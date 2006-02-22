@@ -1562,6 +1562,9 @@ set_color_count(nr)
     else
 	*nr_colors = NUL;
     set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE);
+# ifdef FEAT_EVAL
+    set_option_scriptID((char_u *)"t_Co", current_SID);
+# endif
 }
 #endif
 
@@ -2501,6 +2504,9 @@ termcapinit(name)
     if (term == NULL || *term == NUL)
 	term = DEFAULT_TERM;
     set_string_option_direct((char_u *)"term", -1, term, OPT_FREE);
+# ifdef FEAT_EVAL
+    set_option_scriptID((char_u *)"term", current_SID);
+# endif
 
     /* Set the default terminal name. */
     set_string_default("term", term);

@@ -3078,6 +3078,7 @@ CTRL-W_CTRL-Z	windows.txt	/*CTRL-W_CTRL-Z*
 CTRL-W_CTRL-]	windows.txt	/*CTRL-W_CTRL-]*
 CTRL-W_CTRL-^	windows.txt	/*CTRL-W_CTRL-^*
 CTRL-W_CTRL-_	windows.txt	/*CTRL-W_CTRL-_*
+CTRL-W_F	windows.txt	/*CTRL-W_F*
 CTRL-W_H	windows.txt	/*CTRL-W_H*
 CTRL-W_J	windows.txt	/*CTRL-W_J*
 CTRL-W_K	windows.txt	/*CTRL-W_K*
@@ -5285,6 +5286,7 @@ g?g?	change.txt	/*g?g?*
 g@	map.txt	/*g@*
 gD	pattern.txt	/*gD*
 gE	motion.txt	/*gE*
+gF	editing.txt	/*gF*
 gH	visual.txt	/*gH*
 gI	insert.txt	/*gI*
 gJ	change.txt	/*gJ*
@@ -7283,6 +7285,7 @@ v_b_r_example	visual.txt	/*v_b_r_example*
 v_c	change.txt	/*v_c*
 v_d	change.txt	/*v_d*
 v_g?	change.txt	/*v_g?*
+v_gF	editing.txt	/*v_gF*
 v_gJ	change.txt	/*v_gJ*
 v_gV	visual.txt	/*v_gV*
 v_g]	tagsrch.txt	/*v_g]*

@@ -2673,6 +2673,11 @@ static void did_set_title __ARGS((int icon));
 static char_u *option_expand __ARGS((int opt_idx, char_u *val));
 static void didset_options __ARGS((void));
 static void check_string_option __ARGS((char_u **pp));
+#if defined(FEAT_EVAL) || defined(PROTO)
+static long_u *insecure_flag __ARGS((int opt_idx, int opt_flags));
+#else
+# define insecure_flag(opt_idx, opt_flags) (&options[opt_idx].flags)
+#endif
 static void set_string_option_global __ARGS((int opt_idx, char_u **varp));
 static void set_string_option __ARGS((int opt_idx, char_u *value, int opt_flags));
 static char_u *did_set_string_option __ARGS((int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags));
@@ -3143,6 +3148,7 @@ set_option_default(opt_idx, opt_flags, compatible)
     char_u	*varp;		/* pointer to variable for current option */
     int		dvi;		/* index in def_val[] */
     long_u	flags;
+    long_u	*flagsp;
     int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
 
     varp = get_varp_scope(&(options[opt_idx]), both ? OPT_LOCAL : opt_flags);
@@ -3188,10 +3194,9 @@ set_option_default(opt_idx, opt_flags, compatible)
 								*(int *)varp;
 	}
 
-	/* The default value is not insecure.  But if there are local values
-	 * we can't be sure. */
-	if (options[opt_idx].indir == PV_NONE)
-	    options[opt_idx].flags &= ~P_INSECURE;
+	/* The default value is not insecure. */
+	flagsp = insecure_flag(opt_idx, opt_flags);
+	*flagsp = *flagsp & ~P_INSECURE;
     }
 
 #ifdef FEAT_EVAL
@@ -4467,19 +4472,22 @@ did_set_option(opt_idx, opt_flags, new_value)
     int	    opt_flags;	    /* possibly with OPT_MODELINE */
     int	    new_value;	    /* value was replaced completely */
 {
+    long_u	*p;
+
     options[opt_idx].flags |= P_WAS_SET;
 
     /* When an option is set in the sandbox, from a modeline or in secure mode
      * set the P_INSECURE flag.  Otherwise, if a new value is stored reset the
-     * flag.  But not when there are local values. */
+     * flag. */
+    p = insecure_flag(opt_idx, opt_flags);
     if (secure
 #ifdef HAVE_SANDBOX
 	    || sandbox != 0
 #endif
 	    || (opt_flags & OPT_MODELINE))
-	options[opt_idx].flags |= P_INSECURE;
-    else if (new_value && options[opt_idx].indir == PV_NONE)
-	options[opt_idx].flags &= ~P_INSECURE;
+	*p = *p | P_INSECURE;
+    else if (new_value)
+	*p = *p & ~P_INSECURE;
 }
 
     static char_u *
@@ -4924,15 +4932,54 @@ set_term_option_alloced(p)
  * Return -1 for an unknown option.
  */
     int
-was_set_insecurely(opt)
-    char_u *opt;
+was_set_insecurely(opt, opt_flags)
+    char_u  *opt;
+    int	    opt_flags;
 {
     int	    idx = findoption(opt);
+    long_u  *flagp;
 
     if (idx >= 0)
-	return (options[idx].flags & P_INSECURE) != 0;
+    {
+	flagp = insecure_flag(idx, opt_flags);
+	return (*flagp & P_INSECURE) != 0;
+    }
     EMSG2(_(e_intern2), "was_set_insecurely()");
     return -1;
+}
+
+/*
+ * Get a pointer to the flags used for the P_INSECURE flag of option
+ * "opt_idx".  For some local options a local flags field is used.
+ */
+    static long_u *
+insecure_flag(opt_idx, opt_flags)
+    int		opt_idx;
+    int		opt_flags;
+{
+    if (opt_flags & OPT_LOCAL)
+	switch ((int)options[opt_idx].indir)
+	{
+#ifdef FEAT_STL_OPT
+	    case OPT_BOTH(PV_STL):  return &curwin->w_p_stl_flags;
+#endif
+#ifdef FEAT_EVAL
+	    case PV_FDE:	    return &curwin->w_p_fde_flags;
+	    case PV_FDT:	    return &curwin->w_p_fdt_flags;
+#endif
+#if defined(FEAT_EVAL)
+# if defined(FEAT_CINDENT)
+	    case PV_INDE:	    return &curbuf->b_p_inde_flags;
+# endif
+	    case PV_FEX:	    return &curbuf->b_p_fex_flags;
+# ifdef FEAT_FIND_ID
+	    case PV_INEX:	    return &curbuf->b_p_inex_flags;
+# endif
+#endif
+	}
+
+    /* Nothing special, return global flags field. */
+    return &options[opt_idx].flags;
 }
 #endif
 
@@ -6657,6 +6704,24 @@ compile_cap_prog(buf)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Set the script ID of option "name" to "id".
+ */
+    void
+set_option_scriptID(name, id)
+    char_u	*name;
+    int		id;
+{
+    int opt_idx = findoption(name);
+
+    if (opt_idx == -1)	/* not found (should not happen) */
+	EMSG2(_(e_intern2), "set_option_scriptID()");
+    else
+	options[opt_idx].scriptID = id;
+}
+#endif
+
 /*
  * Set the value of a boolean option, and take care of side effects.
  * Returns NULL for success, or an error message for an error.
@@ -6766,6 +6831,9 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	    STRCPY(IObuff, p_shm);
 	    STRCAT(IObuff, "s");
 	    set_string_option_direct((char_u *)"shm", -1, IObuff, OPT_FREE);
+# ifdef FEAT_EVAL
+	    set_option_scriptID((char_u *)"shm", current_SID);
+# endif
 	}
 	/* remove 's' from p_shm */
 	else if (!p_terse && p != NULL)
@@ -6851,6 +6919,9 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	set_string_option_direct((char_u *)"ffs", -1,
 				 p_ta ? (char_u *)DFLT_FFS_VIM : (char_u *)"",
 							OPT_FREE | opt_flags);
+# ifdef FEAT_EVAL
+	set_option_scriptID((char_u *)"ffs", current_SID);
+# endif
     }
 
     /*

@@ -7677,7 +7677,8 @@ get_expr_indent()
     int		indent;
     pos_T	pos;
     int		save_State;
-    int		use_sandbox = was_set_insecurely((char_u *)"indentexpr");
+    int		use_sandbox = was_set_insecurely((char_u *)"indentexpr",
+								   OPT_LOCAL);
 
     pos = curwin->w_cursor;
     set_vim_var_nr(VV_LNUM, curwin->w_cursor.lnum);

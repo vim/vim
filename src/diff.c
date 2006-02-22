@@ -1078,6 +1078,9 @@ diff_win_options(wp, addbuf)
 	curbuf = curwin->w_buffer;
 	set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
 							  OPT_LOCAL|OPT_FREE);
+# ifdef FEAT_EVAL
+	set_option_scriptID((char_u *)"fdm", current_SID);
+# endif
 	curwin = old_curwin;
 	curbuf = curwin->w_buffer;
 	wp->w_p_fdc = 2;
@@ -1125,6 +1128,9 @@ ex_diffoff(eap)
 	    curbuf = curwin->w_buffer;
 	    set_string_option_direct((char_u *)"fdm", -1,
 				      (char_u *)"manual", OPT_LOCAL|OPT_FREE);
+# ifdef FEAT_EVAL
+	    set_option_scriptID((char_u *)"fdm", current_SID);
+# endif
 	    curwin = old_curwin;
 	    curbuf = curwin->w_buffer;
 	    wp->w_p_fdc = 0;

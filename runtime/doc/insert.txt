@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 14
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -993,10 +993,12 @@ items:
 	menu		extra text for the popup menu
 	info		more information about the item
 	kind		single letter indicating the type of completion
+	icase		when not zero case is to be ignored; when omitted
+			the 'ignorecase' option is used
 
-All of these must be a string.  If an item does not meet these requirements
-then an error message is given and further items in the list are not used.
-You can mix string and Dictionary items in the returned list.
+All of these except 'icase' must be a string.  If an item does not meet these
+requirements then an error message is given and further items in the list are
+not used.  You can mix string and Dictionary items in the returned list.
 
 The "menu" item is used in the popup menu and may be truncated, thus it should
 be relatively short.  The "info" item can be longer, it may be displayed in a

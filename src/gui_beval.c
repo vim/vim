@@ -55,7 +55,7 @@ general_beval_cb(beval, state)
 	set_vim_var_string(VV_BEVAL_TEXT, text, -1);
 	vim_free(text);
 
-	use_sandbox = was_set_insecurely((char_u *)"balloonexpr");
+	use_sandbox = was_set_insecurely((char_u *)"balloonexpr", 0);
 	if (use_sandbox)
 	    ++sandbox;
 	++textlock;

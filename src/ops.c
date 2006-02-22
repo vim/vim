@@ -1439,7 +1439,7 @@ get_spec_reg(regname, argp, allocated, errmsg)
 	    if (!errmsg)
 		return FALSE;
 	    *argp = file_name_at_cursor(FNAME_MESS | FNAME_HYP
-				| (regname == Ctrl_P ? FNAME_EXP : 0), 1L);
+			    | (regname == Ctrl_P ? FNAME_EXP : 0), 1L, NULL);
 	    *allocated = TRUE;
 	    return TRUE;
 #endif
@@ -4334,7 +4334,8 @@ fex_format(lnum, count)
     linenr_T	lnum;
     long	count;
 {
-    int		use_sandbox = was_set_insecurely((char_u *)"formatexpr");
+    int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
+								   OPT_LOCAL);
     int		r;
 
     /*

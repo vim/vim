@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -387,6 +387,14 @@ CTRL-W <Enter>		In the quickfix window: opens a new window to show the
 <A-LeftMouse> ('mousemodel' "popup" or "popup-setpos")
 <A-RightMouse> ('mousemodel' "extend")
 			Make a blockwise selection. |<A-LeftMouse>|
+
+gF			Start editing the filename under the cursor and jump
+			to the line number following the file name.
+			(Yegappan Lakshmanan)
+
+CTRL-W F		Start editing the filename under the cursor in a new
+			window and jump to the line number following the file
+			name.  (Yegappan Lakshmanan)
 
 Insert mode commands: ~
 
@@ -800,9 +808,6 @@ upper case.  Add color support to the builtin vt320 terminal codes.
 For the '%' item in 'viminfo', allow a number to set a maximum for the number
 of buffers.
 
-The 'statusline' option can be local to the window, so that each window can
-have a different value.  (partly by Yegappan Lakshmanan)
-
 When a file looks like a shell script, check for an "exec" command that starts
 the tcl interpreter. (suggested by Alexios Zavras)
 
@@ -1018,11 +1023,19 @@ Insert mode completion for whole lines now also searches unloaded buffers.
 The colortest.vim script can now be invoked directly with ":source" or
 ":runtime".
 
+The 'statusline' option can be local to the window, so that each window can
+have a different value.  (partly by Yegappan Lakshmanan)
+
 The 'statusline' option and other options that support the same format can now
 use these new features:
 - When it starts with "%!" the value is first evaluated as an expression
   before parsing the value.
 - "%#HLname#" can be used to start highlighting with HLname.
+
+When 'statusline' is set to something that causes an error message then it is
+made empty to avoid an endless redraw loop.  Also for other options, such at
+'tabline'.  ":verbose set statusline" will mention that it was set in an error
+handler.
 
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
@@ -1721,5 +1734,9 @@ other diff'ed window.
 When editing in an xterm with a different number of colors than expected the
 screen would be cleared and redrawn, causing the message about the edited file
 to be cleared.  Now set "keep_msg" to redraw the last message.
+
+For a color terminal: When the Normal HL uses bold, possibly to make the color
+lighter, and another HL group specifies a color it might become light as well.
+Now reset bold if a HL group doesn't specify bold itself.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -5474,9 +5474,14 @@ redraw_custum_statusline(wp)
     called_emsg = FALSE;
     win_redr_custom(wp, FALSE);
     if (called_emsg)
+    {
 	set_string_option_direct((char_u *)"statusline", -1,
 		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
 						   ? OPT_LOCAL : OPT_GLOBAL));
+# ifdef FEAT_EVAL
+	set_option_scriptID((char_u *)"statusline", SID_ERROR);
+# endif
+    }
     called_emsg |= save_called_emsg;
 }
 #endif
@@ -5586,7 +5591,8 @@ win_redr_custom(wp, draw_ruler)
     int		fillchar;
     char_u	buf[MAXPATHL];
     char_u	*p;
-    struct	stl_hlrec hl[STL_MAX_ITEM];
+    struct	stl_hlrec hltab[STL_MAX_ITEM];
+    struct	stl_hlrec tabtab[STL_MAX_ITEM];
     int		use_sandbox = FALSE;
 
     /* setup environment for the task at hand */
@@ -5599,7 +5605,7 @@ win_redr_custom(wp, draw_ruler)
 	attr = hl_attr(HLF_TPF);
 	maxwidth = Columns;
 # ifdef FEAT_EVAL
-	use_sandbox = was_set_insecurely((char_u *)"tabline");
+	use_sandbox = was_set_insecurely((char_u *)"tabline", 0);
 # endif
     }
     else
@@ -5643,7 +5649,7 @@ win_redr_custom(wp, draw_ruler)
 	    }
 
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"rulerformat");
+	    use_sandbox = was_set_insecurely((char_u *)"rulerformat", 0);
 # endif
 	}
 	else
@@ -5653,7 +5659,8 @@ win_redr_custom(wp, draw_ruler)
 	    else
 		p = p_stl;
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"statusline");
+	    use_sandbox = was_set_insecurely((char_u *)"statusline",
+					 *wp->w_p_stl == NUL ? 0 : OPT_LOCAL);
 # endif
 	}
 
@@ -5668,7 +5675,7 @@ win_redr_custom(wp, draw_ruler)
     width = build_stl_str_hl(wp == NULL ? curwin : wp,
 				buf, sizeof(buf),
 				p, use_sandbox,
-				fillchar, maxwidth, hl);
+				fillchar, maxwidth, hltab, tabtab);
     len = STRLEN(buf);
 
     while (width < maxwidth && len < sizeof(buf) - 1)
@@ -5682,27 +5689,49 @@ win_redr_custom(wp, draw_ruler)
     }
     buf[len] = NUL;
 
+    /*
+     * Draw each snippet with the specified highlighting.
+     */
     curattr = attr;
     p = buf;
-    for (n = 0; hl[n].start != NULL; n++)
+    for (n = 0; hltab[n].start != NULL; n++)
     {
-	len = (int)(hl[n].start - p);
+	len = (int)(hltab[n].start - p);
 	screen_puts_len(p, len, row, col, curattr);
 	col += vim_strnsize(p, len);
-	p = hl[n].start;
+	p = hltab[n].start;
 
-	if (hl[n].userhl == 0)
+	if (hltab[n].userhl == 0)
 	    curattr = attr;
-	else if (hl[n].userhl < 0)
-	    curattr = syn_id2attr(-hl[n].userhl);
+	else if (hltab[n].userhl < 0)
+	    curattr = syn_id2attr(-hltab[n].userhl);
 #ifdef FEAT_WINDOWS
 	else if (wp != NULL && wp != curwin && wp->w_status_height != 0)
-	    curattr = highlight_stlnc[hl[n].userhl - 1];
+	    curattr = highlight_stlnc[hltab[n].userhl - 1];
 #endif
 	else
-	    curattr = highlight_user[hl[n].userhl - 1];
+	    curattr = highlight_user[hltab[n].userhl - 1];
     }
     screen_puts(p, row, col, curattr);
+
+    if (wp == NULL)
+    {
+	/* Fill the TabPageIdxs[] array for clicking in the tab pagesline. */
+	col = 0;
+	len = 0;
+	p = buf;
+	fillchar = 0;
+	for (n = 0; tabtab[n].start != NULL; n++)
+	{
+	    len += vim_strnsize(p, (int)(tabtab[n].start - p));
+	    while (col < len)
+		TabPageIdxs[col++] = fillchar;
+	    p = tabtab[n].start;
+	    fillchar = tabtab[n].userhl;
+	}
+	while (col < Columns)
+	    TabPageIdxs[col++] = fillchar;
+    }
 }
 
 #endif /* FEAT_STL_OPT */
@@ -6198,7 +6227,8 @@ screen_start_highlight(attr)
 	{
 	    char	buf[20];
 
-	    sprintf(buf, IF_EB("\033|%dh", ESC_STR "|%dh"), attr);		/* internal GUI code */
+	    /* The GUI handles this internally. */
+	    sprintf(buf, IF_EB("\033|%dh", ESC_STR "|%dh"), attr);
 	    OUT_STR(buf);
 	}
 	else
@@ -6207,14 +6237,7 @@ screen_start_highlight(attr)
 	    if (attr > HL_ALL)				/* special HL attr. */
 	    {
 		if (t_colors > 1)
-		{
 		    aep = syn_cterm_attr2entry(attr);
-		    /* If the Normal FG color has BOLD attribute and the new
-		     * HL has a FG color defined, clear BOLD. */
-		    if (aep != NULL && aep->ae_u.cterm.fg_color
-						      && cterm_normal_fg_bold)
-			out_str(T_ME);
-		}
 		else
 		    aep = syn_term_attr2entry(attr);
 		if (aep == NULL)	    /* did ":syntax clear" */
@@ -6224,6 +6247,11 @@ screen_start_highlight(attr)
 	    }
 	    if ((attr & HL_BOLD) && T_MD != NULL)	/* bold */
 		out_str(T_MD);
+	    else if (aep != NULL && t_colors > 1 && aep->ae_u.cterm.fg_color
+						      && cterm_normal_fg_bold)
+		/* If the Normal FG color has BOLD attribute and the new HL
+		 * has a FG color defined, clear BOLD. */
+		out_str(T_ME);
 	    if ((attr & HL_STANDOUT) && T_SO != NULL)	/* standout */
 		out_str(T_SO);
 	    if ((attr & (HL_UNDERLINE | HL_UNDERCURL)) && T_US != NULL)
@@ -6808,7 +6836,7 @@ screenalloc(clear)
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
 #ifdef FEAT_WINDOWS
-    char_u	    *new_TabPageIdxs;
+    short	    *new_TabPageIdxs;
     tabpage_T	    *tp;
 #endif
     static int	    entered = FALSE;		/* avoid recursiveness */
@@ -6885,7 +6913,7 @@ screenalloc(clear)
 					 Rows * sizeof(unsigned)), FALSE);
     new_LineWraps = (char_u *)lalloc((long_u)(Rows * sizeof(char_u)), FALSE);
 #ifdef FEAT_WINDOWS
-    new_TabPageIdxs = (char_u *)lalloc((long_u)(Columns * sizeof(char_u)), FALSE);
+    new_TabPageIdxs = (short *)lalloc((long_u)(Columns * sizeof(short)), FALSE);
 #endif
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
@@ -8553,6 +8581,11 @@ draw_tabline()
 	return;
 
 #if defined(FEAT_STL_OPT)
+
+    /* Init TabPageIdxs[] to zero: Clicking outside of tabs has no effect. */
+    for (scol = 0; scol < Columns; ++scol)
+	TabPageIdxs[scol] = 0;
+
     /* Use the 'tabline' option if it's set. */
     if (*p_tal != NUL)
     {
@@ -8563,8 +8596,13 @@ draw_tabline()
 	called_emsg = FALSE;
 	win_redr_custom(NULL, FALSE);
 	if (called_emsg)
+	{
 	    set_string_option_direct((char_u *)"tabline", -1,
 						      (char_u *)"", OPT_FREE);
+# ifdef FEAT_EVAL
+	    set_option_scriptID((char_u *)"tabline", SID_ERROR);
+# endif
+	}
 	called_emsg |= save_called_emsg;
     }
     else
@@ -8579,6 +8617,7 @@ draw_tabline()
 
 	attr = attr_nosel;
 	tabcount = 0;
+	scol = 0;
 	for (tp = first_tabpage; tp != NULL && col < Columns; tp = tp->tp_next)
 	{
 	    scol = col;
@@ -8671,15 +8710,14 @@ draw_tabline()
 	else
 	    c = ' ';
 	screen_fill(0, 1, col, (int)Columns, c, c, attr_fill);
+
+	/* Put an "X" for closing the current tab if there are several. */
+	if (first_tabpage->tp_next != NULL)
+	{
+	    screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
+	    TabPageIdxs[Columns - 1] = -999;
+	}
     }
-
-    /* Put an "X" for closing the current tab if there are several. */
-    if (first_tabpage->tp_next != NULL)
-	screen_putchar('X', 0, (int)Columns - 1, attr_nosel);
-
-    /* Clicking outside of tabs has no effect. */
-    while (scol < Columns)
-	TabPageIdxs[scol++] = 0xff;
 }
 #endif
 
@@ -8852,8 +8890,13 @@ win_redr_ruler(wp, always)
 	called_emsg = FALSE;
 	win_redr_custom(wp, TRUE);
 	if (called_emsg)
+	{
 	    set_string_option_direct((char_u *)"rulerformat", -1,
 						      (char_u *)"", OPT_FREE);
+# ifdef FEAT_EVAL
+	    set_option_scriptID((char_u *)"rulerformat", SID_ERROR);
+# endif
+	}
 	called_emsg |= save_called_emsg;
 	return;
     }

@@ -62,7 +62,14 @@ EXTERN schar_T	*ScreenLines2 INIT(= NULL);
 #endif
 
 #ifdef FEAT_WINDOWS
-EXTERN char_u	*TabPageIdxs INIT(= NULL);	/* indexes for tab page line */
+/*
+ * Indexes for tab page line:
+ *	N > 0 for label of tab page N
+ *	N == 0 for no label
+ *	N < 0 for closing tab page -N
+ *	N == -999 for closing current tab page
+ */
+EXTERN short	*TabPageIdxs INIT(= NULL);
 #endif
 
 EXTERN int	screen_Rows INIT(= 0);	    /* actual size of ScreenLines[] */

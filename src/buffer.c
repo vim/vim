@@ -3018,12 +3018,12 @@ maketitle()
 	    int	    use_sandbox = FALSE;
 
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"titlestring");
+	    use_sandbox = was_set_insecurely((char_u *)"titlestring", 0);
 # endif
 	    if (stl_syntax & STL_IN_TITLE)
 		build_stl_str_hl(curwin, t_str, sizeof(buf),
 					      p_titlestring, use_sandbox,
-					      0, maxlen, NULL);
+					      0, maxlen, NULL, NULL);
 	    else
 #endif
 		t_str = p_titlestring;
@@ -3115,12 +3115,12 @@ maketitle()
 	    int	    use_sandbox = FALSE;
 
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"iconstring");
+	    use_sandbox = was_set_insecurely((char_u *)"iconstring", 0);
 # endif
 	    if (stl_syntax & STL_IN_ICON)
 		build_stl_str_hl(curwin, i_str, sizeof(buf),
 						    p_iconstring, use_sandbox,
-						    0, 0, NULL);
+						    0, 0, NULL, NULL);
 	    else
 #endif
 		i_str = p_iconstring;
@@ -3213,7 +3213,7 @@ free_titles()
  * or truncated if too long, fillchar is used for all whitespace.
  */
     int
-build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
+build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, tabtab)
     win_T	*wp;
     char_u	*out;		/* buffer to write into */
     size_t	outlen;		/* length of out[] */
@@ -3221,7 +3221,8 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
     int		use_sandbox;	/* "fmt" was set insecurely, use sandbox */
     int		fillchar;
     int		maxwidth;
-    struct stl_hlrec *hl;
+    struct stl_hlrec *hltab;	/* return: HL attributes (can be NULL) */
+    struct stl_hlrec *tabtab;	/* return: tab page nrs (can be NULL) */
 {
     char_u	*p;
     char_u	*s;
@@ -3258,6 +3259,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 	    Group,
 	    Middle,
 	    Highlight,
+	    TabPage,
 	    Trunc
 	}		type;
     }		item[STL_MAX_ITEM];
@@ -3269,6 +3271,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 #define TMPLEN 70
     char_u	tmp[TMPLEN];
     char_u	*usefmt = fmt;
+    struct stl_hlrec *sp;
 
 #ifdef FEAT_EVAL
     /*
@@ -3448,6 +3451,32 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 	    item[curitem].type = Highlight;
 	    item[curitem].start = p;
 	    item[curitem].minwid = minwid > 9 ? 1 : minwid;
+	    s++;
+	    curitem++;
+	    continue;
+	}
+	if (*s == STL_TABPAGENR || *s == STL_TABCLOSENR)
+	{
+	    if (*s == STL_TABCLOSENR)
+	    {
+		if (minwid == 0)
+		{
+		    /* %X ends the close label, go back to the previously
+		     * define tab label nr. */
+		    for (n = curitem - 1; n >= 0; --n)
+			if (item[n].type == TabPage && item[n].minwid >= 0)
+			{
+			    minwid = item[n].minwid;
+			    break;
+			}
+		}
+		else
+		    /* close nrs are stored as negative values */
+		    minwid = - minwid;
+	    }
+	    item[curitem].type = TabPage;
+	    item[curitem].start = p;
+	    item[curitem].minwid = minwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -3953,19 +3982,38 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hl)
 	}
     }
 
-    if (hl != NULL)
+    /* Store the info about highlighting. */
+    if (hltab != NULL)
     {
+	sp = hltab;
 	for (l = 0; l < itemcnt; l++)
 	{
 	    if (item[l].type == Highlight)
 	    {
-		hl->start = item[l].start;
-		hl->userhl = item[l].minwid;
-		hl++;
+		sp->start = item[l].start;
+		sp->userhl = item[l].minwid;
+		sp++;
 	    }
 	}
-	hl->start = NULL;
-	hl->userhl = 0;
+	sp->start = NULL;
+	sp->userhl = 0;
+    }
+
+    /* Store the info about tab pages labels. */
+    if (tabtab != NULL)
+    {
+	sp = tabtab;
+	for (l = 0; l < itemcnt; l++)
+	{
+	    if (item[l].type == TabPage)
+	    {
+		sp->start = item[l].start;
+		sp->userhl = item[l].minwid;
+		sp++;
+	    }
+	}
+	sp->start = NULL;
+	sp->userhl = 0;
     }
 
     return width;

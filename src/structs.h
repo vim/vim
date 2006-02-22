@@ -1324,14 +1324,17 @@ struct file_buffer
     char_u	*b_p_inc;	/* 'include' */
 # ifdef FEAT_EVAL
     char_u	*b_p_inex;	/* 'includeexpr' */
+    long_u	b_p_inex_flags;	/* flags for 'includeexpr' */
 # endif
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
     char_u	*b_p_inde;	/* 'indentexpr' */
+    long_u	b_p_inde_flags;	/* flags for 'indentexpr' */
     char_u	*b_p_indk;	/* 'indentkeys' */
 #endif
 #if defined(FEAT_EVAL)
     char_u	*b_p_fex;	/* 'formatexpr' */
+    long_u	b_p_fex_flags;	/* flags for 'formatexpr' */
 #endif
 #ifdef FEAT_CRYPT
     char_u	*b_p_key;	/* 'key' */
@@ -1825,6 +1828,15 @@ struct window_S
      */
     winopt_T	w_onebuf_opt;
     winopt_T	w_allbuf_opt;
+
+    /* A few options have local flags for P_INSECURE. */
+#ifdef FEAT_STL_OPT
+    long_u	w_p_stl_flags;	    /* flags for 'statusline' */
+#endif
+#ifdef FEAT_EVAL
+    long_u	w_p_fde_flags;	    /* flags for 'foldexpr' */
+    long_u	w_p_fdt_flags;	    /* flags for 'foldtext' */
+#endif
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2005 Nov 30
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -834,7 +834,7 @@ For people who like short functions, this does the same thing: >
 	:  return a:num2
 	:endfunction
 
-A user defined function is called in exactly the same way as a builtin
+A user defined function is called in exactly the same way as a built-in
 function.  Only the name is different.  The Min function can be used like
 this: >
 
@@ -2245,7 +2245,7 @@ organize your functions in library scripts.  But you must use function names
 where the part before the '#' matches the script name.  Otherwise Vim would
 not know what script to load.
 
-If you get really enthousiastic and write lots of library scripts, you may
+If you get really enthusiastic and write lots of library scripts, you may
 want to use subdirectories.  Example: >
 
 	call netlib#ftp#read('somefile')

@@ -105,6 +105,7 @@ do_window(nchar, Prenum, xchar)
     win_T	*wp;
 #if defined(FEAT_SEARCHPATH) || defined(FEAT_FIND_ID)
     char_u	*ptr;
+    linenr_T    lnum = -1;
 #endif
 #ifdef FEAT_FIND_ID
     int		type = FIND_DEFINE;
@@ -478,10 +479,11 @@ newwindow:
 #ifdef FEAT_SEARCHPATH
 /* edit file name under cursor in a new window */
     case 'f':
+    case 'F':
     case Ctrl_F:
 		CHECK_CMDWIN
 
-		ptr = grab_file_name(Prenum1);
+		ptr = grab_file_name(Prenum1, &lnum);
 		if (ptr != NULL)
 		{
 #ifdef FEAT_GUI
@@ -493,8 +495,13 @@ newwindow:
 # ifdef FEAT_SCROLLBIND
 			curwin->w_p_scb = FALSE;
 # endif
-			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
-								   ECMD_HIDE);
+			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL, ECMD_HIDE);
+			if (nchar == 'F' && lnum >= 0)
+			{
+			    curwin->w_cursor.lnum = lnum;
+			    check_cursor_lnum();
+			    beginline(BL_SOL | BL_FIX);
+			}
 		    }
 		    vim_free(ptr);
 		}
@@ -5081,8 +5088,9 @@ tabpageline_height()
  * Returns the name in allocated memory, NULL for failure.
  */
     char_u *
-grab_file_name(count)
-    long count;
+grab_file_name(count, file_lnum)
+    long	count;
+    linenr_T	*file_lnum;
 {
 # ifdef FEAT_VISUAL
     if (VIsual_active)
@@ -5096,7 +5104,9 @@ grab_file_name(count)
 		     FNAME_MESS|FNAME_EXP|FNAME_REL, count, curbuf->b_ffname);
     }
 # endif
-    return file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP|FNAME_REL, count);
+    return file_name_at_cursor(FNAME_MESS|FNAME_HYP|FNAME_EXP|FNAME_REL, count,
+			       file_lnum);
+
 }
 
 /*
@@ -5113,12 +5123,14 @@ grab_file_name(count)
  * FNAME_INCL	    apply "includeexpr"
  */
     char_u *
-file_name_at_cursor(options, count)
-    int	    options;
-    long    count;
+file_name_at_cursor(options, count, file_lnum)
+    int		options;
+    long	count;
+    linenr_T	*file_lnum;
 {
     return file_name_in_line(ml_get_curline(),
-		      curwin->w_cursor.col, options, count, curbuf->b_ffname);
+		      curwin->w_cursor.col, options, count, curbuf->b_ffname,
+		      file_lnum);
 }
 
 /*
@@ -5126,12 +5138,13 @@ file_name_at_cursor(options, count)
  * Otherwise like file_name_at_cursor().
  */
     char_u *
-file_name_in_line(line, col, options, count, rel_fname)
+file_name_in_line(line, col, options, count, rel_fname, file_lnum)
     char_u	*line;
     int		col;
     int		options;
     long	count;
     char_u	*rel_fname;	/* file we are searching relative to */
+    linenr_T	*file_lnum;	/* line number after the file name */
 {
     char_u	*ptr;
     int		len;
@@ -5189,6 +5202,23 @@ file_name_in_line(line, col, options, count, rel_fname)
 						       && ptr[len - 2] != '.')
 	--len;
 
+    if (file_lnum != NULL)
+    {
+	char_u *p;
+
+	/* Get the number after the file name and a separator character */
+	p = ptr + len;
+	p = skipwhite(p);
+	if (*p != NUL)
+	{
+	    if (!isdigit(*p))
+		++p;		    /* skip the separator */
+	    p = skipwhite(p);
+	    if (isdigit(*p))
+		*file_lnum = (int)getdigits(&p);
+	}
+    }
+
     return find_file_name_in_path(ptr, len, options, count, rel_fname);
 }
 
@@ -5204,7 +5234,7 @@ eval_includeexpr(ptr, len)
 
     set_vim_var_string(VV_FNAME, ptr, len);
     res = eval_to_string_safe(curbuf->b_p_inex, NULL,
-				 was_set_insecurely((char_u *)"includeexpr"));
+		      was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL));
     set_vim_var_string(VV_FNAME, NULL, 0);
     return res;
 }

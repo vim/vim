@@ -1035,6 +1035,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define SID_CMDARG	-2	/* for "--cmd" argument */
 #define SID_CARG	-3	/* for "-c" argument */
 #define SID_ENV		-4	/* for sourcing environment variable */
+#define SID_ERROR	-5	/* option was reset because of an error */
 
 /*
  * Events for autocommands.

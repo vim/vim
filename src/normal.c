@@ -2427,28 +2427,43 @@ do_mouse(oap, c, dir, count, fixindent)
     {
 	got_click = FALSE;	/* ignore mouse-up and drag events */
 
-	/* click in last column closes the current tab page. */
-	if (mouse_col == Columns - 1 && first_tabpage->tp_next != NULL)
-	{
-	    tabpage_close(FALSE);
-	    return TRUE;
-	}
-
 	/* click in a tab selects that tab page */
 	if (is_click
 # ifdef FEAT_CMDWIN
 		&& cmdwin_type == 0
 # endif
-		&& mouse_col < Columns && TabPageIdxs[mouse_col] != 0xff)
+		&& mouse_col < Columns)
 	{
-	    goto_tabpage(TabPageIdxs[mouse_col]);
+	    c1 = TabPageIdxs[mouse_col];
+	    if (c1 >= 0)
+	    {
+		/* Go to specified tab page, or next one if not clicking on a
+		 * label. */
+		goto_tabpage(c1);
 
-	    /* It's like clicking on the status line of a window. */
-	    if (curwin != old_curwin)
-		end_visual_mode();
-	    return TRUE;
+		/* It's like clicking on the status line of a window. */
+		if (curwin != old_curwin)
+		    end_visual_mode();
+	    }
+	    else if (c1 < 0)
+	    {
+		tabpage_T	*tp;
+
+		/* Close the current or specified tab page. */
+		if (c1 == -999)
+		    tp = curtab;
+		else
+		    tp = find_tabpage(-c1);
+		if (tp == curtab)
+		{
+		    if (first_tabpage->tp_next != NULL)
+			tabpage_close(FALSE);
+		}
+		else if (tp != NULL)
+		    tabpage_close_other(tp, FALSE);
+	    }
 	}
-	return FALSE;
+	return TRUE;
     }
 #endif
 
@@ -5785,6 +5800,7 @@ nv_gotofile(cap)
     cmdarg_T	*cap;
 {
     char_u	*ptr;
+    linenr_T	lnum = -1;
 
     if (text_locked())
     {
@@ -5793,7 +5809,7 @@ nv_gotofile(cap)
 	return;
     }
 
-    ptr = grab_file_name(cap->count1);
+    ptr = grab_file_name(cap->count1, &lnum);
 
     if (ptr != NULL)
     {
@@ -5803,6 +5819,12 @@ nv_gotofile(cap)
 	setpcmark();
 	(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
 					       P_HID(curbuf) ? ECMD_HIDE : 0);
+	if (cap->nchar == 'F' && lnum >= 0)
+	{
+	    curwin->w_cursor.lnum = lnum;
+	    check_cursor_lnum();
+	    beginline(BL_SOL | BL_FIX);
+	}
 	vim_free(ptr);
     }
     else
@@ -7720,6 +7742,7 @@ nv_g_cmd(cap)
      * "]f" and "[f": can also be used.
      */
     case 'f':
+    case 'F':
 	nv_gotofile(cap);
 	break;
 #endif

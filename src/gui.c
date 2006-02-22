@@ -786,6 +786,9 @@ set_guifontwide(name)
 			gui.wide_font = font;
 			set_string_option_direct((char_u *)"gfw", -1,
 							 wide_name, OPT_FREE);
+# ifdef FEAT_EVAL
+			set_option_scriptID((char_u *)"gfw", current_SID);
+# endif
 		    }
 		}
 		break;

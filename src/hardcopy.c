@@ -492,11 +492,11 @@ prt_header(psettings, pagenum, lnum)
 	printer_page_num = pagenum;
 
 # ifdef FEAT_EVAL
-	use_sandbox = was_set_insecurely((char_u *)"printheader");
+	use_sandbox = was_set_insecurely((char_u *)"printheader", 0);
 # endif
 	build_stl_str_hl(curwin, tbuf, (size_t)(width + IOSIZE),
 						  p_header, use_sandbox,
-						  ' ', width, NULL);
+						  ' ', width, NULL, NULL);
 
 	/* Reset line numbers */
 	curwin->w_cursor.lnum = tmp_lnum;

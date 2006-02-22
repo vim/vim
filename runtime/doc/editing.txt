@@ -334,6 +334,22 @@ CTRL-^			Edit the alternate file (equivalent to ":e #").
 			(For {Visual} see |Visual-mode|.)
 			{not in VI}
 
+							*gF*
+[count]gF		Same as "gf", except if a number follows the file
+			name, then the cursor is positioned on that line in
+			the file. The file name and the number must be
+			separated by a non-filename (see 'isfname') and
+			non-numeric character. White space between the
+			filename, the separator and the number are ignored.
+			Examples: >
+				eval.c:10
+				eval.c @ 20
+				eval.c (30)
+				eval.c 40
+<
+							*v_gF*
+{Visual}[count]gF	Same as "v_gf".
+
 These commands are used to start editing a single file.  This means that the
 file is read into the buffer and the current file name is set.  The file that
 is opened depends on the current directory, see |:cd|.

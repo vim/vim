@@ -9225,7 +9225,7 @@ eval_vars(src, usedlen, lnump, errormsg, srcstart)
 
 #ifdef FEAT_SEARCHPATH
 	case SPEC_CFILE:	/* file name under cursor */
-		result = file_name_at_cursor(FNAME_MESS|FNAME_HYP, 1L);
+		result = file_name_at_cursor(FNAME_MESS|FNAME_HYP, 1L, NULL);
 		if (result == NULL)
 		{
 		    *errormsg = (char_u *)"";

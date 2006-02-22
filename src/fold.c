@@ -1939,7 +1939,7 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 
 	++emsg_off;
 	text = eval_to_string_safe(wp->w_p_fdt, NULL,
-				    was_set_insecurely((char_u *)"foldtext"));
+			 was_set_insecurely((char_u *)"foldtext", OPT_LOCAL));
 	--emsg_off;
 
 	curwin = save_curwin;

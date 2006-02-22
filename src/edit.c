@@ -62,12 +62,13 @@ static char_u e_hitend[] = N_("Hit end of paragraph");
 /*
  * Structure used to store one match for insert completion.
  */
-typedef struct Completion compl_T;
-struct Completion
+typedef struct compl_S compl_T;
+struct compl_S
 {
     compl_T	*cp_next;
     compl_T	*cp_prev;
     char_u	*cp_str;	/* matched text */
+    char	cp_icase;	/* TRUE or FALSE: ignore case */
     char_u	*cp_extra;	/* extra menu text (allocated, can be NULL) */
     char_u	*cp_info;	/* verbose info (can be NULL) */
     char_u	cp_kind;	/* kind of match, single letter, or NUL */
@@ -121,8 +122,9 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
+static int  ins_compl_equal __ARGS((compl_T *match, char_u *str, int len));
 static void ins_compl_longest_match __ARGS((compl_T *match));
-static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches));
+static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int icase));
 static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
 static void ins_compl_del_pum __ARGS((void));
@@ -144,6 +146,7 @@ static int  ins_compl_next __ARGS((int allow_get_expansion, int count, int inser
 static int  ins_compl_key2dir __ARGS((int c));
 static int  ins_compl_pum_key __ARGS((int c));
 static int  ins_compl_key2count __ARGS((int c));
+static int  ins_compl_use_match __ARGS((int c));
 static int  ins_complete __ARGS((int c));
 static int  quote_meta __ARGS((char_u *dest, char_u *str, int len));
 #endif /* FEAT_INS_EXPAND */
@@ -1982,9 +1985,10 @@ vim_is_ctrl_x_key(c)
  * TODO: make this work for multi-byte characters.
  */
     int
-ins_compl_add_infercase(str, len, fname, dir, flags)
+ins_compl_add_infercase(str, len, icase, fname, dir, flags)
     char_u	*str;
     int		len;
+    int		icase;
     char_u	*fname;
     int		dir;
     int		flags;
@@ -2038,26 +2042,22 @@ ins_compl_add_infercase(str, len, fname, dir, flags)
 	/* Copy the original case of the part we typed */
 	STRNCPY(IObuff, compl_orig_text, compl_length);
 
-	return ins_compl_add(IObuff, len, fname, NULL, dir, flags);
+	return ins_compl_add(IObuff, len, icase, fname, NULL, dir, flags);
     }
-    return ins_compl_add(str, len, fname, NULL, dir, flags);
+    return ins_compl_add(str, len, icase, fname, NULL, dir, flags);
 }
 
 /*
  * Add a match to the list of matches.
  * If the given string is already in the list of completions, then return
- * FAIL, otherwise add it to the list and return OK.  If there is an error,
- * maybe because alloc() returns NULL, then RET_ERROR is returned -- webb.
- *
- * New:
- * If the given string is already in the list of completions, then return
  * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
- * maybe because alloc() returns NULL, then FAIL is returned -- webb.
+ * maybe because alloc() returns NULL, then FAIL is returned.
  */
     int
-ins_compl_add(str, len, fname, extra, cdir, flags)
+ins_compl_add(str, len, icase, fname, extra, cdir, flags)
     char_u	*str;
     int		len;
+    int		icase;
     char_u	*fname;
     char_u	*extra;	    /* extra text for popup menu or NULL */
     int		cdir;
@@ -2081,7 +2081,7 @@ ins_compl_add(str, len, fname, extra, cdir, flags)
 	do
 	{
 	    if (    !(match->cp_flags & ORIGINAL_TEXT)
-		    && STRNCMP(match->cp_str, str, (size_t)len) == 0
+		    && ins_compl_equal(match, str, len)
 		    && match->cp_str[len] == NUL)
 		return NOTDONE;
 	    match = match->cp_next;
@@ -2109,6 +2109,7 @@ ins_compl_add(str, len, fname, extra, cdir, flags)
 	vim_free(match);
 	return FAIL;
     }
+    match->cp_icase = icase;
 
     /* match-fname is:
      * - compl_curr_match->cp_fname if it is a string equal to fname.
@@ -2163,6 +2164,21 @@ ins_compl_add(str, len, fname, extra, cdir, flags)
 }
 
 /*
+ * Return TRUE if "str[len]" matches with match->cp_str, considering
+ * match->cp_icase.
+ */
+    static int
+ins_compl_equal(match, str, len)
+    compl_T	*match;
+    char_u	*str;
+    int		len;
+{
+    if (match->cp_icase)
+	return STRNICMP(match->cp_str, str, (size_t)len) == 0;
+    return STRNCMP(match->cp_str, str, (size_t)len) == 0;
+}
+
+/*
  * Reduce the longest common string for match "match".
  */
     static void
@@ -2170,7 +2186,7 @@ ins_compl_longest_match(match)
     compl_T	*match;
 {
     char_u	*p, *s;
-    int		l;
+    int		c1, c2;
     int		had_match;
 
     if (compl_leader == NULL)
@@ -2179,21 +2195,36 @@ ins_compl_longest_match(match)
     else
     {
 	/* Reduce the text if this match differs from compl_leader. */
-	for (p = compl_leader, s = match->cp_str; *p != NUL; p += l, s += l)
+	p = compl_leader;
+	s = match->cp_str;
+	while (*p != NUL)
 	{
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		l = mb_ptr2len(p);
-		if (STRNICMP(p, s, l) != 0)
-			break;
+		c1 = mb_ptr2char(p);
+		c2 = mb_ptr2char(s);
 	    }
 	    else
 #endif
 	    {
-		if (MB_TOLOWER(*p) != MB_TOLOWER(*s))
-		    break;
-		l = 1;
+		c1 = *p;
+		c2 = *s;
+	    }
+	    if (match->cp_icase ? (MB_TOLOWER(c1) != MB_TOLOWER(c2))
+								 : (c1 != c2))
+		break;
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+	    {
+		mb_ptr_adv(p);
+		mb_ptr_adv(s);
+	    }
+	    else
+#endif
+	    {
+		++p;
+		++s;
 	    }
 	}
 
@@ -2221,16 +2252,18 @@ ins_compl_longest_match(match)
  * Frees matches[].
  */
     static void
-ins_compl_add_matches(num_matches, matches)
+ins_compl_add_matches(num_matches, matches, icase)
     int		num_matches;
     char_u	**matches;
+    int		icase;
 {
     int		i;
     int		add_r = OK;
     int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, dir, 0)) == OK)
+	if ((add_r = ins_compl_add(matches[i], -1, icase,
+						   NULL, NULL, dir, 0)) == OK)
 	    /* if dir was BACKWARD then honor it just once */
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -2376,7 +2409,7 @@ ins_compl_show_pum()
 	{
 	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0
 		    && (compl_leader == NULL
-			|| STRNCMP(compl->cp_str, compl_leader, lead_len) == 0))
+			|| ins_compl_equal(compl, compl_leader, lead_len)))
 		++compl_match_arraysize;
 	    compl = compl->cp_next;
 	} while (compl != NULL && compl != compl_first_match);
@@ -2393,8 +2426,7 @@ ins_compl_show_pum()
 	    {
 		if ((compl->cp_flags & ORIGINAL_TEXT) == 0
 			&& (compl_leader == NULL
-			    || STRNCMP(compl->cp_str, compl_leader,
-							      lead_len) == 0))
+			    || ins_compl_equal(compl, compl_leader, lead_len)))
 		{
 		    if (!shown_match_ok)
 		    {
@@ -2560,7 +2592,7 @@ ins_compl_dictionaries(dict, pat, flags, thesaurus)
 			    ptr = find_word_end(ptr);
 			add_r = ins_compl_add_infercase(regmatch.startp[0],
 					      (int)(ptr - regmatch.startp[0]),
-							    files[i], dir, 0);
+					      p_ic, files[i], dir, 0);
 			if (thesaurus)
 			{
 			    char_u *wstart;
@@ -2595,7 +2627,8 @@ ins_compl_dictionaries(dict, pat, flags, thesaurus)
 #endif
 				    ptr = find_word_end(ptr);
 				add_r = ins_compl_add_infercase(wstart,
-					(int)(ptr - wstart), files[i], dir, 0);
+					(int)(ptr - wstart),
+					p_ic, files[i], dir, 0);
 			    }
 			}
 			if (add_r == OK)
@@ -3170,6 +3203,7 @@ expand_by_function(type, base)
     pos_T	pos;
     int		dir = compl_direction;
     char_u	*x;
+    int		icase;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
@@ -3192,6 +3226,12 @@ expand_by_function(type, base)
 	{
 	    p = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"word", FALSE);
 	    x = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"menu", FALSE);
+	    if (get_dict_string(li->li_tv.vval.v_dict, (char_u *)"icase",
+							       FALSE) == NULL)
+		icase = p_ic;
+	    else
+		icase = get_dict_number(li->li_tv.vval.v_dict,
+							   (char_u *)"icase");
 	}
 	else
 	{
@@ -3200,7 +3240,7 @@ expand_by_function(type, base)
 	}
 	if (p != NULL && *p != NUL)
 	{
-	    if (ins_compl_add(p, -1, NULL, x, dir, 0) == OK)
+	    if (ins_compl_add(p, -1, icase, NULL, x, dir, 0) == OK)
 		/* if dir was BACKWARD then honor it just once */
 		dir = FORWARD;
 	}
@@ -3399,7 +3439,7 @@ ins_compl_get_exp(ini)
 		    TAG_INS_COMP | (ctrl_x_mode ? TAG_VERBOSE : 0),
 		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
 	    {
-		ins_compl_add_matches(num_matches, matches);
+		ins_compl_add_matches(num_matches, matches, p_ic);
 	    }
 	    p_ic = save_p_ic;
 	    break;
@@ -3411,7 +3451,13 @@ ins_compl_get_exp(ini)
 
 		/* May change home directory back to "~". */
 		tilde_replace(compl_pattern, num_matches, matches);
-		ins_compl_add_matches(num_matches, matches);
+		ins_compl_add_matches(num_matches, matches,
+#ifdef CASE_INSENSITIVE_FILENAME
+			TRUE
+#else
+			FALSE
+#endif
+			);
 	    }
 	    break;
 
@@ -3419,7 +3465,7 @@ ins_compl_get_exp(ini)
 	    if (expand_cmdline(&compl_xp, compl_pattern,
 			(int)STRLEN(compl_pattern),
 					 &num_matches, &matches) == EXPAND_OK)
-		ins_compl_add_matches(num_matches, matches);
+		ins_compl_add_matches(num_matches, matches, FALSE);
 	    break;
 
 #ifdef FEAT_COMPL_FUNC
@@ -3434,7 +3480,7 @@ ins_compl_get_exp(ini)
 	    num_matches = expand_spelling(first_match_pos.lnum,
 				 first_match_pos.col, compl_pattern, &matches);
 	    if (num_matches > 0)
-		ins_compl_add_matches(num_matches, matches);
+		ins_compl_add_matches(num_matches, matches, FALSE);
 #endif
 	    break;
 
@@ -3568,7 +3614,7 @@ ins_compl_get_exp(ini)
 			    continue;
 		    }
 		}
-		if (ins_compl_add_infercase(ptr, len,
+		if (ins_compl_add_infercase(ptr, len, p_ic,
 				 ins_buf == curbuf ? NULL : ins_buf->b_sfname,
 					   0, flags) != NOTDONE)
 		{
@@ -3687,8 +3733,8 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     {
 	/* Set "compl_shown_match" to the actually shown match, it may differ
 	 * when "compl_leader" is used to omit some of the matches. */
-	while (STRNCMP(compl_shown_match->cp_str,
-				     compl_leader, STRLEN(compl_leader)) != 0
+	while (!ins_compl_equal(compl_shown_match,
+					   compl_leader, STRLEN(compl_leader))
 		&& compl_shown_match->cp_next != NULL
 		&& compl_shown_match->cp_next != compl_first_match)
 	    compl_shown_match = compl_shown_match->cp_next;
@@ -3732,8 +3778,8 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	}
 	if ((compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0
 		&& compl_leader != NULL
-		&& STRNCMP(compl_shown_match->cp_str,
-				     compl_leader, STRLEN(compl_leader)) != 0)
+		&& !ins_compl_equal(compl_shown_match,
+					  compl_leader, STRLEN(compl_leader)))
 	    ++todo;
 	else
 	    /* Remember a matching item. */
@@ -3888,6 +3934,29 @@ ins_compl_key2count(c)
 	return h;
     }
     return 1;
+}
+
+/*
+ * Return TRUE if completion with "c" should insert the match, FALSE if only
+ * to change the currently selected completion.
+ */
+    static int
+ins_compl_use_match(c)
+    int		c;
+{
+    switch (c)
+    {
+	case K_UP:
+	case K_DOWN:
+	case K_PAGEDOWN:
+	case K_KPAGEDOWN:
+	case K_S_DOWN:
+	case K_PAGEUP:
+	case K_KPAGEUP:
+	case K_S_UP:
+	    return FALSE;
+    }
+    return TRUE;
 }
 
 /*
@@ -4252,7 +4321,7 @@ ins_complete(c)
 	 * when the list of matches is freed. */
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-				      -1, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
 	{
 	    vim_free(compl_pattern);
 	    compl_pattern = NULL;
@@ -4278,7 +4347,7 @@ ins_complete(c)
     /*
      * Find next match (and following matches).
      */
-    n = ins_compl_next(TRUE, ins_compl_key2count(c), c != K_UP && c != K_DOWN);
+    n = ins_compl_next(TRUE, ins_compl_key2count(c), ins_compl_use_match(c));
 
     /* may undisplay the popup menu */
     ins_compl_upd_pum();

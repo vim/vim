@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 21
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -164,14 +164,28 @@ pages and define labels for them.  Then get the label for each tab page. >
 	function MyTabLine()
 	  let s = ''
 	  for i in range(tabpagenr('$'))
+	    " select the highlighting
 	    if i + 1 == tabpagenr()
 	      let s .= '%#TabLineSel#'
 	    else
 	      let s .= '%#TabLine#'
 	    endif
+
+	    " set the tab page number (for mouse clicks)
+	    let s .= '%' . (i + 1) . 'T'
+
+	    " the label is made by MyTabLabel()
 	    let s .= ' %{MyTabLabel(' . (i + 1) . ')} '
 	  endfor
-	  let s .= '%#TabLineFill#'
+
+	  " after the last tab fill with TabLineFill and reset tab page nr
+	  let s .= '%#TabLineFill#%T'
+
+	  " right-align the label to close the current tab page
+	  if tabpagenr('$') > 1
+	    let s .= '%=%#TabLine#%999Xclose'
+	  endif
+
 	  return s
 	endfunction
 
@@ -187,7 +201,6 @@ This is just a simplistic example that results in a tab pages line that
 resembles the default, but without adding a + for a modified buffer or
 trunctating the names.  You will want to reduce the width of labels in a
 clever way when there is not enough room.  Check the 'columns' option for the
-space available, keeping in mind that the "X" at the right will take one more
-position.
+space available.
 
  vim:tw=78:ts=8:ft=help:norl:

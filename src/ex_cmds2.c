@@ -3077,13 +3077,15 @@ get_scriptname(id)
     scid_T	id;
 {
     if (id == SID_MODELINE)
-	return (char_u *)"modeline";
+	return (char_u *)_("modeline");
     if (id == SID_CMDARG)
-	return (char_u *)"--cmd argument";
+	return (char_u *)_("--cmd argument");
     if (id == SID_CARG)
-	return (char_u *)"-c argument";
+	return (char_u *)_("-c argument");
     if (id == SID_ENV)
-	return (char_u *)"environment variable";
+	return (char_u *)_("environment variable");
+    if (id == SID_ERROR)
+	return (char_u *)_("error handler");
     return SCRIPT_ITEM(id).sn_name;
 }
 

@@ -714,6 +714,11 @@ CTRL-W CTRL-F	Split current window in two.  Edit file name under cursor.
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
+CTRL-W F						*CTRL-W_F*
+		Split current window in two.  Edit file name under cursor and
+		jump to the line number following the file name. See |gF| for
+		details on how the line number is obtained.
+
 Also see |CTRL-W_CTRL-I|: open window for an included file that includes
 the keyword under the cursor.
 

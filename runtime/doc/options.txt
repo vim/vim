@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 21
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1629,7 +1629,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    sufficient colors are available.  |ins-completion-menu|
 
 	   longest  Only insert the longest common text of the matches.  Use
-	            CTRL-L to add more characters.
+	            CTRL-L to add more characters.  Whether case is ignored
+		    depends on the kind of completion.  For buffer text the
+		    'ignorecase' option is used.
 
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
@@ -2904,7 +2906,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|v:count| the number of lines to be formatted.
 	When this option is empty 'formatprg' is used.
 	Example: >
-		:set formatexp=mylang#Format()
+		:set formatexpr=mylang#Format()
 <	This will invoke the mylang#Format() function in the
 	autoload/mylang.vim file in 'runtimepath'. |autoload|
 
@@ -6073,6 +6075,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.
+	T N   For 'tabline': start of tab page N label.  Use %T after the last
+	      label.  This information is used for mouse clicks.
+	X N   For 'tabline': start of close tab N label.  Use %X after the
+	      label, e.g.: %3Xclose%X.  Use %999X for a "close current tab"
+	      mark.  This information is used for mouse clicks.
 	< -   Where to truncate line if too long.  Default is at the start.
 	      No width fields allowed.
 	= -   Separation point between left and right aligned items.
@@ -6269,14 +6276,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	When nonempty, this option determines the content of the tab pages
 	line at the top of the Vim window.  When empty Vim will use a default
-	tab pages line. |tab-page|
+	tab pages line.  See |setting-tabline| for more info.
 
 	The tab pages line only appears as specified with the 'showtabline'
 	option and only when there is no GUI implementation for tabs.
 
 	The value is evaluated like with 'statusline'.  You can use
 	|tabpagenr()|, |tabpagewinnr()| and |tabpagebuflist()| to figure out
-	the text to be displayed.  See |setting-tabline| for more info.
+	the text to be displayed.  Use "%1T" for the first label, "%2T" for
+	the second one, etc.  Use "%X" items for closing labels.
 
 	Keep in mind that only one of the tab pages is the current one, others
 	are invisible and you can't jump to their windows.

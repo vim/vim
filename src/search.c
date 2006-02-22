@@ -4499,7 +4499,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 	    else
 		/* Use text after match with 'include'. */
 		new_fname = file_name_in_line(incl_regmatch.endp[0], 0,
-				 FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname);
+			     FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname, NULL);
 	    already_searched = FALSE;
 	    if (new_fname != NULL)
 	    {
@@ -4829,7 +4829,7 @@ search_line:
 			goto exit_matched;
 		}
 
-		add_r = ins_compl_add_infercase(aux, i,
+		add_r = ins_compl_add_infercase(aux, i, p_ic,
 			curr_fname == curbuf->b_fname ? NULL : curr_fname,
 			dir, reuse);
 		if (add_r == OK)

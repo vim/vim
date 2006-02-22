@@ -541,6 +541,9 @@ tag		command		   action in Normal mode	~
 				   the cursor
 |CTRL-W_f|	CTRL-W f	   split window and edit file name under the
 				   cursor
+|CTRL-W_F|	CTRL-W F	   split window and edit file name under the
+				   cursor and jump to the line number
+				   following the file name.
 |CTRL-W_g_CTRL-]| CTRL-W g CTRL-]  split window and do |:tjump| to tag under
 				   cursor
 |CTRL-W_g]|	CTRL-W g ]	   split window and do |:tselect| for tag
@@ -719,6 +722,9 @@ tag		char	      note action in Normal mode	~
 				   word
 |gf|		gf		   start editing the file whose name is under
 				   the cursor
+|gF|		gF		   start editing the file whose name is under
+				   the cursor and jump to the line number
+				   following the filename.
 |gg|		gg		1  cursor to line N, default first line
 |gh|		gh		   start Select mode
 |gi|		gi		2  like "i", but first move to the |'^| mark

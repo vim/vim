@@ -1580,7 +1580,8 @@ eval_foldexpr(arg, cp)
     typval_T	tv;
     int		retval;
     char_u	*s;
-    int		use_sandbox = was_set_insecurely((char_u *)"foldexpr");
+    int		use_sandbox = was_set_insecurely((char_u *)"foldexpr",
+								   OPT_LOCAL);
 
     ++emsg_off;
     if (use_sandbox)
@@ -8036,6 +8037,7 @@ f_complete_add(argvars, rettv)
 {
     char_u	*word;
     char_u	*extra = NULL;
+    int		icase = FALSE;
 
     if (argvars[0].v_type == VAR_DICT && argvars[0].vval.v_dict != NULL)
     {
@@ -8043,11 +8045,13 @@ f_complete_add(argvars, rettv)
 						     (char_u *)"word", FALSE);
 	extra = get_dict_string(argvars[0].vval.v_dict,
 						     (char_u *)"menu", FALSE);
+	icase = get_dict_number(argvars[0].vval.v_dict, (char_u *)"icase");
     }
     else
 	word = get_tv_string_chk(&argvars[0]);
     if (word != NULL)
-	rettv->vval.v_number = ins_compl_add(word, -1, NULL, extra, 0, 0);
+	rettv->vval.v_number = ins_compl_add(word, -1, icase,
+							   NULL, extra, 0, 0);
 }
 
 /*
