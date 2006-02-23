@@ -1983,7 +1983,8 @@ do_argfile(eap, argn)
 #endif
 
 #ifdef FEAT_WINDOWS
-	if (*eap->cmd == 's')	    /* split window first */
+	/* split window or create new tab page first */
+	if (*eap->cmd == 's' || cmdmod.tab != 0)
 	{
 	    if (win_split(0, 0) == FAIL)
 		return;

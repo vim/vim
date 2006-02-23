@@ -6109,7 +6109,7 @@ static char *(highlight_init_light[]) =
 	"DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue",
 	"DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan",
-	"TabLine term=underline cterm=underline ctermbg=LightGrey gui=underline guibg=LightGrey",
+	"TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey gui=underline guibg=LightGrey",
 	NULL
     };
 
@@ -6138,7 +6138,7 @@ static char *(highlight_init_dark[]) =
 	"DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue",
 	"DiffChange term=bold ctermbg=DarkMagenta guibg=DarkMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan",
-	"TabLine term=underline cterm=underline ctermbg=DarkGrey gui=underline guibg=DarkGrey",
+	"TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey gui=underline guibg=DarkGrey",
 	NULL
     };
 

@@ -1,5 +1,5 @@
-*** sv_SE.orig.aff	Wed Aug 31 21:00:19 2005
---- sv_SE.aff	Fri Sep 30 14:09:19 2005
+*** sv_SE.orig.aff	2003-08-14 14:00:32.000000000 +0200
+--- sv_SE.aff	2006-02-21 20:33:31.687500000 +0100
 ***************
 *** 6,7 ****
 --- 6,22 ----
@@ -139,547 +139,82 @@
 + SAL Ä	E
 + SAL ÖG(IE)-6	ÖK	# vokal+g(ie) ger ej j-ljud
 + SAL Ö	Ö
-*** sv_SE.orig.dic	2003-08-14 13:02:06.000000000 +0200
---- sv_SE.dic	2005-10-15 18:15:52.171875000 +0200
+*** sv_SE.orig.dic	2003-08-14 14:02:06.000000000 +0200
+--- sv_SE.dic	2006-02-23 18:39:11.218750000 +0100
 ***************
-*** 108,113 ****
---- 108,114 ----
-  adoption/ADHS
-  adoptivbarn/BDS
-  adoptivson/ADS
-+ adr.
-  adrenalin/BS
-  adress/DHS
-  adressat/ADHS
-***************
-*** 608,613 ****
---- 609,615 ----
-  anlöps/S
-  anlöpta/JRS
-  anm
-+ anm.
-  anmaning/ADGS
-  anmoda/ABCDEFMNPS
-  anmodande/ACEFS
-***************
-*** 973,978 ****
---- 975,981 ----
-  arrogant/OS
-  arsenal/DHS
-  arsenik/DS
-+ art.
-  art/ADHOS
-  arta/CHJMNPS
-  artefakt/DHS
-***************
-*** 1094,1099 ****
---- 1097,1103 ----
-  audiens/DHS
-  auditorie/CIS
-  auditorium/JS
-+ aug.
-  August/A
-  augusti/AS
-  auktion/ADHS
-***************
-*** 2376,2381 ****
---- 2380,2386 ----
-  bikupa/AEGS
-  bikupe/S
-  bikups/S
-+ bil.
-  bil/ADGS
-  bila/EGIJOS
-  bilaga/EGOS
-***************
-*** 2490,2495 ****
---- 2495,2501 ----
-  Björn
-  björn/ADGS
-  Björns
-+ bl.a.
-  bla/JS
-  black/DGS
-  blackout/DHS
-***************
-*** 3645,3650 ****
---- 3651,3657 ----
-  debut/ADHS
-  debutant/DHS
-  debutera/JMS
-+ dec.
-  december/AS
-  decennie/CIS
-  decennium/AJS
-***************
-*** 4117,4122 ****
---- 4124,4130 ----
-  dotterson/ADS
-  Douglas
-  dov/OPS
-+ dr
-  dra/AJS
-  drabant/DHS
-  drabba/ACMNPS
-***************
-*** 4315,4321 ****
-  duven/MS
-  dvala/EGJS
+*** 4317,4319 ****
   dvaldes/S
 ! dvs
   dväljas/S
-  dväljes/S
-  dväljs/NS
---- 4323,4330 ----
-  duven/MS
-  dvala/EGJS
+--- 4317,4319 ----
   dvaldes/S
-! dvs.
-! d.v.s.
+! #dvs Removed by Stefan.
   dväljas/S
-  dväljes/S
-  dväljs/NS
 ***************
-*** 4463,4468 ****
---- 4472,4478 ----
-  Ebbas
-  Ecuador/A
-  ed/ADHS
-+ e.d.
-  Edberg/A
-  eder/AJMS
-  Edit/A
-***************
-*** 4612,4617 ****
---- 4622,4628 ----
-  ekorre/AEGS
-  ekosystem/BDS
-  ekosändning/ADGS
+*** 24490 ****
+--- 24490,24554 ----
+  åvila/MS
++ 
++ # Additions by Stefan:
++ SEK
++ adr.
++ anm.
++ art.
++ aug.
++ bl.a.
++ d.v.s.
++ dec.
++ dr
++ dvs.
 + e.Kr.
-  eksem/BDS
-  Eksjö/A
-  ekumenik/DS
-***************
-*** 4825,4830 ****
---- 4836,4842 ----
-  enkrona/EGS
-  enkät/DHS
-  Enköping/A
++ e.d.
 + enl.
-  enlighet/S
-  enligt/S
-  enorm/OPS
-***************
-*** 4990,4995 ****
---- 5002,5008 ----
-  etanol/DS
-  etapp/DHS
-  etc
 + etc.
-  etcetera/S
-  eten/BDS
-  eter/ES
-***************
-*** 5334,5341 ****
---- 5347,5356 ----
-  favorisera/ACDMNPS
-  favorit/ADHS
-  favör/DHS
-+ f.d.
-  fe/EFHS
-  feber/ES
-+ febr.
-  febril/MOPS
-  februari/AS
-  federal/MOS
-***************
-*** 5451,5456 ****
---- 5466,5472 ----
-  fiffla/ACDMNS
-  fifflar/DJQS
-  fifflare/AEJS
-+ fig.
-  figur/ADHS
-  figurativ/OS
-  figurera/ACJMNPS
-***************
-*** 5635,5640 ****
---- 5651,5657 ----
-  fjäsk/ABS
-  fjäska/JMS
-  fjättra/CMNPS
 + f.Kr.
-  flack/OPS
-  flacka/ABCDJMNS
-  fladder/CS
-***************
-*** 5913,5918 ****
---- 5930,5936 ----
-  fortplanta/ACMNPS
-  fortplantning/ADGS
-  fortran/S
-+ forts.
-  fortsatt/OQS
-  fortskrida/KS
-  fortsätta/AJS
-***************
-*** 6075,6080 ****
---- 6093,6099 ----
-  fras/DHS
-  frasa/BDHJMS
-  frasering/ADS
-+ fre.
-  fred/ADS
-  freda/ACJMNPS
-  fredag/ADGS
-***************
-*** 6170,6175 ****
---- 6189,6195 ----
-  frivol/MOS
-  froda/ACMNPS
-  frodig/OS
-+ fr.o.m.
-  from/KLMNS
-  fromhet/ADS
-  fromt/S
-***************
-*** 6453,6458 ****
---- 6473,6479 ----
-  fästman/AFS
-  fästmö/AEIS
-  fästning/ADGS
++ f.d.
++ f.n.
 + f.ö.
-  föda/ADEJKLRS
-  född/OQS
-  födelse/AES
-***************
-*** 10493,10498 ****
---- 10514,10520 ----
-  Jan/A
-  Janne/A
-  Janos
++ febr.
++ fig.
++ fil.kand.
++ fil.lic.
++ forts.
++ fr.o.m.
++ fre.
 + jan.
-  januari/AS
-  japan/DHS
-  Japans
-***************
-*** 10520,10525 ****
---- 10542,10548 ----
-  jetflyg/ABS
-  jetmotor/EHS
-  jetplan/ABDS
 + jfr
-  jiddisch/DS
-  Jimmy/A
-  jippo/ACES
-***************
-*** 10870,10875 ****
---- 10893,10899 ----
-  kaos/BS
-  kaotisk/OS
-  Kap
 + kap.
-  kap/BDS
-  kapa/ACJMNPS
-  kapabel/KMS
-***************
-*** 11119,11124 ****
---- 11143,11149 ----
-  Kjell/A
-  kjol/ADGS
-  kjortel/EIS
 + kl.
-  kl
-  klack/DGS
-  klacka/IJMS
-***************
-*** 13445,13450 ****
---- 13470,13476 ----
-  löpning/ADGS
-  löpsedel/AEIS
-  löptid/DS
 + lör.
-  lördag/ADGS
-  lös/AORS
-  lösa/ABDJKLQRS
-***************
-*** 13783,13788 ****
---- 13809,13815 ----
-  Mauretanien/A
-  Mauritius
-  mausoleum/JS
-+ max.
-  max
-  maxim/DHS
-  maximal/MOS
-***************
-*** 13965,13970 ****
---- 13992,13998 ----
-  mexikan/DHS
-  mexikanska/AEGS
-  Mexiko/A
 + m.fl.
-  mg
-  MHz
-  Michael/A
-***************
-*** 14016,14021 ****
---- 14044,14050 ----
-  milslång/OS
-  milstolpe/AEGS
-  mimosa/AES
-+ min.
-  min/ACDFHS
-  mina/HJS
-  mindervärdig/OQRS
-***************
-*** 14136,14141 ****
---- 14165,14171 ----
-  mjölnar/DJQS
-  mjölnare/AEJS
-  ml
 + m.m.
-  mm
-  mo/AEGS
-  mobba/ACMNPS
-***************
-*** 14539,14544 ****
---- 14569,14575 ----
-  målstyrd/OS
-  målsättning/ADGS
-  måltid/ADHS
++ max.
++ min.
 + mån.
-  mån/DGQS
-  måna/IJMPRS
-  månad/ADHQS
-***************
-*** 14792,14797 ****
---- 14823,14830 ----
-  neutron/DHS
-  nevö/ES
-  New
 + ngn
 + ngt
-  nia/EGJQS
-  Nicaragua/A
-  nick/DGS
-***************
-*** 14920,14931 ****
---- 14953,14966 ----
-  notifikation/ADS
-  notis/DHS
-  notorisk/OS
 + nov.
-  nova/AES
-  novell/DHS
-  novellmagasin/ABDS
-  novellsamling/ADGS
-  november/AS
-  novis/DHS
 + nr.
-  nr
-  nu/BS
-  nubb/S
-***************
-*** 15243,15248 ****
---- 15278,15284 ----
-  obrottslig/OS
-  obrukbar/MOS
-  obruten/MS
-+ obs.
-  obs
-  observant/OPS
-  observation/ADHS
-***************
-*** 15470,15475 ****
---- 15506,15512 ----
-  okonventionell/MOS
-  okritisk/OS
-  okryddade/OS
-+ okt.
-  oktagon/HS
-  oktal/MOS
-  oktav/DHS
-***************
-*** 15741,15746 ****
---- 15778,15784 ----
-  onjutbar/MOS
-  onkel/AES
-  onormal/MOS
-+ ons.
-  onsdag/ADGS
-  onyanserade/OS
-  onykter/MS
-***************
-*** 15977,15983 ****
---- 16015,16023 ----
-  ostrukturerade/OS
-  ostörd/OS
-  osund/OS
-+ osv.
-  osv
 + o.s.v.
-  osvensk/OS
-  osviklig/OPS
-  osympatisk/OPQS
-***************
-*** 16378,16383 ****
---- 16418,16424 ----
-  petitum/ES
-  Petra/A
-  Pettersson/A
++ obs.
++ okt.
++ ons.
++ osv.
 + p.g.a.
-  pga
-  Philips
-  pi/FS
-***************
-*** 17457,17462 ****
---- 17498,17504 ----
-  resonabel/MS
-  resonemang/ABDS
-  resonera/ACMNS
 + resp.
-  resp/S
-  respekt/S
-  respektabel/LMS
-***************
-*** 18328,18333 ****
---- 18370,18376 ----
-  sentimentalitet/ADS
-  separat/OS
-  separera/ACMNPS
-+ sept.
-  september/AS
-  seraf/DHS
-  serenad/DHS
-***************
-*** 18652,18657 ****
---- 18695,18701 ----
-  sjöslag/S
-  sjöss/S
-  sjåpig/OS
 + s.k.
-  ska/GJMPS
-  skada/ABCDEGJMNPS
-  skadedjur/BDS
-***************
-*** 20767,20772 ****
---- 20811,20817 ----
-  sömnlös/OQRS
-  sömnlöshet/ADS
-  sömnmedel/ACFS
++ sept.
 + sön.
-  söndag/ADGS
-  sönder/S
-  sönderbruten/MS
-***************
-*** 20832,20837 ****
---- 20877,20883 ----
-  såväl/S
-  såvärst/S
-  ta/AKRS
-+ tab.
-  tabbe/S
-  tabell/DHS
-  tabernaklet/AS
-***************
-*** 21063,21068 ****
---- 21109,21115 ----
-  testar/DJQS
-  testare/AEJS
-  testning/ADGS
 + t.ex.
-  tex
-  Texas
-  text/DHOS
-***************
-*** 21336,21341 ****
---- 21383,21389 ----
-  tippa/ACMNPS
-  tips/BDS
-  tipsa/ACJMNPS
-+ tis.
-  tisdag/ADGS
-  tistel/EIS
-  titan/S
-***************
-*** 21463,21468 ****
---- 21511,21517 ----
-  tolvårig/OS
-  tolvårs/S
-  Tom
 + t.o.m.
-  tom/LMS
-  Tomas
-  tomat/DHS
-***************
-*** 21513,21518 ****
---- 21562,21568 ----
-  torped/ADHS
-  torpedbåt/ADGS
-  torr/MOPS
++ tab.
++ tis.
 + tors.
-  torsdag/ADGS
-  torsk/DGS
-  Torsten/A
-***************
-*** 22359,22364 ****
---- 22409,22415 ----
-  uppkomst/DS
-  uppkoppling/ADGS
-  uppkrupen/MS
++ u.a.
 + uppl.
-  upplaga/AEGOS
-  upplagd/OS
-  upplage/S
-***************
-*** 22639,22644 ****
---- 22690,22696 ----
-  utförar/DJQS
-  utförare/AEJS
-  utförlig/OPS
 + utg.
-  utgallra/ACMNPS
-  utgamla/S
-  utgammal/MS
-***************
-*** 23003,23008 ****
---- 23055,23061 ----
-  varannan/S
-  varav/S
-  Varberg/A
-+ vard.
-  varda/BDS
-  vardag/ADGS
-  vardaglig/OPS
-***************
-*** 23091,23096 ****
---- 23144,23150 ----
-  Vaxholm/A
-  vaxljus/BDS
-  Vaxmora
-+ vd
-  VD
-  ve/GS
-  veck/ABDS
-***************
-*** 23203,23208 ****
---- 23257,23264 ----
-  vettlös/OS
-  vev/DS
-  veva/ACJMNPS
 + v.g.
 + v.g.v.
-  vi/ACEOS
-  vibration/ADHS
-  vibrator/AES
-***************
-*** 23416,23421 ****
---- 23472,23478 ----
-  VM
-  vokabulär/S
-  vokal/DHS
++ vard.
++ vd
 + vol.
-  volontär/ADHS
-  volt/S
-  Volvo/A

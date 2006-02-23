@@ -4695,10 +4695,18 @@ check_termcode(max_offset, buf, buflen)
 			    && orig_num_clicks != 4
 			    && orig_mouse_col == mouse_col
 			    && orig_mouse_row == mouse_row
+			    && ((orig_topline == curwin->w_topline
 #ifdef FEAT_DIFF
-			    && orig_topfill == curwin->w_topfill
+				    && orig_topfill == curwin->w_topfill
 #endif
-			    && orig_topline == curwin->w_topline)
+				)
+#ifdef FEAT_WINDOWS
+				/* Double click in tab pages line also works
+				 * when window contents changes. */
+				|| (mouse_row == 0 && firstwin->w_winrow > 0)
+#endif
+			       )
+			    )
 			++orig_num_clicks;
 		    else
 			orig_num_clicks = 1;

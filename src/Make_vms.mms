@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2005 Jul 23
+# Last change:  2006 Feb 23
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -288,7 +288,7 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 SRC =	buffer.c charset.c diff.c digraph.c edit.c eval.c ex_cmds.c ex_cmds2.c \
 	ex_docmd.c ex_eval.c ex_getln.c if_xcmdsrv.c fileio.c fold.c getchar.c \
 	hardcopy.c hashtable.c main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
-	misc2.c move.c normal.c ops.c option.c quickfix.c regexp.c search.c \
+	misc2.c move.c normal.c ops.c option.c popupmenu.c quickfix.c regexp.c search.c \
 	spell.c syntax.c tag.c term.c termlib.c ui.c undo.c version.c screen.c \
 	window.c os_unix.c os_vms.c pathdef.c \
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) $(SNIFF_SRC) \
@@ -298,7 +298,7 @@ OBJ =	buffer.obj charset.obj diff.obj digraph.obj edit.obj eval.obj \
 	ex_cmds.obj ex_cmds2.obj ex_docmd.obj ex_eval.obj ex_getln.obj \
 	if_xcmdsrv.obj fileio.obj fold.obj getchar.obj hardcopy.obj hashtable.obj main.obj mark.obj \
 	menu.obj memfile.obj memline.obj message.obj misc1.obj misc2.obj \
-	move.obj mbyte.obj normal.obj ops.obj option.obj quickfix.obj \
+	move.obj mbyte.obj normal.obj ops.obj option.obj popupmenu.obj quickfix.obj \
 	regexp.obj search.obj spell.obj syntax.obj tag.obj term.obj termlib.obj \
 	ui.obj undo.obj screen.obj version.obj window.obj os_unix.obj \
 	os_vms.obj pathdef.obj \
@@ -604,6 +604,10 @@ os_vms.obj : os_vms.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h os_unixx.h
 pathdef.obj : pathdef.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+popupmenu.obj : popupmenu.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h gui_beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

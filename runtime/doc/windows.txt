@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
+*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -954,9 +954,10 @@ list of buffers. |unlisted-buffer|
 :bw[ipeout][!] {bufname}
 :N,Mbw[ipeout][!]
 :bw[ipeout][!] N1 N2 ...
-		Like |:bdelete|, but really delete the buffer.  All marks in
-		this buffer become invalid, option settings are lost, etc.
-		Don't use this unless you know what you are doing.
+		Like |:bdelete|, but really delete the buffer.  Everything
+		related to the buffer is lost.  All marks in this buffer
+		become invalid, option settings are lost, etc.  Don't use this
+		unless you know what you are doing.
 
 :[N]bun[load][!]				*:bun* *:bunload* *E515*
 :bun[load][!] [N]

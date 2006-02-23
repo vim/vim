@@ -2939,6 +2939,14 @@ redrawcmd()
     if (cmd_silent)
 	return;
 
+    /* when 'incsearch' is set there may be no command line while redrawing */
+    if (ccline.cmdbuff == NULL)
+    {
+	windgoto(cmdline_row, 0);
+	msg_clr_eos();
+	return;
+    }
+
     msg_start();
     redrawcmdprompt();
 
@@ -5635,6 +5643,9 @@ ex_window()
     /* Don't execute autocommands while creating the window. */
     ++autocmd_block;
 # endif
+    /* don't use a new tab page */
+    cmdmod.tab = 0;
+
     /* Create a window for the command-line buffer. */
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
     {

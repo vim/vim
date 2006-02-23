@@ -1,12 +1,12 @@
 " Vim syntax file
 " Language:	Yacc
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 06, 2005
-" Version:	3
+" Last Change:	Feb 22, 2006
+" Version:	4
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Option:
-"   yacc_uses_cpp : if this variable exists, then C++ is loaded rather than C
+"   g:yacc_uses_cpp : if this variable exists, then C++ is loaded rather than C
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -18,12 +18,12 @@ endif
 
 " Read the C syntax to start with
 if version >= 600
-  if exists("yacc_uses_cpp")
+  if exists("g:yacc_uses_cpp")
     runtime! syntax/cpp.vim
   else
     runtime! syntax/c.vim
   endif
-elseif exists("yacc_uses_cpp")
+elseif exists("g:yacc_uses_cpp")
   so <sfile>:p:h/cpp.vim
 else
   so <sfile>:p:h/c.vim
@@ -47,7 +47,7 @@ syn region	yaccUnion	contained matchgroup=yaccCurly start="{" matchgroup=yaccCur
 syn region	yaccUnionCurly	contained matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}" contains=@yaccUnionGroup
 syn match	yaccBrkt	contained "[<>]"
 syn match	yaccType	"<[a-zA-Z_][a-zA-Z0-9_]*>"	contains=yaccBrkt
-syn match	yaccDefinition	"^[A-Za-z][A-Za-z0-9_]*[ \t]*:"
+syn match	yaccDefinition	"^[A-Za-z][A-Za-z0-9_]*\_s*:"
 
 " special Yacc separators
 syn match	yaccSectionSep	"^[ \t]*%%"

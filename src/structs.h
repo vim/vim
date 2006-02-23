@@ -428,6 +428,7 @@ typedef struct
 # endif
 # ifdef FEAT_WINDOWS
     int		split;			/* flags for win_split() */
+    int		tab;			/* > 0 when ":tab" was used */
 # endif
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
     int		confirm;		/* TRUE to invoke yes/no dialog */

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 12
+" Last Change:	2006 Feb 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -890,6 +890,9 @@ au BufNewFile,BufRead *.mf			setf mf
 
 " MetaPost
 au BufNewFile,BufRead *.mp			setf mp
+
+" MGL
+au BufNewFile,BufRead *.mgl			setf mgl
 
 " MMIX or VMS makefile
 au BufNewFile,BufRead *.mms			call s:FTmms()

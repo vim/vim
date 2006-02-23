@@ -713,8 +713,8 @@ edit(cmdchar, startln, count)
 		    continue;
 		}
 
-		/* A printable character: Add it to "compl_leader". */
-		if (vim_isprintc(c))
+		/* A printable, non-white character: Add to "compl_leader". */
+		if (vim_isprintc(c) && !vim_iswhite(c))
 		{
 		    ins_compl_addleader(c);
 		    continue;
@@ -3696,7 +3696,10 @@ ins_compl_delete()
 ins_compl_insert()
 {
     ins_bytes(compl_shown_match->cp_str + curwin->w_cursor.col - compl_col);
-    compl_used_match = TRUE;
+    if (compl_shown_match->cp_flags & ORIGINAL_TEXT)
+	compl_used_match = FALSE;
+    else
+	compl_used_match = TRUE;
 }
 
 /*
