@@ -2437,13 +2437,23 @@ do_mouse(oap, c, dir, count, fixindent)
 	    c1 = TabPageIdxs[mouse_col];
 	    if (c1 >= 0)
 	    {
-		/* Go to specified tab page, or next one if not clicking on a
-		 * label. */
-		goto_tabpage(c1);
-
-		/* It's like clicking on the status line of a window. */
-		if (curwin != old_curwin)
+		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
+		{
+		    /* double click opens new page */
 		    end_visual_mode();
+		    tabpage_new();
+		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
+		}
+		else
+		{
+		    /* Go to specified tab page, or next one if not clicking
+		     * on a label. */
+		    goto_tabpage(c1);
+
+		    /* It's like clicking on the status line of a window. */
+		    if (curwin != old_curwin)
+			end_visual_mode();
+		}
 	    }
 	    else if (c1 < 0)
 	    {
@@ -7894,6 +7904,9 @@ nv_g_cmd(cap)
 #ifdef FEAT_WINDOWS
     case 't':
 	goto_tabpage((int)cap->count0);
+	break;
+    case 'T':
+	goto_tabpage(-(int)cap->count1);
 	break;
 #endif
 

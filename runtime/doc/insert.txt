@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 22
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1083,32 +1083,39 @@ There are two states:
 1. A complete match has been inserted.
 2. Only part of a match has been inserted.
 
+You normally start in the first state, with the first match being inserted.
 When "longest" is in 'completeopt' and there is more than one match you start
 in the second state.
+
+If you select another match, e.g., with CTRL-N or CTRL-P, you go from the
+second to the first state.  This doesn't change the list of matches.
+
 
 In the first state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the word before
 		  the cursor.  This reduces the list of matches, often to one
-		  entry.  Switches to the second state.
+		  entry, and switches to the second state.
 
 In the second state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the shorter word
 		  before the cursor.  This may find more matches.
 CTRL-L		  Add one character from the current match, may reduce the
 		  number of matches.
-any printable character: Add this character and reduce the number of matches.
+any printable, non-white character:
+		  Add this character and reduce the number of matches.
 
 In both states these can be used:
-<CR> and <Enter>  Accept the currently selected match
-<PageUp>	  Select a match several entries back
-<PageDown>	  Select a match several entries further
+<CR> and <Enter>  Accept the currently selected match and stop completion.
+<PageUp>	  Select a match several entries back, but don't insert it.
+<PageDown>	  Select a match several entries further, but don't insert it.
 <Up>		  Select the previous match, as if CTRL-P was used, but don't
-		  insert the newly selected word.
+		  insert it.
 <Down>		  Select the next match, as if CTRL-N was used, but don't
-		  insert the newly selected word.
-
-If you select another match, e.g., with CTRL-N or CTRL-P, you go back to the
-first state.  However, the list of matches doesn't change.
+		  insert it.
+Any other character:
+		  Stop completion without changing the match and insert the
+		  typed character.  Note that typing a space or <Tab> will
+		  work in both states.
 
 
 The colors of the menu can be changed with these highlight groups:

@@ -155,6 +155,9 @@ static void	ex_resize __ARGS((exarg_T *eap));
 static void	ex_stag __ARGS((exarg_T *eap));
 static void	ex_tabclose __ARGS((exarg_T *eap));
 static void	ex_tabonly __ARGS((exarg_T *eap));
+static void	ex_tabnext __ARGS((exarg_T *eap));
+static void	ex_tabprevious __ARGS((exarg_T *eap));
+static void	ex_tabmove __ARGS((exarg_T *eap));
 static void	ex_tabs __ARGS((exarg_T *eap));
 #else
 # define ex_close		ex_ni
@@ -163,7 +166,9 @@ static void	ex_tabs __ARGS((exarg_T *eap));
 # define ex_resize		ex_ni
 # define ex_splitview		ex_ni
 # define ex_stag		ex_ni
-# define ex_tab			ex_ni
+# define ex_tabnext		ex_ni
+# define ex_tabprevious		ex_ni
+# define ex_tabmove		ex_ni
 # define ex_tabs		ex_ni
 # define ex_tabclose		ex_ni
 # define ex_tabonly		ex_ni
@@ -1857,7 +1862,25 @@ do_one_cmd(cmdlinep, sourcing,
 			}
 			continue;
 
-	    case 't':	if (!checkforcmd(&ea.cmd, "topleft", 2))
+	    case 't':	if (checkforcmd(&p, "tab", 3))
+			{
+#ifdef FEAT_WINDOWS
+			    tabpage_T	*tp;
+
+			    if (vim_isdigit(*ea.cmd))
+				cmdmod.tab = atoi((char *)ea.cmd) + 1;
+			    else
+			    {
+				cmdmod.tab = 2;
+				for (tp = first_tabpage; tp != curtab;
+							     tp = tp->tp_next)
+				    ++cmdmod.tab;
+			    }
+			    ea.cmd = p;
+#endif
+			    continue;
+			}
+			if (!checkforcmd(&ea.cmd, "topleft", 2))
 			    break;
 #ifdef FEAT_WINDOWS
 			cmdmod.split |= WSP_TOP;
@@ -2380,7 +2403,7 @@ do_one_cmd(cmdlinep, sourcing,
     {
 	n = getdigits(&ea.arg);
 	ea.arg = skipwhite(ea.arg);
-	if (n <= 0 && !ni)
+	if (n <= 0 && !ni && (ea.argt & ZEROR) == 0)
 	{
 	    errormsg = (char_u *)_(e_zerocount);
 	    goto doend;
@@ -6957,7 +6980,7 @@ ex_splitview(eap)
 	    || eap->cmdidx == CMD_tabfind
 	    || eap->cmdidx == CMD_tabnew)
     {
-	if (win_new_tabpage() != FAIL)
+	if (win_new_tabpage(cmdmod.tab) != FAIL)
 	{
 	    do_exedit(eap, NULL);
 
@@ -6998,13 +7021,48 @@ theend:
 }
 
 /*
- * :tab command
+ * Open a new tab page.
  */
     void
-ex_tab(eap)
+tabpage_new()
+{
+    exarg_T	ea;
+
+    vim_memset(&ea, 0, sizeof(ea));
+    ea.cmdidx = CMD_tabnew;
+    ea.cmd = (char_u *)"tabn";
+    ea.arg = (char_u *)"";
+    ex_splitview(&ea);
+}
+
+/*
+ * :tabnext command
+ */
+    static void
+ex_tabnext(eap)
     exarg_T	*eap;
 {
-    goto_tabpage((int)eap->line2);
+    goto_tabpage(eap->addr_count == 0 ? 0 : (int)eap->line2);
+}
+
+/*
+ * :tabprevious and :tabNext command
+ */
+    static void
+ex_tabprevious(eap)
+    exarg_T	*eap;
+{
+    goto_tabpage(eap->addr_count == 0 ? -1 : -(int)eap->line2);
+}
+
+/*
+ * :tabmove command
+ */
+    static void
+ex_tabmove(eap)
+    exarg_T	*eap;
+{
+    tabpage_move(eap->addr_count == 0 ? 9999 : (int)eap->line2);
 }
 
 /*
@@ -7035,7 +7093,9 @@ ex_tabs(eap)
 	    wp = tp->tp_firstwin;
 	for ( ; wp != NULL && !got_int; wp = wp->w_next)
 	{
-	    msg_puts((char_u *)"\n  ");
+	    msg_putchar('\n');
+	    msg_putchar(wp == curwin ? '>' : ' ');
+	    msg_putchar(' ');
 	    msg_putchar(bufIsChanged(wp->w_buffer) ? '+' : ' ');
 	    msg_putchar(' ');
 	    if (buf_spname(wp->w_buffer) != NULL)

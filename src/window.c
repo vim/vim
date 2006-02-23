@@ -622,6 +622,10 @@ win_split(size, flags)
     int		size;
     int		flags;
 {
+    /* When the ":tab" modifier was used open a new tab page instead. */
+    if (may_open_tabpage() == OK)
+	return OK;
+
     /* Add flags from ":vertical", ":topleft" and ":botright". */
     flags |= cmdmod.split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
@@ -2303,14 +2307,13 @@ alt_tabpage()
 {
     tabpage_T	*tp;
 
-    /* Use the next tab page if we are currently at the first one. */
-    if (curtab == first_tabpage)
+    /* Use the next tab page if possible. */
+    if (curtab->tp_next != NULL)
 	return curtab->tp_next;
 
-    /* Find the previous tab page. */
-    for (tp = first_tabpage; tp->tp_next != NULL; tp = tp->tp_next)
-	if (tp->tp_next == curtab)
-	    break;
+    /* Find the last but one tab page. */
+    for (tp = first_tabpage; tp->tp_next != curtab; tp = tp->tp_next)
+	;
     return tp;
 }
 
@@ -2990,14 +2993,17 @@ free_tabpage(tp)
 /*
  * Create a new Tab page with one window.
  * It will edit the current buffer, like after ":split".
- * Put it just after the current Tab page.
+ * When "after" is 0 put it just after the current Tab page.
+ * Otherwise put it just before tab page "after".
  * Return FAIL or OK.
  */
     int
-win_new_tabpage()
+win_new_tabpage(after)
+    int		after;
 {
     tabpage_T	*tp = curtab;
     tabpage_T	*newtp;
+    int		n;
 
     newtp = alloc_tabpage();
     if (newtp == NULL)
@@ -3015,8 +3021,25 @@ win_new_tabpage()
     if (win_alloc_firstwin(tp->tp_curwin) == OK)
     {
 	/* Make the new Tab page the new topframe. */
-	newtp->tp_next = tp->tp_next;
-	tp->tp_next = newtp;
+	if (after == 1)
+	{
+	    /* New tab page becomes the first one. */
+	    newtp->tp_next = first_tabpage;
+	    first_tabpage = newtp;
+	}
+	else
+	{
+	    if (after > 0)
+	    {
+		/* Put new tab page before tab page "after". */
+		n = 2;
+		for (tp = first_tabpage; tp->tp_next != NULL
+					       && n < after; tp = tp->tp_next)
+		    ++n;
+	    }
+	    newtp->tp_next = tp->tp_next;
+	    tp->tp_next = newtp;
+	}
 	win_init_size();
 	firstwin->w_winrow = tabpageline_height();
 
@@ -3032,6 +3055,24 @@ win_new_tabpage()
 
     /* Failed, get back the previous Tab page */
     enter_tabpage(curtab, curbuf);
+    return FAIL;
+}
+
+/*
+ * Open a new tab page if ":tab cmd" was used.  It will edit the same buffer,
+ * like with ":split".
+ * Returns OK if a new tab page was created, FAIL otherwise.
+ */
+    int
+may_open_tabpage()
+{
+    int		n = cmdmod.tab;
+
+    if (cmdmod.tab != 0)
+    {
+	cmdmod.tab = 0;	    /* reset it to avoid doing it twice */
+	return win_new_tabpage(n);
+    }
     return FAIL;
 }
 
@@ -3059,7 +3100,7 @@ make_tabpages(maxcount)
 #endif
 
     for (todo = count - 1; todo > 0; --todo)
-	if (win_new_tabpage() == FAIL)
+	if (win_new_tabpage(0) == FAIL)
 	    break;
 
 #ifdef FEAT_AUTOCMD
@@ -3212,6 +3253,7 @@ goto_tabpage(n)
     int	    n;
 {
     tabpage_T	*tp;
+    tabpage_T	*ttp;
     int		i;
 
     /* If there is only one it can't work. */
@@ -3230,6 +3272,19 @@ goto_tabpage(n)
 	else
 	    tp = curtab->tp_next;
     }
+    else if (n < 0)
+    {
+	/* "gT": go to previous tab page, wrap around end.  "N gT" repeats
+	 * this N times. */
+	ttp = curtab;
+	for (i = n; i < 0; ++i)
+	{
+	    for (tp = first_tabpage; tp->tp_next != ttp && tp->tp_next != NULL;
+		    tp = tp->tp_next)
+		;
+	    ttp = tp;
+	}
+    }
     else
     {
 	/* Go to tab page "n". */
@@ -3243,7 +3298,7 @@ goto_tabpage(n)
 	}
     }
 
-    if (leave_tabpage(tp->tp_curwin->w_buffer) == OK)
+    if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer) == OK)
     {
 	if (valid_tabpage(tp))
 	    enter_tabpage(tp, curbuf);
@@ -3251,6 +3306,51 @@ goto_tabpage(n)
 	    enter_tabpage(curtab, curbuf);
     }
 }
+
+/*
+ * Move the current tab page to before tab page "nr".
+ */
+    void
+tabpage_move(nr)
+    int		nr;
+{
+    int		n = nr;
+    tabpage_T	*tp;
+
+    if (first_tabpage->tp_next == NULL)
+	return;
+
+    /* Remove the current tab page from the list of tab pages. */
+    if (curtab == first_tabpage)
+	first_tabpage = curtab->tp_next;
+    else
+    {
+	for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	    if (tp->tp_next == curtab)
+		break;
+	if (tp == NULL)	/* "cannot happen" */
+	    return;
+	tp->tp_next = curtab->tp_next;
+    }
+
+    /* Re-insert it at the specified position. */
+    if (n == 0)
+    {
+	curtab->tp_next = first_tabpage;
+	first_tabpage = curtab;
+    }
+    else
+    {
+	for (tp = first_tabpage; tp->tp_next != NULL && n > 1; tp = tp->tp_next)
+	    --n;
+	curtab->tp_next = tp->tp_next;
+	tp->tp_next = curtab;
+    }
+
+    /* Need to redraw the tabline.  Tab page contents doesn't change. */
+    redraw_tabline = TRUE;
+}
+
 
 /*
  * Go to another window.

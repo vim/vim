@@ -35,8 +35,7 @@ void alist_set __ARGS((alist_T *al, int count, char_u **files, int use_curbuf, i
 void alist_add __ARGS((alist_T *al, char_u *fname, int set_fnum));
 void alist_slash_adjust __ARGS((void));
 void ex_splitview __ARGS((exarg_T *eap));
-void ex_tabedit __ARGS((exarg_T *eap));
-void ex_tab __ARGS((exarg_T *eap));
+void tabpage_new __ARGS((void));
 void do_exedit __ARGS((exarg_T *eap, win_T *old_curwin));
 void free_cd_dir __ARGS((void));
 void do_sleep __ARGS((long msec));

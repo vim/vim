@@ -1472,14 +1472,17 @@ qf_jump(qi, dir, errornr, forceit)
     /*
      * For ":helpgrep" find a help window or open one.
      */
-    if (qf_ptr->qf_type == 1 && !curwin->w_buffer->b_help)
+    if (qf_ptr->qf_type == 1 && (!curwin->w_buffer->b_help || cmdmod.tab != 0))
     {
 	win_T	*wp;
 	int	n;
 
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	    if (wp->w_buffer != NULL && wp->w_buffer->b_help)
-		break;
+	if (cmdmod.tab != 0)
+	    wp = NULL;
+	else
+	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	    win_enter(wp, TRUE);
 	else
@@ -2182,6 +2185,7 @@ ex_copen(eap)
     qf_info_T	*qi = &ql_info;
     int		height;
     win_T	*win;
+    tabpage_T	*prevtab = curtab;
 
     if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
     {
@@ -2210,7 +2214,7 @@ ex_copen(eap)
      */
     win = qf_find_win(qi);
 
-    if (win != NULL)
+    if (win != NULL && cmdmod.tab == 0)
 	win_goto(win);
     else
     {
@@ -2247,10 +2251,13 @@ ex_copen(eap)
 	set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
 	set_option_value((char_u *)"diff", 0L, (char_u *)"", OPT_LOCAL);
 
+	/* Only set the height when still in the same tab page and there is no
+	 * window to the side. */
+	if (curtab == prevtab
 #ifdef FEAT_VERTSPLIT
-	/* Only set the height when there is no window to the side. */
-	if (curwin->w_width == Columns)
+		&& curwin->w_width == Columns
 #endif
+	   )
 	    win_setheight(height);
 	curwin->w_p_wfh = TRUE;	    /* set 'winfixheight' */
 	if (win_valid(win))

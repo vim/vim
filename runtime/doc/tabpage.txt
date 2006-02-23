@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 22
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,11 +46,16 @@ OPENING A NEW TAB PAGE:
 When starting Vim "vim -p filename ..." opens each file argument in a separate
 tab page (up to 10). |-p|
 
-:tabe[dit]				*:tabe* *:tabedit* *:tabn* *:tabnew*
-:tabn[ew]	Open a new tab page with an empty window.
+A double click with the mouse in the tab pages line opens a new, empty tab
+page.  It is placed left of the position of the click.  The first click may
+select another tab page first, causing an extra screen update.
+
+:tabe[dit]				*:tabe* *:tabedit* *:tabnew*
+:tabnew		Open a new tab page with an empty window, after the current
+		tab page.
 
 :tabe[dit] [++opt] [+cmd] {file}
-:tabn[ew] [++opt] [+cmd] {file}
+:tabnew [++opt] [+cmd] {file}
 		Open a new tab page and edit {file}, like with |:edit|.
 
 :tabf[ind] [++opt] [+cmd] {file}			*:tabf* *:tabfind*
@@ -59,13 +64,25 @@ tab page (up to 10). |-p|
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
+:[count]tab {cmd}					*:tab*
+		Execute {cmd} and when it opens a new window open a new tab
+		page instead.  Doesn't work for |:diffsplit| or |:diffpatch|.
+		When [count] is omitted the tab page appears after the current
+		one.  When [count] is specified the new tab page comes after
+		tab page [count].  Use ":0tab cmd" to get the new tab page as
+		the first one.  Examples: >
+			:tab split	" opens current buffer in new tab page
+			:tab help gt	" opens tab page with help for "gt"
+
 
 CLOSING A TAB PAGE:
 
-Using |:close| in the last window of a tab page closes it.
+Closing the last window of a tab page closes the tab page too, unless there is
+only one tab page.
 
 Using the mouse: If the tab page line is displayed you can click in the "X" at
-the top right to close the current tab page. |'tabline'|
+the top right to close the current tab page.  A custom |'tabline'| may show
+something else.
 
 							*:tabc* *:tabclose*
 :tabc[lose][!]	Close current tab page.
@@ -94,20 +111,41 @@ the top right to close the current tab page. |'tabline'|
 SWITCHING TO ANOTHER TAB PAGE:
 
 Using the mouse: If the tab page line is displayed you can click in a tab page
-label to switch to that tab page. |'tabline'|
+label to switch to that tab page.  Click where there is no label to go to the
+next tab page.  |'tabline'|
 
-:tab							*:tab* *gt*
+:tabn[ext]					*:tabn* *:tabnext* *gt*
 gt		Go to the next tab page.  Wraps around from the last to the
 		first one.
 
-:tab {count}
+:tabn[ext] {count}
 {count}gt	Go to tab page {count}.  The first tab page has number one.
+
+
+:tabp[revious]				*:tabp* *:tabprevious* *gT*
+:tabN[ext]				*:tabN* *:tabNext*
+gT		Go to the previous tab page.  Wraps around from the first one
+		to the last one.
+
+:tabp[revious] {count}
+:tabN[ext] {count}
+{count}gT	Go {count} tab pages back.  Wraps around from the first one
+		to the last one.
 
 
 Other commands:
 							*:tabs*
-:tabs		List the tab pages and the windows they contain.  Shows a "+"
-		for modified buffers.
+:tabs		List the tab pages and the windows they contain.
+		Shows a ">" for the current window.
+		Shows a "+" for modified buffers.
+
+
+REORDERING TAB PAGES:
+
+							*:tabm* *:tabmove*
+:tabmove N	Move the current tab page to after tab page N.  Use zero to
+		make the current tab page the first one.  Without N the tab
+		page is made the last one.
 
 ==============================================================================
 3. Other items						*tab-page-other*

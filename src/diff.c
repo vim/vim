@@ -974,6 +974,9 @@ ex_diffpatch(eap)
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
+    /* don't use a new tab page, each tab page has its own diffs */
+    cmdmod.tab = 0;
+
     if (win_split(0, 0) != FAIL)
     {
 	/* Pretend it was a ":split fname" command */
@@ -1031,6 +1034,9 @@ ex_diffsplit(eap)
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
 #endif
+    /* don't use a new tab page, each tab page has its own diffs */
+    cmdmod.tab = 0;
+
     if (win_split(0, 0) != FAIL)
     {
 	/* Pretend it was a ":split fname" command */
