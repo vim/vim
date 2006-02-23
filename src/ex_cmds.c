@@ -5300,13 +5300,21 @@ ex_help(eap)
 
     /*
      * Re-use an existing help window or open a new one.
+     * Always open a new one for ":tab help".
      */
-    if (!curwin->w_buffer->b_help)
+    if (!curwin->w_buffer->b_help
+#ifdef FEAT_WINDOWS
+	    || cmdmod.tab != 0
+#endif
+	    )
     {
 #ifdef FEAT_WINDOWS
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	    if (wp->w_buffer != NULL && wp->w_buffer->b_help)
-		break;
+	if (cmdmod.tab != 0)
+	    wp = NULL;
+	else
+	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer != NULL && wp->w_buffer->b_help)
+		    break;
 	if (wp != NULL && wp->w_buffer->b_nwindows > 0)
 	    win_enter(wp, TRUE);
 	else
@@ -5325,19 +5333,21 @@ ex_help(eap)
 
 #ifdef FEAT_WINDOWS
 	    /* Split off help window; put it at far top if no position
-	     * specified, the current window is vertically split and narrow. */
+	     * specified, the current window is vertically split and
+	     * narrow. */
 	    n = WSP_HELP;
 # ifdef FEAT_VERTSPLIT
 	    if (cmdmod.split == 0 && curwin->w_width != Columns
-						      && curwin->w_width < 80)
+						  && curwin->w_width < 80)
 		n |= WSP_TOP;
 # endif
 	    if (win_split(0, n) == FAIL)
+		goto erret;
 #else
 	    /* use current window */
 	    if (!can_abandon(curbuf, FALSE))
-#endif
 		goto erret;
+#endif
 
 #ifdef FEAT_WINDOWS
 	    if (curwin->w_height < p_hh)

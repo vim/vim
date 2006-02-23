@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 22
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,34 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Completion: When back at the original word behave like after BS.
+:tablast
+:tabfirst
+Also support:
+    :tabdup	 split the tab with all its windows.
+    :tab ball    tab page for each buffer
+    :tab all     tab page for each argument
+    :tabdo cmd   ":tabdo windo cmd" should also work
 
-Completion: When to get out of the BS state when the user keeps on typing?
-
-TabLineMod, TabLineModSel  hl when a buffer is modified in a tab.
-Command(s) to reorder tabs?  ":tabmove N".
-Open new tab by double click in tab line.
-"gT", ":tpNext" and ":tpprev" to go to previous tab?
-":tab" -> ":tpnext".
-":tab" or ":tabpage"  modifier to open new window in new tab.
-    E.g., ":tab help gt"
-    Keep a few commands as shortcuts:
-	:tpnew	     :tab new
-	:tpedit	        -
-	:tpclose     :tab close
-	:tponly	     :tab only
-	:tpnext		-
-	:tpprevious	-
-	:tpNext		-
-	:tplast		-
-	:tpfirst	-
-    ":tab!" to open it at the end, ":0tab" to open at the start.
-    ":tab split" opens tab with window same as current window.
-    ":tpsplit" would split the tab with all its windows.
-In GUI: right click can popup menu to close a specific tab.
+In GUI: right click can popup a menu to close a specific tab.
 Option to put tab line at the left or right?  Need an option to specify its
 witdh.  It's like a separate window with ":tabs" output.
-    :tabdo    ":tabdo windo cmd" should also work
 
 Add an argument to search functions to stop at a certain line number.
     search('{', 'b', line('w0'))

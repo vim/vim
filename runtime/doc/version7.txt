@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 22
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -657,6 +657,7 @@ different value.
 
 VHDL indent file (Gerald Lai)
 
+MGL syntax file. (Gero Kuhlmann)
 
 New Keymaps: ~
 
