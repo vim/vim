@@ -14934,7 +14934,6 @@ f_tabpagenr(argvars, rettv)
 {
     int		nr = 1;
 #ifdef FEAT_WINDOWS
-    tabpage_T	*tp;
     char_u	*arg;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
@@ -14944,15 +14943,13 @@ f_tabpagenr(argvars, rettv)
 	if (arg != NULL)
 	{
 	    if (STRCMP(arg, "$") == 0)
-		for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-		    ++nr;
+		nr = tabpage_index(NULL);
 	    else
 		EMSG2(_(e_invexpr2), arg);
 	}
     }
     else
-	for (tp = first_tabpage; tp != curtab; tp = tp->tp_next)
-	    ++nr;
+	nr = tabpage_index(curtab);
 #endif
     rettv->vval.v_number = nr;
 }
@@ -15616,6 +15613,7 @@ f_writefile(argvars, rettv)
 
 /*
  * Translate a String variable into a position.
+ * Returns NULL when there is an error.
  */
     static pos_T *
 var2fpos(varp, lnum)
@@ -15625,6 +15623,39 @@ var2fpos(varp, lnum)
     char_u	*name;
     static pos_T	pos;
     pos_T	*pp;
+
+    /* Argument can be [lnum, col]. */
+    if (varp->v_type == VAR_LIST)
+    {
+	list_T		*l;
+	listitem_T	*li;
+	int		len;
+
+	l = varp->vval.v_list;
+	if (l == NULL)
+	    return NULL;
+
+	/* Get the line number */
+	li = list_find(l, 0L);
+	if (li == NULL)
+	    return NULL;
+	pos.lnum = get_tv_number(&li->li_tv);
+	if (pos.lnum <= 0 || pos.lnum > curbuf->b_ml.ml_line_count)
+	    return NULL;	/* invalid line number */
+
+	/* Get the column number */
+	li = list_find(l, 1L);
+	if (li == NULL)
+	    return NULL;
+	pos.col = get_tv_number(&li->li_tv);
+	len = (long)STRLEN(ml_get(pos.lnum));
+	if (pos.col <= 0 || ((len == 0 && pos.col > 1)
+					       || (len > 0 && pos.col > len)))
+	    return NULL;	/* invalid column number */
+
+	pos.col--;
+	return &pos;
+    }
 
     name = get_tv_string_chk(varp);
     if (name == NULL)

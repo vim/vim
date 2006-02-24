@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 15
+*tagsrch.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -36,19 +36,26 @@ An easy way back is with the CTRL-T command.  Also read about the tag stack
 below.
 
 						*:ta* *:tag* *E426* *E429*
-:ta[g][!] {ident}	Jump to the definition of {ident}, using the
+:[count]ta[g][!] {ident}
+			Jump to the definition of {ident}, using the
 			information in the tags file(s).  Put {ident} in the
 			tag stack.  See |tag-!| for [!].
 			{ident} can be a regexp pattern, see |tag-regexp|.
-			When there are several matching tags for {ident}, the
-			first one is jumped to. |:tnext|.
+			When there are several matching tags for {ident}, jump
+			to the [count] one.  When [count] is omitted the
+			first one is jumped to. See |tag-matchlist| for
+			jumping to other matching tags.
 
 g<LeftMouse>						*g<LeftMouse>*
 <C-LeftMouse>					*<C-LeftMouse>* *CTRL-]*
 CTRL-]			Jump to the definition of the keyword under the
 			cursor.  Same as ":tag {ident}", where {ident} is the
-			keyword under or after cursor.  {Vi: identifier after
-			the cursor}
+			keyword under or after cursor.
+			When there are several matching tags for {ident}, jump
+			to the [count] one.  When no [count] is given the
+			first one is jumped to. See |tag-matchlist| for
+			jumping to other matching tags.
+			{Vi: identifier after the cursor}
 
 							*v_CTRL-]*
 {Visual}CTRL-]		Same as ":tag {ident}", where {ident} is the text that

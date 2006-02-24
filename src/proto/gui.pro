@@ -34,6 +34,9 @@ void gui_send_mouse_event __ARGS((int button, int x, int y, int repeated_click, 
 int gui_xy2colrow __ARGS((int x, int y, int *colp));
 void gui_menu_cb __ARGS((vimmenu_T *menu));
 void gui_init_which_components __ARGS((char_u *oldval));
+int gui_use_tabline __ARGS((void));
+void gui_update_tabline __ARGS((void));
+void get_tabline_label __ARGS((tabpage_T *tp));
 void gui_remove_scrollbars __ARGS((void));
 void gui_create_scrollbar __ARGS((scrollbar_T *sb, int type, win_T *wp));
 scrollbar_T *gui_find_scrollbar __ARGS((long ident));

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 22
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3248,6 +3248,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
+
+	  'e'	Add tab pages when indicated with 'showtabpages'.  When 'e' is
+	  	missing a non-GUI tab pages line may be used.
 
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the

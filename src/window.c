@@ -86,7 +86,7 @@ static void win_new_height __ARGS((win_T *, int));
 #ifdef FEAT_WINDOWS
 static long p_ch_used = 1L;		/* value of 'cmdheight' when frame
 					   size was set */
-# define ROWS_AVAIL (Rows - p_ch - tabpageline_height())
+# define ROWS_AVAIL (Rows - p_ch - tabline_height())
 #else
 # define ROWS_AVAIL (Rows - p_ch)
 #endif
@@ -908,7 +908,7 @@ win_split_ins(size, flags, newwin, dir)
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    /* set height and row of new window to full height */
-	    wp->w_winrow = tabpageline_height();
+	    wp->w_winrow = tabline_height();
 	    wp->w_height = curfrp->fr_height - (p_ls > 0);
 	    wp->w_status_height = (p_ls > 0);
 	}
@@ -1543,7 +1543,7 @@ win_equal(next_curwin, current, dir)
 	dir = 'b';
 #endif
     win_equal_rec(next_curwin == NULL ? curwin : next_curwin, current,
-		      topframe, dir, 0, tabpageline_height(),
+		      topframe, dir, 0, tabline_height(),
 					   (int)Columns, topframe->fr_height);
 }
 
@@ -1830,7 +1830,7 @@ close_windows(buf, keep_curwin)
 {
     win_T	*wp;
     tabpage_T   *tp, *nexttp;
-    int		h = tabpageline_height();
+    int		h = tabline_height();
 
     ++RedrawingDisabled;
 
@@ -1866,7 +1866,7 @@ close_windows(buf, keep_curwin)
 
     --RedrawingDisabled;
 
-    if (h != tabpageline_height())
+    if (h != tabline_height())
 	shell_new_rows();
 }
 
@@ -3041,7 +3041,7 @@ win_new_tabpage(after)
 	    tp->tp_next = newtp;
 	}
 	win_init_size();
-	firstwin->w_winrow = tabpageline_height();
+	firstwin->w_winrow = tabline_height();
 
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
@@ -3142,6 +3142,22 @@ find_tabpage(n)
 }
 
 /*
+ * Get index of tab page "tp".  First one has index 1.
+ * When not found returns number of tab pages.
+ */
+    int
+tabpage_index(ftp)
+    tabpage_T	*ftp;
+{
+    int		i = 1;
+    tabpage_T	*tp;
+
+    for (tp = first_tabpage; tp != NULL && tp != ftp; tp = tp->tp_next)
+	++i;
+    return i;
+}
+
+/*
  * Prepare for leaving the current tab page.
  * When autocomands change "curtab" we don't leave the tab page and return
  * FAIL.
@@ -3223,7 +3239,11 @@ enter_tabpage(tp, old_curbuf)
     /* The tabpage line may have appeared or disappeared, may need to resize
      * the frames for that.  When the Vim window was resized need to update
      * frame sizes too. */
-    if (curtab->tp_old_Rows != Rows || old_off != firstwin->w_winrow)
+    if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
+#ifdef FEAT_GUI_TABLINE
+			    && !gui_use_tabline()
+#endif
+		))
 	shell_new_rows();
 #ifdef FEAT_VERTSPLIT
     if (curtab->tp_old_Columns != Columns && starting == 0)
@@ -3233,12 +3253,8 @@ enter_tabpage(tp, old_curbuf)
 #if defined(FEAT_GUI)
     /* When 'guioptions' includes 'L' or 'R' may have to remove or add
      * scrollbars.  Have to update them anyway. */
-    if (gui.in_use)
-    {
-	out_flush();
-	gui_init_which_components(NULL);
+    if (gui.in_use && starting == 0)
 	gui_update_scrollbars(TRUE);
-    }
     need_mouse_correct = TRUE;
 #endif
 
@@ -3247,6 +3263,7 @@ enter_tabpage(tp, old_curbuf)
 
 /*
  * Go to tab page "n".  For ":tab N" and "Ngt".
+ * When "n" is 9999 go to the last tab page.
  */
     void
 goto_tabpage(n)
@@ -3285,12 +3302,16 @@ goto_tabpage(n)
 	    ttp = tp;
 	}
     }
+    else if (n == 9999)
+    {
+	/* Go to last tab page. */
+	for (tp = first_tabpage; tp->tp_next != NULL; tp = tp->tp_next)
+	    ;
+    }
     else
     {
 	/* Go to tab page "n". */
-	i = 0;
-	for (tp = first_tabpage; ++i != n && tp != NULL; tp = tp->tp_next)
-	    ;
+	tp = find_tabpage(n);
 	if (tp == NULL)
 	{
 	    beep_flush();
@@ -3298,6 +3319,22 @@ goto_tabpage(n)
 	}
     }
 
+    goto_tabpage_tp(tp);
+
+#ifdef FEAT_GUI_TABLINE
+    if (gui_use_tabline())
+	gui_mch_set_curtab(tabpage_index(tp));
+#endif
+}
+
+/*
+ * Go to tabpage "tp".
+ * Note: doesn't update the GUI tab.
+ */
+    void
+goto_tabpage_tp(tp)
+    tabpage_T	*tp;
+{
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer) == OK)
     {
 	if (valid_tabpage(tp))
@@ -4071,7 +4108,7 @@ win_size_restore(gap)
     int
 win_comp_pos()
 {
-    int		row = tabpageline_height();
+    int		row = tabline_height();
     int		col = 0;
 
     frame_comp_pos(topframe, &row, &col);
@@ -5169,8 +5206,13 @@ last_status_rec(fr, statusline)
  * Return the number of lines used by the tab page line.
  */
     int
-tabpageline_height()
+tabline_height()
 {
+#ifdef FEAT_GUI_TABLINE
+    /* When the GUI has the tabline then this always returns zero. */
+    if (gui_use_tabline())
+	return 0;
+#endif
     switch (p_stal)
     {
 	case 0: return 0;
@@ -5516,7 +5558,7 @@ min_rows()
 	if (total < n)
 	    total = n;
     }
-    total += tabpageline_height();
+    total += tabline_height();
 #else
     total = 1;		/* at least one window should have a line! */
 #endif

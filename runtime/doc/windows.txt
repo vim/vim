@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 23
+*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -629,7 +629,7 @@ can also get to them with the buffer list commands, like ":bnext".
 				CTRL-W w
 				:{cmd}
 				etc.
-<			This only works in the current tab page.
+<			This only operates in the current tab page.
 			When an error is detected on one window, further
 			windows will not be visited.
 			The last window (or where an error occurred) becomes
@@ -638,7 +638,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			{cmd} must not open or close windows or reorder them.
 			{not in Vi} {not available when compiled without the
 			|+listcmds| feature}
-			Also see |:argdo| and |:bufdo|.
+			Also see |:tabdo|, |:argdo| and |:bufdo|.
 
 							*:bufdo*
 :bufdo[!] {cmd}		Execute {cmd} in each buffer in the buffer list.
@@ -664,7 +664,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			each buffer.
 			{not in Vi} {not available when compiled without the
 			|+listcmds| feature}
-			Also see |:argdo| and |:windo|.
+			Also see |:tabdo|, |:argdo| and |:windo|.
 
 Examples: >
 

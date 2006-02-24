@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 23
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,32 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-:tablast
-:tabfirst
-Also support:
-    :tabdup	 split the tab with all its windows.
-    :tab ball    tab page for each buffer
-    :tab all     tab page for each argument
-    :tabdo cmd   ":tabdo windo cmd" should also work
+Fix for hlsearch getting stuck on multibyte char also in 6.4.  reportec by
+Yukihiro Nakadaira.
 
-In GUI: right click can popup a menu to close a specific tab.
-Option to put tab line at the left or right?  Need an option to specify its
-witdh.  It's like a separate window with ":tabs" output.
+
+Tab pages:
+-   GTK GUI implementation for the tab pages line:
+      /tmp/vim61_tab.patch.bz2
+    Window height can be wrong:
+	:set go-=e
+	resize to fill screen
+	:set go+=e
+    Add 'guitabitem' option?
+-   GUI implementation for the tab pages line for other systems.
+8   tab pages in the session file, if "tabpages" in 'sessionoptions'
+7   :tabdup	 duplicate the tab with all its windows.
+6   :tab ball    tab page for each buffer
+6   :tab all     tab page for each argument
+7   In GUI: right click can popup a menu to close a specific tab.
+7   Option to put tab line at the left or right?  Need an option to specify
+    its witdh.  It's like a separate window with ":tabs" output.
+7   Add local variables for each tab page?
+8   Add local options for each tab page?  E.g., 'diffopt' could differ between
+    tab pages.
+7   Add local highlighting for a tab page?
+
+Spelling: m'n -> no suggestion for "mijn"?
 
 Add an argument to search functions to stop at a certain line number.
     search('{', 'b', line('w0'))
@@ -48,15 +63,6 @@ Add an argument to search functions to stop at a certain line number.
 Also start at a specified position?
 
 undo could remember the '< and '> marks.
-
-Support WINDOW TABS.  Works like several pages, each with their own split
-windows.  Let's call them "tab pages".
-    - line at top of frame with tabs.
-	Add 'tabtext' option, like 'statusline'.
-    - Need to be able to search the windows in inactive tabs, e.g. for the
-      quickfix window?
-    - docs:
-	Add info to the user manual somewhere.
 
 Crash with X command server (Ciaran McCreesh).
 
@@ -483,16 +489,6 @@ Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
 
 Check if file explorer can handle directory names and links with a single
 quote. (Nieko Maatjes, 2005 Jan 4)
-
-Future enhancements for tab pages:
-    - Add GUI Tabs for all systems.
-      Patch for GTK 1.2 passed on by Christian Michon, 2004 Jan 6.
-      Simple patch for GTK by Luis M (nov 7).
-    - ":tabsplit" makes a copy of the current tab page.
-    - Add local variables for each tab page?
-    - Add local options for each tab page?  E.g., 'diffopt' could differ
-      between tab pages.
-    - Add local highlighting for a tab page?
 
 
 Vi incompatibility:
@@ -2074,7 +2070,6 @@ Tags:
 7   Can CTRL-] (jump to tag) include a following "." and "->" to restrict the
     number of possible matches? Check tags file for an item that has members.
     (Flemming Madsen)
-7   Count before CTRL-]: jump to N'th match
 8   Scope arguments for ":tag", e.g.: ":tag class:cPage open", like Elvis.
 8   When output of ":tselect" is long, getting the more-prompt, should be able
     to type the tag number directly.

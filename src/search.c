@@ -602,7 +602,11 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 # ifdef FEAT_EVAL
 		    submatch = first_submatch(&regmatch);
 # endif
-		    ptr = ml_get_buf(buf, lnum + matchpos.lnum, FALSE);
+		    /* Line me be past end of buffer for "\n\zs". */
+		    if (lnum + matchpos.lnum > buf->b_ml.ml_line_count)
+			ptr = (char_u *)"";
+		    else
+			ptr = ml_get_buf(buf, lnum + matchpos.lnum, FALSE);
 
 		    /*
 		     * Forward search in the first line: match should be after
@@ -884,6 +888,15 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 								  mr_pattern);
 	}
 	return FAIL;
+    }
+
+    /* A pattern like "\n\zs" may go past the last line. */
+    if (pos->lnum > buf->b_ml.ml_line_count)
+    {
+	pos->lnum = buf->b_ml.ml_line_count;
+	pos->col = STRLEN(ml_get_buf(buf, pos->lnum, FALSE));
+	if (pos->col > 0)
+	    --pos->col;
     }
 
     return submatch + 1;

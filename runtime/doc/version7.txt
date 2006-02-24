@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 23
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1038,6 +1038,10 @@ made empty to avoid an endless redraw loop.  Also for other options, such at
 'tabline'.  ":verbose set statusline" will mention that it was set in an error
 handler.
 
+When there are several matching tags, the ":tag <name>" and CTRL-] commands
+jump to the [count] matching tag. (Yegappan Lakshmanan)
+
+
 ==============================================================================
 COMPILE TIME CHANGES					*compile-changes-7*
 
@@ -1739,5 +1743,10 @@ to be cleared.  Now set "keep_msg" to redraw the last message.
 For a color terminal: When the Normal HL uses bold, possibly to make the color
 lighter, and another HL group specifies a color it might become light as well.
 Now reset bold if a HL group doesn't specify bold itself.
+
+When using 256 color xterm the color 255 would show up as color 0.  Use a
+short instead of a char to store the color number.
+
+ml_get errors when searching for "\n\zs" in an empty file.
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -42,6 +42,7 @@ int screen_ins_lines __ARGS((int off, int row, int line_count, int end, win_T *w
 int screen_del_lines __ARGS((int off, int row, int line_count, int end, int force, win_T *wp));
 int showmode __ARGS((void));
 void unshowmode __ARGS((int force));
+void get_trans_bufname __ARGS((buf_T *buf));
 int redrawing __ARGS((void));
 int messaging __ARGS((void));
 void showruler __ARGS((int always));

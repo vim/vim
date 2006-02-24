@@ -5344,12 +5344,7 @@ win_redr_status(wp)
     {
 	fillchar = fillchar_status(&attr, wp == curwin);
 
-	if (buf_spname(wp->w_buffer) != NULL)
-	    STRCPY(NameBuff, buf_spname(wp->w_buffer));
-	else
-	    home_replace(wp->w_buffer, wp->w_buffer->b_fname, NameBuff,
-							      MAXPATHL, TRUE);
-	trans_characters(NameBuff, MAXPATHL);
+	get_trans_bufname(wp->w_buffer);
 	p = NameBuff;
 	len = (int)STRLEN(p);
 
@@ -6170,14 +6165,24 @@ next_search_hl(win, shl, lnum, mincol)
 	    matchcol = 0;
 	else if (vim_strchr(p_cpo, CPO_SEARCH) == NULL
 		|| (shl->rm.endpos[0].lnum == 0
-		    && shl->rm.endpos[0].col == shl->rm.startpos[0].col))
+		    && shl->rm.endpos[0].col <= shl->rm.startpos[0].col))
 	{
-	    matchcol = shl->rm.startpos[0].col + 1;
-	    if (ml_get_buf(shl->buf, lnum, FALSE)[matchcol - 1] == NUL)
+	    char_u	*ml = ml_get_buf(shl->buf, lnum, FALSE);
+
+	    matchcol = shl->rm.startpos[0].col;
+	    ml += matchcol;
+	    if (*ml == NUL)
 	    {
+		++matchcol;
 		shl->lnum = 0;
 		break;
 	    }
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		matchcol += mb_ptr2len(ml);
+	    else
+#endif
+		++matchcol;
 	}
 	else
 	    matchcol = shl->rm.endpos[0].col;
@@ -8577,7 +8582,16 @@ draw_tabline()
 
     redraw_tabline = FALSE;
 
-    if (tabpageline_height() < 1)
+#ifdef FEAT_GUI_TABLINE
+    /* When the GUI has the tabline then this always returns zero. */
+    if (gui_use_tabline())
+    {
+	gui_update_tabline();
+	return;
+    }
+#endif
+
+    if (tabline_height() < 1)
 	return;
 
 #if defined(FEAT_STL_OPT)
@@ -8670,12 +8684,8 @@ draw_tabline()
 	    room = scol - col + tabwidth - 1;
 	    if (room > 0)
 	    {
-		if (buf_spname(cwp->w_buffer) != NULL)
-		    STRCPY(NameBuff, buf_spname(cwp->w_buffer));
-		else
-		    home_replace(cwp->w_buffer, cwp->w_buffer->b_fname, NameBuff,
-								  MAXPATHL, TRUE);
-		trans_characters(NameBuff, MAXPATHL);
+		/* Get buffer name in NameBuff[] */
+		get_trans_bufname(cwp->w_buffer);
 		len = vim_strsize(NameBuff);
 		p = NameBuff;
 #ifdef FEAT_MBYTE
@@ -8718,6 +8728,21 @@ draw_tabline()
 	    TabPageIdxs[Columns - 1] = -999;
 	}
     }
+}
+
+/*
+ * Get buffer name for "buf" into NameBuff[].
+ * Takes care of special buffer names and translates special characters.
+ */
+    void
+get_trans_bufname(buf)
+    buf_T	*buf;
+{
+    if (buf_spname(buf) != NULL)
+	STRCPY(NameBuff, buf_spname(buf));
+    else
+	home_replace(buf, buf->b_fname, NameBuff, MAXPATHL, TRUE);
+    trans_characters(NameBuff, MAXPATHL);
 }
 #endif
 

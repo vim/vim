@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 18
+*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -819,7 +819,7 @@ USING THE ARGUMENT LIST
 			each file.
 			{not in Vi} {not available when compiled without the
 			|+listcmds| feature}
-			Also see |:windo| and |:bufdo|.
+			Also see |:windo|, |:tabdo| and |:bufdo|.
 
 Example: >
 	:args *.c

@@ -3861,8 +3861,16 @@ regmatch(scan)
 		}
 		else
 		{
-		    top = curbuf->b_visual_start;
-		    bot = curbuf->b_visual_end;
+		    if (lt(curbuf->b_visual_start, curbuf->b_visual_end))
+		    {
+			top = curbuf->b_visual_start;
+			bot = curbuf->b_visual_end;
+		    }
+		    else
+		    {
+			top = curbuf->b_visual_end;
+			bot = curbuf->b_visual_start;
+		    }
 		    mode = curbuf->b_visual_mode;
 		}
 		lnum = reglnum + reg_firstlnum;
@@ -5092,8 +5100,8 @@ regmatch(scan)
 			/* Tried first position already, advance. */
 			if (rp->rs_state == RS_STAR_LONG)
 			{
-			    /* Trying for longest matc, but couldn't or didn't
-			     * match -- back up one char. */
+			    /* Trying for longest match, but couldn't or
+			     * didn't match -- back up one char. */
 			    if (--rst->count < rst->minval)
 				break;
 			    if (reginput == regline)
@@ -5149,8 +5157,8 @@ regmatch(scan)
 	    break;
 	}
 
-	/* If we want to continue the inner loop or didn't pop a state contine
-	 * matching loop */
+	/* If we want to continue the inner loop or didn't pop a state
+	 * continue matching loop */
 	if (status == RA_CONT || rp == (regitem_T *)
 			     ((char *)regstack.ga_data + regstack.ga_len) - 1)
 	    break;

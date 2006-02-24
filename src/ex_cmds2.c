@@ -2155,7 +2155,7 @@ ex_argdelete(eap)
 }
 
 /*
- * ":argdo", ":windo", ":bufdo"
+ * ":argdo", ":windo", ":bufdo", ":tabdo"
  */
     void
 ex_listdo(eap)
@@ -2163,7 +2163,8 @@ ex_listdo(eap)
 {
     int		i;
 #ifdef FEAT_WINDOWS
-    win_T	*win;
+    win_T	*wp;
+    tabpage_T	*tp;
 #endif
     buf_T	*buf;
     int		next_fnum = 0;
@@ -2188,13 +2189,15 @@ ex_listdo(eap)
 #endif
 
     if (eap->cmdidx == CMD_windo
+	    || eap->cmdidx == CMD_tabdo
 	    || P_HID(curbuf)
 	    || !check_changed(curbuf, TRUE, FALSE, eap->forceit, FALSE))
     {
 	/* start at the first argument/window/buffer */
 	i = 0;
 #ifdef FEAT_WINDOWS
-	win = firstwin;
+	wp = firstwin;
+	tp = first_tabpage;
 #endif
 	/* set pcmark now */
 	if (eap->cmdidx == CMD_bufdo)
@@ -2229,11 +2232,19 @@ ex_listdo(eap)
 #ifdef FEAT_WINDOWS
 	    else if (eap->cmdidx == CMD_windo)
 	    {
-		/* go to window "win" */
-		if (!win_valid(win))
+		/* go to window "wp" */
+		if (!win_valid(wp))
 		    break;
-		win_goto(win);
-		win = curwin->w_next;
+		win_goto(wp);
+		wp = curwin->w_next;
+	    }
+	    else if (eap->cmdidx == CMD_tabdo)
+	    {
+		/* go to window "tp" */
+		if (!valid_tabpage(tp))
+		    break;
+		goto_tabpage_tp(tp);
+		tp = tp->tp_next;
 	    }
 #endif
 	    else if (eap->cmdidx == CMD_bufdo)

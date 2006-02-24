@@ -509,6 +509,13 @@ do_tag(tag, type, count, forceit, verbose)
 		tagmatchname = vim_strsave(name);
 	    }
 
+	    /*
+	     * If a count is supplied to the ":tag <name>" command, then
+	     * jump to count'th matching tag.
+	     */
+	    if (type == DT_TAG && count > 0)
+		cur_match = count - 1;
+
 	    if (type == DT_SELECT || type == DT_JUMP)
 		cur_match = MAXCOL - 1;
 	    max_num_matches = cur_match + 1;

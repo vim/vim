@@ -548,8 +548,8 @@ LINT_OPTIONS = -beprxzF
 #PROFILE_LIBS = -lccmalloc
 
 # MAC OS X platform
-#MAC_OSX_ARCH = -arch ppc
-MAC_OSX_ARCH = -arch i386 -arch ppc
+MAC_OSX_ARCH = -arch ppc
+#MAC_OSX_ARCH = -arch i386
 
 #####################################################
 ###  Specific systems, check if yours is listed!  ### {{{

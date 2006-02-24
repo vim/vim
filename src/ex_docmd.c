@@ -156,7 +156,6 @@ static void	ex_stag __ARGS((exarg_T *eap));
 static void	ex_tabclose __ARGS((exarg_T *eap));
 static void	ex_tabonly __ARGS((exarg_T *eap));
 static void	ex_tabnext __ARGS((exarg_T *eap));
-static void	ex_tabprevious __ARGS((exarg_T *eap));
 static void	ex_tabmove __ARGS((exarg_T *eap));
 static void	ex_tabs __ARGS((exarg_T *eap));
 #else
@@ -167,7 +166,6 @@ static void	ex_tabs __ARGS((exarg_T *eap));
 # define ex_splitview		ex_ni
 # define ex_stag		ex_ni
 # define ex_tabnext		ex_ni
-# define ex_tabprevious		ex_ni
 # define ex_tabmove		ex_ni
 # define ex_tabs		ex_ni
 # define ex_tabclose		ex_ni
@@ -1865,17 +1863,10 @@ do_one_cmd(cmdlinep, sourcing,
 	    case 't':	if (checkforcmd(&p, "tab", 3))
 			{
 #ifdef FEAT_WINDOWS
-			    tabpage_T	*tp;
-
 			    if (vim_isdigit(*ea.cmd))
 				cmdmod.tab = atoi((char *)ea.cmd) + 1;
 			    else
-			    {
-				cmdmod.tab = 2;
-				for (tp = first_tabpage; tp != curtab;
-							     tp = tp->tp_next)
-				    ++cmdmod.tab;
-			    }
+				cmdmod.tab = tabpage_index(curtab) + 1;
 			    ea.cmd = p;
 #endif
 			    continue;
@@ -6242,7 +6233,7 @@ ex_tabclose(eap)
     exarg_T	*eap;
 {
     tabpage_T	*tp;
-    int		h = tabpageline_height();
+    int		h = tabline_height();
 
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6271,7 +6262,7 @@ ex_tabclose(eap)
 		tabpage_close(eap->forceit);
 	}
 
-    if (h != tabpageline_height())
+    if (h != tabline_height())
 	shell_new_rows();
 }
 
@@ -6284,7 +6275,7 @@ ex_tabonly(eap)
 {
     tabpage_T	*tp;
     int		done;
-    int		h = tabpageline_height();
+    int		h = tabline_height();
 
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6314,7 +6305,7 @@ ex_tabonly(eap)
 	    }
 	}
 
-    if (h != tabpageline_height())
+    if (h != tabline_height())
 	shell_new_rows();
 }
 
@@ -7042,17 +7033,23 @@ tabpage_new()
 ex_tabnext(eap)
     exarg_T	*eap;
 {
-    goto_tabpage(eap->addr_count == 0 ? 0 : (int)eap->line2);
-}
-
-/*
- * :tabprevious and :tabNext command
- */
-    static void
-ex_tabprevious(eap)
-    exarg_T	*eap;
-{
-    goto_tabpage(eap->addr_count == 0 ? -1 : -(int)eap->line2);
+    switch (eap->cmdidx)
+    {
+	case CMD_tabfirst:
+	case CMD_tabrewind:
+	    goto_tabpage(1);
+	    break;
+	case CMD_tablast:
+	    goto_tabpage(9999);
+	    break;
+	case CMD_tabprevious:
+	case CMD_tabNext:
+	    goto_tabpage(eap->addr_count == 0 ? -1 : -(int)eap->line2);
+	    break;
+	default: /* CMD_tabnext */
+	    goto_tabpage(eap->addr_count == 0 ? 0 : (int)eap->line2);
+	    break;
+    }
 }
 
 /*

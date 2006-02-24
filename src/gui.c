@@ -26,6 +26,9 @@ static int gui_screenstr __ARGS((int off, int len, int flags, guicolor_T fg, gui
 static void gui_delete_lines __ARGS((int row, int count));
 static void gui_insert_lines __ARGS((int row, int count));
 static void fill_mouse_coord __ARGS((char_u *p, int col, int row));
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+static int gui_has_tabline __ARGS((void));
+#endif
 static void gui_do_scrollbar __ARGS((win_T *wp, int which, int enable));
 static colnr_T scroll_line_len __ARGS((linenr_T lnum));
 static void gui_update_horiz_scrollbar __ARGS((int));
@@ -1410,7 +1413,7 @@ gui_set_shellsize(mustset, fit_to_display)
     min_width = base_width + MIN_COLUMNS * gui.char_width;
     min_height = base_height + MIN_LINES * gui.char_height;
 # ifdef FEAT_WINDOWS
-    min_height += tabpageline_height() * gui.char_height;
+    min_height += tabline_height() * gui.char_height;
 # endif
 
     gui_mch_set_shellsize(width, height, min_width, min_height,
@@ -3081,7 +3084,7 @@ static int	prev_which_scrollbars[3] = {-1, -1, -1};
 
 /*
  * Set which components are present.
- * If "oldval" is not NULL, "oldval" is the previous value, the new * value is
+ * If "oldval" is not NULL, "oldval" is the previous value, the new value is
  * in p_go.
  */
 /*ARGSUSED*/
@@ -3095,6 +3098,10 @@ gui_init_which_components(oldval)
 #ifdef FEAT_TOOLBAR
     static int	prev_toolbar = -1;
     int		using_toolbar = FALSE;
+#endif
+#ifdef FEAT_GUI_TABLINE
+    static int	prev_has_tabline = FALSE;
+    int		using_tabline;
 #endif
 #ifdef FEAT_FOOTER
     static int	prev_footer = -1;
@@ -3185,10 +3192,27 @@ gui_init_which_components(oldval)
 		/* Ignore options that are not supported */
 		break;
 	}
+
     if (gui.in_use)
     {
 	need_set_size = FALSE;
 	fix_size = FALSE;
+
+#ifdef FEAT_GUI_TABLINE
+	/* Update the tab line, it may appear or disappear. */
+	using_tabline = gui_has_tabline();
+	if (prev_has_tabline != using_tabline)
+	{
+	    prev_has_tabline = using_tabline;
+	    gui_update_tabline();
+	    need_set_size = TRUE;
+	    if (using_tabline)
+		fix_size = TRUE;
+	    if (!gui_use_tabline())
+		redraw_tabline = TRUE;    /* may draw non-GUI tab line */
+	}
+#endif
+
 	for (i = 0; i < 3; i++)
 	{
 	    if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
@@ -3281,6 +3305,82 @@ gui_init_which_components(oldval)
     }
 }
 
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+/*
+ * Return TRUE if the GUI is taking care of the tabline.
+ * It may still be hidden if 'showtabline' is zero.
+ */
+    int
+gui_use_tabline()
+{
+    return gui.in_use && vim_strchr(p_go, GO_TABLINE) != NULL;
+}
+
+/*
+ * Return TRUE if the GUI is showing the tabline.
+ * This uses 'showtabline'.
+ */
+    static int
+gui_has_tabline()
+{
+    if (!gui_use_tabline()
+	    || p_stal == 0
+	    || (p_stal == 1 && first_tabpage->tp_next == NULL))
+	return FALSE;
+    return TRUE;
+}
+
+/*
+ * Update the tabline.
+ * This may display/undisplay the tabline and update the labels.
+ */
+    void
+gui_update_tabline()
+{
+    int	    showit = gui_has_tabline();
+
+    if (!gui.starting && starting == 0)
+    {
+	gui_mch_show_tabline(showit);
+	if (showit != 0)
+	    gui_mch_update_tabline();
+    }
+}
+
+/*
+ * Get the label for tab page "tp" into NameBuff[].
+ */
+    void
+get_tabline_label(tp)
+    tabpage_T	*tp;
+{
+    int		modified = FALSE;
+    char_u	buf[40];
+    int		wincount;
+    win_T	*wp;
+
+    /* Get the buffer name into NameBuff[] */
+    get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
+
+    wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+    for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+	if (bufIsChanged(wp->w_buffer))
+	    modified = TRUE;
+    if (modified || wincount > 1)
+    {
+	if (wincount > 1)
+	    vim_snprintf((char *)buf, sizeof(buf), "%d", wincount);
+	else
+	    buf[0] = NUL;
+	if (modified)
+	    STRCAT(buf, "+");
+	STRCAT(buf, " ");
+	mch_memmove(NameBuff + STRLEN(buf), NameBuff, STRLEN(NameBuff) + 1);
+	mch_memmove(NameBuff, buf, STRLEN(buf));
+    }
+}
+
+#endif
 
 /*
  * Scrollbar stuff:

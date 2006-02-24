@@ -1099,9 +1099,9 @@ static struct vimoption
 #if defined(FEAT_GUI)
 			    (char_u *)&p_go, PV_NONE,
 # if defined(UNIX) && !defined(MACOS)
-			    {(char_u *)"agimrLtT", (char_u *)0L}
+			    {(char_u *)"aegimrLtT", (char_u *)0L}
 # else
-			    {(char_u *)"gmrLtT", (char_u *)0L}
+			    {(char_u *)"egmrLtT", (char_u *)0L}
 # endif
 #else
 			    (char_u *)NULL, PV_NONE,

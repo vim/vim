@@ -74,6 +74,9 @@ static void	nv_zet __ARGS((cmdarg_T *cap));
 static void	nv_ver_scrollbar __ARGS((cmdarg_T *cap));
 static void	nv_hor_scrollbar __ARGS((cmdarg_T *cap));
 #endif
+#ifdef FEAT_GUI_TABLINE
+static void	nv_tabline __ARGS((cmdarg_T *cap));
+#endif
 static void	nv_exmode __ARGS((cmdarg_T *cap));
 static void	nv_colon __ARGS((cmdarg_T *cap));
 static void	nv_ctrlg __ARGS((cmdarg_T *cap));
@@ -417,6 +420,9 @@ static const struct nv_cmd
 #ifdef FEAT_GUI
     {K_VER_SCROLLBAR, nv_ver_scrollbar, 0,		0},
     {K_HOR_SCROLLBAR, nv_hor_scrollbar, 0,		0},
+#endif
+#ifdef FEAT_GUI_TABLINE
+    {K_TABLINE, nv_tabline,	0,			0},
 #endif
 #ifdef FEAT_FKMAP
     {K_F8,	farsi_fkey,	0,			0},
@@ -4977,6 +4983,22 @@ nv_hor_scrollbar(cap)
 }
 #endif
 
+#ifdef FEAT_GUI_TABLINE
+/*
+ * Click in GUI tab.
+ */
+    static void
+nv_tabline(cap)
+    cmdarg_T	*cap;
+{
+    if (cap->oap->op_type != OP_NOP)
+	clearopbeep(cap->oap);
+
+    /* Even if an operator was pending, we still want to jump tabs. */
+    goto_tabpage(current_tab);
+}
+#endif
+
 /*
  * "Q" command.
  */
@@ -5329,7 +5351,7 @@ nv_ident(cap)
 	    else if (g_cmd)
 		STRCPY(buf, "tj ");
 	    else
-		STRCPY(buf, "ta ");
+		sprintf((char *)buf, "%ldta ", cap->count0);
     }
 
     /*

@@ -730,6 +730,13 @@
 #endif
 
 /*
+ * GUI tabline
+ */
+#if defined(FEAT_GUI_GTK) && defined(HAVE_GTK2) && defined(FEAT_WINDOWS)
+# define FEAT_GUI_TABLINE
+#endif
+
+/*
  * +browse		":browse" command.
  */
 #if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))

@@ -880,6 +880,18 @@ main
     mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
+#if defined(FEAT_GUI) && defined(FEAT_WINDOWS)
+    /* When tab pages were created, may need to update the tab pages line and
+     * scrollbars.  This is skipped while creating them. */
+    if (first_tabpage->tp_next != NULL)
+    {
+	out_flush();
+	gui_init_which_components(NULL);
+	gui_update_scrollbars(TRUE);
+    }
+    need_mouse_correct = TRUE;
+#endif
+
     /* If ":startinsert" command used, stuff a dummy command to be able to
      * call normal_cmd(), which will then start Insert mode. */
     if (restart_edit != 0)

@@ -435,6 +435,10 @@ EXTERN vimmenu_T	*current_menu;
 /* Set to TRUE after adding/removing menus to ensure they are updated */
 EXTERN int force_menu_update INIT(= FALSE);
 # endif
+# ifdef FEAT_GUI_TABLINE
+/* Tab in tab pages line just selected, set by check_termcode() */
+EXTERN int	    current_tab;
+# endif
 
 /* Scrollbar moved and new value, set by check_termcode() */
 EXTERN int	current_scrollbar;

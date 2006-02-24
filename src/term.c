@@ -4766,6 +4766,9 @@ check_termcode(max_offset, buf, buflen)
 	 * four bytes which are to be taken as a pointer to the vimmenu_T
 	 * structure.
 	 *
+	 * A tab line event is encodded as K_SPECIAL KS_TABLINE nr, where "nr"
+	 * is one byte with the tab index.
+	 *
 	 * A scrollbar event is K_SPECIAL, KS_VER_SCROLLBAR, KE_FILLER followed
 	 * by one byte representing the scrollbar number, and then four bytes
 	 * representing a long_u which is the new value of the scrollbar.
@@ -4783,6 +4786,16 @@ check_termcode(max_offset, buf, buflen)
 	    if (num_bytes == -1)
 		return -1;
 	    current_menu = (vimmenu_T *)val;
+	    slen += num_bytes;
+	}
+# endif
+# ifdef FEAT_GUI_TABLINE
+	else if (key_name[0] == (int)KS_TABLINE)
+	{
+	    num_bytes = get_bytes_from_buf(tp + slen, bytes, 1);
+	    if (num_bytes == -1)
+		return -1;
+	    current_tab = (int)bytes[0];
 	    slen += num_bytes;
 	}
 # endif

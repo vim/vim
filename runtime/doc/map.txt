@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 10
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -778,7 +778,7 @@ This does not work if 'cpoptions' includes the '<' flag. |<>|
 You can even do more complicated things.  For example, to consume the space
 typed after an abbreviation: >
    func Eatchar(pat)
-      let c = nr2char(getchar())
+      let c = nr2char(getchar(0))
       return (c =~ a:pat) ? '' : c
    endfunc
    iabbr <silent> if if ()<Left><C-R>=Eatchar('\s')<CR>

@@ -2827,6 +2827,145 @@ delete_event_cb(GtkWidget *widget, GdkEventAny *event, gpointer data)
     return TRUE;
 }
 
+#if defined(FEAT_MENU) || defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
+    static int
+get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
+{
+    GtkOrientation item_orientation = GTK_ORIENTATION_HORIZONTAL;
+
+#ifdef FEAT_GUI_GNOME
+    if (using_gnome && widget != NULL)
+    {
+# ifdef HAVE_GTK2
+	BonoboDockItem *dockitem;
+
+	widget	 = gtk_widget_get_parent(widget);
+	dockitem = BONOBO_DOCK_ITEM(widget);
+
+	if (dockitem == NULL || dockitem->is_floating)
+	    return 0;
+	item_orientation = bonobo_dock_item_get_orientation(dockitem);
+# else
+	GnomeDockItem *dockitem;
+
+	widget	 = widget->parent;
+	dockitem = GNOME_DOCK_ITEM(widget);
+
+	if (dockitem == NULL || dockitem->is_floating)
+	    return 0;
+	item_orientation = gnome_dock_item_get_orientation(dockitem);
+# endif
+    }
+#endif
+    if (widget != NULL
+	    && item_orientation == orientation
+	    && GTK_WIDGET_REALIZED(widget)
+	    && GTK_WIDGET_VISIBLE(widget))
+    {
+	if (orientation == GTK_ORIENTATION_HORIZONTAL)
+	    return widget->allocation.height;
+	else
+	    return widget->allocation.width;
+    }
+    return 0;
+}
+#endif
+
+    static int
+get_menu_tool_width(void)
+{
+    int width = 0;
+
+#ifdef FEAT_GUI_GNOME /* these are never vertical without GNOME */
+# ifdef FEAT_MENU
+    width += get_item_dimensions(gui.menubar, GTK_ORIENTATION_VERTICAL);
+# endif
+# ifdef FEAT_TOOLBAR
+    width += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_VERTICAL);
+# endif
+# ifdef FEAT_GUI_TABLINE
+    width += get_item_dimensions(gui.tabline, GTK_ORIENTATION_VERTICAL);
+# endif
+#endif
+
+    return width;
+}
+
+    static int
+get_menu_tool_height(void)
+{
+    int height = 0;
+
+#ifdef FEAT_MENU
+    height += get_item_dimensions(gui.menubar, GTK_ORIENTATION_HORIZONTAL);
+#endif
+#ifdef FEAT_TOOLBAR
+    height += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_HORIZONTAL);
+#endif
+#ifdef FEAT_GUI_TABLINE
+    height += get_item_dimensions(gui.tabline, GTK_ORIENTATION_HORIZONTAL);
+#endif
+
+    return height;
+}
+
+    static void
+update_window_manager_hints(void)
+{
+    static int old_width  = 0;
+    static int old_height = 0;
+    static int old_char_width  = 0;
+    static int old_char_height = 0;
+
+    int width;
+    int height;
+
+    /* This also needs to be done when the main window isn't there yet,
+     * otherwise the hints don't work. */
+    width  = gui_get_base_width();
+    height = gui_get_base_height();
+# ifdef FEAT_MENU
+    height += tabline_height() * gui.char_height;
+# endif
+# ifdef HAVE_GTK2
+    width  += get_menu_tool_width();
+    height += get_menu_tool_height();
+# endif
+
+    /* Avoid an expose event when the size didn't change. */
+    if (width != old_width
+	    || height != old_height
+	    || gui.char_width != old_char_width
+	    || gui.char_height != old_char_height)
+    {
+	GdkGeometry	geometry;
+	GdkWindowHints	geometry_mask;
+
+	geometry.width_inc   = gui.char_width;
+	geometry.height_inc  = gui.char_height;
+	geometry.base_width  = width;
+	geometry.base_height = height;
+	geometry.min_width   = width  + MIN_COLUMNS * gui.char_width;
+	geometry.min_height  = height + MIN_LINES   * gui.char_height;
+	geometry_mask	     = GDK_HINT_BASE_SIZE|GDK_HINT_RESIZE_INC
+			       |GDK_HINT_MIN_SIZE;
+# ifdef HAVE_GTK2
+	/* Using gui.formwin as geometry widget doesn't work as expected
+	 * with GTK+ 2 -- dunno why.  Presumably all the resizing hacks
+	 * in Vim confuse GTK+. */
+	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.mainwin,
+				      &geometry, geometry_mask);
+# else
+	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.formwin,
+				      &geometry, geometry_mask);
+# endif
+	old_width  = width;
+	old_height = height;
+	old_char_width	= gui.char_width;
+	old_char_height = gui.char_height;
+    }
+}
+
 #ifdef FEAT_TOOLBAR
 
 # ifdef HAVE_GTK2
@@ -2919,6 +3058,122 @@ set_toolbar_style(GtkToolbar *toolbar)
 }
 
 #endif /* FEAT_TOOLBAR */
+
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+static int ignore_tabline_evt = FALSE;
+
+/*
+ * Handle selecting one of the tabs.
+ */
+/*ARGSUSED*/
+    static void
+on_select_tab(
+	GtkNotebook	*notebook,
+	GtkNotebookPage *page,
+	gint		index,
+	gpointer	data)
+{
+    static char_u string[3];
+
+    if (!ignore_tabline_evt)
+    {
+	string[0] = CSI;
+	string[1] = KS_TABLINE;
+	string[2] = KE_FILLER;
+	add_to_input_buf(string, 3);
+	string[0] = index + 1;
+	add_to_input_buf_csi(string, 1);
+
+	if (gtk_main_level() > 0)
+	    gtk_main_quit();
+    }
+}
+
+/*
+ * Show or hide the tabline.
+ */
+    void
+gui_mch_show_tabline(int showit)
+{
+    if (gui.tabline == NULL)
+	return;
+
+    if (!showit != !gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline)))
+    {
+	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), showit);
+	update_window_manager_hints();
+    }
+}
+
+/*
+ * Update the labels of the tabline.
+ */
+    void
+gui_mch_update_tabline(void)
+{
+    GtkWidget	    *page;
+    GtkWidget	    *label;
+    tabpage_T	    *tp;
+    int		    nr = 0;
+    int		    curtabidx = 0;
+
+    if (gui.tabline == NULL)
+	return;
+
+    ignore_tabline_evt = TRUE;
+
+    /* Add a label for each tab page.  They all contain the same text area. */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	if (tp == curtab)
+	    curtabidx = nr;
+
+	page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr);
+	if (page == NULL)
+	{
+	    /* Add notebook page */
+	    page = gtk_vbox_new(FALSE, 0);
+	    gtk_widget_show(page);
+	    label = gtk_label_new("-Empty-");
+	    gtk_widget_show(label);
+	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
+		    page,
+		    label,
+		    nr++);
+	}
+
+	get_tabline_label(tp);
+	gtk_notebook_set_tab_label_text(GTK_NOTEBOOK(gui.tabline), page,
+						     (const gchar *)NameBuff);
+    }
+
+    /* Remove any old labels. */
+    while (gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr) != NULL)
+	gtk_notebook_remove_page(GTK_NOTEBOOK(gui.tabline), nr);
+
+    if (gtk_notebook_current_page(GTK_NOTEBOOK(gui.tabline)) != curtabidx)
+        gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
+
+    ignore_tabline_evt = FALSE;
+}
+
+/*
+ * Set the current tab to "nr".  First tab is 1.
+ */
+    void
+gui_mch_set_curtab(nr)
+    int		nr;
+{
+    if (gui.tabline == NULL)
+	return;
+
+    ignore_tabline_evt = TRUE;
+    if (gtk_notebook_current_page(GTK_NOTEBOOK(gui.tabline)) != nr - 1)
+        gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), nr - 1);
+    ignore_tabline_evt = FALSE;
+}
+
+#endif /* FEAT_GUI_TABLINE */
 
 /*
  * Initialize the GUI.	Create all the windows, set up all the callbacks etc.
@@ -3060,6 +3315,7 @@ gui_mch_init(void)
     gui.accel_group = gtk_accel_group_get_default();
 #endif
 
+    /* A vertical box holds the menubar, toolbar and main text window. */
     vbox = gtk_vbox_new(FALSE, 0);
 
 #ifdef FEAT_GUI_GNOME
@@ -3193,6 +3449,30 @@ gui_mch_init(void)
 	gtk_box_pack_start(GTK_BOX(vbox), gui.toolbar, FALSE, FALSE, 0);
     }
 #endif /* FEAT_TOOLBAR */
+
+#ifdef FEAT_GUI_TABLINE
+    /* Use a Notebook for the tab pages labels.  The labels are hidden by
+     * default. */
+    gui.tabline = gtk_notebook_new();
+    gtk_widget_show(gui.tabline);
+    gtk_box_pack_start(GTK_BOX(vbox), gui.tabline, FALSE, FALSE, 0);
+    gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
+    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
+
+    {
+	GtkWidget *page, *label;
+
+	/* Add the first tab. */
+	page = gtk_vbox_new(FALSE, 0);
+	gtk_widget_show(page);
+	gtk_container_add(GTK_CONTAINER(gui.tabline), page);
+	label = gtk_label_new("-Empty-");
+	gtk_widget_show(label);
+	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, label);
+    }
+    gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
+		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+#endif
 
     gui.formwin = gtk_form_new();
     gtk_container_border_width(GTK_CONTAINER(gui.formwin), 0);
@@ -3362,139 +3642,6 @@ gui_mch_new_colors(void)
 
 	color.pixel = gui.back_pixel;
 	gdk_window_set_background(gui.drawarea->window, &color);
-    }
-}
-
-#if defined(FEAT_MENU) || defined(FEAT_TOOLBAR)
-    static int
-get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
-{
-    GtkOrientation item_orientation = GTK_ORIENTATION_HORIZONTAL;
-
-#ifdef FEAT_GUI_GNOME
-    if (using_gnome && widget != NULL)
-    {
-# ifdef HAVE_GTK2
-	BonoboDockItem *dockitem;
-
-	widget	 = gtk_widget_get_parent(widget);
-	dockitem = BONOBO_DOCK_ITEM(widget);
-
-	if (dockitem == NULL || dockitem->is_floating)
-	    return 0;
-	item_orientation = bonobo_dock_item_get_orientation(dockitem);
-# else
-	GnomeDockItem *dockitem;
-
-	widget	 = widget->parent;
-	dockitem = GNOME_DOCK_ITEM(widget);
-
-	if (dockitem == NULL || dockitem->is_floating)
-	    return 0;
-	item_orientation = gnome_dock_item_get_orientation(dockitem);
-# endif
-    }
-#endif
-    if (widget != NULL
-	    && item_orientation == orientation
-	    && GTK_WIDGET_REALIZED(widget)
-	    && GTK_WIDGET_VISIBLE(widget))
-    {
-	if (orientation == GTK_ORIENTATION_HORIZONTAL)
-	    return widget->allocation.height;
-	else
-	    return widget->allocation.width;
-    }
-    return 0;
-}
-#endif
-
-    static int
-get_menu_tool_width(void)
-{
-    int width = 0;
-
-#ifdef FEAT_GUI_GNOME /* these are never vertical without GNOME */
-# ifdef FEAT_MENU
-    width += get_item_dimensions(gui.menubar, GTK_ORIENTATION_VERTICAL);
-# endif
-# ifdef FEAT_TOOLBAR
-    width += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_VERTICAL);
-# endif
-#endif
-
-    return width;
-}
-
-    static int
-get_menu_tool_height(void)
-{
-    int height = 0;
-
-#ifdef FEAT_MENU
-    height += get_item_dimensions(gui.menubar, GTK_ORIENTATION_HORIZONTAL);
-#endif
-#ifdef FEAT_TOOLBAR
-    height += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_HORIZONTAL);
-#endif
-
-    return height;
-}
-
-    static void
-update_window_manager_hints(void)
-{
-    static int old_width  = 0;
-    static int old_height = 0;
-    static int old_char_width  = 0;
-    static int old_char_height = 0;
-
-    int width;
-    int height;
-
-    /* This also needs to be done when the main window isn't there yet,
-     * otherwise the hints don't work. */
-    width  = gui_get_base_width();
-    height = gui_get_base_height();
-# ifdef FEAT_MENU
-    height += tabpageline_height() * gui.char_height;
-# endif
-# ifdef HAVE_GTK2
-    width  += get_menu_tool_width();
-    height += get_menu_tool_height();
-# endif
-
-    /* Avoid an expose event when the size didn't change. */
-    if (width != old_width
-	    || height != old_height
-	    || gui.char_width != old_char_width
-	    || gui.char_height != old_char_height)
-    {
-	GdkGeometry	geometry;
-	GdkWindowHints	geometry_mask;
-
-	geometry.width_inc   = gui.char_width;
-	geometry.height_inc  = gui.char_height;
-	geometry.base_width  = width;
-	geometry.base_height = height;
-	geometry.min_width   = width  + MIN_COLUMNS * gui.char_width;
-	geometry.min_height  = height + MIN_LINES   * gui.char_height;
-	geometry_mask	     = GDK_HINT_BASE_SIZE|GDK_HINT_RESIZE_INC
-			       |GDK_HINT_MIN_SIZE;
-# ifdef HAVE_GTK2
-	/* Using gui.formwin as geometry widget doesn't work as expected
-	 * with GTK+ 2 -- dunno why.  Presumably all the resizing hacks
-	 * in Vim confuse GTK+. */
-	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.mainwin,
-				      &geometry, geometry_mask);
-# else
-	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.formwin,
-				      &geometry, geometry_mask);
-# endif
-	old_width  = width;
-	old_height = height;
-	old_char_width	= gui.char_width;
-	old_char_height = gui.char_height;
     }
 }
 

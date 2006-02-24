@@ -101,6 +101,9 @@
 /* Used for the qnx pterm mouse */
 #define KS_PTERM_MOUSE		241
 
+/* Used for click in a tab pages label. */
+#define KS_TABLINE		240
+
 /*
  * Filler used after KS_SPECIAL and others
  */
@@ -398,6 +401,8 @@ enum key_extra
 
 #define K_SELECT	TERMCAP2KEY(KS_SELECT, KE_FILLER)
 #define K_TEAROFF	TERMCAP2KEY(KS_TEAROFF, KE_FILLER)
+
+#define K_TABLINE	TERMCAP2KEY(KS_TABLINE, KE_FILLER)
 
 /*
  * Symbols for pseudo keys which are translated from the real key symbols

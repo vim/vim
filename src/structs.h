@@ -782,8 +782,9 @@ typedef struct attr_entry
 	} term;
 	struct
 	{
-	    char_u	    fg_color;	/* foreground color number */
-	    char_u	    bg_color;	/* background color number */
+	    /* These colors need to be > 8 bits to hold 256. */
+	    short_u	    fg_color;	/* foreground color number */
+	    short_u	    bg_color;	/* background color number */
 	} cterm;
 # ifdef FEAT_GUI
 	struct

@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 23
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -132,6 +132,12 @@ gT		Go to the previous tab page.  Wraps around from the first one
 {count}gT	Go {count} tab pages back.  Wraps around from the first one
 		to the last one.
 
+:tabr[ewind]			*:tabfir* *:tabfirst* *:tabr* *:tabrewind*
+:tabl[ast]	Go to the first tab page.
+
+							*:tabl* *:tablast*
+:tabl[ast]	Go to the last tab page.
+
 
 Other commands:
 							*:tabs*
@@ -146,6 +152,28 @@ REORDERING TAB PAGES:
 :tabmove N	Move the current tab page to after tab page N.  Use zero to
 		make the current tab page the first one.  Without N the tab
 		page is made the last one.
+
+
+LOOPING OVER TAB PAGES:
+
+							*:tabd* *:tabdo*
+:tabd[o] {cmd}	Execute {cmd} in each tab page.
+		It works like doing this: >
+			:tabfirst
+			:{cmd}
+			:tabnext
+			:{cmd}
+			etc.
+<		This only operates in the current window of each tab page.
+		When an error is detected on one tab page, further tab pages
+		will not be visited.
+		The last tab page (or where an error occurred) becomes the
+		current tab page.
+		{cmd} can contain '|' to concatenate several commands.
+		{cmd} must not open or close tab pages or reorder them.
+		{not in Vi} {not available when compiled without the
+		|+listcmds| feature}
+		Also see |:windo|, |:argdo| and |:bufdo|.
 
 ==============================================================================
 3. Other items						*tab-page-other*

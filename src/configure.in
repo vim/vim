@@ -29,7 +29,7 @@ if test -z "$CFLAGS"; then
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall"
 fi
 if test "$GCC" = yes; then
-  gccversion=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[0-9]]\.[[0-9.]]*\).*$/\1/g'`
+  gccversion=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\(darwin.[[^0-9]]*\)*\([[0-9]]\.[[0-9.]]*\).*$/\2/g'`
   dnl version 4.0.1 was reported to cause trouble on Macintosh by Marcin Dalecki
   if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
     echo 'GCC [34].0.[12] has a bug in the optimizer, disabling "-O#"'
@@ -106,7 +106,8 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     MACOSX=yes
     OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp -arch i386 -arch ppc"
+    dnl TODO: use -arch i386 on Intel machines
+    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp -arch ppc"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
@@ -2757,10 +2758,12 @@ fi
 dnl gcc 3.1 changed the meaning of -MM.  The only solution appears to be to
 dnl use "-isystem" instead of "-I" for all non-Vim include dirs.
 dnl But only when making dependencies, cproto and lint don't take "-isystem".
+dnl Mac gcc returns "powerpc-apple-darwin8-gcc-4.0.1 (GCC)...", need to allow
+dnl the number before the version number.
 AC_MSG_CHECKING(for GCC 3 or later)
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
-  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\([[1-9]]\)\.[[0-9.]]*.*$/\1/g'`
+  gccmajor=`"$CC" --version | sed -e '2,$d;s/^[[^0-9]]*\(darwin.[[^0-9]]*\)*\([[1-9]]\)\.[[0-9]].*$/\2/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
   fi

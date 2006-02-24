@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 22
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -577,8 +577,8 @@ Expression syntax summary, from least to most significant:
 	etc.			As above, append ? for ignoring case, # for
 				matching case
 
-	expr5 is expr5		same List instance
-	expr5 isnot expr5	different List instance
+	expr5 is expr5		same |List| instance
+	expr5 isnot expr5	different |List| instance
 
 |expr5|	expr6 +	 expr6 ..	number addition or list concatenation
 	expr6 -	 expr6 ..	number subtraction
@@ -593,16 +593,16 @@ Expression syntax summary, from least to most significant:
 	+ expr7			unary plus
 
 
-|expr8|	expr8[expr1]		byte of a String or item of a List
-	expr8[expr1 : expr1]	substring of a String or sublist of a List
-	expr8.name		entry in a Dictionary
-	expr8(expr1, ...)	function call with Funcref variable
+|expr8|	expr8[expr1]		byte of a String or item of a |List|
+	expr8[expr1 : expr1]	substring of a String or sublist of a |List|
+	expr8.name		entry in a |Dictionary|
+	expr8(expr1, ...)	function call with |Funcref| variable
 
 |expr9| number			number constant
 	"string"		string constant, backslash is special
 	'string'		string constant, ' is doubled
-	[expr1, ...]		List
-	{expr1: expr1, ...}	Dictionary
+	[expr1, ...]		|List|
+	{expr1: expr1, ...}	|Dictionary|
 	&option			option value
 	(expr1)			nested expression
 	variable		internal variable
@@ -714,23 +714,23 @@ Examples:
 "abc" == "Abc"	  evaluates to 1 if 'ignorecase' is set, 0 otherwise
 
 							*E691* *E692*
-A List can only be compared with a List and only "equal", "not equal" and "is"
-can be used.  This compares the values of the list, recursively.  Ignoring
-case means case is ignored when comparing item values.
+A |List| can only be compared with a |List| and only "equal", "not equal" and
+"is" can be used.  This compares the values of the list, recursively.
+Ignoring case means case is ignored when comparing item values.
 
 							*E735* *E736*
-A Dictionary can only be compared with a Dictionary and only "equal", "not
-equal" and "is" can be used.  This compares the key/values of the Dictionary,
+A |Dictionary| can only be compared with a |Dictionary| and only "equal", "not
+equal" and "is" can be used.  This compares the key/values of the |Dictionary|
 recursively.  Ignoring case means case is ignored when comparing item values.
 
 							*E693* *E694*
-A Funcref can only be compared with a Funcref and only "equal" and "not equal"
-can be used.  Case is never ignored.
+A |Funcref| can only be compared with a |Funcref| and only "equal" and "not
+equal" can be used.  Case is never ignored.
 
-When using "is" or "isnot" with a List this checks if the expressions are
-referring to the same List instance.  A copy of a List is different from the
-original List.  When using "is" without a List it is equivalent to using
-"equal", using "isnot" equivalent to using "not equal".  Except that a
+When using "is" or "isnot" with a |List| this checks if the expressions are
+referring to the same |List| instance.  A copy of a |List| is different from
+the original |List|.  When using "is" without a |List| it is equivalent to
+using "equal", using "isnot" equivalent to using "not equal".  Except that a
 different type means the values are different.  "4 == '4'" is true, "4 is '4'"
 is false.
 
@@ -763,12 +763,12 @@ can be matched like an ordinary character.  Examples:
 
 expr5 and expr6						*expr5* *expr6*
 ---------------
-expr6 +	 expr6 ..	Number addition or List concatenation	*expr-+*
+expr6 +	 expr6 ..	Number addition or |List| concatenation	*expr-+*
 expr6 -	 expr6 ..	Number subtraction			*expr--*
 expr6 .	 expr6 ..	String concatenation			*expr-.*
 
-For Lists only "+" is possible and then both expr6 must be a list.  The result
-is a new list with the two lists Concatenated.
+For |List|s only "+" is possible and then both expr6 must be a list.  The
+result is a new list with the two lists Concatenated.
 
 expr7 *	 expr7 ..	number multiplication			*expr-star*
 expr7 /	 expr7 ..	number division				*expr-/*
@@ -783,7 +783,7 @@ Note the difference between "+" and ".":
 When the righthand side of '/' is zero, the result is 0x7fffffff.
 When the righthand side of '%' is zero, the result is 0.
 
-None of these work for Funcrefs.
+None of these work for |Funcref|s.
 
 
 expr7							*expr7*
@@ -806,7 +806,7 @@ These three can be repeated and mixed.  Examples:
 
 expr8							*expr8*
 -----
-expr8[expr1]		item of String or List		*expr-[]* *E111*
+expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
@@ -821,13 +821,14 @@ If the length of the String is less than the index, the result is an empty
 String.  A negative index always results in an empty string (reason: backwards
 compatibility).  Use [-1:] to get the last byte.
 
-If expr8 is a List then it results the item at index expr1.  See |list-index|
+If expr8 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
 error.  Example: >
 	:let item = mylist[-1]		" get last item
 
-Generally, if a List index is equal to or higher than the length of the List,
-or more negative than the length of the List, this results in an error.
+Generally, if a |List| index is equal to or higher than the length of the
+|List|, or more negative than the length of the |List|, this results in an
+error.
 
 
 expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
@@ -852,20 +853,22 @@ Examples: >
 	:let s = line(".")[4:]		" from the fifth byte to the end
 	:let s = s[:-3]			" remove last two bytes
 
-If expr8 is a List this results in a new List with the items indicated by the
-indexes expr1a and expr1b.  This works like with a String, as explained just
-above, except that indexes out of range cause an error.  Examples: >
+If expr8 is a |List| this results in a new |List| with the items indicated by
+the indexes expr1a and expr1b.  This works like with a String, as explained
+just above, except that indexes out of range cause an error.  Examples: >
 	:let l = mylist[:3]		" first four items
 	:let l = mylist[4:4]		" List with one item
 	:let l = mylist[:]		" shallow copy of a List
 
-Using expr8[expr1] or expr8[expr1a : expr1b] on a Funcref results in an error.
+Using expr8[expr1] or expr8[expr1a : expr1b] on a |Funcref| results in an
+error.
 
 
-expr8.name		entry in a Dictionary		*expr-entry*
+expr8.name		entry in a |Dictionary|		*expr-entry*
 
-If expr8 is a Dictionary and it is followed by a dot, then the following name
-will be used as a key in the Dictionary.  This is just like: expr8[name].
+If expr8 is a |Dictionary| and it is followed by a dot, then the following
+name will be used as a key in the |Dictionary|.  This is just like:
+expr8[name].
 
 The name must consist of alphanumeric characters, just like a variable name,
 but it may start with a number.  Curly braces cannot be used.
@@ -881,7 +884,7 @@ Note that the dot is also used for String concatenation.  To avoid confusion
 always put spaces around the dot for String concatenation.
 
 
-expr8(expr1, ...)	Funcref function call
+expr8(expr1, ...)	|Funcref| function call
 
 When expr8 is a |Funcref| type variable, invoke the function it refers to.
 
@@ -1029,8 +1032,8 @@ specified by what is prepended:
 |function-argument|  a:	  Function argument (only inside a function).
 |vim-variable|       v:	  Global, predefined by Vim.
 
-The scope name by itself can be used as a Dictionary.  For example, to delete
-all script-local variables: >
+The scope name by itself can be used as a |Dictionary|.  For example, to
+delete all script-local variables: >
 	:for k in keys(s:)
 	:    unlet s:[k]
 	:endfor
@@ -1327,7 +1330,7 @@ v:insertmode	Used for the |InsertEnter| and |InsertChange| autocommand
 			v	Virtual Replace mode
 
 						*v:key* *key-variable*
-v:key		Key of the current item of a Dictionary.  Only valid while
+v:key		Key of the current item of a |Dictionary|.  Only valid while
 		evaluating the expression used with |map()| and |filter()|.
 		Read-only.
 
@@ -1459,8 +1462,8 @@ v:throwpoint	The point where the exception most recently caught and not
 <		Output: "Exception from test.vim, line 2"
 
 						*v:val* *val-variable*
-v:val		Value of the current item of a List or Dictionary.  Only valid
-		while evaluating the expression used with |map()| and
+v:val		Value of the current item of a |List| or |Dictionary|.  Only
+		valid while evaluating the expression used with |map()| and
 		|filter()|.  Read-only.
 
 					*v:version* *version-variable*
@@ -1486,7 +1489,7 @@ See |function-list| for a list grouped by what the function is used for.
 
 USAGE				RESULT	DESCRIPTION	~
 
-add( {list}, {item})		List	append {item} to List {list}
+add( {list}, {item})		List	append {item} to |List| {list}
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
@@ -1595,9 +1598,9 @@ inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
 insert( {list}, {item} [, {idx}]) List	insert {item} in {list} [before {idx}]
 isdirectory( {directory})	Number	TRUE if {directory} is a directory
 islocked( {expr})		Number	TRUE if {expr} is locked
-items( {dict})			List	List of key-value pairs in {dict}
+items( {dict})			List	key-value pairs in {dict}
 join( {list} [, {sep}])		String	join {list} items into one String
-keys( {dict})			List	List of keys in {dict}
+keys( {dict})			List	keys in {dict}
 len( {expr})			Number	the length of {expr}
 libcall( {lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr( {lib}, {func}, {arg})  Number  idem, but return a Number
@@ -1671,7 +1674,7 @@ spellbadword()			String	badly spelled word at cursor
 spellsuggest( {word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
-				List	make List from {pat} separated {expr}
+				List	make |List| from {pat} separated {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
@@ -1702,7 +1705,7 @@ toupper( {expr})		String	the String {expr} switched to uppercase
 tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
 type( {name})			Number	type of variable {name}
-values( {dict})			List	List of values in {dict}
+values( {dict})			List	values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
 winbufnr( {nr})			Number	buffer number of window {nr}
@@ -1716,18 +1719,18 @@ writefile({list}, {fname} [, {binary}])
 				Number	write list of lines to file {fname}
 
 add({list}, {expr})					*add()*
-		Append the item {expr} to List {list}.  Returns the resulting
-		List.  Examples: >
+		Append the item {expr} to |List| {list}.  Returns the
+		resulting |List|.  Examples: >
 			:let alist = add([1, 2, 3], item)
 			:call add(mylist, "woodstock")
-<		Note that when {expr} is a List it is appended as a single
-		item.  Use |extend()| to concatenate Lists.
+<		Note that when {expr} is a |List| it is appended as a single
+		item.  Use |extend()| to concatenate |List|s.
 		Use |insert()| to add an item at another position.
 
 
 append({lnum}, {expr})					*append()*
-		When {expr} is a List: Append each item of the List as a text
-		line below line {lnum} in the current buffer.
+		When {expr} is a |List|: Append each item of the |List| as a
+		text line below line {lnum} in the current buffer.
 		Otherwise append {expr} as one text line below line {lnum} in
 		the current buffer.
 		{lnum} can be zero to insert a line before the first one.
@@ -1891,9 +1894,9 @@ byteidx({expr}, {nr})					*byteidx()*
 		is returned.
 
 call({func}, {arglist} [, {dict}])			*call()* *E699*
-		Call function {func} with the items in List {arglist} as
+		Call function {func} with the items in |List| {arglist} as
 		arguments.
-		{func} can either be a Funcref or the name of a function.
+		{func} can either be a |Funcref| or the name of a function.
 		a:firstline and a:lastline are set to the cursor line.
 		Returns the return value of the called function.
 		{dict} is for functions with the "dict" attribute.  It will be
@@ -2009,17 +2012,17 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 							*copy()*
 copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
-		When {expr} is a List a shallow copy is created.  This means
-		that the original List can be changed without changing the
+		When {expr} is a |List| a shallow copy is created.  This means
+		that the original |List| can be changed without changing the
 		copy, and vise versa.  But the items are identical, thus
-		changing an item changes the contents of both Lists.  Also see
-		|deepcopy()|.
+		changing an item changes the contents of both |List|s.  Also
+		see |deepcopy()|.
 
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
-		in List or Dictionary {comp}.
+		in |List| or |Dictionary| {comp}.
 		If {start} is given then start with the item with this index.
-		{start} can only be used with a List.
+		{start} can only be used with a |List|.
 		When {ic} is given and it's non-zero then case is ignored.
 
 
@@ -2080,16 +2083,16 @@ cursor({lnum}, {col})					*cursor()*
 deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
 		Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
-		When {expr} is a List a full copy is created.  This means
-		that the original List can be changed without changing the
-		copy, and vise versa.  When an item is a List, a copy for it
+		When {expr} is a |List| a full copy is created.  This means
+		that the original |List| can be changed without changing the
+		copy, and vise versa.  When an item is a |List|, a copy for it
 		is made, recursively.  Thus changing an item in the copy does
-		not change the contents of the original List.
-		When {noref} is omitted or zero a contained List or Dictionary
-		is only copied once.  All references point to this single
-		copy.  With {noref} set to 1 every occurrence of a List or
-		Dictionary results in a new copy.  This also means that a
-		cyclic reference causes deepcopy() to fail.
+		not change the contents of the original |List|.
+		When {noref} is omitted or zero a contained |List| or
+		|Dictionary| is only copied once.  All references point to
+		this single copy.  With {noref} set to 1 every occurrence of a
+		|List| or |Dictionary| results in a new copy.  This also means
+		that a cyclic reference causes deepcopy() to fail.
 								*E724*
 		Nesting is possible up to 100 levels.  When there is an item
 		that refers back to a higher level making a deep copy with
@@ -2100,7 +2103,7 @@ delete({fname})							*delete()*
 		Deletes the file by the name {fname}.  The result is a Number,
 		which is 0 if the file was deleted successfully, and non-zero
 		when the deletion failed.
-		Use |remove()| to delete an item from a List.
+		Use |remove()| to delete an item from a |List|.
 
 							*did_filetype()*
 did_filetype()	Returns non-zero when autocommands are being executed and the
@@ -2135,10 +2138,10 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
-		A List or Dictionary is empty when it does not have any items.
-		A Number is empty when its value is zero.
-		For a long List this is much faster then comparing the length
-		with zero.
+		A |List| or |Dictionary| is empty when it does not have any
+		items.  A Number is empty when its value is zero.
+		For a long |List| this is much faster then comparing the
+		length with zero.
 
 escape({string}, {chars})				*escape()*
 		Escape the characters in {chars} that occur in {string} with a
@@ -2151,7 +2154,7 @@ escape({string}, {chars})				*escape()*
 eval({string})	Evaluate {string} and return the result.  Especially useful to
 		turn the result of |string()| back into the original value.
 		This works for Numbers, Strings and composites of them.
-		Also works for Funcrefs that refer to existing functions.
+		Also works for |Funcref|s that refer to existing functions.
 
 eventhandler()						*eventhandler()*
 		Returns 1 when inside an event handler.  That is that Vim got
@@ -2195,9 +2198,9 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 					|user-functions|).
 			varname		internal variable (see
 					|internal-variables|).  Also works
-					for |curly-braces-names|, Dictionary
-					entries, List items, etc.  Beware that
-					this may cause functions to be
+					for |curly-braces-names|, |Dictionary|
+					entries, |List| items, etc.  Beware
+					that this may cause functions to be
 					invoked cause an error message for an
 					invalid expression.
 			:cmdname	Ex command: built-in command, user
@@ -2323,9 +2326,9 @@ expand({expr} [, {flag}])				*expand()*
 		getting the raw output of an external command.
 
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
-		{expr1} and {expr2} must be both Lists or both Dictionaries.
+		{expr1} and {expr2} must be both |List|s or both Dictionaries.
 
-		If they are Lists: Append {expr2} to {expr1}.
+		If they are |List|s: Append {expr2} to {expr1}.
 		If {expr3} is given insert the items of {expr2} before item
 		{expr3} in {expr1}.  When {expr3} is zero insert before the
 		first item.  When {expr3} is equal to len({expr1}) then
@@ -2362,28 +2365,28 @@ filereadable({file})					*filereadable()*
 
 
 filter({expr}, {string})					*filter()*
-		{expr} must be a List or a Dictionary.
+		{expr} must be a |List| or a |Dictionary|.
 		For each item in {expr} evaluate {string} and when the result
-		is zero remove the item from the List or Dictionary.
+		is zero remove the item from the |List| or |Dictionary|.
 		Inside {string} |v:val| has the value of the current item.
-		For a Dictionary |v:key| has the key of the current item.
+		For a |Dictionary| |v:key| has the key of the current item.
 		Examples: >
 			:call filter(mylist, 'v:val !~ "OLD"')
 <		Removes the items where "OLD" appears. >
 			:call filter(mydict, 'v:key >= 8')
 <		Removes the items with a key below 8. >
 			:call filter(var, 0)
-<		Removes all the items, thus clears the List or Dictionary.
+<		Removes all the items, thus clears the |List| or |Dictionary|.
 
 		Note that {string} is the result of expression and is then
 		used as an expression again.  Often it is good to use a
 		|literal-string| to avoid having to double backslashes.
 
-		The operation is done in-place.  If you want a List or
-		Dictionary to remain unmodified make a copy first: >
+		The operation is done in-place.  If you want a |List| or
+		|Dictionary| to remain unmodified make a copy first: >
 			:let l = filter(copy(mylist), 'v:val =~ "KEEP"')
 
-<		Returns {expr}, the List or Dictionary that was filtered.
+<		Returns {expr}, the |List| or |Dictionary| that was filtered.
 		When an error is encountered while evaluating {string} no
 		further items in {expr} are processed.
 
@@ -2477,35 +2480,35 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 
 
 function({name})					*function()* *E700*
-		Return a Funcref variable that refers to function {name}.
+		Return a |Funcref| variable that refers to function {name}.
 		{name} can be a user defined function or an internal function.
 
 
 garbagecollect()					*garbagecollect()*
-		Cleanup unused Lists and Dictionaries that have circular
+		Cleanup unused |List|s and Dictionaries that have circular
 		references.  There is hardly ever a need to invoke this
 		function, as it is automatically done when Vim runs out of
 		memory or is waiting for the user to press a key after
 		'updatetime'.  Items without circular references are always
 		freed when they become unused.
-		This is useful if you have deleted a very big List and/or
-		Dictionary with circular references in a script that runs for
-		a long time.
+		This is useful if you have deleted a very big |List| and/or
+		|Dictionary| with circular references in a script that runs
+		for a long time.
 
 get({list}, {idx} [, {default}])			*get()*
-		Get item {idx} from List {list}.  When this item is not
+		Get item {idx} from |List| {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
 		omitted.
 get({dict}, {key} [, {default}])
-		Get item with key {key} from Dictionary {dict}.  When this
+		Get item with key {key} from |Dictionary| {dict}.  When this
 		item is not available return {default}.  Return zero when
 		{default} is omitted.
 
 							*getbufline()*
 getbufline({expr}, {lnum} [, {end}])
-		Return a List with the lines starting from {lnum} to {end}
-		(inclusive) in the buffer {expr}.  If {end} is omitted, a List
-		with only the line {lnum} is returned.
+		Return a |List| with the lines starting from {lnum} to {end}
+		(inclusive) in the buffer {expr}.  If {end} is omitted, a
+		|List| with only the line {lnum} is returned.
 
 		For the use of {expr}, see |bufname()| above.
 
@@ -2513,15 +2516,15 @@ getbufline({expr}, {lnum} [, {end}])
 		buffer.  Otherwise a number must be used.
 
 		When {lnum} is smaller than 1 or bigger than the number of
-		lines in the buffer, an empty List is returned.
+		lines in the buffer, an empty |List| is returned.
 
 		When {end} is greater than the number of lines in the buffer,
 		it is treated as {end} is set to the number of lines in the
-		buffer.  When {end} is before {lnum} an empty List is
+		buffer.  When {end} is before {lnum} an empty |List| is
 		returned.
 
 		This function works only for loaded buffers.  For unloaded and
-		non-existing buffers, an empty List is returned.
+		non-existing buffers, an empty |List| is returned.
 
 		Example: >
 			:let lines = getbufline(bufnr("myfile"), 1, "$")
@@ -2697,12 +2700,12 @@ getline({lnum} [, {end}])
 <		When {lnum} is smaller than 1 or bigger than the number of
 		lines in the buffer, an empty string is returned.
 
-		When {end} is given the result is a List where each item is a
-		line from the current buffer in the range {lnum} to {end},
+		When {end} is given the result is a |List| where each item is
+		a line from the current buffer in the range {lnum} to {end},
 		including line {end}.
 		{end} is used in the same way as {lnum}.
 		Non-existing lines are silently omitted.
-		When {end} is before {lnum} an empty List is returned.
+		When {end} is before {lnum} an empty |List| is returned.
 		Example: >
 			:let start = line('.')
 			:let end = search("^$") - 1
@@ -2829,8 +2832,8 @@ has({feature})	The result is a Number, which is 1 if the feature {feature} is
 
 
 has_key({dict}, {key})					*has_key()*
-		The result is a Number, which is 1 if Dictionary {dict} has an
-		entry with key {key}.  Zero otherwise.
+		The result is a Number, which is 1 if |Dictionary| {dict} has
+		an entry with key {key}.  Zero otherwise.
 
 
 hasmapto({what} [, {mode}])				*hasmapto()*
@@ -2982,7 +2985,7 @@ indent({lnum})	The result is a Number, which is indent of line {lnum} in the
 
 
 index({list}, {expr} [, {start} [, {ic}]])			*index()*
-		Return the lowest index in List {list} where the item has a
+		Return the lowest index in |List| {list} where the item has a
 		value equal to {expr}.
 		If {start} is given then start looking at the item with index
 		{start} (may be negative for an item relative to the end).
@@ -3093,18 +3096,18 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 		NOTE: Command-line completion is not supported.
 
 insert({list}, {item} [, {idx}])			*insert()*
-		Insert {item} at the start of List {list}.
+		Insert {item} at the start of |List| {list}.
 		If {idx} is specified insert {item} before the item with index
 		{idx}.  If {idx} is zero it goes before the first item, just
 		like omitting {idx}.  A negative {idx} is also possible, see
 		|list-index|.  -1 inserts just before the last item.
-		Returns the resulting List.  Examples: >
+		Returns the resulting |List|.  Examples: >
 			:let mylist = insert([2, 3, 5], 1)
 			:call insert(mylist, 4, -1)
 			:call insert(mylist, 6, len(mylist))
 <		The last example can be done simpler with |add()|.
-		Note that when {item} is a List it is inserted as a single
-		item.  Use |extend()| to concatenate Lists.
+		Note that when {item} is a |List| it is inserted as a single
+		item.  Use |extend()| to concatenate |List|s.
 
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is non-zero when a directory
@@ -3115,8 +3118,8 @@ isdirectory({directory})				*isdirectory()*
 islocked({expr})					*islocked()*
 		The result is a Number, which is non-zero when {expr} is the
 		name of a locked variable.
-		{expr} must be the name of a variable, List item or Dictionary
-		entry, not the variable itself!  Example: >
+		{expr} must be the name of a variable, |List| item or
+		|Dictionary| entry, not the variable itself!  Example: >
 			:let alist = [0, ['a', 'b'], 2, 3]
 			:lockvar 1 alist
 			:echo islocked('alist')		" 1
@@ -3126,9 +3129,10 @@ islocked({expr})					*islocked()*
 		message.  Use |exists()| to check for existance.
 
 items({dict})						*items()*
-		Return a List with all the key-value pairs of {dict}.  Each
-		List item is a list with two items: the key of a {dict} entry
-		and the value of this entry.  The List is in arbitrary order.
+		Return a |List| with all the key-value pairs of {dict}.  Each
+		|List| item is a list with two items: the key of a {dict}
+		entry and the value of this entry.  The |List| is in arbitrary
+		order.
 
 
 join({list} [, {sep}])					*join()*
@@ -3138,22 +3142,22 @@ join({list} [, {sep}])					*join()*
 		Note that {sep} is not added at the end.  You might want to
 		add it there too: >
 			let lines = join(mylist, "\n") . "\n"
-<		String items are used as-is.  Lists and Dictionaries are
+<		String items are used as-is.  |List|s and Dictionaries are
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
 
 keys({dict})						*keys()*
-		Return a List with all the keys of {dict}.  The List is in
+		Return a |List| with all the keys of {dict}.  The |List| is in
 		arbitrary order.
 
 							*len()* *E701*
 len({expr})	The result is a Number, which is the length of the argument.
 		When {expr} is a String or a Number the length in bytes is
 		used, as with |strlen()|.
-		When {expr} is a List the number of items in the List is
+		When {expr} is a |List| the number of items in the |List| is
 		returned.
-		When {expr} is a Dictionary the number of entries in the
-		Dictionary is returned.
+		When {expr} is a |Dictionary| the number of entries in the
+		|Dictionary| is returned.
 		Otherwise an error is given.
 
 						*libcall()* *E364* *E368*
@@ -3259,11 +3263,11 @@ localtime()						*localtime()*
 
 
 map({expr}, {string})					*map()*
-		{expr} must be a List or a Dictionary.
+		{expr} must be a |List| or a |Dictionary|.
 		Replace each item in {expr} with the result of evaluating
 		{string}.
 		Inside {string} |v:val| has the value of the current item.
-		For a Dictionary |v:key| has the key of the current item.
+		For a |Dictionary| |v:key| has the key of the current item.
 		Example: >
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".
@@ -3273,11 +3277,11 @@ map({expr}, {string})					*map()*
 		|literal-string| to avoid having to double backslashes.  You
 		still have to double ' quotes
 
-		The operation is done in-place.  If you want a List or
-		Dictionary to remain unmodified make a copy first: >
+		The operation is done in-place.  If you want a |List| or
+		|Dictionary| to remain unmodified make a copy first: >
 			:let tlist = map(copy(mylist), ' & . "\t"')
 
-<		Returns {expr}, the List or Dictionary that was filtered.
+<		Returns {expr}, the |List| or |Dictionary| that was filtered.
 		When an error is encountered while evaluating {string} no
 		further items in {expr} are processed.
 
@@ -3335,13 +3339,13 @@ mapcheck({name}[, {mode}])				*mapcheck()*
 		mapping for "_v" or for "_vvv".
 
 match({expr}, {pat}[, {start}[, {count}]])			*match()*
-		When {expr} is a List then this returns the index of the first
-		item where {pat} matches.  Each item is used as a String,
-		Lists and Dictionaries are used as echoed.
+		When {expr} is a |List| then this returns the index of the
+		first item where {pat} matches.  Each item is used as a
+		String, |List|s and Dictionaries are used as echoed.
 		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
-		A match at the first character or List item returns zero.
+		A match at the first character or |List| item returns zero.
 		If there is no match -1 is returned.
 		Example: >
 			:echo match("testing", "ing")	" results in 4
@@ -3359,10 +3363,10 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		is found in a String the search for the next one starts on
 		character further.  Thus this example results in 1: >
 			echo match("testing", "..", 0, 2)
-<		In a List the search continues in the next item.
+<		In a |List| the search continues in the next item.
 
 		If {start} is given, the search starts from byte index
-		{start} in a String or item {start} in a List.
+		{start} in a String or item {start} in a |List|.
 		The result, however, is still the index counted from the
 		first character/item.  Example: >
 			:echo match("testing", "ing", 2)
@@ -3374,7 +3378,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		For a String, if {start} < 0, it will be set to 0.  For a list
 		the index is counted from the end.
 		If {start} is out of range (> strlen({expr} for a String or
-		> len({expr} for a List) -1 is returned.
+		> len({expr} for a |List|) -1 is returned.
 
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
@@ -3398,10 +3402,10 @@ matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 <		results in "7". >
 			:echo matchend("testing", "ing", 5)
 <		result is "-1".
-		When {expr} is a List the result is equal to match().
+		When {expr} is a |List| the result is equal to match().
 
 matchlist({expr}, {pat}[, {start}[, {count}]])			*matchlist()*
-		Same as match(), but return a List.  The first item in the
+		Same as match(), but return a |List|.  The first item in the
 		list is the matched string, same as what matchstr() would
 		return.  Following items are submatches, like "\1", "\2", etc.
 		in |:substitute|.
@@ -3417,20 +3421,20 @@ matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
 <		results in "ing". >
 			:echo matchstr("testing", "ing", 5)
 <		result is "".
-		When {expr} is a List then the matching item is returned.
+		When {expr} is a |List| then the matching item is returned.
 		The type isn't changed, it's not necessarily a String.
 
 							*max()*
 max({list})	Return the maximum value of all items in {list}.
 		If {list} is not a list or one of the items in {list} cannot
 		be used as a Number this results in an error.
-		An empty List results in zero.
+		An empty |List| results in zero.
 
 							*min()*
 min({list})	Return the minumum value of all items in {list}.
 		If {list} is not a list or one of the items in {list} cannot
 		be used as a Number this results in an error.
-		An empty List results in zero.
+		An empty |List| results in zero.
 
 							*mkdir()* *E749*
 mkdir({name} [, {path} [, {prot}]])
@@ -3624,7 +3628,7 @@ pumvisible()						*pumvisible()*
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
-		Returns a List with Numbers:
+		Returns a |List| with Numbers:
 		- If only {expr} is specified: [0, 1, ..., {expr} - 1]
 		- If {max} is specified: [{expr}, {expr} + 1, ..., {max}]
 		- If {stride} is specified: [{expr}, {expr} + {stride}, ...,
@@ -3643,8 +3647,8 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 							*readfile()*
 readfile({fname} [, {binary} [, {max}]])
-		Read file {fname} and return a List, each line of the file as
-		an item.  Lines broken at NL characters.  Macintosh files
+		Read file {fname} and return a |List|, each line of the file
+		as an item.  Lines broken at NL characters.  Macintosh files
 		separated with CR will result in a single long line (unless a
 		NL appears somewhere).
 		When {binary} is equal to "b" binary mode is used:
@@ -3748,7 +3752,7 @@ remote_send({server}, {string} [, {idvar}])
 		 \ 'server2client(expand("<client>"), "HELLO")<CR>')
 <
 remove({list}, {idx} [, {end}])				*remove()*
-		Without {end}: Remove the item at {idx} from List {list} and
+		Without {end}: Remove the item at {idx} from |List| {list} and
 		return it.
 		With {end}: Remove items from {idx} to {end} (inclusive) and
 		return a list with these items.  When {idx} points to the same
@@ -3777,7 +3781,7 @@ repeat({expr}, {count})					*repeat()*
 		result.  Example: >
 			:let seperator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
-		When {expr} is a List the result is {expr} concatenated
+		When {expr} is a |List| the result is {expr} concatenated
 		{count} times.  Example: >
 			:let longlist = repeat(['a', 'b'], 3)
 <		Results in ['a', 'b', 'a', 'b', 'a', 'b'].
@@ -3940,9 +3944,9 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 <
 							*searchpairpos()*
 searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}]])
-		Same as searchpair(), but returns a List with the line and
-		column position of the match. The first element of the List is
-		the line number and the second element is the byte index of
+		Same as searchpair(), but returns a |List| with the line and
+		column position of the match. The first element of the |List|
+		is the line number and the second element is the byte index of
 		the column position of the match.  If no match is found,
 		returns [0, 0].
 >
@@ -3951,11 +3955,11 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}]])
 		See |match-parens| for a bigger and more useful example.
 
 searchpos({pattern} [, {flags}])			*searchpos()*
-		Same as search(), but returns a List with the line and column
-		position of the match. The first element of the List is the
-		line number and the second element is the byte index of the
-		column position of the match. If no match is found, returns
-		[0, 0].
+		Same as search(), but returns a |List| with the line and
+		column position of the match. The first element of the |List|
+		is the line number and the second element is the byte index of
+		the column position of the match. If no match is found,
+		returns [0, 0].
 >
 			:let [lnum,col] = searchpos('mypattern', 'n')
 <
@@ -4015,7 +4019,7 @@ setline({lnum}, {line})					*setline()*
 		If this succeeds, 0 is returned.  If this fails (most likely
 		because {lnum} is invalid) 1 is returned.  Example: >
 			:call setline(5, strftime("%c"))
-<		When {line} is a List then line {lnum} and following lines
+<		When {line} is a |List| then line {lnum} and following lines
 		will be set to the items in the list.  Example: >
 			:call setline(5, ['aaa', 'bbb', 'ccc'])
 <		This is equivalent to: >
@@ -4138,11 +4142,11 @@ sort({list} [, {func}])					*sort()* *E702*
 		want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 <		Uses the string representation of each item to sort on.
-		Numbers sort after Strings, Lists after Numbers.
+		Numbers sort after Strings, |List|s after Numbers.
 		For sorting text in the current buffer use |:sort|.
 		When {func} is given and it is one then case is ignored.
-		When {func} is a Funcref or a function name, this function is
-		called to compare items.  The function is invoked with two
+		When {func} is a |Funcref| or a function name, this function
+		is called to compare items.  The function is invoked with two
 		items as argument and must return zero if they are equal, 1 if
 		the first one sorts after the second one, -1 if the first one
 		sorts before the second one.  Example: >
@@ -4189,7 +4193,7 @@ spellbadword([{sentence}])
 
 							*spellsuggest()*
 spellsuggest({word} [, {max} [, {capital}]])
-		Return a List with spelling suggestions to replace {word}.
+		Return a |List| with spelling suggestions to replace {word}.
 		When {max} is given up to this number of suggestions are
 		returned.  Otherwise up to 25 suggestions are returned.
 
@@ -4212,8 +4216,9 @@ spellsuggest({word} [, {max} [, {capital}]])
 
 
 split({expr} [, {pattern} [, {keepempty}]])			*split()*
-		Make a List out of {expr}.  When {pattern} is omitted or empty
-		each white-separated sequence of characters becomes an item.
+		Make a |List| out of {expr}.  When {pattern} is omitted or
+		empty each white-separated sequence of characters becomes an
+		item.
 		Otherwise the string is split where {pattern} matches,
 		removing the matched characters.
 		When the first or last item is empty it is omitted, unless the
@@ -4454,7 +4459,7 @@ system({expr} [, {input}])				*system()* *E677*
 
 
 tabpagebuflist([{arg}])					*tabpagebuflist()*
-		The result is a List, where each item is the number of the
+		The result is a |List|, where each item is the number of the
 		buffer associated with each window in the current tab page.
 		{arg} specifies the number of tab page to be used.  When
 		omitted the current tab page is used.
@@ -4525,8 +4530,8 @@ taglist({expr})							*taglist()*
 		the tags file generated by the different ctags tools.
 
 							*tagfiles()*
-tagfiles()	Returns a List with the file names used to search for tags for
-		the current buffer.  This is the 'tags' option expanded.
+tagfiles()	Returns a |List| with the file names used to search for tags
+		for the current buffer.  This is the 'tags' option expanded.
 
 
 tempname()					*tempname()* *temp-file-name*
@@ -4581,8 +4586,8 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type({})
 
 values({dict})						*values()*
-		Return a List with all the values of {dict}.  The List is in
-		arbitrary order.
+		Return a |List| with all the values of {dict}.  The |List| is
+		in arbitrary order.
 
 
 virtcol({expr})						*virtcol()*
@@ -4593,6 +4598,8 @@ virtcol({expr})						*virtcol()*
 		position, the returned Number will be the column at the end of
 		the <Tab>.  For example, for a <Tab> in column 1, with 'ts'
 		set to 8, it returns 8.
+		For the use of {expr} see |col()|.  Additionally you can use
+		[lnum, col]: a |List| with the line and column number.
 		For the byte position use |col()|.
 		When Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned. |'virtualedit'|
@@ -4688,7 +4695,7 @@ winwidth({nr})						*winwidth()*
 <
 							*writefile()*
 writefile({list}, {fname} [, {binary}])
-		Write List {list} to file {fname}.  Each list item is
+		Write |List| {list} to file {fname}.  Each list item is
 		separated with a NL.  Each list item must be a String or
 		Number.
 		When {binary} is equal to "b" binary mode is used: There will
@@ -4930,8 +4937,8 @@ instead of "s:" when the mapping is expanded outside of the script.
 :fu[nction]		List all functions and their arguments.
 
 :fu[nction] {name}	List function {name}.
-			{name} can also be a Dictionary entry that is a
-			Funcref: >
+			{name} can also be a |Dictionary| entry that is a
+			|Funcref|: >
 				:function dict.init
 
 :fu[nction] /{pattern}	List functions with a name matching {pattern}.
@@ -4954,8 +4961,8 @@ See |:verbose-cmd| for more information.
 			must be made of alphanumeric characters and '_', and
 			must start with a capital or "s:" (see above).
 
-			{name} can also be a Dictionary entry that is a
-			Funcref: >
+			{name} can also be a |Dictionary| entry that is a
+			|Funcref|: >
 				:function dict.init(arg)
 <			"dict" must be an existing dictionary.  The entry
 			"init" is added if it didn't exist yet.  Otherwise [!]
@@ -4983,7 +4990,7 @@ See |:verbose-cmd| for more information.
 			abort as soon as an error is detected.
 
 			When the [dict] argument is added, the function must
-			be invoked through an entry in a Dictionary.  The
+			be invoked through an entry in a |Dictionary|.  The
 			local variable "self" will then be set to the
 			dictionary.  See |Dictionary-function|.
 
@@ -4996,8 +5003,8 @@ See |:verbose-cmd| for more information.
 
 					*:delf* *:delfunction* *E130* *E131*
 :delf[unction] {name}	Delete function {name}.
-			{name} can also be a Dictionary entry that is a
-			Funcref: >
+			{name} can also be a |Dictionary| entry that is a
+			|Funcref|: >
 				:delfunc dict.init
 <			This will remove the "init" entry from "dict".  The
 			function is deleted if there are no more references to
@@ -5026,14 +5033,14 @@ Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
 may optionally be following.  In the function the extra arguments can be used
 as "a:1", "a:2", etc.  "a:0" is set to the number of extra arguments (which
-can be 0).  "a:000" is set to a List that contains these arguments.  Note that
-"a:1" is the same as "a:000[0]".
+can be 0).  "a:000" is set to a |List| that contains these arguments.  Note
+that "a:1" is the same as "a:000[0]".
 								*E742*
 The a: scope and the variables in it cannot be changed, they are fixed.
-However, if a List or Dictionary is used, you can changes their contents.
-Thus you can pass a List to a function and have the function add an item to
-it.  If you want to make sure the function cannot change a List or Dictionary
-use |:lockvar|.
+However, if a |List| or |Dictionary| is used, you can changes their contents.
+Thus you can pass a |List| to a function and have the function add an item to
+it.  If you want to make sure the function cannot change a |List| or
+|Dictionary| use |:lockvar|.
 
 When not using "...", the number of arguments in a function call must be equal
 to the number of named arguments.  When using "...", the number of arguments
@@ -5269,8 +5276,8 @@ This would call the function "my_func_whizz(parameter)".
 
 							*E711* *E719*
 :let {var-name}[{idx1}:{idx2}] = {expr1}		*E708* *E709* *E710*
-			Set a sequence of items in a List to the result of the
-			expression {expr1}, which must be a list with the
+			Set a sequence of items in a |List| to the result of
+			the expression {expr1}, which must be a list with the
 			correct number of items.
 			{idx1} can be omitted, zero is used instead.
 			{idx2} can be omitted, meaning the end of the list.
@@ -5345,11 +5352,11 @@ This would call the function "my_func_whizz(parameter)".
 			(if there is one).  Works like |:setglobal|.
 
 :let [{name1}, {name2}, ...] = {expr1}		*:let-unpack* *E687* *E688*
-			{expr1} must evaluate to a List.  The first item in
+			{expr1} must evaluate to a |List|.  The first item in
 			the list is assigned to {name1}, the second item to
 			{name2}, etc.
 			The number of names must match the number of items in
-			the List.
+			the |List|.
 			Each name can be one of the items of the ":let"
 			command as mentioned above.
 			Example: >
@@ -5367,10 +5374,10 @@ This would call the function "my_func_whizz(parameter)".
 :let [{name1}, {name2}, ...] += {expr1}
 :let [{name1}, {name2}, ...] -= {expr1}
 			Like above, but append/add/subtract the value for each
-			List item.
+			|List| item.
 
 :let [{name}, ..., ; {lastname}] = {expr1}
-			Like |:let-unpack| above, but the List may have more
+			Like |:let-unpack| above, but the |List| may have more
 			items than there are names.  A list of the remaining
 			items is assigned to {lastname}.  If there are no
 			remaining items {lastname} is set to an empty list.
@@ -5381,7 +5388,7 @@ This would call the function "my_func_whizz(parameter)".
 :let [{name}, ..., ; {lastname}] += {expr1}
 :let [{name}, ..., ; {lastname}] -= {expr1}
 			Like above, but append/add/subtract the value for each
-			List item.
+			|List| item.
 							*E106*
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized
@@ -5401,13 +5408,13 @@ This would call the function "my_func_whizz(parameter)".
 :unl[et][!] {name} ...					*:unlet* *:unl* *E108*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
-			may also be a List or Dictionary item.
+			may also be a |List| or |Dictionary| item.
 			With [!] no error message is given for non-existing
 			variables.
-			One or more items from a List can be removed: >
+			One or more items from a |List| can be removed: >
 				:unlet list[3]	  " remove fourth item
 				:unlet list[3:]   " remove fourth item to last
-<			One item from a Dictionary can be removed at a time: >
+<			One item from a |Dictionary| can be removed at a time: >
 				:unlet dict['two']
 				:unlet dict.two
 
@@ -5422,28 +5429,30 @@ This would call the function "my_func_whizz(parameter)".
 			If you try to change a locked variable you get an
 			error message: "E741: Value of {name} is locked"
 
-			[depth] is relevant when locking a List or Dictionary.
-			It specifies how deep the locking goes:
-				1	Lock the List or Dictionary itself,
+			[depth] is relevant when locking a |List| or
+			|Dictionary|.  It specifies how deep the locking goes:
+				1	Lock the |List| or |Dictionary| itself,
 					cannot add or remove items, but can
 					still change their values.
 				2	Also lock the values, cannot change
-					the items.  If an item is a List or
-					Dictionary, cannot add or remove
+					the items.  If an item is a |List| or
+					|Dictionary|, cannot add or remove
 					items, but can still change the
 					values.
-				3	Like 2 but for the List/Dictionary in
-					the List/Dictionary, one level deeper.
-			The default [depth] is 2, thus when {name} is a List
-			or Dictionary the values cannot be changed.
+				3	Like 2 but for the |List| /
+					|Dictionary| in the |List| /
+					|Dictionary|, one level deeper.
+			The default [depth] is 2, thus when {name} is a |List|
+			or |Dictionary| the values cannot be changed.
 								*E743*
 			For unlimited depth use [!] and omit [depth].
 			However, there is a maximum depth of 100 to catch
 			loops.
 
-			Note that when two variables refer to the same List
-			and you lock one of them, the List will also be locked
-			when used through the other variable.  Example: >
+			Note that when two variables refer to the same |List|
+			and you lock one of them, the |List| will also be
+			locked when used through the other variable.  Example:
+			>
 				:let l = [0, 1, 2, 3]
 				:let cl = l
 				:lockvar l
