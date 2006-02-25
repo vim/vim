@@ -254,6 +254,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'graphic'	vi_diff.txt	/*'graphic'*
 'grepformat'	options.txt	/*'grepformat'*
 'grepprg'	options.txt	/*'grepprg'*
+'gtl'	options.txt	/*'gtl'*
 'guicursor'	options.txt	/*'guicursor'*
 'guifont'	options.txt	/*'guifont'*
 'guifontset'	options.txt	/*'guifontset'*
@@ -261,6 +262,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'guiheadroom'	options.txt	/*'guiheadroom'*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
+'guitablabel'	options.txt	/*'guitablabel'*
 'hardtabs'	vi_diff.txt	/*'hardtabs'*
 'helpfile'	options.txt	/*'helpfile'*
 'helpheight'	options.txt	/*'helpheight'*
@@ -1481,6 +1483,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 08.6	usr_08.txt	/*08.6*
 08.7	usr_08.txt	/*08.7*
 08.8	usr_08.txt	/*08.8*
+08.9	usr_08.txt	/*08.9*
 09.1	usr_09.txt	/*09.1*
 09.2	usr_09.txt	/*09.2*
 09.3	usr_09.txt	/*09.3*
@@ -2648,10 +2651,16 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :tabNext	tabpage.txt	/*:tabNext*
 :tabc	tabpage.txt	/*:tabc*
 :tabclose	tabpage.txt	/*:tabclose*
+:tabd	tabpage.txt	/*:tabd*
+:tabdo	tabpage.txt	/*:tabdo*
 :tabe	tabpage.txt	/*:tabe*
 :tabedit	tabpage.txt	/*:tabedit*
 :tabf	tabpage.txt	/*:tabf*
 :tabfind	tabpage.txt	/*:tabfind*
+:tabfir	tabpage.txt	/*:tabfir*
+:tabfirst	tabpage.txt	/*:tabfirst*
+:tabl	tabpage.txt	/*:tabl*
+:tablast	tabpage.txt	/*:tablast*
 :tabm	tabpage.txt	/*:tabm*
 :tabmove	tabpage.txt	/*:tabmove*
 :tabn	tabpage.txt	/*:tabn*
@@ -2661,6 +2670,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :tabonly	tabpage.txt	/*:tabonly*
 :tabp	tabpage.txt	/*:tabp*
 :tabprevious	tabpage.txt	/*:tabprevious*
+:tabr	tabpage.txt	/*:tabr*
+:tabrewind	tabpage.txt	/*:tabrewind*
 :tabs	tabpage.txt	/*:tabs*
 :tag	tagsrch.txt	/*:tag*
 :tags	tagsrch.txt	/*:tags*
@@ -6592,6 +6603,7 @@ setloclist()	eval.txt	/*setloclist()*
 setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
 setting-guifont	gui.txt	/*setting-guifont*
+setting-guitablabel	tabpage.txt	/*setting-guitablabel*
 setting-tabline	tabpage.txt	/*setting-tabline*
 setwinvar()	eval.txt	/*setwinvar()*
 sftp	pi_netrw.txt	/*sftp*

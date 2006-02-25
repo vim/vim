@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 23
+" Last Change:	2006 Feb 25
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1664,7 +1664,7 @@ fun! s:FTtex()
     if line =~ '^\s*\\\%(documentclass\>\|usepackage\>\|begin{\)'
       setf tex
       return
-    elseif line =~ '^\s*\\\%(start\l\+\|setup\l\+\|usemodule\)\>'
+    elseif line =~ '^\s*\\\%(start\l\+\|setup\l\+\|usemodule\|enablemode\>\|enableregime\>\|setvariables\>\|useencoding\>\|usesymbols\>\|stel\l\+\|verwende\l\+\|stel\l\+\|gebruik\l\+\|usa\l\+\|imposta\l\+\|regle\l\+\|utilisemodule\>\)\>'
       setf context
       return
     endif

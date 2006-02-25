@@ -438,6 +438,12 @@ EXTERN int force_menu_update INIT(= FALSE);
 # ifdef FEAT_GUI_TABLINE
 /* Tab in tab pages line just selected, set by check_termcode() */
 EXTERN int	    current_tab;
+
+/* Menu entry in tab pages line menu just selected, set by check_termcode() */
+EXTERN int	    current_tabmenu;
+#  define TABLINE_MENU_CLOSE	1
+#  define TABLINE_MENU_NEW	2
+#  define TABLINE_MENU_OPEN	3
 # endif
 
 /* Scrollbar moved and new value, set by check_termcode() */
@@ -1198,6 +1204,11 @@ EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # define PRT_UNIT_MM	2
 # define PRT_UNIT_POINT	3
 # define PRT_UNIT_NAMES {"pc", "in", "mm", "pt"}
+#endif
+
+#if defined(FEAT_PRINTER) || defined(FEAT_WINDOWS)
+/* Page number used for %N in 'pageheader' and 'guitablabel'. */
+EXTERN linenr_T printer_page_num;
 #endif
 
 #ifdef FEAT_XCLIPBOARD

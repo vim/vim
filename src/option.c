@@ -1115,6 +1115,15 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)TRUE, (char_u *)0L}},
+    {"guitablabel",  "gtl", P_STRING|P_VI_DEF,
+#if defined(FEAT_GUI_TABLINE)
+			    (char_u *)&p_gtl, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+				    },
     {"hardtabs",    "ht",   P_NUM|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}},
@@ -5836,6 +5845,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'guioptions' */
     else if (varp == &p_go)
 	gui_init_which_components(oldval);
+#endif
+
+#if defined(FEAT_GUI_TABLINE)
+    /* 'guitablabel' */
+    else if (varp == &p_gtl)
+	gui_update_tabline();
 #endif
 
 #if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))

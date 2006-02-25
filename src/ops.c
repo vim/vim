@@ -5494,6 +5494,7 @@ clip_get_selection(cbd)
 	y_previous = old_y_previous;
 	y_current = old_y_current;
 	curwin->w_cursor = old_cursor;
+	changed_cline_bef_curs();   /* need to update w_virtcol et al */
 	curwin->w_curswant = old_curswant;
 	curwin->w_set_curswant = old_set_curswant;
 	curbuf->b_op_start = old_op_start;
@@ -6133,7 +6134,9 @@ cursor_pos_info()
 		oparg.block_mode = TRUE;
 		oparg.op_type = OP_NOP;
 		getvcols(curwin, &min_pos, &max_pos,
-			&oparg.start_vcol, &oparg.end_vcol);
+					  &oparg.start_vcol, &oparg.end_vcol);
+		if (curwin->w_curswant == MAXCOL)
+		    oparg.end_vcol = MAXCOL;
 		/* Swap the start, end vcol if needed */
 		if (oparg.end_vcol < oparg.start_vcol)
 		{
@@ -6231,10 +6234,10 @@ cursor_pos_info()
 #ifdef FEAT_VISUAL
 	if (VIsual_active)
 	{
-	    if (VIsual_mode == Ctrl_V)
+	    if (VIsual_mode == Ctrl_V && curwin->w_curswant < MAXCOL)
 	    {
 		getvcols(curwin, &min_pos, &max_pos, &min_pos.col,
-			&max_pos.col);
+								&max_pos.col);
 		sprintf((char *)buf1, _("%ld Cols; "),
 			(long)(oparg.end_vcol - oparg.start_vcol + 1));
 	    }

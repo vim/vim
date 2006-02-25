@@ -515,6 +515,7 @@ EXTERN char_u	*p_mouseshape;	/* 'mouseshape' */
 #endif
 #if defined(FEAT_GUI)
 EXTERN char_u	*p_go;		/* 'guioptions' */
+EXTERN char_u	*p_gtl;		/* 'guitablabel' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */
 #ifdef FEAT_WINDOWS

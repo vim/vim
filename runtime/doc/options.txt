@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 24
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3249,8 +3249,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
 
-	  'e'	Add tab pages when indicated with 'showtabpages'.  When 'e' is
-	  	missing a non-GUI tab pages line may be used.
+	  'e'	Add tab pages when indicated with 'showtabpages'.
+		'guitablabel' can be used to change the text in the labels.
+		When 'e' is missing a non-GUI tab pages line may be used.
 
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -3311,6 +3312,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with GUI enabled}
 	Only in the GUI: If on, an attempt is made to open a pseudo-tty for
 	I/O to/from shell commands.  See |gui-pty|.
+
+						*'guitablabel'* *'gtl'*
+'guitablabel' 'gtl'	string	(default empty)
+			global
+			{not in Vi}
+	When nonempty describes the text to use in a label of the GUI tab
+	pages line.  When empty Vim will use a default label. See
+	|setting-guitablabel| for more info.
+
+	Only used when the GUI tab pages line is displayed.  'e' must be
+	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
+	used.
 
 						*'helpfile'* *'hf'*
 'helpfile' 'hf'		string	(default (MSDOS)  "$VIMRUNTIME\doc\help.txt"
@@ -6282,7 +6295,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	tab pages line.  See |setting-tabline| for more info.
 
 	The tab pages line only appears as specified with the 'showtabline'
-	option and only when there is no GUI implementation for tabs.
+	option and only when there is no GUI tab line.  When 'e' is in
+	'guioptions' and the GUI supports a tab line 'guitablabel' is used
+	instead.
 
 	The value is evaluated like with 'statusline'.  You can use
 	|tabpagenr()|, |tabpagewinnr()| and |tabpagebuflist()| to figure out

@@ -6167,10 +6167,10 @@ next_search_hl(win, shl, lnum, mincol)
 		|| (shl->rm.endpos[0].lnum == 0
 		    && shl->rm.endpos[0].col <= shl->rm.startpos[0].col))
 	{
-	    char_u	*ml = ml_get_buf(shl->buf, lnum, FALSE);
+	    char_u	*ml;
 
 	    matchcol = shl->rm.startpos[0].col;
-	    ml += matchcol;
+	    ml = ml_get_buf(shl->buf, lnum, FALSE) + matchcol;
 	    if (*ml == NUL)
 	    {
 		++matchcol;

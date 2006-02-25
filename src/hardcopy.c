@@ -394,14 +394,6 @@ prt_line_number(psettings, page_line, lnum)
     }
 }
 
-static linenr_T printer_page_num;
-
-    int
-get_printer_page_num()
-{
-    return printer_page_num;
-}
-
 /*
  * Get the currently effective header height.
  */

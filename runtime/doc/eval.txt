@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 24
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1354,8 +1354,9 @@ v:lc_time	The current locale setting for time messages of the runtime
 
 						*v:lnum* *lnum-variable*
 v:lnum		Line number for the 'foldexpr' |fold-expr| and 'indentexpr'
-		expressions.  Only valid while one of these expressions is
-		being evaluated.  Read-only when in the |sandbox|.
+		expressions, tab page number for 'guitablabel'.  Only valid
+		while one of these expressions is being evaluated.  Read-only
+		when in the |sandbox|.
 
 					*v:prevcount* *prevcount-variable*
 v:prevcount	The count given for the last but one Normal mode command.
@@ -4599,7 +4600,8 @@ virtcol({expr})						*virtcol()*
 		the <Tab>.  For example, for a <Tab> in column 1, with 'ts'
 		set to 8, it returns 8.
 		For the use of {expr} see |col()|.  Additionally you can use
-		[lnum, col]: a |List| with the line and column number.
+		[lnum, col]: a |List| with the line and column number.  When
+		"lnum" or "col" is out of range then virtcol() returns zero.
 		For the byte position use |col()|.
 		When Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned. |'virtualedit'|
