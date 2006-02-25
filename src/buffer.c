@@ -3197,7 +3197,7 @@ free_titles()
 
 #endif /* FEAT_TITLE */
 
-#if defined(FEAT_STL_OPT) || defined(PROTO)
+#if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 /*
  * Build a string from the status line items in "fmt".
  * Return length of string in screen cells.
@@ -3212,10 +3212,11 @@ free_titles()
  * If maxwidth is not zero, the string will be filled at any middle marker
  * or truncated if too long, fillchar is used for all whitespace.
  */
+/*ARGSUSED*/
     int
 build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, tabtab)
     win_T	*wp;
-    char_u	*out;		/* buffer to write into */
+    char_u	*out;		/* buffer to write into != NameBuff */
     size_t	outlen;		/* length of out[] */
     char_u	*fmt;
     int		use_sandbox;	/* "fmt" was set insecurely, use sandbox */
@@ -3632,8 +3633,8 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 		str = tmp;
 	    break;
 	case STL_PAGENUM:
-#ifdef FEAT_PRINTER
-	    num = get_printer_page_num();
+#if defined(FEAT_PRINTER) || defined(FEAT_WINDOWS)
+	    num = printer_page_num;
 #else
 	    num = 0;
 #endif
@@ -4020,7 +4021,8 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 }
 #endif /* FEAT_STL_OPT */
 
-#if defined(FEAT_STL_OPT) || defined(FEAT_CMDL_INFO) || defined(PROTO)
+#if defined(FEAT_STL_OPT) || defined(FEAT_CMDL_INFO) \
+	    || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 /*
  * Get relative cursor position in window into "str[]", in the form 99%, using
  * "Top", "Bot" or "All" when appropriate.

@@ -3143,7 +3143,7 @@ find_tabpage(n)
 
 /*
  * Get index of tab page "tp".  First one has index 1.
- * When not found returns number of tab pages.
+ * When not found returns number of tab pages plus one.
  */
     int
 tabpage_index(ftp)

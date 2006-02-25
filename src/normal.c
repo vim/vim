@@ -76,6 +76,7 @@ static void	nv_hor_scrollbar __ARGS((cmdarg_T *cap));
 #endif
 #ifdef FEAT_GUI_TABLINE
 static void	nv_tabline __ARGS((cmdarg_T *cap));
+static void	nv_tabmenu __ARGS((cmdarg_T *cap));
 #endif
 static void	nv_exmode __ARGS((cmdarg_T *cap));
 static void	nv_colon __ARGS((cmdarg_T *cap));
@@ -423,6 +424,7 @@ static const struct nv_cmd
 #endif
 #ifdef FEAT_GUI_TABLINE
     {K_TABLINE, nv_tabline,	0,			0},
+    {K_TABMENU, nv_tabmenu,	0,			0},
 #endif
 #ifdef FEAT_FKMAP
     {K_F8,	farsi_fkey,	0,			0},
@@ -4996,6 +4998,44 @@ nv_tabline(cap)
 
     /* Even if an operator was pending, we still want to jump tabs. */
     goto_tabpage(current_tab);
+}
+
+/*
+ * Selected item in tab line menu.
+ */
+    static void
+nv_tabmenu(cap)
+    cmdarg_T	*cap;
+{
+    if (cap->oap->op_type != OP_NOP)
+	clearopbeep(cap->oap);
+
+    /* Even if an operator was pending, we still want to jump tabs. */
+    switch (current_tabmenu)
+    {
+	case TABLINE_MENU_CLOSE:
+	    if (current_tab == 0)
+		do_cmdline_cmd((char_u *)"tabclose");
+	    else
+	    {
+		vim_snprintf((char *)IObuff, IOSIZE, "tabclose %d",
+								 current_tab);
+		do_cmdline_cmd(IObuff);
+	    }
+	    break;
+
+	case TABLINE_MENU_NEW:
+	    if (current_tab > 0)
+		goto_tabpage(current_tab);
+	    do_cmdline_cmd((char_u *)"tabnew");
+	    break;
+
+	case TABLINE_MENU_OPEN:
+	    if (current_tab > 0)
+		goto_tabpage(current_tab);
+	    do_cmdline_cmd((char_u *)"browse tabnew");
+	    break;
+    }
 }
 #endif
 

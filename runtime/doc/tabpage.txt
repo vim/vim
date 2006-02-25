@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14,6 +14,7 @@ when used in combination with more than one tab page.
 2. Commands			|tab-page-commands|
 3. Other items			|tab-page-other|
 4. Setting 'tabline'		|setting-tabline|
+5. Setting 'guitablabel'	|setting-guitablabel|
 
 {Vi does not have any of these commands}
 {not able to use multiple tab pages when the |+windows| feature was disabled
@@ -133,7 +134,7 @@ gT		Go to the previous tab page.  Wraps around from the first one
 		to the last one.
 
 :tabr[ewind]			*:tabfir* *:tabfirst* *:tabr* *:tabrewind*
-:tabl[ast]	Go to the first tab page.
+:tabfir[st]	Go to the first tab page.
 
 							*:tabl* *:tablast*
 :tabl[ast]	Go to the last tab page.
@@ -205,6 +206,9 @@ When switching to another tab page the order is:
 ==============================================================================
 4. Setting 'tabline'					*setting-tabline*
 
+The 'tabline' option specifies what the line with tab pages labels looks like.
+It is only used when there is no GUI tab line.
+
 You can use the 'showtabline' option to specify when you want the line with
 tab page labels to appear: never, when there is more than one tab page or
 always.
@@ -268,5 +272,55 @@ resembles the default, but without adding a + for a modified buffer or
 trunctating the names.  You will want to reduce the width of labels in a
 clever way when there is not enough room.  Check the 'columns' option for the
 space available.
+
+==============================================================================
+5. Setting 'guitablabel'				*setting-guitablabel*
+
+When the GUI tab pages line is displayed, 'guitablabel' can be used to
+specify the label to display for each tab page.  Unlike 'tabline', which
+specifies the whole tab pages line at once, 'guitablabel' is used for each
+label separately.
+
+See the 'statusline' option for the format of the value.
+
+The "%N" item can be used for the current tab page number.  The |v:lnum|
+variable is also set to this number.
+
+Note that syntax highlighting is not used for 'guitablabel'.  The %T and %X
+are also ignored.
+
+A simple example that puts the tab page number and the buffer name in the label: >
+
+	:set guitablabel=%N\ %f
+
+An example that resembles the default: Show the number of windows in the tab
+page and a '+' if there is a modifed buffer: >
+
+	function! GuiTabLabel()
+	  let label = ''
+	  let bufnrlist = tabpagebuflist(v:lnum)
+
+	  " Add '+' if one of the buffers in the tab page is modified
+	  for bufnr in bufnrlist
+	    if getbufvar(bufnr, "&modified")
+	      let label = '+'
+	      break
+	    endif
+	  endfor
+
+	  " Append the number of windows in the tab page if more than one
+	  let wincount = tabpagewinnr(v:lnum, '$')
+	  if wincount > 1
+	    let label .= wincount
+	  endif
+	  if label != ''
+	    let label .= ' '
+	  endif
+
+	  " Append the buffer name
+	  return label . bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
+	endfunction
+	set guitablabel=%{GuiTabLabel()}
+<
 
  vim:tw=78:ts=8:ft=help:norl:
