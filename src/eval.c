@@ -14943,7 +14943,7 @@ f_tabpagenr(argvars, rettv)
 	if (arg != NULL)
 	{
 	    if (STRCMP(arg, "$") == 0)
-		nr = tabpage_index(NULL);
+		nr = tabpage_index(NULL) - 1;
 	    else
 		EMSG2(_(e_invexpr2), arg);
 	}

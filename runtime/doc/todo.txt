@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 24
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,20 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Fix for hlsearch getting stuck on multibyte char also in 6.4.  reportec by
-Yukihiro Nakadaira.
-
-
 Tab pages:
+-   Add 'guitablabel' option.
 -   GTK GUI implementation for the tab pages line:
-      /tmp/vim61_tab.patch.bz2
-    Window height can be wrong:
-	:set go-=e
-	resize to fill screen
-	:set go+=e
-    Add 'guitabitem' option?
--   GUI implementation for the tab pages line for other systems.
+    handling of tab in insert mode (like clicking mouse in other window)
+    and cmdline mode (keep current tab)
+
+9   GUI implementation for the tab pages line for other systems.
+8   Make GUI menu in tab pages line configurable.  Like the popup menu.
 8   tab pages in the session file, if "tabpages" in 'sessionoptions'
+8   :tabmove +N	 move tab page N pages forward
+8   :tabmove -N	 move tab page N pages backward
 7   :tabdup	 duplicate the tab with all its windows.
 6   :tab ball    tab page for each buffer
 6   :tab all     tab page for each argument
@@ -136,6 +133,7 @@ all. (Gautam Iyer)
 
 Mac unicode patch (Da Woon Jung):
 - configuration option for platform: i386, ppc or both.
+    Use __LITTLE_ENDIAN__ to test for current platform.
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
 - Command-key mappings do not work. (Alan Schmitt)

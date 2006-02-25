@@ -3061,6 +3061,129 @@ set_toolbar_style(GtkToolbar *toolbar)
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static int ignore_tabline_evt = FALSE;
+static GtkWidget *tabline_menu;
+static int clicked_page;	    /* page clicked in tab line */
+
+/*
+ * Handle selecting an item in the tab line popup menu.
+ */
+/*ARGSUSED*/
+    static void
+tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
+{
+    char_u	string[3];
+
+    /* Add the string cmd into input buffer */
+    string[0] = CSI;
+    string[1] = KS_TABMENU;
+    string[2] = KE_FILLER;
+    add_to_input_buf(string, 3);
+    string[0] = clicked_page;
+    string[1] = (char_u)(long)user_data;
+    add_to_input_buf_csi(string, 2);
+
+    if (gtk_main_level() > 0)
+	gtk_main_quit();
+}
+
+/*
+ * Send the event for clicking to select tab page "nr".
+ */
+    static void
+send_tabline_event(int nr)
+{
+    char_u string[3];
+
+    string[0] = CSI;
+    string[1] = KS_TABLINE;
+    string[2] = KE_FILLER;
+    add_to_input_buf(string, 3);
+    string[0] = nr;
+    add_to_input_buf_csi(string, 1);
+
+    if (gtk_main_level() > 0)
+	gtk_main_quit();
+}
+
+/*
+ * Create a menu for the tab line.
+ */
+    static GtkWidget *
+create_tabline_menu(void)
+{
+    GtkWidget *menu, *item;
+
+    menu = gtk_menu_new();
+
+    item = gtk_menu_item_new_with_label(_("Close"));
+    gtk_widget_show(item);
+    gtk_container_add(GTK_CONTAINER(menu), item);
+    gtk_signal_connect(GTK_OBJECT(item), "activate",
+	    GTK_SIGNAL_FUNC(tabline_menu_handler),
+	    (gpointer)TABLINE_MENU_CLOSE);
+
+    item = gtk_menu_item_new_with_label(_("New tab"));
+    gtk_widget_show(item);
+    gtk_container_add(GTK_CONTAINER(menu), item);
+    gtk_signal_connect(GTK_OBJECT(item), "activate",
+	    GTK_SIGNAL_FUNC(tabline_menu_handler),
+	    (gpointer)TABLINE_MENU_NEW);
+
+    item = gtk_menu_item_new_with_label(_("Open Tab..."));
+    gtk_widget_show(item);
+    gtk_container_add(GTK_CONTAINER(menu), item);
+    gtk_signal_connect(GTK_OBJECT(item), "activate",
+	    GTK_SIGNAL_FUNC(tabline_menu_handler),
+	    (gpointer)TABLINE_MENU_OPEN);
+
+    return menu;
+}
+
+    static gboolean
+on_tabline_menu(GtkWidget *widget, GdkEvent *event)
+{
+    /* Was this button press event ? */
+    if (event->type == GDK_BUTTON_PRESS)
+    {
+	GdkEventButton *bevent = (GdkEventButton *)event;
+	int		x = bevent->x;
+	GtkWidget	*page;
+	GtkWidget	*label;
+
+	/* Find out where the click was. */
+	for (clicked_page = 1;  ; ++clicked_page)
+	{
+	    page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline),
+							    clicked_page - 1);
+	    if (page == NULL)
+	    {
+		/* Past all the labels, return zero. */
+		clicked_page = 0;
+		break;
+	    }
+	    label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
+	    /* The label size apparently doesn't include the spacing, estimate
+	     * it by the page position. */
+	    if (page->allocation.x * 2 + label->allocation.x
+					    + label->allocation.width + 1>= x)
+		break;
+	}
+
+	/* If the event was generated for 3rd button popup the menu. */
+	if (bevent->button == 3)
+	{
+	    gtk_menu_popup(GTK_MENU(widget), NULL, NULL, NULL, NULL,
+						bevent->button, bevent->time);
+	    /* We handled the event. */
+	    return TRUE;
+	}
+	else if (bevent->button == 1 && clicked_page == 0)
+	    /* Click after all tabs moves to next tab page. */
+	    send_tabline_event(0);
+    }
+    /* We didn't handle the event. */
+    return FALSE;
+}
 
 /*
  * Handle selecting one of the tabs.
@@ -3073,20 +3196,8 @@ on_select_tab(
 	gint		index,
 	gpointer	data)
 {
-    static char_u string[3];
-
     if (!ignore_tabline_evt)
-    {
-	string[0] = CSI;
-	string[1] = KS_TABLINE;
-	string[2] = KE_FILLER;
-	add_to_input_buf(string, 3);
-	string[0] = index + 1;
-	add_to_input_buf_csi(string, 1);
-
-	if (gtk_main_level() > 0)
-	    gtk_main_quit();
-    }
+	send_tabline_event(index + 1);
 }
 
 /*
@@ -3472,6 +3583,11 @@ gui_mch_init(void)
     }
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
 		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+
+    /* Create a popup menu for the tab line and connect it. */
+    tabline_menu = create_tabline_menu();
+    gtk_signal_connect_object(GTK_OBJECT(gui.tabline), "button_press_event",
+		  GTK_SIGNAL_FUNC(on_tabline_menu), GTK_OBJECT(tabline_menu));
 #endif
 
     gui.formwin = gtk_form_new();
