@@ -3199,7 +3199,8 @@ gui_init_which_components(oldval)
 	fix_size = FALSE;
 
 #ifdef FEAT_GUI_TABLINE
-	/* Update the tab line, it may appear or disappear. */
+	/* Update the GUI tab line, it may appear or disappear.  This may
+	 * cause the non-GUI tab line to disappear or appear. */
 	using_tabline = gui_has_tabline();
 	if (prev_has_tabline != using_tabline)
 	{
@@ -3279,7 +3280,6 @@ gui_init_which_components(oldval)
 	if (need_set_size)
 	{
 #ifdef FEAT_GUI_GTK
-	    long    r = Rows;
 	    long    c = Columns;
 #endif
 	    /* Adjust the size of the window to make the text area keep the
@@ -3295,13 +3295,20 @@ gui_init_which_components(oldval)
 	     * character here to avoid this effect.
 	     * If you remove this, please test this command for resizing
 	     * effects (with optional left scrollbar): ":vsp|q|vsp|q|vsp|q".
-	     * Don't do this while starting up though. */
+	     * Don't do this while starting up though.
+	     * And don't change Rows, it may have be reduced intentionally
+	     * when adding menu/toolbar/tabline. */
 	    if (!gui.starting)
 		(void)char_avail();
-	    Rows = r;
 	    Columns = c;
 #endif
 	}
+#ifdef FEAT_WINDOWS
+	/* When the console tabline appears or disappears the window positions
+	 * change. */
+	if (firstwin->w_winrow != tabline_height())
+	    shell_new_rows();	/* recompute window positions and heights */
+#endif
     }
 }
 
@@ -3359,24 +3366,57 @@ get_tabline_label(tp)
     int		wincount;
     win_T	*wp;
 
-    /* Get the buffer name into NameBuff[] */
-    get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
-
-    wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-    for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
-	if (bufIsChanged(wp->w_buffer))
-	    modified = TRUE;
-    if (modified || wincount > 1)
+    /* Use 'guitablabel' if it's set. */
+    if (*p_gtl != NUL)
     {
-	if (wincount > 1)
-	    vim_snprintf((char *)buf, sizeof(buf), "%d", wincount);
-	else
-	    buf[0] = NUL;
-	if (modified)
-	    STRCAT(buf, "+");
-	STRCAT(buf, " ");
-	mch_memmove(NameBuff + STRLEN(buf), NameBuff, STRLEN(NameBuff) + 1);
-	mch_memmove(NameBuff, buf, STRLEN(buf));
+	int	use_sandbox = FALSE;
+	int	save_called_emsg = called_emsg;
+	char_u	res[MAXPATHL];
+
+	called_emsg = FALSE;
+
+	printer_page_num = tabpage_index(tp);
+# ifdef FEAT_EVAL
+	set_vim_var_nr(VV_LNUM, printer_page_num);
+	use_sandbox = was_set_insecurely((char_u *)"guitablabel", 0);
+# endif
+	/* Can't use NameBuff directly, build_stl_str_hl() uses it. */
+	build_stl_str_hl(tp == curtab ? curwin : tp->tp_curwin,
+		res, MAXPATHL, p_gtl, use_sandbox,
+		0, (int)Columns, NULL, NULL);
+	STRCPY(NameBuff, res);
+
+	if (called_emsg)
+	{
+	    set_string_option_direct((char_u *)"guitablabel", -1,
+						      (char_u *)"", OPT_FREE);
+# ifdef FEAT_EVAL
+	    set_option_scriptID((char_u *)"guitablabel", SID_ERROR);
+# endif
+	}
+	called_emsg |= save_called_emsg;
+    }
+    else
+    {
+	/* Get the buffer name into NameBuff[] */
+	get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
+
+	wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
+	for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
+	    if (bufIsChanged(wp->w_buffer))
+		modified = TRUE;
+	if (modified || wincount > 1)
+	{
+	    if (wincount > 1)
+		vim_snprintf((char *)buf, sizeof(buf), "%d", wincount);
+	    else
+		buf[0] = NUL;
+	    if (modified)
+		STRCAT(buf, "+");
+	    STRCAT(buf, " ");
+	    mch_memmove(NameBuff + STRLEN(buf), NameBuff, STRLEN(NameBuff) + 1);
+	    mch_memmove(NameBuff, buf, STRLEN(buf));
+	}
     }
 }
 

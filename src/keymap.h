@@ -104,6 +104,9 @@
 /* Used for click in a tab pages label. */
 #define KS_TABLINE		240
 
+/* Used for menu in a tab pages line. */
+#define KS_TABMENU		239
+
 /*
  * Filler used after KS_SPECIAL and others
  */
@@ -403,6 +406,7 @@ enum key_extra
 #define K_TEAROFF	TERMCAP2KEY(KS_TEAROFF, KE_FILLER)
 
 #define K_TABLINE	TERMCAP2KEY(KS_TABLINE, KE_FILLER)
+#define K_TABMENU	TERMCAP2KEY(KS_TABMENU, KE_FILLER)
 
 /*
  * Symbols for pseudo keys which are translated from the real key symbols

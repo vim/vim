@@ -128,7 +128,7 @@ syn match  vimOper	"\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\)[?#]\{0,2}"	skipwhite n
 syn match  vimOper	"||\|&&\|[-+.]"	skipwhite nextgroup=vimString,vimSpecFile
 syn region vimOperParen 	matchgroup=vimOper start="(" end=")" contains=@vimOperGroup
 syn region vimOperParen	matchgroup=vimSep  start="{" end="}" contains=@vimOperGroup nextgroup=vimVar
-syn match  vimOperOk	"\<[aiAIrR][()]"
+syn match  vimOperOk	"\<[aiAIrR][()]" contained
 if !exists("g:vimsyntax_noerror")
  syn match  vimOperError	")"
 endif
