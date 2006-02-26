@@ -345,8 +345,8 @@ getmark(c, changefile)
 #ifdef FEAT_VISUAL
     else if (c == '<' || c == '>')	/* start/end of visual area */
     {
-	startp = &curbuf->b_visual_start;
-	endp = &curbuf->b_visual_end;
+	startp = &curbuf->b_visual.vi_start;
+	endp = &curbuf->b_visual.vi_end;
 	if ((c == '<') == lt(*startp, *endp))
 	    posp = startp;
 	else
@@ -354,7 +354,7 @@ getmark(c, changefile)
 	/*
 	 * For Visual line mode, set mark at begin or end of line
 	 */
-	if (curbuf->b_visual_mode == 'V')
+	if (curbuf->b_visual.vi_mode == 'V')
 	{
 	    pos_copy = *posp;
 	    posp = &pos_copy;
@@ -679,8 +679,8 @@ do_marks(eap)
     show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
     show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
 #ifdef FEAT_VISUAL
-    show_one_mark('<', arg, &curbuf->b_visual_start, NULL, TRUE);
-    show_one_mark('>', arg, &curbuf->b_visual_end, NULL, TRUE);
+    show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
+    show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
 #endif
     show_one_mark(-1, arg, NULL, NULL, FALSE);
 }
@@ -814,8 +814,8 @@ ex_delmarks(eap)
 		    case '[': curbuf->b_op_start.lnum    = 0; break;
 		    case ']': curbuf->b_op_end.lnum      = 0; break;
 #ifdef FEAT_VISUAL
-		    case '<': curbuf->b_visual_start.lnum = 0; break;
-		    case '>': curbuf->b_visual_end.lnum   = 0; break;
+		    case '<': curbuf->b_visual.vi_start.lnum = 0; break;
+		    case '>': curbuf->b_visual.vi_end.lnum   = 0; break;
 #endif
 		    case ' ': break;
 		    default:  EMSG2(_(e_invarg2), p);
@@ -998,8 +998,8 @@ mark_adjust(line1, line2, amount, amount_after)
 
 #ifdef FEAT_VISUAL
 	/* Visual area */
-	one_adjust_nodel(&(curbuf->b_visual_start.lnum));
-	one_adjust_nodel(&(curbuf->b_visual_end.lnum));
+	one_adjust_nodel(&(curbuf->b_visual.vi_start.lnum));
+	one_adjust_nodel(&(curbuf->b_visual.vi_end.lnum));
 #endif
 
 #ifdef FEAT_QUICKFIX
@@ -1173,8 +1173,8 @@ mark_col_adjust(lnum, mincol, lnum_amount, col_amount)
 
 #ifdef FEAT_VISUAL
     /* Visual area */
-    col_adjust(&(curbuf->b_visual_start));
-    col_adjust(&(curbuf->b_visual_end));
+    col_adjust(&(curbuf->b_visual.vi_start));
+    col_adjust(&(curbuf->b_visual.vi_end));
 #endif
 
     /* previous context mark */

@@ -988,6 +988,11 @@ spell_check(wp, ptr, attrp, capcol, docount)
      * then, skipping over the character. */
     if (*ptr <= ' ')
 	return 1;
+
+    /* Return here when loading language files failed. */
+    if (wp->w_buffer->b_langp.ga_len == 0)
+	return 1;
+
     vim_memset(&mi, 0, sizeof(matchinf_T));
 
     /* A number is always OK.  Also skip hexadecimal numbers 0xFF99 and
@@ -1942,7 +1947,8 @@ spell_valid_case(wordflags, treeflags)
 no_spell_checking(wp)
     win_T	*wp;
 {
-    if (!wp->w_p_spell || *wp->w_buffer->b_p_spl == NUL)
+    if (!wp->w_p_spell || *wp->w_buffer->b_p_spl == NUL
+					 || wp->w_buffer->b_langp.ga_len == 0)
     {
 	EMSG(_("E756: Spell checking is not enabled"));
 	return TRUE;

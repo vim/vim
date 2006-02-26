@@ -3323,7 +3323,7 @@ goto_tabpage(n)
 
 #ifdef FEAT_GUI_TABLINE
     if (gui_use_tabline())
-	gui_mch_set_curtab(tabpage_index(tp));
+	gui_mch_set_curtab(tabpage_index(curtab));
 #endif
 }
 

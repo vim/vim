@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 25
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -284,19 +284,20 @@ label separately.
 See the 'statusline' option for the format of the value.
 
 The "%N" item can be used for the current tab page number.  The |v:lnum|
-variable is also set to this number.
+variable is also set to this number when 'guitablabel' is evaluated.
+The items that use a file name refer to the current window of the tab page.
 
 Note that syntax highlighting is not used for 'guitablabel'.  The %T and %X
-are also ignored.
+items are also ignored.
 
-A simple example that puts the tab page number and the buffer name in the label: >
-
+A simple example that puts the tab page number and the buffer name in the
+label: >
 	:set guitablabel=%N\ %f
 
 An example that resembles the default: Show the number of windows in the tab
 page and a '+' if there is a modifed buffer: >
 
-	function! GuiTabLabel()
+	function GuiTabLabel()
 	  let label = ''
 	  let bufnrlist = tabpagebuflist(v:lnum)
 
@@ -320,7 +321,11 @@ page and a '+' if there is a modifed buffer: >
 	  " Append the buffer name
 	  return label . bufname(bufnrlist[tabpagewinnr(v:lnum) - 1])
 	endfunction
+
 	set guitablabel=%{GuiTabLabel()}
-<
+
+Note that the function must be defined before setting the option, otherwise
+you get an error message for the function not being known.
+
 
  vim:tw=78:ts=8:ft=help:norl:

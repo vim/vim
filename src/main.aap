@@ -73,6 +73,11 @@
 # Include the recipe that autoconf generated.
 :include auto/config.aap
 
+# Unfortunately "-M" doesn't work when building for two architectures.  Switch
+# back to PPC only.
+@if string.find(_no.CPPFLAGS, "-arch i386 -arch ppc") >= 0:
+    CPPFLAGS = `string.replace(_no.CPPFLAGS, "-arch i386 -arch ppc", "-arch ppc")`
+
 # A "PREFIX=dir" argument overrules the value of $prefix
 @if _no.get("PREFIX"):
     prefix = $PREFIX

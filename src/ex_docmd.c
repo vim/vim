@@ -2509,6 +2509,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_snomagic:
 	    case CMD_substitute:
 	    case CMD_syntax:
+	    case CMD_tab:
 	    case CMD_tcl:
 	    case CMD_throw:
 	    case CMD_tilde:
@@ -2963,6 +2964,7 @@ cmd_exists(name)
 	{"rightbelow", 6},
 	{"sandbox", 3},
 	{"silent", 3},
+	{"tab", 3},
 	{"topleft", 2},
 	{"verbose", 4},
 	{"vertical", 4},
@@ -3353,6 +3355,7 @@ set_one_cmd_context(xp, buff)
 	case CMD_rightbelow:
 	case CMD_sandbox:
 	case CMD_silent:
+	case CMD_tab:
 	case CMD_topleft:
 	case CMD_verbose:
 	case CMD_vertical:
@@ -3880,7 +3883,8 @@ get_address(ptr, skip, to_other_file)
 			    if (searchit(curwin, curbuf, &pos,
 					*cmd == '?' ? BACKWARD : FORWARD,
 					(char_u *)"", 1L,
-					SEARCH_MSG + SEARCH_START, i) != FAIL)
+					SEARCH_MSG + SEARCH_START,
+						      i, (linenr_T)0) != FAIL)
 				lnum = pos.lnum;
 			    else
 			    {

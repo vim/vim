@@ -1474,13 +1474,13 @@ do_pending_operator(cap, old_col, gui_yank)
 	else if (VIsual_active)
 	{
 	    /* Save the current VIsual area for '< and '> marks, and "gv" */
-	    curbuf->b_visual_start = VIsual;
-	    curbuf->b_visual_end = curwin->w_cursor;
-	    curbuf->b_visual_mode = VIsual_mode;
+	    curbuf->b_visual.vi_start = VIsual;
+	    curbuf->b_visual.vi_end = curwin->w_cursor;
+	    curbuf->b_visual.vi_mode = VIsual_mode;
+	    curbuf->b_visual.vi_curswant = curwin->w_curswant;
 # ifdef FEAT_EVAL
 	    curbuf->b_visual_mode_eval = VIsual_mode;
 # endif
-	    curbuf->b_visual_curswant = curwin->w_curswant;
 
 	    /* In Select mode, a linewise selection is operated upon like a
 	     * characterwise selection. */
@@ -2126,7 +2126,7 @@ op_colon(oap)
  * Handle the "g@" operator: call 'operatorfunc'.
  */
 /*ARGSUSED*/
-    void
+    static void
 op_function(oap)
     oparg_T	*oap;
 {
@@ -3176,13 +3176,13 @@ end_visual_mode()
 #endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
-    curbuf->b_visual_mode = VIsual_mode;
+    curbuf->b_visual.vi_mode = VIsual_mode;
+    curbuf->b_visual.vi_start = VIsual;
+    curbuf->b_visual.vi_end = curwin->w_cursor;
+    curbuf->b_visual.vi_curswant = curwin->w_curswant;
 #ifdef FEAT_EVAL
     curbuf->b_visual_mode_eval = VIsual_mode;
 #endif
-    curbuf->b_visual_start = VIsual;
-    curbuf->b_visual_end = curwin->w_cursor;
-    curbuf->b_visual_curswant = curwin->w_curswant;
 #ifdef FEAT_VIRTUALEDIT
     if (!virtual_active())
 	curwin->w_cursor.coladd = 0;
@@ -4150,7 +4150,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
     for (;;)
     {
 	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,
-					       pat, 1L, searchflags, RE_LAST);
+				  pat, 1L, searchflags, RE_LAST, (linenr_T)0);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
 
@@ -4985,7 +4985,7 @@ nv_hor_scrollbar(cap)
 }
 #endif
 
-#ifdef FEAT_GUI_TABLINE
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 /*
  * Click in GUI tab.
  */
@@ -5011,6 +5011,16 @@ nv_tabmenu(cap)
 	clearopbeep(cap->oap);
 
     /* Even if an operator was pending, we still want to jump tabs. */
+    handle_tabmenu();
+}
+
+/*
+ * Handle selecting an item of the GUI tab line menu.
+ * Used in Normal and Insert mode.
+ */
+    void
+handle_tabmenu()
+{
     switch (current_tabmenu)
     {
 	case TABLINE_MENU_CLOSE:
@@ -7475,9 +7485,9 @@ nv_g_cmd(cap)
 	if (checkclearop(oap))
 	    break;
 
-	if (	   curbuf->b_visual_start.lnum == 0
-		|| curbuf->b_visual_start.lnum > curbuf->b_ml.ml_line_count
-		|| curbuf->b_visual_end.lnum == 0)
+	if (	   curbuf->b_visual.vi_start.lnum == 0
+		|| curbuf->b_visual.vi_start.lnum > curbuf->b_ml.ml_line_count
+		|| curbuf->b_visual.vi_end.lnum == 0)
 	    beep_flush();
 	else
 	{
@@ -7485,26 +7495,26 @@ nv_g_cmd(cap)
 	    if (VIsual_active)
 	    {
 		i = VIsual_mode;
-		VIsual_mode = curbuf->b_visual_mode;
-		curbuf->b_visual_mode = i;
+		VIsual_mode = curbuf->b_visual.vi_mode;
+		curbuf->b_visual.vi_mode = i;
 # ifdef FEAT_EVAL
 		curbuf->b_visual_mode_eval = i;
 # endif
 		i = curwin->w_curswant;
-		curwin->w_curswant = curbuf->b_visual_curswant;
-		curbuf->b_visual_curswant = i;
+		curwin->w_curswant = curbuf->b_visual.vi_curswant;
+		curbuf->b_visual.vi_curswant = i;
 
-		tpos = curbuf->b_visual_end;
-		curbuf->b_visual_end = curwin->w_cursor;
-		curwin->w_cursor = curbuf->b_visual_start;
-		curbuf->b_visual_start = VIsual;
+		tpos = curbuf->b_visual.vi_end;
+		curbuf->b_visual.vi_end = curwin->w_cursor;
+		curwin->w_cursor = curbuf->b_visual.vi_start;
+		curbuf->b_visual.vi_start = VIsual;
 	    }
 	    else
 	    {
-		VIsual_mode = curbuf->b_visual_mode;
-		curwin->w_curswant = curbuf->b_visual_curswant;
-		tpos = curbuf->b_visual_end;
-		curwin->w_cursor = curbuf->b_visual_start;
+		VIsual_mode = curbuf->b_visual.vi_mode;
+		curwin->w_curswant = curbuf->b_visual.vi_curswant;
+		tpos = curbuf->b_visual.vi_end;
+		curwin->w_cursor = curbuf->b_visual.vi_start;
 	    }
 
 	    VIsual_active = TRUE;
@@ -8941,8 +8951,8 @@ nv_put(cap)
 	 * be the most useful, since the original text was removed. */
 	if (was_visual)
 	{
-	    curbuf->b_visual_start = curbuf->b_op_start;
-	    curbuf->b_visual_end = curbuf->b_op_end;
+	    curbuf->b_visual.vi_start = curbuf->b_op_start;
+	    curbuf->b_visual.vi_end = curbuf->b_op_end;
 	}
 
 	/* When all lines were selected and deleted do_put() leaves an empty

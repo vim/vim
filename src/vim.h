@@ -1465,6 +1465,24 @@ int vim_memcmp __ARGS((void *, void *, size_t));
  */
 #define vim_iswhite(x)	((x) == ' ' || (x) == '\t')
 
+/*
+ * EXTERN is only defined in main.c.  That's where global variables are
+ * actually defined and initialized.
+ */
+#ifndef EXTERN
+# define EXTERN extern
+# define INIT(x)
+#else
+# ifndef INIT
+#  define INIT(x) x
+#  define DO_INIT
+# endif
+#endif
+
+/* Include option.h before structs.h, because the number of window-local and
+ * buffer-local options is used there. */
+#include "option.h"	    /* options and default values */
+
 /* Note that gui.h is included by structs.h */
 
 #include "structs.h"	    /* file that defines many structures */
@@ -1663,20 +1681,6 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define stat(a,b) (access(a,0) ? -1 : stat(a,b))
 #endif
 
-/*
- * EXTERN is only defined in main.c.  That's where global variables are
- * actually defined and initialized.
- */
-#ifndef EXTERN
-# define EXTERN extern
-# define INIT(x)
-#else
-# ifndef INIT
-#  define INIT(x) x
-#  define DO_INIT
-# endif
-#endif
-
 #ifdef FEAT_PROFILE
 # ifdef WIN3264
 typedef LARGE_INTEGER proftime_T;
@@ -1687,7 +1691,6 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
-#include "option.h"	    /* option variables and defines */
 #include "ex_cmds.h"	    /* Ex command defines */
 #include "proto.h"	    /* function prototypes */
 
