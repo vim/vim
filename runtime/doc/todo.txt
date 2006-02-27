@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 25
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,48 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Tab pages:
--   Add 'guitablabel' option.
--   GTK GUI implementation for the tab pages line:
-    handling of tab in insert mode (like clicking mouse in other window)
-    and cmdline mode (keep current tab)
-
-9   GUI implementation for the tab pages line for other systems.
-8   Make GUI menu in tab pages line configurable.  Like the popup menu.
-8   tab pages in the session file, if "tabpages" in 'sessionoptions'
-8   :tabmove +N	 move tab page N pages forward
-8   :tabmove -N	 move tab page N pages backward
-7   :tabdup	 duplicate the tab with all its windows.
-6   :tab ball    tab page for each buffer
-6   :tab all     tab page for each argument
-7   In GUI: right click can popup a menu to close a specific tab.
-7   Option to put tab line at the left or right?  Need an option to specify
-    its witdh.  It's like a separate window with ":tabs" output.
-7   Add local variables for each tab page?
-8   Add local options for each tab page?  E.g., 'diffopt' could differ between
-    tab pages.
-7   Add local highlighting for a tab page?
-
-Spelling: m'n -> no suggestion for "mijn"?
-
-Add an argument to search functions to stop at a certain line number.
-    search('{', 'b', line('w0'))
-    search('{', '', line('w$'))
-Also start at a specified position?
-
-undo could remember the '< and '> marks.
+Script ID is only remembered for global options. Should remember it for every
+local option separately.
+    Change PV_XXX values in separate ranges for buffer and window.
+    Move the enums to option.h so that the size is known in structs.h
+    use array for each window and buffer with scriptID values.
 
 Crash with X command server (Ciaran McCreesh).
 
-Make virtcol([lnum, col]) work?
-
-"dip" in end empty lines at end of file leaves one line. (Matt Mzyzik)
-
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.
-
-Script ID is only remembered for global options. Should remember it for every
-local option separately.
 
 "fsutil hardlink" can create a hard link on an NTFS file system. (Daniel
 Einspanjer)  What library function can detect that?
@@ -1389,6 +1357,23 @@ User Friendlier:
     ":mksession" and use "-S fname" for the restart command.  The
     gui_x11_wm_protocol_handler() already takes care of the rest.
     global_event_filter() for GTK.
+
+
+Tab pages:
+9   GUI implementation for the tab pages line for other systems.
+8   Make GUI menu in tab pages line configurable.  Like the popup menu.
+8   tab pages in the session file, if "tabpages" in 'sessionoptions'
+8   :tabmove +N	 move tab page N pages forward
+8   :tabmove -N	 move tab page N pages backward
+7   :tabdup	 duplicate the tab with all its windows.
+6   :tab ball    tab page for each buffer
+6   :tab all     tab page for each argument
+7   Option to put tab line at the left or right?  Need an option to specify
+    its witdh.  It's like a separate window with ":tabs" output.
+7   Add local variables for each tab page?
+8   Add local options for each tab page?  E.g., 'diffopt' could differ between
+    tab pages.
+7   Add local highlighting for each tab page?
 
 
 Spell checking:

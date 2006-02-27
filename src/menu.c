@@ -2129,14 +2129,14 @@ ex_emenu(eap)
 	 * quick way of detecting whether we are doing this from a
 	 * selection - see if the range matches up with the visual
 	 * select start and end.  */
-	if ((curbuf->b_visual_start.lnum == eap->line1)
-		&& (curbuf->b_visual_end.lnum) == eap->line2)
+	if ((curbuf->b_visual.vi_start.lnum == eap->line1)
+		&& (curbuf->b_visual.vi_end.lnum) == eap->line2)
 	{
 	    /* Set it up for visual mode - equivalent to gv.  */
-	    VIsual_mode = curbuf->b_visual_mode;
-	    tpos = curbuf->b_visual_end;
-	    curwin->w_cursor = curbuf->b_visual_start;
-	    curwin->w_curswant = curbuf->b_visual_curswant;
+	    VIsual_mode = curbuf->b_visual.vi_mode;
+	    tpos = curbuf->b_visual.vi_end;
+	    curwin->w_cursor = curbuf->b_visual.vi_start;
+	    curwin->w_curswant = curbuf->b_visual.vi_curswant;
 	}
 	else
 	{

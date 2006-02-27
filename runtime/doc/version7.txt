@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 25
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -734,6 +734,9 @@ other Vim to the foreground.
 When starting Vim with a "-t tag" argument, there is an existing swapfile and
 the user selects "quit" or "abort" then exit Vim.
 
+Undo now also restores the '< and '> marks.  "gv" selects the same area as
+before the change and undo.
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -948,6 +951,9 @@ Win32: Balloons can have multiple lines if common controls supports it.
 The 's' flag is added to the search() and searchpair() function to set the
 ' mark if the cursor is moved. (Yegappan Lakshmanan)
 
+The search() and searchpair() functions have an extra argument to specify
+where to stop searching.  Speeds up searches that should not continue too far.
+
 For 'errorformat' it was not possible to have a file name that contains the
 character that follows after "%f".  For example, in "%f:%l:%m" the file name
 could not contain ":".  Now include the first ":" where the rest of the
@@ -1076,6 +1082,9 @@ without copying the code.
 Mac: When running "make install" the runtime files are installed as for Unix.
 Avoids that too many files are copied.  When running "make" a link to the
 runtime files is created to avoid a recursive copy that takes much time.
+
+Mac: Configure will attempt to build Vim for both Intel and PowerPC.  The
+--with-mac-arch configure argument can change it.
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*
@@ -1755,5 +1764,7 @@ block could be unhighlighted.
 
 When counting words for the Visual block area and using "$" to select until
 the end of every line only up to the length of the last line was counted.
+
+"dip" in trailing empty lines left one empty line behind.
 
  vim:tw=78:ts=8:ft=help:norl:

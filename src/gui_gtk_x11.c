@@ -3087,25 +3087,6 @@ tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
 }
 
 /*
- * Send the event for clicking to select tab page "nr".
- */
-    static void
-send_tabline_event(int nr)
-{
-    char_u string[3];
-
-    string[0] = CSI;
-    string[1] = KS_TABLINE;
-    string[2] = KE_FILLER;
-    add_to_input_buf(string, 3);
-    string[0] = nr;
-    add_to_input_buf_csi(string, 1);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-}
-
-/*
  * Create a menu for the tab line.
  */
     static GtkWidget *
@@ -3178,8 +3159,11 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	    return TRUE;
 	}
 	else if (bevent->button == 1 && clicked_page == 0)
+	{
 	    /* Click after all tabs moves to next tab page. */
-	    send_tabline_event(0);
+	    if (send_tabline_event(0) && gtk_main_level() > 0)
+		gtk_main_quit();
+	}
     }
     /* We didn't handle the event. */
     return FALSE;
@@ -3197,7 +3181,10 @@ on_select_tab(
 	gpointer	data)
 {
     if (!ignore_tabline_evt)
-	send_tabline_event(index + 1);
+    {
+	if (send_tabline_event(index + 1) && gtk_main_level() > 0)
+	    gtk_main_quit();
+    }
 }
 
 /*

@@ -1,4 +1,4 @@
-*usr_12.txt*	For Vim version 7.0aa.  Last change: 2004 Dec 29
+*usr_12.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -273,7 +273,7 @@ To display a man page for the word under the cursor, use this: >
 For example, you want to know the return value of "strstr()" while editing
 this line:
 
-	if (strstr(input, "aap") == ) ~
+	if ( strstr (input, "aap") == ) ~
 
 Move the cursor to somewhere on "strstr" and type "\K".  A window will open
 to display the man page for strstr().

@@ -400,6 +400,7 @@ static int get_option_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_lit_string_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int get_list_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
+static int rettv_list_alloc __ARGS((typval_T *rettv));
 static listitem_T *listitem_alloc __ARGS((void));
 static void listitem_free __ARGS((listitem_T *item));
 static void listitem_remove __ARGS((list_T *l, listitem_T *item));
@@ -5223,6 +5224,25 @@ list_alloc()
 }
 
 /*
+ * Allocate an empty list for a return value.
+ * Returns OK or FAIL.
+ */
+    static int
+rettv_list_alloc(rettv)
+    typval_T	*rettv;
+{
+    list_T	*l = list_alloc();
+
+    if (l == NULL)
+	return FAIL;
+
+    rettv->vval.v_list = l;
+    rettv->v_type = VAR_LIST;
+    ++l->lv_refcount;
+    return OK;
+}
+
+/*
  * Unreference a list: decrement the reference count and free it when it
  * becomes zero.
  */
@@ -6952,11 +6972,11 @@ static struct fst
     {"repeat",		2, 2, f_repeat},
     {"resolve",		1, 1, f_resolve},
     {"reverse",		1, 1, f_reverse},
-    {"search",		1, 2, f_search},
+    {"search",		1, 3, f_search},
     {"searchdecl",	1, 3, f_searchdecl},
-    {"searchpair",	3, 5, f_searchpair},
-    {"searchpairpos",	3, 5, f_searchpairpos},
-    {"searchpos",	1, 2, f_searchpos},
+    {"searchpair",	3, 6, f_searchpair},
+    {"searchpairpos",	3, 6, f_searchpairpos},
+    {"searchpos",	1, 3, f_searchpos},
     {"server2client",	2, 2, f_server2client},
     {"serverlist",	0, 0, f_serverlist},
     {"setbufvar",	3, 3, f_setbufvar},
@@ -9353,17 +9373,11 @@ get_buffer_lines(buf, start, end, retlist, rettv)
     typval_T	*rettv;
 {
     char_u	*p;
-    list_T	*l = NULL;
 
     if (retlist)
     {
-	l = list_alloc();
-	if (l == NULL)
+	if (rettv_list_alloc(rettv) == FAIL)
 	    return;
-
-	rettv->vval.v_list = l;
-	rettv->v_type = VAR_LIST;
-	++l->lv_refcount;
     }
     else
 	rettv->vval.v_number = 0;
@@ -9391,8 +9405,8 @@ get_buffer_lines(buf, start, end, retlist, rettv)
 	if (end > buf->b_ml.ml_line_count)
 	    end = buf->b_ml.ml_line_count;
 	while (start <= end)
-	    if (list_append_string(l, ml_get_buf(buf, start++, FALSE), -1)
-								      == FAIL)
+	    if (list_append_string(rettv->vval.v_list,
+				 ml_get_buf(buf, start++, FALSE), -1) == FAIL)
 		break;
     }
 }
@@ -9846,18 +9860,13 @@ f_getqflist(argvars, rettv)
     typval_T	*rettv;
 {
 #ifdef FEAT_QUICKFIX
-    list_T	*l;
     win_T	*wp;
 #endif
 
     rettv->vval.v_number = FALSE;
 #ifdef FEAT_QUICKFIX
-    l = list_alloc();
-    if (l != NULL)
+    if (rettv_list_alloc(rettv) == OK)
     {
-	rettv->vval.v_list = l;
-	rettv->v_type = VAR_LIST;
-	++l->lv_refcount;
 	wp = NULL;
 	if (argvars[0].v_type != VAR_UNKNOWN)	/* getloclist() */
 	{
@@ -9866,7 +9875,7 @@ f_getqflist(argvars, rettv)
 		return;
 	}
 
-	(void)get_errorlist(wp, l);
+	(void)get_errorlist(wp, rettv->vval.v_list);
     }
 #endif
 }
@@ -11297,7 +11306,6 @@ dict_list(argvars, rettv, what)
     typval_T	*rettv;
     int		what;
 {
-    list_T	*l;
     list_T	*l2;
     dictitem_T	*di;
     hashitem_T	*hi;
@@ -11315,12 +11323,8 @@ dict_list(argvars, rettv, what)
     if ((d = argvars[0].vval.v_dict) == NULL)
 	return;
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
 
     todo = d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
@@ -11333,7 +11337,7 @@ dict_list(argvars, rettv, what)
 	    li = listitem_alloc();
 	    if (li == NULL)
 		break;
-	    list_append(l, li);
+	    list_append(rettv->vval.v_list, li);
 
 	    if (what == 0)
 	    {
@@ -11741,10 +11745,8 @@ find_some_match(argvars, rettv, type)
     if (type == 3)
     {
 	/* return empty list when there are no matches */
-	if ((rettv->vval.v_list = list_alloc()) == NULL)
+	if (rettv_list_alloc(rettv) == FAIL)
 	    goto theend;
-	rettv->v_type = VAR_LIST;
-	++rettv->vval.v_list->lv_refcount;
     }
     else if (type == 2)
     {
@@ -12259,7 +12261,6 @@ f_range(argvars, rettv)
     long	end;
     long	stride = 1;
     long	i;
-    list_T	*l;
     int		error = FALSE;
 
     start = get_tv_number_chk(&argvars[0], &error);
@@ -12284,17 +12285,11 @@ f_range(argvars, rettv)
 	EMSG(_("E727: Start past end"));
     else
     {
-	l = list_alloc();
-	if (l != NULL)
-	{
-	    rettv->v_type = VAR_LIST;
-	    rettv->vval.v_list = l;
-	    ++l->lv_refcount;
-
+	if (rettv_list_alloc(rettv) == OK)
 	    for (i = start; stride > 0 ? i <= end : i >= end; i += stride)
-		if (list_append_number(l, (varnumber_T)i) == FAIL)
+		if (list_append_number(rettv->vval.v_list,
+						      (varnumber_T)i) == FAIL)
 		    break;
-	}
     }
 }
 
@@ -12309,7 +12304,6 @@ f_readfile(argvars, rettv)
     int		binary = FALSE;
     char_u	*fname;
     FILE	*fd;
-    list_T	*l;
     listitem_T	*li;
 #define FREAD_SIZE 200	    /* optimized for text lines */
     char_u	buf[FREAD_SIZE];
@@ -12333,12 +12327,8 @@ f_readfile(argvars, rettv)
 	    maxline = get_tv_number(&argvars[2]);
     }
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    l->lv_refcount = 1;
 
     /* Always open the file in binary mode, library functions have a mind of
      * their own about CR-LF conversion. */
@@ -12397,7 +12387,7 @@ f_readfile(argvars, rettv)
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = s;
-		list_append(l, li);
+		list_append(rettv->vval.v_list, li);
 
 		if (++cnt >= maxline && maxline >= 0)
 		    break;
@@ -12446,7 +12436,7 @@ f_readfile(argvars, rettv)
     if (maxline < 0)
 	while (cnt > -maxline)
 	{
-	    listitem_remove(l, l->lv_first);
+	    listitem_remove(rettv->vval.v_list, rettv->vval.v_list->lv_first);
 	    --cnt;
 	}
 
@@ -12788,14 +12778,11 @@ f_remove(argvars, rettv)
 		    else
 		    {
 			list_remove(l, item, item2);
-			l = list_alloc();
-			if (l != NULL)
+			if (rettv_list_alloc(rettv) == OK)
 			{
-			    rettv->v_type = VAR_LIST;
-			    rettv->vval.v_list = l;
+			    l = rettv->vval.v_list;
 			    l->lv_first = item;
 			    l->lv_last = item2;
-			    l->lv_refcount = 1;
 			    item->li_prev = NULL;
 			    item2->li_next = NULL;
 			    l->lv_len = cnt;
@@ -12839,21 +12826,15 @@ f_repeat(argvars, rettv)
     int		len;
     char_u	*r;
     int		i;
-    list_T	*l;
 
     n = get_tv_number(&argvars[1]);
     if (argvars[0].v_type == VAR_LIST)
     {
-	l = list_alloc();
-	if (l != NULL && argvars[0].vval.v_list != NULL)
-	{
-	    l->lv_refcount = 1;
+	if (rettv_list_alloc(rettv) == OK && argvars[0].vval.v_list != NULL)
 	    while (n-- > 0)
-		if (list_extend(l, argvars[0].vval.v_list, NULL) == FAIL)
+		if (list_extend(rettv->vval.v_list,
+					argvars[0].vval.v_list, NULL) == FAIL)
 		    break;
-	}
-	rettv->v_type = VAR_LIST;
-	rettv->vval.v_list = l;
     }
     else
     {
@@ -13174,7 +13155,7 @@ get_search_arg(varp, flagsp)
     static int
 search_cmn(argvars, match_pos)
     typval_T	*argvars;
-    pos_T   	*match_pos;
+    pos_T	*match_pos;
 {
     char_u	*pat;
     pos_T	pos;
@@ -13183,11 +13164,22 @@ search_cmn(argvars, match_pos)
     int		dir;
     int		flags = 0;
     int		retval = 0;	/* default: FAIL */
+    long	lnum_stop = 0;
 
     pat = get_tv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
     if (dir == 0)
 	goto theend;
+
+    /* Optional extra argument: line number to stop searching. */
+    if (argvars[1].v_type != VAR_UNKNOWN
+	    && argvars[2].v_type != VAR_UNKNOWN)
+    {
+	lnum_stop = get_tv_number_chk(&argvars[2], NULL);
+	if (lnum_stop < 0)
+	    goto theend;
+    }
+
     /*
      * This function accepts only SP_NOMOVE and SP_SETPCMARK flags.
      * Check to make sure only those flags are set.
@@ -13203,7 +13195,7 @@ search_cmn(argvars, match_pos)
 
     pos = save_cursor = curwin->w_cursor;
     if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
-					      SEARCH_KEEP, RE_SEARCH) != FAIL)
+			 SEARCH_KEEP, RE_SEARCH, (linenr_T)lnum_stop) != FAIL)
     {
 	retval = pos.lnum;
 	if (flags & SP_SETPCMARK)
@@ -13284,6 +13276,7 @@ searchpair_cmn(argvars, match_pos)
     char_u	nbuf2[NUMBUFLEN];
     char_u	nbuf3[NUMBUFLEN];
     int		retval = 0;		/* default: FAIL */
+    long	lnum_stop = 0;
 
     /* Get the three pattern arguments: start, middle, end. */
     spat = get_tv_string_chk(&argvars[0]);
@@ -13310,11 +13303,20 @@ searchpair_cmn(argvars, match_pos)
 	    || argvars[4].v_type == VAR_UNKNOWN)
 	skip = (char_u *)"";
     else
+    {
 	skip = get_tv_string_buf_chk(&argvars[4], nbuf3);
+	if (argvars[5].v_type != VAR_UNKNOWN)
+	{
+	    lnum_stop = get_tv_number_chk(&argvars[5], NULL);
+	    if (lnum_stop < 0)
+		goto theend;
+	}
+    }
     if (skip == NULL)
 	goto theend;	    /* type error */
 
-    retval = do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos);
+    retval = do_searchpair(spat, mpat, epat, dir, skip, flags,
+							match_pos, lnum_stop);
 
 theend:
     p_ws = save_p_ws;
@@ -13341,19 +13343,14 @@ f_searchpairpos(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    list_T	*l;
     pos_T	match_pos;
     int		lnum = 0;
     int		col = 0;
 
     rettv->vval.v_number = 0;
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
 
     if (searchpair_cmn(argvars, &match_pos) > 0)
     {
@@ -13361,8 +13358,8 @@ f_searchpairpos(argvars, rettv)
 	col = match_pos.col;
     }
 
-    list_append_number(l, (varnumber_T)lnum);
-    list_append_number(l, (varnumber_T)col);
+    list_append_number(rettv->vval.v_list, (varnumber_T)lnum);
+    list_append_number(rettv->vval.v_list, (varnumber_T)col);
 }
 
 /*
@@ -13371,7 +13368,7 @@ f_searchpairpos(argvars, rettv)
  * Returns 0 or -1 for no match,
  */
     long
-do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos)
+do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     char_u	*spat;	    /* start pattern */
     char_u	*mpat;	    /* middle pattern */
     char_u	*epat;	    /* end pattern */
@@ -13379,6 +13376,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos)
     char_u	*skip;	    /* skip expression */
     int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE */
     pos_T	*match_pos;
+    linenr_T	lnum_stop;  /* stop at this line if not zero */
 {
     char_u	*save_cpo;
     char_u	*pat, *pat2 = NULL, *pat3 = NULL;
@@ -13418,7 +13416,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos)
     for (;;)
     {
 	n = searchit(curwin, curbuf, &pos, dir, pat, 1L,
-						      SEARCH_KEEP, RE_SEARCH);
+					   SEARCH_KEEP, RE_SEARCH, lnum_stop);
 	if (n == FAIL || (firstpos.lnum != 0 && equalpos(pos, firstpos)))
 	    /* didn't find it or found the first match again: FAIL */
 	    break;
@@ -13513,19 +13511,14 @@ f_searchpos(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    list_T	*l;
     pos_T	match_pos;
     int		lnum = 0;
     int		col = 0;
 
     rettv->vval.v_number = 0;
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
 
     if (search_cmn(argvars, &match_pos) > 0)
     {
@@ -13533,8 +13526,8 @@ f_searchpos(argvars, rettv)
 	col = match_pos.col;
     }
 
-    list_append_number(l, (varnumber_T)lnum);
-    list_append_number(l, (varnumber_T)col);
+    list_append_number(rettv->vval.v_list, (varnumber_T)lnum);
+    list_append_number(rettv->vval.v_list, (varnumber_T)col);
 
 }
 
@@ -14167,14 +14160,9 @@ f_spellbadword(argvars, rettv)
     char_u	*word = (char_u *)"";
     hlf_T	attr = HLF_COUNT;
     int		len = 0;
-    list_T	*l;
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
 
 #ifdef FEAT_SYN_HL
     if (argvars[0].v_type == VAR_UNKNOWN)
@@ -14206,8 +14194,8 @@ f_spellbadword(argvars, rettv)
     }
 #endif
 
-    list_append_string(l, word, len);
-    list_append_string(l, (char_u *)(
+    list_append_string(rettv->vval.v_list, word, len);
+    list_append_string(rettv->vval.v_list, (char_u *)(
 			attr == HLF_SPB ? "bad" :
 			attr == HLF_SPR ? "rare" :
 			attr == HLF_SPL ? "local" :
@@ -14223,7 +14211,6 @@ f_spellsuggest(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    list_T	*l;
 #ifdef FEAT_SYN_HL
     char_u	*str;
     int		typeerr = FALSE;
@@ -14234,12 +14221,8 @@ f_spellsuggest(argvars, rettv)
     int		need_capital = FALSE;
 #endif
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
 
 #ifdef FEAT_SYN_HL
     if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
@@ -14274,7 +14257,7 @@ f_spellsuggest(argvars, rettv)
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = str;
-		list_append(l, li);
+		list_append(rettv->vval.v_list, li);
 	    }
 	}
 	ga_clear(&ga);
@@ -14294,7 +14277,6 @@ f_split(argvars, rettv)
     char_u	patbuf[NUMBUFLEN];
     char_u	*save_cpo;
     int		match;
-    list_T	*l;
     colnr_T	col = 0;
     int		keepempty = FALSE;
     int		typeerr = FALSE;
@@ -14315,12 +14297,8 @@ f_split(argvars, rettv)
     if (pat == NULL || *pat == NUL)
 	pat = (char_u *)"[\\x01- ]\\+";
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_LIST;
-    rettv->vval.v_list = l;
-    ++l->lv_refcount;
     if (typeerr)
 	return;
 
@@ -14338,10 +14316,11 @@ f_split(argvars, rettv)
 		end = regmatch.startp[0];
 	    else
 		end = str + STRLEN(str);
-	    if (keepempty || end > str || (l->lv_len > 0 && *str != NUL
-					  && match && end < regmatch.endp[0]))
+	    if (keepempty || end > str || (rettv->vval.v_list->lv_len > 0
+			   && *str != NUL && match && end < regmatch.endp[0]))
 	    {
-		if (list_append_string(l, str, (int)(end - str)) == FAIL)
+		if (list_append_string(rettv->vval.v_list, str,
+						    (int)(end - str)) == FAIL)
 		    break;
 	    }
 	    if (!match)
@@ -14891,7 +14870,6 @@ f_tabpagebuflist(argvars, rettv)
 #else
     tabpage_T	*tp;
     win_T	*wp = NULL;
-    list_T	*l;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
 	wp = firstwin;
@@ -14905,17 +14883,13 @@ f_tabpagebuflist(argvars, rettv)
 	rettv->vval.v_number = 0;
     else
     {
-	l = list_alloc();
-	if (l == NULL)
+	if (rettv_list_alloc(rettv) == FAIL)
 	    rettv->vval.v_number = 0;
 	else
 	{
-	    rettv->vval.v_list = l;
-	    rettv->v_type = VAR_LIST;
-	    ++l->lv_refcount;
-
 	    for (; wp != NULL; wp = wp->w_next)
-		if (list_append_number(l, wp->w_buffer->b_fnum) == FAIL)
+		if (list_append_number(rettv->vval.v_list,
+						wp->w_buffer->b_fnum) == FAIL)
 		    break;
 	}
     }
@@ -15033,23 +15007,20 @@ f_tagfiles(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	fname[MAXPATHL + 1];
-    list_T	*l;
+    tagname_T	tn;
+    int		first;
 
-    l = list_alloc();
-    if (l == NULL)
+    if (rettv_list_alloc(rettv) == FAIL)
     {
 	rettv->vval.v_number = 0;
 	return;
     }
-    rettv->vval.v_list = l;
-    rettv->v_type = VAR_LIST;
-    ++l->lv_refcount;
 
-    get_tagfname(TRUE, NULL);
-    for (;;)
-	if (get_tagfname(FALSE, fname) == FAIL
-		|| list_append_string(l, fname, -1) == FAIL)
+    for (first = TRUE; ; first = FALSE)
+	if (get_tagfname(&tn, first, fname) == FAIL
+		|| list_append_string(rettv->vval.v_list, fname, -1) == FAIL)
 	    break;
+    tagname_free(&tn);
 }
 
 /*
@@ -15061,7 +15032,6 @@ f_taglist(argvars, rettv)
     typval_T  *rettv;
 {
     char_u  *tag_pattern;
-    list_T  *l;
 
     tag_pattern = get_tv_string(&argvars[0]);
 
@@ -15069,18 +15039,8 @@ f_taglist(argvars, rettv)
     if (*tag_pattern == NUL)
 	return;
 
-    l = list_alloc();
-    if (l != NULL)
-    {
-	if (get_tags(l, tag_pattern) != FAIL)
-	{
-	    rettv->vval.v_list = l;
-	    rettv->v_type = VAR_LIST;
-	    ++l->lv_refcount;
-	}
-	else
-	    list_free(l);
-    }
+    if (rettv_list_alloc(rettv) == OK)
+	(void)get_tags(rettv->vval.v_list, tag_pattern);
 }
 
 /*
