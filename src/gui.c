@@ -3420,6 +3420,28 @@ get_tabline_label(tp)
     }
 }
 
+/*
+ * Send the event for clicking to select tab page "nr".
+ * Returns TRUE if it was done, FALSE when skipped because we are already at
+ * that tab page.
+ */
+    int
+send_tabline_event(nr)
+    int	    nr;
+{
+    char_u string[3];
+
+    if (nr == tabpage_index(curtab))
+	return FALSE;
+    string[0] = CSI;
+    string[1] = KS_TABLINE;
+    string[2] = KE_FILLER;
+    add_to_input_buf(string, 3);
+    string[0] = nr;
+    add_to_input_buf_csi(string, 1);
+    return TRUE;
+}
+
 #endif
 
 /*

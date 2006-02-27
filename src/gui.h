@@ -8,12 +8,10 @@
  */
 
 #ifdef FEAT_GUI_MOTIF
-# define FEAT_GUI_X11
 # include <Xm/Xm.h>
 #endif
 
 #ifdef FEAT_GUI_ATHENA
-# define FEAT_GUI_X11
 # include <X11/Intrinsic.h>
 # include <X11/StringDefs.h>
 #endif
