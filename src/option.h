@@ -10,15 +10,6 @@
  * option.h: definition of global variables for settable options
  */
 
-#ifndef EXTERN
-# define EXTERN extern
-# define INIT(x)
-#else
-# ifndef INIT
-#  define INIT(x) x
-# endif
-#endif
-
 /*
  * Default values for 'errorformat'.
  * The "%f|%l| %m" one is used for when the contents of the quickfix window is
@@ -379,10 +370,6 @@ EXTERN long	p_cwh;		/* 'cmdwinheight' */
 #endif
 #ifdef FEAT_CLIPBOARD
 EXTERN char_u	*p_cb;		/* 'clipboard' */
-EXTERN int	clip_unnamed INIT(= FALSE);
-EXTERN int	clip_autoselect INIT(= FALSE);
-EXTERN int	clip_autoselectml INIT(= FALSE);
-EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 #endif
 EXTERN long	p_ch;		/* 'cmdheight' */
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -515,6 +502,8 @@ EXTERN char_u	*p_mouseshape;	/* 'mouseshape' */
 #endif
 #if defined(FEAT_GUI)
 EXTERN char_u	*p_go;		/* 'guioptions' */
+#endif
+#if defined(FEAT_GUI_TABLINE)
 EXTERN char_u	*p_gtl;		/* 'guitablabel' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */

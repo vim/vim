@@ -356,7 +356,11 @@ do_tag(tag, type, count, forceit, verbose)
 		goto end_do_tag;
 	    }
 
-	    if (type == DT_TAG)
+	    if (type == DT_TAG
+#if defined(FEAT_QUICKFIX)
+		|| type == DT_LTAG
+#endif
+		)
 	    {
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview)
@@ -413,9 +417,6 @@ do_tag(tag, type, count, forceit, verbose)
 		switch (type)
 		{
 		    case DT_FIRST: cur_match = count - 1; break;
-#ifdef FEAT_QUICKFIX
-		    case DT_LTAG: cur_match = 0; break;
-#endif
 		    case DT_SELECT:
 		    case DT_JUMP:
 #ifdef FEAT_CSCOPE
@@ -516,7 +517,11 @@ do_tag(tag, type, count, forceit, verbose)
 	    if (type == DT_TAG && count > 0)
 		cur_match = count - 1;
 
-	    if (type == DT_SELECT || type == DT_JUMP)
+	    if (type == DT_SELECT || type == DT_JUMP
+#if defined(FEAT_QUICKFIX)
+		|| type == DT_LTAG
+#endif
+		)
 		cur_match = MAXCOL - 1;
 	    max_num_matches = cur_match + 1;
 
@@ -763,8 +768,7 @@ do_tag(tag, type, count, forceit, verbose)
 		ask_for_selection = TRUE;
 	    }
 #if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
-	    else
-	    if (type == DT_LTAG)
+	    else if (type == DT_LTAG)
 	    {
 		list_T	*list;
 		char_u	tag_name[128 + 1];
@@ -826,6 +830,7 @@ do_tag(tag, type, count, forceit, verbose)
 				;
 			    cmd_end = p;
 			}
+
 			/*
 			 * Now, cmd_end points to the character after the
 			 * command. Adjust it to point to the last
@@ -872,7 +877,7 @@ do_tag(tag, type, count, forceit, verbose)
 
 			if (cmd[len - 1] == '$')
 			{
-			    /* 
+			    /*
 			     * Replace '$' at the end of the search pattern
 			     * with '\$'
 			     */
@@ -902,6 +907,8 @@ do_tag(tag, type, count, forceit, verbose)
 		set_errorlist(curwin, list, ' ');
 
 		list_free(list);
+
+		cur_match = 0;		/* Jump to the first tag */
 	    }
 #endif
 
@@ -1258,6 +1265,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     FILE       *fp;
     char_u     *lbuf;			/* line buffer */
     char_u     *tag_fname;		/* name of tag file */
+    tagname_T	tn;			/* info for get_tagfname() */
     int		first_file;		/* trying first tag file */
     tagptrs_T	tagp;
     int		did_open = FALSE;	/* did open a tag file */
@@ -1461,7 +1469,8 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 #ifdef FEAT_CSCOPE
 	    use_cscope ||
 #endif
-		get_tagfname(first_file, tag_fname) == OK; first_file = FALSE)
+		get_tagfname(&tn, first_file, tag_fname) == OK;
+							   first_file = FALSE)
       {
 	/*
 	 * A file that doesn't exist is silently ignored.  Only when not a
@@ -2429,6 +2438,11 @@ line_read_in:
 
       } /* end of for-each-file loop */
 
+#ifdef FEAT_CSCOPE
+	if (!use_cscope)
+#endif
+	    tagname_free(&tn);
+
 #ifdef FEAT_TAG_BINS
       /* stop searching when already did a linear search, or when TAG_NOIC
        * used, and 'ignorecase' not set or already did case-ignore search */
@@ -2519,13 +2533,11 @@ found_tagfile_cb(fname, cookie)
 							   vim_strsave(fname);
 }
 
-static void	*search_ctx = NULL;
-
 #if defined(EXITFREE) || defined(PROTO)
     void
 free_tag_stuff()
 {
-    vim_findfile_cleanup(search_ctx);
+    ga_clear_strings(&tag_fnames);
     do_tag(NULL, DT_FREE, 0, 0, 0);
 }
 #endif
@@ -2537,15 +2549,16 @@ free_tag_stuff()
  * Return FAIL if no more tag file names, OK otherwise.
  */
     int
-get_tagfname(first, buf)
+get_tagfname(tnp, first, buf)
+    tagname_T	*tnp;	/* holds status info */
     int		first;	/* TRUE when first file name is wanted */
     char_u	*buf;	/* pointer to buffer of MAXPATHL chars */
 {
-    static char_u	*np = NULL;
-    static int		did_filefind_init;
-    static int		hf_idx = 0;
     char_u		*fname = NULL;
     char_u		*r_ptr;
+
+    if (first)
+	vim_memset(tnp, 0, sizeof(tagname_T));
 
     if (curbuf->b_help)
     {
@@ -2573,98 +2586,105 @@ get_tagfname(first, buf)
 		    "doc/tags"
 #endif
 					      , TRUE, found_tagfile_cb, NULL);
-	    hf_idx = 0;
 	}
 
-	if (hf_idx >= tag_fnames.ga_len)
+	if (tnp->tn_hf_idx >= tag_fnames.ga_len)
 	{
 	    /* Not found in 'runtimepath', use 'helpfile', if it exists and
 	     * wasn't used yet, replacing "help.txt" with "tags". */
-	    if (hf_idx > tag_fnames.ga_len || *p_hf == NUL)
+	    if (tnp->tn_hf_idx > tag_fnames.ga_len || *p_hf == NUL)
 		return FAIL;
-	    ++hf_idx;
+	    ++tnp->tn_hf_idx;
 	    STRCPY(buf, p_hf);
 	    STRCPY(gettail(buf), "tags");
 	}
 	else
-	    vim_strncpy(buf, ((char_u **)(tag_fnames.ga_data))[hf_idx++],
-								MAXPATHL - 1);
+	    vim_strncpy(buf, ((char_u **)(tag_fnames.ga_data))[
+					     tnp->tn_hf_idx++], MAXPATHL - 1);
 	return OK;
     }
 
     if (first)
     {
-	/* Init. */
-	if (*curbuf->b_p_tags != NUL)
-	    np = curbuf->b_p_tags;
-	else
-	    np = p_tags;
-	vim_findfile_free_visited(search_ctx);
-	did_filefind_init = FALSE;
+	/* Init.  We make a copy of 'tags', because autocommands may change
+	 * the value without notifying us. */
+	tnp->tn_tags = vim_strsave((*curbuf->b_p_tags != NUL)
+						 ? curbuf->b_p_tags : p_tags);
+	if (tnp->tn_tags == NULL)
+	    return FAIL;
+	tnp->tn_np = tnp->tn_tags;
     }
-    else
+
+    /*
+     * Loop until we have found a file name that can be used.
+     * There are two states:
+     * tnp->tn_did_filefind_init == FALSE: setup for next part in 'tags'.
+     * tnp->tn_did_filefind_init == TRUE: find next file in this part.
+     */
+    for (;;)
     {
-	if (np == NULL)
-	    return FAIL;	/* tried already (or bogus call) */
-
-	/*
-	 * Loop until we have found a file name that can be used.
-	 * There are two states:
-	 * did_filefind_init == FALSE: setup for next part in 'tags'.
-	 * did_filefind_init == TRUE: find next file in this part.
-	 */
-	for (;;)
+	if (tnp->tn_did_filefind_init)
 	{
-	    if (did_filefind_init)
-	    {
-		fname = vim_findfile(search_ctx);
-		if (fname != NULL)
-		    break;
+	    fname = vim_findfile(tnp->tn_search_ctx);
+	    if (fname != NULL)
+		break;
 
-		did_filefind_init = FALSE;
+	    tnp->tn_did_filefind_init = FALSE;
+	}
+	else
+	{
+	    char_u  *filename = NULL;
+
+	    /* Stop when used all parts of 'tags'. */
+	    if (*tnp->tn_np == NUL)
+	    {
+		vim_findfile_cleanup(tnp->tn_search_ctx);
+		tnp->tn_search_ctx = NULL;
+		return FAIL;
 	    }
-	    else
-	    {
-		char_u  *filename = NULL;
 
-		/* Stop when used all parts of 'tags'. */
-		if (*np == NUL)
-		{
-		    vim_findfile_cleanup(search_ctx);
-		    search_ctx = NULL;
-		    return FAIL;
-		}
-
-		/*
-		 * Copy next file name into buf.
-		 */
-		buf[0] = NUL;
-		(void)copy_option_part(&np, buf, MAXPATHL - 1, " ,");
+	    /*
+	     * Copy next file name into buf.
+	     */
+	    buf[0] = NUL;
+	    (void)copy_option_part(&tnp->tn_np, buf, MAXPATHL - 1, " ,");
 
 #ifdef FEAT_PATH_EXTRA
-		r_ptr = vim_findfile_stopdir(buf);
+	    r_ptr = vim_findfile_stopdir(buf);
 #else
-		r_ptr = NULL;
+	    r_ptr = NULL;
 #endif
-		/* move the filename one char forward and truncate the
-		 * filepath with a NUL */
-		filename = gettail(buf);
-		mch_memmove(filename + 1, filename, STRLEN(filename) + 1);
-		*filename++ = NUL;
+	    /* move the filename one char forward and truncate the
+	     * filepath with a NUL */
+	    filename = gettail(buf);
+	    mch_memmove(filename + 1, filename, STRLEN(filename) + 1);
+	    *filename++ = NUL;
 
-		search_ctx = vim_findfile_init(buf, filename, r_ptr, 100,
-			FALSE, /* don't free visited list */
-			FALSE, /* we search for a file */
-			search_ctx, TRUE, curbuf->b_ffname);
-		if (search_ctx != NULL)
-		    did_filefind_init = TRUE;
-	    }
+	    tnp->tn_search_ctx = vim_findfile_init(buf, filename,
+		    r_ptr, 100,
+		    FALSE, /* don't free visited list */
+		    FALSE, /* we search for a file */
+		    tnp->tn_search_ctx, TRUE, curbuf->b_ffname);
+	    if (tnp->tn_search_ctx != NULL)
+		tnp->tn_did_filefind_init = TRUE;
 	}
-	STRCPY(buf, fname);
-	vim_free(fname);
     }
 
+    STRCPY(buf, fname);
+    vim_free(fname);
     return OK;
+}
+
+/*
+ * Free the contents of a tagname_T that was filled by get_tagfname().
+ */
+    void
+tagname_free(tnp)
+    tagname_T	*tnp;
+{
+    vim_free(tnp->tn_tags);
+    vim_findfile_cleanup(tnp->tn_search_ctx);
+    ga_clear_strings(&tag_fnames);
 }
 
 /*

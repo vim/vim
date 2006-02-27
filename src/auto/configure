@@ -876,6 +876,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-mac-arch=ARCH    intel, ppc or both
   --with-vim-name=NAME    what to call the Vim executable
   --with-ex-name=NAME     what to call the Ex executable
   --with-view-name=NAME   what to call the View executable
@@ -2864,11 +2865,149 @@ echo "${ECHO_T}no, Darwin support disabled" >&6
 echo "${ECHO_T}yes, Darwin support excluded" >&6
   fi
 
+  echo "$as_me:$LINENO: checking --with-mac-arch argument" >&5
+echo $ECHO_N "checking --with-mac-arch argument... $ECHO_C" >&6
+
+# Check whether --with-mac-arch or --without-mac-arch was given.
+if test "${with_mac_arch+set}" = set; then
+  withval="$with_mac_arch"
+  MACARCH="$withval"; echo "$as_me:$LINENO: result: $MACARCH" >&5
+echo "${ECHO_T}$MACARCH" >&6
+else
+  MACARCH="both"; echo "$as_me:$LINENO: result: Defaulting to $MACARCH" >&5
+echo "${ECHO_T}Defaulting to $MACARCH" >&6
+fi;
+
+  if test "x$MACARCH" = "xboth"; then
+    echo "$as_me:$LINENO: checking if both architectures are supported" >&5
+echo $ECHO_N "checking if both architectures are supported... $ECHO_C" >&6
+    save_cppflags="$CPPFLAGS"
+    save_ldflags="$LDFLAGS"
+    CPPFLAGS="$CPPFLAGS -arch i386 -arch ppc"
+    LDFLAGS="$LDFLAGS -arch i386 -arch ppc"
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+	    echo "$as_me:$LINENO: checking if Intel architecture is supported" >&5
+echo $ECHO_N "checking if Intel architecture is supported... $ECHO_C" >&6
+	    CPPFLAGS="$save_cppflags -arch i386"
+	    LDFLAGS="$save_ldflags -arch i386"
+	    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext conftest$ac_exeext
+if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
+  (eval $ac_link) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest$ac_exeext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; MACARCH="intel"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; MACARCH="ppc"
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    CPPFLAGS="$save_cppflags"
+    LDFLAGS="$save_ldflags"
+  fi
+
+  case "$MACARCH" in
+    intel)	MAC_OSX_ARCH="-arch i386";;
+    both)	MAC_OSX_ARCH="-arch i386 -arch ppc";;
+    ppc)	MAC_OSX_ARCH="-arch ppc";;
+    *)		MAC_OSX_ARCH="";;
+  esac
+
+    if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
+    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-O/'`
+  fi
+
+  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
+  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
+
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
     OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-        CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp -arch ppc"
+        CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
 
                 echo "$as_me:$LINENO: checking for ANSI C header files" >&5
 echo $ECHO_N "checking for ANSI C header files... $ECHO_C" >&6
@@ -3256,6 +3395,7 @@ fi
       fi
     fi
   fi
+
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6

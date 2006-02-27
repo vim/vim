@@ -38,20 +38,61 @@
  * The options that are local to a window or buffer have "indir" set to one of
  * these values.  Special values:
  * PV_NONE: global option.
+ * PV_WIN is added: window-local option
+ * PV_BUF is added: buffer-local option
  * PV_BOTH is added: global option which also has a local value.
  */
 #define PV_BOTH 0x1000
+#define PV_WIN  0x2000
+#define PV_BUF  0x4000
+#define OPT_WIN(x)  (idopt_T)(PV_WIN + (int)(x))
+#define OPT_BUF(x)  (idopt_T)(PV_BUF + (int)(x))
 #define OPT_BOTH(x) (idopt_T)(PV_BOTH + (int)(x))
 
+/*
+ * "indir" values for buffer-local opions
+ */
+enum
+{
+    BV_AI = 0
+    , BV_AR
+#if defined(FEAT_QUICKFIX)
+    , BV_BH
+#endif
+    , BV_BIN
+    , BV_BL
+    , BV_COUNT	    /* must be the last one */
+};
+
+#define PV_AI		OPT_BUF(BV_AI)
+#define PV_AR		OPT_BOTH(OPT_BUF(BV_AR))
+#if defined(FEAT_QUICKFIX)
+# define PV_BH		OPT_BUF(BV_BH)
+#endif
+#define PV_BIN		OPT_BUF(BV_BIN)
+#define PV_BL		OPT_BUF(BV_BL)
+
+/*
+ * "indir" values for window-local options
+ */
+enum
+{
+    WV_LIST = 0
+#ifdef FEAT_ARABIC
+	, WV_ARAB
+#endif
+    , WV_COUNT	    /* must be the last one */
+};
+
+#define PV_LIST		OPT_WIN(WV_LIST)
+#ifdef FEAT_ARABIC
+# define PV_ARAB	OPT_WIN(WV_ARAB)
+#endif
+
+/* TODO: "indir" values for the rest */
 typedef enum
 {
     PV_NONE = 0
-    , PV_AI
-    , PV_AR
-    , PV_ARAB
-    , PV_BH
-    , PV_BIN
-    , PV_BL
     , PV_BOMB
     , PV_BT
     , PV_CI
@@ -100,7 +141,6 @@ typedef enum
     , PV_KP
     , PV_LBR
     , PV_LISP
-    , PV_LIST
     , PV_MA
     , PV_ML
     , PV_MOD
@@ -408,7 +448,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"autoread",    "ar",   P_BOOL|P_VI_DEF,
-			    (char_u *)&p_ar, OPT_BOTH(PV_AR),
+			    (char_u *)&p_ar, PV_AR,
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"autowrite",   "aw",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_aw, PV_NONE,
@@ -4092,7 +4132,7 @@ do_set(arg, opt_flags)
 			 * with a local value the local value will be
 			 * reset, use the global value here. */
 			if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
-				&& (int)options[opt_idx].indir >= PV_BOTH)
+				&& ((int)options[opt_idx].indir & PV_BOTH))
 			    varp = options[opt_idx].var;
 
 			/* The old value is kept until we are sure that the
@@ -4189,7 +4229,7 @@ do_set(arg, opt_flags)
 
 			    /* When setting the local value of a global
 			     * option, the old value may be the global value. */
-			    if ((int)options[opt_idx].indir >= PV_BOTH
+			    if (((int)options[opt_idx].indir & PV_BOTH)
 						   && (opt_flags & OPT_LOCAL))
 				origval = *(char_u **)get_varp(
 							   &options[opt_idx]);
@@ -5035,7 +5075,7 @@ set_string_option_direct(name, opt_idx, val, opt_flags)
 
 	/* When setting both values of a global option with a local value,
 	 * make the local value empty, so that the global value is used. */
-	if ((int)options[opt_idx].indir >= PV_BOTH && both)
+	if (((int)options[opt_idx].indir & PV_BOTH) && both)
 	{
 	    free_string_option(*varp);
 	    *varp = empty_option;
@@ -5088,7 +5128,7 @@ set_string_option(opt_idx, value, opt_flags)
     {
 	varp = (char_u **)get_varp_scope(&(options[opt_idx]),
 		(opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
-		    ? ((int)options[opt_idx].indir >= PV_BOTH
+		    ? (((int)options[opt_idx].indir & PV_BOTH)
 			? OPT_GLOBAL : OPT_LOCAL)
 		    : opt_flags);
 	oldval = *varp;
@@ -6351,7 +6391,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    options[opt_idx].flags &= ~P_ALLOCED;
 
 	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0
-		&& (int)options[opt_idx].indir >= PV_BOTH)
+		&& ((int)options[opt_idx].indir & PV_BOTH))
 	{
 	    /* global option with local value set to use global value; free
 	     * the local value and make it empty */
@@ -8538,7 +8578,7 @@ get_varp_scope(p, opt_flags)
 	    return (char_u *)GLOBAL_WO(get_varp(p));
 	return p->var;
     }
-    if ((opt_flags & OPT_LOCAL) && (int)p->indir >= PV_BOTH)
+    if ((opt_flags & OPT_LOCAL) && ((int)p->indir & PV_BOTH))
     {
 	switch ((int)p->indir)
 	{
@@ -8550,7 +8590,7 @@ get_varp_scope(p, opt_flags)
 	    case OPT_BOTH(PV_EP):   return (char_u *)&(curbuf->b_p_ep);
 	    case OPT_BOTH(PV_KP):   return (char_u *)&(curbuf->b_p_kp);
 	    case OPT_BOTH(PV_PATH): return (char_u *)&(curbuf->b_p_path);
-	    case OPT_BOTH(PV_AR):   return (char_u *)&(curbuf->b_p_ar);
+	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
 	    case OPT_BOTH(PV_TAGS): return (char_u *)&(curbuf->b_p_tags);
 #ifdef FEAT_FIND_ID
 	    case OPT_BOTH(PV_DEF):  return (char_u *)&(curbuf->b_p_def);
@@ -8591,7 +8631,7 @@ get_varp(p)
 				    ? (char_u *)&curbuf->b_p_kp : p->var;
 	case OPT_BOTH(PV_PATH):	return *curbuf->b_p_path != NUL
 				    ? (char_u *)&(curbuf->b_p_path) : p->var;
-	case OPT_BOTH(PV_AR):	return curbuf->b_p_ar >= 0
+	case PV_AR:	return curbuf->b_p_ar >= 0
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
 	case OPT_BOTH(PV_TAGS):	return *curbuf->b_p_tags != NUL
 				    ? (char_u *)&(curbuf->b_p_tags) : p->var;

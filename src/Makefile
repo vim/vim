@@ -354,7 +354,10 @@ CClink = $(CC)
 # DARWIN - detecting Mac OS X
 # Uncomment this line when you want to compile a Unix version of Vim on
 # Darwin.  None of the Mac specific options or files will be used.
+# You can also change the architecture supported, default is to test for both.
 #CONF_OPT_DARWIN = --disable-darwin
+#CONF_OPT_DARWIN = --with-mac-arch=i386
+#CONF_OPT_DARWIN = --with-mac-arch=ppc
 
 # PERL
 # Uncomment this when you want to include the Perl interface.
@@ -546,10 +549,6 @@ LINT_OPTIONS = -beprxzF
 # (indirectly) is also marked as leaked memory.
 #PROFILE_CFLAGS = -DEXITFREE
 #PROFILE_LIBS = -lccmalloc
-
-# MAC OS X platform
-MAC_OSX_ARCH = -arch ppc
-#MAC_OSX_ARCH = -arch i386
 
 #####################################################
 ###  Specific systems, check if yours is listed!  ### {{{
@@ -1201,11 +1200,11 @@ PHOTONGUI_BUNDLE =
 # CARBON GUI
 CARBONGUI_SRC	= gui.c gui_mac.c
 CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o objects/pty.o
-CARBONGUI_DEFS	= -DFEAT_GUI_MAC $(MAC_OSX_ARCH) -fno-common -fpascal-strings \
+CARBONGUI_DEFS	= -DFEAT_GUI_MAC -fno-common -fpascal-strings \
 		  -Wall -Wno-unknown-pragmas \
 		  -mdynamic-no-pic -pipe
 CARBONGUI_IPATH	= -I. -Iproto
-CARBONGUI_LIBS_DIR = $(MAC_OSX_ARCH)
+CARBONGUI_LIBS_DIR =
 CARBONGUI_LIBS1	= -framework Carbon
 CARBONGUI_LIBS2	=
 CARBONGUI_INSTALL = install_macosx

@@ -489,6 +489,10 @@ EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
 # else
 #  define clip_plus clip_star	/* there is only one clipboard */
 # endif
+EXTERN int	clip_unnamed INIT(= FALSE);
+EXTERN int	clip_autoselect INIT(= FALSE);
+EXTERN int	clip_autoselectml INIT(= FALSE);
+EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 #endif
 
 /*

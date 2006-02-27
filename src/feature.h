@@ -1194,6 +1194,11 @@
 # define FEAT_BEVAL_TIP		/* balloon eval used for toolbar tooltip */
 #endif
 
+/* both Motif and Athena are X11 and share some code */
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
+# define FEAT_GUI_X11
+#endif
+
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
 /*
  * The following features are (currently) only used by Sun Visual WorkShop 6

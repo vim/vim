@@ -242,6 +242,15 @@ typedef struct foldinfo
 				   line */
 } foldinfo_T;
 
+/* Structure to store info about the Visual area. */
+typedef struct
+{
+    pos_T	vi_start;	/* start pos of last VIsual */
+    pos_T	vi_end;		/* end position of last VIsual */
+    int		vi_mode;	/* VIsual_mode of last VIsual */
+    colnr_T	vi_curswant;	/* MAXCOL from w_curswant */
+} visualinfo_T;
+
 /*
  * stuctures used for undo
  */
@@ -270,6 +279,9 @@ struct u_header
 #endif
     int		uh_flags;	/* see below */
     pos_T	uh_namedm[NMARKS];	/* marks before undo/after redo */
+#ifdef FEAT_VISUAL
+    visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
+#endif
 };
 
 /* values for uh_flags */
@@ -1169,13 +1181,10 @@ struct file_buffer
 
 #ifdef FEAT_VISUAL
     /* These variables are set when VIsual_active becomes FALSE */
-    pos_T	b_visual_start;	/* start pos of last VIsual */
-    pos_T	b_visual_end;	/* end position of last VIsual */
-    int		b_visual_mode;	/* VIsual_mode of last VIsual */
+    visualinfo_T b_visual;
 # ifdef FEAT_EVAL
-    int		b_visual_mode_eval;  /* b_visual_mode for visualmode() */
+    int		b_visual_mode_eval;  /* b_visual.vi_mode for visualmode() */
 # endif
-    colnr_T	b_visual_curswant;   /* MAXCOL from w_curswant */
 #endif
 
     pos_T	b_last_cursor;	/* cursor position when last unloading this
@@ -2228,3 +2237,16 @@ typedef struct
     char_u	*pum_extra;	/* extra menu text (may be truncated) */
     char_u	*pum_info;	/* extra info */
 } pumitem_T;
+
+/*
+ * Structure used for get_tagfname().
+ */
+typedef struct
+{
+    char_u	*tn_tags;	/* value of 'tags' when starting */
+    char_u	*tn_np;		/* current position in tn_tags */
+    int		tn_did_filefind_init;
+    int		tn_hf_idx;
+    void	*tn_search_ctx;
+} tagname_T;
+

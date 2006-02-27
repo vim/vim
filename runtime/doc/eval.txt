@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 25
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -767,7 +767,7 @@ expr6 +	 expr6 ..	Number addition or |List| concatenation	*expr-+*
 expr6 -	 expr6 ..	Number subtraction			*expr--*
 expr6 .	 expr6 ..	String concatenation			*expr-.*
 
-For |List|s only "+" is possible and then both expr6 must be a list.  The
+For |Lists| only "+" is possible and then both expr6 must be a list.  The
 result is a new list with the two lists Concatenated.
 
 expr7 *	 expr7 ..	number multiplication			*expr-star*
@@ -1651,11 +1651,11 @@ reverse( {list})		List	reverse {list} in-place
 search( {pattern} [, {flags}])	Number	search for {pattern}
 searchdecl({name} [, {global} [, {thisblock}]])
 				Number  search for variable declaration
-searchpair( {start}, {middle}, {end} [, {flags} [, {skip}]])
+searchpair( {start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 				Number	search for other end of start/end pair
-searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip}]])
+searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 				List	search for other end of start/end pair
-searchpos( {pattern} [, {flags}])
+searchpos( {pattern} [, {flags} [, {stopline}]])
 				List	search for {pattern}
 server2client( {clientid}, {string})
 				Number	send reply string
@@ -1725,7 +1725,7 @@ add({list}, {expr})					*add()*
 			:let alist = add([1, 2, 3], item)
 			:call add(mylist, "woodstock")
 <		Note that when {expr} is a |List| it is appended as a single
-		item.  Use |extend()| to concatenate |List|s.
+		item.  Use |extend()| to concatenate |Lists|.
 		Use |insert()| to add an item at another position.
 
 
@@ -2016,7 +2016,7 @@ copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		When {expr} is a |List| a shallow copy is created.  This means
 		that the original |List| can be changed without changing the
 		copy, and vise versa.  But the items are identical, thus
-		changing an item changes the contents of both |List|s.  Also
+		changing an item changes the contents of both |Lists|.  Also
 		see |deepcopy()|.
 
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
@@ -2327,9 +2327,10 @@ expand({expr} [, {flag}])				*expand()*
 		getting the raw output of an external command.
 
 extend({expr1}, {expr2} [, {expr3}])			*extend()*
-		{expr1} and {expr2} must be both |List|s or both Dictionaries.
+		{expr1} and {expr2} must be both |Lists| or both
+		|Dictionaries|.
 
-		If they are |List|s: Append {expr2} to {expr1}.
+		If they are |Lists|: Append {expr2} to {expr1}.
 		If {expr3} is given insert the items of {expr2} before item
 		{expr3} in {expr1}.  When {expr3} is zero insert before the
 		first item.  When {expr3} is equal to len({expr1}) then
@@ -2341,7 +2342,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		two lists into a new list use the + operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
 <
-		If they are Dictionaries:
+		If they are |Dictionaries|:
 		Add all entries from {expr2} to {expr1}.
 		If a key exists in both {expr1} and {expr2} then {expr3} is
 		used to decide what to do:
@@ -2486,7 +2487,7 @@ function({name})					*function()* *E700*
 
 
 garbagecollect()					*garbagecollect()*
-		Cleanup unused |List|s and Dictionaries that have circular
+		Cleanup unused |Lists| and |Dictionaries| that have circular
 		references.  There is hardly ever a need to invoke this
 		function, as it is automatically done when Vim runs out of
 		memory or is waiting for the user to press a key after
@@ -3108,7 +3109,7 @@ insert({list}, {item} [, {idx}])			*insert()*
 			:call insert(mylist, 6, len(mylist))
 <		The last example can be done simpler with |add()|.
 		Note that when {item} is a |List| it is inserted as a single
-		item.  Use |extend()| to concatenate |List|s.
+		item.  Use |extend()| to concatenate |Lists|.
 
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is non-zero when a directory
@@ -3143,7 +3144,7 @@ join({list} [, {sep}])					*join()*
 		Note that {sep} is not added at the end.  You might want to
 		add it there too: >
 			let lines = join(mylist, "\n") . "\n"
-<		String items are used as-is.  |List|s and Dictionaries are
+<		String items are used as-is.  |Lists| and |Dictionaries| are
 		converted into a string like with |string()|.
 		The opposite function is |split()|.
 
@@ -3342,7 +3343,7 @@ mapcheck({name}[, {mode}])				*mapcheck()*
 match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		When {expr} is a |List| then this returns the index of the
 		first item where {pat} matches.  Each item is used as a
-		String, |List|s and Dictionaries are used as echoed.
+		String, |Lists| and |Dictionaries| are used as echoed.
 		Otherwise, {expr} is used as a String.  The result is a
 		Number, which gives the index (byte offset) in {expr} where
 		{pat} matches.
@@ -3807,7 +3808,7 @@ reverse({list})	Reverse the order of items in {list} in-place.  Returns
 		If you want a list to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 
-search({pattern} [, {flags}])				*search()*
+search({pattern} [, {flags} [, {stopline}]])			*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).
 		{flags} is a String, which can contain these character flags:
@@ -3823,11 +3824,20 @@ search({pattern} [, {flags}])				*search()*
 		cursor is moved. The 's' flag cannot be combined with the 'n'
 		flag.
 
+		When the {stopline} argument is given then the search stops
+		after searching this line.  This is useful to restrict the
+		search to a range of lines.  Examples: >
+			let match = search('(', 'b', line("w0"))
+			let end = search('END', '', line("w$"))
+<		When {stopline} is used and it is not zero this also implies
+		that the search does not wrap around the end of the file.
+
 		When a match has been found its line number is returned.
 		The cursor will be positioned at the match, unless the 'n'
 		flag is used).
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
+		To get the column number too use |searchpos()|.
 
 		Example (goes over all files in the argument list): >
 		    :let n = 1
@@ -3865,7 +3875,7 @@ searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 			endif
 <
 							*searchpair()*
-searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
+searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 		Search for the match of a nested start-end pair.  This can be
 		used to find the "endif" that matches an "if", while other
 		if/endif pairs in between are ignored.
@@ -3899,6 +3909,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 		When {skip} is omitted or empty, every match is accepted.
 		When evaluating {skip} causes an error the search is aborted
 		and -1 returned.
+
+		For {stopline} see |search()|.
 
 		The value of 'ignorecase' is used.  'magic' is ignored, the
 		patterns are used like it's on.
@@ -3944,7 +3956,7 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}]])
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"')
 <
 							*searchpairpos()*
-searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}]])
+searchpairpos({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 		Same as searchpair(), but returns a |List| with the line and
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of
@@ -3955,8 +3967,8 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}]])
 <
 		See |match-parens| for a bigger and more useful example.
 
-searchpos({pattern} [, {flags}])			*searchpos()*
-		Same as search(), but returns a |List| with the line and
+searchpos({pattern} [, {flags} [, {stopline}]])		*searchpos()*
+		Same as |search()|, but returns a |List| with the line and
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of
 		the column position of the match. If no match is found,
@@ -4143,7 +4155,7 @@ sort({list} [, {func}])					*sort()* *E702*
 		want a list to remain unmodified make a copy first: >
 			:let sortedlist = sort(copy(mylist))
 <		Uses the string representation of each item to sort on.
-		Numbers sort after Strings, |List|s after Numbers.
+		Numbers sort after Strings, |Lists| after Numbers.
 		For sorting text in the current buffer use |:sort|.
 		When {func} is given and it is one then case is ignored.
 		When {func} is a |Funcref| or a function name, this function

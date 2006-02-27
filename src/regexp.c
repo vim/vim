@@ -3861,17 +3861,17 @@ regmatch(scan)
 		}
 		else
 		{
-		    if (lt(curbuf->b_visual_start, curbuf->b_visual_end))
+		    if (lt(curbuf->b_visual.vi_start, curbuf->b_visual.vi_end))
 		    {
-			top = curbuf->b_visual_start;
-			bot = curbuf->b_visual_end;
+			top = curbuf->b_visual.vi_start;
+			bot = curbuf->b_visual.vi_end;
 		    }
 		    else
 		    {
-			top = curbuf->b_visual_end;
-			bot = curbuf->b_visual_start;
+			top = curbuf->b_visual.vi_end;
+			bot = curbuf->b_visual.vi_start;
 		    }
-		    mode = curbuf->b_visual_mode;
+		    mode = curbuf->b_visual.vi_mode;
 		}
 		lnum = reglnum + reg_firstlnum;
 		col = (colnr_T)(reginput - regline);

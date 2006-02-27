@@ -294,8 +294,12 @@ u_savecommon(top, bot, newbot)
 	uhp->uh_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
 		       ((curbuf->b_ml.ml_flags & ML_EMPTY) ? UH_EMPTYBUF : 0);
 
-	/* save named marks for undo */
+	/* save named marks and Visual marks for undo */
 	mch_memmove(uhp->uh_namedm, curbuf->b_namedm, sizeof(pos_T) * NMARKS);
+#ifdef FEAT_VISUAL
+	uhp->uh_visual = curbuf->b_visual;
+#endif
+
 	curbuf->b_u_newhead = uhp;
 	if (curbuf->b_u_oldhead == NULL)
 	    curbuf->b_u_oldhead = uhp;
@@ -569,6 +573,9 @@ u_undoredo()
     int		old_flags;
     int		new_flags;
     pos_T	namedm[NMARKS];
+#ifdef FEAT_VISUAL
+    visualinfo_T visualinfo;
+#endif
     int		empty_buffer;		    /* buffer became empty */
 
     old_flags = curbuf->b_u_curhead->uh_flags;
@@ -580,6 +587,9 @@ u_undoredo()
      * save marks before undo/redo
      */
     mch_memmove(namedm, curbuf->b_namedm, sizeof(pos_T) * NMARKS);
+#ifdef FEAT_VISUAL
+    visualinfo = curbuf->b_visual;
+#endif
     curbuf->b_op_start.lnum = curbuf->b_ml.ml_line_count;
     curbuf->b_op_start.col = 0;
     curbuf->b_op_end.lnum = 0;
@@ -741,11 +751,18 @@ u_undoredo()
      * restore marks from before undo/redo
      */
     for (i = 0; i < NMARKS; ++i)
-	if (curbuf->b_u_curhead->uh_namedm[i].lnum)
+	if (curbuf->b_u_curhead->uh_namedm[i].lnum != 0)
 	{
 	    curbuf->b_namedm[i] = curbuf->b_u_curhead->uh_namedm[i];
 	    curbuf->b_u_curhead->uh_namedm[i] = namedm[i];
 	}
+#ifdef FEAT_VISUAL
+    if (curbuf->b_u_curhead->uh_visual.vi_start.lnum != 0)
+    {
+	curbuf->b_visual = curbuf->b_u_curhead->uh_visual;
+	curbuf->b_u_curhead->uh_visual = visualinfo;
+    }
+#endif
 
     /*
      * If the cursor is only off by one line, put it at the same position as

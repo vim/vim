@@ -37,6 +37,7 @@ void gui_init_which_components __ARGS((char_u *oldval));
 int gui_use_tabline __ARGS((void));
 void gui_update_tabline __ARGS((void));
 void get_tabline_label __ARGS((tabpage_T *tp));
+int send_tabline_event __ARGS((int nr));
 void gui_remove_scrollbars __ARGS((void));
 void gui_create_scrollbar __ARGS((scrollbar_T *sb, int type, win_T *wp));
 scrollbar_T *gui_find_scrollbar __ARGS((long ident));

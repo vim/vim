@@ -202,6 +202,9 @@ static int  ins_bs __ARGS((int c, int mode, int *inserted_space_p));
 static void ins_mouse __ARGS((int c));
 static void ins_mousescroll __ARGS((int up));
 #endif
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+static void ins_tabline __ARGS((int c));
+#endif
 static void ins_left __ARGS((void));
 static void ins_home __ARGS((int c));
 static void ins_end __ARGS((int c));
@@ -1042,6 +1045,12 @@ doESCkey:
 
 	case K_MOUSEUP:	/* Default action for scroll wheel down: scroll down */
 	    ins_mousescroll(TRUE);
+	    break;
+#endif
+#ifdef FEAT_GUI_TABLINE
+	case K_TABLINE:
+	case K_TABMENU:
+	    ins_tabline(c);
 	    break;
 #endif
 
@@ -3515,7 +3524,7 @@ ins_compl_get_exp(ini)
 		    found_new_match = searchit(NULL, ins_buf, pos,
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
-								     RE_LAST);
+							RE_LAST, (linenr_T)0);
 		if (!compl_started)
 		{
 		    /* set "compl_started" even on fail */
@@ -7978,7 +7987,31 @@ ins_mousescroll(up)
 }
 #endif
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+    void
+ins_tabline(c)
+    int		c;
+{
+    /* We will be leaving the current window, unless closing another tab. */
+    if (c != K_TABMENU || current_tabmenu != TABLINE_MENU_CLOSE
+		|| (current_tab != 0 && current_tab != tabpage_index(curtab)))
+    {
+	undisplay_dollar();
+	start_arrow(&curwin->w_cursor);
+# ifdef FEAT_CINDENT
+	can_cindent = TRUE;
+# endif
+    }
+
+    if (c == K_TABLINE)
+	goto_tabpage(current_tab);
+    else
+	handle_tabmenu();
+
+}
+#endif
+
+#if defined(FEAT_GUI) || defined(PROTO)
     void
 ins_scroll()
 {

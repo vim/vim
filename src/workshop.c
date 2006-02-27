@@ -1127,13 +1127,13 @@ workshop_get_positions(
     *curLine = curwin->w_cursor.lnum;
     *curCol = curwin->w_cursor.col;
 
-    if (curbuf->b_visual_mode == 'v' &&
-	    equalpos(curwin->w_cursor, curbuf->b_visual_end))
+    if (curbuf->b_visual.vi_mode == 'v' &&
+	    equalpos(curwin->w_cursor, curbuf->b_visual.vi_end))
     {
-	*selStartLine = curbuf->b_visual_start.lnum;
-	*selStartCol = curbuf->b_visual_start.col;
-	*selEndLine = curbuf->b_visual_end.lnum;
-	*selEndCol = curbuf->b_visual_end.col;
+	*selStartLine = curbuf->b_visual.vi_start.lnum;
+	*selStartCol = curbuf->b_visual.vi_start.col;
+	*selEndLine = curbuf->b_visual.vi_end.lnum;
+	*selEndCol = curbuf->b_visual.vi_end.col;
 	*selection = get_selection(curbuf);
 	if (*selection)
 	    *selLength = strlen(*selection);
@@ -1171,10 +1171,10 @@ get_selection(
     char	*new_sp;	/* temp pointer to new sp */
     int		 lnum;		/* line number we are appending */
 
-    if (buf->b_visual_mode == 'v')
+    if (buf->b_visual.vi_mode == 'v')
     {
-	start = &buf->b_visual_start;
-	end = &buf->b_visual_end;
+	start = &buf->b_visual.vi_start;
+	end = &buf->b_visual.vi_end;
 	if (start->lnum == end->lnum)
 	{
 	    /* selection is all on one line */

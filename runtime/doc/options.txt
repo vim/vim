@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 25
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2447,6 +2447,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When reading a file 'fileencoding' will be set from 'fileencodings'.
 	To read a file in a certain encoding it won't work by setting
 	'fileencoding', use the |++enc| argument.
+	For a new file the global value of 'fileencoding' is used.
 	Prepending "8bit-" and "2byte-" has no meaning here, they are ignored.
 	When the option is set, the value is converted to lowercase.  Thus
 	you can set it with uppercase values too.  '_' characters are
@@ -2496,9 +2497,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-blank characters.
 	When the |++enc| argument is used then the value of 'fileencodings' is
 	not used.
-	Note that 'fileencodings' is not used for a new file, 'fileencoding'
-	is always empty then.  This means that a non-existing file may get a
-	different encoding than an empty file.
+	Note that 'fileencodings' is not used for a new file, the global value
+	of 'fileencoding' is used instead.  You can set it with: >
+		:setglobal fenc=iso-8859-2
+<	This means that a non-existing file may get a different encoding than
+	an empty file.
 	The special value "ucs-bom" can be used to check for a Unicode BOM
 	(Byte Order Mark) at the start of the file.  It must not be preceded
 	by "utf-8" or another Unicode encoding for this to work properly.
@@ -3317,9 +3320,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 'guitablabel' 'gtl'	string	(default empty)
 			global
 			{not in Vi}
+			{only available when compiled with GUI enabled and
+			with the +windows feature}
 	When nonempty describes the text to use in a label of the GUI tab
-	pages line.  When empty Vim will use a default label. See
+	pages line.  When empty Vim will use a default label.  See
 	|setting-guitablabel| for more info.
+
+	The format of this option is like that of 'statusline'.
 
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
@@ -5089,7 +5096,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	When this option is not empty, it determines the content of the ruler
 	string, as displayed for the 'ruler' option.
-	The format of this option, is like that of 'statusline'.
+	The format of this option is like that of 'statusline'.
 	The default ruler width is 17 characters.  To make the ruler 15
 	characters wide, put "%15(" at the start and "%)" at the end.
 	Example: >

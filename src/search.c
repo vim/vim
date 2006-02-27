@@ -496,7 +496,7 @@ last_pat_prog(regmatch)
  * subpattern plus one; one if there was none.
  */
     int
-searchit(win, buf, pos, dir, pat, count, options, pat_use)
+searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
     win_T	*win;		/* window to search in; can be NULL for a
 				   buffer without a window! */
     buf_T	*buf;
@@ -505,7 +505,8 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
     char_u	*pat;
     long	count;
     int		options;
-    int		pat_use;
+    int		pat_use;	/* which pattern to use when "pat" is empty */
+    linenr_T	stop_lnum;	/* stop after this line number when != 0 */
 {
     int		found;
     linenr_T	lnum;		/* no init to shut up Apollo cc */
@@ -586,6 +587,11 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 	    for ( ; lnum > 0 && lnum <= buf->b_ml.ml_line_count;
 					   lnum += dir, at_first_line = FALSE)
 	    {
+		/* Stop after checking "stop_lnum", if it's set. */
+		if (stop_lnum != 0 && (dir == FORWARD
+				       ? lnum > stop_lnum : lnum < stop_lnum))
+		    break;
+
 		/*
 		 * Look for a match somewhere in line "lnum".
 		 */
@@ -842,10 +848,12 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use)
 	    at_first_line = FALSE;
 
 	    /*
-	     * Stop the search if wrapscan isn't set, after an interrupt,
-	     * after a match and after looping twice.
+	     * Stop the search if wrapscan isn't set, "stop_lnum" is
+	     * specified, after an interrupt, after a match and after looping
+	     * twice.
 	     */
-	    if (!p_ws || got_int || called_emsg || break_loop || found || loop)
+	    if (!p_ws || stop_lnum != 0 || got_int || called_emsg
+					       || break_loop || found || loop)
 		break;
 
 	    /*
@@ -1227,7 +1235,7 @@ do_search(oap, dirc, pat, count, options)
 		       (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
 			+ SEARCH_MSG + SEARCH_START
 			+ ((pat != NULL && *pat == ';') ? 0 : SEARCH_NOOF))),
-		RE_LAST);
+		RE_LAST, (linenr_T)0);
 
 	if (dircp != NULL)
 	    *dircp = dirc;	/* restore second '/' or '?' for normal_cmd() */
@@ -3746,7 +3754,8 @@ again:
     {
 	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
 		    (char_u *)"",
-		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0, NULL) <= 0)
+		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0,
+						      NULL, (linenr_T)0) <= 0)
 	{
 	    curwin->w_cursor = old_pos;
 	    goto theend;
@@ -3779,7 +3788,8 @@ again:
     sprintf((char *)spat, "<%.*s\\%%(\\_[^>]\\{-}[^/]>\\|>\\)\\c", len, p);
     sprintf((char *)epat, "</%.*s>\\c", len, p);
 
-    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"", 0, NULL);
+    r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"",
+						       0, NULL, (linenr_T)0);
 
     vim_free(spat);
     vim_free(epat);
@@ -3959,8 +3969,8 @@ extend:
      * Move past the end of any white lines.
      */
     end_lnum = start_lnum;
-    while (linewhite(end_lnum) && end_lnum < curbuf->b_ml.ml_line_count)
-	    ++end_lnum;
+    while (end_lnum <= curbuf->b_ml.ml_line_count && linewhite(end_lnum))
+	++end_lnum;
 
     --end_lnum;
     i = count;

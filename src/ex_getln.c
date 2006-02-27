@@ -1224,21 +1224,21 @@ getcmdline(firstc, count, indent)
 # endif
 		    if (!mouse_has(MOUSE_COMMAND))
 			goto cmdline_not_changed;   /* Ignore mouse */
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
 		if (clip_star.available)
 		    cmdline_paste('*', TRUE);
 		else
-#endif
+# endif
 		    cmdline_paste(0, TRUE);
 		redrawcmd();
 		goto cmdline_changed;
 
-#ifdef FEAT_DND
+# ifdef FEAT_DND
 	case K_DROP:
 		cmdline_paste('~', TRUE);
 		redrawcmd();
 		goto cmdline_changed;
-#endif
+# endif
 
 	case K_LEFTDRAG:
 	case K_LEFTRELEASE:
@@ -1291,7 +1291,7 @@ getcmdline(firstc, count, indent)
 		    if (mouse_row <= cmdline_row + ccline.cmdspos / Columns
 				  && mouse_col < ccline.cmdspos % Columns + i)
 			break;
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 		    if (has_mbyte)
 		    {
 			/* Count ">" for double-wide char that doesn't fit. */
@@ -1299,7 +1299,7 @@ getcmdline(firstc, count, indent)
 			ccline.cmdpos += (*mb_ptr2len)(ccline.cmdbuff
 							 + ccline.cmdpos) - 1;
 		    }
-#endif
+# endif
 		    ccline.cmdspos += i;
 		}
 		goto cmdline_not_changed;
@@ -1339,6 +1339,16 @@ getcmdline(firstc, count, indent)
 		}
 		goto cmdline_not_changed;
 #endif
+#ifdef FEAT_GUI_TABLINE
+	case K_TABLINE:
+	case K_TABMENU:
+		/* Don't want to change any tabs here.  Make sure the same tab
+		 * is still selected. */
+		if (gui_use_tabline())
+		    gui_mch_set_curtab(tabpage_index(curtab));
+		goto cmdline_not_changed;
+#endif
+
 	case K_SELECT:	    /* end of Select mode mapping - ignore */
 		goto cmdline_not_changed;
 

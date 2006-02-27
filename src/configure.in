@@ -102,12 +102,51 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     AC_MSG_RESULT([yes, Darwin support excluded])
   fi
 
+  AC_MSG_CHECKING(--with-mac-arch argument)
+  AC_ARG_WITH(mac-arch, [  --with-mac-arch=ARCH    intel, ppc or both],
+	MACARCH="$withval"; AC_MSG_RESULT($MACARCH),
+	MACARCH="both"; AC_MSG_RESULT(Defaulting to $MACARCH))
+
+  if test "x$MACARCH" = "xboth"; then
+    AC_MSG_CHECKING(if both architectures are supported)
+    save_cppflags="$CPPFLAGS"
+    save_ldflags="$LDFLAGS"
+    CPPFLAGS="$CPPFLAGS -arch i386 -arch ppc"
+    LDFLAGS="$LDFLAGS -arch i386 -arch ppc"
+    AC_TRY_LINK([ ], [ ],
+	AC_MSG_RESULT(yes),
+	AC_MSG_RESULT(no)
+	    AC_MSG_CHECKING(if Intel architecture is supported)
+	    CPPFLAGS="$save_cppflags -arch i386"
+	    LDFLAGS="$save_ldflags -arch i386"
+	    AC_TRY_LINK([ ], [ ],
+		AC_MSG_RESULT(yes); MACARCH="intel",
+		AC_MSG_RESULT(no); MACARCH="ppc"))
+    CPPFLAGS="$save_cppflags"
+    LDFLAGS="$save_ldflags"
+  fi
+
+  case "$MACARCH" in
+    intel)	MAC_OSX_ARCH="-arch i386";;
+    both)	MAC_OSX_ARCH="-arch i386 -arch ppc";;
+    ppc)	MAC_OSX_ARCH="-arch ppc";;
+    *)		MAC_OSX_ARCH="";;
+  esac
+
+  dnl avoid a bug with -O2 for intel
+  if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
+    CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-O/'`
+  fi
+
+  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
+  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
+
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
     OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl TODO: use -arch i386 on Intel machines
-    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp -arch ppc"
+    CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
@@ -119,6 +158,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
       fi
     fi
   fi
+
 else
   AC_MSG_RESULT(no)
 fi

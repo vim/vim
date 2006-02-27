@@ -3249,7 +3249,7 @@ do_put(regname, dir, count, flags)
 	if (flags & PUT_LINE_FORWARD)
 	{
 	    /* Must be "p" for a Visual block, put lines below the block. */
-	    curwin->w_cursor = curbuf->b_visual_end;
+	    curwin->w_cursor = curbuf->b_visual.vi_end;
 	    dir = FORWARD;
 	}
 	curbuf->b_op_start = curwin->w_cursor;	/* default for '[ mark */

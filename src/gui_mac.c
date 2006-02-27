@@ -3394,8 +3394,6 @@ gui_mch_init_font(char_u *font_name, int fontset)
 	    kATSStyleNoAntiAliasing :
 	    kATSStyleNoOptions;
 
-	printf("BLA\n");
-
 	ATSUAttributeTag attribTags[] =
 	{
 	    kATSUFontTag, kATSUSizeTag, kATSUStyleRenderingOptionsTag,
@@ -3426,7 +3424,6 @@ gui_mch_init_font(char_u *font_name, int fontset)
 #endif
 
     return OK;
-
 }
 
 /*
