@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 26
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -23,6 +23,7 @@ Spell checking				|new-spell|
 Omni completion				|new-omni-completion|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
+Highlighting matching parens		|new-matchparen|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
 Scroll back in messages			|new-scroll-back|
@@ -225,6 +226,16 @@ Printing multi-byte text				*new-print-multi-byte*
 The |:hardcopy| command now supports printing multi-byte characters.
 The 'printmbcharset' and 'printmbfont' options are used for this.
 Also see |postscript-cjk-printing|.  (Mike Williams)
+
+
+Highlighting matching parens				*new-matchparen*
+----------------------------
+
+When moving the cursor through the text and it is on a paren, then the
+matching paren can be highlighted.  This uses the new |CursorMoved|
+autocommand event.
+
+See |pi_paren.txt| for more information.
 
 
 Translated manual pages					*new-manpage-trans*
@@ -1766,5 +1777,18 @@ When counting words for the Visual block area and using "$" to select until
 the end of every line only up to the length of the last line was counted.
 
 "dip" in trailing empty lines left one empty line behind.
+
+The script ID was only remembered globally for each option. When a buffer- or
+window-local option was set the same "last set" location was changed for all
+buffers and windows.  Now remember the script ID for each local option
+separately.
+
+GUI: The "Replace All" button didn't handle backslashes in the replacement in
+the same way as "Replace".  Escape backslashes so that they are taken
+literally.
+
+An error in a function reported a line number that doesn't take line
+continuation into account.  Now store a NULL for continuation lines, so that
+the index is equal to the line number in the sourced file.
 
  vim:tw=78:ts=8:ft=help:norl:

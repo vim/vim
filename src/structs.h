@@ -203,6 +203,11 @@ typedef struct
 #endif
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
+
+#ifdef FEAT_EVAL
+    int		wo_scriptID[WV_COUNT];	/* SIDs for window-local options */
+# define w_p_scriptID w_onebuf_opt.wo_scriptID
+#endif
 } winopt_T;
 
 /*
@@ -1282,6 +1287,10 @@ struct file_buffer
      * or contents of the file being edited.
      */
     int		b_p_initialized;	/* set when options initialized */
+
+#ifdef FEAT_EVAL
+    int		b_p_scriptID[BV_COUNT];	/* SIDs for buffer-local options */
+#endif
 
     int		b_p_ai;		/* 'autoindent' */
     int		b_p_ai_nopaste;	/* b_p_ai saved for paste mode */

@@ -583,13 +583,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 			/* set forced 'fileencoding' */
 			fenc = enc_canonize(eap->cmd + eap->force_enc);
 			if (fenc != NULL)
-			{
 			    set_string_option_direct((char_u *)"fenc", -1,
-						    fenc, OPT_FREE|OPT_LOCAL);
-# ifdef FEAT_EVAL
-			    set_option_scriptID((char_u *)"fenc", current_SID);
-# endif
-			}
+						 fenc, OPT_FREE|OPT_LOCAL, 0);
 			vim_free(fenc);
 		    }
 #endif
@@ -2113,13 +2108,8 @@ failed:
 #ifdef FEAT_MBYTE
     /* If editing a new file: set 'fenc' for the current buffer. */
     if (newfile)
-    {
 	set_string_option_direct((char_u *)"fenc", -1, fenc,
-							  OPT_FREE|OPT_LOCAL);
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"fenc", current_SID);
-# endif
-    }
+						       OPT_FREE|OPT_LOCAL, 0);
     if (fenc_alloced)
 	vim_free(fenc);
 # ifdef USE_ICONV
@@ -7503,7 +7493,8 @@ au_event_disable(what)
 	if (new_ei != NULL)
 	{
 	    STRCAT(new_ei, what);
-	    set_string_option_direct((char_u *)"ei", -1, new_ei, OPT_FREE);
+	    set_string_option_direct((char_u *)"ei", -1, new_ei,
+							  OPT_FREE, SID_NONE);
 	    vim_free(new_ei);
 	}
     }
@@ -7516,7 +7507,8 @@ au_event_restore(old_ei)
 {
     if (old_ei != NULL)
     {
-	set_string_option_direct((char_u *)"ei", -1, old_ei, OPT_FREE);
+	set_string_option_direct((char_u *)"ei", -1, old_ei,
+							  OPT_FREE, SID_NONE);
 	vim_free(old_ei);
     }
 }

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 26
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3361,12 +3361,6 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		"\c" to the pattern to ignore case: >
 			:let idx = match(haystack, '\cneedle')
 <
-		When {count} is given use the {count}'th match.  When a match
-		is found in a String the search for the next one starts on
-		character further.  Thus this example results in 1: >
-			echo match("testing", "..", 0, 2)
-<		In a |List| the search continues in the next item.
-
 		If {start} is given, the search starts from byte index
 		{start} in a String or item {start} in a |List|.
 		The result, however, is still the index counted from the
@@ -3377,10 +3371,18 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 <		result is again "4". >
 			:echo match("testing", "t", 2)
 <		result is "3".
+		For a String, if {start} > 0 then it is like the string starts
+		{start} bytes later, thus "^" will match there.
 		For a String, if {start} < 0, it will be set to 0.  For a list
 		the index is counted from the end.
 		If {start} is out of range (> strlen({expr} for a String or
 		> len({expr} for a |List|) -1 is returned.
+
+		When {count} is given use the {count}'th match.  When a match
+		is found in a String the search for the next one starts on
+		character further.  Thus this example results in 1: >
+			echo match("testing", "..", 0, 2)
+<		In a |List| the search continues in the next item.
 
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of

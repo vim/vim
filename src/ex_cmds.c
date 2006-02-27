@@ -3265,10 +3265,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	curbuf->b_help = TRUE;
 #ifdef FEAT_QUICKFIX
 	set_string_option_direct((char_u *)"buftype", -1,
-				       (char_u *)"help", OPT_FREE|OPT_LOCAL);
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"buftype", current_SID);
-# endif
+				     (char_u *)"help", OPT_FREE|OPT_LOCAL, 0);
 #endif
 
 	/*
@@ -3287,10 +3284,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	if (STRCMP(curbuf->b_p_isk, p) != 0)
 	{
 	    set_string_option_direct((char_u *)"isk", -1, p,
-							  OPT_FREE|OPT_LOCAL);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"isk", current_SID);
-# endif
+						       OPT_FREE|OPT_LOCAL, 0);
 	    check_buf_options(curbuf);
 	    (void)buf_init_chartab(curbuf, FALSE);
 	}

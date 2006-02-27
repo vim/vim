@@ -346,7 +346,7 @@ gui_init()
 	 */
 	if (!option_was_set((char_u *)"mouse"))
 	    set_string_option_direct((char_u *)"mouse", -1,
-						     (char_u *)"a", OPT_FREE);
+					   (char_u *)"a", OPT_FREE, SID_NONE);
 
 	/*
 	 * If -U option given, use only the initializations from that file and
@@ -788,10 +788,7 @@ set_guifontwide(name)
 			gui_mch_free_font(gui.wide_font);
 			gui.wide_font = font;
 			set_string_option_direct((char_u *)"gfw", -1,
-							 wide_name, OPT_FREE);
-# ifdef FEAT_EVAL
-			set_option_scriptID((char_u *)"gfw", current_SID);
-# endif
+						      wide_name, OPT_FREE, 0);
 		    }
 		}
 		break;
@@ -3387,13 +3384,8 @@ get_tabline_label(tp)
 	STRCPY(NameBuff, res);
 
 	if (called_emsg)
-	{
 	    set_string_option_direct((char_u *)"guitablabel", -1,
-						      (char_u *)"", OPT_FREE);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"guitablabel", SID_ERROR);
-# endif
-	}
+					   (char_u *)"", OPT_FREE, SID_ERROR);
 	called_emsg |= save_called_emsg;
     }
     else
@@ -4809,7 +4801,11 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     if (type == FRD_REPLACEALL)
     {
 	ga_concat(&ga, (char_u *)"/");
-	concat_esc(&ga, repl_text, '/');	/* escape slashes */
+						/* escape / and \ */
+	p = vim_strsave_escaped(repl_text, (char_u *)"/\\");
+	if (p != NULL)
+	    ga_concat(&ga, p);
+	vim_free(p);
 	ga_concat(&ga, (char_u *)"/g");
     }
     ga_append(&ga, NUL);

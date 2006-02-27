@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 26
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4639,7 +4639,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+linebreak|
 			feature}
 	Minimal number of columns to use for the line number.  Only relevant
-	when the 'number' option is set or printint lines with a line number.
+	when the 'number' option is set or printing lines with a line number.
 	Since one space is always between the number and the text, there is
 	one less character for the number itself.
 	The value is the minimum width.  A bigger width is used when needed to

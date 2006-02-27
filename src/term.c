@@ -1561,10 +1561,7 @@ set_color_count(nr)
 	sprintf((char *)nr_colors, "%d", t_colors);
     else
 	*nr_colors = NUL;
-    set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE);
-# ifdef FEAT_EVAL
-    set_option_scriptID((char_u *)"t_Co", current_SID);
-# endif
+    set_string_option_direct((char_u *)"t_Co", -1, nr_colors, OPT_FREE, 0);
 }
 #endif
 
@@ -1825,7 +1822,8 @@ set_termname(term)
 		    out_flush();
 		    ui_delay(2000L, TRUE);
 		}
-		set_string_option_direct((char_u *)"term", -1, term, OPT_FREE);
+		set_string_option_direct((char_u *)"term", -1, term,
+								 OPT_FREE, 0);
 		display_errors();
 	    }
 	    out_flush();
@@ -2503,10 +2501,7 @@ termcapinit(name)
 #endif
     if (term == NULL || *term == NUL)
 	term = DEFAULT_TERM;
-    set_string_option_direct((char_u *)"term", -1, term, OPT_FREE);
-# ifdef FEAT_EVAL
-    set_option_scriptID((char_u *)"term", current_SID);
-# endif
+    set_string_option_direct((char_u *)"term", -1, term, OPT_FREE, 0);
 
     /* Set the default terminal name. */
     set_string_default("term", term);

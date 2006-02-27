@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 25
+" Last Change:	2006 Feb 27
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1658,19 +1658,29 @@ au BufNewFile,BufRead *.latex,*.sty,*.dtx,*.ltx,*.bbl	setf tex
 au BufNewFile,BufRead *.tex			call s:FTtex()
 
 fun! s:FTtex()
-  let n = 1
-  while n < 10 && n < line("$")
-    let line = getline(n)
-    if line =~ '^\s*\\\%(documentclass\>\|usepackage\>\|begin{\)'
-      setf tex
-      return
-    elseif line =~ '^\s*\\\%(start\l\+\|setup\l\+\|usemodule\|enablemode\>\|enableregime\>\|setvariables\>\|useencoding\>\|usesymbols\>\|stel\l\+\|verwende\l\+\|stel\l\+\|gebruik\l\+\|usa\l\+\|imposta\l\+\|regle\l\+\|utilisemodule\>\)\>'
-      setf context
-      return
+  let lnum = 1
+  let checked = 0
+  while checked < 25 && lnum < line("$")
+    let line = getline(lnum)
+    if line !~ '^\s*%'
+      if line =~ '^\s*\\\%(documentclass\>\|usepackage\>\|begin{\|newcommand\>\|renewcommand\>\)'
+	setf tex
+	return
+      elseif line =~ '^\s*\\\%(start\a\+\|setup\a\+\|usemodule\|enablemode\|enableregime\|setvariables\|useencoding\|usesymbols\|stelle\a\+\|verwende\a\+\|stel\a\+\|gebruik\a\+\|usa\a\+\|imposta\a\+\|regle\a\+\|utilisemodule\)\>'
+	setf context
+	return
+      endif
+      let checked = checked + 1
     endif
-    let n = n + 1
+    let lnum = lnum + 1
   endwhile
-  setf tex
+
+  " Didn't recognize anything, guess.
+  if exists("g:tex_flavour") && g:tex_flavour == "context"
+    setf context
+  else
+    setf tex
+  endif
 endfun
 
 " Context

@@ -1036,6 +1036,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define SID_CARG	-3	/* for "-c" argument */
 #define SID_ENV		-4	/* for sourcing environment variable */
 #define SID_ERROR	-5	/* option was reset because of an error */
+#define SID_NONE	-6	/* don't set scriptID */
 
 /*
  * Events for autocommands.

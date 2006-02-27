@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 26
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Script ID is only remembered for global options. Should remember it for every
-local option separately.
-    Change PV_XXX values in separate ranges for buffer and window.
-    Move the enums to option.h so that the size is known in structs.h
-    use array for each window and buffer with scriptID values.
+test 49 fails because of the function line numbering now taking care of
+continuation lines.
 
 Crash with X command server (Ciaran McCreesh).
 
@@ -43,7 +40,6 @@ maintanance.
 
 "fsutil hardlink" can create a hard link on an NTFS file system. (Daniel
 Einspanjer)  What library function can detect that?
-
 Win32: use GetFileInformationByHandle() to detect hard links on NTFS?
 (George Reilly)
 
@@ -89,9 +85,6 @@ spelling:
 - Add a "zug" command that undoes "zg"?  Deletes the good word instead of
   adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
   Colombo)
-
-An error in a function uses a line number that doesn't take line continuation
-into account. (Mikolaj Machowski)  Store line count in an extra array?
 
 Is it possible to keep the command-line window open?  Would actually work like
 closing it, executing the command and re-opening it (at the same position).
@@ -1603,7 +1596,7 @@ Syntax highlighting:
     "%" match.  :syntax nomatch cMatchError (,{,[,),},] [contained]
 8   Highlight the text between two matching parens (e.g., with a grey
     background) when on one of the parens or in between them.
-    Or highlight the matching paren when the cursor is on one.
+    Option for the matchparen plugin?
 8   Add a command to jump to the next character highlighted with "Error".
 8   When using a cterm, and no ctermfg or ctermbg are defined, use start/stop
     sequences.	Add remark in docs that :if 'term' == "term-name" should be
@@ -1796,17 +1789,16 @@ Built-in script language:
     specified in any way?  To be able to jump to the last edited file.
 8   Pass the executable name to the Vim scripts in some way.  As v:argv0?
 8   Add command arguments with three dashes, passed on to Vim scripts.
-8   When starting to source a vim script, delete all functions that it has
-    previously defined?  Avoids using ":fun!" all the time.
 7   Add optional arguments to user functions:
 	:func myFunc(arg1, arg2, arg3 = "blah", arg4 = 17)
 6   User functions: Functions local to buffer "b:func()"?
-8   Add ":let var[{expr}] = {expr}".  When past the end of "var" just ignore.
+8   For Strings add ":let var[{expr}] = {expr}".  When past the end of "var"
+    just ignore.
 8   The "= register should be writable, if followed by the name of a variable,
     option or environment variable.
 8   ":let &option" should list the value of the option.
-7   Add synIDlist(), making the whole list of syntax items on the
-    stack available (separated with '\n').
+7   Add synIDlist(), making the whole list of syntax items on the syntax stack
+    available as a List.
 8   Add autocommand-event for when a variable is changed:
 	:au VarChanged {varname} {commands}
 8   Add "has("gui_capable")", to check if the GUI can be started.

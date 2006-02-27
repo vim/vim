@@ -298,33 +298,38 @@ vms_sys_status(int status)
     int
 vms_read(char *inbuf, size_t nbytes)
 {
-    int		status, function, len;
-    TT_MODE	tt_mode;
-    ITEM	itmlst[3];
+    int         status, function, len;
+    TT_MODE     tt_mode;
+    ITEM        itmlst[2];     /* terminates on everything */
     static long trm_mask[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
     /* whatever happened earlier we need an iochan here */
     if (!iochan)
-	tt_mode = get_tty();
+        tt_mode = get_tty();
 
-    vul_item(&itmlst[0], 0, TRM$_MODIFIERS,
-	     (char *)( TRM$M_TM_ESCAPE	| TRM$M_TM_TIMED    | TRM$M_TM_NOECHO |
-		       TRM$M_TM_NOEDIT	| TRM$M_TM_NOFILTR  |
-		       TRM$M_TM_NORECALL| TRM$M_TM_TRMNOECHO), 0);
-    vul_item(&itmlst[1], 0, TRM$_TIMEOUT, (char *) 1, 0 );
-    vul_item(&itmlst[2], sizeof(trm_mask), TRM$_TERM, (char *)&trm_mask, 0);
-
-    function = (IO$_READLBLK | IO$M_EXTEND);
+    /* important: clean the inbuf */
     memset(inbuf, 0, nbytes);
 
-    for (;;)
-    {
-	status = sys$qiow(0, iochan, function, &iosb, 0, 0, inbuf, nbytes - 1,
-					       0, 0, &itmlst, sizeof(itmlst));
-	len = strlen(inbuf);
-	if (len > 0)
-	    break;
-    }
+    /* set up the itemlist for the first read */
+    vul_item(&itmlst[0], 0, TRM$_MODIFIERS,
+         (char *)( TRM$M_TM_NOECHO  | TRM$M_TM_NOEDIT    |
+                   TRM$M_TM_NOFILTR | TRM$M_TM_TRMNOECHO |
+                   TRM$M_TM_NORECALL) , 0);
+    vul_item(&itmlst[1], sizeof(trm_mask), TRM$_TERM, (char *)&trm_mask, 0);
+
+    /* wait forever for a char */
+    function = (IO$_READLBLK | IO$M_EXTEND);
+    status = sys$qiow(0, iochan, function, &iosb, 0, 0,
+                         inbuf, nbytes-1, 0, 0, &itmlst, sizeof(itmlst));
+    len = strlen(inbuf); /* how many chars we got? */
+
+    /* read immedatelly the rest in the IO queue   */
+    function = (IO$_READLBLK | IO$M_TIMED | IO$M_ESCAPE | IO$M_NOECHO | IO$M_NOFILTR);
+    status = sys$qiow(0, iochan, function, &iosb, 0, 0,
+                         inbuf+len, nbytes-1-len, 0, 0, 0, 0);
+
+    len = strlen(inbuf); /* return the total length */
+
     return len;
 }
 
@@ -510,7 +515,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 
     /* start of directory portion */
     ch = *in;
-    if ((ch == '[') || (ch == '/') || (ch == '<') ) {	/* start of directory(s) ? */
+    if ((ch == '[') || (ch == '/') || (ch == '<')) {	/* start of directory(s) ? */
 	ch = '[';
 	SKIP_FOLLOWING_SLASHES(in);
     } else if (EQN(in, "../", 3)) { /* Unix parent directory? */

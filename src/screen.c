@@ -5469,14 +5469,9 @@ redraw_custum_statusline(wp)
     called_emsg = FALSE;
     win_redr_custom(wp, FALSE);
     if (called_emsg)
-    {
 	set_string_option_direct((char_u *)"statusline", -1,
 		(char_u *)"", OPT_FREE | (*wp->w_p_stl != NUL
-						   ? OPT_LOCAL : OPT_GLOBAL));
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"statusline", SID_ERROR);
-# endif
-    }
+					? OPT_LOCAL : OPT_GLOBAL), SID_ERROR);
     called_emsg |= save_called_emsg;
 }
 #endif
@@ -8610,13 +8605,8 @@ draw_tabline()
 	called_emsg = FALSE;
 	win_redr_custom(NULL, FALSE);
 	if (called_emsg)
-	{
 	    set_string_option_direct((char_u *)"tabline", -1,
-						      (char_u *)"", OPT_FREE);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"tabline", SID_ERROR);
-# endif
-	}
+					   (char_u *)"", OPT_FREE, SID_ERROR);
 	called_emsg |= save_called_emsg;
     }
     else
@@ -8915,13 +8905,8 @@ win_redr_ruler(wp, always)
 	called_emsg = FALSE;
 	win_redr_custom(wp, TRUE);
 	if (called_emsg)
-	{
 	    set_string_option_direct((char_u *)"rulerformat", -1,
-						      (char_u *)"", OPT_FREE);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"rulerformat", SID_ERROR);
-# endif
-	}
+					   (char_u *)"", OPT_FREE, SID_ERROR);
 	called_emsg |= save_called_emsg;
 	return;
     }

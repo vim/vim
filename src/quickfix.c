@@ -2846,12 +2846,7 @@ ex_cfile(eap)
 	wp = curwin;
 
     if (*eap->arg != NUL)
-    {
-	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE);
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"ef", current_SID);
-# endif
-    }
+	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE, 0);
 
     /*
      * This function is used by the :cfile, :cgetfile and :caddfile

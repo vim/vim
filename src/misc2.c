@@ -2793,13 +2793,9 @@ set_fileformat(t, opt_flags)
 	break;
     }
     if (p != NULL)
-    {
 	set_string_option_direct((char_u *)"ff", -1, (char_u *)p,
-							OPT_FREE | opt_flags);
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"ff", current_SID);
-# endif
-    }
+						     OPT_FREE | opt_flags, 0);
+
 #ifdef FEAT_WINDOWS
     /* This may cause the buffer to become (un)modified. */
     check_status(curbuf);

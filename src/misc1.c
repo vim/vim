@@ -2833,6 +2833,12 @@ changed_common(lnum, col, lnume, xtra)
      * since it notices b_mod_set and then uses b_mod_*. */
     if (must_redraw < VALID)
 	must_redraw = VALID;
+
+#ifdef FEAT_AUTOCMD
+    /* when the cursor line is changed always trigger CursorMoved */
+    if (lnum <= curwin->w_cursor.lnum && lnume > curwin->w_cursor.lnum)
+	last_cursormoved.lnum = 0;
+#endif
 }
 
 /*

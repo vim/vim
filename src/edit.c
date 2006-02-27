@@ -136,6 +136,7 @@ static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
 static int  ins_compl_bs __ARGS((void));
 static void ins_compl_addleader __ARGS((int c));
+static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
 static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
@@ -1387,7 +1388,7 @@ ins_redraw(ready)
     if (!char_avail())
     {
 #ifdef FEAT_AUTOCMD
-	    /* Trigger CursorMoved if the cursor moved. */
+	/* Trigger CursorMoved if the cursor moved. */
 	if (ready && has_cursormovedI()
 			     && !equalpos(last_cursormoved, curwin->w_cursor))
 	{
@@ -2109,11 +2110,8 @@ ins_compl_add(str, len, icase, fname, extra, cdir, flags)
 	return FAIL;
     match->cp_number = -1;
     if (flags & ORIGINAL_TEXT)
-    {
 	match->cp_number = 0;
-	match->cp_str = compl_orig_text;
-    }
-    else if ((match->cp_str = vim_strnsave(str, len)) == NULL)
+    if ((match->cp_str = vim_strnsave(str, len)) == NULL)
     {
 	vim_free(match);
 	return FAIL;
@@ -2818,7 +2816,9 @@ ins_compl_bs()
 	ins_compl_delete();
 	ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
 
-	if (!compl_started)
+	if (compl_started)
+	    ins_compl_set_original_text(compl_leader);
+	else
 	{
 	    /* Matches were cleared, need to search for them now. */
 	    if (ins_complete(Ctrl_N) == FAIL)
@@ -2872,6 +2872,28 @@ ins_compl_addleader(c)
 	ins_compl_del_pum();
 	ins_compl_show_pum();
 	compl_used_match = FALSE;
+	ins_compl_set_original_text(compl_leader);
+    }
+}
+
+/*
+ * Set the first match, the original text.
+ */
+    static void
+ins_compl_set_original_text(str)
+    char_u	*str;
+{
+    char_u	*p;
+
+    /* Replace the original text entry. */
+    if (compl_first_match->cp_flags & ORIGINAL_TEXT)	/* safety check */
+    {
+	p = vim_strsave(str);
+	if (p != NULL)
+	{
+	    vim_free(compl_first_match->cp_str);
+	    compl_first_match->cp_str = p;
+	}
     }
 }
 
@@ -4328,9 +4350,8 @@ ins_complete(c)
 	else
 	    edit_submode = (char_u *)_(CTRL_X_MSG(ctrl_x_mode));
 
-	/* Always add completion for the original text.  Note that
-	 * "compl_orig_text" itself (not a copy) is added, it will be freed
-	 * when the list of matches is freed. */
+	/* Always add completion for the original text. */
+	vim_free(compl_orig_text);
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
 			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
@@ -5779,6 +5800,8 @@ free_last_insert()
 {
     vim_free(last_insert);
     last_insert = NULL;
+    vim_free(compl_orig_text);
+    compl_orig_text = NULL;
 }
 #endif
 

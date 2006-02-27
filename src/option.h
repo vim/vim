@@ -850,3 +850,190 @@ EXTERN int	p_write;	/* 'write' */
 EXTERN int	p_wa;		/* 'writeany' */
 EXTERN int	p_wb;		/* 'writebackup' */
 EXTERN long	p_wd;		/* 'writedelay' */
+
+/*
+ * "indir" values for buffer-local opions.
+ * These need to be defined globally, so that the BV_COUNT can be used with
+ * b_p_scriptID[].
+ */
+enum
+{
+    BV_AI = 0
+    , BV_AR
+#ifdef FEAT_QUICKFIX
+    , BV_BH
+    , BV_BT
+    , BV_EFM
+    , BV_GP
+    , BV_MP
+#endif
+    , BV_BIN
+    , BV_BL
+#ifdef FEAT_MBYTE
+    , BV_BOMB
+#endif
+    , BV_CI
+#ifdef FEAT_CINDENT
+    , BV_CIN
+    , BV_CINK
+    , BV_CINO
+#endif
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+    , BV_CINW
+#endif
+#ifdef FEAT_FOLDING
+    , BV_CMS
+#endif
+#ifdef FEAT_COMMENTS
+    , BV_COM
+#endif
+#ifdef FEAT_INS_EXPAND
+    , BV_CPT
+    , BV_DICT
+    , BV_TSR
+#endif
+#ifdef FEAT_COMPL_FUNC
+    , BV_CFU
+#endif
+#ifdef FEAT_FIND_ID
+    , BV_DEF
+    , BV_INC
+#endif
+    , BV_EOL
+    , BV_EP
+    , BV_ET
+    , BV_FENC
+#ifdef FEAT_EVAL
+    , BV_FEX
+#endif
+    , BV_FF
+    , BV_FLP
+    , BV_FO
+#ifdef FEAT_AUTOCMD
+    , BV_FT
+#endif
+    , BV_IMI
+    , BV_IMS
+#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+    , BV_INDE
+    , BV_INDK
+#endif
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+    , BV_INEX
+#endif
+    , BV_INF
+    , BV_ISK
+#ifdef FEAT_CRYPT
+    , BV_KEY
+#endif
+#ifdef FEAT_KEYMAP
+    , BV_KMAP
+#endif
+    , BV_KP
+#ifdef FEAT_LISP
+    , BV_LISP
+#endif
+    , BV_MA
+    , BV_ML
+    , BV_MOD
+    , BV_MPS
+    , BV_NF
+#ifdef FEAT_OSFILETYPE
+    , BV_OFT
+#endif
+#ifdef FEAT_COMPL_FUNC
+    , BV_OFU
+#endif
+    , BV_PATH
+    , BV_PI
+#ifdef FEAT_TEXTOBJ
+    , BV_QE
+#endif
+    , BV_RO
+#ifdef FEAT_SMARTINDENT
+    , BV_SI
+#endif
+#ifndef SHORT_FNAME
+    , BV_SN
+#endif
+#ifdef FEAT_SYN_HL
+    , BV_SMC
+    , BV_SPC
+    , BV_SPF
+    , BV_SPL
+    , BV_SYN
+#endif
+    , BV_STS
+#ifdef FEAT_SEARCHPATH
+    , BV_SUA
+#endif
+    , BV_SW
+    , BV_SWF
+    , BV_TAGS
+    , BV_TS
+    , BV_TW
+    , BV_TX
+    , BV_WM
+    , BV_COUNT	    /* must be the last one */
+};
+
+/*
+ * "indir" values for window-local options.
+ * These need to be defined globally, so that the WV_COUNT can be used in the
+ * window structure.
+ */
+enum
+{
+    WV_LIST = 0
+#ifdef FEAT_ARABIC
+    , WV_ARAB
+#endif
+#ifdef FEAT_DIFF
+    , WV_DIFF
+#endif
+#ifdef FEAT_FOLDING
+    , WV_FDC
+    , WV_FEN
+    , WV_FDI
+    , WV_FDL
+    , WV_FDM
+    , WV_FML
+    , WV_FDN
+# ifdef FEAT_EVAL
+    , WV_FDE
+    , WV_FDT
+# endif
+    , WV_FMR
+#endif
+#ifdef FEAT_LINEBREAK
+    , WV_LBR
+#endif
+    , WV_NU
+#ifdef FEAT_LINEBREAK
+    , WV_NUW
+#endif
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+    , WV_PVW
+#endif
+#ifdef FEAT_RIGHTLEFT
+    , WV_RL
+    , WV_RLC
+#endif
+#ifdef FEAT_SCROLLBIND
+    , WV_SCBIND
+#endif
+    , WV_SCROLL
+#ifdef FEAT_SYN_HL
+    , WV_SPELL
+    , WV_SPC
+    , WV_SYN
+#endif
+#ifdef FEAT_STL_OPT
+    , WV_STL
+#endif
+#ifdef FEAT_WINDOWS
+    , WV_WFH
+#endif
+    , WV_WRAP
+    , WV_COUNT	    /* must be the last one */
+};

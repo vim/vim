@@ -581,7 +581,7 @@ function find_tag2() {
 	ntags=split(atag,blata,"[ 	]");
 	if ( ntags > 1 ) { return; }
 	if 	( ( allow_one_char == "no" ) && \
-		  ( index("!#$%\&'()+,-./0:;=?@ACINX\\[\\]^_`at\\{\\}~",atag) !=0 ) ) {
+		  ( index("!#$%&'()+,-./0:;=?@ACINX\\[\\]^_`at\\{\\}~",atag) !=0 ) ) {
 		return;
 	}
 	if ( skip_word[atag] == "yes" ) { return; }
@@ -610,7 +610,7 @@ function find_tag3() {
 	ntags=split(btag,blata,"[ 	]");
 	if ( ntags > 1 ) { return; }
 	if 	( ( allow_one_char == "no" ) && \
-		  ( index("!#$%\&'()+,-./0:;=?@ACINX\\[\\]^_`at\\{\\}~",btag) !=0 ) ) {
+		  ( index("!#$%&'()+,-./0:;=?@ACINX\\[\\]^_`at\\{\\}~",btag) !=0 ) ) {
 	  	return;
 	}
 	if ( skip_word[btag] == "yes" ) { return; }

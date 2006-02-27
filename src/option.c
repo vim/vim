@@ -45,142 +45,193 @@
 #define PV_BOTH 0x1000
 #define PV_WIN  0x2000
 #define PV_BUF  0x4000
+#define PV_MASK 0x0fff
 #define OPT_WIN(x)  (idopt_T)(PV_WIN + (int)(x))
 #define OPT_BUF(x)  (idopt_T)(PV_BUF + (int)(x))
 #define OPT_BOTH(x) (idopt_T)(PV_BOTH + (int)(x))
 
 /*
- * "indir" values for buffer-local opions
+ * Definition of the PV_ values for buffer-local options.
+ * The BV_ values are defined in option.h.
  */
-enum
-{
-    BV_AI = 0
-    , BV_AR
-#if defined(FEAT_QUICKFIX)
-    , BV_BH
-#endif
-    , BV_BIN
-    , BV_BL
-    , BV_COUNT	    /* must be the last one */
-};
-
 #define PV_AI		OPT_BUF(BV_AI)
 #define PV_AR		OPT_BOTH(OPT_BUF(BV_AR))
-#if defined(FEAT_QUICKFIX)
+#ifdef FEAT_QUICKFIX
 # define PV_BH		OPT_BUF(BV_BH)
+# define PV_BT		OPT_BUF(BV_BT)
+# define PV_EFM		OPT_BOTH(OPT_BUF(BV_EFM))
+# define PV_GP		OPT_BOTH(OPT_BUF(BV_GP))
+# define PV_MP		OPT_BOTH(OPT_BUF(BV_MP))
 #endif
 #define PV_BIN		OPT_BUF(BV_BIN)
 #define PV_BL		OPT_BUF(BV_BL)
+#ifdef FEAT_MBYTE
+# define PV_BOMB	OPT_BUF(BV_BOMB)
+#endif
+#define PV_CI		OPT_BUF(BV_CI)
+#ifdef FEAT_CINDENT
+# define PV_CIN		OPT_BUF(BV_CIN)
+# define PV_CINK	OPT_BUF(BV_CINK)
+# define PV_CINO	OPT_BUF(BV_CINO)
+#endif
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+# define PV_CINW	OPT_BUF(BV_CINW)
+#endif
+#ifdef FEAT_FOLDING
+# define PV_CMS		OPT_BUF(BV_CMS)
+#endif
+#ifdef FEAT_COMMENTS
+# define PV_COM		OPT_BUF(BV_COM)
+#endif
+#ifdef FEAT_INS_EXPAND
+# define PV_CPT		OPT_BUF(BV_CPT)
+# define PV_DICT	OPT_BOTH(OPT_BUF(BV_DICT))
+# define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
+#endif
+#ifdef FEAT_COMPL_FUNC
+# define PV_CFU		OPT_BUF(BV_CFU)
+#endif
+#ifdef FEAT_FIND_ID
+# define PV_DEF		OPT_BOTH(OPT_BUF(BV_DEF))
+# define PV_INC		OPT_BOTH(OPT_BUF(BV_INC))
+#endif
+#define PV_EOL		OPT_BUF(BV_EOL)
+#define PV_EP		OPT_BOTH(OPT_BUF(BV_EP))
+#define PV_ET		OPT_BUF(BV_ET)
+#ifdef FEAT_MBYTE
+# define PV_FENC	OPT_BUF(BV_FENC)
+#endif
+#ifdef FEAT_EVAL
+# define PV_FEX		OPT_BUF(BV_FEX)
+#endif
+#define PV_FF		OPT_BUF(BV_FF)
+#define PV_FLP		OPT_BUF(BV_FLP)
+#define PV_FO		OPT_BUF(BV_FO)
+#ifdef FEAT_AUTOCMD
+# define PV_FT		OPT_BUF(BV_FT)
+#endif
+#define PV_IMI		OPT_BUF(BV_IMI)
+#define PV_IMS		OPT_BUF(BV_IMS)
+#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+# define PV_INDE	OPT_BUF(BV_INDE)
+# define PV_INDK	OPT_BUF(BV_INDK)
+#endif
+#if defined(FEAT_FIND_ID) && defined(FEAT_EVAL)
+# define PV_INEX	OPT_BUF(BV_INEX)
+#endif
+#define PV_INF		OPT_BUF(BV_INF)
+#define PV_ISK		OPT_BUF(BV_ISK)
+#ifdef FEAT_CRYPT
+# define PV_KEY		OPT_BUF(BV_KEY)
+#endif
+#ifdef FEAT_KEYMAP
+# define PV_KMAP	OPT_BUF(BV_KMAP)
+#endif
+#define PV_KP		OPT_BOTH(OPT_BUF(BV_KP))
+#ifdef FEAT_LISP
+# define PV_LISP	OPT_BUF(BV_LISP)
+#endif
+#define PV_MA		OPT_BUF(BV_MA)
+#define PV_ML		OPT_BUF(BV_ML)
+#define PV_MOD		OPT_BUF(BV_MOD)
+#define PV_MPS		OPT_BUF(BV_MPS)
+#define PV_NF		OPT_BUF(BV_NF)
+#ifdef FEAT_OSFILETYPE
+# define PV_OFT		OPT_BUF(BV_OFT)
+#endif
+#ifdef FEAT_COMPL_FUNC
+# define PV_OFU		OPT_BUF(BV_OFU)
+#endif
+#define PV_PATH		OPT_BOTH(OPT_BUF(BV_PATH))
+#define PV_PI		OPT_BUF(BV_PI)
+#ifdef FEAT_TEXTOBJ
+# define PV_QE		OPT_BUF(BV_QE)
+#endif
+#define PV_RO		OPT_BUF(BV_RO)
+#ifdef FEAT_SMARTINDENT
+# define PV_SI		OPT_BUF(BV_SI)
+#endif
+#ifndef SHORT_FNAME
+# define PV_SN		OPT_BUF(BV_SN)
+#endif
+#ifdef FEAT_SYN_HL
+# define PV_SMC		OPT_BUF(BV_SMC)
+# define PV_SPC		OPT_BUF(BV_SPC)
+# define PV_SPF		OPT_BUF(BV_SPF)
+# define PV_SPL		OPT_BUF(BV_SPL)
+# define PV_SYN		OPT_BUF(BV_SYN)
+#endif
+#define PV_STS		OPT_BUF(BV_STS)
+#ifdef FEAT_SEARCHPATH
+# define PV_SUA		OPT_BUF(BV_SUA)
+#endif
+#define PV_SW		OPT_BUF(BV_SW)
+#define PV_SWF		OPT_BUF(BV_SWF)
+#define PV_TAGS		OPT_BOTH(OPT_BUF(BV_TAGS))
+#define PV_TS		OPT_BUF(BV_TS)
+#define PV_TW		OPT_BUF(BV_TW)
+#define PV_TX		OPT_BUF(BV_TX)
+#define PV_WM		OPT_BUF(BV_WM)
 
 /*
- * "indir" values for window-local options
+ * Definition of the PV_ values for window-local options.
+ * The WV_ values are defined in option.h.
  */
-enum
-{
-    WV_LIST = 0
-#ifdef FEAT_ARABIC
-	, WV_ARAB
-#endif
-    , WV_COUNT	    /* must be the last one */
-};
-
 #define PV_LIST		OPT_WIN(WV_LIST)
 #ifdef FEAT_ARABIC
 # define PV_ARAB	OPT_WIN(WV_ARAB)
 #endif
+#ifdef FEAT_DIFF
+# define PV_DIFF	OPT_WIN(WV_DIFF)
+#endif
+#ifdef FEAT_FOLDING
+# define PV_FDC		OPT_WIN(WV_FDC)
+# define PV_FEN		OPT_WIN(WV_FEN)
+# define PV_FDI		OPT_WIN(WV_FDI)
+# define PV_FDL		OPT_WIN(WV_FDL)
+# define PV_FDM		OPT_WIN(WV_FDM)
+# define PV_FML		OPT_WIN(WV_FML)
+# define PV_FDN		OPT_WIN(WV_FDN)
+# ifdef FEAT_EVAL
+#  define PV_FDE	OPT_WIN(WV_FDE)
+#  define PV_FDT	OPT_WIN(WV_FDT)
+# endif
+# define PV_FMR		OPT_WIN(WV_FMR)
+#endif
+#ifdef FEAT_LINEBREAK
+# define PV_LBR		OPT_WIN(WV_LBR)
+#endif
+#define PV_NU		OPT_WIN(WV_NU)
+#ifdef FEAT_LINEBREAK
+# define PV_NUW		OPT_WIN(WV_NUW)
+#endif
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+# define PV_PVW		OPT_WIN(WV_PVW)
+#endif
+#ifdef FEAT_RIGHTLEFT
+# define PV_RL		OPT_WIN(WV_RL)
+# define PV_RLC		OPT_WIN(WV_RLC)
+#endif
+#ifdef FEAT_SCROLLBIND
+# define PV_SCBIND	OPT_WIN(WV_SCBIND)
+#endif
+#define PV_SCROLL	OPT_WIN(WV_SCROLL)
+#ifdef FEAT_SYN_HL
+# define PV_SPELL	OPT_WIN(WV_SPELL)
+#endif
+#ifdef FEAT_STL_OPT
+# define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
+#endif
+#ifdef FEAT_WINDOWS
+# define PV_WFH		OPT_WIN(WV_WFH)
+#endif
+#define PV_WRAP		OPT_WIN(WV_WRAP)
 
-/* TODO: "indir" values for the rest */
+
+/* WV_ and BV_ values get typecasted to this for the "indir" field */
 typedef enum
 {
     PV_NONE = 0
-    , PV_BOMB
-    , PV_BT
-    , PV_CI
-    , PV_CIN
-    , PV_CINK
-    , PV_CINO
-    , PV_CINW
-    , PV_CMS
-    , PV_COM
-    , PV_CPT
-    , PV_CFU
-    , PV_DEF
-    , PV_DICT
-    , PV_DIFF
-    , PV_EFM
-    , PV_EOL
-    , PV_EP
-    , PV_ET
-    , PV_FDC
-    , PV_FDE
-    , PV_FDI
-    , PV_FDL
-    , PV_FDM
-    , PV_FDN
-    , PV_FDT
-    , PV_FEN
-    , PV_FENC
-    , PV_FEX
-    , PV_FF
-    , PV_FML
-    , PV_FMR
-    , PV_FLP
-    , PV_FO
-    , PV_FT
-    , PV_GP
-    , PV_IMI
-    , PV_IMS
-    , PV_INC
-    , PV_INDE
-    , PV_INDK
-    , PV_INEX
-    , PV_INF
-    , PV_ISK
-    , PV_KEY
-    , PV_KMAP
-    , PV_KP
-    , PV_LBR
-    , PV_LISP
-    , PV_MA
-    , PV_ML
-    , PV_MOD
-    , PV_MP
-    , PV_MPS
-    , PV_NF
-    , PV_NU
-    , PV_NUW
-    , PV_OFT
-    , PV_OFU
-    , PV_PATH
-    , PV_PI
-    , PV_PVW
-    , PV_QE
-    , PV_RL
-    , PV_RLC
-    , PV_RO
-    , PV_SCBIND
-    , PV_SCROLL
-    , PV_SI
-    , PV_SN
-    , PV_SPELL
-    , PV_SPC
-    , PV_SPF
-    , PV_SPL
-    , PV_STL
-    , PV_STS
-    , PV_SUA
-    , PV_SW
-    , PV_SWF
-    , PV_SMC
-    , PV_SYN
-    , PV_TAGS
-    , PV_TS
-    , PV_TSR
-    , PV_TW
-    , PV_TX
-    , PV_WFH
-    , PV_WM
-    , PV_WRAP
 } idopt_T;
 
 /*
@@ -784,7 +835,7 @@ static struct vimoption
 			    {(char_u *)"", (char_u *)0L}},
     {"define",	    "def",  P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_FIND_ID
-			    (char_u *)&p_def, OPT_BOTH(PV_DEF),
+			    (char_u *)&p_def, PV_DEF,
 			    {(char_u *)"^\\s*#\\s*define", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -801,7 +852,7 @@ static struct vimoption
 			    },
     {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_INS_EXPAND
-			    (char_u *)&p_dict, OPT_BOTH(PV_DICT),
+			    (char_u *)&p_dict, PV_DICT,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -872,7 +923,7 @@ static struct vimoption
 			    (char_u *)&p_ea, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},
     {"equalprg",    "ep",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
-			    (char_u *)&p_ep, OPT_BOTH(PV_EP),
+			    (char_u *)&p_ep, PV_EP,
 			    {(char_u *)"", (char_u *)0L}},
     {"errorbells",  "eb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_eb, PV_NONE,
@@ -888,7 +939,7 @@ static struct vimoption
 			    },
     {"errorformat", "efm",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)&p_efm, OPT_BOTH(PV_EFM),
+			    (char_u *)&p_efm, PV_EFM,
 			    {(char_u *)DFLT_EFM, (char_u *)0L},
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -1019,7 +1070,7 @@ static struct vimoption
 			    },
 #endif
     {"formatexpr", "fex",   P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
-#if defined(FEAT_EVAL)
+#ifdef FEAT_EVAL
 			    (char_u *)&p_fex, PV_FEX,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -1062,7 +1113,7 @@ static struct vimoption
 			    },
     {"grepprg",	    "gp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)&p_gp, OPT_BOTH(PV_GP),
+			    (char_u *)&p_gp, PV_GP,
 			    {
 # ifdef WIN3264
 			    /* may be changed to "grep -n" in os_win32.c */
@@ -1274,7 +1325,7 @@ static struct vimoption
 			    },
     {"include",	    "inc",  P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_FIND_ID
-			    (char_u *)&p_inc, OPT_BOTH(PV_INC),
+			    (char_u *)&p_inc, PV_INC,
 			    {(char_u *)"^\\s*#\\s*include", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -1421,7 +1472,7 @@ static struct vimoption
 #endif
 			    {(char_u *)"", (char_u *)0L}},
     {"keywordprg",  "kp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
-			    (char_u *)&p_kp, OPT_BOTH(PV_KP),
+			    (char_u *)&p_kp, PV_KP,
 			    {
 #if defined(MSDOS) || defined(MSWIN)
 			    (char_u *)":help",
@@ -1534,7 +1585,7 @@ static struct vimoption
 			    },
     {"makeprg",	    "mp",   P_STRING|P_EXPAND|P_VI_DEF|P_SECURE,
 #ifdef FEAT_QUICKFIX
-			    (char_u *)&p_mp, OPT_BOTH(PV_MP),
+			    (char_u *)&p_mp, PV_MP,
 # ifdef VMS
 			    {(char_u *)"MMS", (char_u *)0L}
 # else
@@ -1724,7 +1775,7 @@ static struct vimoption
 			    (char_u *)&p_pm, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}},
     {"path",	    "pa",   P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
-			    (char_u *)&p_path, OPT_BOTH(PV_PATH),
+			    (char_u *)&p_path, PV_PATH,
 			    {
 #if defined AMIGA || defined MSDOS || defined MSWIN
 			    (char_u *)".,,",
@@ -2192,7 +2243,7 @@ static struct vimoption
 			    {(char_u *)TRUE, (char_u *)0L}},
     {"statusline"  ,"stl",  P_STRING|P_VI_DEF|P_ALLOCED|P_RSTAT,
 #ifdef FEAT_STL_OPT
-			    (char_u *)&p_stl, OPT_BOTH(PV_STL),
+			    (char_u *)&p_stl, PV_STL,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -2202,7 +2253,7 @@ static struct vimoption
 			    {(char_u *)".bak,~,.o,.h,.info,.swp,.obj",
 				(char_u *)0L}},
     {"suffixesadd", "sua",  P_STRING|P_VI_DEF|P_ALLOCED|P_COMMA|P_NODUP,
-#if defined(FEAT_SEARCHPATH)
+#ifdef FEAT_SEARCHPATH
 			    (char_u *)&p_sua, PV_SUA,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -2262,7 +2313,7 @@ static struct vimoption
 			    (char_u *)&p_tr, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)TRUE}},
     {"tags",	    "tag",  P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
-			    (char_u *)&p_tags, OPT_BOTH(PV_TAGS),
+			    (char_u *)&p_tags, PV_TAGS,
 			    {
 #if defined(FEAT_EMACS_TAGS) && !defined(CASE_INSENSITIVE_FILENAME)
 			    (char_u *)"./tags,./TAGS,tags,TAGS",
@@ -2312,7 +2363,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}},
     {"thesaurus",   "tsr",  P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_INS_EXPAND
-			    (char_u *)&p_tsr, OPT_BOTH(PV_TSR),
+			    (char_u *)&p_tsr, PV_TSR,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -2531,7 +2582,7 @@ static struct vimoption
 #endif
 			    {(char_u *)1L, (char_u *)0L}},
     {"winfixheight", "wfh", P_BOOL|P_VI_DEF|P_RSTAT,
-#if defined(FEAT_WINDOWS)
+#ifdef FEAT_WINDOWS
 			    (char_u *)VAR_WIN, PV_WFH,
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -2736,6 +2787,9 @@ static char_u *check_clipboard_option __ARGS((void));
 #endif
 #ifdef FEAT_SYN_HL
 static char_u *compile_cap_prog __ARGS((buf_T *buf));
+#endif
+#ifdef FEAT_EVAL
+static void set_option_scriptID_idx __ARGS((int opt_idx, int opt_flags, int id));
 #endif
 static char_u *set_bool_option __ARGS((int opt_idx, char_u *varp, int value, int opt_flags));
 static char_u *set_num_option __ARGS((int opt_idx, char_u *varp, long value, char_u *errbuf, size_t errbuflen, int opt_flags));
@@ -3139,7 +3193,7 @@ set_init_1()
 	    {
 		/* Adjust the default for 'isprint' to match latin1. */
 		set_string_option_direct((char_u *)"isp", -1,
-					     (char_u *)"@,161-255", OPT_FREE);
+				   (char_u *)"@,161-255", OPT_FREE, SID_NONE);
 		(void)init_chartab();
 	    }
 #endif
@@ -3211,7 +3265,7 @@ set_option_default(opt_idx, opt_flags, compatible)
 	     * freeing and allocating the value. */
 	    if (options[opt_idx].indir != PV_NONE)
 		set_string_option_direct(NULL, opt_idx,
-				    options[opt_idx].def_val[dvi], opt_flags);
+				 options[opt_idx].def_val[dvi], opt_flags, 0);
 	    else
 	    {
 		if ((opt_flags & OPT_FREE) && (flags & P_ALLOCED))
@@ -3249,8 +3303,7 @@ set_option_default(opt_idx, opt_flags, compatible)
     }
 
 #ifdef FEAT_EVAL
-    /* Remember where the option was set. */
-    options[opt_idx].scriptID = current_SID;
+    set_option_scriptID_idx(opt_idx, opt_flags, current_SID);
 #endif
 }
 
@@ -3381,7 +3434,7 @@ set_init_2()
     idx = findoption((char_u *)"bg");
     if (!(options[idx].flags & P_WAS_SET) && *term_bg_default() == 'd')
     {
-	set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE);
+	set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE, 0);
 	/* don't mark it as set, when starting the GUI it may be
 	 * changed again */
 	options[idx].flags &= ~P_WAS_SET;
@@ -3966,7 +4019,17 @@ do_set(arg, opt_flags)
 		    showoneopt(&options[opt_idx], opt_flags);
 #ifdef FEAT_EVAL
 		    if (p_verbose > 0)
-			last_set_msg(options[opt_idx].scriptID);
+		    {
+			/* Mention where the option was last set. */
+			if (varp == options[opt_idx].var)
+			    last_set_msg(options[opt_idx].scriptID);
+			else if ((int)options[opt_idx].indir & PV_WIN)
+			    last_set_msg(curwin->w_p_scriptID[
+				      (int)options[opt_idx].indir & PV_MASK]);
+			else if ((int)options[opt_idx].indir & PV_BUF)
+			    last_set_msg(curbuf->b_p_scriptID[
+				      (int)options[opt_idx].indir & PV_MASK]);
+		    }
 #endif
 		}
 		else
@@ -5010,19 +5073,19 @@ insecure_flag(opt_idx, opt_flags)
 	switch ((int)options[opt_idx].indir)
 	{
 #ifdef FEAT_STL_OPT
-	    case OPT_BOTH(PV_STL):  return &curwin->w_p_stl_flags;
+	    case PV_STL:	return &curwin->w_p_stl_flags;
 #endif
 #ifdef FEAT_EVAL
-	    case PV_FDE:	    return &curwin->w_p_fde_flags;
-	    case PV_FDT:	    return &curwin->w_p_fdt_flags;
+	    case PV_FDE:	return &curwin->w_p_fde_flags;
+	    case PV_FDT:	return &curwin->w_p_fdt_flags;
 #endif
 #if defined(FEAT_EVAL)
 # if defined(FEAT_CINDENT)
-	    case PV_INDE:	    return &curbuf->b_p_inde_flags;
+	    case PV_INDE:	return &curbuf->b_p_inde_flags;
 # endif
-	    case PV_FEX:	    return &curbuf->b_p_fex_flags;
+	    case PV_FEX:	return &curbuf->b_p_fex_flags;
 # ifdef FEAT_FIND_ID
-	    case PV_INEX:	    return &curbuf->b_p_inex_flags;
+	    case PV_INEX:	return &curbuf->b_p_inex_flags;
 # endif
 #endif
 	}
@@ -5036,13 +5099,17 @@ insecure_flag(opt_idx, opt_flags)
  * Set a string option to a new value (without checking the effect).
  * The string is copied into allocated memory.
  * if ("opt_idx" == -1) "name" is used, otherwise "opt_idx" is used.
+ * When "set_sid" is zero set the scriptID to current_SID.  When "set_sid" is
+ * SID_NONE don't set the scriptID.  Otherwose set the scriptID to "set_sid".
  */
+/*ARGSUSED*/
     void
-set_string_option_direct(name, opt_idx, val, opt_flags)
+set_string_option_direct(name, opt_idx, val, opt_flags, set_sid)
     char_u	*name;
     int		opt_idx;
     char_u	*val;
     int		opt_flags;	/* OPT_FREE, OPT_LOCAL and/or OPT_GLOBAL */
+    int		set_sid;
 {
     char_u	*s;
     char_u	**varp;
@@ -5052,7 +5119,10 @@ set_string_option_direct(name, opt_idx, val, opt_flags)
     {
 	opt_idx = findoption(name);
 	if (opt_idx == -1)	/* not found (should not happen) */
+	{
+	    EMSG2(_(e_intern2), "set_string_option_direct()");
 	    return;
+	}
     }
 
     if (options[opt_idx].var == NULL)	/* can't set hidden option */
@@ -5080,6 +5150,11 @@ set_string_option_direct(name, opt_idx, val, opt_flags)
 	    free_string_option(*varp);
 	    *varp = empty_option;
 	}
+# ifdef FEAT_EVAL
+	if (set_sid != SID_NONE)
+	    set_option_scriptID_idx(opt_idx, opt_flags,
+					set_sid == 0 ? current_SID : set_sid);
+# endif
     }
 }
 
@@ -6376,7 +6451,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 #ifdef FEAT_EVAL
 	/* Remember where the option was set. */
-	options[opt_idx].scriptID = current_SID;
+	set_option_scriptID_idx(opt_idx, opt_flags, current_SID);
 #endif
 	/*
 	 * Free string options that are in allocated memory.
@@ -6761,19 +6836,29 @@ compile_cap_prog(buf)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * Set the script ID of option "name" to "id".
+ * Set the scriptID for an option, taking care of setting the buffer- or
+ * window-local value.
  */
-    void
-set_option_scriptID(name, id)
-    char_u	*name;
-    int		id;
+    static void
+set_option_scriptID_idx(opt_idx, opt_flags, id)
+    int	    opt_idx;
+    int	    opt_flags;
+    int	    id;
 {
-    int opt_idx = findoption(name);
+    int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
+    int		indir = (int)options[opt_idx].indir;
 
-    if (opt_idx == -1)	/* not found (should not happen) */
-	EMSG2(_(e_intern2), "set_option_scriptID()");
-    else
+    /* Remember where the option was set.  For local options need to do that
+     * in the buffer or window structure. */
+    if (both || (opt_flags & OPT_GLOBAL) || (indir & (PV_BUF|PV_WIN)) == 0)
 	options[opt_idx].scriptID = id;
+    if (both || (opt_flags & OPT_LOCAL))
+    {
+	if (indir & PV_BUF)
+	    curbuf->b_p_scriptID[indir & PV_MASK] = id;
+	else if (indir & PV_WIN)
+	    curwin->w_p_scriptID[indir & PV_MASK] = id;
+    }
 }
 #endif
 
@@ -6801,7 +6886,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     *(int *)varp = value;	    /* set the new value */
 #ifdef FEAT_EVAL
     /* Remember where the option was set. */
-    options[opt_idx].scriptID = current_SID;
+    set_option_scriptID_idx(opt_idx, opt_flags, current_SID);
 #endif
 
 #ifdef FEAT_GUI
@@ -6885,10 +6970,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	{
 	    STRCPY(IObuff, p_shm);
 	    STRCAT(IObuff, "s");
-	    set_string_option_direct((char_u *)"shm", -1, IObuff, OPT_FREE);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"shm", current_SID);
-# endif
+	    set_string_option_direct((char_u *)"shm", -1, IObuff, OPT_FREE, 0);
 	}
 	/* remove 's' from p_shm */
 	else if (!p_terse && p != NULL)
@@ -6970,14 +7052,9 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 
     /* when 'textauto' is set or reset also change 'fileformats' */
     else if ((int *)varp == &p_ta)
-    {
 	set_string_option_direct((char_u *)"ffs", -1,
 				 p_ta ? (char_u *)DFLT_FFS_VIM : (char_u *)"",
-							OPT_FREE | opt_flags);
-# ifdef FEAT_EVAL
-	set_option_scriptID((char_u *)"ffs", current_SID);
-# endif
-    }
+						     OPT_FREE | opt_flags, 0);
 
     /*
      * When 'lisp' option changes include/exclude '-' in
@@ -7313,7 +7390,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     *pp = value;
 #ifdef FEAT_EVAL
     /* Remember where the option was set. */
-    options[opt_idx].scriptID = current_SID;
+    set_option_scriptID_idx(opt_idx, opt_flags, current_SID);
 #endif
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -8297,23 +8374,39 @@ makeset(fd, opt_flags, local_only)
 		}
 		else    /* P_STRING */
 		{
+#if defined(FEAT_SYN_HL) || defined(FEAT_AUTOCMD)
+		    int		do_endif = FALSE;
+
 		    /* Don't set 'syntax' and 'filetype' again if the value is
 		     * already right, avoids reloading the syntax file. */
-		    if (p->indir == PV_SYN || p->indir == PV_FT)
+		    if (
+# if defined(FEAT_SYN_HL)
+			    p->indir == PV_SYN
+#  if defined(FEAT_AUTOCMD)
+			    ||
+#  endif
+# endif
+# if defined(FEAT_AUTOCMD)
+			    p->indir == PV_FT)
+# endif
 		    {
 			if (fprintf(fd, "if &%s != '%s'", p->fullname,
 						       *(char_u **)(varp)) < 0
 				|| put_eol(fd) < 0)
 			    return FAIL;
+			do_endif = TRUE;
 		    }
+#endif
 		    if (put_setstring(fd, cmd, p->fullname, (char_u **)varp,
 					  (p->flags & P_EXPAND) != 0) == FAIL)
 			return FAIL;
-		    if (p->indir == PV_SYN || p->indir == PV_FT)
+#if defined(FEAT_SYN_HL) || defined(FEAT_AUTOCMD)
+		    if (do_endif)
 		    {
 			if (put_line(fd, "endif") == FAIL)
 			    return FAIL;
 		    }
+#endif
 		}
 	    }
 	}
@@ -8583,25 +8676,25 @@ get_varp_scope(p, opt_flags)
 	switch ((int)p->indir)
 	{
 #ifdef FEAT_QUICKFIX
-	    case OPT_BOTH(PV_GP):   return (char_u *)&(curbuf->b_p_gp);
-	    case OPT_BOTH(PV_MP):   return (char_u *)&(curbuf->b_p_mp);
-	    case OPT_BOTH(PV_EFM):  return (char_u *)&(curbuf->b_p_efm);
+	    case PV_EFM:  return (char_u *)&(curbuf->b_p_efm);
+	    case PV_GP:   return (char_u *)&(curbuf->b_p_gp);
+	    case PV_MP:   return (char_u *)&(curbuf->b_p_mp);
 #endif
-	    case OPT_BOTH(PV_EP):   return (char_u *)&(curbuf->b_p_ep);
-	    case OPT_BOTH(PV_KP):   return (char_u *)&(curbuf->b_p_kp);
-	    case OPT_BOTH(PV_PATH): return (char_u *)&(curbuf->b_p_path);
+	    case PV_EP:   return (char_u *)&(curbuf->b_p_ep);
+	    case PV_KP:   return (char_u *)&(curbuf->b_p_kp);
+	    case PV_PATH: return (char_u *)&(curbuf->b_p_path);
 	    case PV_AR:   return (char_u *)&(curbuf->b_p_ar);
-	    case OPT_BOTH(PV_TAGS): return (char_u *)&(curbuf->b_p_tags);
+	    case PV_TAGS: return (char_u *)&(curbuf->b_p_tags);
 #ifdef FEAT_FIND_ID
-	    case OPT_BOTH(PV_DEF):  return (char_u *)&(curbuf->b_p_def);
-	    case OPT_BOTH(PV_INC):  return (char_u *)&(curbuf->b_p_inc);
+	    case PV_DEF:  return (char_u *)&(curbuf->b_p_def);
+	    case PV_INC:  return (char_u *)&(curbuf->b_p_inc);
 #endif
 #ifdef FEAT_INS_EXPAND
-	    case OPT_BOTH(PV_DICT): return (char_u *)&(curbuf->b_p_dict);
-	    case OPT_BOTH(PV_TSR):  return (char_u *)&(curbuf->b_p_tsr);
+	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
+	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
 #endif
 #ifdef FEAT_STL_OPT
-	    case OPT_BOTH(PV_STL):  return (char_u *)&(curwin->w_p_stl);
+	    case PV_STL:  return (char_u *)&(curwin->w_p_stl);
 #endif
 	}
 	return NULL; /* "cannot happen" */
@@ -8625,38 +8718,38 @@ get_varp(p)
 	case PV_NONE:	return p->var;
 
 	/* global option with local value: use local value if it's been set */
-	case OPT_BOTH(PV_EP):	return *curbuf->b_p_ep != NUL
+	case PV_EP:	return *curbuf->b_p_ep != NUL
 				    ? (char_u *)&curbuf->b_p_ep : p->var;
-	case OPT_BOTH(PV_KP):	return *curbuf->b_p_kp != NUL
+	case PV_KP:	return *curbuf->b_p_kp != NUL
 				    ? (char_u *)&curbuf->b_p_kp : p->var;
-	case OPT_BOTH(PV_PATH):	return *curbuf->b_p_path != NUL
+	case PV_PATH:	return *curbuf->b_p_path != NUL
 				    ? (char_u *)&(curbuf->b_p_path) : p->var;
 	case PV_AR:	return curbuf->b_p_ar >= 0
 				    ? (char_u *)&(curbuf->b_p_ar) : p->var;
-	case OPT_BOTH(PV_TAGS):	return *curbuf->b_p_tags != NUL
+	case PV_TAGS:	return *curbuf->b_p_tags != NUL
 				    ? (char_u *)&(curbuf->b_p_tags) : p->var;
 #ifdef FEAT_FIND_ID
-	case OPT_BOTH(PV_DEF):	return *curbuf->b_p_def != NUL
+	case PV_DEF:	return *curbuf->b_p_def != NUL
 				    ? (char_u *)&(curbuf->b_p_def) : p->var;
-	case OPT_BOTH(PV_INC):	return *curbuf->b_p_inc != NUL
+	case PV_INC:	return *curbuf->b_p_inc != NUL
 				    ? (char_u *)&(curbuf->b_p_inc) : p->var;
 #endif
 #ifdef FEAT_INS_EXPAND
-	case OPT_BOTH(PV_DICT):	return *curbuf->b_p_dict != NUL
+	case PV_DICT:	return *curbuf->b_p_dict != NUL
 				    ? (char_u *)&(curbuf->b_p_dict) : p->var;
-	case OPT_BOTH(PV_TSR):	return *curbuf->b_p_tsr != NUL
+	case PV_TSR:	return *curbuf->b_p_tsr != NUL
 				    ? (char_u *)&(curbuf->b_p_tsr) : p->var;
 #endif
 #ifdef FEAT_QUICKFIX
-	case OPT_BOTH(PV_GP):	return *curbuf->b_p_gp != NUL
-				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
-	case OPT_BOTH(PV_MP):	return *curbuf->b_p_mp != NUL
-				    ? (char_u *)&(curbuf->b_p_mp) : p->var;
-	case OPT_BOTH(PV_EFM):	return *curbuf->b_p_efm != NUL
+	case PV_EFM:	return *curbuf->b_p_efm != NUL
 				    ? (char_u *)&(curbuf->b_p_efm) : p->var;
+	case PV_GP:	return *curbuf->b_p_gp != NUL
+				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
+	case PV_MP:	return *curbuf->b_p_mp != NUL
+				    ? (char_u *)&(curbuf->b_p_mp) : p->var;
 #endif
 #ifdef FEAT_STL_OPT
-	case OPT_BOTH(PV_STL):  return *curwin->w_p_stl != NUL
+	case PV_STL:	return *curwin->w_p_stl != NUL
 				    ? (char_u *)&(curwin->w_p_stl) : p->var;
 #endif
 
@@ -8688,7 +8781,7 @@ get_varp(p)
 #ifdef FEAT_LINEBREAK
 	case PV_NUW:	return (char_u *)&(curwin->w_p_nuw);
 #endif
-#if defined(FEAT_WINDOWS)
+#ifdef FEAT_WINDOWS
 	case PV_WFH:	return (char_u *)&(curwin->w_p_wfh);
 #endif
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
@@ -8763,7 +8856,7 @@ get_varp(p)
 	case PV_INDE:	return (char_u *)&(curbuf->b_p_inde);
 	case PV_INDK:	return (char_u *)&(curbuf->b_p_indk);
 #endif
-#if defined(FEAT_EVAL)
+#ifdef FEAT_EVAL
 	case PV_FEX:	return (char_u *)&(curbuf->b_p_fex);
 #endif
 #ifdef FEAT_CRYPT
@@ -8798,10 +8891,10 @@ get_varp(p)
 	case PV_SWF:	return (char_u *)&(curbuf->b_p_swf);
 #ifdef FEAT_SYN_HL
 	case PV_SMC:	return (char_u *)&(curbuf->b_p_smc);
-	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
 	case PV_SPC:	return (char_u *)&(curbuf->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curbuf->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curbuf->b_p_spl);
+	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);

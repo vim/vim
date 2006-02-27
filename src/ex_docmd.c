@@ -1825,7 +1825,7 @@ do_one_cmd(cmdlinep, sourcing,
 			     * existing option value, we restore it later. */
 			    cmdmod.save_ei = vim_strsave(p_ei);
 			    set_string_option_direct((char_u *)"ei", -1,
-						   (char_u *)"all", OPT_FREE);
+					 (char_u *)"all", OPT_FREE, SID_NONE);
 			}
 #endif
 			continue;
@@ -2649,7 +2649,8 @@ doend:
     if (cmdmod.save_ei != NULL)
     {
 	/* Restore 'eventignore' to the value before ":noautocmd". */
-	set_string_option_direct((char_u *)"ei", -1, cmdmod.save_ei, OPT_FREE);
+	set_string_option_direct((char_u *)"ei", -1, cmdmod.save_ei,
+							  OPT_FREE, SID_NONE);
 	free_string_option(cmdmod.save_ei);
     }
 #endif

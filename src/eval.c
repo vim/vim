@@ -11731,6 +11731,7 @@ find_some_match(argvars, rettv, type)
     char_u	*save_cpo;
     long	start = 0;
     long	nth = 1;
+    colnr_T	startcol = 0;
     int		match = 0;
     list_T	*l = NULL;
     listitem_T	*li = NULL;
@@ -11811,12 +11812,12 @@ find_some_match(argvars, rettv, type)
 		    break;
 		}
 		vim_free(tofree);
-		str = echo_string(&li->li_tv, &tofree, strbuf,0);
+		str = echo_string(&li->li_tv, &tofree, strbuf, 0);
 		if (str == NULL)
 		    break;
 	    }
 
-	    match = vim_regexec_nl(&regmatch, str, (colnr_T)0);
+	    match = vim_regexec_nl(&regmatch, str, (colnr_T)startcol);
 
 	    if (match && --nth <= 0)
 		break;
@@ -11832,9 +11833,10 @@ find_some_match(argvars, rettv, type)
 	    else
 	    {
 #ifdef FEAT_MBYTE
-		str = regmatch.startp[0] + (*mb_ptr2len)(regmatch.startp[0]);
+		startcol = regmatch.startp[0]
+				    + (*mb_ptr2len)(regmatch.startp[0]) - str;
 #else
-		str = regmatch.startp[0] + 1;
+		startcol = regmatch.startp[0] + 1 - str;
 #endif
 	    }
 	}
@@ -17400,6 +17402,7 @@ ex_function(eap)
     hashtab_T	*ht;
     int		todo;
     hashitem_T	*hi;
+    int		sourcing_lnum_off;
 
     /*
      * ":function" without argument: list functions.
@@ -17522,6 +17525,8 @@ ex_function(eap)
 		list_func_head(fp, TRUE);
 		for (j = 0; j < fp->uf_lines.ga_len && !got_int; ++j)
 		{
+		    if (FUNCLINE(fp, j) == NULL)
+			continue;
 		    msg_putchar('\n');
 		    msg_outnum((long)(j + 1));
 		    if (j < 9)
@@ -17693,6 +17698,8 @@ ex_function(eap)
     {
 	msg_scroll = TRUE;
 	need_wait_return = FALSE;
+	sourcing_lnum_off = sourcing_lnum;
+
 	if (line_arg != NULL)
 	{
 	    /* Use eap->arg, split up in parts by line breaks. */
@@ -17717,6 +17724,12 @@ ex_function(eap)
 	    EMSG(_("E126: Missing :endfunction"));
 	    goto erret;
 	}
+
+	/* Detect line continuation: sourcing_lnum increased more than one. */
+	if (sourcing_lnum > sourcing_lnum_off + 1)
+	    sourcing_lnum_off = sourcing_lnum - sourcing_lnum_off - 1;
+	else
+	    sourcing_lnum_off = 0;
 
 	if (skip_until != NULL)
 	{
@@ -17802,7 +17815,7 @@ ex_function(eap)
 	}
 
 	/* Add the line to the function. */
-	if (ga_grow(&newlines, 1) == FAIL)
+	if (ga_grow(&newlines, 1 + sourcing_lnum_off) == FAIL)
 	{
 	    if (line_arg == NULL)
 		vim_free(theline);
@@ -17820,8 +17833,12 @@ ex_function(eap)
 	    theline = p;
 	}
 
-	((char_u **)(newlines.ga_data))[newlines.ga_len] = theline;
-	newlines.ga_len++;
+	((char_u **)(newlines.ga_data))[newlines.ga_len++] = theline;
+
+	/* Add NULL lines for continuation lines, so that the line count is
+	 * equal to the index in the growarray.   */
+	while (sourcing_lnum_off-- > 0)
+	    ((char_u **)(newlines.ga_data))[newlines.ga_len++] = NULL;
 
 	/* Check for end of eap->arg. */
 	if (line_arg != NULL && *line_arg == NUL)
@@ -18362,6 +18379,8 @@ func_dump_profile(fd)
 
 		for (i = 0; i < fp->uf_lines.ga_len; ++i)
 		{
+		    if (FUNCLINE(fp, i) == NULL)
+			continue;
 		    prof_func_line(fd, fp->uf_tml_count[i],
 			     &fp->uf_tml_total[i], &fp->uf_tml_self[i], TRUE);
 		    fprintf(fd, "%s\n", FUNCLINE(fp, i));
@@ -19270,18 +19289,26 @@ get_func_line(c, cookie, indent)
 #endif
 
     gap = &fp->uf_lines;
-    if ((fp->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
-	retval = NULL;
-    else if (fcp->returned || fcp->linenr >= gap->ga_len)
+    if (((fp->uf_flags & FC_ABORT) && did_emsg && !aborted_in_try())
+	    || fcp->returned)
 	retval = NULL;
     else
     {
-	retval = vim_strsave(((char_u **)(gap->ga_data))[fcp->linenr++]);
-	sourcing_lnum = fcp->linenr;
+	/* Skip NULL lines (continuation lines). */
+	while (fcp->linenr < gap->ga_len
+			  && ((char_u **)(gap->ga_data))[fcp->linenr] == NULL)
+	    ++fcp->linenr;
+	if (fcp->linenr >= gap->ga_len)
+	    retval = NULL;
+	else
+	{
+	    retval = vim_strsave(((char_u **)(gap->ga_data))[fcp->linenr++]);
+	    sourcing_lnum = fcp->linenr;
 #ifdef FEAT_PROFILE
-	if (do_profiling)
-	    func_line_start(cookie);
+	    if (do_profiling)
+		func_line_start(cookie);
 #endif
+	}
     }
 
     /* Did we encounter a breakpoint? */
@@ -19315,6 +19342,9 @@ func_line_start(cookie)
 				      && sourcing_lnum <= fp->uf_lines.ga_len)
     {
 	fp->uf_tml_idx = sourcing_lnum - 1;
+	/* Skip continuation lines. */
+	while (fp->uf_tml_idx > 0 && FUNCLINE(fp, fp->uf_tml_idx) == NULL)
+	    --fp->uf_tml_idx;
 	fp->uf_tml_execed = FALSE;
 	profile_start(&fp->uf_tml_start);
 	profile_zero(&fp->uf_tml_children);

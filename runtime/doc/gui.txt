@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 21
+*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -24,9 +24,9 @@ Other GUI documentation:
 1. Starting the GUI				*gui-start* *E229* *E233*
 
 First you must make sure you actually have a version of Vim with the GUI code
-included.  You can check this with the ":version" command, it should include
-"+GUI_Athena", "+GUI_GTK", "+GUI_KDE", "+GUI_Motif" or "MS-Windows ... bit
-GUI version".
+included.  You can check this with the ":version" command, it says "with xxx
+GUI", where "xxx" is X11-Motif, X11-Athena, Photon, GTK, GTK2, etc., or
+"MS-Windows 32 bit GUI version".
 
 How to start the GUI depends on the system used.  Mostly you can run the
 GUI version of Vim with:

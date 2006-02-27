@@ -5920,6 +5920,7 @@ match-parens	tips.txt	/*match-parens*
 matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
+matchparen	pi_paren.txt	/*matchparen*
 matchstr()	eval.txt	/*matchstr()*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
@@ -6180,6 +6181,7 @@ new-items-7	version7.txt	/*new-items-7*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
 new-manpage-trans	version7.txt	/*new-manpage-trans*
+new-matchparen	version7.txt	/*new-matchparen*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
 new-netrw-explore	version7.txt	/*new-netrw-explore*
@@ -6318,6 +6320,7 @@ php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*
 pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
+pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*

@@ -6081,6 +6081,7 @@ static char *(highlight_init_both[]) =
 	"PmenuSbar ctermbg=Grey guibg=Grey",
 	"TabLineSel term=bold cterm=bold gui=bold",
 	"TabLineFill term=reverse cterm=reverse gui=reverse",
+	"MatchParen term=reverse ctermbg=Cyan guibg=Cyan",
 	NULL
     };
 
@@ -7925,8 +7926,10 @@ highlight_list_one(id)
 	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
     }
 
+    if (!didh)
+	highlight_list_arg(id, didh, LIST_STRING, 0, (char_u *)"cleared", "");
 #ifdef FEAT_EVAL
-    if (didh && p_verbose > 0)
+    if (p_verbose > 0)
 	last_set_msg(sgp->sg_scriptID);
 #endif
 }
@@ -7973,8 +7976,11 @@ highlight_list_arg(id, didh, type, iarg, sarg, name)
 	didh = TRUE;
 	if (!got_int)
 	{
-	    MSG_PUTS_ATTR(name, hl_attr(HLF_D));
-	    MSG_PUTS_ATTR("=", hl_attr(HLF_D));
+	    if (*name != NUL)
+	    {
+		MSG_PUTS_ATTR(name, hl_attr(HLF_D));
+		MSG_PUTS_ATTR("=", hl_attr(HLF_D));
+	    }
 	    msg_outtrans(ts);
 	}
     }

@@ -635,13 +635,8 @@ main
     if (params.edit_type == EDIT_QF)
     {
 	if (params.use_ef != NULL)
-	{
 	    set_string_option_direct((char_u *)"ef", -1,
-						     params.use_ef, OPT_FREE);
-# ifdef FEAT_EVAL
-	    set_option_scriptID((char_u *)"ef", SID_CARG);
-# endif
-	}
+					   params.use_ef, OPT_FREE, SID_CARG);
 	if (qf_init(NULL, p_ef, p_efm, TRUE) < 0)
 	{
 	    out_char('\n');
@@ -1010,7 +1005,6 @@ main_loop(cmdwin, noexmode)
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && has_cursormoved()
 			     && !equalpos(last_cursormoved, curwin->w_cursor))
-
 	    {
 		apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
 		last_cursormoved = curwin->w_cursor;

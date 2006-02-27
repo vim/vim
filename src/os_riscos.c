@@ -1245,7 +1245,7 @@ mch_read_filetype(file)
 	;
     type_string[i] = 0;
 
-    set_string_option_direct("osfiletype", -1, type_string, OPT_FREE);
+    set_string_option_direct("osfiletype", -1, type_string, OPT_FREE, 0);
     return;
 }
 
