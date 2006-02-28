@@ -7,6 +7,7 @@ int u_savedel __ARGS((linenr_T lnum, long nlines));
 void u_undo __ARGS((int count));
 void u_redo __ARGS((int count));
 void u_sync __ARGS((void));
+void ex_undojoin __ARGS((exarg_T *eap));
 void u_unchanged __ARGS((buf_T *buf));
 void u_clearall __ARGS((buf_T *buf));
 void u_saveline __ARGS((linenr_T lnum));

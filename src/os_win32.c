@@ -2548,6 +2548,61 @@ mch_isdir(char_u *name)
 }
 
 /*
+ * Return TRUE if file "fname" has more than one link.
+ */
+    int
+mch_is_linked(char_u *fname)
+{
+    HANDLE	hFile;
+    int		res = 0;
+    BY_HANDLE_FILE_INFORMATION inf;
+#ifdef FEAT_MBYTE
+    WCHAR	*wn = NULL;
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	wn = enc_to_ucs2(fname, NULL);
+    if (wn != NULL)
+    {
+	hFile = CreateFileW(wn,		/* file name */
+		    GENERIC_READ,	/* access mode */
+		    0,			/* share mode */
+		    NULL,		/* security descriptor */
+		    OPEN_EXISTING,	/* creation disposition */
+		    0,			/* file attributes */
+		    NULL);		/* handle to template file */
+	if (hFile == INVALID_HANDLE_VALUE
+		&& GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+	{
+	    /* Retry with non-wide function (for Windows 98). */
+	    vim_free(wn);
+	    wn = NULL;
+	}
+    }
+    if (wn == NULL)
+#endif
+	hFile = CreateFile(fname,	/* file name */
+		    GENERIC_READ,	/* access mode */
+		    0,			/* share mode */
+		    NULL,		/* security descriptor */
+		    OPEN_EXISTING,	/* creation disposition */
+		    0,			/* file attributes */
+		    NULL);		/* handle to template file */
+
+    if (hFile != INVALID_HANDLE_VALUE)
+    {
+	if (GetFileInformationByHandle(hFile, &inf) != 0
+		&& inf.nNumberOfLinks > 1)
+	    res = 1;
+	CloseHandle(hFile);
+    }
+
+#ifdef FEAT_MBYTE
+    vim_free(wn);
+#endif
+    return res;
+}
+
+/*
  * Return TRUE if file or directory "name" is writable (not readonly).
  * Strange semantics of Win32: a readonly directory is writable, but you can't
  * delete a file.  Let's say this means it is writable.

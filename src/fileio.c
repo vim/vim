@@ -2357,6 +2357,22 @@ failed:
 	curbuf->b_op_start.col = 0;
 	curbuf->b_op_end.lnum = from + linecnt;
 	curbuf->b_op_end.col = 0;
+
+#ifdef WIN32
+	/*
+	 * Work around a weird problem: When a file has two links (only
+	 * possible on NTFS) and we write through one link, then stat() it
+	 * throught the other link, the timestamp information may be wrong.
+	 * It's correct again after reading the file, thus reset the timestamp
+	 * here.
+	 */
+	if (newfile && !read_stdin && !read_buffer
+					 && mch_stat((char *)fname, &st) >= 0)
+	{
+	    buf_store_time(curbuf, &st, fname);
+	    curbuf->b_mtime_read = curbuf->b_mtime;
+	}
+#endif
     }
     msg_scroll = msg_save;
 
@@ -3263,6 +3279,13 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		    )
 		backup_copy = TRUE;
 	    else
+# else
+#  ifdef WIN32
+	    /* On NTFS file systems hard links are possible. */
+	    if (mch_is_linked(fname))
+		backup_copy = TRUE;
+	    else
+#  endif
 # endif
 	    {
 		/*
