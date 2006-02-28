@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2006 Feb 24
+*index.txt*     For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1476,6 +1476,7 @@ The commands are sorted on the non-optional part of their name.
 |:tselect|	:ts[elect]	list matching tags and select one
 |:tunmenu|	:tu[nmenu]	remove menu tooltip
 |:undo|		:u[ndo]		undo last change(s)
+|:undojoin|	:undoj[oin]	join next change with previous undo block
 |:unabbreviate|	:una[bbreviate]	remove abbreviation
 |:unhide|	:unh[ide]	open a window for each loaded file in the
 				buffer list

@@ -670,6 +670,7 @@ normal_cmd(oap, toplevel)
 	    c = 'd';
 	else
 	    c = 'c';
+	msg_nowait = TRUE;	/* don't delay going to insert mode */
     }
 #endif
 

@@ -813,6 +813,10 @@ static char_u *spell_enc __ARGS((void));
 static void int_wordlist_spl __ARGS((char_u *fname));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
+static int get2c __ARGS((FILE *fd));
+static int get3c __ARGS((FILE *fd));
+static int get4c __ARGS((FILE *fd));
+static time_t get8c __ARGS((FILE *fd));
 static char_u *read_cnt_string __ARGS((FILE *fd, int cnt_bytes, int *lenp));
 static char_u *read_string __ARGS((FILE *fd, int cnt));
 static int read_region_section __ARGS((FILE *fd, slang_T *slang, int len));
@@ -2602,8 +2606,7 @@ spell_load_file(fname, lang, old_lp, silent)
 	if (n == SN_END)
 	    break;
 	c = getc(fd);					/* <sectionflags> */
-	len = (getc(fd) << 24) + (getc(fd) << 16) + (getc(fd) << 8) + getc(fd);
-							/* <sectionlen> */
+	len = get4c(fd);				/* <sectionlen> */
 	if (len < 0)
 	    goto truncerr;
 
@@ -2657,8 +2660,7 @@ spell_load_file(fname, lang, old_lp, silent)
 		break;
 
 	    case SN_SUGFILE:
-		for (i = 7; i >= 0; --i)		/* <timestamp> */
-		    lp->sl_sugtime += getc(fd) << (i * 8);
+		lp->sl_sugtime = get8c(fd);		/* <timestamp> */
 		break;
 
 	    case SN_COMPOUND:
@@ -2746,6 +2748,66 @@ endOK:
     sourcing_lnum = save_sourcing_lnum;
 
     return lp;
+}
+
+/*
+ * Read 2 bytes from "fd" and turn them into an int, MSB first.
+ */
+    static int
+get2c(fd)
+    FILE	*fd;
+{
+    long	n;
+
+    n = getc(fd);
+    n = (n << 8) + getc(fd);
+    return n;
+}
+
+/*
+ * Read 3 bytes from "fd" and turn them into an int, MSB first.
+ */
+    static int
+get3c(fd)
+    FILE	*fd;
+{
+    long	n;
+
+    n = getc(fd);
+    n = (n << 8) + getc(fd);
+    n = (n << 8) + getc(fd);
+    return n;
+}
+
+/*
+ * Read 4 bytes from "fd" and turn them into an int, MSB first.
+ */
+    static int
+get4c(fd)
+    FILE	*fd;
+{
+    long	n;
+
+    n = getc(fd);
+    n = (n << 8) + getc(fd);
+    n = (n << 8) + getc(fd);
+    n = (n << 8) + getc(fd);
+    return n;
+}
+
+/*
+ * Read 8 bytes from "fd" and turn them into a time_t, MSB first.
+ */
+    static time_t
+get8c(fd)
+    FILE	*fd;
+{
+    time_t	n = 0;
+    int		i;
+
+    for (i = 0; i < 8; ++i)
+	n = (n << 8) + getc(fd);
+    return n;
 }
 
 /*
@@ -2882,7 +2944,7 @@ read_prefcond_section(fd, lp)
     char_u	buf[MAXWLEN + 1];
 
     /* <prefcondcnt> <prefcond> ... */
-    cnt = (getc(fd) << 8) + getc(fd);			/* <prefcondcnt> */
+    cnt = get2c(fd);					/* <prefcondcnt> */
     if (cnt <= 0)
 	return SP_FORMERROR;
 
@@ -2928,7 +2990,7 @@ read_rep_section(fd, gap, first)
     fromto_T	*ftp;
     int		i;
 
-    cnt = (getc(fd) << 8) + getc(fd);			/* <repcount> */
+    cnt = get2c(fd);					/* <repcount> */
     if (cnt < 0)
 	return SP_TRUNCERROR;
 
@@ -2993,7 +3055,7 @@ read_sal_section(fd, slang)
     if (i & SAL_REM_ACCENTS)
 	slang->sl_rem_accents = TRUE;
 
-    cnt = (getc(fd) << 8) + getc(fd);		/* <salcount> */
+    cnt = get2c(fd);				/* <salcount> */
     if (cnt < 0)
 	return SP_TRUNCERROR;
 
@@ -3746,7 +3808,7 @@ spell_read_tree(fd, bytsp, idxsp, prefixtree, prefixcnt)
 
     /* The tree size was computed when writing the file, so that we can
      * allocate it as one long block. <nodecount> */
-    len = (getc(fd) << 24) + (getc(fd) << 16) + (getc(fd) << 8) + getc(fd);
+    len = get4c(fd);
     if (len < 0)
 	return SP_TRUNCERROR;
     if (len > 0)
@@ -3836,7 +3898,7 @@ read_tree_node(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 
 		    c |= getc(fd);			/* <affixID> */
 
-		    n = (getc(fd) << 8) + getc(fd);	/* <prefcondnr> */
+		    n = get2c(fd);			/* <prefcondnr> */
 		    if (n >= maxprefcondnr)
 			return SP_FORMERROR;
 		    c |= (n << 8);
@@ -3862,7 +3924,7 @@ read_tree_node(fd, byts, idxs, maxidx, startidx, prefixtree, maxprefcondnr)
 	    else /* c == BY_INDEX */
 	    {
 							/* <nodeidx> */
-		n = (getc(fd) << 16) + (getc(fd) << 8) + getc(fd);
+		n = get3c(fd);
 		if (n < 0 || n >= maxidx)
 		    return SP_FORMERROR;
 		idxs[idx] = n + SHARED_MASK;
@@ -10185,9 +10247,7 @@ suggest_load_files()
 
 	    /* Check the timestamp, it must be exactly the same as the one in
 	     * the .spl file.  Otherwise the word numbers won't match. */
-	    timestamp = 0;
-	    for (i = 7; i >= 0; --i)		/* <timestamp> */
-		timestamp += getc(fd) << (i * 8);
+	    timestamp = get8c(fd);			/* <timestamp> */
 	    if (timestamp != slang->sl_sugtime)
 	    {
 		EMSG2(_("E781: .sug file doesn't match .spl file: %s"),
@@ -10220,8 +10280,7 @@ someerror:
 	    if (slang->sl_sugbuf == NULL)
 		goto someerror;
 							    /* <sugwcount> */
-	    wcount = (getc(fd) << 24) + (getc(fd) << 16) + (getc(fd) << 8)
-								   + getc(fd);
+	    wcount = get4c(fd);
 	    if (wcount < 0)
 		goto someerror;
 
