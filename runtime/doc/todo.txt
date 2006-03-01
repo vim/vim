@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,26 +30,27 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Gcc 4 gives more warnings for uninitialized vars.
-
-Ignore "j" at hit-enter prompt?  "k" already works differently.
+Test58 and test59: also test with NOSPLITSUGS?
 
 Crash with X command server (Ciaran McCreesh).
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
-maintanance.
+maintanance.  Is there another solution?
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
   When 'dictionary' is empty and/or when "kspell" is in 'complete'.
+- Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
+  Don't allow it, because there is no other way to do this.
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
   After deleting a word with "zw" and some timestamp difference perhaps?
   Store it as spell/cleanadd.vim.
-- suggestion for "KG" to "kg" when it's keepcase.
-- Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
-  Don't allow it, because there is no other way to do this.
-- Implement NOSUGGEST flag (used for obscene words).
-- Implement NOSPLITSUGS.
+- Have "zg" and "zw" report the file that was modified. (Marvin Renich)
+- Add a command like "zg" that selects one of the files in 'spellfile'.
+- Add a "zug" command that undoes "zg"?  Deletes the good word instead of
+  adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
+  Colombo)
+
 - Rename COMPOUNDFLAGS to COMPOUNDPATTERN or COMPOUNDRULE?
     Hunspell now uses COMPOUND with a count.
 - Check out Hunspell 1.1.3.
@@ -69,18 +70,9 @@ spelling:
   Check Myspell and Aspell if they also work this way.
   Thus a word + suffix needs a flag that it can't be used with a following
   compound, and word + prefix can't be after another word in a compound.
-- Implement COMPOUNDFORBIDFLAG.
+- Implement COMPOUNDFORBIDFLAG .
 - Support breakpoint character · 0xb7 and ignore it?  Makes it possible to use
   same wordlist for hyphenation.
-8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
-    obtain).  But new Myspell wordlist will come (Hagen)
-- Finding suggestions with sound folding is slow.  Somehow store the
-  sound-folded words and link to the words it comes from?
-- Have "zg" and "zw" report the file that was modified. (Marvin Renich)
-- Add a command like "zg" that selects one of the files 'spellfile'.
-- Add a "zug" command that undoes "zg"?  Deletes the good word instead of
-  adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
-  Colombo)
 
 Is it possible to keep the command-line window open?  Would actually work like
 closing it, executing the command and re-opening it (at the same position).
@@ -1352,8 +1344,6 @@ Tab pages:
 8   :tabmove +N	 move tab page N pages forward
 8   :tabmove -N	 move tab page N pages backward
 7   :tabdup	 duplicate the tab with all its windows.
-6   :tab ball    tab page for each buffer
-6   :tab all     tab page for each argument
 7   Option to put tab line at the left or right?  Need an option to specify
     its witdh.  It's like a separate window with ":tabs" output.
 7   Add local variables for each tab page?
@@ -1363,8 +1353,7 @@ Tab pages:
 
 
 Spell checking:
-9   Work together with OpenOffice.org to update the wordlists.  (Adri Verhoef,
-    Aad Nales)  Setup vim-spell maillist?
+-   suggestion for "KG" to "kg" when it's keepcase.
 -   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
     syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?
 -   COMPOUNDMAX -> COMPOUNDWORDMAX?
@@ -1381,6 +1370,8 @@ Spell checking:
     - PSEUDOROOT == NEEDAFFIX
     - COMPOUNDROOT -> COMPOUNDED?  For a word that already is a compound word
 	    Or use COMPOUNDED2, COMPOUNDED3, etc.
+8   Alternate Dutch word list at www.nederlandsewoorden.nl (use script to
+    obtain).  But new Myspell wordlist will come (Hagen)
 -   CIRCUMFIX: when a word uses a prefix marked with the CIRCUMFIX flag, then
     the word must also have a suffix marked with the CIRCUMFIX flag.  It's a
     bit primitive, since only one flag is used, which doesn't allow matching

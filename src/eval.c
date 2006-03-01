@@ -13412,8 +13412,8 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
-    firstpos.lnum = 0;
-    foundpos.lnum = 0;
+    clearpos(&firstpos);
+    clearpos(&foundpos);
     pat = pat3;
     for (;;)
     {
@@ -15582,9 +15582,9 @@ var2fpos(varp, lnum)
     typval_T	*varp;
     int		lnum;		/* TRUE when $ is last line */
 {
-    char_u	*name;
+    char_u		*name;
     static pos_T	pos;
-    pos_T	*pp;
+    pos_T		*pp;
 
     /* Argument can be [lnum, col]. */
     if (varp->v_type == VAR_LIST)

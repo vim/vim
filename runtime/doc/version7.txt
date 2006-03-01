@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 28
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -241,7 +241,11 @@ When moving the cursor through the text and it is on a paren, then the
 matching paren can be highlighted.  This uses the new |CursorMoved|
 autocommand event.
 
-See |pi_paren.txt| for more information.
+See |matchparen| for more information.
+
+The plugin uses the |:match| command.  It now supports three match patterns.
+The plugin uses the third one.  The first one is for the user and the second
+one can be used by another plugin.
 
 
 Translated manual pages					*new-manpage-trans*
@@ -677,6 +681,8 @@ different value.
 VHDL indent file (Gerald Lai)
 
 MGL syntax file. (Gero Kuhlmann)
+
+rd syntax file. (Johannes Ranke)
 
 New Keymaps: ~
 
