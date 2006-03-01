@@ -30,12 +30,14 @@
 		       ? (a)->col < (b)->col \
 		       : (a)->coladd < (b)->coladd)
 # define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
+# define clearpos(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
 #else
 # define lt(a, b) (((a).lnum != (b).lnum) \
 		   ? ((a).lnum < (b).lnum) : ((a).col < (b).col))
 # define ltp(a, b) (((a)->lnum != (b)->lnum) \
 		   ? ((a)->lnum < (b)->lnum) : ((a)->col < (b)->col))
 # define equalpos(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
+# define clearpos(a) {(a)->lnum = 0; (a)->col = 0;}
 #endif
 
 #define ltoreq(a, b) (lt(a, b) || equalpos(a, b))

@@ -4147,7 +4147,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
     curwin->w_cursor.col = 0;
 
     /* Search forward for the identifier, ignore comment lines. */
-    found_pos.lnum = 0;
+    clearpos(&found_pos);
     for (;;)
     {
 	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,

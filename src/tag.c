@@ -197,6 +197,9 @@ do_tag(tag, type, count, forceit, verbose)
     free_string_option(nofile_fname);
     nofile_fname = NULL;
 
+    clearpos(&saved_fmark.mark);	/* shutup gcc 4.0 */
+    saved_fmark.fnum = 0;
+
     /*
      * Don't add a tag to the tagstack if 'tagstack' has been reset.
      */

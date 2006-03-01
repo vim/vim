@@ -4392,7 +4392,7 @@ repl_cmdline(eap, src, srclen, repl, cmdlinep)
      */
     len = (int)STRLEN(repl);
     i = (int)(src - *cmdlinep) + (int)STRLEN(src + srclen) + len + 3;
-    if (eap->nextcmd)
+    if (eap->nextcmd != NULL)
 	i += (int)STRLEN(eap->nextcmd);/* add space for next command */
     if ((new_cmdline = alloc((unsigned)i)) == NULL)
 	return NULL;			/* out of memory! */
@@ -4411,7 +4411,7 @@ repl_cmdline(eap, src, srclen, repl, cmdlinep)
     STRCPY(new_cmdline + i, src + srclen);
     src = new_cmdline + i;		/* remember where to continue */
 
-    if (eap->nextcmd)			/* append next command */
+    if (eap->nextcmd != NULL)		/* append next command */
     {
 	i = (int)STRLEN(new_cmdline) + 1;
 	STRCPY(new_cmdline + i, eap->nextcmd);
@@ -10583,7 +10583,7 @@ ex_nohlsearch(eap)
 }
 
 /*
- * ":match {group} {pattern}"
+ * ":[N]match {group} {pattern}"
  * Sets nextcmd to the start of the next command, if any.  Also called when
  * skipping commands to find the next command.
  */
@@ -10594,12 +10594,21 @@ ex_match(eap)
     char_u	*p;
     char_u	*end;
     int		c;
+    int		mi;
+
+    if (eap->line2 <= 3)
+	mi = eap->line2 - 1;
+    else
+    {
+	EMSG(e_invcmd);
+	return;
+    }
 
     /* First clear any old pattern. */
     if (!eap->skip)
     {
-	vim_free(curwin->w_match.regprog);
-	curwin->w_match.regprog = NULL;
+	vim_free(curwin->w_match[mi].regprog);
+	curwin->w_match[mi].regprog = NULL;
 	redraw_later(NOT_VALID);	/* always need a redraw */
     }
 
@@ -10613,8 +10622,9 @@ ex_match(eap)
 	p = skiptowhite(eap->arg);
 	if (!eap->skip)
 	{
-	    curwin->w_match_id = syn_namen2id(eap->arg, (int)(p - eap->arg));
-	    if (curwin->w_match_id == 0)
+	    curwin->w_match_id[mi] = syn_namen2id(eap->arg,
+							 (int)(p - eap->arg));
+	    if (curwin->w_match_id[mi] == 0)
 	    {
 		EMSG2(_(e_nogroup), eap->arg);
 		return;
@@ -10643,9 +10653,9 @@ ex_match(eap)
 
 	    c = *end;
 	    *end = NUL;
-	    curwin->w_match.regprog = vim_regcomp(p + 1, RE_MAGIC);
+	    curwin->w_match[mi].regprog = vim_regcomp(p + 1, RE_MAGIC);
 	    *end = c;
-	    if (curwin->w_match.regprog == NULL)
+	    if (curwin->w_match[mi].regprog == NULL)
 	    {
 		EMSG2(_(e_invarg2), p);
 		return;

@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 08
+*message.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -751,9 +751,12 @@ and the screen is about to be redrawn:
 -> Press <Enter> or <Space> to redraw the screen and continue, without that
    key being used otherwise.
 -> Press ':' or any other Normal mode command character to start that command.
--> Press 'k', 'u', 'b' or 'g' to scroll back in the messages.  This works the
-   same way as at the |more-prompt|.  Only works when 'compatible' is off and
-   'more' is on.
+-> Press 'k', <Up>, 'u', 'b' or 'g' to scroll back in the messages.  This
+   works the same way as at the |more-prompt|.  Only works when 'compatible'
+   is off and 'more' is on.
+-> Pressing 'j', 'd' or <Down> is ignored when messages scrolled off the top
+   of the screen, 'compatible' is off and 'more' is on, to avoid that typing
+   one 'j' too many causes the messages to disappear.
 -> Press <C-Y> to copy (yank) a modeless selection to the clipboard register.
 -> Use a menu.  The characters defined for Cmdline-mode are used.
 -> When 'mouse' contains the 'r' flag, clicking the left mouse button works

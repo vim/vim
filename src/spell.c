@@ -172,6 +172,8 @@
  * sectionID == SN_SUGFILE: <timestamp>
  * <timestamp>   8 bytes    time in seconds that must match with .sug file
  *
+ * sectionID == SN_NOSPLITSUGS: nothing
+ *
  * sectionID == SN_WORDS: <word> ...
  * <word>	 N bytes    NUL terminated common word
  *
@@ -241,6 +243,7 @@
  * <flags2>	1 byte	    Bitmask of:
  *			    WF_HAS_AFF >> 8   word includes affix
  *			    WF_NEEDCOMP >> 8  word only valid in compound
+ *			    WF_NOSUGGEST >> 8  word not used for suggestions
  *
  * <pflags>	1 byte	    bitmask of:
  *			    WFP_RARE	rare prefix
@@ -328,6 +331,7 @@ typedef long idx_T;
 /* for <flags2>, shifted up one byte to be used in wn_flags */
 #define WF_HAS_AFF  0x0100	/* word includes affix */
 #define WF_NEEDCOMP 0x0200	/* word only valid in compound */
+#define WF_NOSUGGEST 0x0400	/* word not to be suggested */
 
 /* only used for su_badflags */
 #define WF_MIXCAP   0x20	/* mix of upper and lower case: macaRONI */
@@ -461,6 +465,7 @@ struct slang_S
 				 * "sl_sal" is a list of wide char lists. */
     garray_T	sl_repsal;	/* list of fromto_T entries from REPSAL lines */
     short	sl_repsal_first[256];  /* sl_rep_first for REPSAL lines */
+    int		sl_nosplitsugs;	/* don't suggest splitting a word */
 
     /* Info from the .sug file.  Loaded on demand. */
     time_t	sl_sugtime;	/* timestamp for .sug file */
@@ -528,6 +533,7 @@ typedef struct langp_S
 #define SN_SUGFILE	11	/* timestamp for .sug file */
 #define SN_REPSAL	12	/* REPSAL items section */
 #define SN_WORDS	13	/* common words */
+#define SN_NOSPLITSUGS	14	/* don't split word for suggestions */
 #define SN_END		255	/* end of sections */
 
 #define SNF_REQUIRED	1	/* <sectionflags>: required section */
@@ -602,6 +608,7 @@ typedef struct suggest_S
 
 /* score for various changes */
 #define SCORE_SPLIT	149	/* split bad word */
+#define SCORE_SPLIT_NO	249	/* split bad word with NOSPLITSUGS */
 #define SCORE_ICASE	52	/* slightly different case */
 #define SCORE_REGION	200	/* word is for different region */
 #define SCORE_RARE	180	/* rare word */
@@ -2010,7 +2017,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
      * though...
      */
     lnum = wp->w_cursor.lnum;
-    found_pos.lnum = 0;
+    clearpos(&found_pos);
 
     while (!got_int)
     {
@@ -2661,6 +2668,10 @@ spell_load_file(fname, lang, old_lp, silent)
 
 	    case SN_SUGFILE:
 		lp->sl_sugtime = get8c(fd);		/* <timestamp> */
+		break;
+
+	    case SN_NOSPLITSUGS:
+		lp->sl_nosplitsugs = TRUE;		/* <timestamp> */
 		break;
 
 	    case SN_COMPOUND:
@@ -4554,6 +4565,7 @@ typedef struct afffile_S
     unsigned	af_bad;		/* BAD ID for banned word */
     unsigned	af_needaffix;	/* NEEDAFFIX ID */
     unsigned	af_needcomp;	/* NEEDCOMPOUND ID */
+    unsigned	af_nosuggest;	/* NOSUGGEST ID */
     int		af_pfxpostpone;	/* postpone prefixes without chop string */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
@@ -4710,6 +4722,7 @@ typedef struct spellinfo_S
     char_u	*si_sofofr;	/* SOFOFROM text */
     char_u	*si_sofoto;	/* SOFOTO text */
     int		si_nosugfile;	/* NOSUGFILE item found */
+    int		si_nosplitsugs;	/* NOSPLITSUGS item found */
     int		si_followup;	/* soundsalike: ? */
     int		si_collapse;	/* soundsalike: ? */
     hashtab_T	si_commonwords;	/* hashtable for common words */
@@ -5053,6 +5066,7 @@ spell_read_aff(spin, fname)
 			|| aff->af_bad != 0
 			|| aff->af_needaffix != 0
 			|| aff->af_needcomp != 0
+			|| aff->af_nosuggest != 0
 			|| compflags != NULL
 			|| aff->af_suff.ht_used > 0
 			|| aff->af_pref.ht_used > 0)
@@ -5063,10 +5077,6 @@ spell_read_aff(spin, fname)
 							   && midword == NULL)
 	    {
 		midword = getroom_save(spin, items[1]);
-	    }
-	    else if (STRCMP(items[0], "NOSPLITSUGS") == 0 && itemcnt == 1)
-	    {
-		/* ignored, we always split */
 	    }
 	    else if (STRCMP(items[0], "TRY") == 0 && itemcnt == 2)
 	    {
@@ -5098,6 +5108,12 @@ spell_read_aff(spin, fname)
 						    && aff->af_needaffix == 0)
 	    {
 		aff->af_needaffix = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+	    }
+	    else if (STRCMP(items[0], "NOSUGGEST") == 0 && itemcnt == 2
+						    && aff->af_nosuggest == 0)
+	    {
+		aff->af_nosuggest = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
 	    else if (STRCMP(items[0], "NEEDCOMPOUND") == 0 && itemcnt == 2
@@ -5171,6 +5187,10 @@ spell_read_aff(spin, fname)
 	    {
 		spin->si_nobreak = TRUE;
 	    }
+	    else if (STRCMP(items[0], "NOSPLITSUGS") == 0 && itemcnt == 1)
+	    {
+		spin->si_nosplitsugs = TRUE;
+	    }
 	    else if (STRCMP(items[0], "NOSUGFILE") == 0 && itemcnt == 1)
 	    {
 		spin->si_nosugfile = TRUE;
@@ -5223,8 +5243,9 @@ spell_read_aff(spin, fname)
 			    || cur_aff->ah_flag == aff->af_rare
 			    || cur_aff->ah_flag == aff->af_keepcase
 			    || cur_aff->ah_flag == aff->af_needaffix
+			    || cur_aff->ah_flag == aff->af_nosuggest
 			    || cur_aff->ah_flag == aff->af_needcomp)
-			smsg((char_u *)_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"),
+			smsg((char_u *)_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"),
 						       fname, lnum, items[1]);
 		    STRCPY(cur_aff->ah_key, items[1]);
 		    hash_add(tp, cur_aff->ah_key);
@@ -6242,6 +6263,9 @@ spell_read_dic(spin, fname, affile)
 	    if (affile->af_needcomp != 0 && flag_in_afflist(
 			   affile->af_flagtype, afflist, affile->af_needcomp))
 		flags |= WF_NEEDCOMP;
+	    if (affile->af_nosuggest != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_nosuggest))
+		flags |= WF_NOSUGGEST;
 
 	    if (affile->af_pfxpostpone)
 		/* Need to store the list of prefix IDs with the word. */
@@ -7669,6 +7693,16 @@ write_vim_spell(spin, fname)
 	/* Set si_sugtime and write it to the file. */
 	spin->si_sugtime = time(NULL);
 	put_sugtime(spin, fd);				/* <timestamp> */
+    }
+
+    /* SN_NOSPLITSUGS: nothing
+     * This is used to notify that no suggestions with word splits are to be
+     * made. */
+    if (spin->si_nosplitsugs)
+    {
+	putc(SN_NOSPLITSUGS, fd);			/* <sectionID> */
+	putc(0, fd);					/* <sectionflags> */
+	put_bytes(fd, (long_u)0, 4);			/* <sectionlen> */
     }
 
     /* SN_COMPOUND: compound info.
@@ -10776,6 +10810,11 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    ++sp->ts_curi;		/* eat one NUL byte */
 
 	    flags = (int)idxs[arridx];
+
+	    /* Skip words with the NOSUGGEST flag. */
+	    if (flags & WF_NOSUGGEST)
+		break;
+
 	    fword_ends = (fword[sp->ts_fidx] == NUL
 			   || (soundfold
 			       ? vim_iswhite(fword[sp->ts_fidx])
@@ -11127,7 +11166,11 @@ suggest_trie_walk(su, lp, fword, soundfold)
 				&& !can_compound(slang, p,
 						compflags + sp->ts_compsplit))
 			    break;
-			newscore += SCORE_SPLIT;
+
+			if (slang->sl_nosplitsugs)
+			    newscore += SCORE_SPLIT_NO;
+			else
+			    newscore += SCORE_SPLIT;
 
 			/* Give a bonus to words seen before. */
 			newscore = score_wordcount_adj(slang, newscore,
@@ -12669,6 +12712,10 @@ badword:
 	    char_u	cword[MAXWLEN];
 	    char_u	*p;
 	    int		flags = (int)idxs[n + i];
+
+	    /* Skip words with the NOSUGGEST flag */
+	    if (flags & WF_NOSUGGEST)
+		continue;
 
 	    if (flags & WF_KEEPCAP)
 	    {

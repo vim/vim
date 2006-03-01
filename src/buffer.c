@@ -4191,6 +4191,8 @@ do_arg_all(count, forceit)
     int		p_ea_save;
     alist_T	*alist;		/* argument list to be used */
     buf_T	*buf;
+    tabpage_T	*tpnext;
+    int		had_tab = cmdmod.tab;
 
     if (ARGCOUNT <= 0)
     {
@@ -4214,79 +4216,97 @@ do_arg_all(count, forceit)
      * Also close windows that are not full width;
      * When 'hidden' or "forceit" set the buffer becomes hidden.
      * Windows that have a changed buffer and can't be hidden won't be closed.
+     * When the ":tab" modifier was used do this for all tab pages.
      */
-    for (wp = firstwin; wp != NULL; wp = wpnext)
+    if (had_tab > 0)
+	goto_tabpage_tp(first_tabpage);
+    for (;;)
     {
-	wpnext = wp->w_next;
-	buf = wp->w_buffer;
-	if (buf->b_ffname == NULL
-		|| buf->b_nwindows > 1
+	tpnext = curtab->tp_next;
+	for (wp = firstwin; wp != NULL; wp = wpnext)
+	{
+	    wpnext = wp->w_next;
+	    buf = wp->w_buffer;
+	    if (buf->b_ffname == NULL
+		    || buf->b_nwindows > 1
 #ifdef FEAT_VERTSPLIT
-		|| wp->w_width != Columns
+		    || wp->w_width != Columns
 #endif
-		)
-	    i = ARGCOUNT;
-	else
-	{
-	    /* check if the buffer in this window is in the arglist */
-	    for (i = 0; i < ARGCOUNT; ++i)
+		    )
+		i = ARGCOUNT;
+	    else
 	    {
-		if (ARGLIST[i].ae_fnum == buf->b_fnum
-			|| fullpathcmp(alist_name(&ARGLIST[i]),
-					      buf->b_ffname, TRUE) & FPC_SAME)
+		/* check if the buffer in this window is in the arglist */
+		for (i = 0; i < ARGCOUNT; ++i)
 		{
-		    if (i < opened_len)
-			opened[i] = TRUE;
-		    if (wp->w_alist != curwin->w_alist)
+		    if (ARGLIST[i].ae_fnum == buf->b_fnum
+			    || fullpathcmp(alist_name(&ARGLIST[i]),
+						  buf->b_ffname, TRUE) & FPC_SAME)
 		    {
-			/* Use the current argument list for all windows
-			 * containing a file from it. */
-			alist_unlink(wp->w_alist);
-			wp->w_alist = curwin->w_alist;
-			++wp->w_alist->al_refcount;
+			if (i < opened_len)
+			    opened[i] = TRUE;
+			if (wp->w_alist != curwin->w_alist)
+			{
+			    /* Use the current argument list for all windows
+			     * containing a file from it. */
+			    alist_unlink(wp->w_alist);
+			    wp->w_alist = curwin->w_alist;
+			    ++wp->w_alist->al_refcount;
+			}
+			break;
 		    }
-		    break;
 		}
 	    }
-	}
-	wp->w_arg_idx = i;
+	    wp->w_arg_idx = i;
 
-	if (i == ARGCOUNT)		/* close this window */
-	{
-	    if (P_HID(buf) || forceit || buf->b_nwindows > 1
-							|| !bufIsChanged(buf))
+	    if (i == ARGCOUNT)		/* close this window */
 	    {
-		/* If the buffer was changed, and we would like to hide it,
-		 * try autowriting. */
-		if (!P_HID(buf) && buf->b_nwindows <= 1 && bufIsChanged(buf))
+		if (P_HID(buf) || forceit || buf->b_nwindows > 1
+							    || !bufIsChanged(buf))
 		{
-		    (void)autowrite(buf, FALSE);
-#ifdef FEAT_AUTOCMD
-		    /* check if autocommands removed the window */
-		    if (!win_valid(wp) || !buf_valid(buf))
+		    /* If the buffer was changed, and we would like to hide it,
+		     * try autowriting. */
+		    if (!P_HID(buf) && buf->b_nwindows <= 1 && bufIsChanged(buf))
 		    {
-			wpnext = firstwin;	/* start all over... */
-			continue;
+			(void)autowrite(buf, FALSE);
+#ifdef FEAT_AUTOCMD
+			/* check if autocommands removed the window */
+			if (!win_valid(wp) || !buf_valid(buf))
+			{
+			    wpnext = firstwin;	/* start all over... */
+			    continue;
+			}
+#endif
+		    }
+#ifdef FEAT_WINDOWS
+		    if (firstwin == lastwin)	/* don't close last window */
+#endif
+			use_firstwin = TRUE;
+#ifdef FEAT_WINDOWS
+		    else
+		    {
+			win_close(wp, !P_HID(buf) && !bufIsChanged(buf));
+# ifdef FEAT_AUTOCMD
+			/* check if autocommands removed the next window */
+			if (!win_valid(wpnext))
+			    wpnext = firstwin;	/* start all over... */
+# endif
 		    }
 #endif
 		}
-#ifdef FEAT_WINDOWS
-		if (firstwin == lastwin)	/* don't close last window */
-#endif
-		    use_firstwin = TRUE;
-#ifdef FEAT_WINDOWS
-		else
-		{
-		    win_close(wp, !P_HID(buf) && !bufIsChanged(buf));
-# ifdef FEAT_AUTOCMD
-		    /* check if autocommands removed the next window */
-		    if (!win_valid(wpnext))
-			wpnext = firstwin;	/* start all over... */
-# endif
-		}
-#endif
 	    }
 	}
+
+	/* Without the ":tab" modifier only do the current tab page. */
+	if (had_tab == 0 || tpnext == NULL)
+	    break;
+
+# ifdef FEAT_AUTOCMD
+	/* check if autocommands removed the next tab page */
+	if (!valid_tabpage(tpnext))
+	    tpnext = first_tabpage;	/* start all over...*/
+# endif
+	goto_tabpage_tp(tpnext);
     }
 
     /*
@@ -4359,6 +4379,10 @@ do_arg_all(count, forceit)
 	    use_firstwin = FALSE;
 	}
 	ui_breakcheck();
+
+	/* When ":tab" was used open a new tab for a new window repeatedly. */
+	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
+	    cmdmod.tab = 9999;
     }
 
     /* Remove the "lock" on the argument list. */
@@ -4390,6 +4414,10 @@ ex_buffer_all(eap)
     int		r;
     int		count;		/* Maximum number of windows to open. */
     int		all;		/* When TRUE also load inactive buffers. */
+#ifdef FEAT_WINDOWS
+    int		had_tab = cmdmod.tab;
+    tabpage_T	*tpnext;
+#endif
 
     if (eap->addr_count == 0)	/* make as many windows as possible */
 	count = 9999;
@@ -4410,27 +4438,48 @@ ex_buffer_all(eap)
      * Close superfluous windows (two windows for the same buffer).
      * Also close windows that are not full-width.
      */
-    for (wp = firstwin; wp != NULL; wp = wpnext)
+#ifdef FEAT_WINDOWS
+    if (had_tab > 0)
+	goto_tabpage_tp(first_tabpage);
+    for (;;)
     {
-	wpnext = wp->w_next;
-	if (wp->w_buffer->b_nwindows > 1
-#ifdef FEAT_VERTSPLIT
-		|| ((cmdmod.split & WSP_VERT)
-			  ? wp->w_height + wp->w_status_height < Rows - p_ch
-			  : wp->w_width != Columns)
 #endif
-		)
+	tpnext = curtab->tp_next;
+	for (wp = firstwin; wp != NULL; wp = wpnext)
 	{
-	    win_close(wp, FALSE);
-#ifdef FEAT_AUTOCMD
-	    wpnext = firstwin;	/* just in case an autocommand does something
-				   strange with windows */
-	    open_wins = 0;
+	    wpnext = wp->w_next;
+	    if (wp->w_buffer->b_nwindows > 1
+#ifdef FEAT_VERTSPLIT
+		    || ((cmdmod.split & WSP_VERT)
+			? wp->w_height + wp->w_status_height < Rows - p_ch
+			: wp->w_width != Columns)
 #endif
+		    )
+	    {
+		win_close(wp, FALSE);
+#ifdef FEAT_AUTOCMD
+		wpnext = firstwin;	/* just in case an autocommand does
+					   something strange with windows */
+		open_wins = 0;
+#endif
+	    }
+	    else
+		++open_wins;
 	}
-	else
-	    ++open_wins;
+
+#ifdef FEAT_WINDOWS
+	/* Without the ":tab" modifier only do the current tab page. */
+	if (had_tab == 0 || tpnext == NULL)
+	    break;
+
+# ifdef FEAT_AUTOCMD
+	/* check if autocommands removed the next tab page */
+	if (!valid_tabpage(tpnext))
+	    tpnext = first_tabpage;	/* start all over...*/
+# endif
+	goto_tabpage_tp(tpnext);
     }
+#endif
 
     /*
      * Go through the buffer list.  When a buffer doesn't have a window yet,
@@ -4522,6 +4571,11 @@ ex_buffer_all(eap)
 	/* Autocommands deleted the buffer or aborted script processing!!! */
 	if (aborting())
 	    break;
+#endif
+#ifdef FEAT_WINDOWS
+	/* When ":tab" was used open a new tab for a new window repeatedly. */
+	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
+	    cmdmod.tab = 9999;
 #endif
     }
 #ifdef FEAT_AUTOCMD

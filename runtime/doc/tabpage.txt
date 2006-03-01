@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 26
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,8 +32,9 @@ each tab page.  With the mouse you can click on the label to jump to that tab
 page.  There are other ways to move between tab pages, see below.
 
 Most commands work only in the current tab page.  That includes the |CTRL-W|
-commands, |:windo|, |:all| and |:ball|.  The commands that are aware of
-other tab pages than the current one are mentioned below.
+commands, |:windo|, |:all| and |:ball| (when not using the |:tab| modifier).
+The commands that are aware of other tab pages than the current one are
+mentioned below.
 
 Tabs are also a nice way to edit a buffer temporarily without changing the
 current window layout.  Open a new tab page, do whatever you want to do and
@@ -45,7 +46,7 @@ close the tab page.
 OPENING A NEW TAB PAGE:
 
 When starting Vim "vim -p filename ..." opens each file argument in a separate
-tab page (up to 10). |-p|
+tab page (up to 'tabpagemax'). |-p|
 
 A double click with the mouse in the tab pages line opens a new, empty tab
 page.  It is placed left of the position of the click.  The first click may

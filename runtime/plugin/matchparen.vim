@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Feb 27
+" Last Change: 2006 Mar 01
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -28,7 +28,7 @@ endif
 function! s:Highlight_Matching_Pair()
   " Remove any previous match.
   if s:paren_hl_on
-    match none
+    3match none
     let s:paren_hl_on = 0
   endif
 
@@ -81,6 +81,8 @@ function! s:Highlight_Matching_Pair()
   if before > 0
     if &ve != ''
       let vcol = virtcol('.')
+      let old_ve = &ve
+      set ve=all
     endif
     call cursor(c_lnum, c_col - before)
   endif
@@ -88,6 +90,7 @@ function! s:Highlight_Matching_Pair()
   if before > 0
     if &ve != ''
       exe 'normal ' . vcol . '|'
+      let &ve = old_ve
     else
       call cursor(0, c_col)
     endif
@@ -95,12 +98,12 @@ function! s:Highlight_Matching_Pair()
 
   " If a match is found setup match highlighting.
   if m_lnum > 0 && m_lnum >= line('w0') && m_lnum <= line('w$')
-    exe 'match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
+    exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
 	  \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
     let s:paren_hl_on = 1
   endif
 endfunction
 
 " Define commands that will disable and enable the plugin.
-command! NoMatchParen match none | unlet! g:loaded_matchparen | au! matchparen
+command! NoMatchParen 3match none | unlet! g:loaded_matchparen | au! matchparen
 command! DoMatchParen runtime plugin/matchparen.vim | doau CursorMoved

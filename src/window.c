@@ -3087,9 +3087,9 @@ make_tabpages(maxcount)
     int		count = maxcount;
     int		todo;
 
-    /* Limit to 10 tabs. */
-    if (count > 10)
-	count = 10;
+    /* Limit to 'tabpagemax' tabs. */
+    if (count > p_tpm)
+	count = p_tpm;
 
 #ifdef FEAT_AUTOCMD
     /*
@@ -3852,7 +3852,9 @@ win_free(wp, tp)
 
     vim_free(wp->w_localdir);
 #ifdef FEAT_SEARCH_EXTRA
-    vim_free(wp->w_match.regprog);
+    vim_free(wp->w_match[0].regprog);
+    vim_free(wp->w_match[1].regprog);
+    vim_free(wp->w_match[2].regprog);
 #endif
 #ifdef FEAT_JUMPLIST
     free_jumplist(wp);

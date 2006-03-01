@@ -932,22 +932,33 @@ wait_return(redraw)
 		c = K_IGNORE;
 	    }
 #endif
-	    if (p_more && !p_cp && (c == 'b' || c == 'k' || c == 'u'
-						    || c == 'g' || c == K_UP))
+	    /*
+	     * Allow scrolling back in the messages.
+	     * Also accept scroll-down commands when messages fill the screen,
+	     * to avoid that typing one 'j' too many makes the messages
+	     * disappear.
+	     */
+	    if (p_more && !p_cp)
 	    {
-		/* scroll back to show older messages */
-		do_more_prompt(c);
-		if (quit_more)
+		if (c == 'b' || c == 'k' || c == 'u' || c == 'g' || c == K_UP)
 		{
-		    c = CAR;		/* just pretend CR was hit */
-		    quit_more = FALSE;
-		    got_int = FALSE;
+		    /* scroll back to show older messages */
+		    do_more_prompt(c);
+		    if (quit_more)
+		    {
+			c = CAR;		/* just pretend CR was hit */
+			quit_more = FALSE;
+			got_int = FALSE;
+		    }
+		    else
+		    {
+			c = K_IGNORE;
+			hit_return_msg();
+		    }
 		}
-		else
-		{
+		else if (msg_scrolled > Rows - 2
+				     && (c == 'j' || c == K_DOWN || c == 'd'))
 		    c = K_IGNORE;
-		    hit_return_msg();
-		}
 	    }
 	} while ((had_got_int && c == Ctrl_C)
 				|| c == K_IGNORE
