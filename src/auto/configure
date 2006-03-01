@@ -3395,7 +3395,7 @@ fi
     fi
   fi
 
-    if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
+        if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
   fi
 

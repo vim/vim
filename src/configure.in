@@ -164,7 +164,9 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     fi
   fi
 
-  dnl avoid a bug with -O2 for intel
+  dnl Avoid a bug with -O2 with gcc 4.0.  Symptom: malloc() reports double
+  dnl free.  This happens in expand_filename(), because the optimizer swaps
+  dnl two blocks of code that use "repl" that can't be swapped.
   if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-Oz/'`
   fi

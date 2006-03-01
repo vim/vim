@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 18
+*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -376,9 +376,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-p*
 -p[N]		Open N tab pages.  If [N] is not given, one tab page is opened
-		for every file given as argument.  The maximum is 10 tab
-		pages.  If there are more tab pages than arguments, the last
-		few tab pages will be editing an empty file.
+		for every file given as argument.  The maximum is set with
+		'tabpagemax' pages (default 10).  If there are more tab pages
+		than arguments, the last few tab pages will be editing an
+		empty file.
 		{not in Vi}
 
 							*-T*

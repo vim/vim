@@ -1894,8 +1894,8 @@ struct window_S
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
-    regmmatch_T	w_match;	/* regexp program for ":match" */
-    int		w_match_id;	/* highlight ID for ":match" */
+    regmmatch_T	w_match[3];	/* regexp programs for ":match" */
+    int		w_match_id[3];	/* highlight IDs for ":match" */
 #endif
 
     /*

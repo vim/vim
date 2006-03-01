@@ -3918,6 +3918,7 @@ check_termcode(max_offset, buf, buflen)
 	    continue;
 
 	key_name[0] = NUL;	/* no key name found yet */
+	key_name[1] = NUL;	/* no key name found yet */
 	modifiers = 0;		/* no modifiers yet */
 
 #ifdef FEAT_GUI

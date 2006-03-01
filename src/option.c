@@ -2295,6 +2295,13 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)"", (char_u *)0L}},
+    {"tabpagemax",  "tpm",  P_NUM|P_VI_DEF,
+#ifdef FEAT_WINDOWS
+			    (char_u *)&p_tpm, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)10L, (char_u *)0L}},
     {"tabstop",	    "ts",   P_NUM|P_VI_DEF|P_RBUF,
 			    (char_u *)&p_ts, PV_TS,
 			    {(char_u *)8L, (char_u *)0L}},

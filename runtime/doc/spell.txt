@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 01
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1254,45 +1254,6 @@ the affix file, without arguments:
 Vim will try to figure out where one word ends and a next starts.  When there
 are spelling mistakes this may not be quite right.
 
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-NOTE: The following has not been implemented yet, because there are no word
-lists that support this.
-> 							*spell-CMP*
-> Sometimes it is necessary to change a word when concatenating it to another,
-> by removing a few letters, inserting something or both.  It can also be useful
-> to restrict concatenation to words that match a pattern.  For this purpose CMP
-> items can be used.  They look like this:
-> 	CMP {flag} {flags} {strip} {strip2} {add} {cond} {cond2}
-> 
-> 	{flag}		the flag, as used in COMPOUNDFLAGS for the lead word
-> 	{flags}		accepted flags for the following word ('.' to accept
-> 			all)
-> 	{strip}		text to remove from the end of the lead word (zero
-> 			for no stripping)
-> 	{strip2}	text to remove from the start of the following word
-> 			(zero for no stripping)
-> 	{add}		text to insert between the words (zero for no
-> 			addition)
-> 	{cond}		condition to match at the end of the lead word
-> 	{cond2}		condition to match at the start of the following word
-> 
-> This is the same as what is used for SFX and PFX items, with the extra {flags}
-> and {cond2} fields.  Example:
-> 	CMP f mrt 0 - . . ~
-> 
-> When used with the food and dish word list above, this means that a dash is
-> inserted after each food item.  Thus you get "onion-soup" and
-> "onion-tomato-salat".
-> 
-> When there are CMP items for a compound flag the concatenation is only done
-> when a CMP item matches.
-> 
-> When there are no CMP items for a compound flag, then all words will be
-> concatenated, as if there was an item:
-> 	CMP {flag} . 0 0 . .
->
->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-
 
 							*spell-COMMON*
 Common words can be specified with the COMMON item.  This will give better
@@ -1305,7 +1266,9 @@ When multiple regions are specified in a ":mkspell" command the common words
 for all regions are combined and used for all regions.
 
 							*spell-NOSPLITSUGS*
-This item indicates that suggestions for splitting a word will not appear:
+This item indicates that splitting a word to make suggestions is not a good
+idea.  Split-word suggestions will appear only when there are few similar
+words.
 
 	NOSPLITSUGS ~
 
@@ -1314,8 +1277,6 @@ The flag specified with NOSUGGEST can be used for words that will not be
 suggested.  Can be used for obscene words.
 
 	NOSUGGEST % ~
-
-NOT IMPLEMENTED YET.
 
 
 REPLACEMENTS						*spell-REP*

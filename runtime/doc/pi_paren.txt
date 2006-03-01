@@ -1,4 +1,4 @@
-*pi_paren.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 27
+*pi_paren.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -23,10 +23,10 @@ And to enable it again: >
 
 	:DoMatchParen
 
-The highlighting used is ParenMatch.  You can specify different colors with
+The highlighting used is MatchParen.  You can specify different colors with
 the ":highlight" command.  Example: >
 
-	:hi ParenMatch ctermbg=blue guibg=lightblue
+	:hi MatchParen ctermbg=blue guibg=lightblue
 
 The characters to be matched come from the 'matchpairs' option.  You can
 change the value to highlight different matches.  Note that not everything is

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
+*windows.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -559,7 +559,9 @@ can also get to them with the buffer list commands, like ":bnext".
 		Rearrange the screen to open one window for each argument.
 		All other windows are closed.  When a count is given, this is
 		the maximum number of windows to open.
-		Only uses the current tab page |tab-page|.
+		With the |:tab| modifier open a tab page for each argument.
+		When there are more arguments than 'tabpagemax' further ones
+		become split windows in the last tab page.
 		When the 'hidden' option is set, all buffers in closed windows
 		become hidden.
 		When 'hidden' is not set, and the 'autowrite' option is set,
@@ -1089,7 +1091,8 @@ list of buffers. |unlisted-buffer|
 		of windows opened ('winwidth' if |:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
-		Only uses the current tab page |tab-page|.
+		When the |:tab| modifier is used new windows are opended in a
+		new tab, up to 'tabpagemax'.
 
 Note: All the commands above that start editing another buffer, keep the
 'readonly' flag as it was.  This differs from the ":edit" command, which sets

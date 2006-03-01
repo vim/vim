@@ -710,6 +710,7 @@ EXTERN int	p_scs;		/* 'smartcase' */
 EXTERN int	p_sta;		/* 'smarttab' */
 #ifdef FEAT_WINDOWS
 EXTERN int	p_sb;		/* 'splitbelow' */
+EXTERN long	p_tpm;		/* 'tabpagemax' */
 # if defined(FEAT_STL_OPT)
 EXTERN char_u	*p_tal;		/* 'tabline' */
 # endif

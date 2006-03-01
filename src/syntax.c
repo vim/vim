@@ -780,6 +780,8 @@ syn_sync(wp, start_lnum, last_valid)
 	else
 	    break_lnum = 0;
 
+	found_m_endpos.lnum = 0;
+	found_m_endpos.col = 0;
 	end_lnum = start_lnum;
 	lnum = start_lnum;
 	while (--lnum > break_lnum)

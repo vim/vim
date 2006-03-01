@@ -897,6 +897,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 't_xs'	term.txt	/*'t_xs'*
 'ta'	options.txt	/*'ta'*
 'tabline'	options.txt	/*'tabline'*
+'tabpagemax'	options.txt	/*'tabpagemax'*
 'tabstop'	options.txt	/*'tabstop'*
 'tag'	options.txt	/*'tag'*
 'tagbsearch'	options.txt	/*'tagbsearch'*
@@ -934,6 +935,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'toolbar'	options.txt	/*'toolbar'*
 'toolbariconsize'	options.txt	/*'toolbariconsize'*
 'top'	options.txt	/*'top'*
+'tpm'	options.txt	/*'tpm'*
 'tr'	options.txt	/*'tr'*
 'ts'	options.txt	/*'ts'*
 'tsl'	options.txt	/*'tsl'*
@@ -5524,6 +5526,7 @@ hl-FoldColumn	syntax.txt	/*hl-FoldColumn*
 hl-Folded	syntax.txt	/*hl-Folded*
 hl-IncSearch	syntax.txt	/*hl-IncSearch*
 hl-LineNr	syntax.txt	/*hl-LineNr*
+hl-MatchParen	syntax.txt	/*hl-MatchParen*
 hl-Menu	syntax.txt	/*hl-Menu*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
 hl-MoreMsg	syntax.txt	/*hl-MoreMsg*
@@ -6658,7 +6661,6 @@ spell-CHECKCOMPOUNDPATTERN	spell.txt	/*spell-CHECKCOMPOUNDPATTERN*
 spell-CHECKCOMPOUNDREP	spell.txt	/*spell-CHECKCOMPOUNDREP*
 spell-CHECKCOMPOUNDTRIPLE	spell.txt	/*spell-CHECKCOMPOUNDTRIPLE*
 spell-CIRCUMFIX	spell.txt	/*spell-CIRCUMFIX*
-spell-CMP	spell.txt	/*spell-CMP*
 spell-COMMON	spell.txt	/*spell-COMMON*
 spell-COMPLEXPREFIXES	spell.txt	/*spell-COMPLEXPREFIXES*
 spell-COMPOUNDBEGIN	spell.txt	/*spell-COMPOUNDBEGIN*

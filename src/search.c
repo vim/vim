@@ -1891,6 +1891,8 @@ findmatchlimit(oap, initc, flags, maxtravel)
 
     do_quotes = -1;
     start_in_quotes = MAYBE;
+    clearpos(&match_pos);
+
     /* backward search: Check if this line contains a single-line comment */
     if ((backwards && comment_dir)
 #ifdef FEAT_LISP
@@ -3096,6 +3098,7 @@ current_word(oap, count, include, bigword)
     int		include_white = FALSE;
 
     cls_bigword = bigword;
+    clearpos(&start_pos);
 
 #ifdef FEAT_VISUAL
     /* Correct cursor when 'selection' is exclusive */

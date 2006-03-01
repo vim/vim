@@ -115,7 +115,7 @@ typedef struct
 } match_T;
 
 static match_T search_hl;	/* used for 'hlsearch' highlight matching */
-static match_T match_hl;	/* used for ":match" highlight matching */
+static match_T match_hl[3];	/* used for ":match" highlight matching */
 #endif
 
 #ifdef FEAT_FOLDING
@@ -833,14 +833,19 @@ win_update(wp)
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
-    /* Setup for ":match" highlighting.  Disable any previous match */
-    match_hl.rm = wp->w_match;
-    if (wp->w_match_id == 0)
-	match_hl.attr = 0;
-    else
-	match_hl.attr = syn_id2attr(wp->w_match_id);
-    match_hl.buf = buf;
-    match_hl.lnum = 0;
+    /* Setup for ":match" and 'hlsearch' highlighting.  Disable any previous
+     * match */
+    for (i = 0; i < 3; ++i)
+    {
+	match_hl[i].rm = wp->w_match[i];
+	if (wp->w_match_id[i] == 0)
+	    match_hl[i].attr = 0;
+	else
+	    match_hl[i].attr = syn_id2attr(wp->w_match_id[i]);
+	match_hl[i].buf = buf;
+	match_hl[i].lnum = 0;
+	match_hl[i].first_lnum = 0;
+    }
     search_hl.buf = buf;
     search_hl.lnum = 0;
     search_hl.first_lnum = 0;
@@ -905,11 +910,17 @@ win_update(wp)
 	     * lines above the change.
 	     * Same for a ":match" pattern.
 	     */
-	    if ((search_hl.rm.regprog != NULL
-			&& re_multiline(search_hl.rm.regprog))
-		    || (match_hl.rm.regprog != NULL
-			&& re_multiline(match_hl.rm.regprog)))
+	    if (search_hl.rm.regprog != NULL
+					&& re_multiline(search_hl.rm.regprog))
 		top_to_mod = TRUE;
+	    else
+		for (i = 0; i < 3; ++i)
+		    if (match_hl[i].rm.regprog != NULL
+				      && re_multiline(match_hl[i].rm.regprog))
+		    {
+			top_to_mod = TRUE;
+			break;
+		    }
 #endif
 	}
 #ifdef FEAT_FOLDING
@@ -2570,6 +2581,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 #ifdef FEAT_SEARCH_EXTRA
     match_T	*shl;			/* points to search_hl or match_hl */
+    int		i;
 #endif
 #ifdef FEAT_ARABIC
     int		prev_c = 0;		/* previous Arabic character */
@@ -3007,12 +3019,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_SEARCH_EXTRA
     /*
-     * Handle highlighting the last used search pattern.
-     * Do this for both search_hl and match_hl.
+     * Handle highlighting the last used search pattern and ":match".
+     * Do this for both search_hl and match_hl[3].
      */
-    shl = &search_hl;
-    for (;;)
+    for (i = 3; i >= 0; --i)
     {
+	shl = (i == 3) ? &search_hl : &match_hl[i];
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
 	shl->attr_cur = 0;
@@ -3055,9 +3067,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		area_highlighting = TRUE;
 	    }
 	}
-	if (shl == &match_hl)
-	    break;
-	shl = &match_hl;
     }
 #endif
 
@@ -3305,9 +3314,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 * ":match" overrules 'hlsearch'.
 		 */
 		v = (long)(ptr - line);
-		shl = &search_hl;
-		for (;;)
+		for (i = 3; i >= 0; --i)
 		{
+		    shl = (i == 3) ? &search_hl : &match_hl[i];
 		    while (shl->rm.regprog != NULL)
 		    {
 			if (shl->startcol != MAXCOL
@@ -3355,15 +3364,17 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			}
 			break;
 		    }
-		    if (shl == &match_hl)
-			break;
-		    shl = &match_hl;
 		}
+
 		/* ":match" highlighting overrules 'hlsearch' */
-		if (match_hl.attr_cur != 0)
-		    search_attr = match_hl.attr_cur;
-		else
-		    search_attr = search_hl.attr_cur;
+		for (i = 0; i <= 3; ++i)
+		    if (i == 3)
+			search_attr = search_hl.attr_cur;
+		    else if (match_hl[i].attr_cur != 0)
+		    {
+			search_attr = match_hl[i].attr_cur;
+			break;
+		    }
 	    }
 #endif
 
@@ -4133,7 +4144,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
 			|| (ptr - line) - 1 == (long)search_hl.startcol
-			|| (ptr - line) - 1 == (long)match_hl.startcol
+			|| (ptr - line) - 1 == (long)match_hl[0].startcol
+			|| (ptr - line) - 1 == (long)match_hl[1].startcol
+			|| (ptr - line) - 1 == (long)match_hl[2].startcol
 #endif
 		       ))
 	    {
@@ -4170,10 +4183,16 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_SEARCH_EXTRA
 		if (area_attr == 0)
 		{
-		    if ((ptr - line) - 1 == (long)match_hl.startcol)
-			char_attr = match_hl.attr;
-		    else
-			char_attr = search_hl.attr;
+		    for (i = 0; i <= 3; ++i)
+		    {
+			if (i == 3)
+			    char_attr = search_hl.attr;
+			else if ((ptr - line) - 1 == (long)match_hl[i].startcol)
+			{
+			    char_attr = match_hl[i].attr;
+			    break;
+			}
+		    }
 		}
 #endif
 		ScreenAttrs[off] = char_attr;
@@ -6061,15 +6080,16 @@ prepare_search_hl(wp, lnum)
 {
     match_T	*shl;		/* points to search_hl or match_hl */
     int		n;
+    int		i;
 
     /*
      * When using a multi-line pattern, start searching at the top
      * of the window or just after a closed fold.
-     * Do this both for search_hl and match_hl.
+     * Do this both for search_hl and match_hl[3].
      */
-    shl = &search_hl;
-    for (;;)
+    for (i = 3; i >= 0; --i)
     {
+	shl = (i == 3) ? &search_hl : &match_hl[i];
 	if (shl->rm.regprog != NULL
 		&& shl->lnum == 0
 		&& re_multiline(shl->rm.regprog))
@@ -6104,9 +6124,6 @@ prepare_search_hl(wp, lnum)
 		}
 	    }
 	}
-	if (shl == &match_hl)
-	    break;
-	shl = &match_hl;
     }
 }
 
@@ -6884,12 +6901,8 @@ screenalloc(clear)
      * Continuing with the old ScreenLines may result in a crash, because the
      * size is wrong.
      */
-#ifdef FEAT_WINDOWS
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_free_lsize(wp);
-#else
-    win_free_lsize(curwin);
-#endif
 
     new_ScreenLines = (schar_T *)lalloc((long_u)(
 			      (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
@@ -8622,7 +8635,8 @@ draw_tabline()
 	attr = attr_nosel;
 	tabcount = 0;
 	scol = 0;
-	for (tp = first_tabpage; tp != NULL && col < Columns; tp = tp->tp_next)
+	for (tp = first_tabpage; tp != NULL && col < Columns - 4;
+							     tp = tp->tp_next)
 	{
 	    scol = col;
 
@@ -8657,6 +8671,8 @@ draw_tabline()
 		{
 		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
 		    len = STRLEN(NameBuff);
+		    if (col + len >= Columns - 3)
+			break;
 		    screen_puts_len(NameBuff, len, 0, col,
 #if defined(FEAT_SYN_HL)
 					   hl_combine_attr(attr, hl_attr(HLF_T))
@@ -8692,6 +8708,8 @@ draw_tabline()
 		    p += len - room;
 		    len = room;
 		}
+		if (len > Columns - col - 1)
+		    len = Columns - col - 1;
 
 		screen_puts_len(p, STRLEN(p), 0, col, attr);
 		col += len;

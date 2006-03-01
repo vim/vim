@@ -3379,6 +3379,7 @@ do_put(regname, dir, count, flags)
 	}
 	curwin->w_cursor.coladd = 0;
 #endif
+	bd.textcol = 0;
 	for (i = 0; i < y_size; ++i)
 	{
 	    int spaces;
@@ -3386,7 +3387,6 @@ do_put(regname, dir, count, flags)
 
 	    bd.startspaces = 0;
 	    bd.endspaces = 0;
-	    bd.textcol = 0;
 	    vcol = 0;
 	    delcount = 0;
 
@@ -3536,7 +3536,6 @@ do_put(regname, dir, count, flags)
 		    }
 		}
 	    }
-	    new_cursor = curwin->w_cursor;
 	    curbuf->b_op_start = curwin->w_cursor;
 	}
 	/*
@@ -3544,6 +3543,7 @@ do_put(regname, dir, count, flags)
 	 */
 	else if (dir == BACKWARD)
 	    --lnum;
+	new_cursor = curwin->w_cursor;
 
 	/*
 	 * simple case: insert into current line

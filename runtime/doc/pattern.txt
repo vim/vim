@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 14
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1191,14 +1191,23 @@ Finally, these constructs are unique to Perl:
 <		Instead of // any character can be used to mark the start and
 		end of the {pattern}.  Watch out for using special characters,
 		such as '"' and '|'.
+
 		{group} must exist at the moment this command is executed.
-		The match overrides the 'hlsearch' highlighting.
-		'ignorecase' does not apply, use |/\c| in the pattern to
-		ignore case.  Otherwise case is not ignored.
+
+		The {group} highlighting still applies when a character is
+		to be highlighted for 'hlsearch'.
+
 		Note that highlighting the last used search pattern with
 		'hlsearch' is used in all windows, while the pattern defined
 		with ":match" only exists in the current window.  It is kept
 		when switching to another buffer.
+
+		The |matchparen| plugin uses match highlighting, thus will
+		disable your ":match" command as soon as you move to a paren.
+
+		'ignorecase' does not apply, use |/\c| in the pattern to
+		ignore case.  Otherwise case is not ignored.
+
 		Another example, which highlights all characters in virtual
 		column 72 and more: >
 			:highlight rightMargin term=bold ctermfg=blue guifg=blue
@@ -1212,5 +1221,21 @@ Finally, these constructs are unique to Perl:
 :mat[ch]
 :mat[ch] none
 		Clear a previously defined match pattern.
+
+
+:2mat[ch] {group} /{pattern}/
+:2mat[ch]
+:2mat[ch] none
+:3mat[ch] {group} /{pattern}/
+:3mat[ch]
+:3mat[ch] none
+		Just like |:match| above, but set a separate match.  Thus
+		there can be three matches active at the same time.  The match
+		with the lowest number has priority if several match at the
+		same position.
+		The ":3match" command is used by the |matchparen| plugin.  You
+		are suggested to use ":match" for manual matching and
+		":2match" for another plugin.
+
 
  vim:tw=78:ts=8:ft=help:norl:

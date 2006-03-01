@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Dec 07, 2005
-" Version:	31
+" Last Change:	Feb 28, 2006
+" Version:	32
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -372,7 +372,14 @@ if b:extfname == "dtx"
   syn match texComment		"\^\^A.*$"	contains=@texCommentGroup
   syn match texComment		"^%\+"		contains=@texCommentGroup
 else
-  syn match texComment		"%.*$"		contains=@texCommentGroup
+  if g:tex_fold_enabled
+   " allows syntax-folding of 2 or more contiguous comment lines
+   " single-line comments are not folded
+   syn match  texComment	"%.*$"		contains=@texCommentGroup
+   syn region texComment	start="^\zs\s*%.*\_s*%"	skip="^\s*%"	end='^\ze\s*[^%]' fold
+  else
+   syn match texComment		"%.*$"		contains=@texCommentGroup
+  endif
 endif
 
 " Separate lines used for verb` and verb# so that the end conditions {{{1
