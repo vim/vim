@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 27
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3375,11 +3375,11 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		{start} bytes later, thus "^" will match there.
 		For a String, if {start} < 0, it will be set to 0.  For a list
 		the index is counted from the end.
-		If {start} is out of range (> strlen({expr} for a String or
-		> len({expr} for a |List|) -1 is returned.
+		If {start} is out of range ({start} > strlen({expr}) for a
+		String or {start} > len({expr}) for a |List|) -1 is returned.
 
 		When {count} is given use the {count}'th match.  When a match
-		is found in a String the search for the next one starts on
+		is found in a String the search for the next one starts one
 		character further.  Thus this example results in 1: >
 			echo match("testing", "..", 0, 2)
 <		In a |List| the search continues in the next item.

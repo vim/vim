@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 27
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3252,7 +3252,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
 
-	  'e'	Add tab pages when indicated with 'showtabpages'.
+	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
 

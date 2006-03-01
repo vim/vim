@@ -845,6 +845,28 @@ u_sync()
 }
 
 /*
+ * ":undojoin": continue adding to the last entry list
+ */
+/*ARGSUSED*/
+    void
+ex_undojoin(eap)
+    exarg_T *eap;
+{
+    if (!curbuf->b_u_synced)
+	return;		    /* already unsynced */
+    if (curbuf->b_u_newhead == NULL)
+	return;		    /* nothing changed before */
+    if (p_ul < 0)
+	return;		    /* no entries, nothing to do */
+    else
+    {
+	/* Go back to the last entry */
+	curbuf->b_u_curhead = curbuf->b_u_newhead;
+	curbuf->b_u_synced = FALSE;  /* no entries, nothing to do */
+    }
+}
+
+/*
  * Called after writing the file and setting b_changed to FALSE.
  * Now an undo means that the buffer is modified.
  */

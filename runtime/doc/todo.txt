@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 27
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-test 49 fails because of the function line numbering now taking care of
-continuation lines.
+Gcc 4 gives more warnings for uninitialized vars.
+
+Ignore "j" at hit-enter prompt?  "k" already works differently.
 
 Crash with X command server (Ciaran McCreesh).
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.
-
-"fsutil hardlink" can create a hard link on an NTFS file system. (Daniel
-Einspanjer)  What library function can detect that?
-Win32: use GetFileInformationByHandle() to detect hard links on NTFS?
-(George Reilly)
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
@@ -88,9 +84,6 @@ spelling:
 
 Is it possible to keep the command-line window open?  Would actually work like
 closing it, executing the command and re-opening it (at the same position).
-
-":keepundo": add change to existing undo chain, so that one "u" undoes them
-all. (Gautam Iyer)
 
 Mac unicode patch (Da Woon Jung):
 - configuration option for platform: i386, ppc or both.
@@ -249,7 +242,7 @@ Omni completion:
     to avoid a performance penalty (esp. for string options)?
 8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
     Add the 'maxcombining' option to set the nr. of composing characters.
-    At the same time support more colors (use two bytes when necessary).
+    At the same time support 32 bit Unicode characters?
 8   "ga" should show all composing characters, also if there are more than 2.
 8   Searching for a composing character by itself should work.  Perhaps "."
     with a composing char should work too.

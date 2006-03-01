@@ -3253,14 +3253,13 @@ expand_by_function(type, base)
     /* Go through the List with matches and add each of them. */
     for (li = matchlist->lv_first; li != NULL; li = li->li_next)
     {
+	icase = p_ic;
 	if (li->li_tv.v_type == VAR_DICT && li->li_tv.vval.v_dict != NULL)
 	{
 	    p = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"word", FALSE);
 	    x = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"menu", FALSE);
 	    if (get_dict_string(li->li_tv.vval.v_dict, (char_u *)"icase",
-							       FALSE) == NULL)
-		icase = p_ic;
-	    else
+							       FALSE) != NULL)
 		icase = get_dict_number(li->li_tv.vval.v_dict,
 							   (char_u *)"icase");
 	}

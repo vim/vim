@@ -2783,7 +2783,7 @@ fi
 if test "$GCC" = yes; then
   gccversion=`"$CC" --version | sed -e '2,$d;s/^[^0-9]*\(darwin.[^0-9]*\)*\([0-9]\.[0-9.]*\).*$/\2/g'`
     if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
-    echo 'GCC 34.0.12 has a bug in the optimizer, disabling "-O#"'
+    echo 'GCC [34].0.[12] has a bug in the optimizer, disabling "-O#"'
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-O/'`
   else
     if test "$gccversion" = "3.1" -o "$gccversion" = "3.2" -o "$gccversion" = "3.2.1" && `echo "$CFLAGS" | grep -v fno-strength-reduce >/dev/null`; then
@@ -2874,17 +2874,17 @@ if test "${with_mac_arch+set}" = set; then
   MACARCH="$withval"; echo "$as_me:$LINENO: result: $MACARCH" >&5
 echo "${ECHO_T}$MACARCH" >&6
 else
-  MACARCH="both"; echo "$as_me:$LINENO: result: Defaulting to $MACARCH" >&5
-echo "${ECHO_T}Defaulting to $MACARCH" >&6
+  MACARCH="both"; echo "$as_me:$LINENO: result: defaulting to $MACARCH" >&5
+echo "${ECHO_T}defaulting to $MACARCH" >&6
 fi;
 
   if test "x$MACARCH" = "xboth"; then
-    echo "$as_me:$LINENO: checking if both architectures are supported" >&5
-echo $ECHO_N "checking if both architectures are supported... $ECHO_C" >&6
-    save_cppflags="$CPPFLAGS"
+    echo "$as_me:$LINENO: checking for 10.4 universal SDK" >&5
+echo $ECHO_N "checking for 10.4 universal SDK... $ECHO_C" >&6
+                            save_cppflags="$CPPFLAGS"
+    save_cflags="$CFLAGS"
     save_ldflags="$LDFLAGS"
-    CPPFLAGS="$CPPFLAGS -arch i386 -arch ppc"
-    LDFLAGS="$LDFLAGS -arch i386 -arch ppc"
+    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -2922,19 +2922,20 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
+  echo "$as_me:$LINENO: result: found" >&5
+echo "${ECHO_T}found" >&6
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-	    echo "$as_me:$LINENO: checking if Intel architecture is supported" >&5
+echo "$as_me:$LINENO: result: not found" >&5
+echo "${ECHO_T}not found" >&6
+	CFLAGS="save_cflags"
+	echo "$as_me:$LINENO: checking if Intel architecture is supported" >&5
 echo $ECHO_N "checking if Intel architecture is supported... $ECHO_C" >&6
-	    CPPFLAGS="$save_cppflags -arch i386"
-	    LDFLAGS="$save_ldflags -arch i386"
-	    cat >conftest.$ac_ext <<_ACEOF
+	CPPFLAGS="$CPPFLAGS -arch i386"
+	LDFLAGS="$save_ldflags -arch i386"
+	cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
@@ -2978,36 +2979,34 @@ else
 sed 's/^/| /' conftest.$ac_ext >&5
 
 echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; MACARCH="ppc"
+echo "${ECHO_T}no" >&6
+	        MACARCH="ppc"
+		CPPFLAGS="$save_cppflags -arch ppc"
+		LDFLAGS="$save_ldflags -arch ppc"
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-    CPPFLAGS="$save_cppflags"
-    LDFLAGS="$save_ldflags"
+  elif test "x$MACARCH" = "xintel"; then
+    CPPFLAGS="$CPPFLAGS -arch intel"
+    LDFLAGS="$LDFLAGS -arch intel"
+  else
+    CPPFLAGS="$CPPFLAGS -arch ppc"
+    LDFLAGS="$LDFLAGS -arch ppc"
   fi
-
-  case "$MACARCH" in
-    intel)	MAC_OSX_ARCH="-arch i386";;
-    both)	MAC_OSX_ARCH="-arch i386 -arch ppc";;
-    ppc)	MAC_OSX_ARCH="-arch ppc";;
-    *)		MAC_OSX_ARCH="";;
-  esac
-
-    if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-O/'`
-  fi
-
-  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
-  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
 
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
     OS_EXTRA_SCR="os_macosx.c os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
-        CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -I/Developer/Headers/FlatCarbon -no-cpp-precomp"
+        CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
+    if test "x$MACARCH" = "xboth"; then
+      CPPFLAGS="$CPPFLAGS -I/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
+    else
+      CPPFLAGS="$CPPFLAGS -I/Developer/Headers/FlatCarbon"
+    fi
 
                 echo "$as_me:$LINENO: checking for ANSI C header files" >&5
 echo $ECHO_N "checking for ANSI C header files... $ECHO_C" >&6
@@ -3395,6 +3394,13 @@ fi
       fi
     fi
   fi
+
+    if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
+    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
+  fi
+
+  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
+  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
 
 else
   echo "$as_me:$LINENO: result: no" >&5
@@ -15221,6 +15227,9 @@ echo "${ECHO_T}yes" >&6
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
   fi
+fi
+if test "x$MACARCH" = "xboth"; then
+  LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 
 echo "$as_me:$LINENO: checking for GCC 3 or later" >&5

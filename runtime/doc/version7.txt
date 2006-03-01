@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 27
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -131,6 +131,12 @@ compatibility problems and because "SS" can't be changed back to a sharp s.
 "gd" previously found the very first occurrence of a variable in a function,
 that could be the function argument without type.  Now it finds the position
 where the type is given.
+
+The line continuation in functions was not taken into account, line numbers in
+errors were logical lines, not lines in the sourced file.  That made it
+difficult to locate errors.  Now the line number in the sourced file is
+reported, relative to the function start.  This also means that line numbers
+for ":breakadd func" are different.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -510,6 +516,8 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:lcscope|		Like |:cscope| but use the location list.
 |:ltag|			Jump to a tag and add matching tags to a location list.
 
+|:undojoin|		Join a change with the previous undo block.
+
 
 Ex command modifiers: ~
 
@@ -835,6 +843,10 @@ list.
 
 Win32: When libintl.dll supports bind_textdomain_codeset(), use it.
 (NAKADAIRA Yukihiro)
+
+Win32: Vim was not aware of hard links on NTFS file systems.  These are
+detected now for when 'backupcopy' is "auto".  Also fixed a bogus "file has
+been changed since reading it" error for links.
 
 When foldtext() finds no text after removing the comment leader, use the
 second line of the fold.  Helps for C-style /* */ comments where the first
@@ -1787,8 +1799,8 @@ GUI: The "Replace All" button didn't handle backslashes in the replacement in
 the same way as "Replace".  Escape backslashes so that they are taken
 literally.
 
-An error in a function reported a line number that doesn't take line
-continuation into account.  Now store a NULL for continuation lines, so that
-the index is equal to the line number in the sourced file.
+When using Select mode from Insert mode and typing a key, causing lines to be
+deleted and a message displayed, delayed the effect of inserting the key.
+Now overwrite the message without delay.
 
  vim:tw=78:ts=8:ft=help:norl:

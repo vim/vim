@@ -1,4 +1,4 @@
-*usr_31.txt*	For Vim version 7.0aa.  Last change: 2003 Oct 21
+*usr_31.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -76,7 +76,7 @@ Will start the browser in "/usr".
 
 When you are not using the GUI version, you could use the file explorer window
 to select files like in a file browser.  However, this doesn't work for the
-":browse" command.  See |file-explorer|.
+":browse" command.  See |netrw-browse|.
 
 ==============================================================================
 *31.2*	Confirmation

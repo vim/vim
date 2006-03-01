@@ -2710,6 +2710,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :una	map.txt	/*:una*
 :unabbreviate	map.txt	/*:unabbreviate*
 :undo	undo.txt	/*:undo*
+:undoj	undo.txt	/*:undoj*
+:undojoin	undo.txt	/*:undojoin*
 :unh	windows.txt	/*:unh*
 :unhide	windows.txt	/*:unhide*
 :unl	eval.txt	/*:unl*
@@ -5471,6 +5473,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -7132,6 +7135,7 @@ uganda.txt	uganda.txt	/*uganda.txt*
 undercurl	syntax.txt	/*undercurl*
 underline	syntax.txt	/*underline*
 undo	undo.txt	/*undo*
+undo-blocks	undo.txt	/*undo-blocks*
 undo-commands	undo.txt	/*undo-commands*
 undo-redo	undo.txt	/*undo-redo*
 undo-remarks	undo.txt	/*undo-remarks*

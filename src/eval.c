@@ -15612,7 +15612,7 @@ var2fpos(varp, lnum)
 	pos.col = get_tv_number(&li->li_tv);
 	len = (long)STRLEN(ml_get(pos.lnum));
 	if (pos.col <= 0 || ((len == 0 && pos.col > 1)
-					       || (len > 0 && pos.col > len)))
+					  || (len > 0 && (int)pos.col > len)))
 	    return NULL;	/* invalid column number */
 
 	pos.col--;

@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0aa.  Last change: 2003 Oct 21
+*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,8 @@ The basics are explained in section |02.5| of the user manual.
 
 1. Undo and redo commands	|undo-commands|
 2. Two ways of undo		|undo-two-ways|
-3. Remarks about undo		|undo-remarks|
+3. Undo blocks			|undo-blocks|
+4. Remarks about undo		|undo-remarks|
 
 ==============================================================================
 1. Undo and redo commands				*undo-commands*
@@ -72,7 +73,36 @@ Rationale:  Nvi uses the "." command instead of CTRL-R.  Unfortunately, this
 	    words, in Nvi it does nothing.
 
 ==============================================================================
-3. Remarks about undo					*undo-remarks*
+3. Undo blocks						*undo-blocks*
+
+One undo command normally undoes a typed command, no matter how many changes
+that command makes.  This sequence of undo-able changes forms an undo block.
+Thus if the typed key(s) call a function, all the commands in the function are
+undone together.
+
+If you want to write a function or script that doesn't create a new undoable
+change but joins in with the previous change use this command:
+
+							*:undoj* *:undojoin*
+:undoj[oin]		Join further changes with the previous undo block.
+			Warning: Use with care, it may prevent the user from
+			properly undoing changes.
+			{not in Vi}
+
+This is most useful when you need to prompt the user halfway a change.  For
+example in a function that calls |getchar()|.  Do make sure that there was a
+related change before this that you must join with.
+
+This doesn't work by itself, because the next key press will start a new
+change again.  But you can do something like this: >
+
+	:undojoin | delete
+
+After this an "u" command will undo the delete command and the previous
+change.
+
+==============================================================================
+4. Remarks about undo					*undo-remarks*
 
 The number of changes that are remembered is set with the 'undolevels' option.
 If it is zero, the Vi-compatible way is always used.  If it is negative no

@@ -6128,7 +6128,7 @@ static char *(highlight_init_dark[]) =
 	"SpellRare term=reverse ctermbg=Magenta guisp=Magenta gui=undercurl",
 	"SpellLocal term=underline ctermbg=Cyan guisp=Cyan gui=undercurl",
 	"Pmenu ctermbg=Magenta guibg=Magenta",
-	"PmenuSel ctermbg=Grey guibg=Grey",
+	"PmenuSel ctermbg=DarkGrey guibg=DarkGrey",
 	"Title term=bold ctermfg=LightMagenta gui=bold guifg=Magenta",
 	"WarningMsg term=standout ctermfg=LightRed guifg=Red",
 	"WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",

@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2005 Jun 18
+" Last Change:	2006 Feb 28
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -382,11 +382,6 @@ function! ExtraVim(...)
 	    let func_start = line(".")
 	    let func_name = substitute(theline,
 		\ '^\s*fu\%[nction]!\=\s*\(\%(\u\|s:\)\w*\).*', '\1', "")
-	    let func_conts = 0
-	elseif theline =~ '^\s*\\'
-	    if in_func
-		let func_conts = func_conts + 1
-	    endif
 	elseif theline =~ '^\s*endf'
 	    " End of function definition.
 	    let in_func = 0
@@ -411,7 +406,7 @@ function! ExtraVim(...)
 		    " Add the function breakpoint and note the number of quits
 		    " to be used, if specified, or one for every call else.
 		    let breakpoints = breakpoints . " -c 'breakadd func " .
-			\ (line(".") - func_start - func_conts) . " " .
+			\ (line(".") - func_start) . " " .
 			\ func_name . "'"
 		    if quits != ""
 			let debug_quits = debug_quits . quits
