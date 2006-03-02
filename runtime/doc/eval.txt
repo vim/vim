@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1521,7 +1521,9 @@ count( {list}, {expr} [, {start} [, {ic}]])
 				Number	 count how many {expr} are in {list}
 cscope_connection( [{num} , {dbpath} [, {prepend}]])
 				Number	checks existence of cscope connection
-cursor( {lnum}, {col})		Number	position cursor at {lnum}, {col}
+cursor( {lnum}, {col} [, {coladd}])
+				Number	move cursor to {lnum}, {col}, {coladd}
+cursor( {list})			Number	move cursor to position in {list}
 deepcopy( {expr})		any	make a full copy of {expr}
 delete( {fname})		Number	delete file {fname}
 did_filetype()			Number	TRUE if FileType autocommand event used
@@ -1568,6 +1570,7 @@ getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
+getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
@@ -1929,6 +1932,8 @@ col({expr})	The result is a Number, which is the byte index of the column
 			    number of characters in the cursor line plus one)
 		    'x	    position of mark x (if the mark is not set, 0 is
 			    returned)
+		To get the line number use |col()|.  To get both use
+		|getpos()|.
 		For the screen column position use |virtcol()|.
 		Note that only marks in the current file can be used.
 		Examples: >
@@ -2068,9 +2073,14 @@ cscope_connection([{num} , {dbpath} [, {prepend}]])
 		cscope_connection(4, "out", "local")			0
 		cscope_connection(4, "cscope.out", "/usr/local")	1
 <
-cursor({lnum}, {col})					*cursor()*
+cursor({lnum}, {col} [, {off}])				*cursor()*
+cursor({list})
 		Positions the cursor at the column {col} in the line {lnum}.
 		The first column is one.
+		When there is one argument {list} this is used as a |List|
+		with two or three items {lnum}, {col} and {off}.  This is
+		useful to move the cursor to a position obtained with
+		|getpos()|.
 		Does not change the jumplist.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
@@ -2079,6 +2089,9 @@ cursor({lnum}, {col})					*cursor()*
 		the cursor will be positioned at the last character in the
 		line.
 		If {col} is zero, the cursor will stay in the current column.
+		When 'virtualedit' is used {off} specifies the offset in
+		screen columns from the start of the character.  E.g., a
+		position within a Tab or after the last character.
 
 
 deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
@@ -3229,6 +3242,8 @@ line({expr})	The result is a Number, which is the line number of the file
 		    w0	    first line visible in current window
 		    w$	    last line visible in current window
 		Note that only marks in the current file can be used.
+		To get the column number use |col()|.  To get both use
+		|getpos()|.
 		Examples: >
 			line(".")		line number of the cursor
 			line("'t")		line number of mark t
@@ -3372,7 +3387,10 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 			:echo match("testing", "t", 2)
 <		result is "3".
 		For a String, if {start} > 0 then it is like the string starts
-		{start} bytes later, thus "^" will match there.
+		{start} bytes later, thus "^" will match at {start}.  Except
+		when {count} is given, then it's like matches before the
+		{start} byte are ignored (this is a bit complicated to keep it
+		backwards compatible).
 		For a String, if {start} < 0, it will be set to 0.  For a list
 		the index is counted from the end.
 		If {start} is out of range ({start} > strlen({expr}) for a
@@ -3383,6 +3401,8 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		character further.  Thus this example results in 1: >
 			echo match("testing", "..", 0, 2)
 <		In a |List| the search continues in the next item.
+		Note that when {count} is added the way {start} works changes,
+		see above.
 
 		See |pattern| for the patterns that are accepted.
 		The 'ignorecase' option is used to set the ignore-caseness of
@@ -3488,6 +3508,19 @@ nr2char({expr})						*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
+
+							*getpos()*
+getpos({expr})	The result is a |List| with three numbers: [lnum, col, off].
+		This is the file position given with {expr}.  For the accepted
+		positions see |line()|.
+		The "off" number is zero, unless 'virtualedit' is used.  Then
+		it is the offset in screen columns from the start of the
+		character.  E.g., a position within a Tab or after the last
+		character.
+		This can be used to save and restore the cursor position: >
+			let save_cursor = getpos(".")
+			MoveTheCursorAround
+			call cursor(save_cursor)
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -4616,6 +4649,10 @@ virtcol({expr})						*virtcol()*
 		For the use of {expr} see |col()|.  Additionally you can use
 		[lnum, col]: a |List| with the line and column number.  When
 		"lnum" or "col" is out of range then virtcol() returns zero.
+		When 'virtualedit' is used it can be [lnum, col, off], where
+		"off" is the offset in screen columns from the start of the
+		character.  E.g., a position within a Tab or after the last
+		character.
 		For the byte position use |col()|.
 		When Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned. |'virtualedit'|

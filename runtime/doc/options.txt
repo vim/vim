@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 01
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1576,6 +1576,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	u	scan the unloaded buffers that are in the buffer list
 	U	scan the buffers that are not in the buffer list
 	k	scan the files given with the 'dictionary' option
+	kspell  use the currently active spell checking |spell|
 	k{dict}	scan the file {dict}.  Several "k" flags can be given,
 		patterns are valid too.  For example: >
 			:set cpt=k/usr/dict/*,k~/spanish
@@ -2085,6 +2086,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	contain a list of words.  This can be one word per line, or several
 	words per line, separated by non-keyword characters (white space is
 	preferred).  Maximum line length is 510 bytes.
+	When this option is empty, or an entry "spell" is present, spell
+	checking is enabled the currently active spelling is used. |spell|
 	To include a comma in a file name precede it with a backslash.  Spaces
 	after a comma are ignored, otherwise spaces are included in the file
 	name.  See |option-backslash| about using backslashes.

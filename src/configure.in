@@ -171,9 +171,6 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[[23456789]]/-Oz/'`
   fi
 
-  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
-  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
-
 else
   AC_MSG_RESULT(no)
 fi

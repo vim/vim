@@ -131,6 +131,7 @@ static void ins_compl_del_pum __ARGS((void));
 static int  pum_wanted __ARGS((void));
 static int  pum_two_or_more __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int flags, int thesaurus));
+static void ins_compl_files __ARGS((int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir));
 static char_u *find_line_end __ARGS((char_u *ptr));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
@@ -1906,7 +1907,8 @@ ins_ctrl_x()
 has_compl_option(dict_opt)
     int	    dict_opt;
 {
-    if (dict_opt ? (*curbuf->b_p_dict == NUL && *p_dict == NUL)
+    if (dict_opt ? (*curbuf->b_p_dict == NUL && *p_dict == NUL
+							&& !curwin->w_p_spell)
 		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL))
     {
 	ctrl_x_mode = 0;
@@ -2504,28 +2506,42 @@ ins_compl_show_pum()
 #define DICT_EXACT	(2)	/* "dict" is the exact name of a file */
 
 /*
- * Add any identifiers that match the given pattern to the list of
- * completions.
+ * Add any identifiers that match the given pattern in the list of dictionary
+ * files "dict_start" to the list of completions.
  */
     static void
-ins_compl_dictionaries(dict, pat, flags, thesaurus)
-    char_u	*dict;
+ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
+    char_u	*dict_start;
     char_u	*pat;
     int		flags;		/* DICT_FIRST and/or DICT_EXACT */
-    int		thesaurus;
+    int		thesaurus;	/* Thesaurus completion */
 {
+    char_u	*dict = dict_start;
     char_u	*ptr;
     char_u	*buf;
-    FILE	*fp;
     regmatch_T	regmatch;
-    int		add_r;
     char_u	**files;
     int		count;
     int		i;
     int		save_p_scs;
     int		dir = compl_direction;
 
+    if (*dict == NUL)
+    {
+#ifdef FEAT_SYN_HL
+	/* When 'dictionary' is empty and spell checking is enabled use
+	 * "spell". */
+	if (!thesaurus && curwin->w_p_spell)
+	    dict = (char_u *)"spell";
+	else
+#endif
+	    return;
+    }
+
     buf = alloc(LSIZE);
+    if (buf == NULL)
+	return;
+
     /* If 'infercase' is set, don't use 'smartcase' here */
     save_p_scs = p_scs;
     if (curbuf->b_p_inf)
@@ -2545,12 +2561,15 @@ ins_compl_dictionaries(dict, pat, flags, thesaurus)
 	vim_free(ptr);
     }
     else
+    {
 	regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
+	if (regmatch.regprog == NULL)
+	    goto theend;
+    }
 
     /* ignore case depends on 'ignorecase', 'smartcase' and "pat" */
     regmatch.rm_ic = ignorecase(pat);
-    while (buf != NULL && regmatch.regprog != NULL && *dict != NUL
-					    && !got_int && !compl_interrupted)
+    while (*dict != NUL && !got_int && !compl_interrupted)
     {
 	/* copy one dictionary file name into buf */
 	if (flags == DICT_EXACT)
@@ -2564,104 +2583,139 @@ ins_compl_dictionaries(dict, pat, flags, thesaurus)
 	     * backticks (for security, the 'dict' option may have been set in
 	     * a modeline). */
 	    copy_option_part(&dict, buf, LSIZE, ",");
-	    if (vim_strchr(buf, '`') != NULL
+	    if (!thesaurus && STRCMP(buf, "spell") == 0)
+		count = -1;
+	    else if (vim_strchr(buf, '`') != NULL
 		    || expand_wildcards(1, &buf, &count, &files,
 						     EW_FILE|EW_SILENT) != OK)
 		count = 0;
 	}
 
-	for (i = 0; i < count && !got_int && !compl_interrupted; i++)
+	if (count == -1)
 	{
-	    fp = mch_fopen((char *)files[i], "r");  /* open dictionary file */
-	    if (flags != DICT_EXACT)
-	    {
-		vim_snprintf((char *)IObuff, IOSIZE,
-			      _("Scanning dictionary: %s"), (char *)files[i]);
-		msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
-	    }
-
-	    if (fp != NULL)
-	    {
-		/*
-		 * Read dictionary file line by line.
-		 * Check each line for a match.
-		 */
-		while (!got_int && !compl_interrupted
-						&& !vim_fgets(buf, LSIZE, fp))
-		{
-		    ptr = buf;
-		    while (vim_regexec(&regmatch, buf, (colnr_T)(ptr - buf)))
-		    {
-			ptr = regmatch.startp[0];
-			if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
-			    ptr = find_line_end(ptr);
-			else
-			    ptr = find_word_end(ptr);
-			add_r = ins_compl_add_infercase(regmatch.startp[0],
-					      (int)(ptr - regmatch.startp[0]),
-					      p_ic, files[i], dir, 0);
-			if (thesaurus)
-			{
-			    char_u *wstart;
-
-			    /*
-			     * Add the other matches on the line
-			     */
-			    while (!got_int)
-			    {
-				/* Find start of the next word.  Skip white
-				 * space and punctuation. */
-				ptr = find_word_start(ptr);
-				if (*ptr == NUL || *ptr == NL)
-				    break;
-				wstart = ptr;
-
-				/* Find end of the word and add it. */
-#ifdef FEAT_MBYTE
-				if (has_mbyte)
-				    /* Japanese words may have characters in
-				     * different classes, only separate words
-				     * with single-byte non-word characters. */
-				    while (*ptr != NUL)
-				    {
-					int l = (*mb_ptr2len)(ptr);
-
-					if (l < 2 && !vim_iswordc(*ptr))
-					    break;
-					ptr += l;
-				    }
-				else
-#endif
-				    ptr = find_word_end(ptr);
-				add_r = ins_compl_add_infercase(wstart,
-					(int)(ptr - wstart),
-					p_ic, files[i], dir, 0);
-			    }
-			}
-			if (add_r == OK)
-			    /* if dir was BACKWARD then honor it just once */
-			    dir = FORWARD;
-			else if (add_r == FAIL)
-			    break;
-			/* avoid expensive call to vim_regexec() when at end
-			 * of line */
-			if (*ptr == '\n' || got_int)
-			    break;
-		    }
-		    line_breakcheck();
-		    ins_compl_check_keys(50);
-		}
-		fclose(fp);
-	    }
+	    /* Skip "\<" in the pattern, we don't use it as a RE. */
+	    if (pat[0] == '\\' && pat[1] == '<')
+		ptr = pat + 2;
+	    else
+		ptr = pat;
+	    spell_dump_compl(curbuf, ptr, regmatch.rm_ic, &dir, 0);
 	}
-	if (flags != DICT_EXACT)
-	    FreeWild(count, files);
-	if (flags)
+	else
+	{
+	    ins_compl_files(count, files, thesaurus, flags,
+							&regmatch, buf, &dir);
+	    if (flags != DICT_EXACT)
+		FreeWild(count, files);
+	}
+	if (flags != 0)
 	    break;
     }
+
+theend:
     p_scs = save_p_scs;
     vim_free(regmatch.regprog);
     vim_free(buf);
+}
+
+    static void
+ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
+    int		count;
+    char_u	**files;
+    int		thesaurus;
+    int		flags;
+    regmatch_T	*regmatch;
+    char_u	*buf;
+    int		*dir;
+{
+    char_u	*ptr;
+    int		i;
+    FILE	*fp;
+    int		add_r;
+
+    for (i = 0; i < count && !got_int && !compl_interrupted; i++)
+    {
+	fp = mch_fopen((char *)files[i], "r");  /* open dictionary file */
+	if (flags != DICT_EXACT)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE,
+			      _("Scanning dictionary: %s"), (char *)files[i]);
+	    msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+	}
+
+	if (fp != NULL)
+	{
+	    /*
+	     * Read dictionary file line by line.
+	     * Check each line for a match.
+	     */
+	    while (!got_int && !compl_interrupted
+					    && !vim_fgets(buf, LSIZE, fp))
+	    {
+		ptr = buf;
+		while (vim_regexec(regmatch, buf, (colnr_T)(ptr - buf)))
+		{
+		    ptr = regmatch->startp[0];
+		    if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
+			ptr = find_line_end(ptr);
+		    else
+			ptr = find_word_end(ptr);
+		    add_r = ins_compl_add_infercase(regmatch->startp[0],
+					  (int)(ptr - regmatch->startp[0]),
+					  p_ic, files[i], *dir, 0);
+		    if (thesaurus)
+		    {
+			char_u *wstart;
+
+			/*
+			 * Add the other matches on the line
+			 */
+			while (!got_int)
+			{
+			    /* Find start of the next word.  Skip white
+			     * space and punctuation. */
+			    ptr = find_word_start(ptr);
+			    if (*ptr == NUL || *ptr == NL)
+				break;
+			    wstart = ptr;
+
+			    /* Find end of the word and add it. */
+#ifdef FEAT_MBYTE
+			    if (has_mbyte)
+				/* Japanese words may have characters in
+				 * different classes, only separate words
+				 * with single-byte non-word characters. */
+				while (*ptr != NUL)
+				{
+				    int l = (*mb_ptr2len)(ptr);
+
+				    if (l < 2 && !vim_iswordc(*ptr))
+					break;
+				    ptr += l;
+				}
+			    else
+#endif
+				ptr = find_word_end(ptr);
+			    add_r = ins_compl_add_infercase(wstart,
+				    (int)(ptr - wstart),
+				    p_ic, files[i], *dir, 0);
+			}
+		    }
+		    if (add_r == OK)
+			/* if dir was BACKWARD then honor it just once */
+			*dir = FORWARD;
+		    else if (add_r == FAIL)
+			break;
+		    /* avoid expensive call to vim_regexec() when at end
+		     * of line */
+		    if (*ptr == '\n' || got_int)
+			break;
+		}
+		line_breakcheck();
+		ins_compl_check_keys(50);
+	    }
+	    fclose(fp);
+	}
+    }
 }
 
 /*
@@ -3444,7 +3498,7 @@ ins_compl_get_exp(ini)
 	case CTRL_X_DICTIONARY:
 	case CTRL_X_THESAURUS:
 	    ins_compl_dictionaries(
-		    dict ? dict
+		    dict != NULL ? dict
 			 : (type == CTRL_X_THESAURUS
 			     ? (*curbuf->b_p_tsr == NUL
 				 ? p_tsr
@@ -3453,7 +3507,8 @@ ins_compl_get_exp(ini)
 				 ? p_dict
 				 : curbuf->b_p_dict)),
 			    compl_pattern,
-				 dict ? dict_f : 0, type == CTRL_X_THESAURUS);
+				 dict != NULL ? dict_f
+					       : 0, type == CTRL_X_THESAURUS);
 	    dict = NULL;
 	    break;
 

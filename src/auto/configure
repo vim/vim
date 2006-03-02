@@ -3399,9 +3399,6 @@ fi
     CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
   fi
 
-  CPPFLAGS="$CPPFLAGS $MAC_OSX_ARCH"
-  LDFLAGS="$LDFLAGS $MAC_OSX_ARCH"
-
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6

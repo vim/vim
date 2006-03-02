@@ -256,3 +256,16 @@ taillead
 ['tail lead', 'tail']
 leadprobar
 ['leadprebar', 'lead prebar', 'leadbar']
+
+test 8-8
+# file: Xtest.latin1.spl
+bar
+faabar
+foo
+-------
+bad
+['bar', 'foo']
+foobar
+['faabar', 'foo bar', 'bar']
+barfoo
+['bar foo', 'bar', 'foo']

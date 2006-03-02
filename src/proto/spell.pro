@@ -17,6 +17,7 @@ void ex_spellrepall __ARGS((exarg_T *eap));
 void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int need_cap, int interactive));
 char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spelldump __ARGS((exarg_T *eap));
+void spell_dump_compl __ARGS((buf_T *buf, char_u *pat, int ic, int *dir, int dumpflags_arg));
 char_u *spell_to_word_end __ARGS((char_u *start, buf_T *buf));
 int spell_word_start __ARGS((int startcol));
 void spell_expand_check_cap __ARGS((colnr_T col));
