@@ -97,6 +97,9 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.latin1.add
 :call TestOne('6', '6')
 :call TestOne('7', '7')
 :"
+:" NOSLITSUGS
+:call TestOne('8', '8')
+:"
 gg:/^test output:/,$wq! test.out
 ENDTEST
 
@@ -116,8 +119,6 @@ MIDWORD	'-
 KEP =
 RAR ?
 BAD !
-
-#NOSPLITSUGS
 
 PFX I N 1
 PFX I 0 in .
@@ -182,8 +183,6 @@ MIDWORD	'-
 KEP =
 RAR ?
 BAD !
-
-#NOSPLITSUGS
 
 PFX I N 1
 PFX I 0 in .
@@ -339,8 +338,6 @@ MIDWORD	'-
 KEP =
 RAR ?
 BAD !
-
-#NOSPLITSUGS
 
 PFX I N 1
 PFX I 0 in .
@@ -595,5 +592,25 @@ middle/77,1
 bad: mee meea2 prabar probarmaat middle leadmiddle middletail taillead
 	leadprobar
 badend
+
+Test NOSLITSUGS
+
+8affstart
+SET ISO8859-1
+
+NOSPLITSUGS
+8affend
+
+8dicstart
+1234
+foo
+bar
+faabar
+8dicend
+
+8good: foo bar faabar
+bad: foobar barfoo
+badend
+
 
 test output:

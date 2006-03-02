@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 01
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -553,6 +553,8 @@ New and extended functions: ~
 |complete_check()|	check for key pressed, for 'completefunc'
 |copy()|		make a shallow copy of a List or Dictionary
 |count()|		count nr of times a value is in a List or Dictionary
+|cursor()|		also accepts an offset for 'virtualedit', and
+			the first argument can be a list: [lnum, col, off]
 |deepcopy()|		make a full copy of a List or Dictionary
 |empty()|		check if List or Dictionary is empty
 |getloclist()|		list of location list items (Yegappan Lakshmanan)
@@ -573,6 +575,7 @@ New and extended functions: ~
 |getfperm()|		get file permission string (Nikolai Weibull)
 |getftype()|		get type of file (Nikolai Weibull)
 |getline()|		with second argument: get List with buffer lines
+|getpos()|		return a list with the position of cursor, mark, etc.
 |has_key()|		check whether a key appears in a Dictionary
 |inputlist()|		select an entry from a list
 |insert()|		insert an item somewhere in a List
@@ -1210,6 +1213,9 @@ just before it is invoked
 
 VMS: Occasionally CR characters were inserted in the file.  Expansion of
 environment variables was not correct. (Zoltan Arpadffy)
+
+VMS: Improved low level char input (affects just console mode). (Zoltan
+Arpadffy)
 
 UTF-8: When 'delcombine' is set "dw" only deleted the last combining character
 from the first character of the word.

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 01
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,19 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test58 and test59: also test with NOSPLITSUGS?
+Add setpos(), opposite  of getpos().
+7   Add the markclear() function to delete a mark in another buffer.  Charles
+    Campbell (2004 Jan 9)
+    http://mysite.verizon.net/astronaut/vim/index.html#Patch
+    Implement setmark(markname, lnum [, col [, filename]]) instead?
+    When "lnum" is zero delete the mark.
+    When "filename" has no wildcards and there is no matching buffer, add
+    the buffer (unlisted).
+
+Make match() use {start} differently when using {count} argument.
+
+Function to get and restore window position?  Including topline, column
+offset, etc.  Use dictionary to store the info?
 
 Crash with X command server (Ciaran McCreesh).
 
@@ -39,7 +51,7 @@ maintanance.  Is there another solution?
 
 spelling:
 - Also use the spelling dictionary for dictionary completion.
-  When 'dictionary' is empty and/or when "kspell" is in 'complete'.
+  -> proper case compare against pattern, also for multi-byte
 - Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
   Don't allow it, because there is no other way to do this.
 - Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
@@ -279,6 +291,8 @@ Omni completion:
     taglist() can be used.
 
 Adjust src/main.aap for installing manpages like in Makefile.
+And for generating Vim.app for the Mac.
+Install spell files with src/main.aap.
 
 When editing a file with both utf-8 and latin1 text Vim always falls back to
 latin1.  Add a command to convert the latin1 characters to utf-8?
@@ -1394,7 +1408,6 @@ Spell checking:
     syntax items (to add @Spell).
     Add ":syntax contains {pattern} add=@Spell" command?  A bit like ":syn
     cluster" but change the contains list directly for matching syntax items.
-8   Install spell files with src/main.aap.
 -   References: MySpell library (in OpenOffice.org).
 	http://spellchecker.mozdev.org/source.html
 	http://whiteboard.openoffice.org/source/browse/whiteboard/lingucomponent/source/spellcheck/myspell/
@@ -1715,13 +1728,6 @@ Built-in script language:
     Alternative: Support packages.  {package-name}:{function-name}().
     Packages are loaded automatically when first used, from
     $VIMRUNTIME/packages (or use a search path).
-7   Add the markclear() function to delete a mark in another buffer.  Charles
-    Campbell (2004 Jan 9)
-    http://mysite.verizon.net/astronaut/vim/index.html#Patch
-    Implement setmark(markname, lnum [, col [, filename]]) instead?
-    When "lnum" is zero delete the mark.
-    When "filename" has no wildcards and there is no matching buffer, add
-    the buffer (unlisted).
 7   Pre-parse or compile Vim scripts into a bytecode.
     1. Put the bytecode with the original script, with an ":if
        has('bytecode')" around it, so that it's only used with a Vim that
