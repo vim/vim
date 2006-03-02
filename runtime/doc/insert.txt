@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 23
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1244,18 +1244,56 @@ SYNTAX							*ft-syntax-omni*
 This uses the current syntax highlighting for completion.  It can be used for
 any filetype and provides a minimal language-sensitive completion.
 
-To enable code completion do: >
-	source $VIMRUNTIME/autoload/syntaxcomplete.vim
+To enable syntax code completion you can run: >
+	setlocal omnifunc=syntaxcomplete#Complete 
 
-You can automate this by placing this in your vimrc (after any ":filetype"
-command): >
-	autocmd Filetype * 
-		    \ if exists('&ofu') && &ofu == "" |
-		    \     source $VIMRUNTIME/autoload/syntaxcomplete.vim |
-		    \ endif
+You can automate this by placing the following in your vimrc (after any
+":filetype" command): >
+    if has("autocmd") && exists("+omnifunc")
+        autocmd Filetype *
+                    \	if &omnifunc == "" |
+                    \		setlocal omnifunc=syntaxcomplete#Complete |
+                    \	endif
+    endif
 
-The above will set completion to this script only if a proper one does not
-already exist for that filetype.
+The above will set completion to this script only if a specific plugin does
+not already exist for that filetype.
+
+Each filetype can have a wide range of syntax items.  The plugin allows you to
+customize which syntax groups to include or exclude from the list.  Let's have
+a look at the PHP filetype to see how this works.
+
+If you edit a file called, index.php, run the following command: >
+	:syntax list
+
+First thing you will notice is there are many different syntax groups.  The
+PHP language can include elements from different languages like HTML,
+JavaScript and many more.  The syntax plugin will only include syntax groups
+that begin with the filetype, "php", in this case.  For example these syntax
+groups are included by default with the PHP: phpEnvVar, phpIntVar,
+phpFunctions.
+
+The PHP language has an enormous number of items which it knows how to syntax
+highlight.  This means these items will be available within the omni
+completion list.  Some people may find this list unwieldy or are only
+interested in certain items.
+
+There are two ways to prune this list (if necessary).  If you find certain
+syntax groups you do not wish displayed you can add the following to your
+vimrc: >
+	let g:omni_syntax_group_exclude_php = 'phpCoreConstant,phpConstant'
+
+Add as many syntax groups to this list by comma separating them.  The basic
+form of this variable is: >
+	let g:omni_syntax_group_exclude_{filetype} = 'comma,separated,list'
+
+For completeness the opposite is also true.  Creating this variable in your
+vimrc will only include the items in the phpFunctions and phpMethods syntax
+groups: >
+	let g:omni_syntax_group_include_php = 'phpFunctions,phpMethods'
+
+You can create as many of these variables as you need, varying only the
+filetype at the end of the variable name.
 
 
 XML							*ft-xml-omni*

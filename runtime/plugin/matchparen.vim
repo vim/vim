@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 01
+" Last Change: 2006 Mar 02
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -76,24 +76,14 @@ function! s:Highlight_Matching_Pair()
   execute 'if' s_skip '| let s_skip = 0 | endif'
 
   " Find the match.  When it was just before the cursor move it there for a
-  " moment.  To restore the cursor position use "N|" and when 'virtualedit'
-  " is set, cursor() otherwise.
+  " moment.
   if before > 0
-    if &ve != ''
-      let vcol = virtcol('.')
-      let old_ve = &ve
-      set ve=all
-    endif
+    let save_cursor = getpos('.')
     call cursor(c_lnum, c_col - before)
   endif
   let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
   if before > 0
-    if &ve != ''
-      exe 'normal ' . vcol . '|'
-      let &ve = old_ve
-    else
-      call cursor(0, c_col)
-    endif
+    call cursor(save_cursor)
   endif
 
   " If a match is found setup match highlighting.

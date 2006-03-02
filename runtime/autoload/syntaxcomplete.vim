@@ -1,12 +1,12 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     1.0
-" Last Change: Sun Jan 08 2006 10:17:51 PM
+" Version:     1.1
+" Last Change: Wed Mar 01 2006 9:58:14 PM
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
-if exists('&ofu')
-    setlocal ofu=syntaxcomplete#Complete
+if exists('+omnifunc')
+    setlocal omnifunc=syntaxcomplete#Complete
 endif
 
 if exists('g:loaded_syntax_completion')
@@ -62,7 +62,7 @@ function! syntaxcomplete#Complete(findstart, base)
     if list_idx > -1
         let compl_list = s:cache_list[list_idx]
     else
-        let compl_list = s:SyntaxList()
+        let compl_list = OmniSyntaxList()
         let s:cache_name  = add( s:cache_name,  &filetype )
         let s:cache_list  = add( s:cache_list,  compl_list )
     endif
@@ -78,7 +78,7 @@ function! syntaxcomplete#Complete(findstart, base)
     return compl_list
 endfunc
 
-function! s:SyntaxList()
+function! OmniSyntaxList()
     let saveL = @l
     
     " Loop through all the syntax groupnames, and build a
@@ -86,63 +86,146 @@ function! s:SyntaxList()
     " work generically for any filetype that does not already
     " have a plugin defined.
     " This ASSUMES the syntax groupname BEGINS with the name
-    " of the filetype.  From my casual viewing of the vim7\sytax 
+    " of the filetype.  From my casual viewing of the vim7\syntax 
     " directory.
     redir @l
     silent! exec 'syntax list '
     redir END
 
-    let syntax_groups = @l
+    let syntax_full = "\n".@l
     let @l = saveL
 
-    if syntax_groups =~ 'E28' 
-                \ || syntax_groups =~ 'E411'
-                \ || syntax_groups =~ 'E415'
-                \ || syntax_groups =~ 'No sytax items'
-        return -1
+    if syntax_full =~ 'E28' 
+                \ || syntax_full =~ 'E411'
+                \ || syntax_full =~ 'E415'
+                \ || syntax_full =~ 'No Syntax items'
+        return []
     endif
 
-    " Abort names - match, links to, matchgroup=, start=, contains=, contained,
-    "               cluster=, nextgroup=, end=
+    " Default the include group to include the requested syntax group
+    let syntax_group_include_{&filetype} = ''
+    " Check if there are any overrides specified for this filetype
+    if exists('g:omni_syntax_group_include_'.&filetype)
+        let syntax_group_include_{&filetype} =
+                    \ substitute( g:omni_syntax_group_include_{&filetype},'\s\+','','g') 
+        if syntax_group_include_{&filetype} =~ '\w'
+            let syntax_group_include_{&filetype} = 
+                        \ substitute( syntax_group_include_{&filetype}, 
+                        \ '\s*,\s*', '\\|', 'g'
+                        \ )
+        endif
+    endif
+
+    " Default the exclude group to nothing
+    let syntax_group_exclude_{&filetype} = ''
+    " Check if there are any overrides specified for this filetype
+    if exists('g:omni_syntax_group_exclude_'.&filetype)
+        let syntax_group_exclude_{&filetype} =
+                    \ substitute( g:omni_syntax_group_exclude_{&filetype},'\s\+','','g') 
+        if syntax_group_exclude_{&filetype} =~ '\w' 
+            let syntax_group_exclude_{&filetype} = 
+                        \ substitute( syntax_group_exclude_{&filetype}, 
+                        \ '\s*,\s*', '\\|', 'g'
+                        \ )
+        endif
+    endif
+
+    " Syntax rules can contain items for more than just the current 
+    " filetype.  They can contain additional items added by the user
+    " via autocmds or their vimrc.
+    " Some syntax files can be combined (html, php, jsp).
+    " We want only items that begin with the filetype we are interested in.
     let next_group_regex = '\n' .
                 \ '\zs'.&filetype.'\w\+\ze'.
-                \ '\s\+xxx\s\+'.
-                \ '\<\('.
-                \ substitute(s:syn_remove_words, ',', '\\|', 'g').
-                \ '\)\@!'
+                \ '\s\+xxx\s\+' 
     let syn_list = ''
     let index    = 0
-    let index    = match(syntax_groups, next_group_regex, index)
-
+    let index    = match(syntax_full, next_group_regex, index)
 
     while index > 0
-        let group_name = matchstr( syntax_groups, '\w\+', index )
+        let group_name = matchstr( syntax_full, '\w\+', index )
 
-        let extra_syn_list = s:SyntaxGroupItems(group_name)
+        let get_syn_list = 1
+        " if syntax_group_include_{&filetype} == ''
+        "     if syntax_group_exclude_{&filetype} != ''
+        "         if '\<'.syntax_group_exclude_{&filetype}.'\>' =~ '\<'.group_name.'\>'
+        "             let get_syn_list = 0
+        "         endif
+        "     endif
+        " else
+        "     if '\<'.syntax_group_include_{&filetype}.'\>' !~ '\<'.group_name.'\>'
+        "         let get_syn_list = 0
+        "     endif
+        " endif
+        if syntax_group_exclude_{&filetype} != ''
+            if '\<'.syntax_group_exclude_{&filetype}.'\>' =~ '\<'.group_name.'\>'
+                let get_syn_list = 0
+            endif
+        endif
+    
+        if get_syn_list == 1
+            if syntax_group_include_{&filetype} != ''
+                if '\<'.syntax_group_include_{&filetype}.'\>' !~ '\<'.group_name.'\>'
+                    let get_syn_list = 0
+                endif
+            endif
+        endif
 
-        let syn_list = syn_list . extra_syn_list . "\n"
+        if get_syn_list == 1
+            " Pass in the full syntax listing, plus the group name we 
+            " are interested in.
+            let extra_syn_list = s:SyntaxGroupItems(group_name, syntax_full)
+
+            let syn_list = syn_list . extra_syn_list . "\n"
+        endif
 
         let index = index + strlen(group_name)
-        let index = match(syntax_groups, next_group_regex, index)
+        let index = match(syntax_full, next_group_regex, index)
     endwhile
 
-    return sort(split(syn_list))
+    " Convert the string to a List and sort it.
+    let compl_list = sort(split(syn_list))
+
+    if &filetype == 'vim'
+        let short_compl_list = []
+        for i in range(len(compl_list))
+            if i == len(compl_list)-1
+                let next = i
+            else
+                let next = i + 1
+            endif
+            if  compl_list[next] !~ '^'.compl_list[i].'.$'
+                let short_compl_list += [compl_list[i]]
+            endif
+        endfor
+
+        return short_compl_list
+    else
+        return compl_list
+    endif
 endfunction
 
-function! s:SyntaxGroupItems( group_name )
-    let saveL = @l
-    
-    " Generate (based on the syntax highlight rules) a list of
-    " the Statements, functions, keywords and so on available
-    " If this needs updating, the syntax\sql.vim file should be
-    " updated
-    redir @l
-    silent! exec 'syntax list ' . a:group_name
-    redir END
+function! s:SyntaxGroupItems( group_name, syntax_full )
 
-    if @l !~ 'E28'
+    let syn_list = ""
+
+    " From the full syntax listing, strip out the portion for the
+    " request group.
+    " Query:
+    "     \n           - must begin with a newline
+    "     a:group_name - the group name we are interested in
+    "     \s\+xxx\s\+  - group names are always followed by xxx
+    "     \zs          - start the match
+    "     .\{-}        - everything ...
+    "     \ze          - end the match
+    "     \n\w         - at the first newline starting with a character
+    let syntax_group = matchstr(a:syntax_full, 
+                \ "\n".a:group_name.'\s\+xxx\s\+\zs.\{-}\ze'."\n".'\w'
+                \)
+
+    if syntax_group != ""
         " let syn_list = substitute( @l, '^.*xxx\s*\%(contained\s*\)\?', "", '' )
-        let syn_list = substitute( @l, '^.*xxx\s*', "", '' )
+        " let syn_list = substitute( @l, '^.*xxx\s*', "", '' )
 
         " We only want the words for the lines begining with
         " containedin, but there could be other items.
@@ -152,7 +235,7 @@ function! s:SyntaxGroupItems( group_name )
         "    contained nextgroup=...
         " So this will strip off the ending of lines with known
         " keywords.
-        let syn_list = substitute( syn_list, '\<\('.
+        let syn_list = substitute( syntax_group, '\<\('.
                     \ substitute(
                     \ escape( s:syn_remove_words, '\\/.*$^~[]')
                     \ , ',', '\\|', 'g').
@@ -171,8 +254,6 @@ function! s:SyntaxGroupItems( group_name )
     else
         let syn_list = ''
     endif
-
-    let @l = saveL
 
     return syn_list
 endfunction
