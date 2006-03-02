@@ -904,8 +904,8 @@ static int spell_edit_score_limit __ARGS((slang_T *slang, char_u *badword, char_
 #ifdef FEAT_MBYTE
 static int spell_edit_score_limit_w __ARGS((slang_T *slang, char_u *badword, char_u *goodword, int limit));
 #endif
-static void dump_word __ARGS((slang_T *slang, char_u *word, int round, int flags, linenr_T lnum));
-static linenr_T dump_prefixes __ARGS((slang_T *slang, char_u *word, int round, int flags, linenr_T startlnum));
+static void dump_word __ARGS((slang_T *slang, char_u *word, char_u *pat, int *dir, int round, int flags, linenr_T lnum));
+static linenr_T dump_prefixes __ARGS((slang_T *slang, char_u *word, char_u *pat, int *dir, int round, int flags, linenr_T startlnum));
 static buf_T *open_spellbuf __ARGS((void));
 static void close_spellbuf __ARGS((buf_T *buf));
 
@@ -14808,16 +14808,48 @@ pop:
 
 #define DUMPFLAG_KEEPCASE   1	/* round 2: keep-case tree */
 #define DUMPFLAG_COUNT	    2	/* include word count */
+#define DUMPFLAG_ICASE	    4	/* ignore case when finding matches */
 
 /*
  * ":spelldump"
  */
-/*ARGSUSED*/
     void
 ex_spelldump(eap)
     exarg_T *eap;
 {
     buf_T	*buf = curbuf;
+
+    if (no_spell_checking(curwin))
+	return;
+
+    /* Create a new empty buffer by splitting the window. */
+    do_cmdline_cmd((char_u *)"new");
+    if (!bufempty() || !buf_valid(buf))
+	return;
+
+    spell_dump_compl(buf, NULL, 0, NULL, eap->forceit ? DUMPFLAG_COUNT : 0);
+
+    /* Delete the empty line that we started with. */
+    if (curbuf->b_ml.ml_line_count > 1)
+	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+
+    redraw_later(NOT_VALID);
+}
+
+/*
+ * Go through all possible words and:
+ * 1. When "pat" is NULL: dump a list of all words in the current buffer.
+ *	"ic" and "dir" are not used.
+ * 2. When "pat" is not NULL: add matching words to insert mode completion.
+ */
+    void
+spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
+    buf_T	*buf;	    /* buffer with spell checking */
+    char_u	*pat;	    /* leading part of the word */
+    int		ic;	    /* ignore case */
+    int		*dir;	    /* direction for adding matches */
+    int		dumpflags_arg;	/* DUMPFLAG_* */
+{
     langp_T	*lp;
     slang_T	*slang;
     idx_T	arridx[MAXWLEN];
@@ -14835,15 +14867,11 @@ ex_spelldump(eap)
     int		do_region = TRUE;	    /* dump region names and numbers */
     char_u	*p;
     int		lpi;
-    int		dumpflags;
+    int		dumpflags = dumpflags_arg;
+    int		patlen;
 
-    if (no_spell_checking(curwin))
-	return;
-
-    /* Create a new empty buffer by splitting the window. */
-    do_cmdline_cmd((char_u *)"new");
-    if (!bufempty() || !buf_valid(buf))
-	return;
+    if (ic)
+	dumpflags |= DUMPFLAG_ICASE;
 
     /* Find out if we can support regions: All languages must support the same
      * regions or none at all. */
@@ -14865,8 +14893,11 @@ ex_spelldump(eap)
 
     if (do_region && region_names != NULL)
     {
-	vim_snprintf((char *)IObuff, IOSIZE, "/regions=%s", region_names);
-	ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
+	if (pat == NULL)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "/regions=%s", region_names);
+	    ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
+	}
     }
     else
 	do_region = FALSE;
@@ -14881,8 +14912,18 @@ ex_spelldump(eap)
 	if (slang->sl_fbyts == NULL)	    /* reloading failed */
 	    continue;
 
-	vim_snprintf((char *)IObuff, IOSIZE, "# file: %s", slang->sl_fname);
-	ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
+	if (pat == NULL)
+	{
+	    vim_snprintf((char *)IObuff, IOSIZE, "# file: %s", slang->sl_fname);
+	    ml_append(lnum++, IObuff, (colnr_T)0, FALSE);
+	}
+
+	/* When matching with a pattern and there are no prefixes only use
+	 * parts of the tree that match "pat". */
+	if (pat != NULL && slang->sl_pbyts == NULL)
+	    patlen = STRLEN(pat);
+	else
+	    patlen = 0;
 
 	/* round 1: case-folded tree
 	 * round 2: keep-case tree */
@@ -14890,26 +14931,24 @@ ex_spelldump(eap)
 	{
 	    if (round == 1)
 	    {
-		dumpflags = 0;
+		dumpflags &= ~DUMPFLAG_KEEPCASE;
 		byts = slang->sl_fbyts;
 		idxs = slang->sl_fidxs;
 	    }
 	    else
 	    {
-		dumpflags = DUMPFLAG_KEEPCASE;
+		dumpflags |= DUMPFLAG_KEEPCASE;
 		byts = slang->sl_kbyts;
 		idxs = slang->sl_kidxs;
 	    }
 	    if (byts == NULL)
 		continue;		/* array is empty */
 
-	    if (eap->forceit)
-		dumpflags |= DUMPFLAG_COUNT;
-
 	    depth = 0;
 	    arridx[0] = 0;
 	    curi[0] = 1;
-	    while (depth >= 0 && !got_int)
+	    while (depth >= 0 && !got_int
+				       && (pat == NULL || !compl_interrupted))
 	    {
 		if (curi[depth] > byts[arridx[depth]])
 		{
@@ -14945,13 +14984,17 @@ ex_spelldump(eap)
 			     * when it's the first one. */
 			    c = (unsigned)flags >> 24;
 			    if (c == 0 || curi[depth] == 2)
-				dump_word(slang, word, dumpflags,
-							       flags, lnum++);
+			    {
+				dump_word(slang, word, pat, dir,
+						      dumpflags, flags, lnum);
+				if (pat == NULL)
+				    ++lnum;
+			    }
 
 			    /* Apply the prefix, if there is one. */
 			    if (c != 0)
-				lnum = dump_prefixes(slang, word, dumpflags,
-								 flags, lnum);
+				lnum = dump_prefixes(slang, word, pat, dir,
+						      dumpflags, flags, lnum);
 			}
 		    }
 		    else
@@ -14960,26 +15003,30 @@ ex_spelldump(eap)
 			word[depth++] = c;
 			arridx[depth] = idxs[n];
 			curi[depth] = 1;
+
+			/* Check if this characters matches with the pattern.
+			 * If not skip the whole tree below it.
+			 * TODO ignorecase
+			 * TODO: multi-byte */
+			if (depth <= patlen && STRNCMP(word, pat, depth) != 0)
+			    --depth;
 		    }
 		}
 	    }
 	}
     }
-
-    /* Delete the empty line that we started with. */
-    if (curbuf->b_ml.ml_line_count > 1)
-	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
-
-    redraw_later(NOT_VALID);
 }
 
 /*
  * Dump one word: apply case modifications and append a line to the buffer.
+ * When "lnum" is zero add insert mode completion.
  */
     static void
-dump_word(slang, word, dumpflags, flags, lnum)
+dump_word(slang, word, pat, dir, dumpflags, flags, lnum)
     slang_T	*slang;
     char_u	*word;
+    char_u	*pat;
+    int		*dir;
     int		dumpflags;
     int		flags;
     linenr_T	lnum;
@@ -15007,50 +15054,66 @@ dump_word(slang, word, dumpflags, flags, lnum)
     }
     tw = p;
 
-    /* Add flags and regions after a slash. */
-    if ((flags & (WF_BANNED | WF_RARE | WF_REGION)) || keepcap)
+    if (pat == NULL)
     {
-	STRCPY(badword, p);
-	STRCAT(badword, "/");
-	if (keepcap)
-	    STRCAT(badword, "=");
-	if (flags & WF_BANNED)
-	    STRCAT(badword, "!");
-	else if (flags & WF_RARE)
-	    STRCAT(badword, "?");
-	if (flags & WF_REGION)
-	    for (i = 0; i < 7; ++i)
-		if (flags & (0x10000 << i))
-		    sprintf((char *)badword + STRLEN(badword), "%d", i + 1);
-	p = badword;
-    }
-
-    if (dumpflags & DUMPFLAG_COUNT)
-    {
-	hashitem_T  *hi;
-
-	/* Include the word count for ":spelldump!". */
-	hi = hash_find(&slang->sl_wordcount, tw);
-	if (!HASHITEM_EMPTY(hi))
+	/* Add flags and regions after a slash. */
+	if ((flags & (WF_BANNED | WF_RARE | WF_REGION)) || keepcap)
 	{
-	    vim_snprintf((char *)IObuff, IOSIZE, "%s\t%d",
-						     tw, HI2WC(hi)->wc_count);
-	    p = IObuff;
+	    STRCPY(badword, p);
+	    STRCAT(badword, "/");
+	    if (keepcap)
+		STRCAT(badword, "=");
+	    if (flags & WF_BANNED)
+		STRCAT(badword, "!");
+	    else if (flags & WF_RARE)
+		STRCAT(badword, "?");
+	    if (flags & WF_REGION)
+		for (i = 0; i < 7; ++i)
+		    if (flags & (0x10000 << i))
+			sprintf((char *)badword + STRLEN(badword), "%d", i + 1);
+	    p = badword;
 	}
-    }
 
-    ml_append(lnum, p, (colnr_T)0, FALSE);
+	if (dumpflags & DUMPFLAG_COUNT)
+	{
+	    hashitem_T  *hi;
+
+	    /* Include the word count for ":spelldump!". */
+	    hi = hash_find(&slang->sl_wordcount, tw);
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		vim_snprintf((char *)IObuff, IOSIZE, "%s\t%d",
+						     tw, HI2WC(hi)->wc_count);
+		p = IObuff;
+	    }
+	}
+
+	ml_append(lnum, p, (colnr_T)0, FALSE);
+    }
+    else
+    {
+	/* TODO: ignore case, multi-byte */
+	if (STRNCMP(p, pat, STRLEN(pat)) == 0
+		&& ins_compl_add_infercase(p, (int)STRLEN(p),
+					  dumpflags & DUMPFLAG_ICASE,
+					  NULL, *dir, 0) == OK)
+	    /* if dir was BACKWARD then honor it just once */
+	    *dir = FORWARD;
+    }
 }
 
 /*
  * For ":spelldump": Find matching prefixes for "word".  Prepend each to
  * "word" and append a line to the buffer.
+ * When "lnum" is zero add insert mode completion.
  * Return the updated line number.
  */
     static linenr_T
-dump_prefixes(slang, word, dumpflags, flags, startlnum)
+dump_prefixes(slang, word, pat, dir, dumpflags, flags, startlnum)
     slang_T	*slang;
     char_u	*word;	    /* case-folded word */
+    char_u	*pat;
+    int		*dir;
     int		dumpflags;
     int		flags;	    /* flags with prefix ID */
     linenr_T	startlnum;
@@ -15117,9 +15180,11 @@ dump_prefixes(slang, word, dumpflags, flags, startlnum)
 		    if (c != 0)
 		    {
 			vim_strncpy(prefix + depth, word, MAXWLEN - depth - 1);
-			dump_word(slang, prefix, dumpflags,
+			dump_word(slang, prefix, pat, dir, dumpflags,
 				(c & WF_RAREPFX) ? (flags | WF_RARE)
-							     : flags, lnum++);
+							       : flags, lnum);
+			if (lnum != 0)
+			    ++lnum;
 		    }
 
 		    /* Check for prefix that matches the word when the
@@ -15133,9 +15198,11 @@ dump_prefixes(slang, word, dumpflags, flags, startlnum)
 			{
 			    vim_strncpy(prefix + depth, word_up,
 							 MAXWLEN - depth - 1);
-			    dump_word(slang, prefix, dumpflags,
+			    dump_word(slang, prefix, pat, dir, dumpflags,
 				    (c & WF_RAREPFX) ? (flags | WF_RARE)
-							     : flags, lnum++);
+							       : flags, lnum);
+			    if (lnum != 0)
+				++lnum;
 			}
 		    }
 		}

@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0aa.  Last change: 2005 Jul 12
+*os_vms.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 02
 
 
 		  VIM REFERENCE MANUAL
@@ -56,10 +56,13 @@ To use the precompiled binary version, you need one of these archives:
   vim-XX-exe-vax-gui.zip	VAX GUI executables
   vim-XX-exe-vax-term.zip       VAX console executables
 
-and of course
+and of course (optional)
   vim-XX-runtime.zip		runtime files
 
 The binary archives contain: vim.exe, ctags.exe, xxd.exe files.
+
+For GTK executables you will need GTKLIB that is available for 
+Alpha and IA64 platform.
 
 ==============================================================================
 
@@ -121,10 +124,10 @@ Vim uses a special directory structure to hold the document and runtime files:
     |- vim57
     |----- doc
     |----- syntax
-    |- vim60
+    |- vim62
     |----- doc
     |----- syntax
-    |- vim61
+    |- vim64
     |----- doc
     |----- syntax
     vimrc    (system rc files)
@@ -239,6 +242,17 @@ and to the SYS$STARTUP:SYLOGIN.COM >
 
 It will set up a normal Vim work environment for every user on the system.
 
+IMPORTANT: Vim on OpenVMS (and on other case insensitive system) command line
+parameters are assumed to be lowecase. In order to indicate that a command
+line parameter is uppercase "/" sign must be used.
+
+Examples:
+  >
+	vim -R  filename  ! means: -r List swap files and exit
+        vim -/r filename  ! means: -R Readonly mode (like "view")
+        vim -u  <vimrc>   ! means: -u Use <vimrc> instead of any .vimrc   
+        vim -/u <gvimrc>  ! means: -U Use <gvimrc> instead of any .gvimrc
+                  
 ==============================================================================
 
 7. GUI mode questions					*vms-gui*
@@ -653,7 +667,10 @@ start it with: >
 
 9. VMS related changes					*vms-changes*
 
-Version 7.0
+Version 7
+- Improved low level char input (affects just console mode)
+
+Version 6.4 (2005 Oct 15)
 - GTKLIB and Vim build on IA64
 - colors in terminal mode
 - syntax highlighting in terminal mode

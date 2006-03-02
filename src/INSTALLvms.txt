@@ -1,7 +1,7 @@
 INSTALLvms.txt - Installation of Vim on OpenVMS
 
 Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-Last change:  2005 Jul 12
+Last change:  2006 Mar 02
 
 This file contains instructions for compiling Vim on Openvms.
 If you already have an executable version of Vim, you don't need this.
@@ -142,7 +142,6 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
 	Options:	: YES - Build with support
 			  Uncommented - build without support.
 	Default		: Uncommented
-
 
 	Parameter name	: VIM_XIM
 	Description	: X Input Method. For entering special languages
@@ -304,8 +303,19 @@ perl_env :
      You need also the OpenVMS Porting Library:
      http://www.openvms.compaq.com/openvms/products/ips/porting.html
 
+     Source code for GTK and porting library that is used to build 
+     VMS executables at polarhome.com are at
+     http://www.polarhome.com/vim/files/source/vms/
+
      Enable GTK in make_vms.mms file with GTK = YES
      Define GTK_ROOT that points to your GTK root directory.
+
+     You will need to edit GTKDIR variable in order to point
+     to GTK header files and libraries.
+
+     GTK_DIR  = ALPHA$DKA0:[GTK128.]
+
+     ".]" at the end is very important.
 
      Build it as normally.
 

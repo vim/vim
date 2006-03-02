@@ -4454,12 +4454,16 @@ ex_buffer_all(eap)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 			: wp->w_width != Columns)
 #endif
+#ifdef FEAT_WINDOWS
+		    || (had_tab > 0 && wp != firstwin)
+#endif
 		    )
 	    {
 		win_close(wp, FALSE);
 #ifdef FEAT_AUTOCMD
 		wpnext = firstwin;	/* just in case an autocommand does
 					   something strange with windows */
+		tpnext = first_tabpage;	/* start all over...*/
 		open_wins = 0;
 #endif
 	    }
@@ -4471,12 +4475,6 @@ ex_buffer_all(eap)
 	/* Without the ":tab" modifier only do the current tab page. */
 	if (had_tab == 0 || tpnext == NULL)
 	    break;
-
-# ifdef FEAT_AUTOCMD
-	/* check if autocommands removed the next tab page */
-	if (!valid_tabpage(tpnext))
-	    tpnext = first_tabpage;	/* start all over...*/
-# endif
 	goto_tabpage_tp(tpnext);
     }
 #endif
@@ -4500,14 +4498,28 @@ ex_buffer_all(eap)
 	if ((!all && buf->b_ml.ml_mfp == NULL) || !buf->b_p_bl)
 	    continue;
 
-	/* Check if this buffer already has a window */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
-	    if (wp->w_buffer == buf)
-		break;
-	/* If the buffer already has a window, move it */
-	if (wp != NULL)
-	    win_move_after(wp, curwin);
-	else if (split_ret == OK)
+#ifdef FEAT_WINDOWS
+	if (had_tab != 0)
+	{
+	    /* With the ":tab" modifier don't move the window. */
+	    if (buf->b_nwindows > 0)
+		wp = lastwin;	    /* buffer has a window, skip it */
+	    else
+		wp = NULL;
+	}
+	else
+#endif
+	{
+	    /* Check if this buffer already has a window */
+	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer == buf)
+		    break;
+	    /* If the buffer already has a window, move it */
+	    if (wp != NULL)
+		win_move_after(wp, curwin);
+	}
+
+	if (wp == NULL && split_ret == OK)
 	{
 	    /* Split the window and put the buffer in it */
 	    p_ea_save = p_ea;

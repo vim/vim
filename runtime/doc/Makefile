@@ -393,6 +393,7 @@ os_risc.txt:
 os_win32.txt:
 	touch os_win32.txt
 
+# Note that $< works with GNU make while $> works for BSD make.
 vim-fr.UTF-8.1: vim-fr.1
 	iconv -f latin1 -t utf-8 $< >$@
 
