@@ -409,6 +409,7 @@ static int list_equal __ARGS((list_T *l1, list_T *l2, int ic));
 static int dict_equal __ARGS((dict_T *d1, dict_T *d2, int ic));
 static int tv_equal __ARGS((typval_T *tv1, typval_T *tv2, int ic));
 static listitem_T *list_find __ARGS((list_T *l, long n));
+static long list_find_nr __ARGS((list_T *l, long idx, int *errorp));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_tv __ARGS((list_T *l, typval_T *tv));
@@ -516,6 +517,7 @@ static void f_getfsize __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getregtype __ARGS((typval_T *argvars, typval_T *rettv));
@@ -5522,6 +5524,27 @@ list_find(l, n)
 }
 
 /*
+ * Get list item "l[idx]" as a number.
+ */
+    static long
+list_find_nr(l, idx, errorp)
+    list_T	*l;
+    long	idx;
+    int		*errorp;	/* set to TRUE when something wrong */
+{
+    listitem_T	*li;
+
+    li = list_find(l, idx);
+    if (li == NULL)
+    {
+	if (errorp != NULL)
+	    *errorp = TRUE;
+	return -1L;
+    }
+    return get_tv_number_chk(&li->li_tv, errorp);
+}
+
+/*
  * Locate "item" list "l" and return its index.
  * Returns -1 when "item" is not in the list.
  */
@@ -6854,7 +6877,7 @@ static struct fst
     {"copy",		1, 1, f_copy},
     {"count",		2, 4, f_count},
     {"cscope_connection",0,3, f_cscope_connection},
-    {"cursor",		2, 2, f_cursor},
+    {"cursor",		1, 3, f_cursor},
     {"deepcopy",	1, 2, f_deepcopy},
     {"delete",		1, 1, f_delete},
     {"did_filetype",	0, 0, f_did_filetype},
@@ -6899,6 +6922,7 @@ static struct fst
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 1, f_getqflist},
+    {"getpos",		1, 1, f_getpos},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
@@ -8288,17 +8312,46 @@ f_cursor(argvars, rettv)
     typval_T	*rettv;
 {
     long	line, col;
+#ifdef FEAT_VIRTUALEDIT
+    long	coladd = 0;
+#endif
 
-    line = get_tv_lnum(argvars);
-    col = get_tv_number_chk(&argvars[1], NULL);
-    if (line < 0 || col < 0)
+    if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	list_T		*l = argvars->vval.v_list;
+
+	/* Argument can be [lnum, col, coladd]. */
+	if (argvars->v_type != VAR_LIST || l == NULL)
+	    return;
+	line = list_find_nr(l, 0L, NULL);
+	col = list_find_nr(l, 1L, NULL);
+#ifdef FEAT_VIRTUALEDIT
+	coladd = list_find_nr(l, 2L, NULL);
+	if (coladd < 0)
+	    coladd = 0;
+#endif
+    }
+    else
+    {
+	line = get_tv_lnum(argvars);
+	col = get_tv_number_chk(&argvars[1], NULL);
+#ifdef FEAT_VIRTUALEDIT
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    coladd = get_tv_number_chk(&argvars[2], NULL);
+#endif
+    }
+    if (line < 0 || col < 0
+#ifdef FEAT_VIRTUALEDIT
+			    || coladd < 0
+#endif
+	    )
 	return;		/* type error; errmsg already given */
     if (line > 0)
 	curwin->w_cursor.lnum = line;
     if (col > 0)
 	curwin->w_cursor.col = col - 1;
 #ifdef FEAT_VIRTUALEDIT
-    curwin->w_cursor.coladd = 0;
+    curwin->w_cursor.coladd = coladd;
 #endif
 
     /* Make sure the cursor is in a valid position. */
@@ -9848,6 +9901,35 @@ f_getline(argvars, rettv)
     }
 
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
+}
+
+/*
+ * "getpos(string)" function
+ */
+    static void
+f_getpos(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    pos_T	*fp;
+    list_T	*l;
+
+    if (rettv_list_alloc(rettv) == OK)
+    {
+	l = rettv->vval.v_list;
+	fp = var2fpos(&argvars[0], TRUE);
+	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->lnum
+							    : (varnumber_T)0);
+	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->col + 1
+							    : (varnumber_T)0);
+	list_append_number(l,
+#ifdef FEAT_VIRTUALEDIT
+				(fp != NULL) ? (varnumber_T)fp->coladd :
+#endif
+							      (varnumber_T)0);
+    }
+    else
+	rettv->vval.v_number = FALSE;
 }
 
 /*
@@ -15586,36 +15668,39 @@ var2fpos(varp, lnum)
     static pos_T	pos;
     pos_T		*pp;
 
-    /* Argument can be [lnum, col]. */
+    /* Argument can be [lnum, col, coladd]. */
     if (varp->v_type == VAR_LIST)
     {
 	list_T		*l;
-	listitem_T	*li;
 	int		len;
+	int		error = FALSE;
 
 	l = varp->vval.v_list;
 	if (l == NULL)
 	    return NULL;
 
 	/* Get the line number */
-	li = list_find(l, 0L);
-	if (li == NULL)
-	    return NULL;
-	pos.lnum = get_tv_number(&li->li_tv);
-	if (pos.lnum <= 0 || pos.lnum > curbuf->b_ml.ml_line_count)
+	pos.lnum = list_find_nr(l, 0L, &error);
+	if (error || pos.lnum <= 0 || pos.lnum > curbuf->b_ml.ml_line_count)
 	    return NULL;	/* invalid line number */
 
 	/* Get the column number */
-	li = list_find(l, 1L);
-	if (li == NULL)
+	pos.col = list_find_nr(l, 1L, &error);
+	if (error)
 	    return NULL;
-	pos.col = get_tv_number(&li->li_tv);
 	len = (long)STRLEN(ml_get(pos.lnum));
-	if (pos.col <= 0 || ((len == 0 && pos.col > 1)
-					  || (len > 0 && (int)pos.col > len)))
+	/* Accept a position up to the NUL after the line. */
+	if (pos.col <= 0 || (int)pos.col > len + 1)
 	    return NULL;	/* invalid column number */
+	--pos.col;
 
-	pos.col--;
+#ifdef FEAT_VIRTUALEDIT
+	/* Get the virtual offset.  Defaults to zero. */
+	pos.coladd = list_find_nr(l, 2L, &error);
+	if (error)
+	    pos.coladd = 0;
+#endif
+
 	return &pos;
     }
 
@@ -15631,6 +15716,11 @@ var2fpos(varp, lnum)
 	    return NULL;
 	return pp;
     }
+
+#ifdef FEAT_VIRTUALEDIT
+    pos.coladd = 0;
+#endif
+
     if (name[0] == 'w' && lnum)
     {
 	pos.col = 0;
