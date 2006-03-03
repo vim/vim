@@ -5610,7 +5610,7 @@ win_redr_custom(wp, draw_ruler)
 	/* Use 'tabline'.  Always at the first line of the screen. */
 	p = p_tal;
 	row = 0;
-	fillchar = t_colors < 8 ? '_' : ' ';
+	fillchar = ' ';
 	attr = hl_attr(HLF_TPF);
 	maxwidth = Columns;
 # ifdef FEAT_EVAL

@@ -129,7 +129,7 @@ static int  ins_compl_make_cyclic __ARGS((void));
 static void ins_compl_upd_pum __ARGS((void));
 static void ins_compl_del_pum __ARGS((void));
 static int  pum_wanted __ARGS((void));
-static int  pum_two_or_more __ARGS((void));
+static int  pum_enough_matches __ARGS((void));
 static void ins_compl_dictionaries __ARGS((char_u *dict, char_u *pat, int flags, int thesaurus));
 static void ins_compl_files __ARGS((int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir));
 static char_u *find_line_end __ARGS((char_u *ptr));
@@ -2347,7 +2347,7 @@ ins_compl_del_pum()
     static int
 pum_wanted()
 {
-    /* 'completeopt' must contain "menu" */
+    /* 'completeopt' must contain "menu" or "menuone" */
     if (vim_strchr(p_cot, 'm') == NULL)
 	return FALSE;
 
@@ -2363,9 +2363,10 @@ pum_wanted()
 
 /*
  * Return TRUE if there are two or more matches to be shown in the popup menu.
+ * One if 'completopt' contains "menuone".
  */
     static int
-pum_two_or_more()
+pum_enough_matches()
 {
     compl_T     *compl;
     int		i;
@@ -2382,6 +2383,8 @@ pum_two_or_more()
 	compl = compl->cp_next;
     } while (compl != compl_first_match);
 
+    if (strstr((char *)p_cot, "menuone") != NULL)
+	return (i >= 1);
     return (i >= 2);
 }
 
@@ -2401,7 +2404,7 @@ ins_compl_show_pum()
     colnr_T	col;
     int		lead_len = 0;
 
-    if (!pum_wanted() || !pum_two_or_more())
+    if (!pum_wanted() || !pum_enough_matches())
 	return;
 
     /* Update the screen before drawing the popup menu over it. */

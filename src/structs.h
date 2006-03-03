@@ -151,7 +151,7 @@ typedef struct
     long	wo_fml;
 # define w_p_fml w_onebuf_opt.wo_fml	/* 'foldminlines' */
     long	wo_fdn;
-# define w_p_fdn w_onebuf_opt.wo_fdn	/* 'foldnextmax' */
+# define w_p_fdn w_onebuf_opt.wo_fdn	/* 'foldnestmax' */
 # ifdef FEAT_EVAL
     char_u	*wo_fde;
 # define w_p_fde w_onebuf_opt.wo_fde	/* 'foldexpr' */

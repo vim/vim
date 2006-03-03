@@ -1210,7 +1210,8 @@ EXTERN option_table_T printer_opts[OPT_PRINT_NUM_OPTIONS]
 # define PRT_UNIT_NAMES {"pc", "in", "mm", "pt"}
 #endif
 
-#if defined(FEAT_PRINTER) || defined(FEAT_WINDOWS)
+#if (defined(FEAT_PRINTER) && defined(FEAT_STL_OPT)) \
+	    || defined(FEAT_GUI_TABLINE)
 /* Page number used for %N in 'pageheader' and 'guitablabel'. */
 EXTERN linenr_T printer_page_num;
 #endif

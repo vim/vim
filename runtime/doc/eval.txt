@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 02
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1845,9 +1845,13 @@ bufname({expr})						*bufname()*
 		Obsolete name: buffer_name().
 
 							*bufnr()*
-bufnr({expr})	The result is the number of a buffer, as it is displayed by
+bufnr({expr} [, {create}])
+		The result is the number of a buffer, as it is displayed by
 		the ":ls" command.  For the use of {expr}, see |bufname()|
-		above.  If the buffer doesn't exist, -1 is returned.
+		above.
+		If the buffer doesn't exist, -1 is returned.  Or, if the
+		{create} argument is present and not zero, a new, unlisted,
+		buffer is created and its number is returned.
 		bufnr("$") is the last buffer: >
 	:let last_buffer = bufnr("$")
 <		The result is a Number, which is the highest buffer number
@@ -2078,9 +2082,8 @@ cursor({list})
 		Positions the cursor at the column {col} in the line {lnum}.
 		The first column is one.
 		When there is one argument {list} this is used as a |List|
-		with two or three items {lnum}, {col} and {off}.  This is
-		useful to move the cursor to a position obtained with
-		|getpos()|.
+		with two or three items {lnum}, {col} and {off}.  This is like
+		the return value of |getpos()|, but without the first item.
 		Does not change the jumplist.
 		If {lnum} is greater than the number of lines in the buffer,
 		the cursor will be positioned at the last line in the buffer.
@@ -3241,7 +3244,7 @@ line({expr})	The result is a Number, which is the line number of the file
 			    returned)
 		    w0	    first line visible in current window
 		    w$	    last line visible in current window
-		Note that only marks in the current file can be used.
+		Note that a mark in another file can be used.
 		To get the column number use |col()|.  To get both use
 		|getpos()|.
 		Examples: >
@@ -3510,9 +3513,14 @@ nr2char({expr})						*nr2char()*
 		string, thus results in an empty string.
 
 							*getpos()*
-getpos({expr})	The result is a |List| with three numbers: [lnum, col, off].
-		This is the file position given with {expr}.  For the accepted
-		positions see |line()|.
+getpos({expr})	Get the position for {expr}.  For possible values of {expr}
+		see |line()|.
+		The result is a |List| with four numbers:
+		    [bufnum, lnum, col, off]
+		"bufnum" is zero, unless a mark like '0 or 'A is used, then it
+		is the buffer number of the mark.
+		"lnum" and "col" are the position in the buffer.  The first
+		column is 1.
 		The "off" number is zero, unless 'virtualedit' is used.  Then
 		it is the offset in screen columns from the start of the
 		character.  E.g., a position within a Tab or after the last
@@ -3520,7 +3528,8 @@ getpos({expr})	The result is a |List| with three numbers: [lnum, col, off].
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getpos(".")
 			MoveTheCursorAround
-			call cursor(save_cursor)
+			call setpos(save_cursor)
+<		Also see |setpos()|.
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -3846,13 +3855,14 @@ reverse({list})	Reverse the order of items in {list} in-place.  Returns
 search({pattern} [, {flags} [, {stopline}]])			*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).
+
 		{flags} is a String, which can contain these character flags:
 		'b'	search backward instead of forward
 		'n'	do Not move the cursor
 		'w'	wrap around the end of the file
 		'W'	don't wrap around the end of the file
-		's'	set the ' mark at the previous location of the
-			cursor.
+		's'	set the ' mark at the previous location of the cursor
+		'c'     accept a match at the cursor position
 		If neither 'w' or 'W' is given, the 'wrapscan' option applies.
 
 		If the 's' flag is supplied, the ' mark is set, only if the
@@ -3869,7 +3879,7 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 
 		When a match has been found its line number is returned.
 		The cursor will be positioned at the match, unless the 'n'
-		flag is used).
+		flag is used.
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
 		To get the column number too use |searchpos()|.
@@ -3930,7 +3940,6 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 <		By leaving {middle} empty the "else" is skipped.
 
 		{flags} are used like with |search()|.  Additionally:
-		'n'	do Not move the cursor
 		'r'	Repeat until no more matches found; will find the
 			outer pair
 		'm'	return number of Matches instead of line number with
@@ -4082,6 +4091,32 @@ setloclist({nr}, {list} [, {action}])			*setloclist()*
 		list window, the displayed location list is modified.  For an
 		invalid window number {nr}, -1 is returned.
 		Otherwise, same as setqflist().
+
+							*setpos()*
+setpos({expr}, {list})
+		Set the position for {expr}.  Possible values:
+			.	the cursor
+			'x	mark x
+
+		{list} must be a |List| with four numbers:
+		    [bufnum, lnum, col, off]
+
+		"bufnum" is the buffer number.  Zero can be used for the
+		current buffer.  Setting the cursor is only possible for 
+		the current buffer.  To set a mark in another buffer you can
+		use the |bufnr()| function to turn a file name into a buffer
+		number.
+
+		"lnum" and "col" are the position in the buffer.  The first
+		column is 1.  Use a zero "lnum" to delete a mark.
+
+		The "off" number is only used when 'virtualedit' is set. Then
+		it is the offset in screen columns from the start of the
+		character.  E.g., a position within a Tab or after the last
+		character.
+
+		Also see |getpos()|
+
 
 setqflist({list} [, {action}])				*setqflist()*
 		Create or replace or add to the quickfix list using the items

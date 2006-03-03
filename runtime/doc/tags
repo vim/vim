@@ -5476,6 +5476,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6608,6 +6609,7 @@ setbufvar()	eval.txt	/*setbufvar()*
 setcmdpos()	eval.txt	/*setcmdpos()*
 setline()	eval.txt	/*setline()*
 setloclist()	eval.txt	/*setloclist()*
+setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
 setting-guifont	gui.txt	/*setting-guifont*
@@ -6986,6 +6988,7 @@ tab-page	tabpage.txt	/*tab-page*
 tab-page-commands	tabpage.txt	/*tab-page-commands*
 tab-page-intro	tabpage.txt	/*tab-page-intro*
 tab-page-other	tabpage.txt	/*tab-page-other*
+tabline-menu	tabpage.txt	/*tabline-menu*
 tabpage	tabpage.txt	/*tabpage*
 tabpage.txt	tabpage.txt	/*tabpage.txt*
 tabpagebuflist()	eval.txt	/*tabpagebuflist()*
