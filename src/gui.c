@@ -3097,7 +3097,6 @@ gui_init_which_components(oldval)
     int		using_toolbar = FALSE;
 #endif
 #ifdef FEAT_GUI_TABLINE
-    static int	prev_has_tabline = FALSE;
     int		using_tabline;
 #endif
 #ifdef FEAT_FOOTER
@@ -3199,9 +3198,8 @@ gui_init_which_components(oldval)
 	/* Update the GUI tab line, it may appear or disappear.  This may
 	 * cause the non-GUI tab line to disappear or appear. */
 	using_tabline = gui_has_tabline();
-	if (prev_has_tabline != using_tabline)
+	if (!gui_mch_showing_tabline() != !using_tabline)
 	{
-	    prev_has_tabline = using_tabline;
 	    gui_update_tabline();
 	    need_set_size = TRUE;
 	    if (using_tabline)
@@ -3369,6 +3367,7 @@ get_tabline_label(tp)
 	int	use_sandbox = FALSE;
 	int	save_called_emsg = called_emsg;
 	char_u	res[MAXPATHL];
+	tabpage_T *save_curtab;
 
 	called_emsg = FALSE;
 
@@ -3377,11 +3376,30 @@ get_tabline_label(tp)
 	set_vim_var_nr(VV_LNUM, printer_page_num);
 	use_sandbox = was_set_insecurely((char_u *)"guitablabel", 0);
 # endif
+	/* It's almost as going to the tabpage, but without autocommands. */
+	curtab->tp_firstwin = firstwin;
+	curtab->tp_lastwin = lastwin;
+	curtab->tp_curwin = curwin;
+	save_curtab = curtab;
+	curtab = tp;
+	topframe = curtab->tp_topframe;
+	firstwin = curtab->tp_firstwin;
+	lastwin = curtab->tp_lastwin;
+	curwin = curtab->tp_curwin;
+	curbuf = curwin->w_buffer;
+
 	/* Can't use NameBuff directly, build_stl_str_hl() uses it. */
-	build_stl_str_hl(tp == curtab ? curwin : tp->tp_curwin,
-		res, MAXPATHL, p_gtl, use_sandbox,
-		0, (int)Columns, NULL, NULL);
+	build_stl_str_hl(curwin, res, MAXPATHL, p_gtl, use_sandbox,
+						 0, (int)Columns, NULL, NULL);
 	STRCPY(NameBuff, res);
+
+	/* Back to the original curtab. */
+	curtab = save_curtab;
+	topframe = curtab->tp_topframe;
+	firstwin = curtab->tp_firstwin;
+	lastwin = curtab->tp_lastwin;
+	curwin = curtab->tp_curwin;
+	curbuf = curwin->w_buffer;
 
 	if (called_emsg)
 	    set_string_option_direct((char_u *)"guitablabel", -1,

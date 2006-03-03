@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 02
+" Last Change: 2006 Mar 03
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -83,7 +83,7 @@ function! s:Highlight_Matching_Pair()
   endif
   let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
   if before > 0
-    call cursor(save_cursor)
+    call setpos('.', save_cursor)
   endif
 
   " If a match is found setup match highlighting.

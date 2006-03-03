@@ -3633,7 +3633,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 		str = tmp;
 	    break;
 	case STL_PAGENUM:
-#if defined(FEAT_PRINTER) || defined(FEAT_WINDOWS)
+#if defined(FEAT_PRINTER) || defined(FEAT_GUI_TABLINE)
 	    num = printer_page_num;
 #else
 	    num = 0;
@@ -4448,16 +4448,17 @@ ex_buffer_all(eap)
 	for (wp = firstwin; wp != NULL; wp = wpnext)
 	{
 	    wpnext = wp->w_next;
-	    if (wp->w_buffer->b_nwindows > 1
+	    if ((wp->w_buffer->b_nwindows > 1
 #ifdef FEAT_VERTSPLIT
 		    || ((cmdmod.split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
+							    - tabline_height()
 			: wp->w_width != Columns)
 #endif
 #ifdef FEAT_WINDOWS
 		    || (had_tab > 0 && wp != firstwin)
 #endif
-		    )
+		    ) && firstwin != lastwin)
 	    {
 		win_close(wp, FALSE);
 #ifdef FEAT_AUTOCMD

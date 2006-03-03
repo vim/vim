@@ -39,12 +39,26 @@ static void write_one_filemark __ARGS((FILE *fp, xfmark_T *fm, int c1, int c2));
 #endif
 
 /*
- * Set named mark 'c' at current cursor position.
+ * Set named mark "c" at current cursor position.
  * Returns OK on success, FAIL if bad name given.
  */
     int
 setmark(c)
     int		c;
+{
+    return setmark_pos(c, &curwin->w_cursor, curbuf->b_fnum);
+}
+
+/*
+ * Set named mark "c" to position "pos".
+ * When "c" is upper case use file "fnum".
+ * Returns OK on success, FAIL if bad name given.
+ */
+    int
+setmark_pos(c, pos, fnum)
+    int		c;
+    pos_T	*pos;
+    int		fnum;
 {
     int		i;
 
@@ -54,9 +68,14 @@ setmark(c)
 
     if (c == '\'' || c == '`')
     {
-	setpcmark();
-	/* keep it even when the cursor doesn't move */
-	curwin->w_prev_pcmark = curwin->w_pcmark;
+	if (pos == &curwin->w_cursor)
+	{
+	    setpcmark();
+	    /* keep it even when the cursor doesn't move */
+	    curwin->w_prev_pcmark = curwin->w_pcmark;
+	}
+	else
+	    curwin->w_pcmark = *pos;
 	return OK;
     }
 
@@ -64,12 +83,12 @@ setmark(c)
      * file. */
     if (c == '[')
     {
-	curbuf->b_op_start = curwin->w_cursor;
+	curbuf->b_op_start = *pos;
 	return OK;
     }
     if (c == ']')
     {
-	curbuf->b_op_end = curwin->w_cursor;
+	curbuf->b_op_end = *pos;
 	return OK;
     }
 
@@ -81,14 +100,14 @@ setmark(c)
     if (islower(c))
     {
 	i = c - 'a';
-	curbuf->b_namedm[i] = curwin->w_cursor;
+	curbuf->b_namedm[i] = *pos;
 	return OK;
     }
     if (isupper(c))
     {
 	i = c - 'A';
-	namedfm[i].fmark.mark = curwin->w_cursor;
-	namedfm[i].fmark.fnum = curbuf->b_fnum;
+	namedfm[i].fmark.mark = *pos;
+	namedfm[i].fmark.fnum = fnum;
 	vim_free(namedfm[i].fname);
 	namedfm[i].fname = NULL;
 	return OK;
@@ -267,6 +286,9 @@ movechangelist(count)
 
 /*
  * Find mark "c".
+ * If "changefile" is TRUE it's allowed to edit another file for '0, 'A, etc.
+ * If "fnum" is not NULL store the fnum there for '0, 'A etc., don't edit
+ * another file.
  * Returns:
  * - pointer to pos_T if found.  lnum is 0 when mark not set, -1 when mark is
  *   in another file which can't be gotten. (caller needs to check lnum!)
@@ -276,7 +298,16 @@ movechangelist(count)
     pos_T *
 getmark(c, changefile)
     int		c;
-    int		changefile;		/* allowed to edit another file */
+    int		changefile;
+{
+    return getmark_fnum(c, changefile, NULL);
+}
+
+    pos_T *
+getmark_fnum(c, changefile, fnum)
+    int		c;
+    int		changefile;
+    int		*fnum;
 {
     pos_T		*posp;
 #ifdef FEAT_VISUAL
@@ -382,11 +413,14 @@ getmark(c, changefile)
 
 	if (namedfm[c].fmark.fnum == 0)
 	    fname2fnum(&namedfm[c]);
-	if (namedfm[c].fmark.fnum != curbuf->b_fnum)
+
+	if (fnum != NULL)
+	    *fnum = namedfm[c].fmark.fnum;
+	else if (namedfm[c].fmark.fnum != curbuf->b_fnum)
 	{
+	    /* mark is in another file */
 	    posp = &pos_copy;
 
-	    /* mark is in another file */
 	    if (namedfm[c].fmark.mark.lnum != 0
 				       && changefile && namedfm[c].fmark.fnum)
 	    {

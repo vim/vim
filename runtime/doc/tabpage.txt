@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
+*tabpage.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -48,9 +48,12 @@ OPENING A NEW TAB PAGE:
 When starting Vim "vim -p filename ..." opens each file argument in a separate
 tab page (up to 'tabpagemax'). |-p|
 
-A double click with the mouse in the tab pages line opens a new, empty tab
-page.  It is placed left of the position of the click.  The first click may
-select another tab page first, causing an extra screen update.
+A double click with the mouse in the non-GUI tab pages line opens a new, empty
+tab page.  It is placed left of the position of the click.  The first click
+may select another tab page first, causing an extra screen update.
+
+In the GUI tab pages line you can use the right mouse button to open menu.
+|tabline-menu|.
 
 :tabe[dit]				*:tabe* *:tabedit* *:tabnew*
 :tabnew		Open a new tab page with an empty window, after the current
@@ -179,6 +182,17 @@ LOOPING OVER TAB PAGES:
 
 ==============================================================================
 3. Other items						*tab-page-other*
+
+							*tabline-menu*
+The GUI tab pages line has a popup menu.  It is accessed with a right click.
+The entries are:
+	Close		Close the tab page under the mouse pointer.  The
+			current one if there is no label under the mouse
+			pointer.
+	New Tab		Open a tab page, editing an empty buffer.  It appears
+			to the left of the mouse pointer.
+	Open Tab...	Like "New Tab" and additionaly use a file selector to
+			select a file to edit.
 
 Diff mode works per tab page.  You can see the diffs between several files
 within one tab page.  Other tab pages can show differences between other

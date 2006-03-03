@@ -6,6 +6,7 @@ void gui_mch_stop_blink __ARGS((void));
 void gui_mch_start_blink __ARGS((void));
 int gui_mch_init_check __ARGS((void));
 void gui_mch_show_tabline __ARGS((int showit));
+int gui_mch_showing_tabline __ARGS((void));
 void gui_mch_update_tabline __ARGS((void));
 void gui_mch_set_curtab __ARGS((int nr));
 int gui_mch_init __ARGS((void));
