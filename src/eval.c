@@ -600,6 +600,7 @@ static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setloclist __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_setpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
@@ -647,7 +648,8 @@ static void f_winrestcmd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
 
-static pos_T *var2fpos __ARGS((typval_T *varp, int lnum));
+static int list2fpos __ARGS((typval_T *arg, pos_T *posp, int *fnump));
+static pos_T *var2fpos __ARGS((typval_T *varp, int lnum, int *fnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
 static int get_name_len __ARGS((char_u **arg, char_u **alias, int evaluate, int verbose));
@@ -6861,7 +6863,7 @@ static struct fst
     {"buflisted",	1, 1, f_buflisted},
     {"bufloaded",	1, 1, f_bufloaded},
     {"bufname",		1, 1, f_bufname},
-    {"bufnr",		1, 1, f_bufnr},
+    {"bufnr",		1, 2, f_bufnr},
     {"bufwinnr",	1, 1, f_bufwinnr},
     {"byte2line",	1, 1, f_byte2line},
     {"byteidx",		2, 2, f_byteidx},
@@ -7007,6 +7009,7 @@ static struct fst
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 3, f_setloclist},
+    {"setpos",		2, 2, f_setpos},
     {"setqflist",	1, 2, f_setqflist},
     {"setreg",		2, 3, f_setreg},
     {"setwinvar",	3, 3, f_setwinvar},
@@ -7810,15 +7813,28 @@ f_bufnr(argvars, rettv)
     typval_T	*rettv;
 {
     buf_T	*buf;
+    int		error = FALSE;
+    char_u	*name;
 
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
     ++emsg_off;
     buf = get_buf_tv(&argvars[0]);
+    --emsg_off;
+
+    /* If the buffer isn't found and the second argument is not zero create a
+     * new buffer. */
+    if (buf == NULL
+	    && argvars[1].v_type != VAR_UNKNOWN
+	    && get_tv_number_chk(&argvars[1], &error) != 0
+	    && !error
+	    && (name = get_tv_string_chk(&argvars[0])) != NULL
+	    && !error)
+	buf = buflist_new(name, NULL, (linenr_T)1, 0);
+
     if (buf != NULL)
 	rettv->vval.v_number = buf->b_fnum;
     else
 	rettv->vval.v_number = -1;
-    --emsg_off;
 }
 
 /*
@@ -8027,9 +8043,10 @@ f_col(argvars, rettv)
 {
     colnr_T	col = 0;
     pos_T	*fp;
+    int		fnum = curbuf->b_fnum;
 
-    fp = var2fpos(&argvars[0], FALSE);
-    if (fp != NULL)
+    fp = var2fpos(&argvars[0], FALSE, &fnum);
+    if (fp != NULL && fnum == curbuf->b_fnum)
     {
 	if (fp->col == MAXCOL)
 	{
@@ -8318,17 +8335,14 @@ f_cursor(argvars, rettv)
 
     if (argvars[1].v_type == VAR_UNKNOWN)
     {
-	list_T		*l = argvars->vval.v_list;
+	pos_T	    pos;
 
-	/* Argument can be [lnum, col, coladd]. */
-	if (argvars->v_type != VAR_LIST || l == NULL)
+	if (list2fpos(argvars, &pos, NULL) == FAIL)
 	    return;
-	line = list_find_nr(l, 0L, NULL);
-	col = list_find_nr(l, 1L, NULL);
+	line = pos.lnum;
+	col = pos.col;
 #ifdef FEAT_VIRTUALEDIT
-	coladd = list_find_nr(l, 2L, NULL);
-	if (coladd < 0)
-	    coladd = 0;
+	coladd = pos.coladd;
 #endif
     }
     else
@@ -9913,11 +9927,16 @@ f_getpos(argvars, rettv)
 {
     pos_T	*fp;
     list_T	*l;
+    int		fnum = -1;
 
     if (rettv_list_alloc(rettv) == OK)
     {
 	l = rettv->vval.v_list;
-	fp = var2fpos(&argvars[0], TRUE);
+	fp = var2fpos(&argvars[0], TRUE, &fnum);
+	if (fnum != -1)
+	    list_append_number(l, (varnumber_T)fnum);
+	else
+	    list_append_number(l, (varnumber_T)0);
 	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->lnum
 							    : (varnumber_T)0);
 	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->col + 1
@@ -11645,8 +11664,9 @@ f_line(argvars, rettv)
 {
     linenr_T	lnum = 0;
     pos_T	*fp;
+    int		fnum;
 
-    fp = var2fpos(&argvars[0], TRUE);
+    fp = var2fpos(&argvars[0], TRUE, &fnum);
     if (fp != NULL)
 	lnum = fp->lnum;
     rettv->vval.v_number = lnum;
@@ -11870,7 +11890,13 @@ find_some_match(argvars, rettv, type)
 		start = 0;
 	    if (start > (long)STRLEN(str))
 		goto theend;
-	    str += start;
+	    /* When "count" argument is there ignore matches before "start",
+	     * otherwise skip part of the string.  Differs when pattern is "^"
+	     * or "\<". */
+	    if (argvars[3].v_type != VAR_UNKNOWN)
+		startcol = start;
+	    else
+		str += start;
 	}
 
 	if (argvars[3].v_type != VAR_UNKNOWN)
@@ -13178,6 +13204,7 @@ f_reverse(argvars, rettv)
 #define SP_REPEAT	2	/* repeat to find outer pair */
 #define SP_RETCOUNT	4	/* return matchcount */
 #define SP_SETPCMARK	8       /* set previous context mark */
+#define SP_START	16	/* accept match at start position */
 
 static int get_search_arg __ARGS((typval_T *varp, int *flagsp));
 
@@ -13216,6 +13243,7 @@ get_search_arg(varp, flagsp)
 				 case 'r': mask = SP_REPEAT; break;
 				 case 'm': mask = SP_RETCOUNT; break;
 				 case 's': mask = SP_SETPCMARK; break;
+				 case 'c': mask = SP_START; break;
 			     }
 			  if (mask == 0)
 			  {
@@ -13249,11 +13277,14 @@ search_cmn(argvars, match_pos)
     int		flags = 0;
     int		retval = 0;	/* default: FAIL */
     long	lnum_stop = 0;
+    int		options = SEARCH_KEEP;
 
     pat = get_tv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
     if (dir == 0)
 	goto theend;
+    if (flags & SP_START)
+	options |= SEARCH_START;
 
     /* Optional extra argument: line number to stop searching. */
     if (argvars[1].v_type != VAR_UNKNOWN
@@ -13265,13 +13296,13 @@ search_cmn(argvars, match_pos)
     }
 
     /*
-     * This function accepts only SP_NOMOVE and SP_SETPCMARK flags.
+     * This function accepts only SP_NOMOVE, SP_START and SP_SETPCMARK flags.
      * Check to make sure only those flags are set.
      * Also, Only the SP_NOMOVE or the SP_SETPCMARK flag can be set. Both
      * flags cannot be set. Check for that condition also.
      */
-    if (((flags & ~(SP_NOMOVE | SP_SETPCMARK)) != 0) ||
-	((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
+    if (((flags & ~(SP_NOMOVE | SP_SETPCMARK | SP_START)) != 0)
+	    || ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
 	EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
 	goto theend;
@@ -13279,7 +13310,7 @@ search_cmn(argvars, match_pos)
 
     pos = save_cursor = curwin->w_cursor;
     if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
-			 SEARCH_KEEP, RE_SEARCH, (linenr_T)lnum_stop) != FAIL)
+			     options, RE_SEARCH, (linenr_T)lnum_stop) != FAIL)
     {
 	retval = pos.lnum;
 	if (flags & SP_SETPCMARK)
@@ -13458,7 +13489,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     char_u	*epat;	    /* end pattern */
     int		dir;	    /* BACKWARD or FORWARD */
     char_u	*skip;	    /* skip expression */
-    int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE */
+    int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE, SP_START */
     pos_T	*match_pos;
     linenr_T	lnum_stop;  /* stop at this line if not zero */
 {
@@ -13474,6 +13505,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     int		r;
     int		nest = 1;
     int		err;
+    int		options = SEARCH_KEEP;
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
@@ -13491,6 +13523,8 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     else
 	sprintf((char *)pat3, "\\(%s\\m\\)\\|\\(%s\\m\\)\\|\\(%s\\m\\)",
 							    spat, epat, mpat);
+    if (flags & SP_START)
+	options |= SEARCH_START;
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
@@ -13500,7 +13534,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     for (;;)
     {
 	n = searchit(curwin, curbuf, &pos, dir, pat, 1L,
-					   SEARCH_KEEP, RE_SEARCH, lnum_stop);
+					       options, RE_SEARCH, lnum_stop);
 	if (n == FAIL || (firstpos.lnum != 0 && equalpos(pos, firstpos)))
 	    /* didn't find it or found the first match again: FAIL */
 	    break;
@@ -13876,6 +13910,43 @@ f_setloclist(argvars, rettv)
     win = find_win_by_nr(&argvars[0]);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
+}
+
+/*
+ * "setpos()" function
+ */
+/*ARGSUSED*/
+    static void
+f_setpos(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    pos_T	pos;
+    int		fnum;
+    char_u	*name;
+
+    name = get_tv_string_chk(argvars);
+    if (name != NULL)
+    {
+	if (list2fpos(&argvars[1], &pos, &fnum) == OK)
+	{
+	    --pos.col;
+	    if (name[0] == '.')		/* cursor */
+	    {
+		if (fnum == curbuf->b_fnum)
+		{
+		    curwin->w_cursor = pos;
+		    check_cursor();
+		}
+		else
+		    EMSG(_(e_invarg));
+	    }
+	    else if (name[0] == '\'')	/* mark */
+		(void)setmark_pos(name[1], &pos, fnum);
+	    else
+		EMSG(_(e_invarg));
+	}
+    }
 }
 
 /*
@@ -15412,9 +15483,11 @@ f_virtcol(argvars, rettv)
 {
     colnr_T	vcol = 0;
     pos_T	*fp;
+    int		fnum = curbuf->b_fnum;
 
-    fp = var2fpos(&argvars[0], FALSE);
-    if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count)
+    fp = var2fpos(&argvars[0], FALSE, &fnum);
+    if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
+						    && fnum == curbuf->b_fnum)
     {
 	getvvcol(curwin, fp, NULL, NULL, &vcol);
 	++vcol;
@@ -15660,9 +15733,10 @@ f_writefile(argvars, rettv)
  * Returns NULL when there is an error.
  */
     static pos_T *
-var2fpos(varp, lnum)
+var2fpos(varp, lnum, fnum)
     typval_T	*varp;
     int		lnum;		/* TRUE when $ is last line */
+    int		*fnum;		/* set to fnum for '0, 'A, etc. */
 {
     char_u		*name;
     static pos_T	pos;
@@ -15711,7 +15785,7 @@ var2fpos(varp, lnum)
 	return &curwin->w_cursor;
     if (name[0] == '\'')	/* mark */
     {
-	pp = getmark(name[1], FALSE);
+	pp = getmark_fnum(name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
 	return pp;
@@ -15752,6 +15826,59 @@ var2fpos(varp, lnum)
 	return &pos;
     }
     return NULL;
+}
+
+/*
+ * Convert list in "arg" into a position and optional file number.
+ * When "fnump" is NULL there is no file number, only 3 items.
+ * Note that the column is passed on as-is, the caller may want to decrement
+ * it to use 1 for the first column.
+ * Return FAIL when conversion is not possible, doesn't check the position for
+ * validity.
+ */
+    static int
+list2fpos(arg, posp, fnump)
+    typval_T	*arg;
+    pos_T	*posp;
+    int		*fnump;
+{
+    list_T	*l = arg->vval.v_list;
+    long	i = 0;
+    long	n;
+
+    /* List must be: [fnum, lnum, col, coladd] */
+    if (arg->v_type != VAR_LIST || l == NULL
+				      || l->lv_len != (fnump == NULL ? 3 : 4))
+	return FAIL;
+
+    if (fnump != NULL)
+    {
+	n = list_find_nr(l, i++, NULL);	/* fnum */
+	if (n < 0)
+	    return FAIL;
+	if (n == 0)
+	    n = curbuf->b_fnum;		/* current buffer */
+	*fnump = n;
+    }
+
+    n = list_find_nr(l, i++, NULL);	/* lnum */
+    if (n < 0)
+	return FAIL;
+    posp->lnum = n;
+
+    n = list_find_nr(l, i++, NULL);	/* col */
+    if (n < 0)
+	return FAIL;
+    posp->col = n;
+
+#ifdef FEAT_VIRTUALEDIT
+    n = list_find_nr(l, i, NULL);
+    if (n < 0)
+	return FAIL;
+    posp->coladd = n;
+#endif
+
+    return OK;
 }
 
 /*
