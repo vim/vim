@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 02
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,17 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Add setpos(), opposite  of getpos().
-7   Add the markclear() function to delete a mark in another buffer.  Charles
-    Campbell (2004 Jan 9)
-    http://mysite.verizon.net/astronaut/vim/index.html#Patch
-    Implement setmark(markname, lnum [, col [, filename]]) instead?
-    When "lnum" is zero delete the mark.
-    When "filename" has no wildcards and there is no matching buffer, add
-    the buffer (unlisted).
-
-Make match() use {start} differently when using {count} argument.
 
 Function to get and restore window position?  Including topline, column
 offset, etc.  Use dictionary to store the info?
@@ -1464,7 +1453,8 @@ Folding:
     to implement this?
 -   "zJ" command: add the line or fold below the fold in the fold under the
     cursor.
--   'foldmethod' "syntax": "fold=3": set fold level for a region.
+-   'foldmethod' "syntax": "fold=3" argument: set fold level for a region or
+    match.
 -   Apply a new foldlevel to a range of lines. (Steve Litt)
 8   Have some way to restrict commands to not folded text.  Also commands like
     searches.

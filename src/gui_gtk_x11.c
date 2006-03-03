@@ -3198,9 +3198,20 @@ gui_mch_show_tabline(int showit)
 
     if (!showit != !gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline)))
     {
+	/* Note: this may cause a resize event */
 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), showit);
 	update_window_manager_hints();
     }
+}
+
+/*
+ * Return TRUE when tabline is displayed.
+ */
+    int
+gui_mch_showing_tabline(void)
+{
+    return gui.tabline != NULL
+		     && gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline));
 }
 
 /*
