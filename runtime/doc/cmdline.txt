@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 01
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -969,6 +969,11 @@ started from.  This works as if the command-line window was not there, except
 that there will be an extra screen redraw.
 The buffer used for the command-line window is deleted.  Any changes to lines
 other than the one that is executed with <CR> are lost.
+
+If you would like to execute the command under the cursor and then have the
+command-line window open again, you may find this mapping useful: >
+
+	:map <F5> <CR>q:
 
 
 VARIOUS

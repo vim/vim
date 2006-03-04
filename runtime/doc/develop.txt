@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2006 Jan 12
+*develop.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -187,8 +187,8 @@ strchr()	vim_strchr()	Accepts special characters
 strrchr()	vim_strrchr()	Accepts special characters
 isspace()	vim_isspace()	Can handle characters > 128
 iswhite()	vim_iswhite()	Only TRUE for Tab and space
-memcpy()	vim_memmove()	Handles overlapped copies
-bcopy()		vim_memmove()	Handles overlapped copies
+memcpy()	mch_memmove()	Handles overlapped copies
+bcopy()		mch_memmove()	Handles overlapped copies
 memset()	vim_memset()	Uniform for all systems
 
 

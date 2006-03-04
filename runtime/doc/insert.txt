@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 02
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1142,9 +1142,9 @@ Completion of C code requires a tags file.  You should use Exuberant ctags,
 because it adds extra information that is needed for completion.  You can find
 it here: http://ctags.sourceforge.net/
 For version 5.5.4 you should add a patch that adds the "typename:" field:
-ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
+	ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
 A compiled .exe for MS-Windows can be found at:
-http://georgevreilly.com/vim/ctags.html
+	http://georgevreilly.com/vim/ctags.html
 
 If you want to complete system functions you can do something like this.  Use
 ctags to generate a tags file for all the system header files: >

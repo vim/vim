@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 03
+" Last Change: 2006 Mar 04
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -30,6 +30,11 @@ function! s:Highlight_Matching_Pair()
   if s:paren_hl_on
     3match none
     let s:paren_hl_on = 0
+  endif
+
+  " Avoid that we remove the popup menu.
+  if pumvisible()
+    return
   endif
 
   " Get the character under the cursor and check if it's in 'matchpairs'.

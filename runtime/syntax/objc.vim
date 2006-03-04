@@ -3,7 +3,7 @@
 " Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
 " Ex-maintainer:    Anthony Hodsdon <ahodsdon@fastmail.fm>
 " First Author:	    Valentino Kyriakides <1kyriaki@informatik.uni-hamburg.de>
-" Last Change:	    2005 Apr 13
+" Last Change:	    2006 Mar 4
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -44,6 +44,7 @@ syn match  objcScopeDecl    "@public\|@private\|@protected"
 syn match  objcDirective    "@interface\|@implementation"
 syn match  objcDirective    "@class\|@end\|@defs"
 syn match  objcDirective    "@encode\|@protocol\|@selector"
+syn match  objcDirective    "@try\|@catch\|@finally\|@throw\|@synchronized"
 
 " Match the ObjC method types
 "
