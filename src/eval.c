@@ -645,6 +645,8 @@ static void f_winheight __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winnr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winrestcmd __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_winrestview __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_winsaveview __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
 
@@ -7054,6 +7056,8 @@ static struct fst
     {"winline",		0, 0, f_winline},
     {"winnr",		0, 1, f_winnr},
     {"winrestcmd",	0, 0, f_winrestcmd},
+    {"winrestview",	1, 1, f_winrestview},
+    {"winsaveview",	0, 0, f_winsaveview},
     {"winwidth",	1, 1, f_winwidth},
     {"writefile",	2, 3, f_writefile},
 };
@@ -13200,11 +13204,13 @@ f_reverse(argvars, rettv)
     }
 }
 
-#define SP_NOMOVE	1	/* don't move cursor */
-#define SP_REPEAT	2	/* repeat to find outer pair */
-#define SP_RETCOUNT	4	/* return matchcount */
-#define SP_SETPCMARK	8       /* set previous context mark */
-#define SP_START	16	/* accept match at start position */
+#define SP_NOMOVE	0x01	    /* don't move cursor */
+#define SP_REPEAT	0x02	    /* repeat to find outer pair */
+#define SP_RETCOUNT	0x04	    /* return matchcount */
+#define SP_SETPCMARK	0x08	    /* set previous context mark */
+#define SP_START	0x10	    /* accept match at start position */
+#define SP_SUBPAT	0x20	    /* return nr of matching sub-pattern */
+#define SP_END		0x40	    /* leave cursor at end of match */
 
 static int get_search_arg __ARGS((typval_T *varp, int *flagsp));
 
@@ -13239,11 +13245,13 @@ get_search_arg(varp, flagsp)
 			  if (flagsp != NULL)
 			     switch (*flags)
 			     {
-				 case 'n': mask = SP_NOMOVE; break;
-				 case 'r': mask = SP_REPEAT; break;
-				 case 'm': mask = SP_RETCOUNT; break;
-				 case 's': mask = SP_SETPCMARK; break;
 				 case 'c': mask = SP_START; break;
+				 case 'e': mask = SP_END; break;
+				 case 'm': mask = SP_RETCOUNT; break;
+				 case 'n': mask = SP_NOMOVE; break;
+				 case 'p': mask = SP_SUBPAT; break;
+				 case 'r': mask = SP_REPEAT; break;
+				 case 's': mask = SP_SETPCMARK; break;
 			     }
 			  if (mask == 0)
 			  {
@@ -13278,6 +13286,7 @@ search_cmn(argvars, match_pos)
     int		retval = 0;	/* default: FAIL */
     long	lnum_stop = 0;
     int		options = SEARCH_KEEP;
+    int		subpatnum;
 
     pat = get_tv_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
@@ -13285,6 +13294,8 @@ search_cmn(argvars, match_pos)
 	goto theend;
     if (flags & SP_START)
 	options |= SEARCH_START;
+    if (flags & SP_END)
+	options |= SEARCH_END;
 
     /* Optional extra argument: line number to stop searching. */
     if (argvars[1].v_type != VAR_UNKNOWN
@@ -13296,12 +13307,12 @@ search_cmn(argvars, match_pos)
     }
 
     /*
-     * This function accepts only SP_NOMOVE, SP_START and SP_SETPCMARK flags.
+     * This function does not accept SP_REPEAT and SP_RETCOUNT flags.
      * Check to make sure only those flags are set.
      * Also, Only the SP_NOMOVE or the SP_SETPCMARK flag can be set. Both
      * flags cannot be set. Check for that condition also.
      */
-    if (((flags & ~(SP_NOMOVE | SP_SETPCMARK | SP_START)) != 0)
+    if (((flags & (SP_REPEAT | SP_RETCOUNT)) != 0)
 	    || ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
 	EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
@@ -13309,10 +13320,14 @@ search_cmn(argvars, match_pos)
     }
 
     pos = save_cursor = curwin->w_cursor;
-    if (searchit(curwin, curbuf, &pos, dir, pat, 1L,
-			     options, RE_SEARCH, (linenr_T)lnum_stop) != FAIL)
+    subpatnum = searchit(curwin, curbuf, &pos, dir, pat, 1L,
+				     options, RE_SEARCH, (linenr_T)lnum_stop);
+    if (subpatnum != FAIL)
     {
-	retval = pos.lnum;
+	if (flags & SP_SUBPAT)
+	    retval = subpatnum;
+	else
+	    retval = pos.lnum;
 	if (flags & SP_SETPCMARK)
 	    setpcmark();
 	curwin->w_cursor = pos;
@@ -13404,12 +13419,14 @@ searchpair_cmn(argvars, match_pos)
     dir = get_search_arg(&argvars[3], &flags); /* may set p_ws */
     if (dir == 0)
 	goto theend;
-    /*
+
+    /* Don't accept SP_END or SP_SUBPAT.
      * Only one of the SP_NOMOVE or SP_SETPCMARK flags can be set.
      */
-    if ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK))
+    if ((flags & (SP_END | SP_SUBPAT)) != 0
+	    || ((flags & SP_NOMOVE) && (flags & SP_SETPCMARK)))
     {
-	EMSG2(_(e_invarg2), get_tv_string(&argvars[1]));
+	EMSG2(_(e_invarg2), get_tv_string(&argvars[3]));
 	goto theend;
     }
 
@@ -13489,7 +13506,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos, lnum_stop)
     char_u	*epat;	    /* end pattern */
     int		dir;	    /* BACKWARD or FORWARD */
     char_u	*skip;	    /* skip expression */
-    int		flags;	    /* SP_RETCOUNT, SP_REPEAT, SP_NOMOVE, SP_START */
+    int		flags;	    /* SP_SETPCMARK and other SP_ values */
     pos_T	*match_pos;
     linenr_T	lnum_stop;  /* stop at this line if not zero */
 {
@@ -15634,6 +15651,84 @@ f_winrestcmd(argvars, rettv)
     rettv->vval.v_string = NULL;
 #endif
     rettv->v_type = VAR_STRING;
+}
+
+/*
+ * "winrestview()" function
+ */
+/* ARGSUSED */
+    static void
+f_winrestview(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    dict_T	*dict;
+
+    if (argvars[0].v_type != VAR_DICT
+	    || (dict = argvars[0].vval.v_dict) == NULL)
+	EMSG(_(e_invarg));
+    else
+    {
+	curwin->w_cursor.lnum = get_dict_number(dict, (char_u *)"lnum");
+	curwin->w_cursor.col = get_dict_number(dict, (char_u *)"col");
+#ifdef FEAT_VIRTUALEDIT
+	curwin->w_cursor.coladd = get_dict_number(dict, (char_u *)"coladd");
+#endif
+	curwin->w_curswant = get_dict_number(dict, (char_u *)"curswant");
+
+	curwin->w_topline = get_dict_number(dict, (char_u *)"topline");
+#ifdef FEAT_DIFF
+	curwin->w_topfill = get_dict_number(dict, (char_u *)"topfill");
+#endif
+	curwin->w_leftcol = get_dict_number(dict, (char_u *)"leftcol");
+	curwin->w_skipcol = get_dict_number(dict, (char_u *)"skipcol");
+
+	check_cursor();
+	changed_cline_bef_curs();
+	invalidate_botline();
+	redraw_later(VALID);
+
+	if (curwin->w_topline == 0)
+	    curwin->w_topline = 1;
+	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+	    curwin->w_topline = curbuf->b_ml.ml_line_count;
+#ifdef FEAT_DIFF
+	check_topfill(curwin, TRUE);
+#endif
+    }
+}
+
+/*
+ * "winsaveview()" function
+ */
+/* ARGSUSED */
+    static void
+f_winsaveview(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    dict_T	*dict;
+
+    dict = dict_alloc();
+    if (dict == NULL)
+	return;
+    rettv->v_type = VAR_DICT;
+    rettv->vval.v_dict = dict;
+    ++dict->dv_refcount;
+
+    dict_add_nr_str(dict, "lnum", (long)curwin->w_cursor.lnum, NULL);
+    dict_add_nr_str(dict, "col", (long)curwin->w_cursor.col, NULL);
+#ifdef FEAT_VIRTUALEDIT
+    dict_add_nr_str(dict, "coladd", (long)curwin->w_cursor.coladd, NULL);
+#endif
+    dict_add_nr_str(dict, "curswant", (long)curwin->w_curswant, NULL);
+
+    dict_add_nr_str(dict, "topline", (long)curwin->w_topline, NULL);
+#ifdef FEAT_DIFF
+    dict_add_nr_str(dict, "topfill", (long)curwin->w_topfill, NULL);
+#endif
+    dict_add_nr_str(dict, "leftcol", (long)curwin->w_leftcol, NULL);
+    dict_add_nr_str(dict, "skipcol", (long)curwin->w_skipcol, NULL);
 }
 
 /*

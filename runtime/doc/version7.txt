@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 02
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -608,6 +608,8 @@ New and extended functions: ~
 |taglist()|		get list of matching tags (Yegappan Lakshmanan)
 |tr()|			translate characters (Ron Aaron)
 |values()|		get List of Dictionary values
+|winrestview()|		restore the view of the current window
+|winsaveview()|		save the view of the current window
 |writefile()|		write a list of lines into a file
 
 User defined functions can now be loaded automatically from the "autoload"
@@ -821,7 +823,14 @@ Added the "count" argument to match(), matchend() and matchstr(). (Ilya Sher)
 winnr() takes an optional "$" and "#" arguments.  (Nikolai Weibull, Yegappan
 Lakshmanan)
 
+Added 's' flag to search(): set ' mark if cursor moved. (Yegappan Lakshmanan)
 Added 'n' flag to search(): don't move the cursor. (Nikolai Weibull)
+Added 'c' flag to search(): accept match at the cursor.
+Added 'e' flag to search(): move to end of the match. (Benji Fisher)
+Added 'p' flag to search(): return number of sub-pattern. (Benji Fisher)
+These also apply to searchpos(), searchpair() and searchpairpos().
+The search() and searchpair() functions have an extra argument to specify
+where to stop searching.  Speeds up searches that should not continue too far.
 
 When uncompressing fails in the gzip plugin, give an error message but don't
 delete the raw text.  Helps if the file has a .gz extension but is not
@@ -979,12 +988,6 @@ Lakshmanan)
 
 Win32: Balloons can have multiple lines if common controls supports it.
 (Sergey Khorev)
-
-The 's' flag is added to the search() and searchpair() function to set the
-' mark if the cursor is moved. (Yegappan Lakshmanan)
-
-The search() and searchpair() functions have an extra argument to specify
-where to stop searching.  Speeds up searches that should not continue too far.
 
 For 'errorformat' it was not possible to have a file name that contains the
 character that follows after "%f".  For example, in "%f:%l:%m" the file name

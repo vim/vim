@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 03
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,55 +30,41 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Function to get and restore window position?  Including topline, column
-offset, etc.  Use dictionary to store the info?
+Add options to optwin.vim:
+tabpagemax
+tabline
+showtabline
+guitablabel
+formatexpr
 
-Crash with X command server (Ciaran McCreesh).
-
-Ctags still hasn't included the patch.  Darren is looking for someone to do
-maintanance.  Is there another solution?
+Add options to quickref.txt:
+guitablabel
+showtabline
+tabline
+tabpagemax
 
 spelling:
-- Also use the spelling dictionary for dictionary completion.
-  -> proper case compare against pattern, also for multi-byte
-- Using KEEPCASE flag still allows all-upper word, docs say it doesn't.
-  Don't allow it, because there is no other way to do this.
-- Use runtime/cleanadd script to cleanup .add files.  When to invoke it?
-  After deleting a word with "zw" and some timestamp difference perhaps?
-  Store it as spell/cleanadd.vim.
-- Have "zg" and "zw" report the file that was modified. (Marvin Renich)
-- Add a command like "zg" that selects one of the files in 'spellfile'.
-- Add a "zug" command that undoes "zg"?  Deletes the good word instead of
-  adding a bad word like "zw" would.  Use "zuw" to undo "zw"?  (Antonio
-  Colombo)
-
 - Rename COMPOUNDFLAGS to COMPOUNDPATTERN or COMPOUNDRULE?
     Hunspell now uses COMPOUND with a count.
 - Check out Hunspell 1.1.3.
+    Try to make the newly added features compatible.
     what does MAXNGRAMSUGS do?
     See announcement (Nemeth, 5 jan)
     is COMPLEXPREFIXES necessary now that we have flags for affixes?
-- Look into hungarian dictionary:
+- Look into Hungarian dictionary:
   http://magyarispell.sourceforge.net/hu_HU-1.0.tar.gz
--   Support flags on a suffix.  Used for second level affixes, rare and
-    nocomp.  The flags may also be used for compounding.  Default is an OR
-    mechanism with the flags of the word.  Adding "compset" on the affixes
-    means the compound flags of the word are not used.
-    Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS" (or
-    support both).
 - When compounding Hunspell doesn't allow affixes inside the compound word,
   only before and after it.  COMPOUNDPERMITFLAG can be used to allow it.
   Check Myspell and Aspell if they also work this way.
   Thus a word + suffix needs a flag that it can't be used with a following
   compound, and word + prefix can't be after another word in a compound.
 - Implement COMPOUNDFORBIDFLAG .
-- Support breakpoint character · 0xb7 and ignore it?  Makes it possible to use
-  same wordlist for hyphenation.
-
-Is it possible to keep the command-line window open?  Would actually work like
-closing it, executing the command and re-opening it (at the same position).
 
 Mac unicode patch (Da Woon Jung):
+-   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
+    Other patch from Da Woon Jung, 2005 Jan 16.
+8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+    New patch 2004 Jun 16
 - configuration option for platform: i386, ppc or both.
     Use __LITTLE_ENDIAN__ to test for current platform.
 - selecting proportional font breaks display
@@ -89,17 +75,24 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Patch to add a few flags to search(). (Benji Fisher, Nov 29, doc update Dec 1)
+8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
+    Add the 'maxcombining' option to set the nr. of composing characters.
+    At the same time support 32 bit Unicode characters?
+8   "ga" should show all composing characters, also if there are more than 2.
+8   Searching for a composing character by itself should work.  Perhaps "."
+    with a composing char should work too.
 
 Win32: Use the free downloadable compiler 7.1 (2003).  Figure out how to do
 debugging (with Agide?) and describe it. (George Reilly)
 Try out using the free MS compiler and debugger, using Make_mvc.mak.
-Try using Visual C++ Express 2005. (Ilya Bobir Dec 20)
-    Disadvantage: Annoying warning messages, requires ..._NO_DEPRECATE, this
-    is not a standard compiler.
+Also generate the .pdb file that can be used to generate a useful crash report
+on MS-Windows. (George Reilly)
 
 Win32: Check that installer puts menu items in "all users" dir when possible,
 not administrator dir.
+
+When "= evaluation results in a List, use it as a sequence of lines.
+As if join(list, "\n") was used.
 
 Autoload:
 - Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
@@ -112,21 +105,11 @@ Autoload:
     helpfile doc/myscript.txt
   For the "helpfile" item ":helptags" is run.
 
-Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
-mappings for normal keys can be removed from Select mode.
-
 When expanding on the command line, recognize shell commands, such as ":!cmd".
 Complete command names by searching in $PATH.  When completing file names
 escape special characters ";&<>(){}". (Adri Verhoef)
 
 Are there more commands where v:swapcommand can be set to something useful?
-
-Put autocommand event names in a hashtable for faster lookup?
-
-Awaiting response:
--   Win32: tearoff menu window should have a scrollbar when it's taller than
-    the screen.
--   mblen(NULL, 0) also in Vim 6.3?
 
 
 CONSIDERED FOR VERSION 7.0:
@@ -148,8 +131,8 @@ Omni completion:
       characters/strings. (Martin Stubenschrott)
       And/or: Provide a function to popup the menu, so that an insert mode
       mapping can start it (with a specific selection).
-    - GUI implementation of the popup menu.
-    - Show "info" from a match in preview window.
+    - Show "info" from a match in preview window (with an option or by opening
+      a preview window with a specific name).
       Or use one window for matches, another for context/info (Doug Kearns,
       2005 Sep 13)
     - Ideas on: http://www.wholetomato.com/
@@ -199,46 +182,11 @@ Omni completion:
     Show the list of changes in a window to be able to select a version?
     Also: See ":e" as a change operation, find the changes and add them to the
     undo info.  Needed for when an external tool changes the file.
--   PERSISTENT UNDO: store undo in a file.
-    Use timestamps, so that a version a certain time ago can be found and info
-    before some time/date can be flushed. 'undopersist' gives maximum time to
-    keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
-    extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
+
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
--   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
-    can be selected with CTRL-V.  Allow '$' (end of line) for col2.
--   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye.
-    Should work like an IDE.  Try to keep it generic.  Now found here:
-    http://clewn.sf.net.
-    And the idevim plugin/script.
-    To be able to start the debugger from inside Vim: For GUI run a program
-    with a netbeans connection; for console: start a program that splits the
-    terminal, runs the debugger in one window and reconnect Vim I/O to the
-    other window.
-    Wishes for NetBeans commands:
-    - make it possible to have 'defineAnnoType' also handle terminal colors.
-    - send 'balloonText' events for the cursor position (using CursorHold ?)
-      in terminal mode.
--   ECLIPSE plugin.  Problem is: the interface is very complicated.  Need to
-    implement part in Java and then connect to Vim.  Some hints from Alexandru
-    Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
-    198 standard http://www.jcp.org/en/jsr/detail?id=198.
-    Eclim does it: http://eclim.sourceforge.net/  (Eric Van Dewoestine)
-    Plugin that uses a terminal emulator: http://vimplugin.sf.net
--   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
-    Especially when using the scrollbar.  Typing a cursor-movement command
-    scrolls back to where the cursor is.
--   Execute a function with standard option values.  No need to save and
-    restore option values.  Especially useful for new options.  Problem: how
-    to avoid a performance penalty (esp. for string options)?
-8   Support four composing/combining characters, needed for Hebrew. (Ron Aaron)
-    Add the 'maxcombining' option to set the nr. of composing characters.
-    At the same time support 32 bit Unicode characters?
-8   "ga" should show all composing characters, also if there are more than 2.
-8   Searching for a composing character by itself should work.  Perhaps "."
-    with a composing char should work too.
+
 -   Add a few more things to 'diffopt': "horizontal", "vertical",
     "foldcolumn". (Benji Fisher, 2004 Jun 21)
 -   FileChangedShellPost autocommand event: after (not) reloading a changed
@@ -248,15 +196,6 @@ Omni completion:
 	It's not clear that this doesn't cause problems when the executed
 	commands do something like changing 'lines'.  Esp. because the 
 	screen has not yet been allocated with the new size.
--   Running a shell command from the GUI still has limitations.  Look into how
-    the Vim shell project can help: http://vimshell.wana.at
--   Displaying size of Visual area: use 24-33 column display.
-    When selecting multiple lines, up to about a screenful, also count the
-    characters.
--   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
-    Other patch from Da Woon Jung, 2005 Jan 16.
-8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
-    New patch 2004 Jun 16
 9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
     set highlighting with "CursorColumn" group.  Useful for aligning text.
     Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
@@ -269,78 +208,43 @@ Omni completion:
 -   When using 'incsearch" CTRL-R CTRL-W gets the word under the cursor, but
     the part that already matched is doubled then.  Remove the part of the
     word that would be doubled.  Make it work line CTRL-N in Insert mode.
--   Add Lua interface? (Wolfgang Oertl)
 -   "onemore" flag in 'virtualedit': move cursor past end of line.  Patch by
     Mattias Flodin (2004 Jul 30)
 -   In a :s command multi-byte characters should also be upper/lower cased
     with \u, \U, etc.
-8   Add a command to jump to a certain kind of tag.  Allow the user to specify
-    values for the optional fields.  E.g., ":tag size type=m".
-    Also allow specifying the file and command, so that the result of
-    taglist() can be used.
 
-Adjust src/main.aap for installing manpages like in Makefile.
-And for generating Vim.app for the Mac.
-Install spell files with src/main.aap.
+-   Adjust src/main.aap for installing manpages like in Makefile.
+    And for generating Vim.app for the Mac.
+    Install spell files with src/main.aap.
 
-When editing a file with both utf-8 and latin1 text Vim always falls back to
-latin1.  Add a command to convert the latin1 characters to utf-8?
-    :unmix utf-8,latin1 filename
-Would only work when 'encoding' is utf-8.
-Also: command to search for illegal utf-8 byte sequence?
-
-Also generate the .pdb file that can be used to generate a useful crash report
-on MS-Windows. (George Reilly)
+-   Add command to search for illegal utf-8 byte sequence.
 
 Add strtol() to avoid the problems with leading zero causing octal conversion.
-
-Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
-Version 1.5 is in ~/src/posix/1.5. (Lynne Canal)
 
 Add a 'tool' window: behaves like a preview window but there can be several.
 Don't count it in only_one_window(). (Alexei Alexandrov)
 
 Win32: Patch for Korean IME. (Yusung, 2005 March 21)
 
-When "= evaluation results in a List, use it as a sequence of lines.
-
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
-
-For manipulating buffers without opening a new window, support Virtual
-windows.  Example:
-    :virtwin let l = GetBufLine(4, 10)
-    :fun GetBufLine(bufnr, lnum)
-    :  exe "buffer " . a:bufnr
-    :  return getline(lnum)
-    :endfun
-The getline() and setline() functions could work for other buffers, using a
-Virtual window.
-A Virtual window only exists for one command.  There can be several (for
-nested commands).  The window works as if it comes after the last window, size
-is the Vim window size, but it's never displayed.
 
 Win32: In the generated batch files, use $VIMRUNTIME if it's set.  Examples by
 Mathias Michaelis (2004 Sep 6)
 Also place vimtutor.bat in %windir%?
 
-Add gui_mch_browsedir() for Motif, Mac OS/X.
+Ctags still hasn't included the patch.  Darren is looking for someone to do
+maintanance.  Is there another solution?
 
-HTML indenting can be slow, find out why.  Any way to do some kind of
-profiling for Vim script?  At least add a function to get the current time in
-usec.  reltime([start, [end]])
+HTML indenting can be slow, find out why.
+Add a function to get the current time in usec.  reltime([start, [end]])
     reltime().sec == seconds, reltime().usec = microseconds
     reltime(start) current time relative to [start]
 	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
     reltime(start, end) difference between start and end
-Real Profiling:
-    - :profile start /tmp/somefile  (append if exists)
+Profiling:
     - :profile pause
     - :profile resume
-    - :profile stop
-    - per function line
-    - self, Vim and total time (incl system time)
-    - dump results in file on exit or when stopped.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -351,94 +255,96 @@ Jan 6)
 Add a flag to check for a match with the next item first?  Helps for
 continuation lines that may contain just about anything.
 
-Awaiting updated patches:
-    --- awaiting updated patch ---
-    8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
-	Aric Blumer has a patch for this.
-	He will update the patch for 6.3.
-    Autocommands:
-    7   Completion of network shares, patch by Yasuhiro Matsumoto.
-	Update 2004 Sep 6.
-	How does this work?  Missing comments.
-    -	gettext()	Translate a message.  (Patch from Yasuhiro Matsumoto)
-			Update 2004 Sep 10
-			Another patch from Edward L. Fox (2005 Nov 24)
-			Search in 'runtimepath'?
-			More docs about how to use this.
-			How to get the messages into the .po files?
-    --- did not respond (yet) --
-    -	Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
-	Smilauer, 2004 Sep 13, fix Oct 31)
-	Asked for improvements 2004 Dec 20.
-    7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
-	Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
-	line should delete the last line.  Patch from greenx 2002 Apr 11.
-    8   Add a few more command names to the menus.  Patch from Jiri Brezina
-	(28 feb 2002).
-    7   ATTENTION dialog choices are more logical when "Delete it' appears
-	before "Quit".  Patch by Robert Webb, 2004 May 3.
-    -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
-	for multi-byte characters.
-    -   Win32: add options to print dialog.  Patch from Vipin Aravind.
-    -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
-	use the patch that keeps using HLF_8 if HLF_WS has not
-	been given values.
-	Add section in help files for these highlight groups?
-    8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
-	with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
-    7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
-	Dalecki has a patch for Motif and Carbon)
-    -   Add possibility to highlight specific columns (for Fortran).  Or put a
-	line in between columns (e.g., for 'textwidth').
-	Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
-    8   Add functions:
-	confirm()		add "flags" argument, with 'v' for vertical
-				layout and 'c' for console dialog. (Haegg)
-				Flemming Madsen has a patch for the 'c' flag
-				(2003 May 13)
-	raisewin()		raise gvim window (see HierAssist patch for
-				Tcl implementation ~/vim/HierAssist/ )
-    7   Make globpath() also work with upwards search. (Brian Medley)
-    7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
-	better.  Now also works for Ruby (2001 Nov 10)
-    -   Patch from Herculano de Lima Einloft Neto for better formatting of the
-	quickfix window (2004 dec 2)
-    7   When 'rightleft' is set, the search pattern should be displayed right
-	to left as well?  See patch of Dec 26. (Nadim Shaikli)
-    8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
-	Patch by Jason Holt, 2003 May 23.  Uses mlock.
-    7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
-    7   Add ! register, for shell commands. (patch from Grenie)
-    8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
-	done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
-    7   Add a "-@ filelist" argument: read file names from a file. (David
-	Kotchan has a patch for it)
-    8   Include a connection to an external program through a pipe?  See
-	patches from Felbinger for a mathematica interface.
-	Or use emacs server kind of thing?
-    7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
-    -   findmatch() should be adjusted for Lisp.  See remark at
-	get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
-	incomplete patch Mar 18)
-    -	Set user variables to the names of the actually used user vimrc file,
-	the first directory looked for user plugins/syntax files.
-	$MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
-	runtime files?
-	Also: when the environment variable exists, use it.  If it doesn't
-	exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
-    -	The Replace dialog takes "\r" literal, unless "replace all" is used.
-	Need to escape backslashes.
-        Win32: the text to replace with isn't remembered.
-    -	For GUI Find/Replace dialog support using a regexp.  Patch for Motif
-	and GTK by degreneir (nov 10 and nov 18).
-
-Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
+Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
+mappings for normal keys can be removed from Select mode.
 
 Check if file explorer can handle directory names and links with a single
 quote. (Nieko Maatjes, 2005 Jan 4)
 
 
+Awaiting updated patches:
+8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
+    Aric Blumer has a patch for this.
+    He will update the patch for 6.3.
+7   Completion of network shares, patch by Yasuhiro Matsumoto.
+    Update 2004 Sep 6.
+    How does this work?  Missing comments.
+-   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
+    Smilauer, 2004 Sep 13, fix Oct 31)
+    Asked for improvements 2004 Dec 20.
+7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
+    Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
+    line should delete the last line.  Patch from greenx 2002 Apr 11.
+8   Add a few more command names to the menus.  Patch from Jiri Brezina
+    (28 feb 2002).
+7   ATTENTION dialog choices are more logical when "Delete it' appears
+    before "Quit".  Patch by Robert Webb, 2004 May 3.
+-   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
+    for multi-byte characters.
+-   Win32: add options to print dialog.  Patch from Vipin Aravind.
+-   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
+    use the patch that keeps using HLF_8 if HLF_WS has not
+    been given values.
+    Add section in help files for these highlight groups?
+8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
+    with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
+    Dalecki has a patch for Motif and Carbon)
+-   Add possibility to highlight specific columns (for Fortran).  Or put a
+    line in between columns (e.g., for 'textwidth').
+    Patch to add 'hlcolumn' from Vit Stradal, 2004 May 20.
+8   Add functions:
+    gettext()		Translate a message.  (Patch from Yasuhiro Matsumoto)
+			Update 2004 Sep 10
+			Another patch from Edward L. Fox (2005 Nov 24)
+			Search in 'runtimepath'?
+			More docs about how to use this.
+			How to get the messages into the .po files?
+    confirm()		add "flags" argument, with 'v' for vertical
+			    layout and 'c' for console dialog. (Haegg)
+			    Flemming Madsen has a patch for the 'c' flag
+			    (2003 May 13)
+    raisewin()		raise gvim window (see HierAssist patch for
+			    Tcl implementation ~/vim/HierAssist/ )
+7   Make globpath() also work with upwards search. (Brian Medley)
+7   Add patch from Benoit Cerrina to integrate Vim and Perl functions
+    better.  Now also works for Ruby (2001 Nov 10)
+-   Patch from Herculano de Lima Einloft Neto for better formatting of the
+    quickfix window (2004 dec 2)
+7   When 'rightleft' is set, the search pattern should be displayed right
+    to left as well?  See patch of Dec 26. (Nadim Shaikli)
+8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
+    Patch by Jason Holt, 2003 May 23.  Uses mlock.
+7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
+7   Add ! register, for shell commands. (patch from Grenie)
+8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
+    done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
+7   Add a "-@ filelist" argument: read file names from a file. (David
+    Kotchan has a patch for it)
+8   Include a connection to an external program through a pipe?  See
+    patches from Felbinger for a mathematica interface.
+    Or use emacs server kind of thing?
+7   Add ":justify" command.  Patch from Vit Stradal 2002 Nov 25.
+-   findmatch() should be adjusted for Lisp.  See remark at
+    get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
+    incomplete patch Mar 18)
+-   Set user variables to the names of the actually used user vimrc file,
+    the first directory looked for user plugins/syntax files.
+    $MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
+    runtime files?
+    Also: when the environment variable exists, use it.  If it doesn't
+    exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
+-   The Replace dialog takes "\r" literal, unless "replace all" is used.
+    Need to escape backslashes.
+    Win32: the text to replace with isn't remembered.
+-   For GUI Find/Replace dialog support using a regexp.  Patch for Motif
+    and GTK by degreneir (nov 10 and nov 18).
+-   Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.
+
+
 Vi incompatibility:
+-   Try new POSIX tests, made after my comments. (Geoff Clare, 2005 April 7)
+    Version 1.5 is in ~/src/posix/1.5. (Lynne Canal)
 8   With undo/redo only marks in the changed lines should be changed.  Other
     marks should be kept.  Vi keeps each mark at the same text, even when it
     is deleted or restored. (Webb)
@@ -515,6 +421,7 @@ GTK+ 1 (OK in GTK 2):
     appending "bold" when there are not 14 dashes.
 
 GTK+ GUI known bugs:
+9   Crash with X command server over ssh. (Ciaran McCreesh, 2006 Feb 6)
 8   GTK 2: Combining UTF-8 characters not displayed properly in menus (Mikolaj
     Machowski)  They are displayed as separate characters.  Problem in
     creating a label?
@@ -527,6 +434,8 @@ GTK+ GUI known bugs:
     It starts working after GTK gvim loses the selection and gains it again.
 
 Win32 GUI known bugs:
+-   Win32: tearoff menu window should have a scrollbar when it's taller than
+    the screen.
 8   On Windows 98 the unicows library is needed to support functions with UCS2
     file names.  Can we load unicows.dll dynamically?
 8   The -P argument doesn't work very well with many MDI applications.
@@ -662,6 +571,7 @@ Athena GUI:
 
 
 Motif GUI:
+-   gui_mch_browsedir() is missing.
 7   Use XmStringCreateLocalized() instead of XmStringCreateSimple()?
     David Harrison says it's OK (it exists in Motif 1.2).
 8   Lesstif: When deleting a menu that's torn off, the torn off menu becomes
@@ -866,6 +776,7 @@ Amiga:
 
 
 Macintosh:
+-   GUI: gui_mch_browsedir() is missing.
 7   Patch to add 'transparency' option.  Disadvantage: it's slow. (Eckehard
     Berns, 2004 May 9) http://ecki.to/vim/TransBack-2004-05-09.diff
     Needs more work.  Add when someone really wants it.
@@ -1260,6 +1171,40 @@ Problems that will (probably) not be solved:
 ---------------------  extensions and improvements ----------------------
 						    *extensions-improvements*
 
+Didn't make it into Vim 7.0:
+-   Add COLUMN NUMBERS to ":" commands ":line1,line2[col1,col2]cmd".  Block
+    can be selected with CTRL-V.  Allow '$' (end of line) for col2.
+-   Add DEBUGGER INTERFACE.  Implementation for gdb by Xavier de Gaye.
+    Should work like an IDE.  Try to keep it generic.  Now found here:
+    http://clewn.sf.net.
+    And the idevim plugin/script.
+    To be able to start the debugger from inside Vim: For GUI run a program
+    with a netbeans connection; for console: start a program that splits the
+    terminal, runs the debugger in one window and reconnect Vim I/O to the
+    other window.
+    Wishes for NetBeans commands:
+    - make it possible to have 'defineAnnoType' also handle terminal colors.
+    - send 'balloonText' events for the cursor position (using CursorHold ?)
+      in terminal mode.
+-   ECLIPSE plugin.  Problem is: the interface is very complicated.  Need to
+    implement part in Java and then connect to Vim.  Some hints from Alexandru
+    Roman, 2004 Dec 15.  Should then also work with Oracle Jdeveloper, see JSR
+    198 standard http://www.jcp.org/en/jsr/detail?id=198.
+    Eclim does it: http://eclim.sourceforge.net/  (Eric Van Dewoestine)
+    Plugin that uses a terminal emulator: http://vimplugin.sf.net
+-   STICKY CURSOR: Add a way of scrolling that leaves the cursor where it is.
+    Especially when using the scrollbar.  Typing a cursor-movement command
+    scrolls back to where the cursor is.
+-   Running a shell command from the GUI still has limitations.  Look into how
+    the terminal emulator of the Vim shell project can help:
+    http://vimshell.wana.at
+-   Add Lua interface? (Wolfgang Oertl)
+8   Add a command to jump to a certain kind of tag.  Allow the user to specify
+    values for the optional fields.  E.g., ":tag size type=m".
+    Also allow specifying the file and command, so that the result of
+    taglist() can be used.
+
+
 Documentation:
 8   The GUI help should explain the Find and Find/Replace dialogs.  Add a link
     to it from ":promptrepl" and ":promptfind".
@@ -1357,6 +1302,14 @@ Tab pages:
 
 Spell checking:
 -   suggestion for "KG" to "kg" when it's keepcase.
+-   Support flags on a suffix.  Used for second level affixes, rare and
+    nocomp.  The flags may also be used for compounding.  Default is an OR
+    mechanism with the flags of the word.  Adding "compset" on the affixes
+    means the compound flags of the word are not used.
+    Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS" (or
+    support both).
+-   Support breakpoint character · 0xb7 and ignore it?  Makes it possible to
+    use same wordlist for hyphenation.
 -   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
     syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?
 -   COMPOUNDMAX -> COMPOUNDWORDMAX?
@@ -1461,6 +1414,10 @@ Folding:
 
 
 Multi-byte characters:
+-   When editing a file with both utf-8 and latin1 text Vim always falls back
+    to latin1.  Add a command to convert the latin1 characters to utf-8?
+	:unmix utf-8,latin1 filename
+    Would only work when 'encoding' is utf-8.
 9   When the tail byte of a double-byte character is illegal (e.g., a CR), the
     display is messed up (Yasuhiro Matsumoto).  Should check for illegal
     double-byte characters and display them differently (display each single
@@ -1701,6 +1658,9 @@ Syntax highlighting:
 
 
 Built-in script language:
+7   Execute a function with standard option values.  No need to save and
+    restore option values.  Especially useful for new options.  Problem: how
+    to avoid a performance penalty (esp. for string options)?
 8   Add referring to key options with "&t_xx".  Both for "echo &t_xx" and
     ":let &t_xx =".  Useful for making portable mappings.
 8   exists("&&option") tests if 'option' is actually implemented.  Useful for
@@ -2181,6 +2141,7 @@ GUI:
 
 
 Autocommands:
+-   Put autocommand event names in a hashtable for faster lookup?
 7   For autocommand events that trigger multiple times per buffer (e.g.,
     CursorHold), go through the list once and cache the result for a specific
     buffer.  Invalidate the cache when adding/deleting autocommands or
@@ -2265,6 +2226,7 @@ Autocommands:
 
 
 Insert mode completion/expansion:
+-   GUI implementation of the popup menu.
 8   When there is no word before the cursor but something like "sys." complete
     with "sys.".  Works well for C and similar languages.
 9   ^X^L completion doesn't repeat correctly.  It uses the first match with
@@ -2608,6 +2570,9 @@ Visual mode:
 -   When dragging the Visual selection with the mouse and 'scrolloff' is zero,
     behave like 'scrolloff' is one, so that the text scrolls when the pointer
     is in the top line.
+-   Displaying size of Visual area: use 24-33 column display.
+    When selecting multiple lines, up to about a screenful, also count the
+    characters.
 8   When using "I" or "A" in Visual block mode, short lines do not get the new
     text.  Make it possible to add the text to short lines too, with padding
     where needed.
@@ -2873,6 +2838,11 @@ Searching:
 
 
 Undo:
+-   Persistent undo: store undo in a file.
+    Use timestamps, so that a version a certain time ago can be found and info
+    before some time/date can be flushed. 'undopersist' gives maximum time to
+    keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
+    extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
