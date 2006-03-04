@@ -4686,7 +4686,16 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 				(char *)new_fname);
 			msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 		    }
+		    else
 #endif
+			 if (p_verbose >= 5)
+		    {
+			verbose_enter();
+			smsg((char_u *)_("Searching included file %s"),
+							   (char *)new_fname);
+			verbose_leave();
+		    }
+
 		}
 	    }
 	}

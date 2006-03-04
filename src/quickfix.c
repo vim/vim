@@ -3339,7 +3339,7 @@ get_errorlist(wp, list)
     }
 
     if (qi->qf_curlist >= qi->qf_listcount
-	|| qi->qf_lists[qi->qf_curlist].qf_count == 0)
+	    || qi->qf_lists[qi->qf_curlist].qf_count == 0)
 	return FAIL;
 
     qfp = qi->qf_lists[qi->qf_curlist].qf_start;

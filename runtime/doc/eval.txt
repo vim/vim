@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 03
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1718,6 +1718,8 @@ winheight( {nr})		Number	height of window {nr}
 winline()			Number	window line of the cursor
 winnr( [{expr}])		Number	number of current window
 winrestcmd()			String	returns command to restore window sizes
+winrestview({dict})		None	restore view of current window
+winsaveview()			Dict	save view of current window
 winwidth( {nr})			Number	width of window {nr}
 writefile({list}, {fname} [, {binary}])
 				Number	write list of lines to file {fname}
@@ -3670,7 +3672,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 pumvisible()						*pumvisible()*
 		Returns non-zero when the popup menu is visible, zero
 		otherwise.  See |ins-completion-menu|.
-
+		This can be used to avoid some things that would remove the
+		popup menu.
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*
@@ -3858,11 +3861,13 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 
 		{flags} is a String, which can contain these character flags:
 		'b'	search backward instead of forward
+		'c'     accept a match at the cursor position
+		'e'	move to the End of the match
 		'n'	do Not move the cursor
+		'p'	return number of matching sub-pattern (see below)
+		's'	set the ' mark at the previous location of the cursor
 		'w'	wrap around the end of the file
 		'W'	don't wrap around the end of the file
-		's'	set the ' mark at the previous location of the cursor
-		'c'     accept a match at the cursor position
 		If neither 'w' or 'W' is given, the 'wrapscan' option applies.
 
 		If the 's' flag is supplied, the ' mark is set, only if the
@@ -3877,12 +3882,15 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 <		When {stopline} is used and it is not zero this also implies
 		that the search does not wrap around the end of the file.
 
-		When a match has been found its line number is returned.
-		The cursor will be positioned at the match, unless the 'n'
-		flag is used.
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
+		When a match has been found its line number is returned.  With
+		the 'p' flag the returned value is one more than the first
+		sub-match in \(\).  One if there is none.
 		To get the column number too use |searchpos()|.
+
+		The cursor will be positioned at the match, unless the 'n'
+		flag is used.
 
 		Example (goes over all files in the argument list): >
 		    :let n = 1
@@ -3900,6 +3908,19 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 		    :  let n = n + 1
 		    :endwhile
 <
+		Example for using some flags: >
+		    :echo search('\<if\|\(else\)\|\(endif\)', 'ncpe')
+<		This will search for the keywords "if", "else", and "endif"
+		under or after the cursor.  Because of the 'p' flag, it
+		returns 1, 2, or 3 depending on which keyword is found, or 0
+		if the search fails.  With the cursor on the first word of the
+		line:
+		    if (foo == 0) | let foo = foo + 1 | endif ~
+		the function returns 1.  Without the 'c' flag, the function
+		finds the "endif" and returns 3.  The same thing happens
+		without the 'e' flag if the cursor is on the "f" of "if".
+		The 'n' flag tells the function not to move the cursor.
+
 
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
@@ -3939,11 +3960,12 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 			searchpair('\<if\>', '\<else\>', '\<endif\>')
 <		By leaving {middle} empty the "else" is skipped.
 
-		{flags} are used like with |search()|.  Additionally:
+		{flags} 'b', 'c', 'n', 's', 'w' and 'W' are used like with
+		|search()|.  Additionally:
 		'r'	Repeat until no more matches found; will find the
 			outer pair
 		'm'	return number of Matches instead of line number with
-			the match; will only be > 1 when 'r' is used.
+			the match; will be > 1 when 'r' is used.
 
 		When a match for {start}, {middle} or {end} is found, the
 		{skip} expression is evaluated with the cursor positioned on
@@ -4764,11 +4786,40 @@ winnr([{arg}])	The result is a Number, which is the number of the current
 							*winrestcmd()*
 winrestcmd()	Returns a sequence of |:resize| commands that should restore
 		the current window sizes.  Only works properly when no windows
-		are opened or closed and the current window is unchanged.
+		are opened or closed and the current window and tab page is
+		unchanged.
 		Example: >
 			:let cmd = winrestcmd()
 			:call MessWithWindowSizes()
 			:exe cmd
+<
+							*winrestview()*
+winrestview({dict})
+		Uses the |Dictionary| returned by |winsaveview()| to restore
+		the view of the current window.
+		If you have changed the values the result is unpredictable.
+		If the window size changed the result won't be the same.
+
+							*winsaveview()*
+winsaveview()	Returns a |Dictionary| that contains information to restore
+		the view of the current window.  Use |winrestview()| to
+		restore the view.
+		This is useful if you have a mapping that jumps around in the
+		buffer and you want to go back to the original view.
+		This does not save fold information.  Use the 'foldenable'
+		option to temporarily switch of folding, so that folds are not
+		opened when moving around.
+		The return value includes:
+			lnum		cursor line number
+			col		cursor column
+			coladd		cursor column offset for 'virtualedit'
+			curswant	column for vertical movement
+			topline		first line in the window
+			topfill		filler lines, only in diff mode
+			leftcol		first column displayed
+			skipcol		columns skipped
+		Note that no option values are saved.
+
 
 winwidth({nr})						*winwidth()*
 		The result is a Number, which is the width of window {nr}.

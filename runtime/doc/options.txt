@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 03
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6937,7 +6937,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Currently, these messages are given:
 	>= 1	When the viminfo file is read or written.
 	>= 2	When a file is ":source"'ed.
-	>= 5	Every searched tags file.
+	>= 5	Every searched tags file and include file.
 	>= 8	Files for which a group of autocommands is executed.
 	>= 9	Every executed autocommand.
 	>= 12	Every executed function.
@@ -7159,8 +7159,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		char   key	  mode	~
 		 b    <BS>	 Normal and Visual
 		 s    <Space>	 Normal and Visual
-		 h    "h"	 Normal and Visual
-		 l    "l"	 Normal and Visual
+		 h    "h"	 Normal and Visual (not recommended)
+		 l    "l"	 Normal and Visual (not recommended)
 		 <    <Left>	 Normal and Visual
 		 >    <Right>	 Normal and Visual
 		 ~    "~"	 Normal
@@ -7177,7 +7177,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	":map <BS> X" to make backspace delete the character in front of the
 	cursor.
 	When 'l' is included, you get a side effect: "yl" on an empty line
-	will include the <EOL>, so that "p" will insert a new line.
+	will include the <EOL>, so that "p" will insert a new line.  That's
+	why including 'h' and 'l' are not recommended.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 

@@ -675,6 +675,7 @@ LANG_GEN = \
 		runtime/spell/??/main.aap \
 		runtime/spell/yi/README.txt \
 		runtime/spell/main.aap \
+		runtime/spell/cleanadd.vim \
 		runtime/spell/*.vim \
 		runtime/spell/fixdup \
 

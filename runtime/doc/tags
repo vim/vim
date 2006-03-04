@@ -7506,6 +7506,8 @@ winheight()	eval.txt	/*winheight()*
 winline()	eval.txt	/*winline()*
 winnr()	eval.txt	/*winnr()*
 winrestcmd()	eval.txt	/*winrestcmd()*
+winrestview()	eval.txt	/*winrestview()*
+winsaveview()	eval.txt	/*winsaveview()*
 winwidth()	eval.txt	/*winwidth()*
 word	motion.txt	/*word*
 word-count	editing.txt	/*word-count*

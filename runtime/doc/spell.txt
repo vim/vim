@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 01
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -84,28 +84,45 @@ zG			Like "zg" but add the word to the internal word list
 
 							*zw*
 zw			Like "zg" but mark the word as a wrong (bad) word.
+			If the word already appears in 'spellfile' it is
+			turned into a comment line.  See |spellfile-cleanup|
+			for getting rid of those.
 
 							*zW*
 zW			Like "zw" but add the word to the internal word list
 			|internal-wordlist|.
 
+zuw							*zug* *zuw*
+zug			Undo |zw| and |zg|, remove the word from the entry in
+			'spellfile'.  Count used as with |zg|.
+
+zuW							*zuG* *zuW*
+zuG			Undo |zW| and |zG|, remove the word from the internal
+			word list.  Count used as with |zg|.
+
 							*:spe* *:spellgood*
 :[count]spe[llgood] {word}
 			Add {word} as a good word to 'spellfile', like with
-			"zg".  Without count the first name is used, with a
+			|zg|.  Without count the first name is used, with a
 			count of two the second entry, etc.
 
 :spe[llgood]! {word}	Add {word} as a good word to the internal word list,
-			like with "zG".
+			like with |zG|.
 
 							*:spellw* *:spellwrong*
 :[count]spellw[rong] {word}
 			Add {word} as a wrong (bad) word to 'spellfile', as
-			with "zw".  Without count the first name is used, with
+			with |zw|.  Without count the first name is used, with
 			a count of two the second entry, etc.
 
 :spellw[rong]! {word}	Add {word} as a wrong (bad) word to the internal word
-			list.
+			list, like with |zW|.
+
+:[count]spellu[ndo] {word}				*:spellu* *:spellundo*
+			Like |zuw|.  [count] used as with |:spellgood|.
+
+:spellu[ndo]! {word}	Like |zuW|.  [count] used as with |:spellgood|.
+
 
 After adding a word to 'spellfile' with the above commands its associated
 ".spl" file will automatically be updated and reloaded.  If you change
@@ -317,6 +334,25 @@ before suggestions are made to reduce memory use.
 When loading a spell file Vim checks that it is properly formatted.  If you
 get an error the file may be truncated, modified or intended for another Vim
 version.
+
+
+SPELLFILE CLEANUP					*spellfile-cleanup*
+
+The |zw| command turns existing entries in 'spellfile' into comment lines.
+This avoids having to write a new file every time, but results in the file
+only getting longer, never shorter.  To clean up the comment lines in all
+".add" spell files do this: >
+	:runtime spell/cleanadd.vim
+
+This deletes all comment lines, except the ones that start with "##".  Use
+"##" lines to add comments that you want to keep.
+
+You can invoke this script as often as you like.  A variable is provided to
+skip updating files that have been changed recently.  Set it to the number of
+seconds that has passed since a file was changed before it will be cleaned.
+For example, to clean only files that were not changed in the last hour: >
+      let g:spell_clean_limit = 60 * 60
+The default is one second.
 
 
 WORDS

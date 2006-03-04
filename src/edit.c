@@ -2596,7 +2596,8 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 
 	if (count == -1)
 	{
-	    /* Skip "\<" in the pattern, we don't use it as a RE. */
+	    /* Complete from active spelling.  Skip "\<" in the pattern, we
+	     * don't use it as a RE. */
 	    if (pat[0] == '\\' && pat[1] == '<')
 		ptr = pat + 2;
 	    else
