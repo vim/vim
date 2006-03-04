@@ -4512,6 +4512,9 @@ nv_zet(cap)
     long	old_fdl = curwin->w_p_fdl;
     int		old_fen = curwin->w_p_fen;
 #endif
+#ifdef FEAT_SYN_HL
+    int		undo = FALSE;
+#endif
 
     if (VIM_ISDIGIT(nchar))
     {
@@ -4883,6 +4886,26 @@ dozet:
 #endif /* FEAT_FOLDING */
 
 #ifdef FEAT_SYN_HL
+    case 'u':	/* "zug" and "zuw": undo "zg" and "zw" */
+		++no_mapping;
+		++allow_keys;   /* no mapping for nchar, but allow key codes */
+		nchar = safe_vgetc();
+#ifdef FEAT_LANGMAP
+		LANGMAP_ADJUST(nchar, TRUE);
+#endif
+		--no_mapping;
+		--allow_keys;
+#ifdef FEAT_CMDL_INFO
+		(void)add_to_showcmd(nchar);
+#endif
+		if (vim_strchr((char_u *)"gGwW", nchar) == NULL)
+		{
+		    clearopbeep(cap->oap);
+		    break;
+		}
+		undo = TRUE;
+		/*FALLTHROUGH*/
+
     case 'g':	/* "zg": add good word to word list */
     case 'w':	/* "zw": add wrong word to word list */
     case 'G':	/* "zG": add good word to temp word list */
@@ -4913,8 +4936,9 @@ dozet:
 							    FIND_IDENT)) == 0)
 			return;
 		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
-					    (nchar == 'G' || nchar == 'W') ? 0
-							  : (int)cap->count1);
+					    (nchar == 'G' || nchar == 'W')
+						       ? 0 : (int)cap->count1,
+					    undo);
 		}
 		break;
 

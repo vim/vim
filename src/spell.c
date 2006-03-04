@@ -8759,25 +8759,28 @@ spell_message(spin, str)
 /*
  * ":[count]spellgood  {word}"
  * ":[count]spellwrong  {word}"
+ * ":[count]spellundo  {word}"
  */
     void
 ex_spell(eap)
     exarg_T *eap;
 {
     spell_add_word(eap->arg, STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
-				    eap->forceit ? 0 : (int)eap->line2);
+				   eap->forceit ? 0 : (int)eap->line2,
+				   eap->cmdidx == CMD_spellundo);
 }
 
 /*
  * Add "word[len]" to 'spellfile' as a good or bad word.
  */
     void
-spell_add_word(word, len, bad, index)
+spell_add_word(word, len, bad, index, undo)
     char_u	*word;
     int		len;
     int		bad;
     int		index;	    /* "zG" and "zW": zero, otherwise index in
 			       'spellfile' */
+    int		undo;	    /* TRUE for "zug", "zuG", "zuw" and "zuW" */
 {
     FILE	*fd;
     buf_T	*buf = NULL;
@@ -8839,9 +8842,9 @@ spell_add_word(word, len, bad, index)
 	fname = fnamebuf;
     }
 
-    if (bad)
+    if (bad || undo)
     {
-	/* When the word also appears as good word we need to remove that one,
+	/* When the word appears as good word we need to remove that one,
 	 * since its flags sort before the one with WF_BANNED. */
 	fd = mch_fopen((char *)fname, "r");
 	if (fd != NULL)
@@ -8861,7 +8864,11 @@ spell_add_word(word, len, bad, index)
 		    if (fd == NULL)
 			break;
 		    if (fseek(fd, fpos, SEEK_SET) == 0)
+		    {
 			fputc('#', fd);
+			if (undo)
+			smsg((char_u *)_("Word removed from %s"), NameBuff);
+		    }
 		    fseek(fd, fpos_next, SEEK_SET);
 		}
 	    }
@@ -8869,31 +8876,41 @@ spell_add_word(word, len, bad, index)
 	}
     }
 
-    fd = mch_fopen((char *)fname, "a");
-    if (fd == NULL && new_spf)
+    if (!undo)
     {
-	/* We just initialized the 'spellfile' option and can't open the file.
-	 * We may need to create the "spell" directory first.  We already
-	 * checked the runtime directory is writable in init_spellfile(). */
-	if (!dir_of_file_exists(fname))
+	fd = mch_fopen((char *)fname, "a");
+	if (fd == NULL && new_spf)
 	{
-	    /* The directory doesn't exist.  Try creating it and opening the
-	     * file again. */
-	    vim_mkdir(NameBuff, 0755);
-	    fd = mch_fopen((char *)fname, "a");
+	    /* We just initialized the 'spellfile' option and can't open the
+	     * file.  We may need to create the "spell" directory first.  We
+	     * already checked the runtime directory is writable in
+	     * init_spellfile(). */
+	    if (!dir_of_file_exists(fname))
+	    {
+		/* The directory doesn't exist.  Try creating it and opening
+		 * the file again. */
+		vim_mkdir(NameBuff, 0755);
+		fd = mch_fopen((char *)fname, "a");
+	    }
+	}
+
+	if (fd == NULL)
+	    EMSG2(_(e_notopen), fname);
+	else
+	{
+	    if (bad)
+		fprintf(fd, "%.*s/!\n", len, word);
+	    else
+		fprintf(fd, "%.*s\n", len, word);
+	    fclose(fd);
+
+	    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
+	    smsg((char_u *)_("Word added to %s"), NameBuff);
 	}
     }
 
-    if (fd == NULL)
-	EMSG2(_(e_notopen), fname);
-    else
+    if (fd != NULL)
     {
-	if (bad)
-	    fprintf(fd, "%.*s/!\n", len, word);
-	else
-	    fprintf(fd, "%.*s\n", len, word);
-	fclose(fd);
-
 	/* Update the .add.spl file. */
 	mkspell(1, &fname, FALSE, TRUE, TRUE);
 
@@ -14809,6 +14826,8 @@ pop:
 #define DUMPFLAG_KEEPCASE   1	/* round 2: keep-case tree */
 #define DUMPFLAG_COUNT	    2	/* include word count */
 #define DUMPFLAG_ICASE	    4	/* ignore case when finding matches */
+#define DUMPFLAG_ONECAP	    8	/* pattern starts with capital */
+#define DUMPFLAG_ALLCAP	    16	/* pattern is all capitals */
 
 /*
  * ":spelldump"
@@ -14870,8 +14889,27 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
     int		dumpflags = dumpflags_arg;
     int		patlen;
 
-    if (ic)
-	dumpflags |= DUMPFLAG_ICASE;
+    /* When ignoring case or when the pattern starts with capital pass this on
+     * to dump_word(). */
+    if (pat != NULL)
+    {
+	if (ic)
+	    dumpflags |= DUMPFLAG_ICASE;
+	else
+	{
+	    n = captype(pat, NULL);
+	    if (n == WF_ONECAP)
+		dumpflags |= DUMPFLAG_ONECAP;
+	    else if (n == WF_ALLCAP
+#ifdef FEAT_MBYTE
+		    && STRLEN(pat) > mb_ptr2len(pat)
+#else
+		    && STRLEN(pat) > 1
+#endif
+		    )
+		dumpflags |= DUMPFLAG_ALLCAP;
+	}
+    }
 
     /* Find out if we can support regions: All languages must support the same
      * regions or none at all. */
@@ -15006,9 +15044,12 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
 
 			/* Check if this characters matches with the pattern.
 			 * If not skip the whole tree below it.
-			 * TODO ignorecase
-			 * TODO: multi-byte */
-			if (depth <= patlen && STRNCMP(word, pat, depth) != 0)
+			 * Always ignore case here, dump_word() will check
+			 * proper case later.  This isn't exactly right when
+			 * length changes for multi-byte characters with
+			 * ignore case... */
+			if (depth <= patlen
+					&& MB_STRNICMP(word, pat, depth) != 0)
 			    --depth;
 		    }
 		}
@@ -15022,13 +15063,13 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
  * When "lnum" is zero add insert mode completion.
  */
     static void
-dump_word(slang, word, pat, dir, dumpflags, flags, lnum)
+dump_word(slang, word, pat, dir, dumpflags, wordflags, lnum)
     slang_T	*slang;
     char_u	*word;
     char_u	*pat;
     int		*dir;
     int		dumpflags;
-    int		flags;
+    int		wordflags;
     linenr_T	lnum;
 {
     int		keepcap = FALSE;
@@ -15037,6 +15078,12 @@ dump_word(slang, word, pat, dir, dumpflags, flags, lnum)
     char_u	cword[MAXWLEN];
     char_u	badword[MAXWLEN + 10];
     int		i;
+    int		flags = wordflags;
+
+    if (dumpflags & DUMPFLAG_ONECAP)
+	flags |= WF_ONECAP;
+    if (dumpflags & DUMPFLAG_ALLCAP)
+	flags |= WF_ALLCAP;
 
     if ((dumpflags & DUMPFLAG_KEEPCASE) == 0 && (flags & WF_CAPMASK) != 0)
     {
@@ -15090,16 +15137,14 @@ dump_word(slang, word, pat, dir, dumpflags, flags, lnum)
 
 	ml_append(lnum, p, (colnr_T)0, FALSE);
     }
-    else
-    {
-	/* TODO: ignore case, multi-byte */
-	if (STRNCMP(p, pat, STRLEN(pat)) == 0
+    else if (((dumpflags & DUMPFLAG_ICASE)
+		    ? MB_STRNICMP(p, pat, STRLEN(pat)) == 0
+		    : STRNCMP(p, pat, STRLEN(pat)) == 0)
 		&& ins_compl_add_infercase(p, (int)STRLEN(p),
 					  dumpflags & DUMPFLAG_ICASE,
 					  NULL, *dir, 0) == OK)
-	    /* if dir was BACKWARD then honor it just once */
-	    *dir = FORWARD;
-    }
+	/* if dir was BACKWARD then honor it just once */
+	*dir = FORWARD;
 }
 
 /*
