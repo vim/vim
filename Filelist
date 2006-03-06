@@ -248,6 +248,7 @@ SRC_DOS =	\
 		src/Make_mvc.mak \
 		src/Make_w16.mak \
 		src/bigvim.bat \
+		src/msvcsetup.bat \
 		src/dimm.idl \
 		src/dlldata.c \
 		src/dosinst.c \
@@ -285,6 +286,7 @@ SRC_DOS =	\
 		src/uninstal.c \
 		src/vim.def \
 		src/vim.rc \
+		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vim16.def \
 		src/vim16.rc \

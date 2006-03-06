@@ -1249,7 +1249,7 @@ vim_eval(void *data, int argc, Scheme_Object **argv)
 
     expr = SCHEME_STR_VAL(GUARANTEE_STRING(prim->name, 0));
 
-    str = (char *)eval_to_string((char_u *)expr, NULL);
+    str = (char *)eval_to_string((char_u *)expr, NULL, TRUE);
 
     if (str == NULL)
 	raise_vim_exn(_("invalid expression"));

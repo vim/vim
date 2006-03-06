@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
+*if_ole.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -77,7 +77,8 @@ Eval(expr)		Evaluate an expression.
 
 This method takes a single parameter, which is an expression in Vim's normal
 format (see |expression|).  It returns a string, which is the result of
-evaluating the expression.
+evaluating the expression.  A |List| is turned into a string by joining the
+items and inserting line breaks.
 
 Examples (Visual Basic syntax) >
 	Line20 = Vim.Eval("getline(20)")

@@ -22,7 +22,7 @@
 # endif
 #endif
 
-#include <io.h>
+#include "vimio.h"
 #include "vim.h"
 
 #ifdef HAVE_FCNTL_H

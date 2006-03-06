@@ -33,6 +33,12 @@
 
 #define INC_OLE2	// WIN32, get ole2 from windows.h
 
+/* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
+#if _MSC_VER >= 1400
+# define _CRT_SECURE_NO_DEPRECATE
+# define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #include <windows.h>
 #include <windowsx.h>
 #include <shlobj.h>

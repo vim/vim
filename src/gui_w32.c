@@ -2025,12 +2025,26 @@ gui_mch_draw_string(
 	int		clen;	/* string length up to composing char */
 	int		cells;	/* cell width of string up to composing char */
 	int		cw;	/* width of current cell */
+	int		c;
+	int		xtra;
 
 	cells = 0;
 	for (clen = 0; i < len; )
 	{
-	    unicodebuf[clen] = utf_ptr2char(text + i);
-	    cw = utf_char2cells(unicodebuf[clen]);
+	    c = utf_ptr2char(text + i);
+	    if (c >= 0x10000)
+	    {
+		/* Turn into UTF-16 encoding. */
+		unicodebuf[clen] = ((c - 0x10000) >> 10) + 0xD800;
+		unicodebuf[clen + 1] = ((c - 0x10000) & 0x3ff) + 0xDC00;
+		xtra = 1;
+	    }
+	    else
+	    {
+		unicodebuf[clen] = c;
+		xtra = 0;
+	    }
+	    cw = utf_char2cells(c);
 	    if (cw > 2)		/* don't use 4 for unprintable char */
 		cw = 1;
 	    if (unicodepdy != NULL)
@@ -2039,10 +2053,12 @@ gui_mch_draw_string(
 		 * when the font uses different widths (e.g., bold character
 		 * is wider).  */
 		unicodepdy[clen] = cw * gui.char_width;
+		if (xtra == 1)
+		    unicodepdy[clen + 1] = cw * gui.char_width;
 	    }
 	    cells += cw;
 	    i += utfc_ptr2len_len(text + i, len - i);
-	    ++clen;
+	    clen += xtra + 1;
 	}
 	ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
 			   foptions, pcliprect, unicodebuf, clen, unicodepdy);

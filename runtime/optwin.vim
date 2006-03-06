@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 13
+" Last Change:	2006 Mar 05
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -463,6 +463,17 @@ if has("scrollbind")
 endif
 
 
+call <SID>Header("multiple tab pages")
+call append("$", "showtabline\t0, 1 or 2; when to use a tab pages line")
+call append("$", " \tset stal=" . &stal)
+call append("$", "tabpagemax\tmaximum number of tab pages to open for -p and \"tab all\"")
+call append("$", " \tset tpm=" . &tpm)
+call append("$", "tabline\tcustom tab pages line")
+call <SID>OptionG("tal", &tal)
+call append("$", "guitablabel\tcustom tab page label for the GUI")
+call <SID>OptionG("gtl", &gtl)
+
+
 call <SID>Header("terminal")
 call append("$", "term\tname of the used terminal")
 call <SID>OptionG("term", &term)
@@ -697,6 +708,11 @@ call <SID>OptionL("fo")
 call append("$", "formatlistpat\tpattern to recognize a numbered list")
 call append("$", "\t(local to buffer)")
 call <SID>OptionL("flp")
+if has("eval")
+  call append("$", "formatexpr\texpression used for \"gq\" to format lines")
+  call append("$", "\t(local to buffer)")
+  call <SID>OptionL("fex")
+endif
 if has("insert_expand")
   call append("$", "complete\tspecifies how Insert mode completion works for CTRL-N and CTRL-P")
   call append("$", "\t(local to buffer)")

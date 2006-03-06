@@ -293,10 +293,12 @@ trunc_string(s, buf, room)
     else if (enc_utf8)
     {
 	/* For UTF-8 we can go backwards easily. */
-	i = (int)STRLEN(s);
+	half = i = (int)STRLEN(s);
 	for (;;)
 	{
-	    half = i - (*mb_head_off)(s, s + i - 1) - 1;
+	    do
+		half = half - (*mb_head_off)(s, s + half - 1) - 1;
+	    while (utf_iscomposing(utf_ptr2char(s + half)) && half > 0);
 	    n = ptr2cells(s + half);
 	    if (len + n > room)
 		break;
@@ -1723,7 +1725,7 @@ msg_puts_long_attr(longstr, attr)
     char_u	*longstr;
     int		attr;
 {
-    msg_puts_long_len_attr(longstr, (int)strlen((char *)longstr), attr);
+    msg_puts_long_len_attr(longstr, (int)STRLEN(longstr), attr);
 }
 
     void

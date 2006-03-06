@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2005 Oct 14
+*if_tcl.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -133,7 +133,8 @@ Commands:
 	Evaluates the expression {expr} using vim's internal expression
 	evaluator (see |expression|).   Any expression that queries a buffer
 	or window property uses the current buffer/current window.  Returns
-	the result as a string.
+	the result as a string.  A |List| is turned into a string by joining
+	the items and inserting line breaks.
 	Examples: >
 		set perl_available [::vim::expr has("perl")]
 <	See also |tcl-window-expr| and |tcl-buffer-expr|.

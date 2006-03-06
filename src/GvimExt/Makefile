@@ -16,8 +16,9 @@ all: gvimext.dll
 
 gvimext.dll:    gvimext.obj	\
 		gvimext.res
-  $(implib) /NOLOGO -machine:$(CPU) -def:gvimext.def $** -out:gvimext.lib
-  $(link) $(dlllflags) -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib gvimext.lib comctl32.lib gvimext.exp
+# $(implib) /NOLOGO -machine:$(CPU) -def:gvimext.def $** -out:gvimext.lib
+# $(link) $(dlllflags) -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib gvimext.lib comctl32.lib gvimext.exp
+  $(link) $(lflags) -dll -def:gvimext.def -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib
 
 gvimext.obj: gvimext.h
 

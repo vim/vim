@@ -1173,7 +1173,7 @@ clip_copy_modeless_selection(both)
     if (enc_dbcs != 0)
 	len *= 2;	/* max. 2 bytes per display cell */
     else if (enc_utf8)
-	len *= 9;	/* max. 3 bytes per display cell + 2 composing chars */
+	len *= MB_MAXBYTES;
 #endif
     buffer = lalloc((long_u)len, TRUE);
     if (buffer == NULL)	    /* out of memory */
@@ -1234,6 +1234,7 @@ clip_copy_modeless_selection(both)
 	    else if (enc_utf8)
 	    {
 		int	off;
+		int	i;
 
 		off = LineOffset[row];
 		for (i = start_col; i < end_col; ++i)
@@ -1245,14 +1246,13 @@ clip_copy_modeless_selection(both)
 		    else
 		    {
 			bufp += utf_char2bytes(ScreenLinesUC[off + i], bufp);
-			if (ScreenLinesC1[off + i] != 0)
+			for (i = 0; i < Screen_mco; ++i)
 			{
-			    /* Add one or two composing characters. */
-			    bufp += utf_char2bytes(ScreenLinesC1[off + i],
+			    /* Add a composing character. */
+			    if (ScreenLinesC[i][off + i] == 0)
+				break;
+			    bufp += utf_char2bytes(ScreenLinesC[i][off + i],
 									bufp);
-			    if (ScreenLinesC2[off + i] != 0)
-				bufp += utf_char2bytes(ScreenLinesC2[off + i],
-					bufp);
 			}
 		    }
 		    /* Skip right halve of double-wide character. */

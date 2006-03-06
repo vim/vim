@@ -5691,9 +5691,9 @@ nv_right(cap)
 		|| (PAST_LINE && *ml_get_cursor() == NUL))
 	{
 	    /*
-	     *	  <Space> wraps to next line if 'whichwrap' bit 1 set.
-	     *	      'l' wraps to next line if 'whichwrap' bit 2 set.
-	     * CURS_RIGHT wraps to next line if 'whichwrap' bit 3 set
+	     *	  <Space> wraps to next line if 'whichwrap' has 's'.
+	     *	      'l' wraps to next line if 'whichwrap' has 'l'.
+	     * CURS_RIGHT wraps to next line if 'whichwrap' has '>'.
 	     */
 	    if (       ((cap->cmdchar == ' '
 			    && vim_strchr(p_ww, 's') != NULL)
@@ -5706,8 +5706,7 @@ nv_right(cap)
 		/* When deleting we also count the NL as a character.
 		 * Set cap->oap->inclusive when last char in the line is
 		 * included, move to next line after that */
-		if (	   (cap->oap->op_type == OP_DELETE
-			    || cap->oap->op_type == OP_CHANGE)
+		if (	   cap->oap->op_type != OP_NOP
 			&& !cap->oap->inclusive
 			&& !lineempty(curwin->w_cursor.lnum))
 		    cap->oap->inclusive = TRUE;

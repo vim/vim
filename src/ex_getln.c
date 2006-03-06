@@ -518,7 +518,8 @@ getcmdline(firstc, count, indent)
 		xpc.xp_context = EXPAND_NOTHING;
 	    }
 	}
-	if (xpc.xp_context == EXPAND_FILES && p_wmnu)
+	if ((xpc.xp_context == EXPAND_FILES
+			      || xpc.xp_context == EXPAND_SHELLCMD) && p_wmnu)
 	{
 	    char_u upseg[5];
 
@@ -2466,9 +2467,9 @@ draw_cmdline(start, len)
 	int		pc, pc1;
 	int		prev_c = 0;
 	int		prev_c1 = 0;
-	int		u8c, u8c_c1, u8c_c2;
+	int		u8c;
+	int		u8cc[MAX_MCO];
 	int		nc = 0;
-	int		dummy;
 
 	/*
 	 * Do arabic shaping into a temporary buffer.  This is very
@@ -2495,7 +2496,7 @@ draw_cmdline(start, len)
 	for (j = start; j < start + len; j += mb_l)
 	{
 	    p = ccline.cmdbuff + j;
-	    u8c = utfc_ptr2char_len(p, &u8c_c1, &u8c_c2, start + len - j);
+	    u8c = utfc_ptr2char_len(p, u8cc, start + len - j);
 	    mb_l = utfc_ptr2len_len(p, start + len - j);
 	    if (ARABIC_CHAR(u8c))
 	    {
@@ -2505,7 +2506,7 @@ draw_cmdline(start, len)
 		    /* displaying from right to left */
 		    pc = prev_c;
 		    pc1 = prev_c1;
-		    prev_c1 = u8c_c1;
+		    prev_c1 = u8cc[0];
 		    if (j + mb_l >= start + len)
 			nc = NUL;
 		    else
@@ -2517,20 +2518,25 @@ draw_cmdline(start, len)
 		    if (j + mb_l >= start + len)
 			pc = NUL;
 		    else
-			pc = utfc_ptr2char_len(p + mb_l, &pc1, &dummy,
+		    {
+			int	pcc[MAX_MCO];
+
+			pc = utfc_ptr2char_len(p + mb_l, pcc,
 						      start + len - j - mb_l);
+			pc1 = pcc[0];
+		    }
 		    nc = prev_c;
 		}
 		prev_c = u8c;
 
-		u8c = arabic_shape(u8c, NULL, &u8c_c1, pc, pc1, nc);
+		u8c = arabic_shape(u8c, NULL, &u8cc[0], pc, pc1, nc);
 
 		newlen += (*mb_char2bytes)(u8c, arshape_buf + newlen);
-		if (u8c_c1 != 0)
+		if (u8cc[0] != 0)
 		{
-		    newlen += (*mb_char2bytes)(u8c_c1, arshape_buf + newlen);
-		    if (u8c_c2 != 0)
-			newlen += (*mb_char2bytes)(u8c_c2,
+		    newlen += (*mb_char2bytes)(u8cc[0], arshape_buf + newlen);
+		    if (u8cc[1] != 0)
+			newlen += (*mb_char2bytes)(u8cc[1],
 							arshape_buf + newlen);
 		}
 	    }
@@ -3353,6 +3359,7 @@ ExpandOne(xp, str, orig, options, mode)
 #ifdef CASE_INSENSITIVE_FILENAME
 		if (xp->xp_context == EXPAND_DIRECTORIES
 			|| xp->xp_context == EXPAND_FILES
+			|| xp->xp_context == EXPAND_SHELLCMD
 			|| xp->xp_context == EXPAND_BUFFERS)
 		{
 		    if (TOLOWER_LOC(xp->xp_files[i][len]) !=
@@ -3454,6 +3461,7 @@ ExpandEscape(xp, str, numfiles, files, options)
     if (options & WILD_ESCAPE)
     {
 	if (xp->xp_context == EXPAND_FILES
+		|| xp->xp_context == EXPAND_SHELLCMD
 		|| xp->xp_context == EXPAND_BUFFERS
 		|| xp->xp_context == EXPAND_DIRECTORIES)
 	{
@@ -3648,6 +3656,7 @@ showmatches(xp, wildmenu)
 	for (i = 0; i < num_files; ++i)
 	{
 	    if (!showtail && (xp->xp_context == EXPAND_FILES
+			  || xp->xp_context == EXPAND_SHELLCMD
 			  || xp->xp_context == EXPAND_BUFFERS))
 	    {
 		home_replace(NULL, files_found[i], NameBuff, MAXPATHL, TRUE);
@@ -3700,6 +3709,7 @@ showmatches(xp, wildmenu)
 		for (j = maxlen - lastlen; --j >= 0; )
 		    msg_putchar(' ');
 		if (xp->xp_context == EXPAND_FILES
+					  || xp->xp_context == EXPAND_SHELLCMD
 					  || xp->xp_context == EXPAND_BUFFERS)
 		{
 			    /* highlight directories */
@@ -3789,7 +3799,9 @@ expand_showtail(xp)
     char_u	*end;
 
     /* When not completing file names a "/" may mean something different. */
-    if (xp->xp_context != EXPAND_FILES && xp->xp_context != EXPAND_DIRECTORIES)
+    if (xp->xp_context != EXPAND_FILES
+	    && xp->xp_context != EXPAND_SHELLCMD
+	    && xp->xp_context != EXPAND_DIRECTORIES)
 	return FALSE;
 
     end = gettail(xp->xp_pattern);
@@ -3826,7 +3838,9 @@ addstar(fname, len, context)
     int		new_len;
     char_u	*tail;
 
-    if (context != EXPAND_FILES && context != EXPAND_DIRECTORIES)
+    if (context != EXPAND_FILES
+	    && context != EXPAND_SHELLCMD
+	    && context != EXPAND_DIRECTORIES)
     {
 	/*
 	 * Matching will be done internally (on something other than files).
@@ -3943,6 +3957,7 @@ addstar(fname, len, context)
  *  EXPAND_DIRECTORIES	    In some cases this is used instead of the latter
  *			    when we know only directories are of interest.  eg
  *			    :set dir=^I
+ *  EXPAND_SHELLCMD	    After ":!cmd", ":r !cmd"  or ":w !cmd".
  *  EXPAND_SETTINGS	    Complete variable names.  eg :set d^I
  *  EXPAND_BOOL_SETTINGS    Complete boolean variables only,  eg :set no^I
  *  EXPAND_TAGS		    Complete tags from the files in p_tags.  eg :ta a^I
@@ -4162,6 +4177,93 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	ret = expand_wildcards(1, &pat, num_file, file, flags);
 	if (free_pat)
 	    vim_free(pat);
+	return ret;
+    }
+
+    if (xp->xp_context == EXPAND_SHELLCMD)
+    {
+	/*
+	 * Expand shell command.
+	 */
+	int	    i;
+	char_u	    *path;
+	int	    mustfree = FALSE;
+	garray_T    ga;
+	char_u	    *buf = alloc(MAXPATHL);
+	int	    l;
+	char_u	    *s, *e;
+
+	if (buf == NULL)
+	    return FAIL;
+
+	/* for ":set path=" and ":set tags=" halve backslashes for escaped
+	 * space */
+	pat = vim_strsave(pat);
+	for (i = 0; pat[i]; ++i)
+	    if (pat[i] == '\\' && pat[i + 1] == ' ')
+		STRCPY(pat + i, pat + i + 1);
+
+	flags |= EW_FILE | EW_EXEC;
+	/* For an absolute name we don't use $PATH. */
+	if ((pat[0] == '.' && (vim_ispathsep(pat[1])
+				|| (pat[1] == '.' && vim_ispathsep(pat[2])))))
+	    path = (char_u *)".";
+	else
+	    path = vim_getenv((char_u *)"PATH", &mustfree);
+
+	ga_init2(&ga, (int)sizeof(char *), 10);
+	for (s = path; *s != NUL; s = e)
+	{
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+	    e = vim_strchr(s, ';');
+#else
+	    e = vim_strchr(s, ':');
+#endif
+	    if (e == NULL)
+		e = s + STRLEN(s);
+
+	    l = e - s;
+	    if (l > MAXPATHL - 5)
+		break;
+	    vim_strncpy(buf, s, l);
+	    add_pathsep(buf);
+	    l = STRLEN(buf);
+	    vim_strncpy(buf + l, pat, MAXPATHL - 1 - l);
+
+	    /* Expand matches in one directory of $PATH. */
+	    ret = expand_wildcards(1, &buf, num_file, file, flags);
+	    if (ret == OK)
+	    {
+		if (ga_grow(&ga, *num_file) == FAIL)
+		    FreeWild(*num_file, *file);
+		else
+		{
+		    for (i = 0; i < *num_file; ++i)
+		    {
+			s = (*file)[i];
+			if (STRLEN(s) > l)
+			{
+			    /* Remove the path again. */
+			    mch_memmove(s, s + l, STRLEN(s + l) + 1);
+			    ((char_u **)ga.ga_data)[ga.ga_len] = s;
+			    ++ga.ga_len;
+			}
+			else
+			    vim_free(s);
+		    }
+		    vim_free(*file);
+		}
+	    }
+	    if (*e != NUL)
+		++e;
+	}
+	*file = ga.ga_data;
+	*num_file = ga.ga_len;
+
+	vim_free(buf);
+	vim_free(pat);
+	if (mustfree)
+	    vim_free(path);
 	return ret;
     }
 

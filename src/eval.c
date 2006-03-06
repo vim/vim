@@ -11,7 +11,7 @@
  * eval.c: Expression evaluation.
  */
 #if defined(MSDOS) || defined(MSWIN)
-# include <io.h>	/* for mch_open(), must be before vim.h */
+# include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
 #include "vim.h"
@@ -718,7 +718,7 @@ static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars,
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
 static win_T *find_win_by_nr __ARGS((typval_T *vp));
 static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
-static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
+static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos, int *flagsp));
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
@@ -1171,18 +1171,28 @@ skip_expr(pp)
  * Return pointer to allocated memory, or NULL for failure.
  */
     char_u *
-eval_to_string(arg, nextcmd)
+eval_to_string(arg, nextcmd, dolist)
     char_u	*arg;
     char_u	**nextcmd;
+    int		dolist;		/* turn List into sequence of lines */
 {
     typval_T	tv;
     char_u	*retval;
+    garray_T	ga;
 
     if (eval0(arg, &tv, nextcmd, TRUE) == FAIL)
 	retval = NULL;
     else
     {
-	retval = vim_strsave(get_tv_string(&tv));
+	if (dolist && tv.v_type == VAR_LIST)
+	{
+	    ga_init2(&ga, (int)sizeof(char), 80);
+	    list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, 0);
+	    ga_append(&ga, NUL);
+	    retval = (char_u *)ga.ga_data;
+	}
+	else
+	    retval = vim_strsave(get_tv_string(&tv));
 	clear_tv(&tv);
     }
 
@@ -1206,7 +1216,7 @@ eval_to_string_safe(arg, nextcmd, use_sandbox)
     if (use_sandbox)
 	++sandbox;
     ++textlock;
-    retval = eval_to_string(arg, nextcmd);
+    retval = eval_to_string(arg, nextcmd, FALSE);
     if (use_sandbox)
 	--sandbox;
     --textlock;
@@ -13273,25 +13283,27 @@ get_search_arg(varp, flagsp)
  * Shared by search() and searchpos() functions
  */
     static int
-search_cmn(argvars, match_pos)
+search_cmn(argvars, match_pos, flagsp)
     typval_T	*argvars;
     pos_T	*match_pos;
+    int		*flagsp;
 {
+    int		flags;
     char_u	*pat;
     pos_T	pos;
     pos_T	save_cursor;
     int		save_p_ws = p_ws;
     int		dir;
-    int		flags = 0;
     int		retval = 0;	/* default: FAIL */
     long	lnum_stop = 0;
     int		options = SEARCH_KEEP;
     int		subpatnum;
 
     pat = get_tv_string(&argvars[0]);
-    dir = get_search_arg(&argvars[1], &flags);	/* may set p_ws */
+    dir = get_search_arg(&argvars[1], flagsp);	/* may set p_ws */
     if (dir == 0)
 	goto theend;
+    flags = *flagsp;
     if (flags & SP_START)
 	options |= SEARCH_START;
     if (flags & SP_END)
@@ -13359,7 +13371,9 @@ f_search(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = search_cmn(argvars, NULL);
+    int		flags = 0;
+
+    rettv->vval.v_number = search_cmn(argvars, NULL, &flags);
 }
 
 /*
@@ -13649,13 +13663,16 @@ f_searchpos(argvars, rettv)
     pos_T	match_pos;
     int		lnum = 0;
     int		col = 0;
+    int		n;
+    int		flags = 0;
 
     rettv->vval.v_number = 0;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    if (search_cmn(argvars, &match_pos) > 0)
+    n = search_cmn(argvars, &match_pos, &flags);
+    if (n > 0)
     {
 	lnum = match_pos.lnum;
 	col = match_pos.col;
@@ -13663,7 +13680,8 @@ f_searchpos(argvars, rettv)
 
     list_append_number(rettv->vval.v_list, (varnumber_T)lnum);
     list_append_number(rettv->vval.v_list, (varnumber_T)col);
-
+    if (flags & SP_SUBPAT)
+	list_append_number(rettv->vval.v_list, (varnumber_T)n);
 }
 
 
@@ -15675,6 +15693,7 @@ f_winrestview(argvars, rettv)
 	curwin->w_cursor.coladd = get_dict_number(dict, (char_u *)"coladd");
 #endif
 	curwin->w_curswant = get_dict_number(dict, (char_u *)"curswant");
+	curwin->w_set_curswant = FALSE;
 
 	curwin->w_topline = get_dict_number(dict, (char_u *)"topline");
 #ifdef FEAT_DIFF
@@ -16208,7 +16227,7 @@ make_expanded_name(in_start, expr_start, expr_end, in_end)
     c1 = *in_end;
     *in_end = NUL;
 
-    temp_result = eval_to_string(expr_start + 1, &nextcmd);
+    temp_result = eval_to_string(expr_start + 1, &nextcmd, FALSE);
     if (temp_result != NULL && nextcmd == NULL)
     {
 	retval = alloc((unsigned)(STRLEN(temp_result) + (expr_start - in_start)

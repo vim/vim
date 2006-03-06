@@ -53,8 +53,9 @@ EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
  * Note: These three are only allocated when enc_utf8 is set!
  */
 EXTERN u8char_T	*ScreenLinesUC INIT(= NULL);	/* decoded UTF-8 characters */
-EXTERN u8char_T	*ScreenLinesC1 INIT(= NULL);	/* first composing char */
-EXTERN u8char_T	*ScreenLinesC2 INIT(= NULL);	/* second composing char */
+EXTERN u8char_T	*ScreenLinesC[MAX_MCO];		/* composing characters */
+EXTERN int	Screen_mco INIT(= 0);		/* value of p_mco used when
+						   allocating ScreenLinesC[] */
 
 /* Only used for euc-jp: Second byte of a character that starts with 0x8e.
  * These are single-width. */

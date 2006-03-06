@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 20
+*various.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -55,14 +55,16 @@ ga			Print the ascii value of the character under the
 			The <Nul> character in a file is stored internally as
 			<NL>, but it will be shown as:
 				<^@>  0,  Hex 00,  Octal 000 ~
+			If the character has composing characters these are
+			also shown.  The value of 'maxcombine' doesn't matter.
 			Mnemonic: Get Ascii value.  {not in Vi}
 
 							*g8*
 g8			Print the hex values of the bytes used in the
 			character under the cursor, assuming it is in |UTF-8|
-			encoding.  This also shows composing characters.
-			Example of a character with three composing
-			characters:
+			encoding.  This also shows composing characters.  The
+			value of 'maxcombine' doesn't matter.
+			Example of a character with two composing characters:
 				e0 b8 81 + e0 b8 b9 + e0 b9 89 ~
 			{not in Vi}
 

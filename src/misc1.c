@@ -2177,11 +2177,11 @@ del_bytes(count, fixpos, use_delcombine)
     if (p_deco && use_delcombine && enc_utf8
 					 && utfc_ptr2len(oldp + col) >= count)
     {
-	int	c1, c2;
+	int	cc[MAX_MCO];
 	int	n;
 
-	(void)utfc_ptr2char(oldp + col, &c1, &c2);
-	if (c1 != NUL)
+	(void)utfc_ptr2char(oldp + col, cc);
+	if (cc[0] != NUL)
 	{
 	    /* Find the last composing char, there can be several. */
 	    n = col;
@@ -8056,6 +8056,7 @@ fast_breakcheck()
 /*
  * Expand wildcards.  Calls gen_expand_wildcards() and removes files matching
  * 'wildignore'.
+ * Returns OK or FAIL.
  */
     int
 expand_wildcards(num_pat, pat, num_file, file, flags)
@@ -8898,7 +8899,7 @@ expand_backtick(gap, pat, flags)
 
 #ifdef FEAT_EVAL
     if (*cmd == '=')	    /* `={expr}`: Expand expression */
-	buffer = eval_to_string(cmd + 1, &p);
+	buffer = eval_to_string(cmd + 1, &p, TRUE);
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,

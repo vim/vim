@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 04
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1050,7 +1050,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
-<
+<	When they are supported "\n" characters will start a new line.  If the
+	expression evaluates to a |List| this is equal to using each List item
+	as a string and putting "\n" in between them.
+
 				     *'binary'* *'bin'* *'nobinary'* *'nobin'*
 'binary' 'bin'		boolean	(default off)
 			local to buffer
@@ -3262,6 +3265,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
+		The GUI tabs are only supported on some systens, currently
+		only for GTK.
 
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -4288,6 +4293,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Tenths of a second to show the matching paren, when 'showmatch' is
 	set.  Note that this is not in milliseconds, like other options that
 	set a time.  This is to be compatible with Nvi.
+
+						*'maxcombine'* *'mco'*
+'maxcombine' 'mco'	number (default 2)
+			global
+			{not in Vi}
+			{only available when compiled with the |+multi_byte|
+			feature}
+	The maximum number of combining characters supported for displaying.
+	Only used when 'encoding' is "utf-8".
+	The default is OK for most languages.  Hebrew may require 4.
+	Maximum value is 6.
+	Even when this option is set to 2 you can still edit text with more
+	combining characters, you just can't see them.  Use |g8| or |ga|.
+	See |mbyte-combining|.
 
 						*'maxfuncdepth'* *'mfd'*
 'maxfuncdepth' 'mfd'	number	(default 100)
@@ -7176,9 +7195,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"dh".  If you use this, you may also want to use the mapping
 	":map <BS> X" to make backspace delete the character in front of the
 	cursor.
-	When 'l' is included, you get a side effect: "yl" on an empty line
-	will include the <EOL>, so that "p" will insert a new line.  That's
-	why including 'h' and 'l' are not recommended.
+	When 'l' is included and it is used after an operator at the end of a
+	line then it will not move to the next line.  This makes "dl", "cl",
+	"yl" etc. work normally.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 

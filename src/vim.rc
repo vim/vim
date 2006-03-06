@@ -12,11 +12,11 @@
 #include <winver.h>
 #include "version.h"
 #include "gui_w32_rc.h"
-#if defined(__BORLANDC__) || defined(__CYGWIN32__) || defined(__MINGW32__)
+// #if defined(__BORLANDC__) || defined(__CYGWIN32__) || defined(__MINGW32__)
 # include <winresrc.h>
-#else
-# include <winres.h>
-#endif
+// #else
+// # include <winres.h>
+// #endif
 
 //
 // Icons

@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2006 Jan 05
+*if_mzsch.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -166,7 +166,10 @@ interface.
 Common
 ------
     (command {command-string})	    Perform the vim ":Ex" style command.
-    (eval {expr-string})	    Evaluate the vim command string.
+    (eval {expr-string})	    Evaluate the vim expression to a string.
+				    A |List| is turned into a string by
+				    joining the items and inserting line
+				    breaks.
 				    NOTE clashes with MzScheme eval
     (range-start)		    Start/End of the range passed with
     (range-end)			    the Scheme command.

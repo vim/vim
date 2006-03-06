@@ -1486,55 +1486,59 @@ utf_composinglike(p1, p2)
 #endif
 
 /*
- * Convert a UTF-8 byte string to a wide chararacter.  Also get up to two
+ * Convert a UTF-8 byte string to a wide chararacter.  Also get up to MAX_MCO
  * composing characters.
  */
     int
-utfc_ptr2char(p, p1, p2)
+utfc_ptr2char(p, pcc)
     char_u	*p;
-    int		*p1;	/* return: first composing char or 0 */
-    int		*p2;	/* return: second composing char or 0 */
+    int		*pcc;	/* return: composing chars, last one is 0 */
 {
     int		len;
     int		c;
     int		cc;
+    int		i = 0;
 
     c = utf_ptr2char(p);
     len = utf_ptr2len(p);
+
     /* Only accept a composing char when the first char isn't illegal. */
     if ((len > 1 || *p < 0x80)
 	    && p[len] >= 0x80
 	    && UTF_COMPOSINGLIKE(p, p + len))
     {
-	*p1 = utf_ptr2char(p + len);
-	len += utf_ptr2len(p + len);
-	if (p[len] >= 0x80 && utf_iscomposing(cc = utf_ptr2char(p + len)))
-	    *p2 = cc;
-	else
-	    *p2 = 0;
+	cc = utf_ptr2char(p + len);
+	for (;;)
+	{
+	    pcc[i++] = cc;
+	    if (i == MAX_MCO)
+		break;
+	    len += utf_ptr2len(p + len);
+	    if (p[len] < 0x80 || !utf_iscomposing(cc = utf_ptr2char(p + len)))
+		break;
+	}
     }
-    else
-    {
-	*p1 = 0;
-	*p2 = 0;
-    }
+
+    if (i < MAX_MCO)	/* last composing char must be 0 */
+	pcc[i] = 0;
+
     return c;
 }
 
 /*
- * Convert a UTF-8 byte string to a wide chararacter.  Also get up to two
+ * Convert a UTF-8 byte string to a wide chararacter.  Also get up to MAX_MCO
  * composing characters.  Use no more than p[maxlen].
  */
     int
-utfc_ptr2char_len(p, p1, p2, maxlen)
+utfc_ptr2char_len(p, pcc, maxlen)
     char_u	*p;
-    int		*p1;	/* return: first composing char or 0 */
-    int		*p2;	/* return: second composing char or 0 */
+    int		*pcc;	/* return: composing chars, last one is 0 */
     int		maxlen;
 {
     int		len;
     int		c;
     int		cc;
+    int		i = 0;
 
     c = utf_ptr2char(p);
     len = utf_ptr2len_len(p, maxlen);
@@ -1544,20 +1548,23 @@ utfc_ptr2char_len(p, p1, p2, maxlen)
 	    && p[len] >= 0x80
 	    && UTF_COMPOSINGLIKE(p, p + len))
     {
-	*p1 = utf_ptr2char(p + len);
-	len += utf_ptr2len_len(p + len, maxlen - len);
-	if (len < maxlen
-		&& p[len] >= 0x80
-		&& utf_iscomposing(cc = utf_ptr2char(p + len)))
-	    *p2 = cc;
-	else
-	    *p2 = 0;
+	cc = utf_ptr2char(p + len);
+	for (;;)
+	{
+	    pcc[i++] = cc;
+	    if (i == MAX_MCO)
+		break;
+	    len += utf_ptr2len_len(p + len, maxlen - len);
+	    if (len >= maxlen
+		    || p[len] < 0x80
+		    || !utf_iscomposing(cc = utf_ptr2char(p + len)))
+		break;
+	}
     }
-    else
-    {
-	*p1 = 0;
-	*p2 = 0;
-    }
+
+    if (i < MAX_MCO)	/* last composing char must be 0 */
+	pcc[i] = 0;
+
     return c;
 }
 
@@ -1573,13 +1580,14 @@ utfc_char2bytes(off, buf)
     char_u	*buf;
 {
     int		len;
+    int		i;
 
     len = utf_char2bytes(ScreenLinesUC[off], buf);
-    if (ScreenLinesC1[off] != 0)
+    for (i = 0; i < Screen_mco; ++i)
     {
-	len += utf_char2bytes(ScreenLinesC1[off], buf + len);
-	if (ScreenLinesC2[off] != 0)
-	    len += utf_char2bytes(ScreenLinesC2[off], buf + len);
+	if (ScreenLinesC[i][off] == 0)
+	    break;
+	len += utf_char2bytes(ScreenLinesC[i][off], buf + len);
     }
     return len;
 }

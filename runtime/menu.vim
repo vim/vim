@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 25
+" Last Change:	2006 Mar 05
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -419,7 +419,7 @@ if has("spell")
   an 40.335.120 &Tools.&Spelling.Spell\ Check\ &Off		:set nospell<CR>
   an 40.335.130 &Tools.&Spelling.To\ &Next\ error<Tab>]s	]s
   an 40.335.130 &Tools.&Spelling.To\ &Previous\ error<Tab>[s	[s
-  an 40.335.140 &Tools.&Spelling.Suggest\ &Corrections<Tab>z?	z?
+  an 40.335.140 &Tools.&Spelling.Suggest\ &Corrections<Tab>z=	z=
   an 40.335.150 &Tools.&Spelling.&Repeat\ correction<Tab>:spellrepall	:spellrepall<CR>
   an 40.335.200 &Tools.&Spelling.-SEP1-				<Nop>
   an 40.335.210 &Tools.&Spelling.Set\ language\ to\ "en"	:set spl=en spell<CR>

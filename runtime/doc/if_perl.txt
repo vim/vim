@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.0aa.  Last change: 2005 Oct 14
+*if_perl.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -181,6 +181,8 @@ VIM::Eval({expr})	Evaluates {expr} and returns (success, val).
 			value of internal |variables| x, and '$x' is equivalent
 			to perl's $ENV{x}.  All |functions| accessible from
 			the command-line are valid for {expr}.
+			A |List| is turned into a string by joining the items
+			and inserting line breaks.
 
 							*perl-SetHeight*
 Window->SetHeight({height})

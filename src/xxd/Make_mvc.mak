@@ -4,7 +4,10 @@
 xxd: xxd.exe
 
 xxd.exe: xxd.c
-     cl /nologo -DWIN32 xxd.c /link setargv.obj
+     cl /nologo -DWIN32 xxd.c
+
+# This was for an older compiler
+#    cl /nologo -DWIN32 xxd.c /link setargv.obj
 
 clean:
      - if exist xxd.obj del xxd.obj

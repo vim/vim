@@ -61,7 +61,7 @@ general_beval_cb(beval, state)
 	++textlock;
 
 	vim_free(result);
-	result = eval_to_string(p_bexpr, NULL);
+	result = eval_to_string(p_bexpr, NULL, TRUE);
 
 	if (use_sandbox)
 	    --sandbox;

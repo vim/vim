@@ -20,7 +20,7 @@
 # pragma warn -obs
 #endif
 
-#include <io.h>
+#include "vimio.h"
 #include "vim.h"
 
 #include <fcntl.h>

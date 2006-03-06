@@ -58,6 +58,13 @@
  * make money and share with me,
  * lose money and don't ask me.
  */
+
+/* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
+#if _MSC_VER >= 1400
+# define _CRT_SECURE_NO_DEPRECATE
+# define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #include <stdio.h>
 #ifdef VAXC
 # include <file.h>

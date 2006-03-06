@@ -51,6 +51,11 @@ if exists("loaded_matchit")
 endif
 " ###
 
+if exists('&ofu')
+  setlocal ofu=phpcomplete#CompletePHP
+endif
+
+
 setlocal commentstring=/*%s*/
 
 " Undo the stuff we changed.

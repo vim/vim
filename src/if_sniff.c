@@ -12,7 +12,7 @@
 #ifdef WIN32
 # include <stdio.h>
 # include <fcntl.h>
-# include <io.h>
+# include "vimio.h"
 # include <process.h>
 # include <string.h>
 # include <assert.h>

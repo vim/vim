@@ -20,7 +20,7 @@
  * Roger Knobbe <rogerk@wonderware.com> did the initial port of Vim 3.0.
  */
 
-#include <io.h>
+#include "vimio.h"
 #include "vim.h"
 
 #ifdef FEAT_MZSCHEME
@@ -1926,6 +1926,7 @@ RestoreConsoleBuffer(
     return TRUE;
 }
 
+#define FEAT_RESTORE_ORIG_SCREEN
 #ifdef FEAT_RESTORE_ORIG_SCREEN
 static ConsoleBuffer g_cbOrig = { 0 };
 #endif

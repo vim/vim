@@ -519,7 +519,7 @@ static VALUE vim_command(VALUE self, VALUE str)
 static VALUE vim_evaluate(VALUE self, VALUE str)
 {
 #ifdef FEAT_EVAL
-    char_u *value = eval_to_string((char_u *)STR2CSTR(str), NULL);
+    char_u *value = eval_to_string((char_u *)STR2CSTR(str), NULL, TRUE);
 
     if (value)
     {

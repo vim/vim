@@ -26,7 +26,7 @@
 # ifdef DEBUG
 #  include <tchar.h>	/* for _T definition for TRACEn macros */
 # endif
-# include <io.h>
+# include "vimio.h"
 /* WinSock API is separated from C API, thus we can't use read(), write(),
  * errno... */
 # define sock_errno WSAGetLastError()

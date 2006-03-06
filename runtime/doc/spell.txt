@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 04
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -841,6 +841,29 @@ flags.  But Myspell doesn't support that, thus you may not want to use it
 anyway.  For compatibility use an 8-bit encoding.
 
 
+INFORMATION
+
+These entries in the affix file can be used to add information to the spell
+file.  There are no restrictions on the format, but they should be in the
+right encoding.
+
+				*spell-NAME* *spell-VERSION* *spell-HOME*
+				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
+	NAME	  	Name of the language
+	VERSION   	1.0.1  with fixes
+	HOME		http://www.myhome.eu
+	AUTHOR		John Doe
+	EMAIL		john AT Doe DOT net
+	COPYRIGHT   	LGPL
+
+These fields are put in the .spl file as-is.  The |:spellinfo| command can be
+used to view the info.
+
+							*:spellinfo* *:spelli*
+:spelli[nfo]		Display the information for the spell file(s) used for
+			the current buffer.
+
+
 CHARACTER TABLES
 							*spell-affix-chars*
 When using an 8-bit encoding the affix file should define what characters are
@@ -1157,12 +1180,12 @@ words with this flag combine in any order.  This means there is no control
 over which word comes first.  Example:
 	COMPOUNDFLAG c ~
 
-							*spell-COMPOUNDFLAGS*
+							*spell-COMPOUNDRULE*
 A more advanced method to specify how compound words can be formed uses
 multiple items with multiple flags.  This is not compatible with Myspell 3.0.
 Let's start with an example:
-	COMPOUNDFLAGS c+ ~
-	COMPOUNDFLAGS se ~
+	COMPOUNDRULE c+ ~
+	COMPOUNDRULE se ~
 
 The first line defines that words with the "c" flag can be concatenated in any
 order.  The second line defines compound words that are made of one word with
@@ -1180,7 +1203,7 @@ You can make these words:
 	soup
 	onionsoup
 
-The COMPOUNDFLAGS item may appear multiple times.  The argument is made out of
+The COMPOUNDRULE item may appear multiple times.  The argument is made out of
 one or more groups, where each group can be:
 	one flag			e.g., c
 	alternate flags inside []	e.g., [abc]
@@ -1190,20 +1213,20 @@ Optionally this may be followed by:
 
 This is similar to the regexp pattern syntax (but not the same!).  A few
 examples with the sequence of word flags they require:
-    COMPOUNDFLAGS x+	    x xx xxx etc.
-    COMPOUNDFLAGS yz	    yz
-    COMPOUNDFLAGS x+z	    xz xxz xxxz etc.
-    COMPOUNDFLAGS yx+	    yx yxx yxxx etc.
+    COMPOUNDRULE x+	    x xx xxx etc.
+    COMPOUNDRULE yz	    yz
+    COMPOUNDRULE x+z	    xz xxz xxxz etc.
+    COMPOUNDRULE yx+	    yx yxx yxxx etc.
 
-    COMPOUNDFLAGS [abc]z    az bz cz
-    COMPOUNDFLAGS [abc]+z   az aaz abaz bz baz bcbz cz caz cbaz etc.
-    COMPOUNDFLAGS a[xyz]+   ax axx axyz ay ayx ayzz az azy azxy etc.
-    COMPOUNDFLAGS sm*e	    se sme smme smmme etc.
-    COMPOUNDFLAGS s[xyz]*e  se sxe sxye sxyxe sye syze sze szye szyxe  etc.
+    COMPOUNDRULE [abc]z    az bz cz
+    COMPOUNDRULE [abc]+z   az aaz abaz bz baz bcbz cz caz cbaz etc.
+    COMPOUNDRULE a[xyz]+   ax axx axyz ay ayx ayzz az azy azxy etc.
+    COMPOUNDRULE sm*e	    se sme smme smmme etc.
+    COMPOUNDRULE s[xyz]*e  se sxe sxye sxyxe sye syze sze szye szyxe  etc.
 
 A specific example: Allow a compound to be made of two words and a dash:
 	In the .aff file:
-	    COMPOUNDFLAGS sde ~
+	    COMPOUNDRULE sde ~
 	    NEEDAFFIX x ~
 	    COMPOUNDMAX 3 ~
 	    COMPOUNDMIN 1 ~
@@ -1237,7 +1260,7 @@ specified with COMPOUNDMAX.  Example:
 When omitted there is no maximum.  It applies to all compound words.
 
 To set a limit for words with specific flags make sure the items in
-COMPOUNDFLAGS where they appear don't allow too many words.
+COMPOUNDRULE where they appear don't allow too many words.
 
 							*spell-COMPOUNDSYLMAX*
 The maximum number of syllables that a compound word may contain is specified
@@ -1458,14 +1481,20 @@ CIRCUMFIX	(Hunspell)				*spell-CIRCUMFIX*
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
 
+COMPOUND	(Hunspell)				*spell-COMPOUND*
+                This is one line with the count of COMPOUND items, followd by
+                that many COMPOUND lines with a pattern.
+                Remove the first line with the count and rename the other
+                items to COMPOUNDRULE |spell-COMPOUNDRULE|
+
 COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
-		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
-		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
-		Use COMPOUNDFLAGS instead. |spell-COMPOUNDFLAGS|
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
 COMPOUNDROOT	(Hunspell)				*spell-COMPOUNDROOT*
 		Flag for words in the dictionary that are already a compound.
@@ -1481,9 +1510,6 @@ COMPOUNDWORDMAX	(Hunspell)				*spell-COMPOUNDWORDMAX*
 FORBIDDENWORD	(Hunspell)				*spell-FORBIDDENWORD*
 		Use BAD instead. |spell-BAD|
 
-HOME		(Hunspell)				*spell-HOME*
-		Specifies the website for the language.  Not supported.
-
 LANG		(Hunspell)				*spell-LANG*
 		This specifies language-specific behavior.  This actually
 		moves part of the language knowledge into the program,
@@ -1495,9 +1521,6 @@ LEMMA_PRESENT	(Hunspell)				*spell-LEMMA_PRESENT*
 
 MAXNGRAMSUGS	(Hunspell)				*spell-MAXNGRAMSUGS*
 		Not supported.
-
-NAME		(Hunspell)				*spell-NAME*
-		Specifies the name of the language.  Not supported.
 
 ONLYINCOMPOUND	(Hunspell)				*spell-ONLYINCOMPOUND*
 		Use NEEDCOMPOUND instead. |spell-NEEDCOMPOUND|
@@ -1514,9 +1537,6 @@ SYLLABLENUM	(Hunspell)				*spell-SYLLABLENUM*
 TRY		(Myspell, Hunspell, others)		*spell-TRY*
 		Vim does not use the TRY item, it is ignored.  For making
 		suggestions the actual characters in the words are used.
-
-VERSION		(Hunspell)				*spell-VERSION*
-		Specifies the version for the language.  Not supported.
 
 WORDCHARS	(Hunspell)				*spell-WORDCHARS*
 		Used to recognize words.  Vim doesn't need it, because there

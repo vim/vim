@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 01
+*pattern.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16,8 +16,9 @@ explanations are in chapter 27 |usr_27.txt|.
 5. Multi items			|pattern-multi-items|
 6. Ordinary atoms		|pattern-atoms|
 7. Ignoring case in a pattern	|/ignorecase|
-8. Compare with Perl patterns	|perl-patterns|
-9. Highlighting matches		|match-highlight|
+8. Composing characters		|patterns-composing|
+9. Compare with Perl patterns	|perl-patterns|
+10. Highlighting matches	|match-highlight|
 
 ==============================================================================
 1. Search commands				*search-commands* *E486*
@@ -1104,12 +1105,6 @@ Examples:
 	\cfoo	  -		-		foo Foo FOO
 	foo\C	  -		-		foo
 
-							*/\Z*
-When "\Z" appears anywhere in the pattern, composing characters are ignored.
-Thus only the base characters need to match, the composing characters may be
-different and the number of composing characters may differ.  Only relevant
-when 'encoding' is "utf-8".
-
 Technical detail:				*NL-used-for-Nul*
 <Nul> characters in the file are stored as <NL> in memory.  In the display
 they are shown as "^@".  The translation is done when reading and writing
@@ -1134,7 +1129,27 @@ expect.  But invalid bytes may cause trouble, a pattern with an invalid byte
 will probably never match.
 
 ==============================================================================
-8. Compare with Perl patterns				*perl-patterns*
+8. Composing characters					*patterns-composing*
+
+							*/\Z*
+When "\Z" appears anywhere in the pattern, composing characters are ignored.
+Thus only the base characters need to match, the composing characters may be
+different and the number of composing characters may differ.  Only relevant
+when 'encoding' is "utf-8".
+
+When a composing character appears at the start of the pattern of after an
+item that doesn't include the composing character, a match is found at any
+character that includes this composing character.
+
+When using a dot and a composing character, this works the same as the
+composing character by itself, except that it doesn't matter what comes before
+this.
+
+The order of composing characters matters, even though changing the order
+doen't change what a character looks like.  This may change in the future.
+
+==============================================================================
+9. Compare with Perl patterns				*perl-patterns*
 
 Vim's regexes are most similar to Perl's, in terms of what you can do.  The
 difference between them is mostly just notation;  here's a summary of where
@@ -1144,7 +1159,7 @@ Capability			in Vimspeak	in Perlspeak ~
 ----------------------------------------------------------------
 force case insensitivity	\c		(?i)
 force case sensitivity		\C		(?-i)
-backref-less grouping		\%(atom)	(?:atom)
+backref-less grouping		\%(atom\)	(?:atom)
 conservative quantifiers	\{-n,m}		*?, +?, ??, {}?
 0-width match			atom\@=		(?=atom)
 0-width non-match		atom\@!		(?!atom)
@@ -1177,10 +1192,10 @@ Finally, these constructs are unique to Perl:
 - \& (which is to \| what "and" is to "or";  it forces several branches
    to match at one spot)
 - matching lines/columns by number:  \%5l \%5c \%5v
-- limiting the "return value" of a regex:  \zs \ze
+- setting the start and end of the match:  \zs \ze
 
 ==============================================================================
-9. Highlighting matches					*match-highlight*
+10. Highlighting matches				*match-highlight*
 
 							*:mat* *:match*
 :mat[ch] {group} /{pattern}/

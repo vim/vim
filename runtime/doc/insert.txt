@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 04
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -130,6 +130,9 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 				the cursor up:
 					CTRL-R ="\<Up>"
 				Use CTRL-R CTRL-R to insert text literally.
+				When the result is a |List| the items are used
+				as lines.  They can have line breaks inside
+				too.
 		See |registers| about registers.  {not in Vi}
 
 CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
@@ -1237,6 +1240,30 @@ Regardless from state of implementation in browsers but if element is defined
 in standards, completion plugin will place element in suggestion list. When
 both major engines implemented element, even if this is not in standards it
 will be suggested. All other elements are not placed in suggestion list.
+
+
+PHP                                                     *ft-php-omni*
+
+Completion of PHP code requires tags file for completion of data from external
+files. You should use Exuberant ctags version 5.5.4 or newer. You can find it
+here: http://ctags.sourceforge.net/
+
+Script completes:
+
+- after $ variables name
+- function names with additonal info:
+- in case of built-in functions list of possible arguments and after | type
+  data returned by function
+- in case of user function arguments and name of file were function was
+  defined (if it is not current file)
+
+Note: when doing completion first time Vim will load all necessary data into
+memory. It may take several seconds. After next use of completion delay
+shouldn't be noticeable.
+
+Script detects if cursor is inside <?php ?> tags. If it is outside it will
+automatically switch to HTML/CSS/JavaScript completion. Note: contrary to
+original HTML files completion of tags (and only tags) isn't context aware.
 
 
 SYNTAX							*ft-syntax-omni*

@@ -583,6 +583,9 @@ EXTERN char_u	*p_mef;		/* 'makeef' */
 EXTERN char_u	*p_mp;		/* 'makeprg' */
 #endif
 EXTERN long	p_mat;		/* 'matchtime' */
+#ifdef FEAT_MBYTE
+EXTERN long	p_mco;		/* 'maxcombine' */
+#endif
 #ifdef FEAT_EVAL
 EXTERN long	p_mfd;		/* 'maxfuncdepth' */
 #endif

@@ -665,6 +665,9 @@ static char_u	*regconcat __ARGS((int *flagp));
 static char_u	*regpiece __ARGS((int *));
 static char_u	*regatom __ARGS((int *));
 static char_u	*regnode __ARGS((int));
+#ifdef FEAT_MBYTE
+static int	use_multibytecode __ARGS((int c));
+#endif
 static int	prog_magic_wrong __ARGS((void));
 static char_u	*regnext __ARGS((char_u *));
 static void	regc __ARGS((int b));
@@ -1662,6 +1665,15 @@ regatom(flagp)
 	p = vim_strchr(classchars, no_Magic(c));
 	if (p == NULL)
 	    EMSG_RET_NULL(_("E63: invalid use of \\_"));
+#ifdef FEAT_MBYTE
+	/* When '.' is followed by a composing char ignore the dot, so that
+	 * the composing char is matched here. */
+	if (enc_utf8 && c == Magic('.') && utf_iscomposing(peekchr()))
+	{
+	    c = getchr();
+	    goto do_multibyte;
+	}
+#endif
 	ret = regnode(classcodes[p - classchars] + extra);
 	*flagp |= HASWIDTH | SIMPLE;
 	break;
@@ -1921,7 +1933,12 @@ regatom(flagp)
 			          EMSG_M_RET_NULL(
 					_("E678: Invalid character after %s%%[dxouU]"),
 					reg_magic == MAGIC_ALL);
-			      ret = regnode(EXACTLY);
+#ifdef FEAT_MBYTE
+			      if (use_multibytecode(i))
+				  ret = regnode(MULTIBYTECODE);
+			      else
+#endif
+				  ret = regnode(EXACTLY);
 			      if (i == 0)
 				  regc(0x0a);
 			      else
@@ -2289,10 +2306,10 @@ collection:
 
 #ifdef FEAT_MBYTE
 	    /* A multi-byte character is handled as a separate atom if it's
-	     * before a multi. */
-	    if (has_mbyte && (*mb_char2len)(c) > 1
-				     && re_multi_type(peekchr()) != NOT_MULTI)
+	     * before a multi and when it's a composing char. */
+	    if (use_multibytecode(c))
 	    {
+do_multibyte:
 		ret = regnode(MULTIBYTECODE);
 		regmbc(c);
 		*flagp |= HASWIDTH | SIMPLE;
@@ -2323,27 +2340,17 @@ collection:
 		    regmbc(c);
 		    if (enc_utf8)
 		    {
-			int	off;
 			int	l;
 
-			/* Need to get composing character too, directly
-			 * access regparse for that, because skipchr() skips
-			 * over composing chars. */
-			ungetchr();
-			if (*regparse == '\\' && regparse[1] != NUL)
-			    off = 1;
-			else
-			    off = 0;
+			/* Need to get composing character too. */
 			for (;;)
 			{
-			    l = utf_ptr2len(regparse + off);
-			    if (!UTF_COMPOSINGLIKE(regparse + off,
-							  regparse + off + l))
+			    l = utf_ptr2len(regparse);
+			    if (!UTF_COMPOSINGLIKE(regparse, regparse + l))
 				break;
-			    off += l;
-			    regmbc(utf_ptr2char(regparse + off));
+			    regmbc(utf_ptr2char(regparse));
+			    skipchr();
 			}
-			skipchr();
 		    }
 		}
 		else
@@ -2363,6 +2370,21 @@ collection:
 
     return ret;
 }
+
+#ifdef FEAT_MBYTE
+/*
+ * Return TRUE if MULTIBYTECODE should be used instead of EXACTLY for
+ * character "c".
+ */
+    static int
+use_multibytecode(c)
+    int c;
+{
+    return has_mbyte && (*mb_char2len)(c) > 1
+		     && (re_multi_type(peekchr()) != NOT_MULTI
+			     || (enc_utf8 && utf_iscomposing(c)));
+}
+#endif
 
 /*
  * emit a node
@@ -2747,7 +2769,9 @@ skipchr()
     if (regparse[prevchr_len] != NUL)
     {
 #ifdef FEAT_MBYTE
-	if (has_mbyte)
+	if (enc_utf8)
+	    prevchr_len += utf_char2len(mb_ptr2char(regparse + prevchr_len));
+	else if (has_mbyte)
 	    prevchr_len += (*mb_ptr2len)(regparse + prevchr_len);
 	else
 #endif
@@ -4229,6 +4253,7 @@ regmatch(scan)
 	    {
 		int	i, len;
 		char_u	*opnd;
+		int	opndc, inpc;
 
 		opnd = OPERAND(scan);
 		/* Safety check (just in case 'encoding' was changed since
@@ -4238,12 +4263,37 @@ regmatch(scan)
 		    status = RA_NOMATCH;
 		    break;
 		}
-		for (i = 0; i < len; ++i)
-		    if (opnd[i] != reginput[i])
+		if (enc_utf8)
+		    opndc = mb_ptr2char(opnd);
+		if (enc_utf8 && utf_iscomposing(opndc))
+		{
+		    /* When only a composing char is given match at any
+		     * position where that composing char appears. */
+		    status = RA_NOMATCH;
+		    for (i = 0; reginput[i] != NUL; i += utf_char2len(inpc))
 		    {
-			status = RA_NOMATCH;
-			break;
+			inpc = mb_ptr2char(reginput + i);
+			if (!utf_iscomposing(inpc))
+			{
+			    if (i > 0)
+				break;
+			}
+			else if (opndc == inpc)
+			{
+			    /* Include all following composing chars. */
+			    len = i + mb_ptr2len(reginput + i);
+			    status = RA_MATCH;
+			    break;
+			}
 		    }
+		}
+		else
+		    for (i = 0; i < len; ++i)
+			if (opnd[i] != reginput[i])
+			{
+			    status = RA_NOMATCH;
+			    break;
+			}
 		reginput += len;
 	    }
 	    else
@@ -6745,7 +6795,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    save_ireg_ic = ireg_ic;
 	    can_f_submatch = TRUE;
 
-	    eval_result = eval_to_string(source + 2, NULL);
+	    eval_result = eval_to_string(source + 2, NULL, TRUE);
 	    if (eval_result != NULL)
 	    {
 		for (s = eval_result; *s != NUL; mb_ptr_adv(s))

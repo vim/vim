@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 01
+" Last Change:	2006 Mar 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1298,7 +1298,7 @@ au BufNewFile,BufRead *.rexx,*.rex		setf rexx
 au BufNewFile,BufRead *.s,*.S			setf r
 
 " R Help file
-au BufNewFile,BufRead *.rd,*.Rd			setf rd
+au BufNewFile,BufRead *.rd,*.Rd			setf rhelp
 
 " Rexx, Rebol or R
 au BufNewFile,BufRead *.r,*.R			call s:FTr()

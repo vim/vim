@@ -414,6 +414,8 @@ struct vimoption
 #define P_NFNAME       0x200000L/* only normal file name chars allowed */
 #define P_INSECURE     0x400000L/* option was set from a modeline */
 
+#define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
+
 /*
  * options[] is initialized here.
  * The order of the options MUST be alphabetic for ":set all" and findoption().
@@ -848,8 +850,7 @@ static struct vimoption
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
-			    {(char_u *)FALSE, (char_u *)0L}
-			    },
+			    {(char_u *)FALSE, (char_u *)0L}},
     {"dictionary",  "dict", P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_dict, PV_DICT,
@@ -1423,7 +1424,7 @@ static struct vimoption
 # if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 				(char_u *)"@,48-57,_,128-167,224-235"
 # else
-				(char_u *)"@,48-57,_,192-255"
+				ISK_LATIN1
 # endif
 #endif
 				}},
@@ -1602,6 +1603,13 @@ static struct vimoption
     {"matchtime",   "mat",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_mat, PV_NONE,
 			    {(char_u *)5L, (char_u *)0L}},
+    {"maxcombine",  "mco",  P_NUM|P_VI_DEF,
+#ifdef FEAT_MBYTE
+			    (char_u *)&p_mco, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)2, (char_u *)0L}},
     {"maxfuncdepth", "mfd", P_NUM|P_VI_DEF,
 #ifdef FEAT_EVAL
 			    (char_u *)&p_mfd, PV_NONE,
@@ -3198,9 +3206,17 @@ set_init_1()
 # endif
 		    )
 	    {
-		/* Adjust the default for 'isprint' to match latin1. */
+		/* Adjust the default for 'isprint' and 'iskeyword' to match
+		 * latin1.  Also set the defaults for when 'nocompatible' is
+		 * set. */
 		set_string_option_direct((char_u *)"isp", -1,
 				   (char_u *)"@,161-255", OPT_FREE, SID_NONE);
+		set_string_option_direct((char_u *)"isk", -1,
+					      ISK_LATIN1, OPT_FREE, SID_NONE);
+		opt_idx = findoption((char_u *)"isp");
+		options[opt_idx].def_val[VIM_DEFAULT] = (char_u *)"@,161-255";
+		opt_idx = findoption((char_u *)"isk");
+		options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
 		(void)init_chartab();
 	    }
 #endif
@@ -7563,6 +7579,18 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    foldUpdateAll(curwin);
     }
 #endif /* FEAT_FOLDING */
+
+#ifdef FEAT_MBYTE
+    /* 'maxcombine' */
+    else if (pp == &p_mco)
+    {
+	if (p_mco > MAX_MCO)
+	    p_mco = MAX_MCO;
+	else if (p_mco < 0)
+	    p_mco = 0;
+	screenclear();	    /* will re-allocate the screen */
+    }
+#endif
 
     else if (pp == &curbuf->b_p_iminsert)
     {

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 04
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3371,7 +3371,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		If there is no match -1 is returned.
 		Example: >
 			:echo match("testing", "ing")	" results in 4
-			:echo match([1, 'x'], '\a')	" results in 2
+			:echo match([1, 'x'], '\a')	" results in 1
 <		See |string-match| for how {pat} is used.
 								*strpbrk()*
 		Vim doesn't have a strpbrk() function.  But you can do: >
@@ -3728,6 +3728,9 @@ readfile({fname} [, {binary} [, {max}]])
 remote_expr({server}, {string} [, {idvar}])
 		Send the {string} to {server}.  The string is sent as an
 		expression and the result is returned after evaluation.
+		The result must be a String or a |List|.  A |List| is turned
+		into a String by joining the items with a line break in
+		between (not at the end), like with join(expr, "\n").
 		If {idvar} is present, it is taken as the name of a
 		variable and a {serverid} for later use with
 		remote_read() is stored there.
@@ -3884,9 +3887,11 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
-		When a match has been found its line number is returned.  With
-		the 'p' flag the returned value is one more than the first
-		sub-match in \(\).  One if there is none.
+		When a match has been found its line number is returned.
+							*search()-sub-match*
+		With the 'p' flag the returned value is one more than the
+		first sub-match in \(\).  One if none of them matched but the
+		whole pattern did match.
 		To get the column number too use |searchpos()|.
 
 		The cursor will be positioned at the match, unless the 'n'
@@ -4039,9 +4044,15 @@ searchpos({pattern} [, {flags} [, {stopline}]])		*searchpos()*
 		is the line number and the second element is the byte index of
 		the column position of the match. If no match is found,
 		returns [0, 0].
->
-			:let [lnum,col] = searchpos('mypattern', 'n')
-<
+		Example: >
+	:let [lnum, col] = searchpos('mypattern', 'n')
+
+<		When the 'p' flag is given then there is an extra item with
+		the sub-pattern match number |search()-sub-match|.  Example: >
+	:let [lnum, col, submatch] = searchpos('\(\l\)\|\(\u\)', 'np')
+<		In this example "submatch" is 2 when a lowercase letter is
+		found |/\l|, 3 when an uppercase letter is found |/\u|.
+
 server2client( {clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
 		that sent a string can be retrieved with expand("<client>").

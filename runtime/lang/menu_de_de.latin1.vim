@@ -2,7 +2,7 @@
 " Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
 " Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
 "            		Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sun, 17 Apr 2005 18:28:58 CEST
+" Last Change:	Sun, 5 Mar 2006 07:20:00 CEST
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.
@@ -21,6 +21,7 @@ endif
 menutrans &File				&Datei
 menutrans &Open\.\.\.<Tab>:e		&Öffnen\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\ &Fenster\ Öffnen\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ Öffnen\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Neue\ Datei<Tab>:enew
 menutrans &Close<Tab>:close		S&chließen<Tab>:close
 menutrans &Save<Tab>:w			&Speichern<Tab>:w
@@ -100,6 +101,22 @@ menutrans &Keymap					&Tastatur-Belegung
 " }}} EDIT / EDITIEREN
 
 " {{{  TOOLS / WERKZEUGE
+if has("syntax")
+    menutrans &Spelling					&Rechtschreibung
+    menutrans &Spell\ Check\ On				&Rechtschreibung\ an
+    menutrans Spell\ Check\ &Off			Rechtschreibung\ &aus
+    menutrans To\ &Next\ error<Tab>]s			Zum\ &nächsten\ Fehler<Tab>]s
+    menutrans To\ &Previous\ error<Tab>[s		Zum\ &letzten\ Fehler<Tab>[s
+    menutrans Suggest\ &Corrections<Tab>z?		&Korrekturvorschläge<Tab>z?
+    menutrans &Repeat\ correction<Tab>:spellrepall	&Wiederhole\ Korrektur<Tab>:spellrepall
+    menutrans Set\ language\ to\ "en"			Verwende\ Wörterbuch\ "en"
+    menutrans Set\ language\ to\ "en_au"		Verwende\ Wörterbuch\ "en_au"
+    menutrans Set\ language\ to\ "en_ca"		Verwende\ Wörterbuch\ "en_ca"
+    menutrans Set\ language\ to\ "en_gb"		Verwende\ Wörterbuch\ "en_gb"
+    menutrans Set\ language\ to\ "en_nz"		Verwende\ Wörterbuch\ "en_nz"
+    menutrans Set\ language\ to\ "en_us"		Verwende\ Wörterbuch\ "en_us"
+    menutrans &Find\ More\ Languages			&Suche\ nach\ Wörterbüchern
+endif
 if has("folding")
   menutrans &Folding					Fa&ltung
   " open close folds
@@ -147,7 +164,7 @@ menutrans &Older\ List<Tab>:cold			&Ältere\ Liste<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew			&Neuere\ Liste<Tab>:cnew
 
 menutrans Error\ &Window				Feh&ler-Fenster
-menutrans &Set\ Compiler				&Compiler
+menutrans Se&T\ Compiler				&Compiler
 menutrans &Update<Tab>:cwin				&Aktualisieren<Tab>:cwin
 menutrans &Open<Tab>:copen				&Öffnen<Tab>:copen
 menutrans &Close<Tab>:cclose				&Schließen<Tab>:cclose
@@ -184,7 +201,7 @@ menutrans [No\ File]					[Keine\ Datei]
 menutrans &Window			&Ansicht
 menutrans &New<Tab>^Wn			&Neu<Tab>^Wn
 menutrans S&plit<Tab>^Ws		Aufs&palten<Tab>^Ws
-menutrans Split\ &Vertically<Tab>^Wv	&Vertikal\ Aufspalten<Tab>^Ws
+menutrans Split\ &Vertically<Tab>^Wv	&Vertikal\ Aufspalten<Tab>^Wv
 menutrans Split\ File\ E&xplorer	Ver&zeichnis
 menutrans Sp&lit\ To\ #<Tab>^W^^	Aufspa&lten\ in\ #<Tab>^W^^
 menutrans &Close<Tab>^Wc		&Schließen<Tab>^Wc
@@ -228,6 +245,8 @@ menutrans &Paste			&Einfügen
 menutrans &Delete			&Löschen
 menutrans Select\ Blockwise		Auswahl\ Blockartig
 menutrans Select\ &Word			Auswahl\ des\ &Wortes
+menutrans Select\ &Sentence             Auswahl\ des\ Sa&tzes
+menutrans Select\ Pa&ragraph            Auswahl\ des\ Absatzes
 menutrans Select\ &Line			Auswahl\ der\ &Zeile
 menutrans Select\ &Block		Auswahl\ des\ &Blocks
 menutrans Select\ &All			&Alles\ Auswählen

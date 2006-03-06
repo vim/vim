@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 24
+*editing.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -414,7 +414,9 @@ You can have the backticks expanded as a Vim expression, instead of an
 external command, by using the syntax `={expr}` e.g.: >
 	:e `=tempname()`
 The expression can contain just about anything, thus this can also be used to
-avoid the special meaning of '"', '|', '%' and '#'.
+avoid the special meaning of '"', '|', '%' and '#'.  Names are to be separated
+with line breaks.  When the result is a |List| then each item is used as a
+name.  Line breaks also separate names.
 
 							*++opt* *[++opt]*
 The [++opt] argument can be used to force the value of 'fileformat',

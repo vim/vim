@@ -2,7 +2,7 @@
 " This is a GENERATED FILE. Please always refer to source file at the URI below.
 " Language: OpenSSH server configuration file (ssh_config)
 " Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-" Last Change: 2003-05-06
+" Last Change: 2006-03-05
 " URL: http://trific.ath.cx/Ftp/vim/syntax/sshconfig.vim
 
 " Setup
@@ -30,7 +30,8 @@ syn keyword sshconfigTodo TODO FIXME NOT contained
 syn keyword sshconfigYesNo yes no ask
 syn keyword sshconfigCipher blowfish des 3des
 syn keyword sshconfigCipher aes128-cbc 3des-cbc blowfish-cbc cast128-cbc
-syn keyword sshconfigCipher arcfour aes192-cbc aes256-cbc
+syn keyword sshconfigCipher aes192-cbc aes256-cbc aes128-ctr aes256-ctr
+syn keyword sshconfigCipher arcfour arcfour128 arcfour256 cast128-cbc
 syn keyword sshconfigMAC hmac-md5 hmac-sha1 hmac-ripemd160 hmac-sha1-96
 syn keyword sshconfigMAC hmac-md5-96
 syn keyword sshconfigHostKeyAlg ssh-rsa ssh-dss
@@ -48,24 +49,29 @@ syn match sshconfigHostPort "\<\(\x\{,4}:\)\+\x\{,4}[:/]\d\+\>"
 
 " Keywords
 syn keyword sshconfigHostSect Host
-syn keyword sshconfigKeyword AFSTokenPassing BatchMode BindAddress
+syn keyword sshconfigKeyword AddressFamily BatchMode BindAddress
 syn keyword sshconfigKeyword ChallengeResponseAuthentication CheckHostIP
-syn keyword sshconfigKeyword Cipher Ciphers ClearAllForwardings Compression
-syn keyword sshconfigKeyword CompressionLevel ConnectionAttempts
-syn keyword sshconfigKeyword DynamicForward EscapeChar ForwardAgent ForwardX11
-syn keyword sshconfigKeyword GatewayPorts GlobalKnownHostsFile
-syn keyword sshconfigKeyword HostbasedAuthentication HostKeyAlgorithms
-syn keyword sshconfigKeyword HostKeyAlias HostName IdentityFile KeepAlive
-syn keyword sshconfigKeyword KerberosAuthentication KerberosTgtPassing
-syn keyword sshconfigKeyword LocalForward LogLevel MACs
-syn keyword sshconfigKeyword NoHostAuthenticationForLocalhost
+syn keyword sshconfigKeyword Cipher Ciphers ClearAllForwardings
+syn keyword sshconfigKeyword Compression CompressionLevel ConnectTimeout
+syn keyword sshconfigKeyword ConnectionAttempts ControlMaster
+syn keyword sshconfigKeyword ControlPath DynamicForward EnableSSHKeysign
+syn keyword sshconfigKeyword EscapeChar ForwardAgent ForwardX11
+syn keyword sshconfigKeyword ForwardX11Trusted GSSAPIAuthentication
+syn keyword sshconfigKeyword GSSAPIDelegateCredentials GatewayPorts
+syn keyword sshconfigKeyword GlobalKnownHostsFile HostKeyAlgorithms
+syn keyword sshconfigKeyword HashKnownHosts KbdInteractiveDevices
+syn keyword sshconfigKeyword HostKeyAlias HostName HostbasedAuthentication
+syn keyword sshconfigKeyword IdentitiesOnly IdentityFile LocalForward
+syn keyword sshconfigKeyword LogLevel MACs NoHostAuthenticationForLocalhost
 syn keyword sshconfigKeyword NumberOfPasswordPrompts PasswordAuthentication
 syn keyword sshconfigKeyword Port PreferredAuthentications Protocol
-syn keyword sshconfigKeyword ProxyCommand PubkeyAuthentication RemoteForward
+syn keyword sshconfigKeyword ProxyCommand PubkeyAuthentication
+syn keyword sshconfigKeyword RSAAuthentication RemoteForward
 syn keyword sshconfigKeyword RhostsAuthentication RhostsRSAAuthentication
-syn keyword sshconfigKeyword RSAAuthentication SmartcardDevice
-syn keyword sshconfigKeyword StrictHostKeyChecking UsePrivilegedPort User
-syn keyword sshconfigKeyword UserKnownHostsFile XAuthLocation
+syn keyword sshconfigKeyword SendEnv ServerAliveCountMax ServerAliveInterval
+syn keyword sshconfigKeyword SmartcardDevice StrictHostKeyChecking
+syn keyword sshconfigKeyword TCPKeepAlive UsePrivilegedPort User
+syn keyword sshconfigKeyword UserKnownHostsFile VerifyHostKeyDNS XAuthLocation
 
 " Define the default highlighting
 if version >= 508 || !exists("did_sshconfig_syntax_inits")

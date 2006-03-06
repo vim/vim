@@ -427,9 +427,10 @@ msg_split(s, attr)
  * work properly.
  */
     char_u *
-eval_to_string(arg, nextcmd)
+eval_to_string(arg, nextcmd, dolist)
     char_u	*arg;
     char_u	**nextcmd;
+    int		dolist;
 {
     return NULL;
 }
@@ -827,7 +828,7 @@ Eval(str)
     PREINIT:
 	char_u *value;
     PPCODE:
-	value = eval_to_string((char_u *)str, (char_u**)0);
+	value = eval_to_string((char_u *)str, (char_u **)0, TRUE);
 	if (value == NULL)
 	{
 	    XPUSHs(sv_2mortal(newSViv(0)));

@@ -117,6 +117,10 @@
  * <sectionend>	  1 byte    SN_END
  *
  *
+ * sectionID == SN_INFO: <infotext>
+ * <infotext>	 N bytes    free format text with spell file info (version,
+ *			    website, etc)
+ *
  * sectionID == SN_REGION: <regionname> ...
  * <regionname>	 2 bytes    Up to 8 region names: ca, au, etc.  Lower case.
  *			    First <regionname> is region 1.
@@ -185,7 +189,7 @@
  * <compmax>     1 byte	    Maximum nr of words in compound word.
  * <compminlen>  1 byte	    Minimal word length for compounding.
  * <compsylmax>  1 byte	    Maximum nr of syllables in compound word.
- * <compflags>   N bytes    Flags from COMPOUNDFLAGS items, separated by
+ * <compflags>   N bytes    Flags from COMPOUNDRULE items, separated by
  *			    slashes.
  *
  * sectionID == SN_NOBREAK: (empty, its presence is enough)
@@ -290,7 +294,7 @@
  */
 
 #if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include <io.h>	/* for lseek(), must be before vim.h */
+# include "vimio.h"	/* for lseek(), must be before vim.h */
 #endif
 
 #include "vim.h"
@@ -431,6 +435,8 @@ struct slang_S
     char_u	*sl_pbyts;	/* prefix tree word bytes */
     idx_T	*sl_pidxs;	/* prefix tree word indexes */
 
+    char_u	*sl_info;	/* infotext string or NULL */
+
     char_u	sl_regions[17];	/* table with up to 8 region names plus NUL */
 
     char_u	*sl_midword;	/* MIDWORD string or NULL */
@@ -440,7 +446,7 @@ struct slang_S
     int		sl_compmax;	/* COMPOUNDMAX (default: MAXWLEN) */
     int		sl_compminlen;	/* COMPOUNDMIN (default: 0) */
     int		sl_compsylmax;	/* COMPOUNDSYLMAX (default: MAXWLEN) */
-    regprog_T	*sl_compprog;	/* COMPOUNDFLAGS turned into a regexp progrm
+    regprog_T	*sl_compprog;	/* COMPOUNDRULE turned into a regexp progrm
 				 * (NULL when no compounding) */
     char_u	*sl_compstartflags; /* flags for first compound word */
     char_u	*sl_compallflags; /* all flags for compound words */
@@ -534,6 +540,7 @@ typedef struct langp_S
 #define SN_REPSAL	12	/* REPSAL items section */
 #define SN_WORDS	13	/* common words */
 #define SN_NOSPLITSUGS	14	/* don't split word for suggestions */
+#define SN_INFO		15	/* info section */
 #define SN_END		255	/* end of sections */
 
 #define SNF_REQUIRED	1	/* <sectionflags>: required section */
@@ -1520,7 +1527,7 @@ find_word(mip, mode)
 		}
 
 		/* If the word ends the sequence of compound flags of the
-		 * words must match with one of the COMPOUNDFLAGS items and
+		 * words must match with one of the COMPOUNDRULE items and
 		 * the number of syllables must not be too large. */
 		mip->mi_compflags[mip->mi_complen] = ((unsigned)flags >> 24);
 		mip->mi_compflags[mip->mi_complen + 1] = NUL;
@@ -2284,6 +2291,9 @@ spell_load_lang(lang)
 	    break;
 #endif
 	}
+#ifdef FEAT_AUTOCMD
+	break;
+#endif
     }
 
     if (r == FAIL)
@@ -2433,6 +2443,9 @@ slang_clear(lp)
     lp->sl_prefixcnt = 0;
     vim_free(lp->sl_prefprog);
     lp->sl_prefprog = NULL;
+
+    vim_free(lp->sl_info);
+    lp->sl_info = NULL;
 
     vim_free(lp->sl_midword);
     lp->sl_midword = NULL;
@@ -2620,6 +2633,12 @@ spell_load_file(fname, lang, old_lp, silent)
 	res = 0;
 	switch (n)
 	{
+	    case SN_INFO:
+		lp->sl_info = read_string(fd, len);	/* <infotext> */
+		if (lp->sl_info == NULL)
+		    goto endFAIL;
+		break;
+
 	    case SN_REGION:
 		res = read_region_section(fd, lp, len);
 		break;
@@ -3386,7 +3405,7 @@ read_compound(fd, slang, len)
 	c = MAXWLEN;
     slang->sl_compsylmax = c;
 
-    /* Turn the COMPOUNDFLAGS items into a regexp pattern:
+    /* Turn the COMPOUNDRULE items into a regexp pattern:
      * "a[bc]/a*b+" -> "^\(a[bc]\|a*b\+\)$".
      * Inserting backslashes may double the length, "^\(\)$<Nul>" is 7 bytes.
      * Conversion to utf-8 may double the size. */
@@ -4711,6 +4730,7 @@ typedef struct spellinfo_S
     int		si_memtot;	/* runtime memory used */
     int		si_verbose;	/* verbose messages */
     int		si_msg_count;	/* number of words added since last message */
+    char_u	*si_info;	/* info text chars or NULL  */
     int		si_region_count; /* number of regions supported (1 when there
 				    are no regions) */
     char_u	si_region_name[16]; /* region names; used only if
@@ -4743,6 +4763,7 @@ typedef struct spellinfo_S
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((spellinfo_T *spin, char_u *fname));
+static int spell_info_item __ARGS((char_u *s));
 static unsigned affitem2flag __ARGS((int flagtype, char_u *item, char_u	*fname, int lnum));
 static unsigned get_affitem __ARGS((int flagtype, char_u **pp));
 static void process_compflags __ARGS((spellinfo_T *spin, afffile_T *aff, char_u *compflags));
@@ -4936,7 +4957,7 @@ spell_read_aff(spin, fname)
     int		compminlen = 0;		/* COMPOUNDMIN value */
     int		compsylmax = 0;		/* COMPOUNDSYLMAX value */
     int		compmax = 0;		/* COMPOUNDMAX value */
-    char_u	*compflags = NULL;	/* COMPOUNDFLAG and COMPOUNDFLAGS
+    char_u	*compflags = NULL;	/* COMPOUNDFLAG and COMPOUNDRULE
 					   concatenated */
     char_u	*midword = NULL;	/* MIDWORD value */
     char_u	*syllable = NULL;	/* SYLLABLE value */
@@ -5023,8 +5044,13 @@ spell_read_aff(spin, fname)
 	    if (itemcnt == MAXITEMCNT)	    /* too many items */
 		break;
 	    items[itemcnt++] = p;
-	    while (*p > ' ')	    /* skip until white space or CR/NL */
-		++p;
+	    /* A few items have arbitrary text argument, don't split them. */
+	    if (itemcnt == 2 && spell_info_item(items[0]))
+		while (*p >= ' ' || *p == TAB)    /* skip until CR/NL */
+		    ++p;
+	    else
+		while (*p > ' ')    /* skip until white space or CR/NL */
+		    ++p;
 	    if (*p == NUL)
 		break;
 	    *p++ = NUL;
@@ -5072,6 +5098,25 @@ spell_read_aff(spin, fname)
 			|| aff->af_pref.ht_used > 0)
 		    smsg((char_u *)_("FLAG after using flags in %s line %d: %s"),
 			    fname, lnum, items[1]);
+	    }
+	    else if (spell_info_item(items[0]))
+	    {
+		    p = (char_u *)getroom(spin,
+			    (spin->si_info == NULL ? 0 : STRLEN(spin->si_info))
+			    + STRLEN(items[0])
+			    + STRLEN(items[1]) + 3, FALSE);
+		    if (p != NULL)
+		    {
+			if (spin->si_info != NULL)
+			{
+			    STRCPY(p, spin->si_info);
+			    STRCAT(p, "\n");
+			}
+			STRCAT(p, items[0]);
+			STRCAT(p, " ");
+			STRCAT(p, items[1]);
+			spin->si_info = p;
+		    }
 	    }
 	    else if (STRCMP(items[0], "MIDWORD") == 0 && itemcnt == 2
 							   && midword == NULL)
@@ -5125,7 +5170,7 @@ spell_read_aff(spin, fname)
 	    else if (STRCMP(items[0], "COMPOUNDFLAG") == 0 && itemcnt == 2
 							 && compflags == NULL)
 	    {
-		/* Turn flag "c" into COMPOUNDFLAGS compatible string "c+",
+		/* Turn flag "c" into COMPOUNDRULE compatible string "c+",
 		 * "Na" into "Na+", "1234" into "1234+". */
 		p = getroom(spin, STRLEN(items[1]) + 2, FALSE);
 		if (p != NULL)
@@ -5135,7 +5180,7 @@ spell_read_aff(spin, fname)
 		    compflags = p;
 		}
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDFLAGS") == 0 && itemcnt == 2)
+	    else if (STRCMP(items[0], "COMPOUNDRULE") == 0 && itemcnt == 2)
 	    {
 		/* Concatenate this string to previously defined ones, using a
 		 * slash to separate them. */
@@ -5723,6 +5768,21 @@ spell_read_aff(spin, fname)
     vim_free(pc);
     fclose(fd);
     return aff;
+}
+
+/*
+ * Return TRUE if "s" is the name of an info item in the affix file.
+ */
+    static int
+spell_info_item(s)
+    char_u	*s;
+{
+    return STRCMP(s, "NAME") == 0
+	|| STRCMP(s, "HOME") == 0
+	|| STRCMP(s, "VERSION") == 0
+	|| STRCMP(s, "AUTHOR") == 0
+	|| STRCMP(s, "EMAIL") == 0
+	|| STRCMP(s, "COPYRIGHT") == 0;
 }
 
 /*
@@ -7366,6 +7426,14 @@ put_bytes(fd, nr, len)
 	putc((int)(nr >> (i * 8)), fd);
 }
 
+#ifdef _MSC_VER
+# if (_MSC_VER <= 1200)
+/* This line is required for VC6 without the service pack.  Also see the
+ * matching #pragma below. */
+/* # pragma optimize("", off) */
+# endif
+#endif
+
 /*
  * Write spin->si_sugtime to file "fd".
  */
@@ -7389,6 +7457,12 @@ put_sugtime(spin, fd)
 	    putc(c, fd);
 	}
 }
+
+#ifdef _MSC_VER
+# if (_MSC_VER <= 1200)
+/* # pragma optimize("", on) */
+# endif
+#endif
 
 static int
 #ifdef __BORLANDC__
@@ -7454,6 +7528,17 @@ write_vim_spell(spin, fname)
     /*
      * <SECTIONS>: <section> ... <sectionend>
      */
+
+    /* SN_INFO: <infotext> */
+    if (spin->si_info != NULL)
+    {
+	putc(SN_INFO, fd);				/* <sectionID> */
+	putc(0, fd);					/* <sectionflags> */
+
+	i = STRLEN(spin->si_info);
+	put_bytes(fd, (long_u)i, 4);			/* <sectionlen> */
+	fwrite(spin->si_info, (size_t)i, (size_t)1, fd); /* <infotext> */
+    }
 
     /* SN_REGION: <regionname> ...
      * Write the region names only if there is more than one. */
@@ -14823,6 +14908,38 @@ pop:
 }
 #endif
 
+/*
+ * ":spellinfo"
+ */
+/*ARGSUSED*/
+    void
+ex_spellinfo(eap)
+    exarg_T *eap;
+{
+    int		lpi;
+    langp_T	*lp;
+    char_u	*p;
+
+    if (no_spell_checking(curwin))
+	return;
+
+    msg_start();
+    for (lpi = 0; lpi < curbuf->b_langp.ga_len && !got_int; ++lpi)
+    {
+	lp = LANGP_ENTRY(curbuf->b_langp, lpi);
+	msg_puts((char_u *)"file: ");
+	msg_puts(lp->lp_slang->sl_fname);
+	msg_putchar('\n');
+	p = lp->lp_slang->sl_info;
+	if (p != NULL)
+	{
+	    msg_puts(p);
+	    msg_putchar('\n');
+	}
+    }
+    msg_end();
+}
+
 #define DUMPFLAG_KEEPCASE   1	/* round 2: keep-case tree */
 #define DUMPFLAG_COUNT	    2	/* include word count */
 #define DUMPFLAG_ICASE	    4	/* ignore case when finding matches */
@@ -14902,9 +15019,9 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
 		dumpflags |= DUMPFLAG_ONECAP;
 	    else if (n == WF_ALLCAP
 #ifdef FEAT_MBYTE
-		    && STRLEN(pat) > mb_ptr2len(pat)
+		    && (int)STRLEN(pat) > mb_ptr2len(pat)
 #else
-		    && STRLEN(pat) > 1
+		    && (int)STRLEN(pat) > 1
 #endif
 		    )
 		dumpflags |= DUMPFLAG_ALLCAP;

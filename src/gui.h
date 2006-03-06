@@ -391,6 +391,8 @@ typedef struct Gui
     PangoContext     *text_context; /* the context used for all text */
     PangoFont	     *ascii_font;   /* cached font for ASCII strings */
     PangoGlyphString *ascii_glyphs; /* cached code point -> glyph map */
+# endif
+# ifdef FEAT_GUI_TABLINE
     GtkWidget	*tabline;	    /* tab pages line handle */
 # endif
 

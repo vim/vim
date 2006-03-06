@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 7.0aa.  Last change: 2005 Apr 01
+*remote.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,8 +53,8 @@ The following command line arguments are available:
 								*--remote-send*
    --remote-send {keys}		Send {keys} to server and exit.
 								*--remote-expr*
-   --remote-expr {expr}		Evaluate {expr} in server and
-				print the result on stdout.
+   --remote-expr {expr}		Evaluate {expr} in server and print the result
+   				on stdout.
 								*--serverlist*
    --serverlist			Output a list of server names.
 

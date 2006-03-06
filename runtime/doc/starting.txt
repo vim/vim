@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 01
+*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1129,6 +1129,7 @@ you want to make this file your default .vimrc, move it to your home directory
 (on Unix), s: (Amiga) or $VIM directory (MS-DOS).  You could also use
 autocommands |autocommand| and/or modelines |modeline|.
 
+						*vimrc-option-example*
 If you only want to add a single option setting to your vimrc, you can use
 these steps:
 1. Edit your vimrc file with Vim.
@@ -1138,6 +1139,7 @@ these steps:
    '=' to enter the value.  E.g., for the 'guifont' option: >
    o:set guifont=<C-R>=&guifont<CR><Esc>
 <  [<C-R> is a CTRL-R, <CR> is a return, <Esc> is the escape key]
+   You need to escape special characters, esp. spaces.
 
 Note that when you create a .vimrc file, this can influence the 'compatible'
 option, which has several side effects.  See |'compatible'|.

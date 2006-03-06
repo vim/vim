@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 04
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -23,6 +23,7 @@ Spell checking				|new-spell|
 Omni completion				|new-omni-completion|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
+Extended Unicode support		|new-more-unicode|
 Highlighting matching parens		|new-matchparen|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
@@ -232,6 +233,23 @@ Printing multi-byte text				*new-print-multi-byte*
 The |:hardcopy| command now supports printing multi-byte characters.
 The 'printmbcharset' and 'printmbfont' options are used for this.
 Also see |postscript-cjk-printing|.  (Mike Williams)
+
+
+Extended Unicode support				*new-more-unicode*
+------------------------
+
+Previously only two combining characters were displayed.  The limit is now
+raised to 6.  This can be set with the 'maxcombine' option.  The default is
+still 2.
+
+|ga| now shows all combining characters, not just the first two.
+
+Previously only 16 bit Unicode characters were supported for displaying.  Now
+the full 32 bit character set can be used.  Unless manually disabled at
+compile time.
+
+For pattern matching it is now possible to search for individual composing
+characters. |patterns-composing|
 
 
 Highlighting matching parens				*new-matchparen*
@@ -1090,13 +1108,6 @@ Dropped the support for the BeOS and Amiga GUI.  They were not maintained and
 probably didn't work.  If you want to work on this: get the Vim 6.x version
 and merge it back in.
 
-Mac: "make" now creates the Vim.app directory and "make install" copies it to
-its final destination. (Raf)
-
-Mac: Made it possible to compile with Motif, Athena or GTK without tricks and
-still being able to use the MacRoman conversion.  Added the os_mac_conv.c
-file.
-
 When running the tests and one of them fails to produce "test.out" the
 following tests are still executed.  This helps when running out of memory.
 
@@ -1114,12 +1125,33 @@ functions.
 Moved unix_expandpath() to misc1.c, so that it can also be used by os_mac.c
 without copying the code.
 
-Mac: When running "make install" the runtime files are installed as for Unix.
+--- Mac ---
+
+"make" now creates the Vim.app directory and "make install" copies it to its
+final destination. (Raf)
+
+Made it possible to compile with Motif, Athena or GTK without tricks and still
+being able to use the MacRoman conversion.  Added the os_mac_conv.c file.
+
+When running "make install" the runtime files are installed as for Unix.
 Avoids that too many files are copied.  When running "make" a link to the
 runtime files is created to avoid a recursive copy that takes much time.
 
-Mac: Configure will attempt to build Vim for both Intel and PowerPC.  The
+Configure will attempt to build Vim for both Intel and PowerPC.  The
 --with-mac-arch configure argument can change it.
+
+--- Win32 ---
+
+The Make_mvc.mak file was adjusted to work with the latest MS compilers,
+including the free version of Visual Studio 2005. (George Reilly)
+
+INSTALLpc.txt was updated for the recent changes. (George Reilly)
+
+The distributed executable is now produced with the free Visual C++ Toolkit
+2003 and other free SDK chunks.  msvcsetup.bat was added to support this.
+
+Also generate the .pdb file that can be used to generate a useful crash report
+on MS-Windows. (George Reilly)
 
 ==============================================================================
 BUG FIXES						*bug-fixes-7*
@@ -1817,5 +1849,17 @@ literally.
 When using Select mode from Insert mode and typing a key, causing lines to be
 deleted and a message displayed, delayed the effect of inserting the key.
 Now overwrite the message without delay.
+
+When 'whichwrap' includes "l" then "dl" and "yl" on a single letter line
+worked differently.  Now recognize all operators when using "l" at the end of
+a line.
+
+GTK GUI: when the font selector returned a font name with a comma in it then
+it would be handled like two font names.  Now put a backslash before the
+comma.
+
+MS-DOS, Win32: When 'encoding' defaults to "latin1" then the value for
+'iskeyword' was still for CPxxx.  And when 'nocompatible' was set 'isprint'
+would also be the wrong value.
 
  vim:tw=78:ts=8:ft=help:norl:

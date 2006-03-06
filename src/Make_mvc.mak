@@ -131,9 +131,9 @@
 ### See feature.h for a list of optionals.
 # If you want to build some optional features without modifying the source,
 # you can set DEFINES on the command line, e.g.,
-#	nmake -f makefile.mvc "DEFINES=-DEMACS_TAGS"
+#	nmake -f Make_mvc.mvc "DEFINES=-DEMACS_TAGS"
 
-# Build on both Windows NT and Windows 95
+# Build on both Windows NT/XP and Windows 9x
 
 TARGETOS = BOTH
 
@@ -167,12 +167,12 @@ OBJDIR = $(OBJDIR)Z
 OBJDIR = $(OBJDIR)d
 !endif
 
-# ntwin32.mak requires that CPU be set appropriately
+# Win32.mak requires that CPU be set appropriately
 
 !ifdef PROCESSOR_ARCHITECTURE
-# We're on Windows NT or using VC 6
+# We're on Windows NT or using VC 6+
 CPU = $(PROCESSOR_ARCHITECTURE)
-! if "$(CPU)" == "x86"
+! if ("$(CPU)" == "x86") || ("$(CPU)" == "X86")
 CPU = i386
 ! endif
 !else  # !PROCESSOR_ARCHITECTURE
@@ -190,17 +190,12 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
-# Build a multithreaded version for the Windows 95 dead keys hack
-# Commented out because it doesn't work.
-# MULTITHREADED = 1
-
-
 # Get all sorts of useful, standard macros from the SDK.  (Note that
 # MSVC 2.2 does not install <ntwin32.mak> in the \msvc20\include
 # directory, but you can find it in \msvc20\include on the CD-ROM.
 # You may also need <win32.mak> from the same place.)
 
-!include <ntwin32.mak>
+!include <Win32.mak>
 
 
 #>>>>> path of the compiler and linker; name of include and lib directories
@@ -263,12 +258,14 @@ XPM_INC	  = -I $(XPM)\include
 !endif
 !endif
 
+# Set which version of the CRT to use
 !if defined(USE_MSVCRT)
 CVARS = $(cvarsdll)
-!elseif defined(MULTITHREADED)
-CVARS = $(cvarsmt)
+# !elseif defined(MULTITHREADED)
+# CVARS = $(cvarsmt)
 !else
-CVARS = $(cvars)
+# CVARS = $(cvars)
+CVARS = $(cvarsmt)
 !endif
 
 # need advapi32.lib for GetUserName()
@@ -276,7 +273,7 @@ CVARS = $(cvars)
 # gdi32.lib and comdlg32.lib for printing support
 # ole32.lib and uuid.lib are needed for FEAT_SHORTCUT
 CON_LIB = advapi32.lib shell32.lib gdi32.lib comdlg32.lib ole32.lib uuid.lib
-!if "$(VC6)" == "yes"
+!if "$(DELAYLOAD)" == "yes"
 CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
 
@@ -340,10 +337,14 @@ RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) -MD
 LIBC = msvcrt.lib
-! elseif defined(MULTITHREADED)
-LIBC = libcmt.lib
+# CFLAGS = $(CFLAGS) $(cvarsdll)
+# ! elseif defined(MULTITHREADED)
+# LIBC = libcmt.lib
+# CFLAGS = $(CFLAGS) $(cvarsmt)
 ! else
-LIBC = libc.lib
+# LIBC = libc.lib
+LIBC = libcmt.lib
+# CFLAGS = $(CFLAGS) $(cvars)
 ! endif
 !else  # DEBUG
 VIM = vimd
@@ -358,10 +359,14 @@ LIBC = /fixed:no
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) -MDd
 LIBC = $(LIBC) msvcrtd.lib
-! elseif defined(MULTITHREADED)
-LIBC = $(LIBC) libcmtd.lib
+# CFLAGS = $(CFLAGS) $(cvarsdll)
+# ! elseif defined(MULTITHREADED)
+# LIBC = $(LIBC) libcmtd.lib
+# CFLAGS = $(CFLAGS) $(cvarsmt)
 ! else
-LIBC = $(LIBC) libcd.lib
+# LIBC = $(LIBC) libcd.lib
+LIBC = $(LIBC) libcmtd.lib
+# CFLAGS = $(CFLAGS) $(cvars)
 ! endif
 !endif # DEBUG
 
@@ -666,7 +671,7 @@ CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 # on a crash (doesn't add overhead to the executable).
 #
 CFLAGS = $(CFLAGS) /Zi /Fd$(OUTDIR)/
-LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug:full -debugtype:cv,fixup
+LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug # -debug:full -debugtype:cv,fixup
 
 #
 # End extra feature include
@@ -1003,5 +1008,9 @@ proto.h: \
 	proto/undo.pro \
 	proto/window.pro \
 	$(NETBEANS_PRO)
+
+.cod.c:
+	$(CC) $(CFLAGS) /FAc $<
+
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

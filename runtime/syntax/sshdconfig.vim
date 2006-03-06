@@ -2,7 +2,7 @@
 " This is a GENERATED FILE. Please always refer to source file at the URI below.
 " Language: OpenSSH server configuration file (sshd_config)
 " Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-" Last Change: 2003-05-06
+" Last Change: 2006-03-05
 " URL: http://trific.ath.cx/Ftp/vim/syntax/sshdconfig.vim
 
 " Setup
@@ -29,8 +29,8 @@ syn keyword sshdconfigTodo TODO FIXME NOT contained
 " Constants
 syn keyword sshdconfigYesNo yes no
 syn keyword sshdconfigCipher aes128-cbc 3des-cbc blowfish-cbc cast128-cbc
-syn keyword sshdconfigCipher aes192-cbc aes256-cbc
-syn keyword sshdconfigCipher arcfour
+syn keyword sshdconfigCipher aes192-cbc aes256-cbc aes128-ctr aes256-ctr
+syn keyword sshdconfigCipher arcfour arcfour128 arcfour256 cast128-cbc
 syn keyword sshdconfigMAC hmac-md5 hmac-sha1 hmac-ripemd160 hmac-sha1-96
 syn keyword sshdconfigMAC hmac-md5-96
 syn keyword sshdconfigRootLogin without-password forced-commands-only
@@ -46,27 +46,33 @@ syn match sshdconfigHostPort "\<\(\x\{,4}:\)\+\x\{,4}:\d\+\>"
 syn match sshdconfigTime "\<\(\d\+[sSmMhHdDwW]\)\+\>"
 
 " Keywords
-syn keyword sshdconfigKeyword AFSTokenPassing AllowGroups AllowTcpForwarding
+syn keyword sshdconfigKeyword AcceptEnv AddressFamily
+syn keyword sshdconfigKeyword AllowGroups AllowTcpForwarding
 syn keyword sshdconfigKeyword AllowUsers AuthorizedKeysFile Banner
-syn keyword sshdconfigKeyword ChallengeResponseAuthentication Ciphers
-syn keyword sshdconfigKeyword ClientAliveInterval ClientAliveCountMax
-syn keyword sshdconfigKeyword Compression DenyGroups DenyUsers GatewayPorts
-syn keyword sshdconfigKeyword HostbasedAuthentication HostKey IgnoreRhosts
-syn keyword sshdconfigKeyword IgnoreUserKnownHosts KeepAlive
+syn keyword sshdconfigKeyword ChallengeResponseAuthentication
+syn keyword sshdconfigKeyword Ciphers ClientAliveCountMax
+syn keyword sshdconfigKeyword ClientAliveInterval Compression
+syn keyword sshdconfigKeyword DenyGroups DenyUsers GSSAPIAuthentication
+syn keyword sshdconfigKeyword GSSAPICleanupCredentials GatewayPorts
+syn keyword sshdconfigKeyword HostKey HostbasedAuthentication
+syn keyword sshdconfigKeyword IgnoreRhosts IgnoreUserKnownHosts
 syn keyword sshdconfigKeyword KerberosAuthentication KerberosOrLocalPasswd
 syn keyword sshdconfigKeyword KerberosTgtPassing KerberosTicketCleanup
+syn keyword sshdconfigKeyword KerberosGetAFSToken
 syn keyword sshdconfigKeyword KeyRegenerationInterval ListenAddress
-syn keyword sshdconfigKeyword LoginGraceTime LogLevel MACs MaxStartups
-syn keyword sshdconfigKeyword PAMAuthenticationViaKbdInt
-syn keyword sshdconfigKeyword PasswordAuthentication PermitEmptyPasswords
-syn keyword sshdconfigKeyword PermitRootLogin PermitUserEnvironment PidFile
-syn keyword sshdconfigKeyword Port PrintLastLog PrintMotd Protocol
-syn keyword sshdconfigKeyword PubkeyAuthentication RhostsAuthentication
-syn keyword sshdconfigKeyword RhostsRSAAuthentication RSAAuthentication
+syn keyword sshdconfigKeyword LogLevel LoginGraceTime MACs MaxAuthTries
+syn keyword sshdconfigKeyword MaxStartups PasswordAuthentication
+syn keyword sshdconfigKeyword PermitEmptyPasswords PermitRootLogin
+syn keyword sshdconfigKeyword PermitUserEnvironment PidFile Port
+syn keyword sshdconfigKeyword PrintLastLog PrintMotd Protocol
+syn keyword sshdconfigKeyword PubkeyAuthentication RSAAuthentication
+syn keyword sshdconfigKeyword RhostsAuthentication RhostsRSAAuthentication
 syn keyword sshdconfigKeyword ServerKeyBits StrictModes Subsystem
-syn keyword sshdconfigKeyword SyslogFacility UseLogin UsePrivilegeSeparation
-syn keyword sshdconfigKeyword VerifyReverseMapping X11DisplayOffset
-syn keyword sshdconfigKeyword X11Forwarding X11UseLocalhost XAuthLocation
+syn keyword sshdconfigKeyword ShowPatchLevel
+syn keyword sshdconfigKeyword SyslogFacility TCPKeepAlive UseDNS
+syn keyword sshdconfigKeyword UseLogin UsePAM UsePrivilegeSeparation
+syn keyword sshdconfigKeyword X11DisplayOffset X11Forwarding
+syn keyword sshdconfigKeyword X11UseLocalhost XAuthLocation
 
 " Define the default highlighting
 if version >= 508 || !exists("did_sshdconfig_syntax_inits")

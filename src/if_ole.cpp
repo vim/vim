@@ -368,7 +368,7 @@ CVim::Eval(BSTR expr, BSTR *result)
 
     /* Evaluate the expression */
     ++emsg_skip;
-    str = (char *)eval_to_string((char_u *)buffer, NULL);
+    str = (char *)eval_to_string((char_u *)buffer, NULL, TRUE);
     --emsg_skip;
     vim_free(buffer);
     if (str == NULL)

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2006 Feb 15
+*change.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -764,6 +764,10 @@ break the line.
 
 For convenience a <NL> character is also used as a line break.  Prepend a
 backslash to get a real <NL> character (which will be a NUL in the file).
+
+When the result is a |List| then the items are joined with separating line
+breaks.  Thus each item becomes a line, except that they can contain line
+breaks themselves.
 
 The whole matched text can be accessed with "submatch(0)".  The text matched
 with the first pair of () with "submatch(1)".  Likewise for further

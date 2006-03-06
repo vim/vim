@@ -17,7 +17,7 @@ void eval_patch __ARGS((char_u *origfile, char_u *difffile, char_u *outfile));
 int eval_to_bool __ARGS((char_u *arg, int *error, char_u **nextcmd, int skip));
 char_u *eval_to_string_skip __ARGS((char_u *arg, char_u **nextcmd, int skip));
 int skip_expr __ARGS((char_u **pp));
-char_u *eval_to_string __ARGS((char_u *arg, char_u **nextcmd));
+char_u *eval_to_string __ARGS((char_u *arg, char_u **nextcmd, int dolist));
 char_u *eval_to_string_safe __ARGS((char_u *arg, char_u **nextcmd, int use_sandbox));
 int eval_to_number __ARGS((char_u *expr));
 list_T *eval_spell_expr __ARGS((char_u *badword, char_u *expr));

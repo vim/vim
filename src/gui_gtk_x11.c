@@ -3187,6 +3187,10 @@ on_select_tab(
     }
 }
 
+#ifndef HAVE_GTK2
+static int showing_tabline = 0;
+#endif
+
 /*
  * Show or hide the tabline.
  */
@@ -3196,11 +3200,19 @@ gui_mch_show_tabline(int showit)
     if (gui.tabline == NULL)
 	return;
 
+#ifdef HAVE_GTK2
+    /* gtk_notebook_get_show_tabs does not exist in gtk+-1.2.10 */
     if (!showit != !gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline)))
+#else
+    if (!showit != !showing_tabline)
+#endif
     {
 	/* Note: this may cause a resize event */
 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), showit);
 	update_window_manager_hints();
+#ifndef HAVE_GTK2
+	showing_tabline = showit;
+#endif
     }
 }
 
@@ -3211,7 +3223,13 @@ gui_mch_show_tabline(int showit)
 gui_mch_showing_tabline(void)
 {
     return gui.tabline != NULL
-		     && gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline));
+#ifdef HAVE_GTK2
+	    /* gtk_notebook_get_show_tabs does not exist in gtk+-1.2.10 */
+		     && gtk_notebook_get_show_tabs(GTK_NOTEBOOK(gui.tabline))
+#else
+		     && showing_tabline
+#endif
+		     ;
 }
 
 /*
@@ -4456,7 +4474,9 @@ gui_mch_font_dialog(char_u *oldval)
 
     if (gui.fontname != NULL)
     {
-	fontname = vim_strsave(gui.fontname);
+	/* Apparently some font names include a comma, need to escape that,
+	 * because in 'guifont' it separates names. */
+	fontname = vim_strsave_escaped(gui.fontname, (char_u *)",");
 	g_free(gui.fontname);
 	gui.fontname = NULL;
     }
@@ -4526,11 +4546,19 @@ gui_mch_font_dialog(char_u *oldval)
 			    GTK_FONT_SELECTION_DIALOG(dialog));
 	if (name != NULL)
 	{
-	    if (input_conv.vc_type != CONV_NONE)
-		fontname = string_convert(&input_conv, (char_u *)name, NULL);
-	    else
-		fontname = vim_strsave((char_u *)name);
+	    char_u  *p;
+
+	    /* Apparently some font names include a comma, need to escape
+	     * that, because in 'guifont' it separates names. */
+	    p = vim_strsave_escaped((char_u *)name, (char_u *)",");
 	    g_free(name);
+	    if (input_conv.vc_type != CONV_NONE)
+	    {
+		fontname = string_convert(&input_conv, p, NULL);
+		vim_free(p);
+	    }
+	    else
+		fontname = p;
 	}
     }
 

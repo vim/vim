@@ -356,11 +356,13 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'mat'	options.txt	/*'mat'*
 'matchpairs'	options.txt	/*'matchpairs'*
 'matchtime'	options.txt	/*'matchtime'*
+'maxcombine'	options.txt	/*'maxcombine'*
 'maxfuncdepth'	options.txt	/*'maxfuncdepth'*
 'maxmapdepth'	options.txt	/*'maxmapdepth'*
 'maxmem'	options.txt	/*'maxmem'*
 'maxmempattern'	options.txt	/*'maxmempattern'*
 'maxmemtot'	options.txt	/*'maxmemtot'*
+'mco'	options.txt	/*'mco'*
 'mef'	options.txt	/*'mef'*
 'menuitems'	options.txt	/*'menuitems'*
 'mesg'	vi_diff.txt	/*'mesg'*
@@ -2547,8 +2549,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :spelld	spell.txt	/*:spelld*
 :spelldump	spell.txt	/*:spelldump*
 :spellgood	spell.txt	/*:spellgood*
+:spelli	spell.txt	/*:spelli*
+:spellinfo	spell.txt	/*:spellinfo*
 :spellr	spell.txt	/*:spellr*
 :spellrepall	spell.txt	/*:spellrepall*
+:spellu	spell.txt	/*:spellu*
+:spellundo	spell.txt	/*:spellundo*
 :spellw	spell.txt	/*:spellw*
 :spellwrong	spell.txt	/*:spellwrong*
 :split	windows.txt	/*:split*
@@ -5188,6 +5194,7 @@ ft-ocaml-syntax	syntax.txt	/*ft-ocaml-syntax*
 ft-papp-syntax	syntax.txt	/*ft-papp-syntax*
 ft-pascal-syntax	syntax.txt	/*ft-pascal-syntax*
 ft-perl-syntax	syntax.txt	/*ft-perl-syntax*
+ft-php-omni	insert.txt	/*ft-php-omni*
 ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
 ft-phtml-syntax	syntax.txt	/*ft-phtml-syntax*
@@ -5932,6 +5939,8 @@ matchstr()	eval.txt	/*matchstr()*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
+mbyte-combining	mbyte.txt	/*mbyte-combining*
+mbyte-composing	mbyte.txt	/*mbyte-composing*
 mbyte-conversion	mbyte.txt	/*mbyte-conversion*
 mbyte-encoding	mbyte.txt	/*mbyte-encoding*
 mbyte-first	mbyte.txt	/*mbyte-first*
@@ -6189,6 +6198,7 @@ new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
 new-manpage-trans	version7.txt	/*new-manpage-trans*
 new-matchparen	version7.txt	/*new-matchparen*
+new-more-unicode	version7.txt	/*new-more-unicode*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
 new-netrw-explore	version7.txt	/*new-netrw-explore*
@@ -6291,6 +6301,7 @@ pattern-multi-items	pattern.txt	/*pattern-multi-items*
 pattern-overview	pattern.txt	/*pattern-overview*
 pattern-searches	pattern.txt	/*pattern-searches*
 pattern.txt	pattern.txt	/*pattern.txt*
+patterns-composing	pattern.txt	/*patterns-composing*
 pdev-option	print.txt	/*pdev-option*
 penc-option	print.txt	/*penc-option*
 perl	if_perl.txt	/*perl*
@@ -6583,6 +6594,7 @@ scrolling	scroll.txt	/*scrolling*
 scrollstart-variable	eval.txt	/*scrollstart-variable*
 sdl.vim	syntax.txt	/*sdl.vim*
 search()	eval.txt	/*search()*
+search()-sub-match	eval.txt	/*search()-sub-match*
 search-commands	pattern.txt	/*search-commands*
 search-offset	pattern.txt	/*search-offset*
 search-pattern	pattern.txt	/*search-pattern*
@@ -6656,6 +6668,7 @@ special-buffers	windows.txt	/*special-buffers*
 speed-up	tips.txt	/*speed-up*
 spell	spell.txt	/*spell*
 spell-ACCENT	spell.txt	/*spell-ACCENT*
+spell-AUTHOR	spell.txt	/*spell-AUTHOR*
 spell-BAD	spell.txt	/*spell-BAD*
 spell-CHECKCOMPOUNDCASE	spell.txt	/*spell-CHECKCOMPOUNDCASE*
 spell-CHECKCOMPOUNDDUP	spell.txt	/*spell-CHECKCOMPOUNDDUP*
@@ -6665,19 +6678,22 @@ spell-CHECKCOMPOUNDTRIPLE	spell.txt	/*spell-CHECKCOMPOUNDTRIPLE*
 spell-CIRCUMFIX	spell.txt	/*spell-CIRCUMFIX*
 spell-COMMON	spell.txt	/*spell-COMMON*
 spell-COMPLEXPREFIXES	spell.txt	/*spell-COMPLEXPREFIXES*
+spell-COMPOUND	spell.txt	/*spell-COMPOUND*
 spell-COMPOUNDBEGIN	spell.txt	/*spell-COMPOUNDBEGIN*
 spell-COMPOUNDEND	spell.txt	/*spell-COMPOUNDEND*
 spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
-spell-COMPOUNDFLAGS	spell.txt	/*spell-COMPOUNDFLAGS*
 spell-COMPOUNDFORBIDFLAG	spell.txt	/*spell-COMPOUNDFORBIDFLAG*
 spell-COMPOUNDMAX	spell.txt	/*spell-COMPOUNDMAX*
 spell-COMPOUNDMIDDLE	spell.txt	/*spell-COMPOUNDMIDDLE*
 spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
 spell-COMPOUNDPERMITFLAG	spell.txt	/*spell-COMPOUNDPERMITFLAG*
 spell-COMPOUNDROOT	spell.txt	/*spell-COMPOUNDROOT*
+spell-COMPOUNDRULE	spell.txt	/*spell-COMPOUNDRULE*
 spell-COMPOUNDSYLLABLE	spell.txt	/*spell-COMPOUNDSYLLABLE*
 spell-COMPOUNDSYLMAX	spell.txt	/*spell-COMPOUNDSYLMAX*
 spell-COMPOUNDWORDMAX	spell.txt	/*spell-COMPOUNDWORDMAX*
+spell-COPYRIGHT	spell.txt	/*spell-COPYRIGHT*
+spell-EMAIL	spell.txt	/*spell-EMAIL*
 spell-FLAG	spell.txt	/*spell-FLAG*
 spell-FOL	spell.txt	/*spell-FOL*
 spell-FORBIDDENWORD	spell.txt	/*spell-FORBIDDENWORD*
@@ -6741,6 +6757,7 @@ spell-wordlist-format	spell.txt	/*spell-wordlist-format*
 spell-yiddish	spell.txt	/*spell-yiddish*
 spell.txt	spell.txt	/*spell.txt*
 spellbadword()	eval.txt	/*spellbadword()*
+spellfile-cleanup	spell.txt	/*spellfile-cleanup*
 spellfile.vim	spell.txt	/*spellfile.vim*
 spellsuggest()	eval.txt	/*spellsuggest()*
 split()	eval.txt	/*split()*
@@ -7415,6 +7432,7 @@ viminfo-write	starting.txt	/*viminfo-write*
 vimrc	starting.txt	/*vimrc*
 vimrc-filetype	usr_05.txt	/*vimrc-filetype*
 vimrc-intro	usr_05.txt	/*vimrc-intro*
+vimrc-option-example	starting.txt	/*vimrc-option-example*
 vimrc_example.vim	usr_05.txt	/*vimrc_example.vim*
 vimtutor	usr_01.txt	/*vimtutor*
 virtcol()	eval.txt	/*virtcol()*
@@ -7636,6 +7654,10 @@ zo	fold.txt	/*zo*
 zr	fold.txt	/*zr*
 zs	scroll.txt	/*zs*
 zt	scroll.txt	/*zt*
+zuG	spell.txt	/*zuG*
+zuW	spell.txt	/*zuW*
+zug	spell.txt	/*zug*
+zuw	spell.txt	/*zuw*
 zv	fold.txt	/*zv*
 zw	spell.txt	/*zw*
 zx	fold.txt	/*zx*

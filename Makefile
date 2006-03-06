@@ -128,21 +128,24 @@ MINOR = 0aa
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ 5.0: "vcvars32"
+# - Set environment for Visual C++ Toolkit 2003: "msvcsetup.bat"
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".
+# - Rename ObjC/vim.pdb to vimw32.pdb.
 # - When building the Win32s version later, delete vimrun.exe, install.exe and
 #   uninstal.exe.  Otherwise rename executables to installw32.exe and
 #   uninstalw32.exe.
 # Win32 GUI version:
 # - "nmake -f Make_mvc.mak GUI=yes.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
+# - Move ObjC/gvim.pdb to here.
 # - Delete vimrun.exe, install.exe and uninstall.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
 # - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
 # - Rename "gvim.exe" to "gvim_ole.exe".
+# - Rename ObjC/gvim.pdb to "gvim_ole.pdb".
 # - Delete install.exe and uninstall.exe.
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:
@@ -430,6 +433,7 @@ dosbin_gvim: dist no_title.vim dist/$(COMMENT_GVIM)
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
 	cp gvimext.dll dist/vim/$(VIMRTDIR)/gvimext.dll
 	cd dist && zip -9 -rD -z gvim$(VERSION).zip vim <$(COMMENT_GVIM)
+	cp gvim.pdb dist/gvim$(VERSION).pdb
 
 # make Win32 console
 dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
@@ -446,6 +450,7 @@ dosbin_w32: dist no_title.vim dist/$(COMMENT_W32)
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
 	cd dist && zip -9 -rD -z vim$(VERSION)w32.zip vim <$(COMMENT_W32)
+	cp vimw32.pdb dist/vim$(VERSION)w32.pdb
 
 # make 32bit DOS
 dosbin_d32: dist no_title.vim dist/$(COMMENT_D32)
@@ -500,6 +505,7 @@ dosbin_ole: dist no_title.vim dist/$(COMMENT_OLE)
 	cp src/VisVim/VisVim.dll dist/vim/$(VIMRTDIR)/VisVim.dll
 	cp src/VisVim/README_VisVim.txt dist/vim/$(VIMRTDIR)
 	cd dist && zip -9 -rD -z gvim$(VERSION)ole.zip vim <$(COMMENT_OLE)
+	cp gvim_ole.pdb dist/gvim$(VERSION)ole.pdb
 
 # make Win32s gvim
 dosbin_s: dist no_title.vim dist/$(COMMENT_W32S)

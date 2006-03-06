@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #ifndef __BORLANDC__
-# include "afxres.h"
+# include "winresrc.h"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

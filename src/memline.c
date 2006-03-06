@@ -43,7 +43,7 @@
  */
 
 #if defined(MSDOS) || defined(WIN32) || defined(_WIN64)
-# include <io.h>
+# include "vimio.h"
 #endif
 
 #include "vim.h"

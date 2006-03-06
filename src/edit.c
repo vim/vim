@@ -7604,7 +7604,7 @@ ins_bs(c, mode, inserted_space_p)
     int		in_indent;
     int		oldState;
 #ifdef FEAT_MBYTE
-    int		p1, p2;
+    int		cpc[MAX_MCO];	    /* composing characters */
 #endif
 
     /*
@@ -7920,16 +7920,16 @@ ins_bs(c, mode, inserted_space_p)
 	    {
 #ifdef FEAT_MBYTE
 		if (enc_utf8 && p_deco)
-		    (void)utfc_ptr2char(ml_get_cursor(), &p1, &p2);
+		    (void)utfc_ptr2char(ml_get_cursor(), cpc);
 #endif
 		(void)del_char(FALSE);
 #ifdef FEAT_MBYTE
 		/*
-		 * If p1 or p2 is non-zero, there are combining characters we
-		 * need to take account of.  Don't back up before the base
+		 * If there are combining characters and 'delcombine' is set
+		 * move the cursor back.  Don't back up before the base
 		 * character.
 		 */
-		if (enc_utf8 && p_deco && (p1 != NUL || p2 != NUL))
+		if (enc_utf8 && p_deco && cpc[0] != NUL)
 		    inc_cursor();
 #endif
 #ifdef FEAT_RIGHTLEFT

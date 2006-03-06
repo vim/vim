@@ -12,11 +12,11 @@
  */
 
 #if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
-# include <io.h>	/* for lseek(), must be before vim.h */
+# include "vimio.h"	/* for lseek(), must be before vim.h */
 #endif
 
 #if defined __EMX__
-# include <io.h>	/* for mktemp(), CJW 1997-12-03 */
+# include "vimio.h"	/* for mktemp(), CJW 1997-12-03 */
 #endif
 
 #include "vim.h"

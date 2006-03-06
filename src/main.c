@@ -8,7 +8,7 @@
  */
 
 #if defined(MSDOS) || defined(WIN32) || defined(_WIN64)
-# include <io.h>		/* for close() and dup() */
+# include "vimio.h"		/* for close() and dup() */
 #endif
 
 #define EXTERN
@@ -3602,7 +3602,7 @@ eval_client_expr_to_string(expr)
     redir_off = 0;
     ++emsg_skip;
 
-    res = eval_to_string(expr, NULL);
+    res = eval_to_string(expr, NULL, TRUE);
 
     debug_break_level = save_dbl;
     redir_off = save_ro;

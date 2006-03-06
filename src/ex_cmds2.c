@@ -12,7 +12,7 @@
  */
 
 #if defined(WIN32) && defined(FEAT_CSCOPE)
-# include <io.h>
+# include "vimio.h"
 #endif
 
 #include "vim.h"

@@ -780,7 +780,7 @@ get_expr_line()
     if (expr_copy == NULL)
 	return NULL;
 
-    rv = eval_to_string(expr_copy, NULL);
+    rv = eval_to_string(expr_copy, NULL, TRUE);
     vim_free(expr_copy);
     return rv;
 }

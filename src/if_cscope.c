@@ -22,7 +22,7 @@
 # include <sys/wait.h>
 #else
     /* not UNIX, must be WIN32 */
-# include <io.h>
+# include "vimio.h"
 # include <fcntl.h>
 # include <process.h>
 # define STDIN_FILENO    0

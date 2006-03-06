@@ -240,6 +240,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_spell		ex_ni
 # define ex_mkspell		ex_ni
 # define ex_spelldump		ex_ni
+# define ex_spellinfo		ex_ni
 # define ex_spellrepall		ex_ni
 #endif
 #ifndef FEAT_MZSCHEME
@@ -3289,10 +3290,17 @@ set_one_cmd_context(xp, buff)
 	if (bow != NULL && in_quote)
 	    xp->xp_pattern = bow;
 	xp->xp_context = EXPAND_FILES;
+
 #ifndef BACKSLASH_IN_FILENAME
 	/* For a shell command more chars need to be escaped. */
 	if (usefilter || ea.cmdidx == CMD_bang)
+	{
 	    xp->xp_shell = TRUE;
+
+	    /* When still after the command name expand executables. */
+	    if (xp->xp_pattern == skipwhite(arg))
+		    xp->xp_context = EXPAND_SHELLCMD;
+	}
 #endif
 
 	/* Check for environment variable */
@@ -5089,6 +5097,7 @@ static struct
     {EXPAND_MAPPINGS, "mapping"},
     {EXPAND_MENUS, "menu"},
     {EXPAND_SETTINGS, "option"},
+    {EXPAND_SHELLCMD, "shellcmd"},
     {EXPAND_TAGS, "tag"},
     {EXPAND_TAGS_LISTFILES, "tag_listfiles"},
     {EXPAND_USER_VARS, "var"},

@@ -93,6 +93,12 @@
 # endif
 #endif
 
+/* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
+#if _MSC_VER >= 1400
+# define _CRT_SECURE_NO_DEPRECATE
+# define _CRT_NONSTDC_NO_DEPRECATE
+#endif
+
 #if defined(FEAT_GUI_W32) || defined(FEAT_GUI_W16)
 # define FEAT_GUI_MSWIN
 #endif
@@ -358,12 +364,20 @@ typedef unsigned char sattr_T;
 
 /*
  * The u8char_T can hold one decoded UTF-8 character.
- * Vim always use an int (32 bits) for characters most places, so that we can
- * handle 32 bit characters in the file.  u8char_T is only used for
- * displaying.  That should be enough, because there is no font for > 16 bits.
+ * We normally use 32 bits now, since some Asian characters don't fit in 16
+ * bits.  u8char_T is only used for displaying, it could be 16 bits to save
+ * memory.
  */
 #ifdef FEAT_MBYTE
-typedef unsigned short u8char_T;
+# ifdef UNICODE16
+typedef unsigned short u8char_T;    /* short should be 16 bits */
+# else
+#  if SIZEOF_INT >= 4
+typedef unsigned int u8char_T;	    /* int is 32 bits */
+#  else
+typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
+#  endif
+# endif
 #endif
 
 #ifndef UNIX		    /* For Unix this is included in os_unix.h */
@@ -652,6 +666,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_COMPILER		29
 #define EXPAND_USER_DEFINED	30
 #define EXPAND_USER_LIST	31
+#define EXPAND_SHELLCMD		32
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
@@ -676,12 +691,13 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define WILD_ESCAPE		128
 
 /* Flags for expand_wildcards() */
-#define EW_DIR		1	/* include directory names */
-#define EW_FILE		2	/* include file names */
-#define EW_NOTFOUND	4	/* include not found names */
-#define EW_ADDSLASH	8	/* append slash to directory name */
-#define EW_KEEPALL	16	/* keep all matches */
-#define EW_SILENT	32	/* don't print "1 returned" from shell */
+#define EW_DIR		0x01	/* include directory names */
+#define EW_FILE		0x02	/* include file names */
+#define EW_NOTFOUND	0x04	/* include not found names */
+#define EW_ADDSLASH	0x08	/* append slash to directory name */
+#define EW_KEEPALL	0x10	/* keep all matches */
+#define EW_SILENT	0x20	/* don't print "1 returned" from shell */
+#define EW_EXEC		0x40	/* executable files */
 /* Note: mostly EW_NOTFOUND and EW_SILENT are mutually exclusive: EW_NOTFOUND
  * is used when executing commands and EW_SILENT for interactive expanding. */
 
@@ -1480,6 +1496,15 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 # endif
 #endif
 
+#ifdef FEAT_MBYTE
+# define MAX_MCO	6	/* maximum value for 'maxcombine' */
+
+/* Maximum number of bytes in a multi-byte character.  It can be one 32-bit
+ * character of up to 6 bytes, or one 16-bit character of up to three bytes
+ * plus six following composing characters of three bytes each. */
+# define MB_MAXBYTES	21
+#endif
+
 /* Include option.h before structs.h, because the number of window-local and
  * buffer-local options is used there. */
 #include "option.h"	    /* options and default values */
@@ -1783,11 +1808,6 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
 #ifdef FEAT_MBYTE
-/* Maximum number of bytes in a multi-byte character.  It can be one 32-bit
- * character of up to 6 bytes, or one 16-bit character of up to three bytes
- * plus two following composing characters of three bytes each. */
-# define MB_MAXBYTES	9
-
 /*
  * Return byte length of character that starts with byte "b".
  * Returns 1 for a single-byte character.

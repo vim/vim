@@ -52,12 +52,12 @@ do_ascii(eap)
     char	buf2[20];
     char_u	buf3[7];
 #ifdef FEAT_MBYTE
-    int		c1 = 0;
-    int		c2 = 0;
+    int		cc[MAX_MCO];
+    int		ci = 0;
     int		len;
 
     if (enc_utf8)
-	c = utfc_ptr2char(ml_get_cursor(), &c1, &c2);
+	c = utfc_ptr2char(ml_get_cursor(), cc);
     else
 #endif
 	c = gchar_cursor();
@@ -95,9 +95,7 @@ do_ascii(eap)
 		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
 					   transchar(c), buf1, buf2, c, c, c);
 #ifdef FEAT_MBYTE
-	c = c1;
-	c1 = c2;
-	c2 = 0;
+	c = cc[ci++];
 #endif
     }
 
@@ -120,9 +118,9 @@ do_ascii(eap)
 	vim_snprintf((char *)IObuff + len, IOSIZE - len,
 			c < 0x10000 ? _("> %d, Hex %04x, Octal %o")
 				    : _("> %d, Hex %08x, Octal %o"), c, c, c);
-	c = c1;
-	c1 = c2;
-	c2 = 0;
+	if (ci == MAX_MCO)
+	    break;
+	c = cc[ci++];
     }
 #endif
 

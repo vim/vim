@@ -609,6 +609,10 @@
 # define FEAT_MBYTE
 #endif
 
+/* Define this if you want to use 16 bit Unicode only, reduces memory used for
+ * the screen structures. */
+/* #define UNICODE16 */
+
 /*
  * +multi_byte_ime	Win32 IME input method.  Requires +multi_byte.
  *			Only for far-east Windows, so IME can be used to input
@@ -732,7 +736,7 @@
 /*
  * GUI tabline
  */
-#if defined(FEAT_GUI_GTK) && defined(HAVE_GTK2) && defined(FEAT_WINDOWS)
+#if defined(FEAT_GUI_GTK) && defined(FEAT_WINDOWS)
 # define FEAT_GUI_TABLINE
 #endif
 

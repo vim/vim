@@ -12,7 +12,7 @@
  */
 
 #if defined MSDOS || defined WIN32 || defined(_WIN64)
-# include <io.h>	/* for lseek(), must be before vim.h */
+# include "vimio.h"	/* for lseek(), must be before vim.h */
 #endif
 
 #include "vim.h"
