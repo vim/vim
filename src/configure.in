@@ -123,7 +123,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 	AC_MSG_RESULT(found, will make universal binary),
 
 	AC_MSG_RESULT(not found)
-	CFLAGS="save_cflags"
+	CFLAGS="$save_cflags"
 	AC_MSG_CHECKING(if Intel architecture is supported)
 	CPPFLAGS="$CPPFLAGS -arch i386"
 	LDFLAGS="$save_ldflags -arch i386"

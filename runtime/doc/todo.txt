@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 06
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,47 +30,30 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When expanding on the command line, recognize shell commands, such as ":!cmd".
-    Move from ExpandFromContext() to separate function.
-    Check for file being executable.  EW_EXEC
-    Escape special characters ";&<>(){}". Also in file names. (Adri Verhoef)
-
-Autoload:
-- Add a Vim script in $VIMRUNTIME/tools that takes a file with a list of
-  script names and a help file and produces a script that can be sourced to
-  install the scripts in the user's directories.
-  Use findfile(), so that only file names need to be given:
-    script plugin/myscript.vim
-    script autoload/mylib.vim
-    script autoload/yourlib.vim
-    helpfile doc/myscript.txt
-  For the "helpfile" item ":helptags" is run.
-
 Win32: Describe how to do debugging and describe it. (George Reilly)
-
-Are there more commands where v:swapcommand can be set to something useful?
 
 Mac unicode patch (Da Woon Jung):
 -   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
     Other patch from Da Woon Jung, 2005 Jan 16.
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
+- Add default key mappings for the command key (Alan Schmitt)
+    use http://macvim.org/OSX/files/gvimrc
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
 - Command-key mappings do not work. (Alan Schmitt)
-- Add default key mappings for the command key (Alan Schmitt)
-    use http://macvim.org/OSX/files/gvimrc
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
+Bug in Netbeans interface. (Xavier de Gaye, 2006 Mar 7)
 
 CONSIDERED FOR VERSION 7.0:
 
 Omni completion:
     ccomplete:
     - Finding out if an item has members (to add '.' or '->') requires a grep
-      in the tags files, that is very slow.  Is there another solution?  At
-      least stop at the first match.
+      in the tags files, that is very slow.  Is there another solution?
+      Check what happens when taglist() is called.
       Could build the list of items for each structure in memory.  Is that
       faster?  Not using too much memory?
     - For C add tag "kind" field to each match?
@@ -1625,6 +1608,15 @@ Syntax highlighting:
 
 
 Built-in script language:
+9   Autoload:  Add a Vim script in $VIMRUNTIME/tools that takes a file with a
+    list of script names and a help file and produces a script that can be
+    sourced to install the scripts in the user's directories.
+      Use findfile(), so that only file names need to be given:
+	script plugin/myscript.vim
+	script autoload/mylib.vim
+	script autoload/yourlib.vim
+	helpfile doc/myscript.txt
+      For the "helpfile" item ":helptags" is run.
 7   Execute a function with standard option values.  No need to save and
     restore option values.  Especially useful for new options.  Problem: how
     to avoid a performance penalty (esp. for string options)?

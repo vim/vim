@@ -40,7 +40,8 @@ static int pum_col;			/* left column of pum */
 pum_display(array, size, selected, row, height, col)
     pumitem_T	*array;
     int		size;
-    int		selected;	/* index of initially selected item */
+    int		selected;	/* index of initially selected item, none if
+				   out of range */
     int		row;
     int		height;
     int		col;
@@ -256,7 +257,7 @@ pum_get_selected()
 
 /*
  * Set the index of the currently selected item.  The menu will scroll when
- * necessary.
+ * necessary.  When "n" is out of range don't scroll.
  */
     void
 pum_set_selected(n)
@@ -264,7 +265,7 @@ pum_set_selected(n)
 {
     pum_selected = n;
 
-    if (pum_selected >= 0)
+    if (pum_selected >= 0 && pum_selected < pum_size)
     {
 	if (pum_first > pum_selected - 4)
 	{

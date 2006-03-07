@@ -2938,7 +2938,6 @@ mch_isdir(char_u *name)
     return TRUE;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return 1 if "name" can be executed, 0 if not.
  * Return -1 if unknown.
@@ -2954,7 +2953,6 @@ mch_can_exe(name)
 	return FALSE;
     return TRUE;
 }
-#endif
 
 /*
  * Check what "name" is:

@@ -2962,6 +2962,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
     int		auto_buf = FALSE;	/* TRUE if autocommands brought us
 					   into the buffer unexpectedly */
     char_u	*new_name = NULL;
+    int		did_set_swapcommand = FALSE;
 #endif
     buf_T	*buf;
 #if defined(FEAT_AUTOCMD) || defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -3080,6 +3081,32 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
      * copied into the GUI selection buffer.
      */
     reset_VIsual();
+#endif
+
+#ifdef FEAT_AUTOCMD
+    if ((command != NULL || newlnum > (linenr_T)0)
+	    && *get_vim_var_str(VV_SWAPCOMMAND) == NUL)
+    {
+	int	len;
+	char_u	*p;
+
+	/* Set v:swapcommand for the SwapExists autocommands. */
+	if (command != NULL)
+	    len = STRLEN(command) + 3;
+	else
+	    len = 30;
+	p = alloc((unsigned)len);
+	if (p != NULL)
+	{
+	    if (command != NULL)
+		vim_snprintf((char *)p, len, ":%s\r", command);
+	    else
+		vim_snprintf((char *)p, len, "%ldG", (long)newlnum);
+	    set_vim_var_string(VV_SWAPCOMMAND, p, -1);
+	    did_set_swapcommand = TRUE;
+	    vim_free(p);
+	}
+    }
 #endif
 
     /*
@@ -3619,6 +3646,10 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #endif
 
 theend:
+#ifdef FEAT_AUTOCMD
+    if (did_set_swapcommand)
+	set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
+#endif
 #ifdef FEAT_BROWSE
     vim_free(browse_file);
 #endif

@@ -111,7 +111,7 @@ static int	  compl_matches = 0;
 static char_u	  *compl_pattern = NULL;
 static int	  compl_direction = FORWARD;
 static int	  compl_shows_dir = FORWARD;
-static int	  compl_pending = FALSE;
+static int	  compl_pending = 0;	    /* > 1 for postponed CTRL-N */
 static pos_T	  compl_startpos;
 static colnr_T	  compl_col = 0;	    /* column where the text starts
 					     * that is being completed */
@@ -2466,6 +2466,12 @@ ins_compl_show_pum()
 		if (compl == compl_shown_match)
 		{
 		    did_find_shown_match = TRUE;
+
+		    /* When the original text is the shown match don't set
+		     * compl_shown_match. */
+		    if (compl->cp_flags & ORIGINAL_TEXT)
+			shown_match_ok = TRUE;
+
 		    if (!shown_match_ok && shown_compl != NULL)
 		    {
 			/* The shown match isn't displayed, set it to the
@@ -3837,14 +3843,14 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	/* Delete old text to be replaced */
 	ins_compl_delete();
 
-    compl_pending = FALSE;
-
     /* Repeat this for when <PageUp> or <PageDown> is typed.  But don't wrap
      * around. */
     while (--todo >= 0)
     {
 	if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
 	{
+	    if (compl_pending != 0)
+		--compl_pending;
 	    compl_shown_match = compl_shown_match->cp_next;
 	    found_end = (compl_first_match != NULL
 			   && (compl_shown_match->cp_next == compl_first_match
@@ -3853,18 +3859,23 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	else if (compl_shows_dir == BACKWARD
 					&& compl_shown_match->cp_prev != NULL)
 	{
+	    if (compl_pending != 0)
+		++compl_pending;
 	    found_end = (compl_shown_match == compl_first_match);
 	    compl_shown_match = compl_shown_match->cp_prev;
 	    found_end |= (compl_shown_match == compl_first_match);
 	}
 	else
 	{
-	    compl_pending = TRUE;
+	    if (compl_shows_dir == BACKWARD)
+		--compl_pending;
+	    else
+		++compl_pending;
 	    if (!allow_get_expansion)
 		return -1;
 
 	    num_matches = ins_compl_get_exp(&compl_startpos);
-	    if (compl_pending && compl_direction == compl_shows_dir)
+	    if (compl_pending != 0 && compl_direction == compl_shows_dir)
 		compl_shown_match = compl_curr_match;
 	    found_end = FALSE;
 	}
@@ -3939,7 +3950,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 /*
  * Call this while finding completions, to check whether the user has hit a key
  * that should change the currently displayed completion, or exit completion
- * mode.  Also, when compl_pending is TRUE, show a completion as soon as
+ * mode.  Also, when compl_pending is not zero, show a completion as soon as
  * possible. -- webb
  * "frequency" specifies out of how many calls we actually check.
  */
@@ -3976,8 +3987,9 @@ ins_compl_check_keys(frequency)
 	else if (c != Ctrl_R)
 	    compl_interrupted = TRUE;
     }
-    if (compl_pending && !got_int)
-	(void)ins_compl_next(FALSE, 1, TRUE);
+    if (compl_pending != 0 && !got_int)
+	(void)ins_compl_next(FALSE, compl_pending > 0
+				      ? compl_pending : -compl_pending, TRUE);
 }
 
 /*
@@ -4081,6 +4093,7 @@ ins_complete(c)
 
 	line = ml_get(curwin->w_cursor.lnum);
 	curs_col = curwin->w_cursor.col;
+	compl_pending = 0;
 
 	/* if this same ctrl_x_mode has been interrupted use the text from
 	 * "compl_startpos" to the cursor as a pattern to add a new word

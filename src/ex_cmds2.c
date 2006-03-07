@@ -2612,9 +2612,10 @@ cmd_source(fname, eap)
     if (*fname == NUL)
 	EMSG(_(e_argreq));
 
-    /* ":source!" read vi commands */
     else if (eap != NULL && eap->forceit)
-	/* Need to execute the commands directly when:
+	/* ":source!": read Normal mdoe commands
+	 * Need to execute the commands directly.  This is required at least
+	 * for:
 	 * - ":g" command busy
 	 * - after ":argdo", ":windo" or ":bufdo"
 	 * - another command follows
@@ -2767,6 +2768,10 @@ do_source(fname, check_other, is_vimrc)
 	smsg((char_u *)_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
+
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
+#endif
 
 #if defined(WIN32) && defined(FEAT_CSCOPE)
     cookie.fp = fopen_noinh_readbin((char *)fname_exp);

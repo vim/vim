@@ -931,7 +931,7 @@ var_redir_start(name, append)
     else
 	set_var_lval(redir_lval, redir_endp, &tv, TRUE, (char_u *)"=");
     err = did_emsg;
-    did_emsg += save_emsg;
+    did_emsg |= save_emsg;
     if (err)
     {
 	var_redir_stop();
@@ -979,7 +979,7 @@ var_redir_str(value, len)
     did_emsg = FALSE;
     set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
     err = did_emsg;
-    did_emsg += save_emsg;
+    did_emsg |= save_emsg;
     if (err)
 	var_redir_stop();
 
@@ -8961,7 +8961,7 @@ filter_map(argvars, rettv, map)
     int		rem;
     int		todo;
     char_u	*msg = map ? (char_u *)"map()" : (char_u *)"filter()";
-    int		save_called_emsg;
+    int		save_did_emsg;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST)
@@ -8991,11 +8991,10 @@ filter_map(argvars, rettv, map)
 	prepare_vimvar(VV_VAL, &save_val);
 	expr = skipwhite(expr);
 
-	/* We reset "called_emsg" to be able to detect whether an error
-	 * occurred during evaluation of the expression.  "did_emsg" can't be
-	 * used, because it is reset when calling a function. */
-	save_called_emsg = called_emsg;
-	called_emsg = FALSE;
+	/* We reset "did_emsg" to be able to detect whether an error
+	 * occurred during evaluation of the expression. */
+	save_did_emsg = did_emsg;
+	did_emsg = FALSE;
 
 	if (argvars[0].v_type == VAR_DICT)
 	{
@@ -9015,7 +9014,7 @@ filter_map(argvars, rettv, map)
 			break;
 		    vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
 		    if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL
-							       || called_emsg)
+								  || did_emsg)
 			break;
 		    if (!map && rem)
 			dictitem_remove(d, di);
@@ -9034,7 +9033,7 @@ filter_map(argvars, rettv, map)
 		    break;
 		nli = li->li_next;
 		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
-							       || called_emsg)
+								  || did_emsg)
 		    break;
 		if (!map && rem)
 		    listitem_remove(l, li);
@@ -9043,7 +9042,7 @@ filter_map(argvars, rettv, map)
 
 	restore_vimvar(VV_VAL, &save_val);
 
-	called_emsg |= save_called_emsg;
+	did_emsg |= save_did_emsg;
     }
 
     copy_tv(&argvars[0], rettv);
@@ -17830,6 +17829,7 @@ ex_function(eap)
 	else
 	    eap->skip = TRUE;
     }
+
     /* An error in a function call during evaluation of an expression in magic
      * braces should not cause the function not to be defined. */
     saved_did_emsg = did_emsg;

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 06
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1429,6 +1429,7 @@ v:swapcommand	Normal mode command to be executed after a file has been
 		opened.  Can be used for a |SwapExists| autocommand to have
 		another Vim open the file and jump to the right place.  For
 		example, when jumping to a tag the value is ":tag tagname\r".
+		For ":edit +cmd file" the value is ":cmd\r".
 
 				*v:termresponse* *termresponse-variable*
 v:termresponse	The escape sequence returned by the terminal for the |t_RV|

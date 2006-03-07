@@ -4123,6 +4123,7 @@ Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
 SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
+SourcePre	autocmd.txt	/*SourcePre*
 SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
 StdinReadPre	autocmd.txt	/*StdinReadPre*
@@ -5483,7 +5484,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

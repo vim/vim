@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 06
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -647,6 +647,8 @@ New autocommand events: ~
 
 |SpellFileMissing|	when a spell file can't be found
 
+|SourcePre|		before sourcing a Vim script
+
 |CursorHoldI|		the user doesn't press a key for a while in Insert mode
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedI|		the cursor was moved in Insert mode
@@ -725,6 +727,9 @@ Vietnamese message translations and menu. (Phan Vinh Thinh)
 
 Others: ~
 
+The Netbeans interface was updated for Sun Studio 10.  The protocol number
+goes from 2.2 to 2.3. (Gordon Prieur)
+
 Mac: Add the selection type to the clipboard, so that Block, line and
 character selections can be used between two Vims. (Eckehard Berns)
 Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
@@ -791,6 +796,9 @@ IMPROVEMENTS						*improvements-7*
 ":helpgrep" accepts a language specifier after the pattern: "pat@it".
 
 Move the help for printing to a separate help file.  It's quite a lot now.
+
+When doing completion for ":!cmd", ":r !cmd" or ":w !cmd" executable files are
+found in $PATH instead of looking for ordinary files in the current directlry.
 
 When ":silent" is used and a backwards range is given for an Ex command the
 range is swapped automatically instead of asking if that is OK.
@@ -1861,5 +1869,8 @@ comma.
 MS-DOS, Win32: When 'encoding' defaults to "latin1" then the value for
 'iskeyword' was still for CPxxx.  And when 'nocompatible' was set 'isprint'
 would also be the wrong value.
+
+When a command was defined not to take arguments and no '|' no warning message
+would be given for using a '|'.  Also with ":loadkeymap".
 
  vim:tw=78:ts=8:ft=help:norl:

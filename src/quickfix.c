@@ -2905,6 +2905,7 @@ ex_vimgrep(eap)
     char_u	*au_name =  NULL;
     int		flags = 0;
     colnr_T	col;
+    long	tomatch;
 
     switch (eap->cmdidx)
     {
@@ -2932,6 +2933,11 @@ ex_vimgrep(eap)
 	if (qi == NULL)
 	    return;
     }
+
+    if (eap->addr_count > 0)
+	tomatch = eap->line2;
+    else
+	tomatch = MAXLNUM;
 
     /* Get the search pattern: either white-separated or enclosed in // */
     regmatch.regprog = NULL;
@@ -2975,7 +2981,7 @@ ex_vimgrep(eap)
     }
 
     seconds = (time_t)0;
-    for (fi = 0; fi < fcount && !got_int; ++fi)
+    for (fi = 0; fi < fcount && !got_int && tomatch > 0; ++fi)
     {
 	if (time(NULL) > seconds)
 	{
@@ -3035,7 +3041,8 @@ ex_vimgrep(eap)
 	{
 	    found_match = FALSE;
 	    /* Try for a match in all lines of the buffer. */
-	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
+	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count && tomatch > 0;
+								       ++lnum)
 	    {
 		/* For ":1vimgrep" look for multiple matches. */
 		col = 0;
@@ -3059,8 +3066,9 @@ ex_vimgrep(eap)
 			got_int = TRUE;
 			break;
 		    }
-		    else
-			found_match = TRUE;
+		    found_match = TRUE;
+		    if (--tomatch == 0)
+			break;
 		    if ((flags & VGR_GLOBAL) == 0
 					       || regmatch.endpos[0].lnum > 0)
 			break;

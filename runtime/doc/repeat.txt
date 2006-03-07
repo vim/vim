@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2005 Jun 26
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -144,6 +144,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 					*:so* *:source* *load-vim-script*
 :so[urce] {file}	Read Ex commands from {file}.  These are commands that
 			start with a ":".
+			Triggers the |SourcePre| autocommand.
 
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type

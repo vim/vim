@@ -2930,7 +2930,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 
 echo "$as_me:$LINENO: result: not found" >&5
 echo "${ECHO_T}not found" >&6
-	CFLAGS="save_cflags"
+	CFLAGS="$save_cflags"
 	echo "$as_me:$LINENO: checking if Intel architecture is supported" >&5
 echo $ECHO_N "checking if Intel architecture is supported... $ECHO_C" >&6
 	CPPFLAGS="$CPPFLAGS -arch i386"

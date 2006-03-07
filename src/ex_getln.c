@@ -103,6 +103,7 @@ static void	set_expand_context __ARGS((expand_T *xp));
 static int	ExpandFromContext __ARGS((expand_T *xp, char_u *, int *, char_u ***, int));
 static int	expand_showtail __ARGS((expand_T *xp));
 #ifdef FEAT_CMDL_COMPL
+static int	expand_shellcmd __ARGS((char_u *filepat, int *num_file, char_u ***file, int flagsarg));
 static int	ExpandRTDir __ARGS((char_u *pat, int *num_file, char_u ***file, char *dirname));
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static int	ExpandUserDefined __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
@@ -4180,93 +4181,6 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	return ret;
     }
 
-    if (xp->xp_context == EXPAND_SHELLCMD)
-    {
-	/*
-	 * Expand shell command.
-	 */
-	int	    i;
-	char_u	    *path;
-	int	    mustfree = FALSE;
-	garray_T    ga;
-	char_u	    *buf = alloc(MAXPATHL);
-	int	    l;
-	char_u	    *s, *e;
-
-	if (buf == NULL)
-	    return FAIL;
-
-	/* for ":set path=" and ":set tags=" halve backslashes for escaped
-	 * space */
-	pat = vim_strsave(pat);
-	for (i = 0; pat[i]; ++i)
-	    if (pat[i] == '\\' && pat[i + 1] == ' ')
-		STRCPY(pat + i, pat + i + 1);
-
-	flags |= EW_FILE | EW_EXEC;
-	/* For an absolute name we don't use $PATH. */
-	if ((pat[0] == '.' && (vim_ispathsep(pat[1])
-				|| (pat[1] == '.' && vim_ispathsep(pat[2])))))
-	    path = (char_u *)".";
-	else
-	    path = vim_getenv((char_u *)"PATH", &mustfree);
-
-	ga_init2(&ga, (int)sizeof(char *), 10);
-	for (s = path; *s != NUL; s = e)
-	{
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
-	    e = vim_strchr(s, ';');
-#else
-	    e = vim_strchr(s, ':');
-#endif
-	    if (e == NULL)
-		e = s + STRLEN(s);
-
-	    l = e - s;
-	    if (l > MAXPATHL - 5)
-		break;
-	    vim_strncpy(buf, s, l);
-	    add_pathsep(buf);
-	    l = STRLEN(buf);
-	    vim_strncpy(buf + l, pat, MAXPATHL - 1 - l);
-
-	    /* Expand matches in one directory of $PATH. */
-	    ret = expand_wildcards(1, &buf, num_file, file, flags);
-	    if (ret == OK)
-	    {
-		if (ga_grow(&ga, *num_file) == FAIL)
-		    FreeWild(*num_file, *file);
-		else
-		{
-		    for (i = 0; i < *num_file; ++i)
-		    {
-			s = (*file)[i];
-			if (STRLEN(s) > l)
-			{
-			    /* Remove the path again. */
-			    mch_memmove(s, s + l, STRLEN(s + l) + 1);
-			    ((char_u **)ga.ga_data)[ga.ga_len] = s;
-			    ++ga.ga_len;
-			}
-			else
-			    vim_free(s);
-		    }
-		    vim_free(*file);
-		}
-	    }
-	    if (*e != NUL)
-		++e;
-	}
-	*file = ga.ga_data;
-	*num_file = ga.ga_len;
-
-	vim_free(buf);
-	vim_free(pat);
-	if (mustfree)
-	    vim_free(path);
-	return ret;
-    }
-
     *file = (char_u **)"";
     *num_file = 0;
     if (xp->xp_context == EXPAND_HELP)
@@ -4284,6 +4198,8 @@ ExpandFromContext(xp, pat, num_file, file, options)
 #ifndef FEAT_CMDL_COMPL
     return FAIL;
 #else
+    if (xp->xp_context == EXPAND_SHELLCMD)
+	return expand_shellcmd(pat, num_file, file, flags);
     if (xp->xp_context == EXPAND_OLD_SETTING)
 	return ExpandOldSetting(num_file, file);
     if (xp->xp_context == EXPAND_BUFFERS)
@@ -4456,6 +4372,107 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 
     return OK;
 }
+
+/*
+ * Complete a shell command.
+ * Returns FAIL or OK;
+ */
+    static int
+expand_shellcmd(filepat, num_file, file, flagsarg)
+    char_u	*filepat;	/* pattern to match with command names */
+    int		*num_file;	/* return: number of matches */
+    char_u	***file;	/* return: array with matches */
+    int		flagsarg;	/* EW_ flags */
+{
+    char_u	*pat;
+    int		i;
+    char_u	*path;
+    int		mustfree = FALSE;
+    garray_T    ga;
+    char_u	*buf = alloc(MAXPATHL);
+    size_t	l;
+    char_u	*s, *e;
+    int		flags = flagsarg;
+    int		ret;
+
+    if (buf == NULL)
+	return FAIL;
+
+    /* for ":set path=" and ":set tags=" halve backslashes for escaped
+     * space */
+    pat = vim_strsave(filepat);
+    for (i = 0; pat[i]; ++i)
+	if (pat[i] == '\\' && pat[i + 1] == ' ')
+	    STRCPY(pat + i, pat + i + 1);
+
+    flags |= EW_FILE | EW_EXEC;
+
+    /* For an absolute name we don't use $PATH. */
+    if ((pat[0] == '.' && (vim_ispathsep(pat[1])
+			    || (pat[1] == '.' && vim_ispathsep(pat[2])))))
+	path = (char_u *)".";
+    else
+	path = vim_getenv((char_u *)"PATH", &mustfree);
+
+    /*
+     * Go over all directories in $PATH.  Expand matches in that directory and
+     * collect them in "ga".
+     */
+    ga_init2(&ga, (int)sizeof(char *), 10);
+    for (s = path; *s != NUL; s = e)
+    {
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+	e = vim_strchr(s, ';');
+#else
+	e = vim_strchr(s, ':');
+#endif
+	if (e == NULL)
+	    e = s + STRLEN(s);
+
+	l = e - s;
+	if (l > MAXPATHL - 5)
+	    break;
+	vim_strncpy(buf, s, l);
+	add_pathsep(buf);
+	l = STRLEN(buf);
+	vim_strncpy(buf + l, pat, MAXPATHL - 1 - l);
+
+	/* Expand matches in one directory of $PATH. */
+	ret = expand_wildcards(1, &buf, num_file, file, flags);
+	if (ret == OK)
+	{
+	    if (ga_grow(&ga, *num_file) == FAIL)
+		FreeWild(*num_file, *file);
+	    else
+	    {
+		for (i = 0; i < *num_file; ++i)
+		{
+		    s = (*file)[i];
+		    if (STRLEN(s) > l)
+		    {
+			/* Remove the path again. */
+			mch_memmove(s, s + l, STRLEN(s + l) + 1);
+			((char_u **)ga.ga_data)[ga.ga_len++] = s;
+		    }
+		    else
+			vim_free(s);
+		}
+		vim_free(*file);
+	    }
+	}
+	if (*e != NUL)
+	    ++e;
+    }
+    *file = ga.ga_data;
+    *num_file = ga.ga_len;
+
+    vim_free(buf);
+    vim_free(pat);
+    if (mustfree)
+	vim_free(path);
+    return OK;
+}
+
 
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
 static void * call_user_expand_func __ARGS((void *(*user_expand_func) __ARGS((char_u *, int, char_u **, int)), expand_T	*xp, int *num_file, char_u ***file));

@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 10
+" Last Change:	2006 Mar 07
 
 
 " This function is used for the 'omnifunc' option.
@@ -123,7 +123,7 @@ function! ccomplete#Complete(findstart, base)
       if match(line, match . '\s*\[') > 0
 	let match .= '['
       else
-	let res = s:Nextitem(strpart(line, 0, col), [''], 0)
+	let res = s:Nextitem(strpart(line, 0, col), [''], 0, 1)
 	if len(res) > 0
 	  " There are members, thus add "." or "->".
 	  if match(line, '\*[ \t(]*' . match . '\>') > 0
@@ -136,7 +136,7 @@ function! ccomplete#Complete(findstart, base)
       let res = [{'match': match, 'tagline' : ''}]
     else
       " Completing "var.", "var.something", etc.
-      let res = s:Nextitem(strpart(line, 0, col), items[1:], 0)
+      let res = s:Nextitem(strpart(line, 0, col), items[1:], 0, 1)
     endif
   endif
 
@@ -153,7 +153,7 @@ function! ccomplete#Complete(findstart, base)
     for i in range(len(diclist))
       " New ctags has the "typename" field.
       if has_key(diclist[i], 'typename')
-	call extend(res, s:StructMembers(diclist[i]['typename'], items[1:]))
+	call extend(res, s:StructMembers(diclist[i]['typename'], items[1:], 1))
       endif
 
       " For a variable use the command, which must be a search pattern that
@@ -162,7 +162,7 @@ function! ccomplete#Complete(findstart, base)
 	let line = diclist[i]['cmd']
 	if line[0] == '/' && line[1] == '^'
 	  let col = match(line, '\<' . items[0] . '\>')
-	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:], 0))
+	  call extend(res, s:Nextitem(strpart(line, 2, col - 2), items[1:], 0, 1))
 	endif
       endif
     endfor
@@ -173,7 +173,7 @@ function! ccomplete#Complete(findstart, base)
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
-    let res = s:Nextitem(strpart(line, 0, col), items[1:], 0)
+    let res = s:Nextitem(strpart(line, 0, col), items[1:], 0, 1)
   endif
 
   " If the last item(s) are [...] they need to be added to the matches.
@@ -197,7 +197,7 @@ function! s:GetAddition(line, match, memarg, bracket)
   endif
 
   " Check if the item has members.
-  if len(s:SearchMembers(a:memarg, [''])) > 0
+  if len(s:SearchMembers(a:memarg, [''], 0)) > 0
     " If there is a '*' before the name use "->".
     if match(a:line, '\*[ \t(]*' . a:match . '\>') > 0
       return '->'
@@ -248,8 +248,8 @@ endfunction
 function! s:Tagcmd2extra(cmd, name, fname)
   if a:cmd =~ '^/^'
     " The command is a search command, useful to see what it is.
-    let x = matchstr(a:cmd, '^/^\zs.*\ze$/')
-    let x = substitute(x, a:name, '@@', '')
+    let x = matchstr(a:cmd, '^/^\s*\zs.*\ze$/')
+    let x = substitute(x, '\<' . a:name . '\>', '@@', '')
     let x = substitute(x, '\\\(.\)', '\1', 'g')
     let x = x . ' - ' . a:fname
   elseif a:cmd =~ '^\d*$'
@@ -266,7 +266,7 @@ endfunction
 " Repeat this recursively for items[1], if it's there.
 " When resolving typedefs "depth" is used to avoid infinite recursion.
 " Return the list of matches.
-function! s:Nextitem(lead, items, depth)
+function! s:Nextitem(lead, items, depth, all)
 
   " Use the text up to the variable name and split it in tokens.
   let tokens = split(a:lead, '\s\+\|\<')
@@ -277,7 +277,7 @@ function! s:Nextitem(lead, items, depth)
 
     " Recognize "struct foobar" and "union foobar".
     if (tokens[tidx] == 'struct' || tokens[tidx] == 'union') && tidx + 1 < len(tokens)
-      let res = s:StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items)
+      let res = s:StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items, a:all)
       break
     endif
 
@@ -291,7 +291,7 @@ function! s:Nextitem(lead, items, depth)
     for tagidx in range(len(diclist))
       " New ctags has the "typename" field.
       if has_key(diclist[tagidx], 'typename')
-	call extend(res, s:StructMembers(diclist[tagidx]['typename'], a:items))
+	call extend(res, s:StructMembers(diclist[tagidx]['typename'], a:items, a:all))
 	continue
       endif
 
@@ -317,11 +317,11 @@ function! s:Nextitem(lead, items, depth)
 	      endif
 	    endfor
 	    if name != ''
-	      call extend(res, s:StructMembers(cmdtokens[0] . ':' . name, a:items))
+	      call extend(res, s:StructMembers(cmdtokens[0] . ':' . name, a:items, a:all))
 	    endif
 	  elseif a:depth < 10
 	    " Could be "typedef other_T some_T".
-	    call extend(res, s:Nextitem(cmdtokens[0], a:items, a:depth + 1))
+	    call extend(res, s:Nextitem(cmdtokens[0], a:items, a:depth + 1, a:all))
 	  endif
 	endif
       endif
@@ -338,7 +338,9 @@ endfunction
 " Search for members of structure "typename" in tags files.
 " Return a list with resulting matches.
 " Each match is a dictionary with "match" and "tagline" entries.
-function! s:StructMembers(typename, items)
+" When "all" is non-zero find all, otherwise just return 1 if there is any
+" member.
+function! s:StructMembers(typename, items, all)
   " Todo: What about local structures?
   let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
   if fnames == ''
@@ -347,8 +349,13 @@ function! s:StructMembers(typename, items)
 
   let typename = a:typename
   let qflist = []
+  if a:all == 0
+    let n = '1'	" stop at first found match
+  else
+    let n = ''
+  endif
   while 1
-    exe 'silent! vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
+    exe 'silent! ' . n . 'vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
     let qflist = getqflist()
     if len(qflist) > 0 || match(typename, "::") < 0
       break
@@ -380,7 +387,7 @@ function! s:StructMembers(typename, items)
 
     " More items following.  For each of the possible members find the
     " matching following members.
-    return s:SearchMembers(matches, a:items[idx :])
+    return s:SearchMembers(matches, a:items[idx :], a:all)
   endif
 
   " Failed to find anything.
@@ -388,7 +395,9 @@ function! s:StructMembers(typename, items)
 endfunction
 
 " For matching members, find matches for following items.
-function! s:SearchMembers(matches, items)
+" When "all" is non-zero find all, otherwise just return 1 if there is any
+" member.
+function! s:SearchMembers(matches, items, all)
   let res = []
   for i in range(len(a:matches))
     let typename = ''
@@ -405,17 +414,21 @@ function! s:SearchMembers(matches, items)
 	let typename = matchstr(line, '[^\t]*', e)
       endif
     endif
+
     if typename != ''
-      call extend(res, s:StructMembers(typename, a:items))
+      call extend(res, s:StructMembers(typename, a:items, a:all))
     else
       " Use the search command (the declaration itself).
       let s = match(line, '\t\zs/^')
       if s > 0
 	let e = match(line, '\<' . a:matches[i]['match'] . '\>', s)
 	if e > 0
-	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items, 0))
+	  call extend(res, s:Nextitem(strpart(line, s, e - s), a:items, 0, a:all))
 	endif
       endif
+    endif
+    if a:all == 0 && len(res) > 0
+      break
     endif
   endfor
   return res

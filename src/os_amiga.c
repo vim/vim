@@ -810,7 +810,6 @@ mch_mkdir(name)
 	UnLock(lock);
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return 1 if "name" can be executed, 0 if not.
  * Return -1 if unknown.
@@ -822,7 +821,6 @@ mch_can_exe(name)
     /* TODO */
     return -1;
 }
-#endif
 
 /*
  * Check what "name" is:

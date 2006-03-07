@@ -8938,6 +8938,7 @@ expand_backtick(gap, pat, flags)
  * Add a file to a file list.  Accepted flags:
  * EW_DIR	add directories
  * EW_FILE	add files
+ * EW_EXEC	add executable files
  * EW_NOTFOUND	add even when it doesn't exist
  * EW_ADDSLASH	add slash after directory name
  */
@@ -8962,6 +8963,10 @@ addfile(gap, f, flags)
 
     isdir = mch_isdir(f);
     if ((isdir && !(flags & EW_DIR)) || (!isdir && !(flags & EW_FILE)))
+	return;
+
+    /* If the file isn't executable, may not add it.  Do accept directories. */
+    if (!isdir && (flags & EW_EXEC) && !mch_can_exe(f))
 	return;
 
     /* Make room for another item in the file list. */

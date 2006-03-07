@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Feb 27
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -274,6 +274,7 @@ Name			triggered by ~
 
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
+|SourcePre|		before sourcing a Vim script
 
 |FocusGained|		Vim got input focus
 |FocusLost|		Vim lost input focus
@@ -666,6 +667,8 @@ RemoteReply			When a reply from a Vim that functions as
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.
+							*SourcePre*
+SourcePre			Before sourcing a Vim script. |:source|
 							*SpellFileMissing*
 SpellFileMissing		When trying to load a spell checking file and
 				it can't be found.  <amatch> is the language,

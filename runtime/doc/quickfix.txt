@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 04
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -498,6 +498,12 @@ advantages are:
 			'ignorecase' applies.  To overrule it put |/\c| in the
 			pattern to ignore case or |/\C| to match case.
 			'smartcase' is not used.
+
+			When a number is put before the command this is used
+			as the maximum number of matches to find.  Use
+			":1vimgrep pattern file" to find only the first.
+			Useful if you only want to check if there is a match
+			and quit quickly when it's found.
 
 			Without the 'j' flag Vim jumps to the first match.
 			With 'j' only the quickfix list is updated.
