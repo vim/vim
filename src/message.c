@@ -3846,7 +3846,7 @@ tv_str(tvs, idxp)
 
 /*
  * This code was included to provide a portable vsnprintf() and snprintf().
- * Some systems may provide their own, but we always use these for
+ * Some systems may provide their own, but we always use this one for
  * consistency.
  *
  * This code is based on snprintf.c - a portable implementation of snprintf
@@ -3866,14 +3866,14 @@ tv_str(tvs, idxp)
  * The locale is not used, the string is used as a byte string.  This is only
  * relevant for double-byte encodings where the second byte may be '%'.
  *
- * It is permitted for str_m to be zero, and it is permitted to specify NULL
- * pointer for resulting string argument if str_m is zero (as per ISO C99).
+ * It is permitted for "str_m" to be zero, and it is permitted to specify NULL
+ * pointer for resulting string argument if "str_m" is zero (as per ISO C99).
  *
  * The return value is the number of characters which would be generated
  * for the given input, excluding the trailing null. If this value
- * is greater or equal to str_m, not all characters from the result
- * have been stored in str, output bytes beyond the (str_m-1) -th character
- * are discarded. If str_m is greater than zero it is guaranteed
+ * is greater or equal to "str_m", not all characters from the result
+ * have been stored in str, output bytes beyond the ("str_m"-1) -th character
+ * are discarded. If "str_m" is greater than zero it is guaranteed
  * the resulting string will be null-terminated.
  */
 

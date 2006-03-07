@@ -2426,7 +2426,7 @@ do_one_cmd(cmdlinep, sourcing,
 	get_flags(&ea);
 						/* no arguments allowed */
     if (!ni && !(ea.argt & EXTRA) && *ea.arg != NUL
-			      && vim_strchr((char_u *)"|\"", *ea.arg) == NULL)
+	    && *ea.arg != '"' && (*ea.arg != '|' || (ea.argt & TRLBAR) == 0))
     {
 	errormsg = (char_u *)_(e_trailing);
 	goto doend;

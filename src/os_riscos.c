@@ -637,7 +637,6 @@ mch_isdir(name)
     return FALSE;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return 1 if "name" can be executed, 0 if not.
  * Return -1 if unknown. Requires which to work.
@@ -663,7 +662,6 @@ mch_can_exe(name)
     vim_free(p);
     return retval;
 }
-#endif
 
 /*
  * Check what "name" is:

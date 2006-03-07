@@ -15110,6 +15110,7 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
 		    /* Done all bytes at this node, go up one level. */
 		    --depth;
 		    line_breakcheck();
+		    ins_compl_check_keys(50);
 		}
 		else
 		{

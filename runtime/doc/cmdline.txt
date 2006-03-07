@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 04
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,6 +354,7 @@ word before the cursor.  This is available for:
 - File names: Only after a command that accepts a file name or a setting for
   an option that can be set to a file name.  This is called file name
   completion.
+- Shell command names: After ":!cmd", ":r !cmd" and ":w !cmd".  $PATH is used.
 - Options: Only after the ":set" command.
 - Mappings: Only after a ":map" or similar command.
 - Variable and function names: Only after a ":if", ":call" or similar command.
@@ -742,8 +743,9 @@ Note: these are typed literally, they are not special keys!
 	<afile>    when executing autocommands, is replaced with the file name
 		   for a file read or write
 	<abuf>     when executing autocommands, is replaced with the currently
-		   effective buffer number (for ":r file" it is the current
-		   buffer, the file being read is not in a buffer).
+		   effective buffer number (for ":r file" and ":so file" it is
+		   the current buffer, the file being read/sourced is not in a
+		   buffer).
 	<amatch>   when executing autocommands, is replaced with the match for
 		   which this autocommand was executed.  It differs from
 		   <afile> only when the file name isn't used to match with

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1078,7 +1078,7 @@ INSERT COMPLETION POPUP MENU				*ins-completion-menu*
 Vim can display the matches in a simplistic popup menu.
 
 The menu is used when:
-- The 'completeopt' option contains "menu".
+- The 'completeopt' option contains "menu" or "menuone".
 - The terminal supports at least 8 colors.
 - There are at least two matches.
 
@@ -1092,6 +1092,11 @@ in the second state.
 
 If you select another match, e.g., with CTRL-N or CTRL-P, you go from the
 second to the first state.  This doesn't change the list of matches.
+
+When you are back at the original text then you are in the second state.  To
+get there right away you can use a mapping that uses CTRL-P right after
+starting the completion: >
+	:imap <F7> <C-N><C-P>
 
 
 In the first state these keys have a special meaning:

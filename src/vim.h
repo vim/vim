@@ -1124,6 +1124,7 @@ enum auto_event
     EVENT_FUNCUNDEFINED,	/* if calling a function which doesn't exist */
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
     EVENT_SWAPEXISTS,		/* found existing swap file */
+    EVENT_SOURCEPRE,		/* before sourcing a Vim script */
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */

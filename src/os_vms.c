@@ -445,10 +445,16 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    /* files should exist if expanding interactively */
 	    if (!(flags & EW_NOTFOUND) && mch_getperm(vms_fmatch[i]) < 0)
 		continue;
+
 	    /* do not include directories */
 	    dir = (mch_isdir(vms_fmatch[i]));
 	    if (( dir && !(flags & EW_DIR)) || (!dir && !(flags & EW_FILE)))
 		continue;
+
+	    /* Skip files that are not executable if we check for that. */
+	    if (!dir && (flags & EW_EXEC) && !mch_can_exe(vms_fmatch[i]))
+		continue;
+
 	    /* allocate memory for pointers */
 	    if (--files_free < 1)
 	    {

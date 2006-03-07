@@ -2610,8 +2610,6 @@ mch_isdir(name)
 #endif
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
 static int executable_file __ARGS((char_u *name));
 
 /*
@@ -2681,7 +2679,6 @@ mch_can_exe(name)
     vim_free(buf);
     return retval;
 }
-#endif
 
 /*
  * Check what "name" is:
@@ -4924,6 +4921,10 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		if ((dir && !(flags & EW_DIR)) || (!dir && !(flags & EW_FILE)))
 		    continue;
 
+		/* Skip files that are not executable if we check for that. */
+		if (!dir && (flags & EW_EXEC) && !mch_can_exe(p))
+		    continue;
+
 		if (--files_free == 0)
 		{
 		    /* need more room in table of pointers */
@@ -5388,6 +5389,10 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	/* check if this entry should be included */
 	dir = (mch_isdir((*file)[i]));
 	if ((dir && !(flags & EW_DIR)) || (!dir && !(flags & EW_FILE)))
+	    continue;
+
+	/* Skip files that are not executable if we check for that. */
+	if (!dir && (flags & EW_EXEC) && !mch_can_exe((*file)[i]))
 	    continue;
 
 	p = alloc((unsigned)(STRLEN((*file)[i]) + 1 + dir));
