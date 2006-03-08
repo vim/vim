@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 07
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Bug in Netbeans interface. (Xavier de Gaye, 2006 Mar 7)
+Code for "insert" is wrong.  Don't use b_p_eol or b_start_eol.
+Handle partial lines properly.  What probably should happen is to append to a
+line when "off" points to the NUL after that line, insert before a line when
+the text doesn't end in a "\n" and only insert line breaks where there is a
+"\n" in the argument.
+
 Win32: Describe how to do debugging and describe it. (George Reilly)
 
 Mac unicode patch (Da Woon Jung):
@@ -44,8 +51,6 @@ Mac unicode patch (Da Woon Jung):
 - Command-key mappings do not work. (Alan Schmitt)
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
-
-Bug in Netbeans interface. (Xavier de Gaye, 2006 Mar 7)
 
 CONSIDERED FOR VERSION 7.0:
 

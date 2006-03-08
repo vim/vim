@@ -1,8 +1,8 @@
 *** en_GB.orig.aff	Sun Jul  3 17:53:13 2005
---- en_GB.aff	Sun Jul 31 22:17:09 2005
+--- en_GB.aff	Wed Jan 11 22:03:27 2006
 ***************
 *** 8,9 ****
---- 8,140 ----
+--- 8,147 ----
   TRY esiaénrtolcdugmfphbyvkw-'.zqjxSNRTLCGDMFPHBEAUYOIVKWóöâôZQJXÅçèîêàïüäñ
 + 
 + FOL  àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ
@@ -11,7 +11,7 @@
 + 
 + MIDWORD	'
 + 
-+ RAR ?
++ RARE ?
 + BAD !
 + 
 + MAP 9
@@ -135,6 +135,13 @@
 + SAL ZZ-                  _
 + SAL Z                    S
 + 
++ # When soundfolding "th" is turned into "@".  When this is mistyped as "ht" it
++ # soundfolds to "ht".  This difference is too big, thus use REP items to lower
++ # the score.
++ REPSAL 2
++ REPSAL ht @
++ REPSAL @ ht
++ 
   REP 27
 ***************
 *** 37,56 ****
@@ -158,7 +165,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 168,187 ----
+--- 175,194 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -576,7 +583,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 191,585 ----
+--- 198,592 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1664,7 +1671,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 592,1281 ----
+--- 599,1288 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2356,7 +2363,7 @@
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
 *** en_GB.orig.dic	Sun Jul  3 18:05:07 2005
---- en_GB.dic	Wed Sep 28 23:07:50 2005
+--- en_GB.dic	Wed Mar  8 13:14:37 2006
 ***************
 *** 630,632 ****
   Byrne/M
@@ -2544,7 +2551,7 @@
 --- 45670,45671 ----
 ***************
 *** 46281 ****
---- 46260,46275 ----
+--- 46260,46278 ----
   Zurich/M
 + conj.
 + pompon
@@ -2556,8 +2563,11 @@
 + Moolenaar/M
 + pneumonic
 + the the/!
++ and and/!
 + a a/!
 + a an/!
 + an a/!
 + an an/!
 + PayPal
++ Google
++ TCP\/IP

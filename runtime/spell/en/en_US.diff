@@ -1,8 +1,8 @@
 *** en_US.orig.aff	Fri Apr 15 13:20:36 2005
---- en_US.aff	Wed Sep 28 22:06:01 2005
+--- en_US.aff	Wed Jan 11 22:03:34 2006
 ***************
 *** 3,4 ****
---- 3,134 ----
+--- 3,141 ----
   
 + FOL  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
 + LOW  אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿ
@@ -10,7 +10,7 @@
 + 
 + MIDWORD	'
 + 
-+ RAR ?
++ RARE ?
 + BAD !
 + 
 + MAP 9
@@ -134,6 +134,13 @@
 + SAL ZZ-                  _
 + SAL Z                    S
 + 
++ # When soundfolding "th" is turned into "@".  When this is mistyped as "ht" it
++ # soundfolds to "ht".  This difference is too big, thus use REP items to lower
++ # the score.
++ REPSAL 2
++ REPSAL ht @
++ REPSAL @ ht
++ 
   PFX A Y 1
 ***************
 *** 30,33 ****
@@ -141,7 +148,7 @@
 ! SFX N   y     ication    y 
 ! SFX N   0     en         [^ey] 
   
---- 160,163 ----
+--- 167,170 ----
   SFX N   e     ion        e
 ! SFX N   y     ication    y
 ! SFX N   0     en         [^ey]
@@ -151,7 +158,7 @@
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y] 
   
---- 170,172 ----
+--- 177,179 ----
   SFX H   y     ieth       y
 ! SFX H   0     th         [^y]
   
@@ -160,7 +167,7 @@
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e] 
   
---- 177,179 ----
+--- 184,186 ----
   SFX G   e     ing        e
 ! SFX G   0     ing        [^e]
   
@@ -169,33 +176,40 @@
   
 ! REP 88
   REP a ei
---- 229,231 ----
+--- 236,238 ----
   
 ! REP 91
   REP a ei
 ***************
 *** 137,138 ****
---- 267,270 ----
+--- 274,277 ----
   REP uy i
 + REP y ie
 + REP ie y
   REP i ee
 ***************
 *** 174,175 ****
---- 306,308 ----
+--- 313,315 ----
   REP ew ue
 + REP uf ough
   REP uff ough
 ***************
 *** 188 ****
---- 321,325 ----
+--- 328,332 ----
   REP shun cion
 + REP an_a a
 + REP an_a an
 + REP a_an a
 + REP a_an an
 *** en_US.orig.dic	Fri Apr 15 13:20:36 2005
---- en_US.dic	Sat Oct  8 15:54:26 2005
+--- en_US.dic	Wed Mar  8 13:14:43 2006
+***************
+*** 1,2 ****
+! 62076
+  a
+--- 1,2 ----
+! 62078
+  a
 ***************
 *** 5944,5946 ****
   bk
@@ -565,10 +579,11 @@
   Zubenelgenubi/M
 ***************
 *** 62077 ****
---- 62077,62089 ----
+--- 62077,62092 ----
   zymurgy/S
 + nd
 + the the/!
++ and and/!
 + a a/!
 + an an/!
 + a an/!
@@ -578,4 +593,6 @@
 + a the/!
 + an the/!
 + PayPal
++ Google
 + e.g.
++ TCP\/IP

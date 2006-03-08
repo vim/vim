@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 07
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1872,5 +1872,8 @@ would also be the wrong value.
 
 When a command was defined not to take arguments and no '|' no warning message
 would be given for using a '|'.  Also with ":loadkeymap".
+
+Motif: When using a fontset and 'encoding' is "utf-8" and sizeof(wchar_t) !=
+sizeof(XChar2b) then display was wrong. (Yukihiro Nakadaira)
 
  vim:tw=78:ts=8:ft=help:norl:

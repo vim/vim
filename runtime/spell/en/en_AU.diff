@@ -1,11 +1,11 @@
 *** en_AU.orig.aff	Fri Apr 15 13:20:36 2005
---- en_AU.aff	Sun Jul 31 22:16:19 2005
+--- en_AU.aff	Wed Jan 11 11:10:45 2006
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò 
   REP 24
---- 7,140 ----
+--- 7,147 ----
   SET ISO8859-1
 ! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò
 ! 
@@ -15,7 +15,7 @@
 ! 
 ! MIDWORD	'
 ! 
-! RAR ?
+! RARE ?
 ! BAD !
 ! 
 ! MAP 9
@@ -139,6 +139,13 @@
 ! SAL ZZ-                  _
 ! SAL Z                    S
 ! 
+! # When soundfolding "th" is turned into "@".  When this is mistyped as "ht" it
+! # soundfolds to "ht".  This difference is too big, thus use REP items to lower
+! # the score.
+! REPSAL 2
+! REPSAL ht @
+! REPSAL @ ht
+! 
   REP 24
 ***************
 *** 34,53 ****
@@ -162,7 +169,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 165,184 ----
+--- 172,191 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -580,7 +587,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 188,582 ----
+--- 195,589 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1664,7 +1671,7 @@
 ! SFX 3 0 ist's [aeioubp]y 
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
---- 589,1274 ----
+--- 596,1305 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2351,8 +2358,39 @@
 ! SFX 3 0 ist's [aeioubp]y
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
+! 
+! 
+! # list of 250 most common English words (plucked from the internet)
+! COMMON the of to and a in is it you that he was for on are with as I his they
+! COMMON be at one have this from or had by hot word but what some we can out
+! COMMON other were all there when up use your how said an each she which do
+! COMMON their time if will way about many then them write would like so these
+! COMMON her long make thing see him two has look more day could go come did
+! COMMON number sound no most people my over know water than call first who
+! COMMON may down side been now find any new work part take get place made live
+! COMMON where after back little only round man year came show every good me
+! COMMON give our under name very through just form sentence great think say
+! COMMON help low line differ turn cause much mean before move right boy old too
+! COMMON same tell does set three want air well also play small end put home
+! COMMON read hand port large spell add even land here must big high such follow
+! COMMON act why ask men change went light kind off need house picture try
+! COMMON us again animal point mother world near build self earth father head
+! COMMON stand own page should country found answer school grow study still
+! COMMON learn plant cover food sun four between state keep eye never last let
+! COMMON thought city tree cross farm hard start might story saw far sea draw
+! COMMON left late run don't while press close night real life few north
+! 
+! # a few more for consistency
+! COMMON five six seven eight nine ten hundred thousand
 *** en_AU.orig.dic	Fri Apr 15 13:20:36 2005
---- en_AU.dic	Sat Oct  8 15:54:05 2005
+--- en_AU.dic	Wed Mar  8 13:14:30 2006
+***************
+*** 1,2 ****
+! 45654
+  AA
+--- 1,2 ----
+! 45653
+  AA
 ***************
 *** 912,914 ****
   Alaska/M
@@ -2628,12 +2666,15 @@
 --- 45578,45579 ----
 ***************
 *** 45655 ****
---- 45646,45653 ----
+--- 45646,45656 ----
   zymurgy/S
 + nd
 + the the/!
++ and and/!
 + a a/!
 + a an/!
 + an a/!
 + an an/!
 + PayPal
++ Google
++ TCP\/IP

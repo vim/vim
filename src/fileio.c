@@ -4655,7 +4655,7 @@ set_rw_fname(fname, sfname)
     {
 	if (au_find_group((char_u *)"filetypedetect") != AUGROUP_ERROR)
 	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", FALSE);
-	do_modelines(FALSE);
+	do_modelines(0);
     }
 #endif
 
@@ -8045,7 +8045,7 @@ ex_doautoall(eap)
 
 	    /* execute the autocommands for this buffer */
 	    retval = do_doautocmd(eap->arg, FALSE);
-	    do_modelines(FALSE);
+	    do_modelines(0);
 
 	    /* restore the current window */
 	    aucmd_restbuf(&aco);

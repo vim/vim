@@ -4743,7 +4743,7 @@ ex_doautocmd(eap)
     exarg_T	*eap;
 {
     (void)do_doautocmd(eap->arg, TRUE);
-    do_modelines(FALSE);
+    do_modelines(0);
 }
 #endif
 
@@ -10505,7 +10505,7 @@ ex_filetype(eap)
 	if (*arg == 'd')
 	{
 	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
-	    do_modelines(FALSE);
+	    do_modelines(0);
 	}
     }
     else if (STRCMP(arg, "off") == 0)

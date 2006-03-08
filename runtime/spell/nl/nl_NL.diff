@@ -1,37 +1,48 @@
 *** nl_NL.orig.aff	Sun Jul  3 18:24:07 2005
---- nl_NL.aff	Thu Dec 29 19:42:56 2005
+--- nl_NL.aff	Wed Mar  8 19:09:39 2006
 ***************
-*** 3,6 ****
---- 3,31 ----
+*** 1,5 ****
+  SET ISO8859-1
+  TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
   
-+ FOL  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
-+ LOW  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
-+ UPP  ßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞÿ
-+ 
-+ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
-+ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
-+ 
-+ MIDWORD	'-
-+ 
-+ KEEPCASE =
-+ RARE ?
-+ BAD !
-+ SLASH ,
-+ 
-  NOSPLITSUGS
+! NOSPLITSUGS
   
-+ MAP 9
-+ MAP aàáâãäå
-+ MAP eèéêë
-+ MAP iìíîï
-+ MAP oòóôõö
-+ MAP uùúûü
-+ MAP nñ
-+ MAP cç
-+ MAP yÿı
-+ MAP sß
+--- 1,35 ----
+  SET ISO8859-1
 + 
-  PFX A Y 1
++ NAME 	Nederlands
++ AUTHOR	Various, edited by Bram Moolenaar
++ VERSION	0.8
++ 
+  TRY esianrtolcdugmphbyfvkwjkqxz-ëéèêïîäàâöüû'ESIANRTOLCDUGMPHBYFVKWJKQXZ
+  
+! FOL  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
+! LOW  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
+! UPP  ßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞÿ
+! 
+! SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
+! SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
+! 
+! MIDWORD	'-
+! 
+! KEEPCASE =
+! RARE ?
+! BAD !
+! 
+! #NOSPLITSUGS
+! NOSUGGEST *
+! 
+! MAP 9
+! MAP aàáâãäå
+! MAP eèéêë
+! MAP iìíîï
+! MAP oòóôõö
+! MAP uùúûü
+! MAP nñ
+! MAP cç
+! MAP yÿı
+! MAP sß
+  
 ***************
 *** 33,52 ****
   SFX J N 18
@@ -54,7 +65,7 @@
 ! SFX J 0 je [aeiou][bcdfgkpt] 
 ! SFX J 0 jes [aeiou][bcdfgkpt] 
   
---- 58,77 ----
+--- 63,82 ----
   SFX J N 18
 ! SFX J 0 tje [aeiou][aeiou]
 ! SFX J 0 tjes [aeiou][aeiou]
@@ -80,7 +91,7 @@
   REP ubi ibu
 ! REP croc krok 
   REP ten than
---- 278,280 ----
+--- 283,285 ----
   REP ubi ibu
 ! REP croc krok
   REP ten than
@@ -89,7 +100,7 @@
   REP capucino cappuccino
 ! REP celcius Celsius 
   REP kado cadeau
---- 313,315 ----
+--- 318,320 ----
   REP capucino cappuccino
 ! REP celcius Celsius
   REP kado cadeau
@@ -102,7 +113,7 @@
   REP kommittee comité
 ! REP kwis quiz 
   REP kwissen quizzen
---- 319,325 ----
+--- 324,330 ----
   REP committee comité
 ! REP komitee comité
 ! REP komittee comité
@@ -115,7 +126,7 @@
   REP copy kopij
 ! REP pitoresque pittoreske 
   REP reikweite reikwijdte
---- 327,329 ----
+--- 332,334 ----
   REP copy kopij
 ! REP pitoresque pittoreske
   REP reikweite reikwijdte
@@ -127,7 +138,7 @@
 ! REP kontekst context 
 ! REP korrekt correct 
   REP kritikus criticus
---- 339,344 ----
+--- 344,349 ----
   REP klup club
 ! REP wiskid whizzkid
 ! REP kontakt contact
@@ -136,13 +147,13 @@
   REP kritikus criticus
 ***************
 *** 333 ****
---- 358,361 ----
+--- 363,366 ----
   REP aflassen afgelasten
 + REP svp s.v.p.
 + REP zoz z.o.z.
 + 
 *** nl_NL.orig.dic	Sun Jul  3 18:24:07 2005
---- nl_NL.dic	Tue Jan 17 20:39:49 2006
+--- nl_NL.dic	Wed Mar  8 19:24:21 2006
 ***************
 *** 1,3 ****
   119937
@@ -179,6 +190,26 @@
 + DVD
   Dwingeloo
 ***************
+*** 914,916 ****
+  Oranjegezind/E
+! Oranjehemd
+  Oranjehuis
+--- 918,920 ----
+  Oranjegezind/E
+! #Oranjehemd   We hebben al oranjehemd
+  Oranjehuis
+***************
+*** 1323,1326 ****
+  Winterswijk
+! Witrus
+! Witrussisch
+  Wittem
+--- 1327,1330 ----
+  Winterswijk
+! #Witrus		fout volgens Van Dale
+! #Witrussisch	fout volgens Van Dale
+  Wittem
+***************
 *** 2998,3000 ****
   achterwagen/S
 ! achterwand
@@ -194,8 +225,18 @@
 + aidspreventieprogramma
   aidspreventieprogramma's
 ***************
+*** 5175,5177 ****
+  allergeen/P
+! allergeschikste
+  allergie
+--- 5180,5183 ----
+  allergeen/P
+! #allergeschikste  fout volgens Van Dale
+! allergeschiktste
+  allergie
+***************
 *** 7485,7486 ****
---- 7490,7499 ----
+--- 7491,7500 ----
   avond/SN
 + 's avonds/=
 + 's middags/=
@@ -207,29 +248,157 @@
 + 's Morgens
   avondappèl/S
 ***************
+*** 7669,7671 ****
+  baardscheerder/S
+! baardschrapper/S
+  baardvin/M
+--- 7683,7686 ----
+  baardscheerder/S
+! #baardschrapper/S  fout volgens Van Dale
+! baardschraper/S
+  baardvin/M
+***************
+*** 10502,10504 ****
+  beredder/DWI
+! beredderingskosten
+  bereden/O
+--- 10517,10520 ----
+  beredder/DWI
+! #beredderingskosten	fout volgens Van Dale
+! bereddingskosten
+  bereden/O
+***************
+*** 20561,20563 ****
+  curare
+! curatele/N
+  curatelestelling
+--- 20577,20580 ----
+  curare
+! #curatele/N		curatelen is fout volgens Van Dale
+! curatele
+  curatelestelling
+***************
 *** 20681,20682 ****
---- 20694,20696 ----
+--- 20698,20700 ----
   cytostatica
 + d.m.v.
   daad/P
+***************
+*** 25834,25836 ****
+  driesprong/N
+! driest/TRH
+  driestal/M
+--- 25852,25856 ----
+  driesprong/N
+! #driest/TRH  driestst is fout volgens Van Dale
+! driest/RH
+! driestste
+  driestal/M
+***************
+*** 28239,28241 ****
+  entraineer/WP
+! entre-deutje
+  entre-deux/S
+--- 28259,28261 ----
+  entraineer/WP
+! #entre-deutje    fout volgens Van Dale
+  entre-deux/S
+***************
+*** 31092,31094 ****
+  fotokopie
+! fotokopieer/WP
+  fotokopieerapparaat
+--- 31112,31115 ----
+  fotokopie
+! #fotokopieer/WP    fotokopieren is fout volgens Van Dale
+! fotokopieer/W
+  fotokopieerapparaat
 ***************
 *** 41809,41811 ****
   hartelozer
 ! hartelust
   harten/S
---- 41823,41825 ----
+--- 41830,41832 ----
   hartelozer
 ! hartenlust
   harten/S
 ***************
+*** 42393,42395 ****
+  helderziender
+! helderzienst
+  heldhaftig/ETRH
+--- 42414,42417 ----
+  helderziender
+! #helderzienst		fout volgens Van Dale
+! helderziendst
+  heldhaftig/ETRH
+***************
 *** 46300,46301 ****
---- 46314,46316 ----
+--- 46322,46324 ----
   informaticus
 + informatie/S
   informatie-uitwisseling
 ***************
+*** 54255,54257 ****
+  kornalijn/N
+! kornel/M
+  kornet/M
+--- 54278,54282 ----
+  kornalijn/N
+! #kornel/M	kornellen is fout volgens Van Dale
+! kornel
+! kornels
+  kornet/M
+***************
+*** 55926,55929 ****
+  kustweggetje/S
+! kut/M
+! kutje
+  kuttenkop
+--- 55951,55954 ----
+  kustweggetje/S
+! kut/M*
+! kutje/*
+  kuttenkop
+***************
+*** 58883,58885 ****
+  lijkrede/S
+! lijkredenen
+  lijkroof
+--- 58908,58910 ----
+  lijkrede/S
+! #lijkredenen	fout volgens Van Dale
+  lijkroof
+***************
+*** 59340,59342 ****
+  lofredenaar/S
+! lofredenen
+  lofspraak/P
+--- 59365,59367 ----
+  lofredenaar/S
+! #lofredenen	fout volgens Van Dale
+  lofspraak/P
+***************
+*** 60083,60085 ****
+  lukte/G
+! lul/GWM
+  lulleman/M
+--- 60108,60110 ----
+  lukte/G
+! lul/GWM*
+  lulleman/M
+***************
+*** 60087,60089 ****
+  lullepraat
+! lulletje/S
+  lullig
+--- 60112,60114 ----
+  lullepraat
+! lulletje/S*
+  lullig
+***************
 *** 60206,60208 ****
---- 60221,60228 ----
+--- 60231,60238 ----
   löss
 + m.a.w.
 + m.b.t.
@@ -239,8 +408,26 @@
 + mg
   maag
 ***************
+*** 70861,70863 ****
+  ontsmettingsdienst/N
+! ontsmettingsdient
+  ontsmettingsmiddel/N
+--- 70891,70893 ----
+  ontsmettingsdienst/N
+! #ontsmettingsdient	fout volgens Van Dale
+  ontsmettingsmiddel/N
+***************
+*** 77678,77680 ****
+  platvoetwacht
+! platvorm
+  platwalsen
+--- 77708,77710 ----
+  platvoetwacht
+! #platvorm		fout volgens Van Dale
+  platwalsen
+***************
 *** 77996,77997 ****
---- 78016,78018 ----
+--- 78026,78028 ----
   pluisje
 + pluisjes
   pluist/UF
@@ -249,39 +436,170 @@
   programmablad
 ! programmaboekje
   programmacode
---- 80331,80333 ----
+--- 80341,80343 ----
   programmablad
 ! programmaboekje/S
   programmacode
 ***************
+*** 80489,80491 ****
+  pront/RTE
+! pronunciamento
+  pronunciatie/S
+--- 80520,80523 ----
+  pront/RTE
+! #pronunciamento		fout volgens Van Dale
+! pronunciamiento
+  pronunciatie/S
+***************
+*** 95724,95726 ****
+  stoppertje/V
+! stoppertjes/V
+  stopping/VNK
+--- 95756,95759 ----
+  stoppertje/V
+! #stoppertjes/V   verstoppertjes is fout volgens Van Dale
+! stoppertjes
+  stopping/VNK
+***************
 *** 97474,97475 ****
---- 97495,97498 ----
+--- 97507,97510 ----
   suïciderisico/X
 + s.v.p.
 + z.o.z.
   swagger/S
 ***************
+*** 99366,99368 ****
+  tennisracket/S
+! tennisraket/M
+  tennisrokje
+--- 99401,99403 ----
+  tennisracket/S
+! #tennisraket/M  waarschijnlijk fout
+  tennisrokje
+***************
+*** 99899,99901 ****
+  terugziet
+! terugzijn
+  terugzoeken
+--- 99934,99936 ----
+  terugziet
+! #terugzijn	fout volgens Van Dale
+  terugzoeken
+***************
+*** 100485,100487 ****
+  tijdsdruk
+! tijdsduur/P
+  tijdseenheid
+--- 100520,100523 ----
+  tijdsdruk
+! #tijdsduur/P		tijdsduren is fout volgens Van Dale
+! tijdsduur
+  tijdseenheid
+***************
 *** 101428,101429 ****
---- 101451,101454 ----
+--- 101464,101467 ----
   toezichthouder/S
 + toezichthoudersaansprakelijkheidsverzekering
 + toezichthoudersaansprakelijkheidsverzekeringen
   toezie/N
 ***************
 *** 103707,103708 ****
---- 103732,103734 ----
+--- 103745,103747 ----
   tête-à-tête/S
 + u
   uchtend/N
 ***************
+*** 108982,108984 ****
+  violistisch
+! violoncel/SM
+  violoncellist/N
+--- 109021,109025 ----
+  violistisch
+! #violoncel/SM	violoncels is fout volgens Van Dale
+! violoncel/M
+! violoncellen
+  violoncellist/N
+***************
+*** 109497,109499 ****
+  vliegenscheet/P
+! vliegenstront/N
+  vliegensvlug
+--- 109538,109541 ----
+  vliegenscheet/P
+! #vliegenstront/N	vliegenstronten is fout volgens Van Dale
+! vliegenstront
+  vliegensvlug
+***************
 *** 110847,110848 ****
---- 110873,110875 ----
+--- 110889,110891 ----
   voorjaarscollectie/S
 + voorjaarsconferentie/S
   voorjaarsmoeheid
 ***************
+*** 113996,113998 ****
+  weervloed
+! weervoer/N
+  weervoorspeller/S
+--- 114039,114043 ----
+  weervloed
+! #weervoer/N	weervoeren is fout volgens Van Dale
+! weervoer
+! wedervoeren
+  weervoorspeller/S
+***************
+*** 114822,114824 ****
+  wereld/SN
+! wereldbank
+  wereldbeeld
+--- 114867,114870 ----
+  wereld/SN
+! #wereldbank		fout volgens Van Dale
+! Wereldbank
+  wereldbeeld
+***************
+*** 115268,115270 ****
+  wetens/OG
+! wetenschap/SM
+  wetenschappelijk/TREHO
+--- 115314,115317 ----
+  wetens/OG
+! #wetenschap/SM	wetenschaps is fout volgens Van Dale
+! wetenschap/M
+  wetenschappelijk/TREHO
+***************
+*** 115747,115749 ****
+  willekeur/N
+! willekeurig/OENRTH
+  willekeurige/O
+--- 115794,115797 ----
+  willekeur/N
+! #willekeurig/OENRTH    willekeurige is fout volgens Van Dale
+! willekeurig/OERTH
+  willekeurige/O
+***************
+*** 116672,116674 ****
+  wouter/S
+! wouterman/S
+  wouw/N
+--- 116720,116724 ----
+  wouter/S
+! #wouterman/S		woutermans is fout volgens Van Dale
+! wouterman
+! woutermannetje
+  wouw/N
+***************
+*** 117602,117604 ****
+  zegelwet/M
+! zegen/FCGSWNIU
+  zegenbede/N
+--- 117652,117655 ----
+  zegelwet/M
+! #zegen/FCGSWNIU		 uitzegen is fout volgens Van Dale
+! zegen/FCGSWNI
+  zegenbede/N
+***************
 *** 119938 ****
---- 119965,173166 ----
+--- 119989,173194 ----
   überhaupt
 + Christiaan/X
 + Fred/X
@@ -324,7 +642,8 @@
 + chinezen
 + coming man
 + comme il faut
-+ commedia dell' arte
++ #commedia dell' arte	fout volgens Van Dale
++ commedia dell'arte
 + communis opinio
 + consilium abeundi
 + couleur locale
@@ -456,7 +775,8 @@
 + a.s.
 + evt.
 + enz.
-+ t,m
++ t\/m
++ TCP\/IP
 + bijv.
 + t.n.v.
 + m.b.v.
@@ -10124,7 +10444,8 @@
 + consoletafel
 + consoletafels
 + consolidering
-+ consolsysteem
++ #consolsysteem	fout volgens Van Dale
++ consolesysteem
 + conspiraties
 + conspireerde
 + constanties
@@ -53483,4 +53804,5 @@
 + über-ich
 + übermensch
 + übermenschen
-+ 
++ # groene boekje schrijft Majorca, Van Dale Mallorca
++ Mallorca

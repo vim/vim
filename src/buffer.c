@@ -251,7 +251,7 @@ open_buffer(read_stdin, eap)
 	    /* Go to the buffer that was opened. */
 	    aucmd_prepbuf(&aco, old_curbuf);
 #endif
-	    do_modelines(FALSE);
+	    do_modelines(0);
 	    curbuf->b_flags &= ~(BF_CHECK_RO | BF_NEVERLOADED);
 
 #ifdef FEAT_AUTOCMD
@@ -747,7 +747,7 @@ handle_swap_exists(old_curbuf)
 	ml_recover();
 	MSG_PUTS("\n");	/* don't overwrite the last message */
 	cmdline_row = msg_row;
-	do_modelines(FALSE);
+	do_modelines(0);
 
 # if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 	/* Restore the error/interrupt/exception state if not discarded by a
@@ -4632,16 +4632,20 @@ ex_buffer_all(eap)
 
 #endif /* FEAT_WINDOWS */
 
+static int  chk_modeline __ARGS((linenr_T, int));
+
 /*
  * do_modelines() - process mode lines for the current file
  *
+ * "flags" can be:
+ * OPT_WINONLY	    only set options local to window
+ * OPT_NOWIN	    don't set options local to window
+ *
  * Returns immediately if the "ml" option isn't set.
  */
-static int  chk_modeline __ARGS((linenr_T, int));
-
     void
-do_modelines(win_only)
-    int		win_only;	    /* Only do window-local options. */
+do_modelines(flags)
+    int		flags;
 {
     linenr_T	lnum;
     int		nmlines;
@@ -4658,12 +4662,12 @@ do_modelines(win_only)
     ++entered;
     for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count && lnum <= nmlines;
 								       ++lnum)
-	if (chk_modeline(lnum, win_only) == FAIL)
+	if (chk_modeline(lnum, flags) == FAIL)
 	    nmlines = 0;
 
     for (lnum = curbuf->b_ml.ml_line_count; lnum > 0 && lnum > nmlines
 		       && lnum > curbuf->b_ml.ml_line_count - nmlines; --lnum)
-	if (chk_modeline(lnum, win_only) == FAIL)
+	if (chk_modeline(lnum, flags) == FAIL)
 	    nmlines = 0;
     --entered;
 }
@@ -4675,9 +4679,9 @@ do_modelines(win_only)
  * Return FAIL if an error encountered.
  */
     static int
-chk_modeline(lnum, win_only)
+chk_modeline(lnum, flags)
     linenr_T	lnum;
-    int		win_only;	    /* Only do window-local options. */
+    int		flags;		/* Same as for do_modelines(). */
 {
     char_u	*s;
     char_u	*e;
@@ -4774,8 +4778,7 @@ chk_modeline(lnum, win_only)
 		save_SID = current_SID;
 		current_SID = SID_MODELINE;
 #endif
-		retval = do_set(s, OPT_MODELINE | OPT_LOCAL
-					      | (win_only ? OPT_WINONLY : 0));
+		retval = do_set(s, OPT_MODELINE | OPT_LOCAL | flags);
 #ifdef FEAT_EVAL
 		current_SID = save_SID;
 #endif

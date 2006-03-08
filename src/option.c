@@ -3774,9 +3774,11 @@ set_title_defaults()
  * does not need to be expanded with option_expand().
  * "opt_flags":
  * 0 for ":set"
- * OPT_GLOBAL for ":setglobal"
- * OPT_LOCAL for ":setlocal" and a modeline
+ * OPT_GLOBAL   for ":setglobal"
+ * OPT_LOCAL    for ":setlocal" and a modeline
  * OPT_MODELINE for a modeline
+ * OPT_WINONLY  to only set window-local options
+ * OPT_NOWIN	to skip setting window-local options
  *
  * returns FAIL if an error is detected, OK otherwise
  */
@@ -3975,6 +3977,11 @@ do_set(arg, opt_flags)
 	     * an already loaded buffer in a window). */
 	    if ((opt_flags & OPT_WINONLY)
 			  && (opt_idx < 0 || options[opt_idx].var != VAR_WIN))
+		goto skip;
+
+	    /* Skip all options that are window-local (used for :vimgrep). */
+	    if ((opt_flags & OPT_NOWIN) && opt_idx >= 0
+					   && options[opt_idx].var == VAR_WIN)
 		goto skip;
 
 	    /* Disallow changing some options from modelines */

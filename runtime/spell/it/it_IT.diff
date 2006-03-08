@@ -1,8 +1,8 @@
 *** it_IT.orig.aff	Sun Jul 31 14:20:13 2005
---- it_IT.aff	Tue Aug  9 21:50:25 2005
+--- it_IT.aff	Tue Jan 10 18:06:11 2006
 ***************
 *** 33,34 ****
---- 33,58 ----
+--- 33,61 ----
   
 + # This is no longer required, now that we compress after adding every so many
 + # words.
@@ -14,6 +14,9 @@
 + 
 + SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ‡·‚„‰ÂÊÁËÈÍÎÏÌÓÔÒÚÛÙıˆ¯˘˙˚¸˝˛ﬂˇ¿¡¬√ƒ≈∆«»… ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€‹›ﬁø
 + SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
++ 
++ # Building the soundfold tree takes too much memory, skip it.
++ NOSUGFILE
 + 
 + MIDWORD	'
 + 
@@ -34,7 +37,7 @@
   
 ! PFX T Y 148
   PFX T 0 l' [aeiouhAEIOUH]
---- 1136,1138 ----
+--- 1139,1141 ----
   
 ! PFX T Y 70
   PFX T 0 l' [aeiouhAEIOUH]
@@ -49,7 +52,7 @@
 - PFX T u L'U u
 - PFX T h L'H h
   PFX T 0 all' [aeiouhAEIOUH]
---- 1144,1145 ----
+--- 1147,1148 ----
 ***************
 *** 1134,1143 ****
   PFX T h all'H h
@@ -62,7 +65,7 @@
 - PFX T h All'H h
 - PFX T 0 ALL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 dell' [aeiouhAEIOUH]
---- 1151,1152 ----
+--- 1154,1155 ----
 ***************
 *** 1149,1158 ****
   PFX T h dell'H h
@@ -75,7 +78,7 @@
 - PFX T h Dell'H h
 - PFX T 0 DELL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 dall' [aeiouhAEIOUH]
---- 1158,1159 ----
+--- 1161,1162 ----
 ***************
 *** 1164,1173 ****
   PFX T h dall'H h
@@ -88,7 +91,7 @@
 - PFX T h Dall'H h
 - PFX T 0 DALL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 nell' [aeiouhAEIOUH]
---- 1165,1166 ----
+--- 1168,1169 ----
 ***************
 *** 1179,1188 ****
   PFX T h nell'H h
@@ -101,7 +104,7 @@
 - PFX T h Nell'H h
 - PFX T 0 NELL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 sull' [aeiouhAEIOUH]
---- 1172,1173 ----
+--- 1175,1176 ----
 ***************
 *** 1194,1203 ****
   PFX T h sull'H h
@@ -114,7 +117,7 @@
 - PFX T h Sull'H h
 - PFX T 0 SULL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 coll' [aeiouhAEIOUH]
---- 1179,1180 ----
+--- 1182,1183 ----
 ***************
 *** 1209,1218 ****
   PFX T h coll'H h
@@ -127,7 +130,7 @@
 - PFX T h Coll'H h
 - PFX T 0 COLL' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 d' [aeiouhAEIOUH]
---- 1186,1187 ----
+--- 1189,1190 ----
 ***************
 *** 1224,1232 ****
   PFX T h d'H h
@@ -139,7 +142,7 @@
 - PFX T u D'U u
 - PFX T h D'H h
   PFX T 0 quest' [aeiouhAEIOUH]
---- 1193,1194 ----
+--- 1196,1197 ----
 ***************
 *** 1238,1247 ****
   PFX T h quest'H h
@@ -152,7 +155,7 @@
 - PFX T h Quest'H h
 - PFX T 0 QUEST' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX T 0 quell' [aeiouhAEIOUH]
---- 1200,1201 ----
+--- 1203,1204 ----
 ***************
 *** 1253,1264 ****
   PFX T h quell'H h
@@ -167,7 +170,7 @@
   
 ! PFX U Y 30
   PFX U 0 un' [aeiouhAEIOUH]
---- 1207,1210 ----
+--- 1210,1213 ----
   PFX T h quell'H h
   
 ! PFX U Y 14
@@ -184,7 +187,7 @@
 - PFX U h Un'H h
 - PFX U 0 UN' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   PFX U 0 ciascun' [aeiouhAEIOUH]
---- 1216,1217 ----
+--- 1219,1220 ----
 ***************
 *** 1285,1296 ****
   PFX U h ciascun'H h
@@ -199,7 +202,7 @@
   
 ! PFX X Y 72
   PFX X 0 m' [aeiouAEIOU]
---- 1223,1226 ----
+--- 1226,1229 ----
   PFX U h ciascun'H h
   
 ! PFX X Y 36
@@ -214,7 +217,7 @@
 - PFX X o M'O o
 - PFX X u M'U u
   PFX X 0 t' [aeiouAEIOU]
---- 1231,1232 ----
+--- 1234,1235 ----
 ***************
 *** 1313,1320 ****
   PFX X u t'U u
@@ -225,7 +228,7 @@
 - PFX X o T'O o
 - PFX X u T'U u
   PFX X 0 s' [aeiouAEIOU]
---- 1237,1238 ----
+--- 1240,1241 ----
 ***************
 *** 1325,1332 ****
   PFX X u s'U u
@@ -236,7 +239,7 @@
 - PFX X o S'O o
 - PFX X u S'U u
   PFX X 0 c' [aeiouAEIOU]
---- 1243,1244 ----
+--- 1246,1247 ----
 ***************
 *** 1337,1344 ****
   PFX X u c'U u
@@ -247,7 +250,7 @@
 - PFX X o C'O o
 - PFX X u C'U u
   PFX X 0 v' [aeiouAEIOU]
---- 1249,1250 ----
+--- 1252,1253 ----
 ***************
 *** 1349,1356 ****
   PFX X u v'U u
@@ -258,7 +261,7 @@
 - PFX X o V'O o
 - PFX X u V'U u
   PFX X 0 n' [aeiouAEIOU]
---- 1255,1256 ----
+--- 1258,1259 ----
 ***************
 *** 1361,1368 ****
   PFX X u n'U u
@@ -269,13 +272,13 @@
 - PFX X o N'O o
 - PFX X u N'U u
   
---- 1261,1262 ----
+--- 1264,1265 ----
 ***************
 *** 1669,1671 ****
   
 ! PFX i Y 14
   PFX i 0 l' [aeiouhAEIOUH]
---- 1563,1565 ----
+--- 1566,1568 ----
   
 ! PFX i Y 7
   PFX i 0 l' [aeiouhAEIOUH]
@@ -290,13 +293,13 @@
 - PFX i u L'U u
 - PFX i h L'H h
   
---- 1571,1572 ----
+--- 1574,1575 ----
 ***************
 *** 1738,1740 ****
   
 ! PFX q Y 15
   PFX q 0 bell' [aeiouhAEIOUH]
---- 1625,1627 ----
+--- 1628,1630 ----
   
 ! PFX q Y 7
   PFX q 0 bell' [aeiouhAEIOUH]
@@ -314,7 +317,7 @@
   
 ! PFX r Y 15
   PFX r 0 brav' [aeiouhAEIOUH]
---- 1633,1636 ----
+--- 1636,1639 ----
   PFX q h bell'H h
   
 ! PFX r Y 7
@@ -333,7 +336,7 @@
   
 ! PFX s Y 15
   PFX s 0 buon' [aeiouhAEIOUH]
---- 1642,1645 ----
+--- 1645,1648 ----
   PFX r h brav'H h
   
 ! PFX s Y 7
@@ -350,7 +353,7 @@
 - PFX s h Buon'H h
 - PFX s 0 BUON' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   
---- 1651,1652 ----
+--- 1654,1655 ----
 ***************
 *** 2072,2077 ****
   
@@ -359,7 +362,7 @@
 - PFX ^ 0 Sant' [AEIOUH]
 - PFX ^ 0 SANT' [AEIOUH][QWERTYUIOPLKJHGFDSAZXCVBNM]
   
---- 1935,1938 ----
+--- 1938,1941 ----
   
 ! PFX ^ Y 1 # gestione dell'elisione nei nomi dei santi 
   PFX ^ 0 sant' [AEIOUH]
@@ -369,4 +372,4 @@
   PFX $ 0 mml x
 - 
 - 
---- 2225 ----
+--- 2228 ----

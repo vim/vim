@@ -1,11 +1,11 @@
 *** en_NZ.orig.aff	Fri Apr 15 13:20:36 2005
---- en_NZ.aff	Sun Jul 31 22:17:27 2005
+--- en_NZ.aff	Wed Jan 11 22:03:30 2006
 ***************
 *** 7,9 ****
   SET ISO8859-1
 ! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò 
   REP 66
---- 7,140 ----
+--- 7,147 ----
   SET ISO8859-1
 ! TRY esiaÈnrtolcdugmphbyfvkw-'.zqjxSNRTLCGDMPHBEAUYOFIVKWˆ‚ÙZQJX≈ÁËÓÍ‡Ô¸‰Ò
 ! 
@@ -15,7 +15,7 @@
 ! 
 ! MIDWORD	'
 ! 
-! RAR ?
+! RARE ?
 ! BAD !
 ! 
 ! MAP 9
@@ -139,6 +139,13 @@
 ! SAL ZZ-                  _
 ! SAL Z                    S
 ! 
+! # When soundfolding "th" is turned into "@".  When this is mistyped as "ht" it
+! # soundfolds to "ht".  This difference is too big, thus use REP items to lower
+! # the score.
+! REPSAL 2
+! REPSAL ht @
+! REPSAL @ ht
+! 
   REP 66
 ***************
 *** 76,95 ****
@@ -162,7 +169,7 @@
   PFX E Y 1
 ! PFX E 0 dis . 
   PFX F Y 5
---- 207,226 ----
+--- 214,233 ----
   PFX A Y 2
 ! PFX A 0 re [^e]
 ! PFX A 0 re- e
@@ -580,7 +587,7 @@
   SFX T y iest [^aeiou]y
 ! SFX T 0 er [aeiou]y 
   SFX T 0 est [aeiou]y
---- 230,624 ----
+--- 237,631 ----
   PFX F 0 col l
 ! PFX F 0 con [^abehilmopru].
   PFX K Y 1
@@ -1665,7 +1672,7 @@
 ! SFX 3 o ist's o 
 ! SFX 3 0 ist's [^eoy] 
 \ No newline at end of file
---- 631,1316 ----
+--- 638,1323 ----
   SFX R Y 72
 ! SFX R 0 r e
 ! SFX R 0 rs e
@@ -2353,7 +2360,7 @@
 ! SFX 3 o ist's o
 ! SFX 3 0 ist's [^eoy]
 *** en_NZ.orig.dic	Fri Apr 15 13:20:36 2005
---- en_NZ.dic	Wed Sep 28 23:08:01 2005
+--- en_NZ.dic	Wed Mar  8 13:14:40 2006
 ***************
 *** 4,6 ****
   2ZB
@@ -2673,13 +2680,16 @@
   Burkina
 ! Faso/M
 \ No newline at end of file
---- 47109,47117 ----
+--- 47109,47120 ----
   Burkina
 ! Faso/M
 ! nd
 ! the the/!
+! and and/!
 ! a a/!
 ! a an/!
 ! an a/!
 ! an an/!
 ! PayPal
+! Google
+! TCP\/IP

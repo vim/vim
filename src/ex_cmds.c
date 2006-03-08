@@ -2586,7 +2586,7 @@ do_write(eap)
 	    if (*curbuf->b_p_ft == NUL)
 	    {
 		(void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
-		do_modelines(FALSE);
+		do_modelines(0);
 	    }
 #endif
 	}
@@ -3495,7 +3495,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	    /* Read the modelines, but only to set window-local options.  Any
 	     * buffer-local options have already been set and may have been
 	     * changed by the user. */
-	    do_modelines(TRUE);
+	    do_modelines(OPT_WINONLY);
 
 	    apply_autocmds_retval(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf,
 								    &retval);

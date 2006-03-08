@@ -111,7 +111,16 @@ static XFontSet current_fontset = NULL;
 	    if (current_fontset != NULL) \
 		XwcDrawString(dpy, win, current_fontset, gc, x, y, (wchar_t *)str, n); \
 	    else \
-		XDrawString16(dpy, win, gc, x, y, str, n); \
+		XDrawString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
+	} while (0)
+
+#define XDrawImageString16(dpy, win, gc, x, y, str, n) \
+	do \
+	{ \
+	    if (current_fontset != NULL) \
+		XwcDrawImageString(dpy, win, current_fontset, gc, x, y, (wchar_t *)str, n); \
+	    else \
+		XDrawImageString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
 
 static int check_fontset_sanity __ARGS((XFontSet fs));
@@ -2503,7 +2512,7 @@ gui_mch_draw_string(row, col, s, len, flags)
 {
     int			cells = len;
 #ifdef FEAT_MBYTE
-    static XChar2b	*buf = NULL;
+    static void		*buf = NULL;
     static int		buflen = 0;
     char_u		*p;
     int			wlen = 0;
@@ -2517,7 +2526,8 @@ gui_mch_draw_string(row, col, s, len, flags)
 	if (buflen < len)
 	{
 	    XtFree((char *)buf);
-	    buf = (XChar2b *)XtMalloc(len * sizeof(XChar2b));
+	    buf = (void *)XtMalloc(len * (sizeof(XChar2b) < sizeof(wchar_t)
+					? sizeof(wchar_t) : sizeof(XChar2b)));
 	    buflen = len;
 	}
 	p = s;
@@ -2525,10 +2535,21 @@ gui_mch_draw_string(row, col, s, len, flags)
 	while (p < s + len)
 	{
 	    c = utf_ptr2char(p);
-	    if (c >= 0x10000)	/* show chars > 0xffff as ? */
-		c = 0xbf;
-	    buf[wlen].byte1 = (unsigned)c >> 8;
-	    buf[wlen].byte2 = c;
+# ifdef FEAT_XFONTSET
+	    if (current_fontset != NULL)
+	    {
+		if (c >= 0x10000 && sizeof(wchar_t) <= 2)
+		    c = 0xbf;		/* show chars > 0xffff as ? */
+		((wchar_t *)buf)[wlen] = c;
+	    }
+	    else
+# endif
+	    {
+		if (c >= 0x10000)
+		    c = 0xbf;		/* show chars > 0xffff as ? */
+		((XChar2b *)buf)[wlen].byte1 = (unsigned)c >> 8;
+		((XChar2b *)buf)[wlen].byte2 = c;
+	    }
 	    ++wlen;
 	    cells += utf_char2cells(c);
 	    p += utf_ptr2len(p);

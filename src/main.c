@@ -2302,7 +2302,7 @@ create_windows(parmp)
 	ml_recover();
 	if (curbuf->b_ml.ml_mfp == NULL) /* failed */
 	    getout(1);
-	do_modelines(FALSE);		/* do modelines */
+	do_modelines(0);		/* do modelines */
     }
     else
     {

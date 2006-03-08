@@ -3039,12 +3039,12 @@ ex_vimgrep(eap)
 	}
 	else
 	{
+	    /* Try for a match in all lines of the buffer.
+	     * For ":1vimgrep" look for first match only. */
 	    found_match = FALSE;
-	    /* Try for a match in all lines of the buffer. */
 	    for (lnum = 1; lnum <= buf->b_ml.ml_line_count && tomatch > 0;
 								       ++lnum)
 	    {
-		/* For ":1vimgrep" look for multiple matches. */
 		col = 0;
 		while (vim_regexec_multi(&regmatch, curwin, buf, lnum,
 								     col) > 0)
@@ -3093,12 +3093,17 @@ ex_vimgrep(eap)
 		    wipe_dummy_buffer(buf);
 		    buf = NULL;
 		}
-		else if (!buf_hide(buf))
+		else if (!cmdmod.hide
+			    || buf->b_p_bh[0] == 'u'	/* "unload" */
+			    || buf->b_p_bh[0] == 'w'	/* "wipe" */
+			    || buf->b_p_bh[0] == 'd')	/* "delete" */
 		{
-		    /* When not hiding the buffer and no match was found we
-		     * don't need to remember the buffer, wipe it out.  If
-		     * there was a match and it wasn't the first one or we
-		     * won't jump there: only unload the buffer. */
+		    /* When no match was found we don't need to remember the
+		     * buffer, wipe it out.  If there was a match and it
+		     * wasn't the first one or we won't jump there: only
+		     * unload the buffer.
+		     * Ignore 'hidden' here, because it may lead to having too
+		     * many swap files. */
 		    if (!found_match)
 		    {
 			wipe_dummy_buffer(buf);
@@ -3115,7 +3120,8 @@ ex_vimgrep(eap)
 		{
 		    /* The buffer is still loaded, the Filetype autocommands
 		     * need to be done now, in that buffer.  And the modelines
-		     * need to be done (again). */
+		     * need to be done (again).  But not the window-local
+		     * options! */
 #if defined(FEAT_AUTOCMD)
 		    aucmd_prepbuf(&aco, buf);
 #else
@@ -3127,7 +3133,7 @@ ex_vimgrep(eap)
 		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
 						     buf->b_fname, TRUE, buf);
 #endif
-		    do_modelines(FALSE);
+		    do_modelines(OPT_NOWIN);
 #if defined(FEAT_AUTOCMD)
 		    aucmd_restbuf(&aco);
 #else

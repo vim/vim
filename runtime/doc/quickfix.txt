@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 07
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -478,8 +478,13 @@ advantages are:
 - Uses Vim search patterns.  Multi-line patterns can be used.
 - When plugins are enabled: compressed and remote files can be searched.
 	|gzip| |netrw|
-- When 'hidden' is set the files are kept loaded, thus repeating a search is
-  much faster.  Uses a lot of memory though!
+
+To be able to do this Vim loads each file as if it is being edited.  When
+there is no match in the file the assicated buffer is wiped out again.  The
+'hidden' option is ignored here to avoid running out of memory or file
+descriptors when searching many files.  However, when the |:hide| command
+modifier is used the buffers are kept loaded.  This makes following searches
+in the same files a lot faster.
 
 
 5.1 using Vim's internal grep

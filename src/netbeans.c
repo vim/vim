@@ -1489,10 +1489,10 @@ nb_do_cmd(
 		lbuf[0] = '\0';
 
 		nb_set_curbuf(buf->bufp);
-		old_b_changed = buf->bufp->b_changed;
+		old_b_changed = curbuf->b_changed;
 
-		pos = off2pos(buf->bufp, off);
-		if (pos)
+		pos = off2pos(curbuf, off);
+		if (pos != NULL)
 		{
 		    if (pos->lnum == 0)
 			pos->lnum = 1;
@@ -1506,28 +1506,30 @@ nb_do_cmd(
 #ifdef FEAT_VIRTUALEDIT
 		    pos->coladd = 0;
 #endif
-		    pos->lnum = buf->bufp->b_ml.ml_line_count;
+		    pos->lnum = curbuf->b_ml.ml_line_count;
 		}
 		lnum = pos->lnum;
 		old_w_cursor = curwin->w_cursor;
 		curwin->w_cursor = *pos;
 
-		if (buf->bufp->b_start_eol == FALSE && lnum > 0)
+		if (curbuf->b_start_eol == FALSE
+			&& lnum > 0
+			&& lnum <= curbuf->b_ml.ml_line_count)
 		{
 		    /* Append to a partial line */
 		    char_u *partial = ml_get(lnum);
 
-		    if (partial != IObuff)
-			STRCPY(lbuf, partial);
-			lbuf_len = STRLEN(partial);
-			ml_delete(lnum, FALSE);
+		    STRCPY(lbuf, partial);
+		    lbuf_len = STRLEN(partial);
+		    ml_delete(lnum, FALSE);
+		    buf_was_empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 		}
 
 		doupdate = 1;
 		while (*args)
 		{
 		    nl = (char_u *)strchr((char *)args, '\n');
-		    if (nl)
+		    if (nl != NULL)
 		    {
 			STRNCAT(lbuf, args, nl - args);
 			lbuf[lbuf_len + nl - args] = '\0';
@@ -1554,13 +1556,13 @@ nb_do_cmd(
 
 		if (*(args - 1) == '\n')
 		{
-		    buf->bufp->b_p_eol = TRUE;
-		    buf->bufp->b_start_eol = TRUE;
+		    curbuf->b_p_eol = TRUE;
+		    curbuf->b_start_eol = TRUE;
 		}
 		else
 		{
-		    buf->bufp->b_p_eol = FALSE;
-		    buf->bufp->b_start_eol = FALSE;
+		    curbuf->b_p_eol = FALSE;
+		    curbuf->b_start_eol = FALSE;
 		}
 
 		appended_lines_mark(pos->lnum - 1, lnum - pos->lnum);
@@ -1573,8 +1575,11 @@ nb_do_cmd(
 		    if (ff_detected == EOL_UNKNOWN)
 			ff_detected = EOL_DOS;
 		    set_fileformat(ff_detected, OPT_LOCAL);
-		    buf->bufp->b_start_ffc = *buf->bufp->b_p_ff;
-		    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+		    curbuf->b_start_ffc = *curbuf->b_p_ff;
+
+		    /* Safety check: only delete empty line */
+		    if (*ml_get(curbuf->b_ml.ml_line_count) == NUL)
+			ml_delete(curbuf->b_ml.ml_line_count, FALSE);
 		}
 
 		curwin->w_cursor = old_w_cursor;
@@ -1584,11 +1589,11 @@ nb_do_cmd(
 		 * text the buffer has been updated but not written. Will
 		 * netbeans guarantee to write it? Even if I do a :q! ?
 		 */
-		buf->bufp->b_changed = old_b_changed; /* logically unchanged */
+		curbuf->b_changed = old_b_changed; /* logically unchanged */
 		netbeansFireChanges = oldFire;
 
-		u_blockfree(buf->bufp);
-		u_clearall(buf->bufp);
+		u_blockfree(curbuf);
+		u_clearall(curbuf);
 	    }
 	    vim_free(to_free);
 	    nb_reply_nil(cmdno); /* or !error */
