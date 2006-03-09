@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 05
+" Last Change:	2006 Mar 09
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -131,41 +131,6 @@ an 10.600 &File.-SEP4-				<Nop>
 an 10.610 &File.Sa&ve-Exit<Tab>:wqa		:confirm wqa<CR>
 an 10.620 &File.E&xit<Tab>:qa			:confirm qa<CR>
 
-" Pasting blockwise and linewise selections is not possible in Insert and
-" Visual mode without the +virtualedit feature.  They are pasted as if they
-" were characterwise instead.  Add to that some tricks to leave the cursor in
-" the right position, also for "gi".
-" Note: the same stuff appears in mswin.vim.
-if has("virtualedit")
-  let s:paste_cmd = ":call <SID>Paste()<CR>"
-  func! <SID>Paste()
-    let ove = &ve
-    set ve=all
-    normal! `^
-    if @+ != ''
-      normal! "+gP
-    endif
-    let c = col(".")
-    normal! i
-    if col(".") < c	" compensate for i<ESC> moving the cursor left
-      normal! l
-    endif
-    let &ve = ove
-  endfunc
-else
-  let s:paste_cmd = "\"=@+.'xy'<CR>gPFx\"_2x"
-endif
-
-" Define the string to use for items that are present both in Edit, Popup and
-" Toolbar menu.
-if has("virtualedit")
-  let s:paste_v_cmd = '"-c<Esc>' . s:paste_cmd
-  let s:paste_i_cmd = '<Esc>' . s:paste_cmd . 'gi'
-else
-  let s:paste_v_cmd = '"-c<Esc>gix<Esc>' . s:paste_cmd . '"_x'
-  let s:paste_i_cmd = 'x<Esc>' . s:paste_cmd . '"_s'
-endif
-
 func! <SID>SelectAll()
   exe "norm gg" . (&slm == "" ? "VG" : "gH\<C-O>G")
 endfunc
@@ -182,8 +147,8 @@ vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
-exe 'vnoremenu <script> &Edit.&Paste<Tab>"+gP	' . s:paste_v_cmd
-exe 'inoremenu <script> &Edit.&Paste<Tab>"+gP	' . s:paste_i_cmd
+exe 'vnoremenu <script> &Edit.&Paste<Tab>"+gP	' . paste#paste_cmd['v']
+exe 'inoremenu <script> &Edit.&Paste<Tab>"+gP	' . paste#paste_cmd['i']
 nnoremenu 20.370 &Edit.Put\ &Before<Tab>[p	[p
 inoremenu	 &Edit.Put\ &Before<Tab>[p	<C-O>[p
 nnoremenu 20.380 &Edit.Put\ &After<Tab>]p	]p
@@ -199,10 +164,10 @@ an 20.405	 &Edit.-SEP2-				<Nop>
 if has("win32")  || has("win16") || has("gui_gtk") || has("gui_kde") || has("gui_motif")
   an 20.410	 &Edit.&Find\.\.\.			:promptfind<CR>
   vunmenu	 &Edit.&Find\.\.\.
-  vnoremenu <silent>	 &Edit.&Find\.\.\.			y:call <SID>FixFText()<CR>:promptfind <C-R>"<CR>
+  vnoremenu <silent>	 &Edit.&Find\.\.\.		y:promptfind <C-R>=<SID>FixFText()<CR><CR>
   an 20.420	 &Edit.Find\ and\ Rep&lace\.\.\.	:promptrepl<CR>
   vunmenu	 &Edit.Find\ and\ Rep&lace\.\.\.
-  vnoremenu <silent>	 &Edit.Find\ and\ Rep&lace\.\.\.	y:call <SID>FixFText()<CR>:promptrepl <C-R>"<CR>
+  vnoremenu <silent>	 &Edit.Find\ and\ Rep&lace\.\.\. y:promptrepl <C-R>=<SID>FixFText()<CR><CR>
 else
   an 20.410	 &Edit.&Find<Tab>/			/
   an 20.420	 &Edit.Find\ and\ Rep&lace<Tab>:%s	:%s/
@@ -215,7 +180,7 @@ an 20.430	 &Edit.Settings\ &Window		:options<CR>
 
 fun! s:FixFText()
   " Fix text in nameless register to be used with :promptfind.
-  let @" = substitute(@", "[\r\n]", '\\n', 'g')
+  return substitute(@", "[\r\n]", '\\n', 'g')
 endfun
 
 " Edit/Global Settings
@@ -851,8 +816,8 @@ vnoremenu 1.30 PopUp.&Copy		"+y
 cnoremenu 1.30 PopUp.&Copy		<C-Y>
 nnoremenu 1.40 PopUp.&Paste		"+gP
 cnoremenu 1.40 PopUp.&Paste		<C-R>+
-exe 'vnoremenu <script> 1.40 PopUp.&Paste	' . s:paste_v_cmd
-exe 'inoremenu <script> 1.40 PopUp.&Paste	' . s:paste_i_cmd
+exe 'vnoremenu <script> 1.40 PopUp.&Paste	' . paste#paste_cmd['v']
+exe 'inoremenu <script> 1.40 PopUp.&Paste	' . paste#paste_cmd['i']
 vnoremenu 1.50 PopUp.&Delete		x
 an 1.55 PopUp.-SEP2-			<Nop>
 vnoremenu 1.60 PopUp.Select\ Blockwise	<C-V>
@@ -976,14 +941,14 @@ if has("toolbar")
   cnoremenu 1.80 ToolBar.Copy		<C-Y>
   nnoremenu 1.90 ToolBar.Paste		"+gP
   cnoremenu	 ToolBar.Paste		<C-R>+
-  exe 'vnoremenu <script>	 ToolBar.Paste	' . s:paste_v_cmd
-  exe 'inoremenu <script>	 ToolBar.Paste	' . s:paste_i_cmd
+  exe 'vnoremenu <script>	 ToolBar.Paste	' . paste#paste_cmd['v']
+  exe 'inoremenu <script>	 ToolBar.Paste	' . paste#paste_cmd['i']
 
   if !has("gui_athena")
     an 1.95   ToolBar.-sep3-		<Nop>
     an 1.100  ToolBar.Replace		:promptrepl<CR>
     vunmenu   ToolBar.Replace
-    vnoremenu ToolBar.Replace		y:promptrepl <C-R>"<CR>
+    vnoremenu ToolBar.Replace		y:promptrepl <C-R>=<SID>FixFText()<CR><CR>
     an 1.110  ToolBar.FindNext		n
     an 1.120  ToolBar.FindPrev		N
   endif
@@ -1098,8 +1063,6 @@ an 50.720 &Syntax.&Highlight\ test	:runtime syntax/hitest.vim<CR>
 an 50.730 &Syntax.&Convert\ to\ HTML	:runtime syntax/2html.vim<CR>
 
 endif " !exists("did_install_syntax_menu")
-
-unlet! s:paste_i_cmd s:paste_v_cmd s:paste_cmd
 
 " Restore the previous value of 'cpoptions'.
 let &cpo = s:cpo_save

@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Jan 27, 2006
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 09, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -12,7 +12,7 @@
 
 1.  Starting With Netrw.................................|netrw-start|
 2.  Netrw Reference......................................|netrw-ref|
-      CONTROLLING EXTERNAL APPLICTIONS...................|netrw-externapp|
+      CONTROLLING EXTERNAL APPLICATIONS..................|netrw-externapp|
       READING............................................|netrw-read|
       WRITING............................................|netrw-write|
       DIRECTORY LISTING..................................|netrw-dirlist|
@@ -32,6 +32,7 @@
       Quick Reference Commands Table.....................|netrw-browse-cmds|
       Netrw Browser Variables............................|netrw-browse-var|
       Introduction To Directory Browsing.................|netrw-browse-intro|
+      Netrw Browsing And Option Incompatibilities........|netrw-incompatible|
       Directory Exploring Commands.......................|netrw-explore|
       Refreshing The Listing.............................|netrw-ctrl-l|
       Going Up...........................................|netrw--|
@@ -39,7 +40,7 @@
       Obtaining A File...................................|netrw-O|
       Thin, Long, and Wide Listings......................|netrw-i|
       Making A New Directory.............................|netrw-d|
-      Deleting Files Or Directories......................|netrw-delete|
+      Deleting Files Or Directories......................|netrw-D|
       Renaming Files Or Directories......................|netrw-move|
       Hiding Files Or Directories........................|netrw-a|
       Edit File Or Directory Hiding List.................|netrw-ctrl-h|
@@ -132,7 +133,7 @@ section, |netrw-externapp|.
 ==============================================================================
 2. Netrw Reference						*netrw-ref*
 
-CONTROLLING EXTERNAL APPLICTIONS			*netrw-externapp*
+CONTROLLING EXTERNAL APPLICATIONS			*netrw-externapp*
 
 	Protocol  Variable	    Default Value
 	--------  ----------------  -------------
@@ -719,6 +720,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				=0: re-using the same window
 				=1: horizontally splitting the window first  
 				=2: vertically   splitting the window first  
+
   *g:netrw_browsex_viewer*	specify user's preference for a viewer: >
 					"kfmclient exec"
 					"gnome-open"
@@ -727,7 +729,27 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 <				is used, then netrwFileHandler() will look for
 				a script/function to handle the given
 				extension.  (see |netrw_filehandler|).
-<
+
+  *g:netrw_fastbrowse*		=0: slow speed browsing, never re-use
+  				    directory listings; always obtain
+				    directory listings.
+				=1: medium speed browsing, re-use directory
+				    listings only when remote browsing.
+				    (default value)
+				=2: fast browsing, only obtains directory
+				    listings when the directory hasn't been
+				    seen before (or |netrw-ctrl-l| is used).
+				Fast browsing retains old directory listing
+				buffers so that they don't need to be
+				re-acquired.  This feature is especially
+				important for remote browsing.  However, if
+				a file is introduced or deleted into or from
+				such directories, the old directory buffer
+				becomes out-of-date.  One may always refresh
+				such a directory listing with |netrw-ctrl-l|.
+				This option gives the choice of the trade-off
+				between accuracy and speed to the user.
+
   *g:netrw_ftp_browse_reject*	ftp can produce a number of errors and warnings
 				that can show up as "directories" and "files"
 				in the listing.  This pattern is used to
@@ -819,6 +841,12 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
   *g:netrw_winsize*		specify initial size of new o/v windows
 				 default: ""
 
+  *g:DrChipTopLvlMenu*		This variable specifies the top level
+  				submenu name; by default, its "DrChip.".
+				If you wish to change this, do so in your
+				.vimrc.  It affects all of my plugins which
+				have menus.
+
 INTRODUCTION TO DIRECTORY BROWSING			*netrw-browse-intro*
 
 Netrw supports the browsing of directories on the local system and on remote
@@ -842,6 +870,18 @@ For local directories, the trailing slash is not required.
 
 If you'd like to avoid entering the password in for remote directory listings
 with ssh or scp, see |netrw-listhack|.
+
+
+NETRW BROWSING AND OPTION INCOMPATIBILITIES		*netrw-incompatible*
+
+Netrw will not work properly with >
+
+	:set acd
+	:set fo=...ta...
+<
+If either of these options are present when browsing is attempted, netrw
+will change them by using noacd and removing the ta suboptions from the
+|formatoptions|.
 
 				*netrw-explore*  *netrw-pexplore*
 				*netrw-hexplore* *netrw-sexplore*
@@ -1094,9 +1134,9 @@ One may use a preview window (currently only for local browsing) by using the
 
 PREVIOUS WINDOW					*netrw-P* *netrw-prvwin*
 
-To edit a file or directory in the previously used window (see :he |CTRL-W_P|),
+To edit a file or directory in the previously used window (see :he |ctrl-w_p|),
 press a "P".  If there's only one window, then the one window will be
-horizontally split (above/below splitting is controlled by |g:netrw_alto|,
+horizontally split (above/below splitting is controlled by |g:netrw-alto|,
 and its initial size is controlled by |g:netrw_winsize|).
 
 If there's more than one window, the previous window will be re-used on
@@ -1399,6 +1439,11 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v79: * directories are now displayed with nowrap
+	     * (bugfix) if the column width was smaller than the largest
+	       file's name, then netrw would hang when using wide-listing
+	       mode - fixed
+	     * g:netrw_fastbrowse introduced
 	v78: * progress has been made on allowing spaces inside directory
 	       names for remote work (reading, writing, browsing).  (scp)
 	v77: * Mikolaj Machowski fixed a bug in a substitute command

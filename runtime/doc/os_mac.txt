@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0aa.  Last change: 2005 Mar 29
+*os_mac.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -33,9 +33,10 @@ Indianapolis IN 46220 USA
 ==============================================================================
 1. Filename Convention					*mac-filename*
 
-You can use either the unix or mac path separator or a mix of both.  In order
-to determine if the specified filename is relative to the current folder or
-absolute (i.e. relative to the "Desktop"), the following algorithm is used:
+Starting with Vim version 7 you can just use the unix path separators with
+Vim. In order to determine if the specified filename is relative to the
+current folder or absolute (i.e. relative to the "Desktop"), the following
+algorithm is used:
 
 	If the path start by a "/", the path is absolute
 	If the path start by a ":", the path is relative
@@ -58,10 +59,16 @@ You can use the |$VIM| and |$VIMRUNTIME|  variable. >
 ==============================================================================
 2. .vimrc and .vim files				*mac-vimfile*
 
-On the Mac files starting with a dot "." are discouraged, thus the rc files
-are named "vimrc" or "_vimrc" and "gvimrc" or "_gvimrc".  These files can be in
-any format (mac, dos or unix).  Vim can handle any file format when the
-|'nocompatible'| option is set, otherwise it will only handle mac format
+It is recommended to use Unix style line separators for Vim scripts, thus a
+single newline character.
+
+When starting up Vim will load the $VIMRUNTIME/macmap.vim script to define
+default command-key mappings.
+
+On older systems files starting with a dot "." are discouraged, thus the rc
+files are named "vimrc" or "_vimrc" and "gvimrc" or "_gvimrc".  These files
+can be in any format (mac, dos or unix).  Vim can handle any file format when
+the |'nocompatible'| option is set, otherwise it will only handle mac format
 files.
 
 ==============================================================================
@@ -79,14 +86,6 @@ A: Assuming that Vim.app is located in /Applications:
 
 ==============================================================================
 4. Mac Lack						*mac-lack*
-
-The filenames containing both ":" and "/" are sometimes misinterpreted.  (just
-re-execute the command)
-
-Scrollbar are not scrolling live, and  when only the arrow or scroll area, a
-limit of 32 line or page is scrolled.
-
-Syntax highlighting works on 68k Macs but is _really_ slow.
 
 In a terminal CTRL-^ needs to be entered as Shift-Control-6.  CTRL-@ as
 Shift-Control-2.

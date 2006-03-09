@@ -96,6 +96,7 @@ fun! netrwSettings#NetrwSettings()
    put = 'let g:netrw_browsex_viewer    = (not defined)'
   endif
   put = 'let g:netrw_dirhistmax        = '.g:netrw_dirhistmax
+  put = 'let g:netrw_fastbrowse        = '.g:netrw_fastbrowse
   put = 'let g:netrw_ftp_browse_reject = '.g:netrw_ftp_browse_reject
   put = 'let g:netrw_ftp_list_cmd      = '.g:netrw_ftp_list_cmd
   put = 'let g:netrw_hide              = '.g:netrw_hide

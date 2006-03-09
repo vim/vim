@@ -416,6 +416,14 @@ struct vimoption
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
+/* 'isprint' for latin1 is also used for MS-Windows, where 0x80 is used for
+ * the currency sign.  Thus this isn't really latin1... */
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+# define ISP_LATIN1 (char_u *)"@,128,161-255"
+#else
+# define ISP_LATIN1 (char_u *)"@,161-255"
+#endif
+
 /*
  * options[] is initialized here.
  * The order of the options MUST be alphabetic for ":set all" and findoption().
@@ -1440,7 +1448,7 @@ static struct vimoption
 			    /* all chars above 63 are printable */
 			    (char_u *)"63-255",
 # else
-			    (char_u *)"@,161-255",
+			    ISP_LATIN1,
 # endif
 #endif
 				(char_u *)0L}},
@@ -3210,11 +3218,11 @@ set_init_1()
 		 * latin1.  Also set the defaults for when 'nocompatible' is
 		 * set. */
 		set_string_option_direct((char_u *)"isp", -1,
-				   (char_u *)"@,161-255", OPT_FREE, SID_NONE);
+					      ISP_LATIN1, OPT_FREE, SID_NONE);
 		set_string_option_direct((char_u *)"isk", -1,
 					      ISK_LATIN1, OPT_FREE, SID_NONE);
 		opt_idx = findoption((char_u *)"isp");
-		options[opt_idx].def_val[VIM_DEFAULT] = (char_u *)"@,161-255";
+		options[opt_idx].def_val[VIM_DEFAULT] = ISP_LATIN1;
 		opt_idx = findoption((char_u *)"isk");
 		options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
 		(void)init_chartab();

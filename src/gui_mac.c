@@ -3698,11 +3698,7 @@ gui_mch_get_color(char_u *name)
 	char	line[LINE_LEN];
 	char_u	*fname;
 
-#ifdef COLON_AS_PATHSEP
-	fname = expand_env_save((char_u *)"$VIMRUNTIME:rgb.txt");
-#else
 	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-#endif
 	if (fname == NULL)
 	    return INVALCOLOR;
 

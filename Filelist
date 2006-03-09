@@ -498,6 +498,7 @@ RT_SCRIPTS =	\
 		runtime/filetype.vim \
 		runtime/scripts.vim \
 		runtime/menu.vim \
+		runtime/macmap.vim \
 		runtime/delmenu.vim \
 		runtime/synmenu.vim \
 		runtime/makemenu.vim \

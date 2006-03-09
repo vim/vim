@@ -2465,7 +2465,7 @@ draw_cmdline(start, len)
 	int		j;
 	int		newlen = 0;
 	int		mb_l;
-	int		pc, pc1;
+	int		pc, pc1 = 0;
 	int		prev_c = 0;
 	int		prev_c1 = 0;
 	int		u8c;
@@ -3480,7 +3480,7 @@ ExpandEscape(xp, str, numfiles, files, options)
 		    {
 			vim_free(files[i]);
 			files[i] = p;
-#if defined(BACKSLASH_IN_FILENAME) || defined(COLON_AS_PATHSEP)
+#if defined(BACKSLASH_IN_FILENAME)
 			p = vim_strsave_escaped(files[i], (char_u *)" ");
 			if (p != NULL)
 			{

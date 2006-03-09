@@ -4117,6 +4117,7 @@ Ruby	if_ruby.txt	/*Ruby*
 Russian	russian.txt	/*Russian*
 S	change.txt	/*S*
 SHELL	starting.txt	/*SHELL*
+SQLSetType	sql.txt	/*SQLSetType*
 Select	visual.txt	/*Select*
 Select-mode	visual.txt	/*Select-mode*
 Select-mode-mapping	visual.txt	/*Select-mode-mapping*
@@ -4132,6 +4133,7 @@ Syntax	autocmd.txt	/*Syntax*
 T	motion.txt	/*T*
 TCL	if_tcl.txt	/*TCL*
 TERM	starting.txt	/*TERM*
+TSQL	sql.txt	/*TSQL*
 TTpro-telnet	syntax.txt	/*TTpro-telnet*
 Tab	intro.txt	/*Tab*
 TabEnter	autocmd.txt	/*TabEnter*
@@ -4139,6 +4141,7 @@ TabLeave	autocmd.txt	/*TabLeave*
 Tcl	if_tcl.txt	/*Tcl*
 TermChanged	autocmd.txt	/*TermChanged*
 TermResponse	autocmd.txt	/*TermResponse*
+Transact-SQL	sql.txt	/*Transact-SQL*
 U	undo.txt	/*U*
 UTF-8	mbyte.txt	/*UTF-8*
 UTF8-xterm	mbyte.txt	/*UTF8-xterm*
@@ -5217,7 +5220,9 @@ ft-sgml-syntax	syntax.txt	/*ft-sgml-syntax*
 ft-sh-syntax	syntax.txt	/*ft-sh-syntax*
 ft-spec-plugin	filetype.txt	/*ft-spec-plugin*
 ft-spup-syntax	syntax.txt	/*ft-spup-syntax*
+ft-sql	filetype.txt	/*ft-sql*
 ft-sql-syntax	syntax.txt	/*ft-sql-syntax*
+ft-sqlanywhere-syntax	syntax.txt	/*ft-sqlanywhere-syntax*
 ft-sqlinformix-syntax	syntax.txt	/*ft-sqlinformix-syntax*
 ft-syntax-omni	insert.txt	/*ft-syntax-omni*
 ft-tcsh-syntax	syntax.txt	/*ft-tcsh-syntax*
@@ -5260,12 +5265,14 @@ g'a	motion.txt	/*g'a*
 g,	motion.txt	/*g,*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
+g:DrChipTopLvlMenu	pi_netrw.txt	/*g:DrChipTopLvlMenu*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
 g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
+g:netrw_fastbrowse	pi_netrw.txt	/*g:netrw_fastbrowse*
 g:netrw_fetch_cmd	pi_netrw.txt	/*g:netrw_fetch_cmd*
 g:netrw_ftp	pi_netrw.txt	/*g:netrw_ftp*
 g:netrw_ftp_browse_reject	pi_netrw.txt	/*g:netrw_ftp_browse_reject*
@@ -5484,7 +5491,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -5734,6 +5740,7 @@ index()	eval.txt	/*index()*
 index.txt	index.txt	/*index.txt*
 info-message	starting.txt	/*info-message*
 inform.vim	syntax.txt	/*inform.vim*
+informix	sql.txt	/*informix*
 initialization	starting.txt	/*initialization*
 input()	eval.txt	/*input()*
 inputdialog()	eval.txt	/*inputdialog()*
@@ -6019,6 +6026,7 @@ multilang-messages	mlang.txt	/*multilang-messages*
 multilang-scripts	mlang.txt	/*multilang-scripts*
 myfiletypefile	syntax.txt	/*myfiletypefile*
 myscriptsfile	syntax.txt	/*myscriptsfile*
+mysql	sql.txt	/*mysql*
 mysyntaxfile	syntax.txt	/*mysyntaxfile*
 mysyntaxfile-add	syntax.txt	/*mysyntaxfile-add*
 mysyntaxfile-replace	syntax.txt	/*mysyntaxfile-replace*
@@ -6107,6 +6115,7 @@ netrw-hexplore	pi_netrw.txt	/*netrw-hexplore*
 netrw-history	pi_netrw.txt	/*netrw-history*
 netrw-horiz	pi_netrw.txt	/*netrw-horiz*
 netrw-i	pi_netrw.txt	/*netrw-i*
+netrw-incompatible	pi_netrw.txt	/*netrw-incompatible*
 netrw-list	pi_netrw.txt	/*netrw-list*
 netrw-listbookmark	pi_netrw.txt	/*netrw-listbookmark*
 netrw-listhack	pi_netrw.txt	/*netrw-listhack*
@@ -6269,6 +6278,7 @@ option-summary	options.txt	/*option-summary*
 options	options.txt	/*options*
 options-changed	version5.txt	/*options-changed*
 options.txt	options.txt	/*options.txt*
+oracle	sql.txt	/*oracle*
 os2	os_os2.txt	/*os2*
 os2ansi	os_os2.txt	/*os2ansi*
 os390	os_390.txt	/*os390*
@@ -6341,6 +6351,7 @@ pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
+plsql	sql.txt	/*plsql*
 plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*
 plugin-filetype	usr_41.txt	/*plugin-filetype*
@@ -6356,6 +6367,7 @@ ports-6	version6.txt	/*ports-6*
 posix	vi_diff.txt	/*posix*
 posix-compliance	vi_diff.txt	/*posix-compliance*
 posix-screen-size	vi_diff.txt	/*posix-screen-size*
+postgress	sql.txt	/*postgress*
 postscr.vim	syntax.txt	/*postscr.vim*
 postscript-cjk-printing	print.txt	/*postscript-cjk-printing*
 postscript-print-encoding	print.txt	/*postscript-print-encoding*
@@ -6379,6 +6391,7 @@ profiling	repeat.txt	/*profiling*
 profiling-variable	eval.txt	/*profiling-variable*
 progname-variable	eval.txt	/*progname-variable*
 progress.vim	syntax.txt	/*progress.vim*
+psql	sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
 pumvisible()	eval.txt	/*pumvisible()*
@@ -6769,8 +6782,23 @@ sponsor-faq	sponsor.txt	/*sponsor-faq*
 sponsor.txt	sponsor.txt	/*sponsor.txt*
 spoon	os_unix.txt	/*spoon*
 spup.vim	syntax.txt	/*spup.vim*
+sql-adding-dialects	sql.txt	/*sql-adding-dialects*
+sql-dialects	sql.txt	/*sql-dialects*
+sql-macros	sql.txt	/*sql-macros*
+sql-matchit	sql.txt	/*sql-matchit*
+sql-navigation	sql.txt	/*sql-navigation*
+sql-object-motions	sql.txt	/*sql-object-motions*
+sql-predefined-objects	sql.txt	/*sql-predefined-objects*
+sql-type-default	sql.txt	/*sql-type-default*
+sql-types	sql.txt	/*sql-types*
+sql.txt	sql.txt	/*sql.txt*
 sql.vim	syntax.txt	/*sql.vim*
+sqlanywhere	sql.txt	/*sqlanywhere*
+sqlanywhere.vim	syntax.txt	/*sqlanywhere.vim*
 sqlinformix.vim	syntax.txt	/*sqlinformix.vim*
+sqlj	sql.txt	/*sqlj*
+sqlserver	sql.txt	/*sqlserver*
+sqlsettype	sql.txt	/*sqlsettype*
 sscanf	eval.txt	/*sscanf*
 standard-plugin	usr_05.txt	/*standard-plugin*
 standard-plugin-list	help.txt	/*standard-plugin-list*
@@ -6824,6 +6852,7 @@ swapchoice-variable	eval.txt	/*swapchoice-variable*
 swapcommand-variable	eval.txt	/*swapcommand-variable*
 swapfile-changed	version4.txt	/*swapfile-changed*
 swapname-variable	eval.txt	/*swapname-variable*
+sybase	sql.txt	/*sybase*
 syn-sync-grouphere	syntax.txt	/*syn-sync-grouphere*
 syn-sync-groupthere	syntax.txt	/*syn-sync-groupthere*
 syn-sync-linecont	syntax.txt	/*syn-sync-linecont*
