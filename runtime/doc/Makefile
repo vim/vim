@@ -89,6 +89,7 @@ DOCS = \
 	sponsor.txt \
 	starting.txt \
 	spell.txt \
+	sql.txt \
 	syntax.txt \
 	tabpage.txt \
 	tagsrch.txt \
@@ -213,6 +214,7 @@ HTMLS = \
 	sponsor.html \
 	starting.html \
 	spell.html \
+	sql.html \
 	syntax.html \
 	tabpage.html \
 	tagsrch.html \

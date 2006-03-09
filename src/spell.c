@@ -9756,6 +9756,7 @@ spell_suggest(count)
 	selected = prompt_for_number(&mouse_used);
 	if (mouse_used)
 	    selected -= lines_left;
+	lines_left = Rows;	/* avoid more prompt */
     }
 
     if (selected > 0 && selected <= sug.su_ga.ga_len && u_save_cursor() == OK)

@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0aa.  Last change: 2006 Feb 05
+*netbeans.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -259,9 +259,18 @@ problems and has been fixed in 2.2.  To decrease the likelihood of this
 confusion happening again, netbeans_saved() has been renamed to
 netbeans_save_buffer().
 
+We are now at version 2.3.  For the differences between 2.2 and 2.3 search for
+"2.3" below.
+
 The messages are currently sent over a socket.  Since the messages are in
 plain UTF-8 text this protocol could also be used with any other communication
 mechanism.
+
+To see an example implementation look at the gvim tool in Agide.  Currently
+found here:
+	http://cvs.sf.net/viewcvs.py/a-a-p/Agide/Tools/GvimTool.py?view=markup
+
+
 
 10.1 Kinds of messages		|nb-messages|
 10.2 Terms			|nb-terms|
@@ -612,11 +621,22 @@ getText		Return the contents of the buffer as a string.
 insert off text
 		Insert "text" before position "off".  "text" is a string
 		argument, "off" a number.
+		"off" should have a "\n" (newline) at the end of each line.
+		Or "\r\n" when 'fileformat' is "dos".  When using "insert" in
+		an empty buffer Vim will set 'fileformat' accordingly.
+		When "off" points to the start of a line the text is inserted
+		above this line.  Thus when "off" is zero lines are inserted
+		before the first line.
+		When "off" points after the start of a line, possibly on the
+		NUL at the end of a line, the first line of text is appended
+		to this line.  Further lines come below it.
 		Possible replies:
 			123		no problem
 			123 !message	failed
 		Note that the message in the reply is not quoted.
 		Also sets the current buffer, if necessary.
+		Does not move the cursor to the changed text.
+		Resets undo information.
 
 remove off length
 		Delete "length" bytes of text at position "off".  Both

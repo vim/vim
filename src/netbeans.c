@@ -100,8 +100,6 @@ extern HWND s_hwnd;			/* Gvim's Window handle */
 static int cmdno;			/* current command number for reply */
 static int haveConnection = FALSE;	/* socket is connected and
 					   initialization is done */
-static int oldFire = 1;
-
 #ifdef FEAT_GUI_MOTIF
 static void netbeans_Xt_connect __ARGS((void *context));
 #endif
@@ -1439,13 +1437,7 @@ nb_do_cmd(
 	}
 	else if (streq((char *)cmd, "insert"))
 	{
-	    pos_T	*pos;
-	    pos_T	mypos;
 	    char_u	*to_free;
-	    char_u	*nl;
-	    linenr_T	lnum;
-	    pos_T	old_w_cursor;
-	    int		old_b_changed;
 
 	    if (skip >= SKIP_STOP)
 	    {
@@ -1475,114 +1467,126 @@ nb_do_cmd(
 	    }
 	    else if (args != NULL)
 	    {
-		/*
-		 * We need to detect EOL style
-		 * because addAnno passes char-offset
-		 */
-		int    ff_detected = EOL_UNKNOWN;
-		int    buf_was_empty = (buf->bufp->b_ml.ml_flags & ML_EMPTY);
-		char_u lbuf[4096];  /* size of largest insert sent by exted */
-		int    lbuf_len = 0;
+		int	ff_detected = EOL_UNKNOWN;
+		int	buf_was_empty = (buf->bufp->b_ml.ml_flags & ML_EMPTY);
+		size_t	len = 0;
+		int	added = 0;
+		int	oldFire = netbeansFireChanges;
+		int	old_b_changed;
+		char_u	*nl;
+		linenr_T lnum;
+		linenr_T lnum_start;
+		pos_T	*pos;
 
-		oldFire = netbeansFireChanges;
 		netbeansFireChanges = 0;
-		lbuf[0] = '\0';
 
+		/* Jump to the buffer where we insert.  After this "curbuf"
+		 * can be used. */
 		nb_set_curbuf(buf->bufp);
 		old_b_changed = curbuf->b_changed;
 
+		/* Convert the specified character offset into a lnum/col
+		 * position. */
 		pos = off2pos(curbuf, off);
 		if (pos != NULL)
 		{
-		    if (pos->lnum == 0)
-			pos->lnum = 1;
+		    if (pos->lnum <= 0)
+			lnum_start = 1;
+		    else
+			lnum_start = pos->lnum;
 		}
 		else
 		{
-		    /* if the given position is not found, assume we want
+		    /* If the given position is not found, assume we want
 		     * the end of the file.  See setLocAndSize HACK. */
-		    pos = &mypos;
-		    pos->col = 0;
-#ifdef FEAT_VIRTUALEDIT
-		    pos->coladd = 0;
-#endif
-		    pos->lnum = curbuf->b_ml.ml_line_count;
-		}
-		lnum = pos->lnum;
-		old_w_cursor = curwin->w_cursor;
-		curwin->w_cursor = *pos;
-
-		if (curbuf->b_start_eol == FALSE
-			&& lnum > 0
-			&& lnum <= curbuf->b_ml.ml_line_count)
-		{
-		    /* Append to a partial line */
-		    char_u *partial = ml_get(lnum);
-
-		    STRCPY(lbuf, partial);
-		    lbuf_len = STRLEN(partial);
-		    ml_delete(lnum, FALSE);
-		    buf_was_empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
+		    if (buf_was_empty)
+			lnum_start = 1;	    /* above empty line */
+		    else
+			lnum_start = curbuf->b_ml.ml_line_count + 1;
 		}
 
+		/* "lnum" is the line where we insert: either append to it or
+		 * insert a new line above it. */
+		lnum = lnum_start;
+
+		/* Loop over the "\n" separated lines of the argument. */
 		doupdate = 1;
-		while (*args)
+		while (*args != NUL)
 		{
-		    nl = (char_u *)strchr((char *)args, '\n');
-		    if (nl != NULL)
+		    nl = vim_strchr(args, '\n');
+		    if (nl == NULL)
 		    {
-			STRNCAT(lbuf, args, nl - args);
-			lbuf[lbuf_len + nl - args] = '\0';
-			args += nl - args + 1;
+			/* Incomplete line, probably truncated.  Next "insert"
+			 * command should append to this one. */
+			len = STRLEN(args);
 		    }
 		    else
 		    {
-			STRCPY(lbuf, args);
-			args += STRLEN(lbuf);
+			len = nl - args;
+
+			/*
+			 * We need to detect EOL style, because the commands
+			 * use a character offset.
+			 */
+			if (nl > args && nl[-1] == '\r')
+			{
+			    ff_detected = EOL_DOS;
+			    --len;
+			}
+			else
+			    ff_detected = EOL_UNIX;
+		    }
+		    args[len] = NUL;
+
+		    if (lnum == lnum_start
+			    && ((pos != NULL && pos->col > 0)
+				|| (lnum == 1 && buf_was_empty)))
+		    {
+			char_u *oldline = ml_get(lnum);
+			char_u *newline;
+
+			/* Insert halfway a line.  For simplicity we assume we
+			 * need to append to the line. */
+			newline = alloc_check(STRLEN(oldline) + len + 1);
+			if (newline != NULL)
+			{
+			    STRCPY(newline, oldline);
+			    STRCAT(newline, args);
+			    ml_replace(lnum, newline, FALSE);
+			}
+		    }
+		    else
+		    {
+			/* Append a new line.  Not that we always do this,
+			 * also when the text doesn't end in a "\n". */
+			ml_append((linenr_T)(lnum - 1), args, len + 1, FALSE);
+			++added;
 		    }
 
-		    /*
-		     * EOL detecting. Not sure how to deal with '\n' on Mac.
-		     */
-		    if (buf_was_empty && nl && *(nl - 1) != '\r')
-			ff_detected = EOL_UNIX;
-
-		    /* nbdebug(("    INSERT[%d]: %s\n", lnum, lbuf)); */
-		    ml_append((linenr_T)(lnum++ - 1), lbuf,
-						     STRLEN(lbuf) + 1, FALSE);
-		    lbuf[0] = '\0';	/* empty buffer */
-		    lbuf_len = 0;
+		    if (nl == NULL)
+			break;
+		    ++lnum;
+		    args = nl + 1;
 		}
 
-		if (*(args - 1) == '\n')
-		{
-		    curbuf->b_p_eol = TRUE;
-		    curbuf->b_start_eol = TRUE;
-		}
-		else
-		{
-		    curbuf->b_p_eol = FALSE;
-		    curbuf->b_start_eol = FALSE;
-		}
+		/* Adjust the marks below the inserted lines. */
+		appended_lines_mark(lnum_start - 1, (long)added);
 
-		appended_lines_mark(pos->lnum - 1, lnum - pos->lnum);
-
-		/* We can change initial ff without consequences
-		 * Isn't it a kind of hacking?
+		/*
+		 * When starting with an empty buffer set the fileformat.
+		 * This is just guessing...
 		 */
 		if (buf_was_empty)
 		{
 		    if (ff_detected == EOL_UNKNOWN)
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 			ff_detected = EOL_DOS;
+#else
+			ff_detected = EOL_UNIX;
+#endif
 		    set_fileformat(ff_detected, OPT_LOCAL);
 		    curbuf->b_start_ffc = *curbuf->b_p_ff;
-
-		    /* Safety check: only delete empty line */
-		    if (*ml_get(curbuf->b_ml.ml_line_count) == NUL)
-			ml_delete(curbuf->b_ml.ml_line_count, FALSE);
 		}
-
-		curwin->w_cursor = old_w_cursor;
 
 		/*
 		 * XXX - GRP - Is the next line right? If I've inserted
@@ -1592,6 +1596,7 @@ nb_do_cmd(
 		curbuf->b_changed = old_b_changed; /* logically unchanged */
 		netbeansFireChanges = oldFire;
 
+		/* Undo info is invalid now... */
 		u_blockfree(curbuf);
 		u_clearall(curbuf);
 	    }

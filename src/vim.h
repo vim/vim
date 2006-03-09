@@ -325,11 +325,7 @@
 #ifdef BACKSLASH_IN_FILENAME
 # define PATH_ESC_CHARS ((char_u *)" \t*?[{`%#")
 #else
-# ifdef COLON_AS_PATHSEP
-#  define PATH_ESC_CHARS ((char_u *)" \t*?[{`$%#/")
-# else
-#  define PATH_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|")
-# endif
+# define PATH_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|")
 # define SHELL_ESC_CHARS ((char_u *)" \t*?[{`$\\%#'\"|<>();&!")
 #endif
 

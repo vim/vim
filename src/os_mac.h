@@ -40,37 +40,11 @@
 /*
  * Unix interface
  */
-#if defined(__MWERKS__) /* for CodeWarrior */
-# include <unistd.h>
-# include <utsname.h>
-# include <unix.h>
-#endif
 #if defined(__APPLE_CC__) /* for Project Builder and ... */
 # include <unistd.h>
-#endif
 /* Get stat.h or something similar. Comment: How come some OS get in in vim.h */
-#if defined(__MWERKS__)
-# include <stat.h>
-#endif
-#if defined(__APPLE_CC__)
 # include <sys/stat.h>
-#endif
-#if defined(__MRC__) || defined(__SC__) /* for Apple MPW Compilers */
-/* There's no stat.h for MPW? */
-# ifdef powerc
-#  pragma options align=power
-# endif
-  struct stat
-  {
-    UInt32 st_mtime;
-    UInt32 st_mode;
-    UInt32 st_size;
-  };
-# ifdef powerc
-#  pragma options align=reset
-# endif
-#endif
-#if defined(__APPLE_CC__) /* && defined(HAVE_CURSE) */
+/* && defined(HAVE_CURSE) */
 /* The curses.h from MacOS X provides by default some BACKWARD compatibilty
  * definition which can cause us problem later on. So we undefine a few of them. */
 # include <curses.h>
@@ -84,29 +58,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#ifdef MACOS_X
-# include <dirent.h>
-#endif
-
-/*
- * Incompatibility checks
- */
-
-/* Got problem trying to use shared library in 68k */
-#if !defined(__POWERPC__) && !defined(__i386__) && defined(FEAT_PYTHON)
-# undef FEAT_PYTHON
-# warning Auto-disabling Python. Not yet supported in 68k.
-#endif
-
-#if !defined(__POWERPC__) && !defined(__ppc__) && !defined(__i386__)
-# if !__option(enumsalwaysint)
-#  error "You must compile with enums always int!"
-# endif
-# if defined(__MWERKS__) && !defined(__fourbyteints__)
-#  error "You must compile the project with 4-byte ints"
-/* MPW ints are always 4 byte long */
-# endif
-#endif
+#include <dirent.h>
 
 /*
  * MacOS specific #define
@@ -120,13 +72,7 @@
  */
 /* When compiled under MacOS X (including CARBON version)
  * we use the Unix File path style.  Also when UNIX is defined. */
-#if defined(UNIX) || (defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX)
-# undef COLON_AS_PATHSEP
 # define USE_UNIXFILENAME
-#else
-# define COLON_AS_PATHSEP
-# define DONT_ADD_PATHSEP_TO_DIR
-#endif
 
 
 /*
@@ -176,67 +122,35 @@
  */
 
 #ifndef SYS_VIMRC_FILE
-# ifdef COLON_AS_PATHSEP
-#  define SYS_VIMRC_FILE "$VIM:vimrc"
-# else
 #  define SYS_VIMRC_FILE "$VIM/vimrc"
-# endif
 #endif
 #ifndef SYS_GVIMRC_FILE
-# ifdef COLON_AS_PATHSEP
-#  define SYS_GVIMRC_FILE "$VIM:gvimrc"
-# else
 #  define SYS_GVIMRC_FILE "$VIM/gvimrc"
-# endif
 #endif
 #ifndef SYS_MENU_FILE
-# ifdef COLON_AS_PATHSEP
-#  define SYS_MENU_FILE	"$VIMRUNTIME:menu.vim"
-# else
 #  define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
-# endif
 #endif
 #ifndef SYS_OPTWIN_FILE
-# ifdef COLON_AS_PATHSEP
-#  define SYS_OPTWIN_FILE "$VIMRUNTIME:optwin.vim"
-# else
 #  define SYS_OPTWIN_FILE "$VIMRUNTIME/optwin.vim"
-# endif
 #endif
 #ifndef EVIM_FILE
-# ifdef COLON_AS_PATHSEP
-#  define EVIM_FILE	"$VIMRUNTIME:evim.vim"
-# else
 #  define EVIM_FILE	"$VIMRUNTIME/evim.vim"
-# endif
 #endif
 
 #ifdef FEAT_GUI
 # ifndef USR_GVIMRC_FILE
-#  ifdef COLON_AS_PATHSEP
-#   define USR_GVIMRC_FILE "$VIM:.gvimrc"
-#  else
 #   define USR_GVIMRC_FILE "~/.gvimrc"
-#  endif
 # endif
 # ifndef GVIMRC_FILE
 #  define GVIMRC_FILE	"_gvimrc"
 # endif
 #endif
 #ifndef USR_VIMRC_FILE
-# ifdef COLON_AS_PATHSEP
-#  define USR_VIMRC_FILE	"$VIM:.vimrc"
-# else
 #  define USR_VIMRC_FILE	"~/.vimrc"
-# endif
 #endif
 
 #ifndef USR_EXRC_FILE
-# ifdef COLON_AS_PATHSEP
-#  define USR_EXRC_FILE	"$VIM:.exrc"
-# else
 #  define USR_EXRC_FILE	"~/.exrc"
-# endif
 #endif
 
 #ifndef VIMRC_FILE
@@ -248,11 +162,7 @@
 #endif
 
 #ifndef DFLT_HELPFILE
-# ifdef COLON_AS_PATHSEP
-#  define DFLT_HELPFILE	"$VIMRUNTIME:doc:help.txt"
-# else
 #  define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt"
-# endif
 #endif
 
 #ifndef FILETYPE_FILE
@@ -275,20 +185,12 @@
 #endif
 
 #ifndef SYNTAX_FNAME
-# ifdef COLON_AS_PATHSEP
-#  define SYNTAX_FNAME	"$VIMRUNTIME:syntax:%s.vim"
-# else
 #  define SYNTAX_FNAME	"$VIMRUNTIME/syntax/%s.vim"
-# endif
 #endif
 
 #ifdef FEAT_VIMINFO
 # ifndef VIMINFO_FILE
-#  ifdef COLON_AS_PATHSEP
-#   define VIMINFO_FILE	"$VIM:viminfo"
-#  else
 #   define VIMINFO_FILE	"~/.viminfo"
-#  endif
 # endif
 #endif /* FEAT_VIMINFO */
 
@@ -301,21 +203,13 @@
 #endif
 
 #ifndef DFLT_VDIR
-# ifdef COLON_AS_PATHSEP
-#  define DFLT_VDIR	"$VIM:vimfiles:view"	/* default for 'viewdir' */
-# else
 #  define DFLT_VDIR	"$VIM/vimfiles/view"	/* default for 'viewdir' */
-# endif
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
 
 #ifndef DFLT_RUNTIMEPATH
-# ifdef COLON_AS_PATHSEP
-#  define DFLT_RUNTIMEPATH	"$VIM:vimfiles,$VIMRUNTIME,$VIM:vimfiles:after"
-# else
 #  define DFLT_RUNTIMEPATH	"~/.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,~/.vim/after"
-# endif
 #endif
 
 /*
@@ -413,8 +307,4 @@
 # else
 #  define TRACE			1 ? (void)0 : printf
 # endif
-#endif
-
-#ifdef MACOS_CLASSIC
-#  define TRACE			1 ? (int)0 : printf
 #endif

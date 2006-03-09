@@ -4155,7 +4155,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
 
-	if (thisblock)
+	if (thisblock && t != FAIL)
 	{
 	    pos_T	*pos;
 

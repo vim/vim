@@ -47,16 +47,17 @@ augroup Network
   au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
   au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',"")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
  endif
- au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe 'Nread 0r "'.expand("<amatch>").'"'|exe "silent doau BufReadPost ".expand("<amatch>")
+ au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe '2Nread "'.expand("<amatch>").'"'|exe "silent doau BufReadPost ".expand("<amatch>")
  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe 'Nread "'   .expand("<amatch>").'"'|exe "silent doau FileReadPost ".expand("<amatch>")
  au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe 'Nwrite "' .expand("<amatch>").'"'|exe "silent doau BufWritePost ".expand("<amatch>")
  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']".'Nwrite "' .expand("<amatch>").'"'|exe "silent doau FileWritePost ".expand("<amatch>")
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
-com! -nargs=*		Nread		call netrw#NetSavePosn()<bar>call netrw#NetRead(<f-args>)<bar>call netrw#NetRestorePosn()
+com! -count=1 -nargs=*	Nread		call netrw#NetSavePosn()<bar>call netrw#NetRead(<count>,<f-args>)<bar>call netrw#NetRestorePosn()
 com! -range=% -nargs=*	Nwrite		call netrw#NetSavePosn()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call netrw#NetRestorePosn()
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
+com! -nargs=+           Ncopy           call netrw#NetObtain(<f-args>)
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore {{{2
 com! -nargs=? -bar -bang -count=0	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
