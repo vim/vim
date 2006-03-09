@@ -15,6 +15,7 @@ void profile_start __ARGS((proftime_T *tm));
 void profile_end __ARGS((proftime_T *tm));
 void profile_sub __ARGS((proftime_T *tm, proftime_T *tm2));
 void profile_add __ARGS((proftime_T *tm, proftime_T *tm2));
+void profile_self __ARGS((proftime_T *self, proftime_T *total, proftime_T *children));
 void profile_get_wait __ARGS((proftime_T *tm));
 void profile_sub_wait __ARGS((proftime_T *tm, proftime_T *tma));
 int profile_equal __ARGS((proftime_T *tm1, proftime_T *tm2));

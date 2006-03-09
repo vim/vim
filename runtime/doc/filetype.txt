@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2005 Sep 16
+*filetype.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -534,6 +534,12 @@ RPM SPEC						*ft-spec-plugin*
 
 Since the text for this plugin is rather long it has been put in a separate
 file: |pi_spec.txt|.
+
+
+SQL							*ft-sql*
+
+Since the text for this plugin is rather long it has been put in a separate
+file: |sql.txt|.
 
 
  vim:tw=78:ts=8:ft=help:norl:

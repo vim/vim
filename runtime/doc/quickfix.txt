@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 08
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -480,7 +480,7 @@ advantages are:
 	|gzip| |netrw|
 
 To be able to do this Vim loads each file as if it is being edited.  When
-there is no match in the file the assicated buffer is wiped out again.  The
+there is no match in the file the associated buffer is wiped out again.  The
 'hidden' option is ignored here to avoid running out of memory or file
 descriptors when searching many files.  However, when the |:hide| command
 modifier is used the buffers are kept loaded.  This makes following searches

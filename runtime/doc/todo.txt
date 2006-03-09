@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 08
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,18 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Bug in Netbeans interface. (Xavier de Gaye, 2006 Mar 7)
-Code for "insert" is wrong.  Don't use b_p_eol or b_start_eol.
-Handle partial lines properly.  What probably should happen is to append to a
-line when "off" points to the NUL after that line, insert before a line when
-the text doesn't end in a "\n" and only insert line breaks where there is a
-"\n" in the argument.
-
-Win32: Describe how to do debugging and describe it. (George Reilly)
+Win32: Describe how to do debugging. (George Reilly)
 
 Mac unicode patch (Da Woon Jung):
--   Mac: Unicode input and display (Eckehard Berns, 2004 June 27)
-    Other patch from Da Woon Jung, 2005 Jan 16.
+-   Mac: Unicode input and display (Eckehard Berns)
+    Included patch from Da Woon Jung, not complete yet.
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
 - Add default key mappings for the command key (Alan Schmitt)
@@ -52,15 +45,13 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
+Add ShellCmdPre/ShellCmdPost/ShellFilterPre/ShellFilterPost ?
+Useful for updating the diretory listing in netrw.
+
 CONSIDERED FOR VERSION 7.0:
 
 Omni completion:
     ccomplete:
-    - Finding out if an item has members (to add '.' or '->') requires a grep
-      in the tags files, that is very slow.  Is there another solution?
-      Check what happens when taglist() is called.
-      Could build the list of items for each structure in memory.  Is that
-      faster?  Not using too much memory?
     - For C add tag "kind" field to each match?
     - Flickering because of syntax highlighting redrawing further lines.
     - When a typedef or struct is local to a file only use it in that file?
@@ -274,6 +265,7 @@ Awaiting updated patches:
     runtime files?
     Also: when the environment variable exists, use it.  If it doesn't
     exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
+    Add a menu item "Preferences" that does "sp $MYVIMRC".
 -   The Replace dialog takes "\r" literal, unless "replace all" is used.
     Need to escape backslashes.
     Win32: the text to replace with isn't remembered.
@@ -539,6 +531,9 @@ GUI:
 8   When fontset support is enabled, setting 'guifont' to a single font
     doesn't work.
 8   Menu priority for sub-menus for: Amiga, BeOS.
+8   When translating menus ignore the part after the Tab, the shortcut.  So
+    that the same menu item with a different shortcut (e.g., for the Mac) are
+    still translated.
 8   Add menu separators for Amiga, RISCOS.
 8   Add way to specify the file filter for the browse dialog.  At least for
     browse().
@@ -1633,6 +1628,8 @@ Built-in script language:
     Alternative: Allow range for ":exec", pass it on to the executed command.
     (Webb)
     You can already yank lines and use :@" to execute them.
+7   ":include" command: just like ":source" but doesn't start a new scriptID?
+    Will be tricky for the list of script names.
 8   Have a look at VSEL.  Would it be useful to include? (Bigham)
 8   Add ":fungroup" command, to group function definitions together.  When
     encountered, all functions in the group are removed.  Suggest using an

@@ -2589,6 +2589,9 @@ source_startup_scripts(parmp)
 #ifdef SYS_VIMRC_FILE
 	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, FALSE);
 #endif
+#ifdef MACOS_X
+	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, FALSE);
+#endif
 
 	/*
 	 * Try to read initialization commands from the following places:

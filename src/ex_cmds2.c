@@ -911,6 +911,28 @@ profile_add(tm, tm2)
 }
 
 /*
+ * Add the "self" time from the total time and the children's time.
+ */
+    void
+profile_self(self, total, children)
+    proftime_T *self, *total, *children;
+{
+    /* Check that the result won't be negative.  Can happen with recursive
+     * calls. */
+#ifdef WIN3264
+    if (total->QuadPart <= children->QuadPart)
+	return;
+#else
+    if (total->tv_sec < children->tv_sec
+	    || (total->tv_sec == children->tv_sec
+		&& total->tv_usec <= children->tv_usec))
+	return;
+#endif
+    profile_add(self, total);
+    profile_sub(self, children);
+}
+
+/*
  * Get the current waittime.
  */
     void
@@ -3000,8 +3022,8 @@ do_source(fname, check_other, is_vimrc)
 	    profile_end(&si->sn_pr_start);
 	    profile_sub_wait(&wait_start, &si->sn_pr_start);
 	    profile_add(&si->sn_pr_total, &si->sn_pr_start);
-	    profile_add(&si->sn_pr_self, &si->sn_pr_start);
-	    profile_sub(&si->sn_pr_self, &si->sn_pr_children);
+	    profile_self(&si->sn_pr_self, &si->sn_pr_start,
+							 &si->sn_pr_children);
 	}
     }
 #endif
@@ -3505,9 +3527,9 @@ script_line_end()
 	    ++pp->snp_count;
 	    profile_end(&si->sn_prl_start);
 	    profile_sub_wait(&si->sn_prl_wait, &si->sn_prl_start);
-	    profile_add(&pp->sn_prl_self, &si->sn_prl_start);
 	    profile_add(&pp->sn_prl_total, &si->sn_prl_start);
-	    profile_sub(&pp->sn_prl_self, &si->sn_prl_children);
+	    profile_self(&pp->sn_prl_self, &si->sn_prl_start,
+							&si->sn_prl_children);
 	}
 	si->sn_prl_idx = -1;
     }

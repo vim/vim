@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 08
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -689,6 +689,8 @@ ABAB/4 syntax file. (Marius van Wyk)
 
 SQL-Informix syntax file. (Dean L Hill)
 
+Handling of various SQL variants. (David Fishburn)
+
 PHP compiler plugin. (Doug Kearns)
 
 Sive syntax file. (Nikolai Weibull)
@@ -729,6 +731,9 @@ Others: ~
 
 The Netbeans interface was updated for Sun Studio 10.  The protocol number
 goes from 2.2 to 2.3. (Gordon Prieur)
+
+Mac: When starting up Vim will load the $VIMRUNTIME/macmap.vim script to
+define default command-key mappings.
 
 Mac: Add the selection type to the clipboard, so that Block, line and
 character selections can be used between two Vims. (Eckehard Berns)

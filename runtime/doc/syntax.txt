@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 01
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2374,13 +2374,18 @@ the syntax file.
 
 SQL						*sql.vim* *ft-sql-syntax*
 				*sqlinformix.vim* *ft-sqlinformix-syntax*
+				*sqlanywhere.vim* *ft-sqlanywhere-syntax*
 
-While there is an ANSI standard for SQL, most database engines add their
-own custom extensions.  Vim currently supports the Oracle and Informix
-dialects of SQL.  Vim assumes "*.sql" files are Oracle SQL by default.
+While there is an ANSI standard for SQL, most database engines add their own
+custom extensions.  Vim currently supports the Oracle and Informix dialects of
+SQL.  Vim assumes "*.sql" files are Oracle SQL by default.
 
-If you want to use the Informix dialect, put this in your startup vimrc: >
-    :let g:filetype_sql = "sqlinformix" 
+Vim currently has SQL support for a variety of different vendors via syntax
+scripts.  You can change Vim's default from Oracle to any of the current SQL
+supported types.  You can also easily alter the SQL dialect being used on a
+buffer by buffer basis.
+
+For more detailed instructions see |sql.txt|.
 
 
 TCSH						*tcsh.vim* *ft-tcsh-syntax*

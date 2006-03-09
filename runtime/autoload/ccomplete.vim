@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 07
+" Last Change:	2006 Mar 09
 
 
 " This function is used for the 'omnifunc' option.
@@ -63,6 +63,9 @@ function! ccomplete#Complete(findstart, base)
   if base == ''
     return []
   endif
+
+  " init cache for vimgrep to empty
+  let s:grepCache = {}
 
   " Split item in words, keep empty word after "." or "->".
   " "aa" -> ['aa'], "aa." -> ['aa', ''], "aa.bb" -> ['aa', 'bb'], etc.
@@ -275,6 +278,11 @@ function! s:Nextitem(lead, items, depth, all)
   let res = []
   for tidx in range(len(tokens))
 
+    " Skip tokens starting with a non-ID character.
+    if tokens[tidx] !~ '^\h'
+      continue
+    endif
+
     " Recognize "struct foobar" and "union foobar".
     if (tokens[tidx] == 'struct' || tokens[tidx] == 'union') && tidx + 1 < len(tokens)
       let res = s:StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items, a:all)
@@ -349,20 +357,33 @@ function! s:StructMembers(typename, items, all)
 
   let typename = a:typename
   let qflist = []
+  let cached = 0
   if a:all == 0
     let n = '1'	" stop at first found match
+    if has_key(s:grepCache, a:typename)
+      let qflist = s:grepCache[a:typename]
+      let cached = 1
+    endif
   else
     let n = ''
   endif
-  while 1
-    exe 'silent! ' . n . 'vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
-    let qflist = getqflist()
-    if len(qflist) > 0 || match(typename, "::") < 0
-      break
+  if !cached
+    while 1
+      exe 'silent! ' . n . 'vimgrep /\t' . typename . '\(\t\|$\)/j ' . fnames
+
+      let qflist = getqflist()
+      if len(qflist) > 0 || match(typename, "::") < 0
+	break
+      endif
+      " No match for "struct:context::name", remove "context::" and try again.
+      let typename = substitute(typename, ':[^:]*::', ':', '')
+    endwhile
+
+    if a:all == 0
+      " Store the result to be able to use it again later.
+      let s:grepCache[a:typename] = qflist
     endif
-    " No match for "struct:context::name", remove "context::" and try again.
-    let typename = substitute(typename, ':[^:]*::', ':', '')
-  endwhile
+  endif
 
   let matches = []
   for l in qflist

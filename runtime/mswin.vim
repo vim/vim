@@ -1,7 +1,7 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Feb 02
+" Last change:	2006 Mar 09
 
 " bail out if this isn't wanted (mrsvim.vim uses this).
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
@@ -41,36 +41,11 @@ cmap <S-Insert>		<C-R>+
 " Pasting blockwise and linewise selections is not possible in Insert and
 " Visual mode without the +virtualedit feature.  They are pasted as if they
 " were characterwise instead.
-" Note: the same stuff appears in menu.vim.
-if has("virtualedit")
-  nnoremap <silent> <SID>Paste :call <SID>Paste()<CR>
-  func! <SID>Paste()
-    let ove = &ve
-    set ve=all
-    normal! `^
-    if @+ != ''
-      normal! "+gP
-    endif
-    let c = col(".")
-    normal! i
-    if col(".") < c	" compensate for i<ESC> moving the cursor left
-      " Avoid a beep when the text ends at the window edge.
-      let vb_save = &vb
-      let t_vb_save = &t_vb
-      set vb t_vb=
-      normal! l
-      let &vb = vb_save
-      let &t_vb = t_vb_save
-    endif
-    let &ve = ove
-  endfunc
-  inoremap <script> <C-V>	x<BS><Esc><SID>Pastegi
-  vnoremap <script> <C-V>	"-c<Esc><SID>Paste
-else
-  nnoremap <silent> <SID>Paste	"=@+.'xy'<CR>gPFx"_2x
-  inoremap <script> <C-V>	x<Esc><SID>Paste"_s
-  vnoremap <script> <C-V>	"-c<Esc>gix<Esc><SID>Paste"_x
-endif
+" Uses the paste.vim autoload script.
+
+exe 'inoremap <script> <C-V>' paste#paste_cmd['i']
+exe 'vnoremap <script> <C-V>' paste#paste_cmd['v']
+
 imap <S-Insert>		<C-V>
 vmap <S-Insert>		<C-V>
 

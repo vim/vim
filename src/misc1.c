@@ -4430,12 +4430,8 @@ vim_ispathsep(c)
     /* server"user passwd"::device:[full.path.name]fname.extension;version" */
     return (c == ':' || c == '[' || c == ']' || c == '/'
 	    || c == '<' || c == '>' || c == '"' );
-#   else
-#    ifdef COLON_AS_PATHSEP
-    return (c == ':');
-#    else		/* Amiga */
+#   else		/* Amiga */
     return (c == ':' || c == '/');
-#    endif
 #   endif /* VMS */
 #  endif
 # endif

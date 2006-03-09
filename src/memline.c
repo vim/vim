@@ -2647,7 +2647,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 /*
  * Replace line lnum, with buffering, in current buffer.
  *
- * If copy is TRUE, make a copy of the line, otherwise the line has been
+ * If "copy" is TRUE, make a copy of the line, otherwise the line has been
  * copied to allocated memory already.
  *
  * Check: The caller of this function should probably also call

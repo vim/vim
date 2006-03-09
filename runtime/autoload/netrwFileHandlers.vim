@@ -1,8 +1,8 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Oct 12, 2005
-" Version:	7
+" Date:		Feb 15, 2006
+" Version:	8a	ASTRO-ONLY
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -22,22 +22,27 @@ if exists("g:loaded_netrwFileHandlers") || &cp
 endif
 let s:keepcpo= &cpo
 set cpo&vim
-let g:loaded_netrwFileHandlers= "v7"
+let g:loaded_netrwFileHandlers= "v8a"
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#Init: {{{1
-"    This functions is here to allow a call to this function to autoload
-"    the netrwFileHandlers.vim file
-fun! netrwFileHandlers#Init()
-"  call Dfunc("netrwFileHandlers#Init()")
-"  call Dret("netrwFileHandlers#Init")
+" netrwFileHandlers#Invoke: {{{2
+fun! netrwFileHandlers#Invoke(exten,fname)
+"  call Dfunc("netrwFileHandlers#Invoke(exten<".a:exten."> fname<".a:fname.">)")
+
+  if a:exten != "" && exists("*s:NFH_".a:exten)
+"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.a:fname.'")')
+   exe "let ret= s:NFH_".a:exten.'("'.a:fname.'")'
+  endif
+  
+"  call Dret("netrwFileHandlers#Invoke 0 : ret=".ret)
+  return 0
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_html: handles html when the user hits "x" when the {{{1
+" s:NFH_html: handles html when the user hits "x" when the {{{1
 "                        cursor is atop a *.html file
-fun! netrwFileHandlers#NFH_html(pagefile)
-"  call Dfunc("netrwFileHandlers#NFH_html(".a:pagefile.")")
+fun! s:NFH_html(pagefile)
+"  call Dfunc("s:NFH_html(".a:pagefile.")")
 
   let page= substitute(a:pagefile,'^','file://','')
 
@@ -48,19 +53,19 @@ fun! netrwFileHandlers#NFH_html(pagefile)
 "   call Decho("executing !netscape ".page)
    exe "!netscape \"".page.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_html 0")
+"   call Dret("s:NFH_html 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_html 1")
+"  call Dret("s:NFH_html 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_htm: handles html when the user hits "x" when the {{{1
+" s:NFH_htm: handles html when the user hits "x" when the {{{1
 "                        cursor is atop a *.htm file
-fun! netrwFileHandlers#NFH_htm(pagefile)
-"  call Dfunc("netrwFileHandlers#NFH_htm(".a:pagefile.")")
+fun! s:NFH_htm(pagefile)
+"  call Dfunc("s:NFH_htm(".a:pagefile.")")
 
   let page= substitute(a:pagefile,'^','file://','')
 
@@ -71,18 +76,18 @@ fun! netrwFileHandlers#NFH_htm(pagefile)
 "   call Decho("executing !netscape ".page)
    exe "!netscape \"".page.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_htm 0")
+"   call Dret("s:NFH_htm 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_htm 1")
+"  call Dret("s:NFH_htm 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_jpg: {{{1
-fun! netrwFileHandlers#NFH_jpg(jpgfile)
-"  call Dfunc("netrwFileHandlers#NFH_jpg(jpgfile<".a:jpgfile.">)")
+" s:NFH_jpg: {{{1
+fun! s:NFH_jpg(jpgfile)
+"  call Dfunc("s:NFH_jpg(jpgfile<".a:jpgfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:jpgfile
@@ -90,181 +95,181 @@ fun! netrwFileHandlers#NFH_jpg(jpgfile)
 "   call Decho("silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".escape(a:jpgfile," []|'"))
    exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:jpgfile.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_jpg 0")
+"   call Dret("s:NFH_jpg 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_jpg 1")
+"  call Dret("s:NFH_jpg 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_gif: {{{1
-fun! netrwFileHandlers#NFH_gif(giffile)
-"  call Dfunc("netrwFileHandlers#NFH_gif(giffile<".a:giffile.">)")
+" s:NFH_gif: {{{1
+fun! s:NFH_gif(giffile)
+"  call Dfunc("s:NFH_gif(giffile<".a:giffile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:giffile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:giffile.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_gif 0")
+"   call Dret("s:NFH_gif 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_gif 1")
+"  call Dret("s:NFH_gif 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_png: {{{1
-fun! netrwFileHandlers#NFH_png(pngfile)
-"  call Dfunc("netrwFileHandlers#NFH_png(pngfile<".a:pngfile.">)")
+" s:NFH_png: {{{1
+fun! s:NFH_png(pngfile)
+"  call Dfunc("s:NFH_png(pngfile<".a:pngfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:pngfile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:pngfile.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_png 0")
+"   call Dret("s:NFH_png 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_png 1")
+"  call Dret("s:NFH_png 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_pnm: {{{1
-fun! netrwFileHandlers#NFH_pnm(pnmfile)
-"  call Dfunc("netrwFileHandlers#NFH_pnm(pnmfile<".a:pnmfile.">)")
+" s:NFH_pnm: {{{1
+fun! s:NFH_pnm(pnmfile)
+"  call Dfunc("s:NFH_pnm(pnmfile<".a:pnmfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:pnmfile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:pnmfile.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_pnm 0")
+"   call Dret("s:NFH_pnm 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_pnm 1")
+"  call Dret("s:NFH_pnm 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_bmp: visualize bmp files {{{1
-fun! netrwFileHandlers#NFH_bmp(bmpfile)
-"  call Dfunc("netrwFileHandlers#NFH_bmp(bmpfile<".a:bmpfile.">)")
+" s:NFH_bmp: visualize bmp files {{{1
+fun! s:NFH_bmp(bmpfile)
+"  call Dfunc("s:NFH_bmp(bmpfile<".a:bmpfile.">)")
 
   if executable("gimp")
    exe "silent! !gimp -s ".a:bmpfile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
    exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:bmpfile.'"'
   else
-"   call Dret("netrwFileHandlers#NFH_bmp 0")
+"   call Dret("s:NFH_bmp 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_bmp 1")
+"  call Dret("s:NFH_bmp 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_pdf: visualize pdf files {{{1
-fun! netrwFileHandlers#NFH_pdf(pdf)
-"  " call Dfunc("netrwFileHandlers#NFH_pdf(pdf<".a:pdf.">)")
+" s:NFH_pdf: visualize pdf files {{{1
+fun! s:NFH_pdf(pdf)
+"  call Dfunc("s:NFH_pdf(pdf<".a:pdf.">)")
   if executable("gs")
    exe 'silent! !gs "'.a:pdf.'"'
   else
-"   " call Dret("netrwFileHandlers#NFH_pdf 0")
+"  call Dret("s:NFH_pdf 0")
    return 0
   endif
 
-"  " call Dret("netrwFileHandlers#NFH_pdf 1")
+"  call Dret("s:NFH_pdf 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_doc: visualize doc files {{{1
-fun! netrwFileHandlers#NFH_doc(doc)
-"  " call Dfunc("netrwFileHandlers#NFH_doc(doc<".a:doc.">)")
+" s:NFH_doc: visualize doc files {{{1
+fun! s:NFH_doc(doc)
+"  call Dfunc("s:NFH_doc(doc<".a:doc.">)")
 
   if executable("oowriter")
    exe 'silent! !oowriter "'.a:doc.'"'
    redraw!
   else
-"   " call Dret("netrwFileHandlers#NFH_doc 0")
+"  call Dret("s:NFH_doc 0")
    return 0
   endif
 
-"  " call Dret("netrwFileHandlers#NFH_doc 1")
+"  call Dret("s:NFH_doc 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_sxw: visualize sxw files {{{1
-fun! netrwFileHandlers#NFH_sxw(sxw)
-"  " call Dfunc("netrwFileHandlers#NFH_sxw(sxw<".a:sxw.">)")
+" s:NFH_sxw: visualize sxw files {{{1
+fun! s:NFH_sxw(sxw)
+"  call Dfunc("s:NFH_sxw(sxw<".a:sxw.">)")
 
   if executable("oowriter")
    exe 'silent! !oowriter "'.a:sxw.'"'
    redraw!
   else
-"   " call Dret("netrwFileHandlers#NFH_sxw 0")
+"   call Dret("s:NFH_sxw 0")
    return 0
   endif
 
-"  " call Dret("netrwFileHandlers#NFH_sxw 1")
+"  call Dret("s:NFH_sxw 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_xls: visualize xls files {{{1
-fun! netrwFileHandlers#NFH_xls(xls)
-"  " call Dfunc("netrwFileHandlers#NFH_xls(xls<".a:xls.">)")
+" s:NFH_xls: visualize xls files {{{1
+fun! s:NFH_xls(xls)
+"  call Dfunc("s:NFH_xls(xls<".a:xls.">)")
 
   if executable("oocalc")
    exe 'silent! !oocalc "'.a:xls.'"'
    redraw!
   else
-"   " call Dret("netrwFileHandlers#NFH_xls 0")
+"  call Dret("s:NFH_xls 0")
    return 0
   endif
 
-"  " call Dret("netrwFileHandlers#NFH_xls 1")
+"  call Dret("s:NFH_xls 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_ps: handles PostScript files {{{1
-fun! netrwFileHandlers#NFH_ps(ps)
-"  call Dfunc("netrwFileHandlers#NFH_ps()")
+" s:NFH_ps: handles PostScript files {{{1
+fun! s:NFH_ps(ps)
+"  call Dfunc("s:NFH_ps(ps<".a:ps.">)")
   if executable("gs")
+"   call Decho("exe silent! !gs ".a:ps)
    exe "silent! !gs ".a:ps
    redraw!
   elseif executable("ghostscript")
-   exe "silent! !ghostscript ".a:ps
-   redraw!
-  elseif executable("ghostscript")
+"   call Decho("exe silent! !ghostscript ".a:ps)
    exe "silent! !ghostscript ".a:ps
    redraw!
   elseif executable("gswin32")
+"   call Decho("exe silent! !gswin32 \"".a:ps.'"')
    exe "silent! !gswin32 \"".a:ps.'"'
    redraw!
   else
-"   call Dret("netrwFileHandlers#NFH_ps 0")
+"   call Dret("s:NFH_ps 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_ps 1")
+"  call Dret("s:NFH_ps 1")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_eps: handles encapsulated PostScript files {{{1
-fun! netrwFileHandlers#NFH_eps(eps)
-"  call Dfunc("netrwFileHandlers#NFH_ps()")
+" s:NFH_eps: handles encapsulated PostScript files {{{1
+fun! s:NFH_eps(eps)
+"  call Dfunc("s:NFH_eps()")
   if executable("gs")
    exe "silent! !gs ".a:eps
    redraw!
@@ -278,40 +283,42 @@ fun! netrwFileHandlers#NFH_eps(eps)
    exe "silent! !gswin32 \"".a:eps.'"'
    redraw!
   else
-"   call Dret("netrwFileHandlers#NFH_ps 0")
+"   call Dret("s:NFH_eps 0")
    return 0
   endif
-endfun
-
-" ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_fig: handles xfig files {{{1
-fun! netrwFileHandlers#NFH_fig(fig)
-"  call Dfunc("netrwFileHandlers#NFH_fig()")
-  if executable("xfig")
-   exe "silent! !xfig ".a:fig
-   redraw!
-  else
-"   call Dret("netrwFileHandlers#NFH_fig 0")
-   return 0
-  endif
-
-"  call Dret("netrwFileHandlers#NFH_fig 1")
+"  call Dret("s:NFH_eps 0")
   return 1
 endfun
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#NFH_obj: handles tgif's obj files {{{1
-fun! netrwFileHandlers#NFH_obj(obj)
-"  call Dfunc("netrwFileHandlers#NFH_obj()")
+" s:NFH_fig: handles xfig files {{{1
+fun! s:NFH_fig(fig)
+"  call Dfunc("s:NFH_fig()")
+  if executable("xfig")
+   exe "silent! !xfig ".a:fig
+   redraw!
+  else
+"   call Dret("s:NFH_fig 0")
+   return 0
+  endif
+
+"  call Dret("s:NFH_fig 1")
+  return 1
+endfun
+
+" ---------------------------------------------------------------------
+" s:NFH_obj: handles tgif's obj files {{{1
+fun! s:NFH_obj(obj)
+"  call Dfunc("s:NFH_obj()")
   if has("unix") && executable("tgif")
    exe "silent! !tgif ".a:obj
    redraw!
   else
-"   call Dret("netrwFileHandlers#NFH_obj 0")
+"   call Dret("s:NFH_obj 0")
    return 0
   endif
 
-"  call Dret("netrwFileHandlers#NFH_obj 1")
+"  call Dret("s:NFH_obj 1")
   return 1
 endfun
 

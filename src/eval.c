@@ -19326,8 +19326,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	profile_end(&fp->uf_tm_start);
 	profile_sub_wait(&wait_start, &fp->uf_tm_start);
 	profile_add(&fp->uf_tm_total, &fp->uf_tm_start);
-	profile_add(&fp->uf_tm_self, &fp->uf_tm_start);
-	profile_sub(&fp->uf_tm_self, &fp->uf_tm_children);
+	profile_self(&fp->uf_tm_self, &fp->uf_tm_start, &fp->uf_tm_children);
 	if (fc.caller != NULL && &fc.caller->func->uf_profiling)
 	{
 	    profile_add(&fc.caller->func->uf_tm_children, &fp->uf_tm_start);
@@ -19714,9 +19713,9 @@ func_line_end(cookie)
 	    ++fp->uf_tml_count[fp->uf_tml_idx];
 	    profile_end(&fp->uf_tml_start);
 	    profile_sub_wait(&fp->uf_tml_wait, &fp->uf_tml_start);
-	    profile_add(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_start);
 	    profile_add(&fp->uf_tml_total[fp->uf_tml_idx], &fp->uf_tml_start);
-	    profile_sub(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_children);
+	    profile_self(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_start,
+							&fp->uf_tml_children);
 	}
 	fp->uf_tml_idx = -1;
     }
