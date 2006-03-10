@@ -1,5 +1,5 @@
 *** nl_NL.orig.aff	Sun Jul  3 18:24:07 2005
---- nl_NL.aff	Wed Mar  8 19:09:39 2006
+--- nl_NL.aff	Fri Mar 10 10:03:48 2006
 ***************
 *** 1,5 ****
   SET ISO8859-1
@@ -151,9 +151,9 @@
   REP aflassen afgelasten
 + REP svp s.v.p.
 + REP zoz z.o.z.
-+ 
++ REP hopenlijk hopelijk
 *** nl_NL.orig.dic	Sun Jul  3 18:24:07 2005
---- nl_NL.dic	Wed Mar  8 19:24:21 2006
+--- nl_NL.dic	Fri Mar 10 09:58:01 2006
 ***************
 *** 1,3 ****
   119937
@@ -486,25 +486,35 @@
 ! #terugzijn	fout volgens Van Dale
   terugzoeken
 ***************
+*** 100011,100013 ****
+  teven/S
+! tevergeefs/E
+  tevoorschijn
+--- 100046,100049 ----
+  teven/S
+! #tevergeefs/E		tevergeefse is fout volgens Van Dale
+! tevergeefs
+  tevoorschijn
+***************
 *** 100485,100487 ****
   tijdsdruk
 ! tijdsduur/P
   tijdseenheid
---- 100520,100523 ----
+--- 100521,100524 ----
   tijdsdruk
 ! #tijdsduur/P		tijdsduren is fout volgens Van Dale
 ! tijdsduur
   tijdseenheid
 ***************
 *** 101428,101429 ****
---- 101464,101467 ----
+--- 101465,101468 ----
   toezichthouder/S
 + toezichthoudersaansprakelijkheidsverzekering
 + toezichthoudersaansprakelijkheidsverzekeringen
   toezie/N
 ***************
 *** 103707,103708 ****
---- 103745,103747 ----
+--- 103746,103748 ----
   tête-à-tête/S
 + u
   uchtend/N
@@ -513,7 +523,7 @@
   violistisch
 ! violoncel/SM
   violoncellist/N
---- 109021,109025 ----
+--- 109022,109026 ----
   violistisch
 ! #violoncel/SM	violoncels is fout volgens Van Dale
 ! violoncel/M
@@ -524,14 +534,14 @@
   vliegenscheet/P
 ! vliegenstront/N
   vliegensvlug
---- 109538,109541 ----
+--- 109539,109542 ----
   vliegenscheet/P
 ! #vliegenstront/N	vliegenstronten is fout volgens Van Dale
 ! vliegenstront
   vliegensvlug
 ***************
 *** 110847,110848 ****
---- 110889,110891 ----
+--- 110890,110892 ----
   voorjaarscollectie/S
 + voorjaarsconferentie/S
   voorjaarsmoeheid
@@ -540,7 +550,7 @@
   weervloed
 ! weervoer/N
   weervoorspeller/S
---- 114039,114043 ----
+--- 114040,114044 ----
   weervloed
 ! #weervoer/N	weervoeren is fout volgens Van Dale
 ! weervoer
@@ -551,7 +561,7 @@
   wereld/SN
 ! wereldbank
   wereldbeeld
---- 114867,114870 ----
+--- 114868,114871 ----
   wereld/SN
 ! #wereldbank		fout volgens Van Dale
 ! Wereldbank
@@ -561,7 +571,7 @@
   wetens/OG
 ! wetenschap/SM
   wetenschappelijk/TREHO
---- 115314,115317 ----
+--- 115315,115318 ----
   wetens/OG
 ! #wetenschap/SM	wetenschaps is fout volgens Van Dale
 ! wetenschap/M
@@ -571,7 +581,7 @@
   willekeur/N
 ! willekeurig/OENRTH
   willekeurige/O
---- 115794,115797 ----
+--- 115795,115798 ----
   willekeur/N
 ! #willekeurig/OENRTH    willekeurige is fout volgens Van Dale
 ! willekeurig/OERTH
@@ -581,7 +591,7 @@
   wouter/S
 ! wouterman/S
   wouw/N
---- 116720,116724 ----
+--- 116721,116725 ----
   wouter/S
 ! #wouterman/S		woutermans is fout volgens Van Dale
 ! wouterman
@@ -592,14 +602,14 @@
   zegelwet/M
 ! zegen/FCGSWNIU
   zegenbede/N
---- 117652,117655 ----
+--- 117653,117656 ----
   zegelwet/M
 ! #zegen/FCGSWNIU		 uitzegen is fout volgens Van Dale
 ! zegen/FCGSWNI
   zegenbede/N
 ***************
 *** 119938 ****
---- 119989,173194 ----
+--- 119990,173195 ----
   überhaupt
 + Christiaan/X
 + Fred/X

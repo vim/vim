@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 07
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -988,7 +988,7 @@ On the second invocation the arguments are:
 The function must return a List with the matching words.  These matches
 usually include the "a:base" text.  When there are no matches return an empty
 List.
-
+						*complete-items*
 Each list item can either be a string or a Dictionary.  When it is a string it
 is used as the completion.  When it is a Dictionary it can contain these
 items:
@@ -1136,6 +1136,18 @@ There are no special mappings for when the popup menu is visible.  However,
 you can use an Insert mode mapping that checks the |pumvisible()| function to
 do something different.  Example: >
 	:inoremap <Down> <C-R>=pumvisible() ? "\<lt>C-N>" : "\<lt>Down>"<CR>
+
+You can use of <expr> in mapping to have the popup menu used when typing a
+character and some condition is met.  For example, for typing a dot: >
+	inoremap <expr> . MayComplete()
+	func MayComplete()
+	    if (can complete)
+	      return ".\<C-X>\<C-O>"
+	    endif
+	    return '.'
+	endfunc
+
+See |:map-<expr>| for more info.
 
 
 FILETYPE-SPECIFIC REMARKS FOR OMNI COMPLETION	    *compl-omni-filetypes*

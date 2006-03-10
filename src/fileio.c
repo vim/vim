@@ -6983,6 +6983,8 @@ static struct event_name
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
+    {"ShellCmdPost",	EVENT_SHELLCMDPOST},
+    {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
     {"SourcePre",	EVENT_SOURCEPRE},
     {"SpellFileMissing",EVENT_SPELLFILEMISSING},
     {"StdinReadPost",	EVENT_STDINREADPOST},
