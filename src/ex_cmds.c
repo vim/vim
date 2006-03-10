@@ -949,9 +949,14 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 	do_shell(newcmd, 0);
     }
     else				/* :range! */
+    {
 	/* Careful: This may recursively call do_bang() again! (because of
 	 * autocommands) */
 	do_filter(line1, line2, eap, newcmd, do_in, do_out);
+#ifdef FEAT_AUTOCMD
+	apply_autocmds(EVENT_SHELLFILTERPOST, NULL, NULL, FALSE, curbuf);
+#endif
+    }
     if (free_newcmd)
 	vim_free(newcmd);
 }
@@ -1419,6 +1424,10 @@ do_shell(cmd, flags)
 
     /* display any error messages now */
     display_errors();
+
+#ifdef FEAT_AUTOCMD
+    apply_autocmds(EVENT_SHELLCMDPOST, NULL, NULL, FALSE, curbuf);
+#endif
 }
 
 /*

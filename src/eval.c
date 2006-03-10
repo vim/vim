@@ -467,6 +467,7 @@ static void f_char2nr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_cindent __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_col __ARGS((typval_T *argvars, typval_T *rettv));
 #if defined(FEAT_INS_EXPAND)
+static void f_complete __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_complete_add __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_complete_check __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
@@ -6884,6 +6885,7 @@ static struct fst
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
 #if defined(FEAT_INS_EXPAND)
+    {"complete",	2, 2, f_complete},
     {"complete_add",	1, 1, f_complete_add},
     {"complete_check",	0, 0, f_complete_check},
 #endif
@@ -8101,6 +8103,35 @@ f_col(argvars, rettv)
 }
 
 #if defined(FEAT_INS_EXPAND)
+/*
+ * "complete()" function
+ */
+/*ARGSUSED*/
+    static void
+f_complete(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int	    startcol;
+
+    if ((State & INSERT) == 0)
+    {
+	EMSG(_("E785: complete() can only be used in Insert mode"));
+	return;
+    }
+    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
+    {
+	EMSG(_(e_invarg));
+	return;
+    }
+
+    startcol = get_tv_number_chk(&argvars[0], NULL);
+    if (startcol <= 0)
+	return;
+
+    set_completion(startcol - 1, argvars[1].vval.v_list);
+}
+
 /*
  * "complete_add()" function
  */

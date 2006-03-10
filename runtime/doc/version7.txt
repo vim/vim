@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,6 +32,7 @@ POSIX compatibility			|new-posix|
 Debugger support			|new-debug-support|
 Remote file explorer			|new-netrw-explore|
 Define an operator			|new-define-operator|
+Mapping to an expression		|new-map-expression|
 Location list				|new-location-list|
 Various new items			|new-items-7|
 
@@ -400,6 +401,17 @@ through the |g@| operator.
 See |:map-operator| for the explanation and an example.
 
 
+Mapping to an expression				*new-map-expression*
+------------------------
+
+The {rhs} argument of a mapping can be an expression.  That means the
+resulting characters can depend on the context.  Example: >
+	:inoremap <expr> . InsertDot()
+Here the dot will be mapped to whatever InsertDot() returns.
+
+Also works for abbreviations.  See |:map-<expr>| for the details.
+
+
 Location list						*new-location-list*
 -------------
 
@@ -646,6 +658,9 @@ New autocommand events: ~
 |SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
 
 |SpellFileMissing|	when a spell file can't be found
+
+|ShellCmdPost|		after executing a shell command
+|ShellFilterPost|	after filtering with a shell command
 
 |SourcePre|		before sourcing a Vim script
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 09
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+--remote-tab to open file in new tab in existing Vim server?
+--remote-tab-silent
+--remote-tab-wait
+--remote-tab-wait-silent
+
 Win32: Describe how to do debugging. (George Reilly)
 
 Mac unicode patch (Da Woon Jung):
@@ -45,58 +50,19 @@ Mac unicode patch (Da Woon Jung):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Add ShellCmdPre/ShellCmdPost/ShellFilterPre/ShellFilterPost ?
-Useful for updating the diretory listing in netrw.
 
 CONSIDERED FOR VERSION 7.0:
 
 Omni completion:
     ccomplete:
     - For C add tag "kind" field to each match?
-    - Flickering because of syntax highlighting redrawing further lines.
     - When a typedef or struct is local to a file only use it in that file?
 
     UI:
-    - Add an "auto" mode: after typing a character (or string) completion is
-      done for the longest common string.  plugin defines the possible
-      characters/strings. (Martin Stubenschrott)
-      And/or: Provide a function to popup the menu, so that an insert mode
-      mapping can start it (with a specific selection).
     - Show "info" from a match in preview window (with an option or by opening
       a preview window with a specific name).
       Or use one window for matches, another for context/info (Doug Kearns,
       2005 Sep 13)
-    - Ideas on: http://www.wholetomato.com/
-
-    Completion logic:
-	Ideas from others:
-	http://www.vim.org/scripts/script.php?script_id=747
-	    http://sourceforge.net/projects/insenvim
-		or http://insenvim.sourceforge.net
-	    Java, XML, HTML, C++, JSP, SQL, C#
-	    MS-Windows only, lots of dependencies (e.g. Perl, Internet
-		explorer), uses .dll shared libraries.
-	    For C++ uses $INCLUDE environment var.
-	    Uses Perl for C++.
-	    Uses ctags to find the info:
-		ctags -f $allTagsFile --fields=+aiKmnsSz --language-force=C++ --C++-kinds=+cefgmnpsut-dlux -u $files
-
-	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
-	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
-	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
-	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
-	Ivan Villanueva has something for Java.
-	Emads: http://www.xref-tech.com/xrefactory/more_c_completion.html
-	Ideas from the Vim 7 BOF at SANE:
-	- For interpreted languages, use the interpreter to obtain information.
-	  Should work for Java (Eclipse does this), Python, Tcl, etc.
-	  Richard Emberson mentioned working on an interface to Java.
-	- Check Readline for its completion interface.
-	- Use ctags for other languages.  Writing a file could trigger running
-	  ctags, merging the tags of the changed file.
-	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
-
-        - Pre-expand abbreviations, show which abbrevs would match?
 
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)
@@ -2186,6 +2152,36 @@ Autocommands:
     them save the file itself besides the swapfile.
 
 
+Omni completion:
+-   Ideas from the Vim 7 BOF at SANE:
+	- For interpreted languages, use the interpreter to obtain information.
+	  Should work for Java (Eclipse does this), Python, Tcl, etc.
+	  Richard Emberson mentioned working on an interface to Java.
+	- Check Readline for its completion interface.
+	- Use ctags for other languages.  Writing a file could trigger running
+	  ctags, merging the tags of the changed file.
+-   Ideas from others:
+	http://www.wholetomato.com/
+	http://www.vim.org/scripts/script.php?script_id=747
+	    http://sourceforge.net/projects/insenvim
+		or http://insenvim.sourceforge.net
+	    Java, XML, HTML, C++, JSP, SQL, C#
+	    MS-Windows only, lots of dependencies (e.g. Perl, Internet
+		explorer), uses .dll shared libraries.
+	    For C++ uses $INCLUDE environment var.
+	    Uses Perl for C++.
+	    Uses ctags to find the info:
+		ctags -f $allTagsFile --fields=+aiKmnsSz --language-force=C++ --C++-kinds=+cefgmnpsut-dlux -u $files
+	www.vim.org script 1213 (Java Development Environment) (Fuchuan Wang)
+	IComplete: http://www.vim.org/scripts/script.php?script_id=1265
+	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
+	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
+	Ivan Villanueva has something for Java.
+	Emads: http://www.xref-tech.com/xrefactory/more_c_completion.html
+	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
+-   Pre-expand abbreviations, show which abbrevs would match?
+
+
 Insert mode completion/expansion:
 -   GUI implementation of the popup menu.
 8   When there is no word before the cursor but something like "sys." complete
@@ -2605,6 +2601,7 @@ Mappings and Abbreviations:
 8   To make a mapping work with a prepended "x to select a register, store the
     last _typed_ register name and access it with "&.
 8   Add ":amap", like ":amenu".
+7   Add a mapping that works always, for remapping the keyboard.
 8   Add ":cab!", abbreviations that only apply to Command-line mode and not to
     entering search strings.
 8   Add a flag to ":abbrev" to eat the character that triggers the
@@ -2625,12 +2622,17 @@ Mappings and Abbreviations:
 7   Make it possible to map 'wildchar', but only when it's a special character
     (like CTRL-E).  Currently it's only recognized when typed.  Useful for
     mapping a key to do something and then completion.
-7   Add a mapping that works always, for remapping the keyboard.
 6   Context-sensitive abbreviations: Specify syntax group(s) in which the
     abbreviations are to be used.
 -   Add mappings that take arguments.  Could work like the ":s" command.  For
     example, for a mouse escape sequence:
 	:mapexp  <Esc>{\([0-9]*\),\([0-9]*\);	H\1j\2l
+-   Add optional <Number> argument for mappings:
+    :map <Number>q	     ^W^W<Number>G
+    :map <Number>q<Number>t  ^W^W<Number1-1>G<Number2>l
+    :map q<Char>	    :s/<Char>/\u\0/g
+    Or implicit:
+    :map q			<Register>d<Number>$
 -   Make it possible to include a <Nul> in the lhs and rhs of a mapping.
 -   Add command to repeat a whole mapping ("." only repeats the last change in
     a mapping).  Also: Repeat a whole insert command, including any mappings
@@ -2645,17 +2647,9 @@ Mappings and Abbreviations:
     mappings first, then remove them again when a mapping matches.  Avoids
     that characters that are the start of some mapping are not shown until you
     hit another character.
--   Add optional <Number> argument for mappings:
-    :map <Number>q	     ^W^W<Number>G
-    :map <Number>q<Number>t  ^W^W<Number1-1>G<Number2>l
-    :map q<Char>	    :s/<Char>/\u\0/g
-    Or implicit:
-    :map q			<Register>d<Number>$
 -   Add mappings for replace mode: ":rmap".  How do we then enter mappings for
     non-replace Insert mode?
 -   Add separate mappings for Visual-character/block/line mode?
-6   Alias for Normal mode commands, works like :substitute?  Would allow
-    mappings with arguments.
 -   Add 'mapstop' command, to stop recursive mappings.
 -   List mappings that have a raw escape sequence both with the name of the key
     for that escape sequence (if there is one) and the sequence itself.
