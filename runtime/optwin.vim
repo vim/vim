@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 05
+" Last Change:	2006 Mar 10
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -1163,6 +1163,8 @@ if has("multi_byte")
   call <SID>OptionG("ccv", &ccv)
   call append("$", "delcombine\tDelete combining (composing) characters on their own")
   call <SID>BinOptionG("deco", &deco)
+  call append("$", "maxcombine\tMaximum number of combining (composing) characters displayed")
+  call <SID>OptionG("mco", &mco)
   if has("xim") && has("gui_gtk")
     call append("$", "imactivatekey\tkey that activates the X input method")
     call <SID>OptionG("imak", &imak)

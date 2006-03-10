@@ -1792,8 +1792,8 @@ vgetorpeek(advance)
     int		local_State;
     int		mlen;
     int		max_mlen;
-#ifdef FEAT_CMDL_INFO
     int		i;
+#ifdef FEAT_CMDL_INFO
     int		new_wcol, new_wrow;
 #endif
 #ifdef FEAT_GUI
@@ -2309,6 +2309,17 @@ vgetorpeek(advance)
 			}
 #endif
 
+#ifdef FEAT_EVAL
+			/*
+			 * Handle ":map <expr>": evaluate the {rhs} as an
+			 * expression.
+			 */
+			if (mp->m_expr)
+			    s = eval_to_string(mp->m_str, NULL, FALSE);
+			else
+#endif
+			    s = mp->m_str;
+
 			/*
 			 * Insert the 'to' part in the typebuf.tb_buf.
 			 * If 'from' field is the same as the start of the
@@ -2317,13 +2328,23 @@ vgetorpeek(advance)
 			 * If m_noremap is set, don't remap the whole 'to'
 			 * part.
 			 */
-			if (ins_typebuf(mp->m_str,
-				mp->m_noremap != REMAP_YES
+			if (s == NULL)
+			    i = FAIL;
+			else
+			{
+			    i = ins_typebuf(s,
+				    mp->m_noremap != REMAP_YES
 					    ? mp->m_noremap
-					    : STRNCMP(mp->m_str, mp->m_keys,
+					    : STRNCMP(s, mp->m_keys,
 							  (size_t)keylen) != 0
 						     ? REMAP_YES : REMAP_SKIP,
-				0, TRUE, cmd_silent || mp->m_silent) == FAIL)
+				0, TRUE, cmd_silent || mp->m_silent);
+#ifdef FEAT_EVAL
+			    if (mp->m_expr)
+				vim_free(s);
+#endif
+			}
+			if (i == FAIL)
 			{
 			    c = -1;
 			    break;
@@ -2955,6 +2976,9 @@ do_map(maptype, arg, mode, abbrev)
     mapblock_T	**map_table;
     int		unique = FALSE;
     int		silent = FALSE;
+#ifdef FEAT_EVAL
+    int		expr = FALSE;
+#endif
     int		noremap;
 
     keys = arg;
@@ -2967,7 +2991,7 @@ do_map(maptype, arg, mode, abbrev)
     else
 	noremap = REMAP_YES;
 
-    /* Accept <buffer>, <silent>, <script> and <unique> in any order. */
+    /* Accept <buffer>, <silent>, <expr> <script> and <unique> in any order. */
     for (;;)
     {
 #ifdef FEAT_LOCALMAP
@@ -3001,6 +3025,16 @@ do_map(maptype, arg, mode, abbrev)
 	{
 	    keys = skipwhite(keys + 8);
 	    noremap = REMAP_SCRIPT;
+	    continue;
+	}
+
+	/*
+	 * Check for "<expr>": {rhs} is an expression.
+	 */
+	if (STRNCMP(keys, "<expr>", 6) == 0)
+	{
+	    keys = skipwhite(keys + 6);
+	    expr = TRUE;
 	    continue;
 	}
 #endif
@@ -3328,6 +3362,7 @@ do_map(maptype, arg, mode, abbrev)
 				mp->m_silent = silent;
 				mp->m_mode = mode;
 #ifdef FEAT_EVAL
+				mp->m_expr = expr;
 				mp->m_script_ID = current_SID;
 #endif
 				did_it = TRUE;
@@ -3413,6 +3448,7 @@ do_map(maptype, arg, mode, abbrev)
     mp->m_silent = silent;
     mp->m_mode = mode;
 #ifdef FEAT_EVAL
+    mp->m_expr = expr;
     mp->m_script_ID = current_SID;
 #endif
 
@@ -3835,11 +3871,18 @@ set_context_in_map_cmd(xp, cmd, arg, forceit, isabbrev, isunmap, cmdidx)
 		arg = skipwhite(arg + 8);
 		continue;
 	    }
+#ifdef FEAT_EVAL
 	    if (STRNCMP(arg, "<script>", 8) == 0)
 	    {
 		arg = skipwhite(arg + 8);
 		continue;
 	    }
+	    if (STRNCMP(arg, "<expr>", 6) == 0)
+	    {
+		arg = skipwhite(arg + 6);
+		continue;
+	    }
+#endif
 	    break;
 	}
 	xp->xp_pattern = arg;
@@ -3879,7 +3922,7 @@ ExpandMappings(regmatch, num_file, file)
     {
 	count = 0;
 
-	for (i = 0; i < 4; ++i)
+	for (i = 0; i < 5; ++i)
 	{
 	    if (i == 0)
 		p = (char_u *)"<silent>";
@@ -3888,9 +3931,11 @@ ExpandMappings(regmatch, num_file, file)
 #ifdef FEAT_EVAL
 	    else if (i == 2)
 		p = (char_u *)"<script>";
+	    else if (i == 3)
+		p = (char_u *)"<expr>";
 #endif
 #ifdef FEAT_LOCALMAP
-	    else if (i == 3 && !expand_buffer)
+	    else if (i == 4 && !expand_buffer)
 		p = (char_u *)"<buffer>";
 #endif
 	    else
@@ -4002,6 +4047,7 @@ check_abbr(c, ptr, col, mincol)
     int		len;
     int		scol;		/* starting column of the abbr. */
     int		j;
+    char_u	*s;
 #ifdef FEAT_MBYTE
     char_u	tb[MB_MAXBYTES + 4];
 #else
@@ -4148,10 +4194,23 @@ check_abbr(c, ptr, col, mincol)
 					/* insert the last typed char */
 		(void)ins_typebuf(tb, 1, 0, TRUE, mp->m_silent);
 	    }
+#ifdef FEAT_EVAL
+	    if (mp->m_expr)
+		s = eval_to_string(mp->m_str, NULL, FALSE);
+	    else
+#endif
+		s = mp->m_str;
+	    if (s != NULL)
+	    {
 					/* insert the to string */
-	    (void)ins_typebuf(mp->m_str, mp->m_noremap, 0, TRUE, mp->m_silent);
+		(void)ins_typebuf(s, mp->m_noremap, 0, TRUE, mp->m_silent);
 					/* no abbrev. for these chars */
-	    typebuf.tb_no_abbr_cnt += (int)STRLEN(mp->m_str) + j + 1;
+		typebuf.tb_no_abbr_cnt += (int)STRLEN(s) + j + 1;
+#ifdef FEAT_EVAL
+		if (mp->m_expr)
+		    vim_free(s);
+#endif
+	    }
 
 	    tb[0] = Ctrl_H;
 	    tb[1] = NUL;
@@ -4310,6 +4369,13 @@ makemap(fd, buf)
 			return FAIL;
 		    if (mp->m_silent && fputs(" <silent>", fd) < 0)
 			return FAIL;
+#ifdef FEAT_EVAL
+		    if (mp->m_noremap == REMAP_SCRIPT
+						 && fputs("<script>", fd) < 0)
+			return FAIL;
+		    if (mp->m_expr && fputs(" <expr>", fd) < 0)
+			return FAIL;
+#endif
 
 		    if (       putc(' ', fd) < 0
 			    || put_escstr(fd, mp->m_keys, 0) == FAIL

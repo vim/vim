@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 06
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -145,6 +145,9 @@ type "a", then "bar" will get inserted.
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
 
+"<buffer>", "<silent>", "<script>", "<expr>" and "<unique>" can be used in any
+order.  They must appear right after the command, before any other arguments.
+
 				*:map-local* *:map-<buffer>* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" it will apply to
 mappings locally to the current buffer only.  Example: >
@@ -194,8 +197,35 @@ Example of what will fail: >
 If you want to map a key and then have it do what it was originally mapped to,
 have a look at |maparg()|.
 
-"<buffer>", "<silent>", "<script>" and "<unique>" can be used in any order.
-They must appear right after the command, before any other arguments.
+						*:map-<expr>* *:map-expression*
+If the first argument to one of these commands is "<expr>" and it is used to
+define a new mapping or abbreviation, the argument is an expression.  The
+expression is evaluated to obtain the {rhs} that is used.  Example: >
+	:inoremap <expr> . InsertDot()
+The result of the InsertDot() function will be inserted.  It could check the
+text before the cursor and start omni completion when some condition is met.
+
+Be very careful about side effects!  The expression is evaluated while
+obtaining characters, if you change buffer text, move the cursor, edit another
+file, etc. you may very well make command disfunctional.
+
+Here is an example that inserts a list number that increases: >
+	let counter = 0
+	inoremap <expr> <C-L> ListItem()
+	inoremap <expr> <C-R> ListReset()
+
+	func ListItem()
+	  let g:counter += 1
+	  return g:counter . '. '
+	endfunc
+
+	func ListReset()
+	  let g:counter = 0
+	  return ''
+	endfunc
+
+CTRL-L inserts the next number, CTRL-E resets the count.  CTRL-E returns an
+empty string, so that nothing is inserted.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
