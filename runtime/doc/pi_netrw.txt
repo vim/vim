@@ -881,7 +881,7 @@ Netrw will not work properly with >
 <
 If either of these options are present when browsing is attempted, netrw
 will change them by using noacd and removing the ta suboptions from the
-|formatoptions|.
+|'formatoptions'|.
 
 				*netrw-explore*  *netrw-pexplore*
 				*netrw-hexplore* *netrw-sexplore*
@@ -1134,9 +1134,9 @@ One may use a preview window (currently only for local browsing) by using the
 
 PREVIOUS WINDOW					*netrw-P* *netrw-prvwin*
 
-To edit a file or directory in the previously used window (see :he |ctrl-w_p|),
+To edit a file or directory in the previously used window (see :he |CTRL-W_P|),
 press a "P".  If there's only one window, then the one window will be
-horizontally split (above/below splitting is controlled by |g:netrw-alto|,
+horizontally split (above/below splitting is controlled by |g:netrw_alto|,
 and its initial size is controlled by |g:netrw_winsize|).
 
 If there's more than one window, the previous window will be re-used on

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 07
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -271,6 +271,9 @@ Name			triggered by ~
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
 |FileChangedRO|		before making the first change to a read-only file
+
+|ShellCmdPost|		after executing a shell command
+|ShellFilterPost|	after filtering with a shell command
 
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
@@ -667,6 +670,14 @@ RemoteReply			When a reply from a Vim that functions as
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.
+							*ShellCmdPost*
+ShellCmdPost			After executing a shell command with |:!cmd|,
+				|:shell|, |:make| and |:grep|.  Can be used to
+				check for any changed files.
+							*ShellFilterPost*
+ShellFilterPost			After executing a shell command with
+				":{range}!cmd", ":w !cmd" or ":r !cmd".
+				Can be used to check for any changed files.
 							*SourcePre*
 SourcePre			Before sourcing a Vim script. |:source|
 							*SpellFileMissing*

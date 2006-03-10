@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 07
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1513,6 +1513,7 @@ call( {func}, {arglist} [, {dict}])
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
+complete({startcol}, {matches})	String  set Insert mode completion
 complete_add( {expr})		Number	add completion match
 complete_check()		Number  check for key typed during completion
 confirm( {msg} [, {choices} [, {default} [, {type}]]])
@@ -1957,6 +1958,35 @@ col({expr})	The result is a Number, which is the byte index of the column
 				\<C-O>:echo col(".") . "\n" <Bar>
 				\let &ve = save_ve<CR>
 <
+
+complete({startcol}, {matches})			*complete()* *E785*
+		Set the matches for Insert mode completion.
+		Can only be used in Insert mode.  You need to use a mapping
+		with an expression argument |:map-<expr>| or CTRL-R =
+		|i_CTRL-R|.  It does not work after CTRL-O.
+		{startcol} is the byte offset in the line where the completed
+		text start.  The text up to the cursor is the original text
+		that will be replaced by the matches.  Use col('.') for an
+		empty string.  "col('.') - 1" will replace one character by a
+		match.
+		{matches} must be a |List|.  Each |List| item is one match.
+		See |complete-items| for the kind of items that are possible.
+		Note that the after calling this function you need to avoid
+		inserting anything that would completion to stop.
+		The match can be selected with CTRL-N and CTRL-P as usual with
+		Insert mode completion.  The popup menu will appear if
+		specified, see |ins-completion-menu|.
+		Example: >
+	inoremap <expr> <F5> ListMonths()
+
+	func! ListMonths()
+	  call complete(col('.'), ['January', 'February', 'March',
+		\ 'April', 'May', 'June', 'July', 'August', 'September',
+		\ 'October', 'November', 'December'])
+	  return ''
+	endfunc
+<		This isn't very useful, but it shows how it works.  Note that
+		an empty string is returned to avoid a zero being inserted.
 
 complete_add({expr})				*complete_add()*
 		Add {expr} to the list of matches.  Only to be used by the

@@ -141,6 +141,9 @@ static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
 static int  ins_compl_prep __ARGS((int c));
 static buf_T *ins_compl_next_buf __ARGS((buf_T *buf, int flag));
+#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
+static void ins_compl_add_list __ARGS((list_T *list));
+#endif
 static int  ins_compl_get_exp __ARGS((pos_T *ini));
 static void ins_compl_delete __ARGS((void));
 static void ins_compl_insert __ARGS((void));
@@ -2305,6 +2308,48 @@ ins_compl_make_cyclic()
     return count;
 }
 
+/*
+ * Start completion for the complete() function.
+ * "startcol" is where the matched text starts (1 is first column).
+ * "list" is the list of matches.
+ */
+    void
+set_completion(startcol, list)
+    int	    startcol;
+    list_T  *list;
+{
+    /* If already doing completions stop it. */
+    if (ctrl_x_mode != 0)
+	ins_compl_prep(' ');
+    ins_compl_clear();
+
+    if (stop_arrow() == FAIL)
+	return;
+
+    if (startcol > curwin->w_cursor.col)
+	startcol = curwin->w_cursor.col;
+    compl_col = startcol;
+    compl_length = curwin->w_cursor.col - startcol;
+    /* compl_pattern doesn't need to be set */
+    compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
+    if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
+			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+	return;
+
+    /* Handle like dictionary completion. */
+    ctrl_x_mode = CTRL_X_WHOLE_LINE;
+
+    ins_compl_add_list(list);
+    compl_matches = ins_compl_make_cyclic();
+    compl_started = TRUE;
+    compl_used_match = TRUE;
+
+    compl_curr_match = compl_first_match;
+    ins_complete(Ctrl_N);
+    out_flush();
+}
+
+
 /* "compl_match_array" points the currently displayed list of entries in the
  * popup menu.  It is NULL when there is no popup menu. */
 static pumitem_T *compl_match_array = NULL;
@@ -2837,6 +2882,8 @@ ins_compl_clear()
     vim_free(compl_leader);
     compl_leader = NULL;
     edit_submode_extra = NULL;
+    vim_free(compl_orig_text);
+    compl_orig_text = NULL;
 }
 
 /*
@@ -3283,7 +3330,6 @@ static void expand_by_function __ARGS((int type, char_u *base));
 /*
  * Execute user defined complete function 'completefunc' or 'omnifunc', and
  * get matches in "matches".
- * Return value is number of matches.
  */
     static void
 expand_by_function(type, base)
@@ -3292,13 +3338,8 @@ expand_by_function(type, base)
 {
     list_T      *matchlist;
     char_u	*args[2];
-    listitem_T	*li;
-    char_u	*p;
     char_u	*funcname;
     pos_T	pos;
-    int		dir = compl_direction;
-    char_u	*x;
-    int		icase;
 
     funcname = (type == CTRL_X_FUNCTION) ? curbuf->b_p_cfu : curbuf->b_p_ofu;
     if (*funcname == NUL)
@@ -3314,8 +3355,28 @@ expand_by_function(type, base)
     if (matchlist == NULL)
 	return;
 
+    ins_compl_add_list(matchlist);
+    list_unref(matchlist);
+}
+#endif /* FEAT_COMPL_FUNC */
+
+#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
+/*
+ * Add completions from a list.
+ * Unreferences the list.
+ */
+    static void
+ins_compl_add_list(list)
+    list_T	*list;
+{
+    listitem_T	*li;
+    int		icase;
+    char_u	*p;
+    char_u	*x;
+    int		dir = compl_direction;
+
     /* Go through the List with matches and add each of them. */
-    for (li = matchlist->lv_first; li != NULL; li = li->li_next)
+    for (li = list->lv_first; li != NULL; li = li->li_next)
     {
 	icase = p_ic;
 	if (li->li_tv.v_type == VAR_DICT && li->li_tv.vval.v_dict != NULL)
@@ -3341,10 +3402,8 @@ expand_by_function(type, base)
 	else if (did_emsg)
 	    break;
     }
-
-    list_unref(matchlist);
 }
-#endif /* FEAT_COMPL_FUNC */
+#endif
 
 /*
  * Get the next expansion(s), using "compl_pattern".
@@ -3765,7 +3824,8 @@ ins_compl_get_exp(ini)
     /* If several matches were added (FORWARD) or the search failed and has
      * just been made cyclic then we have to move compl_curr_match to the next
      * or previous entry (if any) -- Acevedo */
-    compl_curr_match = compl_direction == FORWARD ? old_match->cp_next : old_match->cp_prev;
+    compl_curr_match = compl_direction == FORWARD ? old_match->cp_next
+							 : old_match->cp_prev;
     if (compl_curr_match == NULL)
 	compl_curr_match = old_match;
     return i;
@@ -4596,7 +4656,12 @@ ins_complete(c)
     else
 	msg_clr_cmdline();	/* necessary for "noshowmode" */
 
+    /* RedrawingDisabled may be set when invoked through complete(). */
+    n = RedrawingDisabled;
+    RedrawingDisabled = 0;
     ins_compl_show_pum();
+    setcursor();
+    RedrawingDisabled = n;
 
     return OK;
 }
@@ -8082,7 +8147,7 @@ ins_mousescroll(up)
 #endif
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
-    void
+    static void
 ins_tabline(c)
     int		c;
 {

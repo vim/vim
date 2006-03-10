@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 05
+*spell.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1536,7 +1536,8 @@ SYLLABLENUM	(Hunspell)				*spell-SYLLABLENUM*
 
 TRY		(Myspell, Hunspell, others)		*spell-TRY*
 		Vim does not use the TRY item, it is ignored.  For making
-		suggestions the actual characters in the words are used.
+		suggestions the actual characters in the words are used, that
+		is much more efficient.
 
 WORDCHARS	(Hunspell)				*spell-WORDCHARS*
 		Used to recognize words.  Vim doesn't need it, because there

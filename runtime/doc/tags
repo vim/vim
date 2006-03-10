@@ -2227,12 +2227,14 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map	map.txt	/*:map*
 :map!	map.txt	/*:map!*
 :map-<buffer>	map.txt	/*:map-<buffer>*
+:map-<expr>	map.txt	/*:map-<expr>*
 :map-<script>	map.txt	/*:map-<script>*
 :map-<silent>	map.txt	/*:map-<silent>*
 :map-<unique>	map.txt	/*:map-<unique>*
 :map-alt-keys	map.txt	/*:map-alt-keys*
 :map-arguments	map.txt	/*:map-arguments*
 :map-commands	map.txt	/*:map-commands*
+:map-expression	map.txt	/*:map-expression*
 :map-local	map.txt	/*:map-local*
 :map-modes	map.txt	/*:map-modes*
 :map-operator	map.txt	/*:map-operator*
@@ -3922,6 +3924,7 @@ E781	spell.txt	/*E781*
 E782	spell.txt	/*E782*
 E783	spell.txt	/*E783*
 E784	tabpage.txt	/*E784*
+E785	eval.txt	/*E785*
 E79	message.txt	/*E79*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
@@ -4124,6 +4127,8 @@ Select-mode-mapping	visual.txt	/*Select-mode-mapping*
 Session	starting.txt	/*Session*
 SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
+ShellCmdPost	autocmd.txt	/*ShellCmdPost*
+ShellFilterPost	autocmd.txt	/*ShellFilterPost*
 SourcePre	autocmd.txt	/*SourcePre*
 SpellFileMissing	autocmd.txt	/*SpellFileMissing*
 StdinReadPost	autocmd.txt	/*StdinReadPost*
@@ -4638,7 +4643,9 @@ compl-spelling	insert.txt	/*compl-spelling*
 compl-tag	insert.txt	/*compl-tag*
 compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
+complete()	eval.txt	/*complete()*
 complete-functions	insert.txt	/*complete-functions*
+complete-items	insert.txt	/*complete-items*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
 complex-change	change.txt	/*complex-change*
@@ -5491,6 +5498,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6207,6 +6215,7 @@ new-items-7	version7.txt	/*new-items-7*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
 new-manpage-trans	version7.txt	/*new-manpage-trans*
+new-map-expression	version7.txt	/*new-map-expression*
 new-matchparen	version7.txt	/*new-matchparen*
 new-more-unicode	version7.txt	/*new-more-unicode*
 new-multi-byte	version5.txt	/*new-multi-byte*

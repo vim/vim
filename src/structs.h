@@ -928,6 +928,7 @@ struct mapblock
     int		m_noremap;	/* if non-zero no re-mapping for m_str */
     char	m_silent;	/* <silent> used, don't echo commands */
 #ifdef FEAT_EVAL
+    char	m_expr;		/* <expr> used, m_str is an expression */
     scid_T	m_script_ID;	/* ID of script where map was defined */
 #endif
 };
