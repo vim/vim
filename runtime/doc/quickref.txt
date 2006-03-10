@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 05
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -755,6 +755,7 @@ Short explanation of each option:		*option-list*
 'makeprg'         'mp'      program to use for the ":make" command
 'matchpairs'      'mps'     pairs of characters that "%" can match
 'matchtime'       'mat'     tenths of a second to show matching paren
+'maxcombine'      'mco'     maximum nr of combining characters displayed
 'maxfuncdepth'    'mfd'     maximum recursive depth for user functions
 'maxmapdepth'     'mmd'     maximum recursive depth for mapping
 'maxmem'          'mm'      maximum memory (in Kbyte) used for one buffer

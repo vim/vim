@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 04
+*develop.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -149,6 +149,7 @@ VIM IS... NOT						*design-not*
   A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
+  To use Vim with gdb see: http://www.agide.org and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
   welcomed.
