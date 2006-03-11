@@ -5175,8 +5175,9 @@ free_old_sub()
 #if (defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)) || defined(PROTO)
 /*
  * Set up for a tagpreview.
+ * Return TRUE when it was created.
  */
-    void
+    int
 prepare_tagpreview()
 {
     win_T	*wp;
@@ -5202,7 +5203,7 @@ prepare_tagpreview()
 	     */
 	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0)
 								      == FAIL)
-		return;
+		return FALSE;
 	    curwin->w_p_pvw = TRUE;
 	    curwin->w_p_wfh = TRUE;
 # ifdef FEAT_SCROLLBIND
@@ -5214,8 +5215,10 @@ prepare_tagpreview()
 # ifdef FEAT_FOLDING
 	    curwin->w_p_fdc = 0;	    /* no 'foldcolumn' */
 # endif
+	    return TRUE;
 	}
     }
+    return FALSE;
 }
 
 #endif
@@ -6837,11 +6840,11 @@ ex_drop(eap)
     exarg_T	*eap;
 {
     int		split = FALSE;
-    int		incurwin = FALSE;
-    char_u	*arg;
-    char_u	*first = NULL;
     win_T	*wp;
     buf_T	*buf;
+# ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+# endif
 
     /*
      * Check if the first argument is already being edited in a window.  If
@@ -6851,67 +6854,70 @@ ex_drop(eap)
      * This also ignores wildcards, since it is very unlikely the user is
      * editing a file name with a wildcard character.
      */
-    arg = vim_strsave(eap->arg);
-    if (arg != NULL)
-    {
-	/* Get the first argument, remove quotes, make it a full path. */
-	first = fix_fname(arg);
-	if (first != NULL)
-	{
-	    buf = buflist_findname(first);
-	    FOR_ALL_WINDOWS(wp)
-	    {
-		if (wp->w_buffer == buf)
-		{
-		    incurwin = TRUE;
-# ifdef FEAT_WINDOWS
-		    win_enter(wp, TRUE);
-		    break;
-# endif
-		}
-	    }
-	    vim_free(first);
+    set_arglist(eap->arg);
 
-	    if (incurwin)
+# ifdef FEAT_WINDOWS
+    if (cmdmod.tab)
+    {
+	/* ":tab drop file ...": open a tab for each argument that isn't
+	 * edited in a window yet.  It's like ":tab all" but without closing
+	 * windows or tabs. */
+	ex_all(eap);
+    }
+    else
+# endif
+    {
+	/* ":drop file ...": Edit the first argument.  Jump to an existing
+	 * window if possible, edit in current window if the current buffer
+	 * can be abandoned, otherwise open a new window. */
+	buf = buflist_findnr(ARGLIST[0].ae_fnum);
+
+	FOR_ALL_TAB_WINDOWS(tp, wp)
+	{
+	    if (wp->w_buffer == buf)
 	    {
-		/* Already editing the file.  Redefine the argument list. */
-		set_arglist(eap->arg);
+# ifdef FEAT_WINDOWS
+		goto_tabpage_tp(tp);
+		win_enter(wp, TRUE);
+#  ifdef FEAT_GUI_TABLINE
+		if (gui_use_tabline())
+		    gui_mch_set_curtab(tabpage_index(curtab));
+#  endif
+# endif
 		curwin->w_arg_idx = 0;
-		vim_free(arg);
 		return;
 	    }
 	}
-	vim_free(arg);
-    }
 
-    /*
-     * Check whether the current buffer is changed. If so, we will need
-     * to split the current window or data could be lost.
-     * Skip the check if the 'hidden' option is set, as in this case the
-     * buffer won't be lost.
-     */
-    if (!P_HID(curbuf))
-    {
+	/*
+	 * Check whether the current buffer is changed. If so, we will need
+	 * to split the current window or data could be lost.
+	 * Skip the check if the 'hidden' option is set, as in this case the
+	 * buffer won't be lost.
+	 */
+	if (!P_HID(curbuf))
+	{
 # ifdef FEAT_WINDOWS
-	++emsg_off;
+	    ++emsg_off;
 # endif
-	split = check_changed(curbuf, TRUE, FALSE, FALSE, FALSE);
+	    split = check_changed(curbuf, TRUE, FALSE, FALSE, FALSE);
 # ifdef FEAT_WINDOWS
-	--emsg_off;
+	    --emsg_off;
 # else
-	if (split)
-	    return;
+	    if (split)
+		return;
 # endif
-    }
+	}
 
-    /* Fake a ":snext" or ":next" command, redefine the arglist. */
-    if (split)
-    {
-	eap->cmdidx = CMD_snext;
-	eap->cmd[0] = 's';
+	/* Fake a ":sfirst" or ":first" command edit the first argument. */
+	if (split)
+	{
+	    eap->cmdidx = CMD_sfirst;
+	    eap->cmd[0] = 's';
+	}
+	else
+	    eap->cmdidx = CMD_first;
+	ex_rewind(eap);
     }
-    else
-	eap->cmdidx = CMD_next;
-    ex_next(eap);
 }
 #endif
