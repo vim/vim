@@ -1461,20 +1461,16 @@ early_arg_scan(parmp)
 		mainerr_arg_missing((char_u *)argv[i]);
 	    parmp->serverName_arg = (char_u *)argv[++i];
 	}
-	else if (STRICMP(argv[i], "--serverlist") == 0
-		|| STRICMP(argv[i], "--remote-send") == 0
-		|| STRICMP(argv[i], "--remote-expr") == 0
-		|| STRICMP(argv[i], "--remote") == 0
-		|| STRICMP(argv[i], "--remote-silent") == 0)
+	else if (STRICMP(argv[i], "--serverlist") == 0)
 	    parmp->serverArg = TRUE;
-	else if (STRICMP(argv[i], "--remote-wait") == 0
-		|| STRICMP(argv[i], "--remote-wait-silent") == 0)
+	else if (STRNICMP(argv[i], "--remote", 8) == 0)
 	{
 	    parmp->serverArg = TRUE;
-#ifdef FEAT_GUI
-	    /* don't fork() when starting the GUI to edit the files ourself */
-	    gui.dofork = FALSE;
-#endif
+#  ifdef FEAT_GUI
+	    if (strstr(argv[i], "-wait") != 0)
+		/* don't fork() when starting the GUI to edit files ourself */
+		gui.dofork = FALSE;
+#  endif
 	}
 # endif
 # ifdef FEAT_GUI_GTK
@@ -3127,7 +3123,7 @@ gettimeofday(struct timeval *tv, char *dummy)
  * Common code for the X command server and the Win32 command server.
  */
 
-static char_u *build_drop_cmd __ARGS((int filec, char **filev, int sendReply));
+static char_u *build_drop_cmd __ARGS((int filec, char **filev, int tabs, int sendReply));
 
 /*
  * Do the client-server stuff, unless "--servername ''" was used.
@@ -3235,6 +3231,7 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
 #define ARGTYPE_EDIT_WAIT	2
 #define ARGTYPE_SEND		3
     int		silent = FALSE;
+    int		tabs = FALSE;
 # ifndef FEAT_X11
     HWND	srv;
 # else
@@ -3264,24 +3261,40 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
 	    break;
 	}
 
-	if (STRICMP(argv[i], "--remote") == 0)
-	    argtype = ARGTYPE_EDIT;
-	else if (STRICMP(argv[i], "--remote-silent") == 0)
-	{
-	    argtype = ARGTYPE_EDIT;
-	    silent = TRUE;
-	}
-	else if (STRICMP(argv[i], "--remote-wait") == 0)
-	    argtype = ARGTYPE_EDIT_WAIT;
-	else if (STRICMP(argv[i], "--remote-wait-silent") == 0)
-	{
-	    argtype = ARGTYPE_EDIT_WAIT;
-	    silent = TRUE;
-	}
-	else if (STRICMP(argv[i], "--remote-send") == 0)
+	if (STRICMP(argv[i], "--remote-send") == 0)
 	    argtype = ARGTYPE_SEND;
+	else if (STRNICMP(argv[i], "--remote", 8) == 0)
+	{
+	    char	*p = argv[i] + 8;
+
+	    argtype = ARGTYPE_EDIT;
+	    while (*p != NUL)
+	    {
+		if (STRNICMP(p, "-wait", 5) == 0)
+		{
+		    argtype = ARGTYPE_EDIT_WAIT;
+		    p += 5;
+		}
+		else if (STRNICMP(p, "-silent", 7) == 0)
+		{
+		    silent = TRUE;
+		    p += 7;
+		}
+		else if (STRNICMP(p, "-tab", 4) == 0)
+		{
+		    tabs = TRUE;
+		    p += 4;
+		}
+		else
+		{
+		    argtype = ARGTYPE_OTHER;
+		    break;
+		}
+	    }
+	}
 	else
 	    argtype = ARGTYPE_OTHER;
+
 	if (argtype != ARGTYPE_OTHER)
 	{
 	    if (i == *argc - 1)
@@ -3294,7 +3307,7 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
 	    else
 	    {
 		*serverStr = build_drop_cmd(*argc - i - 1, argv + i + 1,
-						argtype == ARGTYPE_EDIT_WAIT);
+					  tabs, argtype == ARGTYPE_EDIT_WAIT);
 		if (*serverStr == NULL)
 		{
 		    /* Probably out of memory, exit. */
@@ -3473,9 +3486,10 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
  * Build a ":drop" command to send to a Vim server.
  */
     static char_u *
-build_drop_cmd(filec, filev, sendReply)
+build_drop_cmd(filec, filev, tabs, sendReply)
     int		filec;
     char	**filev;
+    int		tabs;		/* Use ":tab drop" instead of ":drop". */
     int		sendReply;
 {
     garray_T	ga;
@@ -3500,9 +3514,13 @@ build_drop_cmd(filec, filev, sendReply)
     ga_init2(&ga, 1, 100);
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
     ga_concat(&ga, p);
-    /* Call inputsave() so that a prompt for an encryption key works. */
-    ga_concat(&ga, (char_u *)"<CR>:if exists('*inputsave')|call inputsave()|endif|drop");
     vim_free(p);
+
+    /* Call inputsave() so that a prompt for an encryption key works. */
+    ga_concat(&ga, (char_u *)"<CR>:if exists('*inputsave')|call inputsave()|endif|");
+    if (tabs)
+	ga_concat(&ga, (char_u *)"tab ");
+    ga_concat(&ga, (char_u *)"drop");
     for (i = 0; i < filec; i++)
     {
 	/* On Unix the shell has already expanded the wildcards, don't want to

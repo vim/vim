@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 10
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
---remote-tab to open file in new tab in existing Vim server?
---remote-tab-silent
---remote-tab-wait
---remote-tab-wait-silent
-
 Win32: Describe how to do debugging. (George Reilly)
 
 Mac unicode patch (Da Woon Jung):
@@ -52,17 +47,6 @@ Mac unicode patch (Da Woon Jung):
 
 
 CONSIDERED FOR VERSION 7.0:
-
-Omni completion:
-    ccomplete:
-    - For C add tag "kind" field to each match?
-    - When a typedef or struct is local to a file only use it in that file?
-
-    UI:
-    - Show "info" from a match in preview window (with an option or by opening
-      a preview window with a specific name).
-      Or use one window for matches, another for context/info (Doug Kearns,
-      2005 Sep 13)
 
 -   UNDO TREE: keep all states of the text, don't delete undo info.
     When making a change, instead of clearing any future undo (thus redo)

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 10
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1895,5 +1895,10 @@ would be given for using a '|'.  Also with ":loadkeymap".
 
 Motif: When using a fontset and 'encoding' is "utf-8" and sizeof(wchar_t) !=
 sizeof(XChar2b) then display was wrong. (Yukihiro Nakadaira)
+
+":all" always set the current window to the first window, even when it
+contains a buffer that is not in the argument list (can't be closed because it
+is modified).  Now go to the window that has the first item of the argument
+list.
 
  vim:tw=78:ts=8:ft=help:norl:

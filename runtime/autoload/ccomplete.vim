@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 09
+" Last Change:	2006 Mar 11
 
 
 " This function is used for the 'omnifunc' option.
@@ -123,7 +123,8 @@ function! ccomplete#Complete(findstart, base)
       " Completing one word and it's a local variable: May add '[', '.' or
       " '->'.
       let match = items[0]
-      if match(line, match . '\s*\[') > 0
+      let kind = 'v'
+      if match(line, '\<' . match . '\s*\[') > 0
 	let match .= '['
       else
 	let res = s:Nextitem(strpart(line, 0, col), [''], 0, 1)
@@ -136,7 +137,7 @@ function! ccomplete#Complete(findstart, base)
 	  endif
 	endif
       endif
-      let res = [{'match': match, 'tagline' : ''}]
+      let res = [{'match': match, 'tagline' : '', 'kind' : kind, 'info' : line}]
     else
       " Completing "var.", "var.something", etc.
       let res = s:Nextitem(strpart(line, 0, col), items[1:], 0, 1)
@@ -145,12 +146,23 @@ function! ccomplete#Complete(findstart, base)
 
   if len(items) == 1
     " Only one part, no "." or "->": complete from tags file.
-    call extend(res, map(taglist('^' . base), 's:Tag2item(v:val)'))
+    let tags = taglist('^' . base)
+
+    " Remove members, these can't appear without something in front.
+    call filter(tags, 'has_key(v:val, "kind") ? v:val["kind"] != "m" : 1')
+
+    " Remove static matches in other files.
+    call filter(tags, '!has_key(v:val, "static") || !v:val["static"] || bufnr("%") == bufnr(v:val["filename"])')
+
+    call extend(res, map(tags, 's:Tag2item(v:val)'))
   endif
 
   if len(res) == 0
     " Find the variable in the tags file(s)
     let diclist = taglist('^' . items[0] . '$')
+
+    " Remove members, these can't appear without something in front.
+    call filter(diclist, 'has_key(v:val, "kind") ? v:val["kind"] != "m" : 1')
 
     let res = []
     for i in range(len(diclist))
@@ -216,17 +228,29 @@ endfunction
 " If it is a variable we may add "." or "->".  Don't do it for other types,
 " such as a typedef, by not including the info that s:GetAddition() uses.
 function! s:Tag2item(val)
-  let x = s:Tagcmd2extra(a:val['cmd'], a:val['name'], a:val['filename'])
+  let res = {'match': a:val['name']}
 
+  let res['extra'] = s:Tagcmd2extra(a:val['cmd'], a:val['name'], a:val['filename'])
+
+  " Use the whole search command as the "info" entry.
+  let s = matchstr(a:val['cmd'], '/^\s*\zs.*\ze$/')
+  if s != ''
+    let res['info'] = substitute(s, '\\\(.\)', '\1', 'g')
+  endif
+
+  let res['tagline'] = ''
   if has_key(a:val, "kind")
-    if a:val["kind"] == 'v'
-      return {'match': a:val['name'], 'tagline': "\t" . a:val['cmd'], 'dict': a:val, 'extra': x}
-    endif
-    if a:val["kind"] == 'f'
-      return {'match': a:val['name'] . '(', 'tagline': "", 'extra': x}
+    let kind = a:val['kind']
+    let res['kind'] = kind
+    if kind == 'v'
+      let res['tagline'] = "\t" . a:val['cmd']
+      let res['dict'] = a:val
+    elseif kind == 'f'
+      let res['match'] = a:val['name'] . '('
     endif
   endif
-  return {'match': a:val['name'], 'tagline': '', 'extra': x}
+
+  return res
 endfunction
 
 " Turn a match item "val" into an item for completion.
@@ -234,17 +258,42 @@ endfunction
 " "val['tagline']" is the tagline in which the last part was found.
 function! s:Tagline2item(val, brackets)
   let line = a:val['tagline']
-  let word = a:val['match'] . a:brackets . s:GetAddition(line, a:val['match'], [a:val], a:brackets == '')
+  let add = s:GetAddition(line, a:val['match'], [a:val], a:brackets == '')
+  let res = {'word': a:val['match'] . a:brackets . add }
+
+  if has_key(a:val, 'info')
+    " Use info from Tag2item().
+    let res['info'] = a:val['info']
+  else
+    " Use the whole search command as the "info" entry.
+    let s = matchstr(line, '\t/^\s*\zs.*\ze$/')
+    if s != ''
+      let res['info'] = substitute(s, '\\\(.\)', '\1', 'g')
+    endif
+  endif
+
+  if has_key(a:val, 'kind')
+    let res['kind'] = a:val['kind']
+  elseif add == '('
+    let res['kind'] = 'f'
+  else
+    let s = matchstr(line, '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
+    if s != ''
+      let res['kind'] = s
+    endif
+  endif
+
   if has_key(a:val, 'extra')
-    return {'word': word, 'menu': a:val['extra']}
+    let res['menu'] = a:val['extra']
+    return res
   endif
 
   " Isolate the command after the tag and filename.
   let s = matchstr(line, '[^\t]*\t[^\t]*\t\zs\(/^.*$/\|[^\t]*\)\ze\(;"\t\|\t\|$\)')
   if s != ''
-    return {'word': word, 'menu': s:Tagcmd2extra(s, a:val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))}
+    let res['menu'] = s:Tagcmd2extra(s, a:val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))
   endif
-  return {'word': word}
+  return res
 endfunction
 
 " Turn a command from a tag line to something that is useful in the menu
@@ -297,20 +346,27 @@ function! s:Nextitem(lead, items, depth, all)
     " Use the tags file to find out if this is a typedef.
     let diclist = taglist('^' . tokens[tidx] . '$')
     for tagidx in range(len(diclist))
+      let item = diclist[tagidx]
+
       " New ctags has the "typename" field.
-      if has_key(diclist[tagidx], 'typename')
-	call extend(res, s:StructMembers(diclist[tagidx]['typename'], a:items, a:all))
+      if has_key(item, 'typename')
+	call extend(res, s:StructMembers(item['typename'], a:items, a:all))
 	continue
       endif
 
       " Only handle typedefs here.
-      if diclist[tagidx]['kind'] != 't'
+      if item['kind'] != 't'
+	continue
+      endif
+
+      " Skip matches local to another file.
+      if has_key(item, 'static') && item['static'] && bufnr('%') != bufnr(item['filename'])
 	continue
       endif
 
       " For old ctags we recognize "typedef struct aaa" and
       " "typedef union bbb" in the tags file command.
-      let cmd = diclist[tagidx]['cmd']
+      let cmd = item['cmd']
       let ei = matchend(cmd, 'typedef\s\+')
       if ei > 1
 	let cmdtokens = split(strpart(cmd, ei), '\s\+\|\<')
@@ -385,11 +441,26 @@ function! s:StructMembers(typename, items, all)
     endif
   endif
 
+  " Put matching members in matches[].
   let matches = []
   for l in qflist
     let memb = matchstr(l['text'], '[^\t]*')
     if memb =~ '^' . a:items[0]
-      call add(matches, {'match': memb, 'tagline': l['text']})
+      " Skip matches local to another file.
+      if match(l['text'], "\tfile:") < 0 || bufnr('%') == bufnr(matchstr(l['text'], '\t\zs[^\t]*'))
+	let item = {'match': memb, 'tagline': l['text']}
+
+	" Add the kind of item.
+	let s = matchstr(l['text'], '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
+	if s != ''
+	  let item['kind'] = s
+	  if s == 'f'
+	    let item['match'] = memb . '('
+	  endif
+	endif
+
+	call add(matches, item)
+      endif
     endif
   endfor
 
