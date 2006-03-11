@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 10
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -996,7 +996,7 @@ items:
 	menu		extra text for the popup menu
 	info		more information about the item
 	kind		single letter indicating the type of completion
-	icase		when not zero case is to be ignored; when omitted
+	icase		when non-zero case is to be ignored; when omitted
 			the 'ignorecase' option is used
 
 All of these except 'icase' must be a string.  If an item does not meet these
@@ -1004,15 +1004,19 @@ requirements then an error message is given and further items in the list are
 not used.  You can mix string and Dictionary items in the returned list.
 
 The "menu" item is used in the popup menu and may be truncated, thus it should
-be relatively short.  The "info" item can be longer, it may be displayed in a
-balloon.
+be relatively short.  The "info" item can be longer, it will  be displayed in
+the preview window when "preview" appears in 'completeopt'.  The "info" item
+will also remain displayed after the popup menu has been removed.  This is
+useful for function arguments.
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
 Currently these types can be used:
 	v	variable
 	f	function or method
-	c	composite (struct, object)
+	m	member of a struct or class
+	t	typedef
+	d	#define or macro
 
 When searching for matches takes some time call |complete_add()| to add each
 match to the total list.  These matches should then not appear in the returned
@@ -1268,15 +1272,22 @@ here: http://ctags.sourceforge.net/
 Script completes:
 
 - after $ variables name
+  - if variable was declared as object add "->", if tags file is available show
+    name of class
+
 - function names with additonal info:
-- in case of built-in functions list of possible arguments and after | type
-  data returned by function
-- in case of user function arguments and name of file were function was
-  defined (if it is not current file)
+  - in case of built-in functions list of possible arguments and after | type
+    data returned by function
+  - in case of user function arguments and name of file were function was
+    defined (if it is not current file)
+
+- constants names
+- class names after "new" declaration
+
 
 Note: when doing completion first time Vim will load all necessary data into
 memory. It may take several seconds. After next use of completion delay
-shouldn't be noticeable.
+should not be noticeable.
 
 Script detects if cursor is inside <?php ?> tags. If it is outside it will
 automatically switch to HTML/CSS/JavaScript completion. Note: contrary to

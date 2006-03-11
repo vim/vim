@@ -25,6 +25,7 @@ int parse_compl_arg __ARGS((char_u *value, int vallen, int *complp, long *argt, 
 void not_exiting __ARGS((void));
 void tabpage_close __ARGS((int forceit));
 void tabpage_close_other __ARGS((tabpage_T *tp, int forceit));
+void ex_all __ARGS((exarg_T *eap));
 void handle_drop __ARGS((int filec, char_u **filev, int split));
 void alist_clear __ARGS((alist_T *al));
 void alist_init __ARGS((alist_T *al));

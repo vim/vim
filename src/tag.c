@@ -3084,10 +3084,9 @@ jumpto_tag(lbuf, forceit, keep_help)
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     if (g_do_tagpreview)
     {
-	/* don't split again below */
-	postponed_split = 0;
-	/* Save current window */
-	curwin_save = curwin;
+	postponed_split = 0;	/* don't split again below */
+	curwin_save = curwin;	/* Save current window */
+
 	/*
 	 * If we are reusing a window, we may change dir when
 	 * entering it (autocommands) so turn the tag filename
