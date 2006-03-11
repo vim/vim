@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 10
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -224,7 +224,7 @@ Here is an example that inserts a list number that increases: >
 	  return ''
 	endfunc
 
-CTRL-L inserts the next number, CTRL-E resets the count.  CTRL-E returns an
+CTRL-L inserts the next number, CTRL-R resets the count.  CTRL-R returns an
 empty string, so that nothing is inserted.
 
 

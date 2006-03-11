@@ -150,7 +150,6 @@ static void	ex_quit_all __ARGS((exarg_T *eap));
 static void	ex_close __ARGS((exarg_T *eap));
 static void	ex_win_close __ARGS((int forceit, win_T *win, tabpage_T *tp));
 static void	ex_only __ARGS((exarg_T *eap));
-static void	ex_all __ARGS((exarg_T *eap));
 static void	ex_resize __ARGS((exarg_T *eap));
 static void	ex_stag __ARGS((exarg_T *eap));
 static void	ex_tabclose __ARGS((exarg_T *eap));
@@ -6159,7 +6158,7 @@ ex_quit_all(eap)
     not_exiting();
 }
 
-#ifdef FEAT_WINDOWS
+#if defined(FEAT_WINDOWS) || defined(PROTO)
 /*
  * ":close": close current window, unless it is the last one
  */
@@ -6176,7 +6175,7 @@ ex_close(eap)
 	    ex_win_close(eap->forceit, curwin, NULL);
 }
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
 /*
  * ":pclose": Close any preview window.
  */
@@ -6193,7 +6192,7 @@ ex_pclose(eap)
 	    break;
 	}
 }
-#endif
+# endif
 
 /*
  * Close window "win" and take care of handling closing the last window for a
@@ -6211,7 +6210,7 @@ ex_win_close(forceit, win, tp)
     need_hide = (bufIsChanged(buf) && buf->b_nwindows <= 1);
     if (need_hide && !P_HID(buf) && !forceit)
     {
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && p_write)
 	{
 	    dialog_changed(buf, FALSE);
@@ -6220,16 +6219,16 @@ ex_win_close(forceit, win, tp)
 	    need_hide = FALSE;
 	}
 	else
-#endif
+# endif
 	{
 	    EMSG(_(e_nowrtmsg));
 	    return;
 	}
     }
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     need_mouse_correct = TRUE;
-#endif
+# endif
 
     /* free buffer when not hiding it or when it's a scratch buffer */
     if (tp == NULL)
@@ -6383,14 +6382,15 @@ ex_only(eap)
 
 /*
  * ":all" and ":sall".
+ * Also used for ":tab drop file ..." after setting the argument list.
  */
-    static void
+    void
 ex_all(eap)
     exarg_T	*eap;
 {
     if (eap->addr_count == 0)
 	eap->line2 = 9999;
-    do_arg_all((int)eap->line2, eap->forceit);
+    do_arg_all((int)eap->line2, eap->forceit, eap->cmdidx == CMD_drop);
 }
 #endif /* FEAT_WINDOWS */
 
