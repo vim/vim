@@ -40,7 +40,7 @@ void global_exe __ARGS((char_u *cmd));
 int read_viminfo_sub_string __ARGS((vir_T *virp, int force));
 void write_viminfo_sub_string __ARGS((FILE *fp));
 void free_old_sub __ARGS((void));
-void prepare_tagpreview __ARGS((void));
+int prepare_tagpreview __ARGS((void));
 void ex_help __ARGS((exarg_T *eap));
 char_u *check_help_lang __ARGS((char_u *arg));
 int help_heuristic __ARGS((char_u *matched_string, int offset, int wrong_case));
