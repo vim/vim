@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 08
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1622,7 +1622,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 
 						*'completeopt'* *'cot'*
-'completeopt' 'cot'	string	(default: "menu")
+'completeopt' 'cot'	string	(default: "menu,preview")
 			global
 			{not in Vi}
 	A comma separated list of options for Insert mode completion
@@ -1637,9 +1637,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    match, e.g., what file it comes from.
 
 	   longest  Only insert the longest common text of the matches.  Use
-	            CTRL-L to add more characters.  Whether case is ignored
+	   	    CTRL-L to add more characters.  Whether case is ignored
 		    depends on the kind of completion.  For buffer text the
 		    'ignorecase' option is used.
+
+	   preview  Show extra information about the currently selected
+	   	    completion in the preview window.
 
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*

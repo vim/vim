@@ -1172,6 +1172,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 --remote-expr	remote.txt	/*--remote-expr*
 --remote-send	remote.txt	/*--remote-send*
 --remote-silent	remote.txt	/*--remote-silent*
+--remote-tab	remote.txt	/*--remote-tab*
+--remote-tab-silent	remote.txt	/*--remote-tab-silent*
+--remote-tab-wait	remote.txt	/*--remote-tab-wait*
+--remote-tab-wait-silent	remote.txt	/*--remote-tab-wait-silent*
 --remote-wait	remote.txt	/*--remote-wait*
 --remote-wait-silent	remote.txt	/*--remote-wait-silent*
 --role	starting.txt	/*--role*

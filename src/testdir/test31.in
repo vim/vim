@@ -32,6 +32,7 @@ A 2:rew
 A 1:sp
 :n Xtest2 Xtest3
 :all
+:1wincmd w
 :w >>test.out
 :" test abandoning changed buffer, should be unloaded even when 'hidden' set
 :" write "testtext 2 2" twice
