@@ -4178,9 +4178,10 @@ alist_name(aep)
  * do_arg_all(): Open up to 'count' windows, one for each argument.
  */
     void
-do_arg_all(count, forceit)
+do_arg_all(count, forceit, keep_tabs)
     int	count;
     int	forceit;		/* hide buffers in current windows */
+    int keep_tabs;		/* keep curren tabs, for ":tab drop file" */
 {
     int		i;
     win_T	*wp, *wpnext;
@@ -4193,6 +4194,8 @@ do_arg_all(count, forceit)
     buf_T	*buf;
     tabpage_T	*tpnext;
     int		had_tab = cmdmod.tab;
+    win_T	*new_curwin = NULL;
+    tabpage_T	*new_curtab = NULL;
 
     if (ARGCOUNT <= 0)
     {
@@ -4241,10 +4244,17 @@ do_arg_all(count, forceit)
 		{
 		    if (ARGLIST[i].ae_fnum == buf->b_fnum
 			    || fullpathcmp(alist_name(&ARGLIST[i]),
-						  buf->b_ffname, TRUE) & FPC_SAME)
+					      buf->b_ffname, TRUE) & FPC_SAME)
 		    {
 			if (i < opened_len)
+			{
 			    opened[i] = TRUE;
+			    if (i == 0)
+			    {
+				new_curwin = wp;
+				new_curtab = curtab;
+			    }
+			}
 			if (wp->w_alist != curwin->w_alist)
 			{
 			    /* Use the current argument list for all windows
@@ -4259,14 +4269,15 @@ do_arg_all(count, forceit)
 	    }
 	    wp->w_arg_idx = i;
 
-	    if (i == ARGCOUNT)		/* close this window */
+	    if (i == ARGCOUNT && !keep_tabs)	/* close this window */
 	    {
 		if (P_HID(buf) || forceit || buf->b_nwindows > 1
-							    || !bufIsChanged(buf))
+							|| !bufIsChanged(buf))
 		{
 		    /* If the buffer was changed, and we would like to hide it,
 		     * try autowriting. */
-		    if (!P_HID(buf) && buf->b_nwindows <= 1 && bufIsChanged(buf))
+		    if (!P_HID(buf) && buf->b_nwindows <= 1
+							 && bufIsChanged(buf))
 		    {
 			(void)autowrite(buf, FALSE);
 #ifdef FEAT_AUTOCMD
@@ -4279,7 +4290,8 @@ do_arg_all(count, forceit)
 #endif
 		    }
 #ifdef FEAT_WINDOWS
-		    if (firstwin == lastwin)	/* don't close last window */
+		    /* don't close last window */
+		    if (firstwin == lastwin && first_tabpage->tp_next == NULL)
 #endif
 			use_firstwin = TRUE;
 #ifdef FEAT_WINDOWS
@@ -4364,9 +4376,14 @@ do_arg_all(count, forceit)
 #endif
 
 	    /*
-	     * edit file i
+	     * edit file "i"
 	     */
 	    curwin->w_arg_idx = i;
+	    if (i == 0)
+	    {
+		new_curwin = curwin;
+		new_curtab = curtab;
+	    }
 	    (void)do_ecmd(0, alist_name(&AARGLIST(alist)[i]), NULL, NULL,
 		      ECMD_ONE,
 		      ((P_HID(curwin->w_buffer)
@@ -4391,7 +4408,12 @@ do_arg_all(count, forceit)
 #ifdef FEAT_AUTOCMD
     --autocmd_no_enter;
 #endif
-    win_enter(firstwin, FALSE);			/* back to first window */
+    /* to window with first arg */
+    if (valid_tabpage(new_curtab))
+	goto_tabpage_tp(new_curtab);
+    if (win_valid(new_curwin))
+	win_enter(new_curwin, FALSE);
+
 #ifdef FEAT_AUTOCMD
     --autocmd_no_leave;
 #endif
