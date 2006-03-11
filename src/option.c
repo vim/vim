@@ -768,7 +768,7 @@ static struct vimoption
     {"completeopt",   "cot",  P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_cot, PV_NONE,
-			    {(char_u *)"menu", (char_u *)0L}
+			    {(char_u *)"menu,preview", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -2778,7 +2778,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
-static char *(p_cot_values[]) = {"menu", "menuone", "longest", NULL};
+static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", NULL};
 #endif
 
 static void set_option_default __ARGS((int, int opt_flags, int compatible));
