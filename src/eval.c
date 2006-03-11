@@ -8142,22 +8142,26 @@ f_complete_add(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*word;
+    char_u	*kind = NULL;
     char_u	*extra = NULL;
+    char_u	*info = NULL;
     int		icase = FALSE;
 
     if (argvars[0].v_type == VAR_DICT && argvars[0].vval.v_dict != NULL)
     {
-	word = get_dict_string(argvars[0].vval.v_dict,
-						     (char_u *)"word", FALSE);
+	word = get_dict_string(argvars[0].vval.v_dict, (char_u *)"word", FALSE);
+	kind = get_dict_string(argvars[0].vval.v_dict, (char_u *)"kind", FALSE);
 	extra = get_dict_string(argvars[0].vval.v_dict,
 						     (char_u *)"menu", FALSE);
+	info = get_dict_string(argvars[0].vval.v_dict,
+						     (char_u *)"info", FALSE);
 	icase = get_dict_number(argvars[0].vval.v_dict, (char_u *)"icase");
     }
     else
 	word = get_tv_string_chk(&argvars[0]);
     if (word != NULL)
 	rettv->vval.v_number = ins_compl_add(word, -1, icase,
-							   NULL, extra, 0, 0);
+					       NULL, kind, extra, info, 0, 0);
 }
 
 /*
