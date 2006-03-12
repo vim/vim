@@ -169,7 +169,7 @@ static void internal_format __ARGS((int textwidth, int second_indent, int flags,
 static void check_auto_format __ARGS((int));
 static void redo_literal __ARGS((int c));
 static void start_arrow __ARGS((pos_T *end_insert_pos));
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 static void check_spell_redraw __ARGS((void));
 static void spell_back_to_badword __ARGS((void));
 static int  spell_bad_len = 0;	/* length of located bad word */
@@ -1911,7 +1911,10 @@ has_compl_option(dict_opt)
     int	    dict_opt;
 {
     if (dict_opt ? (*curbuf->b_p_dict == NUL && *p_dict == NUL
-							&& !curwin->w_p_spell)
+# ifdef FEAT_SPELL
+							&& !curwin->w_p_spell
+# endif
+							)
 		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL))
     {
 	ctrl_x_mode = 0;
@@ -2333,7 +2336,7 @@ set_completion(startcol, list)
     if (stop_arrow() == FAIL)
 	return;
 
-    if (startcol > curwin->w_cursor.col)
+    if (startcol > (int)curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
     compl_col = startcol;
     compl_length = curwin->w_cursor.col - startcol;
@@ -2589,7 +2592,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 
     if (*dict == NUL)
     {
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	/* When 'dictionary' is empty and spell checking is enabled use
 	 * "spell". */
 	if (!thesaurus && curwin->w_p_spell)
@@ -2644,14 +2647,18 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 	     * backticks (for security, the 'dict' option may have been set in
 	     * a modeline). */
 	    copy_option_part(&dict, buf, LSIZE, ",");
+# ifdef FEAT_SPELL
 	    if (!thesaurus && STRCMP(buf, "spell") == 0)
 		count = -1;
-	    else if (vim_strchr(buf, '`') != NULL
+	    else
+# endif
+		if (vim_strchr(buf, '`') != NULL
 		    || expand_wildcards(1, &buf, &count, &files,
 						     EW_FILE|EW_SILENT) != OK)
 		count = 0;
 	}
 
+# ifdef FEAT_SPELL
 	if (count == -1)
 	{
 	    /* Complete from active spelling.  Skip "\<" in the pattern, we
@@ -2663,6 +2670,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 	    spell_dump_compl(curbuf, ptr, regmatch.rm_ic, &dir, 0);
 	}
 	else
+# endif
 	{
 	    ins_compl_files(count, files, thesaurus, flags,
 							&regmatch, buf, &dir);
@@ -3116,7 +3124,7 @@ ins_compl_prep(c)
 	    case 's':
 	    case Ctrl_S:
 		ctrl_x_mode = CTRL_X_SPELL;
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 		spell_back_to_badword();
 #endif
 		break;
@@ -3646,7 +3654,7 @@ ins_compl_get_exp(ini)
 #endif
 
 	case CTRL_X_SPELL:
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	    num_matches = expand_spelling(first_match_pos.lnum,
 				 first_match_pos.col, compl_pattern, &matches);
 	    if (num_matches > 0)
@@ -4445,7 +4453,7 @@ ins_complete(c)
 	}
 	else if (ctrl_x_mode == CTRL_X_SPELL)
 	{
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	    if (spell_bad_len > 0)
 		compl_col = curs_col - spell_bad_len;
 	    else
@@ -5718,12 +5726,12 @@ start_arrow(end_insert_pos)
 	stop_insert(end_insert_pos, FALSE);
 	arrow_used = TRUE;	/* this means we stopped the current insert */
     }
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     check_spell_redraw();
 #endif
 }
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 /*
  * If we skipped highlighting word at cursor, do it now.
  * It may be skipped again, thus reset spell_redraw_lnum first.
@@ -7303,7 +7311,7 @@ ins_esc(count, cmdchar, nomove)
     int		temp;
     static int	disabled_redraw = FALSE;
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     check_spell_redraw();
 #endif
 #if defined(FEAT_HANGULIN)

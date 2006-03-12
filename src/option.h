@@ -596,7 +596,7 @@ EXTERN long	p_mmt;		/* 'maxmemtot' */
 #ifdef FEAT_MENU
 EXTERN long	p_mis;		/* 'menuitems' */
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		/* 'mkspellmem' */
 #endif
 EXTERN long	p_mls;		/* 'modelines' */
@@ -718,7 +718,7 @@ EXTERN long	p_tpm;		/* 'tabpagemax' */
 EXTERN char_u	*p_tal;		/* 'tabline' */
 # endif
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 EXTERN char_u	*p_sps;		/* 'spellsuggest' */
 #endif
 #ifdef FEAT_VERTSPLIT
@@ -962,10 +962,12 @@ enum
 #endif
 #ifdef FEAT_SYN_HL
     , BV_SMC
+    , BV_SYN
+#endif
+#ifdef FEAT_SPELL
     , BV_SPC
     , BV_SPF
     , BV_SPL
-    , BV_SYN
 #endif
     , BV_STS
 #ifdef FEAT_SEARCHPATH
@@ -1027,10 +1029,12 @@ enum
     , WV_SCBIND
 #endif
     , WV_SCROLL
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     , WV_SPELL
-    , WV_SPC
-    , WV_SYN
+#endif
+#ifdef FEAT_SYN_HL
+    , WV_CUC
+    , WV_CUL
 #endif
 #ifdef FEAT_STL_OPT
     , WV_STL

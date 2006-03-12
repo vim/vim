@@ -189,9 +189,15 @@ typedef struct
 #endif
     long	wo_scr;
 #define w_p_scr w_onebuf_opt.wo_scr	/* 'scroll' */
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     int		wo_spell;
-#define w_p_spell w_onebuf_opt.wo_spell	/* 'spell' */
+# define w_p_spell w_onebuf_opt.wo_spell /* 'spell' */
+#endif
+#ifdef FEAT_SYN_HL
+    int		wo_cuc;
+# define w_p_cuc w_onebuf_opt.wo_cuc	/* 'cursorcolumn' */
+    int		wo_cul;
+# define w_p_cul w_onebuf_opt.wo_cul	/* 'cursorline' */
 #endif
 #ifdef FEAT_STL_OPT
     char_u	*wo_stl;
@@ -1099,7 +1105,7 @@ struct dictvar_S
 #define SYNSPL_NOTOP	2	/* don't spell check toplevel text */
 
 /* avoid #ifdefs for when b_spell is not available */
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 # define B_SPELL(buf)  ((buf)->b_spell)
 #else
 # define B_SPELL(buf)  (0)
@@ -1393,6 +1399,8 @@ struct file_buffer
 #ifdef FEAT_SYN_HL
     long	b_p_smc;	/* 'synmaxcol' */
     char_u	*b_p_syn;	/* 'syntax' */
+#endif
+#ifdef FEAT_SPELL
     char_u	*b_p_spc;	/* 'spellcapcheck' */
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
@@ -1454,7 +1462,7 @@ struct file_buffer
      */
     int		b_help;		/* TRUE for help file buffer (when set b_p_bt
 				   is "help") */
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     int		b_spell;	/* TRUE for a spell file buffer, most fields
 				   are not used!  Use the B_SPELL macro to
 				   access b_spell without #ifdef. */
@@ -1530,14 +1538,16 @@ struct file_buffer
     int		b_sst_freecount;
     linenr_T	b_sst_check_lnum;
     short_u	b_sst_lasttick;	/* last display tick */
+#endif /* FEAT_SYN_HL */
 
+#ifdef FEAT_SPELL
     /* for spell checking */
     garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
     char_u	b_spell_ismw[256];/* flags: is midword char */
 # ifdef FEAT_MBYTE
     char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
 # endif
-#endif /* FEAT_SYN_HL */
+#endif
 
 #ifdef FEAT_SIGNS
     signlist_T	*b_signlist;	/* list of signs to draw */

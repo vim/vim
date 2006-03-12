@@ -148,7 +148,9 @@ static void prt_line_number __ARGS((prt_settings_T *psettings, int page_line, li
 static void prt_header __ARGS((prt_settings_T *psettings, int pagenum, linenr_T lnum));
 static void prt_message __ARGS((char_u *s));
 static colnr_T hardcopy_line __ARGS((prt_settings_T *psettings, int page_line, prt_pos_T *ppos));
+#ifdef FEAT_SYN_HL
 static void prt_get_attr __ARGS((int hl_id, prt_text_attr_T* pattr, int modec));
+#endif
 
 /*
  * Parse 'printoptions' and set the flags in "printer_opts".
@@ -566,7 +568,6 @@ ex_hardcopy(eap)
     long_u		bytes_to_print = 0;
     int			page_line;
     int			jobsplit;
-    int			id;
 
     memset(&settings, 0, sizeof(prt_settings_T));
     settings.has_color = TRUE;
@@ -638,13 +639,15 @@ ex_hardcopy(eap)
      */
     if (prt_use_number() && settings.do_syntax)
     {
+	int		id;
+
 	id = syn_name2id((char_u *)"LineNr");
 	if (id > 0)
 	    id = syn_get_final_id(id);
 
 	prt_get_attr(id, &settings.number, settings.modec);
     }
-#endif /* FEAT_SYN_HL */
+#endif
 
     /*
      * Estimate the total lines to be printed
@@ -890,7 +893,7 @@ hardcopy_line(psettings, page_line, ppos)
 		prt_set_bg(attr.bg_color);
 	    }
 	}
-#endif /* FEAT_SYN_HL */
+#endif
 
 	/*
 	 * Appropriately expand any tabs to spaces.
