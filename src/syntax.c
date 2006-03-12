@@ -3395,7 +3395,7 @@ syn_cmd_clear(eap, syncing)
 	    arg = skipwhite(arg_end);
 	}
     }
-    redraw_curbuf_later(NOT_VALID);
+    redraw_curbuf_later(SOME_VALID);
     syn_stack_free_all(curbuf);		/* Need to recompute all syntax. */
 }
 
@@ -4560,7 +4560,7 @@ syn_cmd_keyword(eap, syncing)
     else
 	EMSG2(_(e_invarg2), arg);
 
-    redraw_curbuf_later(NOT_VALID);
+    redraw_curbuf_later(SOME_VALID);
     syn_stack_free_all(curbuf);		/* Need to recompute all syntax. */
 }
 
@@ -4646,7 +4646,7 @@ syn_cmd_match(eap, syncing)
 		++curbuf->b_syn_folditems;
 #endif
 
-	    redraw_curbuf_later(NOT_VALID);
+	    redraw_curbuf_later(SOME_VALID);
 	    syn_stack_free_all(curbuf);	/* Need to recompute all syntax. */
 	    return;	/* don't free the progs and patterns now */
 	}
@@ -4893,7 +4893,7 @@ syn_cmd_region(eap, syncing)
 		}
 	    }
 
-	    redraw_curbuf_later(NOT_VALID);
+	    redraw_curbuf_later(SOME_VALID);
 	    syn_stack_free_all(curbuf);	/* Need to recompute all syntax. */
 	    success = TRUE;	    /* don't free the progs and patterns now */
 	}
@@ -5250,7 +5250,7 @@ syn_cmd_cluster(eap, syncing)
 
 	if (got_clstr)
 	{
-	    redraw_curbuf_later(NOT_VALID);
+	    redraw_curbuf_later(SOME_VALID);
 	    syn_stack_free_all(curbuf);	/* Need to recompute all syntax. */
 	}
     }
@@ -5519,7 +5519,7 @@ syn_cmd_sync(eap, syncing)
     else if (!finished)
     {
 	eap->nextcmd = check_nextcmd(arg_start);
-	redraw_curbuf_later(NOT_VALID);
+	redraw_curbuf_later(SOME_VALID);
 	syn_stack_free_all(curbuf);	/* Need to recompute all syntax. */
     }
 }
@@ -6113,6 +6113,8 @@ static char *(highlight_init_light[]) =
 	"DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan",
 	"TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey gui=underline guibg=LightGrey",
+	"CursorColumn term=reverse ctermbg=LightGrey guibg=LightGrey",
+	"CursorLine term=underline cterm=underline guibg=LightGrey",
 	NULL
     };
 
@@ -6142,6 +6144,8 @@ static char *(highlight_init_dark[]) =
 	"DiffChange term=bold ctermbg=DarkMagenta guibg=DarkMagenta",
 	"DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan",
 	"TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey gui=underline guibg=DarkGrey",
+	"CursorColumn term=reverse ctermbg=DarkGrey guibg=DarkGrey",
+	"CursorLine term=underline cterm=underline guibg=DarkGrey",
 	NULL
     };
 
@@ -6391,7 +6395,7 @@ do_highlight(line, forceit, init)
 #ifdef FEAT_EVAL
 		HL_TABLE()[from_id - 1].sg_scriptID = current_SID;
 #endif
-		redraw_all_later(NOT_VALID);
+		redraw_all_later(SOME_VALID);
 	    }
 	}
 
@@ -7143,7 +7147,7 @@ do_highlight(line, forceit, init)
 #ifdef FEAT_EVAL
 	HL_TABLE()[idx].sg_scriptID = current_SID;
 #endif
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(SOME_VALID);
     }
     vim_free(key);
     vim_free(arg);
@@ -7719,7 +7723,7 @@ clear_hl_tables()
     ga_clear(&cterm_attr_table);
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Combine special attributes (e.g., for spelling) with other attributes
  * (e.g., for syntax highlighting).
@@ -7856,8 +7860,33 @@ syn_gui_attr2entry(attr)
 	return NULL;
     return &(GUI_ATTR_ENTRY(attr));
 }
-
 #endif /* FEAT_GUI */
+
+/*
+ * Get the highlight attributes (HL_BOLD etc.) from an attribute nr.
+ * Only to be used when "attr" > HL_ALL.
+ */
+    int
+syn_attr2attr(attr)
+    int	    attr;
+{
+    attrentry_T	*aep;
+
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	aep = syn_gui_attr2entry(attr);
+    else
+#endif
+	if (t_colors > 1)
+	aep = syn_cterm_attr2entry(attr);
+    else
+	aep = syn_term_attr2entry(attr);
+
+    if (aep == NULL)	    /* highlighting not set */
+	return 0;
+    return aep->ae_attr;
+}
+
 
     attrentry_T *
 syn_term_attr2entry(attr)

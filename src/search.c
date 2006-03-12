@@ -288,7 +288,7 @@ save_re_pat(idx, pat, magic)
 #ifdef FEAT_SEARCH_EXTRA
 	/* If 'hlsearch' set and search pat changed: need redraw. */
 	if (p_hls)
-	    redraw_all_later(NOT_VALID);
+	    redraw_all_later(SOME_VALID);
 	no_hlsearch = FALSE;
 #endif
     }
@@ -450,7 +450,7 @@ set_last_search_pat(s, idx, magic, setlast)
 # ifdef FEAT_SEARCH_EXTRA
     /* If 'hlsearch' set and search pat changed: need redraw. */
     if (p_hls && idx == last_idx && !no_hlsearch)
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(SOME_VALID);
 # endif
 }
 #endif
@@ -1032,7 +1032,7 @@ do_search(oap, dirc, pat, count, options)
      */
     if (no_hlsearch && !(options & SEARCH_KEEP))
     {
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(SOME_VALID);
 	no_hlsearch = FALSE;
     }
 #endif
