@@ -914,7 +914,7 @@ vim_iswordc_buf(p, buf)
 # endif
     return (GET_CHARTAB(buf, *p) != 0);
 }
-#endif /* FEAT_SYN_HL */
+#endif
 
 /*
  * return TRUE if 'c' is a valid file-name character
@@ -1464,7 +1464,7 @@ skipdigits(p)
     return p;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * skip over digits and hex characters
  */

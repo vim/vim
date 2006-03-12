@@ -1780,12 +1780,12 @@ regatom(flagp)
 	    }
 	    break;
 
-#ifdef FEAT_SYN_HL
       case Magic('z'):
 	{
 	    c = no_Magic(getchr());
 	    switch (c)
 	    {
+#ifdef FEAT_SYN_HL
 		case '(': if (reg_do_extmatch != REX_SET)
 			      EMSG_RET_NULL(_("E66: \\z( not allowed here"));
 			  if (one_exactly)
@@ -1810,6 +1810,7 @@ regatom(flagp)
 			  ret = regnode(ZREF + c - '0');
 			  re_has_z = REX_USE;
 			  break;
+#endif
 
 		case 's': ret = regnode(MOPEN + 0);
 			  break;
@@ -1821,7 +1822,6 @@ regatom(flagp)
 	    }
 	}
 	break;
-#endif
 
       case Magic('%'):
 	{

@@ -968,7 +968,7 @@ free_all_mem()
     do_cmdline_cmd((char_u *)"only!");
 #endif
 
-# if defined(FEAT_SYN_HL)
+# if defined(FEAT_SPELL)
     /* Free all spell info. */
     spell_free_all();
 # endif
@@ -1270,7 +1270,7 @@ vim_strup(p)
     }
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Make string "s" all upper-case and return it in allocated memory.
  * Handles multi-byte characters as well as possible.
@@ -5758,7 +5758,7 @@ vimpty_getenv(string)
 
 #endif /* !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) */
 
-#if defined(FEAT_EVAL) || defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Return 0 for not writable, 1 for writable file, 2 for a dir which we have
  * rights to write into.
