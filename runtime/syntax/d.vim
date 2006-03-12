@@ -1,12 +1,11 @@
-" Vim syntax file for the D programming language (version 0.137).
+" Vim syntax file for the D programming language (version 0.149).
 "
 " Language:	D
-" Maintainer:	Jason Mills<jmills@cs.mun.ca>
-" Last Change:	2005 Oct 29
-" Version:	0.14
-"
-" Please email me with bugs, comments, and suggestion. Put vim in the subject
-" to ensure the email will not be marked has spam.
+" Maintainer:	Jason Mills<jmills@cs.mun.ca> 
+"   When emailing me, please put the word vim somewhere in the subject
+"   to ensure the email does not get marked as spam.
+" Last Change:	2006 Mar 12
+" Version:	0.15
 "
 " Options:
 "   d_comment_strings - set to highlight strings and numbers in comments
@@ -15,7 +14,8 @@
 "   that when overloaded implement unary and binary operators (e.g. cmp).
 "
 " Todo:
-"   - Allow user to set sync minlines
+"   - Must determine a better method of sync'ing than simply setting minlines
+"   to a large number for /+ +/.
 "
 "   - Several keywords (namely, in and out) are both storage class and
 "   statements, depending on their context. Must use some matching to figure
@@ -23,8 +23,6 @@
 "   statements.
 "
 "   - Mark contents of the asm statement body as special
-"
-"   - Highlight the string prefix r and and postfixes c,w,d
 "
 
 " Quit when a syntax file was already loaded
@@ -53,8 +51,8 @@ if exists("d_hl_operator_overload")
   syn keyword dOpOverload	opAddAssign opSubAssign opMulAssign opDivAssign
   syn keyword dOpOverload	opModAssign opAndAssign opOrAssign opXorAssign
   syn keyword dOpOverload	opShlAssign opShrAssign opUShrAssign opCatAssign
-  syn keyword dOpOverload	opIndex opIndexAssign opCall opSlice opPos
-  syn keyword dOpOverload	opAdd_r opMul_r opAnd_r opOr_r opXor_r
+  syn keyword dOpOverload	opIndex opIndexAssign opCall opSlice opSliceAssign opPos
+  syn keyword dOpOverload	opAdd_r opMul_r opAnd_r opOr_r opXor_r 
 endif
 syn keyword dType		ushort int uint long ulong float
 syn keyword dType		void byte ubyte double bit char wchar ucent cent
@@ -63,7 +61,7 @@ syn keyword dType		real ireal ifloat idouble creal cfloat cdouble
 syn keyword dDebug		deprecated unittest
 syn keyword dExceptions		throw try catch finally
 syn keyword dScopeDecl		public protected private export
-syn keyword dStatement		version debug return with invariant body
+syn keyword dStatement		version debug return with invariant body scope
 syn keyword dStatement		in out inout asm mixin
 syn keyword dStatement		function delegate
 syn keyword dStorageClass	auto static override final const abstract volatile
@@ -116,7 +114,11 @@ hi link dNestedCommentString	dString
 hi link dCommentStar		dBlockComment
 hi link dCommentPlus		dNestedComment
 
-syn sync minlines=25
+" /+ +/ style comments and strings that span multiple lines can cause
+" problems. To play it safe, set minlines to a large number.
+syn sync minlines=200
+" Use ccomment for /* */ style comments
+syn sync ccomment dBlockComment
 
 " Characters
 "
@@ -135,24 +137,28 @@ syn match dCharacter	"'[^\\]'"
 syn match dUnicode "\\u\d\{4\}"
 
 
-
 " String.
 "
-syn region dString	start=+"+ end=+"+ contains=dEscSequence,@Spell
-syn region dRawString	start=+`+ skip=+\\`+ end=+`+ contains=@Spell
-"syn region dRawString	start=+r"+ skip=+\\"+ end=+"+ contains=@Spell
-syn region dHexString	start=+x"+ skip=+\\"+ end=+"+
+syn region dString	start=+"+ end=+"[cwd]\=+ contains=dEscSequence,@Spell
+syn region dRawString	start=+`+ skip=+\\`+ end=+`[cwd]\=+ contains=@Spell
+syn region dRawString	start=+r"+ skip=+\\"+ end=+"[cwd]\=+ contains=@Spell
+syn region dHexString	start=+x"+ skip=+\\"+ end=+"[cwd]\=+ contains=@Spell
 
 " Numbers
 "
 syn case ignore
-syn match dInt		display "\<\d[0-9_]*\(u\=l\=\|l\=u\=\)\>"
+
+syn match dDec		display "\<\d[0-9_]*\(u\=l\=\|l\=u\=\)\>"
+
 " Hex number
 syn match dHex		display "\<0x[0-9a-f_]\+\(u\=l\=\|l\=u\=\)\>"
-syn match dHex		display "\<\x[0-9a-f_]*h\(u\=l\=\|l\=u\=\)\>"
-" Flag the first zero of an octal number as something special
-syn match dOctal	display "\<0[0-7_]\+\(u\=l\=\|l\=u\=\)\>" contains=cOctalZero
-syn match dOctalZero	display contained "\<0"
+
+syn match dOctal	display "\<0[0-7_]\+\(u\=l\=\|l\=u\=\)\>"
+" flag an octal number with wrong digits
+syn match dOctalError	display "\<0[0-7_]*[89][0-9_]*"
+
+" binary numbers
+syn match dBinary	display "\<0b[01_]\+\(u\=l\=\|l\=u\=\)\>"
 
 "floating point without the dot
 syn match dFloat	display "\<\d[0-9_]*\(fi\=\|l\=i\)\>"
@@ -165,16 +171,12 @@ syn match dFloat	display "\(\.[0-9_]\+\)\(e[-+]\=[0-9_]\+\)\=[fl]\=i\=\>"
 syn match dFloat	display "\<\d[0-9_]*e[-+]\=[0-9_]\+[fl]\=\>"
 
 "floating point without the dot
-syn match dHexFloat	display "\<0x\x\+\(fi\=\|l\=i\)\>"
+syn match dHexFloat	display "\<0x[0-9a-f_]\+\(fi\=\|l\=i\)\>"
 "floating point number, with dot, optional exponent
-syn match dHexFloat	display "\<0x\x\+\.\x*\(p[-+]\=\x\+\)\=[fl]\=i\="
+syn match dHexFloat	display "\<0x[0-9a-f_]\+\.[0-9a-f_]*\(p[-+]\=[0-9_]\+\)\=[fl]\=i\="
 "floating point number, without dot, with exponent
-syn match dHexFloat	display "\<0x\x\+p[-+]\=\x\+[fl]\=\>"
+syn match dHexFloat	display "\<0x[0-9a-f_]\+p[-+]\=[0-9_]\+[fl]\=i\=\>"
 
-" binary numbers
-syn match dBinary	display "\<0b[01_]\+\>"
-" flag an octal number with wrong digits
-syn match dOctalError	display "0\o*[89]\d*"
 syn case match
 
 " Pragma (preprocessor) support
@@ -185,7 +187,7 @@ syn region  dPragma start="#\s*\(line\>\)" skip="\\$" end="$"
 " The default highlighting.
 "
 hi def link dBinary		Number
-hi def link dInt		Number
+hi def link dDec		Number
 hi def link dHex		Number
 hi def link dOctal		Number
 hi def link dFloat		Float
@@ -224,5 +226,5 @@ hi def link dExternal		Include
 hi def link dPragma		PreProc
 
 let b:current_syntax = "d"
-
+   
 " vim: ts=8 noet
