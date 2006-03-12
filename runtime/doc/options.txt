@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 11
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2043,6 +2043,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Give messages when adding a cscope database.  See |cscopeverbose|.
 	NOTE: This option is reset when 'compatible' is set.
+
+
+			*'cursorcolumn'* *'cuc'* *'nocursorcolumn'* *'nocuc'*
+'cursorcolumn' 'cuc'	boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the  |+syntax|
+			feature}
+	Highlight the screen column of the cursor with CursorColumn
+	|hl-CursorColumn|.  Useful to align text.  Will make screen redrawing
+	slower.
+
+			*'cursorline'* *'cul'* *'nocursorline'* *'nocul'*
+'cursorline' 'cul'	boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the  |+syntax|
+			feature}
+	Highlight the screen line of the cursor with CursorLine
+	|hl-CursorLine|.  Useful to easily spot the cursor.  Will make screen
+	redrawing slower.
+
 
 						*'debug'*
 'debug'			string	(default "")

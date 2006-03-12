@@ -454,7 +454,7 @@ pum_set_selected(n)
 		    {
 			/* Return cursor to where we were */
 			validate_cursor();
-			redraw_later(NOT_VALID);
+			redraw_later(SOME_VALID);
 
 			/* When the preview window was resized we need to
 			 * update the view on the buffer.  Only go back to
@@ -498,7 +498,7 @@ pum_set_selected(n)
 pum_undisplay()
 {
     pum_array = NULL;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(SOME_VALID);
 }
 
 /*

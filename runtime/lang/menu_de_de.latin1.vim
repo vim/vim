@@ -2,7 +2,7 @@
 " Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
 " Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
 "            		Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sun, 5 Mar 2006 07:20:00 CEST
+" Last Change:	Sat, 11 Mar 2006 22:40:00 CEST
 " vim:set foldmethod=marker tabstop=8:
 
 " Quit when menu translations have already been done.
@@ -101,13 +101,13 @@ menutrans &Keymap					&Tastatur-Belegung
 " }}} EDIT / EDITIEREN
 
 " {{{  TOOLS / WERKZEUGE
-if has("syntax")
-    menutrans &Spelling					&Rechtschreibung
-    menutrans &Spell\ Check\ On				&Rechtschreibung\ an
-    menutrans Spell\ Check\ &Off			Rechtschreibung\ &aus
-    menutrans To\ &Next\ error<Tab>]s			Zum\ &nächsten\ Fehler<Tab>]s
-    menutrans To\ &Previous\ error<Tab>[s		Zum\ &letzten\ Fehler<Tab>[s
-    menutrans Suggest\ &Corrections<Tab>z?		&Korrekturvorschläge<Tab>z?
+if has("spell")
+    menutrans &Spelling					&Rechtschreibprüfung
+    menutrans &Spell\ Check\ On				&Rechtschreibprüfung\ An
+    menutrans Spell\ Check\ &Off			Rechtschreibprüfung\ &Aus
+    menutrans To\ &Next\ error<Tab>]s			Zum\ &Nächsten\ Fehler<Tab>]s
+    menutrans To\ &Previous\ error<Tab>[s		Zum\ &Letzten\ Fehler<Tab>[s
+    menutrans Suggest\ &Corrections<Tab>z=		&Korrekturvorschläge<Tab>z=
     menutrans &Repeat\ correction<Tab>:spellrepall	&Wiederhole\ Korrektur<Tab>:spellrepall
     menutrans Set\ language\ to\ "en"			Verwende\ Wörterbuch\ "en"
     menutrans Set\ language\ to\ "en_au"		Verwende\ Wörterbuch\ "en_au"
@@ -115,6 +115,7 @@ if has("syntax")
     menutrans Set\ language\ to\ "en_gb"		Verwende\ Wörterbuch\ "en_gb"
     menutrans Set\ language\ to\ "en_nz"		Verwende\ Wörterbuch\ "en_nz"
     menutrans Set\ language\ to\ "en_us"		Verwende\ Wörterbuch\ "en_us"
+    menutrans Set\ language\ to\ "de"   		Verwende\ Wörterbuch\ "de"
     menutrans &Find\ More\ Languages			&Suche\ nach\ Wörterbüchern
 endif
 if has("folding")
@@ -164,6 +165,7 @@ menutrans &Older\ List<Tab>:cold			&Ältere\ Liste<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew			&Neuere\ Liste<Tab>:cnew
 
 menutrans Error\ &Window				Feh&ler-Fenster
+menutrans Se&t\ Compiler				&Compiler
 menutrans Se&T\ Compiler				&Compiler
 menutrans &Update<Tab>:cwin				&Aktualisieren<Tab>:cwin
 menutrans &Open<Tab>:copen				&Öffnen<Tab>:copen
@@ -194,7 +196,6 @@ menutrans Delete					Löschen
 menutrans &Alternate					&Wechseln
 menutrans &Next						&Nächster
 menutrans &Previous					&Vorheriger
-menutrans [No\ File]					[Keine\ Datei]
 " }}} BUFFERS / PUFFER
 
 " {{{ WINDOW / ANSICHT
@@ -243,7 +244,7 @@ menutrans Cu&t				Aus&schneiden
 menutrans &Copy				&Kopieren
 menutrans &Paste			&Einfügen
 menutrans &Delete			&Löschen
-menutrans Select\ Blockwise		Auswahl\ Blockartig
+menutrans Select\ Blockwise		Auswahl\ blockartig
 menutrans Select\ &Word			Auswahl\ des\ &Wortes
 menutrans Select\ &Sentence             Auswahl\ des\ Sa&tzes
 menutrans Select\ Pa&ragraph            Auswahl\ des\ Absatzes

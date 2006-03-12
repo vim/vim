@@ -1733,7 +1733,7 @@ cmdline_changed:
 	    validate_cursor();
 
 	    save_cmdline(&save_ccline);
-	    update_screen(NOT_VALID);
+	    update_screen(SOME_VALID);
 	    restore_cmdline(&save_ccline);
 
 	    msg_starthere();
@@ -1781,7 +1781,7 @@ returncmd:
 	curwin->w_botline = old_botline;
 	highlight_match = FALSE;
 	validate_cursor();	/* needed for TAB */
-	redraw_later(NOT_VALID);
+	redraw_later(SOME_VALID);
     }
 #endif
 
@@ -5849,7 +5849,7 @@ ex_window()
     curwin->w_cursor.col = ccline.cmdpos;
     changed_line_abv_curs();
     invalidate_botline();
-    redraw_later(NOT_VALID);
+    redraw_later(SOME_VALID);
 
     /* Save the command line info, can be used recursively. */
     save_ccline = ccline;

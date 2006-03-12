@@ -70,6 +70,11 @@
  * must call redraw_curbuf_later(NOT_VALID) to have all the windows for the
  * buffer redisplayed by update_screen() later.
  *
+ * Commands that change highlighting and possibly cause a scroll too must call
+ * redraw_later(SOME_VALID) to update the whole window but still use scrolling
+ * to avoid redrawing everything.  But the length of displayed lines must not
+ * change, use NOT_VALID then.
+ *
  * Commands that move the window position must call redraw_later(NOT_VALID).
  * TODO: should minimize redrawing by scrolling when possible.
  *
@@ -736,6 +741,7 @@ updateWindow(wp)
  * How the window is redrawn depends on wp->w_redr_type.  Each type also
  * implies the one below it.
  * NOT_VALID	redraw the whole window
+ * SOME_VALID	redraw the whole window but do scroll when possible
  * REDRAW_TOP	redraw the top w_upd_rows window lines, otherwise like VALID
  * INVERTED	redraw the changed part of the Visual area
  * INVERTED_ALL	redraw the whole Visual area
@@ -1022,7 +1028,8 @@ win_update(wp)
      * 3: wp->w_topline is wp->w_lines[0].wl_lnum: find first entry in
      *    w_lines[] that needs updating.
      */
-    if ((type == VALID || type == INVERTED || type == INVERTED_ALL)
+    if ((type == VALID || type == SOME_VALID
+				  || type == INVERTED || type == INVERTED_ALL)
 #ifdef FEAT_DIFF
 	    && !wp->w_botfill && !wp->w_old_botfill
 #endif
@@ -1221,6 +1228,14 @@ win_update(wp)
 	/* Not VALID or INVERTED: redraw all lines. */
 	mid_start = 0;
 	mid_end = wp->w_height;
+    }
+
+    if (type == SOME_VALID)
+    {
+	/* SOME_VALID: redraw all lines. */
+	mid_start = 0;
+	mid_end = wp->w_height;
+	type = NOT_VALID;
     }
 
 #ifdef FEAT_VISUAL
@@ -2386,6 +2401,12 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     }
 #endif
 
+#ifdef FEAT_SYN_HL
+    /* Show 'cursorcolumn' in the fold line. */
+    if (wp->w_p_cuc && (int)wp->w_virtcol + txtcol < W_WIDTH(wp))
+	ScreenAttrs[off + wp->w_virtcol + txtcol] = hl_combine_attr(
+		 ScreenAttrs[off + wp->w_virtcol + txtcol], hl_attr(HLF_CUC));
+#endif
 
     SCREEN_LINE(row + W_WINROW(wp), W_WINCOL(wp), (int)W_WIDTH(wp),
 						     (int)W_WIDTH(wp), FALSE);
@@ -2543,9 +2564,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		area_attr = 0;		/* attributes desired by highlighting */
     int		search_attr = 0;	/* attributes desired by 'hlsearch' */
 #ifdef FEAT_SYN_HL
+    int		vcol_save_attr = 0;	/* saved attr for 'cursorcolumn' */
     int		syntax_attr = 0;	/* attributes desired by syntax */
     int		has_syntax = FALSE;	/* this buffer has syntax highl. */
     int		save_did_emsg;
+#endif
+#ifdef FEAT_SPELL
     int		has_spell = FALSE;	/* this buffer has spell checking */
 # define SPWORDLEN 150
     char_u	nextline[SPWORDLEN * 2];/* text with start of the next line */
@@ -2658,7 +2682,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    extra_check = TRUE;
 	}
     }
+#endif
 
+#ifdef FEAT_SPELL
     if (wp->w_p_spell
 	    && *wp->w_buffer->b_p_spl != NUL
 	    && wp->w_buffer->b_langp.ga_len > 0
@@ -2857,7 +2883,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     line = ml_get_buf(wp->w_buffer, lnum, FALSE);
     ptr = line;
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     if (has_spell)
     {
 	/* For checking first word with a capital skip white space. */
@@ -2964,7 +2990,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	if (wp->w_p_wrap)
 	    need_showbreak = TRUE;
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	/* When spell checking a word we need to figure out the start of the
 	 * word and if it's badly spelled or not. */
 	if (has_spell)
@@ -2994,9 +3020,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 	    wp->w_cursor = pos;
 
+# ifdef FEAT_SYN_HL
 	    /* Need to restart syntax highlighting for this line. */
 	    if (has_syntax)
 		syntax_start(wp, lnum);
+# endif
 	}
 #endif
     }
@@ -3074,6 +3102,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		area_highlighting = TRUE;
 	    }
 	}
+    }
+#endif
+
+#ifdef FEAT_SYN_HL
+    /* Cursor line highlighting for 'cursorline'. */
+    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+    {
+	line_attr = hl_attr(HLF_CUL);
+	area_highlighting = TRUE;
     }
 #endif
 
@@ -3221,6 +3258,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			c_extra = ' ';
 		    n_extra = number_width(wp) + 1;
 		    char_attr = hl_attr(HLF_N);
+#ifdef FEAT_SYN_HL
+		    /* When 'cursorline' is set highlight the line number of
+		     * the current line differently. */
+		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+			char_attr = hl_combine_attr(hl_attr(HLF_CUL), char_attr);
+#endif
 		}
 	    }
 
@@ -3723,9 +3766,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 	    if (extra_check)
 	    {
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 		int	can_spell = TRUE;
+#endif
 
+#ifdef FEAT_SYN_HL
 		/* Get syntax attribute, unless still at the start of the line
 		 * (double-wide char that doesn't fit). */
 		v = (long)(ptr - line);
@@ -3737,7 +3782,10 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    did_emsg = FALSE;
 
 		    syntax_attr = get_syntax_attr((colnr_T)v - 1,
-					       has_spell ? &can_spell : NULL);
+# ifdef FEAT_SPELL
+					       has_spell ? &can_spell :
+# endif
+					       NULL);
 
 		    if (did_emsg)
 		    {
@@ -3757,7 +3805,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    else
 			char_attr = hl_combine_attr(syntax_attr, char_attr);
 		}
+#endif
 
+#ifdef FEAT_SPELL
 		/* Check spelling (unless at the end of the line).
 		 * Only do this when there is no syntax highlighting, the
 		 * @Spell cluster is not used or the current syntax item
@@ -3765,9 +3815,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (has_spell && v >= word_end && v > cur_checked_col)
 		{
 		    spell_attr = 0;
+# ifdef FEAT_SYN_HL
 		    if (!attr_pri)
 			char_attr = syntax_attr;
-		    if (c != 0 && (!has_syntax || can_spell))
+# endif
+		    if (c != 0 && (
+# ifdef FEAT_SYN_HL
+				!has_syntax ||
+# endif
+				can_spell))
 		    {
 			char_u	*prev_ptr, *p;
 			int	len;
@@ -4212,7 +4268,38 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		else
 #endif
 		    ++col;
+		++vcol;
 	    }
+
+#ifdef FEAT_SYN_HL
+	    /* Highlight 'cursorcolumn' past end of the line. */
+	    if (wp->w_p_cuc
+		    && (int)wp->w_virtcol >= vcol
+		    && (int)wp->w_virtcol < W_WIDTH(wp)
+		    && lnum != wp->w_cursor.lnum
+# ifdef FEAT_RIGHTLEFT
+		    && !wp->w_p_rl
+# endif
+		    )
+	    {
+		while (col < W_WIDTH(wp))
+		{
+		    ScreenLines[off] = ' ';
+#ifdef FEAT_MBYTE
+		    if (enc_utf8)
+			ScreenLinesUC[off] = 0;
+#endif
+		    ++col;
+		    if (vcol == wp->w_virtcol)
+		    {
+			ScreenAttrs[off] = hl_attr(HLF_CUC);
+			break;
+		    }
+		    ScreenAttrs[off++] = 0;
+		    ++vcol;
+		}
+	    }
+#endif
 
 	    SCREEN_LINE(screen_row, W_WINCOL(wp), col, (int)W_WIDTH(wp),
 								  wp->w_p_rl);
@@ -4263,6 +4350,20 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		mb_utf8 = FALSE;
 #endif
 	}
+
+#ifdef FEAT_SYN_HL
+	/* Highlight the cursor column if 'cursorcolumn' is set.  But don't
+	 * highlight the cursor position itself. */
+	if (wp->w_p_cuc && vcol == wp->w_virtcol
+		&& lnum != wp->w_cursor.lnum
+		&& draw_state == WL_LINE)
+	{
+	    vcol_save_attr = char_attr;
+	    char_attr = hl_combine_attr(char_attr, hl_attr(HLF_CUC));
+	}
+	else
+	    vcol_save_attr = -1;
+#endif
 
 	/*
 	 * Store character to be displayed.
@@ -4360,6 +4461,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 		)
 	    ++vcol;
+
+#ifdef FEAT_SYN_HL
+	if (vcol_save_attr >= 0)
+	    char_attr = vcol_save_attr;
+#endif
 
 	/* restore attributes after "predeces" in 'listchars' */
 	if (draw_state > WL_NR && n_attr3 > 0 && --n_attr3 == 0)
@@ -4514,7 +4620,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
     }	/* for every character in the line */
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     /* After an empty line check first word for capital. */
     if (*skipwhite(line) == NUL)
     {
@@ -4687,7 +4793,9 @@ screen_line(row, coloff, endcol, clear_width
 	if (redraw_next && gui.in_use)
 	{
 	    hl = ScreenAttrs[off_to + CHAR_CELLS];
-	    if (hl > HL_ALL || (hl & HL_BOLD))
+	    if (hl > HL_ALL)
+		hl = syn_attr2attr(hl);
+	    if (hl & HL_BOLD)
 		redraw_this = TRUE;
 	}
 #endif
@@ -4816,7 +4924,9 @@ screen_line(row, coloff, endcol, clear_width
 		    )
 	    {
 		hl = ScreenAttrs[off_to];
-		if (hl > HL_ALL || (hl & HL_BOLD))
+		if (hl > HL_ALL)
+		    hl = syn_attr2attr(hl);
+		if (hl & HL_BOLD)
 		    redraw_next = TRUE;
 	    }
 #endif
