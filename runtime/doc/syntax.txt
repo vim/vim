@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 09
+*syntax.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3949,6 +3949,12 @@ command.
 Cursor		the character under the cursor
 							*hl-CursorIM*
 CursorIM	like Cursor, but used when in IME mode |CursorIM|
+							*hl-CursorColumn*
+CursorColumn	the screen column that the cursor is in when 'cursorcolumn' is
+		set
+							*hl-CursorLine*
+CursorLine	the screen line that the cursor is in when 'cursorline' is
+		set
 							*hl-Directory*
 Directory	directory names (and other special names in listings)
 							*hl-DiffAdd*
