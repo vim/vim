@@ -25,6 +25,7 @@ void hl_set_fg_color_name __ARGS((char_u *name));
 void clear_hl_tables __ARGS((void));
 int hl_combine_attr __ARGS((int char_attr, int prim_attr));
 attrentry_T *syn_gui_attr2entry __ARGS((int attr));
+int syn_attr2attr __ARGS((int attr));
 attrentry_T *syn_term_attr2entry __ARGS((int attr));
 attrentry_T *syn_cterm_attr2entry __ARGS((int attr));
 char_u *highlight_has_attr __ARGS((int id, int flag, int modec));

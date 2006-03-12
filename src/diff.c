@@ -602,7 +602,7 @@ diff_redraw(dofold)
     for (wp = firstwin; wp != NULL; wp = wp->w_next)
 	if (wp->w_p_diff)
 	{
-	    redraw_win_later(wp, NOT_VALID);
+	    redraw_win_later(wp, SOME_VALID);
 #ifdef FEAT_FOLDING
 	    if (dofold && foldmethodIsDiff(wp))
 		foldUpdateAll(wp);

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 10
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -646,6 +646,8 @@ Short explanation of each option:		*option-list*
 'cscopetag'       'cst'     use cscope for tag commands
 'cscopetagorder'  'csto'    determines ":cstag" search order
 'cscopeverbose'   'csverb'  give messages when adding a cscope database
+'cursorcolumn'	  'cuc'	    highlight the screen column of the cursor
+'cursorline'	  'cul'	    highlight the screen line of the cursor
 'debug'                     set to "msg" to see all error messages
 'define'          'def'     pattern to be used to find a macro definition
 'delcombine'      'deco'    delete combining characters on their own
