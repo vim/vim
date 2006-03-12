@@ -360,7 +360,7 @@ update_topline()
 	    )
     {
 	dollar_vcol = 0;
-	if (curwin->w_skipcol)
+	if (curwin->w_skipcol != 0)
 	{
 	    curwin->w_skipcol = 0;
 	    redraw_later(NOT_VALID);
@@ -841,6 +841,10 @@ validate_virtcol_win(wp)
     {
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 	wp->w_valid |= VALID_VIRTCOL;
+#ifdef FEAT_SYN_HL
+	if (wp->w_p_cuc)
+	    redraw_win_later(wp, SOME_VALID);
+#endif
     }
 }
 
@@ -1196,6 +1200,14 @@ curs_columns(scroll)
 	curwin->w_skipcol = 0;
     if (prev_skipcol != curwin->w_skipcol)
 	redraw_later(NOT_VALID);
+
+#ifdef FEAT_SYN_HL
+    /* Redraw when w_virtcol changes and 'cursorcolumn' is set, or when w_row
+     * changes and 'cursorline' is set. */
+    if ((curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
+	    || (curwin->w_p_cul && (curwin->w_valid & VALID_WROW) == 0))
+	redraw_later(SOME_VALID);
+#endif
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }

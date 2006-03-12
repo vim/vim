@@ -515,6 +515,13 @@
 #endif
 
 /*
+ * +spell		spell checking
+ */
+#if defined(FEAT_NORMAL) || defined(PROTO)
+# define FEAT_SPELL
+#endif
+
+/*
  * +builtin_terms	Choose one out of the following four:
  *
  * NO_BUILTIN_TCAPS	Do not include any builtin termcap entries (used only

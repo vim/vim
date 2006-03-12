@@ -754,7 +754,7 @@ codepage_invalid:
     apply_autocmds(EVENT_ENCODINGCHANGED, NULL, (char_u *)"", FALSE, curbuf);
 #endif
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     /* Need to reload spell dictionaries */
     spell_reload();
 #endif
@@ -2722,7 +2722,7 @@ mb_charlen(str)
     return count;
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Like mb_charlen() but for a string with specified length.
  */
