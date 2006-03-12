@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 11
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+
+Turn spelling into a separate feature?  May require syn-hl.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -77,13 +80,6 @@ CONSIDERED FOR VERSION 7.0:
 	It's not clear that this doesn't cause problems when the executed
 	commands do something like changing 'lines'.  Esp. because the 
 	screen has not yet been allocated with the new size.
-9   Add cursor-column highlighting.  Enable it with 'cursorcolumn' option,
-    set highlighting with "CursorColumn" group.  Useful for aligning text.
-    Also cursor-row highlighting.  Patch from Yasuhiro Matsumoto for
-    underlining the cursor line: 2004 Jun 17.  Should use highlight group
-    instead.
-    Alternative: when 'number' is set highlight the number of the current
-    line.
 7   Make ":startinsert" command work directly for functions and scripts?
     Also make it possible to append (it's difficult at end of line).
 -   When using 'incsearch" CTRL-R CTRL-W gets the word under the cursor, but
@@ -1424,6 +1420,8 @@ Syntax highlighting:
     used in a wrong way.  I can't reproduce it...
 7   Be able to change only the background highlighting.  Useful for Diff* and
     Search highlighting.
+7   When 'number' is set highlight the number of the current line.
+    Must be enabled with an option, because it slows down display updating.
 8   Allow the user to add items to the Syntax menu sorted, without having to
     change this for each release.
 8   Add a "matchcontains" for regions: items contained in the start or end

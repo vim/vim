@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 11
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -23,8 +23,9 @@ Spell checking				|new-spell|
 Omni completion				|new-omni-completion|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
+Tab pages				|new-tab-pages|
 Extended Unicode support		|new-more-unicode|
-Highlighting matching parens		|new-matchparen|
+More highlighting			|new-more-highlighting|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
 Scroll back in messages			|new-scroll-back|
@@ -236,6 +237,29 @@ The 'printmbcharset' and 'printmbfont' options are used for this.
 Also see |postscript-cjk-printing|.  (Mike Williams)
 
 
+Tab pages						*new-tab-pages*
+---------
+
+A tab page is page with one or more windows with a label (aka tab) at the top.
+By clicking on the label you can quickly switch between the tab pages.  And
+with the keyboard, using the |gt| (Goto Tab) command.  This is a convenient
+way to work with many windows.
+
+To start Vim with each file argument in a separate tab page use the |-p|
+argument.  The maximum number of pages can be set with 'tabpagemax'.
+
+The line with tab labels is either made with plain text an highlighting or
+with a GUI mechanism.  The GUI labels look better but are only available on a
+few systems.  The line can be customized with 'tabline' and 'guitablabel'.
+Whether it is displayed is set with 'showtabline'.  Whether to use the GUI
+labels is set with the "e" flag in 'guioptions'.
+
+The |:tab| command modifier can be used to have most commands that open a new
+window open a new tab instead.
+
+More info here: |tabpage|
+
+
 Extended Unicode support				*new-more-unicode*
 ------------------------
 
@@ -253,8 +277,10 @@ For pattern matching it is now possible to search for individual composing
 characters. |patterns-composing|
 
 
-Highlighting matching parens				*new-matchparen*
-----------------------------
+More highlighting				*new-more-highlighting*
+-----------------
+
+Highlighting matching parens
 
 When moving the cursor through the text and it is on a paren, then the
 matching paren can be highlighted.  This uses the new |CursorMoved|
@@ -265,6 +291,14 @@ See |matchparen| for more information.
 The plugin uses the |:match| command.  It now supports three match patterns.
 The plugin uses the third one.  The first one is for the user and the second
 one can be used by another plugin.
+
+Highlighting the cursor line and column
+
+The 'cursorline' and 'cursorcolumn' options have been added.  These highlight
+the screen line and screen column of the cursor.  This makes the cursor
+position easier to spot.  'cursorcolumn' is also useful to align text.  The
+CursorColumn and CursorLine highlighting allow changing the colors used.
+|hl-CursorColumn| |hl-CursorLine|
 
 
 Translated manual pages					*new-manpage-trans*
@@ -1900,5 +1934,15 @@ sizeof(XChar2b) then display was wrong. (Yukihiro Nakadaira)
 contains a buffer that is not in the argument list (can't be closed because it
 is modified).  Now go to the window that has the first item of the argument
 list.
+
+GUI: To avoid left-over pixels from bold text all characters after a character
+with special attributes were redrawn.  Now only do this for characters that
+actually are bold.  Speeds up displaying considerably.
+
+When only highlighting changes and the text is scrolled at the same time
+everything is redraw instead of using a scroll and updating the changed text.
+E.g., when using ":match" to highlight a paren that the cursor landed on.
+Added SOME_VALID: Redraw the whole window but also try to scroll to minimize
+redrawing.
 
  vim:tw=78:ts=8:ft=help:norl:
