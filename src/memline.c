@@ -524,7 +524,7 @@ ml_open_file(buf)
     if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf)
 	return;		/* nothing to do */
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     /* For a spell buffer use a temp file name. */
     if (buf->b_spell)
     {
@@ -2124,7 +2124,7 @@ ml_append(lnum, line, len, newfile)
     return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Like ml_append() but for an arbitrary buffer.  The buffer must already have
  * a memline.

@@ -3344,7 +3344,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_DIFF
 	curwin->w_p_diff = FALSE;	/* No 'diff' */
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	curwin->w_p_spell = FALSE;	/* No spell checking */
 #endif
 
@@ -4493,9 +4493,9 @@ do_sub(eap)
 
 			    update_topline();
 			    validate_cursor();
-			    update_screen(NOT_VALID);
+			    update_screen(SOME_VALID);
 			    highlight_match = FALSE;
-			    redraw_later(NOT_VALID);
+			    redraw_later(SOME_VALID);
 
 #ifdef FEAT_FOLDING
 			    curwin->w_p_fen = save_p_fen;
