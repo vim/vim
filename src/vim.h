@@ -510,6 +510,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define INVERTED		20  /* redisplay inverted part that changed */
 #define INVERTED_ALL		25  /* redisplay whole inverted part */
 #define REDRAW_TOP		30  /* display first w_upd_rows screen lines */
+#define SOME_VALID		35  /* like NOT_VALID but may scroll */
 #define NOT_VALID		40  /* buffer needs complete redraw */
 #define CLEAR			50  /* screen messed up, clear it */
 
@@ -1180,15 +1181,18 @@ typedef enum
     , HLF_TP	    /* tabpage line */
     , HLF_TPS	    /* tabpage line selected */
     , HLF_TPF	    /* tabpage line filler */
+    , HLF_CUC	    /* 'cursurcolumn' */
+    , HLF_CUL	    /* 'cursurline' */
     , HLF_COUNT	    /* MUST be the last one */
 } hlf_T;
 
-/* the HL_FLAGS must be in the same order as the HLF_ enums! */
+/* The HL_FLAGS must be in the same order as the HLF_ enums!
+ * When chainging this also adjust the default for 'highlight'. */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
 		  'f', 'F', 'A', 'C', 'D', 'T', '>', \
 		  'B', 'P', 'R', 'L', \
-		  '+', '=', 'x', 'X', '*', '#', '_'}
+		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.'}
 
 /*
  * Boolean constants

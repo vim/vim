@@ -236,6 +236,8 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #endif
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
+#endif
+#ifndef FEAT_SPELL
 # define ex_spell		ex_ni
 # define ex_mkspell		ex_ni
 # define ex_spelldump		ex_ni
@@ -7025,6 +7027,7 @@ theend:
 # endif
 }
 
+#if defined(FEAT_MOUSE) || defined(PROTO)
 /*
  * Open a new tab page.
  */
@@ -7039,6 +7042,7 @@ tabpage_new()
     ea.arg = (char_u *)"";
     ex_splitview(&ea);
 }
+#endif
 
 /*
  * :tabnext command
@@ -10588,7 +10592,7 @@ ex_nohlsearch(eap)
     exarg_T	*eap;
 {
     no_hlsearch = TRUE;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(SOME_VALID);
 }
 
 /*
@@ -10618,7 +10622,7 @@ ex_match(eap)
     {
 	vim_free(curwin->w_match[mi].regprog);
 	curwin->w_match[mi].regprog = NULL;
-	redraw_later(NOT_VALID);	/* always need a redraw */
+	redraw_later(SOME_VALID);	/* always need a redraw */
     }
 
     if (ends_excmd(*eap->arg))

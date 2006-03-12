@@ -1713,6 +1713,8 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_nf);
 #ifdef FEAT_SYN_HL
     clear_string_option(&buf->b_p_syn);
+#endif
+#ifdef FEAT_SPELL
     clear_string_option(&buf->b_p_spc);
     clear_string_option(&buf->b_p_spf);
     vim_free(buf->b_cap_prog);
@@ -2389,7 +2391,7 @@ get_winopts(buf)
 	curwin->w_p_fdl = p_fdls;
 #endif
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     if (curwin->w_p_spell && *buf->b_p_spl != NUL)
 	did_set_spelllang(buf);
 #endif

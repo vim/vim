@@ -299,7 +299,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(PROTO)
 
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
@@ -1999,8 +1999,10 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     char_u	*endp;
     hlf_T	attr;
     int		len;
+# ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp->w_buffer);
     int		col;
+# endif
     int		can_spell;
     char_u	*buf = NULL;
     int		buflen = 0;
@@ -2087,6 +2089,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 						     : p - buf)
 						  > wp->w_cursor.col)))
 		    {
+# ifdef FEAT_SYN_HL
 			if (has_syntax)
 			{
 			    col = p - buf;
@@ -2094,6 +2097,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 						       FALSE, &can_spell);
 			}
 			else
+#endif
 			    can_spell = TRUE;
 
 			if (can_spell)
@@ -4554,7 +4558,7 @@ spell_reload_one(fname, added_word)
 	    if (spell_load_file(fname, NULL, slang, FALSE) == NULL)
 		/* reloading failed, clear the language */
 		slang_clear(slang);
-	    redraw_all_later(NOT_VALID);
+	    redraw_all_later(SOME_VALID);
 	    didit = TRUE;
 	}
     }
@@ -9003,7 +9007,7 @@ spell_add_word(word, len, bad, index, undo)
 	if (buf != NULL)
 	    buf_reload(buf, buf->b_orig_mode);
 
-	redraw_all_later(NOT_VALID);
+	redraw_all_later(SOME_VALID);
     }
 }
 
@@ -15476,4 +15480,4 @@ expand_spelling(lnum, col, pat, matchp)
 }
 #endif
 
-#endif  /* FEAT_SYN_HL */
+#endif  /* FEAT_SPELL */

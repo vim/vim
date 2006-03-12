@@ -4733,7 +4733,7 @@ win_drag_status_line(dragwin, offset)
     p_ch = Rows - cmdline_row;
     if (p_ch < 1)
 	p_ch = 1;
-    redraw_all_later(NOT_VALID);
+    redraw_all_later(SOME_VALID);
     showmode();
 }
 
@@ -4986,7 +4986,7 @@ win_new_height(wp, height)
     wp->w_prev_fraction_row = wp->w_wrow;
 
     win_comp_scroll(wp);
-    redraw_win_later(wp, NOT_VALID);
+    redraw_win_later(wp, SOME_VALID);
 #ifdef FEAT_WINDOWS
     wp->w_redr_status = TRUE;
 #endif
@@ -5184,7 +5184,7 @@ last_status_rec(fr, statusline)
 	    else
 		win_new_height(wp, wp->w_height - 1);
 	    comp_col();
-	    redraw_all_later(NOT_VALID);
+	    redraw_all_later(SOME_VALID);
 	}
     }
 #ifdef FEAT_VERTSPLIT

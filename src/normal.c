@@ -4512,7 +4512,7 @@ nv_zet(cap)
     long	old_fdl = curwin->w_p_fdl;
     int		old_fen = curwin->w_p_fen;
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     int		undo = FALSE;
 #endif
 
@@ -4885,7 +4885,7 @@ dozet:
 
 #endif /* FEAT_FOLDING */
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     case 'u':	/* "zug" and "zuw": undo "zg" and "zw" */
 		++no_mapping;
 		++allow_keys;   /* no mapping for nchar, but allow key codes */
@@ -6410,7 +6410,7 @@ nv_brackets(cap)
     }
 #endif
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     /*
      * "[s", "[S", "]s" and "]S": move to next spell error.
      */

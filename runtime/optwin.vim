@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 10
+" Last Change:	2006 Mar 12
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -389,6 +389,12 @@ call <SID>OptionG("hl", &hl)
 call append("$", "hlsearch\thighlight all matches for the last used search pattern")
 call <SID>BinOptionG("hls", &hls)
 if has("syntax")
+  call append("$", "cursorcolumn\thighlight the screen column of the cursor")
+  call append("$", "\t(local to window)")
+  call <SID>BinOptionL("cuc")
+  call append("$", "cursorline\thighlight the screen line of the cursor")
+  call append("$", "\t(local to window)")
+  call <SID>BinOptionL("cul")
   call append("$", "spell\thighlight spelling mistakes")
   call append("$", "\t(local to window)")
   call <SID>BinOptionL("spell")
