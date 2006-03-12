@@ -1290,7 +1290,7 @@ restore_vimvar(idx, save_tv)
     }
 }
 
-#if defined(FEAT_SYN_HL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(PROTO)
 /*
  * Evaluate an expression to a list with suggestions.
  * For the "expr:" part of 'spellsuggest'.
@@ -10609,7 +10609,7 @@ f_has(argvars, rettv)
 #ifdef FEAT_NETBEANS_INTG
 	"netbeans_intg",
 #endif
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
 	"spell",
 #endif
 #ifdef FEAT_SYN_HL
@@ -14365,7 +14365,7 @@ f_soundfold(argvars, rettv)
 
     rettv->v_type = VAR_STRING;
     s = get_tv_string(&argvars[0]);
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     rettv->vval.v_string = eval_soundfold(s);
 #else
     rettv->vval.v_string = vim_strsave(s);
@@ -14388,7 +14388,7 @@ f_spellbadword(argvars, rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	/* Find the start and length of the badly spelled word. */
@@ -14430,12 +14430,13 @@ f_spellbadword(argvars, rettv)
 /*
  * "spellsuggest()" function
  */
+/*ARGSUSED*/
     static void
 f_spellsuggest(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     char_u	*str;
     int		typeerr = FALSE;
     int		maxcount;
@@ -14448,7 +14449,7 @@ f_spellsuggest(argvars, rettv)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-#ifdef FEAT_SYN_HL
+#ifdef FEAT_SPELL
     if (curwin->w_p_spell && *curbuf->b_p_spl != NUL)
     {
 	str = get_tv_string(&argvars[0]);
