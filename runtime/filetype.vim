@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 05
+" Last Change:	2006 Mar 13
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1779,6 +1779,9 @@ au BufNewFile,BufRead *.wml			setf wml
 
 " Winbatch
 au BufNewFile,BufRead *.wbt			setf winbatch
+
+" WSML
+au BufNewFile,BufRead *.wsml			setf wsml
 
 " WvDial
 au BufNewFile,BufRead wvdial.conf,.wvdialrc	setf wvdial

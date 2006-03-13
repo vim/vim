@@ -65,7 +65,12 @@ redo:
     kind_width = 0;
     extra_width = 0;
 
+    /* Pretend the pum is already there to avoid that must_redraw is set when
+     * 'cuc' is on. */
+    pum_array = (pumitem_T *)1;
     validate_cursor_col();
+    pum_array = NULL;
+
     row = curwin->w_cline_row + W_WINROW(curwin);
     height = curwin->w_cline_height;
     col = curwin->w_wcol + W_WINCOL(curwin) - curwin->w_leftcol;
@@ -137,7 +142,7 @@ redo:
 	}
 	if (array[i].pum_extra != NULL)
 	{
-	    w = vim_strsize(array[i].pum_extra + 1);
+	    w = vim_strsize(array[i].pum_extra) + 1;
 	    if (extra_width < w)
 		extra_width = w;
 	}

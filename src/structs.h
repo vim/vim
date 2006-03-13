@@ -280,8 +280,12 @@ struct u_entry
 
 struct u_header
 {
-    u_header_T	*uh_next;	/* pointer to next header in list */
+    u_header_T	*uh_next;	/* pointer to next undo header in list */
     u_header_T	*uh_prev;	/* pointer to previous header in list */
+    u_header_T	*uh_alt_next;	/* pointer to next header for alt. redo */
+    u_header_T	*uh_alt_prev;	/* pointer to previous header for alt. redo */
+    long	uh_seq;		/* sequence number, higher == newer undo */
+    int		uh_walk;	/* used by undo_time() */
     u_entry_T	*uh_entry;	/* pointer to first entry */
     u_entry_T	*uh_getbot_entry; /* pointer to where ue_bot must be set */
     pos_T	uh_cursor;	/* cursor position before saving */
@@ -293,6 +297,7 @@ struct u_header
 #ifdef FEAT_VISUAL
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
 #endif
+    time_t	uh_time;	/* timestamp when the change was made */
 };
 
 /* values for uh_flags */
@@ -1248,6 +1253,9 @@ struct file_buffer
     u_header_T	*b_u_curhead;	/* pointer to current header */
     int		b_u_numhead;	/* current number of headers */
     int		b_u_synced;	/* entry lists are synced */
+    long	b_u_seq_last;	/* last used undo sequence number plus 1 */
+    long	b_u_seq_cur;	/* undo sequence number of last header used
+				   plus 1 */
 
     /*
      * variables for "U" command in undo.c
