@@ -325,7 +325,7 @@ void ex_ruby(exarg_T *eap)
     int state;
     char *script = NULL;
 
-    script = script_get(eap, eap->arg);
+    script = (char *)script_get(eap, eap->arg);
     if (!eap->skip && ensure_ruby_initialized())
     {
 	if (script == NULL)
@@ -350,7 +350,7 @@ void ex_rubydo(exarg_T *eap)
 	for (i = eap->line1; i <= eap->line2; i++) {
 	    VALUE line, oldline;
 
-	    line = oldline = rb_str_new2(ml_get(i));
+	    line = oldline = rb_str_new2((char *)ml_get(i));
 	    rb_lastline_set(line);
 	    rb_eval_string_protect((char *) eap->arg, &state);
 	    if (state) {
@@ -521,9 +521,9 @@ static VALUE vim_evaluate(VALUE self, VALUE str)
 #ifdef FEAT_EVAL
     char_u *value = eval_to_string((char_u *)STR2CSTR(str), NULL, TRUE);
 
-    if (value)
+    if (value != NULL)
     {
-	VALUE val = rb_str_new2(value);
+	VALUE val = rb_str_new2((char *)value);
 	vim_free(value);
 	return val;
     }
@@ -587,7 +587,7 @@ static VALUE buffer_name(VALUE self)
 {
     buf_T *buf = get_buf(self);
 
-    return buf->b_ffname ? rb_str_new2(buf->b_ffname) : Qnil;
+    return buf->b_ffname ? rb_str_new2((char *)buf->b_ffname) : Qnil;
 }
 
 static VALUE buffer_number(VALUE self)
@@ -610,7 +610,7 @@ static VALUE buffer_aref(VALUE self, VALUE num)
     long n = NUM2LONG(num);
 
     if (n > 0 && n <= buf->b_ml.ml_line_count) {
-	char *line = ml_get_buf(buf, n, FALSE);
+	char *line = (char *)ml_get_buf(buf, n, FALSE);
 	return line ? rb_str_new2(line) : Qnil;
     }
     else {

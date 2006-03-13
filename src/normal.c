@@ -8006,6 +8006,12 @@ nv_g_cmd(cap)
 	break;
 #endif
 
+    case '+':
+    case '-': /* "g+" and "g-": undo or redo along the timeline */
+	if (!checkclearopq(oap))
+	    undo_time((int)(cap->nchar == '-' ? -cap->count1 : cap->count1));
+	break;
+
     default:
 	clearopbeep(oap);
 	break;
