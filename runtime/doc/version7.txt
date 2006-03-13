@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 12
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -256,6 +256,9 @@ labels is set with the "e" flag in 'guioptions'.
 
 The |:tab| command modifier can be used to have most commands that open a new
 window open a new tab instead.
+
+The |--remote-tab| argument can be used to edit a file in a new tab page in an
+already running Vim server.
 
 More info here: |tabpage|
 

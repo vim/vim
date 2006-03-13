@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 12
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-
-Turn spelling into a separate feature?  May require syn-hl.
+-   UNDO TREE:
+    Make proper test for "g+" and "g-"
+    Verify there are no memory leaks.
+    Docs for "g+" and "g-", note in version7.txt
+    Command to jump so many seconds forward/backward?
+    Show the list of changes in a window to be able to select a version?
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -50,22 +54,6 @@ Mac unicode patch (Da Woon Jung):
 
 
 CONSIDERED FOR VERSION 7.0:
-
--   UNDO TREE: keep all states of the text, don't delete undo info.
-    When making a change, instead of clearing any future undo (thus redo)
-    info, make a new branch.
-    To navigate through the undo tree number the states of the text
-    sequentially and make it possible to go through the tree in that order.
-    Use "g+++" to go forward, "g---" to go backward.  Can mix - and +.
-    Could also use timestamps (to show the time and/or jump to a state five
-    minutes ago). (David Schweikert)
-    To go from one state to another: backtrack to a common state, then forward
-    again.
-    Only difficult thing: When going back in time, how to find the previous
-    text state in the tree?
-    Show the list of changes in a window to be able to select a version?
-    Also: See ":e" as a change operation, find the changes and add them to the
-    undo info.  Needed for when an external tool changes the file.
 
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
     For Xwindows this can be done with XReparentWindow().
@@ -98,6 +86,8 @@ CONSIDERED FOR VERSION 7.0:
 
 Add strtol() to avoid the problems with leading zero causing octal conversion.
 
+Updated Ruby interface. (Ryan Paul)
+
 Add a 'tool' window: behaves like a preview window but there can be several.
 Don't count it in only_one_window(). (Alexei Alexandrov)
 
@@ -124,8 +114,6 @@ Profiling:
     - :profile resume
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
-
-Updated Ruby interface. (Ryan Paul)
 
 'errorformat' docs are a bit unclear.  Suggestions by Charles Campbell (2006
 Jan 6)
@@ -2780,6 +2768,8 @@ Undo:
     before some time/date can be flushed. 'undopersist' gives maximum time to
     keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
+8   See ":e" as a change operation, find the changes and add them to the
+    undo info.  Needed for when an external tool changes the file.
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
@@ -2804,9 +2794,6 @@ Undo:
     [-99].
 -   With undo with simple line delete/insert: optimize screen updating.
 -   When executing macro's: Save each line for undo only once.
--   Store undo info in a file that survives until the next edit.  Then it's
-    possible to undo to before the current editing session.  Combined with
-    viminfo?
 -   When doing a global substitute, causing almost all lines to be changed,
     undo info becomes very big.  Put undo info in swap file??
 
