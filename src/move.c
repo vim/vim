@@ -842,7 +842,11 @@ validate_virtcol_win(wp)
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 	wp->w_valid |= VALID_VIRTCOL;
 #ifdef FEAT_SYN_HL
-	if (wp->w_p_cuc)
+	if (wp->w_p_cuc
+# ifdef FEAT_INS_EXPAND
+		&& !pum_visible()
+# endif
+		)
 	    redraw_win_later(wp, SOME_VALID);
 #endif
     }
@@ -1204,8 +1208,12 @@ curs_columns(scroll)
 #ifdef FEAT_SYN_HL
     /* Redraw when w_virtcol changes and 'cursorcolumn' is set, or when w_row
      * changes and 'cursorline' is set. */
-    if ((curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
-	    || (curwin->w_p_cul && (curwin->w_valid & VALID_WROW) == 0))
+    if (((curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
+		|| (curwin->w_p_cul && (curwin->w_valid & VALID_WROW) == 0))
+# ifdef FEAT_INS_EXPAND
+	    && !pum_visible()
+# endif
+	    )
 	redraw_later(SOME_VALID);
 #endif
 
