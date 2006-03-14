@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 09, 2006
-" Version:	79
+" Date:		Mar 13, 2006
+" Version:	80
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v79"
+let g:loaded_netrw = "v80"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -2802,6 +2802,23 @@ fun! netrw#DirBrowse(dirname)
   endif
   let s:last_sort_by= g:netrw_sort_by
 
+  " set up ShellCmdPost handling.  Append current buffer to browselist
+  if !exists("s:netrw_browselist")
+   let s:netrw_browselist= []
+  endif
+  if g:netrw_fastbrowse <= 1 && (empty(s:netrw_browselist) || bufnr("%") > s:netrw_browselist[-1])
+   call add(s:netrw_browselist,bufnr("%"))
+"   call Decho("browselist=".string(s:netrw_browselist))
+  endif
+  if !exists("s:netrw_browser_shellcmd") && g:netrw_fastbrowse <= 1
+"   call Decho("setting up local-browser shell command refresh")
+   let s:netrw_browser_shellcmd= 1
+   augroup AuNetrwShellCmd
+    au!
+    au ShellCmdPost *	call s:LocalBrowseShellCmdRefresh()
+   augroup END
+  endif
+
   " get the new directory name
   if has("win32") || has("win95") || has("win64") || has("win16")
    let b:netrw_curdir= substitute(a:dirname,'\\','/','ge')
@@ -3162,6 +3179,36 @@ fun! s:LocalBrowseChgDir(dirname,newdir,...)
 endfun
 
 " ---------------------------------------------------------------------
+" LocalBrowseShellCmdRefresh: this function is called after a user has {{{2
+" performed any shell command.  The idea is to cause all local-browsing
+" buffers to be refreshed after a user has executed some shell command,
+" on the chance that s/he removed/created a file/directory with it.
+fun! s:LocalBrowseShellCmdRefresh()
+"  call Dfunc("LocalBrowseShellCmdRefresh() browselist=".string(s:netrw_browselist))
+  "  go through all buffers,
+  "  including unlisted (which is why I can't use bufdo)
+  let curwin = winnr()
+  let ibl    = 0
+  for ibuf in s:netrw_browselist
+   if bufwinnr(ibuf) == -1
+"    call Decho("wiping  buf#".ibuf)
+    exe "bw ".ibuf
+    call remove(s:netrw_browselist,ibl)
+"    call Decho("browselist=".string(s:netrw_browselist))
+    continue
+   else
+"    call Decho("refresh buf#".ibuf.'-> win#'.bufwinnr(ibuf))
+    exe bufwinnr(ibuf)."wincmd w"
+    call s:NetRefresh(s:LocalBrowseChgDir(b:netrw_curdir,'./'),1)
+   endif
+   let ibl= ibl + 1
+  endfor
+  exe curwin."wincmd w"
+
+"  call Dret("LocalBrowseShellCmdRefresh")
+endfun
+
+" ---------------------------------------------------------------------
 " LocalBrowseRm: {{{2
 fun! s:LocalBrowseRm(path) range
 "  call Dfunc("LocalBrowseRm(path<".a:path.">)")
@@ -3465,7 +3512,7 @@ fun! netrw#Explore(indx,dosplit,style,...)
      call search('\<'.substitute(dirfile,"^.*/","","").'\>',"w")
     endif
     let w:netrw_explore_mtchcnt = indx + 1
-    let w:netrw_explore_bufnr   = bufnr(".")
+    let w:netrw_explore_bufnr   = bufnr("%")
     let w:netrw_explore_line    = line(".")
     call s:SetupNetrwStatusLine('%f %h%m%r%=%9*%{NetrwStatusLine()}')
 "    call Decho("explore: mtchcnt=".w:netrw_explore_mtchcnt." bufnr=".w:netrw_explore_bufnr." line#".w:netrw_explore_line)
@@ -3537,8 +3584,8 @@ fun! NetrwStatusLine()
 "  let g:stlmsg=""
 "  if !exists("w:netrw_explore_bufnr")
 "   let g:stlmsg="!X<explore_bufnr>"
-"  elseif w:netrw_explore_bufnr != bufnr(".")
-"   let g:stlmsg="explore_bufnr!=".bufnr(".")
+"  elseif w:netrw_explore_bufnr != bufnr("%")
+"   let g:stlmsg="explore_bufnr!=".bufnr("%")
 "  endif
 "  if !exists("w:netrw_explore_line")
 "   let g:stlmsg=" !X<explore_line>"
@@ -3550,7 +3597,7 @@ fun! NetrwStatusLine()
 "  endif
   " ^^^ NetrwStatusLine() debugging ^^^
 
-  if !exists("w:netrw_explore_bufnr") || w:netrw_explore_bufnr != bufnr(".") || !exists("w:netrw_explore_line") || w:netrw_explore_line != line(".") || !exists("w:netrw_explore_list")
+  if !exists("w:netrw_explore_bufnr") || w:netrw_explore_bufnr != bufnr("%") || !exists("w:netrw_explore_line") || w:netrw_explore_line != line(".") || !exists("w:netrw_explore_list")
    " restore user's status line
    let &stl        = s:netrw_users_stl
    let &laststatus = s:netrw_users_ls

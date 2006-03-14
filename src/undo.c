@@ -39,12 +39,38 @@
  *
  * Each u_entry list contains the information for one undo or redo.
  * curbuf->b_u_curhead points to the header of the last undo (the next redo),
- * or is NULL if nothing has been undone.
+ * or is NULL if nothing has been undone (end of the branch).
  *
  * For keeping alternate undo/redo branches the uh_alt field is used.  Thus at
  * each point in the list a branch may appear for an alternate to redo.  The
  * uh_seq field is numbered sequentially to be able to find a newer or older
  * branch.
+ *
+ *		   +---------------+	+---------------+
+ * b_u_oldhead --->| u_header	   |	| u_header	|
+ *		   |   uh_alt_next ---->|   uh_alt_next ----> NULL
+ *	   NULL <----- uh_alt_prev |<------ uh_alt_prev |
+ *		   |   uh_prev	   |	|   uh_prev	|
+ *		   +-----|---------+	+-----|---------+
+ *			 |		      |
+ *			 V		      V
+ *		   +---------------+	+---------------+
+ *		   | u_header	   |	| u_header	|
+ *		   |   uh_alt_next |	|   uh_alt_next |
+ * b_u_newhead --->|   uh_alt_prev |	|   uh_alt_prev |
+ *		   |   uh_prev	   |	|   uh_prev	|
+ *		   +-----|---------+	+-----|---------+
+ *			 |		      |
+ *			 V		      V
+ *		       NULL		+---------------+    +---------------+
+ *					| u_header	|    | u_header      |
+ *					|   uh_alt_next ---->|	 uh_alt_next |
+ *					|   uh_alt_prev |<------ uh_alt_prev |
+ *					|   uh_prev	|    |	 uh_prev     |
+ *					+-----|---------+    +-----|---------+
+ *					      |			   |
+ *					     etc.		  etc.
+ *
  *
  * All data is allocated with U_ALLOC_LINE(), it will be freed as soon as the
  * buffer is unloaded.
@@ -55,6 +81,7 @@
 /* See below: use malloc()/free() for memory management. */
 #define U_USE_MALLOC 1
 
+static void u_unch_branch __ARGS((u_header_T *uhp));
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
 static int undo_allowed __ARGS((void));
@@ -62,7 +89,7 @@ static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((void));
 static void u_undo_end __ARGS((void));
-static void u_freelist __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
+static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentry __ARGS((u_entry_T *, long));
@@ -270,8 +297,8 @@ u_savecommon(top, bot, newbot)
 	}
 
 	/*
-	 * If we undid more than we redid, remove the entry lists before and
-	 * including curbuf->b_u_curhead to the alternate branch.
+	 * If we undid more than we redid, move the entry lists before and
+	 * including curbuf->b_u_curhead to an alternate branch.
 	 */
 	old_curhead = curbuf->b_u_curhead;
 	if (old_curhead != NULL)
@@ -285,17 +312,17 @@ u_savecommon(top, bot, newbot)
 	 */
 	while (curbuf->b_u_numhead > p_ul && curbuf->b_u_oldhead != NULL)
 	{
-	    u_header_T	    *upfree = curbuf->b_u_oldhead;
+	    u_header_T	    *uhfree = curbuf->b_u_oldhead;
 
 	    /* If there is no branch only free one header. */
-	    if (upfree->uh_alt_next == NULL)
-		u_freelist(curbuf, upfree, &old_curhead);
+	    if (uhfree->uh_alt_next == NULL)
+		u_freeheader(curbuf, uhfree, &old_curhead);
 	    else
 	    {
 		/* Free the oldest alternate branch as a whole. */
-		while (upfree->uh_alt_next != NULL)
-		    upfree = upfree->uh_alt_next;
-		u_freebranch(curbuf, upfree, &old_curhead);
+		while (uhfree->uh_alt_next != NULL)
+		    uhfree = uhfree->uh_alt_next;
+		u_freebranch(curbuf, uhfree, &old_curhead);
 	    }
 	}
 
@@ -317,10 +344,14 @@ u_savecommon(top, bot, newbot)
 		curbuf->b_u_oldhead = uhp;
 	}
 	uhp->uh_alt_prev = NULL;
-	uhp->uh_seq = curbuf->b_u_seq_last++;
-	curbuf->b_u_seq_cur = curbuf->b_u_seq_last;
 	if (curbuf->b_u_newhead != NULL)
 	    curbuf->b_u_newhead->uh_prev = uhp;
+
+	uhp->uh_seq = curbuf->b_u_seq_last++;
+	curbuf->b_u_seq_cur = curbuf->b_u_seq_last;
+	uhp->uh_time = time(NULL);
+	curbuf->b_u_seq_time = uhp->uh_time + 1;
+
 	uhp->uh_walk = 0;
 	uhp->uh_entry = NULL;
 	uhp->uh_getbot_entry = NULL;
@@ -331,7 +362,6 @@ u_savecommon(top, bot, newbot)
 	else
 	    uhp->uh_cursor_vcol = -1;
 #endif
-	uhp->uh_time = time(NULL);
 
 	/* save changed and buffer empty flag for undo */
 	uhp->uh_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
@@ -575,7 +605,6 @@ u_doit(count)
 	    }
 
 	    u_undoredo();
-	    curbuf->b_u_seq_cur = curbuf->b_u_curhead->uh_seq;
 	}
 	else
 	{
@@ -586,7 +615,8 @@ u_doit(count)
 	    }
 
 	    u_undoredo();
-	    curbuf->b_u_seq_cur = curbuf->b_u_curhead->uh_seq + 1;
+	    ++curbuf->b_u_seq_cur;
+	    ++curbuf->b_u_seq_time;
 
 	    /* Advance for next redo.  Set "newhead" when at the end of the
 	     * redoable changes. */
@@ -603,18 +633,27 @@ static int lastmark = 0;
 /*
  * Undo or redo over the timeline.
  * When "step" is negative go back in time, otherwise goes forward in time.
+ * When "sec" is FALSE make "step" steps, when "sec" is TRUE use "step" as
+ * seconds.
  */
     void
-undo_time(step)
-    int	    step;
+undo_time(step, sec)
+    long	step;
+    int		sec;
 {
     long	    target;
     long	    closest;
+    long	    closest_start;
+    long	    closest_seq = 0;
+    long	    val;
+    long	    limit;
     u_header_T	    *uhp;
     u_header_T	    *last;
     int		    mark;
     int		    nomark;
     int		    round;
+    int		    dosec = sec;
+    int		    above = FALSE;
 
     u_newcount = 0;
     u_oldcount = 0;
@@ -625,18 +664,43 @@ undo_time(step)
      * the current one also counts, thus do one less. */
     if (step < 0)
     {
-	target = curbuf->b_u_seq_cur + step;
-	closest = -1;
+	if (sec)
+	    target = (long)curbuf->b_u_seq_time + step;
+	else
+	    target = curbuf->b_u_seq_cur + step;
+	if (target < 0)
+	    target = -1;
+	closest = -2;
     }
     else
     {
-	target = curbuf->b_u_seq_cur + step - 1;
-	closest = curbuf->b_u_seq_last + 1;
+	if (sec)
+	{
+	    target = curbuf->b_u_seq_time + step - 1;
+	    closest = time(NULL) + 1;
+	}
+	else
+	{
+	    target = curbuf->b_u_seq_cur + step - 1;
+	    closest = curbuf->b_u_seq_last + 1;
+	}
+	if (target >= closest)
+	    target = closest - 1;
     }
+    closest_start = closest;
+    if (sec)
+	limit = curbuf->b_u_seq_time + (step > 0 ? -1 : 1);
+    else
+	limit = curbuf->b_u_seq_cur;
 
-    /* May do this twice:
+    /*
+     * May do this twice:
      * 1. Search for "target", update "closest" to the best match found.
-     * 2. If "target" not found search for "closest".  */
+     * 2. If "target" not found search for "closest".
+     *
+     * When using the closest time we use the sequence number in the second
+     * round, because there may be several entries with the same time.
+     */
     for (round = 1; round <= 2; ++round)
     {
 	/* Find the path from the current state to where we want to go.  The
@@ -654,13 +718,37 @@ undo_time(step)
 	while (uhp != NULL)
 	{
 	    uhp->uh_walk = mark;
-	    if (uhp->uh_seq == target)	/* found it! */
-		break;
+	    val = (dosec ? uhp->uh_time : uhp->uh_seq);
 
-	    if (round == 1 && (step < 0
-			? (uhp->uh_seq < target && uhp->uh_seq > closest)
-			: (uhp->uh_seq > target && uhp->uh_seq < closest)))
-		closest = uhp->uh_seq;
+	    if (round == 1)
+	    {
+		/* Remember the header that is closest to the target.
+		 * It must be at least in the right direction (checked with
+		 * "limit").  When the timestamp is equal find the
+		 * highest/lowest sequence number. */
+		if ((dosec && val == closest)
+			? (step < 0
+			    ? uhp->uh_seq < closest_seq
+			    : uhp->uh_seq > closest_seq)
+			: (step < 0
+			    ? (val < limit
+				&& (closest > target
+				    ? (val <= closest)
+				    : (val >= closest)))
+			    : (val > limit
+				&& (closest < target
+				    ? val >= closest
+				    : val <= closest))))
+		{
+		    closest = val;
+		    closest_seq = uhp->uh_seq;
+		}
+	    }
+
+	    /* Quit searching when we found a match.  But when searching for a
+	     * time we need to continue looking for the best uh_seq. */
+	    if (target == val && !dosec)
+		break;
 
 	    /* go down in the tree if we haven't been there */
 	    if (uhp->uh_prev != NULL && uhp->uh_prev->uh_walk != nomark
@@ -693,18 +781,19 @@ undo_time(step)
 
 	if (uhp != NULL)    /* found it */
 	    break;
-	if (step < 0 && closest == -1)
+	if (closest == closest_start)
 	{
-	    MSG(_("Already at oldest change"));
-	    return;
-	}
-	if (step > 0 && closest == curbuf->b_u_seq_last + 1)
-	{
-	    MSG(_("Already at newest change"));
+	    if (step < 0)
+		MSG(_("Already at oldest change"));
+	    else
+		MSG(_("Already at newest change"));
 	    return;
 	}
 
-	target = closest;
+	target = closest_seq;
+	dosec = FALSE;
+	if (step < 0)
+	    above = TRUE;	/* stop above the header */
     }
 
     /* If we found it: Follow the path to go to where we want to be. */
@@ -720,7 +809,8 @@ undo_time(step)
 		uhp = curbuf->b_u_newhead;
 	    else
 	    {
-		while (uhp->uh_alt_prev != NULL)
+		while (uhp->uh_alt_prev != NULL
+					 && uhp->uh_alt_prev->uh_walk == mark)
 		{
 		    uhp->uh_walk = nomark;
 		    uhp = uhp->uh_alt_prev;
@@ -732,11 +822,10 @@ undo_time(step)
 	    curbuf->b_u_curhead = uhp;
 	    u_undoredo();
 	    uhp->uh_walk = nomark;	/* don't go back down here */
-	    curbuf->b_u_seq_cur = uhp->uh_seq;
 	}
 
 	/*
-	 * And now go down the tree, branching off where needed.
+	 * And now go down the tree (redo), branching off where needed.
 	 */
 	uhp = curbuf->b_u_curhead;
 	for (;;)
@@ -759,13 +848,21 @@ undo_time(step)
 
 		uhp = last;
 	    }
+	    curbuf->b_u_curhead = uhp;
+	    curbuf->b_u_seq_cur = uhp->uh_seq;
+	    curbuf->b_u_seq_time = uhp->uh_time;
 
 	    if (uhp->uh_walk != mark)
 		break;	    /* must have reached the target */
 
-	    curbuf->b_u_curhead = uhp;
+	    /* Stop when going backwards in time and didn't find the exact
+	     * header we were looking for. */
+	    if (uhp->uh_seq == target && above)
+		break;
+
 	    u_undoredo();
-	    curbuf->b_u_seq_cur = uhp->uh_seq + 1;
+	    ++curbuf->b_u_seq_cur;
+	    ++curbuf->b_u_seq_time;
 
 	    /* Advance "curhead" to below the header we last used.  If it
 	     * becomes NULL then we need to set "newhead" to this leaf. */
@@ -813,8 +910,9 @@ u_undoredo()
     visualinfo_T visualinfo;
 #endif
     int		empty_buffer;		    /* buffer became empty */
+    u_header_T	*curhead = curbuf->b_u_curhead;
 
-    old_flags = curbuf->b_u_curhead->uh_flags;
+    old_flags = curhead->uh_flags;
     new_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
 	       ((curbuf->b_ml.ml_flags & ML_EMPTY) ? UH_EMPTYBUF : 0);
     setpcmark();
@@ -831,7 +929,7 @@ u_undoredo()
     curbuf->b_op_end.lnum = 0;
     curbuf->b_op_end.col = 0;
 
-    for (uep = curbuf->b_u_curhead->uh_entry; uep != NULL; uep = nuep)
+    for (uep = curhead->uh_entry; uep != NULL; uep = nuep)
     {
 	top = uep->ue_top;
 	bot = uep->ue_bot;
@@ -853,10 +951,10 @@ u_undoredo()
 	    /* If the saved cursor is somewhere in this undo block, move it to
 	     * the remembered position.  Makes "gwap" put the cursor back
 	     * where it was. */
-	    lnum = curbuf->b_u_curhead->uh_cursor.lnum;
+	    lnum = curhead->uh_cursor.lnum;
 	    if (lnum >= top && lnum <= top + newsize + 1)
 	    {
-		curwin->w_cursor = curbuf->b_u_curhead->uh_cursor;
+		curwin->w_cursor = curhead->uh_cursor;
 		newlnum = curwin->w_cursor.lnum - 1;
 	    }
 	    else
@@ -970,8 +1068,8 @@ u_undoredo()
 	newlist = uep;
     }
 
-    curbuf->b_u_curhead->uh_entry = newlist;
-    curbuf->b_u_curhead->uh_flags = new_flags;
+    curhead->uh_entry = newlist;
+    curhead->uh_flags = new_flags;
     if ((old_flags & UH_EMPTYBUF) && bufempty())
 	curbuf->b_ml.ml_flags |= ML_EMPTY;
     if (old_flags & UH_CHANGED)
@@ -987,16 +1085,16 @@ u_undoredo()
      * restore marks from before undo/redo
      */
     for (i = 0; i < NMARKS; ++i)
-	if (curbuf->b_u_curhead->uh_namedm[i].lnum != 0)
+	if (curhead->uh_namedm[i].lnum != 0)
 	{
-	    curbuf->b_namedm[i] = curbuf->b_u_curhead->uh_namedm[i];
-	    curbuf->b_u_curhead->uh_namedm[i] = namedm[i];
+	    curbuf->b_namedm[i] = curhead->uh_namedm[i];
+	    curhead->uh_namedm[i] = namedm[i];
 	}
 #ifdef FEAT_VISUAL
-    if (curbuf->b_u_curhead->uh_visual.vi_start.lnum != 0)
+    if (curhead->uh_visual.vi_start.lnum != 0)
     {
-	curbuf->b_visual = curbuf->b_u_curhead->uh_visual;
-	curbuf->b_u_curhead->uh_visual = visualinfo;
+	curbuf->b_visual = curhead->uh_visual;
+	curhead->uh_visual = visualinfo;
     }
 #endif
 
@@ -1005,15 +1103,15 @@ u_undoredo()
      * before starting the change (for the "o" command).
      * Otherwise the cursor should go to the first undone line.
      */
-    if (curbuf->b_u_curhead->uh_cursor.lnum + 1 == curwin->w_cursor.lnum
+    if (curhead->uh_cursor.lnum + 1 == curwin->w_cursor.lnum
 						 && curwin->w_cursor.lnum > 1)
 	--curwin->w_cursor.lnum;
-    if (curbuf->b_u_curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
+    if (curhead->uh_cursor.lnum == curwin->w_cursor.lnum)
     {
-	curwin->w_cursor.col = curbuf->b_u_curhead->uh_cursor.col;
+	curwin->w_cursor.col = curhead->uh_cursor.col;
 #ifdef FEAT_VIRTUALEDIT
-	if (virtual_active() && curbuf->b_u_curhead->uh_cursor_vcol >= 0)
-	    coladvance((colnr_T)curbuf->b_u_curhead->uh_cursor_vcol);
+	if (virtual_active() && curhead->uh_cursor_vcol >= 0)
+	    coladvance((colnr_T)curhead->uh_cursor_vcol);
 	else
 	    curwin->w_cursor.coladd = 0;
 #endif
@@ -1034,6 +1132,10 @@ u_undoredo()
 
     /* Make sure the cursor is on an existing line and column. */
     check_cursor();
+
+    /* Remember where we are for "g-" and ":earlier 10s". */
+    curbuf->b_u_seq_cur = curhead->uh_seq;
+    curbuf->b_u_seq_time = curhead->uh_time;
 }
 
 /*
@@ -1136,11 +1238,22 @@ ex_undojoin(eap)
 u_unchanged(buf)
     buf_T	*buf;
 {
+    u_unch_branch(buf->b_u_oldhead);
+    buf->b_did_warn = FALSE;
+}
+
+    static void
+u_unch_branch(uhp)
+    u_header_T	*uhp;
+{
     u_header_T	*uh;
 
-    for (uh = buf->b_u_newhead; uh; uh = uh->uh_next)
+    for (uh = uhp; uh != NULL; uh = uh->uh_prev)
+    {
 	uh->uh_flags |= UH_CHANGED;
-    buf->b_did_warn = FALSE;
+	if (uh->uh_alt_next != NULL)
+	    u_unch_branch(uh->uh_alt_next);	    /* recursive */
+    }
 }
 
 /*
@@ -1201,7 +1314,7 @@ u_getbot()
  * Free one header and its entry list and adjust the pointers.
  */
     static void
-u_freelist(buf, uhp, uhpp)
+u_freeheader(buf, uhp, uhpp)
     buf_T	    *buf;
     u_header_T	    *uhp;
     u_header_T	    **uhpp;	/* if not NULL reset when freeing this header */
@@ -1229,7 +1342,7 @@ u_freelist(buf, uhp, uhpp)
 }
 
 /*
- * Free an alternate branch and all following alternate branches.
+ * Free an alternate branch and any following alternate branches.
  */
     static void
 u_freebranch(buf, uhp, uhpp)
@@ -1415,7 +1528,7 @@ u_blockfree(buf)
     buf_T	*buf;
 {
     while (buf->b_u_oldhead != NULL)
-	u_freelist(buf, buf->b_u_oldhead, NULL);
+	u_freeheader(buf, buf->b_u_oldhead, NULL);
     U_FREE_LINE(buf->b_u_line_ptr);
 }
 

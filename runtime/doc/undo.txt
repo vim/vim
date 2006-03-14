@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 28
+*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11,7 +11,8 @@ The basics are explained in section |02.5| of the user manual.
 1. Undo and redo commands	|undo-commands|
 2. Two ways of undo		|undo-two-ways|
 3. Undo blocks			|undo-blocks|
-4. Remarks about undo		|undo-remarks|
+4. Undo branches		|undo-branches|
+5. Remarks about undo		|undo-remarks|
 
 ==============================================================================
 1. Undo and redo commands				*undo-commands*
@@ -102,7 +103,88 @@ After this an "u" command will undo the delete command and the previous
 change.
 
 ==============================================================================
-4. Remarks about undo					*undo-remarks*
+4. Undo branches					*undo-branches*
+
+Above we only discussed one line of undo.  But it is also possible to branch
+off.  This happens when you undo a few changes and then make a new change.
+The undone changes become a branch.  You can go to that branch with the
+following commands.
+
+What matters here is the order in which the changes are made.  Undo and redo
+are not considered changes in this context.  After each change you have a new
+state of the text.
+
+							*g-*
+g-			Go to older text state.  With a count repeat that many
+			times.  {not in Vi}
+							*:ea* *:earlier*
+:earlier {count}	Go to older text state {count} times.
+:earlier {N}s		Go to older text state about {N} seconds before.
+:earlier {N}m		Go to older text state about {N} minutes before.
+:earlier {N}h		Go to older text state about {N} hours before.
+
+							*g+*
+g+			Go to newer text state.  With a count repeat that many
+			times.  {not in Vi}
+							*:lat* *:later*
+:later {count}		Go to newer text state {count} times.
+:later {N}s		Go to newer text state about {N} seconds later.
+:later {N}m		Go to newer text state about {N} minutes later.
+:later {N}h		Go to newer text state about {N} hours later.
+
+Note that text states will become unreachable when undo information is cleared
+for 'undolevels'.
+
+Don't be surprised when moving through time shows multiple changes to take
+place at a time.  This happens when moving through the undo tree and then
+making a new change.
+
+EXAMPLE
+
+Start with this text:
+	one two three ~
+
+Delete the first word by pressing "x" three times:
+	ne two three ~
+	e two three ~
+	 two three ~
+
+Now undo that by pressing "u" three times:
+	e two three ~
+	ne two three ~
+	one two three ~
+
+Delete the second word by pressing "x" three times:
+	one wo three ~
+	one o three ~
+	one  three ~
+
+Now undo that by using "g-" three times:
+	one o three ~
+	one wo three ~
+	one two three ~
+
+Continue going back in time by pressing "g-" one more time:
+	 two three ~
+
+You are now back in the first undo branch, after deleting "one".  Repeating
+"g-" will now bring you back to the original text:
+	e two three ~
+	ne two three ~
+	one two three ~
+
+Jump to the last change with ":later 1h":
+	one  three ~
+
+And back to the start again with ":earlier 1h":
+	one two three ~
+
+
+Note that using "u" and CTRL-R will not get you to all possible text states
+while repeating "g-" and "g+" does.
+
+==============================================================================
+5. Remarks about undo					*undo-remarks*
 
 The number of changes that are remembered is set with the 'undolevels' option.
 If it is zero, the Vi-compatible way is always used.  If it is negative no

@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Feb 18
+*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -378,7 +378,7 @@ will have the same effect.  These variables are set to the file names used:
 
 Example (this does the same as 'patchexpr' being empty): >
 
-	let patchexpr=MyPatch
+	let patchexpr=MyPatch()
 	function MyPatch
 	   :call system("patch -o " . v:fname_out . " " . v:fname_in .
 	   \  " < " . v:fname_diff)

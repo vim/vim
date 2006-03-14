@@ -504,6 +504,7 @@ pum_undisplay()
 {
     pum_array = NULL;
     redraw_all_later(SOME_VALID);
+    status_redraw_all();
 }
 
 /*

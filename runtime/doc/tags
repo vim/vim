@@ -1965,6 +1965,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :dsp	tagsrch.txt	/*:dsp*
 :dsplit	tagsrch.txt	/*:dsplit*
 :e	editing.txt	/*:e*
+:ea	undo.txt	/*:ea*
+:earlier	undo.txt	/*:earlier*
 :ec	eval.txt	/*:ec*
 :echo	eval.txt	/*:echo*
 :echoe	eval.txt	/*:echoe*
@@ -2142,6 +2144,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lang	mlang.txt	/*:lang*
 :language	mlang.txt	/*:language*
 :last	editing.txt	/*:last*
+:lat	undo.txt	/*:lat*
+:later	undo.txt	/*:later*
 :lb	quickfix.txt	/*:lb*
 :lbuffer	quickfix.txt	/*:lbuffer*
 :lc	editing.txt	/*:lc*
@@ -5281,7 +5285,9 @@ g$	motion.txt	/*g$*
 g&	change.txt	/*g&*
 g'	motion.txt	/*g'*
 g'a	motion.txt	/*g'a*
+g+	undo.txt	/*g+*
 g,	motion.txt	/*g,*
+g-	undo.txt	/*g-*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
 g:DrChipTopLvlMenu	pi_netrw.txt	/*g:DrChipTopLvlMenu*
@@ -6254,6 +6260,7 @@ new-searchpat	version6.txt	/*new-searchpat*
 new-session-files	version5.txt	/*new-session-files*
 new-spell	version7.txt	/*new-spell*
 new-tab-pages	version7.txt	/*new-tab-pages*
+new-undo-branches	version7.txt	/*new-undo-branches*
 new-unlisted-buffers	version6.txt	/*new-unlisted-buffers*
 new-user-defined	version5.txt	/*new-user-defined*
 new-user-manual	version6.txt	/*new-user-manual*
@@ -7212,6 +7219,7 @@ undercurl	syntax.txt	/*undercurl*
 underline	syntax.txt	/*underline*
 undo	undo.txt	/*undo*
 undo-blocks	undo.txt	/*undo-blocks*
+undo-branches	undo.txt	/*undo-branches*
 undo-commands	undo.txt	/*undo-commands*
 undo-redo	undo.txt	/*undo-redo*
 undo-remarks	undo.txt	/*undo-remarks*

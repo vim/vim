@@ -4273,9 +4273,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_SYN_HL
 	    /* Highlight 'cursorcolumn' past end of the line. */
+	    if (wp->w_p_wrap)
+		v = wp->w_skipcol;
+	    else
+		v = wp->w_leftcol;
+	    if (vcol < v)	/* line ends before left margin */
+		vcol = v;
 	    if (wp->w_p_cuc
 		    && (int)wp->w_virtcol >= vcol
-		    && (int)wp->w_virtcol < W_WIDTH(wp)
+		    && (int)wp->w_virtcol < W_WIDTH(wp) + v
 		    && lnum != wp->w_cursor.lnum
 # ifdef FEAT_RIGHTLEFT
 		    && !wp->w_p_rl

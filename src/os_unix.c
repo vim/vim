@@ -931,6 +931,29 @@ deathtrap SIGDEFARG(sigarg)
     get_stack_limit();
 #endif
 
+#if 0
+    /* This is for opening gdb the moment Vim crashes.
+     * You need to manually adjust the file name and Vim executable name.
+     * Suggested by SungHyun Nam. */
+    {
+# define VI_GDB_FILE "/tmp/vimgdb"
+# define VIM_NAME "/usr/bin/vim"
+	FILE *fp = fopen(VI_GDB_FILE, "w");
+	if (fp)
+	{
+	    fprintf(fp,
+		    "file %s\n"
+		    "attach %d\n"
+		    "set height 1000\n"
+		    "bt full\n"
+		    , VIM_NAME, getpid());
+	    fclose(fp);
+	    system("xterm -e gdb -x "VI_GDB_FILE);
+	    unlink(VI_GDB_FILE);
+	}
+    }
+#endif
+
 #ifdef SIGHASARG
     /* try to find the name of this signal */
     for (i = 0; signal_info[i].sig != -1; i++)
