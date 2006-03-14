@@ -1811,6 +1811,15 @@ write_viminfo(file, forceit)
 
 	if (tempname != NULL)
 	{
+#ifdef VMS
+	    /* fdopen() fails for some reason */
+	    if (fp_out == NULL)
+	    {
+		umask_save = umask(077);
+		fp_out = mch_fopen((char *)tempname, WRITEBIN);
+		(void)umask(umask_save);
+	    }
+#else
 	    int	fd;
 
 	    /* Use mch_open() to be able to use O_NOFOLLOW and set file
@@ -1818,20 +1827,21 @@ write_viminfo(file, forceit)
 	     * Unix: same as original file, but strip s-bit.  Reset umask to
 	     * avoid it getting in the way.
 	     * Others: r&w for user only. */
-#ifdef UNIX
+# ifdef UNIX
 	    umask_save = umask(0);
 	    fd = mch_open((char *)tempname,
 		    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW,
 				       (int)((st_old.st_mode & 0777) | 0600));
 	    (void)umask(umask_save);
-#else
+# else
 	    fd = mch_open((char *)tempname,
 			    O_CREAT|O_EXTRA|O_EXCL|O_WRONLY|O_NOFOLLOW, 0600);
-#endif
+# endif
 	    if (fd < 0)
 		fp_out = NULL;
 	    else
 		fp_out = fdopen(fd, WRITEBIN);
+#endif /* VMS */
 
 	    /*
 	     * If we can't create in the same directory, try creating a
