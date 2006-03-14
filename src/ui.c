@@ -1235,6 +1235,7 @@ clip_copy_modeless_selection(both)
 	    {
 		int	off;
 		int	i;
+		int	ci;
 
 		off = LineOffset[row];
 		for (i = start_col; i < end_col; ++i)
@@ -1246,12 +1247,12 @@ clip_copy_modeless_selection(both)
 		    else
 		    {
 			bufp += utf_char2bytes(ScreenLinesUC[off + i], bufp);
-			for (i = 0; i < Screen_mco; ++i)
+			for (ci = 0; ci < Screen_mco; ++ci)
 			{
 			    /* Add a composing character. */
-			    if (ScreenLinesC[i][off + i] == 0)
+			    if (ScreenLinesC[ci][off + i] == 0)
 				break;
-			    bufp += utf_char2bytes(ScreenLinesC[i][off + i],
+			    bufp += utf_char2bytes(ScreenLinesC[ci][off + i],
 									bufp);
 			}
 		    }

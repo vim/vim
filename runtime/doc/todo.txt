@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 13
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,21 +31,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 -   UNDO TREE:
-    Make proper test for "g+" and "g-"
+    Make proper test for "g+" and "g-", :earlier, :later
     Verify there are no memory leaks.
-    Docs for "g+" and "g-", note in version7.txt
-    Command to jump so many seconds forward/backward?
-    Show the list of changes in a window to be able to select a version?
 
 Win32: Describe how to do debugging. (George Reilly)
 
-Mac unicode patch (Da Woon Jung):
--   Mac: Unicode input and display (Eckehard Berns)
-    Included patch from Da Woon Jung, not complete yet.
+Mac unicode patch (Da Woon Jung, Eckehard Berns):
 8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
     New patch 2004 Jun 16
-- Add default key mappings for the command key (Alan Schmitt)
-    use http://macvim.org/OSX/files/gvimrc
 - selecting proportional font breaks display
 - UTF-8 text causes display problems.  Font replacement causes this.
 - Command-key mappings do not work. (Alan Schmitt)

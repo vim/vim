@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 13
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -24,6 +24,7 @@ Omni completion				|new-omni-completion|
 MzScheme interface			|new-MzScheme|
 Printing multi-byte text		|new-print-multi-byte|
 Tab pages				|new-tab-pages|
+Undo branches				|new-undo-branches|
 Extended Unicode support		|new-more-unicode|
 More highlighting			|new-more-highlighting|
 Translated manual pages			|new-manpage-trans|
@@ -261,6 +262,28 @@ The |--remote-tab| argument can be used to edit a file in a new tab page in an
 already running Vim server.
 
 More info here: |tabpage|
+
+
+Undo branches						*new-undo-branches*
+-------------
+
+Previously there was only one line of undo-redo.  If, after undoing a number
+of changes, a new change was made all the undone changes were lost.  This
+could lead to accidentally losing text.
+
+Vim now makes an undo branch in this situation.  Thus you can go back to the
+text after any change, even if they were undone.  So long as you do not run
+into 'undolevels', undo information is freed up to limit the memory use.
+
+To be able to navigate the undo branches each change is numbered sequentially.
+The commands |g-| and |:earlier| go back in time, to older changes.  The
+commands |g+| and |:later| go forward in time, to newer changes.  
+
+The changes are also timestamped.  Use ":earlier 10m" to go to the text as it
+was about ten minutes earlier.
+
+There is no graphical display of the tree with changes, navigation can be
+quite confusing.
 
 
 Extended Unicode support				*new-more-unicode*
@@ -785,7 +808,7 @@ The Netbeans interface was updated for Sun Studio 10.  The protocol number
 goes from 2.2 to 2.3. (Gordon Prieur)
 
 Mac: When starting up Vim will load the $VIMRUNTIME/macmap.vim script to
-define default command-key mappings.
+define default command-key mappings. (mostly by Benji Fisher)
 
 Mac: Add the selection type to the clipboard, so that Block, line and
 character selections can be used between two Vims. (Eckehard Berns)
