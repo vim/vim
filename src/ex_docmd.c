@@ -301,6 +301,7 @@ static void	ex_at __ARGS((exarg_T *eap));
 static void	ex_bang __ARGS((exarg_T *eap));
 static void	ex_undo __ARGS((exarg_T *eap));
 static void	ex_redo __ARGS((exarg_T *eap));
+static void	ex_later __ARGS((exarg_T *eap));
 static void	ex_redir __ARGS((exarg_T *eap));
 static void	ex_redraw __ARGS((exarg_T *eap));
 static void	ex_redrawstatus __ARGS((exarg_T *eap));
@@ -8207,6 +8208,37 @@ ex_redo(eap)
     exarg_T	*eap;
 {
     u_redo(1);
+}
+
+/*
+ * ":earlier" and ":later".
+ */
+/*ARGSUSED*/
+    static void
+ex_later(eap)
+    exarg_T	*eap;
+{
+    long	count = 0;
+    int		sec = FALSE;
+    char_u	*p = eap->arg;
+
+    if (*p == NUL)
+	count = 1;
+    else if (isdigit(*p))
+    {
+	count = getdigits(&p);
+	switch (*p)
+	{
+	    case 's': ++p; sec = TRUE; break;
+	    case 'm': ++p; sec = TRUE; count *= 60; break;
+	    case 'h': ++p; sec = TRUE; count *= 60 * 60; break;
+	}
+    }
+
+    if (*p != NUL)
+	EMSG2(_(e_invarg2), eap->arg);
+    else
+	undo_time(eap->cmdidx == CMD_earlier ? -count : count, sec);
 }
 
 /*
