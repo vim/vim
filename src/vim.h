@@ -80,7 +80,6 @@
 # define FEAT_GUI_MAC
 #endif
 
-
 #if defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
@@ -190,6 +189,11 @@
 # ifdef FEAT_CLIENTSERVER
 #  undef FEAT_CLIENTSERVER
 # endif
+#endif
+
+/* The Mac conversion stuff doesn't work under X11. */
+#if defined(FEAT_MBYTE) && defined(MACOS_X)
+# define MACOS_CONVERT
 #endif
 
 /* Can't use "PACKAGE" here, conflicts with a Perl include file. */
@@ -1083,6 +1087,7 @@ enum auto_event
     EVENT_FILEAPPENDPRE,	/* before appending to a file */
     EVENT_FILEAPPENDCMD,	/* appende to a file using command */
     EVENT_FILECHANGEDSHELL,	/* after shell command that changed file */
+    EVENT_FILECHANGEDSHELLPOST,	/* after (not) reloading changed file */
     EVENT_FILECHANGEDRO,	/* before first change to read-only file */
     EVENT_FILEREADPOST,		/* after reading a file */
     EVENT_FILEREADPRE,		/* before reading a file */
@@ -1114,6 +1119,7 @@ enum auto_event
     EVENT_VIMENTER,		/* after starting Vim */
     EVENT_VIMLEAVE,		/* before exiting Vim */
     EVENT_VIMLEAVEPRE,		/* before exiting Vim and writing .viminfo */
+    EVENT_VIMRESIZED,		/* after Vim window was resized */
     EVENT_WINENTER,		/* after entering a window */
     EVENT_WINLEAVE,		/* before leaving a window */
     EVENT_ENCODINGCHANGED,	/* after changing the 'encoding' option */
