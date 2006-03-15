@@ -21,6 +21,8 @@ static int	diff_busy = FALSE;	/* ex_diffgetput() is busy */
 #define DIFF_FILLER	1	/* display filler lines */
 #define DIFF_ICASE	2	/* ignore case */
 #define DIFF_IWHITE	4	/* ignore change in white space */
+#define DIFF_HORIZONTAL	8	/* horizontal splits */
+#define DIFF_VERTICAL	16	/* vertical splits */
 static int	diff_flags = DIFF_FILLER;
 
 #define LBUFLEN 50		/* length of line in diff file */
@@ -977,7 +979,7 @@ ex_diffpatch(eap)
     /* don't use a new tab page, each tab page has its own diffs */
     cmdmod.tab = 0;
 
-    if (win_split(0, 0) != FAIL)
+    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
     {
 	/* Pretend it was a ":split fname" command */
 	eap->cmdidx = CMD_split;
@@ -1037,7 +1039,7 @@ ex_diffsplit(eap)
     /* don't use a new tab page, each tab page has its own diffs */
     cmdmod.tab = 0;
 
-    if (win_split(0, 0) != FAIL)
+    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
     {
 	/* Pretend it was a ":split fname" command */
 	eap->cmdidx = CMD_split;
@@ -1086,7 +1088,7 @@ diff_win_options(wp, addbuf)
 						       OPT_LOCAL|OPT_FREE, 0);
 	curwin = old_curwin;
 	curbuf = curwin->w_buffer;
-	wp->w_p_fdc = 2;
+	wp->w_p_fdc = diff_foldcolumn;
 	wp->w_p_fen = TRUE;
 	wp->w_p_fdl = 0;
 	foldUpdateAll(wp);
@@ -1700,6 +1702,7 @@ diffopt_changed()
     char_u	*p;
     int		diff_context_new = 6;
     int		diff_flags_new = 0;
+    int		diff_foldcolumn_new = 2;
     tabpage_T	*tp;
 
     p = p_dip;
@@ -1725,11 +1728,30 @@ diffopt_changed()
 	    p += 6;
 	    diff_flags_new |= DIFF_IWHITE;
 	}
+	else if (STRNCMP(p, "horizontal", 10) == 0)
+	{
+	    p += 10;
+	    diff_flags_new |= DIFF_HORIZONTAL;
+	}
+	else if (STRNCMP(p, "vertical", 8) == 0)
+	{
+	    p += 8;
+	    diff_flags_new |= DIFF_VERTICAL;
+	}
+	else if (STRNCMP(p, "foldcolumn:", 11) == 0 && VIM_ISDIGIT(p[11]))
+	{
+	    p += 11;
+	    diff_foldcolumn_new = getdigits(&p);
+	}
 	if (*p != ',' && *p != NUL)
 	    return FAIL;
 	if (*p == ',')
 	    ++p;
     }
+
+    /* Can't have both "horizontal" and "vertical". */
+    if ((diff_flags_new & DIFF_HORIZONTAL) && (diff_flags_new & DIFF_VERTICAL))
+	return FAIL;
 
     /* If "icase" or "iwhite" was added or removed, need to update the diff. */
     if (diff_flags != diff_flags_new)
@@ -1738,6 +1760,7 @@ diffopt_changed()
 
     diff_flags = diff_flags_new;
     diff_context = diff_context_new;
+    diff_foldcolumn = diff_foldcolumn_new;
 
     diff_redraw(TRUE);
 
@@ -1746,6 +1769,15 @@ diffopt_changed()
     check_scrollbind((linenr_T)0, 0L);
 
     return OK;
+}
+
+/*
+ * Return TRUE if 'diffopt' contains "horizontal".
+ */
+    int
+diffopt_horizontal()
+{
+    return (diff_flags & DIFF_HORIZONTAL) != 0;
 }
 
 /*
