@@ -546,7 +546,7 @@ LINT_OPTIONS = -beprxzF
 # Requires installing the ccmalloc library.
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
-# (indirectly) is also marked as leaked memory.
+# (in libraries) is also marked as leaked memory.
 #PROFILE_CFLAGS = -DEXITFREE
 #PROFILE_LIBS = -lccmalloc
 
@@ -2518,32 +2518,34 @@ ICONS = $(RESDIR)/$(ICON_APP)
 
 install_macosx: gui_bundle
 # Remove the link to the runtime dir, don't want to copy all of that.
-	-rm $(APPDIR)/runtime
+	-rm $(RESDIR)/vim/runtime
 	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
 # Install the runtime files.  Recursive!
-	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/runtime
-	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
+	-mkdir -p $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
+#	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
 	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
 		VIMEXE=$$srcdir/$(VIMTARGET) \
-		prefix=$(DESTDIR)$(prefix)/$(APPDIR) \
-		VIMRTLOC=$(DESTDIR)$(prefix)/$(APPDIR)/runtime
+		prefix=$(DESTDIR)$(prefix)/$(RESDIR)/vim \
+		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 # Put the link back.
-	ln -s `pwd`/../runtime $(APPDIR)
+	ln -s `pwd`/../runtime $(RESDIR)/vim
 # TODO: Create the vimtutor application.
 
-gui_bundle: $(APPDIR) bundle-dir bundle-executable bundle-info bundle-resource \
+gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
 
-$(APPDIR):
+$(RESDIR):
 	mkdir -p $@
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
 	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 # Make a link to the runtime directory, so that we can try out the executable
 # without installing it.
-	-ln -s `pwd`/../runtime $(APPDIR)
+	mkdir -p $(RESDIR)/vim
+	-ln -s `pwd`/../runtime $(RESDIR)/vim
 
 bundle-executable: $(VIMTARGET)
+	mkdir -p $(APPDIR)/Contents/MacOS
 	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
 
 bundle-info:  bundle-dir

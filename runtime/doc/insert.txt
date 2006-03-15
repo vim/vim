@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 11
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1085,6 +1085,9 @@ The menu is used when:
 - The 'completeopt' option contains "menu" or "menuone".
 - The terminal supports at least 8 colors.
 - There are at least two matches.
+
+The 'pumheight' option can be used to set a maximum height.  The default is to
+use all space available.
 
 There are two states:
 1. A complete match has been inserted.

@@ -5931,7 +5931,7 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 		*lenp = (int)(d - retval);
 	    break;
 
-# ifdef MACOS_X
+# ifdef MACOS_CONVERT
 	case CONV_MAC_LATIN1:
 	    retval = mac_string_convert(ptr, len, lenp, vcp->vc_fail,
 					'm', 'l', unconvlenp);

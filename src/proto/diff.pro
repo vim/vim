@@ -15,6 +15,7 @@ int diff_check __ARGS((win_T *wp, linenr_T lnum));
 int diff_check_fill __ARGS((win_T *wp, linenr_T lnum));
 void diff_set_topline __ARGS((win_T *fromwin, win_T *towin));
 int diffopt_changed __ARGS((void));
+int diffopt_horizontal __ARGS((void));
 int diff_find_change __ARGS((win_T *wp, linenr_T lnum, int *startp, int *endp));
 int diff_infold __ARGS((win_T *wp, linenr_T lnum));
 void nv_diffgetput __ARGS((int put));

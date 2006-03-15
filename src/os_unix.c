@@ -1090,7 +1090,7 @@ mch_init()
     out_flush();
     set_signals();
 
-#if defined(MACOS_X) && defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     mac_conv_init();
 #endif
 }
@@ -2868,7 +2868,7 @@ mch_exit(r)
 	gui_exit(r);
 #endif
 
-#if defined(MACOS_X) && defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     mac_conv_cleanup();
 #endif
 

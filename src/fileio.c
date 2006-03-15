@@ -1595,7 +1595,7 @@ retry:
 	    }
 	    else
 # endif
-# ifdef MACOS_X
+# ifdef MACOS_CONVERT
 	    if (fio_flags & FIO_MACROMAN)
 	    {
 		/*
@@ -5043,7 +5043,7 @@ buf_write_bytes(ip)
 	}
 # endif
 
-# ifdef MACOS_X
+# ifdef MACOS_CONVERT
 	else if (flags & FIO_MACROMAN)
 	{
 	    /*
@@ -6407,6 +6407,11 @@ buf_check_timestamp(buf, focus)
 	/* Reload the buffer. */
 	buf_reload(buf, orig_mode);
 
+#ifdef FEAT_AUTOCMD
+    if (buf_valid(buf))
+	(void)apply_autocmds(EVENT_FILECHANGEDSHELLPOST,
+				      buf->b_fname, buf->b_fname, FALSE, buf);
+#endif
 #ifdef FEAT_GUI
     /* restore this in case an autocommand has set it; it would break
      * 'mousefocus' */
@@ -6959,6 +6964,7 @@ static struct event_name
     {"FileAppendPre",	EVENT_FILEAPPENDPRE},
     {"FileAppendCmd",	EVENT_FILEAPPENDCMD},
     {"FileChangedShell",EVENT_FILECHANGEDSHELL},
+    {"FileChangedShellPost",EVENT_FILECHANGEDSHELLPOST},
     {"FileChangedRO",	EVENT_FILECHANGEDRO},
     {"FileReadPost",	EVENT_FILEREADPOST},
     {"FileReadPre",	EVENT_FILEREADPRE},
@@ -7001,6 +7007,7 @@ static struct event_name
     {"VimLeavePre",	EVENT_VIMLEAVEPRE},
     {"WinEnter",	EVENT_WINENTER},
     {"WinLeave",	EVENT_WINLEAVE},
+    {"VimResized",	EVENT_VIMRESIZED},
     {NULL,		(event_T)0}
 };
 
@@ -8363,7 +8370,8 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     /*
      * FileChangedShell never nests, because it can create an endless loop.
      */
-    if (filechangeshell_busy && event == EVENT_FILECHANGEDSHELL)
+    if (filechangeshell_busy && (event == EVENT_FILECHANGEDSHELL
+				      || event == EVENT_FILECHANGEDSHELLPOST))
 	goto BYPASS_AU;
 
     /*
