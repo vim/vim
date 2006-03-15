@@ -52,8 +52,8 @@
 static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 SInt32 gMacSystemVersion;
 
-#if defined(FEAT_MBYTE)
-#define USE_CARBONKEYHANDLER
+#ifdef MACOS_CONVERT
+# define USE_CARBONKEYHANDLER
 static EventHandlerUPP keyEventHandlerUPP = NULL;
 #endif
 
@@ -130,7 +130,7 @@ static struct
     Boolean isPanelVisible;
 } gFontPanelInfo = { 0, 0, 0, false };
 
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
 # define USE_ATSUI_DRAWING
 ATSUStyle   gFontStyle;
 Boolean	    gIsFontFallbackSet;
@@ -419,7 +419,7 @@ points_to_pixels(char_u *str, char_u **end, int vertical)
     return pixels;
 }
 
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
 /*
  * Deletes all traces of any Windows-style mnemonic text (including any
  * parentheses) from a menu item and returns the cleaned menu item title.
@@ -4437,7 +4437,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 #endif
 	tempclip[scrapSize] = 0;
 
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
 	/* Convert from utf-16 (clipboard) */
 	size_t encLen = 0;
 	char_u *to = mac_utf16_to_enc((UniChar *)tempclip, scrapSize, &encLen);
@@ -4510,7 +4510,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 
     type = clip_convert_selection(&str, (long_u *) &scrapSize, cbd);
 
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     size_t utf16_len = 0;
     UniChar *to = mac_enc_to_utf16(str, scrapSize, &utf16_len);
     if (to)
@@ -4628,7 +4628,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	menu_after_me = hierMenu;
 
     /* Convert the name */
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     name = menu_title_removing_mnemonic(menu);
 #else
     name = C2Pascal_save(menu->dname);
@@ -4721,7 +4721,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
        for older OS call GetMenuItemData (menu, item, isCommandID?, data) */
 
     /* Convert the name */
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     name = menu_title_removing_mnemonic(menu);
 #else
     name = C2Pascal_save(menu->dname);
@@ -5745,7 +5745,7 @@ gui_mch_settitle(char_u *title, char_u *icon)
     /* TODO: Get vim to make sure maxlen (from p_titlelen) is smaller
      *       that 256. Even better get it to fit nicely in the titlebar.
      */
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     CFStringRef windowTitle;
     size_t	windowTitleLen;
 #else
@@ -5755,7 +5755,7 @@ gui_mch_settitle(char_u *title, char_u *icon)
     if (title == NULL)		/* nothing to do */
 	return;
 
-#if defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
     windowTitleLen = STRLEN(title);
     windowTitle  = mac_enc_to_cfstring(title, windowTitleLen);
 

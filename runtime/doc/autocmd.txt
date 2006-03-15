@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 10
+*autocmd.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -270,6 +270,7 @@ Name			triggered by ~
 
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
+|FileChangedShellPost|	After handling a file changed since editing started
 |FileChangedRO|		before making the first change to a read-only file
 
 |ShellCmdPost|		after executing a shell command
@@ -279,6 +280,7 @@ Name			triggered by ~
 |SpellFileMissing|	a spell file is used but it can't be found
 |SourcePre|		before sourcing a Vim script
 
+|VimResized|		after the Vim window size changed
 |FocusGained|		Vim got input focus
 |FocusLost|		Vim lost input focus
 |CursorHold|		the user doesn't press a key for a while
@@ -537,6 +539,9 @@ FileChangedShell		When Vim notices that the modification time of
 				commands for the FileChangedShell event no
 				other FileChangedShell event will be
 				triggered.
+							*FileChangedShellPost*
+FileChangedShellPost		After handling a file that was changed outside
+				of Vim.  Can be used to update the statusline.
 							*FileEncoding*
 FileEncoding			Obsolete.  It still works and is equivalent
 				to |EncodingChanged|.
@@ -764,6 +769,10 @@ VimLeavePre			Before exiting Vim, just before writing the
 				Mostly useful with a "*" pattern. >
 	:autocmd VimLeavePre * call CleanupStuff()
 <				To detect an abnormal exit use |v:dying|.
+							*VimResized*
+VimResized			After the Vim window was resized, thus 'lines'
+				and/or 'columns' changed.  Not when starting
+				up though.
 							*WinEnter*
 WinEnter			After entering another window.  Not done for
 				the first window, when Vim has just started.

@@ -295,6 +295,8 @@ u_savecommon(top, bot, newbot)
 	    if (uhp == NULL)
 		goto nomem;
 	}
+	else
+	    uhp = NULL;
 
 	/*
 	 * If we undid more than we redid, move the entry lists before and
@@ -326,7 +328,7 @@ u_savecommon(top, bot, newbot)
 	    }
 	}
 
-	if (p_ul < 0)		/* no undo at all */
+	if (uhp == NULL)		/* no undo at all */
 	{
 	    if (old_curhead != NULL)
 		u_freebranch(curbuf, old_curhead, NULL);
@@ -654,6 +656,10 @@ undo_time(step, sec)
     int		    round;
     int		    dosec = sec;
     int		    above = FALSE;
+
+    /* First make sure the current undoable change is synced. */
+    if (curbuf->b_u_synced == FALSE)
+	u_sync();
 
     u_newcount = 0;
     u_oldcount = 0;

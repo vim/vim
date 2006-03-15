@@ -2838,6 +2838,10 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 
+    if test x$prefix = xNONE; then
+    prefix=/Applications
+  fi
+
   echo "$as_me:$LINENO: checking --disable-darwin argument" >&5
 echo $ECHO_N "checking --disable-darwin argument... $ECHO_C" >&6
   # Check whether --enable-darwin or --disable-darwin was given.

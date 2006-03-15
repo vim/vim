@@ -646,6 +646,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'pex'	options.txt	/*'pex'*
 'pexpr'	options.txt	/*'pexpr'*
 'pfn'	options.txt	/*'pfn'*
+'ph'	options.txt	/*'ph'*
 'pheader'	options.txt	/*'pheader'*
 'pi'	options.txt	/*'pi'*
 'pm'	options.txt	/*'pm'*
@@ -665,6 +666,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'printoptions'	options.txt	/*'printoptions'*
 'prompt'	options.txt	/*'prompt'*
 'pt'	options.txt	/*'pt'*
+'pumheight'	options.txt	/*'pumheight'*
 'pvh'	options.txt	/*'pvh'*
 'pvw'	options.txt	/*'pvw'*
 'qe'	options.txt	/*'qe'*
@@ -3979,6 +3981,7 @@ FileAppendPost	autocmd.txt	/*FileAppendPost*
 FileAppendPre	autocmd.txt	/*FileAppendPre*
 FileChangedRO	autocmd.txt	/*FileChangedRO*
 FileChangedShell	autocmd.txt	/*FileChangedShell*
+FileChangedShellPost	autocmd.txt	/*FileChangedShellPost*
 FileEncoding	autocmd.txt	/*FileEncoding*
 FileReadCmd	autocmd.txt	/*FileReadCmd*
 FileReadPost	autocmd.txt	/*FileReadPost*
@@ -4181,6 +4184,7 @@ View	starting.txt	/*View*
 VimEnter	autocmd.txt	/*VimEnter*
 VimLeave	autocmd.txt	/*VimLeave*
 VimLeavePre	autocmd.txt	/*VimLeavePre*
+VimResized	autocmd.txt	/*VimResized*
 Virtual-Replace-mode	insert.txt	/*Virtual-Replace-mode*
 VisVim	if_ole.txt	/*VisVim*
 Visual	visual.txt	/*Visual*

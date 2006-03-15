@@ -87,11 +87,13 @@ redo:
 	pum_height = size;
     else
 	pum_height = PUM_DEF_HEIGHT;
+    if (p_ph > 0 && pum_height > p_ph)
+	pum_height = p_ph;
 
     /* Put the pum below "row" if possible.  If there are few lines decide on
      * where there is more room. */
-    if (row >= cmdline_row - top_clear - pum_height
-	    && row > (cmdline_row - top_clear - height) / 2)
+    if (row >= cmdline_row - pum_height
+			      && row > (cmdline_row - top_clear - height) / 2)
     {
 	/* pum above "row" */
 	if (row >= size)
@@ -104,6 +106,11 @@ redo:
 	    pum_row = 0;
 	    pum_height = row;
 	}
+	if (p_ph > 0 && pum_height > p_ph)
+	{
+	    pum_row += pum_height - p_ph;
+	    pum_height = p_ph;
+	}
     }
     else
     {
@@ -113,6 +120,8 @@ redo:
 	    pum_height = cmdline_row - pum_row;
 	else
 	    pum_height = size;
+	if (p_ph > 0 && pum_height > p_ph)
+	    pum_height = p_ph;
     }
 
     /* don't display when we only have room for one line */
@@ -214,7 +223,7 @@ pum_redraw()
     int		i;
     int		idx;
     char_u	*s;
-    char_u	*p;
+    char_u	*p = NULL;
     int		totwidth, width, w;
     int		thumb_pos = 0;
     int		thumb_heigth = 1;
@@ -330,6 +339,7 @@ pum_set_selected(n)
     int	    n;
 {
     int	    resized = FALSE;
+    int	    context = pum_height / 2;
 
     pum_selected = n;
 
@@ -364,20 +374,22 @@ pum_set_selected(n)
 		pum_first = pum_selected - pum_height + 1;
 	}
 
-	if (pum_height > 6)
+	/* Give a few lines of context when possible. */
+	if (context > 3)
+	    context = 3;
+	if (pum_height > 2)
 	{
-	    /* Give three lines of context when possible. */
-	    if (pum_first > pum_selected - 3)
+	    if (pum_first > pum_selected - context)
 	    {
 		/* scroll down */
-		pum_first = pum_selected - 3;
+		pum_first = pum_selected - context;
 		if (pum_first < 0)
 		    pum_first = 0;
 	    }
-	    else if (pum_first < pum_selected + 3 - pum_height + 1)
+	    else if (pum_first < pum_selected + context - pum_height + 1)
 	    {
 		/* scroll up */
-		pum_first = pum_selected + 3 - pum_height + 1;
+		pum_first = pum_selected + context - pum_height + 1;
 	    }
 	}
 
@@ -479,6 +491,12 @@ pum_set_selected(n)
 
 			if (win_valid(curwin_save))
 			    win_enter(curwin_save, TRUE);
+
+			/* May need to update the screen again when there are
+			 * autocommands involved. */
+			pum_do_redraw = TRUE;
+			update_screen(0);
+			pum_do_redraw = FALSE;
 		    }
 		}
 	    }

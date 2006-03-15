@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
+*diff.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -51,6 +51,8 @@ splits add the |-o| argument: >
 
 	vimdiff -o file1 file2 [file3]
 
+If you always prefer horizontal splits include "horizontal" in 'diffopt'.
+
 In each of the edited files these options are set:
 
 	'diff'		on
@@ -58,7 +60,7 @@ In each of the edited files these options are set:
 	'scrollopt'	includes "hor"
 	'wrap'		off
 	'foldmethod'	"diff"
-	'foldcolumn'	2
+	'foldcolumn'	value from 'diffopt', default is 2
 
 These options are set local to the window.  When editing another file they are
 reset to the global value.
@@ -107,7 +109,9 @@ To make these commands use a vertical split, prepend |:vertical|.  Examples: >
 
 	:vert diffsplit main.c~
 	:vert diffpatch /tmp/diff
-<
+
+If you always prefer a vertical split include "vertical" in 'diffopt'.
+
 							*E96*
 There can be up to four buffers with 'diff' set.
 
@@ -378,8 +382,8 @@ will have the same effect.  These variables are set to the file names used:
 
 Example (this does the same as 'patchexpr' being empty): >
 
-	let patchexpr=MyPatch()
-	function MyPatch
+	set patchexpr=MyPatch()
+	function MyPatch()
 	   :call system("patch -o " . v:fname_out . " " . v:fname_in .
 	   \  " < " . v:fname_diff)
 	endfunction

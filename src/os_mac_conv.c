@@ -16,7 +16,14 @@
 #define NO_X11_INCLUDES
 #include "vim.h"
 
-#ifdef FEAT_MBYTE
+#if defined(MACOS_CONVERT) || defined(PROTO)
+# ifdef PROTO
+/* A few dummy types to be able to generate function prototypes. */
+typedef int UniChar;
+typedef int *TECObjectRef;
+typedef int CFStringRef;
+# endif
+
 static char_u	    *mac_utf16_to_utf8 __ARGS((UniChar *from, size_t fromLen, size_t *actualLen));
 static UniChar	    *mac_utf8_to_utf16 __ARGS((char_u *from, size_t fromLen, size_t *actualLen));
 
@@ -477,7 +484,7 @@ mac_precompose_path(decompPath, decompLen, precompLen)
 /*
  * Converts from UTF-16 UniChars to precomposed UTF-8
  */
-    char_u *
+    static char_u *
 mac_utf16_to_utf8(from, fromLen, actualLen)
     UniChar *from;
     size_t fromLen;
@@ -517,7 +524,7 @@ mac_utf16_to_utf8(from, fromLen, actualLen)
 /*
  * Converts from UTF-8 to UTF-16 UniChars
  */
-    UniChar *
+    static UniChar *
 mac_utf8_to_utf16(from, fromLen, actualLen)
     char_u *from;
     size_t fromLen;
@@ -548,4 +555,4 @@ mac_utf8_to_utf16(from, fromLen, actualLen)
 
     return result;
 }
-#endif /* FEAT_MBYTE */
+#endif /* MACOS_CONVERT */

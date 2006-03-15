@@ -7305,6 +7305,11 @@ screenalloc(clear)
 #endif
 
     entered = FALSE;
+
+#ifdef FEAT_AUTOCMD
+    if (starting == 0)
+	apply_autocmds(EVENT_VIMRESIZED, NULL, NULL, FALSE, curbuf);
+#endif
 }
 
     void

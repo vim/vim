@@ -964,8 +964,10 @@ free_all_mem()
 
 #ifdef FEAT_WINDOWS
     /* close all tabs and windows */
-    do_cmdline_cmd((char_u *)"tabonly!");
-    do_cmdline_cmd((char_u *)"only!");
+    if (first_tabpage->tp_next != NULL)
+	do_cmdline_cmd((char_u *)"tabonly!");
+    if (firstwin != lastwin)
+	do_cmdline_cmd((char_u *)"only!");
 #endif
 
 # if defined(FEAT_SPELL)
@@ -1076,6 +1078,10 @@ free_all_mem()
     free_highlight();
 
     reset_last_sourcing();
+
+#ifdef FEAT_WINDOWS
+    vim_free(first_tabpage);
+#endif
 
 # ifdef UNIX
     /* Machine-specific free. */

@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 10, 2006
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 14, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -1439,6 +1439,13 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v81: * FocusGained also used to refresh/wipe local browser directory
+	       buffers
+	     * (bugfix) netrw was leaving [Scratch] buffers behind when the
+	       the user had the "hidden" option set.  The 'hidden' option is
+	       now bypassed.
+	v80: * ShellCmdPost event used in conjunction with g:netrw_fastbrowse
+	       to refresh/wipe local browser directory buffers.
 	v79: * directories are now displayed with nowrap
 	     * (bugfix) if the column width was smaller than the largest
 	       file's name, then netrw would hang when using wide-listing

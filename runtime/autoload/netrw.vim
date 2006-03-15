@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 13, 2006
-" Version:	80
+" Date:		Mar 14, 2006
+" Version:	81
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v80"
+let g:loaded_netrw = "v81"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -2803,21 +2803,7 @@ fun! netrw#DirBrowse(dirname)
   let s:last_sort_by= g:netrw_sort_by
 
   " set up ShellCmdPost handling.  Append current buffer to browselist
-  if !exists("s:netrw_browselist")
-   let s:netrw_browselist= []
-  endif
-  if g:netrw_fastbrowse <= 1 && (empty(s:netrw_browselist) || bufnr("%") > s:netrw_browselist[-1])
-   call add(s:netrw_browselist,bufnr("%"))
-"   call Decho("browselist=".string(s:netrw_browselist))
-  endif
-  if !exists("s:netrw_browser_shellcmd") && g:netrw_fastbrowse <= 1
-"   call Decho("setting up local-browser shell command refresh")
-   let s:netrw_browser_shellcmd= 1
-   augroup AuNetrwShellCmd
-    au!
-    au ShellCmdPost *	call s:LocalBrowseShellCmdRefresh()
-   augroup END
-  endif
+  call s:LocalFastBrowser()
 
   " get the new directory name
   if has("win32") || has("win95") || has("win64") || has("win16")
@@ -3369,6 +3355,47 @@ fun! s:LocalBrowseRename(path) range
 endfun
 
 " ---------------------------------------------------------------------
+" LocalFastBrowser: handles setting up/taking down fast browsing for the {{{2
+"                   local browser
+fun! s:LocalFastBrowser()
+"  call Dfunc("LocalFastBrowser()")
+
+  " initialize browselist, a list of buffer numbers that the local browser has used
+  if !exists("s:netrw_browselist")
+   let s:netrw_browselist= []
+  endif
+
+  " append current buffer to fastbrowse list
+  if g:netrw_fastbrowse <= 1 && (empty(s:netrw_browselist) || bufnr("%") > s:netrw_browselist[-1])
+   call add(s:netrw_browselist,bufnr("%"))
+"   call Decho("browselist=".string(s:netrw_browselist))
+  endif
+
+  " enable autocmd events to handle refreshing/removing local browser buffers
+  "    If local browse buffer is currently showing: refresh it
+  "    If local browse buffer is currently hidden : wipe it
+  if !exists("s:netrw_browser_shellcmd") && g:netrw_fastbrowse <= 1
+"   call Decho("setting up local-browser shell command refresh")
+   let s:netrw_browser_shellcmd= 1
+   augroup AuNetrwShellCmd
+    au!
+    au ShellCmdPost,FocusGained *	call s:LocalBrowseShellCmdRefresh()
+   augroup END
+
+  " user must have changed fastbrowse to its fast setting, so remove
+  " the associated autocmd events
+  if g:netrw_fastbrowse > 1 && exists("s:netrw_browser_shellcmd")
+   unlet s:netrw_browser_shellcmd
+   augroup AuNetrwShellCmd
+    au!
+   augroup END
+   augroup! AuNetrwShellCmd
+  endif
+
+"  call Dret("LocalFastBrowser")
+endfun
+
+" ---------------------------------------------------------------------
 " LocalObtain: copy selected file to current working directory {{{2
 fun! s:LocalObtain()
 "  call Dfunc("LocalObtain()")
@@ -3883,6 +3910,7 @@ fun! s:NetOptionSave()
   let w:cinokeep  = &cino
   let w:comkeep   = &com
   let w:cpokeep   = &cpo
+  let w:hidkeep   = &hidden
   let w:magickeep = &magic
   if !g:netrw_keepdir
    let w:dirkeep  = getcwd()
@@ -3894,7 +3922,7 @@ fun! s:NetOptionSave()
   setlocal cino =
   setlocal com  =
   setlocal cpo -=aA
-  setlocal nocin noai noci magic nospell fo=nroql2
+  setlocal nocin noai noci magic nospell fo=nroql2 nohid
   setlocal tw   =0
   setlocal report=10000
   if has("win32") && !has("win95")
@@ -3926,6 +3954,7 @@ fun! s:NetOptionRestore()
   if exists("w:dirkeep")  |exe "lcd ".w:dirkeep        |unlet w:dirkeep  |endif
   if exists("w:fokeep")   |let &fo     = w:fokeep      |unlet w:fokeep   |endif
   if exists("w:gdkeep")   |let &gd     = w:gdkeep      |unlet w:gdkeep   |endif
+  if exists("w:hidkeep")  |let &hidden = w:hidkeep     |unlet w:hidkeep  |endif
   if exists("w:magic")    |let &magic  = w:magic       |unlet w:magic    |endif
   if exists("w:repkeep")  |let &report = w:repkeep     |unlet w:repkeep  |endif
   if exists("w:spellkeep")|let &spell  = w:spellkeep   |unlet w:spellkeep|endif
