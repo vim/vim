@@ -20,9 +20,6 @@
 
 static char_u *vim_version_dir __ARGS((char_u *vimdir));
 static char_u *remove_tail __ARGS((char_u *p, char_u *pend, char_u *name));
-#if defined(USE_EXE_NAME) && defined(MACOS_X)
-static char_u *remove_tail_with_ext __ARGS((char_u *p, char_u *pend, char_u *ext));
-#endif
 static int copy_indent __ARGS((int size, char_u	*src));
 
 /*
@@ -3850,19 +3847,24 @@ vim_getenv(name, mustfree)
 
 #ifdef USE_EXE_NAME
 # ifdef MACOS_X
-	    /* remove "build/..." from exe_name, if present */
+	    /* remove "MacOS" from exe_name and add "Resources/vim" */
 	    if (p == exe_name)
 	    {
 		char_u	*pend1;
-		char_u  *pend2;
+		char_u	*pnew;
 
-		pend1 = remove_tail(p, pend, (char_u *)"Contents/MacOS");
-		pend2 = remove_tail_with_ext(p, pend1, (char_u *)".app");
-		pend = remove_tail(p, pend2, (char_u *)"build");
-		/* When runnig from project builder get rid of the
-		 * build/???.app, otherwise keep the ???.app */
-		if (pend2 == pend)
-		    pend = pend1;
+		pend1 = remove_tail(p, pend, (char_u *)"MacOS");
+		if (pend1 != pend)
+		{
+		    pnew = alloc((unsigned)(pend1 - p) + 15);
+		    if (pnew != NULL)
+		    {
+			STRNCPY(pnew, p, (pend1 - p));
+			STRCPY(pnew + (pend1 - p), "Resources/vim");
+			p = pnew;
+			pend = p + STRLEN(p);
+		    }
+		}
 	    }
 # endif
 	    /* remove "src/" from exe_name, if present */
@@ -3885,8 +3887,11 @@ vim_getenv(name, mustfree)
 		--pend;
 #endif
 
-	    /* check that the result is a directory name */
-	    p = vim_strnsave(p, (int)(pend - p));
+#ifdef MACOS_X
+	    if (p == exe_name || p == p_hf)
+#endif
+		/* check that the result is a directory name */
+		p = vim_strnsave(p, (int)(pend - p));
 
 	    if (p != NULL && !mch_isdir(p))
 	    {
@@ -4005,29 +4010,6 @@ remove_tail(p, pend, name)
 	return newend;
     return pend;
 }
-
-#if defined(USE_EXE_NAME) && defined(MACOS_X)
-/*
- * If the string between "p" and "pend" ends in "???.ext/", return "pend"
- * minus the length of "???.ext/".  Otherwise return "pend".
- */
-    static char_u *
-remove_tail_with_ext(p, pend, ext)
-    char_u	*p;
-    char_u	*pend;
-    char_u	*ext;
-{
-    int		len = (int)STRLEN(ext) + 1;
-    char_u	*newend = pend - len;
-
-    if (newend >= p && fnamencmp(newend, ext, len - 1) == 0)
-	while (newend > p && !after_pathsep(p, newend))
-	    mb_ptr_back(p, newend);
-    if (newend == p || after_pathsep(p, newend))
-	return newend;
-    return pend;
-}
-#endif
 
 /*
  * Call expand_env() and store the result in an allocated string.
@@ -8690,10 +8672,11 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 			backslash_halve(buf + len + 1);
 		    if (mch_getperm(buf) >= 0)	/* add existing file */
 		    {
-#if defined(MACOS_X) && defined(FEAT_MBYTE)
+#ifdef MACOS_CONVERT
 			size_t precomp_len = STRLEN(buf)+1;
 			char_u *precomp_buf =
 			    mac_precompose_path(buf, precomp_len, &precomp_len);
+
 			if (precomp_buf)
 			{
 			    mch_memmove(buf, precomp_buf, precomp_len);
