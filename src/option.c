@@ -1923,6 +1923,13 @@ static struct vimoption
     {"prompt",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_prompt, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},
+    {"pumheight",   "ph",   P_NUM|P_VI_DEF,
+#ifdef FEAT_INS_EXPAND
+			    (char_u *)&p_ph, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)0L, (char_u *)0L}},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
@@ -3194,7 +3201,7 @@ set_init_1()
 	}
     }
 # else
-#  ifdef MACOS
+#  ifdef MACOS_CONVERT
     if (mch_getenv((char_u *)"LANG") == NULL)
     {
 	char	buf[20];

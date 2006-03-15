@@ -1,0 +1,52 @@
+Tests for undo tree.
+Since this script is sourced we need to explicitly break changes up in
+undo-able pieces.  Do that by setting 'undolevels'.
+
+STARTTEST
+:" Delete three characters and undo
+Gx:set ul=100
+x:set ul=100
+x:.w! test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+:"
+:/^111/w >>test.out
+:" Delete three other characters and go back in time step by step
+$x:set ul=100
+x:set ul=100
+x:.w >>test.out
+:sleep 1
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+g-:.w >>test.out
+10g+:.w >>test.out
+:"
+:/^222/w >>test.out
+:" Delay for three seconds and go some seconds forward and backward
+:sleep 2
+Aa:set ul=100
+Ab:set ul=100
+Ac:set ul=100
+:.w >>test.out
+:ear 1s
+:.w >>test.out
+:ear 3s
+:.w >>test.out
+:later 1s
+:.w >>test.out
+:later 1h
+:.w >>test.out
+:qa!
+ENDTEST
+
+1111 -----
+2222 -----
+
+123456789

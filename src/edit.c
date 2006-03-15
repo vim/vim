@@ -2146,11 +2146,11 @@ ins_compl_add(str, len, icase, fname, kind, extra, info, cdir, flags)
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    if (kind != NULL)
+    if (kind != NULL && *kind != NUL)
 	match->cp_kind = vim_strsave(kind);
-    if (extra != NULL)
+    if (extra != NULL && *extra != NUL)
 	match->cp_extra = vim_strsave(extra);
-    if (info != NULL)
+    if (info != NULL && *info != NUL)
 	match->cp_info = vim_strsave(info);
 
     /*
