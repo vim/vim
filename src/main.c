@@ -416,13 +416,8 @@ main
     TIME_MSG("expanding arguments");
 
 #ifdef FEAT_DIFF
-    if (params.diff_mode)
-    {
-	if (params.window_count == -1)
-	    params.window_count = 0;	/* open up to 3 windows */
-	if (params.window_layout == 0)
-	    params.window_layout = WIN_VER;	/* use vertical split */
-    }
+    if (params.diff_mode && params.window_count == -1)
+	params.window_count = 0;	/* open up to 3 windows */
 #endif
 
     /* Don't redraw until much later. */
@@ -553,6 +548,17 @@ main
     {
 	source_runtime((char_u *)"plugin/**/*.vim", TRUE);
 	TIME_MSG("loading plugins");
+    }
+#endif
+
+#ifdef FEAT_DIFF
+    /* Decide about window layout for diff mode after reading vimrc. */
+    if (params.diff_mode && params.window_layout == 0)
+    {
+	if (diffopt_horizontal())
+	    params.window_layout = WIN_HOR;	/* use horizontal split */
+	else
+	    params.window_layout = WIN_VER;	/* use vertical split */
     }
 #endif
 
@@ -1357,7 +1363,7 @@ parse_command_name(parmp)
 	disallow_gui = TRUE;
 
     /* TODO: On MacOS X default to gui if argv[0] ends in:
-     *       /vim.app/Contents/MacOS/Vim */
+     *       /Vim.app/Contents/MacOS/Vim */
 #endif
 
 #ifdef FEAT_EVAL

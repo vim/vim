@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
--   UNDO TREE:
-    Make proper test for "g+" and "g-", :earlier, :later
-    Verify there are no memory leaks.
-
 Win32: Describe how to do debugging. (George Reilly)
 
 Mac unicode patch (Da Woon Jung, Eckehard Berns):
@@ -49,20 +45,10 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 CONSIDERED FOR VERSION 7.0:
 
 -   EMBEDDING: Make it possible to run Vim inside a window of another program.
-    For Xwindows this can be done with XReparentWindow().
     For GTK Neil Bird has a patch to use Vim like a widget.
 
--   Add a few more things to 'diffopt': "horizontal", "vertical",
-    "foldcolumn". (Benji Fisher, 2004 Jun 21)
--   FileChangedShellPost autocommand event: after (not) reloading a changed
-    file.  Can be used to update statusline oslt.
--   VimResized autocmd event: When the Vim window has been resized (SIGWINCH)
-    patch from Yakov Lerner, 2003 July 24.
-	It's not clear that this doesn't cause problems when the executed
-	commands do something like changing 'lines'.  Esp. because the 
-	screen has not yet been allocated with the new size.
 7   Make ":startinsert" command work directly for functions and scripts?
-    Also make it possible to append (it's difficult at end of line).
+
 -   When using 'incsearch" CTRL-R CTRL-W gets the word under the cursor, but
     the part that already matched is doubled then.  Remove the part of the
     word that would be doubled.  Make it work line CTRL-N in Insert mode.
@@ -106,8 +92,6 @@ Profiling:
     - :profile pause
     - :profile resume
 
-Add more tests for all new functionality in Vim 7.  Especially new functions.
-
 'errorformat' docs are a bit unclear.  Suggestions by Charles Campbell (2006
 Jan 6)
 Add a flag to check for a match with the next item first?  Helps for
@@ -118,6 +102,8 @@ mappings for normal keys can be removed from Select mode.
 
 Check if file explorer can handle directory names and links with a single
 quote. (Nieko Maatjes, 2005 Jan 4)
+
+Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 
 Awaiting updated patches:
@@ -1065,6 +1051,8 @@ Didn't make it into Vim 7.0:
     values for the optional fields.  E.g., ":tag size type=m".
     Also allow specifying the file and command, so that the result of
     taglist() can be used.
+-   X11: Make it possible to run Vim inside a window of another program.
+    This can be done with XReparentWindow().  But how exactly?
 
 
 Documentation:

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 14
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -722,6 +722,10 @@ New autocommand events: ~
 |ShellCmdPost|		after executing a shell command
 |ShellFilterPost|	after filtering with a shell command
 
+|VimResized|		after the Vim window size changed (Yakov Lerner)
+
+|FileChangedShellPost|	after handling a file changed outside of Vim
+
 |SourcePre|		before sourcing a Vim script
 
 |CursorHoldI|		the user doesn't press a key for a while in Insert mode
@@ -1121,6 +1125,9 @@ completion supported for the input. (Yegappan Lakshmanan)
 "dp" works with more than two buffers in diff mode if there is only one where
 'modifiable' is set.
 
+The 'diffopt' option has three new values: "horizontal", "vertical" and
+"foldcolumn".
+
 When the 'include' option contains \zs the file name found is what is being
 matched from \zs to the end or \ze.  Useful to pass more to 'includeexpr'.
 
@@ -1217,6 +1224,9 @@ without copying the code.
 
 "make" now creates the Vim.app directory and "make install" copies it to its
 final destination. (Raf)
+
+Put the runtime directory not directly in Vim.app but in
+Vim.app/Contents/Resources/vim, so that it's according to Mac specs.
 
 Made it possible to compile with Motif, Athena or GTK without tricks and still
 being able to use the MacRoman conversion.  Added the os_mac_conv.c file.
