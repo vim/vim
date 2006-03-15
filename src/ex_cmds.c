@@ -1813,12 +1813,9 @@ write_viminfo(file, forceit)
 	{
 #ifdef VMS
 	    /* fdopen() fails for some reason */
-	    if (fp_out == NULL)
-	    {
-		umask_save = umask(077);
-		fp_out = mch_fopen((char *)tempname, WRITEBIN);
-		(void)umask(umask_save);
-	    }
+	    umask_save = umask(077);
+	    fp_out = mch_fopen((char *)tempname, WRITEBIN);
+	    (void)umask(umask_save);
 #else
 	    int	fd;
 
