@@ -4394,6 +4394,10 @@ gui_mouse_moved(x, y)
     win_T	*wp;
     char_u	st[6];
 
+    /* Ignore this while still starting up. */
+    if (!gui.in_use || gui.starting)
+	return;
+
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
     wp = xy2win(x, y);

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 07
+*cmdline.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -172,8 +172,11 @@ CTRL-R CTRL-A				*c_CTRL-R_CTRL-A* *c_<C-R>_<C-A>*
 				'path' as in |gf|
 			CTRL-W	the Word under the cursor
 			CTRL-A	the WORD under the cursor; see |WORD|
-		When 'incsearch' is set the cursor position of the currently
-		displayed match is used.
+
+		When 'incsearch' is set the cursor position at the end of the
+		currently displayed match is used.  With CTRL-W the part of
+		the word that was already typed is not inserted again.
+
 		{not in Vi}
 		CTRL-F and CTRL-P: {only when +file_in_path feature is
 		included}
@@ -399,6 +402,9 @@ CTRL-L		A match is done on the pattern in front of the cursor.  If
 		If there are multiple matches the longest common part is
 		inserted in place of the pattern.  If the result is shorter
 		than the pattern, no completion is done.
+		When 'incsearch' is set, entering a search pattern for "/" or
+		"?" and the current match is displayed then CTRL-L will add
+		one character from the end of the current match.
 
 The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
 a previous version <Esc> was used).  In the pattern standard wildcards '*' and

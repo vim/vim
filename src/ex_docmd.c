@@ -8196,7 +8196,10 @@ ex_bang(eap)
 ex_undo(eap)
     exarg_T	*eap;
 {
-    u_undo(1);
+    if (eap->addr_count == 1)	    /* :undo 123 */
+	undo_time(eap->line2, FALSE, TRUE);
+    else
+	u_undo(1);
 }
 
 /*
@@ -8238,7 +8241,7 @@ ex_later(eap)
     if (*p != NUL)
 	EMSG2(_(e_invarg2), eap->arg);
     else
-	undo_time(eap->cmdidx == CMD_earlier ? -count : count, sec);
+	undo_time(eap->cmdidx == CMD_earlier ? -count : count, sec, FALSE);
 }
 
 /*

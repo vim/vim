@@ -3017,15 +3017,23 @@ maketitle()
 	if (*p_titlestring != NUL)
 	{
 #ifdef FEAT_STL_OPT
-	    int	    use_sandbox = FALSE;
+	    if (stl_syntax & STL_IN_TITLE)
+	    {
+		int	use_sandbox = FALSE;
+		int	save_called_emsg = called_emsg;
 
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"titlestring", 0);
+		use_sandbox = was_set_insecurely((char_u *)"titlestring", 0);
 # endif
-	    if (stl_syntax & STL_IN_TITLE)
+		called_emsg = FALSE;
 		build_stl_str_hl(curwin, t_str, sizeof(buf),
 					      p_titlestring, use_sandbox,
 					      0, maxlen, NULL, NULL);
+		if (called_emsg)
+		    set_string_option_direct((char_u *)"titlestring", -1,
+					   (char_u *)"", OPT_FREE, SID_ERROR);
+		called_emsg |= save_called_emsg;
+	    }
 	    else
 #endif
 		t_str = p_titlestring;
@@ -3114,15 +3122,23 @@ maketitle()
 	if (*p_iconstring != NUL)
 	{
 #ifdef FEAT_STL_OPT
-	    int	    use_sandbox = FALSE;
+	    if (stl_syntax & STL_IN_ICON)
+	    {
+		int	use_sandbox = FALSE;
+		int	save_called_emsg = called_emsg;
 
 # ifdef FEAT_EVAL
-	    use_sandbox = was_set_insecurely((char_u *)"iconstring", 0);
+		use_sandbox = was_set_insecurely((char_u *)"iconstring", 0);
 # endif
-	    if (stl_syntax & STL_IN_ICON)
+		called_emsg = FALSE;
 		build_stl_str_hl(curwin, i_str, sizeof(buf),
 						    p_iconstring, use_sandbox,
 						    0, 0, NULL, NULL);
+		if (called_emsg)
+		    set_string_option_direct((char_u *)"iconstring", -1,
+					   (char_u *)"", OPT_FREE, SID_ERROR);
+		called_emsg |= save_called_emsg;
+	    }
 	    else
 #endif
 		i_str = p_iconstring;
