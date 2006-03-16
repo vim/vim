@@ -6044,7 +6044,7 @@ beginline(flags)
  * oneright oneleft cursor_down cursor_up
  *
  * Move one char {right,left,down,up}.
- * Doesn't move onto the NUL past the end of the line.
+ * Doesn't move onto the NUL past the end of the line, unless it is allowed.
  * Return OK when successful, FAIL when we hit a line of file boundary.
  */
 
@@ -6052,9 +6052,7 @@ beginline(flags)
 oneright()
 {
     char_u	*ptr;
-#ifdef FEAT_MBYTE
     int		l;
-#endif
 
 #ifdef FEAT_VIRTUALEDIT
     if (virtual_active())
@@ -6064,11 +6062,11 @@ oneright()
 	/* Adjust for multi-wide char (excluding TAB) */
 	ptr = ml_get_cursor();
 	coladvance(getviscol() + ((*ptr != TAB && vim_isprintc(
-#ifdef FEAT_MBYTE
+# ifdef FEAT_MBYTE
 			    (*mb_ptr2char)(ptr)
-#else
+# else
 			    *ptr
-#endif
+# endif
 			    ))
 		    ? ptr2cells(ptr) : 1));
 	curwin->w_set_curswant = TRUE;
@@ -6079,22 +6077,25 @@ oneright()
 #endif
 
     ptr = ml_get_cursor();
+    if (*ptr == NUL)
+	return FAIL;	    /* already at the very end */
+
 #ifdef FEAT_MBYTE
-    if (has_mbyte && (l = (*mb_ptr2len)(ptr)) > 1)
-    {
-	/* The character under the cursor is a multi-byte character, move
-	 * several bytes right, but don't end up on the NUL. */
-	if (ptr[l] == NUL)
-	    return FAIL;
-	curwin->w_cursor.col += l;
-    }
+    if (has_mbyte)
+	l = (*mb_ptr2len)(ptr);
     else
 #endif
-    {
-	if (*ptr++ == NUL || *ptr == NUL)
-	    return FAIL;
-	++curwin->w_cursor.col;
-    }
+	l = 1;
+
+    /* move "l" bytes right, but don't end up on the NUL, unless 'virtualedit'
+     * contains "onemore". */
+    if (ptr[l] == NUL
+#ifdef FEAT_VIRTUALEDIT
+	    && (ve_flags & VE_ONEMORE) == 0
+#endif
+	    )
+	return FAIL;
+    curwin->w_cursor.col += l;
 
     curwin->w_set_curswant = TRUE;
     return OK;

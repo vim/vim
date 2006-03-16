@@ -3733,6 +3733,9 @@ end:
     /* If the cursor is past the end of the line put it at the end. */
     if (gchar_cursor() == NUL
 	    && curwin->w_cursor.col > 0
+#ifdef FEAT_VIRTUALEDIT
+	    && (ve_flags & VE_ONEMORE) == 0
+#endif
 	    && !(restart_edit || (State & INSERT)))
     {
 	/* Put the cursor on the last character in the line. */

@@ -813,11 +813,12 @@ EXTERN int	p_vb;		/* 'visualbell' */
 EXTERN char_u	*p_ve;		/* 'virtualedit' */
 EXTERN unsigned ve_flags;
 # ifdef IN_OPTION_C
-static char *(p_ve_values[]) = {"block", "insert", "all", NULL};
+static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", NULL};
 # endif
 # define VE_BLOCK	5	/* includes "all" */
 # define VE_INSERT	6	/* includes "all" */
 # define VE_ALL		4
+# define VE_ONEMORE	8
 #endif
 EXTERN long	p_verbose;	/* 'verbose' */
 EXTERN char_u	*p_vfile;	/* 'verbosefile' */
