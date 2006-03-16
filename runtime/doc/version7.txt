@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 15
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -30,6 +30,7 @@ More highlighting			|new-more-highlighting|
 Translated manual pages			|new-manpage-trans|
 Internal grep				|new-vimgrep|
 Scroll back in messages			|new-scroll-back|
+Cursor past end of the line		|new-onemore|
 POSIX compatibility			|new-posix|
 Debugger support			|new-debug-support|
 Remote file explorer			|new-netrw-explore|
@@ -269,11 +270,11 @@ Undo branches						*new-undo-branches*
 
 Previously there was only one line of undo-redo.  If, after undoing a number
 of changes, a new change was made all the undone changes were lost.  This
-could lead to accidentally losing text.
+could lead to accidentally losing work.
 
 Vim now makes an undo branch in this situation.  Thus you can go back to the
 text after any change, even if they were undone.  So long as you do not run
-into 'undolevels', undo information is freed up to limit the memory use.
+into 'undolevels', undo information is freed up to limit the memory used.
 
 To be able to navigate the undo branches each change is numbered sequentially.
 The commands |g-| and |:earlier| go back in time, to older changes.  The
@@ -281,6 +282,10 @@ commands |g+| and |:later| go forward in time, to newer changes.
 
 The changes are also timestamped.  Use ":earlier 10m" to go to the text as it
 was about ten minutes earlier.
+
+The |:undolist| command can be used to get an idea of which undo branches
+exist.  The |:undo| command now takes an argument to directly jump to a
+specific position in this list.
 
 There is no graphical display of the tree with changes, navigation can be
 quite confusing.
@@ -376,6 +381,19 @@ Previously it only partly worked for ":clist".
 
 The |g<| command can be used to see the last page of messages after you have
 hit <Enter> at the |hit-enter-prompt|.  Then you can scroll further back.
+
+
+Cursor past end of the line				*new-onemore*
+---------------------------
+
+When the 'virtualedit' option contains "onemore" the cursor can move just past
+the end of the line.  As if it's on top of the line break.
+
+This makes some commands more consistent.  Previously the cursor was always
+past the end of the line if the line was empty.  But it is far from Vi
+compatible.  It may also break some plugins or Vim scripts.  Use with care!
+
+The patch was provided by Mattias Flodin.
 
 
 POSIX compatibility					*new-posix*
@@ -874,6 +892,10 @@ the user selects "quit" or "abort" then exit Vim.
 Undo now also restores the '< and '> marks.  "gv" selects the same area as
 before the change and undo.
 
+When editing a search pattern for a "/" or "?" command and 'incsearch' is set
+CTRL-L can be used to add a character from the current match.  CTRL-R CTRL-W
+will add a word, but exclude the part of the word that was already typed.
+
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
 
@@ -1051,6 +1073,9 @@ When completing buffer names, match with "\(^\|[\/]\)" instead of "^", so that
 To count items (pattern matches) without changing the buffer the 'n' flag has
 been added to |:substitute|.  See |count-items|.
 
+In a |:substitute| command the \u, \U, \l and \L items now also work for
+multi-byte characters.
+
 The "screen.linux" $TERM name is recognized to set the default for
 'background' to "dark". (Ciaran McCreesh)  Also for "cygwin" and "putty".
 
@@ -1189,8 +1214,8 @@ use these new features:
 
 When 'statusline' is set to something that causes an error message then it is
 made empty to avoid an endless redraw loop.  Also for other options, such at
-'tabline'.  ":verbose set statusline" will mention that it was set in an error
-handler.
+'tabline' and 'titlestring'.  ":verbose set statusline" will mention that it
+was set in an error handler.
 
 When there are several matching tags, the ":tag <name>" and CTRL-] commands
 jump to the [count] matching tag. (Yegappan Lakshmanan)
