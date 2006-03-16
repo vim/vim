@@ -85,11 +85,6 @@ AC_MSG_CHECKING([for Darwin (Mac OS X)])
 if test "`(uname) 2>/dev/null`" = Darwin; then
   AC_MSG_RESULT(yes)
 
-  dnl Default install directory is not /usr/local
-  if test x$prefix = xNONE; then
-    prefix=/Applications
-  fi
-
   AC_MSG_CHECKING(--disable-darwin argument)
   AC_ARG_ENABLE(darwin,
 	  [  --disable-darwin        Disable Darwin (Mac OS X) support.],
@@ -165,6 +160,11 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     if test "x$CARBON" = "xyes"; then
       if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
+
+	dnl Default install directory is not /usr/local
+	if test x$prefix = xNONE; then
+	  prefix=/Applications
+	fi
       fi
     fi
   fi

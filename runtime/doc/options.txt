@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 15
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3768,6 +3768,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	cursor to the match.
 	The highlighting can be set with the 'i' flag in 'highlight'.
 	See also: 'hlsearch'.
+	CTRL-L can be used to add one character from after the current match
+	to the command line.
+	CTRL-R CTRL-W can be used to add the word at the end of the current
+	match, excluding the characters that were already typed.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'indentexpr'* *'inde'*
@@ -7182,10 +7186,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    block	Allow virtual editing in Visual block mode.
 	    insert	Allow virtual editing in Insert mode.
 	    all		Allow virtual editing in all modes.
+	    onemore	Allow the cursor to move just past the end of the line
 	Virtual editing means that the cursor can be positioned where there is
 	no actual character.  This can be halfway into a Tab or beyond the end
 	of the line.  Useful for selecting a rectangle in Visual mode and
 	editing a table.
+	"onemore" is not the same, it will only allow moving the cursor just
+	after the last character of the line.  This makes some commands more
+	consistent.  Previously the cursor was always past the end of the line
+	if the line was empty.  But it is far from Vi compatible.  It may also
+	break some plugins or Vim scripts.  For example because |$| moves to a
+	different position.  Use with care!
+	It doesn't make sense to combine "all" with "onemore", but you will
+	not get a warning for it.
 
 			*'visualbell'* *'vb'* *'novisualbell'* *'novb'* *beep*
 'visualbell' 'vb'	boolean	(default off)

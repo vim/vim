@@ -151,11 +151,15 @@ coladvance2(pos, addspaces, finetune, wcol)
     int		head = 0;
 #endif
 
-    one_more = (State & INSERT) || restart_edit != NUL
+    one_more = (State & INSERT)
+		    || restart_edit != NUL
 #ifdef FEAT_VISUAL
-					  || (VIsual_active && *p_sel != 'o')
+		    || (VIsual_active && *p_sel != 'o')
 #endif
-					  ;
+#ifdef FEAT_VIRTUALEDIT
+		    || (ve_flags & VE_ONEMORE)
+#endif
+		    ;
     line = ml_get_curline();
 
     if (wcol >= MAXCOL)
@@ -5486,8 +5490,6 @@ qsort(base, elm_count, elm_size, cmp)
 }
 #endif
 
-#if defined(FEAT_EX_EXTRA) || defined(FEAT_CMDL_COMPL) \
-    || (defined(FEAT_SYN_HL) && defined(FEAT_MBYTE)) || defined(PROTO)
 /*
  * Sort an array of strings.
  */
@@ -5515,7 +5517,6 @@ sort_strings(files, count)
 {
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
-#endif
 
 #if !defined(NO_EXPANDPATH) || defined(PROTO)
 /*

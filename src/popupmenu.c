@@ -58,6 +58,7 @@ pum_display(array, size, selected)
     int		row;
     int		height;
     int		col;
+    int		above_row = cmdline_row;
 
 redo:
     def_width = PUM_DEF_WIDTH;
@@ -80,6 +81,12 @@ redo:
     else
 	top_clear = 0;
 
+    /* When the preview window is at the bottom stop just above it.  Also
+     * avoid drawing over the status line so that it's clear there is a window
+     * boundary. */
+    if (lastwin->w_p_pvw)
+	above_row -= lastwin->w_height + lastwin->w_status_height + 1;
+
     /*
      * Figure out the size and position of the pum.
      */
@@ -92,8 +99,8 @@ redo:
 
     /* Put the pum below "row" if possible.  If there are few lines decide on
      * where there is more room. */
-    if (row >= cmdline_row - pum_height
-			      && row > (cmdline_row - top_clear - height) / 2)
+    if (row >= above_row - pum_height
+			      && row > (above_row - top_clear - height) / 2)
     {
 	/* pum above "row" */
 	if (row >= size)
@@ -116,8 +123,8 @@ redo:
     {
 	/* pum below "row" */
 	pum_row = row + height;
-	if (size > cmdline_row - pum_row)
-	    pum_height = cmdline_row - pum_row;
+	if (size > above_row - pum_row)
+	    pum_height = above_row - pum_row;
 	else
 	    pum_height = size;
 	if (p_ph > 0 && pum_height > p_ph)

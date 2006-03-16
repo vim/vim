@@ -2740,6 +2740,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :undo	undo.txt	/*:undo*
 :undoj	undo.txt	/*:undoj*
 :undojoin	undo.txt	/*:undojoin*
+:undol	undo.txt	/*:undol*
+:undolist	undo.txt	/*:undolist*
 :unh	windows.txt	/*:unh*
 :unhide	windows.txt	/*:unhide*
 :unl	eval.txt	/*:unl*
@@ -6247,6 +6249,7 @@ new-multi-lang	version6.txt	/*new-multi-lang*
 new-netrw-explore	version7.txt	/*new-netrw-explore*
 new-network-files	version6.txt	/*new-network-files*
 new-omni-completion	version7.txt	/*new-omni-completion*
+new-onemore	version7.txt	/*new-onemore*
 new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*

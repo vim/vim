@@ -6531,53 +6531,53 @@ cstrchr(s, c)
  * This is impossible, so we declare a pointer to a function returning a
  * pointer to a function returning void. This should work for all compilers.
  */
-typedef void (*(*fptr) __ARGS((char_u *, int)))();
+typedef void (*(*fptr_T) __ARGS((int *, int)))();
 
-static fptr do_upper __ARGS((char_u *, int));
-static fptr do_Upper __ARGS((char_u *, int));
-static fptr do_lower __ARGS((char_u *, int));
-static fptr do_Lower __ARGS((char_u *, int));
+static fptr_T do_upper __ARGS((int *, int));
+static fptr_T do_Upper __ARGS((int *, int));
+static fptr_T do_lower __ARGS((int *, int));
+static fptr_T do_Lower __ARGS((int *, int));
 
 static int vim_regsub_both __ARGS((char_u *source, char_u *dest, int copy, int magic, int backslash));
 
-    static fptr
+    static fptr_T
 do_upper(d, c)
-    char_u *d;
-    int c;
-{
-    *d = TOUPPER_LOC(c);
-
-    return (fptr)NULL;
-}
-
-    static fptr
-do_Upper(d, c)
-    char_u *d;
-    int c;
-{
-    *d = TOUPPER_LOC(c);
-
-    return (fptr)do_Upper;
-}
-
-    static fptr
-do_lower(d, c)
-    char_u *d;
-    int c;
-{
-    *d = TOLOWER_LOC(c);
-
-    return (fptr)NULL;
-}
-
-    static fptr
-do_Lower(d, c)
-    char_u	*d;
+    int		*d;
     int		c;
 {
-    *d = TOLOWER_LOC(c);
+    *d = MB_TOUPPER(c);
 
-    return (fptr)do_Lower;
+    return (fptr_T)NULL;
+}
+
+    static fptr_T
+do_Upper(d, c)
+    int		*d;
+    int		c;
+{
+    *d = MB_TOUPPER(c);
+
+    return (fptr_T)do_Upper;
+}
+
+    static fptr_T
+do_lower(d, c)
+    int		*d;
+    int		c;
+{
+    *d = MB_TOLOWER(c);
+
+    return (fptr_T)NULL;
+}
+
+    static fptr_T
+do_Lower(d, c)
+    int		*d;
+    int		c;
+{
+    *d = MB_TOLOWER(c);
+
+    return (fptr_T)do_Lower;
 }
 
 /*
@@ -6587,7 +6587,8 @@ do_Lower(d, c)
  * pattern.  If that previous pattern also contains a ~ we should go back a
  * step further...  But we insert the previous pattern into the current one
  * and remember that.
- * This still does not handle the case where "magic" changes. TODO?
+ * This still does not handle the case where "magic" changes.  So require the
+ * user to keep his hands off of "magic".
  *
  * The tildes are parsed once before the first call to vim_regsub().
  */
@@ -6729,17 +6730,14 @@ vim_regsub_both(source, dest, copy, magic, backslash)
     char_u	*dst;
     char_u	*s;
     int		c;
+    int		cc;
     int		no = -1;
-    fptr	func = (fptr)NULL;
+    fptr_T	func = (fptr_T)NULL;
     linenr_T	clnum = 0;	/* init for GCC */
     int		len = 0;	/* init for GCC */
 #ifdef FEAT_EVAL
     static char_u *eval_result = NULL;
 #endif
-#ifdef FEAT_MBYTE
-    int		l;
-#endif
-
 
     /* Be paranoid... */
     if (source == NULL || dest == NULL)
@@ -6840,16 +6838,16 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    {
 		switch (*src++)
 		{
-		case 'u':   func = (fptr)do_upper;
+		case 'u':   func = (fptr_T)do_upper;
 			    continue;
-		case 'U':   func = (fptr)do_Upper;
+		case 'U':   func = (fptr_T)do_Upper;
 			    continue;
-		case 'l':   func = (fptr)do_lower;
+		case 'l':   func = (fptr_T)do_lower;
 			    continue;
-		case 'L':   func = (fptr)do_Lower;
+		case 'L':   func = (fptr_T)do_Lower;
 			    continue;
 		case 'e':
-		case 'E':   func = (fptr)NULL;
+		case 'E':   func = (fptr_T)NULL;
 			    continue;
 		}
 	    }
@@ -6882,28 +6880,28 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 
 	    /* Write to buffer, if copy is set. */
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (l = (*mb_ptr2len)(src - 1)) > 1)
+	    if (has_mbyte)
+		c = mb_ptr2char(src - 1);
+#endif
+
+	    if (func == (fptr_T)NULL)	/* just copy */
+		cc = c;
+	    else
+		/* Turbo C complains without the typecast */
+		func = (fptr_T)(func(&cc, c));
+
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
 	    {
-		/* TODO: should use "func" here. */
+		src += mb_ptr2len(src - 1) - 1;
 		if (copy)
-		    mch_memmove(dst, src - 1, l);
-		dst += l - 1;
-		src += l - 1;
+		    mb_char2bytes(cc, dst);
+		dst += mb_char2len(cc) - 1;
 	    }
 	    else
-	    {
 #endif
 		if (copy)
-		{
-		    if (func == (fptr)NULL)	/* just copy */
-			*dst = c;
-		    else			/* change case */
-			func = (fptr)(func(dst, c));
-		    /* Turbo C complains without the typecast */
-		}
-#ifdef FEAT_MBYTE
-	    }
-#endif
+		    *dst = cc;
 	    dst++;
 	}
 	else
@@ -6976,29 +6974,39 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 			    }
 			    dst += 2;
 			}
-#ifdef FEAT_MBYTE
-			else if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
-			{
-			    /* TODO: should use "func" here. */
-			    if (copy)
-				mch_memmove(dst, s, l);
-			    dst	+= l;
-			    s += l - 1;
-			    len	-= l - 1;
-			}
-#endif
 			else
 			{
-			    if (copy)
-			    {
-				if (func == (fptr)NULL)	    /* just copy */
-				    *dst = *s;
-				else			    /* change case */
-				    func = (fptr)(func(dst, *s));
+#ifdef FEAT_MBYTE
+			    if (has_mbyte)
+				c = mb_ptr2char(s);
+			    else
+#endif
+				c = *s;
+
+			    if (func == (fptr_T)NULL)	/* just copy */
+				cc = c;
+			    else
 				/* Turbo C complains without the typecast */
+				func = (fptr_T)(func(&cc, c));
+
+#ifdef FEAT_MBYTE
+			    if (has_mbyte)
+			    {
+				int l = mb_ptr2len(s) - 1;
+
+				s += l;
+				len -= l;
+				if (copy)
+				    mb_char2bytes(cc, dst);
+				dst += mb_char2len(cc) - 1;
 			    }
-			    ++dst;
+			    else
+#endif
+				if (copy)
+				    *dst = cc;
+			    dst++;
 			}
+
 			++s;
 			--len;
 		    }

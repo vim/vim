@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 06
+*change.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -728,6 +728,7 @@ Examples: >
   :s/\([abc]\)\([efg]\)/\2\1/g	 modifies "af fa bg" to "fa fa gb"
   :s/abcde/abc^Mde/		 modifies "abcde"    to "abc", "de" (two lines)
   :s/$/\^M/			 modifies "abcde"    to "abcde^M"
+  :s/\w\+/\u\0/g		 modifies "bla bla"  to "Bla Bla"
 
 Note: In previous versions CTRL-V was handled in a special way.  Since this is
 not Vi compatible, this was removed.  Use a backslash instead.

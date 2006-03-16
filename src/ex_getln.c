@@ -1377,7 +1377,23 @@ getcmdline(firstc, count, indent)
 		    break;
 		goto cmdline_changed;
 
-	case Ctrl_L:	    /* longest common part */
+	case Ctrl_L:
+#ifdef FEAT_SEARCH_EXTRA
+		if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
+		{
+		    /* Add a character from under the cursor for 'incsearch' */
+		    if (did_incsearch
+				   && !equalpos(curwin->w_cursor, old_cursor))
+		    {
+			c = gchar_cursor();
+			if (c != NUL)
+			    break;
+		    }
+		    goto cmdline_not_changed;
+		}
+#endif
+
+		/* completion: longest common part */
 		if (nextwild(&xpc, WILD_LONGEST, 0) == FAIL)
 		    break;
 		goto cmdline_changed;
@@ -1665,6 +1681,8 @@ cmdline_changed:
 	 */
 	if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 	{
+	    pos_T	end_pos;
+
 	    /* if there is a character waiting, search and redraw later */
 	    if (char_avail())
 	    {
@@ -1696,7 +1714,7 @@ cmdline_changed:
 		    /* cancelled searching because a char was typed */
 		    incsearch_postponed = TRUE;
 	    }
-	    if (i)
+	    if (i != 0)
 		highlight_match = TRUE;		/* highlight position */
 	    else
 		highlight_match = FALSE;	/* remove highlight */
@@ -1717,7 +1735,7 @@ cmdline_changed:
 		pos_T	    save_pos = curwin->w_cursor;
 
 		/*
-		 * First move cursor to end of match, then to start.  This
+		 * First move cursor to end of match, then to the start.  This
 		 * moves the whole match onto the screen when 'nowrap' is set.
 		 */
 		curwin->w_cursor.lnum += search_match_lines;
@@ -1728,13 +1746,19 @@ cmdline_changed:
 		    coladvance((colnr_T)MAXCOL);
 		}
 		validate_cursor();
+		end_pos = curwin->w_cursor;
 		curwin->w_cursor = save_pos;
 	    }
+
 	    validate_cursor();
 
 	    save_cmdline(&save_ccline);
 	    update_screen(SOME_VALID);
 	    restore_cmdline(&save_ccline);
+
+	    /* Leave it at the end to make CTRL-R CTRL-W work. */
+	    if (i != 0)
+		curwin->w_cursor = end_pos;
 
 	    msg_starthere();
 	    redrawcmdline();
@@ -2813,6 +2837,7 @@ cmdline_paste(regname, literally)
 {
     long		i;
     char_u		*arg;
+    char_u		*p;
     int			allocated;
     struct cmdline_info	save_ccline;
 
@@ -2845,7 +2870,40 @@ cmdline_paste(regname, literally)
 	/* Got the value of a special register in "arg". */
 	if (arg == NULL)
 	    return FAIL;
-	cmdline_paste_str(arg, literally);
+
+	/* When 'incsearch' is set and CTRL-R CTRL-W used: skip the duplicate
+	 * part of the word. */
+	p = arg;
+	if (p_is && regname == Ctrl_W)
+	{
+	    char_u  *w;
+	    int	    len;
+
+	    /* Locate start of last word in the cmd buffer. */
+	    for (w = ccline.cmdbuff + ccline.cmdlen; w > ccline.cmdbuff; )
+	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		{
+		    len = (*mb_head_off)(ccline.cmdbuff, w - 1) + 1;
+		    if (!vim_iswordc(mb_ptr2char(w - len)))
+			break;
+		    w -= len;
+		}
+		else
+#endif
+		{
+		    if (!vim_iswordc(w[-1]))
+			break;
+		    --w;
+		}
+	    }
+	    len = (ccline.cmdbuff + ccline.cmdlen) - w;
+	    if (p_ic ? STRNICMP(w, arg, len) == 0 : STRNCMP(w, arg, len) == 0)
+		p += len;
+	}
+
+	cmdline_paste_str(p, literally);
 	if (allocated)
 	    vim_free(arg);
 	return OK;

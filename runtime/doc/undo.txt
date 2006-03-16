@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 14
+*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,6 +22,9 @@ u			Undo [count] changes.  {Vi: only one level}
 
 							*:u* *:un* *:undo*
 :u[ndo]			Undo one change.  {Vi: only one level}
+
+:u[ndo] {N}		Jump to after change number {N}.  See |undo-branches|
+			for the meaning of {N}.  {not in Vi}
 
 							*CTRL-R*
 CTRL-R			Redo [count] changes which were undone.  {Vi: redraw
@@ -114,6 +117,19 @@ What matters here is the order in which the changes are made.  Undo and redo
 are not considered changes in this context.  After each change you have a new
 state of the text.
 
+							*:undol* *:undolist*
+:undol[ist]		List the leafs in the tree of changes.  Example:
+				number changes   time ~
+				4      10        10:34:11
+				18     4         11:01:46
+
+			The "number" column is the change number.  This number
+			continuously increases and can be used to identify a
+			specific undo-able change, see |:undo|.
+			The "changes" column is the number of changes to this
+			leaf from the root of the tree.
+			The "time" column is the time this change was made.
+
 							*g-*
 g-			Go to older text state.  With a count repeat that many
 			times.  {not in Vi}
@@ -131,6 +147,7 @@ g+			Go to newer text state.  With a count repeat that many
 :later {N}s		Go to newer text state about {N} seconds later.
 :later {N}m		Go to newer text state about {N} minutes later.
 :later {N}h		Go to newer text state about {N} hours later.
+
 
 Note that text states will become unreachable when undo information is cleared
 for 'undolevels'.

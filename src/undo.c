@@ -89,6 +89,7 @@ static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((void));
 static void u_undo_end __ARGS((void));
+static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
 static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
@@ -637,11 +638,14 @@ static int lastmark = 0;
  * When "step" is negative go back in time, otherwise goes forward in time.
  * When "sec" is FALSE make "step" steps, when "sec" is TRUE use "step" as
  * seconds.
+ * When "absolute" is TRUE use "step" as the sequence number to jump to.
+ * "sec" must be FALSE then.
  */
     void
-undo_time(step, sec)
+undo_time(step, sec, absolute)
     long	step;
     int		sec;
+    int		absolute;
 {
     long	    target;
     long	    closest;
@@ -668,7 +672,12 @@ undo_time(step, sec)
 
     /* "target" is the node below which we want to be.  When going forward
      * the current one also counts, thus do one less. */
-    if (step < 0)
+    if (absolute)
+    {
+	target = step;
+	closest = -2;
+    }
+    else if (step < 0)
     {
 	if (sec)
 	    target = (long)curbuf->b_u_seq_time + step;
@@ -787,6 +796,13 @@ undo_time(step, sec)
 
 	if (uhp != NULL)    /* found it */
 	    break;
+
+	if (absolute)
+	{
+	    EMSGN(_("Undo number %ld not found"), step);
+	    return;
+	}
+
 	if (closest == closest_start)
 	{
 	    if (step < 0)
@@ -1152,8 +1168,9 @@ u_undoredo()
     static void
 u_undo_end()
 {
-    long	sec;
     char	*msg;
+    u_header_T	*uhp;
+    char_u	msgbuf[80];
 
 #ifdef FEAT_FOLDING
     if ((fdo_flags & FDO_UNDO) && KeyTyped)
@@ -1185,12 +1202,18 @@ u_undo_end()
 	    msg = N_("changes");
     }
 
-    if (curbuf->b_u_curhead == 0)
-	sec = 0;
+    if (curbuf->b_u_curhead != NULL)
+	uhp = curbuf->b_u_curhead;
     else
-	sec = time(NULL) - curbuf->b_u_curhead->uh_time;
+	uhp = curbuf->b_u_newhead;
 
-    smsg((char_u *)_("%ld %s; %ld seconds ago"), u_oldcount, _(msg), sec);
+    if (uhp == NULL)
+	*msgbuf = NUL;
+    else
+	u_add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
+
+    smsg((char_u *)_("%ld %s; #%ld  %s"), u_oldcount, _(msg),
+				      uhp == NULL ? 0L : uhp->uh_seq, msgbuf);
 }
 
 /*
@@ -1212,6 +1235,128 @@ u_sync()
 	u_getbot();		    /* compute ue_bot of previous u_save */
 	curbuf->b_u_curhead = NULL;
     }
+}
+
+/*
+ * ":undolist": List the leafs of the undo tree
+ */
+/*ARGSUSED*/
+    void
+ex_undolist(eap)
+    exarg_T *eap;
+{
+    garray_T	ga;
+    u_header_T	*uhp;
+    int		mark;
+    int		nomark;
+    int		changes = 1;
+    int		i;
+
+    /*
+     * 1: walk the tree to find all leafs, put the info in "ga".
+     * 2: sort the lines
+     * 3: display the list
+     */
+    mark = ++lastmark;
+    nomark = ++lastmark;
+    ga_init2(&ga, (int)sizeof(char *), 20);
+
+    uhp = curbuf->b_u_oldhead;
+    while (uhp != NULL)
+    {
+	if (uhp->uh_prev == NULL)
+	{
+	    if (ga_grow(&ga, 1) == FAIL)
+		break;
+	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7ld  ",
+							uhp->uh_seq, changes);
+	    u_add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
+								uhp->uh_time);
+	    ((char_u **)(ga.ga_data))[ga.ga_len++] = vim_strsave(IObuff);
+	}
+
+	uhp->uh_walk = mark;
+
+	/* go down in the tree if we haven't been there */
+	if (uhp->uh_prev != NULL && uhp->uh_prev->uh_walk != nomark
+					 && uhp->uh_prev->uh_walk != mark)
+	{
+	    uhp = uhp->uh_prev;
+	    ++changes;
+	}
+
+	/* go to alternate branch if we haven't been there */
+	else if (uhp->uh_alt_next != NULL
+		&& uhp->uh_alt_next->uh_walk != nomark
+		&& uhp->uh_alt_next->uh_walk != mark)
+	    uhp = uhp->uh_alt_next;
+
+	/* go up in the tree if we haven't been there and we are at the
+	 * start of alternate branches */
+	else if (uhp->uh_next != NULL && uhp->uh_alt_prev == NULL
+		&& uhp->uh_next->uh_walk != nomark
+		&& uhp->uh_next->uh_walk != mark)
+	{
+	    uhp = uhp->uh_next;
+	    --changes;
+	}
+
+	else
+	{
+	    /* need to backtrack; mark this node as done */
+	    uhp->uh_walk = nomark;
+	    if (uhp->uh_alt_prev != NULL)
+		uhp = uhp->uh_alt_prev;
+	    else
+	    {
+		uhp = uhp->uh_next;
+		--changes;
+	    }
+	}
+    }
+
+    if (ga.ga_len == 0)
+	MSG(_("Nothing to undo"));
+    else
+    {
+	sort_strings((char_u **)ga.ga_data, ga.ga_len);
+
+	msg_start();
+	msg_puts_attr((char_u *)_("number changes  time"), hl_attr(HLF_T));
+	for (i = 0; i < ga.ga_len && !got_int; ++i)
+	{
+	    msg_putchar('\n');
+	    if (got_int)
+		break;
+	    msg_puts(((char_u **)ga.ga_data)[i]);
+	}
+	msg_end();
+
+	ga_clear_strings(&ga);
+    }
+}
+
+/*
+ * Put the timestamp of an undo header in "buf[buflen]" in a nice format.
+ */
+    static void
+u_add_time(buf, buflen, tt)
+    char_u	*buf;
+    size_t	buflen;
+    time_t	tt;
+{
+#ifdef HAVE_STRFTIME
+    struct tm	*curtime;
+
+    if (time(NULL) - tt >= 100)
+    {
+	curtime = localtime(&tt);
+	(void)strftime((char *)buf, buflen, "%T", curtime);
+    }
+    else
+#endif
+	vim_snprintf((char *)buf, buflen, "%ld seconds ago",
+						     (long)(time(NULL) - tt));
 }
 
 /*
