@@ -2595,6 +2595,82 @@ mb_tail_off(base, p)
     return 1 - dbcs_head_off(base, p);
 }
 
+/*
+ * Find the next illegal byte sequence.
+ */
+    void
+utf_find_illegal()
+{
+    pos_T	pos = curwin->w_cursor;
+    char_u	*p;
+    int		len;
+    vimconv_T	vimconv;
+    char_u	*tofree = NULL;
+
+    vimconv.vc_type = CONV_NONE;
+    if (enc_utf8 && (enc_canon_props(curbuf->b_p_fenc) & ENC_8BIT))
+    {
+	/* 'encoding' is "utf-8" but we are editing a 8-bit encoded file,
+	 * possibly a utf-8 file with illegal bytes.  Setup for conversion
+	 * from utf-8 to 'fileencoding'. */
+	convert_setup(&vimconv, p_enc, curbuf->b_p_fenc);
+    }
+
+#ifdef FEAT_VIRTUALEDIT
+    curwin->w_cursor.coladd = 0;
+#endif
+    for (;;)
+    {
+	p = ml_get_cursor();
+	if (vimconv.vc_type != CONV_NONE)
+	{
+	    vim_free(tofree);
+	    tofree = string_convert(&vimconv, p, NULL);
+	    if (tofree == NULL)
+		break;
+	    p = tofree;
+	}
+
+	while (*p != NUL)
+	{
+	    /* Illegal means that there are not enough trail bytes (checked by
+	     * utf_ptr2len()) or too many of them (overlong sequence). */
+	    len = utf_ptr2len(p);
+	    if (*p >= 0x80 && (len == 1
+				     || utf_char2len(utf_ptr2char(p)) != len))
+	    {
+		if (vimconv.vc_type == CONV_NONE)
+		    curwin->w_cursor.col += p - ml_get_cursor();
+		else
+		{
+		    int	    l;
+
+		    len = p - tofree;
+		    for (p = ml_get_cursor(); *p != NUL && len-- > 0; p += l)
+		    {
+			l = utf_ptr2len(p);
+			curwin->w_cursor.col += l;
+		    }
+		}
+		goto theend;
+	    }
+	    p += len;
+	}
+	if (curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count)
+	    break;
+	++curwin->w_cursor.lnum;
+	curwin->w_cursor.col = 0;
+    }
+
+    /* didn't find it: don't move and beep */
+    curwin->w_cursor = pos;
+    beep_flush();
+
+theend:
+    vim_free(tofree);
+    convert_setup(&vimconv, NULL, NULL);
+}
+
 #if defined(HAVE_GTK2) || defined(PROTO)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
