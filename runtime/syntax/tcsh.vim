@@ -1,14 +1,14 @@
 " Vim syntax file
 " Language:		C-shell (tcsh)
-" Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Modified:	Mon 23 Feb 2004 02:28:51 PM CST
+" Maintainor:		Gautam Iyer <gautam@math.uchicago.edu>
+" Last Modified:	Sat 11 Mar 2006 11:16:47 AM CST
 "
 " Description: We break up each statement into a "command" and an "end" part.
 " All groups are either a "command" or part of the "end" of a statement (ie
 " everything after the "command"). This is because blindly highlighting tcsh
 " statements as keywords caused way too many false positives. Eg:
 "
-"	set history=200
+" 	set history=200
 "
 " causes history to come up as a keyword, which we want to avoid.
 
@@ -165,8 +165,8 @@ hi def link tcshExprOp		tcshOperator
 hi def link tcshExprEnd		tcshOperator
 hi def link tcshComment		comment
 hi def link tcshCommentTi	preproc
-hi def link tcshCommentSp	WarningMsg
-hi def link tcshSharpBang	preproc
+hi def link tcshCommentSp	tcshCommentTi
+hi def link tcshSharpBang	tcshCommentTi
 hi def link tcshTodo		todo
 hi def link tcshSQuote		constant
 hi def link tcshDQuote		tcshSQuote

@@ -7880,9 +7880,13 @@ nv_g_cmd(cap)
     /*
      * "g8": Display the bytes used for the UTF-8 character under the
      * cursor.	It is displayed in hex.
+     * "8g8" finds illegal byte sequence.
      */
     case '8':
-	show_utf8();
+	if (cap->count0 == 8)
+	    utf_find_illegal();
+	else
+	    show_utf8();
 	break;
 #endif
 

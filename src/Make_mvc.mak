@@ -23,7 +23,7 @@
 #
 #	OLE interface: OLE=yes (usually with GUI=yes)
 #
-#	Multibyte support: MBYTE=yes
+#	Multibyte support: MBYTE=yes (default is no)
 #
 #	IME support: IME=yes	(requires GUI=yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
