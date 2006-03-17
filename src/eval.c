@@ -370,6 +370,8 @@ static void list_glob_vars __ARGS((void));
 static void list_buf_vars __ARGS((void));
 static void list_win_vars __ARGS((void));
 static void list_vim_vars __ARGS((void));
+static void list_script_vars __ARGS((void));
+static void list_func_vars __ARGS((void));
 static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
 static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
 static int check_changedtick __ARGS((char_u *arg));
@@ -463,6 +465,7 @@ static void f_bufwinnr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_byte2line __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_byteidx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_call __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_changenr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_char2nr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_cindent __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_col __ARGS((typval_T *argvars, typval_T *rettv));
@@ -1676,6 +1679,8 @@ ex_let(eap)
 	    list_glob_vars();
 	    list_buf_vars();
 	    list_win_vars();
+	    list_script_vars();
+	    list_func_vars();
 	    list_vim_vars();
 	}
 	eap->nextcmd = check_nextcmd(arg);
@@ -1946,6 +1951,27 @@ list_vim_vars()
 }
 
 /*
+ * List script-local variables, if there is a script.
+ */
+    static void
+list_script_vars()
+{
+    if (current_SID > 0 && current_SID <= ga_scripts.ga_len)
+	list_hashtable_vars(&SCRIPT_VARS(current_SID), (char_u *)"s:", FALSE);
+}
+
+/*
+ * List function variables, if there is a function.
+ */
+    static void
+list_func_vars()
+{
+    if (current_funccal != NULL)
+	list_hashtable_vars(&current_funccal->l_vars.dv_hashtab,
+						       (char_u *)"l:", FALSE);
+}
+
+/*
  * List variables in "arg".
  */
     static char_u *
@@ -2012,6 +2038,8 @@ list_arg_vars(eap, arg)
 				case 'b': list_buf_vars(); break;
 				case 'w': list_win_vars(); break;
 				case 'v': list_vim_vars(); break;
+				case 's': list_script_vars(); break;
+				case 'l': list_func_vars(); break;
 				default:
 					  EMSG2(_("E738: Can't list variables for %s"), name);
 			    }
@@ -6881,6 +6909,7 @@ static struct fst
     {"byte2line",	1, 1, f_byte2line},
     {"byteidx",		2, 2, f_byteidx},
     {"call",		2, 3, f_call},
+    {"changenr",	0, 0, f_changenr},
     {"char2nr",		1, 1, f_char2nr},
     {"cindent",		1, 1, f_cindent},
     {"col",		1, 1, f_col},
@@ -8006,6 +8035,18 @@ f_call(argvars, rettv)
     /* Free the arguments. */
     while (argc > 0)
 	clear_tv(&argv[--argc]);
+}
+
+/*
+ * "changenr()" function
+ */
+/*ARGSUSED*/
+    static void
+f_changenr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = curbuf->b_u_seq_cur;
 }
 
 /*
