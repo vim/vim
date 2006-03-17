@@ -49,6 +49,7 @@ int utf_head_off __ARGS((char_u *base, char_u *p));
 void mb_copy_char __ARGS((char_u **fp, char_u **tp));
 int mb_off_next __ARGS((char_u *base, char_u *p));
 int mb_tail_off __ARGS((char_u *base, char_u *p));
+void utf_find_illegal __ARGS((void));
 int utf_valid_string __ARGS((char_u *s, char_u *end));
 int dbcs_screen_tail_off __ARGS((char_u *base, char_u *p));
 void mb_adjust_cursor __ARGS((void));

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 16
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -285,7 +285,8 @@ was about ten minutes earlier.
 
 The |:undolist| command can be used to get an idea of which undo branches
 exist.  The |:undo| command now takes an argument to directly jump to a
-specific position in this list.
+specific position in this list.  The |changenr()| function can be used to
+obtain the change number.
 
 There is no graphical display of the tree with changes, navigation can be
 quite confusing.
@@ -306,6 +307,8 @@ compile time.
 
 For pattern matching it is now possible to search for individual composing
 characters. |patterns-composing|
+
+The |8g8| command searches for an illegal UTF-8 byte sequence.
 
 
 More highlighting				*new-more-highlighting*
@@ -2005,5 +2008,9 @@ everything is redraw instead of using a scroll and updating the changed text.
 E.g., when using ":match" to highlight a paren that the cursor landed on.
 Added SOME_VALID: Redraw the whole window but also try to scroll to minimize
 redrawing.
+
+Win32: When using Korean IME making it active didn't work properly. (Moon,
+Yu-sung, 2005 March 21)
+
 
  vim:tw=78:ts=8:ft=help:norl:

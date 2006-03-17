@@ -1843,8 +1843,7 @@ op_delete(oap)
 		    curwin->w_cursor.coladd = 0;
 	    }
 #endif
-	    (void)del_bytes((long)n, restart_edit == NUL && !virtual_op,
-				oap->op_type == OP_DELETE
+	    (void)del_bytes((long)n, !virtual_op, oap->op_type == OP_DELETE
 #ifdef FEAT_VISUAL
 				    && !oap->is_VIsual
 #endif
@@ -1868,8 +1867,7 @@ op_delete(oap)
 	    /* delete from start of line until op_end */
 	    curwin->w_cursor.col = 0;
 	    (void)del_bytes((long)(oap->end.col + 1 - !oap->inclusive),
-					   restart_edit == NUL && !virtual_op,
-				oap->op_type == OP_DELETE
+					!virtual_op, oap->op_type == OP_DELETE
 #ifdef FEAT_VISUAL
 					&& !oap->is_VIsual
 #endif

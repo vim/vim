@@ -4296,7 +4296,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			ScreenLinesUC[off] = 0;
 #endif
 		    ++col;
-		    if (vcol == wp->w_virtcol)
+		    if (vcol == (long)wp->w_virtcol)
 		    {
 			ScreenAttrs[off] = hl_attr(HLF_CUC);
 			break;
@@ -4360,7 +4360,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_SYN_HL
 	/* Highlight the cursor column if 'cursorcolumn' is set.  But don't
 	 * highlight the cursor position itself. */
-	if (wp->w_p_cuc && vcol == wp->w_virtcol
+	if (wp->w_p_cuc && vcol == (long)wp->w_virtcol
 		&& lnum != wp->w_cursor.lnum
 		&& draw_state == WL_LINE)
 	{

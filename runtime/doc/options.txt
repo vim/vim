@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 16
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2557,6 +2557,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	environment.  This is the default value for 'encoding'.  It is useful
 	when 'encoding' is set to "utf-8" and your environment uses a
 	non-latin1 encoding, such as Russian.
+	When 'encoding' is "utf-8" and a file contains an illegal byte
+	sequence it won't be recognized as UTF-8.  You can use the |8g8|
+	command to find the illegal byte sequence.
 	WRONG VALUES:			WHAT'S WRONG:
 		latin1,utf-8		"latin1" will always be used
 		utf-8,ucs-bom,latin1	BOM won't be recognized in an utf-8

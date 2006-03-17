@@ -1254,11 +1254,9 @@ struct file_buffer
     u_header_T	*b_u_curhead;	/* pointer to current header */
     int		b_u_numhead;	/* current number of headers */
     int		b_u_synced;	/* entry lists are synced */
-    long	b_u_seq_last;	/* last used undo sequence number plus 1 */
-    long	b_u_seq_cur;	/* undo sequence number of last header used
-				   plus 1 */
-    time_t	b_u_seq_time;	/* uh_time of the last header used plus 1 or
-				   uh_time of current header */
+    long	b_u_seq_last;	/* last used undo sequence number */
+    long	b_u_seq_cur;	/* hu_seq of header below which we are now */
+    time_t	b_u_seq_time;	/* uh_time of header below which we are now */
 
     /*
      * variables for "U" command in undo.c

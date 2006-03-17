@@ -1647,6 +1647,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
 755	spell.txt	/*755*
+8g8	various.txt	/*8g8*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
 90.3	usr_90.txt	/*90.3*
@@ -4602,6 +4603,7 @@ changed-6.3	version6.txt	/*changed-6.3*
 changed-6.4	version6.txt	/*changed-6.4*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
+changenr()	eval.txt	/*changenr()*
 changetick	eval.txt	/*changetick*
 changing	change.txt	/*changing*
 char2nr()	eval.txt	/*char2nr()*
@@ -6522,6 +6524,7 @@ recursive_mapping	map.txt	/*recursive_mapping*
 redo	undo.txt	/*redo*
 redo-register	undo.txt	/*redo-register*
 ref	intro.txt	/*ref*
+ref-toc	help.txt	/*ref-toc*
 reference	intro.txt	/*reference*
 regexp	pattern.txt	/*regexp*
 regexp-changes-5.4	version5.txt	/*regexp-changes-5.4*

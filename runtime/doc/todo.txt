@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 16
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -44,12 +44,8 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 EMBEDDING: Make it possible to run Vim inside a window of another program.
 For GTK Neil Bird has a patch to use Vim like a widget.
 
-Win32: Patch for Korean IME. (Yusung, 2005 March 21)
-
 Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
 2004).  Should also work for 'filetype'.
-
-Add command to search for illegal utf-8 byte sequence.
 
 Add strtol() to avoid the problems with leading zero causing octal conversion.
 

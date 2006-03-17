@@ -1504,6 +1504,9 @@ EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 EXTERN int xsmp_icefd INIT(= -1);   /* The actual connection */
 #endif
 
+/* For undo we need to know the lowest time possible. */
+EXTERN time_t starttime;
+
 /*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */

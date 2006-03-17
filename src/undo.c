@@ -87,7 +87,7 @@ static void u_getbot __ARGS((void));
 static int undo_allowed __ARGS((void));
 static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
-static void u_undoredo __ARGS((void));
+static void u_undoredo __ARGS((int undo));
 static void u_undo_end __ARGS((void));
 static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
 static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
@@ -350,8 +350,8 @@ u_savecommon(top, bot, newbot)
 	if (curbuf->b_u_newhead != NULL)
 	    curbuf->b_u_newhead->uh_prev = uhp;
 
-	uhp->uh_seq = curbuf->b_u_seq_last++;
-	curbuf->b_u_seq_cur = curbuf->b_u_seq_last;
+	uhp->uh_seq = ++curbuf->b_u_seq_last;
+	curbuf->b_u_seq_cur = uhp->uh_seq;
 	uhp->uh_time = time(NULL);
 	curbuf->b_u_seq_time = uhp->uh_time + 1;
 
@@ -579,9 +579,11 @@ u_redo(count)
  * Undo or redo, depending on 'undo_undoes', 'count' times.
  */
     static void
-u_doit(count)
-    int count;
+u_doit(startcount)
+    int startcount;
 {
+    int count = startcount;
+
     if (!undo_allowed())
 	return;
 
@@ -604,22 +606,30 @@ u_doit(count)
 		/* stick curbuf->b_u_curhead at end */
 		curbuf->b_u_curhead = curbuf->b_u_oldhead;
 		beep_flush();
+		if (count == startcount - 1)
+		{
+		    MSG(_("Already at oldest change"));
+		    return;
+		}
 		break;
 	    }
 
-	    u_undoredo();
+	    u_undoredo(TRUE);
 	}
 	else
 	{
 	    if (curbuf->b_u_curhead == NULL || p_ul <= 0)
 	    {
 		beep_flush();	/* nothing to redo */
+		if (count == startcount - 1)
+		{
+		    MSG(_("Already at newest change"));
+		    return;
+		}
 		break;
 	    }
 
-	    u_undoredo();
-	    ++curbuf->b_u_seq_cur;
-	    ++curbuf->b_u_seq_time;
+	    u_undoredo(FALSE);
 
 	    /* Advance for next redo.  Set "newhead" when at the end of the
 	     * redoable changes. */
@@ -652,7 +662,6 @@ undo_time(step, sec, absolute)
     long	    closest_start;
     long	    closest_seq = 0;
     long	    val;
-    long	    limit;
     u_header_T	    *uhp;
     u_header_T	    *last;
     int		    mark;
@@ -670,43 +679,39 @@ undo_time(step, sec, absolute)
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
 	u_oldcount = -1;
 
-    /* "target" is the node below which we want to be.  When going forward
-     * the current one also counts, thus do one less. */
+    /* "target" is the node below which we want to be.
+     * Init "closest" to a value we can't reach. */
     if (absolute)
     {
 	target = step;
-	closest = -2;
+	closest = -1;
     }
-    else if (step < 0)
+    else
     {
+	/* When doing computations with time_t subtract starttime, because
+	 * time_t converted to a long may result in a wrong number. */
 	if (sec)
-	    target = (long)curbuf->b_u_seq_time + step;
+	    target = (long)(curbuf->b_u_seq_time - starttime) + step;
 	else
 	    target = curbuf->b_u_seq_cur + step;
-	if (target < 0)
-	    target = -1;
-	closest = -2;
-    }
-    else
-    {
-	if (sec)
+	if (step < 0)
 	{
-	    target = curbuf->b_u_seq_time + step - 1;
-	    closest = time(NULL) + 1;
+	    if (target < 0)
+		target = 0;
+	    closest = -1;
 	}
 	else
 	{
-	    target = curbuf->b_u_seq_cur + step - 1;
-	    closest = curbuf->b_u_seq_last + 1;
+	    if (sec)
+		closest = time(NULL) - starttime + 1;
+	    else
+		closest = curbuf->b_u_seq_last + 2;
+	    if (target >= closest)
+		target = closest - 1;
 	}
-	if (target >= closest)
-	    target = closest - 1;
     }
     closest_start = closest;
-    if (sec)
-	limit = curbuf->b_u_seq_time + (step > 0 ? -1 : 1);
-    else
-	limit = curbuf->b_u_seq_cur;
+    closest_seq = curbuf->b_u_seq_cur;
 
     /*
      * May do this twice:
@@ -733,27 +738,28 @@ undo_time(step, sec, absolute)
 	while (uhp != NULL)
 	{
 	    uhp->uh_walk = mark;
-	    val = (dosec ? uhp->uh_time : uhp->uh_seq);
+	    val = (dosec ? (uhp->uh_time - starttime) : uhp->uh_seq);
 
 	    if (round == 1)
 	    {
 		/* Remember the header that is closest to the target.
 		 * It must be at least in the right direction (checked with
-		 * "limit").  When the timestamp is equal find the
+		 * "b_u_seq_cur").  When the timestamp is equal find the
 		 * highest/lowest sequence number. */
-		if ((dosec && val == closest)
-			? (step < 0
-			    ? uhp->uh_seq < closest_seq
-			    : uhp->uh_seq > closest_seq)
-			: (step < 0
-			    ? (val < limit
-				&& (closest > target
-				    ? (val <= closest)
-				    : (val >= closest)))
-			    : (val > limit
-				&& (closest < target
-				    ? val >= closest
-				    : val <= closest))))
+		if ((step < 0 ? uhp->uh_seq <= curbuf->b_u_seq_cur
+			      : uhp->uh_seq > curbuf->b_u_seq_cur)
+			&& ((dosec && val == closest)
+			    ? (step < 0
+				? uhp->uh_seq < closest_seq
+				: uhp->uh_seq > closest_seq)
+			    : closest == closest_start
+				|| (val > target
+				    ? (closest > target
+					? val - target <= closest - target
+					: val - target <= target - closest)
+				    : (closest > target
+					? target - val <= closest - target
+					: target - val <= target - closest))))
 		{
 		    closest = val;
 		    closest_seq = uhp->uh_seq;
@@ -830,19 +836,12 @@ undo_time(step, sec, absolute)
 	    if (uhp == NULL)
 		uhp = curbuf->b_u_newhead;
 	    else
-	    {
-		while (uhp->uh_alt_prev != NULL
-					 && uhp->uh_alt_prev->uh_walk == mark)
-		{
-		    uhp->uh_walk = nomark;
-		    uhp = uhp->uh_alt_prev;
-		}
 		uhp = uhp->uh_next;
-	    }
-	    if (uhp == NULL || uhp->uh_walk != mark)
+	    if (uhp == NULL || uhp->uh_walk != mark
+					 || (uhp->uh_seq == target && !above))
 		break;
 	    curbuf->b_u_curhead = uhp;
-	    u_undoredo();
+	    u_undoredo(TRUE);
 	    uhp->uh_walk = nomark;	/* don't go back down here */
 	}
 
@@ -850,7 +849,7 @@ undo_time(step, sec, absolute)
 	 * And now go down the tree (redo), branching off where needed.
 	 */
 	uhp = curbuf->b_u_curhead;
-	for (;;)
+	while (uhp != NULL)
 	{
 	    /* Find the last branch with a mark, that's the one. */
 	    last = uhp;
@@ -869,10 +868,10 @@ undo_time(step, sec, absolute)
 		uhp->uh_alt_prev = last;
 
 		uhp = last;
+		if (uhp->uh_next != NULL)
+		    uhp->uh_next->uh_prev = uhp;
 	    }
 	    curbuf->b_u_curhead = uhp;
-	    curbuf->b_u_seq_cur = uhp->uh_seq;
-	    curbuf->b_u_seq_time = uhp->uh_time;
 
 	    if (uhp->uh_walk != mark)
 		break;	    /* must have reached the target */
@@ -882,9 +881,7 @@ undo_time(step, sec, absolute)
 	    if (uhp->uh_seq == target && above)
 		break;
 
-	    u_undoredo();
-	    ++curbuf->b_u_seq_cur;
-	    ++curbuf->b_u_seq_time;
+	    u_undoredo(FALSE);
 
 	    /* Advance "curhead" to below the header we last used.  If it
 	     * becomes NULL then we need to set "newhead" to this leaf. */
@@ -898,6 +895,7 @@ undo_time(step, sec, absolute)
 	    uhp = uhp->uh_prev;
 	    if (uhp == NULL || uhp->uh_walk != mark)
 	    {
+		/* Need to redo more but can't find it... */
 		EMSG2(_(e_intern2), "undo_time()");
 		break;
 	    }
@@ -912,9 +910,12 @@ undo_time(step, sec, absolute)
  * The lines in the file are replaced by the lines in the entry list at
  * curbuf->b_u_curhead. The replaced lines in the file are saved in the entry
  * list for the next undo/redo.
+ *
+ * When "undo" is TRUE we go up in the tree, when FALSE we go down.
  */
     static void
-u_undoredo()
+u_undoredo(undo)
+    int		undo;
 {
     char_u	**newarray = NULL;
     linenr_T	oldsize;
@@ -1157,6 +1158,13 @@ u_undoredo()
 
     /* Remember where we are for "g-" and ":earlier 10s". */
     curbuf->b_u_seq_cur = curhead->uh_seq;
+    if (undo)
+	/* We are below the previous undo.  However, to make ":earlier 1s"
+	 * work we compute this as being just above the just undone change. */
+	--curbuf->b_u_seq_cur;
+
+    /* The timestamp can be the same for multiple changes, just use the one of
+     * the undone/redone change. */
     curbuf->b_u_seq_time = curhead->uh_time;
 }
 
@@ -1212,8 +1220,9 @@ u_undo_end()
     else
 	u_add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
 
-    smsg((char_u *)_("%ld %s; #%ld  %s"), u_oldcount, _(msg),
-				      uhp == NULL ? 0L : uhp->uh_seq, msgbuf);
+    smsg((char_u *)_("%ld %s; #%ld  %s"),
+	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
+	    _(msg), uhp == NULL ? 0L : uhp->uh_seq, msgbuf);
 }
 
 /*
@@ -1264,7 +1273,8 @@ ex_undolist(eap)
     uhp = curbuf->b_u_oldhead;
     while (uhp != NULL)
     {
-	if (uhp->uh_prev == NULL)
+	if (uhp->uh_prev == NULL && uhp->uh_walk != nomark
+						      && uhp->uh_walk != mark)
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;

@@ -2147,9 +2147,9 @@ del_chars(count, fixpos)
  */
 /*ARGSUSED*/
     int
-del_bytes(count, fixpos, use_delcombine)
+del_bytes(count, fixpos_arg, use_delcombine)
     long	count;
-    int		fixpos;
+    int		fixpos_arg;
     int		use_delcombine;	    /* 'delcombine' option applies */
 {
     char_u	*oldp, *newp;
@@ -2158,6 +2158,7 @@ del_bytes(count, fixpos, use_delcombine)
     colnr_T	col = curwin->w_cursor.col;
     int		was_alloced;
     long	movelen;
+    int		fixpos = fixpos_arg;
 
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
@@ -2201,9 +2202,14 @@ del_bytes(count, fixpos, use_delcombine)
     {
 	/*
 	 * If we just took off the last character of a non-blank line, and
-	 * fixpos is TRUE, we don't want to end up positioned at the NUL.
+	 * fixpos is TRUE, we don't want to end up positioned at the NUL,
+	 * unless "restart_edit" is set or 'virtualedit' contains "onemore".
 	 */
-	if (col > 0 && fixpos)
+	if (col > 0 && fixpos && restart_edit == 0
+#ifdef FEAT_VIRTUALEDIT
+					      && (ve_flags & VE_ONEMORE) == 0
+#endif
+					      )
 	{
 	    --curwin->w_cursor.col;
 #ifdef FEAT_VIRTUALEDIT

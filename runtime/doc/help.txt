@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 27
+*help.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 17
 
 			VIM - main help file
 									 k
@@ -84,7 +84,7 @@ Making Vim Run ~
 |usr_90.txt|  Installing Vim
 
 
-REFERENCE MANUAL: These files explain every detail of Vim.
+REFERENCE MANUAL: These files explain every detail of Vim.	*ref-toc*
 
 General subjects ~
 |intro.txt|	general introduction to Vim; notation used in help files
@@ -194,6 +194,13 @@ Standard plugins ~
 |pi_zip.txt|	Zip archive explorer
 
 LOCAL ADDITIONS:				*local-additions*
+|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
+|engspchk.txt|	English Spelling Checker   (v61)	Mar 14, 2005
+|example.txt|	Example for a locally added help file
+|matchit.txt|   Extended "%" matching
+|test.txt|	Testing the hélp cömmånd nôw
+|typecorr.txt|	Plugin for correcting typing mistakes
+|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

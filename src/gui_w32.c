@@ -323,6 +323,7 @@ static BOOL (WINAPI *pImmGetCompositionFont)(HIMC, LPLOGFONTA);
 static BOOL (WINAPI *pImmSetCompositionFont)(HIMC, LPLOGFONTA);
 static BOOL (WINAPI *pImmSetCompositionWindow)(HIMC, LPCOMPOSITIONFORM);
 static BOOL (WINAPI *pImmGetConversionStatus)(HIMC, LPDWORD, LPDWORD);
+static BOOL (WINAPI *pImmSetConversionStatus)(HIMC, DWORD, DWORD);
 static void dyn_imm_load(void);
 #else
 # define pImmGetCompositionStringA ImmGetCompositionStringA
@@ -336,6 +337,7 @@ static void dyn_imm_load(void);
 # define pImmSetCompositionFont   ImmSetCompositionFontA
 # define pImmSetCompositionWindow ImmSetCompositionWindow
 # define pImmGetConversionStatus  ImmGetConversionStatus
+# define pImmSetConversionStatus  ImmSetConversionStatus
 #endif
 
 #ifndef ETO_IGNORELANGUAGE
@@ -1714,6 +1716,39 @@ im_set_active(int active)
 	hImc = pImmGetContext(s_hwnd);
 	if (hImc)
 	{
+	    /*
+	     * for Korean ime
+	     */
+	    HKL hKL = GetKeyboardLayout(0);
+
+	    if (LOWORD(hKL) == MAKELANGID(LANG_KOREAN, SUBLANG_KOREAN))
+	    {
+		static DWORD dwConversionSaved = 0, dwSentenceSaved = 0;
+		static BOOL bSaved = FALSE;
+
+		if (active)
+		{
+		    /* if we have a saved conversion status, restore it */
+		    if (bSaved)
+			pImmSetConversionStatus(hImc, dwConversionSaved,
+							     dwSentenceSaved);
+		    bSaved = FALSE;
+		}
+		else
+		{
+		    /* save conversion status and disable korean */
+		    if (pImmGetConversionStatus(hImc, &dwConversionSaved,
+							    &dwSentenceSaved))
+		    {
+			bSaved = TRUE;
+			pImmSetConversionStatus(hImc,
+				dwConversionSaved & ~(IME_CMODE_NATIVE
+						       | IME_CMODE_FULLSHAPE),
+				dwSentenceSaved);
+		    }
+		}
+	    }
+
 	    pImmSetOpenStatus(hImc, active);
 	    pImmReleaseContext(s_hwnd, hImc);
 	}
@@ -1785,7 +1820,7 @@ latin9_to_ucs(char_u *text, int len, WCHAR *unicodebuf)
 {
     int		c;
 
-    while (len-- >= 0)
+    while (--len >= 0)
     {
 	c = *text++;
 	switch (c)
@@ -2021,28 +2056,28 @@ gui_mch_draw_string(
     {
 	/* Output UTF-8 characters.  Caller has already separated
 	 * composing characters. */
-	int		i = 0;
-	int		clen;	/* string length up to composing char */
+	int		i;
+	int		wlen;	/* string length in words */
+	int		clen;	/* string length in characters */
 	int		cells;	/* cell width of string up to composing char */
 	int		cw;	/* width of current cell */
 	int		c;
-	int		xtra;
 
+	wlen = 0
+	clen = 0;
 	cells = 0;
-	for (clen = 0; i < len; )
+	for (i = 0; i < len; )
 	{
 	    c = utf_ptr2char(text + i);
 	    if (c >= 0x10000)
 	    {
 		/* Turn into UTF-16 encoding. */
-		unicodebuf[clen] = ((c - 0x10000) >> 10) + 0xD800;
-		unicodebuf[clen + 1] = ((c - 0x10000) & 0x3ff) + 0xDC00;
-		xtra = 1;
+		unicodebuf[wlen++] = ((c - 0x10000) >> 10) + 0xD800;
+		unicodebuf[wlen++] = ((c - 0x10000) & 0x3ff) + 0xDC00;
 	    }
 	    else
 	    {
-		unicodebuf[clen] = c;
-		xtra = 0;
+		unicodebuf[wlen++] = c;
 	    }
 	    cw = utf_char2cells(c);
 	    if (cw > 2)		/* don't use 4 for unprintable char */
@@ -2053,15 +2088,13 @@ gui_mch_draw_string(
 		 * when the font uses different widths (e.g., bold character
 		 * is wider).  */
 		unicodepdy[clen] = cw * gui.char_width;
-		if (xtra == 1)
-		    unicodepdy[clen + 1] = cw * gui.char_width;
 	    }
 	    cells += cw;
 	    i += utfc_ptr2len_len(text + i, len - i);
-	    clen += xtra + 1;
+	    ++clen;
 	}
 	ExtTextOutW(s_hdc, TEXT_X(col), TEXT_Y(row),
-			   foptions, pcliprect, unicodebuf, clen, unicodepdy);
+			   foptions, pcliprect, unicodebuf, wlen, unicodepdy);
 	len = cells;	/* used for underlining */
     }
     else if ((enc_codepage > 0 && (int)GetACP() != enc_codepage) || enc_latin9)
@@ -3894,6 +3927,8 @@ dyn_imm_load(void)
 	    = (void *)GetProcAddress(hLibImm, "ImmSetCompositionWindow");
     pImmGetConversionStatus
 	    = (void *)GetProcAddress(hLibImm, "ImmGetConversionStatus");
+    pImmSetConversionStatus
+	    = (void *)GetProcAddress(hLibImm, "ImmSetConversionStatus");
 
     if (       pImmGetCompositionStringA == NULL
 	    || pImmGetCompositionStringW == NULL
@@ -3905,7 +3940,8 @@ dyn_imm_load(void)
 	    || pImmGetCompositionFont == NULL
 	    || pImmSetCompositionFont == NULL
 	    || pImmSetCompositionWindow == NULL
-	    || pImmGetConversionStatus == NULL)
+	    || pImmGetConversionStatus == NULL
+	    || pImmSetConversionStatus == NULL)
     {
 	FreeLibrary(hLibImm);
 	hLibImm = NULL;

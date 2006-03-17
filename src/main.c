@@ -208,6 +208,7 @@ main
     time_fd = mch_fopen(STARTUPTIME, "a");
     TIME_MSG("--- VIM STARTING ---");
 #endif
+    starttime = time(NULL);
 
 #ifdef __EMX__
     _wildcard(&params.argc, &params.argv);

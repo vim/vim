@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 10
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1510,6 +1510,7 @@ byte2line( {byte})		Number	line number at byte count {byte}
 byteidx( {expr}, {nr})		Number	byte index of {nr}'th char in {expr}
 call( {func}, {arglist} [, {dict}])
 				any	call {func} with arguments {arglist}
+changenr()			Number  current change number
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
 col( {expr})			Number	column nr of cursor or mark
@@ -1913,6 +1914,14 @@ call({func}, {arglist} [, {dict}])			*call()* *E699*
 		Returns the return value of the called function.
 		{dict} is for functions with the "dict" attribute.  It will be
 		used to set the local variable "self". |Dictionary-function|
+
+changenr()						*changenr()*
+		Return the number of the most recent change.  This is the same
+		number as what is displayed with |:undolist| and can be used
+		with the |:undo| command.
+		When a change was made it is the number of that change.  After
+		redo it is the number of the redone change.  After undo it is
+		one less than the number of the undone change.
 
 char2nr({expr})						*char2nr()*
 		Return number value of the first char in {expr}.  Examples: >
@@ -5574,9 +5583,11 @@ This would call the function "my_func_whizz(parameter)".
 :let {var-name}	..	List the value of variable {var-name}.  Multiple
 			variable names may be given.  Special names recognized
 			here:				*E738*
-			  g:	global variables.
-			  b:	local buffer variables.
-			  w:	local window variables.
+			  g:	global variables
+			  b:	local buffer variables
+			  w:	local window variables
+			  s:	script-local variables
+			  l:	local function variables
 			  v:	Vim variables.
 
 :let			List the values of all variables.  The type of the
