@@ -1722,9 +1722,10 @@ vim_isblankline(lbuf)
  * If "len" is not NULL, the length of the number in characters is returned.
  * If "nptr" is not NULL, the signed result is returned in it.
  * If "unptr" is not NULL, the unsigned result is returned in it.
+ * If "unptr" is not NULL, the unsigned result is returned in it.
  * If "dooct" is non-zero recognize octal numbers, when > 1 always assume
  * octal number.
- * If "dohext" is non-zero recognize hex numbers, when > 1 always assume
+ * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
  * hex number.
  */
     void

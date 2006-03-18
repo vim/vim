@@ -2063,7 +2063,7 @@ gui_mch_draw_string(
 	int		cw;	/* width of current cell */
 	int		c;
 
-	wlen = 0
+	wlen = 0;
 	clen = 0;
 	cells = 0;
 	for (i = 0; i < len; )

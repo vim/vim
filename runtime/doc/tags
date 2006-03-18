@@ -608,8 +608,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nowb'	options.txt	/*'nowb'*
 'noweirdinvert'	options.txt	/*'noweirdinvert'*
 'nowfh'	options.txt	/*'nowfh'*
+'nowfw'	options.txt	/*'nowfw'*
 'nowildmenu'	options.txt	/*'nowildmenu'*
 'nowinfixheight'	options.txt	/*'nowinfixheight'*
+'nowinfixwidth'	options.txt	/*'nowinfixwidth'*
 'nowiv'	options.txt	/*'nowiv'*
 'nowmnu'	options.txt	/*'nowmnu'*
 'nowrap'	options.txt	/*'nowrap'*
@@ -996,6 +998,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'wd'	options.txt	/*'wd'*
 'weirdinvert'	options.txt	/*'weirdinvert'*
 'wfh'	options.txt	/*'wfh'*
+'wfw'	options.txt	/*'wfw'*
 'wh'	options.txt	/*'wh'*
 'whichwrap'	options.txt	/*'whichwrap'*
 'wi'	options.txt	/*'wi'*
@@ -1010,6 +1013,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'winaltkeys'	options.txt	/*'winaltkeys'*
 'window'	options.txt	/*'window'*
 'winfixheight'	options.txt	/*'winfixheight'*
+'winfixwidth'	options.txt	/*'winfixwidth'*
 'winheight'	options.txt	/*'winheight'*
 'winminheight'	options.txt	/*'winminheight'*
 'winminwidth'	options.txt	/*'winminwidth'*
@@ -5524,7 +5528,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6857,6 +6860,7 @@ startup-terminal	term.txt	/*startup-terminal*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
 strchr()	eval.txt	/*strchr()*
 strcspn()	eval.txt	/*strcspn()*

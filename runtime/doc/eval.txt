@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 17
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -77,6 +77,10 @@ the String doesn't start with digits, the result is zero.  Examples: >
 
 To force conversion from String to Number, add zero to it: >
 	:echo "0100" + 0
+<	64 ~
+
+To avoid a leading zero to cause octal conversion, or for using a different
+base, use |str2nr()|.
 
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
 
@@ -1584,7 +1588,8 @@ glob( {expr})			String	expand file wildcards in {expr}
 globpath( {path}, {expr})	String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
 has_key( {dict}, {key})		Number	TRUE if {dict} has entry {key}
-hasmapto( {what} [, {mode}])	Number	TRUE if mapping to {what} exists
+hasmapto( {what} [, {mode} [, {abbr}]])
+				Number	TRUE if mapping to {what} exists
 histadd( {history},{item})	String	add an item to a history
 histdel( {history} [, {item}])	String	remove an item from a history
 histget( {history} [, {index}])	String	get the item {index} from a history
@@ -1616,8 +1621,10 @@ line2byte( {lnum})		Number	byte count of line {lnum}
 lispindent( {lnum})		Number	Lisp indent for line {lnum}
 localtime()			Number	current time
 map( {expr}, {string})		List/Dict  change each item in {expr} to {expr}
-maparg( {name}[, {mode}])	String	rhs of mapping {name} in mode {mode}
-mapcheck( {name}[, {mode}])	String	check for mappings matching {name}
+maparg( {name}[, {mode} [, {abbr}]])
+				String	rhs of mapping {name} in mode {mode}
+mapcheck( {name}[, {mode} [, {abbr}]])
+				String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
 matchend( {expr}, {pat}[, {start}[, {count}]])
@@ -1682,6 +1689,7 @@ spellsuggest( {word} [, {max} [, {capital}]])
 				List	spelling suggestions
 split( {expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
+str2nr( {expr} [, {base}])	Number	convert string to number
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
@@ -2896,11 +2904,13 @@ has_key({dict}, {key})					*has_key()*
 		an entry with key {key}.  Zero otherwise.
 
 
-hasmapto({what} [, {mode}])				*hasmapto()*
+hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
 		contains {what} in somewhere in the rhs (what it is mapped to)
 		and this mapping exists in one of the modes indicated by
 		{mode}.
+		When {abbr} is there and it is non-zero use abbreviations
+		instead of mappings.
 		Both the global mappings and the mappings local to the current
 		buffer are checked for a match.
 		If no matching mapping is found 0 is returned.
@@ -3348,7 +3358,7 @@ map({expr}, {string})					*map()*
 		further items in {expr} are processed.
 
 
-maparg({name}[, {mode}])				*maparg()*
+maparg({name}[, {mode} [, {abbr}]])			*maparg()*
 		Return the rhs of mapping {name} in mode {mode}.  When there
 		is no mapping for {name}, an empty String is returned.
 		{mode} can be one of these strings:
@@ -3360,6 +3370,8 @@ maparg({name}[, {mode}])				*maparg()*
 			"l"	langmap |language-mapping|
 			""	Normal, Visual and Operator-pending
 		When {mode} is omitted, the modes for "" are used.
+		When {abbr} is there and it is non-zero use abbreviations
+		instead of mappings.
 		The {name} can have special key names, like in the ":map"
 		command.  The returned String has special characters
 		translated like in the output of the ":map" command listing.
@@ -3370,10 +3382,12 @@ maparg({name}[, {mode}])				*maparg()*
 			exe 'nnoremap <Tab> ==' . maparg('<Tab>', 'n')
 
 
-mapcheck({name}[, {mode}])				*mapcheck()*
+mapcheck({name}[, {mode} [, {abbr}]])			*mapcheck()*
 		Check if there is a mapping that matches with {name} in mode
 		{mode}.  See |maparg()| for {mode} and special names in
 		{name}.
+		When {abbr} is there and it is non-zero use abbreviations
+		instead of mappings.
 		A match happens with a mapping that starts with {name} and
 		with a mapping which is equal to the start of {name}.
 
@@ -4392,6 +4406,17 @@ split({expr} [, {pattern} [, {keepempty}]])			*split()*
 			:let items = split(line, ':', 1)
 <		The opposite function is |join()|.
 
+
+str2nr( {expr} [, {base}])				*str2nr()*
+		Convert string {expr} to a number.
+		{base} is the conversion base, it can be 8, 10 or 16.
+		When {base} is omitted base 10 is used.  This also means that
+		a leading zero doesn't cause octal conversion to be used, as
+		with the default String to Number conversion.
+		When {base} is 16 a leading "0x" or "0X" is ignored.  With a
+		different base the result will be zero.
+		Text after the number is silently ignored.
+	
 
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as

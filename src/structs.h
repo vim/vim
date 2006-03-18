@@ -176,6 +176,8 @@ typedef struct
 #if defined(FEAT_WINDOWS)
     int		wo_wfh;
 # define w_p_wfh w_onebuf_opt.wo_wfh	/* 'winfixheight' */
+    int		wo_wfw;
+# define w_p_wfw w_onebuf_opt.wo_wfw	/* 'winfixwidth' */
 #endif
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     int		wo_pvw;
@@ -1656,6 +1658,7 @@ struct frame_S
     char	fr_layout;	/* FR_LEAF, FR_COL or FR_ROW */
 #ifdef FEAT_VERTSPLIT
     int		fr_width;
+    int		fr_newwidth;	/* new width used in win_equal_rec() */
 #endif
     int		fr_height;
     int		fr_newheight;	/* new height used in win_equal_rec() */

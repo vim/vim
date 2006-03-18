@@ -350,7 +350,7 @@ retry:
  * List of targets.  The first one (index zero) is used for the default path
  * for the batch files.
  */
-#define TARGET_COUNT  8
+#define TARGET_COUNT  9
 
 struct
 {
@@ -381,6 +381,8 @@ struct
 					"vimdiff.exe","vim.exe",  "-d"},
     {"gvimdiff","gvimdiff.bat",	"gVim Diff.lnk",
 					"gvimdiff.exe","gvim.exe", "-d"},
+    {"vimtutor","vimtutor.bat", "Vim tutor.lnk",
+					"vimtutor.bat",  "vimtutor.bat", ""},
 };
 
 #define ICON_COUNT 3

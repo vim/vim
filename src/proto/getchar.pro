@@ -49,15 +49,15 @@ int do_map __ARGS((int maptype, char_u *arg, int mode, int abbrev));
 int get_map_mode __ARGS((char_u **cmdp, int forceit));
 void map_clear __ARGS((char_u *cmdp, char_u *arg, int forceit, int abbr));
 void map_clear_int __ARGS((buf_T *buf, int mode, int local, int abbr));
-int map_to_exists __ARGS((char_u *str, char_u *modechars));
-int map_to_exists_mode __ARGS((char_u *rhs, int mode));
+int map_to_exists __ARGS((char_u *str, char_u *modechars, int abbr));
+int map_to_exists_mode __ARGS((char_u *rhs, int mode, int abbr));
 char_u *set_context_in_map_cmd __ARGS((expand_T *xp, char_u *cmd, char_u *arg, int forceit, int isabbrev, int isunmap, cmdidx_T cmdidx));
 int ExpandMappings __ARGS((regmatch_T *regmatch, int *num_file, char_u ***file));
 int check_abbr __ARGS((int c, char_u *ptr, int col, int mincol));
 int makemap __ARGS((FILE *fd, buf_T *buf));
 int put_escstr __ARGS((FILE *fd, char_u *strstart, int what));
 void check_map_keycodes __ARGS((void));
-char_u *check_map __ARGS((char_u *keys, int mode, int exact, int ign_mod));
+char_u *check_map __ARGS((char_u *keys, int mode, int exact, int ign_mod, int abbr));
 void init_mappings __ARGS((void));
 void add_map __ARGS((char_u *map, int mode));
 /* vim: set ft=c : */

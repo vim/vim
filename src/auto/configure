@@ -7837,6 +7837,18 @@ echo "${ECHO_T}yes" >&6
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
       GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+
+                  echo "$as_me:$LINENO: checking for FreeBSD" >&5
+echo $ECHO_N "checking for FreeBSD... $ECHO_C" >&6
+      if test "`(uname) 2>/dev/null`" = FreeBSD; then
+	echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+        GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
+	GNOME_LIBS="$GNOME_LIBS -pthread"
+      else
+	echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+      fi
       have_gnome=yes
     else
       echo "$as_me:$LINENO: result: not found" >&5

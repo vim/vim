@@ -751,7 +751,6 @@ install_bat_choice(int idx)
     char	*exename = targets[choices[idx].arg].exenamearg;
     char	*vimarg = targets[choices[idx].arg].exearg;
     FILE	*fd;
-    char	buf[BUFSIZE];
 
     if (*batpath != NUL)
     {
@@ -763,23 +762,29 @@ install_bat_choice(int idx)
 	    need_uninstall_entry = 1;
 
 	    fprintf(fd, "@echo off\n");
-	    fprintf(fd, "rem -- Run Vim --\n\n");
+	    fprintf(fd, "rem -- Run Vim --\n");
+	    fprintf(fd, "\n");
 
-	    strcpy(buf, installdir);
-	    buf[runtimeidx - 1] = NUL;
-	    /* Don't use double quotes for the value here, also when buf
+	    /* Don't use double quotes for the "set" argument, also when it
 	     * contains a space.  The quotes would be included in the value
-	     * for MSDOS and NT. */
-	    fprintf(fd, "set VIM=%s\n\n", buf);
-
-	    strcpy(buf, installdir + runtimeidx);
-	    add_pathsep(buf);
-	    strcat(buf, exename);
+	     * for MSDOS and NT.
+	     * The order of preference is:
+	     * 1. $VIMRUNTIME/vim.exe	    (user preference)
+	     * 2. $VIM/vim70/vim.exe	    (hard coded version)
+	     * 3. installdir/vim.exe	    (hard coded install directory)
+	     */
+	    fprintf(fd, "set VIM_EXE_DIR=%s\n", installdir);
+	    fprintf(fd, "if exist \"%%VIM%%\\%s\\%s\" set VIM_EXE_DIR=%%VIM%%\\%s\n",
+			       VIM_VERSION_NODOT, exename, VIM_VERSION_NODOT);
+	    fprintf(fd, "if exist \"%%VIMRUNTIME%%\\%s\" set VIM_EXE_DIR=%%VIMRUNTIME%%\n", exename);
+	    fprintf(fd, "\n");
 
 	    /* Give an error message when the executable could not be found. */
-	    fprintf(fd, "if exist \"%%VIM%%\\%s\" goto havevim\n", buf);
-	    fprintf(fd, "echo \"%%VIM%%\\%s\" not found\n", buf);
-	    fprintf(fd, "goto eof\n\n");
+	    fprintf(fd, "if exist \"%%VIM_EXE_DIR%%\\%s\" goto havevim\n",
+								     exename);
+	    fprintf(fd, "echo \"%%VIM_EXE_DIR%%\\%s\" not found\n", exename);
+	    fprintf(fd, "goto eof\n");
+	    fprintf(fd, "\n");
 	    fprintf(fd, ":havevim\n");
 
 	    fprintf(fd, "rem collect the arguments in VIMARGS for Win95\n");
@@ -796,10 +801,12 @@ install_bat_choice(int idx)
 	    }
 	    fprintf(fd, "set VIMARGS=%%VIMARGS%% %%1\n");
 	    fprintf(fd, "shift\n");
-	    fprintf(fd, "goto loopstart\n\n");
+	    fprintf(fd, "goto loopstart\n");
 	    fprintf(fd, ":loopend\n");
+	    fprintf(fd, "\n");
 
-	    fprintf(fd, "if .%%OS%%==.Windows_NT goto ntaction\n\n");
+	    fprintf(fd, "if .%%OS%%==.Windows_NT goto ntaction\n");
+	    fprintf(fd, "\n");
 
 	    /* For gvim.exe use "start" to avoid that the console window stays
 	     * open. */
@@ -809,24 +816,21 @@ install_bat_choice(int idx)
 		fprintf(fd, "start ");
 	    }
 
-	    /* Do use quotes here if the path includes a space. */
-	    if (strchr(installdir, ' ') != NULL)
-		fprintf(fd, "\"%%VIM%%\\%s\" %s %%VIMARGS%%\n", buf, vimarg);
-	    else
-		fprintf(fd, "%%VIM%%\\%s %s %%VIMARGS%%\n", buf, vimarg);
-	    fprintf(fd, "goto eof\n\n");
+	    /* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
+							     exename, vimarg);
+	    fprintf(fd, "goto eof\n");
+	    fprintf(fd, "\n");
 
 	    if (*exename == 'g')
 	    {
 		fprintf(fd, ":nofork\n");
 		fprintf(fd, "start /w ");
-		/* Do use quotes here if the path includes a space. */
-		if (strchr(installdir, ' ') != NULL)
-		    fprintf(fd, "\"%%VIM%%\\%s\" %s %%VIMARGS%%\n", buf,
-								      vimarg);
-		else
-		    fprintf(fd, "%%VIM%%\\%s %s %%VIMARGS%%\n", buf, vimarg);
-		fprintf(fd, "goto eof\n\n");
+		/* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
+							     exename, vimarg);
+		fprintf(fd, "goto eof\n");
+		fprintf(fd, "\n");
 	    }
 
 	    fprintf(fd, ":ntaction\n");
@@ -840,22 +844,18 @@ install_bat_choice(int idx)
 		fprintf(fd, "start \"dummy\" /b ");
 	    }
 
-	    /* Do use quotes here if the path includes a space. */
-	    if (strchr(installdir, ' ') != NULL)
-		fprintf(fd, "\"%%VIM%%\\%s\" %s %%*\n", buf, vimarg);
-	    else
-		fprintf(fd, "%%VIM%%\\%s %s %%*\n", buf, vimarg);
-	    fprintf(fd, "goto eof\n\n");
+	    /* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n", exename, vimarg);
+	    fprintf(fd, "goto eof\n");
+	    fprintf(fd, "\n");
 
 	    if (*exename == 'g')
 	    {
 		fprintf(fd, ":noforknt\n");
 		fprintf(fd, "start \"dummy\" /b /wait ");
-		/* Do use quotes here if the path includes a space. */
-		if (strchr(installdir, ' ') != NULL)
-		    fprintf(fd, "\"%%VIM%%\\%s\" %s %%*\n", buf, vimarg);
-		else
-		    fprintf(fd, "%%VIM%%\\%s %s %%*\n", buf, vimarg);
+		/* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n",
+							     exename, vimarg);
 	    }
 
 	    fprintf(fd, "\n:eof\n");

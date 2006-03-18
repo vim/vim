@@ -157,7 +157,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 		    || (VIsual_active && *p_sel != 'o')
 #endif
 #ifdef FEAT_VIRTUALEDIT
-		    || (ve_flags & VE_ONEMORE)
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL)
 #endif
 		    ;
     line = ml_get_curline();

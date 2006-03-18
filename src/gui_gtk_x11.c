@@ -2884,7 +2884,8 @@ get_menu_tool_width(void)
     width += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_VERTICAL);
 # endif
 # ifdef FEAT_GUI_TABLINE
-    width += get_item_dimensions(gui.tabline, GTK_ORIENTATION_VERTICAL);
+    if (gui.tabline != NULL)
+	width += get_item_dimensions(gui.tabline, GTK_ORIENTATION_VERTICAL);
 # endif
 #endif
 
@@ -2903,7 +2904,8 @@ get_menu_tool_height(void)
     height += get_item_dimensions(gui.toolbar, GTK_ORIENTATION_HORIZONTAL);
 #endif
 #ifdef FEAT_GUI_TABLINE
-    height += get_item_dimensions(gui.tabline, GTK_ORIENTATION_HORIZONTAL);
+    if (gui.tabline != NULL)
+	height += get_item_dimensions(gui.tabline, GTK_ORIENTATION_HORIZONTAL);
 #endif
 
     return height;
@@ -3578,32 +3580,38 @@ gui_mch_init(void)
 #endif /* FEAT_TOOLBAR */
 
 #ifdef FEAT_GUI_TABLINE
-    /* Use a Notebook for the tab pages labels.  The labels are hidden by
-     * default. */
-    gui.tabline = gtk_notebook_new();
-    gtk_widget_show(gui.tabline);
-    gtk_box_pack_start(GTK_BOX(vbox), gui.tabline, FALSE, FALSE, 0);
-    gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
-    gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
-
+    /*
+     * Use a Notebook for the tab pages labels.  The labels are hidden by
+     * default.
+     * TODO: currently doesn't work for Gnome.
+     */
+    if (!using_gnome)
     {
-	GtkWidget *page, *label;
+	gui.tabline = gtk_notebook_new();
+	gtk_widget_show(gui.tabline);
+	gtk_box_pack_start(GTK_BOX(vbox), gui.tabline, FALSE, FALSE, 0);
+	gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
+	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
 
-	/* Add the first tab. */
-	page = gtk_vbox_new(FALSE, 0);
-	gtk_widget_show(page);
-	gtk_container_add(GTK_CONTAINER(gui.tabline), page);
-	label = gtk_label_new("-Empty-");
-	gtk_widget_show(label);
-	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, label);
-    }
-    gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
-		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+	{
+	    GtkWidget *page, *label;
 
-    /* Create a popup menu for the tab line and connect it. */
-    tabline_menu = create_tabline_menu();
-    gtk_signal_connect_object(GTK_OBJECT(gui.tabline), "button_press_event",
+	    /* Add the first tab. */
+	    page = gtk_vbox_new(FALSE, 0);
+	    gtk_widget_show(page);
+	    gtk_container_add(GTK_CONTAINER(gui.tabline), page);
+	    label = gtk_label_new("-Empty-");
+	    gtk_widget_show(label);
+	    gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, label);
+	}
+	gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
+			   GTK_SIGNAL_FUNC(on_select_tab), NULL);
+
+	/* Create a popup menu for the tab line and connect it. */
+	tabline_menu = create_tabline_menu();
+	gtk_signal_connect_object(GTK_OBJECT(gui.tabline), "button_press_event",
 		  GTK_SIGNAL_FUNC(on_tabline_menu), GTK_OBJECT(tabline_menu));
+    }
 #endif
 
     gui.formwin = gtk_form_new();

@@ -985,7 +985,7 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case Ctrl_HAT:
-		if (map_to_exists_mode((char_u *)"", LANGMAP))
+		if (map_to_exists_mode((char_u *)"", LANGMAP, FALSE))
 		{
 		    /* ":lmap" mappings exists, toggle use of mappings. */
 		    State ^= LANGMAP;

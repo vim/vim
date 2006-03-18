@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 17
+*options.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -447,8 +447,8 @@ There are two forms of modelines.  The first form:
 		where each part between ':' is the argument for a ":set"
 		command
 
-Example: >
-   vi:noai:sw=3 ts=6
+Example:
+   vi:noai:sw=3 ts=6 ~
 
 The second form (this is compatible with some versions of Vi):
 
@@ -464,8 +464,8 @@ se[t]		the string "set " or "se " (note the space)
 :		a colon
 [text]		any text or empty
 
-Example: >
-   /* vim: set ai tw=75: */
+Example:
+   /* vim: set ai tw=75: */ ~
 
 The white space before {vi:|vim:|ex:} is required.  This minimizes the chance
 that a normal word like "lex:" is caught.  There is one exception: "vi:" and
@@ -493,10 +493,10 @@ number can be specified where "vim:" is used:
 	vim={vers}:	version {vers}
 	vim>{vers}:	version after {vers}
 {vers} is 600 for Vim 6.0 (hundred times the major version plus minor).
-For example, to use a modeline only for Vim 6.0 and later: >
-	/* vim600: set foldmethod=marker: */
-To use a modeline for Vim before version 5.7: >
-	/* vim<570: set sw=4: */
+For example, to use a modeline only for Vim 6.0 and later:
+	/* vim600: set foldmethod=marker: */ ~
+To use a modeline for Vim before version 5.7:
+	/* vim<570: set sw=4: */ ~
 There can be no blanks between "vim" and the ":".
 
 
@@ -504,16 +504,16 @@ The number of lines that are checked can be set with the 'modelines' option.
 If 'modeline' is off or 'modelines' is 0 no lines are checked.
 
 Note that for the first form all of the rest of the line is used, thus a line
-like: >
-   /* vi:ts=4: */
-will give an error message for the trailing "*/".  This line is OK: >
-   /* vi:set ts=4: */
+like:
+   /* vi:ts=4: */ ~
+will give an error message for the trailing "*/".  This line is OK:
+   /* vi:set ts=4: */ ~
 
 If an error is detected the rest of the line is skipped.
 
 If you want to include a ':' in a set command precede it with a '\'.  The
-backslash in front of the ':' will be removed.  Example: >
-   /* vi:set dir=c\:\tmp: */
+backslash in front of the ':' will be removed.  Example:
+   /* vi:set dir=c\:\tmp: */ ~
 This sets the 'dir' option to "c:\tmp".  Only a single backslash before the
 ':' is removed.  Thus to include "\:" you have to specify "\\:".
 
@@ -1017,8 +1017,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only available when compiled with the |+balloon_eval|
 			feature}
-	Expression to show in evaluation balloon.  It is only used when
-	'ballooneval' is on.  These variables can be used:
+	Expression for text to show in evaluation balloon.  It is only used
+	when 'ballooneval' is on.  These variables can be used:
 
 	v:beval_bufnr	number of the buffer in which balloon is going to show
 	v:beval_winnr	number of the window
@@ -2665,9 +2665,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this use the ":filetype on" command. |:filetype|
 	Setting this option to a different value is most useful in a modeline,
 	for a file for which the file type is not automatically recognized.
-	Example, for in an IDL file: >
-		/* vim: set filetype=idl : */
-<	|FileType| |filetypes|
+	Example, for in an IDL file:
+		/* vim: set filetype=idl : */ ~
+	|FileType| |filetypes|
+	When a dot appears in the value then this separates two filetype
+	names.  Example:
+		/* vim: set filetype=c.doxygen : */ ~
+	This will use the "c" filetype first, then the "doxygen" filetype.
+	This works both for filetype plugins and for syntax files.  More than
+	one dot may appear.
 	Do not confuse this option with 'osfiletype', which is for the file
 	type that is actually stored with the file.
 	This option is not copied to another buffer, independent of the 's' or
@@ -2760,7 +2766,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			or |+eval| feature}
 	The expression used for when 'foldmethod' is "expr".  It is evaluated
 	for each line to obtain its fold level.  See |fold-expr|.
-	
+
 	The expression may be evaluated in the |sandbox|, see
 	|sandbox-option|.
 
@@ -6362,9 +6368,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Otherwise this option does not always reflect the current syntax (the
 	b:current_syntax variable does).
 	This option is most useful in a modeline, for a file which syntax is
-	not automatically recognized.  Example, in an IDL file: >
-		/* vim: set syntax=idl : */
-<	To switch off syntax highlighting for the current file, use: >
+	not automatically recognized.  Example, in an IDL file:
+		/* vim: set syntax=idl : */ ~
+	When a dot appears in the value then this separates two filetype
+	names.  Example:
+		/* vim: set syntax=c.doxygen : */ ~
+	This will use the "c" syntax first, then the "doxygen" syntax.
+	Note that the second one must be prepared to be loaded as an addition,
+	otherwise it will be skipped.  More than one dot may appear.
+	To switch off syntax highlighting for the current file, use: >
 		:set syntax=OFF
 <	To switch syntax highlighting on according to the current value of the
 	'filetype' option: >
@@ -7190,6 +7202,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    insert	Allow virtual editing in Insert mode.
 	    all		Allow virtual editing in all modes.
 	    onemore	Allow the cursor to move just past the end of the line
+
 	Virtual editing means that the cursor can be positioned where there is
 	no actual character.  This can be halfway into a Tab or beyond the end
 	of the line.  Useful for selecting a rectangle in Visual mode and
@@ -7198,8 +7211,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	after the last character of the line.  This makes some commands more
 	consistent.  Previously the cursor was always past the end of the line
 	if the line was empty.  But it is far from Vi compatible.  It may also
-	break some plugins or Vim scripts.  For example because |$| moves to a
-	different position.  Use with care!
+	break some plugins or Vim scripts.  For example because |l| can move
+	the cursor after the last character.  Use with care!
+	Using the |$| command will move to the last character in the line, not
+	past it.  This may actually move the cursor to the left!
 	It doesn't make sense to combine "all" with "onemore", but you will
 	not get a warning for it.
 
@@ -7465,6 +7480,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'equalalways' is set.  Set by default for the |preview-window| and
 	|quickfix-window|.
 	The height may be changed anyway when running out of room.
+
+			*'winfixwidth'* *'wfw'* *'nowinfixwidth'* *'nowfw'*
+'winfixwidth' 'wfw'	boolean	(default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the +windows
+			feature}
+	Keep the window width when windows are opened or closed and
+	'equalalways' is set.
+	The width may be changed anyway when running out of room.
 
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)

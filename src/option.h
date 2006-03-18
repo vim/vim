@@ -1044,6 +1044,9 @@ enum
 #ifdef FEAT_WINDOWS
     , WV_WFH
 #endif
+#ifdef FEAT_VERTSPLIT
+    , WV_WFW
+#endif
     , WV_WRAP
     , WV_COUNT	    /* must be the last one */
 };

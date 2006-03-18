@@ -231,6 +231,9 @@
 #ifdef FEAT_WINDOWS
 # define PV_WFH		OPT_WIN(WV_WFH)
 #endif
+#ifdef FEAT_VERTSPLIT
+# define PV_WFW		OPT_WIN(WV_WFW)
+#endif
 #define PV_WRAP		OPT_WIN(WV_WRAP)
 
 
@@ -2636,6 +2639,13 @@ static struct vimoption
     {"winfixheight", "wfh", P_BOOL|P_VI_DEF|P_RSTAT,
 #ifdef FEAT_WINDOWS
 			    (char_u *)VAR_WIN, PV_WFH,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L}},
+    {"winfixwidth", "wfw", P_BOOL|P_VI_DEF|P_RSTAT,
+#ifdef FEAT_VERTSPLIT
+			    (char_u *)VAR_WIN, PV_WFW,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -8868,6 +8878,9 @@ get_varp(p)
 #endif
 #ifdef FEAT_WINDOWS
 	case PV_WFH:	return (char_u *)&(curwin->w_p_wfh);
+#endif
+#ifdef FEAT_VERTSPLIT
+	case PV_WFW:	return (char_u *)&(curwin->w_p_wfw);
 #endif
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 	case PV_PVW:	return (char_u *)&(curwin->w_p_pvw);

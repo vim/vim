@@ -1,6 +1,6 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2005 Oct 16
+" Last Change:	2006 Mar 18
 
 " This small source file is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -15,15 +15,14 @@ if strlen($xx) > 1
   let s:ext = "." . $xx
 else
   let s:lang = ""
-  if exists("v:lang")
+  " Check that a potential value has at least two letters.
+  " Ignore "1043" and "C".
+  if exists("v:lang") && v:lang =~ '\a\a'
     let s:lang = v:lang
-  elseif strlen($LC_ALL) > 0
+  elseif $LC_ALL =~ '\a\a'
     let s:lang = $LC_ALL
-  elseif strlen($LANG) > 0
+  elseif $LANG =~ '\a\a'
     let s:lang = $LANG
-  endif
-  if s:lang == "C"
-    let s:lang = ""
   endif
   if s:lang != ""
     " Remove "@euro" (ignoring case), it may be at the end
@@ -36,6 +35,8 @@ else
       let s:ext = ".pl"
     elseif s:lang =~ "Slovak"
       let s:ext = ".sk"
+    elseif s:lang =~ "Dutch"
+      let s:ext = ".nl"
     else
       let s:ext = "." . strpart(s:lang, 0, 2)
     endif

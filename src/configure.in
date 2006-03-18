@@ -1478,6 +1478,17 @@ AC_DEFUN([GNOME_INIT_HOOK],
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
       GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
+     
+      dnl On FreeBSD we need -pthread but pkg-config doesn't include it.
+      dnl This might not be the right way but it works for me...
+      AC_MSG_CHECKING(for FreeBSD)
+      if test "`(uname) 2>/dev/null`" = FreeBSD; then
+	AC_MSG_RESULT(yes, adding -pthread)
+        GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
+	GNOME_LIBS="$GNOME_LIBS -pthread"
+      else
+	AC_MSG_RESULT(no)
+      fi
       $1
     else
       AC_MSG_RESULT(not found)

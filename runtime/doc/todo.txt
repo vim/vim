@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 17
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,6 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+'cindent' isn't remove when Esc is typed.
+
+Gnome GUI: lots of error messages during startup.  These go away when not
+using the notebook for tab labels.  Still similar error messages when moving
+the toolbar to another location.
+
 Win32: Describe how to do debugging. (George Reilly)
 
 Mac unicode patch (Da Woon Jung, Eckehard Berns):
@@ -43,22 +49,6 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 
 EMBEDDING: Make it possible to run Vim inside a window of another program.
 For GTK Neil Bird has a patch to use Vim like a widget.
-
-Support ":set syntax=cpp.doxygen"?  Suggested patch by Michael Geddes (9 Aug
-2004).  Should also work for 'filetype'.
-
-Add strtol() to avoid the problems with leading zero causing octal conversion.
-
-Add a 'tool' window: behaves like a preview window but there can be several.
-Don't count it in only_one_window(). (Alexei Alexandrov)
-
-Adjust src/main.aap for installing manpages like in Makefile.
-    And for generating Vim.app for the Mac.
-    Install spell files with src/main.aap.
-
-Win32: In the generated batch files, use $VIMRUNTIME if it's set.  Examples by
-Mathias Michaelis (2004 Sep 6)
-Also place vimtutor.bat in %windir%?
 
 Ctags still hasn't included the patch.  Darren is looking for someone to do
 maintanance.  Is there another solution?
@@ -77,6 +67,10 @@ Profiling:
 Jan 6)
 Add a flag to check for a match with the next item first?  Helps for
 continuation lines that may contain just about anything.
+
+Adjust src/main.aap for installing manpages like in Makefile.
+    And for generating Vim.app for the Mac.
+    Install spell files with src/main.aap.
 
 Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
 mappings for normal keys can be removed from Select mode.
@@ -2913,7 +2907,8 @@ Multiple Windows:
 7   Use CTRL-W <Tab>, like alt-tab, to switch between buffers.  Repeat <Tab>
     to select another buffer (only loaded ones?), <BS> to go back, <Enter> to
     select buffer, <Esc> to go back to original buffer.
-7   Add a 'winfixwidth' option, similar to 'winfixheight'.
+7   Add a 'tool' window: behaves like a preview window but there can be
+    several.  Don't count it in only_one_window(). (Alexei Alexandrov)
 6   Add an option to resize the shell when splitting and/or closing a window.
     ":vsp" would make the shell wider by as many columns as needed for the new
     window.  Specify a maximum size (or use the screen size).  ":close" would

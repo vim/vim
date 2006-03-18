@@ -7251,7 +7251,7 @@ ins_ctrl_g()
     static void
 ins_ctrl_hat()
 {
-    if (map_to_exists_mode((char_u *)"", LANGMAP))
+    if (map_to_exists_mode((char_u *)"", LANGMAP, FALSE))
     {
 	/* ":lmap" mappings exists, Toggle use of ":lmap" mappings. */
 	if (State & LANGMAP)
