@@ -1,7 +1,9 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved	by Bram Moolenaar
- * Ruby interface by Shugo Maeda.
+ *
+ * Ruby interface by Shugo Maeda
+ *   with improvements by SegPhault (Ryan Paul)
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
  * Do ":help credits" in Vim to see a list of people who contributed.
@@ -567,7 +569,14 @@ static VALUE buffer_s_count()
     buf_T *b;
     int n = 0;
 
-    for (b = firstbuf; b; b = b->b_next) n++;
+    for (b = firstbuf; b != NULL; b = b->b_next)
+    {
+        /*  Deleted buffers should not be counted
+         *    SegPhault - 01/07/05 */
+        if (b->b_p_bl)
+	    n++;
+    }
+
     return INT2NUM(n);
 }
 
@@ -576,9 +585,17 @@ static VALUE buffer_s_aref(VALUE self, VALUE num)
     buf_T *b;
     int n = NUM2INT(num);
 
-    for (b = firstbuf; b; b = b->b_next, --n) {
-	if (n == 0)
+    for (b = firstbuf; b != NULL; b = b->b_next)
+    {
+        /*  Deleted buffers should not be counted
+         *    SegPhault - 01/07/05 */
+        if (!b->b_p_bl)
+	    continue;
+
+        if (n == 0)
 	    return buffer_new(b);
+
+        n--;
     }
     return Qnil;
 }
@@ -604,32 +621,35 @@ static VALUE buffer_count(VALUE self)
     return INT2NUM(buf->b_ml.ml_line_count);
 }
 
-static VALUE buffer_aref(VALUE self, VALUE num)
+static VALUE get_buffer_line(buf_T *buf, linenr_T n)
 {
-    buf_T *buf = get_buf(self);
-    long n = NUM2LONG(num);
-
-    if (n > 0 && n <= buf->b_ml.ml_line_count) {
+    if (n > 0 && n <= buf->b_ml.ml_line_count)
+    {
 	char *line = (char *)ml_get_buf(buf, n, FALSE);
 	return line ? rb_str_new2(line) : Qnil;
     }
-    else {
-	rb_raise(rb_eIndexError, "index %d out of buffer", n);
-	return Qnil; /* For stop warning */
-    }
+    rb_raise(rb_eIndexError, "index %d out of buffer", n);
+    return Qnil; /* For stop warning */
 }
 
-static VALUE buffer_aset(VALUE self, VALUE num, VALUE str)
+static VALUE buffer_aref(VALUE self, VALUE num)
 {
     buf_T *buf = get_buf(self);
+
+    if (buf != NULL)
+	return get_buffer_line(buf, (linenr_T)NUM2LONG(num));
+    return Qnil; /* For stop warning */
+}
+
+static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
+{
     buf_T *savebuf = curbuf;
     char *line = STR2CSTR(str);
-    long n = NUM2LONG(num);
 
     if (n > 0 && n <= buf->b_ml.ml_line_count && line != NULL) {
 	curbuf = buf;
 	if (u_savesub(n) == OK) {
-	    ml_replace(n, (char_u *) line, TRUE);
+	    ml_replace(n, (char_u *)line, TRUE);
 	    changed();
 #ifdef SYNTAX_HL
 	    syn_changed(n); /* recompute syntax hl. for this line */
@@ -645,6 +665,15 @@ static VALUE buffer_aset(VALUE self, VALUE num, VALUE str)
     return str;
 }
 
+static VALUE buffer_aset(VALUE self, VALUE num, VALUE str)
+{
+    buf_T *buf = get_buf(self);
+
+    if (buf != NULL)
+	return set_buffer_line(buf, (linenr_T)NUM2LONG(num), str);
+    return str;
+}
+
 static VALUE buffer_delete(VALUE self, VALUE num)
 {
     buf_T *buf = get_buf(self);
@@ -654,8 +683,12 @@ static VALUE buffer_delete(VALUE self, VALUE num)
     if (n > 0 && n <= buf->b_ml.ml_line_count) {
 	curbuf = buf;
 	if (u_savedel(n, 1) == OK) {
-	    mark_adjust(n, n, MAXLNUM, -1);
 	    ml_delete(n, 0);
+
+            /* Changes to non-active buffers should properly refresh
+             *   SegPhault - 01/09/05 */
+            deleted_lines_mark(n, 1L);
+
 	    changed();
 	}
 	curbuf = savebuf;
@@ -677,9 +710,13 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     if (n >= 0 && n <= buf->b_ml.ml_line_count && line != NULL) {
 	curbuf = buf;
 	if (u_inssub(n + 1) == OK) {
-	    mark_adjust(n + 1, MAXLNUM, 1L, 0L);
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
-	    changed();
+
+            /*  Changes to non-active buffers should properly refresh screen
+             *    SegPhault - 12/20/04 */
+            appended_lines_mark(n, 1L);
+
+            changed();
 	}
 	curbuf = savebuf;
 	update_curbuf(NOT_VALID);
@@ -719,6 +756,27 @@ static VALUE window_s_current()
 {
     return window_new(curwin);
 }
+
+/*
+ * Added line manipulation functions
+ *    SegPhault - 03/07/05
+ */
+static VALUE line_s_current()
+{
+    return get_buffer_line(curbuf, curwin->w_cursor.lnum);
+}
+
+static VALUE set_current_line(VALUE str)
+{
+    return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
+}
+
+static VALUE current_line_number()
+{
+    return INT2FIX((int)curwin->w_cursor.lnum);
+}
+
+
 
 static VALUE window_s_count()
 {
@@ -876,6 +934,13 @@ static void ruby_vim_init(void)
     rb_define_method(cBuffer, "[]=", buffer_aset, 2);
     rb_define_method(cBuffer, "delete", buffer_delete, 1);
     rb_define_method(cBuffer, "append", buffer_append, 2);
+
+    /* Added line manipulation functions
+     *   SegPhault - 03/07/05 */
+    rb_define_method(cBuffer, "line_number", current_line_number, 0);
+    rb_define_method(cBuffer, "line", line_s_current, 0);
+    rb_define_method(cBuffer, "line=", set_current_line, 1);
+
 
     cVimWindow = rb_define_class_under(mVIM, "Window", rb_cObject);
     rb_define_singleton_method(cVimWindow, "current", window_s_current, 0);

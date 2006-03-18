@@ -3273,7 +3273,7 @@ do_map(maptype, arg, mode, abbrev)
 	{
 	    if (abbrev)
 	    {
-		if (hash != 0)	/* there is only one abbreviation list */
+		if (hash > 0)	/* there is only one abbreviation list */
 		    break;
 		mpp = abbr_table;
 	    }
@@ -3595,7 +3595,7 @@ map_clear_int(buf, mode, local, abbr)
     {
 	if (abbr)
 	{
-	    if (hash)	    /* there is only one abbrlist */
+	    if (hash > 0)	/* there is only one abbrlist */
 		break;
 #ifdef FEAT_LOCALMAP
 	    if (local)
@@ -3734,9 +3734,10 @@ showmap(mp, local)
  * Also checks mappings local to the current buffer.
  */
     int
-map_to_exists(str, modechars)
+map_to_exists(str, modechars, abbr)
     char_u	*str;
     char_u	*modechars;
+    int		abbr;
 {
     int		mode = 0;
     char_u	*rhs;
@@ -3758,7 +3759,7 @@ map_to_exists(str, modechars)
     if (vim_strchr(modechars, 'c') != NULL)
 	mode |= CMDLINE;
 
-    retval = map_to_exists_mode(rhs, mode);
+    retval = map_to_exists_mode(rhs, mode, abbr);
     vim_free(buf);
 
     return retval;
@@ -3770,9 +3771,10 @@ map_to_exists(str, modechars)
  * Also checks mappings local to the current buffer.
  */
     int
-map_to_exists_mode(rhs, mode)
+map_to_exists_mode(rhs, mode, abbr)
     char_u	*rhs;
     int		mode;
+    int		abbr;
 {
     mapblock_T	*mp;
     int		hash;
@@ -3787,11 +3789,22 @@ map_to_exists_mode(rhs, mode)
 # endif
 	for (hash = 0; hash < 256; ++hash)
 	{
+	    if (abbr)
+	    {
+		if (hash > 0)		/* there is only one abbr list */
+		    break;
+#ifdef FEAT_LOCALMAP
+		if (expand_buffer)
+		    mp = curbuf->b_first_abbr;
+		else
+#endif
+		    mp = first_abbr;
+	    }
 # ifdef FEAT_LOCALMAP
-	    if (expand_buffer)
+	    else if (expand_buffer)
 		mp = curbuf->b_maphash[hash];
-	    else
 # endif
+	    else
 		mp = maphash[hash];
 	    for (; mp; mp = mp->m_next)
 	    {
@@ -3954,7 +3967,7 @@ ExpandMappings(regmatch, num_file, file)
 	{
 	    if (expand_isabbrev)
 	    {
-		if (hash)	/* only one abbrev list */
+		if (hash > 0)	/* only one abbrev list */
 		    break; /* for (hash) */
 		mp = first_abbr;
 	    }
@@ -4255,7 +4268,7 @@ makemap(fd, buf)
 	{
 	    if (abbr)
 	    {
-		if (hash)	    /* there is only one abbr list */
+		if (hash > 0)		/* there is only one abbr list */
 		    break;
 #ifdef FEAT_LOCALMAP
 		if (buf != NULL)
@@ -4614,11 +4627,12 @@ check_map_keycodes()
  * NULL otherwise
  */
     char_u *
-check_map(keys, mode, exact, ign_mod)
+check_map(keys, mode, exact, ign_mod, abbr)
     char_u	*keys;
     int		mode;
     int		exact;		/* require exact match */
     int		ign_mod;	/* ignore preceding modifier */
+    int		abbr;		/* do abbreviations */
 {
     int		hash;
     int		len, minlen;
@@ -4637,11 +4651,22 @@ check_map(keys, mode, exact, ign_mod)
 	/* loop over all hash lists */
 	for (hash = 0; hash < 256; ++hash)
 	{
+	    if (abbr)
+	    {
+		if (hash > 0)		/* there is only one list. */
+		    break;
 #ifdef FEAT_LOCALMAP
-	    if (local)
-		mp = curbuf->b_maphash[hash];
-	    else
+		if (local)
+		    mp = curbuf->b_first_abbr;
+		else
 #endif
+		    mp = first_abbr;
+	    }
+#ifdef FEAT_LOCALMAP
+	    else if (local)
+		mp = curbuf->b_maphash[hash];
+#endif
+	    else
 		mp = maphash[hash];
 	    for ( ; mp != NULL; mp = mp->m_next)
 	    {

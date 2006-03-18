@@ -36,8 +36,9 @@ static int frame_has_win __ARGS((frame_T *frp, win_T *wp));
 static void frame_new_height __ARGS((frame_T *topfrp, int height, int topfirst, int wfh));
 static int frame_fixed_height __ARGS((frame_T *frp));
 #ifdef FEAT_VERTSPLIT
+static int frame_fixed_width __ARGS((frame_T *frp));
 static void frame_add_statusline __ARGS((frame_T *frp));
-static void frame_new_width __ARGS((frame_T *topfrp, int width, int leftfirst));
+static void frame_new_width __ARGS((frame_T *topfrp, int width, int leftfirst, int wfw));
 static void frame_add_vsep __ARGS((frame_T *frp));
 static int frame_minwidth __ARGS((frame_T *topfrp, win_T *next_curwin));
 static void frame_fix_width __ARGS((win_T *wp));
@@ -723,6 +724,12 @@ win_split_ins(size, flags, newwin, dir)
 	/* if it doesn't fit in the current window, need win_equal() */
 	if (oldwin->w_width - new_size - 1 < p_wmw)
 	    do_equal = TRUE;
+
+	/* We don't like to take lines for the new window from a
+	 * 'winfixwidth' window.  Take them from a window to the left or right
+	 * instead, if possible. */
+	if (oldwin->w_p_wfw)
+	    win_setwidth_win(oldwin->w_width + new_size, oldwin);
     }
     else
 #endif
@@ -937,10 +944,11 @@ win_split_ins(size, flags, newwin, dir)
 		frame_add_vsep(curfrp);
 	    /* Set width of neighbor frame */
 	    frame_new_width(curfrp, curfrp->fr_width
-		    - (new_size + ((flags & WSP_TOP) != 0)), flags & WSP_TOP);
+		     - (new_size + ((flags & WSP_TOP) != 0)), flags & WSP_TOP,
+								       FALSE);
 	}
 	else
-	    oldwin->w_width -= new_size + 1;
+	    win_new_width(oldwin, oldwin->w_width - (new_size + 1));
 	if (before)	/* new window left of current one */
 	{
 	    wp->w_wincol = oldwin->w_wincol;
@@ -1588,7 +1596,7 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 	    frame_new_height(topfr, height, FALSE, FALSE);
 #ifdef FEAT_VERTSPLIT
 	    topfr->fr_win->w_wincol = col;
-	    frame_new_width(topfr, width, FALSE);
+	    frame_new_width(topfr, width, FALSE, FALSE);
 #endif
 	    redraw_all_later(CLEAR);
 	}
@@ -1610,8 +1618,13 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 	    else
 		extra_sep = 0;
 	    totwincount = (n + extra_sep) / (p_wmw + 1);
+	    has_next_curwin = frame_has_win(topfr, next_curwin);
 
-	    /* Compute room available for windows other than "next_curwin" */
+	    /*
+	     * Compute width for "next_curwin" window and room available for
+	     * other windows.
+	     * "m" is the minimal width when counting p_wiw for "next_curwin".
+	     */
 	    m = frame_minwidth(topfr, next_curwin);
 	    room = width - m;
 	    if (room < 0)
@@ -1619,18 +1632,56 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 		next_curwin_size = p_wiw + room;
 		room = 0;
 	    }
-	    else if (n == m)		/* doesn't contain curwin */
-		next_curwin_size = 0;
 	    else
 	    {
-		next_curwin_size = (room + p_wiw + (totwincount - 1) * p_wmw
+		next_curwin_size = -1;
+		for (fr = topfr->fr_child; fr != NULL; fr = fr->fr_next)
+		{
+		    /* If 'winfixwidth' set keep the window width if
+		     * possible.
+		     * Watch out for this window being the next_curwin. */
+		    if (frame_fixed_width(fr))
+		    {
+			n = frame_minwidth(fr, NOWIN);
+			new_size = fr->fr_width;
+			if (frame_has_win(fr, next_curwin))
+			{
+			    room += p_wiw - p_wmw;
+			    next_curwin_size = 0;
+			    if (new_size < p_wiw)
+				new_size = p_wiw;
+			}
+			else
+			    /* These windows don't use up room. */
+			    totwincount -= (n + (fr->fr_next == NULL
+					      ? extra_sep : 0)) / (p_wmw + 1);
+			room -= new_size - n;
+			if (room < 0)
+			{
+			    new_size += room;
+			    room = 0;
+			}
+			fr->fr_newwidth = new_size;
+		    }
+		}
+		if (next_curwin_size == -1)
+		{
+		    if (!has_next_curwin)
+			next_curwin_size = 0;
+		    else if (totwincount > 1
+			    && (room + (totwincount - 2))
+						  / (totwincount - 1) > p_wiw)
+		    {
+			next_curwin_size = (room + p_wiw + totwincount * p_wmw
 					   + (totwincount - 1)) / totwincount;
-		if (next_curwin_size  > p_wiw)
-		    room -= next_curwin_size - p_wiw;
-		else
-		    next_curwin_size = p_wiw;
+			room -= next_curwin_size - p_wiw;
+		    }
+		    else
+			next_curwin_size = p_wiw;
+		}
 	    }
-	    if (n != m)
+
+	    if (has_next_curwin)
 		--totwincount;		/* don't count curwin */
 	}
 
@@ -1643,6 +1694,11 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 		new_size = width;
 	    else if (dir == 'v')
 		new_size = fr->fr_width;
+	    else if (frame_fixed_width(fr))
+	    {
+		new_size = fr->fr_newwidth;
+		wincount = 0;	    /* doesn't count as a sizeable window */
+	    }
 	    else
 	    {
 		/* Compute the maximum number of windows horiz. in "fr". */
@@ -1650,30 +1706,37 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 		wincount = (n + (fr->fr_next == NULL ? extra_sep : 0))
 								/ (p_wmw + 1);
 		m = frame_minwidth(fr, next_curwin);
-		if (n != m)	    /* don't count next_curwin */
+		if (has_next_curwin)
+		    hnc = frame_has_win(fr, next_curwin);
+		else
+		    hnc = FALSE;
+		if (hnc)	    /* don't count next_curwin */
 		    --wincount;
-		new_size = (wincount * room + ((unsigned)totwincount >> 1))
+		if (totwincount == 0)
+		    new_size = room;
+		else
+		    new_size = (wincount * room + ((unsigned)totwincount >> 1))
 								/ totwincount;
-		if (n != m)	    /* add next_curwin size */
+		if (hnc)	    /* add next_curwin size */
 		{
 		    next_curwin_size -= p_wiw - (m - n);
 		    new_size += next_curwin_size;
+		    room -= new_size - next_curwin_size;
 		}
+		else
+		    room -= new_size;
+		new_size += n;
 	    }
 
-	    /* Skip frame that is full height when splitting or closing a
+	    /* Skip frame that is full width when splitting or closing a
 	     * window, unless equalizing all frames. */
 	    if (!current || dir != 'v' || topfr->fr_parent != NULL
 		    || (new_size != fr->fr_width)
 		    || frame_has_win(fr, next_curwin))
 		win_equal_rec(next_curwin, current, fr, dir, col, row,
-							new_size + n, height);
-	    col += new_size + n;
-	    width -= new_size + n;
-	    if (n != m)	    /* contains curwin */
-		room -= new_size - next_curwin_size;
-	    else
-		room -= new_size;
+							    new_size, height);
+	    col += new_size;
+	    width -= new_size;
 	    totwincount -= wincount;
 	}
     }
@@ -2172,7 +2235,7 @@ winframe_remove(win, dirp, tp)
     frame_T	*frp, *frp2, *frp3;
     frame_T	*frp_close = win->w_frame;
     win_T	*wp;
-    int		old_height = 0;
+    int		old_size = 0;
 
     /*
      * If there is only one window there is nothing to remove.
@@ -2199,18 +2262,27 @@ winframe_remove(win, dirp, tp)
 	if (frp2->fr_win != NULL
 		&& (frp2->fr_next != NULL || frp2->fr_prev != NULL)
 		&& frp2->fr_win->w_p_wfh)
-	    old_height = frp2->fr_win->w_height;
+	    old_size = frp2->fr_win->w_height;
 	frame_new_height(frp2, frp2->fr_height + frp_close->fr_height,
 			    frp2 == frp_close->fr_next ? TRUE : FALSE, FALSE);
-	if (old_height != 0)
-	    win_setheight_win(old_height, frp2->fr_win);
+	if (old_size != 0)
+	    win_setheight_win(old_size, frp2->fr_win);
 #ifdef FEAT_VERTSPLIT
 	*dirp = 'v';
     }
     else
     {
+	/* When 'winfixwidth' is set, remember its old size and restore
+	 * it later (it's a simplistic solution...).  Don't do this if the
+	 * window will occupy the full width of the screen. */
+	if (frp2->fr_win != NULL
+		&& (frp2->fr_next != NULL || frp2->fr_prev != NULL)
+		&& frp2->fr_win->w_p_wfw)
+	    old_size = frp2->fr_win->w_width;
 	frame_new_width(frp2, frp2->fr_width + frp_close->fr_width,
-				   frp2 == frp_close->fr_next ? TRUE : FALSE);
+			    frp2 == frp_close->fr_next ? TRUE : FALSE, FALSE);
+	if (old_size != 0)
+	    win_setwidth_win(old_size, frp2->fr_win);
 	*dirp = 'h';
     }
 #endif
@@ -2390,7 +2462,7 @@ frame_new_height(topfrp, height, topfirst, wfh)
 	while (frp != NULL);
     }
 #endif
-    else
+    else    /* fr_layout == FR_COL */
     {
 	/* Complicated case: Resize a column of frames.  Resize the bottom
 	 * frame first, frames above that when needed. */
@@ -2491,6 +2563,36 @@ frame_fixed_height(frp)
 
 #ifdef FEAT_VERTSPLIT
 /*
+ * Return TRUE if width of frame "frp" should not be changed because of
+ * the 'winfixwidth' option.
+ */
+    static int
+frame_fixed_width(frp)
+    frame_T	*frp;
+{
+    /* frame with one window: fixed width if 'winfixwidth' set. */
+    if (frp->fr_win != NULL)
+	return frp->fr_win->w_p_wfw;
+
+    if (frp->fr_layout == FR_COL)
+    {
+	/* The frame is fixed width if one of the frames in the row is fixed
+	 * width. */
+	for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
+	    if (frame_fixed_width(frp))
+		return TRUE;
+	return FALSE;
+    }
+
+    /* frp->fr_layout == FR_ROW: The frame is fixed width if all of the
+     * frames in the row are fixed width. */
+    for (frp = frp->fr_child; frp != NULL; frp = frp->fr_next)
+	if (!frame_fixed_width(frp))
+	    return FALSE;
+    return TRUE;
+}
+
+/*
  * Add a status line to windows at the bottom of "frp".
  * Note: Does not check if there is room!
  */
@@ -2530,10 +2632,12 @@ frame_add_statusline(frp)
  * May remove separator line for windows at the right side (for win_close()).
  */
     static void
-frame_new_width(topfrp, width, leftfirst)
+frame_new_width(topfrp, width, leftfirst, wfw)
     frame_T	*topfrp;
     int		width;
     int		leftfirst;	/* resize leftmost contained frame first */
+    int		wfw;		/* obey 'winfixwidth' when there is a choice;
+				   may cause the width not to be set */
 {
     frame_T	*frp;
     int		extra_cols;
@@ -2554,20 +2658,45 @@ frame_new_width(topfrp, width, leftfirst)
     }
     else if (topfrp->fr_layout == FR_COL)
     {
-	/* All frames in this column get the same new width. */
-	for (frp = topfrp->fr_child; frp != NULL; frp = frp->fr_next)
-	    frame_new_width(frp, width, leftfirst);
+	do
+	{
+	    /* All frames in this column get the same new width. */
+	    for (frp = topfrp->fr_child; frp != NULL; frp = frp->fr_next)
+	    {
+		frame_new_width(frp, width, leftfirst, wfw);
+		if (frp->fr_width > width)
+		{
+		    /* Could not fit the windows, make whole column wider. */
+		    width = frp->fr_width;
+		    break;
+		}
+	    }
+	} while (frp != NULL);
     }
     else    /* fr_layout == FR_ROW */
     {
 	/* Complicated case: Resize a row of frames.  Resize the rightmost
 	 * frame first, frames left of it when needed. */
 
-	/* Find the rightmost frame of this row */
 	frp = topfrp->fr_child;
+	if (wfw)
+	    /* Advance past frames with one window with 'wfw' set. */
+	    while (frame_fixed_width(frp))
+	    {
+		frp = frp->fr_next;
+		if (frp == NULL)
+		    return;	    /* no frame without 'wfw', give up */
+	    }
 	if (!leftfirst)
+	{
+	    /* Find the rightmost frame of this row */
 	    while (frp->fr_next != NULL)
 		frp = frp->fr_next;
+	    if (wfw)
+		/* Advance back for frames with one window with 'wfw' set. */
+		while (frame_fixed_width(frp))
+		    frp = frp->fr_prev;
+	}
 
 	extra_cols = width - topfrp->fr_width;
 	if (extra_cols < 0)
@@ -2579,23 +2708,35 @@ frame_new_width(topfrp, width, leftfirst)
 		if (frp->fr_width + extra_cols < w)
 		{
 		    extra_cols += frp->fr_width - w;
-		    frame_new_width(frp, w, leftfirst);
+		    frame_new_width(frp, w, leftfirst, wfw);
 		}
 		else
 		{
-		    frame_new_width(frp, frp->fr_width + extra_cols, leftfirst);
+		    frame_new_width(frp, frp->fr_width + extra_cols,
+							      leftfirst, wfw);
 		    break;
 		}
 		if (leftfirst)
-		    frp = frp->fr_next;
+		{
+		    do
+			frp = frp->fr_next;
+		    while (wfw && frp != NULL && frame_fixed_width(frp));
+		}
 		else
-		    frp = frp->fr_prev;
+		{
+		    do
+			frp = frp->fr_prev;
+		    while (wfw && frp != NULL && frame_fixed_width(frp));
+		}
+		/* Increase "width" if we could not reduce enough frames. */
+		if (frp == NULL)
+		    width -= extra_cols;
 	    }
 	}
 	else if (extra_cols > 0)
 	{
 	    /* increase width of rightmost frame */
-	    frame_new_width(frp, frp->fr_width + extra_cols, leftfirst);
+	    frame_new_width(frp, frp->fr_width + extra_cols, leftfirst, wfw);
 	}
     }
     topfrp->fr_width = width;
@@ -3689,7 +3830,7 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
 
 #ifdef FEAT_VERTSPLIT
     /* set window width to desired minimal value */
-    if (curwin->w_width < p_wiw)
+    if (curwin->w_width < p_wiw && !curwin->w_p_wfw)
 	win_setwidth((int)p_wiw);
 #endif
 
@@ -4012,7 +4153,8 @@ shell_new_rows()
 #ifdef FEAT_WINDOWS
     if (h < frame_minheight(topframe, NULL))
 	h = frame_minheight(topframe, NULL);
-    /* First try setting the heights of windows without 'winfixheight'.  If
+
+    /* First try setting the heights of windows with 'winfixheight'.  If
      * that doesn't result in the right height, forget about that option. */
     frame_new_height(topframe, h, FALSE, TRUE);
     if (topframe->fr_height != h)
@@ -4045,7 +4187,13 @@ shell_new_columns()
 {
     if (firstwin == NULL)	/* not initialized yet */
 	return;
-    frame_new_width(topframe, (int)Columns, FALSE);
+
+    /* First try setting the widths of windows with 'winfixwidth'.  If that
+     * doesn't result in the right width, forget about that option. */
+    frame_new_width(topframe, (int)Columns, FALSE, TRUE);
+    if (topframe->fr_width != Columns)
+	frame_new_width(topframe, (int)Columns, FALSE, FALSE);
+
     (void)win_comp_pos();		/* recompute w_winrow and w_wincol */
 #if 0
     /* Disabled: don't want making the screen smaller make a window larger. */
@@ -4480,6 +4628,7 @@ frame_setwidth(curfrp, width)
     int		run;
     frame_T	*frp;
     int		w;
+    int		room_reserved;
 
     /* If the width already is the desired value, nothing to do. */
     if (curfrp->fr_width == width)
@@ -4511,9 +4660,14 @@ frame_setwidth(curfrp, width)
 	for (run = 1; run <= 2; ++run)
 	{
 	    room = 0;
+	    room_reserved = 0;
 	    for (frp = curfrp->fr_parent->fr_child; frp != NULL;
 							   frp = frp->fr_next)
 	    {
+		if (frp != curfrp
+			&& frp->fr_win != NULL
+			&& frp->fr_win->w_p_wfw)
+		    room_reserved += frp->fr_width;
 		room += frp->fr_width;
 		if (frp != curfrp)
 		    room -= frame_minwidth(frp, NULL);
@@ -4531,17 +4685,25 @@ frame_setwidth(curfrp, width)
 		 + frame_minwidth(curfrp->fr_parent, NOWIN) - (int)p_wmw - 1);
 	}
 
-
 	/*
 	 * Compute the number of lines we will take from others frames (can be
 	 * negative!).
 	 */
 	take = width - curfrp->fr_width;
 
+	/* If there is not enough room, also reduce the width of a window
+	 * with 'winfixwidth' set. */
+	if (width > room - room_reserved)
+	    room_reserved = room - width;
+	/* If there is only a 'winfixwidth' window and making the
+	 * window smaller, need to make the other window narrower. */
+	if (take < 0 && room - curfrp->fr_width < room_reserved)
+	    room_reserved = 0;
+
 	/*
 	 * set the current frame to the new width
 	 */
-	frame_new_width(curfrp, width, FALSE);
+	frame_new_width(curfrp, width, FALSE, FALSE);
 
 	/*
 	 * First take lines from the frames right of the current frame.  If
@@ -4557,15 +4719,34 @@ frame_setwidth(curfrp, width)
 	    while (frp != NULL && take != 0)
 	    {
 		w = frame_minwidth(frp, NULL);
-		if (frp->fr_width - take < w)
+		if (room_reserved > 0
+			&& frp->fr_win != NULL
+			&& frp->fr_win->w_p_wfw)
 		{
-		    take -= frp->fr_width - w;
-		    frame_new_width(frp, w, FALSE);
+		    if (room_reserved >= frp->fr_width)
+			room_reserved -= frp->fr_width;
+		    else
+		    {
+			if (frp->fr_width - room_reserved > take)
+			    room_reserved = frp->fr_width - take;
+			take -= frp->fr_width - room_reserved;
+			frame_new_width(frp, room_reserved, FALSE, FALSE);
+			room_reserved = 0;
+		    }
 		}
 		else
 		{
-		    frame_new_width(frp, frp->fr_width - take, FALSE);
-		    take = 0;
+		    if (frp->fr_width - take < w)
+		    {
+			take -= frp->fr_width - w;
+			frame_new_width(frp, w, FALSE, FALSE);
+		    }
+		    else
+		    {
+			frame_new_width(frp, frp->fr_width - take,
+								FALSE, FALSE);
+			take = 0;
+		    }
 		}
 		if (run == 0)
 		    frp = frp->fr_next;
@@ -4811,7 +4992,7 @@ win_drag_vsep_line(dragwin, offset)
 	return;
 
     /* grow frame fr by offset lines */
-    frame_new_width(fr, fr->fr_width + offset, left);
+    frame_new_width(fr, fr->fr_width + offset, left, FALSE);
 
     /* shrink other frames: current and at the left or at the right */
     if (left)
@@ -4825,11 +5006,11 @@ win_drag_vsep_line(dragwin, offset)
 	if (fr->fr_width - offset <= n)
 	{
 	    offset -= fr->fr_width - n;
-	    frame_new_width(fr, n, !left);
+	    frame_new_width(fr, n, !left, FALSE);
 	}
 	else
 	{
-	    frame_new_width(fr, fr->fr_width - offset, !left);
+	    frame_new_width(fr, fr->fr_width - offset, !left, FALSE);
 	    break;
 	}
 	if (left)
@@ -5762,7 +5943,7 @@ restore_snapshot_rec(sn, fr)
     {
 	frame_new_height(fr, fr->fr_height, FALSE, FALSE);
 # ifdef FEAT_VERTSPLIT
-	frame_new_width(fr, fr->fr_width, FALSE);
+	frame_new_width(fr, fr->fr_width, FALSE, FALSE);
 # endif
 	wp = sn->fr_win;
     }

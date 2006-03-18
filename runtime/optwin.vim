@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 16
+" Last Change:	2006 Mar 18
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -435,6 +435,9 @@ call append("$", "winfixheight\tkeep the height of the window")
 call append("$", "\t(local to window)")
 call <SID>BinOptionL("wfh")
 if has("vertsplit")
+call append("$", "winfixwidth\tkeep the width of the window")
+call append("$", "\t(local to window)")
+call <SID>BinOptionL("wfw")
   call append("$", "winwidth\tminimal number of columns used for the current window")
   call append("$", " \tset wiw=" . &wiw)
   call append("$", "winminwidth\tminimal number of columns used for any window")
