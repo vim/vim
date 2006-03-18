@@ -614,6 +614,7 @@ static void f_soundfold __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_spellbadword __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_spellsuggest __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_split __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_str2nr __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef HAVE_STRFTIME
 static void f_strftime __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
@@ -6978,7 +6979,7 @@ static struct fst
     {"globpath",	2, 2, f_globpath},
     {"has",		1, 1, f_has},
     {"has_key",		2, 2, f_has_key},
-    {"hasmapto",	1, 2, f_hasmapto},
+    {"hasmapto",	1, 3, f_hasmapto},
     {"highlightID",	1, 1, f_hlID},		/* obsolete */
     {"highlight_exists",1, 1, f_hlexists},	/* obsolete */
     {"histadd",		2, 2, f_histadd},
@@ -7012,8 +7013,8 @@ static struct fst
     {"lispindent",	1, 1, f_lispindent},
     {"localtime",	0, 0, f_localtime},
     {"map",		2, 2, f_map},
-    {"maparg",		1, 2, f_maparg},
-    {"mapcheck",	1, 2, f_mapcheck},
+    {"maparg",		1, 3, f_maparg},
+    {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
     {"matchend",	2, 4, f_matchend},
     {"matchlist",	2, 4, f_matchlist},
@@ -7062,6 +7063,7 @@ static struct fst
     {"spellbadword",	0, 1, f_spellbadword},
     {"spellsuggest",	1, 3, f_spellsuggest},
     {"split",		1, 3, f_split},
+    {"str2nr",		1, 2, f_str2nr},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -10855,14 +10857,19 @@ f_hasmapto(argvars, rettv)
     char_u	*name;
     char_u	*mode;
     char_u	buf[NUMBUFLEN];
+    int		abbr = FALSE;
 
     name = get_tv_string(&argvars[0]);
     if (argvars[1].v_type == VAR_UNKNOWN)
 	mode = (char_u *)"nvo";
     else
+    {
 	mode = get_tv_string_buf(&argvars[1], buf);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    abbr = get_tv_number(&argvars[2]);
+    }
 
-    if (map_to_exists(name, mode))
+    if (map_to_exists(name, mode, abbr))
 	rettv->vval.v_number = TRUE;
     else
 	rettv->vval.v_number = FALSE;
@@ -11837,6 +11844,7 @@ get_maparg(argvars, rettv, exact)
     char_u	*rhs;
     int		mode;
     garray_T	ga;
+    int		abbr = FALSE;
 
     /* return empty string for failure */
     rettv->v_type = VAR_STRING;
@@ -11847,7 +11855,11 @@ get_maparg(argvars, rettv, exact)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
+    {
 	which = get_tv_string_buf_chk(&argvars[1], buf);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    abbr = get_tv_number(&argvars[2]);
+    }
     else
 	which = (char_u *)"";
     if (which == NULL)
@@ -11856,7 +11868,7 @@ get_maparg(argvars, rettv, exact)
     mode = get_map_mode(&which, 0);
 
     keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE);
-    rhs = check_map(keys, mode, exact, FALSE);
+    rhs = check_map(keys, mode, exact, FALSE, abbr);
     vim_free(keys_buf);
     if (rhs != NULL)
     {
@@ -14610,6 +14622,33 @@ f_split(argvars, rettv)
     }
 
     p_cpo = save_cpo;
+}
+
+/*
+ * "str2nr()" function
+ */
+    static void
+f_str2nr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    int		base = 10;
+    char_u	*p;
+    long	n;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	base = get_tv_number(&argvars[1]);
+	if (base != 8 && base != 10 && base != 16)
+	{
+	    EMSG(_(e_invarg));
+	    return;
+	}
+    }
+
+    p = skipwhite(get_tv_string(&argvars[0]));
+    vim_str2nr(p, NULL, NULL, base == 8 ? 2 : 0, base == 16 ? 2 : 0, &n, NULL);
+    rettv->vval.v_number = n;
 }
 
 #ifdef HAVE_STRFTIME
