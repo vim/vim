@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 16
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -917,6 +917,7 @@ Short explanation of each option:		*option-list*
 'winaltkeys'      'wak'     when the windows system handles ALT keys
 'winheight'       'wh'      minimum number of lines for the current window
 'winfixheight'    'wfh'     keep window height when opening/closing windows
+'winfixwidth'     'wfw'     keep window width when opening/closing windows
 'winminheight'    'wmh'     minimum number of lines for any window
 'winminwidth'     'wmw'     minimal number of columns for any window
 'winwidth'        'wiw'     minimal number of columns for current window
