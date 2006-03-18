@@ -4169,7 +4169,7 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 	    if (event->type != GDK_KEY_PRESS)
 		return TRUE;
 
-	    if (map_to_exists_mode((char_u *)"", LANGMAP))
+	    if (map_to_exists_mode((char_u *)"", LANGMAP, FALSE))
 	    {
 		im_set_active(FALSE);
 
