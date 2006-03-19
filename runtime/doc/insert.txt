@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 15
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -993,6 +993,7 @@ Each list item can either be a string or a Dictionary.  When it is a string it
 is used as the completion.  When it is a Dictionary it can contain these
 items:
 	word		the completion, mandatory
+	abbr		abbreviation of "word", to be used in the menu
 	menu		extra text for the popup menu
 	info		more information about the item
 	kind		single letter indicating the type of completion

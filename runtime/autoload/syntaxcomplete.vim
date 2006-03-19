@@ -1,12 +1,18 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     1.1
-" Last Change: Wed Mar 01 2006 9:58:14 PM
+" Version:     1.2
+" Last Change: Sat Mar 18 2006 8:25:30 PM
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
+" This check is in place in case this script is
+" sourced directly instead of using the autoload feature. 
 if exists('+omnifunc')
-    setlocal omnifunc=syntaxcomplete#Complete
+    " Do not set the option if already set since this
+    " results in an E117 warning.
+    if &omnifunc == ""
+        setlocal omnifunc=syntaxcomplete#Complete
+    endif
 endif
 
 if exists('g:loaded_syntax_completion')
@@ -22,6 +28,7 @@ let s:syn_remove_words = 'match,matchgroup=,contains,'.
 
 let s:cache_name = []
 let s:cache_list = []
+let s:prepended  = ''
 
 " This function is used for the 'omnifunc' option.
 function! syntaxcomplete#Complete(findstart, base)

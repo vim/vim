@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Feb 18
+" Last Change:	2006 Mar 19
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -81,8 +81,9 @@ function! xmlcomplete#CompleteTags(findstart, base)
 				let context_lines = getline(curline-i, curline)
 				let b:compl_context = join(context_lines, ' ')
 				break
-			elseif context_line =~ '>[^<]*$'
+			elseif context_line =~ '>[^<]*$' || i == curline
 				" Normal tag line, no need for completion at all
+				" OR reached first line without tag at all
 				let b:compl_context = ''
 				break
 			endif
