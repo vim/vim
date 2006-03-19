@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 5
+" Last Change:	2006 Mar 19
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -87,22 +87,39 @@ function! htmlcomplete#CompleteTags(findstart, base)
 					let context_lines = getline(curline-i, curline)
 					let b:compl_context = join(context_lines, ' ')
 					break
-				elseif context_line =~ '>[^<]*$'
-					" Normal tag line, no need for completion at all
+				elseif context_line =~ '>[^<]*$' || i == curline
+					" We are in normal tag line, no need for completion at all
+					" OR reached first line without tag at all
 					let b:compl_context = ''
 					break
 				endif
 				let i += 1
+				" We reached first line and no tag approached
+				" Prevents endless loop
+				"if i > curline
+					"let b:compl_context = ''
+					"break
+				"endif
 			endwhile
 			" Make sure we don't have counter
 			unlet! i
 		endif
 		let b:compl_context = matchstr(b:compl_context, '.*\zs<.*')
+
 		" Return proper start for on-events. Without that beginning of
 		" completion will be badly reported
 		if b:compl_context =~? 'on[a-z]*\s*=\s*\(''[^'']*\|"[^"]*\)$'
 			let start = col('.') - 1
 			while start >= 0 && line[start - 1] =~ '\k'
+				let start -= 1
+			endwhile
+		endif
+		" If b:compl_context begins with <? we are inside of PHP code. It
+		" wasn't closed so PHP completion passed it to HTML 
+		if &filetype =~? 'php' && b:compl_context =~ '^<?'
+			let b:phpcompl = 1
+			let start = col('.') - 1
+			while start >= 0 && line[start - 1] =~ '[a-zA-Z_0-9\x7f-\xff$]'
 				let start -= 1
 			endwhile
 		endif
@@ -117,7 +134,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" a:base is very short - we need context
 	let context = b:compl_context
 	" Check if we should do CSS completion inside of <style> tag
-	" or JS completion inside of <script> tag
+	" or JS completion inside of <script> tag or PHP completion in case of <?
+	" tag AND &ft==php
 	if exists("b:csscompl")
 		unlet! b:csscompl
 		let context = b:compl_context
@@ -126,6 +144,10 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	elseif exists("b:jscompl")
 		unlet! b:jscompl
 		return javascriptcomplete#CompleteJS(0, a:base)
+	elseif exists("b:phpcompl")
+		unlet! b:phpcompl
+		let context = b:compl_context
+		return phpcomplete#CompletePHP(0, a:base)
 	else
 		if len(b:compl_context) == 0 && !exists("b:entitiescompl")
 			return []
@@ -599,7 +621,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" }}}
   endif
 endfunction
-function! htmlcomplete#LoadData()
+" HTML context data
+function! htmlcomplete#LoadData() " {{{
 let g:xmldata_xhtml10s = {
 \ 'vimxmlentities' : ["AElig", "Aacute", "Acirc", "Agrave", "Alpha", "Aring", "Atilde", "Auml", "Beta", "Ccedil", "Chi", "Dagger", "Delta", "ETH", "Eacute", "Ecirc", "Egrave", "Epsilon", "Eta", "Euml", "Gamma", "Iacute", "Icirc", "Igrave", "Iota", "Iuml", "Kappa", "Lambda", "Mu", "Ntilde", "Nu", "OElig", "Oacute", "Ocirc", "Ograve", "Omega", "Omicron", "Oslash", "Otilde", "Ouml", "Phi", "Pi", "Prime", "Psi", "Rho", "Scaron", "Sigma", "THORN", "TITY", "Tau", "Theta", "Uacute", "Ucirc", "Ugrave", "Upsilon", "Uuml", "Xi", "Yacute", "Yuml", "Zeta", "amp", "aacute", "acirc", "acute", "aelig", "agrave", "alefsym", "alpha", "and", "ang", "apos", "aring", "asymp", "atilde", "auml", "bdquo", "beta", "brvbar", "bull", "cap", "ccedil", "cedil", "cent", "chi", "circ", "clubs", "copy", "cong", "crarr", "cup", "curren", "dArr", "dagger", "darr", "deg", "delta", "diams", "divide", "eacute", "ecirc", "egrave", "empty", "ensp", "emsp", "epsilon", "equiv", "eta", "eth", "euro", "euml", "exist", "fnof", "forall", "frac12", "frac14", "frac34", "frasl", "gt", "gamma", "ge", "hArr", "harr", "hearts", "hellip", "iacute", "icirc", "iexcl", "igrave", "image", "infin", "int", "iota", "iquest", "isin", "iuml", "kappa", "lt", "laquo", "lArr", "lambda", "lang", "larr", "lceil", "ldquo", "le", "lfloor", "lowast", "loz", "lrm", "lsaquo", "lsquo", "macr", "mdash", "micro", "middot", "minus", "mu", "nbsp", "nabla", "ndash", "ne", "ni", "not", "notin", "nsub", "ntilde", "nu", "oacute", "ocirc", "oelig", "ograve", "oline", "omega", "omicron", "oplus", "or", "ordf", "ordm", "oslash", "otilde", "otimes", "ouml", "para", "part", "permil", "perp", "phi", "pi", "piv", "plusmn", "pound", "prime", "prod", "prop", "psi", "quot", "rArr", "raquo", "radic", "rang", "rarr", "rceil", "rdquo", "real", "reg", "rfloor", "rho", "rlm", "rsaquo", "rsquo", "sbquo", "scaron", "sdot", "sect", "shy", "sigma", "sigmaf", "sim", "spades", "sub", "sube", "sum", "sup", "sup1", "sup2", "sup3", "supe", "szlig", "tau", "there4", "theta", "thetasym", "thinsp", "thorn", "tilde", "times", "trade", "uArr", "uacute", "uarr", "ucirc", "ugrave", "uml", "upsih", "upsilon", "uuml", "weierp", "xi", "yacute", "yen", "yuml", "zeta", "zwj", "zwnj"],
 \ 'vimxmlattrinfo' : {
@@ -4647,4 +4670,5 @@ let g:xmldata_xhtml10s = {
 \ ]
 \ }
 endfunction
+" }}}
 " vim:set foldmethod=marker:
