@@ -580,7 +580,7 @@ static struct vimoption
 			    (char_u *)&p_beval, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
 # ifdef FEAT_EVAL
-    {"balloonexpr", "bexpr",  P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
+    {"balloonexpr", "bexpr", P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
 			    (char_u *)&p_bexpr, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}},
 # endif

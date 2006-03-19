@@ -69,9 +69,7 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	/* matched text */
     char	cp_icase;	/* TRUE or FALSE: ignore case */
-    char_u	*cp_kind;	/* kind menu text (allocated, can be NULL) */
-    char_u	*cp_extra;	/* extra menu text (allocated, can be NULL) */
-    char_u	*cp_info;	/* verbose info (can be NULL) */
+    char_u	*(cp_text[CPT_COUNT]);	/* text for the menu */
     char_u	*cp_fname;	/* file containing the match, allocated when
 				 * cp_flags has FREE_FNAME */
     int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
@@ -2060,10 +2058,9 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 	/* Copy the original case of the part we typed */
 	STRNCPY(IObuff, compl_orig_text, compl_length);
 
-	return ins_compl_add(IObuff, len, icase, fname, NULL, NULL, NULL,
-								  dir, flags);
+	return ins_compl_add(IObuff, len, icase, fname, NULL, dir, flags);
     }
-    return ins_compl_add(str, len, icase, fname, NULL, NULL, NULL, dir, flags);
+    return ins_compl_add(str, len, icase, fname, NULL, dir, flags);
 }
 
 /*
@@ -2073,14 +2070,12 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
  * maybe because alloc() returns NULL, then FAIL is returned.
  */
     int
-ins_compl_add(str, len, icase, fname, kind, extra, info, cdir, flags)
+ins_compl_add(str, len, icase, fname, cptext, cdir, flags)
     char_u	*str;
     int		len;
     int		icase;
     char_u	*fname;
-    char_u	*kind;	    /* extra text for popup menu or NULL */
-    char_u	*extra;	    /* extra text for popup menu or NULL */
-    char_u	*info;	    /* extra text for popup menu or NULL */
+    char_u	**cptext;    /* extra text for popup menu or NULL */
     int		cdir;
     int		flags;
 {
@@ -2146,12 +2141,15 @@ ins_compl_add(str, len, icase, fname, kind, extra, info, cdir, flags)
     else
 	match->cp_fname = NULL;
     match->cp_flags = flags;
-    if (kind != NULL && *kind != NUL)
-	match->cp_kind = vim_strsave(kind);
-    if (extra != NULL && *extra != NUL)
-	match->cp_extra = vim_strsave(extra);
-    if (info != NULL && *info != NUL)
-	match->cp_info = vim_strsave(info);
+
+    if (cptext != NULL)
+    {
+	int i;
+
+	for (i = 0; i < CPT_COUNT; ++i)
+	    if (cptext[i] != NULL && *cptext[i] != NUL)
+		match->cp_text[i] = vim_strsave(cptext[i]);
+    }
 
     /*
      * Link the new match structure in the list of matches.
@@ -2285,7 +2283,7 @@ ins_compl_add_matches(num_matches, matches, icase)
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, icase,
-				       NULL, NULL, NULL, NULL, dir, 0)) == OK)
+						   NULL, NULL, dir, 0)) == OK)
 	    /* if dir was BACKWARD then honor it just once */
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -2343,7 +2341,7 @@ set_completion(startcol, list)
     /* compl_pattern doesn't need to be set */
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-		   -1, FALSE, NULL, NULL, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
 	return;
 
     /* Handle like dictionary completion. */
@@ -2511,13 +2509,17 @@ ins_compl_show_pum()
 			    shown_compl = compl;
 			cur = i;
 		    }
-		    compl_match_array[i].pum_text = compl->cp_str;
-		    if (compl->cp_kind != NULL)
-			compl_match_array[i].pum_kind = compl->cp_kind;
-		    if (compl->cp_info != NULL)
-			compl_match_array[i].pum_info = compl->cp_info;
-		    if (compl->cp_extra != NULL)
-			compl_match_array[i++].pum_extra = compl->cp_extra;
+
+		    if (compl->cp_text[CPT_ABBR] != NULL)
+			compl_match_array[i].pum_text =
+						     compl->cp_text[CPT_ABBR];
+		    else
+			compl_match_array[i].pum_text = compl->cp_str;
+		    compl_match_array[i].pum_kind = compl->cp_text[CPT_KIND];
+		    compl_match_array[i].pum_info = compl->cp_text[CPT_INFO];
+		    if (compl->cp_text[CPT_MENU] != NULL)
+			compl_match_array[i++].pum_extra =
+						     compl->cp_text[CPT_MENU];
 		    else
 			compl_match_array[i++].pum_extra = compl->cp_fname;
 		}
@@ -2550,7 +2552,9 @@ ins_compl_show_pum()
     {
 	/* popup menu already exists, only need to find the current item.*/
 	for (i = 0; i < compl_match_arraysize; ++i)
-	    if (compl_match_array[i].pum_text == compl_shown_match->cp_str)
+	    if (compl_match_array[i].pum_text == compl_shown_match->cp_str
+		    || compl_match_array[i].pum_text
+				      == compl_shown_match->cp_text[CPT_ABBR])
 		break;
 	cur = i;
     }
@@ -2859,6 +2863,7 @@ find_line_end(ptr)
 ins_compl_free()
 {
     compl_T *match;
+    int	    i;
 
     vim_free(compl_pattern);
     compl_pattern = NULL;
@@ -2880,9 +2885,8 @@ ins_compl_free()
 	/* several entries may use the same fname, free it just once. */
 	if (match->cp_flags & FREE_FNAME)
 	    vim_free(match->cp_fname);
-	vim_free(match->cp_kind);
-	vim_free(match->cp_extra);
-	vim_free(match->cp_info);
+	for (i = 0; i < CPT_COUNT; ++i)
+	    vim_free(match->cp_text[i]);
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
@@ -3377,55 +3381,65 @@ expand_by_function(type, base)
 }
 #endif /* FEAT_COMPL_FUNC */
 
-#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL)
+#if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Add completions from a list.
- * Unreferences the list.
  */
     static void
 ins_compl_add_list(list)
     list_T	*list;
 {
     listitem_T	*li;
-    int		icase;
-    char_u	*p;
-    char_u	*x;
-    char_u	*k;
-    char_u	*info;
     int		dir = compl_direction;
 
     /* Go through the List with matches and add each of them. */
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
-	icase = p_ic;
-	if (li->li_tv.v_type == VAR_DICT && li->li_tv.vval.v_dict != NULL)
-	{
-	    p = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"word", FALSE);
-	    x = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"menu", FALSE);
-	    k = get_dict_string(li->li_tv.vval.v_dict, (char_u *)"kind", FALSE);
-	    info = get_dict_string(li->li_tv.vval.v_dict,
-						     (char_u *)"info", FALSE);
-	    if (get_dict_string(li->li_tv.vval.v_dict,
-					    (char_u *)"icase", FALSE) != NULL)
-		icase = get_dict_number(li->li_tv.vval.v_dict,
-							   (char_u *)"icase");
-	}
-	else
-	{
-	    p = get_tv_string_chk(&li->li_tv);
-	    x = NULL;
-	    k = NULL;
-	    info = NULL;
-	}
-	if (p != NULL && *p != NUL)
-	{
-	    if (ins_compl_add(p, -1, icase, NULL, k, x, info, dir, 0) == OK)
-		/* if dir was BACKWARD then honor it just once */
-		dir = FORWARD;
-	}
+	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
+	    /* if dir was BACKWARD then honor it just once */
+	    dir = FORWARD;
 	else if (did_emsg)
 	    break;
     }
+}
+
+/*
+ * Add a match to the list of matches from a typeval_T.
+ * If the given string is already in the list of completions, then return
+ * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
+ * maybe because alloc() returns NULL, then FAIL is returned.
+ */
+    int
+ins_compl_add_tv(tv, dir)
+    typval_T	*tv;
+    int		dir;
+{
+    char_u	*word;
+    int		icase = p_ic;
+    char_u	*(cptext[CPT_COUNT]);
+
+    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+    {
+	word = get_dict_string(tv->vval.v_dict, (char_u *)"word", FALSE);
+	cptext[CPT_ABBR] = get_dict_string(tv->vval.v_dict,
+						     (char_u *)"abbr", FALSE);
+	cptext[CPT_MENU] = get_dict_string(tv->vval.v_dict,
+						     (char_u *)"menu", FALSE);
+	cptext[CPT_KIND] = get_dict_string(tv->vval.v_dict,
+						     (char_u *)"kind", FALSE);
+	cptext[CPT_INFO] = get_dict_string(tv->vval.v_dict,
+						     (char_u *)"info", FALSE);
+	if (get_dict_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL)
+	    icase = get_dict_number(tv->vval.v_dict, (char_u *)"icase");
+    }
+    else
+    {
+	word = get_tv_string_chk(tv);
+	vim_memset(cptext, 0, sizeof(cptext));
+    }
+    if (word == NULL || *word == NUL)
+	return FAIL;
+    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0);
 }
 #endif
 
@@ -4509,7 +4523,7 @@ ins_complete(c)
 	vim_free(compl_orig_text);
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-		   -1, FALSE, NULL, NULL, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
 	{
 	    vim_free(compl_pattern);
 	    compl_pattern = NULL;
@@ -5887,10 +5901,15 @@ stop_insert(end_insert_pos, esc)
 	    pos_T	tpos = curwin->w_cursor;
 
 	    curwin->w_cursor = *end_insert_pos;
-	    if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
-		--curwin->w_cursor.col;
-	    while (cc = gchar_cursor(), vim_iswhite(cc))
+	    for (;;)
+	    {
+		if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
+		    --curwin->w_cursor.col;
+		cc = gchar_cursor();
+		if (!vim_iswhite(cc))
+		    break;
 		(void)del_char(TRUE);
+	    }
 	    if (curwin->w_cursor.lnum != tpos.lnum)
 		curwin->w_cursor = tpos;
 	    else if (cc != NUL)

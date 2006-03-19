@@ -1813,7 +1813,7 @@ im_get_status()
 
 #ifdef FEAT_MBYTE
 /*
- * Convert latin9 text to ucs-2.
+ * Convert latin9 text "text[len]" to ucs-2 in "unicodebuf".
  */
     static void
 latin9_to_ucs(char_u *text, int len, WCHAR *unicodebuf)

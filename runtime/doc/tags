@@ -3224,6 +3224,7 @@ E113	eval.txt	/*E113*
 E114	eval.txt	/*E114*
 E115	eval.txt	/*E115*
 E116	eval.txt	/*E116*
+E117	eval.txt	/*E117*
 E118	eval.txt	/*E118*
 E119	eval.txt	/*E119*
 E12	message.txt	/*E12*
@@ -5528,6 +5529,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

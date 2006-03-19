@@ -2283,3 +2283,11 @@ typedef struct
     void	*tn_search_ctx;
 } tagname_T;
 
+/*
+ * Array indexes used for cptext argument of ins_compl_add().
+ */
+#define CPT_ABBR    0	/* "abbr" */
+#define CPT_MENU    1	/* "menu" */
+#define CPT_KIND    2	/* "kind" */
+#define CPT_INFO    3	/* "info" */
+#define CPT_COUNT   4	/* Number of entries */

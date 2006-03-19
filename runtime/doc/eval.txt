@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 18
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2011,6 +2011,8 @@ complete_add({expr})				*complete_add()*
 		Returns 0 for failure (empty string or out of memory),
 		1 when the match was added, 2 when the match was already in
 		the list.
+		See |complete-functions| for an explanation of {expr}.  It is
+		the same as one item in the list that 'omnifunc' would return.
 
 complete_check()				*complete_check()*
 		Check for a key typed while looking for completion matches.
@@ -2910,7 +2912,8 @@ hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		and this mapping exists in one of the modes indicated by
 		{mode}.
 		When {abbr} is there and it is non-zero use abbreviations
-		instead of mappings.
+		instead of mappings.  Don't forget to specify Insert and/or
+		Command-line mode.
 		Both the global mappings and the mappings local to the current
 		buffer are checked for a match.
 		If no matching mapping is found 0 is returned.
@@ -5315,7 +5318,7 @@ with local variables in a calling function.  Example: >
 The names "lnum" and "col" could also be passed as argument to Bar(), to allow
 the caller to set the names.
 
-							*:cal* *:call* *E107*
+						*:cal* *:call* *E107* *E117*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
 		are as specified with |:function|.  Up to 20 arguments can be
