@@ -1,23 +1,29 @@
 " Vim completion script
 " Language:	PHP
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 9
+" Last Change:	2006 Mar ---
 "
-"
-"  - outside of <?php?> getting parent tag may cause problems. Heh, even in
-"    perfect conditions GetLastOpenTag doesn't cooperate... Inside of
-"    phpStrings this can be even a bonus but outside of <?php?> it is not the
-"    best situation
-" - Switching to HTML completion (SQL) inside of phpStrings
+"   TODO:
+"   - Class aware completion:
+"      a) additional analize of tags file(s)
+"      b) "live" parsing of data, maybe with caching
+"   - Switching to HTML (XML?) completion (SQL) inside of phpStrings
+"   - allow also for XML completion
+"   - better 'info', 'menu'
+"   - outside of <?php?> getting parent tag may cause problems. Heh, even in
+"     perfect conditions GetLastOpenTag doesn't cooperate... Inside of
+"     phpStrings this can be even a bonus but outside of <?php?> it is not the
+"     best situation
 
 function! phpcomplete#CompletePHP(findstart, base)
 	if a:findstart
 		unlet! b:php_menu
 		" Check if we are inside of PHP markup
 		let pos = getpos('.')
-		let phpbegin = searchpairpos('<?', '', '?>', 'bWn','synIDattr(synID(line("."), col("."), 0), "name") =~? "string\|comment"')
-		let phpend = searchpairpos('<?', '', '?>', 'Wn','synIDattr(synID(line("."), col("."), 0), "name") =~? "string\|comment"')
-		" TODO: deal with opened <? but without closing ?>
+		let phpbegin = searchpairpos('<?', '', '?>', 'bWn',
+				\ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\|comment"')
+		let phpend   = searchpairpos('<?', '', '?>', 'Wn',
+				\ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string\|comment"')
 
 		if phpbegin == [0,0] && phpend == [0,0]
 			" We are outside of any PHP markup. Complete HTML
@@ -49,27 +55,34 @@ function! phpcomplete#CompletePHP(findstart, base)
 		endif
 		" Initialize base return lists
 		let res = []
-		let res2 = []
 		" a:base is very short - we need context
 		if exists("b:compl_context")
 			let context = b:compl_context
 			unlet! b:compl_context
 		endif
 
-		let scontext = substitute(context, '\$\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*$', '', '')
+		if !exists('g:php_builtin_functions')
+			call phpcomplete#LoadData()
+		endif
 
-		if scontext =~ 'new\s*$'
+		let scontext = substitute(context, 
+				\ '\$\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*$', '', '')
+
+		if scontext =~ '\(=\s*new\|extends\)\s\+$'
 			" Complete class name
 			" Internal solution for finding classes in current file.
 			let file = getline(1, '$')
-			call filter(file, 'v:val =~ "class\\s\\+[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
+			call filter(file, 
+					\ 'v:val =~ "class\\s\\+[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
 			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 			let jfile = join(file, ' ')
 			let int_values = split(jfile, 'class\s\+')
 			let int_classes = {}
 			for i in int_values
 				let c_name = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-				let int_classes[c_name] = ''
+				if c_name != ''
+					let int_classes[c_name] = ''
+				endif
 			endfor
 
 			" Prepare list of functions from tags file
@@ -79,11 +92,10 @@ function! phpcomplete#CompletePHP(findstart, base)
 				exe 'silent! vimgrep /^'.a:base.'.*\tc\(\t\|$\)/j '.fnames
 				let qflist = getqflist()
 				for field in qflist
-					let item = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-					" Don't show name - in PHP classes usually are in their
-					" own files, showing names will only add clutter
-					" let fname = matchstr(field['text'], 
-					" \ '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
+					" [:space:] thing: we don't have to be so strict when
+					" dealing with tags files - entries there were already
+					" checked by ctags.
+					let item = matchstr(field['text'], '^[^[:space:]]\+')
 					let ext_classes[item] = ''
 				endfor
 			endif
@@ -93,16 +105,14 @@ function! phpcomplete#CompletePHP(findstart, base)
 			for m in sort(keys(int_classes))
 				if m =~ '^'.a:base
 					call add(res, m)
-				elseif m =~ a:base
-					call add(res2, m)
 				endif
 			endfor
 
-			let int_list = res + res2
+			let int_list = res
 
 			let final_menu = []
 			for i in int_list
-				let final_menu += [{'word':i, 'menu':int_classes[i]}, 'kind':'c']
+				let final_menu += [{'word':i, 'kind':'c'}]
 			endfor
 
 			return final_menu
@@ -111,29 +121,28 @@ function! phpcomplete#CompletePHP(findstart, base)
 			" Complete user functions and variables
 			" Internal solution for current file.
 			" That seems as unnecessary repeating of functions but there are
-			" few not so subtle differences as not appeding of $ and addition
+			" few not so subtle differences as not appending of $ and addition
 			" of 'kind' tag (not necessary in regular completion)
+			if a:base =~ '^\$'
+				let adddollar = '$'
+			else
+				let adddollar = ''
+			endif
 			let file = getline(1, '$')
 			let jfile = join(file, ' ')
-			let int_vals = split(jfile, '\$')
-			"call map(int_values, 'matchstr(v:val, "^[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*")')
-			let int_values = []
-			for i in int_vals
+			let sfile = split(jfile, '\$')
+			let int_vars = {}
+			for i in sfile
 				if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
-					let val = matchstr(i, '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
+					let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
 				else
-					let val = matchstr(i, '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
+					let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
 				endif
-				let int_values += [val]
+				if val !~ ''
+					let int_vars[adddollar.val] = ''
+				endif
 			endfor
 			
-			let int_vars = {}
-			for i in int_values
-				if i != ''
-					let int_vars[i] = ''
-				endif
-			endfor
-
 			" ctags has good support for PHP, use tags file for external
 			" variables
 			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
@@ -143,17 +152,15 @@ function! phpcomplete#CompletePHP(findstart, base)
 				exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
 				let qflist = getqflist()
 				for field in qflist
-					" Add space to make more space between 'word' and 'menu'
-					let item = matchstr(field['text'], '^\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-					" Filename is unnecessary - and even darkens situation
-					" let fname = ' '.matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
+					let item = matchstr(field['text'], '^[^[:space:]]\+')
 					" Add -> if it is possible object declaration
-					if field['text'] =~ item.'\s*=\s*new\s*'
+					let classname = ''
+					if field['text'] =~ item.'\s*=\s*new\s\+'
 						let item = item.'->'
 						let classname = matchstr(field['text'], 
-									\ '=\s*new\s*\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+								\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 					endif
-					let ext_vars[item] = classname
+					let ext_vars[adddollar.item] = classname
 				endfor
 			endif
 
@@ -162,14 +169,17 @@ function! phpcomplete#CompletePHP(findstart, base)
 
 			" Internal solution for finding functions in current file.
 			let file = getline(1, '$')
-			call filter(file, 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
+			call filter(file, 
+					\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
 			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 			let jfile = join(file, ' ')
 			let int_values = split(jfile, 'function\s\+')
 			let int_functions = {}
 			for i in int_values
-				let f_name = matchstr(i, '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-				let f_args = matchstr(i, '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)')
+				let f_name = matchstr(i, 
+						\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+				let f_args = matchstr(i, 
+						\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
 				let int_functions[f_name.'('] = f_args
 			endfor
 
@@ -178,40 +188,43 @@ function! phpcomplete#CompletePHP(findstart, base)
 			if fnames != ''
 				exe 'silent! vimgrep /^'.a:base.'.*\tf\(\t\|$\)/j '.fnames
 				let qflist = getqflist()
-				let ext_functions = {}
 				for field in qflist
 					" File name
-					let item = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-					let fname = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
-					let prototype = matchstr(field['text'], 'function\s\+[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)')
-					if prototype == ''
-						let prototype = '()'
-					endif
-					let ext_functions[item.'('] = prototype.' - '.fname
+					let item = matchstr(field['text'], '^[^[:space:]]\+')
+					let fname = matchstr(field['text'], '\t\zs\f\+\ze')
+					let prototype = matchstr(field['text'], 
+							\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
+					let ext_functions[item.'('] = prototype.') - '.fname
 				endfor
 			endif
 
 			let all_values = {}
 			call extend(all_values, int_functions)
 			call extend(all_values, ext_functions)
-			call extend(all_values, int_vars)
+			call extend(all_values, int_vars) " external variables are already in
+			call extend(all_values, g:php_builtin_object_functions)
 
 			for m in sort(keys(all_values))
-				if m =~ '^'.a:base
+				if m =~ '\(^\|::\)'.a:base
 					call add(res, m)
-				elseif m =~ a:base
-					call add(res2, m)
 				endif
 			endfor
 
-			let start_list = res + res2
+			let start_list = res
 
 			let final_list = []
 			for i in start_list
 				if has_key(int_vars, i)
-					let final_list += [{'word':i, 'menu':all_values[i], 'kind':'v'}]
+					let class = ' '
+					if all_values[i] != ''
+						let class = i.' class '
+					endif
+					let final_list += [{'word':i, 'info':class.all_values[i], 'kind':'v'}]
 				else
-					let final_list += [{'word':i, 'menu':all_values[i], 'kind':'f'}]
+					let final_list += 
+							\ [{'word':substitute(i, '.*::', '', ''), 
+							\   'info':i.all_values[i],
+							\   'kind':'f'}]
 				endif
 			endfor
 
@@ -220,80 +233,95 @@ function! phpcomplete#CompletePHP(findstart, base)
 
 		if a:base =~ '^\$'
 			" Complete variables
-			let b:php_builtin_vars = ['$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_COOKIE', 
-				\ '$_FILES', '$_ENV', '$_REQUEST', '$_SESSION', '$HTTP_SERVER_VARS',
-				\ '$HTTP_ENV_VARS', '$HTTP_COOKIE_VARS', '$HTTP_GET_VARS', '$HTTP_POST_VARS',
-				\ '$HTTP_POST_FILES', '$HTTP_SESSION_VARS', '$php_errormsg', '$this',
-				\ ]
+			" Built-in variables {{{
+			let g:php_builtin_vars = {'$GLOBALS':'',
+									\ '$_SERVER':'',
+									\ '$_GET':'',
+									\ '$_POST':'',
+									\ '$_COOKIE':'',
+									\ '$_FILES':'',
+									\ '$_ENV':'',
+									\ '$_REQUEST':'',
+									\ '$_SESSION':'',
+									\ '$HTTP_SERVER_VARS':'',
+									\ '$HTTP_ENV_VARS':'',
+									\ '$HTTP_COOKIE_VARS':'',
+									\ '$HTTP_GET_VARS':'',
+									\ '$HTTP_POST_VARS':'',
+									\ '$HTTP_POST_FILES':'',
+									\ '$HTTP_SESSION_VARS':'',
+									\ '$php_errormsg':'',
+									\ '$this':''
+									\ }
+			" }}}
 
 			" Internal solution for current file.
 			let file = getline(1, '$')
 			let jfile = join(file, ' ')
 			let int_vals = split(jfile, '\ze\$')
-			" call map(int_values, 'matchstr(v:val, "^\\$[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*")')
-			let int_values = []
+			let int_vars = {}
 			for i in int_vals
 				if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
-					let val = matchstr(i, '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
+					let val = matchstr(i, 
+							\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
 				else
-					let val = matchstr(i, '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
+					let val = matchstr(i, 
+							\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
 				endif
-				let int_values += [val]
+				if val != ''
+					let int_vars[val] = ''
+				endif
 			endfor
 
-
-			"call map(int_values, '"$".v:val')
-			"
-			let int_values += b:php_builtin_vars
-
+			call extend(int_vars,g:php_builtin_vars)
 			
-			for m in sort(int_values)
-				if m =~ '^'.a:base
-					call add(res, m)
-				elseif m =~ a:base
-					call add(res2, m)
-				endif
-			endfor
-
-			let int_list = res + res2
-
-			let int_dict = []
-			for i in int_list
-				let int_dict += [{'word':i, 'kind':'v'}]
-			endfor
-
 			" ctags has good support for PHP, use tags file for external
 			" variables
 			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+			let ext_vars = {}
 			if fnames != ''
 				let sbase = substitute(a:base, '^\$', '', '')
 				exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
 				let qflist = getqflist()
-				let ext_dict = []
 				for field in qflist
-					" Filename is unnecessary - and even darkens situation
-					" let m_menu = matchstr(field['text'], 
-					" \ '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
+					let item = '$'.matchstr(field['text'], '^[^[:space:]]\+')
 					let m_menu = ''
-					let item = '$'.matchstr(field['text'], 
-								\ '^\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
 					" Add -> if it is possible object declaration
-					if field['text'] =~ item.'\s*=\s*new\s*'
+					" How to detect if previous line is help line?
+					if field['text'] =~ item.'\s*=\s*new\s\+'
 						let item = item.'->'
-						let classname = matchstr(field['text'], 
-									\ '=\s*new\s*\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-						let m_menu = classname
+						let m_menu = matchstr(field['text'], 
+								\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 					endif
-					
-					let ext_dict += [{'word':item, 'menu':m_menu, 'kind':'v'}]
+					let ext_vars[item] = m_menu
 				endfor
-			else
-				let ext_dict = []
 			endif
 
-			let b:php_menu = int_dict + ext_dict
+			call extend(int_vars, ext_vars)
+			let g:a0 = keys(int_vars)
 
-			return b:php_menu
+			for m in sort(keys(int_vars))
+				if m =~ '^\'.a:base
+					call add(res, m)
+				endif
+			endfor
+
+			let int_list = res
+
+			let int_dict = []
+			for i in int_list
+				if int_vars[i] != ''
+					let class = ' '
+					if int_vars[i] != ''
+						let class = i.' class '
+					endif
+					let int_dict += [{'word':i, 'info':class.int_vars[i], 'kind':'v'}]
+				else
+					let int_dict += [{'word':i, 'kind':'v'}]
+				endif
+			endfor
+
+			return int_dict
 
 		else
 			" Complete everything else - 
@@ -302,10 +330,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 			"  + defines (constant definitions), DONE
 			"  + extend keywords for predefined constants, DONE
 			"  + classes (after new), DONE
-			"  - limit choice after -> and :: to funcs and vars
-			if !exists('b:php_builtin_functions')
-				call phpcomplete#LoadData()
-			endif
+			"  + limit choice after -> and :: to funcs and vars DONE
 
 			" Internal solution for finding functions in current file.
 			let file = getline(1, '$')
@@ -315,9 +340,11 @@ function! phpcomplete#CompletePHP(findstart, base)
 			let int_values = split(jfile, 'function\s\+')
 			let int_functions = {}
 			for i in int_values
-				let f_name = matchstr(i, '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-				let f_args = matchstr(i, '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)')
-				let int_functions[f_name.'('] = f_args
+				let f_name = matchstr(i, 
+						\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+				let f_args = matchstr(i, 
+						\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\s*\zs.\{-}\ze\s*)\_s*{')
+				let int_functions[f_name.'('] = f_args.')'
 			endfor
 
 			" Prepare list of functions from tags file
@@ -327,19 +354,17 @@ function! phpcomplete#CompletePHP(findstart, base)
 				let qflist = getqflist()
 				for field in qflist
 					" File name
-					let item = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-					let fname = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
-					let prototype = matchstr(field['text'], 'function\s\+[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)')
-					if prototype == ''
-						let prototype = '()'
-					endif
-					let ext_functions[item.'('] = prototype.' - '.fname
+					let item = matchstr(field['text'], '^[^[:space:]]\+')
+					let fname = matchstr(field['text'], '\t\zs\f\+\ze')
+					let prototype = matchstr(field['text'], 
+							\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
+					let ext_functions[item.'('] = prototype.') - '.fname
 				endfor
 			endif
 
 			" All functions
 			call extend(int_functions, ext_functions)
-			call extend(int_functions, b:php_builtin_functions)
+			call extend(int_functions, g:php_builtin_functions)
 
 			" Internal solution for finding constants in current file
 			let file = getline(1, '$')
@@ -351,7 +376,9 @@ function! phpcomplete#CompletePHP(findstart, base)
 				let c_name = matchstr(i, '\(["'']\)\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze\1')
 				" let c_value = matchstr(i, 
 				" \ '\(["'']\)[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\1\s*,\s*\zs.\{-}\ze\s*)')
-				let int_constants[c_name] = '' " c_value
+				if c_name != ''
+					let int_constants[c_name] = '' " c_value
+				endif
 			endfor
 
 			" Prepare list of constants from tags file
@@ -360,17 +387,8 @@ function! phpcomplete#CompletePHP(findstart, base)
 			if fnames != ''
 				exe 'silent! vimgrep /^'.a:base.'.*\td\(\t\|$\)/j '.fnames
 				let qflist = getqflist()
-				let ext_constants = {}
 				for field in qflist
-					" File name
-					let item = matchstr(field['text'], '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-					" Origin of definition and value only are only darkening
-					" image - drop it but leave regexps. They may be needed in
-					" future.
-					" let fname = matchstr(field['text'], 
-					" \ '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s\+\zs\f\+\ze')
-					" let cvalue = matchstr(field['text'], 
-					" \ 'define\s*(\s*\(["'']\)[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\1\s*,\s*\zs.\{-}\ze\s*)')
+					let item = matchstr(field['text'], '^[^[:space:]]\+')
 					let ext_constants[item] = ''
 				endfor
 			endif
@@ -378,7 +396,6 @@ function! phpcomplete#CompletePHP(findstart, base)
 			" All constants
 			call extend(int_constants, ext_constants)
 			" Treat keywords as constants
-			call extend(int_constants, b:php_keywords)
 
 			let all_values = {}
 
@@ -387,23 +404,26 @@ function! phpcomplete#CompletePHP(findstart, base)
 
 			" Add constants
 			call extend(all_values, int_constants)
+			" Add keywords
+			call extend(all_values, b:php_keywords)
 
 			for m in sort(keys(all_values))
 				if m =~ '^'.a:base
 					call add(res, m)
-				elseif m =~ a:base
-					call add(res2, m)
 				endif
 			endfor
 
-			let int_list = res + res2
+			let int_list = res
 
 			let final_list = []
 			for i in int_list
 				if has_key(int_functions, i)
-					let final_list += [{'word':i, 'menu':int_functions[i], 'kind':'f'}]
+					let final_list += 
+							\ [{'word':i, 
+							\   'info':i.int_functions[i],
+							\   'kind':'f'}]
 				elseif has_key(int_constants, i)
-					let final_list += [{'word':i, 'menu':int_constants[i], 'kind':'d'}]
+					let final_list += [{'word':i, 'kind':'d'}]
 				else
 					let final_list += [{'word':i}]
 				endif
@@ -757,7 +777,7 @@ let b:php_keywords = {
 "    c) :%s/^\([^[:space:]]\+\) \([^[:space:]]\+\) ( \(.*\))/\\ '\2(': '\3| \1',
 "       This will create Dictionary
 "    d) remove all /^[^\\] lines
-let b:php_builtin_functions = {
+let g:php_builtin_functions = {
 \ 'abs(': 'mixed number | number',
 \ 'acosh(': 'float arg | float',
 \ 'acos(': 'float arg | float',
@@ -821,26 +841,12 @@ let b:php_builtin_functions = {
 \ 'array_intersect_key(': 'array array1, array array2 [, array ...] | array',
 \ 'array_intersect_uassoc(': 'array array1, array array2 [, array ..., callback key_compare_func] | array',
 \ 'array_intersect_ukey(': 'array array1, array array2 [, array ..., callback key_compare_func] | array',
-\ 'ArrayIterator::current(': 'void  | mixed',
-\ 'ArrayIterator::key(': 'void  | mixed',
-\ 'ArrayIterator::next(': 'void  | void',
-\ 'ArrayIterator::rewind(': 'void  | void',
-\ 'ArrayIterator::seek(': 'int position | void',
-\ 'ArrayIterator::valid(': 'void  | bool',
 \ 'array_key_exists(': 'mixed key, array search | bool',
 \ 'array_keys(': 'array input [, mixed search_value [, bool strict]] | array',
 \ 'array_map(': 'callback callback, array arr1 [, array ...] | array',
 \ 'array_merge(': 'array array1 [, array array2 [, array ...]] | array',
 \ 'array_merge_recursive(': 'array array1 [, array ...] | array',
 \ 'array_multisort(': 'array ar1 [, mixed arg [, mixed ... [, array ...]]] | bool',
-\ 'ArrayObject::append(': 'mixed newval | void',
-\ 'ArrayObject::__construct(': 'mixed input | ArrayObject',
-\ 'ArrayObject::count(': 'void  | int',
-\ 'ArrayObject::getIterator(': 'void  | ArrayIterator',
-\ 'ArrayObject::offsetExists(': 'mixed index | bool',
-\ 'ArrayObject::offsetGet(': 'mixed index | bool',
-\ 'ArrayObject::offsetSet(': 'mixed index, mixed newval | void',
-\ 'ArrayObject::offsetUnset(': 'mixed index | void',
 \ 'array_pad(': 'array input, int pad_size, mixed pad_value | array',
 \ 'array_pop(': 'array &#38;array | mixed',
 \ 'array_product(': 'array array | number',
@@ -918,13 +924,6 @@ let b:php_builtin_functions = {
 \ 'bzopen(': 'string filename, string mode | resource',
 \ 'bzread(': 'resource bz [, int length] | string',
 \ 'bzwrite(': 'resource bz, string data [, int length] | int',
-\ 'CachingIterator::hasNext(': 'void  | bool',
-\ 'CachingIterator::next(': 'void  | void',
-\ 'CachingIterator::rewind(': 'void  | void',
-\ 'CachingIterator::__toString(': 'void  | string',
-\ 'CachingIterator::valid(': 'void  | bool',
-\ 'CachingRecursiveIterator::getChildren(': 'void  | CachingRecursiveIterator',
-\ 'CachingRecursiveIterator::hasChildren(': 'void  | bolean',
 \ 'cal_days_in_month(': 'int calendar, int month, int year | int',
 \ 'cal_from_jd(': 'int jd, int calendar | array',
 \ 'cal_info(': '[int calendar] | array',
@@ -1286,32 +1285,6 @@ let b:php_builtin_functions = {
 \ 'dio_tcsetattr(': 'resource fd, array options | bool',
 \ 'dio_truncate(': 'resource fd, int offset | bool',
 \ 'dio_write(': 'resource fd, string data [, int len] | int',
-\ 'DirectoryIterator::__construct(': 'string path | DirectoryIterator',
-\ 'DirectoryIterator::current(': 'void  | DirectoryIterator',
-\ 'DirectoryIterator::getATime(': 'void  | int',
-\ 'DirectoryIterator::getChildren(': 'void  | RecursiveDirectoryIterator',
-\ 'DirectoryIterator::getCTime(': 'void  | int',
-\ 'DirectoryIterator::getFilename(': 'void  | string',
-\ 'DirectoryIterator::getGroup(': 'void  | int',
-\ 'DirectoryIterator::getInode(': 'void  | int',
-\ 'DirectoryIterator::getMTime(': 'void  | int',
-\ 'DirectoryIterator::getOwner(': 'void  | int',
-\ 'DirectoryIterator::getPath(': 'void  | string',
-\ 'DirectoryIterator::getPathname(': 'void  | string',
-\ 'DirectoryIterator::getPerms(': 'void  | int',
-\ 'DirectoryIterator::getSize(': 'void  | int',
-\ 'DirectoryIterator::getType(': 'void  | string',
-\ 'DirectoryIterator::isDir(': 'void  | bool',
-\ 'DirectoryIterator::isDot(': 'void  | bool',
-\ 'DirectoryIterator::isExecutable(': 'void  | bool',
-\ 'DirectoryIterator::isFile(': 'void  | bool',
-\ 'DirectoryIterator::isLink(': 'void  | bool',
-\ 'DirectoryIterator::isReadable(': 'void  | bool',
-\ 'DirectoryIterator::isWritable(': 'void  | bool',
-\ 'DirectoryIterator::key(': 'void  | string',
-\ 'DirectoryIterator::next(': 'void  | void',
-\ 'DirectoryIterator::rewind(': 'void  | void',
-\ 'DirectoryIterator::valid(': 'void  | string',
 \ 'dirname(': 'string path | string',
 \ 'disk_free_space(': 'string directory | float',
 \ 'disk_total_space(': 'string directory | float',
@@ -1534,12 +1507,6 @@ let b:php_builtin_functions = {
 \ 'file_put_contents(': 'string filename, mixed data [, int flags [, resource context]] | int',
 \ 'filesize(': 'string filename | int',
 \ 'filetype(': 'string filename | string',
-\ 'FilterIterator::current(': 'void  | mixed',
-\ 'FilterIterator::getInnerIterator(': 'void  | Iterator',
-\ 'FilterIterator::key(': 'void  | mixed',
-\ 'FilterIterator::next(': 'void  | void',
-\ 'FilterIterator::rewind(': 'void  | void',
-\ 'FilterIterator::valid(': 'void  | bool',
 \ 'floatval(': 'mixed var | float',
 \ 'flock(': 'resource handle, int operation [, int &#38;wouldblock] | bool',
 \ 'floor(': 'float value | float',
@@ -2331,11 +2298,6 @@ let b:php_builtin_functions = {
 \ 'libxml_get_last_error(': 'void  | LibXMLError',
 \ 'libxml_set_streams_context(': 'resource streams_context | void',
 \ 'libxml_use_internal_errors(': '[bool use_errors] | bool',
-\ 'LimitIterator::getPosition(': 'void  | int',
-\ 'LimitIterator::next(': 'void  | void',
-\ 'LimitIterator::rewind(': 'void  | void',
-\ 'LimitIterator::seek(': 'int position | void',
-\ 'LimitIterator::valid(': 'void  | bool',
 \ 'link(': 'string target, string link | bool',
 \ 'linkinfo(': 'string path | int',
 \ 'list(': 'mixed varname, mixed ... | void',
@@ -2521,23 +2483,7 @@ let b:php_builtin_functions = {
 \ 'm_deletetrans(': 'resource conn, int identifier | bool',
 \ 'm_destroyconn(': 'resource conn | bool',
 \ 'm_destroyengine(': 'void  | void',
-\ 'Memcache::add(': 'string key, mixed var [, int flag [, int expire]] | bool',
-\ 'Memcache::addServer(': 'string host [, int port [, bool persistent [, int weight [, int timeout [, int retry_interval]]]]] | bool',
-\ 'Memcache::close(': 'void  | bool',
-\ 'Memcache::connect(': 'string host [, int port [, int timeout]] | bool',
 \ 'memcache_debug(': 'bool on_off | bool',
-\ 'Memcache::decrement(': 'string key [, int value] | int',
-\ 'Memcache::delete(': 'string key [, int timeout] | bool',
-\ 'Memcache::flush(': 'void  | bool',
-\ 'Memcache::getExtendedStats(': 'void  | array',
-\ 'Memcache::get(': 'string key | string',
-\ 'Memcache::getStats(': 'void  | array',
-\ 'Memcache::getVersion(': 'void  | string',
-\ 'Memcache::increment(': 'string key [, int value] | int',
-\ 'Memcache::pconnect(': 'string host [, int port [, int timeout]] | bool',
-\ 'Memcache::replace(': 'string key, mixed var [, int flag [, int expire]] | bool',
-\ 'Memcache::setCompressThreshold(': 'int threshold [, float min_savings] | bool',
-\ 'Memcache::set(': 'string key, mixed var [, int flag [, int expire]] | bool',
 \ 'memory_get_usage(': 'void  | int',
 \ 'metaphone(': 'string str [, int phones] | string',
 \ 'method_exists(': 'object object, string method_name | bool',
@@ -3263,10 +3209,6 @@ let b:php_builtin_functions = {
 \ 'ovrimos_result(': 'int result_id, mixed field | string',
 \ 'ovrimos_rollback(': 'int connection_id | bool',
 \ 'pack(': 'string format [, mixed args [, mixed ...]] | string',
-\ 'ParentIterator::getChildren(': 'void  | ParentIterator',
-\ 'ParentIterator::hasChildren(': 'void  | bool',
-\ 'ParentIterator::next(': 'void  | void',
-\ 'ParentIterator::rewind(': 'void  | void',
 \ 'parse_ini_file(': 'string filename [, bool process_sections] | array',
 \ 'parsekit_compile_file(': 'string filename [, array &#38;errors [, int options]] | array',
 \ 'parsekit_compile_string(': 'string phpcode [, array &#38;errors [, int options]] | array',
@@ -3428,40 +3370,6 @@ let b:php_builtin_functions = {
 \ 'pdf_utf16_to_utf8(': 'resource pdfdoc, string utf16string | string',
 \ 'pdf_utf8_to_utf16(': 'resource pdfdoc, string utf8string, string ordering | string',
 \ 'pdf_xshow(': 'resource pdfdoc, string text | bool',
-\ 'PDO::beginTransaction(': 'void  | bool',
-\ 'PDO::commit(': 'void  | bool',
-\ 'PDO::__construct(': 'string dsn [, string username [, string password [, array driver_options]]] | PDO',
-\ 'PDO::errorCode(': 'void  | string',
-\ 'PDO::errorInfo(': 'void  | array',
-\ 'PDO::exec(': 'string statement | int',
-\ 'PDO::getAttribute(': 'int attribute | mixed',
-\ 'PDO::getAvailableDrivers(': 'void  | array',
-\ 'PDO::lastInsertId(': '[string name] | string',
-\ 'PDO::prepare(': 'string statement [, array driver_options] | PDOStatement',
-\ 'PDO::query(': 'string statement | PDOStatement',
-\ 'PDO::quote(': 'string string [, int parameter_type] | string',
-\ 'PDO::rollBack(': 'void  | bool',
-\ 'PDO::setAttribute(': 'int attribute, mixed value | bool',
-\ 'PDO::sqliteCreateAggregate(': 'string function_name, callback step_func, callback finalize_func [, int num_args] | bool',
-\ 'PDO::sqliteCreateFunction(': 'string function_name, callback callback [, int num_args] | bool',
-\ 'PDOStatement::bindColumn(': 'mixed column, mixed &#38;param [, int type] | bool',
-\ 'PDOStatement::bindParam(': 'mixed parameter, mixed &#38;variable [, int data_type [, int length [, mixed driver_options]]] | bool',
-\ 'PDOStatement::bindValue(': 'mixed parameter, mixed value [, int data_type] | bool',
-\ 'PDOStatement::closeCursor(': 'void  | bool',
-\ 'PDOStatement::columnCount(': 'void  | int',
-\ 'PDOStatement::errorCode(': 'void  | string',
-\ 'PDOStatement::errorInfo(': 'void  | array',
-\ 'PDOStatement::execute(': '[array input_parameters] | bool',
-\ 'PDOStatement::fetchAll(': '[int fetch_style [, int column_index]] | array',
-\ 'PDOStatement::fetchColumn(': '[int column_number] | string',
-\ 'PDOStatement::fetch(': '[int fetch_style [, int cursor_orientation [, int cursor_offset]]] | mixed',
-\ 'PDOStatement::fetchObject(': '[string class_name [, array ctor_args]] | mixed',
-\ 'PDOStatement::getAttribute(': 'int attribute | mixed',
-\ 'PDOStatement::getColumnMeta(': 'int column | mixed',
-\ 'PDOStatement::nextRowset(': 'void  | bool',
-\ 'PDOStatement::rowCount(': 'void  | int',
-\ 'PDOStatement::setAttribute(': 'int attribute, mixed value | bool',
-\ 'PDOStatement::setFetchMode(': 'int mode | bool',
 \ 'pfpro_cleanup(': 'void  | bool',
 \ 'pfpro_init(': 'void  | bool',
 \ 'pfpro_process(': 'array parameters [, string address [, int port [, int timeout [, string proxy_address [, int proxy_port [, string proxy_logon [, string proxy_password]]]]]]] | array',
@@ -3796,16 +3704,6 @@ let b:php_builtin_functions = {
 \ 'range(': 'mixed low, mixed high [, number step] | array',
 \ 'rar_close(': 'resource rar_file | bool',
 \ 'rar_entry_get(': 'resource rar_file, string entry_name | RarEntry',
-\ 'Rar::extract(': 'string dir [, string filepath] | bool',
-\ 'Rar::getAttr(': 'void  | int',
-\ 'Rar::getCrc(': 'void  | int',
-\ 'Rar::getFileTime(': 'void  | string',
-\ 'Rar::getHostOs(': 'void  | int',
-\ 'Rar::getMethod(': 'void  | int',
-\ 'Rar::getName(': 'void  | string',
-\ 'Rar::getPackedSize(': 'void  | int',
-\ 'Rar::getUnpackedSize(': 'void  | int',
-\ 'Rar::getVersion(': 'void  | int',
 \ 'rar_list(': 'resource rar_file | array',
 \ 'rar_open(': 'string filename [, string password] | resource',
 \ 'rawurldecode(': 'string str | string',
@@ -3830,18 +3728,6 @@ let b:php_builtin_functions = {
 \ 'realpath(': 'string path | string',
 \ 'recode_file(': 'string request, resource input, resource output | bool',
 \ 'recode_string(': 'string request, string string | string',
-\ 'RecursiveDirectoryIterator::getChildren(': 'void  | object',
-\ 'RecursiveDirectoryIterator::hasChildren(': '[bool allow_links] | bool',
-\ 'RecursiveDirectoryIterator::key(': 'void  | string',
-\ 'RecursiveDirectoryIterator::next(': 'void  | void',
-\ 'RecursiveDirectoryIterator::rewind(': 'void  | void',
-\ 'RecursiveIteratorIterator::current(': 'void  | mixed',
-\ 'RecursiveIteratorIterator::getDepth(': 'void  | int',
-\ 'RecursiveIteratorIterator::getSubIterator(': 'void  | RecursiveIterator',
-\ 'RecursiveIteratorIterator::key(': 'void  | mixed',
-\ 'RecursiveIteratorIterator::next(': 'void  | void',
-\ 'RecursiveIteratorIterator::rewind(': 'void  | void',
-\ 'RecursiveIteratorIterator::valid(': 'void  | bolean',
 \ 'register_shutdown_function(': 'callback function [, mixed parameter [, mixed ...]] | void',
 \ 'register_tick_function(': 'callback function [, mixed arg [, mixed ...]] | bool',
 \ 'rename_function(': 'string original_name, string new_name | bool',
@@ -3889,74 +3775,6 @@ let b:php_builtin_functions = {
 \ 'satellite_load_idl(': 'string file | bool',
 \ 'satellite_object_to_string(': 'object obj | string',
 \ 'scandir(': 'string directory [, int sorting_order [, resource context]] | array',
-\ 'SDO_DAS_ChangeSummary::beginLogging(': 'void  | void',
-\ 'SDO_DAS_ChangeSummary::endLogging(': 'void  | void',
-\ 'SDO_DAS_ChangeSummary::getChangedDataObjects(': 'void  | SDO_List',
-\ 'SDO_DAS_ChangeSummary::getChangeType(': 'SDO_DataObject dataObject | int',
-\ 'SDO_DAS_ChangeSummary::getOldContainer(': 'SDO_DataObject data_object | SDO_DataObject',
-\ 'SDO_DAS_ChangeSummary::getOldValues(': 'SDO_DataObject data_object | SDO_List',
-\ 'SDO_DAS_ChangeSummary::isLogging(': 'void  | bool',
-\ 'SDO_DAS_DataFactory::addPropertyToType(': 'string parent_type_namespace_uri, string parent_type_name, string property_name, string type_namespace_uri, string type_name [, array options] | void',
-\ 'SDO_DAS_DataFactory::addType(': 'string type_namespace_uri, string type_name [, array options] | void',
-\ 'SDO_DAS_DataFactory::getDataFactory(': 'void  | SDO_DAS_DataFactory',
-\ 'SDO_DAS_DataObject::getChangeSummary(': 'void  | SDO_DAS_ChangeSummary',
-\ 'SDO_DAS_Relational::applyChanges(': 'PDO database_handle, SDODataObject root_data_object | void',
-\ 'SDO_DAS_Relational::__construct(': 'array database_metadata [, string application_root_type [, array SDO_containment_references_metadata]] | SDO_DAS_Relational',
-\ 'SDO_DAS_Relational::createRootDataObject(': 'void  | SDODataObject',
-\ 'SDO_DAS_Relational::executePreparedQuery(': 'PDO database_handle, PDOStatement prepared_statement, array value_list [, array column_specifier] | SDODataObject',
-\ 'SDO_DAS_Relational::executeQuery(': 'PDO database_handle, string SQL_statement [, array column_specifier] | SDODataObject',
-\ 'SDO_DAS_Setting::getListIndex(': 'void  | int',
-\ 'SDO_DAS_Setting::getPropertyIndex(': 'void  | int',
-\ 'SDO_DAS_Setting::getPropertyName(': 'void  | string',
-\ 'SDO_DAS_Setting::getValue(': 'void  | mixed',
-\ 'SDO_DAS_Setting::isSet(': 'void  | bool',
-\ 'SDO_DAS_XML::addTypes(': 'string xsd_file | void',
-\ 'SDO_DAS_XML::createDataObject(': 'string namespace_uri, string type_name | SDO_DataObject',
-\ 'SDO_DAS_XML::createDocument(': '[string document_element_name] | SDO_DAS_XML_Document',
-\ 'SDO_DAS_XML::create(': '[string xsd_file] | SDO_DAS_XML',
-\ 'SDO_DAS_XML_Document::getRootDataObject(': 'void  | SDO_DataObject',
-\ 'SDO_DAS_XML_Document::getRootElementName(': 'void  | string',
-\ 'SDO_DAS_XML_Document::getRootElementURI(': 'void  | string',
-\ 'SDO_DAS_XML_Document::setEncoding(': 'string encoding | void',
-\ 'SDO_DAS_XML_Document::setXMLDeclaration(': 'bool xmlDeclatation | void',
-\ 'SDO_DAS_XML_Document::setXMLVersion(': 'string xmlVersion | void',
-\ 'SDO_DAS_XML::loadFile(': 'string xml_file | SDO_XMLDocument',
-\ 'SDO_DAS_XML::loadString(': 'string xml_string | SDO_DAS_XML_Document',
-\ 'SDO_DAS_XML::saveFile(': 'SDO_XMLDocument xdoc, string xml_file [, int indent] | void',
-\ 'SDO_DAS_XML::saveString(': 'SDO_XMLDocument xdoc [, int indent] | string',
-\ 'SDO_DataFactory::create(': 'string type_namespace_uri, string type_name | void',
-\ 'SDO_DataObject::clear(': 'void  | void',
-\ 'SDO_DataObject::createDataObject(': 'mixed identifier | SDO_DataObject',
-\ 'SDO_DataObject::getContainer(': 'void  | SDO_DataObject',
-\ 'SDO_DataObject::getSequence(': 'void  | SDO_Sequence',
-\ 'SDO_DataObject::getTypeName(': 'void  | string',
-\ 'SDO_DataObject::getTypeNamespaceURI(': 'void  | string',
-\ 'SDO_Exception::getCause(': 'void  | mixed',
-\ 'SDO_List::insert(': 'mixed value [, int index] | void',
-\ 'SDO_Model_Property::getContainingType(': 'void  | SDO_Model_Type',
-\ 'SDO_Model_Property::getDefault(': 'void  | mixed',
-\ 'SDO_Model_Property::getName(': 'void  | string',
-\ 'SDO_Model_Property::getType(': 'void  | SDO_Model_Type',
-\ 'SDO_Model_Property::isContainment(': 'void  | bool',
-\ 'SDO_Model_Property::isMany(': 'void  | bool',
-\ 'SDO_Model_ReflectionDataObject::__construct(': 'SDO_DataObject data_object | SDO_Model_ReflectionDataObject',
-\ 'SDO_Model_ReflectionDataObject::export(': 'SDO_Model_ReflectionDataObject rdo [, bool return] | mixed',
-\ 'SDO_Model_ReflectionDataObject::getContainmentProperty(': 'void  | SDO_Model_Property',
-\ 'SDO_Model_ReflectionDataObject::getInstanceProperties(': 'void  | array',
-\ 'SDO_Model_ReflectionDataObject::getType(': 'void  | SDO_Model_Type',
-\ 'SDO_Model_Type::getBaseType(': 'void  | SDO_Model_Type',
-\ 'SDO_Model_Type::getName(': 'void  | string',
-\ 'SDO_Model_Type::getNamespaceURI(': 'void  | string',
-\ 'SDO_Model_Type::getProperties(': 'void  | array',
-\ 'SDO_Model_Type::getProperty(': 'mixed identifier | SDO_Model_Property',
-\ 'SDO_Model_Type::isAbstractType(': 'void  | bool',
-\ 'SDO_Model_Type::isDataType(': 'void  | bool',
-\ 'SDO_Model_Type::isInstance(': 'SDO_DataObject data_object | bool',
-\ 'SDO_Model_Type::isOpenType(': 'void  | bool',
-\ 'SDO_Model_Type::isSequencedType(': 'void  | bool',
-\ 'SDO_Sequence::getProperty(': 'int sequence_index | SDO_Model_Property',
-\ 'SDO_Sequence::insert(': 'mixed value [, int sequenceIndex [, mixed propertyIdentifier]] | void',
-\ 'SDO_Sequence::move(': 'int toIndex, int fromIndex | void',
 \ 'sem_acquire(': 'resource sem_identifier | bool',
 \ 'sem_get(': 'int key [, int max_acquire [, int perm [, int auto_release]]] | resource',
 \ 'sem_release(': 'resource sem_identifier | bool',
@@ -4036,13 +3854,6 @@ let b:php_builtin_functions = {
 \ 'simplexml_element-&#62;children(': '[string nsprefix] | SimpleXMLElement',
 \ 'SimpleXMLElement-&#62;xpath(': 'string path | array',
 \ 'simplexml_import_dom(': 'DOMNode node [, string class_name] | SimpleXMLElement',
-\ 'SimpleXMLIterator::current(': 'void  | mixed',
-\ 'SimpleXMLIterator::getChildren(': 'void  | object',
-\ 'SimpleXMLIterator::hasChildren(': 'void  | bool',
-\ 'SimpleXMLIterator::key(': 'void  | mixed',
-\ 'SimpleXMLIterator::next(': 'void  | void',
-\ 'SimpleXMLIterator::rewind(': 'void  | void',
-\ 'SimpleXMLIterator::valid(': 'void  | bool',
 \ 'simplexml_load_file(': 'string filename [, string class_name [, int options]] | object',
 \ 'simplexml_load_string(': 'string data [, string class_name [, int options]] | object',
 \ 'sinh(': 'float arg | float',
@@ -4325,13 +4136,11 @@ let b:php_builtin_functions = {
 \ 'swfbitmap-&#62;getwidth(': 'void  | float',
 \ 'swfbitmap(': 'mixed file [, mixed alphafile] | SWFBitmap',
 \ 'swfbutton-&#62;addaction(': 'resource action, int flags | void',
-\ 'SWFButton::addASound(': 'SWFSound sound, int flags | SWFSoundInstance',
 \ 'swfbutton-&#62;addshape(': 'resource shape, int flags | void',
 \ 'swfbutton(': 'void  | SWFButton',
 \ 'swfbutton-&#62;setaction(': 'resource action | void',
 \ 'swfbutton-&#62;setdown(': 'resource shape | void',
 \ 'swfbutton-&#62;sethit(': 'resource shape | void',
-\ 'SWFButton::setMenu(': 'int flag | void',
 \ 'swfbutton-&#62;setover(': 'resource shape | void',
 \ 'swfbutton-&#62;setup(': 'resource shape | void',
 \ 'swf_closefile(': '[int return_file] | void',
@@ -4341,16 +4150,7 @@ let b:php_builtin_functions = {
 \ 'swf_definepoly(': 'int objid, array coords, int npoints, float width | void',
 \ 'swf_definerect(': 'int objid, float x1, float y1, float x2, float y2, float width | void',
 \ 'swf_definetext(': 'int objid, string str, int docenter | void',
-\ 'SWFDisplayItem::addAction(': 'SWFAction action, int flags | void',
 \ 'swfdisplayitem-&#62;addcolor(': 'int red, int green, int blue [, int a] | void',
-\ 'SWFDisplayItem::endMask(': 'void  | void',
-\ 'SWFDisplayItem::getRot(': 'void  | float',
-\ 'SWFDisplayItem::getX(': 'void  | float',
-\ 'SWFDisplayItem::getXScale(': 'void  | float',
-\ 'SWFDisplayItem::getXSkew(': 'void  | float',
-\ 'SWFDisplayItem::getY(': 'void  | float',
-\ 'SWFDisplayItem::getYScale(': 'void  | float',
-\ 'SWFDisplayItem::getYSkew(': 'void  | float',
 \ 'swfdisplayitem-&#62;move(': 'int dx, int dy | void',
 \ 'swfdisplayitem-&#62;moveto(': 'int x, int y | void',
 \ 'swfdisplayitem-&#62;multcolor(': 'int red, int green, int blue [, int a] | void',
@@ -4360,8 +4160,6 @@ let b:php_builtin_functions = {
 \ 'swfdisplayitem-&#62;scale(': 'int dx, int dy | void',
 \ 'swfdisplayitem-&#62;scaleto(': 'int x [, int y] | void',
 \ 'swfdisplayitem-&#62;setdepth(': 'float depth | void',
-\ 'SWFDisplayItem::setMaskLevel(': 'int level | void',
-\ 'SWFDisplayItem::setMatrix(': 'float a, float b, float c, float d, float x, float y | void',
 \ 'swfdisplayitem-&#62;setname(': 'string name | void',
 \ 'swfdisplayitem-&#62;setratio(': 'float ratio | void',
 \ 'swfdisplayitem-&#62;skewx(': 'float ddegrees | void',
@@ -4378,13 +4176,6 @@ let b:php_builtin_functions = {
 \ 'swffill-&#62;scaleto(': 'int x [, int y] | void',
 \ 'swffill-&#62;skewxto(': 'float x | void',
 \ 'swffill-&#62;skewyto(': 'float y | void',
-\ 'SWFFontChar::addChars(': 'string char | void',
-\ 'SWFFontChar::addUTF8Chars(': 'string char | void',
-\ 'SWFFont::getAscent(': 'void  | float',
-\ 'SWFFont::getDescent(': 'void  | float',
-\ 'SWFFont::getLeading(': 'void  | float',
-\ 'SWFFont::getShape(': 'int code | string',
-\ 'SWFFont::getUTF8Width(': 'string string | float',
 \ 'swffont-&#62;getwidth(': 'string string | float',
 \ 'swffont(': 'string filename | SWFFont',
 \ 'swf_fontsize(': 'float size | void',
@@ -4401,26 +4192,17 @@ let b:php_builtin_functions = {
 \ 'swfmorph-&#62;getshape1(': 'void  | mixed',
 \ 'swfmorph-&#62;getshape2(': 'void  | mixed',
 \ 'swfmorph(': 'void  | SWFMorph',
-\ 'SWFMovie::addExport(': 'SWFCharacter char, string name | void',
-\ 'SWFMovie::addFont(': 'SWFFont font | SWFFontChar',
 \ 'swfmovie-&#62;add(': 'resource instance | void',
 \ 'swfmovie(': 'void  | SWFMovie',
-\ 'SWFMovie::importChar(': 'string libswf, string name | SWFSprite',
-\ 'SWFMovie::importFont(': 'string libswf, string name | SWFFontChar',
-\ 'SWFMovie::labelFrame(': 'string label | void',
 \ 'swfmovie-&#62;nextframe(': 'void  | void',
 \ 'swfmovie-&#62;output(': '[int compression] | int',
 \ 'swfmovie-&#62;remove(': 'resource instance | void',
 \ 'swfmovie-&#62;save(': 'string filename [, int compression] | int',
-\ 'SWFMovie::saveToFile(': 'stream x [, int compression] | int',
 \ 'swfmovie-&#62;setbackground(': 'int red, int green, int blue | void',
 \ 'swfmovie-&#62;setdimension(': 'int width, int height | void',
 \ 'swfmovie-&#62;setframes(': 'string numberofframes | void',
 \ 'swfmovie-&#62;setrate(': 'int rate | void',
-\ 'SWFMovie::startSound(': 'SWFSound sound | SWFSoundInstance',
-\ 'SWFMovie::stopSound(': 'SWFSound sound | void',
 \ 'swfmovie-&#62;streammp3(': 'mixed mp3File | void',
-\ 'SWFMovie::writeExports(': 'void  | void',
 \ 'swf_mulcolor(': 'float r, float g, float b, float a | void',
 \ 'swf_nextid(': 'void  | int',
 \ 'swf_oncondition(': 'int transition | void',
@@ -4443,13 +4225,8 @@ let b:php_builtin_functions = {
 \ 'swf_shapearc(': 'float x, float y, float r, float ang1, float ang2 | void',
 \ 'swf_shapecurveto3(': 'float x1, float y1, float x2, float y2, float x3, float y3 | void',
 \ 'swf_shapecurveto(': 'float x1, float y1, float x2, float y2 | void',
-\ 'SWFShape::drawArc(': 'float r, float startAngle, float endAngle | void',
-\ 'SWFShape::drawCircle(': 'float r | void',
-\ 'SWFShape::drawCubic(': 'float bx, float by, float cx, float cy, float dx, float dy | int',
-\ 'SWFShape::drawCubicTo(': 'float bx, float by, float cx, float cy, float dx, float dy | int',
 \ 'swfshape-&#62;drawcurve(': 'int controldx, int controldy, int anchordx, int anchordy [, int targetdx, int targetdy] | int',
 \ 'swfshape-&#62;drawcurveto(': 'int controlx, int controly, int anchorx, int anchory [, int targetx, int targety] | int',
-\ 'SWFShape::drawGlyph(': 'SWFFont font, string character [, int size] | void',
 \ 'swfshape-&#62;drawline(': 'int dx, int dy | void',
 \ 'swfshape-&#62;drawlineto(': 'int x, int y | void',
 \ 'swf_shapefillbitmapclip(': 'int bitmapid | void',
@@ -4467,25 +4244,16 @@ let b:php_builtin_functions = {
 \ 'swfshape-&#62;setrightfill(': 'swfgradient fill | void',
 \ 'swf_showframe(': 'void  | void',
 \ 'SWFSound(': 'string filename, int flags | SWFSound',
-\ 'SWFSoundInstance::loopCount(': 'int point | void',
-\ 'SWFSoundInstance::loopInPoint(': 'int point | void',
-\ 'SWFSoundInstance::loopOutPoint(': 'int point | void',
-\ 'SWFSoundInstance::noMultiple(': 'void  | void',
 \ 'swfsprite-&#62;add(': 'resource object | void',
 \ 'swfsprite(': 'void  | SWFSprite',
-\ 'SWFSprite::labelFrame(': 'string label | void',
 \ 'swfsprite-&#62;nextframe(': 'void  | void',
 \ 'swfsprite-&#62;remove(': 'resource object | void',
 \ 'swfsprite-&#62;setframes(': 'int numberofframes | void',
-\ 'SWFSprite::startSound(': 'SWFSound sound | SWFSoundInstance',
-\ 'SWFSprite::stopSound(': 'SWFSound sound | void',
 \ 'swf_startbutton(': 'int objid, int type | void',
 \ 'swf_startdoaction(': 'void  | void',
 \ 'swf_startshape(': 'int objid | void',
 \ 'swf_startsymbol(': 'int objid | void',
 \ 'swftext-&#62;addstring(': 'string string | void',
-\ 'SWFText::addUTF8String(': 'string text | void',
-\ 'SWFTextField::addChars(': 'string chars | void',
 \ 'swftextfield-&#62;addstring(': 'string string | void',
 \ 'swftextfield-&#62;align(': 'int alignement | void',
 \ 'swftextfield(': '[int flags] | SWFTextField',
@@ -4498,12 +4266,7 @@ let b:php_builtin_functions = {
 \ 'swftextfield-&#62;setlinespacing(': 'int height | void',
 \ 'swftextfield-&#62;setmargins(': 'int left, int right | void',
 \ 'swftextfield-&#62;setname(': 'string name | void',
-\ 'SWFTextField::setPadding(': 'float padding | void',
 \ 'swftextfield-&#62;setrightmargin(': 'int width | void',
-\ 'SWFText::getAscent(': 'void  | float',
-\ 'SWFText::getDescent(': 'void  | float',
-\ 'SWFText::getLeading(': 'void  | float',
-\ 'SWFText::getUTF8Width(': 'string string | float',
 \ 'swftext-&#62;getwidth(': 'string string | float',
 \ 'swftext(': 'void  | SWFText',
 \ 'swftext-&#62;moveto(': 'int x, int y | void',
@@ -4513,9 +4276,7 @@ let b:php_builtin_functions = {
 \ 'swftext-&#62;setspacing(': 'float spacing | void',
 \ 'swf_textwidth(': 'string str | float',
 \ 'swf_translate(': 'float x, float y, float z | void',
-\ 'SWFVideoStream::getNumFrames(': 'void  | int',
 \ 'SWFVideoStream(': '[string file] | SWFVideoStream',
-\ 'SWFVideoStream::setDimension(': 'int x, int y | void',
 \ 'swf_viewport(': 'float xmin, float xmax, float ymin, float ymax | void',
 \ 'sybase_affected_rows(': '[resource link_identifier] | int',
 \ 'sybase_close(': '[resource link_identifier] | bool',
@@ -4553,7 +4314,6 @@ let b:php_builtin_functions = {
 \ 'textdomain(': 'string text_domain | string',
 \ 'tidy_access_count(': 'tidy object | int',
 \ 'tidy_config_count(': 'tidy object | int',
-\ 'tidy::__construct(': '[string filename [, mixed config [, string encoding [, bool use_include_path]]]] | tidy',
 \ 'tidy_error_count(': 'tidy object | int',
 \ 'tidy_get_output(': 'tidy object | string',
 \ 'tidy_load_config(': 'string filename, string encoding | void',
@@ -4868,6 +4628,270 @@ let b:php_builtin_functions = {
 \ 'zlib_get_coding_type(': 'void  | string'
 \ }
 " }}}
+" built-in object functions {{{
+let g:php_builtin_object_functions = {
+\ 'ArrayIterator::current(': 'void  | mixed',
+\ 'ArrayIterator::key(': 'void  | mixed',
+\ 'ArrayIterator::next(': 'void  | void',
+\ 'ArrayIterator::rewind(': 'void  | void',
+\ 'ArrayIterator::seek(': 'int position | void',
+\ 'ArrayIterator::valid(': 'void  | bool',
+\ 'ArrayObject::append(': 'mixed newval | void',
+\ 'ArrayObject::__construct(': 'mixed input | ArrayObject',
+\ 'ArrayObject::count(': 'void  | int',
+\ 'ArrayObject::getIterator(': 'void  | ArrayIterator',
+\ 'ArrayObject::offsetExists(': 'mixed index | bool',
+\ 'ArrayObject::offsetGet(': 'mixed index | bool',
+\ 'ArrayObject::offsetSet(': 'mixed index, mixed newval | void',
+\ 'ArrayObject::offsetUnset(': 'mixed index | void',
+\ 'CachingIterator::hasNext(': 'void  | bool',
+\ 'CachingIterator::next(': 'void  | void',
+\ 'CachingIterator::rewind(': 'void  | void',
+\ 'CachingIterator::__toString(': 'void  | string',
+\ 'CachingIterator::valid(': 'void  | bool',
+\ 'CachingRecursiveIterator::getChildren(': 'void  | CachingRecursiveIterator',
+\ 'CachingRecursiveIterator::hasChildren(': 'void  | bolean',
+\ 'DirectoryIterator::__construct(': 'string path | DirectoryIterator',
+\ 'DirectoryIterator::current(': 'void  | DirectoryIterator',
+\ 'DirectoryIterator::getATime(': 'void  | int',
+\ 'DirectoryIterator::getChildren(': 'void  | RecursiveDirectoryIterator',
+\ 'DirectoryIterator::getCTime(': 'void  | int',
+\ 'DirectoryIterator::getFilename(': 'void  | string',
+\ 'DirectoryIterator::getGroup(': 'void  | int',
+\ 'DirectoryIterator::getInode(': 'void  | int',
+\ 'DirectoryIterator::getMTime(': 'void  | int',
+\ 'DirectoryIterator::getOwner(': 'void  | int',
+\ 'DirectoryIterator::getPath(': 'void  | string',
+\ 'DirectoryIterator::getPathname(': 'void  | string',
+\ 'DirectoryIterator::getPerms(': 'void  | int',
+\ 'DirectoryIterator::getSize(': 'void  | int',
+\ 'DirectoryIterator::getType(': 'void  | string',
+\ 'DirectoryIterator::isDir(': 'void  | bool',
+\ 'DirectoryIterator::isDot(': 'void  | bool',
+\ 'DirectoryIterator::isExecutable(': 'void  | bool',
+\ 'DirectoryIterator::isFile(': 'void  | bool',
+\ 'DirectoryIterator::isLink(': 'void  | bool',
+\ 'DirectoryIterator::isReadable(': 'void  | bool',
+\ 'DirectoryIterator::isWritable(': 'void  | bool',
+\ 'DirectoryIterator::key(': 'void  | string',
+\ 'DirectoryIterator::next(': 'void  | void',
+\ 'DirectoryIterator::rewind(': 'void  | void',
+\ 'DirectoryIterator::valid(': 'void  | string',
+\ 'FilterIterator::current(': 'void  | mixed',
+\ 'FilterIterator::getInnerIterator(': 'void  | Iterator',
+\ 'FilterIterator::key(': 'void  | mixed',
+\ 'FilterIterator::next(': 'void  | void',
+\ 'FilterIterator::rewind(': 'void  | void',
+\ 'FilterIterator::valid(': 'void  | bool',
+\ 'LimitIterator::getPosition(': 'void  | int',
+\ 'LimitIterator::next(': 'void  | void',
+\ 'LimitIterator::rewind(': 'void  | void',
+\ 'LimitIterator::seek(': 'int position | void',
+\ 'LimitIterator::valid(': 'void  | bool',
+\ 'Memcache::add(': 'string key, mixed var [, int flag [, int expire]] | bool',
+\ 'Memcache::addServer(': 'string host [, int port [, bool persistent [, int weight [, int timeout [, int retry_interval]]]]] | bool',
+\ 'Memcache::close(': 'void  | bool',
+\ 'Memcache::connect(': 'string host [, int port [, int timeout]] | bool',
+\ 'Memcache::decrement(': 'string key [, int value] | int',
+\ 'Memcache::delete(': 'string key [, int timeout] | bool',
+\ 'Memcache::flush(': 'void  | bool',
+\ 'Memcache::getExtendedStats(': 'void  | array',
+\ 'Memcache::get(': 'string key | string',
+\ 'Memcache::getStats(': 'void  | array',
+\ 'Memcache::getVersion(': 'void  | string',
+\ 'Memcache::increment(': 'string key [, int value] | int',
+\ 'Memcache::pconnect(': 'string host [, int port [, int timeout]] | bool',
+\ 'Memcache::replace(': 'string key, mixed var [, int flag [, int expire]] | bool',
+\ 'Memcache::setCompressThreshold(': 'int threshold [, float min_savings] | bool',
+\ 'Memcache::set(': 'string key, mixed var [, int flag [, int expire]] | bool',
+\ 'ParentIterator::getChildren(': 'void  | ParentIterator',
+\ 'ParentIterator::hasChildren(': 'void  | bool',
+\ 'ParentIterator::next(': 'void  | void',
+\ 'ParentIterator::rewind(': 'void  | void',
+\ 'PDO::beginTransaction(': 'void  | bool',
+\ 'PDO::commit(': 'void  | bool',
+\ 'PDO::__construct(': 'string dsn [, string username [, string password [, array driver_options]]] | PDO',
+\ 'PDO::errorCode(': 'void  | string',
+\ 'PDO::errorInfo(': 'void  | array',
+\ 'PDO::exec(': 'string statement | int',
+\ 'PDO::getAttribute(': 'int attribute | mixed',
+\ 'PDO::getAvailableDrivers(': 'void  | array',
+\ 'PDO::lastInsertId(': '[string name] | string',
+\ 'PDO::prepare(': 'string statement [, array driver_options] | PDOStatement',
+\ 'PDO::query(': 'string statement | PDOStatement',
+\ 'PDO::quote(': 'string string [, int parameter_type] | string',
+\ 'PDO::rollBack(': 'void  | bool',
+\ 'PDO::setAttribute(': 'int attribute, mixed value | bool',
+\ 'PDO::sqliteCreateAggregate(': 'string function_name, callback step_func, callback finalize_func [, int num_args] | bool',
+\ 'PDO::sqliteCreateFunction(': 'string function_name, callback callback [, int num_args] | bool',
+\ 'PDOStatement::bindColumn(': 'mixed column, mixed &#38;param [, int type] | bool',
+\ 'PDOStatement::bindParam(': 'mixed parameter, mixed &#38;variable [, int data_type [, int length [, mixed driver_options]]] | bool',
+\ 'PDOStatement::bindValue(': 'mixed parameter, mixed value [, int data_type] | bool',
+\ 'PDOStatement::closeCursor(': 'void  | bool',
+\ 'PDOStatement::columnCount(': 'void  | int',
+\ 'PDOStatement::errorCode(': 'void  | string',
+\ 'PDOStatement::errorInfo(': 'void  | array',
+\ 'PDOStatement::execute(': '[array input_parameters] | bool',
+\ 'PDOStatement::fetchAll(': '[int fetch_style [, int column_index]] | array',
+\ 'PDOStatement::fetchColumn(': '[int column_number] | string',
+\ 'PDOStatement::fetch(': '[int fetch_style [, int cursor_orientation [, int cursor_offset]]] | mixed',
+\ 'PDOStatement::fetchObject(': '[string class_name [, array ctor_args]] | mixed',
+\ 'PDOStatement::getAttribute(': 'int attribute | mixed',
+\ 'PDOStatement::getColumnMeta(': 'int column | mixed',
+\ 'PDOStatement::nextRowset(': 'void  | bool',
+\ 'PDOStatement::rowCount(': 'void  | int',
+\ 'PDOStatement::setAttribute(': 'int attribute, mixed value | bool',
+\ 'PDOStatement::setFetchMode(': 'int mode | bool',
+\ 'Rar::extract(': 'string dir [, string filepath] | bool',
+\ 'Rar::getAttr(': 'void  | int',
+\ 'Rar::getCrc(': 'void  | int',
+\ 'Rar::getFileTime(': 'void  | string',
+\ 'Rar::getHostOs(': 'void  | int',
+\ 'Rar::getMethod(': 'void  | int',
+\ 'Rar::getName(': 'void  | string',
+\ 'Rar::getPackedSize(': 'void  | int',
+\ 'Rar::getUnpackedSize(': 'void  | int',
+\ 'Rar::getVersion(': 'void  | int',
+\ 'RecursiveDirectoryIterator::getChildren(': 'void  | object',
+\ 'RecursiveDirectoryIterator::hasChildren(': '[bool allow_links] | bool',
+\ 'RecursiveDirectoryIterator::key(': 'void  | string',
+\ 'RecursiveDirectoryIterator::next(': 'void  | void',
+\ 'RecursiveDirectoryIterator::rewind(': 'void  | void',
+\ 'RecursiveIteratorIterator::current(': 'void  | mixed',
+\ 'RecursiveIteratorIterator::getDepth(': 'void  | int',
+\ 'RecursiveIteratorIterator::getSubIterator(': 'void  | RecursiveIterator',
+\ 'RecursiveIteratorIterator::key(': 'void  | mixed',
+\ 'RecursiveIteratorIterator::next(': 'void  | void',
+\ 'RecursiveIteratorIterator::rewind(': 'void  | void',
+\ 'RecursiveIteratorIterator::valid(': 'void  | bolean',
+\ 'SDO_DAS_ChangeSummary::beginLogging(': 'void  | void',
+\ 'SDO_DAS_ChangeSummary::endLogging(': 'void  | void',
+\ 'SDO_DAS_ChangeSummary::getChangedDataObjects(': 'void  | SDO_List',
+\ 'SDO_DAS_ChangeSummary::getChangeType(': 'SDO_DataObject dataObject | int',
+\ 'SDO_DAS_ChangeSummary::getOldContainer(': 'SDO_DataObject data_object | SDO_DataObject',
+\ 'SDO_DAS_ChangeSummary::getOldValues(': 'SDO_DataObject data_object | SDO_List',
+\ 'SDO_DAS_ChangeSummary::isLogging(': 'void  | bool',
+\ 'SDO_DAS_DataFactory::addPropertyToType(': 'string parent_type_namespace_uri, string parent_type_name, string property_name, string type_namespace_uri, string type_name [, array options] | void',
+\ 'SDO_DAS_DataFactory::addType(': 'string type_namespace_uri, string type_name [, array options] | void',
+\ 'SDO_DAS_DataFactory::getDataFactory(': 'void  | SDO_DAS_DataFactory',
+\ 'SDO_DAS_DataObject::getChangeSummary(': 'void  | SDO_DAS_ChangeSummary',
+\ 'SDO_DAS_Relational::applyChanges(': 'PDO database_handle, SDODataObject root_data_object | void',
+\ 'SDO_DAS_Relational::__construct(': 'array database_metadata [, string application_root_type [, array SDO_containment_references_metadata]] | SDO_DAS_Relational',
+\ 'SDO_DAS_Relational::createRootDataObject(': 'void  | SDODataObject',
+\ 'SDO_DAS_Relational::executePreparedQuery(': 'PDO database_handle, PDOStatement prepared_statement, array value_list [, array column_specifier] | SDODataObject',
+\ 'SDO_DAS_Relational::executeQuery(': 'PDO database_handle, string SQL_statement [, array column_specifier] | SDODataObject',
+\ 'SDO_DAS_Setting::getListIndex(': 'void  | int',
+\ 'SDO_DAS_Setting::getPropertyIndex(': 'void  | int',
+\ 'SDO_DAS_Setting::getPropertyName(': 'void  | string',
+\ 'SDO_DAS_Setting::getValue(': 'void  | mixed',
+\ 'SDO_DAS_Setting::isSet(': 'void  | bool',
+\ 'SDO_DAS_XML::addTypes(': 'string xsd_file | void',
+\ 'SDO_DAS_XML::createDataObject(': 'string namespace_uri, string type_name | SDO_DataObject',
+\ 'SDO_DAS_XML::createDocument(': '[string document_element_name] | SDO_DAS_XML_Document',
+\ 'SDO_DAS_XML::create(': '[string xsd_file] | SDO_DAS_XML',
+\ 'SDO_DAS_XML_Document::getRootDataObject(': 'void  | SDO_DataObject',
+\ 'SDO_DAS_XML_Document::getRootElementName(': 'void  | string',
+\ 'SDO_DAS_XML_Document::getRootElementURI(': 'void  | string',
+\ 'SDO_DAS_XML_Document::setEncoding(': 'string encoding | void',
+\ 'SDO_DAS_XML_Document::setXMLDeclaration(': 'bool xmlDeclatation | void',
+\ 'SDO_DAS_XML_Document::setXMLVersion(': 'string xmlVersion | void',
+\ 'SDO_DAS_XML::loadFile(': 'string xml_file | SDO_XMLDocument',
+\ 'SDO_DAS_XML::loadString(': 'string xml_string | SDO_DAS_XML_Document',
+\ 'SDO_DAS_XML::saveFile(': 'SDO_XMLDocument xdoc, string xml_file [, int indent] | void',
+\ 'SDO_DAS_XML::saveString(': 'SDO_XMLDocument xdoc [, int indent] | string',
+\ 'SDO_DataFactory::create(': 'string type_namespace_uri, string type_name | void',
+\ 'SDO_DataObject::clear(': 'void  | void',
+\ 'SDO_DataObject::createDataObject(': 'mixed identifier | SDO_DataObject',
+\ 'SDO_DataObject::getContainer(': 'void  | SDO_DataObject',
+\ 'SDO_DataObject::getSequence(': 'void  | SDO_Sequence',
+\ 'SDO_DataObject::getTypeName(': 'void  | string',
+\ 'SDO_DataObject::getTypeNamespaceURI(': 'void  | string',
+\ 'SDO_Exception::getCause(': 'void  | mixed',
+\ 'SDO_List::insert(': 'mixed value [, int index] | void',
+\ 'SDO_Model_Property::getContainingType(': 'void  | SDO_Model_Type',
+\ 'SDO_Model_Property::getDefault(': 'void  | mixed',
+\ 'SDO_Model_Property::getName(': 'void  | string',
+\ 'SDO_Model_Property::getType(': 'void  | SDO_Model_Type',
+\ 'SDO_Model_Property::isContainment(': 'void  | bool',
+\ 'SDO_Model_Property::isMany(': 'void  | bool',
+\ 'SDO_Model_ReflectionDataObject::__construct(': 'SDO_DataObject data_object | SDO_Model_ReflectionDataObject',
+\ 'SDO_Model_ReflectionDataObject::export(': 'SDO_Model_ReflectionDataObject rdo [, bool return] | mixed',
+\ 'SDO_Model_ReflectionDataObject::getContainmentProperty(': 'void  | SDO_Model_Property',
+\ 'SDO_Model_ReflectionDataObject::getInstanceProperties(': 'void  | array',
+\ 'SDO_Model_ReflectionDataObject::getType(': 'void  | SDO_Model_Type',
+\ 'SDO_Model_Type::getBaseType(': 'void  | SDO_Model_Type',
+\ 'SDO_Model_Type::getName(': 'void  | string',
+\ 'SDO_Model_Type::getNamespaceURI(': 'void  | string',
+\ 'SDO_Model_Type::getProperties(': 'void  | array',
+\ 'SDO_Model_Type::getProperty(': 'mixed identifier | SDO_Model_Property',
+\ 'SDO_Model_Type::isAbstractType(': 'void  | bool',
+\ 'SDO_Model_Type::isDataType(': 'void  | bool',
+\ 'SDO_Model_Type::isInstance(': 'SDO_DataObject data_object | bool',
+\ 'SDO_Model_Type::isOpenType(': 'void  | bool',
+\ 'SDO_Model_Type::isSequencedType(': 'void  | bool',
+\ 'SDO_Sequence::getProperty(': 'int sequence_index | SDO_Model_Property',
+\ 'SDO_Sequence::insert(': 'mixed value [, int sequenceIndex [, mixed propertyIdentifier]] | void',
+\ 'SDO_Sequence::move(': 'int toIndex, int fromIndex | void',
+\ 'SimpleXMLIterator::current(': 'void  | mixed',
+\ 'SimpleXMLIterator::getChildren(': 'void  | object',
+\ 'SimpleXMLIterator::hasChildren(': 'void  | bool',
+\ 'SimpleXMLIterator::key(': 'void  | mixed',
+\ 'SimpleXMLIterator::next(': 'void  | void',
+\ 'SimpleXMLIterator::rewind(': 'void  | void',
+\ 'SimpleXMLIterator::valid(': 'void  | bool',
+\ 'SWFButton::addASound(': 'SWFSound sound, int flags | SWFSoundInstance',
+\ 'SWFButton::setMenu(': 'int flag | void',
+\ 'SWFDisplayItem::addAction(': 'SWFAction action, int flags | void',
+\ 'SWFDisplayItem::endMask(': 'void  | void',
+\ 'SWFDisplayItem::getRot(': 'void  | float',
+\ 'SWFDisplayItem::getX(': 'void  | float',
+\ 'SWFDisplayItem::getXScale(': 'void  | float',
+\ 'SWFDisplayItem::getXSkew(': 'void  | float',
+\ 'SWFDisplayItem::getY(': 'void  | float',
+\ 'SWFDisplayItem::getYScale(': 'void  | float',
+\ 'SWFDisplayItem::getYSkew(': 'void  | float',
+\ 'SWFDisplayItem::setMaskLevel(': 'int level | void',
+\ 'SWFDisplayItem::setMatrix(': 'float a, float b, float c, float d, float x, float y | void',
+\ 'SWFFontChar::addChars(': 'string char | void',
+\ 'SWFFontChar::addUTF8Chars(': 'string char | void',
+\ 'SWFFont::getAscent(': 'void  | float',
+\ 'SWFFont::getDescent(': 'void  | float',
+\ 'SWFFont::getLeading(': 'void  | float',
+\ 'SWFFont::getShape(': 'int code | string',
+\ 'SWFFont::getUTF8Width(': 'string string | float',
+\ 'SWFMovie::addExport(': 'SWFCharacter char, string name | void',
+\ 'SWFMovie::addFont(': 'SWFFont font | SWFFontChar',
+\ 'SWFMovie::importChar(': 'string libswf, string name | SWFSprite',
+\ 'SWFMovie::importFont(': 'string libswf, string name | SWFFontChar',
+\ 'SWFMovie::labelFrame(': 'string label | void',
+\ 'SWFMovie::saveToFile(': 'stream x [, int compression] | int',
+\ 'SWFMovie::startSound(': 'SWFSound sound | SWFSoundInstance',
+\ 'SWFMovie::stopSound(': 'SWFSound sound | void',
+\ 'SWFMovie::writeExports(': 'void  | void',
+\ 'SWFShape::drawArc(': 'float r, float startAngle, float endAngle | void',
+\ 'SWFShape::drawCircle(': 'float r | void',
+\ 'SWFShape::drawCubic(': 'float bx, float by, float cx, float cy, float dx, float dy | int',
+\ 'SWFShape::drawCubicTo(': 'float bx, float by, float cx, float cy, float dx, float dy | int',
+\ 'SWFShape::drawGlyph(': 'SWFFont font, string character [, int size] | void',
+\ 'SWFSoundInstance::loopCount(': 'int point | void',
+\ 'SWFSoundInstance::loopInPoint(': 'int point | void',
+\ 'SWFSoundInstance::loopOutPoint(': 'int point | void',
+\ 'SWFSoundInstance::noMultiple(': 'void  | void',
+\ 'SWFSprite::labelFrame(': 'string label | void',
+\ 'SWFSprite::startSound(': 'SWFSound sound | SWFSoundInstance',
+\ 'SWFSprite::stopSound(': 'SWFSound sound | void',
+\ 'SWFText::addUTF8String(': 'string text | void',
+\ 'SWFTextField::addChars(': 'string chars | void',
+\ 'SWFTextField::setPadding(': 'float padding | void',
+\ 'SWFText::getAscent(': 'void  | float',
+\ 'SWFText::getDescent(': 'void  | float',
+\ 'SWFText::getLeading(': 'void  | float',
+\ 'SWFText::getUTF8Width(': 'string string | float',
+\ 'SWFVideoStream::getNumFrames(': 'void  | int',
+\ 'SWFVideoStream::setDimension(': 'int x, int y | void',
+\ 'tidy::__construct(': '[string filename [, mixed config [, string encoding [, bool use_include_path]]]] | tidy'
+\ }
+			" }}}
 " Add control structures (they are outside regular pattern of PHP functions)
 let php_control = {
 			\ 'include(': 'string filename | resource',
@@ -4875,7 +4899,7 @@ let php_control = {
 			\ 'require(': 'string filename | resource',
 			\ 'require_once(': 'string filename | resource',
 			\ }
-call extend(b:php_builtin_functions, php_control)
+call extend(g:php_builtin_functions, php_control)
 endfunction
 " }}}
 " vim:set foldmethod=marker:

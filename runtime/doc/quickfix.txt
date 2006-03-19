@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 09
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -882,13 +882,15 @@ prefixes are:
 	%Z		end of a multi-line message
 These can be used with '+' and '-', see |efm-ignore| below.
 
+Using "\n" in the pattern won't work to match multi-line messages.
+
 Example: Your compiler happens to write out errors in the following format
 (leading line numbers not being part of the actual output):
 
-     1	Error 275
-     2	line 42
-     3	column 3
-     4	' ' expected after '--'
+     1	Error 275 ~
+     2	line 42 ~
+     3	column 3 ~
+     4	' ' expected after '--' ~
 
 The appropriate error format string has to look like this: >
    :set efm=%EError\ %n,%Cline\ %l,%Ccolumn\ %c,%Z%m
@@ -927,6 +929,16 @@ starting with a space, followed by any characters to the end of the line,
 it also hides line 7 which would trigger a separate error message otherwise.
 Error format strings are always parsed pattern by pattern until the first
 match occurs.
+
+Important: There is no memory of what part of the errorformat matched before;
+every line in the error file gets a complete new run through the error format
+lines.  For example, if one has: >
+  setlocal efm=aa,bb,cc,dd,ee
+Where aa, bb, etc. are error format strings.  Each line of the error file will
+be matched to the pattern aa, then bb, then cc, etc.  Just because cc matched
+the previous error line does _not_ mean that dd will be tried first on the
+current line, even if cc and dd are multi-line errorformat strings.
+
 
 
 Separate file name			*errorformat-separate-filename*
@@ -994,14 +1006,16 @@ with previous versions of Vim.  However, it is also possible to specify
 Since meta characters of the regular expression language can be part of
 ordinary matching strings or file names (and therefore internally have to
 be escaped), meta symbols have to be written with leading '%':
-	%\		the single '\' character.  Note that this has to be
+	%\		The single '\' character.  Note that this has to be
 			escaped ("%\\") in ":set errorformat=" definitions.
-	%.		the single '.' character.
-	%#		the single '*'(!) character.
-	%^		the single '^' character.
-	%$		the single '$' character.
-	%[		the single '[' character for a [] character range.
-	%~		the single '~' character.
+	%.		The single '.' character.
+	%#		The single '*'(!) character.
+	%^		The single '^' character.  Note that this is not
+			useful, the pattern already matches start of line.
+	%$		The single '$' character.  Note that this is not
+			useful, the pattern already matches end of line.
+	%[		The single '[' character for a [] character range.
+	%~		The single '~' character.
 When using character classes in expressions (see |/\i| for an overview),
 terms containing the "\+" quantifier can be written in the scanf() "%*"
 notation.  Example: "%\\d%\\+" ("\d\+", "any number") is equivalent to "%*\\d".
