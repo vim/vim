@@ -79,10 +79,11 @@ static qf_info_T ql_info;	/* global quickfix list */
 /*
  * Structure used to hold the info of one part of 'errorformat'
  */
-struct eformat
+typedef struct efm_S efm_T;
+struct efm_S
 {
     regprog_T	    *prog;	/* pre-formatted part of 'errorformat' */
-    struct eformat  *next;	/* pointer to next (NULL if last) */
+    efm_T	    *next;	/* pointer to next (NULL if last) */
     char_u	    addr[FMT_PATTERNS]; /* indices of used % patterns */
     char_u	    prefix;	/* prefix of this format line: */
 				/*   'D' enter directory */
@@ -100,6 +101,7 @@ struct eformat
     char_u	    flags;	/* additional flags given in prefix */
 				/*   '-' do not include this line */
 				/*   '+' include whole line in message */
+    int		    conthere;	/* %> used */
 };
 
 static int	qf_init_ext __ARGS((qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
@@ -198,9 +200,10 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
     FILE	    *fd = NULL;
     qfline_T	    *qfprev = NULL;	/* init to make SASC shut up */
     char_u	    *efmp;
-    struct eformat  *fmt_first = NULL;
-    struct eformat  *fmt_last = NULL;
-    struct eformat  *fmt_ptr;
+    efm_T	    *fmt_first = NULL;
+    efm_T	    *fmt_last = NULL;
+    efm_T	    *fmt_ptr;
+    efm_T	    *fmt_start = NULL;
     char_u	    *efm;
     char_u	    *ptr;
     char_u	    *srcptr;
@@ -281,12 +284,12 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
     if ((fmtstr = alloc(i)) == NULL)
 	goto error2;
 
-    while (efm[0])
+    while (efm[0] != NUL)
     {
 	/*
 	 * Allocate a new eformat structure and put it at the end of the list
 	 */
-	fmt_ptr = (struct eformat *)alloc((unsigned)sizeof(struct eformat));
+	fmt_ptr = (efm_T *)alloc_clear((unsigned)sizeof(efm_T));
 	if (fmt_ptr == NULL)
 	    goto error2;
 	if (fmt_first == NULL)	    /* first one */
@@ -294,13 +297,6 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 	else
 	    fmt_last->next = fmt_ptr;
 	fmt_last = fmt_ptr;
-	fmt_ptr->prefix = NUL;
-	fmt_ptr->flags = NUL;
-	fmt_ptr->next = NULL;
-	fmt_ptr->prog = NULL;
-	for (round = FMT_PATTERNS; round > 0; )
-	    fmt_ptr->addr[--round] = NUL;
-	/* round is 0 now */
 
 	/*
 	 * Isolate one part in the 'errorformat' option
@@ -314,6 +310,7 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 	 */
 	ptr = fmtstr;
 	*ptr++ = '^';
+	round = 0;
 	for (efmp = efm; efmp < efm + len; ++efmp)
 	{
 	    if (*efmp == '%')
@@ -425,6 +422,8 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 		    *ptr++ = *efmp;		/* regexp magic characters */
 		else if (*efmp == '#')
 		    *ptr++ = '*';
+		else if (*efmp == '>')
+		    fmt_ptr->conthere = TRUE;
 		else if (efmp == efm + 1)		/* analyse prefix */
 		{
 		    if (vim_strchr((char_u *)"+-", *efmp) != NULL)
@@ -561,13 +560,22 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 	    *efmp = NUL;
 #endif
 
+	/* If there was no %> item start at the first pattern */
+	if (fmt_start == NULL)
+	    fmt_ptr = fmt_first;
+	else
+	{
+	    fmt_ptr = fmt_start;
+	    fmt_start = NULL;
+	}
+
 	/*
 	 * Try to match each part of 'errorformat' until we find a complete
 	 * match or no match.
 	 */
 	valid = TRUE;
 restofline:
-	for (fmt_ptr = fmt_first; fmt_ptr != NULL; fmt_ptr = fmt_ptr->next)
+	for ( ; fmt_ptr != NULL; fmt_ptr = fmt_ptr->next)
 	{
 	    idx = fmt_ptr->prefix;
 	    if (multiscan && vim_strchr((char_u *)"OPQ", idx) == NULL)
@@ -651,6 +659,7 @@ restofline:
 	    }
 	}
 	multiscan = FALSE;
+
 	if (fmt_ptr == NULL || idx == 'D' || idx == 'X')
 	{
 	    if (fmt_ptr != NULL)
@@ -677,6 +686,10 @@ restofline:
 	}
 	else if (fmt_ptr != NULL)
 	{
+	    /* honor %> item */
+	    if (fmt_ptr->conthere)
+		fmt_start = fmt_ptr;
+
 	    if (vim_strchr((char_u *)"AEWI", idx) != NULL)
 		multiline = TRUE;	/* start of a multi-line message */
 	    else if (vim_strchr((char_u *)"CZ", idx) != NULL)

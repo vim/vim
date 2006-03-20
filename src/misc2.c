@@ -2855,7 +2855,7 @@ call_shell(cmd, opt)
     }
 
 #ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_time);
 #endif
 
@@ -2905,7 +2905,7 @@ call_shell(cmd, opt)
 #ifdef FEAT_EVAL
     set_vim_var_nr(VV_SHELL_ERROR, (long)retval);
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_time);
 # endif
 #endif
@@ -2914,8 +2914,8 @@ call_shell(cmd, opt)
 }
 
 /*
- * VISUAL and OP_PENDING State are never set, they are equal to NORMAL State
- * with a condition.  This function returns the real State.
+ * VISUAL, SELECTMODE and OP_PENDING State are never set, they are equal to
+ * NORMAL State with a condition.  This function returns the real State.
  */
     int
 get_real_state()
@@ -2924,11 +2924,15 @@ get_real_state()
     {
 #ifdef FEAT_VISUAL
 	if (VIsual_active)
+	{
+	    if (VIsual_select)
+		return SELECTMODE;
 	    return VISUAL;
+	}
 	else
 #endif
 	    if (finish_op)
-	    return OP_PENDING;
+		return OP_PENDING;
     }
     return State;
 }
