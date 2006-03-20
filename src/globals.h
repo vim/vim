@@ -224,7 +224,7 @@ EXTERN int	debug_break_level INIT(= -1);	/* break below this level */
 EXTERN int	debug_did_msg INIT(= FALSE);	/* did "debug mode" message */
 EXTERN int	debug_tick INIT(= 0);		/* breakpoint change count */
 # ifdef FEAT_PROFILE
-EXTERN int	do_profiling INIT(= 0);		/* ":profile start" used */
+EXTERN int	do_profiling INIT(= PROF_NONE);	/* PROF_ values */
 # endif
 
 /*

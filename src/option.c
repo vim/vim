@@ -101,6 +101,9 @@
 #ifdef FEAT_MBYTE
 # define PV_FENC	OPT_BUF(BV_FENC)
 #endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+# define PV_BEXPR	OPT_BOTH(OPT_BUF(BV_BEXPR))
+#endif
 #ifdef FEAT_EVAL
 # define PV_FEX		OPT_BUF(BV_FEX)
 #endif
@@ -250,7 +253,7 @@ typedef enum
 #define VAR_WIN ((char_u *)-1)
 
 /*
- * These the global values for options which are also local to a buffer.
+ * These are the global values for options which are also local to a buffer.
  * Only to be used in option.c!
  */
 static int	p_ai;
@@ -581,7 +584,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
 # ifdef FEAT_EVAL
     {"balloonexpr", "bexpr", P_STRING|P_ALLOCED|P_VI_DEF|P_VIM,
-			    (char_u *)&p_bexpr, PV_NONE,
+			    (char_u *)&p_bexpr, PV_BEXPR,
 			    {(char_u *)"", (char_u *)0L}},
 # endif
 #endif
@@ -4997,6 +5000,9 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_inde);
     check_string_option(&buf->b_p_indk);
 #endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_bexpr);
+#endif
 #if defined(FEAT_EVAL)
     check_string_option(&buf->b_p_fex);
 #endif
@@ -5157,6 +5163,9 @@ insecure_flag(opt_idx, opt_flags)
 #ifdef FEAT_EVAL
 	    case PV_FDE:	return &curwin->w_p_fde_flags;
 	    case PV_FDT:	return &curwin->w_p_fdt_flags;
+# ifdef FEAT_BEVAL
+	    case PV_BEXPR:	return &curbuf->b_p_bexpr_flags;
+# endif
 #endif
 #if defined(FEAT_EVAL)
 # if defined(FEAT_CINDENT)
@@ -8784,6 +8793,9 @@ get_varp_scope(p, opt_flags)
 	    case PV_DICT: return (char_u *)&(curbuf->b_p_dict);
 	    case PV_TSR:  return (char_u *)&(curbuf->b_p_tsr);
 #endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+	    case PV_BEXPR: return (char_u *)&(curbuf->b_p_bexpr);
+#endif
 #ifdef FEAT_STL_OPT
 	    case PV_STL:  return (char_u *)&(curwin->w_p_stl);
 #endif
@@ -8838,6 +8850,10 @@ get_varp(p)
 				    ? (char_u *)&(curbuf->b_p_gp) : p->var;
 	case PV_MP:	return *curbuf->b_p_mp != NUL
 				    ? (char_u *)&(curbuf->b_p_mp) : p->var;
+#endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+	case PV_BEXPR:	return *curbuf->b_p_bexpr != NUL
+				    ? (char_u *)&(curbuf->b_p_bexpr) : p->var;
 #endif
 #ifdef FEAT_STL_OPT
 	case PV_STL:	return *curwin->w_p_stl != NUL
@@ -9367,6 +9383,9 @@ buf_copy_options(buf, flags)
 #endif
 #ifdef FEAT_TEXTOBJ
 	    buf->b_p_qe = vim_strsave(p_qe);
+#endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+	    buf->b_p_bexpr = empty_option;
 #endif
 
 	    /*

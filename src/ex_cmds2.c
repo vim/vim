@@ -1007,6 +1007,7 @@ profile_msg(tm)
 }
 
 static char_u	*profile_fname = NULL;
+static proftime_T pause_time;
 
 /*
  * ":profile cmd args"
@@ -1026,12 +1027,27 @@ ex_profile(eap)
     {
 	vim_free(profile_fname);
 	profile_fname = vim_strsave(e);
-	do_profiling = TRUE;
+	do_profiling = PROF_YES;
 	profile_zero(&prof_wait_time);
 	set_vim_var_nr(VV_PROFILING, 1L);
     }
-    else if (!do_profiling)
+    else if (do_profiling == PROF_NONE)
 	EMSG(_("E750: First use :profile start <fname>"));
+    else if (STRCMP(eap->arg, "pause") == 0)
+    {
+	if (do_profiling == PROF_YES)
+	    profile_start(&pause_time);
+	do_profiling = PROF_PAUSED;
+    }
+    else if (STRCMP(eap->arg, "continue") == 0)
+    {
+	if (do_profiling == PROF_PAUSED)
+	{
+	    profile_end(&pause_time);
+	    profile_add(&prof_wait_time, &pause_time);
+	}
+	do_profiling = PROF_YES;
+    }
     else
     {
 	/* The rest is similar to ":breakadd". */
@@ -2920,7 +2936,7 @@ do_source(fname, check_other, is_vimrc)
 
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_start);		/* entering a child now */
 # endif
 
@@ -2984,7 +3000,7 @@ do_source(fname, check_other, is_vimrc)
     }
 
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
     {
 	int	forceit;
 
@@ -3013,7 +3029,7 @@ do_source(fname, check_other, is_vimrc)
     retval = OK;
 
 #ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
     {
 	/* Get "si" again, "script_items" may have been reallocated. */
 	si = &SCRIPT_ITEM(current_SID);
@@ -3061,7 +3077,7 @@ almosttheend:
     current_SID = save_current_SID;
     restore_funccal(save_funccalp);
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		/* leaving a child now */
 # endif
 #endif
@@ -3227,7 +3243,7 @@ getsourceline(c, cookie, indent)
 	sp->dbg_tick = debug_tick;
     }
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	script_line_end();
 # endif
 #endif
@@ -3246,7 +3262,7 @@ getsourceline(c, cookie, indent)
 	++sourcing_lnum;
     }
 #ifdef FEAT_PROFILE
-    if (line != NULL && do_profiling)
+    if (line != NULL && do_profiling == PROF_YES)
 	script_line_start();
 #endif
 

@@ -910,6 +910,7 @@ enum
     , BV_ET
     , BV_FENC
 #ifdef FEAT_EVAL
+    , BV_BEXPR
     , BV_FEX
 #endif
     , BV_FF

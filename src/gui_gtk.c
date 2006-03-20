@@ -320,6 +320,19 @@ create_menu_icon(vimmenu_T *menu, GtkIconSize icon_size)
     return image;
 }
 
+/*ARGSUSED*/
+    static gint
+toolbar_button_focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
+{
+    /* When we're in a GtkPlug, we don't have window focus events, only widget focus.
+     * To emulate stand-alone gvim, if a button gets focus (e.g., <Tab> into GtkPlug)
+     * immediately pass it to mainwin.
+     */
+    if (gtk_socket_id != 0)
+        gtk_widget_grab_focus(gui.drawarea);
+
+    return TRUE;
+}
 #endif /* FEAT_TOOLBAR && HAVE_GTK2 */
 
 #if (defined(FEAT_TOOLBAR) && defined(HAVE_GTK2)) || defined(PROTO)
@@ -766,6 +779,10 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 		    G_CALLBACK(&menu_item_activate),
 		    menu,
 		    idx);
+
+            if (gtk_socket_id != 0)
+                gtk_signal_connect(GTK_OBJECT(menu->id), "focus_in_event",
+                        GTK_SIGNAL_FUNC(toolbar_button_focus_in_event), NULL);
 
 	    CONVERT_TO_UTF8_FREE(text);
 	    CONVERT_TO_UTF8_FREE(tooltip);

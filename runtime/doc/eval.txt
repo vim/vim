@@ -7157,7 +7157,7 @@ This is not guaranteed 100% secure, but it should block most attacks.
 
 							*sandbox-option*
 A few options contain an expression.  When this expression is evaluated it may
-have to be done in the sandbox to avoid a security risc.  But the sandbox is
+have to be done in the sandbox to avoid a security risk.  But the sandbox is
 restrictive, thus this only happens when the option was set from an insecure
 location.  Insecure in this context are:
 - sourcing a .vimrc or .exrc in the current directlry

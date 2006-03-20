@@ -1458,6 +1458,11 @@ struct file_buffer
     dict_T	b_vars;		/* internal variables, local to buffer */
 #endif
 
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+    char_u	*b_p_bexpr;	/* 'balloonexpr' local value */
+    long_u	b_p_bexpr_flags;/* flags for 'balloonexpr' */
+#endif
+
     /* When a buffer is created, it starts without a swap file.  b_may_swap is
      * then set to indicate that a swap file may be opened later.  It is reset
      * if a swap file could not be opened.
@@ -1618,6 +1623,10 @@ struct tabpage_S
     win_T	    *tp_lastwin;    /* last window in this Tab page */
     long	    tp_old_Rows;    /* Rows when Tab page was left */
     long	    tp_old_Columns; /* Columns when Tab page was left */
+#ifdef FEAT_GUI
+    int		    tp_prev_which_scrollbars[3];
+				    /* previous value of which_scrollbars */
+#endif
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);
@@ -2092,15 +2101,17 @@ typedef struct cursor_entry
 #define MENU_INDEX_INVALID	-1
 #define MENU_INDEX_NORMAL	0
 #define MENU_INDEX_VISUAL	1
-#define MENU_INDEX_OP_PENDING	2
-#define MENU_INDEX_INSERT	3
-#define MENU_INDEX_CMDLINE	4
-#define MENU_INDEX_TIP		5
-#define MENU_MODES		6
+#define MENU_INDEX_SELECT	2
+#define MENU_INDEX_OP_PENDING	3
+#define MENU_INDEX_INSERT	4
+#define MENU_INDEX_CMDLINE	5
+#define MENU_INDEX_TIP		6
+#define MENU_MODES		7
 
 /* Menu modes */
 #define MENU_NORMAL_MODE	(1 << MENU_INDEX_NORMAL)
 #define MENU_VISUAL_MODE	(1 << MENU_INDEX_VISUAL)
+#define MENU_SELECT_MODE	(1 << MENU_INDEX_SELECT)
 #define MENU_OP_PENDING_MODE	(1 << MENU_INDEX_OP_PENDING)
 #define MENU_INSERT_MODE	(1 << MENU_INDEX_INSERT)
 #define MENU_CMDLINE_MODE	(1 << MENU_INDEX_CMDLINE)

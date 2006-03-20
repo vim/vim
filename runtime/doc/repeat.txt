@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 07
+*repeat.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -563,8 +563,16 @@ It is only included when Vim was compiled with "huge" features.
 
 :prof[ile] start {fname}			*:prof* *:profile* *E750*
 		Start profiling, write the output in {fname} upon exit.
-		If {fname} already exists it will be overwritten.
+		If {fname} already exists it will be silently overwritten.
 		The variable |v:profiling| is set to one.
+
+:prof[ile] pause
+		Don't profile until the following ":profile continue".  Can be
+		used when doing something that should not be counted (e.g., an
+		external command).  Does not nest.
+
+:prof[ile] continue
+		Continue profiling after ":profile pause".
 
 :prof[ile] func {pattern}
 		Profile function that matches the pattern {pattern}.

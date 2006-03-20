@@ -135,7 +135,7 @@ NR == 1 { nf=split(FILENAME,f,".")
 	print "<H1>Vim documentation: " f[1] "</H1>";
 	print "<A NAME=\"top\"></A>";
 	if ( FILENAME != "help.txt" ) {
-	  print "<A HREF=\"help.html\">main help file</A>\n";
+	  print "<A HREF=\"index.html\">main help file</A>\n";
 	}
 	print "<HR>";
 	print "<PRE>";
@@ -244,7 +244,15 @@ npipe > 2 && nstar < 3 {
 				find_tag1();
 				}
 				else {
+					if ( f[1] == "index" ) {
+		printf "|<A HREF=\"vimindex.html\">" p[i] "</A>|";
+					} else {
+						if ( f[1] == "help" ) {
+		printf "|<A HREF=\"index.html\">" p[i] "</A>|";
+						} else {
 		printf "|<A HREF=\"" f[1] ".html\">" p[i] "</A>|";
+						}
+					}
 				}
 			}
 		}
@@ -373,13 +381,12 @@ END {
 
 #
 # as main we keep index.txt (by default)
-# other candidate, help.txt
 #
 function topback () {
 	if ( FILENAME != "tags" ) {
 	if ( FILENAME != "help.txt" ) {
 	printf("<A HREF=\"#top\">top</A> - ");
-	printf("<A HREF=\"help.html\">main help file</A>\n");
+	printf("<A HREF=\"index.html\">main help file</A>\n");
 	} else {
 	printf("<A HREF=\"#top\">top</A>\n");
 	}

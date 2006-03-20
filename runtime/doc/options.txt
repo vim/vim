@@ -1013,7 +1013,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						     *'balloonexpr'* *'bexpr'*
 'balloonexpr' 'bexpr'	string	(default "")
-			global
+			global or local to buffer |global-local|
 			{not in Vi}
 			{only available when compiled with the |+balloon_eval|
 			feature}
