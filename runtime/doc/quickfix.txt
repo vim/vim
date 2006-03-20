@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 19
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -878,6 +878,7 @@ prefixes are:
 	%W		start of a multi-line warning message
 	%I		start of a multi-line informational message
 	%A		start of a multi-line message (unspecified type)
+	%>		for next line start with current pattern again |efm-%>|
 	%C		continuation of a multi-line message
 	%Z		end of a multi-line message
 These can be used with '+' and '-', see |efm-ignore| below.
@@ -929,6 +930,17 @@ starting with a space, followed by any characters to the end of the line,
 it also hides line 7 which would trigger a separate error message otherwise.
 Error format strings are always parsed pattern by pattern until the first
 match occurs.
+							*efm-%>*
+The %> item can be used to avoid trying patterns that appear earlier in
+'errorformat'.  This is useful for patterns that match just about anything.
+For example, if the error looks like this:
+
+	Error in line 123 of foo.c: ~
+	unknown variable "i" ~
+
+This can be found with: >
+	:set efm=xxx,%E%>Error in line %l of %f:,%Z%m
+Where "xxx" has a pattern that would also match the second line.
 
 Important: There is no memory of what part of the errorformat matched before;
 every line in the error file gets a complete new run through the error format

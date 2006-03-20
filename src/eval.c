@@ -19382,7 +19382,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	}
     }
 #ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
     {
 	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
 	    func_do_profile(fp);
@@ -19417,7 +19417,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     }
 
 #ifdef FEAT_PROFILE
-    if (fp->uf_profiling || (fc.caller != NULL && &fc.caller->func->uf_profiling))
+    if (do_profiling == PROF_YES && (fp->uf_profiling
+		    || (fc.caller != NULL && &fc.caller->func->uf_profiling)))
     {
 	profile_end(&fp->uf_tm_start);
 	profile_sub_wait(&wait_start, &fp->uf_tm_start);
@@ -19467,7 +19468,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     sourcing_lnum = save_sourcing_lnum;
     current_SID = save_current_SID;
 #ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	script_prof_restore(&wait_start);
 #endif
 
@@ -19710,7 +19711,7 @@ get_func_line(c, cookie, indent)
 	fcp->dbg_tick = debug_tick;
     }
 #ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	func_line_end(cookie);
 #endif
 
@@ -19731,7 +19732,7 @@ get_func_line(c, cookie, indent)
 	    retval = vim_strsave(((char_u **)(gap->ga_data))[fcp->linenr++]);
 	    sourcing_lnum = fcp->linenr;
 #ifdef FEAT_PROFILE
-	    if (do_profiling)
+	    if (do_profiling == PROF_YES)
 		func_line_start(cookie);
 #endif
 	}

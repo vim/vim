@@ -1,0 +1,66 @@
+*vimball.txt*	Vimball Archiver				Mar 20, 2006
+Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
+	  (remove NOSPAM from Campbell's email first)
+Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
+           The VIM LICENSE applies to Vimball.vim, and Vimball.txt
+           (see |copyright|) except use "Vimball" instead of "Vim".
+	   No warranty, express or implied.
+	   Use At-Your-Own-Risk!
+
+==============================================================================
+1. Contents					*vimball* *vimball-contents*
+
+	1. Contents......................................: |vimball-contents|
+	2. Vimball Manual................................: |vimball-manual|
+	3. Vimball History...............................: |vimball-history|
+
+
+==============================================================================
+2. Vimball Manual					*vimball-manual*
+
+							*:MkVimball*
+		:[range]MkVimball[!] filename
+
+	This command takes lines holding a path to files to be included in
+	your vimball; as an example: >
+		plugin/something.vim
+		doc/something.txt
+<	using MkVimball on this range will create a file called
+	"filename.vba" which can be used by Vimball.vim to re-create these
+	files.  If the "filename.vba" file already exists, then MkVimball
+	will issue a warning and not create the file.
+
+	However, if you use the exclamation point (!), then MkVimball will
+	create the "filename.vba" file, overwriting it if it already exists.
+	This behavior resembles that for |:w|.
+
+							*vimball-extract*
+		vim filename.vba
+
+	Simply editing a Vimball will cause Vimball.vim to tell the user to
+	source the file to extract its contents.
+
+	Extraction will only proceed if the first line of a putative vimball
+	file holds the "Vimball Archiver by Charles E.  Campbell, Jr., Ph.D."
+	line.
+
+		:VimballList				*vimball-vimballlist*
+	
+	This command will tell Vimball to list the files in the archive, along
+	with their lengths in lines.
+
+
+==============================================================================
+3. Vimball History					*vimball-history*
+
+	3  : Mar 20, 2006 * removed query, now requires sourcing to be
+	                    extracted (:so %).  Message to that effect
+			    included.
+			  * :VimballList  now shows files that would be
+			    extracted.
+	2  : Mar 20, 2006 * query, :UseVimball included
+	1  : Mar 20, 2006 * initial release
+
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:fdm=marker

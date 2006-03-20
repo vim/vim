@@ -28,6 +28,8 @@ general_beval_cb(beval, state)
     char_u	*text;
     static char_u  *result = NULL;
     long	winnr = 0;
+    char_u	*bexpr;
+    buf_T	*save_curbuf;
 #ifdef FEAT_WINDOWS
     win_T	*cw;
 #endif
@@ -39,39 +41,51 @@ general_beval_cb(beval, state)
 	return;
 
 #ifdef FEAT_EVAL
-    if (*p_bexpr != NUL
-	    && get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
+    if (get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
     {
+	bexpr = (*wp->w_buffer->b_p_bexpr == NUL) ? p_bexpr
+						    : wp->w_buffer->b_p_bexpr;
+	if (*bexpr != NUL)
+	{
 # ifdef FEAT_WINDOWS
-	/* Convert window pointer to number. */
-	for (cw = firstwin; cw != wp; cw = cw->w_next)
-	    ++winnr;
+	    /* Convert window pointer to number. */
+	    for (cw = firstwin; cw != wp; cw = cw->w_next)
+		++winnr;
 # endif
 
-	set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
-	set_vim_var_nr(VV_BEVAL_WINNR, winnr);
-	set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
-	set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
-	set_vim_var_string(VV_BEVAL_TEXT, text, -1);
-	vim_free(text);
+	    set_vim_var_nr(VV_BEVAL_BUFNR, (long)wp->w_buffer->b_fnum);
+	    set_vim_var_nr(VV_BEVAL_WINNR, winnr);
+	    set_vim_var_nr(VV_BEVAL_LNUM, (long)lnum);
+	    set_vim_var_nr(VV_BEVAL_COL, (long)(col + 1));
+	    set_vim_var_string(VV_BEVAL_TEXT, text, -1);
+	    vim_free(text);
 
-	use_sandbox = was_set_insecurely((char_u *)"balloonexpr", 0);
-	if (use_sandbox)
-	    ++sandbox;
-	++textlock;
+	    /*
+	     * Temporarily change the curbuf, so that we can determine whether
+	     * the buffer-local balloonexpr option was set insecurly.
+	     */
+	    save_curbuf = curbuf;
+	    curbuf = wp->w_buffer;
+	    use_sandbox = was_set_insecurely((char_u *)"balloonexpr",
+				 *curbuf->b_p_bexpr == NUL ? 0 : OPT_LOCAL);
+	    curbuf = save_curbuf;
+	    if (use_sandbox)
+		++sandbox;
+	    ++textlock;
 
-	vim_free(result);
-	result = eval_to_string(p_bexpr, NULL, TRUE);
+	    vim_free(result);
+	    result = eval_to_string(bexpr, NULL, TRUE);
 
-	if (use_sandbox)
-	    --sandbox;
-	--textlock;
+	    if (use_sandbox)
+		--sandbox;
+	    --textlock;
 
-	set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
-	if (result != NULL && result[0] != NUL)
-	{
-	    gui_mch_post_balloon(beval, result);
-	    return;
+	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
+	    if (result != NULL && result[0] != NUL)
+	    {
+		gui_mch_post_balloon(beval, result);
+		return;
+	    }
 	}
     }
 #endif

@@ -739,6 +739,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 		    switch (1 << i)
 		    {
 			case MENU_VISUAL_MODE:
+			case MENU_SELECT_MODE:
 			case MENU_OP_PENDING_MODE:
 			case MENU_CMDLINE_MODE:
 			    c = Ctrl_C;
@@ -1464,7 +1465,13 @@ get_menu_cmd_modes(cmd, forceit, noremap, unmenu)
     switch (*cmd++)
     {
 	case 'v':			/* vmenu, vunmenu, vnoremenu */
+	    modes = MENU_VISUAL_MODE | MENU_SELECT_MODE;
+	    break;
+	case 'x':			/* xmenu, xunmenu, xnoremenu */
 	    modes = MENU_VISUAL_MODE;
+	    break;
+	case 's':			/* smenu, sunmenu, snoremenu */
+	    modes = MENU_SELECT_MODE;
 	    break;
 	case 'o':			/* omenu */
 	    modes = MENU_OP_PENDING_MODE;
@@ -1480,7 +1487,8 @@ get_menu_cmd_modes(cmd, forceit, noremap, unmenu)
 	    break;
 	case 'a':			/* amenu */
 	    modes = MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE
-				    | MENU_VISUAL_MODE | MENU_OP_PENDING_MODE;
+				    | MENU_VISUAL_MODE | MENU_SELECT_MODE
+                                    | MENU_OP_PENDING_MODE;
 	    break;
 	case 'n':
 	    if (*cmd != 'o')		/* nmenu, not noremenu */
@@ -1494,7 +1502,7 @@ get_menu_cmd_modes(cmd, forceit, noremap, unmenu)
 	    if (forceit)		/* menu!! */
 		modes = MENU_INSERT_MODE | MENU_CMDLINE_MODE;
 	    else			/* menu */
-		modes = MENU_NORMAL_MODE | MENU_VISUAL_MODE
+		modes = MENU_NORMAL_MODE | MENU_VISUAL_MODE | MENU_SELECT_MODE
 						       | MENU_OP_PENDING_MODE;
     }
 
@@ -1545,7 +1553,12 @@ get_menu_index(menu, state)
 	idx = MENU_INDEX_CMDLINE;
 #ifdef FEAT_VISUAL
     else if (VIsual_active)
-	idx = MENU_INDEX_VISUAL;
+    {
+        if (VIsual_select)
+            idx = MENU_INDEX_SELECT;
+        else
+            idx = MENU_INDEX_VISUAL;
+    }
 #endif
     else if (state == HITRETURN || state == ASKMORE)
 	idx = MENU_INDEX_CMDLINE;
@@ -1712,7 +1725,11 @@ get_menu_mode()
 {
 #ifdef FEAT_VISUAL
     if (VIsual_active)
+    {
+        if (VIsual_select)
+            return MENU_INDEX_SELECT;
 	return MENU_INDEX_VISUAL;
+    }
 #endif
     if (State & INSERT)
 	return MENU_INDEX_INSERT;

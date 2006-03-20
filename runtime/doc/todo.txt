@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 19
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,15 +30,23 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-'errorformat': Add a flag %? to check for a match with the next item first.
-Helps for continuation lines that may contain just about anything, e.g. an
-error message.
-    error 99 in file foo.c line 1234:
-	something is wrong here
+Links in docs to vimball docs.
 
-Gnome GUI: lots of error messages during startup.  These go away when not
-using the notebook for tab labels.  Still similar error messages when moving
-the toolbar to another location.
+HTML indenting can be slow, find out why.
+Add a function to get the current time in usec.  reltime([start, [end]])
+    reltime().sec == seconds, reltime().usec = microseconds
+    reltime(start) current time relative to [start]
+	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
+    reltime(start, end) difference between start and end
+
+Include GetLatestVimScripts script?
+
+Adjust src/main.aap for installing manpages like in Makefile.
+    And for generating Vim.app for the Mac.
+    Install spell files with src/main.aap.
+
+Gnome2: When moving the toolbar out of the dock, so that it becomes floating,
+it can no longer be moved.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -51,28 +59,8 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-EMBEDDING: Make it possible to run Vim inside a window of another program.
-For GTK Neil Bird has a patch to use Vim like a widget.
-
-Ctags still hasn't included the patch.  Darren is looking for someone to do
-maintenance.  Is there another solution?
-
-HTML indenting can be slow, find out why.
-Add a function to get the current time in usec.  reltime([start, [end]])
-    reltime().sec == seconds, reltime().usec = microseconds
-    reltime(start) current time relative to [start]
-	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
-    reltime(start, end) difference between start and end
-Profiling:
-    - :profile pause
-    - :profile resume
-
-Adjust src/main.aap for installing manpages like in Makefile.
-    And for generating Vim.app for the Mac.
-    Install spell files with src/main.aap.
-
-Add ":smap", Select mode mapping?  Otherwise: ":sunmap", so that Visual mode
-mappings for normal keys can be removed from Select mode.
+Darren is including the patch in ctags.  Test it when it's ready.  Change
+"typename" to "typeref" in C complete code.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -81,7 +69,6 @@ text of a previous change.
 
 
 Awaiting updated patches:
-7   Updated Ruby interface. (Ryan Paul)
 8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
     Aric Blumer has a patch for this.
     He will update the patch for 6.3.
@@ -1446,7 +1433,6 @@ Syntax highlighting:
 7   CTRL-] checks the highlight group for finding out what the tag is.
 7   Add an explanation how a list of words can be used to highlight misspelled
     words.
-7   Command line completion for ":find" should search in 'path'.
 8   Add more command line completion for :syntax.
 8   Add more command line completion for :highlight.
 8   Add more command line completion for :sign.

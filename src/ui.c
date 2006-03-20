@@ -139,7 +139,7 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 #endif
 
 #ifdef FEAT_PROFILE
-    if (do_profiling && wtime != 0)
+    if (do_profiling == PROF_YES && wtime != 0)
 	prof_inchar_enter();
 #endif
 
@@ -199,7 +199,7 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
 theend:
 #endif
 #ifdef FEAT_PROFILE
-    if (do_profiling && wtime != 0)
+    if (do_profiling == PROF_YES && wtime != 0)
 	prof_inchar_exit();
 #endif
     return retval;
@@ -473,7 +473,8 @@ clip_own_selection(cbd)
 	     * selected area.  There is no specific redraw command for this,
 	     * just redraw all windows on the current buffer. */
 	    if (cbd->owned
-		    && get_real_state() == VISUAL
+		    && (get_real_state() == VISUAL
+					    || get_real_state() == SELECTMODE)
 		    && clip_isautosel()
 		    && hl_attr(HLF_V) != hl_attr(HLF_VNC))
 		redraw_curbuf_later(INVERTED_ALL);
@@ -503,7 +504,8 @@ clip_lose_selection(cbd)
 	 * area.  There is no specific redraw command for this, just redraw all
 	 * windows on the current buffer. */
 	if (was_owned
-		&& get_real_state() == VISUAL
+		&& (get_real_state() == VISUAL
+					    || get_real_state() == SELECTMODE)
 		&& clip_isautosel()
 		&& hl_attr(HLF_V) != hl_attr(HLF_VNC))
 	{
