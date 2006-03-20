@@ -3113,6 +3113,12 @@ alloc_tabpage()
     tp = (tabpage_T *)alloc_clear((unsigned)sizeof(tabpage_T));
     if (tp != NULL)
     {
+# ifdef FEAT_GUI
+	int	i;
+
+	for (i = 0; i < 3; i++)
+	    tp->tp_prev_which_scrollbars[i] = -1;
+# endif
 # ifdef FEAT_DIFF
 	tp->tp_diff_invalid = TRUE;
 # endif
@@ -3395,7 +3401,10 @@ enter_tabpage(tp, old_curbuf)
     /* When 'guioptions' includes 'L' or 'R' may have to remove or add
      * scrollbars.  Have to update them anyway. */
     if (gui.in_use && starting == 0)
+    {
+	gui_init_which_components(NULL);
 	gui_update_scrollbars(TRUE);
+    }
     need_mouse_correct = TRUE;
 #endif
 

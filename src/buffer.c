@@ -1689,6 +1689,9 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_inde);
     clear_string_option(&buf->b_p_indk);
 #endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+    clear_string_option(&buf->b_p_bexpr);
+#endif
 #if defined(FEAT_EVAL)
     clear_string_option(&buf->b_p_fex);
 #endif

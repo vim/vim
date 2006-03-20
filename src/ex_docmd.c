@@ -900,7 +900,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	    if (getline_is_func)
 	    {
 # ifdef FEAT_PROFILE
-		if (do_profiling)
+		if (do_profiling == PROF_YES)
 		    func_line_end(real_cookie);
 # endif
 		if (func_has_ended(real_cookie))
@@ -910,7 +910,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 		}
 	    }
 #ifdef FEAT_PROFILE
-	    else if (do_profiling
+	    else if (do_profiling == PROF_YES
 			     && getline_equal(getline, cookie, getsourceline))
 		script_line_end();
 #endif
@@ -947,7 +947,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 		*dbg_tick = debug_tick;
 	    }
 # ifdef FEAT_PROFILE
-	    if (do_profiling)
+	    if (do_profiling == PROF_YES)
 	    {
 		if (getline_is_func)
 		    func_line_start(real_cookie);
@@ -1912,7 +1912,7 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
     /* Count this line for profiling if ea.skip is FALSE. */
-    if (do_profiling && !ea.skip)
+    if (do_profiling == PROF_YES && !ea.skip)
     {
 	if (getline_equal(getline, cookie, get_func_line))
 	    func_line_exec(getline_cookie(getline, cookie));
@@ -5633,21 +5633,22 @@ uc_check_code(code, len, buf, cmd, eap, split_buf, split_len)
 	l -= 2;
     }
 
-    if (l < 1)
+    ++l;
+    if (l <= 1)
 	type = ct_NONE;
-    else if (STRNICMP(p, "args", l) == 0)
+    else if (STRNICMP(p, "args>", l) == 0)
 	type = ct_ARGS;
-    else if (STRNICMP(p, "bang", l) == 0)
+    else if (STRNICMP(p, "bang>", l) == 0)
 	type = ct_BANG;
-    else if (STRNICMP(p, "count", l) == 0)
+    else if (STRNICMP(p, "count>", l) == 0)
 	type = ct_COUNT;
-    else if (STRNICMP(p, "line1", l) == 0)
+    else if (STRNICMP(p, "line1>", l) == 0)
 	type = ct_LINE1;
-    else if (STRNICMP(p, "line2", l) == 0)
+    else if (STRNICMP(p, "line2>", l) == 0)
 	type = ct_LINE2;
-    else if (STRNICMP(p, "lt", l) == 0)
+    else if (STRNICMP(p, "lt>", l) == 0)
 	type = ct_LT;
-    else if (STRNICMP(p, "register", l) == 0)
+    else if (STRNICMP(p, "reg>", l) == 0 || STRNICMP(p, "register>", l) == 0)
 	type = ct_REGISTER;
 
     switch (type)

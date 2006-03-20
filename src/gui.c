@@ -2802,6 +2802,7 @@ button_set:
 	case OP_PENDING:
 	case NORMAL:		checkfor = MOUSE_NORMAL;	break;
 	case VISUAL:		checkfor = MOUSE_VISUAL;	break;
+	case SELECTMODE:	checkfor = MOUSE_VISUAL;	break;
 	case REPLACE:
 	case REPLACE+LANGMAP:
 #ifdef FEAT_VREPLACE
@@ -3077,7 +3078,9 @@ gui_menu_cb(menu)
 }
 #endif
 
-static int	prev_which_scrollbars[3] = {-1, -1, -1};
+#ifndef FEAT_WINDOWS
+static int		    prev_which_scrollbars[3];
+#endif
 
 /*
  * Set which components are present.
@@ -3211,7 +3214,13 @@ gui_init_which_components(oldval)
 
 	for (i = 0; i < 3; i++)
 	{
-	    if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
+	    if (gui.which_scrollbars[i] !=
+#ifdef FEAT_WINDOWS
+		    curtab->tp_prev_which_scrollbars[i]
+#else
+		    prev_which_scrollbars[i]
+#endif
+		    )
 	    {
 		if (i == SBAR_BOTTOM)
 		    gui_mch_enable_scrollbar(&gui.bottom_sbar,
@@ -3227,7 +3236,12 @@ gui_init_which_components(oldval)
 		if (gui.which_scrollbars[i])
 		    fix_size = TRUE;
 	    }
-	    prev_which_scrollbars[i] = gui.which_scrollbars[i];
+#ifdef FEAT_WINDOWS
+	    curtab->tp_prev_which_scrollbars[i]
+#else
+	    prev_which_scrollbars[i]
+#endif
+						= gui.which_scrollbars[i];
 	}
 
 #ifdef FEAT_MENU
@@ -3479,7 +3493,7 @@ gui_remove_scrollbars()
 		gui_do_scrollbar(wp, i, FALSE);
 	    }
 	}
-	prev_which_scrollbars[i] = -1;
+	curtab->tp_prev_which_scrollbars[i] = -1;
     }
 }
 #endif
@@ -3673,6 +3687,16 @@ gui_drag_scrollbar(sb, value, still_dragging)
 	/* Value may have been changed for closed fold. */
 	sb->value = sb->wp->w_topline - 1;
 # endif
+
+	/* When dragging one scrollbar and there is another one at the other
+	 * side move the thumb of that one too. */
+	if (gui.which_scrollbars[SBAR_RIGHT] && gui.which_scrollbars[SBAR_LEFT])
+	    gui_mch_set_scrollbar_thumb(
+		    &sb->wp->w_scrollbars[
+			    sb == &sb->wp->w_scrollbars[SBAR_RIGHT]
+						    ? SBAR_LEFT : SBAR_RIGHT],
+		    sb->value, sb->size, sb->max);
+
 #else
 	bytes[0] = CSI;
 	bytes[1] = KS_VER_SCROLLBAR;

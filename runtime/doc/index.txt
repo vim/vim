@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2006 Mar 16
+*index.txt*     For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1413,10 +1413,15 @@ The commands are sorted on the non-optional part of their name.
 |:slast|	:sla[st]	split window and go to last file in the
 				argument list
 |:smagic|	:sm[agic]	:substitute with 'magic'
+|:smap|		:sma[p]		like ":map" but for Select mode
+|:smapclear|	:smapc[lear]	remove all mappings for Select mode
+|:smenu|	:sme[nu]	add menu for Select mode
 |:snext|	:sn[ext]	split window and go to next file in the
 				argument list
 |:sniff|	:sni[ff]	send request to sniff
 |:snomagic|	:sno[magic]	:substitute with 'nomagic'
+|:snoremap|	:snor[emap]	like ":noremap" but for Select mode
+|:snoremenu|	:snoreme[nu]	like ":noremenu" but for Select mode
 |:sort|		:sor[t]		sort lines
 |:source|	:so[urce]	read Vim or Ex commands from a file
 |:spelldump|	:spelld[ump]	split window and fill with all correct words
@@ -1439,6 +1444,8 @@ The commands are sorted on the non-optional part of their name.
 |:stjump|	:stj[ump]	do ":tjump" and split window
 |:stselect|	:sts[elect]	do ":tselect" and split window
 |:sunhide|	:sun[hide]	same as ":unhide"
+|:sunmap|	:sunm[ap]	like ":unmap" but for Select mode
+|:sunmenu|	:sunme[nu]	remove menu for Select mode
 |:suspend|	:sus[pend]	same as ":stop"
 |:sview|	:sv[iew]	split window and edit file read-only
 |:swapname|	:sw[apname]	show the name of the current swap file
@@ -1500,15 +1507,15 @@ The commands are sorted on the non-optional part of their name.
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode
 |:viusage|	:viu[sage]	overview of Normal mode commands
 |:view|		:vie[w]		edit a file read-only
-|:vmap|		:vm[ap]		like ":map" but for Visual mode
-|:vmapclear|	:vmapc[lear]	remove all mappings for Visual mode
-|:vmenu|	:vme[nu]	add menu for Visual mode
-|:vnoremap|	:vn[oremap]	like ":noremap" but for Visual mode
+|:vmap|		:vm[ap]		like ":map" but for Visual+Select mode
+|:vmapclear|	:vmapc[lear]	remove all mappings for Visual+Select mode
+|:vmenu|	:vme[nu]	add menu for Visual+Select mode
 |:vnew|		:vne[w]		create a new empty window, vertically split
-|:vnoremenu|	:vnoreme[nu]	like ":noremenu" but for Visual mode
+|:vnoremap|	:vn[oremap]	like ":noremap" but for Visual+Select mode
+|:vnoremenu|	:vnoreme[nu]	like ":noremenu" but for Visual+Select mode
 |:vsplit|	:vs[plit]	split current window vertically
-|:vunmap|	:vu[nmap]	like ":unmap" but for Visual mode
-|:vunmenu|	:vunme[nu]	remove menu for Visual mode
+|:vunmap|	:vu[nmap]	like ":unmap" but for Visual+Select mode
+|:vunmenu|	:vunme[nu]	remove menu for Visual+Select mode
 |:windo|	:windo		execute command in each window
 |:write|	:w[rite]	write to a file
 |:wNext|	:wN[ext]	write to a file and go to previous file in
@@ -1528,8 +1535,16 @@ The commands are sorted on the non-optional part of their name.
 |:wviminfo|	:wv[iminfo]	write to viminfo file
 |:xit|		:x[it]		write if buffer changed and quit window or Vim
 |:xall|		:xa[ll]		same as ":wqall"
+|:xmapclear|	:xmapc[lear]	remove all mappings for Visual mode
+|:xmap|		:xm[ap]		like ":map" but for Visual mode
+|:xmenu|	:xme[nu]	add menu for Visual mode
+|:xnoremap|	:xn[oremap]	like ":noremap" but for Visual mode
+|:xnoremenu|	:xnoreme[nu]	like ":noremenu" but for Visual mode
+|:xunmap|	:xu[nmap]	like ":unmap" but for Visual mode
+|:xunmenu|	:xunme[nu]	remove menu for Visual mode
 |:yank|		:y[ank]		yank lines into a register
 |:z|		:z		print some lines
 |:~|		:~		repeat last ":substitute"
+
 
  vim:tw=78:ts=8:ft=help:norl:

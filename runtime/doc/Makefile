@@ -161,7 +161,6 @@ HTMLS = \
 	gui_x11.html \
 	hangulin.html \
 	hebrew.html \
-	help.html \
 	howto.html \
 	if_cscop.html \
 	if_mzsch.html \
@@ -173,6 +172,7 @@ HTMLS = \
 	if_tcl.html \
 	indent.html \
 	index.html \
+	vimindex.html \
 	insert.html \
 	intro.html \
 	map.html \
@@ -326,6 +326,14 @@ noerrors:
 
 .txt.html:
 	$(AWK) -f makehtml.awk $< >$@
+
+# index.html is the starting point for HTML, but for the help files it is
+# help.txt.  Therefore use vimindex.html for index.txt.
+index.html: help.txt
+	$(AWK) -f makehtml.awk help.txt >index.html
+
+vimindex.html: index.txt
+	$(AWK) -f makehtml.awk index.txt >vimindex.html
 
 tags.ref tags.html: tags
 	$(AWK) -f maketags.awk tags >tags.html

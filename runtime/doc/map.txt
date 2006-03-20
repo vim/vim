@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 11
+*map.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -48,6 +48,8 @@ modes.
 :map	{lhs} {rhs}		|mapmode-nvo|		*:map*
 :nm[ap]	{lhs} {rhs}		|mapmode-n|		*:nm* *:nmap*
 :vm[ap]	{lhs} {rhs}		|mapmode-v|		*:vm* *:vmap*
+:xm[ap]	{lhs} {rhs}		|mapmode-x|		*:xm* *:xmap*
+:smap	{lhs} {rhs}		|mapmode-s|		      *:smap*
 :om[ap]	{lhs} {rhs}		|mapmode-o|		*:om* *:omap*
 :map!	{lhs} {rhs}		|mapmode-ic|		*:map!*
 :im[ap]	{lhs} {rhs}		|mapmode-i|		*:im* *:imap*
@@ -62,6 +64,8 @@ modes.
 :no[remap]  {lhs} {rhs}		|mapmode-nvo|		*:no*  *:noremap*
 :nn[oremap] {lhs} {rhs}		|mapmode-n|		*:nn*  *:nnoremap*
 :vn[oremap] {lhs} {rhs}		|mapmode-v|		*:vn*  *:vnoremap*
+:xn[oremap] {lhs} {rhs}		|mapmode-x|		*:xn*  *:xnoremap*
+:snor[emap] {lhs} {rhs}		|mapmode-s|		*:snor* *:snoremap*
 :ono[remap] {lhs} {rhs}		|mapmode-o|		*:ono* *:onoremap*
 :no[remap]! {lhs} {rhs}		|mapmode-ic|		*:no!* *:noremap!*
 :ino[remap] {lhs} {rhs}		|mapmode-i|		*:ino* *:inoremap*
@@ -76,6 +80,8 @@ modes.
 :unm[ap]  {lhs}			|mapmode-nvo|		*:unm*  *:unmap*
 :nun[map] {lhs}			|mapmode-n|		*:nun*  *:nunmap*
 :vu[nmap] {lhs}			|mapmode-v|		*:vu*   *:vunmap*
+:xu[nmap] {lhs}			|mapmode-x|		*:xu*   *:xunmap*
+:sunm[ap] {lhs}			|mapmode-s|		*:sunm* *:sunmap*
 :ou[nmap] {lhs}			|mapmode-o|		*:ou*   *:ounmap*
 :unm[ap]! {lhs}			|mapmode-ic|		*:unm!* *:unmap!*
 :iu[nmap] {lhs}			|mapmode-i|		*:iu*   *:iunmap*
@@ -92,6 +98,8 @@ modes.
 :mapc[lear]			|mapmode-nvo|		*:mapc*   *:mapclear*
 :nmapc[lear]			|mapmode-n|		*:nmapc*  *:nmapclear*
 :vmapc[lear]			|mapmode-v|		*:vmapc*  *:vmapclear*
+:xmapc[lear]			|mapmode-x|		*:xmapc*  *:xmapclear*
+:smapc[lear]			|mapmode-s|		*:smapc*  *:smapclear*
 :omapc[lear]			|mapmode-o|		*:omapc*  *:omapclear*
 :mapc[lear]!			|mapmode-ic|		*:mapc!*  *:mapclear!*
 :imapc[lear]			|mapmode-i|		*:imapc*  *:imapclear*
@@ -104,6 +112,8 @@ modes.
 :map				|mapmode-nvo|
 :nm[ap]				|mapmode-n|
 :vm[ap]				|mapmode-v|
+:xm[ap]				|mapmode-x|
+:sm[ap]				|mapmode-s|
 :om[ap]				|mapmode-o|
 :map!				|mapmode-ic|
 :im[ap]				|mapmode-i|
@@ -116,6 +126,8 @@ modes.
 :map    {lhs}			|mapmode-nvo|		*:map_l*
 :nm[ap] {lhs}			|mapmode-n|		*:nmap_l*
 :vm[ap] {lhs}			|mapmode-v|		*:vmap_l*
+:xm[ap] {lhs}			|mapmode-x|		*:xmap_l*
+:sm[ap] {lhs}			|mapmode-s|		*:smap_l*
 :om[ap] {lhs}			|mapmode-o|		*:omap_l*
 :map!   {lhs}			|mapmode-ic|		*:map_l!*
 :im[ap] {lhs}			|mapmode-i|		*:imap_l*
@@ -238,9 +250,6 @@ There are five sets of mappings
 - For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
 
-There are no separate mappings for Select mode.  The same as for Visual mode
-are used |Select-mode-mapping|.
-
 Special case: While typing a count for a command in Normal mode, mapping zero
 is disabled.  This makes it possible to map zero without making it impossible
 to type a count with a zero.
@@ -250,13 +259,27 @@ Overview of which map command works in which mode:
 
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
     commands:				      modes: ~
-					  Normal     Visual  Operator-pending ~
-:map   :noremap   :unmap   :mapclear	    yes	       yes	  yes
-:nmap  :nnoremap  :nunmap  :nmapclear	    yes		-	   -
-:vmap  :vnoremap  :vunmap  :vmapclear	     -	       yes	   -
-:omap  :onoremap  :ounmap  :omapclear	     -		-	  yes
+                                       Normal  Visual+Select  Operator-pending ~
+:map   :noremap   :unmap   :mapclear     yes        yes            yes
+:nmap  :nnoremap  :nunmap  :nmapclear    yes         -              -
+:vmap  :vnoremap  :vunmap  :vmapclear     -         yes             -
+:omap  :onoremap  :ounmap  :omapclear     -          -             yes
+
+                                                *mapmode-x* *mapmode-s*
+Some commands work both in Visual and Select mode, some in only one.  Note
+that quite often "Visual" is mentioned where both Visual and Select mode
+apply. |Select-mode-mapping|
+
+    commands:                                 modes: ~
+                                          Visual    Select ~
+:vmap  :vnoremap  :vunmap  :vmapclear       yes      yes
+:xmap  :xnoremap  :xunmap  :xmapclear       yes       -
+:smap  :snoremap  :sunmap  :smapclear       -        yes
 
 			*mapmode-ic* *mapmode-i* *mapmode-c* *mapmode-l*
+Some commands work both in Insert mode and Command-line mode, some not:
+
+    commands:                                 modes: ~
 					  Insert  Command-line	Lang-Arg ~
 :map!  :noremap!  :unmap!  :mapclear!	    yes	       yes	   -
 :imap  :inoremap  :iunmap  :imapclear	    yes		-	   -
@@ -1218,8 +1241,9 @@ Replacement text
 The replacement text for a user defined command is scanned for special escape
 sequences, using <...> notation.  Escape sequences are replaced with values
 from the entered command line, and all other text is copied unchanged.  The
-resulting string is executed as an Ex command.  If the initial < of an escape
-sequence is preceded by a backslash, the sequence is copied unchanged.
+resulting string is executed as an Ex command.  To avoid the replacement use
+<lt> in plade of the initial <.  Thus to include "<bang>" literally use
+"<lt>bang>".
 
 The valid escape sequences are
 

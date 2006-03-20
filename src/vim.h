@@ -596,6 +596,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXTERNCMD	0x600	/* executing an external command */
 #define SHOWMATCH	(0x700 + INSERT) /* show matching paren */
 #define CONFIRM		0x800	/* ":confirm" prompt */
+#define SELECTMODE	0x1000	/* Select mode, only for mappings */
 
 /* directions */
 #define FORWARD			1
@@ -1523,6 +1524,11 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 
 #include "structs.h"	    /* file that defines many structures */
 
+/* Values for "do_profiling". */
+#define PROF_NONE	0	/* profiling not started */
+#define PROF_YES	1	/* profiling busy */
+#define PROF_PAUSED	2	/* profiling paused */
+
 #ifdef FEAT_MOUSE
 
 /* Codes for mouse button events in lower three bits: */
@@ -1973,5 +1979,6 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define BAD_REPLACE	'?'	/* replace it with '?' (default) */
 #define BAD_KEEP	-1	/* leave it */
 #define BAD_DROP	-2	/* erase it */
+
 
 #endif /* VIM__H */

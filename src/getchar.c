@@ -63,7 +63,7 @@ static int	block_redo = FALSE;
  * Returns a value between 0 and 255, index in maphash.
  * Put Normal/Visual mode mappings mostly separately from Insert/Cmdline mode.
  */
-#define MAP_HASH(mode, c1) (((mode) & (NORMAL + VISUAL + OP_PENDING)) ? (c1) : ((c1) ^ 0x80))
+#define MAP_HASH(mode, c1) (((mode) & (NORMAL + VISUAL + SELECTMODE + OP_PENDING)) ? (c1) : ((c1) ^ 0x80))
 
 /*
  * Each mapping is put in one of the 256 hash lists, to speed up finding it.
@@ -2236,12 +2236,13 @@ vgetorpeek(advance)
 				{
 # ifdef FEAT_VISUAL
 				    /*
-				     * In Select mode, a Visual mode menu is
-				     * used.  Switch to Visual mode
+				     * In Select mode and a Visual mode menu
+				     * is used:  Switch to Visual mode
 				     * temporarily.  Append K_SELECT to switch
 				     * back to Select mode.
 				     */
-				    if (VIsual_active && VIsual_select)
+				    if (VIsual_active && VIsual_select
+					    && (current_menu->modes & VISUAL))
 				    {
 					VIsual_select = FALSE;
 					(void)ins_typebuf(K_SELECT_STRING,
@@ -2297,11 +2298,12 @@ vgetorpeek(advance)
 
 #ifdef FEAT_VISUAL
 			/*
-			 * In Select mode, a Visual mode mapping is used.
+			 * In Select mode and a Visual mode mapping is used:
 			 * Switch to Visual mode temporarily.  Append K_SELECT
 			 * to switch back to Select mode.
 			 */
-			if (VIsual_active && VIsual_select)
+			if (VIsual_active && VIsual_select
+						     && (mp->m_mode & VISUAL))
 			{
 			    VIsual_select = FALSE;
 			    (void)ins_typebuf(K_SELECT_STRING, REMAP_NONE,
@@ -2926,13 +2928,15 @@ input_available()
  * arg is pointer to any arguments. Note: arg cannot be a read-only string,
  * it will be modified.
  *
- * for :map   mode is NORMAL + VISUAL + OP_PENDING
+ * for :map   mode is NORMAL + VISUAL + SELECTMODE + OP_PENDING
  * for :map!  mode is INSERT + CMDLINE
  * for :cmap  mode is CMDLINE
  * for :imap  mode is INSERT
  * for :lmap  mode is LANGMAP
  * for :nmap  mode is NORMAL
- * for :vmap  mode is VISUAL
+ * for :vmap  mode is VISUAL + SELECTMODE
+ * for :xmap  mode is VISUAL
+ * for :smap  mode is SELECTMODE
  * for :omap  mode is OP_PENDING
  *
  * for :abbr  mode is INSERT + CMDLINE
@@ -3524,7 +3528,11 @@ get_map_mode(cmdp, forceit)
     else if (modec == 'n' && *p != 'o')		    /* avoid :noremap */
 	mode = NORMAL;				/* :nmap */
     else if (modec == 'v')
-	mode = VISUAL;				/* :vmap */
+	mode = VISUAL + SELECTMODE;		/* :vmap */
+    else if (modec == 'x')
+	mode = VISUAL;				/* :xmap */
+    else if (modec == 's')
+	mode = SELECTMODE;			/* :smap */
     else if (modec == 'o')
 	mode = OP_PENDING;			/* :omap */
     else
@@ -3533,7 +3541,7 @@ get_map_mode(cmdp, forceit)
 	if (forceit)
 	    mode = INSERT + CMDLINE;		/* :map ! */
 	else
-	    mode = VISUAL + NORMAL + OP_PENDING;/* :map */
+	    mode = VISUAL + SELECTMODE + NORMAL + OP_PENDING;/* :map */
     }
 
     *cmdp = p;
@@ -3668,8 +3676,8 @@ showmap(mp, local)
 	msg_putchar('l');			/* :lmap */
     else if (mp->m_mode & CMDLINE)
 	msg_putchar('c');			/* :cmap */
-    else if ((mp->m_mode & (NORMAL + VISUAL + OP_PENDING))
-					      == NORMAL + VISUAL + OP_PENDING)
+    else if ((mp->m_mode & (NORMAL + VISUAL + SELECTMODE + OP_PENDING))
+				 == NORMAL + VISUAL + SELECTMODE + OP_PENDING)
 	msg_putchar(' ');			/* :map */
     else
     {
@@ -3684,10 +3692,23 @@ showmap(mp, local)
 	    msg_putchar('o');		/* :omap */
 	    ++len;
 	}
-	if (mp->m_mode & VISUAL)
+	if ((mp->m_mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
 	{
 	    msg_putchar('v');		/* :vmap */
 	    ++len;
+	}
+	else
+	{
+	    if (mp->m_mode & VISUAL)
+	    {
+		msg_putchar('x');		/* :xmap */
+		++len;
+	    }
+	    if (mp->m_mode & SELECTMODE)
+	    {
+		msg_putchar('s');		/* :smap */
+		++len;
+	    }
 	}
     }
     while (++len <= 3)
@@ -3749,7 +3770,11 @@ map_to_exists(str, modechars, abbr)
     if (vim_strchr(modechars, 'n') != NULL)
 	mode |= NORMAL;
     if (vim_strchr(modechars, 'v') != NULL)
+	mode |= VISUAL + SELECTMODE;
+    if (vim_strchr(modechars, 'x') != NULL)
 	mode |= VISUAL;
+    if (vim_strchr(modechars, 's') != NULL)
+	mode |= SELECTMODE;
     if (vim_strchr(modechars, 'o') != NULL)
 	mode |= OP_PENDING;
     if (vim_strchr(modechars, 'i') != NULL)
@@ -3857,7 +3882,7 @@ set_context_in_map_cmd(xp, cmd, arg, forceit, isabbrev, isunmap, cmdidx)
 	{
 	    expand_mapmodes = INSERT + CMDLINE;
 	    if (!isabbrev)
-		expand_mapmodes += VISUAL + NORMAL + OP_PENDING;
+		expand_mapmodes += VISUAL + SELECTMODE + NORMAL + OP_PENDING;
 	}
 	expand_isabbrev = isabbrev;
 	xp->xp_context = EXPAND_MAPPINGS;
@@ -4310,22 +4335,28 @@ makemap(fd, buf)
 		    cmd = "map";
 		switch (mp->m_mode)
 		{
-		    case NORMAL + VISUAL + OP_PENDING:
+		    case NORMAL + VISUAL + SELECTMODE + OP_PENDING:
 			break;
 		    case NORMAL:
 			c1 = 'n';
 			break;
-		    case VISUAL:
+		    case VISUAL + SELECTMODE:
 			c1 = 'v';
+			break;
+		    case VISUAL:
+			c1 = 'x';
+			break;
+		    case SELECTMODE:
+			c1 = 's';
 			break;
 		    case OP_PENDING:
 			c1 = 'o';
 			break;
-		    case NORMAL + VISUAL:
+		    case NORMAL + VISUAL + SELECTMODE:
 			c1 = 'n';
 			c2 = 'v';
 			break;
-		    case VISUAL + OP_PENDING:
+		    case VISUAL + SELECTMODE + OP_PENDING:
 			c1 = 'v';
 			c2 = 'o';
 			break;
@@ -4697,6 +4728,9 @@ check_map(keys, mode, exact, ign_mod, abbr)
 #endif
 
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS)
+
+#define VIS_SEL	(VISUAL+SELECTMODE)	/* abbreviation */
+
 /*
  * Default mappings for some often used keys.
  */
@@ -4709,58 +4743,58 @@ static struct initmap
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
-	{(char_u *)"<C-PageUp> H", NORMAL+VISUAL},
+	{(char_u *)"<C-PageUp> H", NORMAL+VIS_SEL},
 	{(char_u *)"<C-PageUp> <C-O>H",INSERT},
-	{(char_u *)"<C-PageDown> L$", NORMAL+VISUAL},
+	{(char_u *)"<C-PageDown> L$", NORMAL+VIS_SEL},
 	{(char_u *)"<C-PageDown> <C-O>L<C-O>$", INSERT},
 
 	/* paste, copy and cut */
 	{(char_u *)"<S-Insert> \"*P", NORMAL},
-	{(char_u *)"<S-Insert> \"-d\"*P", VISUAL},
+	{(char_u *)"<S-Insert> \"-d\"*P", VIS_SEL},
 	{(char_u *)"<S-Insert> <C-R><C-O>*", INSERT+CMDLINE},
-	{(char_u *)"<C-Insert> \"*y", VISUAL},
-	{(char_u *)"<S-Del> \"*d", VISUAL},
-	{(char_u *)"<C-Del> \"*d", VISUAL},
-	{(char_u *)"<C-X> \"*d", VISUAL},
+	{(char_u *)"<C-Insert> \"*y", VIS_SEL},
+	{(char_u *)"<S-Del> \"*d", VIS_SEL},
+	{(char_u *)"<C-Del> \"*d", VIS_SEL},
+	{(char_u *)"<C-X> \"*d", VIS_SEL},
 	/* Missing: CTRL-C (cancel) and CTRL-V (block selection) */
 # else
-	{(char_u *)"\316\204 H", NORMAL+VISUAL},    /* CTRL-PageUp is "H" */
+	{(char_u *)"\316\204 H", NORMAL+VIS_SEL},    /* CTRL-PageUp is "H" */
 	{(char_u *)"\316\204 \017H",INSERT},	    /* CTRL-PageUp is "^OH"*/
-	{(char_u *)"\316v L$", NORMAL+VISUAL},	    /* CTRL-PageDown is "L$" */
+	{(char_u *)"\316v L$", NORMAL+VIS_SEL},	    /* CTRL-PageDown is "L$" */
 	{(char_u *)"\316v \017L\017$", INSERT},	    /* CTRL-PageDown ="^OL^O$"*/
-	{(char_u *)"\316w <C-Home>", NORMAL+VISUAL},
+	{(char_u *)"\316w <C-Home>", NORMAL+VIS_SEL},
 	{(char_u *)"\316w <C-Home>", INSERT+CMDLINE},
-	{(char_u *)"\316u <C-End>", NORMAL+VISUAL},
+	{(char_u *)"\316u <C-End>", NORMAL+VIS_SEL},
 	{(char_u *)"\316u <C-End>", INSERT+CMDLINE},
 
 	/* paste, copy and cut */
 #  ifdef FEAT_CLIPBOARD
 #   ifdef DJGPP
 	{(char_u *)"\316\122 \"*P", NORMAL},	    /* SHIFT-Insert is "*P */
-	{(char_u *)"\316\122 \"-d\"*P", VISUAL},    /* SHIFT-Insert is "-d"*P */
+	{(char_u *)"\316\122 \"-d\"*P", VIS_SEL},    /* SHIFT-Insert is "-d"*P */
 	{(char_u *)"\316\122 \022\017*", INSERT},  /* SHIFT-Insert is ^R^O* */
-	{(char_u *)"\316\222 \"*y", VISUAL},	    /* CTRL-Insert is "*y */
+	{(char_u *)"\316\222 \"*y", VIS_SEL},	    /* CTRL-Insert is "*y */
 #    if 0 /* Shift-Del produces the same code as Del */
-	{(char_u *)"\316\123 \"*d", VISUAL},	    /* SHIFT-Del is "*d */
+	{(char_u *)"\316\123 \"*d", VIS_SEL},	    /* SHIFT-Del is "*d */
 #    endif
-	{(char_u *)"\316\223 \"*d", VISUAL},	    /* CTRL-Del is "*d */
-	{(char_u *)"\030 \"-d", VISUAL},	    /* CTRL-X is "-d */
+	{(char_u *)"\316\223 \"*d", VIS_SEL},	    /* CTRL-Del is "*d */
+	{(char_u *)"\030 \"-d", VIS_SEL},	    /* CTRL-X is "-d */
 #   else
 	{(char_u *)"\316\324 \"*P", NORMAL},	    /* SHIFT-Insert is "*P */
-	{(char_u *)"\316\324 \"-d\"*P", VISUAL},    /* SHIFT-Insert is "-d"*P */
+	{(char_u *)"\316\324 \"-d\"*P", VIS_SEL},    /* SHIFT-Insert is "-d"*P */
 	{(char_u *)"\316\324 \022\017*", INSERT},  /* SHIFT-Insert is ^R^O* */
-	{(char_u *)"\316\325 \"*y", VISUAL},	    /* CTRL-Insert is "*y */
-	{(char_u *)"\316\327 \"*d", VISUAL},	    /* SHIFT-Del is "*d */
-	{(char_u *)"\316\330 \"*d", VISUAL},	    /* CTRL-Del is "*d */
-	{(char_u *)"\030 \"-d", VISUAL},	    /* CTRL-X is "-d */
+	{(char_u *)"\316\325 \"*y", VIS_SEL},	    /* CTRL-Insert is "*y */
+	{(char_u *)"\316\327 \"*d", VIS_SEL},	    /* SHIFT-Del is "*d */
+	{(char_u *)"\316\330 \"*d", VIS_SEL},	    /* CTRL-Del is "*d */
+	{(char_u *)"\030 \"-d", VIS_SEL},	    /* CTRL-X is "-d */
 #   endif
 #  else
 	{(char_u *)"\316\324 P", NORMAL},	    /* SHIFT-Insert is P */
-	{(char_u *)"\316\324 \"-dP", VISUAL},	    /* SHIFT-Insert is "-dP */
+	{(char_u *)"\316\324 \"-dP", VIS_SEL},	    /* SHIFT-Insert is "-dP */
 	{(char_u *)"\316\324 \022\017\"", INSERT}, /* SHIFT-Insert is ^R^O" */
-	{(char_u *)"\316\325 y", VISUAL},	    /* CTRL-Insert is y */
-	{(char_u *)"\316\327 d", VISUAL},	    /* SHIFT-Del is d */
-	{(char_u *)"\316\330 d", VISUAL},	    /* CTRL-Del is d */
+	{(char_u *)"\316\325 y", VIS_SEL},	    /* CTRL-Insert is y */
+	{(char_u *)"\316\327 d", VIS_SEL},	    /* SHIFT-Del is d */
+	{(char_u *)"\316\330 d", VIS_SEL},	    /* CTRL-Del is d */
 #  endif
 # endif
 #endif
@@ -4769,13 +4803,15 @@ static struct initmap
 	/* Use the Standard MacOS binding. */
 	/* paste, copy and cut */
 	{(char_u *)"<D-v> \"*P", NORMAL},
-	{(char_u *)"<D-v> \"-d\"*P", VISUAL},
+	{(char_u *)"<D-v> \"-d\"*P", VIS_SEL},
 	{(char_u *)"<D-v> <C-R>*", INSERT+CMDLINE},
-	{(char_u *)"<D-c> \"*y", VISUAL},
-	{(char_u *)"<D-x> \"*d", VISUAL},
-	{(char_u *)"<Backspace> \"-d", VISUAL},
+	{(char_u *)"<D-c> \"*y", VIS_SEL},
+	{(char_u *)"<D-x> \"*d", VIS_SEL},
+	{(char_u *)"<Backspace> \"-d", VIS_SEL},
 #endif
 };
+
+# undef VIS_SEL
 #endif
 
 /*

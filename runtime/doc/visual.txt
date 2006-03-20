@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0aa.  Last change: 2006 Jan 22
+*visual.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -460,9 +460,10 @@ example, when a whole line is deleted, it can later be pasted halfway a line.
 
 Mappings and menus in Select mode.			*Select-mode-mapping*
 
-In Select mode the mappings and menus of Visual mode are used.  Before it is
-executed, Vim automatically switches to Visual mode, so that the same
-behavior as in Visual mode is effective.
+When mappings and menus are defined with the |:vmap| or |:vmenu| command they
+work both in Visual mode and in Select mode.  When these are used in Select
+mode Vim automatically switches to Visual mode, so that the same behavior as
+in Visual mode is effective.  If you don't want this use |:xmap| or |:smap|.
 
 After the mapping or menu finishes, the selection is enabled again and Select
 mode entered, unless the selected area was deleted, another buffer became

@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Feb 27
+*gui.txt*       For Vim version 7.0aa.  Last change: 2006 Mar 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -499,6 +499,8 @@ floating menus that do not appear on the main menu bar.
 				*:nme* *:nmenu* *:nnoreme* *:nnoremenu*
 				*:ome* *:omenu* *:onoreme* *:onoremenu*
 				*:vme* *:vmenu* *:vnoreme* *:vnoremenu*
+				*:xme* *:xmenu* *:xnoreme* *:xnoremenu*
+				*:sme* *:smenu* *:snoreme* *:snoremenu*
 				*:ime* *:imenu* *:inoreme* *:inoremenu*
 				*:cme* *:cmenu* *:cnoreme* *:cnoremenu*
 				*E330* *E327* *E331* *E336* *E333*
@@ -787,6 +789,8 @@ using the last visual selection.
 						*:nunme* *:nunmenu*
 						*:ounme* *:ounmenu*
 						*:vunme* *:vunmenu*
+						*:xunme* *:xunmenu*
+						*:sunme* *:sunmenu*
 						*:iunme* *:iunmenu*
 						*:cunme* *:cunmenu*
 To delete a menu item or a whole submenu, use the unmenu commands, which are

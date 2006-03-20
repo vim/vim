@@ -194,7 +194,7 @@ Partial writes disallowed for NetBeans buffers
 							*E658*
 NetBeans connection lost for this buffer
 		NetBeans has become confused about the state of this file.
-		Rather than risc data corruption, NetBeans has severed the
+		Rather than risk data corruption, NetBeans has severed the
 		connection for this file.  Vim will take over responsibility
 		for saving changes to this file and NetBeans will no longer
 		know of these changes.

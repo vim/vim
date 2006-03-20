@@ -8518,7 +8518,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     save_current_SID = current_SID;
 
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_enter(&wait_time); /* doesn't count for the caller itself */
 # endif
 
@@ -8614,7 +8614,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     current_SID = save_current_SID;
     restore_funccal(save_funccalp);
 # ifdef FEAT_PROFILE
-    if (do_profiling)
+    if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_time);
 # endif
 #endif
