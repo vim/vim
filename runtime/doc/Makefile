@@ -28,6 +28,7 @@ DOCS = \
 	farsi.txt \
 	filetype.txt \
 	fold.txt \
+	getscript.txt \
 	gui.txt \
 	gui_w16.txt \
 	gui_w32.txt \
@@ -136,6 +137,7 @@ DOCS = \
 	version6.txt \
 	version7.txt \
 	vi_diff.txt \
+	vimball.txt \
 	visual.txt \
 	windows.txt \
 	workshop.txt
@@ -155,6 +157,7 @@ HTMLS = \
 	farsi.html \
 	filetype.html \
 	fold.html \
+	getscript.html \
 	gui.html \
 	gui_w16.html \
 	gui_w32.html \
@@ -262,6 +265,7 @@ HTMLS = \
 	version6.html \
 	version7.html \
 	vi_diff.html \
+	vimball.txt \
 	visual.html \
 	windows.html \
 	workshop.html

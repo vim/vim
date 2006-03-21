@@ -1723,7 +1723,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # define stat(a,b) (access(a,0) ? -1 : stat(a,b))
 #endif
 
-#ifdef FEAT_PROFILE
+#if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
 # ifdef WIN3264
 typedef LARGE_INTEGER proftime_T;
 # else
