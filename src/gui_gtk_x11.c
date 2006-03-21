@@ -3541,6 +3541,8 @@ gui_mch_init(void)
 	gnome_app_set_menus(GNOME_APP(gui.mainwin), GTK_MENU_BAR(gui.menubar));
 	dockitem = gnome_app_get_dock_item_by_name(GNOME_APP(gui.mainwin),
 						   GNOME_APP_MENUBAR_NAME);
+	// bonobo_dock_item_set_behavior(dockitem,
+	//				 BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
 	gui.menubar_h = GTK_WIDGET(dockitem);
 #  else
 	gui.menubar_h = gnome_dock_item_new("VimMainMenu",
@@ -3597,6 +3599,10 @@ gui_mch_init(void)
 	dockitem = gnome_app_get_dock_item_by_name(GNOME_APP(gui.mainwin),
 						   GNOME_APP_TOOLBAR_NAME);
 	gui.toolbar_h = GTK_WIDGET(dockitem);
+	/* When the toolbar is floating it gets stuck.  So long as that isn't
+	 * fixed let's disallow floating.  Also changes it appearance... */
+	bonobo_dock_item_set_behavior(dockitem,
+					 BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
 	gtk_container_set_border_width(GTK_CONTAINER(gui.toolbar), 0);
 #  else
 	GtkWidget *dockitem;

@@ -88,7 +88,7 @@ char_u *vim_findfile __ARGS((void *search_ctx));
 void vim_findfile_free_visited __ARGS((void *search_ctx));
 char_u *find_file_in_path __ARGS((char_u *ptr, int len, int options, int first, char_u *rel_fname));
 char_u *find_directory_in_path __ARGS((char_u *ptr, int len, int options, char_u *rel_fname));
-char_u *find_file_in_path_option __ARGS((char_u *ptr, int len, int options, int first, char_u *path_option, int need_dir, char_u *rel_fname));
+char_u *find_file_in_path_option __ARGS((char_u *ptr, int len, int options, int first, char_u *path_option, int need_dir, char_u *rel_fname, char_u *suffixes));
 int vim_chdir __ARGS((char_u *new_dir));
 int get_user_name __ARGS((char_u *buf, int len));
 void sort_strings __ARGS((char_u **files, int count));

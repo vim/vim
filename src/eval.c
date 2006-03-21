@@ -583,6 +583,8 @@ static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_reltime __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_reltimestr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_remote_expr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_remote_foreground __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_remote_peek __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7032,6 +7034,8 @@ static struct fst
     {"pumvisible",	0, 0, f_pumvisible},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
+    {"reltime",		0, 2, f_reltime},
+    {"reltimestr",	1, 1, f_reltimestr},
     {"remote_expr",	2, 3, f_remote_expr},
     {"remote_foreground", 1, 1, f_remote_foreground},
     {"remote_peek",	1, 2, f_remote_peek},
@@ -8982,7 +8986,8 @@ findfilendir(argvars, rettv, dir)
 	    vim_free(fresult);
 	    fresult = find_file_in_path_option(first ? fname : NULL,
 					       first ? (int)STRLEN(fname) : 0,
-					       0, first, path, dir, NULL);
+					0, first, path, dir, NULL,
+					dir ? (char_u *)"" : curbuf->b_p_sua);
 	    first = FALSE;
 	} while (--count > 0 && fresult != NULL);
     }
@@ -10597,6 +10602,9 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_PROFILE
 	"profile",
+#endif
+#ifdef FEAT_RELTIME
+	"reltime",
 #endif
 #ifdef FEAT_QUICKFIX
 	"quickfix",
@@ -12635,6 +12643,104 @@ f_readfile(argvars, rettv)
     fclose(fd);
 }
 
+#if defined(FEAT_RELTIME)
+static int list2proftime __ARGS((typval_T *arg, proftime_T *tm));
+
+/*
+ * Convert a List to proftime_T.
+ * Return FAIL when there is something wrong.
+ */
+    static int
+list2proftime(arg, tm)
+    typval_T	*arg;
+    proftime_T  *tm;
+{
+    long	n1, n2;
+    int	error = FALSE;
+
+    if (arg->v_type != VAR_LIST || arg->vval.v_list == NULL
+					     || arg->vval.v_list->lv_len != 2)
+	return FAIL;
+    n1 = list_find_nr(arg->vval.v_list, 0L, &error);
+    n2 = list_find_nr(arg->vval.v_list, 1L, &error);
+# ifdef WIN3264
+    tm->QuadPart = (n1 << 32) + n2;
+# else
+    tm->tv_sec = n1;
+    tm->tv_usec = n2;
+# endif
+    return error ? FAIL : OK;
+}
+#endif /* FEAT_RELTIME */
+
+/*
+ * "reltime()" function
+ */
+    static void
+f_reltime(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_RELTIME
+    proftime_T	res;
+    proftime_T	start;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	/* No arguments: get current time. */
+	profile_start(&res);
+    }
+    else if (argvars[1].v_type == VAR_UNKNOWN)
+    {
+	if (list2proftime(&argvars[0], &res) == FAIL)
+	    return;
+	profile_end(&res);
+    }
+    else
+    {
+	/* Two arguments: compute the difference. */
+	if (list2proftime(&argvars[0], &start) == FAIL
+		|| list2proftime(&argvars[1], &res) == FAIL)
+	    return;
+	profile_sub(&res, &start);
+    }
+
+    if (rettv_list_alloc(rettv) == OK)
+    {
+	long	n1, n2;
+
+# ifdef WIN3264
+	n1 = res.QuadPart >> 32;
+	n2 = res.QuadPart & 0xffffffff;
+# else
+	n1 = res.tv_sec;
+	n2 = res.tv_usec;
+# endif
+	list_append_number(rettv->vval.v_list, (varnumber_T)n1);
+	list_append_number(rettv->vval.v_list, (varnumber_T)n2);
+    }
+#endif
+}
+
+/*
+ * "reltimestr()" function
+ */
+    static void
+f_reltimestr(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_RELTIME
+    proftime_T	tm;
+#endif
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_RELTIME
+    if (list2proftime(&argvars[0], &tm) == OK)
+	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
+#endif
+}
 
 #if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
 static void make_connection __ARGS((void));
@@ -15098,7 +15204,8 @@ f_system(argvars, rettv)
 	}
     }
 
-    res = get_cmd_output(get_tv_string(&argvars[0]), infile, SHELL_SILENT);
+    res = get_cmd_output(get_tv_string(&argvars[0]), infile,
+						 SHELL_SILENT | SHELL_COOKED);
 
 #ifdef USE_CR
     /* translate <CR> into <NL> */

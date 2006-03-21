@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 20
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,23 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Links in docs to vimball docs.
-
 HTML indenting can be slow, find out why.
-Add a function to get the current time in usec.  reltime([start, [end]])
-    reltime().sec == seconds, reltime().usec = microseconds
-    reltime(start) current time relative to [start]
-	echo timestring(reltime(start), 3)  (3 is nr of digits after dot)
-    reltime(start, end) difference between start and end
-
-Include GetLatestVimScripts script?
 
 Adjust src/main.aap for installing manpages like in Makefile.
     And for generating Vim.app for the Mac.
     Install spell files with src/main.aap.
-
-Gnome2: When moving the toolbar out of the dock, so that it becomes floating,
-it can no longer be moved.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -66,6 +54,8 @@ Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Add text in user manual for using the undo tree.  Example with finding the
 text of a previous change.
+
+Links in docs to GetLatestVimScripts (getscript) plugin.
 
 
 Awaiting updated patches:
@@ -239,6 +229,10 @@ GTK+ GUI known bugs:
     when it is longer than 4000 characters.  Works OK from gvim to gvim and
     vim to vim.  Pasting through xterm (using the shift key) also works.
     It starts working after GTK gvim loses the selection and gains it again.
+-   Gnome2: When moving the toolbar out of the dock, so that it becomes
+    floating, it can no longer be moved.  Therefore making it float has been
+    blocked for now.
+
 
 Win32 GUI known bugs:
 -   Win32: tearoff menu window should have a scrollbar when it's taller than
