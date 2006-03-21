@@ -392,6 +392,16 @@
 #endif
 
 /*
+ * +reltime		reltime() function
+ */
+#if defined(FEAT_NORMAL) \
+	&& defined(FEAT_EVAL) \
+	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
+		|| defined(WIN3264))
+# define FEAT_RELTIME
+#endif
+
+/*
  * +textobjects		Text objects: "vaw", "das", etc.
  */
 #if defined(FEAT_NORMAL) && defined(FEAT_EVAL)

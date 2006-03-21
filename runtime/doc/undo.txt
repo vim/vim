@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 16
+*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -108,10 +108,10 @@ change.
 ==============================================================================
 4. Undo branches					*undo-branches*
 
-Above we only discussed one line of undo.  But it is also possible to branch
-off.  This happens when you undo a few changes and then make a new change.
-The undone changes become a branch.  You can go to that branch with the
-following commands.
+Above we only discussed one line of undo/redo.  But it is also possible to
+branch off.  This happens when you undo a few changes and then make a new
+change.  The undone changes become a branch.  You can go to that branch with
+the following commands.
 
 What matters here is the order in which the changes are made.  Undo and redo
 are not considered changes in this context.  After each change you have a new
@@ -179,9 +179,6 @@ Delete the second word by pressing "x" three times:
 Now undo that by using "g-" three times:
 	one o three ~
 	one wo three ~
-	one two three ~
-
-Continue going back in time by pressing "g-" one more time:
 	 two three ~
 
 You are now back in the first undo branch, after deleting "one".  Repeating

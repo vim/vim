@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 22
+*usr_41.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -24,6 +24,7 @@ script.  There are a lot of them, thus this is a long chapter.
 |41.13|	Writing a compiler plugin
 |41.14|	Writing a plugin that loads quickly
 |41.15|	Writing library scripts
+|41.16|	Distributing Vim scripts
 
      Next chapter: |usr_42.txt|  Add new menus
  Previous chapter: |usr_40.txt|  Make new commands
@@ -2155,6 +2156,9 @@ mean is that it loads quickly the first time, postponing the bulk of the
 script to the second time, which only happens when you actually use it.  When
 you always use the functionality it actually gets slower!
 
+Note that since Vim 7 there is an alternative: use the |autoload|
+functionality |41.15|.
+
 The following example shows how it's done: >
 
 	" Vim global plugin for demonstrating quick loading
@@ -2275,6 +2279,19 @@ like: >
 		\ 'donderdag', 'vrijdag', 'zaterdag']
 
 Further reading: |autoload|.
+
+==============================================================================
+*41.16*	Distributing Vim scripts			*distribute-script*
+
+Vim users will look for scripts on the Vim website: http://www.vim.org.
+If you made something that is useful for others, share it!
+
+Vim scripts can be used on any system.  There might not be a tar or gzip
+command.  If you want to pack files together and/or compress them the "zip"
+utility is recommended.
+
+For utmost portability use Vim itself to pack scripts together.  This can be
+done with the Vimball utility.  See |vimball|.
 
 ==============================================================================
 

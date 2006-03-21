@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 19
+*insert.txt*    For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1105,8 +1105,8 @@ When you are back at the original text then you are in the second state.  To
 get there right away you can use a mapping that uses CTRL-P right after
 starting the completion: >
 	:imap <F7> <C-N><C-P>
-
-
+<
+						*popupmenu-keys*
 In the first state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the word before
 		  the cursor.  This reduces the list of matches, often to one
