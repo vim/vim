@@ -1390,9 +1390,14 @@ ins_redraw(ready)
     if (!char_avail())
     {
 #ifdef FEAT_AUTOCMD
-	/* Trigger CursorMoved if the cursor moved. */
+	/* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
+	 * visible, the command might delete it. */
 	if (ready && has_cursormovedI()
-			     && !equalpos(last_cursormoved, curwin->w_cursor))
+			     && !equalpos(last_cursormoved, curwin->w_cursor)
+# ifdef FEAT_INS_EXPAND
+			     && !pum_visible()
+# endif
+			     )
 	{
 	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
 	    last_cursormoved = curwin->w_cursor;
@@ -2459,6 +2464,11 @@ ins_compl_show_pum()
 
     if (!pum_wanted() || !pum_enough_matches())
 	return;
+
+#if defined(FEAT_EVAL)
+    /* Dirty hard-coded hack: remove any matchparen highlighting. */
+    do_cmdline_cmd((char_u *)"if exists('g:loaded_matchparen')|3match none|endif");
+#endif
 
     /* Update the screen before drawing the popup menu over it. */
     update_screen(0);

@@ -1128,6 +1128,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +python	various.txt	/*+python*
 +python/dyn	various.txt	/*+python\/dyn*
 +quickfix	various.txt	/*+quickfix*
++reltime	various.txt	/*+reltime*
 +rightleft	various.txt	/*+rightleft*
 +ruby	various.txt	/*+ruby*
 +ruby/dyn	various.txt	/*+ruby\/dyn*
@@ -1618,6 +1619,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 41.13	usr_41.txt	/*41.13*
 41.14	usr_41.txt	/*41.14*
 41.15	usr_41.txt	/*41.15*
+41.16	usr_41.txt	/*41.16*
 41.2	usr_41.txt	/*41.2*
 41.3	usr_41.txt	/*41.3*
 41.4	usr_41.txt	/*41.4*
@@ -1700,6 +1702,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :Explore	pi_netrw.txt	/*:Explore*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
 :Man	filetype.txt	/*:Man*
+:MkVimball	vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
 :Next	editing.txt	/*:Next*
@@ -4043,6 +4046,7 @@ GTK+	gui_x11.txt	/*GTK+*
 GUI	gui.txt	/*GUI*
 GUI-X11	gui_x11.txt	/*GUI-X11*
 GUIEnter	autocmd.txt	/*GUIEnter*
+GetLatestVimScripts-copyright	getscript.txt	/*GetLatestVimScripts-copyright*
 Gnome	gui_x11.txt	/*Gnome*
 H	motion.txt	/*H*
 I	insert.txt	/*I*
@@ -4222,6 +4226,7 @@ VimEnter	autocmd.txt	/*VimEnter*
 VimLeave	autocmd.txt	/*VimLeave*
 VimLeavePre	autocmd.txt	/*VimLeavePre*
 VimResized	autocmd.txt	/*VimResized*
+Vimball-copyright	vimball.txt	/*Vimball-copyright*
 Virtual-Replace-mode	insert.txt	/*Virtual-Replace-mode*
 VisVim	if_ole.txt	/*VisVim*
 Visual	visual.txt	/*Visual*
@@ -4919,6 +4924,7 @@ dip	motion.txt	/*dip*
 dircolors.vim	syntax.txt	/*dircolors.vim*
 dis	motion.txt	/*dis*
 disable-menus	gui.txt	/*disable-menus*
+distribute-script	usr_41.txt	/*distribute-script*
 distribution	intro.txt	/*distribution*
 diw	motion.txt	/*diw*
 dl	change.txt	/*dl*
@@ -5430,12 +5436,20 @@ getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
 getftime()	eval.txt	/*getftime()*
 getftype()	eval.txt	/*getftype()*
+getlatestvimscripts	getscript.txt	/*getlatestvimscripts*
+getlatestvimscripts-algorithm	getscript.txt	/*getlatestvimscripts-algorithm*
+getlatestvimscripts-autoinstall	getscript.txt	/*getlatestvimscripts-autoinstall*
+getlatestvimscripts-data	getscript.txt	/*getlatestvimscripts-data*
+getlatestvimscripts-history	getscript.txt	/*getlatestvimscripts-history*
+getlatestvimscripts-plugins	getscript.txt	/*getlatestvimscripts-plugins*
 getline()	eval.txt	/*getline()*
 getloclist()	eval.txt	/*getloclist()*
 getpos()	eval.txt	/*getpos()*
 getqflist()	eval.txt	/*getqflist()*
 getreg()	eval.txt	/*getreg()*
 getregtype()	eval.txt	/*getregtype()*
+getscript	getscript.txt	/*getscript*
+getscript.txt	getscript.txt	/*getscript.txt*
 getwinposx()	eval.txt	/*getwinposx()*
 getwinposy()	eval.txt	/*getwinposy()*
 getwinvar()	eval.txt	/*getwinvar()*
@@ -5451,6 +5465,13 @@ global-ime	mbyte.txt	/*global-ime*
 global-local	options.txt	/*global-local*
 global-variable	eval.txt	/*global-variable*
 globpath()	eval.txt	/*globpath()*
+glvs	getscript.txt	/*glvs*
+glvs-alg	getscript.txt	/*glvs-alg*
+glvs-autoinstall	getscript.txt	/*glvs-autoinstall*
+glvs-contents	getscript.txt	/*glvs-contents*
+glvs-data	getscript.txt	/*glvs-data*
+glvs-hist	getscript.txt	/*glvs-hist*
+glvs-plugins	getscript.txt	/*glvs-plugins*
 gm	motion.txt	/*gm*
 gnome-session	gui_x11.txt	/*gnome-session*
 go	motion.txt	/*go*
@@ -6214,6 +6235,8 @@ netrw-preview	pi_netrw.txt	/*netrw-preview*
 netrw-problems	pi_netrw.txt	/*netrw-problems*
 netrw-protocol	pi_netrw.txt	/*netrw-protocol*
 netrw-prvwin	pi_netrw.txt	/*netrw-prvwin*
+netrw-pscp	pi_netrw.txt	/*netrw-pscp*
+netrw-putty	pi_netrw.txt	/*netrw-putty*
 netrw-q	pi_netrw.txt	/*netrw-q*
 netrw-r	pi_netrw.txt	/*netrw-r*
 netrw-read	pi_netrw.txt	/*netrw-read*
@@ -6440,6 +6463,7 @@ popt-option	print.txt	/*popt-option*
 popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
 popupmenu-completion	insert.txt	/*popupmenu-completion*
+popupmenu-keys	insert.txt	/*popupmenu-keys*
 ports-5.2	version5.txt	/*ports-5.2*
 ports-6	version6.txt	/*ports-6*
 posix	vi_diff.txt	/*posix*
@@ -6571,6 +6595,8 @@ register-faq	sponsor.txt	/*register-faq*
 register-variable	eval.txt	/*register-variable*
 registers	change.txt	/*registers*
 regular-expression	pattern.txt	/*regular-expression*
+reltime()	eval.txt	/*reltime()*
+reltimestr()	eval.txt	/*reltimestr()*
 remote.txt	remote.txt	/*remote.txt*
 remote_expr()	eval.txt	/*remote_expr()*
 remote_foreground()	eval.txt	/*remote_foreground()*
@@ -7529,6 +7555,13 @@ vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim:	options.txt	/*vim:*
+vimball	vimball.txt	/*vimball*
+vimball-contents	vimball.txt	/*vimball-contents*
+vimball-extract	vimball.txt	/*vimball-extract*
+vimball-history	vimball.txt	/*vimball-history*
+vimball-manual	vimball.txt	/*vimball-manual*
+vimball-vimballlist	vimball.txt	/*vimball-vimballlist*
+vimball.txt	vimball.txt	/*vimball.txt*
 vimdev	intro.txt	/*vimdev*
 vimdiff	diff.txt	/*vimdiff*
 vimfiles	options.txt	/*vimfiles*

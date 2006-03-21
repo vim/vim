@@ -5152,7 +5152,7 @@ find_file_in_path(ptr, len, options, first, rel_fname)
 {
     return find_file_in_path_option(ptr, len, options, first,
 	    *curbuf->b_p_path == NUL ? p_path : curbuf->b_p_path,
-	    FALSE, rel_fname);
+	    FALSE, rel_fname, curbuf->b_p_sua);
 }
 
 static char_u	*ff_file_to_find = NULL;
@@ -5185,11 +5185,11 @@ find_directory_in_path(ptr, len, options, rel_fname)
     char_u	*rel_fname;	/* file name searching relative to */
 {
     return find_file_in_path_option(ptr, len, options, TRUE, p_cdpath,
-							     TRUE, rel_fname);
+					       TRUE, rel_fname, (char_u *)"");
 }
 
     char_u *
-find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fname)
+find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fname, suffixes)
     char_u	*ptr;		/* file name */
     int		len;		/* length of file name */
     int		options;
@@ -5197,6 +5197,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
     char_u	*path_option;	/* p_path or p_cdpath */
     int		need_dir;	/* looking for directory name */
     char_u	*rel_fname;	/* file name we are looking relative to. */
+    char_u	*suffixes;	/* list of suffixes, 'suffixesadd' option */
 {
     static char_u	*dir;
     static int		did_findfile_init = FALSE;
@@ -5289,7 +5290,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, need_dir, rel_fn
 
 		/* When the file doesn't exist, try adding parts of
 		 * 'suffixesadd'. */
-		buf = curbuf->b_p_sua;
+		buf = suffixes;
 		for (;;)
 		{
 		    if (

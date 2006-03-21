@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 14, 2006
-" Version:	81
+" Date:		Mar 21, 2006
+" Version:	82
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v81"
+let g:loaded_netrw = "v82"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -1318,7 +1318,7 @@ fun! s:NetBrowse(dirname)
   exe 'vnoremap <buffer> <silent> D	:call <SID>NetBrowseRm("'.user.machine.'","'.path.'")<cr>'
   exe 'nnoremap <buffer> <silent> R	:call <SID>NetBrowseRename("'.user.machine.'","'.path.'")<cr>'
   exe 'vnoremap <buffer> <silent> R	:call <SID>NetBrowseRename("'.user.machine.'","'.path.'")<cr>'
-  nnoremap <buffer> ?			:he netrw-browse-cmds<cr>
+  nnoremap <buffer> <F1>			:he netrw-browse-cmds<cr>
   setlocal ma nonu nowrap
 
   " Set up the banner
@@ -2899,7 +2899,7 @@ fun! netrw#DirBrowse(dirname)
   exe 'nnoremap <buffer> <silent> R	:call <SID>LocalBrowseRename("'.b:netrw_curdir.'")<cr>'
   exe 'vnoremap <buffer> <silent> R	:call <SID>LocalBrowseRename("'.b:netrw_curdir.'")<cr>'
   exe 'nnoremap <buffer> <silent> <Leader>m :call <SID>NetMakeDir("")<cr>'
-  nnoremap <buffer> ?			:he netrw-dir<cr>
+  nnoremap <buffer> <F1>		:he netrw-dir<cr>
 
   " Set up the banner
 "  call Decho("set up banner")

@@ -809,29 +809,7 @@ dbg_breakpoint(name, lnum)
 }
 
 
-# if defined(FEAT_PROFILE) || defined(PROTO)
-/*
- * Functions for profiling.
- */
-static void script_do_profile __ARGS((scriptitem_T *si));
-static void script_dump_profile __ARGS((FILE *fd));
-static proftime_T prof_wait_time;
-
-/*
- * Set the time in "tm" to zero.
- */
-    void
-profile_zero(tm)
-    proftime_T *tm;
-{
-# ifdef WIN3264
-    tm->QuadPart = 0;
-# else
-    tm->tv_usec = 0;
-    tm->tv_sec = 0;
-# endif
-}
-
+# if defined(FEAT_PROFILE) || defined(FEAT_RELTIME) || defined(PROTO)
 /*
  * Store the current time in "tm".
  */
@@ -887,6 +865,52 @@ profile_sub(tm, tm2)
 	tm->tv_usec += 1000000;
 	--tm->tv_sec;
     }
+# endif
+}
+
+/*
+ * Return a string that represents the time in "tm".
+ * Uses a static buffer!
+ */
+    char *
+profile_msg(tm)
+    proftime_T *tm;
+{
+    static char buf[50];
+
+# ifdef WIN3264
+    LARGE_INTEGER   fr;
+
+    QueryPerformanceFrequency(&fr);
+    sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
+# else
+    sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
+#endif
+    return buf;
+}
+
+# endif  /* FEAT_PROFILE || FEAT_RELTIME */
+
+# if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Functions for profiling.
+ */
+static void script_do_profile __ARGS((scriptitem_T *si));
+static void script_dump_profile __ARGS((FILE *fd));
+static proftime_T prof_wait_time;
+
+/*
+ * Set the time in "tm" to zero.
+ */
+    void
+profile_zero(tm)
+    proftime_T *tm;
+{
+# ifdef WIN3264
+    tm->QuadPart = 0;
+# else
+    tm->tv_usec = 0;
+    tm->tv_sec = 0;
 # endif
 }
 
@@ -983,27 +1007,6 @@ profile_cmp(tm1, tm2)
 	return tm2->tv_usec - tm1->tv_usec;
     return tm2->tv_sec - tm1->tv_sec;
 # endif
-}
-
-/*
- * Return a string that represents a time.
- * Uses a static buffer!
- */
-    char *
-profile_msg(tm)
-    proftime_T *tm;
-{
-    static char buf[50];
-
-# ifdef WIN3264
-    LARGE_INTEGER   fr;
-
-    QueryPerformanceFrequency(&fr);
-    sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
-# else
-    sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
-#endif
-    return buf;
 }
 
 static char_u	*profile_fname = NULL;

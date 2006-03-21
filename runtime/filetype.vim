@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 13
+" Last Change:	2006 Mar 21
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1748,7 +1748,7 @@ au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl
 au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
 " Vim script
-au BufNewFile,BufRead *.vim,.exrc,_exrc		setf vim
+au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
 
 " Viminfo file
 au BufNewFile,BufRead .viminfo,_viminfo		setf viminfo
@@ -1925,6 +1925,7 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 
 " Asterisk config file
 au BufNewFile,BufRead *asterisk/*.conf*         call s:StarSetf('asterisk')
+au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
 
 " BIND zone
 au BufNewFile,BufRead /var/named/*		call s:StarSetf('bindzone')

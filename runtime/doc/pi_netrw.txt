@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 14, 2006
+*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 21, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -10,7 +10,7 @@
 ==============================================================================
 0. Contents						*netrw-contents*
 
-1.  Starting With Netrw.................................|netrw-start|
+1.  Starting With Netrw..................................|netrw-start|
 2.  Netrw Reference......................................|netrw-ref|
       CONTROLLING EXTERNAL APPLICATIONS..................|netrw-externapp|
       READING............................................|netrw-read|
@@ -162,7 +162,7 @@ READING						*netrw-read* *netrw-nread*
 	:Nread "sftp://[user@]machine/path"		uses sftp
 
 WRITING						*netrw-write* *netrw-nwrite*
-	:Nwrite ?    					give help
+	:Nwrite ?					give help
 	:Nwrite "machine:path"				uses rcp
 	:Nwrite "machine path"				uses ftp w/ <.netrc>
 	:Nwrite "machine id password path"		uses ftp
@@ -208,7 +208,7 @@ VARIABLES						*netrw-variables*
 			="ascii"
 
  *g:netrw_ignorenetrc*	=0 (default)
- 			=1 If you have a <.netrc> file but it doesn't work and
+			=1 If you have a <.netrc> file but it doesn't work and
 			   you want it ignored, then set this variable as shown.
 
  *g:netrw_uid*		(ftp) user-id,      retained on a per-session basis
@@ -267,10 +267,12 @@ series of commands (typically ftp) which it issues to an external program
 from/written to a temporary file (under Unix/Linux, /tmp/...) which the
 <netrw.vim> script will clean up.
 
+						*netrw-putty* *netrw-pscp*
 One may modify any protocol's implementing external application by setting a
 variable (ex. scp uses the variable g:netrw_scp_cmd, which is defaulted to
-"scp -q").
-
+"scp -q").  As an example, consider using PuTTY: >
+	let g:netrw_scp_cmd= '"c:\Program Files\PuTTY\pscp.exe" -q -batch'
+<
 Ftp, an old protocol, seems to be blessed by numerous implementations.
 Unfortunately, some implementations are noisy (ie., add junk to the end of the
 file).  Thus, concerned users may decide to write a NetReadFixup() function
@@ -457,7 +459,7 @@ additional commands available.
 
 
 ==============================================================================
-7. Variables and Options       			*netrw-options* *netrw-var*
+7. Variables and Options			*netrw-options* *netrw-var*
 
 The script <netrw.vim> uses several variables which can affect <netrw.vim>'s
 behavior.  These variables typically may be set in the user's <.vimrc> file:
@@ -589,7 +591,7 @@ To handle the SSL certificate dialog for untrusted servers, one may pull
 down the certificate and place it into /usr/ssl/cert.pem.  This operation
 renders the server treatment as "trusted".
 
-					 	*netrw-fixup* *netreadfixup*
+						*netrw-fixup* *netreadfixup*
 If your ftp for whatever reason generates unwanted lines (such as AUTH
 messages) you may write a NetReadFixup(tmpfile) function:
 >
@@ -629,8 +631,8 @@ itself:
 ==============================================================================
 8. Directory Browsing	*netrw-browse* *netrw-dir* *netrw-list* *netrw-help*
 
-MAPS   								*netrw-maps*
-     ?................Help.......................................|netrw-help|
+MAPS								*netrw-maps*
+     <F1>.............Help.......................................|netrw-help|
      <cr>.............Browsing...................................|netrw-cr|
      <del>............Deleting Files or Directories..............|netrw-delete|
      -................Going Up...................................|netrw--|
@@ -664,12 +666,12 @@ MAPS   								*netrw-maps*
      :Nexplore[!] [dir] Vertical Split & Explore.................|netrw-explore|
      :NetrwSettings.............................................|netrw-settings|
 
-QUICK REFERENCE COMMANDS TABLE     			*netrw-browse-cmds*
+QUICK REFERENCE COMMANDS TABLE				*netrw-browse-cmds*
 >
         -------	-----------
 	Command	Explanation
         -------	-----------
-<          ?	Causes Netrw to issue help
+<	<F1>	Causes Netrw to issue help
 	 <cr>	Netrw will enter the directory or read the file |netrw-cr|
 	 <del>	Netrw will attempt to remove the file/directory |netrw-del|
 	   -	Makes Netrw go up one directory |netrw--|
@@ -713,7 +715,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				 default: =0
 
   *g:netrw_altv*		change from left splitting to right splitting
- 				by setting this variable (see |netrw-v|)
+				by setting this variable (see |netrw-v|)
 				 default: =0
 
   *g:netrw_browse_split*	when browsing, <cr> will open the file by:
@@ -731,7 +733,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				extension.  (see |netrw_filehandler|).
 
   *g:netrw_fastbrowse*		=0: slow speed browsing, never re-use
-  				    directory listings; always obtain
+				    directory listings; always obtain
 				    directory listings.
 				=1: medium speed browsing, re-use directory
 				    listings only when remote browsing.
@@ -824,7 +826,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				           \.info$,\.swp$,\.obj$'
 
   *g:netrw_ssh_cmd*		One may specify an executable command
-  				to use instead of ssh for remote actions
+				to use instead of ssh for remote actions
 				such as listing, file removal, etc.
 				 default: ssh
 
@@ -833,7 +835,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				want masquerading as "directories" and "files".
 				Use this pattern to remove such embedded
 				messages.  By default its value is:
- 					 '^total\s\+\d\+$'
+					 '^total\s\+\d\+$'
 
   *g:netrw_timefmt*		specify format string to strftime() (%c)
 				 default: "%c"
@@ -842,7 +844,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				 default: ""
 
   *g:DrChipTopLvlMenu*		This variable specifies the top level
-  				submenu name; by default, its "DrChip.".
+				submenu name; by default, its "DrChip.".
 				If you wish to change this, do so in your
 				.vimrc.  It affects all of my plugins which
 				have menus.
@@ -971,7 +973,7 @@ preferred.  The NetList function which implements remote directory browsing
 expects that directories will be flagged by a trailing slash.
 
 
-BROWSING 							*netrw-cr*
+BROWSING							*netrw-cr*
 
 Browsing is simple: move the cursor onto a file or directory of interest.
 Hitting the <cr> (the return key) will select the file or directory.
@@ -1311,6 +1313,9 @@ For Linux/Unix systems, I suggest looking into
 It gives a tip for setting up password-less use of ssh and scp, and discusses
 the associated security issues.
 
+For Windows, the vim mailing list has mentioned that Pageant helps with
+avoiding the constant need to enter the password.
+
 
 NETRW SETTINGS						*netrw-settings*
 
@@ -1384,7 +1389,7 @@ help on what each of the variables do.
 	P6. I want my current directory to track my browsing.
 	    How do I do that?
 
-	    	let g:netrw_keepdir= 0
+		let g:netrw_keepdir= 0
 
 
 ==============================================================================

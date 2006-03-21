@@ -88,7 +88,7 @@ static int undo_allowed __ARGS((void));
 static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((int undo));
-static void u_undo_end __ARGS((void));
+static void u_undo_end __ARGS((int did_undo));
 static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
 static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
@@ -638,7 +638,7 @@ u_doit(startcount)
 	    curbuf->b_u_curhead = curbuf->b_u_curhead->uh_prev;
 	}
     }
-    u_undo_end();
+    u_undo_end(undo_undoes);
 }
 
 static int lastmark = 0;
@@ -669,6 +669,7 @@ undo_time(step, sec, absolute)
     int		    round;
     int		    dosec = sec;
     int		    above = FALSE;
+    int		    did_undo = TRUE;
 
     /* First make sure the current undoable change is synced. */
     if (curbuf->b_u_synced == FALSE)
@@ -888,6 +889,7 @@ undo_time(step, sec, absolute)
 	    if (uhp->uh_prev == NULL)
 		curbuf->b_u_newhead = uhp;
 	    curbuf->b_u_curhead = uhp->uh_prev;
+	    did_undo = FALSE;
 
 	    if (uhp->uh_seq == target)	/* found it! */
 		break;
@@ -901,7 +903,7 @@ undo_time(step, sec, absolute)
 	    }
 	}
     }
-    u_undo_end();
+    u_undo_end(did_undo);
 }
 
 /*
@@ -1174,7 +1176,8 @@ u_undoredo(undo)
  * in some cases, but it's better than nothing).
  */
     static void
-u_undo_end()
+u_undo_end(did_undo)
+    int		did_undo;	/* just did an undo */
 {
     char	*msg;
     u_header_T	*uhp;
@@ -1211,7 +1214,12 @@ u_undo_end()
     }
 
     if (curbuf->b_u_curhead != NULL)
-	uhp = curbuf->b_u_curhead;
+    {
+	if (did_undo)
+	    uhp = curbuf->b_u_curhead;
+	else
+	    uhp = curbuf->b_u_curhead->uh_next;
+    }
     else
 	uhp = curbuf->b_u_newhead;
 
@@ -1220,9 +1228,12 @@ u_undo_end()
     else
 	u_add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
 
-    smsg((char_u *)_("%ld %s; #%ld  %s"),
+    smsg((char_u *)_("%ld %s; %s #%ld  %s"),
 	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
-	    _(msg), uhp == NULL ? 0L : uhp->uh_seq, msgbuf);
+	    _(msg),
+	    did_undo ? _("before") : _("after"),
+	    uhp == NULL ? 0L : uhp->uh_seq,
+	    msgbuf);
 }
 
 /*

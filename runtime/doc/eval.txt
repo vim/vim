@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 19
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1647,6 +1647,8 @@ range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
 				List	get list of lines from file {fname}
+reltime( [{start} [, {end}]])	List	get time value
+reltimestr( {time})		String	turn time value into a String
 remote_expr( {server}, {string} [, {idvar}])
 				String	send expression
 remote_foreground( {server})	Number	bring Vim server to the foreground
@@ -2462,21 +2464,23 @@ filter({expr}, {string})					*filter()*
 
 
 finddir({name}[, {path}[, {count}]])				*finddir()*
-		Find directory {name} in {path}.
+		Find directory {name} in {path}.  Returns the path of the
+		first found match.  When the found directory is below the
+		current directory a relative path is returned.  Otherwise a
+		full path is returned.
 		If {path} is omitted or empty then 'path' is used.
 		If the optional {count} is given, find {count}'s occurrence of
-		{name} in {path}.
+		{name} in {path} instead of the first one.
 		This is quite similar to the ex-command |:find|.
-		When the found directory is below the current directory a
-		relative path is returned.  Otherwise a full path is returned.
-		Example: >
-			:echo findfile("tags.vim", ".;")
-<		Searches from the current directory upwards until it finds
-		the file "tags.vim".
 		{only available when compiled with the +file_in_path feature}
 
 findfile({name}[, {path}[, {count}]])				*findfile()*
 		Just like |finddir()|, but find a file instead of a directory.
+		Uses 'suffixesadd'.
+		Example: >
+			:echo findfile("tags.vim", ".;")
+<		Searches from the current directory upwards until it finds
+		the file "tags.vim".
 
 filewritable({file})					*filewritable()*
 		The result is a Number, which is 1 when a file with the
@@ -3781,6 +3785,31 @@ readfile({fname} [, {binary} [, {max}]])
 		the result is an empty list.
 		Also see |writefile()|.
 
+reltime([{start} [, {end}]])				*reltime()*
+		Return an item that represents a time value.  The format of
+		the item depends on the system.  It can be passed to
+		|reltimestr()| to convert it to a string.
+		Without an argument it returns the current time.
+		With one argument is returns the time passed since the time
+		specified in the argument.
+		With two arguments it returns the time passed betweein {start}
+		and {end}.
+		The {start} and {end} arguments must be values returned by
+		reltime().
+		{only available when compiled with the +reltime feature}
+
+reltimestr({time})				*reltimestr()*
+		Return a String that represents the time value of {time}.
+		This is the number of seconds, a dot and the number of
+		microseconds.  Example: >
+			let start = reltime()
+			call MyFunction()
+			echo reltimestr(reltime(start))
+<		Note that overhead for the commands will be added to the time.
+		The accuracy depends on the system.
+		Also see |profiling|.
+		{only available when compiled with the +reltime feature}
+
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar}])
 		Send the {string} to {server}.  The string is sent as an
@@ -4632,6 +4661,9 @@ system({expr} [, {input}])				*system()* *E677*
 		For Unix and OS/2 braces are put around {expr} to allow for
 		concatenated commands.
 
+		The command will be executed in "cooked" mode, so that a
+		CTRL-C will interrupt the command (on Unix at least).
+
 		The resulting error code can be found in |v:shell_error|.
 		This function will fail in |restricted-mode|.
 
@@ -5434,6 +5466,9 @@ And you will get an error message every time.
 Also note that if you have two script files, and one calls a function in the
 other and vise versa, before the used function is defined, it won't work.
 Avoid using the autoload functionality at the toplevel.
+
+Hint: If you distribute a bunch of scripts you can pack them together with the
+|vimball| utility.  Also read the user manual |distribute-script|.
 
 ==============================================================================
 6. Curly braces names					*curly-braces-names*

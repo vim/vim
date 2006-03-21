@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 17
+*various.txt*   For Vim version 7.0aa.  Last change: 2006 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,6 +355,7 @@ H  *+profile*		|:profile| command
 m  *+python*		Python interface |python|
 m  *+python/dyn*	Python interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
+N  *+reltime*		|reltime()| function
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
