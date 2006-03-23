@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Jan 26, 2006
+" Date:		Mar 22, 2006
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	6a	ASTRO-ONLY
+" Version:	6
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v6a"
+let g:loaded_netrwSettings  = "v6"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
@@ -56,10 +56,10 @@ fun! netrwSettings#NetrwSettings()
    let g:netrw_ignorenetrc= 0
   endif
 
-  put ='+ --------------------------------------------'
-  put ='+ NetrwSettings:  by Charles E. Campbell, Jr.'
-  put ='+  Press ? with cursor atop any line for help  '
-  put ='+ --------------------------------------------'
+  put ='+ ---------------------------------------------'
+  put ='+  NetrwSettings:  by Charles E. Campbell, Jr.'
+  put ='+ Press <F1> with cursor atop any line for help'
+  put ='+ ---------------------------------------------'
   let s:netrw_settings_stop= line(".")
 
   put =''
@@ -132,7 +132,7 @@ fun! netrwSettings#NetrwSettings()
 
   set nomod
 
-  map <buffer> <silent> ? :call NetrwSettingHelp()<cr>
+  map <buffer> <silent> <F1> :call NetrwSettingHelp()<cr>
   let tmpfile= tempname()
   exe 'au BufWriteCmd	Netrw\ Settings	silent w! '.tmpfile.'|so '.tmpfile.'|call delete("'.tmpfile.'")|set nomod'
 endfun

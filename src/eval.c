@@ -1661,11 +1661,12 @@ ex_let(eap)
     int		var_count = 0;
     int		semicolon = 0;
     char_u	op[2];
+    char_u	*argend;
 
-    expr = skip_var_list(arg, &var_count, &semicolon);
-    if (expr == NULL)
+    argend = skip_var_list(arg, &var_count, &semicolon);
+    if (argend == NULL)
 	return;
-    expr = vim_strchr(expr, '=');
+    expr = vim_strchr(argend, '=');
     if (expr == NULL)
     {
 	/*
@@ -1692,7 +1693,7 @@ ex_let(eap)
     {
 	op[0] = '=';
 	op[1] = NUL;
-	if (expr > arg)
+	if (expr > argend)
 	{
 	    if (vim_strchr((char_u *)"+-.", expr[-1]) != NULL)
 		op[0] = expr[-1];   /* +=, -= or .= */
@@ -12664,7 +12665,8 @@ list2proftime(arg, tm)
     n1 = list_find_nr(arg->vval.v_list, 0L, &error);
     n2 = list_find_nr(arg->vval.v_list, 1L, &error);
 # ifdef WIN3264
-    tm->QuadPart = (n1 << 32) + n2;
+    tm->HighPart = n1;
+    tm->LowPart = n2;
 # else
     tm->tv_sec = n1;
     tm->tv_usec = n2;
@@ -12710,8 +12712,8 @@ f_reltime(argvars, rettv)
 	long	n1, n2;
 
 # ifdef WIN3264
-	n1 = res.QuadPart >> 32;
-	n2 = res.QuadPart & 0xffffffff;
+	n1 = res.HighPart;
+	n2 = res.LowPart;
 # else
 	n1 = res.tv_sec;
 	n2 = res.tv_usec;

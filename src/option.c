@@ -6053,7 +6053,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #if defined(FEAT_GUI_TABLINE)
     /* 'guitablabel' */
     else if (varp == &p_gtl)
-	gui_update_tabline();
+	gui_init_which_components(NULL);
 #endif
 
 #if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))

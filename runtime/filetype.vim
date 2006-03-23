@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 21
+" Last Change:	2006 Mar 23
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -638,12 +638,16 @@ au BufNewFile,BufRead *.t.html			setf tilde
 " HTML (.shtml and .stm for server side)
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call s:FThtml()
 
-" Distinguish between HTML and XHTML
+" Distinguish between HTML, XHTML and Django
 fun! s:FThtml()
   let n = 1
   while n < 10 && n < line("$")
     if getline(n) =~ '\<DTD\s\+XHTML\s'
       setf xhtml
+      return
+    endif
+    if getline(n) =~ '{%\s*\(extends\|block\)\>'
+      setf htmldjango
       return
     endif
     let n = n + 1

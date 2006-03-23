@@ -6854,6 +6854,23 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	}
 	if (no < 0)	      /* Ordinary character. */
 	{
+	    if (c == K_SPECIAL && src[0] != NUL && src[1] != NUL)
+	    {
+		/* Copy a specialy key as-is. */
+		if (copy)
+		{
+		    *dst++ = c;
+		    *dst++ = *src++;
+		    *dst++ = *src++;
+		}
+		else
+		{
+		    dst += 3;
+		    src += 2;
+		}
+		continue;
+	    }
+
 	    if (c == '\\' && *src != NUL)
 	    {
 		/* Check for abbreviations -- webb */
@@ -6877,13 +6894,12 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 				c = *src++;
 		}
 	    }
-
-	    /* Write to buffer, if copy is set. */
 #ifdef FEAT_MBYTE
-	    if (has_mbyte)
+	    else if (has_mbyte)
 		c = mb_ptr2char(src - 1);
 #endif
 
+	    /* Write to buffer, if copy is set. */
 	    if (func == (fptr_T)NULL)	/* just copy */
 		cc = c;
 	    else

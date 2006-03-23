@@ -41,6 +41,10 @@
 # endif
 # include <gnome.h>
 # include "version.h"
+#  ifdef HAVE_GTK2
+/* missing prototype in bonobo-dock-item.h */
+extern void bonobo_dock_item_set_behavior(BonoboDockItem *dock_item, BonoboDockItemBehavior beh);
+#  endif
 #endif
 
 #if !defined(FEAT_GUI_GTK) && defined(PROTO)
@@ -3541,8 +3545,10 @@ gui_mch_init(void)
 	gnome_app_set_menus(GNOME_APP(gui.mainwin), GTK_MENU_BAR(gui.menubar));
 	dockitem = gnome_app_get_dock_item_by_name(GNOME_APP(gui.mainwin),
 						   GNOME_APP_MENUBAR_NAME);
-	// bonobo_dock_item_set_behavior(dockitem,
-	//				 BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
+	/* We don't want the menu to float. */
+	bonobo_dock_item_set_behavior(dockitem,
+		bonobo_dock_item_get_behavior(dockitem)
+				       | BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
 	gui.menubar_h = GTK_WIDGET(dockitem);
 #  else
 	gui.menubar_h = gnome_dock_item_new("VimMainMenu",
@@ -3600,9 +3606,10 @@ gui_mch_init(void)
 						   GNOME_APP_TOOLBAR_NAME);
 	gui.toolbar_h = GTK_WIDGET(dockitem);
 	/* When the toolbar is floating it gets stuck.  So long as that isn't
-	 * fixed let's disallow floating.  Also changes it appearance... */
+	 * fixed let's disallow floating. */
 	bonobo_dock_item_set_behavior(dockitem,
-					 BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
+		bonobo_dock_item_get_behavior(dockitem)
+				       | BONOBO_DOCK_ITEM_BEH_NEVER_FLOATING);
 	gtk_container_set_border_width(GTK_CONTAINER(gui.toolbar), 0);
 #  else
 	GtkWidget *dockitem;

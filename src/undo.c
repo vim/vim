@@ -88,7 +88,7 @@ static int undo_allowed __ARGS((void));
 static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((int undo));
-static void u_undo_end __ARGS((int did_undo));
+static void u_undo_end __ARGS((int did_undo, int absolute));
 static void u_add_time __ARGS((char_u *buf, size_t buflen, time_t tt));
 static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
@@ -638,7 +638,7 @@ u_doit(startcount)
 	    curbuf->b_u_curhead = curbuf->b_u_curhead->uh_prev;
 	}
     }
-    u_undo_end(undo_undoes);
+    u_undo_end(undo_undoes, FALSE);
 }
 
 static int lastmark = 0;
@@ -704,7 +704,7 @@ undo_time(step, sec, absolute)
 	else
 	{
 	    if (sec)
-		closest = time(NULL) - starttime + 1;
+		closest = (long)(time(NULL) - starttime + 1);
 	    else
 		closest = curbuf->b_u_seq_last + 2;
 	    if (target >= closest)
@@ -739,7 +739,7 @@ undo_time(step, sec, absolute)
 	while (uhp != NULL)
 	{
 	    uhp->uh_walk = mark;
-	    val = (dosec ? (uhp->uh_time - starttime) : uhp->uh_seq);
+	    val = (long)(dosec ? (uhp->uh_time - starttime) : uhp->uh_seq);
 
 	    if (round == 1)
 	    {
@@ -788,7 +788,12 @@ undo_time(step, sec, absolute)
 	    else if (uhp->uh_next != NULL && uhp->uh_alt_prev == NULL
 		    && uhp->uh_next->uh_walk != nomark
 		    && uhp->uh_next->uh_walk != mark)
+	    {
+		/* If still at the start we don't go through this change. */
+		if (uhp == curbuf->b_u_curhead)
+		    uhp->uh_walk = nomark;
 		uhp = uhp->uh_next;
+	    }
 
 	    else
 	    {
@@ -880,7 +885,10 @@ undo_time(step, sec, absolute)
 	    /* Stop when going backwards in time and didn't find the exact
 	     * header we were looking for. */
 	    if (uhp->uh_seq == target && above)
+	    {
+		curbuf->b_u_seq_cur = target - 1;
 		break;
+	    }
 
 	    u_undoredo(FALSE);
 
@@ -903,7 +911,7 @@ undo_time(step, sec, absolute)
 	    }
 	}
     }
-    u_undo_end(did_undo);
+    u_undo_end(did_undo, absolute);
 }
 
 /*
@@ -1176,8 +1184,9 @@ u_undoredo(undo)
  * in some cases, but it's better than nothing).
  */
     static void
-u_undo_end(did_undo)
+u_undo_end(did_undo, absolute)
     int		did_undo;	/* just did an undo */
+    int		absolute;	/* used ":undo N" */
 {
     char	*msg;
     u_header_T	*uhp;
@@ -1215,7 +1224,13 @@ u_undo_end(did_undo)
 
     if (curbuf->b_u_curhead != NULL)
     {
-	if (did_undo)
+	/* For ":undo N" we prefer a "after #N" message. */
+	if (absolute && curbuf->b_u_curhead->uh_next != NULL)
+	{
+	    uhp = curbuf->b_u_curhead->uh_next;
+	    did_undo = FALSE;
+	}
+	else if (did_undo)
 	    uhp = curbuf->b_u_curhead;
 	else
 	    uhp = curbuf->b_u_curhead->uh_next;

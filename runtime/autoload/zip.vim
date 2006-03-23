@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Dec 21, 2005
-" Version:		6
+" Date:			Mar 22, 2006
+" Version:		7
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,8 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip= "v6"
+let g:loaded_zip     = "v7"
+let s:zipfile_escape = ' ?&;\'
 
 " ----------------
 "  Functions: {{{1
@@ -53,6 +54,7 @@ fun! zip#Browse(zipfile)
 "   call Dret("zip#Browse : file<".a:zipfile."> not readable")
    return
   endif
+"  call Decho("passed sanity checks")
   if &ma != 1
    set ma
   endif
@@ -73,7 +75,8 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-  exe "silent r! unzip -l ".a:zipfile
+  call Decho("exe silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'")
+  exe "silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'"
   $d
   silent 4,$v/^\s\+\d\+\s\{0,5}\d/d
   silent  4,$s/^\%(.*\)\s\+\(\S\)/\1/
@@ -111,12 +114,15 @@ fun! s:ZipBrowseSelect()
 
   " get zipfile to the new-window
   let zipfile= substitute(w:zipfile,'.zip$','','e')
-  let curfile= expand("%")
+  let curfile= escape(expand("%"),s:zipfile_escape)
+"  call Decho("zipfile<".zipfile.">")
+"  call Decho("curfile<".curfile.">")
 
   new
   wincmd _
   let s:zipfile_{winnr()}= curfile
-  exe "e zipfile:".zipfile.':'.fname
+"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).':'.fname)
+  exe "e zipfile:".escape(zipfile,s:zipfile_escape).':'.fname
   filetype detect
 
   let &report= repkeep
@@ -130,11 +136,12 @@ fun! zip#Read(fname,mode)
   let repkeep= &report
   set report=10
 
-  let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):.*$','\1','')
-  let fname   = substitute(a:fname,'zipfile:.\{-}:\(.*\)$','\1','')
+  let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):[^\\].*$','\1','')
+  let fname   = substitute(a:fname,'zipfile:.\{-}:\([^\\].*\)$','\1','')
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-  exe "r! unzip -p ".zipfile." ".fname
+"  call Decho("exe r! unzip -p '".escape(zipfile,s:zipfile_escape)."' ".fname)
+  exe "r! unzip -p '".escape(zipfile,s:zipfile_escape)."' ".fname
 
   " cleanup
   0d

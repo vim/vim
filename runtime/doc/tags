@@ -1849,6 +1849,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :cfir	quickfix.txt	/*:cfir*
 :cfirst	quickfix.txt	/*:cfirst*
 :cg	quickfix.txt	/*:cg*
+:cgetb	quickfix.txt	/*:cgetb*
+:cgetbuffer	quickfix.txt	/*:cgetbuffer*
+:cgete	quickfix.txt	/*:cgete*
+:cgetexpr	quickfix.txt	/*:cgetexpr*
 :cgetfile	quickfix.txt	/*:cgetfile*
 :ch	change.txt	/*:ch*
 :change	change.txt	/*:change*
@@ -2188,6 +2192,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lfir	quickfix.txt	/*:lfir*
 :lfirst	quickfix.txt	/*:lfirst*
 :lg	quickfix.txt	/*:lg*
+:lgetb	quickfix.txt	/*:lgetb*
+:lgetbuffer	quickfix.txt	/*:lgetbuffer*
+:lgete	quickfix.txt	/*:lgete*
+:lgetexpr	quickfix.txt	/*:lgetexpr*
 :lgetfile	quickfix.txt	/*:lgetfile*
 :lgr	quickfix.txt	/*:lgr*
 :lgrep	quickfix.txt	/*:lgrep*
@@ -5299,6 +5307,7 @@ ft-sqlinformix-syntax	syntax.txt	/*ft-sqlinformix-syntax*
 ft-syntax-omni	insert.txt	/*ft-syntax-omni*
 ft-tcsh-syntax	syntax.txt	/*ft-tcsh-syntax*
 ft-termcap-syntax	syntax.txt	/*ft-termcap-syntax*
+ft-tex-plugin	filetype.txt	/*ft-tex-plugin*
 ft-tex-syntax	syntax.txt	/*ft-tex-syntax*
 ft-tf-syntax	syntax.txt	/*ft-tf-syntax*
 ft-vb-syntax	syntax.txt	/*ft-vb-syntax*

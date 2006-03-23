@@ -1857,8 +1857,8 @@ installtutor: $(DEST_RT) $(DEST_TUTOR)
 # spell file is there.
 installspell: $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
 	if test -f $(SPELLSOURCE)/en.latin1.spl; then \
-	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(SPELLSOURCE)/*.vim $(DEST_SPELL); \
-	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl $(DEST_SPELL)/*.vim; \
+	  $(INSTALL_DATA) $(SPELLSOURCE)/*.spl $(SPELLSOURCE)/*.sug $(SPELLSOURCE)/*.vim $(DEST_SPELL); \
+	  chmod $(HELPMOD) $(DEST_SPELL)/*.spl $(DEST_SPELL)/*.sug $(DEST_SPELL)/*.vim; \
 	fi
 
 # install helper program xxd
@@ -2029,7 +2029,7 @@ $(DEST_BIN)/$(EVIMTARGET):
 $(DEST_BIN)/$(EVIEWTARGET):
 	cd $(DEST_BIN); ln -s $(VIMTARGET) $(EVIEWTARGET)
 
-# create links for the manual pages with various names to vim.	This is only
+# Create links for the manual pages with various names to vim.	This is only
 # done when the links (or manpages with the same name) don't exist yet.
 
 INSTALLMLARGS = $(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME) \
@@ -2520,6 +2520,8 @@ install_macosx: gui_bundle
 # Remove the link to the runtime dir, don't want to copy all of that.
 	-rm $(RESDIR)/vim/runtime
 	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
+# Generate the help tags file now, it won't work with "make installruntime".
+	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 # Install the runtime files.  Recursive!
 	-mkdir -p $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 #	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
@@ -2538,7 +2540,6 @@ $(RESDIR):
 	mkdir -p $@
 
 bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
-	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
 # Make a link to the runtime directory, so that we can try out the executable
 # without installing it.
 	mkdir -p $(RESDIR)/vim

@@ -3497,8 +3497,10 @@ set_errorlist(wp, list, action)
 /*
  * ":[range]cbuffer [bufnr]" command.
  * ":[range]caddbuffer [bufnr]" command.
+ * ":[range]cgetbuffer [bufnr]" command.
  * ":[range]lbuffer [bufnr]" command.
  * ":[range]laddbuffer [bufnr]" command.
+ * ":[range]lgetbuffer [bufnr]" command.
  */
     void
 ex_cbuffer(eap)
@@ -3507,7 +3509,8 @@ ex_cbuffer(eap)
     buf_T	*buf = NULL;
     qf_info_T	*qi = &ql_info;
 
-    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_laddbuffer)
+    if (eap->cmdidx == CMD_lbuffer || eap->cmdidx == CMD_lgetbuffer
+	    || eap->cmdidx == CMD_laddbuffer)
     {
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
@@ -3534,12 +3537,12 @@ ex_cbuffer(eap)
 	    EMSG(_(e_invrange));
 	else
 	{
-	    int		buffer_cmd = (eap->cmdidx == CMD_cbuffer
-					       || eap->cmdidx == CMD_lbuffer);
-
-	    if (qf_init_ext(qi, NULL, buf, NULL, p_efm, buffer_cmd,
+	    if (qf_init_ext(qi, NULL, buf, NULL, p_efm,
+			    (eap->cmdidx != CMD_caddbuffer
+			     && eap->cmdidx != CMD_laddbuffer),
 						   eap->line1, eap->line2) > 0
-		    && buffer_cmd)
+		    && (eap->cmdidx == CMD_cbuffer
+			|| eap->cmdidx == CMD_lbuffer))
 		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
 	}
     }
@@ -3547,8 +3550,8 @@ ex_cbuffer(eap)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * ":cexpr {expr}" and ":caddexpr {expr}" command.
- * ":lexpr {expr}" and ":laddexpr {expr}" command.
+ * ":cexpr {expr}", ":cgetexpr {expr}", ":caddexpr {expr}" command.
+ * ":lexpr {expr}", ":lgetexpr {expr}", ":laddexpr {expr}" command.
  */
     void
 ex_cexpr(eap)
@@ -3557,7 +3560,8 @@ ex_cexpr(eap)
     typval_T	*tv;
     qf_info_T	*qi = &ql_info;
 
-    if (eap->cmdidx == CMD_lexpr || eap->cmdidx == CMD_laddexpr)
+    if (eap->cmdidx == CMD_lexpr || eap->cmdidx == CMD_lgetexpr
+	    || eap->cmdidx == CMD_laddexpr)
     {
 	qi = ll_get_or_alloc_list(curwin);
 	if (qi == NULL)
@@ -3572,11 +3576,12 @@ ex_cexpr(eap)
 	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
 		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
 	{
-	    int	    expr_cmd = (eap->cmdidx == CMD_cexpr
-				|| eap->cmdidx == CMD_lexpr);
-	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm, expr_cmd,
+	    if (qf_init_ext(qi, NULL, NULL, tv, p_efm,
+			    (eap->cmdidx != CMD_caddexpr
+			     && eap->cmdidx != CMD_laddexpr),
 						 (linenr_T)0, (linenr_T)0) > 0
-		    && expr_cmd)
+		    && (eap->cmdidx == CMD_cexpr
+			|| eap->cmdidx == CMD_lexpr))
 		qf_jump(qi, 0, 0, eap->forceit);  /* display first error */
 	}
 	else

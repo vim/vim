@@ -1749,6 +1749,8 @@ cmdline_changed:
 		end_pos = curwin->w_cursor;
 		curwin->w_cursor = save_pos;
 	    }
+	    else
+		end_pos = curwin->w_cursor; /* shutup gcc 4 */
 
 	    validate_cursor();
 

@@ -1,8 +1,8 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Feb 15, 2006
-" Version:	8a	ASTRO-ONLY
+" Date:		Mar 22, 2006
+" Version:	8
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -22,7 +22,7 @@ if exists("g:loaded_netrwFileHandlers") || &cp
 endif
 let s:keepcpo= &cpo
 set cpo&vim
-let g:loaded_netrwFileHandlers= "v8a"
+let g:loaded_netrwFileHandlers= "v8"
 
 " ---------------------------------------------------------------------
 " netrwFileHandlers#Invoke: {{{2

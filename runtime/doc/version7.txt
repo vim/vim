@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 21
+*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -609,24 +609,27 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 
 |:viusage|		Help for Vi commands (Nvi command).
 
-|:cbuffer|		Read error lines from a buffer. (partly by Yegappan
-			Lakshmanan)
-
 |:sort|			Sort lines in the buffer without depending on an
 			external command.
 
 |:caddfile|		Add error messages to an existing quickfix list
 			(Yegappan Lakshmanan).
-
-|:cexpr|		Read error messages from a Vim expression (Yegappan
-			Lakshmanan).
-
-|:caddexpr|		Add error messages from a Vim expression to an
-			existing quickfix list. (Yegappan Lakshmanan).
+|:cbuffer|		Read error lines from a buffer. (partly by Yegappan
+			Lakshmanan)
+|:cgetbuffer|		Create a quickfix list from a buffer but don't jump to
+			the first error.
 |:caddbuffer|		Add errors from the current buffer to the quickfix
 			list.
+|:cexpr|		Read error messages from a Vim expression (Yegappan
+			Lakshmanan).
+|:caddexpr|		Add error messages from a Vim expression to an
+			existing quickfix list. (Yegappan Lakshmanan).
+|:cgetexpr|		Create a quickfix list from a Vim expression, but
+			don't jump to the first error. (Yegappan Lakshmanan).
 
 |:lfile|		Like |:cfile| but use the location list.
+|:lgetbuffer|		Like |:cgetbuffer| but use the location list.
+|:lgetexpr|		Like |:cgetexpr| but use the location list.
 |:lgetfile|		Like |:cgetfile| but use the location list.
 |:laddfile|		Like |:caddfile| but use the location list.
 |:lbuffer|		Like |:cbuffer| but use the location list.

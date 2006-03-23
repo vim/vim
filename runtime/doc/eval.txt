@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
+*eval.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3591,7 +3591,7 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getpos(".")
 			MoveTheCursorAround
-			call setpos(save_cursor)
+			call setpos('.', save_cursor)
 <		Also see |setpos()|.
 
 prevnonblank({lnum})					*prevnonblank()*
@@ -4225,6 +4225,7 @@ setpos({expr}, {list})
 		the current buffer.  To set a mark in another buffer you can
 		use the |bufnr()| function to turn a file name into a buffer
 		number.
+		Does not change the jumplist.
 
 		"lnum" and "col" are the position in the buffer.  The first
 		column is 1.  Use a zero "lnum" to delete a mark.
@@ -4918,8 +4919,8 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 		This is useful if you have a mapping that jumps around in the
 		buffer and you want to go back to the original view.
 		This does not save fold information.  Use the 'foldenable'
-		option to temporarily switch of folding, so that folds are not
-		opened when moving around.
+		option to temporarily switch off folding, so that folds are
+		not opened when moving around.
 		The return value includes:
 			lnum		cursor line number
 			col		cursor column

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
+*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-HTML indenting can be slow, find out why.
-
-Adjust src/main.aap for installing manpages like in Makefile.
-    And for generating Vim.app for the Mac.
-    Install spell files with src/main.aap.
+Include patch for recognizing TeX flavor. (Benji Fisher)
+And new tex.vim and plaintex.vim.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -49,6 +46,12 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 
 Darren is including the patch in ctags.  Test it when it's ready.  Change
 "typename" to "typeref" in C complete code.
+
+HTML indenting can be slow.  Caused by using searchpair().  Can search() be
+used instead?
+
+ccomplete: use "signature:" field from tags file when it's present.
+Or list all the fields? (Martin Stubenschrott)
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -1129,7 +1132,7 @@ Spell checking:
     means the compound flags of the word are not used.
     Instead of "SFX a 0 add/FLAGS ." we could use "SFX a 0 add . /FLAGS" (or
     support both).
--   Support breakpoint character · 0xb7 and ignore it?  Makes it possible to
+-   Support breakpoint character ? 0xb7 and ignore it?  Makes it possible to
     use same wordlist for hyphenation.
 -   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
     syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 20
+*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -189,6 +189,15 @@ command with 'l'.
 :lb[uffer] [bufnr]	Same as ":cbuffer", except the location list for the
 			current window is used instead of the quickfix list.
 
+						*:cgetb* *:cgetbuffer*
+:cgetb[uffer] [bufnr]	Read the error list from the current buffer.  Just
+			like ":cbuffer" but don't jump to the first error.
+
+						*:lgetb* *:lgetbuffer*
+:lgetb[uffer] [bufnr]	Same as ":cgetbuffer", except the location list for
+			the current window is used instead of the quickfix
+			list.
+
 							*:caddb* *:caddbuffer*
 :caddb[uffer] [bufnr]	Read the error list from the current buffer and add
 			the errors to the current quickfix list.  If a
@@ -229,6 +238,14 @@ command with 'l'.
 <
 							*:lad* *:laddexpr*
 :lad[dexpr][!] {expr}	Same as ":caddexpr", except the location list for the
+			current window is used instead of the quickfix list.
+
+							*:cgete* *:cgetexpr*
+:cgete[xpr][!] {expr}	Create a quickfix list using the result of {expr}.
+			Just like ":cexpr", but don't jump to the first error.
+
+							*:lgete* *:lgetexpr*
+:lgete[xpr][!] {expr}	Same as ":cgetexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cl* *:clist*
