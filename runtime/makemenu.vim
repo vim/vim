@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Jan 12
+" Last Change:	2006 Mar 23
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -136,6 +136,7 @@ SynMenu DE.Desktop:desktop
 SynMenu DE.Diff:diff
 SynMenu DE.Digital\ Command\ Lang:dcl
 SynMenu DE.Dircolors:dircolors
+SynMenu DE.Django\ template:django
 SynMenu DE.DNS/BIND\ zone:dns
 SynMenu DE.DocBook.auto-detect:docbk
 SynMenu DE.DocBook.SGML:docbksgml
@@ -201,6 +202,7 @@ SynMenu HIJK.HTML.HTML:html
 SynMenu HIJK.HTML.HTML\ with\ M4:htmlm4
 SynMenu HIJK.HTML.HTML\ with\ Ruby\ (eRuby):eruby
 SynMenu HIJK.HTML.Cheetah\ HTML\ template:htmlcheetah
+SynMenu HIJK.HTML.Django\ HTML\ template:htmldjango
 SynMenu HIJK.HTML.HTML/OS:htmlos
 SynMenu HIJK.HTML.XHTML:xhtml
 SynMenu HIJK.Hyper\ Builder:hb

@@ -1,4 +1,4 @@
-*zip.txt*	Zip File Interface				Nov 28, 2005
+*zip.txt*	Zip File Interface				Mar 22, 2006
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
@@ -29,6 +29,8 @@ Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1 *zip-copyright*
 
 ==============================================================================
 3. History					*zip-history*
+   v7 Mar 22, 2006 * escaped some characters that can cause filename handling
+                     problems.
    v6 Dec 21, 2005 * writing to files not in directories caused problems -
                      fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed

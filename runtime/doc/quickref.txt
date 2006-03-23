@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 18
+*quickref.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -949,7 +949,9 @@ Short explanation of each option:		*option-list*
 |:cprevious|	:cp		display the previous error
 |:clist|	:cl		list all errors
 |:cfile|	:cf		read errors from the file 'errorfile'
+|:cgetbuffer|	:cgetb		like :cbuffer but don't jump to the first error
 |:cgetfile|	:cg		like :cfile but don't jump to the first error
+|:cgetexpr|	:cgete		like :cexpr but don't jump to the first error
 |:caddfile|	:caddf		add errors from the error file to the current
 				   quickfix list
 |:caddexpr|	:cad		add errors from an expression to the current

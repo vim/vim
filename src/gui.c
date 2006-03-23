@@ -3203,7 +3203,11 @@ gui_init_which_components(oldval)
 	using_tabline = gui_has_tabline();
 	if (!gui_mch_showing_tabline() != !using_tabline)
 	{
+	    /* We don't want a resize event change "Rows" here, save and
+	     * restore it.  Resizing is handled below. */
+	    i = Rows;
 	    gui_update_tabline();
+	    Rows = i;
 	    need_set_size = TRUE;
 	    if (using_tabline)
 		fix_size = TRUE;
@@ -3354,12 +3358,19 @@ gui_has_tabline()
 gui_update_tabline()
 {
     int	    showit = gui_has_tabline();
+    int	    shown = gui_mch_showing_tabline();
 
     if (!gui.starting && starting == 0)
     {
-	gui_mch_show_tabline(showit);
+	if (!showit != !shown)
+	    gui_mch_show_tabline(showit);
 	if (showit != 0)
 	    gui_mch_update_tabline();
+
+	/* When the tabs change from hidden to shown or from shown to
+	 * hidden the size of the text area should remain the same. */
+	if (!showit != !shown)
+	    gui_set_shellsize(FALSE, showit);
     }
 }
 
