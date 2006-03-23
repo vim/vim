@@ -1088,6 +1088,7 @@ The commands are sorted on the non-optional part of their name.
 |:cexpr|	:cex[pr]	read errors from expr and jump to first
 |:cfile|	:cf[ile]	read file with error messages and jump to first
 |:cfirst|	:cfir[st]	go to the specified error, default first one
+|:cgetexpr|	:cgete[xpr]	get errors from expr
 |:cgetfile|	:cg[etfile]	read file with error messages
 |:changes|	:cha[nges]	print the change list
 |:chdir|	:chd[ir]	change directory
@@ -1241,6 +1242,7 @@ The commands are sorted on the non-optional part of their name.
 |:lexpr|	:lex[pr]	read locations from expr and jump to first
 |:lfile|	:lf[ile]	read file with locations and jump to first
 |:lfirst|	:lfir[st]	go to the specified location, default first one
+|:lgetexpr|	:lgete[xpr]	get locations from expr
 |:lgetfile|	:lg[etfile]	read file with locations
 |:lgrep|	:lgr[ep]	run 'grepprg' and jump to first match
 |:lgrepadd|	:lgrepa[dd]	like :grep, but append to current list

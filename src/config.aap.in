@@ -80,6 +80,8 @@ COMPILEDBY	= @compiledby@
 
 INSTALLVIMDIFF	= @dovimdiff@
 INSTALLGVIMDIFF	= @dogvimdiff@
+INSTALL_LANGS	= @INSTALL_LANGS@
+INSTALL_TOOL_LANGS	= @INSTALL_TOOL_LANGS@
 
 ### Line break character as octal number for "tr"
 NL		= @line_break@
@@ -108,8 +110,6 @@ MOTIF_LIBNAME	= @MOTIF_LIBNAME@
 GUI_INC_LOC	= @GUI_INC_LOC@
 GUI_LIB_LOC	= @GUI_LIB_LOC@
 GUI_X_LIBS	= @GUI_X_LIBS@
-KDE_PREFIX	= @KDE_PREFIX@
-MOC             = @MOC@
 
 ### Any OS dependent extra source and object file
 OS_EXTRA_SRC	= @OS_EXTRA_SRC@

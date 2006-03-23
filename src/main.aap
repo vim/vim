@@ -10,6 +10,8 @@
 #                       Can be specified when installing only.
 #                       Example: aap install PREFIX=$HOME
 #
+@if os.name != "posix":
+    :error Sorry, this recipe only works for Unix-like systems.
 
 # Skip the configure stuff when "link.sh" is executing this recipe recursively
 # to build pathdef.c or not building something and auto/config.aap does exist.
@@ -49,11 +51,14 @@
 
     # Dependency: run configure.aap to update config.h and config.aap in the
     # "auto" directory.
+    # NOTE: we can only build for one architecture, because -MM doesn't work
+    # when building for both.
     config {virtual} auto/config.h auto/config.aap :
                          auto/configure.aap configure.aap
                          config.arg config.h.in config.aap.in
         :sys CONFIG_STATUS=auto/config.status
                 ./configure.aap `file2string("config.arg")`
+                    --with-mac-arch=ppc
                     --cache-file=auto/config.cache
 
     # Configure arguments: create an empty "config.arg" file when its missing
@@ -79,11 +84,40 @@
     CPPFLAGS = `string.replace(_no.CPPFLAGS, "-arch i386 -arch ppc", "-arch ppc")`
 
 # A "PREFIX=dir" argument overrules the value of $prefix
-@if _no.get("PREFIX"):
+# But don't use the default "/usr/local".
+@if _no.get("PREFIX") and _no.get("PREFIX") != '/usr/local':
     prefix = $PREFIX
 
 # Don't want "~/" in prefix.
 prefix = `os.path.expanduser(prefix)`
+
+# For Mac.
+APPDIR = $(VIMNAME).app
+
+### Names of the programs and targets
+VIMTARGET       = $VIMNAME$EXESUF
+EXTARGET        = $EXNAME$LNKSUF
+VIEWTARGET      = $VIEWNAME$LNKSUF
+GVIMNAME        = g$VIMNAME
+GVIMTARGET      = $GVIMNAME$LNKSUF
+GVIEWNAME       = g$VIEWNAME
+GVIEWTARGET     = $GVIEWNAME$LNKSUF
+RVIMNAME        = r$VIMNAME
+RVIMTARGET      = $RVIMNAME$LNKSUF
+RVIEWNAME       = r$VIEWNAME
+RVIEWTARGET     = $RVIEWNAME$LNKSUF
+RGVIMNAME       = r$GVIMNAME
+RGVIMTARGET     = $RGVIMNAME$LNKSUF
+RGVIEWNAME      = r$GVIEWNAME
+RGVIEWTARGET    = $RGVIEWNAME$LNKSUF
+VIMDIFFNAME     = $(VIMNAME)diff
+GVIMDIFFNAME    = g$VIMDIFFNAME
+VIMDIFFTARGET   = $VIMDIFFNAME$LNKSUF
+GVIMDIFFTARGET  = $GVIMDIFFNAME$LNKSUF
+EVIMNAME        = e$VIMNAME
+EVIMTARGET      = $EVIMNAME$LNKSUF
+EVIEWNAME       = e$VIEWNAME
+EVIEWTARGET     = $EVIEWNAME$LNKSUF
 
 #
 # G U I  variant
@@ -100,9 +134,12 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    = $GUI_LIB_LOC
         GUI_LIBS1       =
         GUI_LIBS2       = $GTK_LIBNAME
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     = installglinks
-        GUI_MAN_TARGETS = installghelplinks
+        GUI_MAN_TARGETS = yes
         GUI_TESTTARGET  = gui
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
     MOTIF
         GUI_SRC         = gui.c gui_motif.c gui_x11.c pty.c gui_beval.c
                           gui_xmdlg.c gui_xmebw.c
@@ -112,9 +149,12 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    = $GUI_LIB_LOC
         GUI_LIBS1       =
         GUI_LIBS2       = $MOTIF_LIBNAME -lXt
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     = installglinks
-        GUI_MAN_TARGETS = installghelplinks
+        GUI_MAN_TARGETS = yes
         GUI_TESTTARGET  = gui
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
     ATHENA
         # XAW_LIB et al. can be overruled to use Xaw3d widgets
         XAW_LIB         ?= -lXaw
@@ -126,9 +166,12 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    = $GUI_LIB_LOC
         GUI_LIBS1       = $XAW_LIB
         GUI_LIBS2       = -lXt
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     = installglinks
-        GUI_MAN_TARGETS = installghelplinks
+        GUI_MAN_TARGETS = yes
         GUI_TESTTARGET  = gui
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
     NEXTAW
         # XAW_LIB et al. can be overruled to use Xaw3d widgets
         XAW_LIB         ?= -lXaw
@@ -140,9 +183,27 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    = $GUI_LIB_LOC
         GUI_LIBS1       = $NEXTAW_LIB
         GUI_LIBS2       = -lXt
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     = installglinks
-        GUI_MAN_TARGETS = installghelplinks
+        GUI_MAN_TARGETS = yes
         GUI_TESTTARGET  = gui
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
+    CARBONGUI
+        GUI_SRC         =  gui.c gui_mac.c pty.c
+        GUI_OBJ         =
+        GUI_DEFS        = -DFEAT_GUI_MAC -fno-common -fpascal-strings \
+                            -Wall -Wno-unknown-pragmas -mdynamic-no-pic -pipe
+        GUI_IPATH       = $GUI_INC_LOC
+        GUI_LIBS_DIR    = $GUI_LIB_LOC
+        GUI_LIBS1       = -framework Carbon
+        GUI_LIBS2       =
+        GUI_INSTALL     = install_macosx
+        GUI_TARGETS     = installglinks
+        GUI_MAN_TARGETS = yes
+        GUI_TESTTARGET  = gui
+        GUI_BUNDLE      = gui_bundle
+        GUI_TESTARG     = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
     PHOTONGUI
         GUI_SRC         = gui.c gui_photon.c pty.c
         GUI_OBJ         =
@@ -151,9 +212,12 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    =
         GUI_LIBS1       = -lph -lphexlib
         GUI_LIBS2       =
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     = installglinks
-        GUI_MAN_TARGETS = installghelplinks
+        GUI_MAN_TARGETS = yes
         GUI_TESTTARGET  = gui
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
     *
         GUI_SRC         =
         GUI_OBJ         =
@@ -162,9 +226,12 @@ prefix = `os.path.expanduser(prefix)`
         GUI_LIBS_DIR    =
         GUI_LIBS1       =
         GUI_LIBS2       =
+        GUI_INSTALL     = install_normal
         GUI_TARGETS     =
         GUI_MAN_TARGETS =
         GUI_TESTTARGET  =
+        GUI_BUNDLE      =
+        GUI_TESTARG     =
 
 
 PRE_DEFS = -Iproto -I. $DEFS $GUI_DEFS $GUI_IPATH $CPPFLAGS $?(EXTRA_IPATHS)
@@ -181,6 +248,10 @@ Target = $VIMNAME
 # reconfig target also builds Vim (reconfiguration is handled above).
 reconfig {virtual}: $Target
 
+distclean: clean
+    :del {force} auto/config.h auto/config.aap
+    :del {force} auto/config.cache auto/config.status
+
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 #
@@ -192,7 +263,7 @@ reconfig {virtual}: $Target
 #
 test check:
     VimProg = ../$Target
-    :execute testdir/main.aap $GUI_TESTTARGET
+    :execute testdir/main.aap $GUI_TESTTARGET $GUI_TESTARG
 
 testclean {virtual}:
     :del {force} testdir/*.out testdir/test.log
@@ -273,7 +344,7 @@ Objects =
 # TODO: make is still used for subdirectories, need to write a recipe.
 MAKE ?= make
 
-all: $Target
+all: $Target $GUI_BUNDLE
 
 # This dependency is required to build auto/osdef.h before automatic
 # dependencies are generated.
@@ -371,31 +442,6 @@ auto/pathdef.c: auto/config.aap
         :print >> $target char_u *compiled_sys = (char_u *)"$where";
 
 
-### Names of the programs and targets
-VIMTARGET       = $VIMNAME$EXESUF
-EXTARGET        = $EXNAME$LNKSUF
-VIEWTARGET      = $VIEWNAME$LNKSUF
-GVIMNAME        = g$VIMNAME
-GVIMTARGET      = $GVIMNAME$LNKSUF
-GVIEWNAME       = g$VIEWNAME
-GVIEWTARGET     = $GVIEWNAME$LNKSUF
-RVIMNAME        = r$VIMNAME
-RVIMTARGET      = $RVIMNAME$LNKSUF
-RVIEWNAME       = r$VIEWNAME
-RVIEWTARGET     = $RVIEWNAME$LNKSUF
-RGVIMNAME       = r$GVIMNAME
-RGVIMTARGET     = $RGVIMNAME$LNKSUF
-RGVIEWNAME      = r$GVIEWNAME
-RGVIEWTARGET    = $RGVIEWNAME$LNKSUF
-VIMDIFFNAME     = $(VIMNAME)diff
-GVIMDIFFNAME    = g$VIMDIFFNAME
-VIMDIFFTARGET   = $VIMDIFFNAME$LNKSUF
-GVIMDIFFTARGET  = $GVIMDIFFNAME$LNKSUF
-EVIMNAME        = e$VIMNAME
-EVIMTARGET      = $EVIMNAME$LNKSUF
-EVIEWNAME       = e$VIEWNAME
-EVIEWTARGET     = $EVIEWNAME$LNKSUF
-
 ### Names of the tools that are also made
 TOOLS = xxd/xxd$EXESUF
 
@@ -403,8 +449,8 @@ TOOLS = xxd/xxd$EXESUF
 # existing path to install into a special place (for generating a package).
 DESTDIR ?=
 
-### Location of man pages
-MANSUBDIR = $MANDIR/man1
+### Location of man pages under $MANTOPDIR
+MAN1DIR = /man1
 
 ### Location of Vim files (should not need to be changed, and
 ### some things might not work when they are changed!)
@@ -424,6 +470,7 @@ KMAPSUBDIR = /keymap
 MACROSUBDIR = /macros
 TOOLSSUBDIR = /tools
 TUTORSUBDIR = /tutor
+SPELLSUBDIR = /spell
 PRINTSUBDIR = /print
 PODIR = po
 
@@ -449,7 +496,8 @@ PODIR = po
 ### You can override these if you want to install them somewhere else.
 ### Edit feature.h for compile-time settings.
 VIMLOC          = $DATADIR$VIMDIR
-VIMRTLOC        = $DATADIR$VIMDIR$VIMRTDIR
+@if not _no.get("VIMRTLOC"):
+    VIMRTLOC        = $DATADIR$VIMDIR$VIMRTDIR
 VIMRCLOC        = $VIMLOC
 HELPSUBLOC      = $VIMRTLOC$HELPSUBDIR
 COLSUBLOC       = $VIMRTLOC$COLSUBDIR
@@ -464,6 +512,7 @@ KMAPSUBLOC      = $VIMRTLOC$KMAPSUBDIR
 MACROSUBLOC     = $VIMRTLOC$MACROSUBDIR
 TOOLSSUBLOC     = $VIMRTLOC$TOOLSSUBDIR
 TUTORSUBLOC     = $VIMRTLOC$TUTORSUBDIR
+SPELLSUBLOC	= $VIMRTLOC$SPELLSUBDIR
 PRINTSUBLOC     = $VIMRTLOC$PRINTSUBDIR
 SCRIPTLOC       = $VIMRTLOC
 
@@ -561,6 +610,9 @@ TOOLSSOURCE = ../runtime/tools
 # Where to copy the tutor files from
 TUTORSOURCE = ../runtime/tutor
 
+# Where to copy the spell files from
+SPELLSOURCE = ../runtime/spell
+
 # Where to look for language specific files
 LANGSOURCE = ../runtime/lang
 
@@ -590,20 +642,39 @@ DEST_KMAP = $DESTDIR$KMAPSUBLOC
 DEST_MACRO = $DESTDIR$MACROSUBLOC
 DEST_TOOLS = $DESTDIR$TOOLSSUBLOC
 DEST_TUTOR = $DESTDIR$TUTORSUBLOC
+DEST_SPELL = $DESTDIR$SPELLSUBLOC
 DEST_SCRIPT = $DESTDIR$SCRIPTLOC
 DEST_PRINT = $DESTDIR$PRINTSUBLOC
-DEST_MAN = $DESTDIR$MANSUBDIR
+DEST_MAN_TOP = $DESTDIR$?(MANDIR)
+
+# We assume that the ".../man/xx/man1/" directory is for latin1 manual pages.
+# Some systems use UTF-8, but these should find the ".../man/xx.UTF-8/man1/"
+# directory first.
+# FreeBSD uses ".../man/xx.ISO8859-1/man1" for latin1, use that one too.
+DEST_MAN = $(DEST_MAN_TOP)$(MAN1DIR)
+DEST_MAN_FR = $(DEST_MAN_TOP)/fr$(MAN1DIR)
+DEST_MAN_FR_I = $(DEST_MAN_TOP)/fr.ISO8859-1$(MAN1DIR)
+DEST_MAN_FR_U = $(DEST_MAN_TOP)/fr.UTF-8$(MAN1DIR)
+DEST_MAN_IT = $(DEST_MAN_TOP)/it$(MAN1DIR)
+DEST_MAN_IT_I = $(DEST_MAN_TOP)/it.ISO8859-1$(MAN1DIR)
+DEST_MAN_IT_U = $(DEST_MAN_TOP)/it.UTF-8$(MAN1DIR)
+DEST_MAN_RU = $(DEST_MAN_TOP)/ru.KOI8-R$(MAN1DIR)
+DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 
 # These are directories, create them when needed.
 :attr {directory = $DIRMOD} $DEST_BIN $DEST_VIM $DEST_RT $DEST_HELP $DEST_COL
                 $DEST_SYN $DEST_IND $DEST_AUTO $DEST_PLUG $DEST_FTP $DEST_LANG
                 $DEST_COMP $DEST_KMAP $DEST_MACRO $DEST_TOOLS $DEST_TUTOR
-                $DEST_SCRIPT $DEST_PRINT $DEST_MAN
+                $DEST_SCRIPT $DEST_PRINT $DEST_MAN $DEST_SPELL
+                $DEST_MAN_FR $DEST_MAN_FR_I $DEST_MAN_FR_U $DEST_MAN_IT
+                $DEST_MAN_IT_I $DEST_MAN_IT_U $DEST_MAN_RU $DEST_MAN_RU_U
 
 #
 # I N S T A L L
 #
-install:
+install: $GUI_INSTALL
+
+install_normal:
     @if not os.path.isdir(_no.DEST_BIN):
         @try:
             :mkdir $DEST_BIN
@@ -611,7 +682,7 @@ install:
         @   pass
     @if os.access(_no.DEST_BIN, os.W_OK):
         # Bin directory is writable, install directly.
-        :update installvim installtools install-languages install-icons
+        :update installvim installtools $INSTALL_LANGS install-icons
     @else:
         # Bin directory is not writable, need to become root.
         :print The destination directory "$DEST_BIN" is not writable.
@@ -619,8 +690,8 @@ install:
         :print Otherwise, type the root password to continue installing.
         :asroot $AAP install
 
-installvim {virtual}: installvimbin installruntime installlinks \
-                        installhelplinks installmacros installtutor
+installvim {virtual}: installvimbin  installtutorbin \
+                        installruntime installlinks installmanlinks
 
 installvimbin {virtual}{force}: $Target $DEST_BIN
         exe = $DEST_BIN/$VIMTARGET
@@ -636,53 +707,20 @@ installvimbin {virtual}{force}: $Target $DEST_BIN
         @if _no.get("LINKIT"):
             :sys $LINKIT
 
+# Long list of arguments for the shell script that installs the manual pages
+# for one language.
+INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
+		$(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME)
+
+# Install most of the runtime files
+installruntime {virtual}: installrtbase installmacros installtutor installspell
+
 # install the help files; first adjust the contents for the location
-installruntime {virtual}{force}: $HELPSOURCE/vim.1 $DEST_MAN $DEST_VIM
+installrtbase {virtual}{force}: $HELPSOURCE/vim.1 $DEST_VIM
                 $DEST_RT $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
                 $DEST_FTP $DEST_AUTO $DEST_PLUG $DEST_TUTOR $DEST_COMP
-                $DEST_PRINT
-        :print generating $DEST_MAN/$(VIMNAME).1
-        :cat $HELPSOURCE/vim.1 |
-                :eval re.sub("/usr/local/lib/vim", _no.VIMLOC, stdin) |
-                :eval re.sub(_no.VIMLOC + "/doc", _no.HELPSUBLOC, stdin) |
-                :eval re.sub(_no.VIMLOC + "/syntax", _no.SYNSUBLOC, stdin) |
-                :eval re.sub(_no.VIMLOC + "/tutor", _no.TUTORSUBLOC, stdin) |
-                :eval re.sub(_no.VIMLOC + "/vimrc",
-                                               _no.VIMRCLOC + "/vimrc", stdin) |
-                :eval re.sub(_no.VIMLOC + "/gvimrc",
-                                              _no.VIMRCLOC + "/gvimrc", stdin) |
-                :eval re.sub(_no.VIMLOC + "/menu.vim",
-                                           _no.SCRIPTLOC + "/menu.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/bugreport.vim",
-                                      _no.SCRIPTLOC + "/bugreport.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/filetype.vim",
-                                       _no.SCRIPTLOC + "/filetype.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/ftoff.vim",
-                                          _no.SCRIPTLOC + "/ftoff.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/scripts.vim",
-                                        _no.SCRIPTLOC + "/scripts.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/optwin.vim",
-                                         _no.SCRIPTLOC + "/optwin.vim", stdin) |
-                :eval re.sub(_no.VIMLOC + "/\\*.ps",
-                                                 _no.SCRIPTLOC + "/*.ps", stdin)
-                >! $DEST_MAN/$(VIMNAME).1
-        :chmod $MANMOD $DEST_MAN/$(VIMNAME).1
-
-        :print generating $DEST_MAN/$(VIMNAME)tutor.1
-        :cat $HELPSOURCE/vimtutor.1 |
-                :eval re.sub("/usr/local/lib/vim", _no.VIMLOC, stdin) |
-                :eval re.sub(_no.VIMLOC + "/tutor", _no.TUTORSUBLOC, stdin)
-                >! $DEST_MAN/$(VIMNAME)tutor.1
-        :chmod $MANMOD $DEST_MAN/$(VIMNAME)tutor.1
-
-        :copy $HELPSOURCE/vimdiff.1 $DEST_MAN/$(VIMDIFFNAME).1
-        :chmod $MANMOD $DEST_MAN/$(VIMDIFFNAME).1
-
-        :print generating $DEST_MAN/$(EVIMNAME).1
-        :cat $HELPSOURCE/evim.1 |
-                :eval re.sub("/usr/local/lib/vim", _no.SCRIPTLOC, stdin)
-                >! $DEST_MAN/$(EVIMNAME).1
-        :chmod $MANMOD $DEST_MAN/$(EVIMNAME).1
+                $DEST_SPELL $DEST_PRINT
+        :sys ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 
         :cd $HELPSOURCE
         @try:
@@ -781,15 +819,31 @@ installmacros {virtual}{force}: $MACROSOURCE $DEST_VIM $DEST_RT $DEST_MACRO
         :chmod $SCRIPTMOD $DEST_MACRO/less.sh
 
 # install the tutor files
-installtutor {virtual}{force}: $TUTORSOURCE $DEST_VIM $DEST_RT $DEST_TUTOR
+installtutorbin {virtual}{force}: $DEST_VIM
         :copy vimtutor $DEST_BIN/$(VIMNAME)tutor
         :chmod $SCRIPTMOD $DEST_BIN/$(VIMNAME)tutor
+
+installtutor {virtual}{force}: $DEST_RT $DEST_TUTOR
         :copy $TUTORSOURCE/tutor* $TUTORSOURCE/README* $DEST_TUTOR
         :chmod $HELPMOD $DEST_TUTOR/*
 
+# Install the spell files, if they exist.  This assumes at least the English
+# spell file is there.
+installspell {virtual}: $(DEST_VIM) $(DEST_RT) $(DEST_SPELL)
+	enspl = $(SPELLSOURCE)/en.latin1.spl
+        @if os.path.exists(enspl):
+            :copy $(SPELLSOURCE)/*.spl $(SPELLSOURCE)/*.vim $(DEST_SPELL)
+            :chmod $(HELPMOD) $(DEST_SPELL)/*.spl $(DEST_SPELL)/*.vim
+            @try:
+                :copy $(SPELLSOURCE)/*.sug $(DEST_SPELL)
+                :chmod $(HELPMOD) $(DEST_SPELL)/*.sug
+            @except:
+            @   pass
+
 # install helper program xxd
 installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
-                $TOOLSSOURCE $DEST_VIM $DEST_RT $DEST_TOOLS
+                $TOOLSSOURCE $DEST_VIM $DEST_RT $DEST_TOOLS \
+                $INSTALL_TOOL_LANGS
         xxd = $DEST_BIN/xxd$EXESUF
         @if os.path.exists(xxd):
           :move {force} $xxd $(xxd).rm
@@ -797,8 +851,8 @@ installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
         :copy xxd/xxd$EXESUF $DEST_BIN
         :do strip $DEST_BIN/xxd$EXESUF
         :chmod $BINMOD $DEST_BIN/xxd$EXESUF
-        :copy $HELPSOURCE/xxd.1 $DEST_MAN
-        :chmod $MANMOD $DEST_MAN/xxd.1
+        :sys ./installman.sh xxd $(DEST_MAN) "" $(INSTALLMANARGS)
+#
 # install the runtime tools
         @try:
         @  if aap_has(":tree"):
@@ -831,8 +885,44 @@ installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
 
         :sys chmod $SCRIPTMOD ``grep -l "^#!" $DEST_TOOLS/*``
 
+# install the language specific files for tools, if they were unpacked
+install-tool-languages:
+        :sys ./installman.sh xxd $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+
 # install the language specific files, if they were unpacked
 install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
+        :sys ./installman.sh install $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+	:sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_FR) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_FR_I) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_FR_U) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT_I) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_IT_U) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_RU) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_RU_U) $(INSTALLMLARGS)
+
         @if _no.MAKEMO:
            :sys cd $PODIR; $MAKE prefix=$DESTDIR$prefix \
                     LOCALEDIR=$DEST_LANG INSTALL_DATA=cp FILEMOD=$FILEMOD install
@@ -926,73 +1016,64 @@ $DEST_BIN/$EVIEWTARGET: {buildcheck = }
 
 # create links for the manual pages with various names to vim.  This is only
 # done when the links (or manpages with the same name) don't exist yet.
-installhelplinks {virtual}: $GUI_MAN_TARGETS \
-                        $DEST_MAN/$(EXNAME).1 \
-                        $DEST_MAN/$(VIEWNAME).1 \
-                        $DEST_MAN/$(RVIMNAME).1 \
-                        $DEST_MAN/$(RVIEWNAME).1
+INSTALLMLARGS = $(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME) \
+		$(EXNAME) $(VIEWNAME) $(RVIMNAME) $(RVIEWNAME) \
+		$(GVIMNAME) $(GVIEWNAME) $(RGVIMNAME) $(RGVIEWNAME) \
+		$(GVIMDIFFNAME) $(EVIEWNAME)
 
-installghelplinks {virtual}: $DEST_MAN/$(GVIMNAME).1 \
-                        $DEST_MAN/$(GVIEWNAME).1 \
-                        $DEST_MAN/$(RGVIMNAME).1 \
-                        $DEST_MAN/$(RGVIEWNAME).1 \
-                        $DEST_MAN/$(GVIMDIFFNAME).1 \
-                        $DEST_MAN/$(EVIEWNAME).1
-
-$DEST_MAN/$(EXNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(EXNAME).1
-
-$DEST_MAN/$(VIEWNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(VIEWNAME).1
-
-$DEST_MAN/$(GVIMNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(GVIMNAME).1
-
-$DEST_MAN/$(GVIEWNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(GVIEWNAME).1
-
-$DEST_MAN/$(RVIMNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RVIMNAME).1
-
-$DEST_MAN/$(RVIEWNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RVIEWNAME).1
-
-$DEST_MAN/$(RGVIMNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RGVIMNAME).1
-
-$DEST_MAN/$(RGVIEWNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMNAME).1 $(RGVIEWNAME).1
-
-$DEST_MAN/$(GVIMDIFFNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(VIMDIFFNAME).1 $(GVIMDIFFNAME).1
-
-$DEST_MAN/$(EVIEWNAME).1: {buildcheck = }
-    :sys cd $DEST_MAN; ln -s $(EVIMNAME).1 $(EVIEWNAME).1
+installmanlinks {virtual}:
+    :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN) $(INSTALLMLARGS)
 
 #
 # U N I N S T A L L
 #
 uninstall {virtual}{force}: uninstall_runtime
     :del {force} $DEST_BIN/$VIMTARGET
-    :del {force} $DEST_MAN/$(VIMNAME).1 $DEST_MAN/$(VIMNAME)tutor.1
     :del {force} $DEST_BIN/vimtutor
-    :del {force} $DEST_BIN/xxd$EXESUF $DEST_MAN/xxd.1
     :del {force} $DEST_BIN/$EXTARGET $DEST_BIN/$VIEWTARGET
     :del {force} $DEST_BIN/$GVIMTARGET $DEST_BIN/$GVIEWTARGET
     :del {force} $DEST_BIN/$RVIMTARGET $DEST_BIN/$RVIEWTARGET
     :del {force} $DEST_BIN/$RGVIMTARGET $DEST_BIN/$RGVIEWTARGET
     :del {force} $DEST_BIN/$VIMDIFFTARGET $DEST_BIN/$GVIMDIFFTARGET
     :del {force} $DEST_BIN/$EVIMTARGET $DEST_BIN/$EVIEWTARGET
-    :del {force} $DEST_MAN/$(EXNAME).1 $DEST_MAN/$(VIEWNAME).1
-    :del {force} $DEST_MAN/$(GVIMNAME).1 $DEST_MAN/$(GVIEWNAME).1
-    :del {force} $DEST_MAN/$(RVIMNAME).1 $DEST_MAN/$(RVIEWNAME).1
-    :del {force} $DEST_MAN/$(RGVIMNAME).1 $DEST_MAN/$(RGVIEWNAME).1
-    :del {force} $DEST_MAN/$(VIMDIFFNAME).1 $DEST_MAN/$(GVIMDIFFNAME).1
-    :del {force} $DEST_MAN/$(EVIMNAME).1 $DEST_MAN/$(EVIEWNAME).1
+    :del {force} $DEST_BIN/xxd$EXESUF
 
 # Note: "deldir" will fail if any files were added after "make install", that
 # is intentionally: Keep files the user added.
 uninstall_runtime {virtual}{force}:
+    :sys ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_FR) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_FR_I) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_FR_U) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_IT) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_IT_I) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_IT_U) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_RU) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_FR) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_FR_I) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_FR_U) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_IT) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_IT_I) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_IT_U) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_RU) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_RU_U) $(INSTALLMLARGS)
+    :del {force} $DEST_MAN/xxd.1
+    :del {force} $(DEST_MAN_FR)/xxd.1 $(DEST_MAN_FR_I)/xxd.1 $(DEST_MAN_FR_U)/xxd.1
+    :del {force} $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_IT_I)/xxd.1 $(DEST_MAN_IT_U)/xxd.1
+    :del {force} $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
+
     :del {force} $DEST_HELP/*.txt $DEST_HELP/tags $DEST_HELP/*.pl
     :del {force} $SYS_MENU_FILE $SYS_SYNMENU_FILE $SYS_DELMENU_FILE
     :del {force} $SYS_BUGR_FILE $EVIM_FILE $MSWIN_FILE
@@ -1007,6 +1088,7 @@ uninstall_runtime {virtual}{force}:
     :del {force} $DEST_PRINT/*.ps
     :del {force}{recursive} $DEST_MACRO
     :del {force}{recursive} $DEST_TUTOR
+    :del {force}{recursive} $DEST_SPELL
     :del {force}{recursive} $DEST_TOOLS
     :del {force}{recursive} $DEST_LANG
     :del {force}{recursive} $DEST_KMAP
@@ -1021,6 +1103,95 @@ uninstall_runtime {virtual}{force}:
         :deldir $DEST_VIM
     @except:
         :print Cannot delete $DEST_VIM
+
+###############################################################################
+### MacOS X installation
+###
+### This installs a runnable Vim.app in $(prefix)
+
+REZ    = /Developer/Tools/Rez
+RESDIR = $(APPDIR)/Contents/Resources
+@r = re.compile('.*VIM_VERSION_SHORT\\s*"(\\d[^"]*)".*', re.S)
+VERSION = /`r.match(open("version.h").read()).group(1)`
+ICON_APP = gui_mac.icns
+
+### Common flags
+M4FLAGSX = $?(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
+		-DAPP_VER=$(VERSION) -DICON_APP=$(ICON_APP)
+
+### Icons
+ICONS = $(RESDIR)/$(ICON_APP)
+
+:attr {directory = $DIRMOD} $RESDIR
+
+# If you uncomment the following lines the *.icns in the src directory will be
+# detected by this Makefile automatically, and used for Vim.
+#ICON_APP = $(shell if [ -e app.icns ] ; then echo app.icns ; else echo gui_mac.icns ; fi)
+#ICON_DOC = $(shell if [ -e doc.icns ] ; then echo doc.icns ; else echo ; fi)
+#ICON_DOCTXT = $(shell if [ -e doc-txt.icns ] ; then echo doc-txt.icns ; else echo ; fi)
+#ICONS = $(addprefix $(RESDIR)/, $(ICON_APP) $(ICON_DOC) $(ICON_DOCTXT))
+
+install_macosx {virtual}: gui_bundle
+# Remove the link to the runtime dir, don't want to copy all of that.
+        :delete {force} $(RESDIR)/vim/runtime
+        :copy {r} $APPDIR $DESTDIR$prefix
+        :tree $DESTDIR$prefix {dirname = AAPDIR}
+             :delete {recursive} $name
+# Install the runtime files.  Recursive!
+	:mkdir {r}{f} $DESTDIR$prefix/$RESDIR/vim/runtime
+#	:mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
+        :execute main.aap PREFIX=$DESTDIR$prefix/$RESDIR/vim VIMRTLOC=$DESTDIR$prefix/$RESDIR/vim/runtime installruntime
+# Put the link back.
+        :symlink `os.getcwd()`/../runtime $RESDIR/vim/runtime
+# TODO: Create the vimtutor application.
+
+gui_bundle {virtual}: $(RESDIR) bundle-dir bundle-executable bundle-info \
+                        bundle-resource bundle-language
+
+bundle-dir {virtual}: $(APPDIR)/Contents $(VIMTARGET)
+# Make a link to the runtime directory, so that we can try out the executable
+# without installing it.
+        :mkdir {r}{f} $(RESDIR)/vim
+        :symlink {quiet} `os.getcwd()`/../runtime $(RESDIR)/vim/runtime
+
+bundle-executable {virtual}: $(VIMTARGET)
+        :mkdir {r}{f} $(APPDIR)/Contents/MacOS
+        :copy $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
+
+bundle-info {virtual}:  bundle-dir
+        :print Creating PkgInfo
+        :print "APPLVIM!" >! $(APPDIR)/Contents/PkgInfo
+        :print Creating Info.plist
+        :sys m4 $(M4FLAGSX) infplist.xml > $(APPDIR)/Contents/Info.plist
+
+bundle-resource {virtual}: bundle-dir bundle-icons bundle-rsrc
+
+bundle-icons {virtual}: $ICONS
+
+### Classic resources
+# Resource fork (in the form of a .rsrc file) for Classic Vim (Mac OS 9)
+# This file is also required for OS X Vim.
+bundle-rsrc {virtual}: os_mac.rsr.hqx
+    :print Creating resource fork
+    :sys python dehqx.py $source
+    :del {force} gui_mac.rsrc
+    :move gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
+
+# po/Make_osx.pl says something about generating a Mac message file
+# for Ukrananian.  Would somebody using Mac OS X in Ukranian
+# *really* be upset that Carbon Vim was not localised in
+# Ukranian?
+#
+#bundle-language: bundle-dir po/Make_osx.pl
+#	cd po && perl Make_osx.pl --outdir ../$(RESDIR) $(MULTILANG)
+bundle-language {virtual}: bundle-dir
+
+$(APPDIR)/Contents:
+    :mkdir {r} $(APPDIR)/Contents/MacOS
+    :mkdir {r} $(RESDIR)/English.lproj
+
+$ICONS: $ICON_APP
+    :copy $source $target
 
 
 # vim: sts=4 sw=4 :

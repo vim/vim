@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Mar 20, 2006
-" Version: 4
+" Date:   Mar 22, 2006
+" Version: 5
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v4"
+let g:loaded_vimball = "v5"
 set cpo&vim
 
 " =====================================================================
@@ -94,12 +94,10 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
   " write the vimball
   exe "tabn ".vbtabnr
   exe "cd ".curdir
-  if a:really
-   if a:writelevel
-    exe "w! ".vbname
-   else
-    exe "w ".vbname
-   endif
+  if a:writelevel
+   exe "w! ".vbname
+  else
+   exe "w ".vbname
   endif
 "  call Decho("Vimball<".vbname."> created")
   echo "Vimball<".vbname."> created"
@@ -205,8 +203,10 @@ fun! vimball#Vimball(really)
 "   call Decho("rega<".@a.">")
 
    " write tab to file
-"   call Decho("exe w! ".fname)
-   exe "silent w! ".fname
+   if a:really
+"    call Decho("exe w! ".fname)
+    exe "silent w! ".fname
+   endif
 
 "   call Decho("exe tabn ".curtabnr)
    exe "tabn ".curtabnr
@@ -224,7 +224,7 @@ fun! vimball#Vimball(really)
   endif
 
   " make sure a "Press ENTER..." prompt appears to keep the messages showing!
-  while filecnt < &ch
+  while filecnt <= &ch
    echomsg " "
    let filecnt= filecnt + 1
   endwhile
