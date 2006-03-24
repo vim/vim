@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 23
+*version7.txt*  For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -628,13 +628,13 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 			don't jump to the first error. (Yegappan Lakshmanan).
 
 |:lfile|		Like |:cfile| but use the location list.
-|:lgetbuffer|		Like |:cgetbuffer| but use the location list.
-|:lgetexpr|		Like |:cgetexpr| but use the location list.
 |:lgetfile|		Like |:cgetfile| but use the location list.
 |:laddfile|		Like |:caddfile| but use the location list.
 |:lbuffer|		Like |:cbuffer| but use the location list.
+|:lgetbuffer|		Like |:cgetbuffer| but use the location list.
 |:laddbuffer|		Like |:caddbuffer| but use the location list.
 |:lexpr|		Like |:cexpr| but use the location list.
+|:lgetexpr|		Like |:cgetexpr| but use the location list.
 |:laddexpr|		Like |:caddexpr| but use the location list.
 |:ll|			Like |:cc| but use the location list.
 |:llist|		Like |:clist| but use the location list.

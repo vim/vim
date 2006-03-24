@@ -1118,7 +1118,9 @@ struct dictvar_S
 # define B_SPELL(buf)  (0)
 #endif
 
+#ifdef FEAT_QUICKFIX
 typedef struct qf_info_S qf_info_T;
+#endif
 
 /*
  * buffer: structure that holds information about one file

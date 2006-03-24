@@ -1,7 +1,7 @@
 "  matchit.vim: (global plugin) Extended "%" matching
-"  Last Change: Sat May 15 11:00 AM 2004 EDT
+"  Last Change: Sun Feb 26 10:00 AM 2006 EST
 "  Maintainer:  Benji Fisher PhD   <benji@member.AMS.org>
-"  Version:     1.9, for Vim 6.3
+"  Version:     1.10, for Vim 6.3
 "  URL:		http://www.vim.org/script.php?script_id=39
 
 " Documentation:
@@ -220,6 +220,10 @@ function! s:Match_wrapper(word, forward, mode) range
   let ini = strpart(group, 0, i-1)
   let mid = substitute(strpart(group, i,j-i-1), s:notslash.'\zs:', '\\|', 'g')
   let fin = strpart(group, j)
+  "Un-escape the remaining , and : characters.
+  let ini = substitute(ini, s:notslash . '\zs\\\(:\|,\)', '\1', 'g')
+  let mid = substitute(mid, s:notslash . '\zs\\\(:\|,\)', '\1', 'g')
+  let fin = substitute(fin, s:notslash . '\zs\\\(:\|,\)', '\1', 'g')
   " searchpair() requires that these patterns avoid \(\) groups.
   let ini = substitute(ini, s:notslash . '\zs\\(', '\\%(', 'g')
   let mid = substitute(mid, s:notslash . '\zs\\(', '\\%(', 'g')
@@ -565,7 +569,7 @@ fun! s:Choose(patterns, string, comma, branch, prefix, suffix, ...)
   if a:branch == ""
     let currpat = current
   else
-    let currpat = substitute(current, a:branch, '\\|', 'g')
+    let currpat = substitute(current, s:notslash . a:branch, '\\|', 'g')
   endif
   while a:string !~ a:prefix . currpat . a:suffix
     let tail = strpart(tail, i)
@@ -577,7 +581,7 @@ fun! s:Choose(patterns, string, comma, branch, prefix, suffix, ...)
     if a:branch == ""
       let currpat = current
     else
-      let currpat = substitute(current, a:branch, '\\|', 'g')
+      let currpat = substitute(current, s:notslash . a:branch, '\\|', 'g')
     endif
     if a:0
       let alttail = strpart(alttail, j)

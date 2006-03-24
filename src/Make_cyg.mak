@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2005 Oct 01
+# Last updated by Dan Sharp.  Last Change: 2006 Mar 24
 #
 # Also read INSTALLpc.txt!
 #
@@ -404,7 +404,7 @@ OBJ = \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
-	$(OUTDIR)/hashtable.o \
+	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -421,7 +421,7 @@ OBJ = \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/os_mswin.o \
 	$(OUTDIR)/pathdef.o \
-	$(OUTDIR)/popupmenu.o \
+	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \

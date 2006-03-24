@@ -88,7 +88,7 @@ ObjFiles = \
    $(INTDIR)\fold.obj\
    $(INTDIR)\getchar.obj\
    $(INTDIR)\hardcopy.obj\
-   $(INTDIR)\hashtable.obj\
+   $(INTDIR)\hashtab.obj\
    $(INTDIR)\gui.obj\
    $(INTDIR)\gui_w16.obj\
    $(INTDIR)\main.obj\
@@ -107,7 +107,7 @@ ObjFiles = \
    $(INTDIR)\os_win16.obj\
    $(INTDIR)\os_msdos.obj\
    $(INTDIR)\os_mswin.obj\
-   $(INTDIR)\popupmenu.obj\
+   $(INTDIR)\popupmnu.obj\
    $(INTDIR)\quickfix.obj\
    $(INTDIR)\regexp.obj\
    $(INTDIR)\screen.obj\

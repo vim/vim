@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0aa.  Last change: 2005 Oct 04
+*usr_05.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -300,9 +300,12 @@ GETTING A GLOBAL PLUGIN
 Where can you find plugins?
 - Some come with Vim.  You can find them in the directory $VIMRUNTIME/macros
   and its sub-directories.
-- Download from the net, check out http://vim.sf.net.
+- Download from the net.  There is a large collection on http://www.vim.org.
 - They are sometimes posted in a Vim |maillist|.
 - You could write one yourself, see |write-plugin|.
+
+Some plugins come as a vimball archive, see |vimball|.
+Some plugins can be updated automatically, see |getscript|.
 
 
 USING A GLOBAL PLUGIN

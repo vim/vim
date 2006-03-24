@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 05
+*starting.txt*  For Vim version 7.0b.  Last change: 2006 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

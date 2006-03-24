@@ -1132,7 +1132,6 @@ install_vimrc(int idx)
 {
     FILE	*fd, *tfd;
     char	*fname;
-    char	*p;
 
     /* If an old vimrc file exists, overwrite it.
      * Otherwise create a new one. */

@@ -1,4 +1,4 @@
-*usr_31.txt*	For Vim version 7.0aa.  Last change: 2006 Feb 28
+*usr_31.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -15,7 +15,7 @@ between alternatives.  Use keyboard shortcuts to access menu items quickly.
 |31.4|	Vim window position and size
 |31.5|	Various
 
-     Next chapter: |usr_40.txt|  Make new commands
+     Next chapter: |usr_32.txt|  The undo tree
  Previous chapter: |usr_30.txt|  Editing programs
 Table of contents: |usr_toc.txt|
 
@@ -262,6 +262,6 @@ another font size, for example.
 
 ==============================================================================
 
-Next chapter: |usr_40.txt|  Make new commands
+Next chapter: |usr_32.txt|  The undo tree
 
 Copyright: see |manual-copyright|  vim:tw=78:ts=8:ft=help:norl:

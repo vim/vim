@@ -34,7 +34,7 @@ OBJ = \
 	obj/fold.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
-	obj/hashtable.o \
+	obj/hashtab.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -49,7 +49,7 @@ OBJ = \
 	obj/ops.o \
 	obj/option.o \
 	obj/os_msdos.o \
-	obj/popupmenu.o \
+	obj/popupmnu.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \

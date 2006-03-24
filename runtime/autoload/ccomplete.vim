@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 19
+" Last Change:	2006 Mar 24
 
 
 " This function is used for the 'omnifunc' option.
@@ -166,9 +166,11 @@ function! ccomplete#Complete(findstart, base)
 
     let res = []
     for i in range(len(diclist))
-      " New ctags has the "typename" field.
+      " New ctags has the "typeref" field.  Patched version has "typename".
       if has_key(diclist[i], 'typename')
 	call extend(res, s:StructMembers(diclist[i]['typename'], items[1:], 1))
+      elseif has_key(diclist[i], 'typeref')
+	call extend(res, s:StructMembers(diclist[i]['typeref'], items[1:], 1))
       endif
 
       " For a variable use the command, which must be a search pattern that
@@ -232,10 +234,9 @@ function! s:Tag2item(val)
 
   let res['extra'] = s:Tagcmd2extra(a:val['cmd'], a:val['name'], a:val['filename'])
 
-  " Use the whole search command as the "info" entry.
-  let s = matchstr(a:val['cmd'], '/^\s*\zs.*\ze$/')
+  let s = s:Dict2info(a:val)
   if s != ''
-    let res['info'] = substitute(s, '\\\(.\)', '\1', 'g')
+    let res['info'] = s
   endif
 
   let res['tagline'] = ''
@@ -253,6 +254,51 @@ function! s:Tag2item(val)
   return res
 endfunction
 
+" Use all the items in dictionary for the "info" entry.
+function! s:Dict2info(dict)
+  let info = ''
+  for k in sort(keys(a:dict))
+    let info  .= k . repeat(' ', 10 - len(k))
+    if k == 'cmd'
+      let info .= substitute(matchstr(a:dict['cmd'], '/^\s*\zs.*\ze$/'), '\\\(.\)', '\1', 'g')
+    else
+      let info .= a:dict[k]
+    endif
+    let info .= "\n"
+  endfor
+  return info
+endfunc
+
+" Parse a tag line and return a dictionary with items like taglist()
+function! s:ParseTagline(line)
+  let l = split(a:line, "\t")
+  let d = {}
+  if len(l) >= 3
+    let d['name'] = l[0]
+    let d['filename'] = l[1]
+    let d['cmd'] = l[2]
+    let n = 2
+    if l[2] =~ '^/'
+      " Find end of cmd, it may contain Tabs.
+      while n < len(l) && l[n] !~ '/;"$'
+	let n += 1
+	let d['cmd'] .= "  " . l[n]
+      endwhile
+    endif
+    for i in range(n + 1, len(l) - 1)
+      if l[i] == 'file:'
+	let d['static'] = 1
+      elseif l[i] !~ ':'
+	let d['kind'] = l[i]
+      else
+	let d[matchstr(l[i], '[^:]*')] = matchstr(l[i], ':\zs.*')
+      endif
+    endfor
+  endif
+
+  return d
+endfunction
+
 " Turn a match item "val" into an item for completion.
 " "val['match']" is the matching item.
 " "val['tagline']" is the tagline in which the last part was found.
@@ -265,10 +311,10 @@ function! s:Tagline2item(val, brackets)
     " Use info from Tag2item().
     let res['info'] = a:val['info']
   else
-    " Use the whole search command as the "info" entry.
-    let s = matchstr(line, '\t/^\s*\zs.*\ze$/')
+    " Parse the tag line and add each part to the "info" entry.
+    let s = s:Dict2info(s:ParseTagline(line))
     if s != ''
-      let res['info'] = substitute(s, '\\\(.\)', '\1', 'g')
+      let res['info'] = s
     endif
   endif
 
@@ -348,7 +394,11 @@ function! s:Nextitem(lead, items, depth, all)
     for tagidx in range(len(diclist))
       let item = diclist[tagidx]
 
-      " New ctags has the "typename" field.
+      " New ctags has the "typeref" field.  Patched version has "typename".
+      if has_key(item, 'typeref')
+	call extend(res, s:StructMembers(item['typeref'], a:items, a:all))
+	continue
+      endif
       if has_key(item, 'typename')
 	call extend(res, s:StructMembers(item['typename'], a:items, a:all))
 	continue
@@ -496,11 +546,16 @@ function! s:SearchMembers(matches, items, all)
     if has_key(a:matches[i], 'dict')
       if has_key(a:matches[i].dict, 'typename')
 	let typename = a:matches[i].dict['typename']
+      elseif has_key(a:matches[i].dict, 'typeref')
+	let typename = a:matches[i].dict['typeref']
       endif
       let line = "\t" . a:matches[i].dict['cmd']
     else
       let line = a:matches[i]['tagline']
       let e = matchend(line, '\ttypename:')
+      if e < 0
+	let e = matchend(line, '\ttyperef:')
+      endif
       if e > 0
 	" Use typename field
 	let typename = matchstr(line, '[^\t]*', e)

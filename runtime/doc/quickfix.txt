@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 23
+*quickfix.txt*  For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -227,6 +227,14 @@ command with 'l'.
 :lex[pr][!] {expr}	Same as ":cexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
+							*:cgete* *:cgetexpr*
+:cgete[xpr][!] {expr}	Create a quickfix list using the result of {expr}.
+			Just like ":cexpr", but don't jump to the first error.
+
+							*:lgete* *:lgetexpr*
+:lgete[xpr][!] {expr}	Same as ":cgetexpr", except the location list for the
+			current window is used instead of the quickfix list.
+
 							*:cad* *:caddexpr*
 :cad[dexpr][!] {expr}	Evaluate {expr} and add the resulting lines to the
 			current quickfix list. If a quickfix list is not
@@ -238,14 +246,6 @@ command with 'l'.
 <
 							*:lad* *:laddexpr*
 :lad[dexpr][!] {expr}	Same as ":caddexpr", except the location list for the
-			current window is used instead of the quickfix list.
-
-							*:cgete* *:cgetexpr*
-:cgete[xpr][!] {expr}	Create a quickfix list using the result of {expr}.
-			Just like ":cexpr", but don't jump to the first error.
-
-							*:lgete* *:lgetexpr*
-:lgete[xpr][!] {expr}	Same as ":cgetexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cl* *:clist*

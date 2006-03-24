@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 23
+*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include patch for recognizing TeX flavor. (Benji Fisher)
-And new tex.vim and plaintex.vim.
+The 16 bit DOS version doesn't link because too much static memory is used.
+Drop it?
+
+test61 sometimes fails, probably because of timing variations.
+
+Check version7.txt for:
+- new syntax files and other runtime files.
+- new functions
+- new options
+- etc.
+
+Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -44,24 +54,12 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Darren is including the patch in ctags.  Test it when it's ready.  Change
-"typename" to "typeref" in C complete code.
-
-HTML indenting can be slow.  Caused by using searchpair().  Can search() be
-used instead?
-
-ccomplete: use "signature:" field from tags file when it's present.
-Or list all the fields? (Martin Stubenschrott)
-
-Add more tests for all new functionality in Vim 7.  Especially new functions.
-
-Add text in user manual for using the undo tree.  Example with finding the
-text of a previous change.
-
-Links in docs to GetLatestVimScripts (getscript) plugin.
+Darren is including the patch in ctags.  Test it when it's ready.
 
 
 Awaiting updated patches:
+9   HTML indenting can be slow.  Caused by using searchpair().  Can search()
+    be used instead?
 8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
     Aric Blumer has a patch for this.
     He will update the patch for 6.3.

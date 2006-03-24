@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
+*usr_40.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -14,7 +14,7 @@ Autocommands make it possible to execute commands automatically.
 |40.3|	Autocommands
 
      Next chapter: |usr_41.txt|  Write a Vim script
- Previous chapter: |usr_31.txt|  Exploiting the GUI
+ Previous chapter: |usr_32.txt|  The undo tree
 Table of contents: |usr_toc.txt|
 
 ==============================================================================

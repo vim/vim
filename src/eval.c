@@ -1666,6 +1666,8 @@ ex_let(eap)
     argend = skip_var_list(arg, &var_count, &semicolon);
     if (argend == NULL)
 	return;
+    if (argend > arg && argend[-1] == '.')  /* for var.='str' */
+	--argend;
     expr = vim_strchr(argend, '=');
     if (expr == NULL)
     {
@@ -19360,9 +19362,11 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     init_var_dict(&fc.l_vars, &fc.l_vars_var);
     if (selfdict != NULL)
     {
-	/* Set l:self to "selfdict". */
+	/* Set l:self to "selfdict".  Use "name" to avoid a warning from
+	 * some compiler that checks the destination size. */
 	v = &fc.fixvar[fixvar_idx++].var;
-	STRCPY(v->di_key, "self");
+	name = v->di_key;
+	STRCPY(name, "self");
 	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
 	hash_add(&fc.l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;

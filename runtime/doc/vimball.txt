@@ -1,4 +1,7 @@
-*vimball.txt*	Vimball Archiver				Mar 20, 2006
+*vimball.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
+
+	Vimball Archiver
+
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*

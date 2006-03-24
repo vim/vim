@@ -9,7 +9,10 @@
 # define __CYGWIN32__
 #endif
 
-#include <scheme.h>
+/* #ifdef needed for "make depend" */
+#ifdef FEAT_MZSCHEME
+# include <scheme.h>
+#endif
 
 #ifdef __MINGW32__
 # undef __CYGWIN32__

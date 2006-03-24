@@ -1,4 +1,6 @@
-*getscript.txt*		Get the Latest VimScripts	Dec 23, 2005
+*getscript.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
+
+		Get the Latest VimScripts
 
 Authors:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamilyA.Mbiz>
 	  (remove NOSPAM from the email address)
@@ -23,7 +25,7 @@ Copyright: (c) 2004-2005 by Charles E. Campbell, Jr.
 
 
 ==============================================================================
-2. GetLatestVimScripts Usage		*getlatestvimscripts* *getscript* *glvs*
+2. GetLatestVimScripts Usage	      *getlatestvimscripts* *getscript* *glvs*
 
 	While in vim, type
 >

@@ -41,7 +41,7 @@ SRC = \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
-	hashtable.c \
+	hashtab.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -56,7 +56,7 @@ SRC = \
 	ops.c \
 	option.c \
 	os_amiga.c \
-	popupmenu.c \
+	popupmnu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -85,7 +85,7 @@ OBJ =	o/buffer.o \
 	o/fold.o \
 	o/getchar.o \
 	o/hardcopy.o \
-	o/hashtable.o \
+	o/hashtab.o \
 	o/main.o \
 	o/mark.o \
 	o/memfile.o \
@@ -100,7 +100,7 @@ OBJ =	o/buffer.o \
 	o/ops.o \
 	o/option.o \
 	o/os_amiga.o \
-	o/popupmenu.o \
+	o/popupmnu.o \
 	o/quickfix.o \
 	o/regexp.o \
 	o/screen.o \
@@ -163,7 +163,7 @@ o/getchar.o: getchar.c	$(SYMS)
 
 o/hardcopy.o: hardcopy.c	$(SYMS)
 
-o/hashtable.o: hashtable.c	$(SYMS)
+o/hashtab.o: hashtab.c	$(SYMS)
 
 o/main.o: main.c $(SYMS)
 
@@ -198,7 +198,7 @@ o/option.o:	option.c  $(SYMS)
 
 o/os_amiga.o:	os_amiga.c  $(SYMS) os_amiga.h
 
-o/popupmenu.o:	popupmenu.c  $(SYMS)
+o/popupmnu.o:	popupmnu.c  $(SYMS)
 
 o/quickfix.o:	quickfix.c  $(SYMS)
 

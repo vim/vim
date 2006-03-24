@@ -323,7 +323,9 @@ ml_open(buf)
     STRNCPY(b0p->b0_version + 4, Version, 6);
     long_to_char((long)mfp->mf_page_size, b0p->b0_page_size);
 
-    if (!B_SPELL(buf))
+#ifdef FEAT_SPELL
+    if (!buf->b_spell)
+#endif
     {
 	b0p->b0_dirty = buf->b_changed ? B0_DIRTY : 0;
 	b0p->b0_flags = get_fileformat(buf) + 1;

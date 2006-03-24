@@ -24,6 +24,10 @@
 #include "vim.h"
 #include "if_mzsch.h"
 
+/* Only do the following when the feature is enabled.  Needed for "make
+ * depend". */
+#if defined(FEAT_MZSCHEME) || defined(PROTO)
+
 /* Base data structures */
 #define SCHEME_VIMBUFFERP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_buffer_type)
 #define SCHEME_VIMWINDOWP(obj)  SAME_TYPE(SCHEME_TYPE(obj), mz_window_type)
@@ -2708,4 +2712,6 @@ sandbox_network_guard(int argc, Scheme_Object **argv)
 {
     return scheme_void;
 }
+#endif
+
 #endif

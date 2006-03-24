@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0aa.  Last change: 2006 Mar 21
+*filetype.txt*  For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -549,10 +549,10 @@ If the first line of a *.tex file has the form >
 	%&<format>
 then this determined the file type:  plaintex (for plain TeX), context (for
 ConTeXt), or tex (for LaTeX).  Otherwise, the file is searched for keywords to
-choose context or tex.  If no keywords are found, it defaults to tex.  You can
-change the default by defining the variable g:tex_flavor to the format (not
-the file type) you use most:  plain or context or latex.  (Currently no other
-formats are recognized.)
+choose context or tex.  If no keywords are found, it defaults to plaintex.
+You can change the default by defining the variable g:tex_flavor to the format
+(not the file type) you use most:  plain or context or latex.  (Currently no
+other formats are recognized.)
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -31,7 +31,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/gui_beval.h \
 		src/hardcopy.c \
-		src/hashtable.c \
+		src/hashtab.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -52,7 +52,7 @@ SRC_ALL =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
-		src/popupmenu.c \
+		src/popupmnu.c \
 		src/quickfix.c \
 		src/regexp.c \
 		src/regexp.h \
@@ -96,7 +96,7 @@ SRC_ALL =	\
 		src/proto/gui.pro \
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
-		src/proto/hashtable.pro \
+		src/proto/hashtab.pro \
 		src/proto/main.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \
@@ -111,7 +111,7 @@ SRC_ALL =	\
 		src/proto/normal.pro \
 		src/proto/ops.pro \
 		src/proto/option.pro \
-		src/proto/popupmenu.pro \
+		src/proto/popupmnu.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
 		src/proto/screen.pro \

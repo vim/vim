@@ -39,7 +39,7 @@ SRC =	buffer.c						\
 	fold.c							\
 	getchar.c						\
 	hardcopy.c						\
-	hashtable.c						\
+	hashtab.c						\
 	main.c							\
 	mark.c							\
 	mbyte.c							\
@@ -54,7 +54,7 @@ SRC =	buffer.c						\
 	ops.c							\
 	option.c						\
 	os_amiga.c						\
-	popupmenu.c						\
+	popupmnu.c						\
 	quickfix.c						\
 	regexp.c						\
 	screen.c						\
