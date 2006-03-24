@@ -3835,15 +3835,16 @@ get_tags(list, pat)
 			char_u	*s, *n;
 			int	len;
 
-			/* Add extra field as a dict entry. */
+			/* Add extra field as a dict entry.  Fields are
+			 * separated by Tabs. */
 			n = p;
-			while (*p != NUL && *p > ' ' && *p < 127 && *p != ':')
+			while (*p != NUL && *p >= ' ' && *p < 127 && *p != ':')
 			    ++p;
 			len = p - n;
 			if (*p == ':' && len > 0)
 			{
 			    s = ++p;
-			    while (*p != NUL && *p > ' ' && *p < 127)
+			    while (*p != NUL && *p >= ' ' && *p < 127)
 				++p;
 			    n[len] = NUL;
 			    if (add_tag_field(dict, (char *)n, s, p) == FAIL)

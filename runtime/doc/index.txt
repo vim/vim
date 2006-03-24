@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0aa.  Last change: 2006 Mar 20
+*index.txt*     For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1088,6 +1088,7 @@ The commands are sorted on the non-optional part of their name.
 |:cexpr|	:cex[pr]	read errors from expr and jump to first
 |:cfile|	:cf[ile]	read file with error messages and jump to first
 |:cfirst|	:cfir[st]	go to the specified error, default first one
+|:cgetbuffer|	:cgetb[uffer]	get errors from buffer
 |:cgetexpr|	:cgete[xpr]	get errors from expr
 |:cgetfile|	:cg[etfile]	read file with error messages
 |:changes|	:cha[nges]	print the change list
@@ -1242,6 +1243,7 @@ The commands are sorted on the non-optional part of their name.
 |:lexpr|	:lex[pr]	read locations from expr and jump to first
 |:lfile|	:lf[ile]	read file with locations and jump to first
 |:lfirst|	:lfir[st]	go to the specified location, default first one
+|:lgetbuffer|	:lgetb[uffer]	get locations from buffer
 |:lgetexpr|	:lgete[xpr]	get locations from expr
 |:lgetfile|	:lg[etfile]	read file with locations
 |:lgrep|	:lgr[ep]	run 'grepprg' and jump to first match

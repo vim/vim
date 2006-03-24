@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.0aa.  Last change: 2004 Jun 16
+*sponsor.txt*   For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7,13 +7,13 @@
 
 SPONSOR VIM DEVELOPMENT						*sponsor*
 
-Fixing bugs and adding new features takes a lot of effort.  For a few years
-Bram has attempted to do this next to a full-time job.  During that time the
-todo list kept getting longer and longer.
+Fixing bugs and adding new features takes a lot of time and effort.  To show
+your appreciation for the work and motivate Bram and others to continue
+working on Vim please send a donation.
 
-In order for Bram to support Vim properly he needs your support.  Through your
-donations Bram will be able to have a part-time job and spend more time on
-fixing bugs and adding new features.
+Since Bram is back to a paid job the money will now be used to help children
+in Uganda.  See |uganda|.  But at the same time donations increase Bram's
+motivation to work on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 
@@ -58,7 +58,7 @@ But only if you enable this on your account page.
 
 HOW TO SEND MONEY						*send-money*
 
-Creditcard	Through PayPal, see the PayPal site for information:
+Credit card	Through PayPal, see the PayPal site for information:
 			https://www.paypal.com
 		The e-mail address for sending sponsorship money is:
 			donate@vim.org
@@ -68,15 +68,7 @@ Creditcard	Through PayPal, see the PayPal site for information:
 		In Euro countries a bank transfer is preferred, this has lower
 		costs.
 
-Bank transfer	Transfer to Bram's account at the Postbank: 1644503.  For
-		international transfers you can use these numbers:
-			IBAN:       NL79 PSTB 0001 6445 03
-			SWIFT/BIC:  PSTBNL21
-		This is the address of the bank:
-			ING Bank Amsterdam, Foreign Operations
-			PO Box 1800
-			1000 BV Amsterdam
-			The Netherlands
+Other methods	See |iccf-donations|.
 		Include "Vim sponsor" or "Vim registration" in the comment of
 		your money transfer.  Send me an e-mail that mentions the
 		amount you transferred if you want to vote for features and
@@ -88,37 +80,26 @@ Cash		Small amounts can be send with ordinary mail.  Put something
 		features and show others you are a registered Vim user or
 		sponsor.
 
-This is Bram's address: Bram Moolenaar
-			Clematisstraat 30
-			5925 BE Venlo
+You can use this permanent address:
+			Bram Moolenaar
+			Molenstraat 2
+			2161 HP Lisse
 			The Netherlands
 
-
-ALTERNATIVE
-
-If you don't care about sponsoring Vim Development or becoming a registered
-Vim user, but do care about helping needy children, consider giving to the
-ICCF Holland foundation.  This is the charity recommended by Vim's author.
-The money is used for a children centre in the south of Uganda, where AIDS has
-caused many victims.  See |uganda|.
 
 
 QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
 
 Why should I give money?
 
-Bram has tried to work on Vim next to a full-time job.  The list of known bugs
-and ideas for new features has constantly been growing during this time.  Bram
-simply can't spend enough time on Vim development when he has a full-time job.
-Your contribution will make it possible for Bram to have a part-time job and
-spend much more time on Vim development.  Bugs will be fixed quicker and new
-Vim releases will become available more often.
+If you do not show your appreciation for Vim then Bram will be less motivated
+to fix bugs and add new features.
 
 
 How much money should I send?
 
-That is up to you.  The more you give, the more time Bram can work on Vim.  An
-indication for individuals that use Vim at home: 10 Euro per year.  For
+That is up to you.  The more you give, the more children will be helped.
+An indication for individuals that use Vim at home: 10 Euro per year.  For
 professional use: 30 Euro per year per person.  Send at least 10 euro to be
 able to vote for features.
 
@@ -198,33 +179,30 @@ sent money.  The points will be counted right away.
 
 How about Charityware?
 
-You have to decide yourself whether you want to sponsor Vim development, help
-the poor children in Uganda (see |uganda|) or both.  Bram will certainly keep
-on supporting the project in Uganda.  In the (unlikely) situation that Bram
-gets more donations for Vim development than he needs, he will send the money
-to Uganda.
+Currently the Vim donations go to |uganda| anyway.  Thus it doesn't matter if
+you sponsor Vim or ICCF.  Except that Vim sponsoring will allow you to vote
+for features.
 
 
 I donated $$$, now please add feature XYZ!
 
 There is no direct relation between your donation and the work Bram does.
-Otherwise you would be paying for work and Bram has to pay income tax over the
+Otherwise you would be paying for work and we would have to pay tax over the
 donation.  If you want to hire Bram for specific work, contact him directly,
 don't use the donation system.
 
 
-Are the donations tax deductable?
+Are the donations tax deductible?
 
-No.  Setting up a system for this is complex and imposes too many restrictions.
-The donations to help the children in |Uganda| are tax deductable in Holland,
-Germany, Canada and probably also in the USA.
+That depends on your country.  The donations to help the children in |Uganda|
+are tax deductible in Holland, Germany, Canada and in the USA.  See the ICCF
+website http://www.iccf.nl/donate.html.  You must send an e-mail to Bram to
+let him know that the donation is done because of the use of Vim.
 
 
 Can you send me a bill?
 
-Sending a bill would mean Bram does something in return for your contribution.
-That is work and would mean Bram has to pay income tax over the amount.  It is
-possible, but the net amount will be lower.
+No.  But a receipt is possible.
 
 
  vim:tw=78:ts=8:ft=help:norl:

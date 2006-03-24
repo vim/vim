@@ -1,5 +1,9 @@
-" This file was adapted for Vim 6 from the yudit distribution by
-" Robert Goulding <goulding@princeton.edu>
+" Vim Keymap file for greek
+" Maintainer: Panagiotis Louridas <louridas@acm.org>
+" Last Updated: Thu Mar 23 23:45:02 EET 2006
+
+" This file was corrected for Vim after the version adapted for Vim 6 from 
+" the yudit distribution by Robert Goulding <goulding@princeton.edu>
 "
 " The monotonic part of this kmap was made by Constantine Stathopoulos
 " <cstath@irismedia.gr>.
@@ -7,8 +11,7 @@
 " Aarhus, Denmark.
 " It was modified and completed by A. Tsolomitis <atsol@aegean.gr>
 " The licence allows modifications but redistribution of modifications
-" should be with an other name.
-" Any comments can be sent to A. Tsolomitis <atsol@aegean.gr>
+" should be with another name.
 
 " The keymap now conforms with the
 " LaTeX's-Babel Standard by A. Syropoulos <apostolo@ocean1.ee.duth.gr>
@@ -38,7 +41,8 @@
 
 " > dasia " an oxia or baria *always* should follow dasia
 " < psili " an oxia or baria *always* should follow psili
-" ; oxia
+" ; tonos
+" / oxia
 " ` varia
 " ~ perispomeni
 " : dialytika
@@ -95,18 +99,19 @@ W	<char-0x0387>   " GREEK ANO TELEIA (Emacs standard)
 ;:	<char-0x0385>	" GREEK DIALYTIKA Oxia
 :`	<char-0x1FED>	" GREEK DIALYTIKA VARIA
 `:	<char-0x1FED>	" GREEK DIALYTIKA VARIA
-`	<char-0x1FEF>   " Greek Varia
-~	<char-0x1FC0>   " Perispomeni
->`	<char-0x1FCD>	" Psili Varia
-<`	<char-0x1FDD>	" Dasia Varia
->;	<char-0x1FCE>	" Psili Oxia
-<;	<char-0x1FDE>	" Dasia Oxia
-<~	<char-0x1FDF>	" Dasia Perispomeni
->~	<char-0x1FCF>	" Psili Perispomeni
+/	<char-0x1FFD>	" GREEK OXIA
+`	<char-0x1FEF>   " GREEK VARIA
+~	<char-0x1FC0>   " PERISPOMENI
+>`	<char-0x1FCD>	" PSILI VARIA
+<`	<char-0x1FDD>	" DASIA VARIA
+>;	<char-0x1FCE>	" PSILI OXIA
+<;	<char-0x1FDE>	" DASIA OXIA
+<~	<char-0x1FDF>	" DASIA PERISPOMENI
+>~	<char-0x1FCF>	" PSILI PERISPOMENI
 "For plain psili use apostrophe
 ;'	<char-0x1FFE>	" (Plain) dasia
-
-
+"
+"
 "
 " GREEK LETTERS
 "
@@ -127,8 +132,6 @@ J	<char-0x039E>   " GREEK CAPITAL LETTER XI
 O	<char-0x039F>   " GREEK CAPITAL LETTER OMIKRON
 P	<char-0x03A0>   " GREEK CAPITAL LETTER PI
 R	<char-0x03A1>   " GREEK CAPITAL LETTER RHO
-"W	<char-0x03A3>   " GREEK CAPITAL LETTER SIGMA [CAPITAL ANALOGUE FOR
-			" SMALL LETTER FINAL SIGMA]
 S	<char-0x03A3>   " GREEK CAPITAL LETTER SIGMA
 T	<char-0x03A4>   " GREEK CAPITAL LETTER TAU
 Y	<char-0x03A5>   " GREEK CAPITAL LETTER UPSILON
@@ -191,8 +194,9 @@ v	<char-0x03C9>   " GREEK SMALL LETTER OMEGA
 ;y	<char-0x03CD>  " GREEK SMALL LETTER UPSILON WITH TONOS
 ;v	<char-0x03CE>  " GREEK SMALL LETTER OMEGA WITH TONOS
 
-
-
+"
+" This area covers 0x1F00-0x1FFF
+"
 "
 " letters with Varia:
 "
@@ -213,23 +217,20 @@ v	<char-0x03C9>   " GREEK SMALL LETTER OMEGA
 "
 " letters with Oxia:
 "
-;A	<char-0x1FBB>  " GREEK CAPITAL LETTER ALPHA WITH OXIA
-;E	<char-0x1FC9>  " GREEK CAPITAL LETTER EPSILON WITH OXIA
-;H	<char-0x1FCB>  " GREEK CAPITAL LETTER ETA WITH OXIA
-;I	<char-0x1FDB>  " GREEK CAPITAL LETTER IOTA WITH OXIA
-;O	<char-0x1FF9>  " GREEK CAPITAL LETTER OMICRON WITH OXIA
-;Y	<char-0x1FEB>  " GREEK CAPITAL LETTER UPSILON WITH OXIA
-;V	<char-0x1FFB>  " GREEK CAPITAL LETTER OMEGA WITH OXIA
-;a	<char-0x1F71>  " GREEK SMALL LETTER ALPHA WITH OXIA
-;e	<char-0x1F73>  " GREEK SMALL LETTER EPSILON WITH OXIA
-;h	<char-0x1F75>  " GREEK SMALL LETTER ETA WITH OXIA
-;i	<char-0x1F77>  " GREEK SMALL LETTER IOTA WITH OXIA
-;o	<char-0x1F79>  " GREEK SMALL LETTER OMICRON WITH OXIA
-;y	<char-0x1F7B>  " GREEK SMALL LETTER UPSILON WITH OXIA
-;v	<char-0x1F7D>  " GREEK SMALL LETTER OMEGA WITH OXIA
-"
-"
-" This area covers 0x1F00-0x1F6F
+/A	<char-0x1FBB>  " GREEK CAPITAL LETTER ALPHA WITH OXIA
+/E	<char-0x1FC9>  " GREEK CAPITAL LETTER EPSILON WITH OXIA
+/H	<char-0x1FCB>  " GREEK CAPITAL LETTER ETA WITH OXIA
+/I	<char-0x1FDB>  " GREEK CAPITAL LETTER IOTA WITH OXIA
+/O	<char-0x1FF9>  " GREEK CAPITAL LETTER OMICRON WITH OXIA
+/Y	<char-0x1FEB>  " GREEK CAPITAL LETTER UPSILON WITH OXIA
+/V	<char-0x1FFB>  " GREEK CAPITAL LETTER OMEGA WITH OXIA
+/a	<char-0x1F71>  " GREEK SMALL LETTER ALPHA WITH OXIA
+/e	<char-0x1F73>  " GREEK SMALL LETTER EPSILON WITH OXIA
+/h	<char-0x1F75>  " GREEK SMALL LETTER ETA WITH OXIA
+/i	<char-0x1F77>  " GREEK SMALL LETTER IOTA WITH OXIA
+/o	<char-0x1F79>  " GREEK SMALL LETTER OMICRON WITH OXIA
+/y	<char-0x1F7B>  " GREEK SMALL LETTER UPSILON WITH OXIA
+/v	<char-0x1F7D>  " GREEK SMALL LETTER OMEGA WITH OXIA
 "
 " letters with Psili:
 "
@@ -380,7 +381,6 @@ h|	<char-0x1FC3>  " GREEK SMALL LETTER ETA WITH YPOGEGRAMMENI
 v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 "
 "
-" This area covers 0x1F80-0x1FAF
 "
 " letters with Psili and Ypogegrammeni/Prosgegrammeni:
 "
@@ -393,6 +393,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 >h|	<char-0x1F90>  " GREEK SMALL LETTER ETA WITH PSILI AND YPOGEGRAMMENI
 >v|	<char-0x1FA0>  " GREEK SMALL LETTER OMEGA WITH PSILI AND YPOGEGRAMMENI
 "
+"
+"
 " letters with Dasia and Ypogegrammeni/Prosgegrammeni:
 "
 <A|	<char-0x1F89>  " GREEK CAPITAL LETTER ALPHA WITH DASIA AND
@@ -403,6 +405,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 <a|	<char-0x1F81>  " GREEK SMALL LETTER ALPHA WITH DASIA AND YPOGEGRAMMENI
 <h|	<char-0x1F91>  " GREEK SMALL LETTER ETA WITH DASIA AND YPOGEGRAMMENI
 <v|	<char-0x1FA1>  " GREEK SMALL LETTER OMEGA WITH DASIA AND YPOGEGRAMMENI
+"
+"
 "
 " letters with Psili and Varia and Ypogegrammeni/Prosgegrammeni:
 "
@@ -418,6 +422,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 		       " YPOGEGRAMMENI
 >`v|	<char-0x1FA2>  " GREEK SMALL LETTER OMEGA WITH PSILI AND VARIA AND
 		       " YPOGEGRAMMENI
+"
+"
 "
 " letters with Dasia and Varia and Ypogegrammeni/Prosgegrammeni:
 "
@@ -436,6 +442,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 "
 " letters with Psili and Oxia and Ypogegrammeni/Prosgegrammeni:
 "
+"
+"
 >;A|	<char-0x1F8C>  " GREEK CAPITAL LETTER ALPHA WITH PSILI AND OXIA AND
 		       " PROSGEGRAMMENI
 >;H|	<char-0x1F9C>  " GREEK CAPITAL LETTER ETA WITH PSILI AND OXIA AND
@@ -450,6 +458,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 		       " YPOGEGRAMMENI
 "
 " letters with Dasia and Oxia and Ypogegrammeni/Prosgegrammeni:
+"
+"
 "
 <;A|	<char-0x1F8D>  " GREEK CAPITAL LETTER ALPHA WITH DASIA AND OXIA AND
 		       " PROSGEGRAMMENI
@@ -466,6 +476,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 "
 " letters with Psili and Perispomeni and Ypogegrammeni/Prosgegrammeni:
 "
+"
+"
 >~A|	<char-0x1F8E>  " GREEK CAPITAL LETTER ALPHA WITH PSILI AND PERISPOMENI
 		       " AND PROSGEGRAMMENI
 >~H|	<char-0x1F9E>  " GREEK CAPITAL LETTER ETA WITH PSILI AND OXIA
@@ -480,6 +492,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 		       " AND YPOGEGRAMMENI
 "
 " letters with Dasia and Perispomeni and Ypogegrammeni/Prosgegrammeni:
+"
+"
 "
 <~A|	<char-0x1F8F>  " GREEK CAPITAL LETTER ALPHA WITH DASIA AND PERISPOMENI
 		       " AND PROSGEGRAMMENI
@@ -496,6 +510,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 "
 " letters with Perispomeni:
 "
+"
+"
 ~a	<char-0x1FB6>  " GREEK SMALL LETTER ALPHA WITH PERISPOMENI
 ~h	<char-0x1FC6>  " GREEK SMALL LETTER ETA WITH PERISPOMENI
 ~i	<char-0x1FD6>  " GREEK SMALL LETTER IOTA WITH PERISPOMENI
@@ -503,6 +519,8 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 ~v	<char-0x1FF6>  " GREEK SMALL LETTER OMEGA WITH PERISPOMENI
 "
 " letters with Perispomeni and Ypogegrammeni:
+"
+"
 "
 ~a|	<char-0x1FB7> " GREEK SMALL LETTER ALPHA WITH PERISPOMENI AND
 		      " YPOGEGRAMMENI
@@ -514,11 +532,15 @@ v|	<char-0x1FF3>  " GREEK SMALL LETTER OMEGA WITH YPOGEGRAMMENI
 "
 " letters with Varia and Ypogegrammeni:
 "
+"
+"
 `a|	<char-0x1FB2>  " GREEK SMALL LETTER ALPHA WITH VARIA AND YPOGEGRAMMENI
 `h|	<char-0x1FC2>  " GREEK SMALL LETTER ETA WITH VARIA AND YPOGEGRAMMENI
 `v|	<char-0x1FF2>  " GREEK SMALL LETTER OMEGA WITH VARIA AND YPOGEGRAMMENI
 "
 " letters with Oxia and Ypogegrammeni:
+"
+"
 "
 ;a|	<char-0x1FB4>  " GREEK SMALL LETTER ALPHA WITH OXIA AND YPOGEGRAMMENI
 ;h|	<char-0x1FC4>  " GREEK SMALL LETTER ETA WITH OXIA AND YPOGEGRAMMENI

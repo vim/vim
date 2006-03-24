@@ -22,7 +22,7 @@
 !define HAVE_NLS
 
 !define VER_MAJOR 7
-!define VER_MINOR 0aa
+!define VER_MINOR 0b
 
 # ----------- No configurable settings below this line -----------
 
@@ -216,6 +216,12 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0\syntax
 	File ${VIMRT}\syntax\*.*
+
+	SetOutPath $0\spell
+	File ${VIMRT}\spell\*.txt
+	File ${VIMRT}\spell\*.vim
+	File ${VIMRT}\spell\*.spl
+	File ${VIMRT}\spell\*.sug
 
 	SetOutPath $0\tools
 	File ${VIMRT}\tools\*.*

@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 7.0aa.  Last change: 2005 Apr 01
+*usr_02.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -302,7 +302,7 @@ edited.  Typing this command twice cancels the preceding "U".
 
 The "U" command is a change by itself, which the "u" command undoes and CTRL-R
 redoes.  This might be a bit confusing.  Don't worry, with "u" and CTRL-R you
-can go to any of the situations you had.
+can go to any of the situations you had.  More about that in section ||.
 
 ==============================================================================
 *02.6*	Other editing commands

@@ -225,7 +225,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/fold.obj" \
 	"$(INTDIR)/getchar.obj" \
 	"$(INTDIR)/hardcopy.obj" \
-	"$(INTDIR)/hashtable.obj" \
+	"$(INTDIR)/hashtab.obj" \
 	"$(INTDIR)/main.obj" \
 	"$(INTDIR)/mark.obj" \
 	"$(INTDIR)/mbyte.obj" \
@@ -241,7 +241,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/option.obj" \
 	"$(INTDIR)/os_mswin.obj" \
 	"$(INTDIR)/os_win32.obj" \
-	"$(INTDIR)/popupmenu.obj" \
+	"$(INTDIR)/popupmnu.obj" \
 	"$(INTDIR)/quickfix.obj" \
 	"$(INTDIR)/regexp.obj" \
 	"$(INTDIR)/screen.obj" \
@@ -384,7 +384,7 @@ SOURCE=.\hardcopy.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\hashtable.c
+SOURCE=.\hashtab.c
 # End Source File
 # Begin Source File
 
@@ -598,7 +598,7 @@ SOURCE=.\os_win32.c
 # End Source File
 # Begin Source File
 
-SOURCE=.\popupmenu.c
+SOURCE=.\popupmnu.c
 # End Source File
 # Begin Source File
 

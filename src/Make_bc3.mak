@@ -66,7 +66,7 @@ EXE_dependencies = \
 	fold.obj \
 	getchar.obj \
 	hardcopy.obj \
-	hashtable.obj \
+	hashtab.obj \
 	main.obj \
 	mark.obj \
 	memfile.obj \
@@ -80,7 +80,7 @@ EXE_dependencies = \
 	normal.obj \
 	ops.obj \
 	option.obj \
-	popupmenu.obj \
+	popupmnu.obj \
 	quickfix.obj \
 	regexp.obj \
 	screen.obj \

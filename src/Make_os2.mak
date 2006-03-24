@@ -54,7 +54,7 @@ OBJ = \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
-	hashtable.o \
+	hashtab.o \
 	main.o \
 	mark.o \
 	memfile.o \
@@ -68,7 +68,7 @@ OBJ = \
 	normal.o \
 	ops.o \
 	option.o \
-	popupmenu.o \
+	popupmnu.o \
 	quickfix.o \
 	regexp.o \
 	screen.o \
@@ -127,7 +127,7 @@ fileio.o:	fileio.c  $(INCL)
 fold.o:		fold.c  $(INCL)
 getchar.o:	getchar.c  $(INCL)
 hardcopy.o:	hardcopy.c  $(INCL)
-hashtable.o:	hashtable.c  $(INCL)
+hashtab.o:	hashtab.c  $(INCL)
 main.o:		main.c  $(INCL)
 mark.o:		mark.c  $(INCL)
 memfile.o:	memfile.c  $(INCL)
@@ -141,7 +141,7 @@ mbyte.o:	mbyte.c  $(INCL)
 normal.o:	normal.c  $(INCL)
 ops.o:		ops.c  $(INCL)
 option.o:	option.c  $(INCL)
-popupmenu.o:	popupmenu.c  $(INCL)
+popupmnu.o:	popupmnu.c  $(INCL)
 quickfix.o:	quickfix.c  $(INCL)
 regexp.o:	regexp.c  $(INCL)
 screen.o:	screen.c  $(INCL)

@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0aa.  Last change: 2006 Mar 21
+*undo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -113,9 +113,7 @@ branch off.  This happens when you undo a few changes and then make a new
 change.  The undone changes become a branch.  You can go to that branch with
 the following commands.
 
-What matters here is the order in which the changes are made.  Undo and redo
-are not considered changes in this context.  After each change you have a new
-state of the text.
+This is explained in the user manual: |usr_32.txt|.
 
 							*:undol* *:undolist*
 :undol[ist]		List the leafs in the tree of changes.  Example:

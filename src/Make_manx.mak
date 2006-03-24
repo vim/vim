@@ -49,7 +49,7 @@ SRC =	buffer.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
-	hashtable.c \
+	hashtab.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -64,7 +64,7 @@ SRC =	buffer.c \
 	ops.c \
 	option.c \
 	os_amiga.c \
-	popupmenu.c \
+	popupmnu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -95,7 +95,7 @@ OBJ =	obj/buffer.o \
 	obj/fold.o \
 	obj/getchar.o \
 	obj/hardcopy.o \
-	obj/hashtable.o \
+	obj/hashtab.o \
 	obj/main.o \
 	obj/mark.o \
 	obj/memfile.o \
@@ -110,7 +110,7 @@ OBJ =	obj/buffer.o \
 	obj/ops.o \
 	obj/option.o \
 	obj/os_amiga.o \
-	obj/popupmenu.o \
+	obj/popupmnu.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \
@@ -139,7 +139,7 @@ PRO =	proto/buffer.pro \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
-	proto/hashtable.pro \
+	proto/hashtab.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -154,7 +154,7 @@ PRO =	proto/buffer.pro \
 	proto/ops.pro \
 	proto/option.pro \
 	proto/os_amiga.pro \
-	proto/popupmenu.pro \
+	proto/popupmnu.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -258,8 +258,8 @@ obj/getchar.o:	getchar.c
 obj/hardcopy.o:	hardcopy.c
 	$(CCSYM) $@ hardcopy.c
 
-obj/hashtable.o:	hashtable.c
-	$(CCSYM) $@ hashtable.c
+obj/hashtab.o:	hashtab.c
+	$(CCSYM) $@ hashtab.c
 
 # Don't use $(SYMS) here, because main.c defines EXTERN
 obj/main.o:	main.c option.h globals.h
@@ -306,8 +306,8 @@ obj/option.o:	option.c
 obj/os_amiga.o:	os_amiga.c
 	$(CCSYM) $@ os_amiga.c
 
-obj/popupmenu.o:	popupmenu.c
-	$(CCSYM) $@ popupmenu.c
+obj/popupmnu.o:	popupmnu.c
+	$(CCSYM) $@ popupmnu.c
 
 obj/quickfix.o:	quickfix.c
 	$(CCSYM) $@ quickfix.c

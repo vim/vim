@@ -123,6 +123,7 @@ DOCS = \
 	usr_29.txt \
 	usr_30.txt \
 	usr_31.txt \
+	usr_32.txt \
 	usr_40.txt \
 	usr_41.txt \
 	usr_42.txt \
@@ -251,6 +252,7 @@ HTMLS = \
 	usr_29.html \
 	usr_30.html \
 	usr_31.html \
+	usr_32.html \
 	usr_40.html \
 	usr_41.html \
 	usr_42.html \

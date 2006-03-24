@@ -1432,7 +1432,6 @@ retry:
 	    if (fio_flags & FIO_CODEPAGE)
 	    {
 		char_u	*src, *dst;
-		int	u8c;
 		WCHAR	ucs2buf[3];
 		int	ucs2len;
 		int	codepage = FIO_GET_CP(fio_flags);
@@ -1496,7 +1495,8 @@ retry:
 			}
 			else
 			{
-			    u8c = utf_ptr2char(src);
+			    int	    u8c = utf_ptr2char(src);
+
 			    if (u8c > 0xffff || (*src >= 0x80 && bytelen == 1))
 				found_bad = TRUE;
 			    ucs2buf[0] = u8c;

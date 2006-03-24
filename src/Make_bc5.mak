@@ -547,7 +547,7 @@ vimobj =  \
 	$(OBJDIR)\fold.obj \
 	$(OBJDIR)\getchar.obj \
 	$(OBJDIR)\hardcopy.obj \
-	$(OBJDIR)\hashtable.obj \
+	$(OBJDIR)\hashtab.obj \
 	$(OBJDIR)\main.obj \
 	$(OBJDIR)\mark.obj \
 	$(OBJDIR)\memfile.obj \
@@ -561,7 +561,7 @@ vimobj =  \
 	$(OBJDIR)\normal.obj \
 	$(OBJDIR)\ops.obj \
 	$(OBJDIR)\option.obj \
-	$(OBJDIR)\popupmenu.obj \
+	$(OBJDIR)\popupmnu.obj \
 	$(OBJDIR)\quickfix.obj \
 	$(OBJDIR)\regexp.obj \
 	$(OBJDIR)\screen.obj \

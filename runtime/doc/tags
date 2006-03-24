@@ -1609,6 +1609,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 31.3	usr_31.txt	/*31.3*
 31.4	usr_31.txt	/*31.4*
 31.5	usr_31.txt	/*31.5*
+32.1	usr_32.txt	/*32.1*
+32.2	usr_32.txt	/*32.2*
+32.3	usr_32.txt	/*32.3*
 40.1	usr_40.txt	/*40.1*
 40.2	usr_40.txt	/*40.2*
 40.3	usr_40.txt	/*40.3*
@@ -5803,6 +5806,7 @@ i`	motion.txt	/*i`*
 ia64.vim	syntax.txt	/*ia64.vim*
 ib	motion.txt	/*ib*
 iccf	uganda.txt	/*iccf*
+iccf-donations	uganda.txt	/*iccf-donations*
 icon-changed	version4.txt	/*icon-changed*
 iconise	starting.txt	/*iconise*
 iconize	starting.txt	/*iconize*
@@ -7352,6 +7356,7 @@ usr_28.txt	usr_28.txt	/*usr_28.txt*
 usr_29.txt	usr_29.txt	/*usr_29.txt*
 usr_30.txt	usr_30.txt	/*usr_30.txt*
 usr_31.txt	usr_31.txt	/*usr_31.txt*
+usr_32.txt	usr_32.txt	/*usr_32.txt*
 usr_40.txt	usr_40.txt	/*usr_40.txt*
 usr_41.txt	usr_41.txt	/*usr_41.txt*
 usr_42.txt	usr_42.txt	/*usr_42.txt*

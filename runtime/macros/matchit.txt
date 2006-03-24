@@ -4,7 +4,7 @@ For instructions on installing this file, type
 	:help matchit-install
 inside Vim.
 
-For Vim version 6.3.  Last change:  2004 May 12
+For Vim version 6.3.  Last change:  2006 Feb 23
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher
@@ -247,7 +247,7 @@ Examples:
 	comment character) you can >
 		:let b:match_skip = 'r:\(^\|[^\\]\)\(\\\\\)*%'
 <
-	See the $VIMRUNTIME/syntax/vim.vim for an example that uses both
+	See the $VIMRUNTIME/ftplugin/vim.vim for an example that uses both
 	syntax and a regular expression.
 
 ==============================================================================
@@ -261,8 +261,10 @@ Vim's |regular-expression|s.
 
 The format for |b:match_words| is similar to that of the 'matchpairs' option:
 it is a comma (,)-separated list of groups; each group is a colon(:)-separated
-list of patterns (regular expressions).  It is OK to have only one group; the
-effect is undefined if a group has only one pattern.  A simple example is >
+list of patterns (regular expressions).  Commas and backslashes that are part
+of a pattern should be escaped with backslashes ('\:' and '\,').  It is OK to
+have only one group; the effect is undefined if a group has only one pattern.
+A simple example is >
 	:let b:match_words = '\<if\>:\<endif\>,'
 		\ . '\<while\>:\<continue\>:\<break\>:\<endwhile\>'
 (In Vim regular expressions, |\<| and |\>| denote word boundaries.  Thus "if"

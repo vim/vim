@@ -4167,8 +4167,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    {
 			/* memchr on HP does not like n > 2^31  !!! */
 			char *q = memchr(str_arg, '\0',
-				precision <= 0x7fffffff ? precision
-								: 0x7fffffff);
+				precision <= (size_t)0x7fffffffL ? precision
+						       : (size_t)0x7fffffffL);
 			str_arg_l = (q == NULL) ? precision : q - str_arg;
 		    }
 		    break;

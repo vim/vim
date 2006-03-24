@@ -69,15 +69,15 @@ all install uninstall tools config configure proto depend lint tags types test t
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 0aa
+MINOR = 0b
 
 # Uncomment this line if the Win32s version is to be included.
-#DOSBIN_S =  dosbin_s
+DOSBIN_S =  dosbin_s
 
 # CHECKLIST for creating a new version:
 #
 # - Update Vim version number.  For a test version in: src/version.h, Contents,
-#   MAJOR/MINOR above, VIMRTDIR and VERSION in src/Makefile, README*.txt,
+#   MAJOR/MINOR above, VIMMAJOR and VIMMINOR in src/Makefile, README*.txt,
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
 #   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def.
 # - Correct included_patches[] in src/version.c.
@@ -92,7 +92,7 @@ MINOR = 0aa
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
-# - Add remarks for changes to runtime/doc/version6.txt.
+# - Add remarks for changes to runtime/doc/version7.txt.
 # - In runtime/doc run "make" and "make html" to check for errors.
 # - Check if src/Makefile and src/feature.h don't contain any personal
 #   preferences or the GTK, Perl, etc. mentioned above.
@@ -139,13 +139,13 @@ MINOR = 0aa
 # Win32 GUI version:
 # - "nmake -f Make_mvc.mak GUI=yes.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
-# - Move ObjC/gvim.pdb to here.
+# - Move ObjG/gvim.pdb to here.
 # - Delete vimrun.exe, install.exe and uninstall.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
 # - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
 # - Rename "gvim.exe" to "gvim_ole.exe".
-# - Rename ObjC/gvim.pdb to "gvim_ole.pdb".
+# - Rename ObjGOLYTR/gvim.pdb to "gvim_ole.pdb".
 # - Delete install.exe and uninstall.exe.
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:

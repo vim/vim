@@ -104,7 +104,7 @@ SRC = \
 	fold.c \
 	getchar.c \
 	hardcopy.c \
-	hashtable.c \
+	hashtab.c \
 	main.c \
 	mark.c \
 	memfile.c \
@@ -119,7 +119,7 @@ SRC = \
 	ops.c \
 	option.c \
 	os_amiga.c \
-	popupmenu.c \
+	popupmnu.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -149,7 +149,7 @@ OBJ = \
 	fold.o \
 	getchar.o \
 	hardcopy.o \
-	hashtable.o \
+	hashtab.o \
 	main.o \
 	mark.o \
 	memfile.o \
@@ -164,7 +164,7 @@ OBJ = \
 	ops.o \
 	option.o \
 	os_amiga.o \
-	popupmenu.o \
+	popupmnu.o \
 	quickfix.o \
 	regexp.o \
 	screen.o \
@@ -194,7 +194,7 @@ PRO = \
 	proto/fold.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
-	proto/hashtable.pro \
+	proto/hashtab.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -209,7 +209,7 @@ PRO = \
 	proto/ops.pro \
 	proto/option.pro \
 	proto/os_amiga.pro \
-	proto/popupmenu.pro \
+	proto/popupmnu.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -308,8 +308,8 @@ getchar.o:		getchar.c
 proto/getchar.pro:	getchar.c
 hardcopy.o:		hardcopy.c
 proto/hardcopy.pro:	hardcopy.c
-hashtable.o:		hashtable.c
-proto/hashtable.pro:	hashtable.c
+hashtab.o:		hashtab.c
+proto/hashtab.pro:	hashtab.c
 main.o:			main.c
 proto/main.pro:		main.c
 mark.o:			mark.c
@@ -338,8 +338,8 @@ option.o:		option.c
 proto/option.pro:	option.c
 os_amiga.o:		os_amiga.c
 proto/os_amiga.pro:	os_amiga.c
-popupmenu.o:		popupmenu.c
-proto/popupmenu.pro:	popupmenu.c
+popupmnu.o:		popupmnu.c
+proto/popupmnu.pro:	popupmnu.c
 quickfix.o:		quickfix.c
 proto/quickfix.pro:	quickfix.c
 regexp.o:		regexp.c

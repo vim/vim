@@ -13,9 +13,9 @@ ASMFLAGS   = -throwback -objasm -gcc
 
 OBJS =  o.buffer o.charset o.diff o.digraph o.edit o.eval o.ex_cmds o.ex_cmds2  \
 	o.ex_docmd o.ex_eval o.ex_getln o.fileio o.fold o.getchar \
-	o.hardcopy o.hashtable o.main o.mark o.mbyte  \
+	o.hardcopy o.hashtab o.main o.mark o.mbyte  \
 	o.memfile o.memline o.menu o.message o.misc1 o.misc2 o.move     \
-	o.normal o.ops o.option o.popupmenu o.quickfix o.regexp o.screen \
+	o.normal o.ops o.option o.popupmnu o.quickfix o.regexp o.screen \
 	o.search   \
 	o.spell o.syntax o.tag o.term o.termlib o.ui o.undo o.version	\
 	o.window o.os_riscos o.swis o.gui o.gui_riscos
@@ -69,7 +69,7 @@ o.getchar:	c.getchar
 
 o.hardcopy:	c.hardcopy
 
-o.hashtable:	c.hashtable
+o.hashtab:	c.hashtab
 
 o.gui:		c.gui
 
@@ -105,7 +105,7 @@ o.os_riscos:	c.os_riscos
 
 o.pty:		c.pty
 
-o.popupmenu:	c.popupmenu
+o.popupmnu:	c.popupmnu
 
 o.quickfix:	c.quickfix
 

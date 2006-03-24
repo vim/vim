@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0.  Last change: Mar 21, 2006
+*pi_netrw.txt*  For Vim version 7.0b.  Last change: Mar 22, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -365,7 +365,7 @@ Both the :Nread and the :Nwrite ex-commands can accept multiple filenames.
 NETRC							*netrw-netrc*
 
 The typical syntax for lines in a <.netrc> file is given as shown below.
-Ftp under Unix usually support <.netrc>; Windows' ftp usually doesn't.
+Ftp under Unix usually supports <.netrc>; ftp under Windows usually doesn't.
 >
 	machine {full machine name} login {user-id} password "{password}"
 	default login {user-id} password "{password}"
@@ -395,11 +395,12 @@ However, |netrw-listhack| can help with this problem.
 ==============================================================================
 4. Activation						*netrw-activate*
 
-Network-oriented file transfers are available by default whenever
+Network-oriented file transfers are available by default whenever Vim's
 |'nocompatible'| mode is enabled.  The <netrw.vim> file resides in your
 system's vim-plugin directory and is sourced automatically whenever you bring
 up vim.  I suggest that, at a minimum, you have at least the following in your
 <.vimrc> customization file: >
+
 	set nocp
 	if version >= 600
 	  filetype plugin indent on
@@ -420,11 +421,14 @@ Thus one may use files across networks just as simply as if they were local. >
 See |netrw-activate| for more on how to encourage your vim to use plugins
 such as netrw.
 
+
 ==============================================================================
 6. Ex Commands						*netrw-ex*
 
-The usual read/write commands are supported.  There are also a couple of
-additional commands available.
+The usual read/write commands are supported.  There are also a few
+additional commands available.  Often you won't need to use Nw or
+Nread as shown in |netrw-transparent| (ie. use :e url, :r url, :w url;
+see |netrw-urls|).
 
 :[range]Nw	Write the specified lines to the current
 		file as specified in b:netrw_lastfile.
@@ -455,7 +459,7 @@ additional commands available.
 		strings.
 
 :NetrwSettings  This command is desribed in |netrw-settings| -- used to
-                display netrw settings and change netrw behavior
+                display netrw settings and change netrw behavior.
 
 
 ==============================================================================
@@ -1444,6 +1448,10 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v83: * disabled stop-acd handling; the change in directory handling
+	       may allow acd to be used again.  Awaiting feedback.
+	     * D was refusing to delete remote files/directories in wide
+	       listing mode.
 	v81: * FocusGained also used to refresh/wipe local browser directory
 	       buffers
 	     * (bugfix) netrw was leaving [Scratch] buffers behind when the

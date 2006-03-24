@@ -90,7 +90,7 @@ extern int _stricoll __ARGS((char *a, char *b));
 #  include "hangulin.pro"
 # endif
 # include "hardcopy.pro"
-# include "hashtable.pro"
+# include "hashtab.pro"
 # include "main.pro"
 # include "mark.pro"
 # include "memfile.pro"
@@ -140,8 +140,10 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
-# include "popupmenu.pro"
-# include "quickfix.pro"
+# include "popupmnu.pro"
+# ifdef FEAT_QUICKFIX
+#  include "quickfix.pro"
+# endif
 # include "regexp.pro"
 # include "screen.pro"
 # include "search.pro"

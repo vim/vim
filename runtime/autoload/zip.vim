@@ -75,7 +75,7 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-  call Decho("exe silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'")
+"  call Decho("exe silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'")
   exe "silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'"
   $d
   silent 4,$v/^\s\+\d\+\s\{0,5}\d/d

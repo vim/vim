@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 17
+*help.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 			VIM - main help file
 									 k
@@ -71,6 +71,7 @@ Editing Effectively ~
 |usr_29.txt|  Moving through programs
 |usr_30.txt|  Editing programs
 |usr_31.txt|  Exploiting the GUI
+|usr_32.txt|  The undo tree
 
 Tuning Vim ~
 |usr_40.txt|  Make new commands
@@ -194,13 +195,6 @@ Standard plugins ~
 |pi_zip.txt|	Zip archive explorer
 
 LOCAL ADDITIONS:				*local-additions*
-|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
-|engspchk.txt|	English Spelling Checker   (v61)	Mar 14, 2005
-|example.txt|	Example for a locally added help file
-|matchit.txt|   Extended "%" matching
-|test.txt|	Testing the hélp cömmånd nôw
-|typecorr.txt|	Plugin for correcting typing mistakes
-|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

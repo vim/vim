@@ -1,4 +1,6 @@
-*tar.txt*	Tar File Interface				Dec 21, 2005
+*tar.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
+
+	Tar File Interface
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)

@@ -1,4 +1,6 @@
-*zip.txt*	Zip File Interface				Mar 22, 2006
+*zip.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
+
+	Zip File Interface
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)

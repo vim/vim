@@ -372,7 +372,7 @@ OBJ = \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
-	$(OUTDIR)/hashtable.o \
+	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
@@ -389,7 +389,7 @@ OBJ = \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/os_mswin.o \
 	$(OUTDIR)/pathdef.o \
-	$(OUTDIR)/popupmenu.o \
+	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \

@@ -37,7 +37,7 @@ SCRIPTS_GUI = test16.out
 nongui:	fixff $(SCRIPTS16) $(SCRIPTS)
 	echo ALL DONE
 
-small:	fixff $(SCRIPTS16)
+small:
 	echo ALL DONE
 
 gui:	fixff $(SCRIPTS16) $(SCRIPTS) $(SCRIPTS_GUI)

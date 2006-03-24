@@ -711,9 +711,7 @@ vim_kbhit(void)
     static  int
 WaitForChar(long msec)
 {
-    union REGS	regs;
     long	starttime = 0;
-    int		x, y;
 
     if (msec != 0)
 	starttime = biostime(0, 0L);
@@ -723,6 +721,8 @@ WaitForChar(long msec)
 #ifdef FEAT_MOUSE
 	long		clicktime;
 	static int	old_status = 0;
+	union REGS	regs;
+	int		x, y;
 
 	if (mouse_avail && mouse_active && mouse_click < 0)
 	{

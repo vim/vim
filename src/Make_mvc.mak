@@ -390,7 +390,7 @@ OBJ = \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
-	$(OUTDIR)\hashtable.obj \
+	$(OUTDIR)\hashtab.obj \
 	$(OUTDIR)\main.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
@@ -407,7 +407,7 @@ OBJ = \
 	$(OUTDIR)\os_mswin.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
-	$(OUTDIR)\popupmenu.obj \
+	$(OUTDIR)\popupmnu.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
@@ -828,7 +828,7 @@ $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 
 $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
 
-$(OUTDIR)/hashtable.obj:	$(OUTDIR) hashtable.c  $(INCL)
+$(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
 
 $(OUTDIR)/gui.obj:	$(OUTDIR) gui.c  $(INCL) $(GUI_INCL)
 
@@ -903,7 +903,7 @@ $(OUTDIR)/os_w32exe.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS) $(PATHDEF_SRC)
 
-$(OUTDIR)/popupmenu.obj:	$(OUTDIR) popupmenu.c  $(INCL)
+$(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
 
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
@@ -979,7 +979,7 @@ proto.h: \
 	proto/fileio.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
-	proto/hashtable.pro \
+	proto/hashtab.pro \
 	proto/main.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
@@ -995,7 +995,7 @@ proto.h: \
 	proto/option.pro \
 	proto/os_mswin.pro \
 	proto/os_win32.pro \
-	proto/popupmenu.pro \
+	proto/popupmnu.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \

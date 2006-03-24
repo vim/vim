@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 21, 2006
-" Version:	82
+" Date:		Mar 22, 2006
+" Version:	83
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v82"
+let g:loaded_netrw = "v83"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -1280,6 +1280,8 @@ fun! s:NetBrowse(dirname)
   setlocal bt=nofile nobl nonu noswf
   if g:netrw_fastbrowse >= 1
    setlocal bh=hide
+  else
+   setlocal bh=delete
   endif
 
   " save current directory on directory history list
@@ -1508,6 +1510,8 @@ fun! s:NetBrowseChgDir(dirname,newdir)
    setlocal ma nobl
    if g:netrw_fastbrowse >= 1
     setlocal bh=hide
+   else
+    setlocal bh=delete
    endif
    %d
 
@@ -1538,7 +1542,7 @@ endfun
 " ---------------------------------------------------------------------
 "  NetGetWord: it gets the directory named under the cursor {{{2
 fun! s:NetGetWord()
-"  call Dfunc("NetGetWord() line#".line("."))
+"  call Dfunc("NetGetWord() line#".line(".")." longlist=".g:netrw_longlist." virtcol=".virtcol("."))
   call s:UseBufWinVars()
 
   " insure that w:netrw_longlist is set up
@@ -1548,6 +1552,7 @@ fun! s:NetGetWord()
    else
     let w:netrw_longlist= 0
    endif
+"   call Decho("w:netrw_longlist=".w:netrw_longlist)
   endif
 
   if exists("w:netrw_bannercnt") && line(".") < w:netrw_bannercnt
@@ -1596,7 +1601,7 @@ fun! s:NetGetWord()
    endif
 
    let filestart = (virtcol(".")/b:netrw_cpf)*b:netrw_cpf
-"   call Decho("virtcol=".virtcol(".")." cpf=".b:netrw_cpf." bannercnt=".w:netrw_bannercnt." filestart=".filestart)
+"   call Decho("filestart= ([virtcol=".virtcol(".")."]/[b:netrw_cpf=".b:netrw_cpf."])*b:netrw_cpf=".filestart."  bannercnt=".w:netrw_bannercnt)
 "   call Decho("1: dirname<".dirname.">")
    if filestart > 0|let dirname= substitute(dirname,'^.\{'.filestart.'}','','')|endif
 "   call Decho("2: dirname<".dirname.">")
@@ -1613,7 +1618,7 @@ endfun
 " ---------------------------------------------------------------------
 " NetBrowseRm: remove/delete a remote file or directory {{{2
 fun! s:NetBrowseRm(usrhost,path) range
-"  call Dfunc("NetBrowseRm(usrhost<".a:usrhost."> path<".a:path.">)")
+"  call Dfunc("NetBrowseRm(usrhost<".a:usrhost."> path<".a:path.">) virtcol=".virtcol("."))
 "  call Decho("firstline=".a:firstline." lastline=".a:lastline)
 
   " preparation for removing multiple files/directories
@@ -1624,7 +1629,6 @@ fun! s:NetBrowseRm(usrhost,path) range
   while ctr <= a:lastline
    exe ctr
 
-   norm! 0
    let rmfile= s:NetGetWord()
 "   call Decho("rmfile<".rmfile.">")
 
@@ -2849,6 +2853,8 @@ fun! netrw#DirBrowse(dirname)
   setlocal bt=nofile nobl ma nonu noswf nowrap
   if g:netrw_fastbrowse >= 2
    setlocal bh=hide
+  else
+   setlocal bh=delete
   endif
   keepalt silent! %d
 
@@ -3178,7 +3184,7 @@ fun! s:LocalBrowseShellCmdRefresh()
   for ibuf in s:netrw_browselist
    if bufwinnr(ibuf) == -1
 "    call Decho("wiping  buf#".ibuf)
-    exe "bw ".ibuf
+    exe "silent! bw ".ibuf
     call remove(s:netrw_browselist,ibl)
 "    call Decho("browselist=".string(s:netrw_browselist))
     continue
@@ -3898,11 +3904,11 @@ fun! s:NetOptionSave()
 
   " Get Temporary Filename
   let w:aikeep   = &ai
-  " record autochdir setting and then insure its unset (tnx to David Fishburn)
-  if &acd && (has("netbeans_intg") || has("sun_workshop"))
-   set noacd
-   echohl Warning | echomsg "***warning*** directory browsing and the acd setting are incompatible" |echohl None
-  endif
+"  " netrw and the acd option do not work together properly
+"  if &acd && (has("netbeans_intg") || has("sun_workshop"))
+"   set noacd
+"   echohl Warning | echomsg "***warning*** directory browsing and the acd setting are incompatible" |echohl None
+"  endif
   let w:fokeep    = &fo
   let w:aikeep    = &ai
   let w:cikeep    = &ci

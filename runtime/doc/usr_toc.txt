@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 21
+*usr_toc.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -34,6 +34,7 @@ Editing Effectively
 |usr_29.txt|  Moving through programs
 |usr_30.txt|  Editing programs
 |usr_31.txt|  Exploiting the GUI
+|usr_32.txt|  The undo tree
 
 Tuning Vim
 |usr_40.txt|  Make new commands
@@ -47,7 +48,8 @@ Making Vim Run
 |usr_90.txt|  Installing Vim
 
 
-More detailed information in the reference manual: |ref-toc|
+Reference manual
+|ref-toc|     More detailed information for all commands
 
 The user manual is available as a single, ready to print HTML and PDF file
 here:
@@ -269,6 +271,11 @@ Subjects that can be read independently.
 		|31.3|	Menu shortcuts
 		|31.4|	Vim window position and size
 		|31.5|	Various
+
+|usr_32.txt|  The undo tree
+		|32.1|	Numbering changes
+		|32.2|	Jumping around the tree
+		|32.3|	Time travelling
 
 ==============================================================================
 Tuning Vim ~

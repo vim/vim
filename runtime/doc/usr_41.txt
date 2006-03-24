@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0aa.  Last change: 2006 Mar 21
+*usr_41.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2292,6 +2292,8 @@ utility is recommended.
 
 For utmost portability use Vim itself to pack scripts together.  This can be
 done with the Vimball utility.  See |vimball|.
+
+It's good if you add a line to allow automatic updating.  See |glvs-plugins|.
 
 ==============================================================================
 
