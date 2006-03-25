@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0b.  Last change: 2006 Mar 24
+*version7.txt*  For Vim version 7.0b.  Last change: 2006 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -688,8 +688,11 @@ New and extended functions: ~
 |add()|			append an item to a List
 |append()|		append List of lines to the buffer
 |browsedir()|		dialog to select a directory
+|bufnr()|		takes an extra argument: create buffer
 |byteidx()| 		index of a character (Ilya Sher)
 |call()|		call a function with List as arguments
+|changenr()|		number of current change
+|complete()|		set matches for Insert mode completion
 |complete_add()|	add match for 'completefunc'
 |complete_check()|	check for key pressed, for 'completefunc'
 |copy()|		make a shallow copy of a List or Dictionary
@@ -697,9 +700,10 @@ New and extended functions: ~
 |cursor()|		also accepts an offset for 'virtualedit', and
 			the first argument can be a list: [lnum, col, off]
 |deepcopy()|		make a full copy of a List or Dictionary
+|diff_filler()|		returns number of filler lines above line {lnum}.
+|diff_hlID()|		returns the highlight ID for diff mode
 |empty()|		check if List or Dictionary is empty
-|getloclist()|		list of location list items (Yegappan Lakshmanan)
-|getqflist()|		list of quickfix errors (Yegappan Lakshmanan)
+|eval()|		evaluate {string} and return the result
 |extend()|		append one List to another or add items from one
 			Dictionary to another
 |filter()|		remove selected items from a List or Dictionary
@@ -707,6 +711,8 @@ New and extended functions: ~
 |findfile()|		find a file in 'path' (Johannes Zellner)
 |foldtextresult()|  	the text displayed for a closed fold at line "lnum"
 |function()|		make a Funcref out of a function name
+|garbagecollect()|	cleanup unused |Lists| and |Dictionaries| with circular
+			references
 |get()|			get an item from a List or Dictionary
 |getbufline()|		get a list of lines from a specified buffer
 			(Yegappan Lakshmanan)
@@ -716,42 +722,65 @@ New and extended functions: ~
 |getfperm()|		get file permission string (Nikolai Weibull)
 |getftype()|		get type of file (Nikolai Weibull)
 |getline()|		with second argument: get List with buffer lines
+|getloclist()|		list of location list items (Yegappan Lakshmanan)
 |getpos()|		return a list with the position of cursor, mark, etc.
+|getqflist()|		list of quickfix errors (Yegappan Lakshmanan)
+|getreg()|		get contents of a register
 |has_key()|		check whether a key appears in a Dictionary
+|hasmapto()|		check for a mapping to a string
 |inputlist()|		select an entry from a list
+|index()|		index of item in List
+|inputlist()|		prompt the user to make a selection from a list
 |insert()|		insert an item somewhere in a List
+|islocked()|		check if a variable is locked
 |items()|		get List of Dictionary key-value pairs
 |join()|		join List items into a String
 |keys()|		get List of Dictionary keys
 |len()|			number of items in a List or Dictionary
 |map()|			change each List or Dictionary item
+|maparg()|		extra argument: use abbreviation
+|mapcheck()|		extra argument: use abbreviation
+|match()|		extra argument: count
+|matchend()|		extra argument: count
 |matchlist()|		list with match and submatches of a pattern in a string
+|matchstr()|		extra argument: count
 |max()|			maximum value in a List or Dictionary
 |min()|			minimum value in a List or Dictionary
 |mkdir()|		create a directory
 |printf()|		format text
+|pumvisible()|		check whether the popup menu is displayed
+|range()|		generate a List with numbers
 |readfile()|		read a file into a list of lines
 |reltime()|		get time value, possibly relative
 |reltimestr()|		turn a time value into a string
 |remove()|		remove one or more items from a List or Dictionary
 |repeat()| 		repeat "expr" "count" times (Christophe Poucet)
 |reverse()|		reverse the order of a List
+|search()|		extra argument:
 |searchdecl()|		search for declaration of variable
+|searchpair()|		extra argument: line to stop searching
 |searchpairpos()|	return a List with the position of the match
 |searchpos()|	        return a List with the position of the match
 |setloclist()|		modify a location list (Yegappan Lakshmanan)
+|setpos()|		set cursor or mark to a position
 |setqflist()|		modify a quickfix list (Yegappan Lakshmanan)
 |sort()|		sort a List
 |soundfold()|		get the sound-a-like equivalent of a word
-|split()|		split a String into a List
 |spellbadword()|	get a badly spelled word
 |spellsuggest()|	get suggestions for correct spelling
+|split()|		split a String into a List
 |str2nr()|		convert a string to a number, base 8, 10 or 16
+|stridx()|		extra argument: start position
 |string()|		string representation of a List or Dictionary
-|system()|		filters {input} through a shell command
+|system()|		extra argument: filters {input} through a shell command
+|tabpagebuflist()|	List of buffers in a tab page
+|tabpagenr()|		number of current or last tab page
+|tabpagewinnr()|	window number in a tab page
+|tagfiles()|		List with tags file names
 |taglist()|		get list of matching tags (Yegappan Lakshmanan)
 |tr()|			translate characters (Ron Aaron)
 |values()|		get List of Dictionary values
+|winnr()|		takes an argument: what window to use
 |winrestview()|		restore the view of the current window
 |winsaveview()|		save the view of the current window
 |writefile()|		write a list of lines into a file
@@ -762,29 +791,38 @@ directory in 'runtimepath'.  See |autoload-functions|.
 
 New autocommand events: ~
 
-|InsertEnter|		starting Insert or Replace mode
-|InsertChange|		going from Insert to Replace mode or back
-|InsertLeave|		leaving Insert or Replace mode
-
 |ColorScheme|		after loading a color scheme
-|QuickFixCmdPre|	before :make, :grep et al. (Ciaran McCreesh)
-|QuickFixCmdPost|	after :make, :grep et al. (Ciaran McCreesh)
-|SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
-
-|SpellFileMissing|	when a spell file can't be found
-
-|ShellCmdPost|		after executing a shell command
-|ShellFilterPost|	after filtering with a shell command
-
-|VimResized|		after the Vim window size changed (Yakov Lerner)
-
-|FileChangedShellPost|	after handling a file changed outside of Vim
-
-|SourcePre|		before sourcing a Vim script
 
 |CursorHoldI|		the user doesn't press a key for a while in Insert mode
 |CursorMoved|		the cursor was moved in Normal mode
 |CursorMovedI|		the cursor was moved in Insert mode
+
+|FileChangedShellPost|	after handling a file changed outside of Vim
+
+|InsertEnter|		starting Insert or Replace mode
+|InsertChange|		going from Insert to Replace mode or back
+|InsertLeave|		leaving Insert or Replace mode
+
+|MenuPopup|		just before showing popup menu
+
+|QuickFixCmdPre|	before :make, :grep et al. (Ciaran McCreesh)
+|QuickFixCmdPost|	after :make, :grep et al. (Ciaran McCreesh)
+
+|SessionLoadPost|	after loading a session file. (Yegappan Lakshmanan)
+
+|ShellCmdPost|		after executing a shell command
+|ShellFilterPost|	after filtering with a shell command
+
+|SourcePre|		before sourcing a Vim script
+
+|SpellFileMissing|	when a spell file can't be found
+
+|SwapExists|		found existing swap file when editing a file
+
+|TabEnter|		just after entering a tab page
+|TabLeave|		just before leaving a tab page
+
+|VimResized|		after the Vim window size changed (Yakov Lerner)
 
 
 New items in search patterns: ~
@@ -816,47 +854,120 @@ useful, just for compatibility.
 
 New Syntax/Indent/FTplugin files: ~
 
-MuPAD source syntax, indent and ftplugin. (Dave Silvia)
-
-ABAB/4 syntax file. (Marius van Wyk)
-
-SQL-Informix syntax file. (Dean L Hill)
-
-Handling of various SQL variants. (David Fishburn)
-
-PHP compiler plugin. (Doug Kearns)
-
-Sive syntax file. (Nikolai Weibull)
-
-Pascal indent file. (Neil Carter)
-
-Many filetype plugins and others from Nikolai Weibull.
-
-Xquery syntax file. (Jean-Marc Vanel)
-
 Moved all the indent settings from the filetype plugin to the indent file.
 Implemented b:undo_indent to undo indent settings when setting 'filetype' to a
 different value.
 
-VHDL indent file (Gerald Lai)
-
+a2ps syntax and ftplugin file. (Nikolai Weibull)
+ABAB/4 syntax file. (Marius van Wyk)
+alsaconf ftplugin file. (Nikolai Weibull)
+AppendMatchGroup ftplugin file. (Dave Silvia)
+arch ftplugin file. (Nikolai Weibull)
+asterisk and asteriskvm syntax file. (Tilghman Lesher)
+BDF ftplugin file. (Nikolai Weibull)
+BibTeX indent file. (Dorai Sitaram)
+BTM ftplugin file. (Bram Moolenaar)
+calendar ftplugin file. (Nikolai Weibull)
+Changelog indent file. (Nikolai Weibull)
+conf ftplugin file. (Nikolai Weibull)
+context syntax and ftplugin file. (Nikolai Weibull)
+CRM114 ftplugin file. (Nikolai Weibull)
+cvs RC ftplugin file. (Nikolai Weibull)
+D indent file. (Jason Mills)
+dictconf and dictdconf syntax, indent and ftplugin files. (Nikolai Weibull)
+diff ftplugin file. (Bram Moolenaar)
+dircolors ftplugin file. (Nikolai Weibull)
+django and htmldjango syntax file. (Dave Hodder)
+elinks ftplugin file. (Nikolai Weibull)
+eterm ftplugin file. (Nikolai Weibull)
+eviews syntax file. (Vaidotas Zemlys)
+fetchmail RC ftplugin file. (Nikolai Weibull)
+Generic indent file. (Dave Silvia)
+gpg ftplugin file. (Nikolai Weibull)
+gretl syntax file. (Vaidotas Zemlys)
+groovy syntax file. (Alessio Pace)
+group syntax and ftplugin file. (Nikolai Weibull)
+grub ftplugin file. (Nikolai Weibull)
+Haskell ftplugin file. (Nikolai Weibull)
+help ftplugin file. (Nikolai Weibull)
+indent ftplugin file. (Nikolai Weibull)
+Javascript ftplugin file. (Bram Moolenaar)
+ld syntax, indent and ftplugin file. (Nikolai Weibull)
+lftp ftplugin file. (Nikolai Weibull)
+libao config ftplugin file. (Nikolai Weibull)
+limits syntax and ftplugin file. (Nikolai Weibull)
+Lisp indent file. (Sergey Khorev)
+loginaccess and logindefs syntax and ftplugin file. (Nikolai Weibull)
+m4 ftplugin file. (Nikolai Weibull)
+mailcap ftplugin file. (Nikolai Weibull)
+manconf syntax and ftplugin file. (Nikolai Weibull)
+matlab ftplugin file. (Jake Wasserman)
 MGL syntax file. (Gero Kuhlmann)
-
+modconf ftplugin file. (Nikolai Weibull)
+mplayer config ftplugin file. (Nikolai Weibull)
+MuPAD source syntax, indent and ftplugin. (Dave Silvia)
+mutt RC ftplugin file. (Nikolai Weibull)
+nanorc syntax and ftplugin file. (Nikolai Weibull)
+netrc ftplugin file. (Nikolai Weibull)
+pamconf syntax and ftplugin file. (Nikolai Weibull)
+Pascal indent file. (Neil Carter)
+passwd syntax and ftplugin file. (Nikolai Weibull)
+PHP compiler plugin. (Doug Kearns)
+pinfo ftplugin file. (Nikolai Weibull)
+plaintex ftplugin file. (Benji Fisher)
+procmail ftplugin file. (Nikolai Weibull)
+prolog ftplugin file. (Nikolai Weibull)
+protocols syntax and ftplugin file. (Nikolai Weibull)
+quake ftplugin file. (Nikolai Weibull)
+racc syntax and ftplugin file. (Nikolai Weibull)
 rd syntax file. (Johannes Ranke)
+readline ftplugin file. (Nikolai Weibull)
+rhelp syntax file. (Johannes Ranke)
+Relax NG compact ftplugin file. (Nikolai Weibull)
+Scheme indent file. (Sergey Khorev)
+screen ftplugin file. (Nikolai Weibull)
+sensors syntax and ftplugin file. (Nikolai Weibull)
+services syntax and ftplugin file. (Nikolai Weibull)
+setserial syntax and ftplugin file. (Nikolai Weibull)
+sieve syntax and ftplugin file. (Nikolai Weibull)
+Sive syntax file. (Nikolai Weibull)
+slp config, reg and spi syntax and ftplugin files. (Nikolai Weibull)
+SML indent file. (Saikat Guha)
+SQL anywhere syntax and indent file. (David Fishburn)
+SQL indent file.
+SQL-Informix syntax file. (Dean L Hill)
+SQL: Handling of various variants. (David Fishburn)
+sshconfig ftplugin file. (Nikolai Weibull)
+sudoers ftplugin file. (Nikolai Weibull)
+sysctl syntax and ftplugin file. (Nikolai Weibull)
+terminfo ftplugin file. (Nikolai Weibull)
+trustees syntax file. (Nima Talebi)
+udev config, permissions and rules syntax and ftplugin files. (Nikolai Weibull)
+updatedb syntax and ftplugin file. (Nikolai Weibull)
+VHDL indent file (Gerald Lai)
+WSML syntax file. (Thomas Haselwanter)
+Xdefaults ftplugin file. (Nikolai Weibull)
+XFree86 config ftplugin file. (Nikolai Weibull)
+xinetd syntax, indent and ftplugin file. (Nikolai Weibull)
+xmodmap ftplugin file. (Nikolai Weibull)
+Xquery syntax file. (Jean-Marc Vanel)
+xsd (XML schema) indent file.
+YAML ftplugin file. (Nikolai Weibull)
+Zsh ftplugin file. (Nikolai Weibull)
+
 
 New Keymaps: ~
 
 Sinhala (Sri Lanka) (Harshula Jayasuriya)
-
 Tamil in TSCII encoding (Yegappan Lakshmanan)
+Greek in cp737 (Panagiotis Louridas)
+Polish-slash (HS6_06)
+Ukrainian-jcuken (Anatoli Sakhnik)
 
 
 New message translations: ~
 
 The Ukranian messages are now also available in cp1251.
-
-Irish message translations. (Kevin Patrick Scannell)
-
 Vietnamese message translations and menu. (Phan Vinh Thinh)
 
 
@@ -2060,5 +2171,20 @@ Yu-sung, 2005 March 21)
 
 Ruby interface: when inserting/deleting lines display wasn't updated. (Ryan
 Paul)
+
+--- fixes since Vim 6.0b ---
+
+Getting the GCC version in configure didn't work with Solaris sed.  First
+strip any "darwin." and then get the version number.
+
+The "autoload" directory was missing from the self-installing executable for
+MS-Windows.
+
+The MS-Windows install program would find "vimtutor.bat" in the install
+directory.  After changing to "c:" also change to "\" to avoid looking in the
+install directory.
+
+To make the 16 bit DOS version compile exclude not used highlight
+initializations and build a tiny instead of small version.
 
  vim:tw=78:ts=8:ft=help:norl:

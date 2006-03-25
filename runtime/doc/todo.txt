@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 24
+*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,17 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-The 16 bit DOS version doesn't link because too much static memory is used.
-Drop it?
-
-test61 sometimes fails, probably because of timing variations.
-
-Check version7.txt for:
-- new syntax files and other runtime files.
-- new functions
-- new options
-- etc.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 

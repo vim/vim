@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Feb 01
+" Last change:	2006 Mar 25
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -278,9 +278,8 @@ else
     set ft=sindacmp
 
     " DNS zone files
-  elseif s:line1.s:line2 =~ '$ORIGIN\|$TTL\|IN\s*SOA'
-	\ || s:line1.s:line2.s:line3.s:line4 =~ 'BIND.*named'
-    set ft=dns
+  elseif s:line1.s:line2.s:line3.s:line4 =~ '^; <<>> DiG [0-9.]\+ <<>>\|BIND.*named\|$ORIGIN\|$TTL\|IN\s\+SOA'
+    set ft=bindzone
 
     " BAAN
   elseif s:line1 =~ '|\*\{1,80}' && s:line2 =~ 'VRC '
