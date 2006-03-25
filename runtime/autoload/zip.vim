@@ -76,7 +76,7 @@ fun! zip#Browse(zipfile)
   $
 
 "  call Decho("exe silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'")
-  exe "silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'"
+  exe "silent r! unzip -l ".escape(a:zipfile,s:zipfile_escape)
   $d
   silent 4,$v/^\s\+\d\+\s\{0,5}\d/d
   silent  4,$s/^\%(.*\)\s\+\(\S\)/\1/
@@ -141,7 +141,7 @@ fun! zip#Read(fname,mode)
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
 "  call Decho("exe r! unzip -p '".escape(zipfile,s:zipfile_escape)."' ".fname)
-  exe "r! unzip -p '".escape(zipfile,s:zipfile_escape)."' ".fname
+  exe "r! unzip -p ".escape(zipfile,s:zipfile_escape)." ".fname
 
   " cleanup
   0d

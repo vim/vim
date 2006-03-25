@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0b.  Last change: 2006 Mar 18
+*options.txt*	For Vim version 7.0b.  Last change: 2006 Mar 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1222,6 +1222,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'casemap' 'cmp'		string	(default: "internal,keepascii")
 			global
 			{not in Vi}
+			{only available when compiled with the |+multi_byte|
+			feature}
 	Specifies details about changing the case of letters.  It may contain
 	these words, separated by a comma:
 	internal	Use internal case mapping functions, the current
