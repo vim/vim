@@ -116,7 +116,7 @@ Function .onInit
   # $2 - holds the names to create batch files for
   StrCpy $0 "$INSTDIR\vim${VER_MAJOR}${VER_MINOR}"
   StrCpy $1 "-register-OLE"
-  StrCpy $2 "gvim evim gview gvimdiff"
+  StrCpy $2 "gvim evim gview gvimdiff vimtutor"
 
 FunctionEnd
 
@@ -213,6 +213,9 @@ Section "Vim executables and runtime files"
 
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*
+
+	SetOutPath $0\autoload
+	File ${VIMRT}\autoload\*.*
 
 	SetOutPath $0\syntax
 	File ${VIMRT}\syntax\*.*
