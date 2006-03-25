@@ -128,6 +128,10 @@
 
 /* shared library access */
 #if defined(HAVE_DLFCN_H) && defined(USE_DLOPEN)
+# ifdef __MVS__
+    /* needed to define RTLD_LAZY (Anthony Giorgio) */
+#  define __SUSV3
+# endif
 # include <dlfcn.h>
 #else
 # if defined(HAVE_DL_H) && defined(HAVE_SHL_LOAD)

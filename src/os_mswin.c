@@ -598,8 +598,16 @@ display_errors()
 		}
 #endif
 
-		(void)gui_mch_dialog(VIM_ERROR, (char_u *)_("Error"),
-					      p, (char_u *)_("&Ok"), 1, NULL);
+		(void)gui_mch_dialog(
+#ifdef FEAT_GUI
+				     gui.starting ? VIM_INFO :
+#endif
+					     VIM_ERROR,
+#ifdef FEAT_GUI
+				     gui.starting ? (char_u *)_("Message") :
+#endif
+					     (char_u *)_("Error"),
+				     p, (char_u *)_("&Ok"), 1, NULL);
 #if 0
 #ifdef WIN3264
 		MessageBox(NULL, p, "Vim", MB_TASKMODAL|MB_SETFOREGROUND);

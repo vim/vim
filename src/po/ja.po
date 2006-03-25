@@ -4708,7 +4708,7 @@ msgstr "%s の %d 行目に 認識できないか重複した項目があります: %s"
 
 #, c-format
 msgid "Missing FOL/LOW/UPP line in %s"
-msgstr "%d 行目に FOL/LOW/UPP がありません"
+msgstr "%s 行目に FOL/LOW/UPP がありません"
 
 msgid "COMPOUNDSYLMAX used without SYLLABLE"
 msgstr "SYLLABLE が指定されない COMPOUNDSYLMAX"
@@ -4772,7 +4772,7 @@ msgstr "非ASCII文字を含む %d 個の単語を無視しました (%s 内)"
 
 #, c-format
 msgid "Reading word file %s ..."
-msgstr "標準入力から読込み中..."
+msgstr "標準入力から読込み中 %s ..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -4780,7 +4780,7 @@ msgstr "%s の %d 行目の 重複した /encoding= 行を無視しました: %s"
 
 #, c-format
 msgid "/encoding= line after word ignored in %s line %d: %s"
-msgstr "％s の %d 行目の 単語の後の /encoding= 行を無視しました: %s"
+msgstr "%s ％s の %d 行目の 単語の後の /encoding= 行を無視しました: %s"
 
 #, c-format
 msgid "Duplicate /regions= line ignored in %s line %d: %s"
@@ -4891,7 +4891,7 @@ msgstr "E778: .sug ファイルではないようです: %s"
 
 #, c-format
 msgid "E779: Old .sug file, needs to be updated: %s"
-msgstr "E779: 古い .sug ファイルなので, アップデートしてください"
+msgstr "E779: 古い .sug ファイルなので, アップデートしてください: %s"
 
 #, c-format
 msgid "E780: .sug file is for newer version of Vim: %s"
