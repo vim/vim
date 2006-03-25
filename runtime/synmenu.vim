@@ -123,7 +123,7 @@ an 50.30.160 &Syntax.DE.Diff :cal SetSyn("diff")<CR>
 an 50.30.170 &Syntax.DE.Digital\ Command\ Lang :cal SetSyn("dcl")<CR>
 an 50.30.180 &Syntax.DE.Dircolors :cal SetSyn("dircolors")<CR>
 an 50.30.190 &Syntax.DE.Django\ template :cal SetSyn("django")<CR>
-an 50.30.200 &Syntax.DE.DNS/BIND\ zone :cal SetSyn("dns")<CR>
+an 50.30.200 &Syntax.DE.DNS/BIND\ zone :cal SetSyn("bindzone")<CR>
 an 50.30.210 &Syntax.DE.DocBook.auto-detect :cal SetSyn("docbk")<CR>
 an 50.30.220 &Syntax.DE.DocBook.SGML :cal SetSyn("docbksgml")<CR>
 an 50.30.230 &Syntax.DE.DocBook.XML :cal SetSyn("docbkxml")<CR>
