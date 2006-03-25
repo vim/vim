@@ -30,7 +30,7 @@ g-:.w >>test.out
 :"
 :/^222/w >>test.out
 :" Delay for three seconds and go some seconds forward and backward
-:sleep 3
+:sleep 2
 Aa:set ul=100
 Ab:set ul=100
 Ac:set ul=100

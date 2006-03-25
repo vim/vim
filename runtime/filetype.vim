@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 24
+" Last Change:	2006 Mar 25
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -255,6 +255,15 @@ au BufNewFile,BufRead named.conf,rndc.conf	setf named
 
 " BIND zone
 au BufNewFile,BufRead named.root		setf bindzone
+au BufNewFile,BufRead *.db			call s:BindzoneCheck('')
+
+func! s:BindzoneCheck(default)
+  if getline(1).getline(2).getline(3).getline(4) =~ '^; <<>> DiG [0-9.]\+ <<>>\|BIND.*named\|$ORIGIN\|$TTL\|IN\s\+SOA'
+    setf bindzone
+  elseif a:default != ''
+    exe 'setf ' . a:default
+  endif
+endfunc
 
 " Blank
 au BufNewFile,BufRead *.bl			setf blank
@@ -478,10 +487,7 @@ au BufNewFile,BufRead *.rul
 	\ endif
 
 " DCL (Digital Command Language - vms) or DNS zone file
-au BufNewFile,BufRead *.com
-	\ if getline(1).getline(2) =~ '$ORIGIN\|$TTL\|IN\s*SOA'
-	\	|| getline(1).getline(2).getline(3).getline(4) =~ 'BIND.*named'
-	\ | setf dns | else | setf dcl | endif
+au BufNewFile,BufRead *.com			call s:BindzoneCheck('dcl')
 
 " DOT
 au BufNewFile,BufRead *.dot			setf dot
@@ -1958,7 +1964,7 @@ au BufNewFile,BufRead *asterisk/*.conf*         call s:StarSetf('asterisk')
 au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
 
 " BIND zone
-au BufNewFile,BufRead /var/named/*		call s:StarSetf('bindzone')
+au BufNewFile,BufRead */named/db.*,*/bind/db.*	call s:StarSetf('bindzone')
 
 " Changelog
 au BufNewFile,BufRead [cC]hange[lL]og*

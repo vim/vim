@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0b.  Last change: 2006 Mar 06
+*pattern.txt*   For Vim version 7.0b.  Last change: 2006 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1216,9 +1216,6 @@ Finally, these constructs are unique to Perl:
 		'hlsearch' is used in all windows, while the pattern defined
 		with ":match" only exists in the current window.  It is kept
 		when switching to another buffer.
-
-		The |matchparen| plugin uses match highlighting, thus will
-		disable your ":match" command as soon as you move to a paren.
 
 		'ignorecase' does not apply, use |/\c| in the pattern to
 		ignore case.  Otherwise case is not ignored.

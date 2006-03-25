@@ -649,8 +649,13 @@ static struct vimoption
 #endif
 			    },
     {"casemap",	    "cmp",   P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_MBYTE
 			    (char_u *)&p_cmp, PV_NONE,
 			    {(char_u *)"internal,keepascii", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
 			    },
     {"cdpath",	    "cd",   P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_SEARCHPATH
@@ -4928,7 +4933,9 @@ didset_options()
     /* initialize the table for 'iskeyword' et.al. */
     (void)init_chartab();
 
+#ifdef FEAT_MBYTE
     (void)opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE);
+#endif
     (void)opt_strings_flags(p_bkc, p_bkc_values, &bkc_flags, TRUE);
 #ifdef FEAT_SESSION
     (void)opt_strings_flags(p_ssop, p_ssop_values, &ssop_flags, TRUE);
@@ -6377,12 +6384,14 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    errmsg = e_invarg;
     }
 
+#ifdef FEAT_MBYTE
     /* 'casemap' */
     else if (varp == &p_cmp)
     {
 	if (opt_strings_flags(p_cmp, p_cmp_values, &cmp_flags, TRUE) != OK)
 	    errmsg = e_invarg;
     }
+#endif
 
 #ifdef FEAT_DIFF
     /* 'diffopt' */

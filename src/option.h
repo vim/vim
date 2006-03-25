@@ -350,13 +350,15 @@ EXTERN int	p_consk;	/* 'conskey' */
 #ifdef FEAT_LINEBREAK
 EXTERN char_u	*p_breakat;	/* 'breakat' */
 #endif
+#ifdef FEAT_MBYTE
 EXTERN char_u	*p_cmp;		/* 'casemap' */
 EXTERN unsigned	cmp_flags;
-#ifdef IN_OPTION_C
+# ifdef IN_OPTION_C
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
+# endif
+# define CMP_INTERNAL		0x001
+# define CMP_KEEPASCII		0x002
 #endif
-#define CMP_INTERNAL		0x001
-#define CMP_KEEPASCII		0x002
 #ifdef FEAT_MBYTE
 EXTERN char_u	*p_enc;		/* 'encoding' */
 EXTERN int	p_deco;		/* 'delcombine' */
