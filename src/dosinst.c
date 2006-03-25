@@ -361,7 +361,9 @@ find_bat_exe(int check_bat_only)
 {
     int		i;
 
-    mch_chdir(sysdrive);	/* avoid looking in the "installdir" */
+    /* avoid looking in the "installdir" by chdir to system root */
+    mch_chdir(sysdrive);
+    mch_chdir("\\");
 
     for (i = 1; i < TARGET_COUNT; ++i)
     {
@@ -376,7 +378,10 @@ find_bat_exe(int check_bat_only)
 	    remove_tail(default_bat_dir);
 	}
 	if (check_bat_only && targets[i].oldbat != NULL)
+	{
 	    free(targets[i].oldbat);
+	    targets[i].oldbat = NULL;
+	}
     }
 
     mch_chdir(installdir);

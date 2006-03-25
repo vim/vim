@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0b.  Last change: 2006 Mar 21
+*various.txt*   For Vim version 7.0b.  Last change: 2006 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -760,6 +760,7 @@ At this moment translations are available for:
 	Chinese - multiple authors
 	French  - translated by David Blanchet
 	Italian - translated by Antonio Colombo
+	Polish  - translated by Mikolaj Machowski
 	Russian - translated by Vassily Ragosin
 See the Vim website to find them: http://www.vim.org/translations.php
 

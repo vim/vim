@@ -6063,89 +6063,207 @@ syn_get_foldlevel(wp, lnum)
  * The default highlight groups.  These are compiled-in for fast startup and
  * they still work when the runtime files can't be found.
  * When making changes here, also change runtime/colors/default.vim!
+ * The #ifdefs are needed to reduce the amount of static data.  Helps to make
+ * the 16 bit DOS (museum) version compile.
  */
 static char *(highlight_init_both[]) =
     {
+	"ErrorMsg term=standout ctermbg=DarkRed ctermfg=White",
+	"IncSearch term=reverse cterm=reverse",
+	"ModeMsg term=bold cterm=bold",
+	"NonText term=bold ctermfg=Blue",
+	"StatusLine term=reverse,bold cterm=reverse,bold",
+	"StatusLineNC term=reverse cterm=reverse",
+#ifdef FEAT_VERTSPLIT
+	"VertSplit term=reverse cterm=reverse",
+#endif
+#ifdef FEAT_CLIPBOARD
+	"VisualNOS term=underline,bold cterm=underline,bold",
+#endif
+#ifdef FEAT_DIFF
+	"DiffText term=reverse cterm=bold ctermbg=Red",
+#endif
+#ifdef FEAT_INS_EXPAND
+	"PmenuThumb cterm=reverse",
+	"PmenuSbar ctermbg=Grey",
+#endif
+#ifdef FEAT_WINDOWS
+	"TabLineSel term=bold cterm=bold",
+	"TabLineFill term=reverse cterm=reverse",
+#endif
+#ifdef FEAT_AUTOCMD
+	"MatchParen term=reverse ctermbg=Cyan",
+#endif
 #ifdef FEAT_GUI
+	"ErrorMsg guibg=Red guifg=White",
+	"IncSearch gui=reverse",
+	"ModeMsg gui=bold",
+	"NonText gui=bold guifg=Blue",
+	"StatusLine gui=reverse,bold",
+	"StatusLineNC gui=reverse",
+	"VertSplit gui=reverse",
+	"VisualNOS gui=underline,bold",
+	"DiffText gui=bold guibg=Red",
+	"PmenuThumb gui=reverse",
+	"PmenuSbar guibg=Grey",
+	"TabLineSel gui=bold",
+	"TabLineFill gui=reverse",
+	"MatchParen guibg=Cyan",
 	"Cursor guibg=fg guifg=bg",
 	"lCursor guibg=fg guifg=bg",	/* should be different, but what? */
 #endif
-	"ErrorMsg term=standout ctermbg=DarkRed ctermfg=White guibg=Red guifg=White",
-	"IncSearch term=reverse cterm=reverse gui=reverse",
-	"ModeMsg term=bold cterm=bold gui=bold",
-	"NonText term=bold ctermfg=Blue gui=bold guifg=Blue",
-	"StatusLine term=reverse,bold cterm=reverse,bold gui=reverse,bold",
-	"StatusLineNC term=reverse cterm=reverse gui=reverse",
-	"VertSplit term=reverse cterm=reverse gui=reverse",
-	"VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold",
-	"DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red",
-	"PmenuThumb cterm=reverse gui=reverse",
-	"PmenuSbar ctermbg=Grey guibg=Grey",
-	"TabLineSel term=bold cterm=bold gui=bold",
-	"TabLineFill term=reverse cterm=reverse gui=reverse",
-	"MatchParen term=reverse ctermbg=Cyan guibg=Cyan",
 	NULL
     };
 
 static char *(highlight_init_light[]) =
     {
-	"Directory term=bold ctermfg=DarkBlue guifg=Blue",
-	"LineNr term=underline ctermfg=Brown guifg=Brown",
-	"MoreMsg term=bold ctermfg=DarkGreen gui=bold guifg=SeaGreen",
+	"Directory term=bold ctermfg=DarkBlue",
+	"LineNr term=underline ctermfg=Brown",
+	"MoreMsg term=bold ctermfg=DarkGreen",
+	"Question term=standout ctermfg=DarkGreen",
+	"Search term=reverse ctermbg=Yellow ctermfg=NONE",
+#ifdef FEAT_SPELL
+	"SpellBad term=reverse ctermbg=LightRed",
+	"SpellCap term=reverse ctermbg=LightBlue",
+	"SpellRare term=reverse ctermbg=LightMagenta",
+	"SpellLocal term=underline ctermbg=Cyan",
+#endif
+#ifdef FEAT_INS_EXPAND
+	"Pmenu ctermbg=LightMagenta",
+	"PmenuSel ctermbg=LightGrey",
+#endif
+	"SpecialKey term=bold ctermfg=DarkBlue",
+	"Title term=bold ctermfg=DarkMagenta",
+	"WarningMsg term=standout ctermfg=DarkRed",
+#ifdef FEAT_WILDMENU
+	"WildMenu term=standout ctermbg=Yellow ctermfg=Black",
+#endif
+#ifdef FEAT_FOLDING
+	"Folded term=standout ctermbg=Grey ctermfg=DarkBlue",
+	"FoldColumn term=standout ctermbg=Grey ctermfg=DarkBlue",
+#endif
+#ifdef FEAT_SIGNS
+	"SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue",
+#endif
+#ifdef FEAT_VISUAL
+	"Visual term=reverse ctermbg=Magenta",
+#endif
+#ifdef FEAT_DIFF
+	"DiffAdd term=bold ctermbg=LightBlue",
+	"DiffChange term=bold ctermbg=LightMagenta",
+	"DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan",
+#endif
+#ifdef FEAT_WINDOWS
+	"TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey",
+#endif
+#ifdef FEAT_SYN_HL
+	"CursorColumn term=reverse ctermbg=LightGrey",
+	"CursorLine term=underline cterm=underline",
+#endif
+#ifdef FEAT_GUI
+	"Directory guifg=Blue",
+	"LineNr guifg=Brown",
+	"MoreMsg gui=bold guifg=SeaGreen",
 	"Normal gui=NONE",
-	"Question term=standout ctermfg=DarkGreen gui=bold guifg=SeaGreen",
-	"Search term=reverse ctermbg=Yellow ctermfg=NONE guibg=Yellow guifg=NONE",
-	"SpellBad term=reverse ctermbg=LightRed guisp=Red gui=undercurl",
-	"SpellCap term=reverse ctermbg=LightBlue guisp=Blue gui=undercurl",
-	"SpellRare term=reverse ctermbg=LightMagenta guisp=Magenta gui=undercurl",
-	"SpellLocal term=underline ctermbg=Cyan guisp=DarkCyan gui=undercurl",
-	"Pmenu ctermbg=LightMagenta guibg=LightMagenta",
-	"PmenuSel ctermbg=LightGrey guibg=Grey",
-	"SpecialKey term=bold ctermfg=DarkBlue guifg=Blue",
-	"Title term=bold ctermfg=DarkMagenta gui=bold guifg=Magenta",
-	"WarningMsg term=standout ctermfg=DarkRed guifg=Red",
-	"WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",
-	"Folded term=standout ctermbg=Grey ctermfg=DarkBlue guibg=LightGrey guifg=DarkBlue",
-	"FoldColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue",
-	"SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue",
-	"Visual term=reverse ctermbg=Magenta guibg=LightGrey",
-	"DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue",
-	"DiffChange term=bold ctermbg=LightMagenta guibg=LightMagenta",
-	"DiffDelete term=bold ctermfg=Blue ctermbg=LightCyan gui=bold guifg=Blue guibg=LightCyan",
-	"TabLine term=underline cterm=underline ctermfg=black ctermbg=LightGrey gui=underline guibg=LightGrey",
-	"CursorColumn term=reverse ctermbg=LightGrey guibg=LightGrey",
-	"CursorLine term=underline cterm=underline guibg=LightGrey",
+	"Question gui=bold guifg=SeaGreen",
+	"Search guibg=Yellow guifg=NONE",
+	"SpellBad guisp=Red gui=undercurl",
+	"SpellCap guisp=Blue gui=undercurl",
+	"SpellRare guisp=Magenta gui=undercurl",
+	"SpellLocal guisp=DarkCyan gui=undercurl",
+	"Pmenu guibg=LightMagenta",
+	"PmenuSel guibg=Grey",
+	"SpecialKey guifg=Blue",
+	"Title gui=bold guifg=Magenta",
+	"WarningMsg guifg=Red",
+	"WildMenu guibg=Yellow guifg=Black",
+	"Folded guibg=LightGrey guifg=DarkBlue",
+	"FoldColumn guibg=Grey guifg=DarkBlue",
+	"SignColumn guibg=Grey guifg=DarkBlue",
+	"Visual guibg=LightGrey",
+	"DiffAdd guibg=LightBlue",
+	"DiffChange guibg=LightMagenta",
+	"DiffDelete gui=bold guifg=Blue guibg=LightCyan",
+	"TabLine gui=underline guibg=LightGrey",
+	"CursorColumn guibg=LightGrey",
+	"CursorLine guibg=LightGrey",
+#endif
 	NULL
     };
 
 static char *(highlight_init_dark[]) =
     {
-	"Directory term=bold ctermfg=LightCyan guifg=Cyan",
-	"LineNr term=underline ctermfg=Yellow guifg=Yellow",
-	"MoreMsg term=bold ctermfg=LightGreen gui=bold guifg=SeaGreen",
+	"Directory term=bold ctermfg=LightCyan",
+	"LineNr term=underline ctermfg=Yellow",
+	"MoreMsg term=bold ctermfg=LightGreen",
+	"Question term=standout ctermfg=LightGreen",
+	"Search term=reverse ctermbg=Yellow ctermfg=Black",
+	"SpecialKey term=bold ctermfg=LightBlue",
+#ifdef FEAT_SPELL
+	"SpellBad term=reverse ctermbg=Red",
+	"SpellCap term=reverse ctermbg=Blue",
+	"SpellRare term=reverse ctermbg=Magenta",
+	"SpellLocal term=underline ctermbg=Cyan",
+#endif
+#ifdef FEAT_INS_EXPAND
+	"Pmenu ctermbg=Magenta",
+	"PmenuSel ctermbg=DarkGrey",
+#endif
+	"Title term=bold ctermfg=LightMagenta",
+	"WarningMsg term=standout ctermfg=LightRed",
+#ifdef FEAT_WILDMENU
+	"WildMenu term=standout ctermbg=Yellow ctermfg=Black",
+#endif
+#ifdef FEAT_FOLDING
+	"Folded term=standout ctermbg=DarkGrey ctermfg=Cyan",
+	"FoldColumn term=standout ctermbg=DarkGrey ctermfg=Cyan",
+#endif
+#ifdef FEAT_SIGNS
+	"SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan",
+#endif
+#ifdef FEAT_VISUAL
+	"Visual term=reverse ctermbg=Magenta",
+#endif
+#ifdef FEAT_DIFF
+	"DiffAdd term=bold ctermbg=DarkBlue",
+	"DiffChange term=bold ctermbg=DarkMagenta",
+	"DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan",
+#endif
+#ifdef FEAT_WINDOWS
+	"TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey",
+#endif
+#ifdef FEAT_SYN_HL
+	"CursorColumn term=reverse ctermbg=DarkGrey",
+	"CursorLine term=underline cterm=underline",
+#endif
+#ifdef FEAT_GUI
+	"Directory guifg=Cyan",
+	"LineNr guifg=Yellow",
+	"MoreMsg gui=bold guifg=SeaGreen",
 	"Normal gui=NONE",
-	"Question term=standout ctermfg=LightGreen gui=bold guifg=Green",
-	"Search term=reverse ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",
-	"SpecialKey term=bold ctermfg=LightBlue guifg=Cyan",
-	"SpellBad term=reverse ctermbg=Red guisp=Red gui=undercurl",
-	"SpellCap term=reverse ctermbg=Blue guisp=Blue gui=undercurl",
-	"SpellRare term=reverse ctermbg=Magenta guisp=Magenta gui=undercurl",
-	"SpellLocal term=underline ctermbg=Cyan guisp=Cyan gui=undercurl",
-	"Pmenu ctermbg=Magenta guibg=Magenta",
-	"PmenuSel ctermbg=DarkGrey guibg=DarkGrey",
-	"Title term=bold ctermfg=LightMagenta gui=bold guifg=Magenta",
-	"WarningMsg term=standout ctermfg=LightRed guifg=Red",
-	"WildMenu term=standout ctermbg=Yellow ctermfg=Black guibg=Yellow guifg=Black",
-	"Folded term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=DarkGrey guifg=Cyan",
-	"FoldColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan",
-	"SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan",
-	"Visual term=reverse ctermbg=Magenta guibg=DarkGrey",
-	"DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue",
-	"DiffChange term=bold ctermbg=DarkMagenta guibg=DarkMagenta",
-	"DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan",
-	"TabLine term=underline cterm=underline ctermfg=white ctermbg=DarkGrey gui=underline guibg=DarkGrey",
-	"CursorColumn term=reverse ctermbg=DarkGrey guibg=DarkGrey",
-	"CursorLine term=underline cterm=underline guibg=DarkGrey",
+	"Question gui=bold guifg=Green",
+	"Search guibg=Yellow guifg=Black",
+	"SpecialKey guifg=Cyan",
+	"SpellBad guisp=Red gui=undercurl",
+	"SpellCap guisp=Blue gui=undercurl",
+	"SpellRare guisp=Magenta gui=undercurl",
+	"SpellLocal guisp=Cyan gui=undercurl",
+	"Pmenu guibg=Magenta",
+	"PmenuSel guibg=DarkGrey",
+	"Title gui=bold guifg=Magenta",
+	"WarningMsg guifg=Red",
+	"WildMenu guibg=Yellow guifg=Black",
+	"Folded guibg=DarkGrey guifg=Cyan",
+	"FoldColumn guibg=Grey guifg=Cyan",
+	"SignColumn guibg=Grey guifg=Cyan",
+	"Visual guibg=DarkGrey",
+	"DiffAdd guibg=DarkBlue",
+	"DiffChange guibg=DarkMagenta",
+	"DiffDelete gui=bold guifg=Blue guibg=DarkCyan",
+	"TabLine gui=underline guibg=DarkGrey",
+	"CursorColumn guibg=DarkGrey",
+	"CursorLine guibg=DarkGrey",
+#endif
 	NULL
     };
 
