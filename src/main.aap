@@ -658,6 +658,8 @@ DEST_MAN_FR_U = $(DEST_MAN_TOP)/fr.UTF-8$(MAN1DIR)
 DEST_MAN_IT = $(DEST_MAN_TOP)/it$(MAN1DIR)
 DEST_MAN_IT_I = $(DEST_MAN_TOP)/it.ISO8859-1$(MAN1DIR)
 DEST_MAN_IT_U = $(DEST_MAN_TOP)/it.UTF-8$(MAN1DIR)
+DEST_MAN_PL = $(DEST_MAN_TOP)/pl.ISO8859-2$(MAN1DIR)
+DEST_MAN_PL_U = $(DEST_MAN_TOP)/pl.UTF-8$(MAN1DIR)
 DEST_MAN_RU = $(DEST_MAN_TOP)/ru.KOI8-R$(MAN1DIR)
 DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 
@@ -667,7 +669,9 @@ DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
                 $DEST_COMP $DEST_KMAP $DEST_MACRO $DEST_TOOLS $DEST_TUTOR
                 $DEST_SCRIPT $DEST_PRINT $DEST_MAN $DEST_SPELL
                 $DEST_MAN_FR $DEST_MAN_FR_I $DEST_MAN_FR_U $DEST_MAN_IT
-                $DEST_MAN_IT_I $DEST_MAN_IT_U $DEST_MAN_RU $DEST_MAN_RU_U
+                $DEST_MAN_IT_I $DEST_MAN_IT_U
+                $DEST_MAN_PL $DEST_MAN_PL_U
+                $DEST_MAN_RU $DEST_MAN_RU_U
 
 #
 # I N S T A L L
@@ -893,6 +897,8 @@ install-tool-languages:
 	:sys ./installman.sh xxd $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_PL) "-pl" $(INSTALLMANARGS)
+	:sys ./installman.sh xxd $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
 
@@ -904,6 +910,8 @@ install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
 	:sys ./installman.sh install $(DEST_MAN_IT) "-it" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_IT_I) "-it" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_IT_U) "-it.UTF-8" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_PL) "-pl" $(INSTALLMANARGS)
+	:sys ./installman.sh install $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
 	:sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -918,6 +926,10 @@ install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
 		$(DEST_MAN_IT_I) $(INSTALLMLARGS)
         :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_IT_U) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_PL) $(INSTALLMLARGS)
+        :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
+		$(DEST_MAN_PL_U) $(INSTALLMLARGS)
         :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_RU) $(INSTALLMLARGS)
         :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -1049,6 +1061,8 @@ uninstall_runtime {virtual}{force}:
     :sys ./installman.sh uninstall $(DEST_MAN_IT) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_IT_I) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_IT_U) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_PL) "" $(INSTALLMANARGS)
+    :sys ./installman.sh uninstall $(DEST_MAN_PL_U) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_RU) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
@@ -1066,12 +1080,17 @@ uninstall_runtime {virtual}{force}:
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
             $(DEST_MAN_IT_U) $(INSTALLMLARGS)
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_PL) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
+            $(DEST_MAN_PL_U) $(INSTALLMLARGS)
+    :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
             $(DEST_MAN_RU) $(INSTALLMLARGS)
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
             $(DEST_MAN_RU_U) $(INSTALLMLARGS)
     :del {force} $DEST_MAN/xxd.1
     :del {force} $(DEST_MAN_FR)/xxd.1 $(DEST_MAN_FR_I)/xxd.1 $(DEST_MAN_FR_U)/xxd.1
     :del {force} $(DEST_MAN_IT)/xxd.1 $(DEST_MAN_IT_I)/xxd.1 $(DEST_MAN_IT_U)/xxd.1
+    :del {force} $(DEST_MAN_PL)/xxd.1 $(DEST_MAN_PL_U)/xxd.1
     :del {force} $(DEST_MAN_RU)/xxd.1 $(DEST_MAN_RU_U)/xxd.1
 
     :del {force} $DEST_HELP/*.txt $DEST_HELP/tags $DEST_HELP/*.pl

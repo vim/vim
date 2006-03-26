@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         Autoconf configure.{ac,in} file
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-30
+" Latest Revision:  2006-02-11
 " TODO:             how about nested [()]'s in one line
 "                   what's wrong with '\\\@!'?
 
@@ -63,7 +63,7 @@ function GetConfigIndent()
 
   " if previous line had an unmatched closing parantheses,
   " indent to the matching opening parantheses
-  if line =~ '[^(]*\\\@<!)$'
+  if line =~ '[^(]\+\\\@<!)$'
     call search(')', 'bW')
     let lnum = searchpair('\\\@<!(', '', ')', 'bWn')
     let ind = indent(lnum)
@@ -71,7 +71,7 @@ function GetConfigIndent()
 
   " if previous line had an unmatched closing bracket,
   " indent to the matching opening bracket
-  if line =~ '[^[]*]$'
+  if line =~ '[^[]\+]$'
     call search(']', 'bW')
     let lnum = searchpair('\[', '', ']', 'bWn')
     let ind = indent(lnum)
@@ -79,5 +79,3 @@ function GetConfigIndent()
 
   return ind
 endfunction
-
-" vim: set sts=2 sw=2:

@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 25
+" Last Change:	2006 Mar 26
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -267,6 +267,7 @@ SynMenu L-Ma.Lynx\ config:lynx
 SynMenu L-Ma.M4:m4
 SynMenu L-Ma.MaGic\ Point:mgp
 SynMenu L-Ma.Mail:mail
+SynMenu L-Ma.Mail\ aliases:mailaliases
 SynMenu L-Ma.Mailcap:mailcap
 SynMenu L-Ma.Makefile:make
 SynMenu L-Ma.MakeIndex:ist

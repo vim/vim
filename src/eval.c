@@ -8964,42 +8964,54 @@ findfilendir(argvars, rettv, dir)
     char_u	pathbuf[NUMBUFLEN];
     int		count = 1;
     int		first = TRUE;
+    int		error = FALSE;
+#endif
 
+    rettv->vval.v_string = NULL;
+    rettv->v_type = VAR_STRING;
+
+#ifdef FEAT_SEARCHPATH
     fname = get_tv_string(&argvars[0]);
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	p = get_tv_string_buf_chk(&argvars[1], pathbuf);
 	if (p == NULL)
-	    count = -1;	    /* error */
+	    error = TRUE;
 	else
 	{
 	    if (*p != NUL)
 		path = p;
 
 	    if (argvars[2].v_type != VAR_UNKNOWN)
-		count = get_tv_number_chk(&argvars[2], NULL); /* -1: error */
+		count = get_tv_number_chk(&argvars[2], &error);
 	}
     }
 
-    if (*fname != NUL && count >= 0)
+    if (count < 0 && rettv_list_alloc(rettv) == FAIL)
+	error = TRUE;
+
+    if (*fname != NUL && !error)
     {
 	do
 	{
-	    vim_free(fresult);
+	    if (rettv->v_type == VAR_STRING)
+		vim_free(fresult);
 	    fresult = find_file_in_path_option(first ? fname : NULL,
 					       first ? (int)STRLEN(fname) : 0,
 					0, first, path, dir, NULL,
 					dir ? (char_u *)"" : curbuf->b_p_sua);
 	    first = FALSE;
-	} while (--count > 0 && fresult != NULL);
+
+	    if (fresult != NULL && rettv->v_type == VAR_LIST)
+		list_append_string(rettv->vval.v_list, fresult, -1);
+
+	} while ((rettv->v_type == VAR_LIST || --count > 0) && fresult != NULL);
     }
 
-    rettv->vval.v_string = fresult;
-#else
-    rettv->vval.v_string = NULL;
+    if (rettv->v_type == VAR_STRING)
+	rettv->vval.v_string = fresult;
 #endif
-    rettv->v_type = VAR_STRING;
 }
 
 static void filter_map __ARGS((typval_T *argvars, typval_T *rettv, int map));
@@ -18673,8 +18685,9 @@ trans_function_name(pp, skip, flags, fdp)
     else if (lead > 0)
     {
 	lead = 3;
-	if (eval_fname_sid(*pp))	/* If it's "<SID>" */
+	if (eval_fname_sid(lv.ll_exp_name != NULL ? lv.ll_exp_name : *pp))
 	{
+	    /* It's "s:" or "<SID>" */
 	    if (current_SID <= 0)
 	    {
 		EMSG(_(e_usingsid));

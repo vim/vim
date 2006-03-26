@@ -275,6 +275,9 @@ long base_off;
       if (c == '\r')	/* Doze style input file? */
 	continue;
 
+      if (c == ' ' || c == '\n' || c == '\t')  /* allow multiple spaces */
+        continue;
+
       n3 = n2;
       n2 = n1;
 
@@ -334,7 +337,7 @@ long base_off;
 	  n1 = -1;
 	  if ((++p >= cols) && !hextype)
 	    {
-	      /* skip rest of line as garbaga */
+	      /* skip rest of line as garbage */
 	      want_off = 0;
 	      while ((c = getc(fpi)) != '\n' && c != EOF)
 		;

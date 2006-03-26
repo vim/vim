@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 25
+" Last Change:	2006 Mar 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -195,7 +195,7 @@ au BufNewFile,BufRead *.mar			setf vmasm
 au BufNewFile,BufRead *.atl,*.as		setf atlas
 
 " Automake
-au BufNewFile,BufRead [mM]akefile.am		setf automake
+au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
 
 " Autotest .at files are actually m4
 au BufNewFile,BufRead *.at			setf m4
@@ -340,9 +340,20 @@ au BufNewFile,BufRead *.css			setf css
 au BufNewFile,BufRead *.con			setf cterm
 
 " Changelog
-au BufNewFile,BufRead changelog.Debian,changelog.dch setf debchangelog
-au BufNewFile,BufRead [cC]hange[lL]og		if getline(1) =~ '; urgency='
-	\| setf debchangelog | else | setf changelog | endif
+au BufNewFile,BufRead changelog.Debian,changelog.dch,NEWS.Debian,NEWS.dch
+					\	setf debchangelog
+
+au BufNewFile,BufRead [cC]hange[lL]og
+	\  if getline(1) =~ '; urgency='
+	\|   setf debchangelog
+	\| else
+	\|   setf changelog
+	\| endif
+
+au BufNewFile,BufRead NEWS
+	\  if getline(1) =~ '; urgency='
+	\|   setf debchangelog
+	\| endif
 
 " CHILL
 au BufNewFile,BufRead *..ch			setf chill
@@ -417,7 +428,14 @@ au BufNewFile,BufRead *.prg
 	\ endif
 
 " Cobol
-au BufNewFile,BufRead *.cbl,*.cob,*.cpy,*.lib	setf cobol
+au BufNewFile,BufRead *.cbl,*.cob,*.lib	setf cobol
+"   cobol or zope form controller python script? (heuristic)
+au BufNewFile,BufRead *.cpy
+	\ if getline(1) =~ '^##' |
+	\   setf python |
+	\ else |
+	\   setf cobol |
+	\ endif
 
 " Cold Fusion
 au BufNewFile,BufRead *.cfm,*.cfi,*.cfc		setf cf
@@ -842,6 +860,9 @@ au BufNewFile,BufRead *.mgp			setf mgp
 
 " Mail (for Elm, trn, mutt, rn, slrn)
 au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt\w\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
+
+" Mail aliases
+au BufNewFile,BufRead /etc/mail/aliases,/etc/aliases	setf mailaliases
 
 " Mailcap configuration file
 au BufNewFile,BufRead .mailcap,mailcap		setf mailcap
@@ -1384,7 +1405,7 @@ au BufNewFile,BufRead *.sas			setf sas
 au BufNewFile,BufRead *.sa			setf sather
 
 " Scilab
-au BufNewFile,BufRead *.sci			setf scilab
+au BufNewFile,BufRead *.sci,*.sce		setf scilab
 
 " SDL
 au BufNewFile,BufRead *.sdl,*.pr		setf sdl
@@ -1929,6 +1950,13 @@ endfun
 
 " Yaml
 au BufNewFile,BufRead *.yaml,*.yml		setf yaml
+
+" Zope
+"   dtml (zope dynamic template markup language), pt (zope page template),
+"   cpt (zope form controller page template)
+au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call <SID>FTCheck_html()
+"   zsql (zope sql method)
+au BufNewFile,BufRead *.zsql			call s:SQL()
 
 " Z80 assembler asz80
 au BufNewFile,BufRead *.z8a			setf z8a

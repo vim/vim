@@ -658,6 +658,8 @@ LANG_GEN = \
 		runtime/doc/*-fr.UTF-8.1 \
 		runtime/doc/*-it.1 \
 		runtime/doc/*-it.UTF-8.1 \
+		runtime/doc/*-pl.1 \
+		runtime/doc/*-pl.UTF-8.1 \
 		runtime/doc/*-ru.1 \
 		runtime/doc/*-ru.UTF-8.1 \
 		runtime/lang/README.txt \

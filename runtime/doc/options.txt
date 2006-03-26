@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0b.  Last change: 2006 Mar 25
+*options.txt*	For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -78,7 +78,7 @@ achieve special effects.  These options come in three forms:
 			If the option is a list of flags, superfluous flags
 			are removed.  When adding a flag that was already
 			present the option value doesn't change.
-<			Also see |:set-args| above.
+			Also see |:set-args| above.
 			{not in Vi}
 
 :se[t] {option}^={value}				*:set^=*
@@ -269,7 +269,13 @@ You will not get back the 'list' value as it was the last time you edited
 			shown (but that might change in the future).
 			{not in Vi}
 
-:setl[ocal] {option}<	Set the local value of {option} to its global value.
+:setl[ocal] {option}<	Set the local value of {option} to its global value by
+			copying the value.
+			{not in Vi}
+
+:se[t] {option}<	Set the local value of {option} to its global value by
+			making it empty.  Only makes sense for |global-local|
+			options.
 			{not in Vi}
 
 							*:setg* *:setglobal*
@@ -316,7 +322,11 @@ This only works for a string option.  For a boolean option you need to use the
 	:setlocal autoread<
 Note that for non-boolean options using "<" copies the global value to the
 local value, it doesn't switch back to using the global value (that matters
-when changing the global value later).
+when the global value changes later).  You can also use: >
+	:set path<
+This will make the local value of 'path' empty, so that the global value is
+used.  Thus it does the same as: >
+	:setlocal path=
 Note: In the future more global options can be made global-local.  Using
 ":setlocal" on a global option might work differently then.
 

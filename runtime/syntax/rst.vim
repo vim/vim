@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-07-04
+" Latest Revision:  2006-03-26
 
 if exists("b:current_syntax")
   finish
@@ -32,11 +32,11 @@ syn region      rstTable            transparent start='^\n\s*+[-=+]\+' end='^$'
                                     \ contains=rstTableLines,@rstCruft
 syn match       rstTableLines       contained '^\s*[|+=-]\+$'
 syn region      rstSimpleTable      transparent
-                                    \ start='^\n\s*\%(=\+\s\+\)\%(=\+\s*\)\+$'
+                                    \ start='^\n\%(\s*\)\@>\%(\%(=\+\)\@>\%(\s\+\)\@>\)\%(\%(\%(=\+\)\@>\%(\s*\)\@>\)\+\)\@>$'
                                     \ end='^$'
                                     \ contains=rstSimpleTableLines,@rstCruft
 syn match       rstSimpleTableLines contained display
-                                    \ '^\s*\%(=\+\s\+\)\%(=\+\s*\)\+$'
+                                    \ '^\%(\s*\)\@>\%(\%(=\+\)\@>\%(\s\+\)\@>\)\%(\%(\%(=\+\)\@>\%(\s*\)\@>\)\+\)\@>$'
 
 syn region      rstFootnote         matchgroup=rstDirective
                                     \ start='^\.\. \[\%([#*]\|[0-9]\+\|#[a-z0-9_.-]\+\)\]\s'
@@ -69,7 +69,7 @@ syn match       rstHyperlinksLabel  '\w\+__\=\>'
 
 syn match       rstInternalTarget   '_`\S\%([^`]*\S\)\=`'
 
-syn match       rstListItem         '^:\%(\w\+\s*\)\+:'
+syn match       rstListItem         '^:\w\+\%(\s\+\w\+\)*:'
 syn match       rstListItem         '^\s*[-*+]\s\+'
 
 syn sync minlines=50

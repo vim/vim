@@ -2,7 +2,7 @@
 " vim: tw=0 ts=4 sw=4
 " Vim color file
 " Maintainer:	Ron Aaron <ron@ronware.org>
-" Last Change:	2003 May 02
+" Last Change:	2006 Mar 26
 
 hi clear
 set background=dark
@@ -37,6 +37,12 @@ hi PreProc		  term=underline  ctermfg=darkblue	guifg=#ff80ff
 hi Type			  term=underline  cterm=bold ctermfg=lightgreen  gui=bold  guifg=#60ff60
 hi Error		  term=reverse	ctermfg=darkcyan  ctermbg=black  guifg=Red	guibg=Black
 hi Todo			  term=standout  ctermfg=black	ctermbg=darkcyan  guifg=Blue  guibg=Yellow
+hi CursorLine	  term=underline  guibg=#555555
+hi CursorColumn	  term=underline  guibg=#555555
+hi MatchParen	  term=reverse  guibg=Blue
+hi TabLine		  term=bold,reverse  cterm=bold ctermfg=lightblue ctermbg=white gui=bold guifg=blue guibg=white
+hi TabLineFill	  term=bold,reverse  cterm=bold ctermfg=lightblue ctermbg=white gui=bold guifg=blue guibg=white
+hi TabLineSel	  term=reverse	ctermfg=white ctermbg=lightblue guifg=white guibg=blue
 hi link IncSearch		Visual
 hi link String			Constant
 hi link Character		Constant

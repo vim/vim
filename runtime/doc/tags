@@ -6813,9 +6813,9 @@ spell-COMPLEXPREFIXES	spell.txt	/*spell-COMPLEXPREFIXES*
 spell-COMPOUND	spell.txt	/*spell-COMPOUND*
 spell-COMPOUNDBEGIN	spell.txt	/*spell-COMPOUNDBEGIN*
 spell-COMPOUNDEND	spell.txt	/*spell-COMPOUNDEND*
+spell-COMPOUNDFIRST	spell.txt	/*spell-COMPOUNDFIRST*
 spell-COMPOUNDFLAG	spell.txt	/*spell-COMPOUNDFLAG*
 spell-COMPOUNDFORBIDFLAG	spell.txt	/*spell-COMPOUNDFORBIDFLAG*
-spell-COMPOUNDMAX	spell.txt	/*spell-COMPOUNDMAX*
 spell-COMPOUNDMIDDLE	spell.txt	/*spell-COMPOUNDMIDDLE*
 spell-COMPOUNDMIN	spell.txt	/*spell-COMPOUNDMIN*
 spell-COMPOUNDPERMITFLAG	spell.txt	/*spell-COMPOUNDPERMITFLAG*

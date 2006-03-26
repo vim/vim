@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0b.  Last change: 2006 Mar 25
+*eval.txt*      For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2471,6 +2471,7 @@ finddir({name}[, {path}[, {count}]])				*finddir()*
 		If {path} is omitted or empty then 'path' is used.
 		If the optional {count} is given, find {count}'s occurrence of
 		{name} in {path} instead of the first one.
+		When {count} is negative return all the matches in a |List|.
 		This is quite similar to the ex-command |:find|.
 		{only available when compiled with the +file_in_path feature}
 

@@ -5528,7 +5528,7 @@ win_redr_status(wp)
 	    *(p + len++) = ' ';
 	if (wp->w_buffer->b_help)
 	{
-	    STRCPY(p + len, _("[help]"));
+	    STRCPY(p + len, _("[Help]"));
 	    len += (int)STRLEN(p + len);
 	}
 #ifdef FEAT_QUICKFIX

@@ -185,14 +185,21 @@
  * <mapstr>	 N bytes    String with sequences of similar characters,
  *			    separated by slashes.
  *
- * sectionID == SN_COMPOUND: <compmax> <compminlen> <compsylmax> <compflags>
+ * sectionID == SN_COMPOUND: <compmax> <compminlen> <compsylmax> <compoptions>
+ *				<comppatcount> <comppattern> ... <compflags>
  * <compmax>     1 byte	    Maximum nr of words in compound word.
  * <compminlen>  1 byte	    Minimal word length for compounding.
  * <compsylmax>  1 byte	    Maximum nr of syllables in compound word.
+ * <compoptions> 2 bytes    COMP_ flags.
+ * <comppatcount> 2 bytes   number of <comppattern> following
  * <compflags>   N bytes    Flags from COMPOUNDRULE items, separated by
  *			    slashes.
  *
- * sectionID == SN_NOBREAK: (empty, its presence is enough)
+ * <comppattern>: <comppatlen> <comppattext>
+ * <comppatlen>	 1 byte	    length of <comppattext>
+ * <comppattext> N bytes    end or begin chars from CHECKCOMPOUNDPATTERN
+ *
+ * sectionID == SN_NOBREAK: (empty, its presence is what matters)
  *
  * sectionID == SN_SYLLABLE: <syllable>
  * <syllable>    N bytes    String from SYLLABLE item.
@@ -248,6 +255,7 @@
  *			    WF_HAS_AFF >> 8   word includes affix
  *			    WF_NEEDCOMP >> 8  word only valid in compound
  *			    WF_NOSUGGEST >> 8  word not used for suggestions
+ *			    WF_COMPROOT >> 8  word already a compound
  *
  * <pflags>	1 byte	    bitmask of:
  *			    WFP_RARE	rare prefix
@@ -336,6 +344,7 @@ typedef long idx_T;
 #define WF_HAS_AFF  0x0100	/* word includes affix */
 #define WF_NEEDCOMP 0x0200	/* word only valid in compound */
 #define WF_NOSUGGEST 0x0400	/* word not to be suggested */
+#define WF_COMPROOT 0x0800	/* already compounded word, COMPOUNDROOT */
 
 /* only used for su_badflags */
 #define WF_MIXCAP   0x20	/* mix of upper and lower case: macaRONI */
@@ -355,6 +364,12 @@ typedef long idx_T;
 					 * postponed prefix */
 #define WF_PFX_UP   (WFP_UP << 24)	/* in sl_pidxs: flag for to-upper
 					 * postponed prefix */
+
+/* flags for <compoptions> */
+#define COMP_CHECKDUP		1	/* CHECKCOMPOUNDDUP */
+#define COMP_CHECKREP		2	/* CHECKCOMPOUNDREP */
+#define COMP_CHECKCASE		4	/* CHECKCOMPOUNDCASE */
+#define COMP_CHECKTRIPLE	8	/* CHECKCOMPOUNDTRIPLE */
 
 /* Special byte values for <byte>.  Some are only used in the tree for
  * postponed prefixes, some only in the other trees.  This is a bit messy... */
@@ -443,9 +458,11 @@ struct slang_S
 
     hashtab_T	sl_wordcount;	/* hashtable with word count, wordcount_T */
 
-    int		sl_compmax;	/* COMPOUNDMAX (default: MAXWLEN) */
+    int		sl_compmax;	/* COMPOUNDWORDMAX (default: MAXWLEN) */
     int		sl_compminlen;	/* COMPOUNDMIN (default: 0) */
     int		sl_compsylmax;	/* COMPOUNDSYLMAX (default: MAXWLEN) */
+    int		sl_compoptions;	/* COMP_* flags */
+    garray_T	sl_comppat;	/* CHECKCOMPOUNDPATTERN items */
     regprog_T	*sl_compprog;	/* COMPOUNDRULE turned into a regexp progrm
 				 * (NULL when no compounding) */
     char_u	*sl_compstartflags; /* flags for first compound word */
@@ -693,6 +710,7 @@ typedef struct matchinf_S
     int		mi_compoff;		/* start of following word offset */
     char_u	mi_compflags[MAXWLEN];	/* flags for compound words used */
     int		mi_complen;		/* nr of compound words used */
+    int		mi_compextra;		/* nr of COMPOUNDROOT words */
 
     /* others */
     int		mi_result;		/* result so far: SP_BAD, SP_OK, etc. */
@@ -1475,9 +1493,10 @@ find_word(mip, mode)
 			continue;
 #endif
 
-		/* Limit the number of compound words to COMPOUNDMAX if no
+		/* Limit the number of compound words to COMPOUNDWORDMAX if no
 		 * maximum for syllables is specified. */
-		if (!word_ends && mip->mi_complen + 2 > slang->sl_compmax
+		if (!word_ends && mip->mi_complen + mip->mi_compextra + 2
+							   > slang->sl_compmax
 					   && slang->sl_compsylmax == MAXWLEN)
 		    continue;
 
@@ -1589,6 +1608,8 @@ find_word(mip, mode)
 #endif
 		c = mip->mi_compoff;
 		++mip->mi_complen;
+		if (flags & WF_COMPROOT)
+		    ++mip->mi_compextra;
 
 		/* For NOBREAK we need to try all NOBREAK languages, at least
 		 * to find the ".add" file(s). */
@@ -1625,6 +1646,8 @@ find_word(mip, mode)
 			break;
 		}
 		--mip->mi_complen;
+		if (flags & WF_COMPROOT)
+		    --mip->mi_compextra;
 		mip->mi_lp = save_lp;
 
 		if (slang->sl_nobreak)
@@ -1726,7 +1749,7 @@ can_compound(slang, word, flags)
 
     /* Count the number of syllables.  This may be slow, do it last.  If there
      * are too many syllables AND the number of compound words is above
-     * COMPOUNDMAX then compounding is not allowed. */
+     * COMPOUNDWORDMAX then compounding is not allowed. */
     if (slang->sl_compsylmax < MAXWLEN
 		       && count_syllables(slang, word) > slang->sl_compsylmax)
 	return (int)STRLEN(flags) < slang->sl_compmax;
@@ -2464,6 +2487,8 @@ slang_clear(lp)
     vim_free(lp->sl_syllable);
     lp->sl_syllable = NULL;
     ga_clear(&lp->sl_syl_items);
+
+    ga_clear_strings(&lp->sl_comppat);
 
     hash_clear_all(&lp->sl_wordcount, WC_KEY_OFF);
     hash_init(&lp->sl_wordcount);
@@ -3371,7 +3396,7 @@ read_sofo_section(fd, slang)
 
 /*
  * Read the compound section from the .spl file:
- *	<compmax> <compminlen> <compsylmax> <compflags>
+ *	<compmax> <compminlen> <compsylmax> <compoptions> <compflags>
  * Returns SP_*ERROR flags.
  */
     static int
@@ -3387,6 +3412,8 @@ read_compound(fd, slang, len)
     char_u	*pp;
     char_u	*cp;
     char_u	*ap;
+    int		cnt;
+    garray_T	*gap;
 
     if (todo < 2)
 	return SP_FORMERROR;	/* need at least two bytes */
@@ -3408,6 +3435,32 @@ read_compound(fd, slang, len)
     if (c < 1)
 	c = MAXWLEN;
     slang->sl_compsylmax = c;
+
+    c = getc(fd);					/* <compoptions> */
+    if (c != 0)
+	ungetc(c, fd);	    /* be backwards compatible with Vim 7.0b */
+    else
+    {
+	--todo;
+	c = getc(fd);	    /* only use the lower byte for now */
+	--todo;
+	slang->sl_compoptions = c;
+
+	gap = &slang->sl_comppat;
+	c = get2c(fd);					/* <comppatcount> */
+	todo -= 2;
+	ga_init2(gap, sizeof(char_u *), c);
+	if (ga_grow(gap, c) == OK)
+	    while (--c >= 0)
+	    {
+		((char_u **)(gap->ga_data))[gap->ga_len++] =
+						 read_cnt_string(fd, 1, &cnt);
+					    /* <comppatlen> <comppattext> */
+		if (cnt < 0)
+		    return cnt;
+		todo -= cnt + 2;
+	    }
+    }
 
     /* Turn the COMPOUNDRULE items into a regexp pattern:
      * "a[bc]/a*b+" -> "^\(a[bc]\|a*b\+\)$".
@@ -4588,8 +4641,12 @@ typedef struct afffile_S
     unsigned	af_bad;		/* BAD ID for banned word */
     unsigned	af_needaffix;	/* NEEDAFFIX ID */
     unsigned	af_needcomp;	/* NEEDCOMPOUND ID */
+    unsigned	af_comproot;	/* COMPOUNDROOT ID */
+    unsigned	af_compforbid;	/* COMPOUNDFORBIDFLAG ID */
+    unsigned	af_comppermit;	/* COMPOUNDPERMITFLAG ID */
     unsigned	af_nosuggest;	/* NOSUGGEST ID */
-    int		af_pfxpostpone;	/* postpone prefixes without chop string */
+    int		af_pfxpostpone;	/* postpone prefixes without chop string and
+				   without flags */
     hashtab_T	af_pref;	/* hashtable for prefixes, affheader_T */
     hashtab_T	af_suff;	/* hashtable for suffixes, affheader_T */
     hashtab_T	af_comp;	/* hashtable for compound flags, compitem_T */
@@ -4607,9 +4664,9 @@ struct affentry_S
     affentry_T	*ae_next;	/* next affix with same name/number */
     char_u	*ae_chop;	/* text to chop off basic word (can be NULL) */
     char_u	*ae_add;	/* text to add to basic word (can be NULL) */
+    char_u	*ae_flags;	/* flags on the affix (can be NULL) */
     char_u	*ae_cond;	/* condition (NULL for ".") */
     regprog_T	*ae_prog;	/* regexp program for ae_cond or NULL */
-    char_u	ae_rare;	/* rare affix */
     char_u	ae_nocomp;	/* word with affix not compoundable */
 };
 
@@ -4757,6 +4814,9 @@ typedef struct spellinfo_S
     int		si_compmax;	/* max nr of words for compounding */
     int		si_compminlen;	/* minimal length for compounding */
     int		si_compsylmax;	/* max nr of syllables for compounding */
+    int		si_compoptions;	/* COMP_ flags */
+    garray_T	si_comppat;	/* CHECKCOMPOUNDPATTERN items, each stored as
+				   a string */
     char_u	*si_compflags;	/* flags used for compounding */
     char_u	si_nobreak;	/* NOBREAK */
     char_u	*si_syllable;	/* syllable string */
@@ -4960,7 +5020,8 @@ spell_read_aff(spin, fname)
     int		l;
     int		compminlen = 0;		/* COMPOUNDMIN value */
     int		compsylmax = 0;		/* COMPOUNDSYLMAX value */
-    int		compmax = 0;		/* COMPOUNDMAX value */
+    int		compoptions = 0;	/* COMP_ flags */
+    int		compmax = 0;		/* COMPOUNDWORDMAX value */
     char_u	*compflags = NULL;	/* COMPOUNDFLAG and COMPOUNDRULE
 					   concatenated */
     char_u	*midword = NULL;	/* MIDWORD value */
@@ -5096,6 +5157,7 @@ spell_read_aff(spin, fname)
 			|| aff->af_bad != 0
 			|| aff->af_needaffix != 0
 			|| aff->af_needcomp != 0
+			|| aff->af_comproot != 0
 			|| aff->af_nosuggest != 0
 			|| compflags != NULL
 			|| aff->af_suff.ht_used > 0
@@ -5171,6 +5233,24 @@ spell_read_aff(spin, fname)
 		aff->af_needcomp = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
+	    else if (STRCMP(items[0], "COMPOUNDROOT") == 0 && itemcnt == 2
+						     && aff->af_comproot == 0)
+	    {
+		aff->af_comproot = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+	    }
+	    else if (STRCMP(items[0], "COMPOUNDFORBIDFLAG") == 0
+				   && itemcnt == 2 && aff->af_compforbid == 0)
+	    {
+		aff->af_compforbid = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+	    }
+	    else if (STRCMP(items[0], "COMPOUNDPERMITFLAG") == 0
+				   && itemcnt == 2 && aff->af_comppermit == 0)
+	    {
+		aff->af_comppermit = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+	    }
 	    else if (STRCMP(items[0], "COMPOUNDFLAG") == 0 && itemcnt == 2
 							 && compflags == NULL)
 	    {
@@ -5203,12 +5283,12 @@ spell_read_aff(spin, fname)
 		    compflags = p;
 		}
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDMAX") == 0 && itemcnt == 2
+	    else if (STRCMP(items[0], "COMPOUNDWORDMAX") == 0 && itemcnt == 2
 							      && compmax == 0)
 	    {
 		compmax = atoi((char *)items[1]);
 		if (compmax == 0)
-		    smsg((char_u *)_("Wrong COMPOUNDMAX value in %s line %d: %s"),
+		    smsg((char_u *)_("Wrong COMPOUNDWORDMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
 	    else if (STRCMP(items[0], "COMPOUNDMIN") == 0 && itemcnt == 2
@@ -5226,6 +5306,50 @@ spell_read_aff(spin, fname)
 		if (compsylmax == 0)
 		    smsg((char_u *)_("Wrong COMPOUNDSYLMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDDUP") == 0 && itemcnt == 1)
+	    {
+		compoptions |= COMP_CHECKDUP;
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDREP") == 0 && itemcnt == 1)
+	    {
+		compoptions |= COMP_CHECKREP;
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDCASE") == 0 && itemcnt == 1)
+	    {
+		compoptions |= COMP_CHECKCASE;
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDTRIPLE") == 0
+							      && itemcnt == 1)
+	    {
+		compoptions |= COMP_CHECKTRIPLE;
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDPATTERN") == 0
+							      && itemcnt == 2)
+	    {
+		if (atoi((char *)items[1]) == 0)
+		    smsg((char_u *)_("Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"),
+						       fname, lnum, items[1]);
+	    }
+	    else if (STRCMP(items[0], "CHECKCOMPOUNDPATTERN") == 0
+							      && itemcnt == 3)
+	    {
+		garray_T    *gap = &spin->si_comppat;
+		int	    i;
+
+		/* Only add the couple if it isn't already there. */
+		for (i = 0; i < gap->ga_len - 1; i += 2)
+		    if (STRCMP(((char_u **)(gap->ga_data))[i], items[1]) == 0
+			    && STRCMP(((char_u **)(gap->ga_data))[i + 1],
+							       items[2]) == 0)
+			break;
+		if (i >= gap->ga_len && ga_grow(gap, 2) == OK)
+		{
+		    ((char_u **)(gap->ga_data))[gap->ga_len++]
+					       = getroom_save(spin, items[1]);
+		    ((char_u **)(gap->ga_data))[gap->ga_len++]
+					       = getroom_save(spin, items[2]);
+		}
 	    }
 	    else if (STRCMP(items[0], "SYLLABLE") == 0 && itemcnt == 2
 							  && syllable == NULL)
@@ -5293,7 +5417,8 @@ spell_read_aff(spin, fname)
 			    || cur_aff->ah_flag == aff->af_keepcase
 			    || cur_aff->ah_flag == aff->af_needaffix
 			    || cur_aff->ah_flag == aff->af_nosuggest
-			    || cur_aff->ah_flag == aff->af_needcomp)
+			    || cur_aff->ah_flag == aff->af_needcomp
+			    || cur_aff->ah_flag == aff->af_comproot)
 			smsg((char_u *)_("Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"),
 						       fname, lnum, items[1]);
 		    STRCPY(cur_aff->ah_key, items[1]);
@@ -5315,8 +5440,7 @@ spell_read_aff(spin, fname)
 		/* Myspell allows extra text after the item, but that might
 		 * mean mistakes go unnoticed.  Require a comment-starter. */
 		if (itemcnt > lasti && *items[lasti] != '#')
-		    smsg((char_u *)_("Trailing text in %s line %d: %s"),
-						       fname, lnum, items[4]);
+		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
 
 		if (STRCMP(items[2], "Y") != 0 && STRCMP(items[2], "N") != 0)
 		    smsg((char_u *)_("Expected Y or N in %s line %d: %s"),
@@ -5350,31 +5474,16 @@ spell_read_aff(spin, fname)
 		    && itemcnt >= 5)
 	    {
 		affentry_T	*aff_entry;
-		int		rare = FALSE;
 		int		nocomp = FALSE;
 		int		upper = FALSE;
 		int		lasti = 5;
 
-		/* Check for "rare" and "nocomp" after the other info. */
-		while (itemcnt > lasti)
-		{
-		    if (!rare && STRICMP(items[lasti], "rare") == 0)
-		    {
-			rare = TRUE;
-			++lasti;
-		    }
-		    else if (!nocomp && STRICMP(items[lasti], "nocomp") == 0)
-		    {
-			nocomp = TRUE;
-			++lasti;
-		    }
-		    else
-			break;
-		}
-
 		/* Myspell allows extra text after the item, but that might
-		 * mean mistakes go unnoticed.  Require a comment-starter. */
-		if (itemcnt > lasti && *items[lasti] != '#')
+		 * mean mistakes go unnoticed.  Require a comment-starter.
+		 * Hunspell uses a "-" item. */
+		if (itemcnt > lasti && *items[lasti] != '#'
+			&& (STRCMP(items[lasti], "-") != 0
+						     || itemcnt != lasti + 1))
 		    smsg((char_u *)_(e_afftrailing), fname, lnum, items[lasti]);
 
 		/* New item for an affix letter. */
@@ -5383,13 +5492,19 @@ spell_read_aff(spin, fname)
 						    sizeof(affentry_T), TRUE);
 		if (aff_entry == NULL)
 		    break;
-		aff_entry->ae_rare = rare;
 		aff_entry->ae_nocomp = nocomp;
 
 		if (STRCMP(items[2], "0") != 0)
 		    aff_entry->ae_chop = getroom_save(spin, items[2]);
 		if (STRCMP(items[3], "0") != 0)
+		{
 		    aff_entry->ae_add = getroom_save(spin, items[3]);
+
+		    /* Recognize flags on the affix: abcd/1234 */
+		    aff_entry->ae_flags = vim_strchr(aff_entry->ae_add, '/');
+		    if (aff_entry->ae_flags != NULL)
+			*aff_entry->ae_flags++ = NUL;
+		}
 
 		/* Don't use an affix entry with non-ASCII characters when
 		 * "spin->si_ascii" is TRUE. */
@@ -5416,8 +5531,10 @@ spell_read_aff(spin, fname)
 		    }
 
 		    /* For postponed prefixes we need an entry in si_prefcond
-		     * for the condition.  Use an existing one if possible. */
-		    if (*items[0] == 'P' && aff->af_pfxpostpone)
+		     * for the condition.  Use an existing one if possible.
+		     * Can't be done for an affix with flags. */
+		    if (*items[0] == 'P' && aff->af_pfxpostpone
+					       && aff_entry->ae_flags == NULL)
 		    {
 			/* When the chop string is one lower-case letter and
 			 * the add string ends in the upper-case letter we set
@@ -5480,7 +5597,8 @@ spell_read_aff(spin, fname)
 			    }
 			}
 
-			if (aff_entry->ae_chop == NULL)
+			if (aff_entry->ae_chop == NULL
+					       && aff_entry->ae_flags == NULL)
 			{
 			    int		idx;
 			    char_u	**pp;
@@ -5507,16 +5625,19 @@ spell_read_aff(spin, fname)
 							  aff_entry->ae_cond);
 			    }
 
+			    if (aff_entry->ae_flags != NULL)
+				smsg((char_u *)_("Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"),
+						       fname, lnum, items[4]);
+
 			    /* Add the prefix to the prefix tree. */
 			    if (aff_entry->ae_add == NULL)
 				p = (char_u *)"";
 			    else
 				p = aff_entry->ae_add;
+
 			    /* PFX_FLAGS is a negative number, so that
 			     * tree_add_word() knows this is the prefix tree. */
 			    n = PFX_FLAGS;
-			    if (rare)
-				n |= WFP_RARE;
 			    if (!cur_aff->ah_combine)
 				n |= WFP_NC;
 			    if (upper)
@@ -5709,7 +5830,7 @@ spell_read_aff(spin, fname)
     /* Use compound specifications of the .aff file for the spell info. */
     if (compmax != 0)
     {
-	aff_check_number(spin->si_compmax, compmax, "COMPOUNDMAX");
+	aff_check_number(spin->si_compmax, compmax, "COMPOUNDWORDMAX");
 	spin->si_compmax = compmax;
     }
 
@@ -5725,6 +5846,12 @@ spell_read_aff(spin, fname)
 	    smsg((char_u *)_("COMPOUNDSYLMAX used without SYLLABLE"));
 	aff_check_number(spin->si_compsylmax, compsylmax, "COMPOUNDSYLMAX");
 	spin->si_compsylmax = compsylmax;
+    }
+
+    if (compoptions != 0)
+    {
+	aff_check_number(spin->si_compoptions, compoptions, "COMPOUND options");
+	spin->si_compoptions |= compoptions;
     }
 
     if (compflags != NULL)
@@ -6327,6 +6454,9 @@ spell_read_dic(spin, fname, affile)
 	    if (affile->af_needcomp != 0 && flag_in_afflist(
 			   affile->af_flagtype, afflist, affile->af_needcomp))
 		flags |= WF_NEEDCOMP;
+	    if (affile->af_comproot != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_comproot))
+		flags |= WF_COMPROOT;
 	    if (affile->af_nosuggest != 0 && flag_in_afflist(
 			   affile->af_flagtype, afflist, affile->af_nosuggest))
 		flags |= WF_NOSUGGEST;
@@ -6512,11 +6642,12 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 		     * Another requirement from Myspell is that the chop
 		     * string is shorter than the word itself.
 		     * For prefixes, when "PFXPOSTPONE" was used, only do
-		     * prefixes with a chop string. */
+		     * prefixes with a chop string and/or flags. */
 		    regmatch.regprog = ae->ae_prog;
 		    regmatch.rm_ic = FALSE;
 		    if ((xht != NULL || !affile->af_pfxpostpone
-				|| ae->ae_chop != NULL)
+				|| ae->ae_chop != NULL
+				|| ae->ae_flags != NULL)
 			    && (ae->ae_chop == NULL
 				|| STRLEN(ae->ae_chop) < wordlen)
 			    && (ae->ae_prog == NULL
@@ -6565,15 +6696,24 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 			}
 
 			/* Obey the "rare" flag of the affix. */
-			if (ae->ae_rare)
+			if (affile->af_rare != 0
+				&& ae->ae_flags != NULL
+				&& flag_in_afflist(
+				    affile->af_flagtype, ae->ae_flags,
+							     affile->af_rare))
 			    use_flags = flags | WF_RARE;
 			else
 			    use_flags = flags;
 
-			/* Obey the "nocomp" flag of the affix: don't use the
-			 * compound flags. */
+			/* Obey a "COMPOUNDFORBID" flag of the affix: don't
+			 * use the compound flags. */
 			use_pfxlist = pfxlist;
-			if (ae->ae_nocomp && pfxlist != NULL)
+			if (pfxlist != NULL
+				&& affile->af_compforbid != 0
+				&& ae->ae_flags != NULL
+				&& flag_in_afflist(
+				    affile->af_flagtype, ae->ae_flags,
+						       affile->af_compforbid))
 			{
 			    vim_strncpy(pfx_pfxlist, pfxlist, pfxlen);
 			    use_pfxlist = pfx_pfxlist;
@@ -7803,12 +7943,26 @@ write_vim_spell(spin, fname)
 	putc(0, fd);					/* <sectionflags> */
 
 	l = STRLEN(spin->si_compflags);
-	put_bytes(fd, (long_u)(l + 3), 4);		/* <sectionlen> */
+	for (i = 0; i < spin->si_comppat.ga_len; ++i)
+	    l += STRLEN(((char_u **)(spin->si_comppat.ga_data))[i]) + 1;
+	put_bytes(fd, (long_u)(l + 7), 4);		/* <sectionlen> */
+
 	putc(spin->si_compmax, fd);			/* <compmax> */
 	putc(spin->si_compminlen, fd);			/* <compminlen> */
 	putc(spin->si_compsylmax, fd);			/* <compsylmax> */
+	putc(0, fd);		/* for Vim 7.0b compatibility */
+	putc(spin->si_compoptions, fd);			/* <compoptions> */
+	put_bytes(fd, (long_u)spin->si_comppat.ga_len, 2);
+							/* <comppatcount> */
+	for (i = 0; i < spin->si_comppat.ga_len; ++i)
+	{
+	    p = ((char_u **)(spin->si_comppat.ga_data))[i];
+	    putc(STRLEN(p), fd);			/* <comppatlen> */
+	    fwrite(p, (size_t)STRLEN(p), (size_t)1, fd);/* <comppattext> */
+	}
 							/* <compflags> */
-	fwrite(spin->si_compflags, (size_t)l, (size_t)1, fd);
+	fwrite(spin->si_compflags, (size_t)STRLEN(spin->si_compflags),
+							       (size_t)1, fd);
     }
 
     /* SN_NOBREAK: NOBREAK flag */
@@ -8611,6 +8765,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
     ga_init2(&spin.si_repsal, (int)sizeof(fromto_T), 20);
     ga_init2(&spin.si_sal, (int)sizeof(fromto_T), 20);
     ga_init2(&spin.si_map, (int)sizeof(char_u), 100);
+    ga_init2(&spin.si_comppat, (int)sizeof(char_u *), 20);
     ga_init2(&spin.si_prefcond, (int)sizeof(char_u *), 50);
     hash_init(&spin.si_commonwords);
     spin.si_newcompID = 127;	/* start compound ID at first maximum */
@@ -8804,6 +8959,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 	ga_clear(&spin.si_repsal);
 	ga_clear(&spin.si_sal);
 	ga_clear(&spin.si_map);
+	ga_clear(&spin.si_comppat);
 	ga_clear(&spin.si_prefcond);
 	hash_clear_all(&spin.si_commonwords, 0);
 

@@ -876,7 +876,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-mac-arch=ARCH    intel, ppc or both
+  --with-mac-arch=ARCH    current, intel, ppc or both
   --with-vim-name=NAME    what to call the Vim executable
   --with-ex-name=NAME     what to call the Ex executable
   --with-view-name=NAME   what to call the View executable
@@ -2874,7 +2874,7 @@ if test "${with_mac_arch+set}" = set; then
   MACARCH="$withval"; echo "$as_me:$LINENO: result: $MACARCH" >&5
 echo "${ECHO_T}$MACARCH" >&6
 else
-  MACARCH="both"; echo "$as_me:$LINENO: result: defaulting to $MACARCH" >&5
+  MACARCH="current"; echo "$as_me:$LINENO: result: defaulting to $MACARCH" >&5
 echo "${ECHO_T}defaulting to $MACARCH" >&6
 fi;
 

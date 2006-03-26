@@ -103,9 +103,9 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   fi
 
   AC_MSG_CHECKING(--with-mac-arch argument)
-  AC_ARG_WITH(mac-arch, [  --with-mac-arch=ARCH    intel, ppc or both],
+  AC_ARG_WITH(mac-arch, [  --with-mac-arch=ARCH    current, intel, ppc or both],
 	MACARCH="$withval"; AC_MSG_RESULT($MACARCH),
-	MACARCH="both"; AC_MSG_RESULT(defaulting to $MACARCH))
+	MACARCH="current"; AC_MSG_RESULT(defaulting to $MACARCH))
 
   if test "x$MACARCH" = "xboth"; then
     AC_MSG_CHECKING(for 10.4 universal SDK)

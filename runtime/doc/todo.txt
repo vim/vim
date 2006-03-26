@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 25
+*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,18 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+In completion using  Enter to accept the current match causes trouble.
+Leave it out?  Typing a space already works
+
+New Hungarian dictionary. (Laci Nemeth)
+    test COMPOUNDFORBIDFLAG
+    implement use of COMPOUNDPERMITFLAG
+    implement use of CHECKCOMPOUND* flags, <compoptions>
+    implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
+
+Mac: When started from finder path isn't set and curdir is /.
+Benji Fisher suggests using system() (2006 Mar 26)
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -1121,9 +1133,8 @@ Spell checking:
     support both).
 -   Support breakpoint character ? 0xb7 and ignore it?  Makes it possible to
     use same wordlist for hyphenation.
--   Compound word is accepted if nr of words is <= COMPOUNDMAX OR nr of
+-   Compound word is accepted if nr of words is <= COMPOUNDWORDMAX OR nr of
     syllables <= COMPOUNDSYLMAX.  Specify using AND in the affix file?
--   COMPOUNDMAX -> COMPOUNDWORDMAX?
 -   NEEDCOMPOUND also used for affix?  Or is this called ONLYINCOMPOUND now?
     Or is ONLYINCOMPOUND only for inside a compound, not at start or end?
 -   Do we need a flag for the rule that when compounding is done the following
@@ -1133,7 +1144,7 @@ Spell checking:
     - Lots of code depends on LANG, that isn't right.  Enable each mechanism
       in the affix file separately.
     - Example with compounding dash is bad, gets in the way of setting
-      COMPOUNDMIN and COMPOUNDMAX to a reasonable value.
+      COMPOUNDMIN and COMPOUNDWORDMAX to a reasonable value.
     - PSEUDOROOT == NEEDAFFIX
     - COMPOUNDROOT -> COMPOUNDED?  For a word that already is a compound word
 	    Or use COMPOUNDED2, COMPOUNDED3, etc.
@@ -1148,7 +1159,7 @@ Spell checking:
     We might not need this at all, you can use the NEEDAFFIX flag and the
     affix which is required.
 -   When a suffix has more than one syllable, it may count as a word for
-    COMPOUNDMAX.
+    COMPOUNDWORDMAX.
 -   Add flags to count extra syllables in a word.  SYLLABLEADD1 SYLLABLEADD2,
     etc.?  Or make it possible to specify the syllable count of a word
     directly, e.g., after another slash: /abc/3

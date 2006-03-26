@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0b.  Last change: 2006 Mar 10
+*spell.txt*	For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -975,7 +975,7 @@ The first line is a header and has four fields:
 For PFX the fields are exactly the same.
 
 The basic format for the following lines is:
-	SFX {flag} {strip} {add} {condition}
+	SFX {flag} {strip} {add} {condition} {extra}
 
 {flag}		Must be the same as the {flag} used in the first line.
 
@@ -987,6 +987,8 @@ The basic format for the following lines is:
 		When {strip} is 0 (zero) then nothing is stripped.
 
 {add}		Characters added to the basic word, after removing {strip}.
+		Optionally there is a '/' followed by flags.  The flags apply
+		to the word plus affix.  See |spell-affix-flags|
 
 {condition}	A simplistic pattern.  Only when this matches with a basic
 		word will the suffix be used for that word.  This is normally
@@ -1001,6 +1003,13 @@ The basic format for the following lines is:
 		- A set of characters that starts with a ^, meaning the
 		  complement of the specified characters. [^abc] matches any
 		  character but a, b and c.
+
+{extra}		Optional extra text:
+		    rare		word + affix is rare
+		    nocomp		no compounding for word + affix
+		    # comment		Comment is ignored
+		    -			Hunspell uses this, ignored
+		"rare" and "nocomp" are deprecated.
 
 For PFX the fields are the same, but the {strip}, {add} and {condition} apply
 to the start of the word.
@@ -1228,7 +1237,7 @@ A specific example: Allow a compound to be made of two words and a dash:
 	In the .aff file:
 	    COMPOUNDRULE sde ~
 	    NEEDAFFIX x ~
-	    COMPOUNDMAX 3 ~
+	    COMPOUNDWORDMAX 3 ~
 	    COMPOUNDMIN 1 ~
 	In the .dic file:
 	    start/s ~
@@ -1252,10 +1261,10 @@ When omitted there is no minimal length.  Obviously you could just leave out
 the compound flag from short words instead, this feature is present for
 compatibility with Myspell.
 
-							*spell-COMPOUNDMAX*
+							*spell-COMPOUNDWORDMAX*
 The maximum number of words that can be concatenated into a compound word is
-specified with COMPOUNDMAX.  Example:
-	COMPOUNDMAX 3 ~
+specified with COMPOUNDWORDMAX.  Example:
+	COMPOUNDWORDMAX 3 ~
 
 When omitted there is no maximum.  It applies to all compound words.
 
@@ -1270,19 +1279,25 @@ with COMPOUNDSYLMAX.  Example:
 This has no effect if there is no SYLLABLE item.  Without COMPOUNDSYLMAX there
 is no limit on the number of syllables.
 
-If both COMPOUNDMAX and COMPOUNDSYLMAX are defined, a compound word is
+If both COMPOUNDWORDMAX and COMPOUNDSYLMAX are defined, a compound word is
 accepted if it fits one of the criteria, thus is either made from up to
-COMPOUNDMAX words or contains up to COMPOUNDSYLMAX syllables.
+COMPOUNDWORDMAX words or contains up to COMPOUNDSYLMAX syllables.
 
 						    *spell-COMPOUNDFORBIDFLAG*
 The COMPOUNDFORBIDFLAG specifies a flag that can be used on an affix.  It
 means that the word plus affix cannot be used in a compound word.
-NOT IMPLEMENTED YET.
 
 						    *spell-COMPOUNDPERMITFLAG*
 The COMPOUNDPERMITFLAG specifies a flag that can be used on an affix.  It
 means that the word plus affix can also be used in a compound word in a way
 where the affix ends up halfway the word.
+NOT IMPLEMENTED YET.
+
+						    *spell-COMPOUNDROOT*
+The COMPOUNDROOT flag is used for words in the dictionary that are already a
+compound.  This means it counts for two words when checking the compounding
+rules.  Can also be used for an affix to count the affix as a compounding
+word.
 NOT IMPLEMENTED YET.
 
 							*spell-SYLLABLE*
@@ -1487,6 +1502,9 @@ COMPOUND	(Hunspell)				*spell-COMPOUND*
                 Remove the first line with the count and rename the other
                 items to COMPOUNDRULE |spell-COMPOUNDRULE|
 
+COMPOUNDFIRST	(Hunspell)				*spell-COMPOUNDFIRST*
+		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
+
 COMPOUNDBEGIN	(Hunspell)				*spell-COMPOUNDBEGIN*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
@@ -1496,16 +1514,9 @@ COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
 COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
-COMPOUNDROOT	(Hunspell)				*spell-COMPOUNDROOT*
-		Flag for words in the dictionary that are already a compound.
-		Vim doesn't use it.
-
 COMPOUNDSYLLABLE  (Hunspell)			*spell-COMPOUNDSYLLABLE*
 		Use SYLLABLE and COMPOUNDSYLMAX instead. |spell-SYLLABLE|
 		|spell-COMPOUNDSYLMAX|
-
-COMPOUNDWORDMAX	(Hunspell)				*spell-COMPOUNDWORDMAX*
-		Use COMPOUNDMAX instead. |spell-COMPOUNDMAX|
 
 FORBIDDENWORD	(Hunspell)				*spell-FORBIDDENWORD*
 		Use BAD instead. |spell-BAD|
@@ -1517,7 +1528,7 @@ LANG		(Hunspell)				*spell-LANG*
 		must be specified separately.
 
 LEMMA_PRESENT	(Hunspell)				*spell-LEMMA_PRESENT*
-		Only needed for mprphological analysis.
+		Only needed for morphological analysis.
 
 MAXNGRAMSUGS	(Hunspell)				*spell-MAXNGRAMSUGS*
 		Not supported.

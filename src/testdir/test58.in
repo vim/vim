@@ -420,7 +420,8 @@ COMPOUNDRULE m+
 COMPOUNDRULE sm*e
 COMPOUNDRULE sm+
 COMPOUNDMIN 3
-COMPOUNDMAX 3
+COMPOUNDWORDMAX 3
+COMPOUNDFORBIDFLAG t
 
 COMPOUNDSYLMAX 5
 SYLLABLE aáeéiíoóöõuúüûy/aa/au/ea/ee/ei/ie/oa/oe/oo/ou/uu/ui
@@ -447,7 +448,7 @@ SFX q   0    -ok .
 
 SFX a Y 2
 SFX a 0 s .
-SFX a 0 ize . nocomp
+SFX a 0 ize/t .
 
 PFX p N 1
 PFX p 0 pre .

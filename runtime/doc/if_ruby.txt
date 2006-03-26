@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.0b.  Last change: 2006 Mar 06
+*if_ruby.txt*   For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -78,23 +78,26 @@ Executing Ruby commands is not possible in the |sandbox|.
 Ruby code gets all of its access to vim via the "VIM" module.
 
 Overview >
-	print "Hello"			# displays a message
-	VIM.command(cmd)		# execute an ex command
-	num = VIM::Window.count		# gets the number of windows
-	w = VIM::Window[n]		# gets window "n"
-	cw = VIM::Window.current	# gets the current window
-	num = VIM::Buffer.count		# gets the number of buffers
-	b = VIM::Buffer[n]		# gets buffer "n"
-	cb = VIM::Buffer.current	# gets the current buffer
-	w.height = lines		# sets the window height
-	w.cursor = [row, col]		# sets the window cursor position
-	pos = w.cursor			# gets an array [row, col]
-	name = b.name			# gets the buffer file name
-	line = b[n]			# gets a line from the buffer
-	num = b.count			# gets the number of lines
-	b[n] = str			# sets a line in the buffer
-	b.delete(n)			# deletes a line
-	b.append(n, str)		# appends a line after n
+	print "Hello"			      # displays a message
+	VIM.command(cmd)		      # execute an ex command
+	num = VIM::Window.count		      # gets the number of windows
+	w = VIM::Window[n]		      # gets window "n"
+	cw = VIM::Window.current	      # gets the current window
+	num = VIM::Buffer.count		      # gets the number of buffers
+	b = VIM::Buffer[n]		      # gets buffer "n"
+	cb = VIM::Buffer.current	      # gets the current buffer
+	w.height = lines		      # sets the window height
+	w.cursor = [row, col]		      # sets the window cursor position
+	pos = w.cursor			      # gets an array [row, col]
+	name = b.name			      # gets the buffer file name
+	line = b[n]			      # gets a line from the buffer
+	num = b.count			      # gets the number of lines
+	b[n] = str			      # sets a line in the buffer
+	b.delete(n)			      # deletes a line
+	b.append(n, str)		      # appends a line after n
+	line = VIM::Buffer.current.line       # gets the current line
+	num = VIM::Buffer.current.line_number # gets the current line number
+	VIM::Buffer.current.line = "test"     # sets the current line number
 <
 
 Module Functions:
@@ -144,6 +147,11 @@ self[{n}] = {str}
 delete({n})	Deletes a line from the buffer. {n} is the line number.
 append({n}, {str})
 		Appends a line after the line {n}.
+line            Returns the current line of the buffer if the buffer is
+		active.
+line = {str}    Sets the current line of the buffer if the buffer is active.
+line_number     Returns the number of the current line if the buffer is
+		active.
 
 ==============================================================================
 4. VIM::Window objects					*ruby-window*

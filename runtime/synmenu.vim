@@ -242,15 +242,16 @@ an 50.60.330 &Syntax.L-Ma.Lynx\ config :cal SetSyn("lynx")<CR>
 an 50.60.350 &Syntax.L-Ma.M4 :cal SetSyn("m4")<CR>
 an 50.60.360 &Syntax.L-Ma.MaGic\ Point :cal SetSyn("mgp")<CR>
 an 50.60.370 &Syntax.L-Ma.Mail :cal SetSyn("mail")<CR>
-an 50.60.380 &Syntax.L-Ma.Mailcap :cal SetSyn("mailcap")<CR>
-an 50.60.390 &Syntax.L-Ma.Makefile :cal SetSyn("make")<CR>
-an 50.60.400 &Syntax.L-Ma.MakeIndex :cal SetSyn("ist")<CR>
-an 50.60.410 &Syntax.L-Ma.Man\ page :cal SetSyn("man")<CR>
-an 50.60.420 &Syntax.L-Ma.Man\.conf :cal SetSyn("manconf")<CR>
-an 50.60.430 &Syntax.L-Ma.Maple\ V :cal SetSyn("maple")<CR>
-an 50.60.440 &Syntax.L-Ma.Mason :cal SetSyn("mason")<CR>
-an 50.60.450 &Syntax.L-Ma.Mathematica :cal SetSyn("mma")<CR>
-an 50.60.460 &Syntax.L-Ma.Matlab :cal SetSyn("matlab")<CR>
+an 50.60.380 &Syntax.L-Ma.Mail\ aliases :cal SetSyn("mailaliases")<CR>
+an 50.60.390 &Syntax.L-Ma.Mailcap :cal SetSyn("mailcap")<CR>
+an 50.60.400 &Syntax.L-Ma.Makefile :cal SetSyn("make")<CR>
+an 50.60.410 &Syntax.L-Ma.MakeIndex :cal SetSyn("ist")<CR>
+an 50.60.420 &Syntax.L-Ma.Man\ page :cal SetSyn("man")<CR>
+an 50.60.430 &Syntax.L-Ma.Man\.conf :cal SetSyn("manconf")<CR>
+an 50.60.440 &Syntax.L-Ma.Maple\ V :cal SetSyn("maple")<CR>
+an 50.60.450 &Syntax.L-Ma.Mason :cal SetSyn("mason")<CR>
+an 50.60.460 &Syntax.L-Ma.Mathematica :cal SetSyn("mma")<CR>
+an 50.60.470 &Syntax.L-Ma.Matlab :cal SetSyn("matlab")<CR>
 an 50.70.100 &Syntax.Me-NO.MEL\ (for\ Maya) :cal SetSyn("mel")<CR>
 an 50.70.110 &Syntax.Me-NO.Metafont :cal SetSyn("mf")<CR>
 an 50.70.120 &Syntax.Me-NO.MetaPost :cal SetSyn("mp")<CR>

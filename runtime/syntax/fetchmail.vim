@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         fetchmail(1) RC File
 " Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-27
+" Latest Revision:  2006-01-25
 
 if exists("b:current_syntax")
   finish
@@ -33,6 +33,7 @@ syn keyword fetchmailServerOpts contained via proto[col] local[domains] port
                                 \ interface monitor plugin plugout dns
                                 \ checkalias uidl interval netsec principal
                                 \ esmtpname esmtppassword
+                                \ sslcertck sslcertpath sslfingerprint
 syn match   fetchmailServerOpts contained '\<no\_s\+\(envelope\|dns\|checkalias\|uidl\)'
 
 syn keyword fetchmailUserOpts   contained user[name] is to pass[word] ssl

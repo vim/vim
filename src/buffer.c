@@ -3707,7 +3707,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 	    itemisflag = TRUE;
 	    if (wp->w_buffer->b_help)
 		str = (char_u *)((opt == STL_HELPFLAG_ALT) ? ",HLP"
-							       : _("[help]"));
+							       : _("[Help]"));
 	    break;
 
 #ifdef FEAT_AUTOCMD
@@ -4975,7 +4975,7 @@ buf_spname(buf)
 	if (win != NULL && win->w_llist_ref != NULL)
 	    return _("[Location List]");
 	else
-	    return _("[Error List]");
+	    return _("[Quickfix List]");
     }
 #endif
 #ifdef FEAT_QUICKFIX

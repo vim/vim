@@ -1,94 +1,135 @@
-*** hu_HU.orig.aff	Tue Aug 16 18:21:10 2005
---- hu_HU.aff	Fri Aug 19 21:28:45 2005
+*** hu_HU.orig.aff	Sun Mar 26 15:05:13 2006
+--- hu_HU.aff	Sun Mar 26 21:17:08 2006
 ***************
-*** 57,62 ****
-  
-! NAME Magyar Ispell helyesírási szótár
+*** 57,59 ****
+  NAME Magyar Ispell helyesírási szótár
 ! LANG hu_HU
-! HOME http://magyarispell.sourceforge.net
-! VERSION Magyar 0.99.4.2
-  SET ISO8859-2
---- 57,62 ----
-  
-! #NAME Magyar Ispell helyesírási szótár
+  HOME http://magyarispell.sourceforge.net
+--- 57,59 ----
+  NAME Magyar Ispell helyesírási szótár
 ! #LANG hu_HU
-! #HOME http://magyarispell.sourceforge.net
-! #VERSION Magyar 0.99.4.2
-  SET ISO8859-2
+  HOME http://magyarispell.sourceforge.net
 ***************
-*** 64,77 ****
-  COMPOUNDMIN 2
-! COMPOUNDFLAG Y
-! COMPOUNDWORD 2 y
+*** 62,63 ****
+--- 62,68 ----
+  TRY íóúÍÓÚtaeslzánorhgkiédmyõpvöbucfjüûxwqTAESLZÁNORHGKIÉDMYÕPVÖBUCFJÜÛXWQ-.
++ 
++ # There are soooo many affixes.  Postpone the prefixes to keep the time needed
++ # for generating the .spl within reasonable limits.
++ PFXPOSTPONE
++ 
+  COMPOUNDMIN 1
+***************
+*** 66,69 ****
+  COMPOUNDPERMITFLAG @
 ! COMPOUNDSYLLABLE 6 aáeéiíoóöõuúüû
 ! SYLLABLENUM klmc
-! COMPOUNDFIRST v
-! COMPOUNDLAST x
-! FORBIDDENWORD w
-! ONLYROOT u
-! ACCENT áéíóöõúüû aeiooouuu
-! CHECKNUM
-! WORDCHARS -.§%°0123456789
-! HU_KOTOHANGZO Z
   
---- 64,116 ----
-  COMPOUNDMIN 2
-! #COMPOUNDWORD 2 y
-! COMPOUNDMAX 2
-! # I don't understand what the "y" is for; if it's to disable compounding simply
-! # remove the compound flag from the word.
-! 
+--- 71,81 ----
+  COMPOUNDPERMITFLAG @
+! #
+! # Strange that every vowel is counted as a syllable, that's how the hunspell
+! # code works.
 ! #COMPOUNDSYLLABLE 6 aáeéiíoóöõuúüû
 ! COMPOUNDSYLMAX 6
 ! SYLLABLE a/á/e/é/i/í/o/ó/ö/õ/u/ú/ü/û
-! # Strange that every vowel is counted as a syllable, that's how the hunspell
-! # code works.
 ! 
+! # the effect of SYLLABLENUM is not documented
 ! #SYLLABLENUM klmc
-! # Don't understand what this is for
-! 
-! #COMPOUNDFLAG Y
+  
+***************
+*** 74,88 ****
+  
+! # obsoloted
+! COMPOUNDFIRST v
+! COMPOUNDLAST x
+! ONLYROOT u
+  #COMPOUNDWORD 2 y
+! HU_KOTOHANGZO ?
+  
+  # new (> Hunspell-1.0-RC2)
+! COMPOUNDBEGIN v
+! COMPOUNDEND x
+! PSEUDOROOT u
+  # 2. parameter only for back compatibility:
+! COMPOUNDWORDMAX 2 y
+  COMPOUNDROOT y
+--- 86,110 ----
+  
+! # obsolete
 ! #COMPOUNDFIRST v
 ! #COMPOUNDLAST x
-! COMPOUNDFLAGS Y+
-! COMPOUNDFLAGS vY*x
-! COMPOUNDFLAGS Y+x
-! COMPOUNDFLAGS vY+
-! 
-! #FORBIDDENWORD w
-! #  I don't understand what FORBIDDENWORD is needed for, using NEEDAFFIX
-! #  (ONLYROOT) should be sufficient.
-! 
 ! #ONLYROOT u
+! 
+  #COMPOUNDWORD 2 y
+! 
+! # Undocumented and ? is already used for KEEPCASE
+! #HU_KOTOHANGZO ?
+  
+  # new (> Hunspell-1.0-RC2)
+! #COMPOUNDBEGIN v
+! #COMPOUNDEND x
+! COMPOUNDRULE vx
+! 
+! # PSEUDOROOT was renamed to NEEDAFFIX
+! #PSEUDOROOT u
 ! NEEDAFFIX u
 ! 
-! #ACCENT áéíóöõúüû aeiooouuu
+  # 2. parameter only for back compatibility:
+! # What is the extra "y" for?
+! #COMPOUNDWORDMAX 2 y
+! COMPOUNDWORDMAX 2
+  COMPOUNDROOT y
+***************
+*** 93,94 ****
+--- 115,117 ----
+  CHECKCOMPOUNDCASE
++ 
+  CHECKCOMPOUNDPATTERN 7
+***************
+*** 102,111 ****
+  
+! FORBIDDENWORD w
+! WORDCHARS -.Â§%Â°0123456789â€“
+! 
+  
+! NOT_GENERATE &
+! GENERATE (
+  
+! LEMMA_PRESENT )
+  
+--- 125,151 ----
+  
+! #FORBIDDENWORD w
+! BAD w
+  
+! #WORDCHARS -.Â§%Â°0123456789â€“
+  
+! # List the word characters for ISO-8859-2.
+! FOL ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
+! LOW ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
+! UPP ¡¢£¥¦¨©ª«¬®¯±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßÿ-§%°
+! MIDWORD .
+! 
+! # These are not documented and not in the source code either
+! #NOT_GENERATE &
+! #GENERATE (
+! 
+! # Only for morphological analysis
+! #LEMMA_PRESENT )
+! 
+! # This works better than REP items
 ! MAP 5
 ! MAP aáä
 ! MAP eé
 ! MAP ií
 ! MAP oóöõ
 ! MAP uúüû
-! 
-! #CHECKNUM
-! # Vim always handles numbers in the same way.
-! 
-! #WORDCHARS -.§%°0123456789
-! FOL ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
-! LOW ±¢³µ¶¨¹º»¼¾¿±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþßÿ-§%°
-! UPP ¡¢£¥¦¨©ª«¬®¯±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßÿ-§%°
-! MIDWORD .
-! 
-! #HU_KOTOHANGZO Z
-! 
-! # There are soooo many affixes.  Postpone the prefixes to keep the time needed
-! # for generating the .spl within reasonable limits.
-! PFXPOSTPONE
   
 ***************
-*** 81,96 ****
+*** 115,130 ****
   
-! REP 89
+! REP 92
 ! REP í i
 ! REP i í
 ! REP ó o
@@ -103,88 +144,168 @@
   REP ly j
 - REP a ä # Handel->Händel
   REP S © # Skoda->©koda
---- 120,124 ----
+--- 155,159 ----
   
-! REP 78
+! REP 81
   REP j ly
   REP ly j
   REP S © # Skoda->©koda
 ***************
-*** 173,241 ****
+*** 214,251 ****
   
-- # character conversion table
-- # (HTML latin-1 entities -> latin-2)
-- # not implemented yet
-- 
-- CHR HTML 35
-- CHR HTML &curren; ¤
-- CHR HTML &deg; °
-- CHR HTML &acute; ´
-- CHR HTML &cedil; ¸
-- CHR HTML &Aacute; Á
-- CHR HTML &Acirc; Â
-- CHR HTML &Auml; Ä
-- CHR HTML &Ccedil; Ç
-- CHR HTML &Eacute; É
-- CHR HTML &Euml; Ë
-- CHR HTML &Iacute; Í
-- CHR HTML &Icirc; Î
-- CHR HTML &Oacute; Ó
-- CHR HTML &Ocirc; Ô
-- CHR HTML &Ouml; Ö
-- CHR HTML &times; ×
-- CHR HTML &Uacute; Ú
-- CHR HTML &Uuml; Ü
-- CHR HTML &Yacute; Ý
-- CHR HTML &szlig; ß
-- CHR HTML &aacute; á
-- CHR HTML &acirc; â
-- CHR HTML &auml; ä
-- CHR HTML &ccedil; ç
-- CHR HTML &eacute; é
-- CHR HTML &euml; ë
-- CHR HTML &iacute; í
-- CHR HTML &icirc; î
-- CHR HTML &oacute; ó
-- CHR HTML &ocirc; ô
-- CHR HTML &ouml; ö
-- CHR HTML &divide; ÷
-- CHR HTML &uacute; ú
-- CHR HTML &uuml; ü
-- CHR HTML &yacute; ý
-- 
-- # character conversion table
-- # (Prószéky-code -> latin-2)
-- # not implemented yet
-- 
-- CHR 123 20
-- CHR 123 a1 á
-- CHR 123 e1 é
-- CHR 123 e2 ë
-- CHR 123 i1 í
-- CHR 123 o1 ó
-- CHR 123 o2 ö
-- CHR 123 o3 õ
-- CHR 123 u1 ú
-- CHR 123 u2 ü
-- CHR 123 u3 û
-- CHR 123 A1 Á
-- CHR 123 E1 É
-- CHR 123 E2 Ë
-- CHR 123 I1 Í
-- CHR 123 O1 Ó
-- CHR 123 O2 Ö
-- CHR 123 O3 Õ
-- CHR 123 U1 Ú
-- CHR 123 U2 Ü
-- CHR 123 U3 Û
-- 
-  SFX z Y 6
---- 201,202 ----
+! CHR HTML 35
+! CHR HTML &curren; ¤
+! CHR HTML &deg; °
+! CHR HTML &acute; ´
+! CHR HTML &cedil; ¸
+! CHR HTML &Aacute; Á
+! CHR HTML &Acirc; Â
+! CHR HTML &Auml; Ä
+! CHR HTML &Ccedil; Ç
+! CHR HTML &Eacute; É
+! CHR HTML &Euml; Ë
+! CHR HTML &Iacute; Í
+! CHR HTML &Icirc; Î
+! CHR HTML &Oacute; Ó
+! CHR HTML &Ocirc; Ô
+! CHR HTML &Ouml; Ö
+! CHR HTML &times; ×
+! CHR HTML &Uacute; Ú
+! CHR HTML &Uuml; Ü
+! CHR HTML &Yacute; Ý
+! CHR HTML &szlig; ß
+! CHR HTML &aacute; á
+! CHR HTML &acirc; â
+! CHR HTML &auml; ä
+! CHR HTML &ccedil; ç
+! CHR HTML &eacute; é
+! CHR HTML &euml; ë
+! CHR HTML &iacute; í
+! CHR HTML &icirc; î
+! CHR HTML &oacute; ó
+! CHR HTML &ocirc; ô
+! CHR HTML &ouml; ö
+! CHR HTML &divide; ÷
+! CHR HTML &uacute; ú
+! CHR HTML &uuml; ü
+! CHR HTML &yacute; ý
+  
+--- 243,280 ----
+  
+! #CHR HTML 35
+! #CHR HTML &curren; ¤
+! #CHR HTML &deg; °
+! #CHR HTML &acute; ´
+! #CHR HTML &cedil; ¸
+! #CHR HTML &Aacute; Á
+! #CHR HTML &Acirc; Â
+! #CHR HTML &Auml; Ä
+! #CHR HTML &Ccedil; Ç
+! #CHR HTML &Eacute; É
+! #CHR HTML &Euml; Ë
+! #CHR HTML &Iacute; Í
+! #CHR HTML &Icirc; Î
+! #CHR HTML &Oacute; Ó
+! #CHR HTML &Ocirc; Ô
+! #CHR HTML &Ouml; Ö
+! #CHR HTML &times; ×
+! #CHR HTML &Uacute; Ú
+! #CHR HTML &Uuml; Ü
+! #CHR HTML &Yacute; Ý
+! #CHR HTML &szlig; ß
+! #CHR HTML &aacute; á
+! #CHR HTML &acirc; â
+! #CHR HTML &auml; ä
+! #CHR HTML &ccedil; ç
+! #CHR HTML &eacute; é
+! #CHR HTML &euml; ë
+! #CHR HTML &iacute; í
+! #CHR HTML &icirc; î
+! #CHR HTML &oacute; ó
+! #CHR HTML &ocirc; ô
+! #CHR HTML &ouml; ö
+! #CHR HTML &divide; ÷
+! #CHR HTML &uacute; ú
+! #CHR HTML &uuml; ü
+! #CHR HTML &yacute; ý
+  
 ***************
-*** 17678,17681 ****
-  PFX D   0    leg          .
+*** 255,277 ****
+  
+! CHR 123 20
+! CHR 123 a1 á
+! CHR 123 e1 é
+! CHR 123 e2 ë
+! CHR 123 i1 í
+! CHR 123 o1 ó
+! CHR 123 o2 ö
+! CHR 123 o3 õ
+! CHR 123 u1 ú
+! CHR 123 u2 ü
+! CHR 123 u3 û
+! CHR 123 A1 Á
+! CHR 123 E1 É
+! CHR 123 E2 Ë
+! CHR 123 I1 Í
+! CHR 123 O1 Ó
+! CHR 123 O2 Ö
+! CHR 123 O3 Õ
+! CHR 123 U1 Ú
+! CHR 123 U2 Ü
+! CHR 123 U3 Û
+  
+--- 284,306 ----
+  
+! #CHR 123 20
+! #CHR 123 a1 á
+! #CHR 123 e1 é
+! #CHR 123 e2 ë
+! #CHR 123 i1 í
+! #CHR 123 o1 ó
+! #CHR 123 o2 ö
+! #CHR 123 o3 õ
+! #CHR 123 u1 ú
+! #CHR 123 u2 ü
+! #CHR 123 u3 û
+! #CHR 123 A1 Á
+! #CHR 123 E1 É
+! #CHR 123 E2 Ë
+! #CHR 123 I1 Í
+! #CHR 123 O1 Ó
+! #CHR 123 O2 Ö
+! #CHR 123 O3 Õ
+! #CHR 123 U1 Ú
+! #CHR 123 U2 Ü
+! #CHR 123 U3 Û
+  
+*** hu_HU.orig.dic	Sun Mar 26 15:05:13 2006
+--- hu_HU.dic	Sun Mar 26 20:12:13 2006
+***************
+*** 94597,94600 ****
+  0
+- ...
+- .
+  -öt
+--- 94597,94598 ----
+***************
+*** 94616,94622 ****
+  -/ABCUVWKLMQR
+- ,
+- +
+- )
+- (
+- '
+  &aring;ngström/WÌ¯jØMÝÔíè³ÅåTtYc¸½l
+--- 94614,94615 ----
+***************
+*** 94634,94642 ****
+  %-/KUÒÖmQSsi)
+- %
+- $
+- "
+- !!!
+- !!
+- !
+- /
 - 
--    1
-- 
---- 17639 ----
+--- 94627 ----

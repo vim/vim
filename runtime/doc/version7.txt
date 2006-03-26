@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0b.  Last change: 2006 Mar 25
+*version7.txt*  For Vim version 7.0b.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -356,6 +356,7 @@ several other languages.
 French  - translated by David Blanchet
 Italian - translated by Antonio Colombo
 Russian - translated by Vassily Ragosin
+Polish  - translated by Mikolaj Machowski
 
 The Unix Makefile installs the Italian manual pages in .../man/it/man1/,
 .../man/it.ISO8859-1/man1/ and .../man/it.UTF-8/man1/.  There appears to be no
@@ -899,6 +900,7 @@ limits syntax and ftplugin file. (Nikolai Weibull)
 Lisp indent file. (Sergey Khorev)
 loginaccess and logindefs syntax and ftplugin file. (Nikolai Weibull)
 m4 ftplugin file. (Nikolai Weibull)
+mailaliases syntax file. (Nikolai Weibull)
 mailcap ftplugin file. (Nikolai Weibull)
 manconf syntax and ftplugin file. (Nikolai Weibull)
 matlab ftplugin file. (Jake Wasserman)
@@ -2186,5 +2188,20 @@ install directory.
 
 To make the 16 bit DOS version compile exclude not used highlight
 initializations and build a tiny instead of small version.
+
+finddir() and findfile() accept a negative cound and return a List then.
+
+The Python indent file contained a few debugging statements, removed.
+
+Expanding {} for a function name, resulting in a name starting with "s:" was
+not handled correctly.
+
+Spelling: renamed COMPOUNDMAX to COMPOUNDWORDMAX.  Added several items to be
+able to handle the new Hungarian dictionary.
+
+Mac: Default to building for the current platform only, that is much faster
+than building a universal binary.  Also, using Perl/Python/etc. only works for
+the current platform.
+
 
  vim:tw=78:ts=8:ft=help:norl:
