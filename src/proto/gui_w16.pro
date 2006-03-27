@@ -59,7 +59,7 @@ extern char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *dflt, c
 extern int get_cmd_args __ARGS((char *prog, char *cmdline, char ***argvp, char **tofree));
 extern void gui_mch_prepare __ARGS((int *argc, char **argv));
 extern int gui_mch_init __ARGS((void));
-extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height));
+extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height, int direction));
 extern void gui_mch_set_scrollbar_thumb __ARGS((scrollbar_T *sb, long val, long size, long max));
 extern void gui_mch_set_font __ARGS((GuiFont font));
 extern void gui_mch_set_fg_color __ARGS((guicolor_T color));

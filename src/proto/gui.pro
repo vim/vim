@@ -15,7 +15,7 @@ extern int gui_get_base_height __ARGS((void));
 extern void gui_resize_shell __ARGS((int pixel_width, int pixel_height));
 extern void gui_may_resize_shell __ARGS((void));
 extern int gui_get_shellsize __ARGS((void));
-extern void gui_set_shellsize __ARGS((int mustset, int fit_to_display));
+extern void gui_set_shellsize __ARGS((int mustset, int fit_to_display, int direction));
 extern void gui_new_shellsize __ARGS((void));
 extern void gui_reset_scroll_region __ARGS((void));
 extern void gui_start_highlight __ARGS((int mask));

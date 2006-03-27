@@ -159,7 +159,7 @@
 #define TOOLBAR_BORDER_HEIGHT	12  /* room above+below buttons for MSWindows */
 
 #ifdef FEAT_GUI_MSWIN
-# define TABLINE_HEIGHT 24
+# define TABLINE_HEIGHT 22
 #endif
 
 #if defined(NO_CONSOLE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)

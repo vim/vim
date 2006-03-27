@@ -1233,7 +1233,7 @@ gui_mch_new_menu_font()
 #endif
 		     );
     }
-    gui_set_shellsize(FALSE, TRUE);
+    gui_set_shellsize(FALSE, TRUE, RESIZE_VERT);
     ui_new_shellsize();
 }
 
@@ -2799,7 +2799,7 @@ gui_mch_show_toolbar(int showit)
 
 	XtUnmanageChild(XtParent(toolBar));
     }
-    gui_set_shellsize(FALSE, FALSE);
+    gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
 }
 
 /*

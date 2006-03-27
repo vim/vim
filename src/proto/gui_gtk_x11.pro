@@ -16,7 +16,7 @@ extern int gui_mch_open __ARGS((void));
 extern void gui_mch_exit __ARGS((int rc));
 extern int gui_mch_get_winpos __ARGS((int *x, int *y));
 extern void gui_mch_set_winpos __ARGS((int x, int y));
-extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height));
+extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height, int direction));
 extern void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 extern void gui_mch_settitle __ARGS((char_u *title, char_u *icon));
 extern void gui_mch_enable_menu __ARGS((int showit));

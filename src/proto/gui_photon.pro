@@ -11,7 +11,7 @@ extern char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *default
 extern int gui_mch_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int default_button, char_u *textfield));
 extern int gui_mch_get_winpos __ARGS((int *x, int *y));
 extern void gui_mch_set_winpos __ARGS((int x, int y));
-extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height));
+extern void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height, int direction));
 extern void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 extern void gui_mch_iconify __ARGS((void));
 extern void gui_mch_set_foreground __ARGS((void));

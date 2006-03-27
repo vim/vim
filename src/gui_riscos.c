@@ -692,13 +692,14 @@ gui_mch_set_winpos(int x, int y)
 }
 
     void
-gui_mch_set_shellsize(width, height, min_width, min_height, base_width, base_height)
+gui_mch_set_shellsize(width, height, min_width, min_height, base_width, base_height, direction)
     int width;		/* In OS units */
     int height;
     int min_width;	/* Smallest permissable window size (ignored) */
     int min_height;
     int base_width;	/* Space for scroll bars, etc */
     int base_height;
+    int direction;
 {
     int s_width, s_height;
     int block[] = {

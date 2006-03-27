@@ -1113,14 +1113,18 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 #if defined(FEAT_GUI_TABLINE)
     if (showing_tabline)
     {
-	int top = 0;
+	int	top = 0;
+	RECT	rect;
 
 #ifdef FEAT_TOOLBAR
 	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
 
-	MoveWindow(s_tabhwnd, 0, top, w, TABLINE_HEIGHT, TRUE);
+	GetWindowRect(s_hwnd, &rect);
+	SetRect(&rect, 0, top, rect.right, TABLINE_HEIGHT);
+	TabCtrl_AdjustRect(s_tabhwnd, TRUE, &rect);
+	MoveWindow(s_tabhwnd, 0, top, rect.right, rect.bottom, TRUE);
     }
 #endif
 
@@ -2176,6 +2180,68 @@ gui_mch_show_toolbar(int showit)
 #endif
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+    static void
+show_tabline_popup_menu(void)
+{
+    HMENU	    tab_pmenu;
+    MENUITEMINFO    minfo;
+    long	    rval;
+    POINT	    pt;
+    char_u	    string[3];
+
+    tab_pmenu = CreatePopupMenu();
+    if (tab_pmenu == NULL)
+	return;
+
+    minfo.cbSize = sizeof(MENUITEMINFO);
+    minfo.fMask = MIIM_TYPE|MIIM_ID;
+    minfo.fType = MFT_STRING;
+
+    minfo.dwTypeData = _("Close tab");
+    minfo.wID = TABLINE_MENU_CLOSE;
+    InsertMenuItem(tab_pmenu, TABLINE_MENU_CLOSE, FALSE, &minfo);
+
+    minfo.dwTypeData = _("New tab");
+    minfo.wID = TABLINE_MENU_NEW;
+    InsertMenuItem(tab_pmenu, TABLINE_MENU_NEW, FALSE, &minfo);
+
+    minfo.dwTypeData = _("Open tab...");
+    minfo.wID = TABLINE_MENU_OPEN;
+    InsertMenuItem(tab_pmenu, TABLINE_MENU_OPEN, FALSE, &minfo);
+
+    GetCursorPos(&pt);
+    rval = TrackPopupMenuEx(tab_pmenu, TPM_RETURNCMD, pt.x, pt.y, s_tabhwnd,
+									NULL);
+
+    DestroyMenu(tab_pmenu);
+
+    /* Add the string cmd into input buffer */
+    if (rval > 0)
+    {
+	TCHITTESTINFO htinfo;
+	int idx;
+
+	if (ScreenToClient(s_tabhwnd, &pt) == 0)
+	    return;
+
+	htinfo.pt.x = pt.x;
+	htinfo.pt.y = pt.y;
+	idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
+	if (idx == -1)
+	    idx = 0;
+	else
+	    idx += 1;
+
+	string[0] = CSI;
+	string[1] = KS_TABMENU;
+	string[2] = KE_FILLER;
+	add_to_input_buf(string, 3);
+	string[0] = idx;
+	string[1] = (char_u)(long)rval;
+	add_to_input_buf_csi(string, 2);
+    }
+}
+
 /*
  * Show or hide the tabline.
  */

@@ -4899,7 +4899,7 @@ xim_instantiate_cb(display, client_data, call_data)
 	return;
 
     xim_real_init(x11_window, x11_display);
-    gui_set_shellsize(FALSE, FALSE);
+    gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
     if (xic != NULL)
 	XUnregisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 					 xim_instantiate_cb, NULL);
@@ -4923,7 +4923,7 @@ xim_destroy_cb(im, client_data, call_data)
     xic = NULL;
     status_area_enabled = FALSE;
 
-    gui_set_shellsize(FALSE, FALSE);
+    gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
 				   xim_instantiate_cb, NULL);
@@ -4947,7 +4947,7 @@ xim_init()
     if (xim_real_init(x11_window, x11_display))
 	return;
 
-    gui_set_shellsize(FALSE, FALSE);
+    gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
 
 #ifdef USE_X11R6_XIM
     XRegisterIMInstantiateCallback(x11_display, NULL, NULL, NULL,
@@ -5162,7 +5162,7 @@ xim_real_init(x11_window, x11_display)
 	    status_area_enabled = TRUE;
 	}
 	else
-	    gui_set_shellsize(FALSE, FALSE);
+	    gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
     }
     else
     {

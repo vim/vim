@@ -521,7 +521,7 @@ gui_init()
 #ifndef FEAT_GUI_GTK
     /* Set the shell size, adjusted for the screen size.  For GTK this only
      * works after the shell has been opened, thus it is further down. */
-    gui_set_shellsize(FALSE, TRUE);
+    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -547,7 +547,7 @@ gui_init()
 	/* Give GTK+ a chance to put all widget's into place. */
 	gui_mch_update();
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(FALSE, TRUE);
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
@@ -741,7 +741,7 @@ gui_init_font(font_list, fontset)
 #else
 		FALSE
 #endif
-		);
+		, RESIZE_BOTH);
     }
 
     return ret;
@@ -1354,9 +1354,10 @@ gui_get_shellsize()
  */
 /*ARGSUSED*/
     void
-gui_set_shellsize(mustset, fit_to_display)
+gui_set_shellsize(mustset, fit_to_display, direction)
     int		mustset;		/* set by the user */
     int		fit_to_display;
+    int		direction;		/* RESIZE_HOR, RESIZE_VER */
 {
     int		base_width;
     int		base_height;
@@ -1399,14 +1400,14 @@ gui_set_shellsize(mustset, fit_to_display)
     if (fit_to_display)
     {
 	gui_mch_get_screen_dimensions(&screen_w, &screen_h);
-	if (width > screen_w)
+	if ((direction & RESIZE_HOR) && width > screen_w)
 	{
 	    Columns = (screen_w - base_width) / gui.char_width;
 	    if (Columns < MIN_COLUMNS)
 		Columns = MIN_COLUMNS;
 	    width = Columns * gui.char_width + base_width;
 	}
-	if (height > screen_h)
+	if ((direction & RESIZE_VERT) && height > screen_h)
 	{
 	    Rows = (screen_h - base_height) / gui.char_height;
 	    check_shellsize();
@@ -1423,7 +1424,7 @@ gui_set_shellsize(mustset, fit_to_display)
 # endif
 
     gui_mch_set_shellsize(width, height, min_width, min_height,
-						     base_width, base_height);
+					  base_width, base_height, direction);
     if (fit_to_display)
     {
 	int	    x, y;
@@ -3087,9 +3088,7 @@ gui_menu_cb(menu)
 }
 #endif
 
-#ifndef FEAT_WINDOWS
-static int		    prev_which_scrollbars[3];
-#endif
+static int	prev_which_scrollbars[3];
 
 /*
  * Set which components are present.
@@ -3203,7 +3202,7 @@ gui_init_which_components(oldval)
 
     if (gui.in_use)
     {
-	need_set_size = FALSE;
+	need_set_size = 0;
 	fix_size = FALSE;
 
 #ifdef FEAT_GUI_TABLINE
@@ -3217,7 +3216,7 @@ gui_init_which_components(oldval)
 	    i = Rows;
 	    gui_update_tabline();
 	    Rows = i;
-	    need_set_size = TRUE;
+	    need_set_size = RESIZE_VERT;
 	    if (using_tabline)
 		fix_size = TRUE;
 	    if (!gui_use_tabline())
@@ -3227,11 +3226,14 @@ gui_init_which_components(oldval)
 
 	for (i = 0; i < 3; i++)
 	{
-	    if (gui.which_scrollbars[i] !=
+	    /* The scrollbar needs to be updated when it is shown/unshown and
+	     * when switching tab pages.  But the size only changes when it's
+	     * shown/unshown.  Thus we need two places to remember whether a
+	     * scrollbar is there or not. */
+	    if (gui.which_scrollbars[i] != prev_which_scrollbars[i]
 #ifdef FEAT_WINDOWS
-		    curtab->tp_prev_which_scrollbars[i]
-#else
-		    prev_which_scrollbars[i]
+		    || gui.which_scrollbars[i]
+					!= curtab->tp_prev_which_scrollbars[i]
 #endif
 		    )
 	    {
@@ -3245,16 +3247,20 @@ gui_init_which_components(oldval)
 			gui_do_scrollbar(wp, i, gui.which_scrollbars[i]);
 		    }
 		}
-		need_set_size = TRUE;
-		if (gui.which_scrollbars[i])
-		    fix_size = TRUE;
+		if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
+		{
+		    if (i == SBAR_BOTTOM)
+			need_set_size = RESIZE_VERT;
+		    else
+			need_set_size = RESIZE_HOR;
+		    if (gui.which_scrollbars[i])
+			fix_size = TRUE;
+		}
 	    }
 #ifdef FEAT_WINDOWS
-	    curtab->tp_prev_which_scrollbars[i]
-#else
-	    prev_which_scrollbars[i]
+	    curtab->tp_prev_which_scrollbars[i] = gui.which_scrollbars[i];
 #endif
-						= gui.which_scrollbars[i];
+	    prev_which_scrollbars[i] = gui.which_scrollbars[i];
 	}
 
 #ifdef FEAT_MENU
@@ -3266,7 +3272,7 @@ gui_init_which_components(oldval)
 	    gui_mch_enable_menu(gui.menu_is_active);
 	    Rows = i;
 	    prev_menu_is_active = gui.menu_is_active;
-	    need_set_size = TRUE;
+	    need_set_size = RESIZE_VERT;
 	    if (gui.menu_is_active)
 		fix_size = TRUE;
 	}
@@ -3277,7 +3283,7 @@ gui_init_which_components(oldval)
 	{
 	    gui_mch_show_toolbar(using_toolbar);
 	    prev_toolbar = using_toolbar;
-	    need_set_size = TRUE;
+	    need_set_size = RESIZE_VERT;
 	    if (using_toolbar)
 		fix_size = TRUE;
 	}
@@ -3287,7 +3293,7 @@ gui_init_which_components(oldval)
 	{
 	    gui_mch_enable_footer(using_footer);
 	    prev_footer = using_footer;
-	    need_set_size = TRUE;
+	    need_set_size = RESIZE_VERT;
 	    if (using_footer)
 		fix_size = TRUE;
 	}
@@ -3307,7 +3313,7 @@ gui_init_which_components(oldval)
 	    /* Adjust the size of the window to make the text area keep the
 	     * same size and to avoid that part of our window is off-screen
 	     * and a scrollbar can't be used, for example. */
-	    gui_set_shellsize(FALSE, fix_size);
+	    gui_set_shellsize(FALSE, fix_size, need_set_size);
 
 #ifdef FEAT_GUI_GTK
 	    /* GTK has the annoying habit of sending us resize events when
@@ -3379,7 +3385,7 @@ gui_update_tabline()
 	/* When the tabs change from hidden to shown or from shown to
 	 * hidden the size of the text area should remain the same. */
 	if (!showit != !shown)
-	    gui_set_shellsize(FALSE, showit);
+	    gui_set_shellsize(FALSE, showit, RESIZE_VERT);
     }
 }
 

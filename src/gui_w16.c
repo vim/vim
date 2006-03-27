@@ -128,7 +128,7 @@ gui_mswin_get_menu_height(
     if (fix_window && menu_height != old_menu_height)
     {
 	old_menu_height = menu_height;
-	gui_set_shellsize(FALSE, FALSE);
+	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
     }
 
     return menu_height;
@@ -488,7 +488,8 @@ gui_mch_init(void)
  */
     void
 gui_mch_set_shellsize(int width, int height,
-	int min_width, int min_height, int base_width, int base_height)
+	int min_width, int min_height, int base_width, int base_height,
+	int direction)
 {
     RECT	workarea_rect;
     int		win_width, win_height;
@@ -528,16 +529,17 @@ gui_mch_set_shellsize(int width, int height,
 			;
 
     /* if the window is going off the screen, move it on to the screen */
-    if (win_xpos + win_width > workarea_rect.right)
+    if ((direction & RESIZE_HOR) && win_xpos + win_width > workarea_rect.right)
 	win_xpos = workarea_rect.right - win_width;
 
-    if (win_xpos < workarea_rect.left)
+    if ((direction & RESIZE_HOR) && win_xpos < workarea_rect.left)
 	win_xpos = workarea_rect.left;
 
-    if (win_ypos + win_height > workarea_rect.bottom)
+    if ((direction & RESIZE_VERT)
+			       && win_ypos + win_height > workarea_rect.bottom)
 	win_ypos = workarea_rect.bottom - win_height;
 
-    if (win_ypos < workarea_rect.top)
+    if ((direction & RESIZE_VERT) && win_ypos < workarea_rect.top)
 	win_ypos = workarea_rect.top;
 
     /* set window position */

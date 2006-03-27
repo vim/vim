@@ -1014,6 +1014,13 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define WSP_ABOVE	64	/* put new window above/left */
 
 /*
+ * arguments for gui_set_shellsize()
+ */
+#define RESIZE_VERT	1	/* resize vertically */
+#define RESIZE_HOR	2	/* resize horizontally */
+#define RESIZE_BOTH	15	/* resize in both directions */
+
+/*
  * "flags" values for option-setting functions.
  * When OPT_GLOBAL and OPT_LOCAL are both missing, set both local and global
  * values, get local value.

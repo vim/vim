@@ -1,4 +1,4 @@
-*usr_44.txt*	For Vim version 7.0c.  Last change: 2005 Apr 01
+*usr_44.txt*	For Vim version 7.0c.  Last change: 2006 Mar 27
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -689,25 +689,20 @@ Do not include anything that is a user preference.  Don't set 'tabstop',
 Do not include mappings or abbreviations.  Only include setting 'iskeyword' if
 it is really necessary for recognizing keywords.
 
-Avoid using specific colors.  Link to the standard highlight groups whenever
-possible.  Don't forget that some people use a different background color, or
-have only eight colors available.
-For backwards compatibility with Vim 5.8 this construction is used: >
+To allow users select their own preferred colors, make a different group name
+for every kind of highlighted item.  Then link each of them to one of the
+standard highlight groups.  That will make it work with every color scheme.
+If you select specific colors it will look bad with some color schemes.  And
+don't forget that some people use a different background color, or have only
+eight colors available.
 
-	if version >= 508 || !exists("did_c_syn_inits")
-	  if version < 508
-	    let did_c_syn_inits = 1
-	    command -nargs=+ HiLink hi link <args>
-	  else
-	    command -nargs=+ HiLink hi def link <args>
-	  endif
+For the linking use "hi def link", so that the user can select different
+highlighting before your syntax file is loaded.  Example: >
 
-	  HiLink nameString	String
-	  HiLink nameNumber	Number
+	  hi def link nameString	String
+	  hi def link nameNumber	Number
+	  hi def link nameCommand	Statement
 	  ... etc ...
-
-	  delcommand HiLink
-	endif
 
 Add the "display" argument to items that are not used when syncing, to speed
 up scrolling backwards and CTRL-L.
