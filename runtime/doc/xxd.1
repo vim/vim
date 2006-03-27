@@ -161,7 +161,7 @@ and
 .br
 \fI% xxd \-i < file\fR
 .PP
-.I xxd \-s \+seek
+.I xxd \-s +seek
 may be different from
 .IR "xxd \-s seek" ,
 as lseek(2) is used to "rewind" input.  A '+'
@@ -172,17 +172,17 @@ The following examples may help to clarify (or further confuse!)...
 Rewind stdin before reading; needed because the `cat' has already read to the
 end of stdin.
 .br
-\fI% sh \-c 'cat > plain_copy; xxd \-s 0 > hex_copy' < file
+\fI% sh \-c "cat > plain_copy; xxd \-s 0 > hex_copy" < file
 .PP
 Hexdump from file position 0x480 (=1024+128) onwards.
 The `+' sign means "relative to the current position", thus the `128' adds to
 the 1k where dd left off.
 .br
-\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet' < file
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet" < file
 .PP
 Hexdump from file position 0x100 ( = 1024\-768) on.
 .br
-\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +-768 > hex_snippet' < file
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +\-768 > hex_snippet" < file
 .PP
 However, this is a rare situation and the use of `+' is rarely needed.
 The author prefers to monitor the effect of xxd with strace(1) or truss(1), whenever \-s is used.
@@ -190,15 +190,13 @@ The author prefers to monitor the effect of xxd with strace(1) or truss(1), when
 .PP
 .br
 Print everything but the first three lines (hex 0x30 bytes) of
-.B file
-\.
+.BR file .
 .br
 \fI% xxd \-s 0x30 file
 .PP
 .br
 Print 3 lines (hex 0x30 bytes) from the end of
-.B file
-\.
+.BR file .
 .br
 \fI% xxd \-s \-0x30 file
 .PP
@@ -259,13 +257,13 @@ to
 .B output_file
 and prepend 100 bytes of value 0x00.
 .br
-\fI% xxd input_file | xxd \-r \-s 100 \> output_file\fR
+\fI% xxd input_file | xxd \-r \-s 100 > output_file\fR
 .br
 
 .br
 Patch the date in the file xxd.1
 .br
-\fI% echo '0000037: 3574 68' | xxd \-r \- xxd.1\fR
+\fI% echo "0000037: 3574 68" | xxd \-r \- xxd.1\fR
 .br
 \fI% xxd \-s 0x36 \-l 13 \-c 13 xxd.1\fR
 .br
@@ -275,7 +273,7 @@ Patch the date in the file xxd.1
 Create a 65537 byte file with all bytes 0x00,
 except for the last one which is 'A' (hex 0x41).
 .br
-\fI% echo '010000: 41' | xxd \-r \> file\fR
+\fI% echo "010000: 41" | xxd \-r > file\fR
 .PP
 .br
 Hexdump this file with autoskip.
@@ -292,7 +290,7 @@ Create a 1 byte file containing a single 'A' character.
 The number after '\-r \-s' adds to the linenumbers found in the file;
 in effect, the leading bytes are suppressed.
 .br
-\fI% echo '010000: 41' | xxd \-r \-s \-0x10000 \> file\fR
+\fI% echo "010000: 41" | xxd \-r \-s \-0x10000 > file\fR
 .PP
 Use xxd as a filter within an editor such as
 .B vim(1)
@@ -355,7 +353,7 @@ This manual page documents xxd version 1.7
 .br
 (c) 1990-1997 by Juergen Weigert
 .br
-<jnweiger@informatik.uni-erlangen.de>
+<jnweiger@informatik.uni\-erlangen.de>
 .LP
 Distribute freely and credit me,
 .br

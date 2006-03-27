@@ -4667,7 +4667,6 @@ struct affentry_S
     char_u	*ae_flags;	/* flags on the affix (can be NULL) */
     char_u	*ae_cond;	/* condition (NULL for ".") */
     regprog_T	*ae_prog;	/* regexp program for ae_cond or NULL */
-    char_u	ae_nocomp;	/* word with affix not compoundable */
 };
 
 #ifdef FEAT_MBYTE
@@ -5474,7 +5473,6 @@ spell_read_aff(spin, fname)
 		    && itemcnt >= 5)
 	    {
 		affentry_T	*aff_entry;
-		int		nocomp = FALSE;
 		int		upper = FALSE;
 		int		lasti = 5;
 
@@ -5492,7 +5490,6 @@ spell_read_aff(spin, fname)
 						    sizeof(affentry_T), TRUE);
 		if (aff_entry == NULL)
 		    break;
-		aff_entry->ae_nocomp = nocomp;
 
 		if (STRCMP(items[2], "0") != 0)
 		    aff_entry->ae_chop = getroom_save(spin, items[2]);

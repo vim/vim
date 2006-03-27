@@ -1,4 +1,4 @@
-*version4.txt*  For Vim version 7.0b.  Last change: 2004 Mar 12
+*version4.txt*  For Vim version 7.0c.  Last change: 2004 Mar 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

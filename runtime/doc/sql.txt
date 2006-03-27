@@ -1,4 +1,4 @@
-*sql.txt*   	For Vim version 7.0b.  Last change: Fri Jan 06 2006 8:09:25 AM
+*sql.txt*   	For Vim version 7.0c.  Last change: Fri Jan 06 2006 8:09:25 AM
 
 by David Fishburn
 
@@ -295,4 +295,4 @@ pickup the new SQL files and load them when you issue the SQLSetType command.
 
 
 
-vim:tw=78:ts=8:ft=help:norl:ff=unix:
+vim:tw=78:ts=8:ft=help:norl:

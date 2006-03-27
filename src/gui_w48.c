@@ -28,7 +28,7 @@
 #ifndef __MINGW32__
 # include <shellapi.h>
 #endif
-#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL)
+#if defined(FEAT_TOOLBAR) || defined(FEAT_BEVAL) || defined(FEAT_GUI_TABLINE)
 # include <commctrl.h>
 #endif
 #ifdef WIN16
@@ -168,6 +168,11 @@ static HBRUSH	s_brush = NULL;
 
 #ifdef FEAT_TOOLBAR
 static HWND		s_toolbarhwnd = NULL;
+#endif
+
+#ifdef FEAT_GUI_TABLINE
+static HWND		s_tabhwnd = NULL;
+static int		showing_tabline = 0;
 #endif
 
 static WPARAM		s_wParam = 0;
@@ -1105,6 +1110,20 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 	SendMessage(s_toolbarhwnd, WM_SIZE,
 		(WPARAM)0, (LPARAM)(w + ((long)(TOOLBAR_BUTTON_HEIGHT+8)<<16)));
 #endif
+#if defined(FEAT_GUI_TABLINE)
+    if (showing_tabline)
+    {
+	int top = 0;
+
+#ifdef FEAT_TOOLBAR
+	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
+	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
+#endif
+
+	MoveWindow(s_tabhwnd, 0, top, w, TABLINE_HEIGHT, TRUE);
+    }
+#endif
+
     /* When side scroll bar is unshown, the size of window will change.
      * then, the text area move left or right. thus client rect should be
      * forcely redraw. (Yasuhiro Matsumoto) */
@@ -2153,6 +2172,95 @@ gui_mch_show_toolbar(int showit)
 
 /* Then number of bitmaps is fixed.  Exit is missing! */
 #define TOOLBAR_BITMAP_COUNT 31
+
+#endif
+
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+/*
+ * Show or hide the tabline.
+ */
+    void
+gui_mch_show_tabline(int showit)
+{
+    if (s_tabhwnd == NULL)
+	return;
+
+    if (!showit != !showing_tabline)
+    {
+	if (showit)
+	    ShowWindow(s_tabhwnd, SW_SHOW);
+	else
+	    ShowWindow(s_tabhwnd, SW_HIDE);
+	showing_tabline = showit;
+    }
+}
+
+/*
+ * Return TRUE when tabline is displayed.
+ */
+    int
+gui_mch_showing_tabline(void)
+{
+    return s_tabhwnd != NULL && showing_tabline;
+}
+
+/*
+ * Update the labels of the tabline.
+ */
+    void
+gui_mch_update_tabline(void)
+{
+    tabpage_T	*tp;
+    TCITEM	tie;
+    int		nr = 0;
+    int		curtabidx = 0;
+    RECT	rc;
+
+    if (s_tabhwnd == NULL)
+	return;
+
+    tie.mask = TCIF_TEXT;
+    tie.iImage = -1;
+
+    /* Add a label for each tab page.  They all contain the same text area. */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	if (tp == curtab)
+	    curtabidx = nr;
+
+	if (!TabCtrl_GetItemRect(s_tabhwnd, nr, &rc))
+	{
+	    /* Add the tab */
+	    tie.pszText = "-Empty-";
+	    TabCtrl_InsertItem(s_tabhwnd, nr, &tie);
+	}
+
+	get_tabline_label(tp);
+	tie.pszText = NameBuff;
+	TabCtrl_SetItem(s_tabhwnd, nr, &tie);
+    }
+
+    /* Remove any old labels. */
+    while (TabCtrl_GetItemRect(s_tabhwnd, nr, &rc))
+	TabCtrl_DeleteItem(s_tabhwnd, nr);
+
+    if (TabCtrl_GetCurSel(s_tabhwnd) != curtabidx)
+	TabCtrl_SetCurSel(s_tabhwnd, curtabidx);
+}
+
+/*
+ * Set the current tab to "nr".  First tab is 1.
+ */
+    void
+gui_mch_set_curtab(nr)
+    int		nr;
+{
+    if (s_tabhwnd == NULL)
+	return;
+
+    if (TabCtrl_GetCurSel(s_tabhwnd) != nr)
+	TabCtrl_SetCurSel(s_tabhwnd, nr);
+}
 
 #endif
 

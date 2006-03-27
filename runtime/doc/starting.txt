@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0b.  Last change: 2006 Mar 25
+*starting.txt*  For Vim version 7.0c.  Last change: 2006 Mar 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -757,6 +757,7 @@ accordingly.  Vim proceeds in this order:
 	Note that this file is ALWAYS read in 'compatible' mode, since the
 	automatic resetting of 'compatible' is only done later.  Add a ":set
 	nocp" command if you like.
+	For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
 			  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
      c. Four places are searched for initializations.  The first that exists

@@ -1142,6 +1142,11 @@ gui_position_components(total_width)
 	text_area_y = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
 
+#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+    if (gui_has_tabline())
+	text_area_y += TABLINE_HEIGHT;
+#endif
+
 #if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
@@ -1222,6 +1227,10 @@ gui_get_base_height()
 #  else
 	base_height += gui.toolbar_height;
 #  endif
+# endif
+# if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+    if (gui_has_tabline())
+    	base_height += TABLINE_HEIGHT;
 # endif
 # ifdef FEAT_FOOTER
     if (vim_strchr(p_go, GO_FOOTER) != NULL)
@@ -3922,6 +3931,11 @@ gui_update_scrollbars(force)
 		y += TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #  endif
 # endif
+#endif
+
+#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+	    if (gui_has_tabline())
+		y += TABLINE_HEIGHT;
 #endif
 
 #ifdef FEAT_WINDOWS

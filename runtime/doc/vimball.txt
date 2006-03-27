@@ -1,4 +1,4 @@
-*vimball.txt*	For Vim version 7.0b.  Last change: 2006 Mar 24
+*vimball.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
 
 	Vimball Archiver
 

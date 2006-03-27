@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2005 Sep 01
+" Last Change:	2006 Mar 26
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -106,7 +106,7 @@ syn match helpUnderlined	"\t[* ]Underlined\t\+[a-z].*"
 syn match helpError		"\t[* ]Error\t\+[a-z].*"
 syn match helpTodo		"\t[* ]Todo\t\+[a-z].*"
 
-syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-z0-9/]`
+syn match helpURL `\v<(((https?|ftp|gopher)://|(mailto|file|news):)[^' 	<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' 	<>"]+)[a-zA-Z0-9/]`
 
 " Additionally load a language-specific syntax file "help_ab.vim".
 let s:i = match(expand("%"), '\.\a\ax$')

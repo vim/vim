@@ -753,7 +753,8 @@
 /*
  * GUI tabline
  */
-#if defined(FEAT_GUI_GTK) && defined(FEAT_WINDOWS)
+#if defined(FEAT_WINDOWS) && (defined(FEAT_GUI_GTK) \
+	|| (defined(FEAT_GUI_MSWIN) && WINVER > 0x0400))
 # define FEAT_GUI_TABLINE
 #endif
 

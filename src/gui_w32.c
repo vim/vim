@@ -297,6 +297,10 @@ static void initialise_toolbar(void);
 static int get_toolbar_bitmap(vimmenu_T *menu);
 #endif
 
+#ifdef FEAT_GUI_TABLINE
+static void initialise_tabline(void);
+#endif
+
 #ifdef FEAT_MBYTE_IME
 static LRESULT _OnImeComposition(HWND hwnd, WPARAM dbcs, LPARAM param);
 static char_u *GetResultStr(HWND hwnd, int GCS, int *lenp);
@@ -760,10 +764,11 @@ _WndProc(
     case WM_SETTINGCHANGE:
 	return _OnSettingChange((UINT)wParam);
 
-#ifdef FEAT_TOOLBAR
+#if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
     case WM_NOTIFY:
 	switch (((LPNMHDR) lParam)->code)
 	{
+# ifdef FEAT_TOOLBAR
 	    case TTN_NEEDTEXT:
 		{
 		    LPTOOLTIPTEXT	lpttt;
@@ -785,7 +790,20 @@ _WndProc(
 		    }
 		}
 		break;
+# endif
+# ifdef FEAT_GUI_TABLINE
+	    case TCN_SELCHANGE:
+		if (gui_mch_showing_tabline()
+				  && ((LPNMHDR)lParam)->hwndFrom == s_tabhwnd)
+		    send_tabline_event(TabCtrl_GetCurSel(s_tabhwnd) + 1);
+		break;
+# endif
 	    default:
+# ifdef FEAT_GUI_TABLINE
+		if (gui_mch_showing_tabline()
+				  && ((LPNMHDR)lParam)->hwndFrom == s_tabhwnd)
+		    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+# endif
 		break;
 	}
 	break;
@@ -831,6 +849,19 @@ _WndProc(
 	    result = MyWindowProc(hwnd, uMsg, wParam, lParam);
 	    if (result == HTCLIENT)
 	    {
+#ifdef FEAT_GUI_TABLINE
+		if (gui_mch_showing_tabline())
+		{
+		    int  yPos = GET_Y_LPARAM(lParam);
+		    RECT rct;
+
+		    /* If the cursor is on the GUI tabline, don't process this
+		     * event */
+		    GetWindowRect(s_textArea, &rct);
+		    if (yPos < rct.top)
+			return result;
+		}
+#endif
 		gui_mch_get_winpos(&x, &y);
 		xPos -= x;
 
@@ -1279,6 +1310,12 @@ gui_mch_init(void)
      * Create the toolbar
      */
     initialise_toolbar();
+#endif
+#ifdef FEAT_GUI_TABLINE
+    /*
+     * Create the tabline
+     */
+    initialise_tabline();
 #endif
 #ifdef MSWIN_FIND_REPLACE
     /*
@@ -3881,6 +3918,18 @@ get_toolbar_bitmap(vimmenu_T *menu)
 	i = menu->iconidx;
 
     return i;
+}
+#endif
+
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+    static void
+initialise_tabline(void)
+{
+    InitCommonControls();
+
+    s_tabhwnd = CreateWindow(WC_TABCONTROL, "", WS_CHILD|TCS_FOCUSNEVER,
+	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+	    CW_USEDEFAULT, s_hwnd, NULL, s_hinst, NULL);
 }
 #endif
 

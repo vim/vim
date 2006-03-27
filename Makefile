@@ -69,7 +69,7 @@ all install uninstall tools config configure proto depend lint tags types test t
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 0b
+MINOR = 0c
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -168,6 +168,7 @@ DOSBIN_S =  dosbin_s
 #   uninstalw32.exe and xxdw32.exe have been build as mentioned above.
 # - put gvimext.dll in src/GvimExt and VisVim.dll in src/VisVim (get them
 #   from a binary archive or build them)
+#   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 # - make sure there is a diff.exe two levels up
 # - go to ../nsis and do "makensis gvim.nsi".
 # - Copy gvim##.exe to the dist directory.

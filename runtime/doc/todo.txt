@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0b.  Last change: 2006 Mar 26
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Mar 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,14 +33,20 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 In completion using  Enter to accept the current match causes trouble.
 Leave it out?  Typing a space already works
 
+The 16 bit DOS version compiles now, but it's still too low on memory, writing
+a file fails when 'writebackup' is set.
+
 New Hungarian dictionary. (Laci Nemeth)
     test COMPOUNDFORBIDFLAG
     implement use of COMPOUNDPERMITFLAG
     implement use of CHECKCOMPOUND* flags, <compoptions>
     implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
+    explain the use of affix flags, replace |spell-affix-rare|
 
 Mac: When started from finder path isn't set and curdir is /.
 Benji Fisher suggests using system() (2006 Mar 26)
+
+Mac: reported default for $VIM is /Applications/share/vim
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -1094,6 +1100,7 @@ User Friendlier:
 
 
 Tab pages:
+9   Win32 GUI: menu for tab pages line.
 9   GUI implementation for the tab pages line for other systems.
 8   Make GUI menu in tab pages line configurable.  Like the popup menu.
 8   tab pages in the session file, if "tabpages" in 'sessionoptions'

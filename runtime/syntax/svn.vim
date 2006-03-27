@@ -1,9 +1,13 @@
 " Vim syntax file
-" Language:	Subversion (svn) commit file
-" Maintainer:	Dmitry Vasiliev <dima@hlabs.spb.ru>
-" URL:		http://www.hlabs.spb.ru/vim/svn.vim
-" Last Change:	$Date$
-" $Revision$
+" Language:     Subversion (svn) commit file
+" Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
+" URL:          http://www.hlabs.spb.ru/vim/svn.vim
+" Revision:     $Id$
+" Filenames:    svn-commit*.tmp
+" Version:      1.5
+
+" Contributors:
+"   Stefano Zacchiroli
 
 " For version 5.x: Clear all syntax items.
 " For version 6.x: Quit when a syntax file was already loaded.
@@ -13,15 +17,15 @@ elseif exists("b:current_syntax")
   finish
 endif
 
-syn region svnRegion	start="--This line, and those below, will be ignored--" end="\%$" contains=ALL
-syn match svnRemoved	"^D    .*$" contained
-syn match svnAdded	"^A[ M]   .*$" contained
-syn match svnModified	"^M[ M]   .*$" contained
-syn match svnProperty	"^_M   .*$" contained
+syn region svnRegion    start="^--.*--$" end="\%$" contains=ALL
+syn match svnRemoved    "^D    .*$" contained
+syn match svnAdded      "^A[ M]   .*$" contained
+syn match svnModified   "^M[ M]   .*$" contained
+syn match svnProperty   "^_M   .*$" contained
 
 " Synchronization.
 syn sync clear
-syn sync match svnSync	grouphere svnRegion "--This line, and those below, will be ignored--"me=s-1
+syn sync match svnSync  grouphere svnRegion "^--.*--$"me=s-1
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already.
@@ -34,11 +38,11 @@ if version >= 508 || !exists("did_svn_syn_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink svnRegion	Comment
-  HiLink svnRemoved	Constant
-  HiLink svnAdded	Identifier
-  HiLink svnModified	Special
-  HiLink svnProperty	Special
+  HiLink svnRegion      Comment
+  HiLink svnRemoved     Constant
+  HiLink svnAdded       Identifier
+  HiLink svnModified    Special
+  HiLink svnProperty    Special
 
   delcommand HiLink
 endif

@@ -3112,6 +3112,7 @@ get_number(colon, mouse_used)
 {
     int	n = 0;
     int	c;
+    int typed = 0;
 
     if (mouse_used != NULL)
 	*mouse_used = FALSE;
@@ -3134,11 +3135,16 @@ get_number(colon, mouse_used)
 	{
 	    n = n * 10 + c - '0';
 	    msg_putchar(c);
+	    ++typed;
 	}
 	else if (c == K_DEL || c == K_KDEL || c == K_BS || c == Ctrl_H)
 	{
+	    if (typed > 0)
+	    {
+		MSG_PUTS("\b \b");
+		--typed;
+	    }
 	    n /= 10;
-	    MSG_PUTS("\b \b");
 	}
 #ifdef FEAT_MOUSE
 	else if (mouse_used != NULL && c == K_LEFTMOUSE)

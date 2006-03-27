@@ -438,6 +438,16 @@ struct vimoption
 # define ISP_LATIN1 (char_u *)"@,161-255"
 #endif
 
+/* The 16 bit MS-DOS version is low on space, make the string as short as
+ * possible when compiling with few features. */
+#if defined(FEAT_DIFF) || defined(FEAT_FOLDING) || defined(FEAT_SPELL) \
+	|| defined(FEAT_VERTSPLIT) || defined(FEAT_CLIPBOARD) \
+	|| defined(FEAT_INS_EXPAND) || defined(FEAT_SYN_HL)
+# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine"
+#else
+# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,t:Title,v:Visual,w:WarningMsg,W:WildMenu,>:SignColumn,*:TabLine,#:TabLineSel,_:TabLineFill"
+#endif
+
 /*
  * options[] is initialized here.
  * The order of the options MUST be alphabetic for ":set all" and findoption().
@@ -1284,8 +1294,7 @@ static struct vimoption
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"highlight",   "hl",   P_STRING|P_VI_DEF|P_RCLR|P_COMMA|P_NODUP,
 			    (char_u *)&p_hl, PV_NONE,
-			    {(char_u *)"8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine",
-				(char_u *)0L}},
+			    {(char_u *)HIGHLIGHT_INIT, (char_u *)0L}},
     {"history",	    "hi",   P_NUM|P_VIM,
 			    (char_u *)&p_hi, PV_NONE,
 			    {(char_u *)0L, (char_u *)20L}},

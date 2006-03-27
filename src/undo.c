@@ -1387,7 +1387,7 @@ u_add_time(buf, buflen, tt)
     if (time(NULL) - tt >= 100)
     {
 	curtime = localtime(&tt);
-	(void)strftime((char *)buf, buflen, "%T", curtime);
+	(void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
     }
     else
 #endif

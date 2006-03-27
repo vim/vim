@@ -24,9 +24,9 @@ binaire ou de l'entrée standard.
 Il peut également convertir un fichier de codes hexadécimaux en un fichier
 binaire.
 Comme
-.BR uuencode(1)
+.BR uuencode (1)
 et
-.BR uudecode(1)
+.BR uudecode (1)
 il permet la transmission de données binaires dans une représentation ASCII
 compatible avec le courrier électronique, mais a l'avantage de décoder la
 sortie standard.
@@ -126,19 +126,19 @@ supplémentaires sont autorisés à n'importe quel endroit.
 .TP
 .I \-seek décalage
 Utilisé après l'option
-.I \-r
-\: inverse la conversion en ajoutant
+.IR \-r :
+inverse la conversion en ajoutant
 .RI < décalage >
 aux positions dans le fichier données dans le code hexadécimal.
 .TP
-.I \-s [\+][\-]décalage
+.I \-s [+][\-]décalage
 Débute au
 .RI < décalage >
 absolu ou relatif dans fichier_entree.
-\fI\+ \fRindique que le décalage est relatif à la position courante dans
+\fI+ fRindique que le décalage est relatif à la position courante dans
 l'entrée standard (sans effet si la lecture n'a pas lieu sur l'entrée
 standard). \fI\- \fRindique un décalage en caractères depuis la fin de
-l'entrée (utilisé avec \fI \+ \fR, désigne la position avant la position
+l'entrée (utilisé avec \fI+\fR, désigne la position avant la position
 actuelle de l'entrée standard).
 Sans l'option \-s, xxd démarre à la position courante du fichier.
 .TP
@@ -177,12 +177,12 @@ Remarquez la différence entre
 .br
 et
 .br
-\fI% xxd \-i \< fichier\fR
+\fI% xxd \-i < fichier\fR
 .PP
 .I xxd \-s \+seek
 peut différer de 
-.I xxd \-s seek
-\, car lseek(2) est utilisé pour « revenir en arrière ». Le '+' fait une
+.IR "xxd \-s seek" ,
+car lseek(2) est utilisé pour « revenir en arrière ». Le '+' fait une
 différence quand la source des données est l'entrée standard et si la position
 dans le fichier de l'entrée standard n'est pas au début du fichier lorsque xxd
 est démarré et qu'il reçoit ses données.
@@ -201,7 +201,7 @@ ajouté aux 1024 octets comptabilisés pour dd.
 \fI% sh \-c 'dd of=donnees_binaires bs=1k count=1; xxd \-s +128 >
 donnees_hexa' < fichier\fR
 .PP
-Convertir de fichier depuis la position 0x100 (= 1024 - 768) du fichier.
+Convertir de fichier depuis la position 0x100 (= 1024 \- 768) du fichier.
 .br
 \fI% sh \-c 'dd of=donnees_binaires bs=1k count=1; xxd \-s +\-768 >
 donnees_hexa' < fichier\fR

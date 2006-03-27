@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XHTML 1.0 Strict
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 19
+" Last Change:	2006 Mar 25
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -640,7 +640,7 @@ let g:xmldata_xhtml10s = {
 \ 'charoff' : ['Length', ''],
 \ 'charset' : ['LangCode', ''],
 \ 'checked' : ['Bool', ''],
-\ 'class' : ['CDATA', 'Name of class, used for connecting element with style'],
+\ 'class' : ['CDATA', ''],
 \ 'codetype' : ['ContentType', ''],
 \ 'cols' : ['*Number', ''],
 \ 'colspan' : ['Number', ''],

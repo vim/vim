@@ -1,13 +1,13 @@
 " Vim syntax file
-" Language:	RCS file
-" Maintainer:	Dmitry Vasiliev <dima@hlabs.spb.ru>
-" URL:		http://www.hlabs.spb.ru/vim/rcs.vim
-" Last Change:	$Date$
-" Filenames:	*,v
-" $Revision$
-"
+" Language:     RCS file
+" Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
+" URL:          http://www.hlabs.spb.ru/vim/rcs.vim
+" Revision:     $Id$
+" Filenames:    *,v
+" Version:      1.11
+
 " Options:
-" rcs_folding = 1		For folding strings
+"   rcs_folding = 1   For folding strings
 
 " For version 5.x: Clear all syntax items.
 " For version 6.x: Quit when a syntax file was already loaded.
@@ -18,28 +18,28 @@ elseif exists("b:current_syntax")
 endif
 
 " RCS file must end with a newline.
-syn match rcsEOFError	".\%$" containedin=ALL
+syn match rcsEOFError   ".\%$" containedin=ALL
 
 " Keywords.
-syn keyword rcsKeyword	head branch access symbols locks strict
-syn keyword rcsKeyword	comment expand date author state branches
-syn keyword rcsKeyword	next desc log
-syn keyword rcsKeyword	text nextgroup=rcsTextStr skipwhite skipempty
+syn keyword rcsKeyword  head branch access symbols locks strict
+syn keyword rcsKeyword  comment expand date author state branches
+syn keyword rcsKeyword  next desc log
+syn keyword rcsKeyword  text nextgroup=rcsTextStr skipwhite skipempty
 
 " Revision numbers and dates.
-syn match rcsNumber	"\<[0-9.]\+\>" display
+syn match rcsNumber "\<[0-9.]\+\>" display
 
 " Strings.
 if exists("rcs_folding") && has("folding")
   " Folded strings.
-  syn region rcsString	matchgroup=rcsString start="@" end="@" skip="@@" fold contains=rcsSpecial
-  syn region rcsTextStr	matchgroup=rcsTextStr start="@" end="@" skip="@@" fold contained contains=rcsSpecial,rcsDiffLines
+  syn region rcsString  matchgroup=rcsString start="@" end="@" skip="@@" fold contains=rcsSpecial
+  syn region rcsTextStr matchgroup=rcsTextStr start="@" end="@" skip="@@" fold contained contains=rcsSpecial,rcsDiffLines
 else
-  syn region rcsString	matchgroup=rcsString start="@" end="@" skip="@@" contains=rcsSpecial
-  syn region rcsTextStr	matchgroup=rcsTextStr start="@" end="@" skip="@@" contained contains=rcsSpecial,rcsDiffLines
+  syn region rcsString  matchgroup=rcsString start="@" end="@" skip="@@" contains=rcsSpecial
+  syn region rcsTextStr matchgroup=rcsTextStr start="@" end="@" skip="@@" contained contains=rcsSpecial,rcsDiffLines
 endif
-syn match rcsSpecial	"@@" contained
-syn match rcsDiffLines	"[da]\d\+ \d\+$" contained
+syn match rcsSpecial    "@@" contained
+syn match rcsDiffLines  "[da]\d\+ \d\+$" contained
 
 " Synchronization.
 syn sync clear
@@ -47,8 +47,8 @@ if exists("rcs_folding") && has("folding")
   syn sync fromstart
 else
   " We have incorrect folding if following sync patterns is turned on.
-  syn sync match rcsSync	grouphere rcsString "[0-9.]\+\(\s\|\n\)\+log\(\s\|\n\)\+@"me=e-1
-  syn sync match rcsSync	grouphere rcsTextStr "@\(\s\|\n\)\+text\(\s\|\n\)\+@"me=e-1
+  syn sync match rcsSync    grouphere rcsString "[0-9.]\+\(\s\|\n\)\+log\(\s\|\n\)\+@"me=e-1
+  syn sync match rcsSync    grouphere rcsTextStr "@\(\s\|\n\)\+text\(\s\|\n\)\+@"me=e-1
 endif
 
 " Define the default highlighting.
@@ -62,13 +62,13 @@ if version >= 508 || !exists("did_rcs_syn_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink rcsKeyword	Keyword
-  HiLink rcsNumber	Identifier
-  HiLink rcsString	String
-  HiLink rcsTextStr	String
-  HiLink rcsSpecial	Special
-  HiLink rcsDiffLines	Special
-  HiLink rcsEOFError	Error
+  HiLink rcsKeyword     Keyword
+  HiLink rcsNumber      Identifier
+  HiLink rcsString      String
+  HiLink rcsTextStr     String
+  HiLink rcsSpecial     Special
+  HiLink rcsDiffLines   Special
+  HiLink rcsEOFError    Error
 
   delcommand HiLink
 endif

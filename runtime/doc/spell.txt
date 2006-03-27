@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0b.  Last change: 2006 Mar 26
+*spell.txt*	For Vim version 7.0c.  Last change: 2006 Mar 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1005,11 +1005,8 @@ The basic format for the following lines is:
 		  character but a, b and c.
 
 {extra}		Optional extra text:
-		    rare		word + affix is rare
-		    nocomp		no compounding for word + affix
 		    # comment		Comment is ignored
 		    -			Hunspell uses this, ignored
-		"rare" and "nocomp" are deprecated.
 
 For PFX the fields are the same, but the {strip}, {add} and {condition} apply
 to the start of the word.
@@ -1063,7 +1060,7 @@ Specifically, the affix flags can be used for:
   |spell-COMPOUNDFORBIDFLAG| flag.
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-OLD STUFF
+OLD STUFF: This needs to be rewritten to use affix flags.
 							*spell-affix-rare*
 An extra item for Vim is the "rare" flag.  It must come after the other
 fields, before a comment.  When used then all words that use the affix will be
@@ -1298,7 +1295,6 @@ The COMPOUNDROOT flag is used for words in the dictionary that are already a
 compound.  This means it counts for two words when checking the compounding
 rules.  Can also be used for an affix to count the affix as a compounding
 word.
-NOT IMPLEMENTED YET.
 
 							*spell-SYLLABLE*
 The SYLLABLE item defines characters or character sequences that are used to
