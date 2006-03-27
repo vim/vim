@@ -7614,7 +7614,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	/* Recompute gui.char_height and resize the Vim window to keep the
 	 * same number of lines. */
 	if (gui.in_use && gui_mch_adjust_charheight() == OK)
-	    gui_set_shellsize(FALSE, FALSE);
+	    gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
     }
 #endif
 
