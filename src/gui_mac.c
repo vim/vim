@@ -1776,7 +1776,7 @@ gui_mac_doInGrowClick(Point where, WindowPtr whichWindow)
     newHeight = NewContentRect.bottom - NewContentRect.top;
     gui_resize_shell(newWidth, newHeight);
     gui_mch_set_bg_color(gui.back_pixel);
-    gui_set_shellsize(TRUE, FALSE);
+    gui_set_shellsize(TRUE, FALSE, RESIZE_BOTH);
 }
 
 /*
@@ -1820,7 +1820,7 @@ gui_mac_doInZoomClick(EventRecord *theEvent, WindowPtr whichWindow)
     GetWindowBounds(whichWindow, kWindowContentRgn, &r);
     gui_resize_shell(r.right - r.left, r.bottom - r.top);
     gui_mch_set_bg_color(gui.back_pixel);
-    gui_set_shellsize(TRUE, FALSE);
+    gui_set_shellsize(TRUE, FALSE, RESIZE_BOTH);
 }
 
 /*
@@ -3202,7 +3202,8 @@ gui_mch_set_shellsize(
     int		min_width,
     int		min_height,
     int		base_width,
-    int		base_height)
+    int		base_height,
+    int		direction)
 {
     CGrafPtr	VimPort;
     Rect	VimBound;

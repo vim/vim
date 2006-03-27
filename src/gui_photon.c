@@ -392,7 +392,7 @@ gui_ph_handle_window_cb( PtWidget_t *widget, void *data, PtCallbackInfo_t *info 
 	    height -= (pg_margin_top + pg_margin_bottom);
 #endif
 	    gui_resize_shell( *width, *height );
-	    gui_set_shellsize( FALSE, FALSE );
+	    gui_set_shellsize( FALSE, FALSE, RESIZE_BOTH );
 	    is_ignore_draw = FALSE;
 	    PtEndFlux( gui.vimContainer );
 	    PtContainerRelease( gui.vimContainer );
@@ -825,7 +825,7 @@ gui_ph_handle_window_open(
 	void *data,
 	PtCallbackInfo_t *info )
 {
-    gui_set_shellsize( FALSE, TRUE );
+    gui_set_shellsize( FALSE, TRUE, RESIZE_BOTH );
     return( Pt_CONTINUE );
 }
 
@@ -1660,7 +1660,8 @@ gui_mch_set_winpos(int x, int y)
 
     void
 gui_mch_set_shellsize(int width, int height,
-	int min_width, int min_height, int base_width, int base_height)
+	int min_width, int min_height, int base_width, int base_height,
+	int direction)
 {
     PhDim_t window_size = { width, height };
     PhDim_t min_size = { min_width, min_height };
