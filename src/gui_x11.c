@@ -1788,15 +1788,17 @@ gui_mch_set_winpos(x, y)
 	NULL);
 }
 
+/*ARGSUSED*/
     void
 gui_mch_set_shellsize(width, height, min_width, min_height,
-		    base_width, base_height)
+		    base_width, base_height, direction)
     int		width;
     int		height;
     int		min_width;
     int		min_height;
     int		base_width;
     int		base_height;
+    int		direction;
 {
 #ifdef FEAT_XIM
     height += xim_get_status_area_height(),

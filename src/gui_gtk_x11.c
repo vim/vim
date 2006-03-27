@@ -2728,7 +2728,7 @@ mainwin_screen_changed_cb(GtkWidget  *widget,
     if (gui.norm_font != NULL)
     {
 	gui_mch_init_font(p_guifont, FALSE);
-	gui_set_shellsize(FALSE, FALSE);
+	gui_set_shellsize(FALSE, FALSE, RESIZE_BOTH);
     }
 }
 #endif /* HAVE_GTK_MULTIHEAD */
@@ -4247,7 +4247,8 @@ force_shell_resize_idle(gpointer data)
     void
 gui_mch_set_shellsize(int width, int height,
 		      int min_width,  int min_height,
-		      int base_width, int base_height)
+		      int base_width, int base_height,
+		      int direction)
 {
 #ifndef HAVE_GTK2
     /* Hack: When the form already is at the desired size, the window might

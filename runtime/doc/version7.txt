@@ -2209,4 +2209,19 @@ apparently doesn't work everywhere.  Use %H:%M:%S instead.
 
 Typing BS at the "z=" prompt removed the prompt.
 
+--- fixes since Vim 6.0c ---
+
+When jumping to another tab page the Vim window size was always set, even when
+nothing in the layout changed.
+
+Win32 GUI tab pages line wasn't always enabled.  Do a proper check for the
+compiler version.
+
+Win32: When switching between tab pages the Vim window was moved when part of
+it was outside of the screen.  Now only do that in the direction of a size
+change.
+
+Win32: added menu to GUI tab pages line. (Yegappan Lakshmanan)
+
+
  vim:tw=78:ts=8:ft=help:norl:

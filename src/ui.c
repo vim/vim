@@ -328,7 +328,7 @@ ui_set_shellsize(mustset)
 # else
 		FALSE
 # endif
-		);
+		, RESIZE_BOTH);
     else
 #endif
 	mch_set_shellsize();

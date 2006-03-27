@@ -442,7 +442,7 @@ ex_menu(eap)
 		|| gui.toolbar_height != old_toolbar_height
 # endif
 	    ))
-	gui_set_shellsize(FALSE, FALSE);
+	gui_set_shellsize(FALSE, FALSE, RESIZE_VERT);
 #endif
 
 theend:
