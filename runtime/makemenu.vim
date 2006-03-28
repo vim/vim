@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 26
+" Last Change:	2006 Mar 28
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -136,6 +136,7 @@ SynMenu C.CVS.cvsrc:cvsrc
 SynMenu DE.D:d
 SynMenu DE.Debian.Debian\ ChangeLog:debchangelog
 SynMenu DE.Debian.Debian\ Control:debcontrol
+SynMenu DE.Debian.Debian\ Sources\.list:debsources
 SynMenu DE.Desktop:desktop
 SynMenu DE.Dict\ config:dictconf
 SynMenu DE.Dictd\ config:dictdconf

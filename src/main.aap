@@ -296,7 +296,7 @@ Source =
         fold.c
         getchar.c
         hardcopy.c
-        hashtable.c
+        hashtab.c
         if_cscope.c
         if_xcmdsrv.c
         main.c
@@ -314,7 +314,7 @@ Source =
         option.c
         os_unix.c
         auto/pathdef.c
-        popupmenu.c
+        popupmnu.c
         quickfix.c
         regexp.c
         screen.c

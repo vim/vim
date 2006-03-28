@@ -9070,7 +9070,7 @@ ex_pedit(eap)
     win_T	*curwin_save = curwin;
 
     g_do_tagpreview = p_pvh;
-    prepare_tagpreview();
+    prepare_tagpreview(TRUE);
     keep_help_flag = curwin_save->w_buffer->b_help;
     do_exedit(eap, NULL);
     keep_help_flag = FALSE;

@@ -381,8 +381,10 @@ close_buffer(win, buf, action)
      * unloaded. */
     if (buf->b_nwindows > 0 || !unload_buf)
     {
+#if 0	    /* why was this here? */
 	if (buf == curbuf)
 	    u_sync();	    /* sync undo before going to another buffer */
+#endif
 	return;
     }
 
@@ -1312,10 +1314,14 @@ set_curbuf(buf, action)
 #else
 	if (buf_valid(prevbuf))
 #endif
+	{
+	    if (prevbuf == curbuf)
+		u_sync();
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !P_HID(prevbuf)
 			&& !bufIsChanged(prevbuf)) ? DOBUF_UNLOAD : 0);
+	}
     }
 #ifdef FEAT_AUTOCMD
 # ifdef FEAT_EVAL

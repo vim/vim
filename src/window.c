@@ -3192,6 +3192,18 @@ win_new_tabpage(after)
 
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
+
+#if defined(FEAT_GUI)
+	/* When 'guioptions' includes 'L' or 'R' may have to remove or add
+	 * scrollbars.  Have to update them anyway. */
+	if (gui.in_use && starting == 0)
+	{
+	    gui_init_which_components(NULL);
+	    gui_update_scrollbars(TRUE);
+	}
+	need_mouse_correct = TRUE;
+#endif
+
 	redraw_all_later(CLEAR);
 #ifdef FEAT_AUTOCMD
 	apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
