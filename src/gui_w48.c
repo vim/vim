@@ -1121,8 +1121,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
 
-	GetWindowRect(s_hwnd, &rect);
-	SetRect(&rect, 0, top, rect.right, TABLINE_HEIGHT);
+	SetRect(&rect, 0, top, w, TABLINE_HEIGHT);
 	TabCtrl_AdjustRect(s_tabhwnd, TRUE, &rect);
 	MoveWindow(s_tabhwnd, 0, top, rect.right, rect.bottom, TRUE);
     }

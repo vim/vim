@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0c.  Last change: 2006 Mar 27
+*version7.txt*  For Vim version 7.0c.  Last change: 2006 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -76,6 +76,9 @@ When overwriting a file with ":w! fname" there was no warning for when "fname"
 was being edited by another Vim.  Vim now gives an error message |E768|.
 
 The support for Mac OS 9 has been removed.
+
+Files ending in .tex now have 'filetype' set to "context", "plaintex", or
+"tex".  |ft-tex-plugin|
 
 
 Minor incompatibilities:
@@ -876,6 +879,7 @@ context syntax and ftplugin file. (Nikolai Weibull)
 CRM114 ftplugin file. (Nikolai Weibull)
 cvs RC ftplugin file. (Nikolai Weibull)
 D indent file. (Jason Mills)
+Debian Sources.list syntax file. (Matthijs Mohlmann)
 dictconf and dictdconf syntax, indent and ftplugin files. (Nikolai Weibull)
 diff ftplugin file. (Bram Moolenaar)
 dircolors ftplugin file. (Nikolai Weibull)
@@ -917,7 +921,7 @@ Pascal indent file. (Neil Carter)
 passwd syntax and ftplugin file. (Nikolai Weibull)
 PHP compiler plugin. (Doug Kearns)
 pinfo ftplugin file. (Nikolai Weibull)
-plaintex ftplugin file. (Benji Fisher)
+plaintex syntax and ftplugin files. (Nikolai Weibull, Benji Fisher)
 procmail ftplugin file. (Nikolai Weibull)
 prolog ftplugin file. (Nikolai Weibull)
 protocols syntax and ftplugin file. (Nikolai Weibull)
@@ -996,6 +1000,9 @@ Mac: Support the xterm mouse in the non-GUI version.
 Mac: better integration with Xcode.  Post a fake mouse-up event after the odoc
 event and the drag receive handler to work around a stall after Vim loads a
 file.  Fixed an off-by-one line number error. (Da Woon Jung)
+
+Mac: When started from Finder change directory to the file being edited or the
+user home directory.
 
 Added the t_SI and t_EI escape sequences for starting and ending Insert mode.
 GUI font selector for Motif. (Marcin Dalecki)
@@ -2223,5 +2230,13 @@ change.
 
 Win32: added menu to GUI tab pages line. (Yegappan Lakshmanan)
 
+Mac: Added document icons. (Benji Fisher)
+
+Insert mode completion: Using Enter to accept the current match causes
+confusion.  Use CTRL-Y instead.  Also, use CTRL-E to go back to the typed
+text.
+
+GUI: When there are left and righ scrollbars, ":tabedit" kept them instead of
+using the one that isn't needed.
 
  vim:tw=78:ts=8:ft=help:norl:

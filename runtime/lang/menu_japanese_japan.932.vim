@@ -2,7 +2,7 @@
 "
 " Menu Translations:	Japanese (CP932)
 " Translated By:	MURAOKA Taro  <koron@tka.att.ne.jp>
-" Last Change:		04-Feb-2006.
+" Last Change:		28-Mar-2006.
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -30,6 +30,7 @@ let g:menutrans_help_dialog = "ƒwƒ‹ƒv‚ğŒŸõ‚µ‚½‚¢ƒRƒ}ƒ“ƒh‚à‚µ‚­‚Í’PŒê‚ğ“ü—Í‚µ‚Ä‚
 menutrans &File				ƒtƒ@ƒCƒ‹(&F)
 menutrans &Open\.\.\.<Tab>:e		ŠJ‚­(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	•ªŠ„‚µ‚ÄŠJ‚­(&L)\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	ƒ^ƒuƒy[ƒW‚ÅŠJ‚­<Tab>:tabnew
 menutrans &New<Tab>:enew		V‹Kì¬(&N)<Tab>:enew
 menutrans &Close<Tab>:close		•Â‚¶‚é(&C)<Tab>:close
 menutrans &Save<Tab>:w			•Û‘¶(&S)<Tab>:w
@@ -51,7 +52,7 @@ menutrans &Paste<Tab>"+gP		“\‚è•t‚¯(&P)<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		‘O‚É“\‚é(&B)<Tab>[p
 menutrans Put\ &After<Tab>]p		Œã‚É“\‚é(&A)<Tab>]p
 menutrans &Delete<Tab>x			Á‚·(&D)<Tab>x
-menutrans &Select\ All<Tab>ggVG		‘S‚Ä‘I‘ğ(&S)<Tab>ggvG
+menutrans &Select\ All<Tab>ggVG		‘S‚Ä‘I‘ğ(&S)<Tab>ggVG
 menutrans &Find\.\.\.			ŒŸõ(&F)\.\.\.
 menutrans &Find<Tab>/			ŒŸõ(&F)<Tab>/
 menutrans Find\ and\ Rep&lace\.\.\.	’uŠ·(&L)\.\.\.
@@ -150,7 +151,7 @@ menutrans &Spell\ Check\ On		ƒXƒyƒ‹ƒ`ƒFƒbƒN—LŒø(&S)
 menutrans Spell\ Check\ &Off		ƒXƒyƒ‹ƒ`ƒFƒbƒN—LŒø(&O)
 menutrans To\ &Next\ error<Tab>]s	Ÿ‚ÌƒGƒ‰[(&N)<Tab>]s
 menutrans To\ &Previous\ error<Tab>[s	‘O‚ÌƒGƒ‰[(&P)<Tab>[s
-menutrans Suggest\ &Corrections<Tab>z?	C³Œó•â(&C)<Tab>z?
+menutrans Suggest\ &Corrections<Tab>z=	C³Œó•â(&C)<Tab>z=
 menutrans &Repeat\ correction<Tab>:spellrepall	C³‚ğŒJ‚è•Ô‚·(&R)<Tab>:spellrepall
 menutrans Set\ language\ to\ "en"	Œ¾Œê‚ğ\ "en"\ ‚Éİ’è‚·‚é
 menutrans Set\ language\ to\ "en_au"	Œ¾Œê‚ğ\ "en_au"\ ‚Éİ’è‚·‚é

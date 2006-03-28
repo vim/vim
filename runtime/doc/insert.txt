@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0c.  Last change: 2006 Mar 21
+*insert.txt*    For Vim version 7.0c.  Last change: 2006 Mar 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -304,9 +304,11 @@ insert mode:
 
 						*i_CTRL-X_CTRL-E*
 CTRL-X CTRL-E		scroll window one line up.
+			When doing completion look here: |complete_CTRL-E|
 
 						*i_CTRL-X_CTRL-Y*
 CTRL-X CTRL-Y		scroll window one line down.
+			When doing completion look here: |complete_CTRL-Y|
 
 After CTRL-X is pressed, each CTRL-E (CTRL-Y) scrolls the window up (down) by
 one line unless that would cause the cursor to move from its current position
@@ -589,6 +591,16 @@ CTRL-X mode command.  Valid keys are the CTRL-X command itself, CTRL-N (next),
 and CTRL-P (previous).
 
 Also see the 'infercase' option if you want to adjust the case of the match.
+
+							*complete_CTRL-E*
+When completion is active you can use CTRL-E to stop it and go back to the
+orignally typed text.  The CTRL-E will not be inserted.
+
+							*complete_CTRL-Y*
+When the popup menu is displayed you can use CTRL-Y to stop completion and
+accept the currently selected entry.  The CTRL-Y is not inserted.  Typing a
+space, Enter, or some other unprintable character will leave completion mode
+and insert that typed character.
 
 Note: The keys that are valid in CTRL-X mode are not mapped.  This allows for
 ":map ^F ^X^F" to work (where ^F is CTRL-F and ^X is CTRL-X).  The key that
@@ -1121,7 +1133,8 @@ any printable, non-white character:
 		  Add this character and reduce the number of matches.
 
 In both states these can be used:
-<CR> and <Enter>  Accept the currently selected match and stop completion.
+CTRL-Y		  Yes: Accept the currently selected match and stop completion.
+CTRL-E		  End completion, go back to what was typed.
 <PageUp>	  Select a match several entries back, but don't insert it.
 <PageDown>	  Select a match several entries further, but don't insert it.
 <Up>		  Select the previous match, as if CTRL-P was used, but don't

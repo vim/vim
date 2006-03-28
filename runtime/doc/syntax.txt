@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Mar 12
+*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1943,6 +1943,19 @@ Selecting syncing method: >
 x = -1 to sync by search (default),
 x > 0 to sync at least x lines backwards,
 x = 0 to sync from start.
+
+
+PLAINTEX				*plaintex.vim* *ft-plaintex-syntax*
+
+TeX is a typesetting language, and plaintex is the file type for the "plain"
+variant of TeX.  If you never want your *.tex files recognized as plain TeX,
+see |ft-tex-plugin|.  
+
+This syntax file has the option >
+
+	let g:plaintex_delimiters = 1
+
+if you want to highlight brackets "[]" and braces "{}".
 
 
 PPWIZARD					*ppwiz.vim* *ft-ppwiz-syntax*

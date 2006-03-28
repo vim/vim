@@ -3101,7 +3101,7 @@ jumpto_tag(lbuf, forceit, keep_help)
 	     * Make the preview window the current window.
 	     * Open a preview window when needed.
 	     */
-	    prepare_tagpreview();
+	    prepare_tagpreview(TRUE);
 	}
     }
 

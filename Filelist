@@ -362,6 +362,7 @@ SRC_MAC =	\
 		src/dehqx.py \
 		src/gui_mac.c \
 		src/gui_mac.icns \
+		src/doc-txt.icns \
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \

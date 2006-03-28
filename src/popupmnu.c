@@ -401,8 +401,11 @@ pum_set_selected(n)
 	}
 
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
-	/* Show extra info in the preview window if there is something and
-	 * 'completeopt' contains "preview". */
+	/*
+	 * Show extra info in the preview window if there is something and
+	 * 'completeopt' contains "preview".
+	 * NOTE: Be very careful not to sync undo!
+	 */
 	if (pum_array[pum_selected].pum_info != NULL
 					    && vim_strchr(p_cot, 'p') != NULL)
 	{
@@ -411,7 +414,7 @@ pum_set_selected(n)
 
 	    /* Open a preview window.  3 lines by default. */
 	    g_do_tagpreview = 3;
-	    resized = prepare_tagpreview();
+	    resized = prepare_tagpreview(FALSE);
 	    g_do_tagpreview = 0;
 
 	    if (curwin->w_p_pvw)
@@ -496,7 +499,7 @@ pum_set_selected(n)
 			update_screen(0);
 			pum_do_redraw = FALSE;
 
-			if (win_valid(curwin_save))
+			if (!resized && win_valid(curwin_save))
 			    win_enter(curwin_save, TRUE);
 
 			/* May need to update the screen again when there are

@@ -4,13 +4,13 @@
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
 # MURAOKA Taro <koron@tka.att.ne.jp>, 2001-6.
-# Last Change: 05-Feb-2006.
+# Last Change: 28-Mar-2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.0\n"
-"POT-Creation-Date: 2006-02-04 22:44+0900\n"
-"PO-Revision-Date: 2006-02-05 00:10+0900\n"
+"POT-Creation-Date: 2006-03-28 20:12+0900\n"
+"PO-Revision-Date: 2006-03-28 21:10+0900\n"
 "Last-Translator: MURAOKA Taro <koron@tka.att.ne.jp>\n"
 "Language-Team: MURAOKA Taro <koron@tka.att.ne.jp>\n"
 "MIME-Version: 1.0\n"
@@ -130,7 +130,7 @@ msgstr "[無名]"
 msgid "help"
 msgstr "ヘルプ"
 
-msgid "[help]"
+msgid "[Help]"
 msgstr "[ヘルプ]"
 
 msgid "[Preview]"
@@ -155,8 +155,8 @@ msgstr ""
 msgid "[Location List]"
 msgstr "[場所リスト]"
 
-msgid "[Error List]"
-msgstr "[エラーリスト]"
+msgid "[Quickfix List]"
+msgstr "[Quickfixリスト]"
 
 msgid ""
 "\n"
@@ -488,6 +488,9 @@ msgstr "E724: 表示するには変数の入れ子が深過ぎます"
 
 msgid "E699: Too many arguments"
 msgstr "E699: が多過ぎます"
+
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: complete() は挿入モードでしか利用できません"
 
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
@@ -1021,6 +1024,21 @@ msgstr "行 %ld: %s を取込中"
 msgid "finished sourcing %s"
 msgstr "%s の取込を完了"
 
+msgid "modeline"
+msgstr "モード行"
+
+msgid "--cmd argument"
+msgstr "--cmd 引数"
+
+msgid "-c argument"
+msgstr "-c 引数"
+
+msgid "environment variable"
+msgstr "環境変数"
+
+msgid "error handler"
+msgstr "エラーハンドラ"
+
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: 警告: 行区切が不正です. ^M がないのでしょう"
 
@@ -1151,8 +1169,18 @@ msgstr "E185: カラースキーム %s がみつかりません"
 msgid "Greetings, Vim user!"
 msgstr "Vim 使いさん、やあ!"
 
+msgid "E784: Cannot close last tab page"
+msgstr "E784: 最後のタブページを閉じることはできません"
+
+msgid "Already only one tab page"
+msgstr "既にタブページは1つしかありません"
+
 msgid "Edit File in new window"
 msgstr "新しいウィンドウでファイルを編集します"
+
+#, c-format
+msgid "Tab page %d"
+msgstr "タブページ %d"
 
 msgid "No swap file"
 msgstr "スワップファイルがありません"
@@ -1908,6 +1936,15 @@ msgstr "全て置換"
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: セッションマネージャから \"die\" 要求を受け取りました\n"
 
+msgid "Close"
+msgstr "閉じる"
+
+msgid "New tab"
+msgstr "新規タブページ"
+
+msgid "Open Tab..."
+msgstr "タブページを開く..."
+
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: メインウィンドウが不意に破壊されました\n"
 
@@ -1978,6 +2015,12 @@ msgstr "E243: 引数はサポートされません: \"-%s\"; OLE版を使用してください."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: MDIアプリの中ではウィンドウを開けません"
+
+msgid "Close tab"
+msgstr "タブページを閉じる"
+
+msgid "Open tab..."
+msgstr "タブページを開く"
 
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "検索文字列 ('\\' を検索するには '\\\\')"
@@ -2055,10 +2098,6 @@ msgstr "名前:"
 msgid "Show size in Points"
 msgstr "サイズをポイントで表示する"
 
-# msgid " BLOCK"
-# msgstr " ブロック"
-# msgid " LINE"
-# msgstr " 行"
 msgid "Encoding:"
 msgstr "エンコード:"
 
@@ -2658,8 +2697,6 @@ msgstr "このVimにはdiff機能がありません(コンパイル時設定)."
 msgid "Attempt to open script file again: \""
 msgstr "スクリプトファイルを再び開いてみます: \""
 
-# msgid "\"\n"
-# msgstr "\"\n"
 msgid "Cannot open for reading: \""
 msgstr "読込用として開けません"
 
@@ -2835,6 +2872,9 @@ msgstr "-U <gvimrc>\t\t.gvimrcの代わりに <gvimrc> を使う"
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tプラグインスクリプトをロードしない"
 
+msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
+msgstr "-p[N]\t\tN 個タブページを開く(省略値: ファイルにつき1個)"
+
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tN 個ウィンドウを開く(省略値: ファイルにつき1個)"
 
@@ -2887,6 +2927,9 @@ msgstr "--remote-wait <files>\t--remote後 ファイルの編集が終わるのを待つ"
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-wait-silent <files>  同上, サーバが無くても警告文を出力しない"
+
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <files>  --remoteでファイル1つにつき1つのタブページを開く"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <keys>\tVimサーバに <keys> を送信して終了する"
@@ -3011,8 +3054,6 @@ msgstr "--socketid <xid>\t異なるGTK widgetでVimを開く"
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <親のタイトル>\tVimを親アプリケーションの中で起動する"
 
-# msgid "--help\t\tShow Gnome arguments"
-# msgstr "--help\t\tGNOMEの引数を見せる"
 msgid "No display"
 msgstr "ディスプレイが見つかりません"
 
@@ -4146,6 +4187,9 @@ msgstr "入出力エラー"
 msgid "...(truncated)"
 msgstr "...(省略)"
 
+msgid "Message"
+msgstr "メッセージ"
+
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "'columns' が80ではないため, 外部コマンドを実行できません"
 
@@ -4517,10 +4561,6 @@ msgstr " 行指向選択"
 msgid " SELECT BLOCK"
 msgstr " 矩形選択"
 
-# msgid " BLOCK"
-# msgstr " ブロック"
-# msgid " LINE"
-# msgstr " 行"
 msgid "recording"
 msgstr "記録中"
 
@@ -4561,6 +4601,10 @@ msgstr "  みつかりません"
 #, c-format
 msgid "Scanning included file: %s"
 msgstr "インクルードされたファイルをスキャン中: %s"
+
+#, c-format
+msgid "Searching included file %s"
+msgstr "インクルードされたファイルをスキャン中 %s"
 
 msgid "E387: Match is on current line"
 msgstr "E387: 現在行に該当があります"
@@ -4654,8 +4698,8 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "%s 内の %d 行目にフラグの二重使用があります: %s"
 
 #, c-format
-msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
-msgstr "%s の %d 行目の COMPOUNDMAX の値に誤りがあります: %s"
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "%s の %d 行目の COMPOUNDWORDMAX の値に誤りがあります: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
@@ -4664,6 +4708,10 @@ msgstr "%s の %d 行目の COMPOUNDMIN の値に誤りがあります: %s"
 #, c-format
 msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
 msgstr "%s の %d 行目の COMPOUNDSYLMAX の値に誤りがあります: %s"
+
+#, c-format
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "%s の %d 行目の CHECKCOMPOUNDPATTERN の値に誤りがあります: %s"
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
@@ -4676,10 +4724,10 @@ msgstr "%s の %d 行目に 重複した affix を検出しました: %s"
 
 #, c-format
 msgid ""
-"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND in %s line %d: "
-"%s"
+"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
+"line %d: %s"
 msgstr ""
-"%s の %d 行目の affix は BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND "
+"%s の %d 行目の affix は BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST "
 "に使用してください: %s"
 
 #, c-format
@@ -4689,6 +4737,10 @@ msgstr "%s の %d 行目では Y か N が必要です: %s"
 #, c-format
 msgid "Broken condition in %s line %d: %s"
 msgstr "%s の %d 行目の 条件は壊れています: %s"
+
+#, c-format
+msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
+msgstr "PFXPOSTPONEが指定されたので %s の %d 行目の affix フラグを無視しました: %s"
 
 #, c-format
 msgid "Expected REP(SAL) count in %s line %d"
@@ -4780,7 +4832,7 @@ msgstr "%s の %d 行目の 重複した /encoding= 行を無視しました: %s"
 
 #, c-format
 msgid "/encoding= line after word ignored in %s line %d: %s"
-msgstr "%s ％s の %d 行目の 単語の後の /encoding= 行を無視しました: %s"
+msgstr "%s の %d 行目の 単語の後の /encoding= 行を無視しました: %s"
 
 #, c-format
 msgid "Duplicate /regions= line ignored in %s line %d: %s"
@@ -4858,6 +4910,14 @@ msgstr "実行しました!"
 #, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' には %ld 個のエントリはありません"
+
+#, c-format
+msgid "Word removed from %s"
+msgstr "%s から単語が削除されました"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "%s に単語が追加されました"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: 単語の文字がスペルファイルと異なります"
@@ -5223,15 +5283,52 @@ msgstr "Vim: 入力を読込み中のエラーにより終了します...\n"
 msgid "No undo possible; continue anyway"
 msgstr "可能なアンドゥはありません: とりあえず続けます"
 
+msgid "Already at oldest change"
+msgstr "既に一番古い変更です"
+
+msgid "Already at newest change"
+msgstr "既に一番新しい変更です"
+
+#, c-format
+msgid "Undo number %ld not found"
+msgstr "アンドゥ番号 %ld がみつかりません"
+
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: 行番号が間違っています"
 
-msgid "1 change"
-msgstr "1 箇所変更しました"
+msgid "more line"
+msgstr "行 追加しました"
+
+msgid "行あります"
+msgstr "行 追加しました"
+
+msgid "line less"
+msgstr "行 削除しました"
+
+msgid "fewer lines"
+msgstr "行 削除しました"
+
+msgid "change"
+msgstr "箇所変更しました"
+
+msgid "changes"
+msgstr "箇所変更しました"
 
 #, c-format
-msgid "%ld changes"
-msgstr "%ld 箇所変更しました"
+msgid "%ld %s; %s #%ld  %s"
+msgstr "%ld %s; %s #%ld  %s"
+
+msgid "before"
+msgstr "前方"
+
+msgid "after"
+msgstr "後方"
+
+msgid "Nothing to undo"
+msgstr "アンドゥ対象がありません"
+
+msgid "number changes  time"
+msgstr "番号   変更     時刻"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: アンドゥリストが壊れています"
@@ -5563,6 +5660,33 @@ msgstr "E446: カーソルの下にファイル名がありません"
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: pathには \"%s\" というファイルがありません"
+
+msgid "Edit with &multiple Vims"
+msgstr "複数のVimで編集する (&M)"
+
+msgid "Edit with single &Vim"
+msgstr "1つのVimで編集する (&V)"
+
+msgid "Diff with Vim"
+msgstr "Vimで差分を見る"
+
+msgid "Edit with &Vim"
+msgstr "Vimで編集する (&V)"
+
+msgid "Edit with existing Vim - "
+msgstr "既存のVimで編集する - "
+
+msgid "Edits the selected file(s) with Vim"
+msgstr "選択されたファイルをVimで編集する"
+
+msgid "Error creating process: Check if gvim is in your path!"
+msgstr "起動に失敗しました: gvim へのパスが正しく設定されているか確認してください!"
+
+msgid "gvimext.dll error"
+msgstr "gvimext.dll エラー"
+
+msgid "Path length too long!"
+msgstr "パスが長過ぎます!"
 
 msgid "--No lines in buffer--"
 msgstr "--バッファに行がありません--"

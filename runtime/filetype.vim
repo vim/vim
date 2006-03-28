@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 26
+" Last Change:	2006 Mar 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -474,6 +474,9 @@ au BufNewFile,BufRead *.si			setf cuplsim
 
 " Debian Control
 au BufNewFile,BufRead */debian/control		setf debcontrol
+
+" Debian Sources.list
+au BufNewFile,BufRead /etc/apt/sources.list	setf debsources
 
 " ROCKLinux package description
 au BufNewFile,BufRead *.desc			setf desc
@@ -2004,6 +2007,9 @@ au BufNewFile,BufRead [cC]hange[lL]og*
 
 " Crontab
 au BufNewFile,BufRead crontab,crontab.*		call s:StarSetf('crontab')
+
+" Debian Sources.list
+au BufNewFile,BufRead /etc/apt/sources.list.d/*	call s:StarSetf('debsources')
 
 " Dracula
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')

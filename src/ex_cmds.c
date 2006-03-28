@@ -3240,6 +3240,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 		    buf_copy_options(buf, BCO_ENTER);
 
 		/* close the link to the current buffer */
+		u_sync();
 		close_buffer(curwin, curbuf,
 				      (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD);
 
@@ -5185,7 +5186,8 @@ free_old_sub()
  * Return TRUE when it was created.
  */
     int
-prepare_tagpreview()
+prepare_tagpreview(undo_sync)
+    int		undo_sync;	/* sync undo when leaving the window */
 {
     win_T	*wp;
 
@@ -5202,7 +5204,7 @@ prepare_tagpreview()
 	    if (wp->w_p_pvw)
 		break;
 	if (wp != NULL)
-	    win_enter(wp, TRUE);
+	    win_enter(wp, undo_sync);
 	else
 	{
 	    /*

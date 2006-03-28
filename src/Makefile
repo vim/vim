@@ -1524,6 +1524,7 @@ PRO_AUTO = \
 	$(TCL_PRO)
 
 ICON_APP = gui_mac.icns
+ICON_DOCTXT = doc-txt.icns
 
 PRO_MANUAL = os_amiga.pro os_msdos.pro os_win16.pro os_win32.pro \
 	os_mswin.pro os_beos.pro os_vms.pro os_riscos.pro $(PERL_PRO)
@@ -2163,7 +2164,7 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	if test -f $(ICON_APP); then \
 		cd $(SHADOWDIR); \
-		ln -s ../$(ICON_APP) ../os_mac.rsr.hqx ../dehqx.py .; \
+		ln -s ../$(ICON_APP) ../$(ICON_DOCTXT) ../os_mac.rsr.hqx ../dehqx.py .; \
 	fi
 	mkdir $(SHADOWDIR)/testdir
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
@@ -2528,7 +2529,7 @@ M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
 		-DAPP_VER=$(VERSION) -DICON_APP=$(ICON_APP)
 
 ### Icons
-ICONS = $(RESDIR)/$(ICON_APP)
+ICONS = $(RESDIR)/$(ICON_APP) $(RESDIR)/$(ICON_DOCTXT)
 
 # If you uncomment the following lines the *.icns in the src directory will be
 # detected by this Makefile automatically, and used for Vim.

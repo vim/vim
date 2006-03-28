@@ -4720,6 +4720,8 @@ compl-whole-line	insert.txt	/*compl-whole-line*
 complete()	eval.txt	/*complete()*
 complete-functions	insert.txt	/*complete-functions*
 complete-items	insert.txt	/*complete-items*
+complete_CTRL-E	insert.txt	/*complete_CTRL-E*
+complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
 complex-change	change.txt	/*complex-change*
@@ -5285,6 +5287,7 @@ ft-php-omni	insert.txt	/*ft-php-omni*
 ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
 ft-phtml-syntax	syntax.txt	/*ft-phtml-syntax*
+ft-plaintex-syntax	syntax.txt	/*ft-plaintex-syntax*
 ft-postscr-syntax	syntax.txt	/*ft-postscr-syntax*
 ft-ppwiz-syntax	syntax.txt	/*ft-ppwiz-syntax*
 ft-printcap-syntax	syntax.txt	/*ft-printcap-syntax*
@@ -6465,6 +6468,7 @@ pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
+plaintex.vim	syntax.txt	/*plaintex.vim*
 plsql	sql.txt	/*plsql*
 plugin	usr_05.txt	/*plugin*
 plugin-details	filetype.txt	/*plugin-details*

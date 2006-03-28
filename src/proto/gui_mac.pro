@@ -28,7 +28,7 @@ void gui_mch_exit __ARGS((int));
 void gui_mch_set_winsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height));
 int gui_mch_get_winpos __ARGS((int *x, int *y));
 void gui_mch_set_winpos __ARGS((int x, int y));
-void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height));
+void gui_mch_set_shellsize __ARGS((int width, int height, int min_width, int min_height, int base_width, int base_height, int direction));
 void gui_mch_get_screen_dimensions __ARGS((int *screen_w, int *screen_h));
 void gui_mch_set_text_area_pos __ARGS((int x, int y, int w, int h));
 void gui_mch_enable_scrollbar __ARGS((scrollbar_T *sb, int flag));

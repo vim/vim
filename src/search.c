@@ -4927,7 +4927,7 @@ search_line:
 		    if (g_do_tagpreview != 0)
 		    {
 			curwin_save = curwin;
-			prepare_tagpreview();
+			prepare_tagpreview(TRUE);
 		    }
 #endif
 		    if (action == ACTION_SPLIT)

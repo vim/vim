@@ -165,6 +165,9 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 	if test x$prefix = xNONE; then
 	  prefix=/Applications
 	fi
+
+	dnl Sorry for the hard coded default
+	datadir='${prefix}/Vim.app/Contents/Resources'
       fi
     fi
   fi

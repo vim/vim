@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Mar 27
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-In completion using  Enter to accept the current match causes trouble.
-Leave it out?  Typing a space already works
-
 The 16 bit DOS version compiles now, but it's still too low on memory, writing
 a file fails when 'writebackup' is set.
+
+Have argv() return the arguments in a List.
 
 New Hungarian dictionary. (Laci Nemeth)
     test COMPOUNDFORBIDFLAG
@@ -43,10 +42,16 @@ New Hungarian dictionary. (Laci Nemeth)
     implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
     explain the use of affix flags, replace |spell-affix-rare|
 
-Mac: When started from finder path isn't set and curdir is /.
-Benji Fisher suggests using system() (2006 Mar 26)
-
-Mac: reported default for $VIM is /Applications/share/vim
+-   Set user variables to the names of the actually used user vimrc file,
+    the first directory looked for user plugins/syntax files.
+    $MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
+    runtime files?
+    Also: when the environment variable exists, use it.  If it doesn't
+    exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
+    Add a menu item "Preferences" that does "sp $MYVIMRC".
+-   The Replace dialog takes "\r" literal, unless "replace all" is used.
+    Need to escape backslashes.
+    Win32: the text to replace with isn't remembered.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -132,16 +137,6 @@ Awaiting updated patches:
 -   findmatch() should be adjusted for Lisp.  See remark at
     get_lisp_indent().  Esp. \( and \) should be skipped. (Dorai Sitaram,
     incomplete patch Mar 18)
--   Set user variables to the names of the actually used user vimrc file,
-    the first directory looked for user plugins/syntax files.
-    $MYVIMRC for .vimrc, $MYGVIMRC for .gvimrc, $MYRUNTIME/plugin for
-    runtime files?
-    Also: when the environment variable exists, use it.  If it doesn't
-    exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
-    Add a menu item "Preferences" that does "sp $MYVIMRC".
--   The Replace dialog takes "\r" literal, unless "replace all" is used.
-    Need to escape backslashes.
-    Win32: the text to replace with isn't remembered.
 -   For GUI Find/Replace dialog support using a regexp.  Patch for Motif
     and GTK by degreneir (nov 10 and nov 18).
 -   Patch for "paranoid mode" by Kevin Collins, March 7.  Needs much more work.

@@ -3395,6 +3395,8 @@ fi
 		if test x$prefix = xNONE; then
 	  prefix=/Applications
 	fi
+
+		datadir='${prefix}/Vim.app/Contents/Resources'
       fi
     fi
   fi

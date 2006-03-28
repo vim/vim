@@ -726,8 +726,8 @@ edit(cmdchar, startln, count)
 		    continue;
 		}
 
-		/* Pressing Enter selects the current match. */
-		if (c == CAR || c == K_KENTER || c == NL)
+		/* Pressing CTRL-Y selects the current match. */
+		if (c == Ctrl_Y)
 		{
 		    ins_compl_delete();
 		    ins_compl_insert();
@@ -3274,10 +3274,22 @@ ins_compl_prep(c)
 
 	    auto_format(FALSE, TRUE);
 
-	    /* if the popup menu is displayed hitting Enter means accepting
+	    /* If the popup menu is displayed pressing CTRL-Y means accepting
 	     * the selection without inserting anything. */
-	    if ((c == CAR || c == K_KENTER || c == NL) && pum_visible())
+	    if (c == Ctrl_Y && pum_visible())
 		retval = TRUE;
+
+	    /* CTRL-E means completion is Ended, go back to the typed text. */
+	    if (c == Ctrl_E)
+	    {
+		ins_compl_delete();
+		if (compl_leader != NULL)
+		    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+		else if (compl_first_match != NULL)
+		    ins_bytes(compl_first_match->cp_str
+					  + curwin->w_cursor.col - compl_col);
+		retval = TRUE;
+	    }
 
 	    ins_compl_free();
 	    compl_started = FALSE;

@@ -2,7 +2,7 @@
 "
 " Menu Translations:	Japanese (UTF-8)
 " Translated By:	MURAOKA Taro  <koron@tka.att.ne.jp>
-" Last Change:		04-Feb-2006.
+" Last Change:		06-Feb-2006.
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -30,6 +30,7 @@ let g:menutrans_help_dialog = "ヘルプを検索したいコマンドもしく�
 menutrans &File				ファイル(&F)
 menutrans &Open\.\.\.<Tab>:e		開く(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	分割して開く(&L)\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	タブページで開く<Tab>:tabnew
 menutrans &New<Tab>:enew		新規作成(&N)<Tab>:enew
 menutrans &Close<Tab>:close		閉じる(&C)<Tab>:close
 menutrans &Save<Tab>:w			保存(&S)<Tab>:w
@@ -51,7 +52,7 @@ menutrans &Paste<Tab>"+gP		貼り付け(&P)<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		前に貼る(&B)<Tab>[p
 menutrans Put\ &After<Tab>]p		後に貼る(&A)<Tab>]p
 menutrans &Delete<Tab>x			消す(&D)<Tab>x
-menutrans &Select\ All<Tab>ggVG		全て選択(&S)<Tab>ggvG
+menutrans &Select\ All<Tab>ggVG		全て選択(&S)<Tab>ggVG
 menutrans &Find\.\.\.			検索(&F)\.\.\.
 menutrans &Find<Tab>/			検索(&F)<Tab>/
 menutrans Find\ and\ Rep&lace\.\.\.	置換(&L)\.\.\.
@@ -150,7 +151,7 @@ menutrans &Spell\ Check\ On		スペルチェック有効(&S)
 menutrans Spell\ Check\ &Off		スペルチェック有効(&O)
 menutrans To\ &Next\ error<Tab>]s	次のエラー(&N)<Tab>]s
 menutrans To\ &Previous\ error<Tab>[s	前のエラー(&P)<Tab>[s
-menutrans Suggest\ &Corrections<Tab>z?	修正候補(&C)<Tab>z?
+menutrans Suggest\ &Corrections<Tab>z=	修正候補(&C)<Tab>z=
 menutrans &Repeat\ correction<Tab>:spellrepall	修正を繰り返す(&R)<Tab>:spellrepall
 menutrans Set\ language\ to\ "en"	言語を\ "en"\ に設定する
 menutrans Set\ language\ to\ "en_au"	言語を\ "en_au"\ に設定する

@@ -1066,6 +1066,11 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	    else
 		alist_add(&global_alist, p, 2);
 	}
+
+	/* Change directory to the location of the first file. */
+	if (GARGCOUNT > 0 && vim_chdirfile(alist_name(&GARGLIST[0])) == OK)
+	    shorten_fnames(TRUE);
+
 	goto finished;
     }
 

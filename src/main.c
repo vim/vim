@@ -449,7 +449,24 @@ main
      * message box.  isatty(2) returns TRUE anyway, thus we need to check the
      * name to know we're not started from a terminal. */
     if (gui.starting && (!isatty(2) || strcmp("/dev/console", ttyname(2)) == 0))
+    {
 	params.want_full_screen = FALSE;
+
+	/* Avoid always using "/" as the current directory.  Note that when
+	 * started from Finder the arglist will be filled later in
+	 * HandleODocAE() and "fname" will be NULL. */
+	if (getcwd((char *)NameBuff, MAXPATHL) != NULL
+						&& STRCMP(NameBuff, "/") == 0)
+	{
+	    if (fname != NULL)
+		(void)vim_chdirfile(fname);
+	    else
+	    {
+		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
+		vim_chdir(NameBuff);
+	    }
+	}
+    }
 #endif
 
     /*

@@ -116,40 +116,41 @@ an 50.20.390 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
 an 50.30.100 &Syntax.DE.D :cal SetSyn("d")<CR>
 an 50.30.110 &Syntax.DE.Debian.Debian\ ChangeLog :cal SetSyn("debchangelog")<CR>
 an 50.30.120 &Syntax.DE.Debian.Debian\ Control :cal SetSyn("debcontrol")<CR>
-an 50.30.130 &Syntax.DE.Desktop :cal SetSyn("desktop")<CR>
-an 50.30.140 &Syntax.DE.Dict\ config :cal SetSyn("dictconf")<CR>
-an 50.30.150 &Syntax.DE.Dictd\ config :cal SetSyn("dictdconf")<CR>
-an 50.30.160 &Syntax.DE.Diff :cal SetSyn("diff")<CR>
-an 50.30.170 &Syntax.DE.Digital\ Command\ Lang :cal SetSyn("dcl")<CR>
-an 50.30.180 &Syntax.DE.Dircolors :cal SetSyn("dircolors")<CR>
-an 50.30.190 &Syntax.DE.Django\ template :cal SetSyn("django")<CR>
-an 50.30.200 &Syntax.DE.DNS/BIND\ zone :cal SetSyn("bindzone")<CR>
-an 50.30.210 &Syntax.DE.DocBook.auto-detect :cal SetSyn("docbk")<CR>
-an 50.30.220 &Syntax.DE.DocBook.SGML :cal SetSyn("docbksgml")<CR>
-an 50.30.230 &Syntax.DE.DocBook.XML :cal SetSyn("docbkxml")<CR>
-an 50.30.240 &Syntax.DE.Dot :cal SetSyn("dot")<CR>
-an 50.30.250 &Syntax.DE.Dracula :cal SetSyn("dracula")<CR>
-an 50.30.260 &Syntax.DE.DSSSL :cal SetSyn("dsl")<CR>
-an 50.30.270 &Syntax.DE.DTD :cal SetSyn("dtd")<CR>
-an 50.30.280 &Syntax.DE.DTML\ (Zope) :cal SetSyn("dtml")<CR>
-an 50.30.290 &Syntax.DE.Dylan.Dylan :cal SetSyn("dylan")<CR>
-an 50.30.300 &Syntax.DE.Dylan.Dylan\ interface :cal SetSyn("dylanintr")<CR>
-an 50.30.310 &Syntax.DE.Dylan.Dylan\ lid :cal SetSyn("dylanlid")<CR>
-an 50.30.330 &Syntax.DE.EDIF :cal SetSyn("edif")<CR>
-an 50.30.340 &Syntax.DE.Eiffel :cal SetSyn("eiffel")<CR>
-an 50.30.350 &Syntax.DE.Elinks\ config :cal SetSyn("elinks")<CR>
-an 50.30.360 &Syntax.DE.Elm\ filter\ rules :cal SetSyn("elmfilt")<CR>
-an 50.30.370 &Syntax.DE.Embedix\ Component\ Description :cal SetSyn("ecd")<CR>
-an 50.30.380 &Syntax.DE.ERicsson\ LANGuage :cal SetSyn("erlang")<CR>
-an 50.30.390 &Syntax.DE.ESMTP\ rc :cal SetSyn("esmtprc")<CR>
-an 50.30.400 &Syntax.DE.ESQL-C :cal SetSyn("esqlc")<CR>
-an 50.30.410 &Syntax.DE.Essbase\ script :cal SetSyn("csc")<CR>
-an 50.30.420 &Syntax.DE.Esterel :cal SetSyn("esterel")<CR>
-an 50.30.430 &Syntax.DE.Eterm\ config :cal SetSyn("eterm")<CR>
-an 50.30.440 &Syntax.DE.Eviews :cal SetSyn("eviews")<CR>
-an 50.30.450 &Syntax.DE.Exim\ conf :cal SetSyn("exim")<CR>
-an 50.30.460 &Syntax.DE.Expect :cal SetSyn("expect")<CR>
-an 50.30.470 &Syntax.DE.Exports :cal SetSyn("exports")<CR>
+an 50.30.130 &Syntax.DE.Debian.Debian\ Sources\.list :cal SetSyn("debsources")<CR>
+an 50.30.140 &Syntax.DE.Desktop :cal SetSyn("desktop")<CR>
+an 50.30.150 &Syntax.DE.Dict\ config :cal SetSyn("dictconf")<CR>
+an 50.30.160 &Syntax.DE.Dictd\ config :cal SetSyn("dictdconf")<CR>
+an 50.30.170 &Syntax.DE.Diff :cal SetSyn("diff")<CR>
+an 50.30.180 &Syntax.DE.Digital\ Command\ Lang :cal SetSyn("dcl")<CR>
+an 50.30.190 &Syntax.DE.Dircolors :cal SetSyn("dircolors")<CR>
+an 50.30.200 &Syntax.DE.Django\ template :cal SetSyn("django")<CR>
+an 50.30.210 &Syntax.DE.DNS/BIND\ zone :cal SetSyn("bindzone")<CR>
+an 50.30.220 &Syntax.DE.DocBook.auto-detect :cal SetSyn("docbk")<CR>
+an 50.30.230 &Syntax.DE.DocBook.SGML :cal SetSyn("docbksgml")<CR>
+an 50.30.240 &Syntax.DE.DocBook.XML :cal SetSyn("docbkxml")<CR>
+an 50.30.250 &Syntax.DE.Dot :cal SetSyn("dot")<CR>
+an 50.30.260 &Syntax.DE.Dracula :cal SetSyn("dracula")<CR>
+an 50.30.270 &Syntax.DE.DSSSL :cal SetSyn("dsl")<CR>
+an 50.30.280 &Syntax.DE.DTD :cal SetSyn("dtd")<CR>
+an 50.30.290 &Syntax.DE.DTML\ (Zope) :cal SetSyn("dtml")<CR>
+an 50.30.300 &Syntax.DE.Dylan.Dylan :cal SetSyn("dylan")<CR>
+an 50.30.310 &Syntax.DE.Dylan.Dylan\ interface :cal SetSyn("dylanintr")<CR>
+an 50.30.320 &Syntax.DE.Dylan.Dylan\ lid :cal SetSyn("dylanlid")<CR>
+an 50.30.340 &Syntax.DE.EDIF :cal SetSyn("edif")<CR>
+an 50.30.350 &Syntax.DE.Eiffel :cal SetSyn("eiffel")<CR>
+an 50.30.360 &Syntax.DE.Elinks\ config :cal SetSyn("elinks")<CR>
+an 50.30.370 &Syntax.DE.Elm\ filter\ rules :cal SetSyn("elmfilt")<CR>
+an 50.30.380 &Syntax.DE.Embedix\ Component\ Description :cal SetSyn("ecd")<CR>
+an 50.30.390 &Syntax.DE.ERicsson\ LANGuage :cal SetSyn("erlang")<CR>
+an 50.30.400 &Syntax.DE.ESMTP\ rc :cal SetSyn("esmtprc")<CR>
+an 50.30.410 &Syntax.DE.ESQL-C :cal SetSyn("esqlc")<CR>
+an 50.30.420 &Syntax.DE.Essbase\ script :cal SetSyn("csc")<CR>
+an 50.30.430 &Syntax.DE.Esterel :cal SetSyn("esterel")<CR>
+an 50.30.440 &Syntax.DE.Eterm\ config :cal SetSyn("eterm")<CR>
+an 50.30.450 &Syntax.DE.Eviews :cal SetSyn("eviews")<CR>
+an 50.30.460 &Syntax.DE.Exim\ conf :cal SetSyn("exim")<CR>
+an 50.30.470 &Syntax.DE.Expect :cal SetSyn("expect")<CR>
+an 50.30.480 &Syntax.DE.Exports :cal SetSyn("exports")<CR>
 an 50.40.100 &Syntax.FG.Fetchmail :cal SetSyn("fetchmail")<CR>
 an 50.40.110 &Syntax.FG.Focus\ Executable :cal SetSyn("focexec")<CR>
 an 50.40.120 &Syntax.FG.Focus\ Master :cal SetSyn("master")<CR>

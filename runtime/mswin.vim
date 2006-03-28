@@ -1,7 +1,7 @@
 " Set options and add mapping such that Vim behaves a lot like MS-Windows
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Mar 09
+" Last change:	2006 Mar 28
 
 " bail out if this isn't wanted (mrsvim.vim uses this).
 if exists("g:skip_loading_mswin") && g:skip_loading_mswin
@@ -82,16 +82,19 @@ endif
 noremap <C-A> gggH<C-O>G
 inoremap <C-A> <C-O>gg<C-O>gH<C-O>G
 cnoremap <C-A> <C-C>gggH<C-O>G
+onoremap <C-A> <C-C>gggH<C-O>G
 
 " CTRL-Tab is Next window
 noremap <C-Tab> <C-W>w
 inoremap <C-Tab> <C-O><C-W>w
 cnoremap <C-Tab> <C-C><C-W>w
+onoremap <C-Tab> <C-C><C-W>w
 
 " CTRL-F4 is Close window
 noremap <C-F4> <C-W>c
 inoremap <C-F4> <C-O><C-W>c
 cnoremap <C-F4> <C-C><C-W>c
+onoremap <C-F4> <C-C><C-W>c
 
 " restore 'cpoptions'
 set cpo&
