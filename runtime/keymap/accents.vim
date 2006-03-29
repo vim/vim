@@ -1,6 +1,6 @@
 " Vim Keymap file for latin1 accents through dead characters
 " Maintainer: Bram Moolenaar
-" Last Change: 2001 Jul 22
+" Last Change: 2006 Mar 29
 
 " All characters are given literally, conversion to another encoding (e.g.,
 " UTF-8) should work.
@@ -15,6 +15,7 @@ loadkeymap
 ´A	Á
 ^A	Â
 ~A	Ã
+:A	Ä
 'C	Ç
 ´C	Ç
 `E	È
@@ -31,10 +32,12 @@ loadkeymap
 ´O	Ó
 ^O	Ô
 ~O	Õ
+:O	Ö
 `U	Ù
 'U	Ú
 ´U	Ú
 ^U	Û
+:U	Ü
 'Y	Ý
 ´Y	Ý
 `a	à
@@ -42,6 +45,7 @@ loadkeymap
 ´a	á
 ^a	â
 ~a	ã
+:a	ä
 'c	ç
 ´c	ç
 `e	è
@@ -58,10 +62,12 @@ loadkeymap
 ´o	ó
 ^o	ô
 ~o	õ
+:o	ö
 `u	ù
 'u	ú
 ´u	ú
 ^u	û
+:u	ü
 'y	ý
 ´y	ý
 ''	'
@@ -69,3 +75,4 @@ loadkeymap
 ``	`
 ^^	^
 ~~	~
+::	:

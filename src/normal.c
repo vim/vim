@@ -8993,7 +8993,17 @@ nv_put(cap)
 	/* When all lines were selected and deleted do_put() leaves an empty
 	 * line that needs to be deleted now. */
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
+	{
 	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
+
+	    /* If the cursor was in that line, move it to the end of the last
+	     * line. */
+	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+	    {
+		curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+		coladvance((colnr_T)MAXCOL);
+	    }
+	}
 #endif
 	auto_format(FALSE, TRUE);
     }

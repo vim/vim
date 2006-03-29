@@ -2039,7 +2039,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 
     /*
      * Start looking for bad word at the start of the line, because we can't
-     * start halfway a word, we don't know where the it starts or ends.
+     * start halfway a word, we don't know where it starts or ends.
      *
      * When searching backwards, we continue in the line to find the last
      * bad word (in the cursor line: before the cursor).
