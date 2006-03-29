@@ -1,6 +1,6 @@
 " Vim script for Evim key bindings
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2002 Mar 04
+" Last Change:	2006 Mar 29
 
 " Don't use Vi-compatible mode.
 set nocompatible
@@ -15,8 +15,8 @@ set insertmode
 set hidden
 
 " Make cursor keys ignore wrapping
-inoremap <Down> <C-O>gj
-inoremap <Up> <C-O>gk
+inoremap <Down> <C-R>=pumvisible() ? "\<lt>Down>" : "\<lt>C-O>gj"<CR>
+inoremap <Up> <C-R>=pumvisible() ? "\<lt>Up>" : "\<lt>C-O>gk"<CR>
 
 " CTRL-F does Find dialog instead of page forward
 noremap <C-F> :promptfind<CR>

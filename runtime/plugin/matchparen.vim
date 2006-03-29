@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 14
+" Last Change: 2006 Mar 29
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -63,15 +63,22 @@ function! s:Highlight_Matching_Pair()
 
   " Figure out the arguments for searchpairpos().
   " Restrict the search to visible lines with "stopline".
+  " And avoid searching very far (e.g., for closed folds)
   if i % 2 == 0
     let s_flags = 'nW'
     let c2 = plist[i + 1]
     let stopline = line('w$')
+    if stopline > c_lnum + 100
+      let stopline = c_lnu + 100
+    endif
   else
     let s_flags = 'nbW'
     let c2 = c
     let c = plist[i - 1]
     let stopline = line('w0')
+    if stopline < c_lnum - 100
+      let stopline = c_lnu - 100
+    endif
   endif
   if c == '['
     let c = '\['

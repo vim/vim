@@ -431,9 +431,10 @@ struct vimoption
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
 /* 'isprint' for latin1 is also used for MS-Windows, where 0x80 is used for
- * the currency sign.  Thus this isn't really latin1... */
+ * the currency sign.  This isn't really latin1 but Windows-1252, but we can't
+ * detect that. */
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
-# define ISP_LATIN1 (char_u *)"@,128,161-255"
+# define ISP_LATIN1 (char_u *)"@,~-255"
 #else
 # define ISP_LATIN1 (char_u *)"@,161-255"
 #endif

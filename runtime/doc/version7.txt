@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0c.  Last change: 2006 Mar 28
+*version7.txt*  For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -692,6 +692,7 @@ New and extended functions: ~
 
 |add()|			append an item to a List
 |append()|		append List of lines to the buffer
+|argv()|		without an argument return the whole argument list
 |browsedir()|		dialog to select a directory
 |bufnr()|		takes an extra argument: create buffer
 |byteidx()| 		index of a character (Ilya Sher)
@@ -2238,5 +2239,20 @@ text.
 
 GUI: When there are left and righ scrollbars, ":tabedit" kept them instead of
 using the one that isn't needed.
+
+Using "gP" to replace al the text could leave the cursor below the last line,
+causing ml_get errors.
+
+When 'cursorline' is set don't use the highlighting when Visual mode is
+active, otherwise it's difficult to see the selected area.
+
+The matchparen plugin restricts the search to 100 lines, to avoid a long delay
+when there are closed folds.
+
+Sometimes using CTRL-X s to list spelling suggestions used text from another
+line.
+
+Win32: Set the default for 'isprint' back to the wrong default "@,~-255",
+because many people use Windows-1252 while 'encoding' is "latin1".
 
  vim:tw=78:ts=8:ft=help:norl:

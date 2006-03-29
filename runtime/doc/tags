@@ -5307,6 +5307,7 @@ ft-sh-syntax	syntax.txt	/*ft-sh-syntax*
 ft-spec-plugin	filetype.txt	/*ft-spec-plugin*
 ft-spup-syntax	syntax.txt	/*ft-spup-syntax*
 ft-sql	filetype.txt	/*ft-sql*
+ft-sql-omni	insert.txt	/*ft-sql-omni*
 ft-sql-syntax	syntax.txt	/*ft-sql-syntax*
 ft-sqlanywhere-syntax	syntax.txt	/*ft-sqlanywhere-syntax*
 ft-sqlinformix-syntax	syntax.txt	/*ft-sqlinformix-syntax*
@@ -5746,6 +5747,7 @@ i_CTRL-B-gone	version5.txt	/*i_CTRL-B-gone*
 i_CTRL-C	insert.txt	/*i_CTRL-C*
 i_CTRL-D	insert.txt	/*i_CTRL-D*
 i_CTRL-E	insert.txt	/*i_CTRL-E*
+i_CTRL-F	indent.txt	/*i_CTRL-F*
 i_CTRL-G_<Down>	insert.txt	/*i_CTRL-G_<Down>*
 i_CTRL-G_<Up>	insert.txt	/*i_CTRL-G_<Up>*
 i_CTRL-G_CTRL-J	insert.txt	/*i_CTRL-G_CTRL-J*
@@ -5916,6 +5918,7 @@ key-mapping	map.txt	/*key-mapping*
 key-notation	intro.txt	/*key-notation*
 key-variable	eval.txt	/*key-variable*
 keycodes	intro.txt	/*keycodes*
+keymap-accents	mbyte.txt	/*keymap-accents*
 keymap-file-format	mbyte.txt	/*keymap-file-format*
 keymap-hebrew	mbyte.txt	/*keymap-hebrew*
 keypad-0	intro.txt	/*keypad-0*
@@ -6386,6 +6389,7 @@ ole-normal	if_ole.txt	/*ole-normal*
 ole-registration	if_ole.txt	/*ole-registration*
 ole-sendkeys	if_ole.txt	/*ole-sendkeys*
 ole-setforeground	if_ole.txt	/*ole-setforeground*
+omni-sql-completion	sql.txt	/*omni-sql-completion*
 online-help	various.txt	/*online-help*
 opening-window	windows.txt	/*opening-window*
 operator	motion.txt	/*operator*
@@ -6905,6 +6909,16 @@ sponsor.txt	sponsor.txt	/*sponsor.txt*
 spoon	os_unix.txt	/*spoon*
 spup.vim	syntax.txt	/*spup.vim*
 sql-adding-dialects	sql.txt	/*sql-adding-dialects*
+sql-completion	sql.txt	/*sql-completion*
+sql-completion-columns	sql.txt	/*sql-completion-columns*
+sql-completion-customization	sql.txt	/*sql-completion-customization*
+sql-completion-dynamic	sql.txt	/*sql-completion-dynamic*
+sql-completion-maps	sql.txt	/*sql-completion-maps*
+sql-completion-procedures	sql.txt	/*sql-completion-procedures*
+sql-completion-static	sql.txt	/*sql-completion-static*
+sql-completion-tables	sql.txt	/*sql-completion-tables*
+sql-completion-tutorial	sql.txt	/*sql-completion-tutorial*
+sql-completion-views	sql.txt	/*sql-completion-views*
 sql-dialects	sql.txt	/*sql-dialects*
 sql-macros	sql.txt	/*sql-macros*
 sql-matchit	sql.txt	/*sql-matchit*

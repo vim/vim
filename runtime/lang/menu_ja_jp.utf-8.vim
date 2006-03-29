@@ -330,3 +330,8 @@ if has('iconv')
   endif
   an 10.396.120.130 ファイル(&F).エンコード指定(&E)\.\.\..保存(&S)\.\.\..UTF-8(&8)<Tab>fenc=utf-8 :set fenc=utf-8 \| w<CR>
 endif
+
+" filler to avoid the line above being recognized as a modeline
+" filler
+" filler
+" filler

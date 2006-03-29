@@ -47,7 +47,8 @@ syn match   pythonFunction	"[a-zA-Z_][a-zA-Z0-9_]*" contained
 syn keyword pythonRepeat	for while
 syn keyword pythonConditional	if elif else
 syn keyword pythonOperator	and in is not or
-syn keyword pythonPreCondit	import from
+" AS will be a keyword in Python 3
+syn keyword pythonPreCondit	import from as
 syn match   pythonComment	"#.*$" contains=pythonTodo
 syn keyword pythonTodo		TODO FIXME XXX contained
 

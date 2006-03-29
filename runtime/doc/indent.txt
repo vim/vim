@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0c.  Last change: 2005 Aug 30
+*indent.txt*    For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -68,7 +68,7 @@ as follows:
 	"e"	if you type the second 'e' for an "else" at the start of a
 		line
 
-Characters that can precede each key:
+Characters that can precede each key:				*i_CTRL-F*
 !	When a '!' precedes the key, Vim will not insert the key but will
 	instead reindent the current line.  This allows you to define a
 	command key for reindenting the current line.  CTRL-F is the default

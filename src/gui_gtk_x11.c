@@ -5352,6 +5352,8 @@ gui_mch_get_color(char_u *name)
 	{"DarkMagenta",  "#BB00BB"},
 	{"DarkGrey",	 "#BBBBBB"},
 	{"DarkYellow",	 "#BBBB00"},
+	{"Grey90",	 "#E5E5E5"},
+	{"Gray90",	 "#E5E5E5"},
 	{NULL, NULL}
     };
 

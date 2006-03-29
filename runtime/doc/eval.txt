@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0c.  Last change: 2006 Mar 26
+*eval.txt*      For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1501,6 +1501,7 @@ append( {lnum}, {list})		Number	append lines {list} below line {lnum}
 argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
+argv( )				List	the argument list
 browse( {save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir( {title}, {initdir})  String	put up a directory requester
@@ -1767,7 +1768,7 @@ argidx()	The result is the current index in the argument list.  0 is
 		the first file.  argc() - 1 is the last one.  See |arglist|.
 
 							*argv()*
-argv({nr})	The result is the {nr}th file in the argument list of the
+argv([{nr}])	The result is the {nr}th file in the argument list of the
 		current window.  See |arglist|.  "argv(0)" is the first one.
 		Example: >
 	:let i = 0
@@ -1776,7 +1777,9 @@ argv({nr})	The result is the {nr}th file in the argument list of the
 	:  exe 'amenu Arg.' . f . ' :e ' . f . '<CR>'
 	:  let i = i + 1
 	:endwhile
-<
+<		Without the {nr} argument a |List| with the whole |arglist| is
+		returned.
+
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
 		Put up a file requester.  This only works when "has("browse")"

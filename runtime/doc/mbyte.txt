@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0c.  Last change: 2006 Mar 05
+*mbyte.txt*     For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -1076,6 +1076,7 @@ also add this line: >
 	''	'
 Since the mapping is defined with |:lnoremap| the resulting quote will not be
 used for the start of another character.
+The "accents" keymap uses this.				*keymap-accents*
 
 Although it's possible to have more than one character in the second column,
 this is unusual.  But you can use various ways to specify the character: >

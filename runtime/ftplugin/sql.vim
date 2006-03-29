@@ -2,7 +2,7 @@
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
 " Version:     1.0
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: Wed Jan 11 2006 10:04:55 AM
+" Last Change: Tue Mar 28 2006 2:26:48 PM
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -367,16 +367,35 @@ if exists('&omnifunc')
     setlocal omnifunc=sqlcomplete#Complete
     " Prevent the intellisense plugin from loading
     let b:sql_vis = 1
-    imap <buffer> <c-space>t <C-O>:let b:sql_compl_type='table'<CR><C-X><C-O>
-    imap <buffer> <c-space>p <C-O>:let b:sql_compl_type='procedure'<CR><C-X><C-O>
-    imap <buffer> <c-space>v <C-O>:let b:sql_compl_type='view'<CR><C-X><C-O>
-    imap <buffer> <c-space>c <C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
-    imap <buffer> <c-space>f <C-O>:let b:sql_compl_type='function'<CR><C-X><C-O>
-    imap <buffer> <c-space>o <C-O>:let b:sql_compl_type='option'<CR><C-X><C-O>
-    imap <buffer> <c-right> <C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
+    if !exists('g:omni_sql_no_default_maps')
+        " Static maps which use populate the completion list
+        " using Vim's syntax highlighting rules
+        imap <buffer> <c-c>a <C-\><C-O>:let b:sql_compl_type='syntax'<CR><C-X><C-O>
+        imap <buffer> <c-c>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
+        imap <buffer> <c-c>f <C-\><C-O>:let b:sql_compl_type='sqlFunction'<CR><C-X><C-O>
+        imap <buffer> <c-c>o <C-\><C-O>:let b:sql_compl_type='sqlOption'<CR><C-X><C-O>
+        imap <buffer> <c-c>T <C-\><C-O>:let b:sql_compl_type='sqlType'<CR><C-X><C-O>
+        imap <buffer> <c-c>s <C-\><C-O>:let b:sql_compl_type='sqlStatement'<CR><C-X><C-O>
+        " Dynamic maps which use populate the completion list
+        " using the dbext.vim plugin
+        imap <buffer> <c-c>t <C-\><C-O>:let b:sql_compl_type='table'<CR><C-X><C-O>
+        imap <buffer> <c-c>p <C-\><C-O>:let b:sql_compl_type='procedure'<CR><C-X><C-O>
+        imap <buffer> <c-c>v <C-\><C-O>:let b:sql_compl_type='view'<CR><C-X><C-O>
+        imap <buffer> <c-c>c <C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
+        imap <buffer> <c-c>l <C-\><C-O>:let b:sql_compl_type='column_csv'<CR><C-X><C-O>
+        " The next 3 maps are only to be used while the completion window is
+        " active due to the <CR> at the beginning of the map
+        imap <buffer> <c-c>L <CR><C-\><C-O>:let b:sql_compl_type='column_csv'<CR><C-X><C-O>
+        if has('win32')
+            imap <buffer> <c-right>  <CR><C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
+            imap <buffer> <c-left>   <C-\><C-O>:let b:sql_compl_type='tableReset'<CR><C-X><C-O>
+        endif
+        " Remove any cached items useful for schema changes
+        imap <buffer> <c-c>R <C-\><C-O>:let b:sql_compl_type='resetCache'<CR><C-X><C-O>
+    endif
 endif
 
 let &cpo = s:save_cpo
 
-" vim:sw=4:ff=unix:
+" vim:sw=4:
 

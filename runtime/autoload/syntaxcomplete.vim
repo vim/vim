@@ -1,8 +1,8 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     1.2
-" Last Change: Sat Mar 18 2006 8:25:30 PM
+" Version:     1.3
+" Last Change: Mon Mar 27 2006 9:29:35 PM
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
@@ -181,7 +181,7 @@ function! OmniSyntaxList()
         if get_syn_list == 1
             " Pass in the full syntax listing, plus the group name we 
             " are interested in.
-            let extra_syn_list = s:SyntaxGroupItems(group_name, syntax_full)
+            let extra_syn_list = s:SyntaxCSyntaxGroupItems(group_name, syntax_full)
 
             let syn_list = syn_list . extra_syn_list . "\n"
         endif
@@ -212,7 +212,7 @@ function! OmniSyntaxList()
     endif
 endfunction
 
-function! s:SyntaxGroupItems( group_name, syntax_full )
+function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
 
     let syn_list = ""
 

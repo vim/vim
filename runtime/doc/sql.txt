@@ -1,4 +1,4 @@
-*sql.txt*   	For Vim version 7.0c.  Last change: Fri Jan 06 2006 8:09:25 AM
+*sql.txt*   	For Vim version 7.0c.  Last change: Tue Mar 28 2006 9:33:14 PM
 
 by David Fishburn
 
@@ -17,6 +17,16 @@ features for navigation, indentation and syntax highlighting.
     2.1 SQLSetType		        	|SQLSetType|
     2.2 SQL Dialect Default		        |sql-type-default|
 3. Adding new SQL Dialects		        |sql-adding-dialects|
+4. OMNI SQL Completion  		        |sql-completion|
+    4.1 Static mode		        	|sql-completion-static|
+    4.2 Dynamic mode    		        |sql-completion-dynamic|
+    4.3 Tutorial				|sql-completion-tutorial|
+        4.3.1 Complete Tables			|sql-completion-tables|
+        4.3.2 Complete Columns			|sql-completion-columns|
+        4.3.3 Complete Procedures		|sql-completion-procedures|
+        4.3.4 Complete Views			|sql-completion-views|
+    4.4 Completion Customization		|sql-completion-customization|
+    4.5 Customizing Maps			|sql-completion-maps|
 
 ==============================================================================
 1. Navigation	        			*sql-navigation*
@@ -89,7 +99,7 @@ file): >
 
 1.3 Predefined Object Motions                   *sql-predefined-objects*
 -----------------------------
-Most relational databases support various standard features, tables, indicies,
+Most relational databases support various standard features, tables, indices,
 triggers and stored procedures.  Each vendor also has a variety of proprietary
 objects.  The next set of maps have been created to help move between these
 objects.  Depends on which database vendor you are using, the list of objects
@@ -293,6 +303,333 @@ No changes are necessary to the SQLSetType function.  It will automatically
 pickup the new SQL files and load them when you issue the SQLSetType command. 
 
 
+==============================================================================
+4. OMNI SQL Completion  		        *sql-completion* 
+                                                *omni-sql-completion*
 
+Vim 7 includes a code completion interface and functions which allows plugin
+developers to build in code completion for any language.  Vim 7 includes 
+code completion for the SQL language.
+
+There are two modes to the SQL completion plugin, static and dynamic.  The
+static mode populates the popups with the data generated from current syntax
+highlight rules.  The dynamic mode populates the popups with data retrieved
+directly from a database.  This includes, table lists, column lists,
+procedures names and more.
+
+4.1 Static Mode  		                *sql-completion-static*
+---------------
+The static popups created contain items defined by the active syntax rules
+while editing a file with a filetype of SQL.  The plugin defines (by default)
+various maps to help the user refine which list of items they wish displayed.
+The defaults static maps are: >
+        imap <buffer> <C-C>a <C-\><C-O>:let b:sql_compl_type='syntax'<CR><C-X><C-O>
+        imap <buffer> <C-C>s <C-\><C-O>:let b:sql_compl_type='sqlStatement'<CR><C-X><C-O>
+        imap <buffer> <C-C>f <C-\><C-O>:let b:sql_compl_type='sqlFunction'<CR><C-X><C-O>
+        imap <buffer> <C-C>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
+        imap <buffer> <C-C>o <C-\><C-O>:let b:sql_compl_type='sqlOption'<CR><C-X><C-O>
+        imap <buffer> <C-C>T <C-\><C-O>:let b:sql_compl_type='sqlType'<CR><C-X><C-O>
+< 
+The static maps (which are based on the syntax highlight groups) follow this
+format: >
+    imap <buffer> <C-C>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
+<
+This command breaks down as: >
+    imap                   - Create an insert map
+    <buffer>               - Only for this buffer
+    <C-C>k             - Your choice of key map
+    <C-\><C-O>             - Execute one command, return to Insert mode
+    :let b:sql_compl_type= - Choose the highlight group's entries to display.
+                             You can view a list of highlight group names to
+                             choose from by executing the
+                                 :syntax list
+                             command while editing a SQL file.
+    'sqlKeyword'           - Display the items for the sqlKeyword highlight
+                             group
+    <CR>                   - Execute the :let command
+    <C-X><C-O>             - Trigger the standard omni completion key stroke.
+                             By setting the b:sql_compl_type variable, this
+                             instructs the SQL completion plugin to populate
+                             the popup with items from the sqlKeyword highlight
+                             group.  The plugin will also cache this result
+                             until Vim is restarted.  The syntax list is 
+                             retrieved using the syntaxcomplete plugin.
+<
+Setting b:sql_compl_type = 'syntax' is a special case.  This instructs the
+syntaxcomplete plugin to retrieve all syntax items.  So this will effectively
+work for any of Vim's SQL syntax files.  At the time of writing this includes
+10 different syntax files for the different dialects of SQL (see section 3
+above, |sql-dialects|).
+
+Here are some examples of the entries which are pulled from the syntax files: >
+     All
+         - Contains the contents of all syntax highlight groups
+     Statements
+         - Select, Insert, Update, Delete, Create, Alter, ...
+     Functions
+         - Min, Max, Trim, Round, Date, ...
+     Keywords
+         - Index, Database, Having, Group, With
+     Options
+         - Isolation_level, On_error, Qualify_owners, Fire_triggers, ...
+     Types
+         - Integer, Char, Varchar, Date, DateTime, Timestamp, ...
+<
+ 
+4.2 Dynamic Mode  		                *sql-completion-dynamic*
+----------------
+Dynamic mode populates the popups with data directly from a database.  In
+order for the dynamic feature to be enabled you must have the dbext.vim
+plugin installed, (http://vim.sourceforge.net/script.php?script_id=356).
+
+Dynamic mode is used by several features of the SQL completion plugin.  
+After installing the dbext plugin see the |dbext-tutorial| for additional
+configuration and usage.  The dbext plugin allows the SQL completion plugin
+to display a list of tables, procedures, views and columns. >
+     Table List
+         - All tables for all schema owners
+     Procedure List
+         - All stored procedures for all schema owners
+     View List
+         - All stored procedures for all schema owners
+     Column List
+         - For the selected table, the columns that are part of the table
+<
+To enable the popup, while in INSERT mode, use the following key combinations
+for each group (where <C-C> means hold the CTRL key down while pressing 
+the space bar):
+     Table List             - <C-C>t
+                            - <C-X><C-O> (the default map assumes tables)
+     Stored Procedure List  - <C-C>p
+     View List              - <C-C>v
+     Column List            - <C-C>c
+                            - .<C-X><C-O>
+                            - If <C-X><C-O> is pressed following a period
+                              it is assumed you are asking for a column list.
+                            - When viewing a popup window displaying the list
+                              of tables, you can press <C-Right>, this will
+                              replace the table currently highlighted with
+                              the column list for that table.
+                            - When viewing a popup window displaying the list
+                              of columns, you can press <C-Left>, this will
+                              replace the column list with the list of tables.
+ 
+The SQL completion plugin caches various lists that are displayed in
+the popup window.  This makes the re-displaying of these lists very
+fast.  If new tables or columns are added to the database it may become 
+necessary to clear the plugins cache.  The default map for this is: >
+        imap <buffer> <C-C>R <C-O>:let b:sql_compl_type='ResetCache'<CR><C-X><C-O>
+<
+ 
+4.3 SQL Tutorial				*sql-completion-tutorial*
+----------------
+ 
+This tutorial is designed to take you through the common features of the SQL
+completion plugin so that: >
+     a) You gain familiarity with the plugin
+     b) You are introduced to some of the more common features
+     c) Show how to customize it to your preferences
+     d) Demonstrate "Best of Use" of the plugin (easiest way to configure).
+<
+First, create a new buffer: >
+     :e tutorial.sql
+<
+
+Static features
+---------------
+To take you through the various lists, simply enter insert mode, hit:
+    <C-C>s   (show SQL statements)
+At this point, you can page down through the list until you find "select".
+If you are familiar with the item you are looking for, for example you know
+the statement begins with the letter "s".  You can type ahead (without the
+quotes) "se" then press: 
+    <C-Spact>t 
+Assuming "select" is highlighted in the popup list press <Enter> to choose
+the entry.  Now type:
+    * fr<C-C>a (show all syntax items)
+choose "from" from the popup list.
+
+When writing stored procedures using the "type" list is useful.  It contains
+a list of all the database supported types.  This may or may not be true
+depending on the syntax file you are using.  The SQL Anywhere syntax file
+(sqlanywhere.vim) has support for this: >
+     BEGIN
+        DECLARE customer_id <C-C>T <-- Choose a type from the list
+< 
+
+Dynamic features
+----------------
+To take advantage of the dynamic features you must first install the 
+dbext.vim plugin (http://vim.sourceforge.net/script.php?script_id=356).  It
+also comes with a tutorial.  From the SQL completion plugin's perspective,
+the main feature dbext provides is a connection to a database.  dbext
+connection profiles are the most efficient mechanism to define connection
+information.  Once connections have been setup, the SQL completion plugin
+uses the features of dbext in the background to populate the popups.
+
+What follows assumes dbext.vim has been correctly configured, a simple test
+is to run the command, :DBListTable.  If a list of tables is shown, you know
+dbext.vim is working as expected.  If not, please consult the dbext.txt 
+documentation.
+
+Assuming you have followed the |dbext-tutorial| you can press <C-C>t to
+display a list of tables.  There is a delay while dbext is creating the table
+list.  After the list is displayed press <C-W>.  This will remove both the 
+popup window and the table name already chosen when the list became active. >
+ 
+ 4.3.1 Table Completion:			*sql-completion-tables*
+<
+Press <C-C>t to display a list of tables from within the database you
+have connected via the dbext plugin.  
+NOTE: All of the SQL completion popups support typing a prefix before pressing
+the key map.  This will limit the contents of the popup window to just items
+beginning with those characters.  >
+ 
+ 4.3.2 Column Completion:			*sql-completion-columns*
+<
+The SQL completion plugin can also display a list of columns for particular
+tables.  The column completion is trigger via <C-C>c.
+
+NOTE: The following example uses <C-Right> to trigger a column list while
+the popup window is active.  This map is only available on the Windows
+platforms since *nix does not recognize CTRL and the right arrow held down
+together.  If you wish to enable this functionality on a *nix platform choose
+a key and create this mapping (see |sql-completion-maps| for further 
+details on where to create this imap): >
+    imap <buffer> <your_keystroke>  <CR><C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
+<
+Example of using column completion:
+     - Press <C-C>t again to display the list of tables.  
+     - When the list is displayed in the completion window, press <C-Right>,
+       this will replace the list of tables, with a list of columns for the
+       table highlighted (after the same short delay).  
+     - If you press <C-Left>, this will again replace the column list with the
+       list of tables.  This allows you to drill into tables and column lists
+       very quickly.  
+     - Press <C-Right> again while the same table is highlighted.  You will
+       notice there is no delay since the column list has been cached.  If you
+       change the schema of a cached table you can press <C-C>R, which
+       clears the SQL completion cache.  
+     - NOTE: <C-Right> and <C-Left> have been designed to work while the
+       completion window is active.  If you use these maps when the completion
+       window is not active a carriage return will be inadvertently entered in
+       your buffer.
+ 
+Lets look how we can build a SQL statement dynamically.  A select statement
+requires a list of columns.  There are two ways to build a column list using
+the SQL completion plugin. >
+    One column at a time:
+<       1. After typing SELECT press <C-C>t to display a list of tables.
+        2. Choose a table from the list.
+        3. Press <C-Right> to display a list of columns.
+        4. Choose the column from the list and press enter.
+        5. Enter a "," and press <C-C>c.  Generating a column list
+           generally requires having the cursor on a table name.  The plugin
+           uses this name to determine what table to retrieve the column list.  
+           In this step, since we are pressing <C-C>c without the cursor 
+           on a table name the column list displayed will be for the previous 
+           table.  Choose a different column and move on. 
+        6. Repeat step 5 as often as necessary. >
+    All columns for a table: 
+<       1. After typing SELECT press <C-C>t to display a list of tables.
+        2. Highlight the table you need the column list for.
+        3. Press <Enter> to choose the table from the list.
+        4. Press <C-C>l to request a comma separated list of all columns
+           for this table.
+        5. Based on the table name chosen in step 3, the plugin attempts to
+           decide on a reasonable table alias.  You are then prompted to
+           either accept of change the alias.  Press OK.
+        6. The table name is replaced with the column list of the table is
+           replaced with the comma separate list of columns with the alias
+           prepended to each of the columns.
+        7. Step 3 and 4 can be replaced by pressing <C-C>L, which has
+           a <CR> embedded in the map to choose the currently highlighted 
+           table in the list.
+
+There is a special provision when writing select statements.  Consider the
+following statement: >
+     select * 
+       from customer c,
+            contact cn,
+            department as dp,
+            employee e,
+            site_options so
+      where c.
+<
+In INSERT mode after typing the final "c." which is an alias for the
+"customer" table, you can press either <C-C>c or <C-X><C-O>.  This will
+popup a list of columns for the customer table.  It does this by looking back
+to the beginning of the select statement and finding a list of the tables
+specified in the FROM clause.  In this case it notes that in the string
+"customer c", "c" is an alias for the customer table.  The optional "AS"
+keyword is also supported, "customer AS c". >
+ 
+ 
+ 4.3.3 Procedure Completion:			*sql-completion-procedures*
+<
+Similar to the table list, <C-C>p, will display a list of stored
+procedures stored within the database. >
+ 
+ 4.3.4 View Completion:				*sql-completion-views*
+<
+Similar to the table list, <C-C>v, will display a list of views in the
+database.
+
+ 
+4.4 Completion Customization			*sql-completion-customization*
+----------------------------
+
+The SQL completion plugin can be customized through various options set in
+your |vimrc|: >
+    omni_sql_no_default_maps
+<       - Default: This variable is not defined
+        - If this variable is defined, no maps are created for OMNI
+          completion.  See |sql-completion-maps| for further discussion.
+>
+    omni_sql_use_tbl_alias
+<       - Default: a
+        - This setting is only used when generating a comma separated
+          column list.  By default the map is <C-C>l.  When generating
+          a column list, an alias can be prepended to the beginning of each
+          column, for example:  e.emp_id, e.emp_name.  This option has three 
+          settings: >
+                n - do not use an alias
+                d - use the default (calculated) alias
+                a - ask to confirm the alias name
+<
+          An alias is determined following a few rules:
+               1.  If the table name has an '_', then use it as a separator: >
+                   MY_TABLE_NAME --> MTN
+                   my_table_name --> mtn
+                   My_table_NAME --> MtN
+<              2.  If the table name does NOT contain an '_', but DOES use
+                   mixed case then the case is used as a separator: >
+                   MyTableName --> MTN
+<              3.  If the table name does NOT contain an '_', and does NOT 
+                   use mixed case then the first letter of the table is used: >
+                   mytablename --> m
+                   MYTABLENAME --> M
+<
+ 
+4.5 Customizing Maps				*sql-completion-maps*
+--------------------
+
+You can create as many additional key maps as you like.  Generally, the maps
+will be specifying different syntax highlight groups.  
+
+If you do not wish the default maps created or the key choices do not work on
+your platform (often a case on *nix) you define the following variable in
+your |vimrc|: >
+    let g:omni_sql_no_default_maps = 1
+< 
+Do no edit ftplugin/sql.vim directly!  If you change this file your changes
+will be over written on future updates.  Vim has a special directory structure
+that allows you to make customizations without changing the files that are
+included with the Vim distribution.  If you wish to customize the maps
+create an after/ftplugin/sql.vim (see |after-directory|) and place the same
+maps from the ftplugin/sql.vim in it using your own key strokes.  <C-C> was
+chosen since it will work on both Windows and *nix platforms.  On the windows
+platform you can also use <C-Space> or ALT keys.
+ 
 
 vim:tw=78:ts=8:ft=help:norl:

@@ -1070,6 +1070,12 @@ gui_mch_open(void)
     if (!IsWindowVisible(s_hwnd))
 	ShowWindow(s_hwnd, SW_SHOWDEFAULT);
 
+#ifdef MSWIN_FIND_REPLACE
+    /* Init replace string here, so that we keep it when re-opening the
+     * dialog. */
+    s_findrep_struct.lpstrReplaceWith[0] = NUL;
+#endif
+
     return OK;
 }
 
@@ -1339,6 +1345,8 @@ gui_mch_get_color(char_u *name)
 	{"Grey",		RGB(0xC0, 0xC0, 0xC0)},
 	{"LightGray",		RGB(0xE0, 0xE0, 0xE0)},
 	{"LightGrey",		RGB(0xE0, 0xE0, 0xE0)},
+	{"Gray90",		RGB(0xE5, 0xE5, 0xE5)},
+	{"Grey90",		RGB(0xE5, 0xE5, 0xE5)},
 	{"White",		RGB(0xFF, 0xFF, 0xFF)},
 	{"DarkRed",		RGB(0x80, 0x00, 0x00)},
 	{"Red",			RGB(0xFF, 0x00, 0x00)},
@@ -2370,11 +2378,8 @@ initialise_findrep(char_u *initial_string)
     if (wword)
 	s_findrep_struct.Flags |= FR_WHOLEWORD;
     if (entry_text != NULL && *entry_text != NUL)
-    {
 	vim_strncpy(s_findrep_struct.lpstrFindWhat, entry_text,
 					   s_findrep_struct.wFindWhatLen - 1);
-	s_findrep_struct.lpstrReplaceWith[0] = NUL;
-    }
     vim_free(entry_text);
 }
 #endif

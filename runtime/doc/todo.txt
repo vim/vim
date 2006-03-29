@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Mar 28
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-The 16 bit DOS version compiles now, but it's still too low on memory, writing
-a file fails when 'writebackup' is set.
-
-Have argv() return the arguments in a List.
+When "search" is in 'foldopen' have [s and ]s open folds.
 
 New Hungarian dictionary. (Laci Nemeth)
     test COMPOUNDFORBIDFLAG
@@ -49,9 +46,6 @@ New Hungarian dictionary. (Laci Nemeth)
     Also: when the environment variable exists, use it.  If it doesn't
     exist, set it.  Requires good names: $VIM_USER_VIMRC  $VIM_USER_DIR
     Add a menu item "Preferences" that does "sp $MYVIMRC".
--   The Replace dialog takes "\r" literal, unless "replace all" is used.
-    Need to escape backslashes.
-    Win32: the text to replace with isn't remembered.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -461,7 +455,8 @@ MSDOS/DJGPP:
 8   DJGPP: "cd c:" can take us to a directory that no longer exists.
     change_drive() doesn't check this.  How to check for this error?
 9   The 16 bit version runs out of memory very quickly.  Should find unused
-    code and reduce static data.
+    code and reduce static data.  Resetting 'writebackup' helps to be able to
+    write a file.
 9   Crash when running on Windows 98 in a console window and pressing CTRL-C.
     Happens now and then.  When debugging Vim in gdb this also happens.  Since
     the console crashes, might be a bug in the DOS console.  Resetting

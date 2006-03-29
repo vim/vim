@@ -6900,7 +6900,7 @@ static struct fst
     {"append",		2, 2, f_append},
     {"argc",		0, 0, f_argc},
     {"argidx",		0, 0, f_argidx},
-    {"argv",		1, 1, f_argv},
+    {"argv",		0, 1, f_argv},
     {"browse",		4, 4, f_browse},
     {"browsedir",	2, 2, f_browsedir},
     {"bufexists",	1, 1, f_bufexists},
@@ -7651,12 +7651,19 @@ f_argv(argvars, rettv)
 {
     int		idx;
 
-    idx = get_tv_number_chk(&argvars[0], NULL);
-    if (idx >= 0 && idx < ARGCOUNT)
-	rettv->vval.v_string = vim_strsave(alist_name(&ARGLIST[idx]));
-    else
-	rettv->vval.v_string = NULL;
-    rettv->v_type = VAR_STRING;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	idx = get_tv_number_chk(&argvars[0], NULL);
+	if (idx >= 0 && idx < ARGCOUNT)
+	    rettv->vval.v_string = vim_strsave(alist_name(&ARGLIST[idx]));
+	else
+	    rettv->vval.v_string = NULL;
+	rettv->v_type = VAR_STRING;
+    }
+    else if (rettv_list_alloc(rettv) == OK)
+	for (idx = 0; idx < ARGCOUNT; ++idx)
+	    list_append_string(rettv->vval.v_list,
+					       alist_name(&ARGLIST[idx]), -1);
 }
 
 /*

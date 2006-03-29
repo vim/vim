@@ -6186,9 +6186,9 @@ static char *(highlight_init_light[]) =
 #endif
 #ifdef FEAT_SYN_HL
 	CENT("CursorColumn term=reverse ctermbg=LightGrey",
-	     "CursorColumn term=reverse ctermbg=LightGrey guibg=LightGrey"),
+	     "CursorColumn term=reverse ctermbg=LightGrey guibg=Grey90"),
 	CENT("CursorLine term=underline cterm=underline",
-	     "CursorLine term=underline cterm=underline guibg=LightGrey"),
+	     "CursorLine term=underline cterm=underline guibg=Grey90"),
 #endif
 #ifdef FEAT_GUI
 	"Normal gui=NONE",
@@ -6262,9 +6262,9 @@ static char *(highlight_init_dark[]) =
 #endif
 #ifdef FEAT_SYN_HL
 	CENT("CursorColumn term=reverse ctermbg=DarkGrey",
-	     "CursorColumn term=reverse ctermbg=DarkGrey guibg=DarkGrey"),
+	     "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey90"),
 	CENT("CursorLine term=underline cterm=underline",
-	     "CursorLine term=underline cterm=underline guibg=DarkGrey"),
+	     "CursorLine term=underline cterm=underline guibg=Grey90"),
 #endif
 #ifdef FEAT_GUI
 	"Normal gui=NONE",

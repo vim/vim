@@ -1145,6 +1145,8 @@ gui_mch_get_color(char_u *name)
 	{ "LightGrey",		grgb(211,	211,	211)	},
 	{ "DarkGray",		grgb(169,	169,	169)	},
 	{ "DarkGrey",		grgb(169,	169,	169)	},
+	{ "Grey90",		grgb(229,	229,	229)	},
+	{ "Gray90",		grgb(229,	229,	229)	},
 
 	{ "Black",		grgb(0,		0,	0)	},
 	{ "White",		grgb(255,	255,	255)	},

@@ -1,4 +1,4 @@
-*os_mac.txt*    For Vim version 7.0c.  Last change: 2006 Mar 26
+*os_mac.txt*    For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar et al.
@@ -85,6 +85,14 @@ A: Assuming that Vim.app is located in /Applications:
 	open /Applications/Vim.app
    Or:
    	/Applications/Vim.app/Contents/MacOS/Vim -g  {arguments}
+
+Q: How can I set $PATH to something reasonable when I start Vim.app from the
+   GUI or with open?
+A: The following trick works with most shells.  Put it in your vimrc file.
+   This is included in the system vimrc file included with the binaries
+   distributed at macvim.org . >
+	let s:path = system("echo echo VIMPATH'${PATH}' | $SHELL -l")
+	let $PATH = matchstr(s:path, 'VIMPATH\zs.\{-}\ze\n')
 
 ==============================================================================
 4. Mac Lack						*mac-lack*

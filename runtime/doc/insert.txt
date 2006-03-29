@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0c.  Last change: 2006 Mar 28
+*insert.txt*    For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1214,11 +1214,11 @@ are included.
 CSS							*ft-css-omni*
 
 Complete properties and their appropriate values according to CSS 2.1
-specification. 
+specification.
 
 
-HTML and XHTML						*ft-html-omni*
-							*ft-xhtml-omni*
+HTML							*ft-html-omni*
+XHTML							*ft-xhtml-omni*
 
 CTRL-X CTRL-O provides completion of various elements of (X)HTML files.  It is
 designed to support writing of XHTML 1.0 Strict files but will also works for
@@ -1239,12 +1239,12 @@ other versions of HTML. Features:
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 Note: When used first time completion menu will be shown with little delay
-- this is time needed for loading of data file.  
+- this is time needed for loading of data file.
 Note: Completion may fail in badly formatted documents. In such case try to
 run |:make| command to detect formatting problems.
 
 
-JAVASCRIPT                                             *ft-javascript-omni*
+JAVASCRIPT					       *ft-javascript-omni*
 
 Completion of most elements of JavaScript language and DOM elements.
 
@@ -1260,7 +1260,7 @@ Complete:
 Completion works in separate JavaScript files (&ft==javascript), inside of
 <script> tag of (X)HTML and in values of event attributes (including scanning
 of external files.
- 
+
 DOM compatibility
 
 At the moment (beginning of 2006) there are two main browsers - MS Internet
@@ -1268,11 +1268,11 @@ Explorer and Mozilla Firefox. These two applications are covering over 90% of
 market. Theoretically standards are created by W3C organisation
 (http://www.w3c.org) but they are not always followed/implemented.
 
-		IE 	FF 	W3C  Omni completion ~
-		+/-     +/-     +    +               ~
-                +       +       -    +               ~
-                +       -       -    -               ~
-                -       +       -    -               ~
+		IE	FF	W3C  Omni completion ~
+		+/-	+/-	+    +		     ~
+		+	+	-    +		     ~
+		+	-	-    -		     ~
+		-	+	-    -		     ~
 
 Regardless from state of implementation in browsers but if element is defined
 in standards, completion plugin will place element in suggestion list. When
@@ -1280,7 +1280,7 @@ both major engines implemented element, even if this is not in standards it
 will be suggested. All other elements are not placed in suggestion list.
 
 
-PHP                                                     *ft-php-omni*
+PHP							*ft-php-omni*
 
 Completion of PHP code requires tags file for completion of data from external
 files. You should use Exuberant ctags version 5.5.4 or newer. You can find it
@@ -1317,15 +1317,15 @@ This uses the current syntax highlighting for completion.  It can be used for
 any filetype and provides a minimal language-sensitive completion.
 
 To enable syntax code completion you can run: >
-	setlocal omnifunc=syntaxcomplete#Complete 
+	setlocal omnifunc=syntaxcomplete#Complete
 
 You can automate this by placing the following in your vimrc (after any
 ":filetype" command): >
     if has("autocmd") && exists("+omnifunc")
-        autocmd Filetype *
-                    \	if &omnifunc == "" |
-                    \		setlocal omnifunc=syntaxcomplete#Complete |
-                    \	endif
+	autocmd Filetype *
+		    \	if &omnifunc == "" |
+		    \		setlocal omnifunc=syntaxcomplete#Complete |
+		    \	endif
     endif
 
 The above will set completion to this script only if a specific plugin does
@@ -1368,6 +1368,14 @@ You can create as many of these variables as you need, varying only the
 filetype at the end of the variable name.
 
 
+SQL							*ft-sql-omni*
+
+Completion for the SQL language includes statements, functions, keywords.
+It will also dynamically complete tables, procedures, views and column lists
+with data pulled directly from within a database.  For detailed instructions
+and a tutorial see |omni-sql-completion|.
+
+
 XML							*ft-xml-omni*
 
 Vim 7 provides mechanism to context aware completion of XML files.  It depends
@@ -1394,9 +1402,9 @@ which will not create conflicts in future. For example name xhtml10s.vim means
 it is data file for XHTML 1.0 Strict.
 
 File contains one variable with fixed name: g:xmldata_xhtml10s . It is
-compound from two parts: 
+compound from two parts:
 
-1. "g:xmldata_"  general prefix 
+1. "g:xmldata_"  general prefix
 2. "xhtml10s"    name of file and name of described XML dialect
 
 Part two must be exactly the same as name of file.
@@ -1407,14 +1415,14 @@ of possible children, second element is |Dictionary| with names of attributes
 as keys and possible values of attributes as values. Example: >
 
     let g:xmldata_crippledhtml = {
-    \ "html": 
-    \ [ ["body", "head"], {"id": [], "xmlns": ["http://www.w3.org/1999/xhtml"], 
-    \ "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}], 
-    \ "script": 
-    \ [ [], {"id": [], "charset": [], "type": ["text/javascript"], "src": [], 
+    \ "html":
+    \ [ ["body", "head"], {"id": [], "xmlns": ["http://www.w3.org/1999/xhtml"],
+    \ "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}],
+    \ "script":
+    \ [ [], {"id": [], "charset": [], "type": ["text/javascript"], "src": [],
     \ "defer": ["BOOL"], "xml:space": ["preserve"]}],
-    \ "meta": 
-    \ [ [], {"id": [], "http-equiv": [], "name": [], "content": [], "scheme": 
+    \ "meta":
+    \ [ [], {"id": [], "http-equiv": [], "name": [], "content": [], "scheme":
     \ [], "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}]
     \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"]},
     \ "vimxmltaginfo": {

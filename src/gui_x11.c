@@ -2296,6 +2296,8 @@ gui_mch_get_color(reqname)
 	{"DarkMagenta",	"#BB00BB"},
 	{"DarkGrey",	"#BBBBBB"},
 	{"DarkYellow",	"#BBBB00"},
+	{"Gray90",	"#E5E5E5"},
+	{"Grey90",	"#E5E5E5"},
 	{NULL, NULL}
     };
 

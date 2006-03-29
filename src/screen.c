@@ -3106,8 +3106,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 
 #ifdef FEAT_SYN_HL
-    /* Cursor line highlighting for 'cursorline'. */
-    if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+    /* Cursor line highlighting for 'cursorline'.  Not when Visual mode is
+     * active, because it's not clear what is selected then. */
+    if (wp->w_p_cul && lnum == wp->w_cursor.lnum && !VIsual_active)
     {
 	line_attr = hl_attr(HLF_CUL);
 	area_highlighting = TRUE;

@@ -2992,7 +2992,7 @@ rm -f conftest.err conftest.$ac_objext \
   elif test "x$MACARCH" = "xintel"; then
     CPPFLAGS="$CPPFLAGS -arch intel"
     LDFLAGS="$LDFLAGS -arch intel"
-  else
+  elif test "x$MACARCH" = "xppc"; then
     CPPFLAGS="$CPPFLAGS -arch ppc"
     LDFLAGS="$LDFLAGS -arch ppc"
   fi

@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.0c.  Last change: 2006 Mar 24
+*sponsor.txt*   For Vim version 7.0c.  Last change: 2006 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,7 +13,7 @@ working on Vim please send a donation.
 
 Since Bram is back to a paid job the money will now be used to help children
 in Uganda.  See |uganda|.  But at the same time donations increase Bram's
-motivation to work on Vim!
+motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
 
@@ -93,7 +93,7 @@ QUESTIONS AND ANSWERS				*sponsor-faq* *register-faq*
 Why should I give money?
 
 If you do not show your appreciation for Vim then Bram will be less motivated
-to fix bugs and add new features.
+to fix bugs and add new features.  He will do something else instead.
 
 
 How much money should I send?
@@ -177,6 +177,12 @@ You can change your votes any time you like, up to two years after you
 sent money.  The points will be counted right away.
 
 
+Can I add an item to vote on?
+
+Not directly.  You can suggest items to vote on to Bram.  He will consider
+fitting your item into the list.
+
+
 How about Charityware?
 
 Currently the Vim donations go to |uganda| anyway.  Thus it doesn't matter if
@@ -202,7 +208,9 @@ let him know that the donation is done because of the use of Vim.
 
 Can you send me a bill?
 
-No.  But a receipt is possible.
+No, because there is no relation between the money you send and the work that 
+is done.  But a receipt is possible.
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

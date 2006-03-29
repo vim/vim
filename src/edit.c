@@ -4497,6 +4497,8 @@ ins_complete(c)
 	    if (compl_col >= (colnr_T)startcol)
 		return FAIL;
 	    spell_expand_check_cap(compl_col);
+	    /* Need to obtain "line" again, it may have become invalid. */
+	    line = ml_get(curwin->w_cursor.lnum);
 	    compl_length = (int)curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)
