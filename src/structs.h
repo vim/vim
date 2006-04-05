@@ -1635,6 +1635,10 @@ struct tabpage_S
     int		    tp_diff_invalid;	/* list of diffs is outdated */
 #endif
     frame_T	    *tp_snapshot;    /* window layout snapshot */
+#ifdef FEAT_EVAL
+    dictitem_T	    tp_winvar;	    /* variable for "t:" Dictionary */
+    dict_T	    tp_vars;	    /* internal variables, local to tab page */
+#endif
 };
 
 /*
@@ -1928,8 +1932,9 @@ struct window_S
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
-    regmmatch_T	w_match[3];	/* regexp programs for ":match" */
-    int		w_match_id[3];	/* highlight IDs for ":match" */
+    regmmatch_T	w_match[3];	    /* regexp programs for ":match" */
+    char_u	*(w_match_pat[3]);  /* patterns for ":match" */
+    int		w_match_id[3];	    /* highlight IDs for ":match" */
 #endif
 
     /*

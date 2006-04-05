@@ -1,7 +1,7 @@
 " Vim syntax file
-" Language:	ROCKLinux .desc
-" Maintainer:	Piotr Esden-Tempski <esden@rocklinux.org>
-" Last Change:	2002 Apr 23
+" Language:	T2 / ROCK Linux .desc
+" Maintainer:	René Rebe <rene@exactcode.de>, Piotr Esden-Tempski <esden@rocklinux.org>
+" Last Change:	2006 Mar 30
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -14,10 +14,11 @@ endif
 " syntax definitions
 
 setl iskeyword+=-
-syn keyword descFlag DIETLIBC contained
+syn keyword descFlag DIETLIBC KAFFE JAIL FPIC-QUIRK NO-LIBTOOL-QUIRK AUTOMAKE-QUIRK NO-AS-NEEDED NO-SSP contained
 syn keyword descLicense Unknown GPL LGPL FDL MIT BSD OpenSource Free-to-use Commercial contained
 
 " tags
+syn match descTag /^\[\(COPY\)\]/
 syn match descTag /^\[\(I\|TITLE\)\]/
 syn match descTag /^\[\(T\|TEXT\)\]/ contained
 syn match descTag /^\[\(U\|URL\)\]/
@@ -29,6 +30,7 @@ syn match descTag /^\[\(E\|DEP\|DEPENDENCY\)\]/
 syn match descTag /^\[\(R\|ARCH\|ARCHITECTURE\)\]/
 syn match descTag /^\[\(L\|LICENSE\)\]/ contained
 syn match descTag /^\[\(S\|STATUS\)\]/
+syn match descTag /^\[\(O\|CONF\)\]/
 syn match descTag /^\[\(V\|VER\|VERSION\)\]/
 syn match descTag /^\[\(P\|PRI\|PRIORITY\)\]/ nextgroup=descInstall skipwhite
 syn match descTag /^\[\(D\|DOWN\|DOWNLOAD\)\]/ nextgroup=descSum skipwhite
@@ -36,7 +38,7 @@ syn match descTag /^\[\(D\|DOWN\|DOWNLOAD\)\]/ nextgroup=descSum skipwhite
 " misc
 syn match descUrl /\w\+:\/\/\S\+/
 syn match descCategory /\w\+\/\w\+/ contained
-syn match descEmail /<\w\+@[\.A-Za-z0-9]\+>/
+syn match descEmail /<[\.A-Za-z0-9]\+@[\.A-Za-z0-9]\+>/
 
 " priority tag
 syn match descInstallX /X/ contained

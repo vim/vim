@@ -1058,6 +1058,7 @@ typebuf_typed()
     return typebuf.tb_maplen == 0;
 }
 
+#if defined(FEAT_VISUAL) || defined(PROTO)
 /*
  * Return the number of characters that are mapped (or not typed).
  */
@@ -1066,6 +1067,7 @@ typebuf_maplen()
 {
     return typebuf.tb_maplen;
 }
+#endif
 
 /*
  * remove "len" characters from typebuf.tb_buf[typebuf.tb_off + offset]
@@ -4743,10 +4745,12 @@ static struct initmap
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 	/* Use the Windows (CUA) keybindings. */
 # ifdef FEAT_GUI
+#  if 0	    /* These are now used to move tab pages */
 	{(char_u *)"<C-PageUp> H", NORMAL+VIS_SEL},
 	{(char_u *)"<C-PageUp> <C-O>H",INSERT},
 	{(char_u *)"<C-PageDown> L$", NORMAL+VIS_SEL},
 	{(char_u *)"<C-PageDown> <C-O>L<C-O>$", INSERT},
+#  endif
 
 	/* paste, copy and cut */
 	{(char_u *)"<S-Insert> \"*P", NORMAL},
@@ -4758,10 +4762,12 @@ static struct initmap
 	{(char_u *)"<C-X> \"*d", VIS_SEL},
 	/* Missing: CTRL-C (cancel) and CTRL-V (block selection) */
 # else
+#  if 0	    /* These are now used to move tab pages */
 	{(char_u *)"\316\204 H", NORMAL+VIS_SEL},    /* CTRL-PageUp is "H" */
 	{(char_u *)"\316\204 \017H",INSERT},	    /* CTRL-PageUp is "^OH"*/
 	{(char_u *)"\316v L$", NORMAL+VIS_SEL},	    /* CTRL-PageDown is "L$" */
 	{(char_u *)"\316v \017L\017$", INSERT},	    /* CTRL-PageDown ="^OL^O$"*/
+#  endif
 	{(char_u *)"\316w <C-Home>", NORMAL+VIS_SEL},
 	{(char_u *)"\316w <C-Home>", INSERT+CMDLINE},
 	{(char_u *)"\316u <C-End>", NORMAL+VIS_SEL},

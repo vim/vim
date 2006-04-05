@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0c.  Last change: 2006 Mar 25
+*pattern.txt*   For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1220,6 +1220,9 @@ Finally, these constructs are unique to Perl:
 		'ignorecase' does not apply, use |/\c| in the pattern to
 		ignore case.  Otherwise case is not ignored.
 
+		Also see |matcharg()|, it returns the highlight group and
+		pattern of a previous :match command.
+
 		Another example, which highlights all characters in virtual
 		column 72 and more: >
 			:highlight rightMargin term=bold ctermfg=blue guifg=blue
@@ -1235,10 +1238,10 @@ Finally, these constructs are unique to Perl:
 		Clear a previously defined match pattern.
 
 
-:2mat[ch] {group} /{pattern}/
+:2mat[ch] {group} /{pattern}/					*:2match*
 :2mat[ch]
 :2mat[ch] none
-:3mat[ch] {group} /{pattern}/
+:3mat[ch] {group} /{pattern}/					*:3match*
 :3mat[ch]
 :3mat[ch] none
 		Just like |:match| above, but set a separate match.  Thus

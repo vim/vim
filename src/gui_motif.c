@@ -26,6 +26,7 @@
 #include <Xm/LabelG.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/SeparatoG.h>
+#include <Xm/Notebook.h>
 
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
@@ -63,6 +64,11 @@ Widget textArea;
 static Widget toolBarFrame;
 static Widget toolBar;
 #endif
+#ifdef FEAT_GUI_TABLINE
+static Widget	tabLine;
+static Widget	tabLine_menu = 0;
+static int	showing_tabline = 0;
+#endif
 #ifdef FEAT_FOOTER
 static Widget footer;
 #endif
@@ -75,6 +81,11 @@ static Widget menuBar;
 #endif
 
 static void scroll_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
+#ifdef FEAT_GUI_TABLINE
+static void tabline_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
+static void tabline_button_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
+static void tabline_menu_cb __ARGS((Widget w, XtPointer	closure, XEvent	*e, Boolean *continue_dispatch));
+#endif
 #ifdef FEAT_TOOLBAR
 # ifdef FEAT_FOOTER
 static void toolbarbutton_enter_cb __ARGS((Widget, XtPointer, XEvent *, Boolean *));
@@ -119,6 +130,76 @@ scroll_cb(w, client_data, call_data)
 							      (int)XmCR_DRAG);
     gui_drag_scrollbar(sb, value, dragging);
 }
+
+#ifdef FEAT_GUI_TABLINE
+/*ARGSUSED*/
+    static void
+tabline_cb(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data, call_data;
+{
+    XmNotebookCallbackStruct *nptr;
+
+    nptr = (XmNotebookCallbackStruct *)call_data;
+    if (nptr->reason != (int)XmCR_NONE)
+	send_tabline_event(nptr->page_number);
+}
+
+/*ARGSUSED*/
+    static void
+tabline_button_cb(w, client_data, call_data)
+    Widget	w;
+    XtPointer	client_data, call_data;
+{
+    char_u	string[3];
+    int		cmd, tab_idx;
+
+    XtVaGetValues(w, XmNuserData, &cmd, NULL);
+    XtVaGetValues(tabLine_menu, XmNuserData, &tab_idx, NULL);
+
+    string[0] = CSI;
+    string[1] = KS_TABMENU;
+    string[2] = KE_FILLER;
+    add_to_input_buf(string, 3);
+    string[0] = tab_idx;
+    string[1] = (char_u)(long)cmd;
+    add_to_input_buf_csi(string, 2);
+}
+
+/*ARGSUSED*/
+    static void
+tabline_menu_cb(w, closure, e, continue_dispatch)
+    Widget	w;
+    XtPointer	closure;
+    XEvent	*e;
+    Boolean	*continue_dispatch;
+{
+    Widget			tab_w;
+    XButtonPressedEvent		*event;
+    int				tab_idx = 0;
+    WidgetList			children;
+    Cardinal			numChildren;
+
+    event = (XButtonPressedEvent *)e;
+
+    if (event->button != Button3)
+	return;
+
+    if (event->subwindow != None)
+    {
+	tab_w = XtWindowToWidget(XtDisplay(w), event->subwindow);
+	if (tab_w != (Widget)0 && XmIsPushButton(tab_w))
+	    XtVaGetValues(tab_w, XmNpageNumber, &tab_idx, NULL);
+    }
+
+    XtVaSetValues(tabLine_menu, XmNuserData, tab_idx, NULL);
+    XtVaGetValues(tabLine_menu, XmNchildren, &children, XmNnumChildren,
+		  &numChildren, NULL);
+    XtManageChildren(children, numChildren);
+    XmMenuPosition(tabLine_menu, (XButtonPressedEvent *)e) ;
+    XtManageChild(tabLine_menu);
+}
+#endif
 
 /*
  * End of call-back routines
@@ -222,6 +303,13 @@ label_expose(_w, _event, _region)
     void
 gui_x11_create_widgets()
 {
+#ifdef FEAT_GUI_TABLINE
+    Widget	button;
+    Arg		args[10];
+    int		n;
+    XmString	xms;
+#endif
+
     /*
      * Install the 3D shade effect drawing routines.
      */
@@ -316,6 +404,57 @@ gui_x11_create_widgets()
 	NULL);
     gui_motif_menu_colors(toolBar);
 
+#endif
+
+#ifdef FEAT_GUI_TABLINE
+    /* Create the Vim GUI tabline */
+    n = 0;
+    XtSetArg(args[n], XmNbindingType, XmNONE); n++;
+    XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
+    XtSetArg(args[n], XmNbackPageSize, XmNONE); n++;
+    XtSetArg(args[n], XmNbackPageNumber, 0); n++;
+    XtSetArg(args[n], XmNbackPagePlacement, XmTOP_RIGHT); n++;
+    XtSetArg(args[n], XmNmajorTabSpacing, 0); n++;
+    XtSetArg(args[n], XmNshadowThickness, 0); n++;
+    XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
+    XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
+    tabLine = XmCreateNotebook(vimForm, "Vim tabline", args, n);
+
+    XtAddCallback(tabLine, XmNpageChangedCallback, (XtCallbackProc)tabline_cb,
+			NULL);
+    XtAddEventHandler(tabLine, ButtonPressMask, False,
+			(XtEventHandler)tabline_menu_cb, NULL);
+
+    /* Create the tabline popup menu */
+    tabLine_menu = XmCreatePopupMenu(tabLine, "tabline popup", NULL, 0);
+
+    /* Add the buttons to the menu */
+    n = 0;
+    XtSetArg(args[n], XmNuserData, TABLINE_MENU_CLOSE); n++;
+    xms = XmStringCreate((char *)"Close tab", STRING_TAG);
+    XtSetArg(args[n], XmNlabelString, xms); n++;
+    button = XmCreatePushButton(tabLine_menu, "Close", args, n);
+    XtAddCallback(button, XmNactivateCallback,
+		  (XtCallbackProc)tabline_button_cb, NULL);
+    XmStringFree(xms);
+
+    n = 0;
+    XtSetArg(args[n], XmNuserData, TABLINE_MENU_NEW); n++;
+    xms = XmStringCreate((char *)"New Tab", STRING_TAG);
+    XtSetArg(args[n], XmNlabelString, xms); n++;
+    button = XmCreatePushButton(tabLine_menu, "New Tab", args, n);
+    XtAddCallback(button, XmNactivateCallback,
+		  (XtCallbackProc)tabline_button_cb, NULL);
+    XmStringFree(xms);
+
+    n = 0;
+    XtSetArg(args[n], XmNuserData, TABLINE_MENU_OPEN); n++;
+    xms = XmStringCreate((char *)"Open tab...", STRING_TAG);
+    XtSetArg(args[n], XmNlabelString, xms); n++;
+    button = XmCreatePushButton(tabLine_menu, "Open tab...", args, n);
+    XtAddCallback(button, XmNactivateCallback,
+		  (XtCallbackProc)tabline_button_cb, NULL);
+    XmStringFree(xms);
 #endif
 
     textAreaForm = XtVaCreateManagedWidget("textAreaForm",
@@ -550,18 +689,46 @@ gui_mch_enable_menu(flag)
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, menuBar,
 		NULL);
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, XtParent(toolBar),
-		NULL);
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar),
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar),
+			      NULL);
 	}
 	else
 #endif
 	{
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, menuBar,
-		NULL);
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar,
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar,
+			      NULL);
 	}
     }
     else
@@ -573,17 +740,44 @@ gui_mch_enable_menu(flag)
 	    XtVaSetValues(XtParent(toolBar),
 		XmNtopAttachment, XmATTACH_FORM,
 		NULL);
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, XtParent(toolBar),
-		NULL);
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar),
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar),
+			      NULL);
 	}
 	else
 #endif
 	{
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_FORM,
-		NULL);
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_FORM,
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_FORM,
+			      NULL);
 	}
     }
 
@@ -2770,10 +2964,24 @@ gui_mch_show_toolbar(int showit)
 	}
 	gui.toolbar_height = gui_mch_compute_toolbar_height();
 	XtManageChild(XtParent(toolBar));
-	XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, XtParent(toolBar),
-		NULL);
+#ifdef FEAT_GUI_TABLINE
+	if (showing_tabline)
+	{
+	    XtVaSetValues(tabLine,
+			  XmNtopAttachment, XmATTACH_WIDGET,
+			  XmNtopWidget, XtParent(toolBar),
+			  NULL);
+	    XtVaSetValues(textAreaForm,
+			  XmNtopAttachment, XmATTACH_WIDGET,
+			  XmNtopWidget, tabLine,
+			  NULL);
+	}
+	else
+#endif
+	    XtVaSetValues(textAreaForm,
+			  XmNtopAttachment, XmATTACH_WIDGET,
+			  XmNtopWidget, XtParent(toolBar),
+			  NULL);
 	if (XtIsManaged(menuBar))
 	    XtVaSetValues(XtParent(toolBar),
 		    XmNtopAttachment, XmATTACH_WIDGET,
@@ -2788,14 +2996,45 @@ gui_mch_show_toolbar(int showit)
     {
 	gui.toolbar_height = 0;
 	if (XtIsManaged(menuBar))
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_WIDGET,
-		XmNtopWidget, menuBar,
-		NULL);
+	{
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar,
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar,
+			      NULL);
+	}
 	else
-	    XtVaSetValues(textAreaForm,
-		XmNtopAttachment, XmATTACH_FORM,
-		NULL);
+	{
+#ifdef FEAT_GUI_TABLINE
+	    if (showing_tabline)
+	    {
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_FORM,
+			      NULL);
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, tabLine,
+			      NULL);
+	    }
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_FORM,
+			      NULL);
+	}
 
 	XtUnmanageChild(XtParent(toolBar));
     }
@@ -2912,6 +3151,165 @@ toolbarbutton_leave_cb(w, client_data, event, cont)
     gui_mch_set_footer((char_u *) "");
 }
 # endif
+#endif
+
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+/*
+ * Show or hide the tabline.
+ */
+    void
+gui_mch_show_tabline(int showit)
+{
+    if (tabLine == (Widget)0)
+	return;
+
+    if (!showit != !showing_tabline)
+    {
+	if (showit)
+	{
+	    XtManageChild(tabLine);
+	    XtUnmanageChild(XtNameToWidget(tabLine, "PageScroller"));
+#ifdef FEAT_MENU
+# ifdef FEAT_TOOLBAR
+	    if (XtIsManaged(XtParent(toolBar)))
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar), NULL);
+	    else
+# endif
+		if (XtIsManaged(menuBar))
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar, NULL);
+	    else
+#endif
+		XtVaSetValues(tabLine,
+			      XmNtopAttachment, XmATTACH_FORM, NULL);
+	    XtVaSetValues(textAreaForm,
+			  XmNtopAttachment, XmATTACH_WIDGET,
+			  XmNtopWidget, tabLine,
+			  NULL);
+	}
+	else
+	{
+	    XtUnmanageChild(tabLine);
+#ifdef FEAT_MENU
+# ifdef FEAT_TOOLBAR
+	    if (XtIsManaged(XtParent(toolBar)))
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, XtParent(toolBar), NULL);
+	    else
+# endif
+		if (XtIsManaged(menuBar))
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_WIDGET,
+			      XmNtopWidget, menuBar, NULL);
+	    else
+#endif
+		XtVaSetValues(textAreaForm,
+			      XmNtopAttachment, XmATTACH_FORM, NULL);
+	}
+	showing_tabline = showit;
+    }
+}
+
+/*
+ * Return TRUE when tabline is displayed.
+ */
+    int
+gui_mch_showing_tabline(void)
+{
+    return tabLine != (Widget)0 && showing_tabline;
+}
+
+/*
+ * Update the labels of the tabline.
+ */
+    void
+gui_mch_update_tabline(void)
+{
+    tabpage_T		*tp;
+    int			nr = 1, n;
+    Arg			args[10];
+    int			curtabidx = 0, currentpage;
+    Widget		tab;
+    XmNotebookPageInfo	page_info;
+    XmNotebookPageStatus page_status;
+    int			last_page, tab_count;
+
+    if (tabLine == (Widget)0)
+	return;
+
+    /* Add a label for each tab page.  They all contain the same text area. */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	if (tp == curtab)
+	    curtabidx = nr;
+
+	page_status = XmNotebookGetPageInfo(tabLine, nr, &page_info);
+	if (page_status == XmPAGE_INVALID
+	    || page_info.major_tab_widget == (Widget)0)
+	{
+	    /* Add the tab */
+	    n = 0;
+	    XtSetArg(args[n], XmNnotebookChildType, XmMAJOR_TAB); n++;
+	    XtSetArg(args[n], XmNtraversalOn, False); n++;
+	    XtSetArg(args[n], XmNalignment, XmALIGNMENT_BEGINNING); n++;
+	    XtSetArg(args[n], XmNhighlightThickness, 1); n++;
+	    XtSetArg(args[n], XmNshadowThickness , 1); n++;
+	    tab = XmCreatePushButton(tabLine, "-Empty-", args, n);
+	    XtManageChild(tab);
+	}
+	else
+	    tab = page_info.major_tab_widget;
+
+	XtVaSetValues(tab, XmNpageNumber, nr, NULL);
+	get_tabline_label(tp);
+	XtVaSetValues(tab, XtVaTypedArg, XmNlabelString, XmRString,
+		      NameBuff, STRLEN(NameBuff) + 1, NULL);
+    }
+
+    tab_count = nr - 1;
+
+    XtVaGetValues(tabLine, XmNlastPageNumber, &last_page, NULL);
+
+    /* Remove any old labels. */
+    while (nr <= last_page)
+    {
+	if (XmNotebookGetPageInfo(tabLine, nr, &page_info) != XmPAGE_INVALID
+	    && page_info.page_number == nr
+	    && page_info.major_tab_widget != (Widget)0)
+	{
+	    XtUnmanageChild(page_info.major_tab_widget);
+	    XtDestroyWidget(page_info.major_tab_widget);
+	}
+	nr++;
+    }
+
+    XtVaSetValues(tabLine, XmNlastPageNumber, tab_count, NULL);
+
+    XtVaGetValues(tabLine, XmNcurrentPageNumber, &currentpage, NULL);
+    if (currentpage != curtabidx)
+	XtVaSetValues(tabLine, XmNcurrentPageNumber, curtabidx, NULL);
+}
+
+/*
+ * Set the current tab to "nr".  First tab is 1.
+ */
+    void
+gui_mch_set_curtab(nr)
+    int		nr;
+{
+    int		currentpage;
+
+    if (tabLine == (Widget)0)
+	return;
+
+    XtVaGetValues(tabLine, XmNcurrentPageNumber, &currentpage, NULL);
+    if (currentpage != nr)
+	XtVaSetValues(tabLine, XmNcurrentPageNumber, nr, NULL);
+}
 #endif
 
 /*

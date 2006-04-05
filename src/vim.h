@@ -1987,5 +1987,9 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define BAD_KEEP	-1	/* leave it */
 #define BAD_DROP	-2	/* erase it */
 
+/* last argument for do_source() */
+#define DOSO_NONE	0
+#define DOSO_VIMRC	1	/* loading vimrc file */
+#define DOSO_GVIMRC	2	/* loading gvimrc file */
 
 #endif /* VIM__H */

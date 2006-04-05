@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*usr_toc.txt*	For Vim version 7.0c.  Last change: 2006 Apr 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -49,7 +49,7 @@ Making Vim Run
 
 
 Reference manual
-|ref-toc|     More detailed information for all commands
+|reference_toc|     More detailed information for all commands
 
 The user manual is available as a single, ready to print HTML and PDF file
 here:

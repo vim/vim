@@ -1142,6 +1142,7 @@ struct exarg
     int		amount;		/* number of '>' or '<' for shift command */
     int		regname;	/* register name (NUL if none) */
     int		force_bin;	/* 0, FORCE_BIN or FORCE_NOBIN */
+    int		read_edit;	/* ++edit argument */
     int		force_ff;	/* ++ff= argument (index in cmd[]) */
 #ifdef FEAT_MBYTE
     int		force_enc;	/* ++enc= argument (index in cmd[]) */

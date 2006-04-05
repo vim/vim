@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0c.  Last change: 2006 Mar 29
+*mbyte.txt*     For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -985,7 +985,7 @@ Cursor color when IME or XIM is on				*CursorIM*
     This works in the same way when using XIM.
 
     You can select cursor color when status is on by using highlight group
-    CursorIM.  For example, add these lines to your _gvimrc: >
+    CursorIM.  For example, add these lines to your |gvimrc|: >
 
 	if has('multi_byte_ime')
 	    highlight Cursor guifg=NONE guibg=Green

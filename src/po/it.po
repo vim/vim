@@ -1,6 +1,6 @@
 # Italian Translation for Vim
 #
-# FIRST AUTHOR Antonio Colombo <azc10@yahoo.com>, 2000
+# FIRST AUTHOR Antonio Colombo <azc100@gmail.com>, 2000
 #
 # Ogni commento è benvenuto...
 # Every remark is very welcome...
@@ -12,12 +12,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2006-03-03 07:40+0100\n"
-"PO-Revision-Date:  2006-03-03 07:40+0100\n"
-"Last-Translator:   Vlad Sandrini   <marco@sandrini.biz>\n"
+"POT-Creation-Date: 2006-03-31 07:25+0200\n"
+"PO-Revision-Date:  2006-04-03 10:05+0200\n"
+"Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
-"                   Antonio Colombo <azc10@yahoo.com>"
-"                   Vlad Sandrini   <marco@sandrini.biz>\n"
+"                   Antonio Colombo <azc100@gmail.com>"
+"                   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -137,8 +137,8 @@ msgstr "[Senza nome]"
 msgid "help"
 msgstr "aiuto"
 
-msgid "[help]"
-msgstr "[aiuto]"
+msgid "[Help]"
+msgstr "[Aiuto]"
 
 msgid "[Preview]"
 msgstr "[Anteprima]"
@@ -162,8 +162,8 @@ msgstr ""
 msgid "[Location List]"
 msgstr "[Lista Locazioni]"
 
-msgid "[Error List]"
-msgstr "[Lista Errori]"
+msgid "[Quickfix List]"
+msgstr "[Lista Quickfix]"
 
 msgid ""
 "\n"
@@ -223,8 +223,8 @@ msgid " Keyword completion (^N^P)"
 msgstr " Completamento Keyword (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
-msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Completamento Linea Intera (^L^N^P)"
@@ -256,8 +256,8 @@ msgstr " Completamento definito dall'utente (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Completamento globale (^O^N^P)"
 
-msgid " Spelling suggestion (^S^N^P)"
-msgstr " Suggerimento ortografico (^S^N^P)"
+msgid " Spelling suggestion (s^N^P)"
+msgstr " Suggerimento ortografico (s^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Completamento Keyword Locale (^N^P)"
@@ -493,6 +493,9 @@ msgstr "E724: variabile troppo nidificata per la visualizzazione"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Troppi argomenti"
+
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: complete() può essere usata solo in modalità inserimento"
 
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
@@ -2040,6 +2043,12 @@ msgstr "E243: Argomento non supportato: \"-%s\"; Usa la versione OLE."
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Non posso aprire la finestra in un'applicazione MDI"
 
+msgid "Close tab"
+msgstr "Chiudi linguetta"
+
+msgid "Open tab..."
+msgstr "Apri linguetta..."
+
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "Stringa di ricerca (usa '\\\\' per cercare  un '\\')"
 
@@ -2951,6 +2960,9 @@ msgid ""
 msgstr ""
 "--remote-wait-silent <files>  Stessa cosa, ignora se non esiste un server"
 
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <file>  Come --remote ma apre una linguetta per ogni file"
+
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tasti>\tInvia <tasti> a un server Vim ed esci"
 
@@ -3498,7 +3510,7 @@ msgstr "E317: ID blocco puntatori errato 2"
 
 #, c-format
 msgid "E773: Symlink loop for \"%s\""
-msgstr "E773: Collegamento ricorsivo per \"%s\""
+msgstr "E773: Collegamento simbolico ricorsivo per \"%s\""
 
 msgid "E325: ATTENTION"
 msgstr "E325: ATTENZIONE"
@@ -3884,7 +3896,7 @@ msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Non posso togliere piegature con il 'foldmethod' in uso"
 
 msgid "E664: changelist is empty"
-msgstr "E664: lista modifiche non impostata"
+msgstr "E664: lista modifiche assente"
 
 msgid "E662: At start of changelist"
 msgstr "E662: All'inizio della lista modifiche"
@@ -4217,6 +4229,9 @@ msgstr "ERRORE I/O"
 msgid "...(truncated)"
 msgstr "...(troncato)"
 
+msgid "Message"
+msgstr "Messaggio"
+
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "'columns' non vale 80, non riesco ad eseguire comandi esterni"
 
@@ -4446,10 +4461,6 @@ msgstr "E681: Buffer non caricato"
 msgid "E777: String or List expected"
 msgstr "E777: aspettavo Stringa o Lista"
 
-#, c-format
-msgid "E369: invalid item in %s%%[]"
-msgstr "E369: elemento non valido in %s%%[]"
-
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
 
@@ -4624,6 +4635,10 @@ msgstr "  NON TROVATO"
 msgid "Scanning included file: %s"
 msgstr "Scandisco file incluso: %s"
 
+#, c-format
+msgid "Searching included file %s"
+msgstr "Cerco nel file incluso: %s"
+
 msgid "E387: Match is on current line"
 msgstr "E387: Corrispondenza nella linea corrente"
 
@@ -4714,8 +4729,8 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG dopo l'uso di flags in %s linea %d: %s"
 
 #, c-format
-msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
-msgstr "Valore errato per COMPOUNDMAX in %s linea %d: %s"
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "Valore errato per COMPOUNDWORDMAX in %s linea %d: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
@@ -4724,6 +4739,10 @@ msgstr "Valore errato per COMPOUNDMIN in %s linea %d: %s"
 #, c-format
 msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
 msgstr "Valore errato per COMPOUNDSYLMAX in %s linea %d: %s"
+
+#, c-format
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "Valore errato per CHECKCOMPOUNDPATTERN in %s linea %d: %s"
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
@@ -4749,6 +4768,10 @@ msgstr "Y o N deve essere presente in %s linea %d: %s"
 #, c-format
 msgid "Broken condition in %s line %d: %s"
 msgstr "Condizione non rispettata in %s linea %d: %s"
+
+#, c-format
+msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
+msgstr "Flags di affissi ignorati con PFXPOSTPONE in %s linea %d: %s"
 
 #, c-format
 msgid "Expected REP(SAL) count in %s line %d"
@@ -4918,6 +4941,14 @@ msgstr "Fatto!"
 #, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' non ha %ld elementi"
+
+#, c-format
+msgid "Word removed from %s"
+msgstr "Parola rimossa da %s"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "Parola aggiunta a %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Caratteri di parola differenti nei file ortografici"
@@ -5284,15 +5315,52 @@ msgstr "Vim: Errore leggendo l'input, esco...\n"
 msgid "No undo possible; continue anyway"
 msgstr "'undo' non più possibile; continuo comunque"
 
+msgid "Already at oldest change"
+msgstr "Questa è già la prima modifica"
+
+msgid "Already at newest change"
+msgstr "Questa è già l'ultima modifica"
+
+#, c-format
+msgid "Undo number %ld not found"
+msgstr "Undo numero %ld non trovato"
+
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: numeri linee errati"
 
-msgid "1 change"
-msgstr "1 modifica"
+msgid "more line"
+msgstr "linea in più"
+
+msgid "more lines"
+msgstr "linee in più"
+
+msgid "line less"
+msgstr "linea in meno"
+
+msgid "fewer lines"
+msgstr "linee in meno"
+
+msgid "change"
+msgstr "modifica"
+
+msgid "changes"
+msgstr "modifiche"
 
 #, c-format
-msgid "%ld changes"
-msgstr "%ld modifiche"
+msgid "%ld %s; %s #%ld  %s"
+msgstr "%ld %s; %s #%ld  %s"
+
+msgid "before"
+msgstr "prima"
+
+msgid "after"
+msgstr "dopo"
+
+msgid "Nothing to undo"
+msgstr "Nessuna modifica, Undo impossibile"
+
+msgid "number changes  time"
+msgstr "numero modif.   ora"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: lista 'undo' non valida"
@@ -5922,7 +5990,7 @@ msgid "E72: Close error on swap file"
 msgstr "E72: Errore durante chiusura swap file"
 
 msgid "E73: tag stack empty"
-msgstr "E73: tag stack non impostata"
+msgstr "E73: tag stack ancora vuoto"
 
 msgid "E74: Command too complex"
 msgstr "E74: Comando troppo complesso"

@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	PHP
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar ---
+" Last Change:	2006 Apr 05
 "
 "   TODO:
 "   - Class aware completion:
@@ -47,400 +47,594 @@ function! phpcomplete#CompletePHP(findstart, base)
 			" We can be also inside of phpString with HTML tags. Deal with
 			" it later (time, not lines).
 		endif
-	else
-		" If exists b:php_menu it means completion was already constructed we
-		" don't need to do anything more
-		if exists("b:php_menu")
-			return b:php_menu
-		endif
-		" Initialize base return lists
-		let res = []
-		" a:base is very short - we need context
-		if exists("b:compl_context")
-			let context = b:compl_context
-			unlet! b:compl_context
-		endif
 
-		if !exists('g:php_builtin_functions')
-			call phpcomplete#LoadData()
-		endif
+	endif
+	" If exists b:php_menu it means completion was already constructed we
+	" don't need to do anything more
+	if exists("b:php_menu")
+		return b:php_menu
+	endif
+	" Initialize base return lists
+	let res = []
+	let res2 = []
+	" a:base is very short - we need context
+	if exists("b:compl_context")
+		let context = b:compl_context
+		unlet! b:compl_context
+	endif
 
-		let scontext = substitute(context, 
-				\ '\$\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*$', '', '')
+	if !exists('g:php_builtin_functions')
+		call phpcomplete#LoadData()
+	endif
 
-		if scontext =~ '\(=\s*new\|extends\)\s\+$'
-			" Complete class name
-			" Internal solution for finding classes in current file.
-			let file = getline(1, '$')
-			call filter(file, 
-					\ 'v:val =~ "class\\s\\+[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let jfile = join(file, ' ')
-			let int_values = split(jfile, 'class\s\+')
-			let int_classes = {}
-			for i in int_values
-				let c_name = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-				if c_name != ''
-					let int_classes[c_name] = ''
-				endif
-			endfor
+	let scontext = substitute(context, '\$\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*$', '', '')
 
-			" Prepare list of functions from tags file
-			let ext_classes = {}
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			if fnames != ''
-				exe 'silent! vimgrep /^'.a:base.'.*\tc\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					" [:space:] thing: we don't have to be so strict when
-					" dealing with tags files - entries there were already
-					" checked by ctags.
-					let item = matchstr(field['text'], '^[^[:space:]]\+')
-					let ext_classes[item] = ''
-				endfor
+	if scontext =~ '\(=\s*new\|extends\)\s\+$'
+		" Complete class name
+		" Internal solution for finding classes in current file.
+		let file = getline(1, '$')
+		call filter(file, 
+				\ 'v:val =~ "class\\s\\+[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let jfile = join(file, ' ')
+		let int_values = split(jfile, 'class\s\+')
+		let int_classes = {}
+		for i in int_values
+			let c_name = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
+			if c_name != ''
+				let int_classes[c_name] = ''
 			endif
+		endfor
 
-			call extend(int_classes, ext_classes)
-
-			for m in sort(keys(int_classes))
-				if m =~ '^'.a:base
-					call add(res, m)
-				endif
+		" Prepare list of functions from tags file
+		let ext_classes = {}
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		if fnames != ''
+			exe 'silent! vimgrep /^'.a:base.'.*\tc\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				" [:space:] thing: we don't have to be so strict when
+				" dealing with tags files - entries there were already
+				" checked by ctags.
+				let item = matchstr(field['text'], '^[^[:space:]]\+')
+				let ext_classes[item] = ''
 			endfor
+		endif
 
-			let int_list = res
+		call extend(int_classes, ext_classes)
 
-			let final_menu = []
-			for i in int_list
-				let final_menu += [{'word':i, 'kind':'c'}]
-			endfor
+		for m in sort(keys(int_classes))
+			if m =~ '^'.a:base
+				call add(res, m)
+			endif
+		endfor
 
-			return final_menu
+		let int_list = res
 
-		elseif scontext =~ '\(->\|::\)$'
-			" Complete user functions and variables
-			" Internal solution for current file.
-			" That seems as unnecessary repeating of functions but there are
-			" few not so subtle differences as not appending of $ and addition
-			" of 'kind' tag (not necessary in regular completion)
-			if a:base =~ '^\$'
-				let adddollar = '$'
+		let final_menu = []
+		for i in int_list
+			let final_menu += [{'word':i, 'kind':'c'}]
+		endfor
+
+		return final_menu
+
+	elseif scontext =~ '\(->\|::\)$'
+		" Complete user functions and variables
+		" Internal solution for current file.
+		" That seems as unnecessary repeating of functions but there are
+		" few not so subtle differences as not appending of $ and addition
+		" of 'kind' tag (not necessary in regular completion)
+
+		if scontext =~ '->$' && scontext !~ '\$this->$'
+
+			" Get name of the class
+			let classname = phpcomplete#GetClassName(scontext)
+
+			" Get location of class definition, we have to iterate through all
+			" tags files separately because we need relative path from current
+			" file to the exact file (tags file can be in different dir)
+			if classname != ''
+				let classlocation = phpcomplete#GetClassLocation(classname)
 			else
-				let adddollar = ''
+				let classlocation = ''
 			endif
-			let file = getline(1, '$')
-			let jfile = join(file, ' ')
-			let sfile = split(jfile, '\$')
-			let int_vars = {}
-			for i in sfile
-				if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
-					let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
-				else
-					let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-				endif
-				if val !~ ''
-					let int_vars[adddollar.val] = ''
-				endif
-			endfor
-			
-			" ctags has good support for PHP, use tags file for external
-			" variables
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let ext_vars = {}
-			if fnames != ''
-				let sbase = substitute(a:base, '^\$', '', '')
-				exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					let item = matchstr(field['text'], '^[^[:space:]]\+')
-					" Add -> if it is possible object declaration
-					let classname = ''
-					if field['text'] =~ item.'\s*=\s*new\s\+'
-						let item = item.'->'
-						let classname = matchstr(field['text'], 
-								\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
+
+			if filereadable(classlocation)
+				let classfile = readfile(classlocation)
+				let classcontent = ''
+				let classcontent .= "\n".phpcomplete#GetClassContents(classfile, classname)
+				let sccontent = split(classcontent, "\n")
+
+				" YES, YES, YES! - we have whole content including extends!
+				" Now we need to get two elements: public functions and public
+				" vars
+				" NO, NO, NO! - third separate filtering looking for content
+				" :(, but all of them have differences. To squeeze them into
+				" one implementation would require many additional arguments
+				" and ifs. No good solution
+				" Functions declared with public keyword or without any
+				" keyword are public
+				let functions = filter(deepcopy(sccontent), 
+						\ 'v:val =~ "^\\s*\\(public\\s\\*\\)\\?function"')
+				let jfuncs = join(functions, ' ')
+				let sfuncs = split(jfuncs, 'function\s\+')
+				let c_functions = {}
+				for i in sfuncs
+					let f_name = matchstr(i, 
+							\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+					let f_args = matchstr(i, 
+							\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
+					if f_name != ''
+						let c_functions[f_name.'('] = f_args
 					endif
-					let ext_vars[adddollar.item] = classname
 				endfor
-			endif
-
-			" Now we have all variables in int_vars dictionary
-			call extend(int_vars, ext_vars)
-
-			" Internal solution for finding functions in current file.
-			let file = getline(1, '$')
-			call filter(file, 
-					\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let jfile = join(file, ' ')
-			let int_values = split(jfile, 'function\s\+')
-			let int_functions = {}
-			for i in int_values
-				let f_name = matchstr(i, 
-						\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-				let f_args = matchstr(i, 
-						\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
-				let int_functions[f_name.'('] = f_args
-			endfor
-
-			" Prepare list of functions from tags file
-			let ext_functions = {}
-			if fnames != ''
-				exe 'silent! vimgrep /^'.a:base.'.*\tf\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					" File name
-					let item = matchstr(field['text'], '^[^[:space:]]\+')
-					let fname = matchstr(field['text'], '\t\zs\f\+\ze')
-					let prototype = matchstr(field['text'], 
-							\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
-					let ext_functions[item.'('] = prototype.') - '.fname
-				endfor
-			endif
-
-			let all_values = {}
-			call extend(all_values, int_functions)
-			call extend(all_values, ext_functions)
-			call extend(all_values, int_vars) " external variables are already in
-			call extend(all_values, g:php_builtin_object_functions)
-
-			for m in sort(keys(all_values))
-				if m =~ '\(^\|::\)'.a:base
-					call add(res, m)
-				endif
-			endfor
-
-			let start_list = res
-
-			let final_list = []
-			for i in start_list
-				if has_key(int_vars, i)
-					let class = ' '
-					if all_values[i] != ''
-						let class = i.' class '
+				" Variables declared with var or with public keyword are
+				" public
+				let variables = filter(deepcopy(sccontent), 
+						\ 'v:val =~ "^\\s*\\(public\\|var\\)\\s\\+\\$"')
+				let jvars = join(variables, ' ')
+				let svars = split(jvars, '\$')
+				let c_variables = {}
+				for i in svars
+					let c_var = matchstr(i, 
+							\ '^\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+					if c_var != ''
+						let c_variables[c_var] = ''
 					endif
-					let final_list += [{'word':i, 'info':class.all_values[i], 'kind':'v'}]
-				else
-					let final_list += 
-							\ [{'word':substitute(i, '.*::', '', ''), 
-							\   'info':i.all_values[i],
-							\   'kind':'f'}]
-				endif
-			endfor
+				endfor
 
-			return final_list
+				let all_values = {}
+				call extend(all_values, c_functions)
+				call extend(all_values, c_variables)
+				call extend(all_values, g:php_builtin_object_functions)
+
+				for m in sort(keys(all_values))
+					if m =~ '^'.a:base && m !~ '::'
+						call add(res, m)
+					elseif m =~ '::'.a:base
+						call add(res2, m)
+					endif
+				endfor
+
+				let start_list = res + res2
+
+				let final_list = []
+				for i in start_list
+					if has_key(c_variables, i)
+						let class = ' '
+						if all_values[i] != ''
+							let class = i.' class '
+						endif
+						let final_list += 
+								\ [{'word':i, 
+								\   'info':class.all_values[i], 
+								\   'kind':'v'}]
+					else
+						let final_list += 
+								\ [{'word':substitute(i, '.*::', '', ''), 
+								\   'info':i.all_values[i].')',
+								\   'kind':'f'}]
+					endif
+				endfor
+
+				return final_list
+
+			endif
+
 		endif
 
 		if a:base =~ '^\$'
-			" Complete variables
-			" Built-in variables {{{
-			let g:php_builtin_vars = {'$GLOBALS':'',
-									\ '$_SERVER':'',
-									\ '$_GET':'',
-									\ '$_POST':'',
-									\ '$_COOKIE':'',
-									\ '$_FILES':'',
-									\ '$_ENV':'',
-									\ '$_REQUEST':'',
-									\ '$_SESSION':'',
-									\ '$HTTP_SERVER_VARS':'',
-									\ '$HTTP_ENV_VARS':'',
-									\ '$HTTP_COOKIE_VARS':'',
-									\ '$HTTP_GET_VARS':'',
-									\ '$HTTP_POST_VARS':'',
-									\ '$HTTP_POST_FILES':'',
-									\ '$HTTP_SESSION_VARS':'',
-									\ '$php_errormsg':'',
-									\ '$this':''
-									\ }
-			" }}}
-
-			" Internal solution for current file.
-			let file = getline(1, '$')
-			let jfile = join(file, ' ')
-			let int_vals = split(jfile, '\ze\$')
-			let int_vars = {}
-			for i in int_vals
-				if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
-					let val = matchstr(i, 
-							\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
-				else
-					let val = matchstr(i, 
-							\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
-				endif
-				if val != ''
-					let int_vars[val] = ''
-				endif
-			endfor
-
-			call extend(int_vars,g:php_builtin_vars)
-			
-			" ctags has good support for PHP, use tags file for external
-			" variables
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let ext_vars = {}
-			if fnames != ''
-				let sbase = substitute(a:base, '^\$', '', '')
-				exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					let item = '$'.matchstr(field['text'], '^[^[:space:]]\+')
-					let m_menu = ''
-					" Add -> if it is possible object declaration
-					" How to detect if previous line is help line?
-					if field['text'] =~ item.'\s*=\s*new\s\+'
-						let item = item.'->'
-						let m_menu = matchstr(field['text'], 
-								\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
-					endif
-					let ext_vars[item] = m_menu
-				endfor
-			endif
-
-			call extend(int_vars, ext_vars)
-			let g:a0 = keys(int_vars)
-
-			for m in sort(keys(int_vars))
-				if m =~ '^\'.a:base
-					call add(res, m)
-				endif
-			endfor
-
-			let int_list = res
-
-			let int_dict = []
-			for i in int_list
-				if int_vars[i] != ''
-					let class = ' '
-					if int_vars[i] != ''
-						let class = i.' class '
-					endif
-					let int_dict += [{'word':i, 'info':class.int_vars[i], 'kind':'v'}]
-				else
-					let int_dict += [{'word':i, 'kind':'v'}]
-				endif
-			endfor
-
-			return int_dict
-
+			let adddollar = '$'
 		else
-			" Complete everything else - 
-			"  + functions,  DONE
-			"  + keywords of language DONE
-			"  + defines (constant definitions), DONE
-			"  + extend keywords for predefined constants, DONE
-			"  + classes (after new), DONE
-			"  + limit choice after -> and :: to funcs and vars DONE
-
-			" Internal solution for finding functions in current file.
-			let file = getline(1, '$')
-			call filter(file, 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let jfile = join(file, ' ')
-			let int_values = split(jfile, 'function\s\+')
-			let int_functions = {}
-			for i in int_values
-				let f_name = matchstr(i, 
-						\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-				let f_args = matchstr(i, 
-						\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\s*\zs.\{-}\ze\s*)\_s*{')
-				let int_functions[f_name.'('] = f_args.')'
-			endfor
-
-			" Prepare list of functions from tags file
-			let ext_functions = {}
-			if fnames != ''
-				exe 'silent! vimgrep /^'.a:base.'.*\tf\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					" File name
-					let item = matchstr(field['text'], '^[^[:space:]]\+')
-					let fname = matchstr(field['text'], '\t\zs\f\+\ze')
-					let prototype = matchstr(field['text'], 
-							\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
-					let ext_functions[item.'('] = prototype.') - '.fname
-				endfor
+			let adddollar = ''
+		endif
+		let file = getline(1, '$')
+		let jfile = join(file, ' ')
+		let sfile = split(jfile, '\$')
+		let int_vars = {}
+		for i in sfile
+			if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
+				let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
+			else
+				let val = matchstr(i, '^[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
 			endif
-
-			" All functions
-			call extend(int_functions, ext_functions)
-			call extend(int_functions, g:php_builtin_functions)
-
-			" Internal solution for finding constants in current file
-			let file = getline(1, '$')
-			call filter(file, 'v:val =~ "define\\s*("')
-			let jfile = join(file, ' ')
-			let int_values = split(jfile, 'define\s*(\s*')
-			let int_constants = {}
-			for i in int_values
-				let c_name = matchstr(i, '\(["'']\)\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze\1')
-				" let c_value = matchstr(i, 
-				" \ '\(["'']\)[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\1\s*,\s*\zs.\{-}\ze\s*)')
-				if c_name != ''
-					let int_constants[c_name] = '' " c_value
-				endif
-			endfor
-
-			" Prepare list of constants from tags file
-			let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
-			let ext_constants = {}
-			if fnames != ''
-				exe 'silent! vimgrep /^'.a:base.'.*\td\(\t\|$\)/j '.fnames
-				let qflist = getqflist()
-				for field in qflist
-					let item = matchstr(field['text'], '^[^[:space:]]\+')
-					let ext_constants[item] = ''
-				endfor
+			if val !~ ''
+				let int_vars[adddollar.val] = ''
 			endif
-
-			" All constants
-			call extend(int_constants, ext_constants)
-			" Treat keywords as constants
-
-			let all_values = {}
-
-			" One big dictionary of functions
-			call extend(all_values, int_functions)
-
-			" Add constants
-			call extend(all_values, int_constants)
-			" Add keywords
-			call extend(all_values, b:php_keywords)
-
-			for m in sort(keys(all_values))
-				if m =~ '^'.a:base
-					call add(res, m)
+		endfor
+		
+		" ctags has good support for PHP, use tags file for external
+		" variables
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let ext_vars = {}
+		if fnames != ''
+			let sbase = substitute(a:base, '^\$', '', '')
+			exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				let item = matchstr(field['text'], '^[^[:space:]]\+')
+				" Add -> if it is possible object declaration
+				let classname = ''
+				if field['text'] =~ item.'\s*=\s*new\s\+'
+					let item = item.'->'
+					let classname = matchstr(field['text'], 
+							\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 				endif
+				let ext_vars[adddollar.item] = classname
 			endfor
-
-			let int_list = res
-
-			let final_list = []
-			for i in int_list
-				if has_key(int_functions, i)
-					let final_list += 
-							\ [{'word':i, 
-							\   'info':i.int_functions[i],
-							\   'kind':'f'}]
-				elseif has_key(int_constants, i)
-					let final_list += [{'word':i, 'kind':'d'}]
-				else
-					let final_list += [{'word':i}]
-				endif
-			endfor
-
-			return final_list
-
 		endif
 
+		" Now we have all variables in int_vars dictionary
+		call extend(int_vars, ext_vars)
+
+		" Internal solution for finding functions in current file.
+		let file = getline(1, '$')
+		call filter(file, 
+				\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let jfile = join(file, ' ')
+		let int_values = split(jfile, 'function\s\+')
+		let int_functions = {}
+		for i in int_values
+			let f_name = matchstr(i, 
+					\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+			let f_args = matchstr(i, 
+					\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
+			let int_functions[f_name.'('] = f_args.')'
+		endfor
+
+		" Prepare list of functions from tags file
+		let ext_functions = {}
+		if fnames != ''
+			exe 'silent! vimgrep /^'.a:base.'.*\tf\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				" File name
+				let item = matchstr(field['text'], '^[^[:space:]]\+')
+				let fname = matchstr(field['text'], '\t\zs\f\+\ze')
+				let prototype = matchstr(field['text'], 
+						\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
+				let ext_functions[item.'('] = prototype.') - '.fname
+			endfor
+		endif
+
+		let all_values = {}
+		call extend(all_values, int_functions)
+		call extend(all_values, ext_functions)
+		call extend(all_values, int_vars) " external variables are already in
+		call extend(all_values, g:php_builtin_object_functions)
+
+		for m in sort(keys(all_values))
+			if m =~ '\(^\|::\)'.a:base
+				call add(res, m)
+			endif
+		endfor
+
+		let start_list = res
+
+		let final_list = []
+		for i in start_list
+			if has_key(int_vars, i)
+				let class = ' '
+				if all_values[i] != ''
+					let class = i.' class '
+				endif
+				let final_list += [{'word':i, 'info':class.all_values[i], 'kind':'v'}]
+			else
+				let final_list += 
+						\ [{'word':substitute(i, '.*::', '', ''), 
+						\   'info':i.all_values[i],
+						\   'kind':'f'}]
+			endif
+		endfor
+
+		return final_list
 	endif
+
+	if a:base =~ '^\$'
+		" Complete variables
+		" Built-in variables {{{
+		let g:php_builtin_vars = {'$GLOBALS':'',
+								\ '$_SERVER':'',
+								\ '$_GET':'',
+								\ '$_POST':'',
+								\ '$_COOKIE':'',
+								\ '$_FILES':'',
+								\ '$_ENV':'',
+								\ '$_REQUEST':'',
+								\ '$_SESSION':'',
+								\ '$HTTP_SERVER_VARS':'',
+								\ '$HTTP_ENV_VARS':'',
+								\ '$HTTP_COOKIE_VARS':'',
+								\ '$HTTP_GET_VARS':'',
+								\ '$HTTP_POST_VARS':'',
+								\ '$HTTP_POST_FILES':'',
+								\ '$HTTP_SESSION_VARS':'',
+								\ '$php_errormsg':'',
+								\ '$this':''
+								\ }
+		" }}}
+
+		" Internal solution for current file.
+		let file = getline(1, '$')
+		let jfile = join(file, ' ')
+		let int_vals = split(jfile, '\ze\$')
+		let int_vars = {}
+		for i in int_vals
+			if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
+				let val = matchstr(i, 
+						\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
+			else
+				let val = matchstr(i, 
+						\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
+			endif
+			if val != ''
+				let int_vars[val] = ''
+			endif
+		endfor
+
+		call extend(int_vars,g:php_builtin_vars)
+		
+		" ctags has support for PHP, use tags file for external variables
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let ext_vars = {}
+		if fnames != ''
+			let sbase = substitute(a:base, '^\$', '', '')
+			exe 'silent! vimgrep /^'.sbase.'.*\tv\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				let item = '$'.matchstr(field['text'], '^[^[:space:]]\+')
+				let m_menu = ''
+				" Add -> if it is possible object declaration
+				if field['text'] =~ item.'\s*=\s*new\s\+'
+					let item = item.'->'
+					let m_menu = matchstr(field['text'], 
+							\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
+				endif
+				let ext_vars[item] = m_menu
+			endfor
+		endif
+
+		call extend(int_vars, ext_vars)
+		let g:a0 = keys(int_vars)
+
+		for m in sort(keys(int_vars))
+			if m =~ '^\'.a:base
+				call add(res, m)
+			endif
+		endfor
+
+		let int_list = res
+
+		let int_dict = []
+		for i in int_list
+			if int_vars[i] != ''
+				let class = ' '
+				if int_vars[i] != ''
+					let class = i.' class '
+				endif
+				let int_dict += [{'word':i, 'info':class.int_vars[i], 'kind':'v'}]
+			else
+				let int_dict += [{'word':i, 'kind':'v'}]
+			endif
+		endfor
+
+		return int_dict
+
+	else
+		" Complete everything else - 
+		"  + functions,  DONE
+		"  + keywords of language DONE
+		"  + defines (constant definitions), DONE
+		"  + extend keywords for predefined constants, DONE
+		"  + classes (after new), DONE
+		"  + limit choice after -> and :: to funcs and vars DONE
+
+		" Internal solution for finding functions in current file.
+		let file = getline(1, '$')
+		call filter(file, 
+				\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let jfile = join(file, ' ')
+		let int_values = split(jfile, 'function\s\+')
+		let int_functions = {}
+		for i in int_values
+			let f_name = matchstr(i, 
+					\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
+			let f_args = matchstr(i, 
+					\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\s*\zs.\{-}\ze\s*)\_s*{')
+			let int_functions[f_name.'('] = f_args.')'
+		endfor
+
+		" Prepare list of functions from tags file
+		let ext_functions = {}
+		if fnames != ''
+			exe 'silent! vimgrep /^'.a:base.'.*\tf\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				" File name
+				let item = matchstr(field['text'], '^[^[:space:]]\+')
+				let fname = matchstr(field['text'], '\t\zs\f\+\ze')
+				let prototype = matchstr(field['text'], 
+						\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
+				let ext_functions[item.'('] = prototype.') - '.fname
+			endfor
+		endif
+
+		" All functions
+		call extend(int_functions, ext_functions)
+		call extend(int_functions, g:php_builtin_functions)
+
+		" Internal solution for finding constants in current file
+		let file = getline(1, '$')
+		call filter(file, 'v:val =~ "define\\s*("')
+		let jfile = join(file, ' ')
+		let int_values = split(jfile, 'define\s*(\s*')
+		let int_constants = {}
+		for i in int_values
+			let c_name = matchstr(i, '\(["'']\)\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze\1')
+			" let c_value = matchstr(i, 
+			" \ '\(["'']\)[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\1\s*,\s*\zs.\{-}\ze\s*)')
+			if c_name != ''
+				let int_constants[c_name] = '' " c_value
+			endif
+		endfor
+
+		" Prepare list of constants from tags file
+		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+		let ext_constants = {}
+		if fnames != ''
+			exe 'silent! vimgrep /^'.a:base.'.*\td\(\t\|$\)/j '.fnames
+			let qflist = getqflist()
+			for field in qflist
+				let item = matchstr(field['text'], '^[^[:space:]]\+')
+				let ext_constants[item] = ''
+			endfor
+		endif
+
+		" All constants
+		call extend(int_constants, ext_constants)
+		" Treat keywords as constants
+
+		let all_values = {}
+
+		" One big dictionary of functions
+		call extend(all_values, int_functions)
+
+		" Add constants
+		call extend(all_values, int_constants)
+		" Add keywords
+		call extend(all_values, g:php_keywords)
+
+		for m in sort(keys(all_values))
+			if m =~ '^'.a:base
+				call add(res, m)
+			endif
+		endfor
+
+		let int_list = res
+
+		let final_list = []
+		for i in int_list
+			if has_key(int_functions, i)
+				let final_list += 
+						\ [{'word':i, 
+						\   'info':i.int_functions[i],
+						\   'kind':'f'}]
+			elseif has_key(int_constants, i)
+				let final_list += [{'word':i, 'kind':'d'}]
+			else
+				let final_list += [{'word':i}]
+			endif
+		endfor
+
+		return final_list
+
+	endif
+
 endfunction
+
+function! phpcomplete#GetClassName(scontext) " {{{
+	" Get class name
+	" Class name can be detected in few ways:
+	" @var $myVar class
+	" line above
+	" or line in tags file
+
+	let object = matchstr(a:scontext, '\zs[a-zA-Z_0-9\x7f-\xff]\+\ze->')
+	let i = 1
+	while i < line('.')
+		let line = getline(line('.')-i)
+		if line =~ '^\s*\*\/\?\s*$'
+			let i += 1
+			continue
+		else
+			if line =~ '@var\s\+\$'.object.'\s\+[a-zA-Z_0-9\x7f-\xff]\+'
+				let classname = matchstr(line, '@var\s\+\$'.object.'\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+')
+				return classname
+			else
+				break
+			endif
+		endif
+	endwhile
+
+	" OK, first way failed, now check tags file(s)
+	let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+	exe 'silent! vimgrep /^'.object.'.*\$'.object.'.*=\s*new\s\+.*\tv\(\t\|$\)/j '.fnames
+	let qflist = getqflist()
+	if len(qflist) == 0
+		return []
+	endif
+	" In all properly managed projects it should be one item list, even if it
+	" *is* longer we cannot solve conflicts, assume it is first element
+	let classname = matchstr(qflist[0]['text'], '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
+	return classname
+
+endfunction
+" }}}
+function! phpcomplete#GetClassLocation(classname) " {{{
+	" Get class location
+	for fname in tagfiles()
+		let fhead = fnamemodify(fname, ":h")
+		if fhead != ''
+			let psep = '/'
+			let fhead .= psep
+		endif
+		let fname = escape(fname, " \\")
+		exe 'silent! vimgrep /^'.a:classname.'.*\tc\(\t\|$\)/j '.fname
+		let qflist = getqflist()
+		" As in GetClassName we can manage only one element
+		let classlocation = matchstr(qflist[0]['text'], '\t\zs\f\+\ze\t')
+		" And only one class location
+		if classlocation != ''
+			let pset = '/' " Note: slash is potential problem!
+			let classlocation = fhead.classlocation
+			return classlocation
+		endif
+	endfor
+
+endfunction
+" }}}
+
+function! phpcomplete#GetClassContents(file, name) " {{{
+	let cfile = join(a:file, "\n")
+	" We use new buffer and (later) normal! because 
+	" this is the most efficient way. The other way
+	" is to go through the looong string looking for
+	" matching {} 
+	below 1new
+	0put =cfile
+	call search('class\s\+'.a:name)
+	let cfline = line('.')
+	" Catch extends
+	if getline('.') =~ 'extends'
+		let extends_class = matchstr(getline('.'), 
+				\ 'class\s\+'.a:name.'\s\+extends\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
+	else
+		let extends_class = ''
+	endif
+	normal! %
+	let classc = getline(cfline, ".")
+	let classcontent = join(classc, "\n")
+
+	bw! %
+	if extends_class != ''
+		let classlocation = phpcomplete#GetClassLocation(extends_class)
+		if filereadable(classlocation)
+			let classfile = readfile(classlocation)
+			let classcontent .= "\n".phpcomplete#GetClassContents(classfile, extends_class)
+		endif
+	endif
+
+	return classcontent
+endfunction
+" }}}
 
 function! phpcomplete#LoadData() " {{{
 " Keywords/reserved words, all other special things {{{
 " Later it is possible to add some help to values, or type of
 " defined variable
-let b:php_keywords = {
+let g:php_keywords = {
 \ 'PHP_SELF':'',
 \ 'argv':'',
 \ 'argc':'',

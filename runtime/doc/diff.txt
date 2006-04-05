@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0c.  Last change: 2006 Mar 15
+*diff.txt*      For Vim version 7.0c.  Last change: 2006 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,6 +272,10 @@ buffer: >
 Note that deleted lines are displayed, but not counted as text lines.  You
 can't move the cursor into them.  To fill the deleted lines with the lines
 from another buffer use ":diffget" on the line below them.
+								*E787*
+When the buffer that is about to be modified is read-only and the autocommand
+that is triggered by |FileChangedRO| changes buffers the command will fail.
+The autocommand must not change buffers.
 
 The [bufspec] argument above can be a buffer number, a pattern for a buffer
 name or a part of a buffer name.  Examples:

@@ -1,4 +1,4 @@
-*vimball.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*vimball.txt*	For Vim version 7.0c.  Last change: 2006 Apr 01
 
 	Vimball Archiver
 
@@ -56,6 +56,9 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 ==============================================================================
 3. Vimball History					*vimball-history*
 
+	4  : Mar 31, 2006 * BufReadPost seems to fire twice; BufReadEnter
+	                    only fires once, so the "Source this file..."
+			    message is now issued only once.
 	3  : Mar 20, 2006 * removed query, now requires sourcing to be
 	                    extracted (:so %).  Message to that effect
 			    included.

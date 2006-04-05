@@ -75,11 +75,15 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-"  call Decho("exe silent r! unzip -l '".escape(a:zipfile,s:zipfile_escape)."'")
-  exe "silent r! unzip -l ".escape(a:zipfile,s:zipfile_escape)
+"  call Decho("exe silent r! unzip -l '".a:zipfile."'")
+  exe "silent r! unzip -l '".a:zipfile."'"
+"  call Decho("line 6: ".getline(6))
+  let namecol= stridx(getline(6),'Name') + 1
+"  call Decho("namecol=".namecol)
+  4,$g/^\s*----/d
+  4,$g/^\s*\a/d
   $d
-  silent 4,$v/^\s\+\d\+\s\{0,5}\d/d
-  silent  4,$s/^\%(.*\)\s\+\(\S\)/\1/
+  exe 'silent 4,$s/^.*\%'.namecol.'c//'
 
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>ZipBrowseSelect()<cr>
@@ -114,15 +118,15 @@ fun! s:ZipBrowseSelect()
 
   " get zipfile to the new-window
   let zipfile= substitute(w:zipfile,'.zip$','','e')
-  let curfile= escape(expand("%"),s:zipfile_escape)
+  let curfile= expand("%")
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("curfile<".curfile.">")
 
   new
   wincmd _
   let s:zipfile_{winnr()}= curfile
-"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).':'.fname)
-  exe "e zipfile:".escape(zipfile,s:zipfile_escape).':'.fname
+"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).':'.escape(fname,s:zipfile_escape))
+  exe "e zipfile:".escape(zipfile,s:zipfile_escape).':'.escape(fname,s:zipfile_escape)
   filetype detect
 
   let &report= repkeep
@@ -140,8 +144,8 @@ fun! zip#Read(fname,mode)
   let fname   = substitute(a:fname,'zipfile:.\{-}:\([^\\].*\)$','\1','')
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-"  call Decho("exe r! unzip -p '".escape(zipfile,s:zipfile_escape)."' ".fname)
-  exe "r! unzip -p ".escape(zipfile,s:zipfile_escape)." ".fname
+"  call Decho("exe r! unzip -p '".zipfile."' '".fname."'")
+  exe "silent r! unzip -p '".zipfile."' '".fname."'"
 
   " cleanup
   0d
@@ -154,7 +158,7 @@ endfun
 " ---------------------------------------------------------------------
 " zip#Write: {{{2
 fun! zip#Write(fname)
-"  call Dfunc("zip#Write(fname<".a:fname.") zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
+"  call Dfunc("zip#Write(fname<".a:fname.">) zipfile_".winnr()."<".s:zipfile_{winnr()}.">")
   let repkeep= &report
   set report=10
 
@@ -211,6 +215,7 @@ fun! zip#Write(fname)
    if executable("cygpath")
     let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
    endif
+"   call Decho("mkdir(dirpath<".dirpath.">,p)")
    call mkdir(dirpath,"p")
   endif
   if zipfile !~ '/'
@@ -218,13 +223,13 @@ fun! zip#Write(fname)
   endif
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-  exe "w! ".fname
+  exe "w! ".escape(fname,s:zipfile_escape)
   if executable("cygpath")
    let zipfile = substitute(system("cygpath ".zipfile),'\n','','e')
   endif
 
-"  call Decho("zip -u ".zipfile.".zip ".fname)
-  call system("zip -u ".zipfile.".zip ".fname)
+"  call Decho("zip -u '".zipfile.".zip' '".fname."'")
+  call system("zip -u '".zipfile.".zip' '".fname."'")
   if v:shell_error != 0
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()

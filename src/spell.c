@@ -256,6 +256,8 @@
  *			    WF_NEEDCOMP >> 8  word only valid in compound
  *			    WF_NOSUGGEST >> 8  word not used for suggestions
  *			    WF_COMPROOT >> 8  word already a compound
+ *			    WF_NOCOMPBEF >> 8 no compounding before this word
+ *			    WF_NOCOMPAFT >> 8 no compounding after this word
  *
  * <pflags>	1 byte	    bitmask of:
  *			    WFP_RARE	rare prefix
@@ -345,6 +347,8 @@ typedef long idx_T;
 #define WF_NEEDCOMP 0x0200	/* word only valid in compound */
 #define WF_NOSUGGEST 0x0400	/* word not to be suggested */
 #define WF_COMPROOT 0x0800	/* already compounded word, COMPOUNDROOT */
+#define WF_NOCOMPBEF 0x1000	/* no compounding before this word */
+#define WF_NOCOMPAFT 0x2000	/* no compounding after this word */
 
 /* only used for su_badflags */
 #define WF_MIXCAP   0x20	/* mix of upper and lower case: macaRONI */
@@ -1500,6 +1504,13 @@ find_word(mip, mode)
 					   && slang->sl_compsylmax == MAXWLEN)
 		    continue;
 
+		/* Don't allow compounding on a side where an affix was added,
+		 * unless COMPOUNDPERMITFLAG was used. */
+		if (mip->mi_complen > 0 && (flags & WF_NOCOMPBEF))
+		    continue;
+		if (!word_ends && (flags & WF_NOCOMPAFT))
+		    continue;
+
 		/* Quickly check if compounding is possible with this flag. */
 		if (!byte_in_str(mip->mi_complen == 0
 					? slang->sl_compstartflags
@@ -1634,12 +1645,16 @@ find_word(mip, mode)
 			mip->mi_compoff = wlen;
 			find_word(mip, FIND_KEEPCOMPOUND);
 
+#if 0	    /* Disabled, a prefix must not appear halfway a compound word,
+	       unless the COMPOUNDPERMITFLAG is used and then it can't be a
+	       postponed prefix. */
 			if (!slang->sl_nobreak || mip->mi_result == SP_BAD)
 			{
 			    /* Check for following word with prefix. */
 			    mip->mi_compoff = c;
 			    find_prefix(mip, FIND_COMPOUND);
 			}
+#endif
 		    }
 
 		    if (!slang->sl_nobreak)
@@ -6702,7 +6717,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 			else
 			    use_flags = flags;
 
-			/* Obey a "COMPOUNDFORBID" flag of the affix: don't
+			/* Obey a "COMPOUNDFORBIDFLAG" of the affix: don't
 			 * use the compound flags. */
 			use_pfxlist = pfxlist;
 			if (pfxlist != NULL
@@ -6730,13 +6745,29 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 				use_pfxlist += pfxlen;
 			}
 
+			/* When compounding is supported and there is no
+			 * "COMPOUNDPERMITFLAG" then forbid compounding on the
+			 * side where the affix is applied. */
+			if (spin->si_compflags != NULL
+				&& (affile->af_comppermit == 0
+				    || ae->ae_flags == NULL
+				    || !flag_in_afflist(
+					    affile->af_flagtype, ae->ae_flags,
+						      affile->af_comppermit)))
+			{
+			    if (xht != NULL)
+				use_flags |= WF_NOCOMPAFT;
+			    else
+				use_flags |= WF_NOCOMPBEF;
+			}
+
 			/* Store the modified word. */
 			if (store_word(spin, newword, use_flags,
 				 spin->si_region, use_pfxlist, FALSE) == FAIL)
 			    retval = FAIL;
 
 			/* When added a suffix and combining is allowed also
-			 * try adding prefixes additionally. */
+			 * try adding prefixes additionally.  RECURSIVE! */
 			if (xht != NULL && ah->ah_combine)
 			    if (store_aff_word(spin, newword, afflist, affile,
 					  xht, NULL, TRUE,
@@ -9210,9 +9241,15 @@ init_spellfile()
 		    vim_strncpy(buf, curbuf->b_p_spl, lend - curbuf->b_p_spl);
 		else
 		{
+		    /* Create the "spell" directory if it doesn't exist yet. */
+		    l = STRLEN(buf);
+		    vim_snprintf((char *)buf + l, MAXPATHL - l, "/spell");
+		    if (!filewritable(buf) != 2)
+			vim_mkdir(buf, 0755);
+
 		    l = STRLEN(buf);
 		    vim_snprintf((char *)buf + l, MAXPATHL - l,
-				 "/spell/%.*s", (int)(lend - lstart), lstart);
+				 "/%.*s", (int)(lend - lstart), lstart);
 		}
 		l = STRLEN(buf);
 		fname = LANGP_ENTRY(curbuf->b_langp, 0)->lp_slang->sl_fname;
@@ -9947,7 +9984,6 @@ spell_suggest(count)
 	    STRCAT(p, sug.su_badptr + stp->st_orglen);
 	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
 	    curwin->w_cursor.col = c;
-	    changed_bytes(curwin->w_cursor.lnum, c);
 
 	    /* For redo we use a change-word command. */
 	    ResetRedobuff();
@@ -9955,6 +9991,9 @@ spell_suggest(count)
 	    AppendToRedobuffLit(p + c,
 			    stp->st_wordlen + sug.su_badlen - stp->st_orglen);
 	    AppendCharToRedobuff(ESC);
+
+	    /* After this "p" may be invalid. */
+	    changed_bytes(curwin->w_cursor.lnum, c);
 	}
     }
     else

@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Mar 03
+*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Mar 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -119,12 +119,14 @@ Using the mouse: If the tab page line is displayed you can click in a tab page
 label to switch to that tab page.  Click where there is no label to go to the
 next tab page.  |'tabline'|
 
-:tabn[ext]					*:tabn* *:tabnext* *gt*
-gt		Go to the next tab page.  Wraps around from the last to the
+:tabn[ext]				*:tabn* *:tabnext* *gt*
+gt					*CTRL-<PageDown>* *<C-PageDown>*
+<C-PageDown>	Go to the next tab page.  Wraps around from the last to the
 		first one.
 
 :tabn[ext] {count}
-{count}gt	Go to tab page {count}.  The first tab page has number one.
+{count}gt				*CTRL-<PageUp>* *<C-PageUp>*
+<C-PageUp>	Go to tab page {count}.  The first tab page has number one.
 
 
 :tabp[revious]				*:tabp* *:tabprevious* *gT*
@@ -197,6 +199,8 @@ The entries are:
 Diff mode works per tab page.  You can see the diffs between several files
 within one tab page.  Other tab pages can show differences between other
 files.
+
+Variables local to a tab page start with "t:". |tabpage-variable|
 
 The TabLeave and TabEnter autocommand events can be used to do something when
 switching from one tab page to another.  The exact order depends on what you

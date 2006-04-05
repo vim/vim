@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0c.  Last change: 2006 Mar 29
+*options.txt*	For Vim version 7.0c.  Last change: 2006 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -684,8 +684,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	or selected.
 	This option is provided for backward compatibility with the Vim
 	released with Sun ONE Studio 4 Enterprise Edition.
-	Note: When this option is on some plugins may not work.  The directory
-	browser sets if off.
+	Note: When this option is on some plugins may not work.
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
 'arabic' 'arab'		boolean (default off)
@@ -1488,8 +1487,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|fold-marker|.
 
 			*'compatible'* *'cp'* *'nocompatible'* *'nocp'*
-'compatible' 'cp'	boolean	(default on, off when a .vimrc or .gvimrc file
-								is found)
+'compatible' 'cp'	boolean	(default on, off when a |vimrc| or |gvimrc|
+								file is found)
 			global
 			{not in Vi}
 	This option has the effect of making Vim either more Vi-compatible, or
@@ -1504,10 +1503,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	options.  This default was chosen for those people who want to use Vim
 	just like Vi, and don't even (want to) know about the 'compatible'
 	option.
-	When a ".vimrc" or ".gvimrc" file is found while Vim is starting up,
+	When a |vimrc| or |gvimrc| file is found while Vim is starting up,
 	this option is switched off, and all options that have not been
 	modified will be set to the Vim defaults.  Effectively, this means
-	that when a ".vimrc" or ".gvimrc" file exists, Vim will use the Vim
+	that when a |vimrc| or |gvimrc| file exists, Vim will use the Vim
 	defaults, otherwise it will use the Vi defaults.  (Note: This doesn't
 	happen for the system-wide vimrc or gvimrc file).  Also see
 	|compatible-default| and |posix-compliance|.
@@ -2719,6 +2718,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This is similar to the default, except that these characters will also
 	be used when there is highlighting.
 
+	for "stl" and "stlnc" only single-byte values are supported.
+
 	The highlighting used for these items:
 	  item		highlight group ~
 	  stl:c		StatusLine		|hl-StatusLine|
@@ -2894,6 +2895,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		quickfix	":cn", ":crew", ":make", etc.
 		search		search for a pattern: "/", "n", "*", "gd", etc.
 				(not for a search pattern in a ":" command)
+				Also for |[s| and |]s|.
 		tag		jumping to a tag: ":ta", CTRL-T, etc.
 		undo		undo or redo: "u" and CTRL-R
 	When the command is part of a mapping this option is not used.  Add
@@ -3332,7 +3334,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		can use "gvim -f" or ":gui -f" to start the GUI in the
 		foreground.  |gui-fork|
 		Note: Set this option in the vimrc file.  The forking may have
-		happened already when the gvimrc file is read.
+		happened already when the |gvimrc| file is read.
 
 	  'i'	Use a Vim icon.  For GTK with KDE it is used in the left-upper
 		corner of the window.  It's black&white on non-GTK, because of
@@ -3341,7 +3343,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'm'	Menu bar is present.
 	  'M'	The system menu "$VIMRUNTIME/menu.vim" is not sourced.  Note
 		that this flag must be added in the .vimrc file, before
-		switching on syntax or filetype recognition (when the .gvimrc
+		switching on syntax or filetype recognition (when the |gvimrc|
 		file is sourced the system menu has already been loaded; the
 		":syntax on" and ":filetype on" commands load the menu too).
 	  'g'	Grey menu items: Make menu items that are not active grey.  If
@@ -3374,7 +3376,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'p'	Use Pointer callbacks for X11 GUI.  This is required for some
 		window managers.  If the cursor is not blinking or hollow at
 		the right moment, try adding this flag.  This must be done
-		before starting the GUI.  Set it in your gvimrc.  Adding or
+		before starting the GUI.  Set it in your |gvimrc|.  Adding or
 		removing it after the GUI has started has no effect.
 	  'F'	Add a footer.  Only for Motif.  See |gui-footer|.
 
@@ -3469,7 +3471,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     "8:SpecialKey,@:NonText,d:Directory,
 				     e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,
 				     M:ModeMsg,n:LineNr,r:Question,
-				     s:StatusLine,S:StatusLineNC,c:VertSplit
+				     s:StatusLine,S:StatusLineNC,c:VertSplit,
 				     t:Title,v:Visual,w:WarningMsg,W:WildMenu,
 				     f:Folded,F:FoldColumn,A:DiffAdd,
 				     C:DiffChange,D:DiffDelete,T:DiffText,
@@ -3560,7 +3562,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	highlight all of the matched text.  However, this depends on where the
 	search starts.  This will be the first line in the window or the first
 	line below a closed fold.  A match in a previous line which is not
-	drawn may not continue in an newly drawn line.
+	drawn may not continue in a newly drawn line.
 	NOTE: This option is reset when 'compatible' is set.
 
 						*'history'* *'hi'*
@@ -4265,7 +4267,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The characters ':' and ',' should not be used.  UTF-8 characters can
 	be used when 'encoding' is "utf-8", otherwise only printable
-	characters are allowed.
+	characters are allowed.  All characters must be single width.
 
 	Examples: >
 	    :set lcs=tab:>-,trail:-
@@ -5369,6 +5371,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			   going back to the other window, it still uses the
 			   same relative offset.
 	Also see |scroll-binding|.
+	When 'diff' mode is active there always is vertical scroll binding,
+	even when "ver" isn't there.
 
 						*'sections'* *'sect'*
 'sections' 'sect'	string	(default "SHNHH HUnhsh")
@@ -5969,8 +5973,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|zg| and |zw| commands can be used to access each.  This allows using
 	a personal word list file and a project word list file.
 	When a word is added while this option is empty Vim will set it for
-	you: Using the first "spell" directory in 'runtimepath' that is
-	writable and the first language name that appears in 'spelllang',
+	you: Using the first directory in 'runtimepath' that is writable.  If
+	there is no "spell" directory yet it will be created.  For the file
+	name the first language name that appears in 'spelllang' is used,
 	ignoring the region.
 	The resulting ".spl" file will be used for spell checking, it does not
 	have to appear in 'spelllang'.

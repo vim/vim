@@ -243,6 +243,9 @@
 #undef HAVE_X11_XMU_EDITRES_H
 #undef HAVE_X11_SM_SMLIB_H
 
+/* Define to the type of the XpmAttributes type. */
+#undef XPMATTRIBUTES_TYPE
+
 /* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
 #undef HAVE_SYS_WAIT_H
 

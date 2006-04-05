@@ -2601,7 +2601,9 @@ do_write(eap)
 	    /* If 'filetype' was empty try detecting it now. */
 	    if (*curbuf->b_p_ft == NUL)
 	    {
-		(void)do_doautocmd((char_u *)"filetypedetect BufRead", TRUE);
+		if (au_has_group((char_u *)"filetypedetect"))
+		    (void)do_doautocmd((char_u *)"filetypedetect BufRead",
+									TRUE);
 		do_modelines(0);
 	    }
 #endif
@@ -2610,6 +2612,9 @@ do_write(eap)
 	retval = buf_write(curbuf, ffname, fname, eap->line1, eap->line2,
 				 eap, eap->append, eap->forceit, TRUE, FALSE);
 
+	/* After ":saveas fname" reset 'readonly'. */
+	if (eap->cmdidx == CMD_saveas && retval == OK)
+	    curbuf->b_p_ro = FALSE;
     }
 
 theend:
@@ -2698,7 +2703,6 @@ check_overwrite(eap, buf, fname, ffname, other)
 	    }
 	    swapname = makeswapname(fname, ffname, curbuf, dir);
 	    r = vim_fexists(swapname);
-	    vim_free(swapname);
 	    if (r)
 	    {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -2711,7 +2715,10 @@ check_overwrite(eap, buf, fname, ffname, other)
 								    swapname);
 		    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2)
 								   != VIM_YES)
+		    {
+			vim_free(swapname);
 			return FAIL;
+		    }
 		    eap->forceit = TRUE;
 		}
 		else
@@ -2719,9 +2726,11 @@ check_overwrite(eap, buf, fname, ffname, other)
 		{
 		    EMSG2(_("E768: Swap file exists: %s (:silent! overrides)"),
 								    swapname);
+		    vim_free(swapname);
 		    return FAIL;
 		}
 	    }
+	    vim_free(swapname);
 	}
     }
     return OK;
@@ -2885,6 +2894,10 @@ getfile(fnum, ffname, sfname, setpm, lnum, forceit)
 
     if (text_locked())
 	return 1;
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return 1;
+#endif
 
     if (fnum == 0)
     {
@@ -4609,7 +4622,7 @@ do_sub(eap)
 				    sub, sub_firstline, FALSE, p_magic, TRUE);
 
 		/* When the match included the "$" of the last line it may
-		 * include one line too much. */
+		 * go beyond the last line of the buffer. */
 		if (nmatch > curbuf->b_ml.ml_line_count - sub_firstlnum + 1)
 		{
 		    nmatch = curbuf->b_ml.ml_line_count - sub_firstlnum + 1;
@@ -4700,6 +4713,15 @@ do_sub(eap)
 
 		/* Remember next character to be copied. */
 		copycol = regmatch.endpos[0].col;
+
+		if (skip_match)
+		{
+		    /* Already hit end of the buffer, sub_firstlnum is one
+		     * less than what it ought to be. */
+		    vim_free(sub_firstline);
+		    sub_firstline = vim_strsave((char_u *)"");
+		    copycol = 0;
+		}
 
 		/*
 		 * Now the trick is to replace CTRL-M chars with a real line
@@ -5418,11 +5440,13 @@ ex_help(eap)
     if (tag != NULL)
 	do_tag(tag, DT_HELP, 1, FALSE, TRUE);
 
-    /* Delete the empty buffer if we're not using it. */
+    /* Delete the empty buffer if we're not using it.  Careful: autocommands
+     * may have jumped to another window, check that the buffer is not in a
+     * window. */
     if (empty_fnum != 0 && curbuf->b_fnum != empty_fnum)
     {
 	buf = buflist_findnr(empty_fnum);
-	if (buf != NULL)
+	if (buf != NULL && buf->b_nwindows == 0)
 	    wipe_buffer(buf, TRUE);
     }
 

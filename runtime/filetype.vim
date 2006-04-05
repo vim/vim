@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 28
+" Last Change:	2006 Apr 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -146,7 +146,7 @@ au BufNewFile,BufRead *.asp
 	\ endif
 
 " Grub (must be before catch *.lst)
-au BufNewFile,BufRead /boot/grub/menu.lst,/boot/grub/grub.conf	setf grub
+au BufNewFile,BufRead /boot/grub/menu.lst,/boot/grub/grub.conf,/etc/grub.conf	setf grub
 
 " Assembly (all kinds)
 " *.lst is not pure assembly, it has two extra columns (address, byte codes)
@@ -602,10 +602,10 @@ au BufNewFile,BufRead *.mas,*.master		setf master
 au BufNewFile,BufRead *.fs,*.ft			setf forth
 
 " Fortran
-au BufNewFile,BufRead *.f,*.F,*.for,*.fpp,*.FPP*.ftn,*.f77,*.F77,*.f90,*.F90,*.f95,*.F95	setf fortran
+au BufNewFile,BufRead *.f,*.F,*.for,*.fpp,*.FPP,*.ftn,*.f77,*.F77,*.f90,*.F90,*.f95,*.F95	setf fortran
 
 " FStab
-au BufNewFile,BufRead fstab			setf fstab
+au BufNewFile,BufRead fstab,mtab		setf fstab
 
 " GDB command files
 au BufNewFile,BufRead .gdbinit			setf gdb
@@ -880,7 +880,7 @@ au BufNewFile,BufRead *.ist,*.mst		setf ist
 au BufNewFile,BufRead *.man			setf man
 
 " Man config
-au BufNewFile,BufRead /etc/man.conf		setf manconf
+au BufNewFile,BufRead /etc/man.conf,man.config	setf manconf
 
 " Maple V
 au BufNewFile,BufRead *.mv,*.mpl,*.mws		setf maple
@@ -1554,6 +1554,10 @@ au BufNewFile,BufRead *.sim			setf simula
 
 " SINDA
 au BufNewFile,BufRead *.sin,*.s85		setf sinda
+
+" SiSU
+au BufNewFile,BufRead *.sst,*.ssm,*.ssi,*.-sst,*._ssi setf sisu
+au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
 
 " SKILL
 au BufNewFile,BufRead *.il,*.ils,*.cdf		setf skill

@@ -430,9 +430,8 @@ struct vimoption
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
-/* 'isprint' for latin1 is also used for MS-Windows, where 0x80 is used for
- * the currency sign.  This isn't really latin1 but Windows-1252, but we can't
- * detect that. */
+/* 'isprint' for latin1 is also used for MS-Windows cp1252, where 0x80 is used
+ * for the currency sign. */
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 # define ISP_LATIN1 (char_u *)"@,~-255"
 #else
@@ -6727,6 +6726,8 @@ set_chars_option(varp)
 		    s = p + len + 1;
 #ifdef FEAT_MBYTE
 		    c1 = mb_ptr2char_adv(&s);
+		    if (mb_char2cells(c1) > 1)
+			continue;
 #else
 		    c1 = *s++;
 #endif
@@ -6736,6 +6737,8 @@ set_chars_option(varp)
 			    continue;
 #ifdef FEAT_MBYTE
 			c2 = mb_ptr2char_adv(&s);
+			if (mb_char2cells(c2) > 1)
+			    continue;
 #else
 			c2 = *s++;
 #endif
@@ -10241,11 +10244,16 @@ paste_option_changed()
  * Reset 'compatible' and set the values for options that didn't get set yet
  * to the Vim defaults.
  * Don't do this if the 'compatible' option has been set or reset before.
+ * When "fname" is not NULL, use it to set $"envname" when it wasn't set yet.
  */
     void
-vimrc_found()
+vimrc_found(fname, envname)
+    char_u	*fname;
+    char_u	*envname;
 {
-    int	    opt_idx;
+    int		opt_idx;
+    int		dofree;
+    char_u	*p;
 
     if (!option_was_set((char_u *)"cp"))
     {
@@ -10254,6 +10262,23 @@ vimrc_found()
 	    if (!(options[opt_idx].flags & (P_WAS_SET|P_VI_DEF)))
 		set_option_default(opt_idx, OPT_FREE, FALSE);
 	didset_options();
+    }
+
+    if (fname != NULL)
+    {
+	p = vim_getenv(envname, &dofree);
+	if (p == NULL)
+	{
+	    /* Set $MYVIMRC to the first vimrc file found. */
+	    p = FullName_save(fname, FALSE);
+	    if (p != NULL)
+	    {
+		vim_setenv(envname, p);
+		vim_free(p);
+	    }
+	}
+	else if (dofree)
+	    vim_free(p);
     }
 }
 

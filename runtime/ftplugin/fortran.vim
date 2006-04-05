@@ -1,10 +1,11 @@
 " Vim settings file
 " Language:	Fortran90 (and Fortran95, Fortran77, F and elf90)
-" Version:	0.44
-" Last Change:	2003 May 18
+" Version:	0.45
+" Last Change:	2006 Apr. 03
 " URL:		http://www.unb.ca/chem/ajit/ftplugin/fortran.vim
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-plugin from Vim
+" Credits:      Useful suggestions were made by Stefano Zacchiroli
 
 " Only do these settings when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -26,11 +27,11 @@ if !exists("b:fortran_fixed_source")
   else
     " f90 and f95 allow both fixed and free source form
     " assume fixed source form unless signs of free source form
-    " are detected in the first five columns of the first 25 lines
+    " are detected in the first five columns of the first 250 lines
     " Detection becomes more accurate and time-consuming if more lines
     " are checked. Increase the limit below if you keep lots of comments at
     " the very top of each file and you have a fast computer
-    let s:lmax = 25
+    let s:lmax = 250
     if ( s:lmax > line("$") )
       let s:lmax = line("$")
     endif
@@ -73,7 +74,8 @@ endif
 " Set 'formatoptions' to break comment and text lines but allow long lines
 setlocal fo+=tcql
 
-setlocal include=^#\\=\\s*include\\s\\+
+setlocal include=^\\c#\\=\\s*include\\s\\+
+setlocal suffixesadd+=.f95,.f90,.for,.f,.F,.f77,.ftn,.fpp
 
 let s:cposet=&cpoptions
 set cpoptions-=C
@@ -83,6 +85,7 @@ if !exists("b:match_words")
   let s:notend = '\%(\<end\s\+\)\@<!'
   let s:notselect = '\%(\<select\s\+\)\@<!'
   let s:notelse = '\%(\<end\s\+\|\<else\s\+\)\@<!'
+  let s:notprocedure = '\%(\s\+procedure\>\)\@!'
   let b:match_ignorecase = 1
   let b:match_words =
     \ '\<select\s*case\>:' . s:notselect. '\<case\>:\<end\s*select\>,' .
@@ -95,7 +98,7 @@ if !exists("b:match_words")
     \ s:notend . '\<interface\>:\<end\s*interface\>,'.
     \ s:notend . '\<subroutine\>:\<end\s*subroutine\>,'.
     \ s:notend . '\<function\>:\<end\s*function\>,'.
-    \ s:notend . '\<module\>:\<end\s*module\>,'.
+    \ s:notend . '\<module\>' . s:notprocedure . ':\<end\s*module\>,'.
     \ s:notend . '\<program\>:\<end\s*program\>'
 endif
 

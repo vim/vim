@@ -724,6 +724,7 @@ installrtbase {virtual}{force}: $HELPSOURCE/vim.1 $DEST_VIM
                 $DEST_RT $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
                 $DEST_FTP $DEST_AUTO $DEST_PLUG $DEST_TUTOR $DEST_COMP
                 $DEST_SPELL $DEST_PRINT
+        :chmod 755 installman.sh
         :sys ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 
         :cd $HELPSOURCE
@@ -855,6 +856,7 @@ installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
         :copy xxd/xxd$EXESUF $DEST_BIN
         :do strip $DEST_BIN/xxd$EXESUF
         :chmod $BINMOD $DEST_BIN/xxd$EXESUF
+        :chmod 755 installman.sh
         :sys ./installman.sh xxd $(DEST_MAN) "" $(INSTALLMANARGS)
 #
 # install the runtime tools
@@ -891,6 +893,7 @@ installtools {virtual}{force}: $TOOLS $DEST_BIN $DEST_MAN \
 
 # install the language specific files for tools, if they were unpacked
 install-tool-languages:
+        :chmod 755 installman.sh
         :sys ./installman.sh xxd $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
 	:sys ./installman.sh xxd $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
@@ -904,6 +907,7 @@ install-tool-languages:
 
 # install the language specific files, if they were unpacked
 install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
+        :chmod 755 installman.sh
         :sys ./installman.sh install $(DEST_MAN_FR) "-fr" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_FR_I) "-fr" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_FR_U) "-fr.UTF-8" $(INSTALLMANARGS)
@@ -914,6 +918,7 @@ install-languages {virtual}{force}: languages $DEST_LANG $DEST_KMAP
 	:sys ./installman.sh install $(DEST_MAN_PL_U) "-pl.UTF-8" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_RU) "-ru" $(INSTALLMANARGS)
 	:sys ./installman.sh install $(DEST_MAN_RU_U) "-ru.UTF-8" $(INSTALLMANARGS)
+        :chmod 755 installml.sh
 	:sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN_FR) $(INSTALLMLARGS)
         :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
@@ -1034,6 +1039,7 @@ INSTALLMLARGS = $(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME) \
 		$(GVIMDIFFNAME) $(EVIEWNAME)
 
 installmanlinks {virtual}:
+    :chmod 755 installml.sh
     :sys ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN) $(INSTALLMLARGS)
 
@@ -1054,6 +1060,7 @@ uninstall {virtual}{force}: uninstall_runtime
 # Note: "deldir" will fail if any files were added after "make install", that
 # is intentionally: Keep files the user added.
 uninstall_runtime {virtual}{force}:
+    :chmod 755 installman.sh
     :sys ./installman.sh uninstall $(DEST_MAN) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_FR) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_FR_I) "" $(INSTALLMANARGS)
@@ -1065,6 +1072,7 @@ uninstall_runtime {virtual}{force}:
     :sys ./installman.sh uninstall $(DEST_MAN_PL_U) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_RU) "" $(INSTALLMANARGS)
     :sys ./installman.sh uninstall $(DEST_MAN_RU_U) "" $(INSTALLMANARGS)
+    :chmod 755 installml.sh
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \
             $(DEST_MAN) $(INSTALLMLARGS)
     :sys ./installml.sh uninstall "$(GUI_MAN_TARGETS)" \

@@ -28,7 +28,7 @@
 #include <Xm/XmP.h>
 #include <Xm/DrawP.h>
 #if defined(HAVE_XM_TRAITP_H) && defined(HAVE_XM_MANAGER_H) \
-    && defined(HAVE_XM_UNHIGHLIGHT_H) && defined(HAVE_XM_XPMP_H)
+	&& defined(HAVE_XM_UNHIGHLIGHTT_H) && defined(HAVE_XM_XPMP_H)
 # include <Xm/TraitP.h>
 # include <Xm/Manager.h>
 # include <Xm/UnhighlightT.h>
@@ -274,7 +274,9 @@ static char * blank_xpm[] =
     static void
 set_pixmap(XmEnhancedButtonWidget eb)
 {
-    XpmAttributes   attr;
+    /* Configure defines XPMATTRIBUTES_TYPE as XpmAttributes or as
+     * XpmAttributes_21, depending on what is in Xm/XpmP.h. */
+    XPMATTRIBUTES_TYPE   attr;
     Pixmap	    sen_pix;
     Window	    root;
     static XpmColorSymbol color[8] = {

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0c.  Last change: 2006 Mar 29
+*eval.txt*      For Vim version 7.0c.  Last change: 2006 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -110,8 +110,8 @@ around the arguments, to invoke the function it refers to.  Example: >
 	:let Fn = function("MyFunc")
 	:echo Fn()
 <							*E704* *E705* *E707*
-A Funcref variable must start with a capital, "s:", "w:" or "b:".  You cannot
-have both a Funcref variable and a function with the same name.
+A Funcref variable must start with a capital, "s:", "w:", "t:" or "b:".  You
+cannot have both a Funcref variable and a function with the same name.
 
 A special case is defining a function and directly assigning its Funcref to a
 Dictionary entry.  Example: >
@@ -504,7 +504,7 @@ the function was invoked from.
 It is also possible to add a function without the "dict" attribute as a
 Funcref to a Dictionary, but the "self" variable is not available then.
 
-						*numbered-function*
+				*numbered-function* *anonymous-function*
 To avoid the extra name for the function it can be defined and directly
 assigned to a Dictionary in this way: >
 	:let mydict = {'data': [0, 1, 2, 3]}
@@ -1030,6 +1030,7 @@ specified by what is prepended:
 		(nothing) In a function: local to a function; otherwise: global
 |buffer-variable|    b:	  Local to the current buffer.
 |window-variable|    w:	  Local to the current window.
+|tabpage-variable|   t:	  Local to the current tab page.
 |global-variable|    g:	  Global.
 |local-variable|     l:	  Local to a function.
 |script-variable|    s:	  Local to a |:source|'ed Vim script.
@@ -1062,6 +1063,11 @@ b:changedtick	The total number of changes to the current buffer.  It is
 						*window-variable* *w:var*
 A variable name that is preceded with "w:" is local to the current window.  It
 is deleted when the window is closed.
+
+						*tabpage-variable* *t:var*
+A variable name that is preceded with "t:" is local to the current tab page,
+It is deleted when the tab page is closed. {not available when compiled
+without the +windows feature}
 
 						*global-variable* *g:var*
 Inside functions global variables are accessed with "g:".  Omitting this will
@@ -1628,6 +1634,7 @@ mapcheck( {name}[, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
+matcharg( {nr})			List	arguments of |:match|
 matchend( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} ends in {expr}
 matchlist( {expr}, {pat}[, {start}[, {count}]])
@@ -1641,6 +1648,7 @@ mkdir({name} [, {path} [, {prot}]])
 mode()				String	current editing mode
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
+pathshorten( {expr})		String	shorten directory names in a path
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String  format text
 pumvisible()			Number  whether popup menu is visible
@@ -2252,6 +2260,9 @@ executable({expr})					*executable()*
 		extension.
 		On MS-DOS and MS-Windows it only checks if the file exists and
 		is not a directory, not if it's really executable.
+		On MS-Windows an executable in the same directory as Vim is
+		always found.  Since this directory is added to $PATH it
+		should also work to execute it |win32-PATH|.
 		The result is a Number:
 			1	exists
 			0	does not exist
@@ -2720,10 +2731,10 @@ getfontname([{name}])					*getfontname()*
 		Otherwise the actual font name is returned, or {name} if the
 		GUI does not support obtaining the real name.
 		Only works when the GUI is running, thus not you your vimrc or
-		Note that the GTK 2 GUI accepts any font name, thus checking
-		for a valid name does not work.
 		gvimrc file.  Use the |GUIEnter| autocommand to use this
 		function just after the GUI has started.
+		Note that the GTK 2 GUI accepts any font name, thus checking
+		for a valid name does not work.
 
 getfperm({fname})					*getfperm()*
 		The result is a String, which is the read, write, and execute
@@ -3137,9 +3148,9 @@ inputdialog({prompt} [, {text} [, {cancelreturn}]])		*inputdialog()*
 		NOTE: Command-line completion is not supported.
 
 inputlist({textlist})					*inputlist()*
-		{textlist} must be a list of strings.  This list is displayed,
-		one string per line.  The user will be prompted to enter a
-		number, which is returned.
+		{textlist} must be a |List| of strings.  This |List| is
+		displayed, one string per line.  The user will be prompted to
+		enter a number, which is returned.
 		The user can also select an item by clicking on it with the
 		mouse.  For the first string 0 is returned.  When clicking
 		above the first item a negative number is returned.  When
@@ -3196,7 +3207,7 @@ isdirectory({directory})				*isdirectory()*
 		exist, or isn't a directory, the result is FALSE.  {directory}
 		is any expression, which is used as a String.
 
-islocked({expr})					*islocked()*
+islocked({expr})					*islocked()* *E786*
 		The result is a Number, which is non-zero when {expr} is the
 		name of a locked variable.
 		{expr} must be the name of a variable, |List| item or
@@ -3479,6 +3490,18 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		the pattern.  'smartcase' is NOT used.  The matching is always
 		done like 'magic' is set and 'cpoptions' is empty.
 
+
+matcharg({nr})							*matcharg()*
+		Selects the {nr} match item, as set with a |:match|, 
+		|:2match| or |:3match| command.
+		Return a |List| with two elements:
+			The name of the highlight group used
+			The pattern used.
+		When {nr} is not 1, 2 or 3 returns an empty |List|.
+		When there is no match item set returns ['', ''].
+		This is usef to save and restore a |:match|.
+
+
 matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 		Same as match(), but return the index of first character after
 		the match.  Example: >
@@ -3597,6 +3620,15 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 			MoveTheCursorAround
 			call setpos('.', save_cursor)
 <		Also see |setpos()|.
+
+pathshorten({expr})					*pathshorten()*
+		Shorten directory names in the path {expr} and return the
+		result.  The tail, the file name, is kept as-is.  The other
+		components in the path are reduced to single letters.  Leading
+		'~' and '.' characters are kept.  Example: >
+			:echo pathshorten('~/.vim/autoload/myfile.vim')
+<			~/.v/a/myfile.vim ~
+		It doesn't matter if the path exists or not.
 
 prevnonblank({lnum})					*prevnonblank()*
 		Return the line number of the first line at or above {lnum}
@@ -5036,7 +5068,6 @@ gui			Compiled with GUI enabled.
 gui_athena		Compiled with Athena GUI.
 gui_gtk			Compiled with GTK+ GUI (any version).
 gui_gtk2		Compiled with GTK+ 2 GUI (gui_gtk is also defined).
-gui_kde			Compiled with KDE GUI |KVim|
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.
@@ -5654,6 +5685,7 @@ This would call the function "my_func_whizz(parameter)".
 			  g:	global variables
 			  b:	local buffer variables
 			  w:	local window variables
+			  t:	local tab page variables
 			  s:	script-local variables
 			  l:	local function variables
 			  v:	Vim variables.
@@ -5711,8 +5743,8 @@ This would call the function "my_func_whizz(parameter)".
 
 			Note that when two variables refer to the same |List|
 			and you lock one of them, the |List| will also be
-			locked when used through the other variable.  Example:
-			>
+			locked when used through the other variable.
+			Example: >
 				:let l = [0, 1, 2, 3]
 				:let cl = l
 				:lockvar l

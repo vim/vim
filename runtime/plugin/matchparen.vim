@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 29
+" Last Change: 2006 Apr 04
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -16,8 +16,6 @@ augroup matchparen
   autocmd! CursorMoved,CursorMovedI * call s:Highlight_Matching_Pair()
 augroup END
 
-let s:paren_hl_on = 0
-
 " Skip the rest if it was already done.
 if exists("*s:Highlight_Matching_Pair")
   finish
@@ -30,9 +28,9 @@ set cpo-=C
 " for any matching paren.
 function! s:Highlight_Matching_Pair()
   " Remove any previous match.
-  if s:paren_hl_on
+  if exists('w:paren_hl_on') && w:paren_hl_on
     3match none
-    let s:paren_hl_on = 0
+    let w:paren_hl_on = 0
   endif
 
   " Avoid that we remove the popup menu.
@@ -63,21 +61,25 @@ function! s:Highlight_Matching_Pair()
 
   " Figure out the arguments for searchpairpos().
   " Restrict the search to visible lines with "stopline".
-  " And avoid searching very far (e.g., for closed folds)
+  " And avoid searching very far (e.g., for closed folds and long lines)
   if i % 2 == 0
     let s_flags = 'nW'
     let c2 = plist[i + 1]
-    let stopline = line('w$')
-    if stopline > c_lnum + 100
-      let stopline = c_lnu + 100
+    if has("byte_offset") && has("syntax_items") && &smc > 0
+      let stopbyte = min([line2byte("$"), line2byte(".") + col(".") + &smc * 2])
+      let stopline = min([line('w$'), byte2line(stopbyte)])
+    else
+      let stopline = min([line('w$'), c_lnum + 100])
     endif
   else
     let s_flags = 'nbW'
     let c2 = c
     let c = plist[i - 1]
-    let stopline = line('w0')
-    if stopline < c_lnum - 100
-      let stopline = c_lnu - 100
+    if has("byte_offset") && has("syntax_items") && &smc > 0
+      let stopbyte = max([1, line2byte(".") + col(".") - &smc * 2])
+      let stopline = max([line('w0'), byte2line(stopbyte)])
+    else
+      let stopline = max([line('w0'), c_lnum - 100])
     endif
   endif
   if c == '['
@@ -86,7 +88,7 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " When not in a string or comment ignore matches inside them.
-  let s_skip ='synIDattr(synID(c_lnum, c_col - before, 0), "name") ' .
+  let s_skip ='synIDattr(synID(line("."), col(".") - before, 0), "name") ' .
 	\ '=~?  "string\\|comment"'
   execute 'if' s_skip '| let s_skip = 0 | endif'
 
@@ -105,7 +107,7 @@ function! s:Highlight_Matching_Pair()
   if m_lnum > 0 && m_lnum >= line('w0') && m_lnum <= line('w$')
     exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
 	  \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
-    let s:paren_hl_on = 1
+    let w:paren_hl_on = 1
   endif
 endfunction
 

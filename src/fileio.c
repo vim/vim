@@ -217,6 +217,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 {
     int		fd = 0;
     int		newfile = (flags & READ_NEW);
+    int		set_options = newfile || (eap != NULL && eap->read_edit);
     int		check_readonly;
     int		filtering = (flags & READ_FILTER);
     int		read_stdin = (flags & READ_STDIN);
@@ -416,7 +417,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 #endif
 
     /* set default 'fileformat' */
-    if (newfile)
+    if (set_options)
     {
 	if (eap != NULL && eap->force_ff != 0)
 	    set_fileformat(get_fileformat_force(curbuf, eap), OPT_LOCAL);
@@ -622,7 +623,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     if ((check_readonly && file_readonly) || curbuf->b_help)
 	curbuf->b_p_ro = TRUE;
 
-    if (newfile)
+    if (set_options)
     {
 	curbuf->b_p_eol = TRUE;
 	curbuf->b_start_eol = TRUE;
@@ -769,7 +770,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     if (eap != NULL && eap->bad_char != 0)
     {
 	bad_char_behavior = eap->bad_char;
-	if (newfile)
+	if (set_options)
 	    curbuf->b_bad_char = eap->bad_char;
     }
     else
@@ -884,7 +885,7 @@ retry:
 	    ml_delete(lnum--, FALSE);
 	file_rewind = FALSE;
 #ifdef FEAT_MBYTE
-	if (newfile)
+	if (set_options)
 	    curbuf->b_p_bomb = FALSE;
 	conv_error = 0;
 #endif
@@ -1326,7 +1327,7 @@ retry:
 		    filesize += blen;
 		    size -= blen;
 		    mch_memmove(ptr, ptr + blen, (size_t)size);
-		    if (newfile)
+		    if (set_options)
 			curbuf->b_p_bomb = TRUE;
 		}
 
@@ -1955,7 +1956,7 @@ rewind_retry:
 		    fileformat = default_fileformat();
 
 		/* if editing a new file: may set p_tx and p_ff */
-		if (newfile)
+		if (set_options)
 		    set_fileformat(fileformat, OPT_LOCAL);
 	    }
 	}
@@ -2037,7 +2038,7 @@ rewind_retry:
 					|| lseek(fd, (off_t)0L, SEEK_SET) == 0))
 				{
 				    fileformat = EOL_UNIX;
-				    if (newfile)
+				    if (set_options)
 					set_fileformat(EOL_UNIX, OPT_LOCAL);
 				    file_rewind = TRUE;
 				    keep_fileformat = TRUE;
@@ -2087,7 +2088,8 @@ failed:
 		&& *line_start == Ctrl_Z
 		&& ptr == line_start + 1))
     {
-	if (newfile)			/* remember for when writing */
+	/* remember for when writing */
+	if (set_options)
 	    curbuf->b_p_eol = FALSE;
 	*ptr = NUL;
 	if (ml_append(lnum, line_start,
@@ -2097,7 +2099,7 @@ failed:
 	    read_no_eol_lnum = ++lnum;
     }
 
-    if (newfile)
+    if (set_options)
 	save_file_ff(curbuf);		/* remember the current file format */
 
 #ifdef FEAT_CRYPT
@@ -2106,8 +2108,9 @@ failed:
 #endif
 
 #ifdef FEAT_MBYTE
-    /* If editing a new file: set 'fenc' for the current buffer. */
-    if (newfile)
+    /* If editing a new file: set 'fenc' for the current buffer.
+     * Also for ":read ++edit file". */
+    if (set_options)
 	set_string_option_direct((char_u *)"fenc", -1, fenc,
 						       OPT_FREE|OPT_LOCAL, 0);
     if (fenc_alloced)
@@ -2398,7 +2401,7 @@ failed:
 
 	/* Save the fileformat now, otherwise the buffer will be considered
 	 * modified if the format/encoding was automatically detected. */
-	if (newfile)
+	if (set_options)
 	    save_file_ff(curbuf);
 
 	/*
@@ -2482,6 +2485,7 @@ prep_exarg(eap, buf)
     eap->force_ff = 7;
 
     eap->force_bin = buf->b_p_bin ? FORCE_BIN : FORCE_NOBIN;
+    eap->read_edit = FALSE;
     eap->forceit = FALSE;
     return OK;
 }
@@ -3705,7 +3709,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     }
 #endif
 
-    /* When using ":w!" and writing to the current file, readonly makes no
+    /* When using ":w!" and writing to the current file, 'readonly' makes no
      * sense, reset it, unless 'Z' appears in 'cpoptions'.  */
     if (forceit && overwriting && vim_strchr(p_cpo, CPO_KEEPRO) == NULL)
     {
@@ -4653,7 +4657,7 @@ set_rw_fname(fname, sfname)
     /* Do filetype detection now if 'filetype' is empty. */
     if (*curbuf->b_p_ft == NUL)
     {
-	if (au_find_group((char_u *)"filetypedetect") != AUGROUP_ERROR)
+	if (au_has_group((char_u *)"filetypedetect"))
 	    (void)do_doautocmd((char_u *)"filetypedetect BufRead", FALSE);
 	do_modelines(0);
     }
@@ -7321,7 +7325,6 @@ au_find_group(name)
     return AUGROUP_ERROR;
 }
 
-#if defined(FEAT_BROWSE) || defined(PROTO)
 /*
  * Return TRUE if augroup "name" exists.
  */
@@ -7331,7 +7334,6 @@ au_has_group(name)
 {
     return au_find_group(name) != AUGROUP_ERROR;
 }
-#endif
 
 /*
  * ":augroup {name}".

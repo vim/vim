@@ -56,7 +56,7 @@ function GetPythonIndent(lnum)
   " Trick: use the non-existing "dummy" variable to break out of the loop when
   " going too far back.
   call cursor(plnum, 1)
-  let parlnum = searchpair('(', '', ')', 'nbW',
+  let parlnum = searchpair('(\|{\|\[', '', ')\|}\|\]', 'nbW',
 	  \ "line('.') < " . (plnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
 	  \ . " =~ '\\(Comment\\|String\\)$'")
@@ -75,14 +75,14 @@ function GetPythonIndent(lnum)
   "       + b
   "       + c)
   call cursor(a:lnum, 1)
-  let p = searchpair('(', '', ')', 'bW',
+  let p = searchpair('(\|{\|\[', '', ')\|}\|\]', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
 	  \ . " =~ '\\(Comment\\|String\\)$'")
   if p > 0
     if p == plnum
       " When the start is inside parenthesis, only indent one 'shiftwidth'.
-      let pp = searchpair('(', '', ')', 'bW',
+      let pp = searchpair('(\|{\|\[', '', ')\|}\|\]', 'bW',
 	  \ "line('.') < " . (a:lnum - s:maxoff) . " ? dummy :"
 	  \ . " synIDattr(synID(line('.'), col('.'), 1), 'name')"
 	  \ . " =~ '\\(Comment\\|String\\)$'")

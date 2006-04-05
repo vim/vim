@@ -203,29 +203,33 @@
 #endif
 
 #ifdef VMS
-#include <unixio.h>
-#include <unixlib.h>
-#include <signal.h>
-#include <file.h>
-#include <ssdef.h>
-#include <descrip.h>
-#include <libclidef.h>
-#include <lnmdef.h>
-#include <psldef.h>
-#include <prvdef.h>
-#include <dvidef.h>
-#include <dcdef.h>
-#include <stsdef.h>
-#include <iodef.h>
-#include <ttdef.h>
-#include <tt2def.h>
-#include <jpidef.h>
-#include <rms.h>
-#include <trmdef.h>
-#include <string.h>
-#include <starlet.h>
-#include <socket.h>
-#include <lib$routines.h>
+# include <unixio.h>
+# include <unixlib.h>
+# include <signal.h>
+# include <file.h>
+# include <ssdef.h>
+# include <descrip.h>
+# include <libclidef.h>
+# include <lnmdef.h>
+# include <psldef.h>
+# include <prvdef.h>
+# include <dvidef.h>
+# include <dcdef.h>
+# include <stsdef.h>
+# include <iodef.h>
+# include <ttdef.h>
+# include <tt2def.h>
+# include <jpidef.h>
+# include <rms.h>
+# include <trmdef.h>
+# include <string.h>
+# include <starlet.h>
+# include <socket.h>
+# include <lib$routines.h>
+
+# ifdef FEAT_GUI_GTK
+#  include "gui_gtk_vms.h"
+# endif
 
 typedef struct dsc$descriptor   DESC;
 #endif

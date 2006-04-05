@@ -1,4 +1,4 @@
-*sql.txt*   	For Vim version 7.0c.  Last change: Tue Mar 28 2006 9:33:14 PM
+*sql.txt*   	For Vim version 7.0c.  Last change: Mon Apr 03 2006 10:34:00 PM
 
 by David Fishburn
 
@@ -26,7 +26,8 @@ features for navigation, indentation and syntax highlighting.
         4.3.3 Complete Procedures		|sql-completion-procedures|
         4.3.4 Complete Views			|sql-completion-views|
     4.4 Completion Customization		|sql-completion-customization|
-    4.5 Customizing Maps			|sql-completion-maps|
+    4.5 SQL Maps	        		|sql-completion-maps|
+    4.6 Using with other filetypes		|sql-completion-filetypes|
 
 ==============================================================================
 1. Navigation	        			*sql-navigation*
@@ -321,41 +322,48 @@ procedures names and more.
 ---------------
 The static popups created contain items defined by the active syntax rules
 while editing a file with a filetype of SQL.  The plugin defines (by default)
-various maps to help the user refine which list of items they wish displayed.
+various maps to help the user refine the list of items to be displayed.
 The defaults static maps are: >
-        imap <buffer> <C-C>a <C-\><C-O>:let b:sql_compl_type='syntax'<CR><C-X><C-O>
-        imap <buffer> <C-C>s <C-\><C-O>:let b:sql_compl_type='sqlStatement'<CR><C-X><C-O>
-        imap <buffer> <C-C>f <C-\><C-O>:let b:sql_compl_type='sqlFunction'<CR><C-X><C-O>
-        imap <buffer> <C-C>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
-        imap <buffer> <C-C>o <C-\><C-O>:let b:sql_compl_type='sqlOption'<CR><C-X><C-O>
-        imap <buffer> <C-C>T <C-\><C-O>:let b:sql_compl_type='sqlType'<CR><C-X><C-O>
+    imap <buffer> <C-C>a <C-\><C-O>:call sqlcomplete#Map('syntax')<CR><C-X><C-O>
+    imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
+    imap <buffer> <C-C>f <C-\><C-O>:call sqlcomplete#Map('sqlFunction')<CR><C-X><C-O>
+    imap <buffer> <C-C>o <C-\><C-O>:call sqlcomplete#Map('sqlOption')<CR><C-X><C-O>
+    imap <buffer> <C-C>T <C-\><C-O>:call sqlcomplete#Map('sqlType')<CR><C-X><C-O>
+    imap <buffer> <C-C>s <C-\><C-O>:call sqlcomplete#Map('sqlStatement')<CR><C-X><C-O>
 < 
 The static maps (which are based on the syntax highlight groups) follow this
 format: >
-    imap <buffer> <C-C>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
+    imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
 <
 This command breaks down as: >
     imap                   - Create an insert map
     <buffer>               - Only for this buffer
-    <C-C>k             - Your choice of key map
+    <C-C>k                 - Your choice of key map
     <C-\><C-O>             - Execute one command, return to Insert mode
-    :let b:sql_compl_type= - Choose the highlight group's entries to display.
+    :call sqlcomplete#Map( - Allows the SQL completion plugin to perform some
+                             housekeeping functions to allow it to be used in
+                             conjunction with other completion plugins.
+                             Indicate which item you want the SQL completion
+                             plugin to complete.
+                             In this case we are asking the plugin to display
+                             items from the syntax highlight group
+                             'sqlKeyword'.
                              You can view a list of highlight group names to
                              choose from by executing the
                                  :syntax list
                              command while editing a SQL file.
     'sqlKeyword'           - Display the items for the sqlKeyword highlight
                              group
-    <CR>                   - Execute the :let command
+    )<CR>                  - Execute the :let command
     <C-X><C-O>             - Trigger the standard omni completion key stroke.
-                             By setting the b:sql_compl_type variable, this
-                             instructs the SQL completion plugin to populate
-                             the popup with items from the sqlKeyword highlight
-                             group.  The plugin will also cache this result
-                             until Vim is restarted.  The syntax list is 
-                             retrieved using the syntaxcomplete plugin.
+                             Passing in 'sqlKeyword' instructs the SQL
+                             completion plugin to populate the popup with
+                             items from the sqlKeyword highlight group.  The
+                             plugin will also cache this result until Vim is
+                             restarted.  The syntax list is retrieved using
+                             the syntaxcomplete plugin.
 <
-Setting b:sql_compl_type = 'syntax' is a special case.  This instructs the
+Using the 'syntax' keyword is a special case.  This instructs the
 syntaxcomplete plugin to retrieve all syntax items.  So this will effectively
 work for any of Vim's SQL syntax files.  At the time of writing this includes
 10 different syntax files for the different dialects of SQL (see section 3
@@ -383,7 +391,7 @@ order for the dynamic feature to be enabled you must have the dbext.vim
 plugin installed, (http://vim.sourceforge.net/script.php?script_id=356).
 
 Dynamic mode is used by several features of the SQL completion plugin.  
-After installing the dbext plugin see the |dbext-tutorial| for additional
+After installing the dbext plugin see the dbext-tutorial for additional
 configuration and usage.  The dbext plugin allows the SQL completion plugin
 to display a list of tables, procedures, views and columns. >
      Table List
@@ -403,9 +411,7 @@ the space bar):
      Stored Procedure List  - <C-C>p
      View List              - <C-C>v
      Column List            - <C-C>c
-                            - .<C-X><C-O>
-                            - If <C-X><C-O> is pressed following a period
-                              it is assumed you are asking for a column list.
+                            - Windows platform only
                             - When viewing a popup window displaying the list
                               of tables, you can press <C-Right>, this will
                               replace the table currently highlighted with
@@ -418,7 +424,7 @@ The SQL completion plugin caches various lists that are displayed in
 the popup window.  This makes the re-displaying of these lists very
 fast.  If new tables or columns are added to the database it may become 
 necessary to clear the plugins cache.  The default map for this is: >
-        imap <buffer> <C-C>R <C-O>:let b:sql_compl_type='ResetCache'<CR><C-X><C-O>
+    imap <buffer> <C-C>R <C-\><C-O>:call sqlcomplete#Map('ResetCache')<CR><C-X><C-O>
 <
  
 4.3 SQL Tutorial				*sql-completion-tutorial*
@@ -472,7 +478,7 @@ is to run the command, :DBListTable.  If a list of tables is shown, you know
 dbext.vim is working as expected.  If not, please consult the dbext.txt 
 documentation.
 
-Assuming you have followed the |dbext-tutorial| you can press <C-C>t to
+Assuming you have followed the dbext-tutorial you can press <C-C>t to
 display a list of tables.  There is a delay while dbext is creating the table
 list.  After the list is displayed press <C-W>.  This will remove both the 
 popup window and the table name already chosen when the list became active. >
@@ -496,7 +502,7 @@ platforms since *nix does not recognize CTRL and the right arrow held down
 together.  If you wish to enable this functionality on a *nix platform choose
 a key and create this mapping (see |sql-completion-maps| for further 
 details on where to create this imap): >
-    imap <buffer> <your_keystroke>  <CR><C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
+    imap <buffer> <your_keystroke> <CR><C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
 <
 Example of using column completion:
      - Press <C-C>t again to display the list of tables.  
@@ -611,9 +617,65 @@ your |vimrc|: >
                    MYTABLENAME --> M
 <
  
-4.5 Customizing Maps				*sql-completion-maps*
---------------------
+4.5 SQL Maps	        			*sql-completion-maps*
+------------
 
+The default SQL maps have been described in other sections of this document in
+greater detail.  Here is a list of the maps with a brief description of each.
+
+Static Maps
+-----------
+These are maps which use populate the completion list using Vim's syntax
+highlighting rules. >
+    <C-C>a
+<       - Displays all SQL syntax items. >
+    <C-C>k 
+<       - Displays all SQL syntax items defined as 'sqlKeyword'. >
+    <C-C>f 
+<       - Displays all SQL syntax items defined as 'sqlFunction. >
+    <C-C>o
+<       - Displays all SQL syntax items defined as 'sqlOption'. >
+    <C-C>T
+<       - Displays all SQL syntax items defined as 'sqlType'. >
+    <C-C>s
+<       - Displays all SQL syntax items defined as 'sqlStatement'. >
+
+Dynamic Maps
+------------
+These are maps which use populate the completion list using the dbext.vim plugin. >
+    <C-C>t  
+<       - Displays a list of tables. >
+    <C-C>p
+<       - Displays a list of procedures. >
+    <C-C>v
+<       - Displays a list of views. >
+    <C-C>c
+<       - Displays a list of columns for a specific table. >
+    <C-C>l
+<       - Displays a comma separated list of columns for a specific table. >
+    <C-C>L
+<       - Displays a comma separated list of columns for a specific table.
+          This should only be used when the completion window is active. >
+    <C-Right>
+<       - Displays a list of columns for the table currently highlighted in
+          the completion window.  <C-Right> is not recognized on most Unix
+          systems, so this maps is only created on the Windows platform.
+          If you would like the same feature on Unix, choose a different key
+          and make the same map in your vimrc.
+          This should only be used when the completion window is active. >
+    <C-Left>
+<       - Displays the list of tables.
+          <C-Left> is not recognized on most Unix systems, so this maps is
+          only created on the Windows platform.  If you would like the same
+          feature on Unix, choose a different key and make the same map in
+          your vimrc.
+          This should only be used when the completion window is active. >
+    <C-C>R
+<       - This maps removes all cached items and forces the SQL completion 
+          to regenerate the list of items.
+
+Customizing Maps
+----------------
 You can create as many additional key maps as you like.  Generally, the maps
 will be specifying different syntax highlight groups.  
 
@@ -624,12 +686,52 @@ your |vimrc|: >
 < 
 Do no edit ftplugin/sql.vim directly!  If you change this file your changes
 will be over written on future updates.  Vim has a special directory structure
-that allows you to make customizations without changing the files that are
+which allows you to make customizations without changing the files that are
 included with the Vim distribution.  If you wish to customize the maps
 create an after/ftplugin/sql.vim (see |after-directory|) and place the same
 maps from the ftplugin/sql.vim in it using your own key strokes.  <C-C> was
 chosen since it will work on both Windows and *nix platforms.  On the windows
 platform you can also use <C-Space> or ALT keys.
  
+
+4.6 Using with other filetypes		        *sql-completion-filetypes*
+------------------------------
+
+Many times SQL can be used with different filetypes.  For example Perl, Java,
+PHP, Javascript can all interact with a database.  Often you need both the SQL
+completion as well as the completion capabilities for the current language you
+are editing.
+
+This can be enabled easily with the following steps (assuming a Perl file): >
+    1.  :e test.pl
+    2.  :set filetype=sql
+    3.  :set ft=perl
+
+Step 1
+------
+Begins by editing a Perl file.  Vim automatically sets the filetype to
+"perl".  By default, Vim runs the appropriate filetype file
+ftplugin/perl.vim.  If you are using the syntax completion plugin by following
+the directions at |ft-syntax-omni| then the |'omnifunc'| option has been set to
+"syntax#Complete".  Pressing <C-X><C-O> will display the omni popup containing
+the syntax items for Perl.
+
+Step 2
+------
+Manually setting the filetype to 'sql' will also fire the appropriate filetype
+files ftplugin/sql.vim.  This file will define a number of buffer specific
+maps for SQL completion, see |sql-completion-maps|.  Now these maps have
+been created and the SQL completion plugin has been initialized.  All SQL
+syntax items have been cached in preparation.  The SQL filetype script detects
+we are attempting to use two different completion plugins.  Since the SQL maps
+begin with <C-C>, the maps will toggle the |'omnifunc'| when in use.  So you
+can use <C-X><C-O> to continue using the completion for Perl (using the syntax
+completion plugin) and <C-C> to use the SQL completion features.
+
+Step 3
+------
+Setting the filetype back to Perl sets all the usual "perl" related items back
+as they were.
+     
 
 vim:tw=78:ts=8:ft=help:norl:

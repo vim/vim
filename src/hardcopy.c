@@ -2473,6 +2473,7 @@ mch_print_init(psettings, jobname, forceit)
     double      top;
     double      bottom;
 #ifdef FEAT_MBYTE
+    int         props;
     int         cmap;
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
@@ -2510,22 +2511,26 @@ mch_print_init(psettings, jobname, forceit)
      * This is to cope with the fact that various unicode encodings are
      * supported in more than one of CJK. */
     p_mbenc = NULL;
-    p_mbenc_first = NULL;
-    p_mbchar = NULL;
-    for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
-        if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
+    props = enc_canon_props(p_encoding);
+    if (!(props & ENC_8BIT) && (*p_penc != NUL || *p_pmcs != NUL))
+    {
+        p_mbenc_first = NULL;
+        p_mbchar = NULL;
+        for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
+            if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
 								    &p_mbenc))
-        {
-            if (p_mbenc_first == NULL)
-                p_mbenc_first = p_mbenc;
-            if (prt_match_charset((char *)p_pmcs, &prt_ps_mbfonts[cmap],
+            {
+                if (p_mbenc_first == NULL)
+                    p_mbenc_first = p_mbenc;
+                if (prt_match_charset((char *)p_pmcs, &prt_ps_mbfonts[cmap],
 								   &p_mbchar))
-                break;
-        }
+                    break;
+            }
 
-    /* Use first encoding matched if no charset matched */
-    if (p_mbchar == NULL && p_mbenc_first != NULL)
-        p_mbenc = p_mbenc_first;
+        /* Use first encoding matched if no charset matched */
+        if (p_mbchar == NULL && p_mbenc_first != NULL)
+            p_mbenc = p_mbenc_first;
+    }
 
     prt_out_mbyte = (p_mbenc != NULL);
     if (prt_out_mbyte)

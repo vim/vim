@@ -40,7 +40,7 @@
 static char *ctrl_x_msgs[] =
 {
     N_(" Keyword completion (^N^P)"), /* ctrl_x_mode == 0, ^P/^N compl. */
-    N_(" ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"),
+    N_(" ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"),
     NULL,
     N_(" Whole line completion (^L^N^P)"),
     N_(" File name completion (^F^N^P)"),
@@ -53,7 +53,7 @@ static char *ctrl_x_msgs[] =
     N_(" Command-line completion (^V^N^P)"),
     N_(" User defined completion (^U^N^P)"),
     N_(" Omni completion (^O^N^P)"),
-    N_(" Spelling suggestion (^S^N^P)"),
+    N_(" Spelling suggestion (s^N^P)"),
     N_(" Keyword Local completion (^N^P)"),
 };
 
@@ -3139,7 +3139,9 @@ ins_compl_prep(c)
 	    case Ctrl_S:
 		ctrl_x_mode = CTRL_X_SPELL;
 #ifdef FEAT_SPELL
+		++emsg_off;	/* Avoid getting the E756 error twice. */
 		spell_back_to_badword();
+		--emsg_off;
 #endif
 		break;
 	    case Ctrl_RSB:
@@ -3286,7 +3288,7 @@ ins_compl_prep(c)
 		if (compl_leader != NULL)
 		    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
 		else if (compl_first_match != NULL)
-		    ins_bytes(compl_first_match->cp_str
+		    ins_bytes(compl_orig_text
 					  + curwin->w_cursor.col - compl_col);
 		retval = TRUE;
 	    }

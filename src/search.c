@@ -809,6 +809,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
 		    {
 			pos->lnum = lnum + endpos.lnum;
 			pos->col = endpos.col - 1;
+#ifdef FEAT_MBYTE
+			if (has_mbyte)
+			{
+			    ptr = ml_get_buf(buf, pos->lnum, FALSE);
+			    pos->col -= (*mb_head_off)(ptr, ptr + pos->col);
+			}
+#endif
 		    }
 		    else
 		    {

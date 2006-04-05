@@ -213,6 +213,7 @@ static int suppress_winsize = 1;	/* don't fiddle with console */
 get_exe_name(void)
 {
     char	temp[256];
+    static int	did_set_PATH = FALSE;
 
     if (exe_name == NULL)
     {
@@ -220,6 +221,29 @@ get_exe_name(void)
 	GetModuleFileName(NULL, temp, 255);
 	if (*temp != NUL)
 	    exe_name = FullName_save((char_u *)temp, FALSE);
+    }
+
+    if (!did_set_PATH && exe_name != NULL)
+    {
+	char_u	    *p;
+	char_u	    *newpath;
+
+	/* Append our starting directory to $PATH, so that when doing "!xxd"
+	 * it's found in our starting directory.  Needed because SearchPath()
+	 * also looks there. */
+	p = mch_getenv("PATH");
+	newpath = alloc((unsigned)(STRLEN(p) + STRLEN(exe_name) + 2));
+	if (newpath != NULL)
+	{
+	    STRCPY(newpath, p);
+	    STRCAT(newpath, ";");
+	    vim_strncpy(newpath + STRLEN(newpath), exe_name,
+					    gettail_sep(exe_name) - exe_name);
+	    vim_setenv((char_u *)"PATH", newpath);
+	    vim_free(newpath);
+	}
+
+	did_set_PATH = TRUE;
     }
 }
 
@@ -4933,6 +4957,7 @@ static int	*used_file_indexes = NULL; /* indexes in global_argv[] for
 static int	used_file_count = 0;	/* nr of entries in used_file_indexes */
 static int	used_file_literal = FALSE;  /* take file names literally */
 static int	used_file_full_path = FALSE;  /* file name was full path */
+static int	used_file_diff_mode = FALSE;  /* file name was with diff mode */
 static int	used_alist_count = 0;
 
 
@@ -5001,7 +5026,7 @@ free_cmd_argsW(void)
  * is called.
  */
     void
-used_file_arg(char *name, int literal, int full_path)
+used_file_arg(char *name, int literal, int full_path, int diff_mode)
 {
     int		i;
 
@@ -5016,6 +5041,7 @@ used_file_arg(char *name, int literal, int full_path)
 	}
     used_file_literal = literal;
     used_file_full_path = full_path;
+    used_file_diff_mode = diff_mode;
 }
 
 /*
@@ -5072,6 +5098,22 @@ fix_arg_enc(void)
 	str = ucs2_to_enc(ArglistW[idx], NULL);
 	if (str != NULL)
 	{
+#ifdef FEAT_DIFF
+	    /* When using diff mode may need to concatenate file name to
+	     * directory name.  Just like it's done in main(). */
+	    if (used_file_diff_mode && mch_isdir(str) && GARGCOUNT > 0
+				      && !mch_isdir(alist_name(&GARGLIST[0])))
+	    {
+		char_u	    *r;
+
+		r = concat_fnames(str, gettail(alist_name(&GARGLIST[0])), TRUE);
+		if (r != NULL)
+		{
+		    vim_free(str);
+		    str = r;
+		}
+	    }
+#endif
 	    /* Re-use the old buffer by renaming it.  When not using literal
 	     * names it's done by alist_expand() below. */
 	    if (used_file_literal)

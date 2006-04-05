@@ -2168,11 +2168,10 @@ scripterror:
 
 #if defined(FEAT_MBYTE) && defined(WIN32)
 	    {
-		extern void used_file_arg(char *, int, int);
-
 		/* Remember this argument has been added to the argument list.
 		 * Needed when 'encoding' is changed. */
-		used_file_arg(argv[0], parmp->literal, parmp->full_path);
+		used_file_arg(argv[0], parmp->literal, parmp->full_path,
+							    parmp->diff_mode);
 	    }
 #endif
 	}
@@ -2567,7 +2566,7 @@ source_startup_scripts(parmp)
      */
     if (parmp->evim_mode)
     {
-	(void)do_source((char_u *)EVIM_FILE, FALSE, FALSE);
+	(void)do_source((char_u *)EVIM_FILE, FALSE, DOSO_NONE);
 	TIME_MSG("source evim file");
     }
 
@@ -2589,7 +2588,7 @@ source_startup_scripts(parmp)
 	}
 	else
 	{
-	    if (do_source(parmp->use_vimrc, FALSE, FALSE) != OK)
+	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
 		EMSG2(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
@@ -2607,10 +2606,10 @@ source_startup_scripts(parmp)
 	 * Get system wide defaults, if the file name is defined.
 	 */
 #ifdef SYS_VIMRC_FILE
-	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, FALSE);
+	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE);
 #endif
 #ifdef MACOS_X
-	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, FALSE);
+	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, DOSO_NONE);
 #endif
 
 	/*
@@ -2625,18 +2624,20 @@ source_startup_scripts(parmp)
 	 */
 	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
 	{
-	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, TRUE) == FAIL
+	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, DOSO_VIMRC) == FAIL
 #ifdef USR_VIMRC_FILE2
-		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE, TRUE) == FAIL
+		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE,
+							   DOSO_VIMRC) == FAIL
 #endif
 #ifdef USR_VIMRC_FILE3
-		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE, TRUE) == FAIL
+		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE,
+							   DOSO_VIMRC) == FAIL
 #endif
 		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
-		&& do_source((char_u *)USR_EXRC_FILE, FALSE, FALSE) == FAIL)
+		&& do_source((char_u *)USR_EXRC_FILE, FALSE, DOSO_NONE) == FAIL)
 	    {
 #ifdef USR_EXRC_FILE2
-		(void)do_source((char_u *)USR_EXRC_FILE2, FALSE, FALSE);
+		(void)do_source((char_u *)USR_EXRC_FILE2, FALSE, DOSO_NONE);
 #endif
 	    }
 	}
@@ -2674,7 +2675,7 @@ source_startup_scripts(parmp)
 				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
 #endif
 				)
-		i = do_source((char_u *)VIMRC_FILE, TRUE, TRUE);
+		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC);
 
 	    if (i == FAIL)
 	    {
@@ -2692,7 +2693,7 @@ source_startup_scripts(parmp)
 				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
 #endif
 				)
-		    (void)do_source((char_u *)EXRC_FILE, FALSE, FALSE);
+		    (void)do_source((char_u *)EXRC_FILE, FALSE, DOSO_NONE);
 	    }
 	}
 	if (secure == 2)
@@ -2739,7 +2740,7 @@ process_env(env, is_viminit)
     if ((initstr = mch_getenv(env)) != NULL && *initstr != NUL)
     {
 	if (is_viminit)
-	    vimrc_found();
+	    vimrc_found(NULL, NULL);
 	save_sourcing_name = sourcing_name;
 	save_sourcing_lnum = sourcing_lnum;
 	sourcing_name = env;

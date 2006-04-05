@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 22, 2006
-" Version:	83
+" Date:		Mar 31, 2006
+" Version:	84
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v83"
+let g:loaded_netrw = "v84"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -404,8 +404,9 @@ fun! netrw#NetRead(mode,...)
    call s:NetMethod(choice)
 
    " Check if NetBrowse() should be handling this request
-"   call Decho("checking if netlist: choice<".choice."> netrw_list_cmd<".g:netrw_list_cmd.">")
+"   call Decho("checking if NetBrowse() should handle choice<".choice."> with netrw_list_cmd<".g:netrw_list_cmd.">")
    if choice =~ "^.*[\/]$"
+"    call Decho("yes, choice matches '^.*[\/]$'")
     keepjumps call s:NetBrowse(choice)
 "    call Dret("NetRead")
     return
@@ -457,6 +458,7 @@ fun! netrw#NetRead(mode,...)
    elseif b:netrw_method  == 2		" read with ftp + <.netrc>
 "     call Decho("read via ftp+.netrc (method #2)")
      let netrw_fname= escape(b:netrw_fname,g:netrw_fname_escape)
+"     call Decho("netrw_fname<".netrw_fname.">")
      new
      setlocal ff=unix
      exe "put ='".g:netrw_ftpmode."'"
@@ -780,7 +782,7 @@ fun! s:NetGetFile(readcmd, tfile, method)
 "   call Decho("calling NetReadFixup(method<".a:method."> line1=".line1." line2=".line2.")")
    call NetReadFixup(a:method, line1, line2)
 " else " Decho
-"  call Decho("NetReadFixup() not called, doesn't exist")
+"  call Decho("NetReadFixup() not called, doesn't exist  (line1=".line1." line2=".line2.")")
   endif
 
   " update the Buffers menu
@@ -1239,7 +1241,6 @@ fun! s:NetBrowse(dirname)
    exe "silent doau BufReadPre ".fname
    silent call netrw#NetRead(2,method."://".user.machine."/".path)
    exe "silent doau BufReadPost ".fname
-   keepjumps 1d
 
    " save certain window-oriented variables into buffer-oriented variables
    call s:SetBufWinVars()
@@ -1352,7 +1353,7 @@ fun! s:NetBrowse(dirname)
    endif
    let w:netrw_bannercnt= w:netrw_bannercnt + 1
   endif
-  keepjumps put ='\"   Quick Help:    ?:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec'
+  keepjumps put ='\"   Quick Help: <F1>:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec'
   keepjumps put ='\" ==========================================================================='
 
   " remote read the requested directory listing
@@ -2943,7 +2944,7 @@ fun! netrw#DirBrowse(dirname)
    endif
    let w:netrw_bannercnt= w:netrw_bannercnt + 1
   endif
-  keepjumps put ='\"   Quick Help:    ?:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec'
+  keepjumps put ='\"   Quick Help: <F1>:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec'
   keepjumps put ='\" ============================================================================'
   let w:netrw_bannercnt= w:netrw_bannercnt + 2
 

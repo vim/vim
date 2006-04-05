@@ -727,6 +727,33 @@ _WndProc(
 	    }
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
 	}
+	case WM_LBUTTONDBLCLK:
+	{
+	    /*
+	     * If the user double clicked the tabline, create a new tab
+	     */
+	    if (gui_mch_showing_tabline())
+	    {
+		POINT pt;
+		RECT rect;
+
+		GetCursorPos((LPPOINT)&pt);
+		GetWindowRect(s_textArea, &rect);
+		if (pt.y < rect.top)
+		{
+		    char_u	    string[3];
+
+		    string[0] = CSI;
+		    string[1] = KS_TABMENU;
+		    string[2] = KE_FILLER;
+		    add_to_input_buf(string, 3);
+		    string[0] = 0;
+		    string[1] = (char_u)(long)TABLINE_MENU_NEW;
+		    add_to_input_buf_csi(string, 2);
+		}
+	    }
+	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	}
 #endif
 
     case WM_QUERYENDSESSION:	/* System wants to go down. */
@@ -1152,7 +1179,7 @@ gui_mch_init(void)
      * Otherwise only characters in the active codepage will work. */
     if (GetClassInfoW(s_hinst, szVimWndClassW, &wndclassw) == 0)
     {
-	wndclassw.style = 0;
+	wndclassw.style = CS_DBLCLKS;
 	wndclassw.lpfnWndProc = _WndProc;
 	wndclassw.cbClsExtra = 0;
 	wndclassw.cbWndExtra = 0;
@@ -1183,7 +1210,7 @@ gui_mch_init(void)
 
     if (GetClassInfo(s_hinst, szVimWndClass, &wndclass) == 0)
     {
-	wndclass.style = 0;
+	wndclass.style = CS_DBLCLKS;
 	wndclass.lpfnWndProc = _WndProc;
 	wndclass.cbClsExtra = 0;
 	wndclass.cbWndExtra = 0;
@@ -1412,11 +1439,13 @@ gui_mch_set_shellsize(int width, int height,
     int		win_xpos, win_ypos;
     WINDOWPLACEMENT wndpl;
 
-    /* try to keep window completely on screen */
-    /* get size of the screen work area (excludes taskbar, appbars) */
+    /* Try to keep window completely on screen. */
+    /* Get position of the screen work area.  This is the part that is not
+     * used by the taskbar or appbars. */
     get_work_area(&workarea_rect);
 
-    /* get current posision of our window */
+    /* Get current posision of our window.  Note that the .left and .top are
+     * relative to the work area.  */
     wndpl.length = sizeof(WINDOWPLACEMENT);
     GetWindowPlacement(s_hwnd, &wndpl);
 
@@ -1442,28 +1471,21 @@ gui_mch_set_shellsize(int width, int height,
 #endif
 			;
 
-    /* if the window is going off the screen, move it on to the screen */
-    if ((direction & RESIZE_HOR) && win_xpos + win_width > workarea_rect.right)
-	win_xpos = workarea_rect.right - win_width;
+    /* If the window is going off the screen, move it on to the screen.
+     * win_xpos and win_ypos are relative to the workarea. */
+    if ((direction & RESIZE_HOR)
+	   && workarea_rect.left + win_xpos + win_width > workarea_rect.right)
+	win_xpos = workarea_rect.right - win_width - workarea_rect.left;
 
-    if ((direction & RESIZE_HOR) && win_xpos < workarea_rect.left)
-	win_xpos = workarea_rect.left;
+    if ((direction & RESIZE_HOR) && win_xpos < 0)
+	win_xpos = 0;
 
     if ((direction & RESIZE_VERT)
-			      && win_ypos + win_height > workarea_rect.bottom)
-	win_ypos = workarea_rect.bottom - win_height;
+	  && workarea_rect.top + win_ypos + win_height > workarea_rect.bottom)
+	win_ypos = workarea_rect.bottom - win_height - workarea_rect.top;
 
-    if ((direction & RESIZE_VERT) && win_ypos < workarea_rect.top)
-	win_ypos = workarea_rect.top;
-
-    /* When the taskbar is placed on the left or top of the screen,
-     * SetWindowPlacement() adds its width or height automatically, compensate
-     * for that.  When the offset is over 400 it's probably something else,
-     * skip it then (just in case). */
-    if (workarea_rect.left > 0 && workarea_rect.left < 400)
-	win_xpos -= workarea_rect.left;
-    if (workarea_rect.top > 0 && workarea_rect.top < 400)
-	win_ypos -= workarea_rect.top;
+    if ((direction & RESIZE_VERT) && win_ypos < 0)
+	win_ypos = 0;
 
     wndpl.rcNormalPosition.left = win_xpos;
     wndpl.rcNormalPosition.right = win_xpos + win_width;
@@ -2290,13 +2312,13 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 
     get_work_area(&workarea_rect);
 
-    *screen_w = workarea_rect.right
+    *screen_w = workarea_rect.right - workarea_rect.left
 	        - GetSystemMetrics(SM_CXFRAME) * 2;
 
     /* FIXME: dirty trick: Because the gui_get_base_height() doesn't include
      * the menubar for MSwin, we subtract it from the screen height, so that
      * the window size can be made to fit on the screen. */
-    *screen_h = workarea_rect.bottom
+    *screen_h = workarea_rect.bottom - workarea_rect.top
 	        - GetSystemMetrics(SM_CYFRAME) * 2
 		- GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
@@ -3956,11 +3978,24 @@ get_toolbar_bitmap(vimmenu_T *menu)
     static void
 initialise_tabline(void)
 {
+# ifdef USE_SYSMENU_FONT
+    LOGFONT    lfSysmenu;
+# endif
+
     InitCommonControls();
 
-    s_tabhwnd = CreateWindow(WC_TABCONTROL, "", WS_CHILD|TCS_FOCUSNEVER,
+    s_tabhwnd = CreateWindow(WC_TABCONTROL, "Vim tabline",
+	    WS_CHILD|TCS_FOCUSNEVER,
 	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 	    CW_USEDEFAULT, s_hwnd, NULL, s_hinst, NULL);
+
+# ifdef USE_SYSMENU_FONT
+    if (gui_w32_get_menu_font(&lfSysmenu) == OK)
+    {
+	HFONT font = CreateFontIndirect(&lfSysmenu);
+	SendMessage(s_tabhwnd, WM_SETFONT, (WPARAM) font, TRUE);
+    }
+# endif
 }
 #endif
 

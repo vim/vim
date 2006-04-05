@@ -25,8 +25,11 @@ vimrcloc=$6
 helpsource=$7
 manmod=$8
 exename=$9
-vimdiffname=${10}
-evimname=${11}
+# older shells don't support ${10}
+shift
+vimdiffname=$9
+shift
+evimname=$9
 
 helpsubloc=$scriptloc/doc
 synsubloc=$scriptloc/syntax

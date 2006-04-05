@@ -1,18 +1,20 @@
-*zip.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*zip.txt*	For Vim version 7.0c.  Last change: 2006 Apr 03
 
-	Zip File Interface
+				+====================+
+				| Zip File Interface |
+				+====================+
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1 *zip-copyright*
-              Permission is hereby granted to use and distribute this code,
-	      with or without modifications, provided that this copyright
-	      notice is copied with it. Like anything else that's free,
-	      zip.vim, zipPlugin.vim, and pi_zip.txt are provided *as is*
-	      and it comes with no warranty of any kind, either expressed or
-	      implied. By using this plugin, you agree that in no event will
-	      the copyright holder be liable for any damages resulting from
-	      the use of this software.
+Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
+           Permission is hereby granted to use and distribute this code,
+	   with or without modifications, provided that this copyright
+	   notice is copied with it. Like anything else that's free,
+	   zip.vim, zipPlugin.vim, and pi_zip.txt are provided *as is*
+	   and it comes with no warranty of any kind, either expressed or
+	   implied. By using this plugin, you agree that in no event will
+	   the copyright holder be liable for any damages resulting from
+	   the use of this software.
 
 ==============================================================================
 1. Contents					*zip* *zip-contents*

@@ -51,6 +51,7 @@
 #		NOTE: compilation on WinNT/2K/XP requires
 #		at least version 1.6.5 of Ruby.  Earlier versions
 #		of Ruby will cause a compile error on these systems.
+#   RUBY_VER_LONG  same, but in format with dot. (1.6)
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (no)
 # MBYTE		no or yes: set to yes for multi-byte support (yes)
 #               NOTE: multi-byte support is broken in the Borland libraries,

@@ -2176,6 +2176,14 @@ do_one_cmd(cmdlinep, sourcing,
 		errormsg = (char_u *)_(e_secure);
 	    goto doend;
 	}
+#ifdef FEAT_AUTOCMD
+	if (!(ea.argt & CMDWIN)
+# ifdef FEAT_USR_CMDS
+		&& !USER_CMDIDX(ea.cmdidx)
+# endif
+		&& curbuf_locked())
+	    goto doend;
+#endif
 
 	if (!ni && !(ea.argt & RANGE) && ea.addr_count > 0)
 	{
@@ -4587,6 +4595,14 @@ getargopt(eap)
 	return OK;
     }
 
+    /* ":read ++edit file" */
+    if (STRNCMP(arg, "edit", 4) == 0)
+    {
+	eap->read_edit = TRUE;
+	eap->arg = skipwhite(arg + 4);
+	return OK;
+    }
+
     if (STRNCMP(arg, "ff", 2) == 0)
     {
 	arg += 2;
@@ -6086,6 +6102,10 @@ ex_quit(eap)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return;
+#endif
 
 #ifdef FEAT_NETBEANS_INTG
     netbeansForcedQuit = eap->forceit;
@@ -6155,6 +6175,10 @@ ex_quit_all(eap)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return;
+#endif
 
     exiting = TRUE;
     if (eap->forceit || !check_changed_any(FALSE))
@@ -6175,7 +6199,11 @@ ex_close(eap)
 	cmdwin_result = K_IGNORE;
     else
 # endif
-	if (!text_locked())
+	if (!text_locked()
+#ifdef FEAT_AUTOCMD
+		&& !curbuf_locked()
+#endif
+		)
 	    ex_win_close(eap->forceit, curwin, NULL);
 }
 
@@ -6275,7 +6303,11 @@ ex_tabclose(eap)
 		    return;
 		}
 	    }
-	    if (!text_locked())
+	    if (!text_locked()
+#ifdef FEAT_AUTOCMD
+		    && !curbuf_locked()
+#endif
+	       )
 		tabpage_close(eap->forceit);
 	}
 
@@ -6481,6 +6513,10 @@ ex_exit(eap)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return;
+#endif
 
     /*
      * if more files or windows we won't exit
@@ -6596,6 +6632,10 @@ handle_drop(filec, filev, split)
     /* Postpone this while editing the command line. */
     if (text_locked())
 	return;
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return;
+#endif
 
     /* Check whether the current buffer is changed. If so, we will need
      * to split the current window or data could be lost.
@@ -10300,7 +10340,7 @@ ex_loadview(eap)
     fname = get_view_file(*eap->arg);
     if (fname != NULL)
     {
-	do_source(fname, FALSE, FALSE);
+	do_source(fname, FALSE, DOSO_NONE);
 	vim_free(fname);
     }
 }
@@ -10658,6 +10698,8 @@ ex_match(eap)
     {
 	vim_free(curwin->w_match[mi].regprog);
 	curwin->w_match[mi].regprog = NULL;
+	vim_free(curwin->w_match_pat[mi]);
+	curwin->w_match_pat[mi] = NULL;
 	redraw_later(SOME_VALID);	/* always need a redraw */
     }
 
@@ -10703,12 +10745,14 @@ ex_match(eap)
 	    c = *end;
 	    *end = NUL;
 	    curwin->w_match[mi].regprog = vim_regcomp(p + 1, RE_MAGIC);
-	    *end = c;
 	    if (curwin->w_match[mi].regprog == NULL)
 	    {
 		EMSG2(_(e_invarg2), p);
+		*end = c;
 		return;
 	    }
+	    curwin->w_match_pat[mi] = vim_strsave(p + 1);
+	    *end = c;
 	}
     }
     eap->nextcmd = find_nextcmd(end);

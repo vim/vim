@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0c.  Last change: 2006 Mar 06
+*editing.txt*   For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -422,14 +422,18 @@ name.  Line breaks also separate names.
 The [++opt] argument can be used to force the value of 'fileformat',
 'fileencoding' or 'binary' to a value for one command, and to specify the
 behavior for bad characters.  The form is: >
+	++{optname}
+Or: >
 	++{optname}={value}
 
-Where {optname} is one of:		*++ff* *++enc* *++bin* *++nobin*
+Where {optname} is one of:	    *++ff* *++enc* *++bin* *++nobin* *++edit*
     ff     or  fileformat   overrides 'fileformat'
     enc    or  encoding	    overrides 'fileencoding'
     bin    or  binary	    sets 'binary'
     nobin  or  nobinary	    resets 'binary'
     bad                     specifies behavior for bad characters
+    edit		    for |:read| only: keep option values as if editing
+    			    a file
 
 {value} cannot contain white space.  It can be any valid value for these
 options.  Examples: >
@@ -897,6 +901,7 @@ used, for example, when the write fails and you want to try again later with
 			The [!] is needed to overwrite an existing file.
 			When 'filetype' is empty filetype detection is done
 			with the new name, before the file is written.
+			When the write was successful 'readonly' is reset.
 			{not in Vi}
 
 							*:up* *:update*

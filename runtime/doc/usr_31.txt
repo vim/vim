@@ -1,4 +1,4 @@
-*usr_31.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*usr_31.txt*	For Vim version 7.0c.  Last change: 2006 Apr 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -249,6 +249,11 @@ You don't want to do this in a terminal, since it's size is fixed (except for
 an xterm that supports resizing).
    The gvimrc file is searched for in the same locations as the vimrc file.
 Normally it's name is "~/.gvimrc" for Unix and "$VIM/_gvimrc" for MS-Windows.
+The $MYGVIMRC environment variable is set to it, thus you can use this command
+to edit the file, if you have one: >
+
+	:edit $MYGVIMRC
+<
    If for some reason you don't want to use the normal gvimrc file, you can
 specify another one with the "-U" argument: >
 

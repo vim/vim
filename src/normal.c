@@ -382,7 +382,7 @@ static const struct nv_cmd
     {K_X2DRAG, nv_mouse,	0,			0},
     {K_X2RELEASE, nv_mouse,	0,			0},
 #endif
-    {K_IGNORE,	nv_ignore,	0,			0},
+    {K_IGNORE,	nv_ignore,	NV_KEEPREG,		0},
     {K_NOP,	nv_nop,		0,			0},
     {K_INS,	nv_edit,	0,			0},
     {K_KINS,	nv_edit,	0,			0},
@@ -440,7 +440,7 @@ static const struct nv_cmd
     {K_DROP,	nv_drop,	NV_STS,			0},
 #endif
 #ifdef FEAT_AUTOCMD
-    {K_CURSORHOLD, nv_cursorhold, 0,			0},
+    {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
 #endif
 };
 
@@ -572,8 +572,8 @@ normal_cmd(oap, toplevel)
 #ifdef FEAT_VISUAL
     pos_T	old_pos;		/* cursor position before command */
     int		mapped_len;
-#endif
     static int	old_mapped_len = 0;
+#endif
     int		idx;
 
     vim_memset(&ca, 0, sizeof(ca));	/* also resets ca.retval */
@@ -624,6 +624,7 @@ normal_cmd(oap, toplevel)
     LANGMAP_ADJUST(c, TRUE);
 #endif
 
+#ifdef FEAT_VISUAL
     /*
      * If a mapping was started in Visual or Select mode, remember the length
      * of the mapping.  This is used below to not return to Insert mode for as
@@ -632,11 +633,9 @@ normal_cmd(oap, toplevel)
     if (restart_edit == 0)
 	old_mapped_len = 0;
     else if (old_mapped_len
-#ifdef FEAT_VISUAL
-	    || (VIsual_active && mapped_len == 0 && typebuf_maplen() > 0)
-#endif
-	    )
+		|| (VIsual_active && mapped_len == 0 && typebuf_maplen() > 0))
 	old_mapped_len = typebuf_maplen();
+#endif
 
     if (c == NUL)
 	c = K_ZERO;
@@ -805,6 +804,10 @@ getcount:
 	text_locked_msg();
 	goto normal_end;
     }
+#ifdef FEAT_AUTOCMD
+    if ((nv_cmds[idx].cmd_flags & NV_NCW) && curbuf_locked())
+	goto normal_end;
+#endif
 
 #ifdef FEAT_VISUAL
     /*
@@ -1151,10 +1154,12 @@ getcount:
 #endif
     }
 
+#ifdef FEAT_VISUAL
     /* Get the length of mapped chars again after typing a count, second
      * character or "z333<cr>". */
     if (old_mapped_len > 0)
 	old_mapped_len = typebuf_maplen();
+#endif
 
     /*
      * If an operation is pending, handle it...
@@ -1288,6 +1293,8 @@ normal_end:
 #ifdef FEAT_VISUAL
 	    && ((restart_edit != 0 && !VIsual_active && old_mapped_len == 0)
 		|| restart_VIsual_select == 1)
+#else
+	    && restart_edit != 0
 #endif
 	    && !(ca.retval & CA_COMMAND_BUSY)
 	    && stuff_empty()
@@ -1303,9 +1310,9 @@ normal_end:
 #endif
 	if (restart_edit != 0
 #ifdef FEAT_VISUAL
-		&& !VIsual_active
+		&& !VIsual_active && old_mapped_len == 0
 #endif
-		&& old_mapped_len == 0)
+		)
 	    (void)edit(restart_edit, FALSE, 1L);
     }
 
@@ -4065,7 +4072,20 @@ nv_page(cap)
     cmdarg_T	*cap;
 {
     if (!checkclearop(cap->oap))
+    {
+#ifdef FEAT_WINDOWS
+	if (mod_mask & MOD_MASK_CTRL)
+	{
+	    /* <C-PageUp>: tab page back; <C-PageDown>: tab page forward */
+	    if (cap->arg == BACKWARD)
+		goto_tabpage(-(int)cap->count1);
+	    else
+		goto_tabpage((int)cap->count0);
+	}
+	else
+#endif
 	(void)onepage(cap->arg, cap->count1);
+    }
 }
 
 /*
@@ -5914,6 +5934,13 @@ nv_gotofile(cap)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+    {
+	clearop(cap->oap);
+	return;
+    }
+#endif
 
     ptr = grab_file_name(cap->count1, &lnum);
 
@@ -6424,6 +6451,10 @@ nv_brackets(cap)
 		clearopbeep(cap->oap);
 		break;
 	    }
+# ifdef FEAT_FOLDING
+	if (cap->oap->op_type == OP_NOP && (fdo_flags & FDO_SEARCH) && KeyTyped)
+	    foldOpenCursor();
+# endif
     }
 #endif
 

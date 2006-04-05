@@ -1,6 +1,8 @@
 *tar.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
 
-	Tar File Interface
+       	       	       +====================+
+       	       	       | Tar File Interface |
+       	       	       +====================+
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
@@ -12,7 +14,8 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
 1. Contents					*tar* *tar-contents*
    1. Contents..................................................|tar-contents|
    2. Usage.....................................................|tar-usage|
-   3. History...................................................|tar-history|
+   3. Options...................................................|tar-options|
+   4. History...................................................|tar-history|
 
 ==============================================================================
 2. Usage					*tar-usage* *tar-manual*
@@ -24,7 +27,25 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
    tar archives via the plugin.
 
 ==============================================================================
-3. History						*tar-history*
+3. Options						*tar-options*
+
+   These options are variables that one may change, typically in one's
+   <.vimrc> file.
+                         Default
+   Variable               Value   Explanation
+   *g:tar_browseoptions*  "Ptf"   used to get a list of contents
+   *g:tar_readoptions*    "OPxf"  used to extract a file from a tarball
+   *g:tar_cmd*            "tar"   the name of the tar program
+   *g:tar_writeoptions*   "uf"    used to update/replace a file
+
+
+==============================================================================
+4. History						*tar-history*
+
+   v7 Mar 22, 2006 * work on making tar plugin work across network
+      Mar 27, 2006 * g:tar_cmd now available for users to change the name
+                     of the tar program to be used.  By default, of course,
+		     its "tar".
    v6 Dec 21, 2005 * writing to files not in directories caused problems -
                      fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed

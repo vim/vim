@@ -5,7 +5,7 @@
      Vim to potężny edytor, który posiada wiele poleceń, zbyt dużo by
      wyjaśnić je wszystkie w tym tutorialu. Ten przewodnik ma nauczyć
      Cię posługiwać się wystarczająco wieloma komendami byś mógł łatwo
-     używać Vim-a jako edytora ogólnego przeznaczenia.
+     używać Vima jako edytora ogólnego przeznaczenia.
 
      Czas potrzebny na ukończenie tutoriala to 25 do 30 minut i zależy
      od tego jak wiele czasu spędzisz na eksperymentowaniu.  
@@ -15,10 +15,10 @@
 	 wcześniej kopię tego pliku do ćwiczeń (jeśli zacząłeś komendą
 	 "vimtutor" to już pracujesz na kopii).
 
-     Ważne jest, byś pamiętał, że przewodnik ten został zaprojektowany do
-     nauki poprzez ćwiczenia. To oznacza, że musisz wykonywać polecenia
-     by nauczyć się ich prawidłowo. Jeśli będziesz jedynie czytał tekst
-     szybko zapomnisz wiele poleceń!
+	 Pamiętaj że przewodnik ten został zaprojektowany do nauki poprzez
+	 ćwiczenia. Oznacza to, że musisz wykonywać polecenia by nauczyć się ich
+	 prawidłowo. Jeśli będziesz jedynie czytał tekst szybko zapomnisz wiele
+	 poleceń!
 
      Teraz upewnij się, że nie masz wciśniętego CapsLocka i wciskaj  j
      tak długo dopóki Lekcja 1.1. nie wypełni całkowicie ekranu.
@@ -45,7 +45,7 @@ Uwaga: Jeśli nie jesteś pewien czegoś co wpisałeś, wciśnij <ESC> by wróci
 
 Uwaga: Klawisze kursora także powinny działać, ale używając  hjkl  będziesz
        w stanie poruszać się o wiele szybciej jak się tylko przyzwyczaisz.
-	   Naprawdę!
+       Naprawdę!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcja 1.2.: WYCHODZENIE Z VIM-a
@@ -65,7 +65,7 @@ Uwaga: Klawisze kursora także powinny działać, ale używając  hjkl  będzies
      wyjść i wrócić do edytora.
 
 UWAGA: :q!<ENTER> porzuca wszelkie zmiany jakie zrobiłeś. W następnych
-lekcjach dowiesz się jak je zapamiętywać.
+       lekcjach dowiesz się jak je zapamiętywać.
 
   5. Przenieś kursor do lekcji 1.3.
 
@@ -150,16 +150,16 @@ UWAGA: Ucz się przez ćwiczenie, nie wkuwanie.
   1. Zakończ tutorial tak jak w lekcji 1.2.:  :q!
 
   2. W powłoce wydaj polecenie:  vim tutor<ENTER>
-     "vim" jest poleceniem uruchamiającym edytor Vimm. 'tutor' to nazwa pliku
+     "vim" jest poleceniem uruchamiającym edytor Vim. 'tutor' to nazwa pliku
      jaki chcesz edytować. Użyj pliku jaki może zostać zmieniony.
 
   3. Dodaj i usuń tekst tak jak się nauczyłeś w poprzednich lekcjach.
 
-  4. Zapisz plik ze zmianami w opuść Vima:  :wq<ENTER>
+  4. Zapisz plik ze zmianami i opuść Vima:  :wq<ENTER>
 
   5. Uruchom ponownie vimtutor i przejdź do podsumowania lekcji.
 
-  6. Po przeczytaniu wszystkich kroków i zrozumieniu ich: wykonaj je.
+  6. Po przeczytaniu wszystkich kroków i ich zrozumieniu: wykonaj je.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -168,21 +168,21 @@ UWAGA: Ucz się przez ćwiczenie, nie wkuwanie.
   1. Poruszasz kursorem używając "strzałek" i klawiszy  hjkl .
        h (w lewo)	 j (w dół)	 k (do góry)		l (w prawo)
 
-  2. By wejść do Vim-a (z powłoki) wpisz:
+  2. By wejść do Vima (z powłoki) wpisz:
 			    vim NAZWA_PLIKU<ENTER>
 
-  3. By wyjść z Vim-a wpisz:
+  3. By wyjść z Vima wpisz:
 			    <ESC> :q!<ENTER>  by usunąc wszystkie zmiany.
 	     LUB:	    <ESC> :wq<ENTER>  by zmiany zachować.
 
   4. By usunąć znak pod kursorem wciśnij:  x
 
   5. By wstawić tekst przed kursorem lub dodać:
-	i         wpisz tekst      <ESC> wstawi przed kursorem
-	A         wpisz tekst      <ESC> doda na końcu linii
+	i   wpisz tekst   <ESC>         wstawi przed kursorem
+	A   wpisz tekst   <ESC>         doda na końcu linii
 
 UWAGA: Wciśnięcie <ESC> przeniesie Cię z powrotem do trybu Normal
-lub odwoła niechciane lub częściowo wprowadzone polecenia.
+       lub odwoła niechciane lub częściowo wprowadzone polecenia.
 
 Teraz możemy kontynuować i przejść do Lekcji 2.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -197,11 +197,11 @@ Teraz możemy kontynuować i przejść do Lekcji 2.
 
   3. Przesuń kursor na początek wyrazu, które chcesz usunąć.
 
-  4. Wpisz   dw   by usunąc wyraz.
+  4. Wpisz   dw   by usunąć wyraz.
 
   UWAGA: Litera  d  pojawi się na dole ekranu. Vim czeka na wpisanie  w . 
-	 Jeśli zobaczysz inny znak wpisałeś coś źle, wciśnij <ESC> i zacznij
-	 od początku.
+	 Jeśli zobaczysz inny znak oznacza to, że wpisałeś coś źle, wciśnij
+	 <ESC> i zacznij od początku.
 
 ---> Jest tu parę papier wyrazów, które kamień nie należą do nożyce tego zdania.
 
@@ -306,13 +306,13 @@ UWAGA:  Mnożnik pomiędzy operatorem  d  i ruchem działa podobnie do ruchu bez
 
 		   ** Wpisz  dd  aby usunąć całą linię. **
 
-  Z powodu częstości usuwania całych linii, projektanci VI zdecydowali, że
+  Z powodu częstości usuwania całych linii, projektanci Vi zdecydowali, że
   będzie łatwiej wpisać dwa razy  d  aby usunąć linię.
 
-  1. Przenieś kursor do zdania poniżej.
-  2. Wpisz  dd  aby usunąc wiersz.
+  1. Przenieś kursor do drugiego zdania z wierszyka poniżej.
+  2. Wpisz  dd  aby usunąć wiersz.
   3. Teraz przenieś się do czwartego wiersza.
-  4. Wpisz  2dd  aby usunąc dwia wiersze.
+  4. Wpisz  2dd  aby usunąc dwa wiersze.
 
 --->  1)  Róże są czerwone,
 --->  2)  Błoto jest fajne,
@@ -337,7 +337,7 @@ UWAGA:  Mnożnik pomiędzy operatorem  d  i ruchem działa podobnie do ruchu bez
   4. Tym razem popraw wszystkie błędy w linii używając polecenia  x .
   5. Teraz wciśnij wielkie U aby przywrócić linię do oryginalnego stanu.
   6. Teraz wciśnij  u  kilka razy by cofnąć  U  i poprzednie polecenia.
-  7. Teraz wpsz CTRL-R (trzymaj równocześnie wciśnięte klawisze CTRL i R)
+  7. Teraz wpisz CTRL-R (trzymaj równocześnie wciśnięte klawisze CTRL i R)
      kilka razy, by cofnąć cofnięcia.
 
 ---> Poopraw blędyyy w teej liniii i zaamiień je prrzez coofnij.
@@ -377,14 +377,14 @@ UWAGA:  Mnożnik pomiędzy operatorem  d  i ruchem działa podobnie do ruchu bez
 
   1. Przenieś kursor do pierwszej linii ---> poniżej.
 
-  2. Wpisz  dd  aby usunąć linię i przechować ją w rejestrze Vim-a.
+  2. Wpisz  dd  aby usunąć linię i przechować ją w rejestrze Vima.
 
   3. Przenieś kursor do linii c), POWYŻEJ tej gdzie usunięta linia powinna
      się znajdować.
 
   4. Wciśnij  p  by wstawić linię poniżej kursora.
 
-  5. Powtaj kroki 2. do 4. aż znajdą się w odpowiednim porządku.
+  5. Powtarzaj kroki 2. do 4. aż znajdą się w odpowiednim porządku.
 
 ---> d) Jak dwa aniołki.
 ---> b) Na dole fiołki,
@@ -456,7 +456,7 @@ UWAGA: Pamiętaj by uczyć się ćwicząc, a nie pamięciowo.
 
   5. Wpisz  c$ , popraw koniec wiersza i wciśnij <ESC>.
 
----> Koniec tego wiersza musi być poprawiony aby wyglądal tak jak drugi.
+---> Koniec tego wiersza musi być poprawiony aby wyglądał tak jak drugi.
 ---> Koniec tego wiersza musi być poprawiony używając polecenia  c$ .
 
 UWAGA:  Możesz używać <BS> aby poprawiać błędy w czasie pisania.
@@ -526,15 +526,15 @@ UWAGA: Możesz też zobaczyć pozycję kursora w prawym, dolnym rogu ekranu.
   5. Aby wrócić gdzie byłeś wciśnij  CTRL-O. Powtarzaj by wrócić dalej. CTRL-I
      idzie do przodu.
 
-UWAGA:  'błond' to nie jest metoda by przeliterować błąd; 'błond' to błąd.
-UWAGA:  Kiedy szukanie osiągnie koniec pliku będzie kontynuowało od początku
-o ile opcja 'wrapscan' nie została przestawiona.
+Uwaga:  'błond' to nie jest metoda by przeliterować błąd; 'błond' to błąd.
+Uwaga:  Kiedy szukanie osiągnie koniec pliku będzie kontynuowało od początku
+        o ile opcja 'wrapscan' nie została przestawiona.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Lekcja 4.3.: W POSZUKIWANIU PARUJĄCYCH NAWIASÓW
 
 
-		** Wpisz  %  by znaleźć pasujący ),], lub } . **
+	       ** Wpisz  %  by znaleźć parujący ), ], lub } . **
 
   1. Umieść kursor na którymś z (, [, lub { w linii poniżej oznaczonej --->.
 
@@ -548,7 +548,7 @@ o ile opcja 'wrapscan' nie została przestawiona.
 
 ---> To ( jest linia testowa z (, [, ] i {, } . ))
 
-UWAGA: Ta funkcja jest bardzo użyteczna w debuggowaniu programu
+Uwaga: Ta funkcja jest bardzo użyteczna w debuggowaniu programu
        z niesparowanymi nawiasami!
 
 
@@ -598,7 +598,7 @@ UWAGA: Ta funkcja jest bardzo użyteczna w debuggowaniu programu
      By zamienić wszystkie stary na nowy w linii wpisz     :s/stary/nowy/g
      By zamienić frazy pomiędzy dwoma liniami # wpisz      :#,#s/stary/nowy/g
      By zamienić wszystkie wystąpienia w pliku wpisz       :%s/stary/nowy/g
-     By Vim prosił Cię o potwierdzienie dodaj 'c'	   :%s/stary/nowy/gc
+     By Vim prosił Cię o potwierdzenie dodaj 'c'	   :%s/stary/nowy/gc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		 Lekcja 5.1.: JAK WYKONAĆ POLECENIA ZEWNĘTRZNE
 
@@ -606,7 +606,7 @@ UWAGA: Ta funkcja jest bardzo użyteczna w debuggowaniu programu
 	** Wpisz  :!  a następnie zewnętrzne polecenie by je wykonać. **
 
   1. Wpisz znajome polecenie  :  by ustawić kursor na dole ekranu. To pozwala
-     na wprowadzenie polecenia.
+     na wprowadzenie komendy linii poleceń.
 
   2. Teraz wstaw  !  (wykrzyknik). To umożliwi Ci wykonanie dowolnego
      zewnętrznego polecenia powłoki.
@@ -638,12 +638,12 @@ Uwaga:  Wszystkie polecenia  :  muszą być zakończone <ENTER>.
   4. To polecenie zapamięta cały plik (Vim Tutor) pod nazwą TEST.
      By to sprawdzić wpisz  :!dir  lub  :!ls , żeby znowu zobaczyć listę plików.
 
-Uwaga: Zauważ, że gdybyś teraz wyszedł z Vim-a, a następnie wszedł ponownie
-       komendą  vim TEST , plik byłby dokładną kopią tutoriala kiedy go
+Uwaga: Zauważ, że gdybyś teraz wyszedł z Vima, a następnie wszedł ponownie
+       poleceniem  vim TEST , plik byłby dokładną kopią tutoriala kiedy go
        zapisywałeś.
 
-  5. Teraz usuń plik wpisując:		   :!rm TEST
-
+  5. Teraz usuń plik wpisując (MS-DOS):		   :!del TEST
+                          lub (Unix):              :!rm TEST
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		    Lekcja 5.3.: WYBRANIE TEKSTU DO ZAPISU
@@ -687,8 +687,8 @@ UWAGA: Po wykonaniu kroku 2. zobaczysz tekst z Lekcji 5.3. Potem przejdź
      teraz są dwie kopie Lekcji 5.3., oryginał i kopia z pliku.
 
 UWAGA: Możesz też wczytać wyjście zewnętrznego polecenia. Na przykład
-       :r !ls  wczytuje wyjście polecenia ls i umieszcza je pod kursorem.
-
+       :r !ls  wczytuje wyjście polecenia ls i umieszcza je pod poniżej
+       kursora.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -703,7 +703,7 @@ UWAGA: Możesz też wczytać wyjście zewnętrznego polecenia. Na przykład
 
 	  :!rm NAZWA_PLIKU  -  usuwa plik NAZWA_PLIKU.
 
-  2.  :w NAZWA_PLIKU  zapisuje obecny plik Vim-a na dysk z nazwą NAZWA_PLIKU.
+  2.  :w NAZWA_PLIKU  zapisuje obecny plik Vima na dysk z nazwą NAZWA_PLIKU.
 
   3.  v ruch :w NAZWA_PLIKU  zapisuje Wizualnie wybrane linie do NAZWA_PLIKU.
 
@@ -752,13 +752,13 @@ UWAGA: Możesz też wczytać wyjście zewnętrznego polecenia. Na przykład
   4. Dokończ wyraz tak jak w linii poniżej. Wciśnij <ESC> aby opuścić tryb
      Insert.
 
-  5. Użyj  e  by przejść do kolejnego niedokończonego wyraze i powtarzaj kroki
+  5. Użyj  e  by przejść do kolejnego niedokończonego wyrazu i powtarzaj kroki
      3. i 4.
 
 ---> Ta li poz Ci ćwi dodaw teks do koń lin
 ---> Ta linia pozwoli Ci ćwiczyć dodawanie tekstu do końca linii.
 
-Uwaga:  a ,  i  and  A  prowadzą do trybu Insert, jedyną różnicą jest miejsce
+Uwaga:  a ,  i  oraz  A  prowadzą do trybu Insert, jedyną różnicą jest miejsce
        gdzie nowe znaki będą dodawane.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   Lekcja 6.3.: INNA WERSJA REPLACE (zamiana)
@@ -789,7 +789,7 @@ UWAGA: Tryb Replace jest jak tryb Insert, ale każdy znak usuwa istniejący
 
        ** użyj operatora  y  aby skopiować tekst i  p  aby go wkleić **
 
-  1. Przejdź do linii oznaczonej ---> i umieśc kursor za "a)".
+  1. Przejdź do linii oznaczonej ---> i umieść kursor za "a)".
 
   2. Wejdź w tryb Visual  v  i przenieś kursor na początek "pierwszy".
 
@@ -799,8 +799,8 @@ UWAGA: Tryb Replace jest jak tryb Insert, ale każdy znak usuwa istniejący
 
   5. Wciśnij  p  aby wpakować (paste) tekst.  Dodaj:  a drugi<ESC> .
 
-  6. Użyj trybu Visual aby wybrać " element.", yankuj go  y , przejdź do końca
-     następnej linii  j$ i upakuj tam tekst z  p .
+  6. Użyj trybu Wizualnego aby wybrać " element.", yankuj go  y , przejdź do
+     końca następnej linii  j$ i upakuj tam tekst z  p .
 
 --->  a) to jest pierwszy element.
       b)
@@ -818,7 +818,7 @@ Uwaga: możesz użyć  y  jako operatora;  yw  kopiuje jeden wyraz.
   2. Ustaw opcję 'ic' (Ignore case -- ignoruj wielkość liter) poprzez
      wpisanie:		:set ic
 
-  3. Teraz szukaj 'ignore' ponownie wciskując:  n
+  3. Teraz szukaj 'ignore' ponownie wciskając:  n
      Zauważ, że Ignore i IGNORE także są teraz znalezione.
 
   4. Ustaw opcje 'hlsearch' i 'incsearch':    :set hls is
@@ -835,16 +835,18 @@ Uwaga: Aby ignorować wielkość liter dla jednego wyszukiwania: /ignore\c<ENTER
 
 
   1. Wpisanie  o  otwiera linię PONIŻEJ kursora.
-     Wpisanie wielkiego  O  otwiera linię POWYŻEJ kursora.
-  2. Wpisz  a  by wstawić tekst ZA znakiem na, którym jest kursor.
-     Wpisanie wielkiego  A  dodaje tekst na końcu linii.
+     Wpisanie  O  otwiera linię POWYŻEJ kursora.
+
+  2. Wpisanie  a  by wstawić tekst ZA znakiem na, którym jest kursor.
+     Wpisanie  A  dodaje tekst na końcu linii.
+
   3. Polecenie  e  przenosi do końca wyrazu.
-  4. Operato  y  yankuje (kopiuje) tekst,  p  pakuje (wkleja, paste) go.
+  4. Operator  y  yankuje (kopiuje) tekst,  p  pakuje (wkleja, paste) go.
   5. Wpisanie wielkiego  R  wprowadza w tryb Replace (zamiana) dopóki
      nie zostanie wciśnięty <ESC>.
   6. Wpisanie ":set xxx" ustawia opcję "xxx". Nietkóre opcje:
-	'ic' 'ignorecase'	ignoruj wielkość znaków
-	'is' 'incsearch'	pokaż częściowe dopasowania
+	'ic'  'ignorecase'	ignoruj wielkość znaków
+	'is'  'incsearch'	pokaż częściowe dopasowania
 	'hls' 'hlsearch'	podświetl wszystkie dopasowania
      Możesz użyć zarówno długiej jak i krótkiej formy.
   7. Dodaj "no" aby wyłączyć opcję:   :set noic
@@ -854,14 +856,14 @@ Uwaga: Aby ignorować wielkość liter dla jednego wyszukiwania: /ignore\c<ENTER
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			LEKCJA 7.1. JAK UZYSKAĆ POMOC 
+			LEKCJA 7.1. JAK UZYSKAĆ POMOC
 
 		      ** Użycie systemu pomocy on-line **
 
   Vim posiada bardzo dobry system pomocy on-line. By zacząć spróbuj jednej
   z trzech możliwości:
-	- wciśnij klawisz <HELP> (jeśli takowy posiadasz)
-	- wciśnij klawisz <F1> (jeśli takowy posiadasz)
+	- wciśnij klawisz <HELP> (jeśli taki masz)
+	- wciśnij klawisz <F1> (jeśli taki masz)
 	- wpisz   :help<ENTER>
 
   Przeczytaj tekst w oknie pomocy  aby dowiedzieć się jak działa pomoc.
@@ -878,7 +880,7 @@ Uwaga: Aby ignorować wielkość liter dla jednego wyszukiwania: /ignore\c<ENTER
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		   LEKCJA 7.2. TWORZENIE SKRYPTU STARTOWEGO
 
-			 ** Włącz możliwości Vim-a **
+			  ** Włącz możliwości Vima **
 
   Vim ma o wiele więcej możliwości niż Vi, ale większość z nich jest domyślnie
   wyłączona. Jeśli chcesz włączyć te możliwości na starcie musisz utworzyć
@@ -943,23 +945,23 @@ UWAGA: Uzupełnianie działa dla wielu poleceń. Spróbuj wcisnąć CTRL-D i <TA
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Tutaj się kończy tutorial Vim-a. Został on pomyślany tak aby dać krótki
+  Tutaj się kończy tutorial Vima. Został on pomyślany tak aby dać krótki
   przegląd jego możliwości, wystarczający byś mógł go używać. Jest on
   daleki od kompletności ponieważ Vim ma o wiele, wiele więcej poleceń.
 
   Dla dalszej nauki rekomendujemy książkę:
 	Vim - Vi Improved - autor Steve Oualline
 	Wydawca: New Riders
-  Pierwsza ksiązka całkowicie poświęcona Vim-owi. Użyteczna zwłaszcza dla
+  Pierwsza ksiązka całkowicie poświęcona Vimowi. Użyteczna zwłaszcza dla
   początkujących. Zawiera wiele przykładów i ilustracji.
   Zobacz http://iccf-holland.org./click5.html
 
-  Ta książka jest starsza i bardziej o Vi niż o Vim-ie, ale także warta
+  Starsza pozycja i bardziej o Vi niż o Vimie, ale także warta
   polecenia:
 	Learning the Vi Editor - autor Linda Lamb
 	Wydawca: O'Reilly & Associates Inc.
   To dobra książka by dowiedzieć się niemal wszystkiego co chciałbyś zrobić
-  z Vi. Szósta edycja zawiera też informacje o Vim-ie.
+  z Vi. Szósta edycja zawiera też informacje o Vimie.
 
   Po polsku wydano:
 	Edytor vi. Leksykon kieszonkowy - autor Arnold Robbins
@@ -967,10 +969,10 @@ UWAGA: Uzupełnianie działa dla wielu poleceń. Spróbuj wcisnąć CTRL-D i <TA
 	ISBN: 83-7197-472-8
 	http://helion.pl/ksiazki/vilek.htm
   Jest to książeczka zawierająca spis poleceń vi i jego najważniejszych
-  klonów (między innymi Vim-a).
+  klonów (między innymi Vima).
 
 	Edytor vi - autorzy Linda Lamb i Arnold Robbins
-	Wydawca: Helion 2001 (O'Reilly) - wg 6 ang. wydania
+	Wydawca: Helion 2001 (O'Reilly) - wg 6. ang. wydania
 	ISBN: 83-7197-539-2
 	http://helion.pl/ksiazki/viedyt.htm
   Rozszerzona wersja Learning the Vi Editor w polskim tłumaczeniu.
@@ -980,7 +982,7 @@ UWAGA: Uzupełnianie działa dla wielu poleceń. Spróbuj wcisnąć CTRL-D i <TA
   Colorado State University.
   E-mail: bware@mines.colorado.edu.
 
-  Zmodyfikowane dla Vim-a przez Brama Moolenaara.
+  Zmodyfikowane dla Vima przez Brama Moolenaara.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -988,4 +990,5 @@ UWAGA: Uzupełnianie działa dla wielu poleceń. Spróbuj wcisnąć CTRL-D i <TA
   Sierpień 2001,
   rev. Marzec 2002
   2nd rev. Wrzesień 2004
+  3rd rev. Marzec 2006
   Wszelkie uwagi proszę kierować na: mikmach@wp.pl

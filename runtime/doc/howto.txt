@@ -1,4 +1,4 @@
-*howto.txt*	For Vim version 7.0c.  Last change: 2001 Sep 03
+*howto.txt*	For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -75,7 +75,7 @@ How to ...				*howdoi* *how-do-i* *howto* *how-to*
 |auto-setting|		set options automatically
 |term-dependent-settings| set options depending on terminal name
 |save-settings|		save settings
-|:quote|		comment my exrc/vimrc/gvimrc files
+|:quote|		comment my .vim files
 |'helpheight'|		change the default help height
 |'highlight'|		set various highlighting modes
 |'title'|		set the window title

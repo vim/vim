@@ -9,10 +9,6 @@
 #ifndef __GTK_FORM_H__
 #define __GTK_FORM_H__
 
-#ifdef VMS
-# include "gui_gtk_vms.h"
-#endif
-
 #include <gdk/gdk.h>
 #include <gtk/gtkcontainer.h>
 

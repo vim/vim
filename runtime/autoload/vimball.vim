@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Mar 22, 2006
-" Version: 5
+" Date:   Mar 31, 2006
+" Version: 6
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v5"
+let g:loaded_vimball = "v6"
 set cpo&vim
 
 " =====================================================================
@@ -190,7 +190,7 @@ fun! vimball#Vimball(really)
 "   call Decho("yanked ".fsize." lines into register-a")
 
 "   call Decho("didhelp<".didhelp."> fname<".fname.">")
-   if didhelp == "" && fname =~ 'doc/[^/]\+\.txt$'
+   if a:really && didhelp == "" && fname =~ 'doc/[^/]\+\.txt$'
    	let didhelp= substitute(fname,'^\(.*\<doc\)[/\\][^.]*\.txt$','\1','e')
 "	call Decho("didhelp<".didhelp.">")
    endif

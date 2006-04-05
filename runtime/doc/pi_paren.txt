@@ -1,4 +1,4 @@
-*pi_paren.txt*  For Vim version 7.0c.  Last change: 2006 Mar 29
+*pi_paren.txt*  For Vim version 7.0c.  Last change: 2006 Apr 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -38,9 +38,13 @@ in a string or comment syntax item, then matches inside string and comment
 syntax items are ignored.  Any syntax items with "string" or "comment"
 somewhere in their name are considered string or comment items.
 
-The search is limited to what is visible in the window.  The plugin doesn't
-search further than 100 lines to avoid a long delay when there are closed
-folds.
+The search is limited to avoid a delay when moving the cursor.  The limits
+are:
+- What is visible in the window.
+- 100 lines above or below the cursor to avoid a long delay when there are
+  closed folds.
+- 'synmaxcolumn' times 2 bytes before or after the cursor to avoid a delay
+  in a long line with syntax highlighting.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

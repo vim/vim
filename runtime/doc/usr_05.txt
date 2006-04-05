@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*usr_05.txt*	For Vim version 7.0c.  Last change: 2006 Apr 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -25,27 +25,27 @@ Table of contents: |usr_toc.txt|
 *05.1*	The vimrc file					*vimrc-intro*
 
 You probably got tired of typing commands that you use very often.  To start
-with all your favorite option settings and mappings, you write them in what is
-called the vimrc file.  Vim reads this file when it starts up.
+Vim with all your favorite option settings and mappings, you write them in
+what is called the vimrc file.  Vim executes the commands in this file when it
+starts up.
 
-If you have trouble finding your vimrc file, use this command: >
+If you already have a vimrc file (e.g., when your sysadmin has one setup for
+you), you can edit it this way: >
 
-	:scriptnames
+	:edit $MYVIMRC
 
-One of the first files in the list should be called ".vimrc" or "_vimrc" and
-is located in your home directory.
-   If you don't have a vimrc file yet, see |vimrc| to find out where you can
+If you don't have a vimrc file yet, see |vimrc| to find out where you can
 create a vimrc file.  Also, the ":version" command mentions the name of the
 "user vimrc file" Vim looks for.
 
-For Unix this file is always used: >
+For Unix and Macintosh this file is always used and is recommended:
 
-	~/.vimrc
+	~/.vimrc ~
 
-For MS-DOS and MS-Windows it is mostly one of these: >
+For MS-DOS and MS-Windows you can use one of these:
 
-	$HOME/_vimrc
-	$VIM/_vimrc
+	$HOME/_vimrc ~
+	$VIM/_vimrc ~
 
 The vimrc file can contain all the commands that you type after a colon.  The
 most simple ones are for setting options.  For example, if you want Vim to

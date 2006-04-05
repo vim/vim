@@ -369,6 +369,9 @@ static void list_hashtable_vars __ARGS((hashtab_T *ht, char_u *prefix, int empty
 static void list_glob_vars __ARGS((void));
 static void list_buf_vars __ARGS((void));
 static void list_win_vars __ARGS((void));
+#ifdef FEAT_WINDOWS
+static void list_tab_vars __ARGS((void));
+#endif
 static void list_vim_vars __ARGS((void));
 static void list_script_vars __ARGS((void));
 static void list_func_vars __ARGS((void));
@@ -567,6 +570,7 @@ static void f_map __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_maparg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mapcheck __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_match __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_matcharg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchend __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchstr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -578,6 +582,7 @@ static void f_mkdir __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mode __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_pathshorten __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
@@ -1685,6 +1690,9 @@ ex_let(eap)
 	    list_glob_vars();
 	    list_buf_vars();
 	    list_win_vars();
+#ifdef FEAT_WINDOWS
+	    list_tab_vars();
+#endif
 	    list_script_vars();
 	    list_func_vars();
 	    list_vim_vars();
@@ -1947,6 +1955,17 @@ list_win_vars()
     list_hashtable_vars(&curwin->w_vars.dv_hashtab, (char_u *)"w:", TRUE);
 }
 
+#ifdef FEAT_WINDOWS
+/*
+ * List tab page variables.
+ */
+    static void
+list_tab_vars()
+{
+    list_hashtable_vars(&curtab->tp_vars.dv_hashtab, (char_u *)"t:", TRUE);
+}
+#endif
+
 /*
  * List Vim variables.
  */
@@ -2043,6 +2062,9 @@ list_arg_vars(eap, arg)
 				case 'g': list_glob_vars(); break;
 				case 'b': list_buf_vars(); break;
 				case 'w': list_win_vars(); break;
+#ifdef FEAT_WINDOWS
+				case 't': list_tab_vars(); break;
+#endif
 				case 'v': list_vim_vars(); break;
 				case 's': list_script_vars(); break;
 				case 'l': list_func_vars(); break;
@@ -3577,12 +3599,20 @@ get_user_var_name(xp, idx)
     static long_u	gdone;
     static long_u	bdone;
     static long_u	wdone;
+#ifdef FEAT_WINDOWS
+    static long_u	tdone;
+#endif
     static int		vidx;
     static hashitem_T	*hi;
     hashtab_T		*ht;
 
     if (idx == 0)
+    {
 	gdone = bdone = wdone = vidx = 0;
+#ifdef FEAT_WINDOWS
+	tdone = 0;
+#endif
+    }
 
     /* Global variables */
     if (gdone < globvarht.ht_used)
@@ -3628,6 +3658,21 @@ get_user_var_name(xp, idx)
 	    ++hi;
 	return cat_prefix_varname('w', hi->hi_key);
     }
+
+#ifdef FEAT_WINDOWS
+    /* t: variables */
+    ht = &curtab->tp_vars.dv_hashtab;
+    if (tdone < ht->ht_used)
+    {
+	if (tdone++ == 0)
+	    hi = ht->ht_array;
+	else
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('t', hi->hi_key);
+    }
+#endif
 
     /* v: variables */
     if (vidx < VV_LEN)
@@ -5697,7 +5742,9 @@ list_append_string(l, str, len)
     list_append(l, li);
     li->li_tv.v_type = VAR_STRING;
     li->li_tv.v_lock = 0;
-    if ((li->li_tv.vval.v_string = (len >= 0 ? vim_strnsave(str, len)
+    if (str == NULL)
+	li->li_tv.vval.v_string = NULL;
+    else if ((li->li_tv.vval.v_string = (len >= 0 ? vim_strnsave(str, len)
 						 : vim_strsave(str))) == NULL)
 	return FAIL;
     return OK;
@@ -5995,6 +6042,9 @@ garbage_collect()
     int		i;
     funccall_T	*fc;
     int		did_free = FALSE;
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+#endif
 
     /*
      * 1. Go through all accessible variables and mark all lists and dicts
@@ -6009,8 +6059,14 @@ garbage_collect()
 	set_ref_in_ht(&buf->b_vars.dv_hashtab, copyID);
 
     /* window-local variables */
-    FOR_ALL_WINDOWS(wp)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
 	set_ref_in_ht(&wp->w_vars.dv_hashtab, copyID);
+
+#ifdef FEAT_WINDOWS
+    /* tabpage-local variables */
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	set_ref_in_ht(&tp->tp_vars.dv_hashtab, copyID);
+#endif
 
     /* global variables */
     set_ref_in_ht(&globvarht, copyID);
@@ -7021,6 +7077,7 @@ static struct fst
     {"maparg",		1, 3, f_maparg},
     {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
+    {"matcharg",	1, 1, f_matcharg},
     {"matchend",	2, 4, f_matchend},
     {"matchlist",	2, 4, f_matchlist},
     {"matchstr",	2, 4, f_matchstr},
@@ -7032,6 +7089,7 @@ static struct fst
     {"mode",		0, 0, f_mode},
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
+    {"pathshorten",	1, 1, f_pathshorten},
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		2, 19, f_printf},
     {"pumvisible",	0, 0, f_pumvisible},
@@ -11484,7 +11542,7 @@ f_islocked(argvars, rettv)
 		}
 	    }
 	    else if (lv.ll_range)
-		EMSG(_("E745: Range not allowed"));
+		EMSG(_("E786: Range not allowed"));
 	    else if (lv.ll_newkey != NULL)
 		EMSG2(_(e_dictkey), lv.ll_newkey);
 	    else if (lv.ll_list != NULL)
@@ -12120,6 +12178,30 @@ f_match(argvars, rettv)
 }
 
 /*
+ * "matcharg()" function
+ */
+    static void
+f_matcharg(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    if (rettv_list_alloc(rettv) == OK)
+    {
+#ifdef FEAT_SEARCH_EXTRA
+	int	mi = get_tv_number(&argvars[0]);
+
+	if (mi >= 1 && mi <= 3)
+	{
+	    list_append_string(rettv->vval.v_list,
+				 syn_id2name(curwin->w_match_id[mi - 1]), -1);
+	    list_append_string(rettv->vval.v_list,
+					     curwin->w_match_pat[mi - 1], -1);
+	}
+#endif
+    }
+}
+
+/*
  * "matchend()" function
  */
     static void
@@ -12389,6 +12471,29 @@ f_nr2char(argvars, rettv)
     }
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strsave(buf);
+}
+
+/*
+ * "pathshorten()" function
+ */
+    static void
+f_pathshorten(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*p;
+
+    rettv->v_type = VAR_STRING;
+    p = get_tv_string_chk(&argvars[0]);
+    if (p == NULL)
+	rettv->vval.v_string = NULL;
+    else
+    {
+	p = vim_strsave(p);
+	rettv->vval.v_string = p;
+	if (p != NULL)
+	    shorten_dir(p);
+    }
 }
 
 /*
@@ -16658,6 +16763,10 @@ set_cmdarg(eap, oldarg)
 	len = 8;
     else
 	len = 0;
+
+    if (eap->read_edit)
+	len += 7;
+
     if (eap->force_ff != 0)
 	len += (unsigned)STRLEN(eap->cmd + eap->force_ff) + 6;
 # ifdef FEAT_MBYTE
@@ -16677,6 +16786,10 @@ set_cmdarg(eap, oldarg)
 	sprintf((char *)newval, " ++nobin");
     else
 	*newval = NUL;
+
+    if (eap->read_edit)
+	STRCAT(newval, " ++edit");
+
     if (eap->force_ff != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++ff=%s",
 						eap->cmd + eap->force_ff);
@@ -17144,6 +17257,9 @@ find_var_in_ht(ht, varname, writing)
 	    case 'v': return &vimvars_var;
 	    case 'b': return &curbuf->b_bufvar;
 	    case 'w': return &curwin->w_winvar;
+#ifdef FEAT_WINDOWS
+	    case 't': return &curtab->tp_winvar;
+#endif
 	    case 'l': return current_funccal == NULL
 					? NULL : &current_funccal->l_vars_var;
 	    case 'a': return current_funccal == NULL
@@ -17207,6 +17323,10 @@ find_var_ht(name, varname)
 	return &curbuf->b_vars.dv_hashtab;
     if (*name == 'w')				/* window variable */
 	return &curwin->w_vars.dv_hashtab;
+#ifdef FEAT_WINDOWS
+    if (*name == 't')				/* tab page variable */
+	return &curtab->tp_vars.dv_hashtab;
+#endif
     if (*name == 'v')				/* v: variable */
 	return &vimvarht;
     if (*name == 'a' && current_funccal != NULL) /* function argument */
@@ -18528,6 +18648,9 @@ ex_function(eap)
 	    fudi.fd_di->di_tv.v_lock = 0;
 	    fudi.fd_di->di_tv.vval.v_string = vim_strsave(name);
 	    fp->uf_refcount = 1;
+
+	    /* behave like "dict" was used */
+	    flags |= FC_DICT;
 	}
 
 	/* insert the new function in the function list */

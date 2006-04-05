@@ -2,7 +2,7 @@
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
 " Version:	0.36
 " URL:		http://www.unb.ca/chem/ajit/indent/fortran.vim
-" Last Change:	2004 Apr. 05
+" Last Change:	2006 Apr. 02
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -11,9 +11,6 @@ if exists("b:did_indent")
   finish
 endif
 let b:did_indent = 1
-
-let s:cposet=&cpoptions
-set cpoptions-=C
 
 setlocal indentkeys+==~end,=~case,=~if,=~else,=~do,=~where,=~elsewhere,=~select
 setlocal indentkeys+==~endif,=~enddo,=~endwhere,=~endselect
@@ -30,11 +27,11 @@ if !exists("b:fortran_fixed_source")
   else
     " f90 and f95 allow both fixed and free source form
     " assume fixed source form unless signs of free source form
-    " are detected in the first five columns of the first 25 lines
+    " are detected in the first five columns of the first 250 lines
     " Detection becomes more accurate and time-consuming if more lines
     " are checked. Increase the limit below if you keep lots of comments at
     " the very top of each file and you have a fast computer
-    let s:lmax = 25
+    let s:lmax = 250
     if ( s:lmax > line("$") )
       let s:lmax = line("$")
     endif
@@ -63,6 +60,9 @@ else
     finish
   endif
 endif
+
+let s:cposet=&cpoptions
+set cpoptions-=C
 
 function FortranGetIndent(lnum)
   let ind = indent(a:lnum)

@@ -1042,6 +1042,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 ++bad	editing.txt	/*++bad*
 ++bin	editing.txt	/*++bin*
 ++builtin_terms	various.txt	/*++builtin_terms*
+++edit	editing.txt	/*++edit*
 ++enc	editing.txt	/*++enc*
 ++ff	editing.txt	/*++ff*
 ++nobin	editing.txt	/*++nobin*
@@ -1655,7 +1656,6 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 45.3	usr_45.txt	/*45.3*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
-755	spell.txt	/*755*
 8g8	various.txt	/*8g8*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
@@ -1676,6 +1676,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :.	cmdline.txt	/*:.*
 :/	cmdline.txt	/*:\/*
 :0file	editing.txt	/*:0file*
+:2match	pattern.txt	/*:2match*
+:3match	pattern.txt	/*:3match*
 ::.	cmdline.txt	/*::.*
 ::8	cmdline.txt	/*::8*
 ::e	cmdline.txt	/*::e*
@@ -2909,8 +2911,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 <C-LeftMouse>	tagsrch.txt	/*<C-LeftMouse>*
 <C-MouseDown>	scroll.txt	/*<C-MouseDown>*
 <C-MouseUp>	scroll.txt	/*<C-MouseUp>*
-<C-PageDown>	os_dos.txt	/*<C-PageDown>*
-<C-PageUp>	os_dos.txt	/*<C-PageUp>*
+<C-PageDown>	tabpage.txt	/*<C-PageDown>*
+<C-PageUp>	tabpage.txt	/*<C-PageUp>*
 <C-Right>	motion.txt	/*<C-Right>*
 <C-RightMouse>	tagsrch.txt	/*<C-RightMouse>*
 <CR>	motion.txt	/*<CR>*
@@ -3118,6 +3120,8 @@ C-indenting	indent.txt	/*C-indenting*
 COMSPEC	starting.txt	/*COMSPEC*
 CR-used-for-NL	pattern.txt	/*CR-used-for-NL*
 CTRL-6	editing.txt	/*CTRL-6*
+CTRL-<PageDown>	tabpage.txt	/*CTRL-<PageDown>*
+CTRL-<PageUp>	tabpage.txt	/*CTRL-<PageUp>*
 CTRL-A	change.txt	/*CTRL-A*
 CTRL-B	scroll.txt	/*CTRL-B*
 CTRL-C	pattern.txt	/*CTRL-C*
@@ -3961,6 +3965,7 @@ E751	spell.txt	/*E751*
 E752	spell.txt	/*E752*
 E753	spell.txt	/*E753*
 E754	spell.txt	/*E754*
+E755	spell.txt	/*E755*
 E756	spell.txt	/*E756*
 E757	options.txt	/*E757*
 E758	spell.txt	/*E758*
@@ -3994,6 +3999,9 @@ E782	spell.txt	/*E782*
 E783	spell.txt	/*E783*
 E784	tabpage.txt	/*E784*
 E785	eval.txt	/*E785*
+E786	eval.txt	/*E786*
+E787	diff.txt	/*E787*
+E788	autocmd.txt	/*E788*
 E79	message.txt	/*E79*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
@@ -4428,6 +4436,7 @@ alt	intro.txt	/*alt*
 alt-input	debugger.txt	/*alt-input*
 alternate-file	editing.txt	/*alternate-file*
 amiga-window	starting.txt	/*amiga-window*
+anonymous-function	eval.txt	/*anonymous-function*
 ant.vim	syntax.txt	/*ant.vim*
 ap	motion.txt	/*ap*
 apache.vim	syntax.txt	/*apache.vim*
@@ -5398,6 +5407,10 @@ g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
 g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
 g:netrw_win95ftp	pi_netrw.txt	/*g:netrw_win95ftp*
 g:netrw_winsize	pi_netrw.txt	/*g:netrw_winsize*
+g:tar_browseoptions	pi_tar.txt	/*g:tar_browseoptions*
+g:tar_cmd	pi_tar.txt	/*g:tar_cmd*
+g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
+g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:var	eval.txt	/*g:var*
 g;	motion.txt	/*g;*
 g<	message.txt	/*g<*
@@ -6052,6 +6065,7 @@ masm.vim	syntax.txt	/*masm.vim*
 match()	eval.txt	/*match()*
 match-highlight	pattern.txt	/*match-highlight*
 match-parens	tips.txt	/*match-parens*
+matcharg()	eval.txt	/*matcharg()*
 matchend()	eval.txt	/*matchend()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
@@ -6426,6 +6440,7 @@ pager	message.txt	/*pager*
 papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
 pascal.vim	syntax.txt	/*pascal.vim*
+pathshorten()	eval.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
 pattern-multi-byte	pattern.txt	/*pattern-multi-byte*
@@ -6607,8 +6622,8 @@ recursive_mapping	map.txt	/*recursive_mapping*
 redo	undo.txt	/*redo*
 redo-register	undo.txt	/*redo-register*
 ref	intro.txt	/*ref*
-ref-toc	help.txt	/*ref-toc*
 reference	intro.txt	/*reference*
+reference_toc	help.txt	/*reference_toc*
 regexp	pattern.txt	/*regexp*
 regexp-changes-5.4	version5.txt	/*regexp-changes-5.4*
 register	sponsor.txt	/*register*
@@ -6876,9 +6891,7 @@ spell-affix-chars	spell.txt	/*spell-affix-chars*
 spell-affix-comment	spell.txt	/*spell-affix-comment*
 spell-affix-flags	spell.txt	/*spell-affix-flags*
 spell-affix-mbyte	spell.txt	/*spell-affix-mbyte*
-spell-affix-nocomp	spell.txt	/*spell-affix-nocomp*
 spell-affix-not-supported	spell.txt	/*spell-affix-not-supported*
-spell-affix-rare	spell.txt	/*spell-affix-rare*
 spell-affix-vim	spell.txt	/*spell-affix-vim*
 spell-compound	spell.txt	/*spell-compound*
 spell-dic-format	spell.txt	/*spell-dic-format*
@@ -6913,6 +6926,7 @@ sql-completion	sql.txt	/*sql-completion*
 sql-completion-columns	sql.txt	/*sql-completion-columns*
 sql-completion-customization	sql.txt	/*sql-completion-customization*
 sql-completion-dynamic	sql.txt	/*sql-completion-dynamic*
+sql-completion-filetypes	sql.txt	/*sql-completion-filetypes*
 sql-completion-maps	sql.txt	/*sql-completion-maps*
 sql-completion-procedures	sql.txt	/*sql-completion-procedures*
 sql-completion-static	sql.txt	/*sql-completion-static*
@@ -7015,6 +7029,7 @@ system()	eval.txt	/*system()*
 system-vimrc	starting.txt	/*system-vimrc*
 s~	change.txt	/*s~*
 t	motion.txt	/*t*
+t:var	eval.txt	/*t:var*
 t_#2	term.txt	/*t_#2*
 t_#4	term.txt	/*t_#4*
 t_%1	term.txt	/*t_%1*
@@ -7174,6 +7189,7 @@ tab-page-intro	tabpage.txt	/*tab-page-intro*
 tab-page-other	tabpage.txt	/*tab-page-other*
 tabline-menu	tabpage.txt	/*tabline-menu*
 tabpage	tabpage.txt	/*tabpage*
+tabpage-variable	eval.txt	/*tabpage-variable*
 tabpage.txt	tabpage.txt	/*tabpage.txt*
 tabpagebuflist()	eval.txt	/*tabpagebuflist()*
 tabpagenr()	eval.txt	/*tabpagenr()*
@@ -7210,6 +7226,7 @@ tar-contents	pi_tar.txt	/*tar-contents*
 tar-copyright	pi_tar.txt	/*tar-copyright*
 tar-history	pi_tar.txt	/*tar-history*
 tar-manual	pi_tar.txt	/*tar-manual*
+tar-options	pi_tar.txt	/*tar-options*
 tar-usage	pi_tar.txt	/*tar-usage*
 tar.txt	pi_tar.txt	/*tar.txt*
 tcl	if_tcl.txt	/*tcl*
@@ -7663,6 +7680,7 @@ win16-truetype	gui_w16.txt	/*win16-truetype*
 win16-various	gui_w16.txt	/*win16-various*
 win32	os_win32.txt	/*win32*
 win32-!start	gui_w32.txt	/*win32-!start*
+win32-PATH	os_win32.txt	/*win32-PATH*
 win32-colors	gui_w32.txt	/*win32-colors*
 win32-compiling	os_win32.txt	/*win32-compiling*
 win32-curdir	os_win32.txt	/*win32-curdir*
@@ -7682,6 +7700,7 @@ win32-win3.1	os_win32.txt	/*win32-win3.1*
 win32s	os_win32.txt	/*win32s*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
+window	windows.txt	/*window*
 window-contents	intro.txt	/*window-contents*
 window-exit	editing.txt	/*window-exit*
 window-move-cursor	windows.txt	/*window-move-cursor*

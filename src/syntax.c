@@ -551,7 +551,10 @@ syntax_start(wp, lnum)
      * Advance from the sync point or saved state until the current line.
      * Save some entries for syncing with later on.
      */
-    dist = syn_buf->b_ml.ml_line_count / (syn_buf->b_sst_len - Rows) + 1;
+    if (syn_buf->b_sst_len <= Rows)
+	dist = 999999;
+    else
+	dist = syn_buf->b_ml.ml_line_count / (syn_buf->b_sst_len - Rows) + 1;
     prev = syn_stack_find_entry(current_lnum);
     while (current_lnum < lnum)
     {
@@ -1240,7 +1243,10 @@ syn_stack_cleanup()
 	return retval;
 
     /* Compute normal distance between non-displayed entries. */
-    dist = syn_buf->b_ml.ml_line_count / (syn_buf->b_sst_len - Rows) + 1;
+    if (syn_buf->b_sst_len <= Rows)
+	dist = 999999;
+    else
+	dist = syn_buf->b_ml.ml_line_count / (syn_buf->b_sst_len - Rows) + 1;
 
     /*
      * Go throught the list to find the "tick" for the oldest entry that can
@@ -4436,7 +4442,7 @@ syn_cmd_include(eap, syncing)
     prev_toplvl_grp = curbuf->b_syn_topgrp;
     curbuf->b_syn_topgrp = sgl_id;
     if (source ? do_source(eap->arg, FALSE, FALSE) == FAIL
-				     : source_runtime(eap->arg, TRUE) == FAIL)
+				: source_runtime(eap->arg, DOSO_NONE) == FAIL)
 	EMSG2(_(e_notopen), eap->arg);
     curbuf->b_syn_topgrp = prev_toplvl_grp;
     current_syn_inc_tag = prev_syn_inc_tag;
@@ -7270,7 +7276,7 @@ do_highlight(line, forceit, init)
 #ifdef FEAT_EVAL
 	HL_TABLE()[idx].sg_scriptID = current_SID;
 #endif
-	redraw_all_later(SOME_VALID);
+	redraw_all_later(NOT_VALID);
     }
     vim_free(key);
     vim_free(arg);
@@ -8426,6 +8432,21 @@ highlight_exists(name)
 {
     return (syn_name2id(name) > 0);
 }
+
+# if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+/*
+ * Return the name of highlight group "id".
+ * When not a valid ID return an empty string.
+ */
+    char_u *
+syn_id2name(id)
+    int		id;
+{
+    if (id <= 0 || id >= highlight_ga.ga_len)
+	return (char_u *)"";
+    return HL_TABLE()[id - 1].sg_name;
+}
+# endif
 #endif
 
 /*

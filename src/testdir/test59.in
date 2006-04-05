@@ -456,11 +456,14 @@ SFX a 0 ize/t .
 
 PFX p N 1
 PFX p 0 pre .
+
+PFX P N 1
+PFX P 0 nou .
 4affend
 
 4dicstart
 1234
-word/m
+word/mP
 util/am
 pro/xq
 tomato/m
@@ -472,11 +475,14 @@ end/e
 4good: word util bork prebork start end wordutil wordutils pro-ok
 	bork borkbork borkborkbork borkborkborkbork borkborkborkborkbork
 	tomato tomatotomato startend startword startwordword startwordend
-	startwordwordend startwordwordwordend prebork preborkprebork
-	preborkborkprebork preborkpreborkbork
+	startwordwordend startwordwordwordend prebork preborkbork
+	preborkborkbork
+	nouword
 bad: wordutilize pro borkborkborkborkborkbork tomatotomatotomato
 	endstart endend startstart wordend wordstart
+	preborkprebork  preborkpreborkbork
  	startwordwordwordwordend borkpreborkpreborkbork
+	utilsbork  startnouword
 badend
 
 test2:
@@ -494,6 +500,7 @@ NEEDAFFIX !!
 COMPOUNDRULE ssmm*ee
 
 NEEDCOMPOUND xx
+COMPOUNDPERMITFLAG pp
 
 SFX 13 Y 1
 SFX 13 0 bork .
@@ -505,7 +512,10 @@ SFX aé Y 1
 SFX aé 0 aé .
 
 PFX zz Y 1
-PFX zz 0 pre .
+PFX zz 0 pre/pp .
+
+PFX yy Y 1
+PFX yy 0 nou .
 5affend
 
 5dicstart
@@ -513,14 +523,14 @@ PFX zz 0 pre .
 foo/a1aé!!
 bar/zz13ee
 start/ss
-end/ee
+end/eeyy
 middle/mmxx
 5dicend
 
 5good: fooa1 fooaÃ© bar prebar barbork prebarbork  startprebar
-      start end startend  startmiddleend
+      start end startend  startmiddleend nouend
 bad: foo fooa2 prabar probarbirk middle startmiddle middleend endstart
-	startprobar
+	startprobar startnouend
 badend
 
 6affstart
@@ -534,6 +544,8 @@ COMPOUNDRULE sMm*Ee
 
 NEEDCOMPOUND Xx
 
+COMPOUNDPERMITFLAG p
+
 SFX N3 Y 1
 SFX N3 0 bork .
 
@@ -544,7 +556,7 @@ SFX Aé Y 1
 SFX Aé 0 aé .
 
 PFX Zz Y 1
-PFX Zz 0 pre .
+PFX Zz 0 pre/p .
 6affend
 
 6dicstart
@@ -576,6 +588,7 @@ NEEDAFFIX 9999
 COMPOUNDRULE 2,77*123
 
 NEEDCOMPOUND 1
+COMPOUNDPERMITFLAG 432
 
 SFX 61003 Y 1
 SFX 61003 0 meat .
@@ -587,7 +600,7 @@ SFX 111 Y 1
 SFX 111 0 aé .
 
 PFX 17 Y 1
-PFX 17 0 pre .
+PFX 17 0 pre/432 .
 7affend
 
 7dicstart

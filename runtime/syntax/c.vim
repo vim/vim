@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Jun 20
+" Last Change:	2006 Apr 05
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -184,7 +184,7 @@ endif
 
 if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   if exists("c_gnu")
-    syn keyword cConstant __GNUC__ __FUNCTION__ __PRETTY_FUNCTION__
+    syn keyword cConstant __GNUC__ __FUNCTION__ __PRETTY_FUNCTION__ __func__
   endif
   syn keyword cConstant __LINE__ __FILE__ __DATE__ __TIME__ __STDC__
   syn keyword cConstant __STDC_VERSION__
@@ -195,6 +195,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword cConstant SCHAR_MIN SINT_MIN SLONG_MIN SSHRT_MIN
   syn keyword cConstant SCHAR_MAX SINT_MAX SLONG_MAX SSHRT_MAX
   if !exists("c_no_c99")
+    syn keyword cConstant __func__
     syn keyword cConstant LLONG_MAX ULLONG_MAX
     syn keyword cConstant INT8_MIN INT16_MIN INT32_MIN INT64_MIN
     syn keyword cConstant INT8_MAX INT16_MAX INT32_MAX INT64_MAX

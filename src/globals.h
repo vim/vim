@@ -595,6 +595,11 @@ EXTERN int	textlock INIT(= 0);
 				/* non-zero when changing text and jumping to
 				 * another window or buffer is not allowed */
 
+#ifdef FEAT_AUTOCMD
+EXTERN int	curbuf_lock INIT(= 0);
+				/* non-zero when the current buffer can't be
+				 * changed.  Used for FileChangedRO. */
+#endif
 #ifdef FEAT_EVAL
 # define HAVE_SANDBOX
 EXTERN int	sandbox INIT(= 0);

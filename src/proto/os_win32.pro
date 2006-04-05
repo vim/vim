@@ -48,7 +48,7 @@ extern int mch_copy_file_attribute __ARGS((char_u *from, char_u *to));
 extern int myresetstkoflw __ARGS((void));
 extern int get_cmd_argsW __ARGS((char ***argvp));
 extern void free_cmd_argsW __ARGS((void));
-extern void used_file_arg __ARGS((char *name, int literal, int full_path));
+extern void used_file_arg __ARGS((char *name, int literal, int full_path, int diff_mode));
 extern void set_alist_count __ARGS((void));
 extern void fix_arg_enc __ARGS((void));
 /* vim: set ft=c : */

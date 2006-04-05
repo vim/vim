@@ -2223,7 +2223,7 @@ ex_listdo(eap)
 #endif
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
-    if (eap->cmdidx != CMD_windo)
+    if (eap->cmdidx != CMD_windo && eap->cmdidx != CMD_tabdo)
 	/* Don't do syntax HL autocommands.  Skipping the syntax file is a
 	 * great speed improvement. */
 	save_ei = au_event_disable(",Syntax");
@@ -2486,7 +2486,7 @@ source_callback(fname, cookie)
     char_u	*fname;
     void	*cookie;
 {
-    (void)do_source(fname, FALSE, FALSE);
+    (void)do_source(fname, FALSE, DOSO_NONE);
 }
 
 /*
@@ -2669,7 +2669,7 @@ cmd_source(fname, eap)
 						 );
 
     /* ":source" read ex commands */
-    else if (do_source(fname, FALSE, FALSE) == FAIL)
+    else if (do_source(fname, FALSE, DOSO_NONE) == FAIL)
 	EMSG2(_(e_notopen), fname);
 }
 
@@ -2766,7 +2766,7 @@ fopen_noinh_readbin(filename)
 do_source(fname, check_other, is_vimrc)
     char_u	*fname;
     int		check_other;	    /* check for .vimrc and _vimrc */
-    int		is_vimrc;	    /* call vimrc_found() when file exists */
+    int		is_vimrc;	    /* DOSO_ value */
 {
     struct source_cookie    cookie;
     char_u		    *save_sourcing_name;
@@ -2873,8 +2873,10 @@ do_source(fname, check_other, is_vimrc)
 							sourcing_lnum, fname);
 	verbose_leave();
     }
-    if (is_vimrc)
-	vimrc_found();
+    if (is_vimrc == DOSO_VIMRC)
+	vimrc_found(fname_exp, (char_u *)"MYVIMRC");
+    else if (is_vimrc == DOSO_GVIMRC)
+	vimrc_found(fname_exp, (char_u *)"MYGVIMRC");
 
 #ifdef USE_CRNL
     /* If no automatic file format: Set default to CR-NL. */

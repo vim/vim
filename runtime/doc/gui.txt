@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0c.  Last change: 2006 Mar 20
+*gui.txt*       For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -36,6 +36,10 @@ The X11 version of Vim can run both in GUI and in non-GUI mode.  See
 |gui-x11-start|.
 
 					*gui-init* *gvimrc* *.gvimrc* *_gvimrc*
+The gvimrc file is where GUI-specific startup commands should be placed.  It
+is always sourced after the |vimrc| file.  If you have one then the $MYGVIMRC
+environment variable has its name.
+
 When the GUI starts up initializations are carried out, in this order:
 - The 'term' option is set to "builgin_gui" and terminal options are reset to
   their default value for the GUI |terminal-options|.
@@ -66,6 +70,8 @@ When the GUI starts up initializations are carried out, in this order:
   - For Win32, when $HOME is not set, "$VIM\_gvimrc" is used.
   - When a "_gvimrc" file is not found, ".gvimrc" is tried too.  And vice
     versa.
+  The name of the first file found is stored in $MYGVIMRC, unless it was
+  already set.
 - If the 'exrc' option is set (which is NOT the default) the file ./.gvimrc
   is sourced, if it exists and isn't the same file as the system or user
   gvimrc file.  If this file is not owned by you, some security restrictions

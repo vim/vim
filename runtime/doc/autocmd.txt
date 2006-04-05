@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0c.  Last change: 2006 Mar 15
+*autocmd.txt*   For Vim version 7.0c.  Last change: 2006 Apr 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -510,6 +510,10 @@ FileChangedRO			Before making the first change to a read-only
 				just before the change is applied to the text.
 				WARNING: If the autocommand moves the cursor
 				the effect of the change is undefined.
+							*E788*
+				It is not allowed to change to another buffer
+				here.  You can reload the buffer but not edit
+				another one.
 							*FileChangedShell*
 FileChangedShell		When Vim notices that the modification time of
 				a file has changed since editing started.

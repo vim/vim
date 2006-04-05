@@ -4,19 +4,19 @@
 # updated 2005 for vim-7.0
 #
 # FIRST AUTHOR Marcin Dalecki <martin@dalecki.de>, 2000.
-# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005.
+# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005, 2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-10-14 01:26+0200\n"
-"PO-Revision-Date: 2005-10-14 12:24+0200\n"
+"POT-Creation-Date: 2006-04-01 18:24+0200\n"
+"PO-Revision-Date: 2006-04-01 18:39+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
 "Language-Team: Polish <mikmach@wp.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=cp1250\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11\n"
+"X-Generator: KBabel 1.11.2\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Nie mogê zarezerwowaæ bufora; zakoñczenie..."
@@ -134,8 +134,8 @@ msgstr "[Bez nazwy]"
 msgid "help"
 msgstr "pomoc"
 
-msgid "[help]"
-msgstr "[pomoc]"
+msgid "[Help]"
+msgstr "[Pomoc]"
 
 msgid "[Preview]"
 msgstr "[Podgl¹d]"
@@ -157,8 +157,11 @@ msgstr ""
 "\n"
 "# Lista buforów:\n"
 
-msgid "[Error List]"
-msgstr "[Lista B³êdów]"
+msgid "[Location List]"
+msgstr "[Lista lokacji]"
+
+msgid "[Quickfix List]"
+msgstr "[Lista quickfix]"
 
 msgid ""
 "\n"
@@ -490,6 +493,9 @@ msgstr "E724: Zmienna zagnie¿d¿ona zbyt g³êboko by pokazaæ"
 msgid "E699: Too many arguments"
 msgstr "E699: Za du¿o argumentów"
 
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: complete() mo¿e byæ u¿yte tylko w trybie Wprowadzania"
+
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
 #. * this way has the compelling advantage that translations need not to
@@ -770,6 +776,21 @@ msgstr "wiersz %ld: wczytywanie \"%s\""
 #, c-format
 msgid "finished sourcing %s"
 msgstr "skoñczono wczytywanie %s"
+
+msgid "modeline"
+msgstr "modeline"
+
+msgid "--cmd argument"
+msgstr "--cmd argument"
+
+msgid "-c argument"
+msgstr "-c argument"
+
+msgid "environment variable"
+msgstr "zmienna œrodowiskowa"
+
+msgid "error handler"
+msgstr "obs³uga b³êdu"
 
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: OSTRZE¯ENIE: Niew³aœciwy separator wierszy, pewnie brak ^M"
@@ -1158,8 +1179,18 @@ msgstr "E185: Nie mogê znaleŸæ zestawu kolorów %s"
 msgid "Greetings, Vim user!"
 msgstr "Witaj u¿ytkowniku Vima!"
 
+msgid "E784: Cannot close last tab page"
+msgstr "E784: Nie mogê zamkn¹æ ostatniej karty"
+
+msgid "Already only one tab page"
+msgstr "Jest ju¿ tylko jedna karta"
+
 msgid "Edit File in new window"
 msgstr "Edytuj plik w nowym oknie"
+
+#, c-format
+msgid "Tab page %d"
+msgstr "Karta %d"
 
 msgid "No swap file"
 msgstr "Brak pliku wymiany"
@@ -1404,6 +1435,9 @@ msgstr "nie jest plikiem"
 msgid "[New File]"
 msgstr "[Nowy Plik]"
 
+msgid "[New DIRECTORY]"
+msgstr "[Nowy KATALOG]"
+
 msgid "[File too big]"
 msgstr "[Za du¿y plik]"
 
@@ -1456,8 +1490,9 @@ msgstr "[przemienione]"
 msgid "[crypted]"
 msgstr "[zakodowane]"
 
-msgid "[CONVERSION ERROR]"
-msgstr "[B£¥D W PRZEMIANIE]"
+#, c-format
+msgid "[CONVERSION ERROR in line %ld]"
+msgstr "[B£¥D W PRZEMIANIE w linii %ld]"
 
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
@@ -1909,6 +1944,15 @@ msgstr "Zamieñ wszystkie"
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: otrzymano ¿¹danie \"die\" od manad¿era sesji\n"
 
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "New tab"
+msgstr "Nowa karta"
+
+msgid "Open Tab..."
+msgstr "Otwórz kartê..."
+
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: G³ówne okno nieoczekiwanie zniszczone\n"
 
@@ -1979,6 +2023,12 @@ msgstr "E243: Argument nie jest wspomagany: \"-%s\"; U¿ywaj wersji OLE."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Nie mo¿na otworzyæ okna wewn¹trz aplikacji MDI"
+
+msgid "Close tab"
+msgstr "Zamknij kartê"
+
+msgid "Open tab..."
+msgstr "Otwórz kartê..."
 
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "ZnajdŸ ci¹g (u¿yj '\\\\' do szukania '\\')"
@@ -2699,7 +2749,9 @@ msgstr ""
 "   lub:"
 
 msgid "where case is ignored prepend / to make flag upper case"
-msgstr "gdzie wielkoœæ znaków jest ignorowana dodaj na pocz¹tku / by flaga by³a wielk¹ liter¹"
+msgstr ""
+"gdzie wielkoœæ znaków jest ignorowana dodaj na pocz¹tku / by flaga by³a "
+"wielk¹ liter¹"
 
 msgid ""
 "\n"
@@ -2812,6 +2864,9 @@ msgstr "-U <gvimrc>\t\tU¿yj <gvimrc> zamiast jakiegokolwiek .gvimrc"
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tNie ³aduj skryptów wtyczek"
 
+msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
+msgstr "-p[N]\t\tOtwórz N kart (domyœlnie: po jednej dla ka¿dego pliku)"
+
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tOtwórz N okien (domyœlnie: po jednym dla ka¿dego pliku)"
 
@@ -2864,6 +2919,9 @@ msgstr "--remote-wait <pliki>\tTak jak --remote, lecz czekaj na pliki przed edyc
 
 msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-wait-silent <pliki>  To samo, nie narzekaj jeœli nie ma serwera"
+
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <pliki>\tTak jak --remote ale otwórz jedn¹ kartê dla ka¿dego pliku"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <klawisze>\tWyœlij <klawisze> do serwera Vima i zakoñcz"
@@ -2983,25 +3041,6 @@ msgstr "--role <role>\tUstaw unikatow¹ rolê do identyfikacji g³ównego okna"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tOtwórz Vim wewn¹trz innego widgetu GTK"
-
-msgid ""
-"\n"
-"Arguments recognised by kvim (KDE version):\n"
-msgstr ""
-"\n"
-"Argumenty rozpoznawane przez kvim (wersja KDE):\n"
-
-msgid "-black\t\tUse reverse video"
-msgstr "-black\t\tStosuj negatyw kolorów"
-
-msgid "-tip\t\t\tDisplay the tip dialog on startup"
-msgstr "-tip\t\t\tPoka¿ okno wskazówek na pocz¹tku"
-
-msgid "-notip\t\tDisable the tip dialog"
-msgstr "-notip\t\tWy³¹cz okno wskazówek"
-
-msgid "--display <display>\tRun vim on <display>"
-msgstr "--display <display>\tUruchom vim na <display>"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <tytu³ rodzica>\tOtwórz Vima wewn¹trz rodzicielskiej aplikacji"
@@ -3423,6 +3462,10 @@ msgstr "Wielkoœæ stosu wzrasta"
 msgid "E317: pointer block id wrong 2"
 msgstr "E317: niepoprawne id bloku odniesienia 2"
 
+#, c-format
+msgid "E773: Symlink loop for \"%s\""
+msgstr "E773: Pêtla dowi¹zañ dla \"%s\""
+
 msgid "E325: ATTENTION"
 msgstr "E325: UWAGA"
 
@@ -3511,16 +3554,16 @@ msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
 "&Recover\n"
+"&Delete it\n"
 "&Quit\n"
-"&Abort\n"
-"&Delete it"
+"&Abort"
 msgstr ""
 "&Otwórz Read-Only\n"
 "&Edytuj pomimo\n"
 "O&dtwórz\n"
+"&Usuñ\n"
 "&Zakoñcz\n"
-"&Porzuæ\n"
-"&Skasuj go"
+"&Porzuæ"
 
 msgid "E326: Too many swap files found"
 msgstr "E326: Znaleziono zbyt wiele plików wymiany"
@@ -3786,6 +3829,12 @@ msgstr "E658: Bufor %ld utraci³ po³¹czenie z NetBeans"
 
 msgid "E505: "
 msgstr "E505: "
+
+msgid "E774: 'operatorfunc' is empty"
+msgstr "E774: 'operatorfunc' jest pusta"
+
+msgid "E775: Eval feature not available"
+msgstr "E775: Funkcjonalnoœæ eval nie jest dostêpna"
 
 msgid "Warning: terminal cannot highlight"
 msgstr "OSTRZE¯ENIE: terminal nie wykonuje podœwietlania"
@@ -4134,6 +4183,9 @@ msgstr "B£¥D I/O"
 msgid "...(truncated)"
 msgstr "...(obciêty)"
 
+msgid "Message"
+msgstr "Wiadomoœæ"
+
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "'columns' nie wynosi 80, nie mogê wykonaæ zewnêtrznych komend"
 
@@ -4181,14 +4233,6 @@ msgstr "Vim: Za³apa³ œmiertelny sygna³\n"
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Otwieranie ekranu X trwa³o %ld msec"
-
-#. KDE sometimes produces X error that we want to ignore
-msgid ""
-"\n"
-"Vim: Got X error but we continue...\n"
-msgstr ""
-"\n"
-"Vim: Dosta³em b³¹d X ale kontynuujê...\n"
 
 msgid ""
 "\n"
@@ -4374,6 +4418,9 @@ msgstr "Nie mogê otworzyæ pliku \"%s\""
 msgid "E681: Buffer is not loaded"
 msgstr "E681: Bufor nie jest za³adowany"
 
+msgid "E777: String or List expected"
+msgstr "E777: Oczekiwano ³añcucha lub listy"
+
 #, c-format
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: Niew³aœciwy element w %s%%[]"
@@ -4557,6 +4604,10 @@ msgstr "  NIE ZNALEZIONO"
 msgid "Scanning included file: %s"
 msgstr "Przegl¹d w³¹czonego pliku: %s"
 
+#, c-format
+msgid "Searching included file %s"
+msgstr "Przeszukiwanie w³¹czonego pliku %s"
+
 msgid "E387: Match is on current line"
 msgstr "E387: Wzorzec pasuje w bie¿¹cym wierszu"
 
@@ -4647,12 +4698,8 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG po u¿yciu flag w %s wiersz %d: %s"
 
 #, c-format
-msgid "Character used for SLASH must be ASCII; in %s line %d: %s"
-msgstr "Znak u¿yty jako SLASH musi byæ znakiem ASCII; w %s wiersz %d: %s"
-
-#, c-format
-msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
-msgstr "Z³a wartoœæ COMPOUNDMAX w %s wiersz %d: %s"
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "Z³a wartoœæ COMPOUNDWORDMAX w %s wiersz %d: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
@@ -4663,6 +4710,10 @@ msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
 msgstr "Z³a wartoœæ COMPOUNDSYLMAX w %s wiersz %d: %s"
 
 #, c-format
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "Z³a wartoœæ CHECKCOMPOUNDPATTERN w %s wiersz %d: %s"
+
+#, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
 msgstr "Ró¿ne flagi z³o¿eñ w kontynuowanym bloku afiksu w %s wiersz %d: %s"
 
@@ -4671,8 +4722,10 @@ msgid "Duplicate affix in %s line %d: %s"
 msgstr "Powtórzony afiks w %s wiersz %d: %s"
 
 #, c-format
-msgid "Affix also used for BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"
-msgstr "Afiks u¿yty tak¿e dla BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND w %s wiersz %d: %s"
+msgid ""
+"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
+"line %d: %s"
+msgstr "Afiks u¿yty tak¿e dla BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST w %s wiersz %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -4683,8 +4736,12 @@ msgid "Broken condition in %s line %d: %s"
 msgstr "B³êdny warunek w %s wiersz %d: %s"
 
 #, c-format
-msgid "Expected REP count in %s line %d"
-msgstr "Oczekiwano iloœci REP w %s wierszu %d"
+msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
+msgstr "Flagi afiksów zignorowane kiedy u¿yto PFXPOSTPONE w %s wierz %d: %s"
+
+#, c-format
+msgid "Expected REP(SAL) count in %s line %d"
+msgstr "Oczekiwano iloœci REP(SAL) w %s wierszu %d"
 
 #, c-format
 msgid "Expected MAP count in %s line %d"
@@ -4802,8 +4859,34 @@ msgid "Ignored %d words with non-ASCII characters"
 msgstr "Zignorowa³em %d s³ów ze znakami nie ASCII"
 
 #, c-format
-msgid "Compressed %d of %d nodes; %d%% remaining"
-msgstr "Skompresowano %d z %d wêz³ów; pozostaje %d%%"
+msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
+msgstr "Skompresowano %d z %d wêz³ów; pozostaje %d (%d%%)"
+
+msgid "Reading back spell file..."
+msgstr "Odczytujê plik sprawdzania pisowni..."
+
+#.
+#. * Go through the trie of good words, soundfold each word and add it to
+#. * the soundfold trie.
+#.
+msgid "Performing soundfolding..."
+msgstr "Wykonujê kompresjê dŸwiêkow¹..."
+
+#, c-format
+msgid "Number of words after soundfolding: %ld"
+msgstr "Liczba s³ów po kompresji dŸwiêkowej: %ld"
+
+#, c-format
+msgid "Total number of words: %d"
+msgstr "Ca³kowita liczba s³ów: %d"
+
+#, c-format
+msgid "Writing suggestion file %s ..."
+msgstr "Zapisujê plik sugestii %s ..."
+
+#, c-format
+msgid "Estimated runtime memory use: %d bytes"
+msgstr "Oczekiwane zu¿ycie pamiêci: %d bajtów"
 
 msgid "E751: Output file name must not have region name"
 msgstr "E751: Nazwa pliku wynikowego nie mo¿e byæ nazw¹ regionu"
@@ -4826,12 +4909,16 @@ msgid "Done!"
 msgstr "Zrobione!"
 
 #, c-format
-msgid "Estimated runtime memory use: %d bytes"
-msgstr "Oczekiwane zu¿ycie pamiêci: %d bajtów"
-
-#, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' nie posiada wpisów %ld"
+
+#, c-format
+msgid "Word removed from %s"
+msgstr "Usuniêto s³owo z %s"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "Dodano s³owo do %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Znaki wyrazów ró¿ni¹ siê miêdzy plikami sprawdzania pisowni"
@@ -4859,10 +4946,30 @@ msgstr "E752: Brak poprzednich podmian sprawdzania pisowni"
 msgid "E753: Not found: %s"
 msgstr "E753: Nie znaleziono: %s"
 
+#, c-format
+msgid "E778: This does not look like a .sug file: %s"
+msgstr "E778: Ten plik nie wygl¹da na plik .sug: %s"
+
+#, c-format
+msgid "E779: Old .sug file, needs to be updated: %s"
+msgstr "E779: Stary plik .sug, konieczne jest uaktualnienie: %s"
+
+#, c-format
+msgid "E780: .sug file is for newer version of Vim: %s"
+msgstr "E780: Plik .sug dla nowszej wersji Vima: %s"
+
+#, c-format
+msgid "E781: .sug file doesn't match .spl file: %s"
+msgstr "E781: Plik .sug nie pasuje do pliku .spl: %s"
+
+#, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: B³¹d w czasie odczytu pliku .sug: %s"
+
 #. This should have been checked when generating the .spl
 #. * file.
-msgid "E999: duplicate char in MAP entry"
-msgstr "E999: powtórzony znak we wpisie MAP"
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: Podwojony znak we wpisie MAP"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5177,15 +5284,52 @@ msgstr "Vim: B³¹d podczas wczytywania wejœcia, koñczê...\n"
 msgid "No undo possible; continue anyway"
 msgstr "Cofniêcie niemo¿liwe; mimo to kontynuujê"
 
+msgid "Already at oldest change"
+msgstr "Ju¿ w miejscu ostatniej zmiany"
+
+msgid "Already at newest change"
+msgstr "Ju¿ w miejscu najnowszej zmiany"
+
+#, c-format
+msgid "Undo number %ld not found"
+msgstr "Nie znaleziono numeru cofniêcia %ld"
+
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: niew³aœciwe numery wierszy"
 
-msgid "1 change"
+msgid "more line"
+msgstr "1 wiersz wiêcej"
+
+msgid "more lines"
+msgstr "wiêcej wierszy"
+
+msgid "line less"
+msgstr "1 wiersz mniej"
+
+msgid "fewer lines"
+msgstr "mniej wierszy"
+
+msgid "change"
 msgstr "1 zmiana"
 
+msgid "changes"
+msgstr "zmiany"
+
 #, c-format
-msgid "%ld changes"
-msgstr "%ld zmian"
+msgid "%ld %s; %s #%ld  %s"
+msgstr "%ld %s; %s #%ld  %s"
+
+msgid "before"
+msgstr "przed"
+
+msgid "after"
+msgstr "za"
+
+msgid "Nothing to undo"
+msgstr "Nie ma zmian do cofniêcia"
+
+msgid "number changes  time"
+msgstr "liczba zmiany czas"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: uszkodzona lista cofania"
@@ -5363,9 +5507,6 @@ msgstr "z Cocoa GUI."
 
 msgid "with (classic) GUI."
 msgstr "z (klasycznym) GUI."
-
-msgid "with KDE GUI."
-msgstr "z GUI KDE."
 
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Opcje w³¹czone (+) lub nie (-):\n"
@@ -5781,6 +5922,9 @@ msgstr "E459: Nie mo¿na przejœæ do poprzedniego katalogu"
 
 msgid "E42: No Errors"
 msgstr "E42: Brak B³êdów"
+
+msgid "E776: No location list"
+msgstr "E776: Brak listy lokacji"
 
 msgid "E43: Damaged match string"
 msgstr "E43: Popsuty ci¹g wzorca"

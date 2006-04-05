@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    R Help File
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2006 Mär 06
+" Last Change: 2006 Apr 05
 " Version:     0.5
 " Remarks:     - Now includes R syntax highlighting in the appropriate
 "                sections if an r.vim file is in the same directory or in the
@@ -15,7 +15,7 @@
 
 " Version Clears: {{{1
 " For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
+" For version 6.x and 7.x: Quit when a syntax file was already loaded
 if version < 600 
   syntax clear
 elseif exists("b:current_syntax")
@@ -36,7 +36,7 @@ let s:syntaxdir = expand("<sfile>:p:h") "look in the directory of this file
 let s:rsyntax = s:syntaxdir . "/r.vim"
 if filereadable(s:rsyntax)  
   syn include @R <sfile>:p:h/r.vim
-elseif filereadable('/usr/share/vim/vim64/syntax/r.vim')  "and debian location
+elseif filereadable('/usr/share/vim/vimcurrent/syntax/r.vim')  "and debian location
   syn include @R /usr/share/vim/vimcurrent/syntax/r.vim
 else 
   syn match rhelpRComment /\#.*/				"if no r.vim is found, do comments
@@ -46,12 +46,12 @@ syn region rhelpRcode matchgroup=Delimiter start="\\examples{" matchgroup=Delimi
 syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpIdentifier
 syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimiter transparent end=/}/ contains=@R
 syn region rhelpRcode matchgroup=Delimiter start="\\special{" matchgroup=Delimiter transparent end=/}/ contains=@R contained
-syn region rhelpRcode matchgroup=Delimiter start="\\code{" matchgroup=Delimiter transparent end=/}/ contains=@R contained
+syn region rhelpRcode matchgroup=Delimiter start="\\code{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpLink contained
 
 " Strings {{{1
 syn region rhelpString start=/"/ end=/"/ 
 
-" Special TeX characters  ( \$ \& \% \# \{ \} \_) {{{1
+" Special characters  ( \$ \& \% \# \{ \} \_) {{{1
 syn match rhelpSpecialChar        "\\[$&%#{}_]"
 
 " Special Delimiters {{{1

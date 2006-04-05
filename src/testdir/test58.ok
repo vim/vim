@@ -135,6 +135,7 @@ util
 utilize
 utils
 word
+nouword
 -------
 bad
 ['end', 'bork', 'word']
@@ -156,10 +157,18 @@ wordend
 ['word end', 'word', 'wordword']
 wordstart
 ['word start', 'bork start']
+preborkprebork
+['prebork prebork', 'preborkbork', 'preborkborkbork']
+preborkpreborkbork
+['prebork preborkbork', 'preborkborkbork', 'preborkborkborkbork']
 startwordwordwordwordend
 ['startwordwordwordword end', 'startwordwordwordword', 'start wordwordwordword end']
 borkpreborkpreborkbork
-['bork preborkpreborkbork', 'borkprebork preborkbork', 'borkpreborkprebork bork']
+['bork preborkpreborkbork', 'bork prebork preborkbork', 'bork preborkprebork bork']
+utilsbork
+['utilbork', 'utils bork', 'util bork']
+startnouword
+['start nouword', 'startword', 'startborkword']
 
 test 5-5
 # file: Xtest.latin1.spl
@@ -168,6 +177,7 @@ barbork
 end
 fooa1
 fooaé
+nouend
 prebar
 prebarbork
 start
@@ -192,6 +202,8 @@ endstart
 ['end start', 'start']
 startprobar
 ['startprebar', 'start prebar', 'startbar']
+startnouend
+['start nouend', 'startend']
 
 test 6-6
 # file: Xtest.latin1.spl

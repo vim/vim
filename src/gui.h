@@ -161,6 +161,9 @@
 #ifdef FEAT_GUI_MSWIN
 # define TABLINE_HEIGHT 22
 #endif
+#ifdef FEAT_GUI_MOTIF
+# define TABLINE_HEIGHT 30
+#endif
 
 #if defined(NO_CONSOLE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
 # define NO_CONSOLE_INPUT	/* use no_console_input() to check if there

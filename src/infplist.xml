@@ -4,6 +4,8 @@
 <plist version="0.9">
 	<dict>
 
+		<key>CFBundleIdentifier</key>
+		<string>org.vim.Vim-APP_VER</string>
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 
@@ -25,19 +27,40 @@
 		<key>CSResourcesFileMapped</key>
 		<true/>
 		<key>CFBundleIconFile</key>
-		<string>ICON_APP</string>
+		<string>app.icns</string>
 
 		<key>CFBundleDocumentTypes</key>
 		<array>
 			<dict>
 				<key>CFBundleTypeExtensions</key>
 				<array>
-					<string>*</string>
+					<string>txt</string>
+					<string>text</string>
+				</array>
+				<key>CFBundleTypeMIMETypes</key>
+				<array>
+					<string>text/plain</string>
 				</array>
 				<key>CFBundleTypeIconFile</key>
 				<string>doc-txt.icns</string>
 				<key>CFBundleTypeName</key>
-				<string>NSStringPboardType</string>
+				<string>Text File</string>
+				<key>CFBundleTypeRole</key>
+				<string>Editor</string>
+			</dict>
+			<dict>
+				<key>CFBundleTypeExtensions</key>
+				<array>
+					<string>*</string>
+				</array>
+				<key>CFBundleTypeMIMETypes</key>
+				<array>
+					<string>text/*</string>
+				</array>
+				<key>CFBundleTypeIconFile</key>
+				<string>doc.icns</string>
+				<key>CFBundleTypeName</key>
+				<string>File</string>
 				<key>CFBundleTypeOSTypes</key>
 				<array>
 					<string>****</string>

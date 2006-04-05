@@ -1,8 +1,8 @@
 " Vim completion script
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     1.0
-" Last Change: Tue Mar 28 2006 4:39:49 PM
+" Version:     2.0
+" Last Change: Mon Apr 03 2006 10:21:36 PM
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
@@ -21,20 +21,20 @@ endif
 let g:loaded_sql_completion = 1
 
 " Maintains filename of dictionary
-let s:sql_file_table             = ""
-let s:sql_file_procedure         = ""
-let s:sql_file_view              = ""
+let s:sql_file_table        = ""
+let s:sql_file_procedure    = ""
+let s:sql_file_view         = ""
 
 " Define various arrays to be used for caching
-let s:tbl_name                   = []
-let s:tbl_alias                  = []
-let s:tbl_cols                   = []
-let s:syn_list                   = []
-let s:syn_value                  = []
+let s:tbl_name              = []
+let s:tbl_alias             = []
+let s:tbl_cols              = []
+let s:syn_list              = []
+let s:syn_value             = []
  
 " Used in conjunction with the syntaxcomplete plugin
-let s:save_inc = ""
-let s:save_exc = ""
+let s:save_inc              = ""
+let s:save_exc              = ""
 if exists('g:omni_syntax_group_include_sql')
     let s:save_inc = g:omni_syntax_group_include_sql
 endif
@@ -43,11 +43,22 @@ if exists('g:omni_syntax_group_exclude_sql')
 endif
  
 " Used with the column list
-let s:save_prev_table = ""
+let s:save_prev_table       = ""
 
 " Default the option to verify table alias
 if !exists('g:omni_sql_use_tbl_alias')
     let g:omni_sql_use_tbl_alias = 'a'
+endif
+" Default syntax items to precache
+if !exists('g:omni_sql_precache_syntax_groups')
+    let g:omni_sql_precache_syntax_groups = [
+                \ 'syntax',
+                \ 'sqlKeyword',
+                \ 'sqlFunction',
+                \ 'sqlOption',
+                \ 'sqlType',
+                \ 'sqlStatement'
+                \ ]
 endif
 
 " This function is used for the 'omnifunc' option.
@@ -60,6 +71,8 @@ function! sqlcomplete#Complete(findstart, base)
         let compl_type = b:sql_compl_type
     endif
 
+    " First pass through this function determines how much of the line should
+    " be replaced by whatever is chosen from the completion list
     if a:findstart
         " Locate the start of the item, including "."
         let line = getline('.')
@@ -68,15 +81,16 @@ function! sqlcomplete#Complete(findstart, base)
         while start > 0
             if line[start - 1] =~ '\w'
                 let start -= 1
-            elseif line[start - 1] =~ '\.' && compl_type =~ 'column\|table'
-                " If the completion type is table or column
-                " Then assume we are looking for column completion
-                " column_type can be either 'column' or 'column_csv'
-                if lastword == -1
+            elseif line[start - 1] =~ '\.' && compl_type =~ 'column'
+                " If the completion type is column then assume we are looking
+                " for column completion column_type can be either 
+                " 'column' or 'column_csv'
+                if lastword == -1 && compl_type == 'column'
+                    " Do not replace the table name prefix or alias
+                    " if completing only a single column name
                     let lastword = start
                 endif
                 let start -= 1
-                let b:sql_compl_type = 'column'
             else
                 break
             endif
@@ -92,8 +106,12 @@ function! sqlcomplete#Complete(findstart, base)
         return lastword
     endif
 
+    " Second pass through this function will determine what data to put inside
+    " of the completion list
+    " s:prepended is set by the first pass
     let base = s:prepended . a:base
 
+    " Default the completion list to an empty list
     let compl_list = []
 
     " Default to table name completion
@@ -178,36 +196,8 @@ function! sqlcomplete#Complete(findstart, base)
         let s:tbl_cols  = []
         let s:syn_list  = []
         let s:syn_value = []
-        return []
     else
-        " Default to empty or not found
-        let compl_list = []
-        " Check if we have already cached the syntax list
-        let list_idx = index(s:syn_list, compl_type, 0, &ignorecase)
-        if list_idx > -1
-            " Return previously cached value
-            let compl_list = s:syn_value[list_idx]
-        else
-            " Request the syntax list items from the 
-            " syntax completion plugin
-            if compl_type == 'syntax'
-                " Handle this special case.  This allows the user
-                " to indicate they want all the syntax items available,
-                " so do not specify a specific include list.
-                let g:omni_syntax_group_include_sql = ''
-            else
-                " The user has specified a specific syntax group
-                let g:omni_syntax_group_include_sql = compl_type
-            endif
-            let g:omni_syntax_group_exclude_sql = ''
-            let syn_value                       = OmniSyntaxList()
-            let g:omni_syntax_group_include_sql = s:save_inc
-            let g:omni_syntax_group_exclude_sql = s:save_exc
-            " Cache these values for later use
-            let s:syn_list  = add( s:syn_list,  compl_type )
-            let s:syn_value = add( s:syn_value, syn_value )
-            let compl_list  = syn_value
-        endif
+        let compl_list = s:SQLCGetSyntaxList(compl_type)
     endif
 
     if base != ''
@@ -215,6 +205,10 @@ function! sqlcomplete#Complete(findstart, base)
         " entered
         let expr = 'v:val =~ "^'.base.'"'
         let compl_list = filter(copy(compl_list), expr)
+    endif
+
+    if exists('b:sql_compl_savefunc') && b:sql_compl_savefunc != ""
+        let &omnifunc = b:sql_compl_savefunc
     endif
 
     return compl_list
@@ -232,6 +226,70 @@ function! s:SQLCErrorMsg(msg)
     echohl None
 endfunction
       
+function! sqlcomplete#PreCacheSyntax(...)
+    let syn_group_arr = []
+    if a:0 > 0 
+        let syn_group_arr = a:1
+    else
+        let syn_group_arr = g:omni_sql_precache_syntax_groups
+    endif
+    if !empty(syn_group_arr)
+        for group_name in syn_group_arr
+            call s:SQLCGetSyntaxList(group_name)
+        endfor
+    endif
+endfunction
+
+function! sqlcomplete#Map(type)
+    " Tell the SQL plugin what you want to complete
+    let b:sql_compl_type=a:type
+    " Record previous omnifunc, if the SQL completion
+    " is being used in conjunction with other filetype
+    " completion plugins
+    if &omnifunc != "" && &omnifunc != 'sqlcomplete#Complete'
+        " Record the previous omnifunc, the plugin
+        " will automatically set this back so that it
+        " does not interfere with other ftplugins settings
+        let b:sql_compl_savefunc=&omnifunc
+    endif
+    " Set the OMNI func for the SQL completion plugin
+    let &omnifunc='sqlcomplete#Complete'
+endfunction
+
+function! s:SQLCGetSyntaxList(syn_group)
+    let syn_group  = a:syn_group
+    let compl_list = []
+
+    " Check if we have already cached the syntax list
+    let list_idx = index(s:syn_list, syn_group, 0, &ignorecase)
+    if list_idx > -1
+        " Return previously cached value
+        let compl_list = s:syn_value[list_idx]
+    else
+        " Request the syntax list items from the 
+        " syntax completion plugin
+        if syn_group == 'syntax'
+            " Handle this special case.  This allows the user
+            " to indicate they want all the syntax items available,
+            " so do not specify a specific include list.
+            let g:omni_syntax_group_include_sql = ''
+        else
+            " The user has specified a specific syntax group
+            let g:omni_syntax_group_include_sql = syn_group
+        endif
+        let g:omni_syntax_group_exclude_sql = ''
+        let syn_value                       = OmniSyntaxList()
+        let g:omni_syntax_group_include_sql = s:save_inc
+        let g:omni_syntax_group_exclude_sql = s:save_exc
+        " Cache these values for later use
+        let s:syn_list  = add( s:syn_list,  syn_group )
+        let s:syn_value = add( s:syn_value, syn_value )
+        let compl_list  = syn_value
+    endif
+
+    return compl_list
+endfunction
+
 function! s:SQLCCheck4dbext()
     if !exists('g:loaded_dbext')
         let msg = "The dbext plugin must be loaded for dynamic SQL completion"

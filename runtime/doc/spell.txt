@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0c.  Last change: 2006 Mar 27
+*spell.txt*	For Vim version 7.0c.  Last change: 2006 Apr 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -500,7 +500,7 @@ then Vim will try to guess.
 		:mkspell ~/.vim/spell/en /tmp/en_US /tmp/en_CA /tmp/en_AU
 <			This combines the English word lists for US, CA and AU
 			into one en.spl file.
-			Up to eight regions can be combined. *E754* *755*
+			Up to eight regions can be combined. *E754* *E755*
 			The REP and SAL items of the first .aff file where
 			they appear are used. |spell-REP| |spell-SAL|
 
@@ -1058,36 +1058,8 @@ Specifically, the affix flags can be used for:
 - Making the word with the affix rare, by using the |spell-RARE| flag.
 - Exclude the word with the affix from compounding, by using the
   |spell-COMPOUNDFORBIDFLAG| flag.
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-OLD STUFF: This needs to be rewritten to use affix flags.
-							*spell-affix-rare*
-An extra item for Vim is the "rare" flag.  It must come after the other
-fields, before a comment.  When used then all words that use the affix will be
-marked as rare words.  Examples:
-
-	PFX F 0 nene  .   rare ~
-	SFX F 0 oin   n   rare   # hardly ever used ~
-
-However, if the word also appears as a good word in another way (e.g., in
-another region) it won't be marked as rare.
-
-							*spell-affix-nocomp*
-Another extra item for Vim is the "nocomp" flag.  It must come after the other
-fields, before a comment.  It can be either before or after "rare".  When
-present then all words that use the affix will not be part of a compound word.
-Example:
-	affix file:
-		COMPOUNDFLAG c ~
-		SFX a Y 2 ~
-		SFX a 0 s   . ~
-		SFX a 0 ize . nocomp ~
-	dictionary:
-		word/c ~
-		util/ac ~
-
-This allows for "wordutil" and "wordutils" but not "wordutilize".
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+- Allow the word with the affix to be part of a compound word on the side of
+  the affix with the |spell-COMPOUNDPERMITFLAG|.
 
 						    *spell-PFXPOSTPONE*
 When an affix file has very many prefixes that apply to many words it's not
@@ -1145,6 +1117,11 @@ Rare words are highlighted differently from bad words.  This is to be used for
 words that are correct for the language, but are hardly ever used and could be
 a typing mistake anyway.  When the same word is found as good it won't be
 highlighted as rare.
+
+This flag can also be used on an affix, so that a basic word is not rare but
+the basic word plus affix is rare |spell-affix-flags|.  However, if the word
+also appears as a good word in another way (e.g., in another region) it won't
+be marked as rare.
 
 
 BAD WORDS						*spell-BAD*
@@ -1243,6 +1220,12 @@ A specific example: Allow a compound to be made of two words and a dash:
 
 This allows for the word "start-end", but not "startend".
 
+An additional implied rule is that, without further flags, a word with a
+prefix cannot be compounded after another word, and a word with a suffix
+cannot be compounded with a following word.  Thus the affix cannot appear
+on the inside of a compound word.  This can be changed with the
+|spell-COMPOUNDPERMITFLAG|.
+
 							*spell-NEEDCOMPOUND*
 The NEEDCOMPOUND flag is used to require that a word is used as part of a
 compound word.  The word itself is not a good word.  Example:
@@ -1282,13 +1265,24 @@ COMPOUNDWORDMAX words or contains up to COMPOUNDSYLMAX syllables.
 
 						    *spell-COMPOUNDFORBIDFLAG*
 The COMPOUNDFORBIDFLAG specifies a flag that can be used on an affix.  It
-means that the word plus affix cannot be used in a compound word.
+means that the word plus affix cannot be used in a compound word.  Example:
+	affix file:
+		COMPOUNDFLAG c ~
+		COMPOUNDFORBIDFLAG x ~
+		SFX a Y 2 ~
+		SFX a 0 s   . ~
+		SFX a 0 ize/x . ~
+	dictionary:
+		word/c ~
+		util/ac ~
+
+This allows for "wordutil" and "wordutils" but not "wordutilize".
 
 						    *spell-COMPOUNDPERMITFLAG*
 The COMPOUNDPERMITFLAG specifies a flag that can be used on an affix.  It
 means that the word plus affix can also be used in a compound word in a way
-where the affix ends up halfway the word.
-NOT IMPLEMENTED YET.
+where the affix ends up halfway the word.  Without this flag that is not
+allowed.
 
 						    *spell-COMPOUNDROOT*
 The COMPOUNDROOT flag is used for words in the dictionary that are already a
@@ -1309,9 +1303,9 @@ With the example "ideeen" has three syllables, counted by "i", "ee" and "e".
 
 Only case-folded letters need to be included.
 
-Above another way to restrict compounding was mentioned above: adding "nocomp"
-after an affix causes all words that are made with that affix not be be used
-for compounding. |spell-affix-nocomp|
+Above another way to restrict compounding was mentioned above: Adding the
+|spell-COMPOUNDFORBIDFLAG| flag to an affix causes all words that are made
+with that affix not be be used for compounding.
 
 
 UNLIMITED COMPOUNDING					*spell-NOBREAK*

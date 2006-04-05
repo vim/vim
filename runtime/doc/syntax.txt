@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Mar 28
+*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Apr 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -81,14 +81,14 @@ automatically selected if the 'fileformats' option is not empty.
 
 NOTE: When using reverse video ("gvim -fg white -bg black"), the default value
 of 'background' will not be set until the GUI window is opened, which is after
-reading the .gvimrc.  This will cause the wrong default highlighting to be
+reading the |gvimrc|.  This will cause the wrong default highlighting to be
 used.  To set the default value of 'background' before switching on
-highlighting, include the ":gui" command in the .gvimrc: >
+highlighting, include the ":gui" command in the |gvimrc|: >
 
    :gui		" open window and set default for 'background'
    :syntax on	" start highlighting, use 'background' to set colors
 
-NOTE: Using ":gui" in the .gvimrc means that "gvim -f" won't start in the
+NOTE: Using ":gui" in the |gvimrc| means that "gvim -f" won't start in the
 foreground!  Use ":gui -f" then.
 
 
@@ -1013,10 +1013,10 @@ source form if the fortran_free_source variable has been set, and assumes
 fixed source form if the fortran_fixed_source variable has been set.  If
 neither of these variables have been set, the syntax script attempts to
 determine which source form has been used by examining the first five columns
-of the first 25 lines of your file.  If no signs of free source form are
+of the first 250 lines of your file.  If no signs of free source form are
 detected, then the file is assumed to be in fixed source form.  The algorithm
 should work in the vast majority of cases.  In some cases, such as a file that
-begins with 25 or more full-line comments, the script may incorrectly decide
+begins with 250 or more full-line comments, the script may incorrectly decide
 that the fortran code is in fixed form.  If that happens, just add a
 non-comment statement beginning anywhere in the first five columns of the
 first twenty five lines, save (:w) and then reload (:e!) the file.
@@ -2304,7 +2304,7 @@ vimrc file: >
 
 SH		*sh.vim* *ft-sh-syntax* *ft-bash-syntax* *ft-ksh-syntax*
 
-This covers the "normal" Unix (Bourne) sh, bash and the Korn shell.
+This covers the "normal" Unix (Borne) sh, bash and the Korn shell.
 
 Vim attempts to determine which shell type is in use by specifying that
 various filenames are of specific types: >
@@ -2327,6 +2327,11 @@ variables in your <.vimrc>:
 	let is_bash	 = 1
 <   sh: >
 	let is_sh	 = 1
+
+If there's no "#! ..." line, and the user hasn't availed himself/herself of a
+default sh.vim syntax setting as just shown, then syntax/sh.vim will assume
+the Borne shell syntax.  No need to quote RFCs or market penetration
+statistics in error reports, please.
 
 If, in your <.vimrc>, you set >
 	let g:sh_fold_enabled= 1
@@ -3760,7 +3765,7 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" is only available in
-	the GUI.
+	the GUI.  The color is set with |highlight-guisp|.
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*

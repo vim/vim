@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2005 Jul 26
+" Last Change: 2006 Mar 31
 
 " These functions are used by the gzip plugin.
 
@@ -84,9 +84,14 @@ fun gzip#read(cmd)
     '[,']d _
   endif
   " read in the uncompressed lines "'[-1r tmp"
+  " Use ++edit if the buffer was empty, keep the 'ff' and 'fenc' options.
   setlocal nobin
   if exists(":lockmarks")
-    execute "silent lockmarks " . l . "r " . tmp
+    if empty
+      execute "silent lockmarks " . l . "r ++edit " . tmp
+    else
+      execute "silent lockmarks " . l . "r " . tmp
+    endif
   else
     execute "silent " . l . "r " . tmp
   endif

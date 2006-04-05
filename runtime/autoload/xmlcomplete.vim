@@ -1,13 +1,13 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 19
+" Last Change:	2006 Mar 31
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
 " descriptive to avoid any future conflicts. For example 'xhtml10s' should be
 " name for data of XHTML 1.0 Strict and 'xhtml10t' for XHTML 1.0 Transitional
-" User interface will be provided by XMLns command defined ...
+" User interface will be provided by XMLns command defined in ftplugin/xml.vim
 " Currently supported canonicals are:
 " xhtml10s - XHTML 1.0 Strict
 " xsl      - XSL
@@ -224,8 +224,13 @@ function! xmlcomplete#CompleteTags(findstart, base)
 			let attrs = ['encoding', 'version="1.0"', 'version']
 		elseif tag =~ '^!'
 			" Don't make completion at all
+			"
 			return []
 		else
+            if !has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, tag)
+				" Abandon when data file isn't complete
+ 				return []
+ 			endif
 			let attrs = keys(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1])
 		endif
 
@@ -324,6 +329,10 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	    let tags = keys(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]})
 		call filter(tags, 'v:val !~ "^vimxml"')
 	else
+		if !has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, tag)
+			" Abandon when data file isn't complete
+			return []
+		endif
 		let tags = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[opentag][0]
 	endif
 

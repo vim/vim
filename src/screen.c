@@ -3324,7 +3324,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 
 	/* When still displaying '$' of change command, stop at cursor */
-	if (dollar_vcol != 0 && wp == curwin && vcol >= (long)wp->w_virtcol
+	if (dollar_vcol != 0 && wp == curwin
+		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol
 #ifdef FEAT_DIFF
 				   && filler_todo <= 0
 #endif
@@ -3332,8 +3333,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	{
 	    SCREEN_LINE(screen_row, W_WINCOL(wp), col, -(int)W_WIDTH(wp),
 								  wp->w_p_rl);
-	    /* Pretend we have finished updating the window. */
-	    row = wp->w_height;
+	    /* Pretend we have finished updating the window.  Except when
+	     * 'cursorcolumn' is set. */
+#ifdef FEAT_SYN_HL
+	    if (wp->w_p_cuc)
+		row = wp->w_cline_row + wp->w_cline_height;
+	    else
+#endif
+		row = wp->w_height;
 	    break;
 	}
 
@@ -3485,6 +3492,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		{
 		    mb_utf8 = TRUE;
 		    u8cc[0] = 0;
+		    c = 0xc0;
 		}
 		else
 		    mb_utf8 = FALSE;
@@ -3509,6 +3517,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			{
 			    mb_c = utfc_ptr2char(p_extra, u8cc);
 			    mb_utf8 = TRUE;
+			    c = 0xc0;
 			}
 		    }
 		    else
@@ -3744,7 +3753,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    ++ptr;
 
 	    /* 'list' : change char 160 to lcs_nbsp. */
-	    if (wp->w_p_list && c == 160 && lcs_nbsp)
+	    if (wp->w_p_list && (c == 160
+#ifdef FEAT_MBYTE
+			|| (mb_utf8 && mb_c == 160)
+#endif
+			) && lcs_nbsp)
 	    {
 		c = lcs_nbsp;
 		if (area_attr == 0 && search_attr == 0)
@@ -3759,6 +3772,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		{
 		    mb_utf8 = TRUE;
 		    u8cc[0] = 0;
+		    c = 0xc0;
 		}
 		else
 		    mb_utf8 = FALSE;
@@ -3906,7 +3920,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 * Found last space before word: check for line break.
 		 */
 		if (wp->w_p_lbr && vim_isbreak(c) && !vim_isbreak(*ptr)
-						      && !wp->w_p_list)
+							     && !wp->w_p_list)
 		{
 		    n_extra = win_lbr_chartabsize(wp, ptr - (
 # ifdef FEAT_MBYTE
@@ -3934,6 +3948,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    {
 			mb_utf8 = TRUE;
 			u8cc[0] = 0;
+			c = 0xc0;
 		    }
 		    else
 			mb_utf8 = FALSE;
@@ -3944,7 +3959,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    /*
 	     * Handling of non-printable characters.
 	     */
-	    if (!(chartab[c] & CT_PRINT_CHAR))
+	    if (!(chartab[c & 0xff] & CT_PRINT_CHAR))
 	    {
 		/*
 		 * when getting a character from the file, we may have to
@@ -3972,6 +3987,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			{
 			    mb_utf8 = TRUE;
 			    u8cc[0] = 0;
+			    c = 0xc0;
 			}
 #endif
 		    }
@@ -4046,6 +4062,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    {
 			mb_utf8 = TRUE;
 			u8cc[0] = 0;
+			c = 0xc0;
 		    }
 		    else
 			mb_utf8 = FALSE;	/* don't draw as UTF-8 */
@@ -4185,6 +4202,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    {
 		mb_utf8 = TRUE;
 		u8cc[0] = 0;
+		c = 0xc0;
 	    }
 	    else
 		mb_utf8 = FALSE;	/* don't draw as UTF-8 */
@@ -4278,11 +4296,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		v = wp->w_skipcol;
 	    else
 		v = wp->w_leftcol;
-	    if (vcol < v)	/* line ends before left margin */
-		vcol = v;
+	    if (vcol < v + col)	/* line ends before left margin */
+		vcol = v + col;
 	    if (wp->w_p_cuc
 		    && (int)wp->w_virtcol >= vcol
-		    && (int)wp->w_virtcol < W_WIDTH(wp) + v
+		    && (int)wp->w_virtcol < W_WIDTH(wp) * (row - startrow + 1)
+									   + v
 		    && lnum != wp->w_cursor.lnum
 # ifdef FEAT_RIGHTLEFT
 		    && !wp->w_p_rl
@@ -4352,6 +4371,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    {
 		mb_utf8 = TRUE;
 		u8cc[0] = 0;
+		c = 0xc0;
 	    }
 	    else
 		mb_utf8 = FALSE;
@@ -4399,6 +4419,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (mb_utf8)
 		{
 		    ScreenLinesUC[off] = mb_c;
+		    if ((c & 0xff) == 0)
+			ScreenLines[off] = 0x80;   /* avoid storing zero */
 		    for (i = 0; i < Screen_mco; ++i)
 		    {
 			ScreenLinesC[i][off] = u8cc[i];
@@ -4939,12 +4961,13 @@ screen_line(row, coloff, endcol, clear_width
 #endif
 	    ScreenAttrs[off_to] = ScreenAttrs[off_from];
 #ifdef FEAT_MBYTE
-	    if (enc_dbcs != 0 && char_cells == 2)
-	    {
-		/* just a hack: It makes two bytes of DBCS have same attr */
+	    /* For simplicity set the attributes of second half of a
+	     * double-wide character equal to the first half. */
+	    if (char_cells == 2)
 		ScreenAttrs[off_to + 1] = ScreenAttrs[off_from];
+
+	    if (enc_dbcs != 0 && char_cells == 2)
 		screen_char_2(off_to, row, col + coloff);
-	    }
 	    else
 #endif
 		screen_char(off_to, row, col + coloff);
@@ -8893,6 +8916,7 @@ draw_tabline()
 	    {
 		/* Get buffer name in NameBuff[] */
 		get_trans_bufname(cwp->w_buffer);
+		shorten_dir(NameBuff);
 		len = vim_strsize(NameBuff);
 		p = NameBuff;
 #ifdef FEAT_MBYTE

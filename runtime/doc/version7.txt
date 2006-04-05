@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0c.  Last change: 2006 Mar 29
+*version7.txt*  For Vim version 7.0c.  Last change: 2006 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -86,6 +86,12 @@ Minor incompatibilities:
 For filetype detection: For many types, instead of ~/.dir/filename use
 */.dir/filename, so that it also works for other user's files.
 
+For quite a few filetypes the indent settings have been moved from the
+filetype plugin to the indent plugin.  If you used: >
+	:filetype plugin on
+Then some indent settings may be missing.  You need to use: >
+	:filetype plugin indent on
+
 ":0verbose" now sets 'verbose' to zero instead of one.
 
 Removed the old and incomplete "VimBuddy" code.
@@ -151,6 +157,10 @@ When defining a user command with |:command| the special items could be
 abbreviated.  This caused unexpected behavior, such as <li> being recognized
 as <line1>.  The items can no longer be abbreviated.
 
+When executing a FileChangedRO autocommand it is no longer allowed to switch
+to another buffer or edit another file.  This is to prevent crashes (the event
+is triggered deep down in the code where changing buffers is not anticipated).
+
 ==============================================================================
 NEW FEATURES						*new-7*
 
@@ -170,7 +180,7 @@ variable.  Works for Numbers, Strings and composites of them.  Then |eval()|
 can be used to turn the string back into the variable value.
 
 The |:let| command can now use "+=".  ":let var += expr" works like
-":let var = var + expr".  "-=" and ".=" works in a similar way.
+":let var = var + expr".  "-=" and ".=" work in a similar way.
 
 With the |:profile| command you can find out where your function or script
 wastes its time.
@@ -276,6 +286,8 @@ window open a new tab instead.
 
 The |--remote-tab| argument can be used to edit a file in a new tab page in an
 already running Vim server.
+
+Variables starting with "t:" are local to a tab page.
 
 More info here: |tabpage|
 The Win32 GUI tabs were implemented by Yegappan Lakshmanan.
@@ -747,6 +759,7 @@ New and extended functions: ~
 |maparg()|		extra argument: use abbreviation
 |mapcheck()|		extra argument: use abbreviation
 |match()|		extra argument: count
+|matcharg()|		return arguments of |:match| command
 |matchend()|		extra argument: count
 |matchlist()|		list with match and submatches of a pattern in a string
 |matchstr()|		extra argument: count
@@ -981,6 +994,11 @@ Vietnamese message translations and menu. (Phan Vinh Thinh)
 
 Others: ~
 
+The |:read| command has the |++edit| argument.  This means it will use the
+detected 'fileformat', 'fileencoding' and other options for the buffer.  This
+also fixes the problem that editing a compressed file didn't set these
+options.
+
 The Netbeans interface was updated for Sun Studio 10.  The protocol number
 goes from 2.2 to 2.3. (Gordon Prieur)
 
@@ -1055,6 +1073,9 @@ CTRL-L can be used to add a character from the current match.  CTRL-R CTRL-W
 will add a word, but exclude the part of the word that was already typed.
 
 Ruby interface: add line number methods. (Ryan Paul)
+
+The $MYVIMRC environment variable is set to the first found vimrc file.
+The $MYGVIMRC environment variable is set to the first found gvimrc file.
 
 ==============================================================================
 IMPROVEMENTS						*improvements-7*
@@ -2183,7 +2204,7 @@ Yu-sung, 2005 March 21)
 Ruby interface: when inserting/deleting lines display wasn't updated. (Ryan
 Paul)
 
---- fixes since Vim 6.0b ---
+--- fixes since Vim 7.0b ---
 
 Getting the GCC version in configure didn't work with Solaris sed.  First
 strip any "darwin." and then get the version number.
@@ -2217,7 +2238,7 @@ apparently doesn't work everywhere.  Use %H:%M:%S instead.
 
 Typing BS at the "z=" prompt removed the prompt.
 
---- fixes since Vim 6.0c ---
+--- fixes since Vim 7.0c ---
 
 When jumping to another tab page the Vim window size was always set, even when
 nothing in the layout changed.
@@ -2254,5 +2275,114 @@ line.
 
 Win32: Set the default for 'isprint' back to the wrong default "@,~-255",
 because many people use Windows-1252 while 'encoding' is "latin1".
+
+GTK: Added a workaround for gvim crashing when used over an untrusted ssh
+link, caused by GTK doing something nasty. (Ed Catmur)
+
+Win32: The font used for the tab page labels is too big.  Use the system menu
+font. (George Reilly)
+
+Win32: Adjusting the window position and size to keep it on the screen didn't
+work properly when the taskbar is on the left or top of the screen.
+
+The installman.sh and installml.sh scripts use ${10}, that didn't work with
+old shells.  And use "test -f" instead of "test -e".
+
+Win32: When 'encoding' was set in the vimrc then a directory argument for diff
+mode didn't work.
+
+GUI: at the inputlist() prompt the cursorshape was adjusted as if the windows
+were still at their old position.
+
+The parenmatch plugin didn't remember the highlighting per window.
+
+Using ":bd" for a buffer that's the current window in another tab page caused
+a crash.
+
+For a new tab page the 'scroll' option wasn't set to a good default.
+
+Using an end offset for a search "/pat/e" didn't work properly for multi-byte
+text. (Yukihiro Nakadaira)
+
+":s/\n/,/" doubled the text when used on the last line.
+
+When "search" is in 'foldopen' "[s" and "]s" now open folds.
+
+When using a numbered function "dict" can be omitted, but "self" didn't work
+then.  Always add FC_DICT to the function flags when it's part of a
+dictionary.
+
+When "--remote-tab" executes locally it left an empty tab page.
+
+"gvim -u NONE", ":set cursorcolumn", "C" in the second line didn't update
+text.  Do update further lines even though the "$" is displayed.
+
+VMS: Support GTK better, also enable +clientserver. (Zoltan Arpadffy)
+
+When highlighting of statusline or tabline is changed there was no redraw to
+show the effect.
+
+Mac: Added "CFBundleIdentifier" to infplist.xml.
+
+Added tabpage-local variables t:var.
+
+Win32: Added double-click in tab pages line creates new tab. (Yegappan
+Lakshmanan)
+
+Motif: Added GUI tab pages line. (Yegappan Lakshmanan)
+
+Fixed crash when 'lines' was set to 1000 in a modeline.
+
+When init_spellfile() finds a writable directory in 'runtimepath' but it
+doesn't contain a "spell" directory, create one.
+
+Win32: executable() also finds "xxd" in the directory where Vim was started,
+but "!xxd" doesn't work.  Append the Vim starting directory to $PATH.
+
+The tab page labels are shortened, directory names are reduced to a single
+letter by default.  Added the pathshorten() function to allow a user to do the
+same.
+
+":saveas" now resets 'readonly' if the file was successfully written.
+
+Set $MYVIMRC file to the first found .vimrc file.
+Set $MYGVIMRC file to the first found .gvimrc file.
+Added menu item "Startup Settings" that edits the $MYVIMRC file
+
+Added matcharg().
+
+Error message E745 appeared twice.  Renamed one to E786.
+
+Fixed crash when using "au BufRead * Sexplore" and doing ":help".  Was wiping
+out a buffer that's still in a window.
+
+":hardcopy" resulted in an error message when 'encoding' is "utf-8" and
+'printencoding' is empty.  Now it assumes latin1. (Mike Williams)
+
+The check for the toolbar feature for Motif, depending on certain included
+files, wasn't detailed enough, causing building to fail in gui_xmebw.c.
+
+Using CTRL-E in Insert mode completion after CTRL-P inserted the first match
+instead of the original text.
+
+When displaying a UTF-8 character with a zero lower byte Vim might think the
+previous character is double-wide.
+
+The "nbsp" item of 'listchars' didn't work when 'encoding' was utf-8.
+
+Motif: when Xm/xpm.h is missing gui_xmebw.c would not compile.
+HAVE_XM_UNHIGHLIGHTT_H was missing a T.
+
+Mac: Moved the .icns files into src/os_mac_rsrc, so that they can all be
+copied at once.  Adjusted the Info.plist file for three icons.
+
+When Visual mode is active while switching to another tabpage could get ml_get
+errors.
+
+When 'list' is set, 'nowrap' the $ in the first column caused 'cursorcolumn'
+to move to the right.
+
+When a line wraps, 'cursorcolumn' was never displayed past the end of the
+line.
 
  vim:tw=78:ts=8:ft=help:norl:

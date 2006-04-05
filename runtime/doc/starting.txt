@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0c.  Last change: 2006 Mar 26
+*starting.txt*  For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -413,7 +413,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		process and exits the current one.  "-f" should be used when
 		gvim is started by a program that will wait for the edit
 		session to finish (e.g., mail or readnews).  If you want gvim
-		never to fork, include 'f' in 'guioptions' in your .gvimrc.
+		never to fork, include 'f' in 'guioptions' in your |gvimrc|.
 		Careful: You can use "-gf" to start the GUI in the foreground,
 		but "-fg" is used to specify the foreground color.  |gui-fork|
 		{not in Vi}
@@ -430,7 +430,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 <		Also consider using autocommands; see |autocommand|.
 		When {vimrc} is equal to "NONE" (all uppercase), all
 		initializations from files and environment variables are
-		skipped, including reading the .gvimrc file when the GUI
+		skipped, including reading the |gvimrc| file when the GUI
 		starts.  Loading plugins is also skipped.
 		When {vimrc} is equal to "NORC" (all uppercase), this has the
 		same effect as "NONE", but loading plugins is not skipped.
@@ -440,7 +440,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		{not in Vi}
 
 							*-U* *E230*
--U {gvimrc}	The file "gvimrc" is read for initializations when the GUI
+-U {gvimrc}	The file {gvimrc} is read for initializations when the GUI
 		starts.  Other GUI initializations are skipped.  When {gvimrc}
 		is equal to "NONE", no file is read for GUI initializations at
 		all.  |gui-init|
@@ -761,7 +761,8 @@ accordingly.  Vim proceeds in this order:
 
 			  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
      c. Four places are searched for initializations.  The first that exists
-	is used, the others are ignored.
+	is used, the others are ignored.  The $MYVIMRC environment variable is
+	set to the file that was first found, unless $MYVIMRC was already set.
 	-  The environment variable VIMINIT (see also |compatible-default|) (*)
 	   The value of $VIMINIT is used as an Ex command line.
 	-  The user vimrc file(s):
@@ -905,7 +906,8 @@ resetting other options (see 'compatible').  But only the options that have
 not been set or reset will be changed.  This has the same effect like the
 value of 'compatible' had this value when starting Vim.  Note that this
 doesn't happen for the system-wide vimrc file.  It does also happen for gvimrc
-files.
+files.  The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc
+and/or gvimrc file.
 
 But there is a side effect of setting or resetting 'compatible' at the moment
 a .vimrc file is found: Mappings are interpreted the moment they are

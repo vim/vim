@@ -1000,7 +1000,8 @@ ex_diffpatch(eap)
 
 #ifdef FEAT_AUTOCMD
 		/* Do filetype detection with the new name. */
-		do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
+		if (au_has_group((char_u *)"filetypedetect"))
+		    do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
 #endif
 	    }
 	}
@@ -2056,6 +2057,19 @@ ex_diffgetput(eap)
 	aucmd_prepbuf(&aco, curtab->tp_diffbuf[idx_other]);
     }
 
+    /* May give the warning for a changed buffer here, which can trigger the
+     * FileChangedRO autocommand, which may do nasty things and mess
+     * everything up. */
+    if (!curbuf->b_changed)
+    {
+	change_warning(0);
+	if (diff_buf_idx(curbuf) != idx_to)
+	{
+	    EMSG(_("E787: Buffer changed unexpectedly"));
+	    return;
+	}
+    }
+
     dprev = NULL;
     for (dp = curtab->tp_first_diff; dp != NULL; )
     {
@@ -2131,7 +2145,8 @@ ex_diffgetput(eap)
 		nr = dp->df_lnum[idx_from] + start_skip + i;
 		if (nr > curtab->tp_diffbuf[idx_from]->b_ml.ml_line_count)
 		    break;
-		p = vim_strsave(ml_get_buf(curtab->tp_diffbuf[idx_from], nr, FALSE));
+		p = vim_strsave(ml_get_buf(curtab->tp_diffbuf[idx_from],
+								  nr, FALSE));
 		if (p != NULL)
 		{
 		    ml_append(lnum + i - 1, p, 0, FALSE);
@@ -2154,7 +2169,8 @@ ex_diffgetput(eap)
 		/* Check if there are any other buffers and if the diff is
 		 * equal in them. */
 		for (i = 0; i < DB_COUNT; ++i)
-		    if (curtab->tp_diffbuf[i] != NULL && i != idx_from && i != idx_to
+		    if (curtab->tp_diffbuf[i] != NULL && i != idx_from
+								&& i != idx_to
 			    && !diff_equal_entry(dp, idx_from, i))
 			break;
 		if (i == DB_COUNT)

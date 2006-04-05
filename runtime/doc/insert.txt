@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0c.  Last change: 2006 Mar 29
+*insert.txt*    For Vim version 7.0c.  Last change: 2006 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1004,10 +1004,12 @@ List.
 Each list item can either be a string or a Dictionary.  When it is a string it
 is used as the completion.  When it is a Dictionary it can contain these
 items:
-	word		the completion, mandatory
-	abbr		abbreviation of "word", to be used in the menu
-	menu		extra text for the popup menu
-	info		more information about the item
+	word		the text that will be inserted, mandatory
+	abbr		abbreviation of "word"; when not empty it is used in
+			the menu instead of "word"
+	menu		extra text for the popup menu, after "word" or "abbr"
+	info		more information about the item, can be displayed in a
+			preview window
 	kind		single letter indicating the type of completion
 	icase		when non-zero case is to be ignored; when omitted
 			the 'ignorecase' option is used
@@ -1291,6 +1293,14 @@ Script completes:
 - after $ variables name
   - if variable was declared as object add "->", if tags file is available show
     name of class
+  - after "->" complete only function and variable names specific for given
+    class. To find class location and contents tags file is required. Because
+    PHP isn't strongly typed language user can use @var tag to declare class: >
+
+    	/* @var $myVar myClass */
+	$myVar->
+<
+    Still, to find myClass contents tags file is required.
 
 - function names with additonal info:
   - in case of built-in functions list of possible arguments and after | type
@@ -1374,6 +1384,12 @@ Completion for the SQL language includes statements, functions, keywords.
 It will also dynamically complete tables, procedures, views and column lists
 with data pulled directly from within a database.  For detailed instructions
 and a tutorial see |omni-sql-completion|.
+
+The SQL completion plugin can be used in conjunction with other completion
+plugins.  For example, the PHP filetype has it's own completion plugin.
+Since PHP is often used to generate dynamic website by accessing a database,
+the SQL completion plugin can also be enabled.  This allows you to complete
+PHP code and SQL code at the same time.
 
 
 XML							*ft-xml-omni*
@@ -1634,11 +1650,15 @@ NOTE: ":append" and ":insert" don't work properly in between ":if" and
 10. Inserting a file					*inserting-file*
 
 							*:r* *:re* *:read*
-:r[ead] [name]		Insert the file [name] (default: current file) below
+:r[ead] [++opt] [name]
+			Insert the file [name] (default: current file) below
 			the cursor.
+			See |++opt| for the possible values of [++opt].
 
-:{range}r[ead] [name]	Insert the file [name] (default: current file) below
+:{range}r[ead] [++opt] [name]
+			Insert the file [name] (default: current file) below
 			the specified line.
+			See |++opt| for the possible values of [++opt].
 
 							*:r!* *:read!*
 :r[ead] !{cmd}		Execute {cmd} and insert its standard output below
@@ -1662,6 +1682,14 @@ line (sorry, this is Vi compatible).
 If a file name is given with ":r", it becomes the alternate file.  This can be
 used, for example, when you want to edit that file instead: ":e! #".  This can
 be switched off by removing the 'a' flag from the 'cpoptions' option.
+
+Of the [++opt] arguments one is specifically for ":read", the ++edit argument.
+This is useful when the ":read" command is actually used to read a file into
+the buffer as if editing that file.  Use this command in an empty buffer: >
+	:read ++edit filename
+The effect is that the 'fileformat', 'fileencoding', 'bomb', etc. options are
+set to what has been detected for "filename".  Note that a single empty line
+remains, you may want to delete it.
 
 							*file-read*
 The 'fileformat' option sets the <EOL> style for a file:

@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2006 Mar 24
+# Last change:  2006 Mar 31
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -98,7 +98,8 @@ CCVER = YES
 
 .IFDEF VAX
 .IFDEF DECC	     # VAX with DECC
-CC_DEF  = cc/decc
+CC_DEF  = cc # /decc # some system requires this switch
+                     # but when it is not required /ver might fail
 PREFIX  = /prefix=all
 .ELSE		     # VAX with VAXC
 CC_DEF	= cc
@@ -148,10 +149,11 @@ GUI = YES
 # X/Motif/GTK executable  (also works in terminal mode )
 
 .IFDEF GTK
-# define GTK root directory
+# NOTE: you need to set up your GTK_DIR (GTK root directory), because it is
+# unique on every system - logicals are not accepted
 # please note: directory should end with . in order to /trans=conc work
-# example: GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
-GTK_DIR  = ALPHA$DKA0:[GTK128.]
+# Example: GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
+GTK_DIR  = DKA0:[GTK1210.]
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
 GUI_FLAG = /name=(as_is,short)/float=ieee/ieee=denorm

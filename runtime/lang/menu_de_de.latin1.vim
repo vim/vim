@@ -102,7 +102,7 @@ menutrans &Keymap					&Tastatur-Belegung
 
 " {{{  TOOLS / WERKZEUGE
 if has("spell")
-    menutrans &Spelling					&Rechtschreibprüfung
+    menutrans &Spelling					&Rechtschreibung
     menutrans &Spell\ Check\ On				&Rechtschreibprüfung\ An
     menutrans Spell\ Check\ &Off			Rechtschreibprüfung\ &Aus
     menutrans To\ &Next\ error<Tab>]s			Zum\ &Nächsten\ Fehler<Tab>]s

@@ -29,7 +29,12 @@ if test -z "$CFLAGS"; then
   test "$GCC" = yes && CFLAGS="-O2 -fno-strength-reduce -Wall"
 fi
 if test "$GCC" = yes; then
-  gccversion=`"$CC" --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[[^0-9]]*\([[0-9]]\.[[0-9.]]*\).*$/\1/g'`
+  dnl method that should work for nearly all versions
+  gccversion=`"$CC" -dumpversion`
+  if test "x$gccversion" = "x"; then
+    dnl old method; fall-back for when -dumpversion doesn't work
+    gccversion=`"$CC" --version | sed -e '2,$d' -e 's/darwin.//' -e 's/^[[^0-9]]*\([[0-9]]\.[[0-9.]]*\).*$/\1/g'`
+  fi
   dnl version 4.0.1 was reported to cause trouble on Macintosh by Marcin Dalecki
   if test "$gccversion" = "3.0.1" -o "$gccversion" = "3.0.2" -o "$gccversion" = "4.0.1"; then
     echo 'GCC [[34]].0.[[12]] has a bug in the optimizer, disabling "-O#"'
@@ -1897,6 +1902,17 @@ if test -z "$SKIP_MOTIF"; then
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"
   AC_CHECK_HEADERS(Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h \
 		   Xm/UnhighlightT.h)
+
+  if test $ac_cv_header_Xm_XpmP_h = yes; then
+    dnl Solaris uses XpmAttributes_21, very annoying.
+    AC_MSG_CHECKING([for XpmAttributes_21 in Xm/XpmP.h])
+    AC_TRY_COMPILE([#include <Xm/XpmP.h>], [XpmAttributes_21 attr;],
+	AC_MSG_RESULT(yes); AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes_21),
+	AC_MSG_RESULT(no); AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes)
+	)
+  else
+    AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes_21)
+  fi
   CPPFLAGS=$cppflags_save
 fi
 

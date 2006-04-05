@@ -56,6 +56,7 @@ CONVERTED = \
 		cs.cp1250.mo \
 		ja.sjis.mo \
 		pl.cp1250.mo \
+		pl.UTF-8.mo \
 		ru.cp1251.mo \
 		sk.cp1250.mo \
 		uk.cp1251.mo \
@@ -87,6 +88,7 @@ CHECKFILES = \
 		cs.cp1250.ck \
 		ja.sjis.ck \
 		pl.cp1250.ck \
+		pl.UTF-8.ck \
 		ru.cp1251.ck \
 		sk.cp1250.ck \
 		uk.cp1251.ck \
@@ -168,6 +170,12 @@ pl.cp1250.po: pl.po
 	rm -f pl.cp1250.po
 	iconv -f iso-8859-2 -t cp1250 pl.po | \
 		sed -e 's/charset=ISO-8859-2/charset=cp1250/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.cp1250.po
+
+# Convert pl.po to create pl.UTF-8.po.
+pl.UTF-8.po: pl.po
+	rm -f pl.UTF-8.po
+	iconv -f iso-8859-2 -t utf-8 pl.po | \
+		sed -e 's/charset=ISO-8859-2/charset=utf-8/' -e 's/# Original translations/# Generated from pl.po, DO NOT EDIT/' > pl.UTF-8.po
 
 # Convert sk.po to create sk.cp1250.po.
 sk.cp1250.po: sk.po

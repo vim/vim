@@ -1814,6 +1814,10 @@ buflist_getfile(n, lnum, options, forceit)
 	text_locked_msg();
 	return FAIL;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return FAIL;
+#endif
 
     /* altfpos may be changed by getfile(), get it now */
     if (lnum == 0)
@@ -3316,6 +3320,12 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 
     if (fillchar == 0)
 	fillchar = ' ';
+#ifdef FEAT_MBYTE
+    /* Can't handle a multi-byte fill character yet. */
+    else if (mb_char2len(fillchar) > 1)
+	fillchar = '-';
+#endif
+
     /*
      * Get line & check if empty (cursorpos will show "0-1").
      * If inversion is possible we use it. Else '=' characters are used.
@@ -4367,6 +4377,14 @@ do_arg_all(count, forceit, keep_tabs)
     ++autocmd_no_leave;
 #endif
     win_enter(lastwin, FALSE);
+#ifdef FEAT_WINDOWS
+    /* ":drop all" should re-use an empty window to avoid "--remote-tab"
+     * leaving an empty tab page when executed locally. */
+    if (keep_tabs && bufempty() && curbuf->b_nwindows == 1
+			    && curbuf->b_ffname == NULL && !curbuf->b_changed)
+	use_firstwin = TRUE;
+#endif
+
     for (i = 0; i < count && i < alist->al_ga.ga_len && !got_int; ++i)
     {
 	if (alist == &global_alist && i == global_alist.al_ga.ga_len - 1)

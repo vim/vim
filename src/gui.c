@@ -335,7 +335,7 @@ gui_init()
 	if (vim_strchr(p_go, GO_NOSYSMENU) == NULL)
 	{
 	    sys_menu = TRUE;
-	    do_source((char_u *)SYS_MENU_FILE, FALSE, FALSE);
+	    do_source((char_u *)SYS_MENU_FILE, FALSE, DOSO_NONE);
 	    sys_menu = FALSE;
 	}
 #endif
@@ -356,7 +356,7 @@ gui_init()
 	{
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
-		    && do_source(use_gvimrc, FALSE, FALSE) != OK)
+		    && do_source(use_gvimrc, FALSE, DOSO_NONE) != OK)
 		EMSG2(_("E230: Cannot read from \"%s\""), use_gvimrc);
 	}
 	else
@@ -365,7 +365,7 @@ gui_init()
 	     * Get system wide defaults for gvim, only when file name defined.
 	     */
 #ifdef SYS_GVIMRC_FILE
-	    do_source((char_u *)SYS_GVIMRC_FILE, FALSE, FALSE);
+	    do_source((char_u *)SYS_GVIMRC_FILE, FALSE, DOSO_NONE);
 #endif
 
 	    /*
@@ -378,14 +378,16 @@ gui_init()
 	     * The first that exists is used, the rest is ignored.
 	     */
 	    if (process_env((char_u *)"GVIMINIT", FALSE) == FAIL
-		 && do_source((char_u *)USR_GVIMRC_FILE, TRUE, TRUE) == FAIL
+		 && do_source((char_u *)USR_GVIMRC_FILE, TRUE,
+							  DOSO_GVIMRC) == FAIL
 #ifdef USR_GVIMRC_FILE2
-		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE, TRUE) == FAIL
+		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE,
+							  DOSO_GVIMRC) == FAIL
 #endif
 				)
 	    {
 #ifdef USR_GVIMRC_FILE3
-		(void)do_source((char_u *)USR_GVIMRC_FILE3, TRUE, TRUE);
+		(void)do_source((char_u *)USR_GVIMRC_FILE3, TRUE, DOSO_GVIMRC);
 #endif
 	    }
 
@@ -429,7 +431,7 @@ gui_init()
 				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
 #endif
 			)
-		    do_source((char_u *)GVIMRC_FILE, TRUE, TRUE);
+		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC);
 
 		if (secure == 2)
 		    need_wait_return = TRUE;
@@ -1142,7 +1144,8 @@ gui_position_components(total_width)
 	text_area_y = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
 
-#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+# if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MOTIF))
     if (gui_has_tabline())
 	text_area_y += TABLINE_HEIGHT;
 #endif
@@ -1228,9 +1231,10 @@ gui_get_base_height()
 	base_height += gui.toolbar_height;
 #  endif
 # endif
-# if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+# if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MOTIF))
     if (gui_has_tabline())
-    	base_height += TABLINE_HEIGHT;
+	base_height += TABLINE_HEIGHT;
 # endif
 # ifdef FEAT_FOOTER
     if (vim_strchr(p_go, GO_FOOTER) != NULL)
@@ -3448,8 +3452,9 @@ get_tabline_label(tp)
     }
     else
     {
-	/* Get the buffer name into NameBuff[] */
+	/* Get the buffer name into NameBuff[] and shorten it. */
 	get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);
+	shorten_dir(NameBuff);
 
 	wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
 	for (wincount = 0; wp != NULL; wp = wp->w_next, ++wincount)
@@ -4571,11 +4576,11 @@ xy2win(x, y)
 	update_mouseshape(SHAPE_IDX_CLINE);
 #  ifdef FEAT_VERTSPLIT
     else if (!(State & CMDLINE) && W_VSEP_WIDTH(wp) > 0 && col == wp->w_width
-	    && (row != wp->w_height || !stl_connected(wp)))
+	    && (row != wp->w_height || !stl_connected(wp)) && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_VSEP);
 #  endif
     else if (!(State & CMDLINE) && W_STATUS_HEIGHT(wp) > 0
-						       && row == wp->w_height)
+				  && row == wp->w_height && msg_scrolled == 0)
 	update_mouseshape(SHAPE_IDX_STATUS);
     else
 	update_mouseshape(-2);
@@ -4825,6 +4830,7 @@ concat_esc(gap, text, what)
     {
 #ifdef FEAT_MBYTE
 	int l = (*mb_ptr2len)(text);
+
 	if (l > 1)
 	{
 	    while (--l >= 0)

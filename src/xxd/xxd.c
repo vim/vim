@@ -275,8 +275,11 @@ long base_off;
       if (c == '\r')	/* Doze style input file? */
 	continue;
 
+#if 0	/* this doesn't work when there is normal text after the hex codes in
+	   the last line that looks like hex */
       if (c == ' ' || c == '\n' || c == '\t')  /* allow multiple spaces */
         continue;
+#endif
 
       n3 = n2;
       n2 = n1;

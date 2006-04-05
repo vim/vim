@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 09
+" Last Change:	2006 Apr 02
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -177,6 +177,28 @@ endif
 
 an 20.425	 &Edit.-SEP3-				<Nop>
 an 20.430	 &Edit.Settings\ &Window		:options<CR>
+an 20.435	 &Edit.Startup\ &Settings		:call <SID>EditVimrc()<CR>
+
+fun! s:EditVimrc()
+  if $MYVIMRC != ''
+    let fname = "$MYVIMRC"
+  elseif has("win32") || has("dos32") || has("dos16") || has("os2")
+    if $HOME != ''
+      let fname = "$HOME/_vimrc"
+    else
+      let fname = "$VIM/_vimrc"
+    endif
+  elseif has("amiga")
+    let fname = "s:.vimrc"
+  else
+    let fname = "$HOME/.vimrc"
+  endif
+  if &mod
+    exe "split " . fname
+  else
+    exe "edit " . fname
+  endif
+endfun
 
 fun! s:FixFText()
   " Fix text in nameless register to be used with :promptfind.

@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 7.0c.  Last change: 2005 Apr 01
+*usr_24.txt*	For Vim version 7.0c.  Last change: 2006 Apr 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -231,6 +231,32 @@ and go one directory level deeper, use CTRL-X CTRL-F again:
 
 The results depend on what is found in your file system, of course.  The
 matches are sorted alphabetically.
+
+
+COMPLETING IN SOURCE CODE
+
+Source code files are well structured.  That makes it possible to do
+completion in an intelligent way.  In Vim this is called Omni completion.  In
+some other editors it's called intellisense, but that is a trademark.
+
+The key to Omni completion is CTRL-X CTRL-O.  Obviously the O stands for Omni
+here, so that you can remember it easier.  Let's use an example for editing C
+source:
+
+	{ ~
+	    struct foo *p; ~
+	    p-> ~
+
+The cursor is after "p->".  Now type CTRL-X CTRL-O.  Vim will offer you a list
+of alternatives, which are the items that "struct foo" contains.  That is
+quite different from using CTRL-P, which would complete any word, while only
+members of "struct foo" are valid here.
+
+For Omni completion to work you may need to do some setup.  For C code you
+need to create a tags file and set the 'tags' option.  That is explained
+|ft-c-omni|.  For other filetypes you may need to do something similar, look
+below |compl-omni-filetypes|.  It only works for specific filetypes.  Check
+the value of the 'omnifunc' option to find out if it would work.
 
 ==============================================================================
 *24.4*	Repeating an insert

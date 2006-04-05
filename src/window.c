@@ -1944,7 +1944,7 @@ last_window()
 }
 
 /*
- * Close window "win".
+ * Close window "win".  Only works for the current tab page.
  * If "free_buf" is TRUE related buffer may be unloaded.
  *
  * called by :quit, :close, :xit, :wq and findtag()
@@ -2201,6 +2201,11 @@ win_free_mem(win, dirp, tp)
     wp = winframe_remove(win, dirp, tp);
     vim_free(frp);
     win_free(win, tp);
+
+    /* When deleting the current window of another tab page select a new
+     * current window. */
+    if (tp != NULL && win == tp->tp_curwin)
+	tp->tp_curwin = wp;
 
     return wp;
 }
@@ -3122,6 +3127,10 @@ alloc_tabpage()
 # ifdef FEAT_DIFF
 	tp->tp_diff_invalid = TRUE;
 # endif
+#ifdef FEAT_EVAL
+	/* init t: variables */
+	init_var_dict(&tp->tp_vars, &tp->tp_winvar);
+#endif
     }
     return tp;
 }
@@ -3134,6 +3143,9 @@ free_tabpage(tp)
     diff_clear(tp);
 # endif
     clear_snapshot(tp);
+#ifdef FEAT_EVAL
+    vars_clear(&tp->tp_vars.dv_hashtab);	/* free all t: variables */
+#endif
     vim_free(tp);
 }
 
@@ -3189,6 +3201,7 @@ win_new_tabpage(after)
 	}
 	win_init_size();
 	firstwin->w_winrow = tabline_height();
+	win_comp_scroll(curwin);
 
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
@@ -3330,6 +3343,9 @@ leave_tabpage(new_curbuf)
 {
     tabpage_T	*tp = curtab;
 
+#ifdef FEAT_VISUAL
+    reset_VIsual_and_resel();	/* stop Visual mode */
+#endif
 #ifdef FEAT_AUTOCMD
     if (new_curbuf != curbuf)
     {
@@ -3568,6 +3584,10 @@ win_goto(wp)
 	text_locked_msg();
 	return;
     }
+#ifdef FEAT_AUTOCMD
+    if (curbuf_locked())
+	return;
+#endif
 
 #ifdef FEAT_VISUAL
     if (wp->w_buffer != curbuf)

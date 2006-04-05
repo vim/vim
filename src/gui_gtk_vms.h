@@ -77,6 +77,7 @@
 /* INTRINSIC.H omits proto if XtFree is defined */
 /* VMS_BEGIN_C_PLUS_PLUS */
 extern void XtFree(char*);
+extern void XTFREE(char*);
 /* VMS_END_C_PLUS_PLUS */
 
 #define _XRegisterFilterByType _XREGISTERFILTERBYTYPE
@@ -123,6 +124,7 @@ extern void XtFree(char*);
 #define XCreateRegion XCREATEREGION
 #define XCreateSimpleWindow XCREATESIMPLEWINDOW
 #define XCreateWindow XCREATEWINDOW
+#define XDefaultRootWindow XDEFAULTROOTWINDOW
 #define XDefaultScreenOfDisplay XDEFAULTSCREENOFDISPLAY
 #define XDefineCursor XDEFINECURSOR
 #define XDeleteProperty XDELETEPROPERTY
@@ -186,6 +188,7 @@ extern void XtFree(char*);
 #define XGetSubImage XGETSUBIMAGE
 #define XGetVisualInfo XGETVISUALINFO
 #define XGetWMColormapWindows XGETWMCOLORMAPWINDOWS
+#define XGetWMIconName XGETWMICONNAME
 #define XGetWMProtocols XGETWMPROTOCOLS
 #define XGetWMHints XGETWMHINTS
 #define XGetWMName XGETWMNAME
@@ -289,6 +292,7 @@ extern void XtFree(char*);
 #define XShapeCombineRectangles XSHAPECOMBINERECTANGLES
 #define XShapeGetRectangles XSHAPEGETRECTANGLES
 #define XShrinkRegion XSHRINKREGION
+#define XStoreBuffer XSTOREBUFFER
 #define XStoreColor XSTORECOLOR
 #define XStoreColors XSTORECOLORS
 #define XStoreName XSTORENAME
@@ -603,7 +607,9 @@ extern void XtFree(char*);
 #define XtUnmanageChild XTUNMANAGECHILD
 #define XtUnmanageChildren XTUNMANAGECHILDREN
 #define XtUnrealizeWidget XTUNREALIZEWIDGET
+#define XtVaAppCreateShell XTVAAPPCREATESHELL
 #define XtVaCreateManagedWidget XTVACREATEMANAGEDWIDGET
+#define XtVaCreatePopupShell XTVACREATEPOPUPSHELL
 #define XtVaCreateWidget XTVACREATEWIDGET
 #define XtVaGetValues XTVAGETVALUES
 #define XtVaSetValues XTVASETVALUES

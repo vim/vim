@@ -1,7 +1,7 @@
 " Menu Translations:	Italian / Italiano
-" Maintainer:		Antonio Colombo <azc10@yahoo.com>
-"			Vlad Sandrini <sator72@libero.it>
-" Last Change:	2005 Aug 13
+" Maintainer:		Antonio Colombo <azc100@gmail.com>
+"			Vlad Sandrini <vlad.gently@gmail.com>
+" Last Change:	2006 Apr 03
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -33,6 +33,7 @@ let g:menutrans_help_dialog = "Batti un comando o una parola per cercare aiuto:\
 "
 menut &Open\.\.\.<Tab>:e		&Apri\.\.\.<Tab>:e
 menut Sp&lit-Open\.\.\.<Tab>:sp	A&pri\ nuova\ Finestra\.\.\.<Tab>:sp
+menut Open\ Tab\.\.\.<Tab>:tabnew Apri\ nuova\ &Linguetta\.\.\.<Tab>:tabnew
 menut &New<Tab>:enew		&Nuovo<Tab>:enew
 menut &Close<Tab>:close		&Chiudi<Tab>:close
 menut &Save<Tab>:w			&Salva<Tab>:w
@@ -84,7 +85,7 @@ menut Always		Sempre
 
 menut Toggle\ Insert\ &Mode<Tab>:set\ im!	&Modalità\ Inserimento\ Sì/No<Tab>:set\ im!
 menut Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	C&ompatibile\ Vi\ Sì/No<Tab>:set\ cp!
-menut Search\ &Path\.\.\.	Ca&mmino\ di\ ricerca\.\.\.
+menut Search\ &Path\.\.\.	&Percorso\ di\ ricerca\.\.\.
 menut Ta&g\ Files\.\.\.		File\ Ta&g\.\.\.
 "
 " Opzioni GUI
@@ -166,7 +167,7 @@ menut &Spell\ Check\ On			Attiva\ &Controllo\ ortografico
 menut Spell\ Check\ &Off		&Disattiva\ controllo\ ortografico
 menut To\ &Next\ error<Tab>]s		Errore\ &Seguente<tab>]s
 menut To\ &Previous\ error<Tab>[s	Errore\ &Precedente<tab>[s
-menut Suggest\ &Corrections<Tab>z?	&Suggerimenti<Tab>z?
+menut Suggest\ &Corrections<Tab>z=	&Suggerimenti<Tab>z=
 menut &Repeat\ correction<Tab>:spellrepall	&Ripeti\ correzione<Tab>:spellrepall
 menut Set\ language\ to\ "en"		Imposta\ lingua\ a\ "en"
 menut Set\ language\ to\ "en_au"	Imposta\ lingua\ a\ "en_au"

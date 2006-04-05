@@ -1,6 +1,6 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Dec 24, 2005
+" Date:			Mar 27, 2006
 " Version:		7
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
@@ -25,6 +25,7 @@ if exists("g:loaded_tar")
  finish
 endif
 let g:loaded_tar= "v7"
+"call Decho("loading autoload/tar.vim")
 
 " ---------------------------------------------------------------------
 "  Default Settings: {{{1
@@ -33,6 +34,9 @@ if !exists("g:tar_browseoptions")
 endif
 if !exists("g:tar_readoptions")
  let g:tar_readoptions= "OPxf"
+endif
+if !exists("g:tar_cmd")
+ let g:tar_cmd= "tar"
 endif
 if !exists("g:tar_writeoptions")
  let g:tar_writeoptions= "uf"
@@ -50,14 +54,15 @@ fun! tar#Browse(tarfile)
   set report=10
 
   " sanity checks
-  if !executable("tar")
-   echohl Error | echo '***error*** (tar#Browse) "tar" not available on your system'
+  if !executable(g:tar_cmd)
+   echohl Error | echo '***error*** (tar#Browse) "'.g:tar_cmd.'" not available on your system'
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Browse")
    return
   endif
   if !filereadable(a:tarfile)
+"   call Decho('a:tarfile<'.a:tarfile.'> not filereadable')
    if a:tarfile !~# '^\a\+://'
     " if its an url, don't complain, let url-handlers such as vim do its thing
     echohl Error | echo "***error*** (tar#Browse) File not readable<".a:tarfile.">" | echohl None
@@ -80,20 +85,33 @@ fun! tar#Browse(tarfile)
   set ft=tar
 
   " give header
+"  call Decho("printing header")
   exe "$put ='".'\"'." tar.vim version ".g:loaded_tar."'"
   exe "$put ='".'\"'." Browsing tarfile ".a:tarfile."'"
   exe "$put ='".'\"'." Select a file with cursor and press ENTER"."'"
   0d
   $
 
-  if a:tarfile =~# '\.\(gz\|tgz\)$'
-   exe "silent r! gzip -d -c '".a:tarfile."'| tar -".g:tar_browseoptions." - "
-  elseif a:tarfile =~# '\.bz2$'
-   exe "silent r! bzip2 -d -c '".a:tarfile."'| tar -".g:tar_browseoptions." - "
-  else
-   exe "silent r! tar -".g:tar_browseoptions." '".a:tarfile."'"
+  let tarfile= a:tarfile
+  if has("win32") && executable("cygpath")
+   " assuming cygwin
+   let tarfile=substitute(system("cygpath -u ".tarfile),'\n$','','e')
   endif
-  silent %g@/$@d
+  if tarfile =~# '\.\(gz\|tgz\)$'
+"   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - ")
+   exe "silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - "
+  elseif tarfile =~# '\.bz2$'
+"   call Decho("exe silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_browseoptions." - ")
+   exe "silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_browseoptions." - "
+  else
+"   call Decho("exe silent r! ".g:tar_cmd." -".g:tar_browseoptions." '".tarfile."'")
+   exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." '".tarfile."'"
+  endif
+  if v:shell_error != 0
+   echohl Error | echo '***error*** (tar#Browse) while browsing; check your g:tar_browseoptions<".g:tar_browseoptions.">"
+"  call Dret("tar#Browse : w:tarfile<".w:tarfile.">")
+   return
+  endif
 
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>TarBrowseSelect()<cr>
@@ -121,12 +139,21 @@ fun! s:TarBrowseSelect()
   " about to make a new window, need to use w:tarfile
   let tarfile= w:tarfile
   let curfile= expand("%")
+  if has("win32") && executable("cygpath")
+   " assuming cygwin
+   let tarfile=substitute(system("cygpath -u ".tarfile),'\n$','','e')
+  endif
 
   new
   wincmd _
   let s:tblfile_{winnr()}= curfile
-"  call Decho("exe e tarfile:".tarfile.':'.fname)
-  exe "e tarfile:".tarfile.':'.fname
+"  if has("unix")
+""   call Decho("exe e tarfile:".tarfile.':'.fname)
+"   exe "e tarfile:".tarfile.':'.fname
+"  elseif has("win32")
+"   call tar#Read("tarfile:".tarfile.':'.fname,1)
+"  endif
+  call tar#Read("tarfile:".tarfile.':'.fname,1)
   filetype detect
 
   let &report= repkeep
@@ -141,7 +168,12 @@ fun! tar#Read(fname,mode)
   set report=10
   let tarfile = substitute(a:fname,'tarfile:\(.\{-}\):.*$','\1','')
   let fname   = substitute(a:fname,'tarfile:.\{-}:\(.*\)$','\1','')
-"  call Decho("tarfile<".tarfile."> fname<".fname.">")
+  if has("win32") && executable("cygpath")
+   " assuming cygwin
+   let tarfile=substitute(system("cygpath -u ".tarfile),'\n$','','e')
+  endif
+"  call Decho("tarfile<".tarfile.">")
+"  call Decho("fname<".fname.">")
 
   if tarfile =~# '\.\(gz\|tgz\)$'
 "   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -OPxf - '".fname."'")
@@ -151,7 +183,7 @@ fun! tar#Read(fname,mode)
    exe "silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'"
   else
 "   call Decho("exe silent r! tar -".g:tar_readoptions." '".tarfile."' '".fname."'")
-   exe "silent r! tar -".g:tar_readoptions." '".tarfile."' '".fname."'"
+   exe "silent r! ".g:tar_cmd." -".g:tar_readoptions." '".tarfile."' '".fname."'"
   endif
   let w:tarfile= a:fname
   exe "file tarfile:".fname
@@ -172,8 +204,8 @@ fun! tar#Write(fname)
   set report=10
 
   " sanity checks
-  if !executable("tar")
-   echohl Error | echo '***error*** (tar#Browse) "tar" not available on your system'
+  if !executable(g:tar_cmd)
+   echohl Error | echo '***error*** (tar#Browse) "'.g:tar_cmd.'" not available on your system'
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Write")

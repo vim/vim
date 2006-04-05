@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0c.  Last change: 2006 Mar 11
+*windows.txt*   For Vim version 7.0c.  Last change: 2006 Apr 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,7 +33,7 @@ compile time}
 disabled at compile time}
 
 ==============================================================================
-1. Introduction						*windows-intro*
+1. Introduction					*windows-intro* *window*
 
 A window is a viewport onto a buffer.  You can use multiple windows on one
 buffer, or several windows on different buffers.
@@ -618,13 +618,15 @@ can also get to them with the buffer list commands, like ":bnext".
 		The |argument-list| is set, like with the |:next| command.
 		The purpose of this command is that it can be used from a
 		program that wants Vim to edit another file, e.g., a debugger.
+		When using the |:tab| modifier each argument is opened in a
+		tab page.  The last window is used if it's empty.
 		{only available when compiled with the +gui feature}
 
 ==============================================================================
 8. Do a command in all buffers or windows			*list-repeat*
 
 							*:windo*
-:windo[!] {cmd}		Execute {cmd} in each window.
+:windo {cmd}		Execute {cmd} in each window.
 			It works like doing this: >
 				CTRL-W t
 				:{cmd}

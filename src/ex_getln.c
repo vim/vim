@@ -1942,6 +1942,23 @@ text_locked_msg()
 	EMSG(_(e_secure));
 }
 
+#if defined(FEAT_AUTOCMD) || defined(PROTO)
+/*
+ * Check if "curbuf_lock" is set and return TRUE when it is and give an error
+ * message.
+ */
+    int
+curbuf_locked()
+{
+    if (curbuf_lock > 0)
+    {
+	EMSG(_("E788: Not allowed to edit another buffer now"));
+	return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
     static int
 cmdline_charsize(idx)
     int		idx;

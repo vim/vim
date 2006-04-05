@@ -179,7 +179,7 @@
 #endif
 
 /* GUI support defines */
-#ifdef FEAT_GUI_MOTIF
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK)
 #define HAVE_X11
 #define USE_FONTSET
 #undef  X_LOCALE

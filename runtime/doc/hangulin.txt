@@ -1,4 +1,4 @@
-*hangulin.txt*  For Vim version 7.0c.  Last change: 2005 Mar 29
+*hangulin.txt*  For Vim version 7.0c.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL    by Chi-Deok Hwang and Sung-Hyun Nam
@@ -48,7 +48,7 @@ If both are set, VIM_KEYBOARD has higher priority.
 
 Hangul Fonts
 ------------
-You can set text font using $HOME/.Xdefaults or $HOME/.gvimrc.
+You can set text font using $HOME/.Xdefaults or in your gvimrc file.
 But to use Hangul, you should set 'guifontset' in your vimrc.
 
 $HOME/.Xdefaults: >
