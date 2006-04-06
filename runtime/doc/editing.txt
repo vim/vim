@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0c.  Last change: 2006 Apr 02
+*editing.txt*   For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -313,6 +313,8 @@ CTRL-^			Edit the alternate file (equivalent to ":e #").
 			in the 'path' is edited.
 			This command fails if Vim refuses to |abandon| the
 			current file.
+			If you want to edit the file in a new window use
+			|CTRL-W_CTRL-F|.
 			If you do want to edit a new file, use: >
 				:e <cfile>
 <			To make gf always work like that: >

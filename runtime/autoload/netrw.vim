@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Mar 31, 2006
-" Version:	84
+" Date:		Apr 06, 2006
+" Version:	86
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v84"
+let g:loaded_netrw = "v86"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -457,8 +457,7 @@ fun! netrw#NetRead(mode,...)
    " ftp + <.netrc>:  NetRead Method #2 {{{3
    elseif b:netrw_method  == 2		" read with ftp + <.netrc>
 "     call Decho("read via ftp+.netrc (method #2)")
-     let netrw_fname= escape(b:netrw_fname,g:netrw_fname_escape)
-"     call Decho("netrw_fname<".netrw_fname.">")
+     let netrw_fname= b:netrw_fname
      new
      setlocal ff=unix
      exe "put ='".g:netrw_ftpmode."'"
@@ -3388,6 +3387,7 @@ fun! s:LocalFastBrowser()
     au!
     au ShellCmdPost,FocusGained *	call s:LocalBrowseShellCmdRefresh()
    augroup END
+  endif
 
   " user must have changed fastbrowse to its fast setting, so remove
   " the associated autocmd events
@@ -4098,7 +4098,12 @@ fun! s:SetSort()
    let priority = priority + 1
   endwhile
 
-  exe 'silent keepjumps '.w:netrw_bannercnt.',$s/^\(\d\{3}\/\)\%(\d\{3}\/\)\+/\1/e'
+  " I'm afraid that I don't remember why the following line was present.  It
+  " has something to do with priority -- items that satisfy a two or more
+  " priority patterns get preceded by two or more priority patterns: ###/
+  " So, I want to remove priority patterns, but not ###/ directory names.
+  " Following pattern retains just one priority pattern.
+  exe 'silent keepjumps '.w:netrw_bannercnt.',$s/^\(\d\{3}\/\)\%(\d\{3}\/\)\+\ze./\1/e'
 
 "  call Dret("SetSort")
 endfun

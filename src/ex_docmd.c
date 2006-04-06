@@ -7029,7 +7029,9 @@ ex_splitview(eap)
 	    || eap->cmdidx == CMD_tabfind
 	    || eap->cmdidx == CMD_tabnew)
     {
-	if (win_new_tabpage(cmdmod.tab) != FAIL)
+	if (win_new_tabpage(cmdmod.tab != 0 ? cmdmod.tab
+			 : eap->addr_count == 0 ? 0
+					       : (int)eap->line2 + 1) != FAIL)
 	{
 	    do_exedit(eap, NULL);
 

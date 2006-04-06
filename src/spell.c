@@ -4655,6 +4655,7 @@ typedef struct afffile_S
     unsigned	af_keepcase;	/* KEEPCASE ID for keep-case word */
     unsigned	af_bad;		/* BAD ID for banned word */
     unsigned	af_needaffix;	/* NEEDAFFIX ID */
+    unsigned	af_circumfix;	/* CIRCUMFIX ID */
     unsigned	af_needcomp;	/* NEEDCOMPOUND ID */
     unsigned	af_comproot;	/* COMPOUNDROOT ID */
     unsigned	af_compforbid;	/* COMPOUNDFORBIDFLAG ID */
@@ -4855,9 +4856,10 @@ static int sal_to_bool __ARGS((char_u *s));
 static int has_non_ascii __ARGS((char_u *s));
 static void spell_free_aff __ARGS((afffile_T *aff));
 static int spell_read_dic __ARGS((spellinfo_T *spin, char_u *fname, afffile_T *affile));
+static int get_affix_flags __ARGS((afffile_T *affile, char_u *afflist));
 static int get_pfxlist __ARGS((afffile_T *affile, char_u *afflist, char_u *store_afflist));
 static void get_compflags __ARGS((afffile_T *affile, char_u *afflist, char_u *store_afflist));
-static int store_aff_word __ARGS((spellinfo_T *spin, char_u *word, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int comb, int flags, char_u *pfxlist, int pfxlen));
+static int store_aff_word __ARGS((spellinfo_T *spin, char_u *word, char_u *afflist, afffile_T *affile, hashtab_T *ht, hashtab_T *xht, int condit, int flags, char_u *pfxlist, int pfxlen));
 static int spell_read_wordfile __ARGS((spellinfo_T *spin, char_u *fname));
 static void *getroom __ARGS((spellinfo_T *spin, size_t len, int align));
 static char_u *getroom_save __ARGS((spellinfo_T *spin, char_u *s));
@@ -4890,6 +4892,12 @@ static void init_spellfile __ARGS((void));
  * but it must be negative to indicate the prefix tree to tree_add_word().
  * Use a negative number with the lower 8 bits zero. */
 #define PFX_FLAGS	-256
+
+/* flags for "condit" argument of store_aff_word() */
+#define CONDIT_COMB	1	/* affix must combine */
+#define CONDIT_CFIX	2	/* affix must have CIRCUMFIX flag */
+#define CONDIT_SUF	4	/* add a suffix for matching flags */
+#define CONDIT_AFF	8	/* word already has an affix */
 
 /*
  * Tunable parameters for when the tree is compressed.  See 'mkspellmem'.
@@ -5170,6 +5178,7 @@ spell_read_aff(spin, fname)
 			|| aff->af_keepcase != 0
 			|| aff->af_bad != 0
 			|| aff->af_needaffix != 0
+			|| aff->af_circumfix != 0
 			|| aff->af_needcomp != 0
 			|| aff->af_comproot != 0
 			|| aff->af_nosuggest != 0
@@ -5233,6 +5242,12 @@ spell_read_aff(spin, fname)
 						    && aff->af_needaffix == 0)
 	    {
 		aff->af_needaffix = affitem2flag(aff->af_flagtype, items[1],
+								 fname, lnum);
+	    }
+	    else if (STRCMP(items[0], "CIRCUMFIX") == 0 && itemcnt == 2
+						    && aff->af_circumfix == 0)
+	    {
+		aff->af_circumfix = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
 	    else if (STRCMP(items[0], "NOSUGGEST") == 0 && itemcnt == 2
@@ -5430,6 +5445,7 @@ spell_read_aff(spin, fname)
 			    || cur_aff->ah_flag == aff->af_rare
 			    || cur_aff->ah_flag == aff->af_keepcase
 			    || cur_aff->ah_flag == aff->af_needaffix
+			    || cur_aff->ah_flag == aff->af_circumfix
 			    || cur_aff->ah_flag == aff->af_nosuggest
 			    || cur_aff->ah_flag == aff->af_needcomp
 			    || cur_aff->ah_flag == aff->af_comproot)
@@ -6449,29 +6465,12 @@ spell_read_dic(spin, fname, affile)
 	need_affix = FALSE;
 	if (afflist != NULL)
 	{
-	    /* Check for affix name that stands for keep-case word and stands
-	     * for rare word (if defined). */
-	    if (affile->af_keepcase != 0 && flag_in_afflist(
-			   affile->af_flagtype, afflist, affile->af_keepcase))
-		flags |= WF_KEEPCAP | WF_FIXCAP;
-	    if (affile->af_rare != 0 && flag_in_afflist(
-				affile->af_flagtype, afflist, affile->af_rare))
-		flags |= WF_RARE;
-	    if (affile->af_bad != 0 && flag_in_afflist(
-				affile->af_flagtype, afflist, affile->af_bad))
-		flags |= WF_BANNED;
+	    /* Extract flags from the affix list. */
+	    flags |= get_affix_flags(affile, afflist);
+
 	    if (affile->af_needaffix != 0 && flag_in_afflist(
 			  affile->af_flagtype, afflist, affile->af_needaffix))
 		need_affix = TRUE;
-	    if (affile->af_needcomp != 0 && flag_in_afflist(
-			   affile->af_flagtype, afflist, affile->af_needcomp))
-		flags |= WF_NEEDCOMP;
-	    if (affile->af_comproot != 0 && flag_in_afflist(
-			   affile->af_flagtype, afflist, affile->af_comproot))
-		flags |= WF_COMPROOT;
-	    if (affile->af_nosuggest != 0 && flag_in_afflist(
-			   affile->af_flagtype, afflist, affile->af_nosuggest))
-		flags |= WF_NOSUGGEST;
 
 	    if (affile->af_pfxpostpone)
 		/* Need to store the list of prefix IDs with the word. */
@@ -6494,13 +6493,13 @@ spell_read_dic(spin, fname, affile)
 	     * Additionally do matching prefixes that combine. */
 	    if (store_aff_word(spin, dw, afflist, affile,
 			   &affile->af_suff, &affile->af_pref,
-				 FALSE, flags, store_afflist, pfxlen) == FAIL)
+			    CONDIT_SUF, flags, store_afflist, pfxlen) == FAIL)
 		retval = FAIL;
 
 	    /* Find all matching prefixes and add the resulting words. */
 	    if (store_aff_word(spin, dw, afflist, affile,
 			  &affile->af_pref, NULL,
-				 FALSE, flags, store_afflist, pfxlen) == FAIL)
+			    CONDIT_SUF, flags, store_afflist, pfxlen) == FAIL)
 		retval = FAIL;
 	}
     }
@@ -6514,6 +6513,38 @@ spell_read_dic(spin, fname, affile)
 
     fclose(fd);
     return retval;
+}
+
+/*
+ * Check for affix flags in "afflist" that are turned into word flags.
+ * Return WF_ flags.
+ */
+    static int
+get_affix_flags(affile, afflist)
+    afffile_T	*affile;
+    char_u	*afflist;
+{
+    int		flags = 0;
+
+    if (affile->af_keepcase != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_keepcase))
+	flags |= WF_KEEPCAP | WF_FIXCAP;
+    if (affile->af_rare != 0 && flag_in_afflist(
+			       affile->af_flagtype, afflist, affile->af_rare))
+	flags |= WF_RARE;
+    if (affile->af_bad != 0 && flag_in_afflist(
+				affile->af_flagtype, afflist, affile->af_bad))
+	flags |= WF_BANNED;
+    if (affile->af_needcomp != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_needcomp))
+	flags |= WF_NEEDCOMP;
+    if (affile->af_comproot != 0 && flag_in_afflist(
+			   affile->af_flagtype, afflist, affile->af_comproot))
+	flags |= WF_COMPROOT;
+    if (affile->af_nosuggest != 0 && flag_in_afflist(
+			  affile->af_flagtype, afflist, affile->af_nosuggest))
+	flags |= WF_NOSUGGEST;
+    return flags;
 }
 
 /*
@@ -6604,7 +6635,7 @@ get_compflags(affile, afflist, store_afflist)
  * Returns FAIL when out of memory.
  */
     static int
-store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
+store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 							      pfxlist, pfxlen)
     spellinfo_T	*spin;		/* spell info */
     char_u	*word;		/* basic word start */
@@ -6612,7 +6643,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
     afffile_T	*affile;
     hashtab_T	*ht;
     hashtab_T	*xht;
-    int		comb;		/* only use affixes that combine */
+    int		condit;		/* CONDIT_SUF et al. */
     int		flags;		/* flags for the word */
     char_u	*pfxlist;	/* list of prefix IDs */
     int		pfxlen;		/* nr of flags in "pfxlist" for prefixes, rest
@@ -6625,12 +6656,16 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
     regmatch_T	regmatch;
     char_u	newword[MAXWLEN];
     int		retval = OK;
-    int		i;
+    int		i, j;
     char_u	*p;
     int		use_flags;
     char_u	*use_pfxlist;
+    int		use_pfxlen;
+    int		need_affix;
+    char_u	store_afflist[MAXWLEN];
     char_u	pfx_pfxlist[MAXWLEN];
     size_t	wordlen = STRLEN(word);
+    int		use_condit;
 
     todo = ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && retval == OK; ++hi)
@@ -6642,8 +6677,9 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 
 	    /* Check that the affix combines, if required, and that the word
 	     * supports this affix. */
-	    if ((!comb || ah->ah_combine) && flag_in_afflist(
-				   affile->af_flagtype, afflist, ah->ah_flag))
+	    if (((condit & CONDIT_COMB) == 0 || ah->ah_combine)
+		    && flag_in_afflist(affile->af_flagtype, afflist,
+								 ah->ah_flag))
 	    {
 		/* Loop over all affix entries with this name. */
 		for (ae = ah->ah_first; ae != NULL; ae = ae->ae_next)
@@ -6654,7 +6690,10 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 		     * Another requirement from Myspell is that the chop
 		     * string is shorter than the word itself.
 		     * For prefixes, when "PFXPOSTPONE" was used, only do
-		     * prefixes with a chop string and/or flags. */
+		     * prefixes with a chop string and/or flags.
+		     * When a previously added affix had CIRCUMFIX this one
+		     * must have it too, if it had not then this one must not
+		     * have one either. */
 		    regmatch.regprog = ae->ae_prog;
 		    regmatch.rm_ic = FALSE;
 		    if ((xht != NULL || !affile->af_pfxpostpone
@@ -6663,7 +6702,12 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 			    && (ae->ae_chop == NULL
 				|| STRLEN(ae->ae_chop) < wordlen)
 			    && (ae->ae_prog == NULL
-				|| vim_regexec(&regmatch, word, (colnr_T)0)))
+				|| vim_regexec(&regmatch, word, (colnr_T)0))
+			    && (((condit & CONDIT_CFIX) == 0)
+				== ((condit & CONDIT_AFF) == 0
+				    || ae->ae_flags == NULL
+				    || !flag_in_afflist(affile->af_flagtype,
+					ae->ae_flags, affile->af_circumfix))))
 		    {
 			/* Match.  Remove the chop and add the affix. */
 			if (xht == NULL)
@@ -6707,27 +6751,88 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 				STRCAT(newword, ae->ae_add);
 			}
 
-			/* Obey the "rare" flag of the affix. */
-			if (affile->af_rare != 0
-				&& ae->ae_flags != NULL
-				&& flag_in_afflist(
-				    affile->af_flagtype, ae->ae_flags,
-							     affile->af_rare))
-			    use_flags = flags | WF_RARE;
-			else
-			    use_flags = flags;
+			use_flags = flags;
+			use_pfxlist = pfxlist;
+			use_pfxlen = pfxlen;
+			need_affix = FALSE;
+			use_condit = condit | CONDIT_COMB | CONDIT_AFF;
+			if (ae->ae_flags != NULL)
+			{
+			    /* Extract flags from the affix list. */
+			    use_flags |= get_affix_flags(affile, ae->ae_flags);
+
+			    if (affile->af_needaffix != 0 && flag_in_afflist(
+					affile->af_flagtype, ae->ae_flags,
+							affile->af_needaffix))
+				need_affix = TRUE;
+
+			    /* When there is a CIRCUMFIX flag the other affix
+			     * must also have it and we don't add the word
+			     * with one affix. */
+			    if (affile->af_circumfix != 0 && flag_in_afflist(
+					affile->af_flagtype, ae->ae_flags,
+							affile->af_circumfix))
+			    {
+				use_condit |= CONDIT_CFIX;
+				if ((condit & CONDIT_CFIX) == 0)
+				    need_affix = TRUE;
+			    }
+
+			    if (affile->af_pfxpostpone
+						|| spin->si_compflags != NULL)
+			    {
+				if (affile->af_pfxpostpone)
+				    /* Get prefix IDS from the affix list. */
+				    use_pfxlen = get_pfxlist(affile,
+						 ae->ae_flags, store_afflist);
+				else
+				    use_pfxlen = 0;
+				use_pfxlist = store_afflist;
+
+				/* Combine the prefix IDs. Avoid adding the
+				 * same ID twice. */
+				for (i = 0; i < pfxlen; ++i)
+				{
+				    for (j = 0; j < use_pfxlen; ++j)
+					if (pfxlist[i] == use_pfxlist[j])
+					    break;
+				    if (j == use_pfxlen)
+					use_pfxlist[use_pfxlen++] = pfxlist[i];
+				}
+
+				if (spin->si_compflags != NULL)
+				    /* Get compound IDS from the affix list. */
+				    get_compflags(affile, ae->ae_flags,
+						  use_pfxlist + use_pfxlen);
+
+				/* Combine the list of compound flags.
+				 * Concatenate them to the prefix IDs list.
+				 * Avoid adding the same ID twice. */
+				for (i = pfxlen; pfxlist[i] != NUL; ++i)
+				{
+				    for (j = use_pfxlen;
+						   use_pfxlist[j] != NUL; ++j)
+					if (pfxlist[i] == use_pfxlist[j])
+					    break;
+				    if (use_pfxlist[j] == NUL)
+				    {
+					use_pfxlist[j++] = pfxlist[i];
+					use_pfxlist[j] = NUL;
+				    }
+				}
+			    }
+			}
 
 			/* Obey a "COMPOUNDFORBIDFLAG" of the affix: don't
 			 * use the compound flags. */
-			use_pfxlist = pfxlist;
-			if (pfxlist != NULL
+			if (use_pfxlist != NULL
 				&& affile->af_compforbid != 0
 				&& ae->ae_flags != NULL
 				&& flag_in_afflist(
 				    affile->af_flagtype, ae->ae_flags,
 						       affile->af_compforbid))
 			{
-			    vim_strncpy(pfx_pfxlist, pfxlist, pfxlen);
+			    vim_strncpy(pfx_pfxlist, use_pfxlist, use_pfxlen);
 			    use_pfxlist = pfx_pfxlist;
 			}
 
@@ -6741,8 +6846,9 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 			    /* ... don't use a prefix list if combining
 			     * affixes is not allowed.  But do use the
 			     * compound flags after them. */
-			    if ((!ah->ah_combine || comb) && pfxlist != NULL)
-				use_pfxlist += pfxlen;
+			    if ((!ah->ah_combine || (condit & CONDIT_COMB))
+						       && use_pfxlist != NULL)
+				use_pfxlist += use_pfxlen;
 			}
 
 			/* When compounding is supported and there is no
@@ -6763,16 +6869,38 @@ store_aff_word(spin, word, afflist, affile, ht, xht, comb, flags,
 
 			/* Store the modified word. */
 			if (store_word(spin, newword, use_flags,
-				 spin->si_region, use_pfxlist, FALSE) == FAIL)
+						 spin->si_region, use_pfxlist,
+							  need_affix) == FAIL)
 			    retval = FAIL;
 
-			/* When added a suffix and combining is allowed also
-			 * try adding prefixes additionally.  RECURSIVE! */
-			if (xht != NULL && ah->ah_combine)
-			    if (store_aff_word(spin, newword, afflist, affile,
-					  xht, NULL, TRUE,
+			/* When added a prefix or a first suffix and the affix
+			 * has flags may add a(nother) suffix.  RECURSIVE! */
+			if ((condit & CONDIT_SUF) && ae->ae_flags != NULL)
+			    if (store_aff_word(spin, newword, ae->ae_flags,
+					affile, &affile->af_suff, xht,
+					   use_condit & (xht == NULL
+							? ~0 :  ~CONDIT_SUF),
 				      use_flags, use_pfxlist, pfxlen) == FAIL)
 				retval = FAIL;
+
+			/* When added a suffix and combining is allowed also
+			 * try adding a prefix additionally.  Both for the
+			 * word flags and for the affix flags.  RECURSIVE! */
+			if (xht != NULL && ah->ah_combine)
+			{
+			    if (store_aff_word(spin, newword,
+					afflist, affile,
+					xht, NULL, use_condit,
+					use_flags, use_pfxlist,
+					pfxlen) == FAIL
+				    || (ae->ae_flags != NULL
+					&& store_aff_word(spin, newword,
+					    ae->ae_flags, affile,
+					    xht, NULL, use_condit,
+					    use_flags, use_pfxlist,
+					    pfxlen) == FAIL))
+				retval = FAIL;
+			}
 		    }
 		}
 	    }

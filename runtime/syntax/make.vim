@@ -2,7 +2,7 @@
 " Language:	Makefile
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/make.vim
-" Last Change:	2005 Apr 17
+" Last Change:	2006 Apr 5
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -13,15 +13,15 @@ elseif exists("b:current_syntax")
 endif
 
 " some special characters
-syn match makeSpecial	"^\s*[@-]\+"
+syn match makeSpecial	"^\s*[@+-]\+"
 syn match makeNextLine	"\\\n\s*"
 
 " some directives
-syn match makePreCondit	"^\s*\(ifeq\>\|else\>\|endif\>\|ifneq\>\|ifdef\>\|ifndef\>\)"
-syn match makeInclude	"^\s*[-s]\=include"
-syn match makeStatement	"^\s*vpath"
-syn match makeExport    "^\s*\(export\|unexport\)\>"
-syn match makeOverride	"^\s*override"
+syn match makePreCondit	"^ *\(ifeq\>\|else\>\|endif\>\|ifneq\>\|ifdef\>\|ifndef\>\)"
+syn match makeInclude	"^ *[-s]\=include"
+syn match makeStatement	"^ *vpath"
+syn match makeExport    "^ *\(export\|unexport\)\>"
+syn match makeOverride	"^ *override"
 hi link makeOverride makeStatement
 hi link makeExport makeStatement
 
@@ -30,8 +30,8 @@ syn region makeDefine start="^\s*define\s" end="^\s*endef\s*$" contains=makeStat
 
 " Microsoft Makefile specials
 syn case ignore
-syn match makeInclude	"^!\s*include"
-syn match makePreCondit "!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\|ifndef\|else\|elseif\|else if\|else\s*ifdef\|else\s*ifndef\|endif\|undef\)\>"
+syn match makeInclude	"^! *include"
+syn match makePreCondit "! *\(cmdswitches\|error\|message\|include\|if\|ifdef\|ifndef\|else\|elseif\|else if\|else\s*ifdef\|else\s*ifndef\|endif\|undef\)\>"
 syn case match
 
 " identifiers
@@ -39,8 +39,8 @@ syn region makeIdent	start="\$(" skip="\\)\|\\\\" end=")" contains=makeStatement
 syn region makeIdent	start="\${" skip="\\}\|\\\\" end="}" contains=makeStatement,makeIdent,makeSString,makeDString
 syn match makeIdent	"\$\$\w*"
 syn match makeIdent	"\$[^({]"
-syn match makeIdent	"^\s*\a\w*\s*[:+?!*]="me=e-2
-syn match makeIdent	"^\s*\a\w*\s*="me=e-1
+syn match makeIdent	"^ *\a\w*\s*[:+?!*]="me=e-2
+syn match makeIdent	"^ *\a\w*\s*="me=e-1
 syn match makeIdent	"%"
 
 " Makefile.in variables
@@ -54,8 +54,8 @@ syn match makeImplicit		"^\.[A-Za-z0-9_./\t -]\+\s*:$"me=e-1 nextgroup=makeSourc
 syn region makeTarget	transparent matchgroup=makeTarget start="^[A-Za-z0-9_./$()%-][A-Za-z0-9_./\t $()%-]*:\{1,2}[^:=]"rs=e-1 end=";"re=e-1,me=e-1 end="[^\\]$" keepend contains=makeIdent,makeSpecTarget,makeNextLine skipnl nextGroup=makeCommands
 syn match makeTarget		"^[A-Za-z0-9_./$()%*@-][A-Za-z0-9_./\t $()%*@-]*::\=\s*$" contains=makeIdent,makeSpecTarget skipnl nextgroup=makeCommands,makeCommandError
 
-syn region makeSpecTarget	transparent matchgroup=makeSpecTarget start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>:\{1,2}[^:=]"rs=e-1 end="[^\\]$" keepend contains=makeIdent,makeSpecTarget,makeNextLine skipnl nextGroup=makeCommands
-syn match makeSpecTarget		"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>::\=\s*$" contains=makeIdent skipnl nextgroup=makeCommands,makeCommandError
+syn region makeSpecTarget	transparent matchgroup=makeSpecTarget start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>\s*:\{1,2}[^:=]"rs=e-1 end="[^\\]$" keepend contains=makeIdent,makeSpecTarget,makeNextLine skipnl nextGroup=makeCommands
+syn match makeSpecTarget		"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>\s*::\=\s*$" contains=makeIdent skipnl nextgroup=makeCommands,makeCommandError
 
 syn match makeCommandError "^\s\+\S.*" contained
 syn region makeCommands start=";"hs=s+1 start="^\t" end="^[^\t#]"me=e-1,re=e-1 end="^$" contained contains=makeCmdNextLine,makeSpecial,makeComment,makeIdent,makePreCondit,makeDefine,makeDString,makeSString nextgroup=makeCommandError
@@ -67,9 +67,9 @@ syn match makeStatement contained "(\(subst\|addprefix\|addsuffix\|basename\|cal
 
 " Comment
 if exists("make_microsoft")
-   syn match  makeComment "#.*" contains=makeTodo,@Spell
-else
-   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=makeTodo,@Spell
+   syn match  makeComment "#.*" contains=makeTodo
+elseif !exists("make_no_comments")
+   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=makeTodo
    syn match   makeComment	"#$"
 endif
 syn keyword makeTodo TODO FIXME XXX contained

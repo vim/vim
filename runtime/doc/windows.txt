@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0c.  Last change: 2006 Apr 01
+*windows.txt*   For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -707,7 +707,7 @@ CTRL-W g CTRL-]	Split current window in two.  Use identifier under cursor as a
 
 CTRL-W f					*CTRL-W_f* *CTRL-W_CTRL-F*
 CTRL-W CTRL-F	Split current window in two.  Edit file name under cursor.
-		Like ":split ]f", but window isn't split if the file does not
+		Like ":split gf", but window isn't split if the file does not
 		exist.
 		Uses the 'path' variable as a list of directory names where to
 		look for the file.  Also the path for current file is
@@ -722,6 +722,13 @@ CTRL-W F						*CTRL-W_F*
 		Split current window in two.  Edit file name under cursor and
 		jump to the line number following the file name. See |gF| for
 		details on how the line number is obtained.
+
+CTRL-W gf						*CTRL-W_gf*
+		Open a new tab page and edit the file name under the cursor.
+		Like "tab split" and "gf", but the new tab page isn't created
+		if the file does not exist.
+		{not available when the |+file_in_path| feature was disabled
+		at compile time}
 
 Also see |CTRL-W_CTRL-I|: open window for an included file that includes
 the keyword under the cursor.

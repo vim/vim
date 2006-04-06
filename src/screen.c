@@ -4296,8 +4296,10 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		v = wp->w_skipcol;
 	    else
 		v = wp->w_leftcol;
-	    if (vcol < v + col)	/* line ends before left margin */
-		vcol = v + col;
+	    /* check if line ends before left margin */
+	    if (vcol < v + col - win_col_off(wp))
+
+		vcol = v + col - win_col_off(wp);
 	    if (wp->w_p_cuc
 		    && (int)wp->w_virtcol >= vcol
 		    && (int)wp->w_virtcol < W_WIDTH(wp) * (row - startrow + 1)

@@ -5080,15 +5080,15 @@ handle_tabmenu()
 	    break;
 
 	case TABLINE_MENU_NEW:
-	    if (current_tab > 0)
-		goto_tabpage(current_tab);
-	    do_cmdline_cmd((char_u *)"tabnew");
+	    vim_snprintf((char *)IObuff, IOSIZE, "%dtabnew",
+				     current_tab > 0 ? current_tab - 1 : 999);
+	    do_cmdline_cmd(IObuff);
 	    break;
 
 	case TABLINE_MENU_OPEN:
-	    if (current_tab > 0)
-		goto_tabpage(current_tab);
-	    do_cmdline_cmd((char_u *)"browse tabnew");
+	    vim_snprintf((char *)IObuff, IOSIZE, "browse %dtabnew",
+				     current_tab > 0 ? current_tab - 1 : 999);
+	    do_cmdline_cmd(IObuff);
 	    break;
     }
 }

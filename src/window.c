@@ -482,14 +482,15 @@ newwindow:
     case 'f':
     case 'F':
     case Ctrl_F:
+wingotofile:
 		CHECK_CMDWIN
 
 		ptr = grab_file_name(Prenum1, &lnum);
 		if (ptr != NULL)
 		{
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 		    need_mouse_correct = TRUE;
-#endif
+# endif
 		    setpcmark();
 		    if (win_split(0, 0) == OK)
 		    {
@@ -592,6 +593,11 @@ newwindow:
 			do_nv_ident('g', xchar);
 			break;
 
+#ifdef FEAT_SEARCHPATH
+		    case 'f':	    /* CTRL-W gf: "gf" in a new tab page */
+			cmdmod.tab = TRUE;
+			goto wingotofile;
+#endif
 		    default:
 			beep_flush();
 			break;
@@ -3879,8 +3885,8 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
     setmouse();			/* in case jumped to/from help buffer */
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
-    /* Change directories when the acd option is set on and after
+#ifdef FEAT_AUTOCHDIR
+    /* Change directories when the 'acd' option is set on and after
      * switching windows. */
     if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)

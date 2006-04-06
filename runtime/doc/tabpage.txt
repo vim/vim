@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Mar 31
+*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -78,6 +78,9 @@ In the GUI tab pages line you can use the right mouse button to open menu.
 		the first one.  Examples: >
 			:tab split	" opens current buffer in new tab page
 			:tab help gt	" opens tab page with help for "gt"
+
+CTRL-W gf	Open a new tab page and edit the file name under the cursor.
+		See |CTRL-W_gf|.
 
 
 CLOSING A TAB PAGE:

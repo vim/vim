@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0c.  Last change: 2006 Apr 03
+*spell.txt*	For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -712,7 +712,7 @@ accepted.  This is different from a word with mixed case that is automatically
 marked as keep-case, those words may appear in all upper-case letters.
 
 
-FORMAT WITH .AFF and .DIC FILES
+FORMAT WITH .AFF AND .DIC FILES				*aff-dic-format*
 
 There are two files: the basic word list and an affix file.  The affix file
 specifies settings for the language and can contain affixes.  The affixes are
@@ -1033,7 +1033,7 @@ AFFIX FLAGS						*spell-affix-flags*
 
 This is a feature that comes from Hunspell: The affix may specify flags.  This
 works similar to flags specified on a basic word.  The flags apply to the
-basic word plus the affix.  Example:
+basic word plus the affix (but there are restrictions).  Example:
 
 	SFX S Y 1 ~
 	SFX S 0 s . ~
@@ -1054,14 +1054,33 @@ only used once for affixes, except that both one prefix and one suffix can be
 used when both support combining.
 
 Specifically, the affix flags can be used for:
-- Affixes on affixes, as in the example above.
+- Suffixes on suffixes, as in the example above.  This works once, thus you
+  can have two suffixes on a word (plus one prefix).
 - Making the word with the affix rare, by using the |spell-RARE| flag.
 - Exclude the word with the affix from compounding, by using the
   |spell-COMPOUNDFORBIDFLAG| flag.
 - Allow the word with the affix to be part of a compound word on the side of
   the affix with the |spell-COMPOUNDPERMITFLAG|.
+- Use the NEEDCOMPOUND flag: word plus affix can only be used as part of a
+  compound word. |spell-NEEDCOMPOUND|
+- Compound flags: word plus affix can be part of a compound word at the end,
+  middle, start, etc.  The flags are combined with the flags of the basic
+  word.  |spell-compound|
+- NEEDAFFIX: another affix is needed to make a valid word.
+- CIRCUMFIX, as explained just below.
 
-						    *spell-PFXPOSTPONE*
+
+CIRCUMFIX						*spell-CIRCUMFIX*
+
+The CIRCUMFIX flag means a prefix and suffix must be added at the same time.
+If a prefix has the CIRCUMFIX flag than only suffixes with the CIRCUMFIX flag
+can be added, and the other way around.
+An alternative is to only specify the suffix, and give the that suffix two
+flags: The required prefix and the NEEDAFFIX flag.  |spell-NEEDAFFIX|
+
+
+PFXPOSTPONE					    	*spell-PFXPOSTPONE*
+
 When an affix file has very many prefixes that apply to many words it's not
 possible to build the whole word list in memory.  This applies to Hebrew (a
 list with all words is over a Gbyte).  In that case applying prefixes must be
@@ -1070,11 +1089,11 @@ in the .aff file:
 
 	PFXPOSTPONE ~
 
-Only prefixes without a chop string can be postponed, prefixes with a chop
-string will still be included in the word list.  An exception if the chop
-string is one character and equal to the last character of the added string,
-but in lower case.  Thus when the chop string is used to allow the following
-word to start with an upper case letter.
+Only prefixes without a chop string and without flags can be postponed.
+Prefixes with a chop string or with flags will still be included in the word
+list.  An exception if the chop string is one character and equal to the last
+character of the added string, but in lower case.  Thus when the chop string
+is used to allow the following word to start with an upper case letter.
 
 
 WORDS WITH A SLASH					*spell-SLASH*
@@ -1476,12 +1495,6 @@ CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 
 CHECKCOMPOUNDPATTERN  (Hunspell)		*spell-CHECKCOMPOUNDPATTERN*
 		Forbid compounding when patterns match.  Not supported.
-
-CIRCUMFIX	(Hunspell)				*spell-CIRCUMFIX*
-		This means a prefix and suffix must be added at the same time.
-		Instead only specify the suffix, and give the that suffix two
-		flags: The required prefix and the NEEDAFFIX flag.
-		|spell-NEEDAFFIX|
 
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.

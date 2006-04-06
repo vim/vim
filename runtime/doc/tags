@@ -3199,6 +3199,7 @@ CTRL-W_d	tagsrch.txt	/*CTRL-W_d*
 CTRL-W_f	windows.txt	/*CTRL-W_f*
 CTRL-W_g]	windows.txt	/*CTRL-W_g]*
 CTRL-W_g_CTRL-]	windows.txt	/*CTRL-W_g_CTRL-]*
+CTRL-W_gf	windows.txt	/*CTRL-W_gf*
 CTRL-W_g}	windows.txt	/*CTRL-W_g}*
 CTRL-W_h	windows.txt	/*CTRL-W_h*
 CTRL-W_i	tagsrch.txt	/*CTRL-W_i*
@@ -4430,6 +4431,7 @@ added-options	version5.txt	/*added-options*
 added-regexp	version5.txt	/*added-regexp*
 added-various	version5.txt	/*added-various*
 added-win32-GUI	version5.txt	/*added-win32-GUI*
+aff-dic-format	spell.txt	/*aff-dic-format*
 after-directory	options.txt	/*after-directory*
 aleph	options.txt	/*aleph*
 alt	intro.txt	/*alt*

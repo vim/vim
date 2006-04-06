@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0c.  Last change: Mar 22, 2006
+*pi_netrw.txt*  For Vim version 7.0c.  Last change: Apr 06, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -1448,6 +1448,9 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v85: * bug fix -- missing an endif
+	     * bug fix -- handles spaces in names and directories when using
+	       ftp-based browsing
 	v83: * disabled stop-acd handling; the change in directory handling
 	       may allow acd to be used again.  Awaiting feedback.
 	     * D was refusing to delete remote files/directories in wide

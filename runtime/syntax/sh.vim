@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Mar 01, 2006
-" Version:		81
+" Last Change:		Apr 06, 2006
+" Version:		82
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -79,7 +79,7 @@ syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
 syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shExpr,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial
 syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shExSingleQuote,shSingleQuote,shDoubleQuote,shSpecial,shExpr,shDblBrace,shDeref,shDerefSimple
 syn cluster shExprList2	contains=@shExprList1,@shCaseList,shTest
-syn cluster shFunctionList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSub,shCommandSub,shComment,shDo,shEcho,shFor,shHereDoc,shIf,shRedir,shSetList,shSource,shStatement,shVariable,shSpecial,shOperator,shFunctionStart
+syn cluster shFunctionList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSub,shCommandSub,shComment,shDo,shEcho,shExpr,shFor,shHereDoc,shIf,shRedir,shSetList,shSource,shStatement,shVariable,shSpecial,shOperator,shFunctionStart
 syn cluster shHereBeginList	contains=@shCommandSubList
 syn cluster shHereList	contains=shBeginHere,shHerePayload
 syn cluster shHereListDQ	contains=shBeginHere,@shDblQuoteList,shHerePayload
@@ -154,9 +154,15 @@ syn match   shCharClass	contained	"\[:\(backspace\|escape\|return\|xdigit\|alnum
 
 " Loops: do, if, while, until {{{1
 " ======
-syn region shDo		transparent matchgroup=shConditional start="\<do\>" matchgroup=shConditional end="\<done\>" contains=@shLoopList
-syn region shIf		transparent matchgroup=shConditional start="\<if\>" matchgroup=shConditional end="\<;\_s*then\>" end="\<fi\>"   contains=@shLoopList,shDblBrace,shDblParen
-syn region shFor	matchgroup=shLoop start="\<for\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen skipwhite nextgroup=shCurlyIn
+if g:sh_fold_enabled
+ syn region shDo	fold transparent matchgroup=shConditional start="\<do\>" matchgroup=shConditional end="\<done\>" contains=@shLoopList
+ syn region shIf	fold transparent matchgroup=shConditional start="\<if\>" matchgroup=shConditional end="\<;\_s*then\>" end="\<fi\>"   contains=@shLoopList,shDblBrace,shDblParen,shFunctionKey
+ syn region shFor	fold matchgroup=shLoop start="\<for\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen skipwhite nextgroup=shCurlyIn
+else
+ syn region shDo	transparent matchgroup=shConditional start="\<do\>" matchgroup=shConditional end="\<done\>" contains=@shLoopList
+ syn region shIf	transparent matchgroup=shConditional start="\<if\>" matchgroup=shConditional end="\<;\_s*then\>" end="\<fi\>"   contains=@shLoopList,shDblBrace,shDblParen,shFunctionKey
+ syn region shFor	matchgroup=shLoop start="\<for\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen skipwhite nextgroup=shCurlyIn
+endif
 if exists("b:is_kornshell") || exists("b:is_bash")
  syn cluster shCaseList add=shRepeat
  syn region shRepeat   matchgroup=shLoop   start="\<while\>" end="\<in\>" end="\<do\>"me=e-2	contains=@shLoopList,shDblParen,shDblBrace
@@ -174,7 +180,11 @@ syn match  shComma     contained	","
 syn match   shCaseBar	contained skipwhite "[^|"`'()]\{-}|"hs=e		nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 syn match   shCaseStart	contained skipwhite skipnl "("			nextgroup=shCase,shCaseBar
 syn region  shCase	contained skipwhite skipnl matchgroup=shSnglCase start="[^#$()'"]\{-})"ms=s,hs=e  end=";;" end="esac"me=s-1 contains=@shCaseList nextgroup=shCaseStart,shCase,shComment
-syn region  shCaseEsac	matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
+if g:sh_fold_enabled
+ syn region  shCaseEsac	fold matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
+else
+ syn region  shCaseEsac	matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
+endif
 syn keyword shCaseIn	contained skipwhite skipnl in			nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 if exists("b:is_bash")
  syn region  shCaseExSingleQuote	matchgroup=shOperator start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
@@ -319,7 +329,7 @@ endif
 
 " Functions: {{{1
 syn keyword shFunctionKey function	skipwhite skipnl nextgroup=shFunctionTwo
-syn match   shFunctionStart	"{"	contained
+syn match   shFunctionStart	"^\s*{"	contained
 if g:sh_fold_enabled
  syn region shFunctionOne transparent fold	start="^\s*\h\w*\s*()\_s*\ze{"    matchgroup=shFunctionStart end="}"	contains=@shFunctionList
  syn region shFunctionTwo transparent fold	start="\h\w*\s*\%(()\)\=\_s*\ze{" matchgroup=shFunctionStart end="}"	contains=shFunctionKey,@shFunctionList contained

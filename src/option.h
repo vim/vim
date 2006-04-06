@@ -303,7 +303,7 @@
 #ifdef FEAT_RIGHTLEFT
 EXTERN long	p_aleph;	/* 'aleph' */
 #endif
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+#ifdef FEAT_AUTOCHDIR
 EXTERN int	p_acd;		/* 'autochdir' */
 #endif
 #ifdef FEAT_MBYTE

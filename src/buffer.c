@@ -434,7 +434,7 @@ close_buffer(win, buf, action)
     if (usingNetbeans)
 	netbeans_file_closed(buf);
 #endif
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+#ifdef FEAT_AUTOCHDIR
     /* Change directories when the acd option is set on. */
     if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)
@@ -1418,7 +1418,7 @@ enter_buffer(buf)
 	netbeans_file_activated(curbuf);
 #endif
 
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+#ifdef FEAT_AUTOCHDIR
     /* Change directories when the acd option is set on. */
     if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)

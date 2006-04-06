@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0c.  Last change: 2006 Mar 24
+*index.txt*     For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -549,6 +549,8 @@ tag		command		   action in Normal mode	~
 |CTRL-W_g]|	CTRL-W g ]	   split window and do |:tselect| for tag
 				   under cursor
 |CTRL-W_g}|	CTRL-W g }	   do a |:ptjump| to the tag under the cursor
+|CTRL-W_gf|	CTRL-W g f	   edit file name under the cursor in a new
+				   tab page
 |CTRL-W_h|	CTRL-W h	   go to Nth left window (stop at first window)
 |CTRL-W_i|	CTRL-W i	   split window and jump to declaration of
 				   identifier under the cursor

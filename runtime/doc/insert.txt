@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0c.  Last change: 2006 Apr 05
+*insert.txt*    For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1007,7 +1007,8 @@ items:
 	word		the text that will be inserted, mandatory
 	abbr		abbreviation of "word"; when not empty it is used in
 			the menu instead of "word"
-	menu		extra text for the popup menu, after "word" or "abbr"
+	menu		extra text for the popup menu, displayed after "word"
+			or "abbr"
 	info		more information about the item, can be displayed in a
 			preview window
 	kind		single letter indicating the type of completion

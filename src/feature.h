@@ -1246,3 +1246,12 @@
 # define FEAT_FOOTER
 
 #endif
+
+/*
+ * +autochdir		'autochdir' option.
+ */
+#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG) \
+	    || defined(FEAT_BIG)
+# define FEAT_AUTOCHDIR
+#endif
+

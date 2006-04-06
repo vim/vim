@@ -521,7 +521,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-#if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+#ifdef FEAT_AUTOCHDIR
     {"autochdir",  "acd",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_acd, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
@@ -7263,15 +7263,15 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	else
 	    gui_mch_disable_beval_area(balloonEval);
     }
+#endif
 
-# if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
+#ifdef FEAT_AUTOCHDIR
     else if ((int *)varp == &p_acd)
     {
 	if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)
 	    shorten_fnames(TRUE);
     }
-# endif
 #endif
 
 #ifdef FEAT_DIFF
