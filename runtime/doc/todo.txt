@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 05
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,17 +31,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 New Hungarian dictionary. (Laci Nemeth)
--   Support flags on a suffix used for second level affixes.
-    The flags may also be used for compounding.  Default is an OR
-    mechanism with the flags of the word.
-    Adding "compset" flag on the affixes means the compound flags of the word
-    are not used?
-
--   implement use of CHECKCOMPOUND* flags, <compoptions> in .spl file
-
+-   implement use of <compoptions> in .spl file:
+-   implement CHECKCOMPOUNDREP: when a compound word seems to be OK apply REP
+    items and theck if the result is a valid word.
+-   implement CHECKCOMPOUNDDUP
+-   implement CHECKCOMPOUNDTRIPLE
 -   Add CHECKCOMPOUNDCASE: when compounding make leading capital lower case.
     How is it supposed to work?
-
 -   implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
 
 Obey 'switchbuf' "useopen" value for windows in other tabs, e.g. for :sbuffer.
@@ -1113,6 +1109,8 @@ Spell checking:
 -   Add a command the repeats ]s and z=, showing the misspelled word in its
     context.  Thus to spell-check a whole file.
 -   suggestion for "KG" to "kg" when it's keepcase.
+-   For flags on affixes: Use a "AFFCOMPSET" flag; means the compound flags of
+    the word are not used.
 -   Support breakpoint character ? 0xb7 and ignore it?  Makes it possible to
     use same wordlist for hyphenation.
 -   Compound word is accepted if nr of words is <= COMPOUNDWORDMAX OR nr of

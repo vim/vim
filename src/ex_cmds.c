@@ -3485,7 +3485,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	foldUpdateAll(curwin);
 #endif
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
+#ifdef FEAT_AUTOCHDIR
 	if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)
 	    shorten_fnames(TRUE);
@@ -3656,12 +3656,14 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
     if (p_im)
 	need_start_insertmode = TRUE;
 
-#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
+#ifdef FEAT_AUTOCHDIR
     /* Change directories when the acd option is set on. */
     if (p_acd && curbuf->b_ffname != NULL
 				     && vim_chdirfile(curbuf->b_ffname) == OK)
 	shorten_fnames(TRUE);
+#endif
 
+#if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
     if (gui.in_use && curbuf->b_ffname != NULL)
     {
 # ifdef FEAT_SUN_WORKSHOP

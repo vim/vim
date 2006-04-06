@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0c.  Last change: 2006 Apr 05
+*version7.txt*  For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2384,5 +2384,14 @@ to move to the right.
 
 When a line wraps, 'cursorcolumn' was never displayed past the end of the
 line.
+
+'autochdir' was only available when compiled with NetBeans and GUI.  Now it's
+a separate feature, also available in the "big" version.
+
+Added CTRL-W gf: open file under cursor in new tab page.
+
+When using the menu in the tab pages line, "New Tab" opens the new tab before
+where the click was.  Beyond the labels the new tab appears at the end instead
+of after the current tab page.
 
  vim:tw=78:ts=8:ft=help:norl:
