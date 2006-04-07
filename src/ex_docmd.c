@@ -2177,7 +2177,12 @@ do_one_cmd(cmdlinep, sourcing,
 	    goto doend;
 	}
 #ifdef FEAT_AUTOCMD
+	/* Disallow editing another buffer when "curbuf_lock" is set.
+	 * Do allow ":edit" (check for argument later).
+	 * Do allow ":checktime" (it's postponed). */
 	if (!(ea.argt & CMDWIN)
+		&& ea.cmdidx != CMD_edit
+		&& ea.cmdidx != CMD_checktime
 # ifdef FEAT_USR_CMDS
 		&& !USER_CMDIDX(ea.cmdidx)
 # endif
@@ -7402,6 +7407,12 @@ do_exedit(eap, old_curwin)
 #endif
 	    )
     {
+#ifdef FEAT_AUTOCMD
+	/* Can't edit another file when "curbuf_lock" is set.  Only ":edit"
+	 * can bring us here, others are stopped earlier. */
+	if (*eap->arg != NUL && curbuf_locked())
+	    return;
+#endif
 	n = readonlymode;
 	if (eap->cmdidx == CMD_view || eap->cmdidx == CMD_sview)
 	    readonlymode = TRUE;

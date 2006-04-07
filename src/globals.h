@@ -202,7 +202,7 @@ EXTERN int	x_force_connect INIT(= FALSE); /* Do connect to X server.
 # endif
 #endif
 EXTERN int	ex_keep_indent INIT(= FALSE); /* getexmodeline(): keep indent */
-EXTERN int	vgetc_busy INIT(= FALSE);   /* inside vgetc() now */
+EXTERN int	vgetc_busy INIT(= 0);	    /* when inside vgetc() then > 0 */
 
 EXTERN int	didset_vim INIT(= FALSE);   /* did set $VIM ourselves */
 EXTERN int	didset_vimruntime INIT(= FALSE);   /* idem for $VIMRUNTIME */

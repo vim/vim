@@ -382,46 +382,47 @@ an 50.100.160 &Syntax.Sh-S.Simula :cal SetSyn("simula")<CR>
 an 50.100.170 &Syntax.Sh-S.Sinda.Sinda\ compare :cal SetSyn("sindacmp")<CR>
 an 50.100.180 &Syntax.Sh-S.Sinda.Sinda\ input :cal SetSyn("sinda")<CR>
 an 50.100.190 &Syntax.Sh-S.Sinda.Sinda\ output :cal SetSyn("sindaout")<CR>
-an 50.100.200 &Syntax.Sh-S.SKILL.SKILL :cal SetSyn("skill")<CR>
-an 50.100.210 &Syntax.Sh-S.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
-an 50.100.220 &Syntax.Sh-S.Slice :cal SetSyn("slice")<CR>
-an 50.100.230 &Syntax.Sh-S.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
-an 50.100.240 &Syntax.Sh-S.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
-an 50.100.250 &Syntax.Sh-S.SmallTalk :cal SetSyn("st")<CR>
-an 50.100.260 &Syntax.Sh-S.Smarty\ Templates :cal SetSyn("smarty")<CR>
-an 50.100.270 &Syntax.Sh-S.SMIL :cal SetSyn("smil")<CR>
-an 50.100.280 &Syntax.Sh-S.SMITH :cal SetSyn("smith")<CR>
-an 50.100.290 &Syntax.Sh-S.SNMP\ MIB :cal SetSyn("mib")<CR>
-an 50.100.300 &Syntax.Sh-S.SNNS.SNNS\ network :cal SetSyn("snnsnet")<CR>
-an 50.100.310 &Syntax.Sh-S.SNNS.SNNS\ pattern :cal SetSyn("snnspat")<CR>
-an 50.100.320 &Syntax.Sh-S.SNNS.SNNS\ result :cal SetSyn("snnsres")<CR>
-an 50.100.330 &Syntax.Sh-S.Snobol4 :cal SetSyn("snobol4")<CR>
-an 50.100.340 &Syntax.Sh-S.Snort\ Configuration :cal SetSyn("hog")<CR>
-an 50.100.350 &Syntax.Sh-S.SPEC\ (Linux\ RPM) :cal SetSyn("spec")<CR>
-an 50.100.360 &Syntax.Sh-S.Specman :cal SetSyn("specman")<CR>
-an 50.100.370 &Syntax.Sh-S.Spice :cal SetSyn("spice")<CR>
-an 50.100.380 &Syntax.Sh-S.Spyce :cal SetSyn("spyce")<CR>
-an 50.100.390 &Syntax.Sh-S.Speedup :cal SetSyn("spup")<CR>
-an 50.100.400 &Syntax.Sh-S.Splint :cal SetSyn("splint")<CR>
-an 50.100.410 &Syntax.Sh-S.Squid\ config :cal SetSyn("squid")<CR>
-an 50.100.420 &Syntax.Sh-S.SQL.ESQL-C :cal SetSyn("esqlc")<CR>
-an 50.100.430 &Syntax.Sh-S.SQL.MySQL :cal SetSyn("mysql")<CR>
-an 50.100.440 &Syntax.Sh-S.SQL.PL/SQL :cal SetSyn("plsql")<CR>
-an 50.100.450 &Syntax.Sh-S.SQL.SQL\ Anywhere :cal SetSyn("sqlanywhere")<CR>
-an 50.100.460 &Syntax.Sh-S.SQL.SQL\ (automatic) :cal SetSyn("sql")<CR>
-an 50.100.470 &Syntax.Sh-S.SQL.SQL\ (Oracle) :cal SetSyn("sqloracle")<CR>
-an 50.100.480 &Syntax.Sh-S.SQL.SQL\ Forms :cal SetSyn("sqlforms")<CR>
-an 50.100.490 &Syntax.Sh-S.SQL.SQLJ :cal SetSyn("sqlj")<CR>
-an 50.100.500 &Syntax.Sh-S.SQL.SQL-Informix :cal SetSyn("sqlinformix")<CR>
-an 50.100.510 &Syntax.Sh-S.SQR :cal SetSyn("sqr")<CR>
-an 50.100.520 &Syntax.Sh-S.Ssh.ssh_config :cal SetSyn("sshconfig")<CR>
-an 50.100.530 &Syntax.Sh-S.Ssh.sshd_config :cal SetSyn("sshdconfig")<CR>
-an 50.100.540 &Syntax.Sh-S.Standard\ ML :cal SetSyn("sml")<CR>
-an 50.100.550 &Syntax.Sh-S.Stored\ Procedures :cal SetSyn("stp")<CR>
-an 50.100.560 &Syntax.Sh-S.Strace :cal SetSyn("strace")<CR>
-an 50.100.570 &Syntax.Sh-S.Subversion\ commit :cal SetSyn("svn")<CR>
-an 50.100.580 &Syntax.Sh-S.Sudoers :cal SetSyn("sudoers")<CR>
-an 50.100.590 &Syntax.Sh-S.Sysctl\.conf :cal SetSyn("sysctl")<CR>
+an 50.100.200 &Syntax.Sh-S.SiSU :cal SetSyn("sisu")<CR>
+an 50.100.210 &Syntax.Sh-S.SKILL.SKILL :cal SetSyn("skill")<CR>
+an 50.100.220 &Syntax.Sh-S.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
+an 50.100.230 &Syntax.Sh-S.Slice :cal SetSyn("slice")<CR>
+an 50.100.240 &Syntax.Sh-S.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
+an 50.100.250 &Syntax.Sh-S.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
+an 50.100.260 &Syntax.Sh-S.SmallTalk :cal SetSyn("st")<CR>
+an 50.100.270 &Syntax.Sh-S.Smarty\ Templates :cal SetSyn("smarty")<CR>
+an 50.100.280 &Syntax.Sh-S.SMIL :cal SetSyn("smil")<CR>
+an 50.100.290 &Syntax.Sh-S.SMITH :cal SetSyn("smith")<CR>
+an 50.100.300 &Syntax.Sh-S.SNMP\ MIB :cal SetSyn("mib")<CR>
+an 50.100.310 &Syntax.Sh-S.SNNS.SNNS\ network :cal SetSyn("snnsnet")<CR>
+an 50.100.320 &Syntax.Sh-S.SNNS.SNNS\ pattern :cal SetSyn("snnspat")<CR>
+an 50.100.330 &Syntax.Sh-S.SNNS.SNNS\ result :cal SetSyn("snnsres")<CR>
+an 50.100.340 &Syntax.Sh-S.Snobol4 :cal SetSyn("snobol4")<CR>
+an 50.100.350 &Syntax.Sh-S.Snort\ Configuration :cal SetSyn("hog")<CR>
+an 50.100.360 &Syntax.Sh-S.SPEC\ (Linux\ RPM) :cal SetSyn("spec")<CR>
+an 50.100.370 &Syntax.Sh-S.Specman :cal SetSyn("specman")<CR>
+an 50.100.380 &Syntax.Sh-S.Spice :cal SetSyn("spice")<CR>
+an 50.100.390 &Syntax.Sh-S.Spyce :cal SetSyn("spyce")<CR>
+an 50.100.400 &Syntax.Sh-S.Speedup :cal SetSyn("spup")<CR>
+an 50.100.410 &Syntax.Sh-S.Splint :cal SetSyn("splint")<CR>
+an 50.100.420 &Syntax.Sh-S.Squid\ config :cal SetSyn("squid")<CR>
+an 50.100.430 &Syntax.Sh-S.SQL.ESQL-C :cal SetSyn("esqlc")<CR>
+an 50.100.440 &Syntax.Sh-S.SQL.MySQL :cal SetSyn("mysql")<CR>
+an 50.100.450 &Syntax.Sh-S.SQL.PL/SQL :cal SetSyn("plsql")<CR>
+an 50.100.460 &Syntax.Sh-S.SQL.SQL\ Anywhere :cal SetSyn("sqlanywhere")<CR>
+an 50.100.470 &Syntax.Sh-S.SQL.SQL\ (automatic) :cal SetSyn("sql")<CR>
+an 50.100.480 &Syntax.Sh-S.SQL.SQL\ (Oracle) :cal SetSyn("sqloracle")<CR>
+an 50.100.490 &Syntax.Sh-S.SQL.SQL\ Forms :cal SetSyn("sqlforms")<CR>
+an 50.100.500 &Syntax.Sh-S.SQL.SQLJ :cal SetSyn("sqlj")<CR>
+an 50.100.510 &Syntax.Sh-S.SQL.SQL-Informix :cal SetSyn("sqlinformix")<CR>
+an 50.100.520 &Syntax.Sh-S.SQR :cal SetSyn("sqr")<CR>
+an 50.100.530 &Syntax.Sh-S.Ssh.ssh_config :cal SetSyn("sshconfig")<CR>
+an 50.100.540 &Syntax.Sh-S.Ssh.sshd_config :cal SetSyn("sshdconfig")<CR>
+an 50.100.550 &Syntax.Sh-S.Standard\ ML :cal SetSyn("sml")<CR>
+an 50.100.560 &Syntax.Sh-S.Stored\ Procedures :cal SetSyn("stp")<CR>
+an 50.100.570 &Syntax.Sh-S.Strace :cal SetSyn("strace")<CR>
+an 50.100.580 &Syntax.Sh-S.Subversion\ commit :cal SetSyn("svn")<CR>
+an 50.100.590 &Syntax.Sh-S.Sudoers :cal SetSyn("sudoers")<CR>
+an 50.100.600 &Syntax.Sh-S.Sysctl\.conf :cal SetSyn("sysctl")<CR>
 an 50.110.100 &Syntax.TUV.TADS :cal SetSyn("tads")<CR>
 an 50.110.110 &Syntax.TUV.Tags :cal SetSyn("tags")<CR>
 an 50.110.120 &Syntax.TUV.TAK.TAK\ compare :cal SetSyn("takcmp")<CR>

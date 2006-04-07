@@ -4872,7 +4872,7 @@ mch_expandpath(gap, path, flags)
 # define SEEK_END 2
 #endif
 
-#define SHELL_SPECIAL (char_u *)"\t \"&';<>()\\|"
+#define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|"
 
 /* ARGSUSED */
     int

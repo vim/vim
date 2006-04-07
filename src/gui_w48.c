@@ -1114,22 +1114,19 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 #ifdef FEAT_TOOLBAR
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	SendMessage(s_toolbarhwnd, WM_SIZE,
-		(WPARAM)0, (LPARAM)(w + ((long)(TOOLBAR_BUTTON_HEIGHT+8)<<16)));
+	      (WPARAM)0, (LPARAM)(w + ((long)(TOOLBAR_BUTTON_HEIGHT+8)<<16)));
 #endif
 #if defined(FEAT_GUI_TABLINE)
     if (showing_tabline)
     {
 	int	top = 0;
-	RECT	rect;
 
 #ifdef FEAT_TOOLBAR
 	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
 #endif
-
-	SetRect(&rect, 0, top, w, TABLINE_HEIGHT);
-	TabCtrl_AdjustRect(s_tabhwnd, TRUE, &rect);
-	MoveWindow(s_tabhwnd, 0, top, rect.right, rect.bottom, TRUE);
+	GetClientRect(s_hwnd, &rect);
+	MoveWindow(s_tabhwnd, 0, top, rect.right, TABLINE_HEIGHT, TRUE);
     }
 #endif
 
@@ -1460,7 +1457,7 @@ gui_mch_get_color(char_u *name)
 	if (fname == NULL)
 	    return INVALCOLOR;
 
-	fd = fopen((char *)fname, "rt");
+	fd = mch_fopen((char *)fname, "rt");
 	vim_free(fname);
 	if (fd == NULL)
 	    return INVALCOLOR;

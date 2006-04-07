@@ -1822,7 +1822,7 @@ vgetorpeek(advance)
      * Using ":normal" can also do this, but it saves the typeahead buffer,
      * thus it should be OK.  But don't get a key from the user then.
      */
-    if (vgetc_busy
+    if (vgetc_busy > 0
 #ifdef FEAT_EX_EXTRA
 	    && ex_normal_busy == 0
 #endif
@@ -1831,7 +1831,7 @@ vgetorpeek(advance)
 
     local_State = get_real_state();
 
-    vgetc_busy = TRUE;
+    ++vgetc_busy;
 
     if (advance)
 	KeyStuffed = FALSE;
@@ -2316,10 +2316,25 @@ vgetorpeek(advance)
 #ifdef FEAT_EVAL
 			/*
 			 * Handle ":map <expr>": evaluate the {rhs} as an
-			 * expression.
+			 * expression.  Save and restore the typeahead so that
+			 * getchar() can be used.
 			 */
 			if (mp->m_expr)
-			    s = eval_to_string(mp->m_str, NULL, FALSE);
+			{
+			    tasave_T	tabuf;
+			    int		save_vgetc_busy = vgetc_busy;
+
+			    save_typeahead(&tabuf);
+			    if (tabuf.typebuf_valid)
+			    {
+				vgetc_busy = 0;
+				s = eval_to_string(mp->m_str, NULL, FALSE);
+				vgetc_busy = save_vgetc_busy;
+			    }
+			    else
+				s = NULL;
+			    restore_typeahead(&tabuf);
+			}
 			else
 #endif
 			    s = mp->m_str;
@@ -2689,7 +2704,7 @@ vgetorpeek(advance)
 	gui_update_cursor(TRUE, FALSE);
 #endif
 
-    vgetc_busy = FALSE;
+    --vgetc_busy;
 
     return c;
 }

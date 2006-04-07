@@ -21,7 +21,8 @@ $SPELLDIR/hu.utf-8.spl : $FILES
 $SPELLDIR/hu.cp1250.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=cp1250" -c "mkspell! $SPELLDIR/hu hu_HU" -c q
 
-../README_hu.txt: $FILES
+# There is no readme in the .zip file, use the header of the .aff file.
+../README_hu.txt: hu_HU.aff
         :sys $VIM -u NONE -e hu_HU.aff -c "1,/# ---/w! $target" -c q
 
 #

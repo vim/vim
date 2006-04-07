@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 28
+" Last Change:	2006 Apr 07
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -411,6 +411,7 @@ SynMenu Sh-S.Simula:simula
 SynMenu Sh-S.Sinda.Sinda\ compare:sindacmp
 SynMenu Sh-S.Sinda.Sinda\ input:sinda
 SynMenu Sh-S.Sinda.Sinda\ output:sindaout
+SynMenu Sh-S.SiSU:sisu
 SynMenu Sh-S.SKILL.SKILL:skill
 SynMenu Sh-S.SKILL.SKILL\ for\ Diva:diva
 SynMenu Sh-S.Slice:slice

@@ -1,5 +1,5 @@
 *** hu_HU.orig.aff	Sun Mar 26 15:05:13 2006
---- hu_HU.aff	Sun Mar 26 21:17:08 2006
+--- hu_HU.aff	Thu Apr  6 19:48:01 2006
 ***************
 *** 57,59 ****
   NAME Magyar Ispell helyesνrαsi szσtαr
@@ -91,7 +91,7 @@
   
 ! FORBIDDENWORD w
 ! WORDCHARS -.Β§%Β°0123456789β€“
-! 
+  
   
 ! NOT_GENERATE &
 ! GENERATE (
@@ -102,19 +102,19 @@
   
 ! #FORBIDDENWORD w
 ! BAD w
-  
+! 
 ! #WORDCHARS -.Β§%Β°0123456789β€“
   
-! # List the word characters for ISO-8859-2.
-! FOL ±Ά³µ¶¨ΉΊ»ΌΎΏ±²³΄µ¶·ΈΉΊ»Ό½ΎΏΰαβγδεζηθικλμνξοπρςστυφψωϊϋόύώίÿ-§%°
-! LOW ±Ά³µ¶¨ΉΊ»ΌΎΏ±²³΄µ¶·ΈΉΊ»Ό½ΎΏΰαβγδεζηθικλμνξοπρςστυφψωϊϋόύώίÿ-§%°
-! UPP ΅Ά£¥¦¨©ª«¬®―±²³΄µ¶·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡÒΣΤΥΦΨΩΪΫάέήίÿ-§%°
-! MIDWORD .
-! 
++ # List the word characters for ISO-8859-2.
++ FOL ±Ά³µ¶¨ΉΊ»ΌΎΏ±²³΄µ¶·ΈΉΊ»Ό½ΎΏΰαβγδεζηθικλμνξοπρςστυφψωϊϋόύώίÿ-§%°
++ LOW ±Ά³µ¶¨ΉΊ»ΌΎΏ±²³΄µ¶·ΈΉΊ»Ό½ΎΏΰαβγδεζηθικλμνξοπρςστυφψωϊϋόύώίÿ-§%°
++ UPP ΅Ά£¥¦¨©ª«¬®―±²³΄µ¶·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡÒΣΤΥΦΨΩΪΫάέήίÿ-§%°
++ MIDWORD .
+  
 ! # These are not documented and not in the source code either
 ! #NOT_GENERATE &
 ! #GENERATE (
-! 
+  
 ! # Only for morphological analysis
 ! #LEMMA_PRESENT )
 ! 
@@ -278,6 +278,12 @@
 ! #CHR 123 U2 ά
 ! #CHR 123 U3 Ϋ
   
+***************
+*** 22054,22055 ****
+--- 22083,22085 ----
+  PFX D 0 leg [^AΑBCDEΙFGHIΝJKLMNOΣΦΥPQRSTUΪάΫVWZ]
++ 
+  PFX " Y 37
 *** hu_HU.orig.dic	Sun Mar 26 15:05:13 2006
 --- hu_HU.dic	Sun Mar 26 20:12:13 2006
 ***************

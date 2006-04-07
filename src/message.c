@@ -869,7 +869,7 @@ wait_return(redraw)
  * end. Adjust cmdline_row to avoid the next message overwriting the last one.
  * When inside vgetc(), we can't wait for a typed character at all.
  */
-    if (vgetc_busy)
+    if (vgetc_busy > 0)
 	return;
     if (no_wait_return)
     {

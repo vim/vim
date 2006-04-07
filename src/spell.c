@@ -356,18 +356,22 @@ typedef long idx_T;
 #define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP | WF_FIXCAP)
 
 /* flags for <pflags> */
-#define WFP_RARE    0x01	/* rare prefix */
-#define WFP_NC	    0x02	/* prefix is not combining */
-#define WFP_UP	    0x04	/* to-upper prefix */
+#define WFP_RARE	    0x01	/* rare prefix */
+#define WFP_NC		    0x02	/* prefix is not combining */
+#define WFP_UP		    0x04	/* to-upper prefix */
+#define WFP_COMPPERMIT	    0x08	/* prefix with COMPOUNDPERMITFLAG */
+#define WFP_COMPFORBID	    0x10	/* prefix with COMPOUNDFORBIDFLAG */
 
-/* Flags for postponed prefixes.  Must be above affixID (one byte)
- * and prefcondnr (two bytes). */
-#define WF_RAREPFX  (WFP_RARE << 24)	/* in sl_pidxs: flag for rare
-					 * postponed prefix */
-#define WF_PFX_NC   (WFP_NC << 24)	/* in sl_pidxs: flag for non-combining
-					 * postponed prefix */
-#define WF_PFX_UP   (WFP_UP << 24)	/* in sl_pidxs: flag for to-upper
-					 * postponed prefix */
+/* Flags for postponed prefixes in "sl_pidxs".  Must be above affixID (one
+ * byte) and prefcondnr (two bytes). */
+#define WF_RAREPFX  (WFP_RARE << 24)	/* rare postponed prefix */
+#define WF_PFX_NC   (WFP_NC << 24)	/* non-combining postponed prefix */
+#define WF_PFX_UP   (WFP_UP << 24)	/* to-upper postponed prefix */
+#define WF_PFX_COMPPERMIT (WFP_COMPPERMIT << 24) /* postponed prefix with
+						  * COMPOUNDPERMITFLAG */
+#define WF_PFX_COMPFORBID (WFP_COMPFORBID << 24) /* postponed prefix with
+						  * COMPOUNDFORBIDFLAG */
+
 
 /* flags for <compoptions> */
 #define COMP_CHECKDUP		1	/* CHECKCOMPOUNDDUP */
@@ -3473,9 +3477,11 @@ read_compound(fd, slang, len)
 					    /* <comppatlen> <comppattext> */
 		if (cnt < 0)
 		    return cnt;
-		todo -= cnt + 2;
+		todo -= cnt + 1;
 	    }
     }
+    if (todo < 0)
+	return SP_FORMERROR;
 
     /* Turn the COMPOUNDRULE items into a regexp pattern:
      * "a[bc]/a*b+" -> "^\(a[bc]\|a*b\+\)$".
@@ -4683,6 +4689,8 @@ struct affentry_S
     char_u	*ae_flags;	/* flags on the affix (can be NULL) */
     char_u	*ae_cond;	/* condition (NULL for ".") */
     regprog_T	*ae_prog;	/* regexp program for ae_cond or NULL */
+    char	ae_compforbid;	/* COMPOUNDFORBIDFLAG found */
+    char	ae_comppermit;	/* COMPOUNDPERMITFLAG found */
 };
 
 #ifdef FEAT_MBYTE
@@ -4842,6 +4850,7 @@ typedef struct spellinfo_S
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((spellinfo_T *spin, char_u *fname));
+static void aff_process_flags __ARGS((afffile_T *affile, affentry_T *entry));
 static int spell_info_item __ARGS((char_u *s));
 static unsigned affitem2flag __ARGS((int flagtype, char_u *item, char_u	*fname, int lnum));
 static unsigned get_affitem __ARGS((int flagtype, char_u **pp));
@@ -5273,12 +5282,18 @@ spell_read_aff(spin, fname)
 	    {
 		aff->af_compforbid = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
+		if (aff->af_pref.ht_used > 0)
+		    smsg((char_u *)_("Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"),
+			    fname, lnum);
 	    }
 	    else if (STRCMP(items[0], "COMPOUNDPERMITFLAG") == 0
 				   && itemcnt == 2 && aff->af_comppermit == 0)
 	    {
 		aff->af_comppermit = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
+		if (aff->af_pref.ht_used > 0)
+		    smsg((char_u *)_("Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"),
+			    fname, lnum);
 	    }
 	    else if (STRCMP(items[0], "COMPOUNDFLAG") == 0 && itemcnt == 2
 							 && compflags == NULL)
@@ -5528,10 +5543,13 @@ spell_read_aff(spin, fname)
 		{
 		    aff_entry->ae_add = getroom_save(spin, items[3]);
 
-		    /* Recognize flags on the affix: abcd/1234 */
+		    /* Recognize flags on the affix: abcd/XYZ */
 		    aff_entry->ae_flags = vim_strchr(aff_entry->ae_add, '/');
 		    if (aff_entry->ae_flags != NULL)
+		    {
 			*aff_entry->ae_flags++ = NUL;
+			aff_process_flags(aff, aff_entry);
+		    }
 		}
 
 		/* Don't use an affix entry with non-ASCII characters when
@@ -5560,7 +5578,8 @@ spell_read_aff(spin, fname)
 
 		    /* For postponed prefixes we need an entry in si_prefcond
 		     * for the condition.  Use an existing one if possible.
-		     * Can't be done for an affix with flags. */
+		     * Can't be done for an affix with flags, ignoring
+		     * COMPOUNDFORBIDFLAG and COMPOUNDPERMITFLAG. */
 		    if (*items[0] == 'P' && aff->af_pfxpostpone
 					       && aff_entry->ae_flags == NULL)
 		    {
@@ -5653,10 +5672,6 @@ spell_read_aff(spin, fname)
 							  aff_entry->ae_cond);
 			    }
 
-			    if (aff_entry->ae_flags != NULL)
-				smsg((char_u *)_("Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"),
-						       fname, lnum, items[4]);
-
 			    /* Add the prefix to the prefix tree. */
 			    if (aff_entry->ae_add == NULL)
 				p = (char_u *)"";
@@ -5670,6 +5685,10 @@ spell_read_aff(spin, fname)
 				n |= WFP_NC;
 			    if (upper)
 				n |= WFP_UP;
+			    if (aff_entry->ae_comppermit)
+				n |= WFP_COMPPERMIT;
+			    if (aff_entry->ae_compforbid)
+				n |= WFP_COMPFORBID;
 			    tree_add_word(spin, p, spin->si_prefroot, n,
 						      idx, cur_aff->ah_newID);
 			    did_postpone_prefix = TRUE;
@@ -5927,6 +5946,43 @@ spell_read_aff(spin, fname)
     vim_free(pc);
     fclose(fd);
     return aff;
+}
+
+/*
+ * For affix "entry" move COMPOUNDFORBIDFLAG and COMPOUNDPERMITFLAG from
+ * ae_flags to ae_comppermit and ae_compforbid.
+ */
+    static void
+aff_process_flags(affile, entry)
+    afffile_T	*affile;
+    affentry_T	*entry;
+{
+    char_u	*p;
+    char_u	*prevp;
+    int		flag;
+
+    if (entry->ae_flags != NULL
+		&& (affile->af_compforbid != 0 || affile->af_comppermit != 0))
+    {
+	for (p = entry->ae_flags; *p != NUL; )
+	{
+	    prevp = p;
+	    flag = get_affitem(affile->af_flagtype, &p);
+	    if (flag == affile->af_comppermit || flag == affile->af_compforbid)
+	    {
+		mch_memmove(prevp, p, STRLEN(p) + 1);
+		p = prevp;
+		if (flag == affile->af_comppermit)
+		    entry->ae_comppermit = TRUE;
+		else
+		    entry->ae_compforbid = TRUE;
+	    }
+	    if (affile->af_flagtype == AFT_NUM && *p == ',')
+		++p;
+	}
+	if (*entry->ae_flags == NUL)
+	    entry->ae_flags = NULL;	/* nothing left */
+    }
 }
 
 /*
@@ -6379,28 +6435,6 @@ spell_read_dic(spin, fname, affile)
 	    continue;	/* empty line */
 	line[l] = NUL;
 
-	/* Truncate the word at the "/", set "afflist" to what follows.
-	 * Replace "\/" by "/" and "\\" by "\". */
-	afflist = NULL;
-	for (p = line; *p != NUL; mb_ptr_adv(p))
-	{
-	    if (*p == '\\' && (p[1] == '\\' || p[1] == '/'))
-		mch_memmove(p, p + 1, STRLEN(p));
-	    else if (*p == '/')
-	    {
-		*p = NUL;
-		afflist = p + 1;
-		break;
-	    }
-	}
-
-	/* Skip non-ASCII words when "spin->si_ascii" is TRUE. */
-	if (spin->si_ascii && has_non_ascii(line))
-	{
-	    ++non_ascii;
-	    continue;
-	}
-
 #ifdef FEAT_MBYTE
 	/* Convert from "SET" to 'encoding' when needed. */
 	if (spin->si_conv.vc_type != CONV_NONE)
@@ -6419,6 +6453,28 @@ spell_read_dic(spin, fname, affile)
 	{
 	    pc = NULL;
 	    w = line;
+	}
+
+	/* Truncate the word at the "/", set "afflist" to what follows.
+	 * Replace "\/" by "/" and "\\" by "\". */
+	afflist = NULL;
+	for (p = w; *p != NUL; mb_ptr_adv(p))
+	{
+	    if (*p == '\\' && (p[1] == '\\' || p[1] == '/'))
+		mch_memmove(p, p + 1, STRLEN(p));
+	    else if (*p == '/')
+	    {
+		*p = NUL;
+		afflist = p + 1;
+		break;
+	    }
+	}
+
+	/* Skip non-ASCII words when "spin->si_ascii" is TRUE. */
+	if (spin->si_ascii && has_non_ascii(w))
+	{
+	    ++non_ascii;
+	    continue;
 	}
 
 	/* This takes time, print a message every 10000 words. */
@@ -6825,12 +6881,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 
 			/* Obey a "COMPOUNDFORBIDFLAG" of the affix: don't
 			 * use the compound flags. */
-			if (use_pfxlist != NULL
-				&& affile->af_compforbid != 0
-				&& ae->ae_flags != NULL
-				&& flag_in_afflist(
-				    affile->af_flagtype, ae->ae_flags,
-						       affile->af_compforbid))
+			if (use_pfxlist != NULL && ae->ae_compforbid)
 			{
 			    vim_strncpy(pfx_pfxlist, use_pfxlist, use_pfxlen);
 			    use_pfxlist = pfx_pfxlist;
@@ -6854,12 +6905,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 			/* When compounding is supported and there is no
 			 * "COMPOUNDPERMITFLAG" then forbid compounding on the
 			 * side where the affix is applied. */
-			if (spin->si_compflags != NULL
-				&& (affile->af_comppermit == 0
-				    || ae->ae_flags == NULL
-				    || !flag_in_afflist(
-					    affile->af_flagtype, ae->ae_flags,
-						      affile->af_comppermit)))
+			if (spin->si_compflags != NULL && !ae->ae_comppermit)
 			{
 			    if (xht != NULL)
 				use_flags |= WF_NOCOMPAFT;
@@ -10677,7 +10723,7 @@ suggest_load_files()
 	    if (dotp == NULL || fnamecmp(dotp, ".spl") != 0)
 		continue;
 	    STRCPY(dotp, ".sug");
-	    fd = fopen((char *)slang->sl_fname, "r");
+	    fd = mch_fopen((char *)slang->sl_fname, "r");
 	    if (fd == NULL)
 		goto nextone;
 

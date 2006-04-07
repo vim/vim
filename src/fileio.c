@@ -6071,7 +6071,7 @@ check_timestamps(focus)
 
     if (!stuff_empty() || global_busy || !typebuf_typed()
 #ifdef FEAT_AUTOCMD
-			|| autocmd_busy
+			|| autocmd_busy || curbuf_lock > 0
 #endif
 					)
 	need_check_timestamps = TRUE;		/* check later */
