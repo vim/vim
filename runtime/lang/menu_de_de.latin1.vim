@@ -1,7 +1,7 @@
 " Menu Translations:	German / Deutsch
 " Maintainer:		Georg Dahn <gorgyd@yahoo.co.uk>
 " Originally By:	Marcin Dalecki <dalecki@cs.net.pl>
-"            		Johannes Zellner <johannes@zellner.org>
+"			Johannes Zellner <johannes@zellner.org>
 " Last Change:	Sat, 11 Mar 2006 22:40:00 CEST
 " vim:set foldmethod=marker tabstop=8:
 
@@ -20,12 +20,12 @@ endif
 " {{{ FILE / DATEI
 menutrans &File				&Datei
 menutrans &Open\.\.\.<Tab>:e		&Öffnen\.\.\.<Tab>:e
-menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\ &Fenster\ Öffnen\.\.\.<Tab>:sp
-menutrans Open\ Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ Öffnen\.\.\.<Tab>:tabnew
+menutrans Sp&lit-Open\.\.\.<Tab>:sp	In\ geteiltem\ &Fenster\ öffnen\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	In\ neuem\ &Tab\ öffnen\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Neue\ Datei<Tab>:enew
 menutrans &Close<Tab>:close		S&chließen<Tab>:close
 menutrans &Save<Tab>:w			&Speichern<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	Speichern\ &Als\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:sav	Speichern\ &als\.\.\.<Tab>:sav
 menutrans &Print			&Drucken
 menutrans Sa&ve-Exit<Tab>:wqa		Speichern\ und\ Be&enden<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Beenden<Tab>:qa
@@ -44,10 +44,10 @@ menutrans Rep&eat<Tab>\.		&Wiederholen<Tab>\.
 menutrans Cu&t<Tab>"+x			&Ausschneiden<Tab>"+x
 menutrans &Copy<Tab>"+y			&Kopieren<Tab>"+y
 menutrans &Paste<Tab>"+gP		Ein&fügen<Tab>"+gP
-menutrans Put\ &Before<Tab>[p		Da&vor\ Einfügen<Tab>[p
-menutrans Put\ &After<Tab>]p		Da&nach\ Einfügen<Tab>]p
-menutrans &Delete<Tab>x 		&Löschen<Tab>x
-menutrans &Select\ All<Tab>ggVG		Alles\ &Markieren<Tab>ggVG
+menutrans Put\ &Before<Tab>[p		Da&vor\ einfügen<Tab>[p
+menutrans Put\ &After<Tab>]p		Da&nach\ einfügen<Tab>]p
+menutrans &Delete<Tab>x			&Löschen<Tab>x
+menutrans &Select\ All<Tab>ggVG		Alles\ &markieren<Tab>ggVG
 menutrans &Find\.\.\.			&Suchen\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	Suchen\ und\ &Ersetzen\.\.\.
 
@@ -55,6 +55,7 @@ menutrans Find\ and\ Rep&lace\.\.\.	Suchen\ und\ &Ersetzen\.\.\.
 " XXX &E would conflict with 'Suchen\ und\ &Ersetzen', see above
 menutrans Settings\ &Window				E&instellungen\.\.\.
 menutrans &Global\ Settings				&Globale\ Einstellungen
+menutrans Startup\ &Settings                            &Starteinstellungen
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Hervorhebungen\ ein-\ und\ ausschalten<Tab>:set\ hls!
 menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Großschreibung\ &ignorieren\ oder\ benutzen<Tab>:set\ ic!
@@ -66,7 +67,7 @@ menutrans &Virtual\ Edit				&Virtueller\ Editier-Modus
 menutrans Never						Nie
 menutrans Block\ Selection				Block-Auswahl
 menutrans Insert\ mode					Einfüge-Modus
-menutrans Block\ and\ Insert				Block-\ und\ Einfüge-Modus
+menutrans Block\ and\ Insert				Block-Auswahl\ und\ Einfüge-Modus
 menutrans Always					Immer
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Einfüge-&Modus\ ein-\ und\ ausschalten<Tab>:set\ im!
 menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		Vi-Kompatibilität\ ein-\ und\ ausschalten<Tab>:set\ cp!
@@ -94,19 +95,19 @@ menutrans Toggle\ &C-indenting<Tab>:set\ cin!		&C-Einrückung\ ein-\ und\ ausscha
 " other options
 menutrans &Shiftwidth					&Schiebeweite
 menutrans Soft\ &Tabstop				&Tabulator
-menutrans Te&xt\ Width\.\.\.				Te&xt\ Breite\.\.\.
-menutrans &File\ Format\.\.\.				&Datei\ Format\.\.\.
+menutrans Te&xt\ Width\.\.\.				Te&xtbreite\.\.\.
+menutrans &File\ Format\.\.\.				&Dateiformat\.\.\.
 menutrans C&olor\ Scheme				F&arbschema\.\.\.
-menutrans &Keymap					&Tastatur-Belegung
+menutrans &Keymap					&Tastaturbelegung
 " }}} EDIT / EDITIEREN
 
 " {{{  TOOLS / WERKZEUGE
 if has("spell")
     menutrans &Spelling					&Rechtschreibung
-    menutrans &Spell\ Check\ On				&Rechtschreibprüfung\ An
-    menutrans Spell\ Check\ &Off			Rechtschreibprüfung\ &Aus
-    menutrans To\ &Next\ error<Tab>]s			Zum\ &Nächsten\ Fehler<Tab>]s
-    menutrans To\ &Previous\ error<Tab>[s		Zum\ &Letzten\ Fehler<Tab>[s
+    menutrans &Spell\ Check\ On				&Rechtschreibprüfung\ an
+    menutrans Spell\ Check\ &Off			Rechtschreibprüfung\ &aus
+    menutrans To\ &Next\ error<Tab>]s			Zum\ &nächsten\ Fehler<Tab>]s
+    menutrans To\ &Previous\ error<Tab>[s		Zum\ &vorherigen\ Fehler<Tab>[s
     menutrans Suggest\ &Corrections<Tab>z=		&Korrekturvorschläge<Tab>z=
     menutrans &Repeat\ correction<Tab>:spellrepall	&Wiederhole\ Korrektur<Tab>:spellrepall
     menutrans Set\ language\ to\ "en"			Verwende\ Wörterbuch\ "en"
@@ -115,7 +116,7 @@ if has("spell")
     menutrans Set\ language\ to\ "en_gb"		Verwende\ Wörterbuch\ "en_gb"
     menutrans Set\ language\ to\ "en_nz"		Verwende\ Wörterbuch\ "en_nz"
     menutrans Set\ language\ to\ "en_us"		Verwende\ Wörterbuch\ "en_us"
-    menutrans Set\ language\ to\ "de"   		Verwende\ Wörterbuch\ "de"
+    menutrans Set\ language\ to\ "de"			Verwende\ Wörterbuch\ "de"
     menutrans &Find\ More\ Languages			&Suche\ nach\ Wörterbüchern
 endif
 if has("folding")
@@ -138,29 +139,29 @@ if has("folding")
   menutrans Ma&rker					Ma&rkierungen
   " create and delete folds
   " TODO accelerators
-  menutrans Create\ &Fold<Tab>zf			Faltung\ Erzeugen<Tab>zf
-  menutrans &Delete\ Fold<Tab>zd			Faltung\ Löschen<Tab>zd
-  menutrans Delete\ &All\ Folds<Tab>zD			Alle\ Faltungen\ Löschen<Tab>zD
+  menutrans Create\ &Fold<Tab>zf			Faltung\ erzeugen<Tab>zf
+  menutrans &Delete\ Fold<Tab>zd			Faltung\ löschen<Tab>zd
+  menutrans Delete\ &All\ Folds<Tab>zD			Alle\ Faltungen\ löschen<Tab>zD
   " moving around in folds
-  menutrans Fold\ column\ &width			&Breite\ der\ Faltungs-Spalte
+  menutrans Fold\ column\ &width			&Breite\ der\ Faltungsspalte
 endif  " has folding
 
 if has("diff")
   menutrans &Diff					&Differenz
   menutrans &Update					&Aktualisieren
-  menutrans &Get\ Block					Block\ &Einfügen
-  menutrans &Put\ Block					Block\ &Übertragen
+  menutrans &Get\ Block					Block\ &einfügen
+  menutrans &Put\ Block					Block\ &übertragen
 endif
 
 menutrans &Tools					&Werkzeuge
 menutrans &Jump\ to\ this\ tag<Tab>g^]			&Springe\ zum\ Tag<Tab>g^]
-menutrans Jump\ &back<Tab>^T				Springe\ &Zurück<Tab>^T
-menutrans Build\ &Tags\ File				Erstelle\ &Tags\ Datei
+menutrans Jump\ &back<Tab>^T				Springe\ &zurück<Tab>^T
+menutrans Build\ &Tags\ File				Erstelle\ &Tag-Datei
 menutrans &Make<Tab>:make				&Erstellen<Tab>:make
-menutrans &List\ Errors<Tab>:cl				&Fehler\ Anzeigen<Tab>:cl
-menutrans L&ist\ Messages<Tab>:cl!			&Hinweise\ Anzeigen<Tab>:cl!
-menutrans &Next\ Error<Tab>:cn				Zum\ &Nächsten\ Fehler<Tab>:cn
-menutrans &Previous\ Error<Tab>:cp			Zum\ &Vorherigen\ Fehler<Tab>:cp
+menutrans &List\ Errors<Tab>:cl				&Fehler\ anzeigen<Tab>:cl
+menutrans L&ist\ Messages<Tab>:cl!			&Hinweise\ anzeigen<Tab>:cl!
+menutrans &Next\ Error<Tab>:cn				Zum\ &nächsten\ Fehler<Tab>:cn
+menutrans &Previous\ Error<Tab>:cp			Zum\ &vorherigen\ Fehler<Tab>:cp
 menutrans &Older\ List<Tab>:cold			&Ältere\ Liste<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew			&Neuere\ Liste<Tab>:cnew
 
@@ -178,8 +179,8 @@ menutrans Conve&rt\ back<Tab>:%!xxd\ -r			Zurück\ konvertieren<Tab>:%!xxd\ -r
 " {{{ SYNTAX / SYNTAX
 menutrans &Syntax				&Syntax
 menutrans &Show\ filetypes\ in\ menu		Dateitypen\ an&zeigen
-menutrans Set\ '&syntax'\ only			Nur\ '&syntax'\ Setzen
-menutrans Set\ '&filetype'\ too			Auch\ '&filetype'\ Setzen
+menutrans Set\ '&syntax'\ only			Nur\ '&syntax'\ setzen
+menutrans Set\ '&filetype'\ too			Auch\ '&filetype'\ setzen
 menutrans &Off					&Aus
 menutrans &Manual				&Manuell
 menutrans A&utomatic				A&utomatisch
@@ -202,11 +203,11 @@ menutrans &Previous					&Vorheriger
 menutrans &Window			&Ansicht
 menutrans &New<Tab>^Wn			&Neu<Tab>^Wn
 menutrans S&plit<Tab>^Ws		Aufs&palten<Tab>^Ws
-menutrans Split\ &Vertically<Tab>^Wv	&Vertikal\ Aufspalten<Tab>^Wv
+menutrans Split\ &Vertically<Tab>^Wv	&Vertikal\ aufspalten<Tab>^Wv
 menutrans Split\ File\ E&xplorer	Ver&zeichnis
 menutrans Sp&lit\ To\ #<Tab>^W^^	Aufspa&lten\ in\ #<Tab>^W^^
 menutrans &Close<Tab>^Wc		&Schließen<Tab>^Wc
-menutrans Close\ &Other(s)<Tab>^Wo	&Andere\ Schließen<Tab>^Wo
+menutrans Close\ &Other(s)<Tab>^Wo	&Andere\ schließen<Tab>^Wo
 menutrans Ne&xt<Tab>^Ww			N&ächstes<Tab>^Ww
 menutrans P&revious<Tab>^WW		Vor&heriges<Tab>^WW
 menutrans &Equal\ Size<Tab>^W=		&Gleiche\ Höhen<Tab>^W=
@@ -259,9 +260,9 @@ if has("toolbar")
     delfun Do_toolbar_tmenu
   endif
   fun Do_toolbar_tmenu()
-    tmenu ToolBar.Open		Datei Öffnen
-    tmenu ToolBar.Save		Datei Speichern
-    tmenu ToolBar.SaveAll	Alle Dateien Speichern
+    tmenu ToolBar.Open		Datei öffnen
+    tmenu ToolBar.Save		Datei speichern
+    tmenu ToolBar.SaveAll	Alle Dateien speichern
     tmenu ToolBar.Print		Drucken
     tmenu ToolBar.Undo		Zurück
     tmenu ToolBar.Redo		Wiederholen
@@ -269,25 +270,25 @@ if has("toolbar")
     tmenu ToolBar.Copy		Kopieren
     tmenu ToolBar.Paste		Einfügen
     tmenu ToolBar.Find		Suchen...
-    tmenu ToolBar.FindNext	Suche Nächsten
-    tmenu ToolBar.FindPrev	Suche Vorherigen
+    tmenu ToolBar.FindNext	Suche nächsten
+    tmenu ToolBar.FindPrev	Suche vorherigen
     tmenu ToolBar.Replace	Suchen und Ersetzen...
     if 0	" disabled; These are in the Windows menu
       tmenu ToolBar.New		Neue Ansicht
-      tmenu ToolBar.WinSplit	Ansicht Aufspalten
-      tmenu ToolBar.WinMax	Ansicht Maximale Höhen
-      tmenu ToolBar.WinMin	Ansicht Minimale Höhen
-      tmenu ToolBar.WinClose	Ansicht Schließen
+      tmenu ToolBar.WinSplit	Ansicht aufspalten
+      tmenu ToolBar.WinMax	Ansicht maximale Höhen
+      tmenu ToolBar.WinMin	Ansicht minimale Höhen
+      tmenu ToolBar.WinClose	Ansicht schließen
     endif
-    tmenu ToolBar.LoadSesn	Sitzung Laden
-    tmenu ToolBar.SaveSesn	Sitzung Speichern
-    tmenu ToolBar.RunScript	Vim-Skript Ausführen
+    tmenu ToolBar.LoadSesn	Sitzung laden
+    tmenu ToolBar.SaveSesn	Sitzung speichern
+    tmenu ToolBar.RunScript	Vim-Skript ausführen
     tmenu ToolBar.Make		Erstellen
-    tmenu ToolBar.Shell		Shell Starten
-    tmenu ToolBar.RunCtags	Erstelle Tags Datei
+    tmenu ToolBar.Shell		Shell starten
+    tmenu ToolBar.RunCtags	Erstelle Tag-Datei
     tmenu ToolBar.TagJump	Springe zum Tag
     tmenu ToolBar.Help		Hilfe!
-    tmenu ToolBar.FindHelp	Hilfe Durchsuchen...
+    tmenu ToolBar.FindHelp	Hilfe durchsuchen...
   endfun
 endif
 " }}} TOOLBAR

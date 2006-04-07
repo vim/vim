@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0c.  Last change: 2006 Apr 04
+*eval.txt*      For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -819,7 +819,7 @@ Number.  Note that this doesn't recognize multi-byte encodings.
 Index zero gives the first character.  This is like it works in C.  Careful:
 text column numbers start with one!  Example, to get the character under the
 cursor: >
-	:let c = getline(line("."))[col(".") - 1]
+	:let c = getline(".")[col(".") - 1]
 
 If the length of the String is less than the index, the result is an empty
 String.  A negative index always results in an empty string (reason: backwards
@@ -4562,7 +4562,7 @@ strpart({src}, {start}[, {len}])			*strpart()*
 			strpart("abcdefg", 3)       == "defg"
 <		Note: To get the first character, {start} must be 0.  For
 		example, to get three bytes under and after the cursor: >
-			strpart(getline(line(".")), col(".") - 1, 3)
+			strpart(getline("."), col(".") - 1, 3)
 <
 strridx({haystack}, {needle} [, {start}])			*strridx()*
 		The result is a Number, which gives the byte index in

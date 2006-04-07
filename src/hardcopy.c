@@ -2474,7 +2474,7 @@ mch_print_init(psettings, jobname, forceit)
     double      bottom;
 #ifdef FEAT_MBYTE
     int         props;
-    int         cmap;
+    int         cmap = 0;
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;

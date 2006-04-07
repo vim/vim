@@ -1488,7 +1488,7 @@ check_changed_any(hidden)
 	 * may cause a redraw.  But wait_return() is a no-op when vgetc()
 	 * is busy (Quit used from window menu), then make sure we don't
 	 * cause a scroll up. */
-	if (vgetc_busy)
+	if (vgetc_busy > 0)
 	{
 	    msg_row = cmdline_row;
 	    msg_col = 0;
@@ -3696,20 +3696,20 @@ get_locale_val(what)
      * redefined and it doesn't use the arguments. */
     loc = setlocale(what, NULL);
 
-# if defined(__BORLANDC__)
+# ifdef WIN32
     if (loc != NULL)
     {
 	char_u	*p;
 
-	/* Borland returns something like "LC_CTYPE=<name>\n"
-	 * Let's try to fix that bug here... */
+	/* setocale() returns something like "LC_COLLATE=<name>;LC_..." when
+	 * one of the values (e.g., LC_CTYPE) differs. */
 	p = vim_strchr(loc, '=');
 	if (p != NULL)
 	{
 	    loc = ++p;
 	    while (*p != NUL)	/* remove trailing newline */
 	    {
-		if (*p < ' ')
+		if (*p < ' ' || *p == ';')
 		{
 		    *p = NUL;
 		    break;
@@ -3778,8 +3778,10 @@ get_mess_lang()
     p = (char_u *)get_locale_val(LC_MESSAGES);
 #  else
     /* This is necessary for Win32, where LC_MESSAGES is not defined and $LANG
-     * may be set to the LCID number. */
-    p = (char_u *)get_locale_val(LC_ALL);
+     * may be set to the LCID number.  LC_COLLATE is the best guess, LC_TIME
+     * and LC_MONETARY may be set differently for a Japanese working in the
+     * US. */
+    p = (char_u *)get_locale_val(LC_COLLATE);
 #  endif
 # else
     p = mch_getenv((char_u *)"LC_ALL");

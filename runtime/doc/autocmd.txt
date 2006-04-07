@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0c.  Last change: 2006 Apr 04
+*autocmd.txt*   For Vim version 7.0c.  Last change: 2006 Apr 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -506,8 +506,8 @@ FileChangedRO			Before making the first change to a read-only
 				the change was caused by an autocommand.
 				This event is triggered when making the first
 				change in a buffer or the first change after
-				'readonly' was set,
-				just before the change is applied to the text.
+				'readonly' was set, just before the change is
+				applied to the text.
 				WARNING: If the autocommand moves the cursor
 				the effect of the change is undefined.
 							*E788*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 06
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
+    WFP_COMPPERMIT and WFP_COMPFORBID
+
+":mkspell" still takes too long in Hungarian dictionary.
+
+Use ~/tmp/hungarian*.txt to test dictionary with.
 
 New Hungarian dictionary. (Laci Nemeth)
 -   implement use of <compoptions> in .spl file:

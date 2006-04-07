@@ -4287,6 +4287,13 @@ do_sub(eap)
     if (eap->skip)	    /* not executing commands, only parsing */
 	return;
 
+    if (!do_count && !curbuf->b_p_ma)
+    {
+	/* Substitusion is not allowed in non-'modifiable' buffer */
+	EMSG(_(e_modifiable));
+	return;
+    }
+
     if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (do_error)

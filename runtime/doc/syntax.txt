@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Apr 04
+*syntax.txt*	For Vim version 7.0c.  Last change: 2006 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2581,7 +2581,7 @@ somewhere else with "P".
 
 Do you want to draw with the mouse?  Try the following: >
    :function! GetPixel()
-   :   let c = getline(line("."))[col(".") - 1]
+   :   let c = getline(".")[col(".") - 1]
    :   echo c
    :   exe "noremap <LeftMouse> <LeftMouse>r".c
    :   exe "noremap <LeftDrag>	<LeftMouse>r".c
