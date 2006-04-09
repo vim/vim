@@ -38,6 +38,7 @@ extern int gui_use_tabline __ARGS((void));
 extern void gui_update_tabline __ARGS((void));
 extern void get_tabline_label __ARGS((tabpage_T *tp));
 extern int send_tabline_event __ARGS((int nr));
+extern void send_tabline_menu_event __ARGS((int tabidx, int event));
 extern void gui_remove_scrollbars __ARGS((void));
 extern void gui_create_scrollbar __ARGS((scrollbar_T *sb, int type, win_T *wp));
 extern scrollbar_T *gui_find_scrollbar __ARGS((long ident));

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0c.  Last change: 2006 Mar 16
+*change.txt*    For Vim version 7.0c.  Last change: 2006 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1542,6 +1542,9 @@ found here: |sort()|.
 <			To sort on the text at virtual column 10 (thus
 			ignoring the difference between tabs and spaces): >
 				:sort /.*\%10v/
+<			To sort on the first number in the line, no matter
+			what is in front of it: >
+				:sort /.*\ze\d/
 <
 Note that using ":sort" with ":global" doesn't sort the matching lines, it's
 quite useless.

@@ -3128,16 +3128,9 @@ static int clicked_page;	    /* page clicked in tab line */
     static void
 tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
 {
-    char_u	string[3];
 
     /* Add the string cmd into input buffer */
-    string[0] = CSI;
-    string[1] = KS_TABMENU;
-    string[2] = KE_FILLER;
-    add_to_input_buf(string, 3);
-    string[0] = clicked_page;
-    string[1] = (char_u)(long)user_data;
-    add_to_input_buf_csi(string, 2);
+    send_tabline_menu_event(clicked_page, (int)(long)user_data);
 
     if (gtk_main_level() > 0)
 	gtk_main_quit();

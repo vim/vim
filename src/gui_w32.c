@@ -740,17 +740,7 @@ _WndProc(
 		GetCursorPos((LPPOINT)&pt);
 		GetWindowRect(s_textArea, &rect);
 		if (pt.y < rect.top)
-		{
-		    char_u	    string[3];
-
-		    string[0] = CSI;
-		    string[1] = KS_TABMENU;
-		    string[2] = KE_FILLER;
-		    add_to_input_buf(string, 3);
-		    string[0] = 0;
-		    string[1] = (char_u)(long)TABLINE_MENU_NEW;
-		    add_to_input_buf_csi(string, 2);
-		}
+		    send_tabline_menu_event(0, TABLINE_MENU_NEW);
 	    }
 	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
 	}

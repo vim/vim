@@ -171,6 +171,7 @@ Versions ~
 |version4.txt|	Differences between Vim version 3.0 and 4.x
 |version5.txt|	Differences between Vim version 4.6 and 5.x
 |version6.txt|	Differences between Vim version 5.7 and 6.x
+|version7.txt|	Differences between Vim version 6.4 and 7.x
 						*sys-file-list*
 Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix
@@ -195,12 +196,6 @@ Standard plugins ~
 |pi_zip.txt|	Zip archive explorer
 
 LOCAL ADDITIONS:				*local-additions*
-|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
-|example.txt|	Example for a locally added help file
-|matchit.txt|   Extended "%" matching
-|test.txt|	Testing the hélp cömmånd nôw
-|typecorr.txt|	Plugin for correcting typing mistakes
-|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

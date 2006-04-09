@@ -85,8 +85,6 @@ static void win_new_height __ARGS((win_T *, int));
 #define NOWIN		(win_T *)-1	/* non-exisiting window */
 
 #ifdef FEAT_WINDOWS
-static long p_ch_used = 1L;		/* value of 'cmdheight' when frame
-					   size was set */
 # define ROWS_AVAIL (Rows - p_ch - tabline_height())
 #else
 # define ROWS_AVAIL (Rows - p_ch)
@@ -3087,9 +3085,6 @@ win_alloc_firstwin(oldwin)
     topframe->fr_width = Columns;
 #endif
     topframe->fr_height = Rows - p_ch;
-#ifdef FEAT_WINDOWS
-    p_ch_used = p_ch;
-#endif
     topframe->fr_win = curwin;
     curwin->w_frame = topframe;
 
@@ -3137,6 +3132,7 @@ alloc_tabpage()
 	/* init t: variables */
 	init_var_dict(&tp->tp_vars, &tp->tp_winvar);
 #endif
+	tp->tp_ch_used = p_ch;
     }
     return tp;
 }
@@ -3419,7 +3415,9 @@ enter_tabpage(tp, old_curbuf)
 
     /* The tabpage line may have appeared or disappeared, may need to resize
      * the frames for that.  When the Vim window was resized need to update
-     * frame sizes too. */
+     * frame sizes too.  Use the stored value of p_ch, so that it can be
+     * different for each tab page. */
+    p_ch = curtab->tp_ch_used;
     if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
 			    && !gui_use_tabline()
@@ -4215,7 +4213,7 @@ shell_new_rows()
 #endif
     compute_cmdrow();
 #ifdef FEAT_WINDOWS
-    p_ch_used = p_ch;
+    curtab->tp_ch_used = p_ch;
 #endif
 
 #if 0
@@ -4961,6 +4959,7 @@ win_drag_status_line(dragwin, offset)
     p_ch = Rows - cmdline_row;
     if (p_ch < 1)
 	p_ch = 1;
+    curtab->tp_ch_used = p_ch;
     redraw_all_later(SOME_VALID);
     showmode();
 }
@@ -5257,19 +5256,17 @@ win_comp_scroll(wp)
  * command_height: called whenever p_ch has been changed
  */
     void
-command_height(old_p_ch)
-    long	old_p_ch;
+command_height()
 {
 #ifdef FEAT_WINDOWS
     int		h;
     frame_T	*frp;
+    int		old_p_ch = curtab->tp_ch_used;
 
-    /* When passed a negative value use the value of p_ch that we remembered.
-     * This is needed for when the GUI starts up, we can't be sure in what
-     * order things happen. */
-    if (old_p_ch < 0)
-	old_p_ch = p_ch_used;
-    p_ch_used = p_ch;
+    /* Use the value of p_ch that we remembered.  This is needed for when the
+     * GUI starts up, we can't be sure in what order things happen.  And when
+     * p_ch was changed in another tab page. */
+    curtab->tp_ch_used = p_ch;
 
     /* Find bottom frame with width of screen. */
     frp = lastwin->w_frame;
@@ -5328,8 +5325,8 @@ command_height(old_p_ch)
     if (frp != lastwin->w_frame)
 	(void)win_comp_pos();
 #else
-    win_setheight((int)(firstwin->w_height + old_p_ch - p_ch));
     cmdline_row = Rows - p_ch;
+    win_setheight(cmdline_row);
 #endif
 }
 

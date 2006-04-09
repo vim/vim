@@ -7743,7 +7743,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 		&& !gui.starting
 #endif
 	   )
-	    command_height(old_value);
+	    command_height();
     }
 
     /* when 'updatecount' changes from zero to non-zero, open swap files */

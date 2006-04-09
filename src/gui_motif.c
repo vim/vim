@@ -27,6 +27,7 @@
 #include <Xm/ToggleBG.h>
 #include <Xm/SeparatoG.h>
 #include <Xm/Notebook.h>
+#include <Xm/XmP.h>
 
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
@@ -151,19 +152,52 @@ tabline_button_cb(w, client_data, call_data)
     Widget	w;
     XtPointer	client_data, call_data;
 {
-    char_u	string[3];
     int		cmd, tab_idx;
 
     XtVaGetValues(w, XmNuserData, &cmd, NULL);
     XtVaGetValues(tabLine_menu, XmNuserData, &tab_idx, NULL);
 
-    string[0] = CSI;
-    string[1] = KS_TABMENU;
-    string[2] = KE_FILLER;
-    add_to_input_buf(string, 3);
-    string[0] = tab_idx;
-    string[1] = (char_u)(long)cmd;
-    add_to_input_buf_csi(string, 2);
+    send_tabline_menu_event(tab_idx, cmd);
+}
+
+/*
+ * Tabline single mouse click timeout handler
+ */
+/*ARGSUSED*/
+    static void
+motif_tabline_timer_cb (timed_out, interval_id)
+    XtPointer		timed_out;
+    XtIntervalId	*interval_id;
+{
+    *((int *)timed_out) = TRUE;
+}
+
+/*
+ * check if the tabline tab scroller is clicked
+ */
+    static int
+tabline_scroller_clicked(scroller_name, event)
+    char		*scroller_name;
+    XButtonPressedEvent *event;
+{
+    Widget	tab_scroll_w;
+    Position	pos_x, pos_y;
+    Dimension	width, height;
+
+    tab_scroll_w = XtNameToWidget(tabLine, scroller_name);
+    if (tab_scroll_w != (Widget)0) {
+	XtVaGetValues(tab_scroll_w, XmNx, &pos_x, XmNy, &pos_y, XmNwidth,
+		      &width, XmNheight, &height, NULL);
+	if (pos_x >= 0) {
+	    /* Tab scroller (next) is visible */
+	    if ((event->x >= pos_x) && (event->x <= pos_x + width) &&
+		(event->y >= pos_y) && (event->y <= pos_y + height)) {
+		/* Clicked on the scroller */
+		return TRUE;
+	    }
+	}
+    }
+    return FALSE;
 }
 
 /*ARGSUSED*/
@@ -179,8 +213,39 @@ tabline_menu_cb(w, closure, e, continue_dispatch)
     int				tab_idx = 0;
     WidgetList			children;
     Cardinal			numChildren;
+    static XtIntervalId		timer = (XtIntervalId)0;
+    static int			timed_out = TRUE;
 
     event = (XButtonPressedEvent *)e;
+
+    if (event->button == Button1)
+    {
+	if (tabline_scroller_clicked("MajorTabScrollerNext", event)
+	    || tabline_scroller_clicked("MajorTabScrollerPrevious", event))
+	    return;
+
+	if (!timed_out)
+	{
+	    XtRemoveTimeOut(timer);
+	    timed_out = TRUE;
+
+	    /*
+	     * Double click on the tabline gutter, add a new tab
+	     */
+	    send_tabline_menu_event(0, TABLINE_MENU_NEW);
+	}
+	else
+	{
+	    /*
+	     * Single click on the tabline gutter, start a timer to check
+	     * for double clicks
+	     */
+	    timer = XtAppAddTimeOut(app_context, (long_u)p_mouset,
+				    motif_tabline_timer_cb, &timed_out);
+	    timed_out = FALSE;
+	}
+	return;
+    }
 
     if (event->button != Button3)
 	return;
@@ -188,6 +253,7 @@ tabline_menu_cb(w, closure, e, continue_dispatch)
     if (event->subwindow != None)
     {
 	tab_w = XtWindowToWidget(XtDisplay(w), event->subwindow);
+	/* LINTED: avoid warning: dubious operation on enum */
 	if (tab_w != (Widget)0 && XmIsPushButton(tab_w))
 	    XtVaGetValues(tab_w, XmNpageNumber, &tab_idx, NULL);
     }
@@ -3169,6 +3235,9 @@ gui_mch_show_tabline(int showit)
 	{
 	    XtManageChild(tabLine);
 	    XtUnmanageChild(XtNameToWidget(tabLine, "PageScroller"));
+	    XtUnmanageChild(XtNameToWidget(tabLine, "MinorTabScrollerNext"));
+	    XtUnmanageChild(XtNameToWidget(tabLine,
+					   "MinorTabScrollerPrevious"));
 #ifdef FEAT_MENU
 # ifdef FEAT_TOOLBAR
 	    if (XtIsManaged(XtParent(toolBar)))
@@ -3237,6 +3306,8 @@ gui_mch_update_tabline(void)
     XmNotebookPageInfo	page_info;
     XmNotebookPageStatus page_status;
     int			last_page, tab_count;
+    XmString		label_str;
+    char		*label_cstr;
 
     if (tabLine == (Widget)0)
 	return;
@@ -3265,9 +3336,25 @@ gui_mch_update_tabline(void)
 	    tab = page_info.major_tab_widget;
 
 	XtVaSetValues(tab, XmNpageNumber, nr, NULL);
-	get_tabline_label(tp);
-	XtVaSetValues(tab, XtVaTypedArg, XmNlabelString, XmRString,
-		      NameBuff, STRLEN(NameBuff) + 1, NULL);
+
+	/*
+	 * Change the label text only if it is different
+	 */
+	XtVaGetValues(tab, XmNlabelString, &label_str, NULL);
+	if (XmStringGetLtoR(label_str, XmSTRING_DEFAULT_CHARSET, &label_cstr))
+	{
+	    get_tabline_label(tp);
+	    if (STRCMP(label_cstr, NameBuff) != 0) {
+		XtVaSetValues(tab, XtVaTypedArg, XmNlabelString, XmRString,
+			      NameBuff, STRLEN(NameBuff) + 1, NULL);
+		/*
+		 * Force a resize of the tab label button
+		 */
+		XtUnmanageChild(tab);
+		XtManageChild(tab);
+	    }
+	    XtFree(label_cstr);
+	}
     }
 
     tab_count = nr - 1;

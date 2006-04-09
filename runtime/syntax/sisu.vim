@@ -9,9 +9,8 @@ elseif exists("b:current_syntax")
   finish
 else
 endif
-"% 12 Errors?
+"% 11 Errors?
 syn match sisu_error contains=sisu_contain,sisu_control,sisu_markpara,sisu_mark,sisu_content_alt,sisu_error_wspace "<![^ei]\S\+!>"
-"% 11 Expression Substitution: and Backslash Notation
 "% 10 Markers: Endnote Identifiers, Pagebreaks etc.: 
 if !exists("sisu_no_identifiers")
   syn match   sisu_mark_endnote   "\~^"
@@ -19,20 +18,16 @@ if !exists("sisu_no_identifiers")
   syn match   sisu_break          "<br>\|<br />"
   syn match   sisu_control        "<p>\|</p>\|<p />\|<:p[bn]>"
   syn match   sisu_html           "<center>\|</center>"
-  syn match   sisu_markpara       "^_\([12]\*\?\|\*\)\s\+"
-  syn match   sisu_markpara       "#[ 1]\|_# "
   syn match   sisu_marktail       "[~-]#"
   syn match   sisu_html           "<td>\|<td \|<tr>\|</td>\|</tr>\|<table>\|<table \|</table>"
   syn match   sisu_control        "\""
-  syn match   sisu_underline      "\(^\| \)_[a-zA-Z0-9]\+_\([ .,]\|$\)"he=e-1
+  syn match   sisu_underline      "\(^\| \)_[a-zA-Z0-9]\+_\([ .,]\|$\)"
+  syn match   sisu_number         "[0-9a-f]\{32\}\|[0-9a-f]\{64\}"
   "metaverse specific
   syn match   sisu_ocn            "<\~\d\+;\w\d\+;\w\d\+>"
-  syn match   sisu_digest         "<[0-9a-f]\{32\}:[0-9a-f]\{32\}>\|<[0-9a-f]\{32\}>"
-  syn match   sisu_digest         "<[0-9a-f]\{64\}:[0-9a-f]\{64\}>\|<[0-9a-f]\{64\}>"
   syn match   sisu_marktail       "<\~#>"
   syn match   sisu_markpara       "<:i[12]>"
   syn match   sisu_link           " \*\~\S\+"
-  syn match   sisu_action         "^<<.\+"
   syn match   sisu_action         "^<:insert\d\+>"
   syn match   sisu_contain        "<:e>"
 endif
@@ -46,24 +41,25 @@ syn match sisu_error              "<a href\|</a>]" contains=sisu_error
 "% 7 Simple Enclosed Markup:
 " Simple Markup:
 "%   header
-syn region sisu_header contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="0\~" end="$"
+syn region sisu_header_content contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="^0\~\(\S\+\|[^-]\)" end="$"
 "%   headings
-syn region sisu_heading contains=sisu_mark_endnote,sisu_content_endnote,sisu_marktail,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_ocn,sisu_digest,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_heading start="[1-8]\~[^-]" end="$"
+syn region sisu_heading contains=sisu_mark_endnote,sisu_content_endnote,sisu_marktail,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_ocn,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_structure start="^[1-8]\~\(\S\+\|[^-]\)" end="$"
 "%   grouped text
 syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="table{.\+" end="}table"
 syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="{t\~h}" end="$$"
 syn region sisu_content_alt contains=sisu_mark_endnote,sisu_content_endnote,sisu_link,sisu_mark,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="^\(alt\|group\|poem\){" end="^}\(alt\|group\|poem\)"
 syn region sisu_content_alt contains=sisu_error matchgroup=sisu_contain start="^code{" end="^}code"
 "%   endnotes
-syn region sisu_content_endnote contains=sisu_digest,sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_error_spell,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~{" end="}\~" skip="\n"
+syn region sisu_content_endnote contains=sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_error_spell,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~{" end="}\~" skip="\n"
 syn region sisu_content_endnote contains=sisu_strikeout,sisu_number,sisu_control,sisu_link,sisu_identifier,sisu_error,sisu_error_wspace,sisu_error_spell,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\^\~" end="\n\n"
 "%   images
-syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_error,sisu_error_spell matchgroup=sisu_link start="{" end="}\(\(http://\|\.\./\)\S\+\|image\)" oneline
-"syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_link start="{" end="}\(\(http://\|\.\./\)\S\+\|image\)" oneline
-"sisu_identifier fix
-""syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_link start="{" end="}\(http\S\+\|image\)" oneline
+syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_link start="{" end="}\(\(http://\|\.\./\)\S\+\|image\)" oneline
+"%   line operations
+syn region sisu_link contains=sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_action start="^<<\s*|[a-zA-Z0-9^._-]\+|@|[a-zA-Z0-9^._-]\+|"rs=s+2 end="$"
+syn region sisu_control contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_control start="\(\(^\| \)!_ \|<:b>\)" end="$"
+syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^_\([12]\*\?\|\*\) " end="$"
+syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^\(#[ 1]\|_# \)" end="$"
 "%   font face curly brackets
-syn region sisu_control contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_spell matchgroup=sisu_control start="\(\(^\| \)!_ \|<:b>\)" end="$"
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="\*{" end="}\*"
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="!{" end="}!"
 syn region sisu_underline contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="_{" end="}_"
@@ -72,23 +68,19 @@ syn region sisu_underline contains=sisu_strikeout,sisu_number,sisu_control,sisu_
 syn region sisu_identifier contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="\^{" end="}\^"
 syn region sisu_identifier contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start=",{" end="}," 
 syn region sisu_strikeout contains=sisu_error matchgroup=sisu_fontface start="-{" end="}-" 
-syn region sisu_control contains=sisu_error matchgroup=sisu_content_alt start="<b>" end="</b>" oneline
-syn region sisu_control contains=sisu_error matchgroup=sisu_content_alt start="<em>" end="</em>" oneline
-syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="<u>" end="</u>" oneline
-syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="<i>" end="</i>" oneline
-syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="<ins>" end="</ins>" skip="\\\\\|\\'" oneline
-syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="<del>" end="</del>" oneline
 syn region sisu_html contains=sisu_error contains=sisu_strikeout matchgroup=sisu_contain start="<a href=\".\{-}\">" end="</a>" oneline
 "%   single words bold italicise etc. "workon
 syn region sisu_control contains=sisu_error matchgroup=sisu_control start="\([ (]\|^\)\*[^\|{\n\~\\]"hs=e-1 end="\*"he=e-0 skip="[a-zA-Z0-9']" oneline
 syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="\([ ]\|^\)/[^{ \|\n\\]"hs=e-1 end="/\[ \.\]" skip="[a-zA-Z0-9']" oneline
-"syn region sisu_underline matchgroup=sisu_underline start="\([ (]\|^\)_\([^ !*{\\][\w]\|[^12][^*]\)"hs=e-2 end="\(_\([ )\.]\|$\)\| \)"he=e-1 skip="[a-zA-Z0-9']" oneline
 "%   html
-syn region sisu_number contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_contain start="<b>" end="</b>" skip="\n"
-syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_contain start="<i>" end="</i>" skip="\n"
-syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_contain start="<u>" end="</u>" skip="\n"
+syn region sisu_number contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_html start="<b>" end="</b>" skip="\n" oneline
+syn region sisu_number contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_html start="<em>" end="</em>" oneline
+syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_html start="<i>" end="</i>" skip="\n" oneline
+syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_html start="<u>" end="</u>" skip="\n" oneline
+syn region sisu_identifier contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell,sisu_mark matchgroup=sisu_html start="<ins>" end="</ins>" skip="\\\\\|\\'" oneline
+syn region sisu_identifier contains=sisu_error matchgroup=sisu_html start="<del>" end="</del>" oneline
 "%   misc
-syn region sisu_identifier contains=sisu_error matchgroup=sisu_content_alt start="\^[^{\|\n\\]" end="\^[ ,.;:'})\\\n]" skip="[a-zA-Z0-9']" oneline
+syn region sisu_identifier contains=sisu_error matchgroup=sisu_fontface start="\^[^ {\|\n\\]"rs=s+1 end="\^[ ,.;:'})\\\n]" skip="[a-zA-Z0-9']" oneline
 "% metaverse
 syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="<:Table.\{-}>" end="<:Table[-_]end>"
 syn region sisu_content_alt contains=sisu_error matchgroup=sisu_contain start="<:code>" end="<:code[-_]end>"
@@ -101,8 +93,7 @@ else " not Expensive
   syn region  sisu_content_alt  matchgroup=sisu_control start="^\s*def\s" matchgroup=NONE end="[?!]\|\>" skip="\.\|\(::\)" oneline
 endif " Expensive?
 "% 5 Headers: and Headings (Document Instructions)
-"syn match   sisu_header contains=sisu_error,sisu_error_wspace,sisu_mark "0\~.*"
-syn match   sisu_comment contains=sisu_error "^% .*\|^%% .*"
+syn match   sisu_comment "^% .*\|^%% .*"
 syn match   sisu_control contains=sisu_error,sisu_error_wspace "4\~! \S\+"
 syn region  sisu_markpara contains=sisu_error,sisu_error_wspace start="^=begin" end="^=end.*$"
 "% 4 Errors?
@@ -110,6 +101,7 @@ syn match sisu_error_wspace contains=sisu_error_wspace "^\s\+"
 syn match sisu_error_wspace contains=sisu_error_wspace "\s\s\+"
 syn match sisu_error_wspace contains=sisu_error_wspace  " \s*$"
 syn match sisu_error contains=sisu_error,sisu_error_wspace "[^ (}]http:\S\+"
+syn match sisu_error contains=sisu_error_wspace "\t\+"
 syn match sisu_error contains=sisu_error "http:\S\+[}><]"
 syn match sisu_error contains=sisu_error "\([!*/_\+,^]\){\([^(\}\1)]\)\{-}\n\n"
 syn match sisu_error contains=sisu_error "^[\-\~]{[^{]\{-}\n\n"
@@ -139,8 +131,11 @@ if version >= 508 || !exists("did_sisu_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 "% 1 Defined
+  HiLink sisu_normal          Normal
   HiLink sisu_header          PreProc
+  HiLink sisu_header_content  Statement
   HiLink sisu_heading         Title
+  HiLink sisu_structure       Operator
   HiLink sisu_contain         Include
   HiLink sisu_mark_endnote    Include
   HiLink sisu_link            NonText
@@ -151,7 +146,6 @@ if version >= 508 || !exists("did_sisu_syntax_inits")
   HiLink sisu_content_endnote Special
   HiLink sisu_control         Define
   HiLink sisu_ocn             Include
-  HiLink sisu_digest          Identifier
   HiLink sisu_number          Number
   HiLink sisu_identifier      Function
   HiLink sisu_underline       Underlined
@@ -165,8 +159,6 @@ if version >= 508 || !exists("did_sisu_syntax_inits")
   HiLink sisu_error_spell     SpellErrors "line does nothing
   HiLink sisu_error_wspace    Error
   HiLink sisu_error           Error
-  "HiLink sisu_                Statement
-  "HiLink sisu_                Operator
   delcommand HiLink
 endif
 let b:current_syntax = "sisu"

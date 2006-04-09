@@ -1120,6 +1120,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     if (showing_tabline)
     {
 	int	top = 0;
+	RECT	rect;
 
 #ifdef FEAT_TOOLBAR
 	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
@@ -2191,7 +2192,6 @@ show_tabline_popup_menu(void)
     MENUITEMINFO    minfo;
     long	    rval;
     POINT	    pt;
-    char_u	    string[3];
 
     tab_pmenu = CreatePopupMenu();
     if (tab_pmenu == NULL)
@@ -2236,13 +2236,7 @@ show_tabline_popup_menu(void)
 	else
 	    idx += 1;
 
-	string[0] = CSI;
-	string[1] = KS_TABMENU;
-	string[2] = KE_FILLER;
-	add_to_input_buf(string, 3);
-	string[0] = idx;
-	string[1] = (char_u)(long)rval;
-	add_to_input_buf_csi(string, 2);
+	send_tabline_menu_event(idx, (int)rval);
     }
 }
 

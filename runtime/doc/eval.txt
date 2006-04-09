@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0c.  Last change: 2006 Apr 06
+*eval.txt*      For Vim version 7.0c.  Last change: 2006 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1549,29 +1549,33 @@ eval( {string})			any	evaluate {string} into its value
 eventhandler( )			Number	TRUE if inside an event handler
 executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
+extend({expr1}, {expr2} [, {expr3}])
+				List/Dict insert items of {expr2} into {expr1}
 expand( {expr})			String	expand special keywords in {expr}
 filereadable( {file})		Number	TRUE if {file} is a readable file
+filewritable( {file})		Number	TRUE if {file} is a writable file
 filter( {expr}, {string})	List/Dict  remove items from {expr} where
 					{string} is 0
 finddir( {name}[, {path}[, {count}]])
-				String	Find directory {name} in {path}
+				String	find directory {name} in {path}
 findfile( {name}[, {path}[, {count}]])
-				String	Find file {name} in {path}
-filewritable( {file})		Number	TRUE if {file} is a writable file
+				String	find file {name} in {path}
 fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
 foldclosedend( {lnum})		Number	last line of fold at {lnum} if closed
 foldlevel( {lnum})		Number	fold level at {lnum}
 foldtext( )			String	line displayed for closed fold
+foldtextresult( {lnum})		String	text for closed fold at {lnum}
 foreground( )			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
+garbagecollect()		none	free memory, breaking cyclic references
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 getbufline( {expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
+getbufvar( {expr}, {varname})	any	variable {varname} in buffer {expr}
 getchar( [expr])		Number	get one character from the user
 getcharmod( )			Number	modifiers for the last typed character
-getbufvar( {expr}, {varname})		variable {varname} in buffer {expr}
 getcmdline()			String	return the current command-line
 getcmdpos()			Number	return cursor position in command-line
 getcmdtype()			String	return the current command-line type
@@ -1590,7 +1594,7 @@ getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
-getwinvar( {nr}, {varname})		variable {varname} in window {nr}
+getwinvar( {nr}, {varname})	any	variable {varname} in window {nr}
 glob( {expr})			String	expand file wildcards in {expr}
 globpath( {path}, {expr})	String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
@@ -1611,6 +1615,7 @@ index( {list}, {expr} [, {start} [, {ic}]])
 input( {prompt} [, {text} [, {completion}]])
 				String	get input from the user
 inputdialog( {p} [, {t} [, {c}]]) String  like input() but in a GUI dialog
+inputlist( {textlist})		Number	let the user pick from a choice list
 inputrestore()			Number	restore typeahead
 inputsave()			Number	save and clear typeahead
 inputsecret( {prompt} [, {text}]) String  like input() but hiding the text
@@ -1689,6 +1694,7 @@ setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
 setloclist( {nr}, {list}[, {action}])
 				Number	modify location list using {list}
+setpos( {expr}, {list})		none	set the {expr} position to {list}
 setqflist( {list}[, {action}])	Number	modify quickfix list using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
@@ -2730,7 +2736,7 @@ getfontname([{name}])					*getfontname()*
 		font name.  If not then an empty string is returned.
 		Otherwise the actual font name is returned, or {name} if the
 		GUI does not support obtaining the real name.
-		Only works when the GUI is running, thus not you your vimrc or
+		Only works when the GUI is running, thus not in your vimrc or
 		gvimrc file.  Use the |GUIEnter| autocommand to use this
 		function just after the GUI has started.
 		Note that the GTK 2 GUI accepts any font name, thus checking

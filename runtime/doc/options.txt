@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0c.  Last change: 2006 Apr 05
+*options.txt*	For Vim version 7.0c.  Last change: 2006 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1442,6 +1442,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Number of screen lines to use for the command-line.  Helps avoiding
 	|hit-enter| prompts.
+	The value of this option is stored with the tab page, so that each tab
+	page can have a different value.
 
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)
@@ -6522,8 +6524,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'tagrelative' 'tr'	boolean	(Vim default: on, Vi default: off)
 			global
 			{not in Vi}
-	If on and using a tag file in another directory, file names in that
-	tag file are relative to the directory where the tag file is.
+	If on and using a tags file in another directory, file names in that
+	tags file are relative to the directory where the tags file is.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 

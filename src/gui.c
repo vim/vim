@@ -591,7 +591,7 @@ gui_init()
 	/* When 'cmdheight' was set during startup it may not have taken
 	 * effect yet. */
 	if (p_ch != 1L)
-	    command_height(-1L);
+	    command_height();
 
 	return;
     }
@@ -3495,6 +3495,25 @@ send_tabline_event(nr)
     string[0] = nr;
     add_to_input_buf_csi(string, 1);
     return TRUE;
+}
+
+/*
+ * Send a tabline menu event
+ */
+    void
+send_tabline_menu_event(tabidx, event)
+    int	    tabidx;
+    int	    event;
+{
+    char_u	    string[3];
+
+    string[0] = CSI;
+    string[1] = KS_TABMENU;
+    string[2] = KE_FILLER;
+    add_to_input_buf(string, 3);
+    string[0] = tabidx;
+    string[1] = (char_u)(long)event;
+    add_to_input_buf_csi(string, 2);
 }
 
 #endif

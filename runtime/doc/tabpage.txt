@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Apr 06
+*tabpage.txt*   For Vim version 7.0c.  Last change: 2006 Apr 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -204,6 +204,8 @@ within one tab page.  Other tab pages can show differences between other
 files.
 
 Variables local to a tab page start with "t:". |tabpage-variable|
+
+Currently there is only one option local to a tab page: 'cmdheight'.
 
 The TabLeave and TabEnter autocommand events can be used to do something when
 switching from one tab page to another.  The exact order depends on what you

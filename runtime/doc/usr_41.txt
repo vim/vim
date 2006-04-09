@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0c.  Last change: 2006 Mar 24
+*usr_41.txt*	For Vim version 7.0c.  Last change: 2006 Apr 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -577,15 +577,19 @@ used for.  You can find an alphabetical list here: |functions|.  Use CTRL-] on
 the function name to jump to detailed help on it.
 
 String manipulation:
-	char2nr()		get ASCII value of a character
 	nr2char()		get a character by its ASCII value
+	char2nr()		get ASCII value of a character
+	str2nr()		convert a string to a number
+	printf()		format a string according to % items
 	escape()		escape characters in a string with a '\'
+	tr()			translate characters from one set to another
 	strtrans()		translate a string to make it printable
 	tolower()		turn a string to lowercase
 	toupper()		turn a string to uppercase
 	match()			position where a pattern matches in a string
 	matchend()		position where a pattern match ends in a string
 	matchstr()		match of a pattern in a string
+	matchlist()		like matchstr() and also return submatches
 	stridx()		first index of a short string in a long string
 	strridx()		last index of a short string in a long string
 	strlen()		length of a string
@@ -594,6 +598,9 @@ String manipulation:
 	strpart()		get part of a string
 	expand()		expand special keywords
 	iconv()			convert text from one encoding to another
+	byteidx()		byte index of a character in a string
+	repeat()		repeat a string multiple times
+	eval()			evaluate a string expression
 
 List manipulation:
 	get()			get an item without error for wrong index
@@ -611,12 +618,14 @@ List manipulation:
 	reverse()		reverse the order of a List
 	split()			split a String into a List
 	join()			join List items into a String
+	range()			return a List with a sequence of numbers
 	string()		String representation of a List
 	call()			call a function with List as arguments
 	index()			index of a value in a List
 	max()			maximum value in a List
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
+	repeat()		repeat a List multiple times
 
 Dictionary manipulation:
 	get()			get an entry without an error for a wrong key
@@ -637,15 +646,30 @@ Dictionary manipulation:
 	min()			minimum value in a Dictionary
 	count()			count number of times a value appears
 
-Working with text in the current buffer:
-	byte2line()		get line number at a specific byte count
-	line2byte()		byte count at a specific line
+Variables:
+	type()			type of a variable
+	islocked()		check if a variable is locked
+	function()		get a Funcref for a function name
+	getbufvar()		get a variable value from a specific buffer
+	setbufvar()		set a variable in a specific buffer
+	getwinvar()		get a variable value from a specific window
+	setwinvar()		set a variable in a specific window
+	garbagecollect()	possibly free memory
+
+Cursor and mark position:
 	col()			column number of the cursor or a mark
 	virtcol()		screen column of the cursor or a mark
 	line()			line number of the cursor or mark
 	wincol()		window column number of the cursor
 	winline()		window line number of the cursor
 	cursor()		position the cursor at a line/column
+	getpos()		get position of cursor, mark, etc.
+	setpos()		set position of cursor, mark, etc.
+	byte2line()		get line number at a specific byte count
+	line2byte()		byte count at a specific line
+	diff_filler()		get the number of filler lines above a line
+
+Working with text in the current buffer:
 	getline()		get a line or list of lines from the buffer
 	setline()		replace a line in the buffer
 	append()		append line or list of lines in the buffer
@@ -658,30 +682,40 @@ Working with text in the current buffer:
 	searchpos()		find a match for a pattern
 	searchpair()		find the other end of a start/skip/end
 	searchpairpos()		find the other end of a start/skip/end
+	searchdecl()		search for the declaration of a name
 
 System functions and manipulation of files:
-	browse()		put up a file requester
 	glob()			expand wildcards
 	globpath()		expand wildcards in a number of directories
+	findfile()		find a file in a list of directories
+	finddir()		find a directory in a list of directories
 	resolve()		find out where a shortcut points to
 	fnamemodify()		modify a file name
+	pathshorten()		shorten directory names in a path
+	simplify()		simplify a path without changing its meaning
 	executable()		check if an executable program exists
 	filereadable()		check if a file can be read
 	filewritable()		check if a file can be written to
-	mkdir()			create a new directory
+	getfperm()		get the permissions of a file
+	getftype()		get the kind of a file
 	isdirectory()		check if a directory exists
-	getcwd()		get the current working directory
 	getfsize()		get the size of a file
-	getftime()		get last modification time of a file
-	localtime()		get current time
-	strftime()		convert time to a string
+	getcwd()		get the current working directory
 	tempname()		get the name of a temporary file
+	mkdir()			create a new directory
 	delete()		delete a file
 	rename()		rename a file
 	system()		get the result of a shell command
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
 	writefile()		write a List of lines into a file
+
+Date and Time:
+	getftime()		get last modification time of a file
+	localtime()		get current time in seconds
+	strftime()		convert time to a string
+	reltime()		get the current or elapsed time accurately
+	reltimestr()		convert reltime() result to a string
 
 Buffers, windows and the argument list:
 	argc()			number of entries in the argument list
@@ -692,27 +726,52 @@ Buffers, windows and the argument list:
 	bufloaded()		check if a buffer exists and is loaded
 	bufname()		get the name of a specific buffer
 	bufnr()			get the buffer number of a specific buffer
+	tabpagebuflist()	return List of buffers in a tab page
+	tabpagenr()		get the number of a tab page
+	tabpagewinnr()		like winnr() for a specified tab page
 	winnr()			get the window number for the current window
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
 	getbufline()		get a list of lines from the specified buffer
-	getbufvar()		get a variable value from a specific buffer
-	setbufvar()		set a variable in a specific buffer
-	getwinvar()		get a variable value from a specific window
-	setwinvar()		set a variable in a specific window
+
+Command line:
+	getcmdline()		get the current command line
+	getcmdpos()		get position of the cursor in the command line
+	setcmdpos()		set position of the cursor in the command line
+	getcmdtype()		return the current command-line type
+
+Quickfix and location lists:
+	getqflist()		list of quickfix errors
+	setqflist()		modify a quickfix list
+	getloclist()		list of location list items
+	setloclist()		modify a location list
+
+Insert mode completion:
+	complete()		set found matches
+	complete_add()		add to found matches
+	complete_check()	check if completion should be aborted
+	pumvisible()		check if the popup menu is displayed
 
 Folding:
 	foldclosed()		check for a closed fold at a specific line
 	foldclosedend()		like foldclosed() but return the last line
 	foldlevel()		check for the fold level at a specific line
 	foldtext()		generate the line displayed for a closed fold
+	foldtextresult()	get the text displayed for a closed fold
 
-Syntax highlighting:
+Syntax and highlighting:
 	hlexists()		check if a highlight group exists
 	hlID()			get ID of a highlight group
 	synID()			get syntax ID at a specific position
 	synIDattr()		get a specific attribute of a syntax ID
 	synIDtrans()		get translated syntax ID
+	diff_hlID()		get highlight ID for diff mode at a position
+	matcharg()		get info about |:match| arguments
+
+Spelling:
+	spellbadword()		locate badly spelled word at or after cursor
+	spellsuggest()		return suggested spelling corrections
+	soundfold()		return the sound-a-like equivalent of a word
 
 History:
 	histadd()		add an item to a history
@@ -721,14 +780,22 @@ History:
 	histnr()		get highest index of a history list
 
 Interactive:
+	browse()		put up a file requester
+	browsedir()		put up a directory requester
 	confirm()		let the user make a choice
 	getchar()		get a character from the user
 	getcharmod()		get modifiers for the last typed character
 	input()			get a line from the user
+	inputlist()		let the user pick an entry from a list
 	inputsecret()		get a line from the user without showing it
 	inputdialog()		get a line from the user in a dialog
 	inputsave()		save and clear typeahead
 	inputrestore()		restore typeahead
+
+GUI:
+	getfontname()		get name of current font being used
+	getwinposx()		X position of the GUI Vim window
+	getwinposy()		Y position of the GUI Vim window
 
 Vim server:
 	serverlist()		return the list of server names
@@ -740,8 +807,14 @@ Vim server:
 	foreground()		move the Vim window to the foreground
 	remote_foreground()	move the Vim server window to the foreground
 
+Window size and position:
+	winheight()		get height of a specific window
+	winwidth()		get width of a specific window
+	winrestcmd()		return command to restore window sizes
+	winsaveview()		get view of current window
+	winrestview()		restore saved view of current window
+
 Various:
-	type()			type of a variable
 	mode()			get current editing mode
 	visualmode()		last visual mode used
 	hasmapto()		check if a mapping exists
@@ -749,23 +822,20 @@ Various:
 	maparg()		get rhs of a mapping
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
-	getqflist()		list of quickfix errors
-	getloclist()		list of location list items
+	changenr()		return number of most recent change
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
-	getwinposx()		X position of the GUI Vim window
-	getwinposy()		Y position of the GUI Vim window
-	winheight()		get height of a specific window
-	winwidth()		get width of a specific window
+
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
+
 	getreg()		get contents of a register
 	getregtype()		get type of a register
-	setqflist()		modify a quickfix list
-	setloclist()		modify a location list
 	setreg()		set contents and type of a register
+
 	taglist()		get list of matching tags
+	tagfiles()		get a list of tags files
 
 ==============================================================================
 *41.7*	Defining a function

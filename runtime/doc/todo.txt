@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 07
+*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,7 +33,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
     WFP_COMPPERMIT and WFP_COMPFORBID
 
-":mkspell" still takes too long in Hungarian dictionary.
+":mkspell" still takes much too long in Hungarian dictionary.
 
 Use ~/tmp/hungarian*.txt to test dictionary with.
 
@@ -1805,6 +1805,11 @@ Shared libraries:
 
 
 Tags:
+9   With ":set tags=./tags,../tags" and a tag appears in both tags files it is
+    added twice.  Requires figuring out the actual file name for each found
+    match.  Remove tag_fname from the match and combine it with the fname in
+    the match (without expanding or other things that take time).  When
+    'tagrelative' is off tag_fname isn't needed at all.
 7   Can CTRL-] (jump to tag) include a following "." and "->" to restrict the
     number of possible matches? Check tags file for an item that has members.
     (Flemming Madsen)

@@ -28,13 +28,14 @@ endif
 :hi Visual gui=none guifg=khaki guibg=olivedrab cterm=reverse
 :hi WarningMsg guifg=salmon ctermfg=1
 :hi String guifg=SkyBlue ctermfg=darkcyan
-:hi Comment guifg=DimGrey ctermfg=darkgrey
+:hi Comment term=bold ctermfg=11 guifg=#80a0ff
 :hi Constant guifg=#ffa0a0 ctermfg=brown
-:hi Special guifg=DarkKhaki ctermfg=brown
-:hi Identifier guifg=salmon ctermfg=darkred
-:hi Include guifg=darkred ctermfg=darkred
-:hi PreProc guifg=olivedrab ctermfg=red
-:hi Operator guifg=CornflowerBlue ctermfg=darkcyan
+:hi Special guifg=green ctermfg=brown
+:hi Identifier guifg=salmon ctermfg=red
+:hi Include guifg=red ctermfg=red
+:hi PreProc guifg=red guibg=white ctermfg=red
+:hi Operator guifg=Red ctermfg=Red
+":hi Operator guifg=CornflowerBlue ctermfg=darkcyan
 :hi Define guifg=gold gui=bold ctermfg=yellow
 :hi Type guifg=darkkhaki ctermfg=2
 :hi Function guifg=navajowhite ctermfg=brown
