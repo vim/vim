@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0c.  Last change: 2006 Mar 06
+*if_mzsch.txt*  For Vim version 7.0d.  Last change: 2006 Mar 06
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev

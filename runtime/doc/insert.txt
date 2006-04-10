@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0c.  Last change: 2006 Apr 06
+*insert.txt*    For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1105,18 +1105,22 @@ The menu is used when:
 The 'pumheight' option can be used to set a maximum height.  The default is to
 use all space available.
 
-There are two states:
-1. A complete match has been inserted.
-2. Only part of a match has been inserted.
+There are three states:
+1. A complete match has been inserted, e.g., after using CTRL-N or CTRL-P.
+2. A cursor key has been used to select another match.  The match was not
+   inserted then, only the entry in the popup menu is highlighted.
+3. Only part of a match has been inserted and characters were typed or the
+   backspace key was used.  The list of matches was then adjusted for what is
+   in front of the cursor.
 
 You normally start in the first state, with the first match being inserted.
 When "longest" is in 'completeopt' and there is more than one match you start
-in the second state.
+in the third state.
 
-If you select another match, e.g., with CTRL-N or CTRL-P, you go from the
-second to the first state.  This doesn't change the list of matches.
+If you select another match, e.g., with CTRL-N or CTRL-P, you go to the first
+state.  This doesn't change the list of matches.
 
-When you are back at the original text then you are in the second state.  To
+When you are back at the original text then you are in the third state.  To
 get there right away you can use a mapping that uses CTRL-P right after
 starting the completion: >
 	:imap <F7> <C-N><C-P>
@@ -1126,8 +1130,11 @@ In the first state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the word before
 		  the cursor.  This reduces the list of matches, often to one
 		  entry, and switches to the second state.
+Any non-special character:
+		  Stop completion without changing the match and insert the
+		  typed character.
 
-In the second state these keys have a special meaning:
+In the second and third state these keys have a special meaning:
 <BS> and CTRL-H   Delete one character, find the matches for the shorter word
 		  before the cursor.  This may find more matches.
 CTRL-L		  Add one character from the current match, may reduce the
@@ -1135,7 +1142,7 @@ CTRL-L		  Add one character from the current match, may reduce the
 any printable, non-white character:
 		  Add this character and reduce the number of matches.
 
-In both states these can be used:
+In all three states these can be used:
 CTRL-Y		  Yes: Accept the currently selected match and stop completion.
 CTRL-E		  End completion, go back to what was typed.
 <PageUp>	  Select a match several entries back, but don't insert it.
@@ -1144,10 +1151,17 @@ CTRL-E		  End completion, go back to what was typed.
 		  insert it.
 <Down>		  Select the next match, as if CTRL-N was used, but don't
 		  insert it.
-Any other character:
-		  Stop completion without changing the match and insert the
-		  typed character.  Note that typing a space or <Tab> will
-		  work in both states.
+space or <Tab>	  Stop completion without changing the match and insert the
+		  typed character.
+
+The behavior of the Enter key depends on the state you are in:
+first state:	  Use the text as it is and insert a line break.
+second state:	  Insert the currently selected match.
+third state:	  Use the text as it is and insert a line break.
+
+In other words: If you used the cursor keys to select another entry in the
+list of matches then the Enter key inserts that match.  If you typed something
+else then Enter inserts a line break.
 
 
 The colors of the menu can be changed with these highlight groups:

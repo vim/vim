@@ -5959,7 +5959,7 @@ aff_process_flags(affile, entry)
 {
     char_u	*p;
     char_u	*prevp;
-    int		flag;
+    unsigned	flag;
 
     if (entry->ae_flags != NULL
 		&& (affile->af_compforbid != 0 || affile->af_comppermit != 0))
@@ -6474,6 +6474,7 @@ spell_read_dic(spin, fname, affile)
 	if (spin->si_ascii && has_non_ascii(w))
 	{
 	    ++non_ascii;
+	    vim_free(pc);
 	    continue;
 	}
 
@@ -6495,10 +6496,11 @@ spell_read_dic(spin, fname, affile)
 	/* Store the word in the hashtable to be able to find duplicates. */
 	dw = (char_u *)getroom_save(spin, w);
 	if (dw == NULL)
+	{
 	    retval = FAIL;
-	vim_free(pc);
-	if (retval == FAIL)
+	    vim_free(pc);
 	    break;
+	}
 
 	hash = hash_hash(dw);
 	hi = hash_lookup(&ht, dw, hash);
@@ -6558,6 +6560,8 @@ spell_read_dic(spin, fname, affile)
 			    CONDIT_SUF, flags, store_afflist, pfxlen) == FAIL)
 		retval = FAIL;
 	}
+
+	vim_free(pc);
     }
 
     if (duplicate > 0)

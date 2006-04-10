@@ -3527,6 +3527,26 @@ goto_tabpage_tp(tp)
 }
 
 /*
+ * Enter window "wp" in tab page "tp".
+ * Also updates the GUI tab.
+ */
+    void
+goto_tabpage_win(tp, wp)
+    tabpage_T	*tp;
+    win_T	*wp;
+{
+    goto_tabpage_tp(tp);
+    if (curtab == tp && win_valid(wp))
+    {
+	win_enter(wp, TRUE);
+# ifdef FEAT_GUI_TABLINE
+	if (gui_use_tabline())
+	    gui_mch_set_curtab(tabpage_index(curtab));
+# endif
+    }
+}
+
+/*
  * Move the current tab page to before tab page "nr".
  */
     void
@@ -3810,7 +3830,7 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
 
     /* sync undo before leaving the current buffer */
     if (undo_sync && curbuf != wp->w_buffer)
-	u_sync();
+	u_sync(FALSE);
     /* may have to copy the buffer options when 'cpo' contains 'S' */
     if (wp->w_buffer != curbuf)
 	buf_copy_options(wp->w_buffer, BCO_ENTER | BCO_NOHELP);
@@ -3896,9 +3916,8 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
 
 #if defined(FEAT_WINDOWS) || defined(FEAT_SIGNS) || defined(PROTO)
 /*
- * Jump to the first open window that contains buffer buf if one exists
- * TODO: Alternatively jump to last open window? Dependent from 'splitbelow'?
- * Returns pointer to window if it exists, otherwise NULL.
+ * Jump to the first open window that contains buffer "buf", if one exists.
+ * Returns a pointer to the window found, otherwise NULL.
  */
     win_T *
 buf_jump_open_win(buf)
@@ -3907,11 +3926,52 @@ buf_jump_open_win(buf)
 # ifdef FEAT_WINDOWS
     win_T	*wp;
 
-    for (wp = firstwin; wp; wp = wp->w_next)
+    for (wp = firstwin; wp != NULL; wp = wp->w_next)
 	if (wp->w_buffer == buf)
 	    break;
     if (wp != NULL)
 	win_enter(wp, FALSE);
+    return wp;
+# else
+    if (curwin->w_buffer == buf)
+	return curwin;
+    return NULL;
+# endif
+}
+
+/*
+ * Jump to the first open window in any tab page that contains buffer "buf",
+ * if one exists.
+ * Returns a pointer to the window found, otherwise NULL.
+ */
+    win_T *
+buf_jump_open_tab(buf)
+    buf_T	*buf;
+{
+# ifdef FEAT_WINDOWS
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    /* First try the current tab page. */
+    wp = buf_jump_open_win(buf);
+    if (wp != NULL)
+	return wp;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+	if (tp != curtab)
+	{
+	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer == buf)
+		    break;
+	    if (wp != NULL)
+	    {
+		goto_tabpage_win(tp, wp);
+		if (curwin != wp)
+		    wp = NULL;	/* something went wrong */
+		break;
+	    }
+	}
+
     return wp;
 # else
     if (curwin->w_buffer == buf)

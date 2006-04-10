@@ -2233,7 +2233,7 @@ ex_diffgetput(eap)
 	 * another buffer.  Sync undo if the command was typed.  This isn't
 	 * 100% right when ":diffput" is used in a function or mapping. */
 	if (KeyTyped)
-	    u_sync();
+	    u_sync(FALSE);
 	aucmd_restbuf(&aco);
     }
 

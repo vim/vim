@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0c.  Last change: 2006 Apr 09
+*options.txt*	For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2079,7 +2079,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-CursorLine|.  Useful to easily spot the cursor.  Will make screen
 	redrawing slower.
 	When Visual mode is active the highlighting isn't used to make it
-	easier to spot where the selected area.
+	easier to see the selected text.
 
 
 						*'debug'*
@@ -6361,6 +6361,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			jumping to errors (":cc", ":cn", "cp", etc.).  It is
 			also used in all buffer related split commands, for
 			example ":sbuffer", ":sbnext", or ":sbrewind".
+	   usetab	Like "useopen", but also consider windows in other tab
+	   		pages.
 	   split	If included, split the current window before loading
 			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.

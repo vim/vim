@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 07
+" Last Change:	2006 Apr 10
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -278,6 +278,7 @@ SynMenu L-Ma.Maple\ V:maple
 SynMenu L-Ma.Mason:mason
 SynMenu L-Ma.Mathematica:mma
 SynMenu L-Ma.Matlab:matlab
+SynMenu L-Ma.Maxima:maxima
 
 SynMenu Me-NO.MEL\ (for\ Maya):mel
 SynMenu Me-NO.Metafont:mf

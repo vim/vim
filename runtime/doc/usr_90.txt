@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 7.0c.  Last change: 2004 Mar 21
+*usr_90.txt*	For Vim version 7.0d.  Last change: 2004 Mar 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

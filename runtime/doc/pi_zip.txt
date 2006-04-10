@@ -1,4 +1,4 @@
-*zip.txt*	For Vim version 7.0c.  Last change: 2006 Apr 03
+*zip.txt*	For Vim version 7.0d.  Last change: 2006 Apr 03
 
 				+====================+
 				| Zip File Interface |

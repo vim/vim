@@ -1212,7 +1212,11 @@ do_buffer(action, start, dir, count, forceit)
     {
 # ifdef FEAT_WINDOWS
 	/* jump to first window containing buf if one exists ("useopen") */
-	if (vim_strchr(p_swb, 'u') && buf_jump_open_win(buf))
+	if (vim_strchr(p_swb, 'o') && buf_jump_open_win(buf))
+	    return OK;
+	/* jump to first window in any tab page containing buf if one exists
+	 * ("usetab") */
+	if (vim_strchr(p_swb, 'a') && buf_jump_open_tab(buf))
 	    return OK;
 	if (win_split(0, 0) == FAIL)
 # endif
@@ -1316,7 +1320,7 @@ set_curbuf(buf, action)
 #endif
 	{
 	    if (prevbuf == curbuf)
-		u_sync();
+		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
 		    unload ? action : (action == DOBUF_GOTO
 			&& !P_HID(prevbuf)
@@ -1833,8 +1837,11 @@ buflist_getfile(n, lnum, options, forceit)
     if (options & GETF_SWITCH)
     {
 	/* use existing open window for buffer if wanted */
-	if (vim_strchr(p_swb, 'u'))     /* useopen */
+	if (vim_strchr(p_swb, 'o'))     /* useopen */
 	    wp = buf_jump_open_win(buf);
+	/* use existing open window in any tab page for buffer if wanted */
+	if (vim_strchr(p_swb, 'a'))     /* usetab */
+	    wp = buf_jump_open_tab(buf);
 	/* split window if wanted ("split") */
 	if (wp == NULL && vim_strchr(p_swb, 't') && !bufempty())
 	{

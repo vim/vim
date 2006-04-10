@@ -1,4 +1,4 @@
-*usr_43.txt*	For Vim version 7.0c.  Last change: 2002 Jul 14
+*usr_43.txt*	For Vim version 7.0d.  Last change: 2002 Jul 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

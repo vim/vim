@@ -2811,7 +2811,7 @@ static char *(p_bsdir_values[]) = {"current", "last", "buffer", NULL};
 #ifdef FEAT_SCROLLBIND
 static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
 #endif
-static char *(p_swb_values[]) = {"useopen", "split", NULL};
+static char *(p_swb_values[]) = {"useopen", "usetab", "split", NULL};
 static char *(p_debug_values[]) = {"msg", "beep", NULL};
 #ifdef FEAT_VERTSPLIT
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
@@ -7767,7 +7767,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     {
 	/* use the old value, otherwise u_sync() may not work properly */
 	p_ul = old_value;
-	u_sync();
+	u_sync(TRUE);
 	p_ul = value;
     }
 

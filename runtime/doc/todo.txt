@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0c.  Last change: 2006 Apr 09
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,10 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+":mkspell" still takes much too long in Hungarian dictionary.
+
 Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
     WFP_COMPPERMIT and WFP_COMPFORBID
-
-":mkspell" still takes much too long in Hungarian dictionary.
 
 Use ~/tmp/hungarian*.txt to test dictionary with.
 
@@ -46,9 +46,6 @@ New Hungarian dictionary. (Laci Nemeth)
 -   Add CHECKCOMPOUNDCASE: when compounding make leading capital lower case.
     How is it supposed to work?
 -   implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
-
-Obey 'switchbuf' "useopen" value for windows in other tabs, e.g. for :sbuffer.
-Or use another value, e.g., "usetab"?
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 

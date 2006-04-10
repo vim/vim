@@ -90,6 +90,10 @@ static compl_T    *compl_first_match = NULL;
 static compl_T    *compl_curr_match = NULL;
 static compl_T    *compl_shown_match = NULL;
 
+/* After using a cursor key <Enter> selects a match in the popup menu,
+ * otherwise it inserts a line break. */
+static int	  compl_enter_selects = FALSE;
+
 /* When "compl_leader" is not NULL only matches that start with this string
  * are used. */
 static char_u	  *compl_leader = NULL;
@@ -726,8 +730,10 @@ edit(cmdchar, startln, count)
 		    continue;
 		}
 
-		/* Pressing CTRL-Y selects the current match. */
-		if (c == Ctrl_Y)
+		/* Pressing CTRL-Y selects the current match.  Shen
+		 * compl_enter_selects is set the Enter key does the same. */
+		if (c == Ctrl_Y || (compl_enter_selects
+				   && (c == CAR || c == K_KENTER || c == NL)))
 		{
 		    ins_compl_delete();
 		    ins_compl_insert();
@@ -2915,6 +2921,7 @@ ins_compl_clear()
     edit_submode_extra = NULL;
     vim_free(compl_orig_text);
     compl_orig_text = NULL;
+    compl_enter_selects = FALSE;
 }
 
 /*
@@ -2976,6 +2983,7 @@ ins_compl_bs()
 	/* Show the popup menu with a different set of matches. */
 	ins_compl_show_pum();
 	compl_used_match = FALSE;
+	compl_enter_selects = FALSE;
 
 	return TRUE;
     }
@@ -3014,6 +3022,7 @@ ins_compl_addleader(c)
 	ins_compl_del_pum();
 	ins_compl_show_pum();
 	compl_used_match = FALSE;
+	compl_enter_selects = FALSE;
 	ins_compl_set_original_text(compl_leader);
     }
 }
@@ -3277,8 +3286,11 @@ ins_compl_prep(c)
 	    auto_format(FALSE, TRUE);
 
 	    /* If the popup menu is displayed pressing CTRL-Y means accepting
-	     * the selection without inserting anything. */
-	    if (c == Ctrl_Y && pum_visible())
+	     * the selection without inserting anything.  When
+	     * compl_enter_selects is set the Enter key does the same. */
+	    if ((c == Ctrl_Y || (compl_enter_selects
+				   && (c == CAR || c == K_KENTER || c == NL)))
+		    && pum_visible())
 		retval = TRUE;
 
 	    /* CTRL-E means completion is Ended, go back to the typed text. */
@@ -3298,6 +3310,7 @@ ins_compl_prep(c)
 	    compl_matches = 0;
 	    msg_clr_cmdline();		/* necessary for "noshowmode" */
 	    ctrl_x_mode = 0;
+	    compl_enter_selects = FALSE;
 	    if (edit_submode != NULL)
 	    {
 		edit_submode = NULL;
@@ -4048,6 +4061,10 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	 * don't want to match ourselves!  */
 	ins_compl_delete();
     }
+
+    /* Enter will select a match when the match wasn't inserted and the popup
+     * menu is visislbe. */
+    compl_enter_selects = !insert_match && compl_match_array != NULL;
 
     /*
      * Show the file name for the match (if any)
@@ -7277,7 +7294,7 @@ ins_ctrl_g()
 		  break;
 
 	/* CTRL-G u: start new undoable edit */
-	case 'u': u_sync();
+	case 'u': u_sync(TRUE);
 		  ins_need_undo = TRUE;
 
 		  /* Need to reset Insstart, esp. because a BS that joins

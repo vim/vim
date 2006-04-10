@@ -253,6 +253,7 @@ an 50.60.440 &Syntax.L-Ma.Maple\ V :cal SetSyn("maple")<CR>
 an 50.60.450 &Syntax.L-Ma.Mason :cal SetSyn("mason")<CR>
 an 50.60.460 &Syntax.L-Ma.Mathematica :cal SetSyn("mma")<CR>
 an 50.60.470 &Syntax.L-Ma.Matlab :cal SetSyn("matlab")<CR>
+an 50.60.480 &Syntax.L-Ma.Maxima :cal SetSyn("maxima")<CR>
 an 50.70.100 &Syntax.Me-NO.MEL\ (for\ Maya) :cal SetSyn("mel")<CR>
 an 50.70.110 &Syntax.Me-NO.Metafont :cal SetSyn("mf")<CR>
 an 50.70.120 &Syntax.Me-NO.MetaPost :cal SetSyn("mp")<CR>

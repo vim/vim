@@ -3253,7 +3253,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 		    buf_copy_options(buf, BCO_ENTER);
 
 		/* close the link to the current buffer */
-		u_sync();
+		u_sync(FALSE);
 		close_buffer(curwin, curbuf,
 				      (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD);
 
@@ -4289,7 +4289,7 @@ do_sub(eap)
 
     if (!do_count && !curbuf->b_p_ma)
     {
-	/* Substitusion is not allowed in non-'modifiable' buffer */
+	/* Substitution is not allowed in non-'modifiable' buffer */
 	EMSG(_(e_modifiable));
 	return;
     }
@@ -6919,12 +6919,7 @@ ex_drop(eap)
 	    if (wp->w_buffer == buf)
 	    {
 # ifdef FEAT_WINDOWS
-		goto_tabpage_tp(tp);
-		win_enter(wp, TRUE);
-#  ifdef FEAT_GUI_TABLINE
-		if (gui_use_tabline())
-		    gui_mch_set_curtab(tabpage_index(curtab));
-#  endif
+		goto_tabpage_win(tp, wp);
 # endif
 		curwin->w_arg_idx = 0;
 		return;

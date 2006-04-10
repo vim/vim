@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0c.  Last change: Apr 06, 2006
+*pi_netrw.txt*  For Vim version 7.0d.  Last change: Apr 06, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 

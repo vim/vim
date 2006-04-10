@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0c.  Last change: 2006 Apr 09
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -924,6 +924,7 @@ mailaliases syntax file. (Nikolai Weibull)
 mailcap ftplugin file. (Nikolai Weibull)
 manconf syntax and ftplugin file. (Nikolai Weibull)
 matlab ftplugin file. (Jake Wasserman)
+Maxima syntax file. (Robert Dodier)
 MGL syntax file. (Gero Kuhlmann)
 modconf ftplugin file. (Nikolai Weibull)
 mplayer config ftplugin file. (Nikolai Weibull)
@@ -2240,7 +2241,7 @@ apparently doesn't work everywhere.  Use %H:%M:%S instead.
 
 Typing BS at the "z=" prompt removed the prompt.
 
---- fixes since Vim 7.0c ---
+--- fixes and changes since Vim 7.0c ---
 
 When jumping to another tab page the Vim window size was always set, even when
 nothing in the layout changed.
@@ -2413,5 +2414,10 @@ glob('/dir/\$ABC/*') didn't work.
 
 When using several tab pages and changing 'cmdheight' the display could become
 messed up.  Now store the value of 'cmdheight' separately for each tab page.
+
+The user of the Enter key while the popup menu is visible was still confusing.
+Now use Enter to select the match after using a cursor key.
+
+Added "usetab" to 'switchbuf'.
 
  vim:tw=78:ts=8:ft=help:norl:

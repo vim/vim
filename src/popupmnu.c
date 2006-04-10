@@ -427,18 +427,24 @@ pum_set_selected(n)
 		    while (!bufempty())
 			ml_delete((linenr_T)1, FALSE);
 		}
-		else if ((res = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, 0))
-									== OK)
+		else
 		{
-		    /* Edit a new, empty buffer. Set options for a "wipeout"
-		     * buffer. */
-		    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-		    set_option_value((char_u *)"bt", 0L, (char_u *)"nofile",
-								   OPT_LOCAL);
-		    set_option_value((char_u *)"bh", 0L, (char_u *)"wipe",
-								   OPT_LOCAL);
-		    set_option_value((char_u *)"diff", 0L, (char_u *)"",
-								   OPT_LOCAL);
+		    /* Don't want to sync undo in the current buffer. */
+		    ++no_u_sync;
+		    res = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, 0);
+		    --no_u_sync;
+		    if (res == OK)
+		    {
+			/* Edit a new, empty buffer. Set options for a "wipeout"
+			 * buffer. */
+			set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+			set_option_value((char_u *)"bt", 0L,
+					       (char_u *)"nofile", OPT_LOCAL);
+			set_option_value((char_u *)"bh", 0L,
+						 (char_u *)"wipe", OPT_LOCAL);
+			set_option_value((char_u *)"diff", 0L,
+						     (char_u *)"", OPT_LOCAL);
+		    }
 		}
 		if (res == OK)
 		{

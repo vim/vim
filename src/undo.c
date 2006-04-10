@@ -551,7 +551,7 @@ u_undo(count)
      */
     if (curbuf->b_u_synced == FALSE)
     {
-	u_sync();
+	u_sync(TRUE);
 	count = 1;
     }
 
@@ -673,7 +673,7 @@ undo_time(step, sec, absolute)
 
     /* First make sure the current undoable change is synced. */
     if (curbuf->b_u_synced == FALSE)
-	u_sync();
+	u_sync(TRUE);
 
     u_newcount = 0;
     u_oldcount = 0;
@@ -1255,10 +1255,12 @@ u_undo_end(did_undo, absolute)
  * u_sync: stop adding to the current entry list
  */
     void
-u_sync()
+u_sync(force)
+    int	    force;	/* Also sync when no_u_sync is set. */
 {
-    if (curbuf->b_u_synced)
-	return;		    /* already synced */
+    /* Skip it when already synced or syncing is disabled. */
+    if (curbuf->b_u_synced || (!force && no_u_sync > 0))
+	return;
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
     if (im_is_preediting())
 	return;		    /* XIM is busy, don't break an undo sequence */

@@ -7,7 +7,7 @@ extern int u_savedel __ARGS((linenr_T lnum, long nlines));
 extern void u_undo __ARGS((int count));
 extern void u_redo __ARGS((int count));
 extern void undo_time __ARGS((long step, int sec, int absolute));
-extern void u_sync __ARGS((void));
+extern void u_sync __ARGS((int force));
 extern void ex_undolist __ARGS((exarg_T *eap));
 extern void ex_undojoin __ARGS((exarg_T *eap));
 extern void u_unchanged __ARGS((buf_T *buf));

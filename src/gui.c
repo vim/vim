@@ -4931,8 +4931,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 		if (u_save_cursor() == OK)
 		{
 		    /* A button was pressed thus undo should be synced. */
-		    if (no_u_sync == 0)
-			u_sync();
+		    u_sync(FALSE);
 
 		    del_bytes((long)(regmatch.endp[0] - regmatch.startp[0]),
 								FALSE, FALSE);
@@ -4948,8 +4947,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     if (type == FRD_REPLACEALL)
     {
 	/* A button was pressed, thus undo should be synced. */
-	if (no_u_sync == 0)
-	    u_sync();
+	u_sync(FALSE);
 	do_cmdline_cmd(ga.ga_data);
     }
     else
