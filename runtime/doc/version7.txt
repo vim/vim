@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 10
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -628,7 +628,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:viusage|		Help for Vi commands (Nvi command).
 
 |:sort|			Sort lines in the buffer without depending on an
-			external command.
+			external command. (partly by Bryce Wagner)
 
 |:caddfile|		Add error messages to an existing quickfix list
 			(Yegappan Lakshmanan).
@@ -913,6 +913,7 @@ Haskell ftplugin file. (Nikolai Weibull)
 help ftplugin file. (Nikolai Weibull)
 indent ftplugin file. (Nikolai Weibull)
 Javascript ftplugin file. (Bram Moolenaar)
+Kconfig ftplugin and syntax file. (Nikolai Weibull)
 ld syntax, indent and ftplugin file. (Nikolai Weibull)
 lftp ftplugin file. (Nikolai Weibull)
 libao config ftplugin file. (Nikolai Weibull)
@@ -2419,5 +2420,27 @@ The user of the Enter key while the popup menu is visible was still confusing.
 Now use Enter to select the match after using a cursor key.
 
 Added "usetab" to 'switchbuf'.
+
+
+--- fixes and changes since Vim 7.0d ---
+
+Added CTRL-W T: move a window to a new tab page.
+
+Using CTRL-X s in Insert mode to complete spelling suggestions and using BS
+deleted characters before the bad word.
+
+A few small fixes for the VMS makefile. (Zoltan Arpadffy)
+
+With a window of 91 lines 45 cols, ":vsp" scrolled the window.  Copy w_wrow
+when splitting a window and skip setting the height when it's already at the
+right value.
+
+Using <silent> in a mapping with a shell command and the GUI caused redraw
+to use wrong attributes.
+
+Win32: Using MSVC 4.1 for install.exe resulted in the start menu items to be
+created in the administrator directory instead of "All Users".  Define the
+CSIDL_ items if they are missing.
+
 
  vim:tw=78:ts=8:ft=help:norl:

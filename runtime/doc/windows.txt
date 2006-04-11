@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0d.  Last change: 2006 Apr 06
+*windows.txt*   For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -433,6 +433,13 @@ CTRL-W L	Move the current window to be at the far right, using the full
 		":vert botright split", except that the current window
 		contents is used for the new window.
 		{not available when compiled without the +vertsplit feature}
+
+						*CTRL-W_T*
+CTRL-W T	Move the current window to a new tab page.  This fails if
+		there is only one window in the current tab page.
+		When a count is specified the new tab page will be opened
+		before the tab page with this index.  Otherwise it comes after
+		the current tab page.
 
 ==============================================================================
 6. Window resizing					*window-resize*

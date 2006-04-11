@@ -5,9 +5,9 @@ WHAT IS VIM
 
 Vim is an almost compatible version of the UNIX editor Vi.  Many new features
 have been added: multi-level undo, syntax highlighting, command line history,
-on-line help, filename completion, block operations, etc.  There is also a
-Graphical User Interface (GUI) available.  See "runtime/doc/vi_diff.txt" for
-differences with Vi.
+on-line help, spell checking, filename completion, block operations, etc.
+There is also a Graphical User Interface (GUI) available.  See
+"runtime/doc/vi_diff.txt" for differences with Vi.
 
 This editor is very useful for editing programs and other plain ASCII files.
 All commands are given with normal keyboard characters, so those who can type
@@ -56,15 +56,16 @@ distribute it.
 
 SPONSORING
 
-Fixing bugs and adding new features takes a lot of effort.  For a few years
-Bram has attempted to do this next to a full-time job.  During that time the
-todo list kept getting longer and longer.
+Fixing bugs and adding new features takes a lot of time and effort.  To show
+your appreciation for the work and motivate Bram and others to continue
+working on Vim please send a donation.
 
-In order for Bram to support Vim properly he needs your help.  Through your
-donations Bram will be able to have a part-time job and spend more time on
-fixing bugs and adding new features.
+Since Bram is back to a paid job the money will now be used to help children
+in Uganda.  See runtime/doc/uganda.txt.  But at the same time donations
+increase Bram's motivation to keep working on Vim!
 
 For the most recent information about sponsoring look on the Vim web site:
+
 	http://www.vim.org/sponsor/
 
 
@@ -132,6 +133,9 @@ MAIN AUTHOR
 Send any other comments, patches, pizza and suggestions to:
 
 	Bram Moolenaar		E-mail:	Bram@vim.org
-	Clematisstraat 30
-	5925 BE  Venlo		Tel: +31 77 387 2340
-	The Netherlands		Fax/voice-mail: +31 20 773 8272
+	Molenstraat 2
+	2161 HP  Lisse
+	The Netherlands
+
+This is the address of my parents, they will forward mail and eat the pizza.
+My actual address will change a couple of times in 2006.

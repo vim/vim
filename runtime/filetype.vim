@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 04
+" Last Change:	2006 Apr 11
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -783,6 +783,9 @@ au BufNewFile,BufRead *.k			setf kwt
 
 " KDE script
 au BufNewFile,BufRead *.ks			setf kscript
+
+" Kconfig
+au BufNewFile,BufRead Kconfig,Kconfig.debug	setf kconfig
 
 " Lace (ISE)
 au BufNewFile,BufRead *.ace,*.ACE		setf lace
@@ -1662,10 +1665,22 @@ au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
 " Sudoers
 au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
 
+" If the file has an extension of 't' and is in a directory 't' then it is
+" almost certainly a Perl test file.
 " If the first line starts with '#' and contains 'perl' it's probably a Perl
 " file.
+" (Slow test) If a file contains a 'use' statement then it is almost certainly
+" a Perl file.
 fun! s:FTperl()
+  if expand("%:e") == 't' && expand("%:p:h:t") == 't'
+    setf perl
+    return 1
+  endif
   if getline(1)[0] == '#' && getline(1) =~ 'perl'
+    setf perl
+    return 1
+  endif
+  if search('^use\s\s*\k', 'nc', 30)
     setf perl
     return 1
   endif
@@ -1961,7 +1976,7 @@ au BufNewFile,BufRead *.yaml,*.yml		setf yaml
 " Zope
 "   dtml (zope dynamic template markup language), pt (zope page template),
 "   cpt (zope form controller page template)
-au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call <SID>FTCheck_html()
+au BufNewFile,BufRead *.dtml,*.pt,*.cpt		call s:FThtml()
 "   zsql (zope sql method)
 au BufNewFile,BufRead *.zsql			call s:SQL()
 

@@ -16208,7 +16208,7 @@ var2fpos(varp, lnum, fnum)
 	    return NULL;
 	len = (long)STRLEN(ml_get(pos.lnum));
 	/* Accept a position up to the NUL after the line. */
-	if (pos.col <= 0 || (int)pos.col > len + 1)
+	if (pos.col == 0 || (int)pos.col > len + 1)
 	    return NULL;	/* invalid column number */
 	--pos.col;
 

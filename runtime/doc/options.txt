@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0d.  Last change: 2006 Apr 10
+*options.txt*	For Vim version 7.0d.  Last change: 2006 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2068,6 +2068,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Highlight the screen column of the cursor with CursorColumn
 	|hl-CursorColumn|.  Useful to align text.  Will make screen redrawing
 	slower.
+	If you only want the highlighting in the current window you can use
+	these autocommands: >
+		au WinLeave * set nocursorline nocursorcolumn
+		au WinEnter * set cursorline cursorcolumn
+<
 
 			*'cursorline'* *'cul'* *'nocursorline'* *'nocul'*
 'cursorline' 'cul'	boolean	(default off)

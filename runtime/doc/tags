@@ -3188,6 +3188,7 @@ CTRL-W_L	windows.txt	/*CTRL-W_L*
 CTRL-W_P	windows.txt	/*CTRL-W_P*
 CTRL-W_R	windows.txt	/*CTRL-W_R*
 CTRL-W_S	windows.txt	/*CTRL-W_S*
+CTRL-W_T	windows.txt	/*CTRL-W_T*
 CTRL-W_W	windows.txt	/*CTRL-W_W*
 CTRL-W_]	windows.txt	/*CTRL-W_]*
 CTRL-W_^	windows.txt	/*CTRL-W_^*

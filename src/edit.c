@@ -2969,6 +2969,9 @@ ins_compl_bs()
 	    ins_compl_set_original_text(compl_leader);
 	else
 	{
+#ifdef FEAT_SPELL
+	    spell_bad_len = 0;	/* need to redetect bad word */
+#endif
 	    /* Matches were cleared, need to search for them now. */
 	    if (ins_complete(Ctrl_N) == FAIL)
 		compl_cont_status = 0;

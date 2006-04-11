@@ -4,11 +4,12 @@
 "              Markus Mottl        <markus.mottl@gmail.com>
 "              Stefano Zacchiroli  <zack@bononia.it>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2006 Feb 05
+" Last Change: 2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
+"              2005 Oct 13 - removed GPL; better matchit support (MM, SZ)
 "
-" if exists("b:did_ftplugin")
-"   finish
-" endif
+if exists("b:did_ftplugin")
+  finish
+endif
 let b:did_ftplugin=1
 
 " Error handling -- helps moving where the compiler wants you to go
@@ -44,7 +45,7 @@ if !exists("no_plugin_maps") && !exists("no_ocaml_maps")
   vnoremap <buffer> <Plug>BUncomOff <ESC>:'<,'><CR>`<dd`>dd`<
 
   if !hasmapto('<Plug>Abbrev')
-    iabbrev <buffer> ASS (assert false (* XXX *))
+    iabbrev <buffer> ASS (assert (0=1) (* XXX *))
   endif
 endif
 

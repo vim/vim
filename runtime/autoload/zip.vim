@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Mar 22, 2006
-" Version:		7
+" Date:			Apr 10, 2006
+" Version:		8
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip     = "v7"
+let g:loaded_zip     = "v8"
 let s:zipfile_escape = ' ?&;\'
 
 " ----------------
@@ -83,7 +83,9 @@ fun! zip#Browse(zipfile)
   4,$g/^\s*----/d
   4,$g/^\s*\a/d
   $d
-  exe 'silent 4,$s/^.*\%'.namecol.'c//'
+  if namecol > 0
+   exe 'silent 4,$s/^.*\%'.namecol.'c//'
+  endif
 
   setlocal noma nomod ro
   noremap <silent> <buffer> <cr> :call <SID>ZipBrowseSelect()<cr>

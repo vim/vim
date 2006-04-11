@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.0d.  Last change: 2006 Mar 01
+*message.txt*   For Vim version 7.0d.  Last change: 2006 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -413,7 +413,10 @@ device and it isn't present.  You can ignore this error.
 
 You have used an ":unmap" command with an argument which is not an existing
 mapping.  All variations of this command give the same message: ":cunmap",
-":unmap!", etc.  Check for trailing white space.
+":unmap!", etc.  A few hints:
+- Check for trailing white space.
+- If the mapping is buffer-local you need to use ":unmap <buffer>".
+  |:map-<buffer>|
 
 							*E37* *E89*  >
   No write since last change (use ! to override)

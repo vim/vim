@@ -10252,7 +10252,7 @@ vimrc_found(fname, envname)
     char_u	*envname;
 {
     int		opt_idx;
-    int		dofree;
+    int		dofree = FALSE;
     char_u	*p;
 
     if (!option_was_set((char_u *)"cp"))

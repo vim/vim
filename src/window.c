@@ -91,6 +91,9 @@ static void win_new_height __ARGS((win_T *, int));
 #endif
 
 #if defined(FEAT_WINDOWS) || defined(PROTO)
+
+static char *m_onlyone = N_("Already only one window");
+
 /*
  * all CTRL-W window commands are handled here, called from normal_cmd().
  */
@@ -329,6 +332,31 @@ newwindow:
 		win_goto_hor(FALSE, Prenum1);
 		break;
 #endif
+
+/* move window to new tab page */
+    case 'T':
+		if (firstwin == lastwin)
+		    MSG(_(m_onlyone));
+		else
+		{
+		    tabpage_T	*oldtab = curtab;
+		    tabpage_T	*newtab;
+		    win_T	*wp = curwin;
+
+		    /* First create a new tab with the window, then go back to
+		     * the old tab and close the window there. */
+		    if (win_new_tabpage((int)Prenum) == OK
+						     && valid_tabpage(oldtab))
+		    {
+			newtab = curtab;
+			goto_tabpage_tp(oldtab);
+			if (curwin == wp)
+			    win_close(curwin, FALSE);
+			if (valid_tabpage(newtab))
+			    goto_tabpage_tp(newtab);
+		    }
+		}
+		break;
 
 /* cursor to top-left window */
     case 't':
@@ -1102,6 +1130,7 @@ win_init(newp, oldp)
     newp->w_pcmark = oldp->w_pcmark;
     newp->w_prev_pcmark = oldp->w_prev_pcmark;
     newp->w_alt_fnum = oldp->w_alt_fnum;
+    newp->w_wrow = oldp->w_wrow;
     newp->w_fraction = oldp->w_fraction;
     newp->w_prev_fraction_row = oldp->w_prev_fraction_row;
 #ifdef FEAT_JUMPLIST
@@ -2938,7 +2967,7 @@ close_others(message, forceit)
 		    && !autocmd_busy
 #endif
 				    )
-	    MSG(_("Already only one window"));
+	    MSG(_(m_onlyone));
 	return;
     }
 
@@ -5153,6 +5182,8 @@ win_new_height(wp, height)
      * Will equalize heights soon to fix it. */
     if (height < 0)
 	height = 0;
+    if (wp->w_height == height)
+	return;	    /* nothing to do */
 
     if (wp->w_wrow != wp->w_prev_fraction_row && wp->w_height > 0)
 	wp->w_fraction = ((long)wp->w_wrow * FRACTION_MULT

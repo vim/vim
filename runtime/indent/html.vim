@@ -1,8 +1,8 @@
 " Description:	html indenter
 " Author:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Tue, 27 Apr 2004 10:28:39 CEST
-" Globals:	g:html_indent_tags	   -- indenting tags
-"		g:html_indent_strict	   -- inhibit 'O O' elements
+" Globals:	g:html_indent_tags         -- indenting tags
+"		g:html_indent_strict       -- inhibit 'O O' elements
 "		g:html_indent_strict_table -- inhibit 'O -' elements
 
 " Only load this indent file when no other was loaded.
@@ -14,7 +14,7 @@ let b:did_indent = 1
 
 " [-- local settings (must come before aborting the script) --]
 setlocal indentexpr=HtmlIndentGet(v:lnum)
-setlocal indentkeys=o,O,*<Return>,<>>,<bs>,{,}
+setlocal indentkeys=o,O,*<Return>,<>>,{,}
 
 
 if exists('g:html_indent_tags')

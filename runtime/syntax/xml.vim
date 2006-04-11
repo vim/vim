@@ -58,8 +58,8 @@ syn match xmlError "[<&]"
 "
 " <tag foo.attribute = "value">
 "                      ^^^^^^^
-syn region  xmlString contained start=+"+ end=+"+ contains=xmlEntity display
-syn region  xmlString contained start=+'+ end=+'+ contains=xmlEntity display
+syn region  xmlString contained start=+"+ end=+"+ contains=xmlEntity,@Spell display
+syn region  xmlString contained start=+'+ end=+'+ contains=xmlEntity,@Spell display
 
 
 " punctuation (within attributes) e.g. <tag xml:foo.attribute ...>
@@ -183,7 +183,7 @@ if exists('g:xml_syntax_folding')
 	\ end=+</\z1\_\s\{-}>+
 	\ matchgroup=xmlEndTag end=+/>+
 	\ fold
-	\ contains=xmlTag,xmlEndTag,xmlCdata,xmlRegion,xmlComment,xmlEntity,xmlProcessing,@xmlRegionHook
+	\ contains=xmlTag,xmlEndTag,xmlCdata,xmlRegion,xmlComment,xmlEntity,xmlProcessing,@xmlRegionHook,@Spell
 	\ keepend
 	\ extend
 
@@ -239,7 +239,7 @@ syn region  xmlCommentPart
     \ start=+--+
     \ end=+--+
     \ contained
-    \ contains=xmlTodo,@xmlCommentHook
+    \ contains=xmlTodo,@xmlCommentHook,@Spell
 
 
 " CData sections
@@ -249,7 +249,7 @@ syn region  xmlCommentPart
 syn region    xmlCdata
     \ start=+<!\[CDATA\[+
     \ end=+]]>+
-    \ contains=xmlCdataStart,xmlCdataEnd,@xmlCdataHook
+    \ contains=xmlCdataStart,xmlCdataEnd,@xmlCdataHook,@Spell
     \ keepend
     \ extend
 

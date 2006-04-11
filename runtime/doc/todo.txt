@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 10
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Include autoload/xml/*.vim files?  Need to adjust install scripts then.
+
 ":mkspell" still takes much too long in Hungarian dictionary.
+- Are all prefixes really postponed now?
+- postpone secondary suffixes?
 
 Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
     WFP_COMPPERMIT and WFP_COMPFORBID
@@ -47,7 +51,13 @@ New Hungarian dictionary. (Laci Nemeth)
     How is it supposed to work?
 -   implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
 
+Update vi_diff.txt for Vim 7 features.
+
+8   tab pages in the session file, if "tabpages" in 'sessionoptions'
+
 Add more tests for all new functionality in Vim 7.  Especially new functions.
+
+Do some of the 'cindent' bugs below.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -1092,7 +1102,6 @@ User Friendlier:
 Tab pages:
 9   GUI implementation for the tab pages line for other systems.
 8   Make GUI menu in tab pages line configurable.  Like the popup menu.
-8   tab pages in the session file, if "tabpages" in 'sessionoptions'
 8   :tabmove +N	 move tab page N pages forward
 8   :tabmove -N	 move tab page N pages backward
 7   :tabdup	 duplicate the tab with all its windows.

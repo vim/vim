@@ -1,4 +1,4 @@
-*zip.txt*	For Vim version 7.0d.  Last change: 2006 Apr 03
+*zip.txt*	For Vim version 7.0d.  Last change: 2006 Apr 10
 
 				+====================+
 				| Zip File Interface |
@@ -33,6 +33,11 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
 
 ==============================================================================
 3. History					*zip-history*
+   v8 Apr 10, 2006 * Bram Moolenaar reported that he received an error message
+                     due to "Pattern not found: ^.*\%0c"; this was caused by
+		     stridx finding a Name... at the beginning of the line;
+		     zip.vim tried 4,$s/^.*\%0c//, but that doesn't work.
+		     Fixed.
    v7 Mar 22, 2006 * escaped some characters that can cause filename handling
                      problems.
    v6 Dec 21, 2005 * writing to files not in directories caused problems -

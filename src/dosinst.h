@@ -207,6 +207,14 @@ searchpath_save(char *name)
 }
 
 #ifdef WIN3264
+
+#ifndef CSIDL_COMMON_PROGRAMS
+# define CSIDL_COMMON_PROGRAMS 0x0017
+#endif
+#ifndef CSIDL_COMMON_DESKTOPDIRECTORY
+# define CSIDL_COMMON_DESKTOPDIRECTORY 0x0019
+#endif
+
 /*
  * Get the path to a requested Windows shell folder.
  *
@@ -234,22 +242,14 @@ get_shell_folder_path(
     if (strcmp(shell_folder_name, "desktop") == 0)
     {
 	pcsidl = &desktop_csidl;
-#ifdef CSIDL_COMMON_DESKTOPDIRECTORY
 	csidl = CSIDL_COMMON_DESKTOPDIRECTORY;
 	alt_csidl = CSIDL_DESKTOP;
-#else
-	csidl = CSIDL_DESKTOP;
-#endif
     }
     else if (strncmp(shell_folder_name, "Programs", 8) == 0)
     {
 	pcsidl = &programs_csidl;
-#ifdef CSIDL_COMMON_PROGRAMS
 	csidl = CSIDL_COMMON_PROGRAMS;
 	alt_csidl = CSIDL_PROGRAMS;
-#else
-	csidl = CSIDL_PROGRAMS;
-#endif
     }
     else
     {

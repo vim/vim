@@ -213,9 +213,10 @@ an 50.50.440 &Syntax.HIJK.Java.Java\ Properties :cal SetSyn("jproperties")<CR>
 an 50.50.450 &Syntax.HIJK.JavaScript :cal SetSyn("javascript")<CR>
 an 50.50.460 &Syntax.HIJK.Jess :cal SetSyn("jess")<CR>
 an 50.50.470 &Syntax.HIJK.Jgraph :cal SetSyn("jgraph")<CR>
-an 50.50.490 &Syntax.HIJK.KDE\ script :cal SetSyn("kscript")<CR>
-an 50.50.500 &Syntax.HIJK.Kimwitu++ :cal SetSyn("kwt")<CR>
-an 50.50.510 &Syntax.HIJK.KixTart :cal SetSyn("kix")<CR>
+an 50.50.490 &Syntax.HIJK.Kconfig :cal SetSyn("kconfig")<CR>
+an 50.50.500 &Syntax.HIJK.KDE\ script :cal SetSyn("kscript")<CR>
+an 50.50.510 &Syntax.HIJK.Kimwitu++ :cal SetSyn("kwt")<CR>
+an 50.50.520 &Syntax.HIJK.KixTart :cal SetSyn("kix")<CR>
 an 50.60.100 &Syntax.L-Ma.Lace :cal SetSyn("lace")<CR>
 an 50.60.110 &Syntax.L-Ma.LamdaProlog :cal SetSyn("lprolog")<CR>
 an 50.60.120 &Syntax.L-Ma.Latte :cal SetSyn("latte")<CR>

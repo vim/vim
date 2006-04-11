@@ -425,4 +425,4 @@ BUGS
 
 
 
-                                  2002 Feb 22                           VIM(1)
+                                  2006 Apr 11                           VIM(1)

@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:	cl ("Clever Language" by Multibase, http://www.mbase.com.au)
 " Filename extensions: *.ent, *.eni
-" Maintainer:	Philip Uren <philu@system77.com>
-" Last update:	Wed May  2 10:30:30 EST 2001
+" Maintainer:	Philip Uren <philuSPAX@ieee.org> - Remove SPAX spam block
+" Last update:	Tue Apr 11 10:19:01 EST 2006
+" $Id$
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -28,12 +29,15 @@ syn match   clifError		"\<elsif\>"
 syn match   clifError		"\<else\>"
 syn match   clifError		"\<endif\>"
 
+syn match   clSpaceError	"\s\+$"
+
 " If and while regions
 syn region clLoop	transparent matchgroup=clWhile start="\<while\>" matchgroup=clWhile end="\<wend\>" contains=ALLBUT,clBreak,clProcedure
 syn region clIf		transparent matchgroup=clConditional start="\<if\>" matchgroup=clConditional end="\<endif\>"   contains=ALLBUT,clBreak,clProcedure
 
 " Make those TODO notes and debugging stand out!
 syn keyword	clTodo			contained	TODO BUG DEBUG FIX
+syn match	clNeedsWork		contained	"NEED[S]*\s\s*WORK"
 syn keyword clDebug			contained	debug
 
 syn match	clComment		"#.*$"		contains=clTodo,clNeedsWork
@@ -77,6 +81,7 @@ if	version >= 508 || !exists("did_cl_syntax_inits")
 	endif
 
 	HiLink clifError			Error
+	HiLink clSpaceError			Error
 	HiLink clWhile				Repeat
 	HiLink clConditional		Conditional
 	HiLink clDebug				Debug

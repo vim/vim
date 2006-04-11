@@ -231,7 +231,15 @@ redraw_win_later(wp, type)
 redraw_later_clear()
 {
     redraw_all_later(CLEAR);
-    screen_attr = HL_BOLD | HL_UNDERLINE;
+#ifdef FEAT_GUI
+    if (gui.in_use)
+	/* Use a code that will reset gui.highlight_mask in
+	 * gui_stop_highlight(). */
+	screen_attr = HL_ALL + 1;
+    else
+#endif
+	/* Use attributes that is very unlikely to appear in text. */
+	screen_attr = HL_BOLD | HL_UNDERLINE | HL_INVERSE;
 }
 
 /*

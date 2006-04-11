@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2006 Mar 31
+# Last change:  2006 Apr 11
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -44,6 +44,7 @@ MODEL = BIG
 
 # GUI or terminal mode executable.
 # Comment out if you want just the character terminal mode only.
+# GUI with Motif
 GUI = YES
 
 # GUI with GTK
@@ -136,12 +137,24 @@ VIMRUN  = ""
 
 CONFIG_H = os_vms_conf.h
 
+# GTK or XPM but not both
 .IFDEF GTK
 .IFDEF GUI
-.IFDEF XPM
 .ELSE
 GUI = YES
 .ENDIF
+.IFDEF XPM
+XPM = ""
+.ENDIF
+.ENDIF
+
+.IFDEF XPM
+.IFDEF GUI
+.ELSE
+GUI = YES
+.ENDIF
+.IFDEF GTK
+GTK = ""
 .ENDIF
 .ENDIF
 

@@ -3,12 +3,12 @@
 " Filename extensions:	*.p (collides with Pascal),
 "						*.i (collides with assembler)
 "						*.w (collides with cweb)
-" Maintainer:			Philip Uren			<philu@computer.org>
-" Contributors:			Chris Ruprecht		<chrup@mac.com>
-"						Philip Uren			<philu@computer.org>
+" Maintainer:			Philip Uren			<philuSPAX@ieee.org> Remove "SPAX" spam block
+" Contributors:         Chris Ruprecht		<chrup@mac.com>
 "						Mikhail Kuperblum	<mikhail@whasup.com>
-" URL:					http://www.zeta.org.au/~philu/vim/progress.vim
-" Last Change:			Thu May  3 08:49:47 EST 2001
+"						John Florian		<jflorian@voyager.net>
+" Last Change:			Tue Apr 11 10:18:23 EST 2006
+" $Id$
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -24,6 +24,9 @@ else
   set iskeyword=@,48-57,_,-,!,#,$,%
 endif
 
+" The Progress editor doesn't cope with tabs very well.
+set expandtab
+
 syn case ignore
 
 " Progress Blocks of code and mismatched "end." errors.
@@ -31,7 +34,7 @@ syn match   ProgressEndError		"\<end\>"
 syn region ProgressDoBlock transparent matchgroup=ProgressDo start="\<do\>" matchgroup=ProgressDo end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
 syn region ProgressForBlock transparent matchgroup=ProgressFor start="\<for\>" matchgroup=ProgressFor end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
 syn region ProgressRepeatBlock transparent matchgroup=ProgressRepeat start="\<repeat\>" matchgroup=ProgressRepeat end="\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
-syn region ProgressCaseBlock transparent matchgroup=ProgressCase start="\<case\>" matchgroup=ProgressCase end="\<end\scase\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
+syn region ProgressCaseBlock transparent matchgroup=ProgressCase start="\<case\>" matchgroup=ProgressCase end="\<end\scase\>\|\<end\>" contains=ALLBUT,ProgressProcedure,ProgressFunction
 
 " These are Progress reserved words,
 " and they could go in ProgressReserved,
@@ -43,14 +46,23 @@ syn keyword ProgressFor				each where
 syn keyword	ProgressTodo			contained	TODO BUG FIX
 syn keyword ProgressDebug			contained	DEBUG
 syn keyword ProgressDebug						debugger
+syn match   ProgressTodo            contained   "NEED[S]*\s\s*WORK"
 
-syn keyword ProgressFunction	procedure function
+" If you like to highlight the whole line of
+" the start and end of procedures
+" to make the whole block of code stand out:
+syn match ProgressProcedure		"^\s*procedure.*"
+syn match ProgressProcedure		"^\s*end\s\s*procedure.*"
+syn match ProgressFunction		"^\s*function.*"
+syn match ProgressFunction		"^\s*end\s\s*function.*"
+" ... otherwise use this:
+" syn keyword ProgressFunction	procedure function
 
 syn keyword ProgressReserved	accum[ulate] active-window add alias all alter ambig[uous] analyz[e] and any apply as asc[ending] assign at attr[-space]
 syn keyword ProgressReserved	authorization auto-ret[urn] avail[able] back[ground] before-h[ide] begins bell between blank break btos by call can-do can-find
-syn keyword ProgressReserved	center[ed] check chr clear clipboard col colon color col[umn] column-lab[el] col[umns] compiler connected control count-of
+syn keyword ProgressReserved	center[ed] character check chr clear clipboard col colon color col[umn] column-lab[el] col[umns] compiler connected control count-of
 syn keyword ProgressReserved	cpstream create ctos current current-changed current-lang[uage] current-window current_date curs[or] database dataservers
-syn keyword ProgressReserved	dbcodepage dbcollation dbname dbrest[rictions] dbtaskid dbtype dbvers[ion] dde deblank debug-list debugger decimals declare
+syn keyword ProgressReserved	dbcodepage dbcollation dbname dbrest[rictions] dbtaskid dbtype dbvers[ion] dde deblank debug-list debugger decimal decimals declare
 syn keyword ProgressReserved	def default default-noxl[ate] default-window def[ine] delete delimiter desc[ending] dict[ionary] disable discon[nect] disp
 syn keyword ProgressReserved	disp[lay] distinct dos down drop editing enable encode entry error-stat[us] escape etime except exclusive
 syn keyword ProgressReserved	exclusive[-lock] exclusive-web-us[er] exists export false fetch field field[s] file-info[rmation] fill find find-case-sensitive
@@ -58,7 +70,7 @@ syn keyword ProgressReserved	find-global find-next-occurrence find-prev-occurren
 syn keyword ProgressReserved	fram[e] frame-col frame-db frame-down frame-field frame-file frame-inde[x] frame-line frame-name frame-row frame-val[ue]
 syn keyword ProgressReserved	from from-c[hars] from-p[ixels] gateway[s] get-byte get-codepage[s] get-coll[ations] get-key-val[ue] getbyte global go-on
 syn keyword ProgressReserved	go-pend[ing] grant graphic-e[dge] group having header help hide import in index indicator input input-o[utput] insert
-syn keyword ProgressReserved	into is is-attr[-space] join kblabel key-code key-func[tion] key-label keycode keyfunc[tion] keylabel keys keyword label
+syn keyword ProgressReserved	integer into is is-attr[-space] join kblabel key-code key-func[tion] key-label keycode keyfunc[tion] keylabel keys keyword label
 syn keyword ProgressReserved	last last-even[t] last-key last-of lastkey ldbname leave library like line-count[er] listi[ng] locked lookup machine-class
 syn keyword ProgressReserved	map member message message-lines mouse mpe new next next-prompt no no-attr[-space] no-error no-f[ill] no-help no-hide no-label[s]
 syn keyword ProgressReserved	no-lock no-map no-mes[sage] no-pause no-prefe[tch] no-undo no-val[idate] no-wait not null num-ali[ases] num-dbs num-entries
@@ -70,39 +82,51 @@ syn keyword ProgressReserved	release reposition retain retry return return-val[u
 syn keyword ProgressReserved	scroll sdbname search seek select self session set setuser[id] share[-lock] shared show-stat[s] skip some space status stream
 syn keyword ProgressReserved	stream-io string-xref system-dialog table term term[inal] text text-cursor text-seg[-growth] this-procedure time title
 syn keyword ProgressReserved	to today top-only trans trans[action] trigger triggers trim true underl[ine] undo unform[atted] union unique unix up update
-syn keyword ProgressReserved	use-index use-revvideo use-underline user user[id] using v6frame value values view view-as vms wait-for web-con[text]
+syn keyword ProgressReserved	use-index use-revvideo use-underline user user[id] using v6frame value values variable view view-as vms wait-for web-con[text]
 syn keyword ProgressReserved	window window-maxim[ized] window-minim[ized] window-normal with work-tab[le] workfile write xcode xref yes _cbit
-syn keyword ProgressReserved	_control _list _memory _msg _pcontrol _serial[-num] _trace
+syn keyword ProgressReserved	_control _list _memory _msg _pcontrol _serial[-num] _trace 
 
 " Strings. Handles embedded quotes.
 " Note that, for some reason, Progress doesn't use the backslash, "\"
 " as the escape character; it uses tilde, "~".
-syn region ProgressString	matchgroup=ProgressQuote	start=+"+ end=+"+	skip=+\~"+
-syn region ProgressString	matchgroup=ProgressQuote	start=+'+ end=+'+	skip=+\~'+
+syn region ProgressString	matchgroup=ProgressQuote	start=+"+ end=+"+	skip=+\~'\|\~\~+
+syn region ProgressString	matchgroup=ProgressQuote	start=+'+ end=+'+	skip=+\~'\|\~\~+
 
-syn match  ProgressIdentifier			"\<[a-zA-Z_][a-zA-Z0-9_]*\>()"
+syn match  ProgressIdentifier			"\<[a-zA-Z_%#]+\>()"
 
 " syn match  ProgressDelimiter			"()"
 
-" syn match  ProgressMatrixDelimiter	"[][]"
-
+syn match  ProgressMatrixDelimiter	"[][]"
 " If you prefer you can highlight the range
 "syn match  ProgressMatrixDelimiter		"[\d\+\.\.\d\+]"
 
-syn match  ProgressNumber				"\<\d\+\(u\=l\=\|lu\|f\)\>"
+syn match  ProgressNumber				"\<\-\=\d\+\(u\=l\=\|lu\|f\)\>"
 syn match  ProgressByte					"\$[0-9a-fA-F]\+"
 
+" More values: Logicals, and Progress's unknown value, ?.
+syn match   ProgressNumber				"?"
+syn keyword ProgressNumber				true false yes no
+
 " If you don't like tabs:
-"syn match ProgressShowTab "\t"
-"syn match ProgressShowTabc "\t"
+syn match ProgressShowTab "\t"
+
+" If you don't like white space on the end of lines:
+" syn match   ProgressSpaceError "\s\+$"
 
 syn region ProgressComment		start="/\*"  end="\*/" contains=ProgressComment,ProgressTodo,ProgressDebug
-syn match ProgressInclude		"^[ 	]*[{].*\.i[}]"
+syn region ProgressInclude		start="^[ 	]*[{][^&]" end="[}]" contains=ProgressPreProc,ProgressOperator,ProgressString,ProgressComment
+syn region ProgressPreProc		start="&" end="\>" contained
 
-syn match ProgressSubstitute	"^[ 	]*[{].*[^i][}]"
-syn match ProgressPreProc		"^[ 	]*&.*"
-
-syn match ProgressOperator		"[!;|)(:.><+*=-]"
+" This next line works reasonably well.
+" syn match ProgressOperator        "[!;|)(:.><+*=-]"
+"
+" Progress allows a '-' to be part of an identifier.  To be considered
+" the subtraction/negation operation operator it needs a non-word
+" character on either side.  Also valid are cases where the minus
+" operation appears at the beginning or end of a line.
+" This next line trips up on "no-undo" etc.
+" syn match ProgressOperator    "[!;|)(:.><+*=]\|\W-\W\|^-\W\|\W-$"
+syn match ProgressOperator      "[!;|)(:.><+*=]\|\s-\s\|^-\s\|\s-$"
 
 syn keyword ProgressOperator	<= <> >= abs[olute] accelerator across add-first add-last advise alert-box allow-replication ansi-only anywhere append appl-alert[-boxes] application as-cursor ask-overwrite
 syn keyword ProgressOperator	attach[ment] auto-end-key auto-endkey auto-go auto-ind[ent] auto-resize auto-z[ap] available-formats ave[rage] avg backward[s] base-key batch[-mode] bgc[olor] binary
@@ -114,7 +138,7 @@ syn keyword ProgressOperator	column-label-bgc[olor] column-label-dcolor column-l
 syn keyword ProgressOperator	connect constrained contents context context-pop[up] control-containe[r] c[ontrol-form] convert-to-offse[t] convert count cpcase cpcoll cpint[ernal] cplog
 syn keyword ProgressOperator	cpprint cprcodein cprcodeout cpterm crc-val[ue] c[reate-control] create-result-list-entry create-test-file current-column current-environm[ent] current-iteration
 syn keyword ProgressOperator	current-result-row current-row-modified current-value cursor-char cursor-line cursor-offset data-entry-retur[n] data-t[ype] date date-f[ormat] day db-references
-syn keyword ProgressOperator	dcolor dde-error dde-i[d] dde-item dde-name dde-topic debu[g] dec[imal] default-b[utton] default-extensio[n] defer-lob-fetch defined delete-char delete-current-row
+syn keyword ProgressOperator	dcolor dde-error dde-i[d] dde-item dde-name dde-topic debu[g] dec[imal] default-b[utton] default-extensio[n] defer-lob-fetch define defined delete-char delete-current-row
 syn keyword ProgressOperator	delete-line delete-selected-row delete-selected-rows deselect-focused-row deselect-rows deselect-selected-row d[esign-mode] dialog-box dialog-help dir disabled display-message
 syn keyword ProgressOperator	display-t[ype] double drag-enabled drop-down drop-down-list dump dynamic echo edge edge[-chars] edge-p[ixels] editor empty end-key endkey entered eq error error-col[umn]
 syn keyword ProgressOperator	error-row event-t[ype] event[s] exclusive-id execute exp expand extended extent external extract fetch-selected-row fgc[olor] file file-name file-off[set] file-type
@@ -174,38 +198,30 @@ if version >= 508 || !exists("did_progress_syntax_inits")
   endif
 
   " The default methods for highlighting. Can be overridden later.
-  HiLink ProgressByte			    Number
+  HiLink ProgressByte				Number
   HiLink ProgressCase				Repeat
-  HiLink ProgressComment			StatusLine
+  HiLink ProgressComment			Comment
   HiLink ProgressConditional		Conditional
   HiLink ProgressDebug				Debug
   HiLink ProgressDo					Repeat
   HiLink ProgressEndError			Error
   HiLink ProgressFor				Repeat
   HiLink ProgressFunction			Procedure
+  HiLink ProgressIdentifier			Identifier
   HiLink ProgressInclude			Include
-  HiLink ProgressLabel				Label
   HiLink ProgressMatrixDelimiter	Identifier
-  HiLink ProgressModifier			Type
   HiLink ProgressNumber				Number
-  HiLink ProgressOperator			Function
+  HiLink ProgressOperator			Operator
   HiLink ProgressPreProc			PreProc
   HiLink ProgressProcedure			Procedure
   HiLink ProgressQuote				Delimiter
   HiLink ProgressRepeat				Repeat
-  HiLink ProgressReserved			Identifier
+  HiLink ProgressReserved			Statement
+  HiLink ProgressSpaceError			Error
   HiLink ProgressString				String
-  HiLink ProgressStructure			Structure
-  HiLink ProgressSubstitute			PreProc
   HiLink ProgressTodo				Todo
   HiLink ProgressType				Statement
-  HiLink ProgressUnclassified		Statement
-
-  " Optional highlighting
-  " HiLink ProgressDelimiter		Identifier
-  " HiLink ProgressShowTab			Error
-  " HiLink ProgressShowTabc			Error
-  " HiLink ProgressIdentifier		Identifier
+  HiLink ProgressShowTab			Error
 
   delcommand HiLink
 endif

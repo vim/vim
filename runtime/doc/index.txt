@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0d.  Last change: 2006 Apr 06
+*index.txt*     For Vim version 7.0d.  Last change: 2006 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -529,6 +529,7 @@ tag		command		   action in Normal mode	~
 |CTRL-W_P|	CTRL-W P	   go to preview window
 |CTRL-W_R|	CTRL-W R	   rotate windows upwards N times
 |CTRL-W_S|	CTRL-W S	   same as "CTRL-W s"
+|CTRL-W_T|	CTRL-W T	   move current window to a new tab page
 |CTRL-W_W|	CTRL-W W	   go to N previous window (wrap around)
 |CTRL-W_]|	CTRL-W ]	   split window and jump to tag under cursor
 |CTRL-W_^|	CTRL-W ^	   split current window and edit alternate

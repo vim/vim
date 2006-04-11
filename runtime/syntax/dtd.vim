@@ -52,11 +52,11 @@ endif
 
 " if this is a html like comment hightlight also
 " the opening <! and the closing > as Comment.
-syn region dtdComment		start=+<![ \t]*--+ end=+-->+ contains=dtdTodo
+syn region dtdComment		start=+<![ \t]*--+ end=+-->+ contains=dtdTodo,@Spell
 
 
 " proper DTD comment
-syn region dtdComment contained start=+--+ end=+--+ contains=dtdTodo
+syn region dtdComment contained start=+--+ end=+--+ contains=dtdTodo,@Spell
 
 
 " Start tags (keywords). This is contained in dtdFunction.

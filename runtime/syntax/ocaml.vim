@@ -5,9 +5,9 @@
 "               Karl-Heinz Sylla  <Karl-Heinz.Sylla@gmd.de>
 "               Issac Trotts      <ijtrotts@ucdavis.edu>
 " URL:          http://www.ocaml.info/vim/syntax/ocaml.vim
-" Last Change:  2005 May 18 - Added 'NOTE' to highlighted comment words (MM)
+" Last Change:  2006 Apr 11 - Fixed an initialization bug (MM)
+"               2005 May 18 - Added 'NOTE' to highlighted comment words (MM)
 "               2005 Apr 14 - Fixed a small bug concerning 'include' (MM)
-"               2005 Mar 15 - Added a patch from David Baelde (MM)
 
 " A minor patch was applied to the official version so that object/end
 " can be distinguished from begin/end, which is used for indentation,
@@ -17,7 +17,7 @@
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
   syntax clear
-elseif exists("b:current_syntax") && b:current_syntax != "ocaml"
+elseif exists("b:current_syntax") && b:current_syntax == "ocaml"
   finish
 endif
 

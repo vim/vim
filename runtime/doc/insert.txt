@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0d.  Last change: 2006 Apr 10
+*insert.txt*    For Vim version 7.0d.  Last change: 2006 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1419,8 +1419,8 @@ Features are:
   a tag)
 - when attribute has limited number of possible values help to complete
   them
-- complete names of entities (defined in |xml-omni-datafile| and in current file
-  with "<!ENTITY" declarations
+- complete names of entities (defined in |xml-omni-datafile| and in current
+  file with "<!ENTITY" declarations
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 Format of XML data file					*xml-omni-datafile*
