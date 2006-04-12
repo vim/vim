@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:    R Help File
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2006 Apr 05
-" Version:     0.5
+" Last Change: 2006 Apr 12
+" Version:     0.6
 " Remarks:     - Now includes R syntax highlighting in the appropriate
 "                sections if an r.vim file is in the same directory or in the
 "                default debian location.
@@ -32,16 +32,7 @@ syn region rhelpIdentifier matchgroup=rhelpSection	start="\\item{" end="}" conta
 syn region rhelpIdentifier matchgroup=rhelpSection start="\\method{" end=/}/ contained
 
 " Highlighting of R code using an existing r.vim syntax file if available {{{1
-let s:syntaxdir = expand("<sfile>:p:h") "look in the directory of this file
-let s:rsyntax = s:syntaxdir . "/r.vim"
-if filereadable(s:rsyntax)  
-  syn include @R <sfile>:p:h/r.vim
-elseif filereadable('/usr/share/vim/vimcurrent/syntax/r.vim')  "and debian location
-  syn include @R /usr/share/vim/vimcurrent/syntax/r.vim
-else 
-  syn match rhelpRComment /\#.*/				"if no r.vim is found, do comments
-  syn cluster R contains=rhelpRComment 
-endif
+syn include @R syntax/r.vim
 syn region rhelpRcode matchgroup=Delimiter start="\\examples{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpSection
 syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpIdentifier
 syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimiter transparent end=/}/ contains=@R

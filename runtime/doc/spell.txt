@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0d.  Last change: 2006 Apr 06
+*spell.txt*	For Vim version 7.0d.  Last change: 2006 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1296,12 +1296,14 @@ means that the word plus affix cannot be used in a compound word.  Example:
 		util/ac ~
 
 This allows for "wordutil" and "wordutils" but not "wordutilize".
+Note: this doesn't work for postponed prefixes yet.
 
 						    *spell-COMPOUNDPERMITFLAG*
 The COMPOUNDPERMITFLAG specifies a flag that can be used on an affix.  It
 means that the word plus affix can also be used in a compound word in a way
 where the affix ends up halfway the word.  Without this flag that is not
 allowed.
+Note: this doesn't work for postponed prefixes yet.
 
 						    *spell-COMPOUNDROOT*
 The COMPOUNDROOT flag is used for words in the dictionary that are already a

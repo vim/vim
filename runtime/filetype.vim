@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 11
+" Last Change:	2006 Apr 12
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -620,7 +620,7 @@ au BufNewFile,BufRead *.ged			setf gedcom
 au BufNewFile,BufRead gkrellmrc,gkrellmrc_?	setf gkrellmrc
 
 " GP scripts (2.0 and onward)
-au BufNewFile,BufRead *.gp			setf gp
+au BufNewFile,BufRead *.gp,.gprc		setf gp
 
 " GPG
 au BufNewFile,BufRead */.gnupg/options		setf gpg

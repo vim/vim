@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0d.  Last change: 2006 Apr 11
+*options.txt*	For Vim version 7.0d.  Last change: 2006 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5439,7 +5439,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'sessionoptions'* *'ssop'*
 'sessionoptions' 'ssop'	string	(default: "blank,buffers,curdir,folds,
-							help,options,winsize")
+					       help,options,tabpages,winsize")
 			global
 			{not in Vi}
 			{not available when compiled without the +mksession
@@ -5468,6 +5468,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			systems)
 	   slash	backslashes in file names replaced with forward
 			slashes
+	   tabpages	all tab pages; without this only the current tab page
+			is restored, so that you can make a session for each
+			tab page separately
 	   unix		with Unix end-of-line format (single <NL>), even when
 			on Windows or DOS
 	   winpos	position of the whole Vim window

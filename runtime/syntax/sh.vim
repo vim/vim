@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Apr 06, 2006
-" Version:		82
+" Last Change:		Apr 12, 2006
+" Version:		83
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -254,7 +254,7 @@ syn match   shSpecial	"\\[\\\"\'`$()#]"
 " Comments: {{{1
 "==========
 syn cluster    shCommentGroup	contains=shTodo,@Spell
-syn keyword    shTodo	contained	TODO
+syn keyword    shTodo	contained	COMBAK FIXME TODO XXX
 syn match      shComment	"#.*$" contains=@shCommentGroup
 
 " File Redirection Highlighted As Operators: {{{1

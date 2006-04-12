@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 31
+" Last Change:	2006 Apr 12
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -11,7 +11,7 @@
 " Currently supported canonicals are:
 " xhtml10s - XHTML 1.0 Strict
 " xsl      - XSL
-function! xmlcomplete#CreateConnection(canonical, ...)
+function! xmlcomplete#CreateConnection(canonical, ...) " {{{
 
 	" When only one argument provided treat name as default namespace (without
 	" 'prefix:').
@@ -42,14 +42,16 @@ function! xmlcomplete#CreateConnection(canonical, ...)
 	let g:xmldata_connection[users] = a:canonical
 
 endfunction
+" }}}
 
-function! xmlcomplete#CreateEntConnection(...)
+function! xmlcomplete#CreateEntConnection(...) " {{{
 	if a:0 > 0
 		let g:xmldata_entconnect = a:1
 	else
 		let g:xmldata_entconnect = 'DEFAULT'
 	endif
 endfunction
+" }}}
 
 function! xmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -104,7 +106,7 @@ function! xmlcomplete#CompleteTags(findstart, base)
     return start
 
   else
-	" There is no connction of namespace and data file. Abandon action
+	" There is no connection of namespace and data file. Abandon action
 	if !exists("g:xmldata_connection") || g:xmldata_connection == {}
 		return []
 	endif
@@ -305,7 +307,6 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	endif
 
 	" Complete text declaration
-	let g:co = context
 	if context =~ '^?'
 		let tags = ['?xml']
 
@@ -329,7 +330,7 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	    let tags = keys(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]})
 		call filter(tags, 'v:val !~ "^vimxml"')
 	else
-		if !has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, tag)
+		if !has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, opentag)
 			" Abandon when data file isn't complete
 			return []
 		endif
@@ -346,6 +347,11 @@ function! xmlcomplete#CompleteTags(findstart, base)
 		endif
 	endfor
 	let menu = res + res2
+	if b:xml_namespace == 'DEFAULT'
+		let xml_namespace = ''
+	else
+		let xml_namespace = b:xml_namespace.':'
+	endif
 	if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, 'vimxmltaginfo')
 		let final_menu = []
 		for i in range(len(menu))
@@ -357,22 +363,18 @@ function! xmlcomplete#CompleteTags(findstart, base)
 				let m_menu = ''
 				let m_info = ''
 			endif
-			if b:xml_namespace == 'DEFAULT'
-				let xml_namespace = ''
-			else
-				let xml_namespace = b:xml_namespace.':'
-			endif
 			let final_menu += [{'word':xml_namespace.item, 'menu':m_menu, 'info':m_info}]
 		endfor
 	else
-		let final_menu = menu
+		let final_menu = map(menu, 'xml_namespace.v:val')
 	endif
+
 	return final_menu
 
   endif
 endfunction
 
-" MM: This is greatly reduced closetag.vim used with kind permission of Steven
+" MM: This is severely reduced closetag.vim used with kind permission of Steven
 "     Mueller
 "     Changes: strip all comments; delete error messages; add checking for
 "     namespace
@@ -510,3 +512,4 @@ endfunction
 function! s:Clearstack(sname)
 	exe 'let '.a:sname."=''"
 endfunction
+" vim:set foldmethod=marker:

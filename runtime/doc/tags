@@ -7349,6 +7349,7 @@ undo-branches	undo.txt	/*undo-branches*
 undo-commands	undo.txt	/*undo-commands*
 undo-redo	undo.txt	/*undo-redo*
 undo-remarks	undo.txt	/*undo-remarks*
+undo-tree	undo.txt	/*undo-tree*
 undo-two-ways	undo.txt	/*undo-two-ways*
 undo.txt	undo.txt	/*undo.txt*
 undo_ftplugin	usr_41.txt	/*undo_ftplugin*

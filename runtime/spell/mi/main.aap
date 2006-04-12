@@ -9,9 +9,9 @@
 SPELLDIR = ..
 FILES    = mi_NZ.aff mi_NZ.dic
 
-all: $SPELLDIR/mi.latin1.spl $SPELLDIR/mi.utf-8.spl ../README_mi.txt
+all: $SPELLDIR/mi.iso-8859-4.spl $SPELLDIR/mi.utf-8.spl ../README_mi.txt
 
-$SPELLDIR/mi.latin1.spl : $FILES
+$SPELLDIR/mi.iso-8859-4.spl : $FILES
         :sys $VIM -u NONE -e -c "set enc=iso-8859-4"
                 -c "mkspell! $SPELLDIR/mi mi_NZ" -c q
 

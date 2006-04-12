@@ -217,6 +217,9 @@ Section "Vim executables and runtime files"
 	SetOutPath $0\autoload
 	File ${VIMRT}\autoload\*.*
 
+	SetOutPath $0\autoload\xml
+	File ${VIMRT}\autoload\xml\*.*
+
 	SetOutPath $0\syntax
 	File ${VIMRT}\syntax\*.*
 

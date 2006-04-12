@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	DCL (Digital Command Language - vms)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 06, 2005
-" Version:	4
+" Last Change:	Apr 12, 2006
+" Version:	5
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -83,7 +83,7 @@ syn match   dclStart	"^\$"	skipwhite nextgroup=dclExe
 syn match   dclContinue	"-$"
 syn match   dclComment	"^\$!.*$"	contains=@dclCommentGroup
 syn match   dclExe	"\I\i*"	contained
-syn match   dclTodo	"DEBUG\|TODO"	contained
+syn keyword dclTodo contained	COMBAK	DEBUG	FIXME	TODO	XXX
 
 " Assignments and Operators
 syn match   dclAssign	":==\="

@@ -663,7 +663,7 @@ EXTERN unsigned	ssop_flags;
 /* Also used for 'viewoptions'! */
 static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
-    "sesdir", "curdir", "folds", "cursor", NULL};
+    "sesdir", "curdir", "folds", "cursor", "tabpages", NULL};
 # endif
 # define SSOP_BUFFERS		0x001
 # define SSOP_WINPOS		0x002
@@ -680,6 +680,7 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
 # define SSOP_CURDIR		0x1000
 # define SSOP_FOLDS		0x2000
 # define SSOP_CURSOR		0x4000
+# define SSOP_TABPAGES		0x8000
 #endif
 EXTERN char_u	*p_sh;		/* 'shell' */
 EXTERN char_u	*p_shcf;	/* 'shellcmdflag' */

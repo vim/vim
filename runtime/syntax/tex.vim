@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Mar 06, 2006
-" Version:	33
+" Last Change:	Apr 12, 2006
+" Version:	34
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -371,7 +371,7 @@ syn match texSpecialChar	"\^\^[0-9a-f]\{2}\|\^\^\S"
 "    Documented TeX Format:  ^^A...	-and-	leading %s (only)
 syn cluster texCommentGroup	contains=texTodo,@Spell
 syn case ignore
-syn keyword texTodo		contained		combak	fixme	todo
+syn keyword texTodo		contained		combak	fixme	todo	xxx
 syn case match
 if b:extfname == "dtx"
   syn match texComment		"\^\^A.*$"	contains=@texCommentGroup

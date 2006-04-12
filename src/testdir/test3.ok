@@ -711,6 +711,25 @@ void asdf()		/* ind_maxparen may cause trouble here */
 				&& 1)) break;
 }
 
+foo()
+{
+	a = cond ? foo() : asdf
+		+ asdf;
+
+	a = cond ?
+		foo() : asdf
+		+ asdf;
+}
+
+int  main(void)
+{
+	if (a)
+		if (b)
+			2;
+		else 3;
+	next_line_of_code();
+}
+
 /* end of AUTO */
 
 

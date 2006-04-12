@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2006-03-31 07:25+0200\n"
-"PO-Revision-Date:  2006-04-03 10:05+0200\n"
+"POT-Creation-Date: 2006-04-08 09:01+0200\n"
+"PO-Revision-Date:  2006-04-08 09:01+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -209,6 +209,9 @@ msgstr "E102: Non riesco a trovare il buffer: \"%s\""
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: Il buffer \"%s\" non è in modalità 'diff'"
+
+msgid "E787: Buffer changed unexpectedly"
+msgstr "E787: Il buffer è variato inaspettatamente"
 
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Escape not ammesso nei digrammi"
@@ -527,8 +530,8 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "inputrestore() chiamata più volte di inputsave()"
 
-msgid "E745: Range not allowed"
-msgstr "E745: Intervallo non consentito"
+msgid "E786: Range not allowed"
+msgstr "E786: Intervallo non consentito"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Tipo non valido per len()"
@@ -1394,6 +1397,9 @@ msgstr "E602: :endtry senza :try"
 
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction non contenuto in una funzione"
+
+msgid "E788: Not allowed to edit another buffer now"
+msgstr "E788: Non si può aprire ora un altro buffer"
 
 msgid "tagname"
 msgstr "nome_tag"
@@ -4729,6 +4735,22 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG dopo l'uso di flags in %s linea %d: %s"
 
 #, c-format
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Definire COMPOUNDFORBIDFLAG dop l'elemento PFX potrebbe dare risultati "
+"errati in %s linea %d"
+
+#, c-format
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Definire COMPOUNDPERMITFLAG dop l'elemento PFX potrebbe dare risultati "
+"errati in %s linea %d"
+
+#, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
 msgstr "Valore errato per COMPOUNDWORDMAX in %s linea %d: %s"
 
@@ -4768,10 +4790,6 @@ msgstr "Y o N deve essere presente in %s linea %d: %s"
 #, c-format
 msgid "Broken condition in %s line %d: %s"
 msgstr "Condizione non rispettata in %s linea %d: %s"
-
-#, c-format
-msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
-msgstr "Flags di affissi ignorati con PFXPOSTPONE in %s linea %d: %s"
 
 #, c-format
 msgid "Expected REP(SAL) count in %s line %d"
@@ -5714,7 +5732,7 @@ msgstr "Apri i(l) file scelto(i) con Vim"
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
 "Errore creando il processo: Controllate che gvim sia incluso nel vostro "
-"cammino (PATH)"
+"percorso (PATH)"
 
 msgid "gvimext.dll error"
 msgstr "errore gvimext.dll"

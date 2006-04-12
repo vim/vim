@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0d.  Last change: 2006 Mar 24
+*undo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -106,7 +106,7 @@ After this an "u" command will undo the delete command and the previous
 change.
 
 ==============================================================================
-4. Undo branches					*undo-branches*
+4. Undo branches				*undo-branches* *undo-tree*
 
 Above we only discussed one line of undo/redo.  But it is also possible to
 branch off.  This happens when you undo a few changes and then make a new

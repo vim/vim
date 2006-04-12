@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 11
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2441,6 +2441,29 @@ to use wrong attributes.
 Win32: Using MSVC 4.1 for install.exe resulted in the start menu items to be
 created in the administrator directory instead of "All Users".  Define the
 CSIDL_ items if they are missing.
+
+Motif: The GUI tabline did not use the space above the right scrollbar.  Work
+around a bug in the Motif library. (Yegappan Lakshmanan)
+
+The extra files for XML Omni completion are now also installed.
+|xml-omni-datafile|
+
+GTK GUI: when 'm' is missing from 'guioptions' during startup and pressing
+<F10> GTK produced error messages.  Now do create the menu but disable it just
+after the first gui_mch_update().
+
+":mkspell" doesn't work well with the Hungarian dictionary from the Hunspell
+project.  Back to the Myspell dictionary.
+
+In help files hide the | used around tags.
+
+Renamed pycomplete to pythoncomplete.
+
+Added "tabpages" to 'sessionoptions'.
+
+When 'guitablabel' is set the effect wasn't visible right away.
+
+Fixed a few 'cindent' errors.
 
 
  vim:tw=78:ts=8:ft=help:norl:

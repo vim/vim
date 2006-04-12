@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Vim help file
 " Maintainer:	Bram Moolenaar (Bram@vim.org)
-" Last Change:	2006 Apr 06
+" Last Change:	2006 Apr 12
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -13,14 +13,15 @@ syn match helpSectionDelim	"^=\{3,}.*===$"
 syn match helpSectionDelim	"^-\{3,}.*--$"
 syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
 if has("ebcdic")
-  syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|"
+  syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
   syn match helpHyperTextEntry	"\*[^"*|]\+\*\s"he=e-1
   syn match helpHyperTextEntry	"\*[^"*|]\+\*$"
 else
-  syn match helpHyperTextJump	"\\\@<!|[#-)!+-~]\+|"
+  syn match helpHyperTextJump	"\\\@<!|[#-)!+-~]\+|" contains=helpBar
   syn match helpHyperTextEntry	"\*[#-)!+-~]\+\*\s"he=e-1
   syn match helpHyperTextEntry	"\*[#-)!+-~]\+\*$"
 endif
+syn match helpBar		contained "|"
 syn match helpNormal		"|.*====*|"
 syn match helpNormal		":|vim:|"	" for :help modeline
 syn match helpVim		"Vim version [0-9.a-z]\+"
@@ -122,6 +123,7 @@ syn sync minlines=40
 hi def link helpExampleStart	helpIgnore
 hi def link helpIgnore		Ignore
 hi def link helpHyperTextJump	Subtitle
+hi def link helpBar		Ignore
 hi def link helpHyperTextEntry	String
 hi def link helpHeadline	Statement
 hi def link helpHeader		PreProc

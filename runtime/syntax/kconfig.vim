@@ -1,6 +1,6 @@
 " Vim syntax file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-11
+" Latest Revision:  2006-04-12
 
 if exists("b:current_syntax")
   finish
@@ -180,7 +180,7 @@ syn match   kconfigRangeNCSymbol2     '\<\k\+\>'
 
 syn region  kconfigHelpText           contained
       \ matchgroup=kconfigConfigOption
-      \ start='\%(help\|---help---\)\s*\n\ze\z(\s\+\)'
+      \ start='\%(help\|---help---\)\ze\s*\n\z(\s\+\)'
       \ skip='^$'
       \ end='^\z1\@!'
       \ nextgroup=@kconfigConfigOptions
@@ -584,6 +584,8 @@ syn match   kconfigConfOptExprGrpE    ')'
                                       \           kconfigConfOptExprOr
                                       \ skipwhite skipnl
 
+syn sync minlines=50
+
 hi def link kconfigTodo                 Todo
 hi def link kconfigComment              Comment
 hi def link kconfigKeyword              Keyword
@@ -672,6 +674,8 @@ syn keyword kconfigPreProc            source
                                       \ nextgroup=kconfigPath
                                       \ skipwhite
 
+syn keyword kconfigTriState           y m n
+
 syn match   kconfigSpecialChar        contained '\\.'
 
 syn region  kconfigPath               matchgroup=kconfigPath
@@ -697,13 +701,13 @@ syn keyword kconfigType               bool boolean tristate string hex int
 
 syn keyword kconfigOption             prompt default requires select range
                                       \ optional
-syn match   kconfigOption             'depends\%( on\)'
+syn match   kconfigOption             'depends\%( on\)\='
 
 syn keyword kconfigMacro              def_bool def_tristate
 
-syn region  kconfigHelpText           contained
-      \ matchgroup=kconfigConfigOption
-      \ start='\%(help\|---help---\)\s*\n\ze\z(\s\+\)'
+syn region  kconfigHelpText
+      \ matchgroup=kconfigOption
+      \ start='\%(help\|---help---\)\ze\s*\n\z(\s\+\)'
       \ skip='^$'
       \ end='^\z1\@!'
 
@@ -712,6 +716,7 @@ hi def link kconfigComment      Comment
 hi def link kconfigKeyword      Keyword
 hi def link kconfigConditional  Conditional
 hi def link kconfigPreProc      PreProc
+hi def link kconfigTriState     Boolean
 hi def link kconfigSpecialChar  SpecialChar
 hi def link kconfigPath         String
 hi def link kconfigString       String

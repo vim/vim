@@ -1,4 +1,4 @@
-"pycomplete.vim - Omni Completion for python
+"pythoncomplete.vim - Omni Completion for python
 " Maintainer: Aaron Griffin
 " Version: 0.3
 " Last Updated: 23 January 2006
@@ -21,7 +21,7 @@ if !has('python')
     finish
 endif
 
-function! pycomplete#Complete(findstart, base)
+function! pythoncomplete#Complete(findstart, base)
     "findstart = 1 when we need to get the text length
     if a:findstart
         let line = getline('.')
@@ -43,7 +43,7 @@ function! pycomplete#Complete(findstart, base)
     "findstart = 0 when we need to return the list of completions
     else
         execute "python get_completions('" . a:base . "')"
-        return g:pycomplete_completions
+        return g:pythoncomplete_completions
     endif
 endfunction
 
@@ -64,7 +64,7 @@ LOCALDEFS = \
 def dbg(level,msg):
     debug_level = 1
     try:
-        debug_level = vim.eval("g:pycomplete_debug_level")
+        debug_level = vim.eval("g:pythoncomplete_debug_level")
     except:
         pass
     if level <= debug_level: print(msg)
@@ -119,9 +119,9 @@ def get_completions(base):
         else:
             completions.append(all)
         #dbg(10,"all completions: %s" % completions)
-        vim.command("let g:pycomplete_completions = %s" % completions)
+        vim.command("let g:pythoncomplete_completions = %s" % completions)
     except:
-        vim.command("let g:pycomplete_completions = []")
+        vim.command("let g:pythoncomplete_completions = []")
         #dbg(1,"exception: %s" % sys.exc_info()[1])
     clean_up()
 
@@ -346,6 +346,6 @@ sys.path.extend(['.','..'])
 PYTHONEOF
 endfunction
 
-let g:pycomplete_debug_level = 0
+let g:pythoncomplete_debug_level = 0
 call s:DefPython()
 " vim: set et ts=4:

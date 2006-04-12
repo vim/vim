@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 11
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,34 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include autoload/xml/*.vim files?  Need to adjust install scripts then.
-
-":mkspell" still takes much too long in Hungarian dictionary.
-- Are all prefixes really postponed now?
-- postpone secondary suffixes?
-
-Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
-    WFP_COMPPERMIT and WFP_COMPFORBID
-
-Use ~/tmp/hungarian*.txt to test dictionary with.
-
-New Hungarian dictionary. (Laci Nemeth)
--   implement use of <compoptions> in .spl file:
--   implement CHECKCOMPOUNDREP: when a compound word seems to be OK apply REP
-    items and theck if the result is a valid word.
--   implement CHECKCOMPOUNDDUP
--   implement CHECKCOMPOUNDTRIPLE
--   Add CHECKCOMPOUNDCASE: when compounding make leading capital lower case.
-    How is it supposed to work?
--   implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
-
-Update vi_diff.txt for Vim 7 features.
-
-8   tab pages in the session file, if "tabpages" in 'sessionoptions'
+Do some of the 'cindent' bugs below.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
-
-Do some of the 'cindent' bugs below.
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -100,7 +75,10 @@ Awaiting updated patches:
     been given values.
     Add section in help files for these highlight groups?
 8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
-    with an ESC sequence.  Ideas in: ~/vim/patches/vikas.xtermcolors .
+    with an ESC sequence.
+    xterm can send colors for many things.  E.g. for the cursor:
+	<Esc>]12;?<Bel>
+    Can use this to get the background color and restore the colors on exit.
 7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
     Dalecki has a patch for Motif and Carbon)
 -   Add possibility to highlight specific columns (for Fortran).  Or put a
@@ -1114,11 +1092,21 @@ Tab pages:
 
 
 Spell checking:
--   Check out Hunspell 1.1.4.
-    The manpage doesn't match the source code...
-    Try to make the newly added features compatible.
-    what does MAXNGRAMSUGS do?
-    is COMPLEXPREFIXES necessary when we have flags for affixes?
+-   Considering Hunspell 1.1.4:
+    What does MAXNGRAMSUGS do?
+    Is COMPLEXPREFIXES necessary when we have flags for affixes?
+8   ":mkspell" still takes much too long in Hungarian dictionary from
+    hunspell.  Only solution appears to be to postpone secondary suffixes.
+8   Handle postponed prefix with COMPOUNDPERMITFLAG or COMPOUNDFORBIDFLAG.
+    WFP_COMPPERMIT and WFP_COMPFORBID
+8   implement use of <compoptions> in .spl file:
+    implement CHECKCOMPOUNDREP: when a compound word seems to be OK apply REP
+    items and theck if the result is a valid word.
+    implement CHECKCOMPOUNDDUP
+    implement CHECKCOMPOUNDTRIPLE
+    Add CHECKCOMPOUNDCASE: when compounding make leading capital lower case.
+    How is it supposed to work?
+8   implement using CHECKCOMPOUNDPATTERN: match words with sl_comppat[].
 -   Add a command the repeats ]s and z=, showing the misspelled word in its
     context.  Thus to spell-check a whole file.
 -   suggestion for "KG" to "kg" when it's keepcase.
@@ -2248,15 +2236,6 @@ Insert mode:
 
 
 'cindent', 'smartindent':
-8   Aligning with "e" of "error" because of the ':' doesn't make sense:
-	cout << (  a ? f() : "error")
-8   Wrong indent with default settings when (dl) appears in this line:
-	    (dl)->barbar(
-			 dk);
-    When "(dl)" is changed to "dl" it uses 'sw' * 2 as expected.
-8   Wrong indent below ? : with ():
-	if ((a ? (b) : c) != 0)
-		       aligns with ":".
 8   Using "+" part of 'cinoptions' where it's not expected (Alexei Alexandrov):
 	if (a)
 	{

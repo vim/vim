@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Maple V (based on release 4)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 06, 2005
-" Version:	7
+" Last Change:	Apr 12, 2006
+" Version:	8
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Package Function Selection: {{{1
@@ -113,7 +113,7 @@ syn keyword mvPackage	tensor	TypeTools	Units	VariationalCalculus
 syn keyword mvPackage	VectorCalculus	Worksheet	XMLTools
 
 " Language Support: {{{1
-syn keyword mvTodo	contained	TODO
+syn keyword mvTodo	contained	COMBAK	FIXME	TODO	XXX
 if exists("g:mapleversion") && g:mapleversion < 9
  syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
  syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend

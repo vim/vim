@@ -1258,7 +1258,7 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)TRUE, (char_u *)0L}},
-    {"guitablabel",  "gtl", P_STRING|P_VI_DEF,
+    {"guitablabel",  "gtl", P_STRING|P_VI_DEF|P_RWIN,
 #if defined(FEAT_GUI_TABLINE)
 			    (char_u *)&p_gtl, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
@@ -2066,7 +2066,7 @@ static struct vimoption
     {"sessionoptions", "ssop", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_ssop, PV_NONE,
-		 {(char_u *)"blank,buffers,curdir,folds,help,options,winsize",
+	 {(char_u *)"blank,buffers,curdir,folds,help,options,tabpage,winsize",
 							       (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -6069,7 +6069,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #if defined(FEAT_GUI_TABLINE)
     /* 'guitablabel' */
     else if (varp == &p_gtl)
-	gui_init_which_components(NULL);
+	redraw_tabline = TRUE;
 #endif
 
 #if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))

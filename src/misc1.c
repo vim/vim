@@ -5456,6 +5456,8 @@ cin_isbreak(p)
  *	anotherBaseClass	<-- here (should probably lineup ??)
  * MyClass::MyClass(...) :
  *	baseClass(...)		<-- here (constructor-initialization)
+ *
+ * This is a lot of guessing.  Watch out for "cond ? func() : foo".
  */
     static int
 cin_is_cpp_baseclass(line, col)
@@ -5523,6 +5525,11 @@ cin_is_cpp_baseclass(line, col)
 		class_or_struct = FALSE;
 		lookfor_ctor_init = TRUE;
 	    }
+	    else if (s[0] == '?')
+	    {
+		/* Avoid seeing '() :' after '?' as constructor init. */
+		return FALSE;
+	    }
 	    else if (!vim_isIDc(s[0]))
 	    {
 		/* if it is not an identifier, we are wrong */
@@ -5541,6 +5548,32 @@ cin_is_cpp_baseclass(line, col)
 
 	    s = cin_skipcomment(s + 1);
 	}
+    }
+
+    if (cpp_base_class && curwin->w_cursor.lnum > 1)
+    {
+	/* Check that there is no '?' in the previous line to catch:
+	 *	a = cond ?
+	 *	      func() :
+	 *	           asdf;
+	 */
+	s = ml_get(curwin->w_cursor.lnum - 1);
+	if (!cin_ispreproc(s))
+	    while (*s != NUL)
+	    {
+		s = cin_skipcomment(s);
+		if (*s == '?')
+		    /* Disable when finding a '?'... */
+		    cpp_base_class = FALSE;
+		else if (*s == ';' && cin_nocode(s + 1))
+		{
+		    /* ...but re-enable when the line ends in ';'. */
+		    cpp_base_class = TRUE;
+		    break;
+		}
+		if (*s != NUL)
+		    ++s;
+	    }
     }
 
     return cpp_base_class;
@@ -6714,7 +6747,7 @@ get_c_indent()
 
 		/*
 		 * If this is a switch() label, may line up relative to that.
-		 * if this is a C++ scope declaration, do the same.
+		 * If this is a C++ scope declaration, do the same.
 		 */
 		iscase = cin_iscase(l);
 		if (iscase || cin_isscopedecl(l))
@@ -6854,8 +6887,13 @@ get_c_indent()
 		 * Are we at the start of a cpp base class declaration or
 		 * constructor initialization?
 		 */						    /* XXX */
-		if (lookfor != LOOKFOR_TERM && ind_cpp_baseclass
-					     && cin_is_cpp_baseclass(l, &col))
+		n = FALSE;
+		if (lookfor != LOOKFOR_TERM && ind_cpp_baseclass > 0)
+		{
+		    n = cin_is_cpp_baseclass(l, &col);
+		    l = ml_get_curline();
+		}
+		if (n)
 		{
 		    if (lookfor == LOOKFOR_UNTERM)
 		    {
@@ -6885,7 +6923,8 @@ get_c_indent()
 		else if (lookfor == LOOKFOR_CPP_BASECLASS)
 		{
 		    /* only look, whether there is a cpp base class
-		     * declaration or initialization before the opening brace. */
+		     * declaration or initialization before the opening brace.
+		     */
 		    if (cin_isterminated(l, TRUE, FALSE))
 			break;
 		    else
@@ -7326,9 +7365,31 @@ term_again:
 			if (theline[0] == '{')
 			    amount += ind_open_extra;
 			/* See remark above: "Only add ind_open_extra.." */
-			if (*skipwhite(l) == '{')
+			l = skipwhite(l);
+			if (*l == '{')
 			    amount -= ind_open_extra;
 			lookfor = iscase ? LOOKFOR_ANY : LOOKFOR_TERM;
+
+			/*
+			 * When a terminated line starts with "else" skip to
+			 * the matching "if":
+			 *       else 3;
+			 *           indent this;
+			 * Need to use the scope of this "else".  XXX
+			 * If whilelevel != 0 continue looking for a "do {".
+			 */
+			if (lookfor == LOOKFOR_TERM
+				&& *l != '}'
+				&& cin_iselse(l)
+				&& whilelevel == 0)
+			{
+			    if ((trypos = find_start_brace(ind_maxcomment))
+								       == NULL
+				    || find_match(LOOKFOR_IF, trypos->lnum,
+					ind_maxparen, ind_maxcomment) == FAIL)
+				break;
+			    continue;
+			}
 
 			/*
 			 * If we're at the end of a block, skip to the start of
@@ -7418,11 +7479,16 @@ term_again:
 		}
 
 		/*
-		 * Are we at the start of a cpp base class declaration or constructor
-		 * initialization?
+		 * Are we at the start of a cpp base class declaration or
+		 * constructor initialization?
 		 */						    /* XXX */
-		if (ind_cpp_baseclass != 0 && theline[0] != '{'
-					     && cin_is_cpp_baseclass(l, &col))
+		n = FALSE;
+		if (ind_cpp_baseclass != 0 && theline[0] != '{')
+		{
+		    n = cin_is_cpp_baseclass(l, &col);
+		    l = ml_get_curline();
+		}
+		if (n)
 		{
 		    if (col == 0)
 		    {

@@ -548,6 +548,19 @@ gui_init()
 #if defined(FEAT_GUI_GTK)
 	/* Give GTK+ a chance to put all widget's into place. */
 	gui_mch_update();
+
+# ifdef FEAT_MENU
+	/* If there is no 'm' in 'guioptions' we need to remove the menu now.
+	 * It was still there to make F10 work. */
+	if (vim_strchr(p_go, GO_MENUS) == NULL)
+	{
+	    --gui.starting;
+	    gui_mch_enable_menu(FALSE);
+	    ++gui.starting;
+	    gui_mch_update();
+	}
+# endif
+
 	/* Now make sure the shell fits on the screen. */
 	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
 #endif

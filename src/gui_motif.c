@@ -370,7 +370,7 @@ label_expose(_w, _event, _region)
 gui_x11_create_widgets()
 {
 #ifdef FEAT_GUI_TABLINE
-    Widget	button;
+    Widget	button, scroller;
     Arg		args[10];
     int		n;
     XmString	xms;
@@ -490,6 +490,20 @@ gui_x11_create_widgets()
 			NULL);
     XtAddEventHandler(tabLine, ButtonPressMask, False,
 			(XtEventHandler)tabline_menu_cb, NULL);
+
+    /*
+     * Set the size of the minor next/prev scrollers to zero, so
+     * that they are not displayed. Due to a bug in OpenMotif 2.3,
+     * even if these children widget are unmanaged, they are again
+     * managed by the Notebook widget and the notebook widget geometry
+     * is adjusted to account for the minor scroller widgets.
+     */
+    scroller = XtNameToWidget(tabLine, "MinorTabScrollerNext");
+    XtVaSetValues(scroller, XmNwidth, 0, XmNresizable, False,
+		  XmNtraversalOn, False, NULL);
+    scroller = XtNameToWidget(tabLine, "MinorTabScrollerPrevious");
+    XtVaSetValues(scroller, XmNwidth, 0, XmNresizable, False,
+		  XmNtraversalOn, False, NULL);
 
     /* Create the tabline popup menu */
     tabLine_menu = XmCreatePopupMenu(tabLine, "tabline popup", NULL, 0);

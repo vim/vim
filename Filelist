@@ -505,6 +505,7 @@ RT_SCRIPTS =	\
 		runtime/makemenu.vim \
 		runtime/autoload/*.vim \
 		runtime/autoload/README.txt \
+		runtime/autoload/xml/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
 		runtime/compiler/*.vim \

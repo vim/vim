@@ -6901,8 +6901,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 			    /* ... don't use a prefix list if combining
 			     * affixes is not allowed.  But do use the
 			     * compound flags after them. */
-			    if ((!ah->ah_combine || (condit & CONDIT_COMB))
-						       && use_pfxlist != NULL)
+			    if (!ah->ah_combine && use_pfxlist != NULL)
 				use_pfxlist += use_pfxlen;
 			}
 

@@ -665,7 +665,8 @@ DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 
 # These are directories, create them when needed.
 :attr {directory = $DIRMOD} $DEST_BIN $DEST_VIM $DEST_RT $DEST_HELP $DEST_COL
-                $DEST_SYN $DEST_IND $DEST_AUTO $DEST_PLUG $DEST_FTP $DEST_LANG
+                $DEST_SYN $DEST_IND $DEST_AUTO $DEST_AUTO/xml $DEST_PLUG
+                $DEST_FTP $DEST_LANG
                 $DEST_COMP $DEST_KMAP $DEST_MACRO $DEST_TOOLS $DEST_TUTOR
                 $DEST_SCRIPT $DEST_PRINT $DEST_MAN $DEST_SPELL
                 $DEST_MAN_FR $DEST_MAN_FR_I $DEST_MAN_FR_U $DEST_MAN_IT
@@ -722,8 +723,8 @@ installruntime {virtual}: installrtbase installmacros installtutor installspell
 # install the help files; first adjust the contents for the location
 installrtbase {virtual}{force}: $HELPSOURCE/vim.1 $DEST_VIM
                 $DEST_RT $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
-                $DEST_FTP $DEST_AUTO $DEST_PLUG $DEST_TUTOR $DEST_COMP
-                $DEST_SPELL $DEST_PRINT
+                $DEST_FTP $DEST_AUTO $DEST_AUTO/xml $DEST_PLUG $DEST_TUTOR
+                $DEST_COMP $DEST_SPELL $DEST_PRINT
         :chmod 755 installman.sh
         :sys ./installman.sh install $(DEST_MAN) "" $(INSTALLMANARGS)
 
@@ -791,6 +792,8 @@ installrtbase {virtual}{force}: $HELPSOURCE/vim.1 $DEST_VIM
 # install the standard autoload files
         :copy $AUTOSOURCE/*.vim $AUTOSOURCE/README.txt $DEST_AUTO
         :chmod $HELPMOD $DEST_AUTO/*.vim $DEST_AUTO/README.txt
+        :copy $AUTOSOURCE/xml/*.vim $DEST_AUTO/xml
+        :chmod $HELPMOD $DEST_AUTO/xml/*.vim
 # install the standard plugin files
         :copy $PLUGSOURCE/*.vim $PLUGSOURCE/README.txt $DEST_PLUG
         :chmod $HELPMOD $DEST_PLUG/*.vim $DEST_PLUG/README.txt
@@ -1122,9 +1125,9 @@ uninstall_runtime {virtual}{force}:
     :del {force}{recursive} $DEST_COMP
     :deldir {force} $DEST_HELP $DEST_COL $DEST_SYN $DEST_IND
     :del {force}{recursive} $DEST_FTP/*.vim $DEST_FTP/README.txt
-    :del {force} $DEST_AUTO/*.vim $DEST_AUTO/README.txt
+    :del {force} $DEST_AUTO/*.vim $DEST_AUTO/README.txt $DEST_AUTO/xml/*.vim
     :del {force} $DEST_PLUG/*.vim $DEST_PLUG/README.txt
-    :deldir {force} $DEST_FTP $DEST_AUTO $DEST_PLUG $DEST_PRINT $DEST_RT
+    :deldir {force} $DEST_FTP $DEST_AUTO/xml $DEST_AUTO $DEST_PLUG $DEST_PRINT $DEST_RT
 #       This will fail when other Vim versions are installed, no worries.
     @try:
         :deldir $DEST_VIM

@@ -3562,8 +3562,9 @@ gui_mch_init(void)
     else
 # endif	/* FEAT_GUI_GNOME */
     {
-	if (vim_strchr(p_go, GO_MENUS) != NULL)
-	    gtk_widget_show(gui.menubar);
+	/* Always show the menubar, otherwise <F10> doesn't work.  It may be
+	 * disabled in gui_init() later. */
+	gtk_widget_show(gui.menubar);
 	gtk_box_pack_start(GTK_BOX(vbox), gui.menubar, FALSE, FALSE, 0);
     }
 #endif	/* FEAT_MENU */
@@ -4366,7 +4367,8 @@ gui_mch_enable_menu(int showit)
 # endif
 	widget = gui.menubar;
 
-    if (!showit != !GTK_WIDGET_VISIBLE(widget))
+    /* Do not disable the menu while starting up, otherwise F10 doesn't work. */
+    if (!showit != !GTK_WIDGET_VISIBLE(widget) && !gui.starting)
     {
 	if (showit)
 	    gtk_widget_show(widget);

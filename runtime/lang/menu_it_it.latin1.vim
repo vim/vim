@@ -65,7 +65,8 @@ menut &Select\ All<Tab>ggVG		Seleziona\ &tutto<Tab>ggVG
 menut &Find\.\.\.			&Cerca\.\.\.
 menut Find\ and\ Rep&lace\.\.\.	&Sostituisci\.\.\.
 menut Settings\ &Window		&Finestra\ Impostazioni
-menut &Global\ Settings		Impostazioni\ &globali
+menut Startup\ &Settings	Impostazioni\ di\ &Avvio
+menut &Global\ Settings		Impostazioni\ &Globali
 menut Question			Domanda
 
 " Edit / Modifica Impostazioni Globali

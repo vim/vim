@@ -1,7 +1,8 @@
 " Vim syntax file
-" Language:	gp (version 2.1)
-" Maintainer:	Karim Belabas <Karim.Belabas@math.u-psud.fr>
-" Last change:	2001 Sep 02
+" Language:	gp (version 2.2)
+" Maintainer:	Karim Belabas <Karim.Belabas@math.u-bordeaux.fr>
+" Last change:	2006 Apr 12
+" URL:		http://pari.math.u-bordeaux.fr
 
 if version < 600
   syntax clear
@@ -9,17 +10,19 @@ elseif exists("b:current_syntax")
   finish
 endif
 
-" some control statements
+" control statements
 syntax keyword gpStatement	break return next
 syntax keyword gpConditional	if
 syntax keyword gpRepeat		until while for fordiv forprime forstep forvec
+" storage class
 syntax keyword gpScope		local global
-
-syntax keyword gpInterfaceKey	buffersize colors compatible debug debugmem
-syntax keyword gpInterfaceKey	echo format help histsize log logfile output
-syntax keyword gpInterfaceKey	parisize path primelimit prompt psfile
-syntax keyword gpInterfaceKey	realprecision seriesprecision simplify
-syntax keyword gpInterfaceKey	strictmatch timer
+" defaults
+syntax keyword gpInterfaceKey	colors compatible datadir debug debugfiles
+syntax keyword gpInterfaceKey	debugmem echo factor_add_primes format help
+syntax keyword gpInterfaceKey	histsize lines log logfile new_galois_format
+syntax keyword gpInterfaceKey	output parisize path prettyprinter primelimit
+syntax keyword gpInterfaceKey	prompt prompt_cont psfile realprecision secure
+syntax keyword gpInterfaceKey	seriesprecision simplify strictmatch TeXstyle timer
 
 syntax match   gpInterface	"^\s*\\[a-z].*"
 syntax keyword gpInterface	default

@@ -9643,6 +9643,8 @@ makeopens(fd, dirnow)
     win_T	*wp;
     char_u	*sname;
     win_T	*edited_win = NULL;
+    tabpage_T	*old_curtab = curtab;
+    int		tabnr;
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		/* Save ALL buffers */
@@ -9748,114 +9750,144 @@ makeopens(fd, dirnow)
 #endif
 
     /*
-     * Before creating the window layout, try loading one file.  If this is
-     * aborted we don't end up with a number of useless windows.
-     * This may have side effects! (e.g., compressed or network file).
+     * May repeat putting Windows for each tab, when "tabpages" is in
+     * 'sessionoptions'.
      */
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    for (tabnr = 1; ; ++tabnr)
     {
-	if (ses_do_win(wp)
-		&& wp->w_buffer->b_ffname != NULL
-		&& !wp->w_buffer->b_help
-#ifdef FEAT_QUICKFIX
-		&& !bt_nofile(wp->w_buffer)
-#endif
-		)
+	if ((ssop_flags & SSOP_TABPAGES))
 	{
-	    if (fputs("edit ", fd) < 0
-		    || ses_fname(fd, wp->w_buffer, &ssop_flags) == FAIL)
+	    goto_tabpage(tabnr);
+	    if (tabnr > 1 && put_line(fd, "tabnew") == FAIL)
 		return FAIL;
-	    if (!wp->w_arg_idx_invalid)
-		edited_win = wp;
-	    break;
 	}
-    }
 
-    /*
-     * Save current window layout.
-     */
-    if (put_line(fd, "set splitbelow splitright") == FAIL)
-	return FAIL;
-    if (ses_win_rec(fd, topframe) == FAIL)
-	return FAIL;
-    if (!p_sb && put_line(fd, "set nosplitbelow") == FAIL)
-	return FAIL;
-    if (!p_spr && put_line(fd, "set nosplitright") == FAIL)
-	return FAIL;
+	/*
+	 * Before creating the window layout, try loading one file.  If this
+	 * is aborted we don't end up with a number of useless windows.
+	 * This may have side effects! (e.g., compressed or network file).
+	 */
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	{
+	    if (ses_do_win(wp)
+		    && wp->w_buffer->b_ffname != NULL
+		    && !wp->w_buffer->b_help
+#ifdef FEAT_QUICKFIX
+		    && !bt_nofile(wp->w_buffer)
+#endif
+		    )
+	    {
+		if (fputs("edit ", fd) < 0
+			|| ses_fname(fd, wp->w_buffer, &ssop_flags) == FAIL)
+		    return FAIL;
+		if (!wp->w_arg_idx_invalid)
+		    edited_win = wp;
+		break;
+	    }
+	}
 
-    /*
-     * Check if window sizes can be restored (no windows omitted).
-     * Remember the window number of the current window after restoring.
-     */
-    nr = 0;
-    for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
-    {
-	if (ses_do_win(wp))
-	    ++nr;
-	else
-	    restore_size = FALSE;
-	if (curwin == wp)
-	    cnr = nr;
-    }
-
-    /* Go to the first window. */
-    if (put_line(fd, "wincmd t") == FAIL)
-	return FAIL;
-
-    /*
-     * If more than one window, see if sizes can be restored.
-     * First set 'winheight' and 'winwidth' to 1 to avoid the windows being
-     * resized when moving between windows.
-     * Do this before restoring the view, so that the topline and the cursor
-     * can be set.  This is done again below.
-     */
-    if (put_line(fd, "set winheight=1 winwidth=1") == FAIL)
-	return FAIL;
-    if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
-	return FAIL;
-
-    /*
-     * Restore the view of the window (options, file, cursor, etc.).
-     */
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
-    {
-	if (!ses_do_win(wp))
-	    continue;
-	if (put_view(fd, wp, wp != edited_win, &ssop_flags) == FAIL)
+	/*
+	 * Save current window layout.
+	 */
+	if (put_line(fd, "set splitbelow splitright") == FAIL)
 	    return FAIL;
-	if (nr > 1 && put_line(fd, "wincmd w") == FAIL)
+	if (ses_win_rec(fd, topframe) == FAIL)
 	    return FAIL;
-    }
+	if (!p_sb && put_line(fd, "set nosplitbelow") == FAIL)
+	    return FAIL;
+	if (!p_spr && put_line(fd, "set nosplitright") == FAIL)
+	    return FAIL;
 
-    /*
-     * Restore cursor to the current window if it's not the first one.
-     */
-    if (cnr > 1 && (fprintf(fd, "%dwincmd w", cnr) < 0 || put_eol(fd) == FAIL))
-	return FAIL;
+	/*
+	 * Check if window sizes can be restored (no windows omitted).
+	 * Remember the window number of the current window after restoring.
+	 */
+	nr = 0;
+	for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+	{
+	    if (ses_do_win(wp))
+		++nr;
+	    else
+		restore_size = FALSE;
+	    if (curwin == wp)
+		cnr = nr;
+	}
 
-    /*
-     * Wipe out an empty unnamed buffer we started in.
-     */
-    if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
-	return FAIL;
-    if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
-	return FAIL;
-    if (put_line(fd, "endif") == FAIL)
-	return FAIL;
-    if (put_line(fd, "unlet! s:wipebuf") == FAIL)
-	return FAIL;
+	/* Go to the first window. */
+	if (put_line(fd, "wincmd t") == FAIL)
+	    return FAIL;
 
-    /*
-     * Restore window sizes again after jumping around in windows, because the
-     * current window has a minimum size while others may not.
-     */
-    if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
-	return FAIL;
+	/*
+	 * If more than one window, see if sizes can be restored.
+	 * First set 'winheight' and 'winwidth' to 1 to avoid the windows being
+	 * resized when moving between windows.
+	 * Do this before restoring the view, so that the topline and the
+	 * cursor can be set.  This is done again below.
+	 */
+	if (put_line(fd, "set winheight=1 winwidth=1") == FAIL)
+	    return FAIL;
+	if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
+	    return FAIL;
 
-    /* Re-apply 'winheight', 'winwidth' and 'shortmess'. */
-    if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
+	/*
+	 * Restore the view of the window (options, file, cursor, etc.).
+	 */
+	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	{
+	    if (!ses_do_win(wp))
+		continue;
+	    if (put_view(fd, wp, wp != edited_win, &ssop_flags) == FAIL)
+		return FAIL;
+	    if (nr > 1 && put_line(fd, "wincmd w") == FAIL)
+		return FAIL;
+	}
+
+	/*
+	 * Restore cursor to the current window if it's not the first one.
+	 */
+	if (cnr > 1 && (fprintf(fd, "%dwincmd w", cnr) < 0
+						      || put_eol(fd) == FAIL))
+	    return FAIL;
+
+	/*
+	 * Wipe out an empty unnamed buffer we started in.
+	 */
+	if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
+	    return FAIL;
+	if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
+	    return FAIL;
+	if (put_line(fd, "endif") == FAIL)
+	    return FAIL;
+	if (put_line(fd, "unlet! s:wipebuf") == FAIL)
+	    return FAIL;
+
+	/*
+	 * Restore window sizes again after jumping around in windows, because
+	 * the current window has a minimum size while others may not.
+	 */
+	if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
+	    return FAIL;
+
+	/* Re-apply 'winheight', 'winwidth' and 'shortmess'. */
+	if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
 			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
-	return FAIL;
+	    return FAIL;
+
+	/* Don't continue in another tab page when doing only the current one
+	 * or when at the last tab page. */
+	if (!(ssop_flags & SSOP_TABPAGES) || curtab->tp_next == NULL)
+	    break;
+    }
+
+    if (ssop_flags & SSOP_TABPAGES)
+    {
+	if (valid_tabpage(old_curtab))
+	    goto_tabpage_tp(old_curtab);
+	if (fprintf(fd, "tabnext %d", tabpage_index(curtab)) < 0
+		|| put_eol(fd) == FAIL)
+	    return FAIL;
+    }
+
 
     /*
      * Lastly, execute the x.vim file if it exists.
