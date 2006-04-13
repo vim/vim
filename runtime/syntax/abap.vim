@@ -1,11 +1,11 @@
 " Vim ABAP syntax file
-"    Language:	SAP - ABAP/4
-"    Revision:	0.8
-"  Maintainer:	Marius van Wyk <marius@e.co.za>
-" Last Change:	2004 Aug 30
+"    Language: SAP - ABAP/R4
+"    Revision: 1.0
+"  Maintainer: Marius Piedallu van Wyk <marius@e.co.za>
+" Last Change: 2006 Apr 13
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
+" For version  < 6.0: Clear all syntax items
+" For version >= 6.0: Quit when a syntax file was already loaded
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
@@ -16,19 +16,19 @@ endif
 syn case ignore
 
 " Symbol Operators
-syn match   abapSymbolOperator      "[+\-/=<>$]"
-syn match   abapSymbolOperator      "\*"
-syn match   abapSymbolOperator      "[<>]="
-syn match   abapSymbolOperator      "<>"
-syn match   abapSymbolOperator      "\*\*"
-syn match   abapSymbolOperator      "[()]"
-syn match   abapSymbolOperator      "[:,\.]"
+syn match   abapSymbolOperator  "[+\-/=<>$]"
+syn match   abapSymbolOperator  "\*"
+syn match   abapSymbolOperator  "[<>]="
+syn match   abapSymbolOperator  "<>"
+syn match   abapSymbolOperator  "\*\*"
+syn match   abapSymbolOperator  "[()]"
+syn match   abapSymbolOperator  "[:,\.]"
 
 " Literals
 syn region  abapString matchgroup=abapString start="'" end="'" contains=abapStringEscape
 syn match   abapStringEscape contained "''"
 
-syn match   abapNumber	"-\=\<\d\+\>"
+syn match   abapNumber  "-\=\<\d\+\>"
 syn region  abapHex     matchgroup=abapHex start="X'" end="'"
 
 if version >= 600
@@ -52,7 +52,7 @@ syn keyword abapStatement MESSAGE MODIFY MODULE MOVE MOVE-CORRESPONDING MULTIPLY
 syn keyword abapStatement NEW-LINE NEW-PAGE NEW-SECTION
 syn keyword abapStatement ON OVERLAY
 syn keyword abapStatement PACK PARAMETERS PERFORM POSITION PRINT-CONTROL PROGRAM PROVIDE PUT
-syn keyword abapStatement RAISE RANGES READ RECEIVE REFRESH REJECT REPLACE REPORT RESERVE RESTORE ROLLBACK
+syn keyword abapStatement RAISE RANGES READ RECEIVE REFRESH REJECT REPLACE REPORT RESERVE RESTORE ROLLBACK RP-PROVIDE-FROM-LAST
 syn keyword abapStatement SCAN SCROLL SEARCH SELECT SELECT-OPTIONS SELECTION-SCREEN SET SHIFT SKIP SORT SPLIT START-OF-SELECTION STATICS STOP SUBMIT SUBTRACT SUBTRACT-CORRESPONDING SUM SUMMARY SUPPRESS SYNTAX-CHECK SYNTAX-TRACE
 syn keyword abapStatement TABLES TOP-OF-PAGE TRANSFER TRANSLATE TYPE TYPE-POOL TYPE-POOLS TYPES
 syn keyword abapStatement UNPACK UPDATE
@@ -82,7 +82,7 @@ syn match   abapStatement "\(\W\|^\)REF\W\+TO\(\W\|$\)"ms=s+1,me=e-1
 " Special ABAP specific tables:
 syn match   abapSpecial       "\(\W\|^\)\(sy\|\(p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)\(\W\|$\)"ms=s+1,me=e-1
 syn match   abapSpecialTables "\(sy\|\(p\|pa\)\d\d\d\d\|t\d\d\d.\|innnn\)-"me=e-1 contained
-syn match   abapSpecial       "\(\W\|^\)\w\+-\w\+"ms=s+1 contains=abapSpecialTables
+syn match   abapSpecial       "\(\W\|^\)\w\+-\(\w\+-\w\+\|\w\+\)"ms=s+1 contains=abapSpecialTables
 
 " Pointer
 syn match   abapSpecial  "<\w\+>"
@@ -118,7 +118,7 @@ syn match   abapError    "\.\."
 " Comments
 syn region  abapComment  start="^\*" end="$" contains=abapTodo
 syn match   abapComment  "\".*" contains=abapTodo
-syn keyword abapTodo     contained	TODO NOTE
+syn keyword abapTodo     contained TODO NOTE
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -132,17 +132,17 @@ if version >= 508 || !exists("did_abap_syntax_inits")
   endif
 
   HiLink abapError          Error
-  HiLink abapComment	      Comment
-  HiLink abapInclude	      Include
+  HiLink abapComment        Comment
+  HiLink abapInclude        Include
   HiLink abapSpecial        Special
   HiLink abapSpecialTables  PreProc
-  HiLink abapSymbolOperator	abapOperator
-  HiLink abapOperator	      Operator
-  HiLink abapStatement	    Statement
-  HiLink abapString	        String
-  HiLink abapFloat	        Float
-  HiLink abapNumber	        Number
-  HiLink abapHex	          Number
+  HiLink abapSymbolOperator abapOperator
+  HiLink abapOperator       Operator
+  HiLink abapStatement      Statement
+  HiLink abapString         String
+  HiLink abapFloat          Float
+  HiLink abapNumber         Number
+  HiLink abapHex            Number
 
   delcommand HiLink
 endif
@@ -150,3 +150,4 @@ endif
 let b:current_syntax = "abap"
 
 " vim: ts=8 sw=2
+

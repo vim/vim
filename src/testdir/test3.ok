@@ -618,7 +618,7 @@ Constructor::Constructor(int a,
 
 Constructor::Constructor(int a,
 		int b ) /*x*/ : /*x*/ BaseClass(a),
-							  member(b)
+	member(b)
 {
 }
 
@@ -651,7 +651,7 @@ class CAbc :
 };
 
 class CAbc : public BaseClass1,
-			 protected BaseClass2
+	protected BaseClass2
 {
 };
 
@@ -728,6 +728,31 @@ int  main(void)
 			2;
 		else 3;
 	next_line_of_code();
+}
+
+barry()
+{
+	Foo::Foo (int one,
+			int two)
+		: something(4)
+	{}
+}
+
+barry()
+{
+	Foo::Foo (int one, int two)
+		: something(4)
+	{}
+}
+
+Constructor::Constructor(int a,
+		int b 
+		)  : 
+	BaseClass(a,
+			b,
+			c),
+	mMember(b)
+{
 }
 
 /* end of AUTO */
@@ -1068,6 +1093,16 @@ public: // comment
 protected:
 	void testfall();
 };
+
+
+	void
+foo()
+{
+	if (a)
+	{
+	} else
+		asdf;
+}
 
 
 {

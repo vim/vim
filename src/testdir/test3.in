@@ -742,6 +742,31 @@ int  main(void)
 	next_line_of_code();
 }
 
+barry()
+{
+	Foo::Foo (int one,
+			int two)
+		: something(4)
+	{}
+}
+
+barry()
+{
+	Foo::Foo (int one, int two)
+		: something(4)
+	{}
+}
+
+Constructor::Constructor(int a,
+		int b 
+		)  : 
+	BaseClass(a,
+			b,
+			c),
+	mMember(b)
+{
+}
+
 /* end of AUTO */
 
 STARTTEST
@@ -1187,6 +1212,20 @@ public: // comment
 protected:
    void testfall();
 };
+
+STARTTEST
+:set cino=+20
+2kdd]]=][
+ENDTEST
+
+	void
+foo()
+{
+	if (a)
+	{
+	} else
+		asdf;
+}
 
 STARTTEST
 :set cino=(0,W2s

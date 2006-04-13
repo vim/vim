@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 12
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Do some of the 'cindent' bugs below.
+
+Should a[:5] not give an error for a list with 4 items?
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -2236,21 +2238,6 @@ Insert mode:
 
 
 'cindent', 'smartindent':
-8   Using "+" part of 'cinoptions' where it's not expected (Alexei Alexandrov):
-	if (a)
-	{
-	} else
-			asdf;
-8   Wrong indent for ":" after a method with line break in arguments:
-	Foo::Foo (int one,
-		    int two)
-	: something(4)
-	{}
-8   Wrong indent for ":" after a method with multiple lines:
-	Foo::Foo (int one, int two)
-		: something(4),
-	somethingelse(3)
-	{}
 9   Too much indent for "lulu": (Uwe Zeisberger)
        int main ()
        {

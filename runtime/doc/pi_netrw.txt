@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0d.  Last change: Apr 06, 2006
+*pi_netrw.txt*  For Vim version 7.0d.  Last change: Apr 12, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -847,11 +847,10 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
   *g:netrw_winsize*		specify initial size of new o/v windows
 				 default: ""
 
-  *g:DrChipTopLvlMenu*		This variable specifies the top level
-				submenu name; by default, its "DrChip.".
-				If you wish to change this, do so in your
-				.vimrc.  It affects all of my plugins which
-				have menus.
+  *g:NetrwTopLvlMenu*		This variable specifies the top level
+				menu name; by default, its "Netrw.".  If
+				you wish to change this, do so in your
+				.vimrc.
 
 INTRODUCTION TO DIRECTORY BROWSING			*netrw-browse-intro*
 
@@ -1448,6 +1447,7 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v87: * bug fix -- menus were partially disappearing
 	v85: * bug fix -- missing an endif
 	     * bug fix -- handles spaces in names and directories when using
 	       ftp-based browsing

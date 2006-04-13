@@ -2066,7 +2066,7 @@ static struct vimoption
     {"sessionoptions", "ssop", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_ssop, PV_NONE,
-	 {(char_u *)"blank,buffers,curdir,folds,help,options,tabpage,winsize",
+	 {(char_u *)"blank,buffers,curdir,folds,help,options,tabpages,winsize",
 							       (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -6457,6 +6457,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 	if (check_opt_strings(p_fcl, p_fcl_values, TRUE) != OK)
 	    errmsg = e_invarg;
+    }
+    /* 'foldignore' */
+    else if (gvarp == &curwin->w_allbuf_opt.wo_fdi)
+    {
+	if (foldmethodIsIndent(curwin))
+	    foldUpdateAll(curwin);
     }
 #endif
 

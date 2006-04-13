@@ -1,6 +1,6 @@
 " Vim syntax file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-12
+" Latest Revision:  2006-04-13
 
 if exists("b:current_syntax")
   finish
@@ -710,6 +710,8 @@ syn region  kconfigHelpText
       \ start='\%(help\|---help---\)\ze\s*\n\z(\s\+\)'
       \ skip='^$'
       \ end='^\z1\@!'
+
+syn sync    match kconfigSyncHelp     grouphere kconfigHelpText 'help\|---help---'
 
 hi def link kconfigTodo         Todo
 hi def link kconfigComment      Comment

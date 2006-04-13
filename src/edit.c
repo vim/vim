@@ -8494,6 +8494,16 @@ ins_pageup()
     pos_T	tpos;
 
     undisplay_dollar();
+
+#ifdef FEAT_WINDOWS
+    if (mod_mask & MOD_MASK_CTRL)
+    {
+	/* <C-PageUp>: tab page back */
+	goto_tabpage(-1);
+	return;
+    }
+#endif
+
     tpos = curwin->w_cursor;
     if (onepage(BACKWARD, 1L) == OK)
     {
@@ -8543,6 +8553,16 @@ ins_pagedown()
     pos_T	tpos;
 
     undisplay_dollar();
+
+#ifdef FEAT_WINDOWS
+    if (mod_mask & MOD_MASK_CTRL)
+    {
+	/* <C-PageDown>: tab page forward */
+	goto_tabpage(0);
+	return;
+    }
+#endif
+
     tpos = curwin->w_cursor;
     if (onepage(FORWARD, 1L) == OK)
     {

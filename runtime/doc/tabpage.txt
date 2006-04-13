@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0d.  Last change: 2006 Apr 09
+*tabpage.txt*   For Vim version 7.0d.  Last change: 2006 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -124,11 +124,12 @@ next tab page.  |'tabline'|
 
 :tabn[ext]				*:tabn* *:tabnext* *gt*
 gt					*CTRL-<PageDown>* *<C-PageDown>*
-<C-PageDown>	Go to the next tab page.  Wraps around from the last to the
+<C-PageDown>				*i_CTRL-<PageDown>* *i_<C-PageDown>*
+		Go to the next tab page.  Wraps around from the last to the
 		first one.
 
-:tabn[ext] {count}
-{count}gt				*CTRL-<PageUp>* *<C-PageUp>*
+:tabn[ext] {count}			*CTRL-<PageUp>* *<C-PageUp>*
+{count}gt				*i_CTRL-<PageUp>* *i_<C-PageUp>*
 <C-PageUp>	Go to tab page {count}.  The first tab page has number one.
 
 

@@ -5367,7 +5367,7 @@ g,	motion.txt	/*g,*
 g-	undo.txt	/*g-*
 g0	motion.txt	/*g0*
 g8	various.txt	/*g8*
-g:DrChipTopLvlMenu	pi_netrw.txt	/*g:DrChipTopLvlMenu*
+g:NetrwTopLvlMenu	pi_netrw.txt	/*g:NetrwTopLvlMenu*
 g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
@@ -5730,6 +5730,8 @@ i_<BS>	insert.txt	/*i_<BS>*
 i_<C-End>	insert.txt	/*i_<C-End>*
 i_<C-Home>	insert.txt	/*i_<C-Home>*
 i_<C-Left>	insert.txt	/*i_<C-Left>*
+i_<C-PageDown>	tabpage.txt	/*i_<C-PageDown>*
+i_<C-PageUp>	tabpage.txt	/*i_<C-PageUp>*
 i_<C-Right>	insert.txt	/*i_<C-Right>*
 i_<CR>	insert.txt	/*i_<CR>*
 i_<Del>	insert.txt	/*i_<Del>*
@@ -5757,6 +5759,8 @@ i_<S-Up>	insert.txt	/*i_<S-Up>*
 i_<Tab>	insert.txt	/*i_<Tab>*
 i_<Up>	insert.txt	/*i_<Up>*
 i_BS	insert.txt	/*i_BS*
+i_CTRL-<PageDown>	tabpage.txt	/*i_CTRL-<PageDown>*
+i_CTRL-<PageUp>	tabpage.txt	/*i_CTRL-<PageUp>*
 i_CTRL-@	insert.txt	/*i_CTRL-@*
 i_CTRL-A	insert.txt	/*i_CTRL-A*
 i_CTRL-B-gone	version5.txt	/*i_CTRL-B-gone*

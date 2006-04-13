@@ -4444,8 +4444,9 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
 	}
     }
 
-    /* Sort the results. */
-    sort_strings(*file, *num_file);
+    /* Sort the results.  Keep menu's in the specified order. */
+    if (xp->xp_context != EXPAND_MENUNAMES && xp->xp_context != EXPAND_MENUS)
+	sort_strings(*file, *num_file);
 
     return OK;
 }

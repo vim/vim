@@ -2316,22 +2316,25 @@ If none of these cases pertain, then the first line of the file is examined
 (ex. /bin/sh  /bin/ksh	/bin/bash).  If the first line specifies a shelltype,
 then that shelltype is used.  However some files (ex. .profile) are known to
 be shell files but the type is not apparent.  Furthermore, on many systems
-sh is symbolically linked to "bash" (linux) or "ksh" (posix).
+sh is symbolically linked to "bash" (Linux, Windows+cygwin) or "ksh" (Posix).
 
 One may specify a global default by instantiating one of the following three
 variables in your <.vimrc>:
 
     ksh: >
-	let is_kornshell = 1
+	let g:is_kornshell = 1
+<   posix: (using this is the same as setting is_kornshell to 1) >
+	let g:is_posix     = 1
 <   bash: >
-	let is_bash	 = 1
-<   sh: >
-	let is_sh	 = 1
+	let g:is_bash	   = 1
+<   sh: (default) Borne shell >
+	let g:is_sh	   = 1
 
 If there's no "#! ..." line, and the user hasn't availed himself/herself of a
 default sh.vim syntax setting as just shown, then syntax/sh.vim will assume
 the Borne shell syntax.  No need to quote RFCs or market penetration
-statistics in error reports, please.
+statistics in error reports, please -- just select the default version of
+the sh your system uses in your <.vimrc>.
 
 If, in your <.vimrc>, you set >
 	let g:sh_fold_enabled= 1

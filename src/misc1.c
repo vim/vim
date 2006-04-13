@@ -3085,6 +3085,7 @@ get_keystroke()
 		    mch_memmove(buf, buf + 3, (size_t)len);
 		continue;
 	    }
+	    break;
 	}
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
@@ -4771,6 +4772,7 @@ static int	cin_isdo __ARGS((char_u *));
 static int	cin_iswhileofdo __ARGS((char_u *, linenr_T, int));
 static int	cin_isbreak __ARGS((char_u *));
 static int	cin_is_cpp_baseclass __ARGS((char_u *line, colnr_T *col));
+static int	get_baseclass_amount __ARGS((int col, int ind_maxparen, int ind_maxcomment, int ind_cpp_baseclass));
 static int	cin_ends_in __ARGS((char_u *, char_u *, char_u *));
 static int	cin_skip2pos __ARGS((pos_T *trypos));
 static pos_T	*find_start_brace __ARGS((int));
@@ -5447,7 +5449,8 @@ cin_isbreak(p)
     return (STRNCMP(p, "break", 5) == 0 && !vim_isIDc(p[5]));
 }
 
-/* Find the position of a C++ base-class declaration or
+/*
+ * Find the position of a C++ base-class declaration or
  * constructor-initialization. eg:
  *
  * class MyClass :
@@ -5462,10 +5465,11 @@ cin_isbreak(p)
     static int
 cin_is_cpp_baseclass(line, col)
     char_u	*line;
-    colnr_T	*col;
+    colnr_T	*col;	    /* return: column to align with */
 {
     char_u	*s;
     int		class_or_struct, lookfor_ctor_init, cpp_base_class;
+    linenr_T	lnum = curwin->w_cursor.lnum;
 
     *col = 0;
 
@@ -5478,8 +5482,49 @@ cin_is_cpp_baseclass(line, col)
 
     cpp_base_class = lookfor_ctor_init = class_or_struct = FALSE;
 
-    while(*s != NUL)
+    /* Search for a line starting with '#', empty, ending in ';' or containing
+     * '{' or '}' and start below it.  This handles the following situations:
+     *	a = cond ?
+     *	      func() :
+     *	           asdf;
+     *	func::foo()
+     *	      : something
+     *	{}
+     *	Foo::Foo (int one, int two)
+     *		: something(4),
+     *		somethingelse(3)
+     *	{}
+     */
+    while (lnum > 1)
     {
+	s = skipwhite(ml_get(lnum - 1));
+	if (*s == '#' || *s == NUL)
+	    break;
+	while (*s != NUL)
+	{
+	    s = cin_skipcomment(s);
+	    if (*s == '{' || *s == '}'
+		    || (*s == ';' && cin_nocode(s + 1)))
+		break;
+	    if (*s != NUL)
+		++s;
+	}
+	if (*s != NUL)
+	    break;
+	--lnum;
+    }
+
+    s = cin_skipcomment(ml_get(lnum));
+    for (;;)
+    {
+	if (*s == NUL)
+	{
+	    if (lnum == curwin->w_cursor.lnum)
+		break;
+	    /* Continue in the cursor line. */
+	    s = cin_skipcomment(ml_get(++lnum));
+	}
+
 	if (s[0] == ':')
 	{
 	    if (s[1] == ':')
@@ -5542,41 +5587,51 @@ cin_is_cpp_baseclass(line, col)
 		lookfor_ctor_init = FALSE;
 
 		/* the first statement starts here: lineup with this one... */
-		if (cpp_base_class && *col == 0)
+		if (cpp_base_class)
 		    *col = (colnr_T)(s - line);
 	    }
+
+	    /* When the line ends in a comma don't align with it. */
+	    if (lnum == curwin->w_cursor.lnum && *s == ',' && cin_nocode(s + 1))
+		*col = 0;
 
 	    s = cin_skipcomment(s + 1);
 	}
     }
 
-    if (cpp_base_class && curwin->w_cursor.lnum > 1)
-    {
-	/* Check that there is no '?' in the previous line to catch:
-	 *	a = cond ?
-	 *	      func() :
-	 *	           asdf;
-	 */
-	s = ml_get(curwin->w_cursor.lnum - 1);
-	if (!cin_ispreproc(s))
-	    while (*s != NUL)
-	    {
-		s = cin_skipcomment(s);
-		if (*s == '?')
-		    /* Disable when finding a '?'... */
-		    cpp_base_class = FALSE;
-		else if (*s == ';' && cin_nocode(s + 1))
-		{
-		    /* ...but re-enable when the line ends in ';'. */
-		    cpp_base_class = TRUE;
-		    break;
-		}
-		if (*s != NUL)
-		    ++s;
-	    }
-    }
-
     return cpp_base_class;
+}
+
+    static int
+get_baseclass_amount(col, ind_maxparen, ind_maxcomment, ind_cpp_baseclass)
+    int		col;
+    int		ind_maxparen;
+    int		ind_maxcomment;
+    int		ind_cpp_baseclass;
+{
+    int		amount;
+    colnr_T	vcol;
+    pos_T	*trypos;
+
+    if (col == 0)
+    {
+	amount = get_indent();
+	if (find_last_paren(ml_get_curline(), '(', ')')
+		&& (trypos = find_match_paren(ind_maxparen,
+						     ind_maxcomment)) != NULL)
+	    amount = get_indent_lnum(trypos->lnum); /* XXX */
+	if (!cin_ends_in(ml_get_curline(), (char_u *)",", NULL))
+	    amount += ind_cpp_baseclass;
+    }
+    else
+    {
+	curwin->w_cursor.col = col;
+	getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
+	amount = (int)vcol;
+    }
+    if (amount < ind_cpp_baseclass)
+	amount = ind_cpp_baseclass;
+    return amount;
 }
 
 /*
@@ -6902,22 +6957,17 @@ get_c_indent()
 			else
 			    amount += ind_continuation;
 		    }
-		    else if (col == 0 || theline[0] == '{')
+		    else if (theline[0] == '{')
 		    {
-			amount = get_indent();
-			if (find_last_paren(l, '(', ')')
-				&& (trypos = find_match_paren(ind_maxparen,
-					ind_maxcomment)) != NULL)
-			    amount = get_indent_lnum(trypos->lnum); /* XXX */
-			if (theline[0] != '{')
-			    amount += ind_cpp_baseclass;
+			/* Need to find start of the declaration. */
+			lookfor = LOOKFOR_UNTERM;
+			ind_continuation = 0;
+			continue;
 		    }
 		    else
-		    {
-			curwin->w_cursor.col = col;
-			getvcol(curwin, &curwin->w_cursor, &col, NULL, NULL);
-			amount = (int)col;
-		    }
+								     /* XXX */
+			amount = get_baseclass_amount(col, ind_maxparen,
+					   ind_maxcomment, ind_cpp_baseclass);
 		    break;
 		}
 		else if (lookfor == LOOKFOR_CPP_BASECLASS)
@@ -6967,7 +7017,8 @@ get_c_indent()
 		     * If we are looking for ',', we also look for matching
 		     * braces.
 		     */
-		    if (trypos == NULL && find_last_paren(l, '{', '}'))
+		    if (trypos == NULL && terminated == ','
+					      && find_last_paren(l, '{', '}'))
 			trypos = find_start_brace(ind_maxcomment);
 
 		    if (trypos != NULL)
@@ -7490,21 +7541,9 @@ term_again:
 		}
 		if (n)
 		{
-		    if (col == 0)
-		    {
-			amount = get_indent() + ind_cpp_baseclass;  /* XXX */
-			if (find_last_paren(l, '(', ')')
-				&& (trypos = find_match_paren(ind_maxparen,
-					ind_maxcomment)) != NULL)
-			    amount = get_indent_lnum(trypos->lnum)
-					   + ind_cpp_baseclass;	    /* XXX */
-		    }
-		    else
-		    {
-			curwin->w_cursor.col = col;
-			getvcol(curwin, &curwin->w_cursor, &col, NULL, NULL);
-			amount = (int)col;
-		    }
+								     /* XXX */
+		    amount = get_baseclass_amount(col, ind_maxparen,
+					   ind_maxcomment, ind_cpp_baseclass);
 		    break;
 		}
 
@@ -7604,7 +7643,7 @@ term_again:
 		 *     bar;
 		 * indent_to_0 here;
 		 */
-		if (cin_ends_in(l, (char_u*)";", NULL))
+		if (cin_ends_in(l, (char_u *)";", NULL))
 		{
 		    l = ml_get(curwin->w_cursor.lnum - 1);
 		    if (cin_ends_in(l, (char_u *)",", NULL)

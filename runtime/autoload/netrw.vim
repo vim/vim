@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 06, 2006
-" Version:	86
+" Date:		Apr 12, 2006
+" Version:	87
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v86"
+let g:loaded_netrw = "v87"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -1155,7 +1155,7 @@ fun! s:NetBrowse(dirname)
 
   " set up menus
   let b:netrw_browser_active= 1
-  call s:NetMenu()
+  call s:NetMenu(1)
 
   " make this buffer modifiable
   setlocal ma nonu nowrap
@@ -1460,6 +1460,7 @@ fun! s:NetBrowse(dirname)
      else
       exe 'silent keepjumps '.w:netrw_bannercnt.',$sort!'
      endif
+     " remove priority pattern prefix
      exe 'silent keepjumps '.w:netrw_bannercnt.',$s/^\d\{3}\///e'
     endif
     if w:netrw_longlist == 1
@@ -1494,14 +1495,17 @@ fun! s:NetBrowseChgDir(dirname,newdir)
   if newdir !~ '[\/]$'
    " handling a file
    let dirname= dirname.newdir
+   let didfile= 0
    if g:netrw_browse_split == 1
     new
     wincmd _
    elseif g:netrw_browse_split == 2
     rightb vert new
     wincmd |
+   else
+    " handling a file, didn't split, so possibly remove menu
+    call s:NetMenu(0)
    endif
-   call s:NetMenu()
 "   call Decho("handling a file: dirname<".dirname.">")
 
   elseif newdir == './'
@@ -2567,7 +2571,7 @@ fun! netrw#NetObtain(...)
 endfun
 
 " ---------------------------------------------------------------------
-" NetPrevWinOpen: opoen file/directory in previous window.  {{{2
+" NetPrevWinOpen: open file/directory in previous window.  {{{2
 "   If there's only one window, then the window will first be split.
 fun! s:NetPrevWinOpen(islocal)
 "  call Dfunc("NetPrevWinOpen(islocal=".a:islocal.")")
@@ -2644,69 +2648,81 @@ endfun
 
 " ---------------------------------------------------------------------
 " NetMenu: generates the menu for gvim and netrw {{{2
-fun! s:NetMenu()
+fun! s:NetMenu(domenu)
 
   if has("menu") && has("gui_running") && &go =~ 'm'
-"   call Dfunc("NetMenu()")
-   if !exists("s:netrw_menu_enabled")
+"   call Dfunc("NetMenu(domenu=".a:domenu.")")
+   if !exists("s:netrw_menu_enabled") && a:domenu
+"    call Decho("initialize menu")
     let s:netrw_menu_enabled= 1
-    if !exists("g:DrChipTopLvlMenu")
-     let g:DrChipTopLvlMenu= "DrChip."
+    if !exists("g:NetrwTopLvlMenu")
+     let g:NetrwTopLvlMenu= "Netrw."
     endif
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Help<tab>?	?'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Apply\ Special\ Viewer<tab>x	x'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Bookmark\ Current\ Directory<tab>b	Nb'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Go\ Up\ Directory<tab>-	-'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Goto\ Bookmarked\ Directory<tab>B	NB'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Change\ To\ Recently\ Used\ Directory<tab>u	u'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Change\ To\ Subsequently\ Used\ Directory<tab>U	U'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Delete\ File/Directory<tab>D	D'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File\ Hiding\ List<tab>'."<ctrl-h>	\<c-h>"
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File/Directory<tab><cr>	'."\<cr>"
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File/Directory,\ New\ Window<tab>o	o'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File/Directory,\ New\ Vertical\ Window\ <tab>v	v'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.List\ Bookmarks\ and\ History<tab>q	q'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Listing\ Style\ (thin-long-wide)<tab>i	i'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Make\ Subdirectory<tab>d	d'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Normal-Hide-Show<tab>a	a'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Obtain\ File<tab>O	O'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Preview\ File/Directory<tab>p	p'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Previous\ Window\ Browser<tab>P	P'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Refresh\ Listing<tab>'."<ctrl-l>	\<c-l>"
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Rename\ File/Directory<tab>R	R'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Reverse\ Sorting\ Order<tab>'."r	r"
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Select\ Sorting\ Style<tab>s	s'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Sorting\ Sequence\ Edit<tab>S	S'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Set\ Current\ Directory<tab>c	c'
-    exe 'silent! menu '.g:DrChipTopLvlMenu.'Netrw.Settings/Options<tab>:NetrwSettings	'.":NetrwSettings\<cr>"
-   else
-"    call Decho("clear menus")
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Help'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Apply\ Special\ Viewer'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Bookmark\ Current\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Go\ Up\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Goto\ Bookmarked\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Change\ To\ Recently\ Used\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Change\ To\ Subsequently\ Used\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Delete\ File/Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File\ Hiding\ List'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Edit\ File'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Enter\ File/Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Enter\ File/Directory\ (vertical\ split)'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.List\ Bookmarks\ and\ History'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Listing\ Style\ (thin-long-wide)'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Make\ Subdirectory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Normal-Hide-Show'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Obtain\ File'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Preview\ File'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Previous\ Window\ Browser'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Refresh\ Listing'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Rename\ File/Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Reverse\ Sorting\ Order'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Select\ Sorting\ Style'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Sorting\ Sequence\ Edit'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Set\ Current\ Directory'
-    exe 'silent! unmenu '.g:DrChipTopLvlMenu.'Netrw.Settings/Options'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Help<tab><F1>	<F1>'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Apply\ Special\ Viewer<tab>x	x'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Bookmark\ Current\ Directory<tab>b	Nb'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Go\ Up\ Directory<tab>-	-'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Goto\ Bookmarked\ Directory<tab>B	NB'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Change\ To\ Recently\ Used\ Directory<tab>u	u'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Change\ To\ Subsequently\ Used\ Directory<tab>U	U'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Delete\ File/Directory<tab>D	D'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File\ Hiding\ List<tab>'."<ctrl-h>	\<c-h>"
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory<tab><cr>	'."\<cr>"
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Window<tab>o	o'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Vertical\ Window<tab>v	v'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'List\ Bookmarks\ and\ History<tab>q	q'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Listing\ Style\ (thin-long-wide)<tab>i	i'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Make\ Subdirectory<tab>d	d'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Normal-Hide-Show<tab>a	a'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Obtain\ File<tab>O	O'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Preview\ File/Directory<tab>p	p'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Previous\ Window\ Browser<tab>P	P'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Refresh\ Listing<tab>'."<ctrl-l>	\<c-l>"
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Rename\ File/Directory<tab>R	R'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Reverse\ Sorting\ Order<tab>'."r	r"
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Select\ Sorting\ Style<tab>s	s'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Sorting\ Sequence\ Edit<tab>S	S'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Set\ Current\ Directory<tab>c	c'
+    exe 'silent! menu '.g:NetrwTopLvlMenu.'Settings/Options<tab>:NetrwSettings	'.":NetrwSettings\<cr>"
+   elseif !a:domenu
+    let s:netrwcnt = 0
+    let curwin     = winnr()
+    windo if getline(2) =~ "Netrw" | let s:netrwcnt= s:netrwcnt + 1 | endif
+    exe curwin."wincmd w"
+    
+    if s:netrwcnt <= 1
+"     call Decho("clear menus")
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Help'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Apply\ Special\ Viewer'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Bookmark\ Current\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Go\ Up\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Goto\ Bookmarked\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Change\ To\ Recently\ Used\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Change\ To\ Subsequently\ Used\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Delete\ File/Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Edit\ File/Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Window'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Vertical\ Window'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Edit\ File\ Hiding\ List'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Edit\ File'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Enter\ File/Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Enter\ File/Directory\ (vertical\ split)'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'List\ Bookmarks\ and\ History'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Listing\ Style\ (thin-long-wide)'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Make\ Subdirectory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Normal-Hide-Show'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Obtain\ File'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Preview\ File/Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Previous\ Window\ Browser'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Refresh\ Listing'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Rename\ File/Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Reverse\ Sorting\ Order'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Select\ Sorting\ Style'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Sorting\ Sequence\ Edit'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Set\ Current\ Directory'
+     exe 'silent! unmenu '.g:NetrwTopLvlMenu.'Settings/Options'
+     unlet s:netrw_menu_enabled
+    endif
    endif
 "   call Dret("NetMenu")
   endif
@@ -2766,7 +2782,7 @@ fun! netrw#DirBrowse(dirname)
 
   " set up menus
   let b:netrw_browser_active= 1
-  call s:NetMenu()
+  call s:NetMenu(1)
 
   " find buffer number of buffer named precisely the same as a:dirname
   let bufnum= bufnr(escape(a:dirname,'\'))
@@ -2793,7 +2809,7 @@ fun! netrw#DirBrowse(dirname)
   else
    exe "keepalt b ".bufnum
    if exists("s:last_sort_by") && g:netrw_sort_by == s:last_sort_by
-    if getline(2) =~ '^" Directory Listing '
+    if getline(2) =~ '^" Netrw Directory Listing '
      if !g:netrw_keepdir
 "      call Decho("change directory: cd ".b:netrw_curdir)
       exe 'cd '.escape(b:netrw_curdir,s:netrw_cd_escape)
@@ -2911,7 +2927,7 @@ fun! netrw#DirBrowse(dirname)
 "  call Decho("set up banner")
   keepjumps put ='\" ============================================================================'
   keepjumps 1d
-  keepjumps put ='\" Directory Listing                                              (netrw '.g:loaded_netrw.')'
+  keepjumps put ='\" Netrw Directory Listing                                        (netrw '.g:loaded_netrw.')'
   keepjumps put ='\"   '.b:netrw_curdir
   let w:netrw_bannercnt= 3
 
@@ -2979,6 +2995,7 @@ fun! netrw#DirBrowse(dirname)
        exe 'silent keepjumps '.w:netrw_bannercnt.',$sort!'
       endif
      endif
+     " remove priority pattern prefix
      exe 'silent keepjumps '.w:netrw_bannercnt.',$s/^\d\{3}\///e'
 
     else
@@ -3025,12 +3042,12 @@ fun! s:LocalBrowseList()
   let dirname    = escape(b:netrw_curdir,s:netrw_glob_escape)
   let dirnamelen = strlen(b:netrw_curdir)
   let filelist   = glob(dirname."/*")
-"  call Decho("glob(dirname<".dirname.">,*)=".filelist)
+"  call Decho("glob(dirname<".dirname."/.*>)=".filelist)
   if filelist != ""
    let filelist= filelist."\n"
   endif
   let filelist= filelist.glob(dirname."/.*")
-"  call Decho("glob(dirname<".dirname.">,.*)=".glob(dirname.".*"))
+"  call Decho("glob(dirname<".dirname."/.*>)=".glob(dirname.".*"))
 
   " if the directory name includes a "$", and possibly other characters,
   " the glob() doesn't include "." and ".." entries.
@@ -3145,9 +3162,11 @@ fun! s:LocalBrowseChgDir(dirname,newdir,...)
     elseif g:netrw_browse_split == 2
      rightb vert new
      wincmd |
+    else
+     " handling a file, didn't split, so possibly remove menu
+     call s:NetMenu(0)
     endif
     exe "e! ".escape(dirname,s:netrw_cd_escape)
-    call s:NetMenu()
     set ma nomod
    endif
 
@@ -3177,8 +3196,9 @@ endfun
 " on the chance that s/he removed/created a file/directory with it.
 fun! s:LocalBrowseShellCmdRefresh()
 "  call Dfunc("LocalBrowseShellCmdRefresh() browselist=".string(s:netrw_browselist))
-  "  go through all buffers,
-  "  including unlisted (which is why I can't use bufdo)
+  "  GO through all buffers on netrw_browselist (ie. just local-netrw buffers):
+  "   | refresh any netrw window
+  "   | wipe out any non-displaying netrw buffer
   let curwin = winnr()
   let ibl    = 0
   for ibuf in s:netrw_browselist
@@ -4098,11 +4118,12 @@ fun! s:SetSort()
    let priority = priority + 1
   endwhile
 
-  " I'm afraid that I don't remember why the following line was present.  It
-  " has something to do with priority -- items that satisfy a two or more
-  " priority patterns get preceded by two or more priority patterns: ###/
-  " So, I want to remove priority patterns, but not ###/ directory names.
-  " Following pattern retains just one priority pattern.
+  " Following line associated with priority -- items that satisfy a priority
+  " pattern get prefixed by ###/ which permits easy sorting by priority.
+  " Sometimes files can satisfy multiple priority patterns -- only the latest
+  " priority pattern needs to be retained.  So, at this point, these excess
+  " priority prefixes need to be removed, but not directories that happen to
+  " be just digits themselves.
   exe 'silent keepjumps '.w:netrw_bannercnt.',$s/^\(\d\{3}\/\)\%(\d\{3}\/\)\+\ze./\1/e'
 
 "  call Dret("SetSort")

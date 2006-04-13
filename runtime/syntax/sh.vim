@@ -3,18 +3,17 @@
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
 " Last Change:		Apr 12, 2006
-" Version:		83
+" Version:		84
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
-" b:is_kornshell	if defined, enhance with kornshell/POSIX syntax
-" b:is_bash		if defined, enhance with bash syntax
-" g:is_kornshell	if neither b:is_kornshell or b:is_bash is
-"		defined, then if g:is_kornshell is set
-"		enhance with kornshell/POSIX syntax highlighting
 " g:is_bash		if none of the previous three variables are
 "		defined, then if g:is_bash is set enhance with
 "		bash syntax highlighting
+" g:is_kornshell	if neither b:is_kornshell or b:is_bash is
+"		defined, then if g:is_kornshell is set
+"		enhance with kornshell/POSIX syntax highlighting
+" g:is_posix                    this variable is the same as g:is_kornshell
 " g:sh_fold_enabled	if non-zero, syntax folding is enabled
 " g:sh_minlines		sets up syn sync minlines (dflt: 200)
 " g:sh_maxlines		sets up syn sync maxlines (dflt: 2x sh_minlines)
@@ -37,12 +36,15 @@ endif
 " a b:is_sh is converted into b:is_bash/b:is_kornshell,
 " respectively.
 if !exists("b:is_kornshell") && !exists("b:is_bash")
-  if exists("is_kornshell")
+  if exists("g:is_posix") && !exists("g:is_kornshell")
+   let g:is_kornshell= g:is_posix
+  endif
+  if exists("g:is_kornshell")
     let b:is_kornshell= 1
     if exists("b:is_sh")
       unlet b:is_sh
     endif
-  elseif exists("is_bash")
+  elseif exists("g:is_bash")
     let b:is_bash= 1
     if exists("b:is_sh")
       unlet b:is_sh

@@ -584,20 +584,6 @@ display_errors()
 	for (p = (char *)error_ga.ga_data; *p; ++p)
 	    if (!isspace(*p))
 	    {
-#if 0
-		/* Truncate a very long message, it will go off-screen. */
-		if (STRLEN(p) > 2000)
-		{
-		    char_u	*s = p + 2000 - 14;
-
-#ifdef FEAT_MBYTE
-		    if (has_mbyte)
-			s -= (*mb_head_off)(p, s);
-#endif
-		    STRCPY(s, _("...(truncated)"));
-		}
-#endif
-
 		(void)gui_mch_dialog(
 #ifdef FEAT_GUI
 				     gui.starting ? VIM_INFO :
@@ -608,13 +594,6 @@ display_errors()
 #endif
 					     (char_u *)_("Error"),
 				     p, (char_u *)_("&Ok"), 1, NULL);
-#if 0
-#ifdef WIN3264
-		MessageBox(NULL, p, "Vim", MB_TASKMODAL|MB_SETFOREGROUND);
-#else
-		MessageBox(NULL, p, "Vim", MB_TASKMODAL);
-#endif
-#endif
 		break;
 	    }
 	ga_clear(&error_ga);

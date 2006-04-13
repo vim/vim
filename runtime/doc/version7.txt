@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 12
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2465,5 +2465,15 @@ When 'guitablabel' is set the effect wasn't visible right away.
 
 Fixed a few 'cindent' errors.
 
+When completing menu names, e.g., after ":emenu", don't sort the entries but
+keep them in the original order.
+
+Fixed a crash when editing a directory in diff mode.  Don't trigger
+autocommands when executing the diff command.
+
+Getting a keystroke could get stuck if 'encoding' is a multi-byte encoding and
+typing a special key.
+
+When 'foldignore' is set the folds were not updated right away.
 
  vim:tw=78:ts=8:ft=help:norl:
