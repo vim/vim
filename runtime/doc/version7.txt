@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 13
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -242,8 +242,9 @@ Currently supported languages:
 	C					|ft-c-omni|
 	(X)HTML with CSS			|ft-html-omni|
 	JavaScript				|ft-javascript-omni|
-	any language wih syntax highligting	|ft-syntax-omni|
+	Python
 	XML					|ft-xml-omni|
+	any language wih syntax highligting	|ft-syntax-omni|
 
 When the 'completeopt' option contains "menu" then matches for Insert mode
 completion are displayed in a popup menu.
@@ -2475,5 +2476,16 @@ Getting a keystroke could get stuck if 'encoding' is a multi-byte encoding and
 typing a special key.
 
 When 'foldignore' is set the folds were not updated right away.
+
+When a list is indexed with [a : b] and b was greater than the length an error
+message was given.  Now silently restrict to the length of the list.
+
+When using BS during Insert mode completion go back to the original text, so
+that CTRL-N selects the first matching entry.
+
+Added the 'm' flag to 'cinoptions'.
+
+Win32: Make the "gvim --help" window appear in the middle of the screen
+instead of at an arbitrary position. (Randall W. Morris)
 
  vim:tw=78:ts=8:ft=help:norl:

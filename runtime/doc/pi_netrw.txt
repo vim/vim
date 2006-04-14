@@ -1447,6 +1447,10 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v88: * moved DrChip.Netrw menu to Netrw.  Now has priority 80 by
+	       default.  g:NetrwTopLvlMenu == "Netrw" and can be changed
+	       by the user to suit.  The priority is g:NetrwMenuPriority.
+	     * Changed filetype for browser displays from netrwlist to netrw.
 	v87: * bug fix -- menus were partially disappearing
 	v85: * bug fix -- missing an endif
 	     * bug fix -- handles spaces in names and directories when using

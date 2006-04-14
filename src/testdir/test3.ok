@@ -1,4 +1,4 @@
-/* start of AUTO matically checked */
+/* start of AUTO matically checked vim: set ts=4 : */
 {
 	if (test)
 		cmd1;
@@ -754,7 +754,39 @@ Constructor::Constructor(int a,
 	mMember(b)
 {
 }
+int main ()
+{
+	if (lala)
+		do
+			++(*lolo);
+		while (lili
+				&& lele);
+	lulu;
+}
 
+int main ()
+{
+	switch (c)
+	{
+		case 'c': if (cond)
+				  {
+				  }
+	}
+}
+
+main()
+{
+	(void) MyFancyFuasdfadsfnction(
+			argument);
+}
+
+main()
+{
+	char	foo[] = "/*";
+	/* as
+	   df */
+	hello
+}
 /* end of AUTO */
 
 
@@ -1140,5 +1172,14 @@ foo()
 				 asdfasdf),
 			asdasdf
 			);
+}
+
+
+int main ()
+{
+	if (cond1 &&
+			cond2
+			)
+		foo;
 }
 

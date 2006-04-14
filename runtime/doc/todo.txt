@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 13
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,8 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Do some of the 'cindent' bugs below.
 
-Should a[:5] not give an error for a list with 4 items?
-
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Win32: Describe how to do debugging. (George Reilly)
@@ -47,7 +45,8 @@ Mac unicode patch (Da Woon Jung, Eckehard Berns):
 - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
   (Alan Schmitt)
 
-Darren is including the patch in ctags.  Test it when it's ready.
+Darren Hiebert is including the patch for omni completion in ctags.  A new
+version still isn't available for download.
 
 
 Awaiting updated patches:
@@ -2238,29 +2237,6 @@ Insert mode:
 
 
 'cindent', 'smartindent':
-9   Too much indent for "lulu": (Uwe Zeisberger)
-       int main ()
-       {
-	 if (lala)
-	   do
-	     ++(*lolo);
-	   while (lili
-		  && lele);
-	   lulu;
-       }
-9   Function gets extra indent: (Jamax)
-	void function(int param) {
-	     if (false)
-		 return;
-	}
-9   brace not indented correctly:
-	case 'c':   if (cond)
-			{
-    Should align with "if" in case statement.
-7   Allow aligning a closing ")" with the line above, instead of the matching
-    "(": (Riehm) if (asdfasdf &&
-			asdf
-			)
 8   Java: Inside an anonymous class, after an "else" or "try" the indent is
     too small. (Vincent Bergbauer)
 8   In C++ it's possible to have {} inside (): (Kirshna)
@@ -2270,18 +2246,12 @@ Insert mode:
 			    "asdf"
 			}
 		    );
-7   Separate "(0" option into inside/outside a function (Zellner):
+7   Add separate "(0" option into inside/outside a function (Zellner):
 	func(
 	   int x)	// indent like "(4"
 	{
 	   if (a
 	       && b)	// indent like "(0"
-8   Strange problem with this code, "hello" is indented wrong: (Gary Holloway)
-    main() { char	foo[] = "/*";
-	 /* This is a comment; the indentation of C
-	  * source below this comment gets messed up due to the string above.
-	  */
-	  hello
 9   Using "{" in a comment: (Helmut Stiegler)
     if (a)
     {
@@ -2290,9 +2260,9 @@ Insert mode:
 		    // {
 	    }
 	    } <-- this is indented incorrect
-9   Wrong indent for cino=(4, removing the (void) fixes it: (Zellner)
-	(void) MyFancyFunction(
-			       argument);
+    Problem is that find_start_brace() checks for the matching brace to be in
+    a comment, but not braces in between.  Requires adding a comment check to
+    findmatchlimit().
 -   Make smartindenting configurable.  Add 'sioptions', e.g. '#' setting the
     indent to 0 should be switched on/off.
 7   Support ANSI style function header, with each argument on its own line.
@@ -2323,9 +2293,8 @@ Insert mode:
 7   Use Tabs for the indent of starting lines, pad with spaces for
     continuation lines.  Allows changing 'tabstop' without messing up the
     indents.
-    And/or: Add option to copy indent as-is, without changing spaces to tabs.
-    Also for 'autoindent'.  'keeptabs': when set don't change the tabs and
-    spaces used for indent, when the indent remains the same or increases.
+    'keeptabs': when set don't change the tabs and spaces used for indent,
+    when the indent remains the same or increases.
 
 
 Java:
@@ -3184,8 +3153,6 @@ Various improvements:
     stack of previous directories.  We also need ":cdnext".
 7   Should ":cd" for MS-DOS go to $HOME, when it's defined?
 -   Make "gq<CR>" work on the last line in the file.  Maybe for every operator?
-8   findmatchlimit() should be able to skip comments.  Solves problem of
-    matching the '{' in /* if (foo) { */ (Fiveash)
 -   Add more redirecting of Ex commands:
 	:redir #>  bufname
 	:redir #>> bufname   (append)

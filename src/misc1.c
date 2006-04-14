@@ -4658,18 +4658,30 @@ find_start_comment(ind_maxcomment)	    /* XXX */
     pos_T	*pos;
     char_u	*line;
     char_u	*p;
+    int		cur_maxcomment = ind_maxcomment;
 
-    if ((pos = findmatchlimit(NULL, '*', FM_BACKWARD, ind_maxcomment)) == NULL)
-	return NULL;
+    for (;;)
+    {
+	pos = findmatchlimit(NULL, '*', FM_BACKWARD, cur_maxcomment);
+	if (pos == NULL)
+	    break;
 
-    /*
-     * Check if the comment start we found is inside a string.
-     */
-    line = ml_get(pos->lnum);
-    for (p = line; *p && (unsigned)(p - line) < pos->col; ++p)
-	p = skip_string(p);
-    if ((unsigned)(p - line) > pos->col)
-	return NULL;
+	/*
+	 * Check if the comment start we found is inside a string.
+	 * If it is then restrict the search to below this line and try again.
+	 */
+	line = ml_get(pos->lnum);
+	for (p = line; *p && (unsigned)(p - line) < pos->col; ++p)
+	    p = skip_string(p);
+	if ((unsigned)(p - line) <= pos->col)
+	    break;
+	cur_maxcomment = curwin->w_cursor.lnum - pos->lnum - 1;
+	if (cur_maxcomment <= 0)
+	{
+	    pos = NULL;
+	    break;
+	}
+    }
     return pos;
 }
 
@@ -4770,6 +4782,7 @@ static int	cin_isif __ARGS((char_u *));
 static int	cin_iselse __ARGS((char_u *));
 static int	cin_isdo __ARGS((char_u *));
 static int	cin_iswhileofdo __ARGS((char_u *, linenr_T, int));
+static int	cin_iswhileofdo_end __ARGS((int terminated, int	ind_maxparen, int ind_maxcomment));
 static int	cin_isbreak __ARGS((char_u *));
 static int	cin_is_cpp_baseclass __ARGS((char_u *line, colnr_T *col));
 static int	get_baseclass_amount __ARGS((int col, int ind_maxparen, int ind_maxcomment, int ind_cpp_baseclass));
@@ -5078,7 +5091,7 @@ get_indent_nolabel(lnum)		/* XXX */
 
 /*
  * Find indent for line "lnum", ignoring any case or jump label.
- * Also return a pointer to the text (after the label).
+ * Also return a pointer to the text (after the label) in "pp".
  *   label:	if (asdf && asdfasdf)
  *		^
  */
@@ -5442,6 +5455,66 @@ cin_iswhileofdo(p, lnum, ind_maxparen)	    /* XXX */
     return retval;
 }
 
+/*
+ * Return TRUE if we are at the end of a do-while.
+ *    do
+ *       nothing;
+ *    while (foo
+ *             && bar);  <-- here
+ * Adjust the cursor to the line with "while".
+ */
+    static int
+cin_iswhileofdo_end(terminated, ind_maxparen, ind_maxcomment)
+    int	    terminated;
+    int	    ind_maxparen;
+    int	    ind_maxcomment;
+{
+    char_u	*line;
+    char_u	*p;
+    char_u	*s;
+    pos_T	*trypos;
+    int		i;
+
+    if (terminated != ';')	/* there must be a ';' at the end */
+	return FALSE;
+
+    p = line = ml_get_curline();
+    while (*p != NUL)
+    {
+	p = cin_skipcomment(p);
+	if (*p == ')')
+	{
+	    s = skipwhite(p + 1);
+	    if (*s == ';' && cin_nocode(s + 1))
+	    {
+		/* Found ");" at end of the line, now check there is "while"
+		 * before the matching '('.  XXX */
+		i = p - line;
+		curwin->w_cursor.col = i;
+		trypos = find_match_paren(ind_maxparen, ind_maxcomment);
+		if (trypos != NULL)
+		{
+		    s = cin_skipcomment(ml_get(trypos->lnum));
+		    if (*s == '}')		/* accept "} while (cond);" */
+			s = cin_skipcomment(s + 1);
+		    if (STRNCMP(s, "while", 5) == 0 && !vim_isIDc(s[5]))
+		    {
+			curwin->w_cursor.lnum = trypos->lnum;
+			return TRUE;
+		    }
+		}
+
+		/* Searching may have made "line" invalid, get it again. */
+		line = ml_get_curline();
+		p = line + i;
+	    }
+	}
+	if (*p != NUL)
+	    ++p;
+    }
+    return FALSE;
+}
+
     static int
 cin_isbreak(p)
     char_u  *p;
@@ -5716,7 +5789,7 @@ find_start_brace(ind_maxcomment)	    /* XXX */
 	trypos = &pos_copy;
 	curwin->w_cursor = *trypos;
 	pos = NULL;
-	/* ignore the { if it's in a // comment */
+	/* ignore the { if it's in a // or / *  * / comment */
 	if ((colnr_T)cin_skip2pos(trypos) == trypos->col
 		&& (pos = find_start_comment(ind_maxcomment)) == NULL) /* XXX */
 	    break;
@@ -5738,7 +5811,7 @@ find_match_paren(ind_maxparen, ind_maxcomment)	    /* XXX */
 {
     pos_T	cursor_save;
     pos_T	*trypos;
-    static pos_T	pos_copy;
+    static pos_T pos_copy;
 
     cursor_save = curwin->w_cursor;
     if ((trypos = findmatchlimit(NULL, '(', 0, ind_maxparen)) != NULL)
@@ -5942,6 +6015,11 @@ get_c_indent()
     int ind_matching_paren = 0;
 
     /*
+     * indent a closing parentheses under the previous line.
+     */
+    int ind_paren_prev = 0;
+
+    /*
      * Extra indent for comments.
      */
     int ind_comment = 0;
@@ -6079,6 +6157,7 @@ get_c_indent()
 	    case 'W': ind_unclosed_wrapped = n; break;
 	    case 'w': ind_unclosed_whiteok = n; break;
 	    case 'm': ind_matching_paren = n; break;
+	    case 'M': ind_paren_prev = n; break;
 	    case ')': ind_maxparen = n; break;
 	    case '*': ind_maxcomment = n; break;
 	    case 'g': ind_scopedecl = n; break;
@@ -6322,41 +6401,50 @@ get_c_indent()
 	 * If the matching paren is more than one line away, use the indent of
 	 * a previous non-empty line that matches the same paren.
 	 */
-	amount = -1;
-	cur_amount = MAXCOL;
-	our_paren_pos = *trypos;
-	for (lnum = cur_curpos.lnum - 1; lnum > our_paren_pos.lnum; --lnum)
+	if (theline[0] == ')' && ind_paren_prev)
 	{
-	    l = skipwhite(ml_get(lnum));
-	    if (cin_nocode(l))		/* skip comment lines */
-		continue;
-	    if (cin_ispreproc_cont(&l, &lnum))	/* ignore #defines, #if, etc. */
-		continue;
-	    curwin->w_cursor.lnum = lnum;
-
-	    /* Skip a comment. XXX */
-	    if ((trypos = find_start_comment(ind_maxcomment)) != NULL)
+	    /* Line up with the start of the matching paren line. */
+	    amount = get_indent_lnum(curwin->w_cursor.lnum - 1);  /* XXX */
+	}
+	else
+	{
+	    amount = -1;
+	    cur_amount = MAXCOL;
+	    our_paren_pos = *trypos;
+	    for (lnum = cur_curpos.lnum - 1; lnum > our_paren_pos.lnum; --lnum)
 	    {
-		lnum = trypos->lnum + 1;
-		continue;
-	    }
+		l = skipwhite(ml_get(lnum));
+		if (cin_nocode(l))		/* skip comment lines */
+		    continue;
+		if (cin_ispreproc_cont(&l, &lnum))
+		    continue;			/* ignore #define, #if, etc. */
+		curwin->w_cursor.lnum = lnum;
 
-	    /* XXX */
-	    if ((trypos = find_match_paren(
-			    corr_ind_maxparen(ind_maxparen, &cur_curpos),
+		/* Skip a comment. XXX */
+		if ((trypos = find_start_comment(ind_maxcomment)) != NULL)
+		{
+		    lnum = trypos->lnum + 1;
+		    continue;
+		}
+
+		/* XXX */
+		if ((trypos = find_match_paren(
+				corr_ind_maxparen(ind_maxparen, &cur_curpos),
 						      ind_maxcomment)) != NULL
-		    && trypos->lnum == our_paren_pos.lnum
-		    && trypos->col == our_paren_pos.col)
-	    {
-		    amount = get_indent_lnum(lnum);	/* XXX */
+			&& trypos->lnum == our_paren_pos.lnum
+			&& trypos->col == our_paren_pos.col)
+		{
+			amount = get_indent_lnum(lnum);	/* XXX */
 
-		    if (theline[0] == ')')
-		    {
-			if (our_paren_pos.lnum != lnum && cur_amount > amount)
-			    cur_amount = amount;
-			amount = -1;
-		    }
-		break;
+			if (theline[0] == ')')
+			{
+			    if (our_paren_pos.lnum != lnum
+						       && cur_amount > amount)
+				cur_amount = amount;
+			    amount = -1;
+			}
+		    break;
+		}
 	    }
 	}
 
@@ -6367,9 +6455,34 @@ get_c_indent()
 	 */
 	if (amount == -1)
 	{
+	    int	    ignore_paren_col = 0;
+
 	    amount = skip_label(our_paren_pos.lnum, &look, ind_maxcomment);
+	    look = skipwhite(look);
+	    if (*look == '(')
+	    {
+		linenr_T    save_lnum = curwin->w_cursor.lnum;
+		char_u	    *line;
+		int	    look_col;
+
+		/* Ignore a '(' in front of the line that has a match before
+		 * our matching '('. */
+		curwin->w_cursor.lnum = our_paren_pos.lnum;
+		line = ml_get_curline();
+		look_col = look - line;
+		curwin->w_cursor.col = look_col + 1;
+		if ((trypos = findmatchlimit(NULL, ')', 0, ind_maxparen))
+								      != NULL
+			  && trypos->lnum == our_paren_pos.lnum
+			  && trypos->col < our_paren_pos.col)
+		    ignore_paren_col = trypos->col + 1;
+
+		curwin->w_cursor.lnum = save_lnum;
+		look = ml_get(our_paren_pos.lnum) + look_col;
+	    }
 	    if (theline[0] == ')' || ind_unclosed == 0
-		       || (!ind_unclosed_noignore && *skipwhite(look) == '('))
+		    || (!ind_unclosed_noignore && *look == '('
+						    && ignore_paren_col == 0))
 	    {
 		/*
 		 * If we're looking at a close paren, line up right there;
@@ -6439,16 +6552,17 @@ get_c_indent()
 		/* Line up with the start of the matching paren line. */
 	    }
 	    else if (ind_unclosed == 0 || (!ind_unclosed_noignore
-						  && *skipwhite(look) == '('))
+				    && *look == '(' && ignore_paren_col == 0))
 	    {
 		if (cur_amount != MAXCOL)
 		    amount = cur_amount;
 	    }
 	    else
 	    {
-		/* add ind_unclosed2 for each '(' before our matching one */
+		/* Add ind_unclosed2 for each '(' before our matching one, but
+		 * ignore (void) before the line (ignore_paren_col). */
 		col = our_paren_pos.col;
-		while (our_paren_pos.col > 0)
+		while (our_paren_pos.col > ignore_paren_col)
 		{
 		    --our_paren_pos.col;
 		    switch (*ml_get_pos(&our_paren_pos))
@@ -6887,7 +7001,12 @@ get_c_indent()
 			amount = n;
 			l = after_label(ml_get_curline());
 			if (l != NULL && cin_is_cinword(l))
-			    amount += ind_level + ind_no_brace;
+			{
+			    if (theline[0] == '{')
+				amount += ind_open_extra;
+			    else
+				amount += ind_level + ind_no_brace;
+			}
 			break;
 		    }
 
@@ -7259,8 +7378,8 @@ get_c_indent()
 		 * If so: Ignore until the matching "do".
 		 */
 							/* XXX */
-		else if (cin_iswhileofdo(l,
-					 curwin->w_cursor.lnum, ind_maxparen))
+		else if (cin_iswhileofdo_end(terminated, ind_maxparen,
+							      ind_maxcomment))
 		{
 		    /*
 		     * Found an unterminated line after a while ();, line up

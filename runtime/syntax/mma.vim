@@ -1,11 +1,12 @@
 " Vim syntax file
 " Language:     Mathematica
 " Maintainer:   steve layland <layland@wolfram.com>
-" Last Change:  Tue May 10 18:31:00 CDT 2005
-" Source:       http://vim.sourceforge.net/scripts/script.php?script_id=1273
-"               http://members.wri.com/layland/vim/syntax/mma.vim
-"
+" Last Change:  Thu May 19 21:36:04 CDT 2005
+" Source:       http://members.wri.com/layland/vim/syntax/mma.vim
+"               http://vim.sourceforge.net/scripts/script.php?script_id=1273
+" Id:           $Id$
 " NOTE:
+" 
 " Empty .m files will automatically be presumed as Matlab files
 " unless you have the following in your .vimrc:
 "
@@ -22,6 +23,12 @@
 " o  Some ideas like the CommentStar,CommentTitle were adapted
 "    from the Java vim syntax file by Claudio Fleiner.  Thanks!
 " o  Everything else written by steve <layland@wolfram.com>
+"
+" Bugs: 
+" o  Vim 6.1 didn't really have support for character classes 
+"    of other named character classes.  For example, [\a\d]
+"    didn't work.  Therefore, a lot of this code uses explicit
+"    character classes instead: [0-9a-zA-Z] 
 "
 " TODO:
 "   folding
@@ -78,19 +85,20 @@ syntax keyword mmaVariable Protected Listable OneIdentity Orderless Flat Constan
 " Comment Sections:
 "   this:
 "   :that:
-syntax match mmaItem "\%(^[( |*\t]*\)\@<=\%(:\+\|\a\)[a-zA-Z0-9 ]\+:" contained contains=@mmaNotes
+syntax match mmaItem "\%(^[( |*\t]*\)\@<=\%(:\+\|\w\)\w\+\%( \w\+\)\{0,3}:" contained contains=@mmaNotes
 
 " Comment Keywords:
 syntax keyword mmaTodo TODO NOTE HEY contained
 syntax match mmaTodo "X\{3,}" contained
 syntax keyword mmaFixme FIX[ME] FIXTHIS BROKEN contained
+syntax match mmaFixme "BUG\%( *\#\=[0-9]\+\)\=" contained
 " yay pirates...
 syntax match mmaFixme "\%(Y\=A\+R\+G\+\|GRR\+\|CR\+A\+P\+\)\%(!\+\)\=" contained
 
 " EmPHAsis:
 " this unnecessary, but whatever :)
-syntax match mmaemPHAsis "\%(^\|\s\)\([_/]\)[a-zA-Z0-9]\+\%(\s\+[a-zA-Z0-9]\+\)*\1\%(\s\|$\)" contained contains=mmaemPHAsis
-syntax match mmaemPHAsis "\%(^\|\s\)(\@<!\*[a-zA-Z0-9]\+\%(\s\+[a-zA-Z0-9]\+\)*)\@!\*\%(\s\|$\)" contained contains=mmaemPHAsis
+syntax match mmaemPHAsis "\%(^\|\s\)\([_/]\)[a-zA-Z0-9]\+\%([- \t':]\+[a-zA-Z0-9]\+\)*\1\%(\s\|$\)" contained contains=mmaemPHAsis
+syntax match mmaemPHAsis "\%(^\|\s\)(\@<!\*[a-zA-Z0-9]\+\%([- \t':]\+[a-zA-Z0-9]\+\)*)\@!\*\%(\s\|$\)" contained contains=mmaemPHAsis
 
 " Regular Comments:
 "   (* *)
@@ -112,9 +120,11 @@ syntax match mmaCommentStar "^\s*\*\+" contained
 
 " Variables:
 "   Dollar sign variables
-syntax match mmaVariable "$\a\+\d*"
-"   Preceding contexts
-syntax match mmaVariable "`\=\a\+\d*`"
+syntax match mmaVariable "\$\a\+[0-9a-zA-Z$]*"
+
+"   Preceding and Following Contexts
+syntax match mmaVariable "`[a-zA-Z$]\+[0-9a-zA-Z$]*" contains=mmaVariable
+syntax match mmaVariable "[a-zA-Z$]\+[0-9a-zA-Z$]*`" contains=mmaVariable
 
 " Strings:
 "   "string"
@@ -179,9 +189,11 @@ syntax match mmaOperator "[*+=^.:?-]"
 syntax match mmaOperator "\%(\~\~\=\)"
 syntax match mmaOperator "\%(=\{2,3}\|=\=!=\|||\=\|&&\|!\)" contains=ALLBUT,mmaPureFunction
 
-" Function Usage Messages:
+" Symbol Tags:
 "   "SymbolName::item"
-syntax match mmaMessage "$\=\a\+\d*::\a\+\d*"
+"syntax match mmaSymbol "`\=[a-zA-Z$]\+[0-9a-zA-Z$]*\%(`\%([a-zA-Z$]\+[0-9a-zA-Z$]*\)\=\)*" contained
+syntax match mmaMessage "`\=\([a-zA-Z$]\+[0-9a-zA-Z$]*\)\%(`\%([a-zA-Z$]\+[0-9a-zA-Z$]*\)\=\)*::\a\+" contains=mmaMessageType
+syntax match mmaMessageType "::\a\+"hs=s+2 contained
 
 " Pure Functions:
 syntax match mmaPureFunction "#\%(#\|\d\+\)\="
@@ -208,7 +220,7 @@ syntax match mmaUnicode "\\\%(\x\{3}\|\.\x\{2}\|:\x\{4}\)"
 
 " Syntax Errors:
 syntax match mmaError "\*)" containedin=ALLBUT,@mmaComments,@mmaStrings
-syntax match mmaError "\%([&:|+*/?~-]\{3,}\|[.=]\{4,}\|_\@<=\.\{2,}\|`\{2,}\)" containedin=ALLBUT,@mmaComments,@mmaStrings
+syntax match mmaError "\%([/]{3,}\|[&:|+*?~-]\{3,}\|[.=]\{4,}\|_\@<=\.\{2,}\|`\{2,}\)" containedin=ALLBUT,@mmaComments,@mmaStrings
 
 " Punctuation:
 " things that shouldn't really be highlighted, or highlighted 
@@ -217,13 +229,56 @@ syntax match mmaError "\%([&:|+*/?~-]\{3,}\|[.=]\{4,}\|_\@<=\.\{2,}\|`\{2,}\)" c
 " TODO - use Delimiter group?
 syntax match mmaBoring "[(){}]" contained
 
+" ------------------------------------
+"    future explorations...
+" ------------------------------------
 " Function Arguments:
 "   anything between brackets []
-"   TODO - make good folds for this.
-"syntax region mmaArgument start="\[" end="]" containedin=ALLBUT,@mmaComments,@mmaCommentStrings transparent fold
-"syntax sync fromstart
+"   (fold)
+"syntax region mmaArgument start="\[" end="\]" containedin=ALLBUT,@mmaComments,@mmaStrings transparent fold
+
+" Lists:
+"   (fold)
+"syntax region mmaLists start="{" end="}" containedin=ALLBUT,@mmaComments,@mmaStrings transparent fold
+
+" Regions:
+"   (fold)
+"syntax region mmaRegion start="(\*\+[^<]*<!--[^>]*\*\+)" end="--> \*)" containedin=ALLBUT,@mmaStrings transparent fold keepend
+
+" show fold text
+set commentstring='(*%s*)'
+"set foldtext=MmaFoldText()
+
+"function MmaFoldText()
+"    let line = getline(v:foldstart)
+"    
+"    let lines = v:foldend-v:foldstart+1
+"    
+"    let sub = substitute(line, '(\*\+|\*\+)|[-*_]\+', '', 'g')
+"
+"    if match(line, '(\*') != -1
+"        let lines = lines.' line comment'
+"    else
+"        let lines = lines.' lines'
+"    endif
+"
+"    return v:folddashes.' '.lines.' '.sub
+"endf
+    
+"this is slow for computing folds, but it does so accurately
+syntax sync fromstart
+
+" but this seems to do alright for non fold syntax coloring.
+" for folding, however, it doesn't get the nesting right.
+" TODO - find sync group for multiline modules? ick...
+
+" sync multi line comments
+"syntax sync match syncComments groupthere NONE "\*)"
+"syntax sync match syncComments groupthere mmaComment "(\*"
+
 "set foldmethod=syntax
-"set foldminlines=10
+"set foldnestmax=1
+"set foldminlines=15
 
 if version >= 508 || !exists("did_mma_syn_inits")
 	if version < 508
@@ -238,12 +293,14 @@ if version >= 508 || !exists("did_mma_syn_inits")
     " :so $VIMRUNTIME/syntax/hitest.vim and tweak these to
     " look good in yours
 
+
     HiLink mmaComment           Comment
     HiLink mmaCommentStar       Comment
     HiLink mmaFunctionComment   Comment
     HiLink mmaLooseQuote        Comment
 	HiLink mmaGenericFunction   Function
 	HiLink mmaVariable          Identifier
+"    HiLink mmaSymbol            Identifier
 	HiLink mmaOperator          Operator
     HiLink mmaPatternOp         Operator
 	HiLink mmaPureFunction      Operator
@@ -259,6 +316,7 @@ if version >= 508 || !exists("did_mma_syn_inits")
     HiLink mmaTodo              Todo
     HiLink mmaemPHAsis          Special
     HiLink mmaFunctionTitle     Special
+    HiLink mmaMessageType       Special
     HiLink mmaItem              Preproc
 
 	delcommand HiLink

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0d.  Last change: 2006 Mar 29
+*indent.txt*    For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,7 +33,9 @@ There are in fact four methods available for indentation:
 The rest of this section describes the 'cindent' option.
 
 Note that 'cindent' indenting does not work for every code scenario.  Vim
-is not a C compiler: it does not recognize all syntax.
+is not a C compiler: it does not recognize all syntax.  One requirement is
+that toplevel functions have a '{' in the first column.  Otherwise they are
+easily confused with declarations.
 
 These four options control C program indenting:
 'cindent'	Enables Vim to perform C program indenting automatically.
@@ -402,6 +404,16 @@ assume a 'shiftwidth' of 4.
 		  if (			    if (
 		      c1 && c2			c1 && c2
 		     )			    )
+		      foo;			foo;
+<
+	MN    When N is non-zero, line up a line starting with a closing
+	      parentheses with the first character of the previous line.
+	      (default 0).
+
+		cino=			  cino=M1 >
+		  if (cond1 &&		    if (cond1 &&
+		         cond2			   cond2
+		     )			    	   )
 		      foo;			foo;
 <
 					*java-cinoptions* *java-indenting*

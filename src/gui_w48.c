@@ -2118,7 +2118,7 @@ CenterWindow(
     hChild = rChild.bottom - rChild.top;
 
     /* If Vim is minimized put the window in the middle of the screen. */
-    if (IsMinimized(hwndParent))
+    if (hwndParent == NULL || IsMinimized(hwndParent))
     {
 #ifdef WIN16
 	rParent.left = 0;

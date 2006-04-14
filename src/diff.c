@@ -1807,7 +1807,8 @@ diff_find_change(wp, lnum, startp, endp)
     char_u	*line_org;
     char_u	*line_new;
     int		i;
-    int		si, ei_org, ei_new;
+    int		si_org, si_new;
+    int		ei_org, ei_new;
     diff_T	*dp;
     int		idx;
     int		off;
@@ -1838,34 +1839,66 @@ diff_find_change(wp, lnum, startp, endp)
 	    if (off >= dp->df_count[i])
 		continue;
 	    added = FALSE;
-	    line_new = ml_get_buf(curtab->tp_diffbuf[i], dp->df_lnum[i] + off, FALSE);
+	    line_new = ml_get_buf(curtab->tp_diffbuf[i],
+						 dp->df_lnum[i] + off, FALSE);
 
 	    /* Search for start of difference */
-	    for (si = 0; line_org[si] != NUL && line_org[si] == line_new[si]; )
-		++si;
+	    si_org = si_new = 0;
+	    while (line_org[si_org] != NUL)
+	    {
+		if ((diff_flags & DIFF_IWHITE)
+			&& vim_iswhite(line_org[si_org])
+			&& vim_iswhite(line_new[si_new]))
+		{
+		    si_org = skipwhite(line_org + si_org) - line_org;
+		    si_new = skipwhite(line_new + si_new) - line_new;
+		}
+		else
+		{
+		    if (line_org[si_org] != line_new[si_new])
+			break;
+		    ++si_org;
+		    ++si_new;
+		}
+	    }
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
 		/* Move back to first byte of character in both lines (may
 		 * have "nn^" in line_org and "n^ in line_new). */
-		si -= (*mb_head_off)(line_org, line_org + si);
-		si -= (*mb_head_off)(line_new, line_new + si);
+		si_org -= (*mb_head_off)(line_org, line_org + si_org);
+		si_new -= (*mb_head_off)(line_new, line_new + si_new);
 	    }
 #endif
-	    if (*startp > si)
-		*startp = si;
+	    if (*startp > si_org)
+		*startp = si_org;
 
 	    /* Search for end of difference, if any. */
-	    if (line_org[si] != NUL || line_new[si] != NUL)
+	    if (line_org[si_org] != NUL || line_new[si_new] != NUL)
 	    {
 		ei_org = (int)STRLEN(line_org);
 		ei_new = (int)STRLEN(line_new);
-		while (ei_org >= *startp && ei_new >= *startp
-			&& ei_org >= 0 && ei_new >= 0
-			&& line_org[ei_org] == line_new[ei_new])
+		while (ei_org >= *startp && ei_new >= si_new
+						&& ei_org >= 0 && ei_new >= 0)
 		{
-		    --ei_org;
-		    --ei_new;
+		    if ((diff_flags & DIFF_IWHITE)
+			    && vim_iswhite(line_org[ei_org])
+			    && vim_iswhite(line_new[ei_new]))
+		    {
+			while (ei_org >= *startp
+					     && vim_iswhite(line_org[ei_org]))
+			    --ei_org;
+			while (ei_new >= si_new
+					     && vim_iswhite(line_new[ei_new]))
+			    --ei_new;
+		    }
+		    else
+		    {
+			if (line_org[ei_org] != line_new[ei_new])
+			    break;
+			--ei_org;
+			--ei_new;
+		    }
 		}
 		if (*endp < ei_org)
 		    *endp = ei_org;

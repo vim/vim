@@ -1930,7 +1930,7 @@ findmatchlimit(oap, initc, flags, maxtravel)
 		    break;
 		--pos.lnum;
 
-		if (maxtravel && traveled++ > maxtravel)
+		if (maxtravel > 0 && ++traveled > maxtravel)
 		    break;
 
 		linep = ml_get(pos.lnum);

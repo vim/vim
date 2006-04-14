@@ -17,36 +17,6 @@ setlocal indentkeys=!^F,o,O,e,0(,0)
 setlocal indentkeys+==~if,=~then,=~elsif,=~else
 setlocal indentkeys+==~begin,=~is,=~select
 
-" count repeat
-"function! <SID>CountWrapper(cmd)
-"  let i = v:count1
-"  if a:cmd[0] == ":"
-"    while i > 0
-"      execute a:cmd
-"      let i = i - 1
-"    endwhile
-"  else
-"    execute "normal! gv\<Esc>"
-"    execute "normal ".i.a:cmd
-"    let curcol = col(".")
-"    let curline = line(".")
-"    normal! gv
-"    call cursor(curline, curcol)
-"  endif
-"endfunction
-
-" explore motion
-" keywords: "architecture", "block", "configuration", "component", "entity", "function", "package", "procedure", "process", "record", "units"
-"let b:vhdl_explore = '\%(architecture\|block\|configuration\|component\|entity\|function\|package\|procedure\|process\|record\|units\)'
-"noremap  <buffer><silent>[[ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
-"noremap  <buffer><silent>]] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\%(\\<end\\s\\+\\)\\@<!\\<".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
-"noremap  <buffer><silent>[] :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%^","bW")')<CR>
-"noremap  <buffer><silent>][ :<C-u>cal <SID>CountWrapper(':cal search("\\%(--.*\\)\\@<!\\<end\\s\\+".b:vhdl_explore."\\>\\c\\<Bar>\\%$","W")')<CR>
-"vnoremap <buffer><silent>[[ :<C-u>cal <SID>CountWrapper('[[')<CR>
-"vnoremap <buffer><silent>]] :<C-u>cal <SID>CountWrapper(']]')<CR>
-"vnoremap <buffer><silent>[] :<C-u>cal <SID>CountWrapper('[]')<CR>
-"vnoremap <buffer><silent>][ :<C-u>cal <SID>CountWrapper('][')<CR>
-
 " constants
 " not a comment
 let s:NC = '\%(--.*\)\@<!'
@@ -54,28 +24,6 @@ let s:NC = '\%(--.*\)\@<!'
 let s:ES = '\s*\%(--.*\)\=$'
 " no "end" keyword in front
 let s:NE = '\%(\<end\s\+\)\@<!'
-
-" for matchit plugin
-"if exists("loaded_matchit")
-"  let b:match_ignorecase = 1
-"  let b:match_words =
-"    \ s:NE.'\<if\>:\<elsif\>:\<else\>:\<end\s\+if\>,'.
-"    \ s:NE.'\<case\>:\<when\>:\<end\s\+case\>,'.
-"    \ s:NE.'\<loop\>:\<end\s\+loop\>,'.
-"    \ s:NE.'\<for\>:\<end\s\+for\>,'.
-"    \ s:NE.'\<generate\>:\<end\s\+generate\>,'.
-"    \ s:NE.'\<record\>:\<end\s\+record\>,'.
-"    \ s:NE.'\<units\>:\<end\s\+units\>,'.
-"    \ s:NE.'\<process\>:\<end\s\+process\>,'.
-"    \ s:NE.'\<block\>:\<end\s\+block\>,'.
-"    \ s:NE.'\<function\>:\<end\s\+function\>,'.
-"    \ s:NE.'\<entity\>:\<end\s\+entity\>,'.
-"    \ s:NE.'\<component\>:\<end\s\+component\>,'.
-"    \ s:NE.'\<architecture\>:\<end\s\+architecture\>,'.
-"    \ s:NE.'\<package\>:\<end\s\+package\>,'.
-"    \ s:NE.'\<procedure\>:\<end\s\+procedure\>,'.
-"    \ s:NE.'\<configuration\>:\<end\s\+configuration\>'
-"endif
 
 " only define indent function once
 if exists("*GetVHDLindent")

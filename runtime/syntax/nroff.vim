@@ -2,7 +2,7 @@
 " Language:	nroff/groff
 " Maintainer:	Alejandro López-Valencia <dradul@yahoo.com>
 " URL:		http://dradul.tripod.com/vim
-" Last Change:	2003 May 24
+" Last Change:	2006 Apr 14
 "
 " {{{1 Acknowledgements
 "
@@ -125,12 +125,12 @@ if exists("b:nroff_is_groff")
 "
 " GNU troff allows long request names
 "
-syn match nroffReqName /[^\t \\\[?]\+/ contained nextgroup=nroffReqArg
+	syn match nroffReqName /[^\t \\\[?]\+/ contained nextgroup=nroffReqArg
 else
 	syn match nroffReqName /[^\t \\\[?]\{1,2}/ contained nextgroup=nroffReqArg
 endif
 
-syn region roffReqArg start=/\S/ skip=/\\$/ end=/$/ contained contains=nroffEscape,@nroffSpecial,nroffString,nroffError,nroffSpaceError,nroffNumBlock,nroffComment
+syn region nroffReqArg start=/\S/ skip=/\\$/ end=/$/ contained contains=nroffEscape,@nroffSpecial,nroffString,nroffError,nroffSpaceError,nroffNumBlock,nroffComment
 
 " {{{2 Conditional: .if .ie .el
 syn match nroffReqName /\(if\|ie\)/ contained nextgroup=nroffCond skipwhite

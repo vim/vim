@@ -1,6 +1,6 @@
 " Vim color file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2001 May 21
+" Last Change:	2006 Apr 14
 
 " This color scheme uses a dark grey background.
 
@@ -22,7 +22,7 @@ hi ModeMsg term=bold cterm=bold gui=bold
 hi StatusLine term=reverse,bold cterm=reverse,bold gui=reverse,bold
 hi StatusLineNC term=reverse cterm=reverse gui=reverse
 hi VertSplit term=reverse cterm=reverse gui=reverse
-hi Visual term=reverse cterm=reverse gui=reverse guifg=Grey guibg=fg
+hi Visual term=reverse ctermbg=black guibg=grey60
 hi VisualNOS term=underline,bold cterm=underline,bold gui=underline,bold
 hi DiffText term=reverse cterm=bold ctermbg=Red gui=bold guibg=Red
 hi Cursor guibg=Green guifg=Black
@@ -42,6 +42,8 @@ hi FoldColumn term=standout ctermbg=LightGrey ctermfg=DarkBlue guibg=Grey guifg=
 hi DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue
 hi DiffChange term=bold ctermbg=DarkMagenta guibg=DarkMagenta
 hi DiffDelete term=bold ctermfg=Blue ctermbg=DarkCyan gui=bold guifg=Blue guibg=DarkCyan
+hi CursorColumn term=reverse ctermbg=Black guibg=grey40
+hi CursorLine term=underline cterm=underline guibg=grey40
 
 " Groups for syntax highlighting
 hi Constant term=underline ctermfg=Magenta guifg=#ffa0a0 guibg=grey5

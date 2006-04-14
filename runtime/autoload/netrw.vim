@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 12, 2006
-" Version:	87
+" Date:		Apr 14, 2006
+" Version:	88
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v87"
+let g:loaded_netrw = "v88"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -929,7 +929,7 @@ fun! netrw#NetWrite(...) range
    ".........................................
    " ftp + <.netrc>: NetWrite Method #2 {{{3
    elseif b:netrw_method == 2
-    let netrw_fname= escape(b:netrw_fname,g:netrw_fname_escape)
+    let netrw_fname= b:netrw_fname
     new
     setlocal ff=unix
     exe "put ='".g:netrw_ftpmode."'"
@@ -957,7 +957,7 @@ fun! netrw#NetWrite(...) range
    ".........................................
    " ftp + machine, id, passwd, filename: NetWrite Method #3 {{{3
    elseif b:netrw_method == 3
-    let netrw_fname= escape(b:netrw_fname,g:netrw_fname_escape)
+    let netrw_fname= b:netrw_fname
     new
     setlocal ff=unix
     if exists("g:netrw_port") && g:netrw_port != ""
@@ -1408,7 +1408,7 @@ fun! s:NetBrowse(dirname)
 
   " set up syntax highlighting
   if has("syntax")
-   setlocal ft=netrwlist
+   setlocal ft=netrw
    if !exists("g:syntax_on") || !g:syntax_on
     setlocal ft=
     " Ugly workaround -- when syntax highlighting is off and laststatus==2,
@@ -1923,8 +1923,8 @@ endfun
 "  This function assumes that a long listing will be received.  Size, time,
 "  and reverse sorts will be requested of the server but not otherwise
 "  enforced here.
-fun! s:NetBrowseFtpCmd(path,cmd)
-"  call Dfunc("NetBrowseFtpCmd(path<".a:path."> cmd<".a:cmd.">) netrw_method=".w:netrw_method)
+fun! s:NetBrowseFtpCmd(path,listcmd)
+"  call Dfunc("NetBrowseFtpCmd(path<".a:path."> listcmd<".a:listcmd.">) netrw_method=".w:netrw_method)
 
   " because WinXX ftp uses unix style input
   " curline is one more than the bannercnt in order to account
@@ -1942,7 +1942,7 @@ fun! s:NetBrowseFtpCmd(path,cmd)
     put ='cd \"'.a:path.'\"'
 "    call Decho('ftp:  '.getline("."))
    endif
-   exe "put ='".a:cmd."'"
+   exe "put ='".a:listcmd."'"
 "   call Decho("ftp:  ".getline("."))
 "    redraw!|call inputsave()|call input("Pausing...")|call inputrestore()
    if exists("g:netrw_port") && g:netrw_port != ""
@@ -1973,7 +1973,7 @@ fun! s:NetBrowseFtpCmd(path,cmd)
    if a:path != ""
     put ='cd \"'.a:path.'\"'
    endif
-   exe "put ='".a:cmd."'"
+   exe "put ='".a:listcmd."'"
 
     " perform ftp:
     " -i       : turns off interactive prompting from ftp
@@ -1991,7 +1991,7 @@ fun! s:NetBrowseFtpCmd(path,cmd)
   if has("win32") || has("win95") || has("win64") || has("win16")
    silent! keepjumps! %s/\r$//e
   endif
-  if a:cmd == "dir"
+  if a:listcmd == "dir"
    " infer directory/link based on the file permission string
    silent! keepjumps g/d\%([-r][-w][-x]\)\{3}/s@$@/@
    silent! keepjumps g/l\%([-r][-w][-x]\)\{3}/s/$/@/
@@ -2137,9 +2137,9 @@ endfun
 " ---------------------------------------------------------------------
 " NetrwWideListing: {{{2
 fun! s:NetrwWideListing()
-"  call Dfunc("NetrwWideListing() w:netrw_longlist=".w:netrw_longlist)
 
   if w:netrw_longlist == 2
+"   call Dfunc("NetrwWideListing() w:netrw_longlist=".w:netrw_longlist)
    " look for longest filename (cpf=characters per filename)
    " cpf: characters per file
    " fpl: files per line
@@ -2182,9 +2182,9 @@ fun! s:NetrwWideListing()
    endwhile
    exe "silent keepjumps ".w:netrw_bannercnt.',$s/\s\+$//e'
    setlocal noma nomod
+"   call Dret("NetrwWideListing")
   endif
 
-"  call Dret("NetrwWideListing")
 endfun
 
 " ---------------------------------------------------------------------
@@ -2650,6 +2650,10 @@ endfun
 " NetMenu: generates the menu for gvim and netrw {{{2
 fun! s:NetMenu(domenu)
 
+  if !exists("g:NetrwMenuPriority")
+   let g:NetrwMenuPriority= 80
+  endif
+
   if has("menu") && has("gui_running") && &go =~ 'm'
 "   call Dfunc("NetMenu(domenu=".a:domenu.")")
    if !exists("s:netrw_menu_enabled") && a:domenu
@@ -2658,32 +2662,32 @@ fun! s:NetMenu(domenu)
     if !exists("g:NetrwTopLvlMenu")
      let g:NetrwTopLvlMenu= "Netrw."
     endif
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Help<tab><F1>	<F1>'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Apply\ Special\ Viewer<tab>x	x'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Bookmark\ Current\ Directory<tab>b	Nb'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Go\ Up\ Directory<tab>-	-'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Goto\ Bookmarked\ Directory<tab>B	NB'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Change\ To\ Recently\ Used\ Directory<tab>u	u'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Change\ To\ Subsequently\ Used\ Directory<tab>U	U'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Delete\ File/Directory<tab>D	D'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File\ Hiding\ List<tab>'."<ctrl-h>	\<c-h>"
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory<tab><cr>	'."\<cr>"
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Window<tab>o	o'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Vertical\ Window<tab>v	v'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'List\ Bookmarks\ and\ History<tab>q	q'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Listing\ Style\ (thin-long-wide)<tab>i	i'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Make\ Subdirectory<tab>d	d'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Normal-Hide-Show<tab>a	a'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Obtain\ File<tab>O	O'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Preview\ File/Directory<tab>p	p'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Previous\ Window\ Browser<tab>P	P'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Refresh\ Listing<tab>'."<ctrl-l>	\<c-l>"
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Rename\ File/Directory<tab>R	R'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Reverse\ Sorting\ Order<tab>'."r	r"
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Select\ Sorting\ Style<tab>s	s'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Sorting\ Sequence\ Edit<tab>S	S'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Set\ Current\ Directory<tab>c	c'
-    exe 'silent! menu '.g:NetrwTopLvlMenu.'Settings/Options<tab>:NetrwSettings	'.":NetrwSettings\<cr>"
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Help<tab><F1>	<F1>'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Apply\ Special\ Viewer<tab>x	x'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Bookmark\ Current\ Directory<tab>b	Nb'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Go\ Up\ Directory<tab>-	-'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Goto\ Bookmarked\ Directory<tab>B	NB'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Change\ To\ Recently\ Used\ Directory<tab>u	u'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Change\ To\ Subsequently\ Used\ Directory<tab>U	U'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Delete\ File/Directory<tab>D	D'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Edit\ File\ Hiding\ List<tab>'."<ctrl-h>	\<c-h>"
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory<tab><cr>	'."\<cr>"
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Window<tab>o	o'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Edit\ File/Directory,\ New\ Vertical\ Window<tab>v	v'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'List\ Bookmarks\ and\ History<tab>q	q'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Listing\ Style\ (thin-long-wide)<tab>i	i'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Make\ Subdirectory<tab>d	d'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Normal-Hide-Show<tab>a	a'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Obtain\ File<tab>O	O'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Preview\ File/Directory<tab>p	p'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Previous\ Window\ Browser<tab>P	P'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Refresh\ Listing<tab>'."<ctrl-l>	\<c-l>"
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Rename\ File/Directory<tab>R	R'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Reverse\ Sorting\ Order<tab>'."r	r"
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Select\ Sorting\ Style<tab>s	s'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Sorting\ Sequence\ Edit<tab>S	S'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Set\ Current\ Directory<tab>c	c'
+    exe 'silent! '.g:NetrwMenuPriority.'menu '.g:NetrwTopLvlMenu.'Settings/Options<tab>:NetrwSettings	'.":NetrwSettings\<cr>"
    elseif !a:domenu
     let s:netrwcnt = 0
     let curwin     = winnr()
@@ -2972,7 +2976,7 @@ fun! netrw#DirBrowse(dirname)
 
   " set up syntax highlighting
   if has("syntax")
-   setlocal ft=netrwlist
+   setlocal ft=netrw
    if !exists("g:syntax_on") || !g:syntax_on
     setlocal ft=
    endif

@@ -2140,7 +2140,7 @@ ins_compl_add(str, len, icase, fname, cptext, cdir, flags)
      * - a copy of fname, FREE_FNAME is set to free later THE allocated mem.
      * - NULL otherwise.	--Acevedo */
     if (fname != NULL
-	    && compl_curr_match
+	    && compl_curr_match != NULL
 	    && compl_curr_match->cp_fname != NULL
 	    && STRCMP(fname, compl_curr_match->cp_fname) == 0)
 	match->cp_fname = compl_curr_match->cp_fname;
@@ -2501,6 +2501,11 @@ ins_compl_show_pum()
 						    * compl_match_arraysize));
 	if (compl_match_array != NULL)
 	{
+	    /* If the current match is the original text don't find the first
+	     * match after it, don't highlight anything. */
+	    if (compl_shown_match->cp_flags & ORIGINAL_TEXT)
+		shown_match_ok = TRUE;
+
 	    i = 0;
 	    compl = compl_first_match;
 	    do
@@ -2571,8 +2576,10 @@ ins_compl_show_pum()
 	    if (compl_match_array[i].pum_text == compl_shown_match->cp_str
 		    || compl_match_array[i].pum_text
 				      == compl_shown_match->cp_text[CPT_ABBR])
+	    {
+		cur = i;
 		break;
-	cur = i;
+	    }
     }
 
     if (compl_match_array != NULL)
@@ -2951,6 +2958,8 @@ ins_compl_bs()
 	ins_compl_free();
 	compl_started = FALSE;
 	compl_matches = 0;
+	compl_cont_status = 0;
+	compl_cont_mode = 0;
     }
 
     line = ml_get_curline();
@@ -2982,6 +2991,15 @@ ins_compl_bs()
 		ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
 	    }
 	}
+
+	/* Go to the original text, since none of the matches is inserted. */
+	if (compl_first_match->cp_prev != NULL
+		&& (compl_first_match->cp_prev->cp_flags & ORIGINAL_TEXT))
+	    compl_shown_match = compl_first_match->cp_prev;
+	else
+	    compl_shown_match = compl_first_match;
+	compl_curr_match = compl_shown_match;
+	compl_shows_dir = compl_direction;
 
 	/* Show the popup menu with a different set of matches. */
 	ins_compl_show_pum();

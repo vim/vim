@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0d.  Last change: 2006 Apr 06
+*syntax.txt*	For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1348,6 +1348,29 @@ version 6.30 and Library version 6.11.  If you are using an older
 Inform development environment, you may with to add this to your
 startup sequence: >
 	:let inform_highlight_old=1
+
+IDL							*idl.vim* *idl-syntax*
+
+IDL (Interface Definition Language) files are used to define RPC calls.  In
+Microsoft land, this is also used for defining COM interfaces and calls.
+
+IDL's structure is simple enough to permit a full grammar based approach to
+rather than using a few heuristics.  The result is large and somewhat
+repetative but seems to work.
+
+There are some Microsoft extensions to idl files that are here.  Some of them
+are disabled by defining idl_no_ms_extensions.
+
+The more complex of the extensions are disabled by defining idl_no_extensions.
+
+Variable			Effect ~
+
+idl_no_ms_extensions		Disable some of the Microsoft specific
+				extensions
+idl_no_extensions		Disable complex extensions
+idlsyntax_showerror		Show IDL errors (can be rather intrusive, but
+				quite helpful)
+idlsyntax_showerror_soft	Use softer colours by default for errors
 
 
 JAVA						*java.vim* *ft-java-syntax*

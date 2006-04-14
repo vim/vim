@@ -1,8 +1,9 @@
 " Vim syntax file
 " Language:    IDL (Interface Description Language)
-" Created By:  Jody Goldberg <jody@gnome.org>
-" Maintainer:  Michael Geddes <michaelrgeddes@optushome.com.au>
-" Last Change:  2004 Jul 20
+" Created By:  Jody Goldberg
+" Maintainer:  Michael Geddes <vim@frog.wheelycreek.net>
+" Last Change:  Thu Apr 13 2006
+
 
 " This is an experiment.  IDL's structure is simple enough to permit a full
 " grammar based approach to rather than using a few heuristics.  The result
@@ -13,6 +14,10 @@
 "
 " The more complex of the extensions are disabled by defining idl_no_extensions.
 "
+" History:
+" 2.0: Michael's new version
+" 2.1: Support for Vim 7 spell (Anduin Withers)
+"      
 
 if exists("b:current_syntax")
   finish
@@ -32,7 +37,7 @@ syn match   idlSemiColon   contained ";"
 syn match   idlCommaArg    contained ","                      skipempty skipwhite nextgroup=idlSimpDecl
 syn region  idlArraySize1  contained start=:\[: end=:\]:      skipempty skipwhite nextgroup=idlArraySize1,idlError,idlSemiColon,idlCommaArg contains=idlArraySize1,idlLiteral
 syn match   idlSimpDecl    contained "[a-zA-Z][a-zA-Z0-9_]*"  skipempty skipwhite nextgroup=idlError,idlSemiColon,idlCommaArg,idlArraySize1
-syn region  idlString      contained start=+"+  skip=+\\\(\\\\\)*"+  end=+"+
+syn region  idlString      contained start=+"+  skip=+\\\(\\\\\)*"+  end=+"+ contains=@Spell
 syn match   idlLiteral     contained "[1-9]\d*\(\.\d*\)\="
 syn match   idlLiteral     contained "0"
 syn match   idlLiteral     contained "\.\d\+"
@@ -42,8 +47,8 @@ syn keyword idlLiteral     contained TRUE FALSE
 
 " Comments
 syn keyword idlTodo        contained TODO FIXME XXX
-syn region idlComment      start="/\*"  end="\*/" contains=idlTodo
-syn match  idlComment      "//.*" contains=idlTodo
+syn region idlComment      start="/\*"  end="\*/" contains=idlTodo,@Spell
+syn match  idlComment      "//.*" contains=idlTodo,@Spell
 syn match  idlCommentError "\*/"
 
 " C style Preprocessor

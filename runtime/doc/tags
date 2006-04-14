@@ -5838,6 +5838,8 @@ iconize	starting.txt	/*iconize*
 iconv()	eval.txt	/*iconv()*
 iconv-dynamic	mbyte.txt	/*iconv-dynamic*
 ident-search	tips.txt	/*ident-search*
+idl-syntax	syntax.txt	/*idl-syntax*
+idl.vim	syntax.txt	/*idl.vim*
 if_cscop.txt	if_cscop.txt	/*if_cscop.txt*
 if_mzsch.txt	if_mzsch.txt	/*if_mzsch.txt*
 if_ole.txt	if_ole.txt	/*if_ole.txt*

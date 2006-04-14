@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0d.  Last change: 2006 Apr 11
+*insert.txt*    For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -601,6 +601,9 @@ When the popup menu is displayed you can use CTRL-Y to stop completion and
 accept the currently selected entry.  The CTRL-Y is not inserted.  Typing a
 space, Enter, or some other unprintable character will leave completion mode
 and insert that typed character.
+
+When the popup menu is displayed there are a few more special keys, see
+|popupmenu-keys|.
 
 Note: The keys that are valid in CTRL-X mode are not mapped.  This allows for
 ":map ^F ^X^F" to work (where ^F is CTRL-F and ^X is CTRL-X).  The key that

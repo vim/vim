@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0d.  Last change: 2006 Apr 09
+*eval.txt*      For Vim version 7.0d.  Last change: 2006 Apr 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -197,6 +197,11 @@ available. >
 	:let endlist = mylist[2:]	" from item 2 to the end: [3, "four"]
 	:let shortlist = mylist[2:2]	" List with one item: [3]
 	:let otherlist = mylist[:]	" make a copy of the List
+
+If the second index is equal to or greater than the length of the list there
+is no error and the length minus one is used: >
+	:let mylist = [0, 1, 2, 3]
+	:echo mylist[2:8]		" result: [2, 3]
 
 The second index can be just before the first index.  In that case the result
 is an empty list.  If the second index is lower, this results in an error. >

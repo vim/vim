@@ -2,7 +2,7 @@
 " Language:	HTML
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/html.vim
-" Last Change:  2005 Jul 20
+" Last Change:  2006 April 13
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -27,10 +27,6 @@ endif
 
 syn case ignore
 
-if main_syntax == "html"
-  syn spell toplevel
-endif
-
 " mark illegal characters
 syn match htmlError "[<>&]"
 
@@ -39,8 +35,8 @@ syn match htmlError "[<>&]"
 syn region  htmlString   contained start=+"+ end=+"+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn region  htmlString   contained start=+'+ end=+'+ contains=htmlSpecialChar,javaScriptExpression,@htmlPreproc
 syn match   htmlValue    contained "=[\t ]*[^'" \t>][^ \t>]*"hs=s+1   contains=javaScriptExpression,@htmlPreproc
-syn region  htmlEndTag		   start=+</+	   end=+>+ contains=htmlTagN,htmlTagError
-syn region  htmlTag		   start=+<[^/]+   end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
+syn region  htmlEndTag             start=+</+      end=+>+ contains=htmlTagN,htmlTagError
+syn region  htmlTag                start=+<[^/]+   end=+>+ contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent,htmlCssDefinition,@htmlPreproc,@htmlArgCluster
 syn match   htmlTagN     contained +<\s*[-a-zA-Z0-9]\++hs=s+1 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagN     contained +</\s*[-a-zA-Z0-9]\++hs=s+2 contains=htmlTagName,htmlSpecialTagName,@htmlTagNameCluster
 syn match   htmlTagError contained "[^>]<"ms=s+1
@@ -101,13 +97,13 @@ syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,8};"
 
 " Comments (the real ones or the old netscape ones)
 if exists("html_wrong_comments")
-  syn region htmlComment		start=+<!--+	end=+--\s*>+
+  syn region htmlComment                start=+<!--+    end=+--\s*>+
 else
-  syn region htmlComment		start=+<!+	end=+>+   contains=htmlCommentPart,htmlCommentError
+  syn region htmlComment                start=+<!+      end=+>+   contains=htmlCommentPart,htmlCommentError
   syn match  htmlCommentError contained "[^><!]"
   syn region htmlCommentPart  contained start=+--+      end=+--\s*+  contains=@htmlPreProc
 endif
-syn region htmlComment			start=+<!DOCTYPE+ keepend end=+>+
+syn region htmlComment                  start=+<!DOCTYPE+ keepend end=+>+
 
 " server-parsed commands
 syn region htmlPreProc start=+<!--#+ end=+-->+ contains=htmlPreStmt,htmlPreError,htmlPreAttr
@@ -158,14 +154,14 @@ if !exists("html_no_rendering")
   syn region htmlH5 start="<h5\>" end="</h5>"me=e-5 contains=@htmlTop
   syn region htmlH6 start="<h6\>" end="</h6>"me=e-5 contains=@htmlTop
   syn region htmlHead start="<head\>" end="</head>"me=e-7 end="<body\>"me=e-5 end="<h[1-6]\>"me=e-3 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,htmlLink,htmlTitle,javaScript,cssStyle,@htmlPreproc
-  syn region htmlTitle start="<title\>" end="</title>"me=e-8 contains=@Spell,htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
+  syn region htmlTitle start="<title\>" end="</title>"me=e-8 contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlPreProc,htmlComment,javaScript,@htmlPreproc
 endif
 
-syn keyword htmlTagName		contained noscript
+syn keyword htmlTagName         contained noscript
 syn keyword htmlSpecialTagName  contained script style
 if main_syntax != 'java' || exists("java_javascript")
   " JAVA SCRIPT
-  syn include @htmlJavaScript <sfile>:p:h/javascript.vim
+  syn include @htmlJavaScript syntax/javascript.vim
   unlet b:current_syntax
   syn region  javaScript start=+<script[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlJavaScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
   syn region  htmlScriptTag     contained start=+<script+ end=+>+       contains=htmlTagN,htmlString,htmlArg,htmlValue,htmlTagError,htmlEvent
@@ -173,14 +169,14 @@ if main_syntax != 'java' || exists("java_javascript")
 
   " html events (i.e. arguments that include javascript commands)
   if exists("html_extended_events")
-    syn region htmlEvent	contained start=+\<on\a\+\s*=[\t ]*'+ end=+'+ contains=htmlEventSQ
-    syn region htmlEvent	contained start=+\<on\a\+\s*=[\t ]*"+ end=+"+ contains=htmlEventDQ
+    syn region htmlEvent        contained start=+\<on\a\+\s*=[\t ]*'+ end=+'+ contains=htmlEventSQ
+    syn region htmlEvent        contained start=+\<on\a\+\s*=[\t ]*"+ end=+"+ contains=htmlEventDQ
   else
-    syn region htmlEvent	contained start=+\<on\a\+\s*=[\t ]*'+ end=+'+ keepend contains=htmlEventSQ
-    syn region htmlEvent	contained start=+\<on\a\+\s*=[\t ]*"+ end=+"+ keepend contains=htmlEventDQ
+    syn region htmlEvent        contained start=+\<on\a\+\s*=[\t ]*'+ end=+'+ keepend contains=htmlEventSQ
+    syn region htmlEvent        contained start=+\<on\a\+\s*=[\t ]*"+ end=+"+ keepend contains=htmlEventDQ
   endif
-  syn region htmlEventSQ	contained start=+'+ms=s+1 end=+'+me=s-1 contains=@htmlJavaScript
-  syn region htmlEventDQ	contained start=+"+ms=s+1 end=+"+me=s-1 contains=@htmlJavaScript
+  syn region htmlEventSQ        contained start=+'+ms=s+1 end=+'+me=s-1 contains=@htmlJavaScript
+  syn region htmlEventDQ        contained start=+"+ms=s+1 end=+"+me=s-1 contains=@htmlJavaScript
   HtmlHiLink htmlEventSQ htmlEvent
   HtmlHiLink htmlEventDQ htmlEvent
 
@@ -190,7 +186,7 @@ endif
 
 if main_syntax != 'java' || exists("java_vb")
   " VB SCRIPT
-  syn include @htmlVbScript <sfile>:p:h/vb.vim
+  syn include @htmlVbScript syntax/vb.vim
   unlet b:current_syntax
   syn region  javaScript start=+<script [^>]*language *=[^>]*vbscript[^>]*>+ keepend end=+</script>+me=s-1 contains=@htmlVbScript,htmlCssStyleComment,htmlScriptTag,@htmlPreproc
 endif
@@ -199,8 +195,8 @@ syn cluster htmlJavaScript      add=@htmlPreproc
 
 if main_syntax != 'java' || exists("java_css")
   " embedded style sheets
-  syn keyword htmlArg		contained media
-  syn include @htmlCss <sfile>:p:h/css.vim
+  syn keyword htmlArg           contained media
+  syn include @htmlCss syntax/css.vim
   unlet b:current_syntax
   syn region cssStyle start=+<style+ keepend end=+</style>+ contains=@htmlCss,htmlTag,htmlEndTag,htmlCssStyleComment,@htmlPreproc
   syn match htmlCssStyleComment contained "\(<!--\|-->\)"
@@ -223,65 +219,65 @@ if version >= 508 || !exists("did_html_syn_inits")
   if version < 508
     let did_html_syn_inits = 1
   endif
-  HtmlHiLink htmlTag			Function
-  HtmlHiLink htmlEndTag			Identifier
-  HtmlHiLink htmlArg			Type
-  HtmlHiLink htmlTagName		htmlStatement
-  HtmlHiLink htmlSpecialTagName		Exception
-  HtmlHiLink htmlValue			String
-  HtmlHiLink htmlSpecialChar		Special
-
+  HtmlHiLink htmlTag                     Function
+  HtmlHiLink htmlEndTag                  Identifier
+  HtmlHiLink htmlArg                     Type
+  HtmlHiLink htmlTagName                 htmlStatement
+  HtmlHiLink htmlSpecialTagName          Exception
+  HtmlHiLink htmlValue                     String
+  HtmlHiLink htmlSpecialChar             Special
+  
   if !exists("html_no_rendering")
-    HtmlHiLink htmlH1			   Title
-    HtmlHiLink htmlH2			   htmlH1
-    HtmlHiLink htmlH3			   htmlH2
-    HtmlHiLink htmlH4			   htmlH3
-    HtmlHiLink htmlH5			   htmlH4
-    HtmlHiLink htmlH6			   htmlH5
-    HtmlHiLink htmlHead			   PreProc
-    HtmlHiLink htmlTitle		   Title
-    HtmlHiLink htmlBoldItalicUnderline	   htmlBoldUnderlineItalic
-    HtmlHiLink htmlUnderlineBold	   htmlBoldUnderline
-    HtmlHiLink htmlUnderlineItalicBold	   htmlBoldUnderlineItalic
-    HtmlHiLink htmlUnderlineBoldItalic	   htmlBoldUnderlineItalic
-    HtmlHiLink htmlItalicUnderline	   htmlUnderlineItalic
-    HtmlHiLink htmlItalicBold		   htmlBoldItalic
-    HtmlHiLink htmlItalicBoldUnderline	   htmlBoldUnderlineItalic
-    HtmlHiLink htmlItalicUnderlineBold	   htmlBoldUnderlineItalic
-    HtmlHiLink htmlLink			   Underlined
+    HtmlHiLink htmlH1                      Title
+    HtmlHiLink htmlH2                      htmlH1
+    HtmlHiLink htmlH3                      htmlH2
+    HtmlHiLink htmlH4                      htmlH3
+    HtmlHiLink htmlH5                      htmlH4
+    HtmlHiLink htmlH6                      htmlH5
+    HtmlHiLink htmlHead                    PreProc
+    HtmlHiLink htmlTitle                   Title
+    HtmlHiLink htmlBoldItalicUnderline     htmlBoldUnderlineItalic
+    HtmlHiLink htmlUnderlineBold           htmlBoldUnderline
+    HtmlHiLink htmlUnderlineItalicBold     htmlBoldUnderlineItalic
+    HtmlHiLink htmlUnderlineBoldItalic     htmlBoldUnderlineItalic
+    HtmlHiLink htmlItalicUnderline         htmlUnderlineItalic
+    HtmlHiLink htmlItalicBold              htmlBoldItalic
+    HtmlHiLink htmlItalicBoldUnderline     htmlBoldUnderlineItalic
+    HtmlHiLink htmlItalicUnderlineBold     htmlBoldUnderlineItalic
+    HtmlHiLink htmlLink                    Underlined
     if !exists("html_my_rendering")
-      hi def htmlBold		     term=bold cterm=bold gui=bold
-      hi def htmlBoldUnderline	     term=bold,underline cterm=bold,underline gui=bold,underline
-      hi def htmlBoldItalic	     term=bold,italic cterm=bold,italic gui=bold,italic
+      hi def htmlBold                term=bold cterm=bold gui=bold
+      hi def htmlBoldUnderline       term=bold,underline cterm=bold,underline gui=bold,underline
+      hi def htmlBoldItalic          term=bold,italic cterm=bold,italic gui=bold,italic
       hi def htmlBoldUnderlineItalic term=bold,italic,underline cterm=bold,italic,underline gui=bold,italic,underline
-      hi def htmlUnderline	     term=underline cterm=underline gui=underline
+      hi def htmlUnderline           term=underline cterm=underline gui=underline
       hi def htmlUnderlineItalic     term=italic,underline cterm=italic,underline gui=italic,underline
-      hi def htmlItalic		     term=italic cterm=italic gui=italic
+      hi def htmlItalic              term=italic cterm=italic gui=italic
     endif
   endif
-
-  HtmlHiLink htmlPreStmt	    PreProc
-  HtmlHiLink htmlPreError	    Error
-  HtmlHiLink htmlPreProc	    PreProc
-  HtmlHiLink htmlPreAttr	    String
+  
+  HtmlHiLink htmlPreStmt            PreProc
+  HtmlHiLink htmlPreError           Error
+  HtmlHiLink htmlPreProc            PreProc
+  HtmlHiLink htmlPreAttr            String
   HtmlHiLink htmlPreProcAttrName    PreProc
   HtmlHiLink htmlPreProcAttrError   Error
-  HtmlHiLink htmlSpecial	    Special
-  HtmlHiLink htmlSpecialChar	    Special
-  HtmlHiLink htmlString		    String
-  HtmlHiLink htmlStatement	    Statement
-  HtmlHiLink htmlComment	    Comment
-  HtmlHiLink htmlCommentPart	    Comment
-  HtmlHiLink htmlValue		    String
-  HtmlHiLink htmlCommentError	    htmlError
-  HtmlHiLink htmlTagError	    htmlError
-  HtmlHiLink htmlEvent		    javaScript
-  HtmlHiLink htmlError		    Error
-
-  HtmlHiLink javaScript		    Special
+  HtmlHiLink htmlSpecial            Special
+  HtmlHiLink htmlSpecialChar        Special
+  HtmlHiLink htmlString             String
+  HtmlHiLink htmlStatement          Statement
+  HtmlHiLink htmlComment            Comment
+  HtmlHiLink htmlCommentPart        Comment
+  HtmlHiLink htmlValue              String
+  HtmlHiLink htmlCommentError       htmlError
+  HtmlHiLink htmlTagError           htmlError
+  HtmlHiLink htmlEvent              javaScript
+  HtmlHiLink htmlError              Error
+  
+  HtmlHiLink javaScript             Special
   HtmlHiLink javaScriptExpression   javaScript
   HtmlHiLink htmlCssStyleComment    Comment
-  HtmlHiLink htmlCssDefinition	    Special
+  HtmlHiLink htmlCssDefinition      Special
 endif
 
 delcommand HtmlHiLink

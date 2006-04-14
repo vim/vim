@@ -4696,8 +4696,8 @@ eval7(arg, rettv, evaluate)
 }
 
 /*
- * Evaluate an "[expr]" or "[expr:expr]" index.
- * "*arg" points to the '['.
+ * Evaluate an "[expr]" or "[expr:expr]" index.  Also "dict.key".
+ * "*arg" points to the '[' or '.'.
  * Returns FAIL or OK. "*arg" is advanced to after the ']'.
  */
     static int
@@ -4867,7 +4867,9 @@ eval_index(arg, rettv, evaluate, verbose)
 
 		    if (n2 < 0)
 			n2 = len + n2;
-		    if (!empty2 && (n2 < 0 || n2 >= len || n2 + 1 < n1))
+		    else if (n2 >= len)
+			n2 = len - 1;
+		    if (!empty2 && (n2 < 0 || n2 + 1 < n1))
 		    {
 			if (verbose)
 			    EMSGN(_(e_listidx), n2);
