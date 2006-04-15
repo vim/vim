@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 14
+*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -900,6 +900,7 @@ dictconf and dictdconf syntax, indent and ftplugin files. (Nikolai Weibull)
 diff ftplugin file. (Bram Moolenaar)
 dircolors ftplugin file. (Nikolai Weibull)
 django and htmldjango syntax file. (Dave Hodder)
+doxygen syntax file. (Michael Geddes)
 elinks ftplugin file. (Nikolai Weibull)
 eterm ftplugin file. (Nikolai Weibull)
 eviews syntax file. (Vaidotas Zemlys)
@@ -964,6 +965,7 @@ SQL indent file.
 SQL-Informix syntax file. (Dean L Hill)
 SQL: Handling of various variants. (David Fishburn)
 sshconfig ftplugin file. (Nikolai Weibull)
+Stata and SMCL syntax files. (Jeff Pitblado)
 sudoers ftplugin file. (Nikolai Weibull)
 sysctl syntax and ftplugin file. (Nikolai Weibull)
 terminfo ftplugin file. (Nikolai Weibull)
@@ -2487,5 +2489,11 @@ Added the 'm' flag to 'cinoptions'.
 
 Win32: Make the "gvim --help" window appear in the middle of the screen
 instead of at an arbitrary position. (Randall W. Morris)
+
+Added gettabwinvar() and settabwinvar().
+
+Command line completion: pressing <Tab> after ":e /usr/*" expands the whole
+tree, because it becomes ":e /usr/**".  Don't add a star if there already is
+one.
 
  vim:tw=78:ts=8:ft=help:norl:

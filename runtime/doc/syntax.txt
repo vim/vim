@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0d.  Last change: 2006 Apr 14
+*syntax.txt*	For Vim version 7.0d.  Last change: 2006 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -855,6 +855,53 @@ is used by default.  You may select the former with the following line: >
 
 If this variable is undefined or zero, btm syntax is selected.
 
+
+DOXYGEN						*doxygen.vim* *doxygen-syntax*
+
+Doxygen generates code documentation using a special documentation format
+(similar to Javadoc).  This syntax script adds doxygen highlighting to c, cpp
+and idl files, and should also work with java.
+
+There are a few of ways to turn on doxygen formatting. It can be done explicity
+or in a modeline by appending '.doxygen' to the syntax of the file. Example: >
+	:set syntax=c.doxygen
+or >
+	// vim:syntax=c.doxygen
+
+To use doxygen formatting on top of any filetype, add the following to your
+.vimrc for each filetype, replacing {filetype} with the relevent value. >
+	:let g:syntax_extra_{filetype}='doxygen'
+
+It can also be done automaticly for c, cpp and idl files by setting the global
+or buffer-local variable load_doxygen_syntax.  This is done by adding the
+following to your .vimrc. >
+	:let g:load_doxygen_syntax=1
+
+There are a couple of variables that have an affect on syntax highlighting, and
+are to do with non-standard highlighting options.
+
+Variable			Default	Effect ~
+g:doxygen_enhanced_color
+g:doxygen_enhanced_colour	0	Use non-standard highlighting for
+					doxygen comments.
+
+doxygen_my_rendering		0	Disable rendering of HTML bold, italic
+					and html_my_rendering underline.
+
+doxygen_javadoc_autobrief	1	Set to 0 to disable javadoc autobrief
+					colour highlighting.
+
+doxygen_end_punctuation		'[.]'	Set to regexp match for the ending
+					punctuation of brief 
+
+There are also some hilight groups worth mentioning as they can be useful in
+configuration.
+
+Highlight			Effect ~
+doxygenErrorComment		The colour of an end-comment when missing
+				punctuation in a code, verbatim or dot section
+doxygenLinkError		The colour of an end-comment when missing the
+				\endlink from a \link section.
 
 
 DTD						*dtd.vim* *ft-dtd-syntax*

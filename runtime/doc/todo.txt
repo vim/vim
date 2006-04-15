@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 14
+*todo.txt*      For Vim version 7.0d.  Last change: 2006 Apr 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Do some of the 'cindent' bugs below.
-
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Win32: Describe how to do debugging. (George Reilly)
@@ -61,11 +59,8 @@ Awaiting updated patches:
 -   Patch for 'breakindent' option: repeat indent for wrapped line. (Vaclav
     Smilauer, 2004 Sep 13, fix Oct 31)
     Asked for improvements 2004 Dec 20.
-7   Make "5dd" on last-but-one-line not delete anything (Vi compatible).
-    Add flag in 'cpoptions' for this.  When not present, "2dd" in the last
-    line should delete the last line.  Patch from greenx 2002 Apr 11.
 8   Add a few more command names to the menus.  Patch from Jiri Brezina
-    (28 feb 2002).
+    (28 feb 2002).  Will mess the translations...
 7   ATTENTION dialog choices are more logical when "Delete it' appears
     before "Quit".  Patch by Robert Webb, 2004 May 3.
 -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
@@ -90,7 +85,7 @@ Awaiting updated patches:
 			Update 2004 Sep 10
 			Another patch from Edward L. Fox (2005 Nov 24)
 			Search in 'runtimepath'?
-			More docs about how to use this.
+			More docs needed about how to use this.
 			How to get the messages into the .po files?
     confirm()		add "flags" argument, with 'v' for vertical
 			    layout and 'c' for console dialog. (Haegg)
@@ -105,8 +100,8 @@ Awaiting updated patches:
     quickfix window (2004 dec 2)
 7   When 'rightleft' is set, the search pattern should be displayed right
     to left as well?  See patch of Dec 26. (Nadim Shaikli)
-8   Lock all used memory so that it doesn't get swapped to disk (uncrypted).
-    Patch by Jason Holt, 2003 May 23.  Uses mlock.
+8   Option to lock all used memory so that it doesn't get swapped to disk
+    (uncrypted).  Patch by Jason Holt, 2003 May 23.  Uses mlock.
 7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
 7   Add ! register, for shell commands. (patch from Grenie)
 8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
@@ -191,9 +186,6 @@ Vi incompatibility:
 
 
 GTK+ 1 (OK in GTK 2):
-8   When menus are disabled, 'm' removed from 'guioptions', Alt-F still pops
-    up the File menu.  Cannot reproduce this: gives a warning for a NULL
-    pointer if the menu was never displayed.
 8   When using "gvim -geom 40x30" or setting 'columns' in .gvimrc or with a
     GUIEnter autocommand, the width is still set to fit the toolbar.  Also
     happens when changing the font.  How to avoid that the toolbar specifies
@@ -1841,10 +1833,6 @@ Tags:
     ":idselect", which uses an "ID" database (made by "mkid") like "tselect".
 
 
-Security:
--   nothing at the moment
-
-
 Win32 GUI:
 8   Make debug mode work while starting up (vim -D).  Open console window for
     the message and input?
@@ -2239,6 +2227,7 @@ Insert mode:
 'cindent', 'smartindent':
 8   Java: Inside an anonymous class, after an "else" or "try" the indent is
     too small. (Vincent Bergbauer)
+    Problem of using {} inside (), 'cindent' doesn't work then.
 8   In C++ it's possible to have {} inside (): (Kirshna)
 		func(
 			new String[] {
