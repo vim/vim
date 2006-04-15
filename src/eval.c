@@ -528,6 +528,7 @@ static void f_getpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getregtype __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_gettabwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getwinposx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getwinposy __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getwinvar __ARGS((typval_T *argvars, typval_T *rettv));
@@ -614,6 +615,7 @@ static void f_setloclist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_settabwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_simplify __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_sort __ARGS((typval_T *argvars, typval_T *rettv));
@@ -728,9 +730,11 @@ static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
-static win_T *find_win_by_nr __ARGS((typval_T *vp));
+static win_T *find_win_by_nr __ARGS((typval_T *vp, tabpage_T *tp));
+static void getwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
 static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos, int *flagsp));
+static void setwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
@@ -7035,6 +7039,7 @@ static struct fst
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
     {"getregtype",	0, 1, f_getregtype},
+    {"gettabwinvar",	3, 3, f_gettabwinvar},
     {"getwinposx",	0, 0, f_getwinposx},
     {"getwinposy",	0, 0, f_getwinposy},
     {"getwinvar",	2, 2, f_getwinvar},
@@ -7123,6 +7128,7 @@ static struct fst
     {"setpos",		2, 2, f_setpos},
     {"setqflist",	1, 2, f_setqflist},
     {"setreg",		2, 3, f_setreg},
+    {"settabwinvar",	4, 4, f_settabwinvar},
     {"setwinvar",	3, 3, f_setwinvar},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
@@ -10129,7 +10135,7 @@ f_getqflist(argvars, rettv)
 	wp = NULL;
 	if (argvars[0].v_type != VAR_UNKNOWN)	/* getloclist() */
 	{
-	    wp = find_win_by_nr(&argvars[0]);
+	    wp = find_win_by_nr(&argvars[0], NULL);
 	    if (wp == NULL)
 		return;
 	}
@@ -10219,6 +10225,17 @@ f_getregtype(argvars, rettv)
 }
 
 /*
+ * "gettabwinvar()" function
+ */
+    static void
+f_gettabwinvar(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    getwinvar(argvars, rettv, 1);
+}
+
+/*
  * "getwinposx()" function
  */
 /*ARGSUSED*/
@@ -10260,9 +10277,13 @@ f_getwinposy(argvars, rettv)
 #endif
 }
 
+/*
+ * Find window specifed by "vp" in tabpage "tp".
+ */
     static win_T *
-find_win_by_nr(vp)
+find_win_by_nr(vp, tp)
     typval_T	*vp;
+    tabpage_T	*tp;	    /* NULL for current tab page */
 {
 #ifdef FEAT_WINDOWS
     win_T	*wp;
@@ -10277,7 +10298,8 @@ find_win_by_nr(vp)
     if (nr == 0)
 	return curwin;
 
-    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+    for (wp = (tp == NULL || tp == curtab) ? firstwin : tp->tp_firstwin;
+						  wp != NULL; wp = wp->w_next)
 	if (--nr <= 0)
 	    break;
     return wp;
@@ -10296,12 +10318,31 @@ f_getwinvar(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    getwinvar(argvars, rettv, 0);
+}
+
+/*
+ * getwinvar() and gettabwinvar()
+ */
+    static void
+getwinvar(argvars, rettv, off)
+    typval_T	*argvars;
+    typval_T	*rettv;
+    int		off;	    /* 1 for gettabwinvar() */
+{
     win_T	*win, *oldcurwin;
     char_u	*varname;
     dictitem_T	*v;
+    tabpage_T	*tp;
 
-    win = find_win_by_nr(&argvars[0]);
-    varname = get_tv_string_chk(&argvars[1]);
+#ifdef FEAT_WINDOWS
+    if (off == 1)
+	tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
+    else
+	tp = curtab;
+#endif
+    win = find_win_by_nr(&argvars[off], tp);
+    varname = get_tv_string_chk(&argvars[off + 1]);
     ++emsg_off;
 
     rettv->v_type = VAR_STRING;
@@ -14245,7 +14286,7 @@ f_setloclist(argvars, rettv)
 
     rettv->vval.v_number = -1;
 
-    win = find_win_by_nr(&argvars[0]);
+    win = find_win_by_nr(&argvars[0], NULL);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
 }
@@ -14368,37 +14409,71 @@ f_setreg(argvars, rettv)
     rettv->vval.v_number = 0;
 }
 
+/*
+ * "settabwinvar()" function
+ */
+    static void
+f_settabwinvar(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    setwinvar(argvars, rettv, 1);
+}
 
 /*
- * "setwinvar(expr)" function
+ * "setwinvar()" function
  */
-/*ARGSUSED*/
     static void
 f_setwinvar(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
+    setwinvar(argvars, rettv, 0);
+}
+
+/*
+ * "setwinvar()" and "settabwinvar()" functions
+ */
+    static void
+setwinvar(argvars, rettv, off)
+    typval_T	*argvars;
+    typval_T	*rettv;
+    int		off;
+{
     win_T	*win;
 #ifdef FEAT_WINDOWS
     win_T	*save_curwin;
+    tabpage_T	*save_curtab;
 #endif
     char_u	*varname, *winvarname;
     typval_T	*varp;
     char_u	nbuf[NUMBUFLEN];
+    tabpage_T	*tp;
 
     rettv->vval.v_number = 0;
 
     if (check_restricted() || check_secure())
 	return;
-    win = find_win_by_nr(&argvars[0]);
-    varname = get_tv_string_chk(&argvars[1]);
-    varp = &argvars[2];
+
+#ifdef FEAT_WINDOWS
+    if (off == 1)
+	tp = find_tabpage((int)get_tv_number_chk(&argvars[0], NULL));
+    else
+	tp = curtab;
+#endif
+    win = find_win_by_nr(&argvars[off], tp);
+    varname = get_tv_string_chk(&argvars[off + 1]);
+    varp = &argvars[off + 2];
 
     if (win != NULL && varname != NULL && varp != NULL)
     {
 #ifdef FEAT_WINDOWS
 	/* set curwin to be our win, temporarily */
 	save_curwin = curwin;
+	save_curtab = curtab;
+	goto_tabpage_tp(tp);
+	if (!win_valid(win))
+	    return;
 	curwin = win;
 	curbuf = curwin->w_buffer;
 #endif
@@ -14428,8 +14503,10 @@ f_setwinvar(argvars, rettv)
 	}
 
 #ifdef FEAT_WINDOWS
-	/* Restore current window, if it's still valid (autocomands can make
-	 * it invalid). */
+	/* Restore current tabpage and window, if still valid (autocomands can
+	 * make them invalid). */
+	if (valid_tabpage(save_curtab))
+	    goto_tabpage_tp(save_curtab);
 	if (win_valid(save_curwin))
 	{
 	    curwin = save_curwin;
@@ -15901,7 +15978,7 @@ f_winbufnr(argvars, rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0]);
+    wp = find_win_by_nr(&argvars[0], NULL);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -15931,7 +16008,7 @@ f_winheight(argvars, rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0]);
+    wp = find_win_by_nr(&argvars[0], NULL);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
@@ -16092,7 +16169,7 @@ f_winwidth(argvars, rettv)
 {
     win_T	*wp;
 
-    wp = find_win_by_nr(&argvars[0]);
+    wp = find_win_by_nr(&argvars[0], NULL);
     if (wp == NULL)
 	rettv->vval.v_number = -1;
     else
