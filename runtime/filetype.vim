@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 12
+" Last Change:	2006 Apr 15
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1652,6 +1652,12 @@ au BufNewFile,BufRead ssh_config,*/.ssh/config	setf sshconfig
 
 " OpenSSH server configuration
 au BufNewFile,BufRead sshd_config		setf sshdconfig
+
+" Stata
+au BufNewFile,BufRead *.ado,*.class,*.do,*.imata,*.mata   setf stata
+
+" SMCL
+au BufNewFile,BufRead *.hlp,*.ihlp,*.smcl	setf smcl
 
 " Stored Procedures
 au BufNewFile,BufRead *.stp			setf stp

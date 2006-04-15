@@ -4976,6 +4976,8 @@ dos32	os_msdos.txt	/*dos32*
 dosbatch.vim	syntax.txt	/*dosbatch.vim*
 double-click	term.txt	/*double-click*
 download	intro.txt	/*download*
+doxygen-syntax	syntax.txt	/*doxygen-syntax*
+doxygen.vim	syntax.txt	/*doxygen.vim*
 dp	diff.txt	/*dp*
 drag-n-drop	gui.txt	/*drag-n-drop*
 drag-n-drop-win32	gui_w32.txt	/*drag-n-drop-win32*
@@ -5482,6 +5484,7 @@ getreg()	eval.txt	/*getreg()*
 getregtype()	eval.txt	/*getregtype()*
 getscript	getscript.txt	/*getscript*
 getscript.txt	getscript.txt	/*getscript.txt*
+gettabwinvar()	eval.txt	/*gettabwinvar()*
 getwinposx()	eval.txt	/*getwinposx()*
 getwinposy()	eval.txt	/*getwinposy()*
 getwinvar()	eval.txt	/*getwinvar()*
@@ -6788,6 +6791,7 @@ setloclist()	eval.txt	/*setloclist()*
 setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
+settabwinvar()	eval.txt	/*settabwinvar()*
 setting-guifont	gui.txt	/*setting-guifont*
 setting-guitablabel	tabpage.txt	/*setting-guitablabel*
 setting-tabline	tabpage.txt	/*setting-tabline*

@@ -1,10 +1,11 @@
 " Vim compiler file
-" Language:	Ruby
-" Function:	Syntax check and/or error reporting
-" Maintainer:	Tim Hammerquist <timh at rubyforge.org>
-" Info:		$Id$
-" URL:		http://vim-ruby.rubyforge.org
-" Anon CVS:	See above site
+" Language:		Ruby
+" Function:		Syntax check and/or error reporting
+" Maintainer:		Tim Hammerquist <timh at rubyforge.org>
+" Info:			$Id$
+" URL:			http://vim-ruby.rubyforge.org
+" Anon CVS:		See above site
+" Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " ----------------------------------------------------------------------------
 "
 " Changelog:

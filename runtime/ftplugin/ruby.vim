@@ -1,9 +1,10 @@
 " Vim filetype plugin
-" Language:	Ruby
-" Maintainer:	Gavin Sinclair <gsinclair at soyabean.com.au>
-" Info:		$Id$
-" URL:		http://vim-ruby.rubyforge.org
-" Anon CVS:	See above site
+" Language:		Ruby
+" Maintainer:		Gavin Sinclair <gsinclair at soyabean.com.au>
+" Info:			$Id$
+" URL:			http://vim-ruby.rubyforge.org
+" Anon CVS:		See above site
+" Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 " ----------------------------------------------------------------------------
 "
 " Original matchit support thanks to Ned Konz.	See his ftplugin/ruby.vim at
@@ -51,7 +52,10 @@ setlocal formatoptions-=t formatoptions+=croql
 setlocal include=^\\s*\\<\\(load\\\|\w*require\\)\\>
 setlocal includeexpr=substitute(substitute(v:fname,'::','/','g'),'$','.rb','')
 setlocal suffixesadd=.rb
-setlocal omnifunc=rubycomplete#Complete 
+
+if version >= 700
+  setlocal omnifunc=rubycomplete#Complete
+endif
 
 " TODO:
 "setlocal define=^\\s*def

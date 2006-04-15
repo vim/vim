@@ -1,10 +1,10 @@
 " Vim syntax file
-" Language:	eRuby
-" Maintainer:	Doug Kearns <djkea2 at gus.gscit.monash.edu.au>
-" Info:		$Id$
-" URL:		http://vim-ruby.rubyforge.org
-" Anon CVS:	See above site
-" ----------------------------------------------------------------------------
+" Language:		eRuby
+" Maintainer:		Doug Kearns <dougkearns@gmail.com>
+" Info:			$Id$
+" URL:			http://vim-ruby.rubyforge.org
+" Anon CVS:		See above site
+" Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

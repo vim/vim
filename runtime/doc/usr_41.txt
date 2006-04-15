@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0d.  Last change: 2006 Apr 09
+*usr_41.txt*	For Vim version 7.0d.  Last change: 2006 Apr 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -652,8 +652,10 @@ Variables:
 	function()		get a Funcref for a function name
 	getbufvar()		get a variable value from a specific buffer
 	setbufvar()		set a variable in a specific buffer
-	getwinvar()		get a variable value from a specific window
+	getwinvar()		get a variable from specific window
+	gettabwinvar()		get a variable from specific window & tab page
 	setwinvar()		set a variable in a specific window
+	settabwinvar()		set a variable in a specific window & tab page
 	garbagecollect()	possibly free memory
 
 Cursor and mark position:

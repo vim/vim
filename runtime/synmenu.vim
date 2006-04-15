@@ -420,11 +420,13 @@ an 50.100.520 &Syntax.Sh-S.SQR :cal SetSyn("sqr")<CR>
 an 50.100.530 &Syntax.Sh-S.Ssh.ssh_config :cal SetSyn("sshconfig")<CR>
 an 50.100.540 &Syntax.Sh-S.Ssh.sshd_config :cal SetSyn("sshdconfig")<CR>
 an 50.100.550 &Syntax.Sh-S.Standard\ ML :cal SetSyn("sml")<CR>
-an 50.100.560 &Syntax.Sh-S.Stored\ Procedures :cal SetSyn("stp")<CR>
-an 50.100.570 &Syntax.Sh-S.Strace :cal SetSyn("strace")<CR>
-an 50.100.580 &Syntax.Sh-S.Subversion\ commit :cal SetSyn("svn")<CR>
-an 50.100.590 &Syntax.Sh-S.Sudoers :cal SetSyn("sudoers")<CR>
-an 50.100.600 &Syntax.Sh-S.Sysctl\.conf :cal SetSyn("sysctl")<CR>
+an 50.100.560 &Syntax.Sh-S.Stata.SMCL :cal SetSyn("smcl")<CR>
+an 50.100.570 &Syntax.Sh-S.Stata.Stata :cal SetSyn("stata")<CR>
+an 50.100.580 &Syntax.Sh-S.Stored\ Procedures :cal SetSyn("stp")<CR>
+an 50.100.590 &Syntax.Sh-S.Strace :cal SetSyn("strace")<CR>
+an 50.100.600 &Syntax.Sh-S.Subversion\ commit :cal SetSyn("svn")<CR>
+an 50.100.610 &Syntax.Sh-S.Sudoers :cal SetSyn("sudoers")<CR>
+an 50.100.620 &Syntax.Sh-S.Sysctl\.conf :cal SetSyn("sysctl")<CR>
 an 50.110.100 &Syntax.TUV.TADS :cal SetSyn("tads")<CR>
 an 50.110.110 &Syntax.TUV.Tags :cal SetSyn("tags")<CR>
 an 50.110.120 &Syntax.TUV.TAK.TAK\ compare :cal SetSyn("takcmp")<CR>

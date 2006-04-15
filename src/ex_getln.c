@@ -3997,13 +3997,15 @@ addstar(fname, len, context)
 	    vim_strncpy(retval, fname, len);
 
 	    /*
-	     * Don't add a star to ~, ~user, $var or `cmd`.
+	     * Don't add a star to *, ~, ~user, $var or `cmd`.
+	     * * would become **, which walks the whole tree.
 	     * ~ would be at the start of the file name, but not the tail.
 	     * $ could be anywhere in the tail.
 	     * ` could be anywhere in the file name.
 	     */
 	    tail = gettail(retval);
 	    if ((*retval != '~' || tail != retval)
+		    && (len == 0 || retval[len - 1] != '*')
 		    && vim_strchr(tail, '$') == NULL
 		    && vim_strchr(retval, '`') == NULL)
 		retval[len++] = '*';

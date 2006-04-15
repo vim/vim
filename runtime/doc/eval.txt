@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0d.  Last change: 2006 Apr 14
+*eval.txt*      For Vim version 7.0d.  Last change: 2006 Apr 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1597,6 +1597,8 @@ getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
+gettabwinvar( {tabnr}, {winnr}, {name})
+				any	{name} in {winnr} in tab page {tabnr}
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar( {nr}, {varname})	any	variable {varname} in window {nr}
@@ -1702,6 +1704,8 @@ setloclist( {nr}, {list}[, {action}])
 setpos( {expr}, {list})		none	set the {expr} position to {list}
 setqflist( {list}[, {action}])	Number	modify quickfix list using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
+settabwinvar( {tabnr}, {winnr}, {varname}, {val})    set {varname} in window
+					{winnr} in tab page {tabnr} to {val}
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
@@ -2865,6 +2869,20 @@ getregtype([{regname}])					*getregtype()*
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
 
+gettabwinvar({tabnr}, {winnr}, {varname})		*gettabwinvar()*
+		Get the value of an option or local window variable {varname}
+		in window {winnr} in tab page {tabnr}.
+		Tabs are numbered starting with one.  For the current tabpage
+		use |getwinvar()|.
+		When {winnr} is zero the current window is used.
+		This also works for a global option, buffer-local option and
+		window-local option, but it doesn't work for a global variable
+		or buffer-local variable.
+		Note that the name without "w:" must be used.
+		Examples: >
+			:let list_is_on = gettabwinvar(1, 2, '&list')
+			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
+
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window.  The result will be
@@ -2875,14 +2893,8 @@ getwinposy()	The result is a Number, which is the Y coordinate in pixels of
 		the top of the GUI Vim window.  The result will be -1 if the
 		information is not available.
 
-getwinvar({nr}, {varname})				*getwinvar()*
-		The result is the value of option or local window variable
-		{varname} in window {nr}.  When {nr} is zero the current
-		window is used.
-		This also works for a global option, buffer-local option and
-		window-local option, but it doesn't work for a global variable
-		or buffer-local variable.
-		Note that the name without "w:" must be used.
+getwinvar({winnr}, {varname})				*getwinvar()*
+		Like |gettabwinvar()| for the current tabpage.
 		Examples: >
 			:let list_is_on = getwinvar(2, '&list')
 			:echo "myvar = " . getwinvar(1, 'myvar')
@@ -4359,17 +4371,28 @@ setreg({regname}, {value} [,{options}])
 		nothing: >
 			:call setreg('a', '', 'al')
 
-setwinvar({nr}, {varname}, {val})			*setwinvar()*
-		Set option or local variable {varname} in window {nr} to
-		{val}.  When {nr} is zero the current window is used.
+settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
+		Set option or local variable {varname} in window {winnr} to
+		{val}.
+		Tabs are numbered starting with one.  For the current tabpage
+		use |setwinvar()|.
+		When {winnr} is zero the current window is used.
 		This also works for a global or local buffer option, but it
 		doesn't work for a global or local buffer variable.
 		For a local buffer option the global value is unchanged.
 		Note that the variable name without "w:" must be used.
+		Vim briefly goes to the tab page {tabnr}, this may trigger
+		TabLeave and TabEnter autocommands.
+		Examples: >
+			:call settabwinvar(1, 1, "&list", 0)
+			:call settabwinvar(3, 2, "myvar", "foobar")
+<		This function is not available in the |sandbox|.
+
+setwinvar({nr}, {varname}, {val})			*setwinvar()*
+		Like |settabwinvar()| for the current tab page.
 		Examples: >
 			:call setwinvar(1, "&list", 0)
 			:call setwinvar(2, "myvar", "foobar")
-<		This function is not available in the |sandbox|.
 
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
