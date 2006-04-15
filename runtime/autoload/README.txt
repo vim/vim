@@ -17,5 +17,6 @@ htmlcomplete.vim	HTML
 javascriptcomplete.vim  Javascript
 phpcomplete.vim		PHP
 pythoncomplete.vim	Python
+rubycomplete.vim	Ruby
 syntaxcomplete.vim	from syntax highlighting
 xmlcomplete.vim		XML (uses files in the xml directory)
