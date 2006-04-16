@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2000 Jul 15
+" Last Change:	2006 Apr 16
 
 " This file is used for ":syntax off".
 " It removes the autocommands and stops highlighting for all buffers.
@@ -8,6 +8,10 @@
 if !has("syntax")
   finish
 endif
+
+" Remove all autocommands for the Syntax event.  This also avoids that
+" "syntax=foo" in a modeline triggers the SynSet() function of synload.vim.
+au! Syntax
 
 " remove all syntax autocommands and remove the syntax for each buffer
 augroup syntaxset
@@ -17,9 +21,6 @@ augroup syntaxset
   doautoall syntaxset BufEnter *
   au!
 augroup END
-
-" Just in case: remove all autocommands for the Syntax event
-au! Syntax
 
 if exists("syntax_on")
   unlet syntax_on

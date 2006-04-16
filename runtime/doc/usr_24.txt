@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 7.0d.  Last change: 2006 Apr 02
+*usr_24.txt*	For Vim version 7.0e.  Last change: 2006 Apr 02
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

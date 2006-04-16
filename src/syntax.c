@@ -6115,10 +6115,6 @@ static char *(highlight_init_both[]) =
 	CENT("TabLineFill term=reverse cterm=reverse",
 	     "TabLineFill term=reverse cterm=reverse gui=reverse"),
 #endif
-#ifdef FEAT_AUTOCMD
-	CENT("MatchParen term=reverse ctermbg=Cyan",
-	     "MatchParen term=reverse ctermbg=Cyan guibg=Cyan"),
-#endif
 #ifdef FEAT_GUI
 	"Cursor guibg=fg guifg=bg",
 	"lCursor guibg=fg guifg=bg", /* should be different, but what? */
@@ -6196,6 +6192,10 @@ static char *(highlight_init_light[]) =
 	CENT("CursorLine term=underline cterm=underline",
 	     "CursorLine term=underline cterm=underline guibg=Grey90"),
 #endif
+#ifdef FEAT_AUTOCMD
+	CENT("MatchParen term=reverse ctermbg=Cyan",
+	     "MatchParen term=reverse ctermbg=Cyan guibg=Cyan"),
+#endif
 #ifdef FEAT_GUI
 	"Normal gui=NONE",
 #endif
@@ -6268,9 +6268,13 @@ static char *(highlight_init_dark[]) =
 #endif
 #ifdef FEAT_SYN_HL
 	CENT("CursorColumn term=reverse ctermbg=DarkGrey",
-	     "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey90"),
+	     "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey40"),
 	CENT("CursorLine term=underline cterm=underline",
-	     "CursorLine term=underline cterm=underline guibg=Grey90"),
+	     "CursorLine term=underline cterm=underline guibg=Grey40"),
+#endif
+#ifdef FEAT_AUTOCMD
+	CENT("MatchParen term=reverse ctermbg=DarkCyan",
+	     "MatchParen term=reverse ctermbg=DarkCyan guibg=DarkCyan"),
 #endif
 #ifdef FEAT_GUI
 	"Normal gui=NONE",

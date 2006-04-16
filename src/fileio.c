@@ -1259,6 +1259,13 @@ retry:
 			if (bad_char_behavior != BAD_DROP)
 			{
 			    fio_flags = 0;	/* don't convert this */
+# ifdef USE_ICONV
+			    if (iconv_fd != (iconv_t)-1)
+			    {
+				iconv_close(iconv_fd);
+				iconv_fd = (iconv_t)-1;
+			    }
+# endif
 			    if (bad_char_behavior == BAD_KEEP)
 			    {
 				/* Keep the trailing bytes as-is. */

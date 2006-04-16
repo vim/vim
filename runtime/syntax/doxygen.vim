@@ -320,13 +320,15 @@ syn cluster rcGroup add=doxygen.*
 
 " Trick to force special doxygen hilighting if the background changes (need to
 " syn clear first)
-if exists("did_doxygen_syntax_inits")
-  if did_doxygen_syntax_inits != &background && synIDattr(highlightID('doxygen_Dummy'), 'fg', 'gui')==''
-    command -nargs=+ SynColor hi <args>
-    unlet did_doxygen_syntax_inits
+if !exists(':SynColor') 
+  if exists("did_doxygen_syntax_inits")
+    if did_doxygen_syntax_inits != &background && synIDattr(highlightID('doxygen_Dummy'), 'fg', 'gui')==''
+      command -nargs=+ SynColor hi <args>
+      unlet did_doxygen_syntax_inits
+    endif
+  else
+      command -nargs=+ SynColor hi def <args>
   endif
-else
-    command -nargs=+ SynColor hi def <args>
 endif
 
 if !exists("did_doxygen_syntax_inits")
@@ -436,10 +438,18 @@ if !exists("did_doxygen_syntax_inits")
       SynLink doxygenPrev SpecialComment
     endif
   endfun
+  fun! s:Doxygen_ResetSyntax()
+    if exists("did_doxygen_syntax_inits")
+      unlet did_doxygen_syntax_inits
+    endif
+  endfun
+
   call s:Doxygen_Hilights()
   " This is still a proposal, but won't do any harm.
   au Syntax UserColor_reset nested call s:Doxygen_Hilights_Base()
   au Syntax UserColor_{on,reset,enable} nested call s:Doxygen_Hilights()
+  "au User Syntax_UserColor_off nested call s:Doxygen_ResetSyntax()
+
 
   SynLink doxygenBody                   Comment
   SynLink doxygenTODO                   Todo
@@ -549,7 +559,7 @@ syn sync match doxygenSyncEndComment groupthere NONE "\*/"
 if !exists('b:current_syntax')
   let b:current_syntax = "doxygen"
 else
-  let b:current_syntax = b:current_syntax.'+doxygen'
+  let b:current_syntax = b:current_syntax.'.doxygen'
 endif
 
 let &cpo = s:cpo_save

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0d.  Last change: 2006 Apr 14
+*indent.txt*    For Vim version 7.0e.  Last change: 2006 Apr 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -414,7 +414,6 @@ assume a 'shiftwidth' of 4.
 		  if (cond1 &&		    if (cond1 &&
 		         cond2			   cond2
 		     )			    	   )
-		      foo;			foo;
 <
 					*java-cinoptions* *java-indenting*
 	jN    Indent java anonymous classes correctly.  The value 'N' is

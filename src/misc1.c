@@ -6058,7 +6058,7 @@ get_c_indent()
     pos_T	cur_curpos;
     int		amount;
     int		scope_amount;
-    int		cur_amount;
+    int		cur_amount = MAXCOL;
     colnr_T	col;
     char_u	*theline;
     char_u	*linecopy;
@@ -6409,7 +6409,6 @@ get_c_indent()
 	else
 	{
 	    amount = -1;
-	    cur_amount = MAXCOL;
 	    our_paren_pos = *trypos;
 	    for (lnum = cur_curpos.lnum - 1; lnum > our_paren_pos.lnum; --lnum)
 	    {
@@ -6562,7 +6561,7 @@ get_c_indent()
 		/* Add ind_unclosed2 for each '(' before our matching one, but
 		 * ignore (void) before the line (ignore_paren_col). */
 		col = our_paren_pos.col;
-		while (our_paren_pos.col > ignore_paren_col)
+		while ((int)our_paren_pos.col > ignore_paren_col)
 		{
 		    --our_paren_pos.col;
 		    switch (*ml_get_pos(&our_paren_pos))

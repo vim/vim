@@ -28,7 +28,7 @@ endif
 :hi Visual gui=none guifg=khaki guibg=olivedrab cterm=reverse
 :hi WarningMsg guifg=salmon ctermfg=1
 :hi String guifg=SkyBlue ctermfg=darkcyan
-:hi Comment term=bold ctermfg=11 guifg=#80a0ff
+:hi Comment term=bold ctermfg=11 guifg=grey40
 :hi Constant guifg=#ffa0a0 ctermfg=brown
 :hi Special guifg=green ctermfg=brown
 :hi Identifier guifg=salmon ctermfg=red

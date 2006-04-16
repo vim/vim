@@ -8971,6 +8971,10 @@ draw_tabline()
 	    TabPageIdxs[Columns - 1] = -999;
 	}
     }
+
+    /* Reset the flag here again, in case evaluating 'tabline' causes it to be
+     * set. */
+    redraw_tabline = FALSE;
 }
 
 /*

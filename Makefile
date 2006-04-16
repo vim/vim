@@ -69,7 +69,7 @@ all install uninstall tools config configure proto depend lint tags types test t
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 0d
+MINOR = 0e
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -159,7 +159,7 @@ DOSBIN_S =  dosbin_s
 # - The produced uninstalw32.exe and vimrun.exe are used.
 # Create the archives:
 # - Copy all the "*.exe" files to where this Makefile is.
-# - Copy all the "*.pdb" files to the dist directory.
+# - Copy all the "*.pdb" files to where this Makefile is.
 # - "make dosbin".
 # - Run make on Unix to update the ".mo" files.
 # - "make doslang".

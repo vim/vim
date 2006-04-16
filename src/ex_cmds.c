@@ -299,32 +299,38 @@ sort_compare(s1, s2)
     int		result = 0;
 
     /* If the user interrupts, there's no way to stop qsort() immediately, but
-     * if we return 0 every time, qsort will assume it's done sorting and exit */
+     * if we return 0 every time, qsort will assume it's done sorting and
+     * exit. */
     if (sort_abort)
 	return 0;
     fast_breakcheck();
     if (got_int)
 	sort_abort = TRUE;
 
-    /* When sorting numbers "start_col_nr" is the number, not the column number. */
+    /* When sorting numbers "start_col_nr" is the number, not the column
+     * number. */
     if (sort_nr)
 	result = l1.start_col_nr - l2.start_col_nr;
     else
     {
-	/* We need to copy one line into "sortbuf1", because there is no guarantee
-	 * that the first pointer becomes invalid when obtaining the second one. */
-	STRNCPY(sortbuf1, ml_get(l1.lnum) + l1.start_col_nr, l1.end_col_nr - l1.start_col_nr + 1);
+	/* We need to copy one line into "sortbuf1", because there is no
+	 * guarantee that the first pointer becomes invalid when obtaining the
+	 * second one. */
+	STRNCPY(sortbuf1, ml_get(l1.lnum) + l1.start_col_nr,
+					 l1.end_col_nr - l1.start_col_nr + 1);
 	sortbuf1[l1.end_col_nr - l1.start_col_nr] = 0;
-	STRNCPY(sortbuf2, ml_get(l2.lnum) + l2.start_col_nr, l2.end_col_nr - l2.start_col_nr + 1);
+	STRNCPY(sortbuf2, ml_get(l2.lnum) + l2.start_col_nr,
+					 l2.end_col_nr - l2.start_col_nr + 1);
 	sortbuf2[l2.end_col_nr - l2.start_col_nr] = 0;
 
-	result = sort_ic ? STRICMP(sortbuf1, sortbuf2) : STRCMP(sortbuf1, sortbuf2);
+	result = sort_ic ? STRICMP(sortbuf1, sortbuf2)
+						 : STRCMP(sortbuf1, sortbuf2);
     }
-    /* If the two lines have the same value, preserve the original line order */
+
+    /* If two lines have the same value, preserve the original line order. */
     if (result == 0)
-	return (int) (l1.lnum - l2.lnum);
-    else
-	return result;
+	return (int)(l1.lnum - l2.lnum);
+    return result;
 }
 
 /*

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0d.  Last change: 2006 Apr 15
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2480,12 +2480,12 @@ typing a special key.
 When 'foldignore' is set the folds were not updated right away.
 
 When a list is indexed with [a : b] and b was greater than the length an error
-message was given.  Now silently restrict to the length of the list.
+message was given.  Now silently truncate the result.
 
 When using BS during Insert mode completion go back to the original text, so
 that CTRL-N selects the first matching entry.
 
-Added the 'm' flag to 'cinoptions'.
+Added the 'M' flag to 'cinoptions'.
 
 Win32: Make the "gvim --help" window appear in the middle of the screen
 instead of at an arbitrary position. (Randall W. Morris)
@@ -2495,5 +2495,23 @@ Added gettabwinvar() and settabwinvar().
 Command line completion: pressing <Tab> after ":e /usr/*" expands the whole
 tree, because it becomes ":e /usr/**".  Don't add a star if there already is
 one.
+
+Added grey10 to grey90 to all GUIs, so that they can all be used for
+initializing highlighting.  Use grey40 for CursorColumn and CursorLine when
+'background' is "dark".
+
+When reading a file and using iconv for conversion, an incomplete byte
+sequence at the end caused problems. (Yukihiro Nakadaira)
+
+
+--- fixes and changes since Vim 7.0e ---
+
+Default color for MatchParen when 'background' is "dark" is now DarkCyan.
+
+":syn off" had to be used twice in a file that sets 'syntax' in a modeline.
+(Michael Geddes)
+
+When using ":vsp" or ":sp" the available space wasn't used equally between
+windows. (Servatius Brandt)
 
  vim:tw=78:ts=8:ft=help:norl:

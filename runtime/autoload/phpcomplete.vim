@@ -1,15 +1,14 @@
 " Vim completion script
 " Language:	PHP
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 05
+" Last Change:	2006 Apr 15
 "
 "   TODO:
 "   - Class aware completion:
-"      a) additional analize of tags file(s)
-"      b) "live" parsing of data, maybe with caching
+"      a) caching?
 "   - Switching to HTML (XML?) completion (SQL) inside of phpStrings
-"   - allow also for XML completion
-"   - better 'info', 'menu'
+"   - allow also for XML completion <- better do html_flavor for HTML
+"     completion
 "   - outside of <?php?> getting parent tag may cause problems. Heh, even in
 "     perfect conditions GetLastOpenTag doesn't cooperate... Inside of
 "     phpStrings this can be even a bonus but outside of <?php?> it is not the
@@ -563,12 +562,13 @@ function! phpcomplete#GetClassName(scontext) " {{{
 	exe 'silent! vimgrep /^'.object.'.*\$'.object.'.*=\s*new\s\+.*\tv\(\t\|$\)/j '.fnames
 	let qflist = getqflist()
 	if len(qflist) == 0
-		return []
+		return ''
+	else
+		" In all properly managed projects it should be one item list, even if it
+		" *is* longer we cannot solve conflicts, assume it is first element
+		let classname = matchstr(qflist[0]['text'], '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
+		return classname
 	endif
-	" In all properly managed projects it should be one item list, even if it
-	" *is* longer we cannot solve conflicts, assume it is first element
-	let classname = matchstr(qflist[0]['text'], '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
-	return classname
 
 endfunction
 " }}}
@@ -577,7 +577,7 @@ function! phpcomplete#GetClassLocation(classname) " {{{
 	for fname in tagfiles()
 		let fhead = fnamemodify(fname, ":h")
 		if fhead != ''
-			let psep = '/'
+			let psep = '/' " Note: slash is potential problem!
 			let fhead .= psep
 		endif
 		let fname = escape(fname, " \\")
@@ -587,9 +587,10 @@ function! phpcomplete#GetClassLocation(classname) " {{{
 		let classlocation = matchstr(qflist[0]['text'], '\t\zs\f\+\ze\t')
 		" And only one class location
 		if classlocation != ''
-			let pset = '/' " Note: slash is potential problem!
 			let classlocation = fhead.classlocation
 			return classlocation
+		else
+			return ''
 		endif
 	endfor
 

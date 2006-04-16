@@ -1,6 +1,6 @@
 "%% SiSU Vim syntax file
-" Markup:       SiSU
 " SiSU Maintainer: Ralph Amissah <ralph@amissah.com>
+" SiSU Markup:     SiSU (sisu-0.38)
 " (originally looked at Ruby Vim by Mirko Nasato)
 if version < 600
   syntax clear
@@ -42,8 +42,11 @@ syn match sisu_error              "<a href\|</a>]" contains=sisu_error
 " Simple Markup:
 "%   header
 syn region sisu_header_content contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="^0\~\(\S\+\|[^-]\)" end="$"
+syn region sisu_header_content contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="^0\~\(tags\?\|date\)\s\+"rs=e-1 end="\n$"
+syn region sisu_header_content contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="^@\S\+:[+-]\?\s"rs=e-1 end="$"
+syn region sisu_header_content contains=sisu_error,sisu_error_wspace,sisu_content_alt,sisu_link,sisu_linked,sisu_break matchgroup=sisu_header start="^@\(tags\?\|date\):\s\+"rs=e-1 end="\n$"
 "%   headings
-syn region sisu_heading contains=sisu_mark_endnote,sisu_content_endnote,sisu_marktail,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_ocn,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_structure start="^[1-8]\~\(\S\+\|[^-]\)" end="$"
+syn region sisu_heading contains=sisu_mark_endnote,sisu_content_endnote,sisu_marktail,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_ocn,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_structure start="^\([1-8]\|:\?[A-C]\)\~\(\S\+\|[^-]\)" end="$"
 "%   grouped text
 syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="table{.\+" end="}table"
 syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_contain start="{t\~h}" end="$$"
@@ -57,8 +60,9 @@ syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_co
 "%   line operations
 syn region sisu_link contains=sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_action start="^<<\s*|[a-zA-Z0-9^._-]\+|@|[a-zA-Z0-9^._-]\+|"rs=s+2 end="$"
 syn region sisu_control contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_control start="\(\(^\| \)!_ \|<:b>\)" end="$"
-syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^_\([12]\*\?\|\*\) " end="$"
-syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^\(#[ 1]\|_# \)" end="$"
+syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_link,sisu_linked,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^_\([12*]\|[12]\*\) " end="$"
+syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_link,sisu_linked,sisu_error,sisu_error_wspace,sisu_error_spell matchgroup=sisu_markpara start="^\(#[ 1]\|_# \)" end="$"
+syn region sisu_comment contains=sisu_error_spell matchgroup=sisu_comment start="^%\{1,2\} " end="$"
 "%   font face curly brackets
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="\*{" end="}\*"
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_spell matchgroup=sisu_fontface start="!{" end="}!"
@@ -93,7 +97,6 @@ else " not Expensive
   syn region  sisu_content_alt  matchgroup=sisu_control start="^\s*def\s" matchgroup=NONE end="[?!]\|\>" skip="\.\|\(::\)" oneline
 endif " Expensive?
 "% 5 Headers: and Headings (Document Instructions)
-syn match   sisu_comment "^% .*\|^%% .*"
 syn match   sisu_control contains=sisu_error,sisu_error_wspace "4\~! \S\+"
 syn region  sisu_markpara contains=sisu_error,sisu_error_wspace start="^=begin" end="^=end.*$"
 "% 4 Errors?
@@ -111,6 +114,7 @@ syn match sisu_error contains=sisu_error "^[0-9]\~\s*$"
 syn match sisu_error contains=sisu_error "^[0-9]\~\S\+\s*$"
 syn match sisu_error contains=sisu_error "[^{]\~\^[^ \)]"
 syn match sisu_error contains=sisu_error "\~\^\s\+\.\s*"
+syn match sisu_error contains=sisu_error "{\~^\S\+"
 syn match sisu_error contains=sisu_error "[_/\*!^]{[ .,:;?><]*}[_/\*!^]"
 syn match sisu_error contains=sisu_error "[^ (\"'(\[][_/\*!]{\|}[_/\*!][a-zA-Z0-9)\]\"']"
 syn match sisu_error contains=sisu_error "<dir>"
@@ -157,6 +161,7 @@ if version >= 508 || !exists("did_sisu_syntax_inits")
   HiLink sisu_action          Identifier
   HiLink sisu_comment         Comment
   HiLink sisu_error_spell     SpellErrors "line does nothing
+"  HiLink sisu_error_spell     ErrorMsg
   HiLink sisu_error_wspace    Error
   HiLink sisu_error           Error
   delcommand HiLink

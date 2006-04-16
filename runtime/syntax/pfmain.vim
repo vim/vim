@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:	Postfix main.cf configuration
 " Maintainer:	KELEMEN Peter <Peter dot Kelemen at cern dot ch>
-" Last Change:	2004 Jun 01
-" Version:	0.12
+" Last Change:	2006 Apr 15
+" Version:	0.20
 " URL:		http://cern.ch/fuji/vim/syntax/pfmain.vim
-" Comment:	Based on Postfix 2.1.1 defaults. (+TLS)
+" Comment:	Based on Postfix 2.3.x defaults.
 
 if version < 600
 	syntax clear
@@ -36,6 +36,7 @@ syntax keyword pfmainConf address_verify_positive_refresh_time
 syntax keyword pfmainConf address_verify_relay_transport
 syntax keyword pfmainConf address_verify_relayhost
 syntax keyword pfmainConf address_verify_sender
+syntax keyword pfmainConf address_verify_sender_dependent_relayhost_maps
 syntax keyword pfmainConf address_verify_service_name
 syntax keyword pfmainConf address_verify_transport_maps
 syntax keyword pfmainConf address_verify_virtual_transport
@@ -48,9 +49,14 @@ syntax keyword pfmainConf allow_percent_hack
 syntax keyword pfmainConf allow_untrusted_routing
 syntax keyword pfmainConf alternate_config_directories
 syntax keyword pfmainConf always_bcc
+syntax keyword pfmainConf anvil_rate_time_unit
+syntax keyword pfmainConf anvil_status_update_time
 syntax keyword pfmainConf append_at_myorigin
 syntax keyword pfmainConf append_dot_mydomain
 syntax keyword pfmainConf application_event_drain_time
+syntax keyword pfmainConf authorized_flush_users
+syntax keyword pfmainConf authorized_mailq_users
+syntax keyword pfmainConf authorized_submit_users
 syntax keyword pfmainConf backwards_bounce_logfile_compatibility
 syntax keyword pfmainConf berkeley_db_create_buffer_size
 syntax keyword pfmainConf berkeley_db_read_buffer_size
@@ -62,13 +68,20 @@ syntax keyword pfmainConf bounce_notice_recipient
 syntax keyword pfmainConf bounce_queue_lifetime
 syntax keyword pfmainConf bounce_service_name
 syntax keyword pfmainConf bounce_size_limit
+syntax keyword pfmainConf bounce_template_file
 syntax keyword pfmainConf broken_sasl_auth_clients
+syntax keyword pfmainConf canonical_classes
 syntax keyword pfmainConf canonical_maps
 syntax keyword pfmainConf cleanup_service_name
 syntax keyword pfmainConf command_directory
+syntax keyword pfmainConf command_execution_directory
 syntax keyword pfmainConf command_expansion_filter
 syntax keyword pfmainConf command_time_limit
 syntax keyword pfmainConf config_directory
+syntax keyword pfmainConf connection_cache_protocol_timeout
+syntax keyword pfmainConf connection_cache_service_name
+syntax keyword pfmainConf connection_cache_status_update_time
+syntax keyword pfmainConf connection_cache_ttl_limit
 syntax keyword pfmainConf content_filter
 syntax keyword pfmainConf daemon_directory
 syntax keyword pfmainConf daemon_timeout
@@ -91,6 +104,7 @@ syntax keyword pfmainConf default_verp_delimiters
 syntax keyword pfmainConf defer_code
 syntax keyword pfmainConf defer_service_name
 syntax keyword pfmainConf defer_transports
+syntax keyword pfmainConf delay_logging_resolution_limit
 syntax keyword pfmainConf delay_notice_recipient
 syntax keyword pfmainConf delay_warning_time
 syntax keyword pfmainConf deliver_lock_attempts
@@ -104,14 +118,14 @@ syntax keyword pfmainConf dont_remove
 syntax keyword pfmainConf double_bounce_sender
 syntax keyword pfmainConf duplicate_filter_limit
 syntax keyword pfmainConf empty_address_recipient
-syntax keyword pfmainConf enable_errors_to
 syntax keyword pfmainConf enable_original_recipient
 syntax keyword pfmainConf error_notice_recipient
 syntax keyword pfmainConf error_service_name
+syntax keyword pfmainConf execution_directory_expansion_filter
 syntax keyword pfmainConf expand_owner_alias
 syntax keyword pfmainConf export_environment
-syntax keyword pfmainConf fallback_relay
 syntax keyword pfmainConf fallback_transport
+syntax keyword pfmainConf fallback_transport_maps
 syntax keyword pfmainConf fast_flush_domains
 syntax keyword pfmainConf fast_flush_purge_time
 syntax keyword pfmainConf fast_flush_refresh_time
@@ -121,6 +135,7 @@ syntax keyword pfmainConf fork_attempts
 syntax keyword pfmainConf fork_delay
 syntax keyword pfmainConf forward_expansion_filter
 syntax keyword pfmainConf forward_path
+syntax keyword pfmainConf frozen_delivered_to
 syntax keyword pfmainConf hash_queue_depth
 syntax keyword pfmainConf hash_queue_names
 syntax keyword pfmainConf header_address_token_limit
@@ -134,34 +149,68 @@ syntax keyword pfmainConf ignore_mx_lookup_error
 syntax keyword pfmainConf import_environment
 syntax keyword pfmainConf in_flow_delay
 syntax keyword pfmainConf inet_interfaces
+syntax keyword pfmainConf inet_protocols
 syntax keyword pfmainConf initial_destination_concurrency
 syntax keyword pfmainConf invalid_hostname_reject_code
 syntax keyword pfmainConf ipc_idle
 syntax keyword pfmainConf ipc_timeout
 syntax keyword pfmainConf ipc_ttl
 syntax keyword pfmainConf line_length_limit
-syntax keyword pfmainConf lmtp_cache_connection
+syntax keyword pfmainConf lmtp_bind_address
+syntax keyword pfmainConf lmtp_bind_address6
+syntax keyword pfmainConf lmtp_cname_overrides_servername
 syntax keyword pfmainConf lmtp_connect_timeout
+syntax keyword pfmainConf lmtp_connection_cache_destinations
+syntax keyword pfmainConf lmtp_connection_cache_on_demand
+syntax keyword pfmainConf lmtp_connection_cache_time_limit
+syntax keyword pfmainConf lmtp_connection_reuse_time_limit
 syntax keyword pfmainConf lmtp_data_done_timeout
 syntax keyword pfmainConf lmtp_data_init_timeout
 syntax keyword pfmainConf lmtp_data_xfer_timeout
+syntax keyword pfmainConf lmtp_defer_if_no_mx_address_found
 syntax keyword pfmainConf lmtp_destination_concurrency_limit
 syntax keyword pfmainConf lmtp_destination_recipient_limit
+syntax keyword pfmainConf lmtp_discard_lhlo_keyword_address_maps
+syntax keyword pfmainConf lmtp_discard_lhlo_keywords
+syntax keyword pfmainConf lmtp_enforce_tls
+syntax keyword pfmainConf lmtp_generic_maps
+syntax keyword pfmainConf lmtp_host_lookup
+syntax keyword pfmainConf lmtp_lhlo_name
 syntax keyword pfmainConf lmtp_lhlo_timeout
+syntax keyword pfmainConf lmtp_line_length_limit
 syntax keyword pfmainConf lmtp_mail_timeout
+syntax keyword pfmainConf lmtp_mx_address_limit
+syntax keyword pfmainConf lmtp_mx_session_limit
+syntax keyword pfmainConf lmtp_pix_workaround_delay_time
+syntax keyword pfmainConf lmtp_pix_workaround_threshold_time
 syntax keyword pfmainConf lmtp_quit_timeout
+syntax keyword pfmainConf lmtp_quote_rfc821_envelope
+syntax keyword pfmainConf lmtp_randomize_addresses
 syntax keyword pfmainConf lmtp_rcpt_timeout
 syntax keyword pfmainConf lmtp_rset_timeout
 syntax keyword pfmainConf lmtp_sasl_auth_enable
+syntax keyword pfmainConf lmtp_sasl_mechanism_filter
 syntax keyword pfmainConf lmtp_sasl_password_maps
+syntax keyword pfmainConf lmtp_sasl_path
 syntax keyword pfmainConf lmtp_sasl_security_options
+syntax keyword pfmainConf lmtp_sasl_tls_security_options
+syntax keyword pfmainConf lmtp_sasl_tls_verified_security_options
+syntax keyword pfmainConf lmtp_sasl_type
 syntax keyword pfmainConf lmtp_send_xforward_command
-syntax keyword pfmainConf lmtp_skip_quit_response
+syntax keyword pfmainConf lmtp_sender_dependent_authentication
+syntax keyword pfmainConf lmtp_skip_5xx_greeting
+syntax keyword pfmainConf lmtp_starttls_timeout
 syntax keyword pfmainConf lmtp_tcp_port
+syntax keyword pfmainConf lmtp_tls_enforce_peername
+syntax keyword pfmainConf lmtp_tls_note_starttls_offer
+syntax keyword pfmainConf lmtp_tls_per_site
+syntax keyword pfmainConf lmtp_tls_scert_verifydepth
+syntax keyword pfmainConf lmtp_use_tls
 syntax keyword pfmainConf lmtp_xforward_timeout
 syntax keyword pfmainConf local_command_shell
 syntax keyword pfmainConf local_destination_concurrency_limit
 syntax keyword pfmainConf local_destination_recipient_limit
+syntax keyword pfmainConf local_header_rewrite_clients
 syntax keyword pfmainConf local_recipient_maps
 syntax keyword pfmainConf local_transport
 syntax keyword pfmainConf luser_relay
@@ -175,6 +224,7 @@ syntax keyword pfmainConf mailbox_command_maps
 syntax keyword pfmainConf mailbox_delivery_lock
 syntax keyword pfmainConf mailbox_size_limit
 syntax keyword pfmainConf mailbox_transport
+syntax keyword pfmainConf mailbox_transport_maps
 syntax keyword pfmainConf mailq_path
 syntax keyword pfmainConf manpage_directory
 syntax keyword pfmainConf maps_rbl_domains
@@ -186,7 +236,9 @@ syntax keyword pfmainConf max_idle
 syntax keyword pfmainConf max_use
 syntax keyword pfmainConf maximal_backoff_time
 syntax keyword pfmainConf maximal_queue_lifetime
+syntax keyword pfmainConf message_reject_characters
 syntax keyword pfmainConf message_size_limit
+syntax keyword pfmainConf message_strip_characters
 syntax keyword pfmainConf mime_boundary_length_limit
 syntax keyword pfmainConf mime_header_checks
 syntax keyword pfmainConf mime_nesting_limit
@@ -206,6 +258,7 @@ syntax keyword pfmainConf owner_request_special
 syntax keyword pfmainConf parent_domain_matches_subdomains
 syntax keyword pfmainConf permit_mx_backup_networks
 syntax keyword pfmainConf pickup_service_name
+syntax keyword pfmainConf plaintext_reject_code
 syntax keyword pfmainConf prepend_delivered_header
 syntax keyword pfmainConf process_id_directory
 syntax keyword pfmainConf propagate_unmatched_extensions
@@ -228,6 +281,7 @@ syntax keyword pfmainConf rbl_reply_maps
 syntax keyword pfmainConf readme_directory
 syntax keyword pfmainConf receive_override_options
 syntax keyword pfmainConf recipient_bcc_maps
+syntax keyword pfmainConf recipient_canonical_classes
 syntax keyword pfmainConf recipient_canonical_maps
 syntax keyword pfmainConf recipient_delimiter
 syntax keyword pfmainConf reject_code
@@ -240,14 +294,17 @@ syntax keyword pfmainConf relay_recipient_maps
 syntax keyword pfmainConf relay_transport
 syntax keyword pfmainConf relayhost
 syntax keyword pfmainConf relocated_maps
+syntax keyword pfmainConf remote_header_rewrite_domain
 syntax keyword pfmainConf require_home_directory
 syntax keyword pfmainConf resolve_dequoted_address
 syntax keyword pfmainConf resolve_null_domain
+syntax keyword pfmainConf resolve_numeric_domain
 syntax keyword pfmainConf rewrite_service_name
 syntax keyword pfmainConf sample_directory
-syntax keyword pfmainConf sender_based_routing
 syntax keyword pfmainConf sender_bcc_maps
+syntax keyword pfmainConf sender_canonical_classes
 syntax keyword pfmainConf sender_canonical_maps
+syntax keyword pfmainConf sender_dependent_relayhost_maps
 syntax keyword pfmainConf sendmail_path
 syntax keyword pfmainConf service_throttle_time
 syntax keyword pfmainConf setgid_group
@@ -255,14 +312,24 @@ syntax keyword pfmainConf show_user_unknown_table_name
 syntax keyword pfmainConf showq_service_name
 syntax keyword pfmainConf smtp_always_send_ehlo
 syntax keyword pfmainConf smtp_bind_address
+syntax keyword pfmainConf smtp_bind_address6
+syntax keyword pfmainConf smtp_cname_overrides_servername
 syntax keyword pfmainConf smtp_connect_timeout
+syntax keyword pfmainConf smtp_connection_cache_destinations
+syntax keyword pfmainConf smtp_connection_cache_on_demand
+syntax keyword pfmainConf smtp_connection_cache_time_limit
+syntax keyword pfmainConf smtp_connection_reuse_time_limit
 syntax keyword pfmainConf smtp_data_done_timeout
 syntax keyword pfmainConf smtp_data_init_timeout
 syntax keyword pfmainConf smtp_data_xfer_timeout
 syntax keyword pfmainConf smtp_defer_if_no_mx_address_found
 syntax keyword pfmainConf smtp_destination_concurrency_limit
 syntax keyword pfmainConf smtp_destination_recipient_limit
+syntax keyword pfmainConf smtp_discard_ehlo_keyword_address_maps
+syntax keyword pfmainConf smtp_discard_ehlo_keywords
 syntax keyword pfmainConf smtp_enforce_tls
+syntax keyword pfmainConf smtp_fallback_relay
+syntax keyword pfmainConf smtp_generic_maps
 syntax keyword pfmainConf smtp_helo_name
 syntax keyword pfmainConf smtp_helo_timeout
 syntax keyword pfmainConf smtp_host_lookup
@@ -279,11 +346,15 @@ syntax keyword pfmainConf smtp_randomize_addresses
 syntax keyword pfmainConf smtp_rcpt_timeout
 syntax keyword pfmainConf smtp_rset_timeout
 syntax keyword pfmainConf smtp_sasl_auth_enable
+syntax keyword pfmainConf smtp_sasl_mechanism_filter
 syntax keyword pfmainConf smtp_sasl_password_maps
+syntax keyword pfmainConf smtp_sasl_path
 syntax keyword pfmainConf smtp_sasl_security_options
 syntax keyword pfmainConf smtp_sasl_tls_security_options
 syntax keyword pfmainConf smtp_sasl_tls_verified_security_options
+syntax keyword pfmainConf smtp_sasl_type
 syntax keyword pfmainConf smtp_send_xforward_command
+syntax keyword pfmainConf smtp_sender_dependent_authentication
 syntax keyword pfmainConf smtp_skip_5xx_greeting
 syntax keyword pfmainConf smtp_skip_quit_response
 syntax keyword pfmainConf smtp_starttls_timeout
@@ -308,15 +379,23 @@ syntax keyword pfmainConf smtpd_authorized_xclient_hosts
 syntax keyword pfmainConf smtpd_authorized_xforward_hosts
 syntax keyword pfmainConf smtpd_banner
 syntax keyword pfmainConf smtpd_client_connection_count_limit
-syntax keyword pfmainConf smtpd_client_connection_limit_exceptions
 syntax keyword pfmainConf smtpd_client_connection_rate_limit
+syntax keyword pfmainConf smtpd_client_event_limit_exceptions
+syntax keyword pfmainConf smtpd_client_message_rate_limit
+syntax keyword pfmainConf smtpd_client_new_tls_session_rate_limit
+syntax keyword pfmainConf smtpd_client_recipient_rate_limit
 syntax keyword pfmainConf smtpd_client_restrictions
 syntax keyword pfmainConf smtpd_data_restrictions
+syntax keyword pfmainConf smtpd_delay_open_until_valid_rcpt
 syntax keyword pfmainConf smtpd_delay_reject
+syntax keyword pfmainConf smtpd_discard_ehlo_keyword_address_maps
+syntax keyword pfmainConf smtpd_discard_ehlo_keywords
+syntax keyword pfmainConf smtpd_end_of_data_restrictions
 syntax keyword pfmainConf smtpd_enforce_tls
 syntax keyword pfmainConf smtpd_error_sleep_time
 syntax keyword pfmainConf smtpd_etrn_restrictions
 syntax keyword pfmainConf smtpd_expansion_filter
+syntax keyword pfmainConf smtpd_forbidden_commands
 syntax keyword pfmainConf smtpd_hard_error_limit
 syntax keyword pfmainConf smtpd_helo_required
 syntax keyword pfmainConf smtpd_helo_restrictions
@@ -324,6 +403,7 @@ syntax keyword pfmainConf smtpd_history_flush_threshold
 syntax keyword pfmainConf smtpd_junk_command_limit
 syntax keyword pfmainConf smtpd_noop_commands
 syntax keyword pfmainConf smtpd_null_access_lookup_key
+syntax keyword pfmainConf smtpd_peername_lookup
 syntax keyword pfmainConf smtpd_policy_service_max_idle
 syntax keyword pfmainConf smtpd_policy_service_max_ttl
 syntax keyword pfmainConf smtpd_policy_service_timeout
@@ -336,12 +416,14 @@ syntax keyword pfmainConf smtpd_recipient_restrictions
 syntax keyword pfmainConf smtpd_reject_unlisted_recipient
 syntax keyword pfmainConf smtpd_reject_unlisted_sender
 syntax keyword pfmainConf smtpd_restriction_classes
-syntax keyword pfmainConf smtpd_sasl_application_name
 syntax keyword pfmainConf smtpd_sasl_auth_enable
+syntax keyword pfmainConf smtpd_sasl_authenticated_header
 syntax keyword pfmainConf smtpd_sasl_exceptions_networks
 syntax keyword pfmainConf smtpd_sasl_local_domain
+syntax keyword pfmainConf smtpd_sasl_path
 syntax keyword pfmainConf smtpd_sasl_security_options
 syntax keyword pfmainConf smtpd_sasl_tls_security_options
+syntax keyword pfmainConf smtpd_sasl_type
 syntax keyword pfmainConf smtpd_sender_login_maps
 syntax keyword pfmainConf smtpd_sender_restrictions
 syntax keyword pfmainConf smtpd_soft_error_limit
@@ -378,7 +460,6 @@ syntax keyword pfmainConf swap_bangpath
 syntax keyword pfmainConf syslog_facility
 syntax keyword pfmainConf syslog_name
 syntax keyword pfmainConf tls_daemon_random_bytes
-syntax keyword pfmainConf tls_daemon_random_source
 syntax keyword pfmainConf tls_random_bytes
 syntax keyword pfmainConf tls_random_exchange_name
 syntax keyword pfmainConf tls_random_prng_update_period
@@ -429,6 +510,7 @@ syntax match pfmainRef "$\<address_verify_positive_refresh_time\>"
 syntax match pfmainRef "$\<address_verify_relay_transport\>"
 syntax match pfmainRef "$\<address_verify_relayhost\>"
 syntax match pfmainRef "$\<address_verify_sender\>"
+syntax match pfmainRef "$\<address_verify_sender_dependent_relayhost_maps\>"
 syntax match pfmainRef "$\<address_verify_service_name\>"
 syntax match pfmainRef "$\<address_verify_transport_maps\>"
 syntax match pfmainRef "$\<address_verify_virtual_transport\>"
@@ -441,9 +523,14 @@ syntax match pfmainRef "$\<allow_percent_hack\>"
 syntax match pfmainRef "$\<allow_untrusted_routing\>"
 syntax match pfmainRef "$\<alternate_config_directories\>"
 syntax match pfmainRef "$\<always_bcc\>"
+syntax match pfmainRef "$\<anvil_rate_time_unit\>"
+syntax match pfmainRef "$\<anvil_status_update_time\>"
 syntax match pfmainRef "$\<append_at_myorigin\>"
 syntax match pfmainRef "$\<append_dot_mydomain\>"
 syntax match pfmainRef "$\<application_event_drain_time\>"
+syntax match pfmainRef "$\<authorized_flush_users\>"
+syntax match pfmainRef "$\<authorized_mailq_users\>"
+syntax match pfmainRef "$\<authorized_submit_users\>"
 syntax match pfmainRef "$\<backwards_bounce_logfile_compatibility\>"
 syntax match pfmainRef "$\<berkeley_db_create_buffer_size\>"
 syntax match pfmainRef "$\<berkeley_db_read_buffer_size\>"
@@ -455,13 +542,20 @@ syntax match pfmainRef "$\<bounce_notice_recipient\>"
 syntax match pfmainRef "$\<bounce_queue_lifetime\>"
 syntax match pfmainRef "$\<bounce_service_name\>"
 syntax match pfmainRef "$\<bounce_size_limit\>"
+syntax match pfmainRef "$\<bounce_template_file\>"
 syntax match pfmainRef "$\<broken_sasl_auth_clients\>"
+syntax match pfmainRef "$\<canonical_classes\>"
 syntax match pfmainRef "$\<canonical_maps\>"
 syntax match pfmainRef "$\<cleanup_service_name\>"
 syntax match pfmainRef "$\<command_directory\>"
+syntax match pfmainRef "$\<command_execution_directory\>"
 syntax match pfmainRef "$\<command_expansion_filter\>"
 syntax match pfmainRef "$\<command_time_limit\>"
 syntax match pfmainRef "$\<config_directory\>"
+syntax match pfmainRef "$\<connection_cache_protocol_timeout\>"
+syntax match pfmainRef "$\<connection_cache_service_name\>"
+syntax match pfmainRef "$\<connection_cache_status_update_time\>"
+syntax match pfmainRef "$\<connection_cache_ttl_limit\>"
 syntax match pfmainRef "$\<content_filter\>"
 syntax match pfmainRef "$\<daemon_directory\>"
 syntax match pfmainRef "$\<daemon_timeout\>"
@@ -484,6 +578,7 @@ syntax match pfmainRef "$\<default_verp_delimiters\>"
 syntax match pfmainRef "$\<defer_code\>"
 syntax match pfmainRef "$\<defer_service_name\>"
 syntax match pfmainRef "$\<defer_transports\>"
+syntax match pfmainRef "$\<delay_logging_resolution_limit\>"
 syntax match pfmainRef "$\<delay_notice_recipient\>"
 syntax match pfmainRef "$\<delay_warning_time\>"
 syntax match pfmainRef "$\<deliver_lock_attempts\>"
@@ -497,14 +592,14 @@ syntax match pfmainRef "$\<dont_remove\>"
 syntax match pfmainRef "$\<double_bounce_sender\>"
 syntax match pfmainRef "$\<duplicate_filter_limit\>"
 syntax match pfmainRef "$\<empty_address_recipient\>"
-syntax match pfmainRef "$\<enable_errors_to\>"
 syntax match pfmainRef "$\<enable_original_recipient\>"
 syntax match pfmainRef "$\<error_notice_recipient\>"
 syntax match pfmainRef "$\<error_service_name\>"
+syntax match pfmainRef "$\<execution_directory_expansion_filter\>"
 syntax match pfmainRef "$\<expand_owner_alias\>"
 syntax match pfmainRef "$\<export_environment\>"
-syntax match pfmainRef "$\<fallback_relay\>"
 syntax match pfmainRef "$\<fallback_transport\>"
+syntax match pfmainRef "$\<fallback_transport_maps\>"
 syntax match pfmainRef "$\<fast_flush_domains\>"
 syntax match pfmainRef "$\<fast_flush_purge_time\>"
 syntax match pfmainRef "$\<fast_flush_refresh_time\>"
@@ -514,6 +609,7 @@ syntax match pfmainRef "$\<fork_attempts\>"
 syntax match pfmainRef "$\<fork_delay\>"
 syntax match pfmainRef "$\<forward_expansion_filter\>"
 syntax match pfmainRef "$\<forward_path\>"
+syntax match pfmainRef "$\<frozen_delivered_to\>"
 syntax match pfmainRef "$\<hash_queue_depth\>"
 syntax match pfmainRef "$\<hash_queue_names\>"
 syntax match pfmainRef "$\<header_address_token_limit\>"
@@ -527,34 +623,68 @@ syntax match pfmainRef "$\<ignore_mx_lookup_error\>"
 syntax match pfmainRef "$\<import_environment\>"
 syntax match pfmainRef "$\<in_flow_delay\>"
 syntax match pfmainRef "$\<inet_interfaces\>"
+syntax match pfmainRef "$\<inet_protocols\>"
 syntax match pfmainRef "$\<initial_destination_concurrency\>"
 syntax match pfmainRef "$\<invalid_hostname_reject_code\>"
 syntax match pfmainRef "$\<ipc_idle\>"
 syntax match pfmainRef "$\<ipc_timeout\>"
 syntax match pfmainRef "$\<ipc_ttl\>"
 syntax match pfmainRef "$\<line_length_limit\>"
-syntax match pfmainRef "$\<lmtp_cache_connection\>"
+syntax match pfmainRef "$\<lmtp_bind_address\>"
+syntax match pfmainRef "$\<lmtp_bind_address6\>"
+syntax match pfmainRef "$\<lmtp_cname_overrides_servername\>"
 syntax match pfmainRef "$\<lmtp_connect_timeout\>"
+syntax match pfmainRef "$\<lmtp_connection_cache_destinations\>"
+syntax match pfmainRef "$\<lmtp_connection_cache_on_demand\>"
+syntax match pfmainRef "$\<lmtp_connection_cache_time_limit\>"
+syntax match pfmainRef "$\<lmtp_connection_reuse_time_limit\>"
 syntax match pfmainRef "$\<lmtp_data_done_timeout\>"
 syntax match pfmainRef "$\<lmtp_data_init_timeout\>"
 syntax match pfmainRef "$\<lmtp_data_xfer_timeout\>"
+syntax match pfmainRef "$\<lmtp_defer_if_no_mx_address_found\>"
 syntax match pfmainRef "$\<lmtp_destination_concurrency_limit\>"
 syntax match pfmainRef "$\<lmtp_destination_recipient_limit\>"
+syntax match pfmainRef "$\<lmtp_discard_lhlo_keyword_address_maps\>"
+syntax match pfmainRef "$\<lmtp_discard_lhlo_keywords\>"
+syntax match pfmainRef "$\<lmtp_enforce_tls\>"
+syntax match pfmainRef "$\<lmtp_generic_maps\>"
+syntax match pfmainRef "$\<lmtp_host_lookup\>"
+syntax match pfmainRef "$\<lmtp_lhlo_name\>"
 syntax match pfmainRef "$\<lmtp_lhlo_timeout\>"
+syntax match pfmainRef "$\<lmtp_line_length_limit\>"
 syntax match pfmainRef "$\<lmtp_mail_timeout\>"
+syntax match pfmainRef "$\<lmtp_mx_address_limit\>"
+syntax match pfmainRef "$\<lmtp_mx_session_limit\>"
+syntax match pfmainRef "$\<lmtp_pix_workaround_delay_time\>"
+syntax match pfmainRef "$\<lmtp_pix_workaround_threshold_time\>"
 syntax match pfmainRef "$\<lmtp_quit_timeout\>"
+syntax match pfmainRef "$\<lmtp_quote_rfc821_envelope\>"
+syntax match pfmainRef "$\<lmtp_randomize_addresses\>"
 syntax match pfmainRef "$\<lmtp_rcpt_timeout\>"
 syntax match pfmainRef "$\<lmtp_rset_timeout\>"
 syntax match pfmainRef "$\<lmtp_sasl_auth_enable\>"
+syntax match pfmainRef "$\<lmtp_sasl_mechanism_filter\>"
 syntax match pfmainRef "$\<lmtp_sasl_password_maps\>"
+syntax match pfmainRef "$\<lmtp_sasl_path\>"
 syntax match pfmainRef "$\<lmtp_sasl_security_options\>"
+syntax match pfmainRef "$\<lmtp_sasl_tls_security_options\>"
+syntax match pfmainRef "$\<lmtp_sasl_tls_verified_security_options\>"
+syntax match pfmainRef "$\<lmtp_sasl_type\>"
 syntax match pfmainRef "$\<lmtp_send_xforward_command\>"
-syntax match pfmainRef "$\<lmtp_skip_quit_response\>"
+syntax match pfmainRef "$\<lmtp_sender_dependent_authentication\>"
+syntax match pfmainRef "$\<lmtp_skip_5xx_greeting\>"
+syntax match pfmainRef "$\<lmtp_starttls_timeout\>"
 syntax match pfmainRef "$\<lmtp_tcp_port\>"
+syntax match pfmainRef "$\<lmtp_tls_enforce_peername\>"
+syntax match pfmainRef "$\<lmtp_tls_note_starttls_offer\>"
+syntax match pfmainRef "$\<lmtp_tls_per_site\>"
+syntax match pfmainRef "$\<lmtp_tls_scert_verifydepth\>"
+syntax match pfmainRef "$\<lmtp_use_tls\>"
 syntax match pfmainRef "$\<lmtp_xforward_timeout\>"
 syntax match pfmainRef "$\<local_command_shell\>"
 syntax match pfmainRef "$\<local_destination_concurrency_limit\>"
 syntax match pfmainRef "$\<local_destination_recipient_limit\>"
+syntax match pfmainRef "$\<local_header_rewrite_clients\>"
 syntax match pfmainRef "$\<local_recipient_maps\>"
 syntax match pfmainRef "$\<local_transport\>"
 syntax match pfmainRef "$\<luser_relay\>"
@@ -568,6 +698,7 @@ syntax match pfmainRef "$\<mailbox_command_maps\>"
 syntax match pfmainRef "$\<mailbox_delivery_lock\>"
 syntax match pfmainRef "$\<mailbox_size_limit\>"
 syntax match pfmainRef "$\<mailbox_transport\>"
+syntax match pfmainRef "$\<mailbox_transport_maps\>"
 syntax match pfmainRef "$\<mailq_path\>"
 syntax match pfmainRef "$\<manpage_directory\>"
 syntax match pfmainRef "$\<maps_rbl_domains\>"
@@ -579,7 +710,9 @@ syntax match pfmainRef "$\<max_idle\>"
 syntax match pfmainRef "$\<max_use\>"
 syntax match pfmainRef "$\<maximal_backoff_time\>"
 syntax match pfmainRef "$\<maximal_queue_lifetime\>"
+syntax match pfmainRef "$\<message_reject_characters\>"
 syntax match pfmainRef "$\<message_size_limit\>"
+syntax match pfmainRef "$\<message_strip_characters\>"
 syntax match pfmainRef "$\<mime_boundary_length_limit\>"
 syntax match pfmainRef "$\<mime_header_checks\>"
 syntax match pfmainRef "$\<mime_nesting_limit\>"
@@ -599,6 +732,7 @@ syntax match pfmainRef "$\<owner_request_special\>"
 syntax match pfmainRef "$\<parent_domain_matches_subdomains\>"
 syntax match pfmainRef "$\<permit_mx_backup_networks\>"
 syntax match pfmainRef "$\<pickup_service_name\>"
+syntax match pfmainRef "$\<plaintext_reject_code\>"
 syntax match pfmainRef "$\<prepend_delivered_header\>"
 syntax match pfmainRef "$\<process_id_directory\>"
 syntax match pfmainRef "$\<propagate_unmatched_extensions\>"
@@ -621,6 +755,7 @@ syntax match pfmainRef "$\<rbl_reply_maps\>"
 syntax match pfmainRef "$\<readme_directory\>"
 syntax match pfmainRef "$\<receive_override_options\>"
 syntax match pfmainRef "$\<recipient_bcc_maps\>"
+syntax match pfmainRef "$\<recipient_canonical_classes\>"
 syntax match pfmainRef "$\<recipient_canonical_maps\>"
 syntax match pfmainRef "$\<recipient_delimiter\>"
 syntax match pfmainRef "$\<reject_code\>"
@@ -633,14 +768,17 @@ syntax match pfmainRef "$\<relay_recipient_maps\>"
 syntax match pfmainRef "$\<relay_transport\>"
 syntax match pfmainRef "$\<relayhost\>"
 syntax match pfmainRef "$\<relocated_maps\>"
+syntax match pfmainRef "$\<remote_header_rewrite_domain\>"
 syntax match pfmainRef "$\<require_home_directory\>"
 syntax match pfmainRef "$\<resolve_dequoted_address\>"
 syntax match pfmainRef "$\<resolve_null_domain\>"
+syntax match pfmainRef "$\<resolve_numeric_domain\>"
 syntax match pfmainRef "$\<rewrite_service_name\>"
 syntax match pfmainRef "$\<sample_directory\>"
-syntax match pfmainRef "$\<sender_based_routing\>"
 syntax match pfmainRef "$\<sender_bcc_maps\>"
+syntax match pfmainRef "$\<sender_canonical_classes\>"
 syntax match pfmainRef "$\<sender_canonical_maps\>"
+syntax match pfmainRef "$\<sender_dependent_relayhost_maps\>"
 syntax match pfmainRef "$\<sendmail_path\>"
 syntax match pfmainRef "$\<service_throttle_time\>"
 syntax match pfmainRef "$\<setgid_group\>"
@@ -648,14 +786,24 @@ syntax match pfmainRef "$\<show_user_unknown_table_name\>"
 syntax match pfmainRef "$\<showq_service_name\>"
 syntax match pfmainRef "$\<smtp_always_send_ehlo\>"
 syntax match pfmainRef "$\<smtp_bind_address\>"
+syntax match pfmainRef "$\<smtp_bind_address6\>"
+syntax match pfmainRef "$\<smtp_cname_overrides_servername\>"
 syntax match pfmainRef "$\<smtp_connect_timeout\>"
+syntax match pfmainRef "$\<smtp_connection_cache_destinations\>"
+syntax match pfmainRef "$\<smtp_connection_cache_on_demand\>"
+syntax match pfmainRef "$\<smtp_connection_cache_time_limit\>"
+syntax match pfmainRef "$\<smtp_connection_reuse_time_limit\>"
 syntax match pfmainRef "$\<smtp_data_done_timeout\>"
 syntax match pfmainRef "$\<smtp_data_init_timeout\>"
 syntax match pfmainRef "$\<smtp_data_xfer_timeout\>"
 syntax match pfmainRef "$\<smtp_defer_if_no_mx_address_found\>"
 syntax match pfmainRef "$\<smtp_destination_concurrency_limit\>"
 syntax match pfmainRef "$\<smtp_destination_recipient_limit\>"
+syntax match pfmainRef "$\<smtp_discard_ehlo_keyword_address_maps\>"
+syntax match pfmainRef "$\<smtp_discard_ehlo_keywords\>"
 syntax match pfmainRef "$\<smtp_enforce_tls\>"
+syntax match pfmainRef "$\<smtp_fallback_relay\>"
+syntax match pfmainRef "$\<smtp_generic_maps\>"
 syntax match pfmainRef "$\<smtp_helo_name\>"
 syntax match pfmainRef "$\<smtp_helo_timeout\>"
 syntax match pfmainRef "$\<smtp_host_lookup\>"
@@ -672,11 +820,15 @@ syntax match pfmainRef "$\<smtp_randomize_addresses\>"
 syntax match pfmainRef "$\<smtp_rcpt_timeout\>"
 syntax match pfmainRef "$\<smtp_rset_timeout\>"
 syntax match pfmainRef "$\<smtp_sasl_auth_enable\>"
+syntax match pfmainRef "$\<smtp_sasl_mechanism_filter\>"
 syntax match pfmainRef "$\<smtp_sasl_password_maps\>"
+syntax match pfmainRef "$\<smtp_sasl_path\>"
 syntax match pfmainRef "$\<smtp_sasl_security_options\>"
 syntax match pfmainRef "$\<smtp_sasl_tls_security_options\>"
 syntax match pfmainRef "$\<smtp_sasl_tls_verified_security_options\>"
+syntax match pfmainRef "$\<smtp_sasl_type\>"
 syntax match pfmainRef "$\<smtp_send_xforward_command\>"
+syntax match pfmainRef "$\<smtp_sender_dependent_authentication\>"
 syntax match pfmainRef "$\<smtp_skip_5xx_greeting\>"
 syntax match pfmainRef "$\<smtp_skip_quit_response\>"
 syntax match pfmainRef "$\<smtp_starttls_timeout\>"
@@ -701,15 +853,23 @@ syntax match pfmainRef "$\<smtpd_authorized_xclient_hosts\>"
 syntax match pfmainRef "$\<smtpd_authorized_xforward_hosts\>"
 syntax match pfmainRef "$\<smtpd_banner\>"
 syntax match pfmainRef "$\<smtpd_client_connection_count_limit\>"
-syntax match pfmainRef "$\<smtpd_client_connection_limit_exceptions\>"
 syntax match pfmainRef "$\<smtpd_client_connection_rate_limit\>"
+syntax match pfmainRef "$\<smtpd_client_event_limit_exceptions\>"
+syntax match pfmainRef "$\<smtpd_client_message_rate_limit\>"
+syntax match pfmainRef "$\<smtpd_client_new_tls_session_rate_limit\>"
+syntax match pfmainRef "$\<smtpd_client_recipient_rate_limit\>"
 syntax match pfmainRef "$\<smtpd_client_restrictions\>"
 syntax match pfmainRef "$\<smtpd_data_restrictions\>"
+syntax match pfmainRef "$\<smtpd_delay_open_until_valid_rcpt\>"
 syntax match pfmainRef "$\<smtpd_delay_reject\>"
+syntax match pfmainRef "$\<smtpd_discard_ehlo_keyword_address_maps\>"
+syntax match pfmainRef "$\<smtpd_discard_ehlo_keywords\>"
+syntax match pfmainRef "$\<smtpd_end_of_data_restrictions\>"
 syntax match pfmainRef "$\<smtpd_enforce_tls\>"
 syntax match pfmainRef "$\<smtpd_error_sleep_time\>"
 syntax match pfmainRef "$\<smtpd_etrn_restrictions\>"
 syntax match pfmainRef "$\<smtpd_expansion_filter\>"
+syntax match pfmainRef "$\<smtpd_forbidden_commands\>"
 syntax match pfmainRef "$\<smtpd_hard_error_limit\>"
 syntax match pfmainRef "$\<smtpd_helo_required\>"
 syntax match pfmainRef "$\<smtpd_helo_restrictions\>"
@@ -717,6 +877,7 @@ syntax match pfmainRef "$\<smtpd_history_flush_threshold\>"
 syntax match pfmainRef "$\<smtpd_junk_command_limit\>"
 syntax match pfmainRef "$\<smtpd_noop_commands\>"
 syntax match pfmainRef "$\<smtpd_null_access_lookup_key\>"
+syntax match pfmainRef "$\<smtpd_peername_lookup\>"
 syntax match pfmainRef "$\<smtpd_policy_service_max_idle\>"
 syntax match pfmainRef "$\<smtpd_policy_service_max_ttl\>"
 syntax match pfmainRef "$\<smtpd_policy_service_timeout\>"
@@ -729,12 +890,14 @@ syntax match pfmainRef "$\<smtpd_recipient_restrictions\>"
 syntax match pfmainRef "$\<smtpd_reject_unlisted_recipient\>"
 syntax match pfmainRef "$\<smtpd_reject_unlisted_sender\>"
 syntax match pfmainRef "$\<smtpd_restriction_classes\>"
-syntax match pfmainRef "$\<smtpd_sasl_application_name\>"
 syntax match pfmainRef "$\<smtpd_sasl_auth_enable\>"
+syntax match pfmainRef "$\<smtpd_sasl_authenticated_header\>"
 syntax match pfmainRef "$\<smtpd_sasl_exceptions_networks\>"
 syntax match pfmainRef "$\<smtpd_sasl_local_domain\>"
+syntax match pfmainRef "$\<smtpd_sasl_path\>"
 syntax match pfmainRef "$\<smtpd_sasl_security_options\>"
 syntax match pfmainRef "$\<smtpd_sasl_tls_security_options\>"
+syntax match pfmainRef "$\<smtpd_sasl_type\>"
 syntax match pfmainRef "$\<smtpd_sender_login_maps\>"
 syntax match pfmainRef "$\<smtpd_sender_restrictions\>"
 syntax match pfmainRef "$\<smtpd_soft_error_limit\>"
@@ -771,7 +934,6 @@ syntax match pfmainRef "$\<swap_bangpath\>"
 syntax match pfmainRef "$\<syslog_facility\>"
 syntax match pfmainRef "$\<syslog_name\>"
 syntax match pfmainRef "$\<tls_daemon_random_bytes\>"
-syntax match pfmainRef "$\<tls_daemon_random_source\>"
 syntax match pfmainRef "$\<tls_random_bytes\>"
 syntax match pfmainRef "$\<tls_random_exchange_name\>"
 syntax match pfmainRef "$\<tls_random_prng_update_period\>"
@@ -807,13 +969,84 @@ syntax match pfmainRef "$\<virtual_mailbox_maps\>"
 syntax match pfmainRef "$\<virtual_minimum_uid\>"
 syntax match pfmainRef "$\<virtual_transport\>"
 syntax match pfmainRef "$\<virtual_uid_maps\>"
+syntax keyword pfmainWord all
+syntax keyword pfmainWord check_address_map
+syntax keyword pfmainWord check_ccert_access
+syntax keyword pfmainWord check_client_access
+syntax keyword pfmainWord check_etrn_access
+syntax keyword pfmainWord check_helo_access
+syntax keyword pfmainWord check_helo_mx_access
+syntax keyword pfmainWord check_helo_ns_access
+syntax keyword pfmainWord check_policy_service
+syntax keyword pfmainWord check_recipient_access
+syntax keyword pfmainWord check_recipient_maps
+syntax keyword pfmainWord check_recipient_mx_access
+syntax keyword pfmainWord check_recipient_ns_access
+syntax keyword pfmainWord check_relay_domains
+syntax keyword pfmainWord check_sender_access
+syntax keyword pfmainWord check_sender_mx_access
+syntax keyword pfmainWord check_sender_ns_access
+syntax keyword pfmainWord class
+syntax keyword pfmainWord defer_if_permit
+syntax keyword pfmainWord defer_if_reject
+syntax keyword pfmainWord dns
+syntax keyword pfmainWord envelope_recipient
+syntax keyword pfmainWord envelope_sender
+syntax keyword pfmainWord header_recipient
+syntax keyword pfmainWord header_sender
+syntax keyword pfmainWord host
+syntax keyword pfmainWord ipv4
+syntax keyword pfmainWord ipv6
+syntax keyword pfmainWord native
+syntax keyword pfmainWord permit
+syntax keyword pfmainWord permit_auth_destination
+syntax keyword pfmainWord permit_inet_interfaces
+syntax keyword pfmainWord permit_mx_backup
+syntax keyword pfmainWord permit_mynetworks
+syntax keyword pfmainWord permit_naked_ip_address
+syntax keyword pfmainWord permit_sasl_authenticated
+syntax keyword pfmainWord permit_tls_all_clientcerts
+syntax keyword pfmainWord permit_tls_clientcerts
+syntax keyword pfmainWord reject
+syntax keyword pfmainWord reject_invalid_helo_hostname
+syntax keyword pfmainWord reject_invalid_hostname
+syntax keyword pfmainWord reject_maps_rbl
+syntax keyword pfmainWord reject_multi_recipient_bounce
+syntax keyword pfmainWord reject_non_fqdn_helo_hostname
+syntax keyword pfmainWord reject_non_fqdn_hostname
+syntax keyword pfmainWord reject_non_fqdn_recipient
+syntax keyword pfmainWord reject_non_fqdn_sender
+syntax keyword pfmainWord reject_plaintext_session
+syntax keyword pfmainWord reject_rbl
+syntax keyword pfmainWord reject_rbl_client
+syntax keyword pfmainWord reject_rhsbl_client
+syntax keyword pfmainWord reject_rhsbl_helo
+syntax keyword pfmainWord reject_rhsbl_recipient
+syntax keyword pfmainWord reject_rhsbl_sender
+syntax keyword pfmainWord reject_sender_login_mismatch
+syntax keyword pfmainWord reject_unauth_destination
+syntax keyword pfmainWord reject_unauth_pipelining
+syntax keyword pfmainWord reject_unknown_address
+syntax keyword pfmainWord reject_unknown_client
+syntax keyword pfmainWord reject_unknown_client_hostname
+syntax keyword pfmainWord reject_unknown_forward_client_hostname
+syntax keyword pfmainWord reject_unknown_helo_hostname
+syntax keyword pfmainWord reject_unknown_hostname
+syntax keyword pfmainWord reject_unknown_recipient_domain
+syntax keyword pfmainWord reject_unknown_reverse_client_hostname
+syntax keyword pfmainWord reject_unknown_sender_domain
+syntax keyword pfmainWord reject_unlisted_recipient
+syntax keyword pfmainWord reject_unlisted_sender
+syntax keyword pfmainWord reject_unverified_recipient
+syntax keyword pfmainWord reject_unverified_sender
+syntax keyword pfmainWord sleep
+syntax keyword pfmainWord smtpd_access_maps
+syntax keyword pfmainWord subnet
+syntax keyword pfmainWord warn_if_reject
 
-syntax keyword pfmainDictDB	hash btree dbm
-syntax keyword pfmainDictRE	regexp pcre
-syntax keyword pfmainDictEXT	ldap environ nis netinfo
-syntax keyword pfmainQueue	active bounce corrupt defer deferred
-syntax keyword pfmainQueue	flush incoming saved
-syntax keyword pfmainTransport	smtp lmtp unix local error
+syntax keyword pfmainDict	btree cidr environ hash nis pcre proxy regexp sdbm sdbm static tcp unix
+syntax keyword pfmainQueueDir	incoming active deferred corrupt hold
+syntax keyword pfmainTransport	smtp lmtp unix local relay uucp virtual
 syntax keyword pfmainLock	fcntl flock dotlock
 syntax keyword pfmainAnswer	yes no
 
@@ -821,7 +1054,32 @@ syntax match pfmainComment	"#.*$"
 syntax match pfmainNumber	"\<\d\+\>"
 syntax match pfmainTime		"\<\d\+[hmsd]\>"
 syntax match pfmainIP		"\<\d\{1,3}\.\d\{1,3}\.\d\{1,3}\.\d\{1,3}\>"
-syntax match pfmainVariable	"\$\w\+" contains=pfmainRef ",pfmainRefTLS
+syntax match pfmainVariable	"\$\w\+" contains=pfmainRef
+
+syntax match pfmainSpecial	"\<alias\>"
+syntax match pfmainSpecial	"\<canonical\>"
+syntax match pfmainSpecial	"\<command\>"
+syntax match pfmainSpecial	"\<file\>"
+syntax match pfmainSpecial	"\<forward\>"
+syntax match pfmainSpecial	"\<noanonymous\>"
+syntax match pfmainSpecial	"\<noplaintext\>"
+syntax match pfmainSpecial	"\<resource\>"
+syntax match pfmainSpecial	"\<software\>"
+
+syntax match pfmainSpecial	"\<bounce\>"
+syntax match pfmainSpecial	"\<cleanup\>"
+syntax match pfmainSpecial	"\<cyrus\>"
+syntax match pfmainSpecial	"\<defer\>"
+syntax match pfmainSpecial	"\<error\>"
+syntax match pfmainSpecial	"\<flush\>"
+syntax match pfmainSpecial	"\<pickup\>"
+syntax match pfmainSpecial	"\<postdrop\>"
+syntax match pfmainSpecial	"\<qmgr\>"
+syntax match pfmainSpecial	"\<rewrite\>"
+syntax match pfmainSpecial	"\<scache\>"
+syntax match pfmainSpecial	"\<showq\>"
+syntax match pfmainSpecial	"\<trace\>"
+syntax match pfmainSpecial	"\<verify\>"
 
 if version >= 508 || !exists("pfmain_syntax_init")
 	if version < 508
@@ -831,24 +1089,22 @@ if version >= 508 || !exists("pfmain_syntax_init")
 		command -nargs=+ HiLink hi def link <args>
 	endif
 
-	HiLink pfmainComment	Comment
-	HiLink pfmainConf	Keyword
-	HiLink pfmainNumber	Number
-	HiLink pfmainTime	Number
-	HiLink pfmainIP		Number
-	HiLink pfmainDictDB	Type
-	HiLink pfmainDictRE	Type
-	HiLink pfmainDictEXT	Type
-	HiLink pfmainQueue	Constant
+	HiLink pfmainConf	Statement
+	HiLink pfmainRef	PreProc
+	HiLink pfmainWord	identifier
+
+	HiLink pfmainDict	Type
+	HiLink pfmainQueueDir	Constant
 	HiLink pfmainTransport	Constant
 	HiLink pfmainLock	Constant
 	HiLink pfmainAnswer	Constant
-	HiLink pfmainRef	Macro
 
-	" HiLink pfmainConfTLS	Special
-	" HiLink pfmainRefTLS	Macro
-
+	HiLink pfmainComment	Comment
+	HiLink pfmainNumber	Number
+	HiLink pfmainTime	Number
+	HiLink pfmainIP		Number
 	HiLink pfmainVariable	Error
+	HiLink pfmainSpecial	Special
 
 	delcommand HiLink
 endif

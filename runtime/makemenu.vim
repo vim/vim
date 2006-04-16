@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 15
+" Last Change:	2006 Apr 16
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -149,6 +149,10 @@ SynMenu DE.DocBook.auto-detect:docbk
 SynMenu DE.DocBook.SGML:docbksgml
 SynMenu DE.DocBook.XML:docbkxml
 SynMenu DE.Dot:dot
+SynMenu DE.Doxygen.C\ with\ doxygen:c.doxygen
+SynMenu DE.Doxygen.C++\ with\ doxygen:cpp.doxygen
+SynMenu DE.Doxygen.IDL\ with\ doxygen:idl.doxygen
+SynMenu DE.Doxygen.Java\ with\ doxygen:java.doxygen
 SynMenu DE.Dracula:dracula
 SynMenu DE.DSSSL:dsl
 SynMenu DE.DTD:dtd

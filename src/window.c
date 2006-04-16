@@ -1705,8 +1705,11 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 			    && (room + (totwincount - 2))
 						  / (totwincount - 1) > p_wiw)
 		    {
-			next_curwin_size = (room + p_wiw + totwincount * p_wmw
-					   + (totwincount - 1)) / totwincount;
+			/* Can make all windows wider than 'winwidth', spread
+			 * the room equally. */
+			next_curwin_size = (room + p_wiw
+					    + (totwincount - 1) * p_wmw
+					    + (totwincount - 1)) / totwincount;
 			room -= next_curwin_size - p_wiw;
 		    }
 		    else
@@ -1847,7 +1850,10 @@ win_equal_rec(next_curwin, current, topfr, dir, col, row, width, height)
 			    && (room + (totwincount - 2))
 						   / (totwincount - 1) > p_wh)
 		    {
-			next_curwin_size = (room + p_wh + totwincount * p_wmh
+			/* can make all windows higher than 'winheight',
+			 * spread the room equally. */
+			next_curwin_size = (room + p_wh
+					   + (totwincount - 1) * p_wmh
 					   + (totwincount - 1)) / totwincount;
 			room -= next_curwin_size - p_wh;
 		    }
