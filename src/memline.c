@@ -809,7 +809,7 @@ add_b0_fenc(b0p, buf)
 {
     int		n;
 
-    n = STRLEN(buf->b_p_fenc);
+    n = (int)STRLEN(buf->b_p_fenc);
     if (STRLEN(b0p->b0_fname) + n + 1 > B0_FNAME_SIZE)
 	b0p->b0_flags &= ~B0_HAS_FENC;
     else
@@ -1066,7 +1066,7 @@ ml_recover()
 	for (p = b0p->b0_fname + B0_FNAME_SIZE;
 				       p > b0p->b0_fname && p[-1] != NUL; --p)
 	    ;
-	b0_fenc = vim_strnsave(p, b0p->b0_fname + B0_FNAME_SIZE - p);
+	b0_fenc = vim_strnsave(p, (int)(b0p->b0_fname + B0_FNAME_SIZE - p));
     }
 
     mf_put(mfp, hp, FALSE, FALSE);	/* release block 0 */
@@ -2638,7 +2638,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
     if (usingNetbeans)
     {
 	if (STRLEN(line) > 0)
-	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, STRLEN(line));
+	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, (int)STRLEN(line));
 	netbeans_inserted(buf, lnum+1, (colnr_T)STRLEN(line),
 							   (char_u *)"\n", 1);
     }
@@ -2676,7 +2676,7 @@ ml_replace(lnum, line, copy)
     if (usingNetbeans)
     {
 	netbeans_removed(curbuf, lnum, 0, (long)STRLEN(ml_get(lnum)));
-	netbeans_inserted(curbuf, lnum, 0, line, STRLEN(line));
+	netbeans_inserted(curbuf, lnum, 0, line, (int)STRLEN(line));
     }
 #endif
     if (curbuf->b_ml.ml_line_lnum != lnum)	    /* other line buffered */

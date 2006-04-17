@@ -2909,7 +2909,7 @@ set_init_1()
 {
     char_u	*p;
     int		opt_idx;
-    long	n;
+    long_u	n;
 
 #ifdef FEAT_LANGMAP
     langmap_init();
@@ -2970,7 +2970,7 @@ set_init_1()
 	    if (p != NULL && *p != NUL)
 	    {
 		/* First time count the NUL, otherwise count the ','. */
-		len = STRLEN(p) + 3;
+		len = (int)STRLEN(p) + 3;
 		if (ga_grow(&ga, len) == OK)
 		{
 		    if (ga.ga_len > 0)
@@ -4631,7 +4631,7 @@ skip:
 	if (errmsg != NULL)
 	{
 	    vim_strncpy(IObuff, (char_u *)_(errmsg), IOSIZE - 1);
-	    i = STRLEN(IObuff) + 2;
+	    i = (int)STRLEN(IObuff) + 2;
 	    if (i + (arg - startarg) < IOSIZE)
 	    {
 		/* append the argument with the error */
@@ -5336,7 +5336,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     char_u	*s, *p;
     int		did_chartab = FALSE;
     char_u	**gvarp;
-    int		free_oldval = (options[opt_idx].flags & P_ALLOCED);
+    long_u	free_oldval = (options[opt_idx].flags & P_ALLOCED);
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -6191,7 +6191,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
 	if (varp == &(curbuf->b_p_spf))
 	{
-	    l = STRLEN(curbuf->b_p_spf);
+	    l = (int)STRLEN(curbuf->b_p_spf);
 	    if (l > 0 && (l < 4 || STRCMP(curbuf->b_p_spf + l - 4,
 								".add") != 0))
 		errmsg = e_invarg;
@@ -8122,7 +8122,7 @@ set_option_value(name, number, string, opt_flags)
 {
     int		opt_idx;
     char_u	*varp;
-    int		flags;
+    long_u	flags;
 
     opt_idx = findoption(name);
     if (opt_idx == -1)

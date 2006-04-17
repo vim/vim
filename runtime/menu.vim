@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 16
+" Last Change:	2006 Apr 17
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -896,7 +896,11 @@ if has("spell")
       call cursor(0, curcol)	" put the cursor back where it was
     endif
     if w != ''
-      let s:suglist = spellsuggest(w, 10)
+      if a == 'caps'
+	let s:suglist = [substitute(w, '.*', '\u&', '')]
+      else
+	let s:suglist = spellsuggest(w, 10)
+      endif
       if len(s:suglist) <= 0
 	call cursor(0, curcol)	" put the cursor back where it was
       else

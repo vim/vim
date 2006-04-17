@@ -103,7 +103,7 @@ getRuntimeDir(char *buf)
 	    strcpy(buf, searchpath(buf));
 
 	// remove "gvim.exe" from the end
-	for (idx = strlen(buf) - 1; idx >= 0; idx--)
+	for (idx = (int)strlen(buf) - 1; idx >= 0; idx--)
 	    if (buf[idx] == '\\' || buf[idx] == '/')
 	    {
 		buf[idx + 1] = 0;
@@ -279,7 +279,7 @@ dyn_gettext_load(void)
     getRuntimeDir(szBuff);
     if (szBuff[0] != 0)
     {
-	len = strlen(szBuff);
+	len = (DWORD)strlen(szBuff);
 	if (dyn_libintl_init(szBuff))
 	{
 	    strcpy(szBuff + len, "lang");
@@ -740,7 +740,7 @@ STDMETHODIMP CShellExt::PushToWindow(HWND hParent,
     return NOERROR;
 }
 
-STDMETHODIMP CShellExt::GetCommandString(UINT idCmd,
+STDMETHODIMP CShellExt::GetCommandString(UINT_PTR idCmd,
 					 UINT uFlags,
 					 UINT FAR *reserved,
 					 LPSTR pszName,

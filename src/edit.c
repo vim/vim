@@ -2485,7 +2485,7 @@ ins_compl_show_pum()
 	compl_match_arraysize = 0;
 	compl = compl_first_match;
 	if (compl_leader != NULL)
-	    lead_len = STRLEN(compl_leader);
+	    lead_len = (int)STRLEN(compl_leader);
 	do
 	{
 	    if ((compl->cp_flags & ORIGINAL_TEXT) == 0
@@ -2643,7 +2643,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
      * pattern. */
     if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
     {
-	i = STRLEN(pat) + 8;
+	i = (int)STRLEN(pat) + 8;
 	ptr = alloc(i);
 	if (ptr == NULL)
 	    return;
@@ -2967,7 +2967,7 @@ ins_compl_bs()
     mb_ptr_back(line, p);
 
     vim_free(compl_leader);
-    compl_leader = vim_strnsave(line + compl_col, (p - line) - compl_col);
+    compl_leader = vim_strnsave(line + compl_col, (int)(p - line) - compl_col);
     if (compl_leader != NULL)
     {
 	ins_compl_del_pum();
@@ -3988,7 +3988,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	/* Set "compl_shown_match" to the actually shown match, it may differ
 	 * when "compl_leader" is used to omit some of the matches. */
 	while (!ins_compl_equal(compl_shown_match,
-					   compl_leader, STRLEN(compl_leader))
+				      compl_leader, (int)STRLEN(compl_leader))
 		&& compl_shown_match->cp_next != NULL
 		&& compl_shown_match->cp_next != compl_first_match)
 	    compl_shown_match = compl_shown_match->cp_next;
@@ -4038,7 +4038,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	if ((compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0
 		&& compl_leader != NULL
 		&& !ins_compl_equal(compl_shown_match,
-					  compl_leader, STRLEN(compl_leader)))
+				     compl_leader, (int)STRLEN(compl_leader)))
 	    ++todo;
 	else
 	    /* Remember a matching item. */
@@ -4446,7 +4446,7 @@ ins_complete(c)
 	}
 	else if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
 	{
-	    compl_col = skipwhite(line) - line;
+	    compl_col = (colnr_T)(skipwhite(line) - line);
 	    compl_length = (int)curs_col - (int)compl_col;
 	    if (compl_length < 0)	/* cursor in indent: empty pattern */
 		compl_length = 0;
@@ -5668,7 +5668,7 @@ auto_format(trailblank, prev_line)
     if (!wasatend && has_format_option(FO_WHITE_PAR))
     {
 	new = ml_get_curline();
-	len = STRLEN(new);
+	len = (colnr_T)STRLEN(new);
 	if (curwin->w_cursor.col == len)
 	{
 	    pnew = vim_strnsave(new, len + 2);
@@ -5984,7 +5984,7 @@ stop_insert(end_insert_pos, esc)
 	     * deleted characters. */
 	    if (VIsual_active && VIsual.lnum == curwin->w_cursor.lnum)
 	    {
-		cc = STRLEN(ml_get_curline());
+		cc = (int)STRLEN(ml_get_curline());
 		if (VIsual.col > (colnr_T)cc)
 		{
 		    VIsual.col = cc;
@@ -6718,7 +6718,7 @@ replace_do_bs()
 	    del_char(FALSE);
 # ifdef FEAT_VREPLACE
 	    if (State & VREPLACE_FLAG)
-		orig_len = STRLEN(ml_get_cursor());
+		orig_len = (int)STRLEN(ml_get_cursor());
 # endif
 	    replace_push(cc);
 	}
@@ -6728,7 +6728,7 @@ replace_do_bs()
 	    pchar_cursor(cc);
 #ifdef FEAT_VREPLACE
 	    if (State & VREPLACE_FLAG)
-		orig_len = STRLEN(ml_get_cursor()) - 1;
+		orig_len = (int)STRLEN(ml_get_cursor()) - 1;
 #endif
 	}
 	replace_pop_ins();
@@ -6738,7 +6738,7 @@ replace_do_bs()
 	{
 	    /* Get the number of screen cells used by the inserted characters */
 	    p = ml_get_cursor();
-	    ins_len = STRLEN(p) - orig_len;
+	    ins_len = (int)STRLEN(p) - orig_len;
 	    vcol = start_vcol;
 	    for (i = 0; i < ins_len; ++i)
 	    {
@@ -7908,7 +7908,7 @@ ins_bs(c, mode, inserted_space_p)
 									TRUE);
 		    int	    len;
 
-		    len = STRLEN(ptr);
+		    len = (int)STRLEN(ptr);
 		    if (len > 0 && ptr[len - 1] == ' ')
 			ptr[len - 1] = NUL;
 		}

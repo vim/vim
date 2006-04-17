@@ -511,9 +511,9 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 
 		    p = vim_strchr(p_str, '\n');
 		    if (p)
-			len = p - p_str + 1;
+			len = (int)(p - p_str + 1);
 		    else
-			len = STRLEN(p_str);
+			len = (int)STRLEN(p_str);
 
 		    if (len > CMDBUFFSIZE - 2)
 			vim_strncpy(IObuff, p_str, CMDBUFFSIZE - 2);
@@ -531,7 +531,7 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 		    if (!p_li)			/* End of the list */
 			break;
 
-		    len = STRLEN(p_li->li_tv.vval.v_string);
+		    len = (int)STRLEN(p_li->li_tv.vval.v_string);
 		    if (len > CMDBUFFSIZE - 2)
 			len = CMDBUFFSIZE - 2;
 
@@ -3684,7 +3684,7 @@ ex_helpgrep(eap)
 			{
 			    if (vim_regexec(&regmatch, IObuff, (colnr_T)0))
 			    {
-				int	l = STRLEN(IObuff);
+				int	l = (int)STRLEN(IObuff);
 
 				/* remove trailing CR, LF, spaces, etc. */
 				while (l > 0 && IObuff[l - 1] <= ' ')

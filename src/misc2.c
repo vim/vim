@@ -2447,7 +2447,7 @@ find_special_key(srcp, modp, keycode)
     int		modifiers;
     int		bit;
     int		key;
-    long_u	n;
+    unsigned long n;
 
     src = *srcp;
     if (src[0] != '<')

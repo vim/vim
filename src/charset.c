@@ -351,7 +351,7 @@ transstr(s)
 		else
 		{
 		    transchar_hex(hexbuf, c);
-		    len += STRLEN(hexbuf);
+		    len += (int)STRLEN(hexbuf);
 		}
 	    }
 	    else

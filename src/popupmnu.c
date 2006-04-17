@@ -279,7 +279,7 @@ pum_redraw()
 		    if (*p == NUL || *p == TAB || totwidth + w > pum_width)
 		    {
 			/* Display the text that fits or comes before a Tab. */
-			screen_puts_len(s, p - s, row, col, attr);
+			screen_puts_len(s, (int)(p - s), row, col, attr);
 			col += width;
 
 			if (*p != TAB)
@@ -462,7 +462,7 @@ pum_set_selected(n)
 			else
 			{
 			    *e = NUL;
-			    ml_append(lnum++, p, e - p + 1, FALSE);
+			    ml_append(lnum++, p, (int)(e - p + 1), FALSE);
 			    *e = '\n';
 			    p = e + 1;
 			}

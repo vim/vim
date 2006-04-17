@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 15
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -862,6 +862,9 @@ I can't reproduce these (if you can, let me know how!):
 
 
 Problems that will (probably) not be solved:
+-   GTK: when using the popup menu with spelling suggestions and releasing the
+    right mouse button before the menu appears selecting an item with the
+    right mouse button has no effect.  GTK does not produce an event for this.
 -   xterm title: The following scenario may occur (esp. when running the Vim
     test script): Vim 1 sets the title to "file1", then restores the title to
     "xterm" with an ESC sequence when exiting.  Vim 2 obtains the old title

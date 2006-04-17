@@ -186,7 +186,7 @@ static void delete_tooltip __ARGS((BalloonEval *beval));
 static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime));
 
 static BalloonEval  *cur_beval = NULL;
-static UINT	    BevalTimerId = 0;
+static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
 
 /*
@@ -758,7 +758,7 @@ _WndProc(
     case WM_CHAR:
 	/* Don't use HANDLE_MSG() for WM_CHAR, it truncates wParam to a single
 	 * byte while we want the UTF-16 character value. */
-	_OnChar(hwnd, wParam, (int)(short)LOWORD(lParam));
+	_OnChar(hwnd, (UINT)wParam, (int)(short)LOWORD(lParam));
 	return 0L;
 
     case WM_SYSCHAR:
@@ -774,7 +774,7 @@ _WndProc(
 		)
 #endif
 	{
-	    _OnSysChar(hwnd, wParam, (int)(short)LOWORD(lParam));
+	    _OnSysChar(hwnd, (UINT)wParam, (int)(short)LOWORD(lParam));
 	    return 0L;
 	}
 #ifdef FEAT_MENU
@@ -2362,7 +2362,7 @@ gui_mch_add_menu(
 		    infow.wID = menu->id;
 		    infow.fType = MFT_STRING;
 		    infow.dwTypeData = wn;
-		    infow.cch = wcslen(wn);
+		    infow.cch = (UINT)wcslen(wn);
 		    infow.hSubMenu = menu->submenu_id;
 		    n = InsertMenuItemW((parent == NULL)
 					    ? s_menuBar : parent->submenu_id,
@@ -2990,7 +2990,7 @@ gui_mch_dialog(
 		if (last_white != NULL)
 		{
 		    /* break the line just after a space */
-		    ga.ga_len -= pend - (last_white + 1);
+		    ga.ga_len -= (int)(pend - (last_white + 1));
 		    pend = last_white + 1;
 		    last_white = NULL;
 		}
@@ -3374,7 +3374,7 @@ nCopyAnsiToWideChar(
 	if (wn != NULL)
 	{
 	    wcscpy(lpWCStr, wn);
-	    nChar = wcslen(wn) + 1;
+	    nChar = (int)wcslen(wn) + 1;
 	    vim_free(wn);
 	}
     }

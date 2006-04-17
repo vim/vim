@@ -587,7 +587,7 @@ typedef struct wordcount_S
 } wordcount_T;
 
 static wordcount_T dumwc;
-#define WC_KEY_OFF  (dumwc.wc_word - (char_u *)&dumwc)
+#define WC_KEY_OFF  (unsigned)(dumwc.wc_word - (char_u *)&dumwc)
 #define HI2WC(hi)     ((wordcount_T *)((hi)->hi_key - WC_KEY_OFF))
 #define MAXWORDCOUNT 0xffff
 
@@ -1048,7 +1048,7 @@ spell_check(wp, ptr, attrp, capcol, docount)
 	    mi.mi_end = skiphex(ptr + 2);
 	else
 	    mi.mi_end = skipdigits(ptr);
-	nrlen = mi.mi_end - ptr;
+	nrlen = (int)(mi.mi_end - ptr);
     }
 
     /* Find the normal end of the word (until the next non-word character). */
@@ -1086,7 +1086,7 @@ spell_check(wp, ptr, attrp, capcol, docount)
 
     (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
-    mi.mi_fwordlen = STRLEN(mi.mi_fword);
+    mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
 
     /* The word is bad unless we recognize it. */
     mi.mi_result = SP_BAD;
@@ -1187,7 +1187,7 @@ spell_check(wp, ptr, attrp, capcol, docount)
 		    mb_ptr_adv(fp);
 		    if (p >= mi.mi_end)
 			break;
-		    mi.mi_compoff = fp - mi.mi_fword;
+		    mi.mi_compoff = (int)(fp - mi.mi_fword);
 		    find_word(&mi, FIND_COMPOUND);
 		    if (mi.mi_result != SP_BAD)
 		    {
@@ -1416,7 +1416,7 @@ find_word(mip, mode)
 	    {
 		for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
 		    mb_ptr_adv(p);
-		wlen = p - mip->mi_word;
+		wlen = (int)(p - mip->mi_word);
 	    }
 	}
 #endif
@@ -1617,7 +1617,7 @@ find_word(mip, mode)
 		    {
 			for (s = ptr; s < ptr + wlen; mb_ptr_adv(s))
 			    mb_ptr_adv(p);
-			mip->mi_compoff = p - mip->mi_fword;
+			mip->mi_compoff = (int)(p - mip->mi_fword);
 		    }
 		}
 #endif
@@ -1980,7 +1980,7 @@ fold_more(mip)
     (void)spell_casefold(p, (int)(mip->mi_fend - p),
 			     mip->mi_fword + mip->mi_fwordlen,
 			     MAXWLEN - mip->mi_fwordlen);
-    flen = STRLEN(mip->mi_fword + mip->mi_fwordlen);
+    flen = (int)STRLEN(mip->mi_fword + mip->mi_fwordlen);
     mip->mi_fwordlen += flen;
     return flen;
 }
@@ -2074,7 +2074,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     {
 	line = ml_get_buf(wp->w_buffer, lnum, FALSE);
 
-	len = STRLEN(line);
+	len = (int)STRLEN(line);
 	if (buflen < len + MAXWLEN + 2)
 	{
 	    vim_free(buf);
@@ -2090,7 +2090,19 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 
 	/* For checking first word with a capital skip white space. */
 	if (capcol == 0)
-	    capcol = skipwhite(line) - line;
+	    capcol = (int)(skipwhite(line) - line);
+	else if (curline && wp == curwin)
+	{
+	    int	    col = (int)(skipwhite(line) - line);
+
+	    /* For spellbadword(): check if first word needs a capital. */
+	    if (check_need_cap(lnum, col))
+		capcol = col;
+
+	    /* Need to get the line again, may have looked at the previous
+	     * one. */
+	    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	}
 
 	/* Copy the line into "buf" and append the start of the next line if
 	 * possible. */
@@ -2134,7 +2146,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 # ifdef FEAT_SYN_HL
 			if (has_syntax)
 			{
-			    col = p - buf;
+			    col = (int)(p - buf);
 			    (void)syn_get_id(wp, lnum, (colnr_T)col,
 						       FALSE, &can_spell);
 			}
@@ -2145,7 +2157,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 			if (can_spell)
 			{
 			    found_pos.lnum = lnum;
-			    found_pos.col = p - buf;
+			    found_pos.col = (int)(p - buf);
 #ifdef FEAT_VIRTUALEDIT
 			    found_pos.coladd = 0;
 #endif
@@ -2231,11 +2243,11 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 	    /* Skip the characters at the start of the next line that were
 	     * included in a match crossing line boundaries. */
 	    if (attr == HLF_COUNT)
-		skip = p - endp;
+		skip = (int)(p - endp);
 	    else
 		skip = 0;
 
-	    /* Capscol skips over the inserted space. */
+	    /* Capcol skips over the inserted space. */
 	    --capcol;
 
 	    /* But after empty line check first word in next line */
@@ -2271,7 +2283,7 @@ spell_cat_line(buf, line, maxlen)
     {
 	*buf = ' ';
 	vim_strncpy(buf + 1, line, maxlen - 2);
-	n = p - line;
+	n = (int)(p - line);
 	if (n >= maxlen)
 	    n = maxlen - 1;
 	vim_memset(buf + 1, ' ', n);
@@ -3161,7 +3173,7 @@ read_sal_section(fd, slang)
 		break;
 	    *p++ = c;
 	}
-	smp->sm_leadlen = p - smp->sm_lead;
+	smp->sm_leadlen = (int)(p - smp->sm_lead);
 	*p++ = NUL;
 
 	/* Put (abc) chars in sm_oneof, if any. */
@@ -3321,7 +3333,7 @@ count_common_word(lp, word, len, count)
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = (wordcount_T *)alloc(sizeof(wordcount_T) + STRLEN(p));
+	wc = (wordcount_T *)alloc((unsigned)(sizeof(wordcount_T) + STRLEN(p)));
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -3632,9 +3644,9 @@ init_syl_tab(slang)
 	s = p;
 	p = vim_strchr(p, '/');
 	if (p == NULL)
-	    l = STRLEN(s);
+	    l = (int)STRLEN(s);
 	else
-	    l = p - s;
+	    l = (int)(p - s);
 	if (l >= SY_MAXLEN)
 	    return SP_FORMERROR;
 	if (ga_grow(&slang->sl_syl_items, 1) == FAIL)
@@ -4101,7 +4113,7 @@ did_set_spelllang(buf)
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 
 	region = NULL;
-	len = STRLEN(lang);
+	len = (int)STRLEN(lang);
 
 	/* If the name ends in ".spl" use it as the name of the spell file.
 	 * If there is a region name let "region" point to it and remove it
@@ -4390,7 +4402,7 @@ use_midword(lp, buf)
 	    else
 	    {
 		/* Append multi-byte chars to "b_spell_ismw_mb". */
-		n = STRLEN(buf->b_spell_ismw_mb);
+		n = (int)STRLEN(buf->b_spell_ismw_mb);
 		bp = vim_strnsave(buf->b_spell_ismw_mb, n + l);
 		if (bp != NULL)
 		{
@@ -5312,9 +5324,9 @@ spell_read_aff(spin, fname)
 	    {
 		/* Concatenate this string to previously defined ones, using a
 		 * slash to separate them. */
-		l = STRLEN(items[1]) + 1;
+		l = (int)STRLEN(items[1]) + 1;
 		if (compflags != NULL)
-		    l += STRLEN(compflags) + 1;
+		    l += (int)STRLEN(compflags) + 1;
 		p = getroom(spin, l, FALSE);
 		if (p != NULL)
 		{
@@ -6100,9 +6112,9 @@ process_compflags(spin, aff, compflags)
     /* Make room for the old and the new compflags, concatenated with a / in
      * between.  Processing it makes it shorter, but we don't know by how
      * much, thus allocate the maximum. */
-    len = STRLEN(compflags) + 1;
+    len = (int)STRLEN(compflags) + 1;
     if (spin->si_compflags != NULL)
-	len += STRLEN(spin->si_compflags) + 1;
+	len += (int)STRLEN(spin->si_compflags) + 1;
     p = getroom(spin, len, FALSE);
     if (p == NULL)
 	return;
@@ -6285,9 +6297,9 @@ add_fromto(spin, gap, from, to)
     if (ga_grow(gap, 1) == OK)
     {
 	ftp = ((fromto_T *)gap->ga_data) + gap->ga_len;
-	(void)spell_casefold(from, STRLEN(from), word, MAXWLEN);
+	(void)spell_casefold(from, (int)STRLEN(from), word, MAXWLEN);
 	ftp->ft_from = getroom_save(spin, word);
-	(void)spell_casefold(to, STRLEN(to), word, MAXWLEN);
+	(void)spell_casefold(to, (int)STRLEN(to), word, MAXWLEN);
 	ftp->ft_to = getroom_save(spin, word);
 	++gap->ga_len;
     }
@@ -6338,7 +6350,7 @@ spell_free_aff(aff)
     /* All this trouble to free the "ae_prog" items... */
     for (ht = &aff->af_pref; ; ht = &aff->af_suff)
     {
-	todo = ht->ht_used;
+	todo = (int)ht->ht_used;
 	for (hi = ht->ht_array; todo > 0; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
@@ -6428,7 +6440,7 @@ spell_read_dic(spin, fname, affile)
 
 	/* Remove CR, LF and white space from the end.  White space halfway
 	 * the word is kept to allow e.g., "et al.". */
-	l = STRLEN(line);
+	l = (int)STRLEN(line);
 	while (l > 0 && line[l - 1] <= ' ')
 	    --l;
 	if (l == 0)
@@ -6727,7 +6739,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
     size_t	wordlen = STRLEN(word);
     int		use_condit;
 
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && retval == OK; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -6802,7 +6814,7 @@ store_aff_word(spin, word, afflist, affile, ht, xht, condit, flags,
 			    {
 				/* Remove chop string. */
 				p = newword + STRLEN(newword);
-				i = MB_CHARLEN(ae->ae_chop);
+				i = (int)MB_CHARLEN(ae->ae_chop);
 				for ( ; i > 0; --i)
 				    mb_ptr_back(newword, p);
 				*p = NUL;
@@ -7006,7 +7018,7 @@ spell_read_wordfile(spin, fname)
 	    continue;
 
 	/* Remove CR, LF and white space from the end. */
-	l = STRLEN(rline);
+	l = (int)STRLEN(rline);
 	while (l > 0 && rline[l - 1] <= ' ')
 	    --l;
 	if (l == 0)
@@ -7080,7 +7092,7 @@ spell_read_wordfile(spin, fname)
 						       fname, lnum, line);
 		    else
 		    {
-			spin->si_region_count = STRLEN(line) / 2;
+			spin->si_region_count = (int)STRLEN(line) / 2;
 			STRCPY(spin->si_region_name, line);
 
 			/* Adjust the mask for a word valid in all regions. */
@@ -7200,7 +7212,7 @@ getroom(spin, len, align)
     }
 
     p = bl->sb_data + bl->sb_used;
-    bl->sb_used += len;
+    bl->sb_used += (int)len;
 
     return p;
 }
@@ -7267,7 +7279,7 @@ store_word(spin, word, flags, region, pfxlist, need_affix)
     char_u	*pfxlist;	/* list of prefix IDs or NULL */
     int		need_affix;	/* only store word with affix ID */
 {
-    int		len = STRLEN(word);
+    int		len = (int)STRLEN(word);
     int		ct = captype(word, word + len);
     char_u	foldword[MAXWLEN];
     int		res = OK;
@@ -7715,7 +7727,7 @@ node_compress(spin, node, ht, tot)
 	    n = np->wn_flags + (np->wn_region << 8) + (np->wn_affixID << 16);
 	else
 	    /* byte node: use the byte value and the child pointer */
-	    n = np->wn_byte + ((long_u)np->wn_child << 8);
+	    n = (unsigned)(np->wn_byte + ((long_u)np->wn_child << 8));
 	nr = nr * 101 + n;
     }
 
@@ -7884,7 +7896,7 @@ write_vim_spell(spin, fname)
 	putc(SN_INFO, fd);				/* <sectionID> */
 	putc(0, fd);					/* <sectionflags> */
 
-	i = STRLEN(spin->si_info);
+	i = (int)STRLEN(spin->si_info);
 	put_bytes(fd, (long_u)i, 4);			/* <sectionlen> */
 	fwrite(spin->si_info, (size_t)i, (size_t)1, fd); /* <infotext> */
     }
@@ -7956,7 +7968,7 @@ write_vim_spell(spin, fname)
 	putc(SN_MIDWORD, fd);				/* <sectionID> */
 	putc(SNF_REQUIRED, fd);				/* <sectionflags> */
 
-	i = STRLEN(spin->si_midword);
+	i = (int)STRLEN(spin->si_midword);
 	put_bytes(fd, (long_u)i, 4);			/* <sectionlen> */
 	fwrite(spin->si_midword, (size_t)i, (size_t)1, fd); /* <midword> */
     }
@@ -8014,8 +8026,8 @@ write_vim_spell(spin, fname)
 	for (i = 0; i < gap->ga_len; ++i)
 	{
 	    ftp = &((fromto_T *)gap->ga_data)[i];
-	    l += 1 + STRLEN(ftp->ft_from);  /* count <*fromlen> and <*from> */
-	    l += 1 + STRLEN(ftp->ft_to);    /* count <*tolen> and <*to> */
+	    l += 1 + (int)STRLEN(ftp->ft_from);  /* count <*fromlen> and <*from> */
+	    l += 1 + (int)STRLEN(ftp->ft_to);    /* count <*tolen> and <*to> */
 	}
 	if (round == 2)
 	    ++l;	/* count <salflags> */
@@ -8042,7 +8054,7 @@ write_vim_spell(spin, fname)
 	    for (rr = 1; rr <= 2; ++rr)
 	    {
 		p = rr == 1 ? ftp->ft_from : ftp->ft_to;
-		l = STRLEN(p);
+		l = (int)STRLEN(p);
 		putc(l, fd);
 		fwrite(p, l, (size_t)1, fd);
 	    }
@@ -8057,14 +8069,14 @@ write_vim_spell(spin, fname)
 	putc(SN_SOFO, fd);				/* <sectionID> */
 	putc(0, fd);					/* <sectionflags> */
 
-	l = STRLEN(spin->si_sofofr);
+	l = (int)STRLEN(spin->si_sofofr);
 	put_bytes(fd, (long_u)(l + STRLEN(spin->si_sofoto) + 4), 4);
 							/* <sectionlen> */
 
 	put_bytes(fd, (long_u)l, 2);			/* <sofofromlen> */
 	fwrite(spin->si_sofofr, l, (size_t)1, fd);	/* <sofofrom> */
 
-	l = STRLEN(spin->si_sofoto);
+	l = (int)STRLEN(spin->si_sofoto);
 	put_bytes(fd, (long_u)l, 2);			/* <sofotolen> */
 	fwrite(spin->si_sofoto, l, (size_t)1, fd);	/* <sofoto> */
     }
@@ -8084,11 +8096,11 @@ write_vim_spell(spin, fname)
 	    int		len = 0;
 	    hashitem_T	*hi;
 
-	    todo = spin->si_commonwords.ht_used;
+	    todo = (int)spin->si_commonwords.ht_used;
 	    for (hi = spin->si_commonwords.ht_array; todo > 0; ++hi)
 		if (!HASHITEM_EMPTY(hi))
 		{
-		    l = STRLEN(hi->hi_key) + 1;
+		    l = (int)STRLEN(hi->hi_key) + 1;
 		    len += l;
 		    if (round == 2)			/* <word> */
 			fwrite(hi->hi_key, (size_t)l, (size_t)1, fd);
@@ -8147,9 +8159,9 @@ write_vim_spell(spin, fname)
 	putc(SN_COMPOUND, fd);				/* <sectionID> */
 	putc(0, fd);					/* <sectionflags> */
 
-	l = STRLEN(spin->si_compflags);
+	l = (int)STRLEN(spin->si_compflags);
 	for (i = 0; i < spin->si_comppat.ga_len; ++i)
-	    l += STRLEN(((char_u **)(spin->si_comppat.ga_data))[i]) + 1;
+	    l += (int)STRLEN(((char_u **)(spin->si_comppat.ga_data))[i]) + 1;
 	put_bytes(fd, (long_u)(l + 7), 4);		/* <sectionlen> */
 
 	putc(spin->si_compmax, fd);			/* <compmax> */
@@ -8162,7 +8174,7 @@ write_vim_spell(spin, fname)
 	for (i = 0; i < spin->si_comppat.ga_len; ++i)
 	{
 	    p = ((char_u **)(spin->si_comppat.ga_data))[i];
-	    putc(STRLEN(p), fd);			/* <comppatlen> */
+	    putc((int)STRLEN(p), fd);			/* <comppatlen> */
 	    fwrite(p, (size_t)STRLEN(p), (size_t)1, fd);/* <comppattext> */
 	}
 							/* <compflags> */
@@ -8188,7 +8200,7 @@ write_vim_spell(spin, fname)
 	putc(SN_SYLLABLE, fd);				/* <sectionID> */
 	putc(0, fd);					/* <sectionflags> */
 
-	l = STRLEN(spin->si_syllable);
+	l = (int)STRLEN(spin->si_syllable);
 	put_bytes(fd, (long_u)l, 4);			/* <sectionlen> */
 	fwrite(spin->si_syllable, (size_t)l, (size_t)1, fd); /* <syllable> */
     }
@@ -8499,7 +8511,7 @@ spell_make_sugfile(spin, wfname)
      * Make the file name by changing ".spl" to ".sug".
      */
     STRCPY(fname, wfname);
-    len = STRLEN(fname);
+    len = (int)STRLEN(fname);
     fname[len - 2] = 'u';
     fname[len - 1] = 'g';
     sug_write(spin, fname);
@@ -8874,7 +8886,7 @@ sug_write(spin, fname)
     {
 	/* <sugline>: <sugnr> ... NUL */
 	line = ml_get_buf(spin->si_spellbuf, lnum, FALSE);
-	len = STRLEN(line) + 1;
+	len = (int)STRLEN(line) + 1;
 	if (fwrite(line, (size_t)len, (size_t)1, fd) == 0)
 	{
 	    EMSG(_(e_write));
@@ -8981,7 +8993,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 
     if (fcount >= 1)
     {
-	len = STRLEN(fnames[0]);
+	len = (int)STRLEN(fnames[0]);
 	if (fcount == 1 && len > 4 && STRCMP(fnames[0] + len - 4, ".add") == 0)
 	{
 	    /* For ":mkspell path/en.latin1.add" output file is
@@ -9048,7 +9060,7 @@ mkspell(fcount, fnames, ascii, overwrite, added_word)
 
 	    if (incount > 1)
 	    {
-		len = STRLEN(innames[i]);
+		len = (int)STRLEN(innames[i]);
 		if (STRLEN(gettail(innames[i])) < 5
 						|| innames[i][len - 3] != '_')
 		{
@@ -9215,7 +9227,7 @@ spell_message(spin, str)
 ex_spell(eap)
     exarg_T *eap;
 {
-    spell_add_word(eap->arg, STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
+    spell_add_word(eap->arg, (int)STRLEN(eap->arg), eap->cmdidx == CMD_spellwrong,
 				   eap->forceit ? 0 : (int)eap->line2,
 				   eap->cmdidx == CMD_spellundo);
 }
@@ -9419,16 +9431,16 @@ init_spellfile()
 		else
 		{
 		    /* Create the "spell" directory if it doesn't exist yet. */
-		    l = STRLEN(buf);
+		    l = (int)STRLEN(buf);
 		    vim_snprintf((char *)buf + l, MAXPATHL - l, "/spell");
 		    if (!filewritable(buf) != 2)
 			vim_mkdir(buf, 0755);
 
-		    l = STRLEN(buf);
+		    l = (int)STRLEN(buf);
 		    vim_snprintf((char *)buf + l, MAXPATHL - l,
 				 "/%.*s", (int)(lend - lstart), lstart);
 		}
-		l = STRLEN(buf);
+		l = (int)STRLEN(buf);
 		fname = LANGP_ENTRY(curbuf->b_langp, 0)->lp_slang->sl_fname;
 		vim_snprintf((char *)buf + l, MAXPATHL - l, ".%s.add",
 			fname != NULL
@@ -9812,7 +9824,7 @@ write_spell_prefcond(fd, gap)
 	p = ((char_u **)gap->ga_data)[i];
 	if (p != NULL)
 	{
-	    len = STRLEN(p);
+	    len = (int)STRLEN(p);
 	    if (fd != NULL)
 	    {
 		fputc(len, fd);
@@ -10009,7 +10021,7 @@ spell_suggest(count)
 	    beep_flush();
 	    return;
 	}
-	curwin->w_cursor.col = p - line;
+	curwin->w_cursor.col = (colnr_T)(p - line);
     }
 
     /* Get the word and its length. */
@@ -10152,10 +10164,10 @@ spell_suggest(count)
 	}
 
 	/* Replace the word. */
-	p = alloc(STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
+	p = alloc((unsigned)STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
-	    c = sug.su_badptr - line;
+	    c = (int)(sug.su_badptr - line);
 	    mch_memmove(p, line, c);
 	    STRCPY(p + c, stp->st_word);
 	    STRCAT(p, sug.su_badptr + stp->st_orglen);
@@ -10216,7 +10228,7 @@ check_need_cap(lnum, col)
 		/* Append a space in place of the line break. */
 		line_copy = concat_str(line, (char_u *)" ");
 		line = line_copy;
-		endcol = STRLEN(line);
+		endcol = (colnr_T)STRLEN(line);
 	    }
 	}
     }
@@ -10270,9 +10282,9 @@ ex_spellrepall(eap)
 	EMSG(_("E752: No previous spell replacement"));
 	return;
     }
-    addlen = STRLEN(repl_to) - STRLEN(repl_from);
+    addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
 
-    frompat = alloc(STRLEN(repl_from) + 7);
+    frompat = alloc((unsigned)STRLEN(repl_from) + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -10293,7 +10305,7 @@ ex_spellrepall(eap)
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
 					       repl_to, STRLEN(repl_to)) != 0)
 	{
-	    p = alloc(STRLEN(line) + addlen + 1);
+	    p = alloc((unsigned)STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
@@ -10309,7 +10321,7 @@ ex_spellrepall(eap)
 	    }
 	    ++sub_nsubs;
 	}
-	curwin->w_cursor.col += STRLEN(repl_to);
+	curwin->w_cursor.col += (colnr_T)STRLEN(repl_to);
     }
 
     p_ws = save_ws;
@@ -10352,7 +10364,7 @@ spell_suggest_list(gap, word, maxcount, need_cap, interactive)
 	    /* The suggested word may replace only part of "word", add the not
 	     * replaced part. */
 	    wcopy = alloc(stp->st_wordlen
-				+ STRLEN(sug.su_badptr + stp->st_orglen) + 1);
+		      + (unsigned)STRLEN(sug.su_badptr + stp->st_orglen) + 1);
 	    if (wcopy == NULL)
 		break;
 	    STRCPY(wcopy, stp->st_word);
@@ -11060,9 +11072,9 @@ suggest_try_change(su)
      * to find matches (esp. REP items).  Append some more text, changing
      * chars after the bad word may help. */
     STRCPY(fword, su->su_fbadword);
-    n = STRLEN(fword);
+    n = (int)STRLEN(fword);
     p = su->su_badptr + su->su_badlen;
-    (void)spell_casefold(p, STRLEN(p), fword + n, MAXWLEN - n);
+    (void)spell_casefold(p, (int)STRLEN(p), fword + n, MAXWLEN - n);
 
     for (lpi = 0; lpi < curbuf->b_langp.ga_len; ++lpi)
     {
@@ -11266,7 +11278,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		    tword[sp->ts_twordlen] = NUL;
 		    make_case_word(tword + sp->ts_splitoff,
 					  preword + sp->ts_prewordlen, flags);
-		    sp->ts_prewordlen = STRLEN(preword);
+		    sp->ts_prewordlen = (char_u)STRLEN(preword);
 		    sp->ts_splitoff = sp->ts_twordlen;
 		}
 		break;
@@ -11674,7 +11686,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			/* Append a space to preword when splitting. */
 			if (!try_compound && !fword_ends)
 			    STRCAT(preword, " ");
-			sp->ts_prewordlen = STRLEN(preword);
+			sp->ts_prewordlen = (char_u)STRLEN(preword);
 			sp->ts_splitoff = sp->ts_twordlen;
 			sp->ts_splitfidx = sp->ts_fidx;
 
@@ -12482,8 +12494,8 @@ suggest_trie_walk(su, lp, fword, soundfold)
 
 		    /* Change the "from" to the "to" string. */
 		    ++depth;
-		    fl = STRLEN(ftp->ft_from);
-		    tl = STRLEN(ftp->ft_to);
+		    fl = (int)STRLEN(ftp->ft_from);
+		    tl = (int)STRLEN(ftp->ft_to);
 		    if (fl != tl)
 		    {
 			mch_memmove(p + tl, p + fl, STRLEN(p + fl) + 1);
@@ -12511,8 +12523,8 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    else
 		gap = &lp->lp_replang->sl_rep;
 	    ftp = (fromto_T *)gap->ga_data + sp->ts_curi - 1;
-	    fl = STRLEN(ftp->ft_from);
-	    tl = STRLEN(ftp->ft_to);
+	    fl = (int)STRLEN(ftp->ft_from);
+	    tl = (int)STRLEN(ftp->ft_to);
 	    p = fword + sp->ts_fidx;
 	    if (fl != tl)
 	    {
@@ -13054,7 +13066,7 @@ suggest_try_soundalike_finish()
 	if (slang->sl_sal.ga_len > 0 && slang->sl_sbyts != NULL)
 	{
 	    /* Free the info about handled words. */
-	    todo = slang->sl_sounddone.ht_used;
+	    todo = (int)slang->sl_sounddone.ht_used;
 	    for (hi = slang->sl_sounddone.ht_array; todo > 0; ++hi)
 		if (!HASHITEM_EMPTY(hi))
 		{
@@ -13106,7 +13118,7 @@ add_sound_suggest(su, goodword, score, lp)
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc(sizeof(sftword_T) + STRLEN(goodword));
+	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T) + STRLEN(goodword)));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
@@ -13533,8 +13545,8 @@ add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus,
     pbad = su->su_badptr + badlenarg;
     for (;;)
     {
-	goodlen = pgood - goodword;
-	badlen = pbad - su->su_badptr;
+	goodlen = (int)(pgood - goodword);
+	badlen = (int)(pbad - su->su_badptr);
 	if (goodlen <= 0 || badlen <= 0)
 	    break;
 	mb_ptr_back(goodword, pgood);
@@ -13867,7 +13879,7 @@ spell_soundfold(slang, inword, folded, res)
 	    word = inword;
 	else
 	{
-	    (void)spell_casefold(inword, STRLEN(inword), fword, MAXWLEN);
+	    (void)spell_casefold(inword, (int)STRLEN(inword), fword, MAXWLEN);
 	    word = fword;
 	}
 
@@ -14590,8 +14602,8 @@ soundalike_score(goodstart, badstart)
 	}
     }
 
-    goodlen = STRLEN(goodsound);
-    badlen = STRLEN(badsound);
+    goodlen = (int)STRLEN(goodsound);
+    badlen = (int)STRLEN(badsound);
 
     /* Return quickly if the lenghts are too different to be fixed by two
      * changes. */
@@ -14813,8 +14825,8 @@ spell_edit_score(slang, badword, goodword)
     else
 #endif
     {
-	badlen = STRLEN(badword) + 1;
-	goodlen = STRLEN(goodword) + 1;
+	badlen = (int)STRLEN(badword) + 1;
+	goodlen = (int)STRLEN(goodword) + 1;
     }
 
     /* We use "cnt" as an array: CNT(badword_idx, goodword_idx). */
@@ -15450,7 +15462,7 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
 	/* When matching with a pattern and there are no prefixes only use
 	 * parts of the tree that match "pat". */
 	if (pat != NULL && slang->sl_pbyts == NULL)
-	    patlen = STRLEN(pat);
+	    patlen = (int)STRLEN(pat);
 	else
 	    patlen = 0;
 
@@ -15804,7 +15816,7 @@ spell_word_start(startcol)
     /* Go back to start of the word. */
     while (p > line)
     {
-	col = p - line;
+	col = (int)(p - line);
 	mb_ptr_back(line, p);
 	if (!spell_iswordp(p, curbuf))
 	    break;

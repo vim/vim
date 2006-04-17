@@ -1850,8 +1850,8 @@ diff_find_change(wp, lnum, startp, endp)
 			&& vim_iswhite(line_org[si_org])
 			&& vim_iswhite(line_new[si_new]))
 		{
-		    si_org = skipwhite(line_org + si_org) - line_org;
-		    si_new = skipwhite(line_new + si_new) - line_new;
+		    si_org = (int)(skipwhite(line_org + si_org) - line_org);
+		    si_new = (int)(skipwhite(line_new + si_new) - line_new);
 		}
 		else
 		{

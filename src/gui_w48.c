@@ -3612,7 +3612,7 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 	    {
 		/* Backslashes are only special when followed by a double
 		 * quote. */
-		i = strspn(p, "\\");
+		i = (int)strspn(p, "\\");
 		if (p[i] == '"')
 		{
 		    /* Halve the number of backslashes. */

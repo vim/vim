@@ -2652,7 +2652,7 @@ mch_writable(char_u *name)
 mch_can_exe(char_u *name)
 {
     char_u	buf[_MAX_PATH];
-    int		len = STRLEN(name);
+    int		len = (int)STRLEN(name);
     char_u	*p;
 
     if (len >= _MAX_PATH)	/* safety check */
@@ -3914,7 +3914,7 @@ mch_write(
     {
 	/* optimization: use one single write_chars for runs of text,
 	 * rather than once per character  It ain't curses, but it helps. */
-	DWORD  prefix = strcspn(s, "\n\r\b\a\033");
+	DWORD  prefix = (DWORD)strcspn(s, "\n\r\b\a\033");
 
 	if (p_wd)
 	{
@@ -4065,7 +4065,7 @@ mch_write(
 		    delete_lines(arg1);
 		}
 
-		len -= p - s;
+		len -= (int)(p - s);
 		s = p + 1;
 		break;
 
@@ -4716,8 +4716,8 @@ copy_substream(HANDLE sh, void *context, WCHAR *to, WCHAR *substream, long len)
 	for (done = 0; done < len; done += written)
 	{
 	    /* (size_t) cast for Borland C 5.5 */
-	    todo = (size_t)(len - done) > sizeof(buf) ? sizeof(buf)
-						       : (size_t)(len - done);
+	    todo = (DWORD)((size_t)(len - done) > sizeof(buf) ? sizeof(buf)
+						       : (size_t)(len - done));
 	    if (!BackupRead(sh, (LPBYTE)buf, todo, &readcnt,
 						       FALSE, FALSE, context)
 		    || readcnt != todo
@@ -4765,7 +4765,7 @@ copy_infostreams(char_u *from, char_u *to)
 		/* Get the header to find the length of the stream name.  If
 		 * the "readcount" is zero we have done all info streams. */
 		ZeroMemory(&sid, sizeof(WIN32_STREAM_ID));
-		headersize = (char *)&sid.cStreamName - (char *)&sid.dwStreamId;
+		headersize = (int)((char *)&sid.cStreamName - (char *)&sid.dwStreamId);
 		if (!BackupRead(sh, (LPBYTE)&sid, headersize,
 					   &readcount, FALSE, FALSE, &context)
 			|| readcount == 0)
@@ -4986,7 +4986,7 @@ get_cmd_argsW(char ***argvp)
 
 		/* Convert each Unicode argument to the current codepage. */
 		WideCharToMultiByte_alloc(GetACP(), 0,
-				ArglistW[i], wcslen(ArglistW[i]) + 1,
+				ArglistW[i], (int)wcslen(ArglistW[i]) + 1,
 				(LPSTR *)&argv[i], &len, 0, 0);
 		if (argv[i] == NULL)
 		{

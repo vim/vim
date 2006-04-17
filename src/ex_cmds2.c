@@ -1023,7 +1023,7 @@ ex_profile(eap)
     int		len;
 
     e = skiptowhite(eap->arg);
-    len = e - eap->arg;
+    len = (int)(e - eap->arg);
     e = skipwhite(e);
 
     if (len == 5 && STRNCMP(eap->arg, "start", 5) == 0 && *e != NUL)

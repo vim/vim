@@ -1104,7 +1104,7 @@ intable(table, size, c)
 
     /* binary search in table */
     bot = 0;
-    top = size / sizeof(struct interval) - 1;
+    top = (int)(size / sizeof(struct interval) - 1);
     while (top >= bot)
     {
 	mid = (bot + top) / 2;
@@ -2271,7 +2271,7 @@ mb_strnicmp(s1, s2, nn)
     int		i, j, l;
     int		cdiff;
     int		incomplete = FALSE;
-    int		n = nn;
+    int		n = (int)nn;
 
     for (i = 0; i < n; i += l)
     {
@@ -2365,7 +2365,7 @@ show_utf8()
 	}
 	sprintf((char *)IObuff + rlen, "%02x ", line[i]);
 	--clen;
-	rlen += STRLEN(IObuff + rlen);
+	rlen += (int)STRLEN(IObuff + rlen);
 	if (rlen > IOSIZE - 20)
 	    break;
     }
@@ -2640,12 +2640,12 @@ utf_find_illegal()
 				     || utf_char2len(utf_ptr2char(p)) != len))
 	    {
 		if (vimconv.vc_type == CONV_NONE)
-		    curwin->w_cursor.col += p - ml_get_cursor();
+		    curwin->w_cursor.col += (colnr_T)(p - ml_get_cursor());
 		else
 		{
 		    int	    l;
 
-		    len = p - tofree;
+		    len = (int)(p - tofree);
 		    for (p = ml_get_cursor(); *p != NUL && len-- > 0; p += l)
 		    {
 			l = utf_ptr2len(p);
@@ -3263,7 +3263,7 @@ iconv_string(vcp, str, slen, unconvlenp)
 	{
 	    /* Handle an incomplete sequence at the end. */
 	    *to = NUL;
-	    *unconvlenp = fromlen;
+	    *unconvlenp = (int)fromlen;
 	    break;
 	}
 
@@ -3280,12 +3280,12 @@ iconv_string(vcp, str, slen, unconvlenp)
 	    if ((*mb_ptr2cells)((char_u *)from) > 1)
 		*to++ = '?';
 	    if (enc_utf8)
-		l = utfc_ptr2len_len((char_u *)from, fromlen);
+		l = utfc_ptr2len_len((char_u *)from, (int)fromlen);
 	    else
 	    {
 		l = (*mb_ptr2len)((char_u *)from);
 		if (l > (int)fromlen)
-		    l = fromlen;
+		    l = (int)fromlen;
 	    }
 	    from += l;
 	    fromlen -= l;

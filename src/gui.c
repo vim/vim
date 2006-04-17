@@ -2566,7 +2566,7 @@ gui_redraw_block(row1, col1, row2, col2, flags)
     /* Put the cursor back where it was */
     gui.row = old_row;
     gui.col = old_col;
-    gui.highlight_mask = old_hl_mask;
+    gui.highlight_mask = (int)old_hl_mask;
 
     return retval;
 }
@@ -4345,7 +4345,7 @@ gui_do_horiz_scroll()
     if (curwin->w_leftcol == scrollbar_value)
 	return FALSE;
 
-    curwin->w_leftcol = scrollbar_value;
+    curwin->w_leftcol = (colnr_T)scrollbar_value;
 
     /* When the line of the cursor is too short, move the cursor to the
      * longest visible line.  Do a sanity check on "longest_lnum", just in
@@ -4427,9 +4427,9 @@ gui_get_lightness(pixel)
 {
     long_u	rgb = gui_mch_get_rgb(pixel);
 
-    return (  (((rgb >> 16) & 0xff) * 299)
-	    + (((rgb >> 8)  & 0xff) * 587)
-	    +  ((rgb	    & 0xff) * 114)) / 1000;
+    return  (int)(  (((rgb >> 16) & 0xff) * 299)
+	           + (((rgb >> 8) & 0xff) * 587)
+	           +  ((rgb	  & 0xff) * 114)) / 1000;
 }
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)
@@ -4808,7 +4808,7 @@ get_find_dialog_text(arg, wwordp, mcasep)
 	text = vim_strsave(text);
 	if (text != NULL)
 	{
-	    int len = STRLEN(text);
+	    int len = (int)STRLEN(text);
 	    int i;
 
 	    /* Remove "\V" */

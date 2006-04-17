@@ -909,7 +909,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
     if (pos->lnum > buf->b_ml.ml_line_count)
     {
 	pos->lnum = buf->b_ml.ml_line_count;
-	pos->col = STRLEN(ml_get_buf(buf, pos->lnum, FALSE));
+	pos->col = (int)STRLEN(ml_get_buf(buf, pos->lnum, FALSE));
 	if (pos->col > 0)
 	    --pos->col;
     }
@@ -1075,7 +1075,7 @@ do_search(oap, dirc, pat, count, options)
 	    if (strcopy != ps)
 	    {
 		/* made a copy of "pat" to change "\?" to "?" */
-		searchcmdlen += STRLEN(pat) - STRLEN(strcopy);
+		searchcmdlen += (int)(STRLEN(pat) - STRLEN(strcopy));
 		pat = strcopy;
 		searchstr = strcopy;
 	    }
@@ -3660,7 +3660,7 @@ in_html_tag(end_tag)
     }
 
     pos.lnum = curwin->w_cursor.lnum;
-    pos.col = p - line;
+    pos.col = (colnr_T)(p - line);
 
     mb_ptr_adv(p);
     if (end_tag)
@@ -3780,7 +3780,7 @@ again:
     p = ml_get_cursor();
     for (cp = p; *cp != NUL && *cp != '>' && !vim_iswhite(*cp); mb_ptr_adv(cp))
 	;
-    len = cp - p;
+    len = (int)(cp - p);
     if (len == 0)
     {
 	curwin->w_cursor = old_pos;
@@ -4527,7 +4527,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 	    if (inc_opt != NULL && strstr((char *)inc_opt, "\\zs") != NULL)
 		/* Use text from '\zs' to '\ze' (or end) of 'include'. */
 		new_fname = find_file_name_in_path(incl_regmatch.startp[0],
-			      incl_regmatch.endp[0] - incl_regmatch.startp[0],
+			      (int)(incl_regmatch.endp[0] - incl_regmatch.startp[0]),
 				 FNAME_EXP|FNAME_INCL|FNAME_REL, 1L, p_fname);
 	    else
 		/* Use text after match with 'include'. */
@@ -4613,7 +4613,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 			{
 			    /* Nothing found, use the rest of the line. */
 			    p = incl_regmatch.endp[0];
-			    i = STRLEN(p);
+			    i = (int)STRLEN(p);
 			}
 			else
 			{
@@ -5270,7 +5270,7 @@ wvsp_one(fp, idx, s, sc)
 {
     if (spats[idx].pat != NULL)
     {
-	fprintf(fp, "\n# Last %sSearch Pattern:\n~", s);
+	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
 	/* off.dir is not stored, it's reset to forward */
 	fprintf(fp, "%c%c%c%c%ld%s%c",
 		spats[idx].magic    ? 'M' : 'm',	/* magic */

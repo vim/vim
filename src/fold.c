@@ -2006,7 +2006,7 @@ foldtext_cleanup(str)
 
     /* Ignore leading and trailing white space in 'commentstring'. */
     cms_start = skipwhite(curbuf->b_p_cms);
-    cms_slen = STRLEN(cms_start);
+    cms_slen = (int)STRLEN(cms_start);
     while (cms_slen > 0 && vim_iswhite(cms_start[cms_slen - 1]))
 	--cms_slen;
 
@@ -2014,8 +2014,8 @@ foldtext_cleanup(str)
     cms_end = (char_u *)strstr((char *)cms_start, "%s");
     if (cms_end != NULL)
     {
-	cms_elen = cms_slen - (cms_end - cms_start);
-	cms_slen = cms_end - cms_start;
+	cms_elen = cms_slen - (int)(cms_end - cms_start);
+	cms_slen = (int)(cms_end - cms_start);
 
 	/* exclude white space before "%s" */
 	while (cms_slen > 0 && vim_iswhite(cms_start[cms_slen - 1]))
@@ -2023,7 +2023,7 @@ foldtext_cleanup(str)
 
 	/* skip "%s" and white space after it */
 	s = skipwhite(cms_end + 2);
-	cms_elen -= s - cms_end;
+	cms_elen -= (int)(s - cms_end);
 	cms_end = s;
     }
     parseMarker(curwin);
@@ -2047,7 +2047,7 @@ foldtext_cleanup(str)
 	    if (p >= str + cms_slen
 			   && STRNCMP(p - cms_slen, cms_start, cms_slen) == 0)
 	    {
-		len += (s - p) + cms_slen;
+		len += (int)(s - p) + cms_slen;
 		s = p - cms_slen;
 	    }
 	}

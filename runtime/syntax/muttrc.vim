@@ -1,9 +1,18 @@
 " Vim syntax file
 " Language:	Mutt setup files
-" Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
+" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer: Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
 " Contributor:	Gary Johnson <garyjohn@spk.agilent.com>
-" Last Change:	27 May 2004
+" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/muttrc.vim?op=file&rev=0&sc=0
+"
+" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+"     it only because patches have been submitted for it by Debian users and the
+"     former maintainer was MIA (Missing In Action), taking over its
+"     maintenance was thus the only way to include those patches.
+"     If you care about this file, and have time to maintain it please do so!
 
+" XXX outdated comment
 " This file covers mutt version 1.4.2.1i
 
 " For version 5.x: Clear all syntax items
@@ -120,6 +129,8 @@ syn keyword muttrcVarBool	contained invssl_use_sslv2 invssl_use_sslv3 invssl_use
 syn keyword muttrcVarBool	contained invstatus_on_top invstrict_threads invsuspend invtext_flowed invthorough_search
 syn keyword muttrcVarBool	contained invthread_received invtilde invuncollapse_jump invuse_8bitmime invuse_domain invuse_from
 syn keyword muttrcVarBool	contained invuse_ipv6 invuser_agent invwait_key invweed invwrap_search invwrite_bcc
+syn keyword muttrcVarBool	contained crypt_autosign crypt_autoencrypt xterm_set_titles
+syn keyword muttrcVarBool       contained maildir_header_cache_verify
 
 syn keyword muttrcVarQuad	contained abort_nosubject abort_unmodified copy delete honor_followup_to include mime_forward
 syn keyword muttrcVarQuad	contained mime_forward_rest mime_fwd move pgp_create_traditional pgp_verify_sig pop_delete
@@ -139,7 +150,7 @@ syn keyword muttrcVarNum	contained connect_timeout history imap_keepalive mail_c
 syn keyword muttrcVarNum	contained pgp_timeout pop_checkinterval read_inc score_threshold_delete score_threshold_flag
 syn keyword muttrcVarNum	contained score_threshold_read sendmail_wait sleep_time timeout wrapmargin write_inc
 
-syn keyword muttrcVarStr	contained alias_file alias_format alternates attach_format attach_sep attribution certificate_file
+syn keyword muttrcVarStr	contained alias_file alias_format attach_format attach_sep attribution certificate_file
 syn keyword muttrcVarStr	contained charset compose_format date_format default_hook display_filter dotlock_program dsn_notify
 syn keyword muttrcVarStr	contained dsn_return editor entropy_file escape folder folder_format forw_format forward_format
 syn keyword muttrcVarStr	contained from gecos_mask hdr_format hostname imap_authenticators imap_delim_chars
@@ -154,6 +165,7 @@ syn keyword muttrcVarStr	contained pipe_sep pop_authenticators pop_host pop_pass
 syn keyword muttrcVarStr	contained postponed preconnect print_cmd print_command query_command quote_regexp realname record
 syn keyword muttrcVarStr	contained reply_regexp send_charset sendmail shell signature simple_search smileys sort sort_alias
 syn keyword muttrcVarStr	contained sort_aux sort_browser spoolfile status_chars status_format tmpdir to_chars tunnel visual
+syn keyword muttrcVarStr	contained header_cache header_cache_pagesize 
 
 syn keyword muttrcMenu		contained alias attach browser compose editor index pager postpone pgp mix query generic
 
@@ -161,6 +173,7 @@ syn keyword muttrcCommand	account-hook auto_view alternative_order charset-hook 
 syn keyword muttrcCommand	folder-hook hdr_order iconv-hook ignore lists mailboxes message-hook mbox-hook my_hdr
 syn keyword muttrcCommand	pgp-hook push save-hook score send-hook source subscribe unalias unauto_view unhdr_order
 syn keyword muttrcCommand	unhook unignore unlists unmono unmy_hdr unscore unsubscribe
+syn keyword muttrcCommand	send2-hook alternates unalternates
 
 syn keyword muttrcSet		set     skipwhite nextgroup=muttrcVar.*
 syn keyword muttrcUnset		unset   skipwhite nextgroup=muttrcVar.*

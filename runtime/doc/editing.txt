@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0e.  Last change: 2006 Apr 06
+*editing.txt*   For Vim version 7.0e.  Last change: 2006 Apr 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1213,7 +1213,7 @@ also makes a difference for executing external commands, e.g. ":!ls".
 Changing directory fails when the current buffer is modified, the '.' flag is
 present in 'cpoptions' and "!" is not used in the command.
 
-							*:cd* *E472*
+							*:cd* *E747* *E472*
 :cd[!]			On non-Unix systems: Print the current directory
 			name.  On Unix systems: Change the current directory
 			to the home directory.  Use |:pwd| to print the

@@ -2,7 +2,7 @@
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
 " Last Change:	Apr 12, 2006
-" Version:	7.0-41
+" Version:	7.0-42
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -161,7 +161,10 @@ if !exists("g:vimsyntax_noerror")
 endif
 syn case ignore
 syn keyword vimUserAttrbKey   contained	bar	ban[g]	cou[nt]	ra[nge] com[plete]	n[args]	re[gister]
-syn keyword vimUserAttrbCmplt contained	augroup buffer command dir environment event expression file function help highlight mapping menu option tag tag_listfiles var
+syn keyword vimUserAttrbCmplt contained	augroup buffer command dir environment event expression file function help highlight mapping menu option something tag tag_listfiles var
+syn keyword vimUserAttrbCmplt contained	custom customlist nextgroup=vimUserAttrbCmpltFunc,vimUserCmdError
+syn match   vimUserAttrbCmpltFunc contained	",\%(\h\w*#\u\w*\|\u\w*\)"hs=s+1 nextgroup=vimUserCmdError
+
 syn case match
 syn match   vimUserAttrbCmplt contained	"custom,\u\w*"
 
@@ -695,6 +698,7 @@ hi def link vimSyncKey	Type
 hi def link vimSyncNone	Type
 hi def link vimTodo	Todo
 hi def link vimUserCmdError	Error
+hi def link vimUserAttrbCmpltFunc	Special
 
 " Current Syntax Variable: {{{2
 let b:current_syntax = "vim"

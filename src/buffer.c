@@ -3171,7 +3171,7 @@ maketitle()
 		i_name = gettail(curbuf->b_ffname);
 	    *i_str = NUL;
 	    /* Truncate name at 100 bytes. */
-	    len = STRLEN(i_name);
+	    len = (int)STRLEN(i_name);
 	    if (len > 100)
 	    {
 		len -= 100;
@@ -3425,7 +3425,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 		}
 		else
 #endif
-		    n = (p - t) - item[groupitem[groupdepth]].maxwid + 1;
+		    n = (long)(p - t) - item[groupitem[groupdepth]].maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, p - (t + n));
@@ -3461,7 +3461,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 		    mch_memmove(t + n - l, t, p - t);
 		    l = n - l;
 		    if (p + l >= out + outlen)
-			l = (out + outlen) - p - 1;
+			l = (long)((out + outlen) - p - 1);
 		    p += l;
 		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
 			item[n].start += l;
@@ -3792,7 +3792,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 	    {
 		item[curitem].type = Highlight;
 		item[curitem].start = p;
-		item[curitem].minwid = -syn_namen2id(t, s - t);
+		item[curitem].minwid = -syn_namen2id(t, (int)(s - t));
 		curitem++;
 	    }
 	    ++s;

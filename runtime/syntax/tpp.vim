@@ -1,10 +1,17 @@
 " Vim syntax file
 " Language:	tpp - Text Presentation Program
-" Maintainer:	Gerfried Fuchs <alfie@ist.org>
+" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer:	Gerfried Fuchs <alfie@ist.org>
+" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/tpp.vim?op=file&rev=0&sc=0
 " Filenames:	*.tpp
-" Last Change:	28. October 2004
-" URL:		http://alfie.ist.org/projects/vim/syntax/tpp.vim
 " License:	BSD
+"
+" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+"     it only because patches have been submitted for it by Debian users and the
+"     former maintainer was MIA (Missing In Action), taking over its
+"     maintenance was thus the only way to include those patches.
+"     If you care about this file, and have time to maintain it please do so!
 "
 " Comments are very welcome - but please make sure that you are commenting on
 " the latest version of this file.
@@ -24,15 +31,15 @@ endif
 
 
 "" list of the legal switches/options
-syn match tppAbstractOptionKey contained "^--\%(author\|title\|date\) *" nextgroup=tppValue
-syn match tppPageLocalOptionKey contained "^--\%(heading\|center\|right\|huge\|sethugefont\|exec\) *" nextgroup=tppValue
+syn match tppAbstractOptionKey contained "^--\%(author\|title\|date\|footer\) *" nextgroup=tppString
+syn match tppPageLocalOptionKey contained "^--\%(heading\|center\|right\|huge\|sethugefont\|exec\) *" nextgroup=tppString
 syn match tppPageLocalSwitchKey contained "^--\%(horline\|-\|\%(begin\|end\)\%(\%(shell\)\?output\|slide\%(left\|right\|top\|bottom\)\)\|\%(bold\|rev\|ul\)\%(on\|off\)\|withborder\)"
-syn match tppNewPageOptionKey contained "^--newpage *" nextgroup=tppValue
+syn match tppNewPageOptionKey contained "^--newpage *" nextgroup=tppString
 syn match tppColorOptionKey contained "^--\%(\%(bg\|fg\)\?color\) *"
 syn match tppTimeOptionKey contained "^--sleep *"
 
-syn match tppValue contained ".*"
-syn match tppColor contained "\%(white\|yellow\|red\|green\|blue\|cyan\|magenta\|black\)"
+syn match tppString contained ".*"
+syn match tppColor contained "\%(white\|yellow\|red\|green\|blue\|cyan\|magenta\|black\|default\)"
 syn match tppTime contained "\d\+"
 
 syn region tppPageLocalSwitch start="^--" end="$" contains=tppPageLocalSwitchKey oneline
@@ -40,7 +47,7 @@ syn region tppColorOption start="^--\%(\%(bg\|fg\)\?color\)" end="$" contains=tp
 syn region tppTimeOption start="^--sleep" end="$" contains=tppTimeOptionKey,tppTime oneline
 syn region tppNewPageOption start="^--newpage" end="$" contains=tppNewPageOptionKey oneline
 syn region tppPageLocalOption start="^--\%(heading\|center\|right\|huge\|sethugefont\|exec\)" end="$" contains=tppPageLocalOptionKey oneline
-syn region tppAbstractOption start="^--\%(author\|title\|date\)" end="$" contains=tppAbstractOptionKey oneline
+syn region tppAbstractOption start="^--\%(author\|title\|date\|footer\)" end="$" contains=tppAbstractOptionKey oneline
 
 if main_syntax != 'sh'
   " shell command
@@ -74,7 +81,7 @@ if version >= 508 || !exists("did_tpp_syn_inits")
   HiLink tppColorOptionKey		Keyword
   HiLink tppTimeOptionKey		Comment
   HiLink tppNewPageOptionKey		PreProc
-  HiLink tppValue			String
+  HiLink tppString			String
   HiLink tppColor			String
   HiLink tppTime			Number
   HiLink tppComment			Comment

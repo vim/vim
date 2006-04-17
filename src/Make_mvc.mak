@@ -167,13 +167,16 @@ OBJDIR = $(OBJDIR)Z
 OBJDIR = $(OBJDIR)d
 !endif
 
-# Win32.mak requires that CPU be set appropriately
+# Win32.mak requires that CPU be set appropriately.
+# To cross-compile for Win64, set CPU=AMD64 or CPU=IA64.
 
 !ifdef PROCESSOR_ARCHITECTURE
 # We're on Windows NT or using VC 6+
+! ifndef CPU
 CPU = $(PROCESSOR_ARCHITECTURE)
-! if ("$(CPU)" == "x86") || ("$(CPU)" == "X86")
+!  if ("$(CPU)" == "x86") || ("$(CPU)" == "X86")
 CPU = i386
+!  endif
 ! endif
 !else  # !PROCESSOR_ARCHITECTURE
 # We're on Windows 95

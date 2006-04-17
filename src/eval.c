@@ -1913,7 +1913,7 @@ list_hashtable_vars(ht, prefix, empty)
     dictitem_T	*di;
     int		todo;
 
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -2666,7 +2666,7 @@ set_var_lval(lp, endp, rettv, copy, op)
 		typval_T tv;
 
 		/* handle +=, -= and .= */
-		if (get_var_tv(lp->ll_name, STRLEN(lp->ll_name),
+		if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
 							     &tv, TRUE) == OK)
 		{
 		    if (tv_op(&tv, rettv, op) == OK)
@@ -3129,7 +3129,7 @@ ex_call(eap)
 	++fudi.fd_dict->dv_refcount;
 
     /* If it is the name of a variable of type VAR_FUNC use its contents. */
-    len = STRLEN(tofree);
+    len = (int)STRLEN(tofree);
     name = deref_func_name(tofree, &len);
 
     /* Skip white space to allow ":call func ()".  Not good, but required for
@@ -3164,7 +3164,7 @@ ex_call(eap)
 	    curwin->w_cursor.col = 0;
 	}
 	arg = startarg;
-	if (get_func_tv(name, STRLEN(name), &rettv, &arg,
+	if (get_func_tv(name, (int)STRLEN(name), &rettv, &arg,
 		    eap->line1, eap->line2, &doesrange,
 					    !eap->skip, fudi.fd_dict) == FAIL)
 	{
@@ -3491,7 +3491,7 @@ item_lock(tv, deep, lock)
 		if (deep < 0 || deep > 1)
 		{
 		    /* recursive: lock/unlock the items the List contains */
-		    todo = d->dv_hashtab.ht_used;
+		    todo = (int)d->dv_hashtab.ht_used;
 		    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
 		    {
 			if (!HASHITEM_EMPTY(hi))
@@ -3534,7 +3534,7 @@ del_menutrans_vars()
     int		todo;
 
     hash_lock(&globvarht);
-    todo = globvarht.ht_used;
+    todo = (int)globvarht.ht_used;
     for (hi = globvarht.ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -5480,7 +5480,7 @@ dict_equal(d1, d2, ic)
     if (dict_len(d1) != dict_len(d2))
 	return FALSE;
 
-    todo = d1->dv_hashtab.ht_used;
+    todo = (int)d1->dv_hashtab.ht_used;
     for (hi = d1->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -6130,7 +6130,7 @@ set_ref_in_ht(ht, copyID)
     int		todo;
     hashitem_T	*hi;
 
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0; ++hi)
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -6251,7 +6251,7 @@ dict_free(d)
 
     /* Lock the hashtab, we don't want it to resize while freeing items. */
     hash_lock(&d->dv_hashtab);
-    todo = d->dv_hashtab.ht_used;
+    todo = (int)d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -6280,7 +6280,7 @@ dictitem_alloc(key)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(key));
+    di = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T) + STRLEN(key)));
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -6298,7 +6298,8 @@ dictitem_copy(org)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
+    di = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
+						      + STRLEN(org->di_key)));
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
@@ -6365,7 +6366,7 @@ dict_copy(orig, deep, copyID)
 	    orig->dv_copyID = copyID;
 	    orig->dv_copydict = copy;
 	}
-	todo = orig->dv_hashtab.ht_used;
+	todo = (int)orig->dv_hashtab.ht_used;
 	for (hi = orig->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 	{
 	    if (!HASHITEM_EMPTY(hi))
@@ -6462,7 +6463,7 @@ dict_len(d)
 {
     if (d == NULL)
 	return 0L;
-    return d->dv_hashtab.ht_used;
+    return (long)d->dv_hashtab.ht_used;
 }
 
 /*
@@ -6567,7 +6568,7 @@ dict2string(tv, copyID)
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '{');
 
-    todo = d->dv_hashtab.ht_used;
+    todo = (int)d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -6859,7 +6860,7 @@ string_quote(str, function)
     len = (function ? 13 : 3);
     if (str != NULL)
     {
-	len += STRLEN(str);
+	len += (unsigned)STRLEN(str);
 	for (p = str; *p != NUL; mb_ptr_adv(p))
 	    if (*p == '\'')
 		++len;
@@ -7291,7 +7292,7 @@ deref_func_name(name, lenp)
 	    *lenp = 0;
 	    return (char_u *)"";	/* just in case */
 	}
-	*lenp = STRLEN(v->di_tv.vval.v_string);
+	*lenp = (int)STRLEN(v->di_tv.vval.v_string);
 	return v->di_tv.vval.v_string;
     }
 
@@ -7554,21 +7555,21 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	switch (error)
 	{
 	    case ERROR_UNKNOWN:
-		    emsg_funcname("E117: Unknown function: %s", name);
+		    emsg_funcname(N_("E117: Unknown function: %s"), name);
 		    break;
 	    case ERROR_TOOMANY:
 		    emsg_funcname(e_toomanyarg, name);
 		    break;
 	    case ERROR_TOOFEW:
-		    emsg_funcname("E119: Not enough arguments for function: %s",
+		    emsg_funcname(N_("E119: Not enough arguments for function: %s"),
 									name);
 		    break;
 	    case ERROR_SCRIPT:
-		    emsg_funcname("E120: Using <SID> not in a script context: %s",
+		    emsg_funcname(N_("E120: Using <SID> not in a script context: %s"),
 									name);
 		    break;
 	    case ERROR_DICT:
-		    emsg_funcname("E725: Calling dict function without Dictionary: %s",
+		    emsg_funcname(N_("E725: Calling dict function without Dictionary: %s"),
 									name);
 		    break;
 	}
@@ -8047,7 +8048,7 @@ f_byteidx(argvars, rettv)
 	    return;
 	t += (*mb_ptr2len)(t);
     }
-    rettv->vval.v_number = t - str;
+    rettv->vval.v_number = (varnumber_T)(t - str);
 #else
     if (idx <= STRLEN(str))
 	rettv->vval.v_number = idx;
@@ -8110,7 +8111,7 @@ f_call(argvars, rettv)
     }
 
     if (item == NULL)
-	(void)call_func(func, STRLEN(func), rettv, argc, argv,
+	(void)call_func(func, (int)STRLEN(func), rettv, argc, argv,
 				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 						      &dummy, TRUE, selfdict);
 
@@ -8191,7 +8192,7 @@ f_col(argvars, rettv)
 	{
 	    /* '> can be MAXCOL, get the length of the line then */
 	    if (fp->lnum <= curbuf->b_ml.ml_line_count)
-		col = STRLEN(ml_get(fp->lnum)) + 1;
+		col = (colnr_T)STRLEN(ml_get(fp->lnum)) + 1;
 	    else
 		col = MAXCOL;
 	}
@@ -8420,7 +8421,7 @@ f_count(argvars, rettv)
 		    EMSG(_(e_invarg));
 	    }
 
-	    todo = error ? 0 : d->dv_hashtab.ht_used;
+	    todo = error ? 0 : (int)d->dv_hashtab.ht_used;
 	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
@@ -8952,7 +8953,7 @@ f_extend(argvars, rettv)
 
 	    /* Go over all entries in the second dict and add them to the
 	     * first dict. */
-	    todo = d2->dv_hashtab.ht_used;
+	    todo = (int)d2->dv_hashtab.ht_used;
 	    for (hi2 = d2->dv_hashtab.ht_array; todo > 0; ++hi2)
 	    {
 		if (!HASHITEM_EMPTY(hi2))
@@ -9154,7 +9155,7 @@ filter_map(argvars, rettv, map)
 
 	    ht = &d->dv_hashtab;
 	    hash_lock(ht);
-	    todo = ht->ht_used;
+	    todo = (int)ht->ht_used;
 	    for (hi = ht->ht_array; todo > 0; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
@@ -11320,7 +11321,7 @@ f_input(argvars, rettv)
 		if (xp_name == NULL)
 		    return;
 
-		xp_namelen = STRLEN(xp_name);
+		xp_namelen = (int)STRLEN(xp_name);
 
 		if (parse_compl_arg(xp_name, xp_namelen, &xp_type, &argt,
 							     &xp_arg) == FAIL)
@@ -11634,7 +11635,7 @@ dict_list(argvars, rettv, what)
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
-    todo = d->dv_hashtab.ht_used;
+    todo = (int)d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -12153,8 +12154,8 @@ find_some_match(argvars, rettv, type)
 	    else
 	    {
 #ifdef FEAT_MBYTE
-		startcol = regmatch.startp[0]
-				    + (*mb_ptr2len)(regmatch.startp[0]) - str;
+		startcol = (colnr_T)(regmatch.startp[0]
+				    + (*mb_ptr2len)(regmatch.startp[0]) - str);
 #else
 		startcol = regmatch.startp[0] + 1 - str;
 #endif
@@ -12198,7 +12199,7 @@ find_some_match(argvars, rettv, type)
 		else
 		    rettv->vval.v_number =
 					(varnumber_T)(regmatch.endp[0] - str);
-		rettv->vval.v_number += str - expr;
+		rettv->vval.v_number += (varnumber_T)(str - expr);
 	    }
 	}
 	vim_free(regmatch.regprog);
@@ -12323,7 +12324,7 @@ max_min(argvars, rettv, domax)
 	d = argvars[0].vval.v_dict;
 	if (d != NULL)
 	{
-	    todo = d->dv_hashtab.ht_used;
+	    todo = (int)d->dv_hashtab.ht_used;
 	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
@@ -12711,7 +12712,7 @@ f_readfile(argvars, rettv)
     filtd = 0;
     while (cnt < maxline || maxline < 0)
     {
-	readlen = fread(buf + filtd, 1, FREAD_SIZE - filtd, fd);
+	readlen = (int)fread(buf + filtd, 1, FREAD_SIZE - filtd, fd);
 	buflen = filtd + readlen;
 	tolist = 0;
 	for ( ; filtd < buflen || readlen <= 0; ++filtd)
@@ -14599,7 +14600,7 @@ item_compare2(s1, s2)
     copy_tv(&(*(listitem_T **)s2)->li_tv, &argv[1]);
 
     rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    res = call_func(item_compare_func, STRLEN(item_compare_func),
+    res = call_func(item_compare_func, (int)STRLEN(item_compare_func),
 				 &rettv, 2, argv, 0L, 0L, &dummy, TRUE, NULL);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
@@ -15134,7 +15135,7 @@ f_strridx(argvars, rettv)
 
     needle = get_tv_string_chk(&argvars[1]);
     haystack = get_tv_string_buf_chk(&argvars[0], buf);
-    haystack_len = STRLEN(haystack);
+    haystack_len = (int)STRLEN(haystack);
 
     rettv->vval.v_number = -1;
     if (needle == NULL || haystack == NULL)
@@ -16972,7 +16973,7 @@ handle_subscript(arg, rettv, evaluate, verbose)
 
 	    /* Invoke the function.  Recursive! */
 	    s = functv.vval.v_string;
-	    ret = get_func_tv(s, STRLEN(s), rettv, arg,
+	    ret = get_func_tv(s, (int)STRLEN(s), rettv, arg,
 			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
 			&len, evaluate, selfdict);
 
@@ -17512,7 +17513,7 @@ vars_clear_ext(ht, free_val)
     dictitem_T	*v;
 
     hash_lock(ht);
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -18166,7 +18167,7 @@ ex_function(eap)
     {
 	if (!eap->skip)
 	{
-	    todo = func_hashtab.ht_used;
+	    todo = (int)func_hashtab.ht_used;
 	    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
@@ -18200,7 +18201,7 @@ ex_function(eap)
 	    {
 		regmatch.rm_ic = p_ic;
 
-		todo = func_hashtab.ht_used;
+		todo = (int)func_hashtab.ht_used;
 		for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
 		{
 		    if (!HASHITEM_EMPTY(hi))
@@ -18684,8 +18685,8 @@ ex_function(eap)
 		if (scriptname != NULL)
 		{
 		    p = vim_strchr(scriptname, '/');
-		    plen = STRLEN(p);
-		    slen = STRLEN(sourcing_name);
+		    plen = (int)STRLEN(p);
+		    slen = (int)STRLEN(sourcing_name);
 		    if (slen > plen && fnamecmp(p,
 					    sourcing_name + slen - plen) == 0)
 			j = OK;
@@ -18866,7 +18867,7 @@ trans_function_name(pp, skip, flags, fdp)
 
     if (lv.ll_exp_name != NULL)
     {
-	len = STRLEN(lv.ll_exp_name);
+	len = (int)STRLEN(lv.ll_exp_name);
 	if (lead <= 2 && lv.ll_name == lv.ll_exp_name
 					 && STRNCMP(lv.ll_name, "s:", 2) == 0)
 	{
@@ -19110,7 +19111,7 @@ func_dump_profile(fd)
     ufunc_T	**sorttab;
     int		st_len = 0;
 
-    todo = func_hashtab.ht_used;
+    todo = (int)func_hashtab.ht_used;
     sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T) * todo));
 
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
@@ -20274,7 +20275,7 @@ write_viminfo_varlist(fp)
 
     fprintf(fp, _("\n# global variables:\n"));
 
-    todo = globvarht.ht_used;
+    todo = (int)globvarht.ht_used;
     for (hi = globvarht.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -20310,7 +20311,7 @@ store_session_globals(fd)
     int		todo;
     char_u	*p, *t;
 
-    todo = globvarht.ht_used;
+    todo = (int)globvarht.ht_used;
     for (hi = globvarht.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -20542,7 +20543,7 @@ shortpath_for_partial(fnamep, bufp, fnamelen)
     else
 	pbuf = tfname = FullName_save(*fnamep, FALSE);
 
-    len = tflen = STRLEN(tfname);
+    len = tflen = (int)STRLEN(tfname);
 
     if (!get_short_pathname(&tfname, &pbuf, &len))
 	return -1;

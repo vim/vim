@@ -3389,7 +3389,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 	    else
 # endif
 		this_class = mb_get_class(ptr + col);
-	    while (col > 0)
+	    while (col > 0 && this_class != 0)
 	    {
 		prevcol = col - 1 - (*mb_head_off)(ptr, ptr + col - 1);
 		prev_class = mb_get_class(ptr + prevcol);
@@ -6986,7 +6986,7 @@ n_swapchar(cap)
 		    if (did_change)
 		    {
 			ptr = ml_get(pos.lnum);
-			count = STRLEN(ptr) - pos.col;
+			count = (int)STRLEN(ptr) - pos.col;
 			netbeans_removed(curbuf, pos.lnum, pos.col,
 								 (long)count);
 			netbeans_inserted(curbuf, pos.lnum, pos.col,

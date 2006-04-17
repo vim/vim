@@ -674,7 +674,7 @@ getcmdline(firstc, count, indent)
 
 		    if (p != NULL && realloc_cmdbuff((int)STRLEN(p) + 1) == OK)
 		    {
-			ccline.cmdlen = STRLEN(p);
+			ccline.cmdlen = (int)STRLEN(p);
 			STRCPY(ccline.cmdbuff, p);
 			vim_free(p);
 
@@ -2917,7 +2917,7 @@ cmdline_paste(regname, literally)
 		    --w;
 		}
 	    }
-	    len = (ccline.cmdbuff + ccline.cmdlen) - w;
+	    len = (int)((ccline.cmdbuff + ccline.cmdlen) - w);
 	    if (p_ic ? STRNICMP(w, arg, len) == 0 : STRNCMP(w, arg, len) == 0)
 		p += len;
 	}
@@ -4794,7 +4794,7 @@ globpath(path, file)
 	    {
 		ExpandEscape(&xpc, buf, num_p, p, WILD_SILENT);
 		for (len = 0, i = 0; i < num_p; ++i)
-		    len += (long_u)STRLEN(p[i]) + 1;
+		    len += (int)STRLEN(p[i]) + 1;
 
 		/* Concatenate new results to previous ones. */
 		if (ga_grow(&ga, len) == OK)
@@ -5071,7 +5071,7 @@ add_to_history(histype, new_entry, in_map, sep)
 	vim_free(hisptr->hisstr);
 
 	/* Store the separator after the NUL of the string. */
-	len = STRLEN(new_entry);
+	len = (int)STRLEN(new_entry);
 	hisptr->hisstr = vim_strnsave(new_entry, len + 2);
 	if (hisptr->hisstr != NULL)
 	    hisptr->hisstr[len + 1] = sep;

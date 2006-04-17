@@ -43,6 +43,12 @@
 #include <windowsx.h>
 #include <shlobj.h>
 
+/* Accommodate old versions of VC that don't have a modern Platform SDK */
+#if _MSC_VER < 1300
+#undef  UINT_PTR
+#define UINT_PTR UINT
+#endif
+
 #define ResultFromShort(i)  ResultFromScode(MAKE_SCODE(SEVERITY_SUCCESS, 0, (USHORT)(i)))
 
 // Initialize GUIDs (should be done only and at-least once per DLL/EXE)
@@ -152,7 +158,7 @@ public:
 
     STDMETHODIMP InvokeCommand(LPCMINVOKECOMMANDINFO lpcmi);
 
-    STDMETHODIMP GetCommandString(UINT idCmd,
+    STDMETHODIMP GetCommandString(UINT_PTR idCmd,
 	    UINT uFlags,
 	    UINT FAR *reserved,
 	    LPSTR pszName,

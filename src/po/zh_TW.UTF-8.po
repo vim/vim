@@ -5,8 +5,15 @@
 #
 # FIRST AUTHOR  Francis S.Lin <piaip@csie.ntu.edu.tw>, 2000
 # FIRST RELEASE Thu Jun 14 14:24:17 CST 2001
+# MAINTAINER: Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 #
-# Last update: 2005/01/27 07:03 (6.3)
+# Last update: $LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+#
+# XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+#     it only because patches have been submitted for it by Debian users and the
+#     former maintainer was MIA (Missing In Action), taking over its
+#     maintenance was thus the only way to include those patches.
+#     If you care about this file, and have time to maintain it please do so!
 #
 # To update, search pattern:		/fuzzy\|^msgstr ""\(\n"\)\@!
 #
@@ -3288,11 +3295,11 @@ msgstr "少於一行 "
 
 #, c-format
 msgid "%ld more lines"
-msgstr "還有 %ld 行 "
+msgstr "多了 %ld 行 "
 
 #, c-format
 msgid "%ld fewer lines"
-msgstr "只剩 %ld 行 "
+msgstr "少了 %ld 行 "
 
 msgid " (Interrupted)"
 msgstr " (已中斷)"

@@ -1094,7 +1094,7 @@ enc_to_ucs2(char_u *str, int *lenp)
 
     if (lenp == NULL)
     {
-	len_loc = STRLEN(str) + 1;
+	len_loc = (int)STRLEN(str) + 1;
 	lenp = &len_loc;
     }
 
@@ -1153,7 +1153,7 @@ ucs2_to_enc(short_u *str, int *lenp)
 
     if (lenp == NULL)
     {
-	len_loc = wcslen(str) + 1;
+	len_loc = (int)wcslen(str) + 1;
 	lenp = &len_loc;
     }
 
@@ -1267,7 +1267,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 	    {
 		n = STRLEN(p_enc) + 1;
 		str = rawp + n;
-		str_size = metadata.rawlen - n;
+		str_size = (int)(metadata.rawlen - n);
 	    }
 	    else
 	    {
@@ -1292,7 +1292,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 
 	    /* Use the length of our metadata if possible, but limit it to the
 	     * GlobalSize() for safety. */
-	    maxlen = GlobalSize(hMemW) / sizeof(WCHAR);
+	    maxlen = (int)(GlobalSize(hMemW) / sizeof(WCHAR));
 	    if (metadata.ucslen >= 0)
 	    {
 		if (metadata.ucslen > maxlen)
@@ -1321,7 +1321,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 
 	    /* The length is either what our metadata says or the strlen().
 	     * But limit it to the GlobalSize() for safety. */
-	    maxlen = GlobalSize(hMem);
+	    maxlen = (int)GlobalSize(hMem);
 	    if (metadata.txtlen >= 0)
 	    {
 		if (metadata.txtlen > maxlen)
@@ -1444,7 +1444,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     {
 	LPSTR lpszMemRaw;
 
-	metadata.rawlen = txtlen + STRLEN(p_enc) + 1;
+	metadata.rawlen = (int)(txtlen + STRLEN(p_enc) + 1);
 	hMemRaw = (LPSTR)GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
 							 metadata.rawlen + 1);
 	lpszMemRaw = (LPSTR)GlobalLock(hMemRaw);
@@ -2370,7 +2370,7 @@ mch_resolve_shortcut(char_u *fname)
      * CoCreateInstance(), it's quite slow. */
     if (fname == NULL)
 	return rfname;
-    len = STRLEN(fname);
+    len = (int)STRLEN(fname);
     if (len <= 4 || STRNICMP(fname + len - 4, ".lnk", 4) != 0)
 	return rfname;
 
@@ -2484,7 +2484,7 @@ serverSendEnc(HWND target)
 
     data.dwData = COPYDATA_ENCODING;
 #ifdef FEAT_MBYTE
-    data.cbData = STRLEN(p_enc) + 1;
+    data.cbData = (DWORD)STRLEN(p_enc) + 1;
     data.lpData = p_enc;
 #else
     data.cbData = STRLEN("latin1") + 1;
@@ -2600,10 +2600,10 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	    else
 		reply.dwData = COPYDATA_RESULT;
 	    reply.lpData = res;
-	    reply.cbData = STRLEN(res) + 1;
+	    reply.cbData = (DWORD)STRLEN(res) + 1;
 
 	    serverSendEnc(sender);
-	    retval = SendMessage(sender, WM_COPYDATA, (WPARAM)message_window,
+	    retval = (int)SendMessage(sender, WM_COPYDATA, (WPARAM)message_window,
 							    (LPARAM)(&reply));
 	    vim_free(res);
 	    return retval;
@@ -2772,7 +2772,7 @@ serverSetName(char_u *name)
     char_u	*p;
 
     /* Leave enough space for a 9-digit suffix to ensure uniqueness! */
-    ok_name = alloc(STRLEN(name) + 10);
+    ok_name = alloc((unsigned)STRLEN(name) + 10);
 
     STRCPY(ok_name, name);
     p = ok_name + STRLEN(name);
@@ -2849,7 +2849,7 @@ serverSendReply(name, reply)
 	return -1;
 
     data.dwData = COPYDATA_REPLY;
-    data.cbData = STRLEN(reply) + 1;
+    data.cbData = (DWORD)STRLEN(reply) + 1;
     data.lpData = reply;
 
     serverSendEnc(target);
@@ -2885,7 +2885,7 @@ serverSendToVim(name, cmd, result, ptarget, asExpr, silent)
 	*(HWND *)ptarget = target;
 
     data.dwData = asExpr ? COPYDATA_EXPR : COPYDATA_KEYS;
-    data.cbData = STRLEN(cmd) + 1;
+    data.cbData = (DWORD)STRLEN(cmd) + 1;
     data.lpData = cmd;
 
     serverSendEnc(target);

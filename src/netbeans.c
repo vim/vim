@@ -86,7 +86,13 @@ static void nb_parse_cmd __ARGS((char_u *));
 static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
 static void nb_send __ARGS((char *buf, char *fun));
 
-static int sd = -1;			/* socket fd for Netbeans connection */
+#ifdef WIN64
+typedef __int64 NBSOCK;
+#else
+typedef int NBSOCK;
+#endif
+
+static NBSOCK sd = -1;			/* socket fd for Netbeans connection */
 #ifdef FEAT_GUI_MOTIF
 static XtInputId inputHandler;		/* Cookie for input */
 #endif
@@ -315,7 +321,7 @@ netbeans_connect(void)
 #ifdef INET_SOCKETS
     port = atoi(address);
 
-    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
     {
 	PERROR("socket() in netbeans_connect()");
 	goto theend;
@@ -357,7 +363,7 @@ netbeans_connect(void)
 	{
 	    sock_close(sd);
 #ifdef INET_SOCKETS
-	    if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
 	    {
 		PERROR("socket()#2 in netbeans_connect()");
 		goto theend;
@@ -630,7 +636,7 @@ nb_parse_messages(void)
 	     * prepend the text to that buffer and delete this one.  */
 	    if (node->next == &head)
 		return;
-	    p = alloc(STRLEN(node->buffer) + STRLEN(node->next->buffer) + 1);
+	    p = alloc((unsigned)(STRLEN(node->buffer) + STRLEN(node->next->buffer) + 1));
 	    if (p == NULL)
 		return;	    /* out of memory */
 	    STRCPY(p, node->buffer);
@@ -1010,7 +1016,7 @@ netbeans_end(void)
 	nbdebug(("EVT: %s", buf));
 /*	nb_send(buf, "netbeans_end");    avoid "write failed" messages */
 	if (sd >= 0)
-	    sock_write(sd, buf, STRLEN(buf));  /* ignore errors */
+	    sock_write(sd, buf, (int)STRLEN(buf));  /* ignore errors */
     }
 }
 
@@ -1030,7 +1036,7 @@ nb_send(char *buf, char *fun)
 	    EMSG2("E630: %s(): write while not connected", fun);
 	did_error = TRUE;
     }
-    else if (sock_write(sd, buf, STRLEN(buf)) != (int)STRLEN(buf))
+    else if (sock_write(sd, buf, (int)STRLEN(buf)) != (int)STRLEN(buf))
     {
 	if (!did_error)
 	    EMSG2("E631: %s(): write failed", fun);
@@ -1073,7 +1079,7 @@ nb_reply_text(int cmdno, char_u *result)
 
     nbdebug(("REP %d: %s\n", cmdno, (char *)result));
 
-    reply = alloc(STRLEN(result) + 32);
+    reply = alloc((unsigned)STRLEN(result) + 32);
     sprintf((char *)reply, "%d %s\n", cmdno, (char *)result);
     nb_send((char *)reply, "nb_reply_text");
 
@@ -1105,7 +1111,7 @@ nb_reply_nr(int cmdno, long result)
     static char_u *
 nb_quote(char_u *txt)
 {
-    char_u *buf = alloc(2 * STRLEN(txt) + 1);
+    char_u *buf = alloc((unsigned)(2 * STRLEN(txt) + 1));
     char_u *p = txt;
     char_u *q = buf;
 
@@ -1149,7 +1155,7 @@ nb_unquote(char_u *p, char_u **endp)
     int done = 0;
 
     /* result is never longer than input */
-    result = (char *)alloc_clear(STRLEN(p) + 1);
+    result = (char *)alloc_clear((unsigned)STRLEN(p) + 1);
     if (result == NULL)
 	return NULL;
 
@@ -1547,7 +1553,7 @@ nb_do_cmd(
 
 			/* Insert halfway a line.  For simplicity we assume we
 			 * need to append to the line. */
-			newline = alloc_check(STRLEN(oldline) + len + 1);
+			newline = alloc_check((unsigned)(STRLEN(oldline) + len + 1));
 			if (newline != NULL)
 			{
 			    STRCPY(newline, oldline);
@@ -1559,7 +1565,7 @@ nb_do_cmd(
 		    {
 			/* Append a new line.  Not that we always do this,
 			 * also when the text doesn't end in a "\n". */
-			ml_append((linenr_T)(lnum - 1), args, len + 1, FALSE);
+			ml_append((linenr_T)(lnum - 1), args, (colnr_T)(len + 1), FALSE);
 			++added;
 		    }
 
@@ -3292,7 +3298,7 @@ get_buf_size(buf_T *bufp)
 	    eol_size = 1;
 	for (lnum = 1; lnum <= bufp->b_ml.ml_line_count; ++lnum)
 	{
-	    char_count += STRLEN(ml_get(lnum)) + eol_size;
+	    char_count += (long)STRLEN(ml_get(lnum)) + eol_size;
 	    /* Check for a CTRL-C every 100000 characters */
 	    if (char_count > last_check)
 	    {
@@ -3393,7 +3399,7 @@ print_read_msg(buf)
     nbbuf_T	*buf;
 {
     int	    lnum = buf->bufp->b_ml.ml_line_count;
-    long    nchars = buf->bufp->b_orig_size;
+    long    nchars = (long)buf->bufp->b_orig_size;
     char_u  c;
 
     msg_add_fname(buf->bufp, buf->bufp->b_ffname);

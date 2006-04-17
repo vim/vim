@@ -1,7 +1,9 @@
 " Vim syntax file
-" Language:	Debian changelog files
-" Maintainer:	Wichert Akkerman <wakkerma@debian.org>
-" Last Change:	30 April 2001
+" Language:    Debian changelog files
+" Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer: Wichert Akkerman <wakkerma@debian.org>
+" Last Change: $LastChangedDate: 2006-04-16 21:50:31 -0400 (dom, 16 apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/debchangelog.vim?op=file&rev=0&sc=0
 
 " Standard syntax initialization
 if version < 600
@@ -15,10 +17,10 @@ syn case ignore
 
 " Define some common expressions we can use later on
 syn match debchangelogName	contained "^[[:alpha:]][[:alnum:].+-]\+ "
-syn match debchangelogUrgency	contained "; urgency=\(low\|medium\|high\|critical\)"
-syn match debchangelogTarget	contained "\( stable\| frozen\| unstable\| experimental\)\+"
+syn match debchangelogUrgency	contained "; urgency=\(low\|medium\|high\|critical\|emergency\)\( \S.*\)\="
+syn match debchangelogTarget	contained "\( stable\| frozen\| unstable\| testing-proposed-updates\| experimental\| sarge-backports\| sarge-volatile\| stable-security\| testing-security\)\+"
 syn match debchangelogVersion	contained "(.\{-})"
-syn match debchangelogCloses	contained "closes:\s*\(bug\)\=#\s\=\d\+\(,\s*\(bug\)\=#\s\=\d\+\)*"
+syn match debchangelogCloses	contained "closes:\s*\(bug\)\=#\=\s\=\d\+\(,\s*\(bug\)\=#\=\s\=\d\+\)*"
 syn match debchangelogEmail	contained "[_=[:alnum:].+-]\+@[[:alnum:]./\-]\+"
 syn match debchangelogEmail	contained "<.\{-}>"
 

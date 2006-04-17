@@ -1872,7 +1872,7 @@ command_line_scan(parmp)
 		{
 		    set_option_value((char_u *)"verbosefile", 0L,
 					     (char_u *)argv[0] + argv_idx, 0);
-		    argv_idx = STRLEN(argv[0]);
+		    argv_idx = (int)STRLEN(argv[0]);
 		}
 		break;
 

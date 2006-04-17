@@ -796,7 +796,7 @@ do_tag(tag, type, count, forceit, verbose)
 		    parse_match(matches[i], &tagp);
 
 		    /* Save the tag name */
-		    len = tagp.tagname_end - tagp.tagname;
+		    len = (int)(tagp.tagname_end - tagp.tagname);
 		    if (len > 128)
 			len = 128;
 		    vim_strncpy(tag_name, tagp.tagname, len);
@@ -872,7 +872,7 @@ do_tag(tag, type, count, forceit, verbose)
 			STRCAT(cmd, "\\V");
 			len += 2;
 
-			cmd_len = cmd_end - cmd_start + 1;
+			cmd_len = (int)(cmd_end - cmd_start + 1);
 			if (cmd_len > (CMDBUFFSIZE - 5))
 			    cmd_len = CMDBUFFSIZE - 5;
 			STRNCAT(cmd, cmd_start, cmd_len);
@@ -1490,7 +1490,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 	    {
 		/* Prefer help tags according to 'helplang'.  Put the
 		 * two-letter language name in help_lang[]. */
-		i = STRLEN(tag_fname);
+		i = (int)STRLEN(tag_fname);
 		if (i > 3 && tag_fname[i - 3] == '-')
 		    STRCPY(help_lang, tag_fname + i - 2);
 		else
@@ -1507,7 +1507,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 		if ((flags & TAG_KEEP_LANG)
 			&& help_lang_find == NULL
 			&& curbuf->b_fname != NULL
-			&& (i = STRLEN(curbuf->b_fname)) > 4
+			&& (i = (int)STRLEN(curbuf->b_fname)) > 4
 			&& curbuf->b_fname[i - 1] == 'x'
 			&& curbuf->b_fname[i - 4] == '.'
 			&& STRNICMP(curbuf->b_fname + i - 3, help_lang, 2) == 0)
@@ -3766,7 +3766,7 @@ add_tag_field(dict, field_name, start, end)
 	    while (end > start && (end[-1] == '\r' || end[-1] == '\n'))
 		--end;
 	}
-	len = end - start;
+	len = (int)(end - start);
 	if (len > sizeof(buf) - 1)
 	    len = sizeof(buf) - 1;
 	vim_strncpy(buf, start, len);
@@ -3840,7 +3840,7 @@ get_tags(list, pat)
 			n = p;
 			while (*p != NUL && *p >= ' ' && *p < 127 && *p != ':')
 			    ++p;
-			len = p - n;
+			len = (int)(p - n);
 			if (*p == ':' && len > 0)
 			{
 			    s = ++p;

@@ -2142,7 +2142,7 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_USR_CMDS
     if (!USER_CMDIDX(ea.cmdidx))
 #endif
-	ea.argt = cmdnames[(int)ea.cmdidx].cmd_argt;
+	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
 
     if (!ea.skip)
     {
@@ -2898,7 +2898,7 @@ find_ucmd(eap, p, full, xp, compl)
 			eap->cmdidx = CMD_USER;
 		    else
 			eap->cmdidx = CMD_USER_BUF;
-		    eap->argt = uc->uc_argt;
+		    eap->argt = (long)uc->uc_argt;
 		    eap->useridx = j;
 
 # ifdef FEAT_CMDL_COMPL
@@ -3164,7 +3164,7 @@ set_one_cmd_context(xp, buff)
 #ifdef FEAT_USR_CMDS
     if (!USER_CMDIDX(ea.cmdidx))
 #endif
-	ea.argt = cmdnames[(int)ea.cmdidx].cmd_argt;
+	ea.argt = (long)cmdnames[(int)ea.cmdidx].cmd_argt;
 
     arg = skipwhite(p);
 
@@ -5145,7 +5145,7 @@ uc_list(name, name_len)
 	for (i = 0; i < gap->ga_len; ++i)
 	{
 	    cmd = USER_CMD_GA(gap, i);
-	    a = cmd->uc_argt;
+	    a = (long)cmd->uc_argt;
 
 	    /* Skip commands which don't match the requested prefix */
 	    if (STRNCMP(name, cmd->uc_name, name_len) != 0)
@@ -7295,7 +7295,7 @@ ex_open(eap)
 	    regmatch.rm_ic = p_ic;
 	    p = ml_get_curline();
 	    if (vim_regexec(&regmatch, p, (colnr_T)0))
-		curwin->w_cursor.col = regmatch.startp[0] - p;
+		curwin->w_cursor.col = (colnr_T)(regmatch.startp[0] - p);
 	    else
 		EMSG(_(e_nomatch));
 	    vim_free(regmatch.regprog);

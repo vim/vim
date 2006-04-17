@@ -263,7 +263,7 @@ set_indent(size, flags)
 	/* Correct saved cursor position if it's after the indent. */
 	if (saved_cursor.lnum == curwin->w_cursor.lnum
 				&& saved_cursor.col >= (colnr_T)(p - oldline))
-	    saved_cursor.col += ind_len - (p - oldline);
+	    saved_cursor.col += ind_len - (colnr_T)(p - oldline);
 	retval = TRUE;
     }
     else
@@ -1013,7 +1013,7 @@ open_line(dir, flags, old_indent)
 				mb_ptr_back(leader, p);
 				old_size += ptr2cells(p);
 			    }
-			    l = lead_repl_len - (endp - p);
+			    l = lead_repl_len - (int)(endp - p);
 			    if (l != 0)
 				mch_memmove(endp + l, endp,
 					(size_t)((leader + lead_len) - endp));
@@ -3418,7 +3418,7 @@ init_homedir()
 
 	/* Convert from active codepage to UTF-8.  Other conversions are
 	 * not done, because they would fail for non-ASCII characters. */
-	acp_to_enc(var, STRLEN(var), &pp, &len);
+	acp_to_enc(var, (int)STRLEN(var), &pp, &len);
 	if (pp != NULL)
 	{
 	    homedir = pp;
@@ -3497,7 +3497,7 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
     int		startstr_len = 0;
 
     if (startstr != NULL)
-	startstr_len = STRLEN(startstr);
+	startstr_len = (int)STRLEN(startstr);
 
     src = skipwhite(srcp);
     --dstlen;		    /* leave one char space for "\," */
@@ -3705,7 +3705,7 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 	    {
 		STRCPY(dst, var);
 		dstlen -= (int)STRLEN(var);
-		c = STRLEN(var);
+		c = (int)STRLEN(var);
 		/* if var[] ends in a path separator and tail[] starts
 		 * with it, skip a character */
 		if (*var != NUL && after_pathsep(dst, dst + c)
@@ -3780,7 +3780,7 @@ vim_getenv(name, mustfree)
 
 	    /* Convert from active codepage to UTF-8.  Other conversions are
 	     * not done, because they would fail for non-ASCII characters. */
-	    acp_to_enc(p, STRLEN(p), &pp, &len);
+	    acp_to_enc(p, (int)STRLEN(p), &pp, &len);
 	    if (pp != NULL)
 	    {
 		p = pp;
@@ -3825,7 +3825,7 @@ vim_getenv(name, mustfree)
 		/* Convert from active codepage to UTF-8.  Other conversions
 		 * are not done, because they would fail for non-ASCII
 		 * characters. */
-		acp_to_enc(p, STRLEN(p), &pp, &len);
+		acp_to_enc(p, (int)STRLEN(p), &pp, &len);
 		if (pp != NULL)
 		{
 		    if (mustfree)
@@ -5144,11 +5144,11 @@ cin_first_id_amount()
 
     line = ml_get_curline();
     p = skipwhite(line);
-    len = skiptowhite(p) - p;
+    len = (int)(skiptowhite(p) - p);
     if (len == 6 && STRNCMP(p, "static", 6) == 0)
     {
 	p = skipwhite(p + 6);
-	len = skiptowhite(p) - p;
+        len = (int)(skiptowhite(p) - p);
     }
     if (len == 6 && STRNCMP(p, "struct", 6) == 0)
 	p = skipwhite(p + 6);
@@ -5489,7 +5489,7 @@ cin_iswhileofdo_end(terminated, ind_maxparen, ind_maxcomment)
 	    {
 		/* Found ");" at end of the line, now check there is "while"
 		 * before the matching '('.  XXX */
-		i = p - line;
+		i = (int)(p - line);
 		curwin->w_cursor.col = i;
 		trypos = find_match_paren(ind_maxparen, ind_maxcomment);
 		if (trypos != NULL)
@@ -6468,7 +6468,7 @@ get_c_indent()
 		 * our matching '('. */
 		curwin->w_cursor.lnum = our_paren_pos.lnum;
 		line = ml_get_curline();
-		look_col = look - line;
+		look_col = (int)(look - line);
 		curwin->w_cursor.col = look_col + 1;
 		if ((trypos = findmatchlimit(NULL, ')', 0, ind_maxparen))
 								      != NULL

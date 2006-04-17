@@ -1,7 +1,8 @@
 " Menu Translations:	Francais
 " Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
-" Last Change:		2003 May 29
+" Last Modification:    David Blanchet <david.blanchet@free.fr>
+" Last Change:		2006 Apr 11
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -24,6 +25,7 @@ menutrans &Find\.\.\.				Rec&hercher\.\.\.
 " -sep1-
 menutrans &Credits				&Remerciements
 menutrans Co&pying				&License
+menutrans &Sponsor/Register			Sponsor/&Enregistrement
 menutrans O&rphans				&Orphelins
 " -sep2-
 menutrans &Version				&Version
@@ -36,6 +38,7 @@ menutrans &File				&Fichier
 
 menutrans &Open\.\.\.<Tab>:e			&Ouvrir\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp		Ouvrir\ à\ p&art\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew		Ouvrir\ dans\ un\ onglet\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew			&Nouveau<Tab>:enew
 menutrans &Close<Tab>:close			&Fermer<Tab>:close
 " -SEP1-
@@ -64,7 +67,7 @@ menutrans &Paste<Tab>"+gP			C&oller<Tab>"+gP
 menutrans Put\ &Before<Tab>[p			Placer\ a&vant<Tab>[p
 menutrans Put\ &After<Tab>]p			Placer\ apr&ès<Tab>]p
 menutrans &Delete<Tab>x				Effa&cer<Tab>x
-menutrans &Select\ all<Tab>ggVG			&Sélectionner\ tout<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG			&Sélectionner\ tout<Tab>ggVG
 " -SEP2-
 menutrans &Find\.\.\.				Rec&hercher\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.		Re&mplacer\.\.\.
@@ -133,6 +136,26 @@ menutrans Jump\ &back<Tab>^T			Repartir\ en\ arri&ère<Tab>^T
 menutrans Build\ &Tags\ File			&Générer\ fichier\ d'étiquettes
 
 " -SEP1-
+menutrans &Spelling			&Orthographe
+menutrans &Spell\ Check\ On			&Activer
+menutrans Spell\ Check\ &Off			&Désactiver
+menutrans To\ &Next\ error<Tab>]s		À\ l'erreur\ &suivante<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s		À\ l'erreur\ &précédente<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=		Suggérer\ &correction<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	&Reporter\ la\ correction<Tab>:spellrepall
+
+an 40.335.205 &Tools.&Spelling.Français\ (fr)	:set spl=fr spell<CR>
+menutrans Set\ language\ to\ "en"		Anglais
+menutrans Set\ language\ to\ "en_au"		Anglais\ (en_au)
+menutrans Set\ language\ to\ "en_ca"		Anglais\ (en_ca)
+menutrans Set\ language\ to\ "en_gb"		Anglais\ (en_gb)
+menutrans Set\ language\ to\ "en_nz"		Anglais\ (en_nz)
+menutrans Set\ language\ to\ "en_us"		Anglais\ (en_us)
+
+menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues 
+
+
+
 menutrans &Folding				&Replis
 
 menutrans &Enable/Disable\ folds<Tab>zi			&Replis\ on/off<Tab>zi
@@ -185,7 +208,7 @@ menutrans &Close<Tab>:cclose				&Fermer<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd		Convertir\ en\ he&xa<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r		Décon&vertir<Tab>:%!xxd\ -r
 
-menutrans &Set\ Compiler			Type\ de\ &compilateur
+menutrans Se&T\ Compiler			&Type\ de\ compilateur
 
 
 menutrans &Buffers			&Tampons
@@ -327,6 +350,7 @@ endfun
 
 menutrans &Syntax			&Syntaxe
 
+menutrans &Off					Désactiver
 menutrans &Manual				&Manuelle
 menutrans A&utomatic				&Automatique
 menutrans on/off\ for\ &This\ file		On/off\ pour\ &ce\ fichier
@@ -440,5 +464,5 @@ menutrans Set\ '&filetype'\ too			Changer\ '&filetype'\ aussi
 menutrans &Off					&Off
 " -SEP3-
 menutrans Co&lor\ test				Tester\ les\ co&uleurs
-menutrans &Highlight\ test			Tester\ les\ g&roupes\ de\ surlignage
+menutrans &Highlight\ test			Tester\ les\ g&roupes\ de\ surbrillance
 menutrans &Convert\ to\ HTML			Con&vertir\ en\ HTML

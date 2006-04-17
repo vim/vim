@@ -435,7 +435,7 @@ ex_sort(eap)
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
     {
 	s = ml_get(lnum);
-	len = STRLEN(s);
+	len = (int)STRLEN(s);
 	if (maxlen < len)
 	    maxlen = len;
 
@@ -445,11 +445,11 @@ ex_sort(eap)
 	{
 	    if (sort_rx)
 	    {
-		start_col = regmatch.startp[0] - s;
-		end_col = regmatch.endp[0] - s;
+		start_col = (colnr_T)(regmatch.startp[0] - s);
+		end_col = (colnr_T)(regmatch.endp[0] - s);
 	    }
 	    else
-		start_col = regmatch.endp[0] - s;
+		start_col = (colnr_T)(regmatch.endp[0] - s);
 	}
 	else
 	    if (regmatch.regprog != NULL)
@@ -526,7 +526,7 @@ ex_sort(eap)
 	count = 0;
 
     /* Adjust marks for deleted (or added) lines and prepare for displaying. */
-    deleted = count - (lnum - eap->line2);
+    deleted = (long)(count - (lnum - eap->line2));
     if (deleted > 0)
 	mark_adjust(eap->line2 - deleted, eap->line2, (long)MAXLNUM, -deleted);
     else if (deleted < 0)
@@ -3182,7 +3182,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 
 	/* Set v:swapcommand for the SwapExists autocommands. */
 	if (command != NULL)
-	    len = STRLEN(command) + 3;
+	    len = (int)STRLEN(command) + 3;
 	else
 	    len = 30;
 	p = alloc((unsigned)len);
@@ -3986,7 +3986,7 @@ ex_z(eap)
     switch (*kind)
     {
 	case '-':
-	    start = lnum - bigness * (x - kind);
+	    start = lnum - bigness * (linenr_T)(x - kind);
 	    end = start + bigness;
 	    curs = end;
 	    break;
@@ -4013,7 +4013,7 @@ ex_z(eap)
 	default:  /* '+' */
 	    start = lnum;
 	    if (*kind == '+')
-		start += bigness * (x - kind - 1) + 1;
+		start += bigness * (linenr_T)(x - kind - 1) + 1;
 	    else if (eap->addr_count == 0)
 		++start;
 	    end = start + bigness - 1;
@@ -4514,7 +4514,7 @@ do_sub(eap)
 		     * Avoids that ":s/\nB\@=//gc" get stuck. */
 		    if (nmatch > 1)
 		    {
-			matchcol = STRLEN(sub_firstline);
+			matchcol = (colnr_T)STRLEN(sub_firstline);
 			nmatch = 1;
 		    }
 		    sub_nsubs++;
@@ -4671,7 +4671,7 @@ do_sub(eap)
 			 * Avoids that ":s/\nB\@=//gc" get stuck. */
 			if (nmatch > 1)
 			{
-			    matchcol = STRLEN(sub_firstline);
+			    matchcol = (colnr_T)STRLEN(sub_firstline);
 			    nmatch = 1;
 			}
 			goto skip;
@@ -5028,7 +5028,7 @@ do_sub_msg(count_only)
 	if (got_int)
 	{
 	    STRCPY(msg_buf, _("(Interrupted) "));
-	    len = STRLEN(msg_buf);
+	    len = (int)STRLEN(msg_buf);
 	}
 	if (sub_nsubs == 1)
 	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
@@ -5037,7 +5037,7 @@ do_sub_msg(count_only)
 	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
 		    count_only ? _("%ld matches") : _("%ld substitutions"),
 								   sub_nsubs);
-	len = STRLEN(msg_buf);
+	len = (int)STRLEN(msg_buf);
 	if (sub_nlines == 1)
 	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
 		    "%s", _(" on 1 line"));
@@ -5407,7 +5407,7 @@ ex_help(eap)
 	/* Find first item with the requested language. */
 	for (i = 0; i < num_matches; ++i)
 	{
-	    len = STRLEN(matches[i]);
+	    len = (int)STRLEN(matches[i]);
 	    if (len > 3 && matches[i][len - 3] == '@'
 				  && STRICMP(matches[i] + len - 2, lang) == 0)
 		break;
@@ -5539,7 +5539,7 @@ erret:
 check_help_lang(arg)
     char_u *arg;
 {
-    int len = STRLEN(arg);
+    int len = (int)STRLEN(arg);
 
     if (len >= 3 && arg[len - 3] == '@' && ASCII_ISALPHA(arg[len - 2])
 					       && ASCII_ISALPHA(arg[len - 1]))
@@ -6039,7 +6039,7 @@ ex_helptags(eap)
     ga_init2(&ga, 1, 10);
     for (i = 0; i < filecount; ++i)
     {
-	len = STRLEN(files[i]);
+	len = (int)STRLEN(files[i]);
 	if (len > 4)
 	{
 	    if (STRICMP(files[i] + len - 4, ".txt") == 0)
@@ -6172,7 +6172,7 @@ helptags_one(dir, ext, tagfname)
 	    got_int = TRUE;
 	else
 	{
-	    s = alloc(18 + STRLEN(tagfname));
+	    s = alloc(18 + (unsigned)STRLEN(tagfname));
 	    if (s == NULL)
 		got_int = TRUE;
 	    else
@@ -6549,7 +6549,7 @@ ex_sign(eap)
 			    for (s = arg; s < p; ++s)
 				if (!vim_isprintc(*s))
 				    break;
-			    cells = s - arg;
+			    cells = (int)(s - arg);
 			}
 			/* Currently must be one or two display cells */
 			if (s != p || cells < 1 || cells > 2)
@@ -6562,7 +6562,7 @@ ex_sign(eap)
 			vim_free(sp->sn_text);
 			/* Allocate one byte more if we need to pad up
 			 * with a space. */
-			len = p - arg + ((cells == 1) ? 1 : 0);
+			len = (int)(p - arg + ((cells == 1) ? 1 : 0));
 			sp->sn_text = vim_strnsave(arg, len);
 
 			if (sp->sn_text != NULL && cells == 1)

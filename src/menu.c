@@ -759,7 +759,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 			STRCPY(menu->strings[i] + 1, call_data);
 			if (c == Ctrl_C)
 			{
-			    int	    len = STRLEN(menu->strings[i]);
+			    int	    len = (int)STRLEN(menu->strings[i]);
 
 			    /* Append CTRL-\ CTRL-G to obey 'insertmode'. */
 			    menu->strings[i][len] = Ctrl_BSL;

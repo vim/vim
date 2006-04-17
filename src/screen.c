@@ -2896,7 +2896,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     {
 	/* For checking first word with a capital skip white space. */
 	if (cap_col == 0)
-	    cap_col = skipwhite(line) - line;
+	    cap_col = (int)(skipwhite(line) - line);
 
 	/* To be able to spell-check over line boundaries copy the end of the
 	 * current line into nextline[].  Above the start of the next line was
@@ -2909,7 +2909,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 	else
 	{
-	    v = STRLEN(line);
+	    v = (long)STRLEN(line);
 	    if (v < SPWORDLEN)
 	    {
 		/* Short line, use it completely and append the start of the
@@ -3008,14 +3008,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 	    pos = wp->w_cursor;
 	    wp->w_cursor.lnum = lnum;
-	    wp->w_cursor.col = ptr - line;
+	    wp->w_cursor.col = (colnr_T)(ptr - line);
 	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_hlf);
 	    if (len == 0 || (int)wp->w_cursor.col > ptr - line)
 	    {
 		/* no bad word found at line start, don't check until end of a
 		 * word */
 		spell_hlf = HLF_COUNT;
-		word_end = spell_to_word_end(ptr, wp->w_buffer) - line + 1;
+		word_end = (int)(spell_to_word_end(ptr, wp->w_buffer) - line + 1);
 	    }
 	    else
 	    {
@@ -3223,7 +3223,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    if (p_extra != NULL)
 			    {
 				c_extra = NUL;
-				n_extra = STRLEN(p_extra);
+				n_extra = (int)STRLEN(p_extra);
 			    }
 			    char_attr = sign_get_attr(text_sign, FALSE);
 			}
@@ -3867,7 +3867,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    p = nextline + (prev_ptr - line) - nextlinecol;
 			else
 			    p = prev_ptr;
-			cap_col -= (prev_ptr - line);
+			cap_col -= (int)(prev_ptr - line);
 			len = spell_check(wp, p, &spell_hlf, &cap_col,
 								    nochange);
 			word_end = v + len;
@@ -3891,7 +3891,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			    /* Remember that the good word continues at the
 			     * start of the next line. */
 			    checked_lnum = lnum + 1;
-			    checked_col = (p - nextline) + len - nextline_idx;
+			    checked_col = (int)((p - nextline) + len - nextline_idx);
 			}
 
 			/* Turn index into actual attributes. */
@@ -3906,12 +3906,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				/* Remember that the word in the next line
 				 * must start with a capital. */
 				capcol_lnum = lnum + 1;
-				cap_col = (p - nextline) + cap_col
-							       - nextline_idx;
+				cap_col = (int)((p - nextline) + cap_col
+							       - nextline_idx);
 			    }
 			    else
 				/* Compute the actual column. */
-				cap_col += (prev_ptr - line);
+				cap_col += (int)(prev_ptr - line);
 			}
 		    }
 		}
@@ -5871,7 +5871,7 @@ win_redr_custom(wp, draw_ruler)
 				buf, sizeof(buf),
 				p, use_sandbox,
 				fillchar, maxwidth, hltab, tabtab);
-    len = STRLEN(buf);
+    len = (int)STRLEN(buf);
 
     while (width < maxwidth && len < sizeof(buf) - 1)
     {
@@ -8904,7 +8904,7 @@ draw_tabline()
 		if (wincount > 1)
 		{
 		    vim_snprintf((char *)NameBuff, MAXPATHL, "%d", wincount);
-		    len = STRLEN(NameBuff);
+		    len = (int)STRLEN(NameBuff);
 		    if (col + len >= Columns - 3)
 			break;
 		    screen_puts_len(NameBuff, len, 0, col,
@@ -8946,7 +8946,7 @@ draw_tabline()
 		if (len > Columns - col - 1)
 		    len = Columns - col - 1;
 
-		screen_puts_len(p, STRLEN(p), 0, col, attr);
+		screen_puts_len(p, (int)STRLEN(p), 0, col, attr);
 		col += len;
 	    }
 	    screen_putchar(' ', 0, col++, attr);

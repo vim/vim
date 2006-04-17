@@ -1143,7 +1143,7 @@ retry:
 		 * multiple of 2
 		 * ucs-4 to utf-8: 4 bytes become up to 6 bytes, size must be
 		 * multiple of 4 */
-		real_size = size;
+		real_size = (int)size;
 # ifdef USE_ICONV
 		if (iconv_fd != (iconv_t)-1)
 		    size = size / ICONV_MULT;
@@ -1200,7 +1200,7 @@ retry:
 				/* Filled up to "size", append partial line.
 				 * Change NL to NUL to reverse the effect done
 				 * below. */
-				n = size - tlen;
+				n = (int)(size - tlen);
 				for (ni = 0; ni < n; ++ni)
 				{
 				    if (p[ni] == NL)
@@ -1488,7 +1488,7 @@ retry:
 			/* Handle CP_UTF8 input ourselves to be able to handle
 			 * trailing bytes properly.
 			 * Get one UTF-8 character from src. */
-			bytelen = utf_ptr2len_len(src, size);
+			bytelen = (int)utf_ptr2len_len(src, size);
 			if (bytelen > size)
 			{
 			    /* Only got some bytes of a character.  Normally
@@ -1559,7 +1559,7 @@ retry:
 			     * the data doesn't fit in this encoding. */
 			    dstlen = WideCharToMultiByte(enc_codepage, 0,
 				    (LPCWSTR)ucs2buf, ucs2len,
-				    (LPSTR)dst, (src - dst),
+				    (LPSTR)dst, (int)(src - dst),
 				    replstr, &bad);
 			    if (bad)
 				found_bad = TRUE;
@@ -1599,7 +1599,7 @@ retry:
 		}
 
 		/* The new size is equal to how much "dst" was advanced. */
-		size = dst - ptr;
+		size = (long)(dst - ptr);
 	    }
 	    else
 # endif
@@ -1840,7 +1840,7 @@ retry:
 		 * read in the previous read() call. */
 		for (p = ptr - utf_head_off(buffer, ptr); ; ++p)
 		{
-		    int	 todo = (ptr + size) - p;
+		    int	 todo = (int)((ptr + size) - p);
 		    int	 l;
 
 		    if (todo <= 0)
@@ -4538,7 +4538,7 @@ nofail:
 
     if (errmsg != NULL)
     {
-	int numlen = errnum != NULL ? STRLEN(errnum) : 0;
+	int numlen = errnum != NULL ? (int)STRLEN(errnum) : 0;
 
 	attr = hl_attr(HLF_E);	/* set highlight for error messages */
 	msg_add_fname(buf,
@@ -4958,7 +4958,7 @@ buf_write_bytes(ip)
 		 * The buffer has been allocated to be big enough. */
 		while (fromlen > 0)
 		{
-		    n = utf_ptr2len_len(from, fromlen);
+		    n = (int)utf_ptr2len_len(from, (int)fromlen);
 		    if (n > (int)fromlen)	/* incomplete byte sequence */
 			break;
 		    u8c = utf_ptr2char(from);
@@ -4977,7 +4977,7 @@ buf_write_bytes(ip)
 		    return FAIL;
 		}
 		mch_memmove(ip->bw_rest, from, fromlen);
-		ip->bw_restlen = fromlen;
+		ip->bw_restlen = (int)fromlen;
 	    }
 	    else
 	    {
@@ -4985,13 +4985,13 @@ buf_write_bytes(ip)
 		 * buffer.  The buffer has been allocated to be big enough. */
 		ip->bw_restlen = 0;
 		needed = MultiByteToWideChar(enc_codepage,
-				  MB_ERR_INVALID_CHARS, (LPCSTR)from, fromlen,
+				  MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen,
 								     NULL, 0);
 		if (needed == 0)
 		{
 		    /* When conversion fails there may be a trailing byte. */
 		    needed = MultiByteToWideChar(enc_codepage,
-			      MB_ERR_INVALID_CHARS, (LPCSTR)from, fromlen - 1,
+			      MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen - 1,
 								     NULL, 0);
 		    if (needed == 0)
 		    {
@@ -5004,7 +5004,7 @@ buf_write_bytes(ip)
 		    ip->bw_restlen = 1;
 		}
 		needed = MultiByteToWideChar(enc_codepage, MB_ERR_INVALID_CHARS,
-				       (LPCSTR)from, fromlen - ip->bw_restlen,
+				       (LPCSTR)from, (int)(fromlen - ip->bw_restlen),
 							  (LPWSTR)to, needed);
 		if (needed == 0)
 		{
@@ -5033,7 +5033,7 @@ buf_write_bytes(ip)
 			return FAIL;
 		    }
 		}
-		len = to - buf;
+		len = (int)(to - buf);
 	    }
 	    else
 #endif
@@ -5044,7 +5044,7 @@ buf_write_bytes(ip)
 		 * fail. */
 		len = WideCharToMultiByte(FIO_GET_CP(flags), 0,
 			(LPCWSTR)ip->bw_conv_buf, (int)fromlen / sizeof(WCHAR),
-			(LPSTR)to, ip->bw_conv_buflen - fromlen, 0, &bad);
+			(LPSTR)to, (int)(ip->bw_conv_buflen - fromlen), 0, &bad);
 		if (bad)
 		{
 		    ip->bw_conv_error = TRUE;
@@ -7835,7 +7835,7 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
 	    /* normalize pat into standard "<buffer>#N" form */
 	    sprintf((char *)buflocal_pat, "<buffer=%d>", buflocal_nr);
 	    pat = buflocal_pat;			/* can modify pat and patlen */
-	    patlen = STRLEN(buflocal_pat);	/*   but not endpat */
+	    patlen = (int)STRLEN(buflocal_pat);	/*   but not endpat */
 	}
 
 	/*

@@ -362,7 +362,7 @@ void ex_rubydo(exarg_T *eap)
 	    line = rb_lastline_get();
 	    if (!NIL_P(line)) {
 		if (TYPE(line) != T_STRING) {
-		    EMSG("E265: $_ must be an instance of String");
+		    EMSG(_("E265: $_ must be an instance of String"));
 		    return;
 		}
 		ml_replace(i, (char_u *) STR2CSTR(line), 1);
@@ -452,26 +452,26 @@ static void error_print(int state)
 
     switch (state) {
     case TAG_RETURN:
-	EMSG("E267: unexpected return");
+	EMSG(_("E267: unexpected return"));
 	break;
     case TAG_NEXT:
-	EMSG("E268: unexpected next");
+	EMSG(_("E268: unexpected next"));
 	break;
     case TAG_BREAK:
-	EMSG("E269: unexpected break");
+	EMSG(_("E269: unexpected break"));
 	break;
     case TAG_REDO:
-	EMSG("E270: unexpected redo");
+	EMSG(_("E270: unexpected redo"));
 	break;
     case TAG_RETRY:
-	EMSG("E271: retry outside of rescue clause");
+	EMSG(_("E271: retry outside of rescue clause"));
 	break;
     case TAG_RAISE:
     case TAG_FATAL:
 	eclass = CLASS_OF(ruby_errinfo);
 	einfo = rb_obj_as_string(ruby_errinfo);
 	if (eclass == rb_eRuntimeError && RSTRING(einfo)->len == 0) {
-	    EMSG("E272: unhandled exception");
+	    EMSG(_("E272: unhandled exception"));
 	}
 	else {
 	    VALUE epath;

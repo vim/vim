@@ -3958,6 +3958,7 @@ E743	eval.txt	/*E743*
 E744	netbeans.txt	/*E744*
 E745	eval.txt	/*E745*
 E746	eval.txt	/*E746*
+E747	editing.txt	/*E747*
 E747	syntax.txt	/*E747*
 E748	repeat.txt	/*E748*
 E749	eval.txt	/*E749*
@@ -5615,6 +5616,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

@@ -2102,7 +2102,7 @@ inc_msg_scrolled()
 	    p = (char_u *)_("Unknown");
 	else
 	{
-	    len = STRLEN(p) + 40;
+	    len = (int)STRLEN(p) + 40;
 	    tofree = alloc(len);
 	    if (tofree != NULL)
 	    {
@@ -3511,11 +3511,11 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	}
 	else
 	{
-	    len += STRLEN(message)
-		    + 2			/* for the NL's */
-		    + STRLEN(buttons)
-		    + 3;		/* for the ": " and NUL */
-	    lenhotkey++;		/* for the NUL */
+	    len += (int)(STRLEN(message)
+                        + 2			/* for the NL's */
+                        + STRLEN(buttons)
+                        + 3);	        	/* for the ": " and NUL */
+	    lenhotkey++;			/* for the NUL */
 
 	    /* If no hotkey is specified first char is used. */
 	    if (!has_hotkey[0])
@@ -4429,8 +4429,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    /* zero padding to specified minimal field width? */
 		    if (!justify_left && zero_padding)
 		    {
-			int n = min_field_width - (str_arg_l
-						    + number_of_zeros_to_pad);
+			int n = (int)(min_field_width - (str_arg_l
+						    + number_of_zeros_to_pad));
 			if (n > 0)
 			    number_of_zeros_to_pad += n;
 		    }
@@ -4464,7 +4464,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    if (!justify_left)
 	    {
 		/* left padding with blank or zero */
-		int pn = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+		int pn = (int)(min_field_width - (str_arg_l + number_of_zeros_to_pad));
 
 		if (pn > 0)
 		{
@@ -4491,7 +4491,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    {
 		/* insert first part of numerics (sign or '0x') before zero
 		 * padding */
-		int zn = zero_padding_insertion_ind;
+		int zn = (int)zero_padding_insertion_ind;
 
 		if (zn > 0)
 		{
@@ -4507,7 +4507,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 
 		/* insert zero padding as requested by the precision or min
 		 * field width */
-		zn = number_of_zeros_to_pad;
+		zn = (int)number_of_zeros_to_pad;
 		if (zn > 0)
 		{
 		    if (str_l < str_m)
@@ -4524,7 +4524,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    /* insert formatted string
 	     * (or as-is conversion specifier for unknown conversions) */
 	    {
-		int sn = str_arg_l - zero_padding_insertion_ind;
+		int sn = (int)(str_arg_l - zero_padding_insertion_ind);
 
 		if (sn > 0)
 		{
@@ -4544,7 +4544,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    if (justify_left)
 	    {
 		/* right blank padding to the field width */
-		int pn = min_field_width - (str_arg_l + number_of_zeros_to_pad);
+		int pn = (int)(min_field_width - (str_arg_l + number_of_zeros_to_pad));
 
 		if (pn > 0)
 		{

@@ -1,7 +1,15 @@
 " Vim syntax file
 " Language:	Slrn setup file (based on slrn 0.9.8.0)
-" Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
-" Last Change:	19 May 2004
+" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
+" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/slrnrc.vim?op=file&rev=0&sc=0
+"
+" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+"     it only because patches have been submitted for it by Debian users and the
+"     former maintainer was MIA (Missing In Action), taking over its
+"     maintenance was thus the only way to include those patches.
+"     If you care about this file, and have time to maintain it please do so!
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -119,7 +127,7 @@ syn keyword slrnrcFunArt	contained goto_article goto_last_read grouplens_rate_ar
 syn keyword slrnrcFunArt	contained help hide_article locate_article mark_spot next next_high_score next_same_subject pipe post post_postponed previous print quit redraw
 syn keyword slrnrcFunArt	contained repeat_last_key reply request save show_spoilers shrink_article_window skip_quotes skip_to_next_group skip_to_previous_group
 syn keyword slrnrcFunArt	contained subject_search_backward subject_search_forward supersede suspend tag_header toggle_collapse_threads toggle_header_formats
-syn keyword slrnrcFunArt	contained toggle_header_tag toggle_headers toggle_pgpsignature toggle_quotes toggle_rot13 toggle_signature toggle_verbatim_marks
+syn keyword slrnrcFunArt	contained toggle_header_tag toggle_headers toggle_pgpsignature toggle_quotes toggle_rot13 toggle_signature toggle_sort toggle_verbatim_marks
 syn keyword slrnrcFunArt	contained toggle_verbatim_text uncatchup uncatchup_all undelete untag_headers view_scores wrap_article zoom_article_window
 
 " Listed for removal
@@ -136,7 +144,7 @@ syn keyword slrnrcFunGroup	contained toggle_group_formats toggle_hidden toggle_l
 syn keyword slrnrcFunGroup	contained down group_bob group_eob pagedown pageup toggle_group_display uncatch_up up
 
 " Functions in readline mode (actually from slang's slrline.c)
-syn keyword slrnrcFunRead	contained bdel bol del deleol down enter eol left quoted_insert right self_insert trim up
+syn keyword slrnrcFunRead	contained bdel bol complete cycle del delbol delbow deleol down enter eol left quoted_insert right self_insert trim up
 
 " Binding keys
 syn keyword slrnrcSetkeyObj	contained article group readline

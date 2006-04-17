@@ -2986,7 +2986,7 @@ syn_add_end_off(result, regmatch, spp, idx, extra)
 	if (result->lnum > syn_buf->b_ml.ml_line_count)
 	    len = 0;
 	else
-	    len = STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
+	    len = (int)STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
 	if (col > len)
 	    result->col = len;
 	else
@@ -3950,7 +3950,7 @@ syn_list_keywords(id, ht, did_header, attr)
      * Unfortunately, this list of keywords is not sorted on alphabet but on
      * hash value...
      */
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -4038,7 +4038,7 @@ syn_clear_keyword(id, ht)
     int		todo;
 
     hash_lock(ht);
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -4087,7 +4087,7 @@ clear_keywtab(ht)
     keyentry_T	*kp;
     keyentry_T	*kp_next;
 
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))

@@ -475,7 +475,7 @@ staterr:
     /* if filename is a directory, append the cscope database name to it */
     if ((statbuf.st_mode & S_IFMT) == S_IFDIR)
     {
-	fname2 = (char *)alloc(strlen(CSCOPE_DBFILE) + strlen(fname) + 2);
+	fname2 = (char *)alloc((unsigned)(strlen(CSCOPE_DBFILE) + strlen(fname) + 2));
 	if (fname2 == NULL)
 	    goto add_err;
 
@@ -700,7 +700,7 @@ cs_create_cmd(csoption, pattern)
 	return NULL;
     }
 
-    if ((cmd = (char *)alloc(strlen(pattern) + 2)) == NULL)
+    if ((cmd = (char *)alloc((unsigned)(strlen(pattern) + 2))) == NULL)
 	return NULL;
 
     (void)sprintf(cmd, "%d%s", search, pattern);
@@ -723,7 +723,7 @@ cs_create_connection(i)
     char *prog, *cmd, *ppath = NULL;
 #ifndef UNIX
     int in_save, out_save, err_save;
-    int ph;
+    long ph;
 # ifdef FEAT_GUI
     HWND activewnd = NULL;
     HWND consolewnd = NULL;
@@ -792,7 +792,7 @@ err_closing:
 	expand_env((char_u *)p_csprg, (char_u *)prog, MAXPATHL);
 
 	/* alloc space to hold the cscope command */
-	len = strlen(prog) + strlen(csinfo[i].fname) + 32;
+	len = (int)(strlen(prog) + strlen(csinfo[i].fname) + 32);
 	if (csinfo[i].ppath)
 	{
 	    /* expand the prepend path for env var's */
@@ -807,11 +807,11 @@ err_closing:
 	    }
 	    expand_env((char_u *)csinfo[i].ppath, (char_u *)ppath, MAXPATHL);
 
-	    len += strlen(ppath);
+	    len += (int)strlen(ppath);
 	}
 
 	if (csinfo[i].flags)
-	    len += strlen(csinfo[i].flags);
+	    len += (int)strlen(csinfo[i].flags);
 
 	if ((cmd = (char *)alloc(len)) == NULL)
 	{
@@ -881,9 +881,9 @@ err_closing:
 	/* May be use &shell, &shellquote etc */
 # ifdef __BORLANDC__
 	/* BCC 5.5 uses a different function name for spawnlp */
-	ph = spawnlp(P_NOWAIT, prog, cmd, NULL);
+	ph = (long)spawnlp(P_NOWAIT, prog, cmd, NULL);
 # else
-	ph = _spawnlp(_P_NOWAIT, prog, cmd, NULL);
+	ph = (long)_spawnlp(_P_NOWAIT, prog, cmd, NULL);
 # endif
 	vim_free(prog);
 	vim_free(cmd);
@@ -1034,7 +1034,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	if (!verbose)
 	    return FALSE;
 
-	buf = (char *)alloc(strlen(opt) + strlen(pat) + strlen(nf));
+	buf = (char *)alloc((unsigned)(strlen(opt) + strlen(pat) + strlen(nf)));
 	if (buf == NULL)
 	    (void)EMSG(nf);
 	else
@@ -1086,7 +1086,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
 	{
 	    char *nf = _("E469: invalid cscopequickfix flag %c for %c");
-	    char *buf = (char *)alloc(strlen(nf));
+	    char *buf = (char *)alloc((unsigned)strlen(nf));
 
 	    /* strlen will be enough because we use chars */
 	    if (buf != NULL)
@@ -1330,14 +1330,14 @@ cs_insert_filelist(fname, ppath, flags, sb)
 	return -1;
     }
 
-    if ((csinfo[i].fname = (char *)alloc(strlen(fname)+1)) == NULL)
+    if ((csinfo[i].fname = (char *)alloc((unsigned)strlen(fname)+1)) == NULL)
 	return -1;
 
     (void)strcpy(csinfo[i].fname, (const char *)fname);
 
     if (ppath != NULL)
     {
-	if ((csinfo[i].ppath = (char *)alloc(strlen(ppath) + 1)) == NULL)
+	if ((csinfo[i].ppath = (char *)alloc((unsigned)strlen(ppath) + 1)) == NULL)
 	{
 	    vim_free(csinfo[i].fname);
 	    csinfo[i].fname = NULL;
@@ -1349,7 +1349,7 @@ cs_insert_filelist(fname, ppath, flags, sb)
 
     if (flags != NULL)
     {
-	if ((csinfo[i].flags = (char *)alloc(strlen(flags) + 1)) == NULL)
+	if ((csinfo[i].flags = (char *)alloc((unsigned)strlen(flags) + 1)) == NULL)
 	{
 	    vim_free(csinfo[i].fname);
 	    vim_free(csinfo[i].ppath);
@@ -1526,7 +1526,7 @@ cs_make_vim_style_matches(fname, slno, search, tagstr)
 
     if (search != NULL)
     {
-	amt = strlen(fname) + strlen(slno) + strlen(tagstr) + strlen(search)+6;
+	amt = (int)(strlen(fname) + strlen(slno) + strlen(tagstr) + strlen(search)+6);
 	if ((buf = (char *)alloc(amt)) == NULL)
 	    return NULL;
 
@@ -1534,7 +1534,7 @@ cs_make_vim_style_matches(fname, slno, search, tagstr)
     }
     else
     {
-	amt = strlen(fname) + strlen(slno) + strlen(tagstr) + 5;
+	amt = (int)(strlen(fname) + strlen(slno) + strlen(tagstr) + 5);
 	if ((buf = (char *)alloc(amt)) == NULL)
 	    return NULL;
 
@@ -1720,7 +1720,7 @@ cs_file_results(f, nummatches_a)
 			   &slno, &search)) == NULL)
 	       continue;
 
-	   context = (char *)alloc(strlen(cntx)+5);
+	   context = (char *)alloc((unsigned)strlen(cntx)+5);
 	   if (context==NULL)
 	       continue;
 
@@ -1884,13 +1884,13 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 
     assert (num_matches > 0);
 
-    if ((tbuf = (char *)alloc(strlen(matches[0]) + 1)) == NULL)
+    if ((tbuf = (char *)alloc((unsigned)strlen(matches[0]) + 1)) == NULL)
 	return;
 
     strcpy(tbuf, matches[0]);
     ptag = strtok(tbuf, "\t");
 
-    newsize = strlen(cstag_msg) + strlen(ptag);
+    newsize = (int)(strlen(cstag_msg) + strlen(ptag));
     buf = (char *)alloc(newsize);
     if (buf != NULL)
     {
@@ -1914,7 +1914,7 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	 * by parsing matches[i] on the fly and placing stuff into buf
 	 * directly, but that's too much of a hassle
 	 */
-	if ((tbuf = (char *)alloc(strlen(matches[idx]) + 1)) == NULL)
+	if ((tbuf = (char *)alloc((unsigned)strlen(matches[idx]) + 1)) == NULL)
 	    continue;
 	(void)strcpy(tbuf, matches[idx]);
 
@@ -1935,7 +1935,7 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	lno[strlen(lno)-2] = '\0';  /* ignore ;" at the end */
 
 	/* hopefully 'num' (num of matches) will be less than 10^16 */
-	newsize = strlen(csfmt_str) + 16 + strlen(lno);
+	newsize = (int)(strlen(csfmt_str) + 16 + strlen(lno));
 	if (bufsize < newsize)
 	{
 	    buf = (char *)vim_realloc(buf, newsize);
@@ -1957,7 +1957,7 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	    context = cntxts[idx];
 	else
 	    context = globalcntx;
-	newsize = strlen(context) + strlen(cntxformat);
+	newsize = (int)(strlen(context) + strlen(cntxformat));
 
 	if (bufsize < newsize)
 	{
@@ -2018,7 +2018,7 @@ cs_read_prompt(i)
     char	*cs_emsg;
     int		maxlen;
     static char *eprompt = "Press the RETURN key to continue:";
-    int		epromptlen = strlen(eprompt);
+    int		epromptlen = (int)strlen(eprompt);
     int		n;
 
     cs_emsg = _("E609: Cscope error: %s");
@@ -2236,9 +2236,9 @@ cs_resolve_file(i, name)
      * fullname is freed after cs_make_vim_style_matches, after it's been
      * copied into the tag buffer used by vim
      */
-    len = strlen(name) + 2;
+    len = (int)(strlen(name) + 2);
     if (csinfo[i].ppath != NULL)
-	len += strlen(csinfo[i].ppath);
+	len += (int)strlen(csinfo[i].ppath);
 
     if ((fullname = (char *)alloc(len)) == NULL)
 	return NULL;

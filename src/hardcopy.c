@@ -901,7 +901,7 @@ hardcopy_line(psettings, page_line, ppos)
 	if (line[col] == TAB || tab_spaces != 0)
 	{
 	    if (tab_spaces == 0)
-		tab_spaces = curbuf->b_p_ts - (print_pos % curbuf->b_p_ts);
+		tab_spaces = (int)(curbuf->b_p_ts - (print_pos % curbuf->b_p_ts));
 
 	    while (tab_spaces > 0)
 	    {
@@ -936,7 +936,7 @@ hardcopy_line(psettings, page_line, ppos)
     }
 
     ppos->lead_spaces = tab_spaces;
-    ppos->print_pos = print_pos;
+    ppos->print_pos = (int)print_pos;
 
     /*
      * Start next line of file if we clip lines, or have reached end of the
@@ -1476,7 +1476,7 @@ prt_write_file_raw_len(buffer, bytes)
 prt_write_file(buffer)
     char_u	*buffer;
 {
-    prt_write_file_len(buffer, STRLEN(buffer));
+    prt_write_file_len(buffer, (int)STRLEN(buffer));
 }
 
     static void
@@ -1937,7 +1937,7 @@ prt_open_resource(resource)
     vim_memset(prt_resfile.buffer, NUL, PRT_FILE_BUFFER_LEN);
 
     /* Parse first line to ensure valid resource file */
-    prt_resfile.len = fread((char *)prt_resfile.buffer, sizeof(char_u),
+    prt_resfile.len = (int)fread((char *)prt_resfile.buffer, sizeof(char_u),
                                             PRT_FILE_BUFFER_LEN, fd_resource);
     if (ferror(fd_resource))
     {
@@ -1955,7 +1955,7 @@ prt_open_resource(resource)
     offset = 0;
 
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_HEADER,
-                                            STRLEN(PRT_RESOURCE_HEADER)) != 0)
+				       (int)STRLEN(PRT_RESOURCE_HEADER)) != 0)
     {
 	EMSG2(_("E618: file \"%s\" is not a PostScript resource file"),
 		resource->filename);
@@ -1964,7 +1964,7 @@ prt_open_resource(resource)
     }
 
     /* Skip over any version numbers and following ws */
-    offset += STRLEN(PRT_RESOURCE_HEADER);
+    offset += (int)STRLEN(PRT_RESOURCE_HEADER);
     offset = prt_resfile_skip_nonws(offset);
     if (offset == -1)
         return FALSE;
@@ -1973,24 +1973,24 @@ prt_open_resource(resource)
         return FALSE;
 
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_RESOURCE,
-                                            STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
+				     (int)STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
     {
 	EMSG2(_("E619: file \"%s\" is not a supported PostScript resource file"),
 		resource->filename);
 	fclose(fd_resource);
 	return FALSE;
     }
-    offset += STRLEN(PRT_RESOURCE_RESOURCE);
+    offset += (int)STRLEN(PRT_RESOURCE_RESOURCE);
 
     /* Decide type of resource in the file */
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_PROCSET,
-                                            STRLEN(PRT_RESOURCE_PROCSET)) == 0)
+				      (int)STRLEN(PRT_RESOURCE_PROCSET)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_PROCSET;
     else if (prt_resfile_strncmp(offset, PRT_RESOURCE_ENCODING,
-                                            STRLEN(PRT_RESOURCE_ENCODING)) == 0)
+				     (int)STRLEN(PRT_RESOURCE_ENCODING)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_ENCODING;
     else if (prt_resfile_strncmp(offset, PRT_RESOURCE_CMAP,
-                                            STRLEN(PRT_RESOURCE_CMAP)) == 0)
+					 (int)STRLEN(PRT_RESOURCE_CMAP)) == 0)
 	resource->type = PRT_RESOURCE_TYPE_CMAP;
     else
     {
@@ -2414,7 +2414,7 @@ prt_match_encoding(p_encoding, p_cmap, pp_mbenc)
 
     *pp_mbenc = NULL;
     /* Look for recognised encoding */
-    enc_len = STRLEN(p_encoding);
+    enc_len = (int)STRLEN(p_encoding);
     p_mbenc = p_cmap->encodings;
     for (mbenc = 0; mbenc < p_cmap->num_encodings; mbenc++)
     {
@@ -2441,7 +2441,7 @@ prt_match_charset(p_charset, p_cmap, pp_mbchar)
     /* Look for recognised character set, using default if one is not given */
     if (*p_charset == NUL)
         p_charset = p_cmap->defcs;
-    char_len = STRLEN(p_charset);
+    char_len = (int)STRLEN(p_charset);
     p_mbchar = p_cmap->charsets;
     for (mbchar = 0; mbchar < p_cmap->num_charsets; mbchar++)
     {
@@ -2831,7 +2831,7 @@ prt_add_resource(resource)
 	}
 	if (bytes_read == 0)
 	    break;
-	prt_write_file_raw_len(resource_buffer, bytes_read);
+	prt_write_file_raw_len(resource_buffer, (int)bytes_read);
 	if (prt_file_error)
 	{
 	    fclose(fd_resource);
@@ -3634,7 +3634,7 @@ mch_print_set_font(iBold, iItalic, iUnderline)
 mch_print_set_bg(bgcol)
     long_u	bgcol;
 {
-    prt_bgcol = bgcol;
+    prt_bgcol = (int)bgcol;
     prt_attribute_change = TRUE;
     prt_need_bgcol = TRUE;
 }
@@ -3645,7 +3645,7 @@ mch_print_set_fg(fgcol)
 {
     if (fgcol != (long_u)prt_fgcol)
     {
-	prt_fgcol = fgcol;
+	prt_fgcol = (int)fgcol;
 	prt_attribute_change = TRUE;
 	prt_need_fgcol = TRUE;
     }

@@ -453,7 +453,7 @@ throw_exception(value, type, cmdname)
 	mesg = excp->messages->throw_msg;
 	if (cmdname != NULL && *cmdname != NUL)
 	{
-	    cmdlen = STRLEN(cmdname);
+	    cmdlen = (int)STRLEN(cmdname);
 	    excp->value = vim_strnsave((char_u *)"Vim(",
 					   4 + cmdlen + 2 + (int)STRLEN(mesg));
 	    if (excp->value == NULL)

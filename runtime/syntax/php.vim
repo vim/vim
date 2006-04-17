@@ -1,8 +1,15 @@
 " Vim syntax file
 " Language:	php PHP 3/4/5
-" Maintainer:	Lutz Eymers <ixtab@polzin.com>
-" URL:		http://www.isp.de/data/php.vim
-" Last Change:	2004 Feb 04
+" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer:	Lutz Eymers <ixtab@polzin.com>
+" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/php.vim?op=file&rev=0&sc=0
+"
+" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
+"     it only because patches have been submitted for it by Debian users and the
+"     former maintainer was MIA (Missing In Action), taking over its
+"     maintenance was thus the only way to include those patches.
+"     If you care about this file, and have time to maintain it please do so!
 "
 " Options	php_sql_query = 1  for SQL syntax highlighting inside strings
 "		php_htmlInStrings = 1  for HTML syntax highlighting inside strings
@@ -326,9 +333,11 @@ endif
 " String
 if exists("php_parent_error_open")
   syn region	phpStringDouble	matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+	contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex	contained keepend
+  syn region	phpBacktick	matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+	contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex	contained keepend
   syn region	phpStringSingle	matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+	contains=@phpAddStrings contained keepend
 else
   syn region	phpStringDouble	matchgroup=None start=+"+ skip=+\\\\\|\\"+ end=+"+	contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex contained extend keepend
+  syn region	phpBacktick	matchgroup=None start=+`+ skip=+\\\\\|\\"+ end=+`+	contains=@phpAddStrings,phpIdentifier,phpSpecialChar,phpIdentifierSimply,phpIdentifierComplex contained extend keepend
   syn region	phpStringSingle	matchgroup=None start=+'+ skip=+\\\\\|\\'+ end=+'+	contains=@phpAddStrings contained keepend extend
 endif
 
@@ -355,7 +364,7 @@ else
   syn match phpParent	"[({[\]})]"	contained
 endif
 
-syn cluster	phpClConst	contains=phpFunctions,phpIdentifier,phpConditional,phpRepeat,phpStatement,phpOperator,phpRelation,phpStringSingle,phpStringDouble,phpNumber,phpFloat,phpKeyword,phpType,phpBoolean,phpStructure,phpMethodsVar,phpConstant,phpCoreConstant,phpException
+syn cluster	phpClConst	contains=phpFunctions,phpIdentifier,phpConditional,phpRepeat,phpStatement,phpOperator,phpRelation,phpStringSingle,phpStringDouble,phpBacktick,phpNumber,phpFloat,phpKeyword,phpType,phpBoolean,phpStructure,phpMethodsVar,phpConstant,phpCoreConstant,phpException
 syn cluster	phpClInside	contains=@phpClConst,phpComment,phpLabel,phpParent,phpParentError,phpInclude,phpHereDoc
 syn cluster	phpClFunction	contains=@phpClInside,phpDefine,phpParentError,phpStorageClass
 syn cluster	phpClTop	contains=@phpClFunction,phpFoldFunction,phpFoldClass,phpFoldInterface,phpFoldTry,phpFoldCatch
@@ -463,6 +472,7 @@ if version >= 508 || !exists("did_php_syn_inits")
   HiLink	 phpStructure	Structure
   HiLink	 phpStringSingle	String
   HiLink	 phpStringDouble	String
+  HiLink	 phpBacktick	String
   HiLink	 phpNumber	Number
   HiLink	 phpFloat	Float
   HiLink	 phpMethods	Function

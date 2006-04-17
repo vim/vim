@@ -95,10 +95,10 @@ hash_clear_all(ht, off)
     hashtab_T	*ht;
     int		off;
 {
-    int		todo;
+    long	todo;
     hashitem_T	*hi;
 
-    todo = ht->ht_used;
+    todo = (long)ht->ht_used;
     for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
@@ -150,7 +150,7 @@ hash_lookup(ht, key, hash)
      * - skip over a removed item
      * - return if the item matches
      */
-    idx = hash & ht->ht_mask;
+    idx = (int)(hash & ht->ht_mask);
     hi = &ht->ht_array[idx];
 
     if (hi->hi_key == NULL)
@@ -176,7 +176,7 @@ hash_lookup(ht, key, hash)
 #ifdef HT_DEBUG
 	++hash_count_perturb;	    /* count a "miss" for hashtab lookup */
 #endif
-	idx = (idx << 2) + idx + perturb + 1;
+	idx = (int)((idx << 2) + idx + perturb + 1);
 	hi = &ht->ht_array[idx & ht->ht_mask];
 	if (hi->hi_key == NULL)
 	    return freeitem == NULL ? hi : freeitem;
@@ -387,7 +387,7 @@ hash_may_resize(ht, minitems)
     {
 	/* Use specified size. */
 	if ((long_u)minitems < ht->ht_used)	/* just in case... */
-	    minitems = ht->ht_used;
+	    minitems = (int)ht->ht_used;
 	minsize = minitems * 3 / 2;	/* array is up to 2/3 full */
     }
 
@@ -439,7 +439,7 @@ hash_may_resize(ht, minitems)
      * is also a cleanup action.
      */
     newmask = newsize - 1;
-    todo = ht->ht_used;
+    todo = (int)ht->ht_used;
     for (olditem = oldarray; todo > 0; ++olditem)
 	if (!HASHITEM_EMPTY(olditem))
 	{
@@ -448,13 +448,13 @@ hash_may_resize(ht, minitems)
 	     * the algorithm to find an item in hash_lookup().  But we only
 	     * need to search for a NULL key, thus it's simpler.
 	     */
-	    newi = olditem->hi_hash & newmask;
+	    newi = (int)(olditem->hi_hash & newmask);
 	    newitem = &newarray[newi];
 
 	    if (newitem->hi_key != NULL)
 		for (perturb = olditem->hi_hash; ; perturb >>= PERTURB_SHIFT)
 		{
-		    newi = (newi << 2) + newi + perturb + 1;
+		    newi = (int)((newi << 2) + newi + perturb + 1);
 		    newitem = &newarray[newi & newmask];
 		    if (newitem->hi_key == NULL)
 			break;

@@ -2023,7 +2023,7 @@ op_replace(oap, c)
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		n = STRLEN(newp);
+		n = (int)STRLEN(newp);
 		while (--num_chars >= 0)
 		    n += (*mb_char2bytes)(c, newp + n);
 	    }
@@ -2225,7 +2225,7 @@ op_tilde(oap)
 		while (pos.lnum < oap->end.lnum)
 		{
 		    ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
-		    count = STRLEN(ptr) - pos.col;
+		    count = (int)STRLEN(ptr) - pos.col;
 		    netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		    netbeans_inserted(curbuf, pos.lnum, pos.col,
 						 &ptr[pos.col], count);
@@ -2886,7 +2886,7 @@ op_yank(oap, deleting, mess)
 		    else
 		    {
 			if (endcol == MAXCOL)
-			    endcol = STRLEN(p);
+			    endcol = (colnr_T)STRLEN(p);
 			bd.textlen = endcol - startcol + oap->inclusive;
 		    }
 		    bd.textstart = p + startcol;
@@ -4910,7 +4910,7 @@ do_addsub(command, Prenum1)
     char_u	buf2[NUMBUFLEN];
     int		hex;		/* 'X' or 'x': hex; '0': octal */
     static int	hexupper = FALSE;	/* 0xABC */
-    long_u	n;
+    unsigned long n;
     long_u	oldn;
     char_u	*ptr;
     int		c;
@@ -5317,7 +5317,7 @@ write_viminfo_registers(fp)
 	    /* Skip register if there is more text than the maximum size. */
 	    len = 0;
 	    for (j = 0; j < num_lines; j++)
-		len += STRLEN(y_regs[i].y_array[j]) + 1L;
+		len += (long)STRLEN(y_regs[i].y_array[j]) + 1L;
 	    if (len > (long)max_kbyte * 1024L)
 		continue;
 	}

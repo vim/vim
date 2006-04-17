@@ -1393,7 +1393,7 @@ u_add_time(buf, buflen, tt)
     }
     else
 #endif
-	vim_snprintf((char *)buf, buflen, "%ld seconds ago",
+	vim_snprintf((char *)buf, buflen, _("%ld seconds ago"),
 						     (long)(time(NULL) - tt));
 }
 

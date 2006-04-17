@@ -270,7 +270,7 @@ add_buff(buf, s, slen)
 									TRUE);
 	if (p == NULL)
 	    return; /* no space, just forget it */
-	buf->bh_space = len - slen;
+	buf->bh_space = (int)(len - slen);
 	vim_strncpy(p->b_str, s, (size_t)slen);
 
 	p->b_next = buf->bh_curr->b_next;
