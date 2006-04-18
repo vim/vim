@@ -128,6 +128,9 @@ static int	vgetorpeek __ARGS((int));
 static void	map_free __ARGS((mapblock_T **));
 static void	validate_maphash __ARGS((void));
 static void	showmap __ARGS((mapblock_T *mp, int local));
+#ifdef FEAT_EVAL
+static char_u	*eval_map_expr __ARGS((char_u *str));
+#endif
 
 /*
  * Free and clear a buffer.
@@ -2328,7 +2331,7 @@ vgetorpeek(advance)
 			    if (tabuf.typebuf_valid)
 			    {
 				vgetc_busy = 0;
-				s = eval_to_string(mp->m_str, NULL, FALSE);
+				s = eval_map_expr(mp->m_str);
 				vgetc_busy = save_vgetc_busy;
 			    }
 			    else
@@ -4251,7 +4254,7 @@ check_abbr(c, ptr, col, mincol)
 	    }
 #ifdef FEAT_EVAL
 	    if (mp->m_expr)
-		s = eval_to_string(mp->m_str, NULL, FALSE);
+		s = eval_map_expr(mp->m_str);
 	    else
 #endif
 		s = mp->m_str;
@@ -4280,6 +4283,36 @@ check_abbr(c, ptr, col, mincol)
     }
     return FALSE;
 }
+
+#ifdef FEAT_EVAL
+/*
+ * Evaluate the RHS of a mapping or abbreviations and take care of escaping
+ * special characters.
+ */
+    static char_u *
+eval_map_expr(str)
+    char_u	*str;
+{
+    char_u	*res;
+    char_u	*s;
+    int		len;
+
+    s = eval_to_string(str, NULL, FALSE);
+    if (s == NULL)
+	return NULL;
+
+    /* Need a buffer to hold up to three times as much. */
+    len = (int)STRLEN(s);
+    res = alloc((unsigned)(len * 3) + 1);
+    if (res != NULL)
+    {
+	STRCPY(res, s);
+	(void)fix_input_buffer(res, len, TRUE);
+    }
+    vim_free(s);
+    return res;
+}
+#endif
 
 /*
  * Write map commands for the current mappings to an .exrc file.

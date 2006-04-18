@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 14
+*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1103,7 +1103,7 @@ Vim can display the matches in a simplistic popup menu.
 The menu is used when:
 - The 'completeopt' option contains "menu" or "menuone".
 - The terminal supports at least 8 colors.
-- There are at least two matches.
+- There are at least two matches.  One of "menuone" is used.
 
 The 'pumheight' option can be used to set a maximum height.  The default is to
 use all space available.
@@ -1262,6 +1262,26 @@ Note: When used first time completion menu will be shown with little delay
 - this is time needed for loading of data file.
 Note: Completion may fail in badly formatted documents. In such case try to
 run |:make| command to detect formatting problems.
+
+
+HTML flavor						*html-flavor*
+
+By default HTML completion provides completion for XHTML 1.0 Strict. This is
+not the only HTML version. To use another data file and still have benefits of
+custom completion for class, style, etc. attributes set g:html_omni_flavor
+variable. Example (in .vimrc or filetype plugin file): >
+
+	let g:html_omni_flavor = 'xhtml10t'
+
+Data for HTML completion will be read from 'autoload/xml/xhtml10t.vim' file
+located somewhere in 'runtimepath' (not in default distribution).
+
+More about format of data file in |xml-omni-datafile|. Some of data files may
+in future be found on vim-online site (|www|).
+
+Note that g:html_omni_flavor may point to file with any XML data.  This makes
+possible to mix PHP (|ft-php-omni|) completion with whatever XML dialect
+(assuming you have data file for it).
 
 
 JAVASCRIPT					       *ft-javascript-omni*
@@ -1479,8 +1499,21 @@ In example are visible four special elements:
    names, as value two element List for additional menu info and long
    description.
 
-Note: Tag names in data file MUST not contain namespace description. Check
+Note: Tag names in data file MUST not contain namespace description.  Check
 xsl.vim for example.
+
+
+DTD -> Vim                     					*dtd2vim*
+
+On |www| is script |dtd2vim| which parses DTD and creates XML data file
+for Vim XML omni completion.
+
+    dtd2vim: http://www.vim.org/scripts/script.php?script_id=1462
+
+Check there and beginning of file for details of usage.
+Script requires perl and: 
+
+    perlSGML: http://savannah.nongnu.org/projects/perlsgml
 
 
 Commands

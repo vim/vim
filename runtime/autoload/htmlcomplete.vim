@@ -1,7 +1,7 @@
 " Vim completion script
-" Language:	XHTML 1.0 Strict
+" Language:	HTML (XHTML 1.0 Strict by default)
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Mar 25
+" Last Change:	2006 Apr 17
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -159,12 +159,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
 
-		if !exists("g:xmldata_xhtml10s")
-			runtime! autoload/xml/xhtml10s.vim
-			"call htmlcomplete#LoadData()
+		if !exists("g:html_omni")
+			"runtime! autoload/xml/xhtml10s.vim
+			call htmlcomplete#LoadData()
 		endif
 
-	    let entities =  g:xmldata_xhtml10s['vimxmlentities']
+	    let entities =  g:html_omni['vimxmlentities']
 
 		if len(a:base) == 1
 			for m in entities
@@ -443,29 +443,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			let attrname = matchstr(attr, '.*\ze\s*=')
 			let entered_value = matchstr(attr, ".*=\\s*[\"']\\zs.*")
 			let values = []
-			if attrname == 'media'
-				let values = ["screen", "tty", "tv", "projection", "handheld", "print", "braille", "aural", "all"]
-			elseif attrname == 'xml:space'
-				let values = ["preserve"]
-			elseif attrname == 'shape'
-				let values = ["rect", "circle", "poly", "default"]
-			elseif attrname == 'valuetype'
-				let values = ["data", "ref", "object"]
-			elseif attrname == 'method'
-				let values = ["get", "post"]
-			elseif attrname == 'dir'
-				let values = ["ltr", "rtl"]
-			elseif attrname == 'frame'
-				let values = ["void", "above", "below", "hsides", "lhs", "rhs", "vsides", "box", "border"]
-			elseif attrname == 'rules'
-				let values = ["none", "groups", "rows", "all"]
-			elseif attrname == 'align'
-				let values = ["left", "center", "right", "justify", "char"]
-			elseif attrname == 'valign'
-				let values = ["top", "middle", "bottom", "baseline"]
-			elseif attrname == 'scope'
-				let values = ["row", "col", "rowgroup", "colgroup"]
-			elseif attrname == 'href'
+			if attrname == 'href'
 				" Now we are looking for local anchors defined by name or id
 				if entered_value =~ '^#'
 					let file = join(getline(1, line('$')), ' ')
@@ -476,18 +454,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 						let values += ['#'.matchstr(i, "^[a-zA-Z][a-zA-Z0-9%_-]*")]
 					endfor
 				endif
-			elseif attrname == 'type'
-				if context =~ '^input'
-					let values = ["text", "password", "checkbox", "radio", "submit", "reset", "file", "hidden", "image", "button"]
-				elseif context =~ '^button'
-					let values = ["button", "submit", "reset"]
-				elseif context =~ '^style'
-					let values = ["text/css"]
-				elseif context =~ '^script'
-					let values = ["text/javascript"]
-				endif
 			else
-				return []
+				if has_key(g:html_omni, tag) && has_key(g:html_omni[tag][1], attrname)
+					let values = g:html_omni[tag][1][attrname]
+				else
+					return []
+				endif
 			endif
 
 			if len(values) == 0
@@ -518,13 +490,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let sbase = matchstr(context, '.*\ze\s.*')
 
 		" Load data {{{
-		if !exists("g:xmldata_xhtml10s")
-			runtime! autoload/xml/xhtml10s.vim
-			"call htmlcomplete#LoadData()
+		if !exists("g:html_omni_gen")
+			call htmlcomplete#LoadData()
 		endif
 		" }}}
 		"
-		let attrs = keys(g:xmldata_xhtml10s[tag][1])
+		let attrs = keys(g:html_omni[tag][1])
 
 		for m in sort(attrs)
 			if m =~ '^'.attr
@@ -534,13 +505,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			endif
 		endfor
 		let menu = res + res2
-		if has_key(g:xmldata_xhtml10s, 'vimxmlattrinfo')
+		if has_key(g:html_omni, 'vimxmlattrinfo')
 			let final_menu = []
 			for i in range(len(menu))
 				let item = menu[i]
-				if has_key(g:xmldata_xhtml10s['vimxmlattrinfo'], item)
-					let m_menu = g:xmldata_xhtml10s['vimxmlattrinfo'][item][0]
-					let m_info = g:xmldata_xhtml10s['vimxmlattrinfo'][item][1]
+				if has_key(g:html_omni['vimxmlattrinfo'], item)
+					let m_menu = g:html_omni['vimxmlattrinfo'][item][0]
+					let m_info = g:html_omni['vimxmlattrinfo'][item][1]
 					if m_menu !~ 'Bool'
 						let item .= '="'
 					endif
@@ -569,9 +540,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endif
 	" Load data {{{
-	if !exists("g:xmldata_xhtml10s")
-		runtime! autoload/xml/xhtml10s.vim
-		"call htmlcomplete#LoadData()
+	if !exists("g:html_omni")
+		"runtime! autoload/xml/xhtml10s.vim
+		call htmlcomplete#LoadData()
 	endif
 	" }}}
 	" Tag completion {{{
@@ -580,15 +551,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" MM: TODO: GLOT works always the same but with some weird situation it
 	" behaves as intended in HTML but screws in PHP
 	let g:ot = opentag
-	if opentag == '' || &ft == 'php' && !has_key(g:xmldata_xhtml10s, opentag)
+	if opentag == '' || &ft == 'php' && !has_key(g:html_omni, opentag)
 		" Hack for sometimes failing GetLastOpenTag.
 		" As far as I tested fail isn't GLOT fault but problem
 		" of invalid document - not properly closed tags and other mish-mash.
 		" Also when document is empty. Return list of *all* tags.
-	    let tags = keys(g:xmldata_xhtml10s)
+	    let tags = keys(g:html_omni)
 		call filter(tags, 'v:val !~ "^vimxml"')
 	else
-		let tags = g:xmldata_xhtml10s[opentag][0]
+		let tags = g:html_omni[opentag][0]
 	endif
 	" }}}
 
@@ -600,13 +571,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endfor
 	let menu = res + res2
-	if has_key(g:xmldata_xhtml10s, 'vimxmltaginfo')
+	if has_key(g:html_omni, 'vimxmltaginfo')
 		let final_menu = []
 		for i in range(len(menu))
 			let item = menu[i]
-			if has_key(g:xmldata_xhtml10s['vimxmltaginfo'], item)
-				let m_menu = g:xmldata_xhtml10s['vimxmltaginfo'][item][0]
-				let m_info = g:xmldata_xhtml10s['vimxmltaginfo'][item][1]
+			if has_key(g:html_omni['vimxmltaginfo'], item)
+				let m_menu = g:html_omni['vimxmltaginfo'][item][0]
+				let m_info = g:html_omni['vimxmltaginfo'][item][1]
 			else
 				let m_menu = ''
 				let m_info = ''
@@ -621,4 +592,27 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" }}}
   endif
 endfunction
+
+function! htmlcomplete#LoadData() " {{{
+	if !exists("g:html_omni_flavor")
+		let g:html_omni_flavor = 'xhtml10s'
+	endif
+	exe 'runtime! autoload/xml/'.g:html_omni_flavor.'.vim'
+	" This one is necessary because we don't know if
+	" g:html_omni_flavor file exists and was sourced
+	" Proper checking for files would require iterating through 'rtp'
+	" and could introduce OS dependent mess.
+	if !exists("g:xmldata_".g:html_omni_flavor)
+		let g:html_omni_flavor = 'xhtml10s'
+		runtime! autoload/xml/xhtml10s.vim
+	endif
+
+	exe 'let g:html_omni = g:xmldata_'.g:html_omni_flavor
+
+	" Free some memory
+	exe 'unlet! g:xmldata_'.g:html_omni_flavor
+
+	"call htmlcomplete#LoadData()
+endfunction
+" }}}
 " vim:set foldmethod=marker:

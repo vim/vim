@@ -723,7 +723,7 @@ cs_create_connection(i)
     char *prog, *cmd, *ppath = NULL;
 #ifndef UNIX
     int in_save, out_save, err_save;
-    long ph;
+    long_i ph;
 # ifdef FEAT_GUI
     HWND activewnd = NULL;
     HWND consolewnd = NULL;
@@ -881,9 +881,9 @@ err_closing:
 	/* May be use &shell, &shellquote etc */
 # ifdef __BORLANDC__
 	/* BCC 5.5 uses a different function name for spawnlp */
-	ph = (long)spawnlp(P_NOWAIT, prog, cmd, NULL);
+	ph = (long_i)spawnlp(P_NOWAIT, prog, cmd, NULL);
 # else
-	ph = (long)_spawnlp(_P_NOWAIT, prog, cmd, NULL);
+	ph = (long_i)_spawnlp(_P_NOWAIT, prog, cmd, NULL);
 # endif
 	vim_free(prog);
 	vim_free(cmd);

@@ -1,12 +1,12 @@
 # Swedish translation for Vim.
-# Copyright (C) 2003-2005 Free Software Foundation, Inc.
-# Johan Svedberg <johan@svedberg.com>, 2003-2005.
+# Copyright (C) 2003-2006 Free Software Foundation, Inc.
+# Johan Svedberg <johan@svedberg.com>, 2003-2006.
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-12-01 22:51+0100\n"
-"PO-Revision-Date: 2005-12-04 20:33+0100\n"
+"POT-Creation-Date: 2006-04-10 17:24+0200\n"
+"PO-Revision-Date: 2006-04-11 01:08+0200\n"
 "Last-Translator: Johan Svedberg <johan@svedberg.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -131,8 +131,8 @@ msgstr "[Inget Namn]"
 msgid "help"
 msgstr "hjälp"
 
-msgid "[help]"
-msgstr "[hjälp]"
+msgid "[Help]"
+msgstr "[Hjälp]"
 
 msgid "[Preview]"
 msgstr "[Förhandsvisning]"
@@ -154,8 +154,11 @@ msgstr ""
 "\n"
 "# Buffertlista:\n"
 
-msgid "[Error List]"
-msgstr "[Fellista]"
+msgid "[Location List]"
+msgstr "[Positionslista]"
+
+msgid "[Quickfix List]"
+msgstr "[Quickfix-lista]"
 
 msgid ""
 "\n"
@@ -488,6 +491,9 @@ msgstr "E724: variabel nästlad för djupt för att visas"
 msgid "E699: Too many arguments"
 msgstr "E699: För många argument"
 
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: complete() kan bara användas i infogningsläge"
+
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
 #. * this way has the compelling advantage that translations need not to
@@ -670,6 +676,136 @@ msgstr ""
 "\n"
 "\tSenast satt från "
 
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "Går in i felsökningsläge.  Skriv \"cont\" för att fortsätta."
+
+#, c-format
+msgid "line %ld: %s"
+msgstr "rad %ld: %s"
+
+#, c-format
+msgid "cmd: %s"
+msgstr "kommando: %s"
+
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Brytpunkt i \"%s%s\" rad %ld"
+
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Brytpunkt hittades inte: %s"
+
+msgid "No breakpoints defined"
+msgstr "Inga brytpunkter definierade"
+
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  rad %ld"
+
+msgid "E750: First use :profile start <fname>"
+msgstr "E750: Använd :profile start <fnamn> först"
+
+msgid "Save As"
+msgstr "Spara som"
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr "Spara ändringar till \"%s\"?"
+
+msgid "Untitled"
+msgstr "Namnlös"
+
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Ingen skrivning sedan senaste ändring för buffert \"%s\""
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr "Varning: Gick in i andra buffertar oväntat (kontrollera autokommandon)"
+
+msgid "E163: There is only one file to edit"
+msgstr "E163: Det finns bara en fil att redigera"
+
+msgid "E164: Cannot go before first file"
+msgstr "E164: Kan inte gå före första filen"
+
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Kan inte gå bortom sista filen"
+
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: kompilator stöds inte: %s"
+
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Söker efter \"%s\" i \"%s\""
+
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Söker efter \"%s\""
+
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "hittades inte i 'runtimepath': \"%s\""
+
+msgid "Source Vim script"
+msgstr "Läs Vim-skript"
+
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Kan inte läsa en katalog: \"%s\""
+
+#, c-format
+msgid "could not source \"%s\""
+msgstr "kunde inte läsa \"%s\""
+
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "rad %ld: kunde inte läsa \"%s\""
+
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "läser \"%s\""
+
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "rad %ld: läser \"%s\""
+
+#, c-format
+msgid "finished sourcing %s"
+msgstr "läste klart %s"
+
+msgid "modeline"
+msgstr "lägesrad"
+
+msgid "--cmd argument"
+msgstr "--cmd argument"
+
+msgid "-c argument"
+msgstr "-c argument"
+
+msgid "environment variable"
+msgstr "miljövariabel"
+
+msgid "error handler"
+msgstr "felhanterare"
+
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr "W15: Varning: Fel radavskiljare, ^M kan saknas"
+
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: :scriptencoding används utanför en körd fil"
+
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: :finish används utanför en körd fil"
+
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Aktuellt %sspråk: \"%s\""
+
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Kan inte sätta språk till \"%s\""
+
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Hex %02x,  Oktalt %03o"
@@ -753,9 +889,6 @@ msgstr "# Värde av 'encoding' när den här filen blev skriven\n"
 
 msgid "Illegal starting char"
 msgstr "Otillåtet starttecken"
-
-msgid "Save As"
-msgstr "Spara som"
 
 msgid "Write partial file?"
 msgstr "Skriv ofullständig fil?"
@@ -927,118 +1060,6 @@ msgstr " (stöds inte)"
 msgid "[Deleted]"
 msgstr "[Borttagen]"
 
-msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Går in i felsökningsläge.  Skriv \"cont\" för att fortsätta."
-
-#, c-format
-msgid "line %ld: %s"
-msgstr "rad %ld: %s"
-
-#, c-format
-msgid "cmd: %s"
-msgstr "kommando: %s"
-
-#, c-format
-msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Brytpunkt i \"%s%s\" rad %ld"
-
-#, c-format
-msgid "E161: Breakpoint not found: %s"
-msgstr "E161: Brytpunkt hittades inte: %s"
-
-msgid "No breakpoints defined"
-msgstr "Inga brytpunkter definierade"
-
-#, c-format
-msgid "%3d  %s %s  line %ld"
-msgstr "%3d  %s %s  rad %ld"
-
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Använd :profile start <fnamn> först"
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr "Spara ändringar till \"%s\"?"
-
-msgid "Untitled"
-msgstr "Namnlös"
-
-#, c-format
-msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Ingen skrivning sedan senaste ändring för buffert \"%s\""
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr "Varning: Gick in i andra buffertar oväntat (kontrollera autokommandon)"
-
-msgid "E163: There is only one file to edit"
-msgstr "E163: Det finns bara en fil att redigera"
-
-msgid "E164: Cannot go before first file"
-msgstr "E164: Kan inte gå före första filen"
-
-msgid "E165: Cannot go beyond last file"
-msgstr "E165: Kan inte gå bortom sista filen"
-
-#, c-format
-msgid "E666: compiler not supported: %s"
-msgstr "E666: kompilator stöds inte: %s"
-
-#, c-format
-msgid "Searching for \"%s\" in \"%s\""
-msgstr "Söker efter \"%s\" i \"%s\""
-
-#, c-format
-msgid "Searching for \"%s\""
-msgstr "Söker efter \"%s\""
-
-#, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "hittades inte i 'runtimepath': \"%s\""
-
-msgid "Source Vim script"
-msgstr "Läs Vim-skript"
-
-#, c-format
-msgid "Cannot source a directory: \"%s\""
-msgstr "Kan inte läsa en katalog: \"%s\""
-
-#, c-format
-msgid "could not source \"%s\""
-msgstr "kunde inte läsa \"%s\""
-
-#, c-format
-msgid "line %ld: could not source \"%s\""
-msgstr "rad %ld: kunde inte läsa \"%s\""
-
-#, c-format
-msgid "sourcing \"%s\""
-msgstr "läser \"%s\""
-
-#, c-format
-msgid "line %ld: sourcing \"%s\""
-msgstr "rad %ld: läser \"%s\""
-
-#, c-format
-msgid "finished sourcing %s"
-msgstr "läste klart %s"
-
-msgid "W15: Warning: Wrong line separator, ^M may be missing"
-msgstr "W15: Varning: Fel radavskiljare, ^M kan saknas"
-
-msgid "E167: :scriptencoding used outside of a sourced file"
-msgstr "E167: :scriptencoding används utanför en körd fil"
-
-msgid "E168: :finish used outside of a sourced file"
-msgstr "E168: :finish används utanför en körd fil"
-
-#, c-format
-msgid "Current %slanguage: \"%s\""
-msgstr "Aktuellt %sspråk: \"%s\""
-
-#, c-format
-msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Kan inte sätta språk till \"%s\""
-
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Går in i Ex-läge.  Skriv \"visual\" för att gå till Normal-läge."
 
@@ -1152,8 +1173,18 @@ msgstr "E185: Kan inte hitta färgschema %s"
 msgid "Greetings, Vim user!"
 msgstr "Välkommen, Vim-användare!"
 
+msgid "E784: Cannot close last tab page"
+msgstr "E784: Kan inte stänga senaste flik"
+
+msgid "Already only one tab page"
+msgstr "Redan bara en flik"
+
 msgid "Edit File in new window"
 msgstr "Redigera fil i nytt fönster"
+
+#, c-format
+msgid "Tab page %d"
+msgstr "Flik %d"
 
 msgid "No swap file"
 msgstr "Ingen växlingsfil"
@@ -1399,6 +1430,9 @@ msgstr "är inte en fil"
 msgid "[New File]"
 msgstr "[Ny fil]"
 
+msgid "[New DIRECTORY]"
+msgstr "[Ny KATALOG]"
+
 msgid "[File too big]"
 msgstr "[Fil för stor]"
 
@@ -1451,8 +1485,9 @@ msgstr "[konverterad]"
 msgid "[crypted]"
 msgstr "[krypterad]"
 
-msgid "[CONVERSION ERROR]"
-msgstr "[KONVERTERINGSFEL]"
+#, c-format
+msgid "[CONVERSION ERROR in line %ld]"
+msgstr "[KONVERTERINGSFEL på rad %ld]"
 
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
@@ -1798,29 +1833,6 @@ msgstr "Ingen mappning hittades"
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Otillåtet läge"
 
-msgid "E229: Cannot start the GUI"
-msgstr "E229: Kan inte starta GUI"
-
-#, c-format
-msgid "E230: Cannot read from \"%s\""
-msgstr "E230: Kan inte läsa från \"%s\""
-
-msgid "E665: Cannot start GUI, no valid font found"
-msgstr "E665: Kan inte starta GUI, ingen giltig font hittad"
-
-msgid "E231: 'guifontwide' invalid"
-msgstr "E231: 'guifontwide' ogiltig"
-
-msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "E599: Värdet av 'imactivatekey' är ogiltigt"
-
-#, c-format
-msgid "E254: Cannot allocate color %s"
-msgstr "E254: Kan inte allokera färg %s"
-
-msgid "No match at cursor, finding next"
-msgstr "Ingen matchning vid markör, söker nästa"
-
 msgid "<cannot open> "
 msgstr "<kan inte öppna> "
 
@@ -1843,14 +1855,37 @@ msgstr "OK"
 msgid "Cancel"
 msgstr "Avbryt"
 
-msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
-msgstr "Rullningslist: Kunde inte hämta geometrin på miniatyrbild."
-
 msgid "Vim dialog"
 msgstr "Vim-dialog"
 
+msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
+msgstr "Rullningslist: Kunde inte hämta geometrin på miniatyrbild."
+
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: Kan inte skapa BalloonEval med både meddelande och återkallning"
+
+msgid "E229: Cannot start the GUI"
+msgstr "E229: Kan inte starta GUI"
+
+#, c-format
+msgid "E230: Cannot read from \"%s\""
+msgstr "E230: Kan inte läsa från \"%s\""
+
+msgid "E665: Cannot start GUI, no valid font found"
+msgstr "E665: Kan inte starta GUI, ingen giltig font hittad"
+
+msgid "E231: 'guifontwide' invalid"
+msgstr "E231: 'guifontwide' ogiltig"
+
+msgid "E599: Value of 'imactivatekey' is invalid"
+msgstr "E599: Värdet av 'imactivatekey' är ogiltigt"
+
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Kan inte allokera färg %s"
+
+msgid "No match at cursor, finding next"
+msgstr "Ingen matchning vid markör, söker nästa"
 
 msgid "Vim dialog..."
 msgstr "Vim-dialog..."
@@ -1908,6 +1943,15 @@ msgstr "Ersätt alla"
 
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: Tog emot \"die\"-begäran från sessionshanteraren\n"
+
+msgid "Close"
+msgstr "Stäng"
+
+msgid "New tab"
+msgstr "Ny flik"
+
+msgid "Open Tab..."
+msgstr "Öppna flik..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: Huvudfönster oväntat förstört\n"
@@ -1979,6 +2023,12 @@ msgstr "E243: Argument stöds inte: \"-%s\"; Används OLE-versionen."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Kunde inte öppna fönster inuti MDI-applikation"
+
+msgid "Close tab"
+msgstr "Stäng flik"
+
+msgid "Open tab..."
+msgstr "Öppna flik..."
 
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "Sök sträng (använd '\\\\' för att hitta '\\')"
@@ -2819,6 +2869,9 @@ msgstr "-U <gvimrc>\t\tAnvänd <gvimrc> istället för någon .gvimrc"
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tLäs inte in insticksskript"
 
+msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
+msgstr "-p[N]\t\tÖppna N flikar (standard: en för varje fil)"
+
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tÖppna N fönster (standard: ett för varje fil)"
 
@@ -2876,6 +2929,9 @@ msgid ""
 msgstr ""
 "--remote-wait-silent <filer>\tSamma, klaga inte om det inte finns någon "
 "server"
+
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <filer>  Som --remote men öppna flik för varje fil"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr ""
@@ -3000,25 +3056,6 @@ msgstr "--role <roll>\tStäll in en unik roll för att identifiera huvudfönstret"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tÖppna Vim innanför en annan GTK-widget"
-
-msgid ""
-"\n"
-"Arguments recognised by kvim (KDE version):\n"
-msgstr ""
-"\n"
-"Argument igenkända av kvim (KDE-version):\n"
-
-msgid "-black\t\tUse reverse video"
-msgstr "-black\t\tAnvänd omvänd video"
-
-msgid "-tip\t\t\tDisplay the tip dialog on startup"
-msgstr "-tip\t\tVisa tipsdialogen vid uppstart"
-
-msgid "-notip\t\tDisable the tip dialog"
-msgstr "-notip\t\tInaktivera tipsdialogen"
-
-msgid "--display <display>\tRun vim on <display>"
-msgstr "--display <display>\tKör vim på <display>"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <förälder fönster>\tÖppna Vim inuti förälderapplikation"
@@ -3444,6 +3481,10 @@ msgstr "Stackstorlek ökar"
 msgid "E317: pointer block id wrong 2"
 msgstr "E317: pekarblock-id fel 2"
 
+#, c-format
+msgid "E773: Symlink loop for \"%s\""
+msgstr "E773: Symbolisk länk-loop för \"%s\""
+
 msgid "E325: ATTENTION"
 msgstr "E325: LYSTRING"
 
@@ -3532,16 +3573,16 @@ msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
 "&Recover\n"
+"&Delete it\n"
 "&Quit\n"
-"&Abort\n"
-"&Delete it"
+"&Abort"
 msgstr ""
 "&Öppna skrivskyddad\n"
 "&Redigera ändå\n"
 "&Återskapa\n"
+"&Ta bort den\n"
 "&Avsluta\n"
-"A&vbryt\n"
-"&Ta bort den"
+"A&vbryt"
 
 msgid "E326: Too many swap files found"
 msgstr "E326: För många växlingsfiler hittade"
@@ -3808,6 +3849,12 @@ msgstr "E658: NetBeans-anslutning tappad för buffert %ld"
 msgid "E505: "
 msgstr "E505: "
 
+msgid "E774: 'operatorfunc' is empty"
+msgstr "E774: 'operatorfunc' är tom"
+
+msgid "E775: Eval feature not available"
+msgstr "E775: Eval-funktionen inte tillgänglig"
+
 msgid "Warning: terminal cannot highlight"
 msgstr "Varning: terminal kan inte framhäva"
 
@@ -3930,8 +3977,9 @@ msgstr "Markerade %s%ld av %ld rader; %ld av %ld ord; %ld av %ld bitar"
 msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
-msgstr "Markerade %s%ld av %ld rader; %ld av %ld ord; %ld av %ld tecken; %ld "
-"av %ld bitar"
+msgstr ""
+"Markerade %s%ld av %ld rader; %ld av %ld ord; %ld av %ld tecken; %ld av %ld "
+"bitar"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -3941,8 +3989,9 @@ msgstr "Kol %s av %s; rad %ld av %ld; ord %ld av %ld; bit %ld av %ld"
 msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
-msgstr "Kol %s av %s; rad %ld av %ld; ord %ld av %ld; tecken %ld av %ld; bit "
-"%ld av %ld"
+msgstr ""
+"Kol %s av %s; rad %ld av %ld; ord %ld av %ld; tecken %ld av %ld; bit %ld av %"
+"ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4153,6 +4202,9 @@ msgstr "I/O-FEL"
 msgid "...(truncated)"
 msgstr "...(trunkerade)"
 
+msgid "Message"
+msgstr "Meddelande"
+
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "'columns' är inte 80, kan inte köra externa kommandon"
 
@@ -4200,14 +4252,6 @@ msgstr "Vim: Fångade dödlig signal\n"
 #, c-format
 msgid "Opening the X display took %ld msec"
 msgstr "Öppning av X-display tog %ld ms"
-
-#. KDE sometimes produces X error that we want to ignore
-msgid ""
-"\n"
-"Vim: Got X error but we continue...\n"
-msgstr ""
-"\n"
-"Vim: Fick X-error men vi fortsätter...\n"
 
 msgid ""
 "\n"
@@ -4287,9 +4331,6 @@ msgstr "XSMP ICE-anslutning övervakning misslyckades"
 msgid "XSMP SmcOpenConnection failed: %s"
 msgstr "XSMP SmcOpenConnection misslyckades: %s"
 
-msgid "At line"
-msgstr "På rad"
-
 msgid "Could not load vim32.dll!"
 msgstr "Kunde inte läsa in vim32.dll!"
 
@@ -4330,6 +4371,9 @@ msgstr ""
 
 msgid "Vim Warning"
 msgstr "Vim-varning"
+
+msgid "At line"
+msgstr "På rad"
 
 #, c-format
 msgid "E372: Too many %%%c in format string"
@@ -4392,6 +4436,9 @@ msgstr "Kan inte öppna fil \"%s\""
 
 msgid "E681: Buffer is not loaded"
 msgstr "E681: Buffert är inte laddad"
+
+msgid "E777: String or List expected"
+msgstr "E777: Sträng eller Lista förväntades"
 
 #, c-format
 msgid "E369: invalid item in %s%%[]"
@@ -4576,6 +4623,10 @@ msgstr " INTE HITTADE"
 msgid "Scanning included file: %s"
 msgstr "Söker igenom inkluderad fil: %s"
 
+#, c-format
+msgid "Searching included file %s"
+msgstr "Söker igenom inkluderad fil %s"
+
 msgid "E387: Match is on current line"
 msgstr "E387: Matchning är på aktuell rad"
 
@@ -4666,12 +4717,8 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG efter användning av flags i %s rad %d: %s"
 
 #, c-format
-msgid "Character used for SLASH must be ASCII; in %s line %d: %s"
-msgstr "Tecken använt för SLASH måste vara ASCII; i %s rad %d: %s"
-
-#, c-format
-msgid "Wrong COMPOUNDMAX value in %s line %d: %s"
-msgstr "Fel COMPOUNDMAX-värde i %s rad %d: %s"
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "Fel COMPOUNDWORDMAX-värde i %s rad %d: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
@@ -4680,6 +4727,10 @@ msgstr "Fel COMPOUNDMIN-värde i %s rad %d: %s"
 #, c-format
 msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
 msgstr "Fel COMPOUNDSYLMAX-värde i %s rad %d: %s"
+
+#, c-format
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "Fel CHECKCOMPOUNDPATTERN-värde i %s rad %d: %s"
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
@@ -4691,9 +4742,11 @@ msgstr "Duplicerad affix i %s rad %d: %s"
 
 #, c-format
 msgid ""
-"Affix also used for BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND in %s line %d: %s"
+"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
+"line %d: %s"
 msgstr ""
-"Affix också använd för BAD/RAR/KEP/NEEDAFFIX/NEEDCOMPOUND i %s rad %d: %s"
+"Affix också använd för BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST i "
+"%s rad %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -4704,8 +4757,12 @@ msgid "Broken condition in %s line %d: %s"
 msgstr "Trasigt villkor i %s rad %d: %s"
 
 #, c-format
-msgid "Expected REP count in %s line %d"
-msgstr "Förväntade REP-antal i %s rad %d"
+msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
+msgstr "Affix-flaggor ignorerade när PFXPOSTPONE används i %s rad %d: %s"
+
+#, c-format
+msgid "Expected REP(SAL) count in %s line %d"
+msgstr "Förväntade REP(SAL)-antal i %s rad %d"
 
 #, c-format
 msgid "Expected MAP count in %s line %d"
@@ -4820,8 +4877,34 @@ msgid "Ignored %d words with non-ASCII characters"
 msgstr "Ignorerade %d ord med icke-ASCII tecken"
 
 #, c-format
-msgid "Compressed %d of %d nodes; %d%% remaining"
-msgstr "Komprimerade %d av %d noder; %d%% återstår"
+msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
+msgstr "Komprimerade %d av %d noder; %d (%d%%) återstår"
+
+msgid "Reading back spell file..."
+msgstr "Läser tillbaka stavningsfil..."
+
+#.
+#. * Go through the trie of good words, soundfold each word and add it to
+#. * the soundfold trie.
+#.
+msgid "Performing soundfolding..."
+msgstr "Utför ljudvikning..."
+
+#, c-format
+msgid "Number of words after soundfolding: %ld"
+msgstr "Antal ord efter ljudvikning: %ld"
+
+#, c-format
+msgid "Total number of words: %d"
+msgstr "Totalt antal ord: %d"
+
+#, c-format
+msgid "Writing suggestion file %s ..."
+msgstr "Skriver förslagsfil %s ..."
+
+#, c-format
+msgid "Estimated runtime memory use: %d bytes"
+msgstr "Beräknat körtidsminne använt: %d byte"
 
 msgid "E751: Output file name must not have region name"
 msgstr "E751: Utmatningsfilnamn får inte ha regionnamn"
@@ -4844,12 +4927,16 @@ msgid "Done!"
 msgstr "Klar!"
 
 #, c-format
-msgid "Estimated runtime memory use: %d bytes"
-msgstr "Beräknat körtidsminne använt: %d byte"
-
-#, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
 msgstr "E765: 'spellfile' har inte %ld poster"
+
+#, c-format
+msgid "Word removed from %s"
+msgstr "Ord borttaget från %s"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "Ord lagd till %s"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Ordtecken skiljer sig mellan stavningsfiler"
@@ -4877,10 +4964,30 @@ msgstr "E752: Ingen tidigare stavningsersättning"
 msgid "E753: Not found: %s"
 msgstr "E753: Hittades inte: %s"
 
+#, c-format
+msgid "E778: This does not look like a .sug file: %s"
+msgstr "E778: Det här ser inte ut som en .sug-fil: %s"
+
+#, c-format
+msgid "E779: Old .sug file, needs to be updated: %s"
+msgstr "E779: Gammal .sug-fil, behöver bli uppdaterad: %s"
+
+#, c-format
+msgid "E780: .sug file is for newer version of Vim: %s"
+msgstr "E780: .sug-fil är för nyare version av Vim: %s"
+
+#, c-format
+msgid "E781: .sug file doesn't match .spl file: %s"
+msgstr "E781: .sug-fil matchar inte .spl-fil: %s"
+
+#, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: fel vid läsning av .sug-fil: %s"
+
 #. This should have been checked when generating the .spl
 #. * file.
-msgid "E999: duplicate char in MAP entry"
-msgstr "E999: dubblerat tecken i MAP-post"
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: dubblerat tecken i MAP-post"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5195,15 +5302,52 @@ msgstr "Vim: Fel vid läsning av inmatning, avslutar...\n"
 msgid "No undo possible; continue anyway"
 msgstr "Ingen ångring möjlig; fortsätter ändå"
 
+msgid "Already at oldest change"
+msgstr "Redan vid äldsta ändring"
+
+msgid "Already at newest change"
+msgstr "Redan vid nyaste ändring"
+
+#, c-format
+msgid "Undo number %ld not found"
+msgstr "Ångra-nummer %ld hittades inte"
+
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: radnummer fel"
 
-msgid "1 change"
-msgstr "1 ändring"
+msgid "more line"
+msgstr "en rad till"
+
+msgid "more lines"
+msgstr "fler rader"
+
+msgid "line less"
+msgstr "en rad mindre"
+
+msgid "fewer lines"
+msgstr "färre rader"
+
+msgid "change"
+msgstr "ändring"
+
+msgid "changes"
+msgstr "ändringar"
 
 #, c-format
-msgid "%ld changes"
-msgstr "%ld ändringar"
+msgid "%ld %s; %s #%ld  %s"
+msgstr "%ld %s; %s #%ld  %s"
+
+msgid "before"
+msgstr "före"
+
+msgid "after"
+msgstr "efter"
+
+msgid "Nothing to undo"
+msgstr "Inget att ångra"
+
+msgid "number changes  time"
+msgstr "antal ändringar  tid"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: ångra-lista trasig"
@@ -5381,9 +5525,6 @@ msgstr "med Cocoa-GUI."
 
 msgid "with (classic) GUI."
 msgstr "med (klassiskt) GUI."
-
-msgid "with KDE GUI."
-msgstr "med KDE-GUI."
 
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Funktioner inkluderade (+) eller inte (-):\n"
@@ -5802,6 +5943,9 @@ msgstr "E459: Kan inte gå tillbaka till tidigare katalog"
 
 msgid "E42: No Errors"
 msgstr "E42: Inga fel"
+
+msgid "E776: No location list"
+msgstr "E776: Ingen positionslista"
 
 msgid "E43: Damaged match string"
 msgstr "E43: Skadad träffsträng"

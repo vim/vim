@@ -2,7 +2,7 @@
 "
 " Menu Translations:	Japanese (CP932)
 " Translated By:	MURAOKA Taro  <koron@tka.att.ne.jp>
-" Last Change:		28-Mar-2006.
+" Last Change:		18-Apr-2006.
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -60,6 +60,7 @@ menutrans Find\ and\ Rep&lace<Tab>:%s	置換(&L)<Tab>:%s
 menutrans Find\ and\ Rep&lace<Tab>:s	置換(&L)<Tab>:s
 "menutrans Options\.\.\.			オプション(&O)\.\.\.
 menutrans Settings\ &Window		設定ウィンドウ(&W)
+menutrans Startup\ &Settings		起動時の設定(&S)
 
 " Edit/Global Settings
 menutrans &Global\ Settings		全体設定(&G)

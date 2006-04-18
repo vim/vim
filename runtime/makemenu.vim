@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 16
+" Last Change:	2006 Apr 18
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -119,6 +119,7 @@ SynMenu C.CHILL:chill
 SynMenu C.Clean:clean
 SynMenu C.Clever:cl
 SynMenu C.Clipper:clipper
+SynMenu C.Cmake:cmake
 SynMenu C.Cold\ Fusion:cf
 SynMenu C.Config.Cfg\ Config\ file:cfg
 SynMenu C.Config.Generic\ Config\ file:conf
@@ -363,8 +364,9 @@ SynMenu PQ.Python:python
 SynMenu PQ.Quake:quake
 SynMenu PQ.Quickfix\ window:qf
 
-SynMenu R-Sg.R:r
-SynMenu R-Sg.R\ help:rhelp
+SynMenu R-Sg.R.R:r
+SynMenu R-Sg.R.R\ help:rhelp
+SynMenu R-Sg.R.R\ noweb:rnoweb
 SynMenu R-Sg.Racc\ input:racc
 SynMenu R-Sg.Radiance:radiance
 SynMenu R-Sg.Ratpoison:ratpoison
@@ -490,6 +492,7 @@ SynMenu TUV.UIT/UIL:uil
 SynMenu TUV.UnrealScript:uc
 SynMenu TUV.Updatedb\.conf:updatedb
 SynMenu TUV.Valgrind:valgrind
+SynMenu TUV.Vera:vera
 SynMenu TUV.Verilog-AMS\ HDL:verilogams
 SynMenu TUV.Verilog\ HDL:verilog
 SynMenu TUV.Vgrindefs:vgrindefs

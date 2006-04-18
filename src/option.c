@@ -3496,7 +3496,7 @@ set_init_2()
      * 'scroll' defaults to half the window height. Note that this default is
      * wrong when the window height changes.
      */
-    set_number_default("scroll", (long_u)Rows >> 1);
+    set_number_default("scroll", (long)((long_u)Rows >> 1));
     idx = findoption((char_u *)"scroll");
     if (!(options[idx].flags & P_WAS_SET))
 	set_option_default(idx, OPT_LOCAL, p_cp);
@@ -3643,12 +3643,14 @@ set_init_3()
 	    if (       fnamecmp(p, "sh") == 0
 		    || fnamecmp(p, "ksh") == 0
 		    || fnamecmp(p, "zsh") == 0
+		    || fnamecmp(p, "zsh-beta") == 0
 		    || fnamecmp(p, "bash") == 0
 #  ifdef WIN3264
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
 		    || fnamecmp(p, "ksh.exe") == 0
 		    || fnamecmp(p, "zsh.exe") == 0
+		    || fnamecmp(p, "zsh-beta.exe") == 0
 		    || fnamecmp(p, "bash.exe") == 0
 		    || fnamecmp(p, "cmd.exe") == 0
 #  endif

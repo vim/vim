@@ -6171,8 +6171,8 @@ static char *(highlight_init_light[]) =
 	     "SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue"),
 #endif
 #ifdef FEAT_VISUAL
-	CENT("Visual term=reverse ctermbg=Magenta",
-	     "Visual term=reverse ctermbg=Magenta guibg=LightGrey"),
+	CENT("Visual term=reverse",
+	     "Visual term=reverse guibg=LightGrey"),
 #endif
 #ifdef FEAT_DIFF
 	CENT("DiffAdd term=bold ctermbg=LightBlue",
@@ -6251,8 +6251,8 @@ static char *(highlight_init_dark[]) =
 	     "SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan"),
 #endif
 #ifdef FEAT_VISUAL
-	CENT("Visual term=reverse ctermbg=Magenta",
-	     "Visual term=reverse ctermbg=Magenta guibg=DarkGrey"),
+	CENT("Visual term=reverse",
+	     "Visual term=reverse guibg=DarkGrey"),
 #endif
 #ifdef FEAT_DIFF
 	CENT("DiffAdd term=bold ctermbg=DarkBlue",
@@ -6325,11 +6325,13 @@ init_highlight(both, reset)
     for (i = 0; pp[i] != NULL; ++i)
 	do_highlight((char_u *)pp[i], reset, TRUE);
 
-    /* Magenta background looks ugly, but grey may not work for 8 colors.
-     * Thus let it depend on the number of colors available. */
+    /* Reverse looks ugly, but grey may not work for 8 colors.  Thus let it
+     * depend on the number of colors available. */
     if (t_colors > 8)
 	do_highlight((char_u *)(*p_bg == 'l' ? "Visual ctermbg=LightGrey"
 				   : "Visual ctermbg=DarkGrey"), reset, TRUE);
+    else
+	do_highlight((char_u *)"Visual cterm=reverse", reset, TRUE);
 
 #ifdef FEAT_SYN_HL
     /*

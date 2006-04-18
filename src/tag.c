@@ -3844,14 +3844,17 @@ get_tags(list, pat)
 			if (*p == ':' && len > 0)
 			{
 			    s = ++p;
-			    while (*p != NUL && *p >= ' ' && *p < 127)
+			    while (*p != NUL && *p >= ' ')
 				++p;
 			    n[len] = NUL;
 			    if (add_tag_field(dict, (char *)n, s, p) == FAIL)
 				ret = FAIL;
 			    n[len] = ':';
 			}
-			--p;
+			else
+			    /* Skip field without colon. */
+			    while (*p != NUL && *p >= ' ')
+				++p;
 		    }
 		}
 	    }

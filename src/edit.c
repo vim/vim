@@ -709,15 +709,20 @@ edit(cmdchar, startln, count)
 	{
 	    /* BS: Delete one character from "compl_leader". */
 	    if ((c == K_BS || c == Ctrl_H)
-			&& curwin->w_cursor.col > compl_col && ins_compl_bs())
+			&& curwin->w_cursor.col > compl_col
+			&& (c = ins_compl_bs()) == NUL)
 		continue;
 
 	    /* When no match was selected or it was edited. */
 	    if (!compl_used_match)
 	    {
 		/* CTRL-L: Add one character from the current match to
-		 * "compl_leader". */
-		if (c == Ctrl_L)
+		 * "compl_leader".  Except when at the original match and
+		 * there is nothing to add, CTRL-L works like CTRL-P then. */
+		if (c == Ctrl_L
+			&& (ctrl_x_mode != CTRL_X_WHOLE_LINE
+			    || STRLEN(compl_shown_match->cp_str)
+					  > curwin->w_cursor.col - compl_col))
 		{
 		    ins_compl_addfrommatch();
 		    continue;
@@ -2943,13 +2948,22 @@ ins_compl_active()
 /*
  * Delete one character before the cursor and show the subset of the matches
  * that match the word that is now before the cursor.
- * Returns TRUE if the work is done and another char to be got from the user.
+ * Returns the character to be used, NUL if the work is done and another char
+ * to be got from the user.
  */
     static int
 ins_compl_bs()
 {
     char_u	*line;
     char_u	*p;
+
+    line = ml_get_curline();
+    p = line + curwin->w_cursor.col;
+    mb_ptr_back(line, p);
+
+    /* Stop completion when the whole word was deleted. */
+    if ((int)(p - line) - (int)compl_col <= 0)
+	return K_BS;
 
     if (curwin->w_cursor.col <= compl_col + compl_length)
     {
@@ -2961,10 +2975,6 @@ ins_compl_bs()
 	compl_cont_status = 0;
 	compl_cont_mode = 0;
     }
-
-    line = ml_get_curline();
-    p = line + curwin->w_cursor.col;
-    mb_ptr_back(line, p);
 
     vim_free(compl_leader);
     compl_leader = vim_strnsave(line + compl_col, (int)(p - line) - compl_col);
@@ -3006,9 +3016,9 @@ ins_compl_bs()
 	compl_used_match = FALSE;
 	compl_enter_selects = FALSE;
 
-	return TRUE;
+	return NUL;
     }
-    return FALSE;
+    return K_BS;
 }
 
 /*
@@ -3255,26 +3265,34 @@ ins_compl_prep(c)
 	    /* Get here when we have finished typing a sequence of ^N and
 	     * ^P or other completion characters in CTRL-X mode.  Free up
 	     * memory that was used, and make sure we can redo the insert. */
-	    if (compl_curr_match != NULL)
+	    if (compl_curr_match != NULL || compl_leader != NULL || c == Ctrl_E)
 	    {
 		char_u	*p;
 
 		/*
-		 * If any of the original typed text has been changed,
-		 * eg when ignorecase is set, we must add back-spaces to
-		 * the redo buffer.  We add as few as necessary to delete
-		 * just the part of the original text that has changed.
+		 * If any of the original typed text has been changed, eg when
+		 * ignorecase is set, we must add back-spaces to the redo
+		 * buffer.  We add as few as necessary to delete just the part
+		 * of the original text that has changed.
+		 * When using the longest match, edited the match or used
+		 * CTRL-E then don't use the current match.
 		 */
-		ptr = compl_curr_match->cp_str;
+		if (compl_curr_match != NULL && compl_used_match && c != Ctrl_E)
+		    ptr = compl_curr_match->cp_str;
+		else if (compl_leader != NULL)
+		    ptr = compl_leader;
+		else
+		    ptr = compl_orig_text;
 		p = compl_orig_text;
-		while (*p && *p == *ptr)
-		{
-		    ++p;
-		    ++ptr;
-		}
-		for (temp = 0; p[temp]; ++temp)
+		for (temp = 0; p[temp] != NUL && p[temp] == ptr[temp]; ++temp)
+		    ;
+#ifdef FEAT_MBYTE
+		if (temp > 0)
+		    temp -= (*mb_head_off)(compl_orig_text, p + temp);
+#endif
+		for (p += temp; *p != NUL; mb_ptr_adv(p))
 		    AppendCharToRedobuff(K_BS);
-		AppendToRedobuffLit(ptr, -1);
+		AppendToRedobuffLit(ptr + temp, -1);
 	    }
 
 #ifdef FEAT_CINDENT
@@ -3981,6 +3999,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     int	    todo = count;
     compl_T *found_compl = NULL;
     int	    found_end = FALSE;
+    int	    advance;
 
     if (compl_leader != NULL
 			&& (compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0)
@@ -3998,6 +4017,10 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 				  && (!compl_get_longest || compl_used_match))
 	/* Delete old text to be replaced */
 	ins_compl_delete();
+
+    /* When finding the longest common text we stick at the original text,
+     * don't let CTRL-N or CTRL-P move to the first match. */
+    advance = count != 1 || !allow_get_expansion || !compl_get_longest;
 
     /* Repeat this for when <PageUp> or <PageDown> is typed.  But don't wrap
      * around. */
@@ -4023,15 +4046,19 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	}
 	else
 	{
-	    if (compl_shows_dir == BACKWARD)
-		--compl_pending;
-	    else
-		++compl_pending;
+	    if (advance)
+	    {
+		if (compl_shows_dir == BACKWARD)
+		    --compl_pending;
+		else
+		    ++compl_pending;
+	    }
 	    if (!allow_get_expansion)
 		return -1;
 
 	    num_matches = ins_compl_get_exp(&compl_startpos);
-	    if (compl_pending != 0 && compl_direction == compl_shows_dir)
+	    if (compl_pending != 0 && compl_direction == compl_shows_dir
+								   && advance)
 		compl_shown_match = compl_curr_match;
 	    found_end = FALSE;
 	}

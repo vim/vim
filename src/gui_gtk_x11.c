@@ -3293,6 +3293,7 @@ gui_mch_update_tabline(void)
     tabpage_T	    *tp;
     int		    nr = 0;
     int		    curtabidx = 0;
+    char_u	    *labeltext;
 
     if (gui.tabline == NULL)
 	return;
@@ -3320,8 +3321,10 @@ gui_mch_update_tabline(void)
 	}
 
 	get_tabline_label(tp);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
 	gtk_notebook_set_tab_label_text(GTK_NOTEBOOK(gui.tabline), page,
-						     (const gchar *)NameBuff);
+						     (const gchar *)labeltext);
+	CONVERT_TO_UTF8_FREE(labeltext);
     }
 
     /* Remove any old labels. */

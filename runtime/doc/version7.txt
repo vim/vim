@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 17
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -349,6 +349,10 @@ Highlighting matching parens
 When moving the cursor through the text and it is on a paren, then the
 matching paren can be highlighted.  This uses the new |CursorMoved|
 autocommand event.
+
+This means some commands are executed every time you move the cursor.  If this
+slows you down too much switch it off with: >
+	:NoMatchParen
 
 See |matchparen| for more information.
 
@@ -890,6 +894,7 @@ BibTeX indent file. (Dorai Sitaram)
 BTM ftplugin file. (Bram Moolenaar)
 calendar ftplugin file. (Nikolai Weibull)
 Changelog indent file. (Nikolai Weibull)
+Cmake indent and syntax file. (Andy Cedilnik)
 conf ftplugin file. (Nikolai Weibull)
 context syntax and ftplugin file. (Nikolai Weibull)
 CRM114 ftplugin file. (Nikolai Weibull)
@@ -949,6 +954,7 @@ racc syntax and ftplugin file. (Nikolai Weibull)
 rd syntax file. (Johannes Ranke)
 readline ftplugin file. (Nikolai Weibull)
 rhelp syntax file. (Johannes Ranke)
+rnoweb syntax file. (Johannes Ranke)
 Relax NG compact ftplugin file. (Nikolai Weibull)
 Scheme indent file. (Sergey Khorev)
 screen ftplugin file. (Nikolai Weibull)
@@ -970,6 +976,7 @@ sudoers ftplugin file. (Nikolai Weibull)
 sysctl syntax and ftplugin file. (Nikolai Weibull)
 terminfo ftplugin file. (Nikolai Weibull)
 trustees syntax file. (Nima Talebi)
+Vera syntax file. (David Eggum)
 udev config, permissions and rules syntax and ftplugin files. (Nikolai Weibull)
 updatedb syntax and ftplugin file. (Nikolai Weibull)
 VHDL indent file (Gerald Lai)
@@ -2519,5 +2526,34 @@ if 'encoding' is a multi-byte encoding.
 
 Spell checking: spellbadword() didn't see a missing capital in the first word
 of a line.  Popup menu now only suggest the capitalized word when appropriate.
+
+When using whole line completion CTRL-L moves throught the matches but it
+didn't work when at the original text.
+
+When completion finds the longest match, don't go to the first match but stick
+at the original text, so that CTRL-N selects the first one.
+
+Recognize "zsh-beta" like "zsh" for setting the 'shellpipe' default. (James
+Vega)
+
+When using ":map <expr>" and the expression results in something with a
+special byte (NUL or CSI) then it didn't work properly.  Now escape special
+bytes.
+
+The default Visual highlighting for a color xterm with 8 colors was a magenta
+background, which made magenta text disappear.  Now use reverse in this
+specific situation.
+
+After completing the longest match "." didn't insert the same text.  Repeating
+also didn't work correctly for multi-byte text.
+
+When using Insert mode completion and BS the whole word that was completed
+would result in all possible matches.  Now stop completion.  Also fixes that
+for spell completion the previous word was deleted.
+
+GTK: When 'encoding' is "latin1" and using non-ASCII characters in a file name
+the tab page label was wrong and an error message would be given.
+
+The taglist() function could hang on a tags line with a non-ASCII character.
 
  vim:tw=78:ts=8:ft=help:norl:

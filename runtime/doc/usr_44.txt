@@ -1,4 +1,4 @@
-*usr_44.txt*	For Vim version 7.0e.  Last change: 2006 Mar 27
+*usr_44.txt*	For Vim version 7.0e.  Last change: 2006 Apr 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -667,8 +667,13 @@ the syntax file "name.vim", 'filetype', b:current_syntax the start of each
 syntax group (nameType, nameStatement, nameString, etc).
 
 Start with a check for "b:current_syntax".  If it is defined, some other
-syntax file, earlier in 'runtimepath' was already loaded.  To be compatible
-with Vim 5.8 use: >
+syntax file, earlier in 'runtimepath' was already loaded: >
+
+	if exists("b:current_syntax")
+	  finish
+	endif
+
+To be compatible with Vim 5.8 use: >
 
 	if version < 600
 	  syntax clear

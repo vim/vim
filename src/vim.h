@@ -346,8 +346,10 @@ typedef unsigned int	int_u;
  * bit and pointers 64 bit. */
 #ifdef _WIN64
 typedef unsigned __int64 long_u;
+typedef		 __int64 long_i;
 #else
 typedef unsigned long	long_u;
+typedef	         long	long_i;
 #endif
 
 /*

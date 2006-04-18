@@ -4984,6 +4984,7 @@ drag-n-drop	gui.txt	/*drag-n-drop*
 drag-n-drop-win32	gui_w32.txt	/*drag-n-drop-win32*
 drag-status-line	term.txt	/*drag-status-line*
 dtd.vim	syntax.txt	/*dtd.vim*
+dtd2vim	insert.txt	/*dtd2vim*
 dying-variable	eval.txt	/*dying-variable*
 e	motion.txt	/*e*
 easy	starting.txt	/*easy*
@@ -5716,6 +5717,7 @@ howto	howto.txt	/*howto*
 howto.txt	howto.txt	/*howto.txt*
 hpterm	term.txt	/*hpterm*
 hpterm-color	syntax.txt	/*hpterm-color*
+html-flavor	insert.txt	/*html-flavor*
 html.vim	syntax.txt	/*html.vim*
 htmlos.vim	syntax.txt	/*htmlos.vim*
 http	pi_netrw.txt	/*http*

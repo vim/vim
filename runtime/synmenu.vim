@@ -100,19 +100,20 @@ an 50.20.230 &Syntax.C.CHILL :cal SetSyn("chill")<CR>
 an 50.20.240 &Syntax.C.Clean :cal SetSyn("clean")<CR>
 an 50.20.250 &Syntax.C.Clever :cal SetSyn("cl")<CR>
 an 50.20.260 &Syntax.C.Clipper :cal SetSyn("clipper")<CR>
-an 50.20.270 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
-an 50.20.280 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
-an 50.20.290 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
-an 50.20.300 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
-an 50.20.310 &Syntax.C.ConTeXt :cal SetSyn("context")<CR>
-an 50.20.320 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
-an 50.20.330 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
-an 50.20.340 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
-an 50.20.350 &Syntax.C.CSP :cal SetSyn("csp")<CR>
-an 50.20.360 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
-an 50.20.370 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
-an 50.20.380 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
-an 50.20.390 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
+an 50.20.270 &Syntax.C.Cmake :cal SetSyn("cmake")<CR>
+an 50.20.280 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
+an 50.20.290 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
+an 50.20.300 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
+an 50.20.310 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
+an 50.20.320 &Syntax.C.ConTeXt :cal SetSyn("context")<CR>
+an 50.20.330 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
+an 50.20.340 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
+an 50.20.350 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
+an 50.20.360 &Syntax.C.CSP :cal SetSyn("csp")<CR>
+an 50.20.370 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
+an 50.20.380 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
+an 50.20.390 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
+an 50.20.400 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
 an 50.30.100 &Syntax.DE.D :cal SetSyn("d")<CR>
 an 50.30.110 &Syntax.DE.Debian.Debian\ ChangeLog :cal SetSyn("debchangelog")<CR>
 an 50.30.120 &Syntax.DE.Debian.Debian\ Control :cal SetSyn("debcontrol")<CR>
@@ -335,49 +336,50 @@ an 50.80.430 &Syntax.PQ.Pyrex :cal SetSyn("pyrex")<CR>
 an 50.80.440 &Syntax.PQ.Python :cal SetSyn("python")<CR>
 an 50.80.460 &Syntax.PQ.Quake :cal SetSyn("quake")<CR>
 an 50.80.470 &Syntax.PQ.Quickfix\ window :cal SetSyn("qf")<CR>
-an 50.90.100 &Syntax.R-Sg.R :cal SetSyn("r")<CR>
-an 50.90.110 &Syntax.R-Sg.R\ help :cal SetSyn("rhelp")<CR>
-an 50.90.120 &Syntax.R-Sg.Racc\ input :cal SetSyn("racc")<CR>
-an 50.90.130 &Syntax.R-Sg.Radiance :cal SetSyn("radiance")<CR>
-an 50.90.140 &Syntax.R-Sg.Ratpoison :cal SetSyn("ratpoison")<CR>
-an 50.90.150 &Syntax.R-Sg.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
-an 50.90.160 &Syntax.R-Sg.RCS.RCS\ file :cal SetSyn("rcs")<CR>
-an 50.90.170 &Syntax.R-Sg.Readline\ config :cal SetSyn("readline")<CR>
-an 50.90.180 &Syntax.R-Sg.Rebol :cal SetSyn("rebol")<CR>
-an 50.90.190 &Syntax.R-Sg.Remind :cal SetSyn("remind")<CR>
-an 50.90.200 &Syntax.R-Sg.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
-an 50.90.210 &Syntax.R-Sg.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
-an 50.90.220 &Syntax.R-Sg.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
-an 50.90.230 &Syntax.R-Sg.Resolv\.conf :cal SetSyn("resolv")<CR>
-an 50.90.240 &Syntax.R-Sg.Rexx :cal SetSyn("rexx")<CR>
-an 50.90.250 &Syntax.R-Sg.Robots\.txt :cal SetSyn("robots")<CR>
-an 50.90.260 &Syntax.R-Sg.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
-an 50.90.270 &Syntax.R-Sg.Rpcgen :cal SetSyn("rpcgen")<CR>
-an 50.90.280 &Syntax.R-Sg.RPL/2 :cal SetSyn("rpl")<CR>
-an 50.90.290 &Syntax.R-Sg.ReStructuredText :cal SetSyn("rst")<CR>
-an 50.90.300 &Syntax.R-Sg.RTF :cal SetSyn("rtf")<CR>
-an 50.90.310 &Syntax.R-Sg.Ruby :cal SetSyn("ruby")<CR>
-an 50.90.330 &Syntax.R-Sg.S-Lang :cal SetSyn("slang")<CR>
-an 50.90.340 &Syntax.R-Sg.Samba\ config :cal SetSyn("samba")<CR>
-an 50.90.350 &Syntax.R-Sg.SAS :cal SetSyn("sas")<CR>
-an 50.90.360 &Syntax.R-Sg.Sather :cal SetSyn("sather")<CR>
-an 50.90.370 &Syntax.R-Sg.Scheme :cal SetSyn("scheme")<CR>
-an 50.90.380 &Syntax.R-Sg.Scilab :cal SetSyn("scilab")<CR>
-an 50.90.390 &Syntax.R-Sg.Screen\ RC :cal SetSyn("screen")<CR>
-an 50.90.400 &Syntax.R-Sg.SDL :cal SetSyn("sdl")<CR>
-an 50.90.410 &Syntax.R-Sg.Sed :cal SetSyn("sed")<CR>
-an 50.90.420 &Syntax.R-Sg.Sendmail\.cf :cal SetSyn("sm")<CR>
-an 50.90.430 &Syntax.R-Sg.Send-pr :cal SetSyn("sendpr")<CR>
-an 50.90.440 &Syntax.R-Sg.Sensors\.conf :cal SetSyn("sensors")<CR>
-an 50.90.450 &Syntax.R-Sg.Service\ Location\ config :cal SetSyn("slpconf")<CR>
-an 50.90.460 &Syntax.R-Sg.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
-an 50.90.470 &Syntax.R-Sg.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
-an 50.90.480 &Syntax.R-Sg.Services :cal SetSyn("services")<CR>
-an 50.90.490 &Syntax.R-Sg.Setserial\ config :cal SetSyn("setserial")<CR>
-an 50.90.500 &Syntax.R-Sg.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
-an 50.90.510 &Syntax.R-Sg.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
-an 50.90.520 &Syntax.R-Sg.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
-an 50.90.530 &Syntax.R-Sg.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
+an 50.90.100 &Syntax.R-Sg.R.R :cal SetSyn("r")<CR>
+an 50.90.110 &Syntax.R-Sg.R.R\ help :cal SetSyn("rhelp")<CR>
+an 50.90.120 &Syntax.R-Sg.R.R\ noweb :cal SetSyn("rnoweb")<CR>
+an 50.90.130 &Syntax.R-Sg.Racc\ input :cal SetSyn("racc")<CR>
+an 50.90.140 &Syntax.R-Sg.Radiance :cal SetSyn("radiance")<CR>
+an 50.90.150 &Syntax.R-Sg.Ratpoison :cal SetSyn("ratpoison")<CR>
+an 50.90.160 &Syntax.R-Sg.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
+an 50.90.170 &Syntax.R-Sg.RCS.RCS\ file :cal SetSyn("rcs")<CR>
+an 50.90.180 &Syntax.R-Sg.Readline\ config :cal SetSyn("readline")<CR>
+an 50.90.190 &Syntax.R-Sg.Rebol :cal SetSyn("rebol")<CR>
+an 50.90.200 &Syntax.R-Sg.Remind :cal SetSyn("remind")<CR>
+an 50.90.210 &Syntax.R-Sg.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
+an 50.90.220 &Syntax.R-Sg.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
+an 50.90.230 &Syntax.R-Sg.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
+an 50.90.240 &Syntax.R-Sg.Resolv\.conf :cal SetSyn("resolv")<CR>
+an 50.90.250 &Syntax.R-Sg.Rexx :cal SetSyn("rexx")<CR>
+an 50.90.260 &Syntax.R-Sg.Robots\.txt :cal SetSyn("robots")<CR>
+an 50.90.270 &Syntax.R-Sg.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
+an 50.90.280 &Syntax.R-Sg.Rpcgen :cal SetSyn("rpcgen")<CR>
+an 50.90.290 &Syntax.R-Sg.RPL/2 :cal SetSyn("rpl")<CR>
+an 50.90.300 &Syntax.R-Sg.ReStructuredText :cal SetSyn("rst")<CR>
+an 50.90.310 &Syntax.R-Sg.RTF :cal SetSyn("rtf")<CR>
+an 50.90.320 &Syntax.R-Sg.Ruby :cal SetSyn("ruby")<CR>
+an 50.90.340 &Syntax.R-Sg.S-Lang :cal SetSyn("slang")<CR>
+an 50.90.350 &Syntax.R-Sg.Samba\ config :cal SetSyn("samba")<CR>
+an 50.90.360 &Syntax.R-Sg.SAS :cal SetSyn("sas")<CR>
+an 50.90.370 &Syntax.R-Sg.Sather :cal SetSyn("sather")<CR>
+an 50.90.380 &Syntax.R-Sg.Scheme :cal SetSyn("scheme")<CR>
+an 50.90.390 &Syntax.R-Sg.Scilab :cal SetSyn("scilab")<CR>
+an 50.90.400 &Syntax.R-Sg.Screen\ RC :cal SetSyn("screen")<CR>
+an 50.90.410 &Syntax.R-Sg.SDL :cal SetSyn("sdl")<CR>
+an 50.90.420 &Syntax.R-Sg.Sed :cal SetSyn("sed")<CR>
+an 50.90.430 &Syntax.R-Sg.Sendmail\.cf :cal SetSyn("sm")<CR>
+an 50.90.440 &Syntax.R-Sg.Send-pr :cal SetSyn("sendpr")<CR>
+an 50.90.450 &Syntax.R-Sg.Sensors\.conf :cal SetSyn("sensors")<CR>
+an 50.90.460 &Syntax.R-Sg.Service\ Location\ config :cal SetSyn("slpconf")<CR>
+an 50.90.470 &Syntax.R-Sg.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
+an 50.90.480 &Syntax.R-Sg.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
+an 50.90.490 &Syntax.R-Sg.Services :cal SetSyn("services")<CR>
+an 50.90.500 &Syntax.R-Sg.Setserial\ config :cal SetSyn("setserial")<CR>
+an 50.90.510 &Syntax.R-Sg.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
+an 50.90.520 &Syntax.R-Sg.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
+an 50.90.530 &Syntax.R-Sg.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
+an 50.90.540 &Syntax.R-Sg.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
 an 50.100.100 &Syntax.Sh-S.Shell\ script.sh\ and\ ksh :cal SetSyn("sh")<CR>
 an 50.100.110 &Syntax.Sh-S.Shell\ script.csh :cal SetSyn("csh")<CR>
 an 50.100.120 &Syntax.Sh-S.Shell\ script.tcsh :cal SetSyn("tcsh")<CR>

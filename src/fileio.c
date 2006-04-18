@@ -1113,7 +1113,7 @@ retry:
 		size = 0x7ff0L - linerest;	    /* limit buffer to 32K */
 #endif
 
-		for ( ; size >= 10; size = (long_u)size >> 1)
+		for ( ; size >= 10; size = (long)((long_u)size >> 1))
 		{
 		    if ((new_buffer = lalloc((long_u)(size + linerest + 1),
 							      FALSE)) != NULL)

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 12
+*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1651,10 +1651,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   	    Useful when there is additional information about the
 		    match, e.g., what file it comes from.
 
-	   longest  Only insert the longest common text of the matches.  Use
-	   	    CTRL-L to add more characters.  Whether case is ignored
-		    depends on the kind of completion.  For buffer text the
-		    'ignorecase' option is used.
+	   longest  Only insert the longest common text of the matches.  If
+		    the menu is displayed you can use CTRL-L to add more
+		    characters.  Whether case is ignored depends on the kind
+		    of completion.  For buffer text the 'ignorecase' option is
+		    used.
 
 	   preview  Show extra information about the currently selected
 	   	    completion in the preview window.

@@ -4,13 +4,13 @@
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
 # MURAOKA Taro <koron@tka.att.ne.jp>, 2001-6.
-# Last Change: 28-Mar-2006.
+# Last Change: 18-Apr-2006.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7.0\n"
-"POT-Creation-Date: 2006-03-28 20:12+0900\n"
-"PO-Revision-Date: 2006-03-28 21:10+0900\n"
+"POT-Creation-Date: 2006-04-18 11:00+0900\n"
+"PO-Revision-Date: 2006-04-18 11:30+0900\n"
 "Last-Translator: MURAOKA Taro <koron@tka.att.ne.jp>\n"
 "Language-Team: MURAOKA Taro <koron@tka.att.ne.jp>\n"
 "MIME-Version: 1.0\n"
@@ -204,6 +204,9 @@ msgstr "E102: バッファ \"%s\" がみつかりません"
 msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: バッファ \"%s\" は差分モードではありません"
 
+msgid "E787: Buffer changed unexpectedly"
+msgstr "E787: 予期せずバッファが変更変更されました"
+
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: 合字にEscapeは使用できません"
 
@@ -217,8 +220,8 @@ msgid " Keyword completion (^N^P)"
 msgstr " キーワード補完 (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
-msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " ^X モード (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " 行(全体)補完 (^L^N^P)"
@@ -250,8 +253,8 @@ msgstr " ユーザ定義補完 (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " オムニ補完 (^O^N^P)"
 
-msgid " Spelling suggestion (^S^N^P)"
-msgstr " 綴り修正候補 (^S^N^P)"
+msgid " Spelling suggestion (s^N^P)"
+msgstr " 綴り修正候補 (s^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " 局所キーワード補完 (^N^P)"
@@ -486,6 +489,22 @@ msgstr "E723: 辞書型の最後に '}' がありません: %s"
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: 表示するには変数の入れ子が深過ぎます"
 
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: 未知の関数です: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: 関数の引数が少な過ぎます: %s"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: スクリプト以外で<SID>が使われました: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: 辞書用関数が呼ばれましたが辞書がありません: %s"
+
 msgid "E699: Too many arguments"
 msgstr "E699: が多過ぎます"
 
@@ -522,8 +541,8 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "inputrestore() が inputsave() よりも多く呼ばれました"
 
-msgid "E745: Range not allowed"
-msgstr "E745: 範囲指定は許可されていません"
+msgid "E786: Range not allowed"
+msgstr "E786: 範囲指定は許可されていません"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: len() には無効な型です"
@@ -1379,6 +1398,9 @@ msgstr "E602: :try のない :endtry です"
 
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: 関数の外に :endfunction がありました"
+
+msgid "E788: Not allowed to edit another buffer now"
+msgstr "E788: 現在は他のバッファを編集することは許されません"
 
 msgid "tagname"
 msgstr "タグ名"
@@ -2484,11 +2506,32 @@ msgstr "<ウィンドウ %d>"
 msgid "no such window"
 msgstr "そのようなウィンドウはありません"
 
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ は文字列のインスタンスでなければなりません"
+
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
 "E266: このコマンドは無効です,ごめんなさい: "
 "Rubyライブラリをロードできませんでした."
+
+msgid "E267: unexpected return"
+msgstr "E265: 予期せぬ return です"
+
+msgid "E268: unexpected next"
+msgstr "E268: 予期せぬ next です"
+
+msgid "E269: unexpected break"
+msgstr "E269: 予期せぬ break です"
+
+msgid "E270: unexpected redo"
+msgstr "E270: 予期せぬ redo です"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: rescue の外の retry です"
+
+msgid "E272: unhandled exception"
+msgstr "E272: 取り扱われなかった例外があります"
 
 #, c-format
 msgid "E273: unknown longjmp status %d"
@@ -4184,9 +4227,6 @@ msgstr "ANCHOR_BUF_SIZE が小さ過ぎます."
 msgid "I/O ERROR"
 msgstr "入出力エラー"
 
-msgid "...(truncated)"
-msgstr "...(省略)"
-
 msgid "Message"
 msgstr "メッセージ"
 
@@ -4621,6 +4661,16 @@ msgstr "E388: 定義をみつけられません"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: パターンをみつけられません"
 
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# 最後の %s検索パターン:\n"
+"~"
+
 msgid "E759: Format error in spell file"
 msgstr "E759: スペルファイルの書式エラーです"
 
@@ -4646,7 +4696,7 @@ msgid "Compressing word tree..."
 msgstr "単語ツリーを圧縮しています..."
 
 msgid "E756: Spell checking is not enabled"
-msgstr "E756: すぺくチェックは無効化されています"
+msgstr "E756: スペルチェックは無効化されています"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
@@ -4698,6 +4748,22 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "%s 内の %d 行目にフラグの二重使用があります: %s"
 
 #, c-format
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"%s の %d 行目の PFX 項目の後の COMPOUNDFORBIDFLAG "
+"の定義は誤った結果を生じることがあります"
+
+#, c-format
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"%s の %d 行目の PFX 項目の後の COMPOUNDPERMITFLAG "
+"の定義は誤った結果を生じることがあります"
+
+#, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
 msgstr "%s の %d 行目の COMPOUNDWORDMAX の値に誤りがあります: %s"
 
@@ -4737,10 +4803,6 @@ msgstr "%s の %d 行目では Y か N が必要です: %s"
 #, c-format
 msgid "Broken condition in %s line %d: %s"
 msgstr "%s の %d 行目の 条件は壊れています: %s"
-
-#, c-format
-msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
-msgstr "PFXPOSTPONEが指定されたので %s の %d 行目の affix フラグを無視しました: %s"
 
 #, c-format
 msgid "Expected REP(SAL) count in %s line %d"
@@ -5299,7 +5361,7 @@ msgstr "E438: u_undo: 行番号が間違っています"
 msgid "more line"
 msgstr "行 追加しました"
 
-msgid "行あります"
+msgid "more lines"
 msgstr "行 追加しました"
 
 msgid "line less"
@@ -5329,6 +5391,10 @@ msgstr "アンドゥ対象がありません"
 
 msgid "number changes  time"
 msgstr "番号   変更     時刻"
+
+#, c-format
+msgid "%ld seconds ago"
+msgstr "%ld 秒経過しています"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: アンドゥリストが壊れています"
@@ -5636,6 +5702,9 @@ msgstr "   警告: Windows 95/98/Me を検出  "
 msgid "type  :help windows95<Enter>  for info on this"
 msgstr " 詳細な情報は          :help windows95<Enter> "
 
+msgid "Already only one window"
+msgstr "既にウィンドウは1つしかありません"
+
 msgid "E441: There is no preview window"
 msgstr "E441: プレビューウィンドウがありません"
 
@@ -5647,9 +5716,6 @@ msgstr "E443: 他のウィンドウが分割されている時には順回できません"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: 最後のウィンドウを閉じることはできません"
-
-msgid "Already only one window"
-msgstr "既にウィンドウは1つしかありません"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: 他のウィンドウには変更があります"
@@ -5680,7 +5746,8 @@ msgid "Edits the selected file(s) with Vim"
 msgstr "選択されたファイルをVimで編集する"
 
 msgid "Error creating process: Check if gvim is in your path!"
-msgstr "起動に失敗しました: gvim へのパスが正しく設定されているか確認してください!"
+msgstr ""
+"起動に失敗しました: gvim へのパスが正しく設定されているか確認してください!"
 
 msgid "gvimext.dll error"
 msgstr "gvimext.dll エラー"

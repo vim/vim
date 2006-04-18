@@ -1,6 +1,6 @@
 " Menu Translations:    Swedish
 " Maintainer:		Johan Svedberg <johan@svedberg.com>
-" Last Change:		2005 Oct 09
+" Last Change:		2006 Apr 13
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -31,6 +31,7 @@ menutrans &About		&Om
 menutrans &File				&Arkiv
 menutrans &Open\.\.\.<Tab>:e		&Öppna\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Öppna\ i\ splitt-vy\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Öppna\ flik\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Ny<Tab>:enew
 menutrans &Close<Tab>:close		S&täng<Tab>:close
 menutrans &Save<Tab>:w			&Spara<Tab>:w
@@ -66,24 +67,24 @@ menutrans &Keymap			&Tangentbordsuppsättning
 
 " Edit.Global Settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Växla\ mönsterframhävning<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	Växla\ ignorering\ av\ storlek<Tab>:set\ ic!
-menutrans Toggle\ &Showmatch<Tab>:set\ sm!	Växla\ matchningsvisning<Tab>:set\ sm!
-menutrans &Context\ lines		Sammanhangsrader
-menutrans &Virtual\ Edit		Virtuell\ redigering
-menutrans Never				Aldrig
-menutrans Block\ Selection		Blockval
-menutrans Insert\ mode			Infogningsläge
-menutrans Block\ and\ Insert		Block\ och\ infogning
-menutrans Always			Alltid
-menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Växla\ infogningsläge<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Växla\ Vi-kompabilitet<Tab>:set\ cp!
-menutrans Search\ &Path\.\.\.		Sökväg\.\.\.
-menutrans Ta&g\ Files\.\.\.		Taggfiler\.\.\.
-menutrans Toggle\ &Toolbar		Växla\ verktygsrad
-menutrans Toggle\ &Bottom\ Scrollbar	Växla\ rullningslista\ i\ botten
-menutrans Toggle\ &Left\ Scrollbar	Växla\ vänster\ rullningslista
-menutrans Toggle\ &Right\ Scrollbar	Växla\ höger\ rullningslista
-menutrans None				Ingen
+menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Växla\ ignorering\ av\ storlek<Tab>:set\ ic!
+menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Växla\ matchningsvisning<Tab>:set\ sm!
+menutrans &Context\ lines				Sammanhangsrader
+menutrans &Virtual\ Edit				Virtuell\ redigering
+menutrans Never						Aldrig
+menutrans Block\ Selection				Blockval
+menutrans Insert\ mode					Infogningsläge
+menutrans Block\ and\ Insert				Block\ och\ infogning
+menutrans Always					Alltid
+menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Växla\ infogningsläge<Tab>:set\ im!
+menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!		Växla\ Vi-kompabilitet<Tab>:set\ cp!
+menutrans Search\ &Path\.\.\.				Sökväg\.\.\.
+menutrans Ta&g\ Files\.\.\.				Taggfiler\.\.\.
+menutrans Toggle\ &Toolbar				Växla\ verktygsrad
+menutrans Toggle\ &Bottom\ Scrollbar			Växla\ rullningslista\ i\ botten
+menutrans Toggle\ &Left\ Scrollbar			Växla\ vänster\ rullningslista
+menutrans Toggle\ &Right\ Scrollbar			Växla\ höger\ rullningslista
+menutrans None						Ingen
 
 " Edit.File Settings
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Växla\ radnumrering<Tab>:set\ nu!
@@ -94,7 +95,7 @@ menutrans Toggle\ &expand-tab<Tab>:set\ et!		Växla\ tab-expandering<Tab>:set\ et
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Växla\ auto-indentering<Tab>:set\ ai!
 menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Växla\ C-indentering<Tab>:set\ cin!
 menutrans &Shiftwidth					Shiftbredd
-menutrans Soft &Tabstop					Mjuk tab-stopp
+menutrans Soft\ &Tabstop				Mjuk\ tab-stopp
 menutrans Te&xt\ Width\.\.\.				Textbredd\.\.\.
 menutrans &File\ Format\.\.\.				Filformat\.\.\.
 
@@ -116,7 +117,16 @@ menutrans &Open<Tab>:copen		&Öppna<Tab>:copen
 menutrans &Close<Tab>:cclose		&Stäng<Tab>:cclose
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Konvertera\ till\ HEX<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Konvertera\ tillbaka<Tab>:%!xxd\ -r
-menutrans &Set\ Compiler		Sätt\ kompilerare
+menutrans Se&T\ Compiler		Sätt\ &kompilerare
+
+" Tools.Spelling
+menutrans &Spelling				&Stavning
+menutrans &Spell\ Check\ On			&Stavningskontroll\ på
+menutrans &Spell\ Check\ Off			Stavningskontroll\ &av
+menutrans To\ &Next\ error<Tab>]s		Till\ &nästa\ fel
+menutrans To\ &Previous\ error<Tab>[s		Till\ &föregående\ fel
+menutrans Suggest\ &Corrections<Tab>z=		Föreslå\ &korrigeringar
+menutrans &Repeat\ correction<Tab>:spellrepall	&Upprepa\ korrigering
 
 " Tools.Folding
 menutrans &Enable/Disable\ folds<Tab>zi	Växla\ veck<Tab>zi

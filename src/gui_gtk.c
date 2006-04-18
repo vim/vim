@@ -131,44 +131,6 @@ typedef int GtkWidget;
 # define CancelData int
 #endif
 
-#ifdef HAVE_GTK2
-/*
- * Convenience macros to convert from 'encoding' to 'termencoding' and
- * vice versa.	If no conversion is necessary the passed-in pointer is
- * returned as is, without allocating any memory.  Thus additional _FREE()
- * macros are provided.  The _FREE() macros also set the pointer to NULL,
- * in order to avoid bugs due to illegal memory access only happening if
- * 'encoding' != utf-8...
- *
- * Defining these macros as pure expressions looks a bit tricky but
- * avoids depending on the context of the macro expansion.  One of the
- * rare occasions where the comma operator comes in handy :)
- *
- * Note: Do NOT keep the result around when handling control back to
- * the main Vim!  The user could change 'encoding' at any time.
- */
-# define CONVERT_TO_UTF8(String)				\
-    ((output_conv.vc_type == CONV_NONE || (String) == NULL)	\
-	    ? (String)						\
-	    : string_convert(&output_conv, (String), NULL))
-
-# define CONVERT_TO_UTF8_FREE(String)				\
-    ((String) = ((output_conv.vc_type == CONV_NONE)		\
-			? (char_u *)NULL			\
-			: (vim_free(String), (char_u *)NULL)))
-
-# define CONVERT_FROM_UTF8(String)				\
-    ((input_conv.vc_type == CONV_NONE || (String) == NULL)	\
-	    ? (String)						\
-	    : string_convert(&input_conv, (String), NULL))
-
-# define CONVERT_FROM_UTF8_FREE(String)				\
-    ((String) = ((input_conv.vc_type == CONV_NONE)		\
-			? (char_u *)NULL			\
-			: (vim_free(String), (char_u *)NULL)))
-
-#endif /* HAVE_GTK2 */
-
 static void entry_activate_cb(GtkWidget *widget, gpointer data);
 static void entry_changed_cb(GtkWidget *entry, GtkWidget *dialog);
 static void find_replace_cb(GtkWidget *widget, gpointer data);

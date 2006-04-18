@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 15
+" Last Change:	2006 Apr 18
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -426,6 +426,9 @@ au BufNewFile,BufRead *.prg
 	\ else |
 	\   setf clipper |
 	\ endif
+
+" Cmake
+au BufNewFile,BufRead CMakeLists.txt,*.cmake,*.cmake.in		setf cmake
 
 " Cobol
 au BufNewFile,BufRead *.cbl,*.cob,*.lib	setf cobol
@@ -1332,10 +1335,25 @@ au BufNewFile,BufRead *.rib			setf rib
 au BufNewFile,BufRead *.rexx,*.rex		setf rexx
 
 " R (Splus)
-au BufNewFile,BufRead *.s,*.S			setf r
+if has("fname_case")
+  au BufNewFile,BufRead *.s,*.S			setf r
+else
+  au BufNewFile,BufRead *.s			setf r
+endif
 
 " R Help file
-au BufNewFile,BufRead *.rd,*.Rd			setf rhelp
+if has("fname_case")
+  au BufNewFile,BufRead *.rd,*.Rd		setf rhelp
+else
+  au BufNewFile,BufRead *.rd			setf rhelp
+endif
+
+" R noweb file
+if has("fname_case")
+  au BufNewFile,BufRead *.Rnw,*.rnw,*.Snw,*.snw		setf rnoweb
+else
+  au BufNewFile,BufRead *.rnw,*.snw			setf rnoweb
+endif
 
 " Rexx, Rebol or R
 au BufNewFile,BufRead *.r,*.R			call s:FTr()
@@ -1821,6 +1839,9 @@ au BufNewFile,BufRead *.uc			setf uc
 
 " Updatedb
 au BufNewFile,BufRead /etc/updatedb.conf	setf updatedb
+
+" Vera
+au BufNewFile,BufRead *.vr,*.vri,*.vrh		setf vera
 
 " Verilog HDL
 au BufNewFile,BufRead *.v			setf verilog

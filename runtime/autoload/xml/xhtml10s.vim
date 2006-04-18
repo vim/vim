@@ -1460,9 +1460,21 @@ let g:xmldata_xhtml10s = {
 \ 'style' : [[],
 \ {
 \ 'lang' : [],
-\ 'media' : [],
+\ 'media' : [
+\ 'screen',
+\ 'tty',
+\ 'tv',
+\ 'projection',
+\ 'handheld',
+\ 'print',
+\ 'braille',
+\ 'aural',
+\ 'all'
+\ ],
 \ 'title' : [],
-\ 'type' : [],
+\ 'type' : [
+\ 'text/css'
+\ ],
 \ 'xml:space' : [
 \ 'preserve'
 \ ],
@@ -3342,7 +3354,17 @@ let g:xmldata_xhtml10s = {
 \ ],
 \ 'onkeydown' : [],
 \ 'onkeyup' : [],
-\ 'media' : [],
+\ 'media' : [
+\ 'screen',
+\ 'tty',
+\ 'tv',
+\ 'projection',
+\ 'handheld',
+\ 'print',
+\ 'braille',
+\ 'aural',
+\ 'all'
+\ ],
 \ 'href' : [],
 \ 'onmouseup' : [],
 \ 'id' : [],
@@ -3369,7 +3391,9 @@ let g:xmldata_xhtml10s = {
 \ 'BOOL'
 \ ],
 \ 'src' : [],
-\ 'type' : [],
+\ 'type' : [
+\ 'text/javascript'
+\ ],
 \ 'charset' : [],
 \ 'xml:space' : [
 \  'preserve'

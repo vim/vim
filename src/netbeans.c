@@ -169,7 +169,7 @@ netbeans_gtk_connect(void)
 	 * Tell gdk we are interested in being called when there
 	 * is input on the editor connection socket
 	 */
-	inputHandler = gdk_input_add(sd, (GdkInputCondition)
+	inputHandler = gdk_input_add((gint)sd, (GdkInputCondition)
 		((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
 						   messageFromNetbeans, NULL);
     }

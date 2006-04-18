@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 12, 2006
-" Version:	7.0-42
+" Last Change:	Apr 18, 2006
+" Version:	7.0-44
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -129,7 +129,7 @@ syn cluster vimOperGroup	contains=vimOper,vimOperParen,vimNumber,vimString,vimRe
 syn match  vimOper	"\(==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\|=\)[?#]\{0,2}"	skipwhite nextgroup=vimString,vimSpecFile
 syn match  vimOper	"||\|&&\|[-+.]"	skipwhite nextgroup=vimString,vimSpecFile
 syn region vimOperParen 	oneline matchgroup=vimOper start="(" end=")" contains=@vimOperGroup
-syn region vimOperParen	matchgroup=vimSep  start="{" end="}" contains=@vimOperGroup nextgroup=vimVar
+syn region vimOperParen	oneline matchgroup=vimSep  start="{" end="}" contains=@vimOperGroup nextgroup=vimVar
 if !exists("g:vimsyntax_noerror")
  syn match  vimOperError	")"
 endif
@@ -252,7 +252,7 @@ syn match  vimFilter contained	"\A!.\{-}\(|\|$\)"ms=s+1	contains=vimSpecFile
 "syn match  vimCmplxRepeat	'@[0-9a-z".=@:]\ze\($\|[^a-zA-Z]\)'
 
 " Set command and associated set-options (vimOptions) with comment {{{2
-syn region vimSet		matchgroup=vimCommand start="\<setlocal\|set\>" skip="\%(\\\\\)*\\." end="$" matchgroup=vimNotation end="<[cC][rR]>" keepend oneline contains=vimSetEqual,vimOption,vimErrSetting,vimComment,vimSetString,vimSetMod
+syn region vimSet		matchgroup=vimCommand start="\<\%(setl\%[ocal]\|setg\%[lobal]\|set\)\>" skip="\%(\\\\\)*\\." end="$" matchgroup=vimNotation end="<[cC][rR]>" keepend oneline contains=vimSetEqual,vimOption,vimErrSetting,vimComment,vimSetString,vimSetMod
 syn region vimSetEqual  contained	start="="	skip="\\\\\|\\\s" end="[| \t]\|$"me=e-1 contains=vimCtrlChar,vimSetSep,vimNotation oneline
 syn region vimSetString contained	start=+="+hs=s+1	skip=+\\\\\|\\"+  end=+"+	contains=vimCtrlChar
 syn match  vimSetSep    contained	"[,:]"

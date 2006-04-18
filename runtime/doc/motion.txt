@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0e.  Last change: 2006 Jan 02
+*motion.txt*    For Vim version 7.0e.  Last change: 2006 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1059,7 +1059,8 @@ The result is that when repeating CTRL-O you will get back to old positions
 only once.
 
 When the |:keepjumps| command modifier is used, jumps are not stored in the
-jumplist.
+jumplist.  Jumps are also not stored in other cases, e.g., in a |:global|
+command.  You can explicitly add a jump by setting the ' mark.
 
 After the CTRL-O command that got you into line 1154 you could give another
 jump command (e.g., "G").  The jump list would then become:

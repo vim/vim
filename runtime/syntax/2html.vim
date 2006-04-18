@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2005 Dec 04
+" Last Change: 2006 Apr 18
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -224,14 +224,16 @@ else
 endif
 
 let s:HtmlSpace = ' '
+let s:LeadingSpace = ' '
 let s:HtmlEndline = ''
 if exists("html_no_pre")
   let s:HtmlEndline = '<br' . s:tag_close
   if exists("use_xhtml")
-    let s:HtmlSpace = '\&#x20;'
+    let s:LeadingSpace = '&#x20;'
   else
-    let s:HtmlSpace = '\&nbsp;'
+    let s:LeadingSpace = '&nbsp;'
   endif
+  let s:HtmlSpace = '\' . s:LeadingSpace
 endif
 
 " HTML header, with the title and generator ;-). Left free space for the CSS,
@@ -246,9 +248,17 @@ if exists("html_use_css")
   exe "normal! a<style type=\"text/css\">\n<!--\n-->\n</style>\n\e"
 endif
 if exists("html_no_pre")
-  exe "normal! a</head>\n<body>\n\e"
+  if exists("use_xhtml")
+    exe "normal! a</head>\n<body>\n<p>\n\e"
+  else
+    exe "normal! a</head>\n<body>\n\e"
+  endif
 else
-  exe "normal! a</head>\n<body>\n<pre>\n\e"
+  if exists("use_xhtml")
+    exe "normal! a</head>\n<body>\n<p>\n<pre>\n\e"
+  else
+    exe "normal! a</head>\n<body>\n<pre>\n\e"
+  endif
 endif
 
 exe s:orgwin . "wincmd w"
@@ -296,7 +306,7 @@ while s:lnum <= s:end
     while s:n > 0
       if s:numblines
         " Indent if line numbering is on
-        let s:new = repeat(' ', strlen(s:end) + 1) . repeat(s:difffillchar, 3)
+        let s:new = repeat(s:LeadingSpace, strlen(s:end) + 1) . repeat(s:difffillchar, 3)
       else
         let s:new = repeat(s:difffillchar, 3)
       endif
@@ -406,9 +416,17 @@ endwhile
 " Finish with the last line
 exe s:newwin . "wincmd w"
 if exists("html_no_pre")
-  exe "normal! a\n</body>\n</html>\e"
+  if exists("use_xhtml")
+    exe "normal! a</p>\n</body>\n</html>\e"
+  else
+    exe "normal! a\n</body>\n</html>\e"
+  endif
 else
-  exe "normal! a</pre>\n</body>\n</html>\e"
+  if exists("use_xhtml")
+    exe "normal! a</pre>\n</p>\n</body>\n</html>\e"
+  else
+    exe "normal! a</pre>\n</body>\n</html>\e"
+  endif
 endif
 
 
@@ -525,4 +543,4 @@ if !v:profiling
     delfunc s:HtmlClosing
   endif
 endif
-silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:HtmlEndline
+silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:LeadingSpace s:HtmlEndline
