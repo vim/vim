@@ -1,6 +1,6 @@
 " Vim syntax file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-13
+" Latest Revision:  2006-04-14
 
 if exists("b:current_syntax")
   finish
@@ -677,6 +677,7 @@ syn keyword kconfigPreProc            source
 syn keyword kconfigTriState           y m n
 
 syn match   kconfigSpecialChar        contained '\\.'
+syn match   kconfigSpecialChar        '\\$'
 
 syn region  kconfigPath               matchgroup=kconfigPath
                                       \ start=+"+ skip=+\\\\\|\\\"+ end=+"+

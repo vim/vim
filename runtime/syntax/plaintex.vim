@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         TeX (plain.tex format)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-03-26
+" Latest Revision:  2006-04-19
 
 if exists("b:current_syntax")
   finish
@@ -13,10 +13,10 @@ set cpo&vim
 syn match   plaintexControlSequence         display contains=@NoSpell
       \ '\\[a-zA-Z@]\+'
 
-runtime! syntax/coretex.vim
+runtime! syntax/initex.vim
 
 syn match   plaintexComment                 display
-      \ contains=ALLBUT,coretexComment,plaintexComment
+      \ contains=ALLBUT,initexComment,plaintexComment
       \ '^\s*%[CDM].*$'
 
 if exists("g:plaintex_delimiters")
@@ -59,12 +59,14 @@ syn match   plaintexRegistersCommand        display contains=@NoSpell
 syn match   plaintexTablesCommand           display contains=@NoSpell
       \ '&\|\\+\|\\\%(cleartabs\|endline\|hidewidth\|ialign\|multispan\|settabs\|tabalign\)\>'
 
-syn region  plaintexMath                    matchgroup=plaintexMath
+if !exists("g:plaintex_no_math")
+  syn region  plaintexMath                  matchgroup=plaintexMath
       \ contains=@plaintexMath
       \ start='\$' skip='\\\\\|\\\$' end='\$'
-syn region  plaintexMath                    matchgroup=plaintexMath
+  syn region  plaintexMath                  matchgroup=plaintexMath
       \ contains=@plaintexMath keepend
       \ start='\$\$' skip='\\\\\|\\\$' end='\$\$'
+endif
 
 syn cluster plaintexMath
       \ contains=plaintexMathCommand,plaintexMathBoxCommand,
@@ -122,16 +124,16 @@ hi def link plaintexComment                 Comment
 hi def link plaintexInclude                 Include
 hi def link plaintexRepeat                  Repeat
 
-hi def link plaintexCommand                 coretexCommand
+hi def link plaintexCommand                 initexCommand
 hi def link plaintexBoxCommand              plaintexCommand
-hi def link plaintexCharacterCommand        coretexCharacterCommand
-hi def link plaintexDebuggingCommand        coretexDebuggingCommand
-hi def link plaintexFontsCommand            coretexFontsCommand
+hi def link plaintexCharacterCommand        initexCharacterCommand
+hi def link plaintexDebuggingCommand        initexDebuggingCommand
+hi def link plaintexFontsCommand            initexFontsCommand
 hi def link plaintexGlueCommand             plaintexCommand
 hi def link plaintexInsertsCommand          plaintexCommand
-hi def link plaintexJobCommand              coretexJobCommand
+hi def link plaintexJobCommand              initexJobCommand
 hi def link plaintexKernCommand             plaintexCommand
-hi def link plaintexMacroCommand            coretexMacroCommand
+hi def link plaintexMacroCommand            initexMacroCommand
 hi def link plaintexPageCommand             plaintexCommand
 hi def link plaintexParagraphCommand        plaintexCommand
 hi def link plaintexPenaltiesCommand        plaintexCommand
@@ -151,16 +153,15 @@ hi def link plaintexMathOperator            plaintexOperator
 hi def link plaintexMathPunctuation         plaintexCharacterCommand
 hi def link plaintexMathRelation            plaintexOperator
 
-hi def link plaintexParameterDimen          coretexParameterDimen
-hi def link plaintexMathParameterDimen      coretexMathParameterDimen
-hi def link plaintexParagraphParameterGlue  coretexParagraphParameterGlue
-hi def link plaintexFontParameterInteger    coretexFontParameterInteger
-hi def link plaintexJobParameterInteger     coretexJobParameterInteger
-hi def link plaintexPageParameterInteger    coretexPageParameterInteger
-hi def link plaintexPageParameterToken      coretexParameterToken
+hi def link plaintexParameterDimen          initexParameterDimen
+hi def link plaintexMathParameterDimen      initexMathParameterDimen
+hi def link plaintexParagraphParameterGlue  initexParagraphParameterGlue
+hi def link plaintexFontParameterInteger    initexFontParameterInteger
+hi def link plaintexJobParameterInteger     initexJobParameterInteger
+hi def link plaintexPageParameterInteger    initexPageParameterInteger
+hi def link plaintexPageParameterToken      initexParameterToken
 
 let b:current_syntax = "plaintex"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
-

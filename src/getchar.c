@@ -4294,22 +4294,40 @@ eval_map_expr(str)
     char_u	*str;
 {
     char_u	*res;
-    char_u	*s;
-    int		len;
+    char_u	*p;
+    char_u	*s, *d;
 
-    s = eval_to_string(str, NULL, FALSE);
-    if (s == NULL)
+    p = eval_to_string(str, NULL, FALSE);
+    if (p == NULL)
 	return NULL;
 
     /* Need a buffer to hold up to three times as much. */
-    len = (int)STRLEN(s);
-    res = alloc((unsigned)(len * 3) + 1);
+    res = alloc((unsigned)(STRLEN(p) * 3) + 1);
     if (res != NULL)
     {
-	STRCPY(res, s);
-	(void)fix_input_buffer(res, len, TRUE);
+	d = res;
+	for (s = p; *s != NUL; )
+	{
+	    if (s[0] == K_SPECIAL && s[1] != NUL && s[2] != NUL)
+	    {
+		/* Copy special key unmodified. */
+		*d++ = *s++;
+		*d++ = *s++;
+		*d++ = *s++;
+	    }
+	    else
+	    {
+		/* Add character, possibly multi-byte to destination, escaping
+		 * CSI and K_SPECIAL. */
+		d = add_char2buf(PTR2CHAR(s), d);
+		mb_ptr_adv(s);
+	    }
+	}
+	*d = NUL;
     }
-    vim_free(s);
+
+    vim_free(p);
+
     return res;
 }
 #endif

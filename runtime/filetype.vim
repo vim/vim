@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 18
+" Last Change:	2006 Apr 19
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -2081,6 +2081,9 @@ au! BufNewFile,BufRead *jarg*
 	\ if getline(1).getline(2).getline(3).getline(4).getline(5) =~? 'THIS IS THE JARGON FILE'
 	\|  call s:StarSetf('jargon')
 	\|endif
+
+" Kconfig
+au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
 
 " Makefile
 au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')

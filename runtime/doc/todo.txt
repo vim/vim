@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 18
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Hang in omni completion when 'lines' is 6. (dtsfan)
+
+Crash in "z=" when the change triggers checking out the file, FileChangedRO
+event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)
+Added a few checks for valid buffer, did that help?
+
+Check findoption() return value.
+Other coverity false positives?
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -777,6 +786,7 @@ Macintosh:
 8   Xterm sends ^[[H for <Home> and ^[[F for <End> in some mode.  Also
     recognize these keys?  Mostly useful for xterm simulators, like gnometerm.
     See http://dickey.his.com/xterm/xterm.faq.html#xterm_pc_style.
+8   For xterm also recognize keypad up/down/left/right and insert.
 8   '[ and '] should be set to start/end of line when using a linewise operator
     (e.g., ":w").
 8   CTRL-A can't handle big "long" numbers, they become negative.  Check for

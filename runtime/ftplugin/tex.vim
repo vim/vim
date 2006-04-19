@@ -1,8 +1,8 @@
 " LaTeX filetype plugin
 " Language:     LaTeX (ft=tex)
 " Maintainer:   Benji Fisher, Ph.D. <benji@member.AMS.org>
-" Version:	1.3
-" Last Change:	Wed 22 Mar 2006 09:36:32 AM EST
+" Version:	1.4
+" Last Change:	Wed 19 Apr 2006
 "  URL:		http://www.vim.org/script.php?script_id=411
 
 " Only do this when not done yet for this buffer.
@@ -16,6 +16,8 @@ source $VIMRUNTIME/ftplugin/plaintex.vim
 " Avoid problems if running in 'compatible' mode.
 let s:save_cpo = &cpo
 set cpo&vim
+
+let b:undo_ftplugin .= "| setl inex<"
 
 " Allow "[d" to be used to find a macro definition:
 " Recognize plain TeX \def as well as LaTeX \newcommand and \renewcommand .
@@ -33,9 +35,9 @@ let &l:includeexpr = "substitute(v:fname, '^.\\{-}{\\|}.*', '', 'g')"
 " The following lines enable the macros/matchit.vim plugin for
 " extended matching with the % key.
 " ftplugin/plaintex.vim already defines b:match_skip and b:match_ignorecase
-" and matches \(, \), \[, and \].
+" and matches \(, \), \[, \], \{, and \} .
 if exists("loaded_matchit")
-  let b:match_words .= '\\begin\s*\({\a\+\*\=}\):\\end\s*\1'
+  let b:match_words .= ',\\begin\s*\({\a\+\*\=}\):\\end\s*\1'
 endif " exists("loaded_matchit")
 
 let &cpo = s:save_cpo

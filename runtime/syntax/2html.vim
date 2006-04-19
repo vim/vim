@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Apr 18
+" Last Change: 2006 Apr 19
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -112,9 +112,10 @@ function! s:HtmlFormat(text, style_name)
   " Replace the reserved html characters
   let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
   
-  " Replace double spaces
+  " Replace double spaces and leading spaces
   if ' ' != s:HtmlSpace 
     let formatted = substitute(formatted, '  ', s:HtmlSpace . s:HtmlSpace, 'g')
+    let formatted = substitute(formatted, '^ ', s:HtmlSpace, 'g')
   endif
 
   " Enclose in a span of class style_name
@@ -363,7 +364,7 @@ while s:lnum <= s:end
     let s:len = strlen(s:line)
 
     if s:numblines
-      let s:new = '<span class="lnr">' . s:new . '</span>'
+      let s:new = s:HtmlFormat(s:new, "lnr")
     endif
 
     " Get the diff attribute, if any.
@@ -419,7 +420,7 @@ if exists("html_no_pre")
   if exists("use_xhtml")
     exe "normal! a</p>\n</body>\n</html>\e"
   else
-    exe "normal! a\n</body>\n</html>\e"
+    exe "normal! a</body>\n</html>\e"
   endif
 else
   if exists("use_xhtml")
@@ -470,7 +471,7 @@ if s:numblines
   if exists("html_use_css")
     execute "normal! A\n.lnr { " . s:CSS1(hlID("LineNr")) . "}\e"
   else
-    execute '%s+<span class="lnr">\([^<]*\)</span>+' . s:HtmlOpening(hlID("LineNr")) . '\1' . s:HtmlClosing(hlID("LineNr")) . '+g'
+    execute '%s+^<span class="lnr">\([^<]*\)</span>+' . s:HtmlOpening(hlID("LineNr")) . '\1' . s:HtmlClosing(hlID("LineNr")) . '+g'
   endif
 endif
 

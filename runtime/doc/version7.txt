@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 18
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2555,5 +2555,8 @@ GTK: When 'encoding' is "latin1" and using non-ASCII characters in a file name
 the tab page label was wrong and an error message would be given.
 
 The taglist() function could hang on a tags line with a non-ASCII character.
+
+Win32: When 'encoding' differs from the system encoding tab page labels with
+non-ASCII characters looked wrong. (Yegappan Lakshmanan)
 
  vim:tw=78:ts=8:ft=help:norl:

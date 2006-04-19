@@ -185,6 +185,9 @@ static void make_tooltip __ARGS((BalloonEval *beval, char *text, POINT pt));
 static void delete_tooltip __ARGS((BalloonEval *beval));
 static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime));
 
+#ifndef UINT_PTR
+# define UINT_PTR UINT
+#endif
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;

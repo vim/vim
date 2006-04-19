@@ -2295,9 +2295,20 @@ gui_mch_update_tabline(void)
     int		nr = 0;
     int		curtabidx = 0;
     RECT	rc;
+#ifdef FEAT_MBYTE
+    WCHAR	*wstr = NULL;
+#endif
 
     if (s_tabhwnd == NULL)
 	return;
+
+#if defined(FEAT_MBYTE) && defined(CCM_SETUNICODEFORMAT)
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	/*
+	 * Enable unicode support
+	 */
+	SendMessage(s_tabhwnd, CCM_SETUNICODEFORMAT, (WPARAM)TRUE, (LPARAM)0);
+#endif
 
     tie.mask = TCIF_TEXT;
     tie.iImage = -1;
@@ -2317,7 +2328,29 @@ gui_mch_update_tabline(void)
 
 	get_tabline_label(tp);
 	tie.pszText = NameBuff;
-	TabCtrl_SetItem(s_tabhwnd, nr, &tie);
+#ifdef FEAT_MBYTE
+	wstr = NULL;
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    /* Need to go through Unicode. */
+	    wstr = enc_to_ucs2(NameBuff, NULL);
+	    if (wstr != NULL)
+	    {
+		TCITEMW		tiw;
+
+		tiw.mask = TCIF_TEXT;
+		tiw.iImage = -1;
+		tiw.pszText = wstr;
+		SendMessage(s_tabhwnd, TCM_INSERTITEMW, (WPARAM)nr,
+								(LPARAM)&tiw);
+		vim_free(wstr);
+	    }
+	}
+	if (wstr == NULL)
+#endif
+	{
+	    TabCtrl_SetItem(s_tabhwnd, nr, &tie);
+	}
     }
 
     /* Remove any old labels. */

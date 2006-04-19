@@ -6482,7 +6482,7 @@ buf_reload(buf, orig_mode)
 	{
 	    /* Allocate a buffer without putting it in the buffer list. */
 	    savebuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
-	    if (savebuf != NULL)
+	    if (savebuf != NULL && buf == curbuf)
 	    {
 		/* Open the memline. */
 		curbuf = savebuf;
@@ -6491,7 +6491,7 @@ buf_reload(buf, orig_mode)
 		curbuf = buf;
 		curwin->w_buffer = buf;
 	    }
-	    if (savebuf == NULL || saved == FAIL
+	    if (savebuf == NULL || saved == FAIL || buf != curbuf
 				      || move_lines(buf, savebuf) == FAIL)
 	    {
 		EMSG2(_("E462: Could not prepare for reloading \"%s\""),
@@ -6514,18 +6514,17 @@ buf_reload(buf, orig_mode)
 		if (!aborting())
 #endif
 		    EMSG2(_("E321: Could not reload \"%s\""), buf->b_fname);
-		if (savebuf != NULL)
+		if (savebuf != NULL && buf_valid(savebuf) && buf == curbuf)
 		{
 		    /* Put the text back from the save buffer.  First
 		     * delete any lines that readfile() added. */
 		    while (!bufempty())
-			if (ml_delete(curbuf->b_ml.ml_line_count, FALSE)
-								  == FAIL)
+			if (ml_delete(buf->b_ml.ml_line_count, FALSE) == FAIL)
 			    break;
 		    (void)move_lines(savebuf, buf);
 		}
 	    }
-	    else
+	    else if (buf == curbuf)
 	    {
 		/* Mark the buffer as unmodified and free undo info. */
 		unchanged(buf, TRUE);
@@ -6535,12 +6534,12 @@ buf_reload(buf, orig_mode)
 	}
 	vim_free(ea.cmd);
 
-	if (savebuf != NULL)
+	if (savebuf != NULL && buf_valid(savebuf))
 	    wipe_buffer(savebuf, FALSE);
 
 #ifdef FEAT_DIFF
 	/* Invalidate diff info if necessary. */
-	diff_invalidate(buf);
+	diff_invalidate(curbuf);
 #endif
 
 	/* Restore the topline and cursor position and check it (lines may

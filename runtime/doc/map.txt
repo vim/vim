@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0e.  Last change: 2006 Apr 11
+*map.txt*       For Vim version 7.0e.  Last change: 2006 Apr 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -238,6 +238,16 @@ Here is an example that inserts a list number that increases: >
 
 CTRL-L inserts the next number, CTRL-R resets the count.  CTRL-R returns an
 empty string, so that nothing is inserted.
+
+Note that there are some tricks to make special keys work and escape CSI bytes
+in the text.  The |:map| command also does this, thus you must avoid that it
+is done twice.  This does not work: >
+	:imap <expr> <F3> "<Char-0x611B>"
+Because the <Char- sequence is escaped for being a |:imap| argument and then
+again for using <expr>.  This does work: >
+	:imap <expr> <F3> "\u611B"
+Using 0x80 as a single byte before other text does not work, it will be seen
+as a special key.
 
 
 1.3 MAPPING AND MODES					*:map-modes*

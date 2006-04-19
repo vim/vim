@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 12
+" Last Change:	2006 Apr 19
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -186,16 +186,20 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	if context =~ '\s'
 
 		" If attr contains =\s*[\"'] we catched value of attribute
-		if attr =~ "=\s*[\"']"
+		if attr =~ "=\s*[\"']" || attr =~ "=\s*$"
 			" Let do attribute specific completion
 			let attrname = matchstr(attr, '.*\ze\s*=')
-			let entered_value = matchstr(attr, ".*=\\s*[\"']\\zs.*")
+			let entered_value = matchstr(attr, ".*=\\s*[\"']\\?\\zs.*")
 
 			if tag =~ '^[?!]'
 				" Return nothing if we are inside of ! or ? tag
 				return []
 			else
-				let values = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][attrname]
+				if has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}, tag) && has_key(g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1], attrname)
+					let values = g:xmldata{'_'.g:xmldata_connection[b:xml_namespace]}[tag][1][attrname]
+				else
+					return []
+				endif
 			endif
 
 			if len(values) == 0
@@ -205,15 +209,21 @@ function! xmlcomplete#CompleteTags(findstart, base)
 			" We need special version of sbase
 			let attrbase = matchstr(context, ".*[\"']")
 			let attrquote = matchstr(attrbase, '.$')
+			if attrquote !~ "['\"]"
+				let attrquoteopen = '"'
+				let attrquote = '"'
+			else
+				let attrquoteopen = ''
+			endif
 
 			for m in values
 				" This if is needed to not offer all completions as-is
 				" alphabetically but sort them. Those beginning with entered
 				" part will be as first choices
 				if m =~ '^'.entered_value
-					call add(res, m . attrquote.' ')
+					call add(res, attrquoteopen . m . attrquote.' ')
 				elseif m =~ entered_value
-					call add(res2, m . attrquote.' ')
+					call add(res2, attrquoteopen . m . attrquote.' ')
 				endif
 			endfor
 

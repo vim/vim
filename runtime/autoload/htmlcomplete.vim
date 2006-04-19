@@ -210,7 +210,14 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let tag = ''
 	else
 		let tag = split(context)[0]
+		if tag =~ '[A-Z]'
+			let uppercase_tag = 1
+			let tag = tolower(tag)
+		else
+			let uppercase_tag = 0
+		endif
 	endif
+	let g:ta = tag
 	" Get last word, it should be attr name
 	let attr = matchstr(context, '.*\s\zs.*')
 	" Possible situations where any prediction would be difficult:
@@ -438,10 +445,10 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 		" Value of attribute completion {{{
 		" If attr contains =\s*[\"'] we catched value of attribute
-		if attr =~ "=\s*[\"']"
+		if attr =~ "=\s*[\"']" || attr =~ "=\s*$"
 			" Let do attribute specific completion
 			let attrname = matchstr(attr, '.*\ze\s*=')
-			let entered_value = matchstr(attr, ".*=\\s*[\"']\\zs.*")
+			let entered_value = matchstr(attr, ".*=\\s*[\"']\\?\\zs.*")
 			let values = []
 			if attrname == 'href'
 				" Now we are looking for local anchors defined by name or id
@@ -469,15 +476,21 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			" We need special version of sbase
 			let attrbase = matchstr(context, ".*[\"']")
 			let attrquote = matchstr(attrbase, '.$')
+			if attrquote !~ "['\"]"
+				let attrquoteopen = '"'
+				let attrquote = '"'
+			else
+				let attrquoteopen = ''
+			endif
 
 			for m in values
 				" This if is needed to not offer all completions as-is
 				" alphabetically but sort them. Those beginning with entered
 				" part will be as first choices
 				if m =~ '^'.entered_value
-					call add(res, m . attrquote.' ')
+					call add(res, attrquoteopen . m . attrquote.' ')
 				elseif m =~ entered_value
-					call add(res2, m . attrquote.' ')
+					call add(res2, attrquoteopen . m . attrquote.' ')
 				endif
 			endfor
 
@@ -494,8 +507,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			call htmlcomplete#LoadData()
 		endif
 		" }}}
-		"
-		let attrs = keys(g:html_omni[tag][1])
+		
+		if has_key(g:html_omni, tag)
+			let attrs = keys(g:html_omni[tag][1])
+		else
+			return []
+		endif
 
 		for m in sort(attrs)
 			if m =~ '^'.attr
@@ -539,6 +556,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			return [opentag.">"]
 		endif
 	endif
+	" }}}
 	" Load data {{{
 	if !exists("g:html_omni")
 		"runtime! autoload/xml/xhtml10s.vim
@@ -547,10 +565,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" }}}
 	" Tag completion {{{
 	" Deal with tag completion.
-	let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+	let opentag = tolower(xmlcomplete#GetLastOpenTag("b:unaryTagsStack"))
 	" MM: TODO: GLOT works always the same but with some weird situation it
 	" behaves as intended in HTML but screws in PHP
-	let g:ot = opentag
 	if opentag == '' || &ft == 'php' && !has_key(g:html_omni, opentag)
 		" Hack for sometimes failing GetLastOpenTag.
 		" As far as I tested fail isn't GLOT fault but problem
@@ -559,9 +576,17 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	    let tags = keys(g:html_omni)
 		call filter(tags, 'v:val !~ "^vimxml"')
 	else
-		let tags = g:html_omni[opentag][0]
+		if has_key(g:html_omni, opentag)
+			let tags = g:html_omni[opentag][0]
+		else
+			return []
+		endif
 	endif
 	" }}}
+	
+	if exists("uppercase_tag") && uppercase_tag == 1
+		let context = tolower(context)
+	endif
 
 	for m in sort(tags)
 		if m =~ '^'.context
