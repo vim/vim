@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:     Inform
-" Maintainer:   Stephen Thomas (informvim@stephenthomas.uklinux.net)
-" URL:		http://www.stephenthomas.uklinux.net/informvim
-" Last Change:  2004 May 16
+" Maintainer:   Stephen Thomas (stephen@gowarthomas.com)
+" URL:		http://www.gowarthomas.com/informvim
+" Last Change:  2006 April 20
 
 " Quit when a syntax file was already loaded
 if version < 600

@@ -143,8 +143,7 @@ is also available through the Platform SDK, |ms-platform-sdk|.
 Visual C++ 2005 Express Edition
 -------------------------------
 
-Visual C++ 2005 Express Edition can be downloaded for free
-before November 2006 from
+Visual C++ 2005 Express Edition can be downloaded for free from:
     http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
 This includes the IDE and the debugger. You will also need
 |ms-platform-sdk|. You can build Vim with Make_mvc.mak.

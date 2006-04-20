@@ -1,9 +1,12 @@
 " Vim syntax file
-" Language:	BIND 8.x zone files (RFC1035)
-" Maintainer:	glory hump <rnd@web-drive.ru>
-" Last change:	Thu Apr 26 02:16:18 SAMST 2001
-" Filenames:	/var/named/*
-" URL:	http://rnd.web-drive.ru/vim/syntax/bindzone.vim
+" Language:     BIND zone files (RFC1035)
+" Maintainer:   Julian Mehnle <julian@mehnle.net>
+" URL:          http://www.mehnle.net/source/odds+ends/vim/syntax/
+" Last Change:  Thu 2006-04-20 12:30:45 UTC
+" 
+" Based on an earlier version by Вячеслав Горбанев (Slava Gorbanev), with
+" heavy modifications.
+" 
 " $Id$
 
 " For version 5.x: Clear all syntax items
@@ -16,54 +19,55 @@ endif
 
 syn case match
 
-if version >= 600
-  setlocal iskeyword=.,-,48-58,A-Z,a-z,_
-else
-  set iskeyword=.,-,48-58,A-Z,a-z,_
-endif
+" Directives
+syn region      zoneRRecord     start=/^/ end=/$/ contains=zoneOwnerName,zoneSpecial,zoneTTL,zoneClass,zoneRRType,zoneComment,zoneUnknown
 
+syn match       zoneDirective   /^\$ORIGIN\s\+/   nextgroup=zoneOrigin,zoneUnknown
+syn match       zoneDirective   /^\$TTL\s\+/      nextgroup=zoneNumber,zoneUnknown
+syn match       zoneDirective   /^\$INCLUDE\s\+/  nextgroup=zoneText,zoneUnknown
+syn match       zoneDirective   /^\$GENERATE\s/
 
-" Master File Format (rfc 1035)
+syn match       zoneUnknown     contained /\S\+/
 
-" directives
-syn region	zoneRRecord	start=+^+ end=+$+ contains=zoneLHSDomain,zoneLHSIP,zoneIllegalDom,zoneWhitespace,zoneComment,zoneParen,zoneSpecial
-syn match	zoneDirective	/\$ORIGIN\s\+/ nextgroup=zoneDomain,zoneIllegalDom
-syn match	zoneDirective	/\$TTL\s\+/ nextgroup=zoneTTL
-syn match	zoneDirective	/\$INCLUDE\s\+/
-syn match	zoneDirective	/\$GENERATE\s/
+syn match       zoneOwnerName   contained /^[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\^`{|}~]\+\(\s\|;\)\@=/ nextgroup=zoneTTL,zoneClass,zoneRRType skipwhite
+syn match       zoneOrigin      contained  /[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\^`{|}~]\+\(\s\|;\|$\)\@=/
+syn match       zoneDomain      contained  /[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\^`{|}~]\+\(\s\|;\|$\)\@=/
 
-syn match	zoneWhitespace	contained /^\s\+/ nextgroup=zoneTTL,zoneClass,zoneRRType
-syn match	zoneError	"\s\+$"
-syn match	zoneSpecial	contained /^[@.]\s\+/ nextgroup=zoneTTL,zoneClass,zoneRRType
-syn match	zoneSpecial	contained /@$/
+syn match       zoneSpecial     contained /^[@*.]\s/
+syn match       zoneTTL         contained /\<\d[0-9HhWwDd]*\>/  nextgroup=zoneClass,zoneRRType skipwhite
+syn keyword     zoneClass       contained IN CHAOS              nextgroup=zoneRRType,zoneTTL   skipwhite
+syn keyword     zoneRRType      contained A AAAA CNAME HINFO MX NS PTR SOA SRV TXT nextgroup=zoneRData skipwhite
+syn match       zoneRData       contained /[^;]*/ contains=zoneDomain,zoneIPAddr,zoneIP6Addr,zoneText,zoneNumber,zoneParen,zoneUnknown
 
-" domains and IPs
-syn match	zoneLHSDomain	contained /^[-0-9A-Za-z.]\+\s\+/ nextgroup=zoneTTL,zoneClass,zoneRRType
-syn match	zoneLHSIP	contained /^[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{,3}\s\+/ nextgroup=zoneTTL,zoneClass,zoneRRType
-syn match	zoneIPaddr	contained /\<[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{,3}\>/
-syn match	zoneDomain	contained /\<[0-9A-Za-z][-0-9A-Za-z.]\+\>/
+syn match       zoneIPAddr      contained /\<[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{,3}\>/
 
-syn match	zoneIllegalDom	contained /\S*[^-A-Za-z0-9.[:space:]]\S*\>/
-"syn match	zoneIllegalDom	contained /[0-9]\S*[-A-Za-z]\S*/
+"   Plain IPv6 address          IPv6-embedded-IPv4 address
+"   1111:2:3:4:5:6:7:8          1111:2:3:4:5:6:127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{6}\(\x\{1,4}:\x\{1,4}\|\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   ::[...:]8                   ::[...:]127.0.0.1
+syn match       zoneIP6Addr     contained /\s\@<=::\(\(\x\{1,4}:\)\{,6}\x\{1,4}\|\(\x\{1,4}:\)\{,5}\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111::[...:]8               1111::[...:]127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{1}:\(\(\x\{1,4}:\)\{,5}\x\{1,4}\|\(\x\{1,4}:\)\{,4}\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111:2::[...:]8             1111:2::[...:]127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{2}:\(\(\x\{1,4}:\)\{,4}\x\{1,4}\|\(\x\{1,4}:\)\{,3}\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111:2:3::[...:]8           1111:2:3::[...:]127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{3}:\(\(\x\{1,4}:\)\{,3}\x\{1,4}\|\(\x\{1,4}:\)\{,2}\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111:2:3:4::[...:]8         1111:2:3:4::[...:]127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{4}:\(\(\x\{1,4}:\)\{,2}\x\{1,4}\|\(\x\{1,4}:\)\{,1}\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111:2:3:4:5::[...:]8       1111:2:3:4:5::127.0.0.1
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{5}:\(\(\x\{1,4}:\)\{,1}\x\{1,4}\|\([0-2]\?\d\{1,2}\.\)\{3}[0-2]\?\d\{1,2}\)\>/
+"   1111:2:3:4:5:6::8           -
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{6}:\x\{1,4}\>/
+"   1111[:...]::                -
+syn match       zoneIP6Addr     contained /\<\(\x\{1,4}:\)\{1,7}:\(\s\|;\|$\)\@=/
 
-" keywords
-syn keyword	zoneClass	IN CHAOS nextgroup=zoneRRType
+syn match       zoneText        contained /"\([^"\\]\|\\.\)*"\(\s\|;\|$\)\@=/
+syn match       zoneNumber      contained /\<[0-9]\+\(\s\|;\|$\)\@=/
+syn match       zoneSerial      contained /\<[0-9]\{9,10}\(\s\|;\|$\)\@=/
 
-syn match	zoneTTL	contained /\<[0-9HhWwDd]\+\s\+/ nextgroup=zoneClass,zoneRRType
-syn match	zoneRRType	contained /\s*\<\(NS\|HINFO\)\s\+/ nextgroup=zoneSpecial,zoneDomain
-syn match	zoneRRType	contained /\s*\<CNAME\s\+/ nextgroup=zoneDomain,zoneSpecial
-syn match	zoneRRType	contained /\s*\<SOA\s\+/ nextgroup=zoneDomain,zoneIllegalDom
-syn match	zoneRRType	contained /\s*\<PTR\s\+/ nextgroup=zoneDomain,zoneIllegalDom
-syn match	zoneRRType	contained /\s*\<MX\s\+/ nextgroup=zoneMailPrio
-syn match	zoneRRType	contained /\s*\<A\s\+/ nextgroup=zoneIPaddr,zoneIllegalDom
-
-" FIXME: catchup serial number
-syn match	zoneSerial	contained /\<[0-9]\{9}\>/
-
-syn match	zoneMailPrio	contained /\<[0-9]\+\s*/ nextgroup=zoneDomain,zoneIllegalDom
-syn match	zoneErrParen	/)/
-syn region	zoneParen	contained start=+(+ end=+)+ contains=zoneSerial,zoneTTL,zoneComment
-syn match	zoneComment	";.*"
+syn match       zoneErrParen    /)/
+syn region      zoneParen       contained start="(" end=")" contains=zoneSerial,zoneNumber,zoneComment
+syn match       zoneComment     /;.*/
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -76,23 +80,31 @@ if version >= 508 || !exists("did_bind_zone_syn_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink zoneComment	Comment
-  HiLink zoneDirective	Macro
-  HiLink zoneLHSDomain	Statement
-  HiLink zoneLHSIP	Statement
-  HiLink zoneClass	Include
-  HiLink zoneSpecial	Special
-  HiLink zoneRRType	Type
-  HiLink zoneError	Error
-  HiLink zoneErrParen	Error
-  HiLink zoneIllegalDom	Error
-  HiLink zoneSerial	Todo
-  HiLink zoneIPaddr	Number
-  HiLink zoneDomain	Identifier
+  HiLink zoneDirective    Macro
+  
+  HiLink zoneUnknown      Error
+  
+  HiLink zoneOrigin       Statement
+  HiLink zoneOwnerName    Statement
+  HiLink zoneDomain       Identifier
+  
+  HiLink zoneSpecial      Special
+  HiLink zoneTTL          Constant
+  HiLink zoneClass        Include
+  HiLink zoneRRType       Type
+  
+  HiLink zoneIPAddr       Number
+  HiLink zoneIP6Addr      Number
+  HiLink zoneText         String
+  HiLink zoneNumber       Number
+  HiLink zoneSerial       Special
+  
+  HiLink zoneErrParen     Error
+  HiLink zoneComment      Comment
 
   delcommand HiLink
 endif
 
 let b:current_syntax = "bindzone"
 
-" vim: ts=17
+" vim:sts=2 sw=2

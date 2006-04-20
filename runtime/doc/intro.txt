@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.0e.  Last change: 2006 Apr 09
+*intro.txt*     For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,7 +75,7 @@ Published by O'Reilly.  ISBN: 1-56592-426-6.
 ==============================================================================
 2. Vim on the internet					*internet*
 
-			*www* *faq* *FAQ* *distribution* *download*
+			*www* *WWW*  *faq* *FAQ* *distribution* *download*
 The Vim pages contain the most recent information about Vim.  They also
 contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.

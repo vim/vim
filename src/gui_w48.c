@@ -2296,18 +2296,26 @@ gui_mch_update_tabline(void)
     int		curtabidx = 0;
     RECT	rc;
 #ifdef FEAT_MBYTE
+    static int	use_unicode = FALSE;
+    int		uu;
     WCHAR	*wstr = NULL;
 #endif
 
     if (s_tabhwnd == NULL)
 	return;
 
-#if defined(FEAT_MBYTE) && defined(CCM_SETUNICODEFORMAT)
-    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	/*
-	 * Enable unicode support
-	 */
-	SendMessage(s_tabhwnd, CCM_SETUNICODEFORMAT, (WPARAM)TRUE, (LPARAM)0);
+#if defined(FEAT_MBYTE)
+# ifndef CCM_SETUNICODEFORMAT
+    /* For older compilers.  We assume this never changes. */
+#  define CCM_SETUNICODEFORMAT 0x2005
+# endif
+    uu = (enc_codepage >= 0 && (int)GetACP() != enc_codepage);
+    if (uu != use_unicode)
+    {
+	/* Enable/disable unicode support */
+	SendMessage(s_tabhwnd, CCM_SETUNICODEFORMAT, (WPARAM)uu, (LPARAM)0);
+	use_unicode = uu;
+    }
 #endif
 
     tie.mask = TCIF_TEXT;
@@ -2330,7 +2338,7 @@ gui_mch_update_tabline(void)
 	tie.pszText = NameBuff;
 #ifdef FEAT_MBYTE
 	wstr = NULL;
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	if (use_unicode)
 	{
 	    /* Need to go through Unicode. */
 	    wstr = enc_to_ucs2(NameBuff, NULL);

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 19
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -243,6 +243,7 @@ Currently supported languages:
 	(X)HTML with CSS			|ft-html-omni|
 	JavaScript				|ft-javascript-omni|
 	Python
+	Ruby					|ft-ruby-omni|
 	XML					|ft-xml-omni|
 	any language wih syntax highligting	|ft-syntax-omni|
 
@@ -2558,5 +2559,15 @@ The taglist() function could hang on a tags line with a non-ASCII character.
 
 Win32: When 'encoding' differs from the system encoding tab page labels with
 non-ASCII characters looked wrong. (Yegappan Lakshmanan)
+
+Motif: building failed when Xm/Notebook.h doesn't exist.  Added a configure
+check, disable GUI tabline when it's missing.
+
+Mac: When compiled without multi-byte feature the clipboard didn't work.
+
+It was possible to switch to another tab page when the cmdline window is open.
+
+Completion could hang when 'lines' is 6 and a preview window was opened.
+
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0e.  Last change: 2006 Apr 19
+*map.txt*       For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -882,10 +882,11 @@ See |:verbose-cmd| for more information.
 			avoid that a typed {lhs} is expanded, since
 			command-line abbreviations apply here.
 
-:ab[breviate] {lhs} {rhs}
+:ab[breviate] [<expr>] {lhs} {rhs}
 			add abbreviation for {lhs} to {rhs}.  If {lhs} already
 			existed it is replaced with the new {rhs}.  {rhs} may
 			contain spaces.
+			See |:map-<expr>| for the optional <expr> argument.
 
 						*:una* *:unabbreviate*
 :una[bbreviate] {lhs}	Remove abbreviation for {lhs} from the list.  If none
@@ -895,12 +896,13 @@ See |:verbose-cmd| for more information.
 			expansion insert a CTRL-V (type it twice).
 
 						*:norea* *:noreabbrev*
-:norea[bbrev] [lhs] [rhs]
+:norea[bbrev] [<expr>] [lhs] [rhs]
 			same as ":ab", but no remapping for this {rhs} {not
 			in Vi}
 
 						*:ca* *:cabbrev*
-:ca[bbrev] [lhs] [rhs]	same as ":ab", but for Command-line mode only.  {not
+:ca[bbrev] [<expr>] [lhs] [rhs]
+			same as ":ab", but for Command-line mode only.  {not
 			in Vi}
 
 						*:cuna* *:cunabbrev*
@@ -908,19 +910,20 @@ See |:verbose-cmd| for more information.
 			in Vi}
 
 						*:cnorea* *:cnoreabbrev*
-:cnorea[bbrev] [lhs] [rhs]
+:cnorea[bbrev] [<expr>] [lhs] [rhs]
 			same as ":ab", but for Command-line mode only and no
 			remapping for this {rhs} {not in Vi}
 
 						*:ia* *:iabbrev*
-:ia[bbrev] [lhs] [rhs]	same as ":ab", but for Insert mode only.  {not in Vi}
+:ia[bbrev] [<expr>] [lhs] [rhs]
+			same as ":ab", but for Insert mode only.  {not in Vi}
 
 						*:iuna* *:iunabbrev*
 :iuna[bbrev] {lhs}	same as ":una", but for insert mode only.  {not in
 			Vi}
 
 						*:inorea* *:inoreabbrev*
-:inorea[bbrev] [lhs] [rhs]
+:inorea[bbrev] [<expr>] [lhs] [rhs]
 			same as ":ab", but for Insert mode only and no
 			remapping for this {rhs} {not in Vi}
 

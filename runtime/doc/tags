@@ -3959,7 +3959,6 @@ E744	netbeans.txt	/*E744*
 E745	eval.txt	/*E745*
 E746	eval.txt	/*E746*
 E747	editing.txt	/*E747*
-E747	syntax.txt	/*E747*
 E748	repeat.txt	/*E748*
 E749	eval.txt	/*E749*
 E75	vi_diff.txt	/*E75*
@@ -4005,6 +4004,7 @@ E785	eval.txt	/*E785*
 E786	eval.txt	/*E786*
 E787	diff.txt	/*E787*
 E788	autocmd.txt	/*E788*
+E789	syntax.txt	/*E789*
 E79	message.txt	/*E79*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
@@ -4264,6 +4264,7 @@ W16	message.txt	/*W16*
 W17	arabic.txt	/*W17*
 W18	syntax.txt	/*W18*
 WORD	motion.txt	/*WORD*
+WWW	intro.txt	/*WWW*
 Win32	os_win32.txt	/*Win32*
 WinEnter	autocmd.txt	/*WinEnter*
 WinLeave	autocmd.txt	/*WinLeave*
@@ -5314,6 +5315,7 @@ ft-python-syntax	syntax.txt	/*ft-python-syntax*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
+ft-ruby-omni	insert.txt	/*ft-ruby-omni*
 ft-ruby-syntax	syntax.txt	/*ft-ruby-syntax*
 ft-scheme-syntax	syntax.txt	/*ft-scheme-syntax*
 ft-sdl-syntax	syntax.txt	/*ft-sdl-syntax*

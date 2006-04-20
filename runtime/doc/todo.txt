@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 19
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,14 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Hang in omni completion when 'lines' is 6. (dtsfan)
+For a tooltip of at GUI tab label we need a new field.  Also 'guitabtip'?
 
 Crash in "z=" when the change triggers checking out the file, FileChangedRO
 event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)
 Added a few checks for valid buffer, did that help?
 
-Check findoption() return value.
-Other coverity false positives?
+Fix coverity false positives?
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -1086,6 +1085,7 @@ User Friendlier:
 Tab pages:
 9   GUI implementation for the tab pages line for other systems.
 8   Make GUI menu in tab pages line configurable.  Like the popup menu.
+8   balloons for the tab page labels that are shortened to show the full path.
 8   :tabmove +N	 move tab page N pages forward
 8   :tabmove -N	 move tab page N pages backward
 7   :tabdup	 duplicate the tab with all its windows.
@@ -2009,7 +2009,8 @@ Autocommands:
     Error	    - When an error happens
     NormalEnter	    - Entering Normal mode
     ReplaceEnter    - Entering Replace mode
-    CmdEnter	    - Entering Cmdline mode
+    CmdEnter	    - Entering Cmdline mode (with type of cmdline to allow
+			different mapping)
     VisualEnter	    - Entering Visual mode
     *Leave	    - Leaving a mode (in pair with the above *Enter)
     VimLeaveCheck    - Before Vim decides to exit, so that it can be cancelled

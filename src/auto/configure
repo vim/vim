@@ -8986,8 +8986,9 @@ if test -z "$SKIP_MOTIF"; then
 
 
 
+
 for ac_header in Xm/Xm.h Xm/XpmP.h Xm/JoinSideT.h Xm/TraitP.h Xm/Manager.h \
-		   Xm/UnhighlightT.h
+		   Xm/UnhighlightT.h Xm/Notebook.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then

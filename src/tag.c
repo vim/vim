@@ -3356,7 +3356,6 @@ expand_tag_fname(fname, tag_fname, expand)
 	xpc.xp_context = EXPAND_FILES;
 	expanded_fname = ExpandOne(&xpc, (char_u *)fname, NULL,
 			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
-	ExpandCleanup(&xpc);
 	if (expanded_fname != NULL)
 	    fname = expanded_fname;
     }

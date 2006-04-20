@@ -26,7 +26,6 @@
 #include <Xm/LabelG.h>
 #include <Xm/ToggleBG.h>
 #include <Xm/SeparatoG.h>
-#include <Xm/Notebook.h>
 #include <Xm/XmP.h>
 
 #include <X11/keysym.h>
@@ -42,6 +41,9 @@
 # ifdef HAVE_XM_XPMP_H
 #  include <Xm/XpmP.h>
 # endif
+#endif
+#ifdef HAVE_XM_NOTEBOOK_H
+# include <Xm/Notebook.h>
 #endif
 
 #include "gui_xmebw.h"	/* for our Enhanced Button Widget */

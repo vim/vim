@@ -1,7 +1,7 @@
 " Vim completion script
-" Language:	HTML (XHTML 1.0 Strict by default)
+" Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 17
+" Last Change:	2006 Apr 20
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -159,12 +159,12 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
 
-		if !exists("g:html_omni")
+		if !exists("b:html_omni")
 			"runtime! autoload/xml/xhtml10s.vim
 			call htmlcomplete#LoadData()
 		endif
 
-	    let entities =  g:html_omni['vimxmlentities']
+	    let entities =  b:html_omni['vimxmlentities']
 
 		if len(a:base) == 1
 			for m in entities
@@ -462,8 +462,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
 					endfor
 				endif
 			else
-				if has_key(g:html_omni, tag) && has_key(g:html_omni[tag][1], attrname)
-					let values = g:html_omni[tag][1][attrname]
+				if has_key(b:html_omni, tag) && has_key(b:html_omni[tag][1], attrname)
+					let values = b:html_omni[tag][1][attrname]
 				else
 					return []
 				endif
@@ -503,13 +503,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let sbase = matchstr(context, '.*\ze\s.*')
 
 		" Load data {{{
-		if !exists("g:html_omni_gen")
+		if !exists("b:html_omni_gen")
 			call htmlcomplete#LoadData()
 		endif
 		" }}}
 		
-		if has_key(g:html_omni, tag)
-			let attrs = keys(g:html_omni[tag][1])
+		if has_key(b:html_omni, tag)
+			let attrs = keys(b:html_omni[tag][1])
 		else
 			return []
 		endif
@@ -522,13 +522,13 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			endif
 		endfor
 		let menu = res + res2
-		if has_key(g:html_omni, 'vimxmlattrinfo')
+		if has_key(b:html_omni, 'vimxmlattrinfo')
 			let final_menu = []
 			for i in range(len(menu))
 				let item = menu[i]
-				if has_key(g:html_omni['vimxmlattrinfo'], item)
-					let m_menu = g:html_omni['vimxmlattrinfo'][item][0]
-					let m_info = g:html_omni['vimxmlattrinfo'][item][1]
+				if has_key(b:html_omni['vimxmlattrinfo'], item)
+					let m_menu = b:html_omni['vimxmlattrinfo'][item][0]
+					let m_info = b:html_omni['vimxmlattrinfo'][item][1]
 					if m_menu !~ 'Bool'
 						let item .= '="'
 					endif
@@ -558,7 +558,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	endif
 	" }}}
 	" Load data {{{
-	if !exists("g:html_omni")
+	if !exists("b:html_omni")
 		"runtime! autoload/xml/xhtml10s.vim
 		call htmlcomplete#LoadData()
 	endif
@@ -568,16 +568,16 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	let opentag = tolower(xmlcomplete#GetLastOpenTag("b:unaryTagsStack"))
 	" MM: TODO: GLOT works always the same but with some weird situation it
 	" behaves as intended in HTML but screws in PHP
-	if opentag == '' || &ft == 'php' && !has_key(g:html_omni, opentag)
+	if opentag == '' || &ft == 'php' && !has_key(b:html_omni, opentag)
 		" Hack for sometimes failing GetLastOpenTag.
 		" As far as I tested fail isn't GLOT fault but problem
 		" of invalid document - not properly closed tags and other mish-mash.
 		" Also when document is empty. Return list of *all* tags.
-	    let tags = keys(g:html_omni)
+	    let tags = keys(b:html_omni)
 		call filter(tags, 'v:val !~ "^vimxml"')
 	else
-		if has_key(g:html_omni, opentag)
-			let tags = g:html_omni[opentag][0]
+		if has_key(b:html_omni, opentag)
+			let tags = b:html_omni[opentag][0]
 		else
 			return []
 		endif
@@ -596,16 +596,19 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endfor
 	let menu = res + res2
-	if has_key(g:html_omni, 'vimxmltaginfo')
+	if has_key(b:html_omni, 'vimxmltaginfo')
 		let final_menu = []
 		for i in range(len(menu))
 			let item = menu[i]
-			if has_key(g:html_omni['vimxmltaginfo'], item)
-				let m_menu = g:html_omni['vimxmltaginfo'][item][0]
-				let m_info = g:html_omni['vimxmltaginfo'][item][1]
+			if has_key(b:html_omni['vimxmltaginfo'], item)
+				let m_menu = b:html_omni['vimxmltaginfo'][item][0]
+				let m_info = b:html_omni['vimxmltaginfo'][item][1]
 			else
 				let m_menu = ''
 				let m_info = ''
+			endif
+			if &ft == 'html' && exists("uppercase_tag") && uppercase_tag == 1
+				let item = toupper(item)
 			endif
 			let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
 		endfor
@@ -619,25 +622,39 @@ function! htmlcomplete#CompleteTags(findstart, base)
 endfunction
 
 function! htmlcomplete#LoadData() " {{{
-	if !exists("g:html_omni_flavor")
-		let g:html_omni_flavor = 'xhtml10s'
+	if !exists("b:html_omni_flavor")
+		if &ft == 'html'
+			let b:html_omni_flavor = 'html401t'
+		else
+			let b:html_omni_flavor = 'xhtml10s'
+		endif
 	endif
-	exe 'runtime! autoload/xml/'.g:html_omni_flavor.'.vim'
-	" This one is necessary because we don't know if
-	" g:html_omni_flavor file exists and was sourced
+	" With that if we still have bloated memory but create new buffer
+	" variables only by linking to existing g:variable, not sourcing whole
+	" file.
+	if exists('g:xmldata_'.b:html_omni_flavor)
+		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+	else
+		exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
+		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+	endif
+	" This repetition is necessary because we don't know if
+	" b:html_omni_flavor file exists and was sourced
 	" Proper checking for files would require iterating through 'rtp'
 	" and could introduce OS dependent mess.
-	if !exists("g:xmldata_".g:html_omni_flavor)
-		let g:html_omni_flavor = 'xhtml10s'
-		runtime! autoload/xml/xhtml10s.vim
+	if !exists("g:xmldata_".b:html_omni_flavor)
+		if &ft == 'html'
+			let b:html_omni_flavor = 'html401t'
+		else
+			let b:html_omni_flavor = 'xhtml10s'
+		endif
 	endif
-
-	exe 'let g:html_omni = g:xmldata_'.g:html_omni_flavor
-
-	" Free some memory
-	exe 'unlet! g:xmldata_'.g:html_omni_flavor
-
-	"call htmlcomplete#LoadData()
+	if exists('g:xmldata_'.b:html_omni_flavor)
+		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+	else
+		exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
+		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+	endif
 endfunction
 " }}}
 " vim:set foldmethod=marker:

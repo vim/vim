@@ -3491,7 +3491,7 @@ get_tabline_label(tp)
 /*
  * Send the event for clicking to select tab page "nr".
  * Returns TRUE if it was done, FALSE when skipped because we are already at
- * that tab page.
+ * that tab page or the cmdline window is open.
  */
     int
 send_tabline_event(nr)
@@ -3501,6 +3501,14 @@ send_tabline_event(nr)
 
     if (nr == tabpage_index(curtab))
 	return FALSE;
+# ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	/* Set it back to the current tab page. */
+	gui_mch_set_curtab(tabpage_index(curtab));
+	return FALSE;
+    }
+# endif
     string[0] = CSI;
     string[1] = KS_TABLINE;
     string[2] = KE_FILLER;

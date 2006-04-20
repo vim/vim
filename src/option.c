@@ -2996,35 +2996,44 @@ set_init_1()
      * 'maxmemtot' and 'maxmem' may have to be adjusted for available memory
      */
     opt_idx = findoption((char_u *)"maxmemtot");
-#if !defined(HAVE_AVAIL_MEM) && !defined(HAVE_TOTAL_MEM)
-    if (options[opt_idx].def_val[VI_DEFAULT] == (char_u *)0L)
-#endif
+    if (opt_idx >= 0)
     {
+#if !defined(HAVE_AVAIL_MEM) && !defined(HAVE_TOTAL_MEM)
+	if (options[opt_idx].def_val[VI_DEFAULT] == (char_u *)0L)
+#endif
+	{
 #ifdef HAVE_AVAIL_MEM
-	/* Use amount of memory available at this moment. */
-	n = (mch_avail_mem(FALSE) >> 11);
+	    /* Use amount of memory available at this moment. */
+	    n = (mch_avail_mem(FALSE) >> 11);
 #else
 # ifdef HAVE_TOTAL_MEM
-	/* Use amount of memory available to Vim. */
-	n = (mch_total_mem(FALSE) >> 11);
+	    /* Use amount of memory available to Vim. */
+	    n = (mch_total_mem(FALSE) >> 11);
 # else
-	n = (0x7fffffff >> 11);
+	    n = (0x7fffffff >> 11);
 # endif
 #endif
-	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)n;
-	opt_idx = findoption((char_u *)"maxmem");
-#if !defined(HAVE_AVAIL_MEM) && !defined(HAVE_TOTAL_MEM)
-	if ((long)options[opt_idx].def_val[VI_DEFAULT] > n
-			  || (long)options[opt_idx].def_val[VI_DEFAULT] == 0L)
-#endif
 	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)n;
+	    opt_idx = findoption((char_u *)"maxmem");
+	    if (opt_idx >= 0)
+	    {
+#if !defined(HAVE_AVAIL_MEM) && !defined(HAVE_TOTAL_MEM)
+		if ((long)options[opt_idx].def_val[VI_DEFAULT] > n
+			|| (long)options[opt_idx].def_val[VI_DEFAULT] == 0L)
+#endif
+		    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)n;
+	    }
+	}
     }
 
 #ifdef FEAT_GUI_W32
     /* force 'shortname' for Win32s */
     if (gui_is_win32s())
-	options[findoption((char_u *)"shortname")].def_val[VI_DEFAULT] =
-							       (char_u *)TRUE;
+    {
+	opt_idx = findoption((char_u *)"shortname");
+	if (opt_idx >= 0)
+	    options[opt_idx].def_val[VI_DEFAULT] = (char_u *)TRUE;
+    }
 #endif
 
 #ifdef FEAT_SEARCHPATH
@@ -3057,8 +3066,11 @@ set_init_1()
 		}
 		buf[j] = NUL;
 		opt_idx = findoption((char_u *)"cdpath");
-		options[opt_idx].def_val[VI_DEFAULT] = buf;
-		options[opt_idx].flags |= P_DEF_ALLOCED;
+		if (opt_idx >= 0)
+		{
+		    options[opt_idx].def_val[VI_DEFAULT] = buf;
+		    options[opt_idx].flags |= P_DEF_ALLOCED;
+		}
 	    }
 	    if (mustfree)
 		vim_free(cdpath);
@@ -3259,8 +3271,11 @@ set_init_1()
 	if (mb_init() == NULL)
 	{
 	    opt_idx = findoption((char_u *)"encoding");
-	    options[opt_idx].def_val[VI_DEFAULT] = p_enc;
-	    options[opt_idx].flags |= P_DEF_ALLOCED;
+	    if (opt_idx >= 0)
+	    {
+		options[opt_idx].def_val[VI_DEFAULT] = p_enc;
+		options[opt_idx].flags |= P_DEF_ALLOCED;
+	    }
 
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2) || defined(MACOS) \
 		|| defined(VMS)
@@ -3278,9 +3293,11 @@ set_init_1()
 		set_string_option_direct((char_u *)"isk", -1,
 					      ISK_LATIN1, OPT_FREE, SID_NONE);
 		opt_idx = findoption((char_u *)"isp");
-		options[opt_idx].def_val[VIM_DEFAULT] = ISP_LATIN1;
+		if (opt_idx >= 0)
+		    options[opt_idx].def_val[VIM_DEFAULT] = ISP_LATIN1;
 		opt_idx = findoption((char_u *)"isk");
-		options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
+		if (opt_idx >= 0)
+		    options[opt_idx].def_val[VIM_DEFAULT] = ISK_LATIN1;
 		(void)init_chartab();
 	    }
 #endif
@@ -3297,8 +3314,11 @@ set_init_1()
 		if (p_tenc != NULL)
 		{
 		    opt_idx = findoption((char_u *)"termencoding");
-		    options[opt_idx].def_val[VI_DEFAULT] = p_tenc;
-		    options[opt_idx].flags |= P_DEF_ALLOCED;
+		    if (opt_idx >= 0)
+		    {
+			options[opt_idx].def_val[VI_DEFAULT] = p_tenc;
+			options[opt_idx].flags |= P_DEF_ALLOCED;
+		    }
 		    convert_setup(&input_conv, p_tenc, p_enc);
 		    convert_setup(&output_conv, p_enc, p_tenc);
 		}
@@ -3436,10 +3456,13 @@ set_string_default(name, val)
     if (p != NULL)		/* we don't want a NULL */
     {
 	opt_idx = findoption((char_u *)name);
-	if (options[opt_idx].flags & P_DEF_ALLOCED)
-	    vim_free(options[opt_idx].def_val[VI_DEFAULT]);
-	options[opt_idx].def_val[VI_DEFAULT] = p;
-	options[opt_idx].flags |= P_DEF_ALLOCED;
+	if (opt_idx >= 0)
+	{
+	    if (options[opt_idx].flags & P_DEF_ALLOCED)
+		vim_free(options[opt_idx].def_val[VI_DEFAULT]);
+	    options[opt_idx].def_val[VI_DEFAULT] = p;
+	    options[opt_idx].flags |= P_DEF_ALLOCED;
+	}
     }
 }
 
@@ -3452,7 +3475,11 @@ set_number_default(name, val)
     char	*name;
     long	val;
 {
-    options[findoption((char_u *)name)].def_val[VI_DEFAULT] = (char_u *)val;
+    int		opt_idx;
+
+    opt_idx = findoption((char_u *)name);
+    if (opt_idx >= 0)
+	options[opt_idx].def_val[VI_DEFAULT] = (char_u *)val;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -3498,7 +3525,7 @@ set_init_2()
      */
     set_number_default("scroll", (long)((long_u)Rows >> 1));
     idx = findoption((char_u *)"scroll");
-    if (!(options[idx].flags & P_WAS_SET))
+    if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
 	set_option_default(idx, OPT_LOCAL, p_cp);
     comp_col();
 
@@ -3507,7 +3534,7 @@ set_init_2()
      * Default is Rows - 1.
      */
     idx = findoption((char_u *)"wi");
-    if (!(options[idx].flags & P_WAS_SET))
+    if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
 	p_window = Rows - 1;
     set_number_default("window", Rows - 1);
 
@@ -3519,7 +3546,8 @@ set_init_2()
      * with a dark background, that can handle color.
      */
     idx = findoption((char_u *)"bg");
-    if (!(options[idx].flags & P_WAS_SET) && *term_bg_default() == 'd')
+    if (idx >= 0 && !(options[idx].flags & P_WAS_SET)
+						 && *term_bg_default() == 'd')
     {
 	set_string_option_direct(NULL, idx, (char_u *)"dark", OPT_FREE, 0);
 	/* don't mark it as set, when starting the GUI it may be
@@ -3594,10 +3622,16 @@ set_init_3()
 #endif
 
     idx_srr = findoption((char_u *)"srr");
-    do_srr = !(options[idx_srr].flags & P_WAS_SET);
+    if (idx_srr < 0)
+	do_srr = FALSE;
+    else
+	do_srr = !(options[idx_srr].flags & P_WAS_SET);
 #ifdef FEAT_QUICKFIX
     idx_sp = findoption((char_u *)"sp");
-    do_sp = !(options[idx_sp].flags & P_WAS_SET);
+    if (idx_sp < 0)
+	do_sp = FALSE;
+    else
+	do_sp = !(options[idx_sp].flags & P_WAS_SET);
 #endif
 
     /*
@@ -3692,7 +3726,7 @@ set_init_3()
 	int	idx3;
 
 	idx3 = findoption((char_u *)"shcf");
-	if (!(options[idx3].flags & P_WAS_SET))
+	if (idx3 >= 0 && !(options[idx3].flags & P_WAS_SET))
 	{
 	    p_shcf = (char_u *)"-c";
 	    options[idx3].def_val[VI_DEFAULT] = p_shcf;
@@ -3702,14 +3736,14 @@ set_init_3()
 #  ifdef WIN3264
 	/* Somehow Win32 requires the quotes around the redirection too */
 	idx3 = findoption((char_u *)"sxq");
-	if (!(options[idx3].flags & P_WAS_SET))
+	if (idx3 >= 0 && !(options[idx3].flags & P_WAS_SET))
 	{
 	    p_sxq = (char_u *)"\"";
 	    options[idx3].def_val[VI_DEFAULT] = p_sxq;
 	}
 #  else
 	idx3 = findoption((char_u *)"shq");
-	if (!(options[idx3].flags & P_WAS_SET))
+	if (idx3 >= 0 && !(options[idx3].flags & P_WAS_SET))
 	{
 	    p_shq = (char_u *)"\"";
 	    options[idx3].def_val[VI_DEFAULT] = p_shq;
@@ -3738,7 +3772,7 @@ set_helplang_default(lang)
     if (lang == NULL || STRLEN(lang) < 2)	/* safety check */
 	return;
     idx = findoption((char_u *)"hlg");
-    if (!(options[idx].flags & P_WAS_SET))
+    if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
     {
 	if (options[idx].flags & P_ALLOCED)
 	    free_string_option(p_hlg);
@@ -3807,7 +3841,7 @@ set_title_defaults()
      * not need to be contacted.
      */
     idx1 = findoption((char_u *)"title");
-    if (!(options[idx1].flags & P_WAS_SET))
+    if (idx1 >= 0 && !(options[idx1].flags & P_WAS_SET))
     {
 #ifdef FEAT_GUI
 	if (gui.starting || gui.in_use)
@@ -3819,7 +3853,7 @@ set_title_defaults()
 	p_title = val;
     }
     idx1 = findoption((char_u *)"icon");
-    if (!(options[idx1].flags & P_WAS_SET))
+    if (idx1 >= 0 && !(options[idx1].flags & P_WAS_SET))
     {
 #ifdef FEAT_GUI
 	if (gui.starting || gui.in_use)
@@ -5224,7 +5258,7 @@ set_string_option_direct(name, opt_idx, val, opt_flags, set_sid)
     if (opt_idx == -1)		/* use name */
     {
 	opt_idx = findoption(name);
-	if (opt_idx == -1)	/* not found (should not happen) */
+	if (opt_idx < 0)	/* not found (should not happen) */
 	{
 	    EMSG2(_(e_intern2), "set_string_option_direct()");
 	    return;
@@ -8127,7 +8161,7 @@ set_option_value(name, number, string, opt_flags)
     long_u	flags;
 
     opt_idx = findoption(name);
-    if (opt_idx == -1)
+    if (opt_idx < 0)
 	EMSG2(_("E355: Unknown option: %s"), name);
     else
     {
@@ -9464,7 +9498,8 @@ reset_modifiable()
     curbuf->b_p_ma = FALSE;
     p_ma = FALSE;
     opt_idx = findoption((char_u *)"ma");
-    options[opt_idx].def_val[VI_DEFAULT] = FALSE;
+    if (opt_idx >= 0)
+	options[opt_idx].def_val[VI_DEFAULT] = FALSE;
 }
 
 /*
@@ -10297,12 +10332,16 @@ vimrc_found(fname, envname)
 change_compatible(on)
     int	    on;
 {
+    int	    opt_idx;
+
     if (p_cp != on)
     {
 	p_cp = on;
 	compatible_set();
     }
-    options[findoption((char_u *)"cp")].flags |= P_WAS_SET;
+    opt_idx = findoption((char_u *)"cp");
+    if (opt_idx >= 0)
+	options[opt_idx].flags |= P_WAS_SET;
 }
 
 /*

@@ -3625,7 +3625,6 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 		    xpc.xp_context = EXPAND_FILES;
 		    var = ExpandOne(&xpc, dst, NULL,
 				WILD_ADD_SLASH|WILD_SILENT, WILD_EXPAND_FREE);
-		    ExpandCleanup(&xpc);
 		    mustfree = TRUE;
 		}
 
@@ -9363,7 +9362,7 @@ FreeWild(count, files)
     int	    count;
     char_u  **files;
 {
-    if (files == NULL || count <= 0)
+    if (count <= 0 || files == NULL)
 	return;
 #if defined(__EMX__) && defined(__ALWAYS_HAS_TRAILING_NULL_POINTER) /* XXX */
     /*

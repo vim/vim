@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0e.  Last change: 2006 Apr 12
+*spell.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -160,6 +160,10 @@ z=			For the word under/after the cursor suggest correctly
 			choice (only works if the mouse can be used in Normal
 			mode and when there are no line wraps).  Click on the
 			first line (the header) to cancel.
+
+			The suggestions listed normally replace a highlighted
+			bad word.  Sometimes they include other text, in that
+			case the replaced text is also listed after a "<".
 
 			If a count is used that suggestion is used, without
 			prompting.  For example, "1z=" always takes the first

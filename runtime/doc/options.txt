@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 18
+*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6684,6 +6684,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	this.  'textwidth' is set to 0 when the 'paste' option is set.  When
 	'textwidth' is zero, 'wrapmargin' may be used.  See also
 	'formatoptions' and |ins-textwidth|.
+	When 'formatexpr' is set it will be used to break the line.
 	NOTE: This option is set to 0 when 'compatible' is set.
 
 						*'thesaurus'* *'tsr'*

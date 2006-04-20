@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 18
+*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1026,7 +1026,8 @@ The "menu" item is used in the popup menu and may be truncated, thus it should
 be relatively short.  The "info" item can be longer, it will  be displayed in
 the preview window when "preview" appears in 'completeopt'.  The "info" item
 will also remain displayed after the popup menu has been removed.  This is
-useful for function arguments.
+useful for function arguments.  Use a single space for "info" to remove
+existing text in the preview window.
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
@@ -1266,22 +1267,32 @@ run |:make| command to detect formatting problems.
 
 HTML flavor						*html-flavor*
 
-By default HTML completion provides completion for XHTML 1.0 Strict. This is
-not the only HTML version. To use another data file and still have benefits of
-custom completion for class, style, etc. attributes set g:html_omni_flavor
-variable. Example (in .vimrc or filetype plugin file): >
+Default HTML completion depends on filetype. For HTML files it is HTML
+4.01 Transitional (&ft=='html'), for XHTML it is XHTML 1.0 Strict
+(&ft=='xhtml').
 
-	let g:html_omni_flavor = 'xhtml10t'
+These are not the only HTML versions. To use another data file and still
+have benefits of custom completion for class, style, etc. attributes set
+b:html_omni_flavor variable. Example (in .vimrc or filetype plugin
+file): >
 
-Data for HTML completion will be read from 'autoload/xml/xhtml10t.vim' file
-located somewhere in 'runtimepath' (not in default distribution).
+	let g:html_omni_flavor = 'xhtml10s'
 
-More about format of data file in |xml-omni-datafile|. Some of data files may
-in future be found on vim-online site (|www|).
+(Completion data file for HTML 4.01 Strict is also provided by Vim
+distribution.)
 
-Note that g:html_omni_flavor may point to file with any XML data.  This makes
-possible to mix PHP (|ft-php-omni|) completion with whatever XML dialect
-(assuming you have data file for it).
+Data for HTML completion will be read from 'autoload/xml/html10s.vim' file
+located somewhere in 'runtimepath'.
+
+Note: HTML completion files are also located in 'autoload/xml'
+directory.
+
+More about format of data file in |xml-omni-datafile|. Some of data
+files may in future be found on vim-online site (|www|).
+
+Note that b:html_omni_flavor may point to file with any XML data.  This
+makes possible to mix PHP (|ft-php-omni|) completion with whatever XML
+dialect (assuming you have data file for it).
 
 
 JAVASCRIPT					       *ft-javascript-omni*
@@ -1357,6 +1368,39 @@ should not be noticeable.
 Script detects if cursor is inside <?php ?> tags. If it is outside it will
 automatically switch to HTML/CSS/JavaScript completion. Note: contrary to
 original HTML files completion of tags (and only tags) isn't context aware.
+
+
+RUBY                                                    *ft-ruby-omni*
+
+Completion of Ruby code requires that vim be built with |+ruby|.
+
+Ruby completion will parse your buffer on demand in order to provide a list of
+completions.  These completions will be drawn from modules loaded by 'require'
+and modules defined in the current buffer.
+
+The completions provided by CTRL-X CTRL-O are sensitive to the context:
+
+          CONTEXT                          COMPLETIONS PROVIDED ~
+
+ 1. Not inside a class definition    Classes, constants and globals
+
+ 2. Inside a class definition        Methods or constants defined in the class
+
+ 3. After '.', '::' or ':'           Methods applicable to the object being
+                                       dereferenced
+
+ 4. After ':' or ':foo'              Symbol name (beginning with 'foo')
+
+Notes:
+ - Vim will load/evaluate code in order to provide completions.  This may
+   cause some code execution, which may be a concern.
+ - In context 2 above, anonymous classes are not supported.
+ - In context 3 above, Vim will attempt to determine the methods supported by
+   the object.
+ - Vim can detect and load the Rails environment for files within a rails
+   project. The feature is disabled by default, to enable it add >
+	   let g:rubycomplete_rails = 1
+<  to your vimrc.
 
 
 SYNTAX							*ft-syntax-omni*

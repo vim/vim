@@ -48,6 +48,11 @@
 
 /* Vim's Scrap flavor. */
 #define VIMSCRAPFLAVOR 'VIM!'
+#ifdef FEAT_MBYTE
+# define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
+#else
+# define SCRAPTEXTFLAVOR kScrapFlavorTypeText
+#endif
 
 static EventHandlerUPP mouseWheelHandlerUPP = NULL;
 SInt32 gMacSystemVersion;
@@ -4427,69 +4432,65 @@ clip_mch_request_selection(VimClipboard *cbd)
 
     if (flavor == 0)
     {
-	error = GetScrapFlavorFlags(scrap, kScrapFlavorTypeUnicode, &scrapFlags);
+	error = GetScrapFlavorFlags(scrap, SCRAPTEXTFLAVOR, &scrapFlags);
 	if (error != noErr)
 	    return;
 
-	error = GetScrapFlavorSize(scrap, kScrapFlavorTypeUnicode, &scrapSize);
+	error = GetScrapFlavorSize(scrap, SCRAPTEXTFLAVOR, &scrapSize);
 	if (error != noErr)
 	    return;
     }
 
     ReserveMem(scrapSize);
 
-    {
-	/* In CARBON we don't need a Handle, a pointer is good */
-	textOfClip = NewHandle(scrapSize);
-	/* tempclip = lalloc(scrapSize+1, TRUE); */
-	HLock(textOfClip);
-	error = GetScrapFlavorData(scrap,
-		flavor ? VIMSCRAPFLAVOR : kScrapFlavorTypeUnicode,
-		&scrapSize, *textOfClip);
-	scrapSize -= flavor;
+    /* In CARBON we don't need a Handle, a pointer is good */
+    textOfClip = NewHandle(scrapSize);
 
-	if (flavor)
-	    type = **textOfClip;
-	else
-	    type = (strchr(*textOfClip, '\r') != NULL) ? MLINE : MCHAR;
+    /* tempclip = lalloc(scrapSize+1, TRUE); */
+    HLock(textOfClip);
+    error = GetScrapFlavorData(scrap,
+	    flavor ? VIMSCRAPFLAVOR : SCRAPTEXTFLAVOR,
+	    &scrapSize, *textOfClip);
+    scrapSize -= flavor;
 
-	tempclip = lalloc(scrapSize + 1, TRUE);
-#if defined(FEAT_MBYTE)
-	mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
-#else
-	STRNCPY(tempclip, *textOfClip + flavor, scrapSize);
-#endif
-	tempclip[scrapSize] = 0;
+    if (flavor)
+	type = **textOfClip;
+    else
+	type = (strchr(*textOfClip, '\r') != NULL) ? MLINE : MCHAR;
+
+    tempclip = lalloc(scrapSize + 1, TRUE);
+    mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
+    tempclip[scrapSize] = 0;
 
 #ifdef MACOS_CONVERT
+    {
 	/* Convert from utf-16 (clipboard) */
 	size_t encLen = 0;
 	char_u *to = mac_utf16_to_enc((UniChar *)tempclip, scrapSize, &encLen);
-	if (to)
+
+	if (to != NULL)
 	{
 	    scrapSize = encLen;
 	    vim_free(tempclip);
 	    tempclip = to;
 	}
+    }
 #endif
 
-	searchCR = (char *)tempclip;
-	while (searchCR != NULL)
-	{
-	    searchCR = strchr(searchCR, '\r');
-
-	    if (searchCR != NULL)
-		searchCR[0] = '\n';
-
-	}
-
-	clip_yank_selection(type, tempclip, scrapSize, cbd);
-
-	vim_free(tempclip);
-	HUnlock(textOfClip);
-
-	DisposeHandle(textOfClip);
+    searchCR = (char *)tempclip;
+    while (searchCR != NULL)
+    {
+	searchCR = strchr(searchCR, '\r');
+	if (searchCR != NULL)
+	    *searchCR = '\n';
     }
+
+    clip_yank_selection(type, tempclip, scrapSize, cbd);
+
+    vim_free(tempclip);
+    HUnlock(textOfClip);
+
+    DisposeHandle(textOfClip);
 }
 
     void
@@ -4527,12 +4528,10 @@ clip_mch_set_selection(VimClipboard *cbd)
     /*
      * Once we set the clipboard, lose ownership.  If another application sets
      * the clipboard, we don't want to think that we still own it.
-     *
      */
-
     cbd->owned = FALSE;
 
-    type = clip_convert_selection(&str, (long_u *) &scrapSize, cbd);
+    type = clip_convert_selection(&str, (long_u *)&scrapSize, cbd);
 
 #ifdef MACOS_CONVERT
     size_t utf16_len = 0;
@@ -4555,7 +4554,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	**textOfClip = type;
 	mch_memmove(*textOfClip + 1, str, scrapSize);
 	GetCurrentScrap(&scrap);
-	PutScrapFlavor(scrap, kScrapFlavorTypeUnicode, kScrapFlavorMaskNone,
+	PutScrapFlavor(scrap, SCRAPTEXTFLAVOR, kScrapFlavorMaskNone,
 		scrapSize, *textOfClip + 1);
 	PutScrapFlavor(scrap, VIMSCRAPFLAVOR, kScrapFlavorMaskNone,
 		scrapSize + 1, *textOfClip);

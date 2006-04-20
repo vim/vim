@@ -4871,8 +4871,8 @@ msgid "E397: Filename required"
 msgstr "E397: Vy¾adovaný názov súboru"
 
 #, c-format
-msgid "E747: Missing ']': %s"
-msgstr "E747: Chýba ']': %s"
+msgid "E789: Missing ']': %s"
+msgstr "E789: Chýba ']': %s"
 
 #, c-format
 msgid "E398: Missing '=': %s"

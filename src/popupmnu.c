@@ -30,7 +30,7 @@ static int pum_col;			/* left column of pum */
 
 static int pum_do_redraw = FALSE;	/* do redraw anyway */
 
-static int pum_set_selected __ARGS((int n));
+static int pum_set_selected __ARGS((int n, int repeat));
 
 #define PUM_DEF_HEIGHT 10
 #define PUM_DEF_WIDTH  15
@@ -59,6 +59,7 @@ pum_display(array, size, selected)
     int		height;
     int		col;
     int		above_row = cmdline_row;
+    int		redo_count = 0;
 
 redo:
     def_width = PUM_DEF_WIDTH;
@@ -209,8 +210,9 @@ redo:
     pum_size = size;
 
     /* Set selected item and redraw.  If the window size changed need to redo
-     * the positioning. */
-    if (pum_set_selected(selected))
+     * the positioning.  Limit this to two times, when there is not much
+     * room the window size will keep changing. */
+    if (pum_set_selected(selected, redo_count) && ++redo_count <= 2)
 	goto redo;
 }
 
@@ -338,12 +340,17 @@ pum_get_selected()
 /*
  * Set the index of the currently selected item.  The menu will scroll when
  * necessary.  When "n" is out of range don't scroll.
+ * This may be repeated when the preview window is used:
+ * "repeat" == 0: open preview window normally
+ * "repeat" == 1: open preview window but don't set the size
+ * "repeat" == 2: don't open preview window
  * Returns TRUE when the window was resized and the location of the popup menu
  * must be recomputed.
  */
     static int
-pum_set_selected(n)
+pum_set_selected(n, repeat)
     int	    n;
+    int	    repeat;
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
@@ -404,10 +411,14 @@ pum_set_selected(n)
 	/*
 	 * Show extra info in the preview window if there is something and
 	 * 'completeopt' contains "preview".
+	 * Skip this when tried twice already.
+	 * Skip this also when there is not much room.
 	 * NOTE: Be very careful not to sync undo!
 	 */
 	if (pum_array[pum_selected].pum_info != NULL
-					    && vim_strchr(p_cot, 'p') != NULL)
+		&& Rows > 10
+		&& repeat <= 1
+		&& vim_strchr(p_cot, 'p') != NULL)
 	{
 	    win_T	*curwin_save = curwin;
 	    int		res = OK;
@@ -470,12 +481,15 @@ pum_set_selected(n)
 
 		    /* Increase the height of the preview window to show the
 		     * text, but no more than 'previewheight' lines. */
-		    if (lnum > p_pvh)
-			lnum = p_pvh;
-		    if (curwin->w_height < lnum)
+		    if (repeat == 0)
 		    {
-			win_setheight((int)lnum);
-			resized = TRUE;
+			if (lnum > p_pvh)
+			    lnum = p_pvh;
+			if (curwin->w_height < lnum)
+			{
+			    win_setheight((int)lnum);
+			    resized = TRUE;
+			}
 		    }
 
 		    curbuf->b_changed = 0;

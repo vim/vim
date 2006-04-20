@@ -5056,8 +5056,8 @@ msgid "E397: Filename required"
 msgstr "E397: 需要文件名称"
 
 #, c-format
-msgid "E747: Missing ']': %s"
-msgstr "E747: 缺少 ']': %s"
+msgid "E789: Missing ']': %s"
+msgstr "E789: 缺少 ']': %s"
 
 #, c-format
 msgid "E398: Missing '=': %s"

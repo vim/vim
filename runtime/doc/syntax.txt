@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0e.  Last change: 2006 Apr 15
+*syntax.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1606,12 +1606,22 @@ instead, and the name of your source file should be *.pike
 
 LUA						*lua.vim* *ft-lua-syntax*
 
-This syntax file may be used for Lua 4.0 and Lua 5.0 (default).  If you are
-programming in Lua 4.0, use this: >
+This syntax file may be used for Lua 4.0, Lua 5.0 or Lua 5.1 (the latter is
+the default). You can select one of these versions using the global variables
+lua_version and lua_subversion. For example, to activate Lua
+4.0 syntax highlighting, use this command: >
 
 	:let lua_version = 4
 
-If lua_version variable doesn't exist, it is set to 5.
+If you are using Lua 5.0, use these commands: >
+
+	:let lua_version = 5
+	:let lua_subversion = 0
+
+To restore highlighting for Lua 5.1: >
+
+	:let lua_version = 5
+	:let lua_subversion = 1
 
 
 MAIL						*mail.vim* *ft-mail.vim*
@@ -2765,7 +2775,7 @@ DEFINING KEYWORDS					*:syn-keyword*
   :syntax keyword   Type   contained int long char
   :syntax keyword   Type   int long contained char
   :syntax keyword   Type   int long char contained
-<								*E747*
+<								*E789*
 	When you have a keyword with an optional tail, like Ex commands in
 	Vim, you can put the optional characters inside [], to define all the
 	variations at once: >

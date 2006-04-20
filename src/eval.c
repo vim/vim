@@ -8863,7 +8863,6 @@ f_expand(argvars, rettv)
 	    ExpandInit(&xpc);
 	    xpc.xp_context = EXPAND_FILES;
 	    rettv->vval.v_string = ExpandOne(&xpc, s, NULL, flags, WILD_ALL);
-	    ExpandCleanup(&xpc);
 	}
 	else
 	    rettv->vval.v_string = NULL;
@@ -10397,7 +10396,6 @@ f_glob(argvars, rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = ExpandOne(&xpc, get_tv_string(&argvars[0]),
 				     NULL, WILD_USE_NL|WILD_SILENT, WILD_ALL);
-    ExpandCleanup(&xpc);
 }
 
 /*

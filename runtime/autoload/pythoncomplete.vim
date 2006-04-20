@@ -1,20 +1,16 @@
 "pythoncomplete.vim - Omni Completion for python
-" Maintainer: Aaron Griffin
-" Version: 0.3
-" Last Updated: 23 January 2006
+" Maintainer: Aaron Griffin <aaronmgriffin@gmail.com>
+" Version: 0.5
+" Last Updated: 19 April 2006
 "
-"   v0.3 Changes:
-"       added top level def parsing
-"       for safety, call returns are not evaluated
-"       handful of parsing changes
-"       trailing ( and . characters
-"       argument completion on open parens
-"       stop parsing at current line - ++performance, local var resolution
+" Yeah, I skipped a version number - 0.4 was never public.
+"  It was a bugfix version on top of 0.3.  This is a complete
+"  rewrite.
 "
-"   TODO
-"       RExec subclass
-"       Code cleanup + make class
-"       use internal dict, not globals()
+" TODO:
+" User defined docstrings aren't handled right...
+" 'info' item output can use some formatting work
+" Add an "unsafe eval" mode, to allow for return type evaluation
 
 if !has('python')
     echo "Error: Required vim compiled with +python"
@@ -23,12 +19,12 @@ endif
 
 function! pythoncomplete#Complete(findstart, base)
     "findstart = 1 when we need to get the text length
-    if a:findstart
+    if a:findstart == 1
         let line = getline('.')
         let idx = col('.')
         while idx > 0
             let idx -= 1
-            let c = line[idx-1]
+            let c = line[idx]
             if c =~ '\w'
                 continue
             elseif ! c =~ '\.'
@@ -42,310 +38,530 @@ function! pythoncomplete#Complete(findstart, base)
         return idx
     "findstart = 0 when we need to return the list of completions
     else
-        execute "python get_completions('" . a:base . "')"
+        "vim no longer moves the cursor upon completion... fix that
+        let line = getline('.')
+        let idx = col('.')
+        let cword = ''
+        while idx > 0
+            let idx -= 1
+            let c = line[idx]
+            if c =~ '\w' || c =~ '\.'
+                let cword = c . cword
+                continue
+            elseif strlen(cword) > 0 || idx == 0
+                break
+            endif
+        endwhile
+        execute "python vimcomplete('" . cword . "', '" . a:base . "')"
         return g:pythoncomplete_completions
     endif
 endfunction
 
 function! s:DefPython()
 python << PYTHONEOF
-import vim, sys, types
-import __builtin__
-import tokenize, keyword, cStringIO
+import sys, tokenize, cStringIO, types
+from token import NAME, DEDENT, NEWLINE, STRING
 
-LOCALDEFS = \
-	['LOCALDEFS', 'clean_up','eval_source_code', \
-	 'get_completions', '__builtin__', '__builtins__', \
-	 'dbg', '__name__', 'vim', 'sys', 'parse_to_end', \
-     'parse_statement', 'tokenize', 'keyword', 'cStringIO', \
-     'debug_level', 'safe_eval', '_ctor', 'get_arguments', \
-     'strip_calls', 'types', 'parse_block']
+debugstmts=[]
+def dbg(s): debugstmts.append(s)
+def showdbg():
+    for d in debugstmts: print "DBG: %s " % d
 
-def dbg(level,msg):
-    debug_level = 1
+def vimcomplete(context,match):
+    global debugstmts
+    debugstmts = []
     try:
-        debug_level = vim.eval("g:pythoncomplete_debug_level")
-    except:
-        pass
-    if level <= debug_level: print(msg)
+        import vim
+        def complsort(x,y):
+            return x['abbr'] > y['abbr']
+        cmpl = Completer()
+        cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
+        all = cmpl.get_completions(context,match)
+        all.sort(complsort)
+        dictstr = '['
+        # have to do this for double quoting
+        for cmpl in all:
+            dictstr += '{'
+            for x in cmpl: dictstr += '"%s":"%s",' % (x,cmpl[x])
+            dictstr += '"icase":0},'
+        if dictstr[-1] == ',': dictstr = dictstr[:-1]
+        dictstr += ']'
+        dbg("dict: %s" % dictstr)
+        vim.command("silent let g:pythoncomplete_completions = %s" % dictstr)
+        #dbg("Completion dict:\n%s" % all)
+    except vim.error:
+        dbg("VIM Error: %s" % vim.error)
 
-def strip_calls(stmt):
-    parsed=''
-    level = 0
-    for c in stmt:
-        if c in ['[','(']:
-            level += 1
-        elif c in [')',']']:
-            level -= 1
-        elif level == 0:
-            parsed += c
-    ##dbg(10,"stripped: %s" % parsed)
-    return parsed
+class Completer(object):
+    def __init__(self):
+       self.compldict = {}
+       self.parser = PyParser()
 
-def get_completions(base):
-    stmt = vim.eval('expand("<cWORD>")')
-    #dbg(1,"statement: %s - %s" % (stmt, base))
-    stmt = stmt+base
-    eval_source_code()
+    def evalsource(self,text,line=0):
+        sc = self.parser.parse(text,line)
+        src = sc.get_code()
+        dbg("source: %s" % src)
+        try: exec(src) in self.compldict
+        except: dbg("parser: %s, %s" % (sys.exc_info()[0],sys.exc_info()[1]))
+        for l in sc.locals:
+            try: exec(l) in self.compldict
+            except: dbg("locals: %s, %s [%s]" % (sys.exc_info()[0],sys.exc_info()[1],l))
 
-    try:
-        ridx = stmt.rfind('.')
-        if stmt[-1] == '(':
-            match = ""
-            stmt = strip_calls(stmt[:len(stmt)-1])
-            all = get_arguments(eval(stmt))
-        elif ridx == -1:
-            match = stmt
-            all = globals() + __builtin__.__dict__
-        else:
-            match = stmt[ridx+1:]
-            stmt = strip_calls(stmt[:ridx])
-            all = eval(stmt).__dict__
+    def _cleanstr(self,doc):
+        return doc.replace('"',' ')\
+                  .replace("'",' ')\
+                  .replace('\n',' ')\
+                  .replace('\r',' ')\
+                  .replace('',' ')
 
-        #dbg(15,"completions for: %s, match=%s" % (stmt,match))
-        completions = []
-        if type(all) == types.DictType:
-            for m in all:
-                if m.find('_') != 0 and m.find(match) == 0 and \
-			       m not in LOCALDEFS:
-                    #dbg(25,"matched... %s, %s" % (m, m.find(match)))
-                    typestr = str(all[m])
-                    if "function" in typestr: m += '('
-                    elif "method" in typestr: m += '('
-                    elif "module" in typestr: m += '.'
-                    elif "class" in typestr: m += '('
-                    completions.append(m)
-            completions.sort()
-        else:
-            completions.append(all)
-        #dbg(10,"all completions: %s" % completions)
-        vim.command("let g:pythoncomplete_completions = %s" % completions)
-    except:
-        vim.command("let g:pythoncomplete_completions = []")
-        #dbg(1,"exception: %s" % sys.exc_info()[1])
-    clean_up()
+    def get_arguments(self,func_obj):
+        def _ctor(obj):
+            try: return class_ob.__init__.im_func
+            except AttributeError:
+                for base in class_ob.__bases__:
+                    rc = _find_constructor(base)
+                    if rc is not None: return rc
+            return None
 
-def get_arguments(func_obj):
-    def _ctor(obj):
-        try:
-            return class_ob.__init__.im_func
-        except AttributeError:
-            for base in class_ob.__bases__:
-                rc = _find_constructor(base)
-                if rc is not None: return rc
-        return None
-
-    arg_offset = 1
-    if type(func_obj) == types.ClassType: func_obj = _ctor(func_obj)
-    elif type(func_obj) == types.MethodType: func_obj = func_obj.im_func
-    else: arg_offset = 0
-    
-    #dbg(20,"%s, offset=%s" % (str(func_obj), arg_offset))
-
-    arg_text = ''
-    if type(func_obj) in [types.FunctionType, types.LambdaType]:
-        try:
-            cd = func_obj.func_code
-            real_args = cd.co_varnames[arg_offset:cd.co_argcount]
-            defaults = func_obj.func_defaults or []
-            defaults = list(map(lambda name: "=%s" % name, defaults))
-            defaults = [""] * (len(real_args)-len(defaults)) + defaults
-            items = map(lambda a,d: a+d, real_args, defaults)
-            if func_obj.func_code.co_flags & 0x4:
-                items.append("...")
-            if func_obj.func_code.co_flags & 0x8:
-                items.append("***")
-            arg_text = ", ".join(items) + ')'
-
-        except:
-            #dbg(1,"exception: %s" % sys.exc_info()[1])
-            pass
-    if len(arg_text) == 0:
-        # The doc string sometimes contains the function signature
-        #  this works for alot of C modules that are part of the
-        #  standard library
-        doc = getattr(func_obj, '__doc__', '')
-        if doc:
-            doc = doc.lstrip()
-            pos = doc.find('\n')
-            if pos > 0:
-                sigline = doc[:pos]
-                lidx = sigline.find('(')
-                ridx = sigline.find(')')
-                retidx = sigline.find('->')
-                ret = sigline[retidx+2:].strip()
-                if lidx > 0 and ridx > 0:
-                    arg_text = sigline[lidx+1:ridx] + ')'
-                    if len(ret) > 0: arg_text += ' #returns %s' % ret
-    #dbg(15,"argument completion: %s" % arg_text)
-    return arg_text
-
-def parse_to_end(gen):
-    stmt=''
-    level = 0
-    for type, str, begin, end, line in gen:
-        if line == vim.eval('getline(\'.\')'): break
-        elif str == '\\': continue
-        elif str == ';':
-            break
-        elif type == tokenize.NEWLINE and level == 0:
-            break
-        elif str in ['[','(']:
-            level += 1
-        elif str in [')',']']:
-            level -= 1
-        elif level == 0:
-            stmt += str
-        #dbg(10,"current statement: %s" % stmt)
-    return stmt
-
-def parse_block(gen):
-    lines = []
-    level = 0
-    for type, str, begin, end, line in gen:
-        if line.replace('\n','') == vim.eval('getline(\'.\')'): break
-        elif type == tokenize.INDENT:
-            level += 1
-        elif type == tokenize.DEDENT:
-            level -= 1
-            if level == 0: break;
-        else:
-            stmt = parse_statement(gen,str)
-            if len(stmt) > 0: lines.append(stmt)
-    return lines
-
-def parse_statement(gen,curstr=''):
-    var = curstr
-    type, str, begin, end, line = gen.next()
-    if str == '=':
-        type, str, begin, end, line = gen.next()
-        if type == tokenize.NEWLINE:
-            return ''
-        elif type == tokenize.STRING or str == 'str':  
-            return '%s = str' % var
-        elif str == '[' or str == 'list':
-            return '%s= list' % var
-        elif str == '{' or str == 'dict':
-            return '%s = dict' % var
-        elif type == tokenize.NUMBER:
-            return '%s = 0' % var
-        elif str == 'Set': 
-            return '%s = Set' % var
-        elif str == 'open' or str == 'file':
-            return '%s = file' % var
-        else:
-            inst = str + parse_to_end(gen)
-            if len(inst) > 0:
-                #dbg(5,"found [%s = %s]" % (var, inst))
-                return '%s = %s' % (var, inst)
-    return ''
-
-def eval_source_code():
-    LINE=vim.eval('getline(\'.\')')
-    s = cStringIO.StringIO('\n'.join(vim.current.buffer[:]) + '\n')
-    g = tokenize.generate_tokens(s.readline)
-
-    stmts = []
-    lineNo = 0
-    try:
-        for type, str, begin, end, line in g:
-            if line.replace('\n','') == vim.eval('getline(\'.\')'): break
-            elif begin[0] == lineNo: continue
-            #junk
-            elif type == tokenize.INDENT or \
-                 type == tokenize.DEDENT or \
-                 type == tokenize.ERRORTOKEN or \
-                 type == tokenize.ENDMARKER or \
-                 type == tokenize.NEWLINE or \
-                 type == tokenize.COMMENT:
-                continue
-            #import statement
-            elif str == 'import':
-                import_stmt=parse_to_end(g)
-                if len(import_stmt) > 0:
-                    #dbg(5,"found [import %s]" % import_stmt)
-                    stmts.append("import %s" % import_stmt)
-            #import from statement
-            elif str == 'from':
-                type, str, begin, end, line = g.next()
-                mod = str
-
-                type, str, begin, end, line = g.next()
-                if str != "import": break
-                from_stmt=parse_to_end(g)
-                if len(from_stmt) > 0:
-                    #dbg(5,"found [from %s import %s]" % (mod, from_stmt))
-                    stmts.append("from %s import %s" % (mod, from_stmt))
-            #def statement
-            elif str == 'def':
-                funcstr = ''
-                for type, str, begin, end, line in g:
-                    if line.replace('\n','') == vim.eval('getline(\'.\')'): break
-                    elif str == ':':
-                        stmts += parse_block(g)
-                        break
-                    funcstr += str
-                if len(funcstr) > 0:
-                    #dbg(5,"found [def %s]" % funcstr)
-                    stmts.append("def %s:\n   pass" % funcstr)
-            #class declaration
-            elif str == 'class':
-                type, str, begin, end, line = g.next()
-                classname = str
-                #dbg(5,"found [class %s]" % classname)
-
-                level = 0
-                members = []
-                for type, str, begin, end, line in g:
-                    if line.replace('\n','') == vim.eval('getline(\'.\')'): break
-                    elif type == tokenize.INDENT:
-                        level += 1
-                    elif type == tokenize.DEDENT:
-                        level -= 1
-                        if level == 0: break;
-                    elif str == 'def':
-                        memberstr = ''
-                        for type, str, begin, end, line in g:
-                            if line.replace('\n','') == vim.eval('getline(\'.\')'): break
-                            elif str == ':':
-                                stmts += parse_block(g)
-                                break
-                            memberstr += str
-                        #dbg(5,"   member [%s]" % memberstr)
-                        members.append(memberstr)
-                classstr = 'class %s:' % classname
-                for m in members:
-                    classstr += ("\n   def %s:\n      pass" % m)
-                stmts.append("%s\n" % classstr)
-            elif keyword.iskeyword(str) or str in globals():
-                #dbg(5,"keyword = %s" % str)
-                lineNo = begin[0]
-            else:
-                assign = parse_statement(g,str)
-                if len(assign) > 0: stmts.append(assign)
-                
-        for s in stmts:
+        arg_offset = 1
+        if type(func_obj) == types.ClassType: func_obj = _ctor(func_obj)
+        elif type(func_obj) == types.MethodType: func_obj = func_obj.im_func
+        else: arg_offset = 0
+        
+        arg_text = ')'
+        if type(func_obj) in [types.FunctionType, types.LambdaType]:
             try:
-                #dbg(15,"evaluating: %s\n" % s)
-                exec(s) in globals()
+                cd = func_obj.func_code
+                real_args = cd.co_varnames[arg_offset:cd.co_argcount]
+                defaults = func_obj.func_defaults or []
+                defaults = [map(lambda name: "=%s" % name, defaults)]
+                defaults = [""] * (len(real_args)-len(defaults)) + defaults
+                items = map(lambda a,d: a+d, real_args, defaults)
+                if func_obj.func_code.co_flags & 0x4:
+                    items.append("...")
+                if func_obj.func_code.co_flags & 0x8:
+                    items.append("***")
+                arg_text = ", ".join(items) + ')'
+
             except:
-                #dbg(1,"exception: %s" % sys.exc_info()[1])
+                dbg("completion: %s: %s" % (sys.exc_info()[0],sys.exc_info()[1]))
                 pass
-    except:
-        #dbg(1,"exception: %s" % sys.exc_info()[1])
-        pass
+        if len(arg_text) == 0:
+            # The doc string sometimes contains the function signature
+            #  this works for alot of C modules that are part of the
+            #  standard library
+            doc = func_obj.__doc__
+            if doc:
+                doc = doc.lstrip()
+                pos = doc.find('\n')
+                if pos > 0:
+                    sigline = doc[:pos]
+                    lidx = sigline.find('(')
+                    ridx = sigline.find(')')
+                    if lidx > 0 and ridx > 0:
+                        arg_text = sigline[lidx+1:ridx] + ')'
+        return arg_text
 
-def clean_up():
-    for o in globals().keys():
-        if o not in LOCALDEFS:
-            try:
-                exec('del %s' % o) in globals()
-            except: pass
+    def get_completions(self,context,match):
+        dbg("get_completions('%s','%s')" % (context,match))
+        stmt = ''
+        if context: stmt += str(context)
+        if match: stmt += str(match)
+        try:
+            result = None
+            all = {}
+            ridx = stmt.rfind('.')
+            if len(stmt) > 0 and stmt[-1] == '(':
+                #TODO
+                result = eval(_sanitize(stmt[:-1]), self.compldict)
+                doc = result.__doc__
+                if doc == None: doc = ''
+                args = self.get_arguments(res)
+                return [{'word':self._cleanstr(args),'info':self._cleanstr(doc),'kind':'p'}]
+            elif ridx == -1:
+                match = stmt
+                all = self.compldict
+            else:
+                match = stmt[ridx+1:]
+                stmt = _sanitize(stmt[:ridx])
+                result = eval(stmt, self.compldict)
+                all = dir(result)
+
+            dbg("completing: stmt:%s" % stmt)
+            completions = []
+
+            try: maindoc = result.__doc__
+            except: maindoc = ' '
+            if maindoc == None: maindoc = ' '
+            for m in all:
+                if m == "_PyCmplNoType": continue #this is internal
+                try:
+                    dbg('possible completion: %s' % m)
+                    if m.find(match) == 0:
+                        if result == None: inst = all[m]
+                        else: inst = getattr(result,m)
+                        try: doc = inst.__doc__
+                        except: doc = maindoc
+                        typestr = str(inst)
+                        if doc == None or doc == '': doc = maindoc
+
+                        wrd = m[len(match):]
+                        c = {'word':wrd, 'abbr':m,  'info':self._cleanstr(doc),'kind':'m'}
+                        if "function" in typestr:
+                            c['word'] += '('
+                            c['abbr'] += '(' + self._cleanstr(self.get_arguments(inst))
+                            c['kind'] = 'f'
+                        elif "method" in typestr:
+                            c['word'] += '('
+                            c['abbr'] += '(' + self._cleanstr(self.get_arguments(inst))
+                            c['kind'] = 'f'
+                        elif "module" in typestr:
+                            c['word'] += '.'
+                            c['kind'] = 'm'
+                        elif "class" in typestr:
+                            c['word'] += '('
+                            c['abbr'] += '('
+                            c['kind']='c'
+                        completions.append(c)
+                except:
+                    i = sys.exc_info()
+                    dbg("inner completion: %s,%s [stmt='%s']" % (i[0],i[1],stmt))
+            return completions
+        except:
+            i = sys.exc_info()
+            dbg("completion: %s,%s [stmt='%s']" % (i[0],i[1],stmt))
+            return []
+
+class Scope(object):
+    def __init__(self,name,indent):
+        self.subscopes = []
+        self.docstr = ''
+        self.locals = []
+        self.parent = None
+        self.name = name
+        self.indent = indent
+
+    def add(self,sub):
+        #print 'push scope: [%s@%s]' % (sub.name,sub.indent)
+        sub.parent = self
+        self.subscopes.append(sub)
+        return sub
+
+    def doc(self,str):
+        """ Clean up a docstring """
+        d = str.replace('\n',' ')
+        d = d.replace('\t',' ')
+        while d.find('  ') > -1: d = d.replace('  ',' ')
+        while d[0] in '"\'\t ': d = d[1:]
+        while d[-1] in '"\'\t ': d = d[:-1]
+        self.docstr = d
+
+    def local(self,loc):
+        if not self._hasvaralready(loc):
+            self.locals.append(loc)
+
+    def copy_decl(self,indent=0):
+        """ Copy a scope's declaration only, at the specified indent level - not local variables """
+        return Scope(self.name,indent)
+
+    def _hasvaralready(self,test):
+        "Convienance function... keep out duplicates"
+        if test.find('=') > -1:
+            var = test.split('=')[0].strip()
+            for l in self.locals:
+                if l.find('=') > -1 and var == l.split('=')[0].strip():
+                    return True
+        return False
+
+    def get_code(self):
+        # we need to start with this, to fix up broken completions
+        # hopefully this name is unique enough...
+        str = '"""'+self.docstr+'"""\n'
+        str += 'class _PyCmplNoType:\n    def __getattr__(self,name):\n        return None\n'
+        for sub in self.subscopes:
+            str += sub.get_code()
+        #str += '\n'.join(self.locals)+'\n'
+
+        return str
+
+    def pop(self,indent):
+        #print 'pop scope: [%s] to [%s]' % (self.indent,indent)
+        outer = self
+        while outer.parent != None and outer.indent >= indent:
+            outer = outer.parent
+        return outer
+
+    def currentindent(self):
+        #print 'parse current indent: %s' % self.indent
+        return '    '*self.indent
+
+    def childindent(self):
+        #print 'parse child indent: [%s]' % (self.indent+1)
+        return '    '*(self.indent+1)
+
+class Class(Scope):
+    def __init__(self, name, supers, indent):
+        Scope.__init__(self,name,indent)
+        self.supers = supers
+    def copy_decl(self,indent=0):
+        c = Class(self.name,self.supers,indent)
+        for s in self.subscopes:
+            c.add(s.copy_decl(indent+1))
+        return c
+    def get_code(self):
+        str = '%sclass %s' % (self.currentindent(),self.name)
+        if len(self.supers) > 0: str += '(%s)' % ','.join(self.supers)
+        str += ':\n'
+        if len(self.docstr) > 0: str += self.childindent()+'"""'+self.docstr+'"""\n'
+        if len(self.subscopes) > 0:
+            for s in self.subscopes: str += s.get_code()
+        else:
+            str += '%spass\n' % self.childindent()
+        return str
+
+
+class Function(Scope):
+    def __init__(self, name, params, indent):
+        Scope.__init__(self,name,indent)
+        self.params = params
+    def copy_decl(self,indent=0):
+        return Function(self.name,self.params,indent)
+    def get_code(self):
+        str = "%sdef %s(%s):\n" % \
+            (self.currentindent(),self.name,','.join(self.params))
+        if len(self.docstr) > 0: str += self.childindent()+'"""'+self.docstr+'"""\n'
+        str += "%spass\n" % self.childindent()
+        return str
+
+class PyParser:
+    def __init__(self):
+        self.top = Scope('global',0)
+        self.scope = self.top
+
+    def _parsedotname(self,pre=None):
+        #returns (dottedname, nexttoken)
+        name = []
+        if pre == None:
+            tokentype, token, indent = self.next()
+            if tokentype != NAME and token != '*':
+                return ('', token)
+        else: token = pre
+        name.append(token)
+        while True:
+            tokentype, token, indent = self.next()
+            if token != '.': break
+            tokentype, token, indent = self.next()
+            if tokentype != NAME: break
+            name.append(token)
+        return (".".join(name), token)
+
+    def _parseimportlist(self):
+        imports = []
+        while True:
+            name, token = self._parsedotname()
+            if not name: break
+            name2 = ''
+            if token == 'as': name2, token = self._parsedotname()
+            imports.append((name, name2))
+            while token != "," and "\n" not in token:
+                tokentype, token, indent = self.next()
+            if token != ",": break
+        return imports
+
+    def _parenparse(self):
+        name = ''
+        names = []
+        level = 1
+        while True:
+            tokentype, token, indent = self.next()
+            if token in (')', ',') and level == 1:
+                names.append(name)
+                name = ''
+            if token == '(':
+                level += 1
+            elif token == ')':
+                level -= 1
+                if level == 0: break
+            elif token == ',' and level == 1:
+                pass
+            else:
+                name += str(token)
+        return names
+
+    def _parsefunction(self,indent):
+        self.scope=self.scope.pop(indent)
+        tokentype, fname, ind = self.next()
+        if tokentype != NAME: return None
+
+        tokentype, open, ind = self.next()
+        if open != '(': return None
+        params=self._parenparse()
+
+        tokentype, colon, ind = self.next()
+        if colon != ':': return None
+
+        return Function(fname,params,indent)
+
+    def _parseclass(self,indent):
+        self.scope=self.scope.pop(indent)
+        tokentype, cname, ind = self.next()
+        if tokentype != NAME: return None
+
+        super = []
+        tokentype, next, ind = self.next()
+        if next == '(':
+            super=self._parenparse()
+        elif next != ':': return None
+
+        return Class(cname,super,indent)
+
+    def _parseassignment(self):
+        assign=''
+        tokentype, token, indent = self.next()
+        if tokentype == tokenize.STRING or token == 'str':  
+            return '""'
+        elif token == '[' or token == 'list':
+            return '[]'
+        elif token == '{' or token == 'dict':
+            return '{}'
+        elif tokentype == tokenize.NUMBER:
+            return '0'
+        elif token == 'open' or token == 'file':
+            return 'file'
+        elif token == 'None':
+            return '_PyCmplNoType()'
+        elif token == 'type':
+            return 'type(_PyCmplNoType)' #only for method resolution
+        else:
+            assign += token
+            level = 0
+            while True:
+                tokentype, token, indent = self.next()
+                if token in ('(','{','['):
+                    level += 1
+                elif token in (']','}',')'):
+                    level -= 1
+                    if level == 0: break
+                elif level == 0:
+                    if token in (';','\n'): break
+                    assign += token
+        return "%s" % assign
+
+    def next(self):
+        type, token, (lineno, indent), end, self.parserline = self.gen.next()
+        if lineno == self.curline:
+            #print 'line found [%s] scope=%s' % (line.replace('\n',''),self.scope.name)
+            self.currentscope = self.scope
+        return (type, token, indent)
+
+    def _adjustvisibility(self):
+        newscope = Scope('result',0)
+        scp = self.currentscope
+        while scp != None:
+            if type(scp) == Function:
+                slice = 0
+                #Handle 'self' params
+                if scp.parent != None and type(scp.parent) == Class:
+                    slice = 1
+                    p = scp.params[0]
+                    i = p.find('=')
+                    if i != -1: p = p[:i]
+                    newscope.local('%s = %s' % (scp.params[0],scp.parent.name))
+                for p in scp.params[slice:]:
+                    i = p.find('=')
+                    if i == -1:
+                        newscope.local('%s = _PyCmplNoType()' % p)
+                    else:
+                        newscope.local('%s = %s' % (p[:i],_sanitize(p[i+1])))
+
+            for s in scp.subscopes:
+                ns = s.copy_decl(0)
+                newscope.add(ns)
+            for l in scp.locals: newscope.local(l)
+            scp = scp.parent
+
+        self.currentscope = newscope
+        return self.currentscope
+
+    #p.parse(vim.current.buffer[:],vim.eval("line('.')"))
+    def parse(self,text,curline=0):
+        self.curline = int(curline)
+        buf = cStringIO.StringIO(''.join(text) + '\n')
+        self.gen = tokenize.generate_tokens(buf.readline)
+        self.currentscope = self.scope
+
+        try:
+            freshscope=True
+            while True:
+                tokentype, token, indent = self.next()
+                #print 'main: token=[%s] indent=[%s]' % (token,indent)
+
+                if tokentype == DEDENT:
+                    self.scope = self.scope.pop(indent)
+                elif token == 'def':
+                    func = self._parsefunction(indent)
+                    if func == None:
+                        print "function: syntax error..."
+                        continue
+                    freshscope = True
+                    self.scope = self.scope.add(func)
+                elif token == 'class':
+                    cls = self._parseclass(indent)
+                    if cls == None:
+                        print "class: syntax error..."
+                        continue
+                    freshscope = True
+                    self.scope = self.scope.add(cls)
+                    
+                elif token == 'import':
+                    imports = self._parseimportlist()
+                    for mod, alias in imports:
+                        loc = "import %s" % mod
+                        if len(alias) > 0: loc += " as %s" % alias
+                        self.scope.local(loc)
+                    freshscope = False
+                elif token == 'from':
+                    mod, token = self._parsedotname()
+                    if not mod or token != "import":
+                        print "from: syntax error..."
+                        continue
+                    names = self._parseimportlist()
+                    for name, alias in names:
+                        loc = "from %s import %s" % (mod,name)
+                        if len(alias) > 0: loc += " as %s" % alias
+                        self.scope.local(loc)
+                    freshscope = False
+                elif tokentype == STRING:
+                    if freshscope: self.scope.doc(token)
+                elif tokentype == NAME:
+                    name,token = self._parsedotname(token) 
+                    if token == '=':
+                        stmt = self._parseassignment()
+                        if stmt != None:
+                            self.scope.local("%s = %s" % (name,stmt))
+                    freshscope = False
+        except StopIteration: #thrown on EOF
+            pass
+        except:
+            dbg("parse error: %s, %s @ %s" %
+                (sys.exc_info()[0], sys.exc_info()[1], self.parserline))
+        return self._adjustvisibility()
+
+def _sanitize(str):
+    val = ''
+    level = 0
+    for c in str:
+        if c in ('(','{','['):
+            level += 1
+        elif c in (']','}',')'):
+            level -= 1
+        elif level == 0:
+            val += c
+    return val
 
 sys.path.extend(['.','..'])
 PYTHONEOF
 endfunction
 
-let g:pythoncomplete_debug_level = 0
 call s:DefPython()
 " vim: set et ts=4:

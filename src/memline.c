@@ -1532,7 +1532,7 @@ recover_names(fname, list, nr)
 			files[i] = files[i + 1];
 		}
 	}
-	if (nr)
+	if (nr > 0)
 	{
 	    file_count += num_files;
 	    if (nr <= file_count)
@@ -1578,7 +1578,8 @@ recover_names(fname, list, nr)
 
 	for (i = 0; i < num_names; ++i)
 	    vim_free(names[i]);
-	FreeWild(num_files, files);
+	if (num_files > 0)
+	    FreeWild(num_files, files);
     }
     vim_free(dir_name);
     return file_count;

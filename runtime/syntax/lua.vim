@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Lua 4.0, Lua 5.0 and Lua 5.1
-" Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
+" Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol com br>
 " First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
-" Last Change:	2006 Apr. 19
+" Last Change:	2006 Apr 21
 " Options:	lua_version = 4 or 5
 "		lua_subversion = 0 (4.0, 5.0) or 1 (5.1)
 "		default 5.1
@@ -36,7 +36,7 @@ if lua_version == 5 && lua_subversion == 0
   syn region  luaComment        matchgroup=luaComment start="--\[\[" end="\]\]" contains=luaTodo,luaInnerComment
   syn region  luaInnerComment   contained transparent start="\[\[" end="\]\]"
 elseif lua_version > 5 || (lua_version == 5 && lua_subversion >= 1)
-  " Comments in Lua 5.1: [[ ... ]], [=[ ... ]=], [===[ ... ]===], etc.
+  " Comments in Lua 5.1: --[[ ... ]], [=[ ... ]=], [===[ ... ]===], etc.
   syn region  luaComment        matchgroup=luaComment start="--\[\z(=*\)\[" end="\]\z1\]"
 endif
 
@@ -91,15 +91,17 @@ if lua_version > 4
 endif
 
 " Strings
-syn match  luaSpecial contained "\\[\\abfnrtv\'\"[\]]\|\\\d\{,3}"
-syn region luaString  start=+'+ end=+'+ skip=+\\\\\|\\'+ contains=luaSpecial
-syn region luaString  start=+"+ end=+"+ skip=+\\\\\|\\"+ contains=luaSpecial
-" Nested strings
-if (lua_version == 5 && lua_subversion == 0) || lua_version < 5
+if lua_version < 5
+  syn match  luaSpecial contained "\\[\\abfnrtv\'\"]\|\\\d\{,3}"
+elseif lua_version == 5 && lua_subversion == 0
+  syn match  luaSpecial contained "\\[\\abfnrtv\'\"[\]]\|\\\d\{,3}"
   syn region luaString2 matchgroup=luaString start=+\[\[+ end=+\]\]+ contains=luaString2
 elseif lua_version > 5 || (lua_version == 5 && lua_subversion >= 1)
+  syn match  luaSpecial contained "\\[\\abfnrtv\'\"]\|\\\d\{,3}"
   syn region luaString2 matchgroup=luaString start="\[\z(=*\)\[" end="\]\z1\]"
 endif
+syn region luaString  start=+'+ end=+'+ skip=+\\\\\|\\'+ contains=luaSpecial
+syn region luaString  start=+"+ end=+"+ skip=+\\\\\|\\"+ contains=luaSpecial
 
 " integer number
 syn match luaNumber "\<[0-9]\+\>"
@@ -113,11 +115,11 @@ syn match luaFloat  "\<[0-9]\+e[-+]\=[0-9]\+\>"
 " tables
 syn region  luaTableBlock transparent matchgroup=luaTable start="{" end="}" contains=ALLBUT,luaTodo,luaSpecial,luaCond,luaCondElseif,luaCondEnd,luaCondStart,luaBlock,luaRepeatBlock,luaRepeat,luaStatement
 
-syn keyword luaFunc assert collectgarbage dofile error gcinfo next
+syn keyword luaFunc assert collectgarbage dofile error next
 syn keyword luaFunc print rawget rawset tonumber tostring type _VERSION
 
 if lua_version == 4
-  syn keyword luaFunc _ALERT _ERRORMESSAGE
+  syn keyword luaFunc _ALERT _ERRORMESSAGE gcinfo
   syn keyword luaFunc call copytagmethods dostring
   syn keyword luaFunc foreach foreachi getglobal getn
   syn keyword luaFunc gettagmethod globals newtag
@@ -142,7 +144,7 @@ elseif lua_version == 5
   syn keyword luaFunc loadstring pairs pcall rawequal
   syn keyword luaFunc require setfenv setmetatable unpack xpcall
   if lua_subversion == 0
-    syn keyword luaFunc loadlib LUA_PATH _LOADED _REQUIREDNAME
+    syn keyword luaFunc gcinfo loadlib LUA_PATH _LOADED _REQUIREDNAME
   elseif lua_subversion == 1
     syn keyword luaFunc load module select
     syn match luaFunc /package\.cpath/
@@ -171,6 +173,10 @@ elseif lua_version == 5
   syn match   luaFunc /string\.gsub/
   if lua_subversion == 0
     syn match luaFunc /string\.gfind/
+    syn match luaFunc /table\.getn/
+    syn match luaFunc /table\.setn/
+    syn match luaFunc /table\.foreach/
+    syn match luaFunc /table\.foreachi/
   elseif lua_subversion == 1
     syn match luaFunc /string\.gmatch/
     syn match luaFunc /string\.match/
@@ -178,13 +184,9 @@ elseif lua_version == 5
     syn match luaFunc /table\.maxn/
   endif
   syn match   luaFunc /table\.concat/
-  syn match   luaFunc /table\.foreach/
-  syn match   luaFunc /table\.foreachi/
-  syn match   luaFunc /table\.getn/
   syn match   luaFunc /table\.sort/
   syn match   luaFunc /table\.insert/
   syn match   luaFunc /table\.remove/
-  syn match   luaFunc /table\.setn/
   syn match   luaFunc /math\.abs/
   syn match   luaFunc /math\.acos/
   syn match   luaFunc /math\.asin/

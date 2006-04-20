@@ -4528,7 +4528,7 @@ syn_cmd_keyword(eap, syncing)
 			    break;
 			if (p[1] == NUL)
 			{
-			    EMSG2(_("E747: Missing ']': %s"), kw);
+			    EMSG2(_("E789: Missing ']': %s"), kw);
 			    kw = p + 2;		/* skip over the NUL */
 			    break;
 			}
@@ -6329,9 +6329,9 @@ init_highlight(both, reset)
      * depend on the number of colors available. */
     if (t_colors > 8)
 	do_highlight((char_u *)(*p_bg == 'l' ? "Visual ctermbg=LightGrey"
-				   : "Visual ctermbg=DarkGrey"), reset, TRUE);
+				   : "Visual ctermbg=DarkGrey"), FALSE, TRUE);
     else
-	do_highlight((char_u *)"Visual cterm=reverse", reset, TRUE);
+	do_highlight((char_u *)"Visual cterm=reverse", FALSE, TRUE);
 
 #ifdef FEAT_SYN_HL
     /*

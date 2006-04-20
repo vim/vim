@@ -3260,7 +3260,8 @@ nextwild(xp, type, options)
  * Return a pointer to alloced memory containing the new string.
  * Return NULL for failure.
  *
- * Results are cached in xp->xp_files and xp->xp_numfiles.
+ * Results are cached in xp->xp_files and xp->xp_numfiles, except when "mode"
+ * is WILD_EXPAND_FREE or WILD_ALL.
  *
  * mode = WILD_FREE:	    just free previously expanded matches
  * mode = WILD_EXPAND_FREE: normal expansion, do not keep matches

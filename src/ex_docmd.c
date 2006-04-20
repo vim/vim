@@ -4371,7 +4371,6 @@ expand_filename(eap, cmdlinep, errormsgp)
 		    p = ExpandOne(&xpc, eap->arg, NULL,
 					    WILD_LIST_NOTFOUND|WILD_ADD_SLASH,
 						   WILD_EXPAND_FREE);
-		    ExpandCleanup(&xpc);
 		    if (p == NULL)
 			return FAIL;
 		}

@@ -2336,20 +2336,23 @@ ex_menutranslate(eap)
 	    {
 		tp = (menutrans_T *)menutrans_ga.ga_data;
 		from = vim_strsave(from);
-		from_noamp = menu_text(from, NULL, NULL);
-		to = vim_strnsave(to, (int)(arg - to));
-		if (from != NULL && from_noamp != NULL && to != NULL)
+		if (from != NULL)
 		{
-		    tp[menutrans_ga.ga_len].from = from;
-		    tp[menutrans_ga.ga_len].from_noamp = from_noamp;
-		    tp[menutrans_ga.ga_len].to = to;
-		    ++menutrans_ga.ga_len;
-		}
-		else
-		{
-		    vim_free(from);
-		    vim_free(from_noamp);
-		    vim_free(to);
+		    from_noamp = menu_text(from, NULL, NULL);
+		    to = vim_strnsave(to, (int)(arg - to));
+		    if (from_noamp != NULL && to != NULL)
+		    {
+			tp[menutrans_ga.ga_len].from = from;
+			tp[menutrans_ga.ga_len].from_noamp = from_noamp;
+			tp[menutrans_ga.ga_len].to = to;
+			++menutrans_ga.ga_len;
+		    }
+		    else
+		    {
+			vim_free(from);
+			vim_free(from_noamp);
+			vim_free(to);
+		    }
 		}
 	    }
 	}
