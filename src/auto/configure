@@ -9197,7 +9197,7 @@ fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
   else
     cat >>confdefs.h <<\_ACEOF
-#define XPMATTRIBUTES_TYPE XpmAttributes_21
+#define XPMATTRIBUTES_TYPE XpmAttributes
 _ACEOF
 
   fi

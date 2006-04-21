@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 12
+*undo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -87,10 +87,11 @@ undone together.
 If you want to write a function or script that doesn't create a new undoable
 change but joins in with the previous change use this command:
 
-							*:undoj* *:undojoin*
+						*:undoj* *:undojoin* *E790*
 :undoj[oin]		Join further changes with the previous undo block.
 			Warning: Use with care, it may prevent the user from
-			properly undoing changes.
+			properly undoing changes.  Don't use this after undo
+			or redo.
 			{not in Vi}
 
 This is most useful when you need to prompt the user halfway a change.  For

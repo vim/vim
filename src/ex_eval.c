@@ -155,22 +155,22 @@ cause_errthrow(mesg, severe, ignore)
     struct msglist **plist;
 
     /*
-     * Do nothing when displaying the interrupt message or reporting an uncaught
-     * exception (which has already been discarded then) at the top level.  Also
-     * when no exception can be thrown.  The message will be displayed by
-     * emsg().
+     * Do nothing when displaying the interrupt message or reporting an
+     * uncaught exception (which has already been discarded then) at the top
+     * level.  Also when no exception can be thrown.  The message will be
+     * displayed by emsg().
      */
     if (suppress_errthrow)
 	return FALSE;
 
     /*
-     * If emsg() has not been called previously, temporarily reset "force_abort"
-     * until the throw point for error messages has been reached.  This ensures
-     * that aborting() returns the same value for all errors that appear in the
-     * same command.  This means particularly that for parsing errors during
-     * expression evaluation emsg() will be called multiply, even when the
-     * expression is evaluated from a finally clause that was activated due to
-     * an aborting error, interrupt, or exception.
+     * If emsg() has not been called previously, temporarily reset
+     * "force_abort" until the throw point for error messages has been
+     * reached.  This ensures that aborting() returns the same value for all
+     * errors that appear in the same command.  This means particularly that
+     * for parsing errors during expression evaluation emsg() will be called
+     * multiply, even when the expression is evaluated from a finally clause
+     * that was activated due to an aborting error, interrupt, or exception.
      */
     if (!did_emsg)
     {
@@ -181,18 +181,18 @@ cause_errthrow(mesg, severe, ignore)
     /*
      * If no try conditional is active and no exception is being thrown and
      * there has not been an error in a try conditional or a throw so far, do
-     * nothing (for compatibility of non-EH scripts).  The message will then be
-     * displayed by emsg().  When ":silent!" was used and we are not currently
-     * throwing an exception, do nothing.  The message text will then be stored
-     * to v:errmsg by emsg() without displaying it.
+     * nothing (for compatibility of non-EH scripts).  The message will then
+     * be displayed by emsg().  When ":silent!" was used and we are not
+     * currently throwing an exception, do nothing.  The message text will
+     * then be stored to v:errmsg by emsg() without displaying it.
      */
     if (((trylevel == 0 && !cause_abort) || emsg_silent) && !did_throw)
 	return FALSE;
 
     /*
      * Ignore an interrupt message when inside a try conditional or when an
-     * exception is being thrown or when an error in a try conditional or throw
-     * has been detected previously.  This is important in order that an
+     * exception is being thrown or when an error in a try conditional or
+     * throw has been detected previously.  This is important in order that an
      * interrupt exception is catchable by the innermost try conditional and
      * not replaced by an interrupt message error exception.
      */

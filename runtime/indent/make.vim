@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         Makefile
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("b:did_indent")
   finish
@@ -15,18 +15,9 @@ if exists("*GetMakeIndent")
   finish
 endif
 
-function s:GetStringWidth(line, str)
-  let end = matchend(a:line, a:str)
-  let width = 0
-  for c in a:line
-    if c == "\t"
-      let width += &ts - (width % &ts)
-    else
-      let width += 1
-    endif
-  endfor
-  return width
-endfunction
+let s:rule_rx = '^[^ \t#:][^#:]*:\{1,2}\%([^=:]\|$\)'
+let s:continuation_rx = '\\$'
+let s:assignment_rx = '^\s*\h\w*\s*+\==\s*\zs.*\\$'
 
 function GetMakeIndent()
   let lnum = v:lnum - 1
@@ -35,11 +26,27 @@ function GetMakeIndent()
   endif
 
   let line = getline(lnum)
-  if line == ''
-    return 0
-  elseif line =~ '^[^ \t#:][^#:]*:\{1,2}\%([^=:]\|$\)'
-    return indent(lnum) + &ts
-  elseif line =~ '^\s*\h\w*\s*+\==\s*.\+\\$'
-    return s:GetStringWidth(line, '+\==\s*')
+  let ind = indent(lnum)
+
+  if line =~ s:rule_rx
+    return ind + &ts
+  elseif line =~ s:continuation_rx
+    while lnum > 0 && line =~ s:continuation_rx && line !~ s:assignment_rx
+      let lnum -= 1
+      let line = getline(lnum)
+    endwhile
+    if line =~ s:assignment_rx
+      call cursor(lnum, 1)
+      return search(s:assignment_rx, 'W') != 0 ? virtcol('.') - 1 : 0
+    else
+      return 0
+    endif
+  else
+    let pnum = lnum - 1
+    if pnum == 0
+      return ind
+    endif
+
+    return getline(pnum) =~ s:continuation_rx ? 0 : ind
   endif
 endfunction

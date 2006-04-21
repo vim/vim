@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2006-04-08 09:01+0200\n"
-"PO-Revision-Date:  2006-04-08 09:01+0200\n"
+"POT-Creation-Date: 2006-04-21 09:26+0200\n"
+"PO-Revision-Date:  2006-04-21 09:26+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -493,6 +493,22 @@ msgstr "E723: Manca '}' a fine Dizionario: %s"
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variabile troppo nidificata per la visualizzazione"
+
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: Funzione sconosciuta: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: La funzione: %s richiede più argomenti"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: Uso di <SID> fuori dal contesto di uno script: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: Chiamata di funzione dict in assenza di Dizionario: %s"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Troppi argomenti"
@@ -2517,11 +2533,32 @@ msgstr "<finestra %d>"
 msgid "no such window"
 msgstr "finestra inesistente"
 
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ deve essere un'istanza di String"
+
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
 "E266: Spiacente, comando non disponibile, non riesco a caricare libreria "
 "programmi Ruby."
+
+msgid "E267: unexpected return"
+msgstr "E267: return imprevisto"
+
+msgid "E268: unexpected next"
+msgstr "E268: next imprevisto"
+
+msgid "E269: unexpected break"
+msgstr "E269: break imprevisto"
+
+msgid "E270: unexpected redo"
+msgstr "E270: redo imprevisto"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: retry fuori da clausola rescue"
+
+msgid "E272: unhandled exception"
+msgstr "E272: eccezione non gestita"
 
 #, c-format
 msgid "E273: unknown longjmp status %d"
@@ -4232,9 +4269,6 @@ msgstr "ANCHOR_BUF_SIZE troppo piccolo."
 msgid "I/O ERROR"
 msgstr "ERRORE I/O"
 
-msgid "...(truncated)"
-msgstr "...(troncato)"
-
 msgid "Message"
 msgstr "Messaggio"
 
@@ -4660,6 +4694,16 @@ msgstr "E388: Non sono riuscito a trovare la definizione"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Non sono riuscito a trovare il modello"
 
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Ult. %sEspressione di Ricerca:\n"
+"~"
+
 msgid "E759: Format error in spell file"
 msgstr "E759: Errore di formato nel file ortografico"
 
@@ -4739,7 +4783,7 @@ msgid ""
 "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
 "%d"
 msgstr ""
-"Definire COMPOUNDFORBIDFLAG dop l'elemento PFX potrebbe dare risultati "
+"Definire COMPOUNDFORBIDFLAG dopo l'elemento PFX potrebbe dare risultati "
 "errati in %s linea %d"
 
 #, c-format
@@ -4747,7 +4791,7 @@ msgid ""
 "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
 "%d"
 msgstr ""
-"Definire COMPOUNDPERMITFLAG dop l'elemento PFX potrebbe dare risultati "
+"Definire COMPOUNDPERMITFLAG dopo l'elemento PFX potrebbe dare risultati "
 "errati in %s linea %d"
 
 #, c-format
@@ -5380,6 +5424,10 @@ msgstr "Nessuna modifica, Undo impossibile"
 msgid "number changes  time"
 msgstr "numero modif.   ora"
 
+#, c-format
+msgid "%ld seconds ago"
+msgstr "%ld secondi fa"
+
 msgid "E439: undo list corrupt"
 msgstr "E439: lista 'undo' non valida"
 
@@ -5686,6 +5734,9 @@ msgstr "ATTENZIONE: Trovato Windows 95/98/ME"
 msgid "type  :help windows95<Enter>  for info on this"
 msgstr "batti :help windows95<Enter>  per info al riguardo"
 
+msgid "Already only one window"
+msgstr "C'è già una finestra sola"
+
 msgid "E441: There is no preview window"
 msgstr "E441: Non c'è una finestra di pre-visualizzazione"
 
@@ -5697,9 +5748,6 @@ msgstr "E443: Non posso ruotare quando un'altra finestra è divisa in due"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: Non riesco a chiudere l'ultima finestra"
-
-msgid "Already only one window"
-msgstr "C'è già una finestra sola"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: Altre finestre contengono modifiche"

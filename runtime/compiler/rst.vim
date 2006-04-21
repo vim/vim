@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:         reStructuredText Documentation Format
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("current_compiler")
   finish
@@ -11,7 +11,7 @@ let current_compiler = "rst"
 let s:cpo_save = &cpo
 set cpo-=C
 
-CompilerSet errorformat=
+setlocal errorformat=
       \%f:%l:\ (%tEBUG/0)\ %m,
       \%f:%l:\ (%tNFO/1)\ %m,
       \%f:%l:\ (%tARNING/2)\ %m,

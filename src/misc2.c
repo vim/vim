@@ -5816,7 +5816,8 @@ filewritable(fname)
 emsg3(s, a1, a2)
     char_u *s, *a1, *a2;
 {
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
+					  && vim_strchr(p_debug, 't') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif
@@ -5835,7 +5836,8 @@ emsgn(s, n)
     char_u	*s;
     long	n;
 {
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
+					  && vim_strchr(p_debug, 't') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif

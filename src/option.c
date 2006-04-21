@@ -1267,6 +1267,15 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 				    },
+    {"guitabtooltip",  "gtl", P_STRING|P_VI_DEF|P_RWIN,
+#if defined(FEAT_GUI_TABLINE)
+			    (char_u *)&p_gtt, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+				    },
     {"hardtabs",    "ht",   P_NUM|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}},
@@ -2812,7 +2821,7 @@ static char *(p_bsdir_values[]) = {"current", "last", "buffer", NULL};
 static char *(p_scbopt_values[]) = {"ver", "hor", "jump", NULL};
 #endif
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", NULL};
-static char *(p_debug_values[]) = {"msg", "beep", NULL};
+static char *(p_debug_values[]) = {"msg", "throw", "beep", NULL};
 #ifdef FEAT_VERTSPLIT
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
 #endif
@@ -6188,7 +6197,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     /* 'debug' */
     else if (varp == &p_debug)
     {
-	if (check_opt_strings(p_debug, p_debug_values, FALSE) != OK)
+	if (check_opt_strings(p_debug, p_debug_values, TRUE) != OK)
 	    errmsg = e_invarg;
     }
 

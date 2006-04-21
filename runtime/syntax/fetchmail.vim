@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         fetchmail(1) RC File
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2006-01-25
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("b:current_syntax")
   finish

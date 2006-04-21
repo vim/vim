@@ -52,7 +52,7 @@ menutrans &Paste<Tab>"+gP		粘贴(&P)<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		粘贴到光标前(&B)<Tab>[p
 menutrans Put\ &After<Tab>]p		粘贴到光标后(&A)<Tab>]p
 menutrans &Delete<Tab>x			删除(&D)<Tab>x
-menutrans &Select\ all<Tab>ggVG		全选(&S)<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG		全选(&S)<Tab>ggVG
 menutrans &Find\.\.\.			查找(&F)\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	查找和替换(&L)\.\.\.
 menutrans &Find<Tab>/			查找(&F)<Tab>/

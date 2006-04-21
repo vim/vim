@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 20
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-For a tooltip of at GUI tab label we need a new field.  Also 'guitabtip'?
+Win32: Crash when adding many menu entries. (Karl Waedt)
 
 Crash in "z=" when the change triggers checking out the file, FileChangedRO
 event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)
@@ -39,6 +39,7 @@ Added a few checks for valid buffer, did that help?
 Fix coverity false positives?
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
+    :undojoin
 
 Win32: Describe how to do debugging. (George Reilly)
 

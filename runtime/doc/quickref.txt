@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0e.  Last change: 2006 Mar 23
+*quickref.txt*  For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -707,6 +707,7 @@ Short explanation of each option:		*option-list*
 'guioptions'      'go'      GUI: Which components and options are used
 'guipty'                    GUI: try to use a pseudo-tty for ":!" commands
 'guitablabel'     'gtl'     GUI: custom label for a tab page
+'guitabtooltip'   'gtt'     GUI: custom tooltip for a tab page
 'helpfile'        'hf'      full path name of the main help file
 'helpheight'      'hh'      minimum height of a new help window
 'helplang'        'hlg'     preferred help languages

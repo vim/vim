@@ -1,6 +1,6 @@
 " Vim support file to help with paste mappings and menus
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 09
+" Last Change:	2006 Apr 21
 
 " Define the string to use for items that are present both in Edit, Popup and
 " Toolbar menu.  Also used in mswin.vim and macmap.vim.
@@ -32,8 +32,4 @@ else
   let paste#paste_cmd = {'n': "\"=@+.'xy'<CR>gPFx\"_2x"}
   let paste#paste_cmd['v'] = '"-c<Esc>gix<Esc>' . paste#paste_cmd['n'] . '"_x'
   let paste#paste_cmd['i'] = 'x<Esc>' . paste#paste_cmd['n'] . '"_s'
-endif
-
-if has("virtualedit")
-else
 endif

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
+*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2092,12 +2092,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 'debug'			string	(default "")
 			global
 			{not in Vi}
-	When set to "msg", error messages that would otherwise be omitted will
-	be given anyway.  This is useful when debugging 'foldexpr',
-	'formatexpr' or 'indentexpr'.
-	When set to "beep", a message will be given when otherwise only a beep
-	would be produced.
+	These values can be used:
+	msg	Error messages that would otherwise be omitted will be given
+		anyway.
+	throw	Error messages that would otherwise be omitted will be given
+		anyway and also throw an exception and set |v:errmsg|.
+	beep	A message will be given when otherwise only a beep would be
+		produced.
 	The values can be combined, separated by a comma.
+	"msg" and "throw" are useful for debugging 'foldexpr', 'formatexpr' or
+	'indentexpr'.
 
 						*'define'* *'def'*
 'define' 'def'		string	(default "^\s*#\s*define")
@@ -3407,10 +3411,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|setting-guitablabel| for more info.
 
 	The format of this option is like that of 'statusline'.
+	'guitabtooltip' is used for the tooltip, see below.
 
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
 	used.
+
+						*'guitabtooltip'* *'gtt'*
+'guitabtooltip' 'gtt'	string	(default empty)
+			global
+			{not in Vi}
+			{only available when compiled with GUI enabled and
+			with the +windows feature}
+	When nonempty describes the text to use in a tooltip for the GUI tab
+	pages line.  When empty Vim will use a default tooltip.
+	This option is otherwise just like 'guitablabel' above.
+
+	The tooltip only works for some systems.
+
 
 						*'helpfile'* *'hf'*
 'helpfile' 'hf'		string	(default (MSDOS)  "$VIMRUNTIME\doc\help.txt"

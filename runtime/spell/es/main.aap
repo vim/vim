@@ -48,7 +48,7 @@ es_ES.aff es_ES.dic: {buildcheck=}
         :assertpkg unzip patch
         :fetch $ZIPFILE_ES
         :sys $UNZIP $ZIPFILE_ES
-        :delete add-to--dictionary.lst.example
+        :delete Changelog_es_ES.txt
         :delete $ZIPFILE_ES
         @if not os.path.exists('es_ES.orig.aff'):
             :copy es_ES.aff es_ES.orig.aff

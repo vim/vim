@@ -130,14 +130,16 @@ function! GetSMLIndent()
 	elseif line =~ '^\s*else\>'
 	  	if lline !~ '^\s*\(if\|else\|then\)\>'
 				return s:FindPair('\<if\>', '', '\<then\>')
-	  	else return ind
+	  	else
+		  return ind
 		endif
 
 	" Match 'then' with 'if'
 	elseif line =~ '^\s*then\>'
   	if lline !~ '^\s*\(if\|else\|then\)\>'
 		  return s:FindPair('\<if\>', '', '\<then\>')
-	else return ind
+	else
+	  return ind
 	endif
 
 	" Indent if current line begins with ']'

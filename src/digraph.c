@@ -2439,8 +2439,11 @@ ex_loadkeymap(eap)
 	    kp->to = vim_strnsave(p, (int)(s - p));
 
 	    if (kp->from == NULL || kp->to == NULL
-		    || STRLEN(kp->from) + STRLEN(kp->to) >= KMAP_LLEN)
+		    || STRLEN(kp->from) + STRLEN(kp->to) >= KMAP_LLEN
+		    || *kp->from == NUL || *kp->to == NUL)
 	    {
+		if (kp->to != NULL && *kp->to == NUL)
+		    EMSG(_("E791: Empty keymap entry"));
 		vim_free(kp->from);
 		vim_free(kp->to);
 	    }

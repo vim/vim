@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         terminfo(5) definition
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-07-04
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("b:current_syntax")
   finish
@@ -74,7 +74,7 @@ syn keyword terminfoStrings     acsc cbt bel cr cpi lpi chr cvr csr rmp tbc mgc
 syn match terminfoStrings       display '\<kf\([0-9]\|[0-5][0-9]\|6[0-3]\)\>'
 
 syn match terminfoParameters    '%[%dcspl+*/mAO&|^=<>!~i?te;-]'
-syn match terminfoParameters    '%\('[A-Z]'\|{[0-9]\{1,2}}\|p[1-9]\|P[a-z]\|g[A-Z]\)'
+syn match terminfoParameters    "%\('[A-Z]'\|{[0-9]\{1,2}}\|p[1-9]\|P[a-z]\|g[A-Z]\)"
 
 hi def link terminfoComment     Comment
 hi def link terminfoTodo        Todo

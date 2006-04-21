@@ -1,8 +1,8 @@
-*** es_ES.orig.aff	Thu Aug 25 19:19:44 2005
---- es_ES.aff	Thu Aug 25 19:19:44 2005
+*** es_ES.orig.aff	Fri Apr 21 10:57:12 2006
+--- es_ES.aff	Fri Apr 21 11:10:16 2006
 ***************
-*** 3,4 ****
---- 3,22 ----
+*** 4,5 ****
+--- 4,12 ----
   
 + FOL  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
 + LOW  ßàáâãäåæçèéêëìíîïğñòóôõöøùúûüışÿ
@@ -11,77 +11,28 @@
 + SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZàáâãäåæçèéêëìíîïğñòóôõöøùúûüışßÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛÜİŞ¿
 + SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
 + 
-+ MAP 9
-+ MAP aàáâãäå
-+ MAP eèéêë
-+ MAP iìíîï
-+ MAP oòóôõö
-+ MAP uùúûü
-+ MAP nñ
-+ MAP cç
-+ MAP yÿı
-+ MAP sß
-+ 
-  SFX J Y 12
-*** es_ES.orig.dic	Thu Aug 25 19:19:44 2005
---- es_ES.dic	Thu Apr 20 20:30:24 2006
+  REP 20
 ***************
-*** 485,487 ****
-  acercóse
-- acercóse
-  acería/S
---- 485,486 ----
-***************
-*** 708,710 ****
-  acríticamente
-- acrítico
-  acrítico/PS
---- 707,708 ----
-***************
-*** 948,950 ****
-  adónde
-- adónde
-  adondequiera
---- 946,947 ----
-***************
-*** 1435,1437 ****
-  ah
-- ah
-  ahajar/PSTVWX
---- 1432,1433 ----
-***************
-*** 3887,3889 ****
-  apostolado
-- apostolado
-  apostolados
---- 3883,3884 ----
-***************
-*** 12926,12928 ****
-  dame
-- dame
-  dámelo
---- 12921,12922 ----
-***************
-*** 15561,15563 ****
-  dime
-- dime
-  dímelo
---- 15555,15556 ----
-***************
-*** 25133,25135 ****
-  inadaptado/PS
-- inadecuación
-  inadecuación/S
---- 25126,25127 ----
-***************
-*** 28008,28010 ****
-  líbranos
-- líbranos
-  libranza/S
---- 28000,28001 ----
-***************
-*** 48480,48481 ****
---- 48471,48473 ----
-  xilotila/S
-+ y
-  ya
+*** 26,33 ****
+  
+! MAP 5
+! MAP aáAÁ
+! MAP eéEÉ
+! MAP iíIÍ
+! MAP oóOÓ
+! MAP uúüUÚÜ
+  PFX a Y 2
+--- 33,45 ----
+  
+! MAP 9
+! MAP aàáâãäå
+! MAP eèéêë
+! MAP iìíîï
+! MAP oòóôõö
+! MAP uùúûü
+! MAP nñ
+! MAP cç
+! MAP yÿı
+! MAP sß
+! 
+  PFX a Y 2

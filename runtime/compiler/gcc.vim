@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:         GNU C Compiler
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("current_compiler")
   finish

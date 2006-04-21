@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         YACC input file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

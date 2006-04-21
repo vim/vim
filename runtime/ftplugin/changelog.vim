@@ -1,10 +1,13 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 " Variables:
-"   g:changelog_timeformat -
+"   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
+"       default: "%Y-%m-%d".
+"   g:changelog_dateformat -
+"       description: the format sent to strftime() to generate a date string.
 "       default: "%Y-%m-%d".
 "   g:changelog_username -
 "       description: the username to use in ChangeLog entries
@@ -25,8 +28,8 @@
 "  Problem is that you might end up with ChangeLog files all over the place.
 
 " If 'filetype' isn't "changelog", we must have been to add ChangeLog opener
-if &filetype == "changelog"
-  if exists("b:did_ftplugin")
+if &filetype == 'changelog'
+  if exists('b:did_ftplugin')
     finish
   endif
   let b:did_ftplugin = 1
@@ -34,20 +37,25 @@ if &filetype == "changelog"
   let s:cpo_save = &cpo
   set cpo&vim
 
-  " The format of the date-time field (should have been called dateformat)
-  if !exists("g:changelog_timeformat")
-    let g:changelog_timeformat = "%Y-%m-%d"
+  " Set up the format used for dates.
+  if !exists('g:changelog_dateformat')
+    if exists('g:changelog_timeformat')
+      let g:changelog_dateformat = g:changelog_timeformat
+    else
+      let g:changelog_dateformat = "%Y-%m-%d"
+    endif
   endif
 
   " Try to figure out a reasonable username of the form:
-  " Full Name <user@host>
-  if !exists("g:changelog_username")
-    if exists("$EMAIL_ADDRESS")
-      let g:changelog_username = $EMAIL_ADDRESS
-    elseif exists("$EMAIL")
+  "   Full Name <user@host>.
+  if !exists('g:changelog_username')
+    if exists('$EMAIL') && $EMAIL != ''
       let g:changelog_username = $EMAIL
+    elseif exists('$EMAIL_ADDRESS') && $EMAIL_ADDRESS != ''
+      " This is some Debian junk if I remember correctly.
+      let g:changelog_username = $EMAIL_ADDRESS
     else
-      " Get the users login name
+      " Get the users login name.
       let login = system('whoami')
       if v:shell_error
         let login = 'unknown'
@@ -58,43 +66,42 @@ if &filetype == "changelog"
         endif
       endif
 
-      " Try to full name from gecos field in /etc/passwd
+      " Try to get the full name from gecos field in /etc/passwd.
       if filereadable('/etc/passwd')
-        let name = substitute(
-              \system('cat /etc/passwd | grep ^`whoami`'),
-              \'^\%([^:]*:\)\{4}\([^:]*\):.*$', '\1', '')
+        for line in readfile('/etc/passwd')
+          if line =~ '^' . login
+            let name = substitute(line,'^\%([^:]*:\)\{4}\([^:]*\):.*$','\1','')
+            " Only keep stuff before the first comma.
+            let comma = stridx(name, ',')
+            if comma != -1
+              let name = strpart(name, 0, comma)
+            endif
+            " And substitute & in the real name with the login of our user.
+            let amp = stridx(name, '&')
+            if amp != -1
+              let name = strpart(name, 0, amp) . toupper(login[0]) .
+                       \ strpart(login, 1) . strpart(name, amp + 1)
+            endif
+          endif
+        endfor
       endif
 
-      " If there is no such file, or there was some other problem try
-      " others
-      if !filereadable('/etc/passwd') || v:shell_error
-        " Maybe the environment has something of interest
+      " If we haven't found a name, try to gather it from other places.
+      if !exists('name')
+        " Maybe the environment has something of interest.
         if exists("$NAME")
           let name = $NAME
         else
           " No? well, use the login name and capitalize first
-          " character
+          " character.
           let name = toupper(login[0]) . strpart(login, 1)
         endif
       endif
 
-      " Only keep stuff before the first comma
-      let comma = stridx(name, ',')
-      if comma != -1
-        let name = strpart(name, 0, comma)
-      endif
-
-      " And substitute & in the real name with the login of our user
-      let amp = stridx(name, '&')
-      if amp != -1
-        let name = strpart(name, 0, amp) . toupper(login[0]) .
-              \strpart(login, 1) . strpart(name, amp + 1)
-      endif
-
-      " Get our hostname
-      let hostname = system("hostname")
+      " Get our hostname.
+      let hostname = system('hostname')
       if v:shell_error
-        let hostname = 'unknownhost'
+        let hostname = 'localhost'
       else
         let newline = stridx(hostname, "\n")
         if newline != -1
@@ -102,102 +109,99 @@ if &filetype == "changelog"
         endif
       endif
 
-      " And finally set the username
-      let g:changelog_username = name.'  <'.login.'@'.hostname.'>'
+      " And finally set the username.
+      let g:changelog_username = name . '  <' . login . '@' . hostname . '>'
     endif
   endif
 
-  " Format used for new date-entries
-  if !exists("g:changelog_new_date_format")
+  " Format used for new date entries.
+  if !exists('g:changelog_new_date_format')
     let g:changelog_new_date_format = "%d  %u\n\n\t* %c\n\n"
   endif
 
-  " Format used for new entries to current date-entry
-  if !exists("g:changelog_new_entry_format")
+  " Format used for new entries to current date entry.
+  if !exists('g:changelog_new_entry_format')
     let g:changelog_new_entry_format = "\t* %c"
   endif
 
-  if !exists("g:changelog_date_entry_search")
+  " Regular expression used to find a given date entry.
+  if !exists('g:changelog_date_entry_search')
     let g:changelog_date_entry_search = '^\s*%d\_s*%u'
   endif
 
-  " Substitutes specific items in new date-entry formats and search strings
-  " Can be done with substitute of course, but unclean, and need \@! then
+  " Substitutes specific items in new date-entry formats and search strings.
+  " Can be done with substitute of course, but unclean, and need \@! then.
   function! s:substitute_items(str, date, user)
     let str = a:str
+    let middles = {'%': '%', 'd': a:date, 'u': a:user, 'c': '{cursor}'}
     let i = stridx(str, '%')
     while i != -1
-      let char = str[i + 1]
-      if char == '%'
-        let middle = '%'
-      elseif char == 'd'
-        let middle = a:date
-      elseif char == 'u'
-        let middle = a:user
-      elseif char == 'c'
-        let middle = '{cursor}'
-      else
-        let middle = char
+      let inc = 0
+      if has_key(middles, str[i + 1])
+        let mid = middles[str[i + 1]]
+        let str = strpart(str, 0, i) . mid . strpart(str, i + 2)
+        let inc = strlen(mid)
       endif
-      let str = strpart(str, 0, i) . middle . strpart(str, i + 2)
-      let i = stridx(str, '%')
+      let i = stridx(str, '%', i + 1 + inc)
     endwhile
     return str
   endfunction
 
+  " Position the cursor once we've done all the funky substitution.
   function! s:position_cursor()
     if search('{cursor}') > 0
-      let pos = line('.')
-      let line = getline(pos)
+      let lnum = line('.')
+      let line = getline(lnum)
       let cursor = stridx(line, '{cursor}')
-      call setline(pos, substitute(line, '{cursor}', '', ''))
+      call setline(lnum, substitute(line, '{cursor}', '', ''))
     endif
     startinsert!
   endfunction
 
-  " Internal function to create a new entry in the ChangeLog
+  " Internal function to create a new entry in the ChangeLog.
   function! s:new_changelog_entry()
-    " Deal with 'paste' option
+    " Deal with 'paste' option.
     let save_paste = &paste
     let &paste = 1
-    1
-    " Look for an entry for today by our user
-    let date = strftime(g:changelog_timeformat)
+    call cursor(1, 1)
+    " Look for an entry for today by our user.
+    let date = strftime(g:changelog_dateformat)
     let search = s:substitute_items(g:changelog_date_entry_search, date,
-          \g:changelog_username)
+                                  \ g:changelog_username)
     if search(search) > 0
-      " Ok, now we look for the end of the date-entry, and add an entry
-      let pos = nextnonblank(line('.') + 1)
-      let line = getline(pos)
-      while line =~ '^\s\+\S\+'
-        let pos = pos + 1
-        let line = getline(pos)
-      endwhile
-      let insert = s:substitute_items(g:changelog_new_entry_format,
-            \'', '')
-      execute "normal! ".(pos - 1)."Go".insert
-      execute pos
+      " Ok, now we look for the end of the date entry, and add an entry.
+      call cursor(nextnonblank(line('.') + 1), 1)
+      if search('^\s*$', 'W') > 0
+        let p = line('.') - 1
+      else
+        let p = line('.')
+      endif
+      let ls = split(s:substitute_items(g:changelog_new_entry_format, '', ''),
+                   \ '\n')
+      call append(p, ls)
+      call cursor(p + 1, 1)
     else
-      " Flag for removing empty lines at end of new ChangeLogs
+      " Flag for removing empty lines at end of new ChangeLogs.
       let remove_empty = line('$') == 1
 
-      " No entry today, so create a date-user header and insert an entry
+      " No entry today, so create a date-user header and insert an entry.
       let todays_entry = s:substitute_items(g:changelog_new_date_format,
-            \date, g:changelog_username)
-      " Make sure we have a cursor positioning
+                                          \ date, g:changelog_username)
+      " Make sure we have a cursor positioning.
       if stridx(todays_entry, '{cursor}') == -1
-        let todays_entry = todays_entry.'{cursor}'
+        let todays_entry = todays_entry . '{cursor}'
       endif
 
-      " Now do the work
-      execute "normal! i".todays_entry
+      " Now do the work.
+      call append(0, split(todays_entry, '\n'))
+      
+      " Remove empty lines at end of file.
       if remove_empty
-        while getline('$') == ''
-          $delete
-        endwhile
+        $-/^\s*$/-1,$delete
       endif
 
-      1
+      " Reposition cursor once we're done.
+      call cursor(1, 1)
     endif
 
     call s:position_cursor()
@@ -211,15 +215,17 @@ if &filetype == "changelog"
     command! -nargs=0 NewChangelogEntry call s:new_changelog_entry()
   endif
 
-  let b:undo_ftplugin = "setl com< tw< fo< et< ai<"
+  let b:undo_ftplugin = "setl com< fo< et< ai<"
 
-  if &textwidth == 0
-    setlocal textwidth=78
-  endif
   setlocal comments=
   setlocal formatoptions+=t
   setlocal noexpandtab
   setlocal autoindent
+
+  if &textwidth == 0
+    setlocal textwidth=78
+    let b:undo_ftplugin .= " tw<"
+  endif
 
   let &cpo = s:cpo_save
   unlet s:cpo_save
@@ -228,23 +234,20 @@ else
   nmap <silent> <Leader>o :call <SID>open_changelog()<CR>
 
   function! s:open_changelog()
-    if filereadable('ChangeLog')
-      if bufloaded('ChangeLog')
-        let buf = bufnr('ChangeLog')
-        execute "normal! \<C-W>t"
-        while winbufnr(winnr()) != buf
-          execute "normal! \<C-W>w"
-        endwhile
-      else
-        split ChangeLog
-      endif
-
-      if exists("g:mapleader")
-        execute "normal " . g:mapleader . "o"
-      else
-        execute "normal \\o"
-      endif
-      startinsert!
+    if !filereadable('ChangeLog')
+      return
     endif
+    let buf = bufnr('ChangeLog')
+    if buf != -1
+      if bufwinnr(buf) != -1
+        execute buf . 'wincmd w'
+      else
+        execute 'bsplit' buf
+      endif
+    else
+      split ChangeLog
+    endif
+
+    call s:new_changelog_entry()
   endfunction
 endif

@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0e.  Last change: Apr 12, 2006
+*pi_netrw.txt*  For Vim version 7.0e.  Last change: Apr 21, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -782,7 +782,7 @@ NETRW BROWSER VARIABLES					*netrw-browse-var*
 				=0 keep the current directory the same as the
 				   browsing directory.
 				The current browsing directory is contained in
-				b:netrw_curdir
+				b:netrw_curdir (also see |netrw-c|)
 
   *g:netrw_list_cmd*		command for listing remote directories
 				 default: (if ssh is executable)
@@ -919,15 +919,16 @@ DIRECTORY EXPLORING COMMANDS	*netrw-nexplore* *netrw-vexplore*
 By default, these commands use the current file's directory.  However, one
 may explicitly provide a directory (path) to use.
 
-(Following needs v7.0 or later)			*netrw-starstar*
-When Explore, Sexplore, Hexplore, or Vexplore are used with a **,
+							*netrw-starstar*
+When Explore, Sexplore, Hexplore, or Vexplore are used with a **/filepat,
 such as:
 >
 	:Explore **/filename_pattern
 <
-netrw will attempt to find a (sub)directory which matches the filename
-pattern.  Internally, it produces a list of files which match the pattern
-and their paths; to that extent it resembles the Unix operation:
+netrw will attempt to find a file in the current directory or any subdirectory
+which matches the filename pattern.  Internally, it produces a list of files
+which match the pattern and their paths; to that extent it resembles the Unix
+operation:
 >
 	find $(pwd) -name "$1" -exec "echo" "{}" ";" 2> /dev/null
 <
@@ -951,6 +952,18 @@ As an example, consider
 The status line will show, on the right hand side of the status line, a
 message like "Match 3 of 20".
 
+							*netrw-starpat*
+When Explore, Sexplore, Hexplore, or Vexplore are used with a */pattern,
+such as:
+>
+	:Explore */pattern
+<
+netrw will use |:vimgrep| to find files which contain the given pattern.
+Like what happens with |netrw-starstar|, a list of files which contain
+matches to the given pattern is generated.  The cursor will then jump
+to the first file with the given pattern; |:Nexplore|, |:Pexplore|, and
+the shifted-down and -up arrows work with the list to move to the next
+or previous files in that list.
 
 REFRESHING THE LISTING					*netrw-ctrl-l*
 
@@ -1261,14 +1274,16 @@ to forward a copy to me for future inclusion in the distribution.
 
 MAKING THE BROWSING DIRECTORY THE CURRENT DIRECTORY	*netrw-c* *netrw-curdir*
 
-By default, g:netrw_keepdir is 1.  This setting means that the current
+By default, |g:netrw_keepdir| is 1.  This setting means that the current
 directory will not track the browsing directory.  However, setting
-g:netrw_keepdir to 0 (say, in your <.vimrc>) will tell netrw to have the
-currently browsed directory be the current directory.
+g:netrw_keepdir to 0 (say, in your <.vimrc>) will tell netrw to make the
+currently browsed directory also be the current directory.
 
-With the default setting for g:netrw_keepdir, in order to make the two
-directories the same, use the "c" map (just type c).  That map will set the
-current directory to the current browsing directory.
+However, with the default setting for g:netrw_keepdir of 1 where netrw
+maintains its own separate notion of the current directory, in order to make
+the two directories the same, use the "c" map (just type c).  That map will
+set Vim's notion of the current directory to the netrw's current browsing
+directory.
 
 
 BOOKMARKING A DIRECTORY		*netrw-b* *netrw-bookmark* *netrw-bookmarks*
@@ -1447,6 +1462,17 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v91: * :Explore */pattern implemented
+	     * |'acd'| option bypassed
+	v90: * mark ', as suggested by Yegappan Lakshmanan, used to help
+	       guarantee entry into the jump list when appropriate.
+	     * <s-down> and <s-up> are no longer defined until a
+	       :Explore **/pattern  is used (if the user already has a map
+	       for them).  They will be defined for new browser windows
+	       from that point forward.
+	v89: * A <s-down>, <s-up>, :Nexplore, or a :Pexplore without having
+	       first done an :Explore **/pattern (see |netrw-starstar|) caused
+	       a lot of unhelpful error messages to appear
 	v88: * moved DrChip.Netrw menu to Netrw.  Now has priority 80 by
 	       default.  g:NetrwTopLvlMenu == "Netrw" and can be changed
 	       by the user to suit.  The priority is g:NetrwMenuPriority.

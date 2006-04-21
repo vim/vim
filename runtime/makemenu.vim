@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 18
+" Last Change:	2006 Apr 21
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -116,6 +116,7 @@ SynMenu C.CH\ script:ch
 SynMenu C.ChangeLog:changelog
 SynMenu C.Cheetah\ template:cheetah
 SynMenu C.CHILL:chill
+SynMenu C.ChordPro:chordpro
 SynMenu C.Clean:clean
 SynMenu C.Clever:cl
 SynMenu C.Clipper:clipper

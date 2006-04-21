@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         group(5) user group file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-30
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("b:current_syntax")
   finish
@@ -25,7 +25,7 @@ syn match   groupShadow         contained display '[x*]' nextgroup=groupGIDColon
 
 syn match   groupGIDColon       contained display ':' nextgroup=groupGID
 
-syn match   groupGID            contained display '\d\+'
+syn match   groupGID            contained display '\d*'
                                 \ nextgroup=groupUserListColon
 
 syn match   groupUserListColon  contained display ':' nextgroup=groupUserList

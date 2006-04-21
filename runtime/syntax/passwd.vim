@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         passwd(5) password file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-30
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 
 if exists("b:current_syntax")
   finish
@@ -12,7 +12,7 @@ set cpo&vim
 
 syn match   passwdBegin         display '^' nextgroup=passwdAccount
 
-syn match   passwdAccount       contained display '[a-z_][a-z0-9_-]*'
+syn match   passwdAccount       contained display '[+-]\=[a-z_][a-z0-9_-]*'
                                 \ nextgroup=passwdPasswordColon
 
 syn match   passwdPasswordColon contained display ':'
@@ -26,12 +26,12 @@ syn match   passwdShadow        contained display '[x*!]'
 
 syn match   passwdUIDColon      contained display ':' nextgroup=passwdUID
 
-syn match   passwdUID           contained display '\d\+'
+syn match   passwdUID           contained display '\d*'
                                 \ nextgroup=passwdGIDColon
 
 syn match   passwdGIDColon      contained display ':' nextgroup=passwdGID
 
-syn match   passwdGID           contained display '\d\+'
+syn match   passwdGID           contained display '\d*'
                                 \ nextgroup=passwdGecosColon
 
 syn match   passwdGecosColon    contained display ':' nextgroup=passwdGecos
@@ -47,7 +47,7 @@ syn match   passwdDir           contained display '/[^:]*'
 syn match   passwdShellColon    contained display ':'
                                 \ nextgroup=passwdShell
 
-syn match   passwdShell         contained display '[/*][^:]*'
+syn match   passwdShell         contained display '.*'
 
 hi def link passwdColon         Normal
 hi def link passwdAccount       Identifier

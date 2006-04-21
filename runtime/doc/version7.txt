@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 20
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -280,9 +280,9 @@ argument.  The maximum number of pages can be set with 'tabpagemax'.
 
 The line with tab labels is either made with plain text an highlighting or
 with a GUI mechanism.  The GUI labels look better but are only available on a
-few systems.  The line can be customized with 'tabline' and 'guitablabel'.
-Whether it is displayed is set with 'showtabline'.  Whether to use the GUI
-labels is set with the "e" flag in 'guioptions'.
+few systems.  The line can be customized with 'tabline', 'guitablabel' and
+'guitabtooltip'.  Whether it is displayed is set with 'showtabline'.  Whether
+to use the GUI labels is set with the "e" flag in 'guioptions'.
 
 The |:tab| command modifier can be used to have most commands that open a new
 window open a new tab instead.
@@ -895,6 +895,7 @@ BibTeX indent file. (Dorai Sitaram)
 BTM ftplugin file. (Bram Moolenaar)
 calendar ftplugin file. (Nikolai Weibull)
 Changelog indent file. (Nikolai Weibull)
+ChordPro syntax file. (Niels Bo Andersen)
 Cmake indent and syntax file. (Andy Cedilnik)
 conf ftplugin file. (Nikolai Weibull)
 context syntax and ftplugin file. (Nikolai Weibull)
@@ -2568,6 +2569,18 @@ Mac: When compiled without multi-byte feature the clipboard didn't work.
 It was possible to switch to another tab page when the cmdline window is open.
 
 Completion could hang when 'lines' is 6 and a preview window was opened.
+
+Added CTRL-W gF: open file under cursor in new tab page and jump to the line
+number following the file name.
+Added 'guitabtooltip', but it's not implemented anywhere yet.
+
+Added "throw" to 'debug' option: thow an exception for error messages even
+whey they would otherwise be ignored.
+
+When 'keymap' is set and a line contains an invalid entry could get a "No
+mapping found" warning instead of a proper error message.
+
+Motif: default to using XpmAttributes instead of XpmAttributes_21.
 
 
  vim:tw=78:ts=8:ft=help:norl:

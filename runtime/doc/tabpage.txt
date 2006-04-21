@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0e.  Last change: 2006 Apr 13
+*tabpage.txt*   For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -82,6 +82,9 @@ In the GUI tab pages line you can use the right mouse button to open menu.
 CTRL-W gf	Open a new tab page and edit the file name under the cursor.
 		See |CTRL-W_gf|.
 
+CTRL-W gF	Open a new tab page and edit the file name under the cursor
+		and jump to the line number following the file name.
+		See |CTRL-W_gF|.
 
 CLOSING A TAB PAGE:
 
@@ -306,21 +309,25 @@ specify the label to display for each tab page.  Unlike 'tabline', which
 specifies the whole tab pages line at once, 'guitablabel' is used for each
 label separately.
 
+'guitabtooltip' is very similar and is used for the tooltip of the same label.
+This only appears when the mouse pointer hovers over the label, thus it
+usually is longer.  Only supported on some systems though.
+
 See the 'statusline' option for the format of the value.
 
 The "%N" item can be used for the current tab page number.  The |v:lnum|
-variable is also set to this number when 'guitablabel' is evaluated.
+variable is also set to this number when the option is evaluated.
 The items that use a file name refer to the current window of the tab page.
 
-Note that syntax highlighting is not used for 'guitablabel'.  The %T and %X
+Note that syntax highlighting is not used for the option.  The %T and %X
 items are also ignored.
 
 A simple example that puts the tab page number and the buffer name in the
 label: >
 	:set guitablabel=%N\ %f
 
-An example that resembles the default: Show the number of windows in the tab
-page and a '+' if there is a modifed buffer: >
+An example that resembles the default 'guitablabel': Show the number of
+windows in the tab page and a '+' if there is a modifed buffer: >
 
 	function GuiTabLabel()
 	  let label = ''

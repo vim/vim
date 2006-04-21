@@ -1,9 +1,11 @@
 " Vim syntax file
 " Language:         Quake[1-3] configuration file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-06-29
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
+"               quake_is_quake1 - the syntax is to be used for quake1 configs
 "               quake_is_quake2 - the syntax is to be used for quake2 configs
 "               quake_is_quake3 - the syntax is to be used for quake3 configs
+" Credits:          Tomasz Kalkosinski wrote the original quake3Colors stuff
 
 if exists("b:current_syntax")
   finish
@@ -20,20 +22,24 @@ syn region  quakeComment      display oneline start='//' end='$' end=';'
                               \ keepend contains=quakeTodo,@Spell
 
 syn region  quakeString       display oneline start=+"+ skip=+\\\\\|\\"+
-                              \ end=+"\|$+ contains=quakeNumbers,@quakeCommands
+                              \ end=+"\|$+ contains=quakeNumbers,
+                              \ @quakeCommands,@quake3Colors
 
 syn case ignore
 
-syn match quakeNumbers        display transparent '\<\d\|\.\d'
+syn match quakeNumbers        display transparent '\<-\=\d\|\.\d'
                               \ contains=quakeNumber,quakeFloat,
                               \ quakeOctalError,quakeOctal
 syn match quakeNumber         contained display '\d\+\>'
-syn match quakeOctal          contained display '0\o\+\>'
-                              \ contains=quakeOctalZero
-syn match quakeOctalZero      contained display '\<0'
 syn match quakeFloat          contained display '\d\+\.\d*'
 syn match quakeFloat          contained display '\.\d\+\>'
-syn match quakeOctalError     contained display '0\o*[89]\d*'
+
+if exists("quake_is_quake1") || exists("quake_is_quake2")
+  syn match quakeOctal        contained display '0\o\+\>'
+                              \ contains=quakeOctalZero
+  syn match quakeOctalZero    contained display '\<0'
+  syn match quakeOctalError   contained display '0\o*[89]\d*'
+endif
 
 syn cluster quakeCommands     contains=quakeCommand,quake1Command,
                               \ quake12Command,Quake2Command,Quake23Command,
@@ -80,8 +86,6 @@ if exists("quake_is_quake2")
   syn keyword quake2Command   weaplast
 endif
 
-syn case match
-
 if exists("quake_is_quake2") || exists("quake_is_quake3")
   syn keyword quake23Command  imagelist modellist path z_stats
 endif
@@ -112,6 +116,24 @@ if exists("quake_is_quake3")
   syn match   quake3Command   display "\<[+-]button\(\d\|1[0-4]\)\>"
 endif
 
+if exists("quake_is_quake3")
+  syn cluster quake3Colors    contains=quake3Red,quake3Green,quake3Yellow,
+                              \ quake3Blue,quake3Cyan,quake3Purple,quake3White,
+                              \ quake3Orange,quake3Grey,quake3Black,quake3Shadow
+
+  syn region quake3Red        contained start=+\^1+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Green      contained start=+\^2+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Yellow     contained start=+\^3+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Blue       contained start=+\^4+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Cyan       contained start=+\^5+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Purple     contained start=+\^6+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3White      contained start=+\^7+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Orange     contained start=+\^8+hs=e+1 end=+[$^\"\n]+he=e-1
+  syn region quake3Grey       contained start=+\^9+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Black      contained start=+\^0+hs=e+1 end=+[$^"\n]+he=e-1
+  syn region quake3Shadow     contained start=+\^[Xx]+hs=e+1 end=+[$^"\n]+he=e-1
+endif
+
 hi def link quakeComment      Comment
 hi def link quakeTodo         Todo
 hi def link quakeString       String
@@ -127,6 +149,20 @@ hi def link quake2Command     quakeCommands
 hi def link quake23Command    quakeCommands
 hi def link quake3Command     quakeCommands
 hi def link quakeCommands     Keyword
+
+if exists("quake_is_quake3")
+  hi quake3Red                ctermfg=Red         guifg=Red
+  hi quake3Green              ctermfg=Green       guifg=Green
+  hi quake3Yellow             ctermfg=Yellow      guifg=Yellow
+  hi quake3Blue               ctermfg=Blue        guifg=Blue
+  hi quake3Cyan               ctermfg=Cyan        guifg=Cyan
+  hi quake3Purple             ctermfg=DarkMagenta guifg=Purple
+  hi quake3White              ctermfg=White       guifg=White
+  hi quake3Black              ctermfg=Black       guifg=Black
+  hi quake3Orange             ctermfg=Brown       guifg=Orange
+  hi quake3Grey               ctermfg=LightGrey   guifg=LightGrey
+  hi quake3Shadow             cterm=underline     gui=underline
+endif
 
 let b:current_syntax = "quake"
 

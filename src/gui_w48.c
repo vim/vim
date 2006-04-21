@@ -2334,7 +2334,7 @@ gui_mch_update_tabline(void)
 	    TabCtrl_InsertItem(s_tabhwnd, nr, &tie);
 	}
 
-	get_tabline_label(tp);
+	get_tabline_label(tp, FALSE);
 	tie.pszText = NameBuff;
 #ifdef FEAT_MBYTE
 	wstr = NULL;

@@ -32,7 +32,7 @@ syn keyword esterelStatement	every do loop abort weak
 syn keyword esterelStatement	emit present await
 syn keyword esterelStatement	if then else
 syn keyword esterelBoolean		and or not xor xnor nor nand
-syn keyword esterelOperator		\[ \] 
+"syn keyword esterelOperator		\[ \] 
 syn keyword esterelPippo		pippo
 " Esterel Types
 syn keyword esterelType integer float bolean

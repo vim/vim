@@ -1,7 +1,7 @@
 " Vim Keymap file for Persian Standard Keyboard Layout
 " Maintainers: Behnam 'ZWNJ' Esfahbod <behnam@zwnj.org>,
 "	       Amir Hedayaty <hedayaty@gmail.com>
-" Last Change: 2005 Nov 30
+" Last Change: 2006 Apr 21
 
 scriptencoding utf-8
 
@@ -58,7 +58,7 @@ m	پ
 ,	و
 .	.
 /	/
-\	\
+\\	\\
 
 ~	÷
 !	!

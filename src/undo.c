@@ -1405,10 +1405,15 @@ u_add_time(buf, buflen, tt)
 ex_undojoin(eap)
     exarg_T *eap;
 {
-    if (!curbuf->b_u_synced)
-	return;		    /* already unsynced */
     if (curbuf->b_u_newhead == NULL)
 	return;		    /* nothing changed before */
+    if (curbuf->b_u_curhead != NULL)
+    {
+	EMSG(_("E790: undojoin is not allowed after undo"));
+	return;
+    }
+    if (!curbuf->b_u_synced)
+	return;		    /* already unsynced */
     if (p_ul < 0)
 	return;		    /* no entries, nothing to do */
     else

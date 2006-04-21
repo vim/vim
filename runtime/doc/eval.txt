@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0e.  Last change: 2006 Apr 15
+*eval.txt*      For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1369,9 +1369,9 @@ v:lc_time	The current locale setting for time messages of the runtime
 
 						*v:lnum* *lnum-variable*
 v:lnum		Line number for the 'foldexpr' |fold-expr| and 'indentexpr'
-		expressions, tab page number for 'guitablabel'.  Only valid
-		while one of these expressions is being evaluated.  Read-only
-		when in the |sandbox|.
+		expressions, tab page number for 'guitablabel' and
+		'guitabtooltip'.  Only valid while one of these expressions is
+		being evaluated.  Read-only when in the |sandbox|.
 
 					*v:prevcount* *prevcount-variable*
 v:prevcount	The count given for the last but one Normal mode command.

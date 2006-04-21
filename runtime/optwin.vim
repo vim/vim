@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 18
+" Last Change:	2006 Apr 21
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -481,6 +481,8 @@ call append("$", "tabline\tcustom tab pages line")
 call <SID>OptionG("tal", &tal)
 call append("$", "guitablabel\tcustom tab page label for the GUI")
 call <SID>OptionG("gtl", &gtl)
+call append("$", "guitabtooltip\tcustom tab page tooltip for the GUI")
+call <SID>OptionG("gtt", &gtt)
 
 
 call <SID>Header("terminal")

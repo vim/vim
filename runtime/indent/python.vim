@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2006 Mar 26
+" Last Change:		2006 Apr 21
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")

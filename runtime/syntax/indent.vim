@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         indent(1) configuration file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-07-04
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 "   indent_is_bsd:  If exists, will change somewhat to match BSD implementation
 "
 " TODO: is the deny-all (a la lilo.vim nice or no?)...
@@ -15,7 +15,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,-,_
+setlocal iskeyword=@,48-57,-,+,_
 
 syn match   indentError   '\S\+'
 

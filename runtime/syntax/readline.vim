@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         readline(3) configuration file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-07-04
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-19
 "   readline_has_bash - if defined add support for bash specific
 "                       settings/functions
 

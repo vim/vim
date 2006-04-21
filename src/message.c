@@ -561,17 +561,18 @@ emsg(s)
 
     /*
      * If "emsg_off" is set: no error messages at the moment.
-     * If 'debug' is set: do error message anyway, but without side effects.
+     * If "msg" is in 'debug': do error message but without side effects.
      * If "emsg_skip" is set: never do error messages.
      */
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL)
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
+					  && vim_strchr(p_debug, 't') == NULL)
 #ifdef FEAT_EVAL
 	    || emsg_skip > 0
 #endif
 	    )
 	return TRUE;
 
-    if (!emsg_off)
+    if (!emsg_off || vim_strchr(p_debug, 't') != NULL)
     {
 #ifdef FEAT_EVAL
 	/*

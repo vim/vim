@@ -508,6 +508,7 @@ EXTERN char_u	*p_go;		/* 'guioptions' */
 #endif
 #if defined(FEAT_GUI_TABLINE)
 EXTERN char_u	*p_gtl;		/* 'guitablabel' */
+EXTERN char_u	*p_gtt;		/* 'guitabtooltip' */
 #endif
 EXTERN char_u	*p_hf;		/* 'helpfile' */
 #ifdef FEAT_WINDOWS

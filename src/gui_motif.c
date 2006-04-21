@@ -3359,8 +3359,9 @@ gui_mch_update_tabline(void)
 	XtVaGetValues(tab, XmNlabelString, &label_str, NULL);
 	if (XmStringGetLtoR(label_str, XmSTRING_DEFAULT_CHARSET, &label_cstr))
 	{
-	    get_tabline_label(tp);
-	    if (STRCMP(label_cstr, NameBuff) != 0) {
+	    get_tabline_label(tp, FALSE);
+	    if (STRCMP(label_cstr, NameBuff) != 0)
+	    {
 		XtVaSetValues(tab, XtVaTypedArg, XmNlabelString, XmRString,
 			      NameBuff, STRLEN(NameBuff) + 1, NULL);
 		/*

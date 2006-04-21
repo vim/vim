@@ -3320,7 +3320,7 @@ gui_mch_update_tabline(void)
 		    nr++);
 	}
 
-	get_tabline_label(tp);
+	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
 	gtk_notebook_set_tab_label_text(GTK_NOTEBOOK(gui.tabline), page,
 						     (const gchar *)labeltext);

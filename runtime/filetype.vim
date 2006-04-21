@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 19
+" Last Change:	2006 Apr 21
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -389,6 +389,9 @@ fun! s:FTchange()
   endwhile
   setf chill
 endfun
+
+" ChordPro
+au BufNewFile,BufRead *.chopro,*.crd,*.cho,*.crdpro,*.chordpro	setf chordpro
 
 " Clean
 au BufNewFile,BufRead *.dcl,*.icl		setf clean

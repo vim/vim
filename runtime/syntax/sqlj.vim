@@ -94,6 +94,8 @@ if version >= 508 || !exists("did_sqlj_syn_inits")
   HiLink sqljString	String
   HiLink sqljType	Type
   HiLink sqljPre	PreProc
+
+  delcommand HiLink
 endif
 
 let b:current_syntax = "sqlj"

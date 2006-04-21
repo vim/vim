@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         eterm(1) configuration file
-" Maintainer:       Nikolai Weibull <nikolai+work.vim@bitwi.se>
-" Latest Revision:  2005-07-04
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-04-21
 
 if exists("b:current_syntax")
   finish
@@ -61,7 +61,7 @@ syn match   etermColorNumber      contained display '\<\%(\d\|1[0-5]\)'
 syn match   etermColorSpec        contained display '\S\+'
 
 syn region  etermColorContext     fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+color'
+                                  \ start='^\s*begin\s\+color\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermColorOptions
 
@@ -99,7 +99,7 @@ syn keyword etermAttrOptions      contained scrollbar_width desktop
                                   \ nextgroup=etermNumber skipwhite
 
 syn region  etermAttrContext      fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+attributes\'
+                                  \ start='^\s*begin\s\+attributes\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermAttrOptions
 
@@ -111,7 +111,7 @@ syn keyword etermIClassOptions    contained anim nextgroup=etermNumber
                                   \ skipwhite
 
 syn region  etermIClassContext    fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+imageclasses'
+                                  \ start='^\s*begin\s\+imageclasses\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermImageContext,
                                   \ etermIClassOptions
@@ -176,7 +176,7 @@ syn region  etermImageOptions     contained display oneline
 
 syn region  etermImageContext     contained fold transparent
                                   \ matchgroup=etermContext
-                                  \ start='^\s*begin\s\+image'
+                                  \ start='^\s*begin\s\+image\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermImageOptions
 
@@ -193,7 +193,7 @@ syn keyword etermMenuItemOptions  contained text rtext nextgroup=etermString
 
 syn region  etermMenuItemContext  contained fold transparent
                                   \ matchgroup=etermContext
-                                  \ start='^\s*begin\s\+menuitem'
+                                  \ start='^\s*begin\s\+menuitem\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermMenuItemOptions
 
@@ -206,7 +206,7 @@ syn keyword etermMenuOptions      contained font_name nextgroup=etermFont
 syn match   etermMenuOptions      contained display '\<sep\>\|-'
 
 syn region  etermMenuContext      fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+menu'
+                                  \ start='^\s*begin\s\+menu\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermMenuOptions,
                                   \ etermMenuItemContext
@@ -227,7 +227,7 @@ syn keyword etermBindType         contained string echo menu script
 syn match   etermBindParam        contained display '\S\+'
 
 syn region  etermActionsContext   fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+actions'
+                                  \ start='^\s*begin\s\+actions\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermActionsOptions
 
@@ -256,7 +256,7 @@ syn keyword etermButtonAction     contained action nextgroup=etermBindType
                                   \ skipwhite
 
 syn region  etermButtonContext    fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+button_bar'
+                                  \ start='^\s*begin\s\+button_bar\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermButtonOptions
 
@@ -270,8 +270,8 @@ syn keyword etermMultiOptions     contained font nextgroup=etermFontType
                                   \ skipwhite
 
 syn region  etermMultiContext     fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+multichar'
-                                  \ end="^\s*end\>'
+                                  \ start='^\s*begin\s\+multichar\>'
+                                  \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermMultiOptions
 
 syn keyword etermXimOptions       contained input_method
@@ -285,8 +285,8 @@ syn keyword etermXimOptions       contained preedit_type
 syn keyword etermPreeditType      contained OverTheSpot OffTheSpot Root
 
 syn region  etermXimContext       fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+xim'
-                                  \ end="^\s*end\>'
+                                  \ start='^\s*begin\s\+xim\>'
+                                  \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermXimOptions
 
 syn keyword etermTogOptions       contained map_alert visual_bell login_shell
@@ -301,7 +301,7 @@ syn keyword etermTogOptions       contained map_alert visual_bell login_shell
                                   \ skipwhite
 
 syn region  etermTogContext       fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+toggles'
+                                  \ start='^\s*begin\s\+toggles\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermTogOptions
 
@@ -318,7 +318,7 @@ syn keyword etermKeyboardOptions  contained greek app_keypad app_cursor
                                   \ nextgroup=etermBoolean skipwhite
 
 syn region  etermKeyboardContext  fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+keyboard'
+                                  \ start='^\s*begin\s\+keyboard\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermKeyboardOptions
 
@@ -330,7 +330,7 @@ syn keyword etermMiscOptions      contained save_lines min_anchor_size
                                   \ border_width line_space
 
 syn region  etermMiscContext      fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+misc'
+                                  \ start='^\s*begin\s\+misc\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermMiscOptions
 
@@ -351,7 +351,7 @@ syn keyword etermEScreenOptions   contained bbar_dock nextgroup=etermDockOption
                                   \ skipwhite
 
 syn region  etermEScreenContext   fold transparent matchgroup=etermContext
-                                  \ start='^\s*begin\s\+escreen'
+                                  \ start='^\s*begin\s\+escreen\>'
                                   \ end='^\s*end\>'
                                   \ contains=@etermGeneral,etermEScreenOptions
 

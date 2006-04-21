@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.0e.  Last change: 2005 Apr 01
+*print.txt*     For Vim version 7.0e.  Last change: 2006 Apr 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -287,7 +287,7 @@ another font will be used as follows:
 
   if b: is missing, then use r:
   if i: is missing, then use r:
-  if o: is missing, then use i:
+  if o: is missing, then use b:
 
 Some CJK fonts do not contain characters for codes in the ASCII code range.
 Also, some characters in the CJK ASCII code ranges differ in a few code points

@@ -1911,7 +1911,7 @@ if test -z "$SKIP_MOTIF"; then
 	AC_MSG_RESULT(no); AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes)
 	)
   else
-    AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes_21)
+    AC_DEFINE(XPMATTRIBUTES_TYPE, XpmAttributes)
   fi
   CPPFLAGS=$cppflags_save
 fi
