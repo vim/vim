@@ -1136,7 +1136,7 @@ ex_continue(eap)
 	 * next).  Therefor, inactivate all conditionals except the ":while"
 	 * itself (if reached). */
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, FALSE);
-	if ((cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
+	if (idx >= 0 && (cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
 	{
 	    rewind_conditionals(cstack, idx, CSF_TRY, &cstack->cs_trylevel);
 
@@ -1175,7 +1175,7 @@ ex_break(eap)
 	 * executed next) is found.  In the latter case, make the ":break"
 	 * pending for execution at the ":endtry". */
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, TRUE);
-	if (!(cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
+	if (idx >= 0 && !(cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))
 	{
 	    cstack->cs_pending[idx] = CSTP_BREAK;
 	    report_make_pending(CSTP_BREAK, NULL);
@@ -1861,7 +1861,7 @@ ex_endtry(eap)
 	 * after errors except when this ":endtry" is not within a ":try".
 	 * Restore "emsg_silent" if it has been reset by this try conditional.
 	 */
-	cleanup_conditionals(cstack, CSF_TRY | CSF_SILENT, TRUE);
+	(void)cleanup_conditionals(cstack, CSF_TRY | CSF_SILENT, TRUE);
 
 	--cstack->cs_idx;
 	--cstack->cs_trylevel;

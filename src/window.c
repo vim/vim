@@ -5077,7 +5077,7 @@ win_drag_vsep_line(dragwin, offset)
     int		n;
 
     fr = dragwin->w_frame;
-    if (fr == topframe)		/* only one window (cannot happe?) */
+    if (fr == topframe)		/* only one window (cannot happen?) */
 	return;
     curfr = fr;
     fr = fr->fr_parent;

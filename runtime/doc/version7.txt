@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 21
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2572,7 +2572,7 @@ Completion could hang when 'lines' is 6 and a preview window was opened.
 
 Added CTRL-W gF: open file under cursor in new tab page and jump to the line
 number following the file name.
-Added 'guitabtooltip', but it's not implemented anywhere yet.
+Added 'guitabtooltip'.  Implemented for Win32 (Yegappan Lakshmanan).
 
 Added "throw" to 'debug' option: thow an exception for error messages even
 whey they would otherwise be ignored.
@@ -2582,5 +2582,17 @@ mapping found" warning instead of a proper error message.
 
 Motif: default to using XpmAttributes instead of XpmAttributes_21.
 
+A few more changes for 64 bit MS-Windows. (George Reilly)
+
+Got ml_get errors when doing "o" and selecting in other window where there are
+less line shorter than the cursor position in the other window.  ins_mouse()
+was using position in wrong window.
+
+Win32 GUI: Crash when giving a lot of messages during startup.  Allocate twice
+as much memory for the dialog template.
+
+Fixed a few leaks and wrong pointer use reported by coverity.
+
+When showing menus the mode character was sometimes wrong.
 
  vim:tw=78:ts=8:ft=help:norl:

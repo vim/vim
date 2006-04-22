@@ -178,7 +178,9 @@ static int  spell_bad_len = 0;	/* length of located bad word */
 #endif
 static void stop_insert __ARGS((pos_T *end_insert_pos, int esc));
 static int  echeck_abbr __ARGS((int));
+#if 0
 static void replace_push_off __ARGS((int c));
+#endif
 static int  replace_pop __ARGS((void));
 static void replace_join __ARGS((int off));
 static void replace_pop_ins __ARGS((void));
@@ -5823,7 +5825,7 @@ redo_literal(c)
  */
     static void
 start_arrow(end_insert_pos)
-    pos_T    *end_insert_pos;
+    pos_T    *end_insert_pos;	    /* can be NULL */
 {
     if (!arrow_used)	    /* something has been inserted */
     {
@@ -5912,11 +5914,13 @@ stop_arrow()
 }
 
 /*
- * do a few things to stop inserting
+ * Do a few things to stop inserting.
+ * "end_insert_pos" is where insert ended.  It is NULL when we already jumped
+ * to another window/buffer.
  */
     static void
 stop_insert(end_insert_pos, esc)
-    pos_T	*end_insert_pos;	/* where insert ended */
+    pos_T	*end_insert_pos;
     int		esc;			/* called by ins_esc() */
 {
     int		cc;
@@ -5941,7 +5945,7 @@ stop_insert(end_insert_pos, esc)
     else
 	vim_free(ptr);
 
-    if (!arrow_used)
+    if (!arrow_used && end_insert_pos != NULL)
     {
 	/* Auto-format now.  It may seem strange to do this when stopping an
 	 * insertion (or moving the cursor), but it's required when appending
@@ -5987,7 +5991,7 @@ stop_insert(end_insert_pos, esc)
 	 * of the line, and put the cursor back.
 	 * Do this when ESC was used or moving the cursor up/down. */
 	if (did_ai && (esc || (vim_strchr(p_cpo, CPO_INDENT) == NULL
-			   && curwin->w_cursor.lnum != end_insert_pos->lnum)))
+			&& curwin->w_cursor.lnum != end_insert_pos->lnum)))
 	{
 	    pos_T	tpos = curwin->w_cursor;
 
@@ -6030,9 +6034,13 @@ stop_insert(end_insert_pos, esc)
     can_si_back = FALSE;
 #endif
 
-    /* set '[ and '] to the inserted text */
-    curbuf->b_op_start = Insstart;
-    curbuf->b_op_end = *end_insert_pos;
+    /* Set '[ and '] to the inserted text.  When end_insert_pos is NULL we are
+     * now in a different buffer. */
+    if (end_insert_pos != NULL)
+    {
+	curbuf->b_op_start = Insstart;
+	curbuf->b_op_end = *end_insert_pos;
+    }
 }
 
 /*
@@ -6563,6 +6571,7 @@ replace_push(c)
     ++replace_stack_nr;
 }
 
+#if 0
 /*
  * call replace_push(c) with replace_offset set to the first NUL.
  */
@@ -6580,6 +6589,7 @@ replace_push_off(c)
     replace_push(c);
     replace_offset = 0;
 }
+#endif
 
 /*
  * Pop one item from the replace stack.
@@ -8023,7 +8033,9 @@ ins_bs(c, mode, inserted_space_p)
 	    int		ts;
 	    colnr_T	vcol;
 	    colnr_T	want_vcol;
+#if 0
 	    int		extra = 0;
+#endif
 
 	    *inserted_space_p = FALSE;
 	    if (p_sta && in_indent)
@@ -8082,15 +8094,19 @@ ins_bs(c, mode, inserted_space_p)
 #endif
 		{
 		    ins_str((char_u *)" ");
-		    if ((State & REPLACE_FLAG) && extra <= 1)
+		    if ((State & REPLACE_FLAG) /* && extra <= 1 */)
 		    {
+#if 0
 			if (extra)
 			    replace_push_off(NUL);
 			else
+#endif
 			    replace_push(NUL);
 		    }
+#if 0
 		    if (extra == 2)
 			extra = 1;
+#endif
 		}
 		getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
 	    }
@@ -8205,6 +8221,7 @@ ins_mouse(c)
     int	    c;
 {
     pos_T	tpos;
+    win_T	*old_curwin = curwin;
 
 # ifdef FEAT_GUI
     /* When GUI is active, also move/paste when 'mouse' is empty */
@@ -8217,7 +8234,25 @@ ins_mouse(c)
     tpos = curwin->w_cursor;
     if (do_mouse(NULL, c, BACKWARD, 1L, 0))
     {
-	start_arrow(&tpos);
+#ifdef FEAT_WINDOWS
+	win_T	*new_curwin = curwin;
+
+	if (curwin != old_curwin && win_valid(old_curwin))
+	{
+	    /* Mouse took us to another window.  We need to go back to the
+	     * previous one to stop insert there properly. */
+	    curwin = old_curwin;
+	    curbuf = curwin->w_buffer;
+	}
+#endif
+	start_arrow(curwin == old_curwin ? &tpos : NULL);
+#ifdef FEAT_WINDOWS
+	if (curwin != new_curwin && win_valid(new_curwin))
+	{
+	    curwin = new_curwin;
+	    curbuf = curwin->w_buffer;
+	}
+#endif
 # ifdef FEAT_CINDENT
 	can_cindent = TRUE;
 # endif

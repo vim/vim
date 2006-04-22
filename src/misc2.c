@@ -270,14 +270,15 @@ coladvance2(pos, addspaces, finetune, wcol)
 		/* Break a tab */
 		int	linelen = (int)STRLEN(line);
 		int	correct = wcol - col - csize + 1; /* negative!! */
-		char_u	*newline = alloc(linelen + csize);
+		char_u	*newline;
 		int	t, s = 0;
 		int	v;
 
-		/*
-		 * break a tab
-		 */
-		if (newline == NULL || -correct > csize)
+		if (-correct > csize)
+		    return FAIL;
+
+		newline = alloc(linelen + csize);
+		if (newline == NULL)
 		    return FAIL;
 
 		for (t = 0; t < linelen; t++)
@@ -5816,14 +5817,9 @@ filewritable(fname)
 emsg3(s, a1, a2)
     char_u *s, *a1, *a2;
 {
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
-					  && vim_strchr(p_debug, 't') == NULL)
-#ifdef FEAT_EVAL
-	    || emsg_skip > 0
-#endif
-	    )
+    if (emsg_not_now())
 	return TRUE;		/* no error messages at the moment */
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, (long)a1, (long)a2);
+    vim_snprintf((char *)IObuff, IOSIZE, (char *)s, (long_u)a1, (long_u)a2);
     return emsg(IObuff);
 }
 
@@ -5836,14 +5832,8 @@ emsgn(s, n)
     char_u	*s;
     long	n;
 {
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
-					  && vim_strchr(p_debug, 't') == NULL)
-#ifdef FEAT_EVAL
-	    || emsg_skip > 0
-#endif
-	    )
+    if (emsg_not_now())
 	return TRUE;		/* no error messages at the moment */
     vim_snprintf((char *)IObuff, IOSIZE, (char *)s, n);
     return emsg(IObuff);
 }
-

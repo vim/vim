@@ -1330,7 +1330,7 @@ diff_read(idx_orig, idx_new, fname)
 	    /* Allocate a new diffblock. */
 	    dp = diff_alloc_new(curtab, dprev, dp);
 	    if (dp == NULL)
-		return;
+		goto done;
 
 	    dp->df_lnum[idx_orig] = lnum_orig;
 	    dp->df_count[idx_orig] = count_orig;
@@ -1357,6 +1357,7 @@ diff_read(idx_orig, idx_new, fname)
 	notset = TRUE;
     }
 
+done:
     fclose(fd);
 }
 

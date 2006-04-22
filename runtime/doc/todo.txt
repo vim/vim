@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 21
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,11 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Win32: Crash when adding many menu entries. (Karl Waedt)
-
 Crash in "z=" when the change triggers checking out the file, FileChangedRO
 event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)
 Added a few checks for valid buffer, did that help?
 
-Fix coverity false positives?
-
 Add more tests for all new functionality in Vim 7.  Especially new functions.
-    :undojoin
 
 Win32: Describe how to do debugging. (George Reilly)
 
@@ -209,6 +204,10 @@ GTK+ GUI known bugs:
 8   GTK 2: Combining UTF-8 characters not displayed properly in menus (Mikolaj
     Machowski)  They are displayed as separate characters.  Problem in
     creating a label?
+8   GTK2: selecting button in confirm dialog with keys and hitting Enter
+    doesn't select that button. (Steve Hall)
+    It's possible to set the default button but it's not clear how to obtain
+    the currently selected (highlighted) button.
 8   GTK 2: Combining UTF-8 characters are sometimes not drawn properly.
     Depends on the font size, "monospace 13" has the problem.  Vim seems to do
     everything right, must be a GTK bug.  Is there a way to work around it?

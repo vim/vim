@@ -770,14 +770,14 @@ check_str_len(char_u *str)
     if (VirtualQuery(str, &mbi, sizeof(mbi)))
     {
 	/* pre cast these (typing savers) */
-	DWORD dwStr = (DWORD)str;
-	DWORD dwBaseAddress = (DWORD)mbi.BaseAddress;
+	long_u dwStr = (long_u)str;
+	long_u dwBaseAddress = (long_u)mbi.BaseAddress;
 
 	/* get start address of page that str is on */
-	DWORD strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
+	long_u strPage = dwStr - (dwStr - dwBaseAddress) % si.dwPageSize;
 
 	/* get length from str to end of page */
-	DWORD pageLength = si.dwPageSize - (dwStr - strPage);
+	long_u pageLength = si.dwPageSize - (dwStr - strPage);
 
 	for (p = str; !IsBadReadPtr(p, pageLength);
 				  p += pageLength, pageLength = si.dwPageSize)
@@ -2625,7 +2625,7 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #ifdef FEAT_AUTOCMD
 		else if (data->dwData == COPYDATA_REPLY)
 		{
-		    sprintf((char *)winstr, "0x%x", (unsigned)sender);
+		    sprintf((char *)winstr, PRINTF_HEX_LONG_U, (long_u)sender);
 		    apply_autocmds(EVENT_REMOTEREPLY, winstr, str,
 								TRUE, curbuf);
 		}
@@ -2834,13 +2834,13 @@ serverSendReply(name, reply)
 {
     HWND	target;
     COPYDATASTRUCT data;
-    int		n = 0;
+    long_u	n = 0;
 
     /* The "name" argument is a magic cookie obtained from expand("<client>").
      * It should be of the form 0xXXXXX - i.e. a C hex literal, which is the
      * value of the client's message window HWND.
      */
-    sscanf((char *)name, "%x", &n);
+    sscanf((char *)name, SCANF_HEX_LONG_U, &n);
     if (n == 0)
 	return -1;
 
@@ -3130,7 +3130,7 @@ int current_font_height = -12;		/* also used in gui_w48.c */
  * calculation is for a vertical (height) size or a horizontal (width) one.
  */
     static int
-points_to_pixels(char_u *str, char_u **end, int vertical, int pprinter_dc)
+points_to_pixels(char_u *str, char_u **end, int vertical, long_i pprinter_dc)
 {
     int		pixels;
     int		points = 0;
@@ -3338,10 +3338,10 @@ get_logfont(
 	switch (*p++)
 	{
 	    case 'h':
-		lf->lfHeight = - points_to_pixels(p, &p, TRUE, (int)printer_dc);
+		lf->lfHeight = - points_to_pixels(p, &p, TRUE, (long_i)printer_dc);
 		break;
 	    case 'w':
-		lf->lfWidth = points_to_pixels(p, &p, FALSE, (int)printer_dc);
+		lf->lfWidth = points_to_pixels(p, &p, FALSE, (long_i)printer_dc);
 		break;
 	    case 'b':
 #ifndef MSWIN16_FASTTEXT

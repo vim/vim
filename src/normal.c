@@ -831,6 +831,12 @@ getcount:
 	    {
 		unshift_special(&ca);
 		idx = find_command(ca.cmdchar);
+		if (idx < 0)
+		{
+		    /* Just in case */
+		    clearopbeep(oap);
+		    goto normal_end;
+		}
 	    }
 	    else if ((nv_cmds[idx].cmd_flags & NV_SSS)
 					       && (mod_mask & MOD_MASK_SHIFT))

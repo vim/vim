@@ -4053,14 +4053,19 @@ ExpandMappings(regmatch, num_file, file)
 	}
     } /* for (round) */
 
-    /* Sort the matches */
-    sort_strings(*file, count);
-
-    /* Remove multiple entries */
+    if (count > 1)
     {
-	char_u	**ptr1 = *file;
-	char_u	**ptr2 = ptr1 + 1;
-	char_u	**ptr3 = ptr1 + count;
+	char_u	**ptr1;
+	char_u	**ptr2;
+	char_u	**ptr3;
+
+	/* Sort the matches */
+	sort_strings(*file, count);
+
+	/* Remove multiple entries */
+	ptr1 = *file;
+	ptr2 = ptr1 + 1;
+	ptr3 = ptr1 + count;
 
 	while (ptr2 < ptr3)
 	{

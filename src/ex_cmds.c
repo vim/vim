@@ -1778,6 +1778,7 @@ write_viminfo(file, forceit)
 	    tt = msg_didany;
 	    EMSG2(_("E137: Viminfo file is not writable: %s"), fname);
 	    msg_didany = tt;
+	    fclose(fp_in);
 	    goto end;
 	}
 #endif

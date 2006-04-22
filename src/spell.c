@@ -5102,7 +5102,10 @@ spell_read_aff(spin, fname)
      */
     aff = (afffile_T *)getroom(spin, sizeof(afffile_T), TRUE);
     if (aff == NULL)
+    {
+	fclose(fd);
 	return NULL;
+    }
     hash_init(&aff->af_pref);
     hash_init(&aff->af_suff);
     hash_init(&aff->af_comp);
@@ -7361,7 +7364,8 @@ tree_add_word(spin, word, root, flags, region, affixID)
 
 		/* Link the new node in the list, there will be one ref. */
 		np->wn_refs = 1;
-		*copyprev = np;
+		if (copyprev != NULL)
+		    *copyprev = np;
 		copyprev = &np->wn_sibling;
 
 		/* Let "node" point to the head of the copied list. */
@@ -15464,7 +15468,7 @@ spell_dump_compl(buf, pat, ic, dir, dumpflags_arg)
 	if (pat != NULL && slang->sl_pbyts == NULL)
 	    patlen = (int)STRLEN(pat);
 	else
-	    patlen = 0;
+	    patlen = -1;
 
 	/* round 1: case-folded tree
 	 * round 2: keep-case tree */

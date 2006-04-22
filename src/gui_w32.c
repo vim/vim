@@ -181,13 +181,14 @@
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
-static void make_tooltip __ARGS((BalloonEval *beval, char *text, POINT pt));
-static void delete_tooltip __ARGS((BalloonEval *beval));
-static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime));
-
 #ifndef UINT_PTR
 # define UINT_PTR UINT
 #endif
+
+static void make_tooltip __ARGS((BalloonEval *beval, char *text, POINT pt));
+static void delete_tooltip __ARGS((BalloonEval *beval));
+static VOID CALLBACK BevalTimerProc __ARGS((HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime));
+
 static BalloonEval  *cur_beval = NULL;
 static UINT_PTR	    BevalTimerId = 0;
 static DWORD	    LastActivity = 0;
@@ -811,9 +812,102 @@ _WndProc(
     case WM_NOTIFY:
 	switch (((LPNMHDR) lParam)->code)
 	{
-# ifdef FEAT_TOOLBAR
+# ifdef FEAT_MBYTE
+	    case TTN_GETDISPINFOW:
+# endif
 	    case TTN_NEEDTEXT:
+# ifdef FEAT_GUI_TABLINE
+		if (gui_mch_showing_tabline()
+			&& ((LPNMHDR)lParam)->hwndFrom ==
+					       TabCtrl_GetToolTips(s_tabhwnd))
 		{
+		    LPNMTTDISPINFO	lpdi;
+		    POINT		pt;
+		    static char         *tt_text = NULL;
+		    static int          tt_text_len = 0;
+
+		    /*
+		     * Mouse is over the GUI tabline. Display the tooltip
+		     * for the tab under the cursor
+		     */
+		    lpdi = (LPNMTTDISPINFO)lParam;
+		    lpdi->hinst = NULL;
+		    lpdi->szText[0] = '\0';
+
+		    /*
+		     * Get the cursor position within the tab control
+		     */
+		    GetCursorPos(&pt);
+		    if (ScreenToClient(s_tabhwnd, &pt) != 0)
+		    {
+			TCHITTESTINFO htinfo;
+			int idx;
+
+			/*
+			 * Get the tab under the cursor
+			 */
+			htinfo.pt.x = pt.x;
+			htinfo.pt.y = pt.y;
+			idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
+			if (idx != -1)
+			{
+			    tabpage_T *tp;
+
+			    tp = find_tabpage(idx + 1);
+			    if (tp != NULL)
+			    {
+#  ifdef FEAT_MBYTE
+				WCHAR	*wstr = NULL;
+#  endif
+				get_tabline_label(tp, TRUE);
+#  ifdef FEAT_MBYTE
+				if (enc_codepage >= 0
+					     && (int)GetACP() != enc_codepage)
+				{
+				    wstr = enc_to_ucs2(NameBuff, NULL);
+				    if (wstr != NULL)
+				    {
+					int wlen;
+
+					wlen = (wcslen(wstr) + 1)
+							      * sizeof(WCHAR);
+					if (tt_text_len < wlen)
+					{
+					    tt_text = vim_realloc(tt_text,
+									wlen);
+					    if (tt_text != NULL)
+						tt_text_len = wlen;
+					}
+					if (tt_text != NULL)
+					    wcscpy((WCHAR *)tt_text, wstr);
+					lpdi->lpszText = tt_text;
+					vim_free(wstr);
+				    }
+				}
+				if (wstr == NULL)
+#  endif
+				{
+				    int len;
+
+				    len = STRLEN(NameBuff) + 1;
+				    if (tt_text_len < len)
+				    {
+					tt_text = vim_realloc(tt_text, len);
+					if (tt_text != NULL)
+					    tt_text_len = len;
+				    }
+				    if (tt_text != NULL)
+					STRCPY(tt_text, NameBuff);
+				    lpdi->lpszText = tt_text;
+				}
+			    }
+			}
+		    }
+		}
+		else
+# endif
+		{
+# ifdef FEAT_TOOLBAR
 		    LPTOOLTIPTEXT	lpttt;
 		    UINT		idButton;
 		    int			idx;
@@ -831,9 +925,9 @@ _WndProc(
 			    lpttt->lpszText = pMenu->strings[idx];
 			}
 		    }
+# endif
 		}
 		break;
-# endif
 # ifdef FEAT_GUI_TABLINE
 	    case TCN_SELCHANGE:
 		if (gui_mch_showing_tabline()
@@ -2341,7 +2435,7 @@ gui_mch_add_menu(
 	{
 	    InsertMenu((parent == NULL) ? s_menuBar : parent->submenu_id,
 		    (UINT)pos, MF_POPUP | MF_STRING | MF_BYPOSITION,
-		    (UINT)menu->submenu_id, (LPCTSTR) menu->name);
+		    (long_u)menu->submenu_id, (LPCTSTR) menu->name);
 	}
 	else
 	{
@@ -2361,7 +2455,7 @@ gui_mch_add_menu(
 		    infow.cbSize = sizeof(infow);
 		    infow.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID
 							       | MIIM_SUBMENU;
-		    infow.dwItemData = (DWORD)menu;
+		    infow.dwItemData = (long_u)menu;
 		    infow.wID = menu->id;
 		    infow.fType = MFT_STRING;
 		    infow.dwTypeData = wn;
@@ -2384,7 +2478,7 @@ gui_mch_add_menu(
 
 		info.cbSize = sizeof(info);
 		info.fMask = MIIM_DATA | MIIM_TYPE | MIIM_ID | MIIM_SUBMENU;
-		info.dwItemData = (DWORD)menu;
+		info.dwItemData = (long_u)menu;
 		info.wID = menu->id;
 		info.fType = MFT_STRING;
 		info.dwTypeData = (LPTSTR)menu->name;
@@ -2661,7 +2755,7 @@ gui_mch_menu_grey(
 	if (menu->children == NULL)
 	    menuID = (WORD)(menu->id);
 	else
-	    menuID = (WORD)((DWORD)(menu->submenu_id) | (DWORD)0x8000);
+	    menuID = (WORD)((long_u)(menu->submenu_id) | (DWORD)0x8000);
 	menuHandle = GetDlgItem(menu->parent->tearoff_handle, menuID);
 	if (menuHandle)
 	    EnableWindow(menuHandle, !grey);
@@ -2860,7 +2954,7 @@ gui_mch_dialog(
     /* allocate some memory for dialog template */
     /* TODO should compute this really */
     pdlgtemplate = p = (PWORD)LocalAlloc(LPTR,
-					    DLG_ALLOC_SIZE + STRLEN(message));
+					DLG_ALLOC_SIZE + STRLEN(message) * 2);
 
     if (p == NULL)
 	return -1;
@@ -3281,6 +3375,7 @@ gui_mch_dialog(
 }
 
 #endif /* FEAT_GUI_DIALOG */
+
 /*
  * Put a simple element (basic class) onto a dialog template in memory.
  * return a pointer to where the next item should be added.
@@ -3344,9 +3439,9 @@ add_dialog_element(
 lpwAlign(
     LPWORD lpIn)
 {
-    ULONG ul;
+    long_u ul;
 
-    ul = (ULONG)lpIn;
+    ul = (long_u)lpIn;
     ul += 3;
     ul >>= 2;
     ul <<= 2;
@@ -3435,7 +3530,7 @@ tearoff_callback(
 	    if (GetCursorPos(&mp) && GetWindowRect(hwnd, &rect))
 	    {
 		(void)TrackPopupMenu(
-			 (HMENU)(LOWORD(wParam) ^ 0x8000),
+			 (HMENU)(long_u)(LOWORD(wParam) ^ 0x8000),
 			 TPM_LEFTALIGN | TPM_LEFTBUTTON,
 			 (int)rect.right - 8,
 			 (int)mp.y,
@@ -3794,7 +3889,7 @@ gui_mch_tearoff(
 	else
 	{
 	    len += (int)STRLEN(TEAROFF_SUBMENU_LABEL);
-	    menuID = (WORD)((DWORD)(menu->submenu_id) | (DWORD)0x8000);
+	    menuID = (WORD)((long_u)(menu->submenu_id) | (DWORD)0x8000);
 	}
 
 	/* Allocate menu label and fill it in */
@@ -3953,7 +4048,7 @@ get_toolbar_bitmap(vimmenu_T *menu)
 	    TBADDBITMAP tbAddBitmap;
 
 	    tbAddBitmap.hInst = NULL;
-	    tbAddBitmap.nID = (UINT)hbitmap;
+	    tbAddBitmap.nID = (long_u)hbitmap;
 
 	    i = (int)SendMessage(s_toolbarhwnd, TB_ADDBITMAP,
 			    (WPARAM)1, (LPARAM)&tbAddBitmap);
@@ -3978,7 +4073,7 @@ initialise_tabline(void)
     InitCommonControls();
 
     s_tabhwnd = CreateWindow(WC_TABCONTROL, "Vim tabline",
-	    WS_CHILD|TCS_FOCUSNEVER,
+	    WS_CHILD|TCS_FOCUSNEVER|TCS_TOOLTIPS,
 	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 	    CW_USEDEFAULT, s_hwnd, NULL, s_hinst, NULL);
 
@@ -4404,7 +4499,7 @@ delete_tooltip(beval)
 BevalTimerProc(hwnd, uMsg, idEvent, dwTime)
     HWND    hwnd;
     UINT    uMsg;
-    UINT    idEvent;
+    UINT_PTR    idEvent;
     DWORD   dwTime;
 {
     POINT	pt;

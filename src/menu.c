@@ -59,7 +59,7 @@ static char_u *menutrans_lookup __ARGS((char_u *name, int len));
 #endif
 
 /* The character for each menu mode */
-static char_u	menu_mode_chars[] = {'n', 'v', 'o', 'i', 'c', 't'};
+static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};
 
 static char_u e_notsubmenu[] = N_("E327: Part of menu-item path is not sub-menu");
 static char_u e_othermode[] = N_("E328: Menu only exists in another mode");
@@ -1293,6 +1293,7 @@ set_context_in_menu_cmd(xp, cmd, arg, forceit)
 	    name = p;
 	    menu = menu->children;
 	}
+	vim_free(path_name);
 
 	xp->xp_context = expand_menus ? EXPAND_MENUNAMES : EXPAND_MENUS;
 	xp->xp_pattern = after_dot;

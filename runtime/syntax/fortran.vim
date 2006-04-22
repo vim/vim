@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.87
+" Version:	0.88
 " URL:		http://www.unb.ca/chem/ajit/syntax/fortran.vim
-" Last Change:	2006 Apr. 04
+" Last Change:	2006 Apr. 22
 " Maintainer:	Ajit J. Thakkar (ajit AT unb.ca); <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-syntax from Vim
 " Credits:
@@ -279,7 +279,7 @@ syn keyword fortran77IntrinsicR	dble dprod
 syn match   fortran77OperatorR	"\.\s*[gl][et]\s*\."
 syn match   fortran77OperatorR	"\.\s*\(eq\|ne\)\s*\."
 
-if b:fortran_dialect == "f95"
+if b:fortran_dialect == "f95" || b:fortran_dialect == "F"
   syn keyword fortranRepeat		forall
   syn match fortranRepeat		"\<end\s*forall"
   syn keyword fortran95Intrinsic	null cpu_time

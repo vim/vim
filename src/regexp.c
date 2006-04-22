@@ -7054,7 +7054,7 @@ reg_submatch(no)
     int		round;
     linenr_T	lnum;
 
-    if (!can_f_submatch)
+    if (!can_f_submatch || no < 0)
 	return NULL;
 
     if (submatch_match == NULL)
@@ -7112,10 +7112,10 @@ reg_submatch(no)
 		++len;
 	    }
 
-	    if (round == 1)
+	    if (retval == NULL)
 	    {
 		retval = lalloc((long_u)len, TRUE);
-		if (s == NULL)
+		if (retval == NULL)
 		    return NULL;
 	    }
 	}

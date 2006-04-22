@@ -1371,7 +1371,8 @@ store_current_state(sp)
 		for (p = syn_buf->b_sst_first; p != NULL; p = p->sst_next)
 		    if (p->sst_next == sp)
 			break;
-		p->sst_next = sp->sst_next;
+		if (p != NULL)	/* just in case */
+		    p->sst_next = sp->sst_next;
 	    }
 	    syn_stack_free_entry(syn_buf, sp);
 	    sp = NULL;

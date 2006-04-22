@@ -1,4 +1,4 @@
-*sql.txt*   	For Vim version 7.0e.  Last change: Mon Apr 03 2006 10:34:00 PM
+*sql.txt*   	For Vim version 7.0e.  Last change: Fri Apr 21 2006 10:39:11 PM
 
 by David Fishburn
 
@@ -82,7 +82,7 @@ The following keywords are supported: >
 
     create[ or replace] procedure|function|event
     returns
-<
+ 
 
 1.2 Text Object Motions		        	*sql-object-motions*
 -----------------------
@@ -96,7 +96,7 @@ file): >
     [[              move backwards to the previous 'begin'
     ][              move forward to the next 'end'
     []              move backwards to the previous 'end'
-<
+ 
 
 1.3 Predefined Object Motions                   *sql-predefined-objects*
 -----------------------------
@@ -111,7 +111,7 @@ flexible as possible, you can override the list of objects from within your
     let g:ftplugin_sql_objects = 'function,procedure,event,table,trigger' .
                 \ ',schema,service,publication,database,datatype,domain' .
                 \ ',index,subscription,synchronization,view,variable'
-<                
+                 
 The following |Normal| mode and |Visual| mode maps have been created which use
 the above list: >
     ]}              move forward to the next 'create <object name>'
@@ -128,14 +128,14 @@ Repeatedly pressing ]} will cycle through each of these create statements: >
     end;
 
     create index i1 on t1 (c1);
-<
+ 
 The default setting for g:ftplugin_sql_objects is: >
     let g:ftplugin_sql_objects = 'function,procedure,event,' .
                 \ '\\(existing\\\\|global\\s\\+temporary\\s\\+\\)\\\{,1}' .
                 \ 'table,trigger' .
                 \ ',schema,service,publication,database,datatype,domain' .
                 \ ',index,subscription,synchronization,view,variable'
-<
+ 
 The above will also handle these cases: >
     create table t1 (
         ...
@@ -146,7 +146,7 @@ The above will also handle these cases: >
     create global temporary table t3 (
         ...
     );
-<
+ 
 By default, the ftplugin only searches for CREATE statements.  You can also
 override this via your |vimrc| with the following: >
     let g:ftplugin_sql_statements = 'create,alter'
@@ -157,7 +157,7 @@ The filetype plugin defines three types of comments: >
     3.  /*
          *
          */
-<         
+          
 The following |Normal| mode and |Visual| mode maps have been created to work
 with comments: >
     ]"              move forward to the beginning of a comment
@@ -170,7 +170,7 @@ with comments: >
 Vim's feature to find macro definitions, |'define'|, is supported using this
 regular expression: >
     \c\<\(VARIABLE\|DECLARE\|IN\|OUT\|INOUT\)\>
-<
+ 
 This addresses the following code: >
     CREATE VARIABLE myVar1 INTEGER;
 
@@ -187,11 +187,11 @@ This addresses the following code: >
           FROM T1
          WHERE c4 = myVar1;
     END;
-<
+ 
 Place your cursor on "myVar1" on this line: >
          WHERE c4 = myVar1;
                      ^
-<
+ 
 Press any of the following keys: >
     [d
     [D
@@ -235,7 +235,7 @@ For the people that work with many different databases, it would be nice to be
 able to flip between the various vendors rules (indent, syntax) on a per
 buffer basis, at any time.  The ftplugin/sql.vim file defines this function: >
     SQLSetType
-<
+ 
 Executing this function without any parameters will set the indent and syntax
 scripts back to their defaults, see |sql-type-default|.  If you have turned
 off Vi's compatibility mode, |'compatible'|, you can use the <Tab> key to
@@ -252,12 +252,12 @@ examples: >
     :SQLSetType sqlanywhere
     :SQLSetType sqlinformix
     :SQLSetType mysql
-<
+ 
 The easiest approach is to the use <Tab> character which will first complete
 the command name (SQLSetType), after a space and another <Tab>, display a list
 of available Vim script names: >
     :SQL<Tab><space><Tab>
-<
+ 
 
 2.2 SQL Dialect Default		        	*sql-type-default*
 -----------------------
@@ -267,10 +267,10 @@ your |vimrc|: >
     let g:sql_type_default = 'sqlanywhere'
     let g:sql_type_default = 'sqlinformix'
     let g:sql_type_default = 'mysql'
-<
+ 
 If you added the following to your |vimrc|: >
     let g:sql_type_default = 'sqlinformix'
-<
+ 
 The next time edit a SQL file the following scripts will be automatically 
 loaded by Vim: >
     ftplugin/sql.vim
@@ -299,7 +299,7 @@ can create any of the following: >
     Windows
         $VIM/vimfiles/syntax/sqlite.vim
         $VIM/vimfiles/indent/sqlite.vim
-<
+ 
 No changes are necessary to the SQLSetType function.  It will automatically
 pickup the new SQL files and load them when you issue the SQLSetType command. 
 
@@ -330,11 +330,11 @@ The defaults static maps are: >
     imap <buffer> <C-C>o <C-\><C-O>:call sqlcomplete#Map('sqlOption')<CR><C-X><C-O>
     imap <buffer> <C-C>T <C-\><C-O>:call sqlcomplete#Map('sqlType')<CR><C-X><C-O>
     imap <buffer> <C-C>s <C-\><C-O>:call sqlcomplete#Map('sqlStatement')<CR><C-X><C-O>
-< 
+  
 The static maps (which are based on the syntax highlight groups) follow this
 format: >
     imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
-<
+ 
 This command breaks down as: >
     imap                   - Create an insert map
     <buffer>               - Only for this buffer
@@ -362,7 +362,7 @@ This command breaks down as: >
                              plugin will also cache this result until Vim is
                              restarted.  The syntax list is retrieved using
                              the syntaxcomplete plugin.
-<
+ 
 Using the 'syntax' keyword is a special case.  This instructs the
 syntaxcomplete plugin to retrieve all syntax items.  So this will effectively
 work for any of Vim's SQL syntax files.  At the time of writing this includes
@@ -382,7 +382,7 @@ Here are some examples of the entries which are pulled from the syntax files: >
          - Isolation_level, On_error, Qualify_owners, Fire_triggers, ...
      Types
          - Integer, Char, Varchar, Date, DateTime, Timestamp, ...
-<
+ 
  
 4.2 Dynamic Mode  		                *sql-completion-dynamic*
 ----------------
@@ -402,7 +402,7 @@ to display a list of tables, procedures, views and columns. >
          - All stored procedures for all schema owners
      Column List
          - For the selected table, the columns that are part of the table
-<
+ 
 To enable the popup, while in INSERT mode, use the following key combinations
 for each group (where <C-C> means hold the CTRL key down while pressing 
 the space bar):
@@ -425,7 +425,7 @@ the popup window.  This makes the re-displaying of these lists very
 fast.  If new tables or columns are added to the database it may become 
 necessary to clear the plugins cache.  The default map for this is: >
     imap <buffer> <C-C>R <C-\><C-O>:call sqlcomplete#Map('ResetCache')<CR><C-X><C-O>
-<
+ 
  
 4.3 SQL Tutorial				*sql-completion-tutorial*
 ----------------
@@ -436,10 +436,10 @@ completion plugin so that: >
      b) You are introduced to some of the more common features
      c) Show how to customize it to your preferences
      d) Demonstrate "Best of Use" of the plugin (easiest way to configure).
-<
+ 
 First, create a new buffer: >
      :e tutorial.sql
-<
+ 
 
 Static features
 ---------------
@@ -461,7 +461,7 @@ depending on the syntax file you are using.  The SQL Anywhere syntax file
 (sqlanywhere.vim) has support for this: >
      BEGIN
         DECLARE customer_id <C-C>T <-- Choose a type from the list
-< 
+  
 
 Dynamic features
 ----------------
@@ -484,7 +484,7 @@ list.  After the list is displayed press <C-W>.  This will remove both the
 popup window and the table name already chosen when the list became active. >
  
  4.3.1 Table Completion:			*sql-completion-tables*
-<
+ 
 Press <C-C>t to display a list of tables from within the database you
 have connected via the dbext plugin.  
 NOTE: All of the SQL completion popups support typing a prefix before pressing
@@ -492,7 +492,7 @@ the key map.  This will limit the contents of the popup window to just items
 beginning with those characters.  >
  
  4.3.2 Column Completion:			*sql-completion-columns*
-<
+ 
 The SQL completion plugin can also display a list of columns for particular
 tables.  The column completion is trigger via <C-C>c.
 
@@ -503,7 +503,7 @@ together.  If you wish to enable this functionality on a *nix platform choose
 a key and create this mapping (see |sql-completion-maps| for further 
 details on where to create this imap): >
     imap <buffer> <your_keystroke> <CR><C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
-<
+ 
 Example of using column completion:
      - Press <C-C>t again to display the list of tables.  
      - When the list is displayed in the completion window, press <C-Right>,
@@ -561,7 +561,7 @@ following statement: >
             employee e,
             site_options so
       where c.
-<
+ 
 In INSERT mode after typing the final "c." which is an alias for the
 "customer" table, you can press either <C-C>c or <C-X><C-O>.  This will
 popup a list of columns for the customer table.  It does this by looking back
@@ -572,12 +572,12 @@ keyword is also supported, "customer AS c". >
  
  
  4.3.3 Procedure Completion:			*sql-completion-procedures*
-<
+ 
 Similar to the table list, <C-C>p, will display a list of stored
 procedures stored within the database. >
  
  4.3.4 View Completion:				*sql-completion-views*
-<
+ 
 Similar to the table list, <C-C>v, will display a list of views in the
 database.
 
@@ -615,7 +615,32 @@ your |vimrc|: >
                    use mixed case then the first letter of the table is used: >
                    mytablename --> m
                    MYTABLENAME --> M
-<
+ 
+    omni_sql_ignorecase
+<       - Default: Current setting for|ignorecase|
+        - Valid settings are 0 or 1.  
+        - When entering a few letters before initiating completion, the list
+          will be filtered to display only the entries which begin with the
+          list of characters.  When this option is set to 0, the list will be
+          filtered using case sensitivity. >
+ 
+    omni_sql_include_owner
+<       - Default: 0, unless dbext.vim 3.00 has been installed
+        - Valid settings are 0 or 1.  
+        - When completing tables, procedure or views and using dbext.vim 3.00 
+          or higher the list of objects will also include the owner name.
+          When completing these objects and omni_sql_include_owner is enabled
+          the owner name will be be replaced. >
+ 
+    omni_sql_precache_syntax_groups
+<       - Default: 
+          ['syntax','sqlKeyword','sqlFunction','sqlOption','sqlType','sqlStatement']
+        - sqlcomplete can be used in conjunction with other completion
+          plugins.  This is outlined at |sql-completion-filetypes|.  When the 
+          filetype is changed temporarily to SQL, the sqlcompletion plugin
+          will cache the syntax groups listed in the List specified in this
+          option.
+>
  
 4.5 SQL Maps	        			*sql-completion-maps*
 ------------
@@ -642,7 +667,8 @@ highlighting rules. >
 
 Dynamic Maps
 ------------
-These are maps which use populate the completion list using the dbext.vim plugin. >
+These are maps which use populate the completion list using the dbext.vim
+plugin. >
     <C-C>t  
 <       - Displays a list of tables. >
     <C-C>p
@@ -683,7 +709,7 @@ If you do not wish the default maps created or the key choices do not work on
 your platform (often a case on *nix) you define the following variable in
 your |vimrc|: >
     let g:omni_sql_no_default_maps = 1
-< 
+  
 Do no edit ftplugin/sql.vim directly!  If you change this file your changes
 will be over written on future updates.  Vim has a special directory structure
 which allows you to make customizations without changing the files that are

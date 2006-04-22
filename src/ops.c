@@ -3723,11 +3723,10 @@ error:
 
 end:
     if (allocated)
-    {
 	vim_free(insert_string);
-	if (regname == '=')
-	    vim_free(y_array);
-    }
+    if (regname == '=')
+	vim_free(y_array);
+
     /* If the cursor is past the end of the line put it at the end. */
     if (gchar_cursor() == NUL
 	    && curwin->w_cursor.col > 0
@@ -4966,10 +4965,6 @@ do_addsub(command, Prenum1)
 		&& !(doalp && ASCII_ISALPHA(ptr[col])))
 	    --col;
     }
-
-    /* truncate to max length of a number */
-    if (length >= NUMBUFLEN - 1)
-	length = NUMBUFLEN - 2;
 
     /*
      * If a number was found, and saving for undo works, replace the number.

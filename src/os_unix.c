@@ -3602,7 +3602,7 @@ mch_call_shell(cmd, options)
 		*p++ = NUL;
 	    p = skipwhite(p);
 	}
-	if (i == 0)
+	if (argv == NULL)
 	{
 	    argv = (char **)alloc((unsigned)((argc + 4) * sizeof(char *)));
 	    if (argv == NULL)	    /* out of memory */

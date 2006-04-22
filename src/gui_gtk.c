@@ -787,12 +787,12 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 # endif /* FEAT_TOOLBAR */
     {
 	/* No parent, must be a non-menubar menu */
-	if (parent->submenu_id == NULL)
+	if (parent == NULL || parent->submenu_id == NULL)
 	    return;
 
 	/* Make place for the possible tearoff handle item.  Not in the popup
 	 * menu, it doesn't have a tearoff item. */
-	if (parent != NULL && !menu_is_popup(parent->name))
+	if (!menu_is_popup(parent->name))
 	    ++idx;
 
 	if (menu_is_separator(menu->name))

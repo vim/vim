@@ -43,6 +43,13 @@ Ac:set ul=100
 :.w >>test.out
 :later 1h
 :.w >>test.out
+:"
+:" test undojoin
+Goaaaa:set ul=100
+obbbbu:.w >>test.out
+obbbb:set ul=100
+:undojoin
+occccu:.w >>test.out
 :qa!
 ENDTEST
 

@@ -1,8 +1,8 @@
 " Vim completion script
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     2.0
-" Last Change: Mon Apr 03 2006 10:21:36 PM
+" Version:     3.0
+" Last Change: Thu Apr 20 2006 8:47:12 PM
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
@@ -18,7 +18,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish 
 endif
-let g:loaded_sql_completion = 1
+let g:loaded_sql_completion = 30
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -60,6 +60,24 @@ if !exists('g:omni_sql_precache_syntax_groups')
                 \ 'sqlStatement'
                 \ ]
 endif
+" Set ignorecase to the ftplugin standard
+if !exists('g:omni_sql_ignorecase')
+    let g:omni_sql_ignorecase = &ignorecase
+endif
+" During table completion, should the table list also
+" include the owner name
+if !exists('g:omni_sql_include_owner')
+    let g:omni_sql_include_owner = 0
+    if exists('g:loaded_dbext')
+        if g:loaded_dbext >= 300
+            " New to dbext 3.00, by default the table lists include the owner
+            " name of the table.  This is used when determining how much of
+            " whatever has been typed should be replaced as part of the 
+            " code replacement.
+            let g:omni_sql_include_owner = 1
+        endif
+    endif
+endif
 
 " This function is used for the 'omnifunc' option.
 function! sqlcomplete#Complete(findstart, base)
@@ -81,14 +99,26 @@ function! sqlcomplete#Complete(findstart, base)
         while start > 0
             if line[start - 1] =~ '\w'
                 let start -= 1
-            elseif line[start - 1] =~ '\.' && compl_type =~ 'column'
-                " If the completion type is column then assume we are looking
-                " for column completion column_type can be either 
-                " 'column' or 'column_csv'
-                if lastword == -1 && compl_type == 'column'
-                    " Do not replace the table name prefix or alias
-                    " if completing only a single column name
+            elseif line[start - 1] =~ '\.' && 
+                        \ compl_type =~ 'column\|table\|view\|procedure'
+                " If lastword has already been set for column completion
+                " break from the loop, since we do not also want to pickup
+                " a table name if it was also supplied.
+                if lastword != -1 && compl_type =~ 'column'
+                    break
+                endif
+                " Assume we are looking for column completion
+                " column_type can be either 'column' or 'column_csv'
+                if lastword == -1 && compl_type =~ 'column'
                     let lastword = start
+                endif
+                " If omni_sql_include_owner = 0, do not include the table
+                " name as part of the substitution, so break here
+                if lastword == -1 && 
+                            \ compl_type =~ 'table\|view\|procedure' && 
+                            \ g:omni_sql_include_owner == 0
+                    let lastword = start
+                    break
                 endif
                 let start -= 1
             else
@@ -144,6 +174,14 @@ function! sqlcomplete#Complete(findstart, base)
         if s:sql_file_{compl_type} != ""
             if filereadable(s:sql_file_{compl_type})
                 let compl_list = readfile(s:sql_file_{compl_type})
+                " let dic_list = readfile(s:sql_file_{compl_type})
+                " if !empty(dic_list)
+                "     for elem in dic_list
+                "         let kind = (compl_type=='table'?'m':(compl_type=='procedure'?'f':'v'))
+                "         let item = {'word':elem, 'menu':elem, 'kind':kind, 'info':compl_type}
+                "         let compl_list += [item]
+                "     endfor
+                " endif
             endif
         endif
     elseif compl_type == 'column'
@@ -203,8 +241,8 @@ function! sqlcomplete#Complete(findstart, base)
     if base != ''
         " Filter the list based on the first few characters the user
         " entered
-        let expr = 'v:val =~ "^'.base.'"'
-        let compl_list = filter(copy(compl_list), expr)
+        let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "^'.base.'"'
+        let compl_list = filter(deepcopy(compl_list), expr)
     endif
 
     if exists('b:sql_compl_savefunc') && b:sql_compl_savefunc != ""
@@ -297,8 +335,8 @@ function! s:SQLCCheck4dbext()
         " Leave time for the user to read the error message
         :sleep 2
         return -1
-    elseif g:loaded_dbext < 210
-        let msg = "The dbext plugin must be at least version 2.10 " .
+    elseif g:loaded_dbext < 300
+        let msg = "The dbext plugin must be at least version 3.00 " .
                     \ " for dynamic SQL completion"
         call s:SQLCErrorMsg(msg)
         " Leave time for the user to read the error message
@@ -363,7 +401,7 @@ function! s:SQLCGetColumns(table_name, list_type)
     let table_alias  = ''
     let move_to_top  = 1
 
-    if g:loaded_dbext >= 210
+    if g:loaded_dbext >= 300
         let saveSettingAlias = DB_listOption('use_tbl_alias')
         exec 'DBSetOption use_tbl_alias=n'
     endif
@@ -479,7 +517,7 @@ function! s:SQLCGetColumns(table_name, list_type)
          call cursor(curline, curcol)
          
          if found == 0
-             if g:loaded_dbext > 201
+             if g:loaded_dbext > 300
                  exec 'DBSetOption use_tbl_alias='.saveSettingAlias
              endif
 
@@ -502,7 +540,7 @@ function! s:SQLCGetColumns(table_name, list_type)
 
     endif
 
-    if g:loaded_dbext > 201
+    if g:loaded_dbext > 300
         exec 'DBSetOption use_tbl_alias='.saveSettingAlias
     endif
 

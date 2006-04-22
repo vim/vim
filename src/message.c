@@ -529,6 +529,25 @@ msg_source(attr)
 }
 
 /*
+ * Return TRUE if not giving error messages right now:
+ * If "emsg_off" is set: no error messages at the moment.
+ * If "msg" is in 'debug': do error message but without side effects.
+ * If "emsg_skip" is set: never do error messages.
+ */
+    int
+emsg_not_now()
+{
+    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
+					  && vim_strchr(p_debug, 't') == NULL)
+#ifdef FEAT_EVAL
+	    || emsg_skip > 0
+#endif
+	    )
+	return TRUE;
+    return FALSE;
+}
+
+/*
  * emsg() - display an error message
  *
  * Rings the bell, if appropriate, and calls message() to do the real work
@@ -559,17 +578,8 @@ emsg(s)
     emsg_severe = FALSE;
 #endif
 
-    /*
-     * If "emsg_off" is set: no error messages at the moment.
-     * If "msg" is in 'debug': do error message but without side effects.
-     * If "emsg_skip" is set: never do error messages.
-     */
-    if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
-					  && vim_strchr(p_debug, 't') == NULL)
-#ifdef FEAT_EVAL
-	    || emsg_skip > 0
-#endif
-	    )
+    /* Skip this if not giving error messages at the moment. */
+    if (emsg_not_now())
 	return TRUE;
 
     if (!emsg_off || vim_strchr(p_debug, 't') != NULL)

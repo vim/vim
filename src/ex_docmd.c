@@ -9438,7 +9438,8 @@ eval_vars(src, usedlen, lnump, errormsg, srcstart)
 		break;
 #if defined(FEAT_CLIENTSERVER)
 	case SPEC_CLIENT:	/* Source of last submitted input */
-		sprintf((char *)strbuf, "0x%x", (unsigned int)clientWindow);
+		sprintf((char *)strbuf, PRINTF_HEX_LONG_U,
+							(long_u)clientWindow);
 		result = strbuf;
 		break;
 #endif

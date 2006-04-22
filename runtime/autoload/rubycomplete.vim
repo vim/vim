@@ -10,6 +10,7 @@
 " Ruby IRB/Complete author: Keiju ISHITSUKA(keiju@ishitsuka.com)
 " ----------------------------------------------------------------------------
 
+" {{{ requirement checks
 if !has('ruby')
     echohl ErrorMsg
     echo "Error: Required vim compiled with +ruby"
@@ -23,8 +24,17 @@ if version < 700
     echohl None
     finish
 endif
+" }}} requirement checks
 
+if !exists("g:rubycomplete_rails")
+    let g:rubycomplete_rails = 0
+endif
 
+if !exists("g:rubycomplete_classes_in_global")
+    let g:rubycomplete_classes_in_global = 0
+endif
+
+" {{{ vim-side support functions
 function! GetBufferRubyModule(name)
     let [snum,enum] = GetBufferRubyEntity(a:name, "module")
     return snum . '..' . enum
@@ -103,6 +113,8 @@ function! GetRubyVarType(v)
     return ''
 endfunction
 
+"}}} vim-side support functions
+
 function! rubycomplete#Complete(findstart, base)
      "findstart = 1 when we need to get the text length
     if a:findstart
@@ -133,6 +145,7 @@ endfunction
 
 function! s:DefRuby()
 ruby << RUBYEOF
+# {{{ ruby completion
 RailsWords = [
       "has_many", "has_one",
       "belongs_to",
@@ -164,11 +177,11 @@ Operators = [ "%", "&", "*", "**", "+",  "-",  "/",
 
 
 def load_requires
-  @buf = VIM::Buffer.current
-  enum = @buf.line_number
+  buf = VIM::Buffer.current
+  enum = buf.line_number
   nums = Range.new( 1, enum )
   nums.each do |x|
-    ln = @buf[x]
+    ln = buf[x]
     begin
       eval( "require %s" % $1 ) if /.*require\s*(.*)$/.match( ln )
     rescue Exception
@@ -198,7 +211,7 @@ def load_buffer_module(name)
 end
 
 def get_buffer_entity(name, vimfun)
-  @buf = VIM::Buffer.current
+  buf = VIM::Buffer.current
   nums = eval( VIM::evaluate( vimfun % name ) )
   return nil if nums == nil 
   return nil if nums.min == nums.max && nums.min == 0
@@ -207,12 +220,31 @@ def get_buffer_entity(name, vimfun)
   classdef = ""
   nums.each do |x|
     if x != cur_line
-      ln = @buf[x] 
+      ln = buf[x] 
       classdef += "%s\n" % ln
     end
   end
  
   return classdef
+end
+
+def get_buffer_classes()
+  # this will be a little expensive.
+  allow_aggressive_load = VIM::evaluate('g:rubycomplete_classes_in_global')
+  return [] if allow_aggressive_load != '1'
+
+  buf = VIM::Buffer.current
+  eob = buf.length
+  ret = []
+  rg = 1..eob
+
+  rg.each do |x|
+    if /^\s*class\s*([A-Za-z0-9_-]*)(\s*<\s*([A-Za-z0-9_:-]*))?\s*/.match( buf[x] )
+      ret.push $1  
+    end
+  end
+
+  return ret
 end
 
 def load_rails()
@@ -233,13 +265,19 @@ def load_rails()
         break
     end
   end
+  
+  return if pok == nil
   bootfile = pok + "/boot.rb"
-  require bootfile if pok != nil && File.exists?( bootfile )
+  if File.exists?( bootfile )
+    require bootfile 
+    VIM::evaluate('let g:rubycomplete_rails_loaded = 1') 
+  end
 end
 
 def get_rails_helpers
   allow_rails = VIM::evaluate('g:rubycomplete_rails')
-  return [] if allow_rails != '1'
+  rails_loaded = VIM::evaluate('g:rubycomplete_rails_loaded')
+  return [] if allow_rails != '1' || rails_loaded != '1'
   return RailsWords 
 end
 
@@ -404,14 +442,21 @@ def get_completions(base)
         receiver = $1
         message = input
         load_buffer_class( receiver )
-        candidates = eval( "#{receiver}.instance_methods" )
-        candidates += get_rails_helpers
-        select_message(receiver, message, candidates)
+        begin
+          candidates = eval( "#{receiver}.instance_methods" )
+          candidates += get_rails_helpers
+          select_message(receiver, message, candidates)
+        rescue Exception
+          found = nil
+        end
       end
     end
     
     if inclass == nil || found == nil
       candidates = eval("self.class.constants")
+      candidates += get_buffer_classes
+      candidates.uniq!
+      candidates.sort!
       (candidates|ReservedWords).grep(/^#{Regexp.quote(input)}/)
     end
   end
@@ -459,10 +504,12 @@ def select_message(receiver, message, candidates)
   candidates.uniq!
   candidates.sort!
 end
+
+# }}} ruby completion
 RUBYEOF
 endfunction
 
+let g:rubycomplete_rails_loaded = 0
 
-let g:rubycomplete_rails = 0
 call s:DefRuby()
-" vim: set et ts=4:
+" vim:tw=78:sw=4:ts=8:ft=vim:norl:

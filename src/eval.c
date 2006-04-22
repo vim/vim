@@ -1413,7 +1413,7 @@ call_vim_function(func, argc, argv, safe, rettv)
     void	*save_funccalp = NULL;
     int		ret;
 
-    argvars = (typval_T *)alloc((unsigned)(argc * sizeof(typval_T)));
+    argvars = (typval_T *)alloc((unsigned)((argc + 1) * sizeof(typval_T)));
     if (argvars == NULL)
 	return FAIL;
 
@@ -7318,7 +7318,7 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
 {
     char_u	*argp;
     int		ret = OK;
-    typval_T	argvars[MAX_FUNC_ARGS];	/* vars for arguments */
+    typval_T	argvars[MAX_FUNC_ARGS + 1];	/* vars for arguments */
     int		argcount = 0;		/* number of arguments found */
 
     /*
@@ -7375,7 +7375,8 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
     int		len;		/* length of "name" */
     typval_T	*rettv;		/* return value goes here */
     int		argcount;	/* number of "argvars" */
-    typval_T	*argvars;	/* vars for arguments */
+    typval_T	*argvars;	/* vars for arguments, must have "argcount"
+				   PLUS ONE elements! */
     linenr_T	firstline;	/* first line of range */
     linenr_T	lastline;	/* last line of range */
     int		*doesrange;	/* return: function handled range */
@@ -8064,7 +8065,7 @@ f_call(argvars, rettv)
     typval_T	*rettv;
 {
     char_u	*func;
-    typval_T	argv[MAX_FUNC_ARGS];
+    typval_T	argv[MAX_FUNC_ARGS + 1];
     int		argc = 0;
     listitem_T	*item;
     int		dummy;
@@ -8943,7 +8944,7 @@ f_extend(argvars, rettv)
 			break;
 		if (i == 3)
 		{
-		    EMSGN(_(e_invarg2), action);
+		    EMSG2(_(e_invarg2), action);
 		    return;
 		}
 	    }
@@ -12997,7 +12998,7 @@ remote_common(argvars, rettv, expr)
 	char_u		str[30];
 	char_u		*idvar;
 
-	sprintf((char *)str, "0x%x", (unsigned int)w);
+	sprintf((char *)str, PRINTF_HEX_LONG_U, (long_u)w);
 	v.di_tv.v_type = VAR_STRING;
 	v.di_tv.vval.v_string = vim_strsave(str);
 	idvar = get_tv_string_chk(&argvars[2]);
@@ -13064,7 +13065,7 @@ f_remote_peek(argvars, rettv)
     dictitem_T	v;
     char_u	*s = NULL;
 # ifdef WIN32
-    int		n = 0;
+    long_u	n = 0;
 # endif
     char_u	*serverid;
 
@@ -13080,7 +13081,7 @@ f_remote_peek(argvars, rettv)
 	return;		/* type error; errmsg already given */
     }
 # ifdef WIN32
-    sscanf(serverid, "%x", &n);
+    sscanf(serverid, SCANF_HEX_LONG_U, &n);
     if (n == 0)
 	rettv->vval.v_number = -1;
     else
@@ -13128,9 +13129,9 @@ f_remote_read(argvars, rettv)
     {
 # ifdef WIN32
 	/* The server's HWND is encoded in the 'id' parameter */
-	int		n = 0;
+	long_u		n = 0;
 
-	sscanf(serverid, "%x", &n);
+	sscanf(serverid, SCANF_HEX_LONG_U, &n);
 	if (n != 0)
 	    r = serverGetReply((HWND)n, FALSE, TRUE, TRUE);
 	if (r == NULL)
@@ -14585,7 +14586,7 @@ item_compare2(s1, s2)
 {
     int		res;
     typval_T	rettv;
-    typval_T	argv[2];
+    typval_T	argv[3];
     int		dummy;
 
     /* shortcut after failure in previous call; compare all items equal */
@@ -15133,11 +15134,12 @@ f_strridx(argvars, rettv)
 
     needle = get_tv_string_chk(&argvars[1]);
     haystack = get_tv_string_buf_chk(&argvars[0], buf);
-    haystack_len = (int)STRLEN(haystack);
 
     rettv->vval.v_number = -1;
     if (needle == NULL || haystack == NULL)
 	return;		/* type error; errmsg already given */
+
+    haystack_len = (int)STRLEN(haystack);
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
 	/* Third argument: upper limit for index */
@@ -15398,7 +15400,10 @@ f_system(argvars, rettv)
 	}
 	p = get_tv_string_buf_chk(&argvars[1], buf);
 	if (p == NULL)
+	{
+	    fclose(fd);
 	    goto done;		/* type error; errmsg already given */
+	}
 	if (fwrite(p, STRLEN(p), 1, fd) != 1)
 	    err = TRUE;
 	if (fclose(fd) != 0)

@@ -185,11 +185,20 @@ try
   syn region doxygenVerbatimRegion contained matchgroup=doxygenOther start=+\<verbatim\>+ matchgroup=doxygenOther end=+[\\@]\@<=\<endverbatim\>+ contains=doxygenVerbatimRegionSpecial,doxygenContinueComment,doxygenErrorComment
   syn match doxygenVerbatimRegionSpecial contained +[\\@]\(endverbatim\>\)\@=+
 
-  let b:doxygen_syntax_save=b:current_syntax
-  unlet b:current_syntax
+  if exists('b:current_syntax') 
+    let b:doxygen_syntax_save=b:current_syntax
+    unlet b:current_syntax
+  endif
+
   syn include @Dotx syntax/dot.vim
-  let b:current_syntax=b:doxygen_syntax_save
-  unlet b:doxygen_syntax_save
+
+  if exists('b:doxygen_syntax_save') 
+    let b:current_syntax=b:doxygen_syntax_save
+    unlet b:doxygen_syntax_save
+  else
+    unlet b:current_syntax
+  endif
+
   syn region doxygenDotRegion contained matchgroup=doxygenOther start=+\<dot\>+ matchgroup=doxygenOther end=+[\\@]\@<=\<enddot\>+ contains=doxygenDotRegionSpecial,doxygenErrorComment,doxygenContinueComment,@Dotx
   syn match doxygenDotRegionSpecial contained +[\\@]\(enddot\>\)\@=+
 

@@ -2538,12 +2538,11 @@ mch_print_init(psettings, jobname, forceit)
         /* Build CMap name - will be same for all multi-byte fonts used */
         prt_cmap[0] = NUL;
 
-        prt_custom_cmap = prt_out_mbyte && p_mbchar == NULL;
-
+        prt_custom_cmap = (p_mbchar == NULL);
         if (!prt_custom_cmap)
         {
             /* Check encoding and character set are compatible */
-            if ((p_mbenc->needs_charset&p_mbchar->has_charset) == 0)
+            if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
             {
                 EMSG(_("E673: Incompatible multi-byte encoding and character set."));
                 return FALSE;
@@ -2862,6 +2861,7 @@ mch_print_begin(psettings)
     struct prt_ps_resource_S res_encoding;
     char	buffer[256];
     char_u      *p_encoding;
+    char_u	*p;
 #ifdef FEAT_MBYTE
     struct prt_ps_resource_S res_cidfont;
     struct prt_ps_resource_S res_cmap;
@@ -2880,7 +2880,9 @@ mch_print_begin(psettings)
     now = time(NULL);
     p_time = ctime(&now);
     /* Note: ctime() adds a \n so we have to remove it :-( */
-    *(vim_strchr((char_u *)p_time, '\n')) = '\0';
+    p = vim_strchr((char_u *)p_time, '\n');
+    if (p != NULL)
+	*p = NUL;
     prt_dsc_textline("CreationDate", p_time);
     prt_dsc_textline("DocumentData", "Clean8Bit");
     prt_dsc_textline("Orientation", "Portrait");

@@ -321,7 +321,7 @@ copy_indent(size, src)
 		++ind_done;
 	    }
 	    ++ind_len;
-	    if (round == 2)
+	    if (p != NULL)
 		*p++ = *s;
 	    ++s;
 	}
@@ -332,7 +332,7 @@ copy_indent(size, src)
 	{
 	    todo -= tab_pad;
 	    ++ind_len;
-	    if (round == 2)
+	    if (p != NULL)
 		*p++ = TAB;
 	}
 
@@ -341,7 +341,7 @@ copy_indent(size, src)
 	{
 	    todo -= (int)curbuf->b_p_ts;
 	    ++ind_len;
-	    if (round == 2)
+	    if (p != NULL)
 		*p++ = TAB;
 	}
 
@@ -350,11 +350,11 @@ copy_indent(size, src)
 	{
 	    --todo;
 	    ++ind_len;
-	    if (round == 2)
+	    if (p != NULL)
 		*p++ = ' ';
 	}
 
-	if (round == 1)
+	if (p == NULL)
 	{
 	    /* Allocate memory for the result: the copied indent, new indent
 	     * and the rest of the line. */

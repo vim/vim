@@ -342,14 +342,19 @@
 typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
-/* Make sure long_u is big enough to hold a pointer.  On Win64 longs are 32
- * bit and pointers 64 bit. */
+/* Make sure long_u is big enough to hold a pointer.
+ * On Win64 longs are 32 bit and pointers 64 bit.
+ * For printf() and scanf() we need to take care of long_u specifically. */
 #ifdef _WIN64
 typedef unsigned __int64 long_u;
 typedef		 __int64 long_i;
+# define SCANF_HEX_LONG_U  "%Ix"
+# define PRINTF_HEX_LONG_U "0x%Ix"
 #else
 typedef unsigned long	long_u;
 typedef	         long	long_i;
+# define SCANF_HEX_LONG_U  "%lx"
+# define PRINTF_HEX_LONG_U "0x%lx"
 #endif
 
 /*
@@ -1382,6 +1387,7 @@ typedef enum
 #define EMSG2(s, p)		    emsg2((char_u *)(s), (char_u *)(p))
 #define EMSG3(s, p, q)		    emsg3((char_u *)(s), (char_u *)(p), (char_u *)(q))
 #define EMSGN(s, n)		    emsgn((char_u *)(s), (long)(n))
+#define EMSGU(s, n)		    emsgu((char_u *)(s), (long_u)(n))
 #define OUT_STR(s)		    out_str((char_u *)(s))
 #define OUT_STR_NF(s)		    out_str_nf((char_u *)(s))
 #define MSG_PUTS(s)		    msg_puts((char_u *)(s))

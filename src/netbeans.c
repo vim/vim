@@ -1641,17 +1641,30 @@ nb_do_cmd(
 	}
 	else if (streq((char *)cmd, "insertDone"))
 	{
-	    buf->bufp->b_start_eol = *args == 'T';
-	    buf->insertDone = TRUE;
-	    args += 2;
-	    buf->bufp->b_p_ro = *args == 'T';
-	    print_read_msg(buf);
+	    if (buf == NULL || buf->bufp == NULL)
+	    {
+		nbdebug(("    null bufp in insertDone"));
+	    }
+	    else
+	    {
+		buf->bufp->b_start_eol = *args == 'T';
+		buf->insertDone = TRUE;
+		args += 2;
+		buf->bufp->b_p_ro = *args == 'T';
+		print_read_msg(buf);
+	    }
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "saveDone"))
 	{
-	    long savedChars = atol((char *) args);
-	    print_save_msg(buf, savedChars);
+	    long savedChars = atol((char *)args);
+
+	    if (buf == NULL || buf->bufp == NULL)
+	    {
+		nbdebug(("    null bufp in saveDone"));
+	    }
+	    else
+		print_save_msg(buf, savedChars);
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "startDocumentListen"))
@@ -1856,12 +1869,17 @@ nb_do_cmd(
 	}
 	else if (streq((char *)cmd, "setModtime"))
 	{
-	    buf->bufp->b_mtime = atoi((char *) args);
+	    if (buf == NULL || buf->bufp == NULL)
+		nbdebug(("    null bufp in setModtime"));
+	    else
+		buf->bufp->b_mtime = atoi((char *)args);
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setReadOnly"))
 	{
-	    if (streq((char *)args, "T"))
+	    if (buf == NULL || buf->bufp == NULL)
+		nbdebug(("    null bufp in setReadOnly"));
+	    else if (streq((char *)args, "T"))
 		buf->bufp->b_p_ro = TRUE;
 	    else
 		buf->bufp->b_p_ro = FALSE;
@@ -2637,7 +2655,7 @@ netbeans_file_activated(buf_T *bufp)
 	return;
 
     q = nb_quote(bufp->b_ffname);
-    if (q == NULL || bp == NULL || bufp == NULL)
+    if (q == NULL || bp == NULL)
 	return;
 
     vim_snprintf(buffer, sizeof(buffer),  "%d:fileOpened=%d \"%s\" %s %s\n",

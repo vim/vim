@@ -1,9 +1,8 @@
-# Makefile for Vim on Win32 (Windows NT and Windows 95), using the
-# Microsoft Visual C++ 2.x and MSVC 4.x compilers (or newer).
-# It builds on Windows 95 and all four NT platforms: i386, Alpha, MIPS, and
-# PowerPC.  The NT/i386 binary and the Windows 95 binary are identical.
+# Makefile for Vim on Win32 (Windows NT/2000/XP/2003 and Windows 95/98/Me)
+# and Win64, using the Microsoft Visual C++ compilers. Known to work with
+# VC5, VC6 (VS98), VC7.0 (VS2002), VC7.1 (VS2003), and VC8 (VS2005).
 #
-# To build using Borland C++, use Make_bc3.mak or Make_bc5.mak.
+# To build using other Windows compilers, see INSTALLpc.txt
 #
 # This makefile can build the console, GUI, OLE-enable, Perl-enabled and
 # Python-enabled versions of vim for Win32 platforms.
@@ -172,8 +171,11 @@ OBJDIR = $(OBJDIR)d
 
 !ifdef PROCESSOR_ARCHITECTURE
 # We're on Windows NT or using VC 6+
-! ifndef CPU
+! ifdef CPU
+ASSEMBLY_ARCHITECTURE=$(CPU)
+! else
 CPU = $(PROCESSOR_ARCHITECTURE)
+ASSEMBLY_ARCHITECTURE = $(PROCESSOR_ARCHITECTURE)
 !  if ("$(CPU)" == "x86") || ("$(CPU)" == "X86")
 CPU = i386
 !  endif
@@ -183,6 +185,9 @@ CPU = i386
 CPU = i386
 !endif # !PROCESSOR_ARCHITECTURE
 
+!if ("$(CPU)" == "AMD64") || ("$(CPU)" == "IA64")
+DEFINES=$(DEFINES) /Wp64
+!endif
 
 # Build a retail version by default
 
@@ -752,6 +757,7 @@ clean:
 	- if exist $(VIM).pdb del $(VIM).pdb
 	- if exist $(VIM).map del $(VIM).map
 	- if exist $(VIM).ncb del $(VIM).ncb
+	- if exist gvim.exe.mnf del gvim.exe.mnf
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
 	- if exist uninstal.exe del uninstal.exe
@@ -933,7 +939,7 @@ $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c
 
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp \
+$(OUTDIR)/vim.res:	$(OUTDIR) gvim.exe.mnf vim.rc version.h tools.bmp tearoff.bmp \
 		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
@@ -962,6 +968,30 @@ $(PATHDEF_SRC): auto
 	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
+
+gvim.exe.mnf: auto
+	@echo ^<?xml version="1.0" encoding="UTF-8" standalone="yes"?^> >$@
+	@echo ^<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"^> >>$@
+	@echo   ^<assemblyIdentity >>$@
+	@echo     processorArchitecture="$(ASSEMBLY_ARCHITECTURE)" >>$@
+	@echo     version="7.0.0.0" >>$@
+	@echo     type="win32" >>$@
+	@echo     name="Vim" >>$@
+	@echo   /^> >>$@
+	@echo   ^<description^>Vi Improved - A Text Editor^</description^> >>$@
+	@echo   ^<dependency^> >>$@
+	@echo     ^<dependentAssembly^> >>$@
+	@echo       ^<assemblyIdentity >>$@
+	@echo         type="win32" >>$@
+	@echo         name="Microsoft.Windows.Common-Controls" >>$@
+	@echo         version="6.0.0.0" >>$@
+	@echo         publicKeyToken="6595b64144ccf1df" >>$@
+	@echo         language="*" >>$@
+	@echo         processorArchitecture="$(ASSEMBLY_ARCHITECTURE)" >>$@
+	@echo       /^> >>$@
+	@echo     ^</dependentAssembly^> >>$@
+	@echo   ^</dependency^> >>$@
+	@echo ^</assembly^> >>$@
 
 auto:
 	if not exist auto/nul mkdir auto

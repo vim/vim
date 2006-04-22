@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0e.  Last change: 2006 Mar 25
+*various.txt*   For Vim version 7.0e.  Last change: 2006 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -819,7 +819,7 @@ Hints for translators:
   languages in the specified directory.
 
 ==============================================================================
-4. Using Vim like less or more					*less*
+3. Using Vim like less or more					*less*
 
 If you use the less or more program to view a file, you don't get syntax
 highlighting.  Thus you would like to use Vim instead.  You can do this by

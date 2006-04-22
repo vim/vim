@@ -2594,8 +2594,9 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
 
 	/*
 	 * The fold includes the line "flp->lnum" and "flp->lnum_save".
+	 * Check "fp" for safety.
 	 */
-	if (lvl > level)
+	if (lvl > level && fp != NULL)
 	{
 	    /*
 	     * There is a nested fold, handle it recursively.

@@ -2024,6 +2024,8 @@ drag_handle_uri_list(GdkDragContext	*context,
 
 	gui_handle_drop(x, y, modifiers, fnames, nfiles);
     }
+    else
+	vim_free(fnames);
 }
 
     static void
@@ -4707,7 +4709,7 @@ gui_mch_font_dialog(char_u *oldval)
 	     * that, because in 'guifont' it separates names. */
 	    p = vim_strsave_escaped((char_u *)name, (char_u *)",");
 	    g_free(name);
-	    if (input_conv.vc_type != CONV_NONE)
+	    if (p != NULL && input_conv.vc_type != CONV_NONE)
 	    {
 		fontname = string_convert(&input_conv, p, NULL);
 		vim_free(p);
@@ -6870,7 +6872,7 @@ mch_set_mouse_shape(int shape)
 	    else
 		id &= ~1;	/* they are always even (why?) */
 	}
-	else
+	else if (shape < sizeof(mshape_ids) / sizeof(int))
 	    id = mshape_ids[shape];
 # ifdef HAVE_GTK_MULTIHEAD
 	c = gdk_cursor_new_for_display(

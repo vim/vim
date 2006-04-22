@@ -1,8 +1,8 @@
 " Vim indent file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.36
+" Version:	0.37
 " URL:		http://www.unb.ca/chem/ajit/indent/fortran.vim
-" Last Change:	2006 Apr. 02
+" Last Change:	2006 Apr. 22
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -14,6 +14,7 @@ let b:did_indent = 1
 
 setlocal indentkeys+==~end,=~case,=~if,=~else,=~do,=~where,=~elsewhere,=~select
 setlocal indentkeys+==~endif,=~enddo,=~endwhere,=~endselect
+setlocal indentkeys+==~type,=~interface
 
 " Determine whether this is a fixed or free format source file
 " if this hasn't been done yet
@@ -81,20 +82,25 @@ function FortranGetIndent(lnum)
   endif
 
   "Add a shiftwidth to statements following if, else, case,
-  "where and elsewhere statements
+  "where, elsewhere, type and interface statements
   if prevstat =~? '^\s*\(\d\+\s\)\=\s*\(else\|case\|where\|elsewhere\)\>'
+	\ ||prevstat =~? '^\s*\(\d\+\s\)\=\s*\(type\|interface\)\>'
 	\ || prevstat =~? '^\s*\(\d\+\s\)\=\s*\(\a\w*\s*:\)\=\s*if\>'
      let ind = ind + &sw
     " Remove unwanted indent after logical and arithmetic ifs
     if prevstat =~? '\<if\>' && prevstat !~? '\<then\>'
       let ind = ind - &sw
     endif
+    " Remove unwanted indent after type( statements
+    if prevstat =~? '\<type\s*('
+      let ind = ind - &sw
+    endif
   endif
 
   "Subtract a shiftwidth from else, elsewhere, case, end if,
-  " end where and end select statements
+  " end where, end select, end interface and end type statements
   if getline(v:lnum) =~? '^\s*\(\d\+\s\)\=\s*'
-	\. '\(else\|elsewhere\|case\|end\s*\(if\|where\|select\)\)\>'
+	\. '\(else\|elsewhere\|case\|end\s*\(if\|where\|select\|interface\|type\)\)\>'
     let ind = ind - &sw
     " Fix indent for case statement immediately after select
     if prevstat =~? '\<select\>'

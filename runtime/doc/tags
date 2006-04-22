@@ -259,6 +259,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'grepformat'	options.txt	/*'grepformat'*
 'grepprg'	options.txt	/*'grepprg'*
 'gtl'	options.txt	/*'gtl'*
+'gtt'	options.txt	/*'gtt'*
 'guicursor'	options.txt	/*'guicursor'*
 'guifont'	options.txt	/*'guifont'*
 'guifontset'	options.txt	/*'guifontset'*
@@ -267,6 +268,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'guioptions'	options.txt	/*'guioptions'*
 'guipty'	options.txt	/*'guipty'*
 'guitablabel'	options.txt	/*'guitablabel'*
+'guitabtooltip'	options.txt	/*'guitabtooltip'*
 'hardtabs'	vi_diff.txt	/*'hardtabs'*
 'helpfile'	options.txt	/*'helpfile'*
 'helpheight'	options.txt	/*'helpheight'*
@@ -3198,6 +3200,7 @@ CTRL-W_bar	windows.txt	/*CTRL-W_bar*
 CTRL-W_c	windows.txt	/*CTRL-W_c*
 CTRL-W_d	tagsrch.txt	/*CTRL-W_d*
 CTRL-W_f	windows.txt	/*CTRL-W_f*
+CTRL-W_gF	windows.txt	/*CTRL-W_gF*
 CTRL-W_g]	windows.txt	/*CTRL-W_g]*
 CTRL-W_g_CTRL-]	windows.txt	/*CTRL-W_g_CTRL-]*
 CTRL-W_gf	windows.txt	/*CTRL-W_gf*
@@ -4006,6 +4009,8 @@ E787	diff.txt	/*E787*
 E788	autocmd.txt	/*E788*
 E789	syntax.txt	/*E789*
 E79	message.txt	/*E79*
+E790	undo.txt	/*E790*
+E791	mbyte.txt	/*E791*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
 E81	map.txt	/*E81*
@@ -6298,6 +6303,7 @@ netrw-settings	pi_netrw.txt	/*netrw-settings*
 netrw-sexplore	pi_netrw.txt	/*netrw-sexplore*
 netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sortsequence	pi_netrw.txt	/*netrw-sortsequence*
+netrw-starpat	pi_netrw.txt	/*netrw-starpat*
 netrw-starstar	pi_netrw.txt	/*netrw-starstar*
 netrw-start	pi_netrw.txt	/*netrw-start*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
@@ -6504,6 +6510,8 @@ pi_gzip.txt	pi_gzip.txt	/*pi_gzip.txt*
 pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
+pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
+pi_zip.txt	pi_zip.txt	/*pi_zip.txt*
 plaintex.vim	syntax.txt	/*plaintex.vim*
 plsql	sql.txt	/*plsql*
 plugin	usr_05.txt	/*plugin*
@@ -7246,7 +7254,6 @@ tar-history	pi_tar.txt	/*tar-history*
 tar-manual	pi_tar.txt	/*tar-manual*
 tar-options	pi_tar.txt	/*tar-options*
 tar-usage	pi_tar.txt	/*tar-usage*
-tar.txt	pi_tar.txt	/*tar.txt*
 tcl	if_tcl.txt	/*tcl*
 tcl-beep	if_tcl.txt	/*tcl-beep*
 tcl-buffer	if_tcl.txt	/*tcl-buffer*
@@ -7858,7 +7865,6 @@ zip-copyright	pi_zip.txt	/*zip-copyright*
 zip-history	pi_zip.txt	/*zip-history*
 zip-manual	pi_zip.txt	/*zip-manual*
 zip-usage	pi_zip.txt	/*zip-usage*
-zip.txt	pi_zip.txt	/*zip.txt*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*
