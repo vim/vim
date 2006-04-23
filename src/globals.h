@@ -1237,10 +1237,13 @@ EXTERN guint32	gtk_socket_id INIT(= 0);
 EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 #endif
 
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+EXTERN int	typebuf_was_filled INIT(= FALSE); /* received text from client
+						     or from pushkeys() */
+#endif
+
 #ifdef FEAT_CLIENTSERVER
 EXTERN char_u	*serverName INIT(= NULL);	/* name of the server */
-EXTERN int	received_from_client INIT(= FALSE);	/* received text from
-							   client */
 # ifdef FEAT_X11
 EXTERN Window	commWindow INIT(= None);
 EXTERN Window	clientWindow INIT(= None);

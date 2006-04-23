@@ -587,6 +587,7 @@ static void f_pathshorten __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_pushkeys __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_reltime __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7101,6 +7102,7 @@ static struct fst
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		2, 19, f_printf},
     {"pumvisible",	0, 0, f_pumvisible},
+    {"pushkeys",	1, 2, f_pushkeys},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
@@ -12616,6 +12618,42 @@ f_pumvisible(argvars, rettv)
     if (pum_visible())
 	rettv->vval.v_number = 1;
 #endif
+}
+
+/*
+ * "pushkeys()" function
+ */
+/*ARGSUSED*/
+    static void
+f_pushkeys(argvars, rettv)
+    typval_T    *argvars;
+    typval_T    *rettv;
+{
+    int		remap = TRUE;
+    char_u	*keys, *flags;
+    char_u	nbuf[NUMBUFLEN];
+
+    rettv->vval.v_number = 0;
+    keys = get_tv_string(&argvars[0]);
+    if (*keys != NUL)
+    {
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    flags = get_tv_string_buf(&argvars[1], nbuf);
+	    for ( ; *flags != NUL; ++flags)
+	    {
+		switch (*flags)
+		{
+		    case 'n': remap = FALSE; break;
+		    case 'm': remap = TRUE; break;
+		}
+	    }
+	}
+
+	ins_typebuf(keys, (remap ? REMAP_YES : REMAP_NONE),
+						 typebuf.tb_len, TRUE, FALSE);
+	typebuf_was_filled = TRUE;
+    }
 }
 
 /*

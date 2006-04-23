@@ -1,4 +1,4 @@
-let g:xmldata_html401t = {
+let g:xmldata_html40t = {
 \ 'vimxmlentities': ['AElig', 'Aacute', 'Acirc', 'Agrave', 'Alpha', 'Aring', 'Atilde', 'Auml', 'Beta', 'Ccedil', 'Chi', 'Dagger', 'Delta', 'ETH', 'Eacute', 'Ecirc', 'Egrave', 'Epsilon', 'Eta', 'Euml', 'Gamma', 'Iacute', 'Icirc', 'Igrave', 'Iota', 'Iuml', 'Kappa', 'Lambda', 'Mu', 'Ntilde', 'Nu', 'OElig', 'Oacute', 'Ocirc', 'Ograve', 'Omega', 'Omicron', 'Oslash', 'Otilde', 'Ouml', 'Phi', 'Pi', 'Prime', 'Psi', 'Rho', 'Scaron', 'Sigma', 'THORN', 'Tau', 'Theta', 'Uacute', 'Ucirc', 'Ugrave', 'Upsilon', 'Uuml', 'Xi', 'Yacute', 'Yuml', 'Zeta', 'aacute', 'acirc', 'acute', 'aelig', 'agrave', 'alefsym', 'alpha', 'amp', 'and', 'ang', 'apos', 'aring', 'asymp', 'atilde', 'auml', 'bdquo', 'beta', 'brvbar', 'bull', 'cap', 'ccedil', 'cedil', 'cent', 'chi', 'circ', 'clubs', 'cong', 'copy', 'crarr', 'cup', 'curren', 'dArr', 'dagger', 'darr', 'deg', 'delta', 'diams', 'divide', 'eacute', 'ecirc', 'egrave', 'empty', 'emsp', 'ensp', 'epsilon', 'equiv', 'eta', 'eth', 'euml', 'euro', 'exist', 'fnof', 'forall', 'frac12', 'frac14', 'frac34', 'frasl', 'gamma', 'ge', 'gt', 'hArr', 'harr', 'hearts', 'hellip', 'iacute', 'icirc', 'iexcl', 'igrave', 'image', 'infin', 'int', 'iota', 'iquest', 'isin', 'iuml', 'kappa', 'lArr', 'lambda', 'lang', 'laquo', 'larr', 'lceil', 'ldquo', 'le', 'lfloor', 'lowast', 'loz', 'lrm', 'lsaquo', 'lsquo', 'lt', 'macr', 'mdash', 'micro', 'middot', 'minus', 'mu', 'nabla', 'nbsp', 'ndash', 'ne', 'ni', 'not', 'notin', 'nsub', 'ntilde', 'nu', 'oacute', 'ocirc', 'oelig', 'ograve', 'oline', 'omega', 'omicron', 'oplus', 'or', 'ordf', 'ordm', 'oslash', 'otilde', 'otimes', 'ouml', 'para', 'part', 'permil', 'perp', 'phi', 'pi', 'piv', 'plusmn', 'pound', 'prime', 'prod', 'prop', 'psi', 'quot', 'rArr', 'radic', 'rang', 'raquo', 'rarr', 'rceil', 'rdquo', 'real', 'reg', 'rfloor', 'rho', 'rlm', 'rsaquo', 'rsquo', 'sbquo', 'scaron', 'sdot', 'sect', 'shy', 'sigma', 'sigmaf', 'sim', 'spades', 'sub', 'sube', 'sum', 'sup', 'sup1', 'sup2', 'sup3', 'supe', 'szlig', 'tau', 'there4', 'theta', 'thetasym', 'thinsp', 'thorn', 'tilde', 'times', 'trade', 'uArr', 'uacute', 'uarr', 'ucirc', 'ugrave', 'uml', 'upsih', 'upsilon', 'uuml', 'weierp', 'xi', 'yacute', 'yen', 'yuml', 'zeta', 'zwj', 'zwnj'],
 \ 'vimxmlroot': ['html'],
 \ 'a': [
@@ -127,7 +127,7 @@ let g:xmldata_html401t = {
 \ ],
 \ 'form': [
 \ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'dir', 'menu', 'pre', 'dl', 'div', 'center', 'noscript', 'noframes', 'blockquote', 'form', 'isindex', 'hr', 'table', 'fieldset', 'address', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'applet', 'object', 'font', 'basefont', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'iframe', 'input', 'select', 'textarea', 'label', 'button'],
-\ { 'enctype': ['application/x-www-form-urlencoded'], 'onsubmit': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'target': [], 'onkeyup': [], 'onmouseup': [], 'onreset': [], 'id': [], 'method': ['GET', 'POST'], 'onmouseover': [], 'lang': [], 'accept': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'accept-charset': [], 'onkeypress': [], 'onmousedown': [], 'action': [], 'class': [], 'title': [], 'onclick': []}
+\ { 'enctype': ['application/x-www-form-urlencoded'], 'onsubmit': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'target': [], 'onkeyup': [], 'onmouseup': [], 'onreset': [], 'id': [], 'method': ['GET', 'POST'], 'onmouseover': [], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'accept-charset': [], 'onkeypress': [], 'onmousedown': [], 'action': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'h1': [
 \ ['tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'applet', 'object', 'font', 'basefont', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'iframe', 'input', 'select', 'textarea', 'label', 'button'],
@@ -159,11 +159,11 @@ let g:xmldata_html401t = {
 \ ],
 \ 'hr': [
 \ [],
-\ { 'width': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'size': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right'], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'noshade': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
+\ { 'width': [], 'ondblclick': [], 'size': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right'], 'style': [], 'onmousemove': [], 'onmouseout': [], 'noshade': ['BOOL'], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'html': [
 \ ['head', 'body'],
-\ { 'dir': ['ltr', 'rtl'], 'lang': [], 'version': ['-//W3C//DTD HTML 4.01 Transitional//EN']}
+\ { 'dir': ['ltr', 'rtl'], 'lang': [], 'version': ['-//W3C//DTD HTML 4.0 Transitional//EN']}
 \ ],
 \ 'i': [
 \ ['tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'applet', 'object', 'font', 'basefont', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'iframe', 'input', 'select', 'textarea', 'label', 'button'],
@@ -175,11 +175,11 @@ let g:xmldata_html401t = {
 \ ],
 \ 'img': [
 \ [],
-\ { 'width': [], 'usemap': [], 'ismap': ['BOOL'], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'vspace': [], 'onmouseover': [], 'alt': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'src': [], 'longdesc': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'height': [], 'border': [], 'hspace': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
+\ { 'width': [], 'usemap': [], 'ismap': ['BOOL'], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'vspace': [], 'onmouseover': [], 'alt': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'src': [], 'longdesc': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'height': [], 'border': [], 'hspace': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'input': [
 \ [],
-\ { 'ondblclick': [], 'onkeydown': [], 'readonly': ['BOOL'], 'onchange': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'value': [], 'src': [], 'name': [], 'checked': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'type': ['TEXT', 'PASSWORD', 'CHECKBOX', 'RADIO', 'SUBMIT', 'RESET', 'FILE', 'IMAGE', 'BUTTON'], 'class': [], 'title': [], 'onclick': [], 'accesskey': [], 'disabled': ['BOOL'], 'usemap': [], 'ismap': ['BOOL'], 'dir': ['ltr', 'rtl'], 'size': [], 'onblur': [], 'onfocus': [], 'maxlength': [], 'onselect': [], 'tabindex': [], 'accept': [], 'alt': [], 'style': [], 'onmousemove': [], 'onmouseout': []}
+\ { 'ondblclick': [], 'onkeydown': [], 'readonly': ['BOOL'], 'onchange': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'value': [], 'src': [], 'name': [], 'checked': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'type': ['TEXT', 'PASSWORD', 'CHECKBOX', 'RADIO', 'SUBMIT', 'RESET', 'FILE', 'IMAGE', 'BUTTON'], 'class': [], 'title': [], 'onclick': [], 'accesskey': [], 'disabled': ['BOOL'], 'usemap': [], 'dir': ['ltr', 'rtl'], 'size': [], 'onblur': [], 'onfocus': [], 'maxlength': [], 'onselect': [], 'accept': [], 'alt': [], 'tabindex': [], 'style': [], 'onmousemove': [], 'onmouseout': []}
 \ ],
 \ 'ins': [
 \ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'dir', 'menu', 'pre', 'dl', 'div', 'center', 'noscript', 'noframes', 'blockquote', 'form', 'isindex', 'hr', 'table', 'fieldset', 'address', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'applet', 'object', 'font', 'basefont', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'iframe', 'input', 'select', 'textarea', 'label', 'button'],

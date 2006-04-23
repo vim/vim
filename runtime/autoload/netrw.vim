@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
 " Date:		Apr 21, 2006
-" Version:	91
+" Version:	92
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v91"
+let g:loaded_netrw = "v92"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -3523,10 +3523,15 @@ fun! netrw#Explore(indx,dosplit,style,...)
   endif
   norm! 0
 
-  if a:1 =~ '\*/'
+  if a:1 =~ '^\*/'
    " Explore */pattern
    let pattern= substitute(a:1,'^\*/\(.*\)$','\1','')
-"   call Decho("Explore */".pattern)
+"   call Decho("Explore */pat: a:1<".a:1."> -> pattern<".pattern.">")
+  elseif a:1 =~ '^\*\*//'
+   " Explore **//pattern
+   let pattern     = substitute(a:1,'^\*\*//','','')
+   let starstarpat = 1
+"   call Decho("Explore **//pat: a:1<".a:1."> -> pattern<".pattern.">")
   endif
 
   if a:1 == "" && a:indx >= 0
@@ -3556,39 +3561,62 @@ fun! netrw#Explore(indx,dosplit,style,...)
      let w:netrw_explore_indx= 0
     endif
     let indx = a:indx
-"    call Decho("input indx=".indx)
+"    call Decho("set indx=".indx)
 "
     if indx == -1
+     "Nexplore
      if !exists("w:netrw_explore_list") " sanity check
       echohl WarningMsg | echo "***netrw*** using Nexplore or <s-down> improperly; see help for netrw-starstar" | echohl None
       call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "      call Dret("Explore")
       return
      endif
-     let indx= w:netrw_explore_indx + 1
-"     call Decho("indx= [w:netrw_explore_indx=".w:netrw_explore_indx."]=".indx)
+     let indx   = w:netrw_explore_indx
+     let curfile= w:netrw_explore_list[indx]
+     while indx < w:netrw_explore_listlen && curfile == w:netrw_explore_list[indx]
+      let indx= indx + 1
+"      call Decho("indx=".indx)
+     endwhile
+"     call Decho("Nexplore: indx= [w:netrw_explore_indx=".w:netrw_explore_indx."]=".indx)
 
     elseif indx == -2
+     "Pexplore
      if !exists("w:netrw_explore_list") " sanity check
       echohl WarningMsg | echo "***netrw*** using Pexplore or <s-up> improperly; see help for netrw-starstar" | echohl None
       call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "      call Dret("Explore")
       return
      endif
-     let indx= w:netrw_explore_indx - 1
-"     call Decho("indx= [w:netrw_explore_indx=".w:netrw_explore_indx."]=".indx)
+     let indx   = w:netrw_explore_indx
+     let curfile= w:netrw_explore_list[indx]
+     while indx > 0 && curfile == w:netrw_explore_list[indx]
+      let indx= indx - 1
+     endwhile
+"     call Decho("Pexplore: indx= [w:netrw_explore_indx=".w:netrw_explore_indx."]=".indx)
 
     else
+     " Explore -- initialize
      " build list of files to Explore with Nexplore/Pexplore
-     let w:netrw_explore_indx    = 0
+"     call Decho("Explore -- initialize")
+     let w:netrw_explore_indx= 0
      if !exists("b:netrw_curdir")
       let b:netrw_curdir= getcwd()
      endif
 "     call Decho("b:netrw_curdir<".b:netrw_curdir.">")
      if exists("pattern")
 "      call Decho("building list based on pattern<".pattern."> cwd<".getcwd().">")
-      exe "vimgrep /".pattern."/gj ".b:netrw_curdir."/*"
-      let w:netrw_explore_list = map(getqflist(),'b:netrw_curdir.bufname(v:val.bufnr)')
+      if exists("starstarpat")
+       exe "vimgrep /".pattern."/gj "."**/*"
+       let s:netrw_curdir= b:netrw_curdir
+       let w:netrw_explore_list = map(getqflist(),'s:netrw_curdir."/".bufname(v:val.bufnr)')
+      else
+       exe "vimgrep /".pattern."/gj ".b:netrw_curdir."/*"
+       if (has("win32") || has("win95") || has("win64") || has("win16"))
+        let w:netrw_explore_list = map(getqflist(),'bufname(v:val.bufnr)')
+       else
+        let w:netrw_explore_list = map(getqflist(),'b:netrw_curdir.bufname(v:val.bufnr)')
+       endif
+      endif
      else
 "      call Decho("building list based on ".b:netrw_curdir."/".a:1)
       let w:netrw_explore_list= split(expand(b:netrw_curdir."/".a:1),'\n')

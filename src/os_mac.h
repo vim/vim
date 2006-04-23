@@ -23,7 +23,7 @@
  * files have many conflicts).
  */
 #ifndef FEAT_X11
-# include <QuickDraw.h>
+# include <Quickdraw.h>	    /* Apple calls it QuickDraw.h... */
 # include <ToolUtils.h>
 # include <LowMem.h>
 # include <Scrap.h>

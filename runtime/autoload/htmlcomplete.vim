@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 20
+" Last Change:	2006 Apr 22
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -10,7 +10,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
     let start = col('.') - 1
 	let curline = line('.')
 	let compl_begin = col('.') - 2
-    while start >= 0 && line[start - 1] =~ '\(\k\|[:.-]\)'
+    while start >= 0 && line[start - 1] =~ '\(\k\|[!:.-]\)'
 		let start -= 1
     endwhile
 	" Handling of entities {{{
@@ -94,12 +94,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
 					break
 				endif
 				let i += 1
-				" We reached first line and no tag approached
-				" Prevents endless loop
-				"if i > curline
-					"let b:compl_context = ''
-					"break
-				"endif
 			endwhile
 			" Make sure we don't have counter
 			unlet! i
@@ -133,6 +127,8 @@ function! htmlcomplete#CompleteTags(findstart, base)
     let res2 = []
 	" a:base is very short - we need context
 	let context = b:compl_context
+	let g:ab = a:base
+	let g:co = context
 	" Check if we should do CSS completion inside of <style> tag
 	" or JS completion inside of <script> tag or PHP completion in case of <?
 	" tag AND &ft==php
@@ -210,14 +206,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let tag = ''
 	else
 		let tag = split(context)[0]
-		if tag =~ '[A-Z]'
+		" Detect if tag is uppercase to return in proper case,
+		" we need to make it lowercase for processing
+		if tag =~ '^[A-Z]*$'
 			let uppercase_tag = 1
 			let tag = tolower(tag)
 		else
 			let uppercase_tag = 0
 		endif
 	endif
-	let g:ta = tag
 	" Get last word, it should be attr name
 	let attr = matchstr(context, '.*\s\zs.*')
 	" Possible situations where any prediction would be difficult:
@@ -568,7 +565,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	let opentag = tolower(xmlcomplete#GetLastOpenTag("b:unaryTagsStack"))
 	" MM: TODO: GLOT works always the same but with some weird situation it
 	" behaves as intended in HTML but screws in PHP
-	if opentag == '' || &ft == 'php' && !has_key(b:html_omni, opentag)
+	if opentag == '' || &filetype == 'php' && !has_key(b:html_omni, opentag)
 		" Hack for sometimes failing GetLastOpenTag.
 		" As far as I tested fail isn't GLOT fault but problem
 		" of invalid document - not properly closed tags and other mish-mash.
@@ -587,6 +584,23 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("uppercase_tag") && uppercase_tag == 1
 		let context = tolower(context)
 	endif
+	" Handle XML keywords: DOCTYPE and CDATA.
+	if opentag == '' || opentag ==? 'head'
+		let tags += [
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN" "http://www.w3.org/TR/REC-html40/frameset.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">',
+				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/1999/xhtml">',
+				\ '!CDATA'
+				\ ]
+	endif
 
 	for m in sort(tags)
 		if m =~ '^'.context
@@ -596,6 +610,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endfor
 	let menu = res + res2
+	let g:me = menu
 	if has_key(b:html_omni, 'vimxmltaginfo')
 		let final_menu = []
 		for i in range(len(menu))
@@ -607,10 +622,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let m_menu = ''
 				let m_info = ''
 			endif
-			if &ft == 'html' && exists("uppercase_tag") && uppercase_tag == 1
+			if &filetype == 'html' && exists("uppercase_tag") && uppercase_tag == 1 && item !~ 'DOCTYPE'
 				let item = toupper(item)
 			endif
-			let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
+			if item =~ 'DOCTYPE'
+				let abbr = 'DOCTYPE '.matchstr(item, 'DTD \zsX\?HTML .\{-}\ze\/\/')
+			else
+				let abbr = item
+			endif
+			let final_menu += [{'abbr':abbr, 'word':item, 'menu':m_menu, 'info':m_info}]
 		endfor
 	else
 		let final_menu = menu
@@ -623,7 +643,7 @@ endfunction
 
 function! htmlcomplete#LoadData() " {{{
 	if !exists("b:html_omni_flavor")
-		if &ft == 'html'
+		if &filetype == 'html'
 			let b:html_omni_flavor = 'html401t'
 		else
 			let b:html_omni_flavor = 'xhtml10s'
@@ -636,14 +656,13 @@ function! htmlcomplete#LoadData() " {{{
 		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
 	else
 		exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
-		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
 	endif
 	" This repetition is necessary because we don't know if
 	" b:html_omni_flavor file exists and was sourced
 	" Proper checking for files would require iterating through 'rtp'
 	" and could introduce OS dependent mess.
 	if !exists("g:xmldata_".b:html_omni_flavor)
-		if &ft == 'html'
+		if &filetype == 'html'
 			let b:html_omni_flavor = 'html401t'
 		else
 			let b:html_omni_flavor = 'xhtml10s'

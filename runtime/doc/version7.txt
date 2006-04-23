@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 22
+*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -775,6 +775,7 @@ New and extended functions: ~
 |mkdir()|		create a directory
 |printf()|		format text
 |pumvisible()|		check whether the popup menu is displayed
+|pushkeys()|		put characters in the typeahead buffer
 |range()|		generate a List with numbers
 |readfile()|		read a file into a list of lines
 |reltime()|		get time value, possibly relative
@@ -2594,5 +2595,8 @@ as much memory for the dialog template.
 Fixed a few leaks and wrong pointer use reported by coverity.
 
 When showing menus the mode character was sometimes wrong.
+
+Added pushkeys(). (Yakov Lerner)
+
 
  vim:tw=78:ts=8:ft=help:norl:

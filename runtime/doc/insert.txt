@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 20
+*insert.txt*    For Vim version 7.0e.  Last change: 2006 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1017,6 +1017,8 @@ items:
 	kind		single letter indicating the type of completion
 	icase		when non-zero case is to be ignored; when omitted
 			the 'ignorecase' option is used
+	dup		when non-zero this match will be added even when an
+			item with the same word is already present.
 
 All of these except 'icase' must be a string.  If an item does not meet these
 requirements then an error message is given and further items in the list are

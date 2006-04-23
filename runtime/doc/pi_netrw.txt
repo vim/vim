@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0e.  Last change: Apr 21, 2006
+*pi_netrw.txt*  For Vim version 7.0d.  Last change: Apr 22, 2006
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -964,6 +964,17 @@ matches to the given pattern is generated.  The cursor will then jump
 to the first file with the given pattern; |:Nexplore|, |:Pexplore|, and
 the shifted-down and -up arrows work with the list to move to the next
 or previous files in that list.
+
+						*netrw-starstarpat*
+When Explore, Sexplore, Hexplore, or Vexplore are used with a **//pattern,
+such as:
+>
+	:Explore **//pattern
+<
+then Explore will use |:vimgrep| to find files like |netrw-starpat|;
+however, Explore will also search subdirectories as well as the current
+directory.
+
 
 REFRESHING THE LISTING					*netrw-ctrl-l*
 

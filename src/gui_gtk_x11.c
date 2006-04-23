@@ -3198,7 +3198,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	    /* The label size apparently doesn't include the spacing, estimate
 	     * it by the page position. */
 	    if (page->allocation.x * 2 + label->allocation.x
-					    + label->allocation.width + 1>= x)
+					   + label->allocation.width + 1 >= x)
 		break;
 	}
 
@@ -3652,6 +3652,7 @@ gui_mch_init(void)
     gtk_box_pack_start(GTK_BOX(vbox), gui.tabline, FALSE, FALSE, 0);
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
+    gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
 
     {
         GtkWidget *page, *label;

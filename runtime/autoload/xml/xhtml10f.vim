@@ -1,4 +1,4 @@
-let g:xmldata_xhtml10t = {
+let g:xmldata_xhtml10f = {
 \ 'vimxmlentities': ['AElig', 'Aacute', 'Acirc', 'Agrave', 'Alpha', 'Aring', 'Atilde', 'Auml', 'Beta', 'Ccedil', 'Chi', 'Dagger', 'Delta', 'ETH', 'Eacute', 'Ecirc', 'Egrave', 'Epsilon', 'Eta', 'Euml', 'Gamma', 'Iacute', 'Icirc', 'Igrave', 'Iota', 'Iuml', 'Kappa', 'Lambda', 'Mu', 'Ntilde', 'Nu', 'OElig', 'Oacute', 'Ocirc', 'Ograve', 'Omega', 'Omicron', 'Oslash', 'Otilde', 'Ouml', 'Phi', 'Pi', 'Prime', 'Psi', 'Rho', 'Scaron', 'Sigma', 'THORN', 'Tau', 'Theta', 'Uacute', 'Ucirc', 'Ugrave', 'Upsilon', 'Uuml', 'Xi', 'Yacute', 'Yuml', 'Zeta', 'aacute', 'acirc', 'acute', 'aelig', 'agrave', 'alefsym', 'alpha', 'amp', 'and', 'ang', 'apos', 'aring', 'asymp', 'atilde', 'auml', 'bdquo', 'beta', 'brvbar', 'bull', 'cap', 'ccedil', 'cedil', 'cent', 'chi', 'circ', 'clubs', 'cong', 'copy', 'crarr', 'cup', 'curren', 'dArr', 'dagger', 'darr', 'deg', 'delta', 'diams', 'divide', 'eacute', 'ecirc', 'egrave', 'empty', 'emsp', 'ensp', 'epsilon', 'equiv', 'eta', 'eth', 'euml', 'euro', 'exist', 'fnof', 'forall', 'frac12', 'frac14', 'frac34', 'frasl', 'gamma', 'ge', 'gt', 'hArr', 'harr', 'hearts', 'hellip', 'iacute', 'icirc', 'iexcl', 'igrave', 'image', 'infin', 'int', 'iota', 'iquest', 'isin', 'iuml', 'kappa', 'lArr', 'lambda', 'lang', 'laquo', 'larr', 'lceil', 'ldquo', 'le', 'lfloor', 'lowast', 'loz', 'lrm', 'lsaquo', 'lsquo', 'lt', 'macr', 'mdash', 'micro', 'middot', 'minus', 'mu', 'nabla', 'nbsp', 'ndash', 'ne', 'ni', 'not', 'notin', 'nsub', 'ntilde', 'nu', 'oacute', 'ocirc', 'oelig', 'ograve', 'oline', 'omega', 'omicron', 'oplus', 'or', 'ordf', 'ordm', 'oslash', 'otilde', 'otimes', 'ouml', 'para', 'part', 'permil', 'perp', 'phi', 'pi', 'piv', 'plusmn', 'pound', 'prime', 'prod', 'prop', 'psi', 'quot', 'rArr', 'radic', 'rang', 'raquo', 'rarr', 'rceil', 'rdquo', 'real', 'reg', 'rfloor', 'rho', 'rlm', 'rsaquo', 'rsquo', 'sbquo', 'scaron', 'sdot', 'sect', 'shy', 'sigma', 'sigmaf', 'sim', 'spades', 'sub', 'sube', 'sum', 'sup', 'sup1', 'sup2', 'sup3', 'supe', 'szlig', 'tau', 'there4', 'theta', 'thetasym', 'thinsp', 'thorn', 'tilde', 'times', 'trade', 'uArr', 'uacute', 'uarr', 'ucirc', 'ugrave', 'uml', 'upsih', 'upsilon', 'uuml', 'weierp', 'xi', 'yacute', 'yen', 'yuml', 'zeta', 'zwj', 'zwnj'],
 \ 'vimxmlroot': ['html'],
 \ 'a': [
@@ -18,7 +18,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'applet': [
-\ ['param', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['param', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'width': [], 'object': [], 'id': [], 'code': [], 'vspace': [], 'archive': [], 'alt': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'style': [], 'name': [], 'height': [], 'hspace': [], 'title': [], 'class': [], 'codebase': []}
 \ ],
 \ 'area': [
@@ -46,11 +46,11 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'blockquote': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'cite': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'body': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'vlink': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'alink': [], 'onkeyup': [], 'bgcolor': [], 'text': [], 'onmouseup': [], 'id': [], 'link': [], 'onmouseover': [], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'background': [], 'xml:lang': [], 'onunload': [], 'onkeypress': [], 'onmousedown': [], 'onload': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'br': [
@@ -58,7 +58,7 @@ let g:xmldata_xhtml10t = {
 \ { 'clear': ['none', 'left', 'all', 'right', 'none'], 'id': [], 'style': [], 'class': [], 'title': []}
 \ ],
 \ 'button': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'table', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'table', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'noscript', 'ins', 'del', 'script'],
 \ { 'accesskey': [], 'disabled': ['BOOL'], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onblur': [], 'onkeydown': [], 'onfocus': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'tabindex': [], 'lang': [], 'value': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'xml:lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'type': ['submit', 'button', 'submit', 'reset']}
 \ ],
 \ 'caption': [
@@ -66,7 +66,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['top', 'bottom', 'left', 'right'], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'center': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'cite': [
@@ -86,11 +86,11 @@ let g:xmldata_xhtml10t = {
 \ { 'width': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'charoff': [], 'onmouseover': [], 'lang': [], 'align': ['left', 'center', 'right', 'justify', 'char'], 'valign': ['top', 'middle', 'bottom', 'baseline'], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'onkeypress': [], 'onmousedown': [], 'char': [], 'span': ['1'], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'dd': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'del': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'datetime': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'cite': [], 'onmouseover': [], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'dfn': [
@@ -102,7 +102,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'compact': ['BOOL'], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'div': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right', 'justify'], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'dl': [
@@ -118,7 +118,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'fieldset': [
-\ ['legend', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['legend', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'font': [
@@ -126,8 +126,16 @@ let g:xmldata_xhtml10t = {
 \ { 'dir': ['ltr', 'rtl'], 'size': [], 'face': [], 'color': [], 'id': [], 'lang': [], 'style': [], 'xml:lang': [], 'title': [], 'class': []}
 \ ],
 \ 'form': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'enctype': ['application/x-www-form-urlencoded'], 'onsubmit': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'target': [], 'onkeyup': [], 'onmouseup': [], 'onreset': [], 'id': [], 'method': ['get', 'post'], 'onmouseover': [], 'lang': [], 'accept': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'xml:lang': [], 'accept-charset': [], 'onkeypress': [], 'onmousedown': [], 'action': [], 'class': [], 'title': [], 'onclick': []}
+\ ],
+\ 'frame': [
+\ [],
+\ { 'scrolling': ['auto', 'yes', 'no', 'auto'], 'noresize': ['BOOL'], 'marginwidth': [], 'id': [], 'marginheight': [], 'longdesc': [], 'src': [], 'style': [], 'name': [], 'frameborder': ['1', '0'], 'title': [], 'class': []}
+\ ],
+\ 'frameset': [
+\ ['frameset', 'frame', 'noframes'],
+\ { 'rows': [], 'cols': [], 'id': [], 'style': [], 'onunload': [], 'onload': [], 'class': [], 'title': []}
 \ ],
 \ 'h1': [
 \ ['a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'ins', 'del', 'script'],
@@ -162,7 +170,7 @@ let g:xmldata_xhtml10t = {
 \ { 'width': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'size': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right'], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'noshade': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'html': [
-\ ['head', 'body'],
+\ ['head', 'frameset'],
 \ { 'xmlns': ['http://www.w3.org/1999/xhtml'], 'dir': ['ltr', 'rtl'], 'id': [], 'lang': [], 'xml:lang': []}
 \ ],
 \ 'i': [
@@ -170,7 +178,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'iframe': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'width': [], 'scrolling': ['auto', 'yes', 'no', 'auto'], 'marginwidth': [], 'id': [], 'marginheight': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'longdesc': [], 'src': [], 'style': [], 'name': [], 'height': [], 'frameborder': ['1', '0'], 'title': [], 'class': []}
 \ ],
 \ 'img': [
@@ -182,7 +190,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'onkeydown': [], 'readonly': ['BOOL'], 'onchange': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'value': [], 'src': [], 'name': [], 'checked': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'type': ['text', 'password', 'checkbox', 'radio', 'submit', 'reset', 'file', 'hidden', 'image', 'button'], 'accesskey': [], 'disabled': ['BOOL'], 'usemap': [], 'dir': ['ltr', 'rtl'], 'onblur': [], 'size': [], 'onfocus': [], 'maxlength': [], 'onselect': [], 'accept': [], 'tabindex': [], 'alt': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': []}
 \ ],
 \ 'ins': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'dir': ['ltr', 'rtl'], 'datetime': [], 'cite': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': []}
 \ ],
 \ 'isindex': [
@@ -202,7 +210,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['top', 'bottom', 'left', 'right'], 'lang': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'accesskey': [], 'dir': ['ltr', 'rtl'], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': []}
 \ ],
 \ 'li': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'value': [], 'onkeypress': [], 'onmousedown': [], 'type': [], 'class': [], 'title': [], 'onclick': [], 'dir': ['ltr', 'rtl'], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': []}
 \ ],
 \ 'link': [
@@ -210,7 +218,7 @@ let g:xmldata_xhtml10t = {
 \ { 'rel': [], 'ondblclick': [], 'onkeydown': [], 'target': [], 'onkeyup': [], 'href': [], 'media': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'charset': [], 'hreflang': [], 'onkeypress': [], 'onmousedown': [], 'rev': [], 'class': [], 'title': [], 'onclick': [], 'type': [], 'dir': ['ltr', 'rtl'], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': []}
 \ ],
 \ 'map': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'noscript', 'ins', 'del', 'script', 'area'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'noscript', 'ins', 'del', 'script', 'area'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'name': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'onclick': [], 'title': [], 'dir': ['ltr', 'rtl'], 'style': [], 'onmouseout': [], 'onmousemove': [], 'xml:lang': []}
 \ ],
 \ 'menu': [
@@ -222,15 +230,15 @@ let g:xmldata_xhtml10t = {
 \ { 'http-equiv': [], 'content': [], 'id': [], 'lang': [], 'name': [], 'scheme': [], 'dir': ['ltr', 'rtl'], 'xml:lang': []}
 \ ],
 \ 'noframes': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['body'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': [], 'dir': ['ltr', 'rtl'], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': []}
 \ ],
 \ 'noscript': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': [], 'dir': ['ltr', 'rtl'], 'style': [], 'onmousemove': [], 'onmouseout': [], 'xml:lang': []}
 \ ],
 \ 'object': [
-\ ['param', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['param', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'align': ['top', 'middle', 'bottom', 'left', 'right'], 'name': [], 'data': [], 'declare': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'type': [], 'width': [], 'usemap': [], 'dir': ['ltr', 'rtl'], 'vspace': [], 'tabindex': [], 'standby': [], 'archive': [], 'classid': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'height': [], 'xml:lang': [], 'border': [], 'codetype': [], 'hspace': [], 'codebase': []}
 \ ],
 \ 'ol': [
@@ -314,7 +322,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right', 'justify', 'char'], 'lang': [], 'valign': ['top', 'middle', 'bottom', 'baseline'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'dir': ['ltr', 'rtl'], 'charoff': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'char': []}
 \ ],
 \ 'td': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'axis': [], 'onkeydown': [], 'abbr': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'scope': ['row', 'col', 'rowgroup', 'colgroup'], 'onmouseover': [], 'lang': [], 'align': ['left', 'center', 'right', 'justify', 'char'], 'valign': ['top', 'middle', 'bottom', 'baseline'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'width': [], 'headers': [], 'nowrap': ['BOOL'], 'dir': ['ltr', 'rtl'], 'rowspan': ['1'], 'colspan': ['1'], 'bgcolor': [], 'charoff': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'height': [], 'char': []}
 \ ],
 \ 'textarea': [
@@ -326,7 +334,7 @@ let g:xmldata_xhtml10t = {
 \ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'align': ['left', 'center', 'right', 'justify', 'char'], 'lang': [], 'valign': ['top', 'middle', 'bottom', 'baseline'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'dir': ['ltr', 'rtl'], 'charoff': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'char': []}
 \ ],
 \ 'th': [
-\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'noframes', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
+\ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'ul', 'ol', 'dl', 'menu', 'dir', 'pre', 'hr', 'blockquote', 'address', 'center', 'isindex', 'fieldset', 'table', 'form', 'a', 'br', 'span', 'bdo', 'object', 'applet', 'img', 'map', 'iframe', 'tt', 'i', 'b', 'u', 's', 'strike', 'big', 'small', 'font', 'basefont', 'em', 'strong', 'dfn', 'code', 'q', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'sub', 'sup', 'input', 'select', 'textarea', 'label', 'button', 'noscript', 'ins', 'del', 'script'],
 \ { 'ondblclick': [], 'axis': [], 'onkeydown': [], 'abbr': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'scope': ['row', 'col', 'rowgroup', 'colgroup'], 'onmouseover': [], 'lang': [], 'align': ['left', 'center', 'right', 'justify', 'char'], 'valign': ['top', 'middle', 'bottom', 'baseline'], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': [], 'width': [], 'headers': [], 'nowrap': ['BOOL'], 'dir': ['ltr', 'rtl'], 'rowspan': ['1'], 'colspan': ['1'], 'bgcolor': [], 'charoff': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'xml:lang': [], 'height': [], 'char': []}
 \ ],
 \ 'thead': [
@@ -449,6 +457,7 @@ let g:xmldata_xhtml10t = {
 \ 'basefont': ['/>', ''],
 \ 'br': ['/>', ''],
 \ 'col': ['/>', ''],
+\ 'frame': ['/>', ''],
 \ 'hr': ['/>', ''],
 \ 'img': ['/>', ''],
 \ 'input': ['/>', ''],

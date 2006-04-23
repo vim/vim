@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 22
+*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Omit errors for slicing?
+
+When there is only one match and "longest" used then CTRL-X CTRL-N shows
+original match instead of longest. (Nicolas Schodet)
+
+Line completion on "/**" gives error messages. (Nicolas Schodet)
 
 Crash in "z=" when the change triggers checking out the file, FileChangedRO
 event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)

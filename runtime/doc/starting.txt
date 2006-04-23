@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0e.  Last change: 2006 Apr 02
+*starting.txt*  For Vim version 7.0e.  Last change: 2006 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1218,8 +1218,8 @@ An example mapping: >
   :nmap <F2> :wa<Bar>exe "mksession! " . v:this_session<CR>:so ~/sessions/
 This saves the current Session, and starts off the command to load another.
 
-A session only includes the current tab page.  There currently is no option to
-store all tab pages. |tab-page|
+A session includes all tab pages, unless "tabpages" was removed from
+'sessionoptions'. |tab-page|
 
 The |SessionLoadPost| autocmd event is triggered after a session file is
 loaded/sourced.

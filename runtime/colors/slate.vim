@@ -30,15 +30,17 @@ endif
 :hi String guifg=SkyBlue ctermfg=darkcyan
 :hi Comment term=bold ctermfg=11 guifg=grey40
 :hi Constant guifg=#ffa0a0 ctermfg=brown
-:hi Special guifg=green ctermfg=brown
+:hi Special guifg=darkkhaki ctermfg=brown
 :hi Identifier guifg=salmon ctermfg=red
 :hi Include guifg=red ctermfg=red
 :hi PreProc guifg=red guibg=white ctermfg=red
 :hi Operator guifg=Red ctermfg=Red
 ":hi Operator guifg=CornflowerBlue ctermfg=darkcyan
 :hi Define guifg=gold gui=bold ctermfg=yellow
-:hi Type guifg=darkkhaki ctermfg=2
+:hi Type guifg=CornflowerBlue ctermfg=2
+":hi Type guifg=darkkhaki ctermfg=2
 :hi Function guifg=navajowhite ctermfg=brown
+:hi Structure guifg=green ctermfg=green
 :hi LineNr guifg=grey50 ctermfg=3
 :hi Ignore guifg=grey40 cterm=bold ctermfg=7
 :hi Todo guifg=orangered guibg=yellow2

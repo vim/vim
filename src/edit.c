@@ -124,6 +124,7 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
+static int ins_compl_add __ARGS((char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int dup));
 static int  ins_compl_equal __ARGS((compl_T *match, char_u *str, int len));
 static void ins_compl_longest_match __ARGS((compl_T *match));
 static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int icase));
@@ -2076,9 +2077,10 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 	/* Copy the original case of the part we typed */
 	STRNCPY(IObuff, compl_orig_text, compl_length);
 
-	return ins_compl_add(IObuff, len, icase, fname, NULL, dir, flags);
+	return ins_compl_add(IObuff, len, icase, fname, NULL, dir,
+								flags, FALSE);
     }
-    return ins_compl_add(str, len, icase, fname, NULL, dir, flags);
+    return ins_compl_add(str, len, icase, fname, NULL, dir, flags, FALSE);
 }
 
 /*
@@ -2087,15 +2089,16 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
  * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
  * maybe because alloc() returns NULL, then FAIL is returned.
  */
-    int
-ins_compl_add(str, len, icase, fname, cptext, cdir, flags)
+    static int
+ins_compl_add(str, len, icase, fname, cptext, cdir, flags, dup)
     char_u	*str;
     int		len;
     int		icase;
     char_u	*fname;
-    char_u	**cptext;    /* extra text for popup menu or NULL */
+    char_u	**cptext;   /* extra text for popup menu or NULL */
     int		cdir;
     int		flags;
+    int		dup;	    /* accept duplicate match */
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -2109,7 +2112,7 @@ ins_compl_add(str, len, icase, fname, cptext, cdir, flags)
     /*
      * If the same match is already present, don't add it.
      */
-    if (compl_first_match != NULL)
+    if (compl_first_match != NULL && !dup)
     {
 	match = compl_first_match;
 	do
@@ -2301,7 +2304,7 @@ ins_compl_add_matches(num_matches, matches, icase)
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, icase,
-						   NULL, NULL, dir, 0)) == OK)
+					    NULL, NULL, dir, 0, FALSE)) == OK)
 	    /* if dir was BACKWARD then honor it just once */
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -2359,7 +2362,7 @@ set_completion(startcol, list)
     /* compl_pattern doesn't need to be set */
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+			-1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	return;
 
     /* Handle like dictionary completion. */
@@ -3494,6 +3497,7 @@ ins_compl_add_tv(tv, dir)
 {
     char_u	*word;
     int		icase = p_ic;
+    int		dup = FALSE;
     char_u	*(cptext[CPT_COUNT]);
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -3509,6 +3513,8 @@ ins_compl_add_tv(tv, dir)
 						     (char_u *)"info", FALSE);
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL)
 	    icase = get_dict_number(tv->vval.v_dict, (char_u *)"icase");
+	if (get_dict_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
+	    dup = get_dict_number(tv->vval.v_dict, (char_u *)"dup");
     }
     else
     {
@@ -3517,7 +3523,7 @@ ins_compl_add_tv(tv, dir)
     }
     if (word == NULL || *word == NUL)
 	return FAIL;
-    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0);
+    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, dup);
 }
 #endif
 
@@ -4616,7 +4622,7 @@ ins_complete(c)
 	vim_free(compl_orig_text);
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			       -1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT) != OK)
+			-1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	{
 	    vim_free(compl_pattern);
 	    compl_pattern = NULL;

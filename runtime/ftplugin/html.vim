@@ -16,6 +16,55 @@ setlocal commentstring=<!--%s-->
 
 setlocal omnifunc=htmlcomplete#CompleteTags
 
+" This part added as suggestion by Mikolaj Machowski, still be approved by Dan
+" Sharp!
+if &filetype == 'xhtml'
+	let b:html_omni_flavor = 'xhtml10s'
+else
+	let b:html_omni_flavor = 'html401t'
+endif
+
+let i = 1
+while i < 10 && i < line("$")
+	let line = getline(i)
+	if line =~ '<!DOCTYPE.*\<DTD HTML 3\.2'
+		let b:html_omni_flavor = 'html32'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0 Transitional'
+		let b:html_omni_flavor = 'html40t'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0 Frameset'
+		let b:html_omni_flavor = 'html40f'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0'
+		let b:html_omni_flavor = 'html40s'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01 Transitional'
+		let b:html_omni_flavor = 'html401t'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01 Frameset'
+		let b:html_omni_flavor = 'html401f'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01'
+		let b:html_omni_flavor = 'html401s'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Transitional'
+		let b:html_omni_flavor = 'xhtml10t'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Frameset'
+		let b:html_omni_flavor = 'xhtml10f'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Strict'
+		let b:html_omni_flavor = 'xhtml10s'
+		break
+	elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.1'
+		let b:html_omni_flavor = 'xhtml11'
+		break
+	endif
+	let i += 1
+endwhile
+
+
 " HTML:  thanks to Johannes Zellner and Benji Fisher.
 if exists("loaded_matchit")
     let b:match_ignorecase = 1

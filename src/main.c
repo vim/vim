@@ -3629,7 +3629,7 @@ server_to_input_buf(str)
 
 	/* Let input_available() know we inserted text in the typeahead
 	 * buffer. */
-	received_from_client = TRUE;
+	typebuf_was_filled = TRUE;
     }
     vim_free((char_u *)ptr);
 }

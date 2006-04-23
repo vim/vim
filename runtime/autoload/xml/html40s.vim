@@ -1,4 +1,4 @@
-let g:xmldata_html401s = {
+let g:xmldata_html40s = {
 \ 'vimxmlentities': ['AElig', 'Aacute', 'Acirc', 'Agrave', 'Alpha', 'Aring', 'Atilde', 'Auml', 'Beta', 'Ccedil', 'Chi', 'Dagger', 'Delta', 'ETH', 'Eacute', 'Ecirc', 'Egrave', 'Epsilon', 'Eta', 'Euml', 'Gamma', 'Iacute', 'Icirc', 'Igrave', 'Iota', 'Iuml', 'Kappa', 'Lambda', 'Mu', 'Ntilde', 'Nu', 'OElig', 'Oacute', 'Ocirc', 'Ograve', 'Omega', 'Omicron', 'Oslash', 'Otilde', 'Ouml', 'Phi', 'Pi', 'Prime', 'Psi', 'Rho', 'Scaron', 'Sigma', 'THORN', 'Tau', 'Theta', 'Uacute', 'Ucirc', 'Ugrave', 'Upsilon', 'Uuml', 'Xi', 'Yacute', 'Yuml', 'Zeta', 'aacute', 'acirc', 'acute', 'aelig', 'agrave', 'alefsym', 'alpha', 'amp', 'and', 'ang', 'apos', 'aring', 'asymp', 'atilde', 'auml', 'bdquo', 'beta', 'brvbar', 'bull', 'cap', 'ccedil', 'cedil', 'cent', 'chi', 'circ', 'clubs', 'cong', 'copy', 'crarr', 'cup', 'curren', 'dArr', 'dagger', 'darr', 'deg', 'delta', 'diams', 'divide', 'eacute', 'ecirc', 'egrave', 'empty', 'emsp', 'ensp', 'epsilon', 'equiv', 'eta', 'eth', 'euml', 'euro', 'exist', 'fnof', 'forall', 'frac12', 'frac14', 'frac34', 'frasl', 'gamma', 'ge', 'gt', 'hArr', 'harr', 'hearts', 'hellip', 'iacute', 'icirc', 'iexcl', 'igrave', 'image', 'infin', 'int', 'iota', 'iquest', 'isin', 'iuml', 'kappa', 'lArr', 'lambda', 'lang', 'laquo', 'larr', 'lceil', 'ldquo', 'le', 'lfloor', 'lowast', 'loz', 'lrm', 'lsaquo', 'lsquo', 'lt', 'macr', 'mdash', 'micro', 'middot', 'minus', 'mu', 'nabla', 'nbsp', 'ndash', 'ne', 'ni', 'not', 'notin', 'nsub', 'ntilde', 'nu', 'oacute', 'ocirc', 'oelig', 'ograve', 'oline', 'omega', 'omicron', 'oplus', 'or', 'ordf', 'ordm', 'oslash', 'otilde', 'otimes', 'ouml', 'para', 'part', 'permil', 'perp', 'phi', 'pi', 'piv', 'plusmn', 'pound', 'prime', 'prod', 'prop', 'psi', 'quot', 'rArr', 'radic', 'rang', 'raquo', 'rarr', 'rceil', 'rdquo', 'real', 'reg', 'rfloor', 'rho', 'rlm', 'rsaquo', 'rsquo', 'sbquo', 'scaron', 'sdot', 'sect', 'shy', 'sigma', 'sigmaf', 'sim', 'spades', 'sub', 'sube', 'sum', 'sup', 'sup1', 'sup2', 'sup3', 'supe', 'szlig', 'tau', 'there4', 'theta', 'thetasym', 'thinsp', 'thorn', 'tilde', 'times', 'trade', 'uArr', 'uacute', 'uarr', 'ucirc', 'ugrave', 'uml', 'upsih', 'upsilon', 'uuml', 'weierp', 'xi', 'yacute', 'yen', 'yuml', 'zeta', 'zwj', 'zwnj'],
 \ 'vimxmlroot': ['html'],
 \ 'a': [
@@ -107,7 +107,7 @@ let g:xmldata_html401s = {
 \ ],
 \ 'form': [
 \ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'pre', 'dl', 'div', 'noscript', 'blockquote', 'form', 'hr', 'table', 'fieldset', 'address', 'script'],
-\ { 'enctype': ['application/x-www-form-urlencoded'], 'onsubmit': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'onreset': [], 'id': [], 'method': ['GET', 'POST'], 'onmouseover': [], 'lang': [], 'accept': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'accept-charset': [], 'onkeypress': [], 'onmousedown': [], 'action': [], 'class': [], 'title': [], 'onclick': []}
+\ { 'enctype': ['application/x-www-form-urlencoded'], 'onsubmit': [], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'onreset': [], 'id': [], 'method': ['GET', 'POST'], 'onmouseover': [], 'lang': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'accept-charset': [], 'onkeypress': [], 'onmousedown': [], 'action': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'h1': [
 \ ['tt', 'i', 'b', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'object', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'input', 'select', 'textarea', 'label', 'button'],
@@ -139,7 +139,7 @@ let g:xmldata_html401s = {
 \ ],
 \ 'hr': [
 \ [],
-\ { 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
+\ { 'ondblclick': [], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'style': [], 'onmousemove': [], 'onmouseout': [], 'onmousedown': [], 'onkeypress': [], 'onclick': [], 'title': [], 'class': []}
 \ ],
 \ 'html': [
 \ ['head', 'body'],
@@ -151,11 +151,11 @@ let g:xmldata_html401s = {
 \ ],
 \ 'img': [
 \ [],
-\ { 'width': [], 'usemap': [], 'ismap': ['BOOL'], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'alt': [], 'lang': [], 'src': [], 'longdesc': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'name': [], 'height': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
+\ { 'width': [], 'usemap': [], 'ismap': ['BOOL'], 'ondblclick': [], 'dir': ['ltr', 'rtl'], 'onkeydown': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'alt': [], 'lang': [], 'src': [], 'longdesc': [], 'onmouseout': [], 'onmousemove': [], 'style': [], 'height': [], 'onkeypress': [], 'onmousedown': [], 'class': [], 'title': [], 'onclick': []}
 \ ],
 \ 'input': [
 \ [],
-\ { 'ondblclick': [], 'onkeydown': [], 'readonly': ['BOOL'], 'onchange': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'value': [], 'src': [], 'name': [], 'checked': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'type': ['TEXT', 'PASSWORD', 'CHECKBOX', 'RADIO', 'SUBMIT', 'RESET', 'FILE', 'IMAGE', 'BUTTON'], 'class': [], 'title': [], 'onclick': [], 'accesskey': [], 'disabled': ['BOOL'], 'usemap': [], 'ismap': ['BOOL'], 'dir': ['ltr', 'rtl'], 'size': [], 'onblur': [], 'onfocus': [], 'maxlength': [], 'onselect': [], 'accept': [], 'alt': [], 'tabindex': [], 'style': [], 'onmousemove': [], 'onmouseout': []}
+\ { 'ondblclick': [], 'onkeydown': [], 'readonly': ['BOOL'], 'onchange': [], 'onkeyup': [], 'onmouseup': [], 'id': [], 'onmouseover': [], 'lang': [], 'value': [], 'src': [], 'name': [], 'checked': ['BOOL'], 'onkeypress': [], 'onmousedown': [], 'type': ['TEXT', 'PASSWORD', 'CHECKBOX', 'RADIO', 'SUBMIT', 'RESET', 'FILE', 'IMAGE', 'BUTTON'], 'class': [], 'title': [], 'onclick': [], 'accesskey': [], 'disabled': ['BOOL'], 'usemap': [], 'dir': ['ltr', 'rtl'], 'size': [], 'onblur': [], 'onfocus': [], 'maxlength': [], 'onselect': [], 'accept': [], 'alt': [], 'tabindex': [], 'style': [], 'onmousemove': [], 'onmouseout': []}
 \ ],
 \ 'ins': [
 \ ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'pre', 'dl', 'div', 'noscript', 'blockquote', 'form', 'hr', 'table', 'fieldset', 'address', 'tt', 'i', 'b', 'big', 'small', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'abbr', 'acronym', 'a', 'img', 'object', 'br', 'script', 'map', 'q', 'sub', 'sup', 'span', 'bdo', 'input', 'select', 'textarea', 'label', 'button'],

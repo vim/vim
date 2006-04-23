@@ -1034,7 +1034,8 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 
 /*
  * Return TRUE if the typeahead buffer was changed (while waiting for a
- * character to arrive).  Happens when a message was received from a client.
+ * character to arrive).  Happens when a message was received from a client or
+ * from pushkeys().
  * But check in a more generic way to avoid trouble: When "typebuf.tb_buf"
  * changed it was reallocated and the old pointer can no longer be used.
  * Or "typebuf.tb_off" may have been changed and we would overwrite characters
@@ -1045,8 +1046,8 @@ typebuf_changed(tb_change_cnt)
     int		tb_change_cnt;	/* old value of typebuf.tb_change_cnt */
 {
     return (tb_change_cnt != 0 && (typebuf.tb_change_cnt != tb_change_cnt
-#ifdef FEAT_CLIENTSERVER
-	    || received_from_client
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	    || typebuf_was_filled
 #endif
 	   ));
 }
@@ -1142,10 +1143,10 @@ del_typebuf(len, offset)
 	    typebuf.tb_no_abbr_cnt -= len;
     }
 
-#ifdef FEAT_CLIENTSERVER
-    /* Reset the flag that text received from a client was inserted in the
-     * typeahead buffer. */
-    received_from_client = FALSE;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+    /* Reset the flag that text received from a client or from pushkeys()
+     * was inserted in the typeahead buffer. */
+    typebuf_was_filled = FALSE;
 #endif
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
@@ -2917,15 +2918,15 @@ fix_input_buffer(buf, len, script)
 /*
  * Return TRUE when bytes are in the input buffer or in the typeahead buffer.
  * Normally the input buffer would be sufficient, but the server_to_input_buf()
- * may insert characters in the typeahead buffer while we are waiting for
- * input to arrive.
+ * or pushkeys() may insert characters in the typeahead buffer while we are
+ * waiting for input to arrive.
  */
     int
 input_available()
 {
     return (!vim_is_input_buf_empty()
-# ifdef FEAT_CLIENTSERVER
-	    || received_from_client
+# if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	    || typebuf_was_filled
 # endif
 	    );
 }

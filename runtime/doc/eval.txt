@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0e.  Last change: 2006 Apr 21
+*eval.txt*      For Vim version 7.0e.  Last change: 2006 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1664,6 +1664,7 @@ pathshorten( {expr})		String	shorten directory names in a path
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String  format text
 pumvisible()			Number  whether popup menu is visible
+pushkeys( {string} [, {mode}])	Number  add key sequence to typeahead buffer
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -3794,6 +3795,23 @@ pumvisible()						*pumvisible()*
 		otherwise.  See |ins-completion-menu|.
 		This can be used to avoid some things that would remove the
 		popup menu.
+
+pushkeys({string} [, {mode}])				*pushkeys()*
+		Characters in {string} are queued for processing as if they
+		were typed by user.  They are added to the end of the
+		typeahead buffer, thus if a mapping is still being executed
+		these characters come after them.
+		The function does not wait for processing of keys contained in
+		{string}.
+		To include special keys into {string}, use double-quotes
+		and "\..." notation |expr-quote|. For example,
+		pushkeys("\<CR>") simulates pressing of the Enter key. But
+		pushkeys('\<CR>') pushes 5 characters.
+		If {mode} is absent, keys are remapped.
+		{mode} is a String, which can contain these character flags:
+		'm'	remap keys. This is default.
+		'n'	do not remap keys
+		Return value is always 0.
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*

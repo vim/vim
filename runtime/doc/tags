@@ -6305,6 +6305,7 @@ netrw-sort	pi_netrw.txt	/*netrw-sort*
 netrw-sortsequence	pi_netrw.txt	/*netrw-sortsequence*
 netrw-starpat	pi_netrw.txt	/*netrw-starpat*
 netrw-starstar	pi_netrw.txt	/*netrw-starstar*
+netrw-starstarpat	pi_netrw.txt	/*netrw-starstarpat*
 netrw-start	pi_netrw.txt	/*netrw-start*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
@@ -6558,6 +6559,7 @@ psql	sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
 pumvisible()	eval.txt	/*pumvisible()*
+pushkeys()	eval.txt	/*pushkeys()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*
 python	if_pyth.txt	/*python*
