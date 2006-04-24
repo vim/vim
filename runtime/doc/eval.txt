@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0e.  Last change: 2006 Apr 23
+*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -149,7 +149,7 @@ Examples: >
 	:let emptylist = []
 
 An item can be any expression.  Using a List for an item creates a
-nested List: >
+List of Lists: >
 	:let nestlist = [[11, 12], [21, 22], [31, 32]]
 
 An extra comma after the last item is ignored.
@@ -192,21 +192,19 @@ separated by a colon in square brackets: >
 	:let shortlist = mylist[2:-1]	" get List [3, "four"]
 
 Omitting the first index is similar to zero.  Omitting the last index is
-similar to -1.  The difference is that there is no error if the items are not
-available. >
+similar to -1.
 	:let endlist = mylist[2:]	" from item 2 to the end: [3, "four"]
 	:let shortlist = mylist[2:2]	" List with one item: [3]
 	:let otherlist = mylist[:]	" make a copy of the List
 
-If the second index is equal to or greater than the length of the list there
-is no error and the length minus one is used: >
+If the first index is beyond the last item of the List or the second item is
+before the first item, the result is an empty list.  There is no error
+message.
+
+If the second index is equal to or greater than the length of the list the
+length minus one is used: >
 	:let mylist = [0, 1, 2, 3]
 	:echo mylist[2:8]		" result: [2, 3]
-
-The second index can be just before the first index.  In that case the result
-is an empty list.  If the second index is lower, this results in an error. >
-	:echo mylist[2:1]		" result: []
-	:echo mylist[2:0]		" error!
 
 NOTE: mylist[s:e] means using the variable "s:e" as index.  Watch out for
 using a single letter variable before the ":".  Insert a space when needed:
@@ -1557,6 +1555,7 @@ exists( {expr})			Number	TRUE if {expr} exists
 extend({expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
 expand( {expr})			String	expand special keywords in {expr}
+feedkeys( {string} [, {mode}])	Number  add key sequence to typeahead buffer
 filereadable( {file})		Number	TRUE if {file} is a readable file
 filewritable( {file})		Number	TRUE if {file} is a writable file
 filter( {expr}, {string})	List/Dict  remove items from {expr} where
@@ -1664,7 +1663,6 @@ pathshorten( {expr})		String	shorten directory names in a path
 prevnonblank( {lnum})		Number	line nr of non-blank line <= {lnum}
 printf( {fmt}, {expr1}...)	String  format text
 pumvisible()			Number  whether popup menu is visible
-pushkeys( {string} [, {mode}])	Number  add key sequence to typeahead buffer
 range( {expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readfile({fname} [, {binary} [, {max}]])
@@ -2456,6 +2454,25 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		{expr2} remains unchanged.
 		Returns {expr1}.
 
+
+feedkeys({string} [, {mode}])				*feedkeys()*
+		Characters in {string} are queued for processing as if they
+		come from a mapping or where typed by user.  They are added to
+		the end of the typeahead buffer, thus if a mapping is still
+		being executed these characters come after them.
+		The function does not wait for processing of keys contained in
+		{string}.
+		To include special keys into {string}, use double-quotes
+		and "\..." notation |expr-quote|. For example,
+		feedkeys("\<CR>") simulates pressing of the Enter key. But
+		feedkeys('\<CR>') pushes 5 characters.
+		If {mode} is absent, keys are remapped.
+		{mode} is a String, which can contain these character flags:
+		'm'	remap keys. This is default.
+		'n'	do not remap keys
+		't'	handle keys as if typed; otherwise they are handled as
+			if coming from a mapping
+		Return value is always 0.
 
 filereadable({file})					*filereadable()*
 		The result is a Number, which is TRUE when a file with the
@@ -3549,7 +3566,10 @@ matchlist({expr}, {pat}[, {start}[, {count}]])			*matchlist()*
 		Same as match(), but return a |List|.  The first item in the
 		list is the matched string, same as what matchstr() would
 		return.  Following items are submatches, like "\1", "\2", etc.
-		in |:substitute|.
+		in |:substitute|.  When an optional submatch didn't match an
+		empty string is used.  Example: >
+			echo matchlist('acd', '\(a\)\?\(b\)\?\(c\)\?\(.*\)')
+<		Results in: ['acd', 'a', '', 'c', 'd', '', '', '', '', '']
 		When there is no match an empty list is returned.
 
 matchstr({expr}, {pat}[, {start}[, {count}]])			*matchstr()*
@@ -3795,23 +3815,6 @@ pumvisible()						*pumvisible()*
 		otherwise.  See |ins-completion-menu|.
 		This can be used to avoid some things that would remove the
 		popup menu.
-
-pushkeys({string} [, {mode}])				*pushkeys()*
-		Characters in {string} are queued for processing as if they
-		were typed by user.  They are added to the end of the
-		typeahead buffer, thus if a mapping is still being executed
-		these characters come after them.
-		The function does not wait for processing of keys contained in
-		{string}.
-		To include special keys into {string}, use double-quotes
-		and "\..." notation |expr-quote|. For example,
-		pushkeys("\<CR>") simulates pressing of the Enter key. But
-		pushkeys('\<CR>') pushes 5 characters.
-		If {mode} is absent, keys are remapped.
-		{mode} is a String, which can contain these character flags:
-		'm'	remap keys. This is default.
-		'n'	do not remap keys
-		Return value is always 0.
 
 							*E726* *E727*
 range({expr} [, {max} [, {stride}]])				*range()*

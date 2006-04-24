@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 22
+" Last Change:	2006 Apr 24
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -485,9 +485,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				" alphabetically but sort them. Those beginning with entered
 				" part will be as first choices
 				if m =~ '^'.entered_value
-					call add(res, attrquoteopen . m . attrquote.' ')
+					call add(res, attrquoteopen . m . attrquote)
 				elseif m =~ entered_value
-					call add(res2, attrquoteopen . m . attrquote.' ')
+					call add(res2, attrquoteopen . m . attrquote)
 				endif
 			endfor
 

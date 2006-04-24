@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
+*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -648,6 +648,8 @@ c_no_c99		don't highlight C99 standard items
 When 'foldmethod' is set to "syntax" then /* */ comments and { } blocks will
 become a fold.  If you don't want comments to become a fold use: >
 	:let c_no_comment_fold = 1
+"#if 0" blocks are also folded, unless: >
+	:let c_no_if0_fold = 1
 
 If you notice highlighting errors while scrolling backwards, which are fixed
 when redrawing with CTRL-L, try setting the "c_minlines" internal variable

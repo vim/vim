@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0e.  Last change: 2006 Apr 23
+*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,35 +30,22 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Omit errors for slicing?
-
-When there is only one match and "longest" used then CTRL-X CTRL-N shows
-original match instead of longest. (Nicolas Schodet)
-
-Line completion on "/**" gives error messages. (Nicolas Schodet)
-
-Crash in "z=" when the change triggers checking out the file, FileChangedRO
-event.  Problem in move_lines()?  FileChangedShell also involved? (Neil Bird)
-Added a few checks for valid buffer, did that help?
-
 Add more tests for all new functionality in Vim 7.  Especially new functions.
-
-Win32: Describe how to do debugging. (George Reilly)
-
-Mac unicode patch (Da Woon Jung, Eckehard Berns):
-8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
-    New patch 2004 Jun 16
-- selecting proportional font breaks display
-- UTF-8 text causes display problems.  Font replacement causes this.
-- Command-key mappings do not work. (Alan Schmitt)
-- With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
-  (Alan Schmitt)
 
 Darren Hiebert is including the patch for omni completion in ctags.  A new
 version still isn't available for download.
 
 
 Awaiting updated patches:
+9   Mac unicode patch (Da Woon Jung, Eckehard Berns):
+    8   Add patch from Muraoka Taro (Mar 16) to support input method on Mac?
+	New patch 2004 Jun 16
+    - selecting proportional font breaks display
+    - UTF-8 text causes display problems.  Font replacement causes this.
+    - Command-key mappings do not work. (Alan Schmitt)
+    - With 'nopaste' pasting is wrong, with 'paste' Command-V doesn't work.
+      (Alan Schmitt)
+    - remove 'macatsui' option when this has been fixed.
 9   HTML indenting can be slow.  Caused by using searchpair().  Can search()
     be used instead?
 8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.

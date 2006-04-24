@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0e.  Last change: 2006 Apr 20
+*spell.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -36,7 +36,9 @@ Vim only checks words for spelling, there is no grammar check.
 If the 'mousemodel' option is set to "popup" and the cursor is on a badly
 spelled word or it is "popup_setpos" and the mouse pointer is on a badly
 spelled word, then the popup menu will contain a submenu to replace the bad
-word.  Note: this slows down the appearance of the popup menu.
+word.  Note: this slows down the appearance of the popup menu.  Note for GTK:
+don't release the right mouse button until the menu appears, otherwise it
+won't work.
 
 To search for the next misspelled word:
 
@@ -370,8 +372,10 @@ The table with word characters is stored in the main .spl file.  Therefore it
 matters what the current locale is when generating it!  A .add.spl file does
 not contain a word table though.
 
-A word that starts with a digit is always ignored.  That includes hex numbers
-in the form 0xff and 0XFF.
+For a word that starts with a digit the digit is ignored, unless the word as a
+whole is recognized.  Thus if "3D" is a word and "D" is not then "3D" is
+recognized as a word, but if "3D" is not a word then only the "D" is marked as
+bad.  Hex numbers in the form 0x12ab and 0X12AB are recognized.
 
 
 WORD COMBINATIONS

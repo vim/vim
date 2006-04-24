@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0e.  Last change: 2006 Apr 07
+*autocmd.txt*   For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -666,7 +666,8 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				command is not executed.
 							*QuickFixCmdPost*
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
-				command is run.
+				command is run, before jumping to the first
+				location.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.

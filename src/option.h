@@ -581,6 +581,9 @@ EXTERN char_u	*p_lcs;		/* 'listchars' */
 
 EXTERN int	p_lz;		/* 'lazyredraw' */
 EXTERN int	p_lpl;		/* 'loadplugins' */
+#ifdef FEAT_GUI_MAC
+EXTERN int	p_macatsui;	/* 'macatsui' */
+#endif
 EXTERN int	p_magic;	/* 'magic' */
 #ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_mef;		/* 'makeef' */

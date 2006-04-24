@@ -2620,6 +2620,7 @@ ex_make(eap)
     unsigned	len;
     win_T	*wp = NULL;
     qf_info_T	*qi = &ql_info;
+    int		res;
 #ifdef FEAT_AUTOCMD
     char_u	*au_name = NULL;
 
@@ -2693,11 +2694,16 @@ ex_make(eap)
     (void)char_avail();
 #endif
 
-    if (qf_init(wp, fname, (eap->cmdidx != CMD_make
+    res = qf_init(wp, fname, (eap->cmdidx != CMD_make
 			    && eap->cmdidx != CMD_lmake) ? p_gefm : p_efm,
 					   (eap->cmdidx != CMD_grepadd
-					    && eap->cmdidx != CMD_lgrepadd)) > 0
-	    && !eap->forceit)
+					    && eap->cmdidx != CMD_lgrepadd));
+#ifdef FEAT_AUTOCMD
+    if (au_name != NULL)
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+#endif
+    if (res > 0 && !eap->forceit)
     {
 	if (wp != NULL)
 	    qi = GET_LOC_LIST(wp);
@@ -2707,12 +2713,6 @@ ex_make(eap)
     mch_remove(fname);
     vim_free(fname);
     vim_free(cmd);
-
-#ifdef FEAT_AUTOCMD
-    if (au_name != NULL)
-	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
-#endif
 }
 
 /*
@@ -3168,6 +3168,12 @@ ex_vimgrep(eap)
     qf_update_buffer(qi);
 #endif
 
+#ifdef FEAT_AUTOCMD
+    if (au_name != NULL)
+	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					       curbuf->b_fname, TRUE, curbuf);
+#endif
+
     /* Jump to first match. */
     if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
     {
@@ -3176,12 +3182,6 @@ ex_vimgrep(eap)
     }
     else
 	EMSG2(_(e_nomatch2), s);
-
-#ifdef FEAT_AUTOCMD
-    if (au_name != NULL)
-	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
-					       curbuf->b_fname, TRUE, curbuf);
-#endif
 
 theend:
     vim_free(regmatch.regprog);

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0e.  Last change: 2006 Apr 23
+*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -731,6 +731,7 @@ New and extended functions: ~
 |eval()|		evaluate {string} and return the result
 |extend()|		append one List to another or add items from one
 			Dictionary to another
+|feedkeys()|		put characters in the typeahead buffer
 |filter()|		remove selected items from a List or Dictionary
 |finddir()|		find a directory in 'path'
 |findfile()|		find a file in 'path' (Johannes Zellner)
@@ -775,7 +776,6 @@ New and extended functions: ~
 |mkdir()|		create a directory
 |printf()|		format text
 |pumvisible()|		check whether the popup menu is displayed
-|pushkeys()|		put characters in the typeahead buffer
 |range()|		generate a List with numbers
 |readfile()|		read a file into a list of lines
 |reltime()|		get time value, possibly relative
@@ -1030,6 +1030,8 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 Mac: GUI font selector. (Peter Cucka)
 
 Mac: support for multi-byte characters. (Da Woon Jung)
+This doesn't always work properly.  If you see text drawing problems try
+switching the 'macatsui' option off.
 
 Mac: Support the xterm mouse in the non-GUI version.
 
@@ -2530,7 +2532,7 @@ if 'encoding' is a multi-byte encoding.
 Spell checking: spellbadword() didn't see a missing capital in the first word
 of a line.  Popup menu now only suggest the capitalized word when appropriate.
 
-When using whole line completion CTRL-L moves throught the matches but it
+When using whole line completion CTRL-L moves through the matches but it
 didn't work when at the original text.
 
 When completion finds the longest match, don't go to the first match but stick
@@ -2596,7 +2598,16 @@ Fixed a few leaks and wrong pointer use reported by coverity.
 
 When showing menus the mode character was sometimes wrong.
 
-Added pushkeys(). (Yakov Lerner)
+Added feedkeys(). (Yakov Lerner)
+
+Made matchlist() always return all submatches.
+
+Moved triggering QuickFixCmdPost to before jumping to the first location.
+
+Mac: Added the 'macatsui' option as a temporary work around for text drawing
+problems.
+
+Line completion on "/**" gave error messages when scanning an unloaded buffer.
 
 
  vim:tw=78:ts=8:ft=help:norl:

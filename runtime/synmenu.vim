@@ -97,23 +97,24 @@ an 50.20.200 &Syntax.C.CH\ script :cal SetSyn("ch")<CR>
 an 50.20.210 &Syntax.C.ChangeLog :cal SetSyn("changelog")<CR>
 an 50.20.220 &Syntax.C.Cheetah\ template :cal SetSyn("cheetah")<CR>
 an 50.20.230 &Syntax.C.CHILL :cal SetSyn("chill")<CR>
-an 50.20.240 &Syntax.C.Clean :cal SetSyn("clean")<CR>
-an 50.20.250 &Syntax.C.Clever :cal SetSyn("cl")<CR>
-an 50.20.260 &Syntax.C.Clipper :cal SetSyn("clipper")<CR>
-an 50.20.270 &Syntax.C.Cmake :cal SetSyn("cmake")<CR>
-an 50.20.280 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
-an 50.20.290 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
-an 50.20.300 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
-an 50.20.310 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
-an 50.20.320 &Syntax.C.ConTeXt :cal SetSyn("context")<CR>
-an 50.20.330 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
-an 50.20.340 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
-an 50.20.350 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
-an 50.20.360 &Syntax.C.CSP :cal SetSyn("csp")<CR>
-an 50.20.370 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
-an 50.20.380 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
-an 50.20.390 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
-an 50.20.400 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
+an 50.20.240 &Syntax.C.ChordPro :cal SetSyn("chordpro")<CR>
+an 50.20.250 &Syntax.C.Clean :cal SetSyn("clean")<CR>
+an 50.20.260 &Syntax.C.Clever :cal SetSyn("cl")<CR>
+an 50.20.270 &Syntax.C.Clipper :cal SetSyn("clipper")<CR>
+an 50.20.280 &Syntax.C.Cmake :cal SetSyn("cmake")<CR>
+an 50.20.290 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
+an 50.20.300 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
+an 50.20.310 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
+an 50.20.320 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
+an 50.20.330 &Syntax.C.ConTeXt :cal SetSyn("context")<CR>
+an 50.20.340 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
+an 50.20.350 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
+an 50.20.360 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
+an 50.20.370 &Syntax.C.CSP :cal SetSyn("csp")<CR>
+an 50.20.380 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
+an 50.20.390 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
+an 50.20.400 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
+an 50.20.410 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
 an 50.30.100 &Syntax.DE.D :cal SetSyn("d")<CR>
 an 50.30.110 &Syntax.DE.Debian.Debian\ ChangeLog :cal SetSyn("debchangelog")<CR>
 an 50.30.120 &Syntax.DE.Debian.Debian\ Control :cal SetSyn("debcontrol")<CR>
@@ -462,17 +463,18 @@ an 50.110.360 &Syntax.TUV.UIT/UIL :cal SetSyn("uil")<CR>
 an 50.110.370 &Syntax.TUV.UnrealScript :cal SetSyn("uc")<CR>
 an 50.110.380 &Syntax.TUV.Updatedb\.conf :cal SetSyn("updatedb")<CR>
 an 50.110.400 &Syntax.TUV.Valgrind :cal SetSyn("valgrind")<CR>
-an 50.110.410 &Syntax.TUV.Verilog-AMS\ HDL :cal SetSyn("verilogams")<CR>
-an 50.110.420 &Syntax.TUV.Verilog\ HDL :cal SetSyn("verilog")<CR>
-an 50.110.430 &Syntax.TUV.Vgrindefs :cal SetSyn("vgrindefs")<CR>
-an 50.110.440 &Syntax.TUV.VHDL :cal SetSyn("vhdl")<CR>
-an 50.110.450 &Syntax.TUV.Vim.Vim\ help\ file :cal SetSyn("help")<CR>
-an 50.110.460 &Syntax.TUV.Vim.Vim\ script :cal SetSyn("vim")<CR>
-an 50.110.470 &Syntax.TUV.Vim.Viminfo\ file :cal SetSyn("viminfo")<CR>
-an 50.110.480 &Syntax.TUV.Virata\ config :cal SetSyn("virata")<CR>
-an 50.110.490 &Syntax.TUV.Visual\ Basic :cal SetSyn("vb")<CR>
-an 50.110.500 &Syntax.TUV.VRML :cal SetSyn("vrml")<CR>
-an 50.110.510 &Syntax.TUV.VSE\ JCL :cal SetSyn("vsejcl")<CR>
+an 50.110.410 &Syntax.TUV.Vera :cal SetSyn("vera")<CR>
+an 50.110.420 &Syntax.TUV.Verilog-AMS\ HDL :cal SetSyn("verilogams")<CR>
+an 50.110.430 &Syntax.TUV.Verilog\ HDL :cal SetSyn("verilog")<CR>
+an 50.110.440 &Syntax.TUV.Vgrindefs :cal SetSyn("vgrindefs")<CR>
+an 50.110.450 &Syntax.TUV.VHDL :cal SetSyn("vhdl")<CR>
+an 50.110.460 &Syntax.TUV.Vim.Vim\ help\ file :cal SetSyn("help")<CR>
+an 50.110.470 &Syntax.TUV.Vim.Vim\ script :cal SetSyn("vim")<CR>
+an 50.110.480 &Syntax.TUV.Vim.Viminfo\ file :cal SetSyn("viminfo")<CR>
+an 50.110.490 &Syntax.TUV.Virata\ config :cal SetSyn("virata")<CR>
+an 50.110.500 &Syntax.TUV.Visual\ Basic :cal SetSyn("vb")<CR>
+an 50.110.510 &Syntax.TUV.VRML :cal SetSyn("vrml")<CR>
+an 50.110.520 &Syntax.TUV.VSE\ JCL :cal SetSyn("vsejcl")<CR>
 an 50.120.100 &Syntax.WXYZ.WEB.CWEB :cal SetSyn("cweb")<CR>
 an 50.120.110 &Syntax.WXYZ.WEB.WEB :cal SetSyn("web")<CR>
 an 50.120.120 &Syntax.WXYZ.WEB.WEB\ Changes :cal SetSyn("change")<CR>

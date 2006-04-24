@@ -1,16 +1,12 @@
 " Vim syntax file
 " Language:    R Help File
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2006 Apr 12
-" Version:     0.6
+" Last Change: 2006 Apr 24
+" Version:     0.7
+" SVN:		   $Id$
 " Remarks:     - Now includes R syntax highlighting in the appropriate
 "                sections if an r.vim file is in the same directory or in the
 "                default debian location.
-"              - I didn't yet include any special markup for S4 methods.
-"              - The two versions of \item{}{} markup are not 
-"                distinguished (in the \arguments{} environment, the items to
-"                be described are R identifiers, but not in the \describe{}
-"                environment).
 "              - There is no Latex markup in equations
 
 " Version Clears: {{{1
@@ -24,20 +20,22 @@ endif
 
 syn case match
 
-" Rd identifiers {{{
+" R help identifiers {{{
 syn region rhelpIdentifier matchgroup=rhelpSection	start="\\name{" end="}" 
 syn region rhelpIdentifier matchgroup=rhelpSection	start="\\alias{" end="}" 
 syn region rhelpIdentifier matchgroup=rhelpSection	start="\\pkg{" end="}" 
-syn region rhelpIdentifier matchgroup=rhelpSection	start="\\item{" end="}" contained
+syn region rhelpIdentifier matchgroup=rhelpSection	start="\\item{" end="}" contained contains=rhelpDots
 syn region rhelpIdentifier matchgroup=rhelpSection start="\\method{" end=/}/ contained
 
 " Highlighting of R code using an existing r.vim syntax file if available {{{1
 syn include @R syntax/r.vim
+syn match rhelpDots		"\\dots" containedin=@R
 syn region rhelpRcode matchgroup=Delimiter start="\\examples{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpSection
-syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpIdentifier
+syn region rhelpRcode matchgroup=Delimiter start="\\usage{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpIdentifier,rhelpS4method
 syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimiter transparent end=/}/ contains=@R
 syn region rhelpRcode matchgroup=Delimiter start="\\special{" matchgroup=Delimiter transparent end=/}/ contains=@R contained
 syn region rhelpRcode matchgroup=Delimiter start="\\code{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpLink contained
+syn region rhelpS4method matchgroup=Delimiter start="\\S4method{.*}(" matchgroup=Delimiter transparent end=/)/ contains=@R,rhelpDots contained
 
 " Strings {{{1
 syn region rhelpString start=/"/ end=/"/ 
@@ -51,12 +49,16 @@ syn match rhelpDelimiter		"\\tab "
 
 " Keywords {{{1
 syn match rhelpKeyword	"\\R"
-syn match rhelpKeyword	"\\dots"
 syn match rhelpKeyword	"\\ldots"
+syn match rhelpKeyword  "--"
+syn match rhelpKeyword  "---"
+syn match rhelpKeyword  "<"
+syn match rhelpKeyword  ">"
 
 " Links {{{1
 syn region rhelpLink matchgroup=rhelpSection start="\\link{" end="}" contained keepend
 syn region rhelpLink matchgroup=rhelpSection start="\\link\[.*\]{" end="}" contained keepend
+syn region rhelpLink matchgroup=rhelpSection start="\\linkS4class{" end="}" contained keepend
 
 " Type Styles {{{1
 syn match rhelpType		"\\emph\>"
@@ -109,7 +111,7 @@ syn match rhelpSection		"\\testonly\>"
 " Freely named Sections {{{1
 syn region rhelpFreesec matchgroup=Delimiter start="\\section{" matchgroup=Delimiter transparent end=/}/ 
 
-" Rd comments {{{1
+" R help file comments {{{1
 syn match rhelpComment /%.*$/ contained 
 
 " Error {{{1
@@ -134,8 +136,9 @@ if version >= 508 || !exists("did_rhelp_syntax_inits")
   HiLink rhelpIdentifier  Identifier
   HiLink rhelpString      String
   HiLink rhelpKeyword     Keyword
+  HiLink rhelpDots        Keyword
   HiLink rhelpLink        Underlined
-  HiLink rhelpType	       Type
+  HiLink rhelpType	      Type
   HiLink rhelpSection     PreCondit
   HiLink rhelpError       Error
   HiLink rhelpBraceError  Error

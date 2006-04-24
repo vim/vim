@@ -1267,7 +1267,7 @@ static struct vimoption
 			    {(char_u *)NULL, (char_u *)0L}
 #endif
 				    },
-    {"guitabtooltip",  "gtl", P_STRING|P_VI_DEF|P_RWIN,
+    {"guitabtooltip",  "gtt", P_STRING|P_VI_DEF|P_RWIN,
 #if defined(FEAT_GUI_TABLINE)
 			    (char_u *)&p_gtt, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
@@ -1631,6 +1631,11 @@ static struct vimoption
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lpl, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},
+#ifdef FEAT_GUI_MAC
+    {"macatsui",    NULL,   P_BOOL|P_VI_DEF|P_RCLR,
+			    (char_u *)&p_macatsui, PV_NONE,
+			    {(char_u *)TRUE, (char_u *)0L}},
+#endif
     {"magic",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_magic, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},

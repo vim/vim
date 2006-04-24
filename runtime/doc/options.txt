@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0e.  Last change: 2006 Apr 21
+*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4312,6 +4312,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that using the "-u NONE" and "--noplugin" command line arguments
 	reset this option. |-u| |--noplugin|
 
+						*'macatsui'* *'nomacatsui'*
+'macatsui'		boolean	(default on)
+			global
+			{only available in Mac GUI version}
+	This is a workaround for when drawing doesn't work properly.  When set
+	and compiled with multi-byte support ATSUI text drawing is used.  When
+	not set ATSUI text drawing is not used.  Switch this option off when
+	you experience drawing problems.  In a future version the problems may
+	be solved and this option becomes obsolete.  Therefore use this method
+	to unset it: >
+		if exists('&macatsui')
+		   set nomacatsui
+		endif
+<
 						*'magic'* *'nomagic'*
 'magic'			boolean	(default on)
 			global

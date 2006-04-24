@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Mar 31, 2006
-" Version: 6
+" Date:   Apr 24, 2006
+" Version: 7
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v6"
+let g:loaded_vimball = "v7"
 set cpo&vim
 
 " =====================================================================
@@ -125,12 +125,13 @@ fun! vimball#Vimball(really)
   endif
 
   " initialize
+  let fenkeep  = &fen
   let regakeep = @a
   let eikeep   = &ei
   let vekeep   = &ve
   let makeep   = getpos("'a")
   let curtabnr = tabpagenr()
-  set ei=all ve=all
+  set ei=all ve=all nofen
 
   " set up vimball tab
   tabnew
@@ -166,10 +167,11 @@ fun! vimball#Vimball(really)
    else
     echomsg "would extract <".fname.">: ".fsize." lines"
    endif
-"   call Decho(linenr.": will extract file<".fname.">")
-"   call Decho((linenr+1).": fsize=".fsize)
+"   call Decho("using L#".linenr.": will extract file<".fname.">")
+"   call Decho("using L#".(linenr+1).": fsize=".fsize)
 
    " make directories if they don't exist yet
+"   call Decho("making directories if they don't exist yet")
    let fnamebuf= fname
    while fnamebuf =~ '/'
    	let dirname  = substitute(fnamebuf,'/.*$','','e')
@@ -183,24 +185,19 @@ fun! vimball#Vimball(really)
    exe "cd ".home
 
    " grab specified qty of lines and place into "a" buffer
-   exe linenr
-   norm! jjma
-   exe (linenr + fsize + 1)
-   silent norm! "ay'a
-"   call Decho("yanked ".fsize." lines into register-a")
-
-"   call Decho("didhelp<".didhelp."> fname<".fname.">")
-   if a:really && didhelp == "" && fname =~ 'doc/[^/]\+\.txt$'
-   	let didhelp= substitute(fname,'^\(.*\<doc\)[/\\][^.]*\.txt$','\1','e')
-"	call Decho("didhelp<".didhelp.">")
-   endif
+   " (skip over path/filename and qty-lines)
+   let linenr   = linenr + 2
+   let lastline = linenr + fsize - 1
+"   call Decho("exe ".linenr.",".lastline."yank a")
+   exe linenr.",".lastline."yank a"
 
    " copy "a" buffer into tab
 "   call Decho('copy "a buffer into tab#'.vbtabnr)
    exe "tabn ".vbtabnr
    silent! %d
-   silent norm! "aPGdd1G
-"   call Decho("rega<".@a.">")
+   put a
+   1
+   d
 
    " write tab to file
    if a:really
@@ -208,11 +205,21 @@ fun! vimball#Vimball(really)
     exe "silent w! ".fname
    endif
 
+   " return to tab with vimball
 "   call Decho("exe tabn ".curtabnr)
    exe "tabn ".curtabnr
+
+   " set up help if its a doc/*.txt file
+"   call Decho("didhelp<".didhelp."> fname<".fname.">")
+   if a:really && didhelp == "" && fname =~ 'doc/[^/]\+\.txt$'
+   	let didhelp= substitute(fname,'^\(.*\<doc\)[/\\][^.]*\.txt$','\1','e')
+"	call Decho("didhelp<".didhelp.">")
+   endif
+
+   " update for next file
 "   let oldlinenr = linenr " Decho
-   let linenr    = linenr + fsize + 2
-"   call Decho("update linenr= [linenr=".oldlinenr."] + [fsize=".fsize."] + 2 = ".linenr)
+   let linenr    = linenr + fsize
+"   call Decho("update linenr= [linenr=".oldlinenr."] + [fsize=".fsize."] = ".linenr)
   endwhile
 
   " set up help
@@ -234,8 +241,9 @@ fun! vimball#Vimball(really)
   setlocal nomod bh=wipe
   exe "tabn ".curtabnr
   exe "tabc ".vbtabnr
-  let &ei= eikeep
-  let @a = regakeep
+  let &ei  = eikeep
+  let @a   = regakeep
+  let &fen = fenkeep
   if makeep[0] != 0
    " restore mark a
 "   call Decho("restore mark-a: makeep=".string(makeep))

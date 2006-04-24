@@ -13,6 +13,12 @@ STARTTEST
 :catch
 :  $put =v:exception[:14]
 :endtry
+:" List slices
+:$put =string(l[:])
+:$put =string(l[1:])
+:$put =string(l[:-2])
+:$put =string(l[0:8])
+:$put =string(l[8:-1])
 :"
 :" List identity
 :let ll = l
@@ -79,6 +85,57 @@ STARTTEST
 :unlet d.c
 :unlet d[-1]
 :$put =string(d)
+:"
+:" removing items out of range: silently skip items that don't exist
+let l = [0, 1, 2, 3]
+:unlet l[2:1]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[2:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[2:3]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[2:4]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[2:5]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-1:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-2:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-3:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-4:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-5:2]
+:$put =string(l)
+let l = [0, 1, 2, 3]
+:unlet l[-6:2]
+:$put =string(l)
+:"
+:" assignment to a list
+:let l = [0, 1, 2, 3]
+:let [va, vb] = l[2:3]
+:$put =va
+:$put =vb
+:try
+:  let [va, vb] = l
+:catch
+:  $put =v:exception[:14]
+:endtry
+:try
+:  let [va, vb] = l[1:1]
+:catch
+:  $put =v:exception[:14]
+:endtry
 :"
 :" manipulating a big Dictionary (hashtable.c has a border of 1000 entries)
 :let d = {}

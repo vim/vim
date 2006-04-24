@@ -2231,8 +2231,23 @@ ins_compl_longest_match(match)
     int		had_match;
 
     if (compl_leader == NULL)
+    {
 	/* First match, use it as a whole. */
 	compl_leader = vim_strsave(match->cp_str);
+	if (compl_leader != NULL)
+	{
+	    had_match = (curwin->w_cursor.col > compl_col);
+	    ins_compl_delete();
+	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    ins_redraw(FALSE);
+
+	    /* When the match isn't there (to avoid matching itself) remove it
+	     * again after redrawing. */
+	    if (!had_match)
+		ins_compl_delete();
+	    compl_used_match = FALSE;
+	}
+    }
     else
     {
 	/* Reduce the text if this match differs from compl_leader. */
@@ -2650,15 +2665,23 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 
     /* When invoked to match whole lines for CTRL-X CTRL-L adjust the pattern
      * to only match at the start of a line.  Otherwise just match the
-     * pattern. */
+     * pattern. Also need to double backslashes. */
     if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
     {
-	i = (int)STRLEN(pat) + 8;
+	char_u *pat_esc = vim_strsave_escaped(pat, (char_u *)"\\");
+
+	if (pat_esc == NULL)
+	    return ;
+	i = (int)STRLEN(pat_esc) + 10;
 	ptr = alloc(i);
 	if (ptr == NULL)
+	{
+	    vim_free(pat_esc);
 	    return;
-	vim_snprintf((char *)ptr, i, "^\\s*\\zs%s", pat);
-	regmatch.regprog = vim_regcomp(ptr, p_magic ? RE_MAGIC : 0);
+	}
+	vim_snprintf((char *)ptr, i, "^\\s*\\zs\\V%s", pat_esc);
+	regmatch.regprog = vim_regcomp(ptr, RE_MAGIC);
+	vim_free(pat_esc);
 	vim_free(ptr);
     }
     else

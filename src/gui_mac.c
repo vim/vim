@@ -3163,7 +3163,7 @@ gui_mch_exit(int rc)
 	DisposeEventHandlerUPP(mouseWheelHandlerUPP);
 
 #ifdef USE_ATSUI_DRAWING
-    if (gFontStyle)
+    if (p_macatsui && gFontStyle)
 	ATSUDisposeStyle(gFontStyle);
 #endif
 
@@ -3321,7 +3321,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
     char_u	used_font_name[512];
 
 #ifdef USE_ATSUI_DRAWING
-    if (gFontStyle == NULL)
+    if (p_macatsui && gFontStyle == NULL)
     {
 	if (ATSUCreateStyle(&gFontStyle) != noErr)
 	    gFontStyle = NULL;
@@ -3393,7 +3393,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
     Fixed			fontSize;
     ATSStyleRenderingOptions	fontOptions;
 
-    if (gFontStyle)
+    if (p_macatsui && gFontStyle)
     {
 	fontID = font & 0xFFFF;
 	fontSize = Long2Fix(font >> 16);
@@ -3501,7 +3501,7 @@ gui_mch_set_font(GuiFont font)
     Fixed			fontSize;
     ATSStyleRenderingOptions	fontOptions;
 
-    if (gFontStyle)
+    if (p_macatsui && gFontStyle)
     {
 	/* Avoid setting same font again */
 	if (ATSUGetAttribute(gFontStyle, kATSUMaxATSUITagValue+1, sizeof font,
@@ -3546,9 +3546,9 @@ gui_mch_set_font(GuiFont font)
 			(sizeof attribTags)/sizeof(ATSUAttributeTag),
 			attribTags, attribSizes, attribValues) != noErr)
 	    {
-#ifndef NDEBUG
+# ifndef NDEBUG
 		fprintf(stderr, "couldn't set font style\n");
-#endif
+# endif
 		ATSUDisposeStyle(gFontStyle);
 		gFontStyle = NULL;
 	    }
@@ -3556,7 +3556,7 @@ gui_mch_set_font(GuiFont font)
 
     }
 
-    if (!gIsFontFallbackSet)
+    if (p_macatsui && !gIsFontFallbackSet)
     {
 	/* Setup automatic font substitution. The user's guifontwide
 	 * is tried first, then the system tries other fonts. */
@@ -3834,7 +3834,6 @@ draw_undercurl(int flags, int row, int col, int cells)
     }
 }
 
-#ifndef USE_ATSUI_DRAWING
 
     static void
 draw_string_QD(int row, int col, char_u *s, int len, int flags)
@@ -3951,7 +3950,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 #endif
 }
 
-#else /* USE_ATSUI_DRAWING */
+#ifdef USE_ATSUI_DRAWING
 
     static void
 draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
@@ -4040,10 +4039,11 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 {
 #if defined(USE_ATSUI_DRAWING)
-    draw_string_ATSUI(row, col, s, len, flags);
-#else
-    draw_string_QD(row, col, s, len, flags);
+    if (p_macatsui)
+	draw_string_ATSUI(row, col, s, len, flags);
+    else
 #endif
+	draw_string_QD(row, col, s, len, flags);
 }
 
 /*

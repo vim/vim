@@ -1,15 +1,7 @@
 " Vim syntax file
-" Language:	Slrn setup file (based on slrn 0.9.8.0)
-" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
-" Former Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
-" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
-" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/slrnrc.vim?op=file&rev=0&sc=0
-"
-" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
-"     it only because patches have been submitted for it by Debian users and the
-"     former maintainer was MIA (Missing In Action), taking over its
-"     maintenance was thus the only way to include those patches.
-"     If you care about this file, and have time to maintain it please do so!
+" Language:	Slrn setup file (based on slrn 0.9.8.1)
+" Maintainer:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
+" Last Change:	23 April 2006
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

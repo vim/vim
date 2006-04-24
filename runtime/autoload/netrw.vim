@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 21, 2006
-" Version:	92
+" Date:		Apr 24, 2006
+" Version:	93
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v92"
+let g:loaded_netrw = "v93"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -3429,7 +3429,11 @@ fun! s:LocalFastBrowser()
    let s:netrw_browser_shellcmd= 1
    augroup AuNetrwShellCmd
     au!
-    au ShellCmdPost,FocusGained *	call s:LocalBrowseShellCmdRefresh()
+    if (has("win32") || has("win95") || has("win64") || has("win16"))
+     au ShellCmdPost *	call s:LocalBrowseShellCmdRefresh()
+    else
+     au ShellCmdPost,FocusGained *	call s:LocalBrowseShellCmdRefresh()
+    endif
    augroup END
   endif
 

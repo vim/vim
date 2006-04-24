@@ -1239,7 +1239,7 @@ EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
 
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
 EXTERN int	typebuf_was_filled INIT(= FALSE); /* received text from client
-						     or from pushkeys() */
+						     or from feedkeys() */
 #endif
 
 #ifdef FEAT_CLIENTSERVER

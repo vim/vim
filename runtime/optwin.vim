@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 21
+" Last Change:	2006 Apr 24
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -479,10 +479,12 @@ call append("$", "tabpagemax\tmaximum number of tab pages to open for -p and \"t
 call append("$", " \tset tpm=" . &tpm)
 call append("$", "tabline\tcustom tab pages line")
 call <SID>OptionG("tal", &tal)
-call append("$", "guitablabel\tcustom tab page label for the GUI")
-call <SID>OptionG("gtl", &gtl)
-call append("$", "guitabtooltip\tcustom tab page tooltip for the GUI")
-call <SID>OptionG("gtt", &gtt)
+if has("gui")
+  call append("$", "guitablabel\tcustom tab page label for the GUI")
+  call <SID>OptionG("gtl", &gtl)
+  call append("$", "guitabtooltip\tcustom tab page tooltip for the GUI")
+  call <SID>OptionG("gtt", &gtt)
+endif
 
 
 call <SID>Header("terminal")
@@ -605,6 +607,10 @@ if has("gui")
       call append("$", "balloonexpr\texpression to show in balloon eval")
       call append("$", " \tset bexpr=" . &bexpr)
     endif
+  endif
+  if exists("&macatsui")
+    call append("$", "macatsui\tuse ATSUI text drawing; disable to avoid display problems")
+    call <SID>OptionG("macatsui", &macatsui)
   endif
 endif
 

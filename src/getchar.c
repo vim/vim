@@ -1035,7 +1035,7 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 /*
  * Return TRUE if the typeahead buffer was changed (while waiting for a
  * character to arrive).  Happens when a message was received from a client or
- * from pushkeys().
+ * from feedkeys().
  * But check in a more generic way to avoid trouble: When "typebuf.tb_buf"
  * changed it was reallocated and the old pointer can no longer be used.
  * Or "typebuf.tb_off" may have been changed and we would overwrite characters
@@ -1144,7 +1144,7 @@ del_typebuf(len, offset)
     }
 
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
-    /* Reset the flag that text received from a client or from pushkeys()
+    /* Reset the flag that text received from a client or from feedkeys()
      * was inserted in the typeahead buffer. */
     typebuf_was_filled = FALSE;
 #endif
@@ -2918,7 +2918,7 @@ fix_input_buffer(buf, len, script)
 /*
  * Return TRUE when bytes are in the input buffer or in the typeahead buffer.
  * Normally the input buffer would be sufficient, but the server_to_input_buf()
- * or pushkeys() may insert characters in the typeahead buffer while we are
+ * or feedkeys() may insert characters in the typeahead buffer while we are
  * waiting for input to arrive.
  */
     int

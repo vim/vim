@@ -356,6 +356,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'lw'	options.txt	/*'lw'*
 'lz'	options.txt	/*'lz'*
 'ma'	options.txt	/*'ma'*
+'macatsui'	options.txt	/*'macatsui'*
 'magic'	options.txt	/*'magic'*
 'makeef'	options.txt	/*'makeef'*
 'makeprg'	options.txt	/*'makeprg'*
@@ -513,6 +514,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'nolpl'	options.txt	/*'nolpl'*
 'nolz'	options.txt	/*'nolz'*
 'noma'	options.txt	/*'noma'*
+'nomacatsui'	options.txt	/*'nomacatsui'*
 'nomagic'	options.txt	/*'nomagic'*
 'nomh'	options.txt	/*'nomh'*
 'noml'	options.txt	/*'noml'*
@@ -5148,6 +5150,7 @@ fasm.vim	syntax.txt	/*fasm.vim*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
 fcs_reason-variable	eval.txt	/*fcs_reason-variable*
 feature-list	eval.txt	/*feature-list*
+feedkeys()	eval.txt	/*feedkeys()*
 fetch	pi_netrw.txt	/*fetch*
 file-browser-5.2	version5.txt	/*file-browser-5.2*
 file-formats	editing.txt	/*file-formats*
@@ -5624,7 +5627,6 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
-help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*
@@ -6559,7 +6561,6 @@ psql	sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
 pumvisible()	eval.txt	/*pumvisible()*
-pushkeys()	eval.txt	/*pushkeys()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*
 python	if_pyth.txt	/*python*

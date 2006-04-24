@@ -6875,6 +6875,8 @@ mch_set_mouse_shape(int shape)
 	}
 	else if (shape < sizeof(mshape_ids) / sizeof(int))
 	    id = mshape_ids[shape];
+	else
+	    return;
 # ifdef HAVE_GTK_MULTIHEAD
 	c = gdk_cursor_new_for_display(
 		gtk_widget_get_display(gui.drawarea), (GdkCursorType)id);

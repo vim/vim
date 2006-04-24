@@ -234,18 +234,22 @@ typedef struct tagNMTTDISPINFO_NEW
 
 typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 #ifndef TTM_SETMAXTIPWIDTH
-# define TTM_SETMAXTIPWIDTH	 (WM_USER+24)
+# define TTM_SETMAXTIPWIDTH	(WM_USER+24)
 #endif
 
 #ifndef TTF_DI_SETITEM
-# define TTF_DI_SETITEM          0x8000
+# define TTF_DI_SETITEM		0x8000
 #endif
 
 #ifndef TTN_GETDISPINFO
-# define TTN_GETDISPINFO        (TTN_FIRST - 0)
+# define TTN_GETDISPINFO	(TTN_FIRST - 0)
 #endif
 
 #endif /* defined(FEAT_BEVAL) */
+
+#ifndef TTN_GETDISPINFOW
+# define TTN_GETDISPINFOW	(TTN_FIRST - 10)
+#endif
 
 /* Local variables: */
 

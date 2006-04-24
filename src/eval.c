@@ -495,6 +495,7 @@ static void f_executable __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_exists __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_expand __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_extend __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_feedkeys __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_filereadable __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_filewritable __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_filter __ARGS((typval_T *argvars, typval_T *rettv));
@@ -587,7 +588,6 @@ static void f_pathshorten __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_prevnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_printf __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pumvisible __ARGS((typval_T *argvars, typval_T *rettv));
-static void f_pushkeys __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_range __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_readfile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_reltime __ARGS((typval_T *argvars, typval_T *rettv));
@@ -2581,8 +2581,14 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 	    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
 	    if (lp->ll_li == NULL)
 	    {
-		if (!quiet)
-		    EMSGN(_(e_listidx), lp->ll_n1);
+		if (lp->ll_n1 < 0)
+		{
+		    lp->ll_n1 = 0;
+		    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
+		}
+	    }
+	    if (lp->ll_li == NULL)
+	    {
 		if (lp->ll_range && !lp->ll_empty2)
 		    clear_tv(&var2);
 		return NULL;
@@ -2602,11 +2608,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 		{
 		    ni = list_find(lp->ll_list, lp->ll_n2);
 		    if (ni == NULL)
-		    {
-			if (!quiet)
-			    EMSGN(_(e_listidx), lp->ll_n2);
 			return NULL;
-		    }
 		    lp->ll_n2 = list_idx_of_item(lp->ll_list, ni);
 		}
 
@@ -2614,11 +2616,7 @@ get_lval(name, rettv, lp, unlet, skip, quiet, fne_flags)
 		if (lp->ll_n1 < 0)
 		    lp->ll_n1 = list_idx_of_item(lp->ll_list, lp->ll_li);
 		if (lp->ll_n2 < lp->ll_n1)
-		{
-		    if (!quiet)
-			EMSGN(_(e_listidx), lp->ll_n2);
 		    return NULL;
-		}
 	    }
 
 	    lp->ll_tv = &lp->ll_li->li_tv;
@@ -4861,9 +4859,15 @@ eval_index(arg, rettv, evaluate, verbose)
 		    n1 = len + n1;
 		if (!empty1 && (n1 < 0 || n1 >= len))
 		{
-		    if (verbose)
-			EMSGN(_(e_listidx), n1);
-		    return FAIL;
+		    /* For a range we allow invalid values and return an empty
+		     * list.  A list index out of range is an error. */
+		    if (!range)
+		    {
+			if (verbose)
+			    EMSGN(_(e_listidx), n1);
+			return FAIL;
+		    }
+		    n1 = len;
 		}
 		if (range)
 		{
@@ -4875,11 +4879,7 @@ eval_index(arg, rettv, evaluate, verbose)
 		    else if (n2 >= len)
 			n2 = len - 1;
 		    if (!empty2 && (n2 < 0 || n2 + 1 < n1))
-		    {
-			if (verbose)
-			    EMSGN(_(e_listidx), n2);
-			return FAIL;
-		    }
+			n2 = -1;
 		    l = list_alloc();
 		    if (l == NULL)
 			return FAIL;
@@ -4900,8 +4900,7 @@ eval_index(arg, rettv, evaluate, verbose)
 		}
 		else
 		{
-		    copy_tv(&list_find(rettv->vval.v_list, n1)->li_tv,
-								       &var1);
+		    copy_tv(&list_find(rettv->vval.v_list, n1)->li_tv, &var1);
 		    clear_tv(rettv);
 		    *rettv = var1;
 		}
@@ -7006,6 +7005,7 @@ static struct fst
     {"exists",		1, 1, f_exists},
     {"expand",		1, 2, f_expand},
     {"extend",		2, 3, f_extend},
+    {"feedkeys",	1, 2, f_feedkeys},
     {"file_readable",	1, 1, f_filereadable},	/* obsolete */
     {"filereadable",	1, 1, f_filereadable},
     {"filewritable",	1, 1, f_filewritable},
@@ -7102,7 +7102,6 @@ static struct fst
     {"prevnonblank",	1, 1, f_prevnonblank},
     {"printf",		2, 19, f_printf},
     {"pumvisible",	0, 0, f_pumvisible},
-    {"pushkeys",	1, 2, f_pushkeys},
     {"range",		1, 3, f_range},
     {"readfile",	1, 3, f_readfile},
     {"reltime",		0, 2, f_reltime},
@@ -8986,6 +8985,44 @@ f_extend(argvars, rettv)
     }
     else
 	EMSG2(_(e_listdictarg), "extend()");
+}
+
+/*
+ * "feedkeys()" function
+ */
+/*ARGSUSED*/
+    static void
+f_feedkeys(argvars, rettv)
+    typval_T    *argvars;
+    typval_T    *rettv;
+{
+    int		remap = TRUE;
+    char_u	*keys, *flags;
+    char_u	nbuf[NUMBUFLEN];
+    int		typed = FALSE;
+
+    rettv->vval.v_number = 0;
+    keys = get_tv_string(&argvars[0]);
+    if (*keys != NUL)
+    {
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    flags = get_tv_string_buf(&argvars[1], nbuf);
+	    for ( ; *flags != NUL; ++flags)
+	    {
+		switch (*flags)
+		{
+		    case 'n': remap = FALSE; break;
+		    case 'm': remap = TRUE; break;
+		    case 't': typed = TRUE; break;
+		}
+	    }
+	}
+
+	ins_typebuf(keys, (remap ? REMAP_YES : REMAP_NONE),
+					       typebuf.tb_len, !typed, FALSE);
+	typebuf_was_filled = TRUE;
+    }
 }
 
 /*
@@ -12173,8 +12210,12 @@ find_some_match(argvars, rettv, type)
 		for (i = 0; i < NSUBEXP; ++i)
 		{
 		    if (regmatch.endp[i] == NULL)
-			break;
-		    if (list_append_string(rettv->vval.v_list,
+		    {
+			if (list_append_string(rettv->vval.v_list,
+						     (char_u *)"", 0) == FAIL)
+			    break;
+		    }
+		    else if (list_append_string(rettv->vval.v_list,
 				regmatch.startp[i],
 				(int)(regmatch.endp[i] - regmatch.startp[i]))
 			    == FAIL)
@@ -12618,42 +12659,6 @@ f_pumvisible(argvars, rettv)
     if (pum_visible())
 	rettv->vval.v_number = 1;
 #endif
-}
-
-/*
- * "pushkeys()" function
- */
-/*ARGSUSED*/
-    static void
-f_pushkeys(argvars, rettv)
-    typval_T    *argvars;
-    typval_T    *rettv;
-{
-    int		remap = TRUE;
-    char_u	*keys, *flags;
-    char_u	nbuf[NUMBUFLEN];
-
-    rettv->vval.v_number = 0;
-    keys = get_tv_string(&argvars[0]);
-    if (*keys != NUL)
-    {
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    flags = get_tv_string_buf(&argvars[1], nbuf);
-	    for ( ; *flags != NUL; ++flags)
-	    {
-		switch (*flags)
-		{
-		    case 'n': remap = FALSE; break;
-		    case 'm': remap = TRUE; break;
-		}
-	    }
-	}
-
-	ins_typebuf(keys, (remap ? REMAP_YES : REMAP_NONE),
-						 typebuf.tb_len, TRUE, FALSE);
-	typebuf_was_filled = TRUE;
-    }
 }
 
 /*
