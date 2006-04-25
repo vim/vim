@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
+*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2457,7 +2457,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 feedkeys({string} [, {mode}])				*feedkeys()*
 		Characters in {string} are queued for processing as if they
-		come from a mapping or where typed by user.  They are added to
+		come from a mapping or were typed by user.  They are added to
 		the end of the typeahead buffer, thus if a mapping is still
 		being executed these characters come after them.
 		The function does not wait for processing of keys contained in
@@ -2468,10 +2468,11 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		feedkeys('\<CR>') pushes 5 characters.
 		If {mode} is absent, keys are remapped.
 		{mode} is a String, which can contain these character flags:
-		'm'	remap keys. This is default.
-		'n'	do not remap keys
-		't'	handle keys as if typed; otherwise they are handled as
-			if coming from a mapping
+		'm'	Remap keys. This is default.
+		'n'	Do not remap keys.
+		't'	Handle keys as if typed; otherwise they are handled as
+			if coming from a mapping.  This matters for undo,
+			opening folds, etc.
 		Return value is always 0.
 
 filereadable({file})					*filereadable()*
@@ -3259,7 +3260,7 @@ islocked({expr})					*islocked()* *E786*
 			:echo islocked('alist[1]')	" 0
 
 <		When {expr} is a variable that does not exist you get an error
-		message.  Use |exists()| to check for existance.
+		message.  Use |exists()| to check for existence.
 
 items({dict})						*items()*
 		Return a |List| with all the key-value pairs of {dict}.  Each
@@ -3597,7 +3598,7 @@ min({list})	Return the minumum value of all items in {list}.
 		be used as a Number this results in an error.
 		An empty |List| results in zero.
 
-							*mkdir()* *E749*
+							*mkdir()* *E739*
 mkdir({name} [, {path} [, {prot}]])
 		Create directory {name}.
 		If {path} is "p" then intermediate directories are created as
@@ -3872,7 +3873,7 @@ reltime([{start} [, {end}]])				*reltime()*
 		Without an argument it returns the current time.
 		With one argument is returns the time passed since the time
 		specified in the argument.
-		With two arguments it returns the time passed betweein {start}
+		With two arguments it returns the time passed between {start}
 		and {end}.
 		The {start} and {end} arguments must be values returned by
 		reltime().
@@ -3997,7 +3998,7 @@ rename({from}, {to})					*rename()*
 repeat({expr}, {count})					*repeat()*
 		Repeat {expr} {count} times and return the concatenated
 		result.  Example: >
-			:let seperator = repeat('-', 80)
+			:let separator = repeat('-', 80)
 <		When {count} is zero or negative the result is empty.
 		When {expr} is a |List| the result is {expr} concatenated
 		{count} times.  Example: >
@@ -7287,7 +7288,7 @@ A few options contain an expression.  When this expression is evaluated it may
 have to be done in the sandbox to avoid a security risk.  But the sandbox is
 restrictive, thus this only happens when the option was set from an insecure
 location.  Insecure in this context are:
-- sourcing a .vimrc or .exrc in the current directlry
+- sourcing a .vimrc or .exrc in the current directory
 - while executing in the sandbox
 - value coming from a modeline
 

@@ -14,7 +14,7 @@ scriptencoding utf-8
 
 " Help menu
 menutrans &Help			帮助(&H)
-menutrans &Overview<Tab><F1>	预览(&O)<Tab><F1>
+menutrans &Overview<Tab><F1>	纵览(&O)<Tab><F1>
 menutrans &User\ Manual		用户手册(&U)
 menutrans &How-to\ links	How-to\ 连接(&H)
 menutrans &Find\.\.\.		查找(&F)\.\.\.
@@ -80,7 +80,7 @@ menutrans Search\ &Path\.\.\.			查找路径(&P)\.\.\.
 menutrans Ta&g\ Files\.\.\.			Tag\ 文件(&T)\.\.\.
 
 " GUI options
-menutrans Toggle\ &Toolbar			开/关工具条(&T)
+menutrans Toggle\ &Toolbar			开/关工具栏(&T)
 menutrans Toggle\ &Bottom\ Scrollbar		开/关底部滚动条(&B)
 menutrans Toggle\ &Left\ Scrollbar		开/关左端滚动条(&L)
 menutrans Toggle\ &Right\ Scrollbar		开/关右端滚动条(&R)

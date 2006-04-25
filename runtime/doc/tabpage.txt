@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0f.  Last change: 2006 Apr 24
+*tabpage.txt*   For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -162,8 +162,8 @@ Other commands:
 
 REORDERING TAB PAGES:
 
-							*:tabm* *:tabmove*
-:tabmove N	Move the current tab page to after tab page N.  Use zero to
+:tabm[ove] [N]						*:tabm* *:tabmove*
+		Move the current tab page to after tab page N.  Use zero to
 		make the current tab page the first one.  Without N the tab
 		page is made the last one.
 

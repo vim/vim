@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0f.  Last change: 2006 Apr 24
+*starting.txt*  For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1233,9 +1233,9 @@ triggered.
 			current window.
 			When [!] is included an existing file is overwritten.
 			When [file] is omitted or is a number from 1 to 9, a
-			name is generated and 'viewdir' prepended.  When last
-			directory name in 'viewdir' does not exist, this
-			directory is created.			*E739*
+			name is generated and 'viewdir' prepended.  When the
+			last directory name in 'viewdir' does not exist, this
+			directory is created.
 			An existing file is always overwritten then.  Use
 			|:loadview| to load this view again.
 			When [file] is the name of a file ('viewdir' is not

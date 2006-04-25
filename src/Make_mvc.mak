@@ -1046,8 +1046,16 @@ proto.h: \
 	proto/window.pro \
 	$(NETBEANS_PRO)
 
-.cod.c:
-	$(CC) $(CFLAGS) /FAc $<
+.SUFFIXES: .cod
+
+# Generate foo.cod (mixed source and assembly listing) from foo.c via "nmake
+# foo.cod"
+.c.cod:
+	$(CC) $(CFLAGS) /FAcs $<
+
+# Generate foo.i (preprocessor listing) from foo.c via "nmake foo.i"
+.c.i:
+	$(CC) $(CFLAGS) /P /C $<
 
 
 # vim: set noet sw=8 ts=8 sts=0 wm=0 tw=0:

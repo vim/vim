@@ -53,11 +53,11 @@
  * void mch_print_set_font(int Bold, int Italic, int Underline);
  * Called whenever the font style changes.
  *
- * void mch_print_set_bg(long bgcol);
+ * void mch_print_set_bg(long_u bgcol);
  * Called to set the background color for the following text. Parameter is an
  * RGB value.
  *
- * void mch_print_set_fg(long fgcol);
+ * void mch_print_set_fg(long_u fgcol);
  * Called to set the foreground color for the following text. Parameter is an
  * RGB value.
  *

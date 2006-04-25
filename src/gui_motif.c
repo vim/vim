@@ -493,6 +493,8 @@ gui_x11_create_widgets()
     XtAddEventHandler(tabLine, ButtonPressMask, False,
 			(XtEventHandler)tabline_menu_cb, NULL);
 
+    gui.tabline_height = TABLINE_HEIGHT;
+
     /*
      * Set the size of the minor next/prev scrollers to zero, so
      * that they are not displayed. Due to a bug in OpenMotif 2.3,

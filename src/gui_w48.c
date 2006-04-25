@@ -1122,12 +1122,12 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 	int	top = 0;
 	RECT	rect;
 
-#ifdef FEAT_TOOLBAR
+# ifdef FEAT_TOOLBAR
 	if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	    top = TOOLBAR_BUTTON_HEIGHT + TOOLBAR_BORDER_HEIGHT;
-#endif
+# endif
 	GetClientRect(s_hwnd, &rect);
-	MoveWindow(s_tabhwnd, 0, top, rect.right, TABLINE_HEIGHT, TRUE);
+	MoveWindow(s_tabhwnd, 0, top, rect.right, gui.tabline_height, TRUE);
     }
 #endif
 
@@ -2379,8 +2379,8 @@ gui_mch_set_curtab(nr)
     if (s_tabhwnd == NULL)
 	return;
 
-    if (TabCtrl_GetCurSel(s_tabhwnd) != nr)
-	TabCtrl_SetCurSel(s_tabhwnd, nr);
+    if (TabCtrl_GetCurSel(s_tabhwnd) != nr -1)
+	TabCtrl_SetCurSel(s_tabhwnd, nr -1);
 }
 
 #endif

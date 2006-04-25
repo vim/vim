@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0f.  Last change: 2006 Apr 23
+*insert.txt*    For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -594,7 +594,7 @@ Also see the 'infercase' option if you want to adjust the case of the match.
 
 							*complete_CTRL-E*
 When completion is active you can use CTRL-E to stop it and go back to the
-orignally typed text.  The CTRL-E will not be inserted.
+originally typed text.  The CTRL-E will not be inserted.
 
 							*complete_CTRL-Y*
 When the popup menu is displayed you can use CTRL-Y to stop completion and
@@ -1353,7 +1353,7 @@ Script completes:
 <
     Still, to find myClass contents tags file is required.
 
-- function names with additonal info:
+- function names with additional info:
   - in case of built-in functions list of possible arguments and after | type
     data returned by function
   - in case of user function arguments and name of file were function was
@@ -1396,13 +1396,18 @@ The completions provided by CTRL-X CTRL-O are sensitive to the context:
 Notes:
  - Vim will load/evaluate code in order to provide completions.  This may
    cause some code execution, which may be a concern.
+ - In context 1 above, Vim can parse the entire buffer to add a list of
+   classes to the completion results. This feature is turned off by default,
+   to enable it add >
+     let g:rubycomplete_classes_in_global = 1
+<  to your vimrc
  - In context 2 above, anonymous classes are not supported.
  - In context 3 above, Vim will attempt to determine the methods supported by
    the object.
  - Vim can detect and load the Rails environment for files within a rails
    project. The feature is disabled by default, to enable it add >
-	   let g:rubycomplete_rails = 1
-<  to your vimrc.
+     let g:rubycomplete_rails = 1
+<  to your vimrc
 
 
 SYNTAX							*ft-syntax-omni*

@@ -412,6 +412,11 @@ typedef struct Gui
     char_u	*browse_fname;	    /* file name from filedlg */
 #endif	/* FEAT_GUI_GTK */
 
+#if defined(FEAT_GUI_TABLINE) \
+	&& (defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF))
+    int		tabline_height;
+#endif
+
 #ifdef FEAT_FOOTER
     int		footer_height;	    /* height of the message footer */
 #endif

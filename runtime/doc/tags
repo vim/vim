@@ -3954,7 +3954,7 @@ E735	eval.txt	/*E735*
 E736	eval.txt	/*E736*
 E737	eval.txt	/*E737*
 E738	eval.txt	/*E738*
-E739	starting.txt	/*E739*
+E739	eval.txt	/*E739*
 E74	message.txt	/*E74*
 E740	eval.txt	/*E740*
 E741	eval.txt	/*E741*
@@ -3965,7 +3965,7 @@ E745	eval.txt	/*E745*
 E746	eval.txt	/*E746*
 E747	editing.txt	/*E747*
 E748	repeat.txt	/*E748*
-E749	eval.txt	/*E749*
+E749	various.txt	/*E749*
 E75	vi_diff.txt	/*E75*
 E750	repeat.txt	/*E750*
 E751	spell.txt	/*E751*
@@ -5627,6 +5627,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	various.txt	/*help*
 help-context	help.txt	/*help-context*
+help-tags	tags	1
 help-translated	various.txt	/*help-translated*
 help-xterm-window	various.txt	/*help-xterm-window*
 help.txt	help.txt	/*help.txt*

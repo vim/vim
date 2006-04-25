@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0f.  Last change: 2006 Apr 16
+*indent.txt*    For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -288,7 +288,7 @@ assume a 'shiftwidth' of 4.
 		      int	      int			 int
 		  func()	      func()		  func()
 <
-	iN    Indent C++ base class declarations and contructor
+	iN    Indent C++ base class declarations and constructor
 	      initializations, if they start in a new line (otherwise they
 	      are aligned at the right side of the ':').
 	      (default 'shiftwidth').

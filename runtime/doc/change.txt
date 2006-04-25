@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0f.  Last change: 2006 Apr 11
+*change.txt*    For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -687,7 +687,7 @@ When the {string} starts with "\=" it is evaluated as an expression, see
 |sub-replace-expression|.  You can use that for any special characters.
 Otherwise these characters in {string} have a special meaning:
 								*:s%*
-When {string} is equal to "%" and '/' is included with the 'cpotions' option,
+When {string} is equal to "%" and '/' is included with the 'cpoptions' option,
 then the {string} of the previous substitute command is used. |cpo-/|
 
 magic	nomagic	  action    ~
@@ -1178,7 +1178,7 @@ gq{motion}		Format the lines that {motion} moves over.
 			   evaluated.  This can differ for each buffer.
 			2. If 'formatprg' is not empty an external program
 			   is used.
-			3. Otherise formatting is done internally.
+			3. Otherwise formatting is done internally.
 
 			In the third case the 'textwidth' option controls the
 			length of each formatted line (see below).

@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.0f.  Last change: 2005 Sep 11
+*digraph.txt*   For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -193,7 +193,7 @@ char  digraph	hex	dec	official name ~
 ^S	D3	0x13	 19	DEVICE CONTROL THREE (DC3)
 ^T	D4	0x14	 20	DEVICE CONTROL FOUR (DC4)
 ^U	NK	0x15	 21	NEGATIVE ACKNOWLEDGE (NAK)
-^V	SY	0x16	 22	SYNCRONOUS IDLE (SYN)
+^V	SY	0x16	 22	SYNCHRONOUS IDLE (SYN)
 ^W	EB	0x17	 23	END OF TRANSMISSION BLOCK (ETB)
 ^X	CN	0x18	 24	CANCEL (CAN)
 ^Y	EM	0x19	 25	END OF MEDIUM (EM)

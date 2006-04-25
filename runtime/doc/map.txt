@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0f.  Last change: 2006 Apr 20
+*map.txt*       For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -219,7 +219,7 @@ text before the cursor and start omni completion when some condition is met.
 
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, if you change buffer text, move the cursor, edit another
-file, etc. you may very well make command disfunctional.
+file, etc. you may very well make command dysfunctional.
 
 Here is an example that inserts a list number that increases: >
 	let counter = 0

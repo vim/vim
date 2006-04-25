@@ -90,9 +90,15 @@ function! GetRubyVarType(v)
 		return vtp
 	endif
 	call setpos('.',pos)
-    let [lnum,lcol] = searchpos(''.a:v.'\>\s*[+\-*/]*=\s*\([^ \t]\+.\(now\|new\|open\|get_instance\)\>\|[\[{"''/]\|%r{\)','nb',stopline)
+    if g:rubycomplete_rails == 1 && g:rubycomplete_rails_loaded == 1
+        let ctors = '\(now\|new\|open\|get_instance\|find\|create\)'
+    else
+        let ctors = '\(now\|new\|open\|get_instance\)'
+    endif
+
+    let [lnum,lcol] = searchpos(''.a:v.'\>\s*[+\-*/]*=\s*\([^ \t]\+.' . ctors .'\>\|[\[{"''/]\|%r{\)','nb',stopline)
 	if lnum != 0 && lcol != 0
-        let str = matchstr(getline(lnum),'=\s*\([^ \t]\+.\(now\|new\|open\|get_instance\)\>\|[\[{"''/]\|%r{\)',lcol)
+        let str = matchstr(getline(lnum),'=\s*\([^ \t]\+.' . ctors . '\>\|[\[{"''/]\|%r{\)',lcol)
 		let str = substitute(str,'^=\s*','','')
 		call setpos('.',pos)
 		if str == '"' || str == ''''
@@ -255,7 +261,7 @@ def load_rails()
   file_name = VIM::evaluate('expand("%:t")')
   path = buf_path.gsub( file_name, '' ) 
   path.gsub!( /\\/, "/" )
-  pup = [ "../", "../../", "../../../", "../../../../" ]
+  pup = [ "./", "../", "../../", "../../../", "../../../../" ]
   pok = nil
 
   pup.each do |sup|
@@ -267,10 +273,19 @@ def load_rails()
   end
   
   return if pok == nil
+
   bootfile = pok + "/boot.rb"
-  if File.exists?( bootfile )
-    require bootfile 
-    VIM::evaluate('let g:rubycomplete_rails_loaded = 1') 
+  envfile = pok + "/environment.rb"
+  if File.exists?( bootfile ) && File.exists?( envfile )
+    begin
+      require bootfile 
+      require envfile
+      require 'console_app'
+      require 'console_with_helpers'
+      VIM::command('let g:rubycomplete_rails_loaded = 1') 
+    rescue
+      print "Error loading rails environment"
+    end  
   end
 end
 

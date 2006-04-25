@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 24
+*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1104,7 +1104,7 @@ IMPROVEMENTS						*improvements-7*
 Move the help for printing to a separate help file.  It's quite a lot now.
 
 When doing completion for ":!cmd", ":r !cmd" or ":w !cmd" executable files are
-found in $PATH instead of looking for ordinary files in the current directlry.
+found in $PATH instead of looking for ordinary files in the current directory.
 
 When ":silent" is used and a backwards range is given for an Ex command the
 range is swapped automatically instead of asking if that is OK.
@@ -2609,5 +2609,11 @@ problems.
 
 Line completion on "/**" gave error messages when scanning an unloaded buffer.
 
+--- fixes and changes since Vim 7.0f ---
+
+Win32: The height of the tab page labels is now adjusted to the font height.
+(Yegappan Lakshmanan)
+
+Win32: selecting the tab label was off by one. (Yegappan Lakshmanan)
 
  vim:tw=78:ts=8:ft=help:norl:

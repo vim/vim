@@ -1,4 +1,4 @@
-*vimball.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*vimball.txt*	For Vim version 7.0f.  Last change: 2006 Apr 25
 
 	Vimball Archiver
 
@@ -56,6 +56,10 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 ==============================================================================
 3. Vimball History					*vimball-history*
 
+	7  : Apr 25, 2006 * bypasses foldenable
+	                  * uses more exe and less norm! (:yank :put etc)
+			  * does better at insuring a "Press ENTER" prompt
+			    appears to keep its messages visible
 	4  : Mar 31, 2006 * BufReadPost seems to fire twice; BufReadEnter
 	                    only fires once, so the "Source this file..."
 			    message is now issued only once.

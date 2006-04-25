@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*usr_21.txt*	For Vim version 7.0f.  Last change: 2006 Apr 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -165,7 +165,7 @@ And you are right back where you left Vim.  So you can get on with your work.
    Vim creates a mark each time you exit Vim.  The last one is '0.  The
 position that '0 pointed to is made '1.  And '1 is made to '2, and so forth.
 Mark '9 is lost.
-   The ":marks" command is useful to find out where '0 to '9 will take you.
+   The |:marks| command is useful to find out where '0 to '9 will take you.
 
 
 MOVE INFO FROM ONE VIM TO ANOTHER

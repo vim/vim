@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0f.  Last change: 2006 Apr 24
+*autocmd.txt*   For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -196,7 +196,7 @@ Vim recognizes the following events.  Vim ignores the case of event names
 (e.g., you can use "BUFread" or "bufread" instead of "BufRead").
 
 First an overview by function with a short explanation.  Then the list
-alpabetically with full explanations |autocmd-events-abc|.
+alphabetically with full explanations |autocmd-events-abc|.
 
 Name			triggered by ~
 
@@ -209,7 +209,7 @@ Name			triggered by ~
 
 |FileReadPre|		before reading a file with a ":read" command
 |FileReadPost|		after reading a file with a ":read" command
-|FileReadCmd|		before reading a file with a ":read" comman |Cmd-event|
+|FileReadCmd|		before reading a file with a ":read" command |Cmd-event|
 
 |FilterReadPre|		before reading a file from a filter command
 |FilterReadPost|	after reading a file from a filter command
@@ -651,7 +651,7 @@ MenuPopup			Just before showing the popup menu (under the
 					v	Visual
 					o	Operator-pending
 					i	Insert
-					c	Commmand line
+					c	Command line
 							*QuickFixCmdPre*
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
@@ -904,9 +904,9 @@ Examples: >
 
 All the commands for autocommands also work with buffer-local autocommands,
 simply use the special string instead of the pattern.  Examples: >
-    :au! * <buffer>     	     " remove buffer-local autotommands for
+    :au! * <buffer>     	     " remove buffer-local autocommands for
                                      " current buffer
-    :au! * <buffer=33>  	     " remove buffer-local autotommands for
+    :au! * <buffer=33>  	     " remove buffer-local autocommands for
     				     " buffer #33
     :dobuf :au! CursorHold <buffer>  " remove autocmd for given event for all
     				     " buffers

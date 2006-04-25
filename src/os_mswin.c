@@ -2323,9 +2323,10 @@ mch_print_set_font(int iBold, int iItalic, int iUnderline)
 }
 
     void
-mch_print_set_bg(unsigned long bgcol)
+mch_print_set_bg(long_u bgcol)
 {
-    SetBkColor(prt_dlg.hDC, GetNearestColor(prt_dlg.hDC, swap_me(bgcol)));
+    SetBkColor(prt_dlg.hDC, GetNearestColor(prt_dlg.hDC,
+						   swap_me((COLORREF)bgcol)));
     /*
      * With a white background we can draw characters transparent, which is
      * good for italic characters that overlap to the next char cell.
@@ -2337,9 +2338,10 @@ mch_print_set_bg(unsigned long bgcol)
 }
 
     void
-mch_print_set_fg(unsigned long fgcol)
+mch_print_set_fg(long_u fgcol)
 {
-    SetTextColor(prt_dlg.hDC, GetNearestColor(prt_dlg.hDC, swap_me(fgcol)));
+    SetTextColor(prt_dlg.hDC, GetNearestColor(prt_dlg.hDC,
+						   swap_me((COLORREF)fgcol)));
 }
 
 #endif /*FEAT_PRINTER && !FEAT_POSTSCRIPT*/

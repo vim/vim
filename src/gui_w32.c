@@ -181,7 +181,9 @@
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
-#ifndef UINT_PTR
+#if _MSC_VER < 1300
+/* Work around old versions of basetsd.h which wrongly declare
+ * UINT_PTR as unsigned long */
 # define UINT_PTR UINT
 #endif
 
@@ -195,7 +197,7 @@ static DWORD	    LastActivity = 0;
 
 /*
  * excerpts from headers since this may not be presented
- * in the extremelly old compilers
+ * in the extremely old compilers
  */
 #include <pshpack1.h>
 
@@ -568,6 +570,70 @@ _OnMouseWheel(
 	_OnScroll(hwnd, hwndCtl, zDelta >= 0 ? SB_PAGEUP : SB_PAGEDOWN, 0);
 }
 
+#ifdef USE_SYSMENU_FONT
+/*
+ * Get Menu Font.
+ * Return OK or FAIL.
+ */
+    static int
+gui_w32_get_menu_font(LOGFONT *lf)
+{
+    NONCLIENTMETRICS nm;
+
+    nm.cbSize = sizeof(NONCLIENTMETRICS);
+    if (!SystemParametersInfo(
+	    SPI_GETNONCLIENTMETRICS,
+	    sizeof(NONCLIENTMETRICS),
+	    &nm,
+	    0))
+	return FAIL;
+    *lf = nm.lfMenuFont;
+    return OK;
+}
+#endif
+
+
+#if defined(FEAT_GUI_TABLINE) && defined(USE_SYSMENU_FONT)
+/*
+ * Set the GUI tabline font to the system menu font
+ */
+    static void
+set_tabline_font(void)
+{
+    LOGFONT	lfSysmenu;
+    HFONT	font;
+    HWND	hwnd;
+    HDC		hdc;
+    HFONT	hfntOld;
+    TEXTMETRIC	tm;
+
+    if (gui_w32_get_menu_font(&lfSysmenu) != OK)
+	return;
+
+    font = CreateFontIndirect(&lfSysmenu);
+
+    SendMessage(s_tabhwnd, WM_SETFONT, (WPARAM)font, TRUE);
+
+    /*
+     * Compute the height of the font used for the tab text
+     */
+    hwnd = GetDesktopWindow();
+    hdc = GetWindowDC(hwnd);
+    hfntOld = SelectFont(hdc, font);
+
+    GetTextMetrics(hdc, &tm);
+
+    SelectFont(hdc, hfntOld);
+    ReleaseDC(hwnd, hdc);
+
+    /*
+     * The space used by the tab border and the space between the tab label
+     * and the tab border is included as 7.
+     */
+    gui.tabline_height = tm.tmHeight + tm.tmInternalLeading + 7;
+}
+#endif
+
 /*
  * Invoked when a setting was changed.
  */
@@ -577,6 +643,10 @@ _OnSettingChange(UINT n)
     if (n == SPI_SETWHEELSCROLLLINES)
 	SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0,
 		&mouse_scroll_lines, 0);
+#if defined(FEAT_GUI_TABLINE) && defined(USE_SYSMENU_FONT)
+    if (n == SPI_SETNONCLIENTMETRICS)
+	set_tabline_font();
+#endif
     return 0;
 }
 
@@ -873,7 +943,7 @@ _WndProc(
 				    {
 					int wlen;
 
-					wlen = (wcslen(wstr) + 1)
+					wlen = ((int)wcslen(wstr) + 1)
 							      * sizeof(WCHAR);
 					if (tt_text_len < wlen)
 					{
@@ -893,7 +963,7 @@ _WndProc(
 				{
 				    int len;
 
-				    len = STRLEN(NameBuff) + 1;
+				    len = (int)STRLEN(NameBuff) + 1;
 				    if (tt_text_len < len)
 				    {
 					tt_text = vim_realloc(tt_text, len);
@@ -2870,28 +2940,6 @@ static const char_u *dlg_icons[] = /* must match names in resource file */
     "IDR_VIM_QUESTION"
 };
 
-#ifdef USE_SYSMENU_FONT
-/*
- * Get Menu Font.
- * Return OK or FAIL.
- */
-    static int
-gui_w32_get_menu_font(LOGFONT *lf)
-{
-    NONCLIENTMETRICS nm;
-
-    nm.cbSize = sizeof(NONCLIENTMETRICS);
-    if (!SystemParametersInfo(
-	    SPI_GETNONCLIENTMETRICS,
-	    sizeof(NONCLIENTMETRICS),
-	    &nm,
-	    0))
-	return FAIL;
-    *lf = nm.lfMenuFont;
-    return OK;
-}
-#endif
-
     int
 gui_mch_dialog(
     int		 type,
@@ -4070,10 +4118,6 @@ get_toolbar_bitmap(vimmenu_T *menu)
     static void
 initialise_tabline(void)
 {
-# ifdef USE_SYSMENU_FONT
-    LOGFONT    lfSysmenu;
-# endif
-
     InitCommonControls();
 
     s_tabhwnd = CreateWindow(WC_TABCONTROL, "Vim tabline",
@@ -4081,12 +4125,10 @@ initialise_tabline(void)
 	    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 	    CW_USEDEFAULT, s_hwnd, NULL, s_hinst, NULL);
 
+    gui.tabline_height = TABLINE_HEIGHT;
+
 # ifdef USE_SYSMENU_FONT
-    if (gui_w32_get_menu_font(&lfSysmenu) == OK)
-    {
-	HFONT font = CreateFontIndirect(&lfSysmenu);
-	SendMessage(s_tabhwnd, WM_SETFONT, (WPARAM) font, TRUE);
-    }
+    set_tabline_font();
 # endif
 }
 #endif
@@ -4559,8 +4601,7 @@ gui_mch_enable_beval_area(beval)
     if (beval == NULL)
 	return;
     // TRACE0("gui_mch_enable_beval_area {{{");
-    BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2,
-						   (TIMERPROC)BevalTimerProc);
+    BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2, BevalTimerProc);
     // TRACE0("gui_mch_enable_beval_area }}}");
 }
 

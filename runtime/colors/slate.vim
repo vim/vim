@@ -1,6 +1,6 @@
 "%% SiSU Vim color file
 " Slate Maintainer: Ralph Amissah <ralph@amissah.com>
-" (originally looked at desert Hans Fugal <hans@fugal.net> http://hans.fugal.net/vim/colors/desert.vim (2003/05/06 16:37:49)
+" (originally looked at desert Hans Fugal <hans@fugal.net> http://hans.fugal.net/vim/colors/desert.vim (2003/05/06)
 :set background=dark
 :highlight clear
 if version > 580
@@ -35,10 +35,8 @@ endif
 :hi Include guifg=red ctermfg=red
 :hi PreProc guifg=red guibg=white ctermfg=red
 :hi Operator guifg=Red ctermfg=Red
-":hi Operator guifg=CornflowerBlue ctermfg=darkcyan
 :hi Define guifg=gold gui=bold ctermfg=yellow
 :hi Type guifg=CornflowerBlue ctermfg=2
-":hi Type guifg=darkkhaki ctermfg=2
 :hi Function guifg=navajowhite ctermfg=brown
 :hi Structure guifg=green ctermfg=green
 :hi LineNr guifg=grey50 ctermfg=3

@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Apr 24, 2006
-" Version: 7
+" Date:   Apr 25, 2006
+" Version: 8
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v7"
+let g:loaded_vimball = "v8"
 set cpo&vim
 
 " =====================================================================
@@ -253,6 +253,32 @@ fun! vimball#Vimball(really)
   exe "cd ".curdir
 
 "  call Dret("Vimball")
+endfun
+
+" ---------------------------------------------------------------------
+" vimball#Decompress: attempts to automatically decompress vimballs {{{2
+fun! vimball#Decompress(fname)
+"  call Dfunc("Decompress(fname<".a:fname.">)")
+
+  " decompression:
+  if     expand("%") =~ '.*\.gz'  && executable("gunzip")
+   exe "!gunzip ".a:fname
+   let fname= substitute(a:fname,'\.gz$','','')
+   exe "e ".fname
+   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+  elseif expand("%") =~ '.*\.bz2' && executable("bunzip2")
+   exe "!bunzip2 ".a:fname
+   let fname= substitute(a:fname,'\.bz2$','','')
+   exe "e ".fname
+   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+  elseif expand("%") =~ '.*\.zip' && executable("unzip")
+   exe "!unzip ".a:fname
+   let fname= substitute(a:fname,'\.zip$','','')
+   exe "e ".fname
+   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+  endif
+
+"  call Dret("Decompress")
 endfun
 
 let &cpo= s:keepcpo

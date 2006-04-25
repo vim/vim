@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0f.  Last change: 2006 Apr 24
+*various.txt*   For Vim version 7.0f.  Last change: 2006 Apr 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -85,7 +85,7 @@ g8			Print the hex values of the bytes used in the
 			{not in Vi} {only when compiled with the |+multi_byte|
 			feature}
 
-							*:p* *:pr* *:print*
+						*:p* *:pr* *:print* *E749*
 :[range]p[rint] [flags]
 			Print [range] lines (default current line).
 			Note: If you are looking for a way to print your text

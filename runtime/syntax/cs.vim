@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C#
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Mi, 13 Apr 2005 22:52:57 CEST
+" Last Change:	Mo, 24 Apr 2006 10:11:07 CEST
 " Filenames:	*.cs
 " $Id$
 "
@@ -20,7 +20,7 @@ set cpo&vim
 syn keyword csType			bool byte char decimal double float int long object sbyte short string uint ulong ushort void
 " storage
 syn keyword csStorage			class delegate enum interface namespace struct
-" repeate / condition / label
+" repeat / condition / label
 syn keyword csRepeat			break continue do for foreach goto return while
 syn keyword csConditional		else if switch
 syn keyword csLabel			case default
@@ -51,8 +51,8 @@ syn keyword csUnspecifiedKeyword	explicit implicit
 " TODO: include strings ?
 "
 syn keyword csTodo		contained TODO FIXME XXX NOTE
-syn region  csComment		start="/\*"  end="\*/" contains=@csCommentHook,csTodo
-syn match   csComment		"//.*$" contains=@csCommentHook,csTodo
+syn region  csComment		start="/\*"  end="\*/" contains=@csCommentHook,csTodo,@Spell
+syn match   csComment		"//.*$" contains=@csCommentHook,csTodo,@Spell
 
 " xml markup inside '///' comments
 syn cluster xmlRegionHook	add=csXmlCommentLeader
@@ -92,9 +92,9 @@ syn match   csSpecialChar	contained +\\["\\'0abfnrtvx]+
 " unicode characters
 syn match   csUnicodeNumber	+\\\(u\x\{4}\|U\x\{8}\)+ contained contains=csUnicodeSpecifier
 syn match   csUnicodeSpecifier	+\\[uU]+ contained
-syn region  csVerbatimString	start=+@"+ end=+"+ end=+$+ skip=+""+ contains=csVerbatimSpec
+syn region  csVerbatimString	start=+@"+ end=+"+ end=+$+ skip=+""+ contains=csVerbatimSpec,@Spell
 syn match   csVerbatimSpec	+@"+he=s+1 contained
-syn region  csString		start=+"+  end=+"+ end=+$+ contains=csSpecialChar,csSpecialError,csUnicodeNumber
+syn region  csString		start=+"+  end=+"+ end=+$+ contains=csSpecialChar,csSpecialError,csUnicodeNumber,@Spell
 syn match   csCharacter		"'[^']*'" contains=csSpecialChar,csSpecialCharError
 syn match   csCharacter		"'\\''" contains=csSpecialChar
 syn match   csCharacter		"'[^\\]'"
