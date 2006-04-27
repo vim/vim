@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 26
+*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+GTK: tooltips make menu actions use wrong tab page. Yegappan will look into
+it.
 
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
@@ -2349,6 +2352,7 @@ Text objects:
 8   Add text object for any kind of parens, also multi-byte ones.
 7   Add text object for current search pattern: "a/" and "i/".  Makes it
     possible to turn text highlighted for 'hlsearch' into a Visual area.
+8   Add a way to make an ":omap" for a user-defined text object.
 8   Add "gp" and "gP" commands: insert text and make sure there is a single
     space before it, unless at the start of the line, and after it, unless at
     the end of the line or before a ".".

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 21
+" Last Change:	2006 Apr 27
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -249,6 +249,9 @@ au BufNewFile,BufRead *.bdf			setf bdf
 
 " BibTeX bibliography database file
 au BufNewFile,BufRead *.bib			setf bib
+
+" BibTeX Bibliography Style
+au BufNewFile,BufRead *.bst			setf bst
 
 " BIND configuration
 au BufNewFile,BufRead named.conf,rndc.conf	setf named
@@ -596,6 +599,9 @@ au BufNewFile,BufRead *.factor			setf factor
 
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
+
+" FlexWiki
+au BufNewFile,BufRead *.wiki			setf flexwiki
 
 " Focus Executable
 au BufNewFile,BufRead *.fex,*.focexec		setf focexec
@@ -990,6 +996,9 @@ au BufNewFile,BufRead mplayer.conf,*/.mplayer/config	setf mplayerconf
 
 " Moterola S record
 au BufNewFile,BufRead *.s19,*.s28,*.s37		setf srec
+
+" Mrxvtrc
+au BufNewFile,BufRead mrxvtrc,.mrxvtrc		setf mrxvtrc
 
 " Msql
 au BufNewFile,BufRead *.msql			setf msql

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 26
+*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -893,6 +893,7 @@ arch ftplugin file. (Nikolai Weibull)
 asterisk and asteriskvm syntax file. (Tilghman Lesher)
 BDF ftplugin file. (Nikolai Weibull)
 BibTeX indent file. (Dorai Sitaram)
+BibTeX Bibliography Style syntax file. (Tim Pope)
 BTM ftplugin file. (Bram Moolenaar)
 calendar ftplugin file. (Nikolai Weibull)
 Changelog indent file. (Nikolai Weibull)
@@ -913,6 +914,7 @@ elinks ftplugin file. (Nikolai Weibull)
 eterm ftplugin file. (Nikolai Weibull)
 eviews syntax file. (Vaidotas Zemlys)
 fetchmail RC ftplugin file. (Nikolai Weibull)
+FlexWiki syntax and ftplugin file. (George Reilly)
 Generic indent file. (Dave Silvia)
 gpg ftplugin file. (Nikolai Weibull)
 gretl syntax file. (Vaidotas Zemlys)
@@ -939,6 +941,7 @@ Maxima syntax file. (Robert Dodier)
 MGL syntax file. (Gero Kuhlmann)
 modconf ftplugin file. (Nikolai Weibull)
 mplayer config ftplugin file. (Nikolai Weibull)
+Mrxvtrc syntax and ftplugin file. (Gautam Iyer)
 MuPAD source syntax, indent and ftplugin. (Dave Silvia)
 mutt RC ftplugin file. (Nikolai Weibull)
 nanorc syntax and ftplugin file. (Nikolai Weibull)
@@ -2616,7 +2619,7 @@ Win32: The height of the tab page labels is now adjusted to the font height.
 
 Win32: selecting the tab label was off by one. (Yegappan Lakshmanan)
 
-Added tooltips for Motif tab page labels. (Yegappan Lakshmanan)
+Added tooltips for Motif and GTK tab page labels. (Yegappan Lakshmanan)
 
 When 'encoding' is "utf-8" then ":help spell" would report an illegal byte and
 the file was not converted from latin1 to utf-8.  Now retry with latin1 if
@@ -2660,6 +2663,19 @@ folding resulted in too many suggestions.
 Win32: Dropping a shortcut on the Vim icon did't edit the referred file like
 editing it in another way would.  Use fname_expand() in buf_set_name() instead
 of simply make the file name a full path.
+
+Using feedkeys() could cause Vim to hang.
+
+When closing another tab page from the tabline menu in Insert mode the tabline
+was not updated right away.
+
+The syntax menu didn't work in compatible mode.
+
+After using ":ta id" twice with the same "id", ":ts" and then ":pop" a ":ts"
+reported no matching tag.  Clear the cached tag name.
+
+In Insert mode the matchparen plugin highlighted the wrong paren when there is
+a string just next to a paren.
 
 
  vim:tw=78:ts=8:ft=help:norl:

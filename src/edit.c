@@ -8379,8 +8379,10 @@ ins_tabline(c)
     if (c == K_TABLINE)
 	goto_tabpage(current_tab);
     else
+    {
 	handle_tabmenu();
-
+	redraw_statuslines();	/* will redraw the tabline when needed */
+    }
 }
 #endif
 

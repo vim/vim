@@ -1711,7 +1711,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :Explore	pi_netrw.txt	/*:Explore*
 :Hexplore	pi_netrw.txt	/*:Hexplore*
 :Man	filetype.txt	/*:Man*
-:MkVimball	vimball.txt	/*:MkVimball*
+:MkVimball	pi_vimball.txt	/*:MkVimball*
 :N	editing.txt	/*:N*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
 :Next	editing.txt	/*:Next*
@@ -4255,7 +4255,7 @@ VimEnter	autocmd.txt	/*VimEnter*
 VimLeave	autocmd.txt	/*VimLeave*
 VimLeavePre	autocmd.txt	/*VimLeavePre*
 VimResized	autocmd.txt	/*VimResized*
-Vimball-copyright	vimball.txt	/*Vimball-copyright*
+Vimball-copyright	pi_vimball.txt	/*Vimball-copyright*
 Virtual-Replace-mode	insert.txt	/*Virtual-Replace-mode*
 VisVim	if_ole.txt	/*VisVim*
 Visual	visual.txt	/*Visual*
@@ -6519,6 +6519,7 @@ pi_netrw.txt	pi_netrw.txt	/*pi_netrw.txt*
 pi_paren.txt	pi_paren.txt	/*pi_paren.txt*
 pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
+pi_vimball.txt	pi_vimball.txt	/*pi_vimball.txt*
 pi_zip.txt	pi_zip.txt	/*pi_zip.txt*
 plaintex.vim	syntax.txt	/*plaintex.vim*
 plsql	sql.txt	/*plsql*
@@ -7639,13 +7640,12 @@ vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim:	options.txt	/*vim:*
-vimball	vimball.txt	/*vimball*
-vimball-contents	vimball.txt	/*vimball-contents*
-vimball-extract	vimball.txt	/*vimball-extract*
-vimball-history	vimball.txt	/*vimball-history*
-vimball-manual	vimball.txt	/*vimball-manual*
-vimball-vimballlist	vimball.txt	/*vimball-vimballlist*
-vimball.txt	vimball.txt	/*vimball.txt*
+vimball	pi_vimball.txt	/*vimball*
+vimball-contents	pi_vimball.txt	/*vimball-contents*
+vimball-extract	pi_vimball.txt	/*vimball-extract*
+vimball-history	pi_vimball.txt	/*vimball-history*
+vimball-manual	pi_vimball.txt	/*vimball-manual*
+vimball-vimballlist	pi_vimball.txt	/*vimball-vimballlist*
 vimdev	intro.txt	/*vimdev*
 vimdiff	diff.txt	/*vimdiff*
 vimfiles	options.txt	/*vimfiles*

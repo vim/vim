@@ -9029,7 +9029,8 @@ f_feedkeys(argvars, rettv)
 	    ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
 					       typebuf.tb_len, !typed, FALSE);
 	    vim_free(keys_esc);
-	    typebuf_was_filled = TRUE;
+	    if (vgetc_busy)
+		typebuf_was_filled = TRUE;
 	}
     }
 }

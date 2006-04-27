@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 26
+*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2653,6 +2653,14 @@ for external scripting languages (currently perl, python, ruby, and tcl).
 	g:vimembedscript == 0		 Syntax highlighting for embedded
 					 scripting languages will not be
 					 loaded.
+
+Not all error highlighting that syntax/vim.vim does may be correct; VimL is a
+difficult language to highlight correctly.  A way to suppress error
+highlighting is to put: >
+
+	let g:vimsyntax_noerror = 1
+
+in your |vimrc|.
 
 
 XF86CONFIG				*xf86conf.vim* *ft-xf86conf-syntax*

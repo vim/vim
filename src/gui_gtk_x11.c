@@ -3121,6 +3121,7 @@ set_toolbar_style(GtkToolbar *toolbar)
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static int ignore_tabline_evt = FALSE;
 static GtkWidget *tabline_menu;
+static GtkTooltips *tabline_tooltip;
 static int clicked_page;	    /* page clicked in tab line */
 
 /*
@@ -3130,7 +3131,6 @@ static int clicked_page;	    /* page clicked in tab line */
     static void
 tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
 {
-
     /* Add the string cmd into input buffer */
     send_tabline_menu_event(clicked_page, (int)(long)user_data);
 
@@ -3204,6 +3204,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 		break;
 	    }
 	    label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
+
 	    /* The label size apparently doesn't include the spacing, estimate
 	     * it by the page position. */
 	    if (page->allocation.x * 2 + label->allocation.x
@@ -3301,6 +3302,7 @@ gui_mch_showing_tabline(void)
 gui_mch_update_tabline(void)
 {
     GtkWidget	    *page;
+    GtkWidget	    *event_box;
     GtkWidget	    *label;
     tabpage_T	    *tp;
     int		    nr = 0;
@@ -3324,19 +3326,39 @@ gui_mch_update_tabline(void)
 	    /* Add notebook page */
 	    page = gtk_vbox_new(FALSE, 0);
 	    gtk_widget_show(page);
+	    event_box = gtk_event_box_new();
+	    gtk_widget_show(event_box);
 	    label = gtk_label_new("-Empty-");
+#ifdef TABLINE_TOOLTIP
+	    gtk_container_add(GTK_CONTAINER(event_box), label);
+#else
+	    event_box = label;
+#endif
 	    gtk_widget_show(label);
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page,
-		    label,
+		    event_box,
 		    nr++);
 	}
 
+	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
+#ifdef TABLINE_TOOLTIP
+	label = GTK_BIN(event_box)->child;
+#else
+	label = event_box;
+#endif
 	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
-	gtk_notebook_set_tab_label_text(GTK_NOTEBOOK(gui.tabline), page,
-						     (const gchar *)labeltext);
+	gtk_label_set_text(GTK_LABEL(label), (const char *)labeltext);
 	CONVERT_TO_UTF8_FREE(labeltext);
+
+#ifdef TABLINE_TOOLTIP
+	get_tabline_label(tp, TRUE);
+	labeltext = CONVERT_TO_UTF8(NameBuff);
+	gtk_tooltips_set_tip(GTK_TOOLTIPS(tabline_tooltip), event_box,
+			     (const char *)labeltext, NULL);
+	CONVERT_TO_UTF8_FREE(labeltext);
+#endif
     }
 
     /* Remove any old labels. */
@@ -3664,16 +3686,26 @@ gui_mch_init(void)
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
 
+    tabline_tooltip = gtk_tooltips_new();
+    gtk_tooltips_enable(GTK_TOOLTIPS(tabline_tooltip));
+
     {
-        GtkWidget *page, *label;
+	GtkWidget *page, *label, *event_box;
 
         /* Add the first tab. */
-        page = gtk_vbox_new(FALSE, 0);
-        gtk_widget_show(page);
-        gtk_container_add(GTK_CONTAINER(gui.tabline), page);
-        label = gtk_label_new("-Empty-");
-        gtk_widget_show(label);
-        gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, label);
+	page = gtk_vbox_new(FALSE, 0);
+	gtk_widget_show(page);
+	gtk_container_add(GTK_CONTAINER(gui.tabline), page);
+	label = gtk_label_new("-Empty-");
+	gtk_widget_show(label);
+#ifdef TABLINE_TOOLTIP
+	event_box = gtk_event_box_new();
+	gtk_widget_show(event_box);
+	gtk_container_add(GTK_CONTAINER(event_box), label);
+#else
+	event_box = label;
+#endif
+	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
     }
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
                        GTK_SIGNAL_FUNC(on_select_tab), NULL);

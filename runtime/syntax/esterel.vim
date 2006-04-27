@@ -1,9 +1,10 @@
 " Vim syntax file
-" Language:		ESTEREL
-" Maintainer:	Maurizio Tranchero <mtranchero@yahoo.it>
-" Credits:		Luca Necchi	<luca.necchi@polito.it>
-" Last Change:	Tue May 17 23:49:39 CEST 2005
-" Version:		0.2
+" Language:			ESTEREL
+" Maintainer:		Maurizio Tranchero <maurizio.tranchero@polito.it> - <maurizio.tranchero@gmail.com>
+" Credits:			Luca Necchi	<luca.necchi@polito.it>
+" First Release:	Tue May 17 23:49:39 CEST 2005
+" Last Change:		Sat Apr 22 14:56:41 CEST 2006
+" Version:			0.5
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -16,30 +17,39 @@ endif
 " case is significant
 syn case ignore
 " Esterel Regions
-syn region esterelModule		start=/module/	end=/end module/	contains=ALLBUT,esterelModule
-syn region esterelLoop			start=/loop/	end=/end loop/		contains=ALLBUT,esterelModule
-syn region esterelAbort			start=/abort/	end=/end abort/		contains=ALLBUT,esterelModule
-syn region esterelEvery			start=/every/	end=/end every/		contains=ALLBUT,esterelModule
-syn region esterelIf			start=/if/		end=/end if/		contains=ALLBUT,esterelModule
-"syn region esterelConcurrent	start=/\[/		end=/\]/			contains=ALLBUT,esterelModule
-syn region esterelConcurrent	transparent start=/\[/		end=/\]/		contains=ALLBUT,esterelModule
-syn region esterelIfThen		start=/if/		end=/then/			oneline
-" and weak abort? how to make vim know that start='weak abort'?
+syn region esterelModule					start=/module/		end=/end module/	contains=ALLBUT,esterelModule
+syn region esterelLoop						start=/loop/		end=/end loop/		contains=ALLBUT,esterelModule
+syn region esterelAbort						start=/abort/		end=/when/			contains=ALLBUT,esterelModule
+syn region esterelAbort						start=/weak abort/	end=/when/			contains=ALLBUT,esterelModule
+syn region esterelEvery						start=/every/		end=/end every/		contains=ALLBUT,esterelModule
+syn region esterelIf						start=/if/			end=/end if/		contains=ALLBUT,esterelModule
+syn region esterelConcurrent	transparent start=/\[/			end=/\]/			contains=ALLBUT,esterelModule
+syn region esterelIfThen					start=/if/			end=/then/			oneline
 " Esterel Keywords
-syn keyword esterelStatement	module signal end
-syn keyword esterelIO			input output 
+syn keyword esterelIO			input output inputoutput constant
+syn keyword esterelBoolean		and or not xor xnor nor nand
+syn keyword esterelExpressions	mod 
+syn keyword esterelStatement	nothing halt
+syn keyword esterelStatement	module signal sensor end
 syn keyword esterelStatement	every do loop abort weak
 syn keyword esterelStatement	emit present await
-syn keyword esterelStatement	if then else
-syn keyword esterelBoolean		and or not xor xnor nor nand
-"syn keyword esterelOperator		\[ \] 
-syn keyword esterelPippo		pippo
+syn keyword esterelStatement	pause when immediate
+syn keyword esterelStatement	if then else case
+syn keyword esterelStatement	var in  run  suspend
+syn keyword esterelStatement	repeat times combine with
+syn keyword esterelStatement	assert sustain
+" check what it is the following
+syn keyword esterelStatement	relation						
+syn keyword esterelFunctions	function procedure task
+syn keyword esterelSysCall		call trap exit exec
 " Esterel Types
 syn keyword esterelType integer float bolean
 " Esterel Comment
 syn match esterelComment	"%.*$"
 " Operators and special characters
 syn match esterelSpecial	":"
+syn match esterelSpecial	"<="
+syn match esterelSpecial	">="
 syn match esterelSpecial	";"
 syn match esterelOperator	"\["
 syn match esterelOperator	"\]"
@@ -57,13 +67,16 @@ if version >= 508 || !exists("did_esterel_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-	HiLink esterelStatement	Statement
-	HiLink esterelType		Type
-	HiLink esterelComment	Comment
-	HiLink esterelBoolean	Number
-	HiLink esterelIO		String
-	HiLink esterelOperator	Type
-	HiLink esterelSpecial	Special
+	HiLink esterelStatement		Statement
+	HiLink esterelType			Type
+	HiLink esterelComment		Comment
+	HiLink esterelBoolean		Number
+	HiLink esterelExpressions	Number
+	HiLink esterelIO			String
+	HiLink esterelOperator		Type
+	HiLink esterelSysCall		Type
+	HiLink esterelFunctions		Type
+	HiLink esterelSpecial		Special
 
   delcommand HiLink
 endif
