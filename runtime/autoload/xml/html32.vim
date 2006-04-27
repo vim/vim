@@ -2,7 +2,7 @@ let g:xmldata_html32 = {
 \ 'vimxmlentities': ['AElig', 'Aacute', 'Acirc', 'Agrave', 'Aring', 'Atilde', 'Auml', 'Ccedil', 'ETH', 'Eacute', 'Ecirc', 'Egrave', 'Euml', 'Iacute', 'Icirc', 'Igrave', 'Iuml', 'Ntilde', 'Oacute', 'Ocirc', 'Ograve', 'Oslash', 'Otilde', 'Ouml', 'THORN', 'Uacute', 'Ucirc', 'Ugrave', 'Uuml', 'Yacute', 'aacute', 'acirc', 'acute', 'aelig', 'agrave', 'amp', 'aring', 'atilde', 'auml', 'brvbar', 'ccedil', 'cedil', 'cent', 'copy', 'curren', 'deg', 'divide', 'eacute', 'ecirc', 'egrave', 'eth', 'euml', 'frac12', 'frac14', 'frac34', 'gt', 'iacute', 'icirc', 'iexcl', 'igrave', 'iquest', 'iuml', 'laquo', 'lt', 'macr', 'micro', 'middot', 'nbsp', 'not', 'ntilde', 'oacute', 'ocirc', 'ograve', 'ordf', 'ordm', 'oslash', 'otilde', 'ouml', 'para', 'plusmn', 'pound', 'raquo', 'reg', 'sect', 'shy', 'sup1', 'sup2', 'sup3', 'szlig', 'thorn', 'times', 'uacute', 'ucirc', 'ugrave', 'uml', 'uuml', 'yacute', 'yen', 'yuml'],
 \ 'vimxmlroot': ['html'],
 \ 'a': [
-\ ['tt', 'i', 'b', 'u', 'strike', 'big', 'small', 'sub', 'sup', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'a', 'img', 'applet', 'font', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea'],
+\ ['tt', 'i', 'b', 'u', 'strike', 'big', 'small', 'sub', 'sup', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'img', 'applet', 'font', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea'],
 \ { 'rel': [], 'href': [], 'name': [], 'rev': [], 'title': []}
 \ ],
 \ 'address': [
@@ -94,7 +94,7 @@ let g:xmldata_html32 = {
 \ { 'size': [], 'color': []}
 \ ],
 \ 'form': [
-\ ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'tt', 'i', 'b', 'u', 'strike', 'big', 'small', 'sub', 'sup', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'a', 'img', 'applet', 'font', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea', 'p', 'ul', 'ol', 'dir', 'menu', 'pre', 'xmp', 'listing', 'dl', 'div', 'center', 'blockquote', 'form', 'isindex', 'hr', 'table', 'address'],
+\ ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'tt', 'i', 'b', 'u', 'strike', 'big', 'small', 'sub', 'sup', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'a', 'img', 'applet', 'font', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea', 'p', 'ul', 'ol', 'dir', 'menu', 'pre', 'xmp', 'listing', 'dl', 'div', 'center', 'blockquote', 'isindex', 'hr', 'table', 'address'],
 \ { 'enctype': ['application/x-www-form-urlencoded'], 'action': [], 'method': ['GET', 'POST']}
 \ ],
 \ 'h1': [
@@ -122,7 +122,7 @@ let g:xmldata_html32 = {
 \ { 'align': ['left', 'center', 'right']}
 \ ],
 \ 'head': [
-\ ['title', 'isindex', 'base'],
+\ ['title', 'isindex', 'base', 'script', 'style', 'meta', 'link'],
 \ { }
 \ ],
 \ 'hr': [
@@ -198,7 +198,7 @@ let g:xmldata_html32 = {
 \ { }
 \ ],
 \ 'pre': [
-\ ['tt', 'i', 'b', 'u', 'strike', 'big', 'small', 'sub', 'sup', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'a', 'img', 'applet', 'font', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea'],
+\ ['tt', 'i', 'b', 'u', 'strike', 'em', 'strong', 'dfn', 'code', 'samp', 'kbd', 'var', 'cite', 'a', 'applet', 'basefont', 'br', 'script', 'map', 'input', 'select', 'textarea'],
 \ { 'width': ['#implied']}
 \ ],
 \ 'samp': [
@@ -206,7 +206,7 @@ let g:xmldata_html32 = {
 \ { }
 \ ],
 \ 'script': [
-\ [''],
+\ [],
 \ { }
 \ ],
 \ 'select': [
@@ -226,7 +226,7 @@ let g:xmldata_html32 = {
 \ { }
 \ ],
 \ 'style': [
-\ [''],
+\ [],
 \ { }
 \ ],
 \ 'sub': [
@@ -314,7 +314,7 @@ let g:xmldata_html32 = {
 \ 'height' : ['Number', ''],
 \ 'href' : ['*URI', ''],
 \ 'hreflang' : ['LangCode', ''],
-\ 'id' : ['ID', 'Unique string'],
+\ 'id' : ['ID', ''],
 \ 'ismap' : ['Bool', ''],
 \ 'label' : ['*Text', ''],
 \ 'lang' : ['LangCode', ''],

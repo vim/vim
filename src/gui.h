@@ -21,6 +21,14 @@
 #endif
 
 #ifdef FEAT_GUI_GTK
+# ifdef VMS /* undef MIN and MAX because Intrinsic.h redefines them anyway */
+#  ifdef MAX
+#   undef MAX
+#  endif
+#  ifdef MIN
+#   undef MIN
+#  endif
+# endif
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
 #endif

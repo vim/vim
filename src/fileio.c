@@ -829,7 +829,8 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	    /* When the file is utf-8 but a character doesn't fit in
 	     * 'encoding' don't retry.  In help text editing utf-8 bytes
 	     * doesn't make sense. */
-	    keep_dest_enc = TRUE;
+	    if (!enc_utf8)
+		keep_dest_enc = TRUE;
 	}
 	fenc_alloced = FALSE;
     }
@@ -7485,12 +7486,13 @@ event_ignored(event)
 {
     char_u	*p = p_ei;
 
-    if (STRICMP(p_ei, "all") == 0)
-	return TRUE;
-
-    while (*p)
+    while (*p != NUL)
+    {
+	if (STRNICMP(p, "all", 3) == 0 && (p[3] == NUL || p[3] == ','))
+	    return TRUE;
 	if (event_name2nr(p, &p) == event)
 	    return TRUE;
+    }
 
     return FALSE;
 }
@@ -7503,12 +7505,17 @@ check_ei()
 {
     char_u	*p = p_ei;
 
-    if (STRICMP(p_ei, "all") == 0)
-	return OK;
-
     while (*p)
-	if (event_name2nr(p, &p) == NUM_EVENTS)
+    {
+	if (STRNICMP(p, "all", 3) == 0 && (p[3] == NUL || p[3] == ','))
+	{
+	    p += 3;
+	    if (*p == ',')
+		++p;
+	}
+	else if (event_name2nr(p, &p) == NUM_EVENTS)
 	    return FAIL;
+    }
 
     return OK;
 }

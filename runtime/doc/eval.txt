@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 25
+*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1183,6 +1183,9 @@ v:beval_text	The text under or after the mouse pointer.  Usually a word as
 					*v:beval_winnr* *beval_winnr-variable*
 v:beval_winnr	The number of the window, over which the mouse pointer is. Only
 		valid while evaluating the 'balloonexpr' option.
+
+					*v:char* *char-variable*
+v:char		Argument for evaluating 'formatexpr'.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from

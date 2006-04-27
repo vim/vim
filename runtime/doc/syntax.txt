@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -608,6 +608,39 @@ using.	For Perl script use: >
 For Visual Basic use: >
 	:let g:filetype_asa = "aspvbs"
 	:let g:filetype_asp = "aspvbs"
+
+
+BAAN 						    *baan.vim* *baan-syntax*
+
+The baan.vim gives syntax support for BaanC of release BaanIV upto SSA ERP LN
+for both 3 GL and 4 GL programming. Large number of standard defines/constants
+are supported.
+
+Some special violation of coding standards will be signalled when one specify
+in ones |.vimrc|: >
+	let baan_code_stds=1
+
+*baan-folding*
+
+Syntax folding can be enabled at various levels through the variables
+mentioned below (Set those in your |.vimrc|). The more complex folding on
+source blocks and SQL can be CPU intensive.
+
+To allow any folding and enable folding at function level use: >
+	let baan_fold=1
+Folding can be enabled at source block level as if, while, for ,... The
+indentation preceding the begin/end keywords has to match (spaces are not
+considered equal to a tab). >
+	let baan_fold_block=1
+Folding can be enabled for embedded SQL blocks as SELECT, SELECTDO,
+SELECTEMPTY, ... The indentation preceding the begin/end keywords has to 
+match (spaces are not considered equal to a tab). >
+	let baan_fold_sql=1
+Note: Block folding can result in many small folds. It is suggested to |:set| 
+the options 'foldminlines' and 'foldnestmax' in |.vimrc| or use |:setlocal| in
+.../after/syntax/baan.vim (see |after-directory|). Eg: >
+	set foldminlines=5
+	set foldnestmax=6
 
 
 BASIC			*basic.vim* *vb.vim* *ft-basic-syntax* *ft-vb-syntax*

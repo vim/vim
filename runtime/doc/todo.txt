@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 25
+*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-GTK: when executing shell disable tab page labels. (Sean)
-
 Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Darren Hiebert is including the patch for omni completion in ctags.  A new
@@ -50,6 +48,7 @@ Awaiting updated patches:
     - remove 'macatsui' option when this has been fixed.
 9   HTML indenting can be slow.  Caused by using searchpair().  Can search()
     be used instead?
+8   Win32: Add minidump generation. (George Reilly, 2006 Apr 24)
 8   Add ":n" to fnamemodify(): normalize path, remove "../" when possible.
     Aric Blumer has a patch for this.
     He will update the patch for 6.3.
@@ -627,6 +626,9 @@ Macintosh:
     Alternate one: http://www.pramodx.20m.com/tee_for_win32.htm, but Walter
     Briscoe says it's not as good.
 8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
+8   When doing Insert mode completion a mapping cannot recursively call
+    edit(), because the completion information is global.  Put everything in
+    an allocated structure?
 8   Command line completion: buffers "foo.txt" and "../b/foo.txt", completing
     ":buf foo<Tab>" doesn't find the second one. (George V. Reilly)
 7   Output for ":scriptnames" and ":breaklist" should shorten the file names:
@@ -1403,6 +1405,11 @@ Syntax highlighting:
 8   When using a regexp for "contains=", should delay matching with it until
     redrawing happens.  Set a flag when a group is added, check this flag when
     highlighting starts.
+7   It's possible for an item to be transparent, so that the colors of an item
+    lower on the stack is used.  Also do this with highlighting, so that the
+    user can set transparent highlighting?  E.g. a number in a C comment would
+    get the color of a comment, a number in an assignment Normal. (Nikolai
+    Weibull)
 7   Add "semitrans": Add highlighting.  E.g., make the text bold, but keep the
     colors.  And add colors, so that Green+Red becomes Yellow.
     E.g. for this html:

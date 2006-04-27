@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 25
+*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2469,8 +2469,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+autocmd|
 			feature}
 	A list of autocommand event names, which are to be ignored.
-	When set to "all", all autocommand events are ignored, autocommands
-	will not be executed.
+	When set to "all" or when "all" is one of the items, all autocommand
+	events are ignored, autocommands will not be executed.
 	Otherwise this is a comma separated list of event names.  Example: >
 	    :set ei=WinEnter,WinLeave
 <
@@ -2987,9 +2987,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+eval|
 			feature}
 	Expression which is evaluated to format a range of lines for the |gq|
-	operator.  The |v:lnum| variable holds the first line to be formatted,
-	|v:count| the number of lines to be formatted.
-	When this option is empty 'formatprg' is used.
+	operator.  When this option is empty 'formatprg' is used.
+
+	The |v:lnum|  variable holds the first line to be formatted.
+	The |v:count| variable the number of lines to be formatted.
+	The |v:char|  variable the character to be inserted.  This can be
+		      empty.  Don't insert it yet!
+
 	Example: >
 		:set formatexpr=mylang#Format()
 <	This will invoke the mylang#Format() function in the

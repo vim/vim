@@ -1,8 +1,8 @@
 " SQL filetype plugin file
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
-" Version:     1.0
+" Version:     3.0
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: Tue Mar 28 2006 2:26:48 PM
+" Last Change: Wed Apr 26 2006 3:02:32 PM
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -360,6 +360,11 @@ setlocal comments=s1:/*,mb:*,ex:*/,:--,://
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 if exists('&omnifunc')
+    " Since the SQL completion plugin can be used in conjunction
+    " with other completion filetypes it must record the previous
+    " OMNI function prior to setting up the SQL OMNI function
+    let b:sql_compl_savefunc = &omnifunc
+
     " This is used by the sqlcomplete.vim plugin
     " Source it for it's global functions
     runtime autoload/syntaxcomplete.vim 
@@ -370,28 +375,40 @@ if exists('&omnifunc')
     if !exists('g:omni_sql_no_default_maps')
         " Static maps which use populate the completion list
         " using Vim's syntax highlighting rules
-        imap <buffer> <c-c>a <C-\><C-O>:let b:sql_compl_type='syntax'<CR><C-X><C-O>
-        imap <buffer> <c-c>k <C-\><C-O>:let b:sql_compl_type='sqlKeyword'<CR><C-X><C-O>
-        imap <buffer> <c-c>f <C-\><C-O>:let b:sql_compl_type='sqlFunction'<CR><C-X><C-O>
-        imap <buffer> <c-c>o <C-\><C-O>:let b:sql_compl_type='sqlOption'<CR><C-X><C-O>
-        imap <buffer> <c-c>T <C-\><C-O>:let b:sql_compl_type='sqlType'<CR><C-X><C-O>
-        imap <buffer> <c-c>s <C-\><C-O>:let b:sql_compl_type='sqlStatement'<CR><C-X><C-O>
+        imap <buffer> <c-c>a <C-\><C-O>:call sqlcomplete#Map('syntax')<CR><C-X><C-O>
+        imap <buffer> <c-c>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
+        imap <buffer> <c-c>f <C-\><C-O>:call sqlcomplete#Map('sqlFunction')<CR><C-X><C-O>
+        imap <buffer> <c-c>o <C-\><C-O>:call sqlcomplete#Map('sqlOption')<CR><C-X><C-O>
+        imap <buffer> <c-c>T <C-\><C-O>:call sqlcomplete#Map('sqlType')<CR><C-X><C-O>
+        imap <buffer> <c-c>s <C-\><C-O>:call sqlcomplete#Map('sqlStatement')<CR><C-X><C-O>
         " Dynamic maps which use populate the completion list
         " using the dbext.vim plugin
-        imap <buffer> <c-c>t <C-\><C-O>:let b:sql_compl_type='table'<CR><C-X><C-O>
-        imap <buffer> <c-c>p <C-\><C-O>:let b:sql_compl_type='procedure'<CR><C-X><C-O>
-        imap <buffer> <c-c>v <C-\><C-O>:let b:sql_compl_type='view'<CR><C-X><C-O>
-        imap <buffer> <c-c>c <C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
-        imap <buffer> <c-c>l <C-\><C-O>:let b:sql_compl_type='column_csv'<CR><C-X><C-O>
+        imap <buffer> <c-c>t <C-\><C-O>:call sqlcomplete#Map('table')<CR><C-X><C-O>
+        imap <buffer> <c-c>p <C-\><C-O>:call sqlcomplete#Map('procedure')<CR><C-X><C-O>
+        imap <buffer> <c-c>v <C-\><C-O>:call sqlcomplete#Map('view')<CR><C-X><C-O>
+        imap <buffer> <c-c>c <C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
+        imap <buffer> <c-c>l <C-\><C-O>:call sqlcomplete#Map('column_csv')<CR><C-X><C-O>
         " The next 3 maps are only to be used while the completion window is
         " active due to the <CR> at the beginning of the map
-        imap <buffer> <c-c>L <CR><C-\><C-O>:let b:sql_compl_type='column_csv'<CR><C-X><C-O>
+        imap <buffer> <c-c>L <C-Y><C-\><C-O>:call sqlcomplete#Map('column_csv')<CR><C-X><C-O>
+        " <C-Right> is not recognized on most Unix systems, so only create
+        " these additional maps on the Windows platform.
+        " If you would like to use these maps, choose a different key and make
+        " the same map in your vimrc.
         if has('win32')
-            imap <buffer> <c-right>  <CR><C-\><C-O>:let b:sql_compl_type='column'<CR><C-X><C-O>
-            imap <buffer> <c-left>   <C-\><C-O>:let b:sql_compl_type='tableReset'<CR><C-X><C-O>
+            imap <buffer> <c-right>  <C-R>=sqlcomplete#DrillIntoTable()<CR>
+            imap <buffer> <c-left>  <C-R>=sqlcomplete#DrillOutOfColumns()<CR>
         endif
         " Remove any cached items useful for schema changes
-        imap <buffer> <c-c>R <C-\><C-O>:let b:sql_compl_type='resetCache'<CR><C-X><C-O>
+        imap <buffer> <c-c>R <C-\><C-O>:call sqlcomplete#Map('resetCache')<CR><C-X><C-O>
+    endif
+
+    if b:sql_compl_savefunc != ""
+        " We are changing the filetype to SQL from some other filetype
+        " which had OMNI completion defined.  We need to activate the
+        " SQL completion plugin in order to cache some of the syntax items
+        " while the syntax rules for SQL are active.
+        call sqlcomplete#PreCacheSyntax()
     endif
 endif
 

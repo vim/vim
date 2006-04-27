@@ -127,8 +127,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
     let res2 = []
 	" a:base is very short - we need context
 	let context = b:compl_context
-	let g:ab = a:base
-	let g:co = context
 	" Check if we should do CSS completion inside of <style> tag
 	" or JS completion inside of <script> tag or PHP completion in case of <?
 	" tag AND &ft==php
@@ -155,6 +153,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("b:entitiescompl")
 		unlet! b:entitiescompl
 
+		if !exists("b:html_doctype")
+			call htmlcomplete#CheckDoctype()
+		endif
 		if !exists("b:html_omni")
 			"runtime! autoload/xml/xhtml10s.vim
 			call htmlcomplete#LoadData()
@@ -500,7 +501,10 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let sbase = matchstr(context, '.*\ze\s.*')
 
 		" Load data {{{
-		if !exists("b:html_omni_gen")
+		if !exists("b:html_doctype")
+			call htmlcomplete#CheckDoctype()
+		endif
+		if !exists("b:html_omni")
 			call htmlcomplete#LoadData()
 		endif
 		" }}}
@@ -526,18 +530,31 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				if has_key(b:html_omni['vimxmlattrinfo'], item)
 					let m_menu = b:html_omni['vimxmlattrinfo'][item][0]
 					let m_info = b:html_omni['vimxmlattrinfo'][item][1]
-					if m_menu !~ 'Bool'
-						let item .= '="'
-					endif
 				else
 					let m_menu = ''
 					let m_info = ''
+				endif
+				if len(b:html_omni[tag][1][item]) > 0 && b:html_omni[tag][1][item][0] =~ '^\(BOOL\|'.item.'\)$'
+					let item = item
+					let m_menu = 'Bool'
+				else
 					let item .= '="'
 				endif
 				let final_menu += [{'word':item, 'menu':m_menu, 'info':m_info}]
 			endfor
 		else
-			let final_menu = map(menu, 'v:val."=\""')
+			let final_menu = []
+			for i in range(len(menu))
+				let item = menu[i]
+				if len(b:html_omni[tag][1][item]) > 0 && b:html_omni[tag][1][item][0] =~ '^\(BOOL\|'.item.'\)$'
+					let item = item
+				else
+					let item .= '="'
+				endif
+				let final_menu += [item]
+			endfor
+			return final_menu
+
 		endif
 		return final_menu
 
@@ -555,6 +572,9 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	endif
 	" }}}
 	" Load data {{{
+	if !exists("b:html_doctype")
+		call htmlcomplete#CheckDoctype()
+	endif
 	if !exists("b:html_omni")
 		"runtime! autoload/xml/xhtml10s.vim
 		call htmlcomplete#LoadData()
@@ -585,7 +605,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		let context = tolower(context)
 	endif
 	" Handle XML keywords: DOCTYPE and CDATA.
-	if opentag == '' || opentag ==? 'head'
+	if opentag == ''
 		let tags += [
 				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">',
 				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">',
@@ -610,7 +630,6 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endfor
 	let menu = res + res2
-	let g:me = menu
 	if has_key(b:html_omni, 'vimxmltaginfo')
 		let final_menu = []
 		for i in range(len(menu))
@@ -656,23 +675,82 @@ function! htmlcomplete#LoadData() " {{{
 		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
 	else
 		exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
-	endif
-	" This repetition is necessary because we don't know if
-	" b:html_omni_flavor file exists and was sourced
-	" Proper checking for files would require iterating through 'rtp'
-	" and could introduce OS dependent mess.
-	if !exists("g:xmldata_".b:html_omni_flavor)
-		if &filetype == 'html'
-			let b:html_omni_flavor = 'html401t'
-		else
-			let b:html_omni_flavor = 'xhtml10s'
-		endif
-	endif
-	if exists('g:xmldata_'.b:html_omni_flavor)
 		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+	endif
+endfunction
+" }}}
+function! htmlcomplete#CheckDoctype() " {{{
+	if exists('b:html_omni_flavor')
+		let old_flavor = b:html_omni_flavor
 	else
-		exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
-		exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+		let old_flavor = ''
+	endif
+	let i = 1
+	while i < 10 && i < line("$")
+		let line = getline(i)
+		if line =~ '<!DOCTYPE.*\<DTD HTML 3\.2'
+			let b:html_omni_flavor = 'html32'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0 Transitional'
+			let b:html_omni_flavor = 'html40t'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0 Frameset'
+			let b:html_omni_flavor = 'html40f'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.0'
+			let b:html_omni_flavor = 'html40s'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01 Transitional'
+			let b:html_omni_flavor = 'html401t'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01 Frameset'
+			let b:html_omni_flavor = 'html401f'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD HTML 4\.01'
+			let b:html_omni_flavor = 'html401s'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Transitional'
+			let b:html_omni_flavor = 'xhtml10t'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Frameset'
+			let b:html_omni_flavor = 'xhtml10f'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.0 Strict'
+			let b:html_omni_flavor = 'xhtml10s'
+			let b:html_doctype = 1
+			break
+		elseif line =~ '<!DOCTYPE.*\<DTD XHTML 1\.1'
+			let b:html_omni_flavor = 'xhtml11'
+			let b:html_doctype = 1
+			break
+		endif
+		let i += 1
+	endwhile
+	if !exists("b:html_doctype")
+		return
+	else
+		" Tie g:xmldata with b:html_omni this way we need to sourca data file only
+		" once, not every time per buffer.
+		if old_flavor == b:html_omni_flavor
+			return
+		else
+			if exists('g:xmldata_'.b:html_omni_flavor)
+				exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+			else
+				exe 'runtime! autoload/xml/'.b:html_omni_flavor.'.vim'
+				exe 'let b:html_omni = g:xmldata_'.b:html_omni_flavor
+			endif
+			return
+		endif
 	endif
 endfunction
 " }}}

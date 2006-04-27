@@ -3183,6 +3183,15 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	GtkWidget	*page;
 	GtkWidget	*label;
 
+	/* When ignoring events return TRUE so that the selected page doesn't
+	 * change. */
+	if (hold_gui_events
+# ifdef FEAT_CMDWIN
+		|| cmdwin_type != 0
+# endif
+	   )
+	    return TRUE;
+
 	/* Find out where the click was. */
 	for (clicked_page = 1;  ; ++clicked_page)
 	{
@@ -3217,6 +3226,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 		gtk_main_quit();
 	}
     }
+
     /* We didn't handle the event. */
     return FALSE;
 }

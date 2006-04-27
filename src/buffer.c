@@ -2635,8 +2635,11 @@ buf_set_name(fnum, name)
     {
 	vim_free(buf->b_sfname);
 	vim_free(buf->b_ffname);
-	buf->b_sfname = vim_strsave(name);
-	buf->b_ffname = FullName_save(buf->b_sfname, FALSE);
+	buf->b_ffname = vim_strsave(name);
+	buf->b_sfname = NULL;
+	/* Allocate ffname and expand into full path.  Also resolves .lnk
+	 * files on Win32. */
+	fname_expand(buf, &buf->b_ffname, &buf->b_sfname);
 	buf->b_fname = buf->b_sfname;
     }
 }
@@ -4187,11 +4190,11 @@ fname_expand(buf, ffname, sfname)
 #ifdef FEAT_SHORTCUT
     if (!buf->b_p_bin)
     {
-	char_u  *rfname = NULL;
+	char_u  *rfname;
 
 	/* If the file name is a shortcut file, use the file it links to. */
 	rfname = mch_resolve_shortcut(*ffname);
-	if (rfname)
+	if (rfname != NULL)
 	{
 	    vim_free(*ffname);
 	    *ffname = rfname;

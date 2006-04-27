@@ -1046,7 +1046,7 @@ proto.h: \
 	proto/window.pro \
 	$(NETBEANS_PRO)
 
-.SUFFIXES: .cod
+.SUFFIXES: .cod .i
 
 # Generate foo.cod (mixed source and assembly listing) from foo.c via "nmake
 # foo.cod"

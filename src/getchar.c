@@ -4301,11 +4301,29 @@ eval_map_expr(str)
 {
     char_u	*res;
     char_u	*p;
-    char_u	*s, *d;
 
     p = eval_to_string(str, NULL, FALSE);
     if (p == NULL)
 	return NULL;
+    res = vim_strsave_escape_csi(p);
+    vim_free(p);
+
+    return res;
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Copy "p" to allocated memory, escaping K_SPECIAL and CSI so that the result
+ * can be put in the typeahead buffer.
+ * Returns NULL when out of memory.
+ */
+    char_u *
+vim_strsave_escape_csi(p)
+    char_u *p;
+{
+    char_u	*res;
+    char_u	*s, *d;
 
     /* Need a buffer to hold up to three times as much. */
     res = alloc((unsigned)(STRLEN(p) * 3) + 1);
@@ -4331,9 +4349,6 @@ eval_map_expr(str)
 	}
 	*d = NUL;
     }
-
-    vim_free(p);
-
     return res;
 }
 #endif

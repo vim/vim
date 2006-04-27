@@ -1,7 +1,9 @@
-" Vim filetype plugin file
+" Vim filetype plugin file (GUI menu and folding)
 " Language:	Debian Changelog
 " Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
-" Last Change:	15 August 2005
+"		Stefano Zacchiroli <zack@debian.org>
+" Last Change:	25 April 2006
+" License:	GNU GPL, version 2.1 or later
 
 if exists("g:did_changelog_ftplugin")
   finish
@@ -9,6 +11,8 @@ endif
 
 " Don't load another plugin (this is global)
 let g:did_changelog_ftplugin = 1
+
+" {{{1 GUI menu
 
 " Helper functions returning various data.
 " Returns full name, either from $DEBFULLNAME or debianfullname.
@@ -204,3 +208,47 @@ augroup END
 setlocal tw=78
 setlocal comments=f:* 
 let b:undo_ftplugin = "setlocal tw< comments<"
+
+" }}}
+" {{{1 folding
+
+setlocal foldmethod=expr
+set foldexpr=GetDebChangelogFold(v:lnum)
+setlocal foldtext=DebChangelogFoldText()
+
+" look for an author name searching backward from a given line number
+function! s:getAuthor(lnum)
+  let line = getline(a:lnum)
+  let backsteps = 0
+  while line !~ '^ --'
+    let backsteps += 1
+    let line = getline(a:lnum - backsteps)
+  endwhile
+  let author = substitute(line, '^ --\s*\([^<]\+\)\s*.*', '\1', '')
+  return author
+endfunction
+
+function! DebChangelogFoldText()
+  if v:folddashes == '-'  " changelog entry fold
+    return foldtext() . ' -- ' . s:getAuthor(v:foldend) . ' '
+  endif
+  return foldtext()
+endfunction
+
+function! GetDebChangelogFold(lnum)
+  let line = getline(a:lnum)
+  if line =~ '^\w\+'
+    return '>1' " beginning of a changelog entry
+  endif
+  if line =~ '^\s\+\[.*\]'
+    return '>2' " beginning of an author-specific chunk
+  endif
+  if line =~ '^ --'
+    return '1'
+  endif
+  return '='
+endfunction
+
+" }}}
+
+" vim: set foldmethod=marker:

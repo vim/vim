@@ -3507,14 +3507,19 @@ send_tabline_event(nr)
 
     if (nr == tabpage_index(curtab))
 	return FALSE;
+
+    /* Don't put events in the input queue now. */
+    if (hold_gui_events
 # ifdef FEAT_CMDWIN
-    if (cmdwin_type != 0)
+	    || cmdwin_type != 0
+# endif
+	    )
     {
 	/* Set it back to the current tab page. */
 	gui_mch_set_curtab(tabpage_index(curtab));
 	return FALSE;
     }
-# endif
+
     string[0] = CSI;
     string[1] = KS_TABLINE;
     string[2] = KE_FILLER;
@@ -3533,6 +3538,10 @@ send_tabline_menu_event(tabidx, event)
     int	    event;
 {
     char_u	    string[3];
+
+    /* Don't put events in the input queue now. */
+    if (hold_gui_events)
+	return;
 
     string[0] = CSI;
     string[1] = KS_TABMENU;

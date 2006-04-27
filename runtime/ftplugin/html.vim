@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	html
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2004 Jul 08
+" Last Changed: 2006 Apr 26
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -14,16 +14,17 @@ set cpo-=C
 
 setlocal commentstring=<!--%s-->
 
+if exists('&omnifunc')
+" Distinguish between HTML versions
+" To use with other HTML versions add another
+" elseif condition to match proper DOCTYPE
 setlocal omnifunc=htmlcomplete#CompleteTags
 
-" This part added as suggestion by Mikolaj Machowski, still be approved by Dan
-" Sharp!
 if &filetype == 'xhtml'
 	let b:html_omni_flavor = 'xhtml10s'
 else
 	let b:html_omni_flavor = 'html401t'
 endif
-
 let i = 1
 while i < 10 && i < line("$")
 	let line = getline(i)
@@ -63,7 +64,7 @@ while i < 10 && i < line("$")
 	endif
 	let i += 1
 endwhile
-
+endif
 
 " HTML:  thanks to Johannes Zellner and Benji Fisher.
 if exists("loaded_matchit")

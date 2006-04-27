@@ -335,6 +335,12 @@ edit(cmdchar, startln, count)
     }
 
 #ifdef FEAT_INS_EXPAND
+    /* Don't allow recursive insert mode when busy with completion. */
+    if (compl_started || pum_visible())
+    {
+	EMSG(_(e_secure));
+	return FALSE;
+    }
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
 #endif
 
@@ -5147,7 +5153,7 @@ insertchar(c, flags, second_indent)
 	 * when 'formatexpr' isn't set or it returns non-zero. */
 #if defined(FEAT_EVAL)
 	if (*curbuf->b_p_fex == NUL
-				|| fex_format(curwin->w_cursor.lnum, 1L) != 0)
+			     || fex_format(curwin->w_cursor.lnum, 1L, c) != 0)
 #endif
 	    internal_format(textwidth, second_indent, flags, c == NUL);
     }
@@ -7243,6 +7249,9 @@ ins_reg()
     int		need_redraw = FALSE;
     int		regname;
     int		literally = 0;
+#ifdef FEAT_VISUAL
+    int		vis_active = VIsual_active;
+#endif
 
     /*
      * If we are going to wait for a character, show a '"'.
@@ -7344,6 +7353,12 @@ ins_reg()
     /* If the inserted register is empty, we need to remove the '"' */
     if (need_redraw || stuff_empty())
 	edit_unputchar();
+
+#ifdef FEAT_VISUAL
+    /* Disallow starting Visual mode here, would get a weird mode. */
+    if (!vis_active && VIsual_active)
+	end_visual_mode();
+#endif
 }
 
 /*
@@ -8953,6 +8968,13 @@ ins_eol(c)
      * line onto the replace stack.  This is not done here though, it is done
      * in open_line().
      */
+
+#ifdef FEAT_VIRTUALEDIT
+    /* Put cursor on NUL if on the last char and coladd is 1 (happens after
+     * CTRL-O). */
+    if (virtual_active() && curwin->w_cursor.coladd > 0)
+	coladvance(getviscol());
+#endif
 
 #ifdef FEAT_RIGHTLEFT
 # ifdef FEAT_FKMAP

@@ -1,8 +1,12 @@
-" Vim completion script
+" Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     3.0
-" Last Change: Thu Apr 20 2006 8:47:12 PM
+" Version:     4.0
+" Last Change: Wed Apr 26 2006 3:00:06 PM
+" Usage:       For detailed help
+"              ":help sql.txt" 
+"              or ":help ft-sql-omni" 
+"              or read $VIMRUNTIME/doc/sql.txt
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
@@ -18,7 +22,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish 
 endif
-let g:loaded_sql_completion = 30
+let g:loaded_sql_completion = 40
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -93,9 +97,14 @@ function! sqlcomplete#Complete(findstart, base)
     " be replaced by whatever is chosen from the completion list
     if a:findstart
         " Locate the start of the item, including "."
-        let line = getline('.')
-        let start = col('.') - 1
+        let line     = getline('.')
+        let start    = col('.') - 1
         let lastword = -1
+        let begindot = 0
+        " Check if the first character is a ".", for column completion
+        if line[start - 1] == '.'
+            let begindot = 1
+        endif
         while start > 0
             if line[start - 1] =~ '\w'
                 let start -= 1
@@ -104,18 +113,19 @@ function! sqlcomplete#Complete(findstart, base)
                 " If lastword has already been set for column completion
                 " break from the loop, since we do not also want to pickup
                 " a table name if it was also supplied.
-                if lastword != -1 && compl_type =~ 'column'
+                if lastword != -1 && compl_type == 'column'
                     break
                 endif
-                " Assume we are looking for column completion
-                " column_type can be either 'column' or 'column_csv'
-                if lastword == -1 && compl_type =~ 'column'
+                " If column completion was specified stop at the "." if
+                " a . was specified, otherwise, replace all the way up
+                " to the owner name (if included).
+                if lastword == -1 && compl_type == 'column' && begindot == 1
                     let lastword = start
                 endif
                 " If omni_sql_include_owner = 0, do not include the table
                 " name as part of the substitution, so break here
                 if lastword == -1 && 
-                            \ compl_type =~ 'table\|view\|procedure' && 
+                            \ compl_type =~ 'table\|view\|procedure\column_csv' && 
                             \ g:omni_sql_include_owner == 0
                     let lastword = start
                     break
@@ -234,6 +244,11 @@ function! sqlcomplete#Complete(findstart, base)
         let s:tbl_cols  = []
         let s:syn_list  = []
         let s:syn_value = []
+
+        let msg = "All SQL cached items have been removed."
+        call s:SQLCWarningMsg(msg)
+        " Leave time for the user to read the error message
+        :sleep 2
     else
         let compl_list = s:SQLCGetSyntaxList(compl_type)
     endif
@@ -252,18 +267,6 @@ function! sqlcomplete#Complete(findstart, base)
     return compl_list
 endfunc
 
-function! s:SQLCWarningMsg(msg)
-    echohl WarningMsg
-    echomsg a:msg 
-    echohl None
-endfunction
-      
-function! s:SQLCErrorMsg(msg)
-    echohl ErrorMsg
-    echomsg a:msg 
-    echohl None
-endfunction
-      
 function! sqlcomplete#PreCacheSyntax(...)
     let syn_group_arr = []
     if a:0 > 0 
@@ -294,6 +297,51 @@ function! sqlcomplete#Map(type)
     let &omnifunc='sqlcomplete#Complete'
 endfunction
 
+function! sqlcomplete#DrillIntoTable()
+    " If the omni popup window is visible
+    if pumvisible()
+        call sqlcomplete#Map('column')
+        " C-Y, makes the currently highlighted entry active
+        " and trigger the omni popup to be redisplayed
+        call feedkeys("\<C-Y>\<C-X>\<C-O>")
+    else
+        if has('win32')
+            " If the popup is not visible, simple perform the normal
+            " <C-Right> behaviour
+            exec "normal! \<C-Right>"
+        endif
+    endif
+    return ""
+endfunction
+
+function! sqlcomplete#DrillOutOfColumns()
+    " If the omni popup window is visible
+    if pumvisible()
+        call sqlcomplete#Map('tableReset')
+        " Trigger the omni popup to be redisplayed
+        call feedkeys("\<C-X>\<C-O>")
+    else
+        if has('win32')
+            " If the popup is not visible, simple perform the normal
+            " <C-Left> behaviour
+            exec "normal! \<C-Left>"
+        endif
+    endif
+    return ""
+endfunction
+
+function! s:SQLCWarningMsg(msg)
+    echohl WarningMsg
+    echomsg a:msg 
+    echohl None
+endfunction
+      
+function! s:SQLCErrorMsg(msg)
+    echohl ErrorMsg
+    echomsg a:msg 
+    echohl None
+endfunction
+      
 function! s:SQLCGetSyntaxList(syn_group)
     let syn_group  = a:syn_group
     let compl_list = []
@@ -347,7 +395,8 @@ function! s:SQLCCheck4dbext()
 endfunction
 
 function! s:SQLCAddAlias(table_name, table_alias, cols)
-    let table_name  = a:table_name
+    " Strip off the owner if included
+    let table_name  = matchstr(a:table_name, '\%(.\{-}\.\)\?\zs\(.*\)' )
     let table_alias = a:table_alias
     let cols        = a:cols
 
@@ -373,7 +422,7 @@ function! s:SQLCAddAlias(table_name, table_alias, cols)
                     " Restore original value
                     let &iskeyword = save_keyword
                 elseif table_name =~ '\u\U'
-                    let initials = substitute(
+                    let table_alias = substitute(
                                 \ table_name, '\(\u\)\U*', '\1', 'g')
                 else
                     let table_alias = strpart(table_name, 0, 1)
@@ -397,6 +446,7 @@ endfunction
 
 function! s:SQLCGetColumns(table_name, list_type)
     let table_name   = matchstr(a:table_name, '^\w\+')
+    let table_name   = matchstr(a:table_name, '^[a-zA-Z0-9_.]\+')
     let table_cols   = []
     let table_alias  = ''
     let move_to_top  = 1
@@ -480,7 +530,9 @@ function! s:SQLCGetColumns(table_name, list_type)
                          \ 'from.\{-}'.
                          \ '\zs\(\(\<\w\+\>\)\.\)\?'.
                          \ '\<\w\+\>\ze'.
-                         \ '\s\+\%(as\s\+\)\?\<'.table_name.'\>'.
+                         \ '\s\+\%(as\s\+\)\?\<'.
+                         \ matchstr(table_name, '.\{-}\ze\.\?$').
+                         \ '\>'.
                          \ '\s*\.\@!.*'.
                          \ '\(\<where\>\|$\)'.
                          \ '.*'
@@ -544,9 +596,12 @@ function! s:SQLCGetColumns(table_name, list_type)
         exec 'DBSetOption use_tbl_alias='.saveSettingAlias
     endif
 
+    " If the user has asked for a comma separate list of column
+    " values, ask the user if they want to prepend each column
+    " with a tablename alias.
     if a:list_type == 'csv' && !empty(table_cols)
-        let cols = join(table_cols, ', ')
-        let cols = s:SQLCAddAlias(table_name, table_alias, cols)
+        let cols       = join(table_cols, ', ')
+        let cols       = s:SQLCAddAlias(table_name, table_alias, cols)
         let table_cols = [cols]
     endif
 

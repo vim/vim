@@ -9333,7 +9333,7 @@ spell_add_word(word, len, bad, index, undo)
 		    {
 			fputc('#', fd);
 			if (undo)
-			smsg((char_u *)_("Word removed from %s"), NameBuff);
+			    smsg((char_u *)_("Word removed from %s"), NameBuff);
 		    }
 		    fseek(fd, fpos_next, SEEK_SET);
 		}
@@ -9341,8 +9341,7 @@ spell_add_word(word, len, bad, index, undo)
 	    fclose(fd);
 	}
     }
-
-    if (!undo)
+    else
     {
 	fd = mch_fopen((char *)fname, "a");
 	if (fd == NULL && new_spf)
@@ -12860,8 +12859,12 @@ score_combine(su)
 	}
     }
 
-    if (slang == NULL)	/* just in case */
+    if (slang == NULL)	/* Using "double" without sound folding. */
+    {
+	(void)cleanup_suggestions(&su->su_ga, su->su_maxscore,
+							     su->su_maxcount);
 	return;
+    }
 
     /* Add the alternate score to su_sga. */
     for (i = 0; i < su->su_sga.ga_len; ++i)
@@ -13122,7 +13125,8 @@ add_sound_suggest(su, goodword, score, lp)
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T) + STRLEN(goodword)));
+	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T)
+							 + STRLEN(goodword)));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;

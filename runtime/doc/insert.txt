@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0f.  Last change: 2006 Apr 25
+*insert.txt*    For Vim version 7.0f.  Last change: 2006 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -609,6 +609,9 @@ Note: The keys that are valid in CTRL-X mode are not mapped.  This allows for
 ":map ^F ^X^F" to work (where ^F is CTRL-F and ^X is CTRL-X).  The key that
 ends CTRL-X mode (any key that is not a valid CTRL-X mode command) is mapped.
 Also, when doing completion with 'complete' mappings apply as usual.
+
+Note: While completion is active Insert mode can't be used recursively.
+Mappings that somehow invoke ":normal i.." will generate an E523 error.
 
 The following mappings are suggested to make typing the completion commands
 a bit easier (although they will hide other commands): >

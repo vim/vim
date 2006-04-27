@@ -9,9 +9,10 @@
 
 " ---------------------------------------------------------------------
 "  Load Once: {{{1
-if &cp || exists("g:loaded_vimball")
+if &cp || exists("g:loaded_vimball") || exists("g:loaded_vimballplugin")
  finish
 endif
+let g:loaded_vimballplugin= 1
 
 let s:keepcpo= &cpo
 set cpo&vim
@@ -22,7 +23,7 @@ com! -ra -na=+ -bang MkVimball call vimball#MkVimball(<line1>,<line2>,<bang>0,<f
 com! -na=0 UseVimball  call vimball#Vimball(1)
 com! -na=0 VimballList call vimball#Vimball(0)
 au BufEnter *.vba.gz,*.vba.bz2,*.vba.zip call vimball#Decompress(expand("<amatch>"))
-au BufEnter *.vba echohl WarningMsg | echo "Source this file to extract it! (:so %)" | echohl None
+au BufEnter *.vba call vimball#ShowMesg("Source this file to extract it! (:so %)")
 
 let &cpo= s:keepcpo
 unlet s:keepcpo

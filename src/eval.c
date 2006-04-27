@@ -341,6 +341,7 @@ static struct vimvar
     {VV_NAME("swapname",	 VAR_STRING), VV_RO},
     {VV_NAME("swapchoice",	 VAR_STRING), 0},
     {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
+    {VV_NAME("char",		 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
@@ -9000,6 +9001,7 @@ f_feedkeys(argvars, rettv)
     char_u	*keys, *flags;
     char_u	nbuf[NUMBUFLEN];
     int		typed = FALSE;
+    char_u	*keys_esc;
 
     rettv->vval.v_number = 0;
     keys = get_tv_string(&argvars[0]);
@@ -9019,9 +9021,16 @@ f_feedkeys(argvars, rettv)
 	    }
 	}
 
-	ins_typebuf(keys, (remap ? REMAP_YES : REMAP_NONE),
+	/* Need to escape K_SPECIAL and CSI before putting the string in the
+	 * typeahead buffer. */
+	keys_esc = vim_strsave_escape_csi(keys);
+	if (keys_esc != NULL)
+	{
+	    ins_typebuf(keys_esc, (remap ? REMAP_YES : REMAP_NONE),
 					       typebuf.tb_len, !typed, FALSE);
-	typebuf_was_filled = TRUE;
+	    vim_free(keys_esc);
+	    typebuf_was_filled = TRUE;
+	}
     }
 }
 

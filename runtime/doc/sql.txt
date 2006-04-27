@@ -1,4 +1,4 @@
-*sql.txt*   	For Vim version 7.0f.  Last change: Fri Apr 21 2006 10:39:11 PM
+*sql.txt*   	For Vim version 7.0f.  Last change: Wed Apr 26 2006 3:05:33 PM
 
 by David Fishburn
 
@@ -411,14 +411,16 @@ the space bar):
      Stored Procedure List  - <C-C>p
      View List              - <C-C>v
      Column List            - <C-C>c
-                            - Windows platform only
-                            - When viewing a popup window displaying the list
+
+     Windows platform only  - When viewing a popup window displaying the list
                               of tables, you can press <C-Right>, this will
                               replace the table currently highlighted with
                               the column list for that table.
                             - When viewing a popup window displaying the list
                               of columns, you can press <C-Left>, this will
                               replace the column list with the list of tables.
+                            - This allows you to quickly drill down into a
+                              table to view it's columns and back again.
  
 The SQL completion plugin caches various lists that are displayed in
 the popup window.  This makes the re-displaying of these lists very
@@ -500,9 +502,10 @@ NOTE: The following example uses <C-Right> to trigger a column list while
 the popup window is active.  This map is only available on the Windows
 platforms since *nix does not recognize CTRL and the right arrow held down
 together.  If you wish to enable this functionality on a *nix platform choose
-a key and create this mapping (see |sql-completion-maps| for further 
+a key and create one of these mappings (see |sql-completion-maps| for further
 details on where to create this imap): >
-    imap <buffer> <your_keystroke> <CR><C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
+    imap <buffer> <your_keystroke> <C-R>=sqlcomplete#DrillIntoTable()<CR>
+    imap <buffer> <your_keystroke> <C-Y><C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
  
 Example of using column completion:
      - Press <C-C>t again to display the list of tables.  
@@ -517,9 +520,8 @@ Example of using column completion:
        change the schema of a cached table you can press <C-C>R, which
        clears the SQL completion cache.  
      - NOTE: <C-Right> and <C-Left> have been designed to work while the
-       completion window is active.  If you use these maps when the completion
-       window is not active a carriage return will be inadvertently entered in
-       your buffer.
+       completion window is active.  If the completion popup window is 
+       not active, a normal <C-Right> or <C-Left> will be executed.
  
 Lets look how we can build a SQL statement dynamically.  A select statement
 requires a list of columns.  There are two ways to build a column list using
@@ -549,7 +551,7 @@ the SQL completion plugin. >
            replaced with the comma separate list of columns with the alias
            prepended to each of the columns.
         7. Step 3 and 4 can be replaced by pressing <C-C>L, which has
-           a <CR> embedded in the map to choose the currently highlighted 
+           a <C-Y> embedded in the map to choose the currently highlighted 
            table in the list.
 
 There is a special provision when writing select statements.  Consider the
@@ -687,15 +689,13 @@ plugin. >
           the completion window.  <C-Right> is not recognized on most Unix
           systems, so this maps is only created on the Windows platform.
           If you would like the same feature on Unix, choose a different key
-          and make the same map in your vimrc.
-          This should only be used when the completion window is active. >
+          and make the same map in your vimrc. >
     <C-Left>
 <       - Displays the list of tables.
           <C-Left> is not recognized on most Unix systems, so this maps is
           only created on the Windows platform.  If you would like the same
           feature on Unix, choose a different key and make the same map in
-          your vimrc.
-          This should only be used when the completion window is active. >
+          your vimrc. >
     <C-C>R
 <       - This maps removes all cached items and forces the SQL completion 
           to regenerate the list of items.

@@ -3209,9 +3209,7 @@ end_visual_mode()
 	clear_showcmd();
 #endif
 
-    /* Don't leave the cursor past the end of the line */
-    if (curwin->w_cursor.col > 0 && *ml_get_cursor() == NUL)
-	--curwin->w_cursor.col;
+    adjust_cursor_eol();
 }
 
 /*

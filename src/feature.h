@@ -753,7 +753,8 @@
 /*
  * GUI tabline
  */
-#if defined(FEAT_WINDOWS) && (defined(FEAT_GUI_GTK) \
+#if defined(FEAT_WINDOWS) && defined(FEAT_NORMAL) \
+    && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| (defined(FEAT_GUI_MSWIN) && (!defined(_MSC_VER) || _MSC_VER > 1020)))
 # define FEAT_GUI_TABLINE
@@ -1202,7 +1203,7 @@
  */
 #if (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)) \
-	&& (   (defined(FEAT_TOOLBAR) \
+	&& (   ((defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)) \
 		&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)) \
 	    || defined(FEAT_SUN_WORKSHOP) \
 	    || defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL))

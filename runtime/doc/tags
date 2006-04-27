@@ -4509,6 +4509,9 @@ b:changedtick-variable	eval.txt	/*b:changedtick-variable*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:var	eval.txt	/*b:var*
+baan-folding	syntax.txt	/*baan-folding*
+baan-syntax	syntax.txt	/*baan-syntax*
+baan.vim	syntax.txt	/*baan.vim*
 backslash	intro.txt	/*backslash*
 backspace	intro.txt	/*backspace*
 backspace-delete	version4.txt	/*backspace-delete*
@@ -4677,6 +4680,7 @@ changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	eval.txt	/*changenr()*
 changetick	eval.txt	/*changetick*
 changing	change.txt	/*changing*
+char-variable	eval.txt	/*char-variable*
 char2nr()	eval.txt	/*char2nr()*
 characterwise	motion.txt	/*characterwise*
 characterwise-register	change.txt	/*characterwise-register*
@@ -7441,6 +7445,7 @@ v:beval_col	eval.txt	/*v:beval_col*
 v:beval_lnum	eval.txt	/*v:beval_lnum*
 v:beval_text	eval.txt	/*v:beval_text*
 v:beval_winnr	eval.txt	/*v:beval_winnr*
+v:char	eval.txt	/*v:char*
 v:charconvert_from	eval.txt	/*v:charconvert_from*
 v:charconvert_to	eval.txt	/*v:charconvert_to*
 v:cmdarg	eval.txt	/*v:cmdarg*

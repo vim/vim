@@ -390,7 +390,7 @@ let g:xmldata_xhtml10t = {
 \ 'height' : ['Number', ''],
 \ 'href' : ['*URI', ''],
 \ 'hreflang' : ['LangCode', ''],
-\ 'id' : ['ID', 'Unique string'],
+\ 'id' : ['ID', ''],
 \ 'ismap' : ['Bool', ''],
 \ 'label' : ['*Text', ''],
 \ 'lang' : ['LangCode', ''],

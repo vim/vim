@@ -1824,8 +1824,8 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_AUTOCMD
 			if (cmdmod.save_ei == NULL)
 			{
-			    /* Set 'eventignore' to "all".  Don't free the
-			     * existing option value, we restore it later. */
+			    /* Set 'eventignore' to "all". Restore the
+			     * existing option value later. */
 			    cmdmod.save_ei = vim_strsave(p_ei);
 			    set_string_option_direct((char_u *)"ei", -1,
 					 (char_u *)"all", OPT_FREE, SID_NONE);

@@ -88,6 +88,7 @@ static void scroll_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_da
 static void tabline_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
 static void tabline_button_cb __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
 static void tabline_menu_cb __ARGS((Widget w, XtPointer	closure, XEvent	*e, Boolean *continue_dispatch));
+static void tabline_balloon_cb __ARGS((BalloonEval *beval, int state));
 #endif
 #ifdef FEAT_TOOLBAR
 # ifdef FEAT_FOOTER
@@ -252,6 +253,14 @@ tabline_menu_cb(w, closure, e, continue_dispatch)
     if (event->button != Button3)
 	return;
 
+    /* When ignoring events don't show the menu. */
+    if (hold_gui_events
+# ifdef FEAT_CMDWIN
+	    || cmdwin_type != 0
+# endif
+       )
+	return;
+
     if (event->subwindow != None)
     {
 	tab_w = XtWindowToWidget(XtDisplay(w), event->subwindow);
@@ -267,6 +276,28 @@ tabline_menu_cb(w, closure, e, continue_dispatch)
     XmMenuPosition(tabLine_menu, (XButtonPressedEvent *)e) ;
     XtManageChild(tabLine_menu);
 }
+
+/*ARGSUSED*/
+    static void
+tabline_balloon_cb(beval, state)
+    BalloonEval	*beval;
+    int		state;
+{
+    int		nr;
+    tabpage_T	*tp;
+
+    if (beval->target == (Widget)0)
+	return;
+
+    XtVaGetValues(beval->target, XmNpageNumber, &nr, NULL);
+    tp = find_tabpage(nr);
+    if (tp == NULL)
+	return;
+
+    get_tabline_label(tp, TRUE);
+    gui_mch_post_balloon(beval, NameBuff);
+}
+
 #endif
 
 /*
@@ -1365,9 +1396,9 @@ gui_mch_add_menu_item(menu, idx)
 	if (xms != NULL)
 	    XmStringFree(xms);
 
-#ifdef FEAT_BEVAL
+# ifdef FEAT_BEVAL
 	gui_mch_menu_set_tip(menu);
-#endif
+# endif
 
 	menu->parent = parent;
 	menu->submenu_id = NULL;
@@ -3024,8 +3055,7 @@ gui_mch_show_toolbar(int showit)
 			int	    n = 0;
 
 			/* Enable/Disable tooltip (OK to enable while
-			 * currently enabled)
-			 */
+			 * currently enabled). */
 			if (cur->tip != NULL)
 			    (*action)(cur->tip);
 			if (!menu_is_separator(cur->name))
@@ -3326,6 +3356,7 @@ gui_mch_update_tabline(void)
     int			last_page, tab_count;
     XmString		label_str;
     char		*label_cstr;
+    BalloonEval		*beval;
 
     if (tabLine == (Widget)0)
 	return;
@@ -3338,7 +3369,7 @@ gui_mch_update_tabline(void)
 
 	page_status = XmNotebookGetPageInfo(tabLine, nr, &page_info);
 	if (page_status == XmPAGE_INVALID
-	    || page_info.major_tab_widget == (Widget)0)
+		|| page_info.major_tab_widget == (Widget)0)
 	{
 	    /* Add the tab */
 	    n = 0;
@@ -3349,6 +3380,9 @@ gui_mch_update_tabline(void)
 	    XtSetArg(args[n], XmNshadowThickness , 1); n++;
 	    tab = XmCreatePushButton(tabLine, "-Empty-", args, n);
 	    XtManageChild(tab);
+	    beval = gui_mch_create_beval_area(tab, NULL, tabline_balloon_cb,
+									NULL);
+	    XtVaSetValues(tab, XmNuserData, beval, NULL);
 	}
 	else
 	    tab = page_info.major_tab_widget;
@@ -3387,6 +3421,9 @@ gui_mch_update_tabline(void)
 	    && page_info.page_number == nr
 	    && page_info.major_tab_widget != (Widget)0)
 	{
+	    XtVaGetValues(page_info.major_tab_widget, XmNuserData, &beval, NULL);
+	    if (beval != NULL)
+		gui_mch_destroy_beval_area(beval);
 	    XtUnmanageChild(page_info.major_tab_widget);
 	    XtDestroyWidget(page_info.major_tab_widget);
 	}

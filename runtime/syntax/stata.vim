@@ -1,14 +1,16 @@
 " stata.vim -- Vim syntax file for Stata do, ado, and class files.
 " Language:	Stata and/or Mata
 " Maintainer:	Jeff Pitblado <jpitblado@stata.com>
-" Last Change:	17apr2006
-" Version:	1.1.2
-" Location:	http://www.stata.com/users/jpitblado/files/vimfiles/syntax/stata.vim
+" Last Change:	26apr2006
+" Version:	1.1.4
 
 " Log:
 " 14apr2006	renamed syntax groups st* to stata*
 "		'syntax clear' only under version control
 "		check for 'b:current_syntax', removed 'did_stata_syntax_inits'
+" 17apr2006	fixed start expression for stataFunc
+" 26apr2006	fixed brace confusion in stataErrInParen and stataErrInBracket
+"		fixed paren/bracket confusion in stataFuncGroup
 
 if version < 600
 	syntax clear
@@ -182,7 +184,7 @@ syn region stataEString matchgroup=Nothing start=/`"/ end=/"'/ oneline contains=
 syn region stataString  matchgroup=Nothing start=/"/ end=/"/   oneline contains=@stataMacroGroup
 
 " define clusters
-syn cluster stataFuncGroup contains=@stataMacroGroup,stataFunc,stataString,stataEstring
+syn cluster stataFuncGroup contains=@stataMacroGroup,stataFunc,stataString,stataEstring,stataParen,stataBracket
 syn cluster stataMacroGroup contains=stataGlobal,stataLocal
 syn cluster stataParenGroup contains=stataParenError,stataBracketError,stataBraceError,stataSpecial,stataFormat
 
@@ -410,14 +412,14 @@ syn region stataFunc matchgroup=Function start=/\<vecdiag(/ end=/)/ contains=@st
 " Errors to catch
 " taken from $VIMRUNTIME/syntax/c.vim 
 " catch errors caused by wrong parenthesis, braces and brackets
-syn region	stataParen		transparent start=/(/ end=/)/  contains=ALLBUT,@stataParenGroup,stataErrInBracket,stataErrInBrace
+syn region	stataParen	transparent start=/(/ end=/)/  contains=ALLBUT,@stataParenGroup,stataErrInBracket,stataErrInBrace
 syn region	stataBracket	transparent start=/\[/ end=/]/ contains=ALLBUT,@stataParenGroup,stataErrInParen,stataErrInBrace
-syn region	stataBrace		transparent start=/{/ end=/}/  contains=ALLBUT,@stataParenGroup,stataErrInParen,stataErrInBracket
+syn region	stataBrace	transparent start=/{/ end=/}/  contains=ALLBUT,@stataParenGroup,stataErrInParen,stataErrInBracket
 syn match	stataParenError	/[\])}]/
 syn match	stataBracketError	/]/
 syn match	stataBraceError	/}/
-syn match	stataErrInParen	contained /[\]{}]/
-syn match	stataErrInBracket	contained /[){}]/
+syn match	stataErrInParen	contained /[\]}]/
+syn match	stataErrInBracket	contained /[)}]/
 syn match	stataErrInBrace	contained /[)\]]/
 
 " assign highlight groups

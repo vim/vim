@@ -366,7 +366,7 @@ let g:xmldata_xhtml11 = {
 \ 'height' : ['Number', ''],
 \ 'href' : ['*URI', ''],
 \ 'hreflang' : ['LangCode', ''],
-\ 'id' : ['ID', 'Unique string'],
+\ 'id' : ['ID', ''],
 \ 'ismap' : ['Bool', ''],
 \ 'label' : ['*Text', ''],
 \ 'lang' : ['LangCode', ''],

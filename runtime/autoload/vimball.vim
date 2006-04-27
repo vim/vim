@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Apr 25, 2006
-" Version: 8
+" Date:   Apr 26, 2006
+" Version: 9
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v8"
+let g:loaded_vimball = "v9"
 set cpo&vim
 
 " =====================================================================
@@ -40,12 +40,25 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
   endif
 
   " user option bypass
-  let eikeep= &ei
-  set ei=all
+  let eikeep  = &ei
+  let acdkeep = &acd
+  set ei=all noacd
 
-  let home   = substitute(&rtp,',.*$','','')
+  " go to vim plugin home
+  for home in split(&rtp,',') + ['']
+   if isdirectory(home) | break | endif
+  endfor
+  if home == ""
+   let home= substitute(&rtp,',.*$','','')
+  endif
+  if (has("win32") || has("win95") || has("win64") || has("win16"))
+   let home= substitute(home,'/','\\','ge')
+  endif
+"  call Decho("home<".home.">")
+
+  " save current directory
   let curdir = getcwd()
-  exe "cd ".home
+  call s:ChgDir(home)
 
   " record current tab, initialize while loop index
   let curtabnr = tabpagenr()
@@ -58,8 +71,9 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
  
    if !filereadable(svfile)
     echohl Error | echo "unable to read file<".svfile.">" | echohl None
-    let &ei= eikeep
-    exe "cd ".curdir
+	call s:ChgDir(curdir)
+    let &ei  = eikeep
+    let &acd = acdkeep
 "    call Dret("MkVimball")
     return
    endif
@@ -82,7 +96,12 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
    endif
    call setline(lastline  ,svfile)
    call setline(lastline+1,0)
-   exe "$r ".svfile
+
+   " write the file from the tab
+   let svfilepath= s:Path(svfile,'')
+"   call Decho("exe $r ".svfilepath)
+   exe "$r ".svfilepath
+
    call setline(lastline+1,line("$") - lastline - 1)
 "   call Decho("lastline=".lastline." line$=".line("$"))
 
@@ -93,11 +112,15 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
 
   " write the vimball
   exe "tabn ".vbtabnr
-  exe "cd ".curdir
+  call s:ChgDir(curdir)
   if a:writelevel
-   exe "w! ".vbname
+   let vbnamepath= s:Path(vbname,'')
+"   call Decho("exe w! ".vbnamepath)
+   exe "w! ".vbnamepath
   else
-   exe "w ".vbname
+   let vbnamepath= s:Path(vbname,'')
+"   call Decho("exe w ".vbnamepath)
+   exe "w ".vbnamepath
   endif
 "  call Decho("Vimball<".vbname."> created")
   echo "Vimball<".vbname."> created"
@@ -108,7 +131,8 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
   exe "tabc ".vbtabnr
 
   " restore options
-  let &ei= eikeep
+  let &ei  = eikeep
+  let &acd = acdkeep
 
 "  call Dret("MkVimball")
 endfun
@@ -125,13 +149,14 @@ fun! vimball#Vimball(really)
   endif
 
   " initialize
+  let acdkeep  = &acd
   let fenkeep  = &fen
   let regakeep = @a
   let eikeep   = &ei
   let vekeep   = &ve
   let makeep   = getpos("'a")
   let curtabnr = tabpagenr()
-  set ei=all ve=all nofen
+  set ei=all ve=all nofen noacd
 
   " set up vimball tab
   tabnew
@@ -140,10 +165,21 @@ fun! vimball#Vimball(really)
   let didhelp= ""
 
   " go to vim plugin home
-  let home   = substitute(&rtp,',.*$','','')
+  for home in split(&rtp,',') + ['']
+   if isdirectory(home) | break | endif
+  endfor
+  if home == ""
+   let home= substitute(&rtp,',.*$','','')
+  endif
+  if (has("win32") || has("win95") || has("win64") || has("win16"))
+   let home= substitute(home,'/','\\','ge')
+  endif
+"  call Decho("home<".home.">")
+
+  " save current directory
   let curdir = getcwd()
-"  call Decho("exe cd ".home)
-  exe "cd ".home
+  call s:ChgDir(home)
+
   let linenr  = 4
   let filecnt = 0
 
@@ -174,35 +210,36 @@ fun! vimball#Vimball(really)
 "   call Decho("making directories if they don't exist yet")
    let fnamebuf= fname
    while fnamebuf =~ '/'
-   	let dirname  = substitute(fnamebuf,'/.*$','','e')
+   	let dirname  = home."/".substitute(fnamebuf,'/.*$','','e')
    	let fnamebuf = substitute(fnamebuf,'^.\{-}/\(.*\)$','\1','e')
 	if !isdirectory(dirname)
 "	 call Decho("making <".dirname.">")
 	 call mkdir(dirname)
 	endif
-	exe "cd ".dirname
    endwhile
-   exe "cd ".home
+   call s:ChgDir(home)
 
    " grab specified qty of lines and place into "a" buffer
    " (skip over path/filename and qty-lines)
    let linenr   = linenr + 2
    let lastline = linenr + fsize - 1
 "   call Decho("exe ".linenr.",".lastline."yank a")
-   exe linenr.",".lastline."yank a"
+   exe "silent ".linenr.",".lastline."yank a"
 
    " copy "a" buffer into tab
 "   call Decho('copy "a buffer into tab#'.vbtabnr)
    exe "tabn ".vbtabnr
    silent! %d
-   put a
+   silent put a
    1
-   d
+   silent d
 
    " write tab to file
    if a:really
-"    call Decho("exe w! ".fname)
-    exe "silent w! ".fname
+    let fnamepath= s:Path(home."/".fname,'')
+"    call Decho("exe w! ".fnamepath)
+    exe "silent w! ".fnamepath
+    echo "wrote ".fnamepath
    endif
 
    " return to tab with vimball
@@ -225,9 +262,10 @@ fun! vimball#Vimball(really)
   " set up help
 "  call Decho("about to set up help: didhelp<".didhelp.">")
   if didhelp != ""
-"   call Decho("exe helptags ".home."/".didhelp)
-   exe "helptags ".home."/".didhelp
-   echomsg "did helptags"
+   let htpath= escape(substitute(s:Path(home."/".didhelp,'"'),'"','','ge'),' ')
+"   call Decho("exe helptags ".htpath)
+   exe "helptags ".htpath
+   echo "did helptags"
   endif
 
   " make sure a "Press ENTER..." prompt appears to keep the messages showing!
@@ -244,13 +282,14 @@ fun! vimball#Vimball(really)
   let &ei  = eikeep
   let @a   = regakeep
   let &fen = fenkeep
+  let &acd = acdkeep
   if makeep[0] != 0
    " restore mark a
 "   call Decho("restore mark-a: makeep=".string(makeep))
    call setpos("'a",makeep)
    ka
   endif
-  exe "cd ".curdir
+  call s:ChgDir(curdir)
 
 "  call Dret("Vimball")
 endfun
@@ -264,23 +303,65 @@ fun! vimball#Decompress(fname)
   if     expand("%") =~ '.*\.gz'  && executable("gunzip")
    exe "!gunzip ".a:fname
    let fname= substitute(a:fname,'\.gz$','','')
-   exe "e ".fname
-   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+   exe "e ".escape(fname,' \')
+   call vimball#ShowMesg("Source this file to extract it! (:so %)")
   elseif expand("%") =~ '.*\.bz2' && executable("bunzip2")
    exe "!bunzip2 ".a:fname
    let fname= substitute(a:fname,'\.bz2$','','')
-   exe "e ".fname
-   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+   exe "e ".escape(fname,' \')
+   call vimball#ShowMesg("Source this file to extract it! (:so %)")
   elseif expand("%") =~ '.*\.zip' && executable("unzip")
    exe "!unzip ".a:fname
    let fname= substitute(a:fname,'\.zip$','','')
-   exe "e ".fname
-   echohl WarningMsg | echo "Source this file to extract it! (:so ".fname.")" | echohl None
+   exe "e ".escape(fname,' \')
+   call vimball#ShowMesg("Source this file to extract it! (:so %)")
   endif
 
 "  call Dret("Decompress")
 endfun
 
+" ---------------------------------------------------------------------
+" ChgDir: change directory (in spite of Windoze) {{{2
+fun! s:ChgDir(newdir)
+"  call Dfunc("ChgDir(newdir<".a:newdir.">)")
+  if (has("win32") || has("win95") || has("win64") || has("win16"))
+    exe 'silent cd '.escape(substitute(a:newdir,'/','\\','g'),' ')
+  else
+   exe 'silent cd '.escape(a:newdir,' ')
+  endif
+"  call Dret("ChgDir")
+endfun
+
+" ---------------------------------------------------------------------
+" Path: {{{2
+fun! s:Path(cmd,quote)
+"  call Dfunc("Path(cmd<".a:cmd."> quote<".a:quote.">)")
+  if (has("win32") || has("win95") || has("win64") || has("win16"))
+   let cmdpath= a:quote.substitute(a:cmd,'/','\\','ge').a:quote
+  else
+   let cmdpath= a:quote.a:cmd.a:quote
+  endif
+  if a:quote == ""
+   let cmdpath= escape(cmdpath,' ')
+  endif
+"  call Dret("Path <".cmdpath.">")
+  return cmdpath
+endfun
+
+" ---------------------------------------------------------------------
+" vimball#ShowMesg: {{{2
+fun! vimball#ShowMesg(msg)
+"  call Dfunc("vimball#ShowMesg(msg<".a:msg.">)")
+  let ich= 1
+  echohl WarningMsg | echo a:msg | echohl None
+  while ich < &ch
+   echo " "
+   let ich= ich + 1
+  endwhile
+"  call Dret("vimball#ShowMesg")
+endfun
+
+" ---------------------------------------------------------------------
 let &cpo= s:keepcpo
 unlet s:keepcpo
 " =====================================================================

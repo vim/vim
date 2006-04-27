@@ -3728,8 +3728,18 @@ end:
 	vim_free(y_array);
 
     /* If the cursor is past the end of the line put it at the end. */
-    if (gchar_cursor() == NUL
-	    && curwin->w_cursor.col > 0
+    adjust_cursor_eol();
+}
+
+/*
+ * When the cursor is on the NUL past the end of the line and it should not be
+ * there move it left.
+ */
+    void
+adjust_cursor_eol()
+{
+    if (curwin->w_cursor.col > 0
+	    && gchar_cursor() == NUL
 #ifdef FEAT_VIRTUALEDIT
 	    && (ve_flags & VE_ONEMORE) == 0
 #endif
@@ -3737,6 +3747,7 @@ end:
     {
 	/* Put the cursor on the last character in the line. */
 	dec_cursor();
+
 #ifdef FEAT_VIRTUALEDIT
 	if (ve_flags == VE_ALL)
 	{
@@ -4326,23 +4337,37 @@ op_formatexpr(oap)
 	redraw_curbuf_later(INVERTED);
 # endif
 
-    (void)fex_format(oap->start.lnum, oap->line_count);
+    (void)fex_format(oap->start.lnum, oap->line_count, NUL);
 }
 
     int
-fex_format(lnum, count)
+fex_format(lnum, count, c)
     linenr_T	lnum;
     long	count;
+    int		c;	/* character to be inserted */
 {
     int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
 								   OPT_LOCAL);
     int		r;
+    char_u	buf[NUMBUFLEN];
 
     /*
      * Set v:lnum to the first line number and v:count to the number of lines.
+     * Set v:char to the character to be inserted (can be NUL).
      */
     set_vim_var_nr(VV_LNUM, lnum);
     set_vim_var_nr(VV_COUNT, count);
+
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+    else
+#endif
+    {
+	buf[0] = c;
+	buf[1] = NUL;
+    }
+    set_vim_var_string(VV_CHAR, buf, -1);
 
     /*
      * Evaluate the function.
@@ -4352,6 +4377,9 @@ fex_format(lnum, count)
     r = eval_to_number(curbuf->b_p_fex);
     if (use_sandbox)
 	--sandbox;
+
+    set_vim_var_string(VV_CHAR, NULL, -1);
+
     return r;
 }
 #endif

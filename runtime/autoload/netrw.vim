@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 24, 2006
-" Version:	93
+" Date:		Apr 26, 2006
+" Version:	94
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v93"
+let g:loaded_netrw = "v94"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -142,7 +142,7 @@ if !exists("g:netrw_list_cmd")
   " provide a default listing command
   let g:netrw_list_cmd= g:netrw_ssh_cmd." HOSTNAME ls -FLa"
  else
-"  call Decho(g:netrw_ssh_cmd." is not executable, can't do remote directory exploring)
+"  call Decho(g:netrw_ssh_cmd." is not executable, can't do remote directory exploring")
   let g:netrw_list_cmd= ""
  endif
 endif

@@ -2695,6 +2695,9 @@ serverInitMessaging(void)
 			 s_hinst, NULL);
 }
 
+/* Used by serverSendToVim() to find an alternate server name. */
+static char_u *altname_buf_ptr = NULL;
+
 /*
  * Get the title of the window "hwnd", which is the Vim server name, in
  * "name[namelen]" and return the length.
@@ -2730,6 +2733,15 @@ enumWindowsGetServer(HWND hwnd, LPARAM lparam)
     {
 	id->hwnd = hwnd;
 	return FALSE;
+    }
+
+    /* If we are looking for an alternate server, remember this name. */
+    if (altname_buf_ptr != NULL
+	    && STRNICMP(server, id->name, STRLEN(id->name)) == 0
+	    && vim_isdigit(server[STRLEN(id->name)]))
+    {
+	STRCPY(altname_buf_ptr, server);
+	altname_buf_ptr = NULL;	    /* don't use another name */
     }
 
     /* Otherwise, keep looking */
@@ -2871,10 +2883,22 @@ serverSendToVim(name, cmd, result, ptarget, asExpr, silent)
     int		 asExpr;		/* Expression or keys? */
     int		 silent;		/* don't complain about no server */
 {
-    HWND	target = findServer(name);
+    HWND	target;
     COPYDATASTRUCT data;
     char_u	*retval = NULL;
     int		retcode = 0;
+    char_u	altname_buf[MAX_PATH];
+
+    /* If the server name does not end in a digit then we look for an
+     * alternate name.  e.g. when "name" is GVIM the we may find GVIM2. */
+    if (STRLEN(name) > 1 && !vim_isdigit(name[STRLEN(name) - 1]))
+	altname_buf_ptr = altname_buf;
+    altname_buf[0] = NUL;
+    target = findServer(name);
+    altname_buf_ptr = NULL;
+    if (target == 0 && altname_buf[0] != NUL)
+	/* Use another server name we found. */
+	target = findServer(altname_buf);
 
     if (target == 0)
     {
