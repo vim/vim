@@ -12,7 +12,7 @@
 if &cp || exists("g:loaded_vimball") || exists("g:loaded_vimballplugin")
  finish
 endif
-let g:loaded_vimballplugin= 1
+let g:loaded_vimballplugin = 1
 
 let s:keepcpo= &cpo
 set cpo&vim

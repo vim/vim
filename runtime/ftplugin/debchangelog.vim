@@ -2,7 +2,7 @@
 " Language:	Debian Changelog
 " Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
 "		Stefano Zacchiroli <zack@debian.org>
-" Last Change:	25 April 2006
+" Last Change:	27 April 2006
 " License:	GNU GPL, version 2.1 or later
 
 if exists("g:did_changelog_ftplugin")
@@ -203,17 +203,11 @@ au BufEnter * if &filetype == "debchangelog" | call <SID>MakeMenu() | endif
 au BufLeave * if &filetype == "debchangelog" | aunmenu Changelog | endif
 augroup END
 
-" Debian changelogs are not supposed to have any other text width,
-" so the user cannot override this setting
-setlocal tw=78
-setlocal comments=f:* 
-let b:undo_ftplugin = "setlocal tw< comments<"
-
 " }}}
 " {{{1 folding
 
 setlocal foldmethod=expr
-set foldexpr=GetDebChangelogFold(v:lnum)
+setlocal foldexpr=GetDebChangelogFold(v:lnum)
 setlocal foldtext=DebChangelogFoldText()
 
 " look for an author name searching backward from a given line number
@@ -250,5 +244,13 @@ function! GetDebChangelogFold(lnum)
 endfunction
 
 " }}}
+
+" Debian changelogs are not supposed to have any other text width,
+" so the user cannot override this setting
+setlocal tw=78
+setlocal comments=f:* 
+
+" Clean unloading
+let b:undo_ftplugin = "setlocal tw< comments< foldmethod< foldexpr< foldtext<"
 
 " vim: set foldmethod=marker:

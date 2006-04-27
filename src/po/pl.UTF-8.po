@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-12 20:24+0200\n"
-"PO-Revision-Date: 2006-04-12 20:28+0200\n"
+"POT-Creation-Date: 2006-04-27 18:27+0200\n"
+"PO-Revision-Date: 2006-04-27 19:15+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
-"Language-Team: Polish <mikmach@wp.pl>\n"
+"Language-Team: Polish <kde-transl@mer.chemia.polsl.gliwice.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -198,8 +198,7 @@ msgid "E100: No other buffer in diff mode"
 msgstr "E100: Brak innego bufora w trybie różnic"
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
-msgstr ""
-"E101: Więcej niż jeden bufor w trybie różnicowania, nie wiem którego użyć"
+msgstr "E101: Więcej niż jeden bufor w trybie różnicowania, nie wiem którego użyć"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -220,6 +219,9 @@ msgstr "E544: Nie znaleziono pliku rozkładu klawiszy"
 
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Zastosowano :loadkeymap w niewczytanym pliku"
+
+msgid "E791: Empty keymap entry"
+msgstr "E791: Pusty wpis keymap"
 
 msgid " Keyword completion (^N^P)"
 msgstr " Dopełnianie słów kluczowych (^N^P)"
@@ -493,6 +495,22 @@ msgstr "E723: Brak końca w Słowniku '}': %s"
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: Zmienna zagnieżdżona zbyt głęboko by pokazać"
+
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: Nieznana funkcja: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: Za mało argumentów dla funkcji: %s"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: Użycie <SID> poza kontekstem skryptu: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: Wywołanie funkcji \"dict\" bez Słownika: %s"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Za dużo argumentów"
@@ -1088,8 +1106,7 @@ msgid "End of function"
 msgstr "Koniec funkcji"
 
 msgid "E464: Ambiguous use of user-defined command"
-msgstr ""
-"E464: Niejednoznaczne zastosowanie komendy zdefiniowanej przez użytkownika"
+msgstr "E464: Niejednoznaczne zastosowanie komendy zdefiniowanej przez użytkownika"
 
 msgid "E492: Not an editor command"
 msgstr "E492: Nie jest komendą edytora"
@@ -1172,8 +1189,7 @@ msgid "E180: Invalid complete value: %s"
 msgstr "E180: Niewłaściwa wartość dopełniania: %s"
 
 msgid "E468: Completion argument only allowed for custom completion"
-msgstr ""
-"E468: Argument depełniania dozwolony wyłącznie dla dopełniania użytkownika"
+msgstr "E468: Argument depełniania dozwolony wyłącznie dla dopełniania użytkownika"
 
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Dopełnianie użytkownika wymaga funkcji jako argumentu"
@@ -1223,8 +1239,7 @@ msgid "Window position: X %d, Y %d"
 msgstr "Pozycja okna: X %d, Y %d"
 
 msgid "E188: Obtaining window position not implemented for this platform"
-msgstr ""
-"E188: Pozyskiwanie pozycji okna nie jest zaimplementowane dla tego systemu"
+msgstr "E188: Pozyskiwanie pozycji okna nie jest zaimplementowane dla tego systemu"
 
 msgid "E466: :winpos requires two number arguments"
 msgstr "E466: :winpos wymaga dwóch argumentów numerycznych"
@@ -1524,8 +1539,7 @@ msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Brak pasujących autokomend dla bufora acwrite"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
-msgstr ""
-"E203: Autokomendy skasowały lub wyładowały bufor przeznaczony do zapisu"
+msgstr "E203: Autokomendy skasowały lub wyładowały bufor przeznaczony do zapisu"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autokomenda zmieniła liczbę wierszy w nieoczekiwany sposób"
@@ -1579,8 +1593,7 @@ msgid "E512: Close failed"
 msgstr "E512: Zamknięcie się nie powiodło"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
-msgstr ""
-"E513: Błąd zapisu, przemiana się nie powiodła (opróżnij 'fenc' aby wymusić)"
+msgstr "E513: Błąd zapisu, przemiana się nie powiodła (opróżnij 'fenc' aby wymusić)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: błąd w zapisie (może system plików jest przepełniony?)"
@@ -1711,8 +1724,7 @@ msgstr "Zobacz \":help W11\"  dla dalszych informacji."
 
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
-msgstr ""
-"W16: OSTRZEŻENIE: Tryb pliku \"%s\" zmienił się od czasu rozpoczęcia edycji"
+msgstr "W16: OSTRZEŻENIE: Tryb pliku \"%s\" zmienił się od czasu rozpoczęcia edycji"
 
 msgid "See \":help W16\" for more info."
 msgstr "Zobacz \":help W16\"  dla dalszych informacji."
@@ -2064,8 +2076,7 @@ msgstr ""
 
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
-msgstr ""
-"E250: Brak czcionek dla następujących zestawów znaków w zestawie czcionek %s:"
+msgstr "E250: Brak czcionek dla następujących zestawów znaków w zestawie czcionek %s:"
 
 #, c-format
 msgid "E252: Fontset name: %s"
@@ -2494,11 +2505,31 @@ msgstr "<okno %d>"
 msgid "no such window"
 msgstr "nie ma takiego okna"
 
-msgid ""
-"E266: Sorry, this command is disabled, the Ruby library could not be loaded."
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ musi być reprezentacją Łańcucha"
+
+msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
 "E263: Przykro mi, ta komenda jest wyłączona, bo nie można załadować "
 "biblioteki Ruby."
+
+msgid "E267: unexpected return"
+msgstr "E267: nieoczekiwany return"
+
+msgid "E268: unexpected next"
+msgstr "E268: nieoczekiwany next"
+
+msgid "E269: unexpected break"
+msgstr "E269: nieoczekiwany break"
+
+msgid "E270: unexpected redo"
+msgstr "E270: nieoczekiwane redo"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: ponowna próba poza klauzulą ratunku"
+
+msgid "E272: unhandled exception"
+msgstr "E272: nieobsługiwany wyjątek"
 
 #, c-format
 msgid "E273: unknown longjmp status %d"
@@ -2628,8 +2659,7 @@ msgstr "błąd vima"
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "nie mogę stworzyć bufora/okna komendy: obiekt jest kasowany"
 
-msgid ""
-"cannot register callback command: buffer/window is already being deleted"
+msgid "cannot register callback command: buffer/window is already being deleted"
 msgstr ""
 "nie mogę zarejestrować wstecznego wywołania komendy: bufor/okno już została "
 "skasowana"
@@ -2647,13 +2677,10 @@ msgstr ""
 "nie mogę zarejestrować wstecznego wywołania komendy: brak odniesienia do "
 "bufora/okna"
 
-msgid ""
-"E571: Sorry, this command is disabled: the Tcl library could not be loaded."
-msgstr ""
-"Przykro mi, ta komenda jest wyłączona, bo nie można załadować biblioteki Tcl."
+msgid "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
+msgstr "Przykro mi, ta komenda jest wyłączona, bo nie można załadować biblioteki Tcl."
 
-msgid ""
-"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
+msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
 msgstr ""
 "E281: BŁĄD TCL: kod zakończeniowy nie jest całkowity!? Proszę złożyć raport "
 "o tym na vim-dev@vim.org"
@@ -2676,8 +2703,7 @@ msgid "E573: Invalid server id used: %s"
 msgstr "E573: Użyto niewłaściwego id serwera: %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
-msgstr ""
-"E251: wcielenia instancji rejestru Vima jest źle sformowane.  Skasowano!"
+msgstr "E251: wcielenia instancji rejestru Vima jest źle sformowane.  Skasowano!"
 
 msgid "Unknown option argument"
 msgstr "Nieznany argument opcji"
@@ -2692,8 +2718,7 @@ msgid "Garbage after option argument"
 msgstr "Śmiecie po argumencie opcji"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
-msgstr ""
-"Zbyt wiele argumentów \"+komenda\", \"-c komenda\" lub \"--cmd komenda\""
+msgstr "Zbyt wiele argumentów \"+komenda\", \"-c komenda\" lub \"--cmd komenda\""
 
 msgid "Invalid argument for"
 msgstr "Niewłaściwy argument dla"
@@ -2906,8 +2931,7 @@ msgstr ""
 "jakiegokolwiek pliku vimrc"
 
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr ""
-"-c <command>\t\tWykonaj komendę <command> po załadowaniu pierwszego pliku"
+msgstr "-c <command>\t\tWykonaj komendę <command> po załadowaniu pierwszego pliku"
 
 msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr "-S <sesja>\t\tWczytaj plik <sesja> po załadowaniu pierwszego pliku"
@@ -2916,12 +2940,10 @@ msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <scriptin>\tWczytuj komendy trybu normalnego z pliku <scriptin>"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
-msgstr ""
-"-w <scriptout>\tDołącz wszystkie wprowadzane komendy do pliku <scriptout>"
+msgstr "-w <scriptout>\tDołącz wszystkie wprowadzane komendy do pliku <scriptout>"
 
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
-msgstr ""
-"-W <scriptout>\tZapisuj wszystkie wprowadzane komendy do pliku <scriptout>"
+msgstr "-W <scriptout>\tZapisuj wszystkie wprowadzane komendy do pliku <scriptout>"
 
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEdytuj zakodowane pliki"
@@ -2938,15 +2960,11 @@ msgstr "--remote <pliki>\tEdytuj pliki w serwerze Vima jeśli możliwe"
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <pliki> To samo, nie narzekaj jeśli nie ma serwera"
 
-msgid ""
-"--remote-wait <files>  As --remote but wait for files to have been edited"
-msgstr ""
-"--remote-wait <pliki>\tTak jak --remote, lecz czekaj na pliki przed edycją"
+msgid "--remote-wait <files>  As --remote but wait for files to have been edited"
+msgstr "--remote-wait <pliki>\tTak jak --remote, lecz czekaj na pliki przed edycją"
 
-msgid ""
-"--remote-wait-silent <files>  Same, don't complain if there is no server"
-msgstr ""
-"--remote-wait-silent <pliki>  To samo, nie narzekaj jeśli nie ma serwera"
+msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
+msgstr "--remote-wait-silent <pliki>  To samo, nie narzekaj jeśli nie ma serwera"
 
 msgid "--remote-tab <files>  As --remote but open tab page for each file"
 msgstr ""
@@ -3011,8 +3029,7 @@ msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <kolor>\tUżywaj <kolor> dla tła (również: -bg)"
 
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
-msgstr ""
-"-foreground <kolor>\tUżywaj <kolor> dla normalnego tekstu (również: -fg)"
+msgstr "-foreground <kolor>\tUżywaj <kolor> dla normalnego tekstu (również: -fg)"
 
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr "-font <font>\t\tUżywaj <font> dla normalnego tekstu (również: -fn)"
@@ -3024,19 +3041,16 @@ msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <font>\tUżywaj <font> dla pochyłego"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
-msgstr ""
-"-geometry <geom>\tUżywaj <geom> dla początkowych rozmiarów (również: -geom)"
+msgstr "-geometry <geom>\tUżywaj <geom> dla początkowych rozmiarów (również: -geom)"
 
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr "-borderwidth <szer>\tUżyj ramki o grubości <szer> (również: -bw)"
 
 msgid "-scrollbarwidth <width>  Use a scrollbar width of <width> (also: -sw)"
-msgstr ""
-"-scrollbarwidth <szer>  Używaj przewijacza o szerokości <szer> (również: -sw)"
+msgstr "-scrollbarwidth <szer>  Używaj przewijacza o szerokości <szer> (również: -sw)"
 
 msgid "-menuheight <height>\tUse a menu bar height of <height> (also: -mh)"
-msgstr ""
-"-menuheight <height>\tStosuj belkę menu o wysokości <height> (również: -mh)"
+msgstr "-menuheight <height>\tStosuj belkę menu o wysokości <height> (również: -mh)"
 
 msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\tStosuj negatyw kolorów (również: -rv)"
@@ -3225,8 +3239,7 @@ msgstr "E302: Nie mogłem zmienić nazwy pliku wymiany"
 
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
-msgstr ""
-"E303: Nie mogę otworzyć pliku wymiany dla \"%s\"; odtworzenie niemożliwe"
+msgstr "E303: Nie mogę otworzyć pliku wymiany dla \"%s\"; odtworzenie niemożliwe"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block(): Nie otrzymałem bloku 0??"
@@ -3321,16 +3334,14 @@ msgstr "???KONIEC"
 msgid "E311: Recovery Interrupted"
 msgstr "E311: Przerwanie odtwarzania"
 
-msgid ""
-"E312: Errors detected while recovering; look for lines starting with ???"
+msgid "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr "E312: Wykryto błędy podczas odtwarzania; od których wierszy zacząć ???"
 
 msgid "See \":help E312\" for more information."
 msgstr "Zobacz \":help E312\" dla dalszych informacji."
 
 msgid "Recovery completed. You should check if everything is OK."
-msgstr ""
-"Odtwarzanie zakończono. Powinieneś sprawdzić czy wszystko jest w porządku."
+msgstr "Odtwarzanie zakończono. Powinieneś sprawdzić czy wszystko jest w porządku."
 
 msgid ""
 "\n"
@@ -4217,9 +4228,6 @@ msgstr "ANCHOR_BUF_SIZE zbyt niskie."
 msgid "I/O ERROR"
 msgstr "BŁĄD I/O"
 
-msgid "...(truncated)"
-msgstr "...(obcięty)"
-
 msgid "Message"
 msgstr "Wiadomość"
 
@@ -4247,8 +4255,7 @@ msgstr "Wydrukowano '%s'"
 
 #, c-format
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
-msgstr ""
-"E244: Niedozwolona nazwa zestawu znaków \"%s\" w nazwie czcionki \"%s\""
+msgstr "E244: Niedozwolona nazwa zestawu znaków \"%s\" w nazwie czcionki \"%s\""
 
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
@@ -4661,6 +4668,16 @@ msgstr "E388: Nie znalazłem definicji"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Nie znalazłem wzorca"
 
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Ostatni %sWyszukiwany wzorzec:\n"
+"~"
+
 msgid "E759: Format error in spell file"
 msgstr "E759: Nieprawidłowy format pliku sprawdzania pisowni"
 
@@ -4689,8 +4706,7 @@ msgstr "E756: Sprawdzanie pisowni nie jest włączone"
 
 #, c-format
 msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
-msgstr ""
-"Ostrzeżenie: Nie mogę znaleźć listy słów \"%s.%s.spl\" lub \"%s.ascii.spl\""
+msgstr "Ostrzeżenie: Nie mogę znaleźć listy słów \"%s.%s.spl\" lub \"%s.ascii.spl\""
 
 #, c-format
 msgid "Reading spell file \"%s\""
@@ -5384,6 +5400,13 @@ msgstr "Nie ma zmian do cofnięcia"
 msgid "number changes  time"
 msgstr "liczba zmiany czas"
 
+#, c-format
+msgid "%ld seconds ago"
+msgstr "%ld sekund temu"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: undojoin nie jest dozwolone po undo"
+
 msgid "E439: undo list corrupt"
 msgstr "E439: uszkodzona lista cofania"
 
@@ -5690,6 +5713,9 @@ msgstr "OSTRZEŻENIE: wykryto Windows 95/98/ME"
 msgid "type  :help windows95<Enter>  for info on this"
 msgstr "wprowadź :help windows95<Enter>   dla informacji to tym  "
 
+msgid "Already only one window"
+msgstr "Już jest tylko jeden widok"
+
 msgid "E441: There is no preview window"
 msgstr "E441: Nie ma okna podglądu"
 
@@ -5701,9 +5727,6 @@ msgstr "E443: Nie mogę przekręcić, gdy inne okno jest rozdzielone"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: Nie mogę zamknąć ostatniego okna"
-
-msgid "Already only one window"
-msgstr "Już jest tylko jeden widok"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: Inne okno zawiera zmiany"
@@ -5720,8 +5743,7 @@ msgid "E370: Could not load library %s"
 msgstr "E370: Nie mogłem załadować biblioteki %s"
 
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Przykro mi, ta komenda jest wyłączona: nie mogłem załadować biblioteki Perla."
+msgstr "Przykro mi, ta komenda jest wyłączona: nie mogłem załadować biblioteki Perla."
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr "E299: wyliczenie Perla zabronione w piaskownicy bez modułu Safe"
@@ -5771,8 +5793,7 @@ msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: po \\ powinno być /, ? lub &"
 
 msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr ""
-"E11: Niedozwolone w oknie wiersza poleceń; <CR> wykonuje, CTRL-C opuszcza"
+msgstr "E11: Niedozwolone w oknie wiersza poleceń; <CR> wykonuje, CTRL-C opuszcza"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -6095,3 +6116,4 @@ msgstr "szukanie dobiło GÓRY; kontynuacja od KOŃCA"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "szukanie dobiło KOŃCA; kontynuacja od GÓRY"
+

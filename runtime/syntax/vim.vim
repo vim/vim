@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 26, 2006
-" Version:	7.0-47
+" Last Change:	Apr 27, 2006
+" Version:	7.0-48
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -284,11 +284,11 @@ syn match   vimMap	"\<map!\=\ze\s*[^(]" skipwhite nextgroup=vimMapMod,vimMapLhs
 syn keyword vimMap	cm[ap] cno[remap] im[ap] ino[remap] nm[ap] nn[oremap] no[remap] om[ap] ono[remap] vm[ap] vn[oremap] skipwhite nextgroup=vimMapBang,vimMapMod,vimMapLhs
 syn match   vimMapLhs    contained	"\S\+"	contains=vimNotation,vimCtrlChar skipwhite nextgroup=vimMapRhs
 syn match   vimMapBang   contained	"!"	skipwhite nextgroup=vimMapMod,vimMapLhs
-syn match   vimMapMod    contained	"\c<\(buffer\|\(local\)\=leader\|plug\|script\|sid\|unique\|silent\)\+>" contains=vimMapModKey,vimMapModErr skipwhite nextgroup=vimMapMod,vimMapLhs
+syn match   vimMapMod    contained	"\c<\(buffer\|expr\|\(local\)\=leader\|plug\|script\|sid\|unique\|silent\)\+>" contains=vimMapModKey,vimMapModErr skipwhite nextgroup=vimMapMod,vimMapLhs
 syn match   vimMapRhs    contained  ".*" contains=vimNotation,vimCtrlChar skipnl nextgroup=vimMapRhsExtend
 syn match   vimMapRhsExtend contained "^\s*\\.*$" contains=vimContinue
 syn case ignore
-syn keyword vimMapModKey contained	buffer	leader	localleader	plug	script	sid	silent	unique
+syn keyword vimMapModKey contained	buffer	expr	leader	localleader	plug	script	sid	silent	unique
 syn case match
 
 " Menus {{{2

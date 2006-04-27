@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Apr 04
+" Last Change: 2006 Apr 27
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -87,18 +87,20 @@ function! s:Highlight_Matching_Pair()
     let c2 = '\]'
   endif
 
-  " When not in a string or comment ignore matches inside them.
-  let s_skip ='synIDattr(synID(line("."), col(".") - before, 0), "name") ' .
-	\ '=~?  "string\\|comment"'
-  execute 'if' s_skip '| let s_skip = 0 | endif'
-
   " Find the match.  When it was just before the cursor move it there for a
   " moment.
   if before > 0
     let save_cursor = getpos('.')
     call cursor(c_lnum, c_col - before)
   endif
+
+  " When not in a string or comment ignore matches inside them.
+  let s_skip ='synIDattr(synID(line("."), col("."), 0), "name") ' .
+	\ '=~?  "string\\|comment"'
+  execute 'if' s_skip '| let s_skip = 0 | endif'
+
   let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
+
   if before > 0
     call setpos('.', save_cursor)
   endif

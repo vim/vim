@@ -218,7 +218,8 @@ do_tag(tag, type, count, forceit, verbose)
 	    use_tagstack = TRUE;
 
 	/* new pattern, add to the tag stack */
-	if (*tag && (type == DT_TAG || type == DT_SELECT || type == DT_JUMP
+	if (*tag != NUL
+		&& (type == DT_TAG || type == DT_SELECT || type == DT_JUMP
 #ifdef FEAT_QUICKFIX
 		    || type == DT_LTAG
 #endif
@@ -356,14 +357,15 @@ do_tag(tag, type, count, forceit, verbose)
 		cs_free_tags();
 #endif
 		num_matches = 0;
+		tag_freematch();
 		goto end_do_tag;
 	    }
 
 	    if (type == DT_TAG
 #if defined(FEAT_QUICKFIX)
-		|| type == DT_LTAG
+		    || type == DT_LTAG
 #endif
-		)
+	       )
 	    {
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
 		if (g_do_tagpreview)

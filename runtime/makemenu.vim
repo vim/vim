@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 21
+" Last Change:	2006 Apr 27
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -97,7 +97,8 @@ SynMenu AB.Baan:baan
 SynMenu AB.BASIC:basic
 SynMenu AB.BC\ calculator:bc
 SynMenu AB.BDF\ font:bdf
-SynMenu AB.BibTeX:bib
+SynMenu AB.BibTeX.Bibliography\ database:bib
+SynMenu AB.BibTeX.Bibliography\ Style:bst
 SynMenu AB.BIND.BIND\ config:named
 SynMenu AB.BIND.BIND\ zone:bindzone
 SynMenu AB.Blank:blank
@@ -180,6 +181,7 @@ SynMenu DE.Expect:expect
 SynMenu DE.Exports:exports
 
 SynMenu FG.Fetchmail:fetchmail
+SynMenu FG.FlexWiki:flexwiki
 SynMenu FG.Focus\ Executable:focexec
 SynMenu FG.Focus\ Master:master
 SynMenu FG.FORM:form
@@ -300,6 +302,7 @@ SynMenu Me-NO.Modula\ 3:modula3
 SynMenu Me-NO.Monk:monk
 SynMenu Me-NO.Mplayer\ config:mplayerconf
 SynMenu Me-NO.MOO:moo
+SynMenu Me-NO.Mrxvtrc:mrxvtrc
 SynMenu Me-NO.MS-DOS/Windows.4DOS\ \.bat\ file:btm
 SynMenu Me-NO.MS-DOS/Windows.\.bat\/\.cmd\ file:dosbatch
 SynMenu Me-NO.MS-DOS/Windows.\.ini\ file:dosini

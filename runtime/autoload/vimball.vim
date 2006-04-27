@@ -1,7 +1,7 @@
 " vimball : construct a file containing both paths and files
 " Author: Charles E. Campbell, Jr.
-" Date:   Apr 26, 2006
-" Version: 9
+" Date:   Apr 27, 2006
+" Version: 11
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball")
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v9"
+let g:loaded_vimball = "v11"
 set cpo&vim
 
 " =====================================================================
@@ -40,9 +40,7 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
   endif
 
   " user option bypass
-  let eikeep  = &ei
-  let acdkeep = &acd
-  set ei=all noacd
+  call s:SaveSettings()
 
   " go to vim plugin home
   for home in split(&rtp,',') + ['']
@@ -72,8 +70,7 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
    if !filereadable(svfile)
     echohl Error | echo "unable to read file<".svfile.">" | echohl None
 	call s:ChgDir(curdir)
-    let &ei  = eikeep
-    let &acd = acdkeep
+	call s:RestoreSettings()
 "    call Dret("MkVimball")
     return
    endif
@@ -131,8 +128,7 @@ fun! vimball#MkVimball(line1,line2,writelevel,vimballname) range
   exe "tabc ".vbtabnr
 
   " restore options
-  let &ei  = eikeep
-  let &acd = acdkeep
+  call s:RestoreSettings()
 
 "  call Dret("MkVimball")
 endfun
@@ -148,15 +144,9 @@ fun! vimball#Vimball(really)
    return
   endif
 
-  " initialize
-  let acdkeep  = &acd
-  let fenkeep  = &fen
-  let regakeep = @a
-  let eikeep   = &ei
-  let vekeep   = &ve
-  let makeep   = getpos("'a")
+  " set up standard settings
+  call s:SaveSettings()
   let curtabnr = tabpagenr()
-  set ei=all ve=all nofen noacd
 
   " set up vimball tab
   tabnew
@@ -188,6 +178,7 @@ fun! vimball#Vimball(really)
    echohl Title | echomsg "Vimball Archive" | echohl None
   else
    echohl Title | echomsg "Vimball Archive Listing" | echohl None
+   echohl Statement | echomsg "files would be placed under: ".home | echohl None
   endif
 
   " apportion vimball contents to various files
@@ -208,15 +199,17 @@ fun! vimball#Vimball(really)
 
    " make directories if they don't exist yet
 "   call Decho("making directories if they don't exist yet")
-   let fnamebuf= fname
-   while fnamebuf =~ '/'
-   	let dirname  = home."/".substitute(fnamebuf,'/.*$','','e')
-   	let fnamebuf = substitute(fnamebuf,'^.\{-}/\(.*\)$','\1','e')
-	if !isdirectory(dirname)
-"	 call Decho("making <".dirname.">")
-	 call mkdir(dirname)
-	endif
-   endwhile
+   if a:really
+    let fnamebuf= fname
+    while fnamebuf =~ '/'
+    	let dirname  = home."/".substitute(fnamebuf,'/.*$','','e')
+    	let fnamebuf = substitute(fnamebuf,'^.\{-}/\(.*\)$','\1','e')
+     if !isdirectory(dirname)
+"     call Decho("making <".dirname.">")
+      call mkdir(dirname)
+     endif
+    endwhile
+   endif
    call s:ChgDir(home)
 
    " grab specified qty of lines and place into "a" buffer
@@ -279,16 +272,7 @@ fun! vimball#Vimball(really)
   setlocal nomod bh=wipe
   exe "tabn ".curtabnr
   exe "tabc ".vbtabnr
-  let &ei  = eikeep
-  let @a   = regakeep
-  let &fen = fenkeep
-  let &acd = acdkeep
-  if makeep[0] != 0
-   " restore mark a
-"   call Decho("restore mark-a: makeep=".string(makeep))
-   call setpos("'a",makeep)
-   ka
-  endif
+  call s:RestoreSettings()
   call s:ChgDir(curdir)
 
 "  call Dret("Vimball")
@@ -359,6 +343,44 @@ fun! vimball#ShowMesg(msg)
    let ich= ich + 1
   endwhile
 "  call Dret("vimball#ShowMesg")
+endfun
+
+" ---------------------------------------------------------------------
+" s:SaveSettings: {{{2
+fun! s:SaveSettings()
+"  call Dfunc("SaveSettings()")
+  let s:makeep  = getpos("'a")
+  let s:regakeep= @a
+  let s:acdkeep = &acd
+  let s:eikeep  = &ei
+  let s:fenkeep = &fen
+  let s:hidkeep = &hidden
+  let s:ickeep  = &ic
+  let s:repkeep = &report
+  let s:vekeep  = &ve
+  set ei=all ve=all noacd nofen noic report=999 nohid
+"  call Dret("SaveSettings")
+endfun
+
+" ---------------------------------------------------------------------
+" s:RestoreSettings: {{{2
+fun! s:RestoreSettings()
+"  call Dfunc("RestoreSettings()")
+  let @a      = s:regakeep
+  let &acd    = s:acdkeep
+  let &ei     = s:eikeep
+  let &fen    = s:fenkeep
+  let &hidden = s:hidkeep
+  let &ic     = s:ickeep
+  let &report = s:repkeep
+  let &ve     = s:vekeep
+  if s:makeep[0] != 0
+   " restore mark a
+"   call Decho("restore mark-a: makeep=".string(makeep))
+   call setpos("'a",s:makeep)
+  endif
+  unlet s:regakeep s:acdkeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep
+"  call Dret("RestoreSettings")
 endfun
 
 " ---------------------------------------------------------------------

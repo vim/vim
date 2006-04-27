@@ -75,6 +75,7 @@ DOCS = \
 	pi_paren.txt \
 	pi_spec.txt \
 	pi_tar.txt \
+	pi_vimball.txt \
 	pi_zip.txt \
 	print.txt \
 	quickfix.txt \
@@ -138,7 +139,6 @@ DOCS = \
 	version6.txt \
 	version7.txt \
 	vi_diff.txt \
-	vimball.txt \
 	visual.txt \
 	windows.txt \
 	workshop.txt
@@ -204,6 +204,9 @@ HTMLS = \
 	pi_netrw.html \
 	pi_paren.html \
 	pi_spec.html \
+	pi_tar.html \
+	pi_vimball.html \
+	pi_zip.html \
 	print.html \
 	quickfix.html \
 	quickref.html \
@@ -267,7 +270,6 @@ HTMLS = \
 	version6.html \
 	version7.html \
 	vi_diff.html \
-	vimball.txt \
 	visual.html \
 	windows.html \
 	workshop.html
