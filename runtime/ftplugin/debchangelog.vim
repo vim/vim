@@ -2,8 +2,28 @@
 " Language:	Debian Changelog
 " Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
 "		Stefano Zacchiroli <zack@debian.org>
-" Last Change:	27 April 2006
-" License:	GNU GPL, version 2.1 or later
+" Last Change:	$LastChangedDate: 2006-04-28 12:15:12 -0400 (ven, 28 apr 2006) $
+" License:	GNU GPL, version 2.0 or later
+" URL:		http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/ftplugin/debchangelog.vim?op=file&rev=0&sc=0
+
+if exists("b:did_ftplugin")
+  finish
+endif
+let b:did_ftplugin = 1
+
+" {{{1 Local settings (do on every load)
+setlocal foldmethod=expr
+setlocal foldexpr=GetDebChangelogFold(v:lnum)
+setlocal foldtext=DebChangelogFoldText()
+
+" Debian changelogs are not supposed to have any other text width,
+" so the user cannot override this setting
+setlocal tw=78
+setlocal comments=f:* 
+
+" Clean unloading
+let b:undo_ftplugin = "setlocal tw< comments< foldmethod< foldexpr< foldtext<"
+" }}}1
 
 if exists("g:did_changelog_ftplugin")
   finish
@@ -82,7 +102,7 @@ function NewVersion()
     amenu enable Changelog.Set\ Urgency
     amenu disable Changelog.Unfinalise
     amenu enable Changelog.Finalise
-    call append(0, substitute(getline(1),'-\([[:digit:]]\+\))', '-Ü\1)', ''))
+    call append(0, substitute(getline(1), '-\([[:digit:]]\+\))', '-$$\1)', ''))
     call append(1, "")
     call append(2, "")
     call append(3, " -- ")
@@ -93,7 +113,8 @@ function NewVersion()
     call search(")")
     normal h
     normal 
-    call setline(1, substitute(getline(1),'-Ü\([[:digit:]]\+\))', '-\1)', ''))
+    call setline(1, substitute(getline(1), '-\$\$', '-', ''))
+    normal zo
     call AddEntry()
 endfunction
 
@@ -206,10 +227,6 @@ augroup END
 " }}}
 " {{{1 folding
 
-setlocal foldmethod=expr
-setlocal foldexpr=GetDebChangelogFold(v:lnum)
-setlocal foldtext=DebChangelogFoldText()
-
 " look for an author name searching backward from a given line number
 function! s:getAuthor(lnum)
   let line = getline(a:lnum)
@@ -244,13 +261,5 @@ function! GetDebChangelogFold(lnum)
 endfunction
 
 " }}}
-
-" Debian changelogs are not supposed to have any other text width,
-" so the user cannot override this setting
-setlocal tw=78
-setlocal comments=f:* 
-
-" Clean unloading
-let b:undo_ftplugin = "setlocal tw< comments< foldmethod< foldexpr< foldtext<"
 
 " vim: set foldmethod=marker:

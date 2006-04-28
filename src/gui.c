@@ -3394,6 +3394,11 @@ gui_update_tabline()
 
     if (!gui.starting && starting == 0)
     {
+	/* Updating the tabline uses direct GUI commands, flush
+	 * outstanding instructions first. (esp. clear screen) */
+	out_flush();
+	gui_mch_flush();
+
 	if (!showit != !shown)
 	    gui_mch_show_tabline(showit);
 	if (showit != 0)
