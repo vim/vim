@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 27
+" Last Change:	2006 Apr 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1146,8 +1146,8 @@ au BufNewFile,BufRead *.pm
 " Perl POD
 au BufNewFile,BufRead *.pod			setf pod
 
-" Php3
-au BufNewFile,BufRead *.php,*.php3		setf php
+" Php, php3, php4, etc.
+au BufNewFile,BufRead *.php,*.php\d		setf php
 
 " Phtml
 au BufNewFile,BufRead *.phtml			setf phtml
