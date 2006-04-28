@@ -2321,7 +2321,8 @@ vgetorpeek(advance)
 			/*
 			 * Handle ":map <expr>": evaluate the {rhs} as an
 			 * expression.  Save and restore the typeahead so that
-			 * getchar() can be used.
+			 * getchar() can be used.  Also save and restore the
+			 * command line for "normal :".
 			 */
 			if (mp->m_expr)
 			{
@@ -4301,8 +4302,13 @@ eval_map_expr(str)
 {
     char_u	*res;
     char_u	*p;
+    char_u	*save_cmd;
 
+    save_cmd = save_cmdline_alloc();
+    if (save_cmd == NULL)
+	return NULL;
     p = eval_to_string(str, NULL, FALSE);
+    restore_cmdline_alloc(save_cmd);
     if (p == NULL)
 	return NULL;
     res = vim_strsave_escape_csi(p);

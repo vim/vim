@@ -2003,6 +2003,7 @@ win_close(win, free_buf)
     int		close_curwin = FALSE;
     int		dir;
     int		help_window = FALSE;
+    tabpage_T   *prev_curtab = curtab;
 
     if (last_window())
     {
@@ -2051,44 +2052,53 @@ win_close(win, free_buf)
      * Close the link to the buffer.
      */
     close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
+
     /* Autocommands may have closed the window already, or closed the only
-     * other window. */
-    if (!win_valid(win) || last_window())
+     * other window or moved to another tab page. */
+    if (!win_valid(win) || last_window() || curtab != prev_curtab)
 	return;
 
-    /* Free the memory used for the window. */
-    wp = win_free_mem(win, &dir, NULL);
-
-    /* When closing the last window in a tab page go to another tab page. */
-    if (wp == NULL)
+    /* When closing the last window in a tab page go to another tab page. This
+     * must be done before freeing memory to avoid that "topframe" becomes
+     * invalid (it may be used in GUI events). */
+    if (firstwin == lastwin)
     {
 	tabpage_T   *ptp = NULL;
 	tabpage_T   *tp;
 	tabpage_T   *atp = alt_tabpage();
 
-	for (tp = first_tabpage; tp != curtab; tp = tp->tp_next)
+	/* We don't do the window resizing stuff, let enter_tabpage() take
+	 * care of entering a window in another tab page. */
+	enter_tabpage(atp, old_curbuf);
+
+	for (tp = first_tabpage; tp != NULL && tp != prev_curtab;
+							     tp = tp->tp_next)
 	    ptp = tp;
-	if (tp == NULL)
+	if (tp != prev_curtab || tp->tp_firstwin != win)
 	{
-	    EMSG2(_(e_intern2), "win_close()");
+	    /* Autocommands must have closed it when jumping to the other tab
+	     * page. */
 	    return;
 	}
+
+	(void)win_free_mem(win, &dir, tp);
+
 	if (ptp == NULL)
 	    first_tabpage = tp->tp_next;
 	else
 	    ptp->tp_next = tp->tp_next;
 	free_tabpage(tp);
 
-	/* We don't do the window resizing stuff, let enter_tabpage() take
-	 * care of entering a window in another tab page. */
-	enter_tabpage(atp, old_curbuf);
 	return;
     }
+
+    /* Free the memory used for the window. */
+    wp = win_free_mem(win, &dir, NULL);
 
     /* Make sure curwin isn't invalid.  It can cause severe trouble when
      * printing an error message.  For win_equal() curbuf needs to be valid
      * too. */
-    else if (win == curwin)
+    if (win == curwin)
     {
 	curwin = wp;
 #ifdef FEAT_QUICKFIX
@@ -2213,7 +2223,7 @@ win_close_othertab(win, free_buf, tp)
 	    }
 	    ptp->tp_next = tp->tp_next;
 	}
-	vim_free(tp);
+	free_tabpage(tp);
     }
 }
 
