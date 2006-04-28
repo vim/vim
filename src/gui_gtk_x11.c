@@ -3138,36 +3138,35 @@ tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
 	gtk_main_quit();
 }
 
+    static void
+add_tabline_menu_item(GtkWidget *menu, char_u *text, int resp)
+{
+    GtkWidget	*item;
+    char_u	*utf_text;
+
+    utf_text = CONVERT_TO_UTF8(text);
+    item = gtk_menu_item_new_with_label((const char *)utf_text);
+    gtk_widget_show(item);
+    CONVERT_TO_UTF8_FREE(utf_text);
+
+    gtk_container_add(GTK_CONTAINER(menu), item);
+    gtk_signal_connect(GTK_OBJECT(item), "activate",
+	    GTK_SIGNAL_FUNC(tabline_menu_handler),
+	    (gpointer)resp);
+}
+
 /*
  * Create a menu for the tab line.
  */
     static GtkWidget *
 create_tabline_menu(void)
 {
-    GtkWidget *menu, *item;
+    GtkWidget *menu;
 
     menu = gtk_menu_new();
-
-    item = gtk_menu_item_new_with_label(_("Close"));
-    gtk_widget_show(item);
-    gtk_container_add(GTK_CONTAINER(menu), item);
-    gtk_signal_connect(GTK_OBJECT(item), "activate",
-	    GTK_SIGNAL_FUNC(tabline_menu_handler),
-	    (gpointer)TABLINE_MENU_CLOSE);
-
-    item = gtk_menu_item_new_with_label(_("New tab"));
-    gtk_widget_show(item);
-    gtk_container_add(GTK_CONTAINER(menu), item);
-    gtk_signal_connect(GTK_OBJECT(item), "activate",
-	    GTK_SIGNAL_FUNC(tabline_menu_handler),
-	    (gpointer)TABLINE_MENU_NEW);
-
-    item = gtk_menu_item_new_with_label(_("Open Tab..."));
-    gtk_widget_show(item);
-    gtk_container_add(GTK_CONTAINER(menu), item);
-    gtk_signal_connect(GTK_OBJECT(item), "activate",
-	    GTK_SIGNAL_FUNC(tabline_menu_handler),
-	    (gpointer)TABLINE_MENU_OPEN);
+    add_tabline_menu_item(menu, (char_u *)_("Close"), TABLINE_MENU_CLOSE);
+    add_tabline_menu_item(menu, (char_u *)_("New tab"), TABLINE_MENU_NEW);
+    add_tabline_menu_item(menu, (char_u *)_("Open Tab..."), TABLINE_MENU_OPEN);
 
     return menu;
 }
@@ -3180,8 +3179,9 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
     {
 	GdkEventButton *bevent = (GdkEventButton *)event;
 	int		x = bevent->x;
-	GtkWidget	*page;
-	GtkWidget	*label;
+	int		y = bevent->y;
+	GtkWidget	*tabwidget;
+	GdkWindow	*tabwin;
 
 	/* When ignoring events return TRUE so that the selected page doesn't
 	 * change. */
@@ -3192,25 +3192,10 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	   )
 	    return TRUE;
 
-	/* Find out where the click was. */
-	for (clicked_page = 1;  ; ++clicked_page)
-	{
-	    page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline),
-							    clicked_page - 1);
-	    if (page == NULL)
-	    {
-		/* Past all the labels, return zero. */
-		clicked_page = 0;
-		break;
-	    }
-	    label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
-
-	    /* The label size apparently doesn't include the spacing, estimate
-	     * it by the page position. */
-	    if (page->allocation.x * 2 + label->allocation.x
-					   + label->allocation.width + 1 >= x)
-		break;
-	}
+	tabwin = gdk_window_at_pointer(&x, &y);
+	gdk_window_get_user_data(tabwin, (gpointer)&tabwidget);
+	clicked_page = (int)(long)gtk_object_get_user_data(
+						       GTK_OBJECT(tabwidget));
 
 	/* If the event was generated for 3rd button popup the menu. */
 	if (bevent->button == 3)
@@ -3306,6 +3291,7 @@ gui_mch_update_tabline(void)
     GtkWidget	    *label;
     tabpage_T	    *tp;
     int		    nr = 0;
+    int		    tab_num;
     int		    curtabidx = 0;
     char_u	    *labeltext;
 
@@ -3320,6 +3306,8 @@ gui_mch_update_tabline(void)
 	if (tp == curtab)
 	    curtabidx = nr;
 
+	tab_num = nr + 1;
+
 	page = gtk_notebook_get_nth_page(GTK_NOTEBOOK(gui.tabline), nr);
 	if (page == NULL)
 	{
@@ -3329,11 +3317,8 @@ gui_mch_update_tabline(void)
 	    event_box = gtk_event_box_new();
 	    gtk_widget_show(event_box);
 	    label = gtk_label_new("-Empty-");
-#ifdef TABLINE_TOOLTIP
+	    gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	    gtk_container_add(GTK_CONTAINER(event_box), label);
-#else
-	    event_box = label;
-#endif
 	    gtk_widget_show(label);
 	    gtk_notebook_insert_page(GTK_NOTEBOOK(gui.tabline),
 		    page,
@@ -3342,23 +3327,18 @@ gui_mch_update_tabline(void)
 	}
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
-#ifdef TABLINE_TOOLTIP
+	gtk_object_set_user_data(GTK_OBJECT(event_box), (gpointer)tab_num);
 	label = GTK_BIN(event_box)->child;
-#else
-	label = event_box;
-#endif
 	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
 	gtk_label_set_text(GTK_LABEL(label), (const char *)labeltext);
 	CONVERT_TO_UTF8_FREE(labeltext);
 
-#ifdef TABLINE_TOOLTIP
 	get_tabline_label(tp, TRUE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
 	gtk_tooltips_set_tip(GTK_TOOLTIPS(tabline_tooltip), event_box,
 			     (const char *)labeltext, NULL);
 	CONVERT_TO_UTF8_FREE(labeltext);
-#endif
     }
 
     /* Remove any old labels. */
@@ -3367,6 +3347,9 @@ gui_mch_update_tabline(void)
 
     if (gtk_notebook_current_page(GTK_NOTEBOOK(gui.tabline)) != curtabidx)
         gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
+
+    /* Make sure everything is in place before drawing text. */
+    gui_mch_update();
 
     ignore_tabline_evt = FALSE;
 }
@@ -3685,6 +3668,9 @@ gui_mch_init(void)
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
+# ifdef HAVE_GTK2
+    g_object_set(GTK_OBJECT(gui.tabline), "tab-border", 0, NULL);
+# endif
 
     tabline_tooltip = gtk_tooltips_new();
     gtk_tooltips_enable(GTK_TOOLTIPS(tabline_tooltip));
@@ -3698,13 +3684,11 @@ gui_mch_init(void)
 	gtk_container_add(GTK_CONTAINER(gui.tabline), page);
 	label = gtk_label_new("-Empty-");
 	gtk_widget_show(label);
-#ifdef TABLINE_TOOLTIP
 	event_box = gtk_event_box_new();
 	gtk_widget_show(event_box);
+	gtk_object_set_user_data(GTK_OBJECT(event_box), (gpointer)1);
+	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_container_add(GTK_CONTAINER(event_box), label);
-#else
-	event_box = label;
-#endif
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
     }
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 27
+*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -6,7 +6,7 @@
 
 Welcome to Vim 7!  A large number of features has been added.  This file
 mentions all the new items, changes to existing features and bug fixes
-compared to Vim 6.x.  Use this command to see the version you are using: >
+since Vim 6.x.  Use this command to see the version you are using: >
 	:version
 
 See |vi_diff.txt| for an overview of differences between Vi and Vim 7.0.
@@ -64,9 +64,9 @@ In an argument list double quotes could be used to include spaces in a file
 name.  This caused a difference between ":edit" and ":next" for escaping
 double quotes and it is incompatible with some versions of Vi.
 	Command			Vim 6.x	file name	Vim 7.x file name ~
-	:edit foo\"888          'foo"888'         	'foo"888'
-	:next foo\"888          'foo888'          	'foo"888'
-	:next a\"b c\"d         'ab cd'           	'a"b' and 'c"d'
+	:edit foo\"888          foo"888         	foo"888
+	:next foo\"888          foo888          	foo"888
+	:next a\"b c\"d         ab cd           	a"b  and  c"d
 
 In a |literal-string| a single quote can be doubled to get one.
 ":echo 'a''b'" would result in "a b", but now that two quotes stand for one it
@@ -83,8 +83,8 @@ Files ending in .tex now have 'filetype' set to "context", "plaintex", or
 
 Minor incompatibilities:
 
-For filetype detection: For many types, instead of ~/.dir/filename use
-*/.dir/filename, so that it also works for other user's files.
+For filetype detection: For many types, use */.dir/filename instead of
+~/.dir/filename, so that it also works for other user's files.
 
 For quite a few filetypes the indent settings have been moved from the
 filetype plugin to the indent plugin.  If you used: >
@@ -106,7 +106,7 @@ The "2html.vim" script now converts closed folds to HTML.  This means the HTML
 looks like its displayed, with the same folds open and closed.  Use "zR", or
 "let html_ignore_folding=1", if no folds should appear in the HTML. (partly by
 Carl Osterwisch)
-Diff mode now is also converted as it is displayed.
+Diff mode now is also converted to HTML as it is displayed.
 
 Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
 on whether <F10> has been mapped or not.  This allows mapping <F10> without
@@ -160,7 +160,11 @@ as <line1>.  The items can no longer be abbreviated.
 When executing a FileChangedRO autocommand it is no longer allowed to switch
 to another buffer or edit another file.  This is to prevent crashes (the event
 is triggered deep down in the code where changing buffers is not anticipated).
-It is possible to reload the buffer.
+It is still possible to reload the buffer.
+
+At the |more-prompt| and the |hit-enter-prompt|, when the 'more' option is
+set, the 'k', 'u', 'g' and 'b' keys are now used to scroll back to previous
+messages.  Thus they are no longer used as typeahead.
 
 ==============================================================================
 NEW FEATURES						*new-7*
@@ -170,9 +174,9 @@ Vim script enhancements					*new-vim-script*
 
 In Vim scripts the following types have been added:
 
-	List		ordered list of items |List|
-	Dictionary	associative array of items |Dictionary|
-	Funcref		reference to a function |Funcref|
+	|List|		ordered list of items
+	|Dictionary|	associative array of items
+	|Funcref|	reference to a function
 
 Many functions and commands have been added to support the new types.
 
@@ -180,11 +184,13 @@ The |string()| function can be used to get a string representation of a
 variable.  Works for Numbers, Strings and composites of them.  Then |eval()|
 can be used to turn the string back into the variable value.
 
-The |:let| command can now use "+=".  ":let var += expr" works like
-":let var = var + expr".  "-=" and ".=" work in a similar way.
+The |:let| command can now use "+=", "-=" and ".=": >
+	:let var += expr	" works like :let var = var + expr
+	:let var -= expr	" works like :let var = var - expr
+	:let var .= string	" works like :let var = var . string
 
 With the |:profile| command you can find out where your function or script
-wastes its time.
+is wasting time.
 
 In the Python interface vim.eval() also handles Dictionaries and Lists.
 |python-eval| (G. Sumner Hayes)
@@ -203,15 +209,15 @@ Spell checking						*new-spell*
 Spell checking has been integrated in Vim.  There were a few implementations
 with scripts, but they were slow and/or required an external program.
 
-The 'spell' option is used to switch spell checking on or off.
-The 'spelllang' option is used to specify the languages that are accepted.
-The 'spellfile' option specifies where new words are added.
+The 'spell'	   option is used to switch spell checking on or off
+The 'spelllang'    option is used to specify the accepted language(s)
+The 'spellfile'    option specifies where new words are added
 The 'spellsuggest' option specifies the methods used for making suggestions
 
-The |[s| and |]s| commands can be used to move to the next or previous error.
-The |zg| and |zw| commands can be used to add good and wrong words.
-The |z=| command can be used to correct the word.
-The |:mkspell| command is used to generate a Vim spell file from word lists.
+The |[s| and |]s| commands can be used to move to the next or previous error
+The |zg| and |zw| commands can be used to add good and wrong words
+The |z=|          command can be used to list suggestions and correct the word
+The |:mkspell|    command is used to generate a Vim spell file from word lists
 
 The "undercurl" highlighting attribute was added to nicely point out spelling
 mistakes in the GUI (based on patch from Marcin Dalecki).
@@ -220,13 +226,13 @@ background.
 The number of possible different highlight attributes was raised from about
 220 to over 30000.  This allows for the attributes of spelling to be combined
 with syntax highlighting attributes.  This is also used for syntax
-highlighting.
+highlighting and marking the Visual area.
 
 Much more info here: |spell|.
 
 
 Omni completion					*new-omni-completion*
------------------
+---------------
 
 This could also be called "intellisense", but that is a trademark.  It is a
 smart kind of completion.  The text in front of the cursor is inspected to
@@ -242,27 +248,36 @@ Currently supported languages:
 	C					|ft-c-omni|
 	(X)HTML with CSS			|ft-html-omni|
 	JavaScript				|ft-javascript-omni|
+	PHP					|ft-php-omni|
 	Python
 	Ruby					|ft-ruby-omni|
+	SQL					|ft-sql-omni|
 	XML					|ft-xml-omni|
 	any language wih syntax highligting	|ft-syntax-omni|
 
+You can add your own omni completion scripts.
+
 When the 'completeopt' option contains "menu" then matches for Insert mode
-completion are displayed in a popup menu.
+completion are displayed in a (rather primitive) popup menu.
 
 
 MzScheme interface					*new-MzScheme*
 ------------------
 
 The MzScheme interpreter is supported. |MzScheme|
-The |:mzscheme| command can be used to execute MzScheme commands.
-The |:mzfile| command can be used to execute an MzScheme script file.
+
+The |:mzscheme| command can be used to execute MzScheme commands
+The |:mzfile|   command can be used to execute an MzScheme script file
+
+This depends on Vim being compiled with the |+mzscheme| feature.
 
 
 Printing multi-byte text				*new-print-multi-byte*
-------------------
+------------------------
 
-The |:hardcopy| command now supports printing multi-byte characters.
+The |:hardcopy| command now supports printing multi-byte characters when using
+PostScript.
+
 The 'printmbcharset' and 'printmbfont' options are used for this.
 Also see |postscript-cjk-printing|.  (Mike Williams)
 
@@ -278,14 +293,14 @@ way to work with many windows.
 To start Vim with each file argument in a separate tab page use the |-p|
 argument.  The maximum number of pages can be set with 'tabpagemax'.
 
-The line with tab labels is either made with plain text an highlighting or
+The line with tab labels is either made with plain text and highlighting or
 with a GUI mechanism.  The GUI labels look better but are only available on a
 few systems.  The line can be customized with 'tabline', 'guitablabel' and
 'guitabtooltip'.  Whether it is displayed is set with 'showtabline'.  Whether
 to use the GUI labels is set with the "e" flag in 'guioptions'.
 
 The |:tab| command modifier can be used to have most commands that open a new
-window open a new tab instead.
+window open a new tab page instead.
 
 The |--remote-tab| argument can be used to edit a file in a new tab page in an
 already running Vim server.
@@ -293,7 +308,7 @@ already running Vim server.
 Variables starting with "t:" are local to a tab page.
 
 More info here: |tabpage|
-The Win32 GUI tabs were implemented by Yegappan Lakshmanan.
+Most of the GUI stuff was implemented by Yegappan Lakshmanan.
 
 
 Undo branches						*new-undo-branches*
@@ -305,7 +320,7 @@ could lead to accidentally losing work.
 
 Vim now makes an undo branch in this situation.  Thus you can go back to the
 text after any change, even if they were undone.  So long as you do not run
-into 'undolevels', undo information is freed up to limit the memory used.
+into 'undolevels', when undo information is freed up to limit the memory used.
 
 To be able to navigate the undo branches each change is numbered sequentially.
 The commands |g-| and |:earlier| go back in time, to older changes.  The
@@ -334,7 +349,7 @@ still 2.
 
 Previously only 16 bit Unicode characters were supported for displaying.  Now
 the full 32 bit character set can be used.  Unless manually disabled at
-compile time.
+compile time to save a bit of memory.
 
 For pattern matching it is now possible to search for individual composing
 characters. |patterns-composing|
@@ -345,7 +360,7 @@ The |8g8| command searches for an illegal UTF-8 byte sequence.
 More highlighting				*new-more-highlighting*
 -----------------
 
-Highlighting matching parens
+Highlighting matching parens:
 
 When moving the cursor through the text and it is on a paren, then the
 matching paren can be highlighted.  This uses the new |CursorMoved|
@@ -361,13 +376,19 @@ The plugin uses the |:match| command.  It now supports three match patterns.
 The plugin uses the third one.  The first one is for the user and the second
 one can be used by another plugin.
 
-Highlighting the cursor line and column
+Highlighting the cursor line and column:
 
 The 'cursorline' and 'cursorcolumn' options have been added.  These highlight
 the screen line and screen column of the cursor.  This makes the cursor
-position easier to spot.  'cursorcolumn' is also useful to align text.  The
-CursorColumn and CursorLine highlighting allow changing the colors used.
-|hl-CursorColumn| |hl-CursorLine|
+position easier to spot.  'cursorcolumn' is also useful to align text.  This
+may make screen updating quite slow.  The CursorColumn and CursorLine
+highlight groups allow changing the colors used.  |hl-CursorColumn|
+|hl-CursorLine|
+
+The number of possible different highlight attributes was raised from about
+220 to over 30000.  This allows for the attributes of spelling to be combined
+with syntax highlighting attributes.  This is also used for syntax
+highlighting, marking the Visual area, CursorColumn, etc.
 
 
 Translated manual pages					*new-manpage-trans*
@@ -403,17 +424,17 @@ patterns, this also allows grepping in compressed and remote files.
 If you want to use the search results in a script you can use the
 |getqflist()| function.
 
-To search in files in various directories the "**" pattern can be used.  It
-expands into an arbitrary depth of directories.  "**" can be used in all
-places where file names are expanded, thus also with |:next| and |:args|.
+To grep files in various directories the "**" pattern can be used.  It expands
+into an arbitrary depth of directories.  "**" can be used in all places where
+file names are expanded, thus also with |:next| and |:args|.
 
 
 Scroll back in messages					*new-scroll-back*
 -----------------------
 
 When displaying messages, at the |more-prompt| and the |hit-enter-prompt|, The
-'k', 'u' and 'b' keys can be used to scroll back to previous messages.  This
-is especially useful for commands such as ":syntax", ":autocommand" and
+'k', 'u', 'g' and 'b' keys can be used to scroll back to previous messages.
+This is especially useful for commands such as ":syntax", ":autocommand" and
 ":highlight".  This is implemented in a generic way thus it works for all
 commands and highlighting is kept.  Only works when the 'more' option is set.
 Previously it only partly worked for ":clist".
@@ -526,7 +547,7 @@ resulting characters can depend on the context.  Example: >
 	:inoremap <expr> . InsertDot()
 Here the dot will be mapped to whatever InsertDot() returns.
 
-Also works for abbreviations.  See |:map-<expr>| for the details.
+This also works for abbreviations.  See |:map-<expr>| for the details.
 
 
 Visual and Select mode mappings				*new-map-select*
@@ -548,7 +569,7 @@ Location list						*new-location-list*
 
 The support for a per-window quickfix list (location list) is added. The
 location list can be displayed in a location window (similar to the quickfix
-window). You can open more than one location list window. A set of commands
+window).  You can open more than one location list window.  A set of commands
 similar to the quickfix commands are added to browse the location list.
 (Yegappan Lakshmanan)
 
@@ -1679,7 +1700,7 @@ GTK setting and do select the menu when <F10> isn't mapped. (David Necas)
 After "Y" '[ and '] were not at start/end of the yanked text.
 
 When a telnet connection is dropped Vim preserves files and exits.  While
-doing that a SIGHUP may arrive and disturbe us, thus ignore it. (Scott
+doing that a SIGHUP may arrive and disturb us, thus ignore it. (Scott
 Anderson)  Also postpone SIGHUP, SIGQUIT and SIGTERM until it's safe to
 handle.  Added handle_signal().
 
@@ -1708,7 +1729,7 @@ message for the next buffer.  Temporarily clear 'shortmess' to avoid that.
 Win32: Cannot edit a file starting with # with --remote.  Do escape % and #
 when building the ":drop" command.
 
-A comment or | just after a expresion-backtick argument was not recognized.
+A comment or | just after a expression-backtick argument was not recognized.
 E.g. in :e `="foo"`"comment.
 
 "(" does not stop at an empty sentence (single dot and white space) while ")"
@@ -2676,6 +2697,14 @@ reported no matching tag.  Clear the cached tag name.
 
 In Insert mode the matchparen plugin highlighted the wrong paren when there is
 a string just next to a paren.
+
+GTK: After opening a new tab page the text was sometimes not drawn correctly.
+Flush output and catch up with events when updating the tab page labels.
+
+Using CTRL-W q to close the last window of a tab page could cause a crash in
+the GUI.
+
+GTK: The tab pages line menu was not converted from 'encoding' to utf-8.
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 27
+*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,11 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-GTK: tooltips make menu actions use wrong tab page. Yegappan will look into
-it.
-
-Add more tests for all new functionality in Vim 7.  Especially new functions.
 
 Darren Hiebert is including the patch for omni completion in ctags.  A new
 version still isn't available for download.
