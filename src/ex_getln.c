@@ -2841,6 +2841,38 @@ restore_cmdline(ccp)
     prev_ccline = *ccp;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Save the command line into allocated memory.  Returns a pointer to be
+ * passed to restore_cmdline_alloc() later.
+ * Returns NULL when failed.
+ */
+    char_u *
+save_cmdline_alloc()
+{
+    struct cmdline_info *p;
+
+    p = (struct cmdline_info *)alloc((unsigned)sizeof(struct cmdline_info));
+    if (p != NULL)
+	save_cmdline(p);
+    return (char_u *)p;
+}
+
+/*
+ * Restore the command line from the return value of save_cmdline_alloc().
+ */
+    void
+restore_cmdline_alloc(p)
+    char_u  *p;
+{
+    if (p != NULL)
+    {
+	restore_cmdline((struct cmdline_info *)p);
+	vim_free(p);
+    }
+}
+#endif
+
 /*
  * paste a yank register into the command line.
  * used by CTRL-R command in command-line mode

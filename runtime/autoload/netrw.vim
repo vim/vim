@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 26, 2006
-" Version:	94
+" Date:		Apr 28, 2006
+" Version:	95
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v94"
+let g:loaded_netrw = "v95"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -322,7 +322,9 @@ fun! netrw#NetRead(mode,...)
 
   " get name of a temporary file and set up shell-quoting character {{{3
   let tmpfile= tempname()
+"  call Decho("tmpfile<".tmpfile.">")
   let tmpfile= escape(substitute(tmpfile,'\','/','ge'),g:netrw_tmpfile_escape)
+"  call Decho("tmpfile<".tmpfile.">")
   if !isdirectory(substitute(tmpfile,'[^/]\+$','','e'))
    echohl Error | echo "***netrw*** your <".substitute(tmpfile,'[^/]\+$','','e')."> directory is missing!" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
@@ -806,9 +808,12 @@ fun! netrw#NetWrite(...) range
   call s:NetOptionSave()
 
   " Get Temporary Filename {{{3
-  let tmpfile= escape(tempname(),g:netrw_tmpfile_escape)
+  let tmpfile= tempname()
+"  call Decho("tmpfile<".tmpfile."> (raw)")
+  let tmpfile= escape(substitute(tmpfile,'\','/','ge'),g:netrw_tmpfile_escape)
+"  call Decho("tmpfile<".tmpfile."> (escaped)")
   if !isdirectory(substitute(tmpfile,'[^/]\+$','','e'))
-   echohl Error | echo "***netrw*** your ".substitute(tmpfile,'[^/]\+$','','e')." directory is missing!"
+   echohl Error | echo "***netrw*** your <".substitute(tmpfile,'[^/]\+$','','e')."> directory is missing!"
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "   call Dret("NetWrite")
    return
@@ -2023,7 +2028,12 @@ endfun
 fun! s:NetrwListHide()
 "  call Dfunc("NetrwListHide() hide=".g:netrw_hide." listhide<".g:netrw_list_hide.">")
 
+  " find a character not in the "hide" string to used as a separator
+  " for :g and :v commands
   let listhide= g:netrw_list_hide
+  let sep     = strpart(substitute('~!@#$%^&*{};:,<.>/?|abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890','['.escape(listhide,'-]^\').']','','ge'),1,1)
+"  call Decho("sep=".sep)
+
   while listhide != ""
    if listhide =~ ','
     let hide     = substitute(listhide,',.*$','','e')
@@ -2036,14 +2046,16 @@ fun! s:NetrwListHide()
    " Prune the list by hiding any files which match
    if g:netrw_hide == 1
 "    call Decho("hiding<".hide."> listhide<".listhide.">")
-"    call Decho('exe silent keepjumps '.w:netrw_bannercnt.',$g~'.hide.'~d')
-    exe 'silent keepjumps '.w:netrw_bannercnt.',$g~'.hide.'~d'
+    exe 'silent keepjumps '.w:netrw_bannercnt.',$g'.sep.hide.sep.'d'
    elseif g:netrw_hide == 2
 "    call Decho("showing<".hide."> listhide<".listhide.">")
-"    call Decho('exe silent keepjumps '.w:netrw_bannercnt.',$v~'.hide.'~d')
-    exe 'silent keepjumps '.w:netrw_bannercnt.',$v~'.hide.'~d'
+    exe 'silent keepjumps '.w:netrw_bannercnt.',$g'.sep.hide.sep.'s@^@ /-KEEP-/ @'
    endif
   endwhile
+  if g:netrw_hide == 2
+   exe 'silent keepjumps '.w:netrw_bannercnt.',$v@^ /-KEEP-/ @d'
+   exe 'silent keepjumps '.w:netrw_bannercnt.',$s@^\%( /-KEEP-/ \)\+@@e'
+  endif
 
 "  call Dret("NetrwListHide")
 endfun
@@ -2759,7 +2771,7 @@ endfun
 " DirBrowse: supports local file/directory browsing {{{2
 fun! netrw#DirBrowse(dirname)
   if !exists("w:netrw_longlist")|let w:netrw_longlist= g:netrw_longlist|endif
-"  call Dfunc("DirBrowse(dirname<".a:dirname.">) buf#".bufnr("%")." winnr=".winnr()." sortby=".g:netrw_sort_by)
+"  call Dfunc("DirBrowse(dirname<".a:dirname.">) buf#".bufnr("%")." winnr=".winnr()." sortby=".g:netrw_sort_by." hide=".g:netrw_hide)
 "  call Dredir("ls!")
 
   if exists("s:netrw_skipbrowse")

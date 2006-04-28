@@ -463,6 +463,12 @@ update_screen(type)
 		))
 	curwin->w_redr_type = type;
 
+#ifdef FEAT_WINDOWS
+    /* Redraw the tab pages line if needed. */
+    if (redraw_tabline || type >= NOT_VALID)
+	draw_tabline();
+#endif
+
 #ifdef FEAT_SYN_HL
     /*
      * Correct stored syntax highlighting info for changes in each displayed
@@ -488,12 +494,6 @@ update_screen(type)
 		syn_stack_apply_changes(wp->w_buffer);
 	}
     }
-#endif
-
-#ifdef FEAT_WINDOWS
-    /* Redraw the tab pages line if needed. */
-    if (redraw_tabline || type >= NOT_VALID)
-	draw_tabline();
 #endif
 
     /*

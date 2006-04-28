@@ -910,7 +910,7 @@ msgstr ""
 
 #, c-format
 msgid "# Value of 'encoding' when this file was written\n"
-msgstr "# Wartoœæ 'encoding' w czasie zapsu tego pliku\n"
+msgstr "# Wartoœæ 'encoding' w czasie zapisu tego pliku\n"
 
 msgid "Illegal starting char"
 msgstr "Niedopuszczalny pocz¹tkowy znak"
@@ -1483,7 +1483,7 @@ msgstr "Wczytywanie ze stdin..."
 
 #. Re-opening the original file failed!
 msgid "E202: Conversion made file unreadable!"
-msgstr "E202: Plik stworzony poprzez przemianê jest nieodczytywalny!"
+msgstr "E202: Nie mo¿na otworzyæ pliku utworzonego przez przemianê!"
 
 msgid "[fifo/socket]"
 msgstr "[fifo/socket]"
@@ -1648,13 +1648,13 @@ msgid "[mac]"
 msgstr "[mac]"
 
 msgid "[mac format]"
-msgstr "[format mac-a]"
+msgstr "[format maca]"
 
 msgid "[unix]"
 msgstr "[unix]"
 
 msgid "[unix format]"
-msgstr "[format unix-a]"
+msgstr "[format unixa]"
 
 msgid "1 line, "
 msgstr "1 wiersz, "
@@ -1928,7 +1928,7 @@ msgid "Input _Methods"
 msgstr "Input _Methods"
 
 msgid "VIM - Search and Replace..."
-msgstr "VIM - Szukaj i Zamieniaj..."
+msgstr "VIM - Szukaj i Zamieñ..."
 
 msgid "VIM - Search..."
 msgstr "VIM - Szukaj..."
@@ -1967,7 +1967,7 @@ msgid "Replace All"
 msgstr "Zamieñ wszystkie"
 
 msgid "Vim: Received \"die\" request from session manager\n"
-msgstr "Vim: otrzymano ¿¹danie \"die\" od manad¿era sesji\n"
+msgstr "Vim: otrzymano ¿¹danie \"die\" od mened¿era sesji\n"
 
 msgid "Close"
 msgstr "Zamknij"
@@ -2463,7 +2463,7 @@ msgid "writelines() requires list of strings"
 msgstr "writelines() wymaga listy ci¹gów"
 
 msgid "E264: Python: Error initialising I/O objects"
-msgstr "E264: Python: B³¹d w inicjalizacji obiektów I/O"
+msgstr "E264: Python: B³¹d w uruchomieniu obiektów I/O"
 
 msgid "attempt to refer to deleted buffer"
 msgstr "próba odniesienia do skasowanego bufora"
@@ -2542,7 +2542,7 @@ msgid "Show base class of"
 msgstr "Poka¿ bazê klasy"
 
 msgid "Show overridden member function"
-msgstr "Poka¿ przepisan¹ funkcjê cz³onkow¹"
+msgstr "Poka¿ przepisan¹ funkcjê cz³onow¹"
 
 msgid "Retrieve from file"
 msgstr "Pobieraj z pliku"
@@ -2587,7 +2587,7 @@ msgid "Show docu of"
 msgstr "Poka¿ dokumentacjê dla"
 
 msgid "Generate docu for"
-msgstr "Wygeneruj dokumentacjê dla"
+msgstr "Utwórz dokumentacjê dla"
 
 msgid ""
 "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "

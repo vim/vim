@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.0f.  Last change: 2006 Apr 26
+*pi_netrw.txt*  For Vim version 7.0f.  Last change: 2006 Apr 28
 
 		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
 
@@ -1473,6 +1473,12 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v95: * bugfix - Hiding mode worked correctly (don't show any file
+	       matching any of the g:netrw_hide patterns), but
+	       but showing mode was showing only those files that didn't
+	       match any of the g:netrw_hide patterns.  Instead, it now
+	       shows all files that match any of the g:netrw_hide patterns
+	       (the difference between a logical and and logical or).
 	v94: * bugfix - a Decho() had a missing quote; only affects things
 	       when debugging was enabled.
 	v93: * bugfix - removed FocusGained event from causing a slow-browser
