@@ -198,6 +198,9 @@ struct ufunc
  */
 static hashtab_T	func_hashtab;
 
+/* The names of packages that once were loaded is remembered. */
+static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
+
 /* list heads for garbage collection */
 static dict_T		*first_dict = NULL;	/* list of all dicts */
 static list_T		*first_list = NULL;	/* list of all lists */
@@ -806,6 +809,9 @@ eval_clear()
     /* functions */
     free_all_functions();
     hash_clear(&func_hashtab);
+
+    /* autoloaded script names */
+    ga_clear_strings(&ga_loaded);
 
     /* unreferenced lists and dicts */
     (void)garbage_collect();
@@ -19098,10 +19104,11 @@ free_all_functions()
 function_exists(name)
     char_u *name;
 {
-    char_u  *p = name;
+    char_u  *nm = name;
+    char_u  *p;
     int	    n = FALSE;
 
-    p = trans_function_name(&p, FALSE, TFN_INT|TFN_QUIET, NULL);
+    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL);
     if (p != NULL)
     {
 	if (builtin_function(p))
@@ -19308,9 +19315,6 @@ prof_self_cmp(s1, s2)
 }
 
 #endif
-
-/* The names of packages that once were loaded is remembered. */
-static garray_T	    ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 
 /*
  * If "name" has a package name try autoloading the script for it.
