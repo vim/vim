@@ -1,4 +1,4 @@
-Tests for string text objects. vim: set ft=vim :
+Tests for string and html text objects. vim: set ft=vim :
 
 Note that the end-of-line moves the cursor to the next test line.
 
@@ -15,7 +15,14 @@ da"
 :set quoteescape=+*-
 di`
 $F"va"oha"i"rz
-k:put =matchstr(\"abcd\", \".\", 0, 2) " b
+:"
+/^<begin
+jfXdit
+0fXdit
+fXdat
+0fXdat
+:"
+:put =matchstr(\"abcd\", \".\", 0, 2) " b
 :put =matchstr(\"abcd\", \"..\", 0, 2) " bc
 :put =matchstr(\"abcd\", \".\", 2, 0) " c (zero and negative -> first match)
 :put =matchstr(\"abcd\", \".\", 0, -1) " a
@@ -31,4 +38,11 @@ out " in "noXno"
 "'" 'blah' rep 'buh'
 bla `s*`d-`+++`l**` b`la
 voo "nah" sdf " asdf" sdf " sdf" sd
+
+<begin>
+-<b>asdf<i>Xasdf</i>asdf</b>-
+-<b>asdX<i>a<i />sdf</i>asdf</b>-
+-<b>asdf<i>Xasdf</i>asdf</b>-
+-<b>asdX<i>as<b />df</i>asdf</b>-
+</begin>
 end:

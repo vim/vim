@@ -5,6 +5,13 @@ out " in ""
 "'" 'blah'yyyyy'buh'
 bla `` b`la
 voo "zzzzzzzzzzzzzzzzzzzzzzzzzzzzsd
+
+<begin>
+-<b>asdf<i></i>asdf</b>-
+-<b></b>-
+-<b>asdfasdf</b>-
+--
+</begin>
 b
 bc
 c

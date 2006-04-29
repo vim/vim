@@ -83,10 +83,11 @@ an 50.10.550 &Syntax.AB.Baan :cal SetSyn("baan")<CR>
 an 50.10.560 &Syntax.AB.BASIC :cal SetSyn("basic")<CR>
 an 50.10.570 &Syntax.AB.BC\ calculator :cal SetSyn("bc")<CR>
 an 50.10.580 &Syntax.AB.BDF\ font :cal SetSyn("bdf")<CR>
-an 50.10.590 &Syntax.AB.BibTeX :cal SetSyn("bib")<CR>
-an 50.10.600 &Syntax.AB.BIND.BIND\ config :cal SetSyn("named")<CR>
-an 50.10.610 &Syntax.AB.BIND.BIND\ zone :cal SetSyn("bindzone")<CR>
-an 50.10.620 &Syntax.AB.Blank :cal SetSyn("blank")<CR>
+an 50.10.590 &Syntax.AB.BibTeX.Bibliography\ database :cal SetSyn("bib")<CR>
+an 50.10.600 &Syntax.AB.BibTeX.Bibliography\ Style :cal SetSyn("bst")<CR>
+an 50.10.610 &Syntax.AB.BIND.BIND\ config :cal SetSyn("named")<CR>
+an 50.10.620 &Syntax.AB.BIND.BIND\ zone :cal SetSyn("bindzone")<CR>
+an 50.10.630 &Syntax.AB.Blank :cal SetSyn("blank")<CR>
 an 50.20.100 &Syntax.C.C :cal SetSyn("c")<CR>
 an 50.20.110 &Syntax.C.C++ :cal SetSyn("cpp")<CR>
 an 50.20.120 &Syntax.C.C# :cal SetSyn("cs")<CR>

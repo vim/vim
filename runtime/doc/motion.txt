@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0f.  Last change: 2006 Apr 28
+*motion.txt*    For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -707,7 +707,8 @@ there are a few restrictions.
 
 The normal method is to select a <tag> until the matching </tag>.  For "at"
 the tags are included, for "it" they are excluded.  But when "it" is repeated
-the tags will be included (otherwise nothing would change).
+the tags will be included (otherwise nothing would change).  Also, "it" used
+on a tag block with no contents will select the leading tag.
 
 "<aaa/>" items are skipped.  Case is ignored, also for XML where case does
 matter.

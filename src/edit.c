@@ -925,6 +925,15 @@ doESCkey:
 	    if (echeck_abbr(Ctrl_O + ABBR_OFF))
 		break;
 	    ins_ctrl_o();
+
+#ifdef FEAT_VIRTUALEDIT
+	    /* don't move the cursor left when 'virtualedit' has "onemore". */
+	    if (ve_flags & VE_ONEMORE)
+	    {
+		ins_at_eol = FALSE;
+		nomove = TRUE;
+	    }
+#endif
 	    count = 0;
 	    goto doESCkey;
 

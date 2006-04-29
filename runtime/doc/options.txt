@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 26
+*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3201,7 +3201,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	For Mac OSX you can use something like this: >
 	    :set guifont=Monaco:h10
-<								*E236*
+<	Also see 'macatsui', it can help fix display problems.
+								*E236*
 	Note that the fonts must be mono-spaced (all characters have the same
 	width).  An exception is GTK 2: all fonts are accepted, but
 	mono-spaced fonts look best.
@@ -5108,8 +5109,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the
 			|+insert_expand| feature}
 			{not in Vi}
-	Determines the maximum number of items to show in the popup menu.
-	When zero as much space as available is used.
+	Determines the maximum number of items to show in the popup menu for
+	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
 
 

@@ -1085,7 +1085,8 @@ free_all_mem()
     reset_last_sourcing();
 
 #ifdef FEAT_WINDOWS
-    vim_free(first_tabpage);
+    free_tabpage(first_tabpage);
+    first_tabpage = NULL;
 #endif
 
 # ifdef UNIX

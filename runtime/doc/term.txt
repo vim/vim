@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
+*term.txt*      For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -751,8 +751,8 @@ which is editing another buffer, the Visual or Select mode is stopped.
 In Normal, Visual and Select mode clicking the right mouse button with the alt
 key pressed causes the Visual area to become blockwise.  When 'mousemodel is
 "popup" the left button has to be used with the alt key.  Note that this won't
-work on systems where the window manager uses the mouse when the alt key is
-pressed (it may move the window).
+work on systems where the window manager consumes the mouse events when the
+alt key is pressed (it may move the window).
 
 							*double-click*
 Double, triple and quadruple clicks are supported when the GUI is active,

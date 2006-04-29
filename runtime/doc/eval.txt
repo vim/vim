@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 26
+*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2344,12 +2344,13 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 			exists("##ColorScheme")
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
+		Trailing characters that can't be part of the name are often
+		ignored, but don't depend on it.
 		Note that the argument must be a string, not the name of the
 		variable itself!  For example: >
 			exists(bufcount)
 <		This doesn't check for existence of the "bufcount" variable,
-		but gets the contents of "bufcount", and checks if that
-		exists.
+		but gets the value of "bufcount", and checks if that exists.
 
 expand({expr} [, {flag}])				*expand()*
 		Expand wildcards and the following special keywords in {expr}.
