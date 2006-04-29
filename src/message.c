@@ -1004,13 +1004,9 @@ wait_return(redraw)
 #endif
 	    if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
 	{
-	    char_u	buf[2];
-
 	    /* Put the character back in the typeahead buffer.  Don't use the
 	     * stuff buffer, because lmaps wouldn't work. */
-	    buf[0] = c;
-	    buf[1] = NUL;
-	    ins_typebuf(buf, REMAP_YES, 0, !KeyTyped, FALSE);
+	    ins_char_typebuf(c);
 	    do_redraw = TRUE;	    /* need a redraw even though there is
 				       typeahead */
 	}

@@ -648,23 +648,13 @@ normal_cmd(oap, toplevel)
 	    && VIsual_select
 	    && (vim_isprintc(c) || c == NL || c == CAR || c == K_KENTER))
     {
-# ifdef FEAT_MBYTE
-	char_u	    buf[MB_MAXBYTES + 1];
-
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
-# else
-	char_u	    buf[2];
-
-	buf[0] = c;
-	buf[1] = NUL;
-# endif
 	/* Fake a "c"hange command.  When "restart_edit" is set (e.g., because
 	 * 'insertmode' is set) fake a "d"elete command, Insert mode will
 	 * restart automatically.
 	 * Insert the typed character in the typeahead buffer, so that it will
 	 * be mapped in Insert mode.  Required for ":lmap" to work.  May cause
 	 * mapping a character from ":vnoremap"... */
-	(void)ins_typebuf(buf, REMAP_YES, 0, !KeyTyped, FALSE);
+	ins_char_typebuf(c);
 	if (restart_edit != 0)
 	    c = 'd';
 	else

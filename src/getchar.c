@@ -1033,6 +1033,38 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 }
 
 /*
+ * Put character "c" back into the typeahead buffer.
+ * Can be used for a character obtained by vgetc() that needs to be put back.
+ */
+    void
+ins_char_typebuf(c)
+    int	    c;
+{
+#ifdef FEAT_MBYTE
+    char_u	buf[MB_MAXBYTES];
+#else
+    char_u	buf[4];
+#endif
+    if (IS_SPECIAL(c))
+    {
+	buf[0] = K_SPECIAL;
+	buf[1] = K_SECOND(c);
+	buf[2] = K_THIRD(c);
+	buf[3] = NUL;
+    }
+    else
+    {
+#ifdef FEAT_MBYTE
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+#else
+	buf[0] = c;
+	buf[1] = NUL;
+#endif
+    }
+    (void)ins_typebuf(buf, REMAP_YES, 0, !KeyTyped, FALSE);
+}
+
+/*
  * Return TRUE if the typeahead buffer was changed (while waiting for a
  * character to arrive).  Happens when a message was received from a client or
  * from feedkeys().

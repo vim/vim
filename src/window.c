@@ -47,7 +47,6 @@ static void frame_fix_width __ARGS((win_T *wp));
 static int win_alloc_firstwin __ARGS((win_T *oldwin));
 #if defined(FEAT_WINDOWS) || defined(PROTO)
 static tabpage_T *alloc_tabpage __ARGS((void));
-static void free_tabpage __ARGS((tabpage_T *tp));
 static int leave_tabpage __ARGS((buf_T *new_curbuf));
 static void enter_tabpage __ARGS((tabpage_T *tp, buf_T *old_curbuf));
 static void frame_fix_height __ARGS((win_T *wp));
@@ -3184,7 +3183,7 @@ alloc_tabpage()
     return tp;
 }
 
-    static void
+    void
 free_tabpage(tp)
     tabpage_T	*tp;
 {

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0f.  Last change: 2006 Apr 17
+*editing.txt*   For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -343,12 +343,12 @@ CTRL-^			Edit the alternate file (equivalent to ":e #").
 			separated by a non-filename (see 'isfname') and
 			non-numeric character. White space between the
 			filename, the separator and the number are ignored.
-			Examples: >
-				eval.c:10
-				eval.c @ 20
-				eval.c (30)
-				eval.c 40
-<
+			Examples:
+				eval.c:10 ~
+				eval.c @ 20 ~
+				eval.c (30) ~
+				eval.c 40 ~
+
 							*v_gF*
 {Visual}[count]gF	Same as "v_gf".
 
