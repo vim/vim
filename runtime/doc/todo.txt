@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 28
+*todo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -589,6 +589,8 @@ Macintosh:
 
 
 "Small" problems:
+9   When the last edited file is a help file, using '0 in a new Vim doesn't
+    edit the file as a help file.
 8   When an ":edit" is inside a try command and the ATTENTION prompt is used,
     the :catch commands are always executed, also when the file is edited
     normally.  Should reset did_emsg and undo side effects.  Also make sure

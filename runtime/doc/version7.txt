@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 28
+*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -602,37 +602,56 @@ CTRL-W F		Start editing the filename under the cursor in a new
 Insert mode commands: ~
 
 CTRL-\ CTRL-O		Execute a Normal mode command.  Like CTRL-O but
-			without moving the cursor.
+			without moving the cursor. |i_CTRL-\_CTRL-O|
 
 Options: ~
 
-'completefunc'		The name of a function used for user-specified Insert
-			mode completion.  CTRL-X CTRL-U can be used in Insert
-			mode to do any kind of completion.  (Taro Muraoka)
-'completeopt'		Enable popup menu for Insert mode completion.
-'omnifunc'		The name of a function used for omni completion.
-'quoteescape'		Characters used to escape quotes inside a string.
-			Used for the a", a' and a` text objects. |a'|
-'numberwidth'		Minimal width of the space used for the 'number'
-			option. (Emmanuel Renieris)
-'mzquantum'		Time in msec to schedule MzScheme threads.
-'printmbcharset'	CJK character set to be used for :hardcopy
-'printmbfont'		font names to be used for CJK output of :hardcopy
-'fsync'			Whether fsync() is called after writing a file.
-			(Ciaran McCreesh)
-'wildoptions'		"tagfile" value enables listing the file name of
-			matching tags for CTRL-D command line completion.
-			(based on an idea from Yegappan Lakshmanan)
-'formatlistpat'		pattern to recognize a numbered list for formatting.
-			(idea by Hugo Haas)
+'balloonexpr'		expression for text to show in evaluation balloon
+'completefunc'		The name of the function used for user-specified
+			Insert mode completion.  CTRL-X CTRL-U can be used in
+			Insert mode to do any kind of completion.  (Taro
+			Muraoka)
+'completeopt'		Enable popup menu and other settings for Insert mode
+			completion.
+'cursorcolumn'		highlight column of the cursor
+'cursorline'		highlight line of the cursor
 'formatexpr'		expression for formatting text with |gq| and when text
 			goes over 'textwidth' in Insert mode.
+'formatlistpat'		pattern to recognize a numbered list for formatting.
+			(idea by Hugo Haas)
+'fsync'			Whether fsync() is called after writing a file.
+			(Ciaran McCreesh)
+'guitablabel'		expression for text to display in GUI tab page label
+'guitabtooltip'		expression for text to display in GUI tab page tooltip
+'macatsui'		Mac: use ATSUI text display functions
+'maxcombine'		maximum number of combining characters displayed
+'maxmempattern'		maximum amount of memory to use for pattern matching
+'mkspellmem'		parameters for |:mkspell| memory use
+'mzquantum'		Time in msec to schedule MzScheme threads.
+'numberwidth'		Minimal width of the space used for the 'number'
+			option. (Emmanuel Renieris)
+'omnifunc'		The name of the function used for omni completion.
+'operatorfunc'		function to be called for |g@| operator
+'printmbcharset'	CJK character set to be used for :hardcopy
+'printmbfont'		font names to be used for CJK output of :hardcopy
+'pumheight'		maximum number of items to show in the popup menu
+'quoteescape'		Characters used to escape quotes inside a string.
+			Used for the a", a' and a` text objects. |a'|
+'shelltemp'		whether to use a temp file or pipes for shell commands
+'showtabline'		whether to show the tab pages line
 'spell'			switch spell checking on/off
+'spellcapcheck'		pattern to locate the end of a sentence
+'spellfile'		file where good and wrong words are added
 'spelllang'		languages to check spelling for
 'spellsuggest'		methods for spell suggestions
 'synmaxcol'		maximum column to look for syntax items; avoids very
 			slow redrawing when there are very long lines
+'tabline'		expression for text to display in the tab pages line
+'tabpagemax'		maximum number of tab pages to open for |-p|
 'verbosefile'		Log messages in a file.
+'wildoptions'		"tagfile" value enables listing the file name of
+			matching tags for CTRL-D command line completion.
+			(based on an idea from Yegappan Lakshmanan)
 'winfixwidth'		window with fixed width, similar to 'winfixheight'
 
 
@@ -651,11 +670,13 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:delmarks|		Delete marks.
 
 |:exusage|		Help for Ex commands (Nvi command).
-
 |:viusage|		Help for Vi commands (Nvi command).
 
 |:sort|			Sort lines in the buffer without depending on an
 			external command. (partly by Bryce Wagner)
+
+|:vimgrep|		Internal grep command, search for a pattern in files.
+|:vimgrepadd|		Like |:vimgrep| but don't make a new list.
 
 |:caddfile|		Add error messages to an existing quickfix list
 			(Yegappan Lakshmanan).
@@ -707,7 +728,65 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:ltag|			Jump to a tag and add matching tags to a location list.
 
 |:undojoin|		Join a change with the previous undo block.
+|:undolist|		List the leafs of the undo tree.
 
+|:earlier|		Go back in time for changes in the text.
+|:later|		Go forward in time for changes in the text.
+
+|:for|			Loop over a |List|.
+|:endfor|
+
+|:lockvar|		Lock a variable, prevents it from being changed.
+|:unlockvar|		Unlock a locked variable.
+
+|:mkspell|		Create a Vim spell file.
+|:spellgood|		Add a word to the list of good words.
+|:spellwrong|		Add a word to the list of bad words
+|:spelldump|		Dump list of good words.
+|:spellinfo|		Show information about the spell files used.
+|:spellrepall|		Repeat a spelling correction for the whole buffer.
+|:spellundo|		Remove a word from list of good and bad words.
+
+|:mzscheme|		Execute MzScheme commands.
+|:mzfile|   		Execute an MzScheme script file.
+
+|:nbkey|		Pass a key to NetBeans for processing.
+
+|:profile|		Commands for Vim script profiling.
+|:profdel|		Stop profiling for specified items.
+
+|:smap|			Select mode mapping.
+|:smapclear|
+|:snoremap|
+|:sunmap|
+
+|:xmap|			Visual mode mapping, not used for Select mode.
+|:xmapclear|
+|:xnoremap|
+|:xunmap|
+
+|:smenu|		Select mode menu.
+|:snoremenu|
+|:sunmenu|
+
+|:xmenu|		Visual mode menu, not used for Select mode.
+|:xnoremenu|
+|:xunmenu|
+
+|:tabclose|		Close the current tab page.
+|:tabdo|		Perform a command in every tab page.
+|:tabedit|		Edit a file in a new tab page.
+|:tabnew|		Open a new tab page.
+|:tabfind|		Search for a file and open it in a new tab page.
+|:tabnext|		Go to the next tab page.
+|:tabprevious|		Go to the previous tab page.
+|:tabNext|		Go to the previous tab page.
+|:tabfirst|		Go to the first tab page.
+|:tabrewind|		Go to the first tab page.
+|:tablast|		Go to the last tab page.
+|:tabmove|		Move the current tab page elsewhere.
+|:tabonly|		Close all other tab pages.
+|:tabs|			List the tab pages and the windows they contain.
 
 Ex command modifiers: ~
 
@@ -716,6 +795,8 @@ Ex command modifiers: ~
 |:noautocmd|		Do not trigger autocommand events.
 
 |:sandbox|		Execute a command in the sandbox.
+
+|:tab|			When opening a new window create a new tab page.
 
 
 Ex command arguments: ~
@@ -773,6 +854,7 @@ New and extended functions: ~
 |getpos()|		return a list with the position of cursor, mark, etc.
 |getqflist()|		list of quickfix errors (Yegappan Lakshmanan)
 |getreg()|		get contents of a register
+|gettabwinvar()|	get variable from window in specified tab page.
 |has_key()|		check whether a key appears in a Dictionary
 |hasmapto()|		check for a mapping to a string
 |inputlist()|		select an entry from a list
@@ -795,6 +877,7 @@ New and extended functions: ~
 |max()|			maximum value in a List or Dictionary
 |min()|			minimum value in a List or Dictionary
 |mkdir()|		create a directory
+|pathshorten()|		reduce directory names to a single character
 |printf()|		format text
 |pumvisible()|		check whether the popup menu is displayed
 |range()|		generate a List with numbers
@@ -812,6 +895,7 @@ New and extended functions: ~
 |setloclist()|		modify a location list (Yegappan Lakshmanan)
 |setpos()|		set cursor or mark to a position
 |setqflist()|		modify a quickfix list (Yegappan Lakshmanan)
+|settabwinvar()|	set variable in window of specified tab page
 |sort()|		sort a List
 |soundfold()|		get the sound-a-like equivalent of a word
 |spellbadword()|	get a badly spelled word
@@ -819,6 +903,7 @@ New and extended functions: ~
 |split()|		split a String into a List
 |str2nr()|		convert a string to a number, base 8, 10 or 16
 |stridx()|		extra argument: start position
+|strridx()|		extra argument: start position
 |string()|		string representation of a List or Dictionary
 |system()|		extra argument: filters {input} through a shell command
 |tabpagebuflist()|	List of buffers in a tab page
@@ -835,6 +920,26 @@ New and extended functions: ~
 
 User defined functions can now be loaded automatically from the "autoload"
 directory in 'runtimepath'.  See |autoload-functions|.
+
+
+New Vim variables: ~
+
+|v:insertmode|		used for |InsertEnter| and |InsertChange| autocommands
+|v:val|			item value in a |map()| or |filter()| function
+|v:key|			item key in a |map()| or |filter()| function
+|v:profiling|		non-zero after a ":profile start" command
+|v:fcs_reason| 		the reason why |FileChangedShell| was triggered
+|v:fcs_choice| 		what should happen after |FileChangedShell|
+|v:beval_bufnr|		buffer number for 'balloonexpr'
+|v:beval_winnr|		window number for 'balloonexpr'
+|v:beval_lnum|		line number for 'balloonexpr'
+|v:beval_col|		column number for 'balloonexpr'
+|v:beval_text|		text under the mouse pointer for 'balloonexpr'
+|v:scrollstart|		what caused the screen to be scrolled up
+|v:swapname|		name of the swap file for the |SwapExists| event
+|v:swapchoice|		what do do for an existing swap file
+|v:swapcommand|		command to be executed after handling |SwapExists|
+|v:char|		argument for evaluating 'formatexpr'
 
 
 New autocommand events: ~
@@ -1025,6 +1130,7 @@ Tamil in TSCII encoding (Yegappan Lakshmanan)
 Greek in cp737 (Panagiotis Louridas)
 Polish-slash (HS6_06)
 Ukrainian-jcuken (Anatoli Sakhnik)
+Kana (Edward L. Fo)
 
 
 New message translations: ~
@@ -1067,14 +1173,18 @@ Mac: When started from Finder change directory to the file being edited or the
 user home directory.
 
 Added the t_SI and t_EI escape sequences for starting and ending Insert mode.
+To be used to set the cursor shape to a bar or a block.  No default values,
+they are not supported by termcap/terminfo.
+
 GUI font selector for Motif. (Marcin Dalecki)
 
 Nicer toolbar buttons for Motif. (Marcin Dalecki)
 
 Mnemonics for the Motif find/replace dialog. (Marcin Dalecki)
 
-To be used to set the cursor shape to a bar or a block.  No default values,
-they are not supported by termcap/terminfo.
+Included a few improvements for Motif from Marcin Dalecki.  Draw label
+contents ourselves to make them handle fonts in a way configurable by Vim and
+a bit less dependent on the X11 font management.
 
 Autocommands can be defined local to a buffer.  This means they will also work
 when the buffer does not have a name or no specific name.  See
@@ -1125,7 +1235,7 @@ IMPROVEMENTS						*improvements-7*
 
 ":helpgrep" accepts a language specifier after the pattern: "pat@it".
 
-Move the help for printing to a separate help file.  It's quite a lot now.
+Moved the help for printing to a separate help file.  It's quite a lot now.
 
 When doing completion for ":!cmd", ":r !cmd" or ":w !cmd" executable files are
 found in $PATH instead of looking for ordinary files in the current directory.
@@ -1153,8 +1263,8 @@ breakpoint at the cursor.
 It is now possible to define a function with: >
 	:exe "func Test()\n ...\n endfunc"
 
-The tutor was updated to make it simpler to use and added text to explain a
-few more important commands.  Used ideas from Gabriel Zachmann.
+The tutor was updated to make it simpler to use and text was added to explain
+a few more important commands.  Used ideas from Gabriel Zachmann.
 
 Unix: When libcall() fails obtain an error message with dlerror() and display
 it. (Johannes Zellner)
@@ -1176,7 +1286,7 @@ For lisp indenting and matching parenthesis: (Sergey Khorev)
 
 Added the "count" argument to match(), matchend() and matchstr(). (Ilya Sher)
 
-winnr() takes an optional "$" and "#" arguments.  (Nikolai Weibull, Yegappan
+winnr() takes an optional "$" or "#" argument.  (Nikolai Weibull, Yegappan
 Lakshmanan)
 
 Added 's' flag to search(): set ' mark if cursor moved. (Yegappan Lakshmanan)
@@ -1185,6 +1295,7 @@ Added 'c' flag to search(): accept match at the cursor.
 Added 'e' flag to search(): move to end of the match. (Benji Fisher)
 Added 'p' flag to search(): return number of sub-pattern. (Benji Fisher)
 These also apply to searchpos(), searchpair() and searchpairpos().
+
 The search() and searchpair() functions have an extra argument to specify
 where to stop searching.  Speeds up searches that should not continue too far.
 
@@ -1207,8 +1318,9 @@ upper case.  Add color support to the builtin vt320 terminal codes.
 For the '%' item in 'viminfo', allow a number to set a maximum for the number
 of buffers.
 
-When a file looks like a shell script, check for an "exec" command that starts
-the tcl interpreter. (suggested by Alexios Zavras)
+For recognizing the file type: When a file looks like a shell script, check
+for an "exec" command that starts the tcl interpreter. (suggested by Alexios
+Zavras)
 
 Support conversion between utf-8 and latin9 (iso-8859-15) internally, so that
 digraphs still work when iconv is not available.
@@ -1246,10 +1358,6 @@ with different 'encoding' settings to exchange messages.
 
 Internal: Changed ga_room into ga_maxlen, so that it doesn't need to be
 incremented/decremented each time.
-
-Included a few improvements for Motif from Marcin Dalecki.  Draw label
-contents ourselves to make them handle fonts in a way configurable by Vim and
-a bit less dependent on the X11 font management.
 
 When a register is empty it is not stored in the viminfo file.
 
@@ -1428,7 +1536,7 @@ asdf.c" when it sets the filename for the buffer.
 Insert mode completion for whole lines now also searches unloaded buffers.
 
 The colortest.vim script can now be invoked directly with ":source" or
-":runtime".
+":runtime syntax/colortest.vim".
 
 The 'statusline' option can be local to the window, so that each window can
 have a different value.  (partly by Yegappan Lakshmanan)
@@ -1474,7 +1582,7 @@ to store the ":quit" command.
 Moved the code for printing to src/hardcopy.c.
 
 Moved some code from main() to separate functions to make it easier to see
-what is being done.  Use a structure to avoid a lot of arguments to the
+what is being done.  Using a structure to avoid a lot of arguments to the
 functions.
 
 Moved unix_expandpath() to misc1.c, so that it can also be used by os_mac.c
@@ -2646,10 +2754,10 @@ When 'encoding' is "utf-8" then ":help spell" would report an illegal byte and
 the file was not converted from latin1 to utf-8.  Now retry with latin1 if
 reading the file as utf-8 results in illegal bytes.
 
-Escape argument of feedkeys() before putting it in the typeahead buffer.
+Escape the argument of feedkeys() before putting it in the typeahead buffer.
 (Yukihiro Nakadaira)
 
-Add v:char variable for evaluating 'formatexpr'.  (Yukihiro Nakadaira)
+Added the v:char variable for evaluating 'formatexpr'. (Yukihiro Nakadaira)
 
 With 8 colors Search highlighting combined with Statement highlighted text
 made the text disappear.
@@ -2661,22 +2769,23 @@ move the cursor left.
 
 Prevent that using CTRL-R = in Insert mode can start Visual mode.
 
-Fixed a crash that occured when in Insert mode with completion active a
+Fixed a crash that occured when in Insert mode with completion active and a
 mapping caused edit() to be called recursively.
 
 When using CTRL-O in Insert mode just after the last character while
 'virtualedit' is "all", then typing CR moved the last character to the next
 line.  Call coladvance() before starting the new line.
 
-When using ":shell" and in the command line window ignore clicks on the tab
-page labels.
+When using |:shell| ignore clicks on the tab page labels.  Also when using the
+command line window.
 
-When 'eventignore' is "all" then ignoring some events, e.g., for ":vimgrep",
-would actually trigger more events.
+When 'eventignore' is "all" then adding more to ignoring some events, e.g.,
+for ":vimgrep", would actually trigger more events.
 
 Win32: When a running Vim uses server name GVIM1 then "gvim --remote fname"
-doesn't find it.  When looking for a server name that doesn't end in a digit
-and it is not found then use another server that is found (just like Unix).
+didn't find it.  When looking for a server name that doesn't end in a digit
+and it is not found then use another server with that name and a number (just
+like on Unix).
 
 When using "double" in 'spellsuggest' when the language doesn't support sound
 folding resulted in too many suggestions.
@@ -2692,7 +2801,7 @@ was not updated right away.
 
 The syntax menu didn't work in compatible mode.
 
-After using ":ta id" twice with the same "id", ":ts" and then ":pop" a ":ts"
+After using ":tag id" twice with the same "id", ":ts" and then ":pop" a ":ts"
 reported no matching tag.  Clear the cached tag name.
 
 In Insert mode the matchparen plugin highlighted the wrong paren when there is
@@ -2701,10 +2810,17 @@ a string just next to a paren.
 GTK: After opening a new tab page the text was sometimes not drawn correctly.
 Flush output and catch up with events when updating the tab page labels.
 
-Using CTRL-W q to close the last window of a tab page could cause a crash in
-the GUI.
+In the GUI, using CTRL-W q to close the last window of a tab page could cause
+a crash.
 
 GTK: The tab pages line menu was not converted from 'encoding' to utf-8.
+
+Typing a multi-byte character or a special key at the hit-enter prompt did not
+work.
+
+When 'virtualedit' contains "onemore" CTRL-O in Insert mode still moved the
+cursor left when it was after the end of the line, even though it's allowed to
+be there.
 
 
  vim:tw=78:ts=8:ft=help:norl:
