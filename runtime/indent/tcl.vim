@@ -36,13 +36,13 @@ function s:count_braces(lnum, count_open)
   while i != -1
     if synIDattr(synID(a:lnum, i + 1, 0), 'name') !~ 'tcl\%(Comment\|String\)'
       if line[i] == '{'
-        let n_open += 1
+	let n_open += 1
       elseif line[i] == '}'
-        if n_open > 0
-          let n_open -= 1
-        else
-          let n_close += 1
-        endif
+	if n_open > 0
+	  let n_open -= 1
+	else
+	  let n_close += 1
+	endif
       endif
     endif
     let i = match(line, pattern, i + 1)

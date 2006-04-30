@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	Java Script
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Feb 6
+" Last Change:	2006 Apr 30
 
 function! javascriptcomplete#CompleteJS(findstart, base)
   if a:findstart
@@ -48,7 +48,7 @@ function! javascriptcomplete#CompleteJS(findstart, base)
 		let doms = ['style.']
 		" Arrays
 		let arrayprop = ['constructor', 'index', 'input', 'length', 'prototype']
-		let arraymeth = ['concat', 'join', 'pop', 'push', 'reverse', 'shift', 
+		let arraymeth = ['concat', 'join', 'pop', 'push', 'reverse', 'shift',
 					\ 'splice', 'sort', 'toSource', 'toString', 'unshift', 'valueOf',
 					\ 'watch', 'unwatch']
 		call map(arraymeth, 'v:val."("')

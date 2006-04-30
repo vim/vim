@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0f.  Last change: 2006 Apr 29
+*pattern.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1018,13 +1018,13 @@ x	A single character, with no special meaning, matches itself
 	- An equivalence class.  This means that characters are matched that
 	  have almost the same meaning, e.g., when ignoring accents.  The form
 	  is:
-	  	[=a=]
+		[=a=]
 	  Currently this is only implemented for latin1.  Also works for the
 	  latin1 characters in utf-8 and latin9.
 							*/[[.* *[..]*
 	- A collation element.  This currently simply accepts a single
 	  character in the form:
-	  	[.a.]
+		[.a.]
 							  */\]*
 	- To include a literal ']', '^', '-' or '\' in the collection, put a
 	  backslash before it: "[xyz\]]", "[\^xyz]", "[xy\-z]" and "[xyz\\]".

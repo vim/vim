@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0f.  Last change: 2006 Apr 21
+*mbyte.txt*     For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -352,7 +352,7 @@ u   ucs2be	same as ucs-2 (big endian)
 u   ucs-2be	same as ucs-2 (big endian)
 u   ucs-4be	same as ucs-4 (big endian)
     default     stands for the default value of 'encoding', depends on the
-    		environment
+		environment
 
 For the UCS codes the byte order matters.  This is tricky, use UTF-8 whenever
 you can.  The default is to use big-endian (most significant byte comes
@@ -774,7 +774,7 @@ is suitable for complex input, such as CJK.
   locale if you make a correct input table.  Xcin can be found at:
   http://xcin.linux.org.tw/
   Others are scim: http://scim.freedesktop.org/ and fcitx:
-  http://www.fcitx.org/ 
+  http://www.fcitx.org/
 
 - Conversion Server
 							*conversion-server*
@@ -1261,7 +1261,7 @@ is no longer relevant in the GTK+ 2 GUI.
 					*mbyte-combining* *mbyte-composing*
 A composing or combining character is used to change the meaning of the
 character before it.  The combining characters are drawn on top of the
-preceding character.  
+preceding character.
 Up to two combining characters can be used by default.  This can be changed
 with the 'maxcombine' option.
 When editing text a composing character is mostly considered part of the

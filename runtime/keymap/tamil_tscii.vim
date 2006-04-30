@@ -9,7 +9,7 @@
 "
 " Visit http://www.tscii.org for more information about the TSCII
 " encoding.
-" 
+"
 let b:keymap_name = "tamil_tscii"
 
 loadkeymap

@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	PHP
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 15
+" Last Change:	2006 Apr 30
 "
 "   TODO:
 "   - Class aware completion:
@@ -72,7 +72,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 		" Complete class name
 		" Internal solution for finding classes in current file.
 		let file = getline(1, '$')
-		call filter(file, 
+		call filter(file,
 				\ 'v:val =~ "class\\s\\+[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
 		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 		let jfile = join(file, ' ')
@@ -153,15 +153,15 @@ function! phpcomplete#CompletePHP(findstart, base)
 				" and ifs. No good solution
 				" Functions declared with public keyword or without any
 				" keyword are public
-				let functions = filter(deepcopy(sccontent), 
+				let functions = filter(deepcopy(sccontent),
 						\ 'v:val =~ "^\\s*\\(public\\s\\*\\)\\?function"')
 				let jfuncs = join(functions, ' ')
 				let sfuncs = split(jfuncs, 'function\s\+')
 				let c_functions = {}
 				for i in sfuncs
-					let f_name = matchstr(i, 
+					let f_name = matchstr(i,
 							\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-					let f_args = matchstr(i, 
+					let f_args = matchstr(i,
 							\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
 					if f_name != ''
 						let c_functions[f_name.'('] = f_args
@@ -169,13 +169,13 @@ function! phpcomplete#CompletePHP(findstart, base)
 				endfor
 				" Variables declared with var or with public keyword are
 				" public
-				let variables = filter(deepcopy(sccontent), 
+				let variables = filter(deepcopy(sccontent),
 						\ 'v:val =~ "^\\s*\\(public\\|var\\)\\s\\+\\$"')
 				let jvars = join(variables, ' ')
 				let svars = split(jvars, '\$')
 				let c_variables = {}
 				for i in svars
-					let c_var = matchstr(i, 
+					let c_var = matchstr(i,
 							\ '^\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
 					if c_var != ''
 						let c_variables[c_var] = ''
@@ -204,13 +204,13 @@ function! phpcomplete#CompletePHP(findstart, base)
 						if all_values[i] != ''
 							let class = i.' class '
 						endif
-						let final_list += 
-								\ [{'word':i, 
-								\   'info':class.all_values[i], 
+						let final_list +=
+								\ [{'word':i,
+								\   'info':class.all_values[i],
 								\   'kind':'v'}]
 					else
-						let final_list += 
-								\ [{'word':substitute(i, '.*::', '', ''), 
+						let final_list +=
+								\ [{'word':substitute(i, '.*::', '', ''),
 								\   'info':i.all_values[i].')',
 								\   'kind':'f'}]
 					endif
@@ -241,7 +241,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 				let int_vars[adddollar.val] = ''
 			endif
 		endfor
-		
+
 		" ctags has good support for PHP, use tags file for external
 		" variables
 		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
@@ -256,7 +256,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 				let classname = ''
 				if field['text'] =~ item.'\s*=\s*new\s\+'
 					let item = item.'->'
-					let classname = matchstr(field['text'], 
+					let classname = matchstr(field['text'],
 							\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 				endif
 				let ext_vars[adddollar.item] = classname
@@ -268,16 +268,16 @@ function! phpcomplete#CompletePHP(findstart, base)
 
 		" Internal solution for finding functions in current file.
 		let file = getline(1, '$')
-		call filter(file, 
+		call filter(file,
 				\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
 		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 		let jfile = join(file, ' ')
 		let int_values = split(jfile, 'function\s\+')
 		let int_functions = {}
 		for i in int_values
-			let f_name = matchstr(i, 
+			let f_name = matchstr(i,
 					\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-			let f_args = matchstr(i, 
+			let f_args = matchstr(i,
 					\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\zs.\{-}\ze)\_s*{')
 			let int_functions[f_name.'('] = f_args.')'
 		endfor
@@ -291,7 +291,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 				" File name
 				let item = matchstr(field['text'], '^[^[:space:]]\+')
 				let fname = matchstr(field['text'], '\t\zs\f\+\ze')
-				let prototype = matchstr(field['text'], 
+				let prototype = matchstr(field['text'],
 						\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
 				let ext_functions[item.'('] = prototype.') - '.fname
 			endfor
@@ -320,8 +320,8 @@ function! phpcomplete#CompletePHP(findstart, base)
 				endif
 				let final_list += [{'word':i, 'info':class.all_values[i], 'kind':'v'}]
 			else
-				let final_list += 
-						\ [{'word':substitute(i, '.*::', '', ''), 
+				let final_list +=
+						\ [{'word':substitute(i, '.*::', '', ''),
 						\   'info':i.all_values[i],
 						\   'kind':'f'}]
 			endif
@@ -361,10 +361,10 @@ function! phpcomplete#CompletePHP(findstart, base)
 		let int_vars = {}
 		for i in int_vals
 			if i =~ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*=\s*new'
-				let val = matchstr(i, 
+				let val = matchstr(i,
 						\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*').'->'
 			else
-				let val = matchstr(i, 
+				let val = matchstr(i,
 						\ '^\$[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*')
 			endif
 			if val != ''
@@ -373,7 +373,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 		endfor
 
 		call extend(int_vars,g:php_builtin_vars)
-		
+
 		" ctags has support for PHP, use tags file for external variables
 		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 		let ext_vars = {}
@@ -387,7 +387,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 				" Add -> if it is possible object declaration
 				if field['text'] =~ item.'\s*=\s*new\s\+'
 					let item = item.'->'
-					let m_menu = matchstr(field['text'], 
+					let m_menu = matchstr(field['text'],
 							\ '=\s*new\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 				endif
 				let ext_vars[item] = m_menu
@@ -421,7 +421,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 		return int_dict
 
 	else
-		" Complete everything else - 
+		" Complete everything else -
 		"  + functions,  DONE
 		"  + keywords of language DONE
 		"  + defines (constant definitions), DONE
@@ -431,16 +431,16 @@ function! phpcomplete#CompletePHP(findstart, base)
 
 		" Internal solution for finding functions in current file.
 		let file = getline(1, '$')
-		call filter(file, 
+		call filter(file,
 				\ 'v:val =~ "function\\s\\+&\\?[a-zA-Z_\\x7f-\\xff][a-zA-Z_0-9\\x7f-\\xff]*\\s*("')
 		let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
 		let jfile = join(file, ' ')
 		let int_values = split(jfile, 'function\s\+')
 		let int_functions = {}
 		for i in int_values
-			let f_name = matchstr(i, 
+			let f_name = matchstr(i,
 					\ '^&\?\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze')
-			let f_args = matchstr(i, 
+			let f_args = matchstr(i,
 					\ '^&\?[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\s*(\s*\zs.\{-}\ze\s*)\_s*{')
 			let int_functions[f_name.'('] = f_args.')'
 		endfor
@@ -454,7 +454,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 				" File name
 				let item = matchstr(field['text'], '^[^[:space:]]\+')
 				let fname = matchstr(field['text'], '\t\zs\f\+\ze')
-				let prototype = matchstr(field['text'], 
+				let prototype = matchstr(field['text'],
 						\ 'function\s\+&\?[^[:space:]]\+\s*(\s*\zs.\{-}\ze\s*)\s*{\?')
 				let ext_functions[item.'('] = prototype.') - '.fname
 			endfor
@@ -472,7 +472,7 @@ function! phpcomplete#CompletePHP(findstart, base)
 		let int_constants = {}
 		for i in int_values
 			let c_name = matchstr(i, '\(["'']\)\zs[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\ze\1')
-			" let c_value = matchstr(i, 
+			" let c_value = matchstr(i,
 			" \ '\(["'']\)[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*\1\s*,\s*\zs.\{-}\ze\s*)')
 			if c_name != ''
 				let int_constants[c_name] = '' " c_value
@@ -516,8 +516,8 @@ function! phpcomplete#CompletePHP(findstart, base)
 		let final_list = []
 		for i in int_list
 			if has_key(int_functions, i)
-				let final_list += 
-						\ [{'word':i, 
+				let final_list +=
+						\ [{'word':i,
 						\   'info':i.int_functions[i],
 						\   'kind':'f'}]
 			elseif has_key(int_constants, i)
@@ -599,17 +599,17 @@ endfunction
 
 function! phpcomplete#GetClassContents(file, name) " {{{
 	let cfile = join(a:file, "\n")
-	" We use new buffer and (later) normal! because 
+	" We use new buffer and (later) normal! because
 	" this is the most efficient way. The other way
 	" is to go through the looong string looking for
-	" matching {} 
+	" matching {}
 	below 1new
 	0put =cfile
 	call search('class\s\+'.a:name)
 	let cfline = line('.')
 	" Catch extends
 	if getline('.') =~ 'extends'
-		let extends_class = matchstr(getline('.'), 
+		let extends_class = matchstr(getline('.'),
 				\ 'class\s\+'.a:name.'\s\+extends\s\+\zs[a-zA-Z_0-9\x7f-\xff]\+\ze')
 	else
 		let extends_class = ''
@@ -965,8 +965,8 @@ let g:php_keywords = {
 " PHP builtin functions {{{
 " To create from scratch list of functions:
 " 1. Download multi html file PHP documentation
-" 2. run for i in `ls | grep "^function\."`; do grep -A4 Description $i >> funcs; done 
-" 3. Open funcs in Vim and 
+" 2. run for i in `ls | grep "^function\."`; do grep -A4 Description $i >> funcs; done
+" 3. Open funcs in Vim and
 "    a) g/Description/normal! 5J
 "    b) remove all html tags (it will require few s/// and g//)
 "    c) :%s/^\([^[:space:]]\+\) \([^[:space:]]\+\) ( \(.*\))/\\ '\2(': '\3| \1',

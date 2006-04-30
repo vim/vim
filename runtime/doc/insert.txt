@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0f.  Last change: 2006 Apr 26
+*insert.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1351,7 +1351,7 @@ Script completes:
     class. To find class location and contents tags file is required. Because
     PHP isn't strongly typed language user can use @var tag to declare class: >
 
-    	/* @var $myVar myClass */
+	/* @var $myVar myClass */
 	$myVar->
 <
     Still, to find myClass contents tags file is required.
@@ -1375,7 +1375,7 @@ automatically switch to HTML/CSS/JavaScript completion. Note: contrary to
 original HTML files completion of tags (and only tags) isn't context aware.
 
 
-RUBY                                                    *ft-ruby-omni*
+RUBY							*ft-ruby-omni*
 
 Completion of Ruby code requires that vim be built with |+ruby|.
 
@@ -1385,16 +1385,16 @@ and modules defined in the current buffer.
 
 The completions provided by CTRL-X CTRL-O are sensitive to the context:
 
-          CONTEXT                          COMPLETIONS PROVIDED ~
+	  CONTEXT			   COMPLETIONS PROVIDED ~
 
  1. Not inside a class definition    Classes, constants and globals
 
- 2. Inside a class definition        Methods or constants defined in the class
+ 2. Inside a class definition	     Methods or constants defined in the class
 
- 3. After '.', '::' or ':'           Methods applicable to the object being
-                                       dereferenced
+ 3. After '.', '::' or ':'	     Methods applicable to the object being
+				       dereferenced
 
- 4. After ':' or ':foo'              Symbol name (beginning with 'foo')
+ 4. After ':' or ':foo'		     Symbol name (beginning with 'foo')
 
 Notes:
  - Vim will load/evaluate code in order to provide completions.  This may
@@ -1557,7 +1557,7 @@ Note: Tag names in data file MUST not contain namespace description.  Check
 xsl.vim for example.
 
 
-DTD -> Vim                     					*dtd2vim*
+DTD -> Vim							*dtd2vim*
 
 On |www| is script |dtd2vim| which parses DTD and creates XML data file
 for Vim XML omni completion.
@@ -1565,7 +1565,7 @@ for Vim XML omni completion.
     dtd2vim: http://www.vim.org/scripts/script.php?script_id=1462
 
 Check there and beginning of file for details of usage.
-Script requires perl and: 
+Script requires perl and:
 
     perlSGML: http://savannah.nongnu.org/projects/perlsgml
 

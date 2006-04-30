@@ -3223,12 +3223,12 @@ motif_get_toolbar_colors(bgp, fgp, bsp, tsp, hsp)
     Pixel       *hsp;
 {
     XtVaGetValues(toolBar,
-            XmNbackground, bgp,
-            XmNforeground, fgp,
-            XmNbottomShadowColor, bsp,
-            XmNtopShadowColor, tsp,
-            XmNhighlightColor, hsp,
-            NULL);
+	    XmNbackground, bgp,
+	    XmNforeground, fgp,
+	    XmNbottomShadowColor, bsp,
+	    XmNtopShadowColor, tsp,
+	    XmNhighlightColor, hsp,
+	    NULL);
 }
 
 # ifdef FEAT_FOOTER

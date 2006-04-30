@@ -54,9 +54,9 @@
 #   RUBY_VER_LONG  same, but in format with dot. (1.6)
 #   DYNAMIC_RUBY no or yes: use yes to load the Ruby DLL dynamically (no)
 # MBYTE		no or yes: set to yes for multi-byte support (yes)
-#               NOTE: multi-byte support is broken in the Borland libraries,
-#               not everything will work properly!  Esp. handling multi-byte
-#               file names.
+#		NOTE: multi-byte support is broken in the Borland libraries,
+#		not everything will work properly!  Esp. handling multi-byte
+#		file names.
 # IME		no or yes: set to yes for multi-byte IME support (yes)
 #   DYNAMIC_IME no or yes: set to yes to load imm32.dll dynamically (yes)
 # GETTEXT	no or yes: set to yes for multi-language support (yes)
@@ -80,7 +80,7 @@
 # CSCOPE	no or yes: include support for Cscope interface (yes)
 # NETBEANS	no or yes: include support for Netbeans interface (yes if GUI
 #		is yes)
-# NBDEBUG 	no or yes: include support for debugging Netbeans interface (no)
+# NBDEBUG	no or yes: include support for debugging Netbeans interface (no)
 # XPM		define to path to XPM dir to get support for loading XPM images.
 
 ### BOR: root of the BC installation

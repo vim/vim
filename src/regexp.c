@@ -101,8 +101,8 @@
  *		       +----------------------+
  *		       V		      |
  * <aa>\+	BRANCH <aa> --> BRANCH --> BACK  BRANCH --> NOTHING --> END
- *		     |	             |	         ^		        ^
- *		     |	             +-----------+		        |
+ *		     |		     |		 ^			^
+ *		     |		     +-----------+			|
  *		     +--------------------------------------------------+
  *
  *
@@ -1930,7 +1930,7 @@ regatom(flagp)
 			      }
 
 			      if (i < 0)
-			          EMSG_M_RET_NULL(
+				  EMSG_M_RET_NULL(
 					_("E678: Invalid character after %s%%[dxouU]"),
 					reg_magic == MAGIC_ALL);
 #ifdef FEAT_MBYTE
@@ -2834,7 +2834,7 @@ ungetchr()
  * Return -1 if there is no valid hex number.
  * The position is updated:
  *     blahblah\%x20asdf
- *         before-^ ^-after
+ *	   before-^ ^-after
  * The parameter controls the maximum number of input characters. This will be
  * 2 when reading a \%x20 sequence and 4 when reading a \%u20AC sequence.
  */
@@ -2893,7 +2893,7 @@ getdecchrs()
  * numbers > 377 correctly (for example, 400 is treated as 40) and doesn't
  * treat 8 or 9 as recognised characters. Position is updated:
  *     blahblah\%o210asdf
- *         before-^  ^-after
+ *	   before-^  ^-after
  */
     static int
 getoctchrs()

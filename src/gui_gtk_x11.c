@@ -812,7 +812,7 @@ focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
 
     /* make sure keyboard input goes to the draw area (if this is focus for a window) */
     if (widget != gui.drawarea)
-        gtk_widget_grab_focus(gui.drawarea);
+	gtk_widget_grab_focus(gui.drawarea);
 
     return TRUE;
 }
@@ -2843,21 +2843,21 @@ get_item_dimensions(GtkWidget *widget, GtkOrientation orientation)
     if (using_gnome && widget != NULL)
     {
 # ifdef HAVE_GTK2
-        GtkWidget *parent;
+	GtkWidget *parent;
 	BonoboDockItem *dockitem;
 
 	parent	 = gtk_widget_get_parent(widget);
-        if (G_TYPE_FROM_INSTANCE(parent) == BONOBO_TYPE_DOCK_ITEM)
-        {
-            /* Only menu & toolbar are dock items.  Could tabline be?
-             * Seem to be only the 2 defined in GNOME */
-            widget = parent;
-            dockitem = BONOBO_DOCK_ITEM(widget);
+	if (G_TYPE_FROM_INSTANCE(parent) == BONOBO_TYPE_DOCK_ITEM)
+	{
+	    /* Only menu & toolbar are dock items.  Could tabline be?
+	     * Seem to be only the 2 defined in GNOME */
+	    widget = parent;
+	    dockitem = BONOBO_DOCK_ITEM(widget);
 
-            if (dockitem == NULL || dockitem->is_floating)
-                return 0;
-            item_orientation = bonobo_dock_item_get_orientation(dockitem);
-        }
+	    if (dockitem == NULL || dockitem->is_floating)
+		return 0;
+	    item_orientation = bonobo_dock_item_get_orientation(dockitem);
+	}
 # else
 	GnomeDockItem *dockitem;
 
@@ -2953,9 +2953,9 @@ update_window_manager_hints(int force_width, int force_height)
      */
     if (!(force_width && force_height)  &&  init_window_hints_state > 0)
     {
-        /* Don't do it! */
-        init_window_hints_state = 2;
-        return;
+	/* Don't do it! */
+	init_window_hints_state = 2;
+	return;
     }
 
     /* This also needs to be done when the main window isn't there yet,
@@ -2978,19 +2978,19 @@ update_window_manager_hints(int force_width, int force_height)
      */
     if (force_width && force_height)
     {
-        min_width  = force_width;
-        min_height = force_height;
+	min_width  = force_width;
+	min_height = force_height;
     }
     else
     {
-        min_width  = width  + MIN_COLUMNS * gui.char_width;
-        min_height = height + MIN_LINES   * gui.char_height;
+	min_width  = width  + MIN_COLUMNS * gui.char_width;
+	min_height = height + MIN_LINES   * gui.char_height;
     }
 
     /* Avoid an expose event when the size didn't change. */
     if (width != old_width
 	    || height != old_height
-            || min_width != old_min_width
+	    || min_width != old_min_width
 	    || min_height != old_min_height
 	    || gui.char_width != old_char_width
 	    || gui.char_height != old_char_height)
@@ -3002,8 +3002,8 @@ update_window_manager_hints(int force_width, int force_height)
 	geometry.height_inc  = gui.char_height;
 	geometry.base_width  = width;
 	geometry.base_height = height;
-        geometry.min_width   = min_width;
-        geometry.min_height  = min_height;
+	geometry.min_width   = min_width;
+	geometry.min_height  = min_height;
 	geometry_mask	     = GDK_HINT_BASE_SIZE|GDK_HINT_RESIZE_INC
 			       |GDK_HINT_MIN_SIZE;
 # ifdef HAVE_GTK2
@@ -3016,12 +3016,12 @@ update_window_manager_hints(int force_width, int force_height)
 	gtk_window_set_geometry_hints(GTK_WINDOW(gui.mainwin), gui.formwin,
 				      &geometry, geometry_mask);
 # endif
-        old_width       = width;
-        old_height      = height;
-        old_min_width   = min_width;
-        old_min_height  = min_height;
-        old_char_width  = gui.char_width;
-        old_char_height = gui.char_height;
+	old_width       = width;
+	old_height      = height;
+	old_min_width   = min_width;
+	old_min_height  = min_height;
+	old_char_width  = gui.char_width;
+	old_char_height = gui.char_height;
     }
 }
 
@@ -3346,7 +3346,7 @@ gui_mch_update_tabline(void)
 	gtk_notebook_remove_page(GTK_NOTEBOOK(gui.tabline), nr);
 
     if (gtk_notebook_current_page(GTK_NOTEBOOK(gui.tabline)) != curtabidx)
-        gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
+	gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), curtabidx);
 
     /* Make sure everything is in place before drawing text. */
     gui_mch_update();
@@ -3366,7 +3366,7 @@ gui_mch_set_curtab(nr)
 
     ignore_tabline_evt = TRUE;
     if (gtk_notebook_current_page(GTK_NOTEBOOK(gui.tabline)) != nr - 1)
-        gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), nr - 1);
+	gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline), nr - 1);
     ignore_tabline_evt = FALSE;
 }
 
@@ -3678,7 +3678,7 @@ gui_mch_init(void)
     {
 	GtkWidget *page, *label, *event_box;
 
-        /* Add the first tab. */
+	/* Add the first tab. */
 	page = gtk_vbox_new(FALSE, 0);
 	gtk_widget_show(page);
 	gtk_container_add(GTK_CONTAINER(gui.tabline), page);
@@ -3692,12 +3692,12 @@ gui_mch_init(void)
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
     }
     gtk_signal_connect(GTK_OBJECT(gui.tabline), "switch_page",
-                       GTK_SIGNAL_FUNC(on_select_tab), NULL);
+		       GTK_SIGNAL_FUNC(on_select_tab), NULL);
 
     /* Create a popup menu for the tab line and connect it. */
     tabline_menu = create_tabline_menu();
     gtk_signal_connect_object(GTK_OBJECT(gui.tabline), "button_press_event",
-              GTK_SIGNAL_FUNC(on_tabline_menu), GTK_OBJECT(tabline_menu));
+	    GTK_SIGNAL_FUNC(on_tabline_menu), GTK_OBJECT(tabline_menu));
 #endif
 
     gui.formwin = gtk_form_new();
@@ -3797,22 +3797,22 @@ gui_mch_init(void)
      */
     if (gtk_socket_id == 0)
     {
-        gtk_signal_connect(GTK_OBJECT(gui.mainwin), "focus_out_event",
-                               GTK_SIGNAL_FUNC(focus_out_event), NULL);
-        gtk_signal_connect(GTK_OBJECT(gui.mainwin), "focus_in_event",
-                               GTK_SIGNAL_FUNC(focus_in_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.mainwin), "focus_out_event",
+			       GTK_SIGNAL_FUNC(focus_out_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.mainwin), "focus_in_event",
+			       GTK_SIGNAL_FUNC(focus_in_event), NULL);
     }
     else
     {
-        gtk_signal_connect(GTK_OBJECT(gui.drawarea), "focus_out_event",
-                               GTK_SIGNAL_FUNC(focus_out_event), NULL);
-        gtk_signal_connect(GTK_OBJECT(gui.drawarea), "focus_in_event",
-                               GTK_SIGNAL_FUNC(focus_in_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.drawarea), "focus_out_event",
+			       GTK_SIGNAL_FUNC(focus_out_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.drawarea), "focus_in_event",
+			       GTK_SIGNAL_FUNC(focus_in_event), NULL);
 #ifdef FEAT_GUI_TABLINE
-        gtk_signal_connect(GTK_OBJECT(gui.tabline), "focus_out_event",
-                               GTK_SIGNAL_FUNC(focus_out_event), NULL);
-        gtk_signal_connect(GTK_OBJECT(gui.tabline), "focus_in_event",
-                               GTK_SIGNAL_FUNC(focus_in_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.tabline), "focus_out_event",
+			       GTK_SIGNAL_FUNC(focus_out_event), NULL);
+	gtk_signal_connect(GTK_OBJECT(gui.tabline), "focus_in_event",
+			       GTK_SIGNAL_FUNC(focus_in_event), NULL);
 #endif /* FEAT_GUI_TABLINE */
     }
 
@@ -3906,7 +3906,7 @@ form_configure_event(GtkWidget *widget, GdkEventConfigure *event,
      * Widths seem to sort themselves out, don't ask me why.
      */
     if (gtk_socket_id != 0)
-        usable_height -= (gui.char_height - (gui.char_height/2)); /* sic. */
+	usable_height -= (gui.char_height - (gui.char_height/2)); /* sic. */
 
     gtk_form_freeze(GTK_FORM(gui.formwin));
     gui_resize_shell(event->width, usable_height);
@@ -3958,10 +3958,10 @@ check_startup_plug_hints(gpointer data)
 {
     if (init_window_hints_state == 1)
     {
-        /* Safe to use normal hints now */
-        init_window_hints_state = 0;
-        update_window_manager_hints(0, 0);
-        return FALSE;   /* stop timer */
+	/* Safe to use normal hints now */
+	init_window_hints_state = 0;
+	update_window_manager_hints(0, 0);
+	return FALSE;   /* stop timer */
     }
 
     /* Keep on trying */
@@ -4034,25 +4034,25 @@ gui_mch_open(void)
 	vim_free(gui.geom);
 	gui.geom = NULL;
 
-        /* From now until everyone's stopped trying to set the window hints
-         * to their correct minimum values, stop them being set as we need
-         * them to remain at our required size for the parent GtkSocket to
-         * give us the right initial size.
-         */
+	/* From now until everyone's stopped trying to set the window hints
+	 * to their correct minimum values, stop them being set as we need
+	 * them to remain at our required size for the parent GtkSocket to
+	 * give us the right initial size.
+	 */
 	if (gtk_socket_id != 0  &&  (mask & WidthValue || mask & HeightValue))
-        {
-            guint pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
-            guint pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+	{
+	    guint pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
+	    guint pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
 
 #ifdef HAVE_GTK2
-            pixel_width  += get_menu_tool_width();
-            pixel_height += get_menu_tool_height();
+	    pixel_width  += get_menu_tool_width();
+	    pixel_height += get_menu_tool_height();
 #endif
 
-            update_window_manager_hints(pixel_width, pixel_height);
-            init_window_hints_state = 1;
-            g_timeout_add(1000, check_startup_plug_hints, NULL);
-        }
+	    update_window_manager_hints(pixel_width, pixel_height);
+	    init_window_hints_state = 1;
+	    g_timeout_add(1000, check_startup_plug_hints, NULL);
+	}
     }
 
     gtk_form_set_size(GTK_FORM(gui.formwin),
@@ -4299,7 +4299,7 @@ gui_mch_set_shellsize(int width, int height,
 #else  /* HAVE_GTK2 */
     /* this will cause the proper resizement to happen too */
     if (gtk_socket_id == 0)
-        update_window_manager_hints(0, 0);
+	update_window_manager_hints(0, 0);
 
     /* With GTK+ 2, changing the size of the form widget doesn't resize
      * the window.  So let's do it the other way around and resize the
@@ -4308,9 +4308,9 @@ gui_mch_set_shellsize(int width, int height,
     height += get_menu_tool_height();
 
     if (gtk_socket_id == 0)
-        gtk_window_resize(GTK_WINDOW(gui.mainwin), width, height);
+	gtk_window_resize(GTK_WINDOW(gui.mainwin), width, height);
     else
-        update_window_manager_hints(width, height);
+	update_window_manager_hints(width, height);
 
 #if 0
     if (!resize_idle_installed)
@@ -7176,4 +7176,3 @@ gui_mch_destroy_sign(void *sign)
 # endif /* !HAVE_GTK2 */
 
 #endif /* FEAT_SIGN_ICONS */
-

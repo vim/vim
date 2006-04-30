@@ -1,4 +1,4 @@
-README_os_390.txt for version 7.0f of Vim: Vi IMproved.
+README_os_390.txt for version 7.0g of Vim: Vi IMproved.
 
 Welcome to the OS/390 Unix port of VIM.
 

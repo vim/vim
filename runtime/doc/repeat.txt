@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0f.  Last change: 2006 Apr 24
+*repeat.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -606,11 +606,11 @@ numbers prepended for the explanation:
   4  Self time:   0.002006 ~
   5  ~
   6 count  total (s)   self (s) ~
-  7     9              0.000096   for i in range(8) ~
-  8     8   0.153655   0.000410     call Test3() ~
-  9     8              0.000070   endfor ~
- 10                               " Ask a question ~
- 11     1              0.001341   echo input("give me an answer: ") ~
+  7	9	       0.000096   for i in range(8) ~
+  8	8   0.153655   0.000410     call Test3() ~
+  9	8	       0.000070   endfor ~
+ 10				  " Ask a question ~
+ 11	1	       0.001341   echo input("give me an answer: ") ~
 
 The header (lines 1-4) gives the time for the whole function.  The "Total"
 time is the time passed while the function was executing.  The "Self" time is
@@ -649,7 +649,7 @@ mind there are various things that may clobber the results:
 
 - Functions that are deleted before Vim exits will not produce profiling
   information.  You can check the |v:profiling| variable if needed: >
-  	:if !v:profiling
+	:if !v:profiling
 	:   delfunc MyFunc
 	:endif
 <

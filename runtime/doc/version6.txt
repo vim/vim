@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0f.  Last change: 2006 Apr 24
+*version6.txt*  For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -14135,7 +14135,7 @@ Solution:   Check that the mapping has ended after obtaining all characters of
 Files:	    src/normal.c
 
 Patch 6.3.034
-Problem:    VMS: crash when using ":help". 
+Problem:    VMS: crash when using ":help".
 Solution:   Avoid using "tags-??", some Open VMS systems can't handle the "?"
 	    wildcard.  (Zoltan Arpadffy)
 Files:	    src/tag.c

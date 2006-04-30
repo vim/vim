@@ -1,4 +1,4 @@
-*usr_32.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*usr_32.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -31,11 +31,11 @@ two changes, numbered 1 and 2, and three states of the text:
 		one ~
 		 |
 	      change 1
-	         |
+		 |
 	      one too ~
-	         |
+		 |
 	      change 2
-	         |
+		 |
 	      one two ~
 
 If we now undo one change, back to "one too", and change "one" to "me" we
@@ -44,12 +44,12 @@ create a branch in the undo tree:
 		one ~
 		 |
 	      change 1
-	         |
+		 |
 	      one too ~
 	      /     \
-         change 2  change 3
-            |         |
-         one two    me too ~
+	 change 2  change 3
+	    |	      |
+	 one two    me too ~
 
 You can now use the |u| command to undo.  If you do this twice you get to
 "one".  Use |CTRL-R| to redo, and you will go to "one too".  One more |CTRL-R|
@@ -80,12 +80,12 @@ Now make another change: change "one" to "not":
 		one ~
 		 |
 	      change 1
-	         |
+		 |
 	      one too ~
 	      /     \
-         change 2  change 3
-            |         |
-         one two    me too ~
+	 change 2  change 3
+	    |	      |
+	 one two    me too ~
 	    |
 	 change 4
 	    |

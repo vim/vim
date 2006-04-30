@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:      Scheme
 " Maintainer:    Sergey Khorev <sergey.khorev@gmail.com>
-" URL:		 http://iamphet.nm.ru/vim 
+" URL:		 http://iamphet.nm.ru/vim
 " Original author:    Dorai Sitaram <ds26@gte.com>
 " Original URL:		 http://www.ccs.neu.edu/~dorai/vimplugins/vimplugins.html
 " Last Change:   Nov 22, 2004

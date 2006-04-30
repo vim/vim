@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	R (GNU S)
 " Maintainer:	Vaidotas Zemlys <zemlys@gmail.com>
-" Last Change:  2006 January 12 
+" Last Change:  2006 Apr 30
 " Filenames:	*.R *.Rout *.r *.Rhistory *.Rt *.Rout.save *.Rout.fail
 " URL:		http://uosis.mif.vu.lt/~zemlys/vim-syntax/r.vim
 

@@ -2201,8 +2201,8 @@ utf_toupper(a)
     if (a < 128 && (cmp_flags & CMP_KEEPASCII))
 	return TOUPPER_ASC(a);
 
-#if defined(HAVE_TOWUPPER) && defined(__STDC__ISO_10646__)
-    /* If towupper() is availble and handles Unicode, use it. */
+#if defined(HAVE_TOWUPPER) && defined(__STDC_ISO_10646__)
+    /* If towupper() is available and handles Unicode, use it. */
     if (!(cmp_flags & CMP_INTERNAL))
 	return towupper(a);
 #endif
@@ -2234,7 +2234,7 @@ utf_tolower(a)
     if (a < 128 && (cmp_flags & CMP_KEEPASCII))
 	return TOLOWER_ASC(a);
 
-#if defined(HAVE_TOWLOWER) && defined(__STDC__ISO_10646__)
+#if defined(HAVE_TOWLOWER) && defined(__STDC_ISO_10646__)
     /* If towlower() is available and handles Unicode, use it. */
     if (!(cmp_flags & CMP_INTERNAL))
 	return towlower(a);

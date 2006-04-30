@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0f.  Last change: 2006 Apr 24
+*quickfix.txt*  For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -88,7 +88,7 @@ command with 'l'.
 			all, go to the [count] previous error.  See |:cc| for
 			[!] and 'switchbuf'.
 
-				
+
 :[count]lN[ext][!]			*:lp* *:lprevious* *:lN* *:lNext*
 :[count]lp[revious][!]	Same as ":cNext" and ":cprevious", except the location
 			list for the current window is used instead of the
@@ -158,12 +158,12 @@ command with 'l'.
 			You can not use the -q command-line option to set
 			the location list.
 
-		
+
 :cg[etfile][!] [errorfile]				*:cg* *:cgetfile*
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
 
-			
+
 :lg[etfile][!] [errorfile]				*:lg* *:lgetfile*
 			Same as ":cgetfile", except the location list for the
 			current window is used instead of the quickfix list.

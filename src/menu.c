@@ -1489,7 +1489,7 @@ get_menu_cmd_modes(cmd, forceit, noremap, unmenu)
 	case 'a':			/* amenu */
 	    modes = MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE
 				    | MENU_VISUAL_MODE | MENU_SELECT_MODE
-                                    | MENU_OP_PENDING_MODE;
+				    | MENU_OP_PENDING_MODE;
 	    break;
 	case 'n':
 	    if (*cmd != 'o')		/* nmenu, not noremenu */
@@ -1555,10 +1555,10 @@ get_menu_index(menu, state)
 #ifdef FEAT_VISUAL
     else if (VIsual_active)
     {
-        if (VIsual_select)
-            idx = MENU_INDEX_SELECT;
-        else
-            idx = MENU_INDEX_VISUAL;
+	if (VIsual_select)
+	    idx = MENU_INDEX_SELECT;
+	else
+	    idx = MENU_INDEX_VISUAL;
     }
 #endif
     else if (state == HITRETURN || state == ASKMORE)
@@ -1727,8 +1727,8 @@ get_menu_mode()
 #ifdef FEAT_VISUAL
     if (VIsual_active)
     {
-        if (VIsual_select)
-            return MENU_INDEX_SELECT;
+	if (VIsual_select)
+	    return MENU_INDEX_SELECT;
 	return MENU_INDEX_VISUAL;
     }
 #endif

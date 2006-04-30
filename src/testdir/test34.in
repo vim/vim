@@ -1,4 +1,5 @@
-Test for user functions
+Test for user functions.
+Also test an <expr> mapping calling a function.
 
 STARTTEST
 :so small.vim
@@ -18,6 +19,27 @@ STARTTEST
 :  exe "let g:" . a:divname . " = ". a:n1 / a:n2
 :  return "ok"
 :endfunction
+:func Expr1()
+:  normal! v
+:  return "111"
+:endfunc
+:func Expr2()
+:  call search('XX', 'b')
+:  return "222"
+:endfunc
+:func ListItem()
+:  let g:counter += 1
+:  return g:counter . '. '
+:endfunc
+:func ListReset()
+:  let g:counter = 0
+:  return ''
+:endfunc
+:let counter = 0
+:inoremap <expr> ( ListItem()
+:inoremap <expr> [ ListReset()
+:imap <expr> + Expr1()
+:imap <expr> * Expr2()
 :let retval = "nop"
 /^here
 C=Table("xxx", 4, "asdf")
@@ -25,7 +47,12 @@ C=Table("xxx", 4, "asdf")
  =retval
  =Compute(45, 5, "retval")
  =retval
-:.wq! test.out
+
+XX+-XX
+---*---
+(one
+(two
+[(one again:$-5,$wq! test.out
 ENDTEST
 
 here

@@ -3071,9 +3071,9 @@ ex_vimgrep(eap)
 				regmatch.startpos[0].col + 1,
 				FALSE,      /* vis_col */
 				NULL,	    /* search pattern */
-				0,          /* nr */
-				0,          /* type */
-				TRUE        /* valid */
+				0,	    /* nr */
+				0,	    /* type */
+				TRUE	    /* valid */
 				) == FAIL)
 		    {
 			got_int = TRUE;

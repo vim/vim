@@ -55,5 +55,5 @@ if exists("g:flexwiki_maps")
   if v:version >= 700
       imap <buffer> <Down>   <C-o>gj
       imap <buffer> <Up>     <C-o>gk
-  endif 
+  endif
 endif

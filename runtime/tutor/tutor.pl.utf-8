@@ -8,8 +8,8 @@
      używać Vima jako edytora ogólnego przeznaczenia.
 
      Czas potrzebny na ukończenie tutoriala to 25 do 30 minut i zależy
-     od tego jak wiele czasu spędzisz na eksperymentowaniu.  
-	 
+     od tego jak wiele czasu spędzisz na eksperymentowaniu.
+
 	 UWAGA:
 	 Polecenia wykonywane w czasie lekcji zmodyfikują tekst. Zrób
 	 wcześniej kopię tego pliku do ćwiczeń (jeśli zacząłeś komendą
@@ -199,7 +199,7 @@ Teraz możemy kontynuować i przejść do Lekcji 2.
 
   4. Wpisz   dw   by usunąć wyraz.
 
-  UWAGA: Litera  d  pojawi się na dole ekranu. Vim czeka na wpisanie  w . 
+  UWAGA: Litera  d  pojawi się na dole ekranu. Vim czeka na wpisanie  w .
 	 Jeśli zobaczysz inny znak oznacza to, że wpisałeś coś źle, wciśnij
 	 <ESC> i zacznij od początku.
 
@@ -359,7 +359,7 @@ UWAGA:  Mnożnik pomiędzy operatorem  d  i ruchem działa podobnie do ruchu bez
   gdzie:
    operator  - to co trzeba zrobić (np.  d  dla usuwania)
    [liczba]  - opcjonalne, ile razy powtórzyć ruch
-   ruch      - przenosi nad tekstem do operowania, takim jak  w (wyraz), 
+   ruch      - przenosi nad tekstem do operowania, takim jak  w (wyraz),
 	       $  (do końca linii), etc.
 
   6. By przejść do początku linii użyj zera:  0
@@ -492,7 +492,7 @@ UWAGA:  Możesz używać <BS> aby poprawiać błędy w czasie pisania.
 
   UWAGA: Przeczytaj całą lekcję zanim wykonasz jakieś polecenia!!!
 
-  1. Przytrzymaj klawisz CTRL i wciśnij  g . Używamy notacji CTRL-G. 
+  1. Przytrzymaj klawisz CTRL i wciśnij  g . Używamy notacji CTRL-G.
      Na dole strony pojawi się pasek statusu z nazwą pliku i pozycją w pliku.
      Zapamiętaj numer linii dla potrzeb kroku 3.
 

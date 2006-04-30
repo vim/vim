@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.0f.  Last change: 2006 Mar 26
+*if_ruby.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -147,7 +147,7 @@ self[{n}] = {str}
 delete({n})	Deletes a line from the buffer. {n} is the line number.
 append({n}, {str})
 		Appends a line after the line {n}.
-line            Returns the current line of the buffer if the buffer is
+line		Returns the current line of the buffer if the buffer is
 		active.
 line = {str}    Sets the current line of the buffer if the buffer is active.
 line_number     Returns the number of the current line if the buffer is

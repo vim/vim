@@ -1,5 +1,5 @@
 " System gvimrc file for Mac OS X
-" Author:  	Benji Fisher <benji@member.AMS.org>
+" Author:	Benji Fisher <benji@member.AMS.org>
 " Last Change: Thu Mar 09 09:00 AM 2006 EST
 "
 " Define Mac-standard keyboard shortcuts.

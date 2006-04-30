@@ -9335,8 +9335,8 @@ number_width(wp)
     n = 0;
     do
     {
-        lnum /= 10;
-        ++n;
+	lnum /= 10;
+	++n;
     } while (lnum > 0);
 
     /* 'numberwidth' gives the minimal width plus one */

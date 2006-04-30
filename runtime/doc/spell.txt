@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*spell.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -698,11 +698,11 @@ Additionally the following items are recognized:
   know something won't work.
 
 - A "/" may follow the word with the following items:
-    =   	Case must match exactly.
+    =		Case must match exactly.
     ?		Rare word.
     !		Bad (wrong) word.
     digit	A region in which the word is valid.  If no regions are
-    		specified the word is valid in all regions.
+		specified the word is valid in all regions.
 
 Example:
 
@@ -857,12 +857,12 @@ right encoding.
 
 				*spell-NAME* *spell-VERSION* *spell-HOME*
 				*spell-AUTHOR* *spell-EMAIL* *spell-COPYRIGHT*
-	NAME	  	Name of the language
-	VERSION   	1.0.1  with fixes
+	NAME		Name of the language
+	VERSION		1.0.1  with fixes
 	HOME		http://www.myhome.eu
 	AUTHOR		John Doe
 	EMAIL		john AT Doe DOT net
-	COPYRIGHT   	LGPL
+	COPYRIGHT	LGPL
 
 These fields are put in the .spl file as-is.  The |:spellinfo| command can be
 used to view the info.
@@ -1023,7 +1023,7 @@ Note: Myspell ignores any extra text after the relevant info.  Vim requires
 this text to start with a "#" so that mistakes don't go unnoticed.  Example:
 
 	SFX F 0 in   [^i]n      # Spion > Spionin  ~
-	SFX F 0 nen  in         # Bauerin > Bauerinnen ~
+	SFX F 0 nen  in		# Bauerin > Bauerinnen ~
 
 Apparently Myspell allows an affix name to appear more than once.  Since this
 might also be a mistake, Vim checks for an extra "S".  The affix files for
@@ -1087,7 +1087,7 @@ An alternative is to only specify the suffix, and give the that suffix two
 flags: The required prefix and the NEEDAFFIX flag.  |spell-NEEDAFFIX|
 
 
-PFXPOSTPONE					    	*spell-PFXPOSTPONE*
+PFXPOSTPONE						*spell-PFXPOSTPONE*
 
 When an affix file has very many prefixes that apply to many words it's not
 possible to build the whole word list in memory.  This applies to Hebrew (a
@@ -1434,10 +1434,10 @@ In the affix file SAL items can be used to define the sounds-a-like mechanism
 to be used.  The main items define the "from" text and the "to" replacement.
 Simplistic example:
 
-	SAL CIA                  X ~
-	SAL CH                   X ~
-	SAL C                    K ~
-	SAL K                    K ~
+	SAL CIA			 X ~
+	SAL CH			 X ~
+	SAL C			 K ~
+	SAL K			 K ~
 
 There are a few rules and this can become quite complicated.  An explanation
 how it works can be found in the Aspell manual:
@@ -1510,10 +1510,10 @@ COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
 
 COMPOUND	(Hunspell)				*spell-COMPOUND*
-                This is one line with the count of COMPOUND items, followd by
-                that many COMPOUND lines with a pattern.
-                Remove the first line with the count and rename the other
-                items to COMPOUNDRULE |spell-COMPOUNDRULE|
+		This is one line with the count of COMPOUND items, followd by
+		that many COMPOUND lines with a pattern.
+		Remove the first line with the count and rename the other
+		items to COMPOUNDRULE |spell-COMPOUNDRULE|
 
 COMPOUNDFIRST	(Hunspell)				*spell-COMPOUNDFIRST*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|

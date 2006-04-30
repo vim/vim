@@ -571,9 +571,9 @@ static VALUE buffer_s_count()
 
     for (b = firstbuf; b != NULL; b = b->b_next)
     {
-        /*  Deleted buffers should not be counted
-         *    SegPhault - 01/07/05 */
-        if (b->b_p_bl)
+	/*  Deleted buffers should not be counted
+	 *    SegPhault - 01/07/05 */
+	if (b->b_p_bl)
 	    n++;
     }
 
@@ -587,15 +587,15 @@ static VALUE buffer_s_aref(VALUE self, VALUE num)
 
     for (b = firstbuf; b != NULL; b = b->b_next)
     {
-        /*  Deleted buffers should not be counted
-         *    SegPhault - 01/07/05 */
-        if (!b->b_p_bl)
+	/*  Deleted buffers should not be counted
+	 *    SegPhault - 01/07/05 */
+	if (!b->b_p_bl)
 	    continue;
 
-        if (n == 0)
+	if (n == 0)
 	    return buffer_new(b);
 
-        n--;
+	n--;
     }
     return Qnil;
 }
@@ -685,9 +685,9 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 	if (u_savedel(n, 1) == OK) {
 	    ml_delete(n, 0);
 
-            /* Changes to non-active buffers should properly refresh
-             *   SegPhault - 01/09/05 */
-            deleted_lines_mark(n, 1L);
+	    /* Changes to non-active buffers should properly refresh
+	     *   SegPhault - 01/09/05 */
+	    deleted_lines_mark(n, 1L);
 
 	    changed();
 	}
@@ -712,11 +712,11 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 	if (u_inssub(n + 1) == OK) {
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
 
-            /*  Changes to non-active buffers should properly refresh screen
-             *    SegPhault - 12/20/04 */
-            appended_lines_mark(n, 1L);
+	    /*  Changes to non-active buffers should properly refresh screen
+	     *    SegPhault - 12/20/04 */
+	    appended_lines_mark(n, 1L);
 
-            changed();
+	    changed();
 	}
 	curbuf = savebuf;
 	update_curbuf(NOT_VALID);

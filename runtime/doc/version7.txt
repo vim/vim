@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0f.  Last change: 2006 Apr 29
+*version7.txt*  For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,9 +64,9 @@ In an argument list double quotes could be used to include spaces in a file
 name.  This caused a difference between ":edit" and ":next" for escaping
 double quotes and it is incompatible with some versions of Vi.
 	Command			Vim 6.x	file name	Vim 7.x file name ~
-	:edit foo\"888          foo"888         	foo"888
-	:next foo\"888          foo888          	foo"888
-	:next a\"b c\"d         ab cd           	a"b  and  c"d
+	:edit foo\"888		foo"888			foo"888
+	:next foo\"888		foo888			foo"888
+	:next a\"b c\"d		ab cd			a"b  and  c"d
 
 In a |literal-string| a single quote can be doubled to get one.
 ":echo 'a''b'" would result in "a b", but now that two quotes stand for one it
@@ -106,7 +106,7 @@ The "2html.vim" script now converts closed folds to HTML.  This means the HTML
 looks like its displayed, with the same folds open and closed.  Use "zR", or
 "let html_ignore_folding=1", if no folds should appear in the HTML. (partly by
 Carl Osterwisch)
-Diff mode now is also converted to HTML as it is displayed.
+Diff mode is now also converted to HTML as it is displayed.
 
 Win32: The effect of the <F10> key depended on 'winaltkeys'.  Now it depends
 on whether <F10> has been mapped or not.  This allows mapping <F10> without
@@ -216,7 +216,7 @@ The 'spellsuggest' option specifies the methods used for making suggestions
 
 The |[s| and |]s| commands can be used to move to the next or previous error
 The |zg| and |zw| commands can be used to add good and wrong words
-The |z=|          command can be used to list suggestions and correct the word
+The |z=|	  command can be used to list suggestions and correct the word
 The |:mkspell|    command is used to generate a Vim spell file from word lists
 
 The "undercurl" highlighting attribute was added to nicely point out spelling
@@ -324,7 +324,7 @@ into 'undolevels', when undo information is freed up to limit the memory used.
 
 To be able to navigate the undo branches each change is numbered sequentially.
 The commands |g-| and |:earlier| go back in time, to older changes.  The
-commands |g+| and |:later| go forward in time, to newer changes.  
+commands |g+| and |:later| go forward in time, to newer changes.
 
 The changes are also timestamped.  Use ":earlier 10m" to go to the text as it
 was about ten minutes earlier.
@@ -748,7 +748,7 @@ Win32: The ":winpos" command now also works in the console. (Vipin Aravind)
 |:spellundo|		Remove a word from list of good and bad words.
 
 |:mzscheme|		Execute MzScheme commands.
-|:mzfile|   		Execute an MzScheme script file.
+|:mzfile|		Execute an MzScheme script file.
 
 |:nbkey|		Pass a key to NetBeans for processing.
 
@@ -816,7 +816,7 @@ New and extended functions: ~
 |argv()|		without an argument return the whole argument list
 |browsedir()|		dialog to select a directory
 |bufnr()|		takes an extra argument: create buffer
-|byteidx()| 		index of a character (Ilya Sher)
+|byteidx()|		index of a character (Ilya Sher)
 |call()|		call a function with List as arguments
 |changenr()|		number of current change
 |complete()|		set matches for Insert mode completion
@@ -837,7 +837,7 @@ New and extended functions: ~
 |filter()|		remove selected items from a List or Dictionary
 |finddir()|		find a directory in 'path'
 |findfile()|		find a file in 'path' (Johannes Zellner)
-|foldtextresult()|  	the text displayed for a closed fold at line "lnum"
+|foldtextresult()|	the text displayed for a closed fold at line "lnum"
 |function()|		make a Funcref out of a function name
 |garbagecollect()|	cleanup unused |Lists| and |Dictionaries| with circular
 			references
@@ -846,7 +846,7 @@ New and extended functions: ~
 			(Yegappan Lakshmanan)
 |getcmdtype()|		return the current command-line type
 			(Yegappan Lakshmanan)
-|getfontname()| 	get actual font name being used
+|getfontname()|		get actual font name being used
 |getfperm()|		get file permission string (Nikolai Weibull)
 |getftype()|		get type of file (Nikolai Weibull)
 |getline()|		with second argument: get List with buffer lines
@@ -885,13 +885,13 @@ New and extended functions: ~
 |reltime()|		get time value, possibly relative
 |reltimestr()|		turn a time value into a string
 |remove()|		remove one or more items from a List or Dictionary
-|repeat()| 		repeat "expr" "count" times (Christophe Poucet)
+|repeat()|		repeat "expr" "count" times (Christophe Poucet)
 |reverse()|		reverse the order of a List
 |search()|		extra argument:
 |searchdecl()|		search for declaration of variable
 |searchpair()|		extra argument: line to stop searching
 |searchpairpos()|	return a List with the position of the match
-|searchpos()|	        return a List with the position of the match
+|searchpos()|		return a List with the position of the match
 |setloclist()|		modify a location list (Yegappan Lakshmanan)
 |setpos()|		set cursor or mark to a position
 |setqflist()|		modify a quickfix list (Yegappan Lakshmanan)
@@ -928,8 +928,8 @@ New Vim variables: ~
 |v:val|			item value in a |map()| or |filter()| function
 |v:key|			item key in a |map()| or |filter()| function
 |v:profiling|		non-zero after a ":profile start" command
-|v:fcs_reason| 		the reason why |FileChangedShell| was triggered
-|v:fcs_choice| 		what should happen after |FileChangedShell|
+|v:fcs_reason|		the reason why |FileChangedShell| was triggered
+|v:fcs_choice|		what should happen after |FileChangedShell|
 |v:beval_bufnr|		buffer number for 'balloonexpr'
 |v:beval_winnr|		window number for 'balloonexpr'
 |v:beval_lnum|		line number for 'balloonexpr'
@@ -2821,6 +2821,14 @@ work.
 When 'virtualedit' contains "onemore" CTRL-O in Insert mode still moved the
 cursor left when it was after the end of the line, even though it's allowed to
 be there.
+
+Added test for using tab pages.
+
+towupper() and towlower() were not used, because of checking for
+__STDC__ISO_10646__ instead of __STDC_ISO_10646__. (sertacyildiz)
+
+For ":map <expr>" forbid changing the text, jumping to another buffer and
+using ":normal" to avoid nasty side effects.
 
 
  vim:tw=78:ts=8:ft=help:norl:

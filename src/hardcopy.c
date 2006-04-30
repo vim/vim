@@ -106,7 +106,7 @@ static int	page_count;
 # define OPT_MBFONT_USECOURIER  0
 # define OPT_MBFONT_ASCII       1
 # define OPT_MBFONT_REGULAR     2
-# define OPT_MBFONT_BOLD        3
+# define OPT_MBFONT_BOLD	3
 # define OPT_MBFONT_OBLIQUE     4
 # define OPT_MBFONT_BOLDOBLIQUE 5
 # define OPT_MBFONT_NUM_OPTIONS 6
@@ -1075,20 +1075,20 @@ struct prt_ps_charset_S
 #define CS_JIS_C_1978   (0x01)
 #define CS_JIS_X_1983   (0x02)
 #define CS_JIS_X_1990   (0x04)
-#define CS_NEC          (0x08)
-#define CS_MSWINDOWS    (0x10)
-#define CS_CP932        (0x20)
-#define CS_KANJITALK6   (0x40)
+#define CS_NEC		(0x08)
+#define CS_MSWINDOWS	(0x10)
+#define CS_CP932	(0x20)
+#define CS_KANJITALK6	(0x40)
 #define CS_KANJITALK7   (0x80)
 
 /* Japanese encodings and charsets */
 static struct prt_ps_encoding_S j_encodings[] =
 {
     {"iso-2022-jp", NULL,       (CS_JIS_C_1978|CS_JIS_X_1983|CS_JIS_X_1990|
-                                                                    CS_NEC)},
-    {"euc-jp",      "EUC",      (CS_JIS_C_1978|CS_JIS_X_1983|CS_JIS_X_1990)},
-    {"sjis",        "RKSJ",     (CS_JIS_C_1978|CS_JIS_X_1983|CS_MSWINDOWS|
-                                                CS_KANJITALK6|CS_KANJITALK7)},
+								    CS_NEC)},
+    {"euc-jp",	    "EUC",	(CS_JIS_C_1978|CS_JIS_X_1983|CS_JIS_X_1990)},
+    {"sjis",	    "RKSJ",	(CS_JIS_C_1978|CS_JIS_X_1983|CS_MSWINDOWS|
+						CS_KANJITALK6|CS_KANJITALK7)},
     {"cp932",       "RKSJ",     CS_JIS_X_1983},
     {"ucs-2",       "UCS2",     CS_JIS_X_1990},
     {"utf-8",       "UTF8" ,    CS_JIS_X_1990}
@@ -1098,7 +1098,7 @@ static struct prt_ps_charset_S j_charsets[] =
     {"JIS_C_1978",  "78",       CS_JIS_C_1978},
     {"JIS_X_1983",  NULL,       CS_JIS_X_1983},
     {"JIS_X_1990",  "Hojo",     CS_JIS_X_1990},
-    {"NEC",         "Ext",      CS_NEC},
+    {"NEC",	    "Ext",	CS_NEC},
     {"MSWINDOWS",   "90ms",     CS_MSWINDOWS},
     {"CP932",       "90ms",     CS_JIS_X_1983},
     {"KANJITALK6",  "83pv",     CS_KANJITALK6},
@@ -1107,10 +1107,10 @@ static struct prt_ps_charset_S j_charsets[] =
 
 #define CS_GB_2312_80       (0x01)
 #define CS_GBT_12345_90     (0x02)
-#define CS_GBK2K            (0x04)
-#define CS_SC_MAC           (0x08)
-#define CS_GBT_90_MAC       (0x10)
-#define CS_GBK              (0x20)
+#define CS_GBK2K	    (0x04)
+#define CS_SC_MAC	    (0x08)
+#define CS_GBT_90_MAC	    (0x10)
+#define CS_GBK		    (0x20)
 #define CS_SC_ISO10646      (0x40)
 
 /* Simplified Chinese encodings and charsets */
@@ -1119,8 +1119,8 @@ static struct prt_ps_encoding_S sc_encodings[] =
     {"iso-2022",    NULL,       (CS_GB_2312_80|CS_GBT_12345_90)},
     {"gb18030",     NULL,       CS_GBK2K},
     {"euc-cn",      "EUC",      (CS_GB_2312_80|CS_GBT_12345_90|CS_SC_MAC|
-                                                                CS_GBT_90_MAC)},
-    {"gbk",         "EUC",      CS_GBK},
+								CS_GBT_90_MAC)},
+    {"gbk",	    "EUC",	CS_GBK},
     {"ucs-2",       "UCS2",     CS_SC_ISO10646},
     {"utf-8",       "UTF8",     CS_SC_ISO10646}
 };
@@ -1128,9 +1128,9 @@ static struct prt_ps_charset_S sc_charsets[] =
 {
     {"GB_2312-80",  "GB",       CS_GB_2312_80},
     {"GBT_12345-90","GBT",      CS_GBT_12345_90},
-    {"MAC",         "GBpc",     CS_SC_MAC},
-    {"GBT-90_MAC",  "GBTpc",    CS_GBT_90_MAC},
-    {"GBK",         "GBK",      CS_GBK},
+    {"MAC",	    "GBpc",	CS_SC_MAC},
+    {"GBT-90_MAC",  "GBTpc",	CS_GBT_90_MAC},
+    {"GBK",	    "GBK",	CS_GBK},
     {"GB18030",     "GBK2K",    CS_GBK2K},
     {"ISO10646",    "UniGB",    CS_SC_ISO10646}
 };
@@ -1138,25 +1138,25 @@ static struct prt_ps_charset_S sc_charsets[] =
 #define CS_CNS_PLANE_1      (0x01)
 #define CS_CNS_PLANE_2      (0x02)
 #define CS_CNS_PLANE_1_2    (0x04)
-#define CS_B5               (0x08)
-#define CS_ETEN             (0x10)
-#define CS_HK_GCCS          (0x20)
-#define CS_HK_SCS           (0x40)
-#define CS_HK_SCS_ETEN      (0x80)
-#define CS_MTHKL            (0x100)
-#define CS_MTHKS            (0x200)
-#define CS_DLHKL            (0x400)
-#define CS_DLHKS            (0x800)
-#define CS_TC_ISO10646      (0x1000)
+#define CS_B5		    (0x08)
+#define CS_ETEN		    (0x10)
+#define CS_HK_GCCS	    (0x20)
+#define CS_HK_SCS	    (0x40)
+#define CS_HK_SCS_ETEN	    (0x80)
+#define CS_MTHKL	    (0x100)
+#define CS_MTHKS	    (0x200)
+#define CS_DLHKL	    (0x400)
+#define CS_DLHKS	    (0x800)
+#define CS_TC_ISO10646	    (0x1000)
 
 /* Traditional Chinese encodings and charsets */
 static struct prt_ps_encoding_S tc_encodings[] =
 {
     {"iso-2022",    NULL,       (CS_CNS_PLANE_1|CS_CNS_PLANE_2)},
     {"euc-tw",      "EUC",      CS_CNS_PLANE_1_2},
-    {"big5",        "B5",       (CS_B5|CS_ETEN|CS_HK_GCCS|CS_HK_SCS|
-                                    CS_HK_SCS_ETEN|CS_MTHKL|CS_MTHKS|CS_DLHKL|
-                                                                    CS_DLHKS)},
+    {"big5",	    "B5",	(CS_B5|CS_ETEN|CS_HK_GCCS|CS_HK_SCS|
+				    CS_HK_SCS_ETEN|CS_MTHKL|CS_MTHKS|CS_DLHKL|
+								    CS_DLHKS)},
     {"cp950",       "B5",       CS_B5},
     {"ucs-2",       "UCS2",     CS_TC_ISO10646},
     {"utf-8",       "UTF8",     CS_TC_ISO10646},
@@ -1168,11 +1168,11 @@ static struct prt_ps_charset_S tc_charsets[] =
     {"CNS_1992_1",  "CNS1",     CS_CNS_PLANE_1},
     {"CNS_1992_2",  "CNS2",     CS_CNS_PLANE_2},
     {"CNS_1993",    "CNS",      CS_CNS_PLANE_1_2},
-    {"BIG5",        NULL,       CS_B5},
-    {"CP950",       NULL,       CS_B5},
-    {"ETEN",        "ETen",     CS_ETEN},
-    {"HK_GCCS",     "HKgccs",   CS_HK_GCCS},
-    {"SCS",         "HKscs",    CS_HK_SCS},
+    {"BIG5",	    NULL,	CS_B5},
+    {"CP950",	    NULL,	CS_B5},
+    {"ETEN",	    "ETen",	CS_ETEN},
+    {"HK_GCCS",     "HKgccs",	CS_HK_GCCS},
+    {"SCS",	    "HKscs",	CS_HK_SCS},
     {"SCS_ETEN",    "ETHK",     CS_HK_SCS_ETEN},
     {"MTHKL",       "HKm471",   CS_MTHKL},
     {"MTHKS",       "HKm314",   CS_MTHKS},
@@ -1181,8 +1181,8 @@ static struct prt_ps_charset_S tc_charsets[] =
     {"ISO10646",    "UniCNS",   CS_TC_ISO10646}
 };
 
-#define CS_KR_X_1992        (0x01)
-#define CS_KR_MAC           (0x02)
+#define CS_KR_X_1992	    (0x01)
+#define CS_KR_MAC	    (0x02)
 #define CS_KR_X_1992_MS     (0x04)
 #define CS_KR_ISO10646      (0x08)
 
@@ -1193,7 +1193,7 @@ static struct prt_ps_encoding_S k_encodings[] =
     {"euc-kr",      "EUC",      (CS_KR_X_1992|CS_KR_MAC)},
     {"johab",       "Johab",    CS_KR_X_1992},
     {"cp1361",      "Johab",    CS_KR_X_1992},
-    {"uhc",         "UHC",      CS_KR_X_1992_MS},
+    {"uhc",	    "UHC",	CS_KR_X_1992_MS},
     {"cp949",       "UHC",      CS_KR_X_1992_MS},
     {"ucs-2",       "UCS2",     CS_KR_ISO10646},
     {"utf-8",       "UTF8",     CS_KR_ISO10646}
@@ -1202,7 +1202,7 @@ static struct prt_ps_charset_S k_charsets[] =
 {
     {"KS_X_1992",   "KSC",      CS_KR_X_1992},
     {"CP1361",      "KSC",      CS_KR_X_1992},
-    {"MAC",         "KSCpc",    CS_KR_MAC},
+    {"MAC",	    "KSCpc",	CS_KR_MAC},
     {"MSWINDOWS",   "KSCms",    CS_KR_X_1992_MS},
     {"CP949",       "KSCms",    CS_KR_X_1992_MS},
     {"WANSUNG",     "KSCms",    CS_KR_X_1992_MS},
@@ -1212,47 +1212,47 @@ static struct prt_ps_charset_S k_charsets[] =
 /* Collections of encodings and charsets for multi-byte printing */
 struct prt_ps_mbfont_S
 {
-    int                         num_encodings;
-    struct prt_ps_encoding_S    *encodings;
-    int                         num_charsets;
-    struct prt_ps_charset_S     *charsets;
-    char                        *ascii_enc;
-    char                        *defcs;
+    int				num_encodings;
+    struct prt_ps_encoding_S	*encodings;
+    int				num_charsets;
+    struct prt_ps_charset_S	*charsets;
+    char			*ascii_enc;
+    char			*defcs;
 };
 
 static struct prt_ps_mbfont_S prt_ps_mbfonts[] =
 {
     {
-        NUM_ELEMENTS(j_encodings),
-        j_encodings,
-        NUM_ELEMENTS(j_charsets),
-        j_charsets,
-        "jis_roman",
-        "JIS_X_1983"
+	NUM_ELEMENTS(j_encodings),
+	j_encodings,
+	NUM_ELEMENTS(j_charsets),
+	j_charsets,
+	"jis_roman",
+	"JIS_X_1983"
     },
     {
-        NUM_ELEMENTS(sc_encodings),
-        sc_encodings,
-        NUM_ELEMENTS(sc_charsets),
-        sc_charsets,
-        "gb_roman",
-        "GB_2312-80"
+	NUM_ELEMENTS(sc_encodings),
+	sc_encodings,
+	NUM_ELEMENTS(sc_charsets),
+	sc_charsets,
+	"gb_roman",
+	"GB_2312-80"
     },
     {
-        NUM_ELEMENTS(tc_encodings),
-        tc_encodings,
-        NUM_ELEMENTS(tc_charsets),
-        tc_charsets,
-        "cns_roman",
-        "BIG5"
+	NUM_ELEMENTS(tc_encodings),
+	tc_encodings,
+	NUM_ELEMENTS(tc_charsets),
+	tc_charsets,
+	"cns_roman",
+	"BIG5"
     },
     {
-        NUM_ELEMENTS(k_encodings),
-        k_encodings,
-        NUM_ELEMENTS(k_charsets),
-        k_charsets,
-        "ks_roman",
-        "KS_X_1992"
+	NUM_ELEMENTS(k_encodings),
+	k_encodings,
+	NUM_ELEMENTS(k_charsets),
+	k_charsets,
+	"ks_roman",
+	"KS_X_1992"
     }
 };
 #endif /* FEAT_MBYTE */
@@ -1299,19 +1299,19 @@ static char *prt_resource_types[] =
 #define PRT_RESOURCE_RESOURCE	    "Resource-"
 #define PRT_RESOURCE_PROCSET	    "ProcSet"
 #define PRT_RESOURCE_ENCODING	    "Encoding"
-#define PRT_RESOURCE_CMAP           "CMap"
+#define PRT_RESOURCE_CMAP	    "CMap"
 
 
 /* Data for table based DSC comment recognition, easy to extend if VIM needs to
  * read more comments. */
-#define PRT_DSC_MISC_TYPE           (-1)
-#define PRT_DSC_TITLE_TYPE          (1)
-#define PRT_DSC_VERSION_TYPE        (2)
+#define PRT_DSC_MISC_TYPE	    (-1)
+#define PRT_DSC_TITLE_TYPE	    (1)
+#define PRT_DSC_VERSION_TYPE	    (2)
 #define PRT_DSC_ENDCOMMENTS_TYPE    (3)
 
-#define PRT_DSC_TITLE	            "%%Title:"
-#define PRT_DSC_VERSION	            "%%Version:"
-#define PRT_DSC_ENDCOMMENTS         "%%EndComments:"
+#define PRT_DSC_TITLE		    "%%Title:"
+#define PRT_DSC_VERSION		    "%%Version:"
+#define PRT_DSC_ENDCOMMENTS	    "%%EndComments:"
 
 struct prt_dsc_comment_S
 {
@@ -1538,7 +1538,7 @@ prt_def_font(new_name, encoding, height, font)
     prt_write_file(prt_line_buffer);
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
-        sprintf((char *)prt_line_buffer, "/%s %d %f /_%s sffs\n",
+	sprintf((char *)prt_line_buffer, "/%s %d %f /_%s sffs\n",
 		       new_name, height, 500./prt_ps_courier_font.wx, new_name);
     else
 #endif
@@ -1704,7 +1704,7 @@ prt_flush_buffer()
 		prt_do_moveto = FALSE;
 	    }
 
-            /* Underline length of text run */
+	    /* Underline length of text run */
 	    prt_write_real(prt_text_run, 2);
 	    prt_write_string("ul\n");
 	}
@@ -1712,18 +1712,18 @@ prt_flush_buffer()
 	 * Note: we write text out raw - EBCDIC conversion is handled in the
 	 * PostScript world via the font encoding vector. */
 #ifdef FEAT_MBYTE
-        if (prt_out_mbyte)
-            prt_write_string("<");
-        else
+	if (prt_out_mbyte)
+	    prt_write_string("<");
+	else
 #endif
-            prt_write_string("(");
+	    prt_write_string("(");
 	prt_write_file_raw_len(prt_ps_buffer.ga_data, prt_ps_buffer.ga_len);
 #ifdef FEAT_MBYTE
-        if (prt_out_mbyte)
-            prt_write_string(">");
-        else
+	if (prt_out_mbyte)
+	    prt_write_string(">");
+	else
 #endif
-            prt_write_string(")");
+	    prt_write_string(")");
 	/* Add a moveto if need be and use the appropriate show procedure */
 	if (prt_do_moveto)
 	{
@@ -1800,19 +1800,19 @@ prt_resfile_next_line()
     index = prt_resfile.line_end + 1;
     while (index < prt_resfile.len)
     {
-        if (prt_resfile.buffer[index] != PSLF && prt_resfile.buffer[index]
-                                                                        != PSCR)
-            break;
-        index++;
+	if (prt_resfile.buffer[index] != PSLF && prt_resfile.buffer[index]
+									!= PSCR)
+	    break;
+	index++;
     }
     prt_resfile.line_start = index;
 
     while (index < prt_resfile.len)
     {
-        if (prt_resfile.buffer[index] == PSLF || prt_resfile.buffer[index]
-                                                                        == PSCR)
-            break;
-        index++;
+	if (prt_resfile.buffer[index] == PSLF || prt_resfile.buffer[index]
+									== PSCR)
+	    break;
+	index++;
     }
     prt_resfile.line_end = index;
 
@@ -1827,10 +1827,10 @@ prt_resfile_strncmp(offset, string, len)
 {
     /* Force not equal if string is longer than remainder of line */
     if (len > (prt_resfile.line_end - (prt_resfile.line_start + offset)))
-        return 1;
+	return 1;
 
     return STRNCMP(&prt_resfile.buffer[prt_resfile.line_start + offset],
-                                                                string, len);
+								string, len);
 }
 
     static int
@@ -1842,9 +1842,9 @@ prt_resfile_skip_nonws(offset)
     index = prt_resfile.line_start + offset;
     while (index < prt_resfile.line_end)
     {
-        if (isspace(prt_resfile.buffer[index]))
-            return index - prt_resfile.line_start;
-        index++;
+	if (isspace(prt_resfile.buffer[index]))
+	    return index - prt_resfile.line_start;
+	index++;
     }
     return -1;
 }
@@ -1858,9 +1858,9 @@ prt_resfile_skip_ws(offset)
     index = prt_resfile.line_start + offset;
     while (index < prt_resfile.line_end)
     {
-        if (!isspace(prt_resfile.buffer[index]))
-            return index - prt_resfile.line_start;
-        index++;
+	if (!isspace(prt_resfile.buffer[index]))
+	    return index - prt_resfile.line_start;
+	index++;
     }
     return -1;
 }
@@ -1876,37 +1876,37 @@ prt_next_dsc(p_dsc_line)
 
     /* Move to start of next line */
     if (!prt_resfile_next_line())
-        return FALSE;
+	return FALSE;
 
     /* DSC comments always start %% */
     if (prt_resfile_strncmp(0, "%%", 2) != 0)
-        return FALSE;
+	return FALSE;
 
     /* Find type of DSC comment */
     for (comment = 0; comment < NUM_ELEMENTS(prt_dsc_table); comment++)
-        if (prt_resfile_strncmp(0, prt_dsc_table[comment].string,
-                                            prt_dsc_table[comment].len) == 0)
-            break;
+	if (prt_resfile_strncmp(0, prt_dsc_table[comment].string,
+					    prt_dsc_table[comment].len) == 0)
+	    break;
 
     if (comment != NUM_ELEMENTS(prt_dsc_table))
     {
-        /* Return type of comment */
-        p_dsc_line->type = prt_dsc_table[comment].type;
-        offset = prt_dsc_table[comment].len;
+	/* Return type of comment */
+	p_dsc_line->type = prt_dsc_table[comment].type;
+	offset = prt_dsc_table[comment].len;
     }
     else
     {
-        /* Unrecognised DSC comment, skip to ws after comment leader */
-        p_dsc_line->type = PRT_DSC_MISC_TYPE;
-        offset = prt_resfile_skip_nonws(0);
-        if (offset == -1)
-            return FALSE;
+	/* Unrecognised DSC comment, skip to ws after comment leader */
+	p_dsc_line->type = PRT_DSC_MISC_TYPE;
+	offset = prt_resfile_skip_nonws(0);
+	if (offset == -1)
+	    return FALSE;
     }
 
     /* Skip ws to comment value */
     offset = prt_resfile_skip_ws(offset);
     if (offset == -1)
-        return FALSE;
+	return FALSE;
 
     p_dsc_line->string = &prt_resfile.buffer[prt_resfile.line_start + offset];
     p_dsc_line->len = prt_resfile.line_end - (prt_resfile.line_start + offset);
@@ -1921,10 +1921,10 @@ prt_next_dsc(p_dsc_line)
 prt_open_resource(resource)
     struct prt_ps_resource_S *resource;
 {
-    int         offset;
-    int         seen_all;
-    int         seen_title;
-    int         seen_version;
+    int		offset;
+    int		seen_all;
+    int		seen_title;
+    int		seen_version;
     FILE	*fd_resource;
     struct prt_dsc_line_S dsc_line;
 
@@ -1938,7 +1938,7 @@ prt_open_resource(resource)
 
     /* Parse first line to ensure valid resource file */
     prt_resfile.len = (int)fread((char *)prt_resfile.buffer, sizeof(char_u),
-                                            PRT_FILE_BUFFER_LEN, fd_resource);
+					    PRT_FILE_BUFFER_LEN, fd_resource);
     if (ferror(fd_resource))
     {
 	EMSG2(_("E457: Can't read PostScript resource file \"%s\""),
@@ -1950,7 +1950,7 @@ prt_open_resource(resource)
     prt_resfile.line_end = -1;
     prt_resfile.line_start = 0;
     if (!prt_resfile_next_line())
-        return FALSE;
+	return FALSE;
 
     offset = 0;
 
@@ -1967,10 +1967,10 @@ prt_open_resource(resource)
     offset += (int)STRLEN(PRT_RESOURCE_HEADER);
     offset = prt_resfile_skip_nonws(offset);
     if (offset == -1)
-        return FALSE;
+	return FALSE;
     offset = prt_resfile_skip_ws(offset);
     if (offset == -1)
-        return FALSE;
+	return FALSE;
 
     if (prt_resfile_strncmp(offset, PRT_RESOURCE_RESOURCE,
 				     (int)STRLEN(PRT_RESOURCE_RESOURCE)) != 0)
@@ -2008,31 +2008,31 @@ prt_open_resource(resource)
     seen_all = FALSE;
     while (!seen_all && prt_next_dsc(&dsc_line))
     {
-        switch (dsc_line.type)
-        {
-        case PRT_DSC_TITLE_TYPE:
-            vim_strncpy(resource->title, dsc_line.string, dsc_line.len);
-            seen_title = TRUE;
-            if (seen_version)
-                seen_all = TRUE;
-            break;
+	switch (dsc_line.type)
+	{
+	case PRT_DSC_TITLE_TYPE:
+	    vim_strncpy(resource->title, dsc_line.string, dsc_line.len);
+	    seen_title = TRUE;
+	    if (seen_version)
+		seen_all = TRUE;
+	    break;
 
-        case PRT_DSC_VERSION_TYPE:
-            vim_strncpy(resource->version, dsc_line.string, dsc_line.len);
-            seen_version = TRUE;
-            if (seen_title)
-                seen_all = TRUE;
-            break;
+	case PRT_DSC_VERSION_TYPE:
+	    vim_strncpy(resource->version, dsc_line.string, dsc_line.len);
+	    seen_version = TRUE;
+	    if (seen_title)
+		seen_all = TRUE;
+	    break;
 
-        case PRT_DSC_ENDCOMMENTS_TYPE:
-            /* Wont find title or resource after this comment, stop searching */
-            seen_all = TRUE;
-            break;
+	case PRT_DSC_ENDCOMMENTS_TYPE:
+	    /* Wont find title or resource after this comment, stop searching */
+	    seen_all = TRUE;
+	    break;
 
-        case PRT_DSC_MISC_TYPE:
-            /* Not interested in whatever comment this line had */
-            break;
-        }
+	case PRT_DSC_MISC_TYPE:
+	    /* Not interested in whatever comment this line had */
+	    break;
+	}
     }
 
     if (!seen_title || !seen_version)
@@ -2151,10 +2151,10 @@ prt_dsc_font_resource(resource, ps_font)
     int     i;
 
     prt_dsc_resources(resource, "font",
-                                    ps_font->ps_fontname[PRT_PS_FONT_ROMAN]);
+				    ps_font->ps_fontname[PRT_PS_FONT_ROMAN]);
     for (i = PRT_PS_FONT_BOLD ; i <= PRT_PS_FONT_BOLDOBLIQUE ; i++)
-        if (ps_font->ps_fontname[i] != NULL)
-            prt_dsc_resources(NULL, "font", ps_font->ps_fontname[i]);
+	if (ps_font->ps_fontname[i] != NULL)
+	    prt_dsc_resources(NULL, "font", ps_font->ps_fontname[i]);
 }
 
     static void
@@ -2228,18 +2228,18 @@ mch_print_cleanup()
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        int     i;
+	int     i;
 
-        /* Free off all CID font names created, but first clear duplicate
-         * pointers to the same string (when the same font is used for more than
-         * one style).
-         */
-        for (i = PRT_PS_FONT_ROMAN; i <= PRT_PS_FONT_BOLDOBLIQUE; i++)
-        {
-            if (prt_ps_mb_font.ps_fontname[i] != NULL)
-                vim_free(prt_ps_mb_font.ps_fontname[i]);
-            prt_ps_mb_font.ps_fontname[i] = NULL;
-        }
+	/* Free off all CID font names created, but first clear duplicate
+	 * pointers to the same string (when the same font is used for more than
+	 * one style).
+	 */
+	for (i = PRT_PS_FONT_ROMAN; i <= PRT_PS_FONT_BOLDOBLIQUE; i++)
+	{
+	    if (prt_ps_mb_font.ps_fontname[i] != NULL)
+		vim_free(prt_ps_mb_font.ps_fontname[i]);
+	    prt_ps_mb_font.ps_fontname[i] = NULL;
+	}
     }
 
     if (prt_do_conv)
@@ -2334,11 +2334,11 @@ prt_get_cpl()
     {
 	prt_number_width = PRINT_NUMBER_WIDTH * prt_char_width;
 #ifdef FEAT_MBYTE
-        /* If we are outputting multi-byte characters then line numbers will be
-         * printed with half width characters
-         */
-        if (prt_out_mbyte)
-            prt_number_width /= 2;
+	/* If we are outputting multi-byte characters then line numbers will be
+	 * printed with half width characters
+	 */
+	if (prt_out_mbyte)
+	    prt_number_width /= 2;
 #endif
 	prt_left_margin += prt_number_width;
     }
@@ -2359,7 +2359,7 @@ prt_build_cid_fontname(font, name, name_len)
 
     fontname = (char *)alloc(name_len + 1);
     if (fontname == NULL)
-        return FALSE;
+	return FALSE;
     vim_strncpy((char_u *)fontname, name, name_len);
     prt_ps_mb_font.ps_fontname[font] = fontname;
 
@@ -2418,12 +2418,12 @@ prt_match_encoding(p_encoding, p_cmap, pp_mbenc)
     p_mbenc = p_cmap->encodings;
     for (mbenc = 0; mbenc < p_cmap->num_encodings; mbenc++)
     {
-        if (STRNICMP(p_mbenc->encoding, p_encoding, enc_len) == 0)
-        {
-            *pp_mbenc = p_mbenc;
-            return TRUE;
-        }
-        p_mbenc++;
+	if (STRNICMP(p_mbenc->encoding, p_encoding, enc_len) == 0)
+	{
+	    *pp_mbenc = p_mbenc;
+	    return TRUE;
+	}
+	p_mbenc++;
     }
     return FALSE;
 }
@@ -2440,17 +2440,17 @@ prt_match_charset(p_charset, p_cmap, pp_mbchar)
 
     /* Look for recognised character set, using default if one is not given */
     if (*p_charset == NUL)
-        p_charset = p_cmap->defcs;
+	p_charset = p_cmap->defcs;
     char_len = (int)STRLEN(p_charset);
     p_mbchar = p_cmap->charsets;
     for (mbchar = 0; mbchar < p_cmap->num_charsets; mbchar++)
     {
-        if (STRNICMP(p_mbchar->charset, p_charset, char_len) == 0)
-        {
-            *pp_mbchar = p_mbchar;
-            return TRUE;
-        }
-        p_mbchar++;
+	if (STRNICMP(p_mbchar->charset, p_charset, char_len) == 0)
+	{
+	    *pp_mbchar = p_mbchar;
+	    return TRUE;
+	}
+	p_mbchar++;
     }
     return FALSE;
 }
@@ -2473,8 +2473,8 @@ mch_print_init(psettings, jobname, forceit)
     double      top;
     double      bottom;
 #ifdef FEAT_MBYTE
-    int         props;
-    int         cmap = 0;
+    int		props;
+    int		cmap = 0;
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;
@@ -2505,7 +2505,7 @@ mch_print_init(psettings, jobname, forceit)
 #ifdef FEAT_MBYTE
     p_encoding = enc_skip(p_penc);
     if (*p_encoding == NUL)
-        p_encoding = enc_skip(p_enc);
+	p_encoding = enc_skip(p_enc);
 
     /* Look for recognised multi-byte coding, and if the charset is recognised.
      * This is to cope with the fact that various unicode encodings are
@@ -2514,119 +2514,119 @@ mch_print_init(psettings, jobname, forceit)
     props = enc_canon_props(p_encoding);
     if (!(props & ENC_8BIT) && (*p_penc != NUL || *p_pmcs != NUL))
     {
-        p_mbenc_first = NULL;
-        p_mbchar = NULL;
-        for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
-            if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
+	p_mbenc_first = NULL;
+	p_mbchar = NULL;
+	for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
+	    if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
 								    &p_mbenc))
-            {
-                if (p_mbenc_first == NULL)
-                    p_mbenc_first = p_mbenc;
-                if (prt_match_charset((char *)p_pmcs, &prt_ps_mbfonts[cmap],
+	    {
+		if (p_mbenc_first == NULL)
+		    p_mbenc_first = p_mbenc;
+		if (prt_match_charset((char *)p_pmcs, &prt_ps_mbfonts[cmap],
 								   &p_mbchar))
-                    break;
-            }
+		    break;
+	    }
 
-        /* Use first encoding matched if no charset matched */
-        if (p_mbchar == NULL && p_mbenc_first != NULL)
-            p_mbenc = p_mbenc_first;
+	/* Use first encoding matched if no charset matched */
+	if (p_mbchar == NULL && p_mbenc_first != NULL)
+	    p_mbenc = p_mbenc_first;
     }
 
     prt_out_mbyte = (p_mbenc != NULL);
     if (prt_out_mbyte)
     {
-        /* Build CMap name - will be same for all multi-byte fonts used */
-        prt_cmap[0] = NUL;
+	/* Build CMap name - will be same for all multi-byte fonts used */
+	prt_cmap[0] = NUL;
 
-        prt_custom_cmap = (p_mbchar == NULL);
-        if (!prt_custom_cmap)
-        {
-            /* Check encoding and character set are compatible */
-            if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
-            {
-                EMSG(_("E673: Incompatible multi-byte encoding and character set."));
-                return FALSE;
-            }
+	prt_custom_cmap = (p_mbchar == NULL);
+	if (!prt_custom_cmap)
+	{
+	    /* Check encoding and character set are compatible */
+	    if ((p_mbenc->needs_charset & p_mbchar->has_charset) == 0)
+	    {
+		EMSG(_("E673: Incompatible multi-byte encoding and character set."));
+		return FALSE;
+	    }
 
-            /* Add charset name if not empty */
-            if (p_mbchar->cmap_charset != NULL)
-            {
-                vim_strncpy((char_u *)prt_cmap,
+	    /* Add charset name if not empty */
+	    if (p_mbchar->cmap_charset != NULL)
+	    {
+		vim_strncpy((char_u *)prt_cmap,
 		      (char_u *)p_mbchar->cmap_charset, sizeof(prt_cmap) - 3);
-                STRCAT(prt_cmap, "-");
-            }
-        }
-        else
-        {
-            /* Add custom CMap character set name */
-            if (*p_pmcs == NUL)
-            {
-                EMSG(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
-                return FALSE;
-            }
-            vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
-            STRCAT(prt_cmap, "-");
-        }
+		STRCAT(prt_cmap, "-");
+	    }
+	}
+	else
+	{
+	    /* Add custom CMap character set name */
+	    if (*p_pmcs == NUL)
+	    {
+		EMSG(_("E674: printmbcharset cannot be empty with multi-byte encoding."));
+		return FALSE;
+	    }
+	    vim_strncpy((char_u *)prt_cmap, p_pmcs, sizeof(prt_cmap) - 3);
+	    STRCAT(prt_cmap, "-");
+	}
 
-        /* CMap name ends with (optional) encoding name and -H for horizontal */
-        if (p_mbenc->cmap_encoding != NULL && STRLEN(prt_cmap)
+	/* CMap name ends with (optional) encoding name and -H for horizontal */
+	if (p_mbenc->cmap_encoding != NULL && STRLEN(prt_cmap)
 		      + STRLEN(p_mbenc->cmap_encoding) + 3 < sizeof(prt_cmap))
-        {
-            STRCAT(prt_cmap, p_mbenc->cmap_encoding);
-            STRCAT(prt_cmap, "-");
-        }
-        STRCAT(prt_cmap, "H");
+	{
+	    STRCAT(prt_cmap, p_mbenc->cmap_encoding);
+	    STRCAT(prt_cmap, "-");
+	}
+	STRCAT(prt_cmap, "H");
 
-        if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
-        {
-            EMSG(_("E675: No default font specified for multi-byte printing."));
-            return FALSE;
-        }
+	if (!mbfont_opts[OPT_MBFONT_REGULAR].present)
+	{
+	    EMSG(_("E675: No default font specified for multi-byte printing."));
+	    return FALSE;
+	}
 
-        /* Derive CID font names with fallbacks if not defined */
-        if (!prt_build_cid_fontname(PRT_PS_FONT_ROMAN,
-                                    mbfont_opts[OPT_MBFONT_REGULAR].string,
-                                    mbfont_opts[OPT_MBFONT_REGULAR].strlen))
-            return FALSE;
-        if (mbfont_opts[OPT_MBFONT_BOLD].present)
-            if (!prt_build_cid_fontname(PRT_PS_FONT_BOLD,
-                                        mbfont_opts[OPT_MBFONT_BOLD].string,
-                                        mbfont_opts[OPT_MBFONT_BOLD].strlen))
-                return FALSE;
-        if (mbfont_opts[OPT_MBFONT_OBLIQUE].present)
-            if (!prt_build_cid_fontname(PRT_PS_FONT_OBLIQUE,
-                                        mbfont_opts[OPT_MBFONT_OBLIQUE].string,
-                                        mbfont_opts[OPT_MBFONT_OBLIQUE].strlen))
-                return FALSE;
-        if (mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].present)
-            if (!prt_build_cid_fontname(PRT_PS_FONT_BOLDOBLIQUE,
+	/* Derive CID font names with fallbacks if not defined */
+	if (!prt_build_cid_fontname(PRT_PS_FONT_ROMAN,
+				    mbfont_opts[OPT_MBFONT_REGULAR].string,
+				    mbfont_opts[OPT_MBFONT_REGULAR].strlen))
+	    return FALSE;
+	if (mbfont_opts[OPT_MBFONT_BOLD].present)
+	    if (!prt_build_cid_fontname(PRT_PS_FONT_BOLD,
+					mbfont_opts[OPT_MBFONT_BOLD].string,
+					mbfont_opts[OPT_MBFONT_BOLD].strlen))
+		return FALSE;
+	if (mbfont_opts[OPT_MBFONT_OBLIQUE].present)
+	    if (!prt_build_cid_fontname(PRT_PS_FONT_OBLIQUE,
+					mbfont_opts[OPT_MBFONT_OBLIQUE].string,
+					mbfont_opts[OPT_MBFONT_OBLIQUE].strlen))
+		return FALSE;
+	if (mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].present)
+	    if (!prt_build_cid_fontname(PRT_PS_FONT_BOLDOBLIQUE,
 				   mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].string,
 				  mbfont_opts[OPT_MBFONT_BOLDOBLIQUE].strlen))
-                return FALSE;
+		return FALSE;
 
-        /* Check if need to use Courier for ASCII code range, and if so pick up
-         * the encoding to use */
-        prt_use_courier = mbfont_opts[OPT_MBFONT_USECOURIER].present &&
-            (TOLOWER_ASC(mbfont_opts[OPT_MBFONT_USECOURIER].string[0]) == 'y');
-        if (prt_use_courier)
-        {
-            /* Use national ASCII variant unless ASCII wanted */
-            if (mbfont_opts[OPT_MBFONT_ASCII].present &&
-                (TOLOWER_ASC(mbfont_opts[OPT_MBFONT_ASCII].string[0]) == 'y'))
-                prt_ascii_encoding = "ascii";
-            else
-                prt_ascii_encoding = prt_ps_mbfonts[cmap].ascii_enc;
-        }
+	/* Check if need to use Courier for ASCII code range, and if so pick up
+	 * the encoding to use */
+	prt_use_courier = mbfont_opts[OPT_MBFONT_USECOURIER].present &&
+	    (TOLOWER_ASC(mbfont_opts[OPT_MBFONT_USECOURIER].string[0]) == 'y');
+	if (prt_use_courier)
+	{
+	    /* Use national ASCII variant unless ASCII wanted */
+	    if (mbfont_opts[OPT_MBFONT_ASCII].present &&
+		(TOLOWER_ASC(mbfont_opts[OPT_MBFONT_ASCII].string[0]) == 'y'))
+		prt_ascii_encoding = "ascii";
+	    else
+		prt_ascii_encoding = prt_ps_mbfonts[cmap].ascii_enc;
+	}
 
-        prt_ps_font = &prt_ps_mb_font;
+	prt_ps_font = &prt_ps_mb_font;
     }
     else
 #endif
     {
 #ifdef FEAT_MBYTE
-        prt_use_courier = FALSE;
+	prt_use_courier = FALSE;
 #endif
-        prt_ps_font = &prt_ps_courier_font;
+	prt_ps_font = &prt_ps_courier_font;
     }
 
     /*
@@ -2780,7 +2780,7 @@ mch_print_init(psettings, jobname, forceit)
     prt_bufsiz = psettings->chars_per_line;
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
-        prt_bufsiz *= 2;
+	prt_bufsiz *= 2;
 #endif
     ga_init2(&prt_ps_buffer, (int)sizeof(char), prt_bufsiz);
 
@@ -2873,7 +2873,7 @@ mch_print_begin(psettings)
     prt_dsc_start();
     prt_dsc_textline("Title", (char *)psettings->jobname);
     if (!get_user_name((char_u *)buffer, 256))
-        STRCPY(buffer, "Unknown");
+	STRCPY(buffer, "Unknown");
     prt_dsc_textline("For", buffer);
     prt_dsc_textline("Creator", VIM_VERSION_LONG);
     /* Note: to ensure Clean8bit I don't think we can use LC_TIME */
@@ -2929,14 +2929,14 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
 #endif
-        prt_dsc_font_resource("DocumentNeededResources", &prt_ps_courier_font);
+	prt_dsc_font_resource("DocumentNeededResources", &prt_ps_courier_font);
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        prt_dsc_font_resource((prt_use_courier ? NULL
-                                 : "DocumentNeededResources"), &prt_ps_mb_font);
-        if (!prt_custom_cmap)
-            prt_dsc_resources(NULL, "cmap", prt_cmap);
+	prt_dsc_font_resource((prt_use_courier ? NULL
+				 : "DocumentNeededResources"), &prt_ps_mb_font);
+	if (!prt_custom_cmap)
+	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }
 #endif
 
@@ -2953,16 +2953,16 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        /* Look for required version of multi-byte printing procset */
-        if (!prt_find_resource("cidfont", &res_cidfont))
-        {
-            EMSG(_("E456: Can't find PostScript resource file \"cidfont.ps\""));
-            return FALSE;
-        }
-        if (!prt_open_resource(&res_cidfont))
-            return FALSE;
-        if (!prt_check_resource(&res_cidfont, PRT_CID_PROLOG_VERSION))
-            return FALSE;
+	/* Look for required version of multi-byte printing procset */
+	if (!prt_find_resource("cidfont", &res_cidfont))
+	{
+	    EMSG(_("E456: Can't find PostScript resource file \"cidfont.ps\""));
+	    return FALSE;
+	}
+	if (!prt_open_resource(&res_cidfont))
+	    return FALSE;
+	if (!prt_check_resource(&res_cidfont, PRT_CID_PROLOG_VERSION))
+	    return FALSE;
     }
 #endif
 
@@ -2975,64 +2975,64 @@ mch_print_begin(psettings)
     if (!prt_out_mbyte)
     {
 #endif
-        p_encoding = enc_skip(p_penc);
-        if (*p_encoding == NUL
-                || !prt_find_resource((char *)p_encoding, &res_encoding))
-        {
-            /* 'printencoding' not set or not supported - find alternate */
+	p_encoding = enc_skip(p_penc);
+	if (*p_encoding == NUL
+		|| !prt_find_resource((char *)p_encoding, &res_encoding))
+	{
+	    /* 'printencoding' not set or not supported - find alternate */
 #ifdef FEAT_MBYTE
-            int		props;
+	    int		props;
 
-            p_encoding = enc_skip(p_enc);
-            props = enc_canon_props(p_encoding);
-            if (!(props & ENC_8BIT)
-                    || !prt_find_resource((char *)p_encoding, &res_encoding))
-                /* 8-bit 'encoding' is not supported */
+	    p_encoding = enc_skip(p_enc);
+	    props = enc_canon_props(p_encoding);
+	    if (!(props & ENC_8BIT)
+		    || !prt_find_resource((char *)p_encoding, &res_encoding))
+		/* 8-bit 'encoding' is not supported */
 #endif
-                {
-                /* Use latin1 as default printing encoding */
-                p_encoding = (char_u *)"latin1";
-                if (!prt_find_resource((char *)p_encoding, &res_encoding))
-                {
-                    EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
-                            p_encoding);
-                    return FALSE;
-                }
-            }
-        }
-        if (!prt_open_resource(&res_encoding))
-            return FALSE;
-        /* For the moment there are no checks on encoding resource files to
-         * perform */
+		{
+		/* Use latin1 as default printing encoding */
+		p_encoding = (char_u *)"latin1";
+		if (!prt_find_resource((char *)p_encoding, &res_encoding))
+		{
+		    EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
+			    p_encoding);
+		    return FALSE;
+		}
+	    }
+	}
+	if (!prt_open_resource(&res_encoding))
+	    return FALSE;
+	/* For the moment there are no checks on encoding resource files to
+	 * perform */
 #ifdef FEAT_MBYTE
     }
     else
     {
-        p_encoding = enc_skip(p_penc);
-        if (*p_encoding == NUL)
-            p_encoding = enc_skip(p_enc);
-        if (prt_use_courier)
-        {
-            /* Include ASCII range encoding vector */
-            if (!prt_find_resource(prt_ascii_encoding, &res_encoding))
-            {
-                EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
+	p_encoding = enc_skip(p_penc);
+	if (*p_encoding == NUL)
+	    p_encoding = enc_skip(p_enc);
+	if (prt_use_courier)
+	{
+	    /* Include ASCII range encoding vector */
+	    if (!prt_find_resource(prt_ascii_encoding, &res_encoding))
+	    {
+		EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
 							  prt_ascii_encoding);
-                return FALSE;
-            }
-            if (!prt_open_resource(&res_encoding))
-                return FALSE;
-            /* For the moment there are no checks on encoding resource files to
-             * perform */
-        }
+		return FALSE;
+	    }
+	    if (!prt_open_resource(&res_encoding))
+		return FALSE;
+	    /* For the moment there are no checks on encoding resource files to
+	     * perform */
+	}
     }
 
     prt_conv.vc_type = CONV_NONE;
     if (!(enc_canon_props(p_enc) & enc_canon_props(p_encoding) & ENC_8BIT)) {
-        /* Set up encoding conversion if required */
+	/* Set up encoding conversion if required */
 	if (FAIL == convert_setup(&prt_conv, p_enc, p_encoding))
 	{
-            EMSG2(_("E620: Unable to convert to print encoding \"%s\""),
+	    EMSG2(_("E620: Unable to convert to print encoding \"%s\""),
 		    p_encoding);
 	    return FALSE;
 	}
@@ -3042,15 +3042,15 @@ mch_print_begin(psettings)
 
     if (prt_out_mbyte && prt_custom_cmap)
     {
-        /* Find user supplied CMap */
-        if (!prt_find_resource(prt_cmap, &res_cmap))
-        {
-            EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
+	/* Find user supplied CMap */
+	if (!prt_find_resource(prt_cmap, &res_cmap))
+	{
+	    EMSG2(_("E456: Can't find PostScript resource file \"%s.ps\""),
 								    prt_cmap);
-            return FALSE;
-        }
-        if (!prt_open_resource(&res_cmap))
-            return FALSE;
+	    return FALSE;
+	}
+	if (!prt_open_resource(&res_cmap))
+	    return FALSE;
     }
 #endif
 
@@ -3062,26 +3062,26 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        STRCPY(buffer, res_cidfont.title);
-        STRCAT(buffer, " ");
-        STRCAT(buffer, res_cidfont.version);
-        prt_dsc_resources(NULL, "procset", buffer);
+	STRCPY(buffer, res_cidfont.title);
+	STRCAT(buffer, " ");
+	STRCAT(buffer, res_cidfont.version);
+	prt_dsc_resources(NULL, "procset", buffer);
 
-        if (prt_custom_cmap)
-        {
-            STRCPY(buffer, res_cmap.title);
-            STRCAT(buffer, " ");
-            STRCAT(buffer, res_cmap.version);
-            prt_dsc_resources(NULL, "cmap", buffer);
-        }
+	if (prt_custom_cmap)
+	{
+	    STRCPY(buffer, res_cmap.title);
+	    STRCAT(buffer, " ");
+	    STRCAT(buffer, res_cmap.version);
+	    prt_dsc_resources(NULL, "cmap", buffer);
+	}
     }
     if (!prt_out_mbyte || prt_use_courier)
 #endif
     {
-        STRCPY(buffer, res_encoding.title);
-        STRCAT(buffer, " ");
-        STRCAT(buffer, res_encoding.version);
-        prt_dsc_resources(NULL, "encoding", buffer);
+	STRCPY(buffer, res_encoding.title);
+	STRCAT(buffer, " ");
+	STRCAT(buffer, res_encoding.version);
+	prt_dsc_resources(NULL, "encoding", buffer);
     }
     prt_dsc_requirements(prt_duplex, prt_tumble, prt_collate,
 #ifdef FEAT_SYN_HL
@@ -3101,14 +3101,14 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
 #endif
-        prt_dsc_font_resource("PageResources", &prt_ps_courier_font);
+	prt_dsc_font_resource("PageResources", &prt_ps_courier_font);
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        prt_dsc_font_resource((prt_use_courier ? NULL : "PageResources"),
-                                                            &prt_ps_mb_font);
-        if (!prt_custom_cmap)
-            prt_dsc_resources(NULL, "cmap", prt_cmap);
+	prt_dsc_font_resource((prt_use_courier ? NULL : "PageResources"),
+							    &prt_ps_mb_font);
+	if (!prt_custom_cmap)
+	    prt_dsc_resources(NULL, "cmap", prt_cmap);
     }
 #endif
 
@@ -3128,21 +3128,21 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (prt_out_mbyte)
     {
-        /* Add CID font procset, and any user supplied CMap */
-        if (!prt_add_resource(&res_cidfont))
-            return FALSE;
-        if (prt_custom_cmap && !prt_add_resource(&res_cmap))
-            return FALSE;
+	/* Add CID font procset, and any user supplied CMap */
+	if (!prt_add_resource(&res_cidfont))
+	    return FALSE;
+	if (prt_custom_cmap && !prt_add_resource(&res_cmap))
+	    return FALSE;
     }
 #endif
 
 #ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
 #endif
-        /* There will be only one Roman font encoding to be included in the PS
-         * file. */
-        if (!prt_add_resource(&res_encoding))
-            return FALSE;
+	/* There will be only one Roman font encoding to be included in the PS
+	 * file. */
+	if (!prt_add_resource(&res_encoding))
+	    return FALSE;
 
     prt_dsc_noarg("EndProlog");
 
@@ -3168,82 +3168,82 @@ mch_print_begin(psettings)
 #ifdef FEAT_MBYTE
     if (!prt_out_mbyte || prt_use_courier)
     {
-        /* When using Courier for ASCII range when printing multi-byte, need to
-         * pick up ASCII encoding to use with it. */
-        if (prt_use_courier)
-            p_encoding = (char_u *)prt_ascii_encoding;
+	/* When using Courier for ASCII range when printing multi-byte, need to
+	 * pick up ASCII encoding to use with it. */
+	if (prt_use_courier)
+	    p_encoding = (char_u *)prt_ascii_encoding;
 #endif
-        prt_dsc_resources("IncludeResource", "font",
-                          prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
-        prt_def_font("F0", (char *)p_encoding, (int)prt_line_height,
-                     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
-        prt_dsc_resources("IncludeResource", "font",
-                          prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLD]);
-        prt_def_font("F1", (char *)p_encoding, (int)prt_line_height,
-                     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLD]);
-        prt_dsc_resources("IncludeResource", "font",
-                          prt_ps_courier_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
-        prt_def_font("F2", (char *)p_encoding, (int)prt_line_height,
-                     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
-        prt_dsc_resources("IncludeResource", "font",
-                          prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
-        prt_def_font("F3", (char *)p_encoding, (int)prt_line_height,
-                     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
+	prt_dsc_resources("IncludeResource", "font",
+			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
+	prt_def_font("F0", (char *)p_encoding, (int)prt_line_height,
+		     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_ROMAN]);
+	prt_dsc_resources("IncludeResource", "font",
+			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLD]);
+	prt_def_font("F1", (char *)p_encoding, (int)prt_line_height,
+		     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLD]);
+	prt_dsc_resources("IncludeResource", "font",
+			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
+	prt_def_font("F2", (char *)p_encoding, (int)prt_line_height,
+		     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
+	prt_dsc_resources("IncludeResource", "font",
+			  prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
+	prt_def_font("F3", (char *)p_encoding, (int)prt_line_height,
+		     prt_ps_courier_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
 #ifdef FEAT_MBYTE
     }
     if (prt_out_mbyte)
     {
-        /* Define the CID fonts to be used in the job.  Typically CJKV fonts do
-         * not have an italic form being a western style, so where no font is
-         * defined for these faces VIM falls back to an existing face.
-         * Note: if using Courier for the ASCII range then the printout will
-         * have bold/italic/bolditalic regardless of the setting of printmbfont.
-         */
-        prt_dsc_resources("IncludeResource", "font",
-                          prt_ps_mb_font.ps_fontname[PRT_PS_FONT_ROMAN]);
-        if (!prt_custom_cmap)
-            prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
-        prt_def_cidfont("CF0", (int)prt_line_height,
-                        prt_ps_mb_font.ps_fontname[PRT_PS_FONT_ROMAN]);
+	/* Define the CID fonts to be used in the job.	Typically CJKV fonts do
+	 * not have an italic form being a western style, so where no font is
+	 * defined for these faces VIM falls back to an existing face.
+	 * Note: if using Courier for the ASCII range then the printout will
+	 * have bold/italic/bolditalic regardless of the setting of printmbfont.
+	 */
+	prt_dsc_resources("IncludeResource", "font",
+			  prt_ps_mb_font.ps_fontname[PRT_PS_FONT_ROMAN]);
+	if (!prt_custom_cmap)
+	    prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
+	prt_def_cidfont("CF0", (int)prt_line_height,
+			prt_ps_mb_font.ps_fontname[PRT_PS_FONT_ROMAN]);
 
-        if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD] != NULL)
-        {
-            prt_dsc_resources("IncludeResource", "font",
-                              prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD]);
-            if (!prt_custom_cmap)
-                prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
-            prt_def_cidfont("CF1", (int)prt_line_height,
-                            prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD]);
-        }
-        else
-            /* Use ROMAN for BOLD */
-            prt_dup_cidfont("CF0", "CF1");
+	if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD] != NULL)
+	{
+	    prt_dsc_resources("IncludeResource", "font",
+			      prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD]);
+	    if (!prt_custom_cmap)
+		prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
+	    prt_def_cidfont("CF1", (int)prt_line_height,
+			    prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLD]);
+	}
+	else
+	    /* Use ROMAN for BOLD */
+	    prt_dup_cidfont("CF0", "CF1");
 
-        if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE] != NULL)
-        {
-            prt_dsc_resources("IncludeResource", "font",
-                              prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
-            if (!prt_custom_cmap)
-                prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
-            prt_def_cidfont("CF2", (int)prt_line_height,
-                            prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
-        }
-        else
-            /* Use ROMAN for OBLIQUE */
-            prt_dup_cidfont("CF0", "CF2");
+	if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE] != NULL)
+	{
+	    prt_dsc_resources("IncludeResource", "font",
+			      prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
+	    if (!prt_custom_cmap)
+		prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
+	    prt_def_cidfont("CF2", (int)prt_line_height,
+			    prt_ps_mb_font.ps_fontname[PRT_PS_FONT_OBLIQUE]);
+	}
+	else
+	    /* Use ROMAN for OBLIQUE */
+	    prt_dup_cidfont("CF0", "CF2");
 
-        if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE] != NULL)
-        {
-            prt_dsc_resources("IncludeResource", "font",
-                              prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
-            if (!prt_custom_cmap)
-                prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
-            prt_def_cidfont("CF3", (int)prt_line_height,
-                            prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
-        }
-        else
-            /* Use BOLD for BOLDOBLIQUE */
-            prt_dup_cidfont("CF1", "CF3");
+	if (prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE] != NULL)
+	{
+	    prt_dsc_resources("IncludeResource", "font",
+			      prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
+	    if (!prt_custom_cmap)
+		prt_dsc_resources("IncludeResource", "cmap", prt_cmap);
+	    prt_def_cidfont("CF3", (int)prt_line_height,
+			    prt_ps_mb_font.ps_fontname[PRT_PS_FONT_BOLDOBLIQUE]);
+	}
+	else
+	    /* Use BOLD for BOLDOBLIQUE */
+	    prt_dup_cidfont("CF1", "CF3");
     }
 #endif
 
@@ -3328,10 +3328,10 @@ mch_print_begin_page(str)
 #ifdef FEAT_MBYTE
     prt_in_ascii = !prt_out_mbyte;
     if (prt_out_mbyte)
-        prt_write_string("CF0 sf\n");
+	prt_write_string("CF0 sf\n");
     else
 #endif
-        prt_write_string("F0 sf\n");
+	prt_write_string("F0 sf\n");
     prt_fgcol = PRCOLOR_BLACK;
     prt_bgcol = PRCOLOR_WHITE;
     prt_font = PRT_PS_FONT_ROMAN;
@@ -3393,8 +3393,8 @@ mch_print_text_out(p, len)
     float       char_width;
     float       next_pos;
 #ifdef FEAT_MBYTE
-    int         in_ascii;
-    int         half_width;
+    int		in_ascii;
+    int		half_width;
 #endif
 
     char_width = prt_char_width;
@@ -3409,47 +3409,47 @@ mch_print_text_out(p, len)
      */
     if (prt_use_courier)
     {
-        in_ascii = (len == 1 && *p < 0x80);
-        if (prt_in_ascii)
-        {
-            if (!in_ascii)
-            {
-                /* No longer in ASCII range - need to switch font */
-                prt_in_ascii = FALSE;
-                prt_need_font = TRUE;
-                prt_attribute_change = TRUE;
-            }
-        }
-        else if (in_ascii)
-        {
-            /* Now in ASCII range - need to switch font */
-            prt_in_ascii = TRUE;
-            prt_need_font = TRUE;
-            prt_attribute_change = TRUE;
-        }
+	in_ascii = (len == 1 && *p < 0x80);
+	if (prt_in_ascii)
+	{
+	    if (!in_ascii)
+	    {
+		/* No longer in ASCII range - need to switch font */
+		prt_in_ascii = FALSE;
+		prt_need_font = TRUE;
+		prt_attribute_change = TRUE;
+	    }
+	}
+	else if (in_ascii)
+	{
+	    /* Now in ASCII range - need to switch font */
+	    prt_in_ascii = TRUE;
+	    prt_need_font = TRUE;
+	    prt_attribute_change = TRUE;
+	}
     }
     if (prt_out_mbyte)
     {
-        half_width = ((*mb_ptr2cells)(p) == 1);
-        if (half_width)
-            char_width /= 2;
-        if (prt_half_width)
-        {
-            if (!half_width)
-            {
-                prt_half_width = FALSE;
-                prt_pos_x += prt_char_width/4;
-                prt_need_moveto = TRUE;
-                prt_attribute_change = TRUE;
-            }
-        }
-        else if (half_width)
-        {
-            prt_half_width = TRUE;
-            prt_pos_x += prt_char_width/4;
-            prt_need_moveto = TRUE;
-            prt_attribute_change = TRUE;
-        }
+	half_width = ((*mb_ptr2cells)(p) == 1);
+	if (half_width)
+	    char_width /= 2;
+	if (prt_half_width)
+	{
+	    if (!half_width)
+	    {
+		prt_half_width = FALSE;
+		prt_pos_x += prt_char_width/4;
+		prt_need_moveto = TRUE;
+		prt_attribute_change = TRUE;
+	    }
+	}
+	else if (half_width)
+	{
+	    prt_half_width = TRUE;
+	    prt_pos_x += prt_char_width/4;
+	    prt_need_moveto = TRUE;
+	    prt_attribute_change = TRUE;
+	}
     }
 #endif
 
@@ -3473,14 +3473,14 @@ mch_print_text_out(p, len)
 	if (prt_need_font)
 	{
 #ifdef FEAT_MBYTE
-            if (!prt_in_ascii)
-                prt_write_string("CF");
-            else
+	    if (!prt_in_ascii)
+		prt_write_string("CF");
+	    else
 #endif
-                prt_write_string("F");
-            prt_write_int(prt_font);
-            prt_write_string("sf\n");
-            prt_need_font = FALSE;
+		prt_write_string("F");
+	    prt_write_int(prt_font);
+	    prt_write_string("sf\n");
+	    prt_need_font = FALSE;
 	}
 	if (prt_need_fgcol)
 	{
@@ -3529,60 +3529,60 @@ mch_print_text_out(p, len)
 
     if (prt_out_mbyte)
     {
-        /* Multi-byte character strings are represented more efficiently as hex
-         * strings when outputting clean 8 bit PS.
-         */
-        do
-        {
-           ch = prt_hexchar[(unsigned)(*p) >> 4];
-           ga_append(&prt_ps_buffer, ch);
-           ch = prt_hexchar[(*p) & 0xf];
-           ga_append(&prt_ps_buffer, ch);
-           p++;
-        }
-        while (--len);
+	/* Multi-byte character strings are represented more efficiently as hex
+	 * strings when outputting clean 8 bit PS.
+	 */
+	do
+	{
+	    ch = prt_hexchar[(unsigned)(*p) >> 4];
+	    ga_append(&prt_ps_buffer, ch);
+	    ch = prt_hexchar[(*p) & 0xf];
+	    ga_append(&prt_ps_buffer, ch);
+	    p++;
+	}
+	while (--len);
     }
     else
 #endif
     {
-        /* Add next character to buffer of characters to output.
-         * Note: One printed character may require several PS characters to
-         * represent it, but we only count them as one printed character.
-         */
-        ch = *p;
-        if (ch < 32 || ch == '(' || ch == ')' || ch == '\\')
-        {
-            /* Convert non-printing characters to either their escape or octal
-             * sequence, ensures PS sent over a serial line does not interfere
-             * with the comms protocol.  Note: For EBCDIC we need to write out
-             * the escape sequences as ASCII codes!
+	/* Add next character to buffer of characters to output.
+	 * Note: One printed character may require several PS characters to
+	 * represent it, but we only count them as one printed character.
+	 */
+	ch = *p;
+	if (ch < 32 || ch == '(' || ch == ')' || ch == '\\')
+	{
+	    /* Convert non-printing characters to either their escape or octal
+	     * sequence, ensures PS sent over a serial line does not interfere
+	     * with the comms protocol.  Note: For EBCDIC we need to write out
+	     * the escape sequences as ASCII codes!
 	     * Note 2: Char codes < 32 are identical in EBCDIC and ASCII AFAIK!
 	     */
-            ga_append(&prt_ps_buffer, IF_EB('\\', 0134));
-            switch (ch)
-            {
-                case BS:   ga_append(&prt_ps_buffer, IF_EB('b', 0142)); break;
-                case TAB:  ga_append(&prt_ps_buffer, IF_EB('t', 0164)); break;
-                case NL:   ga_append(&prt_ps_buffer, IF_EB('n', 0156)); break;
-                case FF:   ga_append(&prt_ps_buffer, IF_EB('f', 0146)); break;
-                case CAR:  ga_append(&prt_ps_buffer, IF_EB('r', 0162)); break;
-                case '(':  ga_append(&prt_ps_buffer, IF_EB('(', 0050)); break;
-                case ')':  ga_append(&prt_ps_buffer, IF_EB(')', 0051)); break;
-                case '\\': ga_append(&prt_ps_buffer, IF_EB('\\', 0134)); break;
+	    ga_append(&prt_ps_buffer, IF_EB('\\', 0134));
+	    switch (ch)
+	    {
+		case BS:   ga_append(&prt_ps_buffer, IF_EB('b', 0142)); break;
+		case TAB:  ga_append(&prt_ps_buffer, IF_EB('t', 0164)); break;
+		case NL:   ga_append(&prt_ps_buffer, IF_EB('n', 0156)); break;
+		case FF:   ga_append(&prt_ps_buffer, IF_EB('f', 0146)); break;
+		case CAR:  ga_append(&prt_ps_buffer, IF_EB('r', 0162)); break;
+		case '(':  ga_append(&prt_ps_buffer, IF_EB('(', 0050)); break;
+		case ')':  ga_append(&prt_ps_buffer, IF_EB(')', 0051)); break;
+		case '\\': ga_append(&prt_ps_buffer, IF_EB('\\', 0134)); break;
 
-                default:
-                           sprintf((char *)ch_buff, "%03o", (unsigned int)ch);
+		default:
+			   sprintf((char *)ch_buff, "%03o", (unsigned int)ch);
 #ifdef EBCDIC
-                           ebcdic2ascii(ch_buff, 3);
+			   ebcdic2ascii(ch_buff, 3);
 #endif
-                           ga_append(&prt_ps_buffer, ch_buff[0]);
-                           ga_append(&prt_ps_buffer, ch_buff[1]);
-                           ga_append(&prt_ps_buffer, ch_buff[2]);
-                           break;
-            }
-        }
-        else
-            ga_append(&prt_ps_buffer, ch);
+			   ga_append(&prt_ps_buffer, ch_buff[0]);
+			   ga_append(&prt_ps_buffer, ch_buff[1]);
+			   ga_append(&prt_ps_buffer, ch_buff[2]);
+			   break;
+	    }
+	}
+	else
+	    ga_append(&prt_ps_buffer, ch);
     }
 
 #ifdef FEAT_MBYTE
@@ -3597,7 +3597,7 @@ mch_print_text_out(p, len)
     /* The downside of fp - use relative error on right margin check */
     next_pos = prt_pos_x + prt_char_width;
     need_break = (next_pos > prt_right_margin) &&
-                    ((next_pos - prt_right_margin) > (prt_right_margin*1e-5));
+		    ((next_pos - prt_right_margin) > (prt_right_margin*1e-5));
 
     if (need_break)
 	prt_flush_buffer();

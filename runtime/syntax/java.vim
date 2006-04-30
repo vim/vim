@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2006 Jan 15
+" Last Change:  2006 Apr 30
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -37,7 +37,7 @@ JavaHiLink javaError2 javaError
 
 " keyword definitions
 syn keyword javaExternal	native package
-syn match javaExternal          "\<import\>\(\s\+static\>\)\?"
+syn match javaExternal		"\<import\>\(\s\+static\>\)\?"
 syn keyword javaError		goto const
 syn keyword javaConditional	if else switch
 syn keyword javaRepeat		while for do
@@ -62,13 +62,13 @@ syn match   javaAnnotation      "@[_$a-zA-Z][_$a-zA-Z0-9_]*\>"
 syn match   javaClassDecl       "@interface\>"
 syn keyword javaBranch		break continue nextgroup=javaUserLabelRef skipwhite
 syn match   javaUserLabelRef	"\k\+" contained
-syn match   javaVarArg          "\.\.\."
+syn match   javaVarArg		"\.\.\."
 syn keyword javaScopeDecl	public protected private abstract
 
 if exists("java_highlight_java_lang_ids")
   let java_highlight_all=1
 endif
-if exists("java_highlight_all")  || exists("java_highlight_java")  || exists("java_highlight_java_lang") 
+if exists("java_highlight_all")  || exists("java_highlight_java")  || exists("java_highlight_java_lang")
   " java.lang.*
   syn match javaLangClass "\<System\>"
   syn keyword javaR_JavaLang NegativeArraySizeException ArrayStoreException IllegalStateException RuntimeException IndexOutOfBoundsException UnsupportedOperationException ArrayIndexOutOfBoundsException ArithmeticException ClassCastException EnumConstantNotPresentException StringIndexOutOfBoundsException IllegalArgumentException IllegalMonitorStateException IllegalThreadStateException NumberFormatException NullPointerException TypeNotPresentException SecurityException

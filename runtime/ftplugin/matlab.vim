@@ -3,8 +3,8 @@
 " Maintainer:	Jake Wasserman <jwasserman at gmail dot com>
 " Last Changed: 2006 Jan 12
 
-if exists("b:did_ftplugin") 
-	finish 
+if exists("b:did_ftplugin")
+	finish
 endif
 let b:did_ftplugin = 1
 
@@ -13,7 +13,7 @@ set cpo-=C
 
 if exists("loaded_matchit")
 	let s:conditionalEnd = '\(([^()]*\)\@!\<end\>\([^()]*)\)\@!'
-	let b:match_words = '\<if\>\|\<while\>\|\<for\>\|\<switch\>:' . 
+	let b:match_words = '\<if\>\|\<while\>\|\<for\>\|\<switch\>:' .
 		\ s:conditionalEnd . ',\<if\>:\<elseif\>:\<else\>:' .
 		\ s:conditionalEnd
 endif

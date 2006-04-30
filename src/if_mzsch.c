@@ -823,7 +823,7 @@ mzscheme_init(void)
 	    return -1;
 	}
 #endif
-        startup_mzscheme();
+	startup_mzscheme();
 
 	if (mzscheme_io_init())
 	    return -1;
@@ -911,7 +911,7 @@ eval_in_namespace(void *data, Scheme_Closed_Prim *what, Scheme_Env *env,
     if (!value)
     {
 	value = extract_exn_message(exn);
-        /* Got an exn? */
+	/* Got an exn? */
 	if (value)
 	{
 	    scheme_display(value, curerr);  /*  Send to stderr-vim */
@@ -952,7 +952,8 @@ mzscheme_buffer_free(buf_T *buf)
 {
     if (buf->b_mzscheme_ref)
     {
-        vim_mz_buffer *bp;
+	vim_mz_buffer *bp;
+
 	bp = buf->b_mzscheme_ref;
 	bp->buf = INVALID_BUFFER_VALUE;
 	buf->b_mzscheme_ref = NULL;
@@ -1083,16 +1084,16 @@ init_exn_catching_apply(void)
     {
 	char *e =
 	    "(lambda (thunk) "
-	        "(with-handlers ([void (lambda (exn) (cons #f exn))]) "
+		"(with-handlers ([void (lambda (exn) (cons #f exn))]) "
 		"(cons #t (thunk))))";
 
-        /* make sure we have a namespace with the standard syntax: */
+	/* make sure we have a namespace with the standard syntax: */
 	Scheme_Env *env = (Scheme_Env *)scheme_make_namespace(0, NULL);
 	add_vim_exn(env);
 
-        exn_catching_apply = scheme_eval_string(e, env);
+	exn_catching_apply = scheme_eval_string(e, env);
 	exn_p = scheme_lookup_global(scheme_intern_symbol("exn?"), env);
-        exn_message = scheme_lookup_global(
+	exn_message = scheme_lookup_global(
 		scheme_intern_symbol("exn-message"), env);
     }
 }
@@ -1346,14 +1347,14 @@ get_option(void *data, int argc, Scheme_Object **argv)
     case 1:
 	return scheme_make_integer_value(value);
     case 0:
-        rval = scheme_make_string(strval);
+	rval = scheme_make_string(strval);
 	vim_free(strval);
 	return rval;
     case -1:
     case -2:
-        raise_vim_exn(_("hidden option"));
+	raise_vim_exn(_("hidden option"));
     case -3:
-        raise_vim_exn(_("unknown option"));
+	raise_vim_exn(_("unknown option"));
     }
     /* unreachable */
     return scheme_void;
@@ -1445,7 +1446,7 @@ get_window_list(void *data, int argc, Scheme_Object **argv)
     list = scheme_null;
 
     for (w = firstwin; w != NULL; w = w->w_next)
-        if (w->w_buffer == buf->buf)
+	if (w->w_buffer == buf->buf)
 	    list = scheme_make_pair(window_new(w), list);
 
     return list;
@@ -1506,7 +1507,7 @@ get_window_by_num(void *data, int argc, Scheme_Object **argv)
 	scheme_signal_error(_("window index is out of range"));
 
     for (win = firstwin; win != NULL; win = win->w_next, --fnum)
-        if (fnum == 1)	    /* to be 1-based */
+	if (fnum == 1)	    /* to be 1-based */
 	    return window_new(win);
 
     return scheme_false;
@@ -1681,7 +1682,7 @@ get_buffer_by_num(void *data, int argc, Scheme_Object **argv)
     fnum = SCHEME_INT_VAL(GUARANTEE_INTEGER(prim->name, 0));
 
     for (buf = firstbuf; buf; buf = buf->b_next)
-        if (buf->b_fnum == fnum)
+	if (buf->b_fnum == fnum)
 	    return buffer_new(buf);
 
     return scheme_false;
@@ -1786,7 +1787,7 @@ buffer_new(buf_T *buf)
      * then we can get at it in buf_freeall() in vim.
      */
     if (buf->b_mzscheme_ref)
-        return buf->b_mzscheme_ref;
+	return buf->b_mzscheme_ref;
 
     self = scheme_malloc_fail_ok(scheme_malloc, sizeof(vim_mz_buffer));
 
@@ -1863,12 +1864,12 @@ get_buffer_line_list(void *data, int argc, Scheme_Object **argv)
      * Handle some error conditions
      */
     if (lo < 0)
-        lo = 0;
+	lo = 0;
 
     if (hi < 0)
 	hi = 0;
     if (hi < lo)
-        hi = lo;
+	hi = lo;
 
     n = hi - lo;
 
@@ -1918,7 +1919,7 @@ set_buffer_line(void *data, int argc, Scheme_Object **argv)
 #endif
     n = SCHEME_INT_VAL(GUARANTEE_INTEGER(prim->name, 0));
     if (!SCHEME_STRINGP(argv[1]) && !SCHEME_FALSEP(argv[1]))
-        scheme_wrong_type(prim->name, "string or #f", 1, argc, argv);
+	scheme_wrong_type(prim->name, "string or #f", 1, argc, argv);
     line = argv[1];
     buf = get_buffer_arg(prim->name, 2, argc, argv);
 
@@ -2072,11 +2073,11 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     rest = line_list;
     for (i = 0; i < new_len; ++i)
     {
-        line = SCHEME_CAR(rest);
+	line = SCHEME_CAR(rest);
 	rest = SCHEME_CDR(rest);
 	if (!SCHEME_STRINGP(line))
 	    scheme_wrong_type(prim->name, "string-list", 2, argc, argv);
-        array[i] = string_to_line(line);
+	array[i] = string_to_line(line);
     }
 
     savebuf = curbuf;
@@ -2085,7 +2086,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     if (u_save((linenr_T)(lo-1), (linenr_T)hi) == FAIL)
     {
 	curbuf = savebuf;
-        raise_vim_exn(_("cannot save undo information"));
+	raise_vim_exn(_("cannot save undo information"));
     }
 
     /*
@@ -2100,7 +2101,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	    curbuf = savebuf;
 	    raise_vim_exn(_("cannot delete line"));
 	}
-        extra--;
+	extra--;
     }
 
     /*
@@ -2122,14 +2123,14 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
      */
     while (i < new_len)
     {
-        if (ml_append((linenr_T)(lo + i - 1),
+	if (ml_append((linenr_T)(lo + i - 1),
 		(char_u *)array[i], 0, FALSE) == FAIL)
 	{
 	    curbuf = savebuf;
-            raise_vim_exn(_("cannot insert line"));
+	    raise_vim_exn(_("cannot insert line"));
 	}
-        ++i;
-        ++extra;
+	++i;
+	++extra;
     }
 
     /*
@@ -2186,7 +2187,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     buf = get_buffer_arg(prim->name, 2, argc, argv);
 
     if (n != 0)	    /* 0 can be used in insert */
-        check_line_range(n, buf->buf);
+	check_line_range(n, buf->buf);
     if (SCHEME_STRINGP(list))
     {
 	str = string_to_line(list);
@@ -2229,9 +2230,9 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     rest = list;
     for (i = 0; i < size; ++i)
     {
-        line = SCHEME_CAR(rest);
-        rest = SCHEME_CDR(rest);
-        array[i] = string_to_line(line);
+	line = SCHEME_CAR(rest);
+	rest = SCHEME_CDR(rest);
+	array[i] = string_to_line(line);
     }
 
     savebuf = curbuf;
@@ -2240,20 +2241,20 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     if (u_save((linenr_T)n, (linenr_T)(n + 1)) == FAIL)
     {
 	curbuf = savebuf;
-        raise_vim_exn(_("cannot save undo information"));
+	raise_vim_exn(_("cannot save undo information"));
     }
     else
     {
-        for (i = 0; i < size; ++i)
-            if (ml_append((linenr_T)(n + i), (char_u *)array[i],
+	for (i = 0; i < size; ++i)
+	    if (ml_append((linenr_T)(n + i), (char_u *)array[i],
 			0, FALSE) == FAIL)
 	    {
 		curbuf = savebuf;
-	        raise_vim_exn(_("cannot insert line"));
+		raise_vim_exn(_("cannot insert line"));
 	    }
 
-        if (i > 0)
-            appended_lines_mark((linenr_T)n, (long)i);
+	if (i > 0)
+	    appended_lines_mark((linenr_T)n, (long)i);
     }
 
     curbuf = savebuf;

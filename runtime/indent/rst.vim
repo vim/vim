@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         reStructuredText Documentation Format
+" Language:	    reStructuredText Documentation Format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 
@@ -40,7 +40,7 @@ function GetRSTIndent()
       let ind = ind - 2
     elseif line =~ '^\s*\d\+\.\s'
       let ind = ind - matchend(substitute(line, '^\s*', '', ''),
-            \ '\d\+\.\s\+')
+	    \ '\d\+\.\s\+')
     elseif line =~ '^\s*\.\.'
       let ind = ind - 3
     else

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0f.  Last change: 2006 Apr 29
+*options.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1192,7 +1192,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			written
 	  nowrite	buffer which will not be written
 	  acwrite	buffer which will always be written with BufWriteCmd
-	  		autocommands. {not available when compiled without the
+			autocommands. {not available when compiled without the
 			|+autocmd| feature}
 	  quickfix	quickfix buffer, contains list of errors |:cwindow|
 			or list of locations |:lwindow|
@@ -1648,7 +1648,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    sufficient colors are available.  |ins-completion-menu|
 
 	   menuone  Use the popup menu also when there is only one match.
-	   	    Useful when there is additional information about the
+		    Useful when there is additional information about the
 		    match, e.g., what file it comes from.
 
 	   longest  Only insert the longest common text of the matches.  If
@@ -1658,7 +1658,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    used.
 
 	   preview  Show extra information about the currently selected
-	   	    completion in the preview window.
+		    completion in the preview window.
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)
@@ -1954,7 +1954,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		+	When included, a ":write file" command will reset the
 			'modified' flag of the buffer, even though the buffer
 			itself may still be different from its file.
-			 					*cpo-star*
+								*cpo-star*
 		*	Use ":*" in the same way as ":@".  When not included,
 			":*" is an alias for ":'<,'>", select the Visual area.
 								*cpo-<*
@@ -1973,7 +1973,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	when $VIM_POSIX was set on startup. |posix|
 
 	    contains	behavior	~
-			 					*cpo-#*
+								*cpo-#*
 		#	A count before "D", "o" and "O" has no effect.
 								*cpo-&*
 		&	When ":preserve" was used keep the swap file when
@@ -2990,9 +2990,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	operator.  When this option is empty 'formatprg' is used.
 
 	The |v:lnum|  variable holds the first line to be formatted.
-	The |v:count| variable the number of lines to be formatted.
-	The |v:char|  variable the character to be inserted.  This can be
-		      empty.  Don't insert it yet!
+	The |v:count| variable holds the number of lines to be formatted.
+	The |v:char|  variable holds the character that is going to be
+		      inserted.  This can be empty.  Don't insert it yet!
 
 	Example: >
 		:set formatexpr=mylang#Format()
@@ -3370,7 +3370,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  't'	Include tearoff menu items.  Currently only works for Win32,
 		GTK+, and Motif 1.2 GUI.
 	  'T'	Include Toolbar.  Currently only in Win32, GTK+, Motif, Photon
-	        and Athena GUIs.
+		and Athena GUIs.
 
 	  'r'	Right-hand scrollbar is always present.
 	  'R'	Right-hand scrollbar is present when there is a vertically
@@ -4294,7 +4294,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			is off and there is text preceding the character
 			visible in the first column.
 	  nbsp:c	Character to show for a non-breakable space (character
-	  		0xA0, 160).  Left blank when omitted.
+			0xA0, 160).  Left blank when omitted.
 
 	The characters ':' and ',' should not be used.  UTF-8 characters can
 	be used when 'encoding' is "utf-8", otherwise only printable
@@ -6408,7 +6408,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			also used in all buffer related split commands, for
 			example ":sbuffer", ":sbnext", or ":sbrewind".
 	   usetab	Like "useopen", but also consider windows in other tab
-	   		pages.
+			pages.
 	   split	If included, split the current window before loading
 			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.
@@ -6988,7 +6988,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				"s"  = button state
 				"c"  = column plus 33
 				"r"  = row plus 33
-	   		This only works up to 223 columns!  See "dec" for a
+			This only works up to 223 columns!  See "dec" for a
 			solution.
 	   xterm2	Works like "xterm", but with the xterm reporting the
 			mouse position while the mouse is dragged.  This works
@@ -7479,7 +7479,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	A list of words that change how command line completion is done.
 	Currently only one word is allowed:
 	  tagfile	When using CTRL-D to list matching tags, the kind of
-	   		tag and the file of the tag is listed.  Only one match
+			tag and the file of the tag is listed.	Only one match
 			is displayed per line.  Often used tag kinds are:
 				d	#define
 				f	function

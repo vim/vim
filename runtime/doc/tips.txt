@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
+*tips.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -489,8 +489,8 @@ A slightly more advanced version is used in the |matchparen| plugin.
 	    let c2 = '\]'
 	  endif
 	  let s_skip ='synIDattr(synID(line("."), col("."), 0), "name") ' .
- 	  	\ '=~?  "string\\|comment"'
- 	  execute 'if' s_skip '| let s_skip = 0 | endif'
+		\ '=~?	"string\\|comment"'
+	  execute 'if' s_skip '| let s_skip = 0 | endif'
 
 	  let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip)
 

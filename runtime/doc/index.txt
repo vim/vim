@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0f.  Last change: 2006 Apr 10
+*index.txt*     For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -748,7 +748,7 @@ tag		char	      note action in Normal mode	~
 |gu|		gu{motion}	2  make Nmove text lowercase
 |gv|		gv		   reselect the previous Visual area
 |gw|		gw{motion}	2  format Nmove text and keep cursor
-|g@|            g@{motion}         call 'operatorfunc'
+|g@|		g@{motion}	   call 'operatorfunc'
 |g~|		g~{motion}	2  swap case for Nmove text
 |g<Down>|	g<Down>		1  same as "gj"
 |g<End>|	g<End>		1  same as "g$"
@@ -1336,7 +1336,7 @@ The commands are sorted on the non-optional part of their name.
 |:profdel|	:profd[el]	stop profiling a function or script
 |:profile|	:prof[ile]	profiling functions and scripts
 |:promptfind|	:pro[mtfind]	open GUI dialog for searching
-|:promptrepl| 	:promtr[epl]	open GUI dialog for search/replace
+|:promptrepl|	:promtr[epl]	open GUI dialog for search/replace
 |:perldo|	:perld[o]	execute Perl command for each line
 |:pop|		:po[p]		jump to older entry in tag stack
 |:popup|	:pop[up]	popup a menu by name

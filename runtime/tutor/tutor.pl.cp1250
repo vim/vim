@@ -8,8 +8,8 @@
      u¿ywaæ Vima jako edytora ogólnego przeznaczenia.
 
      Czas potrzebny na ukoñczenie tutoriala to 25 do 30 minut i zale¿y
-     od tego jak wiele czasu spêdzisz na eksperymentowaniu.  
-	 
+     od tego jak wiele czasu spêdzisz na eksperymentowaniu.
+
 	 UWAGA:
 	 Polecenia wykonywane w czasie lekcji zmodyfikuj¹ tekst. Zrób
 	 wczeœniej kopiê tego pliku do æwiczeñ (jeœli zacz¹³eœ komend¹
@@ -199,7 +199,7 @@ Teraz mo¿emy kontynuowaæ i przejœæ do Lekcji 2.
 
   4. Wpisz   dw   by usun¹æ wyraz.
 
-  UWAGA: Litera  d  pojawi siê na dole ekranu. Vim czeka na wpisanie  w . 
+  UWAGA: Litera  d  pojawi siê na dole ekranu. Vim czeka na wpisanie  w .
 	 Jeœli zobaczysz inny znak oznacza to, ¿e wpisa³eœ coœ Ÿle, wciœnij
 	 <ESC> i zacznij od pocz¹tku.
 
@@ -359,7 +359,7 @@ UWAGA:  Mno¿nik pomiêdzy operatorem  d  i ruchem dzia³a podobnie do ruchu bez
   gdzie:
    operator  - to co trzeba zrobiæ (np.  d  dla usuwania)
    [liczba]  - opcjonalne, ile razy powtórzyæ ruch
-   ruch      - przenosi nad tekstem do operowania, takim jak  w (wyraz), 
+   ruch      - przenosi nad tekstem do operowania, takim jak  w (wyraz),
 	       $  (do koñca linii), etc.
 
   6. By przejœæ do pocz¹tku linii u¿yj zera:  0
@@ -492,7 +492,7 @@ UWAGA:  Mo¿esz u¿ywaæ <BS> aby poprawiaæ b³êdy w czasie pisania.
 
   UWAGA: Przeczytaj ca³¹ lekcjê zanim wykonasz jakieœ polecenia!!!
 
-  1. Przytrzymaj klawisz CTRL i wciœnij  g . U¿ywamy notacji CTRL-G. 
+  1. Przytrzymaj klawisz CTRL i wciœnij  g . U¿ywamy notacji CTRL-G.
      Na dole strony pojawi siê pasek statusu z nazw¹ pliku i pozycj¹ w pliku.
      Zapamiêtaj numer linii dla potrzeb kroku 3.
 

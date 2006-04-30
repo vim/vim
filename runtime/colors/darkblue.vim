@@ -1,6 +1,6 @@
 " Vim color file
 " Maintainer:	Bohdan Vlasyuk <bohdan@vstu.edu.ua>
-" Last Change:	2006 Apr 21
+" Last Change:	2006 Apr 30
 
 " darkblue -- for those who prefer dark background
 " [note: looks bit uglier with come terminal palettes,
@@ -45,8 +45,8 @@ hi DiffChange	guibg=darkmagenta ctermbg=magenta cterm=none
 hi DiffDelete	ctermfg=blue ctermbg=cyan gui=bold guifg=Blue guibg=DarkCyan
 hi DiffText	cterm=bold ctermbg=red gui=bold guibg=Red
 
-hi Cursor   	guifg=black guibg=yellow ctermfg=black ctermbg=yellow
-hi lCursor   	guifg=black guibg=white ctermfg=black ctermbg=white
+hi Cursor	guifg=black guibg=yellow ctermfg=black ctermbg=yellow
+hi lCursor	guifg=black guibg=white ctermfg=black ctermbg=white
 
 
 hi Comment	guifg=#80a0ff ctermfg=darkred

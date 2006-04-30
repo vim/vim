@@ -5,7 +5,7 @@
 " This keyboard layout allows all Greek symbols to be typed,
 " including accented capitals and diaeresis. It does not
 " include diaeresis and accent on the same vowel, nor
-" the greek quotes, as these were not included in the codepage. 
+" the greek quotes, as these were not included in the codepage.
 " It includes the Greek semicolon sign.
 
 "

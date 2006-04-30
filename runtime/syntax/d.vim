@@ -1,10 +1,10 @@
 " Vim syntax file for the D programming language (version 0.149).
 "
 " Language:	D
-" Maintainer:	Jason Mills<jmills@cs.mun.ca> 
+" Maintainer:	Jason Mills<jmills@cs.mun.ca>
 "   When emailing me, please put the word vim somewhere in the subject
 "   to ensure the email does not get marked as spam.
-" Last Change:	2006 Mar 12
+" Last Change:	2006 Apr 30
 " Version:	0.15
 "
 " Options:

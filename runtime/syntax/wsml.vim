@@ -2,7 +2,7 @@
 " Language:     WSML
 " Maintainer:   Thomas Haselwanter <thomas.haselwanter@deri.org>
 " URL:		none
-" Last Change:  2006 Mar 13
+" Last Change:  2006 Apr 30
 
 " Quit when a syntax file was already loaded
 if version < 600
@@ -13,9 +13,9 @@ endif
 
 " WSML
 syn keyword wsmlHeader		wsmlVariant
-syn keyword wsmlNamespace	namespace 
-syn keyword wsmlTopLevel	concept instance relationInstance ofType usesMediator usesService relation sharedVariables importsOntology 
-syn keyword wsmlOntology	hasValue memberOf ofType impliesType subConceptOf 
+syn keyword wsmlNamespace	namespace
+syn keyword wsmlTopLevel	concept instance relationInstance ofType usesMediator usesService relation sharedVariables importsOntology
+syn keyword wsmlOntology	hasValue memberOf ofType impliesType subConceptOf
 syn keyword wsmlAxiom		axiom definedBy
 syn keyword wsmlService		assumption effect postcondition precondition capability interface
 syn keyword wsmlTopLevel	ooMediator wwMediator wgMediator ggMediator

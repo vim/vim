@@ -1,0 +1,32 @@
+Tests for tab pages
+
+STARTTEST
+:so small.vim
+:" Simple test for opening and closing a tab page
+:tabnew
+:let nr = tabpagenr()
+:q
+:call append(line('$'), 'tab page ' . nr)
+:"
+:" Open three tab pages and use ":tabdo"
+:0tabnew
+:1tabnew
+:888tabnew
+:tabdo call append(line('$'), 'this is tab page ' . tabpagenr())
+:tabclose! 2
+:tabrewind
+:let line1 = getline('$')
+:undo
+:q
+:tablast
+:let line2 = getline('$')
+:q!
+:call append(line('$'), line1)
+:call append(line('$'), line2)
+:"
+:"
+:/^Results/,$w! test.out
+:qa!
+ENDTEST
+
+Results:

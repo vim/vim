@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:    SQL 
+" Language:    SQL
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
 " Last Change: Wed Sep 14 2005 10:21:15 PM
 " Version:     1.4
@@ -10,7 +10,7 @@
 "    Anywhere (ASA).  Test indenting was done with ASA stored procedures and
 "    fuctions and Oracle packages which contain stored procedures and
 "    functions.
-"    This has not been tested against Microsoft SQL Server or 
+"    This has not been tested against Microsoft SQL Server or
 "    Sybase Adaptive Server Enterprise (ASE) which use the Transact-SQL
 "    syntax.  That syntax does not have end tags for IF's, which makes
 "    indenting more difficult.
@@ -32,7 +32,7 @@ setlocal indentkeys-=:
 setlocal indentkeys-=0#
 setlocal indentkeys-=e
 
-" This indicates formatting should take place when one of these 
+" This indicates formatting should take place when one of these
 " expressions is used.  These expressions would normally be something
 " you would type at the BEGINNING of a line
 " SQL is generally case insensitive, so this files assumes that
@@ -40,7 +40,7 @@ setlocal indentkeys-=e
 " an indent right, since the SQLBlockStart is used for those keywords
 setlocal indentkeys+==~end,=~else,=~elseif,=~elsif,0=~when,0=)
 
-" GetSQLIndent is executed whenever one of the expressions 
+" GetSQLIndent is executed whenever one of the expressions
 " in the indentkeys is typed
 setlocal indentexpr=GetSQLIndent()
 
@@ -51,7 +51,7 @@ endif
 
 " List of all the statements that start a new block.
 " These are typically words that start a line.
-" IS is excluded, since it is difficult to determine when the 
+" IS is excluded, since it is difficult to determine when the
 " ending block is (especially for procedures/functions).
 let s:SQLBlockStart = '^\s*\%('.
             \ 'if\|else\|elseif\|elsif\|'.
@@ -114,7 +114,7 @@ function s:CheckToIgnoreRightParan( prev_lnum, num_levels )
             break
         endif
 
-        if matching_paran == lnum 
+        if matching_paran == lnum
             " This was not an unmatched parantenses, start the search again
             " again after this column
             " echom 'CTIRP - same line match, ignoring'
@@ -173,9 +173,9 @@ function s:GetStmtStarterIndent( keyword, curr_lnum )
     elseif a:keyword =~? 'when'
         exec 'normal! ^'
         let matching_lnum = searchpair(
-                    \ '\%(\<end\s\+\)\@<!\<case\>\|\<exception\>\|\<merge\>', 
-                    \ '', 
-                    \ '\%(\%(\<when\s\+others\>\)\|\%(\<end\s\+case\>\)\)', 
+                    \ '\%(\<end\s\+\)\@<!\<case\>\|\<exception\>\|\<merge\>',
+                    \ '',
+                    \ '\%(\%(\<when\s\+others\>\)\|\%(\<end\s\+case\>\)\)',
                     \ 'bW',
                     \ 'IsColComment(line("."), col(".")) == 1')
         exec 'normal! $'
@@ -193,10 +193,10 @@ endfunction
 " Check if the line is a comment
 function IsLineComment(lnum)
     let rc = synIDattr(
-                \ synID(a:lnum, 
+                \ synID(a:lnum,
                 \     match(getline(a:lnum), '\S')+1, 0)
-                \ , "name") 
-                \ =~? "comment" 
+                \ , "name")
+                \ =~? "comment"
 
     return rc
 endfunction
@@ -204,8 +204,8 @@ endfunction
 
 " Check if the column is a comment
 function IsColComment(lnum, cnum)
-    let rc = synIDattr(synID(a:lnum, a:cnum, 0), "name") 
-                \           =~? "comment" 
+    let rc = synIDattr(synID(a:lnum, a:cnum, 0), "name")
+                \           =~? "comment"
 
     return rc
 endfunction
@@ -214,7 +214,7 @@ endfunction
 " Check if the column is a comment
 function ModuloIndent(ind)
     let ind = a:ind
-    
+
     if ind > 0
         let modulo = ind % &shiftwidth
 
@@ -229,7 +229,7 @@ endfunction
 
 " Find correct indent of a new line based upon the previous line
 function GetSQLIndent()
-    let lnum = v:lnum 
+    let lnum = v:lnum
     let ind = indent(lnum)
 
     " If the current line is a comment, leave the indent as is
@@ -246,7 +246,7 @@ function GetSQLIndent()
             return ind
         endif
 
-        if IsLineComment(prevlnum) == 1 
+        if IsLineComment(prevlnum) == 1
             if getline(v:lnum) =~ '^\s*\*'
                 let ind = ModuloIndent(indent(prevlnum))
                 return ind + 1
@@ -269,13 +269,13 @@ function GetSQLIndent()
     "     endif
     " endwhile
 
-    " echom 'PREVIOUS INDENT: ' . indent(prevlnum) . '  LINE: ' . getline(prevlnum) 
+    " echom 'PREVIOUS INDENT: ' . indent(prevlnum) . '  LINE: ' . getline(prevlnum)
 
     " This is the line you just hit return on, it is not the current line
     " which is new and empty
     " Based on this line, we can determine how much to indent the new
     " line
-    
+
     " Get default indent (from prev. line)
     let ind      = indent(prevlnum)
     let prevline = getline(prevlnum)
@@ -300,7 +300,7 @@ function GetSQLIndent()
             " let num_unmatched_right  = s:CountUnbalancedParan( prevline, ')' )
         endif
         if num_unmatched_left > 0
-            " There is a open left paranethesis 
+            " There is a open left paranethesis
             " increase indent
             let ind = ind + ( &sw * num_unmatched_left )
         elseif num_unmatched_right > 0
@@ -331,7 +331,7 @@ function GetSQLIndent()
     let line = getline(v:lnum)
 
     if line =~? '^\s*els'
-        " Any line when you type else will automatically back up one 
+        " Any line when you type else will automatically back up one
         " ident level  (ie else, elseif, elsif)
         let ind = ind - &sw
         " echom 'curr - else - indent ' . ind
@@ -356,11 +356,11 @@ function GetSQLIndent()
         " If the line ends in a ), then reduce the indent
         " This catches items like:
         " CREATE TABLE T1(
-        "    c1 int, 
+        "    c1 int,
         "    c2 int
         "    );
         " But we do not want to unindent a line like:
-        " IF ( c1 = 1 
+        " IF ( c1 = 1
         " AND  c2 = 3 ) THEN
         " let num_unmatched_right  = s:CountUnbalancedParan( line, ')' )
         " if num_unmatched_right > 0

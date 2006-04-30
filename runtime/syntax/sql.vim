@@ -5,8 +5,8 @@
 " Version:     1.0
 
 " Description: Checks for a:
-"                  buffer local variable, 
-"                  global variable, 
+"                  buffer local variable,
+"                  global variable,
 "              If the above exist, it will source the type specified.
 "              If none exist, it will source the default sql.vim file.
 "

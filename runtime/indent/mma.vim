@@ -12,7 +12,7 @@
 "       let filetype_m="mma"
 "
 " Credits:
-" o steve hacked this out of a random indent file in the Vim 6.1 
+" o steve hacked this out of a random indent file in the Vim 6.1
 "   distribution that he no longer remembers...sh.vim?  Thanks!
 
 " Only load this indent file when no other was loaded.
@@ -30,7 +30,7 @@ if exists("*GetMmaIndent")
 endif
 
 function GetMmaIndent()
-   
+
     " Hit the start of the file, use zero indent.
     if v:lnum == 0
         return 0
@@ -38,21 +38,21 @@ function GetMmaIndent()
 
      " Find a non-blank line above the current line.
     let lnum = prevnonblank(v:lnum - 1)
-   
-    " use indenting as a base 
+
+    " use indenting as a base
     let ind = indent(v:lnum)
     let lnum = v:lnum
-    
+
     " if previous line has an unmatched bracket, or ( indent.
     " doesn't do multiple parens/blocks/etc...
-    
+
     " also, indent only if this line if this line isn't starting a new
     " block... TODO - fix this with indentkeys?
     if getline(v:lnum-1) =~ '\\\@<!\%(\[[^\]]*\|([^)]*\|{[^}]*\)$' && getline(v:lnum) !~ '\s\+[\[({]'
         let ind = ind+&sw
     endif
 
-    " if this line had unmatched closing block, 
+    " if this line had unmatched closing block,
     " indent to the matching opening block
     if getline(v:lnum) =~ '[^[]*]\s*$'
         " move to the closing bracket

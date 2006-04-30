@@ -1,12 +1,9 @@
-*uganda.txt*    For Vim version 7.0g.  Last change: 2006 Apr 24
-
+    For Vim version 7.0g.  Last change: 2006 Apr 24
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
-
-			*uganda* *Uganda* *copying* *copyright* *license*
 SUMMARY
-								*iccf* *ICCF*
+
 Vim is Charityware.  You can use and copy it as much as you like, but you are
 encouraged to make a donation for needy children in Uganda.  Please see |kcc|
 below or visit the ICCF web site, available at these URLs:
@@ -127,7 +124,7 @@ Note:
   MODIFIED_BY define.
 
 ==============================================================================
-Kibaale Children's Centre						*kcc*
+Kibaale Children's Centre
 
 Kibaale Children's Centre (KCC) is located in Kibaale, a small town in the
 south of Uganda, near Tanzania, in East Africa.  The area is known as Rakai
@@ -172,7 +169,7 @@ There is a small clinic at the project, which provides children and their
 family with medical help.  When needed, transport to a hospital is offered.
 Immunization programs are carried out and help is provided when an epidemic is
 breaking out (measles and cholera have been a problem).
-							*donate*
+
 Summer 1994 to summer 1995 I spent a whole year at the centre, working as a
 volunteer.  I have helped to expand the centre and worked in the area of water
 and sanitation.  I learned that the help that the KCC provides really helps.
@@ -206,10 +203,9 @@ The address of the centre is:
 			p.o. box 1658
 			Masaka, Uganda, East Africa
 
-Sending money:						*iccf-donations*
+Sending money:
 
 Check the ICCF web site for the latest information!  See |iccf| for the URL.
-
 
 USA:		The methods mentioned below can be used.  Alternatively, you
 		can send a check to the Nehemiah Group Outreach Society
@@ -293,4 +289,4 @@ Address to send checks to:
 This address is expected to be valid for a long time.  The address in Venlo
 will not be valid after June 2006.
 
- vim:tw=78:ts=8:ft=help:norl:
+ ts=8:ft=help:norl:

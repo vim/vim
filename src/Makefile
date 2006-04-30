@@ -880,7 +880,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 0f
+VIMMINOR = 0g
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -1113,7 +1113,7 @@ GTK_BUNDLE	=
 
 ### Motif GUI
 MOTIF_SRC	= gui.c gui_motif.c gui_x11.c pty.c gui_beval.c \
-		  	gui_xmdlg.c gui_xmebw.c
+			gui_xmdlg.c gui_xmebw.c
 MOTIF_OBJ	= objects/gui.o objects/gui_motif.o objects/gui_x11.o \
 			objects/pty.o objects/gui_beval.o \
 			objects/gui_xmdlg.o objects/gui_xmebw.o
@@ -1764,7 +1764,7 @@ INSTALLMANARGS = $(VIMLOC) $(SCRIPTLOC) $(VIMRCLOC) $(HELPSOURCE) $(MANMOD) \
 
 # Install most of the runtime files
 installruntime: installrtbase installmacros installtutor installspell
-	
+
 # install the help files; first adjust the contents for the final location
 installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 		$(DEST_HELP) $(DEST_PRINT) $(DEST_COL) $(DEST_SYN) $(DEST_IND) \
@@ -2062,7 +2062,7 @@ INSTALLMLARGS = $(VIMNAME) $(VIMDIFFNAME) $(EVIMNAME) \
 		$(GVIMNAME) $(GVIEWNAME) $(RGVIMNAME) $(RGVIEWNAME) \
 		$(GVIMDIFFNAME) $(EVIEWNAME)
 
-installmanlinks: 
+installmanlinks:
 	-$(SHELL) ./installml.sh install "$(GUI_MAN_TARGETS)" \
 		$(DEST_MAN) $(INSTALLMLARGS)
 

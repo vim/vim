@@ -5147,7 +5147,7 @@ cin_first_id_amount()
     if (len == 6 && STRNCMP(p, "static", 6) == 0)
     {
 	p = skipwhite(p + 6);
-        len = (int)(skiptowhite(p) - p);
+	len = (int)(skiptowhite(p) - p);
     }
     if (len == 6 && STRNCMP(p, "struct", 6) == 0)
 	p = skipwhite(p + 6);
@@ -5459,7 +5459,7 @@ cin_iswhileofdo(p, lnum, ind_maxparen)	    /* XXX */
  *    do
  *       nothing;
  *    while (foo
- *             && bar);  <-- here
+ *	       && bar);  <-- here
  * Adjust the cursor to the line with "while".
  */
     static int
@@ -5558,7 +5558,7 @@ cin_is_cpp_baseclass(line, col)
      * '{' or '}' and start below it.  This handles the following situations:
      *	a = cond ?
      *	      func() :
-     *	           asdf;
+     *		   asdf;
      *	func::foo()
      *	      : something
      *	{}
@@ -7542,7 +7542,7 @@ term_again:
 			 * When a terminated line starts with "else" skip to
 			 * the matching "if":
 			 *       else 3;
-			 *           indent this;
+			 *	     indent this;
 			 * Need to use the scope of this "else".  XXX
 			 * If whilelevel != 0 continue looking for a "do {".
 			 */

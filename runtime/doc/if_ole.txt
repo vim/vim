@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 7.0f.  Last change: 2006 Mar 06
+*if_ole.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -169,7 +169,7 @@ In .Net Studio choose from the menu Tools->External Tools...
 Add
      Title     - Vim
      Command   - c:\vim\vim63\gvim.exe
-     Arguments - --servername VS_NET --remote-silent "+call cursor($(CurLine), $(CurCol))" $(ItemPath)  
+     Arguments - --servername VS_NET --remote-silent "+call cursor($(CurLine), $(CurCol))" $(ItemPath)
      Init Dir  - Empty
 
 Now, when you open a file in .Net, you can choose from the .Net menu:
@@ -182,14 +182,14 @@ like.  You might also be able to set this as your default editor.
 If you refine this further, please post back to the Vim maillist so we have a
 record of it.
 
---servername VS_NET 
+--servername VS_NET
 This will create a new instance of vim called VS_NET.  So if you open multiple
 files from VS, they will use the same instance of Vim.  This allows you to
 have multiple copies of Vim running, but you can control which one has VS
 files in it.
 
---remote-silent "+call cursor(10, 27)" 
-              - Places the cursor on line 10 column 27
+--remote-silent "+call cursor(10, 27)"
+	      - Places the cursor on line 10 column 27
 In Vim >
    :h --remote-silent for mor details
 

@@ -897,8 +897,8 @@ _WndProc(
 		{
 		    LPNMTTDISPINFO	lpdi;
 		    POINT		pt;
-		    static char         *tt_text = NULL;
-		    static int          tt_text_len = 0;
+		    static char		*tt_text = NULL;
+		    static int		tt_text_len = 0;
 
 		    /*
 		     * Mouse is over the GUI tabline. Display the tooltip
@@ -2474,18 +2474,18 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
     get_work_area(&workarea_rect);
 
     *screen_w = workarea_rect.right - workarea_rect.left
-	        - GetSystemMetrics(SM_CXFRAME) * 2;
+		- GetSystemMetrics(SM_CXFRAME) * 2;
 
     /* FIXME: dirty trick: Because the gui_get_base_height() doesn't include
      * the menubar for MSwin, we subtract it from the screen height, so that
      * the window size can be made to fit on the screen. */
     *screen_h = workarea_rect.bottom - workarea_rect.top
-	        - GetSystemMetrics(SM_CYFRAME) * 2
+		- GetSystemMetrics(SM_CYFRAME) * 2
 		- GetSystemMetrics(SM_CYCAPTION)
 #ifdef FEAT_MENU
-	        - gui_mswin_get_menu_height(FALSE)
+		- gui_mswin_get_menu_height(FALSE)
 #endif
-	        ;
+		;
 }
 
 
@@ -4417,27 +4417,28 @@ multiline_balloon_available(void)
     hDll = GetModuleHandle(comctl_dll);
     if (hDll != NULL)
     {
-        DLLGETVERSIONPROC pGetVer;
-        pGetVer = (DLLGETVERSIONPROC)GetProcAddress(hDll, "DllGetVersion");
+	DLLGETVERSIONPROC pGetVer;
+	pGetVer = (DLLGETVERSIONPROC)GetProcAddress(hDll, "DllGetVersion");
 
-        if (pGetVer != NULL)
-        {
-            DLLVERSIONINFO dvi;
-            HRESULT hr;
+	if (pGetVer != NULL)
+	{
+	    DLLVERSIONINFO dvi;
+	    HRESULT hr;
 
-            ZeroMemory(&dvi, sizeof(dvi));
-            dvi.cbSize = sizeof(dvi);
+	    ZeroMemory(&dvi, sizeof(dvi));
+	    dvi.cbSize = sizeof(dvi);
 
-            hr = (*pGetVer)(&dvi);
+	    hr = (*pGetVer)(&dvi);
 
-            if (SUCCEEDED(hr)
+	    if (SUCCEEDED(hr)
 		    && (dvi.dwMajorVersion > 4
-		    || (dvi.dwMajorVersion == 4 && dvi.dwMinorVersion >= 70)))
+			|| (dvi.dwMajorVersion == 4
+						&& dvi.dwMinorVersion >= 70)))
 	    {
 		multiline_tip = TRUE;
 		return multiline_tip;
 	    }
-        }
+	}
 	else
 	{
 	    /* there is chance we have ancient CommCtl 4.70

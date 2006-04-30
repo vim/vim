@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.0f.  Last change: 2005 Dec 06
+*gui_x11.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12,7 +12,7 @@ Vim's Graphical User Interface				*gui-x11* *GUI-X11*
 4. Various			|gui-x11-various|
 5. GTK version			|gui-gtk|
 6. GNOME version		|gui-gnome|
-7. KDE version                  |gui-kde|
+7. KDE version			|gui-kde|
 8. Compiling			|gui-x11-compiling|
 9. X11 selection mechanism	|x11-selection|
 

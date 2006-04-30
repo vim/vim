@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2006 Mar 24
+# Last updated by Dan Sharp.  Last Change: 2006 Apr 30
 #
 # Also read INSTALLpc.txt!
 #
@@ -42,7 +42,7 @@
 # OPTIMIZE	SPACE, SPEED, or MAXSPEED: set optimization level (MAXSPEED)
 # NETBEANS	no or yes: to include netbeans interface support (yes when GUI
 #		is yes)
-# NBDEBUG 	no or yes: to include netbeans interface debugging support (no)
+# NBDEBUG	no or yes: to include netbeans interface debugging support (no)
 # XPM		define to path to XPM dir to get XPM image support (not defined)
 #>>>>> choose options:
 ifndef GUI

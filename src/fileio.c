@@ -7762,7 +7762,7 @@ do_autocmd_event(event, pat, nested, cmd, forceit, group)
     int		findgroup;
     int		allgroups;
     int		patlen;
-    int	        is_buflocal;
+    int		is_buflocal;
     int		buflocal_nr;
     char_u	buflocal_pat[25];	/* for "<buffer=X>" */
 
@@ -8839,10 +8839,10 @@ has_autocmd(event, sfname, buf)
 
     for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
 	if (ap->pat != NULL && ap->cmds != NULL
-            && (ap->buflocal_nr == 0
+	      && (ap->buflocal_nr == 0
 		? match_file_pat(NULL, ap->reg_prog,
 					  fname, sfname, tail, ap->allow_dirs)
-                : buf != NULL && ap->buflocal_nr == buf->b_fnum
+		: buf != NULL && ap->buflocal_nr == buf->b_fnum
 	   ))
 	{
 	    retval = TRUE;

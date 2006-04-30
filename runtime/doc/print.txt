@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.0f.  Last change: 2006 Apr 24
+*print.txt*     For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,7 @@ Printing						*printing*
 2. Print options			|print-options|
 3. PostScript Printing			|postscript-printing|
 4. PostScript Printing Encoding		|postscript-print-encoding|
-5. PostScript CJK Printing 		|postscript-cjk-printing|
+5. PostScript CJK Printing		|postscript-cjk-printing|
 6. PostScript Printing Troubleshooting	|postscript-print-trouble|
 7. PostScript Utilities			|postscript-print-util|
 8. Formfeed Characters			|printing-formfeed|
@@ -218,7 +218,7 @@ Sets the CJK character set to be used when generating CJK output from
   Japanese	JIS_C_1978
 		JIS_X_1983
 		JIS_X_1990
-		MSWINDOWS	Win3.1/95J (JIS X 1997 + NEC + 
+		MSWINDOWS	Win3.1/95J (JIS X 1997 + NEC +
 				  IBM extensions)
 		KANJITALK6	Apple Mac KanjiTalk V6.x
 		KANJITALK7	Apple Mac KanjiTalk V7.x
@@ -254,7 +254,7 @@ possible.  The following tables show the valid combinations:
 		KANJITALK7	   x
 
 				euc-kr	 cp949	ucs-2	utf-8 ~
-  Korean	KS_X_1992	   x   
+  Korean	KS_X_1992	   x
 		MAC		   x
 		MSWINDOWS		   x
 		ISO10646			  x	  x
@@ -307,7 +307,7 @@ character set: >
 	:set printmbfont=r:WadaMin-Regular,b:WadaMin-Bold,c:yes
 <
 							*popt-option*
-'printoptions' 'popt' 	string (default "")
+'printoptions' 'popt'	string (default "")
 			global
 This is a comma-separated list of items that control the format of the output
 of |:hardcopy|:
@@ -336,7 +336,7 @@ of |:hardcopy|:
 			thus useful when printing large files.
   syntax:y		Do syntax highlighting.
   syntax:a  (default)	Use syntax highlighting if the printer appears to be
-  			able to print color or grey.
+			able to print color or grey.
 
   number:y		Include line numbers in the printed output.
   number:n  (default)	No line numbers.
@@ -346,16 +346,16 @@ of |:hardcopy|:
 
   duplex:off		Print on one side.
   duplex:long (default)	Print on both sides (when possible), bind on long
-  			side.
+			side.
   duplex:short		Print on both sides (when possible), bind on short
-  			side.
+			side.
 
   collate:y  (default)	Collating: 1 2 3, 1 2 3, 1 2 3
   collate:n		No collating: 1 1 1, 2 2 2, 3 3 3
 
   jobsplit:n (default)	Do all copies in one print job
   jobsplit:y		Do each copy as a separate print job.  Useful when
-  			doing N-up postprocessing.
+			doing N-up postprocessing.
 
   portrait:y (default)	Orientation is portrait.
   portrait:n		Orientation is landscape.
@@ -379,7 +379,7 @@ of |:hardcopy|:
 			tabloid     27.96 x 43.13    11    x 17
 
   formfeed:n (default)	Treat form feed characters (0x0c) as a normal print
-  			character.
+			character.
   formfeed:y		When a form feed character is encountered, continue
 			printing of the current line at the beginning of the
 			first line on a new page.
@@ -484,7 +484,7 @@ Traditional Chinese fonts available at:
 
   http://examples.oreilly.com/cjkvinfo/adobe/samples/
 
-You can find descriptions of the various fonts in the read me file at 
+You can find descriptions of the various fonts in the read me file at
 
   http://examples.oreilly.com/cjkvinfo/adobe/00README
 

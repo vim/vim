@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.0f.  Last change: 2006 Apr 29
+*term.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -289,8 +289,8 @@ Added by Vim (there are no standard codes for these):
 	t_IE	set icon text end				*t_IE* *'t_IE'*
 	t_WP	set window position (Y, X) in pixels		*t_WP* *'t_WP'*
 	t_WS	set window size (height, width) in characters	*t_WS* *'t_WS'*
-	t_SI    start insert mode (bar cursor shape)            *t_SI* *'t_SI'*
-	t_EI    end insert mode (block cursor shape)            *t_EI* *'t_EI'*
+	t_SI	start insert mode (bar cursor shape)		*t_SI* *'t_SI'*
+	t_EI	end insert mode (block cursor shape)		*t_EI* *'t_EI'*
 		|termcap-cursor-shape|
 	t_RV	request terminal version string (for xterm)	*t_RV* *'t_RV'*
 		|xterm-8bit| |v:termresponse| |'ttymouse'| |xterm-codes|

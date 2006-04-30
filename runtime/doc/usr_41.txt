@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*usr_41.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -209,7 +209,7 @@ exists() checks.  That's not what you want.
 becomes false.  When it was false, it becomes true.  You can read it as "not".
 Thus "if !exists()" can be read as "if not exists()".
    What Vim calls true is anything that is not zero.  Zero is false.
-   	Note:
+	Note:
 	Vim automatically converts a string to a number when it is looking for
 	a number.  When using a string that doesn't start with a digit the
 	resulting number is zero.  Thus look out for this: >
@@ -1076,16 +1076,16 @@ A List is an ordered sequence of things.  The things can be any kind of value,
 thus you can make a List of numbers, a List of Lists and even a List of mixed
 items.  To create a List with three strings: >
 
-   	:let alist = ['aap', 'mies', 'noot']
+	:let alist = ['aap', 'mies', 'noot']
 
 The List items are enclosed in square brackets and separated by commas.  To
 create an empty List: >
 
-   	:let alist = []
+	:let alist = []
 
 You can add items to a List with the add() function: >
 
-   	:let alist = []
+	:let alist = []
 	:call add(alist, 'foo')
 	:call add(alist, 'bar')
 	:echo alist
@@ -1098,14 +1098,14 @@ List concatenation is done with +: >
 
 Or, if you want to extend a List directly: >
 
-   	:let alist = ['one']
+	:let alist = ['one']
 	:call extend(alist, ['two', 'three'])
 	:echo alist
 <	['one', 'two', 'three'] ~
 
 Notice that using add() will have a different effect: >
 
-   	:let alist = ['one']
+	:let alist = ['one']
 	:call add(alist, ['two', 'three'])
 	:echo alist
 <	['one', ['two', 'three']] ~
@@ -1155,11 +1155,11 @@ last item is one less than the length of the list.
 
 A more useful example, looping over lines in the buffer: >
 
-        :for line in getline(1, 20)
-        :  if line =~ "Date: "
-        :    echo matchstr(line, 'Date: \zs.*')
-        :  endif
-        :endfor
+	:for line in getline(1, 20)
+	:  if line =~ "Date: "
+	:    echo matchstr(line, 'Date: \zs.*')
+	:  endif
+	:endfor
 
 This looks into lines 1 to 20 (inclusive) and echoes any date found in there.
 
@@ -1168,7 +1168,7 @@ DICTIONARIES
 
 A Dictionary stores key-value pairs.  You can quickly lookup a value if you
 know the key.  A Dictionary is created with curly braces: >
-   	
+
 	:let uk2nl = {'one': 'een', 'two': 'twee', 'three': 'drie'}
 
 Now you can lookup words by putting the key in square brackets: >
@@ -2274,7 +2274,7 @@ startup.  This is the sequence of events that happens:
 
 2. The user types the BNRead command or presses the <F19> key.  The
    BufNetRead() or BufNetWrite() function will be called.
-   
+
 3. Vim can't find the function and triggers the |FuncUndefined| autocommand
    event.  Since the pattern "BufNet*" matches the invoked function, the
    command "source fname" will be executed.  "fname" will be equal to the name

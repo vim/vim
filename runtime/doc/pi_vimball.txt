@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.0f.  Last change: 2006 Apr 27
+*pi_vimball.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 			       ----------------
 			       Vimball Archiver
@@ -7,8 +7,8 @@
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
-           The VIM LICENSE applies to Vimball.vim, and Vimball.txt
-           (see |copyright|) except use "Vimball" instead of "Vim".
+	   The VIM LICENSE applies to Vimball.vim, and Vimball.txt
+	   (see |copyright|) except use "Vimball" instead of "Vim".
 	   No warranty, express or implied.
 	   Use At-Your-Own-Risk!
 
@@ -53,7 +53,7 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 	line.
 
 		:VimballList				*vimball-vimballlist*
-	
+
 	This command will tell Vimball to list the files in the archive, along
 	with their lengths in lines.
 
@@ -62,22 +62,22 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 3. Vimball History					*vimball-history* {{{1
 
 	11 : Apr 27, 2006 * VimballList would create missing subdirectories that
-	                    the vimball specified were needed.  Fixed.
+			    the vimball specified were needed.	Fixed.
 	10 : Apr 27, 2006 * moved all setting saving/restoration to a pair of
-	                    functions.  Included some more settings in them
+			    functions.	Included some more settings in them
 			    which frequently cause trouble.
 	9  : Apr 26, 2006 * various changes to support Windows prediliction
-	                    for backslashes and spaces in file and directory
+			    for backslashes and spaces in file and directory
 			    names.
 	7  : Apr 25, 2006 * bypasses foldenable
-	                  * uses more exe and less norm! (:yank :put etc)
+			  * uses more exe and less norm! (:yank :put etc)
 			  * does better at insuring a "Press ENTER" prompt
 			    appears to keep its messages visible
 	4  : Mar 31, 2006 * BufReadPost seems to fire twice; BufReadEnter
-	                    only fires once, so the "Source this file..."
+			    only fires once, so the "Source this file..."
 			    message is now issued only once.
 	3  : Mar 20, 2006 * removed query, now requires sourcing to be
-	                    extracted (:so %).  Message to that effect
+			    extracted (:so %).	Message to that effect
 			    included.
 			  * :VimballList  now shows files that would be
 			    extracted.

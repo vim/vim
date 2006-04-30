@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         automake
+" Language:	    automake
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 

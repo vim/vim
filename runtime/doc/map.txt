@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0f.  Last change: 2006 Apr 25
+*map.txt*       For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -218,8 +218,14 @@ The result of the InsertDot() function will be inserted.  It could check the
 text before the cursor and start omni completion when some condition is met.
 
 Be very careful about side effects!  The expression is evaluated while
-obtaining characters, if you change buffer text, move the cursor, edit another
-file, etc. you may very well make command dysfunctional.
+obtaining characters, you may very well make the command dysfunctional.
+For this reason the following is blocked:
+- changing the buffer text |textlock|
+- editing another buffer
+- the |:normal| command
+- moving the cursor is allowed, but it is restored afterwards
+If you want the mapping to do any of these let the returned characters do
+that.
 
 Here is an example that inserts a list number that increases: >
 	let counter = 0
@@ -269,28 +275,28 @@ Overview of which map command works in which mode:
 
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
     commands:				      modes: ~
-                                       Normal  Visual+Select  Operator-pending ~
-:map   :noremap   :unmap   :mapclear     yes        yes            yes
-:nmap  :nnoremap  :nunmap  :nmapclear    yes         -              -
-:vmap  :vnoremap  :vunmap  :vmapclear     -         yes             -
-:omap  :onoremap  :ounmap  :omapclear     -          -             yes
+				       Normal  Visual+Select  Operator-pending ~
+:map   :noremap   :unmap   :mapclear	 yes	    yes		   yes
+:nmap  :nnoremap  :nunmap  :nmapclear	 yes	     -		    -
+:vmap  :vnoremap  :vunmap  :vmapclear	  -	    yes		    -
+:omap  :onoremap  :ounmap  :omapclear	  -	     -		   yes
 
 :nunmap can also be used outside of a monastery.
-                                                *mapmode-x* *mapmode-s*
+						*mapmode-x* *mapmode-s*
 Some commands work both in Visual and Select mode, some in only one.  Note
 that quite often "Visual" is mentioned where both Visual and Select mode
 apply. |Select-mode-mapping|
 
-    commands:                                 modes: ~
-                                          Visual    Select ~
-:vmap  :vnoremap  :vunmap  :vmapclear       yes      yes
-:xmap  :xnoremap  :xunmap  :xmapclear       yes       -
-:smap  :snoremap  :sunmap  :smapclear       -        yes
+    commands:				      modes: ~
+					  Visual    Select ~
+:vmap  :vnoremap  :vunmap  :vmapclear	    yes      yes
+:xmap  :xnoremap  :xunmap  :xmapclear	    yes       -
+:smap  :snoremap  :sunmap  :smapclear	    -	     yes
 
 			*mapmode-ic* *mapmode-i* *mapmode-c* *mapmode-l*
 Some commands work both in Insert mode and Command-line mode, some not:
 
-    commands:                                 modes: ~
+    commands:				      modes: ~
 					  Insert  Command-line	Lang-Arg ~
 :map!  :noremap!  :unmap!  :mapclear!	    yes	       yes	   -
 :imap  :inoremap  :iunmap  :imapclear	    yes		-	   -
@@ -366,7 +372,7 @@ last defined.  Example: >
 
 	:verbose map <C-W>*
 	n  <C-W>*      * <C-W><C-S>*
-	        Last set from /home/abcd/.vimrc
+		Last set from /home/abcd/.vimrc
 
 See |:verbose-cmd| for more information.
 
@@ -872,7 +878,7 @@ When 'verbose' is non-zero, listing an abbreviation will also display where it
 was last defined.  Example: >
 
 	:verbose abbreviate
-	!  teh           the
+	!  teh		 the
 		Last set from /home/abcd/vim/abbr.vim
 
 See |:verbose-cmd| for more information.
@@ -1083,10 +1089,10 @@ When 'verbose' is non-zero, listing a command will also display where it was
 last defined. Example: >
 
     :verbose command TOhtml
-	Name        Args Range Complete  Definition
-	TOhtml      0    %               :call Convert2HTML(<line1>, <line2>)
-	    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim
-<
+<	Name	    Args Range Complete  Definition ~
+	TOhtml	    0	 %		 :call Convert2HTML(<line1>, <line2>) ~
+	    Last set from /usr/share/vim/vim-7.0/plugin/tohtml.vim ~
+
 See |:verbose-cmd| for more information.
 
 							*E174* *E182*
@@ -1295,7 +1301,7 @@ To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command
 arguments at spaces and Tabs, quotes each argument individually, and the
 <f-args> sequence is replaced by the comma-separated list of quoted arguments.
-See the Mycmd example below.  If no arguments are given <f-args> is removed. 
+See the Mycmd example below.  If no arguments are given <f-args> is removed.
 
 Examples >
 

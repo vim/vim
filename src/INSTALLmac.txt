@@ -43,9 +43,9 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
 
  To overrule the architecture do this before running make:
 
- 	./configure --with-mac-arch=intel
+	./configure --with-mac-arch=intel
  or
- 	./configure --with-mac-arch=ppc
+	./configure --with-mac-arch=ppc
 
 
 1.2 X-Windows or Plain Text

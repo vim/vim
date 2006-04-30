@@ -2,7 +2,7 @@
 " Maintainer: Panagiotis Louridas <louridas@acm.org>
 " Last Updated: Thu Mar 23 23:45:02 EET 2006
 
-" This file was corrected for Vim after the version adapted for Vim 6 from 
+" This file was corrected for Vim after the version adapted for Vim 6 from
 " the yudit distribution by Robert Goulding <goulding@princeton.edu>
 "
 " The monotonic part of this kmap was made by Constantine Stathopoulos

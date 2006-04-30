@@ -2,7 +2,7 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change:  2006 January 15th
+" Last Change:  2006 Apr 30
 " Newsletter:   http://www.2072productions.com/?to=php-indent-for-vim-newsletter.php
 " Version:	1.23
 "
@@ -10,7 +10,7 @@
 "
 "  For a complete change log and fully commented code, download the script on
 "  2072productions.com at the URI provided above.
-" 
+"
 "  If you find a bug, please e-mail me at John.wellesz (AT) teaser (DOT) fr
 "  with an example of code that breaks the algorithm.
 "
@@ -23,9 +23,9 @@
 "
 "
 "	In the case you have syntax errors in your script such as end of HereDoc
-"	tags not at col 1 you'll have to indent your file 2 times (This script 
+"	tags not at col 1 you'll have to indent your file 2 times (This script
 "	will automatically put HereDoc end tags at col 1).
-" 
+"
 "
 " NOTE: If you are editing file in Unix file format and that (by accident)
 " there are '\r' before new lines, this script won't be able to proceed
@@ -41,7 +41,7 @@
 
 " Options: PHP_autoformatcomment = 0 to not enable autoformating of comment by
 "		    default, if set to 0, this script will let the 'formatoptions' setting intact.
-" 
+"
 " Options: PHP_default_indenting = # of sw (default is 0), # of sw will be
 "		   added to the indent of each line of PHP code.
 "
@@ -116,7 +116,7 @@ let b:UserIsTypingComment = 0
 let b:optionsset = 0
 
 setlocal nosmartindent
-setlocal noautoindent 
+setlocal noautoindent
 setlocal nocindent
 setlocal nolisp
 
@@ -141,13 +141,13 @@ let s:PHP_startindenttag = '<?\%(.*?>\)\@!\|<script[^>]*>\%(.*<\/script>\)\@!'
 
 
 function! GetLastRealCodeLNum(startline) " {{{
-    
+
     let lnum = a:startline
-    
+
     if b:GetLastRealCodeLNum_ADD && b:GetLastRealCodeLNum_ADD == lnum + 1
 	let lnum = b:GetLastRealCodeLNum_ADD
     endif
-    
+
     let old_lnum = lnum
 
     while lnum > 1
@@ -194,7 +194,7 @@ function! GetLastRealCodeLNum(startline) " {{{
 		let lnum = lnum - 1
 	    endwhile
 	else
-	    break 
+	    break
 	endif
     endwhile
 
@@ -312,7 +312,7 @@ function! ResetOptions()
 	if b:PHP_autoformatcomment
 
 	    setlocal comments=s1:/*,mb:*,ex:*/,://,:#
-	    
+
 	    setlocal formatoptions-=t
 	    setlocal formatoptions+=q
 	    setlocal formatoptions+=r
@@ -341,7 +341,7 @@ function! GetPhpIndent()
 
     let cline = getline(v:lnum)
 
-    if !b:PHP_indentinghuge && b:PHP_lastindented > b:PHP_indentbeforelast 
+    if !b:PHP_indentinghuge && b:PHP_lastindented > b:PHP_indentbeforelast
 	if b:PHP_indentbeforelast
 	    let b:PHP_indentinghuge = 1
 	    echom 'Large indenting detected, speed optimizations engaged'
@@ -456,7 +456,7 @@ function! GetPhpIndent()
 		let b:InPHPcode_and_script = 1
 	    endif
 
-	elseif last_line =~? '<<<\a\w*$' 
+	elseif last_line =~? '<<<\a\w*$'
 	    let b:InPHPcode = 0
 	    let b:InPHPcode_tofind = substitute( last_line, '^.*<<<\(\a\w*\)\c', '^\\s*\1;$', '')
 
@@ -470,7 +470,7 @@ function! GetPhpIndent()
 	endif
     endif " }}}
 
-    
+
     if !b:InPHPcode && !b:InPHPcode_and_script
 	return -1
     endif
@@ -512,7 +512,7 @@ function! GetPhpIndent()
 	return 0
     endif
 
-    if  cline =~ '^\s*?>' && cline !~# '<?'  
+    if  cline =~ '^\s*?>' && cline !~# '<?'
 	return 0
     endif
 
@@ -561,7 +561,7 @@ function! GetPhpIndent()
 
     let defaultORcase = '^\s*\%(default\|case\).*:'
 
-    if last_line =~ '[;}]'.endline && last_line !~# defaultORcase 
+    if last_line =~ '[;}]'.endline && last_line !~# defaultORcase
 	if ind==b:PHP_default_indenting
 	    return b:PHP_default_indenting
 	elseif b:PHP_indentinghuge && ind==b:PHP_CurrentIndentLevel && cline !~# '^\s*\%(else\|\%(case\|default\).*:\|[})];\=\)' && last_line !~# '^\s*\%(\%(}\s*\)\=else\)' && getline(GetLastRealCodeLNum(lnum - 1))=~';'.endline
@@ -592,7 +592,7 @@ function! GetPhpIndent()
 		    let ind = ind + &sw
 		endif
 
-		return ind 
+		return ind
 	    endif
 
 	    let last_line_num = last_line_num - 1
@@ -644,7 +644,7 @@ function! GetPhpIndent()
 		    break
 		endif
 
-		if one_ahead_indent == two_ahead_indent || last_line_num < 1 
+		if one_ahead_indent == two_ahead_indent || last_line_num < 1
 		    if previous_line =~# '[;}]'.endline || last_line_num < 1
 			break
 		    endif

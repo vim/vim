@@ -1,9 +1,9 @@
 " Vim syntax file
-" Language:	gretl (http://gretl.sf.net) 
+" Language:	gretl (http://gretl.sf.net)
 " Maintainer:	Vaidotas Zemlys <zemlys@gmail.com>
-" Last Change:  2006 Jan 6
+" Last Change:  2006 Apr 30
 " Filenames:	*.inp *.gretl
-" URL:	http://uosis.mif.vu.lt/~zemlys/vim-syntax/gretl.vim	
+" URL:	http://uosis.mif.vu.lt/~zemlys/vim-syntax/gretl.vim
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
 

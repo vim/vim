@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2006 Apr 22
+" Last Change:		2006 Apr 30
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -27,7 +27,7 @@ endif
 let s:maxoff = 50	" maximum number of lines to look backwards for ()
 
 function GetPythonIndent(lnum)
- 
+
   " If this line is explicitly joined: If the previous line was also joined,
   " line it up with that one, otherwise add two 'shiftwidth'
   if getline(a:lnum - 1) =~ '\\$'

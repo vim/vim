@@ -278,7 +278,7 @@ long base_off;
 #if 0	/* this doesn't work when there is normal text after the hex codes in
 	   the last line that looks like hex */
       if (c == ' ' || c == '\n' || c == '\t')  /* allow multiple spaces */
-        continue;
+	continue;
 #endif
 
       n3 = n2;

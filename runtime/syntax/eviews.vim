@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	Eviews (http://www.eviews.com)
 " Maintainer:	Vaidotas Zemlys <zemlys@gmail.com>
-" Last Change:  2006 Jan 11
+" Last Change:  2006 Apr 30
 " Filenames:	*.prg
-" URL:	http://uosis.mif.vu.lt/~zemlys/vim-syntax/eviews.vim	
+" URL:	http://uosis.mif.vu.lt/~zemlys/vim-syntax/eviews.vim
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600

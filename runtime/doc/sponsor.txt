@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.0f.  Last change: 2006 Apr 24
+*sponsor.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -208,7 +208,7 @@ to let him know that the donation is done because of the use of Vim.
 
 Can you send me a bill?
 
-No, because there is no relation between the money you send and the work that 
+No, because there is no relation between the money you send and the work that
 is done.  But a receipt is possible.
 
 

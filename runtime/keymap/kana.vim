@@ -3,10 +3,10 @@
 "
 " Maintainer: Rory McCann <ebelular at gmail dot com>
 " Modified by: Edward L. Fox <edyfox at gmail dot com>
-" Last Change: 2006-04-29 11:14:32
+" Last Change: 2006 Apr 30
 "
-" 
-"  
+"
+"
 "  Kana.kmap (Japanese Phonograms)
 "
 "  Converted from Gaspar Sinai's yudit 2.7.6
@@ -27,15 +27,15 @@
 "	Summary:
 "
 "	(1) To transliterate Japanese language, Table 1 should be used
-"          primarily.
+"	   primarily.
 "	(2) Table 2 may be used only when existing conventions such as
-"          international relationship should be respected.
+"	   international relationship should be respected.
 "	(3) Other transliteration is acceptable only when neither Table 1
 "	    nor Table 2 gives any specification of the sound in question
 "
 "	For details, refer to
 "
-"	    http://xembho.tripod.com/siryo/naikaku_kokuzi.html	    
+"	    http://xembho.tripod.com/siryo/naikaku_kokuzi.html
 "
 "  2.	The specification instructed by the Cabinet Notification is rather
 "	inadequate even for daily use.  At the present time there are thus

@@ -291,7 +291,7 @@ toolbar_button_focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer 
      * immediately pass it to mainwin.
      */
     if (gtk_socket_id != 0)
-        gtk_widget_grab_focus(gui.drawarea);
+	gtk_widget_grab_focus(gui.drawarea);
 
     return TRUE;
 }
@@ -742,9 +742,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 		    menu,
 		    idx);
 
-            if (gtk_socket_id != 0)
-                gtk_signal_connect(GTK_OBJECT(menu->id), "focus_in_event",
-                        GTK_SIGNAL_FUNC(toolbar_button_focus_in_event), NULL);
+	    if (gtk_socket_id != 0)
+		gtk_signal_connect(GTK_OBJECT(menu->id), "focus_in_event",
+			GTK_SIGNAL_FUNC(toolbar_button_focus_in_event), NULL);
 
 	    CONVERT_TO_UTF8_FREE(text);
 	    CONVERT_TO_UTF8_FREE(tooltip);
@@ -1307,11 +1307,11 @@ gui_mch_browse(int saving,
     gui.browse_fname = NULL;
     if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
     {
-        char *filename;
+	char *filename;
 
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
-        gui.browse_fname = (char_u *)g_strdup(filename);
-        g_free(filename);
+	filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
+	gui.browse_fname = (char_u *)g_strdup(filename);
+	g_free(filename);
     }
     gtk_widget_destroy(GTK_WIDGET(fc));
 

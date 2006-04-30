@@ -2,7 +2,7 @@
 " Maintainer:		Adrien Beau <version.francaise@free.fr>
 " First Version:	Francois Thunus <thunus@systran.fr>
 " Last Modification:    David Blanchet <david.blanchet@free.fr>
-" Last Change:		2006 Apr 11
+" Last Change:		2006 Apr 30
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -152,7 +152,7 @@ menutrans Set\ language\ to\ "en_gb"		Anglais\ (en_gb)
 menutrans Set\ language\ to\ "en_nz"		Anglais\ (en_nz)
 menutrans Set\ language\ to\ "en_us"		Anglais\ (en_us)
 
-menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues 
+menutrans &Find\ More\ Languages		&Trouver\ d'autres\ langues
 
 
 

@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         Zsh Shell Script
+" Language:	    Zsh Shell Script
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 

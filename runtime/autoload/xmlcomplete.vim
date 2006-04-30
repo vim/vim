@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 19
+" Last Change:	2006 Apr 30
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -22,7 +22,7 @@ function! xmlcomplete#CreateConnection(canonical, ...) " {{{
 	endif
 
 	" Source data file. Due to suspected errors in autoload do it with
-	" :runtime. 
+	" :runtime.
 	" TODO: make it properly (using autoload, that is) later
 	exe "runtime autoload/xml/".a:canonical.".vim"
 
@@ -166,7 +166,7 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	endif
 
     " find tags matching with "a:base"
-	" If a:base contains white space it is attribute. 
+	" If a:base contains white space it is attribute.
 	" It could be also value of attribute...
 	" We have to get first word to offer
 	" proper completions

@@ -1,6 +1,6 @@
-" Vim Plugin: 	Edit the file with an existing Vim if possible
+" Vim Plugin:	Edit the file with an existing Vim if possible
 " Maintainer:	Bram Moolenaar
-" Last Change:	2005 Dec 15
+" Last Change:	2006 Apr 30
 
 " This is a plugin, drop it in your (Unix) ~/.vim/plugin or (Win32)
 " $VIM/vimfiles/plugin directory.  Or make a symbolic link, so that you
@@ -35,7 +35,7 @@ func s:EditElsewhere(filename)
     if servername ==? v:servername
       continue
     endif
-   
+
     " Check if this server is editing our file.
     if remote_expr(servername, "bufloaded('" . fname_esc . "')")
       " Yes, bring it to the foreground.

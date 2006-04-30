@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.0f.  Last change: 2006 Mar 06
+*if_mzsch.txt*  For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -41,7 +41,7 @@ For downloading MzScheme and other info:
 							*:mzfile* *:mzf*
 :[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
 			All statements are executed in the namespace of the
-                        buffer that was current during :mzfile start.
+			buffer that was current during :mzfile start.
 			If you want to access other namespaces, use
 			'parameterize'.
 
@@ -196,8 +196,8 @@ Buffers							 *mzscheme-buffer*
     (set-buff-line {linenr} {string} [buffer])
 				    Set a line in a buffer. If {string} is #f,
 				    the line gets deleted.  The [buffer]
-                                    argument is optional. If omitted, the
-                                    current buffer will be used.
+				    argument is optional. If omitted, the
+				    current buffer will be used.
     (get-buff-line-list {start} {end} [buffer])
 				    Get a list of lines in a buffer. {Start}
 				    and {end} are 1-based. {Start} is
@@ -262,7 +262,7 @@ In a console window type "path" to see what directories are used.
 
 The names of the DLLs must match the MzScheme version Vim was compiled with.
 For MzScheme version 209 they will be "libmzsch209_000.dll" and
-"libmzgc209_000.dll". To know for sure edit "gvim.exe" and search for 
+"libmzgc209_000.dll". To know for sure edit "gvim.exe" and search for
 "libmzsch\d\d\d_\d\d\d\.dll\c".
 
 ======================================================================

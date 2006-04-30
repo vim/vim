@@ -453,15 +453,15 @@ python_end()
 #ifdef DYNAMIC_PYTHON
     if (hinstPython && Py_IsInitialized())
     {
-        Python_RestoreThread();	    /* enter python */
-        Py_Finalize();
+	Python_RestoreThread();	    /* enter python */
+	Py_Finalize();
     }
     end_dynamic_python();
 #else
     if (Py_IsInitialized())
     {
-        Python_RestoreThread();	    /* enter python */
-        Py_Finalize();
+	Python_RestoreThread();	    /* enter python */
+	Py_Finalize();
     }
 #endif
 
@@ -1105,9 +1105,9 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
     /* Avoid infinite recursion */
     if (depth > 100)
     {
-        Py_INCREF(Py_None);
-        result = Py_None;
-        return result;
+	Py_INCREF(Py_None);
+	result = Py_None;
+	return result;
     }
 
     /* Check if we run into a recursive loop.  The item must be in lookupDict
@@ -1115,28 +1115,28 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
     sprintf(ptrBuf, "%ld", (long)our_tv);
     result = PyDict_GetItemString(lookupDict, ptrBuf);
     if (result != NULL)
-        Py_INCREF(result);
+	Py_INCREF(result);
     else if (our_tv->v_type == VAR_STRING)
     {
-        result = Py_BuildValue("s", our_tv->vval.v_string);
-        PyDict_SetItemString(lookupDict, ptrBuf, result);
+	result = Py_BuildValue("s", our_tv->vval.v_string);
+	PyDict_SetItemString(lookupDict, ptrBuf, result);
     }
     else if (our_tv->v_type == VAR_NUMBER)
     {
-        char buf[NUMBUFLEN];
+	char buf[NUMBUFLEN];
 
 	/* For backwards compatibility numbers are stored as strings. */
-        sprintf(buf, "%ld", (long)our_tv->vval.v_number);
-        result = Py_BuildValue("s", buf);
-        PyDict_SetItemString(lookupDict, ptrBuf, result);
+	sprintf(buf, "%ld", (long)our_tv->vval.v_number);
+	result = Py_BuildValue("s", buf);
+	PyDict_SetItemString(lookupDict, ptrBuf, result);
     }
     else if (our_tv->v_type == VAR_LIST)
     {
-        list_T		*list = our_tv->vval.v_list;
-        listitem_T	*curr;
+	list_T		*list = our_tv->vval.v_list;
+	listitem_T	*curr;
 
-        result = PyList_New(0);
-        PyDict_SetItemString(lookupDict, ptrBuf, result);
+	result = PyList_New(0);
+	PyDict_SetItemString(lookupDict, ptrBuf, result);
 
 	if (list != NULL)
 	{
@@ -1150,8 +1150,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
     }
     else if (our_tv->v_type == VAR_DICT)
     {
-        result = PyDict_New();
-        PyDict_SetItemString(lookupDict, ptrBuf, result);
+	result = PyDict_New();
+	PyDict_SetItemString(lookupDict, ptrBuf, result);
 
 	if (our_tv->vval.v_dict != NULL)
 	{
@@ -1176,8 +1176,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
     }
     else
     {
-        Py_INCREF(Py_None);
-        result = Py_None;
+	Py_INCREF(Py_None);
+	result = Py_None;
     }
 
     return result;

@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 7.0f.  Last change: 2006 Apr 24
+*usr_08.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -521,12 +521,12 @@ window.  And you will notice a bar at the top with the two file names:
 
 	+----------------------------------+
 	| thisfile | /thatfile/ __________X|    (thatfile is bold)
-	|/* thatfile */  		   |
+	|/* thatfile */			   |
 	|that				   |
 	|that				   |
-	|~                                 |
-	|~                                 |
-	|~                                 |
+	|~				   |
+	|~				   |
+	|~				   |
 	|				   |
 	+----------------------------------+
 
@@ -538,12 +538,12 @@ Now use the mouse to click on "thisfile" in the top line.  The result is
 
 	+----------------------------------+
 	| /thisfile/ | thatfile __________X|    (thisfile is bold)
-	|/* thisfile */  		   |
+	|/* thisfile */			   |
 	|this				   |
 	|this				   |
-	|~                                 |
-	|~                                 |
-	|~                                 |
+	|~				   |
+	|~				   |
+	|~				   |
 	|				   |
 	+----------------------------------+
 
@@ -560,12 +560,12 @@ the window we were in:
 
 	+-------------------------------------+
 	| thisfile | /thisfile/ | thatfile __X|   (thisfile is bold)
-	|/* thisfile */  		      |
+	|/* thisfile */			      |
 	|this				      |
 	|this				      |
-	|~                                    |
-	|~                                    |
-	|~                                    |
+	|~				      |
+	|~				      |
+	|~				      |
 	|				      |
 	+-------------------------------------+
 
@@ -579,17 +579,17 @@ Will show the help text for "gt" in a new tab page.
 A few more things you can do with tab pages:
 
 - click with the mouse in the space after the last label
-  	The next tab page will be selected, like with "gt".
+	The next tab page will be selected, like with "gt".
 
 - click with the mouse on the "X" in the top right corner
-  	The current tab page will be closed.  Unless there are unsaved
+	The current tab page will be closed.  Unless there are unsaved
 	changes in the current tab page.
 
 - double click with the mouse in the top line
-  	A new tab page will be created.
+	A new tab page will be created.
 
 - the "tabonly" command
-  	Closes all tab pages except the current one.  Unless there are unsaved
+	Closes all tab pages except the current one.  Unless there are unsaved
 	changes in other tab pages.
 
 For more information about tab pages see |tab-page|.

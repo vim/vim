@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0f.  Last change: 2006 Mar 02
+*os_vms.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL
@@ -50,8 +50,8 @@ To use the precompiled binary version, you need one of these archives:
   vim-XX-exe-ia64-gui.zip       IA64 GUI/Motif executables
   vim-XX-exe-ia64-gtk.zip       IA64 GUI/GTK executables
   vim-XX-exe-ia64-term.zip      IA64 console executables
-  vim-XX-exe-axp-gui.zip        Alpha GUI/Motif executables
-  vim-XX-exe-axp-gtk.zip        Alpha GUI/GTK executables
+  vim-XX-exe-axp-gui.zip	Alpha GUI/Motif executables
+  vim-XX-exe-axp-gtk.zip	Alpha GUI/GTK executables
   vim-XX-exe-axp-term.zip       Alpha console executables
   vim-XX-exe-vax-gui.zip	VAX GUI executables
   vim-XX-exe-vax-term.zip       VAX console executables
@@ -61,7 +61,7 @@ and of course (optional)
 
 The binary archives contain: vim.exe, ctags.exe, xxd.exe files.
 
-For GTK executables you will need GTKLIB that is available for 
+For GTK executables you will need GTKLIB that is available for
 Alpha and IA64 platform.
 
 ==============================================================================
@@ -249,10 +249,10 @@ line parameter is uppercase "/" sign must be used.
 Examples:
   >
 	vim -R  filename  ! means: -r List swap files and exit
-        vim -/r filename  ! means: -R Readonly mode (like "view")
-        vim -u  <vimrc>   ! means: -u Use <vimrc> instead of any .vimrc   
-        vim -/u <gvimrc>  ! means: -U Use <gvimrc> instead of any .gvimrc
-                  
+	vim -/r filename  ! means: -R Readonly mode (like "view")
+	vim -u	<vimrc>   ! means: -u Use <vimrc> instead of any .vimrc
+	vim -/u <gvimrc>  ! means: -U Use <gvimrc> instead of any .gvimrc
+
 ==============================================================================
 
 7. GUI mode questions					*vms-gui*
@@ -356,7 +356,7 @@ number, try these settings. >
 
 	:set nobackup	     " does not create *.*_ backup files
 	:set nowritebackup   " does not have any purpose on VMS.  It's the
-	                     " default.
+			     " default.
 
 Recovery is working perfect as well from the default swap file.
 Read more with :help swapfile

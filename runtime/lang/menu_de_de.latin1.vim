@@ -55,7 +55,7 @@ menutrans Find\ and\ Rep&lace\.\.\.	Suchen\ und\ &Ersetzen\.\.\.
 " XXX &E would conflict with 'Suchen\ und\ &Ersetzen', see above
 menutrans Settings\ &Window				E&instellungen\.\.\.
 menutrans &Global\ Settings				&Globale\ Einstellungen
-menutrans Startup\ &Settings                            &Starteinstellungen
+menutrans Startup\ &Settings				&Starteinstellungen
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	&Hervorhebungen\ ein-\ und\ ausschalten<Tab>:set\ hls!
 menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Großschreibung\ &ignorieren\ oder\ benutzen<Tab>:set\ ic!
@@ -247,8 +247,8 @@ menutrans &Paste			&Einfügen
 menutrans &Delete			&Löschen
 menutrans Select\ Blockwise		Auswahl\ blockartig
 menutrans Select\ &Word			Auswahl\ des\ &Wortes
-menutrans Select\ &Sentence             Auswahl\ des\ Sa&tzes
-menutrans Select\ Pa&ragraph            Auswahl\ des\ Absatzes
+menutrans Select\ &Sentence		Auswahl\ des\ Sa&tzes
+menutrans Select\ Pa&ragraph		Auswahl\ des\ Absatzes
 menutrans Select\ &Line			Auswahl\ der\ &Zeile
 menutrans Select\ &Block		Auswahl\ des\ &Blocks
 menutrans Select\ &All			&Alles\ Auswählen

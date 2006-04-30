@@ -43,11 +43,11 @@ To build Vim from the command line with MSVC, use Make_mvc.mak.
 Visual Studio installed a batch file called vcvars32.bat, which you must
 run to set up paths for nmake and MSVC.
 
-nmake -f Make_mvc.mak           console   Win32 SDK or Microsoft Visual C++
-nmake -f Make_mvc.mak GUI=yes   GUI       Microsoft Visual C++
-nmake -f Make_mvc.mak OLE=yes   OLE       Microsoft Visual C++
+nmake -f Make_mvc.mak		console   Win32 SDK or Microsoft Visual C++
+nmake -f Make_mvc.mak GUI=yes	GUI	  Microsoft Visual C++
+nmake -f Make_mvc.mak OLE=yes	OLE	  Microsoft Visual C++
 nmake -f Make_mvc.mak PERL=C:\Perl PYTHON=C:\Python etc.
-                                Perl, Python, etc.
+				Perl, Python, etc.
 
 Make_mvc.mak allows a Vim to be built with various different features and
 debug support.  Debugging with MS Devstudio is provided by Make_dvc.mak.
@@ -61,9 +61,9 @@ To build Vim from within the Visual Studio IDE, open the Make_ivc.mak project.
 far more configuration.) Make_ivc.mak can also be built with nmake.
 
 nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim"
-                                GUI       Microsoft Visual C++ 4.x or later
+				GUI	  Microsoft Visual C++ 4.x or later
 nmake -f Make_ivc.mak CFG="Vim - Win32 Release gvim OLE"
-                                OLE       Microsoft Visual C++ 4.x or later
+				OLE	  Microsoft Visual C++ 4.x or later
 
 See the specific files for comments and options.
 
@@ -94,7 +94,7 @@ free C compilers for Win32.)
 To compile Vim using the VC2003 Toolkit and Make_mvc.mak, you must first
 execute the following commands in a cmd.exe window (the msvcsetup.bat batch
 file can be used):
-       
+
     set PATH=%SystemRoot%\Microsoft.NET\Framework\v1.1.4322;%PATH%
     call "%VCToolkitInstallDir%vcvars32.bat"
     set MSVCVer=7.1
@@ -104,7 +104,7 @@ file can be used):
 Now you can build Vim with Make_mvc.mak.
 
 
-Getting the Windows Platform SDK            *ms-platform-sdk*
+Getting the Windows Platform SDK	    *ms-platform-sdk*
 
 You will also need a copy of the Windows Platform SDK from
     http://www.microsoft.com/msdownload/platformsdk/sdkupdate/
@@ -122,7 +122,7 @@ This is needed to install |dotnet-1.1-sdk|. It also contains cvtres.exe,
 which is needed to link Vim.
 
 
-Getting the .NET Framework 1.1 SDK          *dotnet-1.1-sdk*
+Getting the .NET Framework 1.1 SDK	    *dotnet-1.1-sdk*
 
 You need the .NET Framework 1.1 SDK from
     http://www.microsoft.com/downloads/details.aspx?familyid=9b3a2ca6-3647-4070-9f41-a333c6b9181d
@@ -131,7 +131,7 @@ such as msvcrt.lib. You must install |dotnet-1.1-redist| before
 installing the .NET 1.1 SDK.
 
 
-Getting the WinDbg debugger                 *windbg-download*
+Getting the WinDbg debugger		    *windbg-download*
 
 The Debugging Tools for Windows can be downloaded from
     http://www.microsoft.com/whdc/devtools/debugging/default.mspx
@@ -242,7 +242,7 @@ Use Make_bc5.mak with Borland C++ 5.x. See
 If you like, you can compile the 'mingw' Win32 version from the comfort of
 your Linux (or other unix) box.  To do this, you need to follow a few steps:
     1) Install the mingw32 cross-compiler. See
-        http://www.libsdl.org/extras/win32/cross/README.txt
+	http://www.libsdl.org/extras/win32/cross/README.txt
     2) get the *unix* version of the vim sources
     3) in 'Make_ming.mak', set 'CROSS' to '1' instead of '0'.
     4) make -f Make_ming.mak gvim.exe
@@ -317,7 +317,7 @@ After a successful build, these dlls can be freely removed, leaving them in
 8. Windows 3.1x
 ===============
 
-make -f Make_w16.mak             16 bit, Borland C++ 5.0
+make -f Make_w16.mak		 16 bit, Borland C++ 5.0
 
 Warning: Be sure to use the right make.exe.  It should be Borland make.
 
@@ -340,9 +340,9 @@ In MSVC 4.2 support for Win32s was dropped!  Use this command:
 Summary:
 ren Make_bc3.mak Makefile; make     16 bit, Borland C++ and Turbo C++
 ren Make_tcc.mak Makefile; make     16 bit, Turbo C
-make -f Make_djg.mak                32 bit, DJGPP 2.0
-make -f Make_bc5.mak                32 bit, Borland C++ 5.x (edit it to
-                                    define DOS)
+make -f Make_djg.mak		    32 bit, DJGPP 2.0
+make -f Make_bc5.mak		    32 bit, Borland C++ 5.x (edit it to
+				    define DOS)
 
 Warning: Be sure to use the right make.exe.  Microsoft C make doesn't work;
 Borland make only works with Make_bc3.mak, Make_bc5.mak and Make_tcc.mak;

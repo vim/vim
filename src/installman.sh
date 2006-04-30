@@ -3,16 +3,16 @@
 #
 # arguments:
 # 1  what: "install", "uninstall" or "xxd"
-# 2  target directory                      e.g., "/usr/local/man/it/man1"
+# 2  target directory			   e.g., "/usr/local/man/it/man1"
 # 3  language addition			   e.g., "" or "-it"
 # 4  vim location as used in manual pages  e.g., "/usr/local/share/vim"
-# 5  runtime dir for menu.vim et al.       e.g., "/usr/local/share/vim/vim70"
-# 6  runtime dir for global vimrc file     e.g., "/usr/local/share/vim"
-# 7  source dir for help files             e.g., "../runtime/doc"
-# 8  mode bits for manpages                e.g., "644"
-# 9  vim exe name                          e.g., "vim"
-# 10 name of vimdiff exe                   e.g., "vimdiff"
-# 11 name of evim exe                      e.g., "evim"
+# 5  runtime dir for menu.vim et al.	   e.g., "/usr/local/share/vim/vim70"
+# 6  runtime dir for global vimrc file	   e.g., "/usr/local/share/vim"
+# 7  source dir for help files		   e.g., "../runtime/doc"
+# 8  mode bits for manpages		   e.g., "644"
+# 9  vim exe name			   e.g., "vim"
+# 10 name of vimdiff exe		   e.g., "vimdiff"
+# 11 name of evim exe			   e.g., "evim"
 
 errstatus=0
 

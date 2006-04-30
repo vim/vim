@@ -1995,7 +1995,6 @@ win_close(win, free_buf)
     int		free_buf;
 {
     win_T	*wp;
-    buf_T	*old_curbuf = curbuf;
 #ifdef FEAT_AUTOCMD
     int		other_buffer = FALSE;
 #endif
@@ -2007,6 +2006,30 @@ win_close(win, free_buf)
     if (last_window())
     {
 	EMSG(_("E444: Cannot close last window"));
+	return;
+    }
+
+    /*
+     * When closing the last window in a tab page first go to another tab
+     * page and then close the window and the tab page.  This avoids that
+     * curwin and curtab are not invalid while we are freeing memory, they may
+     * be used in GUI events.
+     */
+    if (firstwin == lastwin)
+    {
+	goto_tabpage_tp(alt_tabpage());
+	redraw_tabline = TRUE;
+
+	/* Safety check: Autocommands may have closed the window when jumping
+	 * to the other tab page. */
+	if (valid_tabpage(prev_curtab) && prev_curtab->tp_firstwin == win)
+	{
+	    int	    h = tabline_height();
+
+	    win_close_othertab(win, free_buf, prev_curtab);
+	    if (h != tabline_height())
+		shell_new_rows();
+	}
 	return;
     }
 
@@ -2056,40 +2079,6 @@ win_close(win, free_buf)
      * other window or moved to another tab page. */
     if (!win_valid(win) || last_window() || curtab != prev_curtab)
 	return;
-
-    /* When closing the last window in a tab page go to another tab page. This
-     * must be done before freeing memory to avoid that "topframe" becomes
-     * invalid (it may be used in GUI events). */
-    if (firstwin == lastwin)
-    {
-	tabpage_T   *ptp = NULL;
-	tabpage_T   *tp;
-	tabpage_T   *atp = alt_tabpage();
-
-	/* We don't do the window resizing stuff, let enter_tabpage() take
-	 * care of entering a window in another tab page. */
-	enter_tabpage(atp, old_curbuf);
-
-	for (tp = first_tabpage; tp != NULL && tp != prev_curtab;
-							     tp = tp->tp_next)
-	    ptp = tp;
-	if (tp != prev_curtab || tp->tp_firstwin != win)
-	{
-	    /* Autocommands must have closed it when jumping to the other tab
-	     * page. */
-	    return;
-	}
-
-	(void)win_free_mem(win, &dir, tp);
-
-	if (ptp == NULL)
-	    first_tabpage = tp->tp_next;
-	else
-	    ptp->tp_next = tp->tp_next;
-	free_tabpage(tp);
-
-	return;
-    }
 
     /* Free the memory used for the window. */
     wp = win_free_mem(win, &dir, NULL);
@@ -2174,7 +2163,8 @@ win_close(win, free_buf)
  * Close window "win" in tab page "tp", which is not the current tab page.
  * This may be the last window ih that tab page and result in closing the tab,
  * thus "tp" may become invalid!
- * Called must check if buffer is hidden.
+ * Caller must check if buffer is hidden and whether the tabline needs to be
+ * updated.
  */
     void
 win_close_othertab(win, free_buf, tp)

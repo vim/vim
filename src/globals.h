@@ -937,6 +937,7 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 		    ;
 #ifdef FEAT_EX_EXTRA
 EXTERN int	ex_normal_busy INIT(= 0); /* recursivenes of ex_normal() */
+EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
 #endif
 EXTERN int	stop_insert_mode;	/* for ":stopinsert" and 'insertmode' */
 

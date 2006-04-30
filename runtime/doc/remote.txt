@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 7.0f.  Last change: 2006 Apr 24
+*remote.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,19 +45,19 @@ The following command line arguments are available:
    --remote-wait-silent [+{cmd}] {file} ...		*--remote-wait-silent*
 				As --remote-wait, but don't complain if there
 				is no server.
-    							*--remote-tab*
+							*--remote-tab*
    --remote-tab			Like --remote but open each file in a new
-    				tabpage.
-    							*--remote-tab-silent*
+				tabpage.
+							*--remote-tab-silent*
    --remote-tab-silent		Like --remote-silent but open each file in a
-    				new tabpage.
+				new tabpage.
 							*--remote-tab-wait*
    --remote-tab-wait		Like --remote-wait but open each file in a new
-    				tabpage.
+				tabpage.
 
-    						*--remote-tab-wait-silent*
+						*--remote-tab-wait-silent*
    --remote-tab-wait-silent	Like --remote-wait-silent but open each file
-    				in a new tabpage.
+				in a new tabpage.
 								*--servername*
    --servername {name}		Become the server {name}.  When used together
 				with one of the --remote commands: connect to
@@ -67,7 +67,7 @@ The following command line arguments are available:
    --remote-send {keys}		Send {keys} to server and exit.
 								*--remote-expr*
    --remote-expr {expr}		Evaluate {expr} in server and print the result
-   				on stdout.
+				on stdout.
 								*--serverlist*
    --serverlist			Output a list of server names.
 

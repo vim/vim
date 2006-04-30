@@ -4325,7 +4325,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	return ExpandRTDir(pat, num_file, file, "compiler");
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
-        return ExpandUserList(xp, num_file, file);
+	return ExpandUserList(xp, num_file, file);
 # endif
 
     regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);

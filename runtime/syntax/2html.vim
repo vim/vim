@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Apr 19
+" Last Change: 2006 Apr 30
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 
@@ -111,9 +111,9 @@ function! s:HtmlFormat(text, style_name)
 
   " Replace the reserved html characters
   let formatted = substitute(substitute(substitute(substitute(substitute(formatted, '&', '\&amp;', 'g'), '<', '\&lt;', 'g'), '>', '\&gt;', 'g'), '"', '\&quot;', 'g'), "\x0c", '<hr class="PAGE-BREAK">', 'g')
-  
+
   " Replace double spaces and leading spaces
-  if ' ' != s:HtmlSpace 
+  if ' ' != s:HtmlSpace
     let formatted = substitute(formatted, '  ', s:HtmlSpace . s:HtmlSpace, 'g')
     let formatted = substitute(formatted, '^ ', s:HtmlSpace, 'g')
   endif
@@ -306,10 +306,10 @@ while s:lnum <= s:end
     let s:n = s:filler
     while s:n > 0
       if s:numblines
-        " Indent if line numbering is on
-        let s:new = repeat(s:LeadingSpace, strlen(s:end) + 1) . repeat(s:difffillchar, 3)
+	" Indent if line numbering is on
+	let s:new = repeat(s:LeadingSpace, strlen(s:end) + 1) . repeat(s:difffillchar, 3)
       else
-        let s:new = repeat(s:difffillchar, 3)
+	let s:new = repeat(s:difffillchar, 3)
       endif
 
       if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
@@ -318,8 +318,8 @@ while s:lnum <= s:end
       endif
 
       if !exists("html_no_pre")
-        " HTML line wrapping is off--go ahead and fill to the margin
-        let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new))
+	" HTML line wrapping is off--go ahead and fill to the margin
+	let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new))
       endif
 
       let s:new = s:HtmlFormat(s:new, "DiffDelete")
@@ -349,10 +349,10 @@ while s:lnum <= s:end
       " HTML line wrapping is off--go ahead and fill to the margin
       let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
     endif
-    
+
     let s:new = s:HtmlFormat(s:new, "Folded")
 
-    " Skip to the end of the fold  
+    " Skip to the end of the fold
     let s:lnum = foldclosedend(s:lnum)
 
   else
@@ -380,11 +380,11 @@ while s:lnum <= s:end
 	" Speed loop (it's small - that's the trick)
 	" Go along till we find a change in hlID
 	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
-        if s:len < &columns && !exists("html_no_pre")
+	if s:len < &columns && !exists("html_no_pre")
 	  " Add spaces at the end to mark the changed line.
-          let s:line = s:line . repeat(' ', &columns - s:len)
-          let s:len = &columns
-        endif
+	  let s:line = s:line . repeat(' ', &columns - s:len)
+	  let s:len = &columns
+	endif
       else
 	let s:id = synID(s:lnum, s:col, 1)
 	let s:col = s:col + 1
@@ -397,9 +397,9 @@ while s:lnum <= s:end
       let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
       let idx = stridx(s:expandedtab, "\t")
       while idx >= 0
-        let i = &ts - ((idx + s:startcol - 1) % &ts)
-        let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
-        let idx = stridx(s:expandedtab, "\t")
+	let i = &ts - ((idx + s:startcol - 1) % &ts)
+	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
+	let idx = stridx(s:expandedtab, "\t")
       endwhile
 
       " Output the text with the same synID, with class set to {s:id_name}
@@ -512,7 +512,7 @@ if exists("html_use_css")
   endif
 endif
 
-if exists("use_xhtml") 
+if exists("use_xhtml")
   exe "normal! gg/<html/e\na xmlns=\"http://www.w3.org/1999/xhtml\"\e"
 endif
 

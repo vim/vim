@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 18
+" Last Change:	2006 Apr 30
 
 " This file sets up for syntax highlighting.
 " It is loaded from "syntax.vim" and "manual.vim".
@@ -59,10 +59,10 @@ endfun
 
 
 " Handle adding doxygen to other languages (C, C++, IDL)
-au Syntax cpp,c,idl 
+au Syntax cpp,c,idl
 	\ if (exists('b:load_doxygen_syntax') && b:load_doxygen_syntax)
 	\	|| (exists('g:load_doxygen_syntax') && g:load_doxygen_syntax)
-	\   | runtime! syntax/doxygen.vim 
+	\   | runtime! syntax/doxygen.vim
 	\ | endif
 
 

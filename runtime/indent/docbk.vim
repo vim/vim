@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         DocBook Documentation Format
+" Language:	    DocBook Documentation Format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 

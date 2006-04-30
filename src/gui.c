@@ -4456,8 +4456,8 @@ gui_get_lightness(pixel)
     long_u	rgb = gui_mch_get_rgb(pixel);
 
     return  (int)(  (((rgb >> 16) & 0xff) * 299)
-	           + (((rgb >> 8) & 0xff) * 587)
-	           +  ((rgb	  & 0xff) * 114)) / 1000;
+		   + (((rgb >> 8) & 0xff) * 587)
+		   +  ((rgb	  & 0xff) * 114)) / 1000;
 }
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)

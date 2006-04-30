@@ -253,7 +253,7 @@
 /* if we're compiling in C++ (currently only KVim), the system
  * headers must have the correct prototypes or nothing will build.
  * conversely, our prototypes might clash due to throw() specifiers and
- * cause compilation failures even though the headers are correct.  for
+ * cause compilation failures even though the headers are correct.  For
  * a concrete example, gcc-3.2 enforces exception specifications, and
  * glibc-2.2.5 has them in their system headers.
  */
@@ -352,7 +352,7 @@ typedef		 __int64 long_i;
 # define PRINTF_HEX_LONG_U "0x%Ix"
 #else
 typedef unsigned long	long_u;
-typedef	         long	long_i;
+typedef		 long	long_i;
 # define SCANF_HEX_LONG_U  "%lx"
 # define PRINTF_HEX_LONG_U "0x%lx"
 #endif

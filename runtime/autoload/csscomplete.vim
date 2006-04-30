@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2005 Oct 12
+" Last Change:	2006 Apr 30
 
 function! csscomplete#CompleteCSS(findstart, base)
 if a:findstart
@@ -19,12 +19,12 @@ else
 	" ^ ; : { } /* */
 	" Where ^ is start of line and /* */ are comment borders
 	" Depending on their relative position to cursor we will now what should
-	" be completed. 
+	" be completed.
 	" 1. if nearest are ^ or { or ; current word is property
 	" 2. if : it is value (with exception of pseudo things)
 	" 3. if } we are outside of css definitions
 	" 4. for comments ignoring is be the easiest but assume they are the same
-	"    as 1. 
+	"    as 1.
 	" 5. if @ complete at-rule
 	" 6. if ! complete important
 	if exists("b:compl_context")
@@ -385,7 +385,7 @@ else
 					let filestart = matchstr(entered_atruleafter, "^url([\"']\\?\\zs.*")
 					let files = split(glob(filestart.'*'), '\n')
 					let values = map(copy(files), '"url(".v:val')
-					
+
 				else
 					let values = ['"', 'url(']
 

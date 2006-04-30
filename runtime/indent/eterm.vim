@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         Eterm configuration file
+" Language:	    Eterm configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 

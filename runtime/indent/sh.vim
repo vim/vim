@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         Shell Script
+" Language:	    Shell Script
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 
@@ -30,8 +30,8 @@ function GetShIndent()
   let ind = indent(lnum)
   let line = getline(lnum)
   if line =~ '^\s*\(if\|then\|do\|else\|elif\|case\|while\|until\|for\)\>'
-        \ || line =~ '^\s*\<\k\+\>\s*()\s*{'
-        \ || line =~ '^\s*{'
+	\ || line =~ '^\s*\<\k\+\>\s*()\s*{'
+	\ || line =~ '^\s*{'
     if line !~ '\(esac\|fi\|done\)\>\s*$' && line !~ '}\s*$'
       let ind = ind + &sw
     endif
@@ -41,7 +41,7 @@ function GetShIndent()
   " Retain the indentation level if line matches fin (for find)
   let line = getline(v:lnum)
   if (line =~ '^\s*\(then\|do\|else\|elif\|esac\|fi\|done\)\>' || line =~ '^\s*}')
-        \ && line !~ '^\s*fi[ln]\>'
+	\ && line !~ '^\s*fi[ln]\>'
     let ind = ind - &sw
   endif
 

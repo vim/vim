@@ -1,7 +1,7 @@
 " Vim support file to switch on loading plugins for file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Mar 18
+" Last change:	2006 Apr 30
 
 if exists("did_load_ftplugin")
   finish
@@ -10,13 +10,13 @@ let did_load_ftplugin = 1
 
 augroup filetypeplugin
   au FileType * call s:LoadFTPlugin()
- 
+
   func! s:LoadFTPlugin()
     if exists("b:undo_ftplugin")
       exe b:undo_ftplugin
       unlet! b:undo_ftplugin b:did_ftplugin
     endif
-   
+
     let s = expand("<amatch>")
     if s != ""
       if &cpo =~# "S" && exists("b:did_ftplugin")

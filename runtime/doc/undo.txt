@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.0f.  Last change: 2006 Apr 24
+*undo.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -119,8 +119,8 @@ This is explained in the user manual: |usr_32.txt|.
 							*:undol* *:undolist*
 :undol[ist]		List the leafs in the tree of changes.  Example:
 				number changes   time ~
-				4      10        10:34:11
-				18     4         11:01:46
+				4      10	 10:34:11
+				18     4	 11:01:46
 
 			The "number" column is the change number.  This number
 			continuously increases and can be used to identify a

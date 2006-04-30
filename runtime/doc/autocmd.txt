@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0f.  Last change: 2006 Apr 25
+*autocmd.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -162,7 +162,7 @@ was last defined. Example: >
 
     :verbose autocmd BufEnter
     FileExplorer  BufEnter
-	*         call s:LocalBrowse(expand("<amatch>"))
+	*	  call s:LocalBrowse(expand("<amatch>"))
 	    Last set from /usr/share/vim/vim-7.0/plugin/NetrwPlugin.vim
 <
 See |:verbose-cmd| for more information.
@@ -884,8 +884,8 @@ buffer actually still exists (it becomes unlisted), thus the autocommands are
 still executed.
 
 ==============================================================================
-7. Buffer-local autocommands  	*autocmd-buflocal* *autocmd-buffer-local*
-                                    	*<buffer=N>* *<buffer=abuf>* *E680*
+7. Buffer-local autocommands	*autocmd-buflocal* *autocmd-buffer-local*
+					*<buffer=N>* *<buffer=abuf>* *E680*
 
 Buffer-local autocommands are attached to a specific buffer.  They are useful
 if the buffer does not have a name and when the name does not match a specific
@@ -904,14 +904,14 @@ Examples: >
 
 All the commands for autocommands also work with buffer-local autocommands,
 simply use the special string instead of the pattern.  Examples: >
-    :au! * <buffer>     	     " remove buffer-local autocommands for
-                                     " current buffer
-    :au! * <buffer=33>  	     " remove buffer-local autocommands for
-    				     " buffer #33
+    :au! * <buffer>		     " remove buffer-local autocommands for
+				     " current buffer
+    :au! * <buffer=33>		     " remove buffer-local autocommands for
+				     " buffer #33
     :dobuf :au! CursorHold <buffer>  " remove autocmd for given event for all
-    				     " buffers
-    :au * <buffer>       	     " list buffer-local autocommands for
-    				     " current buffer
+				     " buffers
+    :au * <buffer>		     " list buffer-local autocommands for
+				     " current buffer
 
 Note that when an autocommand is defined for the current buffer, it is stored
 with the buffer number.  Thus it uses the form "<buffer=12>", where 12 is the

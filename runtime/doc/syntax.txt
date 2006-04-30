@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0f.  Last change: 2006 Apr 27
+*syntax.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -610,7 +610,7 @@ For Visual Basic use: >
 	:let g:filetype_asp = "aspvbs"
 
 
-BAAN 						    *baan.vim* *baan-syntax*
+BAAN						    *baan.vim* *baan-syntax*
 
 The baan.vim gives syntax support for BaanC of release BaanIV upto SSA ERP LN
 for both 3 GL and 4 GL programming. Large number of standard defines/constants
@@ -633,10 +633,10 @@ indentation preceding the begin/end keywords has to match (spaces are not
 considered equal to a tab). >
 	let baan_fold_block=1
 Folding can be enabled for embedded SQL blocks as SELECT, SELECTDO,
-SELECTEMPTY, ... The indentation preceding the begin/end keywords has to 
+SELECTEMPTY, ... The indentation preceding the begin/end keywords has to
 match (spaces are not considered equal to a tab). >
 	let baan_fold_sql=1
-Note: Block folding can result in many small folds. It is suggested to |:set| 
+Note: Block folding can result in many small folds. It is suggested to |:set|
 the options 'foldminlines' and 'foldnestmax' in |.vimrc| or use |:setlocal| in
 .../after/syntax/baan.vim (see |after-directory|). Eg: >
 	set foldminlines=5
@@ -927,7 +927,7 @@ doxygen_javadoc_autobrief	1	Set to 0 to disable javadoc autobrief
 					colour highlighting.
 
 doxygen_end_punctuation		'[.]'	Set to regexp match for the ending
-					punctuation of brief 
+					punctuation of brief
 
 There are also some hilight groups worth mentioning as they can be useful in
 configuration.
@@ -2002,8 +2002,8 @@ If you want to fold blocks in if statements, etc. as well set the following: >
 To avoid folding packages or subs when perl_fold is let, let the appropriate
 variable(s): >
 
- 	:unlet perl_nofold_packages
- 	:unlet perl_nofold_subs
+	:unlet perl_nofold_packages
+	:unlet perl_nofold_subs
 
 
 
@@ -2064,7 +2064,7 @@ PLAINTEX				*plaintex.vim* *ft-plaintex-syntax*
 
 TeX is a typesetting language, and plaintex is the file type for the "plain"
 variant of TeX.  If you never want your *.tex files recognized as plain TeX,
-see |ft-tex-plugin|.  
+see |ft-tex-plugin|.
 
 This syntax file has the option >
 
@@ -2328,7 +2328,7 @@ By default only R5RS keywords are highlighted and properly indented.
 
 MzScheme-specific stuff will be used if b:is_mzscheme or g:is_mzscheme
 variables are defined.
- 
+
 Also scheme.vim supports keywords of the Chicken Scheme->C compiler.  Define
 b:is_chicken or g:is_chicken, if you need them.
 
@@ -3745,7 +3745,7 @@ faster.]
 	Without a "groupthere" argument.  Define a region or match that is
 	skipped while searching for a sync point.
 
-    						*syn-sync-linecont*
+						*syn-sync-linecont*
     :syntax sync linecont {pattern}
 
 	When {pattern} matches in a line, it is considered to continue in
@@ -3851,12 +3851,12 @@ specified field is used, and settings are merged with previous ones.  So, the
 result is like this single command has been used: >
    :hi Comment	term=bold ctermfg=Cyan guifg=#80a0ff gui=bold
 <
-						    	*:highlight-verbose*
+							*:highlight-verbose*
 When listing a highlight group and 'verbose' is non-zero, the listing will
 also tell where it was last set.  Example: >
 	:verbose hi Comment
 <	Comment        xxx term=bold ctermfg=4 guifg=Blue ~
-           Last set from /home/mool/vim/vim7/runtime/syntax/syncolor.vim ~
+	   Last set from /home/mool/vim/vim7/runtime/syntax/syncolor.vim ~
 
 When ":hi clear" is used then the script where this command is used will be
 mentioned for the default values. See |:verbose-cmd| for more information.

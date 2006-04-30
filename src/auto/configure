@@ -2983,7 +2983,7 @@ sed 's/^/| /' conftest.$ac_ext >&5
 
 echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
-	        MACARCH="ppc"
+		MACARCH="ppc"
 		CPPFLAGS="$save_cppflags -arch ppc"
 		LDFLAGS="$save_ldflags -arch ppc"
 fi
@@ -3753,11 +3753,11 @@ echo $ECHO_N "checking PLTHOME environment var... $ECHO_C" >&6
     if test "X$PLTHOME" != "X"; then
 	echo "$as_me:$LINENO: result: \"$PLTHOME\"" >&5
 echo "${ECHO_T}\"$PLTHOME\"" >&6
-        vi_cv_path_mzscheme_pfx="$PLTHOME"
+	vi_cv_path_mzscheme_pfx="$PLTHOME"
     else
 	echo "$as_me:$LINENO: result: \"not set\"" >&5
 echo "${ECHO_T}\"not set\"" >&6
-	        # Extract the first word of "mzscheme", so it can be a program name with args.
+		# Extract the first word of "mzscheme", so it can be a program name with args.
 set dummy mzscheme; ac_word=$2
 echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
@@ -3797,30 +3797,30 @@ echo "${ECHO_T}no" >&6
 fi
 
 
-		        if test "X$vi_cv_path_mzscheme" != "X"; then
+			if test "X$vi_cv_path_mzscheme" != "X"; then
 	  lsout=`ls -l $vi_cv_path_mzscheme`
 	  if echo "$lsout" | grep -e '->' >/dev/null 2>/dev/null; then
 	    vi_cv_path_mzscheme=`echo "$lsout" | sed 's/.*-> \(.*\)/\1/'`
 	  fi
 	fi
 
-        if test "X$vi_cv_path_mzscheme" != "X"; then
-                        echo "$as_me:$LINENO: checking MzScheme install prefix" >&5
+	if test "X$vi_cv_path_mzscheme" != "X"; then
+	    	    echo "$as_me:$LINENO: checking MzScheme install prefix" >&5
 echo $ECHO_N "checking MzScheme install prefix... $ECHO_C" >&6
 if test "${vi_cv_path_mzscheme_pfx+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
    vi_cv_path_mzscheme_pfx=`
-      	    ${vi_cv_path_mzscheme} -evm \
-            "(display (simplify-path		\
-              (build-path (call-with-values	\
-      	        (lambda () (split-path (find-system-path (quote exec-file)))) \
-      	        (lambda (base name must-be-dir?) base)) (quote up))))"`
+	    ${vi_cv_path_mzscheme} -evm \
+	    "(display (simplify-path		\
+	       (build-path (call-with-values	\
+		(lambda () (split-path (find-system-path (quote exec-file)))) \
+		(lambda (base name must-be-dir?) base)) (quote up))))"`
 fi
 echo "$as_me:$LINENO: result: $vi_cv_path_mzscheme_pfx" >&5
 echo "${ECHO_T}$vi_cv_path_mzscheme_pfx" >&6
 	    	    vi_cv_path_mzscheme_pfx=`echo "$vi_cv_path_mzscheme_pfx" | sed 's+/$++'`
-        fi
+	fi
     fi
   fi
 
@@ -3843,7 +3843,7 @@ echo "${ECHO_T}\"no\"" >&6
     else
       MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzgc -lmzscheme"
       if test "$GCC" = yes; then
-		        MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
+			MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
       elif test "`(uname) 2>/dev/null`" = SunOS &&
 			       uname -r | grep '^5' >/dev/null; then
 	MZSCHEME_LIBS="$MZSCHEME_LIBS -R ${vi_cv_path_mzscheme_pfx}/lib"
@@ -7848,7 +7848,7 @@ echo $ECHO_N "checking for FreeBSD... $ECHO_C" >&6
       if test "`(uname) 2>/dev/null`" = FreeBSD; then
 	echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
-        GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
+	GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
 	GNOME_LIBS="$GNOME_LIBS -pthread"
       else
 	echo "$as_me:$LINENO: result: no" >&5

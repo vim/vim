@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     ChordPro (v. 3.6.2)
 " Maintainer:   Niels Bo Andersen <niels@niboan.dk>
-" Last Change:	2006 Apr 20 
+" Last Change:	2006 Apr 30
 " Remark:       Requires VIM version 6.00 or greater
 
 " Quit when a syntax file was already loaded

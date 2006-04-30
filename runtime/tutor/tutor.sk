@@ -60,7 +60,7 @@ Poznámka: Kurzorové klávesy sú tie¾ funkèné. Ale pou¾ívaním hjkl sa bude¹
      spe» do tejto výuky. To mô¾e by»:	vimtutor <ENTER>
 
   4. Ak si si tieto kroky spoµahlivo zapamätal, vykonaj kroky 1 a¾ 3, pre
-     ukonèenie a znovu spustenie editora. 
+     ukonèenie a znovu spustenie editora.
 
 POZNÁMKA: :q! <ENTER> neulo¾í zmeny, ktoré si vykonal. O niekoµko lekcií
           sa nauèí¹ ako ulo¾i» zmeny do súboru
@@ -125,7 +125,7 @@ POZNÁMKA: Neskú¹aj si zapamäta» obsah tejto výuky, ale sa uè pou¾ívaním.
 
   3. Po pridaní textu stlaè klávesu <ESC> pre návrat do Normálneho módu.
 
-  4. Presuò kurozr na druhý riadok oznaèený ---> a zopakuj 
+  4. Presuò kurozr na druhý riadok oznaèený ---> a zopakuj
      kroky 2 a 3 kým nieje veta správna.
 
 ---> Tu je nejaký text chýbajúci o
@@ -147,14 +147,14 @@ POZNÁMKA: Neskú¹aj si zapamäta» obsah tejto výuky, ale sa uè pou¾ívaním.
 1. Opusti túto výuku, ako si to urobil v lekcii 1.2:  :q!
 
 2. Do príkazového riadku napí¹ príkaz:  vim tutor <ENTER>
-   'vim' je príkaz, ktorý spustí editor Vim, 'tutor' je meno súboru, 
+   'vim' je príkaz, ktorý spustí editor Vim, 'tutor' je meno súboru,
    ktorý chce¹ editova». Pou¾i taký súbor, ktorý mô¾e¹ meni».
 
 3. Vlo¾ a zma¾ text tak, ako si sa nauèil v predo¹lých lekciach.
 
 4. Ulo¾ súbor so zmenami a opusti Vim príkazom:  :wq  <ENTER>
 
-5. Re¹tartuj vimtutor a presuò sa dole na nasledujúce zhrnutie. 
+5. Re¹tartuj vimtutor a presuò sa dole na nasledujúce zhrnutie.
 
 6. Urob tak po preèítaní predo¹lých krokov a porozumeniu im.
 
@@ -198,8 +198,8 @@ Teraz pokraèuj lekciou 2.
 4. Napí¹  dw  aby slovo zmizlo.
 
 POZNÁMKA: Písmeno d sa zobrazí na poslednom riadku obrazovky keï ho
-	        napí¹e¹. Vim na teba poèká, aby si mohol napísa» 
-          písmeno w. Ak vidí¹ nieèo iné ako  d , tak si napísal 
+	        napí¹e¹. Vim na teba poèká, aby si mohol napísa»
+          písmeno w. Ak vidí¹ nieèo iné ako  d , tak si napísal
           nesprávny znak; stlaè  <ESC>  a zaèni znova.
 
 ---> Tu je niekoµko slov zábava, ktoré nie patria list do tejto vety.
@@ -231,7 +231,7 @@ POZNÁMKA: Písmeno d sa zobrazí na poslednom riadku obrazovky keï ho
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		     Lekcia 2.3: OPERÁTORY A POHYBY
 
-  Veµa príkazov, ktoré menia text sú odvodené od operátorov a pohybov. 
+  Veµa príkazov, ktoré menia text sú odvodené od operátorov a pohybov.
   Formát pre príkaz mazania klávesou  d  je nasledovný:
 
     d   pohyb
@@ -242,13 +242,13 @@ POZNÁMKA: Písmeno d sa zobrazí na poslednom riadku obrazovky keï ho
 
   Krátky list pohybov:
     w - do zaèiatku ïal¹ieho slova, okrem jeho prvého písmena.
-    e - do konca teraj¹ieho slova, vrátane posledného znaku. 
+    e - do konca teraj¹ieho slova, vrátane posledného znaku.
     $ - do konca riadku, vrátane posledného znaku
 
   Tak¾e napísaním  de  sa zma¾e v¹etko od kurzora do konca slova.
 
-POZNÁMKA: Stlaèením iba pohybu v normálnom móde bez operátora 
-          sa presunie kurzor tak ako je to ¹pecivikované. 
+POZNÁMKA: Stlaèením iba pohybu v normálnom móde bez operátora
+          sa presunie kurzor tak ako je to ¹pecivikované.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		Lekcia 2.4: Pou¾itie viacnásobného pohybu
@@ -258,13 +258,13 @@ POZNÁMKA: Stlaèením iba pohybu v normálnom móde bez operátora
 
   1. Presuò kurozr ni¾¹ie na zaèiatok riadku oznaèeného --->.
 
-  2. Napí¹  2w  a kurozr sa presunie o dve slová vpred. 
+  2. Napí¹  2w  a kurozr sa presunie o dve slová vpred.
 
-  3. Napí¹  3e  a kurozr sa presunie vpred na koniec tretieho slova. 
+  3. Napí¹  3e  a kurozr sa presunie vpred na koniec tretieho slova.
 
   4. Napí¹  0  (nula) a kurozr sa presunie na zaèiatok riadku.
 
-  5. Zopakuj kroky 2 a 3 s rôznymi èíslami. 
+  5. Zopakuj kroky 2 a 3 s rôznymi èíslami.
 
 ---> Toto je riadok so slovami po kotrých sa mô¾ete pohybova».
 
@@ -277,11 +277,11 @@ POZNÁMKA: Stlaèením iba pohybu v normálnom móde bez operátora
 
     ** Napísanie èísla spolu s operátorom ho zopakuje zadaný poèet krát **
 
-  V kombinácii operátorov mazania a pohybu spomínaného vy¹¹ie vlo¾ poèet 
+  V kombinácii operátorov mazania a pohybu spomínaného vy¹¹ie vlo¾ poèet
   pred pohyb pre docielenie hromadného mazania:
     d   èíslo   pohyb
 
-  1. Presuò kurzor na prvé slovo písané VE¥KÝMI PÍSMENAMI 
+  1. Presuò kurzor na prvé slovo písané VE¥KÝMI PÍSMENAMI
      v riadku oznaèenom --->.
 
   2. Napí¹  2dw  a zma¾e¹ dve slová písané VE¥KÝMI PÍSMENAMI
@@ -289,9 +289,9 @@ POZNÁMKA: Stlaèením iba pohybu v normálnom móde bez operátora
   3. Zopakuj kroky 1 a 2 s pou¾itím rôzneho èísla tak aby si zmazal slová
      písané veµkými písmenami jedným príkazom.
 
----> Tento ABC DE riadok FGHI JK LMN OP so slovamI je Q RS TUV vycisteny. 
+---> Tento ABC DE riadok FGHI JK LMN OP so slovamI je Q RS TUV vycisteny.
 
-POZNÁMKA: Èíslo medzi operátorom  d  a pohybom funguje podobne ako pri 
+POZNÁMKA: Èíslo medzi operátorom  d  a pohybom funguje podobne ako pri
           pou¾ití s pohybom bez operátora.
 
 
@@ -359,7 +359,7 @@ Vzhµadom na frekvenciu mazania celého riadku, sa autori Vimu rozhodli,
      kde:
        operátor - èo treba robi», napríklad  d  pre zmazanie
        [èíslo] - je voliteµný poèet pre opakovanie pohybu
-       pohyb - pohyb po texte vzhµadom na operátor, napríklad w (slovo), 
+       pohyb - pohyb po texte vzhµadom na operátor, napríklad w (slovo),
 		$ (do konca riadku), atï.
 
   6. Pre pohyb na zaèiatok riadku pou¾i nulu:  0
@@ -472,13 +472,13 @@ POZNÁMKA: Mô¾e¹ pou¾i» klávesu backspace na úpravu zmien poèas písania.
   2. Pre naradenie znaku na mieste kurzora, napí¹  r  a potom znak, ktorý
      nahradí pôvodný znak.
 
-  3. Príkaz na upravenie umo¾òuje zmeni» od kurzora a¾ po miesto, ktoré 
+  3. Príkaz na upravenie umo¾òuje zmeni» od kurzora a¾ po miesto, ktoré
      urèuje pohyb.  napr. Napí¹  ce  èím zmní¹ text od pozície
      kurzora do konca slova, c$  zmení text do konca riadku.
 
   4. Formát pre nahradenie je:
 
-	    c    [èíslo]    pohyb 
+	    c    [èíslo]    pohyb
 
 
 Teraz prejdi na nalsedujúcu lekciu.
@@ -494,8 +494,8 @@ Teraz prejdi na nalsedujúcu lekciu.
 
   Poznámka: Preèítaj si celú túto lekciu skôr ako zaène¹ vykonáva» kroky!!
 
-  1. Dr¾ stlaèenú klávesu Ctrl a stlaè  g . Toto nazývame CTRL-G. 
-     Na spodu obrazovky sa zobrazí správa s názvom súboru a pozíciou 
+  1. Dr¾ stlaèenú klávesu Ctrl a stlaè  g . Toto nazývame CTRL-G.
+     Na spodu obrazovky sa zobrazí správa s názvom súboru a pozíciou
      v súbore. Zapamätajsi si èíslo riadku pre pou¾itie v kroku 3.
 
   2. Stlaè  G  èím sa dostane¹ na spodok súboru.
@@ -526,8 +526,8 @@ Teraz prejdi na nalsedujúcu lekciu.
   4. Ak chce¹ vyhµada» re»azec v spätnom smere, pou¾í príkaz  ?  miesto
      príkazu /.
 
-  5. Pre návrat na miesto z ktorého si pri¹iel stlaè CTRL-O (dr¾ stlaèenú 
-     klávesu Ctrl poèas stlaèenia klávesy o). Zopakuj pre ïal¹í návrat 
+  5. Pre návrat na miesto z ktorého si pri¹iel stlaè CTRL-O (dr¾ stlaèenú
+     klávesu Ctrl poèas stlaèenia klávesy o). Zopakuj pre ïal¹í návrat
      spä». CTRL-I ide vpred.
 
 POZNÁMKA: "errroor" nieje spôsob hláskovania error; errroor je error.
@@ -590,7 +590,7 @@ Poznámka: Toto je veµmi výhodné pou¾í» pri ladení programu s chýbajúcimi
 
 
   1. CTRL-g    vypí¹e tvoju pozíciu v súbore a status súboru.
-            G  »a premiestni na koniec riadku. 
+            G  »a premiestni na koniec riadku.
      èíslo  G  »a premiestni na riadok s èíslom.
            gg  »a presunie na prvý riadok
 
@@ -668,15 +668,15 @@ Poznámka: ¾e ak ukonèí¹ prácu s editorom Vim a znovu ho spustí¹ príkazom
 
   3. Stlaè klávesu  : . V spodnej èasti okna sa objaví  :'<,'>.
 
-  4. Napí¹ w TEST  , kde TEST je meno súboru, ktorý zatial neexistuje. 
+  4. Napí¹ w TEST  , kde TEST je meno súboru, ktorý zatial neexistuje.
      Skontroluj, e vidí¹  :'<,'>w TEST  predtým ne¾ stlaèí¹ Enter.
 
   5. Vim zapí¹e oznaèené riadky do súboru TEST. Pou¾i :!dir  alebo  !ls
      pre overenie. Zatial ho e¹te nema¾! Pou¾ijeme ho v ïal¹ej lekcii.
 
-POZNÁMKA: Stlaèením klávesy  v  sa spustí vizuálne oznaèovanie. 
-          Mô¾e¹ pohybova» kurzorom pre upresnenie vyznaèeného textu. 
-          Potom mô¾e¹ pou¾i» operátor pre vykonanie nejakej akcie 
+POZNÁMKA: Stlaèením klávesy  v  sa spustí vizuálne oznaèovanie.
+          Mô¾e¹ pohybova» kurzorom pre upresnenie vyznaèeného textu.
+          Potom mô¾e¹ pou¾i» operátor pre vykonanie nejakej akcie
           s textom. Napríklad  d  zma¾e vyznaèený text.
 
 
@@ -686,7 +686,7 @@ POZNÁMKA: Stlaèením klávesy  v  sa spustí vizuálne oznaèovanie.
 
 	** Pre vlo¾enie obsahu súboru, napí¹   :r FILENAME **
 
-  1. Premiestni kurzor nad tento riadok. 
+  1. Premiestni kurzor nad tento riadok.
 
 POZNÁMKA: Po vykonaní kroku 2 uvidí¹ text z lekcie 5.3. Potom sa presuò
           dole, aby si videl túto lekciu.
@@ -710,8 +710,8 @@ POZNÁMKA: Mô¾e¹ tie¾ naèíta» výstup vonkaj¹ieho príkazu. Napríklad :r !ls
 	 :!del FILENAME    :!rm FILENAME    -  odstráni súbor FILENAME
 
   2.  :w FILENAME  ulo¾í aktuálny súbor na disk pod menom FILENAME.
- 
-  3.  v  pohyb  :w FILENAME  ulo¾í vizuálne oznaèené riadky do 
+
+  3.  v  pohyb  :w FILENAME  ulo¾í vizuálne oznaèené riadky do
       súboru FILENAME.
 
   4.  :r FILENAME  vyberie z disku súbor FILENAME a vlo¾í ho do aktuálneho
@@ -738,8 +738,8 @@ POZNÁMKA: Mô¾e¹ tie¾ naèíta» výstup vonkaj¹ieho príkazu. Napríklad :r !ls
 ---> Po napísaní  o  sa kurzor premiestní na vlo¾ený riadok do vkladacieho
      módu.
 
-  4. Pre otvorenie riadku nad kurzorom, jednotucho napí¹ veµké  O , 
-     namiesto malého  o. Vyskú¹aj si to na riadku dole. 
+  4. Pre otvorenie riadku nad kurzorom, jednotucho napí¹ veµké  O ,
+     namiesto malého  o. Vyskú¹aj si to na riadku dole.
 
 ---> Vlo¾ riadok nad týmto napísaním O, keï kurzor je na tomto riadku.
 
@@ -753,11 +753,11 @@ POZNÁMKA: Mô¾e¹ tie¾ naèíta» výstup vonkaj¹ieho príkazu. Napríklad :r !ls
 
   1. Presuò kurzor ni¾¹ie na koniec prvého riadku oznaèeného znaèkou --->
 
-  2. Stlaè klávesu  e  dokiaµ kurozr nieje na konci riadku.   
+  2. Stlaè klávesu  e  dokiaµ kurozr nieje na konci riadku.
 
   3. Napí¹  a  (malé písmeno) pre pridanie textu ZA kurzorom.
 
-  4. Dokonèí slovo tak ako je to v druhom riadku. Stla¹ <ESC> pre 
+  4. Dokonèí slovo tak ako je to v druhom riadku. Stla¹ <ESC> pre
      opustenie vkladacieho módu.
 
   5. Pou¾i  e  na presun na ïal¹ie nedokonèené slovo a zopakuj kroky 3 a 4.
@@ -765,8 +765,8 @@ POZNÁMKA: Mô¾e¹ tie¾ naèíta» výstup vonkaj¹ieho príkazu. Napríklad :r !ls
 ---> Tento ri ti dovoµuje nácv priávan testu na koniec riadku.
 ---> Tento riadok ti dovoµuje nácvik pridávania textu na koniec riadku.
 
-POZNÁMKA: a, i, A ¹tartujú rovnaký vkladací mód, jediný rozidel je, kde 
-          sa znaky vkladajú. 
+POZNÁMKA: a, i, A ¹tartujú rovnaký vkladací mód, jediný rozidel je, kde
+          sa znaky vkladajú.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -778,19 +778,19 @@ POZNÁMKA: a, i, A ¹tartujú rovnaký vkladací mód, jediný rozidel je, kde
   1. Presuò kurzor ni¾¹ie na prvý riadok oznaèený znaèkou --->. Premiestni
      kurzor na zaèiatok prvého výskytu  xxx.
 
-  2. Teraz napí¹  R  a  napí¹  èíslo uvedené v druhom riadku, tak¾e 
+  2. Teraz napí¹  R  a  napí¹  èíslo uvedené v druhom riadku, tak¾e
      sa ním nahradí pôvodné xxx.
 
-  3. Stlaè <ESC> pre opustenie nahradzovacieho módu. Poznámka, ¾e zvy¹ok 
-     riadku zostane nezmenený. 
+  3. Stlaè <ESC> pre opustenie nahradzovacieho módu. Poznámka, ¾e zvy¹ok
+     riadku zostane nezmenený.
 
   4. Zopakuj tieto kroky pre nahradenie zvy¹ných xxx.
 
 ---> Pridaním 123 ku xxx dostane¹ xxx.
 ---> Pridaním 123 ku 456 dostane¹ 579.
 
-POZNÁMKA:  Nahradzovací mód je ako vkladací mód, ale ka¾dý napísaný znak 
-           zma¾e existujúci znak. 
+POZNÁMKA:  Nahradzovací mód je ako vkladací mód, ale ka¾dý napísaný znak
+           zma¾e existujúci znak.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -809,14 +809,14 @@ POZNÁMKA:  Nahradzovací mód je ako vkladací mód, ale ka¾dý napísaný znak
 
   5. Napí¹  p  pre vlo¾nie (paste) textu. Potom napí¹:  a druha <ESC>.
 
-  6. Pou¾i vizuálny mód pre oznaèenie "polo¾ka.", vystrihni to 
-     pou¾itím  y, presuò sa na koniec nasledujúceho riadku pou¾itím  j$ 
+  6. Pou¾i vizuálny mód pre oznaèenie "polo¾ka.", vystrihni to
+     pou¾itím  y, presuò sa na koniec nasledujúceho riadku pou¾itím  j$
      a vlo¾ sem text pou¾itím  p.
 
 ---> a) toto je prvá polo¾ka
 ---> b)
 
-POZNÁMKA: Mô¾e¹ pou¾i» tie¾  y  ako operátor; yw  vystrihne jedno slovo. 
+POZNÁMKA: Mô¾e¹ pou¾i» tie¾  y  ako operátor; yw  vystrihne jedno slovo.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -843,11 +843,11 @@ POZNÁMKA: Mô¾e¹ pou¾i» tie¾  y  ako operátor; yw  vystrihne jedno slovo.
   5. Teraz spusti vyhµadávací príkaz znovu, a pozri èo sa stalo:
      /ignore <ENTER>
 
-  6. Pre opetovné zapnutie rozly¹ovania veµkých a malých písmen 
+  6. Pre opetovné zapnutie rozly¹ovania veµkých a malých písmen
      napí¹:  :set noic
 
 POZNÁMKA: Na odstránenie zvýraznenia výrazov napí¹:  :nohlsearch
-POZNÁMKA: Ak chce¹ nerozly¹ova» veµkos» písmen len pre jedno 
+POZNÁMKA: Ak chce¹ nerozly¹ova» veµkos» písmen len pre jedno
           pou¾itie vyhµadávacieho príkazu, pou¾i \c:  /ignore\c <ENTER>
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -867,9 +867,9 @@ POZNÁMKA: Ak chce¹ nerozly¹ova» veµkos» písmen len pre jedno
   5. Napísanie veµkého  R  prepne do nahradzovacieho módu, kým nieje
      stlaèené <ESC>.
 
-  6. Napísanie ":set xxx" nastaví mo¾nos» "xxx". Niektoré nastavenia sú: 
-     'ic' 'ignorecase' ignoruje veµké a malé písmená poèas vyhµadávania. 
-     'is' 'incsearch' zobrazuje èiastoèné re»azce vyhµadávaného re»azca. 
+  6. Napísanie ":set xxx" nastaví mo¾nos» "xxx". Niektoré nastavenia sú:
+     'ic' 'ignorecase' ignoruje veµké a malé písmená poèas vyhµadávania.
+     'is' 'incsearch' zobrazuje èiastoèné re»azce vyhµadávaného re»azca.
      'hls' 'hlsearch' vyznaèí v¹etky vyhµadávané re»azce.
       Mô¾e¹ pou¾i» hociktorý z dlhých a krátkych názvov mo¾ností.
 
@@ -893,8 +893,8 @@ POZNÁMKA: Ak chce¹ nerozly¹ova» veµkos» písmen len pre jedno
 	- stlaè klávesu <F1> (ak nejakú má¹)
 	- napí¹  :help <ENTER>
 
-  Èítaj text v okne nápovedy pre získanie predstavy ako nápoveda funguje. 
-  Napí¹   CTRL-W CTRL-W  pre skok z jedného okna do druhého. 
+  Èítaj text v okne nápovedy pre získanie predstavy ako nápoveda funguje.
+  Napí¹   CTRL-W CTRL-W  pre skok z jedného okna do druhého.
   Napí¹    :q <ENTER>    èím zatvorí¹ okno nápovedy.
 
   Mô¾e¹ nájs» help ku hociakej téme pridaním argumentu ku príkazu ":help".
@@ -945,12 +945,12 @@ POZNÁMKA: Ak chce¹ nerozly¹ova» veµkos» písmen len pre jedno
 
   5. Stlaè <TAB> a Vim dokonèí meno príkazu na ":edit".
 
-  6. Teraz pridaj medzerník a zaèiatok mena existujúceho súboru: 
+  6. Teraz pridaj medzerník a zaèiatok mena existujúceho súboru:
      :edit FIL
 
   7. Stlaè <TAB>. Vim dokonèí meno (ak je jedineèné).
 
-POZNÁMKA: Dokonèovanie funguje pre veµa príkazov. Vyskú¹aj stlaèenie 
+POZNÁMKA: Dokonèovanie funguje pre veµa príkazov. Vyskú¹aj stlaèenie
           CTRL-D a <TAB>. ©peciálne je to u¾itoèné pre príkaz  :help.
 
 
@@ -960,16 +960,16 @@ POZNÁMKA: Dokonèovanie funguje pre veµa príkazov. Vyskú¹aj stlaèenie
 
   1. Napí¹  :help  alebo stlaè <F1> alebo <Help> pre otvorenie okna nápovedy.
 
-  2. Napí¹  :help príkaz  pre vyhµadanie nápovedy ku príkazu príkaz. 
+  2. Napí¹  :help príkaz  pre vyhµadanie nápovedy ku príkazu príkaz.
 
-  3. Napí¹  CTRL-W CTRL-W  na preskoèenie do iného okna. 
+  3. Napí¹  CTRL-W CTRL-W  na preskoèenie do iného okna.
 
   4. Napí¹  :q  pre zatvorenie okna nápovedy
 
-  5. Vytvor ¹tartovací skript vimrc pre udr¾anie uprednostòovaných nastavení. 
+  5. Vytvor ¹tartovací skript vimrc pre udr¾anie uprednostòovaných nastavení.
 
-  6. Poèas písania príkazu  :  stlaè CTRL-D pre zobrazenie dokonèení. 
-     Stlaè <TAB> pre pou¾itie jedného z dokonèení. 
+  6. Poèas písania príkazu  :  stlaè CTRL-D pre zobrazenie dokonèení.
+     Stlaè <TAB> pre pou¾itie jedného z dokonèení.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

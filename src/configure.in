@@ -135,7 +135,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 	AC_TRY_LINK([ ], [ ],
 	    AC_MSG_RESULT(yes); MACARCH="intel",
 	    AC_MSG_RESULT(no, using PowerPC)
-	        MACARCH="ppc"
+		MACARCH="ppc"
 		CPPFLAGS="$save_cppflags -arch ppc"
 		LDFLAGS="$save_ldflags -arch ppc"))
   elif test "x$MACARCH" = "xintel"; then
@@ -372,8 +372,8 @@ if test "$enable_mzschemeinterp" = "yes"; then
 
   AC_MSG_CHECKING(--with-plthome argument)
   AC_ARG_WITH(plthome,
-  	[  --with-plthome=PLTHOME   Use PLTHOME.],
-        with_plthome="$withval"; AC_MSG_RESULT($with_plthome),
+	[  --with-plthome=PLTHOME   Use PLTHOME.],
+	with_plthome="$withval"; AC_MSG_RESULT($with_plthome),
 	with_plthome="";AC_MSG_RESULT("no"))
 
   if test "X$with_plthome" != "X"; then
@@ -382,33 +382,33 @@ if test "$enable_mzschemeinterp" = "yes"; then
     AC_MSG_CHECKING(PLTHOME environment var)
     if test "X$PLTHOME" != "X"; then
 	AC_MSG_RESULT("$PLTHOME")
-        vi_cv_path_mzscheme_pfx="$PLTHOME"
+	vi_cv_path_mzscheme_pfx="$PLTHOME"
     else
 	AC_MSG_RESULT("not set")
 	dnl -- try to find MzScheme executable
-        AC_PATH_PROG(vi_cv_path_mzscheme, mzscheme)
+	AC_PATH_PROG(vi_cv_path_mzscheme, mzscheme)
 
 	dnl resolve symbolic link, the executable is often elsewhere and there
 	dnl are no links for the include files.
-        if test "X$vi_cv_path_mzscheme" != "X"; then
+	if test "X$vi_cv_path_mzscheme" != "X"; then
 	  lsout=`ls -l $vi_cv_path_mzscheme`
 	  if echo "$lsout" | grep -e '->' >/dev/null 2>/dev/null; then
 	    vi_cv_path_mzscheme=`echo "$lsout" | sed 's/.*-> \(.*\)/\1/'`
 	  fi
 	fi
 
-        if test "X$vi_cv_path_mzscheme" != "X"; then
-            dnl -- find where MzScheme thinks it was installed
-            AC_CACHE_CHECK(MzScheme install prefix,vi_cv_path_mzscheme_pfx,
-            [ vi_cv_path_mzscheme_pfx=`
-      	    ${vi_cv_path_mzscheme} -evm \
-            "(display (simplify-path		\
-              (build-path (call-with-values	\
-      	        (lambda () (split-path (find-system-path (quote exec-file)))) \
-      	        (lambda (base name must-be-dir?) base)) (quote up))))"` ])
+	if test "X$vi_cv_path_mzscheme" != "X"; then
+	    dnl -- find where MzScheme thinks it was installed
+	    AC_CACHE_CHECK(MzScheme install prefix,vi_cv_path_mzscheme_pfx,
+	    [ vi_cv_path_mzscheme_pfx=`
+	    ${vi_cv_path_mzscheme} -evm \
+	    "(display (simplify-path		\
+	       (build-path (call-with-values	\
+		(lambda () (split-path (find-system-path (quote exec-file)))) \
+		(lambda (base name must-be-dir?) base)) (quote up))))"` ])
 	    dnl Remove a trailing slash.
 	    vi_cv_path_mzscheme_pfx=`echo "$vi_cv_path_mzscheme_pfx" | sed 's+/$++'`
-        fi
+	fi
     fi
   fi
 
@@ -430,7 +430,7 @@ if test "$enable_mzschemeinterp" = "yes"; then
       if test "$GCC" = yes; then
 	dnl Make Vim remember the path to the library.  For when it's not in
 	dnl $LD_LIBRARY_PATH.
-        MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
+	MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
       elif test "`(uname) 2>/dev/null`" = SunOS &&
 			       uname -r | grep '^5' >/dev/null; then
 	MZSCHEME_LIBS="$MZSCHEME_LIBS -R ${vi_cv_path_mzscheme_pfx}/lib"
@@ -1486,13 +1486,13 @@ AC_DEFUN([GNOME_INIT_HOOK],
       GNOME_LIBS=`$PKG_CONFIG --libs-only-l libgnomeui-2.0`
       GNOME_LIBDIR=`$PKG_CONFIG --libs-only-L libgnomeui-2.0`
       GNOME_INCLUDEDIR=`$PKG_CONFIG --cflags libgnomeui-2.0`
-     
+
       dnl On FreeBSD we need -pthread but pkg-config doesn't include it.
       dnl This might not be the right way but it works for me...
       AC_MSG_CHECKING(for FreeBSD)
       if test "`(uname) 2>/dev/null`" = FreeBSD; then
 	AC_MSG_RESULT(yes, adding -pthread)
-        GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
+	GNOME_INCLUDEDIR="$GNOME_INCLUDEDIR -D_THREAD_SAFE"
 	GNOME_LIBS="$GNOME_LIBS -pthread"
       else
 	AC_MSG_RESULT(no)

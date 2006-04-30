@@ -4,7 +4,7 @@
 " Current version: 1.0.2
 " History: see polish-slash.vim
 
-" This keymap adds the special Polish letters 
+" This keymap adds the special Polish letters
 " to an existing Latin keyboard.
 " All chars as usual except:
 " Polish:

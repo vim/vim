@@ -4349,7 +4349,11 @@ fex_format(lnum, count, c)
     int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
 								   OPT_LOCAL);
     int		r;
-    char_u	buf[NUMBUFLEN];
+#ifdef FEAT_MBYTE
+    char_u	buf[MB_MAXBYTES];
+#else
+    char_u	buf[2];
+#endif
 
     /*
      * Set v:lnum to the first line number and v:count to the number of lines.

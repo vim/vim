@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2006 Apr 11
+# Last change:  2006 Apr 30
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -100,7 +100,7 @@ CCVER = YES
 .IFDEF VAX
 .IFDEF DECC	     # VAX with DECC
 CC_DEF  = cc # /decc # some system requires this switch
-                     # but when it is not required /ver might fail
+		     # but when it is not required /ver might fail
 PREFIX  = /prefix=all
 .ELSE		     # VAX with VAXC
 CC_DEF	= cc
@@ -391,7 +391,7 @@ motif_env :
 .IFDEF XPM
 	-@ write sys$output "using DECW/Motif/XPM environment."
 .ELSE
-        -@ write sys$output "using DECW/Motif environment."
+	-@ write sys$output "using DECW/Motif environment."
 .ENDIF
 	-@ write sys$output "creating OS_VMS_MOTIF.OPT file."
 	-@ open/write opt_file OS_VMS_MOTIF.OPT

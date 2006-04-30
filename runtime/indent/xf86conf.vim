@@ -1,5 +1,5 @@
 " Vim indent file
-" Language:         XFree86 Configuration File
+" Language:	    XFree86 Configuration File
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
 " Latest Revision:  2006-04-19
 

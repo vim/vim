@@ -198,7 +198,7 @@ struct ufunc
  */
 static hashtab_T	func_hashtab;
 
-/* The names of packages that once were loaded is remembered. */
+/* The names of packages that once were loaded are remembered. */
 static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 
 /* list heads for garbage collection */

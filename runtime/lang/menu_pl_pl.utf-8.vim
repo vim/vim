@@ -75,7 +75,7 @@ menutrans hebrew			hebrajski
 menutrans hebrewp			hebrajski\ p
 menutrans russian-jcuken		rosyjski-jcuken
 menutrans russian-jcukenwin		rosyjski-jcukenwin
-menutrans russian-yawerty  		rosyjski-yawerty
+menutrans russian-yawerty		rosyjski-yawerty
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Podkre¶lanie\ &wzorców<Tab>:set\ hls!
 

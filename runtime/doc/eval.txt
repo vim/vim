@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0f.  Last change: 2006 Apr 29
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1681,7 +1681,7 @@ remote_read( {serverid})	String	read reply string
 remote_send( {server}, {string} [, {idvar}])
 				String	send key sequence
 remove( {list}, {idx} [, {end}])  any	remove items {idx}-{end} from {list}
-remove( {dict}, {key})  	any	remove entry {key} from {dict}
+remove( {dict}, {key})		any	remove entry {key} from {dict}
 rename( {from}, {to})		Number	rename (move) file from {from} to {to}
 repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
@@ -2323,7 +2323,7 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 			#group#event	autocommand defined for this group and
 					event.
 			#group#event#pattern
-					autocommand defined for this group, 
+					autocommand defined for this group,
 					event and pattern.
 			##event		autocommand for this event is
 					supported.
@@ -2450,7 +2450,7 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		used to decide what to do:
 		{expr3} = "keep": keep the value of {expr1}
 		{expr3} = "force": use the value of {expr2}
-		{expr3} = "error": give an error message 		*E737*
+		{expr3} = "error": give an error message		*E737*
 		When {expr3} is omitted then "force" is assumed.
 
 		{expr1} is changed when {expr2} is not empty.  If necessary
@@ -3538,7 +3538,7 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 
 
 matcharg({nr})							*matcharg()*
-		Selects the {nr} match item, as set with a |:match|, 
+		Selects the {nr} match item, as set with a |:match|,
 		|:2match| or |:3match| command.
 		Return a |List| with two elements:
 			The name of the highlight group used
@@ -3696,7 +3696,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 			"  99: E42 asdfasdfasdfasdfasdfasdfasdfas" ~
 
 		Often used items are:
-		  %s   	string
+		  %s	string
 		  %6s	string right-aligned in 6 bytes
 		  %.9s  string truncated to 9 bytes
 		  %c    single byte
@@ -3717,7 +3717,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 			%  [flags]  [field-width]  [.precision]  type
 
-	        flags
+		flags
 			Zero or more of the following flags:
 
 		    #	      The value should be converted to an "alternate
@@ -3779,7 +3779,7 @@ printf({fmt}, {expr1} ...)				*printf()*
 <		This limits the length of the text used from "line" to
 		"width" bytes.
 
-	        The conversion specifiers and their meanings are:
+		The conversion specifiers and their meanings are:
 
 		doxX    The Number argument is converted to signed decimal
 			(d), unsigned octal (o), or unsigned hexadecimal (x
@@ -3833,10 +3833,10 @@ range({expr} [, {max} [, {stride}]])				*range()*
 		empty list.  When the maximum is more than one before the
 		start this is an error.
 		Examples: >
-			range(4) 		" [0, 1, 2, 3]
+			range(4)		" [0, 1, 2, 3]
 			range(2, 4)		" [2, 3, 4]
 			range(2, 9, 3)		" [2, 5, 8]
-			range(2, -2, -1) 	" [2, 1, 0, -1, -2]
+			range(2, -2, -1)	" [2, 1, 0, -1, -2]
 			range(0)		" []
 			range(2, 0)		" error!
 <
@@ -4100,7 +4100,7 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
-		
+
 		With a non-zero {global} argument it works like |gD|, find
 		first match in the file.  Otherwise it works like |gd|, find
 		first match in the function.
@@ -4306,7 +4306,7 @@ setpos({expr}, {list})
 		    [bufnum, lnum, col, off]
 
 		"bufnum" is the buffer number.  Zero can be used for the
-		current buffer.  Setting the cursor is only possible for 
+		current buffer.  Setting the cursor is only possible for
 		the current buffer.  To set a mark in another buffer you can
 		use the |bufnr()| function to turn a file name into a buffer
 		number.
@@ -4334,7 +4334,7 @@ setqflist({list} [, {action}])				*setqflist()*
 		    pattern	search pattern used to locate the error
 		    col		column number
 		    vcol	when non-zero: "col" is visual column
-		    		when zero: "col" is byte index
+				when zero: "col" is byte index
 		    nr		error number
 		    text	description of the error
 		    type	single-character error type, 'E', 'W', etc.
@@ -4478,7 +4478,7 @@ spellbadword([{sentence}])
 		The return value is a list with two items:
 		- The badly spelled word or an empty string.
 		- The type of the spelling error:
-		  	"bad"		spelling mistake
+			"bad"		spelling mistake
 			"rare"		rare word
 			"local"		word only valid in another region
 			"caps"		word should start with Capital
@@ -4545,7 +4545,7 @@ str2nr( {expr} [, {base}])				*str2nr()*
 		When {base} is 16 a leading "0x" or "0X" is ignored.  With a
 		different base the result will be zero.
 		Text after the number is silently ignored.
-	
+
 
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as
@@ -4581,7 +4581,7 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 		  :echo stridx("An Example", "Example")	     3
 		  :echo stridx("Starting point", "Start")    0
 		  :echo stridx("Starting point", "start")   -1
-<	  					*strstr()* *strchr()*
+<						*strstr()* *strchr()*
 		stridx() works similar to the C function strstr().  When used
 		with a single character it works similar to strchr().
 
@@ -4638,7 +4638,7 @@ strridx({haystack}, {needle} [, {start}])			*strridx()*
 		If the {needle} is empty the length of {haystack} is returned.
 		See also |stridx()|.  Examples: >
 		  :echo strridx("an angry armadillo", "an")	     3
-<		  					*strrchr()*
+<							*strrchr()*
 		When used with a single character it works similar to the C
 		function strrchr().
 
@@ -4937,10 +4937,11 @@ virtcol({expr})						*virtcol()*
 
 visualmode([expr])						*visualmode()*
 		The result is a String, which describes the last Visual mode
-		used.  Initially it returns an empty string, but once Visual
-		mode has been used, it returns "v", "V", or "<CTRL-V>" (a
-		single CTRL-V character) for character-wise, line-wise, or
-		block-wise Visual mode respectively.
+		used in the current buffer.  Initially it returns an empty
+		string, but once Visual mode has been used, it returns "v",
+		"V", or "<CTRL-V>" (a single CTRL-V character) for
+		character-wise, line-wise, or block-wise Visual mode
+		respectively.
 		Example: >
 			:exe "normal " . visualmode()
 <		This enters the same Visual mode as before.  It is also useful
@@ -5301,7 +5302,7 @@ last defined. Example: >
 <
 See |:verbose-cmd| for more information.
 
- 							*E124* *E125*
+							*E124* *E125*
 :fu[nction][!] {name}([arguments]) [range] [abort] [dict]
 			Define a new function by the name {name}.  The name
 			must be made of alphanumeric characters and '_', and
@@ -5754,7 +5755,7 @@ This would call the function "my_func_whizz(parameter)".
 			variable is indicated before the value:
 			    <nothing>	String
 				#	Number
-			    	*	Funcref
+				*	Funcref
 
 
 :unl[et][!] {name} ...					*:unlet* *:unl* *E108*

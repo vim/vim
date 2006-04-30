@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 24
+" Last Change:	2006 Apr 30
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -23,7 +23,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" Handling of <style> tag {{{
 	let stylestart = searchpair('<style\>', '', '<\/style\>', "bnW")
 	let styleend   = searchpair('<style\>', '', '<\/style\>', "nW")
-	if stylestart != 0 && styleend != 0 
+	if stylestart != 0 && styleend != 0
 		if stylestart <= curline && styleend >= curline
 			let start = col('.') - 1
 			let b:csscompl = 1
@@ -36,7 +36,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	" Handling of <script> tag {{{
 	let scriptstart = searchpair('<script\>', '', '<\/script\>', "bnW")
 	let scriptend   = searchpair('<script\>', '', '<\/script\>', "nW")
-	if scriptstart != 0 && scriptend != 0 
+	if scriptstart != 0 && scriptend != 0
 		if scriptstart <= curline && scriptend >= curline
 			let start = col('.') - 1
 			let b:jscompl = 1
@@ -109,7 +109,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			endwhile
 		endif
 		" If b:compl_context begins with <? we are inside of PHP code. It
-		" wasn't closed so PHP completion passed it to HTML 
+		" wasn't closed so PHP completion passed it to HTML
 		if &filetype =~? 'php' && b:compl_context =~ '^<?'
 			let b:phpcompl = 1
 			let start = col('.') - 1
@@ -200,7 +200,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 
 	" If context contains > it means we are already outside of tag and we
 	" should abandon action
-	" If context contains white space it is attribute. 
+	" If context contains white space it is attribute.
 	" It can be also value of attribute.
 	" We have to get first word to offer proper completions
 	if context == ''
@@ -353,7 +353,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 					let filelines = getline(1, line('$'))
 					" 2. Find lines with possible id
 					let used_id_lines = filter(filelines, 'v:val =~ "id\\s*=\\s*[\"''][a-zA-Z0-9_-]\\+"')
-					" 3a. Join all filtered lines 
+					" 3a. Join all filtered lines
 					let id_string = join(used_id_lines, ' ')
 					" 3b. And split them to be sure each id is in separate item
 					let id_list = split(id_string, 'id\s*=\s*')
@@ -432,7 +432,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				return javascriptcomplete#CompleteJS(0, js_context)
 
 			endif
-				
+
 			" }}}
 			let stripbase = matchstr(context, ".*\\(on[a-zA-Z]*\\|style\\|class\\)\\s*=\\s*[\"']\\zs.*")
 			" Now we have context stripped from all chars up to style/class.
@@ -508,7 +508,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			call htmlcomplete#LoadData()
 		endif
 		" }}}
-		
+
 		if has_key(b:html_omni, tag)
 			let attrs = keys(b:html_omni[tag][1])
 		else
@@ -600,7 +600,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 		endif
 	endif
 	" }}}
-	
+
 	if exists("uppercase_tag") && uppercase_tag == 1
 		let context = tolower(context)
 	endif

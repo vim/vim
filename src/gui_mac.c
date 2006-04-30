@@ -14,8 +14,8 @@
 
 /*
  * NOTES: - Vim 7+ does not support classic MacOS. Please use Vim 6.x
- *        - Comments mentioning FAQ refer to the book:
- *          "Macworld Mac Programming FAQs" from "IDG Books"
+ *	  - Comments mentioning FAQ refer to the book:
+ *	    "Macworld Mac Programming FAQs" from "IDG Books"
  */
 
 /*
@@ -3817,10 +3817,10 @@ gui_mch_set_sp_color(guicolor_T color)
     static void
 draw_undercurl(int flags, int row, int col, int cells)
 {
-    int                 x;
-    int                 offset;
-    const static int    val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
-    int                 y = FILL_Y(row + 1) - 1;
+    int			x;
+    int			offset;
+    const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+    int			y = FILL_Y(row + 1) - 1;
 
     RGBForeColor(&specialColor);
 

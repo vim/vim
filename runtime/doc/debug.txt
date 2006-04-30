@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.0f.  Last change: 2006 Apr 24
+*debug.txt*     For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,7 @@ This is for debugging Vim itself, when it doesn't work properly.
 For debugging Vim scripts, functions, etc. see |debug-scripts|
 
 1. Location of a crash, using gcc and gdb	|debug-gcc|
-2. Windows Bug Reporting               		|debug-win32|
+2. Windows Bug Reporting			|debug-win32|
 
 ==============================================================================
 
@@ -38,7 +38,7 @@ This also applies when using the MingW tools.
 
 ==============================================================================
 
-2. Windows Bug Reporting                       		*debug-win32*
+2. Windows Bug Reporting				*debug-win32*
 
 If the Windows version of Vim crashes in a reproducible manner, you can take
 some steps to provide a useful bug report.

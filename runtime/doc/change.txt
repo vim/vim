@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0f.  Last change: 2006 Apr 25
+*change.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -470,7 +470,7 @@ For example: >
 ==============================================================================
 4. Complex changes					*complex-change*
 
-4.1 Filter commands 					*filter*
+4.1 Filter commands					*filter*
 
 A filter is a program that accepts text at standard input, changes it in some
 way, and sends it to standard output.  You can use the commands below to send
@@ -900,7 +900,7 @@ inside of strings can change!  Also see 'softtabstop' option. >
 							*<MiddleMouse>*
 ["x]<MiddleMouse>	Put the text from a register before the cursor [count]
 			times.  Uses the "* register, unless another is
-			specified.  
+			specified.
 			Leaves the cursor at the end of the new text.
 			Using the mouse only works when 'mouse' contains 'n'
 			or 'a'.

@@ -3519,9 +3519,9 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	else
 	{
 	    len += (int)(STRLEN(message)
-                        + 2			/* for the NL's */
-                        + STRLEN(buttons)
-                        + 3);	        	/* for the ": " and NUL */
+			+ 2			/* for the NL's */
+			+ STRLEN(buttons)
+			+ 3);			/* for the ": " and NUL */
 	    lenhotkey++;			/* for the NUL */
 
 	    /* If no hotkey is specified first char is used. */
@@ -4450,10 +4450,10 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		zero_padding = 0;  /* turn zero padding off for non-numeric
 				      convers. */
 		justify_left = 1;
-		min_field_width = 0;                /* reset flags */
+		min_field_width = 0;		    /* reset flags */
 
 		/* discard the unrecognized conversion, just keep *
-		 * the unrecognized conversion character          */
+		 * the unrecognized conversion character	  */
 		str_arg = p;
 		str_arg_l = 0;
 		if (*p != NUL)

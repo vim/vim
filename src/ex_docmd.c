@@ -8813,6 +8813,11 @@ ex_normal(eap)
     char_u	*p;
 #endif
 
+    if (ex_normal_lock > 0)
+    {
+	EMSG(_(e_secure));
+	return;
+    }
     if (ex_normal_busy >= p_mmd)
     {
 	EMSG(_("E192: Recursive use of :normal too deep"));

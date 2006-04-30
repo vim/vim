@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0f.  Last change: 2006 Apr 02
+*help.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
 
 			VIM - main help file
 									 k
@@ -18,12 +18,12 @@ Get specific help:  It is possible to go directly to whatever you want help
 							*help-context*
 			  WHAT			PREPEND    EXAMPLE	~
 		      Normal mode command      (nothing)   :help x
-		      Visual mode command 	  v_	   :help v_u
-		      Insert mode command 	  i_	   :help i_<Esc>
-		      Command-line command 	  :	   :help :quit
+		      Visual mode command	  v_	   :help v_u
+		      Insert mode command	  i_	   :help i_<Esc>
+		      Command-line command	  :	   :help :quit
 		      Command-line editing	  c_	   :help c_<Del>
-		      Vim command argument 	  -	   :help -r
-		      Option 			  '	   :help 'textwidth'
+		      Vim command argument	  -	   :help -r
+		      Option			  '	   :help 'textwidth'
   Search for help:  Type ":help word", then hit CTRL-D to see matching
 		    help entries for "word".
 

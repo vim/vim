@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0f.  Last change: 2006 Apr 29
+*editing.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -433,9 +433,9 @@ Where {optname} is one of:	    *++ff* *++enc* *++bin* *++nobin* *++edit*
     enc    or  encoding	    overrides 'fileencoding'
     bin    or  binary	    sets 'binary'
     nobin  or  nobinary	    resets 'binary'
-    bad                     specifies behavior for bad characters
+    bad			    specifies behavior for bad characters
     edit		    for |:read| only: keep option values as if editing
-    			    a file
+			    a file
 
 {value} cannot contain white space.  It can be any valid value for these
 options.  Examples: >
@@ -453,7 +453,7 @@ The argument of "++bad=" specifies what happens with characters that can't be
 converted and illegal bytes.  It can be one of three things:
     ++bad=X      A single-byte character that replaces each bad character.
     ++bad=keep   Keep bad characters without conversion.  Note that this may
-    		 result in illegal bytes in your text!
+		 result in illegal bytes in your text!
     ++bad=drop   Remove the bad characters.
 
 The default is like "++bad=?": Replace each bad character with a question
