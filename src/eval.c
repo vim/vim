@@ -11415,7 +11415,7 @@ f_inputdialog(argvars, rettv)
 
 	message = get_tv_string_chk(&argvars[0]);
 	if (argvars[1].v_type != VAR_UNKNOWN
-	    && (defstr = get_tv_string_buf_chk(&argvars[1], buf)) != NULL)
+		&& (defstr = get_tv_string_buf_chk(&argvars[1], buf)) != NULL)
 	    vim_strncpy(IObuff, defstr, IOSIZE - 1);
 	else
 	    IObuff[0] = NUL;
