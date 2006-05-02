@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across a network
 "            AUTOLOAD PORTION
-" Date:		Apr 28, 2006
-" Version:	95
+" Date:		May 02, 2006
+" Version:	98
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
@@ -23,7 +23,7 @@
 if &cp || exists("g:loaded_netrw")
   finish
 endif
-let g:loaded_netrw = "v95"
+let g:loaded_netrw = "v98"
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 or later for version ".g:loaded_netrw." of netrw" | echohl None
  finish
@@ -328,7 +328,7 @@ fun! netrw#NetRead(mode,...)
   if !isdirectory(substitute(tmpfile,'[^/]\+$','','e'))
    echohl Error | echo "***netrw*** your <".substitute(tmpfile,'[^/]\+$','','e')."> directory is missing!" | echohl None
    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
-"   call Dret("NetRead")
+"   call Dret("NetRead :1 getcwd<".getcwd().">")
    return
   endif
 "  call Decho("tmpfile<".tmpfile.">")
@@ -380,7 +380,7 @@ fun! netrw#NetRead(mode,...)
          echohl Error | echo "***netrw*** Unbalanced string in filename '". wholechoice ."'" | echohl None
          call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 	endif
-"        call Dret("NetRead")
+"        call Dret("NetRead :2 getcwd<".getcwd().">")
         return
        endif
        let choice= a:{ichoice}
@@ -398,7 +398,9 @@ fun! netrw#NetRead(mode,...)
     let choice = substitute(choice,'\\','/','ge')
 "    call Decho("fixing up windows url to <".choice."> tmpfile<".tmpfile)
 
-    exe 'cd ' . fnamemodify(tmpfile,':h')
+    if !g:netrw_keepdir
+     exe 'lcd ' . fnamemodify(tmpfile,':h')
+    endif
     let tmpfile = fnamemodify(tmpfile,':t')
    endif
 
@@ -410,7 +412,7 @@ fun! netrw#NetRead(mode,...)
    if choice =~ "^.*[\/]$"
 "    call Decho("yes, choice matches '^.*[\/]$'")
     keepjumps call s:NetBrowse(choice)
-"    call Dret("NetRead")
+"    call Dret("NetRead :3 getcwd<".getcwd().">")
     return
    endif
 
@@ -432,7 +434,7 @@ fun! netrw#NetRead(mode,...)
    " rcp:  NetRead Method #1 {{{3
    if  b:netrw_method == 1 " read with rcp
 "    call Decho("read via rcp (method #1)")
-   " ER: noting done with g:netrw_uid yet?
+   " ER: nothing done with g:netrw_uid yet?
    " ER: on Win2K" rcp machine[.user]:file tmpfile
    " ER: if machine contains '.' adding .user is required (use $USERNAME)
    " ER: the tmpfile is full path: rcp sees C:\... as host C
@@ -566,7 +568,7 @@ fun! netrw#NetRead(mode,...)
       echohl Error | echo "***netrw*** neither wget nor fetch command is available" | echohl None
       call inputsave()|call input("Press <cr> to continue")|call inputrestore()
      endif
-"     call Dret("NetRead")
+"     call Dret("NetRead :4 getcwd<".getcwd().">")
      return
     endif
 
@@ -701,7 +703,7 @@ fun! netrw#NetRead(mode,...)
   endif
   call s:NetOptionRestore()
 
-"  call Dret("NetRead")
+"  call Dret("NetRead :5 getcwd<".getcwd().">")
 endfun
 
 " ------------------------------------------------------------------------
@@ -894,8 +896,9 @@ fun! netrw#NetWrite(...) range
    " fix up windows urls
    if has("win32") || has("win95") || has("win64") || has("win16")
     let choice= substitute(choice,'\\','/','ge')
-    "ER: see NetRead()
-    exe 'cd ' . fnamemodify(tmpfile,':h')
+    if !g:netrw_keepdir
+     exe 'lcd ' . fnamemodify(tmpfile,':h')
+    endif
     let tmpfile = fnamemodify(tmpfile,':t')
    endif
 
@@ -1212,6 +1215,7 @@ fun! s:NetBrowse(dirname)
    elseif g:netrw_sort_by =~ "^s"
     let listcmd= listcmd."S"
    endif
+
    " optionally sort in reverse
    if g:netrw_sort_direction =~ "^r" && listcmd == "dir"
     let listcmd= listcmd."r"
@@ -2464,15 +2468,21 @@ fun! netrw#NetObtain(...)
   " NetrwStatusLine support - for obtaining support
   call s:SetupNetrwStatusLine('%f %h%m%r%=%9*Obtaining '.fname)
 
-"  call Decho("method=".w:netrw_method)
   if exists("w:netrw_method") && w:netrw_method =~ '[235]'
+"   call Decho("method=".w:netrw_method)
    if executable("ftp")
+"    call Decho("ftp is executable, method=".w:netrw_method)
     let curdir = expand("%")
     let path   = substitute(curdir,'ftp://[^/]\+/','','e')
     let curline= line(".")
     let endline= line("$")+1
     set ma
     keepjumps $
+"    call Decho("getcwd<".getcwd().">")
+"    call Decho("curdir<".curdir.">")
+"    call Decho("path<".path.">")
+"    call Decho("curline=".curline)
+"    call Decho("endline=".endline)
 
     ".........................................
     if w:netrw_method == 2
@@ -2484,6 +2494,8 @@ fun! netrw#NetObtain(...)
      endif
      put ='get '.fname
 "     call Decho("ftp:  get ".fname)
+     put ='quit'
+"     call Decho("ftp:  quit")
      if exists("g:netrw_port") && g:netrw_port != ""
 "      call Decho("exe ".g:netrw_silentxfer.endline.",$!".g:netrw_ftp_cmd." -i ".g:netrw_machine." ".g:netrw_port)
       exe g:netrw_silentxfer.endline.",$!".g:netrw_ftp_cmd." -i ".g:netrw_machine." ".g:netrw_port
@@ -2537,6 +2549,7 @@ fun! netrw#NetObtain(...)
     exe "keepjumps ".curline
     setlocal noma nomod
    else
+"    call Decho("ftp not executable")
     if !exists("g:netrw_quiet")
      echohl Error | echo "***netrw*** this system doesn't support ftp" | echohl None
      call inputsave()|call input("Press <cr> to continue")|call inputrestore()
@@ -2556,6 +2569,7 @@ fun! netrw#NetObtain(...)
   ".........................................
   else
    " scp: Method#4
+"   call Decho("using scp")
    let curdir = expand("%")
    let path   = substitute(curdir,'scp://[^/]\+/','','e')
 "   call Decho("path<".path.">")
@@ -2788,7 +2802,7 @@ fun! netrw#DirBrowse(dirname)
   endif
 
   call s:NetOptionSave()
-  if w:acdkeep
+  if exists("w:acdkeep") && w:acdkeep
    exe 'cd '.escape(a:dirname,s:netrw_cd_escape)
 "   call Decho("cd ".escape(a:dirname,s:netrw_cd_escape))
 "   call Decho("getcwd<".getcwd().">")
@@ -3486,7 +3500,7 @@ fun! s:LocalPreview(path) range
 "  call Dfunc("LocalPreview(path<".a:path.">)")
   if has("quickfix")
    if !isdirectory(a:path)
-    exe "pedit ".a:path
+    exe "pedit ".escape(a:path,g:netrw_fname_escape)
    elseif !exists("g:netrw_quiet")
     echohl WarningMsg | echo "***netrw*** sorry, cannot preview a directory such as <".a:path.">" | echohl None
     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
@@ -4033,7 +4047,9 @@ fun! s:NetOptionSave()
   endif
 
   " Get Temporary Filename
-  let w:acdkeep   = &acd
+  if exists("&acd")
+   let w:acdkeep  = &acd
+  endif
   let w:aikeep    = &ai
   let w:fokeep    = &fo
   let w:cikeep    = &ci
@@ -4043,6 +4059,9 @@ fun! s:NetOptionSave()
   let w:cpokeep   = &cpo
   let w:hidkeep   = &hidden
   let w:magickeep = &magic
+  if !g:netrw_keepdir
+   let w:dirkeep  = getcwd()
+  endif
   let w:gdkeep    = &gd
   let w:repkeep   = &report
   let w:spellkeep = &spell
@@ -4050,7 +4069,11 @@ fun! s:NetOptionSave()
   setlocal cino =
   setlocal com  =
   setlocal cpo -=aA
-  setlocal noacd nocin noai noci magic nospell fo=nroql2 nohid
+  if exists("&acd")
+   setlocal noacd nocin noai noci magic nospell fo=nroql2 nohid
+  else
+   setlocal nocin noai noci magic nospell fo=nroql2 nohid
+  endif
   setlocal tw   =0
   setlocal report=10000
   if has("win32") && !has("win95")
@@ -4072,13 +4095,16 @@ fun! s:NetOptionRestore()
   endif
   unlet w:netoptionsave
 
-  if exists("w:acdkeep")  |let &acd    = w:acdkeep     |unlet w:acdkeep  |endif
+  if exists("&acd")
+   if exists("w:acdkeep") |let &acd    = w:acdkeep     |unlet w:acdkeep  |endif
+  endif
   if exists("w:aikeep")   |let &ai     = w:aikeep      |unlet w:aikeep   |endif
   if exists("w:cikeep")   |let &ci     = w:cikeep      |unlet w:cikeep   |endif
   if exists("w:cinkeep")  |let &cin    = w:cinkeep     |unlet w:cinkeep  |endif
   if exists("w:cinokeep") |let &cino   = w:cinokeep    |unlet w:cinokeep |endif
   if exists("w:comkeep")  |let &com    = w:comkeep     |unlet w:comkeep  |endif
   if exists("w:cpokeep")  |let &cpo    = w:cpokeep     |unlet w:cpokeep  |endif
+  if exists("w:dirkeep")  |exe "lcd ".w:dirkeep        |unlet w:dirkeep  |endif
   if exists("w:fokeep")   |let &fo     = w:fokeep      |unlet w:fokeep   |endif
   if exists("w:gdkeep")   |let &gd     = w:gdkeep      |unlet w:gdkeep   |endif
   if exists("w:hidkeep")  |let &hidden = w:hidkeep     |unlet w:hidkeep  |endif

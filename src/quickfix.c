@@ -2153,7 +2153,7 @@ ex_cwindow(eap)
      * it if we have errors; otherwise, leave it closed.
      */
     if (qi->qf_lists[qi->qf_curlist].qf_nonevalid
-	|| qi->qf_curlist >= qi->qf_listcount)
+	    || qi->qf_curlist >= qi->qf_listcount)
     {
 	if (win != NULL)
 	    ex_cclose(eap);
@@ -3290,6 +3290,7 @@ load_dummy_buffer(fname)
 	if (readfile(fname, NULL,
 		    (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM,
 		    NULL, READ_NEW | READ_DUMMY) == OK
+		&& !got_int
 		&& !(curbuf->b_flags & BF_NEW))
 	{
 	    failed = FALSE;
@@ -3329,7 +3330,24 @@ wipe_dummy_buffer(buf)
     buf_T	*buf;
 {
     if (curbuf != buf)		/* safety check */
+    {
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	cleanup_T   cs;
+
+	/* Reset the error/interrupt/exception state here so that aborting()
+	 * returns FALSE when wiping out the buffer.  Otherwise it doesn't
+	 * work when got_int is set. */
+	enter_cleanup(&cs);
+#endif
+
 	wipe_buffer(buf, FALSE);
+
+#if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
+	/* Restore the error/interrupt/exception state if not discarded by a
+	 * new aborting error, interrupt, or uncaught exception. */
+	leave_cleanup(&cs);
+#endif
+    }
 }
 
 /*

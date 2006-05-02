@@ -1437,7 +1437,11 @@ gui_mch_init()
 	if (mask & WidthValue)
 	    Columns = w;
 	if (mask & HeightValue)
+	{
+	    if (p_window > h - 1 || !option_was_set((char_u *)"window"))
+		p_window = h - 1;
 	    Rows = h;
+	}
 	/*
 	 * Set the (x,y) position of the main window only if specified in the
 	 * users geometry, so we get good defaults when they don't. This needs

@@ -16,11 +16,10 @@ scriptencoding cp936
 menutrans &Help			帮助(&H)
 menutrans &Overview<Tab><F1>	纵览(&O)<Tab><F1>
 menutrans &User\ Manual		用户手册(&U)
-menutrans &How-to\ links	How-to\ 连接(&H)
+menutrans &How-to\ links	How-to\ 指引(&H)
 menutrans &Find\.\.\.		查找(&F)\.\.\.
-menutrans &Credits		作者(&C)
+menutrans &Credits		致谢(&C)
 menutrans Co&pying		版权(&P)
-menutrans &Version		版本(&V)
 menutrans &Sponsor/Register	赞助/注册(&S)
 menutrans O&rphans		孤儿(&R)
 menutrans &Version		版本(&V)
@@ -104,7 +103,7 @@ menutrans Te&xt\ Width\.\.\.		文本宽度(&X)\.\.\.
 menutrans &File\ Format\.\.\.		文件格式(&F)\.\.\.
 menutrans C&olor\ Scheme		配色方案(&O)
 menutrans Select\ Fo&nt\.\.\.		选择字体(&N)\.\.\.
-menutrans &Keymap			Keymap(&K)
+menutrans &Keymap			键盘映射(&K)
 
 " Programming menu
 menutrans &Tools			工具(&T)
@@ -252,11 +251,11 @@ endif
 
 " Syntax menu
 menutrans &Syntax			语法(&S)
+menutrans &Show\ filetypes\ in\ menu	在菜单中显示文件类型(&S)
+menutrans &Off				关闭(&O)
 menutrans &Manual			手工(&M)
 menutrans A&utomatic			自动(&U)
 menutrans on/off\ for\ &This\ file	仅对这个文件开/关(&T)
-menutrans &Show\ filetypes\ in\ menu	在菜单中显示文件类型(&S)
-menutrans &Off				关闭(&O)
 menutrans Co&lor\ test			色彩测试(&L)
 menutrans &Highlight\ test		高亮测试(&H)
 menutrans &Convert\ to\ HTML		转换成\ HTML(&C)

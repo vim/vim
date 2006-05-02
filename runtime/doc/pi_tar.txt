@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
+*pi_tar.txt*	For Vim version 7.0g.  Last change: 2006 May 02
 
 		       +====================+
 		       | Tar File Interface |
@@ -36,12 +36,15 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
    *g:tar_browseoptions*  "Ptf"   used to get a list of contents
    *g:tar_readoptions*	  "OPxf"  used to extract a file from a tarball
    *g:tar_cmd*		  "tar"   the name of the tar program
-   *g:tar_writeoptions*   "uf"    used to update/replace a file
+   *g:tar_writeoptions*   "uf"	  used to update/replace a file
 
 
 ==============================================================================
 4. History						*tar-history*
 
+   v9 May 02, 2006 * improved detection of masquerading as tar file
+   v8 May 02, 2006 * allows editing of files that merely masquerade as tar
+		     files
    v7 Mar 22, 2006 * work on making tar plugin work across network
       Mar 27, 2006 * g:tar_cmd now available for users to change the name
 		     of the tar program to be used.  By default, of course,

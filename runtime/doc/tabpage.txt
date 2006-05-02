@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0g.  Last change: 2006 Apr 26
+*tabpage.txt*   For Vim version 7.0g.  Last change: 2006 May 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -361,6 +361,11 @@ windows in the tab page and a '+' if there is a modifed buffer: >
 
 Note that the function must be defined before setting the option, otherwise
 you get an error message for the function not being known.
+
+If you want to fall back to the default label, return an empty string.
+
+If you want to show something specific for a tab page, you might want to use a
+tab page local variable. |t:var|
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 30
+" Last Change:	2006 May 02
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1589,7 +1589,7 @@ au BufNewFile,BufRead *.sim			setf simula
 au BufNewFile,BufRead *.sin,*.s85		setf sinda
 
 " SiSU
-au BufNewFile,BufRead *.sst,*.ssm,*.ssi,*.-sst,*._ssi setf sisu
+au BufNewFile,BufRead *.sst,*.ssm,*.ssi,*.-sst,*._sst setf sisu
 au BufNewFile,BufRead *.sst.meta,*.-sst.meta,*._sst.meta setf sisu
 
 " SKILL
@@ -1630,8 +1630,8 @@ au BufNewFile,BufRead *.smi
 " SMITH
 au BufNewFile,BufRead *.smt,*.smith		setf smith
 
-" Snobol4
-au BufNewFile,BufRead *.sno			setf snobol4
+" Snobol4 and spitbol
+au BufNewFile,BufRead *.sno,*.spt		setf snobol4
 
 " SNMP MIB files
 au BufNewFile,BufRead *.mib,*.my		setf mib

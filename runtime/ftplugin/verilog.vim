@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Verilog HDL
 " Maintainer:	Chih-Tsun Huang <cthuang@larc.ee.nthu.edu.tw>
-" Last Change:	Mon Sep  5 11:05:54 CST 2005
+" Last Change:	Mon Sep  5 11:05:54 CST 2005 and 2006 April 30
 " URL:		http://larc.ee.nthu.edu.tw/~cthuang/vim/ftplugin/verilog.vim
 
 " Only do this when not done yet for this buffer
@@ -14,7 +14,7 @@ let b:did_ftplugin = 1
 
 " Undo the plugin effect
 let b:undo_ftplugin = "setlocal fo< com< tw<"
-    \ . "| unlet b:browsefilter b:match_ignorecase b:match_words"
+    \ . "| unlet! b:browsefilter b:match_ignorecase b:match_words"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".

@@ -2500,6 +2500,7 @@ keymap_unload()
 
     ga_clear(&curbuf->b_kmap_ga);
     curbuf->b_kmap_state &= ~KEYMAP_LOADED;
+    do_cmdline_cmd((char_u *)"unlet! b:keymap_name");
 #ifdef FEAT_WINDOWS
     status_redraw_curbuf();
 #endif

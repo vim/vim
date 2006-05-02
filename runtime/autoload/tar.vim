@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Mar 27, 2006
-" Version:		7
+" Date:			May 02, 2006
+" Version:		9
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 "
@@ -24,7 +24,7 @@ set cpo&vim
 if exists("g:loaded_tar")
  finish
 endif
-let g:loaded_tar= "v7"
+let g:loaded_tar= "v9"
 "call Decho("loading autoload/tar.vim")
 
 " ---------------------------------------------------------------------
@@ -97,6 +97,7 @@ fun! tar#Browse(tarfile)
    " assuming cygwin
    let tarfile=substitute(system("cygpath -u ".tarfile),'\n$','','e')
   endif
+  let curlast= line("$")
   if tarfile =~# '\.\(gz\|tgz\)$'
 "   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - ")
    exe "silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - "
@@ -108,8 +109,27 @@ fun! tar#Browse(tarfile)
    exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." '".tarfile."'"
   endif
   if v:shell_error != 0
-   echohl Error | echo '***error*** (tar#Browse) while browsing; check your g:tar_browseoptions<".g:tar_browseoptions.">"
-"  call Dret("tar#Browse : w:tarfile<".w:tarfile.">")
+   echohl WarningMsg | echo "***warning*** (tar#Browse) please check your g:tar_browseoptions<".g:tar_browseoptions.">"
+   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
+   silent %d
+   let eikeep= &ei
+   set ei=BufReadCmd,FileReadCmd
+   exe "r ".a:tarfile
+   let &ei= eikeep
+   1d
+   return
+  endif
+  if line("$") == curlast || ( line("$") == (curlast + 1) && getline("$") =~? '\c\%(warning\|error\|inappropriate\|unrecognized\)')
+   echohl WarningMsg | echo "***warning*** (tar#Browse) ".a:tarfile." doesn't appear to be a tar file" | echohl None
+   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   silent %d
+   let eikeep= &ei
+   set ei=BufReadCmd,FileReadCmd
+   exe "r ".a:tarfile
+   let &ei= eikeep
+   1d
+"   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
    return
   endif
 
@@ -147,12 +167,6 @@ fun! s:TarBrowseSelect()
   new
   wincmd _
   let s:tblfile_{winnr()}= curfile
-"  if has("unix")
-""   call Decho("exe e tarfile:".tarfile.':'.fname)
-"   exe "e tarfile:".tarfile.':'.fname
-"  elseif has("win32")
-"   call tar#Read("tarfile:".tarfile.':'.fname,1)
-"  endif
   call tar#Read("tarfile:".tarfile.':'.fname,1)
   filetype detect
 

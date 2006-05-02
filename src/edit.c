@@ -4695,9 +4695,9 @@ ins_complete(c)
 	compl_matches = n;
     compl_curr_match = compl_shown_match;
     compl_direction = compl_shows_dir;
-    compl_interrupted = FALSE;
 
-    /* eat the ESC to avoid leaving insert mode */
+    /* Eat the ESC that vgetc() returns after a CTRL-C to avoid leaving Insert
+     * mode. */
     if (got_int && !global_busy)
     {
 	(void)vgetc();
@@ -4831,12 +4831,17 @@ ins_complete(c)
     else
 	msg_clr_cmdline();	/* necessary for "noshowmode" */
 
-    /* RedrawingDisabled may be set when invoked through complete(). */
-    n = RedrawingDisabled;
-    RedrawingDisabled = 0;
-    ins_compl_show_pum();
-    setcursor();
-    RedrawingDisabled = n;
+    /* Show the popup menu, unless we got interrupted. */
+    if (!compl_interrupted)
+    {
+	/* RedrawingDisabled may be set when invoked through complete(). */
+	n = RedrawingDisabled;
+	RedrawingDisabled = 0;
+	ins_compl_show_pum();
+	setcursor();
+	RedrawingDisabled = n;
+    }
+    compl_interrupted = FALSE;
 
     return OK;
 }

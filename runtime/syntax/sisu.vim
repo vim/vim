@@ -22,7 +22,7 @@ if !exists("sisu_no_identifiers")
   syn match   sisu_control                           "\""
   syn match   sisu_underline                         "\(^\| \)_[a-zA-Z0-9]\+_\([ .,]\|$\)"
   syn match   sisu_number        contains=@NoSpell   "[0-9a-f]\{32\}\|[0-9a-f]\{64\}"
-  syn match   sisu_link          contains=@NoSpell   "\(http://\|\.\.\/\)\S\+"
+  syn match   sisu_link          contains=@NoSpell   "\(https\?://\|\.\.\/\)\S\+"
   "metaverse specific
   syn match   sisu_ocn           contains=@NoSpell   "<\~\d\+;\w\d\+;\w\d\+>"
   syn match   sisu_marktail                          "<\~#>"
@@ -57,7 +57,7 @@ syn region sisu_content_alt contains=sisu_error matchgroup=sisu_contain start="^
 syn region sisu_content_endnote contains=sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~{" end="}\~" skip="\n"
 syn region sisu_content_endnote contains=sisu_strikeout,sisu_number,sisu_control,sisu_link,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\^\~" end="\n\n"
 "%   images
-syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_link start="{" end="}\(\(http://\|\.\./\)\S\+\|image\)" oneline
+syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_link start="{" end="}\(\(https\?://\|\.\./\)\S\+\|image\)" oneline
 "%   some line operations
 syn region sisu_control contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_error,sisu_error_wspace matchgroup=sisu_control start="\(\(^\| \)!_ \|<:b>\)" end="$"
 syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endnote,sisu_mark_endnote,sisu_link,sisu_linked,sisu_error,sisu_error_wspace matchgroup=sisu_markpara start="^_\([12*]\|[12]\*\) " end="$"
@@ -103,9 +103,9 @@ syn region  sisu_markpara contains=sisu_error,sisu_error_wspace start="^=begin" 
 syn match sisu_error_wspace contains=sisu_error_wspace "^\s\+"
 syn match sisu_error_wspace contains=sisu_error_wspace "\s\s\+"
 syn match sisu_error_wspace contains=sisu_error_wspace  " \s*$"
-syn match sisu_error contains=sisu_error,sisu_error_wspace "[^ (}]http:\S\+"
+syn match sisu_error contains=sisu_error,sisu_error_wspace "[^ (}]https\?:\S\+"
 syn match sisu_error contains=sisu_error_wspace "\t\+"
-syn match sisu_error contains=sisu_error "http:\S\+[}><]"
+syn match sisu_error contains=sisu_error "https\?:\S\+[}><]"
 syn match sisu_error contains=sisu_error "\([!*/_\+,^]\){\([^(\}\1)]\)\{-}\n\n"
 syn match sisu_error contains=sisu_error "^[\-\~]{[^{]\{-}\n\n"
 syn match sisu_error contains=sisu_error "\s\+.{{"
@@ -125,8 +125,8 @@ syn match sisu_error  "/\?<\([biu]\)>[^(</\1>)]\{-}\n\n"
 syn match sisu_control "\n\n" "contains=ALL
 syn match sisu_control " //"
 syn match sisu_error  "%{"
-syn match sisu_error "<br>http:\S\+\|http:\S\+<br>"
-syn match sisu_error "[><]http:\S\+\|http:\S\+[><]"
+syn match sisu_error "<br>https\?:\S\+\|https\?:\S\+<br>"
+syn match sisu_error "[><]https\?:\S\+\|https\?:\S\+[><]"
 "% 2 Definitions - Define the default highlighting.
 if version >= 508 || !exists("did_sisu_syntax_inits")
   if version < 508

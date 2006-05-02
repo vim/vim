@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
+*insert.txt*    For Vim version 7.0g.  Last change: 2006 May 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1109,7 +1109,7 @@ Vim can display the matches in a simplistic popup menu.
 The menu is used when:
 - The 'completeopt' option contains "menu" or "menuone".
 - The terminal supports at least 8 colors.
-- There are at least two matches.  One of "menuone" is used.
+- There are at least two matches.  One if "menuone" is used.
 
 The 'pumheight' option can be used to set a maximum height.  The default is to
 use all space available.

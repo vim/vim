@@ -5787,7 +5787,9 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
 	if (SETJMP(lc_jump_env) != 0)
 	{
 	    success = FALSE;
+#  if defined(USE_DLOPEN)
 	    dlerr = NULL;
+#  endif
 	    mch_didjmp();
 	}
 	else

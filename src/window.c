@@ -3491,6 +3491,18 @@ goto_tabpage(n)
     tabpage_T	*ttp;
     int		i;
 
+    if (text_locked())
+    {
+	/* Not allowed when editing the command line. */
+#ifdef FEAT_CMDWIN
+	if (cmdwin_type != 0)
+	    EMSG(_(e_cmdwin));
+	else
+#endif
+	    EMSG(_(e_secure));
+	return;
+    }
+
     /* If there is only one it can't work. */
     if (first_tabpage->tp_next == NULL)
     {

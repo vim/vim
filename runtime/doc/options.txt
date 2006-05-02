@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
+*options.txt*	For Vim version 7.0g.  Last change: 2006 May 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3342,8 +3342,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
-		The GUI tabs are only supported on some systens, currently
-		only for GTK.
+		The GUI tabs are only supported on some systems, currently
+		GTK, Motif and MS-Windows.
 
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -3412,8 +3412,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with GUI enabled and
 			with the +windows feature}
 	When nonempty describes the text to use in a label of the GUI tab
-	pages line.  When empty Vim will use a default label.  See
-	|setting-guitablabel| for more info.
+	pages line.  When empty and when the result is empty Vim will use a
+	default label.  See |setting-guitablabel| for more info.
 
 	The format of this option is like that of 'statusline'.
 	'guitabtooltip' is used for the tooltip, see below.
@@ -3431,8 +3431,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When nonempty describes the text to use in a tooltip for the GUI tab
 	pages line.  When empty Vim will use a default tooltip.
 	This option is otherwise just like 'guitablabel' above.
-
-	The tooltip only works for some systems.
 
 
 						*'helpfile'* *'hf'*

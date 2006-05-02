@@ -1021,6 +1021,23 @@ your .vimrc: >
 	:let erlang_characters = 1
 
 
+FLEXWIKI				*flexwiki.vim* *ft-flexwiki-syntax*
+
+FlexWiki is an ASP.NET-based wiki package available at http://www.flexwiki.com
+
+Syntax highlighting is available for the most common elements of FlexWiki
+syntax. The associated ftplugin script sets some buffer-local options to make
+editing FlexWiki pages more convenient. FlexWiki considers a newline as the
+start of a new paragraph, so the ftplugin sets 'tw'=0 (unlimited line length),
+'wrap' (wrap long lines instead of using horizontal scrolling), 'linebreak'
+(to wrap at a character in 'breakat' instead of at the last char on screen),
+and so on. It also includes some keymaps that are disabled by default.
+
+If you want to enable the keymaps that make "j" and "k" and the cursor keys
+move up and down by display lines, add this to your .vimrc: >
+	:let flexwiki_maps = 1
+
+
 FORM						*form.vim* *ft-form-syntax*
 
 The coloring scheme for syntax elements in the FORM file uses the default

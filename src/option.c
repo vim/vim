@@ -3548,8 +3548,7 @@ set_init_2()
      * 'window' is only for backwards compatibility with Vi.
      * Default is Rows - 1.
      */
-    idx = findoption((char_u *)"wi");
-    if (idx >= 0 && !(options[idx].flags & P_WAS_SET))
+    if (!option_was_set((char_u *)"window"))
 	p_window = Rows - 1;
     set_number_default("window", Rows - 1);
 
@@ -7904,7 +7903,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    if (cmdline_row > Rows - p_ch && Rows > p_ch)
 		cmdline_row = Rows - p_ch;
 	}
-	if (p_window >= Rows)
+	if (p_window >= Rows || !option_was_set((char_u *)"window"))
 	    p_window = Rows - 1;
     }
 

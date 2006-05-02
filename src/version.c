@@ -445,6 +445,11 @@ static char *(features[]) =
 #else
 	"-quickfix",
 #endif
+#ifdef FEAT_RELTIME
+	"+reltime",
+#else
+	"-reltime",
+#endif
 #ifdef FEAT_RIGHTLEFT
 	"+rightleft",
 #else

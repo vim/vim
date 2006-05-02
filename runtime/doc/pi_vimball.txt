@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.0g.  Last change: 2006 Apr 30
+*pi_vimball.txt*	For Vim version 7.0g.  Last change: 2006 May 01
 
 			       ----------------
 			       Vimball Archiver
@@ -61,6 +61,9 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 ==============================================================================
 3. Vimball History					*vimball-history* {{{1
 
+	13 : May 01, 2006 * exists("&acd") used to determine if the acd
+			    option exists
+	12 : May 01, 2006 * bugfix - the |'acd'| option is not always defined
 	11 : Apr 27, 2006 * VimballList would create missing subdirectories that
 			    the vimball specified were needed.	Fixed.
 	10 : Apr 27, 2006 * moved all setting saving/restoration to a pair of

@@ -1529,7 +1529,7 @@ get_loop_line(c, cookie, indent)
 	    line = getcmdline(c, 0L, indent);
 	else
 	    line = cp->getline(c, cp->cookie, indent);
-	if (store_loop_line(cp->lines_gap, line) == OK)
+	if (line != NULL && store_loop_line(cp->lines_gap, line) == OK)
 	    ++cp->current_line;
 
 	return line;

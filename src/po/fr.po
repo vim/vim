@@ -3,14 +3,14 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-#  FIRST AUTHOR  DindinX      <David.Odin@bigfoot.com>	   2000.
-# SECOND AUTHOR  Adrien Beau  <version.francaise@free.fr>  2002, 2003.
+#  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
+# SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
+#  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
-# Ce fichier n'est pas finalisé ! Le gros du travail a été fait, mais la touche
-# finale reste à apporter. Je pense que tout sera bel et bien fini pour Vim 6.3
-# (hum, c'était censé être le cas pour Vim 6.2).
+# Ce fichier est perfectible ! Le gros du travail a été fait, mais la touche
+# finale reste à apporter.
 #
 # Consultez http://version.francaise.free.fr/ pour les mises à jour de ce
 # fichier, ainsi que pour les versions françaises des menus et du tutoriel.
@@ -28,8 +28,7 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # This file still needs work! The rough work has been done, some polishing
-# needs to be applied. I expect everything to be bright and shiny for Vim 6.3
-# (err, that was supposed to be Vim 6.2).
+# needs to be applied.
 #
 # Go to http://version.francaise.free.fr/ for updates to this file, and to the
 # French versions of the menus and the tutor.
@@ -71,15 +70,18 @@
 # 			  - Hundreds of error messages numbers added (wow)
 # 2006-04-15    DB      Vim 7.0 first draft, based on fr.po 7.0c03
 #                         - 285 new messages.
-# 2006-05-17    DB      VIM 7.0 second draft, still 7.0c03
+# 2006-04-17    DB      VIM 7.0 second draft, still 7.0c03
 #                         - (check.vim) Fixed 2 wrong translated messages.
-# 2006-05-19    DB      VIM 7.0 second draft, 7.0e02
+# 2006-04-19    DB      VIM 7.0e02
 #                         - 15 new messages.
-# 2006-05-19    DB      VIM 7.0, based on 7.0e03
+# 2006-04-19    DB      VIM 7.0e03
 #                         - (check.vim) Fixed wrong messages.
-#                         - header comment of this file should be updated.
+# 2006-05-01    DB      VIM 7.0g
+#                         - 1 message fixed, 2 messages translated.
+# 2006-05-02    DB      VIM 7.0g
+#                         - 3 message fixed.
 #
-# Translated:	 1692/1692 (100.00%)
+# Translated:	 1694/1694 (100.00%)
 #
 # Polishing done on:
 #  buffer.c
@@ -99,9 +101,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
-"Report-Msgid-Bugs-To: Adrien Beau <version.francaise@free.fr>\n"
-"POT-Creation-Date: 2006-04-01 17:09+0200\n"
-"PO-Revision-Date: 2006-04-21 00:31+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2006-05-01 19:42+0200\n"
+"PO-Revision-Date: 2006-05-02 14:15+0200\n"
 "Last-Translator: David Blanchet <david.blanchet@free.fr>\n"
 "Language-Team: Adrien Beau <version.francaise@free.fr>\n"
 "MIME-Version: 1.0\n"
@@ -348,6 +350,9 @@ msgstr "E544: Le fichier descripteur de clavier est introuvable"
 # AB - La version française est meilleure que la version anglaise.
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: :loadkeymap ne peut être utilisé que dans un script Vim"
+
+msgid "E791: Empty keymap entry"
+msgstr "E791: Entrée du descripteur de clavier (keymap) vide"
 
 # AB - Remplacer "complétion" par "complètement" ? Voir l'éthymologie
 #      d'"accrétion".
@@ -5158,7 +5163,7 @@ msgid ""
 "%d"
 msgstr ""
 "Définir COMPOUNDPERMITFLAG après des PFX peut donner des résultats erronés "
-" dans %s ligne %d"
+"dans %s ligne %d"
 
 #, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
@@ -5516,8 +5521,8 @@ msgid "E397: Filename required"
 msgstr "E397: Nom de fichier requis"
 
 #, c-format
-msgid "E747: Missing ']': %s"
-msgstr "E747: ']' manquant : %s"
+msgid "E789: Missing ']': %s"
+msgstr "E789: ']' manquant : %s"
 
 #, c-format
 msgid "E398: Missing '=': %s"
@@ -5807,6 +5812,9 @@ msgstr "numéro  modif.  instant"
 #, c-format
 msgid "%ld seconds ago"
 msgstr "il y a %ld secondes"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: undojoin n'est pas autorisé après une annulation"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: la liste d'annulation est corrompue"
@@ -6533,4 +6541,3 @@ msgstr "La recherche a atteint le HAUT, et continue en BAS"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La recherche a atteint le BAS, et continue en HAUT"
-

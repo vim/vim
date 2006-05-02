@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:	Debian control files
-" Maintainer:	Gerfried Fuchs <alfie@debian.org>
-" Last Change:  29 Oct 2004
-" URL:          http://alfie.ist.org/software/vim/syntax/debcontrol.vim
-"
-" Original Version: Wichert Akkerman <wakkerma@debian.org>
+" Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainers: Gerfried Fuchs <alfie@ist.org>
+"                     Wichert Akkerman <wakkerma@debian.org>
+" Last Change: $LastChangedDate: 2006-04-16 21:50:31 -0400 (Sun, 16 Apr 2006) $
+" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/debcontrol.vim?op=file&rev=0&sc=0
 
 " Comments are very welcome - but please make sure that you are commenting on
 " the latest version of this file.
@@ -25,7 +25,7 @@ syn match debControlComma ", *"
 syn match debControlSpace " "
 
 " Define some common expressions we can use later on
-syn match debcontrolArchitecture contained "\(all\|any\|alpha\|amd64\|arm\|hppa\|i386\|ia64\|m68k\|mipsel\|mips\|powerpc\|s390\|sheb\|sh\|sparc64\|sparc\|hurd-i386\|kfreebsd-i386\|knetbsd-i386\|netbsd-i386\)"
+syn match debcontrolArchitecture contained "\(all\|any\|alpha\|amd64\|arm\(eb\)\=\|hppa\|i386\|ia64\|m32r\|m68k\|mipsel\|mips\|powerpc\|ppc64\|s390\|sheb\|sh\|sparc64\|sparc\|hurd-i386\|kfreebsd-\(i386\|gnu\)\|knetbsd-i386\|netbsd-\(alpha\|i386\)\)"
 syn match debcontrolName contained "[a-z][a-z0-9+-]*"
 syn match debcontrolPriority contained "\(extra\|important\|optional\|required\|standard\)"
 syn match debcontrolSection contained "\(\(contrib\|non-free\|non-US/main\|non-US/contrib\|non-US/non-free\)/\)\=\(admin\|base\|comm\|devel\|doc\|editors\|electronics\|embedded\|games\|gnome\|graphics\|hamradio\|interpreters\|kde\|libs\|libdevel\|mail\|math\|misc\|net\|news\|oldlibs\|otherosfs\|perl\|python\|science\|shells\|sound\|text\|tex\|utils\|web\|x11\|debian-installer\)"

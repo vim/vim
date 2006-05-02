@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 24
+" Last Change:	2006 May 01
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -289,8 +289,8 @@ syn match	cUserCont	display ";\s*\I\i*\s*:[^:]"me=e-1 contains=@cLabelGroup
 syn match	cUserLabel	display "\I\i*" contained
 
 " Avoid recognizing most bitfields as labels
-syn match	cBitField	display "^\s*\I\i*\s*:\s*[1-9]"me=e-1
-syn match	cBitField	display ";\s*\I\i*\s*:\s*[1-9]"me=e-1
+syn match	cBitField	display "^\s*\I\i*\s*:\s*[1-9]"me=e-1 contains=cType
+syn match	cBitField	display ";\s*\I\i*\s*:\s*[1-9]"me=e-1 contains=cType
 
 if exists("c_minlines")
   let b:c_minlines = c_minlines

@@ -3423,11 +3423,11 @@ get_tabline_label(tp, tooltip)
     char_u	buf[40];
     int		wincount;
     win_T	*wp;
-    char_u	*opt;
+    char_u	**opt;
 
     /* Use 'guitablabel' or 'guitabtooltip' if it's set. */
-    opt = (tooltip ? p_gtt : p_gtl);
-    if (*opt != NUL)
+    opt = (tooltip ? &p_gtt : &p_gtl);
+    if (**opt != NUL)
     {
 	int	use_sandbox = FALSE;
 	int	save_called_emsg = called_emsg;
@@ -3456,7 +3456,7 @@ get_tabline_label(tp, tooltip)
 	curbuf = curwin->w_buffer;
 
 	/* Can't use NameBuff directly, build_stl_str_hl() uses it. */
-	build_stl_str_hl(curwin, res, MAXPATHL, opt, use_sandbox,
+	build_stl_str_hl(curwin, res, MAXPATHL, *opt, use_sandbox,
 						 0, (int)Columns, NULL, NULL);
 	STRCPY(NameBuff, res);
 
@@ -3473,7 +3473,10 @@ get_tabline_label(tp, tooltip)
 					   (char_u *)"", OPT_FREE, SID_ERROR);
 	called_emsg |= save_called_emsg;
     }
-    else
+
+    /* If 'guitablabel'/'guitabtooltip' is not set or the result is empty then
+     * use a default label. */
+    if (**opt == NUL || *NameBuff == NUL)
     {
 	/* Get the buffer name into NameBuff[] and shorten it. */
 	get_trans_bufname(tp == curtab ? curbuf : tp->tp_curwin->w_buffer);

@@ -4897,11 +4897,14 @@ daw	motion.txt	/*daw*
 dd	change.txt	/*dd*
 debug-gcc	debug.txt	/*debug-gcc*
 debug-highlight	debugger.txt	/*debug-highlight*
+debug-minidump	debug.txt	/*debug-minidump*
 debug-mode	repeat.txt	/*debug-mode*
 debug-scripts	repeat.txt	/*debug-scripts*
 debug-signs	debugger.txt	/*debug-signs*
 debug-vim	debug.txt	/*debug-vim*
+debug-vs2005	debug.txt	/*debug-vs2005*
 debug-win32	debug.txt	/*debug-win32*
+debug-windbg	debug.txt	/*debug-windbg*
 debug.txt	debug.txt	/*debug.txt*
 debugger-compilation	debugger.txt	/*debugger-compilation*
 debugger-features	debugger.txt	/*debugger-features*
@@ -5196,6 +5199,7 @@ fixed-6.1	version6.txt	/*fixed-6.1*
 fixed-6.2	version6.txt	/*fixed-6.2*
 fixed-6.3	version6.txt	/*fixed-6.3*
 fixed-6.4	version6.txt	/*fixed-6.4*
+flexwiki.vim	syntax.txt	/*flexwiki.vim*
 fname_diff-variable	eval.txt	/*fname_diff-variable*
 fname_in-variable	eval.txt	/*fname_in-variable*
 fname_new-variable	eval.txt	/*fname_new-variable*
@@ -5273,6 +5277,7 @@ ft-dosbatch-syntax	syntax.txt	/*ft-dosbatch-syntax*
 ft-dtd-syntax	syntax.txt	/*ft-dtd-syntax*
 ft-eiffel-syntax	syntax.txt	/*ft-eiffel-syntax*
 ft-erlang-syntax	syntax.txt	/*ft-erlang-syntax*
+ft-flexwiki-syntax	syntax.txt	/*ft-flexwiki-syntax*
 ft-form-syntax	syntax.txt	/*ft-form-syntax*
 ft-fortran-indent	indent.txt	/*ft-fortran-indent*
 ft-fortran-plugin	filetype.txt	/*ft-fortran-plugin*
@@ -5473,6 +5478,7 @@ garbagecollect()	eval.txt	/*garbagecollect()*
 gd	pattern.txt	/*gd*
 ge	motion.txt	/*ge*
 get()	eval.txt	/*get()*
+get-ms-debuggers	debug.txt	/*get-ms-debuggers*
 getbufline()	eval.txt	/*getbufline()*
 getbufvar()	eval.txt	/*getbufvar()*
 getchar()	eval.txt	/*getchar()*

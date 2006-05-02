@@ -334,16 +334,16 @@ msgstr "E686: Argument von %s muss eine Liste sein"
 
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "E712: Argument von %s muss eine Liste oder ein Wörterbuch"
+msgstr "E712: Argument von %s muss eine Liste oder ein Dictionary"
 
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: Der Schlüssel für das Wörterbuch darf nicht leer sein"
+msgstr "E713: Der Schlüssel für das Dictionary darf nicht leer sein"
 
 msgid "E714: List required"
 msgstr "E714: Liste benötigt"
 
 msgid "E715: Dictionary required"
-msgstr "E715: Wörterbuch benötigt"
+msgstr "E715: Dictionary benötigt"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
@@ -351,20 +351,20 @@ msgstr "E118: Zu viele Argumente für Funktion: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: %s"
-msgstr "E716: Schlüssel nicht vorhanden im Wörterbuch: %s"
+msgstr "E716: Schlüssel nicht vorhanden im Dictionary: %s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
 msgstr "E122: Funktion %s existiert bereits; zum Ersetzen ! hinzufügen"
 
 msgid "E717: Dictionary entry already exists"
-msgstr "E717: Wörterbucheintrag existiert bereits"
+msgstr "E717: Dictionary-Eintrag existiert bereits"
 
 msgid "E718: Funcref required"
 msgstr "E718: Funcref benötigt"
 
 msgid "E719: Cannot use [:] with a Dictionary"
-msgstr "E719: Kann [:] nicht mit einem Wörterbuch verwenden"
+msgstr "E719: Kann [:] nicht mit einem Dictionary verwenden"
 
 #, c-format
 msgid "E734: Wrong variable type for %s="
@@ -392,7 +392,7 @@ msgid "E738: Can't list variables for %s"
 msgstr "E738: Kann Variablen nicht auflisten: %s"
 
 msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: Kann nur Listen und Wörterbücher indizieren"
+msgstr "E689: Kann nur Listen und Dictionarys indizieren"
 
 msgid "E708: [:] must come last"
 msgstr "E708: [:] muss am Schluss kommen"
@@ -430,10 +430,10 @@ msgid "E692: Invalid operation for Lists"
 msgstr "E692: Unzulässige Operation für Listen"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Kann nur ein Wörterbuch mit einem Wörterbuch vergleichen"
+msgstr "E735: Kann nur ein Dictionary mit einem Dictionary vergleichen"
 
 msgid "E736: Invalid operation for Dictionary"
-msgstr "E736: Unzulässige Operation für ein Wörterbuch"
+msgstr "E736: Unzulässige Operation für ein Dictionary"
 
 msgid "E693: Can only compare Funcref with Funcref"
 msgstr "E693: Kann nur eine Funcref mit einer Funcref vergleichen"
@@ -473,19 +473,19 @@ msgstr "E697: Fehlendes Ende der Liste ']': %s"
 
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
-msgstr "E720: Fehlender Doppelpunkt im Wörterbuch: %s"
+msgstr "E720: Fehlender Doppelpunkt im Dictionary: %s"
 
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "E721: Doppelter Schlüssel im Wörterbuch: \"%s\""
+msgstr "E721: Doppelter Schlüssel im Dictionary: \"%s\""
 
 #, c-format
 msgid "E722: Missing comma in Dictionary: %s"
-msgstr "E722: Fehlendes Komma im Wörterbuch: %s"
+msgstr "E722: Fehlendes Komma im Dictionary: %s"
 
 #, c-format
 msgid "E723: Missing end of Dictionary '}': %s"
-msgstr "E723: Fehlendes Ende des Wörterbuchs '}': %s"
+msgstr "E723: Fehlendes Ende des Dictionarys '}': %s"
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: Variable ist zu tief verschachtelt für die Anzeige"
@@ -573,7 +573,7 @@ msgid "E745: Using a List as a number"
 msgstr "E745: Liste als Zahl verwendet"
 
 msgid "E728: Using a Dictionary as a number"
-msgstr "E728: Wörterbuch als Zahl verwendet"
+msgstr "E728: Dictionary als Zahl verwendet"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: Funcref als String verwendet"
@@ -582,7 +582,7 @@ msgid "E730: using List as a String"
 msgstr "E730: Liste als String verwendet"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: Wörterbuch als String verwendet"
+msgstr "E731: Dictionary als String verwendet"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -894,7 +894,7 @@ msgstr "E670: Mischung von Kodierungen einer Hilfedatei innerhalb einer Sprache:
 
 #, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s"
-msgstr "E154: Tag \"%s\" ist mehrmals in der Datei %s"
+msgstr "E154: Doppelter Tag \"%s\" in der Datei %s"
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -5995,3 +5995,139 @@ msgstr "Editiert die ausgewählte(n) Datei(en) mit Vim"
 
 msgid "%ld seconds ago"
 msgstr "vor %ld Sekunden"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: 'undojoin' ist nicht erlaubt nach 'undo'"
+
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: Unbekannte Funktion: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: Zu wenige Argumente für Funktion: %s"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: <SID> wurde nicht in einer Skript-Umgebung benutzt: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: Aufruf der 'dict' Funktion ohne Dictionary: %s"
+
+msgid "E786: Range not allowed"
+msgstr "E786: Bereich nicht erlaubt"
+
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s/%s"
+msgstr "E154: Doppelter Tag \"%s\" in der Datei %s/%s"
+
+msgid "E179: argument required for -complete"
+msgstr "E179: Argument benötigt für -complete"
+
+#, c-format
+msgid "Tab page %d"
+msgstr "Tab %d"
+
+msgid "E585: :while/:for nesting too deep"
+msgstr "E585: :while/:for Schachtelung zu tief"
+
+msgid "E586: :continue without :while or :for"
+msgstr "E586: :continue ohne :while or :for"
+
+msgid "E587: :break without :while or :for"
+msgstr "E587: :break ohne :while oder :for"
+
+msgid "E788: Not allowed to edit another buffer now"
+msgstr "E788: Einen weiteren Puffer zu editieren ist im Moment nicht erlaubt"
+
+msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+msgstr "E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um sie zu erzwingen)"
+
+#, c-format
+msgid "E211: File \"%s\" no longer available"
+msgstr "E211: Datei \"%s\" ist nicht länger vorhanden"
+
+msgid "See \":help W12\" for more info."
+msgstr "Siehe \":help W12\" für mehr Information"
+
+msgid "See \":help W11\" for more info."
+msgstr "Siehe \":help W11\" für mehr Information"
+
+#, c-format
+msgid "E46: Cannot change read-only variable \"%s\""
+msgstr "E46: Variable \"%s\" kann nur gelesen werden"
+
+#, c-format
+msgid "E46: Cannot set variable in the sandbox: \"%s\""
+msgstr "E46: Variable \"%s\" kann in der Sandbox nur gelesen werden"
+
+msgid "E267: unexpected return"
+msgstr "E267: Unerwartetes 'return'"
+
+msgid "E268: unexpected next"
+msgstr "E268: Unerwartetes 'next'"
+
+msgid "E269: unexpected break"
+msgstr "E269: Unerwartetes 'break'"
+
+msgid "E270: unexpected redo"
+msgstr "E270: Unerwartetes 'redo'"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: 'retry' außerhalb der 'rescue clause'"
+
+msgid "E272: unhandled exception"
+msgstr "E272: Unbehandelte Ausnahme"
+
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d Dateien zum Editieren\n"
+
+msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
+msgstr "-p[N]\t\tÖffne N Tabs (Vorgabe: einzeln für jede Datei)"
+
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <Dateien>  Wie --remote, aber öffne ein Tab für jede Datei"
+
+msgid "E304: ml_upd_block0(): Didn't get block 0??"
+msgstr "E304: ml_upd_block0(): Block Nr. 0 nicht erhalten?"
+
+msgid "Select Directory dialog"
+msgstr "Verzeichnis Auswahl Dialog"
+
+msgid "No match at cursor, finding next"
+msgstr "Kein Treffer beim Cursur, finde den nächsten"
+
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ muss eine Instanz einer Zeichenkette sein"
+
+msgid "E773: Symlink loop for \"%s\""
+msgstr "E773: Symlink Schleife für \"%s\""
+
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Letztes %sSuchmuster:\n"
+"~"
+
+#, c-format
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Die Definition von COMPOUNDFORBIDFLAG nach dem PFX Element kann falsches Ergebnis in Zeile %s ergeben "
+"%d"
+
+#, c-format
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Die Definition von COMPOUNDPERMITFLAG nach dem PFX Element kann falsches Ergebnis in Zeile %s ergeben "
+"%d"
+

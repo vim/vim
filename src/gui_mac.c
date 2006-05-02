@@ -2003,6 +2003,9 @@ gui_mac_doSuspendEvent(EventRecord *event)
  * Handle the key
  */
 #ifdef USE_CARBONKEYHANDLER
+
+static int dialog_busy = FALSE;	    /* TRUE when gui_mch_dialog() wants the keys */
+
 # define INLINE_KEY_BUFFER_SIZE 80
     static pascal OSStatus
 gui_mac_doKeyEventCarbon(
@@ -2031,6 +2034,10 @@ gui_mac_doKeyEventCarbon(
 
     do
     {
+	/* Don't use the keys when the dialog wants them. */
+	if (dialog_busy)
+	    break;
+
 	if (noErr != GetEventParameter(theEvent, kEventParamTextInputSendText,
 		    typeUnicodeText, NULL, 0, &actualSize, NULL))
 	    break;
@@ -2615,7 +2622,7 @@ gui_mac_handle_event(EventRecord *event)
 	    break;
 #endif
 	case (keyUp):
-	    /* We don't care about when the key get release */
+	    /* We don't care about when the key is released */
 	    break;
 
 	case (mouseDown):
@@ -5472,7 +5479,7 @@ gui_mch_dialog(
     /* Add the input box if needed */
     if (textfield != NULL)
     {
-	/* Cheat for now reuse the message and convet to text edit */
+	/* Cheat for now reuse the message and convert to text edit */
 	inputItm.idx = lastButton + 3;
 	inputDITL = GetResource('DITL', 132);
 	AppendDITL(theDialog, inputDITL, overlayDITL);
@@ -5566,11 +5573,20 @@ gui_mch_dialog(
     SetPortDialogPort(theDialog);
 #endif
 
+#ifdef USE_CARBONKEYHANDLER
+    /* Avoid that we use key events for the main window. */
+    dialog_busy = TRUE;
+#endif
+
     /* Hang until one of the button is hit */
     do
     {
 	ModalDialog(nil, &itemHit);
     } while ((itemHit < 1) || (itemHit > lastButton));
+
+#ifdef USE_CARBONKEYHANDLER
+    dialog_busy = FALSE;
+#endif
 
     /* Copy back the text entered by the user into the param */
     if (textfield != NULL)

@@ -1,7 +1,7 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		Mar 22, 2006
+" Date:		May 01, 2006
 " Version:	8
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
@@ -25,7 +25,7 @@ set cpo&vim
 let g:loaded_netrwFileHandlers= "v8"
 
 " ---------------------------------------------------------------------
-" netrwFileHandlers#Invoke: {{{2
+" netrwFileHandlers#Invoke: {{{1
 fun! netrwFileHandlers#Invoke(exten,fname)
 "  call Dfunc("netrwFileHandlers#Invoke(exten<".a:exten."> fname<".a:fname.">)")
 

@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 7.0 script
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 27, 2006
-" Version:	7.0-48
+" Last Change:	May 02, 2006
+" Version:	7.0-50
 " Automatically generated keyword lists: {{{1
 
 " Quit when a syntax file was already loaded {{{2
@@ -189,7 +189,7 @@ syn match vimEnvvar	"\${\I\i*}"
 " In-String Specials: {{{2
 " Try to catch strings, if nothing else matches (therefore it must precede the others!)
 "  vimEscapeBrace handles ["]  []"] (ie. "s don't terminate string inside [])
-syn region vimEscapeBrace	oneline   contained transparent start="[^\\]\(\\\\\)*\[\^\=\]\=" skip="\\\\\|\\\]" end="\]"me=e-1
+syn region vimEscapeBrace	oneline   contained transparent start="[^\\]\(\\\\\)*\[\zs\^\=\]\=" skip="\\\\\|\\\]" end="]"me=e-1
 syn match  vimPatSepErr	contained	"\\)"
 syn match  vimPatSep	contained	"\\|"
 syn region vimPatSepZone	oneline   contained   matchgroup=vimPatSepZ start="\\%\=\ze(" skip="\\\\" end="\\)\|[^\]['"]"	contains=@vimStringGroup
@@ -308,10 +308,10 @@ syn match   vimMenuBang	"!"	contained skipwhite nextgroup=@vimMenuList
 syn case ignore
 syn match vimNotation	"\(\\\|<lt>\)\=<\([scam]-\)\{0,4}x\=\(f\d\{1,2}\|[^ \t:]\|cr\|lf\|linefeed\|return\|k\=del\%[ete]\|bs\|backspace\|tab\|esc\|right\|left\|help\|undo\|insert\|ins\|k\=home\|k\=end\|kplus\|kminus\|kdivide\|kmultiply\|kenter\|space\|k\=\(page\)\=\(\|down\|up\)\)>" contains=vimBracket
 syn match vimNotation	"\(\\\|<lt>\)\=<\([scam2-4]-\)\{0,4}\(right\|left\|middle\)\(mouse\)\=\(drag\|release\)\=>"	contains=vimBracket
-syn match vimNotation	"\(\\\|<lt>\)\=<\(bslash\|plug\|sid\|space\|bar\|nop\|nul\|lt\)>"	contains=vimBracket
-syn match vimNotation	'\(\\\|<lt>\)\=<C-R>[0-9a-z"%#:.\-=]'he=e-1	contains=vimBracket
-syn match vimNotation	'\(\\\|<lt>\)\=<\(line[12]\|count\|bang\|reg\|args\|lt\|[qf]-args\)>'	contains=vimBracket
-syn match vimNotation	"\(\\\|<lt>\)\=<\([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>"	contains=vimBracket
+syn match vimNotation	"\(\\\|<lt>\)\=<\(bslash\|plug\|sid\|space\|bar\|nop\|nul\|lt\)>"		contains=vimBracket
+syn match vimNotation	'\(\\\|<lt>\)\=<C-R>[0-9a-z"%#:.\-=]'he=e-1			contains=vimBracket
+syn match vimNotation	'\(\\\|<lt>\)\=<\%(q-\)\=\(line[12]\|count\|bang\|reg\|args\|f-args\|lt\)>'	contains=vimBracket
+syn match vimNotation	"\(\\\|<lt>\)\=<\([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>"		contains=vimBracket
 syn match vimBracket contained	"[\\<>]"
 syn case match
 

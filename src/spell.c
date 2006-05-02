@@ -2131,8 +2131,6 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 		/* We found a bad word.  Check the attribute. */
 		if (allwords || attr == HLF_SPB)
 		{
-		    found_one = TRUE;
-
 		    /* When searching forward only accept a bad word after
 		     * the cursor. */
 		    if (dir == BACKWARD
@@ -2149,6 +2147,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 			    col = (int)(p - buf);
 			    (void)syn_get_id(wp, lnum, (colnr_T)col,
 						       FALSE, &can_spell);
+			    if (!can_spell)
+				attr = HLF_COUNT;
 			}
 			else
 #endif
@@ -2156,6 +2156,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 
 			if (can_spell)
 			{
+			    found_one = TRUE;
 			    found_pos.lnum = lnum;
 			    found_pos.col = (int)(p - buf);
 #ifdef FEAT_VIRTUALEDIT
@@ -2177,6 +2178,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 			    found_len = len;
 			}
 		    }
+		    else
+			found_one = TRUE;
 		}
 	    }
 

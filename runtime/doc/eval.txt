@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -5178,6 +5178,7 @@ profile			Compiled with |:profile| support.
 python			Compiled with Python interface.
 qnx			QNX version of Vim.
 quickfix		Compiled with |quickfix| support.
+reltime			Compiled with |reltime()| support.
 rightleft		Compiled with 'rightleft' support.
 ruby			Compiled with Ruby interface |ruby|.
 scrollbind		Compiled with 'scrollbind' support.

@@ -1,6 +1,6 @@
-*pi_netrw.txt*  For Vim version 7.0g.  Last change: 2006 Apr 30
+*pi_netrw.txt*  For Vim version 7.0g.  Last change: 2006 May 02
 
-		VIM REFERENCE MANUAL    by Charles E. Campbell, Jr.
+		NETRW REFERENCE MANUAL	  by Charles E. Campbell, Jr.
 
 
 *dav*		*http*		*network*	*rcp*		*scp*
@@ -458,7 +458,7 @@ see |netrw-urls|).
 		effectively remove the user-id and password by using ""
 		strings.
 
-:NetrwSettings  This command is desribed in |netrw-settings| -- used to
+:NetrwSettings	This command is desribed in |netrw-settings| -- used to
 		display netrw settings and change netrw behavior.
 
 
@@ -672,7 +672,7 @@ MAPS								*netrw-maps*
 
 QUICK REFERENCE COMMANDS TABLE				*netrw-browse-cmds*
 >
-	-------	-----------
+        -------	-----------
 	Command	Explanation
 	-------	-----------
 <	<F1>	Causes Netrw to issue help
@@ -1473,6 +1473,13 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 11. History						*netrw-history* {{{1
 
+	v98: May 02, 2006 * the "p" key didn't work properly when the browsing
+			    directory name had spaces in it.
+	v97: May 01, 2006 * exists("&acd") now used to determine if
+			    the 'acd' option exists
+			  * "obtain" now works again under Windows
+	v96: * bugfix - the |'acd'| option is not always defined but is
+	       now bypassed only when it is
 	v95: * bugfix - Hiding mode worked correctly (don't show any file
 	       matching any of the g:netrw_hide patterns), but
 	       but showing mode was showing only those files that didn't

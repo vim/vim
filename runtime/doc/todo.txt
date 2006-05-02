@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0g.  Last change: 2006 Apr 30
+*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,27 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Session file can contain:
+    args version.c main.c
+    edit version.c
+Can that be avoided?
+
+With 'mousefocus' set and using text tabline don't select first window.
+
+The Hungarian spell file uses different FOL/UPP/LOW items than other spell
+files with the same encoding, that causes problem when changing 'spelllang'.
+Clear character table when switching it?  Adjust Hungarian?
+
+Quickfix windows in different tabs should use same buffer, there is only one
+quickfix list.
+
+let exists() not ignore trailing text?
+
+Include new Python syntax file? (dharana)
+
+indent/html.vim doesn't restore 'ignorecase' and 'cpo'.
+
 
 Awaiting updated patches:
 9   Mac unicode patch (Da Woon Jung, Eckehard Berns):
@@ -584,6 +605,8 @@ Macintosh:
 
 
 "Small" problems:
+9   For Turkish vim_tolower() and vim_toupper() also need to use utf_
+    functions for characters below 0x80. (Sertacyildiz)
 9   When the last edited file is a help file, using '0 in a new Vim doesn't
     edit the file as a help file.
 8   When an ":edit" is inside a try command and the ATTENTION prompt is used,
@@ -1810,6 +1833,9 @@ Tags:
     match.  Remove tag_fname from the match and combine it with the fname in
     the match (without expanding or other things that take time).  When
     'tagrelative' is off tag_fname isn't needed at all.
+8   Use a mechanism similar to omni completion to figure out the kind of tab
+    for CTRL-] and jump to the appropriate matching tag (if there are
+    several).
 7   Can CTRL-] (jump to tag) include a following "." and "->" to restrict the
     number of possible matches? Check tags file for an item that has members.
     (Flemming Madsen)

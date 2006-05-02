@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			Apr 10, 2006
-" Version:		8
+" Date:			May 01, 2006
+" Version:		9
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
 " License:		Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if exists("g:loaded_zip")
  finish
 endif
 
-let g:loaded_zip     = "v8"
+let g:loaded_zip     = "v9"
 let s:zipfile_escape = ' ?&;\'
 
 " ----------------
@@ -77,6 +77,18 @@ fun! zip#Browse(zipfile)
 
 "  call Decho("exe silent r! unzip -l '".a:zipfile."'")
   exe "silent r! unzip -l '".a:zipfile."'"
+  if v:shell_error != 0
+   echohl WarningMsg | echo "***warning*** (zip#Browse) ".a:zipfile." is not a zip file" | echohl None
+   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+   silent %d
+   let eikeep= &ei
+   set ei=BufReadCmd,FileReadCmd
+   exe "r ".a:zipfile
+   let &ei= eikeep
+   1d
+"   call Dret("zip#Browse")
+   return
+  endif
 "  call Decho("line 6: ".getline(6))
   let namecol= stridx(getline(6),'Name') + 1
 "  call Decho("namecol=".namecol)
@@ -127,8 +139,8 @@ fun! s:ZipBrowseSelect()
   new
   wincmd _
   let s:zipfile_{winnr()}= curfile
-"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).':'.escape(fname,s:zipfile_escape))
-  exe "e zipfile:".escape(zipfile,s:zipfile_escape).':'.escape(fname,s:zipfile_escape)
+"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape))
+  exe "e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape)
   filetype detect
 
   let &report= repkeep
@@ -142,9 +154,15 @@ fun! zip#Read(fname,mode)
   let repkeep= &report
   set report=10
 
-  let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):[^\\].*$','\1','')
-  let fname   = substitute(a:fname,'zipfile:.\{-}:\([^\\].*\)$','\1','')
-"  call Decho("zipfile<".zipfile."> fname<".fname.">")
+  if has("unix")
+   let zipfile = substitute(a:fname,'zipfile:\(.\{-}\)::[^\\].*$','\1','')
+   let fname   = substitute(a:fname,'zipfile:.\{-}::\([^\\].*\)$','\1','')
+  else
+   let zipfile = substitute(a:fname,'^.\{-}zipfile:\(.\{-}\)::[^\\].*$','\1','')
+   let fname   = substitute(a:fname,'^.\{-}zipfile:.\{-}::\([^\\].*\)$','\1','')
+  endif
+"  call Decho("zipfile<".zipfile.">")
+"  call Decho("fname  <".fname.">")
 
 "  call Decho("exe r! unzip -p '".zipfile."' '".fname."'")
   exe "silent r! unzip -p '".zipfile."' '".fname."'"
@@ -209,8 +227,15 @@ fun! zip#Write(fname)
   cd _ZIPVIM_
 "  call Decho("current directory now: ".getcwd())
 
-  let zipfile = substitute(a:fname,'zipfile:\(.\{-}\):.*$','\1','')
-  let fname   = substitute(a:fname,'zipfile:.\{-}:\(.*\)$','\1','')
+  if has("unix")
+   let zipfile = substitute(a:fname,'zipfile:\(.\{-}\)::[^\\].*$','\1','')
+   let fname   = substitute(a:fname,'zipfile:.\{-}::\([^\\].*\)$','\1','')
+  else
+   let zipfile = substitute(a:fname,'^.\{-}zipfile:\(.\{-}\)::[^\\].*$','\1','')
+   let fname   = substitute(a:fname,'^.\{-}zipfile:.\{-}::\([^\\].*\)$','\1','')
+  endif
+"  call Decho("zipfile<".zipfile.">")
+"  call Decho("fname  <".fname.">")
 
   if fname =~ '/'
    let dirpath = substitute(fname,'/[^/]\+$','','e')

@@ -4024,7 +4024,11 @@ gui_mch_open(void)
 	if (mask & WidthValue)
 	    Columns = w;
 	if (mask & HeightValue)
+	{
+	    if (p_window > h - 1 || !option_was_set((char_u *)"window"))
+		p_window = h - 1;
 	    Rows = h;
+	}
 	if (mask & (XValue | YValue))
 #ifdef HAVE_GTK2
 	    gtk_window_move(GTK_WINDOW(gui.mainwin), x, y);
