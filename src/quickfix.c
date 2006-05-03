@@ -118,6 +118,7 @@ static void	qf_fmt_text __ARGS((char_u *text, char_u *buf, int bufsize));
 static void	qf_clean_dir_stack __ARGS((struct dir_stack_T **));
 #ifdef FEAT_WINDOWS
 static int	qf_win_pos_update __ARGS((qf_info_T *qi, int old_qf_index));
+static int	is_qf_win __ARGS((win_T *win, qf_info_T *qi));
 static win_T	*qf_find_win __ARGS((qf_info_T *qi));
 static buf_T	*qf_find_buf __ARGS((qf_info_T *qi));
 static void	qf_update_buffer __ARGS((qf_info_T *qi));
@@ -2199,6 +2200,7 @@ ex_copen(eap)
     int		height;
     win_T	*win;
     tabpage_T	*prevtab = curtab;
+    buf_T	*qf_buf;
 
     if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
     {
@@ -2231,6 +2233,8 @@ ex_copen(eap)
 	win_goto(win);
     else
     {
+	qf_buf = qf_find_buf(qi);
+
 	/* The current window becomes the previous window afterwards. */
 	win = curwin;
 
@@ -2256,13 +2260,21 @@ ex_copen(eap)
 	    win->w_llist->qf_refcount++;
 	}
 
-	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE);
-	/* switch off 'swapfile' */
-	set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
-	set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
+	if (qf_buf != NULL)
+	    /* Use the existing quickfix buffer */
+	    (void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
+						     ECMD_HIDE + ECMD_OLDBUF);
+	else
+	{
+	    /* Create a new quickfix buffer */
+	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE);
+	    /* switch off 'swapfile' */
+	    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+	    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
 								   OPT_LOCAL);
-	set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
-	set_option_value((char_u *)"diff", 0L, (char_u *)"", OPT_LOCAL);
+	    set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
+	    set_option_value((char_u *)"diff", 0L, (char_u *)"", OPT_LOCAL);
+	}
 
 	/* Only set the height when still in the same tab page and there is no
 	 * window to the side. */
@@ -2352,7 +2364,31 @@ qf_win_pos_update(qi, old_qf_index)
 }
 
 /*
+ * Check whether the given window is displaying the specified quickfix/location
+ * list buffer
+ */
+    static int
+is_qf_win(win, qi)
+    win_T	*win;
+    qf_info_T	*qi;
+{
+    /*
+     * A window displaying the quickfix buffer will have the w_llist_ref field
+     * set to NULL.
+     * A window displaying a location list buffer will have the w_llist_ref
+     * pointing to the location list.
+     */
+    if (bt_quickfix(win->w_buffer))
+	if ((qi == &ql_info && win->w_llist_ref == NULL)
+		|| (qi != &ql_info && win->w_llist_ref == qi))
+	    return TRUE;
+
+    return FALSE;
+}
+
+/*
  * Find a window displaying the quickfix/location list 'qi'
+ * Searches in only the windows opened in the current tab.
  */
     static win_T *
 qf_find_win(qi)
@@ -2360,33 +2396,29 @@ qf_find_win(qi)
 {
     win_T	*win;
 
-    /*
-     * When searching for the quickfix buffer, find a window
-     * with w_llist_ref set to NULL.
-     * When searching for the location list buffer, find a window
-     * with w_llist_ref pointing to the supplied location list.
-     */
     FOR_ALL_WINDOWS(win)
-	if (bt_quickfix(win->w_buffer))
-	    if ((qi == &ql_info && win->w_llist_ref == NULL)
-		|| (qi != &ql_info && win->w_llist_ref == qi))
-		break;
+	if (is_qf_win(win, qi))
+	    break;
 
     return win;
 }
 
 /*
- * Find quickfix buffer.
+ * Find a quickfix buffer.
+ * Searches in windows opened in all the tabs.
  */
     static buf_T *
 qf_find_buf(qi)
     qf_info_T	*qi;
 {
+    tabpage_T	*tp;
     win_T	*win;
 
-    win = qf_find_win(qi);
+    FOR_ALL_TAB_WINDOWS(tp, win)
+	if (is_qf_win(win, qi))
+	    return win->w_buffer;
 
-    return (win != NULL) ? win->w_buffer: NULL;
+    return NULL;
 }
 
 /*

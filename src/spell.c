@@ -7031,7 +7031,7 @@ spell_read_wordfile(spin, fname)
 	    continue;	/* empty or blank line */
 	rline[l] = NUL;
 
-	/* Convert from "=encoding={encoding}" to 'encoding' when needed. */
+	/* Convert from "/encoding={encoding}" to 'encoding' when needed. */
 	vim_free(pc);
 #ifdef FEAT_MBYTE
 	if (spin->si_conv.vc_type != CONV_NONE)
@@ -7069,7 +7069,7 @@ spell_read_wordfile(spin, fname)
 		    char_u	*enc;
 
 		    /* Setup for conversion to 'encoding'. */
-		    line += 10;
+		    line += 9;
 		    enc = enc_canonize(line);
 		    if (enc != NULL && !spin->si_ascii
 			    && convert_setup(&spin->si_conv, enc,

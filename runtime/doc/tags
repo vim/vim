@@ -2273,6 +2273,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-<expr>	map.txt	/*:map-<expr>*
 :map-<script>	map.txt	/*:map-<script>*
 :map-<silent>	map.txt	/*:map-<silent>*
+:map-<special>	map.txt	/*:map-<special>*
 :map-<unique>	map.txt	/*:map-<unique>*
 :map-alt-keys	map.txt	/*:map-alt-keys*
 :map-arguments	map.txt	/*:map-arguments*
@@ -2283,6 +2284,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :map-operator	map.txt	/*:map-operator*
 :map-script	map.txt	/*:map-script*
 :map-silent	map.txt	/*:map-silent*
+:map-special	map.txt	/*:map-special*
 :map-special-chars	map.txt	/*:map-special-chars*
 :map-special-keys	map.txt	/*:map-special-keys*
 :map-undo	map.txt	/*:map-undo*
@@ -2301,10 +2303,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :menu	gui.txt	/*:menu*
 :menu-<script>	gui.txt	/*:menu-<script>*
 :menu-<silent>	gui.txt	/*:menu-<silent>*
+:menu-<special>	gui.txt	/*:menu-<special>*
 :menu-disable	gui.txt	/*:menu-disable*
 :menu-enable	gui.txt	/*:menu-enable*
 :menu-script	gui.txt	/*:menu-script*
 :menu-silent	gui.txt	/*:menu-silent*
+:menu-special	gui.txt	/*:menu-special*
 :menut	mlang.txt	/*:menut*
 :menutrans	mlang.txt	/*:menutrans*
 :menutranslate	mlang.txt	/*:menutranslate*

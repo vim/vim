@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	C#
-" Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Mo, 24 Apr 2006 10:11:07 CEST
+" Maintainer:	Anduin Withers <awithers@anduin.com>
+" Former Maintainer:	Johannes Zellner <johannes@zellner.org>
+" Last Change:	Sun Apr 30 19:26:18 PDT 2006
 " Filenames:	*.cs
 " $Id$
 "
@@ -38,11 +39,16 @@ syn keyword csException			try catch finally throw
 " TODO:
 syn keyword csUnspecifiedStatement	as base checked event fixed in is lock new operator out params ref sizeof stackalloc this typeof unchecked unsafe using
 " TODO:
-syn keyword csUnsupportedStatement	get set add remove value
+syn keyword csUnsupportedStatement	add remove value
 " TODO:
 syn keyword csUnspecifiedKeyword	explicit implicit
 
 
+" Contextual Keywords
+syn match csContextualStatement	/\<yield[[:space:]\n]\+\(return\|break\)/me=s+5
+syn match csContextualStatement	/\<partial[[:space:]\n]\+\(class\|struct\|interface\)/me=s+7
+syn match csContextualStatement	/\<\(get\|set\)[[:space:]\n]*{/me=s+3
+syn match csContextualStatement	/\<where\>[^:]\+:/me=s+5
 
 " Comments
 "
@@ -79,8 +85,10 @@ hi def link xmlRegion Comment
 
 " [1] 9.5 Pre-processing directives
 syn region	csPreCondit
-    \ start="^\s*#\s*\(define\|undef\|if\|elif\|else\|endif\|line\|error\|warning\|region\|endregion\)"
+    \ start="^\s*#\s*\(define\|undef\|if\|elif\|else\|endif\|line\|error\|warning\)"
     \ skip="\\$" end="$" contains=csComment keepend
+syn region	csRegion matchgroup=csPreCondit start="^\s*#\s*region.*$"
+    \ end="^\s*#\s*endregion" transparent fold contains=TOP
 
 
 
@@ -115,6 +123,7 @@ hi def link csException			Exception
 hi def link csUnspecifiedStatement	Statement
 hi def link csUnsupportedStatement	Statement
 hi def link csUnspecifiedKeyword	Keyword
+hi def link csContextualStatement	Statement
 hi def link csOperatorError		Error
 
 hi def link csTodo			Todo

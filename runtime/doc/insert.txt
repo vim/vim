@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0g.  Last change: 2006 May 01
+*insert.txt*    For Vim version 7.0g.  Last change: 2006 May 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -919,6 +919,8 @@ Completion is done by a function that can be defined by the user with the
 
 See below for how the function is called and an example |complete-functions|.
 For remarks about specific filetypes see |compl-omni-filetypes|.
+More completion scripts will appear, check www.vim.org.  Currently there is a
+first version for C++.
 
 							*i_CTRL-X_CTRL-O*
 CTRL-X CTRL-O		Guess what kind of item is in front of the cursor and
@@ -1272,32 +1274,21 @@ run |:make| command to detect formatting problems.
 
 HTML flavor						*html-flavor*
 
-Default HTML completion depends on filetype. For HTML files it is HTML
-4.01 Transitional (&ft=='html'), for XHTML it is XHTML 1.0 Strict
-(&ft=='xhtml').
+The default HTML completion depends on the filetype.  For HTML files it is
+HTML 4.01 Transitional ('filetype' is "html"), for XHTML it is XHTML 1.0
+Strict ('filetype' is "xhtml").
 
-These are not the only HTML versions. To use another data file and still
-have benefits of custom completion for class, style, etc. attributes set
-b:html_omni_flavor variable. Example (in .vimrc or filetype plugin
-file): >
+When doing completion outside of any other tag you will have possibility to
+choose DOCTYPE and the appropriate data file will be loaded and used for all
+next completions.
 
-	let g:html_omni_flavor = 'xhtml10s'
+More about format of data file in |xml-omni-datafile|. Some of the data files
+may be found on the Vim website (|www|).
 
-(Completion data file for HTML 4.01 Strict is also provided by Vim
-distribution.)
-
-Data for HTML completion will be read from 'autoload/xml/html10s.vim' file
-located somewhere in 'runtimepath'.
-
-Note: HTML completion files are also located in 'autoload/xml'
-directory.
-
-More about format of data file in |xml-omni-datafile|. Some of data
-files may in future be found on vim-online site (|www|).
-
-Note that b:html_omni_flavor may point to file with any XML data.  This
-makes possible to mix PHP (|ft-php-omni|) completion with whatever XML
-dialect (assuming you have data file for it).
+Note that b:html_omni_flavor may point to a file with any XML data.  This
+makes possible to mix PHP (|ft-php-omni|) completion with any XML dialect
+(assuming you have data file for it).  Without setting that variable XHTML 1.0
+Strict will be used.
 
 
 JAVASCRIPT					       *ft-javascript-omni*
@@ -1486,86 +1477,100 @@ PHP code and SQL code at the same time.
 
 XML							*ft-xml-omni*
 
-Vim 7 provides mechanism to context aware completion of XML files.  It depends
-on special |xml-omni-datafile| and two commands: |:XMLns| and |:XMLent|.
-Features are:
+Vim 7 provides a mechanism for context aware completion of XML files.  It
+depends on a special |xml-omni-datafile| and two commands: |:XMLns| and
+|:XMLent|.  Features are:
 
-- after "<" complete tag name depending on context (no div suggest
-  inside of an a tag)
-- inside of tag complete proper attributes (no width attribute for an
-  a tag)
-- when attribute has limited number of possible values help to complete
+- after "<" complete the tag name, depending on context
+- inside of a tag complete proper attributes
+- when an attribute has a limited number of possible values help to complete
   them
-- complete names of entities (defined in |xml-omni-datafile| and in current
-  file with "<!ENTITY" declarations
+- complete names of entities (defined in |xml-omni-datafile| and in the
+  current file with "<!ENTITY" declarations)
 - when used after "</" CTRL-X CTRL-O will close the last opened tag
 
 Format of XML data file					*xml-omni-datafile*
 
-Vim distribution provides two data files as examples (xhtml10s.vim, xsl.vim)
+XML data files are stored in the "autoload/xml" directory in 'runtimepath'.
+Vim distribution provides examples of data files in the
+"$VIMRUNTIME/autoload/xml" directory.  They have a meaningful name which will
+be used in commands.  It should be a unique name which will not create
+conflicts.  For example, the name xhtml10s.vim means it is the data file for
+XHTML 1.0 Strict.
 
-XML data files are stored in "autoload/xml" directory in 'runtimepath'.  They
-have meaningful name which will be used in commands. It should be unique name
-which will not create conflicts in future. For example name xhtml10s.vim means
-it is data file for XHTML 1.0 Strict.
+Each file contains a variable with a name like g:xmldata_xhtml10s . It is
+a compound from two parts:
 
-File contains one variable with fixed name: g:xmldata_xhtml10s . It is
-compound from two parts:
-
-1. "g:xmldata_"  general prefix
-2. "xhtml10s"    name of file and name of described XML dialect
+1. "g:xmldata_"  general prefix, constant for all data files
+2. "xhtml10s"    the name of the file and the name of the described XML
+		 dialect; it will be used as an argument for the |:XMLns|
+		 command
 
 Part two must be exactly the same as name of file.
 
-Variable is data structure in form of |Dictionary|. Keys are tag names and
-values are two element |List|. First element of List is also List with names
-of possible children, second element is |Dictionary| with names of attributes
-as keys and possible values of attributes as values. Example: >
+The variable is a |Dictionary|.  Keys are tag names and each value is a two
+element |List|.  The first element of the List is also a List with the names
+of possible children.  The second element is a |Dictionary| with the names of
+attributes as keys and the possible values of attributes as values.  Example: >
 
-    let g:xmldata_crippledhtml = {
-    \ "html":
-    \ [ ["body", "head"], {"id": [], "xmlns": ["http://www.w3.org/1999/xhtml"],
-    \ "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}],
-    \ "script":
-    \ [ [], {"id": [], "charset": [], "type": ["text/javascript"], "src": [],
-    \ "defer": ["BOOL"], "xml:space": ["preserve"]}],
-    \ "meta":
-    \ [ [], {"id": [], "http-equiv": [], "name": [], "content": [], "scheme":
-    \ [], "lang": [], "xml:lang": [], "dir": ["ltr", "rtl"]}]
-    \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"]},
+    let g:xmldata_crippled = {
+    \ "vimxmlentities": ["amp", "lt", "gt", "apos", "quot"],
+    \ 'vimxmlroot': ['tag1'],
+    \ 'tag1':
+    \ [ ['childoftag1a', 'childoftag1b'], {'attroftag1a': [],
+    \ 'attroftag1b': ['valueofattr1', 'valueofattr2']}],
+    \ 'childoftag1a':
+    \ [ [], {'attrofchild': ['attrofchild']}],
+    \ 'childoftag1b':
+    \ [ ['childoftag1a'], {'attrofchild': []}],
     \ "vimxmltaginfo": {
-    \ 'meta': ['/>', '']},
-    \ "vimxmlattrinfo": {
-    \ 'http-equiv': ['ContentType', '']}
+    \ 'tag1': ['Menu info', 'Long information visible in preview window']},
+    \ 'vimxmlattrinfo': {
+    \ 'attrofchild': ['Menu info', 'Long information visible in preview window']}}
 
-This example should be put in "autoload/xml/crippledhtml.vim" file.
+This example would be put in the "autoload/xml/crippled.vim" file and could
+help to write this file: >
 
-In example are visible four special elements:
+    <tag1 attroftag1b="valueofattr1">
+        <childoftag1a attrofchild>
+                &amp; &lt;
+        </childoftag1a>
+        <childoftag1b attrofchild="5">
+            <childoftag1a>
+                &gt; &apos; &quot;
+            </childoftag1a>
+        </childoftag1b>
+    </tag1>
 
-1. "vimxmlentities" - special key with List containing entities of this XML
+In the example four special elements are visible:
+
+1. "vimxmlentities" - a special key with List containing entities of this XML
    dialect.
-2. "BOOL" - value of attribute key showing if attribute should be inserted
-   bare ("defer" vs. 'defer="'). It can be the only element of List of
-   attribute values.
-3. "vimxmltaginfo" - special key with dictionary containing as key tag names,
-   as value two element List for additional menu info and long description.
-4. "vimxmlattrinfo" - special key with dictionary containing as key attribute
-   names, as value two element List for additional menu info and long
+2. If the list containing possible values of attributes has one element and
+   this element is equal to the name of the attribute this attribute will be
+   treated as boolean and inserted as 'attrname' and not as 'attrname="'
+3. "vimxmltaginfo" - a special key with a Dictionary containing tag
+   names as keys and two element List as values, for additional menu info and
+   the long description.
+4. "vimxmlattrinfo" - special key with Dictionary containing attribute names
+   as keys and two element List as values, for additional menu info and long
    description.
 
-Note: Tag names in data file MUST not contain namespace description.  Check
-xsl.vim for example.
+Note: Tag names in the data file MUST not contain a namespace description.
+Check xsl.vim for an example.
+Note: All data and functions are publicly available as global
+variables/functions and can be used for personal editing functions.
 
 
 DTD -> Vim							*dtd2vim*
 
-On |www| is script |dtd2vim| which parses DTD and creates XML data file
+On |www| is the script |dtd2vim| which parses DTD and creates an XML data file
 for Vim XML omni completion.
 
     dtd2vim: http://www.vim.org/scripts/script.php?script_id=1462
 
-Check there and beginning of file for details of usage.
-Script requires perl and:
+Check the beginning of that file for usage details.
+The script requires perl and:
 
     perlSGML: http://savannah.nongnu.org/projects/perlsgml
 
@@ -1574,12 +1579,12 @@ Commands
 
 :XMLns {name} [{namespace}]					*:XMLns*
 
-Vim has to know which data file should be used and with which namespace. For
-loading of data file and connecting data with prope namespace use |:XMLns|
-command. First (obligatory) argument is name of data (xhtml10s, xsl). Second
-argument is code of namespace (h, xsl). When used without second argument
-dialect will be used as default - without namespace declaration. For example
-to use XML completion in .xsl files: >
+Vim has to know which data file should be used and with which namespace.  For
+loading of the data file and connecting data with the proper namespace use
+|:XMLns| command.  The first (obligatory) argument is the name of the data
+(xhtml10s, xsl).  The second argument is the code of namespace (h, xsl).  When
+used without a second argument the dialect will be used as default - without
+namespace declaration.  For example to use XML completion in .xsl files: >
 
 	:XMLns xhtml10s
 	:XMLns xsl xsl
@@ -1587,32 +1592,31 @@ to use XML completion in .xsl files: >
 
 :XMLent {name}							*:XMLent*
 
-By default entities will be completed from data file of default
-namespace. XMLent command should be used in case when there is no
-default namespace: >
+By default entities will be completed from the data file of the default
+namespace.  The XMLent command should be used in case when there is no default
+namespace: >
 
 	:XMLent xhtml10s
 
 Usage
 
-While used in situation (after declarations from previous part, | is
+While used in this situation (after declarations from previous part, | is
 cursor position): >
 
 	<|
 
-Will complete to appropriate XHTML tag, and in this situation: >
+Will complete to an appropriate XHTML tag, and in this situation: >
 
 	<xsl:|
 
-Will complete to appropriate XSL tag.
+Will complete to an appropriate XSL tag.
 
-File xmlcomplete.vim provides through |autoload| mechanism
-GetLastOpenTag function which can be used in XML files to get name of
-last open tag with (b:unaryTagsStack has to be defined): >
+
+The script xmlcomplete.vim, provided through the |autoload| mechanism,
+has the xmlcomplete#GetLastOpenTag() function which can be used in XML files
+to get the name of the last open tag (b:unaryTagsStack has to be defined): >
 
 	:echo xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
-
-
 
 
 

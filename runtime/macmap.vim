@@ -4,80 +4,72 @@
 "
 " Define Mac-standard keyboard shortcuts.
 
-" Save and restore compatible mode.
-let s:save_cpo = &cpo
-set cpo&vim
+" We don't change 'cpoptions' here, because it would not be set properly when
+" a .vimrc file is found later.  Thus don't use line continuation and use
+" <special> in mappings.
 
-nnoremap <D-n> :confirm enew<CR>
-vmap <D-n> <Esc><D-n>gv
-imap <D-n> <C-O><D-n>
-cmap <D-n> <C-C><D-n>
-omap <D-n> <Esc><D-n>
+nnoremap <special> <D-n> :confirm enew<CR>
+vmap <special> <D-n> <Esc><D-n>gv
+imap <special> <D-n> <C-O><D-n>
+cmap <special> <D-n> <C-C><D-n>
+omap <special> <D-n> <Esc><D-n>
 
-nnoremap <D-o> :browse confirm e<CR>
-vmap <D-o> <Esc><D-o>gv
-imap <D-o> <C-O><D-o>
-cmap <D-o> <C-C><D-o>
-omap <D-o> <Esc><D-o>
+nnoremap <special> <D-o> :browse confirm e<CR>
+vmap <special> <D-o> <Esc><D-o>gv
+imap <special> <D-o> <C-O><D-o>
+cmap <special> <D-o> <C-C><D-o>
+omap <special> <D-o> <Esc><D-o>
 
-nnoremap <silent> <D-w> :if winheight(2) < 0 <Bar>
-	\   confirm enew <Bar>
-	\ else <Bar>
-	\   confirm close <Bar>
-	\ endif<CR>
-vmap <D-w> <Esc><D-w>gv
-imap <D-w> <C-O><D-w>
-cmap <D-w> <C-C><D-w>
-omap <D-w> <Esc><D-w>
+nnoremap <silent> <special> <D-w> :if winheight(2) < 0 <Bar> confirm enew <Bar> else <Bar> confirm close <Bar> endif<CR>
+vmap <special> <D-w> <Esc><D-w>gv
+imap <special> <D-w> <C-O><D-w>
+cmap <special> <D-w> <C-C><D-w>
+omap <special> <D-w> <Esc><D-w>
 
-nnoremap <silent> <D-s> :if expand("%") == ""<Bar>browse confirm w<Bar>
-	\ else<Bar>confirm w<Bar>endif<CR>
-vmap <D-s> <Esc><D-s>gv
-imap <D-s> <C-O><D-s>
-cmap <D-s> <C-C><D-s>
-omap <D-s> <Esc><D-s>
+nnoremap <silent> <special> <D-s> :if expand("%") == ""<Bar>browse confirm w<Bar> else<Bar>confirm w<Bar>endif<CR>
+vmap <special> <D-s> <Esc><D-s>gv
+imap <special> <D-s> <C-O><D-s>
+cmap <special> <D-s> <C-C><D-s>
+omap <special> <D-s> <Esc><D-s>
 
-nnoremap <D-S-s> :browse confirm saveas<CR>
-vmap <D-S-s> <Esc><D-s>gv
-imap <D-S-s> <C-O><D-s>
-cmap <D-S-s> <C-C><D-s>
-omap <D-S-s> <Esc><D-s>
+nnoremap <special> <D-S-s> :browse confirm saveas<CR>
+vmap <special> <D-S-s> <Esc><D-s>gv
+imap <special> <D-S-s> <C-O><D-s>
+cmap <special> <D-S-s> <C-C><D-s>
+omap <special> <D-S-s> <Esc><D-s>
 
 " From the Edit menu of SimpleText:
-nnoremap <D-z> u
-vmap <D-z> <Esc><D-z>gv
-imap <D-z> <C-O><D-z>
-cmap <D-z> <C-C><D-z>
-omap <D-z> <Esc><D-z>
+nnoremap <special> <D-z> u
+vmap <special> <D-z> <Esc><D-z>gv
+imap <special> <D-z> <C-O><D-z>
+cmap <special> <D-z> <C-C><D-z>
+omap <special> <D-z> <Esc><D-z>
 
-vnoremap <D-x> "+x
+vnoremap <special> <D-x> "+x
 
-vnoremap <D-c> "+y
+vnoremap <special> <D-c> "+y
 
-cnoremap <D-c> <C-Y>
+cnoremap <special> <D-c> <C-Y>
 
-nnoremap <D-v> "+gP
-cnoremap <D-v> <C-R>+
-execute 'vnoremap <script> <D-v>' paste#paste_cmd['v']
-execute 'inoremap <script> <D-v>' paste#paste_cmd['i']
+nnoremap <special> <D-v> "+gP
+cnoremap <special> <D-v> <C-R>+
+execute 'vnoremap <script> <special> <D-v>' paste#paste_cmd['v']
+execute 'inoremap <script> <special> <D-v>' paste#paste_cmd['i']
 
-nnoremap <silent> <D-a> :if &slm != ""<Bar>exe ":norm gggH<C-O>G"<Bar>
-	\ else<Bar>exe ":norm ggVG"<Bar>endif<CR>
-vmap <D-a> <Esc><D-a>
-imap <D-a> <Esc><D-a>
-cmap <D-a> <C-C><D-a>
-omap <D-a> <Esc><D-a>
+nnoremap <silent> <special> <D-a> :if &slm != ""<Bar>exe ":norm gggH<C-O>G"<Bar> else<Bar>exe ":norm ggVG"<Bar>endif<CR>
+vmap <special> <D-a> <Esc><D-a>
+imap <special> <D-a> <Esc><D-a>
+cmap <special> <D-a> <C-C><D-a>
+omap <special> <D-a> <Esc><D-a>
 
-nnoremap <D-f> /
-vmap <D-f> <Esc><D-f>
-imap <D-f> <Esc><D-f>
-cmap <D-f> <C-C><D-f>
-omap <D-f> <Esc><D-f>
+nnoremap <special> <D-f> /
+vmap <special> <D-f> <Esc><D-f>
+imap <special> <D-f> <Esc><D-f>
+cmap <special> <D-f> <C-C><D-f>
+omap <special> <D-f> <Esc><D-f>
 
-nnoremap <D-g> n
-vmap <D-g> <Esc><D-g>
-imap <D-g> <C-O><D-g>
-cmap <D-g> <C-C><D-g>
-omap <D-g> <Esc><D-g>
-
-let &cpo = s:save_cpo
+nnoremap <special> <D-g> n
+vmap <special> <D-g> <Esc><D-g>
+imap <special> <D-g> <C-O><D-g>
+cmap <special> <D-g> <C-C><D-g>
+omap <special> <D-g> <Esc><D-g>

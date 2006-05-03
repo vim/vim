@@ -4999,7 +4999,7 @@ uc_add_command(name, name_len, rep, argt, def, flags, compl, compl_arg, force)
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, FALSE, FALSE);
+    replace_termcodes(rep, &rep_buf, FALSE, FALSE, FALSE);
     if (rep_buf == NULL)
     {
 	/* Can't replace termcodes - try using the string as is */
@@ -9855,27 +9855,10 @@ makeopens(fd, dirnow)
 	    return FAIL;
 
 	/*
-	 * Wipe out an empty unnamed buffer we started in.
-	 */
-	if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
-	    return FAIL;
-	if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
-	    return FAIL;
-	if (put_line(fd, "endif") == FAIL)
-	    return FAIL;
-	if (put_line(fd, "unlet! s:wipebuf") == FAIL)
-	    return FAIL;
-
-	/*
 	 * Restore window sizes again after jumping around in windows, because
 	 * the current window has a minimum size while others may not.
 	 */
 	if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
-	    return FAIL;
-
-	/* Re-apply 'winheight', 'winwidth' and 'shortmess'. */
-	if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
-			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
 	    return FAIL;
 
 	/* Don't continue in another tab page when doing only the current one
@@ -9893,6 +9876,22 @@ makeopens(fd, dirnow)
 	    return FAIL;
     }
 
+    /*
+     * Wipe out an empty unnamed buffer we started in.
+     */
+    if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
+	return FAIL;
+    if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
+	return FAIL;
+    if (put_line(fd, "endif") == FAIL)
+	return FAIL;
+    if (put_line(fd, "unlet! s:wipebuf") == FAIL)
+	return FAIL;
+
+    /* Re-apply 'winheight', 'winwidth' and 'shortmess'. */
+    if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
+			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
+	return FAIL;
 
     /*
      * Lastly, execute the x.vim file if it exists.

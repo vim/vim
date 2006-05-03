@@ -51,7 +51,7 @@ extern char_u *get_termcode __ARGS((int i));
 extern void del_termcode __ARGS((char_u *name));
 extern void set_mouse_topline __ARGS((win_T *wp));
 extern int check_termcode __ARGS((int max_offset, char_u *buf, int buflen));
-extern char_u *replace_termcodes __ARGS((char_u *from, char_u **bufp, int from_part, int do_lt));
+extern char_u *replace_termcodes __ARGS((char_u *from, char_u **bufp, int from_part, int do_lt, int special));
 extern int find_term_bykeys __ARGS((char_u *src));
 extern void show_termcodes __ARGS((void));
 extern int show_one_termcode __ARGS((char_u *name, char_u *code, int printit));

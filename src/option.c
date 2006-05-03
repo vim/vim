@@ -6420,7 +6420,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 	if (*p_pt)
 	{
-	    (void)replace_termcodes(p_pt, &p, TRUE, TRUE);
+	    (void)replace_termcodes(p_pt, &p, TRUE, TRUE, FALSE);
 	    if (p != NULL)
 	    {
 		if (new_value_alloced)

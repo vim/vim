@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0g.  Last change: 2006 May 02
+*options.txt*	For Vim version 7.0g.  Last change: 2006 May 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4792,6 +4792,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	See |complete-functions| for an explanation of how the function is
 	invoked and what it should return.
+	This option is usually set by a filetype plugin.
+	|:filetype-plugin-on|
 
 
 						*'operatorfunc'* *'opfunc'*

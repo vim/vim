@@ -3034,6 +3034,7 @@ do_map(maptype, arg, mode, abbrev)
     mapblock_T	**map_table;
     int		unique = FALSE;
     int		silent = FALSE;
+    int		special = FALSE;
 #ifdef FEAT_EVAL
     int		expr = FALSE;
 #endif
@@ -3072,6 +3073,16 @@ do_map(maptype, arg, mode, abbrev)
 	{
 	    keys = skipwhite(keys + 8);
 	    silent = TRUE;
+	    continue;
+	}
+
+	/*
+	 * Check for "<special>": accept special keys in <>
+	 */
+	if (STRNCMP(keys, "<special>", 9) == 0)
+	{
+	    keys = skipwhite(keys + 9);
+	    special = TRUE;
 	    continue;
 	}
 
@@ -3147,13 +3158,13 @@ do_map(maptype, arg, mode, abbrev)
      * replace_termcodes() also removes CTRL-Vs and sometimes backslashes.
      */
     if (haskey)
-	keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE);
+	keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, special);
     if (hasarg)
     {
 	if (STRICMP(rhs, "<nop>") == 0)	    /* "<Nop>" means nothing */
 	    rhs = (char_u *)"";
 	else
-	    rhs = replace_termcodes(rhs, &arg_buf, FALSE, TRUE);
+	    rhs = replace_termcodes(rhs, &arg_buf, FALSE, TRUE, special);
     }
 
 #ifdef FEAT_FKMAP
@@ -3819,7 +3830,7 @@ map_to_exists(str, modechars, abbr)
     char_u	*buf;
     int		retval;
 
-    rhs = replace_termcodes(str, &buf, FALSE, TRUE);
+    rhs = replace_termcodes(str, &buf, FALSE, TRUE, FALSE);
 
     if (vim_strchr(modechars, 'n') != NULL)
 	mode |= NORMAL;

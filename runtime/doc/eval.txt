@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 01
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2345,9 +2345,14 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
 		Trailing characters that can't be part of the name are often
-		ignored, but don't depend on it.
-		Note that the argument must be a string, not the name of the
-		variable itself!  For example: >
+		ignored, but don't depend on it, it may change in the future!
+		Example: >
+			exists("*strftime()")
+<		This currently works, but it should really be: >
+			exists("*strftime")
+
+<		Note that the argument must be a string, not the name of the
+		variable itself.  For example: >
 			exists(bufcount)
 <		This doesn't check for existence of the "bufcount" variable,
 		but gets the value of "bufcount", and checks if that exists.

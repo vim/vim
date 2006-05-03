@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	   VRML97
 " Modified from:   VRML 1.0C by David Brown <dbrown@cgs.c4.gmeds.com>
-" Maintainer:	   Gregory Seidman <gseidman@acm.org>
-" URL:		   http://www.cs.brown.edu/~gss/vim/syntax/vrml.vim
-" Last change:	   2003 May 11
+" Maintainer:	   vacancy!
+" Former Maintainer:    Gregory Seidman <gsslist+vim@anthropohedron.net>
+" Last change:	   2006 May 03
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -195,7 +195,7 @@ syn sync minlines=1
 if version >= 600
 "FOLDS!
   syn sync fromstart
-  setlocal foldmethod=syntax
+  "setlocal foldmethod=syntax
   syn region braceFold start="{" end="}" transparent fold contains=TOP
   syn region bracketFold start="\[" end="]" transparent fold contains=TOP
   syn region VRMLString start=+"+ skip=+\\\\\|\\"+ end=+"+ fold contains=VRMLSpecial,VRMLjScriptString

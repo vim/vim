@@ -4945,12 +4945,13 @@ check_termcode(max_offset, buf, buflen)
  * nothing).  When 'cpoptions' does not contain 'B', a backslash can be used
  * instead of a CTRL-V.
  */
-    char_u  *
-replace_termcodes(from, bufp, from_part, do_lt)
+    char_u *
+replace_termcodes(from, bufp, from_part, do_lt, special)
     char_u	*from;
     char_u	**bufp;
     int		from_part;
     int		do_lt;		/* also translate <lt> */
+    int		special;	/* always accept <key> notation */
 {
     int		i;
     int		slen;
@@ -4963,7 +4964,7 @@ replace_termcodes(from, bufp, from_part, do_lt)
     char_u	*result;	/* buffer for resulting string */
 
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
-    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL);
+    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL) || special;
     do_key_code = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
 
     /*

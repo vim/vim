@@ -5195,6 +5195,7 @@ win_new_height(wp, height)
     int		sline, line_size;
     int		space;
     int		did_below = FALSE;
+    int		old_height = wp->w_height;
 #define FRACTION_MULT	16384L
 
     /* Don't want a negative height.  Happens when splitting a tiny window.
@@ -5238,9 +5239,15 @@ win_new_height(wp, height)
 	}
 	else
 	{
-	    space = height;
+	    space = height - 1;
+
 	    while (lnum > 1)
 	    {
+		/* When using "~" lines stop when at the old topline, don't
+		 * scroll down. */
+		if (did_below && height < old_height && lnum <= wp->w_topline)
+		    sline = 0;
+
 		space -= line_size;
 		if (space > 0 && sline <= 0 && !did_below)
 		{

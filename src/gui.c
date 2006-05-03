@@ -4544,6 +4544,12 @@ gui_mouse_moved(x, y)
 	if (wp == curwin || wp == NULL)
 	    return;	/* still in the same old window, or none at all */
 
+#ifdef FEAT_WINDOWS
+	/* Ignore position in the tab pages line. */
+	if (Y_2_ROW(y) < tabline_height())
+	    return;
+#endif
+
 	/*
 	 * format a mouse click on status line input
 	 * ala gui_send_mouse_event(0, x, y, 0, 0);
@@ -4597,7 +4603,11 @@ gui_mouse_correct()
     /* Don't move the mouse when it's left or right of the Vim window */
     if (x < 0 || x > Columns * gui.char_width)
 	return;
+# ifdef FEAT_WINDOWS
+    if (Y_2_ROW(y) >= tabline_height())
+# else
     if (y >= 0)
+# endif
 	wp = xy2win(x, y);
     if (wp != curwin && wp != NULL)	/* If in other than current window */
     {

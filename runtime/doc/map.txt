@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0g.  Last change: 2006 Apr 30
+*map.txt*       For Vim version 7.0g.  Last change: 2006 May 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,8 +157,9 @@ type "a", then "bar" will get inserted.
 
 1.2 SPECIAL ARGUMENTS					*:map-arguments*
 
-"<buffer>", "<silent>", "<script>", "<expr>" and "<unique>" can be used in any
-order.  They must appear right after the command, before any other arguments.
+"<buffer>", "<silent>", "<special>", "<script>", "<expr>" and "<unique>" can
+be used in any order.  They must appear right after the command, before any
+other arguments.
 
 				*:map-local* *:map-<buffer>* *E224* *E225*
 If the first argument to one of these commands is "<buffer>" it will apply to
@@ -185,6 +186,12 @@ Prompts will still be given, e.g., for inputdialog().
 Using "<silent>" for an abbreviation is possible, but will cause redrawing of
 the command line to fail.
 
+						*:map-<special>* *:map-special*
+Define a mapping with <> notation for special keys, even though the "<" flag
+may appear in 'cpoptions'.  This is useful if the side effect of setting
+'cpoptions' is not desired.  Example: >
+	:map <special> <F12> /Header<CR>
+<
 						*:map-<script>* *:map-script*
 If the first argument to one of these commands is "<script>" and it is used to
 define a new mapping or abbreviation, the mapping will only remap characters
