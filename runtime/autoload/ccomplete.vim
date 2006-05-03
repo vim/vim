@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Mar 24
+" Last Change:	2006 May 03
 
 
 " This function is used for the 'omnifunc' option.
@@ -379,7 +379,9 @@ function! s:Nextitem(lead, items, depth, all)
     endif
 
     " Recognize "struct foobar" and "union foobar".
-    if (tokens[tidx] == 'struct' || tokens[tidx] == 'union') && tidx + 1 < len(tokens)
+    " Also do "class foobar" when it's C++ after all (doesn't work very well
+    " though).
+    if (tokens[tidx] == 'struct' || tokens[tidx] == 'union' || tokens[tidx] == 'class') && tidx + 1 < len(tokens)
       let res = s:StructMembers(tokens[tidx] . ':' . tokens[tidx + 1], a:items, a:all)
       break
     endif
@@ -421,7 +423,7 @@ function! s:Nextitem(lead, items, depth, all)
       if ei > 1
 	let cmdtokens = split(strpart(cmd, ei), '\s\+\|\<')
 	if len(cmdtokens) > 1
-	  if cmdtokens[0] == 'struct' || cmdtokens[0] == 'union'
+	  if cmdtokens[0] == 'struct' || cmdtokens[0] == 'union' || cmdtokens[0] == 'class'
 	    let name = ''
 	    " Use the first identifier after the "struct" or "union"
 	    for ti in range(len(cmdtokens) - 1)

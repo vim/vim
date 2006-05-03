@@ -91,6 +91,7 @@ ex_menu(eap)
     char_u	*map_to;
     int		noremap;
     int		silent = FALSE;
+    int		special = FALSE;
     int		unmenu;
     char_u	*map_buf;
     char_u	*arg;
@@ -129,6 +130,12 @@ ex_menu(eap)
 	{
 	    silent = TRUE;
 	    arg = skipwhite(arg + 8);
+	    continue;
+	}
+	if (STRNCMP(arg, "<special>", 9) == 0)
+	{
+	    special = TRUE;
+	    arg = skipwhite(arg + 9);
 	    continue;
 	}
 	break;
@@ -390,7 +397,7 @@ ex_menu(eap)
 	else if (modes & MENU_TIP_MODE)
 	    map_buf = NULL;	/* Menu tips are plain text. */
 	else
-	    map_to = replace_termcodes(map_to, &map_buf, FALSE, TRUE);
+	    map_to = replace_termcodes(map_to, &map_buf, FALSE, TRUE, special);
 	menuarg.modes = modes;
 #ifdef FEAT_TOOLBAR
 	menuarg.iconfile = icon;

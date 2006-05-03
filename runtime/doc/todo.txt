@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 02
+*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,24 +29,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
-
-Session file can contain:
-    args version.c main.c
-    edit version.c
-Can that be avoided?
-
-With 'mousefocus' set and using text tabline don't select first window.
-
-The Hungarian spell file uses different FOL/UPP/LOW items than other spell
-files with the same encoding, that causes problem when changing 'spelllang'.
-Clear character table when switching it?  Adjust Hungarian?
-
-Quickfix windows in different tabs should use same buffer, there is only one
-quickfix list.
-
-let exists() not ignore trailing text?
-
-Include new Python syntax file? (dharana)
 
 indent/html.vim doesn't restore 'ignorecase' and 'cpo'.
 
@@ -1116,6 +1098,9 @@ Tab pages:
 
 
 Spell checking:
+-   The Hungarian spell file uses four extra characters in the FOL/UPP/LOW
+    items than other spell files with the ISO-8859-2 encoding, that causes
+    problem when changing 'spelllang'.  There is no obvious way to fix this.
 -   Considering Hunspell 1.1.4:
     What does MAXNGRAMSUGS do?
     Is COMPLEXPREFIXES necessary when we have flags for affixes?
@@ -1226,6 +1211,11 @@ Folding:
     smoother?
 -   When creating a session, also store folds for buffers in the buffer list,
     using the wininfo in wi_folds.
+-   When currently editing the first file in the argument list the session
+    file can contain:
+	args version.c main.c
+	edit version.c
+    Can editing version.c twice be avoided?
 -   'foldmethod' "textobject": fold on sections and paragraph text objects.
 -   Add 'hidecomment' option: don't display comments in /* */ and after //.
     Or is the conceal patch from Vince Negri a more generic solution?
@@ -2108,6 +2098,8 @@ Omni completion:
 
 Insert mode completion/expansion:
 -   GUI implementation of the popup menu.
+7   When searching in other files the name flash by, too fast to read.  Only
+    display a name every second or so, like with ":vimgrep".
 8   When there is no word before the cursor but something like "sys." complete
     with "sys.".  Works well for C and similar languages.
 9   ^X^L completion doesn't repeat correctly.  It uses the first match with

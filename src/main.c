@@ -3606,11 +3606,11 @@ server_to_input_buf(str)
      *    B set - backslashes are *not* treated specially
      *    k set - keycodes are *not* reverse-engineered
      *    < unset - <Key> sequences *are* interpreted
-     *  The last parameter of replace_termcodes() is TRUE so that the <lt>
-     *  sequence is recognised - needed for a real backslash.
+     *  The last but one parameter of replace_termcodes() is TRUE so that the
+     *  <lt> sequence is recognised - needed for a real backslash.
      */
     p_cpo = (char_u *)"Bk";
-    str = replace_termcodes((char_u *)str, &ptr, FALSE, TRUE);
+    str = replace_termcodes((char_u *)str, &ptr, FALSE, TRUE, FALSE);
     p_cpo = cpo_save;
 
     if (*ptr != NUL)	/* trailing CTRL-V results in nothing */
