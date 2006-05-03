@@ -12033,7 +12033,7 @@ get_maparg(argvars, rettv, exact)
 
     mode = get_map_mode(&which, 0);
 
-    keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE);
+    keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, FALSE);
     rhs = check_map(keys, mode, exact, FALSE, abbr);
     vim_free(keys_buf);
     if (rhs != NULL)

@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2006-04-21 09:26+0200\n"
-"PO-Revision-Date:  2006-04-21 09:26+0200\n"
+"POT-Creation-Date: 2006-04-25 12:03+0200\n"
+"PO-Revision-Date:  2006-05-03 00:02+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -221,6 +221,9 @@ msgstr "E544: File keymap non trovato"
 
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Uso di :loadkeymap fuori da un file di comandi"
+
+msgid "E791: Empty keymap entry"
+msgstr "E791: Nessuna keymap per questo tasto"
 
 msgid " Keyword completion (^N^P)"
 msgstr " Completamento Keyword (^N^P)"
@@ -5427,6 +5430,9 @@ msgstr "numero modif.   ora"
 #, c-format
 msgid "%ld seconds ago"
 msgstr "%ld secondi fa"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: undojoin non è consentito dopo undo"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: lista 'undo' non valida"
