@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0g.  Last change: 2006 May 03
+*version7.txt*  For Vim version 7.0g.  Last change: 2006 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -100,10 +100,10 @@ Buffers without a name report "No Name" instead of "No File".  It was
 confusing for buffers with a name and 'buftype' set to "nofile".
 
 When ":file xxx" is used in a buffer without a name, the alternate file name
-isn't set.  This avoids creating buffers without a name that are not useful.
+isn't set.  This avoids creating buffers without a name, they are not useful.
 
 The "2html.vim" script now converts closed folds to HTML.  This means the HTML
-looks like its displayed, with the same folds open and closed.  Use "zR", or
+looks like it's displayed, with the same folds open and closed.  Use "zR", or
 "let html_ignore_folding=1", if no folds should appear in the HTML. (partly by
 Carl Osterwisch)
 Diff mode is now also converted to HTML as it is displayed.
@@ -2887,6 +2887,30 @@ changed to be able to use <> notation.  Also do this for ":menu" for
 consistency.
 
 When using "/encoding=abc" in a spell word list, only "bc" was used.
+
+When 'encoding' and 'printencoding' were both "utf-8" then ":hardcopy" didn't
+work. (Mike Williams)
+
+Mac: When building with "--disable-gui" the install directory would still be
+"/Applications" and Vim.app would be installed.  Now install in /usr/local as
+usual for a console application.
+
+GUI: when doing completion and there is one match and still searching for
+another, the cursor was displayed at the end of the line instead of after the
+match.  Now show the cursor after the match while still searching for matches.
+
+GUI: The mouse shape changed on the statusline even when 'mouse' was empty and
+they can't be dragged..
+
+GTK2: Selecting a button in the confirm() dialog with Tab or cursor keys and
+hitting Enter didn't select that button.  Removed GTK 1 specific code. (Neil
+Bird)
+
+When evaluating 'balloonexpr' takes a long time it could be called
+recursively, which could cause a crash.
+
+exists() could not be used to detect whether ":2match" is supported.  Added a
+check for it specifically.
 
 
  vim:tw=78:ts=8:ft=help:norl:

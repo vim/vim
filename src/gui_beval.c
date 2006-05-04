@@ -33,12 +33,18 @@ general_beval_cb(beval, state)
 #ifdef FEAT_WINDOWS
     win_T	*cw;
 #endif
-
+    static int	recursive = FALSE;
 
     /* Don't do anything when 'ballooneval' is off, messages scrolled the
      * windows up or we have no beval area. */
     if (!p_beval || balloonEval == NULL || msg_scrolled > 0)
 	return;
+
+    /* Don't do this recursively.  Happens when the expression evaluation
+     * takes a long time and invokes something that checks for CTRL-C typed. */
+    if (recursive)
+	return;
+    recursive = TRUE;
 
 #ifdef FEAT_EVAL
     if (get_beval_info(balloonEval, TRUE, &wp, &lnum, &text, &col) == OK)
@@ -84,6 +90,7 @@ general_beval_cb(beval, state)
 	    if (result != NULL && result[0] != NUL)
 	    {
 		gui_mch_post_balloon(beval, result);
+		recursive = FALSE;
 		return;
 	    }
 	}
@@ -97,6 +104,8 @@ general_beval_cb(beval, state)
     if (bevalServers & BEVAL_WORKSHOP)
 	workshop_beval_cb(beval, state);
 #endif
+
+    recursive = FALSE;
 }
 
 /* on Win32 only get_beval_info() is required */
