@@ -2221,6 +2221,7 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     DialogInfo *di = (DialogInfo *)data;
 
+#ifndef HAVE_GTK2
     /* Ignore hitting "Enter" if there is no default button. */
     if (event->keyval == GDK_Return)
     {
@@ -2228,6 +2229,7 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 	    gtk_dialog_response(di->dialog, GTK_RESPONSE_ACCEPT);
 	return TRUE;
     }
+#endif
 
     /* Close the dialog when hitting "Esc". */
     if (event->keyval == GDK_Escape)
@@ -2290,7 +2292,7 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 	dialoginfo.noalt = TRUE;
 
     /* Allow activation of mnemonic accelerators without pressing <Alt> when
-     * there is no textfield.  Handle pressing Enter and Esc. */
+     * there is no textfield.  Handle pressing Esc. */
     g_signal_connect(G_OBJECT(dialog), "key_press_event",
 			 G_CALLBACK(&dialog_key_press_event_cb), &dialoginfo);
 

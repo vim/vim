@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 03
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2313,6 +2313,8 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 					3  matches several user commands
 					To check for a supported command
 					always check the return value to be 2.
+			:2match		The |:2match| command.
+			:3match		The |:3match| command.
 			#event		autocommand defined for this event
 			#event#pattern	autocommand defined for this event and
 					pattern (the pattern is taken
@@ -2683,9 +2685,9 @@ getchar([expr])						*getchar()*
 		If [expr] is omitted, wait until a character is available.
 		If [expr] is 0, only get a character when one is available.
 		If [expr] is 1, only check if a character is available, it is
-				not consumed.  If a normal character is
-				available, it is returned, otherwise a
-				non-zero value is returned.
+				not consumed.  If one is available a non-zero
+				number is returned.  For a one-byte character
+				it is the character itself.
 		If a normal character available, it is returned as a Number.
 		Use nr2char() to convert it to a String.
 		The returned value is zero if no character is available.

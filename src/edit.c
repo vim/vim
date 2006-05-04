@@ -4150,6 +4150,15 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 
 	/* display the updated popup menu */
 	ins_compl_show_pum();
+#ifdef FEAT_GUI
+	if (gui.in_use)
+	{
+	    /* Show the cursor after the match, not after the redrawn text. */
+	    setcursor();
+	    out_flush();
+	    gui_update_cursor(FALSE, FALSE);
+	}
+#endif
 
 	/* Delete old text to be replaced, since we're still searching and
 	 * don't want to match ourselves!  */

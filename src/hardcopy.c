@@ -2507,12 +2507,13 @@ mch_print_init(psettings, jobname, forceit)
     if (*p_encoding == NUL)
 	p_encoding = enc_skip(p_enc);
 
-    /* Look for recognised multi-byte coding, and if the charset is recognised.
-     * This is to cope with the fact that various unicode encodings are
-     * supported in more than one of CJK. */
+    /* Look for a multi-byte font that matches the encoding and character set.
+     * Only look if multi-byte character set is defined, or using multi-byte
+     * encoding other than Unicode.  This is because a Unicode encoding does not
+     * uniquely identify a CJK character set to use. */
     p_mbenc = NULL;
     props = enc_canon_props(p_encoding);
-    if (!(props & ENC_8BIT) && (*p_penc != NUL || *p_pmcs != NUL))
+    if (!(props & ENC_8BIT) && ((*p_pmcs != NUL) || !(props & ENC_UNICODE)))
     {
 	p_mbenc_first = NULL;
 	p_mbchar = NULL;

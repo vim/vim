@@ -3394,12 +3394,6 @@ fi
     if test "x$CARBON" = "xyes"; then
       if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
-
-		if test x$prefix = xNONE; then
-	  prefix=/Applications
-	fi
-
-		datadir='${prefix}/Vim.app/Contents/Resources'
       fi
     fi
   fi
@@ -7266,6 +7260,13 @@ echo "${ECHO_T}yes" >&6;
   if test "$VIMNAME" = "vim"; then
     VIMNAME=Vim
   fi
+
+    if test x$prefix = xNONE; then
+    prefix=/Applications
+  fi
+
+    datadir='${prefix}/Vim.app/Contents/Resources'
+
     SKIP_GTK=YES;
   SKIP_GTK2=YES;
   SKIP_GNOME=YES;

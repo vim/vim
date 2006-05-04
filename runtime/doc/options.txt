@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0g.  Last change: 2006 May 03
+*options.txt*	For Vim version 7.0g.  Last change: 2006 May 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -763,7 +763,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Write the contents of the file, if it has been modified, on each
 	:next, :rewind, :last, :first, :previous, :stop, :suspend, :tag, :!,
-	:make, CTRL-] and CTRL-^ command; and when a CTRL-O, CTRL-I,
+	:make, CTRL-] and CTRL-^ command; and when a :buffer, CTRL-O, CTRL-I,
 	'{A-Z0-9}, or `{A-Z0-9} command takes one to another file.
 	Note that for some commands the 'autowrite' option is not used, see
 	'autowriteall' for that.

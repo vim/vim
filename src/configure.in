@@ -165,14 +165,6 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     if test "x$CARBON" = "xyes"; then
       if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk -a "X$enable_gui" != Xgtk2; then
 	with_x=no
-
-	dnl Default install directory is not /usr/local
-	if test x$prefix = xNONE; then
-	  prefix=/Applications
-	fi
-
-	dnl Sorry for the hard coded default
-	datadir='${prefix}/Vim.app/Contents/Resources'
       fi
     fi
   fi
@@ -1305,12 +1297,21 @@ fi
 
 if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   AC_MSG_CHECKING(for Carbon GUI)
-  dnl already did this
+  dnl already did the check, just give the message
   AC_MSG_RESULT(yes);
   GUITYPE=CARBONGUI
   if test "$VIMNAME" = "vim"; then
     VIMNAME=Vim
   fi
+
+  dnl Default install directory is not /usr/local
+  if test x$prefix = xNONE; then
+    prefix=/Applications
+  fi
+
+  dnl Sorry for the hard coded default
+  datadir='${prefix}/Vim.app/Contents/Resources'
+
   dnl skip everything else
   SKIP_GTK=YES;
   SKIP_GTK2=YES;

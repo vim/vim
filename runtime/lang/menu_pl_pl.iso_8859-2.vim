@@ -1,7 +1,7 @@
 " Menu Translations:	Polish
-" Maintainer:		Rafal M. Sulejman <rms@poczta.onet.pl>
+" Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl )
 " Initial Translation:	Marcin Dalecki <martin@dalecki.de>
-" Last Change: 5 May  2004
+" Last Change: 4 May  2006
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -19,9 +19,9 @@ menutrans &Credits		Po&dziêkowania
 menutrans &User\ Manual    Podrêcznik\ &u¿ytkownika
 menutrans Co&pying		&Kopiowanie
 menutrans &Version		&Wersja
-menutrans &About		o\ &Aplikacji
+menutrans &About		o\ &Programie
 menutrans &Sponsor/Register	&Sponsorowanie/Rejestracja
-menutrans O&rphans	K&ibaale\ Children\'s\ Center
+menutrans O&rphans		Sie&roty
 
 " File menu
 menutrans &File				&Plik
@@ -36,6 +36,7 @@ menutrans Split\ Patched\ &By\.\.\.	Podziel\ ³atane\ przez\.\.\.
 menutrans &Print			&Drukuj
 menutrans Sa&ve-Exit<Tab>:wqa		W&yj¶cie\ z\ zapisem<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Wyj¶cie<Tab>:qa
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Otwórz\ &kartê\.\.\.<Tab>:tabnew
 
 " Edit menu
 menutrans &Edit				&Edycja
@@ -57,6 +58,7 @@ menutrans Find\ and\ Rep&lace<Tab>:s	&Zamieñ<Tab>:s
 menutrans Options\.\.\.			Opcje\.\.\.
 menutrans Settings\ &Window		Ustawienia
 menutrans &Global\ Settings		Ustawienia\ &globalne
+menutrans Startup\ &Settings	Ustawienia\ &startowe
 menutrans F&ile\ Settings		Ustawienia\ dla\ pliku
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!			&Numerowanie\ wierszy<Tab>:set\ nu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!					Tryb\ &listowania<Tab>:set\ list!
@@ -110,6 +112,23 @@ menutrans &Tools			&Narzêdzia
 menutrans &Jump\ to\ this\ tag<Tab>g^]	&Skocz\ do\ taga<Tab>g^]
 menutrans Jump\ &back<Tab>^T		Skok\ w\ &ty³<Tab>^T
 menutrans Build\ &Tags\ File		&Twórz\ plik\ tagów
+" Spelling
+menutrans &Spelling	Pi&sownia
+menutrans &Spell\ Check\ On	W³±cz
+menutrans Spell\ Check\ &Off	Wy³±cz
+menutrans To\ &Next\ error<Tab>]s	Do\ &nastêpnego\ b³êdu<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s	Do\ &poprzedniego\ b³êdu<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=	Sugestie\ poprawek<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	Powtó&z\ poprawkê<Tab>:spellrepall
+menutrans Set\ language\ to\ "en"	Ustaw\ jêzyk\ na\ "en"
+menutrans Set\ language\ to\ "en_au"	Ustaw\ jêzyk\ na\ "en_au"
+menutrans Set\ language\ to\ "en_ca"	Ustaw\ jêzyk\ na\ "en_ca"
+menutrans Set\ language\ to\ "en_gb"	Ustaw\ jêzyk\ na\ "en_gb"
+menutrans Set\ language\ to\ "en_nz"	Ustaw\ jêzyk\ na\ "en_nz"
+menutrans Set\ language\ to\ "en_us"	Ustaw\ jêzyk\ na\ "en_us"
+menutrans Set\ language\ to\ "pl"	Ustaw\ jêzyk\ na\ "pl"
+menutrans &Find\ More\ Languages	&Znajd¼\ wiêcej\ jêzyków
+
 " Folding
 menutrans &Folding				&Zwijanie
 menutrans &Enable/Disable\ folds<Tab>zi		&Zwiñ/rozwiñ<Tab>zi
@@ -149,7 +168,7 @@ menutrans &Update<Tab>:cwin			Akt&ualizuj<Tab>:cwin
 menutrans &Close<Tab>:cclose			&Zamknij<Tab>:cclose
 menutrans &Open<Tab>:copen			&Otwórz<Tab>:copen
 
-menutrans &Set\ Compiler				U&staw\ kompilator
+menutrans Se&T\ Compiler				U&staw\ kompilator
 menutrans &Convert\ to\ HEX<Tab>:%!xxd     Kody\ szesnastkowe<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r     Zwyk³y\ tekst<Tab>:%!xxd\ -r
 
@@ -198,10 +217,13 @@ menutrans &Copy			&Kopiuj
 menutrans &Paste		&Wklej
 menutrans &Delete		&Skasuj
 menutrans Select\ Blockwise	Zaznacz\ &blok
+menutrans Select\ &Sentence	Zaznacz\ &zdanie
+menutrans Select\ Pa&ragraph	Zaznacz\ aka&pit
 menutrans Select\ &Word		Zaznacz\ &s³owo
 menutrans Select\ &Line		Zaznacz\ w&iersz
 menutrans Select\ &Block	Zaznacz\ &blok
 menutrans Select\ &All		Zaznacz\ c&a³o¶æ
+menutrans Input\ &Methods	Wprowadza&nie
 
 " The GUI toolbar
 if has("toolbar")
@@ -261,3 +283,4 @@ let g:menutrans_path_dialog = "Wprowad¼ ¶cie¿kê poszukiwania plików.\nProszê roz
 let g:menutrans_tags_dialog = "Podaj nazwy plików tagów.\nProszê rozdzielaæ nazwy przecinkiem."
 let g:menutrans_textwidth_dialog = "Wprowad¼ now± szeroko¶æ tekstu (0 wy³±cza przewijanie): "
 let g:menutrans_fileformat_dialog = "Wybierz format w którym ten plik ma byæ zapisany"
+let g:menutrans_fileformat_choices = "&Unix\n&Dos\n&Mac\n&Anuluj"

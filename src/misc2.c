@@ -3413,6 +3413,13 @@ update_mouseshape(shape_idx)
 	return;
     }
 
+    /* When ignoring the mouse don't change shape on the statusline. */
+    if (*p_mouse == NUL
+	    && (shape_idx == SHAPE_IDX_CLINE
+		|| shape_idx == SHAPE_IDX_STATUS
+		|| shape_idx == SHAPE_IDX_VSEP))
+	shape_idx = -2;
+
     if (shape_idx == -2
 	    && old_mouse_shape != shape_table[SHAPE_IDX_CLINE].mshape
 	    && old_mouse_shape != shape_table[SHAPE_IDX_STATUS].mshape
