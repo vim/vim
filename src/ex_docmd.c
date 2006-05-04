@@ -2997,11 +2997,14 @@ cmd_exists(name)
 	    return (cmdmods[i].name[j] == NUL ? 2 : 1);
     }
 
-    /* Check built-in commands and user defined commands. */
-    ea.cmd = name;
+    /* Check built-in commands and user defined commands.
+     * For ":2match" and ":3match" we need to skip the number. */
+    ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
     ea.cmdidx = (cmdidx_T)0;
     if (find_command(&ea, &full) == NULL)
 	return 3;
+    if (vim_isdigit(*name) && ea.cmdidx != CMD_match)
+	return 0;
     return (ea.cmdidx == CMD_SIZE ? 0 : (full ? 2 : 1));
 }
 #endif

@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.0g.  Last change: 2006 May 03
+*gui.txt*       For Vim version 7.0g.  Last change: 2006 May 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -102,7 +102,7 @@ There are a number of options which only have meaning in the GUI version of
 Vim.  These are 'guicursor', 'guifont', 'guipty' and 'guioptions'.  They are
 documented in |options.txt| with all the other options.
 
-If using the Motif or Athena version of the GUI (but not for the KDE, GTK+ or
+If using the Motif or Athena version of the GUI (but not for the GTK+ or
 Win32 version), a number of X resources are available.  See |gui-resources|.
 
 Another way to set the colors for different occasions is with highlight
@@ -487,7 +487,7 @@ a menu entry.  Hit <Enter> to execute it.  Hit <Esc> if you want to cancel.
 This does require the |+menu| feature enabled at compile time.
 
 							*tear-off-menus*
-KDE, GTK+ and Motif support Tear-off menus.  These are sort of sticky menus or
+GTK+ and Motif support Tear-off menus.  These are sort of sticky menus or
 pop-up menus that are present all the time.  If the resizing does not work
 correctly, this may be caused by using something like "Vim*geometry" in the
 defaults.  Use "Vim.geometry" instead.
@@ -666,7 +666,7 @@ simple.
 
 							*gui-toolbar*
 The toolbar is currently available in the Win32, Athena, Motif, GTK+ (X11),
-KDE and Photon GUI.  It should turn up in other GUIs in due course.  The
+and Photon GUI.  It should turn up in other GUIs in due course.  The
 default toolbar is setup in menu.vim.
 The display of the toolbar is controlled by the 'guioptions' letter 'T'.  You
 can thus have menu & toolbar together, or either on its own, or neither.
@@ -754,7 +754,7 @@ from the main menu bar.  You must then use the |:popup| or |:tearoff| command
 to display it.
 
 							*popup-menu*
-In the Win32, KDE, GTK+, Motif, Athena and Photon GUI, you can define the
+In the Win32, GTK+, Motif, Athena and Photon GUI, you can define the
 special menu "PopUp".  This is the menu that is displayed when the right mouse
 button is pressed, if 'mousemodel' is set to popup or popup_setpos.
 
@@ -964,8 +964,6 @@ This section describes other features which are related to the GUI.
 	if has("gui_running")
 	    if has("gui_gtk2")
 		:set guifont=Luxi\ Mono\ 12
-	    elseif has("gui_kde")
-		:set guifont=Luxi\ Mono/12/-1/5/50/0/0/0/1/0
 	    elseif has("x11")
 		" Also for GTK 1
 		:set guifont=*-lucidatypewriter-medium-r-normal-*-*-180-*-*-m-*-*
