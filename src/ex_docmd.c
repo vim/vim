@@ -2962,6 +2962,7 @@ cmd_exists(name)
     int		full = FALSE;
     int		i;
     int		j;
+    char_u	*p;
     static struct cmdmod
     {
 	char	*name;
@@ -3001,10 +3002,13 @@ cmd_exists(name)
      * For ":2match" and ":3match" we need to skip the number. */
     ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
     ea.cmdidx = (cmdidx_T)0;
-    if (find_command(&ea, &full) == NULL)
+    p = find_command(&ea, &full);
+    if (p == NULL)
 	return 3;
     if (vim_isdigit(*name) && ea.cmdidx != CMD_match)
 	return 0;
+    if (*skipwhite(p) != NUL)
+	return 0;	/* trailing garbage */
     return (ea.cmdidx == CMD_SIZE ? 0 : (full ? 2 : 1));
 }
 #endif
@@ -9884,7 +9888,7 @@ makeopens(fd, dirnow)
      */
     if (put_line(fd, "if exists('s:wipebuf')") == FAIL)
 	return FAIL;
-    if (put_line(fd, "  exe 'bwipe ' . s:wipebuf") == FAIL)
+    if (put_line(fd, "  silent exe 'bwipe ' . s:wipebuf") == FAIL)
 	return FAIL;
     if (put_line(fd, "endif") == FAIL)
 	return FAIL;

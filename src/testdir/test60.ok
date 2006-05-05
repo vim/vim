@@ -1,6 +1,8 @@
 
 #myagroup: 1
 OK
+#myagroup+b: 0
+OK
 #myagroup#BufEnter: 1
 OK
 #myagroup#BufEnter#*.my: 1
@@ -33,6 +35,8 @@ OK
 OK
 &tw: 1
 OK
+&tw-: 0
+OK
 &g:errorformat: 1
 OK
 &l:errorformat: 1
@@ -45,6 +49,8 @@ OK
 OK
 +incsearch: 1
 OK
++incsearch!1: 0
+OK
 +is: 1
 OK
 +autoprint: 0
@@ -55,13 +61,19 @@ $NON_ENV_VAR: 0
 OK
 *bufnr: 1
 OK
+*bufnr(): 1
+OK
 *myxyzfunc: 0
+OK
+*bufnr&6: 0
 OK
 *TestExists: 1
 OK
 *MyxyzFunc: 0
 OK
 :edit: 2
+OK
+:edit/a: 0
 OK
 :q: 1
 OK
@@ -79,9 +91,17 @@ OK
 OK
 local_var: 1
 OK
+local_var%n: 0
+OK
 local_var: 0
 OK
 local_list: 1
+OK
+local_list[1]: 1
+OK
+local_list[1]+5: 0
+OK
+local_list[2]: 0
 OK
 local_list: 0
 OK
@@ -94,6 +114,8 @@ OK
 curly_local_var: 0
 OK
 g:global_var: 1
+OK
+g:global_var-n: 1
 OK
 g:global_var: 0
 OK
