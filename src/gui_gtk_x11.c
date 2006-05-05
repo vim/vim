@@ -3205,11 +3205,19 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	    /* We handled the event. */
 	    return TRUE;
 	}
-	else if (bevent->button == 1 && clicked_page == 0)
+	else if (bevent->button == 1)
 	{
-	    /* Click after all tabs moves to next tab page. */
-	    if (send_tabline_event(0) && gtk_main_level() > 0)
-		gtk_main_quit();
+	    if (clicked_page == 0)
+	    {
+		/* Click after all tabs moves to next tab page. */
+		if (send_tabline_event(0) && gtk_main_level() > 0)
+		    gtk_main_quit();
+	    }
+#ifndef HAVE_GTK2
+	    else
+		gtk_notebook_set_page(GTK_NOTEBOOK(gui.tabline),
+							    clicked_page - 1);
+#endif
 	}
     }
 
@@ -3261,7 +3269,11 @@ gui_mch_show_tabline(int showit)
 #ifndef HAVE_GTK2
 	showing_tabline = showit;
 #endif
+	if (showit)
+	    GTK_WIDGET_UNSET_FLAGS(GTK_WIDGET(gui.tabline), GTK_CAN_FOCUS);
     }
+
+    gui_mch_update();
 }
 
 /*
@@ -3668,9 +3680,7 @@ gui_mch_init(void)
     gtk_notebook_set_show_border(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_show_tabs(GTK_NOTEBOOK(gui.tabline), FALSE);
     gtk_notebook_set_scrollable(GTK_NOTEBOOK(gui.tabline), TRUE);
-# ifdef HAVE_GTK2
-    g_object_set(GTK_OBJECT(gui.tabline), "tab-border", 0, NULL);
-# endif
+    gtk_notebook_set_tab_border(GTK_NOTEBOOK(gui.tabline), FALSE);
 
     tabline_tooltip = gtk_tooltips_new();
     gtk_tooltips_enable(GTK_TOOLTIPS(tabline_tooltip));

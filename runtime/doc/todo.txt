@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 04
+*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,16 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Cursor moved while evaluating balloonexpr. (Neil Bird)
-
-Change exists() not to ignore non-isk chars after the recognized word. (Benji
-Fisher)
-
-GTK1: tab page labels don't work. (Helmut Schellong)
-
-Test 61 fails sometimes.
-
-indent/html.vim doesn't restore 'ignorecase' and 'cpo'.
+Test 61 fails sometimes.  This is a timing problem with "sleep 2" not always
+taking 2 seconds.
 
 
 Awaiting updated patches:

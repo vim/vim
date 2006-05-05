@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0g.  Last change: 2006 May 04
+*version7.txt*  For Vim version 7.0g.  Last change: 2006 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -976,6 +976,28 @@ New autocommand events: ~
 |TabLeave|		just before leaving a tab page
 
 |VimResized|		after the Vim window size changed (Yakov Lerner)
+
+
+New highlight groups: ~
+
+Pmenu                   Popup menu: normal item |hl-Pmenu|
+PmenuSel                Popup menu: selected item |hl-PmenuSel|
+PmenuThumb              Popup menu: scrollbar |hl-PmenuThumb|
+PmenuSbar               Popup menu: Thumb of the scrollbar |hl-PmenuSbar|
+
+TabLine                 tab pages line, inactive label |hl-TabLine|
+TabLineSel              tab pages line, selected label |hl-TabLineSel|
+TabLineFill             tab pages line, filler |hl-TabLineFill|
+
+SpellBad                badly spelled word |hl-SpellBad|
+SpellCap                word with wrong caps |hl-SpellCap|
+SpellRare               rare word |hl-SpellRare|
+SpellLocal              word only exists in other region |hl-SpellLocal|
+
+CursorColumn            'cursorcolumn' |hl-CursorColumn|
+CursorLine              'cursorline' |hl-CursorLine|
+
+MatchParen              matching parens |pi_paren.txt| |hl-MatchParen|
 
 
 New items in search patterns: ~
@@ -2911,6 +2933,28 @@ recursively, which could cause a crash.
 
 exists() could not be used to detect whether ":2match" is supported.  Added a
 check for it specifically.
+
+GTK1: Tab page labels didn't work. (Yegappan Lakshmanan)
+
+Insert mode completion: When finding matches use 'ignorecase', but when adding
+matches to the list don't use it, so that all words with different case are
+added, "word", "Word" and "WORD".
+
+When 'cursorline' and 'hlsearch' are set and the search pattern is "x\n"
+the rest of the line was highlighted as a match.
+
+Cursor moved while evaluating 'balloonexpr' that invokes ":isearch" and
+redirects the output.  Don't move the cursor to the command line if msg_silent
+is set.
+
+exists() ignored text after a function name and option name, which could
+result in false positives.
+
+exists() ignored characters after the recognized word, which can be wrong when
+using a name with non-keyword characters.  Specifically, these calls no longer
+allow characters after the name: exists('*funcname') exists('*funcname(...')
+exists('&option') exists(':cmd') exists('g:name') exists('g:name[n]')
+exists('g:name.n')
 
 
  vim:tw=78:ts=8:ft=help:norl:
