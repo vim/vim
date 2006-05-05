@@ -4871,7 +4871,7 @@ search_line:
 			goto exit_matched;
 		}
 
-		add_r = ins_compl_add_infercase(aux, i, p_ic,
+		add_r = ins_compl_add_infercase(aux, i, FALSE,
 			curr_fname == curbuf->b_fname ? NULL : curr_fname,
 			dir, reuse);
 		if (add_r == OK)
@@ -5110,7 +5110,7 @@ show_pat_in_path(line, type, did_show, action, fp, lnum, count)
 
     if (did_show)
 	msg_putchar('\n');	/* cursor below last one */
-    else
+    else if (!msg_silent)
 	gotocmdline(TRUE);	/* cursor at status line */
     if (got_int)		/* 'q' typed at "--more--" message */
 	return;

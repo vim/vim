@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0g.  Last change: 2006 Apr 30
+*change.txt*    For Vim version 7.0g.  Last change: 2006 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1429,8 +1429,9 @@ value	action	~
 "c"	automatic formatting for comments, but not text (good for C code)
 "tc"	automatic formatting for text and comments
 
-Note that when 'textwidth' is 0, Vim does no formatting anyway (but does
-insert comment leaders according to the 'comments' option).
+Note that when 'textwidth' is 0, Vim does no automatic formatting anyway (but
+does insert comment leaders according to the 'comments' option).  An exception
+is when the 'a' flag is present. |auto-format|
 
 Note that when 'paste' is on, Vim does no formatting at all.
 
@@ -1484,6 +1485,9 @@ editing text paragraphs.  A few hints on how to use this:
 	bla foobar bla bla foobar
 
 - Add the 'c' flag to only auto-format comments.  Useful in source code.
+
+- Set 'textwidth' to the desired width.  If it is zero then 79 is used, or the
+  width of the screen if this is smaller.
 
 And a few warnings:
 

@@ -2806,7 +2806,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 			ptr = find_word_end(ptr);
 		    add_r = ins_compl_add_infercase(regmatch->startp[0],
 					  (int)(ptr - regmatch->startp[0]),
-						     p_ic, files[i], *dir, 0);
+						     FALSE, files[i], *dir, 0);
 		    if (thesaurus)
 		    {
 			char_u *wstart;
@@ -2842,7 +2842,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 				ptr = find_word_end(ptr);
 			    add_r = ins_compl_add_infercase(wstart,
 				    (int)(ptr - wstart),
-				    p_ic, files[i], *dir, 0);
+				    FALSE, files[i], *dir, 0);
 			}
 		    }
 		    if (add_r == OK)
@@ -3534,7 +3534,7 @@ ins_compl_add_tv(tv, dir)
     int		dir;
 {
     char_u	*word;
-    int		icase = p_ic;
+    int		icase = FALSE;
     int		dup = FALSE;
     char_u	*(cptext[CPT_COUNT]);
 
@@ -3753,7 +3753,7 @@ ins_compl_get_exp(ini)
 		    TAG_INS_COMP | (ctrl_x_mode ? TAG_VERBOSE : 0),
 		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
 	    {
-		ins_compl_add_matches(num_matches, matches, p_ic);
+		ins_compl_add_matches(num_matches, matches, FALSE);
 	    }
 	    p_ic = save_p_ic;
 	    break;
@@ -3928,7 +3928,7 @@ ins_compl_get_exp(ini)
 			    continue;
 		    }
 		}
-		if (ins_compl_add_infercase(ptr, len, p_ic,
+		if (ins_compl_add_infercase(ptr, len, FALSE,
 				 ins_buf == curbuf ? NULL : ins_buf->b_sfname,
 					   0, flags) != NOTDONE)
 		{
@@ -5818,7 +5818,7 @@ check_auto_format(end_insert)
  */
     int
 comp_textwidth(ff)
-    int		ff;	/* force formatting (for "Q" command) */
+    int		ff;	/* force formatting (for "gq" command) */
 {
     int		textwidth;
 

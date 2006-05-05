@@ -2626,6 +2626,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		prev_c = 0;		/* previous Arabic character */
     int		prev_c1 = 0;		/* first composing char for prev_c */
 #endif
+#if defined(FEAT_DIFF) || defined(LINE_ATTR)
+    int		did_line_attr = 0;
+#endif
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -4133,6 +4136,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    /* Highlight until the right side of the window */
 		    c = ' ';
 		    --ptr;	    /* put it back at the NUL */
+
+		    /* Remember we do the char for line highlighting. */
+		    ++did_line_attr;
+
+		    /* don't do search HL for the rest of the line */
+		    if (line_attr != 0 && char_attr == search_attr && col > 0)
+			char_attr = line_attr;
 # ifdef FEAT_DIFF
 		    if (diff_hlf == HLF_TXD)
 		    {
@@ -4224,22 +4234,34 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 
 	/*
-	 * At end of the text line.
+	 * At end of the text line or just after the last character.
 	 */
-	if (c == NUL)
+	if (c == NUL
+#if defined(FEAT_DIFF) || defined(LINE_ATTR)
+		|| did_line_attr == 1
+#endif
+		)
 	{
+#ifdef FEAT_SEARCH_EXTRA
+	    long prevcol = (long)(ptr - line) - (c == NUL);
+#endif
+
 	    /* invert at least one char, used for Visual and empty line or
 	     * highlight match at end of line. If it's beyond the last
 	     * char on the screen, just overwrite that one (tricky!)  Not
 	     * needed when a '$' was displayed for 'list'. */
 	    if (lcs_eol == lcs_eol_one
-		    && ((area_attr != 0 && vcol == fromcol)
+		    && ((area_attr != 0 && vcol == fromcol && c == NUL)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
-			|| (ptr - line) - 1 == (long)search_hl.startcol
-			|| (ptr - line) - 1 == (long)match_hl[0].startcol
-			|| (ptr - line) - 1 == (long)match_hl[1].startcol
-			|| (ptr - line) - 1 == (long)match_hl[2].startcol
+			|| ((prevcol == (long)search_hl.startcol
+				|| prevcol == (long)match_hl[0].startcol
+				|| prevcol == (long)match_hl[1].startcol
+				|| prevcol == (long)match_hl[2].startcol)
+# if defined(FEAT_DIFF) || defined(LINE_ATTR)
+			    && did_line_attr <= 1
+# endif
+			   )
 #endif
 		       ))
 	    {
@@ -4297,7 +4319,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    ++col;
 		++vcol;
 	    }
+	}
 
+	/*
+	 * At end of the text line.
+	 */
+	if (c == NUL)
+	{
 #ifdef FEAT_SYN_HL
 	    /* Highlight 'cursorcolumn' past end of the line. */
 	    if (wp->w_p_wrap)

@@ -18,6 +18,8 @@ endfunction
 
     " valid autocmd group
     let test_cases += [['#myagroup', 1]]
+    " valid autocmd group with garbage
+    let test_cases += [['#myagroup+b', 0]]
     " Valid autocmd group and event
     let test_cases += [['#myagroup#BufEnter', 1]]
     " Valid autocmd group, event and pattern
@@ -51,6 +53,8 @@ endfunction
     let test_cases += [['&textwidth', 1]]
     " Existing and working option (short form)
     let test_cases += [['&tw', 1]]
+    " Existing and working option with garbage
+    let test_cases += [['&tw-', 0]]
     " Global option
     let test_cases += [['&g:errorformat', 1]]
     " Local option
@@ -64,6 +68,8 @@ endfunction
 
     " Existing and working option (long form)
     let test_cases += [['+incsearch', 1]]
+    " Existing and working option with garbage
+    let test_cases += [['+incsearch!1', 0]]
     " Existing and working option (short form)
     let test_cases += [['+is', 1]]
     " Existing option that is hidden.
@@ -77,8 +83,12 @@ endfunction
 
     " Valid internal function
     let test_cases += [['*bufnr', 1]]
+    " Valid internal function with ()
+    let test_cases += [['*bufnr()', 1]]
     " Non-existing internal function
     let test_cases += [['*myxyzfunc', 0]]
+    " Valid internal function with garbage
+    let test_cases += [['*bufnr&6', 0]]
 
     " Valid user defined function
     let test_cases += [['*TestExists', 1]]
@@ -95,6 +105,14 @@ endfunction
     " Valid internal command (full match)
     echo ':edit: 2'
     if exists(':edit') == 2
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid internal command (full match) with garbage
+    echo ':edit/a: 0'
+    if exists(':edit/a') == 0
 	echo "OK"
     else
 	echo "FAILED"
@@ -171,6 +189,15 @@ endfunction
 	echo "FAILED"
     endif
 
+    " Valid local variable with garbage
+    let local_var = 1
+    echo 'local_var%n: 0'
+    if !exists('local_var%n')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
     " Non-existing local variable
     unlet local_var
     echo 'local_var: 0'
@@ -184,6 +211,30 @@ endfunction
     let local_list = ["blue", "orange"]
     echo 'local_list: 1'
     if exists('local_list')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid local list item
+    echo 'local_list[1]: 1'
+    if exists('local_list[1]')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Valid local list item with garbage
+    echo 'local_list[1]+5: 0'
+    if !exists('local_list[1]+5')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Invalid local list item
+    echo 'local_list[2]: 0'
+    if !exists('local_list[2]')
 	echo "OK"
     else
 	echo "FAILED"
@@ -240,6 +291,14 @@ endfunction
     let g:global_var = 1
     echo 'g:global_var: 1'
     if exists('g:global_var')
+	echo "OK"
+    else
+	echo "FAILED"
+    endif
+
+    " Existing global variable with garbage
+    echo 'g:global_var-n: 1'
+    if !exists('g:global_var-n')
 	echo "OK"
     else
 	echo "FAILED"

@@ -2221,16 +2221,6 @@ dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     DialogInfo *di = (DialogInfo *)data;
 
-#ifndef HAVE_GTK2
-    /* Ignore hitting "Enter" if there is no default button. */
-    if (event->keyval == GDK_Return)
-    {
-	if (!di->ignore_enter)
-	    gtk_dialog_response(di->dialog, GTK_RESPONSE_ACCEPT);
-	return TRUE;
-    }
-#endif
-
     /* Close the dialog when hitting "Esc". */
     if (event->keyval == GDK_Escape)
     {

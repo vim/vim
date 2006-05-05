@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 04
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2346,12 +2346,13 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 			exists("##ColorScheme")
 <		There must be no space between the symbol (&/$/*/#) and the
 		name.
-		Trailing characters that can't be part of the name are often
-		ignored, but don't depend on it, it may change in the future!
-		Example: >
-			exists("*strftime()")
-<		This currently works, but it should really be: >
-			exists("*strftime")
+		There must be no extra characters after the name, although in
+		a few cases this is ignored.  That may become more strict in
+		the future, thus don't count on it!
+		Working example: >
+			exists(":make")
+<		NOT working example: >
+			exists(":make install")
 
 <		Note that the argument must be a string, not the name of the
 		variable itself.  For example: >
@@ -2678,21 +2679,25 @@ getbufvar({expr}, {varname})				*getbufvar()*
 			:echo "todo myvar = " . getbufvar("todo", "myvar")
 <
 getchar([expr])						*getchar()*
-		Get a single character from the user.  If it is an 8-bit
-		character, the result is a number.  Otherwise a String is
-		returned with the encoded character.  For a special key it's a
-		sequence of bytes starting with 0x80 (decimal: 128).
+		Get a single character from the user or input stream.
 		If [expr] is omitted, wait until a character is available.
 		If [expr] is 0, only get a character when one is available.
+			Return zero otherwise.
 		If [expr] is 1, only check if a character is available, it is
-				not consumed.  If one is available a non-zero
-				number is returned.  For a one-byte character
-				it is the character itself.
-		If a normal character available, it is returned as a Number.
-		Use nr2char() to convert it to a String.
-		The returned value is zero if no character is available.
-		The returned value is a string of characters for special keys
-		and when a modifier (shift, control, alt) was used.
+			not consumed.  Return zero if no character available.
+
+		Without {expr} and when {expr} is 0 a whole character or
+		special key is returned.  If it is an 8-bit character, the
+		result is a number.  Use nr2char() to convert it to a String.
+		Otherwise a String is returned with the encoded character.
+		For a special key it's a sequence of bytes starting with 0x80
+		(decimal: 128).  The returned value is also a String when a
+		modifier (shift, control, alt) was used that is not included
+		in the character.
+
+		When {expr} is 1 only the first byte is returned.  For a
+		one-byte character it is the character itself.
+
 		There is no prompt, you will somehow have to make clear to the
 		user that a character has to be typed.
 		There is no mapping for the character.

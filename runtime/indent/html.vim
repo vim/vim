@@ -1,6 +1,7 @@
 " Description:	html indenter
 " Author:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Tue, 27 Apr 2004 10:28:39 CEST
+" 		Restoring 'cpo' and 'ic' added by Bram 2006 May 5
 " Globals:	g:html_indent_tags	   -- indenting tags
 "		g:html_indent_strict       -- inhibit 'O O' elements
 "		g:html_indent_strict_table -- inhibit 'O -' elements
@@ -116,6 +117,7 @@ endif
 
 delfun <SID>HtmlIndentPush
 
+let s:cpo_save = &cpo
 set cpo-=C
 
 " [-- count indent-increasing tags of line a:lnum --]
@@ -183,6 +185,9 @@ fun! HtmlIndentGet(lnum)
 		\ || 0 < searchpair('\c<pre>', '', '\c</pre>', 'nWb')
 		\ || 0 < searchpair('\c<pre>', '', '\c</pre>', 'nW')
 	" we're in a line with </pre> or inside <pre> ... </pre>
+	if restore_ic == 0
+	  setlocal noic
+	endif
 	return -1
     endif
 
@@ -192,6 +197,9 @@ fun! HtmlIndentGet(lnum)
     \ || 0 < searchpair(js, '', '</script>', 'nW')
 	" we're inside javascript
 	if getline(lnum) !~ js && getline(a:lnum) != '</script>'
+	    if restore_ic == 0
+	      setlocal noic
+	    endif
 	    return cindent(a:lnum)
 	endif
     endif
@@ -202,6 +210,9 @@ fun! HtmlIndentGet(lnum)
 	" starting <pre> to restore the indent.
 	let preline = prevnonblank(search('\c<pre>', 'bW') - 1)
 	if preline > 0
+	    if restore_ic == 0
+	      setlocal noic
+	    endif
 	    return indent(preline)
 	endif
     endif
@@ -215,5 +226,8 @@ fun! HtmlIndentGet(lnum)
 
     return indent(lnum) + (&sw * ind)
 endfun
+
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " [-- EOF <runtime>/indent/html.vim --]
