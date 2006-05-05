@@ -8791,7 +8791,11 @@ f_exists(argvars, rettv)
 	}
     }
     else if (*p == '&' || *p == '+')			/* option */
+    {
 	n = (get_option_tv(&p, NULL, TRUE) == OK);
+	if (*skipwhite(p) != NUL)
+	    n = FALSE;			/* trailing garbage */
+    }
     else if (*p == '*')			/* internal or user defined function */
     {
 	n = function_exists(p + 1);
@@ -8830,6 +8834,8 @@ f_exists(argvars, rettv)
 		    clear_tv(&tv);
 	    }
 	}
+	if (*p != NUL)
+	    n = FALSE;
 
 	vim_free(tofree);
     }
@@ -19109,14 +19115,18 @@ function_exists(name)
     int	    n = FALSE;
 
     p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL);
-    if (p != NULL)
+    nm = skipwhite(nm);
+
+    /* Only accept "funcname", "funcname ", "funcname (..." and
+     * "funcname(...", not "funcname!...". */
+    if (p != NULL && (*nm == NUL || *nm == '('))
     {
 	if (builtin_function(p))
 	    n = (find_internal_func(p) >= 0);
 	else
 	    n = (find_func(p) != NULL);
-	vim_free(p);
     }
+    vim_free(p);
     return n;
 }
 
