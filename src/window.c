@@ -3425,19 +3425,22 @@ enter_tabpage(tp, old_curbuf)
     buf_T	*old_curbuf;
 {
     int		old_off = tp->tp_firstwin->w_winrow;
+    win_T	*next_prevwin = tp->tp_prevwin;
 
     curtab = tp;
     firstwin = tp->tp_firstwin;
     lastwin = tp->tp_lastwin;
     topframe = tp->tp_topframe;
+
+    /* We would like doing the TabEnter event first, but we don't have a
+     * valid current window yet, which may break some commands.
+     * This triggers autocommands, thus may make "tp" invalid. */
+    win_enter_ext(tp->tp_curwin, FALSE, TRUE);
+    prevwin = next_prevwin;
+
 #ifdef FEAT_AUTOCMD
     apply_autocmds(EVENT_TABENTER, NULL, NULL, FALSE, curbuf);
-#endif
 
-    win_enter_ext(tp->tp_curwin, FALSE, TRUE);
-    prevwin = tp->tp_prevwin;
-
-#ifdef FEAT_AUTOCMD
     if (old_curbuf != curbuf)
 	apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
 #endif

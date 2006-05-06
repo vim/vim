@@ -2595,8 +2595,11 @@ do_more_prompt(typed_char)
 		    {
 			/* redisplay all lines */
 			screenclear();
-			for (i = 0; i < Rows - 1; ++i)
+			for (i = 0; mp != NULL && i < Rows - 1; ++i)
+			{
 			    mp = disp_sb_line(i, mp);
+			    ++msg_scrolled;
+			}
 		    }
 		    scroll = 0;
 		}
