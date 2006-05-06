@@ -1599,6 +1599,7 @@ gui_mch_set_shellsize(int width, int height,
     int		win_width, win_height;
     int		win_xpos, win_ypos;
     WINDOWPLACEMENT wndpl;
+    int		workarea_left;
 
     /* Try to keep window completely on screen. */
     /* Get position of the screen work area.  This is the part that is not
@@ -1632,11 +1633,21 @@ gui_mch_set_shellsize(int width, int height,
 #endif
 			;
 
+    /* There is an inconsistency when using two monitors and Vim is on the
+     * second (right) one: win_xpos will be the offset from the workarea of
+     * the left monitor.  While with one monitor it's the offset from the
+     * workarea (including a possible taskbar on the left).  Detect the second
+     * monitor by checking for the left offset to be quite big. */
+    if (workarea_rect.left > 300)
+	workarea_left = 0;
+    else
+	workarea_left = workarea_rect.left;
+
     /* If the window is going off the screen, move it on to the screen.
      * win_xpos and win_ypos are relative to the workarea. */
     if ((direction & RESIZE_HOR)
-	   && workarea_rect.left + win_xpos + win_width > workarea_rect.right)
-	win_xpos = workarea_rect.right - win_width - workarea_rect.left;
+	    && workarea_left + win_xpos + win_width > workarea_rect.right)
+	win_xpos = workarea_rect.right - win_width - workarea_left;
 
     if ((direction & RESIZE_HOR) && win_xpos < 0)
 	win_xpos = 0;

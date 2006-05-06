@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0g.  Last change: 2006 Apr 30
+*autocmd.txt*   For Vim version 7.0g.  Last change: 2006 May 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -734,8 +734,8 @@ Syntax				When the 'syntax' option has been set.
 				See |:syn-on|.
 							*TabEnter*
 TabEnter			Just after entering a tab page. |tab-page|
-				Before triggering the WinEnter and BufEnter
-				events.
+				After triggering the WinEnter and before
+				triggering the BufEnter event.
 							*TabLeave*
 TabLeave			Just before leaving a tab page. |tab-page|
 				A WinLeave event will have been triggered

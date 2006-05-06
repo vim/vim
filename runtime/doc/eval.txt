@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 05
+*eval.txt*      For Vim version 7.0g.  Last change: 2006 May 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2691,12 +2691,14 @@ getchar([expr])						*getchar()*
 		result is a number.  Use nr2char() to convert it to a String.
 		Otherwise a String is returned with the encoded character.
 		For a special key it's a sequence of bytes starting with 0x80
-		(decimal: 128).  The returned value is also a String when a
-		modifier (shift, control, alt) was used that is not included
-		in the character.
+		(decimal: 128).  This is the same value as the string
+		"\<Key>", e.g., "\<Left>".  The returned value is also a
+		String when a modifier (shift, control, alt) was used that is
+		not included in the character.
 
 		When {expr} is 1 only the first byte is returned.  For a
-		one-byte character it is the character itself.
+		one-byte character it is the character itself as a number.
+		Use nr2char() to convert it to a String.
 
 		There is no prompt, you will somehow have to make clear to the
 		user that a character has to be typed.
@@ -4677,6 +4679,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		like the ":substitute" command (without any flags).  But the
 		matching with {pat} is always done like the 'magic' option is
 		set and 'cpoptions' is empty (to make scripts portable).
+		'ignorecase' is still relevant.
 		See |string-match| for how {pat} is used.
 		And a "~" in {sub} is not replaced with the previous {sub}.
 		Note that some codes in {sub} have a special meaning
