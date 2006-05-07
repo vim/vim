@@ -105,6 +105,11 @@ static int	  compl_used_match;	/* Selected one of the matches.  When
 					   FALSE the match was edited or using
 					   the longest common string. */
 
+static int	  compl_was_interrupted = FALSE;  /* didn't finish finding
+						     completions. */
+
+static int	  compl_restarting = FALSE;	/* don't insert match */
+
 /* When the first completion is done "compl_started" is set.  When it's
  * FALSE the word to be completed must be located. */
 static int	  compl_started = FALSE;
@@ -139,7 +144,9 @@ static char_u *find_line_end __ARGS((char_u *ptr));
 static void ins_compl_free __ARGS((void));
 static void ins_compl_clear __ARGS((void));
 static int  ins_compl_bs __ARGS((void));
+static void ins_compl_new_leader __ARGS((void));
 static void ins_compl_addleader __ARGS((int c));
+static void ins_compl_restart __ARGS((void));
 static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
 static int  ins_compl_prep __ARGS((int c));
@@ -3008,43 +3015,69 @@ ins_compl_bs()
     if ((int)(p - line) - (int)compl_col <= 0)
 	return K_BS;
 
-    if (curwin->w_cursor.col <= compl_col + compl_length)
-    {
-	/* Deleted more than what was used to find matches, need to look for
-	 * matches all over again. */
-	ins_compl_free();
-	compl_started = FALSE;
-	compl_matches = 0;
-	compl_cont_status = 0;
-	compl_cont_mode = 0;
-    }
+    /* For redo we need to repeat this backspace. */
+    AppendCharToRedobuff(K_BS);
+
+    /* Deleted more than what was used to find matches or didn't finish
+     * finding all matches: need to look for matches all over again. */
+    if (curwin->w_cursor.col <= compl_col + compl_length
+						     || compl_was_interrupted)
+	ins_compl_restart();
 
     vim_free(compl_leader);
     compl_leader = vim_strnsave(line + compl_col, (int)(p - line) - compl_col);
     if (compl_leader != NULL)
     {
-	ins_compl_del_pum();
-	ins_compl_delete();
-	ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	ins_compl_new_leader();
+	return NUL;
+    }
+    return K_BS;
+}
 
-	if (compl_started)
-	    ins_compl_set_original_text(compl_leader);
-	else
-	{
+/*
+ * Called after changing "compl_leader".
+ * Show the popup menu with a different set of matches.
+ * May also search for matches again if the previous search was interrupted.
+ */
+    static void
+ins_compl_new_leader()
+{
+    ins_compl_del_pum();
+    ins_compl_delete();
+    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+    compl_used_match = FALSE;
+    compl_enter_selects = FALSE;
+
+    if (compl_started)
+	ins_compl_set_original_text(compl_leader);
+    else
+    {
 #ifdef FEAT_SPELL
-	    spell_bad_len = 0;	/* need to redetect bad word */
+	spell_bad_len = 0;	/* need to redetect bad word */
 #endif
-	    /* Matches were cleared, need to search for them now. */
-	    if (ins_complete(Ctrl_N) == FAIL)
-		compl_cont_status = 0;
-	    else
-	    {
-		/* Remove the completed word again. */
-		ins_compl_delete();
-		ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
-	    }
+	/*
+	 * Matches were cleared, need to search for them now.  First display
+	 * the changed text before the cursor.  Set "compl_restarting" to
+	 * avoid that the first match is inserted.
+	 */
+	update_screen(0);
+#ifdef FEAT_GUI
+	if (gui.in_use)
+	{
+	    /* Show the cursor after the match, not after the redrawn text. */
+	    setcursor();
+	    out_flush();
+	    gui_update_cursor(FALSE, FALSE);
 	}
+#endif
+	compl_restarting = TRUE;
+	if (ins_complete(Ctrl_N) == FAIL)
+	    compl_cont_status = 0;
+	compl_restarting = FALSE;
+    }
 
+    if (!compl_used_match)
+    {
 	/* Go to the original text, since none of the matches is inserted. */
 	if (compl_first_match->cp_prev != NULL
 		&& (compl_first_match->cp_prev->cp_flags & ORIGINAL_TEXT))
@@ -3053,15 +3086,10 @@ ins_compl_bs()
 	    compl_shown_match = compl_first_match;
 	compl_curr_match = compl_shown_match;
 	compl_shows_dir = compl_direction;
-
-	/* Show the popup menu with a different set of matches. */
-	ins_compl_show_pum();
-	compl_used_match = FALSE;
-	compl_enter_selects = FALSE;
-
-	return NUL;
     }
-    return K_BS;
+
+    /* Show the popup menu with a different set of matches. */
+    ins_compl_show_pum();
 }
 
 /*
@@ -3087,18 +3115,33 @@ ins_compl_addleader(c)
 #endif
 	ins_char(c);
 
+    /* For redo we need to count this character so that the number of
+     * backspaces is correct. */
+    AppendCharToRedobuff(c);
+
+    /* If we didn't complete finding matches we must search again. */
+    if (compl_was_interrupted)
+	ins_compl_restart();
+
     vim_free(compl_leader);
     compl_leader = vim_strnsave(ml_get_curline() + compl_col,
 					    curwin->w_cursor.col - compl_col);
     if (compl_leader != NULL)
-    {
-	/* Show the popup menu with a different set of matches. */
-	ins_compl_del_pum();
-	ins_compl_show_pum();
-	compl_used_match = FALSE;
-	compl_enter_selects = FALSE;
-	ins_compl_set_original_text(compl_leader);
-    }
+	ins_compl_new_leader();
+}
+
+/*
+ * Setup for finding completions again without leaving CTRL-X mode.  Used when
+ * BS or a key was typed while still searching for matches.
+ */
+    static void
+ins_compl_restart()
+{
+    ins_compl_free();
+    compl_started = FALSE;
+    compl_matches = 0;
+    compl_cont_status = 0;
+    compl_cont_mode = 0;
 }
 
 /*
@@ -4060,13 +4103,20 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     }
 
     if (allow_get_expansion && insert_match
-				  && (!compl_get_longest || compl_used_match))
+	    && (!(compl_get_longest || compl_restarting) || compl_used_match))
 	/* Delete old text to be replaced */
 	ins_compl_delete();
 
     /* When finding the longest common text we stick at the original text,
      * don't let CTRL-N or CTRL-P move to the first match. */
     advance = count != 1 || !allow_get_expansion || !compl_get_longest;
+
+    /* When restarting the search don't insert the first match either. */
+    if (compl_restarting)
+    {
+	advance = FALSE;
+	compl_restarting = FALSE;
+    }
 
     /* Repeat this for when <PageUp> or <PageDown> is typed.  But don't wrap
      * around. */
@@ -4102,6 +4152,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	    if (!allow_get_expansion)
 		return -1;
 
+	    /* Find matches. */
 	    num_matches = ins_compl_get_exp(&compl_startpos);
 	    if (compl_pending != 0 && compl_direction == compl_shows_dir
 								   && advance)
@@ -4850,6 +4901,7 @@ ins_complete(c)
 	setcursor();
 	RedrawingDisabled = n;
     }
+    compl_was_interrupted = compl_interrupted;
     compl_interrupted = FALSE;
 
     return OK;

@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.0g.  Last change: 2006 May 05
+*help.txt*	For Vim version 7.0.  Last change: 2006 May 07
 
 			VIM - main help file
 									 k
@@ -13,7 +13,7 @@ Jump to a subject:  Position the cursor on a tag (e.g. |bars|) and hit CTRL-].
 	Jump back:  Type CTRL-T or CTRL-O (repeat to go further back).
 
 Get specific help:  It is possible to go directly to whatever you want help
-		    on, by giving an argument to the ":help" command |:help|.
+		    on, by giving an argument to the |:help| command.
 		    It is possible to further specify the context:
 							*help-context*
 			  WHAT			PREPEND    EXAMPLE	~
@@ -196,18 +196,6 @@ Standard plugins ~
 |pi_zip.txt|	Zip archive explorer
 
 LOCAL ADDITIONS:				*local-additions*
-|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
-|example.txt|	Example for a locally added help file
-|matchit.txt|   Extended "%" matching
-|test.txt|	Testing the hélp cömmånd nôw
-|typecorr.txt|	Plugin for correcting typing mistakes
-|helpp.txt|	Dummy line to avoid an error message
-|cecutil.txt|	DrChip's Utilities				Jun 11, 2004
-|example.txt|	Example for a locally added help file
-|matchit.txt|   Extended "%" matching
-|test.txt|	Testing the hélp cömmånd nôw
-|typecorr.txt|	Plugin for correcting typing mistakes
-|helpp.txt|	Dummy line to avoid an error message
 
 ------------------------------------------------------------------------------
 *bars*		Bars example

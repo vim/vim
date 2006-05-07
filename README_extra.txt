@@ -1,17 +1,17 @@
-README_extra.txt for version 7.0g of Vim: Vi IMproved.
+README_extra.txt for version 7.0 of Vim: Vi IMproved.
 
 The extra archive of Vim is to be used in combination with the source archive
-(vim-6.0-src.tar.gz).  The extra archive is useless without it.
+(vim-7.0-src.tar.gz).  The extra archive is useless without it.
 
 For more information, see the "README.txt" file that comes with the runtime
-archive (vim-6.0-rt.tar.gz).  To be able to run Vim you MUST get the runtime
+archive (vim-7.0-rt.tar.gz).  To be able to run Vim you MUST get the runtime
 archive too!
 
 The extra archive plus the source and runtime achives make up the complete
 sources of Vim for all systems.
 
 
-The extra archive contains:
+Some of the things that the extra archive contains:
 
 Farsi		Files for the Farsi (persian) language.  If you don't know
 		what Farsi is, this is not for you.
@@ -19,7 +19,6 @@ Farsi		Files for the Farsi (persian) language.  If you don't know
 if_sniff	Interface to SNiFF.  If you don't know what SNiFF is, this is
 		not for you.
 
-gui_amiga
 os_amiga	Files for the Amiga port.
 
 gui_riscos
@@ -45,7 +44,8 @@ os_w32
 os_win32	Files for the Win32 port.
 
 gui_w32		Files for the Win32 GUI.
-Gvim_vc.mak	MS Visual C++ makefile for the Win32 GUI.
+gui_w48		Files for the Win32 and Win16 GUI.
+Make_mvc.mak	MS Visual C++ makefile for the Win32 GUI.
 rgb.txt		File with color definitions for the Win32 GUI.
 
 if_ole		OLE automation interface, for MS Windows 95 and NT.

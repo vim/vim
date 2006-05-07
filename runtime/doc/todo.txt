@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.0g.  Last change: 2006 May 06
+*todo.txt*      For Vim version 7.0.  Last change: 2006 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Test 61 fails sometimes.  This is a timing problem with "sleep 2" not always
-taking 2 seconds.
+Test 61 fails sometimes.  This is a timing problem: "sleep 2" sometimes takes
+longer than 2 seconds.
 
 
 Awaiting updated patches:
@@ -213,6 +213,9 @@ Win32 GUI known bugs:
     the screen.
 8   On Windows 98 the unicows library is needed to support functions with UCS2
     file names.  Can we load unicows.dll dynamically?
+8   When the primary monitor is below or right of the secondary monitor and
+    Vim is on the secondary monitor it will often move to the primary monitor.
+    Window position coordinates can be negative. (James Harvey)
 8   The -P argument doesn't work very well with many MDI applications.
     The last argument of CreateWindowEx() should be used, see MSDN docs.
     Tutorial: http://win32assembly.online.fr/tut32.html

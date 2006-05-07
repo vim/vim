@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.0g.  Last change: 2006 May 01
+*pi_zip.txt*	For Vim version 7.0.  Last change: 2006 May 01
 
 				+====================+
 				| Zip File Interface |

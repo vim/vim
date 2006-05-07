@@ -1,6 +1,6 @@
 " Vim script to work like "less"
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Feb 19
+" Last Change:	2006 May 07
 
 " Avoid loading this file twice, allow the user to define his own script.
 if exists("loaded_less")
@@ -191,7 +191,7 @@ noremap q :q<CR>
 map v :silent call <SID>End()<CR>
 fun! s:End()
   set ma
-  if exists(s:lz)
+  if exists('s:lz')
     let &lz = s:lz
   endif
   unmap h

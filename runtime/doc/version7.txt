@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.0g.  Last change: 2006 May 06
+*version7.txt*  For Vim version 7.0.  Last change: 2006 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2964,6 +2964,9 @@ width of the Vim window could make it jump to the first monitor.
 
 When scrolling back at the more prompt and the quitting a line of text would
 be left behind when 'cmdheight' is 2 or more.
+
+Fixed a few things for Insert mode completion, especially when typing BS,
+CTRL-N or a printable character while still searching for matches.
 
 
  vim:tw=78:ts=8:ft=help:norl:

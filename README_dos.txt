@@ -1,4 +1,4 @@
-README_dos.txt for version 7.0g of Vim: Vi IMproved.
+README_dos.txt for version 7.0 of Vim: Vi IMproved.
 
 This file explains the installation of Vim on MS-DOS and MS-Windows systems.
 See "README.txt" for general information about Vim.
@@ -47,13 +47,13 @@ These are the normal steps to install Vim from the .zip archives:
    Binary and runtime Vim archives are normally unpacked in the same location,
    on top of each other.
 
-2. Unpack the zip archives.  This will create a new directory "vim\vim60",
+2. Unpack the zip archives.  This will create a new directory "vim\vim70",
    in which all the distributed Vim files are placed.  Since the directory
    name includes the version number, it is unlikely that you overwrite
    existing files.
    Examples:
-	pkunzip -d gvim60.zip
-	unzip vim60w32.zip
+	pkunzip -d gvim70.zip
+	unzip vim70w32.zip
 
    You need to unpack the runtime archive and at least one of the binary
    archives.  When using more than one binary version, be careful not to
@@ -69,7 +69,7 @@ These are the normal steps to install Vim from the .zip archives:
    archive and follow the instructions in the documentation.
 
 3. Change to the new directory:
-	cd vim\vim60
+	cd vim\vim70
    Run the "install.exe" program.  It will ask you a number of questions about
    how you would like to have your Vim setup.  Among these are:
    - You can tell it to write a "_vimrc" file with your preferences in the
@@ -80,8 +80,8 @@ These are the normal steps to install Vim from the .zip archives:
      console or in a shell.  You can select one of the directories in your
      $PATH.  If you skip this, you can add Vim to the search path manually:
      The simplest is to add a line to your autoexec.bat.  Examples:
-	set path=%path%;C:\vim\vim60
-	set path=%path%;D:\editors\vim\vim60
+	set path=%path%;C:\vim\vim70
+	set path=%path%;D:\editors\vim\vim70
    - Create entries for Vim on the desktop and in the Start menu.
 
 That's it!
@@ -94,7 +94,7 @@ Remarks:
   point to the top directory of your Vim files.  Example:
     set VIM=C:\editors\vim
   Vim version 6.0 will look for your vimrc file in $VIM, and for the runtime
-  files in $VIM/vim60.  See ":help $VIM" for more information.
+  files in $VIM/vim70.  See ":help $VIM" for more information.
 
 - To avoid confusion between distributed files of different versions and your
   own modified vim scripts, it is recommended to use this directory layout:
@@ -105,14 +105,14 @@ Remarks:
 	C:\vim\vimfiles\ftplugin\*.vim	Filetype plugins
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim60\vim.exe		The Vim version 6.0 executable.
-	C:\vim\vim60\doc\*.txt		The version 6.0 documentation files.
-	C:\vim\vim60\bugreport.vim	A Vim version 6.0 script.
-	C:\vim\vim60\...		Other version 6.0 distributed files.
+	C:\vim\vim70\vim.exe		The Vim version 6.0 executable.
+	C:\vim\vim70\doc\*.txt		The version 6.0 documentation files.
+	C:\vim\vim70\bugreport.vim	A Vim version 6.0 script.
+	C:\vim\vim70\...		Other version 6.0 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
-  Then $VIMRUNTIME will automatically be set to "$VIM\vim60".  Don't add
-  "vim60" to $VIM, that won't work.
+  Then $VIMRUNTIME will automatically be set to "$VIM\vim70".  Don't add
+  "vim70" to $VIM, that won't work.
 
 - You can put your Vim executable anywhere else.  If the executable is not
   with the other Vim files, you should set $VIM. The simplest is to add a line
@@ -136,8 +136,8 @@ Remarks:
      Select Properties.
   5. In the Program tab, change the "Cmdline" to add "/c" and the name of the
      Vim executable.  Examples:
-	C:\command.com /c C:\vim\vim60\vim.exe
-	C:\command.com /c D:\editors\vim\vim60\vim.exe
+	C:\command.com /c C:\vim\vim70\vim.exe
+	C:\command.com /c D:\editors\vim\vim70\vim.exe
   6. Select the font, window size, etc. that you like.  If this isn't
      possible, select "Advanced" in the Program tab, and deselect "MS-DOS
      mode".

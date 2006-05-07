@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.0g.  Last change: 2006 Apr 25
+*usr_21.txt*	For Vim version 7.0.  Last change: 2006 Apr 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

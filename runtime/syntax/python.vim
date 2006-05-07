@@ -2,6 +2,7 @@
 " Language:	Python
 " Maintainer:	Neil Schemenauer <nas@python.ca>
 " Updated:	2002-10-18
+"		Added Python 2.4 features 2006 May 4 (Dmitry Vasiliev)
 "
 " Options to control Python syntax highlighting:
 "
