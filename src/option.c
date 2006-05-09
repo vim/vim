@@ -2294,7 +2294,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-    {"spellsuggest", "sps", P_STRING|P_VI_DEF|P_EXPAND|P_SECURE,
+    {"spellsuggest", "sps", P_STRING|P_VI_DEF|P_EXPAND|P_SECURE|P_COMMA,
 #ifdef FEAT_SPELL
 			    (char_u *)&p_sps, PV_NONE,
 			    {(char_u *)"best", (char_u *)0L}
