@@ -833,7 +833,7 @@ do_cmdline(cmdline, getline, cookie, flags)
      * If requested, store and reset the global values controlling the
      * exception handling (used when debugging).
      */
-    else if (flags & DOCMD_EXCRESET)
+    if (flags & DOCMD_EXCRESET)
 	save_dbg_stuff(&debug_saved);
 
     initial_trylevel = trylevel;
