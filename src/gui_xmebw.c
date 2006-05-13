@@ -480,7 +480,7 @@ draw_shadows(XmEnhancedButtonWidget eb)
 	    || (eb->core.height <= 2 * eb->primitive.highlight_thickness))
 	return;
 
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
     {
 	XmDisplay	dpy;
 
@@ -641,7 +641,7 @@ draw_label(XmEnhancedButtonWidget eb, XEvent *event, Region region)
     GC		tmp_gc = NULL;
     Boolean	replaceGC = False;
     Boolean	deadjusted = False;
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
     XmDisplay	dpy = (XmDisplay)XmGetXmDisplay(XtDisplay(eb));
     Boolean	etched_in = dpy->display.enable_etched_in_menu;
 #else
@@ -726,7 +726,7 @@ Enter(Widget wid, XEvent *event, String *params, Cardinal *num_params)
 	if ((((ShellWidget) XtParent(XtParent(eb)))->shell.popped_up)
 		&& _XmGetInDragMode((Widget) eb))
 	{
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 	    XmDisplay dpy = (XmDisplay) XmGetXmDisplay(XtDisplay(wid));
 	    Boolean etched_in = dpy->display.enable_etched_in_menu;
 #else
@@ -810,7 +810,7 @@ Leave(Widget wid, XEvent *event, String *params, Cardinal *num_params)
 
     if (Lab_IsMenupane(eb))
     {
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 	XmDisplay dpy = (XmDisplay) XmGetXmDisplay(XtDisplay(wid));
 	Boolean etched_in = dpy->display.enable_etched_in_menu;
 #else
@@ -1150,7 +1150,7 @@ SetValues(Widget current, Widget request, Widget new, ArgList args, Cardinal *n)
 Redisplay(Widget w, XEvent *event, Region region)
 {
     XmEnhancedButtonWidget  eb = (XmEnhancedButtonWidget) w;
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
     XmDisplay		    dpy;
     XtEnum		    default_button_emphasis;
 #endif
@@ -1162,7 +1162,7 @@ Redisplay(Widget w, XEvent *event, Region region)
     if (!XtIsRealized((Widget)eb))
 	return;
 
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
     dpy = (XmDisplay)XmGetXmDisplay(XtDisplay(eb));
     default_button_emphasis = dpy->display.default_button_emphasis;
 #endif
@@ -1241,7 +1241,7 @@ Redisplay(Widget w, XEvent *event, Region region)
     {
 	int adjust = 0;
 
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 	/*
 	 *  NOTE: PushButton has two types of shadows: primitive-shadow and
 	 *  default-button-shadow.  If pushbutton is in a menu only primitive
@@ -1289,7 +1289,7 @@ Redisplay(Widget w, XEvent *event, Region region)
 			  adjust, adjust, rectwidth, rectheight, borderwidth);
 	    }
 
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 	    switch (default_button_emphasis)
 	    {
 		case XmINTERNAL_HIGHLIGHT:
@@ -1365,7 +1365,7 @@ Redisplay(Widget w, XEvent *event, Region region)
 		    default_button_shadow_thickness =
 			       eb->pushbutton.default_button_shadow_thickness;
 
-#ifndef LESSTIF_VERSION
+#if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 		/*
 		 * Compute location of bounding box to contain the
 		 * defaultButtonShadow.
