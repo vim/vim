@@ -5227,13 +5227,13 @@ insecure_flag(opt_idx, opt_flags)
 	    case PV_STL:	return &curwin->w_p_stl_flags;
 #endif
 #ifdef FEAT_EVAL
+# ifdef FEAT_FOLDING
 	    case PV_FDE:	return &curwin->w_p_fde_flags;
 	    case PV_FDT:	return &curwin->w_p_fdt_flags;
+# endif
 # ifdef FEAT_BEVAL
 	    case PV_BEXPR:	return &curbuf->b_p_bexpr_flags;
 # endif
-#endif
-#if defined(FEAT_EVAL)
 # if defined(FEAT_CINDENT)
 	    case PV_INDE:	return &curbuf->b_p_inde_flags;
 # endif
