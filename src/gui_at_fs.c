@@ -1861,27 +1861,27 @@ SFvAreaSelectedCallback(w, n, pnew)
     XtPointer	pnew;
 {
     SFDir	*dir;
-    int		nw;
+    int		nw = (int)(long)pnew;
 
     dir = &(SFdirs[SFdirPtr + (int)(long)n]);
 
 #ifdef FEAT_GUI_NEXTAW
-    if ((int)(long)pnew < 0)
+    if (nw < 0)
     {
-	if ((int)(long)pnew > -SFvScrollHeight)
-	    (int)(long)pnew = -1;
+	if (nw > -SFvScrollHeight)
+	    nw = -1;
 	else
-	    (int)(long)pnew = -SFlistSize;
+	    nw = -SFlistSize;
     }
-    else if ((int)(long)pnew > 0)
+    else if (nw > 0)
     {
-	if ((int)(long)pnew < SFvScrollHeight)
-	    (int)(long)pnew = 1;
+	if (nw < SFvScrollHeight)
+	    nw = 1;
 	else
-	    (int)(long)pnew = SFlistSize;
+	    nw = SFlistSize;
     }
 #endif
-    nw = dir->vOrigin + (int)(long)pnew;
+    nw += dir->vOrigin;
 
     if (nw > dir->nEntries - SFlistSize)
 	nw = dir->nEntries - SFlistSize;
@@ -1941,27 +1941,27 @@ SFhAreaSelectedCallback(w, n, pnew)
     XtPointer	pnew;
 {
     SFDir	*dir;
-    int		nw;
+    int		nw = (int)(long)pnew;
 
     dir = &(SFdirs[SFdirPtr + (int)(long)n]);
 
 #ifdef FEAT_GUI_NEXTAW
-    if ((int)(long)pnew < 0)
+    if (nw < 0)
     {
-	if ((int)(long)pnew > -SFhScrollWidth)
-	    (int)(long)pnew = -1;
+	if (nw > -SFhScrollWidth)
+	    nw = -1;
 	else
-	    (int)(long)pnew = -SFcharsPerEntry;
+	    nw = -SFcharsPerEntry;
     }
-    else if ((int)(long)pnew > 0)
+    else if (nw > 0)
     {
-	if ((int)(long)pnew < SFhScrollWidth)
-	    (int)(long)pnew = 1;
+	if (nw < SFhScrollWidth)
+	    nw = 1;
 	else
-	    (int)(long)pnew = SFcharsPerEntry;
+	    nw = SFcharsPerEntry;
     }
 #endif
-    nw = dir->hOrigin + (int)(long)pnew;
+    nw += dir->hOrigin;
 
     if (nw > dir->nChars - SFcharsPerEntry)
 	nw = dir->nChars - SFcharsPerEntry;
@@ -2038,26 +2038,26 @@ SFpathAreaSelectedCallback(w, client_data, pnew)
     XtPointer	client_data;
     XtPointer	pnew;
 {
-    int		nw;
+    int		nw = (int)(long)pnew;
     float	f;
 
 #ifdef FEAT_GUI_NEXTAW
-    if ((int)(long)pnew < 0)
+    if (nw < 0)
     {
-	if ((int)(long)pnew > -SFpathScrollWidth)
-	    (int)(long)pnew = -1;
+	if (nw > -SFpathScrollWidth)
+	    nw = -1;
 	else
-	    (int)(long)pnew = -3;
+	    nw = -3;
     }
-    else if ((int)(long)pnew > 0)
+    else if (nw > 0)
     {
-	if ((int)(long)pnew < SFpathScrollWidth)
-	    (int)(long)pnew = 1;
+	if (nw < SFpathScrollWidth)
+	    nw = 1;
 	else
-	    (int)(long)pnew = 3;
+	    nw = 3;
     }
 #endif
-    nw = SFdirPtr + (int)(long)pnew;
+    nw += SFdirPtr;
 
     if (nw > SFdirEnd - 3)
 	nw = SFdirEnd - 3;
