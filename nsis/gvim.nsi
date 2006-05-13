@@ -391,6 +391,7 @@ Section Uninstall
 	ClearErrors
 	# Remove everything but *.dll files.  Avoids that
 	# a lot remains when gvimext.dll cannot be deleted.
+	RMDir /r $0\autoload
 	RMDir /r $0\colors
 	RMDir /r $0\compiler
 	RMDir /r $0\doc
@@ -398,6 +399,7 @@ Section Uninstall
 	RMDir /r $0\indent
 	RMDir /r $0\macros
 	RMDir /r $0\plugin
+	RMDir /r $0\spell
 	RMDir /r $0\syntax
 	RMDir /r $0\tools
 	RMDir /r $0\tutor
