@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 May 03
+" Last Change:	2006 May 08
 
 
 " This function is used for the 'omnifunc' option.
@@ -458,7 +458,7 @@ endfunction
 " member.
 function! s:StructMembers(typename, items, all)
   " Todo: What about local structures?
-  let fnames = join(map(tagfiles(), 'escape(v:val, " \\")'))
+  let fnames = join(map(tagfiles(), 'escape(v:val, " \\#%")'))
   if fnames == ''
     return []
   endif
