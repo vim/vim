@@ -311,7 +311,11 @@ enc_canon_table[] =
 
 #define IDX_MACROMAN	57
     {"macroman",	ENC_8BIT + ENC_MACROMAN, 0},	/* Mac OS */
-#define IDX_COUNT	58
+#define IDX_DECMCS	58
+    {"dec-mcs",		ENC_8BIT,		0},	/* DEC MCS */
+#define IDX_HPROMAN8	59
+    {"hp-roman8",	ENC_8BIT,		0},	/* HP Roman8 */
+#define IDX_COUNT	60
 };
 
 /*
@@ -386,6 +390,7 @@ enc_alias_table[] =
     {"950",		IDX_BIG5},
 #endif
     {"mac",		IDX_MACROMAN},
+    {"mac-roman",	IDX_MACROMAN},
     {NULL,		0}
 };
 
