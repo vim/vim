@@ -751,7 +751,7 @@ edit(cmdchar, startln, count)
 		    continue;
 		}
 
-		/* Pressing CTRL-Y selects the current match.  Shen
+		/* Pressing CTRL-Y selects the current match.  When
 		 * compl_enter_selects is set the Enter key does the same. */
 		if (c == Ctrl_Y || (compl_enter_selects
 				   && (c == CAR || c == K_KENTER || c == NL)))
@@ -3046,7 +3046,6 @@ ins_compl_new_leader()
     ins_compl_delete();
     ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
     compl_used_match = FALSE;
-    compl_enter_selects = FALSE;
 
     if (compl_started)
 	ins_compl_set_original_text(compl_leader);
@@ -3076,6 +3075,7 @@ ins_compl_new_leader()
 	compl_restarting = FALSE;
     }
 
+#if 0   /* disabled, made CTRL-L, BS and typing char jump to original text. */
     if (!compl_used_match)
     {
 	/* Go to the original text, since none of the matches is inserted. */
@@ -3087,6 +3087,8 @@ ins_compl_new_leader()
 	compl_curr_match = compl_shown_match;
 	compl_shows_dir = compl_direction;
     }
+#endif
+    compl_enter_selects = !compl_used_match;
 
     /* Show the popup menu with a different set of matches. */
     ins_compl_show_pum();
@@ -3175,10 +3177,32 @@ ins_compl_addfrommatch()
     char_u	*p;
     int		len = curwin->w_cursor.col - compl_col;
     int		c;
+    compl_T	*cp;
 
     p = compl_shown_match->cp_str;
     if ((int)STRLEN(p) <= len)   /* the match is too short */
-	return;
+    {
+	/* When still at the original match use the first entry that matches
+	 * the leader. */
+	if (compl_shown_match->cp_flags & ORIGINAL_TEXT)
+	{
+	    p = NULL;
+	    for (cp = compl_shown_match->cp_next; cp != NULL
+				 && cp != compl_first_match; cp = cp->cp_next)
+	    {
+		if (ins_compl_equal(cp, compl_leader,
+						   (int)STRLEN(compl_leader)))
+		{
+		    p = cp->cp_str;
+		    break;
+		}
+	    }
+	    if (p == NULL || (int)STRLEN(p) <= len)
+		return;
+	}
+	else
+	    return;
+    }
     p += len;
 #ifdef FEAT_MBYTE
     c = mb_ptr2char(p);
@@ -4100,6 +4124,21 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 		&& compl_shown_match->cp_next != NULL
 		&& compl_shown_match->cp_next != compl_first_match)
 	    compl_shown_match = compl_shown_match->cp_next;
+
+	/* If we didn't find it searching forward, and compl_shows_dir is
+	 * backward, find the last match. */
+	if (compl_shows_dir == BACKWARD
+		&& !ins_compl_equal(compl_shown_match,
+				      compl_leader, (int)STRLEN(compl_leader))
+		&& (compl_shown_match->cp_next == NULL
+		    || compl_shown_match->cp_next == compl_first_match))
+	{
+	    while (!ins_compl_equal(compl_shown_match,
+				      compl_leader, (int)STRLEN(compl_leader))
+		    && compl_shown_match->cp_prev != NULL
+		    && compl_shown_match->cp_prev != compl_first_match)
+		compl_shown_match = compl_shown_match->cp_prev;
+	}
     }
 
     if (allow_get_expansion && insert_match
