@@ -4603,11 +4603,11 @@ gui_mouse_correct()
     /* Don't move the mouse when it's left or right of the Vim window */
     if (x < 0 || x > Columns * gui.char_width)
 	return;
+    if (y >= 0
 # ifdef FEAT_WINDOWS
-    if (Y_2_ROW(y) >= tabline_height())
-# else
-    if (y >= 0)
+	    && Y_2_ROW(y) >= tabline_height()
 # endif
+       )
 	wp = xy2win(x, y);
     if (wp != curwin && wp != NULL)	/* If in other than current window */
     {
