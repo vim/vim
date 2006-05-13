@@ -1,9 +1,9 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Feb 01
+" Last Change:	2006 May 10
 
 if !exists('g:spellfile_URL')
-  let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/unstable/runtime/spell'
+  let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
 endif
 let s:spellfile_URL = ''    " Start with nothing so that s:donedict is reset.
 
@@ -61,13 +61,13 @@ function! spellfile#LoadFile(lang)
     new
     setlocal bin
     echo 'Downloading ' . fname . '...'
-    exe 'Nread ' g:spellfile_URL . '/' . fname
+    call spellfile#Nread(fname)
     if getline(2) !~ 'VIMspell'
       " Didn't work, perhaps there is an ASCII one.
       g/^/d
       let fname = a:lang . '.ascii.spl'
       echo 'Could not find it, trying ' . fname . '...'
-      exe 'Nread ' g:spellfile_URL . '/' . fname
+      call spellfile#Nread(fname)
       if getline(2) !~ 'VIMspell'
 	echo 'Sorry, downloading failed'
 	bwipe!
@@ -95,7 +95,7 @@ function! spellfile#LoadFile(lang)
 	g/^/d
 	let fname = substitute(fname, '\.spl$', '.sug', '')
 	echo 'Downloading ' . fname . '...'
-	exe 'Nread ' g:spellfile_URL . '/' . fname
+	call spellfile#Nread(fname)
 	if getline(2) !~ 'VIMsug'
 	  echo 'Sorry, downloading failed'
 	else
@@ -108,4 +108,11 @@ function! spellfile#LoadFile(lang)
 
     bwipe
   endif
+endfunc
+
+" Read "fname" from the ftp server.
+function! spellfile#Nread(fname)
+  let machine = substitute(g:spellfile_URL, 'ftp://\([^/]*\).*', '\1', '')
+  let dir = substitute(g:spellfile_URL, 'ftp://[^/]*/\(.*\)', '\1', '')
+  exe 'Nread "' . machine . ' anonymous vim7user ' . dir . '/' . a:fname . '"'
 endfunc
