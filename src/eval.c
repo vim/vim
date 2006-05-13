@@ -11372,7 +11372,7 @@ f_input(argvars, rettv)
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
 		char_u	*xp_name;
-		int		xp_namelen;
+		int	xp_namelen;
 		long	argt;
 
 		rettv->vval.v_string = NULL;
@@ -18963,7 +18963,8 @@ trans_function_name(pp, skip, flags, fdp)
     else if (lead > 0)
     {
 	lead = 3;
-	if (eval_fname_sid(lv.ll_exp_name != NULL ? lv.ll_exp_name : *pp))
+	if ((lv.ll_exp_name != NULL && eval_fname_sid(lv.ll_exp_name))
+						       || eval_fname_sid(*pp))
 	{
 	    /* It's "s:" or "<SID>" */
 	    if (current_SID <= 0)
