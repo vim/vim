@@ -2108,7 +2108,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 	 * possible. */
 	STRCPY(buf, line);
 	if (lnum < wp->w_buffer->b_ml.ml_line_count)
-	    spell_cat_line(buf + STRLEN(buf), ml_get(lnum + 1), MAXWLEN);
+	    spell_cat_line(buf + STRLEN(buf),
+			  ml_get_buf(wp->w_buffer, lnum + 1, FALSE), MAXWLEN);
 
 	p = buf + skip;
 	endp = buf + len;
