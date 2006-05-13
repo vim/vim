@@ -47,13 +47,13 @@
 #include "gui_xmebwp.h"
 
 /* Provide some missing wrappers, which are missed from the LessTif
- * implementation.
+ * implementation.  Also missing in Motif 1.2 and earlier.
  *
  * We neither use XmeGetPixmapData or _XmGetPixmapData, since with LessTif the
  * pixmap will not appear in it's caches properly. We cache the interresting
  * values in XmEnhancedButtonPart instead ourself.
  */
-#ifdef LESSTIF_VERSION
+#if defined(LESSTIF_VERSION) || (XmVersion <= 1002)
 # ifndef Lab_IsMenupane
 #  define Lab_IsMenupane(w) (Lab_MenuType(w) == (int)XmMENU_POPUP || \
 		    Lab_MenuType(w) == (int)XmMENU_PULLDOWN)
