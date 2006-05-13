@@ -2177,6 +2177,7 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/xxd; ln -s ../../xxd/*.[ch] ../../xxd/Make* .
 	if test -d $(RSRC_DIR); then \
 		cd $(SHADOWDIR); \
+		ln -s ../infplist.xml .; \
 		ln -s ../$(RSRC_DIR) ../os_mac.rsr.hqx ../dehqx.py .; \
 	fi
 	mkdir $(SHADOWDIR)/testdir
