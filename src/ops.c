@@ -2413,6 +2413,7 @@ op_insert(oap, count1)
 	else
 	{
 	    curwin->w_cursor = oap->end;
+	    check_cursor_col();
 
 	    /* Works just like an 'i'nsert on the next character. */
 	    if (!lineempty(curwin->w_cursor.lnum)
