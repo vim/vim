@@ -602,13 +602,19 @@ restofline:
 		else
 		    type = 0;
 		/*
-		 * Extract error message data from matched line
+		 * Extract error message data from matched line.
+		 * We check for an actual submatch, because "\[" and "\]" in
+		 * the 'errorformat' may cause the wrong submatch to be used.
 		 */
 		if ((i = (int)fmt_ptr->addr[0]) > 0)		/* %f */
 		{
-		    int c = *regmatch.endp[i];
+		    int c;
+
+		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
+			continue;
 
 		    /* Expand ~/file and $HOME/file to full path. */
+		    c = *regmatch.endp[i];
 		    *regmatch.endp[i] = NUL;
 		    expand_env(regmatch.startp[i], namebuf, CMDBUFFSIZE);
 		    *regmatch.endp[i] = c;
@@ -618,35 +624,63 @@ restofline:
 			continue;
 		}
 		if ((i = (int)fmt_ptr->addr[1]) > 0)		/* %n */
+		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    enr = (int)atol((char *)regmatch.startp[i]);
+		}
 		if ((i = (int)fmt_ptr->addr[2]) > 0)		/* %l */
+		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    lnum = atol((char *)regmatch.startp[i]);
+		}
 		if ((i = (int)fmt_ptr->addr[3]) > 0)		/* %c */
+		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    col = (int)atol((char *)regmatch.startp[i]);
+		}
 		if ((i = (int)fmt_ptr->addr[4]) > 0)		/* %t */
+		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    type = *regmatch.startp[i];
+		}
 		if (fmt_ptr->flags == '+' && !multiscan)	/* %+ */
 		    STRCPY(errmsg, IObuff);
 		else if ((i = (int)fmt_ptr->addr[5]) > 0)	/* %m */
 		{
+		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
+			continue;
 		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
 		    vim_strncpy(errmsg, regmatch.startp[i], len);
 		}
 		if ((i = (int)fmt_ptr->addr[6]) > 0)		/* %r */
+		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    tail = regmatch.startp[i];
+		}
 		if ((i = (int)fmt_ptr->addr[7]) > 0)		/* %p */
 		{
+		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
+			continue;
 		    col = (int)(regmatch.endp[i] - regmatch.startp[i] + 1);
 		    if (*((char_u *)regmatch.startp[i]) != TAB)
 			use_viscol = TRUE;
 		}
 		if ((i = (int)fmt_ptr->addr[8]) > 0)		/* %v */
 		{
+		    if (regmatch.startp[i] == NULL)
+			continue;
 		    col = (int)atol((char *)regmatch.startp[i]);
 		    use_viscol = TRUE;
 		}
 		if ((i = (int)fmt_ptr->addr[9]) > 0)		/* %s */
 		{
+		    if (regmatch.startp[i] == NULL || regmatch.endp[i] == NULL)
+			continue;
 		    len = (int)(regmatch.endp[i] - regmatch.startp[i]);
 		    if (len > CMDBUFFSIZE - 5)
 			len = CMDBUFFSIZE - 5;
