@@ -564,7 +564,11 @@ main
      */
     if (p_lpl)
     {
+# ifdef VMS	/* Somehow VMS doesn't handle the "**". */
+	source_runtime((char_u *)"plugin/*.vim", TRUE);
+# else
 	source_runtime((char_u *)"plugin/**/*.vim", TRUE);
+# endif
 	TIME_MSG("loading plugins");
     }
 #endif
