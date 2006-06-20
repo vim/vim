@@ -4515,7 +4515,7 @@ gui_mouse_moved(x, y)
     int		y;
 {
     win_T	*wp;
-    char_u	st[6];
+    char_u	st[8];
 
     /* Ignore this while still starting up. */
     if (!gui.in_use || gui.starting)
