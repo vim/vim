@@ -1664,7 +1664,11 @@ process_message(void)
 	/* request is handled in normal.c */
     }
     if (msg.message == WM_USER)
+    {
+	MyTranslateMessage(&msg)
+	DispatchMessage(&msg);
 	return;
+    }
 #endif
 
 #ifdef MSWIN_FIND_REPLACE
