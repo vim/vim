@@ -719,9 +719,14 @@ edit(cmdchar, startln, count)
 #ifdef FEAT_INS_EXPAND
 	/*
 	 * Special handling of keys while the popup menu is visible or wanted
-	 * and the cursor is still in the completed word.
+	 * and the cursor is still in the completed word.  Only when there is
+	 * a match, skip this when no matches were found.
 	 */
-	if (compl_started && pum_wanted() && curwin->w_cursor.col >= compl_col)
+	if (compl_started
+		&& pum_wanted()
+		&& curwin->w_cursor.col >= compl_col
+		&& (compl_shown_match == NULL
+		    || compl_shown_match != compl_shown_match->cp_next))
 	{
 	    /* BS: Delete one character from "compl_leader". */
 	    if ((c == K_BS || c == Ctrl_H)
@@ -3393,16 +3398,21 @@ ins_compl_prep(c)
 		    ptr = compl_leader;
 		else
 		    ptr = compl_orig_text;
-		p = compl_orig_text;
-		for (temp = 0; p[temp] != NUL && p[temp] == ptr[temp]; ++temp)
-		    ;
+		if (compl_orig_text != NULL)
+		{
+		    p = compl_orig_text;
+		    for (temp = 0; p[temp] != NUL && p[temp] == ptr[temp];
+								       ++temp)
+			;
 #ifdef FEAT_MBYTE
-		if (temp > 0)
-		    temp -= (*mb_head_off)(compl_orig_text, p + temp);
+		    if (temp > 0)
+			temp -= (*mb_head_off)(compl_orig_text, p + temp);
 #endif
-		for (p += temp; *p != NUL; mb_ptr_adv(p))
-		    AppendCharToRedobuff(K_BS);
-		AppendToRedobuffLit(ptr + temp, -1);
+		    for (p += temp; *p != NUL; mb_ptr_adv(p))
+			AppendCharToRedobuff(K_BS);
+		}
+		if (ptr != NULL)
+		    AppendToRedobuffLit(ptr + temp, -1);
 	    }
 
 #ifdef FEAT_CINDENT
@@ -4650,10 +4660,18 @@ ins_complete(c)
 				     (int)STRLEN(compl_pattern), curs_col);
 	    if (compl_xp.xp_context == EXPAND_UNSUCCESSFUL
 		    || compl_xp.xp_context == EXPAND_NOTHING)
-		return FAIL;
-	    startcol = (int)(compl_xp.xp_pattern - compl_pattern);
-	    compl_col = startcol;
-	    compl_length = curs_col - startcol;
+	    {
+		compl_col = curs_col;
+		compl_length = 0;
+		vim_free(compl_pattern);
+		compl_pattern = NULL;
+	    }
+	    else
+	    {
+		startcol = (int)(compl_xp.xp_pattern - compl_pattern);
+		compl_col = startcol;
+		compl_length = curs_col - startcol;
+	    }
 	}
 	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
 	{
@@ -4707,11 +4725,17 @@ ins_complete(c)
 	    else
 		compl_col = spell_word_start(startcol);
 	    if (compl_col >= (colnr_T)startcol)
-		return FAIL;
-	    spell_expand_check_cap(compl_col);
+	    {
+		compl_length = 0;
+		compl_col = curs_col;
+	    }
+	    else
+	    {
+		spell_expand_check_cap(compl_col);
+		compl_length = (int)curs_col - compl_col;
+	    }
 	    /* Need to obtain "line" again, it may have become invalid. */
 	    line = ml_get(curwin->w_cursor.lnum);
-	    compl_length = (int)curs_col - compl_col;
 	    compl_pattern = vim_strnsave(line + compl_col, compl_length);
 	    if (compl_pattern == NULL)
 #endif
