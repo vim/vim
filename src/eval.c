@@ -13250,7 +13250,7 @@ f_remove(argvars, rettv)
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    EMSG2(_(e_toomanyarg), "remove()");
 	else if ((d = argvars[0].vval.v_dict) != NULL
-		&& !tv_check_lock(d->dv_lock, (char_u *)"remove()"))
+		&& !tv_check_lock(d->dv_lock, (char_u *)"remove() argument"))
 	{
 	    key = get_tv_string_chk(&argvars[1]);
 	    if (key != NULL)
@@ -13270,7 +13270,7 @@ f_remove(argvars, rettv)
     else if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listdictarg), "remove()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !tv_check_lock(l->lv_lock, (char_u *)"remove()"))
+	    && !tv_check_lock(l->lv_lock, (char_u *)"remove() argument"))
     {
 	int	    error = FALSE;
 
@@ -19693,6 +19693,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     v->di_tv.vval.v_list = &fc.l_varlist;
     vim_memset(&fc.l_varlist, 0, sizeof(list_T));
     fc.l_varlist.lv_refcount = 99999;
+    fc.l_varlist.lv_lock = VAR_FIXED;
 
     /*
      * Set a:firstline to "firstline" and a:lastline to "lastline".
