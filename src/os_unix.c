@@ -4971,7 +4971,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 		    if (((*file)[*num_file] = alloc(len + 2)) != NULL)
 		    {
 			STRCPY((*file)[*num_file], p);
-			if (!after_pathsep((*file)[*num_file] + len))
+			if (!after_pathsep((*file)[*num_file],
+						    (*file)[*num_file] + len))
 			{
 			    (*file)[*num_file][len] = psepc;
 			    (*file)[*num_file][len + 1] = NUL;

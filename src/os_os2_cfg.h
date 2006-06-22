@@ -183,6 +183,9 @@
 /* Define if you have the ANSI C header files. */
 /* #undef STDC_HEADERS */
 
+/* added by David Sanders */
+#define HAVE_STDARG_H 1
+
 /* instead, we check a few STDC things ourselves */
 #define HAVE_STDLIB_H	1
 #undef HAVE_STRING_H	/* On EMX it is better to use strings.h */
