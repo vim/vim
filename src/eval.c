@@ -9792,6 +9792,9 @@ f_getchar(argvars, rettv)
     varnumber_T		n;
     int			error = FALSE;
 
+    /* Position the cursor.  Needed after a message that ends in a space. */
+    windgoto(msg_row, msg_col);
+
     ++no_mapping;
     ++allow_keys;
     if (argvars[0].v_type == VAR_UNKNOWN)
