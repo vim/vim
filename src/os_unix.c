@@ -5757,8 +5757,13 @@ mch_libcall(libname, funcname, argstring, argint, string_result, number_result)
     int		retval_int = 0;
     int		success = FALSE;
 
-    /* Get a handle to the DLL module. */
+    /*
+     * Get a handle to the DLL module.
+     */
 # if defined(USE_DLOPEN)
+    /* First clear any error, it's not cleared by the dlopen() call. */
+    (void)dlerror();
+
     hinstLib = dlopen((char *)libname, RTLD_LAZY
 #  ifdef RTLD_LOCAL
 	    | RTLD_LOCAL
