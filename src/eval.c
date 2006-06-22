@@ -17759,6 +17759,13 @@ set_var(name, tv, copy)
     }
     else		    /* add a new variable */
     {
+	/* Can't add "v:" variable. */
+	if (ht == &vimvarht)
+	{
+	    EMSG2(_(e_illvar), name);
+	    return;
+	}
+
 	/* Make sure the variable name is valid. */
 	for (p = varname; *p != NUL; ++p)
 	    if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
