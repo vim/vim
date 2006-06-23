@@ -3020,9 +3020,6 @@ ins_compl_bs()
     if ((int)(p - line) - (int)compl_col <= 0)
 	return K_BS;
 
-    /* For redo we need to repeat this backspace. */
-    AppendCharToRedobuff(K_BS);
-
     /* Deleted more than what was used to find matches or didn't finish
      * finding all matches: need to look for matches all over again. */
     if (curwin->w_cursor.col <= compl_col + compl_length
@@ -3121,10 +3118,6 @@ ins_compl_addleader(c)
     else
 #endif
 	ins_char(c);
-
-    /* For redo we need to count this character so that the number of
-     * backspaces is correct. */
-    AppendCharToRedobuff(c);
 
     /* If we didn't complete finding matches we must search again. */
     if (compl_was_interrupted)
