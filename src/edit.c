@@ -4166,8 +4166,6 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     {
 	if (compl_shows_dir == FORWARD && compl_shown_match->cp_next != NULL)
 	{
-	    if (compl_pending != 0)
-		--compl_pending;
 	    compl_shown_match = compl_shown_match->cp_next;
 	    found_end = (compl_first_match != NULL
 			   && (compl_shown_match->cp_next == compl_first_match
@@ -4176,14 +4174,24 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	else if (compl_shows_dir == BACKWARD
 					&& compl_shown_match->cp_prev != NULL)
 	{
-	    if (compl_pending != 0)
-		++compl_pending;
 	    found_end = (compl_shown_match == compl_first_match);
 	    compl_shown_match = compl_shown_match->cp_prev;
 	    found_end |= (compl_shown_match == compl_first_match);
 	}
 	else
 	{
+	    if (!allow_get_expansion)
+	    {
+		if (advance)
+		{
+		    if (compl_shows_dir == BACKWARD)
+			compl_pending -= todo + 1;
+		    else
+			compl_pending += todo + 1;
+		}
+		return -1;
+	    }
+
 	    if (advance)
 	    {
 		if (compl_shows_dir == BACKWARD)
@@ -4191,14 +4199,27 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 		else
 		    ++compl_pending;
 	    }
-	    if (!allow_get_expansion)
-		return -1;
 
 	    /* Find matches. */
 	    num_matches = ins_compl_get_exp(&compl_startpos);
-	    if (compl_pending != 0 && compl_direction == compl_shows_dir
+
+	    /* handle any pending completions */
+	    while (compl_pending != 0 && compl_direction == compl_shows_dir
 								   && advance)
-		compl_shown_match = compl_curr_match;
+	    {
+		if (compl_pending > 0 && compl_shown_match->cp_next != NULL)
+		{
+		    compl_shown_match = compl_shown_match->cp_next;
+		    --compl_pending;
+		}
+		if (compl_pending < 0 && compl_shown_match->cp_prev != NULL)
+		{
+		    compl_shown_match = compl_shown_match->cp_prev;
+		    ++compl_pending;
+		}
+		else
+		    break;
+	    }
 	    found_end = FALSE;
 	}
 	if ((compl_shown_match->cp_flags & ORIGINAL_TEXT) == 0
@@ -4307,9 +4328,9 @@ ins_compl_check_keys(frequency)
 	return;
     count = 0;
 
-    ++no_mapping;
+    /* Check for a typed key.  Do use mappings, otherwise vim_is_ctrl_x_key()
+     * can't do its work correctly. */
     c = vpeekc_any();
-    --no_mapping;
     if (c != NUL)
     {
 	if (vim_is_ctrl_x_key(c) && c != Ctrl_X && c != Ctrl_R)
@@ -4319,12 +4340,27 @@ ins_compl_check_keys(frequency)
 	    (void)ins_compl_next(FALSE, ins_compl_key2count(c),
 						    c != K_UP && c != K_DOWN);
 	}
-	else if (c != Ctrl_R)
-	    compl_interrupted = TRUE;
+	else
+	{
+	    /* Need to get the character to have KeyTyped set.  We'll put it
+	     * back with vungetc() below. */
+	    c = safe_vgetc();
+
+	    /* Don't interrupt completion when the character wasn't typed,
+	     * e.g., when doing @q to replay keys. */
+	    if (c != Ctrl_R && KeyTyped)
+		compl_interrupted = TRUE;
+
+	    vungetc(c);
+	}
     }
     if (compl_pending != 0 && !got_int)
-	(void)ins_compl_next(FALSE, compl_pending > 0
-				      ? compl_pending : -compl_pending, TRUE);
+    {
+	int todo = compl_pending > 0 ? compl_pending : -compl_pending;
+
+	compl_pending = 0;
+	(void)ins_compl_next(FALSE, todo, TRUE);
+    }
 }
 
 /*
