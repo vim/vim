@@ -1665,7 +1665,7 @@ process_message(void)
     }
     if (msg.message == WM_USER)
     {
-	MyTranslateMessage(&msg)
+	MyTranslateMessage(&msg);
 	DispatchMessage(&msg);
 	return;
     }
