@@ -585,7 +585,6 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define INSERT		0x10	/* Insert mode */
 #define LANGMAP		0x20	/* Language mapping, can be combined with
 				   INSERT and CMDLINE */
-#define MAP_ALL_MODES	0x3f	/* all mode bits used for mapping */
 
 #define REPLACE_FLAG	0x40	/* Replace mode flag */
 #define REPLACE		(REPLACE_FLAG + INSERT)
@@ -604,6 +603,9 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define SHOWMATCH	(0x700 + INSERT) /* show matching paren */
 #define CONFIRM		0x800	/* ":confirm" prompt */
 #define SELECTMODE	0x1000	/* Select mode, only for mappings */
+
+#define MAP_ALL_MODES	(0x3f | SELECTMODE)	/* all mode bits used for
+						 * mapping */
 
 /* directions */
 #define FORWARD			1
