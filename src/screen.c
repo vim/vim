@@ -7129,6 +7129,12 @@ screenalloc(clear)
 	return;
     entered = TRUE;
 
+    /*
+     * Note that the window sizes are updated before reallocating the arrays,
+     * thus we must not redraw here!
+     */
+    ++RedrawingDisabled;
+
     win_new_shellsize();    /* fit the windows in the new sized shell */
 
     comp_col();		/* recompute columns for shown command and ruler */
@@ -7363,6 +7369,7 @@ screenalloc(clear)
 #endif
 
     entered = FALSE;
+    --RedrawingDisabled;
 
 #ifdef FEAT_AUTOCMD
     if (starting == 0)
