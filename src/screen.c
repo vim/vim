@@ -2612,7 +2612,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_LINEBREAK
     int		need_showbreak = FALSE;
 #endif
-#if defined(FEAT_SIGNS) || (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS))
+#if defined(FEAT_SIGNS) || (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
+	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
 # define LINE_ATTR
     int		line_attr = 0;		/* atrribute for the whole line */
 #endif
@@ -2626,7 +2627,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		prev_c = 0;		/* previous Arabic character */
     int		prev_c1 = 0;		/* first composing char for prev_c */
 #endif
-#if defined(FEAT_DIFF) || defined(LINE_ATTR)
+#if defined(LINE_ATTR)
     int		did_line_attr = 0;
 #endif
 
@@ -4116,17 +4117,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    --ptr;	    /* put it back at the NUL */
 		}
 #endif
-#if defined(FEAT_DIFF) || defined(LINE_ATTR)
+#if defined(LINE_ATTR)
 		else if ((
 # ifdef FEAT_DIFF
-			    diff_hlf != (hlf_T)0
-#  ifdef LINE_ATTR
-			    ||
-#  endif
+			    diff_hlf != (hlf_T)0 ||
 # endif
-# ifdef LINE_ATTR
 			    line_attr != 0
-# endif
 			) && (
 # ifdef FEAT_RIGHTLEFT
 			    wp->w_p_rl ? (col >= 0) :
@@ -4237,7 +4233,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	 * At end of the text line or just after the last character.
 	 */
 	if (c == NUL
-#if defined(FEAT_DIFF) || defined(LINE_ATTR)
+#if defined(LINE_ATTR)
 		|| did_line_attr == 1
 #endif
 		)
@@ -4258,7 +4254,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				|| prevcol == (long)match_hl[0].startcol
 				|| prevcol == (long)match_hl[1].startcol
 				|| prevcol == (long)match_hl[2].startcol)
-# if defined(FEAT_DIFF) || defined(LINE_ATTR)
+# if defined(LINE_ATTR)
 			    && did_line_attr <= 1
 # endif
 			   )
