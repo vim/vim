@@ -8252,6 +8252,12 @@ f_complete(argvars, rettv)
 	EMSG(_("E785: complete() can only be used in Insert mode"));
 	return;
     }
+
+    /* Check for undo allowed here, because if something was already inserted
+     * the line was already saved for undo and this check isn't done. */
+    if (!undo_allowed())
+	return;
+
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
 	EMSG(_(e_invarg));

@@ -84,7 +84,6 @@
 static void u_unch_branch __ARGS((u_header_T *uhp));
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
-static int undo_allowed __ARGS((void));
 static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((int undo));
@@ -196,7 +195,7 @@ u_savedel(lnum, nlines)
  * Return TRUE when undo is allowed.  Otherwise give an error message and
  * return FALSE.
  */
-    static int
+    int
 undo_allowed()
 {
     /* Don't allow changes when 'modifiable' is off.  */

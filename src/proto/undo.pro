@@ -4,6 +4,7 @@ extern int u_save __ARGS((linenr_T top, linenr_T bot));
 extern int u_savesub __ARGS((linenr_T lnum));
 extern int u_inssub __ARGS((linenr_T lnum));
 extern int u_savedel __ARGS((linenr_T lnum, long nlines));
+extern int undo_allowed __ARGS((void));
 extern void u_undo __ARGS((int count));
 extern void u_redo __ARGS((int count));
 extern void undo_time __ARGS((long step, int sec, int absolute));
