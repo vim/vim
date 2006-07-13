@@ -11321,14 +11321,19 @@ f_index(argvars, rettv)
 
 static int inputsecret_flag = 0;
 
+static void get_user_input __ARGS((typval_T *argvars, typval_T *rettv, int inputdialog));
+
 /*
- * "input()" function
- *     Also handles inputsecret() when inputsecret is set.
+ * This function is used by f_input() and f_inputdialog() functions. The third
+ * argument to f_input() specifies the type of completion to use at the
+ * prompt. The third argument to f_inputdialog() specifies the value to return
+ * when the user cancels the prompt.
  */
     static void
-f_input(argvars, rettv)
+get_user_input(argvars, rettv, inputdialog)
     typval_T	*argvars;
     typval_T	*rettv;
+    int		inputdialog;
 {
     char_u	*prompt = get_tv_string_chk(&argvars[0]);
     char_u	*p = NULL;
@@ -11378,7 +11383,7 @@ f_input(argvars, rettv)
 	    if (defstr != NULL)
 		stuffReadbuffSpec(defstr);
 
-	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    if (!inputdialog && argvars[2].v_type != VAR_UNKNOWN)
 	    {
 		char_u	*xp_name;
 		int	xp_namelen;
@@ -11410,6 +11415,18 @@ f_input(argvars, rettv)
 	msg_didout = FALSE;
     }
     cmd_silent = cmd_silent_save;
+}
+
+/*
+ * "input()" function
+ *     Also handles inputsecret() when inputsecret is set.
+ */
+    static void
+f_input(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    get_user_input(argvars, rettv, FALSE);
 }
 
 /*
@@ -11452,7 +11469,7 @@ f_inputdialog(argvars, rettv)
     }
     else
 #endif
-	f_input(argvars, rettv);
+	get_user_input(argvars, rettv, TRUE);
 }
 
 /*
