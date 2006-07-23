@@ -16465,9 +16465,12 @@ list2fpos(arg, posp, fnump)
     long	i = 0;
     long	n;
 
-    /* List must be: [fnum, lnum, col, coladd] */
-    if (arg->v_type != VAR_LIST || l == NULL
-				      || l->lv_len != (fnump == NULL ? 3 : 4))
+    /* List must be: [fnum, lnum, col, coladd], where "fnum" is only there
+     * when "fnump" isn't NULL and "coladd" is optional. */
+    if (arg->v_type != VAR_LIST
+	    || l == NULL
+	    || l->lv_len < (fnump == NULL ? 2 : 3)
+	    || l->lv_len > (fnump == NULL ? 3 : 4))
 	return FAIL;
 
     if (fnump != NULL)
@@ -16493,8 +16496,9 @@ list2fpos(arg, posp, fnump)
 #ifdef FEAT_VIRTUALEDIT
     n = list_find_nr(l, i, NULL);
     if (n < 0)
-	return FAIL;
-    posp->coladd = n;
+	posp->coladd = 0;
+    else
+	posp->coladd = n;
 #endif
 
     return OK;
