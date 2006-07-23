@@ -3493,8 +3493,15 @@ do_put(regname, dir, count, flags)
 # endif
 	if (flags & PUT_CURSEND)
 	{
+	    colnr_T len;
+
 	    curwin->w_cursor = curbuf->b_op_end;
 	    curwin->w_cursor.col++;
+
+	    /* in Insert mode we might be after the NUL, correct for that */
+	    len = (colnr_T)STRLEN(ml_get_curline());
+	    if (curwin->w_cursor.col > len)
+		curwin->w_cursor.col = len;
 	}
 	else
 	    curwin->w_cursor.lnum = lnum;
