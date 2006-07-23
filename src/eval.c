@@ -11497,6 +11497,7 @@ f_inputlist(argvars, rettv)
     }
 
     msg_start();
+    msg_row = Rows - 1;	/* for when 'cmdheight' > 1 */
     lines_left = Rows;	/* avoid more prompt */
     msg_scroll = TRUE;
     msg_clr_eos();

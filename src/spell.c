@@ -10071,6 +10071,7 @@ spell_suggest(count)
 
 	/* List the suggestions. */
 	msg_start();
+	msg_row = Rows - 1;	/* for when 'cmdheight' > 1 */
 	lines_left = Rows;	/* avoid more prompt */
 	vim_snprintf((char *)IObuff, IOSIZE, _("Change \"%.*s\" to:"),
 						sug.su_badlen, sug.su_badptr);
