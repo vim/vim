@@ -13,11 +13,14 @@
  * See os_mswin.c for the client side.
  */
 
+extern "C" {
+#include "vim.h"
+}
+
 #include <windows.h>
 #include <oleauto.h>
 
 extern "C" {
-#include "vim.h"
 extern HWND s_hwnd;
 extern HWND vim_parent_hwnd;
 }
