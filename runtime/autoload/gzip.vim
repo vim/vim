@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Mar 31
+" Last Change: 2006 Jul 19
 
 " These functions are used by the gzip plugin.
 
@@ -127,9 +127,9 @@ fun gzip#write(cmd)
     let nmt = s:tempname(nm)
     if rename(nm, nmt) == 0
       if exists("b:gzip_comp_arg")
-	call system(a:cmd . " " . b:gzip_comp_arg . " " . nmt)
+	call system(a:cmd . " " . b:gzip_comp_arg . " '" . nmt . "'")
       else
-	call system(a:cmd . " " . nmt)
+	call system(a:cmd . " '" . nmt . "'")
       endif
       call rename(nmt . "." . expand("<afile>:e"), nm)
     endif
