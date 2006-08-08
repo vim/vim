@@ -1986,6 +1986,8 @@ nb_do_cmd(
 	    if (buf->bufp != NULL)
 		do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD,
 						     buf->bufp->b_fnum, TRUE);
+	    buf->bufp = NULL;
+	    buf->initDone = FALSE;
 	    doupdate = 1;
 /* =====================================================================*/
 	}
