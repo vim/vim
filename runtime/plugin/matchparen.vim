@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 May 11
+" Last Change: 2006 Jun 26
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -96,7 +96,7 @@ function! s:Highlight_Matching_Pair()
 
   " When not in a string or comment ignore matches inside them.
   let s_skip ='synIDattr(synID(line("."), col("."), 0), "name") ' .
-	\ '=~?  "string\\|comment"'
+	\ '=~?  "string\\|character\\|singlequote\\|comment"'
   execute 'if' s_skip '| let s_skip = 0 | endif'
 
   let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
