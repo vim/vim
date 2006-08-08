@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Mar 28
+" Last change:	2006 Jul 08
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -52,6 +52,12 @@ if s:line1 =~ "^#!"
     let s:name = substitute(s:line1, '^#!\s*\([^/\\ ]*\>\).*', '\1', '')
   else
     let s:name = substitute(s:line1, '^#!\s*\S*[/\\]\(\i\+\).*', '\1', '')
+  endif
+
+  " tcl scripts may have #!/bin/sh in the first line and "exec wish" in the
+  " third line.  Suggested by Steven Atkinson.
+  if getline(3) =~ '^exec wish'
+    let s:name = 'wish'
   endif
 
   " Bourne-like shell scripts: bash bash2 ksh ksh93 sh
