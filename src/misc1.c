@@ -4492,7 +4492,7 @@ shorten_dir(str)
 		int l = mb_ptr2len(s);
 
 		while (--l > 0)
-		    *d++ = *s++;
+		    *d++ = *++s;
 	    }
 # endif
 	}
