@@ -3212,10 +3212,15 @@ prepare_server(parmp)
      * Register for remote command execution with :serversend and --remote
      * unless there was a -X or a --servername '' on the command line.
      * Only register nongui-vim's with an explicit --servername argument.
+     * When running as root --servername is also required.
      */
     if (X_DISPLAY != NULL && parmp->servername != NULL && (
 #  ifdef FEAT_GUI
-		gui.in_use ||
+		(gui.in_use
+#   ifdef UNIX
+		 && getuid() != 0
+#   endif
+		) ||
 #  endif
 		parmp->serverName_arg != NULL))
     {
