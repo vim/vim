@@ -10,6 +10,7 @@ extern int menu_is_popup __ARGS((char_u *name));
 extern int menu_is_child_of_popup __ARGS((vimmenu_T *menu));
 extern int menu_is_toolbar __ARGS((char_u *name));
 extern int menu_is_separator __ARGS((char_u *name));
+extern int check_menu_pointer __ARGS((vimmenu_T *root, vimmenu_T *menu_to_check));
 extern void gui_create_initial_menus __ARGS((vimmenu_T *menu));
 extern void gui_update_menus __ARGS((int modes));
 extern int gui_is_menu_shortcut __ARGS((int key));

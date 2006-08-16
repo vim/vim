@@ -4783,6 +4783,14 @@ check_termcode(max_offset, buf, buflen)
 		return -1;
 	    current_menu = (vimmenu_T *)val;
 	    slen += num_bytes;
+
+	    /* The menu may have been deleted right after it was used, check
+	     * for that. */
+	    if (check_menu_pointer(root_menu, current_menu) == FAIL)
+	    {
+		key_name[0] = KS_EXTRA;
+		key_name[1] = (int)KE_IGNORE;
+	    }
 	}
 # endif
 # ifdef FEAT_GUI_TABLINE

@@ -1778,6 +1778,27 @@ get_menu_mode()
 }
 
 /*
+ * Check that a pointer appears in the menu tree.  Used to protect from using
+ * a menu that was deleted after it was selected but before the event was
+ * handled.
+ * Return OK or FAIL.  Used recursively.
+ */
+    int
+check_menu_pointer(root, menu_to_check)
+    vimmenu_T *root;
+    vimmenu_T *menu_to_check;
+{
+    vimmenu_T	*p;
+
+    for (p = root; p != NULL; p = p->next)
+	if (p == menu_to_check
+		|| (p->children != NULL
+		    && check_menu_pointer(p->children, menu_to_check) == OK))
+	    return OK;
+    return FAIL;
+}
+
+/*
  * After we have started the GUI, then we can create any menus that have been
  * defined.  This is done once here.  add_menu_path() may have already been
  * called to define these menus, and may be called again.  This function calls
