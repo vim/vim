@@ -6450,17 +6450,10 @@ buf_reload(buf, orig_mode)
     int		old_ro = buf->b_p_ro;
     buf_T	*savebuf;
     int		saved = OK;
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
 
     /* set curwin/curbuf for "buf" and save some things */
     aucmd_prepbuf(&aco, buf);
-#else
-    buf_T	*save_curbuf = curbuf;
-
-    curbuf = buf;
-    curwin->w_buffer = buf;
-#endif
 
     /* We only want to read the text from the file, not reset the syntax
      * highlighting, clear marks, diff status, etc.  Force the fileformat
@@ -6573,14 +6566,9 @@ buf_reload(buf, orig_mode)
 	    curbuf->b_p_ro |= old_ro;
     }
 
-#ifdef FEAT_AUTOCMD
     /* restore curwin/curbuf and a few other things */
     aucmd_restbuf(&aco);
     /* Careful: autocommands may have made "buf" invalid! */
-#else
-    curwin->w_buffer = save_curbuf;
-    curbuf = save_curbuf;
-#endif
 }
 
 /*ARGSUSED*/
@@ -8088,6 +8076,7 @@ ex_doautoall(eap)
  * Search a window for the current buffer.  Save the cursor position and
  * screen offset.
  * Set "curbuf" and "curwin" to match "buf".
+ * When FEAT_AUTOCMD is not defined another version is used, see below.
  */
     void
 aucmd_prepbuf(aco, buf)
@@ -8151,6 +8140,7 @@ aucmd_prepbuf(aco, buf)
 /*
  * Cleanup after executing autocommands for a (hidden) buffer.
  * Restore the window as it was (if possible).
+ * When FEAT_AUTOCMD is not defined another version is used, see below.
  */
     void
 aucmd_restbuf(aco)
@@ -9063,7 +9053,37 @@ theend:
     return retval;
 }
 
+#else	/* FEAT_AUTOCMD */
+
+/*
+ * Prepare for executing commands for (hidden) buffer "buf".
+ * This is the non-autocommand version, it simply saves "curbuf" and sets
+ * "curbuf" and "curwin" to match "buf".
+ */
+    void
+aucmd_prepbuf(aco, buf)
+    aco_save_T	*aco;		/* structure to save values in */
+    buf_T	*buf;		/* new curbuf */
+{
+    aco->save_buf = buf;
+    curbuf = buf;
+    curwin->w_buffer = buf;
+}
+
+/*
+ * Restore after executing commands for a (hidden) buffer.
+ * This is the non-autocommand version.
+ */
+    void
+aucmd_restbuf(aco)
+    aco_save_T	*aco;		/* structure holding saved values */
+{
+    curbuf = aco->save_buf;
+    curwin->w_buffer = curbuf;
+}
+
 #endif	/* FEAT_AUTOCMD */
+
 
 #if defined(FEAT_AUTOCMD) || defined(FEAT_WILDIGN) || defined(PROTO)
 /*

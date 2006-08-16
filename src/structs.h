@@ -2213,18 +2213,20 @@ typedef int vimmenu_T;
 
 /*
  * Struct to save values in before executing autocommands for a buffer that is
- * not the current buffer.
+ * not the current buffer.  Without FEAT_AUTOCMD only "curbuf" is remembered.
  */
 typedef struct
 {
     buf_T	*save_buf;	/* saved curbuf */
+#ifdef FEAT_AUTOCMD
     buf_T	*new_curbuf;	/* buffer to be used */
     win_T	*save_curwin;	/* saved curwin, NULL if it didn't change */
     win_T	*new_curwin;	/* new curwin if save_curwin != NULL */
     pos_T	save_cursor;	/* saved cursor pos of save_curwin */
     linenr_T	save_topline;	/* saved topline of save_curwin */
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     int		save_topfill;	/* saved topfill of save_curwin */
+# endif
 #endif
 } aco_save_T;
 

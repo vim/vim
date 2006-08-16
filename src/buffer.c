@@ -5420,11 +5420,7 @@ buf_contents_changed(buf)
     buf_T	*newbuf;
     int		differ = TRUE;
     linenr_T	lnum;
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*old_curbuf = curbuf;
-#endif
     exarg_T	ea;
 
     /* Allocate a buffer without putting it in the buffer list. */
@@ -5439,13 +5435,8 @@ buf_contents_changed(buf)
 	return TRUE;
     }
 
-#ifdef FEAT_AUTOCMD
     /* set curwin/curbuf to buf and save a few things */
     aucmd_prepbuf(&aco, newbuf);
-#else
-    curbuf = newbuf;
-    curwin->w_buffer = newbuf;
-#endif
 
     if (ml_open(curbuf) == OK
 	    && readfile(buf->b_ffname, buf->b_fname,
@@ -5466,13 +5457,8 @@ buf_contents_changed(buf)
     }
     vim_free(ea.cmd);
 
-#ifdef FEAT_AUTOCMD
     /* restore curwin/curbuf and a few other things */
     aucmd_restbuf(&aco);
-#else
-    curbuf = old_curbuf;
-    curwin->w_buffer = old_curbuf;
-#endif
 
     if (curbuf != newbuf)	/* safety check */
 	wipe_buffer(newbuf, FALSE);

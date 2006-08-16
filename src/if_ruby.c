@@ -644,21 +644,12 @@ static VALUE buffer_aref(VALUE self, VALUE num)
 static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 {
     char	*line = STR2CSTR(str);
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*save_curbuf = curbuf;
-#endif
 
     if (n > 0 && n <= buf->b_ml.ml_line_count && line != NULL)
     {
-#ifdef FEAT_AUTOCMD
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
-#else
-	curbuf = buf;
-	curwin->w_buffer = buf;
-#endif
 
 	if (u_savesub(n) == OK) {
 	    ml_replace(n, (char_u *)line, TRUE);
@@ -668,14 +659,10 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 #endif
 	}
 
-#ifdef FEAT_AUTOCMD
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
 	/* Careful: autocommands may have made "buf" invalid! */
-#else
-	curwin->w_buffer = save_curbuf;
-	curbuf = save_curbuf;
-#endif
+
 	update_curbuf(NOT_VALID);
     }
     else
@@ -699,21 +686,12 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 {
     buf_T	*buf = get_buf(self);
     long	n = NUM2LONG(num);
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*save_curbuf = curbuf;
-#endif
 
     if (n > 0 && n <= buf->b_ml.ml_line_count)
     {
-#ifdef FEAT_AUTOCMD
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
-#else
-	curbuf = buf;
-	curwin->w_buffer = buf;
-#endif
 
 	if (u_savedel(n, 1) == OK) {
 	    ml_delete(n, 0);
@@ -725,14 +703,10 @@ static VALUE buffer_delete(VALUE self, VALUE num)
 	    changed();
 	}
 
-#ifdef FEAT_AUTOCMD
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
 	/* Careful: autocommands may have made "buf" invalid! */
-#else
-	curwin->w_buffer = save_curbuf;
-	curbuf = save_curbuf;
-#endif
+
 	update_curbuf(NOT_VALID);
     }
     else
@@ -747,21 +721,12 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     buf_T	*buf = get_buf(self);
     char	*line = STR2CSTR(str);
     long	n = NUM2LONG(num);
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*save_curbuf = curbuf;
-#endif
 
     if (n >= 0 && n <= buf->b_ml.ml_line_count && line != NULL)
     {
-#ifdef FEAT_AUTOCMD
 	/* set curwin/curbuf for "buf" and save some things */
 	aucmd_prepbuf(&aco, buf);
-#else
-	curbuf = buf;
-	curwin->w_buffer = buf;
-#endif
 
 	if (u_inssub(n + 1) == OK) {
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
@@ -773,14 +738,10 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
 	    changed();
 	}
 
-#ifdef FEAT_AUTOCMD
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
 	/* Careful: autocommands may have made "buf" invalid! */
-#else
-	curwin->w_buffer = save_curbuf;
-	curbuf = save_curbuf;
-#endif
+
 	update_curbuf(NOT_VALID);
     }
     else {

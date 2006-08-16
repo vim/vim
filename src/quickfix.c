@@ -2463,32 +2463,19 @@ qf_update_buffer(qi)
     qf_info_T	*qi;
 {
     buf_T	*buf;
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*save_curbuf;
-#endif
 
     /* Check if a buffer for the quickfix list exists.  Update it. */
     buf = qf_find_buf(qi);
     if (buf != NULL)
     {
-#ifdef FEAT_AUTOCMD
 	/* set curwin/curbuf to buf and save a few things */
 	aucmd_prepbuf(&aco, buf);
-#else
-	save_curbuf = curbuf;
-	curbuf = buf;
-#endif
 
 	qf_fill_buffer(qi);
 
-#ifdef FEAT_AUTOCMD
 	/* restore curwin/curbuf and a few other things */
 	aucmd_restbuf(&aco);
-#else
-	curbuf = save_curbuf;
-#endif
 
 	(void)qf_win_pos_update(qi, 0);
     }
@@ -2977,10 +2964,8 @@ ex_vimgrep(eap)
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
     char_u	*save_ei = NULL;
 #endif
-#ifndef FEAT_AUTOCMD
-    buf_T	*save_curbuf;
-#else
     aco_save_T	aco;
+#ifdef FEAT_AUTOCMD
     char_u	*au_name =  NULL;
     int		flags = 0;
     colnr_T	col;
@@ -3201,24 +3186,13 @@ ex_vimgrep(eap)
 		     * need to be done now, in that buffer.  And the modelines
 		     * need to be done (again).  But not the window-local
 		     * options! */
-#if defined(FEAT_AUTOCMD)
 		    aucmd_prepbuf(&aco, buf);
-#else
-		    save_curbuf = curbuf;
-		    curbuf = buf;
-		    curwin->w_buffer = curbuf;
-#endif
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
 		    apply_autocmds(EVENT_FILETYPE, buf->b_p_ft,
 						     buf->b_fname, TRUE, buf);
 #endif
 		    do_modelines(OPT_NOWIN);
-#if defined(FEAT_AUTOCMD)
 		    aucmd_restbuf(&aco);
-#else
-		    curbuf = save_curbuf;
-		    curwin->w_buffer = curbuf;
-#endif
 		}
 	    }
 	}
@@ -3319,11 +3293,7 @@ load_dummy_buffer(fname)
 {
     buf_T	*newbuf;
     int		failed = TRUE;
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*old_curbuf = curbuf;
-#endif
 
     /* Allocate a buffer without putting it in the buffer list. */
     newbuf = buflist_new(NULL, NULL, (linenr_T)1, BLN_DUMMY);
@@ -3333,13 +3303,8 @@ load_dummy_buffer(fname)
     /* Init the options. */
     buf_copy_options(newbuf, BCO_ENTER | BCO_NOHELP);
 
-#ifdef FEAT_AUTOCMD
     /* set curwin/curbuf to buf and save a few things */
     aucmd_prepbuf(&aco, newbuf);
-#else
-    curbuf = newbuf;
-    curwin->w_buffer = newbuf;
-#endif
 
     /* Need to set the filename for autocommands. */
     (void)setfname(curbuf, fname, NULL, FALSE);
@@ -3370,13 +3335,8 @@ load_dummy_buffer(fname)
 	}
     }
 
-#ifdef FEAT_AUTOCMD
     /* restore curwin/curbuf and a few other things */
     aucmd_restbuf(&aco);
-#else
-    curbuf = old_curbuf;
-    curwin->w_buffer = old_curbuf;
-#endif
 
     if (!buf_valid(newbuf))
 	return NULL;

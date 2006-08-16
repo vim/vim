@@ -14184,11 +14184,7 @@ f_setbufvar(argvars, rettv)
     typval_T	*rettv;
 {
     buf_T	*buf;
-#ifdef FEAT_AUTOCMD
     aco_save_T	aco;
-#else
-    buf_T	*save_curbuf;
-#endif
     char_u	*varname, *bufvarname;
     typval_T	*varp;
     char_u	nbuf[NUMBUFLEN];
@@ -14205,12 +14201,7 @@ f_setbufvar(argvars, rettv)
     if (buf != NULL && varname != NULL && varp != NULL)
     {
 	/* set curbuf to be our buf, temporarily */
-#ifdef FEAT_AUTOCMD
 	aucmd_prepbuf(&aco, buf);
-#else
-	save_curbuf = curbuf;
-	curbuf = buf;
-#endif
 
 	if (*varname == '&')
 	{
@@ -14237,11 +14228,7 @@ f_setbufvar(argvars, rettv)
 	}
 
 	/* reset notion of buffer */
-#ifdef FEAT_AUTOCMD
 	aucmd_restbuf(&aco);
-#else
-	curbuf = save_curbuf;
-#endif
     }
 }
 

@@ -1068,30 +1068,20 @@ Set(vimbuf, ...)
 	    line = SvPV(ST(i),PL_na);
 	    if (lnum > 0 && lnum <= vimbuf->b_ml.ml_line_count && line != NULL)
 	    {
-#ifdef FEAT_AUTOCMD
 		aco_save_T	aco;
 
 		/* set curwin/curbuf for "vimbuf" and save some things */
 		aucmd_prepbuf(&aco, vimbuf);
-#else
-		buf_T	*save_curbuf = curbuf;
 
-		curbuf = vimbuf;
-		curwin->w_buffer = vimbuf;
-#endif
 		if (u_savesub(lnum) == OK)
 		{
 		    ml_replace(lnum, (char_u *)line, TRUE);
 		    changed_bytes(lnum, 0);
 		}
-#ifdef FEAT_AUTOCMD
+
 		/* restore curwin/curbuf and a few other things */
 		aucmd_restbuf(&aco);
 		/* Careful: autocommands may have made "vimbuf" invalid! */
-#else
-		curwin->w_buffer = save_curbuf;
-		curbuf = save_curbuf;
-#endif
 	    }
 	}
     }
@@ -1128,31 +1118,23 @@ Delete(vimbuf, ...)
 	    {
 		if (lnum > 0 && lnum <= vimbuf->b_ml.ml_line_count)
 		{
-		    buf_T	*save_curbuf = curbuf;
-#ifdef FEAT_AUTOCMD
 		    aco_save_T	aco;
 
 		    /* set curwin/curbuf for "vimbuf" and save some things */
 		    aucmd_prepbuf(&aco, vimbuf);
-#else
-		    curbuf = vimbuf;
-		    curwin->w_buffer = vimbuf;
-#endif
+
 		    if (u_savedel(lnum, 1) == OK)
 		    {
 			ml_delete(lnum, 0);
 			deleted_lines_mark(lnum, 1L);
-			if (save_curbuf == curbuf)
+			if (aco.save_buf == curbuf)
 			    check_cursor();
 		    }
-#ifdef FEAT_AUTOCMD
+
 		    /* restore curwin/curbuf and a few other things */
 		    aucmd_restbuf(&aco);
 		    /* Careful: autocommands may have made "vimbuf" invalid! */
-#else
-		    curwin->w_buffer = save_curbuf;
-		    curbuf = save_curbuf;
-#endif
+
 		    update_curbuf(VALID);
 		}
 	    }
@@ -1179,30 +1161,21 @@ Append(vimbuf, ...)
 	    line = SvPV(ST(i),PL_na);
 	    if (lnum >= 0 && lnum <= vimbuf->b_ml.ml_line_count && line != NULL)
 	    {
-#ifdef FEAT_AUTOCMD
 		aco_save_T	aco;
 
 		/* set curwin/curbuf for "vimbuf" and save some things */
 		aucmd_prepbuf(&aco, vimbuf);
-#else
-		buf_T	*save_curbuf = curbuf;
 
-		curbuf = vimbuf;
-		curwin->w_buffer = vimbuf;
-#endif
 		if (u_inssub(lnum + 1) == OK)
 		{
 		    ml_append(lnum, (char_u *)line, (colnr_T)0, FALSE);
 		    appended_lines_mark(lnum, 1L);
 		}
-#ifdef FEAT_AUTOCMD
+
 		/* restore curwin/curbuf and a few other things */
 		aucmd_restbuf(&aco);
 		/* Careful: autocommands may have made "vimbuf" invalid! */
-#else
-		curwin->w_buffer = save_curbuf;
-		curbuf = save_curbuf;
-#endif
+
 		update_curbuf(VALID);
 	    }
 	}
