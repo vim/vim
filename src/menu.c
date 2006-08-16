@@ -511,6 +511,14 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 	 * name (without mnemonic and accelerator text). */
 	next_name = menu_name_skip(name);
 	dname = menu_text(name, NULL, NULL);
+	if (dname == NULL)
+	    goto erret;
+	if (*dname == NUL)
+	{
+	    /* Only a mnemonic or accelerator is not valid. */
+	    EMSG(_("E792: Empty menu name"));
+	    goto erret;
+	}
 
 	/* See if it's already there */
 	lower_pri = menup;
@@ -704,6 +712,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 	parent = menu;
 	name = next_name;
 	vim_free(dname);
+	dname = NULL;
 	if (pri_tab[pri_idx + 1] != -1)
 	    ++pri_idx;
     }
@@ -793,6 +802,22 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 erret:
     vim_free(path_name);
     vim_free(dname);
+
+    /* Delete any empty submenu we added before discovering the error.  Repeat
+     * for higher levels. */
+    while (parent != NULL && parent->children == NULL)
+    {
+	if (parent->parent == NULL)
+	    menup = &root_menu;
+	else
+	    menup = &parent->parent->children;
+	for ( ; *menup != NULL && *menup != parent; menup = &((*menup)->next))
+	    ;
+	if (*menup == NULL) /* safety check */
+	    break;
+	parent = parent->parent;
+	free_menu(menup);
+    }
     return FAIL;
 }
 
