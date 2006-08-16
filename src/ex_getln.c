@@ -5982,6 +5982,8 @@ ex_window()
     typestr[0] = cmdwin_type;
     typestr[1] = NUL;
     apply_autocmds(EVENT_CMDWINENTER, typestr, typestr, FALSE, curbuf);
+    if (restart_edit != 0)	/* autocmd with ":startinsert" */
+	stuffcharReadbuff(K_NOP);
 # endif
 
     i = RedrawingDisabled;

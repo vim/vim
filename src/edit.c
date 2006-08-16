@@ -882,6 +882,7 @@ edit(cmdchar, startln, count)
 		/* Close the cmdline window. */
 		cmdwin_result = K_IGNORE;
 		got_int = FALSE; /* don't stop executing autocommands et al. */
+		nomove = TRUE;
 		goto doESCkey;
 	    }
 #endif
@@ -2414,6 +2415,7 @@ set_completion(startcol, list)
     compl_matches = ins_compl_make_cyclic();
     compl_started = TRUE;
     compl_used_match = TRUE;
+    compl_cont_status = 0;
 
     compl_curr_match = compl_first_match;
     ins_complete(Ctrl_N);
