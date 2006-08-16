@@ -18811,6 +18811,7 @@ ex_function(eap)
 		if (dict_add(fudi.fd_dict, fudi.fd_di) == FAIL)
 		{
 		    vim_free(fudi.fd_di);
+		    vim_free(fp);
 		    goto erret;
 		}
 	    }
