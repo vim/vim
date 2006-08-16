@@ -1710,6 +1710,10 @@ do_one_cmd(cmdlinep, sourcing,
     save_cmdmod = cmdmod;
     vim_memset(&cmdmod, 0, sizeof(cmdmod));
 
+    /* "#!anything" is handled like a comment. */
+    if ((*cmdlinep)[0] == '#' && (*cmdlinep)[1] == '!')
+	goto doend;
+
     /*
      * Repeat until no more command modifiers are found.
      */
