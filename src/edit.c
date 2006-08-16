@@ -4691,18 +4691,12 @@ ins_complete(c)
 				     (int)STRLEN(compl_pattern), curs_col);
 	    if (compl_xp.xp_context == EXPAND_UNSUCCESSFUL
 		    || compl_xp.xp_context == EXPAND_NOTHING)
-	    {
+		/* No completion possible, use an empty pattern to get a
+		 * "pattern not found" message. */
 		compl_col = curs_col;
-		compl_length = 0;
-		vim_free(compl_pattern);
-		compl_pattern = NULL;
-	    }
 	    else
-	    {
-		startcol = (int)(compl_xp.xp_pattern - compl_pattern);
-		compl_col = startcol;
-		compl_length = curs_col - startcol;
-	    }
+		compl_col = (int)(compl_xp.xp_pattern - compl_pattern);
+	    compl_length = curs_col - compl_col;
 	}
 	else if (ctrl_x_mode == CTRL_X_FUNCTION || ctrl_x_mode == CTRL_X_OMNI)
 	{
