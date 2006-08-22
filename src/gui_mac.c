@@ -2480,6 +2480,12 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
     UInt32	mod;
     SInt32	delta;
     int_u	vim_mod;
+    EventMouseWheelAxis axis;
+
+    if (noErr == GetEventParameter(theEvent, kEventParamMouseWheelAxis,
+			  typeMouseWheelAxis, NULL, sizeof(axis), NULL, &axis)
+	    && axis != kEventMouseWheelAxisY)
+	goto bail; /* Vim only does up-down scrolling */
 
     if (noErr != GetEventParameter(theEvent, kEventParamMouseWheelDelta,
 			      typeSInt32, NULL, sizeof(SInt32), NULL, &delta))
