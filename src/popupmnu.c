@@ -552,6 +552,9 @@ pum_undisplay()
 {
     pum_array = NULL;
     redraw_all_later(SOME_VALID);
+#ifdef FEAT_WINDOWS
+    redraw_tabline = TRUE;
+#endif
     status_redraw_all();
 }
 
