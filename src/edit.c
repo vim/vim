@@ -2760,6 +2760,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 	}
 	else
 # endif
+	    if (count > 0)	/* avoid warning for using "files" uninit */
 	{
 	    ins_compl_files(count, files, thesaurus, flags,
 							&regmatch, buf, &dir);
@@ -3222,7 +3223,6 @@ ins_compl_prep(c)
     int	    c;
 {
     char_u	*ptr;
-    int		temp;
     int		want_cindent;
     int		retval = FALSE;
 
@@ -3378,6 +3378,7 @@ ins_compl_prep(c)
 	    if (compl_curr_match != NULL || compl_leader != NULL || c == Ctrl_E)
 	    {
 		char_u	*p;
+		int	temp = 0;
 
 		/*
 		 * If any of the original typed text has been changed, eg when
