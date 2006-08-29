@@ -3514,6 +3514,11 @@ im_delete_preedit(void)
 	add_to_input_buf(delkey, (int)sizeof(delkey));
 }
 
+/*
+ * Move the cursor left by "num_move_back" characters.
+ * Note that ins_left() checks im_is_preediting() to avoid breaking undo for
+ * these K_LEFT keys.
+ */
     static void
 im_correct_cursor(int num_move_back)
 {
@@ -3741,8 +3746,7 @@ im_preedit_changed_cb(GtkIMContext *context, gpointer data)
     }
     else if (cursor_index == 0 && preedit_string[0] == '\0')
     {
-	if (preedit_start_col == MAXCOL)
-	    xim_has_preediting = FALSE;
+	xim_has_preediting = FALSE;
 
 	/* If at the start position (after typing backspace)
 	 * preedit_start_col must be reset. */
