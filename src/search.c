@@ -4871,7 +4871,7 @@ search_line:
 			goto exit_matched;
 		}
 
-		add_r = ins_compl_add_infercase(aux, i, FALSE,
+		add_r = ins_compl_add_infercase(aux, i, p_ic,
 			curr_fname == curbuf->b_fname ? NULL : curr_fname,
 			dir, reuse);
 		if (add_r == OK)

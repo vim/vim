@@ -2405,7 +2405,7 @@ set_completion(startcol, list)
     /* compl_pattern doesn't need to be set */
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			-1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
+			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	return;
 
     /* Handle like dictionary completion. */
@@ -2821,7 +2821,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 			ptr = find_word_end(ptr);
 		    add_r = ins_compl_add_infercase(regmatch->startp[0],
 					  (int)(ptr - regmatch->startp[0]),
-						     FALSE, files[i], *dir, 0);
+						     p_ic, files[i], *dir, 0);
 		    if (thesaurus)
 		    {
 			char_u *wstart;
@@ -2857,7 +2857,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 				ptr = find_word_end(ptr);
 			    add_r = ins_compl_add_infercase(wstart,
 				    (int)(ptr - wstart),
-				    FALSE, files[i], *dir, 0);
+				    p_ic, files[i], *dir, 0);
 			}
 		    }
 		    if (add_r == OK)
@@ -3826,7 +3826,7 @@ ins_compl_get_exp(ini)
 		    TAG_INS_COMP | (ctrl_x_mode ? TAG_VERBOSE : 0),
 		    TAG_MANY, curbuf->b_ffname) == OK && num_matches > 0)
 	    {
-		ins_compl_add_matches(num_matches, matches, FALSE);
+		ins_compl_add_matches(num_matches, matches, p_ic);
 	    }
 	    p_ic = save_p_ic;
 	    break;
@@ -3867,7 +3867,7 @@ ins_compl_get_exp(ini)
 	    num_matches = expand_spelling(first_match_pos.lnum,
 				 first_match_pos.col, compl_pattern, &matches);
 	    if (num_matches > 0)
-		ins_compl_add_matches(num_matches, matches, FALSE);
+		ins_compl_add_matches(num_matches, matches, p_ic);
 #endif
 	    break;
 
@@ -4001,7 +4001,7 @@ ins_compl_get_exp(ini)
 			    continue;
 		    }
 		}
-		if (ins_compl_add_infercase(ptr, len, FALSE,
+		if (ins_compl_add_infercase(ptr, len, p_ic,
 				 ins_buf == curbuf ? NULL : ins_buf->b_sfname,
 					   0, flags) != NOTDONE)
 		{
@@ -4809,7 +4809,7 @@ ins_complete(c)
 	vim_free(compl_orig_text);
 	compl_orig_text = vim_strnsave(line + compl_col, compl_length);
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-			-1, FALSE, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
+			-1, p_ic, NULL, NULL, 0, ORIGINAL_TEXT, FALSE) != OK)
 	{
 	    vim_free(compl_pattern);
 	    compl_pattern = NULL;

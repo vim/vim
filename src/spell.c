@@ -15658,7 +15658,7 @@ dump_word(slang, word, pat, dir, dumpflags, wordflags, lnum)
 		    ? MB_STRNICMP(p, pat, STRLEN(pat)) == 0
 		    : STRNCMP(p, pat, STRLEN(pat)) == 0)
 		&& ins_compl_add_infercase(p, (int)STRLEN(p),
-					  FALSE, NULL, *dir, 0) == OK)
+					  p_ic, NULL, *dir, 0) == OK)
 	/* if dir was BACKWARD then honor it just once */
 	*dir = FORWARD;
 }
