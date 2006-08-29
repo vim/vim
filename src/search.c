@@ -1259,7 +1259,7 @@ do_search(oap, dirc, pat, count, options)
 	/*
 	 * Add character and/or line offset
 	 */
-	if (!(options & SEARCH_NOOF) || *pat == ';')
+	if (!(options & SEARCH_NOOF) || (pat != NULL && *pat == ';'))
 	{
 	    if (spats[0].off.line)	/* Add the offset to the line number. */
 	    {
