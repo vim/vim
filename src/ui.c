@@ -1137,7 +1137,6 @@ clip_copy_modeless_selection(both)
     int		len;
 #ifdef FEAT_MBYTE
     char_u	*p;
-    int		i;
 #endif
     int		row1 = clip_star.start.lnum;
     int		col1 = clip_star.start.col;
@@ -1218,6 +1217,8 @@ clip_copy_modeless_selection(both)
 #ifdef FEAT_MBYTE
 	    if (enc_dbcs != 0)
 	    {
+		int	i;
+
 		p = ScreenLines + LineOffset[row];
 		for (i = start_col; i < end_col; ++i)
 		    if (enc_dbcs == DBCS_JPNU && p[i] == 0x8e)

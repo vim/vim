@@ -500,8 +500,6 @@ qf_init_ext(qi, efile, buf, tv, errorformat, newlist, lnumfirst, lnumlast)
 	{
 	    if (tv != NULL)
 	    {
-		int len;
-
 		if (tv->v_type == VAR_STRING)
 		{
 		    /* Get the next line from the supplied string */

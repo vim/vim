@@ -957,15 +957,15 @@ toolbar_remove_item_by_text(GtkToolbar *tb, const char *text)
 get_menu_position(vimmenu_T *menu)
 {
     vimmenu_T	*node;
-    int		index = 0;
+    int		idx = 0;
 
     for (node = menu->parent->children; node != menu; node = node->next)
     {
 	g_return_val_if_fail(node != NULL, -1);
-	++index;
+	++idx;
     }
 
-    return index;
+    return idx;
 }
 #endif /* FEAT_TOOLBAR && HAVE_GTK2 */
 
@@ -2127,7 +2127,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
     char    **ync;  /* "yes no cancel" */
     char    **buttons;
     int	    n_buttons = 0;
-    int	    index;
+    int	    idx;
 
     button_string = vim_strsave(button_string); /* must be writable */
     if (button_string == NULL)
@@ -2161,12 +2161,12 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
      * Well, apparently somebody changed his mind: with GTK 2.2.4 it works the
      * other way around...
      */
-    for (index = 1; index <= n_buttons; ++index)
+    for (idx = 1; idx <= n_buttons; ++idx)
     {
 	char	*label;
 	char_u	*label8;
 
-	label = buttons[index - 1];
+	label = buttons[idx - 1];
 	/*
 	 * Perform some guesswork to find appropriate stock items for the
 	 * buttons.  We have to compare with a sample of the translated
@@ -2188,7 +2188,7 @@ dialog_add_buttons(GtkDialog *dialog, char_u *button_string)
 	    else if (button_equal(label, "Cancel")) label = GTK_STOCK_CANCEL;
 	}
 	label8 = CONVERT_TO_UTF8((char_u *)label);
-	gtk_dialog_add_button(dialog, (const gchar *)label8, index);
+	gtk_dialog_add_button(dialog, (const gchar *)label8, idx);
 	CONVERT_TO_UTF8_FREE(label8);
     }
 

@@ -454,7 +454,7 @@ static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static int call_func __ARGS((char_u *name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
-static void emsg_funcname __ARGS((char *msg, char_u *name));
+static void emsg_funcname __ARGS((char *ermsg, char_u *name));
 
 static void f_add __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_append __ARGS((typval_T *argvars, typval_T *rettv));
@@ -2260,7 +2260,7 @@ ex_let_one(arg, tv, copy, endchars, op)
 	    EMSG(_(e_letunexp));
 	else
 	{
-	    char_u	*tofree = NULL;
+	    char_u	*ptofree = NULL;
 	    char_u	*s;
 
 	    p = get_tv_string_chk(tv);
@@ -2269,7 +2269,7 @@ ex_let_one(arg, tv, copy, endchars, op)
 		s = get_reg_contents(*arg == '@' ? '"' : *arg, TRUE, TRUE);
 		if (s != NULL)
 		{
-		    p = tofree = concat_str(s, p);
+		    p = ptofree = concat_str(s, p);
 		    vim_free(s);
 		}
 	    }
@@ -2278,7 +2278,7 @@ ex_let_one(arg, tv, copy, endchars, op)
 		write_reg_contents(*arg == '@' ? '"' : *arg, p, -1, FALSE);
 		arg_end = arg + 1;
 	    }
-	    vim_free(tofree);
+	    vim_free(ptofree);
 	}
     }
 
@@ -7595,8 +7595,8 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
  * Give an error message with a function name.  Handle <SNR> things.
  */
     static void
-emsg_funcname(msg, name)
-    char	*msg;
+emsg_funcname(ermsg, name)
+    char	*ermsg;
     char_u	*name;
 {
     char_u	*p;
@@ -7605,7 +7605,7 @@ emsg_funcname(msg, name)
 	p = concat_str((char_u *)"<SNR>", name + 3);
     else
 	p = name;
-    EMSG2(_(msg), p);
+    EMSG2(_(ermsg), p);
     if (p != name)
 	vim_free(p);
 }
@@ -9179,25 +9179,25 @@ filter_map(argvars, rettv, map)
     typval_T	save_key;
     int		rem;
     int		todo;
-    char_u	*msg = map ? (char_u *)"map()" : (char_u *)"filter()";
+    char_u	*ermsg = map ? (char_u *)"map()" : (char_u *)"filter()";
     int		save_did_emsg;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
-		|| (map && tv_check_lock(l->lv_lock, msg)))
+		|| (map && tv_check_lock(l->lv_lock, ermsg)))
 	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
 	if ((d = argvars[0].vval.v_dict) == NULL
-		|| (map && tv_check_lock(d->dv_lock, msg)))
+		|| (map && tv_check_lock(d->dv_lock, ermsg)))
 	    return;
     }
     else
     {
-	EMSG2(_(e_listdictarg), msg);
+	EMSG2(_(e_listdictarg), ermsg);
 	return;
     }
 
@@ -9229,7 +9229,7 @@ filter_map(argvars, rettv, map)
 		{
 		    --todo;
 		    di = HI2DI(hi);
-		    if (tv_check_lock(di->di_tv.v_lock, msg))
+		    if (tv_check_lock(di->di_tv.v_lock, ermsg))
 			break;
 		    vimvars[VV_KEY].vv_str = vim_strsave(di->di_key);
 		    if (filter_map_one(&di->di_tv, expr, map, &rem) == FAIL
@@ -9248,7 +9248,7 @@ filter_map(argvars, rettv, map)
 	{
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
-		if (tv_check_lock(li->li_tv.v_lock, msg))
+		if (tv_check_lock(li->li_tv.v_lock, ermsg))
 		    break;
 		nli = li->li_next;
 		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
@@ -19789,7 +19789,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    if (p_verbose >= 14)
 	    {
 		char_u	buf[MSG_BUF_LEN];
-		char_u	numbuf[NUMBUFLEN];
+		char_u	numbuf2[NUMBUFLEN];
 		char_u	*tofree;
 
 		msg_puts((char_u *)"(");
@@ -19801,8 +19801,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 			msg_outnum((long)argvars[i].vval.v_number);
 		    else
 		    {
-			trunc_string(tv2string(&argvars[i], &tofree, numbuf, 0),
-							    buf, MSG_BUF_CLEN);
+			trunc_string(tv2string(&argvars[i], &tofree,
+					      numbuf2, 0), buf, MSG_BUF_CLEN);
 			msg_puts(buf);
 			vim_free(tofree);
 		    }
@@ -19880,13 +19880,13 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	else
 	{
 	    char_u	buf[MSG_BUF_LEN];
-	    char_u	numbuf[NUMBUFLEN];
+	    char_u	numbuf2[NUMBUFLEN];
 	    char_u	*tofree;
 
 	    /* The value may be very long.  Skip the middle part, so that we
 	     * have some idea how it starts and ends. smsg() would always
 	     * truncate it at the end. */
-	    trunc_string(tv2string(fc.rettv, &tofree, numbuf, 0),
+	    trunc_string(tv2string(fc.rettv, &tofree, numbuf2, 0),
 							   buf, MSG_BUF_CLEN);
 	    smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
 	    vim_free(tofree);

@@ -340,10 +340,10 @@ newwindow:
 		{
 		    tabpage_T	*oldtab = curtab;
 		    tabpage_T	*newtab;
-		    win_T	*wp = curwin;
 
 		    /* First create a new tab with the window, then go back to
 		     * the old tab and close the window there. */
+		    wp = curwin;
 		    if (win_new_tabpage((int)Prenum) == OK
 						     && valid_tabpage(oldtab))
 		    {

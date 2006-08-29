@@ -989,8 +989,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 {
     int i;
     char *cmd;
-    char **matches, **contexts;
-    int nummatches[CSCOPE_MAX_CONNECTIONS], totmatches, matched;
+    int nummatches[CSCOPE_MAX_CONNECTIONS], totmatches;
 #ifdef FEAT_QUICKFIX
     char cmdletter;
     char *qfpos;
@@ -1141,6 +1140,9 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
     else
 #endif /* FEAT_QUICKFIX */
     {
+	char **matches = NULL, **contexts = NULL;
+	int matched = 0;
+
 	/* read output */
 	cs_fill_results((char *)pat, totmatches, nummatches, &matches,
 							 &contexts, &matched);

@@ -3912,7 +3912,7 @@ regmatch(scan)
 		{
 		    colnr_T	    start, end;
 		    colnr_T	    start2, end2;
-		    colnr_T	    col;
+		    colnr_T	    cols;
 
 		    getvvcol(wp, &top, &start, NULL, &end);
 		    getvvcol(wp, &bot, &start2, NULL, &end2);
@@ -3922,9 +3922,9 @@ regmatch(scan)
 			end = end2;
 		    if (top.col == MAXCOL || bot.col == MAXCOL)
 			end = MAXCOL;
-		    col = win_linetabsize(wp,
+		    cols = win_linetabsize(wp,
 				      regline, (colnr_T)(reginput - regline));
-		    if (col < start || col > end - (*p_sel == 'e'))
+		    if (cols < start || cols > end - (*p_sel == 'e'))
 			status = RA_NOMATCH;
 		}
 	    }
@@ -4253,7 +4253,7 @@ regmatch(scan)
 	    {
 		int	i, len;
 		char_u	*opnd;
-		int	opndc, inpc;
+		int	opndc = 0, inpc;
 
 		opnd = OPERAND(scan);
 		/* Safety check (just in case 'encoding' was changed since

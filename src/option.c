@@ -5268,45 +5268,46 @@ set_string_option_direct(name, opt_idx, val, opt_flags, set_sid)
     char_u	*s;
     char_u	**varp;
     int		both = (opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0;
+    int		idx = opt_idx;
 
-    if (opt_idx == -1)		/* use name */
+    if (idx == -1)		/* use name */
     {
-	opt_idx = findoption(name);
-	if (opt_idx < 0)	/* not found (should not happen) */
+	idx = findoption(name);
+	if (idx < 0)	/* not found (should not happen) */
 	{
 	    EMSG2(_(e_intern2), "set_string_option_direct()");
 	    return;
 	}
     }
 
-    if (options[opt_idx].var == NULL)	/* can't set hidden option */
+    if (options[idx].var == NULL)	/* can't set hidden option */
 	return;
 
     s = vim_strsave(val);
     if (s != NULL)
     {
-	varp = (char_u **)get_varp_scope(&(options[opt_idx]),
+	varp = (char_u **)get_varp_scope(&(options[idx]),
 					       both ? OPT_LOCAL : opt_flags);
-	if ((opt_flags & OPT_FREE) && (options[opt_idx].flags & P_ALLOCED))
+	if ((opt_flags & OPT_FREE) && (options[idx].flags & P_ALLOCED))
 	    free_string_option(*varp);
 	*varp = s;
 
 	/* For buffer/window local option may also set the global value. */
 	if (both)
-	    set_string_option_global(opt_idx, varp);
+	    set_string_option_global(idx, varp);
 
-	options[opt_idx].flags |= P_ALLOCED;
+	options[idx].flags |= P_ALLOCED;
 
 	/* When setting both values of a global option with a local value,
 	 * make the local value empty, so that the global value is used. */
-	if (((int)options[opt_idx].indir & PV_BOTH) && both)
+	if (((int)options[idx].indir & PV_BOTH) && both)
 	{
 	    free_string_option(*varp);
 	    *varp = empty_option;
 	}
 # ifdef FEAT_EVAL
 	if (set_sid != SID_NONE)
-	    set_option_scriptID_idx(opt_idx, opt_flags,
+	    set_option_scriptID_idx(idx, opt_flags,
 					set_sid == 0 ? current_SID : set_sid);
 # endif
     }

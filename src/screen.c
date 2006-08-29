@@ -7099,7 +7099,7 @@ screenalloc(clear)
     tabpage_T	    *tp;
 #endif
     static int	    entered = FALSE;		/* avoid recursiveness */
-    static int	    did_outofmem_msg = FALSE;	/* did outofmem message */
+    static int	    done_outofmem_msg = FALSE;	/* did outofmem message */
 
     /*
      * Allocation of the screen buffers is done only when the size changes and
@@ -7207,14 +7207,14 @@ screenalloc(clear)
 #endif
 	    || outofmem)
     {
-	if (ScreenLines != NULL || !did_outofmem_msg)
+	if (ScreenLines != NULL || !done_outofmem_msg)
 	{
 	    /* guess the size */
 	    do_outofmem_msg((long_u)((Rows + 1) * Columns));
 
 	    /* Remember we did this to avoid getting outofmem messages over
 	     * and over again. */
-	    did_outofmem_msg = TRUE;
+	    done_outofmem_msg = TRUE;
 	}
 	vim_free(new_ScreenLines);
 	new_ScreenLines = NULL;
@@ -7242,7 +7242,7 @@ screenalloc(clear)
     }
     else
     {
-	did_outofmem_msg = FALSE;
+	done_outofmem_msg = FALSE;
 
 	for (new_row = 0; new_row < Rows; ++new_row)
 	{

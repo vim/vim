@@ -4826,15 +4826,20 @@ search_line:
 
 		if ((compl_cont_status & CONT_ADDING) && i == compl_length)
 		{
-		    /* get the next line */
 		    /* IOSIZE > compl_length, so the STRNCPY works */
 		    STRNCPY(IObuff, aux, i);
-		    if (!(     depth < 0
-			    && lnum < end_lnum
-			    && (line = ml_get(++lnum)) != NULL)
-			&& !(	depth >= 0
-			    && !vim_fgets(line = file_line,
-						     LSIZE, files[depth].fp)))
+
+		    /* Get the next line: when "depth" < 0  from the current
+		     * buffer, otherwise from the included file.  Jump to
+		     * exit_matched when past the last line. */
+		    if (depth < 0)
+		    {
+			if (lnum >= end_lnum)
+			    goto exit_matched;
+			line = ml_get(++lnum);
+		    }
+		    else if (vim_fgets(line = file_line,
+						      LSIZE, files[depth].fp))
 			goto exit_matched;
 
 		    /* we read a line, set "already" to check this "line" later

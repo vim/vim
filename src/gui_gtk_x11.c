@@ -3233,12 +3233,12 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 on_select_tab(
 	GtkNotebook	*notebook,
 	GtkNotebookPage *page,
-	gint		index,
+	gint		idx,
 	gpointer	data)
 {
     if (!ignore_tabline_evt)
     {
-	if (send_tabline_event(index + 1) && gtk_main_level() > 0)
+	if (send_tabline_event(idx + 1) && gtk_main_level() > 0)
 	    gtk_main_quit();
     }
 }
@@ -5303,13 +5303,13 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
 # ifdef HAVE_GTK2
     if (font != NOFONT)
     {
-	char	*name = pango_font_description_to_string(font);
+	char	*pangoname = pango_font_description_to_string(font);
 
-	if (name != NULL)
+	if (pangoname != NULL)
 	{
-	    char_u	*s = vim_strsave((char_u *)name);
+	    char_u	*s = vim_strsave((char_u *)pangoname);
 
-	    g_free(name);
+	    g_free(pangoname);
 	    return s;
 	}
     }
@@ -6241,24 +6241,20 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
 {
     GdkGCValues values;
     GdkGC *invert_gc;
-    GdkColor foreground;
-    GdkColor background;
 
     if (gui.drawarea->window == NULL)
 	return;
 
-    foreground.pixel = gui.norm_pixel ^ gui.back_pixel;
-    background.pixel = gui.norm_pixel ^ gui.back_pixel;
-
-    values.foreground = foreground;
-    values.background = background;
+    values.foreground.pixel = gui.norm_pixel ^ gui.back_pixel;
+    values.background.pixel = gui.norm_pixel ^ gui.back_pixel;
     values.function = GDK_XOR;
     invert_gc = gdk_gc_new_with_values(gui.drawarea->window,
 				       &values,
 				       GDK_GC_FOREGROUND |
 				       GDK_GC_BACKGROUND |
 				       GDK_GC_FUNCTION);
-    gdk_gc_set_exposures(invert_gc, gui.visibility != GDK_VISIBILITY_UNOBSCURED);
+    gdk_gc_set_exposures(invert_gc, gui.visibility !=
+						   GDK_VISIBILITY_UNOBSCURED);
     gdk_draw_rectangle(gui.drawarea->window, invert_gc,
 		       TRUE,
 		       FILL_X(c), FILL_Y(r),

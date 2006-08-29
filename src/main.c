@@ -2285,7 +2285,7 @@ create_windows(parmp)
     mparm_T	*parmp;
 {
 #ifdef FEAT_WINDOWS
-    int		rewind;
+    int		dorewind;
     int		done = 0;
 
     /*
@@ -2342,10 +2342,10 @@ create_windows(parmp)
 	++autocmd_no_leave;
 #endif
 #ifdef FEAT_WINDOWS
-	rewind = TRUE;
+	dorewind = TRUE;
 	while (done++ < 1000)
 	{
-	    if (rewind)
+	    if (dorewind)
 	    {
 		if (parmp->window_layout == WIN_TABS)
 		    goto_tabpage(1);
@@ -2364,7 +2364,7 @@ create_windows(parmp)
 		    break;
 		curwin = curwin->w_next;
 	    }
-	    rewind = FALSE;
+	    dorewind = FALSE;
 #endif
 	    curbuf = curwin->w_buffer;
 	    if (curbuf->b_ml.ml_mfp == NULL)
@@ -2385,7 +2385,7 @@ create_windows(parmp)
 		check_swap_exists_action();
 #endif
 #ifdef FEAT_AUTOCMD
-		rewind = TRUE;		/* start again */
+		dorewind = TRUE;		/* start again */
 #endif
 	    }
 #ifdef FEAT_WINDOWS

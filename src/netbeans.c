@@ -103,7 +103,7 @@ static gint inputHandler;		/* Cookie for input */
 static int  inputHandler = -1;		/* simply ret.value of WSAAsyncSelect() */
 extern HWND s_hwnd;			/* Gvim's Window handle */
 #endif
-static int cmdno;			/* current command number for reply */
+static int r_cmdno;			/* current command number for reply */
 static int haveConnection = FALSE;	/* socket is connected and
 					   initialization is done */
 #ifdef FEAT_GUI_MOTIF
@@ -832,11 +832,11 @@ nb_parse_cmd(char_u *cmd)
 	return;
     }
 
-    cmdno = strtol(q, &q, 10);
+    r_cmdno = strtol(q, &q, 10);
 
     q = (char *)skipwhite((char_u *)q);
 
-    if (nb_do_cmd(bufno, (char_u *)verb, isfunc, cmdno, (char_u *)q) == FAIL)
+    if (nb_do_cmd(bufno, (char_u *)verb, isfunc, r_cmdno, (char_u *)q) == FAIL)
     {
 #ifdef NBDEBUG
 	/*
@@ -1008,11 +1008,11 @@ netbeans_end(void)
 	if (netbeansForcedQuit)
 	{
 	    /* mark as unmodified so NetBeans won't put up dialog on "killed" */
-	    sprintf(buf, "%d:unmodified=%d\n", i, cmdno);
+	    sprintf(buf, "%d:unmodified=%d\n", i, r_cmdno);
 	    nbdebug(("EVT: %s", buf));
 	    nb_send(buf, "netbeans_end");
 	}
-	sprintf(buf, "%d:killed=%d\n", i, cmdno);
+	sprintf(buf, "%d:killed=%d\n", i, r_cmdno);
 	nbdebug(("EVT: %s", buf));
 /*	nb_send(buf, "netbeans_end");    avoid "write failed" messages */
 	if (sd >= 0)
@@ -2563,7 +2563,7 @@ netbeans_beval_cb(
 	    if (p != NULL)
 	    {
 		vim_snprintf(buf, sizeof(buf),
-				       "0:balloonText=%d \"%s\"\n", cmdno, p);
+				       "0:balloonText=%d \"%s\"\n", r_cmdno, p);
 		vim_free(p);
 	    }
 	    nbdebug(("EVT: %s", buf));
@@ -2617,7 +2617,7 @@ netbeans_send_disconnect()
 
     if (haveConnection)
     {
-	sprintf(buf, "0:disconnect=%d\n", cmdno);
+	sprintf(buf, "0:disconnect=%d\n", r_cmdno);
 	nbdebug(("EVT: %s", buf));
 	nb_send(buf, "netbeans_disconnect");
     }
@@ -2636,7 +2636,7 @@ netbeans_frame_moved(int new_x, int new_y)
 	return;
 
     sprintf(buf, "0:geometry=%d %d %d %d %d\n",
-		    cmdno, (int)Columns, (int)Rows, new_x, new_y);
+		    r_cmdno, (int)Columns, (int)Rows, new_x, new_y);
     /*nbdebug(("EVT: %s", buf)); happens too many times during a move */
     nb_send(buf, "netbeans_frame_moved");
 }
@@ -2745,7 +2745,7 @@ netbeans_file_closed(buf_T *bufp)
     if (bufno <= 0)
 	return;
 
-    sprintf(buffer, "%d:killed=%d\n", bufno, cmdno);
+    sprintf(buffer, "%d:killed=%d\n", bufno, r_cmdno);
 
     nbdebug(("EVT: %s", buffer));
 
@@ -2819,7 +2819,8 @@ netbeans_inserted(
     if (p != NULL)
     {
 	buf = alloc(128 + 2*newlen);
-	sprintf((char *)buf, "%d:insert=%d %ld \"%s\"\n", bufno, cmdno, off, p);
+	sprintf((char *)buf, "%d:insert=%d %ld \"%s\"\n",
+						      bufno, r_cmdno, off, p);
 	nbdebug(("EVT: %s", buf));
 	nb_send((char *)buf, "netbeans_inserted");
 	vim_free(p);
@@ -2861,7 +2862,7 @@ netbeans_removed(
 
     off = pos2off(bufp, &pos);
 
-    sprintf((char *)buf, "%d:remove=%d %ld %ld\n", bufno, cmdno, off, len);
+    sprintf((char *)buf, "%d:remove=%d %ld %ld\n", bufno, r_cmdno, off, len);
     nbdebug(("EVT: %s", buf));
     nb_send((char *)buf, "netbeans_removed");
 }
@@ -2886,7 +2887,7 @@ netbeans_unmodified(buf_T *bufp)
 
     nbbuf->modified = 0;
 
-    sprintf((char *)buf, "%d:unmodified=%d\n", bufno, cmdno);
+    sprintf((char *)buf, "%d:unmodified=%d\n", bufno, r_cmdno);
     nbdebug(("EVT: %s", buf));
     nb_send((char *)buf, "netbeans_unmodified");
 #endif
@@ -2910,11 +2911,11 @@ netbeans_button_release(int button)
 	long off = pos2off(curbuf, &curwin->w_cursor);
 
 	/* sync the cursor position */
-	sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, cmdno, off, off);
+	sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, r_cmdno, off, off);
 	nbdebug(("EVT: %s", buf));
 	nb_send(buf, "netbeans_button_release[newDotAndMark]");
 
-	sprintf(buf, "%d:buttonRelease=%d %d %ld %d\n", bufno, cmdno,
+	sprintf(buf, "%d:buttonRelease=%d %d %ld %d\n", bufno, r_cmdno,
 				    button, (long)curwin->w_cursor.lnum, col);
 	nbdebug(("EVT: %s", buf));
 	nb_send(buf, "netbeans_button_release");
@@ -2975,7 +2976,7 @@ netbeans_keystring(int key, char *keyName)
 
     /* sync the cursor position */
     off = pos2off(curbuf, &curwin->w_cursor);
-    sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, cmdno, off, off);
+    sprintf(buf, "%d:newDotAndMark=%d %ld %ld\n", bufno, r_cmdno, off, off);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
 
@@ -2986,13 +2987,13 @@ netbeans_keystring(int key, char *keyName)
 
     /* now send keyCommand event */
     vim_snprintf(buf, sizeof(buf), "%d:keyCommand=%d \"%s\"\n",
-						       bufno, cmdno, keyName);
+						     bufno, r_cmdno, keyName);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
 
     /* New: do both at once and include the lnum/col. */
     vim_snprintf(buf, sizeof(buf), "%d:keyAtPos=%d \"%s\" %ld %ld/%ld\n",
-	    bufno, cmdno, keyName,
+	    bufno, r_cmdno, keyName,
 		off, (long)curwin->w_cursor.lnum, (long)curwin->w_cursor.col);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
@@ -3015,7 +3016,7 @@ netbeans_save_buffer(buf_T *bufp)
 
     nbbuf->modified = 0;
 
-    sprintf((char *)buf, "%d:save=%d\n", bufno, cmdno);
+    sprintf((char *)buf, "%d:save=%d\n", bufno, r_cmdno);
     nbdebug(("EVT: %s", buf));
     nb_send((char *)buf, "netbeans_save_buffer");
 }
@@ -3039,7 +3040,7 @@ netbeans_deleted_all_lines(buf_T *bufp)
     if (nbbuf->insertDone)
 	nbbuf->modified = 1;
 
-    sprintf((char *)buf, "%d:remove=%d 0 -1\n", bufno, cmdno);
+    sprintf((char *)buf, "%d:remove=%d 0 -1\n", bufno, r_cmdno);
     nbdebug(("EVT(suppressed): %s", buf));
 /*     nb_send(buf, "netbeans_deleted_all_lines"); */
 }

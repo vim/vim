@@ -1794,29 +1794,27 @@ static struct prt_resfile_buffer_S prt_resfile;
     static int
 prt_resfile_next_line()
 {
-    int     index;
+    int     idx;
 
     /* Move to start of next line and then find end of line */
-    index = prt_resfile.line_end + 1;
-    while (index < prt_resfile.len)
+    idx = prt_resfile.line_end + 1;
+    while (idx < prt_resfile.len)
     {
-	if (prt_resfile.buffer[index] != PSLF && prt_resfile.buffer[index]
-									!= PSCR)
+	if (prt_resfile.buffer[idx] != PSLF && prt_resfile.buffer[idx] != PSCR)
 	    break;
-	index++;
+	idx++;
     }
-    prt_resfile.line_start = index;
+    prt_resfile.line_start = idx;
 
-    while (index < prt_resfile.len)
+    while (idx < prt_resfile.len)
     {
-	if (prt_resfile.buffer[index] == PSLF || prt_resfile.buffer[index]
-									== PSCR)
+	if (prt_resfile.buffer[idx] == PSLF || prt_resfile.buffer[idx] == PSCR)
 	    break;
-	index++;
+	idx++;
     }
-    prt_resfile.line_end = index;
+    prt_resfile.line_end = idx;
 
-    return (index < prt_resfile.len);
+    return (idx < prt_resfile.len);
 }
 
     static int
@@ -1837,14 +1835,14 @@ prt_resfile_strncmp(offset, string, len)
 prt_resfile_skip_nonws(offset)
     int     offset;
 {
-    int     index;
+    int     idx;
 
-    index = prt_resfile.line_start + offset;
-    while (index < prt_resfile.line_end)
+    idx = prt_resfile.line_start + offset;
+    while (idx < prt_resfile.line_end)
     {
-	if (isspace(prt_resfile.buffer[index]))
-	    return index - prt_resfile.line_start;
-	index++;
+	if (isspace(prt_resfile.buffer[idx]))
+	    return idx - prt_resfile.line_start;
+	idx++;
     }
     return -1;
 }
@@ -1853,14 +1851,14 @@ prt_resfile_skip_nonws(offset)
 prt_resfile_skip_ws(offset)
     int     offset;
 {
-    int     index;
+    int     idx;
 
-    index = prt_resfile.line_start + offset;
-    while (index < prt_resfile.line_end)
+    idx = prt_resfile.line_start + offset;
+    while (idx < prt_resfile.line_end)
     {
-	if (!isspace(prt_resfile.buffer[index]))
-	    return index - prt_resfile.line_start;
-	index++;
+	if (!isspace(prt_resfile.buffer[idx]))
+	    return idx - prt_resfile.line_start;
+	idx++;
     }
     return -1;
 }
@@ -2478,7 +2476,7 @@ mch_print_init(psettings, jobname, forceit)
     char_u	*p_encoding;
     struct prt_ps_encoding_S *p_mbenc;
     struct prt_ps_encoding_S *p_mbenc_first;
-    struct prt_ps_charset_S  *p_mbchar;
+    struct prt_ps_charset_S  *p_mbchar = NULL;
 #endif
 
 #if 0
@@ -2516,7 +2514,6 @@ mch_print_init(psettings, jobname, forceit)
     if (!(props & ENC_8BIT) && ((*p_pmcs != NUL) || !(props & ENC_UNICODE)))
     {
 	p_mbenc_first = NULL;
-	p_mbchar = NULL;
 	for (cmap = 0; cmap < NUM_ELEMENTS(prt_ps_mbfonts); cmap++)
 	    if (prt_match_encoding((char *)p_encoding, &prt_ps_mbfonts[cmap],
 								    &p_mbenc))

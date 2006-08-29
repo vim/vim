@@ -185,6 +185,7 @@ ex_align(eap)
 	    new_indent = indent;
 	else
 	{
+	    has_tab = FALSE;	/* avoid uninit warnings */
 	    len = linelen(eap->cmdidx == CMD_right ? &has_tab
 						   : NULL) - get_indent();
 
@@ -1772,10 +1773,9 @@ write_viminfo(file, forceit)
 				? (st_old.st_mode & 0020)
 				: (st_old.st_mode & 0002))))
 	{
-	    int	tt;
+	    int	tt = msg_didany;
 
 	    /* avoid a wait_return for this message, it's annoying */
-	    tt = msg_didany;
 	    EMSG2(_("E137: Viminfo file is not writable: %s"), fname);
 	    msg_didany = tt;
 	    fclose(fp_in);

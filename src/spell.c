@@ -2043,8 +2043,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
     int		len;
 # ifdef FEAT_SYN_HL
     int		has_syntax = syntax_present(wp->w_buffer);
-    int		col;
 # endif
+    int		col;
     int		can_spell;
     char_u	*buf = NULL;
     int		buflen = 0;
@@ -2093,9 +2093,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 	    capcol = (int)(skipwhite(line) - line);
 	else if (curline && wp == curwin)
 	{
-	    int	    col = (int)(skipwhite(line) - line);
-
 	    /* For spellbadword(): check if first word needs a capital. */
+	    col = (int)(skipwhite(line) - line);
 	    if (check_need_cap(lnum, col))
 		capcol = col;
 
@@ -5061,7 +5060,7 @@ spell_read_aff(spin, fname)
     int		do_rep;
     int		do_repsal;
     int		do_sal;
-    int		do_map;
+    int		do_mapline;
     int		found_map = FALSE;
     hashitem_T	*hi;
     int		l;
@@ -5099,7 +5098,7 @@ spell_read_aff(spin, fname)
     do_sal = spin->si_sal.ga_len == 0;
 
     /* Only do MAP lines when not done in another .aff file already. */
-    do_map = spin->si_map.ga_len == 0;
+    do_mapline = spin->si_map.ga_len == 0;
 
     /*
      * Allocate and init the afffile_T structure.
@@ -5781,7 +5780,7 @@ spell_read_aff(spin, fname)
 			smsg((char_u *)_("Expected MAP count in %s line %d"),
 								 fname, lnum);
 		}
-		else if (do_map)
+		else if (do_mapline)
 		{
 		    int		c;
 
@@ -7508,7 +7507,7 @@ spell_check_msm()
 {
     char_u	*p = p_msm;
     long	start = 0;
-    long	inc = 0;
+    long	incr = 0;
     long	added = 0;
 
     if (!VIM_ISDIGIT(*p))
@@ -7520,7 +7519,7 @@ spell_check_msm()
     ++p;
     if (!VIM_ISDIGIT(*p))
 	return FAIL;
-    inc = (getdigits(&p) * 102) / (SBLOCKSIZE / 10);
+    incr = (getdigits(&p) * 102) / (SBLOCKSIZE / 10);
     if (*p != ',')
 	return FAIL;
     ++p;
@@ -7530,11 +7529,11 @@ spell_check_msm()
     if (*p != NUL)
 	return FAIL;
 
-    if (start == 0 || inc == 0 || added == 0 || inc > start)
+    if (start == 0 || incr == 0 || added == 0 || incr > start)
 	return FAIL;
 
     compress_start = start;
-    compress_inc = inc;
+    compress_inc = incr;
     compress_added = added;
     return OK;
 }
@@ -8292,14 +8291,14 @@ clear_node(node)
  * Returns the number of nodes used.
  */
     static int
-put_node(fd, node, index, regionmask, prefixtree)
+put_node(fd, node, idx, regionmask, prefixtree)
     FILE	*fd;		/* NULL when only counting */
     wordnode_T	*node;
-    int		index;
+    int		idx;
     int		regionmask;
     int		prefixtree;	/* TRUE for PREFIXTREE */
 {
-    int		newindex = index;
+    int		newindex = idx;
     int		siblingcount = 0;
     wordnode_T	*np;
     int		flags;
@@ -8309,7 +8308,7 @@ put_node(fd, node, index, regionmask, prefixtree)
 	return 0;
 
     /* Store the index where this node is written. */
-    node->wn_u1.index = index;
+    node->wn_u1.index = idx;
 
     /* Count the number of siblings. */
     for (np = node; np != NULL; np = np->wn_sibling)
@@ -9244,11 +9243,11 @@ ex_spell(eap)
  * Add "word[len]" to 'spellfile' as a good or bad word.
  */
     void
-spell_add_word(word, len, bad, index, undo)
+spell_add_word(word, len, bad, idx, undo)
     char_u	*word;
     int		len;
     int		bad;
-    int		index;	    /* "zG" and "zW": zero, otherwise index in
+    int		idx;	    /* "zG" and "zW": zero, otherwise index in
 			       'spellfile' */
     int		undo;	    /* TRUE for "zug", "zuG", "zuw" and "zuW" */
 {
@@ -9262,7 +9261,7 @@ spell_add_word(word, len, bad, index, undo)
     int		i;
     char_u	*spf;
 
-    if (index == 0)	    /* use internal wordlist */
+    if (idx == 0)	    /* use internal wordlist */
     {
 	if (int_wordlist == NULL)
 	{
@@ -9290,11 +9289,11 @@ spell_add_word(word, len, bad, index, undo)
 	for (spf = curbuf->b_p_spf, i = 1; *spf != NUL; ++i)
 	{
 	    copy_option_part(&spf, fnamebuf, MAXPATHL, ",");
-	    if (i == index)
+	    if (i == idx)
 		break;
 	    if (*spf == NUL)
 	    {
-		EMSGN(_("E765: 'spellfile' does not have %ld entries"), index);
+		EMSGN(_("E765: 'spellfile' does not have %ld entries"), idx);
 		return;
 	    }
 	}
@@ -13581,53 +13580,58 @@ add_suggestion(su, gap, goodword, badlenarg, score, altscore, had_bonus,
 	 * the first "the" to itself. */
 	return;
 
-    /* Check if the word is already there.  Also check the length that is
-     * being replaced "thes," -> "these" is a different suggestion from
-     * "thes" -> "these". */
-    stp = &SUG(*gap, 0);
-    for (i = gap->ga_len; --i >= 0; ++stp)
-	if (stp->st_wordlen == goodlen
-		&& stp->st_orglen == badlen
-		&& STRNCMP(stp->st_word, goodword, goodlen) == 0)
-	{
-	    /*
-	     * Found it.  Remember the word with the lowest score.
-	     */
-	    if (stp->st_slang == NULL)
-		stp->st_slang = slang;
-
-	    new_sug.st_score = score;
-	    new_sug.st_altscore = altscore;
-	    new_sug.st_had_bonus = had_bonus;
-
-	    if (stp->st_had_bonus != had_bonus)
+    if (gap->ga_len == 0)
+	i = -1;
+    else
+    {
+	/* Check if the word is already there.  Also check the length that is
+	 * being replaced "thes," -> "these" is a different suggestion from
+	 * "thes" -> "these". */
+	stp = &SUG(*gap, 0);
+	for (i = gap->ga_len; --i >= 0; ++stp)
+	    if (stp->st_wordlen == goodlen
+		    && stp->st_orglen == badlen
+		    && STRNCMP(stp->st_word, goodword, goodlen) == 0)
 	    {
-		/* Only one of the two had the soundalike score computed.
-		 * Need to do that for the other one now, otherwise the
-		 * scores can't be compared.  This happens because
-		 * suggest_try_change() doesn't compute the soundalike
-		 * word to keep it fast, while some special methods set
-		 * the soundalike score to zero. */
-		if (had_bonus)
-		    rescore_one(su, stp);
-		else
+		/*
+		 * Found it.  Remember the word with the lowest score.
+		 */
+		if (stp->st_slang == NULL)
+		    stp->st_slang = slang;
+
+		new_sug.st_score = score;
+		new_sug.st_altscore = altscore;
+		new_sug.st_had_bonus = had_bonus;
+
+		if (stp->st_had_bonus != had_bonus)
 		{
-		    new_sug.st_word = stp->st_word;
-		    new_sug.st_wordlen = stp->st_wordlen;
-		    new_sug.st_slang = stp->st_slang;
-		    new_sug.st_orglen = badlen;
-		    rescore_one(su, &new_sug);
+		    /* Only one of the two had the soundalike score computed.
+		     * Need to do that for the other one now, otherwise the
+		     * scores can't be compared.  This happens because
+		     * suggest_try_change() doesn't compute the soundalike
+		     * word to keep it fast, while some special methods set
+		     * the soundalike score to zero. */
+		    if (had_bonus)
+			rescore_one(su, stp);
+		    else
+		    {
+			new_sug.st_word = stp->st_word;
+			new_sug.st_wordlen = stp->st_wordlen;
+			new_sug.st_slang = stp->st_slang;
+			new_sug.st_orglen = badlen;
+			rescore_one(su, &new_sug);
+		    }
 		}
-	    }
 
-	    if (stp->st_score > new_sug.st_score)
-	    {
-		stp->st_score = new_sug.st_score;
-		stp->st_altscore = new_sug.st_altscore;
-		stp->st_had_bonus = new_sug.st_had_bonus;
+		if (stp->st_score > new_sug.st_score)
+		{
+		    stp->st_score = new_sug.st_score;
+		    stp->st_altscore = new_sug.st_altscore;
+		    stp->st_had_bonus = new_sug.st_had_bonus;
+		}
+		break;
 	    }
-	    break;
-	}
+    }
 
     if (i < 0 && ga_grow(gap, 1) == OK)
     {

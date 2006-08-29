@@ -3934,7 +3934,7 @@ mch_call_shell(cmd, options)
 		    {
 			linenr_T    lnum = curbuf->b_op_start.lnum;
 			int	    written = 0;
-			char_u	    *p = ml_get(lnum);
+			char_u	    *lp = ml_get(lnum);
 			char_u	    *s;
 			size_t	    l;
 
@@ -3942,17 +3942,17 @@ mch_call_shell(cmd, options)
 			close(fromshell_fd);
 			for (;;)
 			{
-			    l = STRLEN(p + written);
+			    l = STRLEN(lp + written);
 			    if (l == 0)
 				len = 0;
-			    else if (p[written] == NL)
+			    else if (lp[written] == NL)
 				/* NL -> NUL translation */
 				len = write(toshell_fd, "", (size_t)1);
 			    else
 			    {
-				s = vim_strchr(p + written, NL);
-				len = write(toshell_fd, (char *)p + written,
-					   s == NULL ? l : s - (p + written));
+				s = vim_strchr(lp + written, NL);
+				len = write(toshell_fd, (char *)lp + written,
+					   s == NULL ? l : s - (lp + written));
 			    }
 			    if (len == l)
 			    {
@@ -3973,7 +3973,7 @@ mch_call_shell(cmd, options)
 				    toshell_fd = -1;
 				    break;
 				}
-				p = ml_get(lnum);
+				lp = ml_get(lnum);
 				written = 0;
 			    }
 			    else if (len > 0)

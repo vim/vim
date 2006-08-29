@@ -129,7 +129,7 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
-static int ins_compl_add __ARGS((char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int dup));
+static int ins_compl_add __ARGS((char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup));
 static int  ins_compl_equal __ARGS((compl_T *match, char_u *str, int len));
 static void ins_compl_longest_match __ARGS((compl_T *match));
 static void ins_compl_add_matches __ARGS((int num_matches, char_u **matches, int icase));
@@ -2118,7 +2118,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
  * maybe because alloc() returns NULL, then FAIL is returned.
  */
     static int
-ins_compl_add(str, len, icase, fname, cptext, cdir, flags, dup)
+ins_compl_add(str, len, icase, fname, cptext, cdir, flags, adup)
     char_u	*str;
     int		len;
     int		icase;
@@ -2126,7 +2126,7 @@ ins_compl_add(str, len, icase, fname, cptext, cdir, flags, dup)
     char_u	**cptext;   /* extra text for popup menu or NULL */
     int		cdir;
     int		flags;
-    int		dup;	    /* accept duplicate match */
+    int		adup;	    /* accept duplicate match */
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -2140,7 +2140,7 @@ ins_compl_add(str, len, icase, fname, cptext, cdir, flags, dup)
     /*
      * If the same match is already present, don't add it.
      */
-    if (compl_first_match != NULL && !dup)
+    if (compl_first_match != NULL && !adup)
     {
 	match = compl_first_match;
 	do
@@ -3608,7 +3608,7 @@ ins_compl_add_tv(tv, dir)
 {
     char_u	*word;
     int		icase = FALSE;
-    int		dup = FALSE;
+    int		adup = FALSE;
     char_u	*(cptext[CPT_COUNT]);
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
@@ -3625,7 +3625,7 @@ ins_compl_add_tv(tv, dir)
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL)
 	    icase = get_dict_number(tv->vval.v_dict, (char_u *)"icase");
 	if (get_dict_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
-	    dup = get_dict_number(tv->vval.v_dict, (char_u *)"dup");
+	    adup = get_dict_number(tv->vval.v_dict, (char_u *)"dup");
     }
     else
     {
@@ -3634,7 +3634,7 @@ ins_compl_add_tv(tv, dir)
     }
     if (word == NULL || *word == NUL)
 	return FAIL;
-    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, dup);
+    return ins_compl_add(word, -1, icase, NULL, cptext, dir, 0, adup);
 }
 #endif
 

@@ -926,7 +926,7 @@ requestBalloon(beval)
 #  define IS_NONPRINTABLE(c) (((c) < 0x20 && (c) != TAB && (c) != NL) \
 			      || (c) == DEL)
     static void
-set_printable_label_text(GtkLabel *label, char_u *msg)
+set_printable_label_text(GtkLabel *label, char_u *text)
 {
     char_u	    *convbuf = NULL;
     char_u	    *buf;
@@ -940,14 +940,14 @@ set_printable_label_text(GtkLabel *label, char_u *msg)
     /* Convert to UTF-8 if it isn't already */
     if (output_conv.vc_type != CONV_NONE)
     {
-	convbuf = string_convert(&output_conv, msg, NULL);
+	convbuf = string_convert(&output_conv, text, NULL);
 	if (convbuf != NULL)
-	    msg = convbuf;
+	    text = convbuf;
     }
 
     /* First let's see how much we need to allocate */
     len = 0;
-    for (p = msg; *p != NUL; p += charlen)
+    for (p = text; *p != NUL; p += charlen)
     {
 	if ((*p & 0x80) == 0)	/* be quick for ASCII */
 	{
@@ -992,7 +992,7 @@ set_printable_label_text(GtkLabel *label, char_u *msg)
 				     (unsigned long)pixel, &color);
 
 	pdest = buf;
-	p = msg;
+	p = text;
 	while (*p != NUL)
 	{
 	    /* Be quick for ASCII */

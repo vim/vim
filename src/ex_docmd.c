@@ -58,9 +58,9 @@ static char_u *get_user_command_name __ARGS((int idx));
 #endif
 
 #ifdef FEAT_EVAL
-static char_u	*do_one_cmd __ARGS((char_u **, int, struct condstack *, char_u *(*getline)(int, void *, int), void *cookie));
+static char_u	*do_one_cmd __ARGS((char_u **, int, struct condstack *, char_u *(*fgetline)(int, void *, int), void *cookie));
 #else
-static char_u	*do_one_cmd __ARGS((char_u **, int, char_u *(*getline)(int, void *, int), void *cookie));
+static char_u	*do_one_cmd __ARGS((char_u **, int, char_u *(*fgetline)(int, void *, int), void *cookie));
 static int	if_level = 0;		/* depth in :if */
 #endif
 static char_u	*find_command __ARGS((exarg_T *eap, int *full));
@@ -831,10 +831,13 @@ do_cmdline(cmdline, getline, cookie, flags)
 
     /*
      * If requested, store and reset the global values controlling the
-     * exception handling (used when debugging).
+     * exception handling (used when debugging).  Otherwise clear it to avoid
+     * a bogus compiler warning when the optimizer uses inline functions...
      */
     if (flags & DOCMD_EXCRESET)
 	save_dbg_stuff(&debug_saved);
+    else
+	memset(&debug_saved, 0, 1);
 
     initial_trylevel = trylevel;
 
@@ -1574,24 +1577,24 @@ free_cmdlines(gap)
 #endif
 
 /*
- * If "getline" is get_loop_line(), return TRUE if the getline it uses equals
- * "func".  * Otherwise return TRUE when "getline" equals "func".
+ * If "fgetline" is get_loop_line(), return TRUE if the getline it uses equals
+ * "func".  * Otherwise return TRUE when "fgetline" equals "func".
  */
 /*ARGSUSED*/
     int
-getline_equal(getline, cookie, func)
-    char_u	*(*getline) __ARGS((int, void *, int));
-    void	*cookie;		/* argument for getline() */
+getline_equal(fgetline, cookie, func)
+    char_u	*(*fgetline) __ARGS((int, void *, int));
+    void	*cookie;		/* argument for fgetline() */
     char_u	*(*func) __ARGS((int, void *, int));
 {
 #ifdef FEAT_EVAL
     char_u		*(*gp) __ARGS((int, void *, int));
     struct loop_cookie *cp;
 
-    /* When "getline" is "get_loop_line()" use the "cookie" to find the
+    /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
      * function that's orignally used to obtain the lines.  This may be nested
      * several levels. */
-    gp = getline;
+    gp = fgetline;
     cp = (struct loop_cookie *)cookie;
     while (gp == get_loop_line)
     {
@@ -1600,29 +1603,29 @@ getline_equal(getline, cookie, func)
     }
     return gp == func;
 #else
-    return getline == func;
+    return fgetline == func;
 #endif
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_MBYTE) || defined(PROTO)
 /*
- * If "getline" is get_loop_line(), return the cookie used by the original
+ * If "fgetline" is get_loop_line(), return the cookie used by the original
  * getline function.  Otherwise return "cookie".
  */
 /*ARGSUSED*/
     void *
-getline_cookie(getline, cookie)
-    char_u	*(*getline) __ARGS((int, void *, int));
-    void	*cookie;		/* argument for getline() */
+getline_cookie(fgetline, cookie)
+    char_u	*(*fgetline) __ARGS((int, void *, int));
+    void	*cookie;		/* argument for fgetline() */
 {
 # ifdef FEAT_EVAL
     char_u		*(*gp) __ARGS((int, void *, int));
     struct loop_cookie *cp;
 
-    /* When "getline" is "get_loop_line()" use the "cookie" to find the
+    /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
      * cookie that's orignally used to obtain the lines.  This may be nested
      * several levels. */
-    gp = getline;
+    gp = fgetline;
     cp = (struct loop_cookie *)cookie;
     while (gp == get_loop_line)
     {
@@ -1648,7 +1651,7 @@ getline_cookie(getline, cookie)
  * 5. parse arguments
  * 6. switch on command name
  *
- * Note: "getline" can be NULL.
+ * Note: "fgetline" can be NULL.
  *
  * This function may be called recursively!
  */
@@ -1663,14 +1666,14 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_EVAL
 			    cstack,
 #endif
-				    getline, cookie)
+				    fgetline, cookie)
     char_u		**cmdlinep;
     int			sourcing;
 #ifdef FEAT_EVAL
     struct condstack	*cstack;
 #endif
-    char_u		*(*getline) __ARGS((int, void *, int));
-    void		*cookie;		/* argument for getline() */
+    char_u		*(*fgetline) __ARGS((int, void *, int));
+    void		*cookie;		/* argument for fgetline() */
 {
     char_u		*p;
     linenr_T		lnum;
@@ -1698,7 +1701,7 @@ do_one_cmd(cmdlinep, sourcing,
     if (quitmore
 #ifdef FEAT_EVAL
 	    /* avoid that a function call in 'statusline' does this */
-	    && !getline_equal(getline, cookie, get_func_line)
+	    && !getline_equal(fgetline, cookie, get_func_line)
 #endif
 	    )
 	--quitmore;
@@ -1728,8 +1731,8 @@ do_one_cmd(cmdlinep, sourcing,
 
 	/* in ex mode, an empty line works like :+ */
 	if (*ea.cmd == NUL && exmode_active
-			&& (getline_equal(getline, cookie, getexmodeline)
-			    || getline_equal(getline, cookie, getexline))
+			&& (getline_equal(fgetline, cookie, getexmodeline)
+			    || getline_equal(fgetline, cookie, getexline))
 			&& curwin->w_cursor.lnum < curbuf->b_ml.ml_line_count)
 	{
 	    ea.cmd = (char_u *)"+";
@@ -1918,9 +1921,9 @@ do_one_cmd(cmdlinep, sourcing,
     /* Count this line for profiling if ea.skip is FALSE. */
     if (do_profiling == PROF_YES && !ea.skip)
     {
-	if (getline_equal(getline, cookie, get_func_line))
-	    func_line_exec(getline_cookie(getline, cookie));
-	else if (getline_equal(getline, cookie, getsourceline))
+	if (getline_equal(fgetline, cookie, get_func_line))
+	    func_line_exec(getline_cookie(fgetline, cookie));
+	else if (getline_equal(fgetline, cookie, getsourceline))
 	    script_line_exec();
     }
 #endif
@@ -2589,7 +2592,7 @@ do_one_cmd(cmdlinep, sourcing,
  * The "ea" structure holds the arguments that can be used.
  */
     ea.cmdlinep = cmdlinep;
-    ea.getline = getline;
+    ea.getline = fgetline;
     ea.cookie = cookie;
 #ifdef FEAT_EVAL
     ea.cstack = cstack;
@@ -2627,9 +2630,9 @@ do_one_cmd(cmdlinep, sourcing,
 	do_throw(cstack);
     else if (check_cstack)
     {
-	if (source_finished(getline, cookie))
+	if (source_finished(fgetline, cookie))
 	    do_finish(&ea, TRUE);
-	else if (getline_equal(getline, cookie, get_func_line)
+	else if (getline_equal(fgetline, cookie, get_func_line)
 						   && current_func_returned())
 	    do_return(&ea, TRUE, FALSE, NULL);
     }

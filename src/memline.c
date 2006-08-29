@@ -215,7 +215,7 @@ static linenr_T	lowest_marked = 0;
 #define ML_FLUSH	0x02	    /* flush locked block */
 #define ML_SIMPLE(x)	(x & 0x10)  /* DEL, INS or FIND */
 
-static void ml_upd_block0 __ARGS((buf_T *buf, int setfname));
+static void ml_upd_block0 __ARGS((buf_T *buf, int set_fname));
 static void set_b0_fname __ARGS((ZERO_BL *, buf_T *buf));
 static void set_b0_dir_flag __ARGS((ZERO_BL *b0p, buf_T *buf));
 #ifdef FEAT_MBYTE
@@ -679,9 +679,9 @@ ml_timestamp(buf)
  * Update the timestamp or the B0_SAME_DIR flag of the .swp file.
  */
     static void
-ml_upd_block0(buf, setfname)
+ml_upd_block0(buf, set_fname)
     buf_T	*buf;
-    int		setfname;
+    int		set_fname;
 {
     memfile_T	*mfp;
     bhdr_T	*hp;
@@ -695,7 +695,7 @@ ml_upd_block0(buf, setfname)
 	EMSG(_("E304: ml_upd_block0(): Didn't get block 0??"));
     else
     {
-	if (setfname)
+	if (set_fname)
 	    set_b0_fname(b0p, buf);
 	else
 	    set_b0_dir_flag(b0p, buf);

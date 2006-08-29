@@ -4127,7 +4127,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
     int		save_p_ws;
     int		save_p_scs;
     int		retval = OK;
-    int		incl;
+    int		incll;
 
     if ((pat = alloc(len + 7)) == NULL)
 	return FAIL;
@@ -4147,7 +4147,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
      * With "gd" Search back for the start of the current function, then go
      * back until a blank line.  If this fails go to line 1.
      */
-    if (!locally || !findpar(&incl, BACKWARD, 1L, '{', FALSE))
+    if (!locally || !findpar(&incll, BACKWARD, 1L, '{', FALSE))
     {
 	setpcmark();			/* Set in findpar() otherwise */
 	curwin->w_cursor.lnum = 1;

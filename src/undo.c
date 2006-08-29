@@ -1187,7 +1187,7 @@ u_undo_end(did_undo, absolute)
     int		did_undo;	/* just did an undo */
     int		absolute;	/* used ":undo N" */
 {
-    char	*msg;
+    char	*msgstr;
     u_header_T	*uhp;
     char_u	msgbuf[80];
 
@@ -1205,20 +1205,20 @@ u_undo_end(did_undo, absolute)
 
     u_oldcount -= u_newcount;
     if (u_oldcount == -1)
-	msg = N_("more line");
+	msgstr = N_("more line");
     else if (u_oldcount < 0)
-	msg = N_("more lines");
+	msgstr = N_("more lines");
     else if (u_oldcount == 1)
-	msg = N_("line less");
+	msgstr = N_("line less");
     else if (u_oldcount > 1)
-	msg = N_("fewer lines");
+	msgstr = N_("fewer lines");
     else
     {
 	u_oldcount = u_newcount;
 	if (u_newcount == 1)
-	    msg = N_("change");
+	    msgstr = N_("change");
 	else
-	    msg = N_("changes");
+	    msgstr = N_("changes");
     }
 
     if (curbuf->b_u_curhead != NULL)
@@ -1244,7 +1244,7 @@ u_undo_end(did_undo, absolute)
 
     smsg((char_u *)_("%ld %s; %s #%ld  %s"),
 	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
-	    _(msg),
+	    _(msgstr),
 	    did_undo ? _("before") : _("after"),
 	    uhp == NULL ? 0L : uhp->uh_seq,
 	    msgbuf);

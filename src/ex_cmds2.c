@@ -3648,13 +3648,13 @@ do_finish(eap, reanimate)
  * Return FALSE when not sourcing a file.
  */
     int
-source_finished(getline, cookie)
-    char_u	*(*getline) __ARGS((int, void *, int));
+source_finished(fgetline, cookie)
+    char_u	*(*fgetline) __ARGS((int, void *, int));
     void	*cookie;
 {
-    return (getline_equal(getline, cookie, getsourceline)
+    return (getline_equal(fgetline, cookie, getsourceline)
 	    && ((struct source_cookie *)getline_cookie(
-						 getline, cookie))->finished);
+						fgetline, cookie))->finished);
 }
 #endif
 

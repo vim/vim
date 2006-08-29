@@ -3861,13 +3861,13 @@ im_get_feedback_attr(int col)
 
     if (preedit_string != NULL && attr_list != NULL)
     {
-	int index;
+	int idx;
 
 	/* Get the byte index as used by PangoAttrIterator */
-	for (index = 0; col > 0 && preedit_string[index] != '\0'; --col)
-	    index += utfc_ptr2len((char_u *)preedit_string + index);
+	for (idx = 0; col > 0 && preedit_string[idx] != '\0'; --col)
+	    idx += utfc_ptr2len((char_u *)preedit_string + idx);
 
-	if (preedit_string[index] != '\0')
+	if (preedit_string[idx] != '\0')
 	{
 	    PangoAttrIterator	*iter;
 	    int			start, end;
@@ -3880,7 +3880,7 @@ im_get_feedback_attr(int col)
 	    {
 		pango_attr_iterator_range(iter, &start, &end);
 
-		if (index >= start && index < end)
+		if (idx >= start && idx < end)
 		    char_attr |= translate_pango_attributes(iter);
 	    }
 	    while (pango_attr_iterator_next(iter));
