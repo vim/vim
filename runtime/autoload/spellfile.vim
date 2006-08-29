@@ -1,6 +1,6 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 May 10
+" Last Change:	2006 Aug 29
 
 if !exists('g:spellfile_URL')
   let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
@@ -110,9 +110,14 @@ function! spellfile#LoadFile(lang)
   endif
 endfunc
 
-" Read "fname" from the ftp server.
+" Read "fname" from the server.
 function! spellfile#Nread(fname)
-  let machine = substitute(g:spellfile_URL, 'ftp://\([^/]*\).*', '\1', '')
-  let dir = substitute(g:spellfile_URL, 'ftp://[^/]*/\(.*\)', '\1', '')
-  exe 'Nread "' . machine . ' anonymous vim7user ' . dir . '/' . a:fname . '"'
+  if g:spellfile_URL =~ '^ftp://'
+    " for an ftp server use a default login and password to avoid a prompt
+    let machine = substitute(g:spellfile_URL, 'ftp://\([^/]*\).*', '\1', '')
+    let dir = substitute(g:spellfile_URL, 'ftp://[^/]*/\(.*\)', '\1', '')
+    exe 'Nread "' . machine . ' anonymous vim7user ' . dir . '/' . a:fname . '"'
+  else
+    exe 'Nread ' g:spellfile_URL . '/' . a:fname
+  endif
 endfunc
