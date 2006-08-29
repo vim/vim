@@ -187,9 +187,10 @@ gui_start()
 #endif
 
 #ifdef FEAT_AUTOCMD
-    /* If the GUI started successfully, trigger the GUIEnter event */
-    if (gui.in_use)
-	apply_autocmds(EVENT_GUIENTER, NULL, NULL, FALSE, curbuf);
+    /* If the GUI started successfully, trigger the GUIEnter event, otherwise
+     * the GUIFailed event. */
+    apply_autocmds(gui.in_use ? EVENT_GUIENTER : EVENT_GUIFAILED,
+						   NULL, NULL, FALSE, curbuf);
 #endif
 
     --recursive;

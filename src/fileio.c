@@ -6980,6 +6980,7 @@ static struct event_name
     {"FocusLost",	EVENT_FOCUSLOST},
     {"FuncUndefined",	EVENT_FUNCUNDEFINED},
     {"GUIEnter",	EVENT_GUIENTER},
+    {"GUIFailed",	EVENT_GUIFAILED},
     {"InsertChange",	EVENT_INSERTCHANGE},
     {"InsertEnter",	EVENT_INSERTENTER},
     {"InsertLeave",	EVENT_INSERTLEAVE},

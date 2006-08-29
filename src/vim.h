@@ -1120,6 +1120,7 @@ enum auto_event
     EVENT_FOCUSGAINED,		/* got the focus */
     EVENT_FOCUSLOST,		/* lost the focus to another app */
     EVENT_GUIENTER,		/* after starting the GUI */
+    EVENT_GUIFAILED,		/* after starting the GUI failed */
     EVENT_INSERTCHANGE,		/* when changing Insert/Replace mode */
     EVENT_INSERTENTER,		/* when entering Insert mode */
     EVENT_INSERTLEAVE,		/* when leaving Insert mode */
