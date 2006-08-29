@@ -889,117 +889,90 @@ _WndProc(
 # ifdef FEAT_MBYTE
 	    case TTN_GETDISPINFOW:
 # endif
-	    case TTN_NEEDTEXT:
-# ifdef FEAT_GUI_TABLINE
-		if (gui_mch_showing_tabline()
-			&& ((LPNMHDR)lParam)->hwndFrom ==
-					       TabCtrl_GetToolTips(s_tabhwnd))
+	    case TTN_GETDISPINFO:
 		{
-		    LPNMTTDISPINFO	lpdi;
-		    POINT		pt;
-		    static char		*tt_text = NULL;
-		    static int		tt_text_len = 0;
+		    LPNMHDR		hdr = (LPNMHDR)lParam;
+		    char_u		*str = NULL;
+		    static void		*tt_text = NULL;
 
-		    /*
-		     * Mouse is over the GUI tabline. Display the tooltip
-		     * for the tab under the cursor
-		     */
-		    lpdi = (LPNMTTDISPINFO)lParam;
-		    lpdi->hinst = NULL;
-		    lpdi->szText[0] = '\0';
+		    vim_free(tt_text);
+		    tt_text = NULL;
 
-		    /*
-		     * Get the cursor position within the tab control
-		     */
-		    GetCursorPos(&pt);
-		    if (ScreenToClient(s_tabhwnd, &pt) != 0)
+# ifdef FEAT_GUI_TABLINE
+		    if (gui_mch_showing_tabline()
+			   && hdr->hwndFrom == TabCtrl_GetToolTips(s_tabhwnd))
 		    {
-			TCHITTESTINFO htinfo;
-			int idx;
-
+			POINT		pt;
 			/*
-			 * Get the tab under the cursor
+			 * Mouse is over the GUI tabline. Display the
+			 * tooltip for the tab under the cursor
+			 *
+			 * Get the cursor position within the tab control
 			 */
-			htinfo.pt.x = pt.x;
-			htinfo.pt.y = pt.y;
-			idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
-			if (idx != -1)
+			GetCursorPos(&pt);
+			if (ScreenToClient(s_tabhwnd, &pt) != 0)
 			{
-			    tabpage_T *tp;
+			    TCHITTESTINFO htinfo;
+			    int idx;
 
-			    tp = find_tabpage(idx + 1);
-			    if (tp != NULL)
+			    /*
+			     * Get the tab under the cursor
+			     */
+			    htinfo.pt.x = pt.x;
+			    htinfo.pt.y = pt.y;
+			    idx = TabCtrl_HitTest(s_tabhwnd, &htinfo);
+			    if (idx != -1)
 			    {
-#  ifdef FEAT_MBYTE
-				WCHAR	*wstr = NULL;
-#  endif
-				get_tabline_label(tp, TRUE);
-#  ifdef FEAT_MBYTE
-				if (enc_codepage >= 0
-					     && (int)GetACP() != enc_codepage)
-				{
-				    wstr = enc_to_ucs2(NameBuff, NULL);
-				    if (wstr != NULL)
-				    {
-					int wlen;
+				tabpage_T *tp;
 
-					wlen = ((int)wcslen(wstr) + 1)
-							      * sizeof(WCHAR);
-					if (tt_text_len < wlen)
-					{
-					    tt_text = vim_realloc(tt_text,
-									wlen);
-					    if (tt_text != NULL)
-						tt_text_len = wlen;
-					}
-					if (tt_text != NULL)
-					    wcscpy((WCHAR *)tt_text, wstr);
-					lpdi->lpszText = tt_text;
-					vim_free(wstr);
-				    }
-				}
-				if (wstr == NULL)
-#  endif
+				tp = find_tabpage(idx + 1);
+				if (tp != NULL)
 				{
-				    int len;
-
-				    len = (int)STRLEN(NameBuff) + 1;
-				    if (tt_text_len < len)
-				    {
-					tt_text = vim_realloc(tt_text, len);
-					if (tt_text != NULL)
-					    tt_text_len = len;
-				    }
-				    if (tt_text != NULL)
-					STRCPY(tt_text, NameBuff);
-				    lpdi->lpszText = tt_text;
+				    get_tabline_label(tp, TRUE);
+				    str = NameBuff;
 				}
 			    }
 			}
 		    }
-		}
-		else
 # endif
-		{
 # ifdef FEAT_TOOLBAR
-		    LPTOOLTIPTEXT	lpttt;
-		    UINT		idButton;
-		    int			idx;
-		    vimmenu_T		*pMenu;
-
-		    lpttt = (LPTOOLTIPTEXT)lParam;
-		    idButton = (UINT) lpttt->hdr.idFrom;
-		    pMenu = gui_mswin_find_menu(root_menu, idButton);
-		    if (pMenu)
+#  ifdef FEAT_GUI_TABLINE
+		    else
+#  endif
 		    {
-			idx = MENU_INDEX_TIP;
-			if (pMenu->strings[idx])
-			{
-			    lpttt->hinst = NULL;  /* string, not resource */
-			    lpttt->lpszText = pMenu->strings[idx];
-			}
+			UINT		idButton;
+			vimmenu_T	*pMenu;
+
+			idButton = (UINT) hdr->idFrom;
+			pMenu = gui_mswin_find_menu(root_menu, idButton);
+			if (pMenu)
+			    str = pMenu->strings[MENU_INDEX_TIP];
 		    }
 # endif
+		    if (str != NULL)
+		    {
+# ifdef FEAT_MBYTE
+			if (hdr->code == TTN_GETDISPINFOW)
+			{
+			    LPNMTTDISPINFOW	lpdi = (LPNMTTDISPINFOW)lParam;
+
+			    tt_text = enc_to_ucs2(str, NULL);
+			    lpdi->lpszText = tt_text;
+			    /* can't show tooltip if failed */
+			}
+			else
+# endif
+			{
+			    LPNMTTDISPINFO	lpdi = (LPNMTTDISPINFO)lParam;
+
+			    if (STRLEN(str) < sizeof(lpdi->szText)
+				    || ((tt_text = vim_strsave(str)) == NULL))
+				vim_strncpy(lpdi->szText, str,
+						sizeof(lpdi->szText) - 1);
+			    else
+				lpdi->lpszText = tt_text;
+			}
+		    }
 		}
 		break;
 # ifdef FEAT_GUI_TABLINE

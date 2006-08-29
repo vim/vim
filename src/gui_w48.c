@@ -2194,7 +2194,18 @@ gui_mch_show_toolbar(int showit)
 	return;
 
     if (showit)
+    {
+# ifdef FEAT_MBYTE
+#  ifndef TB_SETUNICODEFORMAT
+    /* For older compilers.  We assume this never changes. */
+#   define TB_SETUNICODEFORMAT 0x2005
+#  endif
+	/* Enable/disable unicode support */
+	int uu = (enc_codepage >= 0 && (int)GetACP() != enc_codepage);
+	SendMessage(s_toolbarhwnd, TB_SETUNICODEFORMAT, (WPARAM)uu, (LPARAM)0);
+# endif
 	ShowWindow(s_toolbarhwnd, SW_SHOW);
+    }
     else
 	ShowWindow(s_toolbarhwnd, SW_HIDE);
 }
