@@ -3097,6 +3097,10 @@ ins_compl_new_leader()
 
     /* Show the popup menu with a different set of matches. */
     ins_compl_show_pum();
+
+    /* Don't let Enter select the original text when there is no popup menu. */
+    if (compl_match_array == NULL)
+	compl_enter_selects = FALSE;
 }
 
 /*
