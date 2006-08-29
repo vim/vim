@@ -16232,6 +16232,7 @@ f_winsaveview(argvars, rettv)
 #ifdef FEAT_VIRTUALEDIT
     dict_add_nr_str(dict, "coladd", (long)curwin->w_cursor.coladd, NULL);
 #endif
+    update_curswant();
     dict_add_nr_str(dict, "curswant", (long)curwin->w_curswant, NULL);
 
     dict_add_nr_str(dict, "topline", (long)curwin->w_topline, NULL);
