@@ -3324,7 +3324,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
     {
 	usefmt = eval_to_string_safe(fmt + 2, NULL, use_sandbox);
 	if (usefmt == NULL)
-	    usefmt = (char_u *)"";
+	    usefmt = fmt;
     }
 #endif
 
