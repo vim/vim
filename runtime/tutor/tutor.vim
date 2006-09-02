@@ -1,6 +1,6 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2006 Mar 18
+" Last Change:	2006 Sep 02
 
 " This small source file is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -103,11 +103,15 @@ if s:ext =~? '\.sk' && &enc =~ 1250
   let s:ext = ".sk.cp1250"
 endif
 
-" The Russian tutor is available in two encodings, guess which one to use.
-" This segment is from the above lines and modified by
-" Alexey I. Froloff <raorn@altlinux.org> for Russian vim tutorial
-if s:ext =~? '\.ru' && &enc =~ 1251
-  let s:ext = ".ru.cp1251"
+" The Russian tutor is available in three encodings, guess which one to use.
+if s:ext =~? '\.ru'
+  if &enc == 'utf-8'
+    let s:ext = '.ru.utf-8'
+  elseif &enc =~ '1251'
+    let s:ext = '.ru.cp1251'
+  elseif &enc =~ 'koi8'
+    let s:ext = '.ru'
+  endif
 endif
 
 " Somehow ".ge" (Germany) is sometimes used for ".de" (Deutsch).
