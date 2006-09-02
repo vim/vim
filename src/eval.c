@@ -701,6 +701,7 @@ static void list_one_var __ARGS((dictitem_T *v, char_u *prefix));
 static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
 static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
+static int var_check_fixed __ARGS((int flags, char_u *name));
 static int tv_check_lock __ARGS((int lock, char_u *name));
 static void copy_tv __ARGS((typval_T *from, typval_T *to));
 static int item_copy __ARGS((typval_T *from, typval_T *to, int deep, int copyID));
@@ -3364,6 +3365,8 @@ do_unlet(name, forceit)
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
 	{
+	    if (var_check_fixed(HI2DI(hi)->di_flags, name))
+		return FAIL;
 	    if (var_check_ro(HI2DI(hi)->di_flags, name))
 		return FAIL;
 	    delete_var(ht, hi);
@@ -17818,7 +17821,7 @@ set_var(name, tv, copy)
 }
 
 /*
- * Return TRUE if di_flags "flags" indicate read-only variable "name".
+ * Return TRUE if di_flags "flags" indicates variable "name" is read-only.
  * Also give an error message.
  */
     static int
@@ -17834,6 +17837,23 @@ var_check_ro(flags, name)
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
 	EMSG2(_(e_readonlysbx), name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if di_flags "flags" indicates variable "name" is fixed.
+ * Also give an error message.
+ */
+    static int
+var_check_fixed(flags, name)
+    int		flags;
+    char_u	*name;
+{
+    if (flags & DI_FLAGS_FIX)
+    {
+	EMSG2(_("E795: Cannot delete variable %s"), name);
 	return TRUE;
     }
     return FALSE;
