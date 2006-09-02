@@ -4521,7 +4521,9 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
     flags |= EW_FILE | EW_EXEC;
 
     /* For an absolute name we don't use $PATH. */
-    if ((pat[0] == '.' && (vim_ispathsep(pat[1])
+    if (mch_isFullName(pat))
+	path = (char_u *)" ";
+    else if ((pat[0] == '.' && (vim_ispathsep(pat[1])
 			    || (pat[1] == '.' && vim_ispathsep(pat[2])))))
 	path = (char_u *)".";
     else
@@ -4534,6 +4536,9 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
     ga_init2(&ga, (int)sizeof(char *), 10);
     for (s = path; *s != NUL; s = e)
     {
+	if (*s == ' ')
+	    ++s;	/* Skip space used for absolute path name. */
+
 #if defined(MSDOS) || defined(MSWIN) || defined(OS2)
 	e = vim_strchr(s, ';');
 #else
