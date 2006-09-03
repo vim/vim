@@ -1925,7 +1925,8 @@ msg_puts_display(str, maxlen, attr, recurse)
 	     * If screen is completely filled and 'more' is set then wait
 	     * for a character.
 	     */
-	    if (p_more && --lines_left == 0 && State != HITRETURN
+	    --lines_left;
+	    if (p_more && lines_left == 0 && State != HITRETURN
 					    && !msg_no_more && !exmode_active)
 	    {
 #ifdef FEAT_CON_DIALOG

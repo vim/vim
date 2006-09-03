@@ -3196,14 +3196,12 @@ prompt_for_number(mouse_used)
     else
 	MSG_PUTS(_("Choice number (<Enter> cancels): "));
 
-    /* Set the state such that text can be selected/copied/pasted. */
+    /* Set the state such that text can be selected/copied/pasted and we still
+     * get mouse events. */
     save_cmdline_row = cmdline_row;
-    cmdline_row = Rows - 1;
+    cmdline_row = 0;
     save_State = State;
-    if (mouse_used == NULL)
-	State = CMDLINE;
-    else
-	State = NORMAL;
+    State = CMDLINE;
 
     i = get_number(TRUE, mouse_used);
     if (KeyTyped)
