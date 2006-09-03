@@ -248,6 +248,17 @@ struct funccall_S
 };
 
 /*
+ * Struct used to make a list of all arguments used in internal functions.
+ */
+typedef struct av_list_item_S av_list_item_T;
+struct av_list_item_S {
+    av_list_item_T  *avl_next;
+    typval_T	    *avl_argvars;
+};
+
+av_list_item_T *argvars_list = NULL;
+
+/*
  * Info used by a ":for" loop.
  */
 typedef struct
@@ -6058,6 +6069,7 @@ garbage_collect()
     int		i;
     funccall_T	*fc;
     int		did_free = FALSE;
+    av_list_item_T *av;
 #ifdef FEAT_WINDOWS
     tabpage_T	*tp;
 #endif
@@ -6093,6 +6105,11 @@ garbage_collect()
 	set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID);
 	set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID);
     }
+
+    /* arguments for internal functions */
+    for (av = argvars_list; av != NULL; av = av->avl_next)
+	for (i = 0; av->avl_argvars[i].v_type != VAR_UNKNOWN; ++i)
+	    set_ref_in_item(&av->avl_argvars[i], copyID);
 
     /*
      * 2. Go through the list of dicts and free items without the copyID.
@@ -7537,9 +7554,21 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 		    error = ERROR_TOOMANY;
 		else
 		{
+		    av_list_item_T  av_list_item;
+
+		    /* Add the arguments to the "argvars_list" to avoid the
+		     * garbage collector not seeing them.  This isn't needed
+		     * for user functions, because the arguments are available
+		     * in the a: hashtab. */
+		    av_list_item.avl_argvars = argvars;
+		    av_list_item.avl_next = argvars_list;
+		    argvars_list = &av_list_item;
+
 		    argvars[argcount].v_type = VAR_UNKNOWN;
 		    functions[i].f_func(argvars, rettv);
 		    error = ERROR_NONE;
+
+		    argvars_list = av_list_item.avl_next;
 		}
 	    }
 	}
