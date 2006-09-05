@@ -3426,8 +3426,10 @@ get_errorlist(wp, list)
 	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
 	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
 	  || dict_add_nr_str(dict, "nr",    (long)qfp->qf_nr, NULL) == FAIL
-	  || dict_add_nr_str(dict, "pattern",  0L, qfp->qf_pattern) == FAIL
-	  || dict_add_nr_str(dict, "text",  0L, qfp->qf_text) == FAIL
+	  || dict_add_nr_str(dict, "pattern",  0L,
+	     qfp->qf_pattern == NULL ? (char_u *)"" : qfp->qf_pattern) == FAIL
+	  || dict_add_nr_str(dict, "text",  0L,
+		   qfp->qf_text == NULL ? (char_u *)"" : qfp->qf_text) == FAIL
 	  || dict_add_nr_str(dict, "type",  0L, buf) == FAIL
 	  || dict_add_nr_str(dict, "valid", (long)qfp->qf_valid, NULL) == FAIL)
 	    return FAIL;
