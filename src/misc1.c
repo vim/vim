@@ -3016,6 +3016,7 @@ get_keystroke()
     int		len = 0;
     int		n;
     int		save_mapped_ctrl_c = mapped_ctrl_c;
+    int		waited = 0;
 
     mapped_ctrl_c = FALSE;	/* mappings are not used here */
     for (;;)
@@ -3034,11 +3035,16 @@ get_keystroke()
 	    /* Replace zero and CSI by a special key code. */
 	    n = fix_input_buffer(buf + len, n, FALSE);
 	    len += n;
+	    waited = 0;
 	}
+	else if (len > 0)
+	    ++waited;	    /* keep track of the waiting time */
 
-	/* incomplete termcode: get more characters */
-	if ((n = check_termcode(1, buf, len)) < 0)
+	/* Incomplete termcode and not timed out yet: get more characters */
+	if ((n = check_termcode(1, buf, len)) < 0
+	       && (!p_ttimeout || waited * 100L < (p_ttm < 0 ? p_tm : p_ttm)))
 	    continue;
+
 	/* found a termcode: adjust length */
 	if (n > 0)
 	    len = n;
