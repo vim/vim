@@ -4014,7 +4014,7 @@ rm -f conftest.err conftest.$ac_objext \
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  PERL_CFLAGS="$perlcppflags"
+	  	  PERL_CFLAGS=`echo "$perlcppflags" | sed 's/-pipe //'`
 	fi
 	if test "X$perlldflags" != "X"; then
 	  LDFLAGS="$perlldflags $LDFLAGS"

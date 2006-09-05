@@ -508,7 +508,8 @@ if test "$enable_perlinterp" = "yes"; then
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  PERL_CFLAGS="$perlcppflags"
+	  dnl remove -pipe, it confuses cproto
+	  PERL_CFLAGS=`echo "$perlcppflags" | sed 's/-pipe //'`
 	fi
 	if test "X$perlldflags" != "X"; then
 	  LDFLAGS="$perlldflags $LDFLAGS"
