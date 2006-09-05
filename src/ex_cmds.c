@@ -95,7 +95,10 @@ do_ascii(eap)
 		_("<%s>%s%s  %d,  Hex %02x,  Octal %03o"),
 					   transchar(c), buf1, buf2, c, c, c);
 #ifdef FEAT_MBYTE
-	c = cc[ci++];
+	if (enc_utf8)
+	    c = cc[ci++];
+	else
+	    c = 0;
 #endif
     }
 
@@ -108,7 +111,7 @@ do_ascii(eap)
 	if (len > 0)
 	    IObuff[len++] = ' ';
 	IObuff[len++] = '<';
-	if (utf_iscomposing(c)
+	if (enc_utf8 && utf_iscomposing(c)
 # ifdef USE_GUI
 		&& !gui.in_use
 # endif
@@ -120,7 +123,10 @@ do_ascii(eap)
 				    : _("> %d, Hex %08x, Octal %o"), c, c, c);
 	if (ci == MAX_MCO)
 	    break;
-	c = cc[ci++];
+	if (enc_utf8)
+	    c = cc[ci++];
+	else
+	    c = 0;
     }
 #endif
 
