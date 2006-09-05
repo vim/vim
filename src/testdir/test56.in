@@ -3,7 +3,7 @@ Test for script-local function.     vim: set ft=vim :
 STARTTEST
 :so small.vim
 :"
-:set nocp
+:set nocp viminfo+=nviminfo
 :/^start:/+1,/^end:/-1w! Xtest.vim
 :source Xtest.vim
 _x
