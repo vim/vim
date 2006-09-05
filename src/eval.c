@@ -6074,6 +6074,10 @@ garbage_collect()
     tabpage_T	*tp;
 #endif
 
+    /* Only do this once. */
+    want_garbage_collect = FALSE;
+    may_garbage_collect = FALSE;
+
     /*
      * 1. Go through all accessible variables and mark all lists and dicts
      *    with copyID.
@@ -9636,7 +9640,9 @@ f_garbagecollect(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    garbage_collect();
+    /* This is postponed until we are back at the toplevel, because we may be
+     * using Lists and Dicts internally.  E.g.: ":echo [garbagecollect()]". */
+    want_garbage_collect = TRUE;
 }
 
 /*

@@ -300,9 +300,16 @@ EXTERN except_T *caught_stack INIT(= NULL);
 #endif
 
 #ifdef FEAT_EVAL
-EXTERN scid_T	current_SID INIT(= 0);	    /* ID of script being sourced or
-					       was sourced to define the
-					       current function. */
+/* Garbage collection can only take place when we are sure there are no Lists
+ * or Dictionaries being used internally.  This is flagged with
+ * "may_garbage_collect" when we are at the toplevel.
+ * "want_garbage_collect" is set by the garbagecollect() function, which means
+ * we do garbage collection before waiting for a char at the toplevel. */
+EXTERN int	may_garbage_collect INIT(= FALSE);
+EXTERN int	want_garbage_collect INIT(= FALSE);
+
+/* ID of script being sourced or was sourced to define the current function. */
+EXTERN scid_T	current_SID INIT(= 0);
 #endif
 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)

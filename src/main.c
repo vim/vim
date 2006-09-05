@@ -1130,6 +1130,16 @@ main_loop(cmdwin, noexmode)
 	 */
 	update_curswant();
 
+#ifdef FEAT_EVAL
+	/*
+	 * May perform garbage collection when waiting for a character, but
+	 * only at the very toplevel.  Otherwise we may be using a List or
+	 * Dict internally somewhere.
+	 * "may_garbage_collect" is reset in vgetc() which is invoked through
+	 * do_exmode() and normal_cmd().
+	 */
+	may_garbage_collect = (!cmdwin && !noexmode);
+#endif
 	/*
 	 * If we're invoked as ex, do a round of ex commands.
 	 * Otherwise, get and execute a normal mode command.

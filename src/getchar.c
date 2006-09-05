@@ -1451,7 +1451,8 @@ before_blocking()
 {
     updatescript(0);
 #ifdef FEAT_EVAL
-    garbage_collect();
+    if (may_garbage_collect)
+	garbage_collect();
 #endif
 }
 
@@ -1502,6 +1503,13 @@ vgetc()
     int		i;
 #endif
 
+#ifdef FEAT_EVAL
+    /* Do garbage collection when garbagecollect() was called previously and
+     * we are now at the toplevel. */
+    if (may_garbage_collect && want_garbage_collect)
+	garbage_collect();
+#endif
+
     /*
      * If a character was put back with vungetc, it was already processed.
      * Return it directly.
@@ -1511,13 +1519,13 @@ vgetc()
 	c = old_char;
 	old_char = -1;
 	mod_mask = old_mod_mask;
-	return c;
     }
-
-    mod_mask = 0x0;
-    last_recorded_len = 0;
-    for (;;)			/* this is done twice if there are modifiers */
+    else
     {
+      mod_mask = 0x0;
+      last_recorded_len = 0;
+      for (;;)			/* this is done twice if there are modifiers */
+      {
 	if (mod_mask)		/* no mapping after modifier has been read */
 	{
 	    ++no_mapping;
@@ -1695,8 +1703,20 @@ vgetc()
 	}
 #endif
 
-	return c;
+	break;
+      }
     }
+
+#ifdef FEAT_EVAL
+    /*
+     * In the main loop "may_garbage_collect" can be set to do garbage
+     * collection in the first next vgetc().  It's disabled after that to
+     * avoid internally used Lists and Dicts to be freed.
+     */
+    may_garbage_collect = FALSE;
+#endif
+
+    return c;
 }
 
 /*
