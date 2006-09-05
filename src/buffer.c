@@ -434,12 +434,8 @@ close_buffer(win, buf, action)
     if (usingNetbeans)
 	netbeans_file_closed(buf);
 #endif
-#ifdef FEAT_AUTOCHDIR
-    /* Change directories when the acd option is set on. */
-    if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	shorten_fnames(TRUE);
-#endif
+    /* Change directories when the 'acd' option is set. */
+    DO_AUTOCHDIR
 
     /*
      * Remove the buffer from the list.
@@ -1422,12 +1418,8 @@ enter_buffer(buf)
 	netbeans_file_activated(curbuf);
 #endif
 
-#ifdef FEAT_AUTOCHDIR
-    /* Change directories when the acd option is set on. */
-    if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	shorten_fnames(TRUE);
-#endif
+    /* Change directories when the 'acd' option is set. */
+    DO_AUTOCHDIR
 
 #ifdef FEAT_KEYMAP
     if (curbuf->b_kmap_state & KEYMAP_INIT)
@@ -1435,6 +1427,18 @@ enter_buffer(buf)
 #endif
     redraw_later(NOT_VALID);
 }
+
+#if defined(FEAT_AUTOCHDIR) || defined(PROTO)
+/*
+ * Change to the directory of the current buffer.
+ */
+    void
+do_autochdir()
+{
+    if (curbuf->b_ffname != NULL && vim_chdirfile(curbuf->b_ffname) == OK)
+	shorten_fnames(TRUE);
+}
+#endif
 
 /*
  * functions for dealing with the buffer list

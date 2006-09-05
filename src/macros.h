@@ -276,3 +276,9 @@
 # define MB_CHARLEN(p)		STRLEN(p)
 # define PTR2CHAR(p)		((int)*(p))
 #endif
+
+#ifdef FEAT_AUTOCHDIR
+# define DO_AUTOCHDIR if (p_acd) do_autochdir();
+#else
+# define DO_AUTOCHDIR
+#endif

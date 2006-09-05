@@ -7326,9 +7326,8 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 #ifdef FEAT_AUTOCHDIR
     else if ((int *)varp == &p_acd)
     {
-	if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	    shorten_fnames(TRUE);
+	/* Change directories when the 'acd' option is set now. */
+	DO_AUTOCHDIR
     }
 #endif
 

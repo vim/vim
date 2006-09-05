@@ -10,6 +10,7 @@ extern char_u *do_bufdel __ARGS((int command, char_u *arg, int addr_count, int s
 extern int do_buffer __ARGS((int action, int start, int dir, int count, int forceit));
 extern void set_curbuf __ARGS((buf_T *buf, int action));
 extern void enter_buffer __ARGS((buf_T *buf));
+extern void do_autochdir __ARGS((void));
 extern buf_T *buflist_new __ARGS((char_u *ffname, char_u *sfname, linenr_T lnum, int flags));
 extern void free_buf_options __ARGS((buf_T *buf, int free_p_ff));
 extern int buflist_getfile __ARGS((int n, linenr_T lnum, int options, int forceit));

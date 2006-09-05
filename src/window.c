@@ -3954,13 +3954,8 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
     setmouse();			/* in case jumped to/from help buffer */
 #endif
 
-#ifdef FEAT_AUTOCHDIR
-    /* Change directories when the 'acd' option is set on and after
-     * switching windows. */
-    if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	shorten_fnames(TRUE);
-#endif
+    /* Change directories when the 'acd' option is set. */
+    DO_AUTOCHDIR
 }
 
 #endif /* FEAT_WINDOWS */

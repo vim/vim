@@ -2458,6 +2458,8 @@ ex_file(eap)
 #ifdef FEAT_AUTOCMD
 	apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
 #endif
+	/* Change directories when the 'acd' option is set. */
+	DO_AUTOCHDIR
     }
     /* print full file name if :cd used */
     fileinfo(FALSE, FALSE, eap->forceit);
@@ -2675,8 +2677,13 @@ do_write(eap)
 				 eap, eap->append, eap->forceit, TRUE, FALSE);
 
 	/* After ":saveas fname" reset 'readonly'. */
-	if (eap->cmdidx == CMD_saveas && retval == OK)
-	    curbuf->b_p_ro = FALSE;
+	if (eap->cmdidx == CMD_saveas)
+	{
+	    if (retval == OK)
+		curbuf->b_p_ro = FALSE;
+	    /* Change directories when the 'acd' option is set. */
+	    DO_AUTOCHDIR
+	}
     }
 
 theend:
@@ -3547,11 +3554,9 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	foldUpdateAll(curwin);
 #endif
 
-#ifdef FEAT_AUTOCHDIR
-	if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	    shorten_fnames(TRUE);
-#endif
+	/* Change directories when the 'acd' option is set. */
+	DO_AUTOCHDIR
+
 	/*
 	 * Careful: open_buffer() and apply_autocmds() may change the current
 	 * buffer and window.
@@ -3718,12 +3723,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
     if (p_im)
 	need_start_insertmode = TRUE;
 
-#ifdef FEAT_AUTOCHDIR
-    /* Change directories when the acd option is set on. */
-    if (p_acd && curbuf->b_ffname != NULL
-				     && vim_chdirfile(curbuf->b_ffname) == OK)
-	shorten_fnames(TRUE);
-#endif
+    /* Change directories when the 'acd' option is set. */
+    DO_AUTOCHDIR
 
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
     if (gui.in_use && curbuf->b_ffname != NULL)
