@@ -16225,7 +16225,7 @@ f_winrestview(argvars, rettv)
 	curwin->w_curswant = get_dict_number(dict, (char_u *)"curswant");
 	curwin->w_set_curswant = FALSE;
 
-	curwin->w_topline = get_dict_number(dict, (char_u *)"topline");
+	set_topline(curwin, get_dict_number(dict, (char_u *)"topline"));
 #ifdef FEAT_DIFF
 	curwin->w_topfill = get_dict_number(dict, (char_u *)"topfill");
 #endif
