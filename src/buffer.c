@@ -1386,7 +1386,8 @@ enter_buffer(buf)
     }
     else
     {
-	need_fileinfo = TRUE;		/* display file info after redraw */
+	if (!msg_silent)
+	    need_fileinfo = TRUE;	/* display file info after redraw */
 	(void)buf_check_timestamp(curbuf, FALSE); /* check if file changed */
 #ifdef FEAT_AUTOCMD
 	curwin->w_topline = 1;
