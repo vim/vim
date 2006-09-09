@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Jun 26
+" Last Change: 2006 Sep 09
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -44,7 +44,7 @@ function! s:Highlight_Matching_Pair()
   let before = 0
 
   let c = getline(c_lnum)[c_col - 1]
-  let plist = split(&matchpairs, ':\|,')
+  let plist = split(&matchpairs, '.\zs[:,]')
   let i = index(plist, c)
   if i < 0
     " not found, in Insert mode try character before the cursor
