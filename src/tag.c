@@ -3787,6 +3787,7 @@ get_tags(list, pat)
 {
     int		num_matches, i, ret;
     char_u	**matches, *p;
+    char_u	*full_fname;
     dict_T	*dict;
     tagptrs_T	tp;
     long	is_static;
@@ -3809,15 +3810,18 @@ get_tags(list, pat)
 	    if (list_append_dict(list, dict) == FAIL)
 		ret = FAIL;
 
+	    full_fname = tag_full_fname(&tp);
 	    if (add_tag_field(dict, "name", tp.tagname, tp.tagname_end) == FAIL
-		    || add_tag_field(dict, "filename", tp.fname,
-							 tp.fname_end) == FAIL
+		    || add_tag_field(dict, "filename", full_fname,
+							 NULL) == FAIL
 		    || add_tag_field(dict, "cmd", tp.command,
 						       tp.command_end) == FAIL
 		    || add_tag_field(dict, "kind", tp.tagkind,
 						      tp.tagkind_end) == FAIL
 		    || dict_add_nr_str(dict, "static", is_static, NULL) == FAIL)
 		ret = FAIL;
+
+	    vim_free(full_fname);
 
 	    if (tp.command_end != NULL)
 	    {
