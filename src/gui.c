@@ -3734,6 +3734,12 @@ gui_drag_scrollbar(sb, value, still_dragging)
     if (dont_scroll || input_available())
 	return;
 #endif
+#ifdef FEAT_INS_EXPAND
+    /* Disallow scrolling the current window when the completion popup menu is
+     * visible. */
+    if ((sb->wp == NULL || sb->wp == curwin) && pum_visible())
+	return;
+#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (sb->wp == NULL && curwin->w_p_rl)
@@ -4207,6 +4213,12 @@ gui_do_scroll()
 	redraw_win_later(wp, VALID);
 	updateWindow(wp);   /* update window, status line, and cmdline */
     }
+
+#ifdef FEAT_INS_EXPAND
+    /* May need to redraw the popup menu. */
+    if (pum_visible())
+	pum_redraw();
+#endif
 
     return (wp == curwin && !equalpos(curwin->w_cursor, old_cursor));
 }
