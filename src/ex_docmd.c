@@ -6296,7 +6296,6 @@ ex_tabclose(eap)
     exarg_T	*eap;
 {
     tabpage_T	*tp;
-    int		h = tabline_height();
 
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6328,9 +6327,6 @@ ex_tabclose(eap)
 	       )
 		tabpage_close(eap->forceit);
 	}
-
-    if (h != tabline_height())
-	shell_new_rows();
 }
 
 /*
@@ -6342,7 +6338,6 @@ ex_tabonly(eap)
 {
     tabpage_T	*tp;
     int		done;
-    int		h = tabline_height();
 
 # ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
@@ -6371,9 +6366,6 @@ ex_tabonly(eap)
 		    break;
 	    }
 	}
-
-    if (h != tabline_height())
-	shell_new_rows();
 }
 
 /*
@@ -6397,6 +6389,8 @@ tabpage_close(forceit)
 /*
  * Close tab page "tp", which is not the current tab page.
  * Note that autocommands may make "tp" invalid.
+ * Also takes care of the tab pages line disappearing when closing the
+ * last-but-one tab page.
  */
     void
 tabpage_close_other(tp, forceit)
@@ -6405,6 +6399,7 @@ tabpage_close_other(tp, forceit)
 {
     int		done = 0;
     win_T	*wp;
+    int		h = tabline_height();
 
     /* Limit to 1000 windows, autocommands may add a window while we close
      * one.  OK, so I'm paranoid... */
@@ -6418,7 +6413,10 @@ tabpage_close_other(tp, forceit)
 	if (!valid_tabpage(tp) || tp->tp_firstwin == wp)
 	    break;
     }
+
     redraw_tabline = TRUE;
+    if (h != tabline_height())
+	shell_new_rows();
 }
 
 /*
