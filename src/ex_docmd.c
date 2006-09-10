@@ -8422,6 +8422,15 @@ ex_redir(eap)
 	else
 	    EMSG2(_(e_invarg2), eap->arg);
     }
+
+    /* Make sure redirection is not off.  Can happen for cmdline completion
+     * that indirectly invokes a command to catch its output. */
+    if (redir_fd != NULL
+#ifdef FEAT_EVAL
+			  || redir_reg || redir_vname
+#endif
+							)
+	redir_off = FALSE;
 }
 
 /*

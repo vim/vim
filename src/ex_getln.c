@@ -324,6 +324,9 @@ getcmdline(firstc, count, indent)
      */
     for (;;)
     {
+	redir_off = TRUE;	/* Don't redirect the typed command.
+				   Repeated, because a ":redir" inside
+				   completion may switch it on. */
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = FALSE;	/* allow scrolling here */
 #endif
