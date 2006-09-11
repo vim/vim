@@ -1483,7 +1483,7 @@ find_word(mip, mode)
 	    else if ((mode == FIND_COMPOUND || mode == FIND_KEEPCOMPOUND
 								|| !word_ends))
 	    {
-		/* If there is no  flag or the word is shorter than
+		/* If there is no compound flag or the word is shorter than
 		 * COMPOUNDMIN reject it quickly.
 		 * Makes you wonder why someone puts a compound flag on a word
 		 * that's too short...  Myspell compatibility requires this
@@ -9336,7 +9336,10 @@ spell_add_word(word, len, bad, idx, undo)
 		    {
 			fputc('#', fd);
 			if (undo)
+			{
+			    home_replace(NULL, fname, NameBuff, MAXPATHL, TRUE);
 			    smsg((char_u *)_("Word removed from %s"), NameBuff);
+			}
 		    }
 		    fseek(fd, fpos_next, SEEK_SET);
 		}
