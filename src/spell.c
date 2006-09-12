@@ -9347,20 +9347,27 @@ spell_add_word(word, len, bad, idx, undo)
 	    fclose(fd);
 	}
     }
-    else
+
+    if (!undo)
     {
 	fd = mch_fopen((char *)fname, "a");
 	if (fd == NULL && new_spf)
 	{
+	    char_u *p;
+
 	    /* We just initialized the 'spellfile' option and can't open the
 	     * file.  We may need to create the "spell" directory first.  We
 	     * already checked the runtime directory is writable in
 	     * init_spellfile(). */
-	    if (!dir_of_file_exists(fname))
+	    if (!dir_of_file_exists(fname) && (p = gettail_sep(fname)) != fname)
 	    {
+		int c = *p;
+
 		/* The directory doesn't exist.  Try creating it and opening
 		 * the file again. */
-		vim_mkdir(NameBuff, 0755);
+		*p = NUL;
+		vim_mkdir(fname, 0755);
+		*p = c;
 		fd = mch_fopen((char *)fname, "a");
 	    }
 	}
