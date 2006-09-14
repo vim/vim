@@ -1756,6 +1756,11 @@ cmdline_changed:
 		end_pos = curwin->w_cursor; /* shutup gcc 4 */
 
 	    validate_cursor();
+# ifdef FEAT_WINDOWS
+	    /* May redraw the status line to show the cursor position. */
+	    if (p_ru && curwin->w_status_height > 0)
+		curwin->w_redr_status = TRUE;
+# endif
 
 	    save_cmdline(&save_ccline);
 	    update_screen(SOME_VALID);
