@@ -9251,7 +9251,7 @@ spell_add_word(word, len, bad, idx, undo)
 			       'spellfile' */
     int		undo;	    /* TRUE for "zug", "zuG", "zuw" and "zuW" */
 {
-    FILE	*fd;
+    FILE	*fd = NULL;
     buf_T	*buf = NULL;
     int		new_spf = FALSE;
     char_u	*fname;
