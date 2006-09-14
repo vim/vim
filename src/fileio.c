@@ -8289,7 +8289,11 @@ trigger_cursorhold()
 {
     int		state;
 
-    if (!did_cursorhold && has_cursorhold() && !Recording)
+    if (!did_cursorhold && has_cursorhold() && !Recording
+#ifdef FEAT_INS_EXPAND
+	    && !ins_compl_active()
+#endif
+	    )
     {
 	state = get_real_state();
 	if (state == NORMAL_BUSY || (state & INSERT) != 0)

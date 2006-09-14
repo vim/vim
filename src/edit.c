@@ -707,6 +707,11 @@ edit(cmdchar, startln, count)
 	lastc = c;			/* remember previous char for CTRL-D */
 	c = safe_vgetc();
 
+#ifdef FEAT_AUTOCMD
+	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
+	did_cursorhold = TRUE;
+#endif
+
 #ifdef FEAT_RIGHTLEFT
 	if (p_hkmap && KeyTyped)
 	    c = hkmap(c);		/* Hebrew mode mapping */
@@ -1388,6 +1393,12 @@ normalchar:
 #endif
 	    break;
 	}   /* end of switch (c) */
+
+#ifdef FEAT_AUTOCMD
+	/* If typed something may trigger CursorHoldI again. */
+	if (c != K_CURSORHOLD)
+	    did_cursorhold = FALSE;
+#endif
 
 	/* If the cursor was moved we didn't just insert a space */
 	if (arrow_used)
