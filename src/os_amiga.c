@@ -799,7 +799,7 @@ mch_isdir(name)
 /*
  * Create directory "name".
  */
-    void
+    int
 mch_mkdir(name)
     char_u	*name;
 {
@@ -807,7 +807,11 @@ mch_mkdir(name)
 
     lock = CreateDir(name);
     if (lock != NULL)
+    {
 	UnLock(lock);
+	return 0;
+    }
+    return -1;
 }
 
 /*

@@ -25,7 +25,7 @@ extern long mch_getperm __ARGS((char_u *name));
 extern int mch_setperm __ARGS((char_u *name, long perm));
 extern void mch_hide __ARGS((char_u *name));
 extern int mch_isdir __ARGS((char_u *name));
-extern void mch_mkdir __ARGS((char_u *name));
+extern int mch_mkdir __ARGS((char_u *name));
 extern int mch_can_exe __ARGS((char_u *name));
 extern int mch_nodetype __ARGS((char_u *name));
 extern void mch_early_init __ARGS((void));
