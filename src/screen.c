@@ -1228,7 +1228,14 @@ win_update(wp)
 	{
 	    mid_end = wp->w_height;
 	    if (lastwin == firstwin)
+	    {
 		screenclear();
+#ifdef FEAT_WINDOWS
+		/* The screen was cleared, redraw the tab pages line. */
+		if (redraw_tabline)
+		    draw_tabline();
+#endif
+	    }
 	}
     }
     else
