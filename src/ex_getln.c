@@ -2363,7 +2363,7 @@ redrawcmd_preedit()
 {
     if ((State & CMDLINE)
 	    && xic != NULL
-	    && im_get_status()
+	    /* && im_get_status()  doesn't work when using SCIM */
 	    && !p_imdisable
 	    && im_is_preediting())
     {
