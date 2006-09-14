@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 17
+" Last Change:	2006 Sep 14
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -885,6 +885,8 @@ if has("spell")
     if exists("s:changeitem") && s:changeitem != ''
       call <SID>SpellDel()
     endif
+
+    " Return quickly if spell checking is not enabled.
     if !&spell || &spelllang == ''
       return
     endif
@@ -908,18 +910,18 @@ if has("spell")
 	let s:fromword = w
 	let pri = 1
 	for sug in s:suglist
-	  exe 'amenu 1.5.' . pri . ' PopUp.' . s:changeitem . '.' . escape(sug, ' .')
+	  exe 'anoremenu 1.5.' . pri . ' PopUp.' . s:changeitem . '.' . escape(sug, ' .')
 		\ . ' :call <SID>SpellReplace(' . pri . ')<CR>'
 	  let pri += 1
 	endfor
 
 	let s:additem = 'add\ "' . escape(w, ' .') . '"\ to\ word\ list'
-	exe 'amenu 1.6 PopUp.' . s:additem . ' :spellgood ' . w . '<CR>'
+	exe 'anoremenu 1.6 PopUp.' . s:additem . ' :spellgood ' . w . '<CR>'
 
 	let s:ignoreitem = 'ignore\ "' . escape(w, ' .') . '"'
-	exe 'amenu 1.7 PopUp.' . s:ignoreitem . ' :spellgood! ' . w . '<CR>'
+	exe 'anoremenu 1.7 PopUp.' . s:ignoreitem . ' :spellgood! ' . w . '<CR>'
 
-	amenu 1.8 PopUp.-SpellSep- :
+	anoremenu 1.8 PopUp.-SpellSep- :
       endif
     endif
   endfunc
@@ -938,7 +940,9 @@ if has("spell")
     let s:changeitem = ''
   endfun
 
-  au! MenuPopup * call <SID>SpellPopup()
+  augroup SpellPopupMenu
+    au! MenuPopup * call <SID>SpellPopup()
+  augroup END
 endif
 
 " The GUI toolbar (for MS-Windows and GTK)
@@ -1013,9 +1017,9 @@ else
     tmenu ToolBar.FindPrev	Find Previous
     tmenu ToolBar.Replace		Find / Replace...
   endif
-  tmenu ToolBar.LoadSesn	Chose a session to load
+  tmenu ToolBar.LoadSesn	Choose a session to load
   tmenu ToolBar.SaveSesn	Save current session
-  tmenu ToolBar.RunScript	Chose a Vim Script to run
+  tmenu ToolBar.RunScript	Choose a Vim Script to run
   tmenu ToolBar.Make		Make current project (:make)
   tmenu ToolBar.RunCtags	Build tags in current directory tree (!ctags -R .)
   tmenu ToolBar.TagJump		Jump to tag under cursor
