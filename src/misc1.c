@@ -8074,9 +8074,20 @@ get_lisp_indent()
 		}
 		if (*that == '"' && *(that + 1) != NUL)
 		{
-		    that++;
-		    while (*that && (*that != '"' || *(that - 1) == '\\'))
-			++that;
+		    while (*++that && *that != '"')
+		    {
+			/* skipping escaped characters in the string */
+			if (*that == '\\')
+			{
+			    if (*++that == NUL)
+				break;
+			    if (that[1] == NUL)
+			    {
+				++that;
+				break;
+			    }
+			}
+		    }
 		}
 		if (*that == '(' || *that == '[')
 		    ++parencount;
