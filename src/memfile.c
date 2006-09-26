@@ -517,7 +517,7 @@ mf_free(mfp, hp)
 	mf_ins_free(mfp, hp);	/* put *hp in the free list */
 }
 
-#if defined(__MORPHOS__)
+#if defined(__MORPHOS__) && defined(__libnix__)
 /* function is missing in MorphOS libnix version */
 extern unsigned long *__stdfiledes;
 
@@ -677,15 +677,19 @@ mf_sync(mfp, flags)
 #  else
 #   if defined(_DCC) || defined(__GNUC__) || defined(__MORPHOS__)
 	{
-#    if defined(__GNUC__) && !defined(__MORPHOS__)
+#    if defined(__GNUC__) && !defined(__MORPHOS__) && defined(__libnix__)
 	    /* Have function (in libnix at least),
 	     * but ain't got no prototype anywhere. */
 	    extern unsigned long fdtofh(int filedescriptor);
 #    endif
+#    if !defined(__libnix__)
+	    fflush(NULL);
+#    else
 	    BPTR fh = (BPTR)fdtofh(mfp->mf_fd);
 
 	    if (fh != 0)
 		Flush(fh);
+#    endif
 	}
 #   else /* assume Manx */
 	    Flush(_devtab[mfp->mf_fd].fd);
