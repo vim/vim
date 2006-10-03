@@ -1463,7 +1463,7 @@ BufferDestructor(PyObject *self)
     if (this->buf && this->buf != INVALID_BUFFER_VALUE)
 	this->buf->b_python_ref = NULL;
 
-    PyMem_DEL(self);
+    Py_DECREF(self);
 }
 
     static PyObject *
@@ -1674,7 +1674,7 @@ RangeNew(buf_T *buf, int start, int end)
     bufr = (BufferObject *)BufferNew(buf);
     if (bufr == NULL)
     {
-	PyMem_DEL(self);
+	Py_DECREF(self);
 	return NULL;
     }
     Py_INCREF(bufr);
@@ -1690,7 +1690,7 @@ RangeNew(buf_T *buf, int start, int end)
 RangeDestructor(PyObject *self)
 {
     Py_DECREF(((RangeObject *)(self))->buf);
-    PyMem_DEL(self);
+    Py_DECREF(self);
 }
 
     static PyObject *
@@ -1944,7 +1944,7 @@ WindowDestructor(PyObject *self)
     if (this->win && this->win != INVALID_WINDOW_VALUE)
 	this->win->w_python_ref = NULL;
 
-    PyMem_DEL(self);
+    Py_DECREF(self);
 }
 
     static int
