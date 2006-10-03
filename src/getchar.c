@@ -1960,10 +1960,13 @@ vgetorpeek(advance)
 			c = Ctrl_C;
 		    flush_buffers(TRUE);	/* flush all typeahead */
 
-		    /* Also record this character, it might be needed to
-		     * get out of Insert mode. */
-		    *typebuf.tb_buf = c;
-		    gotchars(typebuf.tb_buf, 1);
+		    if (advance)
+		    {
+			/* Also record this character, it might be needed to
+			 * get out of Insert mode. */
+			*typebuf.tb_buf = c;
+			gotchars(typebuf.tb_buf, 1);
+		    }
 		    cmd_silent = FALSE;
 
 		    break;
