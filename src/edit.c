@@ -3206,7 +3206,8 @@ ins_compl_addfrommatch()
 	    for (cp = compl_shown_match->cp_next; cp != NULL
 				 && cp != compl_first_match; cp = cp->cp_next)
 	    {
-		if (ins_compl_equal(cp, compl_leader,
+		if (compl_leader == NULL
+			|| ins_compl_equal(cp, compl_leader,
 						   (int)STRLEN(compl_leader)))
 		{
 		    p = cp->cp_str;
