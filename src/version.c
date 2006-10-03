@@ -667,6 +667,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    116,
+/**/
     115,
 /**/
     114,
@@ -961,7 +963,11 @@ list_version()
     /* Only MS VC 4.1 and earlier can do Win32s */
     MSG_PUTS(_("\nMS-Windows 16/32 bit GUI version"));
 #  else
+#   ifdef _WIN64
+    MSG_PUTS(_("\nMS-Windows 64 bit GUI version"));
+#   else
     MSG_PUTS(_("\nMS-Windows 32 bit GUI version"));
+#   endif
 #  endif
     if (gui_is_win32s())
 	MSG_PUTS(_(" in Win32s mode"));
