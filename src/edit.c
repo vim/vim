@@ -2157,7 +2157,7 @@ ins_compl_add(str, len, icase, fname, cptext, cdir, flags, adup)
 	do
 	{
 	    if (    !(match->cp_flags & ORIGINAL_TEXT)
-		    && ins_compl_equal(match, str, len)
+		    && STRNCMP(match->cp_str, str, len) == 0
 		    && match->cp_str[len] == NUL)
 		return NOTDONE;
 	    match = match->cp_next;
@@ -4042,7 +4042,7 @@ ins_compl_get_exp(ini)
 	    if (got_int)
 		break;
 	    /* Fill the popup menu as soon as possible. */
-	    if (pum_wanted() && type != -1)
+	    if (type != -1)
 		ins_compl_check_keys(0);
 
 	    if ((ctrl_x_mode != 0 && ctrl_x_mode != CTRL_X_WHOLE_LINE)
