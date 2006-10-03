@@ -4124,8 +4124,6 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    case 'c':
 	    case 's':
 		length_modifier = '\0';
-		zero_padding = 0;    /* turn zero padding off for string
-					conversions */
 		str_arg_l = 1;
 		switch (fmt_spec)
 		{
