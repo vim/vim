@@ -29,6 +29,7 @@ extern char_u *vim_strsave __ARGS((char_u *string));
 extern char_u *vim_strnsave __ARGS((char_u *string, int len));
 extern char_u *vim_strsave_escaped __ARGS((char_u *string, char_u *esc_chars));
 extern char_u *vim_strsave_escaped_ext __ARGS((char_u *string, char_u *esc_chars, int cc, int bsl));
+extern char_u *vim_strsave_shellescape __ARGS((char_u *string));
 extern char_u *vim_strsave_up __ARGS((char_u *string));
 extern char_u *vim_strnsave_up __ARGS((char_u *string, int len));
 extern void vim_strup __ARGS((char_u *p));

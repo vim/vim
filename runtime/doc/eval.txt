@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0.  Last change: 2006 May 06
+*eval.txt*      For Vim version 7.0.  Last change: 2006 Sep 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1709,6 +1709,8 @@ setreg( {n}, {v}[, {opt}])	Number	set register to value and type
 settabwinvar( {tabnr}, {winnr}, {varname}, {val})    set {varname} in window
 					{winnr} in tab page {tabnr} to {val}
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
+shellescape( {string})		String	escape {string} for use as shell
+					command argument
 simplify( {filename})		String	simplify filename as much as possible
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
 soundfold( {word})		String	sound-fold {word}
@@ -4433,6 +4435,21 @@ setwinvar({nr}, {varname}, {val})			*setwinvar()*
 		Examples: >
 			:call setwinvar(1, "&list", 0)
 			:call setwinvar(2, "myvar", "foobar")
+
+shellescape({string})					*shellescape()*
+		Escape {string} for use as shell command argument.
+		On MS-Windows and MS-DOS, when 'shellslash' is not set, it
+		will enclose {string} double quotes and double all double
+		quotes within {string}.
+		For other systems, it will enclose {string} in single quotes
+		and replace all "'" with "'\''".
+		Example: >
+			:echo shellescape('c:\program files\vim')
+<		results in:
+			"c:\program files\vim" ~
+		Example usage: >
+			:call system("chmod +x -- " . shellescape(expand("%")))
+
 
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing

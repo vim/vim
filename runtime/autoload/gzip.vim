@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Jul 19
+" Last Change: 2006 Oct 03
 
 " These functions are used by the gzip plugin.
 
@@ -68,9 +68,9 @@ fun gzip#read(cmd)
   let tmp = tempname()
   let tmpe = tmp . "." . expand("<afile>:e")
   " write the just read lines to a temp file "'[,']w tmp.gz"
-  execute "silent '[,']w " . tmpe
+  execute "silent '[,']w " . escape(tmpe, ' ')
   " uncompress the temp file: call system("gzip -dn tmp.gz")
-  call system(a:cmd . " " . tmpe)
+  call system(a:cmd . " " . s:escape(tmpe))
   if !filereadable(tmp)
     " uncompress didn't work!  Keep the compressed file then.
     echoerr "Error: Could not read uncompressed file"
@@ -127,9 +127,9 @@ fun gzip#write(cmd)
     let nmt = s:tempname(nm)
     if rename(nm, nmt) == 0
       if exists("b:gzip_comp_arg")
-	call system(a:cmd . " " . b:gzip_comp_arg . " '" . nmt . "'")
+	call system(a:cmd . " " . b:gzip_comp_arg . " " . s:escape(nmt))
       else
-	call system(a:cmd . " '" . nmt . "'")
+	call system(a:cmd . " " . s:escape(nmt))
       endif
       call rename(nmt . "." . expand("<afile>:e"), nm)
     endif
@@ -154,10 +154,10 @@ fun gzip#appre(cmd)
     if rename(nm, nmte) == 0
       if &patchmode != "" && getfsize(nm . &patchmode) == -1
 	" Create patchmode file by creating the decompressed file new
-	call system(a:cmd . " -c " . nmte . " > " . nmt)
+	call system(a:cmd . " -c " . s:escape(nmte) . " > " . s:escape(nmt))
 	call rename(nmte, nm . &patchmode)
       else
-	call system(a:cmd . " " . nmte)
+	call system(a:cmd . " " . s:escape(nmte))
       endif
       call rename(nmt, nm)
     endif
@@ -173,6 +173,14 @@ fun s:tempname(name)
     return fn
   endif
   return fnamemodify(a:name, ":p:h") . "/X~=@l9q5"
+endfun
+
+fun s:escape(name)
+  " shellescape() was added by patch 7.0.111
+  if v:version > 700 || (v:version == 700 && has('patch111'))
+    return shellescape(a:name)
+  endif
+  return "'" . a:name . "'"
 endfun
 
 " vim: set sw=2 :

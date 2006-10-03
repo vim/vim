@@ -622,6 +622,7 @@ static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_settabwinvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setwinvar __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_shellescape __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_simplify __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_sort __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_soundfold __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7146,6 +7147,7 @@ static struct fst
     {"setreg",		2, 3, f_setreg},
     {"settabwinvar",	4, 4, f_settabwinvar},
     {"setwinvar",	3, 3, f_setwinvar},
+    {"shellescape",	1, 1, f_shellescape},
     {"simplify",	1, 1, f_simplify},
     {"sort",		1, 2, f_sort},
     {"soundfold",	1, 1, f_soundfold},
@@ -14602,6 +14604,18 @@ setwinvar(argvars, rettv, off)
 	}
 #endif
     }
+}
+
+/*
+ * "shellescape({string})" function
+ */
+    static void
+f_shellescape(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_string = vim_strsave_shellescape(get_tv_string(&argvars[0]));
+    rettv->v_type = VAR_STRING;
 }
 
 /*

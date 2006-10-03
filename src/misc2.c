@@ -1229,6 +1229,94 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
     return escaped_string;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Escape "string" for use as a shell argument with system().
+ * This uses single quotes, except when we know we need to use double qoutes
+ * (MS-DOS and MS-Windows without 'shellslash' set).
+ * Returns the result in allocated memory, NULL if we have run out.
+ */
+    char_u *
+vim_strsave_shellescape(string)
+    char_u	*string;
+{
+    unsigned	length;
+    char_u	*p;
+    char_u	*d;
+    char_u	*escaped_string;
+
+    /* First count the number of extra bytes required. */
+    length = STRLEN(string) + 3;	/* two quotes and the trailing NUL */
+    for (p = string; *p != NUL; mb_ptr_adv(p))
+    {
+# if defined(WIN32) || defined(WIN16) || defined(DOS)
+	if (!p_ssl)
+	{
+	    if (*p == '"')
+		++length;		/* " -> "" */
+	}
+	else
+# endif
+	if (*p == '\'')
+	    length += 3;		/* ' => '\'' */
+    }
+
+    /* Allocate memory for the result and fill it. */
+    escaped_string = alloc(length);
+    if (escaped_string != NULL)
+    {
+	d = escaped_string;
+
+	/* add opening quote */
+# if defined(WIN32) || defined(WIN16) || defined(DOS)
+	if (!p_ssl)
+	    *d++ = '"';
+	else
+# endif
+	    *d++ = '\'';
+
+	for (p = string; *p != NUL; )
+	{
+# if defined(WIN32) || defined(WIN16) || defined(DOS)
+	    if (!p_ssl)
+	    {
+		if (*p == '"')
+		{
+		    *d++ = '"';
+		    *d++ = '"';
+		    ++p;
+		    continue;
+		}
+	    }
+	    else
+# endif
+	    if (*p == '\'')
+	    {
+		*d++='\'';
+		*d++='\\';
+		*d++='\'';
+		*d++='\'';
+		++p;
+		continue;
+	    }
+
+	    MB_COPY_CHAR(p, d);
+	}
+
+	/* add terminating quote and finish with a NUL */
+# if defined(WIN32) || defined(WIN16) || defined(DOS)
+	if (!p_ssl)
+	    *d++ = '"';
+	else
+# endif
+	    *d++ = '\'';
+	*d = NUL;
+    }
+
+    return escaped_string;
+}
+#endif
+
 /*
  * Like vim_strsave(), but make all characters uppercase.
  * This uses ASCII lower-to-upper case translation, language independent.
