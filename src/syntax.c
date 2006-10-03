@@ -977,6 +977,7 @@ syn_update_ends(startofline)
 {
     stateitem_T	*cur_si;
     int		i;
+    int		seen_keepend;
 
     if (startofline)
     {
@@ -1002,7 +1003,10 @@ syn_update_ends(startofline)
     /*
      * Need to update the end of a start/skip/end that continues from the
      * previous line.  And regions that have "keepend", because they may
-     * influence contained items.
+     * influence contained items.  If we've just removed "extend"
+     * (startofline == 0) then we should update ends of normal regions
+     * contained inside "keepend" because "extend" could have extended
+     * these "keepend" regions as well as contained normal regions.
      * Then check for items ending in column 0.
      */
     i = current_state.ga_len - 1;
@@ -1010,10 +1014,13 @@ syn_update_ends(startofline)
 	for ( ; i > keepend_level; --i)
 	    if (CUR_STATE(i).si_flags & HL_EXTEND)
 		break;
+
+    seen_keepend = FALSE;
     for ( ; i < current_state.ga_len; ++i)
     {
 	cur_si = &CUR_STATE(i);
 	if ((cur_si->si_flags & HL_KEEPEND)
+			    || (seen_keepend && !startofline)
 			    || (i == current_state.ga_len - 1 && startofline))
 	{
 	    cur_si->si_h_startpos.col = 0;	/* start highl. in col 0 */
@@ -1021,6 +1028,9 @@ syn_update_ends(startofline)
 
 	    if (!(cur_si->si_flags & HL_MATCHCONT))
 		update_si_end(cur_si, (int)current_col, !startofline);
+
+	    if (!startofline && (cur_si->si_flags & HL_KEEPEND))
+		seen_keepend = TRUE;
 	}
     }
     check_keepend();
@@ -2564,6 +2574,7 @@ check_keepend()
 {
     int		i;
     lpos_T	maxpos;
+    lpos_T	maxpos_h;
     stateitem_T	*sip;
 
     /*
@@ -2583,23 +2594,30 @@ check_keepend()
 	    break;
 
     maxpos.lnum = 0;
+    maxpos_h.lnum = 0;
     for ( ; i < current_state.ga_len; ++i)
     {
 	sip = &CUR_STATE(i);
 	if (maxpos.lnum != 0)
 	{
 	    limit_pos_zero(&sip->si_m_endpos, &maxpos);
-	    limit_pos_zero(&sip->si_h_endpos, &maxpos);
+	    limit_pos_zero(&sip->si_h_endpos, &maxpos_h);
 	    limit_pos_zero(&sip->si_eoe_pos, &maxpos);
 	    sip->si_ends = TRUE;
 	}
-	if (sip->si_ends
-		&& (sip->si_flags & HL_KEEPEND)
-		&& (maxpos.lnum == 0
+	if (sip->si_ends && (sip->si_flags & HL_KEEPEND))
+	{
+	    if (maxpos.lnum == 0
 		    || maxpos.lnum > sip->si_m_endpos.lnum
 		    || (maxpos.lnum == sip->si_m_endpos.lnum
-			&& maxpos.col > sip->si_m_endpos.col)))
-	    maxpos = sip->si_m_endpos;
+			&& maxpos.col > sip->si_m_endpos.col))
+		maxpos = sip->si_m_endpos;
+	    if (maxpos_h.lnum == 0
+		    || maxpos_h.lnum > sip->si_h_endpos.lnum
+		    || (maxpos_h.lnum == sip->si_h_endpos.lnum
+			&& maxpos_h.col > sip->si_h_endpos.col))
+		maxpos_h = sip->si_h_endpos;
+	}
     }
 }
 
