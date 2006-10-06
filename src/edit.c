@@ -923,6 +923,7 @@ doESCkey:
 		if (cmdchar != 'r' && cmdchar != 'v')
 		    apply_autocmds(EVENT_INSERTLEAVE, NULL, NULL,
 							       FALSE, curbuf);
+		did_cursorhold = FALSE;
 #endif
 		return (c == Ctrl_O);
 	    }
