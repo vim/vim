@@ -2873,6 +2873,9 @@ button_set:
      */
     if ((State == NORMAL || State == NORMAL_BUSY || (State & INSERT))
 	    && Y_2_ROW(y) >= topframe->fr_height
+# ifdef FEAT_WINDOWS
+						+ firstwin->w_winrow
+# endif
 	    && button != MOUSE_DRAG
 # ifdef FEAT_MOUSESHAPE
 	    && !drag_status_line
