@@ -5079,15 +5079,38 @@ screen_line(row, coloff, endcol, clear_width
 	     * character too.  If we didn't skip any blanks above, then we
 	     * only redraw if the character wasn't already redrawn anyway.
 	     */
-	    if (gui.in_use && (col > startCol || !redraw_this)
-# ifdef FEAT_MBYTE
-		    && enc_dbcs == 0
-# endif
-	       )
+	    if (gui.in_use && (col > startCol || !redraw_this))
 	    {
 		hl = ScreenAttrs[off_to];
 		if (hl > HL_ALL || (hl & HL_BOLD))
-		    screen_char(off_to - 1, row, col + coloff - 1);
+		{
+		    int prev_cells = 1;
+# ifdef FEAT_MBYTE
+		    if (enc_utf8)
+			/* for utf-8, ScreenLines[char_offset + 1] == 0 means
+			 * that its width is 2. */
+			prev_cells = ScreenLines[off_to - 1] == 0 ? 2 : 1;
+		    else if (enc_dbcs != 0)
+		    {
+			/* find previous character by counting from first
+			 * column and get its width. */
+			unsigned off = LineOffset[row];
+
+			while (off < off_to)
+			{
+			    prev_cells = (*mb_off2cells)(off);
+			    off += prev_cells;
+			}
+		    }
+
+		    if (enc_dbcs != 0 && prev_cells > 1)
+			screen_char_2(off_to - prev_cells, row,
+						   col + coloff - prev_cells);
+		    else
+# endif
+			screen_char(off_to - prev_cells, row,
+						   col + coloff - prev_cells);
+		}
 	    }
 #endif
 	    screen_fill(row, row + 1, col + coloff, clear_width + coloff,
