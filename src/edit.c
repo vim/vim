@@ -5333,8 +5333,16 @@ insertchar(c, flags, second_indent)
 	/* Format with 'formatexpr' when it's set.  Use internal formatting
 	 * when 'formatexpr' isn't set or it returns non-zero. */
 #if defined(FEAT_EVAL)
-	if (*curbuf->b_p_fex == NUL
-			     || fex_format(curwin->w_cursor.lnum, 1L, c) != 0)
+	int do_internal = TRUE;
+
+	if (*curbuf->b_p_fex != NUL)
+	{
+	    do_internal = (fex_format(curwin->w_cursor.lnum, 1L, c) != 0);
+	    /* It may be required to save for undo again, e.g. when setline()
+	     * was called. */
+	    ins_need_undo = TRUE;
+	}
+	if (do_internal)
 #endif
 	    internal_format(textwidth, second_indent, flags, c == NUL);
     }
