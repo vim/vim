@@ -681,7 +681,8 @@ eof
 	AC_MSG_CHECKING([if -pthread should be used])
 	threadsafe_flag=
 	thread_lib=
-	if test "x$MACOSX" != "xyes"; then
+	dnl if test "x$MACOSX" != "xyes"; then
+        if test "`(uname) 2>/dev/null`" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
 	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
 	    threadsafe_flag="-D_THREAD_SAFE"
@@ -2151,8 +2152,9 @@ else
   dnl  Newer versions of ncurses are preferred over anything.
   dnl  Older versions of ncurses have bugs, get a new one!
   dnl  Digital Unix (OSF1) should use curses (Ronald Schild).
+  dnl  On SCO Openserver should prefer termlib (Roger Cornelius).
   case "`uname -s 2>/dev/null`" in
-	OSF1)	tlibs="ncurses curses termlib termcap";;
+	OSF1|SCO_SV)	tlibs="ncurses curses termlib termcap";;
 	*)	tlibs="ncurses termlib termcap curses";;
   esac
   for libname in $tlibs; do

@@ -4256,7 +4256,7 @@ fi
 echo $ECHO_N "checking if -pthread should be used... $ECHO_C" >&6
 	threadsafe_flag=
 	thread_lib=
-	if test "x$MACOSX" != "xyes"; then
+	        if test "`(uname) 2>/dev/null`" != Darwin; then
 	  test "$GCC" = yes && threadsafe_flag="-pthread"
 	  if test "`(uname) 2>/dev/null`" = FreeBSD; then
 	    threadsafe_flag="-D_THREAD_SAFE"
@@ -11555,8 +11555,8 @@ rm -f conftest.err conftest.$ac_objext \
 else
   echo "$as_me:$LINENO: result: empty: automatic terminal library selection" >&5
 echo "${ECHO_T}empty: automatic terminal library selection" >&6
-            case "`uname -s 2>/dev/null`" in
-	OSF1)	tlibs="ncurses curses termlib termcap";;
+              case "`uname -s 2>/dev/null`" in
+	OSF1|SCO_SV)	tlibs="ncurses curses termlib termcap";;
 	*)	tlibs="ncurses termlib termcap curses";;
   esac
   for libname in $tlibs; do
