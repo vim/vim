@@ -637,6 +637,7 @@ gui_exit(rc)
 
 #if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) || defined(PROTO)
+# define NEED_GUI_UPDATE_SCREEN 1
 /*
  * Called when the GUI shell is closed by the user.  If there are no changed
  * files Vim exits, otherwise there will be a dialog to ask the user what to
@@ -665,8 +666,7 @@ gui_shell_closed()
 
     exiting = FALSE;
     cmdmod = save_cmdmod;
-    setcursor();		/* position cursor */
-    out_flush();
+    gui_update_screen();	/* redraw, window may show changed buffer */
 }
 #endif
 
@@ -4823,6 +4823,7 @@ no_console_input()
 #endif
 
 #if defined(FIND_REPLACE_DIALOG) || defined(FEAT_SUN_WORKSHOP) \
+	|| defined(NEED_GUI_UPDATE_SCREEN) \
 	|| defined(PROTO)
 /*
  * Update the current window and the screen.
