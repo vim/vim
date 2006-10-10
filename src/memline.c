@@ -1633,6 +1633,7 @@ swapfile_info(fname)
     int		    fd;
     struct block0   b0;
     time_t	    x = (time_t)0;
+    char	    *p;
 #ifdef UNIX
     char_u	    uname[B0_UNAME_SIZE];
 #endif
@@ -1652,8 +1653,11 @@ swapfile_info(fname)
 #endif
 	    MSG_PUTS(_("             dated: "));
 	x = st.st_mtime;		    /* Manx C can't do &st.st_mtime */
-	MSG_PUTS(ctime(&x));		    /* includes '\n' */
-
+	p = ctime(&x);			    /* includes '\n' */
+	if (p == NULL)
+	    MSG_PUTS("(invalid)\n");
+	else
+	    MSG_PUTS(p);
     }
 
     /*
@@ -3652,6 +3656,7 @@ attention_message(buf, fname)
 {
     struct stat st;
     time_t	x, sx;
+    char	*p;
 
     ++no_wait_return;
     (void)EMSG(_("E325: ATTENTION"));
@@ -3666,7 +3671,11 @@ attention_message(buf, fname)
     {
 	MSG_PUTS(_("             dated: "));
 	x = st.st_mtime;    /* Manx C can't do &st.st_mtime */
-	MSG_PUTS(ctime(&x));
+	p = ctime(&x);			    /* includes '\n' */
+	if (p == NULL)
+	    MSG_PUTS("(invalid)\n");
+	else
+	    MSG_PUTS(p);
 	if (sx != 0 && x > sx)
 	    MSG_PUTS(_("      NEWER than swap file!\n"));
     }
