@@ -10432,20 +10432,14 @@ getwinvar(argvars, rettv, off)
 
     if (win != NULL && varname != NULL)
     {
+	/* Set curwin to be our win, temporarily.  Also set curbuf, so
+	 * that we can get buffer-local options. */
+	oldcurwin = curwin;
+	curwin = win;
+	curbuf = win->w_buffer;
+
 	if (*varname == '&')	/* window-local-option */
-	{
-	    /* Set curwin to be our win, temporarily.  Also set curbuf, so
-	     * that we can get buffer-local options. */
-	    oldcurwin = curwin;
-	    curwin = win;
-	    curbuf = win->w_buffer;
-
 	    get_option_tv(&varname, rettv, 1);
-
-	    /* restore previous notion of curwin */
-	    curwin = oldcurwin;
-	    curbuf = curwin->w_buffer;
-	}
 	else
 	{
 	    if (*varname == NUL)
@@ -10458,6 +10452,10 @@ getwinvar(argvars, rettv, off)
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
+
+	/* restore previous notion of curwin */
+	curwin = oldcurwin;
+	curbuf = curwin->w_buffer;
     }
 
     --emsg_off;
