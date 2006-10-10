@@ -1275,18 +1275,13 @@ gui_mch_browse(int saving,
     title = CONVERT_TO_UTF8(title);
 # endif
 
-    /* Concatenate "initdir" and "dflt". */
+    /* GTK has a bug, it only works with an absolute path. */
     if (initdir == NULL || *initdir == NUL)
 	mch_dirname(dirbuf, MAXPATHL);
-    else if (STRLEN(initdir) + 2 < MAXPATHL)
-	STRCPY(dirbuf, initdir);
-    else
+    else if (vim_FullName(initdir, dirbuf, MAXPATHL - 2, FALSE) == FAIL)
 	dirbuf[0] = NUL;
     /* Always need a trailing slash for a directory. */
     add_pathsep(dirbuf);
-    if (dflt != NULL && *dflt != NUL
-			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
-	STRCAT(dirbuf, dflt);
 
     /* If our pointer is currently hidden, then we should show it. */
     gui_mch_mousehide(FALSE);
@@ -1340,6 +1335,11 @@ gui_mch_browse(int saving,
     }
     else
 	gtk_window_set_title(GTK_WINDOW(gui.filedlg), (const gchar *)title);
+
+    /* Concatenate "initdir" and "dflt". */
+    if (dflt != NULL && *dflt != NUL
+			      && STRLEN(dirbuf) + 2 + STRLEN(dflt) < MAXPATHL)
+	STRCAT(dirbuf, dflt);
 
     gtk_file_selection_set_filename(GTK_FILE_SELECTION(gui.filedlg),
 						      (const gchar *)dirbuf);
