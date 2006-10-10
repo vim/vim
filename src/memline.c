@@ -1400,8 +1400,9 @@ recover_names(fname, list, nr)
 		names[0] = vim_strsave((char_u *)"*.sw?");
 # endif
 #endif
-#ifdef UNIX
-		/* for Unix names starting with a dot are special */
+#if defined(UNIX) || defined(WIN3264)
+		/* For Unix names starting with a dot are special.  MS-Windows
+		 * supports this too, on some file systems. */
 		names[1] = vim_strsave((char_u *)".*.sw?");
 		names[2] = vim_strsave((char_u *)".sw?");
 		num_names = 3;
@@ -1430,8 +1431,9 @@ recover_names(fname, list, nr)
 		names[0] = concat_fnames(dir_name, (char_u *)"*.sw?", TRUE);
 # endif
 #endif
-#ifdef UNIX
-		/* for Unix names starting with a dot are special */
+#if defined(UNIX) || defined(WIN3264)
+		/* For Unix names starting with a dot are special.  MS-Windows
+		 * supports this too, on some file systems. */
 		names[1] = concat_fnames(dir_name, (char_u *)".*.sw?", TRUE);
 		names[2] = concat_fnames(dir_name, (char_u *)".sw?", TRUE);
 		num_names = 3;
