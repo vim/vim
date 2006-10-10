@@ -4792,8 +4792,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	See |complete-functions| for an explanation of how the function is
 	invoked and what it should return.
-	This option is usually set by a filetype plugin.
+	This option is usually set by a filetype plugin:
 	|:filetype-plugin-on|
+
+
+				*'opendevice* *'odev* *'noopendevice* *'noodev*
+'opendevice' 'odev'	boolean	(default off)
+			global
+			{not in Vi}
+			{only for MS-DOS, MS-Windows and OS/2}
+	Enable reading and writing from devices.  This may get Vim stuck on a
+	device that can be opened but doesn't actually do the I/O.  Therefore
+	it is off by default.
+	Note that on MS-Windows editing "aux.h", "lpt1.txt" and the like also
+	result in editing a device.
 
 
 						*'operatorfunc'* *'opfunc'*

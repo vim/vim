@@ -2702,6 +2702,12 @@ mch_nodetype(char_u *name)
     HANDLE	hFile;
     int		type;
 
+    /* We can't open a file with a name "\\.\con" or "\\.\prn" and trying to
+     * read from it later will cause Vim to hang.  Thus return NODE_WRITABLE
+     * here. */
+    if (STRNCMP(name, "\\\\.\\", 4) == 0)
+	return NODE_WRITABLE;
+
     hFile = CreateFile(name,		/* file name */
 		GENERIC_WRITE,		/* access mode */
 		0,			/* share mode */

@@ -1810,6 +1810,14 @@ static struct vimoption
     {"open",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"opendevice",  "odev", P_BOOL|P_VI_DEF,
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+			    (char_u *)&p_odev, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)FALSE}
+			    },
     {"operatorfunc", "opfunc", P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_opfunc, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} },

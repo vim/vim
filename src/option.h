@@ -618,6 +618,9 @@ EXTERN int	p_more;		/* 'more' */
 #ifdef FEAT_MZSCHEME
 EXTERN long	p_mzq;		/* 'mzquantum */
 #endif
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+EXTERN int	p_odev;		/* 'opendevice' */
+#endif
 EXTERN char_u	*p_opfunc;	/* 'operatorfunc' */
 EXTERN char_u	*p_para;	/* 'paragraphs' */
 EXTERN int	p_paste;	/* 'paste' */

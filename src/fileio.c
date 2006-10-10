@@ -419,6 +419,20 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     }
 #endif
 
+#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+    /*
+     * MS-Windows allows opening a device, but we will probably get stuck
+     * trying to read it.
+     */
+    if (!p_odev && mch_nodetype(fname) == NODE_WRITABLE)
+    {
+	filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option"), 0);
+	msg_end();
+	msg_scroll = msg_save;
+	return FAIL;
+    }
+#endif
+
     /* set default 'fileformat' */
     if (set_options)
     {
@@ -3163,6 +3177,16 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     }
     if (c == NODE_WRITABLE)
     {
+# if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+	/* MS-Windows allows opening a device, but we will probably get stuck
+	 * trying to write to it.  */
+	if (!p_odev)
+	{
+	    errnum = (char_u *)"E796: ";
+	    errmsg = (char_u *)_("writing to device disabled with 'opendevice' option");
+	    goto fail;
+	}
+# endif
 	device = TRUE;
 	newfile = TRUE;
 	perm = -1;
