@@ -416,20 +416,20 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	    msg_scroll = msg_save;
 	    return FAIL;
 	}
-    }
-#endif
 
-#if defined(MSDOS) || defined(MSWIN) || defined(OS2)
-    /*
-     * MS-Windows allows opening a device, but we will probably get stuck
-     * trying to read it.
-     */
-    if (!p_odev && mch_nodetype(fname) == NODE_WRITABLE)
-    {
-	filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option"), 0);
-	msg_end();
-	msg_scroll = msg_save;
-	return FAIL;
+# if defined(MSDOS) || defined(MSWIN) || defined(OS2)
+	/*
+	 * MS-Windows allows opening a device, but we will probably get stuck
+	 * trying to read it.
+	 */
+	if (!p_odev && mch_nodetype(fname) == NODE_WRITABLE)
+	{
+	    filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option"), 0);
+	    msg_end();
+	    msg_scroll = msg_save;
+	    return FAIL;
+	}
+# endif
     }
 #endif
 
