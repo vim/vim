@@ -3909,6 +3909,8 @@ ins_compl_get_exp(ini)
 	    {
 		int	flags = 0;
 
+		++msg_silent;  /* Don't want messages for wrapscan. */
+
 		/* ctrl_x_mode == CTRL_X_WHOLE_LINE || word-wise search that
 		 * has added a word that was at the beginning of the line */
 		if (	ctrl_x_mode == CTRL_X_WHOLE_LINE
@@ -3920,6 +3922,7 @@ ins_compl_get_exp(ini)
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
 							RE_LAST, (linenr_T)0);
+		--msg_silent;
 		if (!compl_started)
 		{
 		    /* set "compl_started" even on fail */

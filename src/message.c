@@ -53,7 +53,6 @@ struct msg_hist
 static struct msg_hist *first_msg_hist = NULL;
 static struct msg_hist *last_msg_hist = NULL;
 static int msg_hist_len = 0;
-static int msg_hist_off = FALSE;	/* don't add messages to history */
 
 /*
  * When writing messages to the screen, there are many different situations.

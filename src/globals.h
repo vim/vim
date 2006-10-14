@@ -166,6 +166,7 @@ EXTERN int	msg_nowait INIT(= FALSE);   /* don't wait for this msg */
 EXTERN int	emsg_off INIT(= 0);	    /* don't display errors for now,
 					       unless 'debug' is set. */
 EXTERN int	info_message INIT(= FALSE); /* printing informative message */
+EXTERN int      msg_hist_off INIT(= FALSE); /* don't add messages to history */
 #ifdef FEAT_EVAL
 EXTERN int	emsg_skip INIT(= 0);	    /* don't display errors for
 					       expression that is skipped */
