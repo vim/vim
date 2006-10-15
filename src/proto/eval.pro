@@ -44,7 +44,7 @@ extern void del_menutrans_vars __ARGS((void));
 extern char_u *get_user_var_name __ARGS((expand_T *xp, int idx));
 extern list_T *list_alloc __ARGS((void));
 extern void list_unref __ARGS((list_T *l));
-extern void list_free __ARGS((list_T *l));
+extern void list_free __ARGS((list_T *l, int recurse));
 extern dictitem_T *dict_lookup __ARGS((hashitem_T *hi));
 extern int list_append_dict __ARGS((list_T *list, dict_T *dict));
 extern int garbage_collect __ARGS((void));

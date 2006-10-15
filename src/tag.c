@@ -911,7 +911,7 @@ do_tag(tag, type, count, forceit, verbose)
 
 		set_errorlist(curwin, list, ' ');
 
-		list_free(list);
+		list_free(list, TRUE);
 
 		cur_match = 0;		/* Jump to the first tag */
 	    }

@@ -191,8 +191,6 @@ struct ufunc
 #define FC_RANGE    2		/* function accepts range */
 #define FC_DICT	    4		/* Dict function, uses "self" */
 
-#define DEL_REFCOUNT	999999	/* list/dict is being deleted */
-
 /*
  * All user-defined functions are found in this hashtable.
  */
@@ -435,7 +433,7 @@ static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
 static void dict_unref __ARGS((dict_T *d));
-static void dict_free __ARGS((dict_T *d));
+static void dict_free __ARGS((dict_T *d, int recurse));
 static dictitem_T *dictitem_alloc __ARGS((char_u *key));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
@@ -4899,7 +4897,7 @@ eval_index(arg, rettv, evaluate, verbose)
 		    {
 			if (list_append_tv(l, &item->li_tv) == FAIL)
 			{
-			    list_free(l);
+			    list_free(l, TRUE);
 			    return FAIL;
 			}
 			item = item->li_next;
@@ -5299,7 +5297,7 @@ get_list_tv(arg, rettv, evaluate)
 	EMSG2(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
-	    list_free(l);
+	    list_free(l, TRUE);
 	return FAIL;
     }
 
@@ -5363,8 +5361,8 @@ rettv_list_alloc(rettv)
 list_unref(l)
     list_T *l;
 {
-    if (l != NULL && l->lv_refcount != DEL_REFCOUNT && --l->lv_refcount <= 0)
-	list_free(l);
+    if (l != NULL && --l->lv_refcount <= 0)
+	list_free(l, TRUE);
 }
 
 /*
@@ -5372,13 +5370,11 @@ list_unref(l)
  * Ignores the reference count.
  */
     void
-list_free(l)
-    list_T *l;
+list_free(l, recurse)
+    list_T  *l;
+    int	    recurse;	/* Free Lists and Dictionaries recursively. */
 {
     listitem_T *item;
-
-    /* Avoid that recursive reference to the list frees us again. */
-    l->lv_refcount = DEL_REFCOUNT;
 
     /* Remove the list from the list of lists for garbage collection. */
     if (l->lv_used_prev == NULL)
@@ -5392,7 +5388,10 @@ list_free(l)
     {
 	/* Remove the item before deleting it. */
 	l->lv_first = item->li_next;
-	listitem_free(item);
+	if (recurse || (item->li_tv.v_type != VAR_LIST
+					   && item->li_tv.v_type != VAR_DICT))
+	    clear_tv(&item->li_tv);
+	vim_free(item);
     }
     vim_free(l);
 }
@@ -6113,7 +6112,10 @@ garbage_collect()
     for (dd = first_dict; dd != NULL; )
 	if (dd->dv_copyID != copyID)
 	{
-	    dict_free(dd);
+	    /* Free the Dictionary and ordinary items it contains, but don't
+	     * recurse into Lists and Dictionaries, they will be in the list
+	     * of dicts or list of lists. */
+	    dict_free(dd, FALSE);
 	    did_free = TRUE;
 
 	    /* restart, next dict may also have been freed */
@@ -6130,7 +6132,10 @@ garbage_collect()
     for (ll = first_list; ll != NULL; )
 	if (ll->lv_copyID != copyID && ll->lv_watch == NULL)
 	{
-	    list_free(ll);
+	    /* Free the List and ordinary items it contains, but don't recurse
+	     * into Lists and Dictionaries, they will be in the list of dicts
+	     * or list of lists. */
+	    list_free(ll, FALSE);
 	    did_free = TRUE;
 
 	    /* restart, next list may also have been freed */
@@ -6223,11 +6228,12 @@ dict_alloc()
     d = (dict_T *)alloc(sizeof(dict_T));
     if (d != NULL)
     {
-	/* Add the list to the hashtable for garbage collection. */
+	/* Add the list to the list of dicts for garbage collection. */
 	if (first_dict != NULL)
 	    first_dict->dv_used_prev = d;
 	d->dv_used_next = first_dict;
 	d->dv_used_prev = NULL;
+	first_dict = d;
 
 	hash_init(&d->dv_hashtab);
 	d->dv_lock = 0;
@@ -6245,8 +6251,8 @@ dict_alloc()
 dict_unref(d)
     dict_T *d;
 {
-    if (d != NULL && d->dv_refcount != DEL_REFCOUNT && --d->dv_refcount <= 0)
-	dict_free(d);
+    if (d != NULL && --d->dv_refcount <= 0)
+	dict_free(d, TRUE);
 }
 
 /*
@@ -6254,15 +6260,13 @@ dict_unref(d)
  * Ignores the reference count.
  */
     static void
-dict_free(d)
-    dict_T *d;
+dict_free(d, recurse)
+    dict_T  *d;
+    int	    recurse;	/* Free Lists and Dictionaries recursively. */
 {
     int		todo;
     hashitem_T	*hi;
     dictitem_T	*di;
-
-    /* Avoid that recursive reference to the dict frees us again. */
-    d->dv_refcount = DEL_REFCOUNT;
 
     /* Remove the dict from the list of dicts for garbage collection. */
     if (d->dv_used_prev == NULL)
@@ -6283,7 +6287,10 @@ dict_free(d)
 	     * something recursive causing trouble. */
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
-	    dictitem_free(di);
+	    if (recurse || (di->di_tv.v_type != VAR_LIST
+					     && di->di_tv.v_type != VAR_DICT))
+		clear_tv(&di->di_tv);
+	    vim_free(di);
 	    --todo;
 	}
     }
@@ -6734,7 +6741,7 @@ get_dict_tv(arg, rettv, evaluate)
 	EMSG2(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
 	if (evaluate)
-	    dict_free(d);
+	    dict_free(d, TRUE);
 	return FAIL;
     }
 
