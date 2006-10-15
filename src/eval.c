@@ -5520,19 +5520,27 @@ tv_equal(tv1, tv2, ic)
 {
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
     char_u	*s1, *s2;
+    static int  recursive = 0;	    /* cach recursive loops */
+    int		r;
 
-    if (tv1->v_type != tv2->v_type)
+    /* Catch lists and dicts that have an endless loop by limiting
+     * recursiveness to 1000. */
+    if (tv1->v_type != tv2->v_type || recursive >= 1000)
 	return FALSE;
 
     switch (tv1->v_type)
     {
 	case VAR_LIST:
-	    /* recursive! */
-	    return list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+	    ++recursive;
+	    r = list_equal(tv1->vval.v_list, tv2->vval.v_list, ic);
+	    --recursive;
+	    return r;
 
 	case VAR_DICT:
-	    /* recursive! */
-	    return dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
+	    ++recursive;
+	    r = dict_equal(tv1->vval.v_dict, tv2->vval.v_dict, ic);
+	    --recursive;
+	    return r;
 
 	case VAR_FUNC:
 	    return (tv1->vval.v_string != NULL
