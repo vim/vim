@@ -86,7 +86,7 @@ static int	realloc_cmdbuff __ARGS((int len));
 static void	draw_cmdline __ARGS((int start, int len));
 static void	save_cmdline __ARGS((struct cmdline_info *ccp));
 static void	restore_cmdline __ARGS((struct cmdline_info *ccp));
-static int	cmdline_paste __ARGS((int regname, int literally));
+static int	cmdline_paste __ARGS((int regname, int literally, int remcr));
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 static void	redrawcmd_preedit __ARGS((void));
 #endif
@@ -1116,7 +1116,7 @@ getcmdline(firstc, count, indent)
 #endif
 		if (c != ESC)	    /* use ESC to cancel inserting register */
 		{
-		    cmdline_paste(c, i == Ctrl_R);
+		    cmdline_paste(c, i == Ctrl_R, FALSE);
 
 #ifdef FEAT_EVAL
 		    /* When there was a serious error abort getting the
@@ -1231,16 +1231,16 @@ getcmdline(firstc, count, indent)
 			goto cmdline_not_changed;   /* Ignore mouse */
 # ifdef FEAT_CLIPBOARD
 		if (clip_star.available)
-		    cmdline_paste('*', TRUE);
+		    cmdline_paste('*', TRUE, TRUE);
 		else
 # endif
-		    cmdline_paste(0, TRUE);
+		    cmdline_paste(0, TRUE, TRUE);
 		redrawcmd();
 		goto cmdline_changed;
 
 # ifdef FEAT_DND
 	case K_DROP:
-		cmdline_paste('~', TRUE);
+		cmdline_paste('~', TRUE, FALSE);
 		redrawcmd();
 		goto cmdline_changed;
 # endif
@@ -2890,9 +2890,10 @@ restore_cmdline_alloc(p)
  * return FAIL for failure, OK otherwise
  */
     static int
-cmdline_paste(regname, literally)
+cmdline_paste(regname, literally, remcr)
     int regname;
     int literally;	/* Insert text literally instead of "as typed" */
+    int remcr;		/* remove trailing CR */
 {
     long		i;
     char_u		*arg;
@@ -2968,7 +2969,7 @@ cmdline_paste(regname, literally)
 	return OK;
     }
 
-    return cmdline_paste_reg(regname, literally);
+    return cmdline_paste_reg(regname, literally, remcr);
 }
 
 /*

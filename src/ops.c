@@ -1480,9 +1480,10 @@ get_spec_reg(regname, argp, allocated, errmsg)
  * return FAIL for failure, OK otherwise
  */
     int
-cmdline_paste_reg(regname, literally)
+cmdline_paste_reg(regname, literally, remcr)
     int regname;
     int literally;	/* Insert text literally instead of "as typed" */
+    int remcr;		/* don't add trailing CR */
 {
     long	i;
 
@@ -1494,8 +1495,13 @@ cmdline_paste_reg(regname, literally)
     {
 	cmdline_paste_str(y_current->y_array[i], literally);
 
-	/* insert ^M between lines and after last line if type is MLINE */
-	if (y_current->y_type == MLINE || i < y_current->y_size - 1)
+	/* Insert ^M between lines and after last line if type is MLINE.
+	 * Don't do this when "remcr" is TRUE and the next line is empty. */
+	if (y_current->y_type == MLINE
+		|| (i < y_current->y_size - 1
+		    && !(remcr
+			&& i == y_current->y_size - 2
+			&& *y_current->y_array[i + 1] == NUL)))
 	    cmdline_paste_str((char_u *)"\r", literally);
 
 	/* Check for CTRL-C, in case someone tries to paste a few thousand

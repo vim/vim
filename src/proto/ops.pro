@@ -20,7 +20,7 @@ extern int do_record __ARGS((int c));
 extern int do_execreg __ARGS((int regname, int colon, int addcr));
 extern int insert_reg __ARGS((int regname, int literally));
 extern int get_spec_reg __ARGS((int regname, char_u **argp, int *allocated, int errmsg));
-extern int cmdline_paste_reg __ARGS((int regname, int literally));
+extern int cmdline_paste_reg __ARGS((int regname, int literally, int remcr));
 extern void adjust_clip_reg __ARGS((int *rp));
 extern int op_delete __ARGS((oparg_T *oap));
 extern int op_replace __ARGS((oparg_T *oap, int c));
