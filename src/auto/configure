@@ -15302,7 +15302,7 @@ if test "x$MACOSX" = "xyes" && test "x$CARBON" = "xyes" \
 	&& test "x$GUITYPE" != "xCARBONGUI"; then
   echo "$as_me:$LINENO: checking whether we need -framework Carbon" >&5
 echo $ECHO_N "checking whether we need -framework Carbon... $ECHO_C" >&6
-    if test "x$enable_multibyte" = "xyes" || test "x$features" == "xbig" \
+    if test "x$enable_multibyte" = "xyes" || test "x$features" = "xbig" \
 	|| test "x$features" = "xhuge"; then
     LIBS="$LIBS -framework Carbon"
     echo "$as_me:$LINENO: result: yes" >&5

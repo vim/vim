@@ -2838,7 +2838,7 @@ if test "x$MACOSX" = "xyes" && test "x$CARBON" = "xyes" \
 	&& test "x$GUITYPE" != "xCARBONGUI"; then
   AC_MSG_CHECKING(whether we need -framework Carbon)
   dnl check for MACOSX without Carbon GUI, but with FEAT_MBYTE
-  if test "x$enable_multibyte" = "xyes" || test "x$features" == "xbig" \
+  if test "x$enable_multibyte" = "xyes" || test "x$features" = "xbig" \
 	|| test "x$features" = "xhuge"; then
     LIBS="$LIBS -framework Carbon"
     AC_MSG_RESULT(yes)
