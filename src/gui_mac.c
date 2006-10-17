@@ -2014,7 +2014,7 @@ gui_mac_doKeyEventCarbon(
 	void *data)
 {
     /* Multibyte-friendly key event handler */
-    OSStatus	e = -1;
+    OSStatus	err = -1;
     UInt32	actualSize;
     UniChar	*text;
     char_u	result[INLINE_KEY_BUFFER_SIZE];
@@ -2022,174 +2022,153 @@ gui_mac_doKeyEventCarbon(
     UInt32	key_sym;
     char	charcode;
     int		key_char;
-    UInt32	modifiers;
+    UInt32	modifiers, vimModifiers;
     size_t	encLen;
     char_u	*to = NULL;
     Boolean	isSpecial = FALSE;
     int		i;
+    EventRef keyEvent;
 
     /* Mask the mouse (as per user setting) */
     if (p_mh)
 	ObscureCursor();
 
-    do
-    {
-	/* Don't use the keys when the dialog wants them. */
-	if (dialog_busy)
-	    break;
+    /* Don't use the keys when the dialog wants them. */
+    if (dialog_busy)
+        return eventNotHandledErr;
 
-	if (noErr != GetEventParameter(theEvent, kEventParamTextInputSendText,
-		    typeUnicodeText, NULL, 0, &actualSize, NULL))
-	    break;
+    if (noErr != GetEventParameter(theEvent, kEventParamTextInputSendText,
+                typeUnicodeText, NULL, 0, &actualSize, NULL))
+        return eventNotHandledErr;
 
-	text = (UniChar *)alloc(actualSize);
+    text = (UniChar *)alloc(actualSize);
+    if (!text)
+        return eventNotHandledErr;
 
-	if (text)
-	{
-	    do
-	    {
-		if (noErr != GetEventParameter(theEvent,
-			    kEventParamTextInputSendText,
-			    typeUnicodeText, NULL, actualSize, NULL, text))
-		    break;
-		EventRef keyEvent;
-		if (noErr != GetEventParameter(theEvent,
-			    kEventParamTextInputSendKeyboardEvent,
-			    typeEventRef, NULL, sizeof(EventRef), NULL, &keyEvent))
-		    break;
-		if (noErr != GetEventParameter(keyEvent,
-			    kEventParamKeyModifiers,
-			    typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers))
-		    break;
-		if (noErr != GetEventParameter(keyEvent,
-			    kEventParamKeyCode,
-			    typeUInt32, NULL, sizeof(UInt32), NULL, &key_sym))
-		    break;
-		if (noErr != GetEventParameter(keyEvent,
-			    kEventParamKeyMacCharCodes,
-			    typeChar, NULL, sizeof(char), NULL, &charcode))
-		    break;
+    err = GetEventParameter(theEvent, kEventParamTextInputSendText,
+            typeUnicodeText, NULL, actualSize, NULL, text);
+    require_noerr(err, done);
 
-		key_char = charcode;
+    err = GetEventParameter(theEvent, kEventParamTextInputSendKeyboardEvent,
+            typeEventRef, NULL, sizeof(EventRef), NULL, &keyEvent);
+    require_noerr(err, done);
 
-		if (modifiers & controlKey)
-		{
-		    if ((modifiers & ~(controlKey|shiftKey)) == 0
-			    && (key_char == '2' || key_char == '6'))
-		    {
-			/* CTRL-^ and CTRL-@ don't work in the normal way. */
-			if (key_char == '2')
-			    key_char = Ctrl_AT;
-			else
-			    key_char = Ctrl_HAT;
+    err = GetEventParameter(keyEvent, kEventParamKeyModifiers,
+            typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
+    require_noerr(err, done);
 
-			text[0] = (UniChar)key_char;
-			modifiers = 0;
-		    }
-		}
+    err = GetEventParameter(keyEvent, kEventParamKeyCode,
+            typeUInt32, NULL, sizeof(UInt32), NULL, &key_sym);
+    require_noerr(err, done);
 
-		if (modifiers & cmdKey)
+    err = GetEventParameter(keyEvent, kEventParamKeyMacCharCodes,
+            typeChar, NULL, sizeof(char), NULL, &charcode);
+    require_noerr(err, done);
+
 #ifndef USE_CMD_KEY
-		    break;  /* Let system handle Cmd+... */
-#else
-		{
-		    /* Intercept CMD-. */
-		    if (key_char == '.')
-			got_int = TRUE;
-
-		    /* Convert the modifiers */
-		    modifiers = EventModifiers2VimModifiers(modifiers);
-
-		    /* Following code to simplify and consolidate modifiers
-		     * taken liberally from gui_w48.c */
-
-		    key_char = simplify_key(key_char, (int *)&modifiers);
-
-		    /* remove SHIFT for keys that are already shifted, e.g.,
-		     * '(' and '*' */
-		    if (key_char < 0x100 &&
-			    !isalpha(key_char) && isprint(key_char))
-			modifiers &= ~MOD_MASK_SHIFT;
-
-		    /* Interpret META, include SHIFT, etc. */
-		    key_char = extract_modifiers(key_char, (int *)&modifiers);
-		    if (key_char == CSI)
-			key_char = K_CSI;
-
-		    if (modifiers)
-		    {
-			result[len++] = CSI;
-			result[len++] = KS_MODIFIER;
-			result[len++] = modifiers;
-		    }
-
-		    isSpecial = TRUE;
-		}
+    if (modifiers & cmdKey)
+        goto done;  /* Let system handle Cmd+... */
 #endif
-		else
-		{
-		    /* Find the special key (eg., for cursor keys) */
-		    if (!(actualSize > sizeof(UniChar)) &&
-			    ((text[0] < 0x20) || (text[0] == 0x7f)))
-		    {
-			for (i = 0; special_keys[i].key_sym != (KeySym)0; ++i)
-			    if (special_keys[i].key_sym == key_sym)
-			    {
-				key_char = TO_SPECIAL(special_keys[i].vim_code0,
-					special_keys[i].vim_code1);
-				key_char = simplify_key(key_char,
-					(int *)&modifiers);
-				isSpecial = TRUE;
-				break;
-			    }
-		    }
-		}
 
-		if (isSpecial && IS_SPECIAL(key_char))
-		{
-		    result[len++] = CSI;
-		    result[len++] = K_SECOND(key_char);
-		    result[len++] = K_THIRD(key_char);
-		}
-		else
-		{
-		    encLen = actualSize;
-		    to = mac_utf16_to_enc(text, actualSize, &encLen);
-		}
+    key_char = charcode;
+    vimModifiers = EventModifiers2VimModifiers(modifiers);
 
-		if (to)
-		{
-		    /* This is basically add_to_input_buf_csi() */
-		    for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
-		    {
-			result[len++] = to[i];
-			if (to[i] == CSI)
-			{
-			    result[len++] = KS_EXTRA;
-			    result[len++] = (int)KE_CSI;
-			}
-		    }
-		    vim_free(to);
-		}
-
-		add_to_input_buf(result, len);
-		e = noErr;
-	    }
-	    while (0);
-
-	    vim_free(text);
-	    if (e == noErr)
-	    {
-		/* Fake event to wake up WNE (required to get
-		 * key repeat working */
-		PostEvent(keyUp, 0);
-		return noErr;
-	    }
-	}
+    /* Find the special key (eg., for cursor keys) */
+    if (actualSize <= sizeof(UniChar) &&
+            ((text[0] < 0x20) || (text[0] == 0x7f)))
+    {
+        for (i = 0; special_keys[i].key_sym != (KeySym)0; ++i)
+            if (special_keys[i].key_sym == key_sym)
+            {
+                key_char = TO_SPECIAL(special_keys[i].vim_code0,
+                        special_keys[i].vim_code1);
+                key_char = simplify_key(key_char,
+                        (int *)&vimModifiers);
+                isSpecial = TRUE;
+                break;
+            }
     }
-    while (0);
 
-    return CallNextEventHandler(nextHandler, theEvent);
+    /* Intercept CMD-. and CTRL-c */
+    if (((modifiers & controlKey) && key_char == 'c') ||
+            ((modifiers & cmdKey) && key_char == '.'))
+        got_int = TRUE;
+
+    if (!isSpecial)
+    {
+        /* remove SHIFT for keys that are already shifted, e.g.,
+         * '(' and '*' */
+        if (key_char < 0x100 && !isalpha(key_char) && isprint(key_char))
+            vimModifiers &= ~MOD_MASK_SHIFT;
+
+        /* remove CTRL from keys that already have it */
+        if (key_char < 0x20)
+            vimModifiers &= ~MOD_MASK_CTRL;
+
+        /* don't process unicode characters here */
+        if (!IS_SPECIAL(key_char))
+        {
+            /* Following code to simplify and consolidate vimModifiers
+             * taken liberally from gui_w48.c */
+            key_char = simplify_key(key_char, (int *)&vimModifiers);
+
+            /* Interpret META, include SHIFT, etc. */
+            key_char = extract_modifiers(key_char, (int *)&vimModifiers);
+            if (key_char == CSI)
+                key_char = K_CSI;
+
+            if (IS_SPECIAL(key_char))
+                isSpecial = TRUE;
+        }
+    }
+
+    if (vimModifiers)
+    {
+        result[len++] = CSI;
+        result[len++] = KS_MODIFIER;
+        result[len++] = vimModifiers;
+    }
+
+    if (isSpecial && IS_SPECIAL(key_char))
+    {
+        result[len++] = CSI;
+        result[len++] = K_SECOND(key_char);
+        result[len++] = K_THIRD(key_char);
+    }
+    else
+    {
+        encLen = actualSize;
+        to = mac_utf16_to_enc(text, actualSize, &encLen);
+        if (to)
+        {
+            /* This is basically add_to_input_buf_csi() */
+            for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
+            {
+                result[len++] = to[i];
+                if (to[i] == CSI)
+                {
+                    result[len++] = KS_EXTRA;
+                    result[len++] = (int)KE_CSI;
+                }
+            }
+            vim_free(to);
+        }
+    }
+
+    add_to_input_buf(result, len);
+    err = noErr;
+
+done:
+    vim_free(text);
+    if (err == noErr)
+    {
+        /* Fake event to wake up WNE (required to get
+         * key repeat working */
+        PostEvent(keyUp, 0);
+        return noErr;
+    }
+
+    return eventNotHandledErr;
 }
 #else
     void
@@ -5748,7 +5727,8 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     /* TODO: Get the text selection from Vim */
 
     /* Call to Handle Popup */
-    status = ContextualMenuSelect(CntxMenu, where, false, kCMHelpItemNoHelp, HelpName, NULL, &CntxType, &CntxMenuID, &CntxMenuItem);
+    status = ContextualMenuSelect(CntxMenu, where, false, kCMHelpItemNoHelp,
+		       HelpName, NULL, &CntxType, &CntxMenuID, &CntxMenuItem);
 
     if (status == noErr)
     {
@@ -5756,7 +5736,8 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
 	{
 	    /* Handle the menu CntxMenuID, CntxMenuItem */
 	    /* The submenu can be handle directly by gui_mac_handle_menu */
-	    /* But what about the current menu, is the menu changed by ContextualMenuSelect */
+	    /* But what about the current menu, is the menu changed by
+	     * ContextualMenuSelect */
 	    gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
 	}
 	else if (CntxMenuID == kCMShowHelpSelected)
