@@ -2380,11 +2380,20 @@ do_mouse(oap, c, dir, count, fixindent)
 	    /*
 	     * If visual was active, yank the highlighted text and put it
 	     * before the mouse pointer position.
+	     * In Select mode replace the highlighted text with the clipboard.
 	     */
 	    if (VIsual_active)
 	    {
-		stuffcharReadbuff('y');
-		stuffcharReadbuff(K_MIDDLEMOUSE);
+		if (VIsual_select)
+		{
+		    stuffcharReadbuff(Ctrl_G);
+		    stuffReadbuff("\"+p");
+		}
+		else
+		{
+		    stuffcharReadbuff('y');
+		    stuffcharReadbuff(K_MIDDLEMOUSE);
+		}
 		do_always = TRUE;	/* ignore 'mouse' setting next time */
 		return FALSE;
 	    }
