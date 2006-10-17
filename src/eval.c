@@ -5451,6 +5451,8 @@ list_equal(l1, l2, ic)
 {
     listitem_T	*item1, *item2;
 
+    if (l1 == l2)
+	return TRUE;
     if (list_len(l1) != list_len(l2))
 	return FALSE;
 
@@ -5487,6 +5489,8 @@ dict_equal(d1, d2, ic)
     dictitem_T	*item2;
     int		todo;
 
+    if (d1 == d2)
+	return TRUE;
     if (dict_len(d1) != dict_len(d2))
 	return FALSE;
 
@@ -5522,10 +5526,12 @@ tv_equal(tv1, tv2, ic)
     static int  recursive = 0;	    /* cach recursive loops */
     int		r;
 
-    /* Catch lists and dicts that have an endless loop by limiting
-     * recursiveness to 1000. */
-    if (tv1->v_type != tv2->v_type || recursive >= 1000)
+    if (tv1->v_type != tv2->v_type)
 	return FALSE;
+    /* Catch lists and dicts that have an endless loop by limiting
+     * recursiveness to 1000.  We guess they are equal then. */
+    if (recursive >= 1000)
+	return TRUE;
 
     switch (tv1->v_type)
     {
