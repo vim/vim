@@ -3405,7 +3405,7 @@ set_option_default(opt_idx, opt_flags, compatible)
 	}
 	else if (flags & P_NUM)
 	{
-	    if (varp == (char_u *)PV_SCROLL)
+	    if (options[opt_idx].indir == PV_SCROLL)
 		win_comp_scroll(curwin);
 	    else
 	    {
