@@ -3777,8 +3777,8 @@ regmatch(scan)
 
 	op = OP(scan);
 	/* Check for character class with NL added. */
-	if (!reg_line_lbr && WITH_NL(op) && *reginput == NUL
-						    && reglnum <= reg_maxline)
+	if (!reg_line_lbr && WITH_NL(op) && REG_MULTI
+				&& *reginput == NUL && reglnum <= reg_maxline)
 	{
 	    reg_nextline();
 	}
@@ -4855,8 +4855,8 @@ regmatch(scan)
 	    break;
 
 	  case NEWL:
-	    if ((c != NUL || reglnum > reg_maxline || reg_line_lbr)
-					      && (c != '\n' || !reg_line_lbr))
+	    if ((c != NUL || !REG_MULTI || reglnum > reg_maxline
+			     || reg_line_lbr) && (c != '\n' || !reg_line_lbr))
 		status = RA_NOMATCH;
 	    else if (reg_line_lbr)
 		ADVANCE_REGINPUT();
@@ -5316,8 +5316,8 @@ regrepeat(p, maxcount)
 		++count;
 		mb_ptr_adv(scan);
 	    }
-	    if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr
-							 || count == maxcount)
+	    if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+					 || reg_line_lbr || count == maxcount)
 		break;
 	    ++count;		/* count the line-break */
 	    reg_nextline();
@@ -5341,7 +5341,8 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5370,7 +5371,8 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5399,7 +5401,8 @@ regrepeat(p, maxcount)
 	    }
 	    else if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5424,7 +5427,8 @@ regrepeat(p, maxcount)
 	{
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5454,7 +5458,8 @@ do_class:
 #endif
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5617,7 +5622,8 @@ do_class:
 #endif
 	    if (*scan == NUL)
 	    {
-		if (!WITH_NL(OP(p)) || reglnum > reg_maxline || reg_line_lbr)
+		if (!REG_MULTI || !WITH_NL(OP(p)) || reglnum > reg_maxline
+							      || reg_line_lbr)
 		    break;
 		reg_nextline();
 		scan = reginput;
@@ -5646,8 +5652,8 @@ do_class:
 
       case NEWL:
 	while (count < maxcount
-		&& ((*scan == NUL && reglnum <= reg_maxline && !reg_line_lbr)
-		    || (*scan == '\n' && reg_line_lbr)))
+		&& ((*scan == NUL && reglnum <= reg_maxline && !reg_line_lbr
+			    && REG_MULTI) || (*scan == '\n' && reg_line_lbr)))
 	{
 	    count++;
 	    if (reg_line_lbr)
