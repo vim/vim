@@ -2387,7 +2387,7 @@ do_mouse(oap, c, dir, count, fixindent)
 		if (VIsual_select)
 		{
 		    stuffcharReadbuff(Ctrl_G);
-		    stuffReadbuff("\"+p");
+		    stuffReadbuff((char_u *)"\"+p");
 		}
 		else
 		{
