@@ -8822,7 +8822,11 @@ ins_pageup()
     if (mod_mask & MOD_MASK_CTRL)
     {
 	/* <C-PageUp>: tab page back */
-	goto_tabpage(-1);
+	if (first_tabpage->tp_next != NULL)
+	{
+	    start_arrow(&curwin->w_cursor);
+	    goto_tabpage(-1);
+	}
 	return;
     }
 #endif
@@ -8881,7 +8885,11 @@ ins_pagedown()
     if (mod_mask & MOD_MASK_CTRL)
     {
 	/* <C-PageDown>: tab page forward */
-	goto_tabpage(0);
+	if (first_tabpage->tp_next != NULL)
+	{
+	    start_arrow(&curwin->w_cursor);
+	    goto_tabpage(0);
+	}
 	return;
     }
 #endif
