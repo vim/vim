@@ -2842,7 +2842,8 @@ changed_common(lnum, col, lnume, xtra)
 
 #ifdef FEAT_AUTOCMD
     /* when the cursor line is changed always trigger CursorMoved */
-    if (lnum <= curwin->w_cursor.lnum && lnume > curwin->w_cursor.lnum)
+    if (lnum <= curwin->w_cursor.lnum
+		 && lnume + (xtra < 0 ? -xtra : xtra) > curwin->w_cursor.lnum)
 	last_cursormoved.lnum = 0;
 #endif
 }
