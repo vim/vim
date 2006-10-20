@@ -1586,10 +1586,30 @@ qf_jump(qi, dir, errornr, forceit)
 	    }
 
 	/*
-	 * If there is only one window, create a new one above the quickfix
-	 * window.
+	 * If no usable window is found and 'switchbuf' is set to 'usetab'
+	 * then search in other tabs.
 	 */
-	if (firstwin == lastwin || !usable_win)
+	if (!usable_win && vim_strchr(p_swb, 'a') != NULL)
+	{
+	    tabpage_T	*tp;
+	    win_T	*wp;
+
+	    FOR_ALL_TAB_WINDOWS(tp, wp)
+	    {
+		if (wp->w_buffer->b_fnum == qf_ptr->qf_fnum)
+		{
+		    goto_tabpage_win(tp, wp);
+		    usable_win = 1;
+		    break;
+		}
+	    }
+	}
+
+	/*
+	 * If there is only one window and is the quickfix window, create a new
+	 * one above the quickfix window.
+	 */
+	if (((firstwin == lastwin) && bt_quickfix(curbuf)) || !usable_win)
 	{
 	    ll_ref = curwin->w_llist_ref;
 
