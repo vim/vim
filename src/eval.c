@@ -3125,7 +3125,12 @@ ex_call(eap)
     funcdict_T	fudi;
 
     tofree = trans_function_name(&arg, eap->skip, TFN_INT, &fudi);
-    vim_free(fudi.fd_newkey);
+    if (fudi.fd_newkey != NULL)
+    {
+	/* Still need to give an error message for missing key. */
+	EMSG2(_(e_dictkey), fudi.fd_newkey);
+	vim_free(fudi.fd_newkey);
+    }
     if (tofree == NULL)
 	return;
 
