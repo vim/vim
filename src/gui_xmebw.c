@@ -138,6 +138,19 @@ static XtResource resources[] =
     }
 };
 
+/* This is needed to work around a bug in Lesstif 2, leaving the extension
+ * NULL somehow results in getting it set to an invalid pointer. */
+XmPrimitiveClassExtRec xmEnhancedButtonPrimClassExtRec =
+{
+    /* next_extension      */ NULL,
+    /* record_type         */ NULLQUARK,
+    /* version             */ XmPrimitiveClassExtVersion,
+    /* record_size         */ sizeof(XmPrimitiveClassExtRec),
+    /* widget_baseline     */ XmInheritBaselineProc,
+    /* widget_display_rect */ XmInheritDisplayRectProc,
+    /* widget_margins      */ NULL
+};
+
 XmEnhancedButtonClassRec xmEnhancedButtonClassRec =
 {
     {
@@ -184,7 +197,7 @@ XmEnhancedButtonClassRec xmEnhancedButtonClassRec =
 	/* arm and activate	 */ XmInheritArmAndActivate,
 	/* synthetic resources	 */ NULL,
 	/* number of syn res	 */ 0,
-	/* extension		 */ NULL,
+	/* extension		 */ (XtPointer)&xmEnhancedButtonPrimClassExtRec,
     },
 
     /* label_class fields */
