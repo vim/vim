@@ -5189,11 +5189,7 @@ win_new_height(wp, height)
     int		height;
 {
     linenr_T	lnum;
-    linenr_T	bot;
     int		sline, line_size;
-    int		space;
-    int		did_below = FALSE;
-    int		old_height = wp->w_height;
 #define FRACTION_MULT	16384L
 
     /* Don't want a negative height.  Happens when splitting a tiny window.
@@ -5228,54 +5224,44 @@ win_new_height(wp, height)
 	wp->w_wrow = ((long)wp->w_fraction * (long)height - 1L) / FRACTION_MULT;
 	line_size = plines_win_col(wp, lnum, (long)(wp->w_cursor.col)) - 1;
 	sline = wp->w_wrow - line_size;
+
+	if (sline >= 0)
+	{
+	    /* Make sure the whole cursor line is visible, if possible. */
+	    int rows = plines_win(wp, lnum, FALSE);
+
+	    if (sline > wp->w_height - rows)
+	    {
+		sline = wp->w_height - rows;
+		wp->w_wrow -= rows - line_size;
+	    }
+	}
+
 	if (sline < 0)
 	{
 	    /*
 	     * Cursor line would go off top of screen if w_wrow was this high.
+	     * Make cursor line the first line in the window.  If not enough
+	     * room use w_skipcol;
 	     */
 	    wp->w_wrow = line_size;
+	    if (wp->w_wrow >= wp->w_height
+				       && (W_WIDTH(wp) - win_col_off(wp)) > 0)
+	    {
+		wp->w_skipcol += W_WIDTH(wp) - win_col_off(wp);
+		--wp->w_wrow;
+		while (wp->w_wrow >= wp->w_height)
+		{
+		    wp->w_skipcol += W_WIDTH(wp) - win_col_off(wp)
+							   + win_col_off2(wp);
+		    --wp->w_wrow;
+		}
+	    }
 	}
 	else
 	{
-	    space = height - 1;
-
-	    while (lnum > 1)
+	    while (sline > 0 && lnum > 1)
 	    {
-		/* When using "~" lines stop when at the old topline, don't
-		 * scroll down. */
-		if (did_below && height < old_height && lnum <= wp->w_topline)
-		    sline = 0;
-
-		space -= line_size;
-		if (space > 0 && sline <= 0 && !did_below)
-		{
-		    /* Try to use "~" lines below the text to avoid that text
-		     * is above the window while there are empty lines.
-		     * Subtract the rows below the cursor from "space" and
-		     * give the rest to "sline". */
-		    did_below = TRUE;
-		    bot = wp->w_cursor.lnum;
-		    while (space > 0)
-		    {
-			if (wp->w_buffer->b_ml.ml_line_count - bot >= space)
-			    space = 0;
-			else
-			{
-#ifdef FEAT_FOLDING
-			    hasFoldingWin(wp, bot, NULL, &bot, TRUE, NULL);
-#endif
-			    if (bot >= wp->w_buffer->b_ml.ml_line_count)
-				break;
-			    ++bot;
-			    space -= plines_win(wp, bot, TRUE);
-			}
-		    }
-		    if (bot == wp->w_buffer->b_ml.ml_line_count && space > 0)
-			sline += space;
-		}
-		if (sline <= 0)
-		    break;
-
 #ifdef FEAT_FOLDING
 		hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
 		if (lnum == 1)

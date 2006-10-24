@@ -1761,15 +1761,13 @@ plines_win_col(wp, lnum, column)
      * Add column offset for 'number', 'foldcolumn', etc.
      */
     width = W_WIDTH(wp) - win_col_off(wp);
-    if (width > 0)
-    {
-	lines += 1;
-	if (col >= width)
-	    lines += (col - width) / (width + win_col_off2(wp));
-	if (lines <= wp->w_height)
-	    return lines;
-    }
-    return (int)(wp->w_height);	    /* maximum length */
+    if (width <= 0)
+	return 9999;
+
+    lines += 1;
+    if (col > width)
+	lines += (col - width) / (width + win_col_off2(wp)) + 1;
+    return lines;
 }
 
     int
