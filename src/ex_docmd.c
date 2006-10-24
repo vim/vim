@@ -9643,7 +9643,8 @@ expand_sfile(arg)
 #endif
 
 #ifdef FEAT_SESSION
-static int ses_winsizes __ARGS((FILE *fd, int restore_size));
+static int ses_winsizes __ARGS((FILE *fd, int restore_size,
+							win_T *tab_firstwin));
 static int ses_win_rec __ARGS((FILE *fd, frame_T *fr));
 static frame_T *ses_skipframe __ARGS((frame_T *fr));
 static int ses_do_frame __ARGS((frame_T *fr));
@@ -9669,8 +9670,8 @@ makeopens(fd, dirnow)
     win_T	*wp;
     char_u	*sname;
     win_T	*edited_win = NULL;
-    tabpage_T	*old_curtab = curtab;
     int		tabnr;
+    win_T	*tab_firstwin;
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		/* Save ALL buffers */
@@ -9778,14 +9779,26 @@ makeopens(fd, dirnow)
     /*
      * May repeat putting Windows for each tab, when "tabpages" is in
      * 'sessionoptions'.
+     * Don't use goto_tabpage(), it may change directory and trigger
+     * autocommands.
      */
+    tab_firstwin = firstwin;	/* first window in tab page "tabnr" */
     for (tabnr = 1; ; ++tabnr)
     {
+	int  need_tabnew = FALSE;
+
 	if ((ssop_flags & SSOP_TABPAGES))
 	{
-	    goto_tabpage(tabnr);
-	    if (tabnr > 1 && put_line(fd, "tabnew") == FAIL)
-		return FAIL;
+	    tabpage_T *tp = find_tabpage(tabnr);
+
+	    if (tp == NULL)
+		break;		/* done all tab pages */
+	    if (tp == curtab)
+		tab_firstwin = firstwin;
+	    else
+		tab_firstwin = tp->tp_firstwin;
+	    if (tabnr > 1)
+		need_tabnew = TRUE;
 	}
 
 	/*
@@ -9793,7 +9806,7 @@ makeopens(fd, dirnow)
 	 * is aborted we don't end up with a number of useless windows.
 	 * This may have side effects! (e.g., compressed or network file).
 	 */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	for (wp = tab_firstwin; wp != NULL; wp = wp->w_next)
 	{
 	    if (ses_do_win(wp)
 		    && wp->w_buffer->b_ffname != NULL
@@ -9803,14 +9816,19 @@ makeopens(fd, dirnow)
 #endif
 		    )
 	    {
-		if (fputs("edit ", fd) < 0
+		if (fputs(need_tabnew ? "tabedit " : "edit ", fd) < 0
 			|| ses_fname(fd, wp->w_buffer, &ssop_flags) == FAIL)
 		    return FAIL;
+		need_tabnew = FALSE;
 		if (!wp->w_arg_idx_invalid)
 		    edited_win = wp;
 		break;
 	    }
 	}
+
+	/* If no file got edited create an empty tab page. */
+	if (need_tabnew && put_line(fd, "tabnew") == FAIL)
+	    return FAIL;
 
 	/*
 	 * Save current window layout.
@@ -9829,7 +9847,7 @@ makeopens(fd, dirnow)
 	 * Remember the window number of the current window after restoring.
 	 */
 	nr = 0;
-	for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+	for (wp = tab_firstwin; wp != NULL; wp = W_NEXT(wp))
 	{
 	    if (ses_do_win(wp))
 		++nr;
@@ -9852,13 +9870,13 @@ makeopens(fd, dirnow)
 	 */
 	if (put_line(fd, "set winheight=1 winwidth=1") == FAIL)
 	    return FAIL;
-	if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
+	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    return FAIL;
 
 	/*
 	 * Restore the view of the window (options, file, cursor, etc.).
 	 */
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	for (wp = tab_firstwin; wp != NULL; wp = wp->w_next)
 	{
 	    if (!ses_do_win(wp))
 		continue;
@@ -9879,19 +9897,17 @@ makeopens(fd, dirnow)
 	 * Restore window sizes again after jumping around in windows, because
 	 * the current window has a minimum size while others may not.
 	 */
-	if (nr > 1 && ses_winsizes(fd, restore_size) == FAIL)
+	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    return FAIL;
 
 	/* Don't continue in another tab page when doing only the current one
 	 * or when at the last tab page. */
-	if (!(ssop_flags & SSOP_TABPAGES) || curtab->tp_next == NULL)
+	if (!(ssop_flags & SSOP_TABPAGES))
 	    break;
     }
 
     if (ssop_flags & SSOP_TABPAGES)
     {
-	if (valid_tabpage(old_curtab))
-	    goto_tabpage_tp(old_curtab);
 	if (fprintf(fd, "tabnext %d", tabpage_index(curtab)) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
@@ -9927,16 +9943,17 @@ makeopens(fd, dirnow)
 }
 
     static int
-ses_winsizes(fd, restore_size)
+ses_winsizes(fd, restore_size, tab_firstwin)
     FILE	*fd;
     int		restore_size;
+    win_T	*tab_firstwin;
 {
     int		n = 0;
     win_T	*wp;
 
     if (restore_size && (ssop_flags & SSOP_WINSIZE))
     {
-	for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	for (wp = tab_firstwin; wp != NULL; wp = wp->w_next)
 	{
 	    if (!ses_do_win(wp))
 		continue;
