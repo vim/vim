@@ -3137,25 +3137,32 @@ set_shellsize(width, height, mustset)
 	    screenalloc(FALSE);
 	    repeat_message();
 	}
-	else if (State & CMDLINE)
-	{
-	    update_screen(NOT_VALID);
-	    redrawcmdline();
-	}
 	else
 	{
-	    update_topline();
-#if defined(FEAT_INS_EXPAND)
-	    if (pum_visible())
+#ifdef FEAT_SCROLLBIND
+	    if (curwin->w_p_scb)
+		do_check_scrollbind(TRUE);
+#endif
+	    if (State & CMDLINE)
 	    {
-		redraw_later(NOT_VALID);
-		ins_compl_show_pum(); /* This includes the redraw. */
+		update_screen(NOT_VALID);
+		redrawcmdline();
 	    }
 	    else
+	    {
+		update_topline();
+#if defined(FEAT_INS_EXPAND)
+		if (pum_visible())
+		{
+		    redraw_later(NOT_VALID);
+		    ins_compl_show_pum(); /* This includes the redraw. */
+		}
+		else
 #endif
-		update_screen(NOT_VALID);
-	    if (redrawing())
-		setcursor();
+		    update_screen(NOT_VALID);
+		if (redrawing())
+		    setcursor();
+	    }
 	}
 	cursor_on();	    /* redrawing may have switched it off */
     }
