@@ -1100,38 +1100,44 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
     if (qfpos != NULL && *qfpos != '0' && totmatches > 0)
     {
 	/* fill error list */
-	FILE *f;
-	char_u *tmp = vim_tempname('c');
+	FILE	    *f;
+	char_u	    *tmp = vim_tempname('c');
 	qf_info_T   *qi = NULL;
 	win_T	    *wp = NULL;
 
 	f = mch_fopen((char *)tmp, "w");
-	cs_file_results(f, nummatches);
-	fclose(f);
-	if (use_ll)	    /* Use location list */
-	    wp = curwin;
-	/* '-' starts a new error list */
-	if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m", *qfpos == '-') > 0)
+	if (f == NULL)
+	    EMSG2(_(e_notopen), tmp);
+	else
 	{
-# ifdef FEAT_WINDOWS
-	    if (postponed_split != 0)
+	    cs_file_results(f, nummatches);
+	    fclose(f);
+	    if (use_ll)	    /* Use location list */
+		wp = curwin;
+	    /* '-' starts a new error list */
+	    if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m",
+							   *qfpos == '-') > 0)
 	    {
-		win_split(postponed_split > 0 ? postponed_split : 0,
+# ifdef FEAT_WINDOWS
+		if (postponed_split != 0)
+		{
+		    win_split(postponed_split > 0 ? postponed_split : 0,
 						       postponed_split_flags);
 #  ifdef FEAT_SCROLLBIND
-		curwin->w_p_scb = FALSE;
+		    curwin->w_p_scb = FALSE;
 #  endif
-		postponed_split = 0;
-	    }
+		    postponed_split = 0;
+		}
 # endif
-	    if (use_ll)
-		/*
-		 * In the location list window, use the displayed location
-		 * list. Otherwise, use the location list for the window.
-		 */
-		qi = (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL) ?
-				    wp->w_llist_ref : wp->w_llist;
-	    qf_jump(qi, 0, 0, forceit);
+		if (use_ll)
+		    /*
+		     * In the location list window, use the displayed location
+		     * list. Otherwise, use the location list for the window.
+		     */
+		    qi = (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL)
+			?  wp->w_llist_ref : wp->w_llist;
+		qf_jump(qi, 0, 0, forceit);
+	    }
 	}
 	mch_remove(tmp);
 	vim_free(tmp);
@@ -1723,7 +1729,7 @@ cs_file_results(f, nummatches_a)
 	       continue;
 
 	   context = (char *)alloc((unsigned)strlen(cntx)+5);
-	   if (context==NULL)
+	   if (context == NULL)
 	       continue;
 
 	   if (strcmp(cntx, "<global>")==0)
@@ -1731,7 +1737,7 @@ cs_file_results(f, nummatches_a)
 	   else
 	       sprintf(context, "<<%s>>", cntx);
 
-	   if (search==NULL)
+	   if (search == NULL)
 	       fprintf(f, "%s\t%s\t%s\n", fullname, slno, context);
 	   else
 	       fprintf(f, "%s\t%s\t%s %s\n", fullname, slno, context, search);
