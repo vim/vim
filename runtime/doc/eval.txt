@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0.  Last change: 2006 Sep 22
+*eval.txt*      For Vim version 7.0.  Last change: 2006 Nov 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1374,6 +1374,21 @@ v:lnum		Line number for the 'foldexpr' |fold-expr| and 'indentexpr'
 		'guitabtooltip'.  Only valid while one of these expressions is
 		being evaluated.  Read-only when in the |sandbox|.
 
+					*v:mouse_win* *mouse_win-variable*
+v:mouse_win	Window number for a mouse click obtained with |getchar()|.
+		First window has number 1, like with |winnr()|.  The value is
+		zero when there was no mouse button click.
+
+					*v:mouse_lnum* *mouse_lnum-variable*
+v:mouse_lnum	Line number for a mouse click obtained with |getchar()|.
+		This is the text line number, not the screen line number.  The
+		value is zero when there was no mouse button click.
+
+					*v:mouse_col* *mouse_col-variable*
+v:mouse_col	Column number for a mouse click obtained with |getchar()|.
+		This is the screen column number, like with |virtcol()|.  The
+		value is zero when there was no mouse button click.
+
 					*v:prevcount* *prevcount-variable*
 v:prevcount	The count given for the last but one Normal mode command.
 		This is the v:count value of the previous command.  Useful if
@@ -2702,6 +2717,17 @@ getchar([expr])						*getchar()*
 		one-byte character it is the character itself as a number.
 		Use nr2char() to convert it to a String.
 
+		When the user clicks a mouse button, the mouse event will be
+		returned.  The position can then be found in |v:mouse_col|,
+		|v:mouse_lnum| and |v:mouse_win|.  This example positions the
+		mouse as it would normally happen: >
+			let c = getchar()
+		  	if c == "\<LeftMouse>" && v:mouse_win > 0
+			  exe v:mouse_win . "wincmd w"
+			  exe v:mouse_lnum
+			  exe "normal " . v:mouse_col . "|"
+			endif
+<
 		There is no prompt, you will somehow have to make clear to the
 		user that a character has to be typed.
 		There is no mapping for the character.

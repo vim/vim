@@ -1669,7 +1669,10 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_SWAPCHOICE	46
 #define VV_SWAPCOMMAND	47
 #define VV_CHAR		48
-#define VV_LEN		49	/* number of v: vars */
+#define VV_MOUSE_WIN	49
+#define VV_MOUSE_LNUM   50
+#define VV_MOUSE_COL	51
+#define VV_LEN		52	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

@@ -343,6 +343,9 @@ static struct vimvar
     {VV_NAME("swapchoice",	 VAR_STRING), 0},
     {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
     {VV_NAME("char",		 VAR_STRING), VV_RO},
+    {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
 };
 
 /* shorthand */
@@ -9855,6 +9858,10 @@ f_getchar(argvars, rettv)
     --no_mapping;
     --allow_keys;
 
+    vimvars[VV_MOUSE_WIN].vv_nr = 0;
+    vimvars[VV_MOUSE_LNUM].vv_nr = 0;
+    vimvars[VV_MOUSE_COL].vv_nr = 0;
+
     rettv->vval.v_number = n;
     if (IS_SPECIAL(n) || mod_mask != 0)
     {
@@ -9883,6 +9890,53 @@ f_getchar(argvars, rettv)
 	temp[i++] = NUL;
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = vim_strsave(temp);
+
+#ifdef FEAT_MOUSE
+	if (n == K_LEFTMOUSE
+		|| n == K_LEFTMOUSE_NM
+		|| n == K_LEFTDRAG
+		|| n == K_LEFTRELEASE
+		|| n == K_LEFTRELEASE_NM
+		|| n == K_MIDDLEMOUSE
+		|| n == K_MIDDLEDRAG
+		|| n == K_MIDDLERELEASE
+		|| n == K_RIGHTMOUSE
+		|| n == K_RIGHTDRAG
+		|| n == K_RIGHTRELEASE
+		|| n == K_X1MOUSE
+		|| n == K_X1DRAG
+		|| n == K_X1RELEASE
+		|| n == K_X2MOUSE
+		|| n == K_X2DRAG
+		|| n == K_X2RELEASE
+		|| n == K_MOUSEDOWN
+		|| n == K_MOUSEUP)
+	{
+	    int		row = mouse_row;
+	    int		col = mouse_col;
+	    win_T	*win;
+	    linenr_T	lnum;
+# ifdef FEAT_WINDOWS
+	    win_T	*wp;
+# endif
+	    int		n = 1;
+
+	    if (row >= 0 && col >= 0)
+	    {
+		/* Find the window at the mouse coordinates and compute the
+		 * text position. */
+		win = mouse_find_win(&row, &col);
+		(void)mouse_comp_pos(win, &row, &col, &lnum);
+# ifdef FEAT_WINDOWS
+		for (wp = firstwin; wp != win; wp = wp->w_next)
+		    ++n;
+# endif
+		vimvars[VV_MOUSE_WIN].vv_nr = n;
+		vimvars[VV_MOUSE_LNUM].vv_nr = lnum;
+		vimvars[VV_MOUSE_COL].vv_nr = col + 1;
+	    }
+	}
+#endif
     }
 }
 
