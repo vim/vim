@@ -6072,7 +6072,11 @@ syn_get_foldlevel(wp, lnum)
 		++level;
     }
     if (level > wp->w_p_fdn)
+    {
 	level = wp->w_p_fdn;
+	if (level < 0)
+	    level = 0;
+    }
     return level;
 }
 #endif
