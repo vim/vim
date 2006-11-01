@@ -1133,7 +1133,7 @@
 /*
  * +ARP			Amiga only. Use arp.library, DOS 2.0 is not required.
  */
-#ifndef NO_ARP
+#if !defined(NO_ARP) && !defined(__amigaos4__)
 # define FEAT_ARP
 #endif
 

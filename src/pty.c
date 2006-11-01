@@ -51,7 +51,7 @@
 # include <sys/termios.h>
 #endif
 
-#if HAVE_SYS_IOCTL_H
+#ifdef HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif
 
@@ -69,14 +69,14 @@
 # endif
 #endif
 
-#if HAVE_UNISTD_H
+#ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
 #if HAVE_TERMIO_H
 # include <termio.h>
 #else
-# if HAVE_TERMIOS_H
+# ifdef HAVE_TERMIOS_H
 #  include <termios.h>
 # endif
 #endif

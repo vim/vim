@@ -17,8 +17,11 @@
 #define HAVE_AVAIL_MEM
 
 #ifndef HAVE_CONFIG_H
-# ifdef AZTEC_C
+# if defined(AZTEC_C) || defined(__amigaos4__)
 #  define HAVE_STAT_H
+# endif
+# ifdef __amigaos4__
+#  define HAVE_STDARG_H
 # endif
 # define HAVE_STDLIB_H
 # define HAVE_STRING_H
@@ -34,15 +37,24 @@
 #  define HAVE_DATE_TIME
 # endif
 
-#define DFLT_ERRORFILE		"AztecC.Err"
-#define DFLT_RUNTIMEPATH "home:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,home:vimfiles/after"
-
-#define BASENAMELEN	26	/* Amiga */
-
-#define TEMPNAME	"t:v?XXXXXX"
-#define TEMPNAMELEN	12
-
 #endif /* HAVE_CONFIG_H */
+
+#ifndef	DFLT_ERRORFILE
+# define DFLT_ERRORFILE		"AztecC.Err"	/* Should this change? */
+#endif
+
+#ifndef	DFLT_RUNTIMEPATH
+# define DFLT_RUNTIMEPATH "home:vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,home:vimfiles/after"
+#endif
+
+#ifndef	BASENAMELEN
+# define BASENAMELEN	26	/* Amiga */
+#endif
+
+#ifndef	TEMPNAME
+# define TEMPNAME	"t:v?XXXXXX"
+# define TEMPNAMELEN	12
+#endif
 
 #include <exec/types.h>
 #include <libraries/dos.h>
@@ -155,9 +167,9 @@ typedef long off_t;
 #endif
 
 #ifdef FEAT_VIMINFO
-#ifndef VIMINFO_FILE
-# define VIMINFO_FILE	"s:.viminfo"
-#endif
+# ifndef VIMINFO_FILE
+#  define VIMINFO_FILE	"s:.viminfo"
+# endif
 #endif /* FEAT_VIMINFO */
 
 #ifndef EXRC_FILE

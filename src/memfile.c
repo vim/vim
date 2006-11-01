@@ -655,7 +655,7 @@ mf_sync(mfp, flags)
 # endif
 #endif
 #ifdef AMIGA
-# ifdef __AROS__
+# if defined(__AROS__) || defined(__amigaos4__)
 	if (fsync(mfp->mf_fd) != 0)
 	    status = FAIL;
 # else

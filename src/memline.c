@@ -55,8 +55,12 @@
 # include <time.h>
 #endif
 
-#ifdef SASC
+#if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    /* for Open() and Close() */
+#endif
+
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
 #endif
 
 typedef struct block0		ZERO_BL;    /* contents of the first block */
@@ -4481,7 +4485,7 @@ ml_updatechunk(buf, line, len, updtype)
     curchnk = buf->b_ml.ml_chunksize + curix;
 
     if (updtype == ML_CHNK_DELLINE)
-	len *= -1;
+	len = -len;
     curchnk->mlcs_totalsize += len;
     if (updtype == ML_CHNK_ADDLINE)
     {
