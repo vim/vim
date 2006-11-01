@@ -9204,6 +9204,10 @@ ins_eol(c)
 #ifdef FEAT_CINDENT
     can_cindent = TRUE;
 #endif
+#ifdef FEAT_FOLDING
+    /* When inserting a line the cursor line must never be in a closed fold. */
+    foldOpenCursor();
+#endif
 
     return (!i);
 }
