@@ -166,7 +166,6 @@ struct ufunc
     int		uf_tm_count;	/* nr of calls */
     proftime_T	uf_tm_total;	/* time spend in function + children */
     proftime_T	uf_tm_self;	/* time spend in function itself */
-    proftime_T	uf_tm_start;	/* time at function call */
     proftime_T	uf_tm_children;	/* time spent in children this call */
     /* profiling the function per line */
     int		*uf_tml_count;	/* nr of times line was executed */
@@ -19764,6 +19763,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     char_u	*name;
 #ifdef FEAT_PROFILE
     proftime_T	wait_start;
+    proftime_T	call_start;
 #endif
 
     /* If depth of calling is getting too high, don't execute the function */
@@ -19943,7 +19943,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 		       || (fc.caller != NULL && &fc.caller->func->uf_profiling))
 	{
 	    ++fp->uf_tm_count;
-	    profile_start(&fp->uf_tm_start);
+	    profile_start(&call_start);
 	    profile_zero(&fp->uf_tm_children);
 	}
 	script_prof_save(&wait_start);
@@ -19973,14 +19973,14 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     if (do_profiling == PROF_YES && (fp->uf_profiling
 		    || (fc.caller != NULL && &fc.caller->func->uf_profiling)))
     {
-	profile_end(&fp->uf_tm_start);
-	profile_sub_wait(&wait_start, &fp->uf_tm_start);
-	profile_add(&fp->uf_tm_total, &fp->uf_tm_start);
-	profile_self(&fp->uf_tm_self, &fp->uf_tm_start, &fp->uf_tm_children);
+	profile_end(&call_start);
+	profile_sub_wait(&wait_start, &call_start);
+	profile_add(&fp->uf_tm_total, &call_start);
+	profile_self(&fp->uf_tm_self, &call_start, &fp->uf_tm_children);
 	if (fc.caller != NULL && &fc.caller->func->uf_profiling)
 	{
-	    profile_add(&fc.caller->func->uf_tm_children, &fp->uf_tm_start);
-	    profile_add(&fc.caller->func->uf_tml_children, &fp->uf_tm_start);
+	    profile_add(&fc.caller->func->uf_tm_children, &call_start);
+	    profile_add(&fc.caller->func->uf_tml_children, &call_start);
 	}
     }
 #endif
