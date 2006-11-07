@@ -1028,12 +1028,12 @@ mf_read(mfp, hp)
     size = page_size * hp->bh_page_count;
     if (lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
     {
-	EMSG(_("E294: Seek error in swap file read"));
+	PERROR(_("E294: Seek error in swap file read"));
 	return FAIL;
     }
     if ((unsigned)vim_read(mfp->mf_fd, hp->bh_data, size) != size)
     {
-	EMSG(_("E295: Read error in swap file"));
+	PERROR(_("E295: Read error in swap file"));
 	return FAIL;
     }
     return OK;
@@ -1085,7 +1085,7 @@ mf_write(mfp, hp)
 	offset = (off_t)page_size * nr;
 	if (lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
 	{
-	    EMSG(_("E296: Seek error in swap file write"));
+	    PERROR(_("E296: Seek error in swap file write"));
 	    return FAIL;
 	}
 	if (hp2 == NULL)	    /* freed block, fill with dummy data */
