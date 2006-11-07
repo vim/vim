@@ -2217,10 +2217,54 @@ gui_mch_show_toolbar(int showit)
 
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
     static void
+add_tabline_popup_menu_entry(HMENU pmenu, UINT item_id, char_u *item_text)
+{
+#ifdef FEAT_MBYTE
+    WCHAR	*wn = NULL;
+    int		n;
+
+    if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+	/* 'encoding' differs from active codepage: convert menu name
+	 * and use wide function */
+	wn = enc_to_ucs2(item_text, NULL);
+	if (wn != NULL)
+	{
+	    MENUITEMINFOW	infow;
+
+	    infow.cbSize = sizeof(infow);
+	    infow.fMask = MIIM_TYPE | MIIM_ID;
+	    infow.wID = item_id;
+	    infow.fType = MFT_STRING;
+	    infow.dwTypeData = wn;
+	    infow.cch = (UINT)wcslen(wn);
+	    n = InsertMenuItemW(pmenu, item_id, FALSE, &infow);
+	    vim_free(wn);
+	    if (n == 0 && GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
+		/* Failed, try using non-wide function. */
+		wn = NULL;
+	}
+    }
+
+    if (wn == NULL)
+#endif
+    {
+	MENUITEMINFO	info;
+
+	info.cbSize = sizeof(info);
+	info.fMask = MIIM_TYPE | MIIM_ID;
+	info.wID = item_id;
+	info.fType = MFT_STRING;
+	info.dwTypeData = item_text;
+	info.cch = (UINT)STRLEN(item_text);
+	InsertMenuItem(pmenu, item_id, FALSE, &info);
+    }
+}
+
+    static void
 show_tabline_popup_menu(void)
 {
     HMENU	    tab_pmenu;
-    MENUITEMINFO    minfo;
     long	    rval;
     POINT	    pt;
 
@@ -2236,21 +2280,10 @@ show_tabline_popup_menu(void)
     if (tab_pmenu == NULL)
 	return;
 
-    minfo.cbSize = sizeof(MENUITEMINFO);
-    minfo.fMask = MIIM_TYPE|MIIM_ID;
-    minfo.fType = MFT_STRING;
-
-    minfo.dwTypeData = _("Close tab");
-    minfo.wID = TABLINE_MENU_CLOSE;
-    InsertMenuItem(tab_pmenu, TABLINE_MENU_CLOSE, FALSE, &minfo);
-
-    minfo.dwTypeData = _("New tab");
-    minfo.wID = TABLINE_MENU_NEW;
-    InsertMenuItem(tab_pmenu, TABLINE_MENU_NEW, FALSE, &minfo);
-
-    minfo.dwTypeData = _("Open tab...");
-    minfo.wID = TABLINE_MENU_OPEN;
-    InsertMenuItem(tab_pmenu, TABLINE_MENU_OPEN, FALSE, &minfo);
+    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_CLOSE, _("Close tab"));
+    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_NEW, _("New tab"));
+    add_tabline_popup_menu_entry(tab_pmenu, TABLINE_MENU_OPEN,
+				 _("Open tab..."));
 
     GetCursorPos(&pt);
     rval = TrackPopupMenuEx(tab_pmenu, TPM_RETURNCMD, pt.x, pt.y, s_tabhwnd,
@@ -2455,6 +2488,30 @@ initialise_findrep(char_u *initial_string)
 }
 #endif
 
+    static void
+set_window_title(HWND hwnd, char *title)
+{
+#ifdef FEAT_MBYTE
+    if (title != NULL && enc_codepage >= 0 && enc_codepage != (int)GetACP())
+    {
+	WCHAR	*wbuf;
+	int	n;
+
+	/* Convert the title from 'encoding' to ucs2. */
+	wbuf = (WCHAR *)enc_to_ucs2((char_u *)title, NULL);
+	if (wbuf != NULL)
+	{
+	    n = SetWindowTextW(hwnd, wbuf);
+	    vim_free(wbuf);
+	    if (n != 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
+		return;
+	    /* Retry with non-wide function (for Windows 98). */
+	}
+    }
+#endif
+    (void)SetWindowText(hwnd, (LPCSTR)title);
+}
+
     void
 gui_mch_find_dialog(exarg_T *eap)
 {
@@ -2470,8 +2527,8 @@ gui_mch_find_dialog(exarg_T *eap)
 	    s_findrep_hwnd = FindText((LPFINDREPLACE) &s_findrep_struct);
 	}
 
-	(void)SetWindowText(s_findrep_hwnd,
-		       (LPCSTR)_("Find string (use '\\\\' to find  a '\\')"));
+	set_window_title(s_findrep_hwnd,
+			       _("Find string (use '\\\\' to find  a '\\')"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = TRUE;
@@ -2495,8 +2552,8 @@ gui_mch_replace_dialog(exarg_T *eap)
 	    s_findrep_hwnd = ReplaceText((LPFINDREPLACE) &s_findrep_struct);
 	}
 
-	(void)SetWindowText(s_findrep_hwnd,
-		    (LPCSTR)_("Find & Replace (use '\\\\' to find  a '\\')"));
+	set_window_title(s_findrep_hwnd,
+			    _("Find & Replace (use '\\\\' to find  a '\\')"));
 	(void)SetFocus(s_findrep_hwnd);
 
 	s_findrep_is_find = FALSE;
@@ -3015,25 +3072,7 @@ gui_mch_settitle(
     char_u  *title,
     char_u  *icon)
 {
-#ifdef FEAT_MBYTE
-    if (title != NULL && enc_codepage >= 0 && enc_codepage != (int)GetACP())
-    {
-	WCHAR	*wbuf;
-	int	n;
-
-	/* Convert the title from 'encoding' to ucs2. */
-	wbuf = (WCHAR *)enc_to_ucs2(title, NULL);
-	if (wbuf != NULL)
-	{
-	    n = SetWindowTextW(s_hwnd, wbuf);
-	    vim_free(wbuf);
-	    if (n != 0 || GetLastError() != ERROR_CALL_NOT_IMPLEMENTED)
-		return;
-	    /* Retry with non-wide function (for Windows 98). */
-	}
-    }
-#endif
-    SetWindowText(s_hwnd, (LPCSTR)(title == NULL ? "VIM" : (char *)title));
+    set_window_title(s_hwnd, (title == NULL ? "VIM" : (char *)title));
 }
 
 #ifdef FEAT_MOUSESHAPE
