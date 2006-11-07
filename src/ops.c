@@ -95,8 +95,8 @@ static void shift_block __ARGS((oparg_T *oap, int amount));
 static void block_insert __ARGS((oparg_T *oap, char_u *s, int b_insert, struct block_def*bdp));
 #endif
 static int	stuff_yank __ARGS((int, char_u *));
-static void	put_reedit_in_typebuf __ARGS((void));
-static int	put_in_typebuf __ARGS((char_u *s, int colon));
+static void	put_reedit_in_typebuf __ARGS((int silent));
+static int	put_in_typebuf __ARGS((char_u *s, int colon, int silent));
 static void	stuffescaped __ARGS((char_u *arg, int literally));
 #ifdef FEAT_MBYTE
 static void	mb_adjust_opend __ARGS((oparg_T *oap));
@@ -1120,10 +1120,11 @@ stuff_yank(regname, p)
  * return FAIL for failure, OK otherwise
  */
     int
-do_execreg(regname, colon, addcr)
+do_execreg(regname, colon, addcr, silent)
     int	    regname;
     int	    colon;		/* insert ':' before each line */
     int	    addcr;		/* always add '\n' to end of line */
+    int	    silent;		/* set "silent" flag in typeahead buffer */
 {
     static int	lastc = NUL;
     long	i;
@@ -1173,9 +1174,9 @@ do_execreg(regname, colon, addcr)
 	    /* When in Visual mode "'<,'>" will be prepended to the command.
 	     * Remove it when it's already there. */
 	    if (VIsual_active && STRNCMP(p, "'<,'>", 5) == 0)
-		retval = put_in_typebuf(p + 5, TRUE);
+		retval = put_in_typebuf(p + 5, TRUE, silent);
 	    else
-		retval = put_in_typebuf(p, TRUE);
+		retval = put_in_typebuf(p, TRUE, silent);
 	}
 	vim_free(p);
     }
@@ -1186,7 +1187,7 @@ do_execreg(regname, colon, addcr)
 	p = get_expr_line();
 	if (p == NULL)
 	    return FAIL;
-	retval = put_in_typebuf(p, colon);
+	retval = put_in_typebuf(p, colon, silent);
 	vim_free(p);
     }
 #endif
@@ -1198,7 +1199,7 @@ do_execreg(regname, colon, addcr)
 	    EMSG(_(e_noinstext));
 	    return FAIL;
 	}
-	retval = put_in_typebuf(p, colon);
+	retval = put_in_typebuf(p, colon, silent);
 	vim_free(p);
     }
     else
@@ -1213,20 +1214,20 @@ do_execreg(regname, colon, addcr)
 	/*
 	 * Insert lines into typeahead buffer, from last one to first one.
 	 */
-	put_reedit_in_typebuf();
+	put_reedit_in_typebuf(silent);
 	for (i = y_current->y_size; --i >= 0; )
 	{
 	    /* insert NL between lines and after last line if type is MLINE */
 	    if (y_current->y_type == MLINE || i < y_current->y_size - 1
 								     || addcr)
 	    {
-		if (ins_typebuf((char_u *)"\n", remap, 0, TRUE, FALSE) == FAIL)
+		if (ins_typebuf((char_u *)"\n", remap, 0, TRUE, silent) == FAIL)
 		    return FAIL;
 	    }
-	    if (ins_typebuf(y_current->y_array[i], remap, 0, TRUE, FALSE)
+	    if (ins_typebuf(y_current->y_array[i], remap, 0, TRUE, silent)
 								      == FAIL)
 		return FAIL;
-	    if (colon && ins_typebuf((char_u *)":", remap, 0, TRUE, FALSE)
+	    if (colon && ins_typebuf((char_u *)":", remap, 0, TRUE, silent)
 								      == FAIL)
 		return FAIL;
 	}
@@ -1240,7 +1241,8 @@ do_execreg(regname, colon, addcr)
  * used only after other typeahead has been processed.
  */
     static void
-put_reedit_in_typebuf()
+put_reedit_in_typebuf(silent)
+    int		silent;
 {
     char_u	buf[3];
 
@@ -1257,25 +1259,26 @@ put_reedit_in_typebuf()
 	    buf[0] = restart_edit == 'I' ? 'i' : restart_edit;
 	    buf[1] = NUL;
 	}
-	if (ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE) == OK)
+	if (ins_typebuf(buf, REMAP_NONE, 0, TRUE, silent) == OK)
 	    restart_edit = NUL;
     }
 }
 
     static int
-put_in_typebuf(s, colon)
+put_in_typebuf(s, colon, silent)
     char_u	*s;
     int		colon;	    /* add ':' before the line */
+    int		silent;
 {
     int		retval = OK;
 
-    put_reedit_in_typebuf();
+    put_reedit_in_typebuf(silent);
     if (colon)
-	retval = ins_typebuf((char_u *)"\n", REMAP_YES, 0, TRUE, FALSE);
+	retval = ins_typebuf((char_u *)"\n", REMAP_YES, 0, TRUE, silent);
     if (retval == OK)
-	retval = ins_typebuf(s, REMAP_YES, 0, TRUE, FALSE);
+	retval = ins_typebuf(s, REMAP_YES, 0, TRUE, silent);
     if (colon && retval == OK)
-	retval = ins_typebuf((char_u *)":", REMAP_YES, 0, TRUE, FALSE);
+	retval = ins_typebuf((char_u *)":", REMAP_YES, 0, TRUE, silent);
     return retval;
 }
 

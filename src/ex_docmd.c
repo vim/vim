@@ -8219,8 +8219,9 @@ ex_at(eap)
     c = *eap->arg;
     if (c == NUL || (c == '*' && *eap->cmd == '*'))
 	c = '@';
-    /* put the register in mapbuf */
-    if (do_execreg(c, TRUE, vim_strchr(p_cpo, CPO_EXECBUF) != NULL) == FAIL)
+    /* Put the register in the typeahead buffer with the "silent" flag. */
+    if (do_execreg(c, TRUE, vim_strchr(p_cpo, CPO_EXECBUF) != NULL, TRUE)
+								      == FAIL)
     {
 	beep_flush();
     }

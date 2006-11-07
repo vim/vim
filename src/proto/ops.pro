@@ -17,7 +17,7 @@ extern void *get_register __ARGS((int name, int copy));
 extern void put_register __ARGS((int name, void *reg));
 extern int yank_register_mline __ARGS((int regname));
 extern int do_record __ARGS((int c));
-extern int do_execreg __ARGS((int regname, int colon, int addcr));
+extern int do_execreg __ARGS((int regname, int colon, int addcr, int silent));
 extern int insert_reg __ARGS((int regname, int literally));
 extern int get_spec_reg __ARGS((int regname, char_u **argp, int *allocated, int errmsg));
 extern int cmdline_paste_reg __ARGS((int regname, int literally, int remcr));
