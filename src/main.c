@@ -2392,7 +2392,23 @@ create_windows(parmp)
 		(void)open_buffer(FALSE, NULL); /* create memfile, read file */
 
 #if defined(HAS_SWAP_EXISTS_ACTION)
-		check_swap_exists_action();
+		if (swap_exists_action == SEA_QUIT)
+		{
+		    if (got_int || only_one_window())
+		    {
+			/* abort selected or quit and only one window */
+			did_emsg = FALSE;   /* avoid hit-enter prompt */
+			getout(1);
+		    }
+		    /* We can't close the window, it would disturb what
+		     * happens next.  Clear the file name and set the arg
+		     * index to -1 to delete it later. */
+		    setfname(curbuf, NULL, NULL, FALSE);
+		    curwin->w_arg_idx = -1;
+		    swap_exists_action = SEA_NONE;
+		}
+		else
+		    handle_swap_exists(NULL);
 #endif
 #ifdef FEAT_AUTOCMD
 		dorewind = TRUE;		/* start again */
@@ -2432,6 +2448,8 @@ edit_buffers(parmp)
 {
     int		arg_idx;		/* index in argument list */
     int		i;
+    int		advance = TRUE;
+    buf_T	*old_curbuf;
 
 # ifdef FEAT_AUTOCMD
     /*
@@ -2440,31 +2458,65 @@ edit_buffers(parmp)
     ++autocmd_no_enter;
     ++autocmd_no_leave;
 # endif
+
+    /* When w_arg_idx is -1 remove the window (see create_windows()). */
+    if (curwin->w_arg_idx == -1)
+    {
+	win_close(curwin, TRUE);
+	advance = FALSE;
+    }
+
     arg_idx = 1;
     for (i = 1; i < parmp->window_count; ++i)
     {
-	if (parmp->window_layout == WIN_TABS)
+	/* When w_arg_idx is -1 remove the window (see create_windows()). */
+	if (curwin->w_arg_idx == -1)
 	{
-	    if (curtab->tp_next == NULL)	/* just checking */
-		break;
-	    goto_tabpage(0);
-	}
-	else
-	{
-	    if (curwin->w_next == NULL)		/* just checking */
-		break;
-	    win_enter(curwin->w_next, FALSE);
+	    ++arg_idx;
+	    win_close(curwin, TRUE);
+	    advance = FALSE;
+	    continue;
 	}
 
+	if (advance)
+	{
+	    if (parmp->window_layout == WIN_TABS)
+	    {
+		if (curtab->tp_next == NULL)	/* just checking */
+		    break;
+		goto_tabpage(0);
+	    }
+	    else
+	    {
+		if (curwin->w_next == NULL)	/* just checking */
+		    break;
+		win_enter(curwin->w_next, FALSE);
+	    }
+	}
+	advance = TRUE;
+
 	/* Only open the file if there is no file in this window yet (that can
-	 * happen when .vimrc contains ":sall") */
+	 * happen when .vimrc contains ":sall"). */
 	if (curbuf == firstwin->w_buffer || curbuf->b_ffname == NULL)
 	{
 	    curwin->w_arg_idx = arg_idx;
-	    /* edit file from arg list, if there is one */
+	    /* Edit file from arg list, if there is one.  When "Quit" selected
+	     * at the ATTENTION prompt close the window. */
+	    old_curbuf = curbuf;
 	    (void)do_ecmd(0, arg_idx < GARGCOUNT
 			  ? alist_name(&GARGLIST[arg_idx]) : NULL,
 			  NULL, NULL, ECMD_LASTL, ECMD_HIDE);
+	    if (curbuf == old_curbuf)
+	    {
+		if (got_int || only_one_window())
+		{
+		    /* abort selected or quit and only one window */
+		    did_emsg = FALSE;   /* avoid hit-enter prompt */
+		    getout(1);
+		}
+		win_close(curwin, TRUE);
+		advance = FALSE;
+	    }
 	    if (arg_idx == GARGCOUNT - 1)
 		arg_had_last = TRUE;
 	    ++arg_idx;
