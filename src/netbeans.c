@@ -61,7 +61,7 @@
 
 /* The first implementation (working only with Netbeans) returned "1.1".  The
  * protocol implemented here also supports A-A-P. */
-static char *ExtEdProtocolVersion = "2.3";
+static char *ExtEdProtocolVersion = "2.4";
 
 static long pos2off __ARGS((buf_T *, pos_T *));
 static pos_T *off2pos __ARGS((buf_T *, long));
@@ -1269,6 +1269,29 @@ nb_do_cmd(
 		    (int)curwin->w_cursor.col,
 		    pos2off(curbuf, &curwin->w_cursor));
 	    nb_reply_text(cmdno, text);
+/* =====================================================================*/
+	}
+	else if (streq((char *)cmd, "getAnno"))
+	{
+	    long linenum = 0;
+#ifdef FEAT_SIGNS
+	    if (buf == NULL || buf->bufp == NULL)
+	    {
+		nbdebug(("    null bufp in getAnno"));
+		EMSG("E652: null bufp in getAnno");
+		retval = FAIL;
+	    }
+	    else
+	    {
+		int serNum;
+
+		cp = (char *)args;
+		serNum = strtol(cp, &cp, 10);
+		/* If the sign isn't found linenum will be zero. */
+		linenum = (long)buf_findsign(buf->bufp, serNum);
+	    }
+#endif
+	    nb_reply_nr(cmdno, linenum);
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "getLength"))

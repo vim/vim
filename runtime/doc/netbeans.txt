@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.0.  Last change: 2006 Mar 09
+*netbeans.txt*  For Vim version 7.0.  Last change: 2006 Nov 14
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -259,8 +259,8 @@ problems and has been fixed in 2.2.  To decrease the likelihood of this
 confusion happening again, netbeans_saved() has been renamed to
 netbeans_save_buffer().
 
-We are now at version 2.3.  For the differences between 2.2 and 2.3 search for
-"2.3" below.
+We are now at version 2.4.  For the differences between 2.3 and 2.4 search for
+"2.4" below.
 
 The messages are currently sent over a socket.  Since the messages are in
 plain UTF-8 text this protocol could also be used with any other communication
@@ -604,6 +604,15 @@ getLength	Return the length of the buffer in bytes.
 		TODO: explain use of partial line.
 
 getMark		Not implemented.
+
+getAnno serNum
+		Return the line number of the annotation in the buffer.
+		Argument:
+			serNum		serial number of this placed annotation
+		The reply is:
+			123 lnum	line number of the annotation
+			123 0		invalid annotation serial number
+		New in version 2.4.
 
 getModified	When a buffer is specified: Return zero if the buffer does not
 		have changes, one if it does have changes.
