@@ -8371,6 +8371,7 @@ ex_redir(eap)
 	    if (ASCII_ISALPHA(*arg)
 # ifdef FEAT_CLIPBOARD
 		    || *arg == '*'
+		    || *arg == '+'
 # endif
 		    || *arg == '"')
 	    {
@@ -8381,6 +8382,7 @@ ex_redir(eap)
 			 (islower(redir_reg)
 # ifdef FEAT_CLIPBOARD
 			    || redir_reg == '*'
+			    || redir_reg == '+'
 # endif
 			    || redir_reg == '"'))
 		{
