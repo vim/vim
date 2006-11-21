@@ -1329,6 +1329,7 @@ theend:
 	    mf_put(mfp, hp, FALSE, FALSE);
 	mf_close(mfp, FALSE);	    /* will also vim_free(mfp->mf_fname) */
     }
+    vim_free(buf->b_ml.ml_stack);
     vim_free(buf);
     if (serious_error && called_from_main)
 	ml_close(curbuf, TRUE);

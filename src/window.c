@@ -4273,7 +4273,7 @@ win_alloc_lines(wp)
     win_T	*wp;
 {
     wp->w_lines_valid = 0;
-    wp->w_lines = (wline_T *)alloc((unsigned)(Rows * sizeof(wline_T)));
+    wp->w_lines = (wline_T *)alloc_clear((unsigned)(Rows * sizeof(wline_T)));
     if (wp->w_lines == NULL)
 	return FAIL;
     return OK;
