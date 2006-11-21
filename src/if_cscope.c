@@ -1008,7 +1008,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
     totmatches = 0;
     for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
     {
-	if (csinfo[i].fname == NULL)
+	if (csinfo[i].fname == NULL || csinfo[i].to_fp == NULL)
 	    continue;
 
 	/* send cmd to cscope */
