@@ -18539,12 +18539,14 @@ ex_function(eap)
 
     if (!eap->skip)
     {
-	/* Check the name of the function. */
+	/* Check the name of the function.  Unless it's a dictionary function
+	 * (that we are overwriting). */
 	if (name != NULL)
 	    arg = name;
 	else
 	    arg = fudi.fd_newkey;
-	if (arg != NULL)
+	if (arg != NULL && (fudi.fd_di == NULL
+				     || fudi.fd_di->di_tv.v_type != VAR_FUNC))
 	{
 	    if (*arg == K_SPECIAL)
 		j = 3;
