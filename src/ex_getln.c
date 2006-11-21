@@ -34,7 +34,7 @@ struct cmdline_info
     int		xp_context;	/* type of expansion */
 # ifdef FEAT_EVAL
     char_u	*xp_arg;	/* user-defined expansion arg */
-    int		input_fn;	/* Invoked for input() function */
+    int		input_fn;	/* when TRUE Invoked for input() function */
 # endif
 };
 
@@ -1390,7 +1390,17 @@ getcmdline(firstc, count, indent)
 		    {
 			c = gchar_cursor();
 			if (c != NUL)
+			{
+			    if (c == firstc || vim_strchr((char_u *)(
+					    p_magic ? "\\^$.*[" : "\\^$"), c)
+								      != NULL)
+			    {
+				/* put a backslash before special characters */
+				stuffcharReadbuff(c);
+				c = '\\';
+			    }
 			    break;
+			}
 		    }
 		    goto cmdline_not_changed;
 		}
