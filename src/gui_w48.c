@@ -2405,8 +2405,7 @@ gui_mch_update_tabline(void)
 		tiw.mask = TCIF_TEXT;
 		tiw.iImage = -1;
 		tiw.pszText = wstr;
-		SendMessage(s_tabhwnd, TCM_INSERTITEMW, (WPARAM)nr,
-								(LPARAM)&tiw);
+		SendMessage(s_tabhwnd, TCM_SETITEMW, (WPARAM)nr, (LPARAM)&tiw);
 		vim_free(wstr);
 	    }
 	}
@@ -3033,13 +3032,25 @@ gui_mch_init_font(char_u *font_name, int fontset)
     return OK;
 }
 
+#ifndef WPF_RESTORETOMAXIMIZED
+# define WPF_RESTORETOMAXIMIZED 2   /* just in case someone doesn't have it */
+#endif
+
 /*
  * Return TRUE if the GUI window is maximized, filling the whole screen.
  */
     int
 gui_mch_maximized()
 {
-    return IsZoomed(s_hwnd);
+    WINDOWPLACEMENT wp;
+
+    wp.length = sizeof(WINDOWPLACEMENT);
+    if (GetWindowPlacement(s_hwnd, &wp))
+	return wp.showCmd == SW_SHOWMAXIMIZED
+	    || (wp.showCmd == SW_SHOWMINIMIZED
+		    && wp.flags == WPF_RESTORETOMAXIMIZED);
+
+    return 0;
 }
 
 /*
