@@ -3184,9 +3184,18 @@ ex_call(eap)
 	    failed = TRUE;
 	    break;
 	}
+
+	/* Handle a function returning a Funcref, Dictionary or List. */
+	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE) == FAIL)
+	{
+	    failed = TRUE;
+	    break;
+	}
+
 	clear_tv(&rettv);
 	if (doesrange || eap->skip)
 	    break;
+
 	/* Stop when immediately aborting on error, or when an interrupt
 	 * occurred or an exception was thrown but not caught.
 	 * get_func_tv() returned OK, so that the check for trailing
