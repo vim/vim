@@ -455,6 +455,7 @@ update_screen(type)
 		    && curwin->w_topline == curwin->w_lines[0].wl_lnum)
 #ifdef FEAT_VISUAL
 		|| (type == INVERTED
+		    && VIsual_active
 		    && curwin->w_old_cursor_lnum == curwin->w_cursor.lnum
 		    && curwin->w_old_visual_mode == VIsual_mode
 		    && (curwin->w_valid & VALID_VIRTCOL)
