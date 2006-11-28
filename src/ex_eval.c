@@ -340,7 +340,7 @@ do_errthrow(cstack, cmdname)
 
     /* If no exception is to be thrown or the conversion should be done after
      * returning to a previous invocation of do_one_cmd(), do nothing. */
-    if (*msg_list == NULL)
+    if (msg_list == NULL || *msg_list == NULL)
 	return;
 
     if (throw_exception(*msg_list, ET_ERROR, cmdname) == FAIL)
@@ -2026,8 +2026,11 @@ leave_cleanup(csp)
 
 	/* If an error was about to be converted to an exception when
 	 * enter_cleanup() was called, free the message list. */
-	free_msglist(*msg_list);
-	*msg_list = NULL;
+	if (msg_list != NULL)
+	{
+	    free_msglist(*msg_list);
+	    *msg_list = NULL;
+	}
     }
 
     /*
