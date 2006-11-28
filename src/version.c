@@ -667,6 +667,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    171,
+/**/
     170,
 /**/
     169,
@@ -1113,6 +1115,14 @@ list_version()
 #endif
 #ifdef VMS
     MSG_PUTS("\nOpenVMS version");
+# ifdef HAVE_PATHDEF
+    if (*compiled_arch != NUL)
+    {
+	MSG_PUTS(" - ");
+	MSG_PUTS(compiled_arch);
+    }
+# endif
+
 #endif
 
     /* Print the list of patch numbers if there is at least one. */

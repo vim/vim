@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2006 Apr 30
+# Last change:  2006 Sep 04
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -13,7 +13,7 @@
 #
 # Edit the lines in the Configuration section below for fine tuning.
 #
-# To build:    mms/descrip=Make_vms.mms
+# To build:    mms/descrip=Make_vms.mms /ignore=warning
 # To clean up: mms/descrip=Make_vms.mms clean
 #
 # Hints and detailed description could be found in INSTALLVMS.TXT file.
@@ -21,10 +21,6 @@
 ######################################################################
 # Configuration section.
 ######################################################################
-# Platform selection
-# Define this if you will use the VAX platform to build.
-# VAX = YES
-
 # VMS version
 # Uncomment if you use VMS version 6.2 or older
 # OLD_VMS = YES
@@ -49,6 +45,7 @@ GUI = YES
 
 # GUI with GTK
 # If you have GTK installed you might want to enable this option.
+# NOTE: you will need to properly define GTK_DIR below
 # GTK = YES
 
 # GUI/Motif with XPM
@@ -97,7 +94,7 @@ CCVER = YES
 
 # Compiler setup
 
-.IFDEF VAX
+.IFDEF MMSVAX
 .IFDEF DECC	     # VAX with DECC
 CC_DEF  = cc # /decc # some system requires this switch
 		     # but when it is not required /ver might fail
@@ -165,8 +162,8 @@ GTK = ""
 # NOTE: you need to set up your GTK_DIR (GTK root directory), because it is
 # unique on every system - logicals are not accepted
 # please note: directory should end with . in order to /trans=conc work
-# Example: GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
-GTK_DIR  = DKA0:[GTK1210.]
+# This value for GTK_DIR is an example.
+GTK_DIR  = $1$DGA104:[USERS.ZAY.WORK.GTK1210.]
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
 GUI_FLAG = /name=(as_is,short)/float=ieee/ieee=denorm
@@ -274,7 +271,6 @@ TAG_DEF = ,"FEAT_TAG_ANYWHITE"
 # Please, do not change anything below without programming experience.
 ######################################################################
 
-
 MODEL_DEF = "FEAT_$(MODEL)",
 
 # These go into pathdef.c
@@ -360,7 +356,8 @@ pathdef.c : check_ccver $(CONFIG_H)
 	-@ write pd "char_u *all_lflags = (char_u *)""$(LD_DEF)$(LDFLAGS) /exe=$(TARGET) *.OBJ $(ALL_LIBS)"";"
 	-@ write pd "char_u *compiler_version = (char_u *) ""''CC_VER'"";"
 	-@ write pd "char_u *compiled_user = (char_u *) "$(VIMUSER)";"
-	-@ write pd "char_u *compiled_sys = (char_u *) "$(VIMHOST)";"
+	-@ write pd "char_u *compiled_sys  = (char_u *) "$(VIMHOST)";"
+	-@ write pd "char_u *compiled_arch = (char_u *) ""$(MMSARCH_NAME)"";"
 	-@ close pd
 
 if_perl.c : if_perl.xs
