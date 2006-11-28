@@ -9675,6 +9675,7 @@ makeopens(fd, dirnow)
     win_T	*edited_win = NULL;
     int		tabnr;
     win_T	*tab_firstwin;
+    frame_T	*tab_topframe;
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		/* Save ALL buffers */
@@ -9786,6 +9787,7 @@ makeopens(fd, dirnow)
      * autocommands.
      */
     tab_firstwin = firstwin;	/* first window in tab page "tabnr" */
+    tab_topframe = topframe;
     for (tabnr = 1; ; ++tabnr)
     {
 	int  need_tabnew = FALSE;
@@ -9797,9 +9799,15 @@ makeopens(fd, dirnow)
 	    if (tp == NULL)
 		break;		/* done all tab pages */
 	    if (tp == curtab)
+	    {
 		tab_firstwin = firstwin;
+		tab_topframe = topframe;
+	    }
 	    else
+	    {
 		tab_firstwin = tp->tp_firstwin;
+		tab_topframe = tp->tp_topframe;
+	    }
 	    if (tabnr > 1)
 		need_tabnew = TRUE;
 	}
@@ -9838,7 +9846,7 @@ makeopens(fd, dirnow)
 	 */
 	if (put_line(fd, "set splitbelow splitright") == FAIL)
 	    return FAIL;
-	if (ses_win_rec(fd, topframe) == FAIL)
+	if (ses_win_rec(fd, tab_topframe) == FAIL)
 	    return FAIL;
 	if (!p_sb && put_line(fd, "set nosplitbelow") == FAIL)
 	    return FAIL;
