@@ -2294,8 +2294,14 @@ mb_strnicmp(s1, s2, nn)
 	    }
 	    /* Check directly first, it's faster. */
 	    for (j = 0; j < l; ++j)
+	    {
 		if (s1[i + j] != s2[i + j])
 		    break;
+		if (s1[i + j] == 0)
+		    /* Both stings have the same bytes but are incomplete or
+		     * have illegal bytes, accept them as equal. */
+		    l = j;
+	    }
 	    if (j < l)
 	    {
 		/* If one of the two characters is incomplete return -1. */
