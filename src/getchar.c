@@ -76,7 +76,7 @@ static int		maphash_valid = FALSE;
  */
 static mapblock_T	*first_abbr = NULL; /* first entry in abbrlist */
 
-static int		KeyNoremap = FALSE; /* remapping disabled */
+static int		KeyNoremap = 0;	    /* remapping flags */
 
 /*
  * variables used by vgetorpeek() and flush_buffers()
@@ -1035,6 +1035,8 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 /*
  * Put character "c" back into the typeahead buffer.
  * Can be used for a character obtained by vgetc() that needs to be put back.
+ * Uses cmd_silent, KeyTyped and KeyNoremap to restore the flags belonging to
+ * the char.
  */
     void
 ins_char_typebuf(c)
@@ -1061,7 +1063,7 @@ ins_char_typebuf(c)
 	buf[1] = NUL;
 #endif
     }
-    (void)ins_typebuf(buf, REMAP_YES, 0, !KeyTyped, FALSE);
+    (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
 }
 
 /*
@@ -2270,9 +2272,8 @@ vgetorpeek(advance)
 					gotchars(typebuf.tb_buf
 							 + typebuf.tb_off, 1);
 				    }
-				    KeyNoremap = (typebuf.tb_noremap[
-						   typebuf.tb_off]
-						       & (RM_NONE|RM_SCRIPT));
+				    KeyNoremap = typebuf.tb_noremap[
+							      typebuf.tb_off];
 				    del_typebuf(1, 0);
 				}
 				break;	    /* got character, break for loop */
@@ -4196,7 +4197,8 @@ check_abbr(c, ptr, col, mincol)
 
     if (typebuf.tb_no_abbr_cnt)	/* abbrev. are not recursive */
 	return FALSE;
-    if (KeyNoremap)		/* no remapping implies no abbreviation */
+    if ((KeyNoremap & (RM_NONE|RM_SCRIPT)) != 0)
+	/* no remapping implies no abbreviation */
 	return FALSE;
 
     /*

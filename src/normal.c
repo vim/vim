@@ -651,9 +651,8 @@ normal_cmd(oap, toplevel)
 	/* Fake a "c"hange command.  When "restart_edit" is set (e.g., because
 	 * 'insertmode' is set) fake a "d"elete command, Insert mode will
 	 * restart automatically.
-	 * Insert the typed character in the typeahead buffer, so that it will
-	 * be mapped in Insert mode.  Required for ":lmap" to work.  May cause
-	 * mapping a character from ":vnoremap"... */
+	 * Insert the typed character in the typeahead buffer, so that it can
+	 * be mapped in Insert mode.  Required for ":lmap" to work. */
 	ins_char_typebuf(c);
 	if (restart_edit != 0)
 	    c = 'd';
