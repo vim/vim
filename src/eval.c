@@ -16073,6 +16073,10 @@ error:
 	}
     }
 
+    /* add a terminating NUL */
+    ga_grow(&ga, 1);
+    ga_append(&ga, NUL);
+
     rettv->vval.v_string = ga.ga_data;
 }
 
