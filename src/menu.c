@@ -2246,7 +2246,7 @@ ex_emenu(eap)
     {
 	/* When executing a script or function execute the commands right now.
 	 * Otherwise put them in the typeahead buffer. */
-#ifdef FEAT_En
+#ifdef FEAT_EVAL
 	if (current_SID != 0)
 	    exec_normal_cmd(menu->strings[idx], menu->noremap[idx],
 							   menu->silent[idx]);
