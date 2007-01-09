@@ -341,11 +341,15 @@ u_savecommon(top, bot, newbot)
 	uhp->uh_alt_next = old_curhead;
 	if (old_curhead != NULL)
 	{
+	    uhp->uh_alt_prev = old_curhead->uh_alt_prev;
+	    if (uhp->uh_alt_prev != NULL)
+		uhp->uh_alt_prev->uh_alt_next = uhp;
 	    old_curhead->uh_alt_prev = uhp;
 	    if (curbuf->b_u_oldhead == old_curhead)
 		curbuf->b_u_oldhead = uhp;
 	}
-	uhp->uh_alt_prev = NULL;
+	else
+	    uhp->uh_alt_prev = NULL;
 	if (curbuf->b_u_newhead != NULL)
 	    curbuf->b_u_newhead->uh_prev = uhp;
 
@@ -856,6 +860,11 @@ undo_time(step, sec, absolute)
 	uhp = curbuf->b_u_curhead;
 	while (uhp != NULL)
 	{
+	    /* Go back to the first branch with a mark. */
+	    while (uhp->uh_alt_prev != NULL
+					&& uhp->uh_alt_prev->uh_walk == mark)
+		uhp = uhp->uh_alt_prev;
+
 	    /* Find the last branch with a mark, that's the one. */
 	    last = uhp;
 	    while (last->uh_alt_next != NULL
@@ -865,6 +874,8 @@ undo_time(step, sec, absolute)
 	    {
 		/* Make the used branch the first entry in the list of
 		 * alternatives to make "u" and CTRL-R take this branch. */
+		while (uhp->uh_alt_prev != NULL)
+		    uhp = uhp->uh_alt_prev;
 		if (last->uh_alt_next != NULL)
 		    last->uh_alt_next->uh_alt_prev = last->uh_alt_prev;
 		last->uh_alt_prev->uh_alt_next = last->uh_alt_next;
