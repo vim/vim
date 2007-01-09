@@ -6178,8 +6178,8 @@ move_lines(frombuf, tobuf)
     if (retval != FAIL)
     {
 	curbuf = frombuf;
-	while (!bufempty())
-	    if (ml_delete(curbuf->b_ml.ml_line_count, FALSE) == FAIL)
+	for (lnum = curbuf->b_ml.ml_line_count; lnum > 0; --lnum)
+	    if (ml_delete(lnum, FALSE) == FAIL)
 	    {
 		/* Oops!  We could try putting back the saved lines, but that
 		 * might fail again... */
