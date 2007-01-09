@@ -2221,7 +2221,6 @@ mch_FullName(fname, buf, len, force)
      * behaviour should be avoided for the existing files and we need to find
      * the exact path of the edited file.
      */
-    if (force || !mch_isFullName(fname))
     {
 	char_u	*fixed_fname = vms_fixfilename(fname);
 	int	fd = mch_open((char *)fixed_fname, O_RDONLY | O_EXTRA, 0);

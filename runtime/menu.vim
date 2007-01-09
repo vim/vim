@@ -384,7 +384,7 @@ endif
 " Programming menu
 if !exists("g:ctags_command")
   if has("vms")
-    let g:ctags_command = "mc vim:ctags ."
+    let g:ctags_command = "mc vim:ctags *.*"
   else
     let g:ctags_command = "ctags -R ."
   endif
