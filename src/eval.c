@@ -898,6 +898,7 @@ set_internal_string_var(name, value)
 }
 
 static lval_T	*redir_lval = NULL;
+static garray_T redir_ga;	/* only valid when redir_lval is not NULL */
 static char_u	*redir_endp = NULL;
 static char_u	*redir_varname = NULL;
 
@@ -931,6 +932,9 @@ var_redir_start(name, append)
 	var_redir_stop();
 	return FAIL;
     }
+
+    /* The output is stored in growarray "redir_ga" until redirection ends. */
+    ga_init2(&redir_ga, (int)sizeof(char), 500);
 
     /* Parse the variable name (can be a dict or list entry). */
     redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, FALSE,
@@ -974,42 +978,36 @@ var_redir_start(name, append)
 }
 
 /*
- * Append "value[len]" to the variable set by var_redir_start().
+ * Append "value[value_len]" to the variable set by var_redir_start().
+ * The actual appending is postponed until redirection ends, because the value
+ * appended may in fact be the string we write to, changing it may cause freed
+ * memory to be used:
+ *   :redir => foo
+ *   :let foo
+ *   :redir END
  */
     void
-var_redir_str(value, len)
+var_redir_str(value, value_len)
     char_u	*value;
-    int		len;
+    int		value_len;
 {
-    char_u	*val;
-    typval_T	tv;
-    int		save_emsg;
-    int		err;
+    size_t	len;
 
     if (redir_lval == NULL)
 	return;
 
-    if (len == -1)
-	/* Append the entire string */
-	val = vim_strsave(value);
+    if (value_len == -1)
+	len = STRLEN(value);	/* Append the entire string */
     else
-	/* Append only the specified number of characters */
-	val = vim_strnsave(value, len);
-    if (val == NULL)
-	return;
+	len = value_len;	/* Append only "value_len" characters */
 
-    tv.v_type = VAR_STRING;
-    tv.vval.v_string = val;
-
-    save_emsg = did_emsg;
-    did_emsg = FALSE;
-    set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
-    err = did_emsg;
-    did_emsg |= save_emsg;
-    if (err)
+    if (ga_grow(&redir_ga, (int)len) == OK)
+    {
+	mch_memmove((char *)redir_ga.ga_data + redir_ga.ga_len, value, len);
+	redir_ga.ga_len += len;
+    }
+    else
 	var_redir_stop();
-
-    vim_free(tv.vval.v_string);
 }
 
 /*
@@ -1018,8 +1016,19 @@ var_redir_str(value, len)
     void
 var_redir_stop()
 {
+    typval_T	tv;
+
     if (redir_lval != NULL)
     {
+	/* Append the trailing NUL. */
+	ga_append(&redir_ga, NUL);
+
+	/* Assign the text to the variable. */
+	tv.v_type = VAR_STRING;
+	tv.vval.v_string = redir_ga.ga_data;
+	set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
+	vim_free(tv.vval.v_string);
+
 	clear_lval(redir_lval);
 	vim_free(redir_lval);
 	redir_lval = NULL;
