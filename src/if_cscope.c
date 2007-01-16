@@ -627,10 +627,11 @@ cs_cnt_matches(idx)
 	 * If the database is out of date, or there's some other problem,
 	 * cscope will output error messages before the number-of-lines output.
 	 * Display/discard any output that doesn't match what we want.
+	 * Accept "\S*cscope: X lines", also matches "mlcscope".
 	 */
 	if ((stok = strtok(buf, (const char *)" ")) == NULL)
 	    continue;
-	if (strcmp((const char *)stok, "cscope:"))
+	if (strstr((const char *)stok, "cscope:") == NULL)
 	    continue;
 
 	if ((stok = strtok(NULL, (const char *)" ")) == NULL)
