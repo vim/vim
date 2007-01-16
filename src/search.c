@@ -812,7 +812,11 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
 #ifdef FEAT_MBYTE
 			if (has_mbyte)
 			{
-			    ptr = ml_get_buf(buf, pos->lnum, FALSE);
+			    /* 'e' offset may put us just below the last line */
+			    if (pos->lnum > buf->b_ml.ml_line_count)
+				ptr = "";
+			    else
+				ptr = ml_get_buf(buf, pos->lnum, FALSE);
 			    pos->col -= (*mb_head_off)(ptr, ptr + pos->col);
 			}
 #endif
