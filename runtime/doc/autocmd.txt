@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0.  Last change: 2006 May 06
+*autocmd.txt*   For Vim version 7.0.  Last change: 2007 Jan 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -279,6 +279,7 @@ Name			triggered by ~
 |FuncUndefined|		a user function is used but it isn't defined
 |SpellFileMissing|	a spell file is used but it can't be found
 |SourcePre|		before sourcing a Vim script
+|SourceCmd|		before sourcing a Vim script |Cmd-event|
 
 |VimResized|		after the Vim window size changed
 |FocusGained|		Vim got input focus
@@ -690,10 +691,17 @@ ShellFilterPost			After executing a shell command with
 				Can be used to check for any changed files.
 							*SourcePre*
 SourcePre			Before sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+							*SourceCmd*
+SourceCmd			When sourcing a Vim script. |:source|
+				<afile> is the name of the file being sourced.
+				The autocommand must source this file.
+				|Cmd-event|
 							*SpellFileMissing*
 SpellFileMissing		When trying to load a spell checking file and
-				it can't be found.  <amatch> is the language,
-				'encoding' also matters.  See
+				it can't be found.  The pattern is matched
+				against the language.  <amatch> is the
+				language, 'encoding' also matters.  See
 				|spell-SpellFileMissing|.
 							*StdinReadPost*
 StdinReadPost			After reading from the stdin into the buffer,
@@ -1219,8 +1227,8 @@ highlighting when starting Vim.
 
 							*Cmd-event*
 When using one of the "*Cmd" events, the matching autocommands are expected to
-do the file reading or writing.  This can be used when working with a special
-kind of file, for example on a remote system.
+do the file reading, writing or sourcing.  This can be used when working with
+a special kind of file, for example on a remote system.
 CAREFUL: If you use these events in a wrong way, it may have the effect of
 making it impossible to read or write the matching files!  Make sure you test
 your autocommands properly.  Best is to use a pattern that will never match a
@@ -1233,9 +1241,10 @@ possible with a BufReadCmd, use the |:preserve| command to make sure the
 original file isn't needed for recovery.  You might want to do this only when
 you expect the file to be modified.
 
-The |v:cmdarg| variable holds the "++enc=" and "++ff=" argument that are
-effective.  These should be used for the command that reads/writes the file.
-The |v:cmdbang| variable is one when "!" was used, zero otherwise.
+For file read and write commands the |v:cmdarg| variable holds the "++enc="
+and "++ff=" argument that are effective.  These should be used for the command
+that reads/writes the file.  The |v:cmdbang| variable is one when "!" was
+used, zero otherwise.
 
 See the $VIMRUNTIME/plugin/netrw.vim for examples.
 

@@ -7019,6 +7019,7 @@ static struct event_name
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
     {"SourcePre",	EVENT_SOURCEPRE},
+    {"SourceCmd",	EVENT_SOURCECMD},
     {"SpellFileMissing",EVENT_SPELLFILEMISSING},
     {"StdinReadPost",	EVENT_STDINREADPOST},
     {"StdinReadPre",	EVENT_STDINREADPRE},

@@ -1102,7 +1102,7 @@ enum auto_event
     EVENT_COLORSCHEME,		/* after loading a colorscheme */
     EVENT_FILEAPPENDPOST,	/* after appending to a file */
     EVENT_FILEAPPENDPRE,	/* before appending to a file */
-    EVENT_FILEAPPENDCMD,	/* appende to a file using command */
+    EVENT_FILEAPPENDCMD,	/* append to a file using command */
     EVENT_FILECHANGEDSHELL,	/* after shell command that changed file */
     EVENT_FILECHANGEDSHELLPOST,	/* after (not) reloading changed file */
     EVENT_FILECHANGEDRO,	/* before first change to read-only file */
@@ -1147,6 +1147,7 @@ enum auto_event
     EVENT_REMOTEREPLY,		/* upon string reception from a remote vim */
     EVENT_SWAPEXISTS,		/* found existing swap file */
     EVENT_SOURCEPRE,		/* before sourcing a Vim script */
+    EVENT_SOURCECMD,		/* sourcing a Vim script using command */
     EVENT_SPELLFILEMISSING,	/* spell file missing */
     EVENT_CURSORMOVED,		/* cursor was moved */
     EVENT_CURSORMOVEDI,		/* cursor was moved in Insert mode */

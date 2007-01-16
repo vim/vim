@@ -2811,6 +2811,17 @@ do_source(fname, check_other, is_vimrc)
     }
 
 #ifdef FEAT_AUTOCMD
+    /* Apply SourceCmd autocommands, they should get the file and source it. */
+    if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
+	    && apply_autocmds(EVENT_SOURCECMD, fname_exp, fname_exp,
+							       FALSE, curbuf))
+# ifdef FEAT_EVAL
+	return aborting() ? FAIL : OK;
+# else
+	return OK;
+# endif
+
+    /* Apply SourcePre autocommands, they may get the file. */
     apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
 #endif
 
