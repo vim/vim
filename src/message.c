@@ -1556,7 +1556,7 @@ msg_prt_line(s, list)
     int		c_extra = 0;
     char_u	*p_extra = NULL;	    /* init to make SASC shut up */
     int		n;
-    int		attr= 0;
+    int		attr = 0;
     char_u	*trail = NULL;
 #ifdef FEAT_MBYTE
     int		l;
@@ -1581,7 +1581,7 @@ msg_prt_line(s, list)
 
     while (!got_int)
     {
-	if (n_extra)
+	if (n_extra > 0)
 	{
 	    --n_extra;
 	    if (c_extra)
@@ -1595,7 +1595,7 @@ msg_prt_line(s, list)
 	    col += (*mb_ptr2cells)(s);
 	    mch_memmove(buf, s, (size_t)l);
 	    buf[l] = NUL;
-	    msg_puts_attr(buf, attr);
+	    msg_puts(buf);
 	    s += l;
 	    continue;
 	}
@@ -1635,6 +1635,9 @@ msg_prt_line(s, list)
 		p_extra = transchar_byte(c);
 		c_extra = NUL;
 		c = *p_extra++;
+		/* Use special coloring to be able to distinguish <hex> from
+		 * the same in plain text. */
+		attr = hl_attr(HLF_8);
 	    }
 	    else if (c == ' ' && trail != NULL && s > trail)
 	    {
