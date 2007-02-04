@@ -3206,7 +3206,7 @@ syn_cmd_spell(eap, syncing)
 	curbuf->b_syn_spell = SYNSPL_TOP;
     else if (STRNICMP(arg, "notoplevel", 10) == 0 && next - arg == 10)
 	curbuf->b_syn_spell = SYNSPL_NOTOP;
-    else if (STRNICMP(arg, "default", 4) == 0 && next - arg == 4)
+    else if (STRNICMP(arg, "default", 7) == 0 && next - arg == 7)
 	curbuf->b_syn_spell = SYNSPL_DEFAULT;
     else
 	EMSG2(_("E390: Illegal argument: %s"), arg);
