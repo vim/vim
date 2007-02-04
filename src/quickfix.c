@@ -106,7 +106,7 @@ struct efm_S
 
 static int	qf_init_ext __ARGS((qf_info_T *qi, char_u *efile, buf_T *buf, typval_T *tv, char_u *errorformat, int newlist, linenr_T lnumfirst, linenr_T lnumlast));
 static void	qf_new_list __ARGS((qf_info_T *qi));
-static int	qf_add_entry __ARGS((qf_info_T *qi, qfline_T **prevp, char_u *dir, char_u *fname, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid));
+static int	qf_add_entry __ARGS((qf_info_T *qi, qfline_T **prevp, char_u *dir, char_u *fname, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid));
 static void	qf_msg __ARGS((qf_info_T *qi));
 static void	qf_free __ARGS((qf_info_T *qi, int idx));
 static char_u	*qf_types __ARGS((int, int));
@@ -791,6 +791,7 @@ restofline:
 			(*namebuf || directory)
 			    ? namebuf
 			    : ((currfile && valid) ? currfile : (char_u *)NULL),
+			0,
 			errmsg,
 			lnum,
 			col,
@@ -936,12 +937,13 @@ qf_free_all(wp)
  * Returns OK or FAIL.
  */
     static int
-qf_add_entry(qi, prevp, dir, fname, mesg, lnum, col, vis_col, pattern, nr, type,
-	     valid)
+qf_add_entry(qi, prevp, dir, fname, bufnum, mesg, lnum, col, vis_col, pattern,
+	     nr, type, valid)
     qf_info_T	*qi;		/* quickfix list */
     qfline_T	**prevp;	/* pointer to previously added entry or NULL */
     char_u	*dir;		/* optional directory name */
     char_u	*fname;		/* file name or NULL */
+    int		bufnum;		/* buffer number or zero */
     char_u	*mesg;		/* message */
     long	lnum;		/* line number */
     int		col;		/* column */
@@ -955,7 +957,10 @@ qf_add_entry(qi, prevp, dir, fname, mesg, lnum, col, vis_col, pattern, nr, type,
 
     if ((qfp = (qfline_T *)alloc((unsigned)sizeof(qfline_T))) == NULL)
 	return FAIL;
-    qfp->qf_fnum = qf_get_fnum(dir, fname);
+    if (bufnum != 0)
+	qfp->qf_fnum = bufnum;
+    else
+	qfp->qf_fnum = qf_get_fnum(dir, fname);
     if ((qfp->qf_text = vim_strsave(mesg)) == NULL)
     {
 	vim_free(qfp);
@@ -1106,6 +1111,7 @@ copy_loclist(from, to)
 		if (qf_add_entry(to->w_llist, &prevp,
 				 NULL,
 				 NULL,
+				 0,
 				 from_qfp->qf_text,
 				 from_qfp->qf_lnum,
 				 from_qfp->qf_col,
@@ -3134,6 +3140,7 @@ ex_vimgrep(eap)
 		    if (qf_add_entry(qi, &prevp,
 				NULL,       /* dir */
 				fnames[fi],
+				0,
 				ml_get_buf(buf,
 				     regmatch.startpos[0].lnum + lnum, FALSE),
 				regmatch.startpos[0].lnum + lnum,
@@ -3419,6 +3426,7 @@ get_errorlist(wp, list)
     char_u	buf[2];
     qfline_T	*qfp;
     int		i;
+    int		bufnum;
 
     if (wp != NULL)
     {
@@ -3434,6 +3442,11 @@ get_errorlist(wp, list)
     qfp = qi->qf_lists[qi->qf_curlist].qf_start;
     for (i = 1; !got_int && i <= qi->qf_lists[qi->qf_curlist].qf_count; ++i)
     {
+	/* Handle entries with a non-existing buffer number. */
+	bufnum = qfp->qf_fnum;
+	if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
+	    bufnum = 0;
+
 	if ((dict = dict_alloc()) == NULL)
 	    return FAIL;
 	if (list_append_dict(list, dict) == FAIL)
@@ -3441,7 +3454,7 @@ get_errorlist(wp, list)
 
 	buf[0] = qfp->qf_type;
 	buf[1] = NUL;
-	if ( dict_add_nr_str(dict, "bufnr", (long)qfp->qf_fnum, NULL) == FAIL
+	if ( dict_add_nr_str(dict, "bufnr", (long)bufnum, NULL) == FAIL
 	  || dict_add_nr_str(dict, "lnum",  (long)qfp->qf_lnum, NULL) == FAIL
 	  || dict_add_nr_str(dict, "col",   (long)qfp->qf_col, NULL) == FAIL
 	  || dict_add_nr_str(dict, "vcol",  (long)qfp->qf_viscol, NULL) == FAIL
@@ -3472,6 +3485,7 @@ set_errorlist(wp, list, action)
     listitem_T	*li;
     dict_T	*d;
     char_u	*filename, *pattern, *text, *type;
+    int		bufnum;
     long	lnum;
     int		col, nr;
     int		vcol;
@@ -3479,6 +3493,7 @@ set_errorlist(wp, list, action)
     int		valid, status;
     int		retval = OK;
     qf_info_T	*qi = &ql_info;
+    int		did_bufnr_emsg = FALSE;
 
     if (wp != NULL)
     {
@@ -3508,6 +3523,7 @@ set_errorlist(wp, list, action)
 	    continue;
 
 	filename = get_dict_string(d, (char_u *)"filename", TRUE);
+	bufnum = get_dict_number(d, (char_u *)"bufnr");
 	lnum = get_dict_number(d, (char_u *)"lnum");
 	col = get_dict_number(d, (char_u *)"col");
 	vcol = get_dict_number(d, (char_u *)"vcol");
@@ -3519,12 +3535,26 @@ set_errorlist(wp, list, action)
 	    text = vim_strsave((char_u *)"");
 
 	valid = TRUE;
-	if (filename == NULL || (lnum == 0 && pattern == NULL))
+	if ((filename == NULL && bufnum == 0) || (lnum == 0 && pattern == NULL))
 	    valid = FALSE;
+
+	/* Mark entries with non-existing buffer number as not valid. Give the
+	 * error message only once. */
+	if (bufnum != 0 && (buflist_findnr(bufnum) == NULL))
+	{
+	    if (!did_bufnr_emsg)
+	    {
+		did_bufnr_emsg = TRUE;
+		EMSGN(_("E92: Buffer %ld not found"), bufnum);
+	    }
+	    valid = FALSE;
+	    bufnum = 0;
+	}
 
 	status =  qf_add_entry(qi, &prevp,
 			       NULL,	    /* dir */
 			       filename,
+			       bufnum,
 			       text,
 			       lnum,
 			       col,
@@ -3757,6 +3787,7 @@ ex_helpgrep(eap)
 				if (qf_add_entry(qi, &prevp,
 					    NULL,	/* dir */
 					    fnames[fi],
+					    0,
 					    IObuff,
 					    lnum,
 					    (int)(regmatch.startp[0] - IObuff)

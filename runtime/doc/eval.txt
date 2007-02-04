@@ -2897,12 +2897,14 @@ getqflist()						*getqflist()*
 			vcol	non-zero: "col" is visual column
 				zero: "col" is byte index
 			nr	error number
+			pattern	search pattern used to locate the error
 			text	description of the error
 			type	type of the error, 'E', '1', etc.
 			valid	non-zero: recognized error message
 
 		When there is no error list or it's empty an empty list is
-		returned.
+		returned. Quickfix list entries with non-existing buffer
+		number are returned with "bufnr" set to zero.
 
 		Useful application: Find pattern matches in multiple files and
 		do something with them: >
@@ -4371,7 +4373,10 @@ setqflist({list} [, {action}])				*setqflist()*
 		Non-dictionary items in {list} are ignored.  Each dictionary
 		item can contain the following entries:
 
-		    filename	name of a file
+		    bufnr	buffer number; must be the number of a valid
+		    		buffer
+		    filename	name of a file; only used when "bufnr" is not
+		    		present or it is invalid.
 		    lnum	line number in the file
 		    pattern	search pattern used to locate the error
 		    col		column number
@@ -4384,11 +4389,13 @@ setqflist({list} [, {action}])				*setqflist()*
 		The "col", "vcol", "nr", "type" and "text" entries are
 		optional.  Either "lnum" or "pattern" entry can be used to
 		locate a matching error line.
-		If the "filename" entry is not present or neither the "lnum"
-		or "pattern" entries are present, then the item will not be
-		handled as an error line.
+		If the "filename" and "bufnr" entries are not present or
+		neither the "lnum" or "pattern" entries are present, then the
+		item will not be handled as an error line.
 		If both "pattern" and "lnum" are present then "pattern" will
 		be used.
+		Note that the list is not exactly the same as what
+		|getqflist()| returns.
 
 		If {action} is set to 'a', then the items from {list} are
 		added to the existing quickfix list. If there is no existing
