@@ -4970,16 +4970,18 @@ ins_complete(c)
 	     * just a safety check. */
 	    if (compl_curr_match->cp_number != -1)
 	    {
-		/* Space for 10 text chars. + 2x10-digit no.s */
-		static char_u match_ref[31];
+		/* Space for 10 text chars. + 2x10-digit no.s = 31.
+		 * Translations may need more than twice that. */
+		static char_u match_ref[81];
 
 		if (compl_matches > 0)
-		    sprintf((char *)IObuff, _("match %d of %d"),
+		    vim_snprintf((char *)match_ref, sizeof(match_ref),
+				_("match %d of %d"),
 				compl_curr_match->cp_number, compl_matches);
 		else
-		    sprintf((char *)IObuff, _("match %d"),
-						 compl_curr_match->cp_number);
-		vim_strncpy(match_ref, IObuff, 30);
+		    vim_snprintf((char *)match_ref, sizeof(match_ref),
+				_("match %d"),
+				compl_curr_match->cp_number);
 		edit_submode_extra = match_ref;
 		edit_submode_highl = HLF_R;
 		if (dollar_vcol)
