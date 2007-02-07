@@ -76,7 +76,6 @@ extern int dos2;			/* this is in os_amiga.c */
 #define MEMFILE_PAGE_SIZE 4096		/* default page size */
 
 static long_u	total_mem_used = 0;	/* total memory used for memfiles */
-static int	dont_release = FALSE;	/* don't release blocks */
 
 static void mf_ins_hash __ARGS((memfile_T *, bhdr_T *));
 static void mf_rem_hash __ARGS((memfile_T *, bhdr_T *));
@@ -279,10 +278,10 @@ mf_close_file(buf, getlines)
     if (getlines)
     {
 	/* get all blocks in memory by accessing all lines (clumsy!) */
-	dont_release = TRUE;
+	mf_dont_release = TRUE;
 	for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	    (void)ml_get_buf(buf, lnum, FALSE);
-	dont_release = FALSE;
+	mf_dont_release = FALSE;
 	/* TODO: should check if all blocks are really in core */
     }
 
@@ -830,7 +829,7 @@ mf_release(mfp, page_count)
     buf_T	*buf;
 
     /* don't release while in mf_close_file() */
-    if (dont_release)
+    if (mf_dont_release)
 	return NULL;
 
     /*

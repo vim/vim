@@ -2074,8 +2074,10 @@ errorret:
 /*
  * See if it is the same line as requested last time.
  * Otherwise may need to flush last used line.
+ * Don't use the last used line when 'swapfile' is reset, need to load all
+ * blocks.
  */
-    if (buf->b_ml.ml_line_lnum != lnum)
+    if (buf->b_ml.ml_line_lnum != lnum || mf_dont_release)
     {
 	ml_flush_line(buf);
 
@@ -3200,13 +3202,16 @@ ml_find_line(buf, lnum, action)
      * If not, flush and release the locked block.
      * Don't do this for ML_INSERT_SAME, because the stack need to be updated.
      * Don't do this for ML_FLUSH, because we want to flush the locked block.
+     * Don't do this when 'swapfile' is reset, we want to load all the blocks.
      */
     if (buf->b_ml.ml_locked)
     {
-	if (ML_SIMPLE(action) && buf->b_ml.ml_locked_low <= lnum
-					  && buf->b_ml.ml_locked_high >= lnum)
+	if (ML_SIMPLE(action)
+		&& buf->b_ml.ml_locked_low <= lnum
+		&& buf->b_ml.ml_locked_high >= lnum
+		&& !mf_dont_release)
 	{
-		/* remember to update pointer blocks and stack later */
+	    /* remember to update pointer blocks and stack later */
 	    if (action == ML_INSERT)
 	    {
 		++(buf->b_ml.ml_locked_lineadd);
