@@ -1242,14 +1242,22 @@ autowrite(buf, forceit)
     buf_T	*buf;
     int		forceit;
 {
+    int		r;
+
     if (!(p_aw || p_awa) || !p_write
 #ifdef FEAT_QUICKFIX
-	/* never autowrite a "nofile" or "nowrite" buffer */
-	|| bt_dontwrite(buf)
+	    /* never autowrite a "nofile" or "nowrite" buffer */
+	    || bt_dontwrite(buf)
 #endif
-	|| (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
+	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
 	return FAIL;
-    return buf_write_all(buf, forceit);
+    r = buf_write_all(buf, forceit);
+
+    /* Writing may succeed but the buffer still changed, e.g., when there is a
+     * conversion error.  We do want to return FAIL then. */
+    if (buf_valid(buf) && bufIsChanged(buf))
+	r = FAIL;
+    return r;
 }
 
 /*
@@ -1472,6 +1480,8 @@ check_changed_any(hidden)
 	if (buf == NULL)    /* No buffers changed */
 	    return FALSE;
 
+	/* Try auto-writing the buffer.  If this fails but the buffer no
+	 * longer exists it's not changed, that's OK. */
 	if (check_changed(buf, p_awa, TRUE, FALSE, TRUE) && buf_valid(buf))
 	    break;	    /* didn't save - still changes */
     }
