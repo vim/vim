@@ -6967,6 +6967,14 @@ ex_drop(eap)
      */
     set_arglist(eap->arg);
 
+    /*
+     * Expanding wildcards may result in an empty argument list.  E.g. when
+     * editing "foo.pyc" and ".pyc" is in 'wildignore'.  Assume that we
+     * already did an error message for this.
+     */
+    if (ARGCOUNT == 0)
+	return;
+
 # ifdef FEAT_WINDOWS
     if (cmdmod.tab)
     {
