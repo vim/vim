@@ -2054,13 +2054,21 @@ ml_get_buf(buf, lnum, will_change)
     linenr_T	lnum;
     int		will_change;		/* line will be changed */
 {
-    bhdr_T    *hp;
-    DATA_BL *dp;
-    char_u  *ptr;
+    bhdr_T	*hp;
+    DATA_BL	*dp;
+    char_u	*ptr;
+    static int	recursive = 0;
 
     if (lnum > buf->b_ml.ml_line_count)	/* invalid line number */
     {
-	EMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
+	if (recursive == 0)
+	{
+	    /* Avoid giving this message for a recursive call, may happen when
+	     * the GUI redraws part of the text. */
+	    ++recursive;
+	    EMSGN(_("E315: ml_get: invalid lnum: %ld"), lnum);
+	    --recursive;
+	}
 errorret:
 	STRCPY(IObuff, "???");
 	return IObuff;
@@ -2088,7 +2096,14 @@ errorret:
 	 */
 	if ((hp = ml_find_line(buf, lnum, ML_FIND)) == NULL)
 	{
-	    EMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
+	    if (recursive == 0)
+	    {
+		/* Avoid giving this message for a recursive call, may happen
+		 * when the GUI redraws part of the text. */
+		++recursive;
+		EMSGN(_("E316: ml_get: cannot find line %ld"), lnum);
+		--recursive;
+	    }
 	    goto errorret;
 	}
 
