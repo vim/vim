@@ -1541,8 +1541,15 @@ win_move_after(win1, win2)
 	    win1->w_prev->w_status_height = win1->w_status_height;
 	    win1->w_status_height = height;
 #ifdef FEAT_VERTSPLIT
-	    win1->w_prev->w_vsep_width = 0;
-	    win1->w_vsep_width = 1;
+	    if (win1->w_prev->w_vsep_width == 1)
+	    {
+		/* Remove the vertical separator from the last-but-one window,
+		 * add it to the last window.  Adjust the frame widths. */
+		win1->w_prev->w_vsep_width = 0;
+		win1->w_prev->w_frame->fr_width -= 1;
+		win1->w_vsep_width = 1;
+		win1->w_frame->fr_width += 1;
+	    }
 #endif
 	}
 	else if (win2 == lastwin)
@@ -1551,8 +1558,15 @@ win_move_after(win1, win2)
 	    win1->w_status_height = win2->w_status_height;
 	    win2->w_status_height = height;
 #ifdef FEAT_VERTSPLIT
-	    win2->w_vsep_width = 1;
-	    win1->w_vsep_width = 0;
+	    if (win1->w_vsep_width == 1)
+	    {
+		/* Remove the vertical separator from win1, add it to the last
+		 * window, win2.  Adjust the frame widths. */
+		win2->w_vsep_width = 1;
+		win2->w_frame->fr_width += 1;
+		win1->w_vsep_width = 0;
+		win1->w_frame->fr_width -= 1;
+	    }
 #endif
 	}
 	win_remove(win1, NULL);
