@@ -3448,11 +3448,16 @@ ins_compl_prep(c)
 	    }
 	    else
 	    {
+		int prev_col = curwin->w_cursor.col;
+
 		/* put the cursor on the last char, for 'tw' formatting */
-		curwin->w_cursor.col--;
+		if (prev_col > 0)
+		    dec_cursor();
 		if (stop_arrow() == OK)
 		    insertchar(NUL, 0, -1);
-		curwin->w_cursor.col++;
+		if (prev_col > 0
+			     && ml_get_curline()[curwin->w_cursor.col] != NUL)
+		    inc_cursor();
 	    }
 
 	    auto_format(FALSE, TRUE);
