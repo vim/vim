@@ -683,7 +683,7 @@ CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 # on a crash (doesn't add overhead to the executable).
 #
 CFLAGS = $(CFLAGS) /Zi /Fd$(OUTDIR)/
-LINK_PDB = /PDB:$(OUTDIR)/$(VIM).pdb -debug # -debug:full -debugtype:cv,fixup
+LINK_PDB = /PDB:$(VIM).pdb -debug # -debug:full -debugtype:cv,fixup
 
 #
 # End extra feature include
@@ -761,7 +761,6 @@ clean:
 	- if exist $(VIM).pdb del $(VIM).pdb
 	- if exist $(VIM).map del $(VIM).map
 	- if exist $(VIM).ncb del $(VIM).ncb
-	- if exist gvim.exe.mnf del gvim.exe.mnf
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
 	- if exist uninstal.exe del uninstal.exe
@@ -943,7 +942,7 @@ $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c
 
-$(OUTDIR)/vim.res:	$(OUTDIR) gvim.exe.mnf vim.rc version.h tools.bmp tearoff.bmp \
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp \
 		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
@@ -961,6 +960,7 @@ $(OUTDIR)/glbl_ime.obj:	$(OUTDIR) glbl_ime.cpp  dimm.h $(INCL)
 # $CFLAGS may contain backslashes and double quotes, escape them both.
 E0_CFLAGS = $(CFLAGS:\=\\)
 E_CFLAGS = $(E0_CFLAGS:"=\")
+# ") stop the string
 
 $(PATHDEF_SRC): auto
 	@echo creating $(PATHDEF_SRC)
@@ -972,30 +972,6 @@ $(PATHDEF_SRC): auto
 	@echo char_u *all_lflags = (char_u *)"$(link:\=\\) $(LINKARGS1:\=\\) $(LINKARGS2:\=\\)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
-
-gvim.exe.mnf: auto
-	@echo ^<?xml version="1.0" encoding="UTF-8" standalone="yes"?^> >$@
-	@echo ^<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"^> >>$@
-	@echo   ^<assemblyIdentity >>$@
-	@echo     processorArchitecture="$(ASSEMBLY_ARCHITECTURE)" >>$@
-	@echo     version="7.0.0.0" >>$@
-	@echo     type="win32" >>$@
-	@echo     name="Vim" >>$@
-	@echo   /^> >>$@
-	@echo   ^<description^>Vi Improved - A Text Editor^</description^> >>$@
-	@echo   ^<dependency^> >>$@
-	@echo     ^<dependentAssembly^> >>$@
-	@echo       ^<assemblyIdentity >>$@
-	@echo         type="win32" >>$@
-	@echo         name="Microsoft.Windows.Common-Controls" >>$@
-	@echo         version="6.0.0.0" >>$@
-	@echo         publicKeyToken="6595b64144ccf1df" >>$@
-	@echo         language="*" >>$@
-	@echo         processorArchitecture="$(ASSEMBLY_ARCHITECTURE)" >>$@
-	@echo       /^> >>$@
-	@echo     ^</dependentAssembly^> >>$@
-	@echo   ^</dependency^> >>$@
-	@echo ^</assembly^> >>$@
 
 auto:
 	if not exist auto/nul mkdir auto

@@ -1246,7 +1246,7 @@ vim_strsave_shellescape(string)
     char_u	*escaped_string;
 
     /* First count the number of extra bytes required. */
-    length = STRLEN(string) + 3;	/* two quotes and the trailing NUL */
+    length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
     for (p = string; *p != NUL; mb_ptr_adv(p))
     {
 # if defined(WIN32) || defined(WIN16) || defined(DOS)
@@ -3718,7 +3718,7 @@ get_crypt_key(store, twice)
  *
  * ATTENTION:
  * ==========
- *	Also we use an allocated search context here, this functions ARE NOT
+ *	Also we use an allocated search context here, this functions are NOT
  *	thread-safe!!!!!
  *
  *	To minimize parameter passing (or because I'm to lazy), only the

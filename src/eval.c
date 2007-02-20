@@ -1004,7 +1004,7 @@ var_redir_str(value, value_len)
     if (ga_grow(&redir_ga, (int)len) == OK)
     {
 	mch_memmove((char *)redir_ga.ga_data + redir_ga.ga_len, value, len);
-	redir_ga.ga_len += len;
+	redir_ga.ga_len += (int)len;
     }
     else
 	var_redir_stop();
@@ -10307,7 +10307,7 @@ f_getqflist(argvars, rettv)
     win_T	*wp;
 #endif
 
-    rettv->vval.v_number = FALSE;
+    rettv->vval.v_number = 0;
 #ifdef FEAT_QUICKFIX
     if (rettv_list_alloc(rettv) == OK)
     {
