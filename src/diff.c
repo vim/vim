@@ -2014,6 +2014,7 @@ ex_diffgetput(eap)
     int		start_skip, end_skip;
     int		new_count;
     int		buf_empty;
+    int		found_not_ma = FALSE;
 
     /* Find the current buffer in the list of diff buffers. */
     idx_cur = diff_buf_idx(curbuf);
@@ -2028,13 +2029,19 @@ ex_diffgetput(eap)
 	/* No argument: Find the other buffer in the list of diff buffers. */
 	for (idx_other = 0; idx_other < DB_COUNT; ++idx_other)
 	    if (curtab->tp_diffbuf[idx_other] != curbuf
-		    && curtab->tp_diffbuf[idx_other] != NULL
-		    && (eap->cmdidx != CMD_diffput
-					       || curtab->tp_diffbuf[idx_other]->b_p_ma))
-		break;
+		    && curtab->tp_diffbuf[idx_other] != NULL)
+	    {
+		if (eap->cmdidx != CMD_diffput
+				     || curtab->tp_diffbuf[idx_other]->b_p_ma)
+		    break;
+		found_not_ma = TRUE;
+	    }
 	if (idx_other == DB_COUNT)
 	{
-	    EMSG(_("E100: No other buffer in diff mode"));
+	    if (found_not_ma)
+		EMSG(_("E793: No other buffer in diff mode is modifiable"));
+	    else
+		EMSG(_("E100: No other buffer in diff mode"));
 	    return;
 	}
 
