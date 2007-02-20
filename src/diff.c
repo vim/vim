@@ -1822,14 +1822,20 @@ diff_find_change(wp, lnum, startp, endp)
 
     idx = diff_buf_idx(wp->w_buffer);
     if (idx == DB_COUNT)	/* cannot happen */
+    {
+	vim_free(line_org);
 	return FALSE;
+    }
 
     /* search for a change that includes "lnum" in the list of diffblocks. */
     for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
     if (dp == NULL || diff_check_sanity(curtab, dp) == FAIL)
+    {
+	vim_free(line_org);
 	return FALSE;
+    }
 
     off = lnum - dp->df_lnum[idx];
 

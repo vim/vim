@@ -2698,6 +2698,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
     buf = alloc(LSIZE);
     if (buf == NULL)
 	return;
+    regmatch.regprog = NULL;	/* so that we can goto theend */
 
     /* If 'infercase' is set, don't use 'smartcase' here */
     save_p_scs = p_scs;
@@ -2712,13 +2713,13 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 	char_u *pat_esc = vim_strsave_escaped(pat, (char_u *)"\\");
 
 	if (pat_esc == NULL)
-	    return ;
+	    goto theend ;
 	i = (int)STRLEN(pat_esc) + 10;
 	ptr = alloc(i);
 	if (ptr == NULL)
 	{
 	    vim_free(pat_esc);
-	    return;
+	    goto theend;
 	}
 	vim_snprintf((char *)ptr, i, "^\\s*\\zs\\V%s", pat_esc);
 	regmatch.regprog = vim_regcomp(ptr, RE_MAGIC);
