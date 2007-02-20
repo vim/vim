@@ -239,6 +239,11 @@ mch_exit(int r)
 
     if (gui.in_use)
 	gui_exit(r);
+
+#ifdef EXITFREE
+    free_all_mem();
+#endif
+
     exit(r);
 }
 

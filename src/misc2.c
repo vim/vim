@@ -1075,7 +1075,7 @@ free_all_mem()
     ResetRedobuff();
     ResetRedobuff();
 
-#ifdef FEAT_CLIENTSERVER
+#if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
     vim_free(serverDelayedStartName);
 #endif
 
