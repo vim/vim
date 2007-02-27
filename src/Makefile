@@ -201,6 +201,7 @@
 #SunOS 4.1.x			     +X11 -GUI		5.1b (J) Bram Moolenaar
 #SunOS 4.1.3_U1 (sun4c) gcc	     +X11 +GUI Athena	5.0w (J) Darren Hiebert
 #SUPER-UX 6.2 (NEC SX-4) cc	     +X11R6 Motif,Athena4.6b (P) Lennart Schultz
+#Tandem/NSK                                                  (c) Matthew Woehlke
 #Unisys 6035	      cc	     +X11 Motif		5.3  (8) Glauber Ribeiro
 #ESIX V4.2	      cc	     +X11		6.0  (a) Reinhard Wobst
 #Mac OS X 10.[23]     gcc	     Carbon		6.2  (x) Bram Moolenaar
@@ -251,6 +252,7 @@
 # (a)  See line with EXTRA_LIBS below.
 # (b)  When using gcc with the Solaris linker, make sure you don't use GNU
 #      strip, otherwise the binary may not run: "Cannot find ELF".
+# (c)  Add -lfloss to EXTRA_LIBS, see below.
 # (x)  When you get warnings for precompiled header files, run
 #      "sudo fixPrecomps".  Also see CONF_OPT_DARWIN below.
 # }}}
@@ -793,6 +795,9 @@ LINT_OPTIONS = -beprxzF
 
 ### (a)  ESIX V4.2 (Reinhard Wobst)
 #EXTRA_LIBS = -lnsl -lsocket -lgen -lXIM -lXmu -lXext
+
+### (c)  Tandem/NSK (Matthew Woehlke)
+#EXTRA_LIBS = -lfloss
 
 ### If you want to use ncurses library instead of the automatically found one
 ### after changing this, you need to do "make reconfig".

@@ -3280,7 +3280,7 @@ prepare_server(parmp)
 #  ifdef FEAT_GUI
 		(gui.in_use
 #   ifdef UNIX
-		 && getuid() != 0
+		 && getuid() != ROOT_UID
 #   endif
 		) ||
 #  endif

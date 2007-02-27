@@ -50,6 +50,15 @@
 # endif
 #endif
 
+/* user ID of root is usually zero, but not for everybody */
+#ifdef __TANDEM
+# define _TANDEM_SOURCE
+# include <floss.h>
+# define ROOT_UID 65535
+#else
+# define ROOT_UID 0
+#endif
+
 #ifdef __EMX__		/* hand-edited config.h for OS/2 with EMX */
 # include "os_os2_cfg.h"
 #endif

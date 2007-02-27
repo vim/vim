@@ -1772,7 +1772,8 @@ write_viminfo(file, forceit)
 	 */
 	st_old.st_dev = st_old.st_ino = 0;
 	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0 && getuid()
+	if (mch_stat((char *)fname, &st_old) == 0
+		&& getuid() != ROOT_UID
 		&& !(st_old.st_uid == getuid()
 			? (st_old.st_mode & 0200)
 			: (st_old.st_gid == getgid()

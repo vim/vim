@@ -98,7 +98,9 @@ extern int	atol __ARGS((char *));
 
 #ifndef USE_SYSTEM
 extern int	fork __ARGS((void));
+# ifndef __TANDEM
 extern int	execvp __ARGS((const char *, const char **));
+# endif
 extern int	wait __ARGS((int *)); /* will this break things ...? */
 extern int	waitpid __ARGS((pid_t, int *, int));
 #endif
@@ -123,10 +125,12 @@ extern void	longjmp __ARGS((jmp_buf, int));
 
 extern int	kill __ARGS((int, int));
 
+#ifndef __TANDEM
 extern int	access __ARGS((char *, int));
+#endif
 extern int	fsync __ARGS((int));
 extern int	fchown __ARGS((int, int, int));
-#if defined(HAVE_GETCWD) && !defined(sun)
+#if defined(HAVE_GETCWD) && !defined(sun) && !defined(__TANDEM)
 extern char	*getcwd __ARGS((char *, int));
 #else
 extern char	*getwd __ARGS((char *));

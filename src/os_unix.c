@@ -25,7 +25,7 @@
  * Don't use it for the Mac, it causes a warning for precompiled headers.
  * TODO: use a configure check for precompiled headers?
  */
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__TANDEM)
 # define select select_declared_wrong
 #endif
 
@@ -48,9 +48,11 @@
 /*
  * Use this prototype for select, some include files have a wrong prototype
  */
-#undef select
-#ifdef __BEOS__
-# define select	beos_select
+#ifndef __TANDEM
+# undef select
+# ifdef __BEOS__
+#  define select	beos_select
+# endif
 #endif
 
 #if defined(HAVE_SELECT)
@@ -4770,6 +4772,14 @@ RealWaitForChar(fd, msec, check_for_gpm)
 # else
 	ret = select(maxfd + 1, &rfds, NULL, &efds, tvp);
 # endif
+# ifdef __TANDEM
+	if (ret == -1 && errno == ENOTSUP)
+	{
+	    FD_ZERO(&rfds);
+	    FD_ZERO(&efds);
+	    ret = 0;
+	}
+#endif
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
 	    /* loop if MzThreads must be scheduled and timeout occured */

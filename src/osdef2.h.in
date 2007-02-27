@@ -11,13 +11,19 @@ extern char	*getenv __ARGS((char *));
 extern int	setenv __ARGS((char *, char *, int));
 extern int	putenv __ARGS((const char *));
 
+#ifndef __TANDEM
 extern int	gethostname __ARGS((char *, int));
+#endif
 extern void	perror __ARGS((char *));
 
+#ifndef __TANDEM
 extern int	sleep __ARGS((int));
+#endif
 extern int	usleep __ARGS((unsigned int));
 extern unsigned int	alarm __ARGS((unsigned int));
+#ifndef __TANDEM
 extern int	chdir __ARGS((char *));
+#endif
 extern int	fchdir __ARGS((int));
 #ifndef stat	/* could be redefined to stat64() */
 extern int	stat __ARGS((const char *, struct stat *));
@@ -28,8 +34,10 @@ extern int	lstat __ARGS((const char *, struct stat *));
 extern int	fstat __ARGS((int, struct stat *));
 extern int	open __ARGS((const char *, int, ...));
 extern int	close __ARGS((int));
+#ifndef __TANDEM
 extern int	read __ARGS((int, char *, size_t));
 extern int	write __ARGS((int, char *, size_t));
+#endif
 extern int	pipe __ARGS((int *));
 extern off_t	lseek __ARGS((int, off_t, int));
 extern void	sync __ARGS((void));

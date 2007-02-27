@@ -330,7 +330,7 @@ OpenPTY(ttyn)
     if ((f = open("/dev/ptc", O_RDWR | O_NOCTTY | O_EXTRA)) < 0)
 	return -1;
     strncpy(TtyName, ttyname(f), sizeof(TtyName));
-    if (geteuid() && mch_access(TtyName, R_OK | W_OK))
+    if (geteuid() != ROOT_UID && mch_access(TtyName, R_OK | W_OK))
     {
 	close(f);
 	return -1;
@@ -394,7 +394,7 @@ OpenPTY(ttyn)
 	    q[0] = *l;
 	    q[1] = *d;
 #ifndef MACOS
-	    if (geteuid() && mch_access(TtyName, R_OK | W_OK))
+	    if (geteuid() != ROOT_UID && mch_access(TtyName, R_OK | W_OK))
 	    {
 		close(f);
 		continue;
