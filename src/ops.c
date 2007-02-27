@@ -96,7 +96,8 @@ static void block_insert __ARGS((oparg_T *oap, char_u *s, int b_insert, struct b
 #endif
 static int	stuff_yank __ARGS((int, char_u *));
 static void	put_reedit_in_typebuf __ARGS((int silent));
-static int	put_in_typebuf __ARGS((char_u *s, int colon, int silent));
+static int	put_in_typebuf __ARGS((char_u *s, int esc, int colon,
+								 int silent));
 static void	stuffescaped __ARGS((char_u *arg, int literally));
 #ifdef FEAT_MBYTE
 static void	mb_adjust_opend __ARGS((oparg_T *oap));
@@ -1174,9 +1175,9 @@ do_execreg(regname, colon, addcr, silent)
 	    /* When in Visual mode "'<,'>" will be prepended to the command.
 	     * Remove it when it's already there. */
 	    if (VIsual_active && STRNCMP(p, "'<,'>", 5) == 0)
-		retval = put_in_typebuf(p + 5, TRUE, silent);
+		retval = put_in_typebuf(p + 5, TRUE, TRUE, silent);
 	    else
-		retval = put_in_typebuf(p, TRUE, silent);
+		retval = put_in_typebuf(p, TRUE, TRUE, silent);
 	}
 	vim_free(p);
     }
@@ -1187,7 +1188,7 @@ do_execreg(regname, colon, addcr, silent)
 	p = get_expr_line();
 	if (p == NULL)
 	    return FAIL;
-	retval = put_in_typebuf(p, colon, silent);
+	retval = put_in_typebuf(p, TRUE, colon, silent);
 	vim_free(p);
     }
 #endif
@@ -1199,7 +1200,7 @@ do_execreg(regname, colon, addcr, silent)
 	    EMSG(_(e_noinstext));
 	    return FAIL;
 	}
-	retval = put_in_typebuf(p, colon, silent);
+	retval = put_in_typebuf(p, FALSE, colon, silent);
 	vim_free(p);
     }
     else
@@ -1217,6 +1218,8 @@ do_execreg(regname, colon, addcr, silent)
 	put_reedit_in_typebuf(silent);
 	for (i = y_current->y_size; --i >= 0; )
 	{
+	    char_u *escaped;
+
 	    /* insert NL between lines and after last line if type is MLINE */
 	    if (y_current->y_type == MLINE || i < y_current->y_size - 1
 								     || addcr)
@@ -1224,8 +1227,12 @@ do_execreg(regname, colon, addcr, silent)
 		if (ins_typebuf((char_u *)"\n", remap, 0, TRUE, silent) == FAIL)
 		    return FAIL;
 	    }
-	    if (ins_typebuf(y_current->y_array[i], remap, 0, TRUE, silent)
-								      == FAIL)
+	    escaped = vim_strsave_escape_csi(y_current->y_array[i]);
+	    if (escaped == NULL)
+		return FAIL;
+	    retval = ins_typebuf(escaped, remap, 0, TRUE, silent);
+	    vim_free(escaped);
+	    if (retval == FAIL)
 		return FAIL;
 	    if (colon && ins_typebuf((char_u *)":", remap, 0, TRUE, silent)
 								      == FAIL)
@@ -1265,8 +1272,9 @@ put_reedit_in_typebuf(silent)
 }
 
     static int
-put_in_typebuf(s, colon, silent)
+put_in_typebuf(s, esc, colon, silent)
     char_u	*s;
+    int		esc;	    /* Escape CSI characters */
     int		colon;	    /* add ':' before the line */
     int		silent;
 {
@@ -1276,7 +1284,20 @@ put_in_typebuf(s, colon, silent)
     if (colon)
 	retval = ins_typebuf((char_u *)"\n", REMAP_YES, 0, TRUE, silent);
     if (retval == OK)
-	retval = ins_typebuf(s, REMAP_YES, 0, TRUE, silent);
+    {
+	char_u	*p;
+
+	if (esc)
+	    p = vim_strsave_escape_csi(s);
+	else
+	    p = s;
+	if (p == NULL)
+	    retval = FAIL;
+	else
+	    retval = ins_typebuf(p, REMAP_YES, 0, TRUE, silent);
+	if (esc)
+	    vim_free(p);
+    }
     if (colon && retval == OK)
 	retval = ins_typebuf((char_u *)":", REMAP_YES, 0, TRUE, silent);
     return retval;
