@@ -4401,7 +4401,6 @@ eval_map_expr(str)
 }
 #endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Copy "p" to allocated memory, escaping K_SPECIAL and CSI so that the result
  * can be put in the typeahead buffer.
@@ -4440,7 +4439,6 @@ vim_strsave_escape_csi(p)
     }
     return res;
 }
-#endif
 
 /*
  * Write map commands for the current mappings to an .exrc file.
