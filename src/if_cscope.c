@@ -1932,14 +1932,8 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	if ((fname = strtok(NULL, (const char *)"\t")) == NULL)
 	    continue;
 	if ((lno = strtok(NULL, (const char *)"\t")) == NULL)
-	{
-	    /* if NULL, then no "extra", although in cscope's case, there
-	     * should always be "extra".
-	     */
-	    extra = NULL;
-	}
-
-	extra = lno + strlen(lno) + 1;
+	    continue;
+	extra = strtok(NULL, (const char *)"\t");
 
 	lno[strlen(lno)-2] = '\0';  /* ignore ;" at the end */
 
