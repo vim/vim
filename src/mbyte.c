@@ -364,7 +364,6 @@ enc_alias_table[] =
     {"949",		IDX_CP949},
     {"936",		IDX_CP936},
     {"gbk",		IDX_CP936},
-    {"gb18030",		IDX_CP936},	/* only 99% the same */
     {"950",		IDX_CP950},
     {"eucjp",		IDX_EUC_JP},
     {"unix-jis",	IDX_EUC_JP},

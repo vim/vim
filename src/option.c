@@ -3290,6 +3290,14 @@ set_init_1()
 	 * If not, go back to the default "latin1". */
 	save_enc = p_enc;
 	p_enc = p;
+	if (STRCMP(p_enc, "gb18030") == 0)
+	{
+	    /* We don't support "gb18030", but "cp936" is a good substitute
+	     * for practical purposes, thus use that.  It's not an alias to
+	     * still support conversion between gb18030 and utf-8. */
+	    p_enc = vim_strsave((char_u *)"cp936");
+	    vim_free(p);
+	}
 	if (mb_init() == NULL)
 	{
 	    opt_idx = findoption((char_u *)"encoding");
