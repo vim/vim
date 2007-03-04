@@ -56,6 +56,7 @@ extern char_u *set_context_in_map_cmd __ARGS((expand_T *xp, char_u *cmd, char_u 
 extern int ExpandMappings __ARGS((regmatch_T *regmatch, int *num_file, char_u ***file));
 extern int check_abbr __ARGS((int c, char_u *ptr, int col, int mincol));
 extern char_u *vim_strsave_escape_csi __ARGS((char_u *p));
+extern void vim_unescape_csi __ARGS((char_u *p));
 extern int makemap __ARGS((FILE *fd, buf_T *buf));
 extern int put_escstr __ARGS((FILE *fd, char_u *strstart, int what));
 extern void check_map_keycodes __ARGS((void));

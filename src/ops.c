@@ -1042,6 +1042,9 @@ do_record(c)
 	    retval = FAIL;
 	else
 	{
+	    /* Remove escaping for CSI and K_SPECIAL in multi-byte chars. */
+	    vim_unescape_csi(p);
+
 	    /*
 	     * We don't want to change the default register here, so save and
 	     * restore the current register name.
