@@ -2214,48 +2214,21 @@ mch_FullName(fname, buf, len, force)
     int		len;
     int		force;		/* also expand when already absolute path */
 {
-#ifdef VMS
-    /*
-     * VMS does this in a completely different way.
-     *
-     * By default a file found in a complex path is written to the first
-     * directory in the path and not to the original directory.  This
-     * behaviour should be avoided for the existing files and we need to find
-     * the exact path of the edited file.
-     */
-    {
-	char_u	*fixed_fname = vms_fixfilename(fname);
-	int	fd = mch_open((char *)fixed_fname, O_RDONLY | O_EXTRA, 0);
-
-	if (fd > 0)
-	{
-	    char nbuf[MAXNAMLEN];
-
-	    /* File exists, use getname() to get the real name. */
-	    if (getname(fd, nbuf))
-		vim_strncpy(fixed_fname, (char_u *)nbuf, (size_t)(len - 1));
-	    close(fd);
-	}
-
-	if (STRLEN(fixed_fname) >= len)
-	    return FAIL;
-
-	STRCPY(buf, fixed_fname);
-    }
-
-#else /* not VMS */
-
     int		l;
-# ifdef OS2
+#ifdef OS2
     int		only_drive;	/* file name is only a drive letter */
-# endif
-# ifdef HAVE_FCHDIR
+#endif
+#ifdef HAVE_FCHDIR
     int		fd = -1;
     static int	dont_fchdir = FALSE;	/* TRUE when fchdir() doesn't work */
-# endif
+#endif
     char_u	olddir[MAXPATHL];
     char_u	*p;
     int		retval = OK;
+
+#ifdef VMS
+    fname = vms_fixfilename(fname);
+#endif
 
     /* expand it if forced or not an absolute path */
     if (force || !mch_isFullName(fname))
@@ -2265,16 +2238,16 @@ mch_FullName(fname, buf, len, force)
 	 * and then do the getwd() (and get back to where we were).
 	 * This will get the correct path name with "../" things.
 	 */
-# ifdef OS2
+#ifdef OS2
 	only_drive = 0;
 	if (((p = vim_strrchr(fname, '/')) != NULL)
 		|| ((p = vim_strrchr(fname, '\\')) != NULL)
 		|| (((p = vim_strchr(fname,  ':')) != NULL) && ++only_drive))
-# else
+#else
 	if ((p = vim_strrchr(fname, '/')) != NULL)
-# endif
+#endif
 	{
-# ifdef HAVE_FCHDIR
+#ifdef HAVE_FCHDIR
 	    /*
 	     * Use fchdir() if possible, it's said to be faster and more
 	     * reliable.  But on SunOS 4 it might not work.  Check this by
@@ -2290,14 +2263,14 @@ mch_FullName(fname, buf, len, force)
 		    dont_fchdir = TRUE;	    /* don't try again */
 		}
 	    }
-# endif
+#endif
 
 	    /* Only change directory when we are sure we can return to where
 	     * we are now.  After doing "su" chdir(".") might not work. */
 	    if (
-# ifdef HAVE_FCHDIR
+#ifdef HAVE_FCHDIR
 		fd < 0 &&
-# endif
+#endif
 			(mch_dirname(olddir, MAXPATHL) == FAIL
 					   || mch_chdir((char *)olddir) != 0))
 	    {
@@ -2306,7 +2279,7 @@ mch_FullName(fname, buf, len, force)
 	    }
 	    else
 	    {
-# ifdef OS2
+#ifdef OS2
 		/*
 		 * compensate for case where ':' from "D:" was the only
 		 * path separator detected in the file name; the _next_
@@ -2314,7 +2287,7 @@ mch_FullName(fname, buf, len, force)
 		 */
 		if (only_drive)
 		    p++;
-# endif
+#endif
 		/* The directory is copied into buf[], to be able to remove
 		 * the file name without changing it (could be a string in
 		 * read-only memory) */
@@ -2329,14 +2302,14 @@ mch_FullName(fname, buf, len, force)
 			fname = p + 1;
 		    *buf = NUL;
 		}
-# ifdef OS2
+#ifdef OS2
 		if (only_drive)
 		{
 		    p--;
 		    if (retval != FAIL)
 			fname--;
 		}
-# endif
+#endif
 	    }
 	}
 	if (mch_dirname(buf, len) == FAIL)
@@ -2346,14 +2319,14 @@ mch_FullName(fname, buf, len, force)
 	}
 	if (p != NULL)
 	{
-# ifdef HAVE_FCHDIR
+#ifdef HAVE_FCHDIR
 	    if (fd >= 0)
 	    {
 		l = fchdir(fd);
 		close(fd);
 	    }
 	    else
-# endif
+#endif
 		l = mch_chdir((char *)olddir);
 	    if (l != 0)
 		EMSG(_(e_prev_dir));
@@ -2362,12 +2335,14 @@ mch_FullName(fname, buf, len, force)
 	l = STRLEN(buf);
 	if (l >= len)
 	    retval = FAIL;
+#ifndef VMS
 	else
 	{
 	    if (l > 0 && buf[l - 1] != '/' && *fname != NUL
 						   && STRCMP(fname, ".") != 0)
 		STRCAT(buf, "/");
 	}
+#endif
     }
 
     /* Catch file names which are too long. */
@@ -2377,8 +2352,6 @@ mch_FullName(fname, buf, len, force)
     /* Do not append ".", "/dir/." is equal to "/dir". */
     if (STRCMP(fname, ".") != 0)
 	STRCAT(buf, fname);
-
-#endif /* VMS */
 
     return OK;
 }

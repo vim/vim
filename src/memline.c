@@ -3592,9 +3592,8 @@ makeswapname(fname, ffname, buf, dir_name)
 #else
 	    (buf->b_p_sn || buf->b_shortname),
 #endif
-#if defined(VMS) || defined(RISCOS)
-	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap>.
-	     * For VMS always use full path for swapfile. */
+#ifdef RISCOS
+	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap> */
 	    ffname,
 #else
 # ifdef HAVE_READLINK

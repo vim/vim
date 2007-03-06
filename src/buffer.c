@@ -4145,13 +4145,11 @@ fix_fname(fname)
     /*
      * Force expanding the path always for Unix, because symbolic links may
      * mess up the full path name, even though it starts with a '/'.
-     * Also expand always for VMS, it may have alternate paths that need to be
-     * resolved.
      * Also expand when there is ".." in the file name, try to remove it,
      * because "c:/src/../README" is equal to "c:/README".
      * For MS-Windows also expand names like "longna~1" to "longname".
      */
-#if defined(UNIX) || defined(VMS)
+#ifdef UNIX
     return FullName_save(fname, TRUE);
 #else
     if (!vim_isAbsName(fname) || strstr((char *)fname, "..") != NULL
