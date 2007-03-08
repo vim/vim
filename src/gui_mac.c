@@ -2800,9 +2800,6 @@ gui_mch_prepare(int *argc, char **argv)
 # endif
 #endif
 
-    /* Why did I put that in? (Dany) */
-    MoreMasterPointers (0x40 * 3); /* we love handles */
-
 #if 0
     InitCursor();
 
@@ -4966,6 +4963,7 @@ gui_mch_set_scrollbar_thumb(
     SetControl32BitMaximum (sb->id, max);
     SetControl32BitMinimum (sb->id, 0);
     SetControl32BitValue   (sb->id, val);
+    SetControlViewSize     (sb->id, size);    
 #ifdef DEBUG_MAC_SB
     printf("thumb_sb (%x) %x, %x,%x\n",sb->id, val, size, max);
 #endif
@@ -5727,7 +5725,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     /* TODO: Get the text selection from Vim */
 
     /* Call to Handle Popup */
-    status = ContextualMenuSelect(CntxMenu, where, false, kCMHelpItemNoHelp,
+    status = ContextualMenuSelect(CntxMenu, where, false, kCMHelpItemRemoveHelp,
 		       HelpName, NULL, &CntxType, &CntxMenuID, &CntxMenuItem);
 
     if (status == noErr)
