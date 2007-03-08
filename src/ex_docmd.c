@@ -5551,6 +5551,9 @@ ex_delcommand(eap)
 	mch_memmove(cmd, cmd + 1, (gap->ga_len - i) * sizeof(ucmd_T));
 }
 
+/*
+ * split and quote args for <f-args>
+ */
     static char_u *
 uc_split_args(arg, lenp)
     char_u *arg;
@@ -5567,7 +5570,12 @@ uc_split_args(arg, lenp)
 
     while (*p)
     {
-	if (p[0] == '\\' && vim_iswhite(p[1]))
+	if (p[0] == '\\' && p[1] == '\\')
+	{
+	    len += 2;
+	    p += 2;
+	}
+	else if (p[0] == '\\' && vim_iswhite(p[1]))
 	{
 	    len += 1;
 	    p += 2;
@@ -5603,7 +5611,13 @@ uc_split_args(arg, lenp)
     *q++ = '"';
     while (*p)
     {
-	if (p[0] == '\\' && vim_iswhite(p[1]))
+	if (p[0] == '\\' && p[1] == '\\')
+	{
+	    *q++ = '\\';
+	    *q++ = '\\';
+	    p += 2;
+	}
+	else if (p[0] == '\\' && vim_iswhite(p[1]))
 	{
 	    *q++ = p[1];
 	    p += 2;
@@ -5735,7 +5749,7 @@ uc_check_code(code, len, buf, cmd, eap, split_buf, split_len)
 	    }
 
 	    break;
-	case 2: /* Quote and split */
+	case 2: /* Quote and split (<f-args>) */
 	    /* This is hard, so only do it once, and cache the result */
 	    if (*split_buf == NULL)
 		*split_buf = uc_split_args(eap->arg, split_len);

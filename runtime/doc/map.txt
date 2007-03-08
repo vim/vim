@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0.  Last change: 2006 May 03
+*map.txt*       For Vim version 7.0.  Last change: 2007 Mar 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1303,12 +1303,28 @@ If the first two characters of an escape sequence are "q-" (for example,
 <q-args>) then the value is quoted in such a way as to make it a valid value
 for use in an expression.  This uses the argument as one single value.
 When there is no argument <q-args> is an empty string.
-
+							*<f-args>*
 To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command
 arguments at spaces and Tabs, quotes each argument individually, and the
 <f-args> sequence is replaced by the comma-separated list of quoted arguments.
 See the Mycmd example below.  If no arguments are given <f-args> is removed.
+   To embed whitespace into an argument of <f-args>, prepend a backslash.
+<f-args> replaces every pair of backslashes (\\) with one backslash.  A
+backslash followed by a character other than white space or a backslash
+remains unmodified.  Overview:
+
+	command		   <f-args> ~
+	XX ab		   'ab'
+	XX a\b		   'a\b'
+	XX a\ b		   'a b'
+	XX a\  b	   'a ', 'b'
+	XX a\\b		   'a\b'
+	XX a\\ b	   'a\', 'b'
+	XX a\\\b	   'a\\b'
+	XX a\\\ b	   'a\ b'
+	XX a\\\\b	   'a\\b'
+	XX a\\\\ b	   'a\\', 'b'
 
 Examples >
 
