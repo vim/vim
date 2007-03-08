@@ -13094,7 +13094,10 @@ suggest_try_soundalike_finish()
 		    vim_free(HI2SFT(hi));
 		    --todo;
 		}
+
+	    /* Clear the hashtable, it may also be used by another region. */
 	    hash_clear(&slang->sl_sounddone);
+	    hash_init(&slang->sl_sounddone);
 	}
     }
 }
