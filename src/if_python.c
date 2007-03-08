@@ -2410,6 +2410,8 @@ py_fix_cursor(int lo, int hi, int extra)
 	    curwin->w_cursor.lnum = lo;
 	    check_cursor();
 	}
+	else
+	    check_cursor_col();
 	changed_cline_bef_curs();
     }
     invalidate_botline();
@@ -2486,6 +2488,10 @@ SetBufferLine(buf_T *buf, int n, PyObject *line, int *len_change)
 	    changed_bytes((linenr_T)n, 0);
 
 	curbuf = savebuf;
+
+	/* Check that the cursor is not beyond the end of the line now. */
+	if (buf == curwin->w_buffer)
+	    check_cursor_col();
 
 	if (PyErr_Occurred() || VimErrorCheck())
 	    return FAIL;
