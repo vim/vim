@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0.  Last change: 2006 Apr 30
+*quickfix.txt*  For Vim version 7.0.  Last change: 2006 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -178,15 +178,16 @@ command with 'l'.
 			current window is used instead of the quickfix list.
 
 						*:cb* *:cbuffer* *E681*
-:cb[uffer] [bufnr]	Read the error list from the current buffer.
+:cb[uffer][!] [bufnr]	Read the error list from the current buffer.
 			When [bufnr] is given it must be the number of a
 			loaded buffer.  That buffer will then be used instead
 			of the current buffer.
 			A range can be specified for the lines to be used.
 			Otherwise all lines in the buffer are used.
+			See |:cc| for [!].
 
 						*:lb* *:lbuffer*
-:lb[uffer] [bufnr]	Same as ":cbuffer", except the location list for the
+:lb[uffer][!] [bufnr]	Same as ":cbuffer", except the location list for the
 			current window is used instead of the quickfix list.
 
 						*:cgetb* *:cgetbuffer*
