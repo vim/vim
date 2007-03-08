@@ -166,10 +166,17 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
     }
 #endif
 
-    /* When doing a blocking wait there is no need for CTRL-C to interrupt
-     * something, don't let it set got_int when it was mapped. */
-    if (mapped_ctrl_c && (wtime == -1 || wtime > 100L))
-	ctrl_c_interrupts = FALSE;
+    /* If we are going to wait for some time or block... */
+    if (wtime == -1 || wtime > 100L)
+    {
+	/* ... allow signals to kill us. */
+	(void)vim_handle_signal(SIGNAL_UNBLOCK);
+
+	/* ... there is no need for CTRL-C to interrupt something, don't let
+	 * it set got_int when it was mapped. */
+	if (mapped_ctrl_c)
+	    ctrl_c_interrupts = FALSE;
+    }
 
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -183,15 +190,13 @@ ui_inchar(buf, maxlen, wtime, tb_change_cnt)
     else
 # endif
     {
-	if (wtime == -1 || wtime > 100L)
-	    /* allow signals to kill us */
-	    (void)vim_handle_signal(SIGNAL_UNBLOCK);
 	retval = mch_inchar(buf, maxlen, wtime, tb_change_cnt);
-	if (wtime == -1 || wtime > 100L)
-	    /* block SIGHUP et al. */
-	    (void)vim_handle_signal(SIGNAL_BLOCK);
     }
 #endif
+
+    if (wtime == -1 || wtime > 100L)
+	/* block SIGHUP et al. */
+	(void)vim_handle_signal(SIGNAL_BLOCK);
 
     ctrl_c_interrupts = TRUE;
 
