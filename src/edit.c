@@ -8250,7 +8250,12 @@ ins_bs(c, mode, inserted_space_p)
 #endif
 	mincol = 0;
 						/* keep indent */
-	if (mode == BACKSPACE_LINE && curbuf->b_p_ai
+	if (mode == BACKSPACE_LINE
+		&& (curbuf->b_p_ai
+#ifdef FEAT_CINDENT
+                    || cindent_on()
+#endif
+		   )
 #ifdef FEAT_RIGHTLEFT
 		&& !revins_on
 #endif
