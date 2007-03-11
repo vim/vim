@@ -1030,6 +1030,7 @@ EXTERN linenr_T	write_no_eol_lnum INIT(= 0); /* non-zero lnum when last line
 #ifdef FEAT_WINDOWS
 EXTERN int	postponed_split INIT(= 0);  /* for CTRL-W CTRL-] command */
 EXTERN int	postponed_split_flags INIT(= 0);  /* args for win_split() */
+EXTERN int	postponed_split_tab INIT(= 0);  /* cmdmod.tab */
 # ifdef FEAT_QUICKFIX
 EXTERN int	g_do_tagpreview INIT(= 0);  /* for tag preview commands:
 					       height of preview window */

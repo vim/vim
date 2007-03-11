@@ -128,6 +128,7 @@ do_cscope_general(eap, make_split)
 	}
 	postponed_split = -1;
 	postponed_split_flags = cmdmod.split;
+	postponed_split_tab = cmdmod.tab;
     }
 #endif
 
@@ -135,6 +136,7 @@ do_cscope_general(eap, make_split)
 
 #ifdef FEAT_WINDOWS
     postponed_split_flags = 0;
+    postponed_split_tab = 0;
 #endif
 }
 

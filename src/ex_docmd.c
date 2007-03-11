@@ -7980,8 +7980,10 @@ ex_wincmd(eap)
     {
 	/* Pass flags on for ":vertical wincmd ]". */
 	postponed_split_flags = cmdmod.split;
+	postponed_split_tab = cmdmod.tab;
 	do_window(*eap->arg, eap->addr_count > 0 ? eap->line2 : 0L, xchar);
 	postponed_split_flags = 0;
+	postponed_split_tab = 0;
     }
 }
 #endif
@@ -9189,8 +9191,10 @@ ex_stag(eap)
 {
     postponed_split = -1;
     postponed_split_flags = cmdmod.split;
+    postponed_split_tab = cmdmod.tab;
     ex_tag_cmd(eap, cmdnames[eap->cmdidx].cmd_name + 1);
     postponed_split_flags = 0;
+    postponed_split_tab = 0;
 }
 #endif
 
