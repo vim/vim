@@ -3710,7 +3710,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 	case STL_BYTEVAL_X:
 	    base = 'X';
 	case STL_BYTEVAL:
-	    if (((State & INSERT) && wp == curwin) || empty_line)
+	    if (wp->w_cursor.col > STRLEN(linecont))
 		num = 0;
 	    else
 	    {
