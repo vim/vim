@@ -4677,11 +4677,12 @@ do_sub(eap)
 			/* For a multi-line match, put matchcol at the NUL at
 			 * the end of the line and set nmatch to one, so that
 			 * we continue looking for a match on the next line.
-			 * Avoids that ":s/\nB\@=//gc" get stuck. */
+			 * Avoids that ":%s/\nB\@=//gc" and ":%s/\n/,\r/gc"
+			 * get stuck when pressing 'n'. */
 			if (nmatch > 1)
 			{
 			    matchcol = (colnr_T)STRLEN(sub_firstline);
-			    nmatch = 1;
+			    skip_match = TRUE;
 			}
 			goto skip;
 		    }
