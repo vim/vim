@@ -1,6 +1,6 @@
 " Vim Plugin:	Edit the file with an existing Vim if possible
 " Maintainer:	Bram Moolenaar
-" Last Change:	2006 Apr 30
+" Last Change:	2007 Mar 17
 
 " This is a plugin, drop it in your (Unix) ~/.vim/plugin or (Win32)
 " $VIM/vimfiles/plugin directory.  Or make a symbolic link, so that you
@@ -85,9 +85,23 @@ endtry
 " Function used on the server to make the file visible and possibly execute a
 " command.
 func! EditExisting(fname, command)
-  let n = bufwinnr(a:fname)
-  if n > 0
-    exe n . "wincmd w"
+  " Get the window number of the file in the current tab page.
+  let winnr = bufwinnr(a:fname)
+  if winnr <= 0
+    " Not found, look in other tab pages.
+    let bufnr = bufnr(a:fname)
+    for i in range(tabpagenr('$'))
+      if index(tabpagebuflist(i + 1), bufnr) >= 0
+	" Make this tab page the current one and find the window number.
+	exe 'tabnext ' . (i + 1)
+	let winnr = bufwinnr(a:fname)
+	break;
+      endif
+    endfor
+  endif
+
+  if winnr > 0
+    exe winnr . "wincmd w"
   else
     exe "split " . escape(a:fname, ' #%"|')
   endif

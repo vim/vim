@@ -798,6 +798,11 @@ main
     create_windows(&params);
     TIME_MSG("opening buffers");
 
+#ifdef FEAT_EVAL
+    /* clear v:swapcommand */
+    set_vim_var_string(VV_SWAPCOMMAND, NULL, -1);
+#endif
+
     /* Ex starts at last line of the file */
     if (exmode_active)
 	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
@@ -2202,6 +2207,21 @@ scripterror:
 	    argv_idx = 1;
 	}
     }
+
+#ifdef FEAT_EVAL
+    /* If there is a "+123" or "-c" command, set v:swapcommand to the first
+     * one. */
+    if (parmp->n_commands > 0)
+    {
+	p = alloc((unsigned)STRLEN(parmp->commands[0]) + 3);
+	if (p != NULL)
+	{
+	    sprintf((char *)p, ":%s\r", parmp->commands[0]);
+	    set_vim_var_string(VV_SWAPCOMMAND, p, -1);
+	    vim_free(p);
+	}
+    }
+#endif
 }
 
 /*
