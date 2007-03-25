@@ -15769,7 +15769,15 @@ get_winnr(tp, argvar)
     if (nr > 0)
 	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
 					      wp != twin; wp = wp->w_next)
+	{
+	    if (wp == NULL)
+	    {
+		/* didn't find it in this tabpage */
+		nr = 0;
+		break;
+	    }
 	    ++nr;
+	}
     return nr;
 }
 #endif
