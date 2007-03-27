@@ -9195,7 +9195,7 @@ findfilendir(argvars, rettv, dir)
 		vim_free(fresult);
 	    fresult = find_file_in_path_option(first ? fname : NULL,
 					       first ? (int)STRLEN(fname) : 0,
-					0, first, path, dir, NULL,
+					0, first, path, dir, curbuf->b_ffname,
 					dir ? (char_u *)"" : curbuf->b_p_sua);
 	    first = FALSE;
 
