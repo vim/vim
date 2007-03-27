@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.0.  Last change: 2006 Apr 30
+*indent.txt*    For Vim version 7.0.  Last change: 2007 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,10 +434,15 @@ assume a 'shiftwidth' of 4.
 	      limits the time needed to search for the start of a comment.
 	      (default 30 lines).
 
+	#N    When N is non-zero recognize shell/Perl comments, starting with
+	      '#'.  Default N is zero: don't recognizes '#' comments.  Note
+	      that lines starting with # will still be seen as preprocessor
+	      lines.
+
 
 The defaults, spelled out in full, are:
 	cinoptions=>s,e0,n0,f0,{0,}0,^0,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,c3,C0,
-		   /0,(2s,us,U0,w0,W0,m0,j0,)20,*30
+		   /0,(2s,us,U0,w0,W0,m0,j0,)20,*30,#0
 
 Vim puts a line in column 1 if:
 - It starts with '#' (preprocessor directives), if 'cinkeys' contains '#'.

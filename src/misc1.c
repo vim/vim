@@ -4796,8 +4796,11 @@ static int	corr_ind_maxparen __ARGS((int ind_maxparen, pos_T *startpos));
 static int	find_last_paren __ARGS((char_u *l, int start, int end));
 static int	find_match __ARGS((int lookfor, linenr_T ourscope, int ind_maxparen, int ind_maxcomment));
 
+static int	ind_hash_comment = 0;   /* # starts a comment */
+
 /*
  * Skip over white space and C comments within the line.
+ * Also skip over Perl/shell comments if desired.
  */
     static char_u *
 cin_skipcomment(s)
@@ -4805,7 +4808,17 @@ cin_skipcomment(s)
 {
     while (*s)
     {
+	char_u *prev_s = s;
+
 	s = skipwhite(s);
+
+	/* Perl/shell # comment comment continues until eol.  Require a space
+	 * before # to avoid recognizing $#array. */
+	if (ind_hash_comment != 0 && s != prev_s && *s == '#')
+	{
+	    s += STRLEN(s);
+	    break;
+	}
 	if (*s != '/')
 	    break;
 	++s;
@@ -6133,7 +6146,7 @@ get_c_indent()
 	if (l[1] == '-')
 	    n = -n;
 	/* When adding an entry here, also update the default 'cinoptions' in
-	 * change.txt, and add explanation for it! */
+	 * doc/indent.txt, and add explanation for it! */
 	switch (*l)
 	{
 	    case '>': ind_level = n; break;
@@ -6166,6 +6179,7 @@ get_c_indent()
 	    case 'h': ind_scopedecl_code = n; break;
 	    case 'j': ind_java = n; break;
 	    case 'l': ind_keep_case_label = n; break;
+	    case '#': ind_hash_comment = n; break;
 	}
     }
 
