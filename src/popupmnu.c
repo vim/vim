@@ -280,8 +280,20 @@ pum_redraw()
 		    w = ptr2cells(p);
 		    if (*p == NUL || *p == TAB || totwidth + w > pum_width)
 		    {
-			/* Display the text that fits or comes before a Tab. */
-			screen_puts_len(s, (int)(p - s), row, col, attr);
+			/* Display the text that fits or comes before a Tab.
+			 * First convert it to printable characters. */
+			char_u *st;
+			int  saved = *p;
+
+			*p = NUL;
+			st = transstr(s);
+			*p = saved;
+			if (st != NULL)
+			{
+			    screen_puts_len(st, (int)STRLEN(st), row, col,
+									attr);
+			    vim_free(st);
+			}
 			col += width;
 
 			if (*p != TAB)
