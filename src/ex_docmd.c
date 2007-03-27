@@ -4176,6 +4176,7 @@ expand_filename(eap, cmdlinep, errormsgp)
     int		srclen;
     char_u	*p;
     int		n;
+    int		escaped;
 
 #ifdef FEAT_QUICKFIX
     /* Skip a regexp pattern for ":vimgrep[add] pat file..." */
@@ -4216,7 +4217,8 @@ expand_filename(eap, cmdlinep, errormsgp)
 	/*
 	 * Try to find a match at this position.
 	 */
-	repl = eval_vars(p, &srclen, &(eap->do_ecmd_lnum), errormsgp, eap->arg);
+	repl = eval_vars(p, eap->arg, &srclen, &(eap->do_ecmd_lnum),
+							 errormsgp, &escaped);
 	if (*errormsgp != NULL)		/* error detected */
 	    return FAIL;
 	if (repl == NULL)		/* no match found */
@@ -4235,11 +4237,15 @@ expand_filename(eap, cmdlinep, errormsgp)
 	    vim_free(l);
 	}
 
-	/* Need to escape white space et al. with a backslash.  Don't do this
-	 * for shell commands (may have to use quotes instead).  Don't do this
-	 * for non-unix systems when there is a single argument (spaces don't
-	 * separate arguments then). */
+	/* Need to escape white space et al. with a backslash.
+	 * Don't do this for:
+	 * - replacement that already has been escaped: "##"
+	 * - shell commands (may have to use quotes instead).
+	 * - non-unix systems when there is a single argument (spaces don't
+	 *   separate arguments then).
+	 */
 	if (!eap->usefilter
+		&& !escaped
 		&& eap->cmdidx != CMD_bang
 		&& eap->cmdidx != CMD_make
 		&& eap->cmdidx != CMD_lmake
@@ -9280,12 +9286,14 @@ ex_tag_cmd(eap, name)
  * number of characters to skip.
  */
     char_u *
-eval_vars(src, usedlen, lnump, errormsg, srcstart)
+eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
     char_u	*src;		/* pointer into commandline */
+    char_u	*srcstart;	/* beginning of valid memory for src */
     int		*usedlen;	/* characters after src that are used */
     linenr_T	*lnump;		/* line number for :e command, or NULL */
     char_u	**errormsg;	/* pointer to error message */
-    char_u	*srcstart;	/* beginning of valid memory for src */
+    int		*escaped;	/* return value has escaped white space (can
+				 * be NULL) */
 {
     int		i;
     char_u	*s;
@@ -9332,6 +9340,8 @@ eval_vars(src, usedlen, lnump, errormsg, srcstart)
 #endif
 
     *errormsg = NULL;
+    if (escaped != NULL)
+	*escaped = FALSE;
 
     /*
      * Check if there is something to do.
@@ -9407,6 +9417,8 @@ eval_vars(src, usedlen, lnump, errormsg, srcstart)
 		    result = arg_all();
 		    resultbuf = result;
 		    *usedlen = 2;
+		    if (escaped != NULL)
+			*escaped = TRUE;
 #ifdef FEAT_MODIFY_FNAME
 		    skip_mod = TRUE;
 #endif
@@ -9627,7 +9639,7 @@ expand_sfile(arg)
 	else
 	{
 	    /* replace "<sfile>" with the sourced file name, and do ":" stuff */
-	    repl = eval_vars(p, &srclen, NULL, &errormsg, result);
+	    repl = eval_vars(p, result, &srclen, NULL, &errormsg, NULL);
 	    if (errormsg != NULL)
 	    {
 		if (*errormsg)

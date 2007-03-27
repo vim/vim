@@ -44,7 +44,7 @@ extern int vim_mkdir_emsg __ARGS((char_u *name, int prot));
 extern FILE *open_exfile __ARGS((char_u *fname, int forceit, char *mode));
 extern void update_topline_cursor __ARGS((void));
 extern void exec_normal_cmd __ARGS((char_u *cmd, int remap, int silent));
-extern char_u *eval_vars __ARGS((char_u *src, int *usedlen, linenr_T *lnump, char_u **errormsg, char_u *srcstart));
+extern char_u *eval_vars __ARGS((char_u *src, char_u *srcstart, int *usedlen, linenr_T *lnump, char_u **errormsg, int *escaped));
 extern char_u *expand_sfile __ARGS((char_u *arg));
 extern int put_eol __ARGS((FILE *fd));
 extern int put_line __ARGS((FILE *fd, char *s));

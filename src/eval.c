@@ -8924,7 +8924,7 @@ f_expand(argvars, rettv)
     if (*s == '%' || *s == '#' || *s == '<')
     {
 	++emsg_off;
-	rettv->vval.v_string = eval_vars(s, &len, NULL, &errormsg, s);
+	rettv->vval.v_string = eval_vars(s, s, &len, NULL, &errormsg, NULL);
 	--emsg_off;
     }
     else
