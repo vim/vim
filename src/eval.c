@@ -14397,7 +14397,8 @@ f_setline(argvars, rettv)
 	    if (u_savesub(lnum) == OK && ml_replace(lnum, line, TRUE) == OK)
 	    {
 		changed_bytes(lnum, 0);
-		check_cursor_col();
+		if (lnum == curwin->w_cursor.lnum)
+		    check_cursor_col();
 		rettv->vval.v_number = 0;	/* OK */
 	    }
 	}

@@ -516,7 +516,14 @@ check_cursor_col()
 		|| virtual_active())
 	    curwin->w_cursor.col = len;
 	else
+	{
 	    curwin->w_cursor.col = len - 1;
+#ifdef FEAT_MBYTE
+	    /* prevent cursor from moving on the trail byte */
+	    if (has_mbyte)
+		mb_adjust_cursor();
+#endif
+	}
     }
 
 #ifdef FEAT_VIRTUALEDIT
