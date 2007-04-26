@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0.  Last change: 2006 Apr 30
+*usr_41.txt*	For Vim version 7.0.  Last change: 2007 Apr 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -703,6 +703,7 @@ System functions and manipulation of files:
 	isdirectory()		check if a directory exists
 	getfsize()		get the size of a file
 	getcwd()		get the current working directory
+	haslocaldir()		check if current window used |:lcd|
 	tempname()		get the name of a temporary file
 	mkdir()			create a new directory
 	delete()		delete a file

@@ -541,6 +541,7 @@ static void f_glob __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_globpath __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_has __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_has_key __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_haslocaldir __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_hasmapto __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_histadd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_histdel __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7110,6 +7111,7 @@ static struct fst
     {"globpath",	2, 2, f_globpath},
     {"has",		1, 1, f_has},
     {"has_key",		2, 2, f_has_key},
+    {"haslocaldir",	0, 0, f_haslocaldir},
     {"hasmapto",	1, 3, f_hasmapto},
     {"highlightID",	1, 1, f_hlID},		/* obsolete */
     {"highlight_exists",1, 1, f_hlexists},	/* obsolete */
@@ -11131,6 +11133,18 @@ f_has_key(argvars, rettv)
 
     rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
 				      get_tv_string(&argvars[1]), -1) != NULL;
+}
+
+/*
+ * "haslocaldir()" function
+ */
+/*ARGSUSED*/
+    static void
+f_haslocaldir(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = (curwin->w_localdir != NULL);
 }
 
 /*

@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0.  Last change: 2006 Nov 01
+*eval.txt*      For Vim version 7.0.  Last change: 2007 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1623,6 +1623,7 @@ glob( {expr})			String	expand file wildcards in {expr}
 globpath( {path}, {expr})	String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
 has_key( {dict}, {key})		Number	TRUE if {dict} has entry {key}
+haslocaldir()			Number	TRUE if current window executed |:lcd|
 hasmapto( {what} [, {mode} [, {abbr}]])
 				Number	TRUE if mapping to {what} exists
 histadd( {history},{item})	String	add an item to a history
@@ -3016,6 +3017,9 @@ has_key({dict}, {key})					*has_key()*
 		The result is a Number, which is 1 if |Dictionary| {dict} has
 		an entry with key {key}.  Zero otherwise.
 
+haslocaldir()						*haslocaldir()*
+		The result is a Number, which is 1 when the current
+                window has set a local path via |:lcd|, and 0 otherwise.
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		The result is a Number, which is 1 if there is a mapping that
