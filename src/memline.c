@@ -1015,18 +1015,39 @@ ml_recover()
 	msg_end();
 	goto theend;
     }
+
     /*
      * If we guessed the wrong page size, we have to recalculate the
      * highest block number in the file.
      */
     if (mfp->mf_page_size != (unsigned)char_to_long(b0p->b0_page_size))
     {
+	unsigned previous_page_size = mfp->mf_page_size;
+
 	mf_new_page_size(mfp, (unsigned)char_to_long(b0p->b0_page_size));
+	if (mfp->mf_page_size < previous_page_size)
+	{
+	    msg_start();
+	    msg_outtrans_attr(mfp->mf_fname, attr | MSG_HIST);
+	    MSG_PUTS_ATTR(_(" has been damaged (page size is smaller than minimum value).\n"),
+			attr | MSG_HIST);
+	    msg_end();
+	    goto theend;
+	}
 	if ((size = lseek(mfp->mf_fd, (off_t)0L, SEEK_END)) <= 0)
 	    mfp->mf_blocknr_max = 0;	    /* no file or empty file */
 	else
 	    mfp->mf_blocknr_max = (blocknr_T)(size / mfp->mf_page_size);
 	mfp->mf_infile_count = mfp->mf_blocknr_max;
+
+	/* need to reallocate the memory used to store the data */
+	p = alloc(mfp->mf_page_size);
+	if (p == NULL)
+	    goto theend;
+	mch_memmove(p, hp->bh_data, previous_page_size);
+	vim_free(hp->bh_data);
+	hp->bh_data = p;
+	b0p = (ZERO_BL *)(hp->bh_data);
     }
 
 /*
