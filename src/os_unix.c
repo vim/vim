@@ -55,6 +55,12 @@
 # endif
 #endif
 
+#ifdef __CYGWIN__
+# ifndef WIN32
+#  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() */
+# endif
+#endif
+
 #if defined(HAVE_SELECT)
 extern int   select __ARGS((int, fd_set *, fd_set *, fd_set *, struct timeval *));
 #endif
@@ -2228,6 +2234,13 @@ mch_FullName(fname, buf, len, force)
 
 #ifdef VMS
     fname = vms_fixfilename(fname);
+#endif
+
+#ifdef __CYGWIN__
+    /*
+     * This helps for when "/etc/hosts" is a symlink to "c:/something/hosts".
+     */
+    cygwin_conv_to_posix_path(fname, fname);
 #endif
 
     /* expand it if forced or not an absolute path */
