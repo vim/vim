@@ -2084,6 +2084,13 @@ win_close(win, free_buf)
     }
 #endif
 
+#ifdef FEAT_GUI
+    /* Avoid trouble with scrollbars that are going to be deleted in
+     * win_free(). */
+    if (gui.in_use)
+	out_flush();
+#endif
+
     /*
      * Close the link to the buffer.
      */
@@ -4174,7 +4181,6 @@ win_free(wp, tp)
 #ifdef FEAT_GUI
     if (gui.in_use)
     {
-	out_flush();
 	gui_mch_destroy_scrollbar(&wp->w_scrollbars[SBAR_LEFT]);
 	gui_mch_destroy_scrollbar(&wp->w_scrollbars[SBAR_RIGHT]);
     }
