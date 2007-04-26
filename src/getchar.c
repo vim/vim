@@ -2183,7 +2183,7 @@ vgetorpeek(advance)
 			}
 			/* Need more chars for partly match. */
 			if (mlen == typebuf.tb_len)
-			    keylen = KL_PART_MAP;
+			    keylen = KL_PART_KEY;
 			else if (max_mlen < mlen)
 			    /* no match, may have to check for termcode at
 			     * next character */
