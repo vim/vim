@@ -421,7 +421,8 @@ typedef struct Gui
 #endif	/* FEAT_GUI_GTK */
 
 #if defined(FEAT_GUI_TABLINE) \
-	&& (defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF))
+ 	&& (defined(FEAT_GUI_W32) || defined(FEAT_GUI_MOTIF) \
+                 || defined(FEAT_GUI_MAC))
     int		tabline_height;
 #endif
 

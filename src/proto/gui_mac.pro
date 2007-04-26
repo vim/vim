@@ -84,6 +84,10 @@ void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
 int gui_mch_dialog __ARGS((int type, char_u *title, char_u *message, char_u *buttons, int dfltbutton, char_u *textfield));
 char_u *gui_mch_browse __ARGS((int saving, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter));
 void gui_mch_set_foreground __ARGS((void));
+void gui_mch_show_tabline __ARGS((int showit));
+int gui_mch_showing_tabline __ARGS((void));
+void gui_mch_update_tabline __ARGS((void));
+void gui_mch_set_curtab __ARGS((int nr));
 
 char_u *C2Pascal_save __ARGS((char_u *Cstring));
 char_u *C2Pascal_save_and_remove_backslash __ARGS((char_u *Cstring));

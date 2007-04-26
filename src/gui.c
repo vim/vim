@@ -1159,7 +1159,7 @@ gui_position_components(total_width)
 #endif
 
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MOTIF))
+ 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_MAC))
     if (gui_has_tabline())
 	text_area_y += gui.tabline_height;
 #endif

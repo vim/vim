@@ -4,7 +4,7 @@
  *				GUI/Motif support by Robert Webb
  *				Macintosh port by Dany St-Amant
  *					      and Axel Kielhorn
- *				Port to MPW by Bernhard PrŸmmer
+ *				Port to MPW by Bernhard Pruemmer
  *				Initial Carbon port by Ammon Skidmore
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
@@ -258,6 +258,11 @@ static struct
 
 #ifdef USE_AEVENT
 OSErr HandleUnusedParms(const AppleEvent *theAEvent);
+#endif
+
+#ifdef FEAT_GUI_TABLINE
+static void initialise_tabline(void);
+static WindowRef drawer = NULL; // TODO: put into gui.h
 #endif
 
 /*
@@ -2357,6 +2362,13 @@ gui_mac_doMouseDownEvent(EventRecord *theEvent)
 
     thePart = FindWindow(theEvent->where, &whichWindow);
 
+#ifdef FEAT_GUI_TABLINE
+    /* prevent that the vim window size changes if it's activated by a
+       click into the tab pane */
+    if (whichWindow == drawer)
+        return;
+#endif
+
     switch (thePart)
     {
 	case (inDesk):
@@ -3096,6 +3108,13 @@ gui_mch_init(void)
     set_option_value((char_u *)"encoding", 0L, (char_u *)"utf-8", 0);
 #endif
 */
+
+#ifdef FEAT_GUI_TABLINE
+    /*
+     * Create the tabline
+     */
+    initialise_tabline();
+#endif
 
     /* TODO: Load bitmap if using TOOLBAR */
     return OK;
@@ -5895,7 +5914,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     theCPB.dirInfo.ioFDirIndex = 0;
     theCPB.dirInfo.ioNamePtr   = file.name;
     theCPB.dirInfo.ioVRefNum   = file.vRefNum;
-  /*theCPB.hFileInfo.ioDirID   = 0;*/
+    /*theCPB.hFileInfo.ioDirID   = 0;*/
     theCPB.dirInfo.ioDrDirID   = file.parID;
 
     /* As ioFDirIndex = 0, get the info of ioNamePtr,
@@ -6093,4 +6112,407 @@ im_get_status(void)
     return (script != smRoman
 	    && script == GetScriptManagerVariable(smSysScript)) ? 1 : 0;
 }
+
 #endif /* defined(USE_IM_CONTROL) || defined(PROTO) */
+
+
+
+
+#if defined(FEAT_GUI_TABLINE) || defined(PROTO)
+// drawer implementation
+static MenuRef contextMenu = NULL;
+enum
+{
+    kTabContextMenuId = 42,
+};
+
+// the caller has to CFRelease() the returned string
+    static CFStringRef
+getTabLabel(tabpage_T *page)
+{
+    get_tabline_label(page, FALSE);
+#ifdef MACOS_CONVERT
+    return mac_enc_to_cfstring(NameBuff, STRLEN(NameBuff));
+#else
+    // TODO: check internal encoding?
+    return CFStringCreateWithCString(kCFAllocatorDefault, (char *)NameBuff,
+						   kCFStringEncodingMacRoman);
+#endif
+}
+
+
+#define DRAWER_SIZE 150
+#define DRAWER_INSET 16
+
+static ControlRef dataBrowser = NULL;
+
+// when the tabline is hidden, vim doesn't call update_tabline(). When
+// the tabline is shown again, show_tabline() is called before upate_tabline(),
+// and because of this, the tab labels and vims internal tabs are out of sync
+// for a very short time. to prevent inconsistent state, we store the labels
+// of the tabs, not pointers to the tabs (which are invalid for a short time).
+static CFStringRef *tabLabels = NULL;
+static int tabLabelsSize = 0;
+
+enum
+{
+    kTabsColumn = 'Tabs'
+};
+
+    static int
+getTabCount(void)
+{
+    tabpage_T	*tp;
+    int		numTabs = 0;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
+        ++numTabs;
+    return numTabs;
+}
+
+// data browser item display callback
+    static OSStatus
+dbItemDataCallback(ControlRef browser,
+	DataBrowserItemID itemID,
+        DataBrowserPropertyID property /* column id */,
+        DataBrowserItemDataRef itemData,
+	Boolean changeValue)
+{
+    OSStatus status = noErr;
+
+    // assert(property == kTabsColumn); // why is this violated??
+
+    // changeValue is true if we have a modifieable list and data was changed.
+    // In our case, it's always false.
+    // (that is: if (changeValue) updateInternalData(); else return
+    // internalData();
+    if (!changeValue)
+    {
+	CFStringRef str;
+
+	assert(itemID - 1 >= 0 && itemID - 1 < tabLabelsSize);
+	str = tabLabels[itemID - 1];
+	status = SetDataBrowserItemDataText(itemData, str);
+    }
+    else
+	status = errDataBrowserPropertyNotSupported;
+
+    return status;
+}
+
+// data browser action callback
+    static void
+dbItemNotificationCallback(ControlRef browser,
+	DataBrowserItemID item,
+	DataBrowserItemNotification message)
+{
+    switch (message)
+    {
+	case kDataBrowserItemSelected:
+	    send_tabline_event(item);
+	    break;
+    }
+}
+
+// callbacks needed for contextual menu:
+    static void
+dbGetContextualMenuCallback(ControlRef browser,
+	MenuRef *menu,
+        UInt32 *helpType,
+	CFStringRef *helpItemString,
+        AEDesc *selection)
+{
+    // on mac os 9: kCMHelpItemNoHelp, but it's not the same
+    *helpType = kCMHelpItemRemoveHelp; // OS X only ;-)
+    *helpItemString = NULL;
+
+    *menu = contextMenu;
+}
+
+    static void
+dbSelectContextualMenuCallback(ControlRef browser,
+	MenuRef menu,
+	UInt32 selectionType,
+	SInt16 menuID,
+	MenuItemIndex menuItem)
+{
+    if (selectionType == kCMMenuItemSelected)
+    {
+	MenuCommand command;
+	GetMenuItemCommandID(menu, menuItem, &command);
+
+	// get tab that was selected when the context menu appeared
+	// (there is always one tab selected). TODO: check if the context menu
+	// isn't opened on an item but on empty space (has to be possible some
+	// way, the finder does it too ;-) )
+	Handle items = NewHandle(0);
+	if (items != NULL)
+	{
+	    int numItems;
+
+	    GetDataBrowserItems(browser, kDataBrowserNoItem, false,
+					   kDataBrowserItemIsSelected, items);
+	    numItems = GetHandleSize(items) / sizeof(DataBrowserItemID);
+	    if (numItems > 0)
+	    {
+		int idx;
+		DataBrowserItemID *itemsPtr;
+
+		HLock(items);
+		itemsPtr = (DataBrowserItemID *)*items;
+		idx = itemsPtr[0];
+		HUnlock(items);
+		send_tabline_menu_event(idx, command);
+	    }
+	    DisposeHandle(items);
+	}
+    }
+}
+
+// focus callback of the data browser to always leave focus in vim
+    static OSStatus
+dbFocusCallback(EventHandlerCallRef handler, EventRef event, void *data)
+{
+    assert(GetEventClass(event) == kEventClassControl
+	    && GetEventKind(event) == kEventControlSetFocusPart);
+
+    return paramErr;
+}
+
+
+// drawer callback to resize data browser to drawer size
+    static OSStatus
+drawerCallback(EventHandlerCallRef handler, EventRef event, void *data)
+{
+    switch (GetEventKind(event))
+    {
+	case kEventWindowBoundsChanged: // move or resize
+	    {
+		UInt32 attribs;
+		GetEventParameter(event, kEventParamAttributes, typeUInt32,
+				       NULL, sizeof(attribs), NULL, &attribs);
+		if (attribs & kWindowBoundsChangeSizeChanged) // resize
+		{
+		    Rect r;
+		    GetWindowBounds(drawer, kWindowContentRgn, &r);
+		    SetRect(&r, 0, 0, r.right - r.left, r.bottom - r.top);
+		    SetControlBounds(dataBrowser, &r);
+		    SetDataBrowserTableViewNamedColumnWidth(dataBrowser,
+							kTabsColumn, r.right);
+		}
+	    }
+	    break;
+    }
+
+    return eventNotHandledErr;
+}
+
+// Load DataBrowserChangeAttributes() dynamically on tiger (and better).
+// This way the code works on 10.2 and 10.3 as well (it doesn't have the
+// blue highlights in the list view on these systems, though. Oh well.)
+
+
+#import <mach-o/dyld.h>
+
+enum { kMyDataBrowserAttributeListViewAlternatingRowColors = (1 << 1) };
+
+    static OSStatus
+myDataBrowserChangeAttributes(ControlRef inDataBrowser,
+	OptionBits inAttributesToSet,
+	OptionBits inAttributesToClear)
+{
+    long osVersion;
+    char *symbolName;
+    NSSymbol symbol = NULL;
+    OSStatus (*dataBrowserChangeAttributes)(ControlRef inDataBrowser,
+	      OptionBits   inAttributesToSet, OptionBits inAttributesToClear);
+
+    Gestalt(gestaltSystemVersion, &osVersion);
+    if (osVersion < 0x1040) // only supported for 10.4 (and up)
+	return noErr;
+
+    // C name mangling...
+    symbolName = "_DataBrowserChangeAttributes";
+    if (!NSIsSymbolNameDefined(symbolName)
+	    || (symbol = NSLookupAndBindSymbol(symbolName)) == NULL)
+	return noErr;
+
+    dataBrowserChangeAttributes = NSAddressOfSymbol(symbol);
+    if (dataBrowserChangeAttributes == NULL)
+	return noErr; // well...
+    return dataBrowserChangeAttributes(inDataBrowser,
+				      inAttributesToSet, inAttributesToClear);
+}
+
+    static void
+initialise_tabline(void)
+{
+    Rect drawerRect = { 0, 0, 0, DRAWER_SIZE };
+    DataBrowserCallbacks dbCallbacks;
+    EventTypeSpec focusEvent = {kEventClassControl, kEventControlSetFocusPart};
+    EventTypeSpec resizeEvent = {kEventClassWindow, kEventWindowBoundsChanged};
+    DataBrowserListViewColumnDesc colDesc;
+
+    // drawers have to have compositing enabled
+    CreateNewWindow(kDrawerWindowClass,
+	    kWindowStandardHandlerAttribute
+		    | kWindowCompositingAttribute
+		    | kWindowResizableAttribute
+		    | kWindowLiveResizeAttribute,
+	    &drawerRect, &drawer);
+
+    SetThemeWindowBackground(drawer, kThemeBrushDrawerBackground, true);
+    SetDrawerParent(drawer, gui.VimWindow);
+    SetDrawerOffsets(drawer, kWindowOffsetUnchanged, DRAWER_INSET);
+
+
+    // create list view embedded in drawer
+    CreateDataBrowserControl(drawer, &drawerRect, kDataBrowserListView,
+								&dataBrowser);
+
+    dbCallbacks.version = kDataBrowserLatestCallbacks;
+    InitDataBrowserCallbacks(&dbCallbacks);
+    dbCallbacks.u.v1.itemDataCallback =
+				NewDataBrowserItemDataUPP(dbItemDataCallback);
+    dbCallbacks.u.v1.itemNotificationCallback =
+		NewDataBrowserItemNotificationUPP(dbItemNotificationCallback);
+    dbCallbacks.u.v1.getContextualMenuCallback =
+	      NewDataBrowserGetContextualMenuUPP(dbGetContextualMenuCallback);
+    dbCallbacks.u.v1.selectContextualMenuCallback =
+	NewDataBrowserSelectContextualMenuUPP(dbSelectContextualMenuCallback);
+
+    SetDataBrowserCallbacks(dataBrowser, &dbCallbacks);
+
+    SetDataBrowserListViewHeaderBtnHeight(dataBrowser, 0); // no header
+    SetDataBrowserHasScrollBars(dataBrowser, false, true); // only vertical
+    SetDataBrowserSelectionFlags(dataBrowser,
+	      kDataBrowserSelectOnlyOne | kDataBrowserNeverEmptySelectionSet);
+    SetDataBrowserTableViewHiliteStyle(dataBrowser,
+					     kDataBrowserTableViewFillHilite);
+    Boolean b = false;
+    SetControlData(dataBrowser, kControlEntireControl,
+		  kControlDataBrowserIncludesFrameAndFocusTag, sizeof(b), &b);
+
+    // enable blue background in data browser (this is only in 10.4 and vim
+    // has to support older osx versions as well, so we have to load this
+    // function dynamically)
+    myDataBrowserChangeAttributes(dataBrowser,
+		      kMyDataBrowserAttributeListViewAlternatingRowColors, 0);
+
+    // install callback that keeps focus in vim and away from the data browser
+    InstallControlEventHandler(dataBrowser, dbFocusCallback, 1, &focusEvent,
+								  NULL, NULL);
+
+    // install callback that keeps data browser at the size of the drawer
+    InstallWindowEventHandler(drawer, drawerCallback, 1, &resizeEvent,
+								  NULL, NULL);
+
+    // add "tabs" column to data browser
+    colDesc.propertyDesc.propertyID = kTabsColumn;
+    colDesc.propertyDesc.propertyType = kDataBrowserTextType;
+
+    // add if items can be selected (?): kDataBrowserListViewSelectionColumn
+    colDesc.propertyDesc.propertyFlags = kDataBrowserDefaultPropertyFlags;
+
+    colDesc.headerBtnDesc.version = kDataBrowserListViewLatestHeaderDesc;
+    colDesc.headerBtnDesc.minimumWidth = 100;
+    colDesc.headerBtnDesc.maximumWidth = 150;
+    colDesc.headerBtnDesc.titleOffset = 0;
+    colDesc.headerBtnDesc.titleString = CFSTR("Tabs");
+    colDesc.headerBtnDesc.initialOrder = kDataBrowserOrderIncreasing;
+    colDesc.headerBtnDesc.btnFontStyle.flags = 0; // use default font
+    colDesc.headerBtnDesc.btnContentInfo.contentType = kControlContentTextOnly;
+
+    AddDataBrowserListViewColumn(dataBrowser, &colDesc, 0);
+
+    // create tabline popup menu required by vim docs (see :he tabline-menu)
+    CreateNewMenu(kTabContextMenuId, 0, &contextMenu);
+    AppendMenuItemTextWithCFString(contextMenu, CFSTR("Close"), 0,
+						    TABLINE_MENU_CLOSE, NULL);
+    AppendMenuItemTextWithCFString(contextMenu, CFSTR("New Tab"), 0,
+						      TABLINE_MENU_NEW, NULL);
+    AppendMenuItemTextWithCFString(contextMenu, CFSTR("Open Tab..."), 0,
+						     TABLINE_MENU_OPEN, NULL);
+}
+
+
+/*
+ * Show or hide the tabline.
+ */
+    void
+gui_mch_show_tabline(int showit)
+{
+    if (showit == 0)
+        CloseDrawer(drawer, true);
+    else
+        OpenDrawer(drawer, kWindowEdgeRight, true);
+}
+
+/*
+ * Return TRUE when tabline is displayed.
+ */
+    int
+gui_mch_showing_tabline(void)
+{
+    WindowDrawerState state = GetDrawerState(drawer);
+
+    return state == kWindowDrawerOpen || state == kWindowDrawerOpening;
+}
+
+/*
+ * Update the labels of the tabline.
+ */
+    void
+gui_mch_update_tabline(void)
+{
+    tabpage_T	*tp;
+    int		numTabs = getTabCount();
+    int		nr = 1;
+    int		curtabidx = 1;
+
+    // adjust data browser
+    if (tabLabels != NULL)
+    {
+        int i;
+
+        for (i = 0; i < tabLabelsSize; ++i)
+            CFRelease(tabLabels[i]);
+        free(tabLabels);
+    }
+    tabLabels = (CFStringRef *)malloc(numTabs * sizeof(CFStringRef));
+    tabLabelsSize = numTabs;
+
+    for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
+    {
+	if (tp == curtab)
+	    curtabidx = nr;
+        tabLabels[nr-1] = getTabLabel(tp);
+    }
+
+    RemoveDataBrowserItems(dataBrowser, kDataBrowserNoItem, 0, NULL,
+						  kDataBrowserItemNoProperty);
+    // data browser uses ids 1, 2, 3, ... numTabs per default, so we
+    // can pass NULL for the id array
+    AddDataBrowserItems(dataBrowser, kDataBrowserNoItem, numTabs, NULL,
+						  kDataBrowserItemNoProperty);
+
+    DataBrowserItemID item = curtabidx;
+    SetDataBrowserSelectedItems(dataBrowser, 1, &item, kDataBrowserItemsAssign);
+}
+
+/*
+ * Set the current tab to "nr".  First tab is 1.
+ */
+    void
+gui_mch_set_curtab(nr)
+    int		nr;
+{
+    DataBrowserItemID item = nr;
+    SetDataBrowserSelectedItems(dataBrowser, 1, &item, kDataBrowserItemsAssign);
+
+    // TODO: call something like this?: (or restore scroll position, or...)
+    RevealDataBrowserItem(dataBrowser, item, kTabsColumn,
+						      kDataBrowserRevealOnly);
+}
+
+#endif // FEAT_GUI_TABLINE
