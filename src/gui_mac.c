@@ -28,11 +28,11 @@
  *
  */
 
- /* TODO (Jussi)
-  *   * Clipboard does not work (at least some cases)
-  *   * ATSU font rendering has some problems
-  *   * Investigate and remove dead code (there is still lots of that)
-  */
+/* TODO (Jussi)
+ *   * Clipboard does not work (at least some cases)
+ *   * ATSU font rendering has some problems
+ *   * Investigate and remove dead code (there is still lots of that)
+ */
 
 #include <Devices.h> /* included first to avoid CR problems */
 #include "vim.h"
@@ -504,9 +504,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
     /* Get number of files in list */
     *error = AECountItems(theList, numFiles);
     if (*error)
-    {
-	return(fnames);
-    }
+	return fnames;
 
     /* Allocate the pointer list */
     fnames = (char_u **) alloc(*numFiles * sizeof(char_u *));
@@ -526,7 +524,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	{
 	    /* Caller is able to clean up */
 	    /* TODO: Should be clean up or not? For safety. */
-	    return(fnames);
+	    return fnames;
 	}
 
 	/* Convert the FSSpec to a pathname */
@@ -589,15 +587,11 @@ Handle_KAHL_SRCH_AE(
 
     error = AEGetParamPtr(theAEvent, keyDirectObject, typeChar, &typeCode, (Ptr) &SearchData, sizeof(WindowSearch), &actualSize);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
     error = HandleUnusedParms(theAEvent);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	if (buf->b_ml.ml_mfp != NULL
@@ -668,9 +662,7 @@ Handle_KAHL_MOD_AE(
 
     error = HandleUnusedParms(theAEvent);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
     /* Send the reply */
 /*  replyObject.descriptorType = typeNull;
@@ -679,9 +671,7 @@ Handle_KAHL_MOD_AE(
 /* AECreateDesc(typeChar, (Ptr)&title[1], title[0], &data) */
     error = AECreateList(nil, 0, false, &replyList);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
 #if 0
     error = AECountItems(&replyList, &numFiles);
@@ -775,9 +765,7 @@ Handle_KAHL_GTTX_AE(
     error = AEGetParamPtr(theAEvent, keyDirectObject, typeChar, &typeCode, (Ptr) &GetTextData, sizeof(GetTextData), &actualSize);
 
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
 	if (buf->b_ml.ml_mfp != NULL)
@@ -826,12 +814,8 @@ Handle_KAHL_GTTX_AE(
     }
 
     error = HandleUnusedParms(theAEvent);
-    if (error)
-    {
-	return(error);
-    }
 
-    return(error);
+    return error;
 }
 
 /*
@@ -1017,9 +1001,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     /* the direct object parameter is the list of aliases to files (one or more) */
     error = AEGetParamDesc(theAEvent, keyDirectObject, typeAEList, &theList);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
 
     error = AEGetParamPtr(theAEvent, keyAEPosition, typeChar, &typeCode, (Ptr) &thePosition, sizeof(SelectionRange), &actualSize);
@@ -1028,9 +1010,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     if (error == errAEDescNotFound)
 	error = noErr;
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
 /*
     error = AEGetParamDesc(theAEvent, keyAEPosition, typeChar, &thePosition);
@@ -1134,15 +1114,11 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     /* Fake mouse event to wake from stall */
     PostEvent(mouseUp, 0);
 
-  finished:
+finished:
     AEDisposeDesc(&theList); /* dispose what we allocated */
 
     error = HandleUnusedParms(theAEvent);
-    if (error)
-    {
-	return(error);
-    }
-    return(error);
+    return error;
 }
 
 /*
@@ -1158,12 +1134,7 @@ Handle_aevt_oapp_AE(
     OSErr	error = noErr;
 
     error = HandleUnusedParms(theAEvent);
-    if (error)
-    {
-	return(error);
-    }
-
-    return(error);
+    return error;
 }
 
 /*
@@ -1180,14 +1151,12 @@ Handle_aevt_quit_AE(
 
     error = HandleUnusedParms(theAEvent);
     if (error)
-    {
-	return(error);
-    }
+	return error;
 
     /* Need to fake a :confirm qa */
     do_cmdline_cmd((char_u *)"confirm qa");
 
-    return(error);
+    return error;
 }
 
 /*
@@ -1203,12 +1172,8 @@ Handle_aevt_pdoc_AE(
     OSErr	error = noErr;
 
     error = HandleUnusedParms(theAEvent);
-    if (error)
-    {
-	return(error);
-    }
 
-    return(error);
+    return error;
 }
 
 /*
@@ -1225,12 +1190,8 @@ Handle_unknown_AE(
     OSErr	error = noErr;
 
     error = HandleUnusedParms(theAEvent);
-    if (error)
-    {
-	return(error);
-    }
 
-    return(error);
+    return error;
 }
 
 
@@ -2517,7 +2478,7 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 
     return noErr;
 
-  bail:
+bail:
     /*
      * when we fail give any additional callback handler a chance to perform
      * it's actions
@@ -2907,7 +2868,7 @@ gui_mch_init_check(void)
 #endif
 
     static OSErr
-receiveHandler(WindowRef theWindow, void* handlerRefCon, DragRef theDrag)
+receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 {
     int		x, y;
     int_u	modifiers;
@@ -4982,7 +4943,7 @@ gui_mch_set_scrollbar_thumb(
     SetControl32BitMaximum (sb->id, max);
     SetControl32BitMinimum (sb->id, 0);
     SetControl32BitValue   (sb->id, val);
-    SetControlViewSize     (sb->id, size);    
+    SetControlViewSize     (sb->id, size);
 #ifdef DEBUG_MAC_SB
     printf("thumb_sb (%x) %x, %x,%x\n",sb->id, val, size, max);
 #endif
