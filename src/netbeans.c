@@ -2143,8 +2143,6 @@ nb_do_cmd(
 		    coloncmd(":sign jump %d buffer=%d", serNum,
 						       buf->bufp->b_fnum);
 	    }
-	    /* XXX only redraw what changed. */
-	    redraw_later(CLEAR);
 #endif
 /* =====================================================================*/
 	}
