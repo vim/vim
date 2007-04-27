@@ -9078,6 +9078,12 @@ f_feedkeys(argvars, rettv)
     int		typed = FALSE;
     char_u	*keys_esc;
 
+    /* This is not allowed in the sandbox.  If the commands would still be
+     * executed in the sandbox it would be OK, but it probably happens later,
+     * when "sandbox" is no longer set. */
+    if (check_secure())
+	return;
+
     rettv->vval.v_number = 0;
     keys = get_tv_string(&argvars[0]);
     if (*keys != NUL)
