@@ -15598,6 +15598,9 @@ f_system(argvars, rettv)
     int		err = FALSE;
     FILE	*fd;
 
+    if (check_restricted() || check_secure())
+	return;
+
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	/*
@@ -16430,6 +16433,9 @@ f_writefile(argvars, rettv)
     char_u	*s;
     int		ret = 0;
     int		c;
+
+    if (check_restricted() || check_secure())
+	return;
 
     if (argvars[0].v_type != VAR_LIST)
     {
