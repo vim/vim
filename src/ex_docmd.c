@@ -375,6 +375,7 @@ static int	makeopens __ARGS((FILE *fd, char_u *dirnow));
 static int	put_view __ARGS((FILE *fd, win_T *wp, int add_edit, unsigned *flagp));
 static void	ex_loadview __ARGS((exarg_T *eap));
 static char_u	*get_view_file __ARGS((int c));
+static int	did_lcd;	/* whether ":lcd" was produced for a session */
 #else
 # define ex_loadview		ex_ni
 #endif
@@ -8573,6 +8574,8 @@ ex_mkrc(eap)
     }
 
 #ifdef FEAT_SESSION
+    did_lcd = FALSE;
+
     /* ":mkview" or ":mkview 9": generate file name with 'viewdir' */
     if (eap->cmdidx == CMD_mkview
 	    && (*eap->arg == NUL
@@ -10327,6 +10330,7 @@ put_view(fd, wp, add_edit, flagp)
 		|| ses_put_fname(fd, wp->w_localdir, flagp) == FAIL
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
+	did_lcd = TRUE;
     }
 
     return OK;
@@ -10384,11 +10388,14 @@ ses_fname(fd, buf, flagp)
     char_u	*name;
 
     /* Use the short file name if the current directory is known at the time
-     * the session file will be sourced.  Don't do this for ":mkview", we
-     * don't know the current directory. */
+     * the session file will be sourced.
+     * Don't do this for ":mkview", we don't know the current directory.
+     * Don't do this after ":lcd", we don't keep track of what the current
+     * directory is. */
     if (buf->b_sfname != NULL
 	    && flagp == &ssop_flags
-	    && (ssop_flags & (SSOP_CURDIR | SSOP_SESDIR)))
+	    && (ssop_flags & (SSOP_CURDIR | SSOP_SESDIR))
+	    && !did_lcd)
 	name = buf->b_sfname;
     else
 	name = buf->b_ffname;

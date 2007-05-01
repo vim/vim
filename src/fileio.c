@@ -8086,7 +8086,10 @@ ex_doautoall(eap)
 
 	    /* execute the autocommands for this buffer */
 	    retval = do_doautocmd(eap->arg, FALSE);
-	    do_modelines(0);
+
+	    /* Execute the modeline settings, but don't set window-local
+	     * options if we are using the current window for another buffer. */
+	    do_modelines(aco.save_curwin == NULL ? OPT_NOWIN : 0);
 
 	    /* restore the current window */
 	    aucmd_restbuf(&aco);
