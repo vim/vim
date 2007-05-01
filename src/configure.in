@@ -2590,6 +2590,17 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO),
 	AC_MSG_RESULT(not usable))
 
+dnl struct sysinfo may have the mem_unit field or not
+AC_MSG_CHECKING(for sysinfo.mem_unit)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <sys/sysinfo.h>],
+[	struct sysinfo sinfo;
+ 	sinfo.mem_unit = 1;
+	],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_MEM_UNIT),
+	AC_MSG_RESULT(no))
+
 dnl sysconf() may exist but not support what we want to use
 AC_MSG_CHECKING(for sysconf)
 AC_TRY_COMPILE(

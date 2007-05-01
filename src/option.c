@@ -3030,7 +3030,7 @@ set_init_1()
 #else
 # ifdef HAVE_TOTAL_MEM
 	    /* Use amount of memory available to Vim. */
-	    n = (mch_total_mem(FALSE) >> 11);
+	    n = (mch_total_mem(FALSE) >> 1);
 # else
 	    n = (0x7fffffff >> 11);
 # endif

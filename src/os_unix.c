@@ -428,8 +428,8 @@ mch_char_avail()
 # endif
 
 /*
- * Return total amount of memory available.  Doesn't change when memory has
- * been allocated.
+ * Return total amount of memory available in Kbyte.
+ * Doesn't change when memory has been allocated.
  */
 /* ARGSUSED */
     long_u
@@ -437,9 +437,10 @@ mch_total_mem(special)
     int special;
 {
 # ifdef __EMX__
-    return ulimit(3, 0L);   /* always 32MB? */
+    return ulimit(3, 0L) >> 10;   /* always 32MB? */
 # else
     long_u	mem = 0;
+    long_u	shiftright = 10;  /* how much to shift "mem" right for Kbyte */
 
 #  ifdef HAVE_SYSCTL
     int		mib[2], physmem;
@@ -460,7 +461,19 @@ mch_total_mem(special)
 
 	/* Linux way of getting amount of RAM available */
 	if (sysinfo(&sinfo) == 0)
+	{
+#   ifdef HAVE_SYSINFO_MEM_UNIT
+	    /* avoid overflow as much as possible */
+	    while (shiftright > 0 && (sinfo.mem_unit & 1) == 0)
+	    {
+		sinfo.mem_unit = sinfo.mem_unit >> 1;
+		--shiftright;
+	    }
+	    mem = sinfo.totalram * sinfo.mem_unit;
+#   else
 	    mem = sinfo.totalram;
+#   endif
+	}
     }
 #  endif
 
@@ -473,7 +486,15 @@ mch_total_mem(special)
 	pagesize = sysconf(_SC_PAGESIZE);
 	pagecount = sysconf(_SC_PHYS_PAGES);
 	if (pagesize > 0 && pagecount > 0)
+	{
+	    /* avoid overflow as much as possible */
+	    while (shiftright > 0 && (pagesize & 1) == 0)
+	    {
+		pagesize = pagesize >> 1;
+		--shiftright;
+	    }
 	    mem = (long_u)pagesize * pagecount;
+	}
     }
 #  endif
 
@@ -488,15 +509,18 @@ mch_total_mem(special)
 #   ifdef RLIM_INFINITY
 		&& rlp.rlim_cur != RLIM_INFINITY
 #   endif
-		&& (long_u)rlp.rlim_cur < mem
+		&& ((long_u)rlp.rlim_cur >> 10) < (mem >> shiftright)
 	   )
-	    return (long_u)rlp.rlim_cur;
+	{
+	    mem = (long_u)rlp.rlim_cur;
+	    shiftright = 10;
+	}
     }
 #  endif
 
     if (mem > 0)
-	return mem;
-    return (long_u)0x7fffffff;
+	return mem >> shiftright;
+    return (long_u)0x1fffff;
 # endif
 }
 #endif
