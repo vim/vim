@@ -6477,9 +6477,15 @@ next_search_hl(win, shl, lnum, mincol)
 	if (called_emsg)
 	{
 	    /* Error while handling regexp: stop using this regexp. */
-	    vim_free(shl->rm.regprog);
+	    if (shl == &search_hl)
+	    {
+		/* don't free the regprog in match_hl[], it's a copy */
+		vim_free(shl->rm.regprog);
+		no_hlsearch = TRUE;
+	    }
 	    shl->rm.regprog = NULL;
-	    no_hlsearch = TRUE;
+	    shl->lnum = 0;
+	    got_int = FALSE;  /* avoid the "Type :quit to exit Vim" message */
 	    break;
 	}
 	if (nmatched == 0)
