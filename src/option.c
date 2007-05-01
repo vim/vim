@@ -3429,6 +3429,11 @@ set_option_default(opt_idx, opt_flags, compatible)
 	    /* the cast to long is required for Manx C, long_i is needed for
 	     * MSVC */
 	    *(int *)varp = (int)(long)(long_i)options[opt_idx].def_val[dvi];
+#ifdef UNIX
+	    /* 'modeline' defaults to off for root */
+	    if (options[opt_idx].indir == PV_ML && getuid() == ROOT_UID)
+		*(int *)varp = FALSE;
+#endif
 	    /* May also set global value for local option. */
 	    if (both)
 		*(int *)get_varp_scope(&(options[opt_idx]), OPT_GLOBAL) =

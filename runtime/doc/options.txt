@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.0.  Last change: 2006 May 04
+*options.txt*	For Vim version 7.0.  Last change: 2007 May 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -528,7 +528,12 @@ This sets the 'dir' option to "c:\tmp".  Only a single backslash before the
 ':' is removed.  Thus to include "\:" you have to specify "\\:".
 
 No other commands than "set" are supported, for security reasons (somebody
-might create a Trojan horse text file with modelines).
+might create a Trojan horse text file with modelines).  And not all options
+can be set.  For some options a flag is set, so that when it's used the
+|sandbox| is effective.  Still, there is always a small risc that a modeline
+causes trouble.  E.g., when some joker sets 'textwidth' to 5 all your lines
+are wrapped unexpectedly.  So disable modelines before editing untrusted text.
+The mail ftplugin does this, for example.
 
 Hint: If you would like to do something else than setting an option, you could
 define an autocommand that checks the file for a specific string.  For
@@ -4520,7 +4525,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	languages, no matter what you set 'mkspellmem' to.
 
 				   *'modeline'* *'ml'* *'nomodeline'* *'noml'*
-'modeline' 'ml'		boolean	(Vim default: on, Vi default: off)
+'modeline' 'ml'		boolean	(Vim default: on (off for root),
+				 Vi default: off)
 			local to buffer
 						*'modelines'* *'mls'*
 'modelines' 'mls'	number	(default 5)
