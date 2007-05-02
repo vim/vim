@@ -722,6 +722,12 @@ win_split_ins(size, flags, newwin, dir)
 	need_status = STATUS_HEIGHT;
     }
 
+#ifdef FEAT_GUI
+    /* May be needed for the scrollbars that are going to change. */
+    if (gui.in_use)
+	out_flush();
+#endif
+
 #ifdef FEAT_VERTSPLIT
     if (flags & WSP_VERT)
     {
@@ -4071,6 +4077,12 @@ win_alloc(after)
 
     if (newwin != NULL)
     {
+#ifdef FEAT_AUTOCMD
+	/* Don't execute autocommands while the window is not properly
+	 * initialized yet.  gui_create_scrollbar() may trigger a FocusGained
+	 * event. */
+	++autocmd_block;
+#endif
 	/*
 	 * link the window in the window list
 	 */
@@ -4100,7 +4112,6 @@ win_alloc(after)
 #ifdef FEAT_GUI
 	if (gui.in_use)
 	{
-	    out_flush();
 	    gui_create_scrollbar(&newwin->w_scrollbars[SBAR_LEFT],
 		    SBAR_LEFT, newwin);
 	    gui_create_scrollbar(&newwin->w_scrollbars[SBAR_RIGHT],
@@ -4113,6 +4124,9 @@ win_alloc(after)
 #endif
 #ifdef FEAT_FOLDING
 	foldInitWin(newwin);
+#endif
+#ifdef FEAT_AUTOCMD
+	--autocmd_block;
 #endif
     }
     return newwin;
@@ -4129,6 +4143,12 @@ win_free(wp, tp)
     tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     int		i;
+
+#ifdef FEAT_AUTOCMD
+    /* Don't execute autocommands while the window is halfway being deleted.
+     * gui_mch_destroy_scrollbar() may trigger a FocusGained event. */
+    ++autocmd_block;
+#endif
 
 #ifdef FEAT_MZSCHEME
     mzscheme_window_free(wp);
@@ -4188,6 +4208,10 @@ win_free(wp, tp)
 
     win_remove(wp, tp);
     vim_free(wp);
+
+#ifdef FEAT_AUTOCMD
+    --autocmd_block;
+#endif
 }
 
 /*
