@@ -2287,6 +2287,8 @@ ex_listdo(eap)
 		if (!win_valid(wp))
 		    break;
 		win_goto(wp);
+		if (curwin != wp)
+		    break;  /* something must be wrong */
 		wp = curwin->w_next;
 	    }
 	    else if (eap->cmdidx == CMD_tabdo)
