@@ -1140,8 +1140,13 @@ gui_mch_set_parent(char *title)
     static void
 ole_error(char *arg)
 {
-    EMSG2(_("E243: Argument not supported: \"-%s\"; Use the OLE version."),
-									 arg);
+    char buf[IOSIZE];
+
+    /* Can't use EMSG() here, we have not finished initialisation yet. */
+    vim_snprintf(buf, IOSIZE,
+	    _("E243: Argument not supported: \"-%s\"; Use the OLE version."),
+	    arg);
+    mch_errmsg(buf);
 }
 #endif
 
@@ -3164,8 +3169,9 @@ gui_mch_dialog(
 
     /*
      * Check button names.  A long one will make the dialog wider.
+     * When called early (-register error message) p_go isn't initialized.
      */
-    vertical = (vim_strchr(p_go, GO_VERTICAL) != NULL);
+    vertical = (p_go != NULL && vim_strchr(p_go, GO_VERTICAL) != NULL);
     if (!vertical)
     {
 	// Place buttons horizontally if they fit.
