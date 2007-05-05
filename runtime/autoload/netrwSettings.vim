@@ -1,8 +1,8 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Mar 22, 2006
+" Date:		Jan 05, 2007
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	6
-" Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
+" Version:	9b	ASTRO-ONLY
+" Copyright:    Copyright (C) 1999-2007 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v6"
+let g:loaded_netrwSettings  = "v9b"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
@@ -39,8 +39,8 @@ fun! netrwSettings#NetrwSettings()
 
   " these variables have the following default effects when they don't
   " exist (ie. have not been set by the user in his/her .vimrc)
-  if !exists("g:netrw_longlist")
-   let g:netrw_longlist= 0
+  if !exists("g:netrw_liststyle")
+   let g:netrw_liststyle= 0
    let g:netrw_list_cmd= "ssh HOSTNAME ls -FLa"
   endif
   if !exists("g:netrw_silent")
@@ -81,6 +81,8 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_ftp               = '.g:netrw_ftp
   put = 'let g:netrw_ftpmode           = '.g:netrw_ftpmode
   put = 'let g:netrw_ignorenetrc       = '.g:netrw_ignorenetrc
+  let shqline= line("$")
+  put = 'let g:netrw_shq...'
   put = 'let g:netrw_use_nt_rcp        = '.g:netrw_use_nt_rcp
   put = 'let g:netrw_win95ftp          = '.g:netrw_win95ftp
   let s:netrw_xfer_stop= line(".")
@@ -99,14 +101,17 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_fastbrowse        = '.g:netrw_fastbrowse
   put = 'let g:netrw_ftp_browse_reject = '.g:netrw_ftp_browse_reject
   put = 'let g:netrw_ftp_list_cmd      = '.g:netrw_ftp_list_cmd
+  put = 'let g:netrw_ftp_sizelist_cmd  = '.g:netrw_ftp_sizelist_cmd
+  put = 'let g:netrw_ftp_timelist_cmd  = '.g:netrw_ftp_timelist_cmd
   put = 'let g:netrw_hide              = '.g:netrw_hide
   put = 'let g:netrw_keepdir           = '.g:netrw_keepdir
   put = 'let g:netrw_list_cmd          = '.g:netrw_list_cmd
   put = 'let g:netrw_list_hide         = '.g:netrw_list_hide
   put = 'let g:netrw_local_mkdir       = '.g:netrw_local_mkdir
   put = 'let g:netrw_local_rmdir       = '.g:netrw_local_rmdir
-  put = 'let g:netrw_longlist          = '.g:netrw_longlist
+  put = 'let g:netrw_liststyle         = '.g:netrw_liststyle
   put = 'let g:netrw_maxfilenamelen    = '.g:netrw_maxfilenamelen
+  put = 'let g:netrw_menu              = '.g:netrw_menu
   put = 'let g:netrw_mkdir_cmd         = '.g:netrw_mkdir_cmd
   put = 'let g:netrw_rename_cmd        = '.g:netrw_rename_cmd
   put = 'let g:netrw_rm_cmd            = '.g:netrw_rm_cmd
@@ -118,6 +123,7 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
   put = 'let g:netrw_timefmt           = '.g:netrw_timefmt
+  put = 'let g:netrw_use_noswf         = '.g:netrw_use_noswf
   put = 'let g:netrw_winsize           = '.g:netrw_winsize
 
   put =''
@@ -130,9 +136,18 @@ fun! netrwSettings#NetrwSettings()
   silent %s/= $/= ''/e
   1
 
+  " Put in shq setting.
+  " (deferred so as to avoid the quote manipulation just preceding)
+  if g:netrw_shq == "'"
+   call setline(shqline,'let g:netrw_shq               = "'.g:netrw_shq.'"')
+  else
+   call setline(shqline,"let g:netrw_shq               = '".g:netrw_shq."'")
+  endif
+
   set nomod
 
-  map <buffer> <silent> <F1> :call NetrwSettingHelp()<cr>
+  nmap <buffer> <silent> <F1>                       :call NetrwSettingHelp()<cr>
+  nnoremap <buffer> <silent> <leftmouse> <leftmouse>:call NetrwSettingHelp()<cr>
   let tmpfile= tempname()
   exe 'au BufWriteCmd	Netrw\ Settings	silent w! '.tmpfile.'|so '.tmpfile.'|call delete("'.tmpfile.'")|set nomod'
 endfun

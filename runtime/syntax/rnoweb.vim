@@ -1,15 +1,12 @@
 " Vim syntax file
 " Language:    R noweb Files
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2006 Apr 25
-" Version:     0.6
+" Last Change: 2007 Mär 30
+" Version:     0.8
 " SVN:	       $Id$
 " Remarks:     - This file is inspired by the proposal of 
 "				 Fernando Henrique Ferraz Pereira da Rosa <feferraz@ime.usp.br>
 "			     http://www.ime.usp.br/~feferraz/en/sweavevim.html
-"			   - It extends some clusters from syntax/tex.vim (version 33,
-"			   	 March 06 2006) and therefore depends on some contents 
-"			     of this file
 "
 
 " Version Clears: {{{1
@@ -23,21 +20,24 @@ endif
 
 syn case match
 
-" Extension of Tex regions {{{1
+" Extension of Tex clusters {{{1
 runtime syntax/tex.vim
 unlet b:current_syntax
 
-syn cluster texDocGroup		contains=texPartZone,@texPartGroup,@rnoweb
-syn cluster texPartGroup		contains=texChapterZone,texSectionZone,texParaZone,@rnoweb
-syn cluster texChapterGroup		contains=texSectionZone,texParaZone,@rnoweb
-syn cluster texSectionGroup		contains=texSubSectionZone,texParaZone,@rnoweb
-syn cluster texSubSectionGroup		contains=texSubSubSectionZone,texParaZone,@rnoweb
-syn cluster texSubSubSectionGroup	contains=texParaZone,@rnoweb
-syn cluster texParaGroup		contains=texSubParaZone,@rnoweb
+syn cluster texMatchGroup add=@rnoweb
+syn cluster texEnvGroup add=@rnoweb
+syn cluster texFoldGroup add=@rnoweb
+syn cluster texDocGroup		add=@rnoweb
+syn cluster texPartGroup		add=@rnoweb
+syn cluster texChapterGroup		add=@rnoweb
+syn cluster texSectionGroup		add=@rnoweb
+syn cluster texSubSectionGroup		add=@rnoweb
+syn cluster texSubSubSectionGroup	add=@rnoweb
+syn cluster texParaGroup		add=@rnoweb
 
 " Highlighting of R code using an existing r.vim syntax file if available {{{1
 syn include @rnowebR syntax/r.vim
-syn region rnowebChunk matchgroup=rnowebDelimiter start="^<<.*>>=" matchgroup=rnowebDelimiter end="^@" contains=@rnowebR,rnowebChunkReference,rnowebChunk keepend
+syn region rnowebChunk matchgroup=rnowebDelimiter start="^<<.*>>=" matchgroup=rnowebDelimiter end="^@" contains=@rnowebR,rnowebChunkReference,rnowebChunk fold keepend
 syn match rnowebChunkReference "^<<.*>>$" contained
 syn region rnowebSexpr matchgroup=Delimiter start="\\Sexpr{" matchgroup=Delimiter end="}" contains=@rnowebR
 

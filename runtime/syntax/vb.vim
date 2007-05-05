@@ -3,7 +3,8 @@
 " Maintainer:	Tim Chase <vb.vim@tim.thechases.com>
 " Former Maintainer:	Robert M. Cortopassi <cortopar@mindspring.com>
 "	(tried multiple times to contact, but email bounced)
-" Last Change:	2004 May 25
+" Last Change:
+"   2005 May 25  Synched with work by Thomas Barthel
 "   2004 May 30  Added a few keywords
 
 " This was thrown together after seeing numerous requests on the
@@ -21,223 +22,320 @@ endif
 " VB is case insensitive
 syn case ignore
 
-syn keyword vbStatement Alias AppActivate As Base Beep Call Case
-syn keyword vbStatement ChDir ChDrive Const Declare DefBool DefByte
-syn keyword vbStatement DefCur DefDate DefDbl DefDec DefInt
-syn keyword vbStatement DefLng DefObj DefSng DefStr Deftype
-syn keyword vbStatement DefVar DeleteSetting Dim Do Each Else
-syn keyword vbStatement ElseIf End Enum Erase Event Exit Explicit
-syn keyword vbStatement FileCopy For ForEach Function Get GoSub
-syn keyword vbStatement GoTo If Implements Kill Let Lib LineInput
-syn keyword vbStatement Lock Loop LSet MkDir Name Next OnError On
-syn keyword vbStatement Option Preserve Private Property Public Put
-syn keyword vbStatement RaiseEvent Randomize ReDim Reset Resume
-syn keyword vbStatement Return RmDir RSet SavePicture SaveSetting
-syn keyword vbStatement SendKeys Select SetAttr Static Step Sub
-syn keyword vbStatement Then Type Unlock Until Wend While Width
-syn keyword vbStatement With Write
+syn keyword vbConditional If Then ElseIf Else Select Case
 
-syn keyword vbFunction Abs Array Asc AscB AscW Atn Avg CBool
-syn keyword vbFunction CByte CCur CDate CDbl Cdec Choose Chr
-syn keyword vbFunction ChrB ChrW CInt CLng Command Cos Count
-syn keyword vbFunction CreateObject CSng CStr CurDir CVar
-syn keyword vbFunction CVDate CVErr DateAdd DateDiff DatePart
-syn keyword vbFunction DateSerial DateValue Day DDB Dir
-syn keyword vbFunction DoEvents Environ EOF Error Exp FileAttr
-syn keyword vbFunction FileDateTime FileLen Fix Format FreeFile
-syn keyword vbFunction FV GetAllStrings GetAttr
-syn keyword vbFunction GetAutoServerSettings GetObject
-syn keyword vbFunction GetSetting Hex Hour IIf IMEStatus Input
-syn keyword vbFunction InputB InputBox InStr InstB Int IPmt
-syn keyword vbFunction IsArray IsDate IsEmpty IsError IsMissing
-syn keyword vbFunction IsNull IsNumeric IsObject LBound LCase
-syn keyword vbFunction Left LeftB Len LenB LoadPicture Loc LOF
-syn keyword vbFunction Log LTrim Max Mid MidB Min Minute MIRR
-syn keyword vbFunction Month MsgBox Now NPer NPV Oct Partition
-syn keyword vbFunction Pmt PPmt PV QBColor Rate RGB Right
-syn keyword vbFunction RightB Rnd RTrim Second Seek Sgn Shell
-syn keyword vbFunction Sin SLN Space Spc Sqr StDev StDevP Str
-syn keyword vbFunction StrComp StrConv String Switch Sum SYD
-syn keyword vbFunction Tab Tan Time Timer TimeSerial TimeValue
-syn keyword vbFunction Trim TypeName UBound UCase Val Var VarP
-syn keyword vbFunction VarType Weekday Year
-
-syn keyword vbMethods Accept Activate Add AddCustom AddFile
-syn keyword vbMethods AddFromFile AddFromTemplate AddItem
-syn keyword vbMethods AddNew AddToAddInToolbar
-syn keyword vbMethods AddToolboxProgID Append AppendChunk
-syn keyword vbMethods Arrange Assert AsyncRead BatchUpdate
-syn keyword vbMethods BeginTrans Bind Cancel CancelAsyncRead
-syn keyword vbMethods CancelBatch CancelUpdate
-syn keyword vbMethods CanPropertyChange CaptureImage CellText
-syn keyword vbMethods CellValue Circle Clear ClearFields
-syn keyword vbMethods ClearSel ClearSelCols Clone Close Cls
-syn keyword vbMethods ColContaining ColumnSize CommitTrans
-syn keyword vbMethods CompactDatabase Compose Connect Copy
-syn keyword vbMethods CopyQueryDef CreateDatabase
-syn keyword vbMethods CreateDragImage CreateEmbed CreateField
-syn keyword vbMethods CreateGroup CreateIndex CreateLink
-syn keyword vbMethods CreatePreparedStatement CreatePropery
-syn keyword vbMethods CreateQuery CreateQueryDef
-syn keyword vbMethods CreateRelation CreateTableDef CreateUser
-syn keyword vbMethods CreateWorkspace Customize Delete
-syn keyword vbMethods DeleteColumnLabels DeleteColumns
-syn keyword vbMethods DeleteRowLabels DeleteRows DoVerb Drag
-syn keyword vbMethods Draw Edit EditCopy EditPaste EndDoc
-syn keyword vbMethods EnsureVisible EstablishConnection
-syn keyword vbMethods Execute ExtractIcon Fetch FetchVerbs
-syn keyword vbMethods Files FillCache Find FindFirst FindItem
-syn keyword vbMethods FindLast FindNext FindPrevious Forward
-syn keyword vbMethods GetBookmark GetChunk GetClipString
-syn keyword vbMethods GetData GetFirstVisible GetFormat
-syn keyword vbMethods GetHeader GetLineFromChar GetNumTicks
-syn keyword vbMethods GetRows GetSelectedPart GetText
-syn keyword vbMethods GetVisibleCount GoBack GoForward Hide
-syn keyword vbMethods HitTest HoldFields Idle InitializeLabels
-syn keyword vbMethods InsertColumnLabels InsertColumns
-syn keyword vbMethods InsertObjDlg InsertRowLabels InsertRows
-syn keyword vbMethods Item KillDoc Layout Line LinkExecute
-syn keyword vbMethods LinkPoke LinkRequest LinkSend Listen
-syn keyword vbMethods LoadFile LoadResData LoadResPicture
-syn keyword vbMethods LoadResString LogEvent MakeCompileFile
-syn keyword vbMethods MakeReplica MoreResults Move MoveData
-syn keyword vbMethods MoveFirst MoveLast MoveNext MovePrevious
-syn keyword vbMethods NavigateTo NewPage NewPassword
-syn keyword vbMethods NextRecordset OLEDrag OnAddinsUpdate
-syn keyword vbMethods OnConnection OnDisconnection
-syn keyword vbMethods OnStartupComplete Open OpenConnection
-syn keyword vbMethods OpenDatabase OpenQueryDef OpenRecordset
-syn keyword vbMethods OpenResultset OpenURL Overlay
-syn keyword vbMethods PaintPicture Paste PastSpecialDlg
-syn keyword vbMethods PeekData Play Point PopulatePartial
-syn keyword vbMethods PopupMenu Print PrintForm
-syn keyword vbMethods PropertyChanged PSet Quit Raise
-syn keyword vbMethods RandomDataFill RandomFillColumns
-syn keyword vbMethods RandomFillRows rdoCreateEnvironment
-syn keyword vbMethods rdoRegisterDataSource ReadFromFile
-syn keyword vbMethods ReadProperty Rebind ReFill Refresh
-syn keyword vbMethods RefreshLink RegisterDatabase Reload
-syn keyword vbMethods Remove RemoveAddInFromToolbar RemoveItem
-syn keyword vbMethods Render RepairDatabase Reply ReplyAll
-syn keyword vbMethods Requery ResetCustom ResetCustomLabel
-syn keyword vbMethods ResolveName RestoreToolbar Resync
-syn keyword vbMethods Rollback RollbackTrans RowBookmark
-syn keyword vbMethods RowContaining RowTop Save SaveAs
-syn keyword vbMethods SaveFile SaveToFile SaveToolbar
-syn keyword vbMethods SaveToOle1File Scale ScaleX ScaleY
-syn keyword vbMethods Scroll SelectAll SelectPart SelPrint
-syn keyword vbMethods Send SendData Set SetAutoServerSettings
-syn keyword vbMethods SetData SetFocus SetOption SetSize
-syn keyword vbMethods SetText SetViewport Show ShowColor
-syn keyword vbMethods ShowFont ShowHelp ShowOpen ShowPrinter
-syn keyword vbMethods ShowSave ShowWhatsThis SignOff SignOn
-syn keyword vbMethods Size Span SplitContaining StartLabelEdit
-syn keyword vbMethods StartLogging Stop Synchronize TextHeight
-syn keyword vbMethods TextWidth ToDefaults TwipsToChartPart
-syn keyword vbMethods TypeByChartType Update UpdateControls
-syn keyword vbMethods UpdateRecord UpdateRow Upto
-syn keyword vbMethods WhatsThisMode WriteProperty ZOrder
-
-syn keyword vbEvents AccessKeyPress AfterAddFile
-syn keyword vbEvents AfterChangeFileName AfterCloseFile
-syn keyword vbEvents AfterColEdit AfterColUpdate AfterDelete
-syn keyword vbEvents AfterInsert AfterLabelEdit
-syn keyword vbEvents AfterRemoveFile AfterUpdate
-syn keyword vbEvents AfterWriteFile AmbienChanged
-syn keyword vbEvents ApplyChanges Associate AsyncReadComplete
-syn keyword vbEvents AxisActivated AxisLabelActivated
-syn keyword vbEvents AxisLabelSelected AxisLabelUpdated
-syn keyword vbEvents AxisSelected AxisTitleActivated
-syn keyword vbEvents AxisTitleSelected AxisTitleUpdated
-syn keyword vbEvents AxisUpdated BeforeClick BeforeColEdit
-syn keyword vbEvents BeforeColUpdate BeforeConnect
-syn keyword vbEvents BeforeDelete BeforeInsert
-syn keyword vbEvents BeforeLabelEdit BeforeLoadFile
-syn keyword vbEvents BeforeUpdate ButtonClick ButtonCompleted
-syn keyword vbEvents ButtonGotFocus ButtonLostFocus Change
-syn keyword vbEvents ChartActivated ChartSelected
-syn keyword vbEvents ChartUpdated Click ColEdit Collapse
-syn keyword vbEvents ColResize ColumnClick Compare
-syn keyword vbEvents ConfigChageCancelled ConfigChanged
-syn keyword vbEvents ConnectionRequest DataArrival
-syn keyword vbEvents DataChanged DataUpdated DblClick
-syn keyword vbEvents Deactivate DeviceArrival
-syn keyword vbEvents DeviceOtherEvent DeviceQueryRemove
-syn keyword vbEvents DeviceQueryRemoveFailed
-syn keyword vbEvents DeviceRemoveComplete DeviceRemovePending
-syn keyword vbEvents DevModeChange Disconnect DisplayChanged
-syn keyword vbEvents Dissociate DoGetNewFileName Done
-syn keyword vbEvents DonePainting DownClick DragDrop DragOver
-syn keyword vbEvents DropDown EditProperty EnterCell
-syn keyword vbEvents EnterFocus ExitFocus Expand
-syn keyword vbEvents FootnoteActivated FootnoteSelected
-syn keyword vbEvents FootnoteUpdated GotFocus HeadClick
-syn keyword vbEvents InfoMessage Initialize IniProperties
-syn keyword vbEvents ItemActivated ItemAdded ItemCheck
-syn keyword vbEvents ItemClick ItemReloaded ItemRemoved
-syn keyword vbEvents ItemRenamed ItemSeletected KeyDown
-syn keyword vbEvents KeyPress KeyUp LeaveCell LegendActivated
-syn keyword vbEvents LegendSelected LegendUpdated LinkClose
-syn keyword vbEvents LinkError LinkNotify LinkOpen Load
-syn keyword vbEvents LostFocus MouseDown MouseMove MouseUp
-syn keyword vbEvents NodeClick ObjectMove OLECompleteDrag
-syn keyword vbEvents OLEDragDrop OLEDragOver OLEGiveFeedback
-syn keyword vbEvents OLESetData OLEStartDrag OnAddNew OnComm
-syn keyword vbEvents Paint PanelClick PanelDblClick
-syn keyword vbEvents PathChange PatternChange PlotActivated
-syn keyword vbEvents PlotSelected PlotUpdated PointActivated
-syn keyword vbEvents PointLabelActivated PointLabelSelected
-syn keyword vbEvents PointLabelUpdated PointSelected
-syn keyword vbEvents PointUpdated PowerQuerySuspend
-syn keyword vbEvents PowerResume PowerStatusChanged
-syn keyword vbEvents PowerSuspend QueryChangeConfig
-syn keyword vbEvents QueryComplete QueryCompleted
-syn keyword vbEvents QueryTimeout QueryUnload ReadProperties
-syn keyword vbEvents Reposition RequestChangeFileName
-syn keyword vbEvents RequestWriteFile Resize ResultsChanged
-syn keyword vbEvents RowColChange RowCurrencyChange RowResize
-syn keyword vbEvents RowStatusChanged SelChange
-syn keyword vbEvents SelectionChanged SendComplete
-syn keyword vbEvents SendProgress SeriesActivated
-syn keyword vbEvents SeriesSelected SeriesUpdated
-syn keyword vbEvents SettingChanged SplitChange StateChanged
-syn keyword vbEvents StatusUpdate SysColorsChanged Terminate
-syn keyword vbEvents TimeChanged TitleActivated TitleSelected
-syn keyword vbEvents TitleActivated UnboundAddData
-syn keyword vbEvents UnboundDeleteRow
-syn keyword vbEvents UnboundGetRelativeBookmark
-syn keyword vbEvents UnboundReadData UnboundWriteData Unload
-syn keyword vbEvents UpClick Updated Validate ValidationError
-syn keyword vbEvents WillAssociate WillChangeData
-syn keyword vbEvents WillDissociate WillExecute
-syn keyword vbEvents WillUpdateRows WriteProperties
-
-syn keyword vbTypes Boolean Byte Currency Date Decimal
-syn keyword vbTypes Double Empty Integer Long Single String
+syn keyword vbOperator AddressOf And ByRef ByVal Eqv Imp In
+syn keyword vbOperator Is Like Mod Not Or To Xor
 
 syn match vbOperator "[()+.,\-/*=&]"
 syn match vbOperator "[<>]=\="
 syn match vbOperator "<>"
 syn match vbOperator "\s\+_$"
-syn keyword vbOperator And Or Not Xor Mod In Is Imp Eqv
-syn keyword vbOperator To ByVal ByRef
-syn keyword vbConst True False Null Nothing
 
-syn keyword vbTodo contained TODO
+syn keyword vbBoolean  True False
+syn keyword vbConst Null Nothing
 
+syn keyword vbRepeat Do For ForEach Loop Next
+syn keyword vbRepeat Step To Until Wend While
+
+syn keyword vbEvents AccessKeyPress Activate ActiveRowChanged
+syn keyword vbEvents AfterAddFile AfterChangeFileName AfterCloseFile
+syn keyword vbEvents AfterColEdit AfterColUpdate AfterDelete
+syn keyword vbEvents AfterInsert AfterLabelEdit AfterRemoveFile
+syn keyword vbEvents AfterUpdate AfterWriteFile AmbientChanged
+syn keyword vbEvents ApplyChanges Associate AsyncProgress
+syn keyword vbEvents AsyncReadComplete AsyncReadProgress AxisActivated
+syn keyword vbEvents AxisLabelActivated AxisLabelSelected
+syn keyword vbEvents AxisLabelUpdated AxisSelected AxisTitleActivated
+syn keyword vbEvents AxisTitleSelected AxisTitleUpdated AxisUpdated
+syn keyword vbEvents BeforeClick BeforeColEdit BeforeColUpdate
+syn keyword vbEvents BeforeConnect BeforeDelete BeforeInsert
+syn keyword vbEvents BeforeLabelEdit BeforeLoadFile BeforeUpdate
+syn keyword vbEvents BeginRequest BeginTrans ButtonClick
+syn keyword vbEvents ButtonCompleted ButtonDropDown ButtonGotFocus
+syn keyword vbEvents ButtonLostFocus CallbackKeyDown Change Changed
+syn keyword vbEvents ChartActivated ChartSelected ChartUpdated Click
+syn keyword vbEvents Close CloseQuery CloseUp ColEdit ColResize
+syn keyword vbEvents Collapse ColumnClick CommitTrans Compare
+syn keyword vbEvents ConfigChageCancelled ConfigChanged
+syn keyword vbEvents ConfigChangedCancelled Connect ConnectionRequest
+syn keyword vbEvents CurrentRecordChanged DECommandAdded
+syn keyword vbEvents DECommandPropertyChanged DECommandRemoved
+syn keyword vbEvents DEConnectionAdded DEConnectionPropertyChanged
+syn keyword vbEvents DEConnectionRemoved DataArrival DataChanged
+syn keyword vbEvents DataUpdated DateClicked DblClick Deactivate
+syn keyword vbEvents DevModeChange DeviceArrival DeviceOtherEvent
+syn keyword vbEvents DeviceQueryRemove DeviceQueryRemoveFailed
+syn keyword vbEvents DeviceRemoveComplete DeviceRemovePending
+syn keyword vbEvents Disconnect DisplayChanged Dissociate
+syn keyword vbEvents DoGetNewFileName Done DonePainting DownClick
+syn keyword vbEvents DragDrop DragOver DropDown EditProperty EditQuery
+syn keyword vbEvents EndRequest EnterCell EnterFocus ExitFocus Expand
+syn keyword vbEvents FontChanged FootnoteActivated FootnoteSelected
+syn keyword vbEvents FootnoteUpdated Format FormatSize GotFocus
+syn keyword vbEvents HeadClick HeightChanged Hide InfoMessage
+syn keyword vbEvents IniProperties InitProperties Initialize
+syn keyword vbEvents ItemActivated ItemAdded ItemCheck ItemClick
+syn keyword vbEvents ItemReloaded ItemRemoved ItemRenamed
+syn keyword vbEvents ItemSeletected KeyDown KeyPress KeyUp LeaveCell
+syn keyword vbEvents LegendActivated LegendSelected LegendUpdated
+syn keyword vbEvents LinkClose LinkError LinkExecute LinkNotify
+syn keyword vbEvents LinkOpen Load LostFocus MouseDown MouseMove
+syn keyword vbEvents MouseUp NodeCheck NodeClick OLECompleteDrag
+syn keyword vbEvents OLEDragDrop OLEDragOver OLEGiveFeedback OLESetData
+syn keyword vbEvents OLEStartDrag ObjectEvent ObjectMove OnAddNew
+syn keyword vbEvents OnComm Paint PanelClick PanelDblClick PathChange
+syn keyword vbEvents PatternChange PlotActivated PlotSelected
+syn keyword vbEvents PlotUpdated PointActivated PointLabelActivated
+syn keyword vbEvents PointLabelSelected PointLabelUpdated PointSelected
+syn keyword vbEvents PointUpdated PowerQuerySuspend PowerResume
+syn keyword vbEvents PowerStatusChanged PowerSuspend ProcessTag
+syn keyword vbEvents ProcessingTimeout QueryChangeConfig QueryClose
+syn keyword vbEvents QueryComplete QueryCompleted QueryTimeout
+syn keyword vbEvents QueryUnload ReadProperties RepeatedControlLoaded
+syn keyword vbEvents RepeatedControlUnloaded Reposition
+syn keyword vbEvents RequestChangeFileName RequestWriteFile Resize
+syn keyword vbEvents ResultsChanged RetainedProject RollbackTrans
+syn keyword vbEvents RowColChange RowCurrencyChange RowResize
+syn keyword vbEvents RowStatusChanged Scroll SelChange SelectionChanged
+syn keyword vbEvents SendComplete SendProgress SeriesActivated
+syn keyword vbEvents SeriesSelected SeriesUpdated SettingChanged Show
+syn keyword vbEvents SplitChange Start StateChanged StatusUpdate
+syn keyword vbEvents SysColorsChanged Terminate TimeChanged Timer
+syn keyword vbEvents TitleActivated TitleSelected TitleUpdated
+syn keyword vbEvents UnboundAddData UnboundDeleteRow
+syn keyword vbEvents UnboundGetRelativeBookmark UnboundReadData
+syn keyword vbEvents UnboundWriteData Unformat Unload UpClick Updated
+syn keyword vbEvents UserEvent Validate ValidationError
+syn keyword vbEvents VisibleRecordChanged WillAssociate WillChangeData
+syn keyword vbEvents WillDissociate WillExecute WillUpdateRows
+syn keyword vbEvents WriteProperties
+
+
+syn keyword vbFunction Abs Array Asc AscB AscW Atn Avg BOF CBool CByte
+syn keyword vbFunction CCur CDate CDbl CInt CLng CSng CStr CVDate CVErr
+syn keyword vbFunction CVar CallByName Cdec Choose Chr ChrB ChrW Command
+syn keyword vbFunction Cos Count CreateObject CurDir DDB Date DateAdd
+syn keyword vbFunction DateDiff DatePart DateSerial DateValue Day Dir
+syn keyword vbFunction DoEvents EOF Environ Error Exp FV FileAttr
+syn keyword vbFunction FileDateTime FileLen FilterFix Fix Format
+syn keyword vbFunction FormatCurrency FormatDateTime FormatNumber
+syn keyword vbFunction FormatPercent FreeFile GetAllStrings GetAttr
+syn keyword vbFunction GetAutoServerSettings GetObject GetSetting Hex
+syn keyword vbFunction Hour IIf IMEStatus IPmt InStr Input InputB
+syn keyword vbFunction InputBox InstrB Int IsArray IsDate IsEmpty IsError
+syn keyword vbFunction IsMissing IsNull IsNumeric IsObject Join LBound
+syn keyword vbFunction LCase LOF LTrim Left LeftB Len LenB LoadPicture
+syn keyword vbFunction LoadResData LoadResPicture LoadResString Loc Log
+syn keyword vbFunction MIRR Max Mid MidB Min Minute Month MonthName
+syn keyword vbFunction MsgBox NPV NPer Now Oct PPmt PV Partition Pmt
+syn keyword vbFunction QBColor RGB RTrim Rate Replace Right RightB Rnd
+syn keyword vbFunction Round SLN SYD Second Seek Sgn Shell Sin Space Spc
+syn keyword vbFunction Split Sqr StDev StDevP Str StrComp StrConv
+syn keyword vbFunction StrReverse String Sum Switch Tab Tan Time
+syn keyword vbFunction TimeSerial TimeValue Timer Trim TypeName UBound
+syn keyword vbFunction UCase Val Var VarP VarType Weekday WeekdayName
+syn keyword vbFunction Year
+
+syn keyword vbMethods AboutBox Accept Activate Add AddCustom AddFile
+syn keyword vbMethods AddFromFile AddFromGuid AddFromString
+syn keyword vbMethods AddFromTemplate AddItem AddNew AddToAddInToolbar
+syn keyword vbMethods AddToolboxProgID Append AppendAppendChunk
+syn keyword vbMethods AppendChunk Arrange Assert AsyncRead BatchUpdate
+syn keyword vbMethods BeginQueryEdit BeginTrans Bind BuildPath
+syn keyword vbMethods CanPropertyChange Cancel CancelAsyncRead
+syn keyword vbMethods CancelBatch CancelUpdate CaptureImage CellText
+syn keyword vbMethods CellValue Circle Clear ClearFields ClearSel
+syn keyword vbMethods ClearSelCols ClearStructure Clone Close Cls
+syn keyword vbMethods ColContaining CollapseAll ColumnSize CommitTrans
+syn keyword vbMethods CompactDatabase Compose Connect Copy CopyFile
+syn keyword vbMethods CopyFolder CopyQueryDef Count CreateDatabase
+syn keyword vbMethods CreateDragImage CreateEmbed CreateField
+syn keyword vbMethods CreateFolder CreateGroup CreateIndex CreateLink
+syn keyword vbMethods CreatePreparedStatement CreatePropery CreateQuery
+syn keyword vbMethods CreateQueryDef CreateRelation CreateTableDef
+syn keyword vbMethods CreateTextFile CreateToolWindow CreateUser
+syn keyword vbMethods CreateWorkspace Customize Cut Delete
+syn keyword vbMethods DeleteColumnLabels DeleteColumns DeleteFile
+syn keyword vbMethods DeleteFolder DeleteLines DeleteRowLabels
+syn keyword vbMethods DeleteRows DeselectAll DesignerWindow DoVerb Drag
+syn keyword vbMethods Draw DriveExists Edit EditCopy EditPaste EndDoc
+syn keyword vbMethods EnsureVisible EstablishConnection Execute Exists
+syn keyword vbMethods Expand Export ExportReport ExtractIcon Fetch
+syn keyword vbMethods FetchVerbs FileExists Files FillCache Find
+syn keyword vbMethods FindFirst FindItem FindLast FindNext FindPrevious
+syn keyword vbMethods FolderExists Forward GetAbsolutePathName
+syn keyword vbMethods GetBaseName GetBookmark GetChunk GetClipString
+syn keyword vbMethods GetData GetDrive GetDriveName GetFile GetFileName
+syn keyword vbMethods GetFirstVisible GetFolder GetFormat GetHeader
+syn keyword vbMethods GetLineFromChar GetNumTicks GetParentFolderName
+syn keyword vbMethods GetRows GetSelectedPart GetSelection
+syn keyword vbMethods GetSpecialFolder GetTempName GetText
+syn keyword vbMethods GetVisibleCount GoBack GoForward Hide HitTest
+syn keyword vbMethods HoldFields Idle Import InitializeLabels Insert
+syn keyword vbMethods InsertColumnLabels InsertColumns InsertFile
+syn keyword vbMethods InsertLines InsertObjDlg InsertRowLabels
+syn keyword vbMethods InsertRows Item Keys KillDoc Layout Line Lines
+syn keyword vbMethods LinkExecute LinkPoke LinkRequest LinkSend Listen
+syn keyword vbMethods LoadFile LoadResData LoadResPicture LoadResString
+syn keyword vbMethods LogEvent MakeCompileFile MakeCompiledFile
+syn keyword vbMethods MakeReplica MoreResults Move MoveData MoveFile
+syn keyword vbMethods MoveFirst MoveFolder MoveLast MoveNext
+syn keyword vbMethods MovePrevious NavigateTo NewPage NewPassword
+syn keyword vbMethods NextRecordset OLEDrag OnAddinsUpdate OnConnection
+syn keyword vbMethods OnDisconnection OnStartupComplete Open
+syn keyword vbMethods OpenAsTextStream OpenConnection OpenDatabase
+syn keyword vbMethods OpenQueryDef OpenRecordset OpenResultset OpenURL
+syn keyword vbMethods Overlay PSet PaintPicture PastSpecialDlg Paste
+syn keyword vbMethods PeekData Play Point PopulatePartial PopupMenu
+syn keyword vbMethods Print PrintForm PrintReport PropertyChanged Quit
+syn keyword vbMethods Raise RandomDataFill RandomFillColumns
+syn keyword vbMethods RandomFillRows ReFill Read ReadAll ReadFromFile
+syn keyword vbMethods ReadLine ReadProperty Rebind Refresh RefreshLink
+syn keyword vbMethods RegisterDatabase ReleaseInstance Reload Remove
+syn keyword vbMethods RemoveAddInFromToolbar RemoveAll RemoveItem Render
+syn keyword vbMethods RepairDatabase ReplaceLine Reply ReplyAll Requery
+syn keyword vbMethods ResetCustom ResetCustomLabel ResolveName
+syn keyword vbMethods RestoreToolbar Resync Rollback RollbackTrans
+syn keyword vbMethods RowBookmark RowContaining RowTop Save SaveAs
+syn keyword vbMethods SaveFile SaveToFile SaveToOle1File SaveToolbar
+syn keyword vbMethods Scale ScaleX ScaleY Scroll SelPrint SelectAll
+syn keyword vbMethods SelectPart Send SendData Set SetAutoServerSettings
+syn keyword vbMethods SetData SetFocus SetOption SetSelection SetSize
+syn keyword vbMethods SetText SetViewport Show ShowColor ShowFont
+syn keyword vbMethods ShowHelp ShowOpen ShowPrinter ShowSave
+syn keyword vbMethods ShowWhatsThis SignOff SignOn Size Skip SkipLine
+syn keyword vbMethods Span Split SplitContaining StartLabelEdit
+syn keyword vbMethods StartLogging Stop Synchronize Tag TextHeight
+syn keyword vbMethods TextWidth ToDefaults Trace TwipsToChartPart
+syn keyword vbMethods TypeByChartType URLFor Update UpdateControls
+syn keyword vbMethods UpdateRecord UpdateRow Upto ValidateControls Value
+syn keyword vbMethods WhatsThisMode Write WriteBlankLines WriteLine
+syn keyword vbMethods WriteProperty WriteTemplate ZOrder
+syn keyword vbMethods rdoCreateEnvironment rdoRegisterDataSource
+
+syn keyword vbStatement Alias AppActivate As Base Beep Begin Call ChDir
+syn keyword vbStatement ChDrive Close Const Date Declare DefBool DefByte
+syn keyword vbStatement DefCur DefDate DefDbl DefDec DefInt DefLng DefObj
+syn keyword vbStatement DefSng DefStr DefVar Deftype DeleteSetting Dim Do
+syn keyword vbStatement Each ElseIf End Enum Erase Error Event Exit
+syn keyword vbStatement Explicit FileCopy For ForEach Function Get GoSub
+syn keyword vbStatement GoTo Gosub Implements Kill LSet Let Lib LineInput
+syn keyword vbStatement Load Lock Loop Mid MkDir Name Next On OnError Open
+syn keyword vbStatement Option Preserve Private Property Public Put RSet
+syn keyword vbStatement RaiseEvent Randomize ReDim Redim Rem Reset Resume
+syn keyword vbStatement Return RmDir SavePicture SaveSetting Seek SendKeys
+syn keyword vbStatement Sendkeys Set SetAttr Static Step Stop Sub Time
+syn keyword vbStatement Type Unload Unlock Until Wend While Width With
+syn keyword vbStatement Write
+
+syn keyword vbKeyword As Binary ByRef ByVal Date Empty Error Friend Get
+syn keyword vbKeyword Input Is Len Lock Me Mid New Nothing Null On
+syn keyword vbKeyword Option Optional ParamArray Print Private Property
+syn keyword vbKeyword Public PublicNotCreateable OnNewProcessSingleUse
+syn keyword vbKeyword InSameProcessMultiUse GlobalMultiUse Resume Seek
+syn keyword vbKeyword Set Static Step String Time WithEvents
+
+syn keyword vbTodo contained	TODO
+
+"Datatypes
+syn keyword vbTypes Boolean Byte Currency Date Decimal Double Empty
+syn keyword vbTypes Integer Long Object Single String Variant
+
+"VB defined values
+syn keyword vbDefine dbBigInt dbBinary dbBoolean dbByte dbChar
+syn keyword vbDefine dbCurrency dbDate dbDecimal dbDouble dbFloat
+syn keyword vbDefine dbGUID dbInteger dbLong dbLongBinary dbMemo
+syn keyword vbDefine dbNumeric dbSingle dbText dbTime dbTimeStamp
+syn keyword vbDefine dbVarBinary
+
+"VB defined values
+syn keyword vbDefine vb3DDKShadow vb3DFace vb3DHighlight vb3DLight
+syn keyword vbDefine vb3DShadow vbAbort vbAbortRetryIgnore
+syn keyword vbDefine vbActiveBorder vbActiveTitleBar vbAlias
+syn keyword vbDefine vbApplicationModal vbApplicationWorkspace
+syn keyword vbDefine vbAppTaskManager vbAppWindows vbArchive vbArray
+syn keyword vbDefine vbBack vbBinaryCompare vbBlack vbBlue vbBoolean
+syn keyword vbDefine vbButtonFace vbButtonShadow vbButtonText vbByte
+syn keyword vbDefine vbCalGreg vbCalHijri vbCancel vbCr vbCritical
+syn keyword vbDefine vbCrLf vbCurrency vbCyan vbDatabaseCompare
+syn keyword vbDefine vbDataObject vbDate vbDecimal vbDefaultButton1
+syn keyword vbDefine vbDefaultButton2 vbDefaultButton3 vbDefaultButton4
+syn keyword vbDefine vbDesktop vbDirectory vbDouble vbEmpty vbError
+syn keyword vbDefine vbExclamation vbFirstFourDays vbFirstFullWeek
+syn keyword vbDefine vbFirstJan1 vbFormCode vbFormControlMenu
+syn keyword vbDefine vbFormFeed vbFormMDIForm vbFriday vbFromUnicode
+syn keyword vbDefine vbGrayText vbGreen vbHidden vbHide vbHighlight
+syn keyword vbDefine vbHighlightText vbHiragana vbIgnore vbIMEAlphaDbl
+syn keyword vbDefine vbIMEAlphaSng vbIMEDisable vbIMEHiragana
+syn keyword vbDefine vbIMEKatakanaDbl vbIMEKatakanaSng vbIMEModeAlpha
+syn keyword vbDefine vbIMEModeAlphaFull vbIMEModeDisable
+syn keyword vbDefine vbIMEModeHangul vbIMEModeHangulFull
+syn keyword vbDefine vbIMEModeHiragana vbIMEModeKatakana
+syn keyword vbDefine vbIMEModeKatakanaHalf vbIMEModeNoControl
+syn keyword vbDefine vbIMEModeOff vbIMEModeOn vbIMENoOp vbIMEOff
+syn keyword vbDefine vbIMEOn vbInactiveBorder vbInactiveCaptionText
+syn keyword vbDefine vbInactiveTitleBar vbInfoBackground vbInformation
+syn keyword vbDefine vbInfoText vbInteger vbKatakana vbKey0 vbKey1
+syn keyword vbDefine vbKey2 vbKey3 vbKey4 vbKey5 vbKey6 vbKey7 vbKey8
+syn keyword vbDefine vbKey9 vbKeyA vbKeyAdd vbKeyB vbKeyBack vbKeyC
+syn keyword vbDefine vbKeyCancel vbKeyCapital vbKeyClear vbKeyControl
+syn keyword vbDefine vbKeyD vbKeyDecimal vbKeyDelete vbKeyDivide
+syn keyword vbDefine vbKeyDown vbKeyE vbKeyEnd vbKeyEscape vbKeyExecute
+syn keyword vbDefine vbKeyF vbKeyF1 vbKeyF10 vbKeyF11 vbKeyF12 vbKeyF13
+syn keyword vbDefine vbKeyF14 vbKeyF15 vbKeyF16 vbKeyF2 vbKeyF3 vbKeyF4
+syn keyword vbDefine vbKeyF5 vbKeyF6 vbKeyF7 vbKeyF8 vbKeyF9 vbKeyG
+syn keyword vbDefine vbKeyH vbKeyHelp vbKeyHome vbKeyI vbKeyInsert
+syn keyword vbDefine vbKeyJ vbKeyK vbKeyL vbKeyLButton vbKeyLeft vbKeyM
+syn keyword vbDefine vbKeyMButton vbKeyMenu vbKeyMultiply vbKeyN
+syn keyword vbDefine vbKeyNumlock vbKeyNumpad0 vbKeyNumpad1
+syn keyword vbDefine vbKeyNumpad2 vbKeyNumpad3 vbKeyNumpad4
+syn keyword vbDefine vbKeyNumpad5 vbKeyNumpad6 vbKeyNumpad7
+syn keyword vbDefine vbKeyNumpad8 vbKeyNumpad9 vbKeyO vbKeyP
+syn keyword vbDefine vbKeyPageDown vbKeyPageUp vbKeyPause vbKeyPrint
+syn keyword vbDefine vbKeyQ vbKeyR vbKeyRButton vbKeyReturn vbKeyRight
+syn keyword vbDefine vbKeyS vbKeySelect vbKeySeparator vbKeyShift
+syn keyword vbDefine vbKeySnapshot vbKeySpace vbKeySubtract vbKeyT
+syn keyword vbDefine vbKeyTab vbKeyU vbKeyUp vbKeyV vbKeyW vbKeyX
+syn keyword vbDefine vbKeyY vbKeyZ vbLf vbLong vbLowerCase vbMagenta
+syn keyword vbDefine vbMaximizedFocus vbMenuBar vbMenuText
+syn keyword vbDefine vbMinimizedFocus vbMinimizedNoFocus vbMonday
+syn keyword vbDefine vbMsgBox vbMsgBoxHelpButton vbMsgBoxRight
+syn keyword vbDefine vbMsgBoxRtlReading vbMsgBoxSetForeground
+syn keyword vbDefine vbMsgBoxText vbNarrow vbNewLine vbNo vbNormal
+syn keyword vbDefine vbNormalFocus vbNormalNoFocus vbNull vbNullChar
+syn keyword vbDefine vbNullString vbObject vbObjectError vbOK
+syn keyword vbDefine vbOKCancel vbOKOnly vbProperCase vbQuestion
+syn keyword vbDefine vbReadOnly vbRed vbRetry vbRetryCancel vbSaturday
+syn keyword vbDefine vbScrollBars vbSingle vbString vbSunday vbSystem
+syn keyword vbDefine vbSystemModal vbTab vbTextCompare vbThursday
+syn keyword vbDefine vbTitleBarText vbTuesday vbUnicode vbUpperCase
+syn keyword vbDefine vbUseSystem vbUseSystemDayOfWeek vbVariant
+syn keyword vbDefine vbVerticalTab vbVolume vbWednesday vbWhite vbWide
+syn keyword vbDefine vbWindowBackground vbWindowFrame vbWindowText
+syn keyword vbDefine vbYellow vbYes vbYesNo vbYesNoCancel
+
+"Numbers
 "integer number, or floating point number without a dot.
 syn match vbNumber "\<\d\+\>"
 "floating point number, with dot
 syn match vbNumber "\<\d\+\.\d*\>"
 "floating point number, starting with a dot
 syn match vbNumber "\.\d\+\>"
+"syn match  vbNumber		"{[[:xdigit:]-]\+}\|&[hH][[:xdigit:]]\+&"
+"syn match  vbNumber		":[[:xdigit:]]\+"
+"syn match  vbNumber		"[-+]\=\<\d\+\>"
+syn match  vbFloat		"[-+]\=\<\d\+[eE][\-+]\=\d\+"
+syn match  vbFloat		"[-+]\=\<\d\+\.\d*\([eE][\-+]\=\d\+\)\="
+syn match  vbFloat		"[-+]\=\<\.\d\+\([eE][\-+]\=\d\+\)\="
 
 " String and Character contstants
-syn region vbString start=+"+ end=+"+
-syn region vbComment start="\<REM\>" end="$" contains=vbTodo
-syn region vbComment start="'" end="$" contains=vbTodo
-syn region vbLineNumber	start="^\d" end="\s"
-syn match vbTypeSpecifier "[a-zA-Z0-9][\$%&!#]"ms=s+1
+syn region  vbString		start=+"+  end=+"\|$+
+syn region  vbComment		start="\(^\|\s\)REM\s" end="$" contains=vbTodo
+syn region  vbComment		start="\(^\|\s\)\'"   end="$" contains=vbTodo
+syn match   vbLineNumber	"^\d\+\(\s\|$\)"
+syn match   vbTypeSpecifier  "[a-zA-Z0-9][\$%&!#]"ms=s+1
+syn match   vbTypeSpecifier  "#[a-zA-Z0-9]"me=e-1
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already
@@ -250,20 +348,27 @@ if version >= 508 || !exists("did_vb_syntax_inits")
 		command -nargs=+ HiLink hi def link <args>
 	endif
 
-	HiLink vbLineNumber	Comment
-	HiLink vbNumber		Number
-	HiLink vbConst		Constant
-	HiLink vbError		Error
-	HiLink vbStatement	Statement
-	HiLink vbString		String
-	HiLink vbComment	Comment
-	HiLink vbTodo		Todo
-	HiLink vbFunction	Identifier
-	HiLink vbMethods	PreProc
-	HiLink vbEvents		Special
+	HiLink vbBoolean		Boolean
+	HiLink vbLineNumber		Comment
+	HiLink vbComment		Comment
+	HiLink vbConditional	Conditional
+	HiLink vbConst			Constant
+	HiLink vbDefine			Constant
+	HiLink vbError			Error
+	HiLink vbFunction		Identifier
+	HiLink vbIdentifier		Identifier
+	HiLink vbNumber			Number
+	HiLink vbFloat			Float
+	HiLink vbMethods		PreProc
+	HiLink vbOperator		Operator
+	HiLink vbRepeat			Repeat
+	HiLink vbString			String
+	HiLink vbStatement		Statement
+	HiLink vbKeyword		Statement
+	HiLink vbEvents			Special
+	HiLink vbTodo			Todo
+	HiLink vbTypes			Type
 	HiLink vbTypeSpecifier	Type
-	HiLink vbTypes		Type
-	HiLink vbOperator	Operator
 
 	delcommand HiLink
 endif

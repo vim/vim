@@ -1,4 +1,4 @@
-*usr_24.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_24.txt*	For Vim version 7.1a.  Last change: 2006 Jul 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -252,11 +252,18 @@ of alternatives, which are the items that "struct foo" contains.  That is
 quite different from using CTRL-P, which would complete any word, while only
 members of "struct foo" are valid here.
 
-For Omni completion to work you may need to do some setup.  For C code you
-need to create a tags file and set the 'tags' option.  That is explained
-|ft-c-omni|.  For other filetypes you may need to do something similar, look
-below |compl-omni-filetypes|.  It only works for specific filetypes.  Check
-the value of the 'omnifunc' option to find out if it would work.
+For Omni completion to work you may need to do some setup.  At least make sure
+filetype plugins are enabled.  Your vimrc file should contain a line like
+this: >
+	filetype plugin on
+Or: >
+	filetype plugin indent on
+
+For C code you need to create a tags file and set the 'tags' option.  That is
+explained |ft-c-omni|.  For other filetypes you may need to do something
+similar, look below |compl-omni-filetypes|.  It only works for specific
+filetypes.  Check the value of the 'omnifunc' option to find out if it would
+work.
 
 ==============================================================================
 *24.4*	Repeating an insert

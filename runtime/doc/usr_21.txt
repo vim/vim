@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.0.  Last change: 2006 Apr 25
+*usr_21.txt*	For Vim version 7.1a.  Last change: 2007 May 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -421,7 +421,8 @@ file are inspected for containing a modeline.  To inspect ten lines: >
 	:set modelines=10
 
 The 'modeline' option can be used to switch this off.  Do this when you are
-working as root or don't trust the files you are editing: >
+working as root on Unix or Administrator on MS-Windows, or when you don't
+trust the files you are editing: >
 
 	:set nomodeline
 
@@ -432,9 +433,9 @@ Use this format for the modeline:
 The "any-text" indicates that you can put any text before and after the part
 that Vim will use.  This allows making it look like a comment, like what was
 done above with /* and */.
-   The " vim:" part is what makes Vim recognize this line.  The must be white
-space before "vim", or "vim" must be at the start of the line.  Thus using
-something like "gvim:" will not work.
+   The " vim:" part is what makes Vim recognize this line.  There must be
+white space before "vim", or "vim" must be at the start of the line.  Thus
+using something like "gvim:" will not work.
    The part between the colons is a ":set" command.  It works the same way as
 typing the ":set" command, except that you need to insert a backslash before a
 colon (otherwise it would be seen as the end of the modeline).
