@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	DCL (Digital Command Language - vms)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 12, 2006
-" Version:	5
+" Last Change:	Sep 11, 2006
+" Version:	6
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -75,7 +75,7 @@ syn match   dclFilename	"\I\i*\.\(\I\i*\)\=\(;\d\+\)\="	contains=dclDirSep	conta
 syn match   dclDirSep	"[[\].;]"
 
 " Strings
-syn region  dclString	start='"'	skip='""'	end='"'
+syn region  dclString	start='"'	skip='""'	end='"'	contains=@Spell
 
 " $ stuff and comments
 syn cluster dclCommentGroup	contains=dclStart,dclTodo,@Spell

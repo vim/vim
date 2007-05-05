@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.0.  Last change: 2006 Apr 30
+*sponsor.txt*   For Vim version 7.1a.  Last change: 2007 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,7 +59,7 @@ But only if you enable this on your account page.
 HOW TO SEND MONEY						*send-money*
 
 Credit card	Through PayPal, see the PayPal site for information:
-			https://www.paypal.com
+			https://www.paypal.com/en_US/mrb/pal=XAC62PML3GF8Q
 		The e-mail address for sending sponsorship money is:
 			donate@vim.org
 		The e-mail address for Vim registration is:

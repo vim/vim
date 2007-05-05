@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Mail
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Feb 20
+" Last Change:	2007 Apr 30
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -11,7 +11,8 @@ let b:did_ftplugin = 1
 
 let b:undo_ftplugin = "setl modeline< tw< fo<"
 
-" Don't use modelines in e-mail messages, avoid trojan horses
+" Don't use modelines in e-mail messages, avoid trojan horses and nasty
+" "jokes" (e.g., setting 'textwidth' to 5).
 setlocal nomodeline
 
 " many people recommend keeping e-mail messages 72 chars wide

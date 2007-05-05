@@ -5,9 +5,9 @@
 "               Karl-Heinz Sylla  <Karl-Heinz.Sylla@gmd.de>
 "               Issac Trotts      <ijtrotts@ucdavis.edu>
 " URL:          http://www.ocaml.info/vim/syntax/ocaml.vim
-" Last Change:  2006 Apr 11 - Fixed an initialization bug (MM)
-"               2005 May 18 - Added 'NOTE' to highlighted comment words (MM)
-"               2005 Apr 14 - Fixed a small bug concerning 'include' (MM)
+" Last Change:  2007 Apr 13 - Added highlighting of nativeints (MM)
+"               2006 Oct 09 - More highlighting improvements to numbers (MM)
+"               2006 Sep 19 - Improved highlighting of numbers (Florent Monnier)
 
 " A minor patch was applied to the official version so that object/end
 " can be distinguished from begin/end, which is used for indentation,
@@ -29,6 +29,9 @@ syn match    ocamlComment   "^#!.*"
 
 " Scripting directives
 syn match    ocamlScript "^#\<\(quit\|labels\|warnings\|directory\|cd\|load\|use\|install_printer\|remove_printer\|require\|thread\|trace\|untrace\|untrace_all\|print_depth\|print_length\)\>"
+
+" Script headers highlighted like comments
+syn match    ocamlComment      "^#!.*"
 
 " lowercase identifier - the standard way to match
 syn match    ocamlLCIdentifier /\<\(\l\|_\)\(\w\|'\)*\>/
@@ -213,11 +216,11 @@ else
   syn match    ocamlOperator   "<-"
 endif
 
-syn match    ocamlNumber        "\<-\=\d\+[l|L]\?\>"
-syn match    ocamlNumber        "\<-\=0[x|X]\x\+[l|L]\?\>"
-syn match    ocamlNumber        "\<-\=0[o|O]\o\+[l|L]\?\>"
-syn match    ocamlNumber        "\<-\=0[b|B][01]\+[l|L]\?\>"
-syn match    ocamlFloat         "\<-\=\d\+\.\d*\([eE][-+]\=\d\+\)\=[fl]\=\>"
+syn match    ocamlNumber        "\<-\=\d\(_\|\d\)*[l|L|n]\?\>"
+syn match    ocamlNumber        "\<-\=0[x|X]\(\x\|_\)\+[l|L|n]\?\>"
+syn match    ocamlNumber        "\<-\=0[o|O]\(\o\|_\)\+[l|L|n]\?\>"
+syn match    ocamlNumber        "\<-\=0[b|B]\([01]\|_\)\+[l|L|n]\?\>"
+syn match    ocamlFloat         "\<-\=\d\(_\|\d\)*\.\(_\|\d\)*\([eE][-+]\=\d\(_\|\d\)*\)\=\>"
 
 " Labels
 syn match    ocamlLabel        "\~\(\l\|_\)\(\w\|'\)*"lc=1
@@ -294,6 +297,7 @@ if version >= 508 || !exists("did_ocaml_syntax_inits")
   HiLink ocamlModPreRHS    Keyword
   HiLink ocamlMPRestr2	   Keyword
   HiLink ocamlKeyword	   Keyword
+  HiLink ocamlMethod	   Include
   HiLink ocamlFunDef	   Keyword
   HiLink ocamlRefAssign    Keyword
   HiLink ocamlKeyChar	   Keyword

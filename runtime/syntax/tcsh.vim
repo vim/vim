@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		C-shell (tcsh)
-" Maintainor:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Modified:	Sat 11 Mar 2006 11:16:47 AM CST
+" Maintainer:		Gautam Iyer <gi1242@users.sourceforge.net>
+" Last Modified:	Thu 16 Nov 2006 01:07:04 PM PST
 "
 " Description: We break up each statement into a "command" and an "end" part.
 " All groups are either a "command" or part of the "end" of a statement (ie
@@ -48,9 +48,10 @@ syn keyword tcshSetEnv	nextgroup=tcshEnvEnd setenv unsetenv
 syn region  tcshEnvEnd	contained transparent matchgroup=tcshBuiltins start='' skip="\\$" end="$\|;" contains=tcshEnvVar,@tcshStatementEnds
 
 " alias and unalias (contains special aliases)
-syn keyword tcshAliases contained beemcmd cwdcmd jobcmd helpcommand periodic precmd postcmd shell
-syn keyword tcshAlias	nextgroup=tcshAliEnd alias unalias
-syn region  tcshAliEnd	contained transparent matchgroup=tcshBuiltins start='' skip="\\$" end="$\|;" contains=tcshAliases,@tcshStatementEnds
+syn keyword tcshAliases contained beepcmd cwdcmd jobcmd helpcommand periodic precmd postcmd shell
+syn keyword tcshAlias	nextgroup=tcshAliCmd skipwhite alias unalias
+syn match   tcshAliCmd	contained nextgroup=tcshAliEnd skipwhite '\v[\w-]+' contains=tcshAliases
+syn region  tcshAliEnd	contained transparent matchgroup=tcshBuiltins start='' skip="\\$" end="$\|;" contains=@tcshStatementEnds
 
 " if statements (contains expressions / operators)
 syn keyword tcshIf	nextgroup=tcshIfEnd if
@@ -72,10 +73,10 @@ syn match tcshExprEnd	contained "\v.*$"hs=e+1 contains=tcshOperator,tcshNumber,@
 syn match tcshExprEnd	contained "\v.{-};"hs=e	contains=tcshOperator,tcshNumber,@tcshVarList
 
 " ----- Comments: -----
-syn match tcshComment	"#.*" contains=tcshTodo,tcshCommentTi,tcshCommentSp,@Spell
-syn match tcshSharpBang "^#! .*$"
+syn match tcshComment	'#\s.*' contains=tcshTodo,tcshCommentTi,@Spell
+syn match tcshComment	'\v#($|\S.*)' contains=tcshTodo,tcshCommentTi
+syn match tcshSharpBang '^#! .*$'
 syn match tcshCommentTi contained '\v#\s*\u\w*(\s+\u\w*)*:'hs=s+1 contains=tcshTodo
-syn match tcshCommentSp contained '\v<\u{3,}>' contains=tcshTodo
 syn match tcshTodo	contained '\v\c<todo>'
 
 " ----- Strings -----
@@ -152,6 +153,7 @@ hi def link tcshBuiltins	statement
 hi def link tcshShellVar	preproc
 hi def link tcshEnvVar		tcshShellVar
 hi def link tcshAliases		tcshShellVar
+hi def link tcshAliCmd		identifier
 hi def link tcshCommands	identifier
 hi def link tcshSet		tcshBuiltins
 hi def link tcshSetEnv		tcshBuiltins
@@ -165,7 +167,6 @@ hi def link tcshExprOp		tcshOperator
 hi def link tcshExprEnd		tcshOperator
 hi def link tcshComment		comment
 hi def link tcshCommentTi	preproc
-hi def link tcshCommentSp	tcshCommentTi
 hi def link tcshSharpBang	tcshCommentTi
 hi def link tcshTodo		todo
 hi def link tcshSQuote		constant

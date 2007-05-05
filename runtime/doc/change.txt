@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.0.  Last change: 2006 May 05
+*change.txt*    For Vim version 7.1a.  Last change: 2007 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -640,7 +640,7 @@ The flags that you can use for the substitute commands:
 
 [#]	Like [p] and prepend the line number.
 
-[l]	Like [l] but print the text like |:list|.
+[l]	Like [p] but print the text like |:list|.
 
 [r]	Only useful in combination with ":&" or ":s" without arguments.  ":&r"
 	works the same way as ":~":  When the search pattern is empty, use the
@@ -670,14 +670,20 @@ pattern from the last substitute or ":global" command.  With the [r] flag, the
 command uses the pattern from the last substitute, ":global", or search
 command.
 
+If the {string} is omitted the substitute is done as if it's empty.  Thus the
+matched pattern is deleted.  The separator after {pattern} can also be left
+out then.  Example: >
+	:%s/TESTING
+This deletes "TESTING" from all lines, but only one per line.
+
 For compatibility with Vi these two exceptions are allowed:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
 							*E146*
 Instead of the '/' which surrounds the pattern and replacement string, you
-can use any other character, but not an alphanumeric character, '\', '"' or
-'|'.  This is useful if you want to include a '/' in the search pattern or
-replacement string.  Example: >
+can use any other single-byte character, but not an alphanumeric character,
+'\', '"' or '|'.  This is useful if you want to include a '/' in the search
+pattern or replacement string.  Example: >
 	:s+/+//+
 
 For the definition of a pattern, see |pattern|.
@@ -1075,7 +1081,7 @@ and ":put" commands and with CTRL-R.  {not in Vi}
 		{not available when compiled without the |+cmdline_hist|
 		feature}
 
-6. Expression register "=				*quote_=* *quote=*
+6. Expression register "=			*quote_=* *quote=* *@=*
 This is not really a register that stores text, but is a way to use an
 expression in commands which use a register.  The expression register is
 read-only; you cannot put text into it.  After the '=', the cursor moves to
@@ -1365,7 +1371,7 @@ readability.
 
 letter	 meaning when present in 'formatoptions'    ~
 
-t	Auto-wrap text using textwidth (does not apply to comments)
+t	Auto-wrap text using textwidth
 c	Auto-wrap comments using textwidth, inserting the current comment
 	leader automatically.
 r	Automatically insert the current comment leader after hitting

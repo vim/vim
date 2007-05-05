@@ -1,8 +1,8 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     2.0
-" Last Change: Fri May 05 2006 10:34:57 PM
+" Version:     3.0
+" Last Change: Wed Nov 08 2006 10:46:46 AM
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
@@ -19,11 +19,29 @@ endif
 if exists('g:loaded_syntax_completion')
     finish 
 endif
-let g:loaded_syntax_completion = 20
+let g:loaded_syntax_completion = 30
 
 " Set ignorecase to the ftplugin standard
+" This is the default setting, but if you define a buffer local
+" variable you can override this on a per filetype.
 if !exists('g:omni_syntax_ignorecase')
     let g:omni_syntax_ignorecase = &ignorecase
+endif
+
+" Indicates whether we should use the iskeyword option to determine
+" how to split words.
+" This is the default setting, but if you define a buffer local
+" variable you can override this on a per filetype.
+if !exists('g:omni_syntax_use_iskeyword')
+    let g:omni_syntax_use_iskeyword = 1
+endif
+
+" Only display items in the completion window that are at least
+" this many characters in length.
+" This is the default setting, but if you define a buffer local
+" variable you can override this on a per filetype.
+if !exists('g:omni_syntax_minimum_length')
+    let g:omni_syntax_minimum_length = 0
 endif
 
 " This script will build a completion list based on the syntax
@@ -38,21 +56,28 @@ let s:prepended  = ''
 " This function is used for the 'omnifunc' option.
 function! syntaxcomplete#Complete(findstart, base)
 
+    " Only display items in the completion window that are at least
+    " this many characters in length
+    if !exists('b:omni_syntax_ignorecase')
+        if exists('g:omni_syntax_ignorecase')
+            let b:omni_syntax_ignorecase = g:omni_syntax_ignorecase
+        else
+            let b:omni_syntax_ignorecase = &ignorecase
+        endif
+    endif
+
     if a:findstart
         " Locate the start of the item, including "."
         let line = getline('.')
         let start = col('.') - 1
         let lastword = -1
         while start > 0
-            if line[start - 1] =~ '\w'
+            " if line[start - 1] =~ '\S'
+            "     let start -= 1
+            " elseif line[start - 1] =~ '\.'
+            if line[start - 1] =~ '\k'
                 let start -= 1
-            elseif line[start - 1] =~ '\.'
-                " The user must be specifying a column name
-                if lastword == -1
-                    let lastword = start
-                endif
-                let start -= 1
-                let b:sql_compl_type = 'column'
+                let lastword = a:findstart
             else
                 break
             endif
@@ -64,11 +89,12 @@ function! syntaxcomplete#Complete(findstart, base)
             let s:prepended = ''
             return start
         endif
-        let s:prepended = strpart(line, start, lastword - start)
-        return lastword
+        let s:prepended = strpart(line, start, (col('.') - 1) - start)
+        return start
     endif
 
-    let base = s:prepended . a:base
+    " let base = s:prepended . a:base
+    let base = s:prepended
 
     let filetype = substitute(&filetype, '\.', '_', 'g')
     let list_idx = index(s:cache_name, filetype, 0, &ignorecase)
@@ -82,11 +108,16 @@ function! syntaxcomplete#Complete(findstart, base)
 
     " Return list of matches.
 
-    if base =~ '\w'
-        let compstr    = join(compl_list, ' ')
-        let expr       = (g:omni_syntax_ignorecase==0?'\C':'').'\<\%('.base.'\)\@!\w\+\s*'
-        let compstr    = substitute(compstr, expr, '', 'g')
-        let compl_list = split(compstr, '\s\+')
+    if base != ''
+        " let compstr    = join(compl_list, ' ')
+        " let expr       = (b:omni_syntax_ignorecase==0?'\C':'').'\<\%('.base.'\)\@!\w\+\s*'
+        " let compstr    = substitute(compstr, expr, '', 'g')
+        " let compl_list = split(compstr, '\s\+')
+
+        " Filter the list based on the first few characters the user
+        " entered
+        let expr = 'v:val '.(g:omni_syntax_ignorecase==1?'=~?':'=~#')." '^".escape(base, '\\/.*$^~[]').".*'"
+        let compl_list = filter(deepcopy(compl_list), expr)
     endif
 
     return compl_list
@@ -99,6 +130,26 @@ function! OmniSyntaxList()
     " if a:0 > 0 && a:1 != ''
     "     let use_dictionary = a:1
     " endif
+
+    " Only display items in the completion window that are at least
+    " this many characters in length
+    if !exists('b:omni_syntax_use_iskeyword')
+        if exists('g:omni_syntax_use_iskeyword')
+            let b:omni_syntax_use_iskeyword = g:omni_syntax_use_iskeyword
+        else
+            let b:omni_syntax_use_iskeyword = 1
+        endif
+    endif
+
+    " Only display items in the completion window that are at least
+    " this many characters in length
+    if !exists('b:omni_syntax_minimum_length')
+        if exists('g:omni_syntax_minimum_length')
+            let b:omni_syntax_minimum_length = g:omni_syntax_minimum_length
+        else
+            let b:omni_syntax_minimum_length = 0
+        endif
+    endif
 
     let saveL = @l
     
@@ -294,14 +345,32 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
                     \    , "", 'g' 
                     \ )
 
-        " There are a number of items which have non-word characters in
-        " them, *'T_F1'*.  vim.vim is one such file.
-        " This will replace non-word characters with spaces.
-        let syn_list = substitute( syn_list, '[^0-9A-Za-z_ ]', ' ', 'g' )
+        if b:omni_syntax_use_iskeyword == 0
+            " There are a number of items which have non-word characters in
+            " them, *'T_F1'*.  vim.vim is one such file.
+            " This will replace non-word characters with spaces.
+            let syn_list = substitute( syn_list, '[^0-9A-Za-z_ ]', ' ', 'g' )
+        else
+            let accept_chars = ','.&iskeyword.','
+            " Remove all character ranges
+            let accept_chars = substitute(accept_chars, ',[^,]\+-[^,]\+,', ',', 'g')
+            " Remove all numeric specifications
+            let accept_chars = substitute(accept_chars, ',\d\{-},', ',', 'g')
+            " Remove all commas
+            let accept_chars = substitute(accept_chars, ',', '', 'g')
+            " Escape special regex characters
+            let accept_chars = escape(accept_chars, '\\/.*$^~[]' )
+            " Remove all characters that are not acceptable
+            let syn_list = substitute( syn_list, '[^0-9A-Za-z_ '.accept_chars.']', ' ', 'g' )
+        endif
+
+        if b:omni_syntax_minimum_length > 0
+            " If the user specified a minimum length, enforce it
+            let syn_list = substitute(' '.syn_list.' ', ' \S\{,'.b:omni_syntax_minimum_length.'}\ze ', ' ', 'g')
+        endif
     else
         let syn_list = ''
     endif
 
     return syn_list
 endfunction
-

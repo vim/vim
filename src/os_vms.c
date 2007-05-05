@@ -626,12 +626,13 @@ vms_fixfilename(void *instring)
 
     Fspec_Rms = buf;				/* for decc$to_vms */
 
-    if ( strchr(instring,'/') == NULL )
+    if (strchr(instring,'/') == NULL)
 	/* It is already a VMS file spec */
 	strcpy(buf, instring);
-    else if ( strchr(instring,'"') == NULL ){     /* password in the path ?   */
+    else if (strchr(instring,'"') == NULL)	/* password in the path? */
+    {
 	/* Seems it is a regular file, let guess that it is pure Unix fspec */
-	if ( decc$to_vms(instring, vms_fspec_proc, 0, 0) <= 0 )
+	if (decc$to_vms(instring, vms_fspec_proc, 0, 0) <= 0)
 	    /* No... it must be mixed */
 	    vms_unix_mixed_filespec(instring, buf);
     }
@@ -643,6 +644,7 @@ vms_fixfilename(void *instring)
 
     return buf;
 }
+
 /*
  * Remove version number from file name
  * we need it in some special cases as:

@@ -4,7 +4,7 @@
 " URL:		http://www.geocities.com/pmalwankar (Home Page with link to my Vim page)
 "		http://www.geocities.com/pmalwankar/vim.htm (for VIM)
 " File Version: 0.7
-" Last Change:  2004 May 04
+" Last Change:  2006 Sep 08
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -309,4 +309,3 @@ endif
 let b:current_syntax = "ia64"
 
 " vim: ts=8 sw=2
-

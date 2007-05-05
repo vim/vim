@@ -1,15 +1,9 @@
 " Vim syntax file
-" Language:	automake Makefile.am
-" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
-" Former Maintainer:	John Williams <jrw@pobox.com>
-" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
+" Language: automake Makefile.am
+" Maintainer: Felipe Contreras <felipe.contreras@gmail.com>
+" Former Maintainer: John Williams <jrw@pobox.com>
+" Last Change: $LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
 " URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/automake.vim?op=file&rev=0&sc=0
-"
-" XXX This file is in need of a new maintainer, Debian VIM Maintainers maintain
-"     it only because patches have been submitted for it by Debian users and the
-"     former maintainer was MIA (Missing In Action), taking over its
-"     maintenance was thus the only way to include those patches.
-"     If you care about this file, and have time to maintain it please do so!
 "
 " This script adds support for automake's Makefile.am format. It highlights
 " Makefile variables significant to automake as well as highlighting
@@ -25,11 +19,18 @@ else
   runtime! syntax/make.vim
 endif
 
-syn match automakePrimary "^[A-Za-z0-9_]\+\(_PROGRAMS\|LIBRARIES\|_LIST\|_SCRIPTS\|_DATA\|_HEADERS\|_MANS\|_TEXINFOS\|_JAVA\|_LTLIBRARIES\)\s*="me=e-1
+syn match automakePrimary "^[A-Za-z0-9_]\+_\(PROGRAMS\|LIBRARIES\|LISP\|PYTHON\|JAVA\|SCRIPTS\|DATA\|HEADERS\|MANS\|TEXINFOS\|LTLIBRARIES\)\s*="me=e-1
+
+syn match automakeSecondary "^[A-Za-z0-9_]\+_\(SOURCES\|AR\|LIBADD\|LDADD\|LDFLAGS\|DEPENDENCIES\|LINK\|SHORTNAME\)\s*="me=e-1
+syn match automakeSecondary "^[A-Za-z0-9_]\+_\(CCASFLAGS\|CFLAGS\|CPPFLAGS\|CXXFLAGS\|FFLAGS\|GCJFLAGS\|LFLAGS\|OBJCFLAGS\|RFLAGS\|YFLAGS\)\s*="me=e-1
+
+syn match automakeExtra "^EXTRA_DIST\s*="me=e-1
+syn match automakeExtra "^EXTRA_PROGRAMS\s*="me=e-1
+syn match automakeExtra "^EXTRA_[A-Za-z0-9_]\+_SOURCES\s*="me=e-1
+
+" TODO: Check these:
 syn match automakePrimary "^TESTS\s*="me=e-1
-syn match automakeSecondary "^[A-Za-z0-9_]\+\(_SOURCES\|_LDADD\|_LIBADD\|_LDFLAGS\|_DEPENDENCIES\|_CPPFLAGS\)\s*="me=e-1
 syn match automakeSecondary "^OMIT_DEPENDENCIES\s*="me=e-1
-syn match automakeExtra "^EXTRA_[A-Za-z0-9_]\+\s*="me=e-1
 syn match automakeOptions "^\(AUTOMAKE_OPTIONS\|ETAGS_ARGS\|TAGS_DEPENDENCIES\)\s*="me=e-1
 syn match automakeClean "^\(MOSTLY\|DIST\|MAINTAINER\)\=CLEANFILES\s*="me=e-1
 syn match automakeSubdirs "^\(DIST_\)\=SUBDIRS\s*="me=e-1

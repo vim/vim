@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Maple V (based on release 4)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 12, 2006
-" Version:	8
+" Last Change:	Sep 11, 2006
+" Version:	9
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Package Function Selection: {{{1
@@ -115,14 +115,14 @@ syn keyword mvPackage	VectorCalculus	Worksheet	XMLTools
 " Language Support: {{{1
 syn keyword mvTodo	contained	COMBAK	FIXME	TODO	XXX
 if exists("g:mapleversion") && g:mapleversion < 9
- syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
- syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend
+ syn region  mvString	start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo,@Spell
+ syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend	contains=@Spell
  syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError,mvSemiError
  syn match   mvVarAssign	"[a-zA-Z_][a-zA-Z_0-9]*[ \t]*:=" contains=mvAssign
  syn match   mvAssign	":="	contained
 else
  syn region  mvName		start=+`+ skip=+``+ end=+`+	keepend	contains=mvTodo
- syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend
+ syn region  mvString	start=+"+ skip=+""+ end=+"+	keepend	contains=@Spell
  syn region  mvDelayEval	start=+'+ end=+'+	keepend contains=ALLBUT,mvError,mvBraceError,mvCurlyError,mvParenError
  syn match   mvDelim		"[;:]"	display
  syn match   mvAssign	":="

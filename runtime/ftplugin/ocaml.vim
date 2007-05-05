@@ -4,7 +4,8 @@
 "              Markus Mottl        <markus.mottl@gmail.com>
 "              Stefano Zacchiroli  <zack@bononia.it>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
+" Last Change: 2006 May 01 - Added .annot support for file.whateverext (SZ)
+"	       2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
 "              2005 Oct 13 - removed GPL; better matchit support (MM, SZ)
 "
 if exists("b:did_ftplugin")
@@ -202,6 +203,7 @@ python << EOF
 
 import re
 import os
+import os.path
 import string
 import time
 import vim
@@ -288,13 +290,13 @@ class Annotations:
                 line = f.readline() # position line
             f.close()
             self.__filename = fname
-            self.__ml_filename = re.sub("\.annot$", ".ml", fname)
+            self.__ml_filename = vim.current.buffer.name
             self.__timestamp = int(time.time())
         except IOError:
             raise no_annotations
 
     def parse(self):
-        annot_file = re.sub("\.ml$", ".annot", vim.current.buffer.name)
+        annot_file = os.path.splitext(vim.current.buffer.name)[0] + ".annot"
         self.__parse(annot_file)
 
     def get_type(self, (line1, col1), (line2, col2)):

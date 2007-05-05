@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 7.0.  Last change: 2004 Feb 24
+*mlang.txt*     For Vim version 7.1a.  Last change: 2006 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -114,7 +114,7 @@ the language of your choice.  use "en" to disable translations. >
 ==============================================================================
 2. Menus						*multilang-menus*
 
-See |45.2| for the basics.
+See |45.2| for the basics, esp. using 'langmenu'.
 
 Note that if changes have been made to the menus after the translation was
 done, some of the menus may be shown in English.  Please try contacting the

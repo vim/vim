@@ -1,15 +1,15 @@
 " Vim syntax file
-" Language:	Fvwm{1,2} configuration file
-" Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
-" Last Change:	2002 Jun 2
+" Language:		Fvwm{1,2} configuration file
+" Maintainer:		Gautam Iyer <gi1242@users.sourceforge.net>
+" Previous Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
+" Last Change:		Sat 04 Nov 2006 11:28:37 PM PST
 "
 " Thanks to David Necas (Yeti) for adding Fvwm 2.4 support.
+"
+" 2006-05-09 gi1242: Rewrote fvwm2 syntax completely. Also since fvwm1 is now
+" mostly obsolete, made the syntax file pick fvwm2 syntax by default.
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-    syn clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
     finish
 endif
 
@@ -18,332 +18,600 @@ syn case ignore
 
 " Identifiers in Fvwm can contain most characters, so we only
 " include the most common ones here.
-if version >= 600
-    setlocal iskeyword=_,-,+,.,a-z,A-Z,48-57
-else
-    set iskeyword=_,-,+,.,a-z,A-Z,48-57
-endif
+setlocal iskeyword=_,-,+,.,a-z,A-Z,48-57
 
-" Read system colors from the color database (rgb.txt)
-if exists("rgb_file")
-    " We don't want any hit-return prompts, so we make sure that
-    " &shortmess is set to `O'
-    let __fvwm_oldshm = &shortmess
-    set shortmess=O
-
-    " And we set &report to a huge number, so that no hit-return prompts
-    " will be given
-    let __fvwm_oldreport = &report
-    set report=10000
-
-    " Append the color database to the fvwm configuration, and read the
-    " colors from this buffer
-    let __fvwm_i = line("$") + 1
-    exe "$r" rgb_file
-    let __fvwm_lastline = line("$")
-    while __fvwm_i <= __fvwm_lastline
-	let __fvwm_s = matchstr(getline(__fvwm_i), '^\s*\d\+\s\+\d\+\s\+\d\+\s\+\h.*$')
-	if __fvwm_s != ""
-	    exe "syn keyword fvwmColors ".substitute(__fvwm_s, '^\s*\d\+\s\+\d\+\s\+\d\+\s\+\(\h.*\)$', '\1', "")
-	endif
-	let __fvwm_i = __fvwm_i + 1
-    endwhile
-
-    " Remove the appended data
-    undo
-
-    " Goto first line again
-    1
-
-    " and restore the old values of the variables
-    let &shortmess = __fvwm_oldshm
-    let &report = __fvwm_oldreport
-    unlet __fvwm_i __fvwm_s __fvwm_lastline __fvwm_oldshm __fvwm_oldreport
-endif
-" done reading colors
-
-syn match   fvwmWhitespace	"\s\+" contained
+" Syntax items common to fvwm1 and fvwm2 config files
+syn cluster fvwmConstants	contains=fvwmEnvVar,fvwmNumber
 syn match   fvwmEnvVar		"\$\w\+"
-syn match   fvwmModConf		"^\s*\*\a\+" contains=fvwmWhitespace
-syn match   fvwmString		'".\{-}"'
+syn match   fvwmNumber		'\v<(\d+|0x[0-9a-f]+)>' 
+
+syn match   fvwmModConf		nextgroup=fvwmModArg	"\v^\s*\*\a+"
+syn region  fvwmModArg		contained contains=fvwmString,fvwmRGBValue
+				\ start='.' skip='\\$' end='$'
+
+syn region  fvwmString		contains=fvwmBackslash start='"'
+				\ matchgroup=fvwmBackslash skip='\v\\"' end='"'
+syn region  fvwmString		contains=fvwmBackslash start='`'
+				\ matchgroup=fvwmBackslash skip='\v\\`' end='`'
+syn region  fvwmString		contains=fvwmBackslash start="'"
+				\ matchgroup=fvwmBackslash skip="\v\\'" end="'"
+syn match   fvwmBackslash	contained '\\[^"'`]'
+
 syn match   fvwmRGBValue	"#\x\{3}"
 syn match   fvwmRGBValue	"#\x\{6}"
 syn match   fvwmRGBValue	"#\x\{9}"
 syn match   fvwmRGBValue	"#\x\{12}"
 syn match   fvwmRGBValue	"rgb:\x\{1,4}/\x\{1,4}/\x\{1,4}"
-syn match   fvwmPath		"\<IconPath\s.*$"lc=8 contains=fvwmEnvVar
-syn match   fvwmPath		"\<ModulePath\s.*$"lc=10 contains=fvwmEnvVar
-syn match   fvwmPath		"\<PixmapPath\s.*$"lc=10 contains=fvwmEnvVar
-syn match   fvwmModule		"\<Module\s\+\w\+"he=s+6
-syn match   fvwmKey		"\<Key\s\+\w\+"he=s+3
-syn keyword fvwmExec		Exec
-syn match   fvwmComment		"^#.*$"
 
-if (exists("b:fvwm_version") && b:fvwm_version == 1) || (exists("use_fvwm_1") && use_fvwm_1)
+syn region  fvwmComment		contains=@Spell start="^\s*#" skip='\\$' end='$'
+
+if (exists("b:fvwm_version") && b:fvwm_version == 1)
+	    \ || (exists("use_fvwm_1") && use_fvwm_1)
+
+    "
+    " Syntax highlighting for Fvwm1 files.
+    "
+
+    " Moved from common syntax items
+    syn match   fvwmModule	"\<Module\s\+\w\+"he=s+6
+    syn keyword fvwmExec	Exec
+    syn match   fvwmPath	"\<IconPath\s.*$"lc=8 contains=fvwmEnvVar
+    syn match   fvwmPath	"\<ModulePath\s.*$"lc=10 contains=fvwmEnvVar
+    syn match   fvwmPath	"\<PixmapPath\s.*$"lc=10 contains=fvwmEnvVar
+    syn match   fvwmKey		"\<Key\s\+\w\+"he=s+3
+
+    " fvwm1 specific items
     syn match  fvwmEnvVar	"\$(\w\+)"
-    syn region fvwmStyle	matchgroup=fvwmFunction start="^\s*Style\>"hs=e-5 end="$" oneline keepend contains=fvwmString,fvwmKeyword,fvwmWhiteSpace
+    syn match  fvwmWhitespace	contained "\s\+"
+    syn region fvwmStyle	oneline keepend
+				\ contains=fvwmString,fvwmKeyword,fvwmWhiteSpace
+				\ matchgroup=fvwmFunction
+				\ start="^\s*Style\>"hs=e-5 end="$"
 
-    syn keyword fvwmFunction	AppsBackingStore AutoRaise BackingStore
-    syn keyword fvwmFunction	Beep BoundaryWidth ButtonStyle
-    syn keyword fvwmFunction	CenterOnCirculate CirculateDown
-    syn keyword fvwmFunction	CirculateHit CirculateSkip
-    syn keyword fvwmFunction	CirculateSkipIcons CirculateUp
-    syn keyword fvwmFunction	ClickTime ClickToFocus Close Cursor
-    syn keyword fvwmFunction	CursorMove DecorateTransients Delete
-    syn keyword fvwmFunction	Desk DeskTopScale DeskTopSize Destroy
-    syn keyword fvwmFunction	DontMoveOff EdgeResistance EdgeScroll
-    syn keyword fvwmFunction	EndFunction EndMenu EndPopup Focus
-    syn keyword fvwmFunction	Font Function GotoPage HiBackColor
-    syn keyword fvwmFunction	HiForeColor Icon IconBox IconFont
-    syn keyword fvwmFunction	Iconify IconPath Key Lenience Lower
-    syn keyword fvwmFunction	Maximize MenuBackColor MenuForeColor
-    syn keyword fvwmFunction	MenuStippleColor Module ModulePath Mouse
-    syn keyword fvwmFunction	Move MWMBorders MWMButtons MWMDecorHints
-    syn keyword fvwmFunction	MWMFunctionHints MWMHintOverride MWMMenus
-    syn keyword fvwmFunction	NoBorder NoBoundaryWidth Nop NoPPosition
-    syn keyword fvwmFunction	NoTitle OpaqueMove OpaqueResize Pager
-    syn keyword fvwmFunction	PagerBackColor PagerFont PagerForeColor
-    syn keyword fvwmFunction	PagingDefault PixmapPath Popup Quit Raise
-    syn keyword fvwmFunction	RaiseLower RandomPlacement Refresh Resize
-    syn keyword fvwmFunction	Restart SaveUnders Scroll SloppyFocus
-    syn keyword fvwmFunction	SmartPlacement StartsOnDesk StaysOnTop
-    syn keyword fvwmFunction	StdBackColor StdForeColor Stick Sticky
-    syn keyword fvwmFunction	StickyBackColor StickyForeColor
-    syn keyword fvwmFunction	StickyIcons StubbornIconPlacement
-    syn keyword fvwmFunction	StubbornIcons StubbornPlacement
-    syn keyword fvwmFunction	SuppressIcons Title TogglePage Wait Warp
-    syn keyword fvwmFunction	WindowFont WindowList WindowListSkip
-    syn keyword fvwmFunction	WindowsDesk WindowShade XORvalue
+    syn keyword fvwmFunction	AppsBackingStore AutoRaise BackingStore Beep
+				\ BoundaryWidth ButtonStyle CenterOnCirculate
+				\ CirculateDown CirculateHit CirculateSkip
+				\ CirculateSkipIcons CirculateUp ClickTime
+				\ ClickToFocus Close Cursor CursorMove
+				\ DecorateTransients Delete Desk DeskTopScale
+				\ DeskTopSize Destroy DontMoveOff
+				\ EdgeResistance EdgeScroll EndFunction
+				\ EndMenu EndPopup Focus Font Function
+				\ GotoPage HiBackColor HiForeColor Icon
+				\ IconBox IconFont Iconify IconPath Key
+				\ Lenience Lower Maximize MenuBackColor
+				\ MenuForeColor MenuStippleColor Module
+				\ ModulePath Mouse Move MWMBorders MWMButtons
+				\ MWMDecorHints MWMFunctionHints
+				\ MWMHintOverride MWMMenus NoBorder
+				\ NoBoundaryWidth Nop NoPPosition NoTitle
+				\ OpaqueMove OpaqueResize Pager PagerBackColor
+				\ PagerFont PagerForeColor PagingDefault
+				\ PixmapPath Popup Quit Raise RaiseLower
+				\ RandomPlacement Refresh Resize Restart
+				\ SaveUnders Scroll SloppyFocus SmartPlacement
+				\ StartsOnDesk StaysOnTop StdBackColor
+				\ StdForeColor Stick Sticky StickyBackColor
+				\ StickyForeColor StickyIcons
+				\ StubbornIconPlacement StubbornIcons
+				\ StubbornPlacement SuppressIcons Title
+				\ TogglePage Wait Warp WindowFont WindowList
+				\ WindowListSkip WindowsDesk WindowShade
+				\ XORvalue
 
     " These keywords are only used after the "Style" command.  To avoid
     " name collision with several commands, they are contained.
-    syn keyword fvwmKeyword	BackColor BorderWidth BoundaryWidth contained
-    syn keyword fvwmKeyword	Button CirculateHit CirculateSkip Color contained
-    syn keyword fvwmKeyword	DoubleClick ForeColor Handles HandleWidth contained
-    syn keyword fvwmKeyword	Icon IconTitle NoBorder NoBoundaryWidth contained
-    syn keyword fvwmKeyword	NoButton NoHandles NoIcon NoIconTitle contained
-    syn keyword fvwmKeyword	NoTitle Slippery StartIconic StartNormal contained
-    syn keyword fvwmKeyword	StartsAnyWhere StartsOnDesk StaysOnTop contained
-    syn keyword fvwmKeyword	StaysPut Sticky Title WindowListHit contained
-    syn keyword fvwmKeyword	WindowListSkip contained
-elseif (exists("b:fvwm_version") && b:fvwm_version == 2) || (exists("use_fvwm_2") && use_fvwm_2)
+    syn keyword fvwmKeyword	contained
+				\ BackColor BorderWidth BoundaryWidth Button
+				\ CirculateHit CirculateSkip Color DoubleClick
+				\ ForeColor Handles HandleWidth Icon IconTitle
+				\ NoBorder NoBoundaryWidth NoButton NoHandles
+				\ NoIcon NoIconTitle NoTitle Slippery
+				\ StartIconic StartNormal StartsAnyWhere
+				\ StartsOnDesk StaysOnTop StaysPut Sticky
+				\ Title WindowListHit WindowListSkip
+
+" elseif (exists("b:fvwm_version") && b:fvwm_version == 2)
+" 	    \ || (exists("use_fvwm_2") && use_fvwm_2)
+else
+
+    "
+    " Syntax highlighting for fvwm2 files.
+    "
     syn match   fvwmEnvVar	"\${\w\+}"
     syn match   fvwmEnvVar	"\$\[[^]]\+\]"
     syn match   fvwmEnvVar	"\$[$0-9*]"
-    syn match   fvwmDef		'^\s*+\s*".\{-}"' contains=fvwmMenuString,fvwmWhitespace
-    syn match   fvwmIcon	'%.\{-}%' contained
-    syn match   fvwmIcon	'\*.\{-}\*' contained
-    syn match   fvwmMenuString	'".\{-}"' contains=fvwmIcon,fvwmShortcutKey contained
-    syn match   fvwmShortcutKey	"&." contained
-    syn match   fvwmModule	"\<KillModule\s\+\w\+"he=s+10 contains=fvwmModuleName
-    syn match   fvwmModule	"\<SendToModule\s\+\w\+"he=s+12 contains=fvwmModuleName
-    syn match   fvwmModule	"\<DestroyModuleConfig\s\+\w\+"he=s+19 contains=fvwmModuleName
 
-    syn keyword fvwmFunction	AddButtonStyle AddTitleStyle AddToDecor AddToFunc
-    syn keyword fvwmFunction	AddToMenu AnimatedMove Beep BorderStyle BugOpts
-    syn keyword fvwmFunction	BusyCursor ButtonState ButtonStyle ChangeDecor
-    syn keyword fvwmFunction	ChangeMenuStyle ClickTime Close ColorLimit
-    syn keyword fvwmFunction	ColormapFocus CopyMenuStyle Current CursorMove
-    syn keyword fvwmFunction	CursorStyle DefaultColors DefaultColorset
-    syn keyword fvwmFunction	DefaultFont DefaultIcon DefaultLayers Delete Desk
-    syn keyword fvwmFunction	DeskTopSize Destroy DestroyDecor DestroyFunc
-    syn keyword fvwmFunction	DestroyMenu DestroyMenuStyle Direction Echo
-    syn keyword fvwmFunction	EdgeResistance EdgeScroll EdgeThickness Emulate
-    syn keyword fvwmFunction	EscapeFunc Exec ExecUseShell ExitFunction
-    syn keyword fvwmFunction	FakeClick FlipFocus Focus Function GlobalOpts
-    syn keyword fvwmFunction	GnomeButton GotoDesk GotoDeskAndPage GotoPage
-    syn keyword fvwmFunction	HideGeometryWindow HilightColor HilightColorset
-    syn keyword fvwmFunction	IconFont IconPath Iconify IgnoreModifiers
-    syn keyword fvwmFunction	ImagePath Key Layer Lower Maximize Menu MenuStyle
-    syn keyword fvwmFunction	ModulePath ModuleSynchronous ModuleTimeout
-    syn keyword fvwmFunction	Mouse Move MoveThreshold MoveToDesk MoveToPage
-    syn keyword fvwmFunction	MoveToScreen Next None Nop OpaqueMoveSize
-    syn keyword fvwmFunction	PipeRead PixmapPath PlaceAgain PointerKey
-    syn keyword fvwmFunction	Popup Prev Quit QuitScreen QuitSession Raise
-    syn keyword fvwmFunction	RaiseLower Read Recapture RecaptureWindow
-    syn keyword fvwmFunction	Refresh RefreshWindow Resize ResizeMove
-    syn keyword fvwmFunction	Restart SaveQuitSession SaveSession Scroll
-    syn keyword fvwmFunction	SetAnimation SetEnv SetMenuDelay SetMenuStyle
-    syn keyword fvwmFunction	Silent SnapAttraction SnapGrid Stick Stroke
-    syn keyword fvwmFunction	StrokeFunc Style Title TitleStyle UnsetEnv
-    syn keyword fvwmFunction	UpdateDecor UpdateStyles Wait WarpToWindow
-    syn keyword fvwmFunction	WindowFont WindowId WindowList WindowShade
-    syn keyword fvwmFunction	WindowShadeAnimate WindowsDesk Xinerama
-    syn keyword fvwmFunction	XineramaPrimaryScreen XineramaSls XineramaSlsSize
-    syn keyword fvwmFunction	XorPixmap XorValue
+    syn match   fvwmDef		contains=fvwmMenuString,fvwmWhitespace
+				\ '^\s*+\s*".\{-}"'
+    syn region  fvwmMenuString	contains=fvwmIcon,fvwmShortcutKey
+				\ start='^\s*+\s*\zs"' skip='\v\\\\|\\\"' end='"'
+    syn region	fvwmIcon	contained start='\v\%\%@!' end='%'
+    syn match   fvwmShortcutKey	contained "&."
 
-    syn keyword fvwmKeyword	Active ActiveColorset ActiveDown
-    syn keyword fvwmKeyword	ActiveFore ActiveForeOff ActivePlacement
-    syn keyword fvwmKeyword	ActivePlacementHonorsStartsOnPage
-    syn keyword fvwmKeyword	ActivePlacementIgnoresStartsOnPage ActiveUp All
-    syn keyword fvwmKeyword	AllowRestack Alphabetic Anim Animated Animation
-    syn keyword fvwmKeyword	AnimationOff AutomaticHotkeys AutomaticHotkeysOff
-    syn keyword fvwmKeyword	BGradient BackColor Background BackingStore
-    syn keyword fvwmKeyword	BackingStoreOff BorderColorset BorderWidth
-    syn keyword fvwmKeyword	Bottom Button Button0 Button1 Button2 Button3
-    syn keyword fvwmKeyword	Button4 Button5 Button6 Button7 Button8
-    syn keyword fvwmKeyword	Button9 CGradient CaptureHonorsStartsOnPage
-    syn keyword fvwmKeyword	CaptureIgnoresStartsOnPage CascadePlacement
-    syn keyword fvwmKeyword	Centered CirculateHit CirculateHitIcon
-    syn keyword fvwmKeyword	CirculateHitShaded CirculateSkip
-    syn keyword fvwmKeyword	CirculateSkipIcon CirculateSkipShaded Clear
-    syn keyword fvwmKeyword	ClickToFocus ClickToFocusDoesntPassClick
-    syn keyword fvwmKeyword	ClickToFocusDoesntRaise ClickToFocusPassesClick
-    syn keyword fvwmKeyword	ClickToFocusPassesClickOff ClickToFocusRaises
-    syn keyword fvwmKeyword	ClickToFocusRaisesOff Color Colorset Context
-    syn keyword fvwmKeyword	CurrentDesk CurrentPage CurrentPageAnyDesk
-    syn keyword fvwmKeyword	DGradient DecorateTransient Default
-    syn keyword fvwmKeyword	DepressableBorder Desk DontLowerTransient
-    syn keyword fvwmKeyword	DontRaiseTransient DontStackTransientParent
-    syn keyword fvwmKeyword	DoubleClickTime Down DumbPlacement DynamicMenu
-    syn keyword fvwmKeyword	DynamicPopDownAction DynamicPopUpAction
-    syn keyword fvwmKeyword	East Expect FVWM FirmBorder Fixed
-    syn keyword fvwmKeyword	FixedPosition Flat FlickeringMoveWorkaround
-    syn keyword fvwmKeyword	FlickeringQtDialogsWorkaround FocusFollowsMouse
-    syn keyword fvwmKeyword	FollowsFocus FollowsMouse Font ForeColor
-    syn keyword fvwmKeyword	Foreground Function Fvwm FvwmBorder
-    syn keyword fvwmKeyword	FvwmButtons GNOMEIgnoreHints GNOMEUseHints
-    syn keyword fvwmKeyword	GrabFocus GrabFocusOff GrabFocusTransient
-    syn keyword fvwmKeyword	GrabFocusTransientOff Greyed GreyedColorset
-    syn keyword fvwmKeyword	HGradient HandleWidth Handles Height
-    syn keyword fvwmKeyword	HiddenHandles Hilight3DOff Hilight3DThick
-    syn keyword fvwmKeyword	Hilight3DThickness Hilight3DThin HilightBack
-    syn keyword fvwmKeyword	HilightBackOff HilightBorderColorset
-    syn keyword fvwmKeyword	HilightColorset HilightFore HintOverride
-    syn keyword fvwmKeyword	HoldSubmenus Icon IconBox IconFill IconFont
-    syn keyword fvwmKeyword	IconGrid IconOverride IconTitle Iconic
-    syn keyword fvwmKeyword	IconifyWindowGroups IconifyWindowGroupsOff
-    syn keyword fvwmKeyword	Icons IgnoreRestack Inactive Interior Item
-    syn keyword fvwmKeyword	ItemFormat KeepWindowGroupsOnDesk Layer Left
-    syn keyword fvwmKeyword	LeftJustified Lenience LowerTransient MWM
-    syn keyword fvwmKeyword	MWMBorder MWMButtons MWMDecor MWMDecorMax
-    syn keyword fvwmKeyword	MWMDecorMenu MWMDecorMin MWMFunctions
-    syn keyword fvwmKeyword	ManualPlacement ManualPlacementHonorsStartsOnPage
-    syn keyword fvwmKeyword	ManualPlacementIgnoresStartsOnPage MaxWindowSize
-    syn keyword fvwmKeyword	Maximized Menu MenuColorset MenuFace
-    syn keyword fvwmKeyword	MinOverlapPercentPlacement MinOverlapPlacement
-    syn keyword fvwmKeyword	MiniIcon MixedVisualWorkaround ModalityIsEvil
-    syn keyword fvwmKeyword	ModuleSynchronous Mouse MouseFocus
-    syn keyword fvwmKeyword	MouseFocusClickDoesntRaise MouseFocusClickRaises
-    syn keyword fvwmKeyword	MouseFocusClickRaisesOff Move Mwm MwmBorder
-    syn keyword fvwmKeyword	MwmButtons MwmDecor MwmFunctions NakedTransient
-    syn keyword fvwmKeyword	Never NeverFocus NoActiveIconOverride NoButton
-    syn keyword fvwmKeyword	NoDecorHint NoDeskSort NoFuncHint NoGeometry
-    syn keyword fvwmKeyword	NoGeometryWithInfo NoHandles NoHotkeys NoIcon
-    syn keyword fvwmKeyword	NoIconOverride NoIconPosition NoIconTitle
-    syn keyword fvwmKeyword	NoIcons NoInset NoLenience NoNormal
-    syn keyword fvwmKeyword	NoOLDecor NoOnBottom NoOnTop NoOverride
-    syn keyword fvwmKeyword	NoPPosition NoResizeOverride NoSticky
-    syn keyword fvwmKeyword	NoStipledTitles NoTitle NoTransientPPosition
-    syn keyword fvwmKeyword	NoTransientUSPosition NoUSPosition
-    syn keyword fvwmKeyword	NoWarp Normal North Northeast Northwest
-    syn keyword fvwmKeyword	NotAlphabetic OLDecor OnBottom OnTop Once
-    syn keyword fvwmKeyword	OnlyIcons OnlyListSkip OnlyNormal OnlyOnBottom
-    syn keyword fvwmKeyword	OnlyOnTop OnlySticky Opacity ParentalRelativity
-    syn keyword fvwmKeyword	Pixmap PopdownDelayed PopdownDelay PopupDelay
-    syn keyword fvwmKeyword	PopupAsRootMenu PopupAsSubmenu PopdownImmediately
-    syn keyword fvwmKeyword	PopupDelayed PopupImmediately PopupOffset
-    syn keyword fvwmKeyword	Quiet RGradient RaiseOverNativeWindows
-    syn keyword fvwmKeyword	RaiseOverUnmanaged RaiseTransient
-    syn keyword fvwmKeyword	Raised Read RecaptureHonorsStartsOnPage
-    syn keyword fvwmKeyword	RecaptureIgnoresStartsOnPage Rectangle
-    syn keyword fvwmKeyword	RemoveSubmenus Reset Resize ResizeHintOverride
-    syn keyword fvwmKeyword	ResizeOpaque ResizeOutline ReverseOrder
-    syn keyword fvwmKeyword	Right RightJustified Root SGradient SameType
-    syn keyword fvwmKeyword	SaveUnder SaveUnderOff ScatterWindowGroups
-    syn keyword fvwmKeyword	Screen SelectInPlace SelectOnRelease
-    syn keyword fvwmKeyword	SelectWarp SeparatorsLong SeparatorsShort
-    syn keyword fvwmKeyword	ShowMapping SideColor SidePic Simple
-    syn keyword fvwmKeyword	SkipMapping Slippery SlipperyIcon SloppyFocus
-    syn keyword fvwmKeyword	SmartPlacement SmartPlacementIsNormal
-    syn keyword fvwmKeyword	SmartPlacementIsReallySmart Solid South
-    syn keyword fvwmKeyword	Southeast Southwest StackTransientParent
-    syn keyword fvwmKeyword	StartIconic StartNormal StartsAnyWhere
-    syn keyword fvwmKeyword	StartsLowered StartsOnDesk StartsOnPage
-    syn keyword fvwmKeyword	StartsOnPageIgnoresTransients
-    syn keyword fvwmKeyword	StartsOnPageIncludesTransients StartsOnScreen
-    syn keyword fvwmKeyword	StartsRaised StaysOnBottom StaysOnTop StaysPut
-    syn keyword fvwmKeyword	Sticky StickyIcon StipledTitles StippledTitle
-    syn keyword fvwmKeyword	StippledTitleOff SubmenusLeft SubmenusRight Sunk
-    syn keyword fvwmKeyword	This TileCascadePlacement TileManualPlacement
-    syn keyword fvwmKeyword	TiledPixmap Timeout Title TitleAtBottom
-    syn keyword fvwmKeyword	TitleAtTop TitleUnderlines0 TitleUnderlines1
-    syn keyword fvwmKeyword	TitleUnderlines2 TitleWarp TitleWarpOff Top
-    syn keyword fvwmKeyword	Transient TrianglesRelief TrianglesSolid
-    syn keyword fvwmKeyword	Up UseBorderStyle UseDecor UseIconName
-    syn keyword fvwmKeyword	UseIconPosition UseListSkip UsePPosition
-    syn keyword fvwmKeyword	UseStyle UseTitleStyle UseTransientPPosition
-    syn keyword fvwmKeyword	UseTransientUSPosition UseUSPosition VGradient
-    syn keyword fvwmKeyword	VariablePosition Vector VerticalItemSpacing
-    syn keyword fvwmKeyword	VerticalTitleSpacing WIN Wait Warp WarpTitle
-    syn keyword fvwmKeyword	West Win Window WindowListHit WindowListSkip
-    syn keyword fvwmKeyword	WindowShadeScrolls WindowShadeShrinks
-    syn keyword fvwmKeyword	WindowShadeSteps Windows XineramaRoot YGradient
-    syn keyword fvwmKeyword	bottomright default pointer prev quiet
-    syn keyword fvwmKeyword	True False Toggle
+    syn keyword fvwmModuleName	FvwmAnimate FvwmAudio FvwmAuto FvwmBacker
+				\ FvwmBanner FvwmButtons FvwmCommandS
+				\ FvwmConsole FvwmCpp FvwmDebug FvwmDragWell
+				\ FvwmEvent FvwmForm FvwmGtk FvwmIconBox
+				\ FvwmIconMan FvwmIdent FvwmM4 FvwmPager
+				\ FvwmSave FvwmSaveDesk FvwmScript FvwmScroll
+				\ FvwmTaskBar FvwmWinList FvwmWharf
+    " Obsolete fvwmModuleName: FvwmTheme
 
-    syn keyword fvwmConditionName	AcceptsFocus CurrentDesk CurrentGlobalPage
-    syn keyword fvwmConditionName	CurrentGlobalPageAnyDesk CurrentPage
-    syn keyword fvwmConditionName	CurrentPageAnyDesk CurrentScreen Iconic Layer
-    syn keyword fvwmConditionName	Maximized PlacedByButton3 PlacedByFvwm Raised
-    syn keyword fvwmConditionName	Shaded Sticky Transient Visible
+    syn keyword fvwmKeyword	AddToMenu ChangeMenuStyle CopyMenuStyle
+				\ DestroyMenu DestroyMenuStyle Menu
+				\ Popup TearMenuOff Title BugOpts BusyCursor
+				\ ClickTime ColorLimit ColormapFocus
+				\ DefaultColors DefaultColorset DefaultFont
+				\ DefaultIcon DefaultLayers Deschedule Emulate
+				\ EscapeFunc FakeClick FakeKeypress GlobalOpts
+				\ HilightColor HilightColorset IconFont
+				\ PrintInfo Repeat Schedule State WindowFont
+				\ XSync XSynchronize AnimatedMove
+				\ HideGeometryWindow Layer Lower Move
+				\ MoveToDesk MoveThreshold MoveToPage
+				\ MoveToScreen OpaqueMoveSize PlaceAgain Raise
+				\ RaiseLower ResizeMaximize ResizeMove
+				\ ResizeMoveMaximize RestackTransients
+				\ SetAnimation SnapAttraction SnapGrid
+				\ WindowsDesk XorPixmap XorValue CursorMove
+				\ FlipFocus Focus WarpToWindow Close Delete
+				\ Destroy Iconify Recapture RecaptureWindow
+				\ Refresh RefreshWindow Stick StickAcrossPages
+				\ StickAcrossDesks WindowShade
+				\ WindowShadeAnimate IgnoreModifiers
+				\ EdgeCommand EdgeLeaveCommand GnomeButton
+				\ Stroke StrokeFunc FocusStyle DestroyStyle
+				\ UpdateStyles AddToDecor BorderStyle
+				\ ChangeDecor DestroyDecor UpdateDecor
+				\ DesktopName DeskTopSize EdgeResistance
+				\ EdgeScroll EdgeThickness EwmhBaseStruts
+				\ EWMHNumberOfDesktops GotoDeskAndPage
+				\ GotoPage Scroll Xinerama
+				\ XineramaPrimaryScreen XineramaSls
+				\ XineramaSlsSize XineramaSlsScreens AddToFunc
+				\ Beep DestroyFunc Echo Exec ExecUseShell
+				\ Function Nop PipeRead Read SetEnv Silent
+				\ UnsetEnv Wait DestroyModuleConfig KillModule
+				\ Module ModuleSynchronous ModuleTimeout
+				\ SendToModule Quit QuitScreen QuitSession
+				\ Restart SaveSession SaveQuitSession KeepRc
+				\ NoWindow Break CleanupColorsets
 
-    syn keyword fvwmContextName	BOTTOM BOTTOM_EDGE BOTTOM_LEFT BOTTOM_RIGHT
-    syn keyword fvwmContextName	DEFAULT DESTROY LEFT LEFT_EDGE MENU MOVE
-    syn keyword fvwmContextName	RESIZE RIGHT RIGHT_EDGE ROOT SELECT STROKE SYS
-    syn keyword fvwmContextName	TITLE TOP TOP_EDGE TOP_LEFT TOP_RIGHT WAIT
-    syn keyword fvwmContextName	POSITION
+    " Conditional commands
+    syn keyword fvwmKeyword	nextgroup=fvwmCondition skipwhite
+				\ All Any Current Next None Pick PointerWindow
+				\ Prev ThisWindow
+    syn keyword fvwmKeyword	nextgroup=fvwmDirection skipwhite
+				\ Direction
+    syn keyword fvwmDirection	contained nextgroup=fvwmDirection skipwhite
+				\ FromPointer
+    syn keyword fvwmDirection	contained nextgroup=fvwmCondition skipwhite
+				\ North Northeast East Southeast South
+				\ Southwest West Northwest Center
+    syn region	fvwmCondition	contained contains=fvwmCondNames,fvwmString
+				\ matchgroup=fvwmKeyword start='(' skip=','
+				\ end=')'
+    syn keyword fvwmCondNames	contained
+				\ AcceptsFocus AnyScreen CirculateHit
+				\ CirculateHitIcon CirculateHitShaded Closable
+				\ CurrentDesk CurrentGlobalPage
+				\ CurrentGlobalPageAnyDesk CurrentPage
+				\ CurrentPageAnyDesk CurrentScreen FixedSize
+				\ Focused HasHandles HasPointer Iconic
+				\ Iconifiable Maximizable Maximized
+				\ Overlapped PlacedByButton3 PlacedByFvwm Raised
+				\ Shaded Sticky StickyAcrossDesks
+				\ StickyAcrossPages Transient Visible
+    syn keyword fvwmCondNames	contained skipwhite nextgroup=@fvwmConstants
+				\ State Layer
 
-    syn keyword fvwmFunctionName	contained FvwmAnimate FvwmAudio FvwmAuto
-    syn keyword fvwmFunctionName	contained FvwmBacker FvwmBanner FvwmButtons
-    syn keyword fvwmFunctionName	contained FvwmCascade FvwmCommandS
-    syn keyword fvwmFunctionName	contained FvwmConsole FvwmConsoleC FvwmCpp
-    syn keyword fvwmFunctionName	contained FvwmDebug FvwmDragWell FvwmEvent
-    syn keyword fvwmFunctionName	contained FvwmForm FvwmGtk FvwmIconBox
-    syn keyword fvwmFunctionName	contained FvwmIconMan FvwmIdent FvwmM4
-    syn keyword fvwmFunctionName	contained FvwmPager FvwmRearrange FvwmSave
-    syn keyword fvwmFunctionName	contained FvwmSaveDesk FvwmScript FvwmScroll
-    syn keyword fvwmFunctionName	contained FvwmTalk FvwmTaskBar FvwmTheme
-    syn keyword fvwmFunctionName	contained FvwmTile FvwmWharf FvwmWinList
+    " Test
+    syn keyword fvwmKeyword	nextgroup=fvwmTCond skipwhite
+				\ Test
+    syn region	fvwmTCond	contained contains=fvwmTCNames,fvwmString
+				\ matchgroup=fvwmKeyword start='(' end=')'
+    syn keyword	fvwmTCNames	contained
+				\ Version EnvIsSet EnvMatch EdgeHasPointer
+				\ EdgeIsActive Start Init Restart Exit Quit
+				\ ToRestart True False F R W X I
+    
+    " TestRc
+    syn keyword fvwmKeyword	nextgroup=fvwmTRCond skipwhite
+				\ TestRc
+    syn region	fvwmTRCond	contained contains=fvwmTRNames,fvwmNumber
+				\ matchgroup=fvwmKeyword start='(' end=')'
+    syn keyword	fvwmTRNames	contained NoMatch Match Error Break
 
-    syn keyword fvwmFunctionName	StartFunction InitFunction RestartFunction
-    syn keyword fvwmFunctionName	ExitFunction SessionInitFunction
-    syn keyword fvwmFunctionName	SessionRestartFunction SessionExitFunction
-    syn keyword fvwmFunctionName	MissingSubmenuFunction
+    " Colorsets
+    syn keyword fvwmKeyword	nextgroup=fvwmCSArgs	skipwhite
+				\ ColorSet
+    syn region	fvwmCSArgs	contained transparent contains=fvwmCSNames,@fvwmConstants,fvwmString,fvwmRGBValue,fvwmGradient
+		\ start='.' skip='\\$' end='$'
+    syn keyword	fvwmCSNames	contained
+				\ fg Fore Foreground bg Back Background hi
+				\ Hilite Hilight sh Shade Shadow fgsh Pixmap
+				\ TiledPixmap AspectPixmap RootTransparent
+				\ Shape TiledShape AspectShape Tint fgTint
+				\ bgTint Alpha fgAlpha Dither IconTint
+				\ IconAlpha NoShape Plain Translucent
+    syn match	fvwmCSNames	contained	'\v<Transparent>'
+    syn match	fvwmGradient	contained	'\v<[HVDBSCRY]Gradient>'
+
+    " Styles
+    syn keyword fvwmKeyword	nextgroup=fvwmStyleArgs skipwhite
+				\ Style WindowStyle
+    syn region	fvwmStyleArgs	contained transparent contains=fvwmStyleNames,@fvwmConstants,fvwmString,fvwmRGBValue
+				\ start='.' skip='\\$' end='$'
+    syn keyword	fvwmStyleNames	contained
+				\ BorderWidth HandleWidth NoIcon Icon MiniIcon
+				\ IconBox IconGrid IconFill IconSize NoTitle
+				\ Title TitleAtBottom TitleAtLeft TitleAtRight
+				\ TitleAtTop LeftTitleRotatedCW
+				\ LeftTitleRotatedCCW RightTitleRotatedCCW
+				\ RightTitleRotatedCW TopTitleRotated
+				\ TopTitleNotRotated BottomTitleRotated
+				\ BottomTitleNotRotated UseTitleDecorRotation
+				\ StippledTitle StippledTitleOff
+				\ IndexedWindowName ExactWindowName
+				\ IndexedIconName ExactIconName Borders
+				\ NoHandles Handles WindowListSkip
+				\ WindowListHit CirculateSkip CirculateHit
+				\ CirculateSkipShaded CirculateHitShaded Layer
+				\ StaysOnTop StaysOnBottom StaysPut Sticky
+				\ Slippery StickyAcrossPages StickyAcrossDesks
+				\ StartIconic StartNormal Color ForeColor
+				\ BackColor Colorset HilightFore HilightBack
+				\ HilightColorset BorderColorset
+				\ HilightBorderColorset IconTitleColorset
+				\ HilightIconTitleColorset
+				\ IconBackgroundColorset IconTitleRelief
+				\ IconBackgroundRelief IconBackgroundPadding
+				\ Font IconFont StartsOnDesk StartsOnPage
+				\ StartsAnyWhere StartsOnScreen
+				\ ManualPlacementHonorsStartsOnPage
+				\ ManualPlacementIgnoresStartsOnPage
+				\ CaptureHonorsStartsOnPage
+				\ CaptureIgnoresStartsOnPage
+				\ RecaptureHonorsStartsOnPage
+				\ RecaptureIgnoresStartsOnPage
+				\ StartsOnPageIncludesTransients
+				\ StartsOnPageIgnoresTransients IconTitle
+				\ NoIconTitle MwmButtons FvwmButtons MwmBorder
+				\ FvwmBorder MwmDecor NoDecorHint MwmFunctions
+				\ NoFuncHint HintOverride NoOverride NoButton
+				\ Button ResizeHintOverride NoResizeOverride
+				\ OLDecor NoOLDecor GNOMEUseHints
+				\ GNOMEIgnoreHints StickyIcon SlipperyIcon
+				\ StickyAcrossPagesIcon StickyAcrossDesksIcon
+				\ ManualPlacement CascadePlacement
+				\ MinOverlapPlacement
+				\ MinOverlapPercentPlacement
+				\ TileManualPlacement TileCascadePlacement
+				\ CenterPlacement MinOverlapPlacementPenalties
+				\ MinOverlapPercentPlacementPenalties
+				\ DecorateTransient NakedTransient
+				\ DontRaiseTransient RaiseTransient
+				\ DontLowerTransient LowerTransient
+				\ DontStackTransientParent
+				\ StackTransientParent SkipMapping ShowMapping
+				\ ScatterWindowGroups KeepWindowGroupsOnDesk
+				\ UseDecor UseStyle NoPPosition UsePPosition
+				\ NoUSPosition UseUSPosition
+				\ NoTransientPPosition UseTransientPPosition
+				\ NoTransientUSPosition UseTransientUSPosition
+				\ NoIconPosition UseIconPosition Lenience
+				\ NoLenience ClickToFocus SloppyFocus
+				\ MouseFocus FocusFollowsMouse NeverFocus
+				\ ClickToFocusPassesClickOff
+				\ ClickToFocusPassesClick
+				\ ClickToFocusRaisesOff ClickToFocusRaises
+				\ MouseFocusClickRaises
+				\ MouseFocusClickRaisesOff GrabFocus
+				\ GrabFocusOff GrabFocusTransientOff
+				\ GrabFocusTransient FPFocusClickButtons
+				\ FPFocusClickModifiers
+				\ FPSortWindowlistByFocus FPClickRaisesFocused
+				\ FPClickDecorRaisesFocused
+				\ FPClickIconRaisesFocused
+				\ FPClickRaisesUnfocused
+				\ FPClickDecorRaisesUnfocused
+				\ FPClickIconRaisesUnfocused FPClickToFocus
+				\ FPClickDecorToFocus FPClickIconToFocus
+				\ FPEnterToFocus FPLeaveToUnfocus
+				\ FPFocusByProgram FPFocusByFunction
+				\ FPFocusByFunctionWarpPointer FPLenient
+				\ FPPassFocusClick FPPassRaiseClick
+				\ FPIgnoreFocusClickMotion
+				\ FPIgnoreRaiseClickMotion
+				\ FPAllowFocusClickFunction
+				\ FPAllowRaiseClickFunction FPGrabFocus
+				\ FPGrabFocusTransient FPOverrideGrabFocus
+				\ FPReleaseFocus FPReleaseFocusTransient
+				\ FPOverrideReleaseFocus StartsLowered
+				\ StartsRaised IgnoreRestack AllowRestack
+				\ FixedPosition VariablePosition
+				\ FixedUSPosition VariableUSPosition
+				\ FixedPPosition VariablePPosition FixedSize
+				\ VariableSize FixedUSSize VariableUSSize
+				\ FixedPSize VariablePSize Closable
+				\ Iconifiable Maximizable
+				\ AllowMaximizeFixedSize IconOverride
+				\ NoIconOverride NoActiveIconOverride
+				\ DepressableBorder FirmBorder MaxWindowSize
+				\ IconifyWindowGroups IconifyWindowGroupsOff
+				\ ResizeOpaque ResizeOutline BackingStore
+				\ BackingStoreOff BackingStoreWindowDefault
+				\ Opacity ParentalRelativity SaveUnder
+				\ SaveUnderOff WindowShadeShrinks
+				\ WindowShadeScrolls WindowShadeSteps
+				\ WindowShadeAlwaysLazy WindowShadeBusy
+				\ WindowShadeLazy EWMHDonateIcon
+				\ EWMHDontDonateIcon EWMHDonateMiniIcon
+				\ EWMHDontDonateMiniIcon EWMHMiniIconOverride
+				\ EWMHNoMiniIconOverride
+				\ EWMHUseStackingOrderHints
+				\ EWMHIgnoreStackingOrderHints
+				\ EWMHIgnoreStateHints EWMHUseStateHints
+				\ EWMHIgnoreStrutHints EWMHUseStrutHints
+				\ EWMHMaximizeIgnoreWorkingArea
+				\ EWMHMaximizeUseWorkingArea
+				\ EWMHMaximizeUseDynamicWorkingArea
+				\ EWMHPlacementIgnoreWorkingArea
+				\ EWMHPlacementUseWorkingArea
+				\ EWMHPlacementUseDynamicWorkingArea
+				\ MoveByProgramMethod Unmanaged State
+
+    " Cursor styles
+    syn keyword fvwmKeyword	nextgroup=fvwmCursorStyle skipwhite
+				\ CursorStyle
+    syn case match
+    syn keyword fvwmCursorStyle	contained
+				\ POSITION TITLE DEFAULT SYS MOVE RESIZE WAIT
+				\ MENU SELECT DESTROY TOP RIGHT BOTTOM LEFT
+				\ TOP_LEFT TOP_RIGHT BOTTOM_LEFT BOTTOM_RIGHT
+				\ TOP_EDGE RIGHT_EDGE BOTTOM_EDGE LEFT_EDGE
+				\ ROOT STROKE
+    syn case ignore
+
+    " Menu style
+    syn keyword fvwmKeyword	nextgroup=fvwmMStyleArgs skipwhite
+				\ MenuStyle
+    syn region	fvwmMStyleArgs	contained transparent contains=fvwmMStyleNames,@fvwmConstants,fvwmString,fvwmGradient,fvwmRGBValue
+				\ start='.' skip='\\$' end='$'
+    syn keyword	fvwmMStyleNames	contained
+				\ Fvwm Mwm Win BorderWidth Foreground
+				\ Background Greyed HilightBack HilightBackOff
+				\ ActiveFore ActiveForeOff MenuColorset
+				\ ActiveColorset GreyedColorset Hilight3DThick
+				\ Hilight3DThin Hilight3DOff
+				\ Hilight3DThickness Animation AnimationOff
+				\ Font MenuFace PopupDelay PopupOffset
+				\ TitleWarp TitleWarpOff TitleUnderlines0
+				\ TitleUnderlines1 TitleUnderlines2
+				\ SeparatorsLong SeparatorsShort
+				\ TrianglesSolid TrianglesRelief
+				\ PopupImmediately PopupDelayed
+				\ PopdownImmediately PopdownDelayed
+				\ PopupActiveArea DoubleClickTime SidePic
+				\ SideColor PopupAsRootMenu PopupAsSubmenu
+				\ PopupIgnore PopupClose RemoveSubmenus
+				\ HoldSubmenus SubmenusRight SubmenusLeft
+				\ SelectOnRelease ItemFormat
+				\ VerticalItemSpacing VerticalTitleSpacing
+				\ AutomaticHotkeys AutomaticHotkeysOff
+
+    " Button style
+    syn keyword fvwmKeyword	nextgroup=fvwmBNum	skipwhite
+				\ ButtonStyle AddButtonStyle
+    syn match	fvwmBNum	contained
+				\ nextgroup=fvwmBState,fvwmBStyleArgs skipwhite 
+				\ '\v<([0-9]|All|Left|Right|Reset)>'
+    syn keyword	fvwmBState	contained nextgroup=fvwmBStyleArgs skipwhite
+				\ ActiveUp ActiveDown InactiveUp InactiveDown
+				\ Active Inactive ToggledActiveUp
+				\ ToggledActiveDown ToggledInactiveUp
+				\ ToggledInactiveDown ToggledActive
+				\ ToggledInactive AllNormal AllToggled
+				\ AllActive AllInactive AllUp AllDown
+    syn region	fvwmBStyleArgs	contained contains=fvwmBStyleFlags,fvwmBStyleNames,fvwmGradient,fvwmRGBValue,@fvwmConstants,fvwmString
+				\ start='\S' skip='\\$' end='$'
+    syn keyword	fvwmBStyleNames	contained
+				\ Simple Default Solid Colorset Vector Pixmap
+				\ AdjustedPixmap ShrunkPixmap StretchedPixmap
+				\ TiledPixmap MiniIcon
+    syn keyword fvwmBStyleFlags	contained
+				\ Raised Sunk Flat UseTitleStyle
+				\ UseBorderStyle
+
+    " Border style
+    syn keyword fvwmKeyword	skipwhite nextgroup=fvwmBdState,fvwmBdStyleArgs
+				\ BorderStyle
+    syn keyword	fvwmBdState	contained skipwhite nextgroup=fvwmBdStyleArgs
+				\ Active Inactive
+    syn region	fvwmBdStyleArgs	contained contains=fvwmBdStyNames,fvwmBdStyFlags
+				\ start='\S' skip='\\$' end='$'
+    syn keyword	fvwmBdStyNames	contained
+				\ TiledPixmap Colorset
+    syn keyword	fvwmBdStyFlags	contained
+				\ HiddenHandles NoInset Raised Sunk Flat
+
+    " Title styles
+    syn keyword	fvwmKeyword	skipwhite nextgroup=fvwmTState,fvwmTStyleArgs
+				\ TitleStyle AddTitleStyle
+    syn keyword	fvwmTState	contained skipwhite nextgroup=fvwmTStyleArgs
+				\ ActiveUp ActiveDown InactiveUp InactiveDown
+				\ Active Inactive ToggledActiveUp
+				\ ToggledActiveDown ToggledInactiveUp
+				\ ToggledInactiveDown ToggledActive
+				\ ToggledInactive AllNormal AllToggled
+				\ AllActive AllInactive AllUp AllDown
+    syn region	fvwmTStyleArgs	contained contains=fvwmBStyleNames,fvwmTStyleNames,fvwmMPmapNames,fvwmTStyleFlags,fvwmGradient,fvwmRGBValue,@fvwmConstants
+				\ start='\S' skip='\\$' end='$'
+    syn keyword	fvwmTStyleNames	contained
+				\ MultiPixmap
+    syn keyword fvwmTStyleNames	contained
+				\ LeftJustified Centered RightJustified Height
+				\ MinHeight
+    syn keyword	fvwmMPmapNames	contained
+				\ Main LeftMain RightMain UnderText LeftOfText
+				\ RightOfText LeftEnd RightEnd Buttons
+				\ LeftButtons RightButtons
+    syn keyword	fvwmTStyleFlags	contained
+				\ Raised Flat Sunk
+
+    " Button state
+    syn keyword fvwmKeyword	nextgroup=fvwmBStateArgs
+				\ ButtonState
+    syn region	fvwmBStateArgs	contained contains=fvwmBStateTF,fvwmBStateNames
+				\ start='.' skip='\\$' end='$'
+    syn keyword	fvwmBStateNames	contained ActiveDown Inactive InactiveDown
+    syn keyword fvwmBStateTF	contained True False
+
+    " Paths
+    syn keyword fvwmKeyword	nextgroup=fvwmPath	skipwhite
+				\ IconPath ImagePath LocalePath PixmapPath
+				\ ModulePath 
+    syn match	fvwmPath	contained contains=fvwmEnvVar '\v.+$'
+
+    " Window list command
+    syn keyword fvwmKeyword	nextgroup=fvwmWLArgs skipwhite
+				\ WindowList
+    syn region	fvwmWLArgs	contained
+		\ contains=fvwmCondition,@fvwmConstants,fvwmString,fvwmWLOpts
+		\ start='.' skip='\\$' end='$'
+    syn keyword fvwmWLOpts	contained
+				\ Geometry NoGeometry NoGeometryWithInfo
+				\ NoDeskNum NoNumInDeskTitle
+				\ NoCurrentDeskTitle MaxLabelWidth width
+				\ TitleForAllDesks Function funcname Desk
+				\ desknum CurrentDesk NoIcons Icons OnlyIcons
+				\ NoNormal Normal OnlyNormal NoSticky Sticky
+				\ OnlySticky NoStickyAcrossPages
+				\ StickyAcrossPages OnlyStickyAcrossPages
+				\ NoStickyAcrossDesks StickyAcrossDesks
+				\ OnlyStickyAcrossDesks NoOnTop OnTop
+				\ OnlyOnTop NoOnBottom OnBottom OnlyOnBottom
+				\ Layer UseListSkip OnlyListSkip NoDeskSort
+				\ ReverseOrder CurrentAtEnd IconifiedAtEnd
+				\ UseIconName Alphabetic NotAlphabetic
+				\ SortByResource SortByClass NoHotkeys
+				\ SelectOnRelease
+
+    syn keyword fvwmSpecialFn	StartFunction InitFunction RestartFunction
+				\ ExitFunction SessionInitFunction
+				\ SessionRestartFunction SessionExitFunction
+				\ MissingSubmenuFunction WindowListFunc
+
+    syn keyword fvwmKeyword	skipwhite nextgroup=fvwmKeyWin,fvwmKeyName
+				\ Key PointerKey
+    syn region	fvwmKeyWin	contained skipwhite nextgroup=fvwmKeyName
+				\ start='(' end=')'
+    syn case match
+    syn match	fvwmKeyName	contained skipwhite nextgroup=fvwmKeyContext
+				\ '\v<([a-zA-Z0-9]|F\d+|KP_\d)>'
+    syn keyword fvwmKeyName	contained skipwhite nextgroup=fvwmKeyContext
+				\ BackSpace Begin Break Cancel Clear Delete
+				\ Down End Escape Execute Find Help Home
+				\ Insert KP_Add KP_Begin KP_Decimal KP_Delete
+				\ KP_Divide KP_Down KP_End KP_Enter KP_Equal
+				\ KP_Home KP_Insert KP_Left KP_Multiply
+				\ KP_Next KP_Page_Down KP_Page_Up KP_Prior
+				\ KP_Right KP_Separator KP_Space KP_Subtract
+				\ KP_Tab KP_Up Left Linefeed Menu Mode_switch
+				\ Next Num_Lock Page_Down Page_Up Pause Print
+				\ Prior Redo Return Right script_switch
+				\ Scroll_Lock Select Sys_Req Tab Undo Up space
+				\ exclam quotedbl numbersign dollar percent
+				\ ampersand apostrophe quoteright parenleft
+				\ parenright asterisk plus comma minus period
+				\ slash colon semicolon less equal greater
+				\ question at bracketleft backslash
+				\ bracketright asciicircum underscore grave
+				\ quoteleft braceleft bar braceright
+				\ asciitilde
+
+    syn match	fvwmKeyContext	contained skipwhite nextgroup=fvwmKeyMods
+				\ '\v<[][RWDTS_F<^>vI0-9AM-]+>'
+    syn match	fvwmKeyMods	contained '\v[NCSMLA1-5]+'
+    syn case ignore
+
+    syn keyword	fvwmKeyword	skipwhite nextgroup=fvwmMouseWin,fvwmMouseButton
+				\ Mouse
+    syn region	fvwmMouseWin	contained skipwhite nextgroup=fvwmMouseButton
+				\ start='(' end=')'
+    syn match	fvwmMouseButton	contained skipwhite nextgroup=fvwmKeyContext
+				\ '[0-5]'
 endif
 
-if version >= 508 || !exists("did_fvwm_syntax_inits")
-    if version < 508
-	let did_fvwm_syntax_inits = 1
-	command -nargs=+ HiLink hi link <args>
-    else
-	command -nargs=+ HiLink hi def link <args>
-    endif
+" Define syntax highlighting groups
 
-    HiLink fvwmComment		Comment
-    HiLink fvwmEnvVar		Macro
-    HiLink fvwmExec		Function
-    HiLink fvwmFunction		Function
-    HiLink fvwmFunctionName	Special
-    HiLink fvwmContextName	Function
-    HiLink fvwmConditionName	Function
-    HiLink fvwmIcon		Comment
-    HiLink fvwmKey		Function
-    HiLink fvwmKeyword		Keyword
-    HiLink fvwmMenuString	String
-    HiLink fvwmModConf		Macro
-    HiLink fvwmModule		Function
-    HiLink fvwmModuleName	Special
-    HiLink fvwmRGBValue		Type
-    HiLink fvwmShortcutKey	SpecialChar
-    HiLink fvwmString		String
+"
+" Common highlighting groups
+"
+hi def link fvwmComment		Comment
+hi def link fvwmEnvVar		Macro
+hi def link fvwmNumber		Number
+hi def link fvwmKeyword		Keyword
+hi def link fvwmPath		Constant
+hi def link fvwmModConf		Macro
+hi def link fvwmRGBValue	Constant
+hi def link fvwmString		String
+hi def link fvwmBackslash	SpecialChar
 
-    if exists("rgb_file")
-	HiLink fvwmColors	Type
-    endif
 
-    delcommand HiLink
-endif
+"
+" Highlighting groups for fvwm1 specific items
+"
+hi def link fvwmExec		fvwmKeyword
+hi def link fvwmKey		fvwmKeyword
+hi def link fvwmModule		fvwmKeyword
+hi def link fvwmFunction	Function
+
+"
+" Highlighting groups for fvwm2 specific items
+"
+hi def link fvwmSpecialFn	Type
+hi def link fvwmCursorStyle	fvwmStyleNames
+hi def link fvwmStyleNames	Identifier
+hi def link fvwmMStyleNames	fvwmStyleNames
+hi def link fvwmCSNames		fvwmStyleNames
+hi def link fvwmGradient	fvwmStyleNames
+hi def link fvwmCondNames	fvwmStyleNames
+hi def link fvwmTCNames		fvwmStyleNames
+hi def link fvwmTRNames		fvwmStyleNames
+hi def link fvwmWLOpts		fvwmStyleNames
+
+hi def link fvwmBNum		Number
+hi def link fvwmBState		Type
+hi def link fvwmBStyleNames	fvwmStyleNames
+hi def link fvwmBStyleFlags	Special
+
+hi def link fvwmBStateTF	Constant
+hi def link fvwmBStateNames	fvwmStyleNames
+
+hi def link fvwmBdState		fvwmBState
+hi def link fvwmBdStyNames	fvwmStyleNames
+hi def link fvwmBdStyFlags	fvwmBStyleFlags
+
+hi def link fvwmTState		fvwmBState
+hi def link fvwmTStyleNames	fvwmStyleNames
+hi def link fvwmMPmapNames	fvwmBStyleFlags
+hi def link fvwmTStyleFlags	fvwmBStyleFlags
+
+hi def link fvwmDirection	fvwmBStyleFlags
+
+hi def link fvwmKeyWin		Constant
+hi def link fvwmMouseWin	fvwmKeyWin
+hi def link fvwmKeyName		Special
+hi def link fvwmKeyContext	fvwmKeyName
+hi def link fvwmKeyMods		fvwmKeyName
+hi def link fvwmMouseButton	fvwmKeyName
+
+hi def link fvwmMenuString	String
+hi def link fvwmIcon		Type
+hi def link fvwmShortcutKey	SpecialChar
+
+hi def link fvwmModuleName	Function
 
 let b:current_syntax = "fvwm"
-" vim: sts=4 sw=4 ts=8

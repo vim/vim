@@ -1,6 +1,6 @@
 " Description:	html indenter
 " Author:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 27 Apr 2004 10:28:39 CEST
+" Last Change:	Mo, 05 Jun 2006 22:32:41 CEST
 " 		Restoring 'cpo' and 'ic' added by Bram 2006 May 5
 " Globals:	g:html_indent_tags	   -- indenting tags
 "		g:html_indent_strict       -- inhibit 'O O' elements
@@ -193,8 +193,17 @@ fun! HtmlIndentGet(lnum)
 
     " [-- special handling for <javascript>: use cindent --]
     let js = '<script.*type\s*=\s*.*java'
+
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+    " by Tye Zdrojewski <zdro@yahoo.com>, 05 Jun 2006
+    " ZDR: This needs to be an AND (we are 'after the start of the pair' AND
+    "      we are 'before the end of the pair').  Otherwise, indentation
+    "      before the start of the script block will be affected; the end of
+    "      the pair will still match if we are before the beginning of the
+    "      pair.
+    "
     if   0 < searchpair(js, '', '</script>', 'nWb')
-    \ || 0 < searchpair(js, '', '</script>', 'nW')
+    \ && 0 < searchpair(js, '', '</script>', 'nW')
 	" we're inside javascript
 	if getline(lnum) !~ js && getline(a:lnum) != '</script>'
 	    if restore_ic == 0

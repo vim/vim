@@ -1,4 +1,4 @@
-*pi_paren.txt*  For Vim version 7.0.  Last change: 2006 Apr 24
+*pi_paren.txt*  For Vim version 7.1a.  Last change: 2006 Jun 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,7 +43,7 @@ are:
 - What is visible in the window.
 - 100 lines above or below the cursor to avoid a long delay when there are
   closed folds.
-- 'synmaxcolumn' times 2 bytes before or after the cursor to avoid a delay
+- 'synmaxcol' times 2 bytes before or after the cursor to avoid a delay
   in a long line with syntax highlighting.
 
 ==============================================================================

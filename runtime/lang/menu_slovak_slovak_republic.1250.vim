@@ -1,6 +1,6 @@
 " Menu Translations:	Slovak
 " Translated By:	Martin Lacko <lacko@host.sk>
-" Last Change:		2003 Mar 30
+" Last Change:		2006 Jun 17
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

@@ -99,7 +99,9 @@ main(void)
      */
     retval = system(p);
 
-    if (retval != 0)
+    if (retval == -1)
+	perror("vimrun system(): ");
+    else if (retval != 0)
 	printf("shell returned %d\n", retval);
 
     if (!silent)

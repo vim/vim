@@ -2,9 +2,9 @@
 " Language:	Mutt setup files
 " Original:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
 " Maintainer:	Kyle Wheeler <kyle-muttrc.vim@memoryhole.net>
-" Last Change:	22 Apr 2006
+" Last Change:	5 Mar 2007
 
-" This file covers mutt version 1.5.11
+" This file covers mutt version 1.5.14 (and most of CVS HEAD)
 " Included are also a few features from 1.4.2.1
 
 " For version 5.x: Clear all syntax items
@@ -22,17 +22,19 @@ else
   setlocal isk=@,48-57,_,-
 endif
 
-syn match muttrcComment		"^#.*$"
+syn match muttrcComment		"^# .*$" contains=@Spell
+syn match muttrcComment		"^#[^ ].*$"
+syn match muttrcComment		"^#$"
 syn match muttrcComment		"[^\\]#.*$"lc=1
 
 " Escape sequences (back-tick and pipe goes here too)
-syn match muttrcEscape		+\\[#tnr"'Cc]+
+syn match muttrcEscape		+\\[#tnr"'Cc ]+
 syn match muttrcEscape		+[`|]+
 
 " The variables takes the following arguments
 syn match  muttrcString		"=\s*[^ #"'`]\+"lc=1 contains=muttrcEscape
-syn region muttrcString		start=+"+ms=e skip=+\\"+ end=+"+ contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcMacro,muttrcCommand,muttrcAction
-syn region muttrcString		start=+'+ms=e skip=+\\'+ end=+'+ contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcMacro,muttrcCommand,muttrcAction
+syn region muttrcString		start=+"+ms=e skip=+\\"+ end=+"+ contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction
+syn region muttrcString		start=+'+ms=e skip=+\\'+ end=+'+ contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction
 
 syn region muttrcShellString	matchgroup=muttrcEscape keepend start=+`+ skip=+\\`+ end=+`+ contains=muttrcVarStr,muttrcVarBool,muttrcVarQuad,muttrcVarNum,muttrcCommand,muttrcSet
 
@@ -41,8 +43,11 @@ syn match  muttrcRXChars	contained /[][|()][.*?+]*/
 syn match  muttrcRXChars	contained /'^/ms=s+1
 syn match  muttrcRXChars	contained /$'/me=e-1
 syn match  muttrcRXChars	contained /\\/
+" Why does muttrcRXString2 work with one \ when muttrcRXString requires two?
 syn region muttrcRXString	contained start=+'+ skip=+\\'+ end=+'+ contains=muttrcRXChars
 syn region muttrcRXString	contained start=+"+ skip=+\\"+ end=+"+ contains=muttrcRXChars
+syn region muttrcRXString2	contained start=+'+ skip=+\'+ end=+'+ contains=muttrcRXChars
+syn region muttrcRXString2	contained start=+"+ skip=+\"+ end=+"+ contains=muttrcRXChars
 
 syn region muttrcRXPat		contained start=+'+ skip=+\\'+ end=+'\s*+ keepend skipwhite contains=muttrcRXString nextgroup=muttrcRXPat
 syn region muttrcRXPat		contained start=+"+ skip=+\\"+ end=+"\s*+ keepend skipwhite contains=muttrcRXString nextgroup=muttrcRXPat
@@ -102,7 +107,7 @@ syn keyword muttrcVarBool	contained save_empty save_name score sig_dashes sig_on
 syn keyword muttrcVarBool	contained smart_wrap smime_ask_cert_label smime_decrypt_use_default_key
 syn keyword muttrcVarBool	contained smime_is_default sort_re ssl_force_tls ssl_use_sslv2
 syn keyword muttrcVarBool	contained ssl_use_sslv3 ssl_use_tlsv1 ssl_usesystemcerts status_on_top
-syn keyword muttrcVarBool	contained strict_threads suspend text_flowed thorough_search
+syn keyword muttrcVarBool	contained strict_mime strict_threads suspend text_flowed thorough_search
 syn keyword muttrcVarBool	contained thread_received tilde uncollapse_jump use_8bitmime
 syn keyword muttrcVarBool	contained use_domain use_envelope_from use_from use_idn use_ipv6
 syn keyword muttrcVarBool	contained user_agent wait_key weed wrap_search write_bcc
@@ -199,24 +204,26 @@ syn keyword muttrcVarQuad	contained invpostpone invprint invquit invrecall invre
 
 syn keyword muttrcVarNum	contained connect_timeout history imap_keepalive mail_check menu_context net_inc
 syn keyword muttrcVarNum	contained pager_context pager_index_lines pgp_timeout pop_checkinterval read_inc
-syn keyword muttrcVarNum	contained score_threshold_delete score_threshold_flag score_threshold_read
-syn keyword muttrcVarNum	contained sendmail_wait sleep_time smime_timeout ssl_min_dh_prime_bits timeout
-syn keyword muttrcVarNum	contained wrapmargin write_inc
+syn keyword muttrcVarNum	contained save_history score_threshold_delete score_threshold_flag
+syn keyword muttrcVarNum	contained score_threshold_read sendmail_wait sleep_time smime_timeout
+syn keyword muttrcVarNum	contained ssl_min_dh_prime_bits timeout wrap wrapmargin write_inc
 
-syn keyword muttrcVarStr	contained alias_file alias_format attach_format attach_sep attribution
+syn match muttrcVarStr		contained 'my_[a-zA-Z0-9_]\+'
+syn keyword muttrcVarStr	contained alias_file alias_format assumed_charset attach_format attach_sep attribution
 syn keyword muttrcVarStr	contained certificate_file charset compose_format config_charset content_type
 syn keyword muttrcVarStr	contained date_format default_hook display_filter dotlock_program dsn_notify
 syn keyword muttrcVarStr	contained dsn_return editor entropy_file envelope_from_address escape folder
 syn keyword muttrcVarStr	contained folder_format forw_format forward_format from gecos_mask hdr_format
-syn keyword muttrcVarStr	contained header_cache header_cache_pagesize hostname imap_authenticators
-syn keyword muttrcVarStr	contained imap_delim_chars imap_headers imap_home_namespace imap_login imap_pass
+syn keyword muttrcVarStr	contained header_cache header_cache_pagesize history_file hostname imap_authenticators
+syn keyword muttrcVarStr	contained imap_delim_chars imap_headers imap_home_namespace imap_idle imap_login imap_pass
 syn keyword muttrcVarStr	contained imap_user indent_str indent_string index_format ispell locale mailcap_path
-syn keyword muttrcVarStr	contained mask mbox mbox_type message_format mh_seq_flagged mh_seq_replied
+syn keyword muttrcVarStr	contained mask mbox mbox_type message_format message_cachedir mh_seq_flagged mh_seq_replied
 syn keyword muttrcVarStr	contained mh_seq_unseen mix_entry_format mixmaster msg_format pager pager_format
 syn keyword muttrcVarStr	contained pgp_clearsign_command pgp_decode_command pgp_decrypt_command
 syn keyword muttrcVarStr	contained pgp_encrypt_only_command pgp_encrypt_sign_command pgp_entry_format
 syn keyword muttrcVarStr	contained pgp_export_command pgp_getkeys_command pgp_good_sign pgp_import_command
-syn keyword muttrcVarStr	contained pgp_list_pubring_command pgp_list_secring_command pgp_sign_as
+syn keyword muttrcVarStr	contained pgp_list_pubring_command pgp_list_secring_command pgp_mime_signature_filename
+syn keyword muttrcVarStr	contained pgp_mime_signature_description pgp_sign_as
 syn keyword muttrcVarStr	contained pgp_sign_command pgp_sort_keys pgp_verify_command pgp_verify_key_command
 syn keyword muttrcVarStr	contained pipe_sep pop_authenticators pop_host pop_pass pop_user post_indent_str
 syn keyword muttrcVarStr	contained post_indent_string postponed preconnect print_cmd print_command
@@ -227,8 +234,8 @@ syn keyword muttrcVarStr	contained smime_encrypt_command smime_encrypt_with smim
 syn keyword muttrcVarStr	contained smime_get_cert_email_command smime_get_signer_cert_command
 syn keyword muttrcVarStr	contained smime_import_cert_command smime_keys smime_pk7out_command smime_sign_as
 syn keyword muttrcVarStr	contained smime_sign_command smime_sign_opaque_command smime_verify_command
-syn keyword muttrcVarStr	contained smime_verify_opaque_command sort sort_alias sort_aux sort_browser
-syn keyword muttrcVarStr	contained spam_separator spoolfile ssl_ca_certificates_file ssl_client_cert
+syn keyword muttrcVarStr	contained smime_verify_opaque_command smtp_url smtp_authenticators sort sort_alias sort_aux
+syn keyword muttrcVarStr	contained sort_browser spam_separator spoolfile ssl_ca_certificates_file ssl_client_cert
 syn keyword muttrcVarStr	contained status_chars status_format tmpdir to_chars tunnel visual
 
 " Present in 1.4.2.1 (pgp_create_traditional was a bool then)
@@ -243,9 +250,13 @@ syn match muttrcMenuCommas /,/ contained
 syn keyword muttrcCommand	auto_view alternative_order charset-hook exec unalternative_order
 syn keyword muttrcCommand	hdr_order iconv-hook ignore mailboxes my_hdr unmailboxes
 syn keyword muttrcCommand	pgp-hook push score source unauto_view unhdr_order
-syn keyword muttrcCommand	unhook unignore unmono unmy_hdr unscore
+syn keyword muttrcCommand	unignore unmono unmy_hdr unscore
 syn keyword muttrcCommand	mime_lookup unmime_lookup spam ungroup
 syn keyword muttrcCommand	nospam unalternative_order
+
+syn keyword muttrcHooks		contained account-hook charset-hook iconv-hook message-hook folder-hook mbox-hook save-hook fcc-hook fcc-save-hook send-hook send2-hook reply-hook crypt-hook
+syn keyword muttrcUnhook	contained unhook
+syn region muttrcUnhookLine	keepend start=+^\s*unhook\s+ skip=+\\$+ end=+$+ contains=muttrcUnhook,muttrcHooks,muttrcUnHighlightSpace,muttrcComment
 
 syn match muttrcAttachmentsMimeType contained "[*a-z0-9_-]\+/[*a-z0-9._-]\+\s*" skipwhite nextgroup=muttrcAttachmentsMimeType
 syn match muttrcAttachmentsFlag contained "[+-]\%([AI]\|inline\|attachment\)\s\+" skipwhite nextgroup=muttrcAttachmentsMimeType
@@ -286,12 +297,12 @@ syn match muttrcFunction	contained "\<previous-\%(line\|new\|page\|subthread\|un
 syn match muttrcFunction	contained "\<search\%(-\%(next\|opposite\|reverse\|toggle\)\)\?\>"
 syn match muttrcFunction	contained "\<show-\%(limit\|version\)\>"
 syn match muttrcFunction	contained "\<sort-\%(mailbox\|reverse\)\>"
-syn match muttrcFunction	contained "\<tag-\%(pattern\|prefix\)\>"
+syn match muttrcFunction	contained "\<tag-\%(pattern\|prefix\%(-cond\)\?\)\>"
 syn match muttrcFunction	contained "\<toggle-\%(mailboxes\|new\|quoted\|subscribed\|unlink\|write\)\>"
 syn match muttrcFunction	contained "\<undelete-\%(pattern\|subthread\)\>"
 syn match muttrcFunction	contained "\<collapse-\%(parts\|thread\|all\)\>"
 syn match muttrcFunction	contained "\<view-\%(attach\|attachments\|file\|mailcap\|name\|text\)\>"
-syn match muttrcFunction	contained "\<\%(backspace\|backward-char\|bol\|bottom\|bottom-page\|buffy-cycle\|clear-flag\|complete\%(-query\)\?\|copy-file\|create-alias\|detach-file\|eol\|exit\|extract-keys\|\%(imap-\)\?fetch-mail\|forget-passphrase\|forward-char\|group-reply\|help\|ispell\|jump\|limit\|list-reply\|mail\|mail-key\|mark-as-new\|middle-page\|new-mime\|pgp-menu\|query\|query-append\|quit\|quote-char\|read-subthread\|redraw-screen\|refresh\|rename-file\|reply\|select-new\|set-flag\|shell-escape\|skip-quoted\|sort\|subscribe\|sync-mailbox\|top\|top-page\|transpose-chars\|unsubscribe\|untag-pattern\|verify-key\|write-fcc\)\>"
+syn match muttrcFunction	contained "\<\%(backspace\|backward-char\|bol\|bottom\|bottom-page\|buffy-cycle\|clear-flag\|complete\%(-query\)\?\|copy-file\|create-alias\|detach-file\|eol\|exit\|extract-keys\|\%(imap-\)\?fetch-mail\|forget-passphrase\|forward-char\|group-reply\|help\|ispell\|jump\|limit\|list-reply\|mail\|mail-key\|mark-as-new\|middle-page\|new-mime\|noop\|pgp-menu\|query\|query-append\|quit\|quote-char\|read-subthread\|redraw-screen\|refresh\|rename-file\|reply\|select-new\|set-flag\|shell-escape\|skip-quoted\|sort\|subscribe\|sync-mailbox\|top\|top-page\|transpose-chars\|unsubscribe\|untag-pattern\|verify-key\|what-key\|write-fcc\)\>"
 syn match muttrcAction		contained "<[^>]\{-}>" contains=muttrcBadAction,muttrcFunction,muttrcKeyName
 
 syn keyword muttrcSet		set     skipwhite nextgroup=muttrcVar.*
@@ -315,7 +326,15 @@ syn match muttrcBindMenuList	contained /\S\+/ skipwhite contains=muttrcMenu,mutt
 syn match muttrcBindMenuListNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcBindMenuList,muttrcBindMenuListNL
 syn match muttrcBind		/^\s*bind\s\?/ skipwhite nextgroup=muttrcBindMenuList,muttrcBindMenuListNL
 
-syn match muttrcMacroKey	contained /\S\+/ skipwhite contains=muttrcKey
+syn region muttrcMacroDescr	contained keepend skipwhite start=+\s*\S+ms=e skip=+\\ + end=+ \|$+me=s
+syn region muttrcMacroDescr	contained keepend skipwhite start=+'+ms=e skip=+\\'+ end=+'+me=s
+syn region muttrcMacroDescr	contained keepend skipwhite start=+"+ms=e skip=+\\"+ end=+"+me=s
+syn match muttrcMacroDescrNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn region muttrcMacroBody	contained skipwhite start="\S" skip='\\ \|\\$' end=' \|$' contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+'+ms=e skip=+\\'+ end=+'+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+"+ms=e skip=+\\"+ end=+"+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn match muttrcMacroBodyNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroBody,muttrcMacroBodyNL
+syn match muttrcMacroKey	contained /\S\+/ skipwhite contains=muttrcKey nextgroup=muttrcMacroBody,muttrcMacroBodyNL
 syn match muttrcMacroKeyNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroKey,muttrcMacroKeyNL
 syn match muttrcMacroMenuList	contained /\S\+/ skipwhite contains=muttrcMenu,muttrcMenuCommas nextgroup=muttrcMacroKey,muttrcMacroKeyNL
 syn match muttrcMacroMenuListNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroMenuList,muttrcMacroMenuListNL
@@ -332,32 +351,36 @@ syn region muttrcGroupDef	contained start="-group\s\+" skip="\\$" end="\s" skipw
 syn keyword muttrcGroupKeyword	contained group ungroup
 syn region muttrcGroupLine	keepend start=+^\s*\%(un\)\?group\s+ skip=+\\$+ end=+$+ contains=muttrcGroupKeyword,muttrcGroupDef,muttrcAddrDef,muttrcRXDef,muttrcUnHighlightSpace,muttrcComment
 
-syn match muttrcAliasGroupName	contained /\w\+/ skipwhite nextgroup=muttrcAliasGroupDef,muttrcAliasAbbr,muttrcAliasNL
+syn match muttrcAliasGroupName	contained /\w\+/ skipwhite nextgroup=muttrcAliasGroupDef,muttrcAliasKey,muttrcAliasNL
 syn match muttrcAliasGroupDefNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasGroupName,muttrcAliasGroupDefNL
 syn match muttrcAliasGroupDef	contained /\s*-group/ skipwhite nextgroup=muttrcAliasGroupName,muttrcAliasGroupDefNL contains=muttrcGroupFlag
-syn match muttrcAliasEmail	contained /\S\+@\S\+/ contains=muttrcEmail nextgroup=muttrcAliasName,muttrcAliasNameNL
-syn match muttrcAliasEncEmail	contained /<[^>]\+>/ contains=muttrcEmail
+syn match muttrcAliasComma	contained /,/ skipwhite nextgroup=muttrcAliasEmail,muttrcAliasEncEmail,muttrcAliasNameNoParens,muttrcAliasENNL
+syn match muttrcAliasEmail	contained /\S\+@\S\+/ contains=muttrcEmail nextgroup=muttrcAliasName,muttrcAliasNameNL skipwhite
+syn match muttrcAliasEncEmail	contained /<[^>]\+>/ contains=muttrcEmail nextgroup=muttrcAliasComma
 syn match muttrcAliasEncEmailNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasEncEmail,muttrcAliasEncEmailNL
 syn match muttrcAliasNameNoParens contained /[^<(@]\+\s\+/ nextgroup=muttrcAliasEncEmail,muttrcAliasEncEmailNL
 syn region muttrcAliasName	contained matchgroup=Type start=/(/ end=/)/ skipwhite
 syn match muttrcAliasNameNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasName,muttrcAliasNameNL
-syn match muttrcAliasENNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasEmail,muttrcAliasNameNoParens,muttrcAliasENNL
-syn match muttrcAliasAbbr	contained /\s*[^- \t]\S\+/ skipwhite nextgroup=muttrcAliasEmail,muttrcAliasNameNoParens,muttrcAliasENNL
-syn match muttrcAliasNL		contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasGroupDef,muttrcAliasAbbr,muttrcAliasNL
-syn match muttrcAlias		/^\s*alias\s/ skipwhite nextgroup=muttrcAliasGroupDef,muttrcAliasAbbr,muttrcAliasNL
+syn match muttrcAliasENNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasEmail,muttrcAliasEncEmail,muttrcAliasNameNoParens,muttrcAliasENNL
+syn match muttrcAliasKey	contained /\s*[^- \t]\S\+/ skipwhite nextgroup=muttrcAliasEmail,muttrcAliasEncEmail,muttrcAliasNameNoParens,muttrcAliasENNL
+syn match muttrcAliasNL		contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcAliasGroupDef,muttrcAliasKey,muttrcAliasNL
+syn match muttrcAlias		/^\s*alias\s/ skipwhite nextgroup=muttrcAliasGroupDef,muttrcAliasKey,muttrcAliasNL
 
-syn match muttrcUnAliasAbbr	contained "\s*\w\+\s*" skipwhite nextgroup=muttrcUnAliasAbbr,muttrcUnAliasNL
-syn match muttrcUnAliasNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcUnAliasAbbr,muttrcUnAliasNL
-syn match muttrcUnAlias		/^\s*unalias\s\?/ nextgroup=muttrcUnAliasAbbr,muttrcUnAliasNL
+syn match muttrcUnAliasKey	contained "\s*\w\+\s*" skipwhite nextgroup=muttrcUnAliasKey,muttrcUnAliasNL
+syn match muttrcUnAliasNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcUnAliasKey,muttrcUnAliasNL
+syn match muttrcUnAlias		/^\s*unalias\s\?/ nextgroup=muttrcUnAliasKey,muttrcUnAliasNL
 
 syn match muttrcSimplePat contained "!\?\^\?[~][ADEFgGklNOpPQRSTuUvV=$]"
 syn match muttrcSimplePat contained "!\?\^\?[~][mnXz]\s\+\%([<>-][0-9]\+\|[0-9]\+[-][0-9]*\)"
-syn match muttrcSimplePat contained "!\?\^\?[~][dr]\s\+[0-9]\{2}\%(/[0-9]\{2}\%(/[0-9]\{2}\%([0-9]\{2}\)\)\?\)\?"
+syn match muttrcSimplePat contained "!\?\^\?[~][dr]\s\+\%(\%(-\?[0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)*\)\|\%(\%([0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)*\)-\%([0-9]\{1,2}\%(/[0-9]\{1,2}\%(/[0-9]\{2}\%([0-9]\{2}\)\?\)\?\)\?\%([+*-][0-9]\+[ymwd]\)\?\)\?\)\|\%([<>=][0-9]\+[ymwd]\)\)"
 syn match muttrcSimplePat contained "!\?\^\?[~][bBcCefhHiLstxy]\s\+" nextgroup=muttrcSimplePatRXContainer
-syn match muttrcSimplePat contained "!\?\^\?[%][bBcCefhHiLstxy]\s\+" nextgroup=muttrcSimplePatGroup
+syn match muttrcSimplePat contained "!\?\^\?[%][bBcCefhHiLstxy]\s\+" nextgroup=muttrcSimplePatString
+syn match muttrcSimplePat contained "!\?\^\?[=][bh]\s\+" nextgroup=muttrcSimplePatString
 "syn match muttrcSimplePat contained /"[^~=%][^"]*/ contains=muttrcRXPat
 "syn match muttrcSimplePat contained /'[^~=%][^']*/ contains=muttrcRXPat
-syn match muttrcSimplePatGroup contained /[a-zA-Z0-9]\+/
+syn match muttrcSimplePatString contained /[a-zA-Z0-9]\+/
+syn region muttrcSimplePatString contained keepend start=+"+ end=+"+ skip=+\\"+
+syn region muttrcSimplePatString contained keepend start=+'+ end=+'+ skip=+\\'+
 syn region muttrcSimplePatRXContainer contained keepend start=+"+ end=+"+ skip=+\\"+ contains=muttrcRXPat
 syn region muttrcSimplePatRXContainer contained keepend start=+'+ end=+'+ skip=+\\'+ contains=muttrcRXPat
 syn match muttrcSimplePatRXContainer contained /\S\+/ contains=muttrcRXPat
@@ -372,32 +395,32 @@ syn region muttrcPatternInner contained keepend start=+'[~=%!(^]+ms=s+1 skip=+\\
 " Colour definitions takes object, foreground and background arguments (regexps excluded).
 syn match muttrcColorMatchCount	contained "[0-9]\+"
 syn match muttrcColorMatchCountNL contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
-syn region muttrcColorRXPat	contained start=+\s\+'+ skip=+\\'+ end=+'\s*+ keepend skipwhite contains=muttrcRXString nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
-syn region muttrcColorRXPat	contained start=+\s\+"+ skip=+\\"+ end=+"\s*+ keepend skipwhite contains=muttrcRXString nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
+syn region muttrcColorRXPat	contained start=+\s*'+ skip=+\\'+ end=+'\s*+ keepend skipwhite contains=muttrcRXString2 nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
+syn region muttrcColorRXPat	contained start=+\s*"+ skip=+\\"+ end=+"\s*+ keepend skipwhite contains=muttrcRXString2 nextgroup=muttrcColorMatchCount,muttrcColorMatchCountNL
 syn keyword muttrcColorField	contained attachment body bold error hdrdefault header index indicator markers message normal quoted search signature status tilde tree underline
 syn match   muttrcColorField	contained "\<quoted\d\=\>"
 syn keyword muttrcColor	contained black blue cyan default green magenta red white yellow
 syn keyword muttrcColor	contained brightblack brightblue brightcyan brightdefault brightgreen brightmagenta brightred brightwhite brightyellow
 syn match   muttrcColor	contained "\<\%(bright\)\=color\d\{1,2}\>"
 " Now for the structure of the color line
-syn match muttrcColorRXNL	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorRXPat,muttrcColorRXNL
-syn match muttrcColorBG 	contained skipwhite /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorRXPat,muttrcColorRXNL
-syn match muttrcColorBGNL	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorBG,muttrcColorBGNL
-syn match muttrcColorFG 	contained skipwhite /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorBG,muttrcColorBGNL
-syn match muttrcColorFGNL	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorFG,muttrcColorFGNL
-syn match muttrcColorContext 	contained skipwhite /\s*[$]\?\w\+/ contains=muttrcColorField,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorFG,muttrcColorFGNL
-syn match muttrcColorNL 	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorContext,muttrcColorNL
-syn match muttrcColorKeyword	contained skipwhite /^\s*color\s\+/ nextgroup=muttrcColorContext,muttrcColorNL
+syn match muttrcColorRXNL	contained skipnl "\s*\\$" nextgroup=muttrcColorRXPat,muttrcColorRXNL
+syn match muttrcColorBG 	contained /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorRXPat,muttrcColorRXNL
+syn match muttrcColorBGNL	contained skipnl "\s*\\$" nextgroup=muttrcColorBG,muttrcColorBGNL
+syn match muttrcColorFG 	contained /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorBG,muttrcColorBGNL
+syn match muttrcColorFGNL	contained skipnl "\s*\\$" nextgroup=muttrcColorFG,muttrcColorFGNL
+syn match muttrcColorContext 	contained /\s*[$]\?\w\+/ contains=muttrcColorField,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorFG,muttrcColorFGNL
+syn match muttrcColorNL 	contained skipnl "\s*\\$" nextgroup=muttrcColorContext,muttrcColorNL
+syn match muttrcColorKeyword	contained /^\s*color\s\+/ nextgroup=muttrcColorContext,muttrcColorNL
 syn region muttrcColorLine keepend start=/^\s*color\s\+\%(index\)\@!/ skip=+\\$+ end=+$+ contains=muttrcColorKeyword,muttrcComment,muttrcUnHighlightSpace
 " Now for the structure of the color index line
-syn match muttrcPatternNL	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcPattern,muttrcPatternNL
-syn match muttrcColorBGI	contained skipwhite /\s*[$]\?\w\+\s*/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcPattern,muttrcPatternNL
-syn match muttrcColorBGNLI	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorBGI,muttrcColorBGNLI
-syn match muttrcColorFGI	contained skipwhite /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorBGI,muttrcColorBGNLI
-syn match muttrcColorFGNLI	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorFGI,muttrcColorFGNLI
-syn match muttrcColorContextI	contained skipwhite /\s*index/ contains=muttrcUnHighlightSpace nextgroup=muttrcColorFGI,muttrcColorFGNLI
-syn match muttrcColorNLI	contained skipwhite skipnl "\s*\\$" nextgroup=muttrcColorContextI,muttrcColorNLI
-syn match muttrcColorKeywordI	contained skipwhite /^\s*color\s\+/ nextgroup=muttrcColorContextI,muttrcColorNLI
+syn match muttrcPatternNL	contained skipnl "\s*\\$" nextgroup=muttrcPattern,muttrcPatternNL
+syn match muttrcColorBGI	contained /\s*[$]\?\w\+\s*/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcPattern,muttrcPatternNL
+syn match muttrcColorBGNLI	contained skipnl "\s*\\$" nextgroup=muttrcColorBGI,muttrcColorBGNLI
+syn match muttrcColorFGI	contained /\s*[$]\?\w\+/ contains=muttrcColor,muttrcVariable,muttrcUnHighlightSpace nextgroup=muttrcColorBGI,muttrcColorBGNLI
+syn match muttrcColorFGNLI	contained skipnl "\s*\\$" nextgroup=muttrcColorFGI,muttrcColorFGNLI
+syn match muttrcColorContextI	contained /\s*index/ contains=muttrcUnHighlightSpace nextgroup=muttrcColorFGI,muttrcColorFGNLI
+syn match muttrcColorNLI	contained skipnl "\s*\\$" nextgroup=muttrcColorContextI,muttrcColorNLI
+syn match muttrcColorKeywordI	contained /^\s*color\s\+/ nextgroup=muttrcColorContextI,muttrcColorNLI
 syn region muttrcColorLine keepend start=/^\s*color\s\+index/ skip=+\\$+ end=+$+ contains=muttrcColorKeywordI,muttrcComment,muttrcUnHighlightSpace
 " And now color's brother:
 syn region muttrcUnColorPatterns contained skipwhite start=+\s*'+ end=+'+ skip=+\\'+ contains=muttrcPattern nextgroup=muttrcUnColorPatterns,muttrcUnColorPatNL
@@ -432,15 +455,17 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcRXChars		SpecialChar
   HiLink muttrcString		String
   HiLink muttrcRXString		String
+  HiLink muttrcRXString2	String
   HiLink muttrcSpecial		Special
+  HiLink muttrcHooks		Type
   HiLink muttrcGroupFlag	Type
   HiLink muttrcGroupDef		Macro
   HiLink muttrcAddrDef		muttrcGroupFlag
   HiLink muttrcRXDef		muttrcGroupFlag
   HiLink muttrcRXPat		String
   HiLink muttrcAliasGroupName	Macro
-  HiLink muttrcAliasAbbr	Identifier
-  HiLink muttrcUnAliasAbbr	Identifier
+  HiLink muttrcAliasKey	Identifier
+  HiLink muttrcUnAliasKey	Identifier
   HiLink muttrcAliasEncEmail	Identifier
   HiLink muttrcAliasParens	Type
   HiLink muttrcNumber		Number
@@ -463,8 +488,11 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcToggle		muttrcCommand
   HiLink muttrcBind		muttrcCommand
   HiLink muttrcMacro		muttrcCommand
+  HiLink muttrcMacroDescr	String
   HiLink muttrcAlias		muttrcCommand
   HiLink muttrcUnAlias		muttrcCommand
+  HiLink muttrcUnhook		muttrcCommand
+  HiLink muttrcUnhookLine	Error
   HiLink muttrcAction		Macro
   HiLink muttrcBadAction	Error
   HiLink muttrcBindFunction	Error
@@ -487,7 +515,7 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcColorKeyword	muttrcCommand
   HiLink muttrcColorKeywordI	muttrcColorKeyword
   HiLink muttrcColorField	Identifier
-  HiLink muttrcColor		String
+  HiLink muttrcColor		Type
   HiLink muttrcColorFG		Error
   HiLink muttrcColorFGI		Error
   HiLink muttrcColorBG		Error
@@ -495,7 +523,7 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcMonoAttrib	muttrcColor
   HiLink muttrcMono		muttrcCommand
   HiLink muttrcSimplePat	Identifier
-  HiLink muttrcSimplePatGroup	Macro
+  HiLink muttrcSimplePatString	Macro
   HiLink muttrcSimplePatMetas	Special
   HiLink muttrcPattern		Type
   HiLink muttrcPatternInner	Error
@@ -507,6 +535,29 @@ if version >= 508 || !exists("did_muttrc_syntax_inits")
   HiLink muttrcRXHookNot	Type
   HiLink muttrcPatHooks		muttrcCommand
   HiLink muttrcPatHookNot	Type
+
+  HiLink muttrcBindFunctionNL	SpecialChar
+  HiLink muttrcBindKeyNL	SpecialChar
+  HiLink muttrcBindMenuListNL	SpecialChar
+  HiLink muttrcMacroDescrNL	SpecialChar
+  HiLink muttrcMacroBodyNL	SpecialChar
+  HiLink muttrcMacroKeyNL	SpecialChar
+  HiLink muttrcMacroMenuListNL	SpecialChar
+  HiLink muttrcColorMatchCountNL SpecialChar
+  HiLink muttrcColorNL		SpecialChar
+  HiLink muttrcColorRXNL	SpecialChar
+  HiLink muttrcColorBGNL	SpecialChar
+  HiLink muttrcColorFGNL	SpecialChar
+  HiLink muttrcAliasNameNL	SpecialChar
+  HiLink muttrcAliasENNL	SpecialChar
+  HiLink muttrcAliasNL		SpecialChar
+  HiLink muttrcUnAliasNL	SpecialChar
+  HiLink muttrcAliasGroupDefNL	SpecialChar
+  HiLink muttrcAliasEncEmailNL	SpecialChar
+  HiLink muttrcPatternNL	SpecialChar
+  HiLink muttrcUnColorPatNL	SpecialChar
+  HiLink muttrcUnColorAPNL	SpecialChar
+  HiLink muttrcUnColorIndexNL	SpecialChar
 
   delcommand HiLink
 endif

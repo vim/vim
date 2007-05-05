@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.0.  Last change: 2006 Mar 09
+*develop.txt*   For Vim version 7.1a.  Last change: 2006 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -224,7 +224,7 @@ __.*		POSIX, system
 _[A-Z].*	POSIX, system
 E[A-Z0-9]*	POSIX, errno.h
 
-*_t		POSIX, for typedefs.  Use *_T instead.
+.*_t		POSIX, for typedefs.  Use .*_T instead.
 
 wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration

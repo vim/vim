@@ -2,7 +2,8 @@
 " Language:	Microsoft VBScript Web Content (ASP)
 " Maintainer:	Devin Weaver <ktohg@tritarget.com> (non-functional)
 " URL:		http://tritarget.com/pub/vim/syntax/aspvbs.vim (broken)
-" Last Change:	2004 Jul 29
+" Last Change:	2006 Jun 19
+" 		by Dan Casey
 " Version:	$Revision$
 " Thanks to Jay-Jay <vim@jay-jay.net> for a syntax sync hack, hungarian
 " notation, and extra highlighting.
@@ -35,7 +36,7 @@ syn cluster htmlPreProc add=AspVBScriptInsideHtmlTags
 hi def AspVBSVariableSimple   term=standout  ctermfg=3  guifg=#99ee99
 hi def AspVBSVariableComplex  term=standout  ctermfg=3  guifg=#ee9900
 syn match AspVBSVariableSimple  contained "\<\(bln\|byt\|dtm\=\|dbl\|int\|str\)\u\w*"
-syn match AspVBSVariableComplex contained "\<\(arr\|obj\)\u\w*"
+syn match AspVBSVariableComplex contained "\<\(arr\|ary\|obj\)\u\w*"
 
 
 " Functions and methods that are in VB but will cause errors in an ASP page
@@ -67,8 +68,9 @@ syn match AspVBSError contained "Respose\.\S*"
 
 " AspVBScript Reserved Words.
 syn match AspVBSStatement contained "\<On\s\+Error\s\+\(Resume\s\+Next\|goto\s\+0\)\>\|\<Next\>"
-syn match AspVBSStatement contained "\<End\s\+\(If\|For\|Select\|Class\|Function\|Sub\|With\)\>"
+syn match AspVBSStatement contained "\<End\s\+\(If\|For\|Select\|Class\|Function\|Sub\|With\|Property\)\>"
 syn match AspVBSStatement contained "\<Exit\s\+\(Do\|For\|Sub\|Function\)\>"
+syn match AspVBSStatement contained "\<Exit\s\+\(Do\|For\|Sub\|Function\|Property\)\>"
 syn match AspVBSStatement contained "\<Option\s\+Explicit\>"
 syn match AspVBSStatement contained "\<For\s\+Each\>\|\<For\>"
 syn match AspVBSStatement contained "\<Set\>"

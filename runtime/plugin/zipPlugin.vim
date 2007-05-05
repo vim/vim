@@ -1,9 +1,9 @@
 " zipPlugin.vim: Handles browsing zipfiles
 "            PLUGIN PORTION
-" Date:			Sep 14, 2005
-" Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+" Date:			Jul 18, 2006
+" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005,2006 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -12,10 +12,16 @@
 "               plugin, you agree that in no event will the copyright
 "               holder be liable for any damages resulting from the use
 "               of this software.
-
+"
+" (James 4:8 WEB) Draw near to God, and he will draw near to you.
+" Cleanse your hands, you sinners; and purify your hearts, you double-minded.
 " ---------------------------------------------------------------------
-" Initialization: {{{1
-let s:keepcpo= &cpo
+" Load Once: {{{1
+if &cp || exists("g:loaded_zipPlugin")
+ finish
+endif
+let g:loaded_zipPlugin = 1
+let s:keepcpo          = &cpo
 set cpo&vim
 
 " ---------------------------------------------------------------------
@@ -37,8 +43,8 @@ augroup zip
  au BufReadCmd   *.zip		call zip#Browse(expand("<amatch>"))
 augroup END
 
-" ------------------------------------------------------------------------
-" Modelines And Restoration: {{{1
+" ---------------------------------------------------------------------
+"  Restoration And Modelines: {{{1
+"  vim: fdm=marker
 let &cpo= s:keepcpo
 unlet s:keepcpo
-" vim:ts=8 fdm=marker

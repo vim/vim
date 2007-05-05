@@ -8,7 +8,7 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
-let b:undo_plugin = "setl com< cms< fo<"
+let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=s1fl:{-,mb:-,ex:-},:-- commentstring=--\ %s
 setlocal formatoptions-=t formatoptions+=croql

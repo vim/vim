@@ -1,4 +1,4 @@
-*usr_03.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_03.txt*	For Vim version 7.1a.  Last change: 2006 Jun 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -606,7 +606,7 @@ NAMED MARKS							*bookmark*
 Vim enables you to place your own marks in the text.  The command "ma" marks
 the place under the cursor as mark a.  You can place 26 marks (a through z) in
 your text.  You can't see them, it's just a position that Vim remembers.
-   To go to a mark, use the command `{mark}, where "{mark} is the mark letter.
+   To go to a mark, use the command `{mark}, where {mark} is the mark letter.
 Thus to move to the a mark:
 >
 	`a
@@ -622,7 +622,7 @@ while working on some text near the end of the file.
 
 	ms
 
-The move to the text you want to work on and put the e (end) mark there: >
+Then move to the text you want to work on and put the e (end) mark there: >
 
 	me
 

@@ -1,4 +1,4 @@
-*usr_10.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_10.txt*	For Vim version 7.1a.  Last change: 2006 Nov 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -183,8 +183,9 @@ results in (starting with the original line):
 	Teacher Smith criticized Teacher Johnson today. ~
 
 Other flags include p (print), which causes the ":substitute" command to print
-out each line it changes.  The c (confirm) flag tells ":substitute" to ask you
-for confirmation before it performs each substitution.  Enter the following: >
+out the last line it changes.  The c (confirm) flag tells ":substitute" to ask
+you for confirmation before it performs each substitution.  Enter the
+following: >
 
 	:%s/Professor/Teacher/c
 

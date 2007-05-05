@@ -2,14 +2,14 @@
 " Language:	Debian Changelog
 " Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
 "		Stefano Zacchiroli <zack@debian.org>
-" Last Change:	$LastChangedDate: 2006-04-28 12:15:12 -0400 (ven, 28 apr 2006) $
+" Last Change:	$LastChangedDate: 2006-08-24 23:41:26 +0200 (gio, 24 ago 2006) $
 " License:	GNU GPL, version 2.0 or later
 " URL:		http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/ftplugin/debchangelog.vim?op=file&rev=0&sc=0
 
 if exists("b:did_ftplugin")
   finish
 endif
-let b:did_ftplugin = 1
+let b:did_ftplugin=1
 
 " {{{1 Local settings (do on every load)
 setlocal foldmethod=expr
@@ -227,21 +227,22 @@ augroup END
 " }}}
 " {{{1 folding
 
-" look for an author name searching backward from a given line number
-function! s:getAuthor(lnum)
-  let line = getline(a:lnum)
-  let backsteps = 0
-  while line !~ '^ --'
-    let backsteps += 1
-    let line = getline(a:lnum - backsteps)
+" look for an author name in the [zonestart zoneend] lines searching backward
+function! s:getAuthor(zonestart, zoneend)
+  let linepos = a:zoneend
+  while linepos >= a:zonestart
+    let line = getline(linepos)
+    if line =~ '^ --'
+      return substitute(line, '^ --\s*\([^<]\+\)\s*.*', '\1', '')
+    endif
+    let linepos -= 1
   endwhile
-  let author = substitute(line, '^ --\s*\([^<]\+\)\s*.*', '\1', '')
-  return author
+  return '[unknown]'
 endfunction
 
 function! DebChangelogFoldText()
   if v:folddashes == '-'  " changelog entry fold
-    return foldtext() . ' -- ' . s:getAuthor(v:foldend) . ' '
+    return foldtext() . ' -- ' . s:getAuthor(v:foldstart, v:foldend) . ' '
   endif
   return foldtext()
 endfunction
@@ -259,6 +260,8 @@ function! GetDebChangelogFold(lnum)
   endif
   return '='
 endfunction
+
+foldopen!   " unfold the entry the cursor is on (usually the first one)
 
 " }}}
 

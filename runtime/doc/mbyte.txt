@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.0.  Last change: 2006 Apr 30
+*mbyte.txt*     For Vim version 7.1a.  Last change: 2006 Aug 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -403,7 +403,8 @@ depends on the system used, no detailed list can be given.
  8bit      2byte	MS-Windows: works for all codepages installed on your
 			system; you can only type 8bit characters;
 			Other systems: does NOT work.
- 8bit	   Unicode	Works, but you can only type 8bit characters; in a
+ 8bit	   Unicode	Works, but only 8bit characters can be typed directly
+			(others through digraphs, keymaps, etc.); in a
 			terminal you can only see 8bit characters; the GUI can
 			show all characters that the 'guifont' supports.
 

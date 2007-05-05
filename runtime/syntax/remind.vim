@@ -1,12 +1,12 @@
 " Vim syntax file
 " Language:	Remind
-" Maintainer:	Davide Alberani <alberanid@bigfoot.com>
-" Last Change:	28 Apr 2001
-" Version:	0.2
-" URL:		http://digilander.iol.it/alberanid/vim/syntax/remind.vim
+" Maintainer:	Davide Alberani <alberanid@libero.it>
+" Last Change:	10 May 2006
+" Version:	0.3
+" URL:		http://erlug.linux.it/~da/vim/syntax/remind.vim
 "
-" remind is a sophisticated reminder service
-" you can download remind from http://www.roaringpenguin.com/remind.html
+" remind is a sophisticated reminder service; you can download remind from:
+" http://www.roaringpenguin.com/penguin/open_source_remind.php
 
 if version < 600
   syntax clear
@@ -32,6 +32,10 @@ syn keyword remindDebug		DEBUG DUMPVARS DUMP ERRMSG FLUSH PRESERVE
 syn match remindVar		"\$[_a-zA-Z][_a-zA-Z0-9]*"
 syn match remindSubst		"%[^ ]"
 syn match remindAdvanceNumber	"\(\*\|+\|-\|++\|--\)[0-9]\+"
+" This will match trailing whitespaces that seem to break rem2ps.
+" Courtesy of Michael Dunn.
+syn match remindWarning		display excludenl "\S\s\+$"ms=s+1
+
 
 if version >= 508 || !exists("did_remind_syn_inits")
   if version < 508
@@ -55,6 +59,7 @@ if version >= 508 || !exists("did_remind_syn_inits")
   HiLink remindVar		Identifier
   HiLink remindSubst		Constant
   HiLink remindAdvanceNumber	Number
+  HiLink remindWarning		Error
 
   delcommand HiLink
 endif

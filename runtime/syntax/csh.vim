@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	C-shell (csh)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Version:	9
-" Last Change:	Sep 06, 2005
+" Version:	10
+" Last Change:	Sep 11, 2006
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -35,12 +35,12 @@ syn match   cshNoEndlineDQ	contained "[^\"]\(\\\\\)*$"
 syn match   cshNoEndlineSQ	contained "[^\']\(\\\\\)*$"
 syn match   cshNoEndlineBQ	contained "[^\`]\(\\\\\)*$"
 
-syn region  cshDblQuote	start=+[^\\]"+lc=1 skip=+\\\\\|\\"+ end=+"+	contains=cshSpecial,cshShellVariables,cshExtVar,cshSelector,cshQtyWord,cshArgv,cshSubst,cshNoEndlineDQ,cshBckQuote
-syn region  cshSnglQuote	start=+[^\\]'+lc=1 skip=+\\\\\|\\'+ end=+'+	contains=cshNoEndlineSQ
-syn region  cshBckQuote	start=+[^\\]`+lc=1 skip=+\\\\\|\\`+ end=+`+	contains=cshNoEndlineBQ
-syn region  cshDblQuote	start=+^"+ skip=+\\\\\|\\"+ end=+"+		contains=cshSpecial,cshExtVar,cshSelector,cshQtyWord,cshArgv,cshSubst,cshNoEndlineDQ
-syn region  cshSnglQuote	start=+^'+ skip=+\\\\\|\\'+ end=+'+		contains=cshNoEndlineSQ
-syn region  cshBckQuote	start=+^`+ skip=+\\\\\|\\`+ end=+`+		contains=cshNoEndlineBQ
+syn region  cshDblQuote	start=+[^\\]"+lc=1 skip=+\\\\\|\\"+ end=+"+	contains=cshSpecial,cshShellVariables,cshExtVar,cshSelector,cshQtyWord,cshArgv,cshSubst,cshNoEndlineDQ,cshBckQuote,@Spell
+syn region  cshSnglQuote	start=+[^\\]'+lc=1 skip=+\\\\\|\\'+ end=+'+	contains=cshNoEndlineSQ,@Spell
+syn region  cshBckQuote	start=+[^\\]`+lc=1 skip=+\\\\\|\\`+ end=+`+	contains=cshNoEndlineBQ,@Spell
+syn region  cshDblQuote	start=+^"+ skip=+\\\\\|\\"+ end=+"+		contains=cshSpecial,cshExtVar,cshSelector,cshQtyWord,cshArgv,cshSubst,cshNoEndlineDQ,@Spell
+syn region  cshSnglQuote	start=+^'+ skip=+\\\\\|\\'+ end=+'+		contains=cshNoEndlineSQ,@Spell
+syn region  cshBckQuote	start=+^`+ skip=+\\\\\|\\`+ end=+`+		contains=cshNoEndlineBQ,@Spell
 syn cluster cshCommentGroup	contains=cshTodo,@Spell
 syn match   cshComment	"#.*$" contains=@cshCommentGroup
 

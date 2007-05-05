@@ -2,7 +2,7 @@
 " Language:	Lua 4.0, Lua 5.0 and Lua 5.1
 " Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol com br>
 " First Author:	Carlos Augusto Teixeira Mendes <cmendes 'at' inf puc-rio br>
-" Last Change:	2006 Apr 21
+" Last Change:	2006 Aug 10
 " Options:	lua_version = 4 or 5
 "		lua_subversion = 0 (4.0, 5.0) or 1 (5.1)
 "		default 5.1
@@ -31,13 +31,13 @@ syn sync minlines=100
 
 " Comments
 syn keyword luaTodo             contained TODO FIXME XXX
-syn match   luaComment          "--.*$" contains=luaTodo
+syn match   luaComment          "--.*$" contains=luaTodo,@Spell
 if lua_version == 5 && lua_subversion == 0
-  syn region  luaComment        matchgroup=luaComment start="--\[\[" end="\]\]" contains=luaTodo,luaInnerComment
+  syn region  luaComment        matchgroup=luaComment start="--\[\[" end="\]\]" contains=luaTodo,luaInnerComment,@Spell
   syn region  luaInnerComment   contained transparent start="\[\[" end="\]\]"
 elseif lua_version > 5 || (lua_version == 5 && lua_subversion >= 1)
   " Comments in Lua 5.1: --[[ ... ]], [=[ ... ]=], [===[ ... ]===], etc.
-  syn region  luaComment        matchgroup=luaComment start="--\[\z(=*\)\[" end="\]\z1\]"
+  syn region  luaComment        matchgroup=luaComment start="--\[\z(=*\)\[" end="\]\z1\]" contains=luaTodo,@Spell
 endif
 
 " First line may start with #!
@@ -95,22 +95,27 @@ if lua_version < 5
   syn match  luaSpecial contained "\\[\\abfnrtv\'\"]\|\\\d\{,3}"
 elseif lua_version == 5 && lua_subversion == 0
   syn match  luaSpecial contained "\\[\\abfnrtv\'\"[\]]\|\\\d\{,3}"
-  syn region luaString2 matchgroup=luaString start=+\[\[+ end=+\]\]+ contains=luaString2
+  syn region luaString2 matchgroup=luaString start=+\[\[+ end=+\]\]+ contains=luaString2,@Spell
 elseif lua_version > 5 || (lua_version == 5 && lua_subversion >= 1)
   syn match  luaSpecial contained "\\[\\abfnrtv\'\"]\|\\\d\{,3}"
-  syn region luaString2 matchgroup=luaString start="\[\z(=*\)\[" end="\]\z1\]"
+  syn region luaString2 matchgroup=luaString start="\[\z(=*\)\[" end="\]\z1\]" contains=@Spell
 endif
-syn region luaString  start=+'+ end=+'+ skip=+\\\\\|\\'+ contains=luaSpecial
-syn region luaString  start=+"+ end=+"+ skip=+\\\\\|\\"+ contains=luaSpecial
+syn region luaString  start=+'+ end=+'+ skip=+\\\\\|\\'+ contains=luaSpecial,@Spell
+syn region luaString  start=+"+ end=+"+ skip=+\\\\\|\\"+ contains=luaSpecial,@Spell
 
 " integer number
-syn match luaNumber "\<[0-9]\+\>"
+syn match luaNumber "\<\d\+\>"
 " floating point number, with dot, optional exponent
-syn match luaFloat  "\<[0-9]\+\.[0-9]*\%(e[-+]\=[0-9]\+\)\=\>"
+syn match luaFloat  "\<\d\+\.\d*\%(e[-+]\=\d\+\)\=\>"
 " floating point number, starting with a dot, optional exponent
-syn match luaFloat  "\.[0-9]\+\%(e[-+]\=[0-9]\+\)\=\>"
+syn match luaFloat  "\.\d\+\%(e[-+]\=\d\+\)\=\>"
 " floating point number, without dot, with exponent
-syn match luaFloat  "\<[0-9]\+e[-+]\=[0-9]\+\>"
+syn match luaFloat  "\<\d\+e[-+]\=\d\+\>"
+
+" hex numbers
+if lua_version > 5 || (lua_version == 5 && lua_subversion >= 1)
+  syn match luaNumber "\<0x\x\+\>"
+endif
 
 " tables
 syn region  luaTableBlock transparent matchgroup=luaTable start="{" end="}" contains=ALLBUT,luaTodo,luaSpecial,luaCond,luaCondElseif,luaCondEnd,luaCondStart,luaBlock,luaRepeatBlock,luaRepeat,luaStatement

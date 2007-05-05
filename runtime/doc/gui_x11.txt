@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.0.  Last change: 2006 Apr 30
+*gui_x11.txt*   For Vim version 7.1a.  Last change: 2006 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -406,8 +406,9 @@ These are the different looks:
 - That means the menubar and toolbar handles are back!  Yeah!  And the
   resizing grid still works too.
 
-GNOME is automatically compiled with if it was found by configure.
-(FIXME: Is this still true?  Use --enable-gnome-check to force it to.)
+GNOME is compiled with if it was found by configure and the
+--enable-gnome-check argument was used.
+
 
 GNOME session support			*gui-gnome-session* *gnome-session*
 
@@ -436,7 +437,7 @@ command line argument).
 
 ==============================================================================
 7. KDE version					*gui-kde* *kde* *KDE* *KVim*
-
+							*gui-x11-kde*
 There is no KDE version of Vim.  There has been some work on a port using the
 Qt toolkit, but it never worked properly and it has been abandoned.  Work
 continues on Yzis: www.yzis.org.
@@ -496,12 +497,6 @@ version, you might want to link with Xaw3d instead.  This will make the
 menus look a bit better.  Edit the Makefile and look for "XAW_LIB".  The
 scrollbars will remain the same, because Vim has its own, which are already
 3D (in fact, they look more like Motif).
-
-							*gui-x11-kde*
-For Vim-KDE, you need at least Qt(>=2.x) and the corresponding kdelibs.
-To compile, you must use the --with-qt-dir configure flag because QTDIR is not
-automatically detected yet. Giving KDE's directories to the configure script
-may also help in some cases.
 
 							*gui-x11-neXtaw*
 The neXtaw version is mostly like Athena, but uses different widgets.

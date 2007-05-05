@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.0.  Last change: 2005 Mar 29
+*gui_w32.txt*   For Vim version 7.1a.  Last change: 2007 May 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -233,7 +233,8 @@ $VIMRUNTIME/mswin.vim script.  You could add this line to your _vimrc file: >
 Since CTRL-C is used to copy the text to the clipboard, it can't be used to
 cancel an operation.  Use CTRL-Break for that.
 
-CTRL-Z is used for undo.  This means you can't suspend Vim.
+CTRL-Z is used for undo.  This means you can't suspend Vim with this key, use
+|:suspend| instead (if it's supported at all).
 
 						*CTRL-V-alternative* *CTRL-Q*
 Since CTRL-V is used to paste, you can't use it to start a blockwise Visual
@@ -462,6 +463,8 @@ This maps Alt-Space to pop down the system menu for the Vim window.  Note that
 	:map <C-n> :simalt ~n<CR>
 Maps Control-N to produce the keys Alt-Space followed by N.  This minimizes the
 Vim window via the system menu.
+
+Note that the key changes depending on the language you are using.
 
 						*intellimouse-wheel-problems*
 When using the Intellimouse mouse wheel causes Vim to stop accepting input, go

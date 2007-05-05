@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.0.  Last change: 2006 Apr 30
+*version6.txt*  For Vim version 7.1a.  Last change: 2006 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11128,7 +11128,7 @@ Solution:   Insert the indent.  Also fix other mistakes.
 Files:	    runtime/doc/eval.txt
 
 Patch 6.2.187
-Problem:    Using Insure++ reveals a number of bugs.  (Dominuque Pelle)
+Problem:    Using Insure++ reveals a number of bugs.  (Dominique Pelle)
 Solution:   Initialize variables where needed.  Free allocated memory to avoid
 	    leaks.  Fix comparing tags to avoid reading past allocated memory.
 Files:	    src/buffer.c, src/diff.c, src/fileio.c, src/mark.c, src/misc1.c,
@@ -14406,7 +14406,7 @@ Files:	    src/normal.c
 Patch 6.3.075
 Problem:    After unloading another buffer, syntax highlighting in the current
 	    buffer may be wrong when it uses "containedin". (Eric Arnold)
-Solution:   Use "buf" intead of "curbuf" in syntax_clear().
+Solution:   Use "buf" instead of "curbuf" in syntax_clear().
 Files:	    src/syntax.c
 
 Patch 6.3.076

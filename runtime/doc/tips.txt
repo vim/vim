@@ -1,4 +1,4 @@
-*tips.txt*      For Vim version 7.0.  Last change: 2006 Apr 30
+*tips.txt*      For Vim version 7.1a.  Last change: 2006 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -149,8 +149,8 @@ these two variables are the correct place where the above mentioned control
 sequences should go.
 
 Compare your xterm termcap entry (found in /etc/termcap) with your xterm
-terminfo entry (retrieved with /usr/5bin/infocmp -C xterm).  Both should
-contain entries similar to: >
+terminfo entry (retrieved with "infocmp -C xterm").  Both should contain
+entries similar to: >
 	:te=\E[2J\E[?47l\E8:ti=\E7\E[?47h:
 
 PS: If you find any difference, someone (your sysadmin?) should better check

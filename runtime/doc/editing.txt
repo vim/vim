@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.0.  Last change: 2006 Apr 30
+*editing.txt*   For Vim version 7.1a.  Last change: 2006 Oct 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -372,7 +372,7 @@ Example: The command ":e   Long File Name " will edit the file "Long File
 Name".  When using a command that accepts more than one file name (like ":next
 file1 file2") embedded spaces must be escaped with a backslash.
 
-							*wildcard*
+						*wildcard* *wildcards*
 Wildcards in {file} are expanded.  Which wildcards are supported depends on
 the system.  These are the common ones:
 	?	matches one character
@@ -849,7 +849,7 @@ Note: When the 'write' option is off, you are not able to write any file.
 
 							*:w* *:write*
 						*E502* *E503* *E504* *E505*
-						*E512* *E514* *E667*
+						*E512* *E514* *E667* *E796*
 :w[rite]		Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
@@ -1150,8 +1150,8 @@ If you want to always use ":confirm", set the 'confirm' option.
 			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
 :bro[wse] {command}	Open a file selection dialog for an argument to
 			{command}.  At present this works for |:e|, |:w|,
-			|:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc| and
-			|:mksession|.
+			|:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc|,
+			|:mksession|, |:split|, |:vsplit|, and |:tabe|.
 			{only in Win32, Athena, Motif, GTK and Mac GUI}
 			When ":browse" is not possible you get an error
 			message.  If the |+browse| feature is missing or the
@@ -1469,7 +1469,9 @@ problem goes away the next day.
 {not available when compiled without the |+path_extra| feature}
 
 The file searching is currently used for the 'path', 'cdpath' and 'tags'
-options.  There are three different types of searching:
+options, for |finddir()| and |findfile()|.
+
+There are three different types of searching:
 
 1) Downward search:					*starstar*
    Downward search uses the wildcards '*', '**' and possibly others

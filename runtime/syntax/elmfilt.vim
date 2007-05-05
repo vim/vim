@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Elm Filter rules
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 06, 2005
-" Version:	4
+" Last Change:	Sep 11, 2006
+" Version:	5
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -33,8 +33,8 @@ syn match	elmfiltNumber	contained	"\d\+"
 syn keyword	elmfiltOperKey	contained	and not				skipnl skipwhite nextgroup=elmfiltOper,elmfiltOperKey,elmfiltString
 syn match	elmfiltOper	contained	"\~"				skipnl skipwhite nextgroup=elmfiltMatch
 syn match	elmfiltOper	contained	"<=\|>=\|!=\|<\|<\|="		skipnl skipwhite nextgroup=elmfiltString,elmfiltCond,elmfiltOperKey
-syn region	elmfiltString	contained	start='"' skip='"\(\\\\\)*\\["%]' end='"'	contains=elmfiltArg skipnl skipwhite nextgroup=elmfiltOper,elmfiltOperKey
-syn region	elmfiltString	contained	start="'" skip="'\(\\\\\)*\\['%]" end="'"	contains=elmfiltArg skipnl skipwhite nextgroup=elmfiltOper,elmfiltOperKey
+syn region	elmfiltString	contained	start='"' skip='"\(\\\\\)*\\["%]' end='"'	contains=elmfiltArg skipnl skipwhite nextgroup=elmfiltOper,elmfiltOperKey,@Spell
+syn region	elmfiltString	contained	start="'" skip="'\(\\\\\)*\\['%]" end="'"	contains=elmfiltArg skipnl skipwhite nextgroup=elmfiltOper,elmfiltOperKey,@Spell
 syn match	elmfiltSpaceError	contained	"\s.*$"
 
 " Define the default highlighting.

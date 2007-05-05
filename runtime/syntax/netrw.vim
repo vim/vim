@@ -1,7 +1,7 @@
 " Language   : Netrw Remote-Directory Listing Syntax
 " Maintainer : Charles E. Campbell, Jr.
-" Last change: Aug 29, 2005
-" Version    : 7
+" Last change: Nov 27, 2006
+" Version    : 9
 " ---------------------------------------------------------------------
 
 " Syntax Clearing: {{{1
@@ -19,10 +19,15 @@ syn match  netrwSpecial		"\%(\S\+ \)*\S\+[*|=]\ze\%(\s\{2,}\|$\)" contains=netrw
 syn match  netrwDir		"\.\{1,2}/"			contains=netrwClassify
 syn match  netrwDir		"\%(\S\+ \)*\S\+/"		contains=netrwClassify
 syn match  netrwDir		"^\S*/"				contains=netrwClassify
+syn match  netrwSizeDate	"\<\d\+\s\d\{1,2}/\d\{1,2}/\d\{4}\s"	contains=netrwDateSep skipwhite nextgroup=netrwTime
 syn match  netrwSymLink		"\%(\S\+ \)*\S\+@\ze\%(\s\{2,}\|$\)"  contains=netrwClassify
-syn match  netrwExe		"\%(\S\+ \)*\S\+\*\ze\%(\s\{2,}\|$\)" contains=netrwClassify
+syn match  netrwExe		"\%(\S\+ \)*\S\+\*\ze\%(\s\{2,}\|$\)" contains=netrwClassify,netrwTreeIgnore
+syn match  netrwTreeIgnore contained "^\%(| \)*"
 
 syn match  netrwClassify	"[*=|@/]\ze\%(\s\{2,}\|$\)"	contained
+syn match  netrwDateSep		"/"				contained
+syn match  netrwTime		"\d\{1,2}:\d\{2}:\d\{2}"	contained contains=netrwTimeSep
+syn match  netrwTimeSep		":"
 
 syn match  netrwComment		'".*\%(\t\|$\)'			contains=@NetrwGroup
 syn match  netrwHide		'^"\s*\(Hid\|Show\)ing:'	skipwhite nextgroup=netrwHidePat
@@ -53,7 +58,9 @@ if !exists("did_drchip_dbg_syntax")
  hi link netrwVersion	Identifier
  hi link netrwSymLink	Special
  hi link netrwExe	PreProc
+ hi link netrwDateSep	Delimiter
 
+ hi link netrwTimeSep	netrwDateSep
  hi link netrwComma	netrwComment
  hi link netrwHide	netrwComment
 endif

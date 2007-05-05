@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	AmigaDos
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 06, 2005
-" Version:     5
+" Last Change:	Sep 11, 2006
+" Version:     6
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -23,7 +23,7 @@ syn match amiAlias	"\<[a-zA-Z][a-zA-Z0-9]\+:"
 syn match amiAlias	"\<[a-zA-Z][a-zA-Z0-9]\+:[a-zA-Z0-9/]*/"
 
 " strings
-syn region amiString	start=+"+ end=+"+ oneline
+syn region amiString	start=+"+ end=+"+ oneline contains=@Spell
 
 " numbers
 syn match amiNumber	"\<\d\+\>"

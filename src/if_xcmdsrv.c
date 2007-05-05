@@ -37,8 +37,8 @@
 # endif
 
 /*
- * This file provides procedures that implement the command server functionality
- * of Vim when in contact with an X11 server.
+ * This file provides procedures that implement the command server
+ * functionality of Vim when in contact with an X11 server.
  *
  * Adapted from TCL/TK's send command  in tkSend.c of the tk 3.6 distribution.
  * Adapted for use in Vim by Flemming Madsen. Protocol changed to that of tk 4

@@ -166,7 +166,7 @@ update_topline()
 
 #ifdef FEAT_MOUSE
     /* When dragging with the mouse, don't scroll that quickly */
-    if (mouse_dragging)
+    if (mouse_dragging > 0)
 	p_so = mouse_dragging - 1;
 #endif
 
@@ -1995,7 +1995,7 @@ scroll_cursor_bot(min_scroll, set_topbot)
 	if ((((scrolled <= 0 || scrolled >= min_scroll)
 			&& extra >= (
 #ifdef FEAT_MOUSE
-			    mouse_dragging ? mouse_dragging - 1 :
+			    mouse_dragging > 0 ? mouse_dragging - 1 :
 #endif
 			    p_so))
 		    || boff.lnum + 1 > curbuf->b_ml.ml_line_count)
@@ -2209,7 +2209,7 @@ cursor_correct()
     above_wanted = p_so;
     below_wanted = p_so;
 #ifdef FEAT_MOUSE
-    if (mouse_dragging)
+    if (mouse_dragging > 0)
     {
 	above_wanted = mouse_dragging - 1;
 	below_wanted = mouse_dragging - 1;
@@ -2225,7 +2225,7 @@ cursor_correct()
     validate_botline();
     if (curwin->w_botline == curbuf->b_ml.ml_line_count + 1
 #ifdef FEAT_MOUSE
-	    && !mouse_dragging
+	    && mouse_dragging == 0
 #endif
 	    )
     {

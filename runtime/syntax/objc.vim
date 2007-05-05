@@ -3,7 +3,7 @@
 " Maintainer:	    Kazunobu Kuriyama <kazunobu.kuriyama@nifty.com>
 " Ex-maintainer:    Anthony Hodsdon <ahodsdon@fastmail.fm>
 " First Author:	    Valentino Kyriakides <1kyriaki@informatik.uni-hamburg.de>
-" Last Change:	    2006 Mar 4
+" Last Change:	    2007 Feb 21
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -36,7 +36,7 @@ syn keyword objcConstant	nil Nil
 
 " Match the ObjC #import directive (like C's #include)
 syn region objcImported display contained start=+"+  skip=+\\\\\|\\"+  end=+"+
-syn match  objcImported display contained "<[_0-9a-zA-Z.\/]*>"
+syn match  objcImported display contained "<[-_0-9a-zA-Z.\/]*>"
 syn match  objcImport display "^\s*\(%:\|#\)\s*import\>\s*["<]" contains=objcImported
 
 " Match the important ObjC directives

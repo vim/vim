@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.0.  Last change: 2006 May 05
+*insert.txt*    For Vim version 7.1a.  Last change: 2007 Apr 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -219,8 +219,8 @@ CTRL-_		Switch between languages, as follows:
 		Please refer to |rileft.txt| for more information about
 		right-to-left mode.
 		{not in Vi}
-		Only if compiled with the |+rightleft| feature (which is not
-		the default).
+		Only if compiled with the |+rightleft| feature.
+
 						*i_CTRL-^*
 CTRL-^		Toggle the use of typing language characters.
 		When language |:lmap| mappings are defined:
@@ -1156,14 +1156,15 @@ any printable, non-white character:
 
 In all three states these can be used:
 CTRL-Y		  Yes: Accept the currently selected match and stop completion.
-CTRL-E		  End completion, go back to what was typed.
+CTRL-E		  End completion, go back to what was there before selecting a
+		  match (what was typed or longest common string).
 <PageUp>	  Select a match several entries back, but don't insert it.
 <PageDown>	  Select a match several entries further, but don't insert it.
 <Up>		  Select the previous match, as if CTRL-P was used, but don't
 		  insert it.
 <Down>		  Select the next match, as if CTRL-N was used, but don't
 		  insert it.
-space or <Tab>	  Stop completion without changing the match and insert the
+<Space> or <Tab>  Stop completion without changing the match and insert the
 		  typed character.
 
 The behavior of the Enter key depends on the state you are in:
@@ -1210,7 +1211,8 @@ C							*ft-c-omni*
 
 Completion of C code requires a tags file.  You should use Exuberant ctags,
 because it adds extra information that is needed for completion.  You can find
-it here: http://ctags.sourceforge.net/
+it here: http://ctags.sourceforge.net/  Version 5.6 or later is recommended.
+
 For version 5.5.4 you should add a patch that adds the "typename:" field:
 	ftp://ftp.vim.org/pub/vim/unstable/patches/ctags-5.5.4.patch
 A compiled .exe for MS-Windows can be found at:
@@ -1330,9 +1332,9 @@ will be suggested. All other elements are not placed in suggestion list.
 
 PHP							*ft-php-omni*
 
-Completion of PHP code requires tags file for completion of data from external
-files. You should use Exuberant ctags version 5.5.4 or newer. You can find it
-here: http://ctags.sourceforge.net/
+Completion of PHP code requires a tags file for completion of data from
+external files and for class aware completion. You should use Exuberant ctags
+version 5.5.4 or newer. You can find it here: http://ctags.sourceforge.net/
 
 Script completes:
 
@@ -1390,8 +1392,10 @@ The completions provided by CTRL-X CTRL-O are sensitive to the context:
 
 Notes:
  - Vim will load/evaluate code in order to provide completions.  This may
-   cause some code execution, which may be a concern.
- - In context 1 above, Vim can parse the entire buffer to add a list of
+   cause some code execution, which may be a concern. This is no longer 
+   enabled by default, to enable this feature add >
+     let g:rubycomplete_buffer_loading = 1
+<- In context 1 above, Vim can parse the entire buffer to add a list of
    classes to the completion results. This feature is turned off by default,
    to enable it add >
      let g:rubycomplete_classes_in_global = 1
@@ -1407,8 +1411,13 @@ Notes:
 
 SYNTAX							*ft-syntax-omni*
 
-This uses the current syntax highlighting for completion.  It can be used for
-any filetype and provides a minimal language-sensitive completion.
+Vim has the ability to color syntax highlight nearly 500 languages.  Part of
+this highlighting includes knowing what keywords are part of a language.  Many
+filetypes already have custom completion scripts written for them, the
+syntaxcomplete plugin provides basic completion for all other filetypes.  It
+does this by populating the omni completion list with the text Vim already
+knows how to color highlight.  It can be used for any filetype and provides a
+minimal language-sensitive completion.
 
 To enable syntax code completion you can run: >
 	setlocal omnifunc=syntaxcomplete#Complete
@@ -1460,6 +1469,15 @@ groups: >
 
 You can create as many of these variables as you need, varying only the
 filetype at the end of the variable name.
+
+The plugin uses the isKeyword option to determine where word boundaries are
+for the syntax items.  For example, in the Scheme language completion should
+include the "-", call-with-output-file.  Depending on your filetype, this may
+not provide the words you are expecting.  Setting the
+g:omni_syntax_use_iskeyword option to 0 will force the syntax plugin to break
+on word characters.   This can be controlled adding the following to your
+vimrc: >
+    let g:omni_syntax_use_iskeyword = 0
 
 
 SQL							*ft-sql-omni*
@@ -1771,13 +1789,13 @@ NOTE: ":append" and ":insert" don't work properly in between ":if" and
 			See |++opt| for the possible values of [++opt].
 
 							*:r!* *:read!*
-:r[ead] !{cmd}		Execute {cmd} and insert its standard output below
-			the cursor.  A temporary file is used to store the
-			output of the command which is then read into the
-			buffer.  'shellredir' is used to save the output of
-			the command, which can be set to include stderr or
-			not.  {cmd} is executed like with ":!{cmd}", any '!'
-			is replaced with the previous command |:!|.
+:[range]r[ead] !{cmd}	Execute {cmd} and insert its standard output below
+			the cursor or the specified line.  A temporary file is
+			used to store the output of the command which is then
+			read into the buffer.  'shellredir' is used to save
+			the output of the command, which can be set to include
+			stderr or not.  {cmd} is executed like with ":!{cmd}",
+			any '!' is replaced with the previous command |:!|.
 
 These commands insert the contents of a file, or the output of a command,
 into the buffer.  They can be undone.  They cannot be repeated with the "."

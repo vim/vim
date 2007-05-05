@@ -137,6 +137,6 @@ if version >= 508 || !exists("did_b_syntax_inits")
   delcommand HiLink
 endif
 
-let current_syntax = "b"
+let b:current_syntax = "b"
 
 " vim: ts=8

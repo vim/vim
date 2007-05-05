@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 7.0.  Last change: 2006 Apr 30
+*usr_08.txt*	For Vim version 7.1a.  Last change: 2006 Jul 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -197,8 +197,8 @@ unmodified.)
 MOVING BETWEEN WINDOWS
 
 Since you can split windows horizontally and vertically as much as you like,
-you can create any layout of windows.  Then you can use these commands to move
-between them:
+you can create almost any layout of windows.  Then you can use these commands
+to move between them:
 
 	CTRL-W h	move to the window on the left
 	CTRL-W j	move to the window below
@@ -242,7 +242,7 @@ and the type this command: >
 This uses the uppercase letter K.  What happens is that the window is moved to
 the very top.  You will notice that K is again used for moving upwards.
    When you have vertical splits, CTRL-W K will move the current window to the
-top and make it occupy the full with of the Vim window.  If this is your
+top and make it occupy the full width of the Vim window.  If this is your
 layout:
 
 	+-------------------------------------------+

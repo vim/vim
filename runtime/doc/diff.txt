@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.0.  Last change: 2006 Apr 14
+*diff.txt*      For Vim version 7.1a.  Last change: 2006 Oct 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -155,13 +155,16 @@ All the buffers edited in a window where the 'diff' option is set will join in
 the diff.  This is also possible for hidden buffers.  They must have been
 edited in a window first for this to be possible.
 
+					*:DiffOrig* *diff-original-file*
 Since 'diff' is a window-local option, it's possible to view the same buffer
 in diff mode in one window and "normal" in another window.  It is also
-possible to view the changes you have made to a buffer, but since Vim doesn't
-allow having two buffers for the same file, you need to make a copy of the
-original file and diff with that.  For example: >
-	:!cp % tempfile
-	:diffsplit tempfile
+possible to view the changes you have made to a buffer since the file was
+loaded.  Since Vim doesn't allow having two buffers for the same file, you
+need another buffer.  This command is useful: >
+	 command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
+	 	\ | wincmd p | diffthis
+(this is in |vimrc_example.vim|).  Use ":DiffOrig" to see the differences
+between the current buffer and the file it was loaded from.
 
 A buffer that is unloaded cannot be used for the diff.  But it does work for
 hidden buffers.  You can use ":hide" to close a window without unloading the
@@ -239,7 +242,7 @@ that the buffers will be equal within the specified range.
 		mode.
 		See below for [range].
 
-							*:diffpu* *:diffput*
+						*:diffpu* *:diffput* *E793*
 :[range]diffpu[t] [bufspec]
 		Modify another buffer to undo difference with the current
 		buffer.  Just like ":diffget" but the other buffer is modified

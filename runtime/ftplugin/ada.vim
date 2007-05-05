@@ -1,223 +1,190 @@
-" Vim Ada plugin file
-" Language:	Ada
-" Maintainer:	Neil Bird <neil@fnxweb.com>
-" Last Change:	2006 Apr 21
-" Version:	$Id$
-" Look for the latest version at http://vim.sourceforge.net/
-"
-" Perform Ada specific completion & tagging.
-"
-"
+"------------------------------------------------------------------------------
+"  Description: Perform Ada specific completion & tagging.
+"     Language: Ada (2005)
+"	   $Id$
+"   Maintainer: Martin Krischik
+"		Neil Bird <neil@fnxweb.com>
+"      $Author$
+"	 $Date$
+"      Version: 4.2
+"    $Revision$
+"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/ftplugin/ada.vim $
+"      History: 24.05.2006 MK Unified Headers
+"		26.05.2006 MK ' should not be in iskeyword.
+"		16.07.2006 MK Ada-Mode as vim-ball
+"		02.10.2006 MK Better folding.
+"		15.10.2006 MK Bram's suggestion for runtime integration
+"               05.11.2006 MK Bram suggested not to use include protection for
+"                             autoload
+"		05.11.2006 MK Bram suggested to save on spaces
+"    Help Page: ft-ada-plugin
+"------------------------------------------------------------------------------
 " Provides mapping overrides for tag jumping that figure out the current
 " Ada object and tag jump to that, not the 'simple' vim word.
 " Similarly allows <Ctrl-N> matching of full-length ada entities from tags.
-" Exports 'AdaWord()' function to return full name of Ada entity under the
-" cursor( or at given line/column), stripping whitespace/newlines as necessary.
+"------------------------------------------------------------------------------
 
 " Only do this when not done yet for this buffer
-if exists("b:did_ftplugin")
-  finish
+if exists ("b:did_ftplugin") || version < 700
+   finish
 endif
 
 " Don't load another plugin for this buffer
-let b:did_ftplugin = 1
+let b:did_ftplugin = 38
 
+"
 " Temporarily set cpoptions to ensure the script loads OK
+"
 let s:cpoptions = &cpoptions
-set cpo-=C
+set cpoptions-=C
 
-" Ada comments
-setlocal comments+=O:--
+" Section: Comments {{{1
+"
+setlocal comments=O:--,:--\ \
+setlocal commentstring=--\ \ %s
+setlocal complete=.,w,b,u,t,i
 
-" Make local tag mappings for this buffer (if not already set)
-if mapcheck('<C-]>','n') == ''
-  nnoremap <unique> <buffer> <C-]>    :call JumpToTag_ada('')<cr>
-endif
-if mapcheck('g<C-]>','n') == ''
-  nnoremap <unique> <buffer> g<C-]>   :call JumpToTag_ada('','stj')<cr>
-endif
-
-if mapcheck('<C-N>','i') == ''
-  inoremap <unique> <buffer> <C-N> <C-R>=<SID>AdaCompletion("\<lt>C-N>")<cr>
-endif
-if mapcheck('<C-P>','i') == ''
-  inoremap <unique> <buffer> <C-P> <C-R>=<SID>AdaCompletion("\<lt>C-P>")<cr>
-endif
-if mapcheck('<C-X><C-]>','i') == ''
-  inoremap <unique> <buffer> <C-X><C-]> <C-R>=<SID>AdaCompletion("\<lt>C-X>\<lt>C-]>")<cr>
-endif
-if mapcheck('<bs>','i') == ''
-  inoremap <silent> <unique> <buffer> <bs> <C-R>=<SID>AdaInsertBackspace()<cr>
-endif
-
-
-" Only do this when not done yet for this buffer & matchit is used
-if ! exists("b:match_words")  &&  exists("loaded_matchit")
-  " The following lines enable the macros/matchit.vim plugin for
-  " Ada-specific extended matching with the % key.
-  let s:notend = '\%(\<end\s\+\)\@<!'
-  let b:match_words=
-  \ s:notend . '\<if\>:\<elsif\>:\<else\>:\<end\>\s\+\<if\>,' .
-  \ s:notend . '\<case\>:\<when\>:\<end\>\s\+\<case\>,' .
-  \ '\%(\<while\>.*\|\<for\>.*\|'.s:notend.'\)\<loop\>:\<end\>\s\+\<loop\>,' .
-  \ '\%(\<do\>\|\<begin\>\):\<exception\>:\<end\>\s*\%($\|[;A-Z]\),' .
-  \ s:notend . '\<record\>:\<end\>\s\+\<record\>'
-endif
-
-
-" Prevent re-load of functions
-if exists('s:id')
-  finish
-endif
-
-" Get this script's unique id
-map <script> <SID>?? <SID>??
-let s:id = substitute( maparg('<SID>??'), '^<SNR>\(.*\)_??$', '\1', '' )
-unmap <script> <SID>??
-
-
-" Extract current Ada word across multiple lines
-" AdaWord( [line, column] )\
-let s:AdaWordRegex = '\a\w*\(\_s*\.\_s*\a\w*\)*'
-let s:AdaComment   = "\\v^(\"[^\"]*\"|'.'|[^\"']){-}\\zs\\s*--.*"
-
-function! AdaWord(...)
-  if a:0 > 1
-    let linenr = a:1
-    let colnr  = a:2 - 1
-  else
-    let linenr = line('.')
-    let colnr  = col('.') - 1
-  endif
-  let line = substitute( getline(linenr), s:AdaComment, '', '' )
-  " Cope with tag searching for items in comments; if we are, don't loop
-  " backards looking for previous lines
-  if colnr > strlen(line)
-    " We were in a comment
-    let line = getline(linenr)
-    let search_prev_lines = 0
-  else
-    let search_prev_lines = 1
-  endif
-
-  " Go backwards until we find a match (Ada ID) that *doesn't* include our
-  " location - i.e., the previous ID. This is because the current 'correct'
-  " match will toggle matching/not matching as we traverse characters
-  " backwards. Thus, we have to find the previous unrelated match, exclude
-  " it, then use the next full match (ours).
-  " Remember to convert vim column 'colnr' [1..n] to string offset [0..(n-1)]
-  " ... but start, here, one after the required char.
-  let newcol = colnr + 1
-  while 1
-    let newcol = newcol - 1
-    if newcol < 0
-      " Have to include previous line from file
-      let linenr = linenr - 1
-      if linenr < 1  ||  !search_prev_lines
-	" Start of file or matching in a comment
-	let linenr = 1
-	let newcol = 0
-	let ourmatch = match( line, s:AdaWordRegex )
-	break
+" Section: Tagging {{{1
+"
+if exists ("g:ada_extended_tagging")
+   " Make local tag mappings for this buffer (if not already set)
+   if g:ada_extended_tagging == 'jump'
+      if mapcheck('<C-]>','n') == ''
+	 nnoremap <unique> <buffer> <C-]>    :call ada#Jump_Tag ('', 'tjump')<cr>
       endif
-      " Get previous line, and prepend it to our search string
-      let newline = substitute( getline(linenr), s:AdaComment, '', '' )
-      let newcol  = strlen(newline) - 1
-      let colnr   = colnr + newcol
-      let line    = newline . line
-    endif
-    " Check to see if this is a match excluding 'us'
-    let mend = newcol + matchend( strpart(line,newcol), s:AdaWordRegex ) - 1
-    if mend >= newcol  &&  mend < colnr
-      " Yes
-      let ourmatch = mend+1 + match( strpart(line,mend+1), s:AdaWordRegex )
-      break
-    endif
-  endwhile
+      if mapcheck('g<C-]>','n') == ''
+	 nnoremap <unique> <buffer> g<C-]>   :call ada#Jump_Tag ('','stjump')<cr>
+      endif
+   elseif g:ada_extended_tagging == 'list'
+      if mapcheck('<C-]>','n') == ''
+	 nnoremap <unique> <buffer> <C-]>    :call ada#List_Tag ()<cr>
+      endif
+      if mapcheck('g<C-]>','n') == ''
+	 nnoremap <unique> <buffer> g<C-]>   :call ada#List_Tag ()<cr>
+      endif
+   endif
+endif
 
-  " Got anything?
-  if ourmatch < 0
-    return ''
-  else
-    let line = strpart( line, ourmatch)
-  endif
+" Section: Completion {{{1
+"
+setlocal completefunc=ada#User_Complete
+setlocal omnifunc=adacomplete#Complete
 
-  " Now simply add further lines until the match gets no bigger
-  let matchstr = matchstr( line, s:AdaWordRegex )
-  let lastline  = line('$')
-  let linenr    = line('.') + 1
-  while linenr <= lastline
-    let lastmatch = matchstr
-    let line = line . substitute( getline(linenr), s:AdaComment, '', '' )
-    let matchstr = matchstr( line, s:AdaWordRegex )
-    if matchstr == lastmatch
-      break
-    endif
-  endwhile
+if exists ("g:ada_extended_completion")
+   if mapcheck ('<C-N>','i') == ''
+      inoremap <unique> <buffer> <C-N> <C-R>=ada#Completion("\<lt>C-N>")<cr>
+   endif
+   if mapcheck ('<C-P>','i') == ''
+      inoremap <unique> <buffer> <C-P> <C-R>=ada#Completion("\<lt>C-P>")<cr>
+   endif
+   if mapcheck ('<C-X><C-]>','i') == ''
+      inoremap <unique> <buffer> <C-X><C-]> <C-R>=<SID>ada#Completion("\<lt>C-X>\<lt>C-]>")<cr>
+   endif
+   if mapcheck ('<bs>','i') == ''
+      inoremap <silent> <unique> <buffer> <bs> <C-R>=ada#Insert_Backspace ()<cr>
+   endif
+endif
 
-  " Strip whitespace & return
-  return substitute( matchstr, '\s\+', '', 'g' )
-endfunction
+" Section: Matchit {{{1
+"
+" Only do this when not done yet for this buffer & matchit is used
+"
+if !exists ("b:match_words")  &&
+  \ exists ("loaded_matchit")
+   "
+   " The following lines enable the macros/matchit.vim plugin for
+   " Ada-specific extended matching with the % key.
+   "
+   let s:notend      = '\%(\<end\s\+\)\@<!'
+   let b:match_words =
+      \ s:notend . '\<if\>:\<elsif\>:\<else\>:\<end\>\s\+\<if\>,' .
+      \ s:notend . '\<case\>:\<when\>:\<end\>\s\+\<case\>,' .
+      \ '\%(\<while\>.*\|\<for\>.*\|'.s:notend.'\)\<loop\>:\<end\>\s\+\<loop\>,' .
+      \ '\%(\<do\>\|\<begin\>\):\<exception\>:\<end\>\s*\%($\|[;A-Z]\),' .
+      \ s:notend . '\<record\>:\<end\>\s\+\<record\>'
+endif
 
+" Section: Compiler {{{1
+"
+if ! exists("current_compiler")			||
+   \ current_compiler != g:ada_default_compiler
+   execute "compiler " . g:ada_default_compiler
+endif
 
-" Word tag - include '.' and if Ada make uppercase
-" Name allows a common JumpToTag() to look for an ft specific JumpToTag_ft().
-function! JumpToTag_ada(word,...)
-  if a:word == ''
-    " Get current word
-    let word = AdaWord()
-    if word == ''
-      return
-    endif
-  else
-    let word = a:word
-  endif
-  if a:0 > 0
-    let mode = a:1
-  else
-    let mode = 'tj'
-  endif
+" Section: Folding {{{1
+"
+if exists("g:ada_folding")
+   if g:ada_folding[0] == 'i'
+      setlocal foldmethod=indent
+      setlocal foldignore=--
+      setlocal foldnestmax=5
+   elseif g:ada_folding[0] == 'g'
+      setlocal foldmethod=expr
+      setlocal foldexpr=ada#Pretty_Print_Folding(v:lnum)
+   elseif g:ada_folding[0] == 's'
+      setlocal foldmethod=syntax
+   endif
+   setlocal tabstop=8
+   setlocal softtabstop=3
+   setlocal shiftwidth=3
+endif
 
-  let v:errmsg = ''
-  execute 'silent!' mode word
-  if v:errmsg != ''
-    if v:errmsg =~ '^E426:'  " Tag not found
-      let ignorecase = &ignorecase
-      set ignorecase
-      execute mode word
-      let &ignorecase = ignorecase
-    else
-      " Repeat to give error
-      execute mode word
-    endif
-  endif
-endfunction
+" Section: Abbrev {{{1
+"
+if exists("g:ada_abbrev")
+   iabbrev ret	return
+   iabbrev proc procedure
+   iabbrev pack package
+   iabbrev func function
+endif
 
+" Section: Commands, Mapping, Menus {{{1
+"
+call ada#Map_Popup (
+   \ 'Tag.List',
+   \  'l',
+   \ 'call ada#List_Tag ()')
+call ada#Map_Popup (
+   \'Tag.Jump',
+   \'j',
+   \'call ada#Jump_Tag ()')
+call ada#Map_Menu (
+   \'Tag.Create File',
+   \':AdaTagFile',
+   \'call ada#Create_Tags (''file'')')
+call ada#Map_Menu (
+   \'Tag.Create Dir',
+   \':AdaTagDir',
+   \'call ada#Create_Tags (''dir'')')
 
-" Word completion (^N/^R/^X^]) - force '.' inclusion
-function! s:AdaCompletion(cmd)
-  set iskeyword+=46
-  return a:cmd . "\<C-R>=<SNR>" . s:id . "_AdaCompletionEnd()\<CR>"
-endfunction
-function! s:AdaCompletionEnd()
-  set iskeyword-=46
-  return ''
-endfunction
+call ada#Map_Menu (
+   \'Highlight.Toggle Space Errors',
+   \ ':AdaSpaces',
+   \'call ada#Switch_Syntax_Option (''space_errors'')')
+call ada#Map_Menu (
+   \'Highlight.Toggle Lines Errors',
+   \ ':AdaLines',
+   \'call ada#Switch_Syntax_Option (''line_errors'')')
+call ada#Map_Menu (
+   \'Highlight.Toggle Rainbow Color',
+   \ ':AdaRainbow',
+   \'call ada#Switch_Syntax_Option (''rainbow_color'')')
+call ada#Map_Menu (
+   \'Highlight.Toggle Standard Types',
+   \ ':AdaTypes',
+   \'call ada#Switch_Syntax_Option (''standard_types'')')
 
-
-" Backspace at end of line after auto-inserted commentstring '-- ' wipes it
-function! s:AdaInsertBackspace()
-  let line = getline('.')
-  if col('.') > strlen(line) && match(line,'-- $') != -1 && match(&comments,'--') != -1
-    return "\<bs>\<bs>\<bs>"
-  else
-    return "\<bs>"
-  endif
-endfunction
-
-
+" 1}}}
 " Reset cpoptions
 let &cpoptions = s:cpoptions
 unlet s:cpoptions
 
-" vim: sts=2 sw=2 :
+finish " 1}}}
+
+"------------------------------------------------------------------------------
+"   Copyright (C) 2006	Martin Krischik
+"
+"   Vim is Charityware - see ":help license" or uganda.txt for licence details.
+"------------------------------------------------------------------------------
+" vim: textwidth=78 nowrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+" vim: foldmethod=marker

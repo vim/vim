@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.0.  Last change: 2006 Apr 24
+*version5.txt*  For Vim version 7.1a.  Last change: 2006 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1865,7 +1865,7 @@ For ":syntax keyword" the "transparent" option did work, although not
 mentioned in the help.  But synID() returned wrong name.
 
 "gqG" in a file with one-word-per-line (e.g. a dictionary) was very slow and
-not interruptable.
+not interruptible.
 
 "gq" operator inserted screen lines in the wrong situation.  Now screen
 lines are inserted or deleted when this speeds up displaying.
@@ -2870,7 +2870,7 @@ backspace key.  "\<Del>" produces 0x7f.
 
 The shell syntax didn't contain a "syn sync maxlines" setting.  In a long file
 without recognizable items, syncing took so long it looked like Vim hangs.
-Added a maxlines setting, and made syncing interruptable.
+Added a maxlines setting, and made syncing interruptible.
 
 The "gs" command didn't flush output before waiting.
 
@@ -7578,7 +7578,7 @@ Fixed compiling under NeXT. (Jeroen C.M. Goudswaard)
 
 optwin.vim gave an error when used in Vi compatible mode ('cpo' contains 'C').
 
-Tcl interpreter: "buffer" command didn't check for presense of an argument.
+Tcl interpreter: "buffer" command didn't check for presence of an argument.
 (Dave Bodenstab)
 
 dosinst.c: Added checks for too long file name.

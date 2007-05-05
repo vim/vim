@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	T2 / ROCK Linux .desc
 " Maintainer:	René Rebe <rene@exactcode.de>, Piotr Esden-Tempski <esden@rocklinux.org>
-" Last Change:	2006 Mar 30
+" Last Change:	2006 Aug 14
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -14,7 +14,7 @@ endif
 " syntax definitions
 
 setl iskeyword+=-
-syn keyword descFlag DIETLIBC KAFFE JAIL FPIC-QUIRK NO-LIBTOOL-QUIRK AUTOMAKE-QUIRK NO-AS-NEEDED NO-SSP contained
+syn keyword descFlag DIETLIBC KAFFE JAIL NOPARALLEL FPIC-QUIRK LIBTOOL-WUIRK NO-LIBTOOL-FIX AUTOMAKE-QUIRK NO-AS-NEEDED NO-SSP KERNEL INIT LIBC CC CXX F77 KCC contained
 syn keyword descLicense Unknown GPL LGPL FDL MIT BSD OpenSource Free-to-use Commercial contained
 
 " tags

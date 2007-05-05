@@ -1,27 +1,35 @@
-*** pt_PT.orig.aff	Wed Aug 31 20:05:16 2005
---- pt_PT.aff	Wed Aug 31 20:05:16 2005
+*** pt_PT.orig.aff	Mon Apr 16 15:20:13 2007
+--- pt_PT.aff	Mon Apr 16 15:52:13 2007
 ***************
 *** 3,4 ****
---- 3,24 ----
+--- 3,7 ----
   
 + FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
-+ 
-+ SOFOFROM abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZאבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏‗ÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ¿
-+ SOFOTO   ebctefghejklnnepkrstevvkesebctefghejklnnepkrstevvkeseeeeeeeceeeeeeeedneeeeeeeeeeepseeeeeeeeceeeeeeeedneeeeeeeeeeep?
-+ 
-+ MIDWORD	'
-+ 
-+ MAP 9
-+ MAP aאבגדהו
-+ MAP eטיךכ
-+ MAP iלםמן
-+ MAP oעףפץצ
-+ MAP uשתûü
-+ MAP nס
-+ MAP cח
-+ MAP yÿ‎
-+ MAP s‗
-+ 
-  PFX A Y 1
+  
+***************
+*** 1065,1078 ****
+  
+! MAP 11
+! MAP aב
+! MAP aד
+! MAP aג
+! MAP eי
+! MAP eך
+! MAP iם
+  MAP cח
+! MAP oף
+! MAP oפ
+! MAP oץ
+! MAP uת
+! 
+--- 1068,1075 ----
+  
+! MAP 6
+! MAP aבדגAÁÃÂ
+! MAP eיךEÉÊ
+! MAP iםIÍ
+  MAP cח
+! MAP oףץפOÓÕÔ
+! MAP uתüUÚÜ

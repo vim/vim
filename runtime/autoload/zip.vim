@@ -1,9 +1,9 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:			May 01, 2006
-" Version:		9
-" Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" License:		Vim License  (see vim's :help license)
+" Date:		Sep 29, 2006
+" Version:	12
+" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
+" License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -15,15 +15,28 @@
 "               of this software.
 
 " ---------------------------------------------------------------------
-" Initialization: {{{1
+" Load Once: {{{1
 let s:keepcpo= &cpo
 set cpo&vim
-if exists("g:loaded_zip")
+if &cp || exists("g:loaded_zip") || v:version < 700
  finish
 endif
 
-let g:loaded_zip     = "v9"
+let g:loaded_zip     = "v12"
 let s:zipfile_escape = ' ?&;\'
+let s:ERROR          = 2
+let s:WARNING        = 1
+let s:NOTE           = 0
+
+" ---------------------------------------------------------------------
+"  Global Values: {{{1
+if !exists("g:zip_shq")
+ if has("unix")
+  let g:zip_shq= "'"
+ else
+  let g:zip_shq= '"'
+ endif
+endif
 
 " ----------------
 "  Functions: {{{1
@@ -38,8 +51,9 @@ fun! zip#Browse(zipfile)
 
   " sanity checks
   if !executable("unzip")
+   redraw!
    echohl Error | echo "***error*** (zip#Browse) unzip not available on your system"
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("zip#Browse")
    return
@@ -47,8 +61,9 @@ fun! zip#Browse(zipfile)
   if !filereadable(a:zipfile)
    if a:zipfile !~# '^\a\+://'
     " if its an url, don't complain, let url-handlers such as vim do its thing
+    redraw!
     echohl Error | echo "***error*** (zip#Browse) File not readable<".a:zipfile.">" | echohl None
-    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
    let &report= repkeep
 "   call Dret("zip#Browse : file<".a:zipfile."> not readable")
@@ -75,11 +90,12 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-"  call Decho("exe silent r! unzip -l '".a:zipfile."'")
-  exe "silent r! unzip -l '".a:zipfile."'"
+"  call Decho("exe silent r! unzip -l ".s:QuoteFileDir(a:zipfile))
+  exe "silent r! unzip -l ".s:QuoteFileDir(a:zipfile)
   if v:shell_error != 0
+   redraw!
    echohl WarningMsg | echo "***warning*** (zip#Browse) ".a:zipfile." is not a zip file" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    silent %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
@@ -121,8 +137,9 @@ fun! s:ZipBrowseSelect()
    return
   endif
   if fname =~ '/$'
+   redraw!
    echohl Error | echo "***error*** (zip#Browse) Please specify a file, not a directory" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("ZipBrowseSelect")
    return
@@ -131,7 +148,7 @@ fun! s:ZipBrowseSelect()
 "  call Decho("fname<".fname.">")
 
   " get zipfile to the new-window
-  let zipfile= substitute(w:zipfile,'.zip$','','e')
+  let zipfile = w:zipfile
   let curfile= expand("%")
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("curfile<".curfile.">")
@@ -160,12 +177,15 @@ fun! zip#Read(fname,mode)
   else
    let zipfile = substitute(a:fname,'^.\{-}zipfile:\(.\{-}\)::[^\\].*$','\1','')
    let fname   = substitute(a:fname,'^.\{-}zipfile:.\{-}::\([^\\].*\)$','\1','')
+
+   " TODO Needs to predicated to using InfoZIP's unzip on Windows
+   let fname = substitute(fname, '[', '[[]', 'g')
   endif
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! unzip -p '".zipfile."' '".fname."'")
-  exe "silent r! unzip -p '".zipfile."' '".fname."'"
+"  call Decho("exe r! unzip -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+  exe "silent r! unzip -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname)
 
   " cleanup
   0d
@@ -184,15 +204,17 @@ fun! zip#Write(fname)
 
   " sanity checks
   if !executable("zip")
+   redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, your system doesn't appear to have the zip pgm" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("zip#Write")
    return
   endif
   if !exists("*mkdir")
+   redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, mkdir() doesn't work on your system" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("zip#Write")
    return
@@ -208,15 +230,11 @@ fun! zip#Write(fname)
   call mkdir(tmpdir,"p")
 
   " attempt to change to the indicated directory
-  try
-   exe "cd ".escape(tmpdir,' \')
-  catch /^Vim\%((\a\+)\)\=:E344/
-   echohl Error | echo "***error*** (zip#Write) cannot cd to temporary directory" | Echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+  if s:ChgDir(tmpdir,s:ERROR,"(zip#Write) cannot cd to temporary directory")
    let &report= repkeep
 "   call Dret("zip#Write")
    return
-  endtry
+  endif
 "  call Decho("current directory now: ".getcwd())
 
   " place temporary files under .../_ZIPVIM_/
@@ -255,21 +273,27 @@ fun! zip#Write(fname)
    let zipfile = substitute(system("cygpath ".zipfile),'\n','','e')
   endif
 
-"  call Decho("zip -u '".zipfile.".zip' '".fname."'")
-  call system("zip -u '".zipfile.".zip' '".fname."'")
+  " TODO Needs to predicated to using InfoZIP's unzip
+  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
+    let fname = substitute(fname, '[', '[[]', 'g')
+  endif
+
+"  call Decho("zip -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+  call system("zip -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
   if v:shell_error != 0
+   redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 
   elseif s:zipfile_{winnr()} =~ '^\a\+://'
    " support writing zipfiles across a network
    let netzipfile= s:zipfile_{winnr()}
-"   call Decho("handle writing <".zipfile.".zip> across network as <".netzipfile.">")
+"   call Decho("handle writing <".zipfile."> across network as <".netzipfile.">")
    1split|enew
    let binkeep= &binary
    let eikeep = &ei
    set binary ei=all
-   exe "e! ".zipfile.".zip"
+   exe "e! ".zipfile
    call netrw#NetWrite(netzipfile)
    let &ei     = eikeep
    let &binary = binkeep
@@ -280,7 +304,8 @@ fun! zip#Write(fname)
   " cleanup and restore current directory
   cd ..
   call s:Rmdir("_ZIPVIM_")
-  exe "cd ".escape(curdir,' \')
+  call s:ChgDir(curdir,s:WARNING,"(zip#Write) unable to return to ".curdir."!")
+  call s:Rmdir(tmpdir)
   setlocal nomod
 
   let &report= repkeep
@@ -288,17 +313,52 @@ fun! zip#Write(fname)
 endfun
 
 " ---------------------------------------------------------------------
+" QuoteFileDir: {{{2
+fun! s:QuoteFileDir(fname)
+"  call Dfunc("QuoteFileDir(fname<".a:fname.">)")
+"  call Dret("QuoteFileDir")
+  return g:zip_shq.a:fname.g:zip_shq
+endfun
+
+" ---------------------------------------------------------------------
+" ChgDir: {{{2
+fun! s:ChgDir(newdir,errlvl,errmsg)
+"  call Dfunc("ChgDir(newdir<".a:newdir."> errlvl=".a:errlvl."  errmsg<".a:errmsg.">)")
+
+  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
+   let newdir= escape(a:newdir,' ')
+  else
+   let newdir= escape(a:newdir,'\ ')
+  endif
+
+  try
+   exe "cd ".newdir
+  catch /^Vim\%((\a\+)\)\=:E344/
+   redraw!
+   if a:errlvl == s:NOTE
+    echo "***note*** ".a:errmsg
+   elseif a:errlvl == s:WARNING
+    echohl WarningMsg | echo "***warning*** ".a:errmsg | echohl NONE
+   elseif a:errlvl == s:ERROR
+    echohl Error | echo "***error*** ".a:errmsg | echohl NONE
+   endif
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call Dret("ChgDir 1")
+   return 1
+  endtry
+
+"  call Dret("ChgDir 0")
+  return 0
+endfun
+
+" ---------------------------------------------------------------------
 " Rmdir: {{{2
 fun! s:Rmdir(fname)
 "  call Dfunc("Rmdir(fname<".a:fname.">)")
-  if has("unix")
-   call system("/bin/rm -rf ".a:fname)
-  elseif has("win32") || has("win95") || has("win64") || has("win16")
-   if &shell =~? "sh$"
-    call system("/bin/rm -rf ".a:fname)
-   else
-    call system("del /S ".a:fname)
-   endif
+  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
+   call system("rmdir /S/Q ".s:QuoteFileDir(a:fname))
+  else
+   call system("/bin/rm -rf ".s:QuoteFileDir(a:fname))
   endif
 "  call Dret("Rmdir")
 endfun
@@ -307,4 +367,4 @@ endfun
 " Modelines And Restoration: {{{1
 let &cpo= s:keepcpo
 unlet s:keepcpo
-" vim:ts=8 fdm=marker
+"  vim:ts=8 fdm=marker

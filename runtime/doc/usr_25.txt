@@ -1,4 +1,4 @@
-*usr_25.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_25.txt*	For Vim version 7.1a.  Last change: 2006 Jun 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -122,7 +122,7 @@ whole file by typing this: >
 together.  A common mistake is to have a line with a space or Tab.  That's a
 blank line, but not an empty line.
 
-Vim is able format more than just plain text.  See |fo-table| for how to
+Vim is able to format more than just plain text.  See |fo-table| for how to
 change this.  See the 'joinspaces' option to change the number of spaces used
 after a full stop.
    It is possible to use an external program for formatting.  This is useful

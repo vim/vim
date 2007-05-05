@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.0.  Last change: 2006 May 01
+*pi_zip.txt*	For Vim version 7.1a.  Last change: 2006 Sep 29
 
 				+====================+
 				| Zip File Interface |
@@ -7,7 +7,7 @@
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
-	   Permission is hereby granted to use and distribute this code,
+           Permission is hereby granted to use and distribute this code,
 	   with or without modifications, provided that this copyright
 	   notice is copied with it. Like anything else that's free,
 	   zip.vim, zipPlugin.vim, and pi_zip.txt are provided *as is*
@@ -31,24 +31,34 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
    also write to the file.  Currently, one may not make a new file in
    zip archives via the plugin.
 
+   The zip program supports one option: >
+   	g:zip_shq
+<  which by default is a single quote under Unix (') and a double quote
+   under Windows (").  If you'd rather have no quotes, simply set
+   g:zip_shq to the empty string (let g:zip_shq= "") in your <.vimrc>.
+
 ==============================================================================
 3. History					*zip-history*
+   v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
+                      of "echo and prompt user"
+		    * g:zip_shq provided to allow for quoting control for the
+		      command being passed via :r! ... commands.
    v8 Apr 10, 2006 * Bram Moolenaar reported that he received an error message
-		     due to "Pattern not found: ^.*\%0c"; this was caused by
+                     due to "Pattern not found: ^.*\%0c"; this was caused by
 		     stridx finding a Name... at the beginning of the line;
 		     zip.vim tried 4,$s/^.*\%0c//, but that doesn't work.
 		     Fixed.
    v7 Mar 22, 2006 * escaped some characters that can cause filename handling
-		     problems.
+                     problems.
    v6 Dec 21, 2005 * writing to files not in directories caused problems -
-		     fixed (pointed out by Christian Robinson)
+                     fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed
    v3 Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
    v2 Sep 16, 2005 * silenced some commands (avoiding hit-enter prompt)
-		   * began testing under Windows; works thus far
+                   * began testing under Windows; works thus far
 		   * filetype detection fixed
       Nov 03, 2005 * handles writing zipfiles across a network using
-		     netrw#NetWrite()
+                     netrw#NetWrite()
    v1 Sep 15, 2005 * Initial release, had browsing, reading, and writing
 
 ==============================================================================

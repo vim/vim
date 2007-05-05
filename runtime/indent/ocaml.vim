@@ -4,7 +4,7 @@
 "		Mike Leary	     <leary@nwlink.com>
 "		Markus Mottl	     <markus.mottl@gmail.com>
 " URL:		http://www.ocaml.info/vim/indent/ocaml.vim
-" Last Change:	2006 Apr 30
+" Last Change:  2005 Jun 25 - Fixed multiple bugs due to 'else\nreturn ind' working
 "		2005 May 09 - Added an option to not indent OCaml-indents specially (MM)
 "		2005 Apr 11 - Fixed an indentation bug concerning "let" (MM)
 

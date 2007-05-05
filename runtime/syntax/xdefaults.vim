@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 "		Author and previous maintainer:
 "		Gautam H. Mudunuri <gmudunur@informatica.com>
-" Last Change:	Tue, 27 Apr 2004 14:54:59 CEST
+" Last Change:	Di, 09 Mai 2006 23:10:23 CEST
 " $Id$
 "
 " REFERENCES:
@@ -48,7 +48,7 @@ syn match   xdefaultsLineEnd	contained +\\n$+
 " COMMENTS
 
 " note, that the '!' must be at the very first position of the line
-syn match   xdefaultsComment "^!.*$"                     contains=xdefaultsTodo
+syn match   xdefaultsComment "^!.*$"                     contains=xdefaultsTodo,@Spell
 
 " lines starting with a '#' mark and which are not preprocessor
 " lines are skipped.  This is not part of the xrdb documentation.
@@ -56,7 +56,7 @@ syn match   xdefaultsComment "^!.*$"                     contains=xdefaultsTodo
 " having a look at xrdb.c:GetEntries()
 syn match   xdefaultsCommentH		"^#.*$"
 "syn region  xdefaultsComment start="^#"  end="$" keepend contains=ALL
-syn region  xdefaultsComment start="/\*" end="\*/"       contains=xdefaultsTodo
+syn region  xdefaultsComment start="/\*" end="\*/"       contains=xdefaultsTodo,@Spell
 
 syntax match xdefaultsCommentError	"\*/"
 

@@ -1,17 +1,16 @@
 " Vim syntax file
-" Language:	BIND 8.x configuration file
-" Maintainer:	glory hump <rnd@web-drive.ru>
-" Last change:	Mon May 21 04:51:01 SAMST 2001
-" Updated:	by Marcin Dalecki 2004-12-31
-" Filenames:	named.conf
-" URL:	http://rnd.web-drive.ru/vim/syntax/named.vim [DEFUNCT]
-" $Id$
+" Language:	BIND configuration file
+" Maintainer:	Nick Hibma <nick@van-laarhoven.org>
+" Last change:	2007-01-30
+" Filenames:	named.conf, rndc.conf
+" Location:	http://www.van-laarhoven.org/vim/syntax/named.vim
 "
-" NOTE
-"    it was not widely tested, i just tried it on my simple
-"    single-master-single-slave configuration. most syntax was borrowed
-"    directly from "BIND Configuration File Guide" without testing.
-
+" Previously maintained by glory hump <rnd@web-drive.ru> and updated by Marcin
+" Dalecki.
+"
+" This file could do with a lot of improvements, so comments are welcome.
+" Please submit the named.conf (segment) with any comments.
+"
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
 if version < 600
@@ -26,6 +25,10 @@ if version >= 600
   setlocal iskeyword=.,-,48-58,A-Z,a-z,_
 else
   set iskeyword=.,-,48-58,A-Z,a-z,_
+endif
+
+if version >= 600
+  syn sync match namedSync grouphere NONE "^(zone|controls|acl|key)"
 endif
 
 let s:save_cpo = &cpo
@@ -79,6 +82,11 @@ syn keyword	namedIntKeyword	contained unix nextgroup=namedString skipwhite
 syn keyword	namedIntKeyword	contained port perm owner group nextgroup=namedNumber,namedNotNumber skipwhite
 syn keyword	namedIntKeyword	contained allow nextgroup=namedIntSection skipwhite
 
+" + these keywords are contained within `update-policy' section only
+syn keyword	namedIntKeyword	contained grant nextgroup=namedString skipwhite
+syn keyword	namedIntKeyword	contained name self subdomain wildcard nextgroup=namedString skipwhite
+syn keyword	namedIntKeyword	TXT A PTR NS SOA A6 CNAME MX ANY skipwhite
+
 " --- options
 syn region	namedOptSection	contained start=+{+ end=+};+ contains=namedOption,namedCNOption,namedComment,namedParenError
 
@@ -101,9 +109,10 @@ syn keyword	namedOption	contained notify recursion rfc2308-type1
 syn keyword	namedOption	contained use-id-pool treat-cr-as-space
 \		nextgroup=namedBool,namedNotBool skipwhite
 syn keyword	namedOption	contained also-notify forwarders
-\		nextgroup=namedIntSection skipwhite
+\		nextgroup=namedIPlist skipwhite
 syn keyword	namedOption	contained forward check-names
-syn keyword	namedOption	contained allow-query allow-transfer allow-recursion	nextgroup=namedAML skipwhite
+syn keyword	namedOption	contained allow-query allow-transfer allow-recursion
+\		nextgroup=namedAML skipwhite
 syn keyword	namedOption	contained blackhole listen-on
 \		nextgroup=namedIntSection skipwhite
 syn keyword	namedOption	contained lame-ttl max-transfer-time-in
@@ -159,8 +168,10 @@ syn keyword	namedZoneType	contained master slave stub forward hint
 syn keyword	namedZoneOpt	contained masters forwarders
 \		nextgroup=namedIPlist skipwhite
 syn region	namedIPlist	contained start=+{+ end=+};+ contains=namedIPaddr,namedIPerror,namedParenError,namedComment
-syn match	namedZoneOpt	contained "\<allow-\(update\|query\|transfer\)"
+syn keyword	namedZoneOpt	contained allow-update allow-query allow-transfer
 \		nextgroup=namedAML skipwhite
+syn keyword	namedZoneOpt	contained update-policy
+\		nextgroup=namedIntSection skipwhite
 
 " --- boolean parameter
 syn match	namedNotBool	contained "[^ 	;]\+"
@@ -171,7 +182,7 @@ syn match	namedNotNumber	contained "[^ 	0-9;]\+"
 syn match	namedNumber	contained "\d\+"
 
 " --- address match list
-syn region	namedAML	contained start=+{+ end=+};+ contains=namedParenError,namedComment
+syn region	namedAML	contained start=+{+ end=+};+ contains=namedParenError,namedComment,namedString
 
 " --- IPs & Domains
 syn match	namedIPaddr	contained /\<[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{3};/he=e-1
@@ -215,6 +226,7 @@ if version >= 508 || !exists("did_named_syn_inits")
   HiLink namedQSKeywords	Type
   HiLink namedCNKeywords	Type
   HiLink namedLogCategory	Type
+  HiLink namedIPaddr	Number
   HiLink namedDomain	Identifier
   HiLink namedZoneOpt	namedKeyword
   HiLink namedZoneType	Type

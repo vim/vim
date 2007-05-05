@@ -1,6 +1,6 @@
 " Vim color file
 " Maintainer:	Thorsten Maerz <info@netztorte.de>
-" Last Change:	2001 Jul 23
+" Last Change:	2006 Dec 07
 " grey on black
 " optimized for TFT panels
 
@@ -18,7 +18,7 @@ let g:colors_name = "torte"
 " GUI
 highlight Normal     guifg=Grey80	guibg=Black
 highlight Search     guifg=Black	guibg=Red	gui=bold
-highlight Visual     guifg=Grey25			gui=bold
+highlight Visual     guifg=#404040			gui=bold
 highlight Cursor     guifg=Black	guibg=Green	gui=bold
 highlight Special    guifg=Orange
 highlight Comment    guifg=#80a0ff
@@ -42,7 +42,7 @@ if has("unix")
   if v:version<600
     highlight Normal  ctermfg=Grey	ctermbg=Black	cterm=NONE	guifg=Grey80      guibg=Black	gui=NONE
     highlight Search  ctermfg=Black	ctermbg=Red	cterm=bold	guifg=Black       guibg=Red	gui=bold
-    highlight Visual  ctermfg=Black	ctermbg=yellow	cterm=bold	guifg=Grey25			gui=bold
+    highlight Visual  ctermfg=Black	ctermbg=yellow	cterm=bold	guifg=#404040			gui=bold
     highlight Special ctermfg=LightBlue			cterm=NONE	guifg=LightBlue			gui=NONE
     highlight Comment ctermfg=Cyan			cterm=NONE	guifg=LightBlue			gui=NONE
   endif

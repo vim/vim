@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.0.  Last change: 2006 Apr 25
+*digraph.txt*   For Vim version 7.1a.  Last change: 2006 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -107,13 +107,12 @@ If you accidentally typed an 'a' that should be an 'e', you will type 'a' <BS>
 this, you will have to type <BS> e again.  To avoid this don't set the
 'digraph' option and use CTRL-K to enter digraphs.
 
-You may have problems using Vim with characters which have an ASCII value
-above 128.  For example: You insert ue (u-umlaut) and the editor echoes \334
-in Insert mode.  After leaving the Insert mode everything is fine.  Note that
-fmt removes all characters with ASCII codes above 128 from the text being
-formatted.  On some Unix systems this means you have to define the
-environment-variable LC_CTYPE.  If you are using csh, then put the following
-line in your .cshrc: >
+You may have problems using Vim with characters which have a value above 128.
+For example: You insert ue (u-umlaut) and the editor echoes \334 in Insert
+mode.  After leaving the Insert mode everything is fine.  Note that fmt
+removes all characters with a value above 128 from the text being formatted.
+On some Unix systems this means you have to define the environment-variable
+LC_CTYPE.  If you are using csh, then put the following line in your .cshrc: >
 	setenv LC_CTYPE iso_8859_1
 
 ==============================================================================

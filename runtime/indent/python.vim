@@ -2,7 +2,7 @@
 " Language:		Python
 " Maintainer:		Bram Moolenaar <Bram@vim.org>
 " Original Author:	David Bustos <bustos@caltech.edu>
-" Last Change:		2006 Apr 30
+" Last Change:		2006 Jun 18
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -136,7 +136,7 @@ function GetPythonIndent(lnum)
   endif
 
   " If the previous line was a stop-execution statement...
-  if getline(plnum) =~ '^\s*\(break\|continue\|raise\|return\)\>'
+  if getline(plnum) =~ '^\s*\(break\|continue\|raise\|return\|pass\)\>'
     " See if the user has already dedented
     if indent(a:lnum) > indent(plnum) - &sw
       " If not, recommend one dedent

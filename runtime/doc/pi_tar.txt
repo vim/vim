@@ -1,8 +1,8 @@
-*pi_tar.txt*	For Vim version 7.0.  Last change: 2006 May 02
+*pi_tar.txt*	For Vim version 7.1a.  Last change: 2006 Sep 29
 
-		       +====================+
-		       | Tar File Interface |
-		       +====================+
+       	       	       +====================+
+       	       	       | Tar File Interface |
+       	       	       +====================+
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
@@ -31,35 +31,37 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
 
    These options are variables that one may change, typically in one's
    <.vimrc> file.
-			 Default
-   Variable		  Value   Explanation
+                         Default
+   Variable               Value   Explanation
    *g:tar_browseoptions*  "Ptf"   used to get a list of contents
-   *g:tar_readoptions*	  "OPxf"  used to extract a file from a tarball
-   *g:tar_cmd*		  "tar"   the name of the tar program
-   *g:tar_writeoptions*   "uf"	  used to update/replace a file
+   *g:tar_readoptions*    "OPxf"  used to extract a file from a tarball
+   *g:tar_cmd*            "tar"   the name of the tar program
+   *g:tar_writeoptions*   "uf"    used to update/replace a file
 
 
 ==============================================================================
 4. History						*tar-history*
 
+   v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
+                      of "echo and prompt user"
    v9 May 02, 2006 * improved detection of masquerading as tar file
    v8 May 02, 2006 * allows editing of files that merely masquerade as tar
-		     files
+                     files
    v7 Mar 22, 2006 * work on making tar plugin work across network
       Mar 27, 2006 * g:tar_cmd now available for users to change the name
-		     of the tar program to be used.  By default, of course,
+                     of the tar program to be used.  By default, of course,
 		     its "tar".
    v6 Dec 21, 2005 * writing to files not in directories caused problems -
-		     fixed (pointed out by Christian Robinson)
+                     fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed
    v3 Sep 16, 2005 * handles writing files in an archive back to the
-		     archive
+                     archive
       Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
       Oct 18, 2005 * handles writing to compressed archives
       Nov 03, 2005 * handles writing tarfiles across a network using
-		     netrw#NetWrite()
-   v2		   * converted to use Vim7's new autoload feature by
-		     Bram Moolenaar
+                     netrw#NetWrite()
+   v2              * converted to use Vim7's new autoload feature by
+                     Bram Moolenaar
    v1 (original)   * Michael Toren (see http://michael.toren.net/code/)
 
 ==============================================================================

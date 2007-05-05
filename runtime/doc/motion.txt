@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.0.  Last change: 2006 Apr 30
+*motion.txt*    For Vim version 7.1a.  Last change: 2006 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -169,15 +169,15 @@ l		or					*l*
 
 							*0*
 0			To the first character of the line.  |exclusive|
-			motion.  When moving up or down, stay in same screen
-			column (if possible).
+			motion.
 
 							*<Home>* *<kHome>*
 <Home>			To the first character of the line.  |exclusive|
-			motion.  When moving up or down, stay in same text
-			column (if possible).  Works like "1|", which differs
-			from "0" when the line starts with a <Tab>.  {not in
-			Vi}
+			motion.  When moving up or down next, stay in same
+			TEXT column (if possible).  Most other commands stay
+			in the same SCREEN column.  <Home> works like "1|",
+			which differs from "0" when the line starts with a
+			<Tab>.  {not in Vi}
 
 							*^*
 ^			To the first non-blank character of the line.
@@ -752,11 +752,11 @@ m[  or  m]		Set the |'[| or |']| mark.  Useful when an operator is
 			be omitted.
 
 						*'* *'a* *`* *`a*
-'{a-z}  `{a-z}		Jump to the mark {a-z}.
+'{a-z}  `{a-z}		Jump to the mark {a-z} in the current buffer.
 
 						*'A* *'0* *`A* *`0*
-'{A-Z0-9}  `{A-Z0-9}	To the mark {A-Z0-9} in the correct file (not a motion
-			command when in another file).  {not in Vi}
+'{A-Z0-9}  `{A-Z0-9}	To the mark {A-Z0-9} in the file where it was set (not
+			a motion command when in another file).  {not in Vi}
 
 						*g'* *g'a* *g`* *g`a*
 g'{mark}  g`{mark}

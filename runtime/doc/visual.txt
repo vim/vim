@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.0.  Last change: 2006 Apr 24
+*visual.txt*    For Vim version 7.1a.  Last change: 2006 Sep 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -175,7 +175,7 @@ stops when a motion command is used that does not move straight up or down.
 
 For moving the end of the block many commands can be used, but you cannot
 use Ex commands, commands that make changes or abandon the file.  Commands
-(starting with) ".pPiIaAO&", CTRL-^, "Z", CTRL-], CTRL-T, CTRL-R, CTRL-I
+(starting with) ".", "&", CTRL-^, "Z", CTRL-], CTRL-T, CTRL-R, CTRL-I
 and CTRL-O cause a beep and Visual mode continues.
 
 When switching to another window on the same buffer, the cursor position in

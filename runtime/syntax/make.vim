@@ -2,7 +2,7 @@
 " Language:	Makefile
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/make.vim
-" Last Change:	2006 Apr 5
+" Last Change:	2007 Apr 30
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -63,14 +63,14 @@ syn match makeCmdNextLine	"\\\n."he=e-1 contained
 
 
 " Statements / Functions (GNU make)
-syn match makeStatement contained "(\(subst\|addprefix\|addsuffix\|basename\|call\|dir\|error\|filter-out\|filter\|findstring\|firstword\|foreach\|if\|join\|notdir\|origin\|patsubst\|shell\|sort\|strip\|suffix\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
+syn match makeStatement contained "(\(subst\|addprefix\|addsuffix\|basename\|call\|dir\|error\|eval\|filter-out\|filter\|findstring\|firstword\|foreach\|if\|join\|notdir\|origin\|patsubst\|shell\|sort\|strip\|suffix\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
 
 " Comment
 if exists("make_microsoft")
-   syn match  makeComment "#.*" contains=makeTodo
+   syn match  makeComment "#.*" contains=@Spell,makeTodo
 elseif !exists("make_no_comments")
-   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=makeTodo
-   syn match   makeComment	"#$"
+   syn region  makeComment	start="#" end="^$" end="[^\\]$" keepend contains=@Spell,makeTodo
+   syn match   makeComment	"#$" contains=@Spell
 endif
 syn keyword makeTodo TODO FIXME XXX contained
 

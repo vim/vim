@@ -35,7 +35,7 @@ da_DK.aff da_DK.dic: {buildcheck=}
         :fetch da_DK.zip
         :sys $UNZIP da_DK.zip
         :delete da_DK.zip
-        :delete contributors COPYING Makefile da_DK.excluded
+        :delete COPYING Makefile da_DK.excluded
         @if not os.path.exists('da_DK.orig.aff'):
             :copy da_DK.aff da_DK.orig.aff
         @if not os.path.exists('da_DK.orig.dic'):

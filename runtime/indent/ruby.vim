@@ -217,7 +217,11 @@ function GetRubyIndent()
     call cursor(v:lnum, col)
     let bs = strpart('(){}[]', stridx(')}]', line[col - 1]) * 2, 2)
     if searchpair(escape(bs[0], '\['), '', bs[1], 'bW', s:skip_expr) > 0
-      let ind = line[col-1]==')' ? virtcol('.')-1 : indent(s:GetMSL(line('.')))
+      if line[col-1]==')' && col('.') != col('$') - 1
+	let ind = virtcol('.')-1
+      else
+	let ind = indent(s:GetMSL(line('.')))
+      endif
     endif
     return ind
   endif
@@ -274,7 +278,11 @@ function GetRubyIndent()
   if line =~ '[[({]'
     let counts = s:LineHasOpeningBrackets(lnum)
     if counts[0] == '1' && searchpair('(', '', ')', 'bW', s:skip_expr) > 0
-      return virtcol('.')
+      if col('.') + 1 == col('$')
+	return ind + &sw
+      else
+	return virtcol('.')
+      endif
     elseif counts[1] == '1' || counts[2] == '1'
       return ind + &sw
     else
@@ -361,3 +369,5 @@ endfunction
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+" vim:set sw=2 sts=2 ts=8 noet ff=unix:

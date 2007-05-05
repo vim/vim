@@ -4,7 +4,7 @@ This file explains how to create and maintain po files using
 gnu-gettext.win32, a Windows port of gettext by Franco Bez
 <franco.bez@gmx.de>.  You can find it at:
 
-	http://home.a-city.de/franco.bez/gettext/gettext_win32_en.html
+	http://people.freenet.de/franco.bez/gettext/gettext_win32_en.html
 
 First read the README.txt file in this directory for general remarks on
 translating Vim messages.
@@ -12,18 +12,32 @@ translating Vim messages.
 
 SETUP
 
-Set the enviroment variable LANGUAGE to the language code for the language you
-are translating Vim messages to.  Languagde codes are typically two characters
-and you can find a list of them at:
+Set the environment variable LANGUAGE to the language code for the language
+you are translating Vim messages to.  Language codes are typically two
+characters and you can find a list of them at:
 
 	http://www.geocities.com/click2speak/languages.html
+
+Another possibility is to use the gnuwin32 port of gettext. This is
+recommended especially if you use already gnuwin32 tools to gunzip, bunzip,
+patch etc. these files. You find the gnuwin32 version of gettext here:
+
+        http://gnuwin32.sourceforge.net/packages/gettext.htm
+
+Yet another very strait forward way is to get the sources of gettext from
+
+        http://www.gnu.org/software/gettext/gettext.html
+
+and build your own version of these tools. The documentation states that this
+should be possible with MSVC4.0, MSVC5.0, MSVC6.0 or MSVC7.0, but you can
+build it even successfully with MSVC8.0.
 
 The LANGUAGE environment variable can be set from the command line, by adding
 a line to your autoexec.bat file, or by defining a user variable from the
 Advanced tab in the System control panel.
 
 Next, edit Make_mvc.mak so that GETTEXT_PATH points the binary directory of
-the intallation.
+the installation.
 
 
 CREATING A NEW TRANSLATION
@@ -43,7 +57,7 @@ highlighting turned on then untranslated messages will stand out more easily.
 You will also need to edit the file names in the comments in the .po file.
 You need to remove the absolute directory specification (which has the form
 c:\vim61\src\).  You can do this in Vim with the following command with the
-appropriate directory specfication for where you have installed the Vim
+appropriate directory specification for where you have installed the Vim
 source:
 
 	%s/c:\\vim61\\src\\//g
@@ -57,7 +71,7 @@ with the following command:
 
 	nmake -f Make_mvc.mak xx.po
 
-where xx is the langauge code for the language needing translations.  The
+where xx is the language code for the language needing translations.  The
 original .po file is copied to xx.po.orig.
 
 

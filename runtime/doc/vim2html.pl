@@ -182,7 +182,6 @@ EOF
 }
 
 
-
 sub writeCSS
 {
 	open( CSS, ">vim-stylesheet.css"  ) || die "Couldn't write stylesheet: $!\n";

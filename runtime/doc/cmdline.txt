@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.0.  Last change: 2006 Apr 30
+*cmdline.txt*   For Vim version 7.1a.  Last change: 2006 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -300,6 +300,10 @@ CTRL-^		Toggle the use of language |:lmap| mappings and/or Input
 		switching it on with CTRL-^, the new state is not used again
 		for the next command or Search pattern.
 		{not in Vi}
+
+						*c_CTRL-]*
+CTRL-]		Trigger abbreviation, without inserting a character.  {not in
+		Vi}
 
 For Emacs-style editing on the command-line see |emacs-keys|.
 

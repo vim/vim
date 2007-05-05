@@ -1,15 +1,45 @@
 " Vim syntax file
-" Language:     FoxPro for DOS v2.x
-" Maintainer:   Powing Tse <powing@hkem.com>
-" Last Change:  06 September 2001
+" Filename:     foxpro.vim
+" Version:      1.0
+" Language:     FoxPro for DOS/UNIX v2.6
+" Maintainer:   Bill W. Smith, Jr. <donal@brewich.com>
+" Last Change:  15 May 2006
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
+"     This file replaces the FoxPro for DOS v2.x syntax file 
+" maintained by Powing Tse <powing@mcmug.org>
+" 
+" Change Log:	added support for FoxPro Codebook highlighting
+" 		corrected highlighting of comments that do NOT start in col 1
+" 		corrected highlighting of comments at end of line (&&)
+" 
+" 
 if version < 600
     syntax clear
 elseif exists("b:current_syntax")
     finish
 endif
+
+" FoxPro Codebook Naming Conventions
+syn match foxproCBConst "\<[c][A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBVar "\<[lgrt][acndlmf][A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBField "\<[a-z0-9]*\.[A-Za-z0-9_]*\>"
+" PROPER CodeBook field names start with the data type and do NOT have _
+syn match foxproCBField "\<[A-Za-z0-9]*\.[acndlm][A-Z][A-Za-z0-9]*\>"
+syn match foxproCBWin "\<w[rbcm][A-Z][A-Za-z0-9_]*\>"
+" CodeBook 2.0 defined objects as follows
+" This uses the hotkey from the screen builder as the second character
+syn match foxproCBObject "\<[lgr][bfthnkoli][A-Z][A-Za-z0-9_]*\>"
+" A later version added the following conventions for objects
+syn match foxproCBObject "\<box[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<fld[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<txt[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<phb[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<rdo[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<chk[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<pop[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<lst[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<inv[A-Z][A-Za-z0-9_]*\>"
+syn match foxproCBObject "\<mnu[A-Z][A-Za-z0-9_]*\>"
 
 syntax case ignore
 
@@ -685,6 +715,11 @@ if version >= 508 || !exists("did_foxpro_syn_inits")
     HiLink foxproFloat    Float
     HiLink foxproComment  Comment
     HiLink foxproParenErr Error
+    HiLink foxproCBConst  PreProc
+    HiLink foxproCBField  Special
+    HiLink foxproCBVar    Identifier
+    HiLink foxproCBWin    Special
+    HiLink foxproCBObject Identifier
 
     delcommand HiLink
 endif

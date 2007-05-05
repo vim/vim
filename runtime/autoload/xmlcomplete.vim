@@ -1,7 +1,12 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 30
+" Last Change:	2006 Jul 18
+" Version: 1.8
+"
+" Changelog:
+" 1.8 - 2006 Jul 18
+"       - allow for closing of xml tags even when data file isn't available
 
 " This function will create Dictionary with users namespace strings and values
 " canonical (system) names of data files.  Names should be lowercase,
@@ -80,7 +85,7 @@ function! xmlcomplete#CompleteTags(findstart, base)
 			let context_line = getline(curline-i)
 			if context_line =~ '<[^>]*$'
 				" Yep, this is this line
-				let context_lines = getline(curline-i, curline)
+				let context_lines = getline(curline-i, curline-1) + [b:compl_context]
 				let b:compl_context = join(context_lines, ' ')
 				break
 			elseif context_line =~ '>[^<]*$' || i == curline
@@ -106,10 +111,6 @@ function! xmlcomplete#CompleteTags(findstart, base)
     return start
 
   else
-	" There is no connection of namespace and data file. Abandon action
-	if !exists("g:xmldata_connection") || g:xmldata_connection == {}
-		return []
-	endif
 	" Initialize base return lists
     let res = []
     let res2 = []
@@ -119,6 +120,17 @@ function! xmlcomplete#CompleteTags(findstart, base)
 	endif
 	let context = matchstr(b:compl_context, '^<\zs.*')
 	unlet! b:compl_context
+	" There is no connection of namespace and data file.
+	if !exists("g:xmldata_connection") || g:xmldata_connection == {}
+		" There is still possibility we may do something - eg. close tag
+		let b:unaryTagsStack = "base meta link hr br param img area input col"
+		if context =~ '^\/'
+			let opentag = xmlcomplete#GetLastOpenTag("b:unaryTagsStack")
+			return [opentag.">"]
+		else
+			return []
+		endif
+	endif
 
 	" Make entities completion
 	if exists("b:entitiescompl")

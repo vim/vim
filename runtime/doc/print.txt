@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.0.  Last change: 2006 Apr 30
+*print.txt*     For Vim version 7.1a.  Last change: 2007 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -427,7 +427,7 @@ There are currently a number of limitations with PostScript printing:
 								*E618* *E619*
 To use your own print character encoding when printing 8-bit character data
 you need to define your own PostScript font encoding vector.  Details on how
-to to define a font encoding vector is beyond the scope of this help file, but
+to define a font encoding vector is beyond the scope of this help file, but
 you can find details in the PostScript Language Reference Manual, 3rd Edition,
 published by Addison-Wesley and available in PDF form at
 http://www.adobe.com/.  The following describes what you need to do for VIM to

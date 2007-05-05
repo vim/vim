@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Make
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2004 Dec 17
+" Last Change:	2006 Jun 17
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -9,7 +9,7 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
-let b:undo_ftplugin = "setl et< fo< com< commentstring<"
+let b:undo_ftplugin = "setl et< sts< fo< com< cms< inc<"
 
 " Make sure a hard tab is used, required for most make programs
 setlocal noexpandtab softtabstop=0

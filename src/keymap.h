@@ -229,7 +229,7 @@ enum key_extra
     , KE_S_XF4
 
     , KE_MOUSEDOWN	/* scroll wheel pseudo-button Down */
-    , KE_MOUSEUP		/* scroll wheel pseudo-button Up */
+    , KE_MOUSEUP	/* scroll wheel pseudo-button Up */
 
     , KE_KINS		/* keypad Insert key */
     , KE_KDEL		/* keypad Delete key */

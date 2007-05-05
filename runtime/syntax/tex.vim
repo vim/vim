@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Apr 18, 2006
-" Version:	35
+" Last Change:	Feb 27, 2007
+" Version:	37
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -261,25 +261,25 @@ syn match texSpaceCodeChar    "`\\\=.\(\^.\)\==\(\d\|\"\x\{1,6}\|`.\)"	contained
 
 " Sections, subsections, etc: {{{1
 if g:tex_fold_enabled && has("folding")
- syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	fold keepend contains=@texFoldGroup,@texDocGroup,@Spell
- syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		fold keepend contains=@texFoldGroup,@texPartGroup,@Spell
- syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	fold keepend contains=@texFoldGroup,@texChapterGroup,@Spell
- syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	fold keepend contains=@texFoldGroup,@texSectionGroup,@Spell
- syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	fold keepend contains=@texFoldGroup,@texSubSectionGroup,@Spell
- syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	fold keepend contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
- syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	fold keepend contains=@texFoldGroup,@texParaGroup,@Spell
- syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	fold keepend contains=@texFoldGroup,@Spell
+ syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	fold contains=@texFoldGroup,@texDocGroup,@Spell
+ syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		fold contains=@texFoldGroup,@texPartGroup,@Spell
+ syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	fold contains=@texFoldGroup,@texChapterGroup,@Spell
+ syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	fold contains=@texFoldGroup,@texSectionGroup,@Spell
+ syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	fold contains=@texFoldGroup,@texSubSectionGroup,@Spell
+ syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	fold contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
+ syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	fold contains=@texFoldGroup,@texParaGroup,@Spell
+ syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	fold contains=@texFoldGroup,@Spell
  syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'		fold contains=@texFoldGroup,@Spell
  syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	fold contains=@texFoldGroup,@Spell
 else
- syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	keepend contains=@texFoldGroup,@texDocGroup,@Spell
- syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		keepend contains=@texFoldGroup,@texPartGroup,@Spell
- syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	keepend contains=@texFoldGroup,@texChapterGroup,@Spell
- syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	keepend contains=@texFoldGroup,@texSectionGroup,@Spell
- syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	keepend contains=@texFoldGroup,@texSubSectionGroup,@Spell
- syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	keepend contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
- syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	keepend contains=@texFoldGroup,@texParaGroup,@Spell
- syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	keepend contains=@texFoldGroup,@Spell
+ syn region texDocZone			matchgroup=texSection start='\\begin\s*{\s*document\s*}' end='\\end\s*{\s*document\s*}'	contains=@texFoldGroup,@texDocGroup,@Spell
+ syn region texPartZone			matchgroup=texSection start='\\part\>'			 end='\n\ze\s*\\part\>'		contains=@texFoldGroup,@texPartGroup,@Spell
+ syn region texChapterZone		matchgroup=texSection start='\\chapter\>'		 end='\n\ze\s*\\chapter\>'	contains=@texFoldGroup,@texChapterGroup,@Spell
+ syn region texSectionZone		matchgroup=texSection start='\\section\>'		 end='\n\ze\s*\\section\>'	contains=@texFoldGroup,@texSectionGroup,@Spell
+ syn region texSubSectionZone		matchgroup=texSection start='\\subsection\>'		 end='\n\ze\s*\\subsection\>'	contains=@texFoldGroup,@texSubSectionGroup,@Spell
+ syn region texSubSubSectionZone	matchgroup=texSection start='\\subsubsection\>'		end='\n\ze\s*\\subsubsection\>'	contains=@texFoldGroup,@texSubSubSectionGroup,@Spell
+ syn region texParaZone			matchgroup=texSection start='\\paragraph\>'		 end='\n\ze\s*\\paragraph\>'	contains=@texFoldGroup,@texParaGroup,@Spell
+ syn region texSubParaZone		matchgroup=texSection start='\\subparagraph\>'		 end='\n\ze\s*\\subparagraph\>'	contains=@texFoldGroup,@Spell
  syn region texTitle			matchgroup=texSection start='\\\%(author\|title\)\>\s*{' end='}'			contains=@texFoldGroup,@Spell
  syn region texAbstract			matchgroup=texSection start='\\begin\s*{\s*abstract\s*}' end='\\end\s*{\s*abstract\s*}'	contains=@texFoldGroup,@Spell
 endif
@@ -442,7 +442,7 @@ syn match texDefParms  contained		"#[^{]*"	contains=texDefParm	nextgroup=texCmdB
 syn match  texDefParm  contained		"#\d\+"
 
 " TeX Lengths: {{{1
-syn match  texLength		"\<\d\+\(\.\d\+\)\=\s*\(true\)\=\s*\(bp\|cc\|cm\|dd\|em\|ex\|in\|mm\|pc\|pt\|sp\)\>"
+syn match  texLength		"\<\d\+\([.,]\d\+\)\=\s*\(true\)\=\s*\(bp\|cc\|cm\|dd\|em\|ex\|in\|mm\|pc\|pt\|sp\)\>"
 
 " TeX String Delimiters: {{{1
 syn match texString		"\(``\|''\|,,\)"

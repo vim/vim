@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.0.  Last change: 2006 Apr 24
+*uganda.txt*    For Vim version 7.1a.  Last change: 2007 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,6 +13,7 @@ below or visit the ICCF web site, available at these URLs:
 
 	http://iccf-holland.org/
 	http://www.vim.org/iccf/
+	http://www.iccf.nl/
 
 You can also sponsor the development of Vim.  Vim sponsors can vote for
 features.  See |sponsor|.  The money goes to Uganda anyway.
@@ -211,21 +212,12 @@ Sending money:						*iccf-donations*
 Check the ICCF web site for the latest information!  See |iccf| for the URL.
 
 
-USA:		The methods mentioned below can be used.  Alternatively, you
-		can send a check to the Nehemiah Group Outreach Society
-		(NGOS).  This will reduce banking costs and you can get an IRS
-		tax receipt.  The NGOS forwards the funds directly to the
-		Kibaale project in Uganda.  Checks must be made payable to
-		NGOS but please note on the check "donation Kibaale".  Mail
-		checks to:
-			NGOS
-			P.O. Box 50862
-			Indianapolis, IN 45250
-		Questions regarding the Nehemiah Group Outreach Society (NGOS)
-		should be directed to: Ross deMerchant, Executive Director -
-		r.demerchant AT sbcglobal DOT net.
-		For sponsoring a child contact KCF in Canada (see below) and
-		send the check to NGOS in Indianapolis.
+USA:		The methods mentioned below can be used.
+		Sending a check to the Nehemiah Group Outreach Society (NGOS)
+		is no longer possible, unfortunately. We are looking for
+		another way to get you an IRS tax receipt. 
+		For sponsoring a child contact KCF in Canada (see below). US
+		checks can be send to them to lower banking costs.
 
 Canada:		Contact Kibaale Children's Fund (KCF) in Surrey, Canada.  They
 		take care of the Canadian sponsors for the children in
@@ -264,7 +256,7 @@ Europe:		Use a bank transfer if possible.  Your bank should have a form
 Credit Card:	You can use PayPal to send money with a Credit card.  This is
 		the most widely used Internet based payment system.  It's
 		really simple to use.  Use this link to find more info:
-		    https://www.paypal.com/affil/pal=Bram%40iccf-holland.org
+		    https://www.paypal.com/en_US/mrb/pal=XAC62PML3GF8Q
 		The e-mail address for sending the money to is:
 		    Bram@iccf-holland.org
 		For amounts above 400 Euro ($500) sending a check is

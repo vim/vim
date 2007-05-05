@@ -1,16 +1,34 @@
 "pythoncomplete.vim - Omni Completion for python
 " Maintainer: Aaron Griffin <aaronmgriffin@gmail.com>
-" Version: 0.5
-" Last Updated: 19 April 2006
+" Version: 0.7
+" Last Updated: 19 Oct 2006
 "
-" Yeah, I skipped a version number - 0.4 was never public.
-"  It was a bugfix version on top of 0.3.  This is a complete
-"  rewrite.
-"
+" Changes
 " TODO:
 " User defined docstrings aren't handled right...
 " 'info' item output can use some formatting work
 " Add an "unsafe eval" mode, to allow for return type evaluation
+" Complete basic syntax along with import statements
+"   i.e. "import url<c-x,c-o>"
+" Continue parsing on invalid line??
+"
+" v 0.7
+"   * Fixed function list sorting (_ and __ at the bottom)
+"   * Removed newline removal from docs.  It appears vim handles these better in
+"   recent patches
+"
+" v 0.6:
+"   * Fixed argument completion
+"   * Removed the 'kind' completions, as they are better indicated
+"   with real syntax
+"   * Added tuple assignment parsing (whoops, that was forgotten)
+"   * Fixed import handling when flattening scope
+"
+" v 0.5:
+" Yeah, I skipped a version number - 0.4 was never public.
+"  It was a bugfix version on top of 0.3.  This is a complete
+"  rewrite.
+"
 
 if !has('python')
     echo "Error: Required vim compiled with +python"
@@ -28,7 +46,7 @@ function! pythoncomplete#Complete(findstart, base)
             if c =~ '\w'
                 continue
             elseif ! c =~ '\.'
-                idx = -1
+                let idx = -1
                 break
             else
                 break
@@ -45,7 +63,7 @@ function! pythoncomplete#Complete(findstart, base)
         while idx > 0
             let idx -= 1
             let c = line[idx]
-            if c =~ '\w' || c =~ '\.'
+            if c =~ '\w' || c =~ '\.' || c == '('
                 let cword = c . cword
                 continue
             elseif strlen(cword) > 0 || idx == 0
@@ -73,7 +91,24 @@ def vimcomplete(context,match):
     try:
         import vim
         def complsort(x,y):
-            return x['abbr'] > y['abbr']
+            try:
+                xa = x['abbr']
+                ya = y['abbr']
+                if xa[0] == '_':
+                    if xa[1] == '_' and ya[0:2] == '__':
+                        return xa > ya
+                    elif ya[0:2] == '__':
+                        return -1
+                    elif y[0] == '_':
+                        return xa > ya
+                    else:
+                        return 1
+                elif ya[0] == '_':
+                    return -1
+                else:
+                   return xa > ya
+            except:
+                return 0
         cmpl = Completer()
         cmpl.evalsource('\n'.join(vim.current.buffer),vim.eval("line('.')"))
         all = cmpl.get_completions(context,match)
@@ -86,7 +121,7 @@ def vimcomplete(context,match):
             dictstr += '"icase":0},'
         if dictstr[-1] == ',': dictstr = dictstr[:-1]
         dictstr += ']'
-        dbg("dict: %s" % dictstr)
+        #dbg("dict: %s" % dictstr)
         vim.command("silent let g:pythoncomplete_completions = %s" % dictstr)
         #dbg("Completion dict:\n%s" % all)
     except vim.error:
@@ -108,11 +143,7 @@ class Completer(object):
             except: dbg("locals: %s, %s [%s]" % (sys.exc_info()[0],sys.exc_info()[1],l))
 
     def _cleanstr(self,doc):
-        return doc.replace('"',' ')\
-                  .replace("'",' ')\
-                  .replace('\n',' ')\
-                  .replace('\r',' ')\
-                  .replace('',' ')
+        return doc.replace('"',' ').replace("'",' ')
 
     def get_arguments(self,func_obj):
         def _ctor(obj):
@@ -128,23 +159,23 @@ class Completer(object):
         elif type(func_obj) == types.MethodType: func_obj = func_obj.im_func
         else: arg_offset = 0
         
-        arg_text = ')'
+        arg_text=''
         if type(func_obj) in [types.FunctionType, types.LambdaType]:
             try:
                 cd = func_obj.func_code
                 real_args = cd.co_varnames[arg_offset:cd.co_argcount]
-                defaults = func_obj.func_defaults or []
-                defaults = [map(lambda name: "=%s" % name, defaults)]
+                defaults = func_obj.func_defaults or ''
+                defaults = map(lambda name: "=%s" % name, defaults)
                 defaults = [""] * (len(real_args)-len(defaults)) + defaults
                 items = map(lambda a,d: a+d, real_args, defaults)
                 if func_obj.func_code.co_flags & 0x4:
                     items.append("...")
                 if func_obj.func_code.co_flags & 0x8:
                     items.append("***")
-                arg_text = ", ".join(items) + ')'
+                arg_text = (','.join(items)) + ')'
 
             except:
-                dbg("completion: %s: %s" % (sys.exc_info()[0],sys.exc_info()[1]))
+                dbg("arg completion: %s: %s" % (sys.exc_info()[0],sys.exc_info()[1]))
                 pass
         if len(arg_text) == 0:
             # The doc string sometimes contains the function signature
@@ -160,6 +191,7 @@ class Completer(object):
                     ridx = sigline.find(')')
                     if lidx > 0 and ridx > 0:
                         arg_text = sigline[lidx+1:ridx] + ')'
+        if len(arg_text) == 0: arg_text = ')'
         return arg_text
 
     def get_completions(self,context,match):
@@ -172,12 +204,11 @@ class Completer(object):
             all = {}
             ridx = stmt.rfind('.')
             if len(stmt) > 0 and stmt[-1] == '(':
-                #TODO
                 result = eval(_sanitize(stmt[:-1]), self.compldict)
                 doc = result.__doc__
                 if doc == None: doc = ''
-                args = self.get_arguments(res)
-                return [{'word':self._cleanstr(args),'info':self._cleanstr(doc),'kind':'p'}]
+                args = self.get_arguments(result)
+                return [{'word':self._cleanstr(args),'info':self._cleanstr(doc)}]
             elif ridx == -1:
                 match = stmt
                 all = self.compldict
@@ -206,22 +237,18 @@ class Completer(object):
                         if doc == None or doc == '': doc = maindoc
 
                         wrd = m[len(match):]
-                        c = {'word':wrd, 'abbr':m,  'info':self._cleanstr(doc),'kind':'m'}
+                        c = {'word':wrd, 'abbr':m,  'info':self._cleanstr(doc)}
                         if "function" in typestr:
                             c['word'] += '('
                             c['abbr'] += '(' + self._cleanstr(self.get_arguments(inst))
-                            c['kind'] = 'f'
                         elif "method" in typestr:
                             c['word'] += '('
                             c['abbr'] += '(' + self._cleanstr(self.get_arguments(inst))
-                            c['kind'] = 'f'
                         elif "module" in typestr:
                             c['word'] += '.'
-                            c['kind'] = 'm'
                         elif "class" in typestr:
                             c['word'] += '('
                             c['abbr'] += '('
-                            c['kind']='c'
                         completions.append(c)
                 except:
                     i = sys.exc_info()
@@ -277,10 +304,13 @@ class Scope(object):
         # we need to start with this, to fix up broken completions
         # hopefully this name is unique enough...
         str = '"""'+self.docstr+'"""\n'
+        for l in self.locals:
+            if l.startswith('import'): str += l+'\n'
         str += 'class _PyCmplNoType:\n    def __getattr__(self,name):\n        return None\n'
         for sub in self.subscopes:
             str += sub.get_code()
-        #str += '\n'.join(self.locals)+'\n'
+        for l in self.locals:
+            if not l.startswith('import'): str += l+'\n'
 
         return str
 
@@ -420,6 +450,8 @@ class PyParser:
         tokentype, token, indent = self.next()
         if tokentype == tokenize.STRING or token == 'str':  
             return '""'
+        elif token == '(' or token == 'tuple':
+            return '()'
         elif token == '[' or token == 'list':
             return '[]'
         elif token == '{' or token == 'dict':
@@ -494,9 +526,9 @@ class PyParser:
             freshscope=True
             while True:
                 tokentype, token, indent = self.next()
-                #print 'main: token=[%s] indent=[%s]' % (token,indent)
+                #dbg( 'main: token=[%s] indent=[%s]' % (token,indent))
 
-                if tokentype == DEDENT:
+                if tokentype == DEDENT or token == "pass":
                     self.scope = self.scope.pop(indent)
                 elif token == 'def':
                     func = self._parsefunction(indent)

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.0.  Last change: 2006 Apr 30
+*quickref.txt*  For Vim version 7.1a.  Last change: 2006 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -783,7 +783,8 @@ Short explanation of each option:		*option-list*
 'number'	  'nu'	    print the line number in front of each line
 'numberwidth'	  'nuw'     number of columns used for the line number
 'omnifunc'	  'ofu'     function for filetype-specific completion
-'operatorfunc'	  'opfunc'  funtion to be called for |g@| operator
+'opendevice'	  'odev'    allow reading/writing devices on MS-Windows
+'operatorfunc'	  'opfunc'  function to be called for |g@| operator
 'osfiletype'	  'oft'     operating system-specific filetype information
 'paragraphs'	  'para'    nroff macros that separate paragraphs
 'paste'			    allow pasting text
