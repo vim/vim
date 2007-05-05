@@ -4,9 +4,9 @@
 " Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
 " License: This file can be redistribued and/or modified under the same terms
 "		as Vim itself.
-" Last Change: 2006-04-12
+" Last Change: 2006-12-13
 " URL: http://trific.ath.cx/Ftp/vim/syntax/apache.vim
-" Notes: Last synced with apache-2.2.0, version 1.x is no longer supported
+" Notes: Last synced with apache-2.2.3, version 1.x is no longer supported
 " TODO: see particular FIXME's scattered through the file
 "		make it really linewise?
 "		+ add `display' where appropriate
@@ -94,7 +94,7 @@ syn keyword apacheDeclaration AddAlt AddAltByEncoding AddAltByType AddDescriptio
 syn keyword apacheDeclaration IndexStyleSheet
 syn keyword apacheOption DescriptionWidth FancyIndexing FoldersFirst IconHeight IconsAreLinks IconWidth NameWidth ScanHTMLTitles SuppressColumnSorting SuppressDescription SuppressHTMLPreamble SuppressLastModified SuppressSize TrackModified
 syn keyword apacheOption Ascending Descending Name Date Size Description
-syn keyword apacheOption HTMLTable SupressIcon SupressRules VersionSort XHTML
+syn keyword apacheOption HTMLTable SuppressIcon SuppressRules VersionSort XHTML
 syn keyword apacheOption IgnoreClient IgnoreCase ShowForbidden SuppresRules
 syn keyword apacheDeclaration CacheForceCompletion CacheMaxStreamingBuffer
 syn keyword apacheDeclaration CacheDefaultExpire CacheDisable CacheEnable CacheIgnoreCacheControl CacheIgnoreHeaders CacheIgnoreNoLastMod CacheLastModifiedFactor CacheMaxExpire CacheStoreNoStore CacheStorePrivate
@@ -161,7 +161,7 @@ syn keyword apacheDeclaration RewriteBase RewriteCond RewriteEngine RewriteLock 
 syn keyword apacheOption inherit
 syn keyword apacheDeclaration BrowserMatch BrowserMatchNoCase SetEnvIf SetEnvIfNoCase
 syn keyword apacheDeclaration LoadFile LoadModule
-syn keyword apacheDeclaration CheckSpelling
+syn keyword apacheDeclaration CheckSpelling CheckCaseOnly
 syn keyword apacheDeclaration SSLCACertificateFile SSLCACertificatePath SSLCADNRequestFile SSLCADNRequestPath SSLCARevocationFile SSLCARevocationPath SSLCertificateChainFile SSLCertificateFile SSLCertificateKeyFile SSLCipherSuite SSLCryptoDevice SSLEngine SSLHonorCipherOrder SSLMutex SSLOptions SSLPassPhraseDialog SSLProtocol SSLProxyCACertificateFile SSLProxyCACertificatePath SSLProxyCARevocationFile SSLProxyCARevocationPath SSLProxyCipherSuite SSLProxyEngine SSLProxyMachineCertificateFile SSLProxyMachineCertificatePath SSLProxyProtocol SSLProxyVerify SSLProxyVerifyDepth SSLRandomSeed SSLRequire SSLRequireSSL SSLSessionCache SSLSessionCacheTimeout SSLUserName SSLVerifyClient SSLVerifyDepth
 syn match apacheOption "[+-]\?\<\(StdEnvVars\|CompatEnvVars\|ExportCertData\|FakeBasicAuth\|StrictRequire\|OptRenegotiate\)\>"
 syn keyword apacheOption builtin sem

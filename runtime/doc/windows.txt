@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.0.  Last change: 2006 Apr 24
+*windows.txt*   For Vim version 7.1a.  Last change: 2007 Mar 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -200,6 +200,7 @@ window will appear.
 :vert[ical] {cmd}
 		Execute {cmd}.  If it contains a command that splits a window,
 		it will be split vertically.
+		Doesn't work for |:execute| and |:normal|.
 
 :lefta[bove] {cmd}				*:lefta* *:leftabove*
 :abo[veleft] {cmd}				*:abo* *:aboveleft*
@@ -207,6 +208,7 @@ window will appear.
 		it will be opened left (vertical split) or above (horizontal
 		split) the current window.  Overrules 'splitbelow' and
 		'splitright'.
+		Doesn't work for |:execute| and |:normal|.
 
 :rightb[elow] {cmd}				*:rightb* *:rightbelow*
 :bel[owright] {cmd}				*:bel* *:belowright*
@@ -214,6 +216,7 @@ window will appear.
 		it will be opened right (vertical split) or below (horizontal
 		split) the current window.  Overrules 'splitbelow' and
 		'splitright'.
+		Doesn't work for |:execute| and |:normal|.
 
 						*:topleft* *E442*
 :to[pleft] {cmd}
@@ -221,6 +224,7 @@ window will appear.
 		it will appear at the top and occupy the full width of the Vim
 		window.  When the split is vertical the window appears at the
 		far left and occupies the full height of the Vim window.
+		Doesn't work for |:execute| and |:normal|.
 
 						*:botright*
 :bo[tright] {cmd}
@@ -228,6 +232,7 @@ window will appear.
 		it will appear at the bottom and occupy the full width of the
 		Vim window.  When the split is vertical the window appears at
 		the far right and occupies the full height of the Vim window.
+		Doesn't work for |:execute| and |:normal|.
 
 These command modifiers can be combined to make a vertically split window
 occupy the full height.  Example: >
@@ -447,6 +452,8 @@ CTRL-W T	Move the current window to a new tab page.  This fails if
 						*CTRL-W_=*
 CTRL-W =	Make all windows (almost) equally high and wide, but use
 		'winheight' and 'winwidth' for the current window.
+		Windows with 'winfixheight' set keep their height and windows
+		with 'winfixwidth' set keep their width.
 
 :res[ize] -N					*:res* *:resize* *CTRL-W_-*
 CTRL-W -	Decrease current window height by N (default 1).
@@ -1118,7 +1125,7 @@ list of buffers. |unlisted-buffer|
 		of windows opened ('winwidth' if |:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
-		When the |:tab| modifier is used new windows are opended in a
+		When the |:tab| modifier is used new windows are opened in a
 		new tab, up to 'tabpagemax'.
 
 Note: All the commands above that start editing another buffer, keep the

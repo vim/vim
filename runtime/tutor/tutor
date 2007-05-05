@@ -29,7 +29,7 @@
 	     ^
 	     k		    Hint:  The h key is at the left and moves left.
        < h	 l >		   The l key is at the right and moves right.
-	     j			   The j key looks like a down arrow
+	     j			   The j key looks like a down arrow.
 	     v
   1. Move the cursor around the screen until you are comfortable.
 
@@ -38,10 +38,10 @@
 
   3. Using the down key, move to Lesson 1.2.
 
-Note: If you are ever unsure about something you typed, press <ESC> to place
+NOTE: If you are ever unsure about something you typed, press <ESC> to place
       you in Normal mode.  Then retype the command you wanted.
 
-Note: The cursor keys should also work.  But using hjkl you will be able to
+NOTE: The cursor keys should also work.  But using hjkl you will be able to
       move around much faster, once you get used to it.  Really!
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -109,7 +109,7 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
 ---> There is text misng this .
 ---> There is some text missing from this line.
 
-  5. When you are comfortable inserting text move to the summary below.
+  5. When you are comfortable inserting text move to lesson 1.5.
 
 
 
@@ -160,7 +160,7 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
 
   
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 1 SUMMARY
+			       Lesson 1 SUMMARY
 
 
   1. The cursor is moved using either the arrow keys or the hjkl keys.
@@ -286,15 +286,15 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 
   1. Move the cursor to the first UPPER CASE word in the line marked --->.
 
-  2. Type  2dw  to delete the two UPPER CASE words
+  2. Type  d2w  to delete the two UPPER CASE words
 
   3. Repeat steps 1 and 2 with a different count to delete the consecutive
      UPPER CASE words with one command
 
 --->  this ABC DE line FGHI JK LMN OP of words is Q RS TUV cleaned up.
 
-NOTE:  A count between the operator  d  and the motion works similar to
-       using the motion without an operator.
+
+
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -344,10 +344,10 @@ NOTE:  A count between the operator  d  and the motion works similar to
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 2 SUMMARY
+			       Lesson 2 SUMMARY
 
 
-  1. To delete from the cursor upto the next word type:    dw
+  1. To delete from the cursor up to the next word type:    dw
   2. To delete from the cursor to the end of a line type:    d$
   3. To delete a whole line type:    dd
 
@@ -357,7 +357,7 @@ NOTE:  A count between the operator  d  and the motion works similar to
      where:
        operator - is what to do, such as  d  for delete
        [number] - is an optional count to repeat the motion
-       motion   - moves over the text to operator on, such as  w (word),
+       motion   - moves over the text to operate on, such as  w (word),
 		  $ (to the end of line), etc.
 
   6. To move to the start of the line use a zero:  0
@@ -406,7 +406,7 @@ NOTE:  A count between the operator  d  and the motion works similar to
 --->  Whan this lime was tuoed in, someone presswd some wrojg keys!
 --->  When this line was typed in, someone pressed some wrong keys!
 
-  5. Now move on to Lesson 3.2.
+  5. Now move on to Lesson 3.3.
 
 NOTE: Remember that you should be learning by doing, not memorization.
 
@@ -428,8 +428,8 @@ NOTE: Remember that you should be learning by doing, not memorization.
 
   5. Repeat steps 3 and 4 until the first sentence is the same as the second.
 
----> This lubw has a few wptfd that mrrf changing usf the change command.
----> This line has a few words that need changing using the change command.
+---> This lubw has a few wptfd that mrrf changing usf the change operator.
+---> This line has a few words that need changing using the change operator.
 
 Notice that  ce  deletes the word and places you in Insert mode.
 
@@ -439,7 +439,7 @@ Notice that  ce  deletes the word and places you in Insert mode.
 		       Lesson 3.4: MORE CHANGES USING c
 
 
-     ** The change command is used with the same motions as delete. **
+     ** The change operator is used with the same motions as delete. **
 
   1. The change operator works in the same way as delete.  The format is:
 
@@ -459,7 +459,7 @@ Notice that  ce  deletes the word and places you in Insert mode.
 NOTE:  You can use the Backspace key to correct mistakes while typing.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 3 SUMMARY
+			       Lesson 3 SUMMARY
 
 
   1. To put back text that has just been deleted, type   p .  This puts the
@@ -487,14 +487,14 @@ Now go on to the next lesson.
   ** Type CTRL-G to show your location in the file and the file status.
      Type  G  to move to a line in the file. **
 
-  Note: Read this entire lesson before executing any of the steps!!
+  NOTE: Read this entire lesson before executing any of the steps!!
 
   1. Hold down the Ctrl key and press  g .  We call this CTRL-G.
      A message will appear at the bottom of the page with the filename and the
      position in the file.  Remember the line number for Step 3.
 
 NOTE:  You may see the cursor position in the lower right corner of the screen
-       This happens when the 'ruler' option is set (explained in lesson 6).
+       This happens when the 'ruler' option is set (see  :help 'ruler'  )
 
   2. Press  G  to move you to the bottom of the file.
      Type  gg  to move you to the start of the file.
@@ -523,8 +523,8 @@ NOTE:  You may see the cursor position in the lower right corner of the screen
   5. To go back to where you came from press  CTRL-O  (Keep Ctrl down while
      pressing the letter o).  Repeat to go back further.  CTRL-I goes forward.
 
-Note: "errroor" is not the way to spell error;  errroor is an error.
-Note: When the search reaches the end of the file it will continue at the
+--->  "errroor" is not the way to spell error;  errroor is an error.
+NOTE: When the search reaches the end of the file it will continue at the
       start, unless the 'wrapscan' option has been reset.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -546,7 +546,7 @@ Note: When the search reaches the end of the file it will continue at the
 ---> This ( is a test line with ('s, ['s ] and {'s } in it. ))
 
 
-Note: This is very useful in debugging a program with unmatched parentheses!
+NOTE: This is very useful in debugging a program with unmatched parentheses!
 
 
 
@@ -568,13 +568,13 @@ Note: This is very useful in debugging a program with unmatched parentheses!
 
   4. To change every occurrence of a character string between two lines,
      type   :#,#s/old/new/g    where #,# are the line numbers of the range
-                               of lines where the subsitution is to be done.
+                               of lines where the substitution is to be done.
      Type   :%s/old/new/g      to change every occurrence in the whole file.
      Type   :%s/old/new/gc     to find every occurrence in the whole file,
-     			       with a prompt wether to substitute or not.
+     			       with a prompt whether to substitute or not.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 4 SUMMARY
+			       Lesson 4 SUMMARY
 
 
   1. CTRL-G  displays your location in the file and the file status.
@@ -612,11 +612,11 @@ Note: This is very useful in debugging a program with unmatched parentheses!
      will show you a listing of your directory, just as if you were at the
      shell prompt.  Or use  :!dir  if ls doesn't work.
 
-Note:  It is possible to execute any external command this way, also with
+NOTE:  It is possible to execute any external command this way, also with
        arguments.
 
-Note:  All  :  commands must be finished by hitting <ENTER>
-       From here one we will not always mention it.
+NOTE:  All  :  commands must be finished by hitting <ENTER>
+       From here on we will not always mention it.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -635,7 +635,7 @@ Note:  All  :  commands must be finished by hitting <ENTER>
   4. This saves the whole file (the Vim Tutor) under the name TEST.
      To verify this, type    :!dir  or  :!ls   again to see your directory.
 
-Note: If you were to exit Vim and start it again with  vim TEST , the file
+NOTE: If you were to exit Vim and start it again with  vim TEST , the file
       would be an exact copy of the tutor when you saved it.
 
   5. Now remove the file by typing (MS-DOS):    :!del TEST
@@ -689,7 +689,7 @@ NOTE:  You can also read the output of an external command.  For example,
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 5 SUMMARY
+			       Lesson 5 SUMMARY
 
 
   1.  :!command  executes an external command.
@@ -708,7 +708,7 @@ NOTE:  You can also read the output of an external command.  For example,
       cursor position.
 
   5.  :r !dir  reads the output of the dir command and puts it below the
-      cursor position
+      cursor position.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -754,7 +754,7 @@ NOTE:  You can also read the output of an external command.  For example,
 ---> This li will allow you to pract appendi text to a line.
 ---> This line will allow you to practice appending text to a line.
 
-Note:  a, i and A all go to the same Insert mode, the only difference is where
+NOTE:  a, i and A all go to the same Insert mode, the only difference is where
        the characters are inserted.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -772,7 +772,7 @@ Note:  a, i and A all go to the same Insert mode, the only difference is where
   3. Press <ESC> to leave Replace mode.  Notice that the rest of the line
      remains unmodified.
 
-  5. Repeat the steps to replace the remaining xxx.
+  4. Repeat the steps to replace the remaining xxx.
 
 ---> Adding 123 to xxx gives you xxx.
 ---> Adding 123 to 456 gives you 579.
@@ -784,7 +784,7 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 			Lesson 6.4: COPY AND PASTE TEXT
 
 
-	  ** use the  y  operator to copy text and  p  to paste it **
+	  ** Use the  y  operator to copy text and  p  to paste it **
 
   1. Go to the line marked with ---> below and place the cursor after "a)".
   
@@ -802,7 +802,7 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 --->  a) this is the first item.
       b)
 
-  Note: you can also use  y  as an operator;  yw  yanks one word.
+  NOTE: you can also use  y  as an operator;  yw  yanks one word.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lesson 6.5: SET OPTION
 
@@ -823,11 +823,11 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 
   6. To disable ignoring case enter:  :set noic
 
-Note:  To remove the highlighting of matches enter:   :nohlsearch 
-Note:  If you want to ignore case for just one search command, use  \c
+NOTE:  To remove the highlighting of matches enter:   :nohlsearch 
+NOTE:  If you want to ignore case for just one search command, use  \c
        in the phrase:  /ignore\c  <ENTER>
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 6 SUMMARY
+			       Lesson 6 SUMMARY
 
   1. Type  o  to open a line BELOW the cursor and start Insert mode.
      Type  O  to open a line ABOVE the cursor.
@@ -850,7 +850,7 @@ Note:  If you want to ignore case for just one search command, use  \c
   7. Prepend "no" to switch an option off:   :set noic
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       LESSON 7.1: GETTING HELP
+		       Lesson 7.1: GETTING HELP
 
 
 		      ** Use the on-line help system **
@@ -862,7 +862,7 @@ Note:  If you want to ignore case for just one search command, use  \c
 	- type   :help <ENTER>
 
   Read the text in the help window to find out how the help works.
-  type  CTRL-W CTRL-W   to jump from one window to another
+  Type  CTRL-W CTRL-W   to jump from one window to another.
   Type    :q <ENTER>    to close the help window.
 
   You can find help on just about any subject, by giving an argument to the
@@ -873,7 +873,7 @@ Note:  If you want to ignore case for just one search command, use  \c
 	:help insert-index
 	:help user-manual
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      LESSON 7.2: CREATE A STARTUP SCRIPT
+		      Lesson 7.2: CREATE A STARTUP SCRIPT
 
 
 			  ** Enable Vim features **
@@ -896,7 +896,7 @@ Note:  If you want to ignore case for just one search command, use  \c
   For more information type  :help vimrc-intro
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			     LESSON 7.3: COMPLETION
+			     Lesson 7.3: COMPLETION
 
 
 	      ** Command line completion with CTRL-D and <TAB> **
@@ -919,7 +919,7 @@ NOTE:  Completion works for many commands.  Just try pressing CTRL-D and
        <TAB>.  It is especially useful for  :help .
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			       LESSON 7 SUMMARY
+			       Lesson 7 SUMMARY
 
 
   1. Type  :help  or press <F1> or <Help>  to open a help window.
