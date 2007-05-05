@@ -19,6 +19,7 @@ gvimext.dll:    gvimext.obj	\
 # $(implib) /NOLOGO -machine:$(CPU) -def:gvimext.def $** -out:gvimext.lib
 # $(link) $(dlllflags) -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib gvimext.lib comctl32.lib gvimext.exp
   $(link) $(lflags) -dll -def:gvimext.def -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib
+  if exist $*.dll.manifest mt -nologo -manifest $*.dll.manifest -outputresource:$*.dll;2
 
 gvimext.obj: gvimext.h
 
@@ -34,3 +35,4 @@ clean:
     - if exist gvimext.exp del gvimext.exp
     - if exist gvimext.obj del gvimext.obj
     - if exist gvimext.res del gvimext.res
+    - if exist gvimext.dll.manifest del gvimext.dll.manifest
