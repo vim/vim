@@ -2,9 +2,9 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change:  2006 Apr 30
+" Last Change:  2007 February 25th
 " Newsletter:   http://www.2072productions.com/?to=php-indent-for-vim-newsletter.php
-" Version:	1.23
+" Version:	1.24
 "
 "  The change log and all the comments have been removed from this file.
 "
@@ -67,12 +67,6 @@
 "
 "			NOTE: The script will be a bit slower if you use this option because
 "			some optimizations won't be available.
-
-
-
-
-
-
 
 if exists("b:did_indent")
     finish
@@ -137,7 +131,7 @@ endif
 
 let s:endline= '\s*\%(//.*\|#.*\|/\*.*\*/\s*\)\=$'
 let s:PHP_startindenttag = '<?\%(.*?>\)\@!\|<script[^>]*>\%(.*<\/script>\)\@!'
-" setlocal debug=msg " XXX
+"setlocal debug=msg " XXX
 
 
 function! GetLastRealCodeLNum(startline) " {{{
@@ -205,6 +199,9 @@ function! GetLastRealCodeLNum(startline) " {{{
     if b:InPHPcode_and_script && !b:InPHPcode
 	let b:InPHPcode_and_script = 0
     endif
+
+
+
     return lnum
 endfunction " }}}
 
@@ -221,7 +218,7 @@ endfun
 
 function! Skippmatch()  " {{{
     let synname = synIDattr(synID(line("."), col("."), 0), "name")
-    if synname == "Delimiter" || synname == "phpParent" || synname == "javaScriptBraces" || synname == "phpComment" && b:UserIsTypingComment
+    if synname == "Delimiter" || synname == "phpRegionDelimiter" || synname =~# "^phpParent" || synname == "phpArrayParens" || synname =~# '^php\%(Block\|Brace\)' || synname == "javaScriptBraces" || synname == "phpComment" && b:UserIsTypingComment
 	return 0
     else
 	return 1
@@ -380,7 +377,7 @@ function! GetPhpIndent()
 	endif
 
 	if synname!=""
-	    if synname != "phpHereDoc"
+	    if synname != "phpHereDoc" && synname != "phpHereDocDelimiter"
 		let b:InPHPcode = 1
 		let b:InPHPcode_tofind = ""
 
@@ -448,7 +445,7 @@ function! GetPhpIndent()
 
     if b:InPHPcode
 
-	if !b:InPHPcode_and_script && last_line =~ '\%(<?.*\)\@<!?>\%(.*<?\)\@!' && IslinePHP(lnum, '?>')=="Delimiter"
+	if !b:InPHPcode_and_script && last_line =~ '\%(<?.*\)\@<!?>\%(.*<?\)\@!' && IslinePHP(lnum, '?>')=~"Delimiter"
 	    if cline !~? s:PHP_startindenttag
 		let b:InPHPcode = 0
 		let b:InPHPcode_tofind = s:PHP_startindenttag
@@ -717,5 +714,3 @@ function! GetPhpIndent()
     let b:PHP_CurrentIndentLevel = ind
     return ind
 endfunction
-
-" vim: set ts=8 sw=4 sts=4:

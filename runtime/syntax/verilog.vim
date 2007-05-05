@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Verilog
-" Maintainer:	Mun Johl <mun_johl@sierralogic.com>
-" Last Update:  Tue Jun  7 14:27:10 PDT 2005
+" Maintainer:	Mun Johl <Mun.Johl@emulex.com>
+" Last Update:  Fri Oct 13 11:44:32 PDT 2006
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -76,10 +76,10 @@ syn match   verilogGlobal "$[a-zA-Z0-9_]\+\>"
 
 syn match   verilogConstant "\<[A-Z][A-Z0-9_]\+\>"
 
-syn match   verilogNumber "\(\<\d\+\|\)'[bB]\s*[0-1_xXzZ?]\+\>"
-syn match   verilogNumber "\(\<\d\+\|\)'[oO]\s*[0-7_xXzZ?]\+\>"
-syn match   verilogNumber "\(\<\d\+\|\)'[dD]\s*[0-9_xXzZ?]\+\>"
-syn match   verilogNumber "\(\<\d\+\|\)'[hH]\s*[0-9a-fA-F_xXzZ?]\+\>"
+syn match   verilogNumber "\(\<\d\+\|\)'[sS]\?[bB]\s*[0-1_xXzZ?]\+\>"
+syn match   verilogNumber "\(\<\d\+\|\)'[sS]\?[oO]\s*[0-7_xXzZ?]\+\>"
+syn match   verilogNumber "\(\<\d\+\|\)'[sS]\?[dD]\s*[0-9_xXzZ?]\+\>"
+syn match   verilogNumber "\(\<\d\+\|\)'[sS]\?[hH]\s*[0-9a-fA-F_xXzZ?]\+\>"
 syn match   verilogNumber "\<[+-]\=[0-9_]\+\(\.[0-9_]*\|\)\(e[0-9_]*\|\)\>"
 
 syn region  verilogString start=+"+ skip=+\\"+ end=+"+ contains=verilogEscape,@Spell

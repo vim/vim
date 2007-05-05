@@ -14,6 +14,7 @@ VIMEXE = vim
 include ../../src/auto/config.mk
 
 DOCS = \
+	ada.txt \
 	arabic.txt \
 	autocmd.txt \
 	change.txt \
@@ -28,7 +29,6 @@ DOCS = \
 	farsi.txt \
 	filetype.txt \
 	fold.txt \
-	getscript.txt \
 	gui.txt \
 	gui_w16.txt \
 	gui_w32.txt \
@@ -70,6 +70,7 @@ DOCS = \
 	os_vms.txt \
 	os_win32.txt \
 	pattern.txt \
+	pi_getscript.txt \
 	pi_gzip.txt \
 	pi_netrw.txt \
 	pi_paren.txt \
@@ -144,6 +145,7 @@ DOCS = \
 	workshop.txt
 
 HTMLS = \
+	ada.html \
 	arabic.html \
 	autocmd.html \
 	change.html \
@@ -158,7 +160,6 @@ HTMLS = \
 	farsi.html \
 	filetype.html \
 	fold.html \
-	getscript.html \
 	gui.html \
 	gui_w16.html \
 	gui_w32.html \
@@ -200,6 +201,7 @@ HTMLS = \
 	os_vms.html \
 	os_win32.html \
 	pattern.html \
+	pi_getscript.html \
 	pi_gzip.html \
 	pi_netrw.html \
 	pi_paren.html \
@@ -224,8 +226,8 @@ HTMLS = \
 	sql.html \
 	syntax.html \
 	tabpage.html \
-	tagsrch.html \
 	tags.html \
+	tagsrch.html \
 	term.html \
 	tips.html \
 	todo.html \

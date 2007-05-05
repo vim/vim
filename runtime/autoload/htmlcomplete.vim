@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	HTML and XHTML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Apr 30
+" Last Change:	2006 Oct 19
 
 function! htmlcomplete#CompleteTags(findstart, base)
   if a:findstart
@@ -84,7 +84,7 @@ function! htmlcomplete#CompleteTags(findstart, base)
 				let context_line = getline(curline-i)
 				if context_line =~ '<[^>]*$'
 					" Yep, this is this line
-					let context_lines = getline(curline-i, curline)
+					let context_lines = getline(curline-i, curline-1) + [b:compl_context]
 					let b:compl_context = join(context_lines, ' ')
 					break
 				elseif context_line =~ '>[^<]*$' || i == curline
@@ -448,6 +448,15 @@ function! htmlcomplete#CompleteTags(findstart, base)
 			let attrname = matchstr(attr, '.*\ze\s*=')
 			let entered_value = matchstr(attr, ".*=\\s*[\"']\\?\\zs.*")
 			let values = []
+			" Load data {{{
+			if !exists("b:html_doctype")
+				call htmlcomplete#CheckDoctype()
+			endif
+			if !exists("b:html_omni")
+				"runtime! autoload/xml/xhtml10s.vim
+				call htmlcomplete#LoadData()
+			endif
+			" }}}
 			if attrname == 'href'
 				" Now we are looking for local anchors defined by name or id
 				if entered_value =~ '^#'
@@ -604,21 +613,20 @@ function! htmlcomplete#CompleteTags(findstart, base)
 	if exists("uppercase_tag") && uppercase_tag == 1
 		let context = tolower(context)
 	endif
-	" Handle XML keywords: DOCTYPE and CDATA.
+	" Handle XML keywords: DOCTYPE
 	if opentag == ''
 		let tags += [
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN" "http://www.w3.org/TR/REC-html40/frameset.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">',
-				\ '!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/1999/xhtml">',
-				\ '!CDATA'
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN" "http://www.w3.org/TR/REC-html40/frameset.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">',
+				\ '!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/1999/xhtml">'
 				\ ]
 	endif
 

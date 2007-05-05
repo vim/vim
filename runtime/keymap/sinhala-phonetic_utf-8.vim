@@ -1,6 +1,6 @@
 " Vim Keymap file for Sinhala (Sri Lanka) (2003-11-02)
-" Maintainer  : Harshula Jayasuriya <hash@jayasolutions.cjb.net>
-" Last Updated: 2004-12-22
+" Maintainer  : Harshula Jayasuriya <harshula@gmail.com>
+" Last Updated: 2006-06-08
 " This is a static phonetic mapping for a standard US-English keyboard
 " (qwerty)
 " http://www.nongnu.org/sinhala/doc/keymaps/sinhala-keyboard_3.html
@@ -15,8 +15,8 @@
 let b:keymap_name = "sinhala"
 
 loadkeymap
-V	<char-0x0d82>	"  ං - anusvaraya (anusvara)
-<A-v>	<char-0x0d83>	"  ඃ - visargaya (visarga)
+<A-n>	<char-0x0d82>	"  ං - anusvaraya (anusvara)
+H	<char-0x0d83>	"  ඃ - visargaya (visarga)
 a	<char-0x0d85>	" අ - ayanna (a)
 A	<char-0x0d86>	" ආ - aayanna (aa)
 w	<char-0x0d87>	" ඇ - aeyanna (ae)
@@ -31,15 +31,15 @@ Q	<char-0x0d8e>	" ඎ - iruuyanna (iruu)
 <A-K>	<char-0x0d90>	" ඐ - iluuyanna (iluu)
 e	<char-0x0d91>	" එ - eyanna (e)
 E	<char-0x0d92>	" ඒ - eeyanna (ee)
-F	<char-0x0d93>	" ඓ - aiyanna (ai)
+<A-F>	<char-0x0d93>	" ඓ - aiyanna (ai)
 o	<char-0x0d94>	" ඔ - oyanna (o)
 O	<char-0x0d95>	" ඕ - ooyanna (oo)
-H	<char-0x0d96>	" ඖ - auyanna (au)
+<A-H>	<char-0x0d96>	" ඖ - auyanna (au)
 k	<char-0x0d9a>	" ක - alpapraana kayanna (ka)
 K	<char-0x0d9b>	" ඛ - mahaapraana kayanna (kha)
 g	<char-0x0d9c>	" ග - alpapraana gayanna (ga)
 G	<char-0x0d9d>	" ඝ - mahaapraana gayanna (gha)
-<A-n>	<char-0x0d9e>	" ඞ - kantaja naasikyaya (nga)
+<A-N>	<char-0x0d9e>	" ඞ - kantaja naasikyaya (nga)
 <A-g>	<char-0x0d9f>	" ඟ - sanyaka gayanna (nnga)
 c	<char-0x0da0>	" ච - alpapraana cayanna (ca)
 C	<char-0x0da1>	" ඡ - mahaapraana cayanna (cha)

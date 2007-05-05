@@ -1143,23 +1143,15 @@ REZ    = /Developer/Tools/Rez
 RESDIR = $(APPDIR)/Contents/Resources
 @r = re.compile('.*VIM_VERSION_SHORT\\s*"(\\d[^"]*)".*', re.S)
 VERSION = /`r.match(open("version.h").read()).group(1)`
-ICON_APP = gui_mac.icns
 
 ### Common flags
 M4FLAGSX = $?(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
-		-DAPP_VER=$(VERSION) -DICON_APP=$(ICON_APP)
+		-DAPP_VER=$(VERSION)
 
-### Icons
-ICONS = $(RESDIR)/$(ICON_APP)
+# Resources used for the Mac are in one directory.
+RSRC_DIR = os_mac_rsrc
 
 :attr {directory = $DIRMOD} $RESDIR
-
-# If you uncomment the following lines the *.icns in the src directory will be
-# detected by this Makefile automatically, and used for Vim.
-#ICON_APP = $(shell if [ -e app.icns ] ; then echo app.icns ; else echo gui_mac.icns ; fi)
-#ICON_DOC = $(shell if [ -e doc.icns ] ; then echo doc.icns ; else echo ; fi)
-#ICON_DOCTXT = $(shell if [ -e doc-txt.icns ] ; then echo doc-txt.icns ; else echo ; fi)
-#ICONS = $(addprefix $(RESDIR)/, $(ICON_APP) $(ICON_DOC) $(ICON_DOCTXT))
 
 install_macosx {virtual}: gui_bundle
 # Remove the link to the runtime dir, don't want to copy all of that.
@@ -1175,7 +1167,7 @@ install_macosx {virtual}: gui_bundle
         :symlink `os.getcwd()`/../runtime $RESDIR/vim/runtime
 # TODO: Create the vimtutor application.
 
-gui_bundle {virtual}: $(RESDIR) bundle-dir bundle-executable bundle-info \
+gui_bundle {virtual}: $(RESDIR) bundle-dir bundle-executable bundle-info
                         bundle-resource bundle-language
 
 bundle-dir {virtual}: $(APPDIR)/Contents $(VIMTARGET)
@@ -1194,9 +1186,8 @@ bundle-info {virtual}:  bundle-dir
         :print Creating Info.plist
         :sys m4 $(M4FLAGSX) infplist.xml > $(APPDIR)/Contents/Info.plist
 
-bundle-resource {virtual}: bundle-dir bundle-icons bundle-rsrc
-
-bundle-icons {virtual}: $ICONS
+bundle-resource {virtual}: bundle-dir bundle-rsrc
+    :copy {force} $(RSRC_DIR)/*.icns $(RESDIR)
 
 ### Classic resources
 # Resource fork (in the form of a .rsrc file) for Classic Vim (Mac OS 9)
@@ -1219,9 +1210,6 @@ bundle-language {virtual}: bundle-dir
 $(APPDIR)/Contents:
     :mkdir {r} $(APPDIR)/Contents/MacOS
     :mkdir {r} $(RESDIR)/English.lproj
-
-$ICONS: $ICON_APP
-    :copy $source $target
 
 
 # vim: sts=4 sw=4 :

@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.0.  Last change: 2006 Apr 30
+*os_vms.txt*    For Vim version 7.1a.  Last change: 2006 Nov 18
 
 
 		  VIM REFERENCE MANUAL
@@ -243,7 +243,7 @@ and to the SYS$STARTUP:SYLOGIN.COM >
 It will set up a normal Vim work environment for every user on the system.
 
 IMPORTANT: Vim on OpenVMS (and on other case insensitive system) command line
-parameters are assumed to be lowecase. In order to indicate that a command
+parameters are assumed to be lowercase. In order to indicate that a command
 line parameter is uppercase "/" sign must be used.
 
 Examples:

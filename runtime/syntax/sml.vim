@@ -4,9 +4,9 @@
 " Maintainers:  Markus Mottl            <markus.mottl@gmail.com>
 "               Fabrizio Zeno Cornelli  <zeno@filibusta.crema.unimi.it>
 " URL:          http://www.ocaml.info/vim/syntax/sml.vim
-" Last Change:  2006 Feb 05
+" Last Change:  2006 Oct 23 - Fixed character highlighting bug (MM)
+"               2002 Jun 02 - Fixed small typo  (MM)
 "               2001 Nov 20 - Fixed small highlighting bug with modules (MM)
-"               2001 Aug 29 - Fixed small highlighting bug  (MM)
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -137,7 +137,7 @@ syn match    smlConstructor  "\u\(\w\|'\)*\>"
 " Module prefix
 syn match    smlModPath      "\u\(\w\|'\)*\."he=e-1
 
-syn match    smlCharacter    +#"."\|#"\\\d\d\d"+
+syn match    smlCharacter    +#"\\""\|#"."\|#"\\\d\d\d"+
 syn match    smlCharErr      +#"\\\d\d"\|#"\\\d"+
 syn region   smlString       start=+"+ skip=+\\\\\|\\"+ end=+"+
 

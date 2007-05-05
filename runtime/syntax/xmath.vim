@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	xmath (a simulation tool)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Apr 12, 2006
-" Version:	5
+" Last Change:	Sep 11, 2006
+" Version:	6
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 
 " For version 5.x: Clear all syntax items
@@ -175,7 +175,7 @@ syn match   xmathLabel	 "^\s*<[a-zA-Z_][a-zA-Z0-9]*>"
 " String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   xmathSpecial	contained "\\\d\d\d\|\\."
-syn region  xmathString	start=+"+  skip=+\\\\\|\\"+  end=+"+ contains=xmathSpecial
+syn region  xmathString	start=+"+  skip=+\\\\\|\\"+  end=+"+ contains=xmathSpecial,@Spell
 syn match   xmathCharacter	"'[^\\]'"
 syn match   xmathSpecialChar	"'\\.'"
 
@@ -184,9 +184,10 @@ syn match   xmathNumber	"-\=\<\d\+L\=\>\|0[xX][0-9a-fA-F]\+\>"
 " Comments:
 " xmath supports #...  (like Unix shells)
 "       and      #{ ... }# comment blocks
+syn cluster xmathCommentGroup	contains=xmathString,xmathTodo,@Spell
 syn keyword xmathTodo contained	COMBAK	DEBUG	FIXME	Todo	TODO	XXX
-syn match   xmathComment	"#.*$"		contains=xmathString,xmathTodo,@Spell
-syn region  xmathCommentBlock	start="#{" end="}#"	contains=xmathString,xmathTodo
+syn match   xmathComment	"#.*$"		contains=@xmathCommentGroup
+syn region  xmathCommentBlock	start="#{" end="}#"	contains=@xmathCommentGroup
 
 " synchronizing
 syn sync match xmathSyncComment	grouphere xmathCommentBlock "#{"
