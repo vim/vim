@@ -669,12 +669,15 @@ LANG_GEN = \
 		runtime/tutor/README.*.txt \
 		runtime/tutor/Makefile \
 		runtime/tutor/tutor.?? \
+		runtime/tutor/tutor.cs.* \
 		runtime/tutor/tutor.gr.* \
+		runtime/tutor/tutor.hu.* \
 		runtime/tutor/tutor.ja.* \
 		runtime/tutor/tutor.ko.* \
 		runtime/tutor/tutor.pl.* \
 		runtime/tutor/tutor.ru.* \
 		runtime/tutor/tutor.sk.* \
+		runtime/tutor/tutor.tr.* \
 		runtime/tutor/tutor.zh.* \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
