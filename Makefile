@@ -27,7 +27,7 @@ first:
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.
-all install uninstall tools config configure proto depend lint tags types test testclean clean distclean:
+all install uninstall tools config configure reconfig proto depend lint tags types test testclean clean distclean:
 	@echo "Starting make in the src directory."
 	@echo "If there are problems, cd to the src directory and run make there"
 	cd src && $(MAKE) $@
@@ -69,7 +69,7 @@ all install uninstall tools config configure proto depend lint tags types test t
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 0
+MINOR = 1a
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -81,14 +81,14 @@ DOSBIN_S =  dosbin_s
 #   runtime/doc/*.txt and nsis/gvim.nsi. Other things in README_os2.txt.  For a
 #   minor/major version: src/GvimExt/GvimExt.reg, src/vim.def, src/vim16.def.
 # - Correct included_patches[] in src/version.c.
-# - Compile Vim with GTK, Perl, Python, TCL, Ruby, MZscheme, Cscope and "huge"
-#   features.  Exclude workshop and SNiFF.
+# - Compile Vim with GTK, Perl, Python, TCL, Ruby, MZscheme (if you can make it
+#   work), Cscope and "huge" features.  Exclude workshop and SNiFF.
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
 # - "make lint" and check the output (ignore GTK warnings).
 # - Enable the efence library in "src/Makefile" and run "make test".  May
-#   require disabling Python to avoid trouble with threads.
+#   require disabling Python and Ruby to avoid trouble with threads.
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
@@ -128,25 +128,26 @@ DOSBIN_S =  dosbin_s
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ Toolkit 2003: "msvcsetup.bat"
+# - Set environment for Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
+#   paths when necessary).
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".
-# - Rename ObjC/vim.pdb to vimw32.pdb.
+# - Rename vim.pdb to vimw32.pdb.
 # - When building the Win32s version later, delete vimrun.exe, install.exe and
 #   uninstal.exe.  Otherwise rename executables to installw32.exe and
 #   uninstalw32.exe.
 # Win32 GUI version:
 # - "nmake -f Make_mvc.mak GUI=yes.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
-# - Move ObjG/gvim.pdb to here.
-# - Delete vimrun.exe, install.exe and uninstall.exe.
+# - Move gvim.pdb to here.
+# - Delete vimrun.exe, install.exe and uninstal.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
 # - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
 # - Rename "gvim.exe" to "gvim_ole.exe".
-# - Rename ObjGOLYTR/gvim.pdb to "gvim_ole.pdb".
-# - Delete install.exe and uninstall.exe.
+# - Rename gvim.pdb to "gvim_ole.pdb".
+# - Delete install.exe and uninstal.exe.
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:
 # - Set environment for Visual C++ 4.1 (requires a new console window)

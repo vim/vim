@@ -1,7 +1,7 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
-"            PLUGIN PORTION
-" Date:		Oct 27, 2005
-" Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+"            PLUGIN SECTION
+" Date:		Jan 05, 2007
+" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
@@ -19,9 +19,11 @@
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
-if exists("g:loaded_netrw")
+if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
+let g:loaded_netrwPlugin = 1
+let s:keepcpo            = &cpo
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 for this version of netrw" | echohl None
  finish
@@ -36,6 +38,9 @@ set cpo&vim
 augroup FileExplorer
  au!
  au BufEnter * silent! call s:LocalBrowse(expand("<amatch>"))
+ if has("win32") || has("win95") || has("win64") || has("win16")
+  au BufEnter .* silent! call s:LocalBrowse(expand("<amatch>"))
+ endif
 augroup END
 
 " Network Browsing Reading Writing: {{{2
@@ -51,6 +56,11 @@ augroup Network
  au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe 'Nread "'   .expand("<amatch>").'"'|exe "silent doau FileReadPost ".expand("<amatch>")
  au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe 'Nwrite "' .expand("<amatch>").'"'|exe "silent doau BufWritePost ".expand("<amatch>")
  au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']".'Nwrite "' .expand("<amatch>").'"'|exe "silent doau FileWritePost ".expand("<amatch>")
+ try
+  au SourceCmd    ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe 'Nsource "'.expand("<amatch>").'"'
+ catch /^Vim\%((\a\+)\)\=:E216/
+  au SourcePre    ftp://*,rcp://*,scp://*,http://*,dav://*,rsync://*,sftp://*	exe 'Nsource "'.expand("<amatch>").'"'
+ endtry
 augroup END
 
 " Commands: :Nread, :Nwrite, :NetUserPass {{{2
@@ -58,23 +68,27 @@ com! -count=1 -nargs=*	Nread		call netrw#NetSavePosn()<bar>call netrw#NetRead(<c
 com! -range=% -nargs=*	Nwrite		call netrw#NetSavePosn()<bar><line1>,<line2>call netrw#NetWrite(<f-args>)<bar>call netrw#NetRestorePosn()
 com! -nargs=*		NetUserPass	call NetUserPass(<f-args>)
 com! -nargs=+           Ncopy           call netrw#NetObtain(<f-args>)
+com! -nargs=*	        Nsource		call netrw#NetSavePosn()<bar>call netrw#NetSource(<f-args>)<bar>call netrw#NetRestorePosn()
 
 " Commands: :Explore, :Sexplore, Hexplore, Vexplore {{{2
-com! -nargs=? -bar -bang -count=0	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
-com! -nargs=? -bar -bang -count=0	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
-com! -nargs=? -bar -bang		Nexplore	call netrw#Explore(-1,0,0,<q-args>)
-com! -nargs=? -bar -bang		Pexplore	call netrw#Explore(-2,0,0,<q-args>)
+com! -nargs=* -bar -bang -count=0 -complete=dir	Explore		call netrw#Explore(<count>,0,0+<bang>0,<q-args>)
+com! -nargs=* -bar -bang -count=0 -complete=dir	Sexplore	call netrw#Explore(<count>,1,0+<bang>0,<q-args>)
+com! -nargs=* -bar -bang -count=0 -complete=dir	Hexplore	call netrw#Explore(<count>,1,2+<bang>0,<q-args>)
+com! -nargs=* -bar -bang -count=0 -complete=dir	Vexplore	call netrw#Explore(<count>,1,4+<bang>0,<q-args>)
+com! -nargs=* -bar       -count=0 -complete=dir	Texplore	call netrw#Explore(<count>,0,6        ,<q-args>)
+com! -nargs=* -bar -bang			Nexplore	call netrw#Explore(-1,0,0,<q-args>)
+com! -nargs=* -bar -bang			Pexplore	call netrw#Explore(-2,0,0,<q-args>)
 
 " Commands: NetrwSettings {{{2
 com! -nargs=0 NetrwSettings :call netrwSettings#NetrwSettings()
 
 " Maps:
-if !hasmapto('<Plug>NetrwBrowseX')
- nmap <unique> gx <Plug>NetrwBrowseX
+if !exists("g:netrw_nogx") && maparg('g','n') == ""
+ if !hasmapto('<Plug>NetrwBrowseX')
+  nmap <unique> gx <Plug>NetrwBrowseX
+ endif
+ nno <silent> <Plug>NetrwBrowseX :call netrw#NetBrowseX(expand("<cWORD>"),0)<cr>
 endif
-nno <silent> <Plug>NetrwBrowseX :call netrw#NetBrowseX(expand("<cWORD>"),0)<cr>
 
 " ---------------------------------------------------------------------
 " LocalBrowse: {{{2
@@ -82,8 +96,17 @@ fun! s:LocalBrowse(dirname)
   " unfortunate interaction -- debugging calls can't be used here;
   " the BufEnter event causes triggering when attempts to write to
   " the DBG buffer are made.
-  if isdirectory(a:dirname)
-   silent! call netrw#DirBrowse(a:dirname)
+"  echomsg "dirname<".a:dirname.">"
+  if has("amiga")
+   " The check against '' is made for the Amiga, where the empty
+   " string is the current directory and not checking would break
+   " things such as the help command.
+   if a:dirname != '' && isdirectory(a:dirname)
+    silent! call netrw#LocalBrowseCheck(a:dirname)
+   endif
+  elseif isdirectory(a:dirname)
+"   echomsg "dirname<".dirname."> isdir"
+   silent! call netrw#LocalBrowseCheck(a:dirname)
   endif
   " not a directory, ignore it
 endfun

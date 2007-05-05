@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 27
+" Last Change:	2007 May 04
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -87,6 +87,7 @@ SynMenu AB.ASN\.1:asn
 SynMenu AB.Asterisk\ config:asterisk
 SynMenu AB.Asterisk\ voicemail\ config:asteriskvm
 SynMenu AB.Atlas:atlas
+SynMenu AB.AutoIt:autoit
 SynMenu AB.Automake:automake
 SynMenu AB.Avenue:ave
 SynMenu AB.Awk:awk
@@ -94,7 +95,11 @@ SynMenu AB.AYacc:ayacc
 
 SynMenu AB.B:b
 SynMenu AB.Baan:baan
-SynMenu AB.BASIC:basic
+SynMenu AB.Basic.FreeBasic:freebasic
+SynMenu AB.Basic.IBasic:ibasic
+SynMenu AB.Basic.QBasic:basic
+SynMenu AB.Basic.Visual\ Basic:vb
+SynMenu AB.Bazaar\ commit\ file:bzr
 SynMenu AB.BC\ calculator:bc
 SynMenu AB.BDF\ font:bdf
 SynMenu AB.BibTeX.Bibliography\ database:bib
@@ -122,11 +127,11 @@ SynMenu C.Clean:clean
 SynMenu C.Clever:cl
 SynMenu C.Clipper:clipper
 SynMenu C.Cmake:cmake
+SynMenu C.Cmusrc:cmusrc
 SynMenu C.Cold\ Fusion:cf
 SynMenu C.Config.Cfg\ Config\ file:cfg
 SynMenu C.Config.Generic\ Config\ file:conf
 SynMenu C.Config.Configure\.in:config
-SynMenu C.ConTeXt:context
 SynMenu C.CRM114:crm
 SynMenu C.Ctrl-H:ctrlh
 SynMenu C.Cobol:cobol
@@ -209,6 +214,7 @@ SynMenu FG.Groff:groff
 SynMenu FG.Groovy:groovy
 SynMenu FG.GTKrc:gtkrc
 
+SynMenu HIJK.Hamster:hamster
 SynMenu HIJK.Haskell.Haskell:haskell
 SynMenu HIJK.Haskell.Haskell-c2hs:chaskell
 SynMenu HIJK.Haskell.Haskell-literate:lhaskell
@@ -230,6 +236,7 @@ SynMenu HIJK.IDL\Microsoft\ IDL:msidl
 SynMenu HIJK.Indent\ profile:indent
 SynMenu HIJK.Inform:inform
 SynMenu HIJK.Informix\ 4GL:fgl
+SynMenu HIJK.Initng:initng
 SynMenu HIJK.Inittab:inittab
 SynMenu HIJK.Inno\ setup:iss
 SynMenu HIJK.InstallShield\ script:ishd
@@ -290,6 +297,7 @@ SynMenu L-Ma.Matlab:matlab
 SynMenu L-Ma.Maxima:maxima
 
 SynMenu Me-NO.MEL\ (for\ Maya):mel
+SynMenu Me-NO.Messages\ (/var/log):messages
 SynMenu Me-NO.Metafont:mf
 SynMenu Me-NO.MetaPost:mp
 SynMenu Me-NO.MGL:mgl
@@ -357,6 +365,7 @@ SynMenu PQ.Povray.Povray\ scene\ descr:pov
 SynMenu PQ.Povray.Povray\ configuration:povini
 SynMenu PQ.Prescribe\ (Kyocera):prescribe
 SynMenu PQ.Printcap:pcap
+SynMenu PQ.Privoxy:privoxy
 SynMenu PQ.Procmail:procmail
 SynMenu PQ.Product\ Spec\ File:psf
 SynMenu PQ.Progress:progress
@@ -463,6 +472,7 @@ SynMenu Sh-S.Stata.SMCL:smcl
 SynMenu Sh-S.Stata.Stata:stata
 SynMenu Sh-S.Stored\ Procedures:stp
 SynMenu Sh-S.Strace:strace
+SynMenu Sh-S.Streaming\ descriptor\ file:sd
 SynMenu Sh-S.Subversion\ commit:svn
 SynMenu Sh-S.Sudoers:sudoers
 SynMenu Sh-S.Sysctl\.conf:sysctl
@@ -477,7 +487,9 @@ SynMenu TUV.TealInfo:tli
 SynMenu TUV.Telix\ Salt:tsalt
 SynMenu TUV.Termcap/Printcap:ptcap
 SynMenu TUV.Terminfo:terminfo
-SynMenu TUV.TeX.TeX:tex
+SynMenu TUV.TeX.TeX/LaTeX:tex
+SynMenu TUV.TeX.plain\ TeX:plaintex
+SynMenu TUV.TeX.ConTeXt:context
 SynMenu TUV.TeX.TeX\ configuration:texmf
 SynMenu TUV.TeX.Texinfo:texinfo
 SynMenu TUV.TF\ mud\ client:tf

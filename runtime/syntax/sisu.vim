@@ -2,6 +2,8 @@
 " SiSU Maintainer: Ralph Amissah <ralph@amissah.com>
 " SiSU Markup:     SiSU (sisu-0.38)
 " (originally looked at Ruby Vim by Mirko Nasato)
+" Last Update:	   2006 Jul 22
+
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
@@ -54,7 +56,8 @@ syn region sisu_content_alt contains=sisu_strikeout,sisu_number,sisu_control,sis
 syn region sisu_content_alt contains=sisu_mark_endnote,sisu_content_endnote,sisu_link,sisu_mark,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_contain start="^\(alt\|group\|poem\){" end="^}\(alt\|group\|poem\)"
 syn region sisu_content_alt contains=sisu_error matchgroup=sisu_contain start="^code{" end="^}code"
 "%   endnotes
-syn region sisu_content_endnote contains=sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~{" end="}\~" skip="\n"
+syn region sisu_content_endnote contains=sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~{[*+]*" end="}\~" skip="\n"
+syn region sisu_content_endnote contains=sisu_link,sisu_strikeout,sisu_underline,sisu_number,sisu_control,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\~\[[*+]*" end="\]\~" skip="\n"
 syn region sisu_content_endnote contains=sisu_strikeout,sisu_number,sisu_control,sisu_link,sisu_identifier,sisu_error,sisu_error_wspace,sisu_mark,sisu_break matchgroup=sisu_mark_endnote start="\^\~" end="\n\n"
 "%   images
 syn region sisu_linked contains=sisu_fontface,sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_link start="{" end="}\(\(https\?://\|\.\./\)\S\+\|image\)" oneline

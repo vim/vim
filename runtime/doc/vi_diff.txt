@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.0.  Last change: 2006 Apr 24
+*vi_diff.txt*   For Vim version 7.1a.  Last change: 2006 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,7 +25,7 @@ is missing something or because Posix is beside the mark).
 ==============================================================================
 1. Simulated command					*simulated-command*
 
-This command is in Vi, but Vim only simuates it:
+This command is in Vi, but Vim only simulates it:
 
 							*:o* *:op* *:open*
 :[range]o[pen]			Works like |:visual|: end Ex mode.
@@ -953,7 +953,7 @@ Only Vim is able to accept options in between and after the file names.
 ==============================================================================
 7. POSIX compliance				*posix* *posix-compliance*
 
-In 2005 the POSIX test suite was run to check the compatiblity of Vim.  Most
+In 2005 the POSIX test suite was run to check the compatibility of Vim.  Most
 of the test was executed properly.  There are the few things where Vim
 is not POSIX compliant, even when run in Vi compatibility mode.
 

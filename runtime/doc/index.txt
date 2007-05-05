@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.0.  Last change: 2006 Apr 30
+*index.txt*     For Vim version 7.1a.  Last change: 2007 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -624,9 +624,10 @@ tag		char	      note action in Normal mode	~
 				   included files that contains the word under
 				   the cursor, start searching at beginning of
 				   current file
-|[p|		[p		2  like "P", but adjust indent to current line
 |[m|		[m		1  cursor N times back to start of member
 				   function
+|[p|		[p		2  like "P", but adjust indent to current line
+|[s|		[s		1  move to the previous misspelled word
 |[z|		[z		1  move to start of open fold
 |[{|		[{		1  cursor N times back to unmatched '{'
 |[<MiddleMouse> [<MiddleMouse>	2  same as "[p"
@@ -663,9 +664,10 @@ tag		char	      note action in Normal mode	~
 				   included files that contains the word under
 				   the cursor, start searching at cursor
 				   position
-|]p|		]p		2  like "p", but adjust indent to current line
 |]m|		]m		1  cursor N times forward to end of member
 				   function
+|]p|		]p		2  like "p", but adjust indent to current line
+|]s|		]s		1  move to next misspelled word
 |]z|		]z		1  move to end of open fold
 |]}|		]}		1  cursor N times forward to unmatched '}'
 |]<MiddleMouse> ]<MiddleMouse>	2  same as "]p"
@@ -748,6 +750,8 @@ tag		char	      note action in Normal mode	~
 |gu|		gu{motion}	2  make Nmove text lowercase
 |gv|		gv		   reselect the previous Visual area
 |gw|		gw{motion}	2  format Nmove text and keep cursor
+|netrw-gx|	gx		   execute application for file name under the
+				   cursor (only with |netrw| plugin)
 |g@|		g@{motion}	   call 'operatorfunc'
 |g~|		g~{motion}	2  swap case for Nmove text
 |g<Down>|	g<Down>		1  same as "gj"
@@ -984,7 +988,7 @@ file names, tags, commands etc. as appropriate.
 				{expr}
 		CTRL-\ f - z	reserved for extensions
 		CTRL-\ others	not used
-		CTRL-]		not used
+|c_CTRL-]|	CTRL-]		trigger abbreviation
 |c_CTRL-^|	CTRL-^		toggle use of |:lmap| mappings
 |c_CTRL-_|	CTRL-_		when 'allowrevins' set: change language
 				(Hebrew, Farsi)

@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 7.0.  Last change: 2006 May 02
+*tabpage.txt*   For Vim version 7.1a.  Last change: 2007 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -74,7 +74,8 @@ In the GUI tab pages line you can use the right mouse button to open menu.
 
 :[count]tab {cmd}					*:tab*
 		Execute {cmd} and when it opens a new window open a new tab
-		page instead.  Doesn't work for |:diffsplit| or |:diffpatch|.
+		page instead.  Doesn't work for |:diffsplit|, |:diffpatch|,
+		|:execute| and |:normal|.
 		When [count] is omitted the tab page appears after the current
 		one.  When [count] is specified the new tab page comes after
 		tab page [count].  Use ":0tab cmd" to get the new tab page as
@@ -129,23 +130,25 @@ label to switch to that tab page.  Click where there is no label to go to the
 next tab page.  |'tabline'|
 
 :tabn[ext]				*:tabn* *:tabnext* *gt*
-gt					*CTRL-<PageDown>* *<C-PageDown>*
-<C-PageDown>				*i_CTRL-<PageDown>* *i_<C-PageDown>*
+<C-PageDown>				*CTRL-<PageDown>* *<C-PageDown>*
+gt					*i_CTRL-<PageDown>* *i_<C-PageDown>*
 		Go to the next tab page.  Wraps around from the last to the
 		first one.
 
-:tabn[ext] {count}			*CTRL-<PageUp>* *<C-PageUp>*
-{count}gt				*i_CTRL-<PageUp>* *i_<C-PageUp>*
-<C-PageUp>	Go to tab page {count}.  The first tab page has number one.
+:tabn[ext] {count}
+{count}<C-PageDown>
+{count}gt	Go to tab page {count}.  The first tab page has number one.
 
 
-:tabp[revious]				*:tabp* *:tabprevious* *gT*
-:tabN[ext]				*:tabN* *:tabNext*
+:tabp[revious]				*:tabp* *:tabprevious* *gT* *:tabN*
+:tabN[ext]				*:tabNext* *CTRL-<PageUp>*
+<C-PageUp>			 *<C-PageUp>* *i_CTRL-<PageUp>* *i_<C-PageUp>*
 gT		Go to the previous tab page.  Wraps around from the first one
 		to the last one.
 
 :tabp[revious] {count}
 :tabN[ext] {count}
+{count}<C-PageUp>
 {count}gT	Go {count} tab pages back.  Wraps around from the first one
 		to the last one.
 
@@ -203,7 +206,7 @@ The entries are:
 			pointer.
 	New Tab		Open a tab page, editing an empty buffer.  It appears
 			to the left of the mouse pointer.
-	Open Tab...	Like "New Tab" and additionaly use a file selector to
+	Open Tab...	Like "New Tab" and additionally use a file selector to
 			select a file to edit.
 
 Diff mode works per tab page.  You can see the diffs between several files
@@ -247,6 +250,10 @@ always.
 The highlighting of the tab pages line is set with the groups TabLine
 TabLineSel and TabLineFill.  |hl-TabLine| |hl-TabLineSel| |hl-TabLineFill|
 
+A "+" will be shown for a tab page that has a modified window.  The number of
+windows in a tabpage is also shown.  Thus "3+" means three windows and one of
+them has a modified buffer.
+
 The 'tabline' option allows you to define your preferred way to tab pages
 labels.  This isn't easy, thus an example will be given here.
 
@@ -254,8 +261,8 @@ For basics see the 'statusline' option.  The same items can be used in the
 'tabline' option.  Additionally, the |tabpagebuflist()|, |tabpagenr()| and
 |tabpagewinnr()| functions are useful.
 
-Since the number of tab labels will vary, you need to use an expresion for the
-whole option.  Something like: >
+Since the number of tab labels will vary, you need to use an expression for
+the whole option.  Something like: >
 	:set tabline=%!MyTabLine()
 
 Then define the MyTabLine() function to list all the tab pages labels.  A
@@ -300,7 +307,7 @@ Now the MyTabLabel() function is called for each tab page to get its label. >
 
 This is just a simplistic example that results in a tab pages line that
 resembles the default, but without adding a + for a modified buffer or
-trunctating the names.  You will want to reduce the width of labels in a
+truncating the names.  You will want to reduce the width of labels in a
 clever way when there is not enough room.  Check the 'columns' option for the
 space available.
 
@@ -330,7 +337,7 @@ label: >
 	:set guitablabel=%N\ %f
 
 An example that resembles the default 'guitablabel': Show the number of
-windows in the tab page and a '+' if there is a modifed buffer: >
+windows in the tab page and a '+' if there is a modified buffer: >
 
 	function GuiTabLabel()
 	  let label = ''
