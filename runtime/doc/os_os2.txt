@@ -1,4 +1,4 @@
-*os_os2.txt*    For Vim version 7.0.  Last change: 2005 Mar 29
+*os_os2.txt*    For Vim version 7.1a.  Last change: 2007 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Paul Slootman
@@ -100,7 +100,7 @@ ENVIRONMENT VARIABLES IN FILE NAMES
 This HOME environment variable is also used when using ~ in file names, so
 ":e ~/textfile" will edit the file "textfile" in the directory referred to by
 HOME.  Additionally you can use other environment variables in file names, as
-as ":n $SRC/*.c".
+in ":n $SRC/*.c".
 
 The HOME environment variable is also used to locate the .viminfo file
 (see |viminfo-file|).  There is no support yet for .viminfo on FAT file
