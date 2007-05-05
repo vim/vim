@@ -1564,7 +1564,9 @@ tclsetdelcmd(interp, reflist, vimobj, delcmd)
 	if (reflist->interp == interp && reflist->vimobj == vimobj)
 	{
 	    if (reflist->delcmd)
+	    {
 		Tcl_DecrRefCount(reflist->delcmd);
+	    }
 	    Tcl_IncrRefCount(delcmd);
 	    reflist->delcmd = delcmd;
 	    return TCL_OK;

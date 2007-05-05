@@ -2,7 +2,7 @@
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
 " Version:	0.37
 " URL:		http://www.unb.ca/chem/ajit/indent/fortran.vim
-" Last Change:	2006 Apr. 22
+" Last Change:	2006 Nov 16
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -72,7 +72,7 @@ function FortranGetIndent(lnum)
   let prevstat=substitute(prevline, '!.*$', '', '')
 
   "Indent do loops only if they are all guaranteed to be of do/end do type
-  if exists("b:fortran_do_enddo") || exists("fortran_do_enddo")
+  if exists("b:fortran_do_enddo") || exists("g:fortran_do_enddo")
     if prevstat =~? '^\s*\(\d\+\s\)\=\s*\(\a\w*\s*:\)\=\s*do\>'
       let ind = ind + &sw
     endif

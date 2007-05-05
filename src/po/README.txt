@@ -12,9 +12,9 @@ supported by iconv and will be automatically converted to the currently used
 encoding.
 
 The GNU gettext library, starting with version 0.10.36, uses a new format for
-some encodings.  This folows the C99 standard for strings.  It means that when
-a multi-byte character includes the 0x5c byte, this is not recognized as a
-backslash.  Since this format is incompatible with Solaris, Vim uses the old
+some encodings.  This follows the C99 standard for strings.  It means that
+when a multi-byte character includes the 0x5c byte, this is not recognized as
+a backslash.  Since this format is incompatible with Solaris, Vim uses the old
 format.  This is done by setting the OLD_PO_FILE_OUTPUT and OLD_PO_FILE_INPUT
 environment variables.  When you use the Makefile in this directory that will
 be done for you.  This does NOT work with gettext 0.10.36.  Don't use it, get
@@ -30,7 +30,7 @@ on MS-Windows.  Download the gettext packages, for example from:
 
 You might have to do the commands manually.  Example:
 
-   cd c:\vim\vim60
+   cd c:\vim\vim71
    mkdir runtime\lang\ja\LC_MESSAGES
    msgfmt -o runtime\lang\ja\LC_MESSAGES\vim.mo src\po\ja.po
 

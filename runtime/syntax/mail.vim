@@ -22,13 +22,15 @@ syn cluster mailQuoteExps	contains=mailQuoteExp1,mailQuoteExp2,mailQuoteExp3,mai
 syn case match
 " For "From " matching case is required. The "From " is not matched in quoted
 " emails
-syn region	mailHeader	contains=@mailHeaderFields,@NoSpell start="^From " skip="^\s" end="\v^[-A-Za-z0-9]*([^-A-Za-z0-9:]|$)"me=s-1
+" According to RFC 2822 any printable ASCII character can appear in a field
+" name, except ':'.
+syn region	mailHeader	contains=@mailHeaderFields,@NoSpell start="^From " skip="^\s" end="\v^[!-9;-~]*([^!-~]|$)"me=s-1
 syn match	mailHeaderKey	contained contains=mailEmail,@NoSpell "^From\s.*$"
 
 syn case ignore
 " Nothing else depends on case. Headers in properly quoted (with "> " or ">")
 " emails are matched
-syn region	mailHeader	keepend contains=@mailHeaderFields,@mailQuoteExps,@NoSpell start="^\z(\(> \?\)*\)\v(newsgroups|from|((in-)?reply-)?to|b?cc|subject|return-path|received|date|replied):" skip="^\z1\s" end="\v^\z1[-a-z0-9]*([^-a-z0-9:]|$)"me=s-1 end="\v^\z1@!"me=s-1 end="\v^\z1(\> ?)+"me=s-1
+syn region	mailHeader	keepend contains=@mailHeaderFields,@mailQuoteExps,@NoSpell start="^\z(\(> \?\)*\)\v(newsgroups|from|((in-)?reply-)?to|b?cc|subject|return-path|received|date|replied):" skip="^\z1\s" end="\v^\z1[!-9;-~]*([^!-~]|$)"me=s-1 end="\v^\z1@!"me=s-1 end="\v^\z1(\> ?)+"me=s-1
 
 syn region	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@mailQuoteExps,@NoSpell start="\v(^(\> ?)*)@<=(to|b?cc):" skip=",$" end="$"
 syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(from|reply-to):.*$"

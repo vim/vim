@@ -1,4 +1,4 @@
-*sql.txt*	For Vim version 7.0.  Last change: Wed Apr 26 2006 3:05:33 PM
+*sql.txt*	For Vim version 7.1a.  Last change: Wed Apr 26 2006 3:05:33 PM
 
 by David Fishburn
 
@@ -632,7 +632,7 @@ your |vimrc|: >
 	- When completing tables, procedure or views and using dbext.vim 3.00
 	  or higher the list of objects will also include the owner name.
 	  When completing these objects and omni_sql_include_owner is enabled
-	  the owner name will be be replaced. >
+	  the owner name will be replaced. >
 
     omni_sql_precache_syntax_groups
 <	- Default:

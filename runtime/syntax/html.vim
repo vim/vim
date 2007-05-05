@@ -2,7 +2,7 @@
 " Language:	HTML
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/html.vim
-" Last Change:  2006 April 13
+" Last Change:  2006 Jun 19
 
 " Please check :help html.vim for some comments and a description of the options
 
@@ -24,6 +24,7 @@ else
   command! -nargs=+ HtmlHiLink hi def link <args>
 endif
 
+syntax spell toplevel
 
 syn case ignore
 

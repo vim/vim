@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	php
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2005 Sep 05
+" Last Changed: 2006 Jul 15
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -30,6 +30,9 @@ endif
 if exists("b:match_words")
     let s:match_words = b:match_words
 endif
+if exists("b:match_skip")
+    unlet b:match_skip
+endif
 
 " Change the :browse e filter to primarily show PHP-related files.
 if has("gui_win32")
@@ -41,12 +44,13 @@ endif
 setlocal include=\\\(require\\\|include\\\)\\\(_once\\\)\\\?
 setlocal iskeyword+=$
 if exists("loaded_matchit")
-    let b:match_words = '<php?:?>,\<switch\>:\<endswitch\>,' .
+    let b:match_words = '<?php:?>,\<switch\>:\<endswitch\>,' .
 		      \ '\<if\>:\<elseif\>:\<else\>:\<endif\>,' .
 		      \ '\<while\>:\<endwhile\>,' .
 		      \ '\<do\>:\<while\>,' .
 		      \ '\<for\>:\<endfor\>,' .
 		      \ '\<foreach\>:\<endforeach\>,' .
+                      \ '(:),[:],{:},' .
 		      \ s:match_words
 endif
 " ###

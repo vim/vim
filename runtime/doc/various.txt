@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.0.  Last change: 2006 Apr 25
+*various.txt*   For Vim version 7.1a.  Last change: 2007 Jan 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -121,6 +121,12 @@ g8			Print the hex values of the bytes used in the
 :[range]# [count] [flags]
 			synonym for :number.
 
+							*:#!*
+:#!{anything}		Ignored, so that you can start a Vim script with: >
+				#!/usr/bin/env vim -S
+				echo "this is a Vim script"
+				quit
+<
 							*:z* *E144*
 :{range}z[+-^.=]{count}	Display several lines of text surrounding the line
 			specified with {range}, or around the current line
@@ -163,6 +169,7 @@ g8			Print the hex values of the bytes used in the
 			it possible to execute Normal mode commands typed on
 			the command-line.  {commands} is executed like it is
 			typed.  For undo all commands are undone together.
+			Execution stops when an error is encountered.
 			If the [!] is given, mappings will not be used.
 			{commands} should be a complete command.  If
 			{commands} does not finish a command, the last one
@@ -377,7 +384,7 @@ m  *+tcl/dyn*		Tcl interface |tcl-dynamic| |/dyn|
 N  *+termresponse*	support for |t_RV| and |v:termresponse|
 N  *+textobjects*	|text-objects| selection
    *+tgetent*		non-Unix only: able to use external termcap
-N  *+title*		Setting the window title |'title'|
+N  *+title*		Setting the window 'title' and 'icon'
 N  *+toolbar*		|gui-toolbar|
 N  *+user_commands*	User-defined commands. |user-commands|
 N  *+viminfo*		|'viminfo'|
@@ -434,10 +441,14 @@ N  *+X11*		Unix only: can restore window title |X11|
 			after the register name can be omitted. {not in Vi}
 :redi[r] @{a-z}>>	Append messages to register {a-z}. {not in Vi}
 
-:redi[r] @*>		Redirect messages to the clipboard. For backward
-			compatibility, the ">" after the register name can be
-			omitted. {not in Vi}
-:redi[r] @*>>		Append messages to the clipboard. {not in Vi}
+:redi[r] @*>		
+:redi[r] @+>		Redirect messages to the selection or clipboard. For
+			backward compatibility, the ">" after the register
+			name can be omitted. See |quotestar| and |quoteplus|.
+			{not in Vi}
+:redi[r] @*>>		
+:redi[r] @+>>		Append messages to the selection or clipboard.
+			{not in Vi}
 
 :redi[r] @">		Redirect messages to the unnamed register. For
 			backward compatibility, the ">" after the register
@@ -447,6 +458,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] => {var}	Redirect messages to a variable.  If the variable
 			doesn't exist, then it is created.  If the variable
 			exists, then it is initialized to an empty string.
+			The variable will remain empty until redirection ends.
 			Only string variables can be used.  After the
 			redirection starts, if the variable is removed or
 			locked or the variable type is changed, then further

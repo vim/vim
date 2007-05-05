@@ -1,287 +1,367 @@
-" Vim syntax file
-" Language:	Ada (95)
-" Maintainer:	David A. Wheeler <dwheeler@dwheeler.com>
-" URL: http://www.dwheeler.com/vim
-" Last Change:	2001-11-02
+"----------------------------------------------------------------------------
+"  Description: Vim Ada syntax file
+"     Language: Ada (2005)
+"	   $Id$
+"    Copyright: Copyright (C) 2006 Martin Krischik
+"   Maintainer: Martin Krischik
+"		David A. Wheeler <dwheeler@dwheeler.com>
+"		Simon Bradley <simon.bradley@pitechnology.com>
+" Contributors: Preben Randhol.
+"      $Author$
+"	 $Date$
+"      Version: 4.2
+"    $Revision$
+"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/syntax/ada.vim $
+"		http://www.dwheeler.com/vim
+"      History: 24.05.2006 MK Unified Headers
+"		26.05.2006 MK ' should not be in iskeyword.
+"		16.07.2006 MK Ada-Mode as vim-ball
+"		02.10.2006 MK Better folding.
+"		15.10.2006 MK Bram's suggestion for runtime integration
+"		05.11.2006 MK Spell check for comments and strings only
+"		05.11.2006 MK Bram suggested to save on spaces
+"    Help Page: help ft-ada-syntax
+"------------------------------------------------------------------------------
+" The formal spec of Ada 2005 (ARM) is the "Ada 2005 Reference Manual".
+" For more Ada 2005 info, see http://www.gnuada.org and http://www.adapower.com.
+"
+" This vim syntax file works on vim 7.0 only and makes use of most of Voim 7.0 
+" advanced features.
+"------------------------------------------------------------------------------
 
-" Former Maintainer:	Simon Bradley <simon.bradley@pitechnology.com>
-"			(was <sib93@aber.ac.uk>)
-" Other contributors: Preben Randhol.
-" The formal spec of Ada95 (ARM) is the "Ada95 Reference Manual".
-" For more Ada95 info, see http://www.gnuada.org and http://www.adapower.com.
-
-" This vim syntax file works on vim 5.6, 5.7, 5.8 and 6.x.
-" It implements Bram Moolenaar's April 25, 2001 recommendations to make
-" the syntax file maximally portable across different versions of vim.
-" If vim 6.0+ is available,
-" this syntax file takes advantage of the vim 6.0 advanced pattern-matching
-" functions to avoid highlighting uninteresting leading spaces in
-" some expressions containing "with" and "use".
-
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
- syntax clear
-elseif exists("b:current_syntax")
- finish
+if exists("b:current_syntax") || version < 700
+    finish
 endif
 
-" Ada is entirely case-insensitive.
-syn case ignore
+let b:current_syntax = "ada"
 
-" We don't need to look backwards to highlight correctly;
-" this speeds things up greatly.
-syn sync minlines=1 maxlines=1
+" Section: Ada is entirely case-insensitive. {{{1
+"
+syntax   case ignore
+setlocal nosmartcase
+setlocal ignorecase
 
-" Highlighting commands.  There are 69 reserved words in total in Ada95.
-" Some keywords are used in more than one way. For example:
+" Section: Highlighting commands {{{1
+"
+" There are 72 reserved words in total in Ada2005. Some keywords are
+" used in more than one way. For example:
 " 1. "end" is a general keyword, but "end if" ends a Conditional.
 " 2. "then" is a conditional, but "and then" is an operator.
+"
+for b:Item in g:ada#Keywords
+   " Standard Exceptions (including I/O).
+   " We'll highlight the standard exceptions, similar to vim's Python mode.
+   " It's possible to redefine the standard exceptions as something else,
+   " but doing so is very bad practice, so simply highlighting them makes sense.
+   if b:Item['kind'] == "x"
+      execute "syntax keyword adaException " . b:Item['word']
+   endif
+   if b:Item['kind'] == "a"
+      execute 'syntax match adaAttribute "\V' . b:Item['word'] . '"'
+   endif
+   " We don't normally highlight types in package Standard
+   " (Integer, Character, Float, etc.).  I don't think it looks good
+   " with the other type keywords, and many Ada programs define
+   " so many of their own types that it looks inconsistent.
+   " However, if you want this highlighting, turn on "ada_standard_types".
+   " For package Standard's definition, see ARM section A.1.
+   if b:Item['kind'] == "t" && exists ("g:ada_standard_types")
+      execute "syntax keyword adaBuiltinType " . b:Item['word']
+   endif
+endfor
 
+" Section: others {{{1
+"
+syntax keyword  adaLabel	others
 
-" Standard Exceptions (including I/O).
-" We'll highlight the standard exceptions, similar to vim's Python mode.
-" It's possible to redefine the standard exceptions as something else,
-" but doing so is very bad practice, so simply highlighting them makes sense.
-syn keyword adaException Constraint_Error Program_Error Storage_Error
-syn keyword adaException Tasking_Error
-syn keyword adaException Status_Error Mode_Error Name_Error Use_Error
-syn keyword adaException Device_Error End_Error Data_Error Layout_Error
-syn keyword adaException Length_Error Pattern_Error Index_Error
-syn keyword adaException Translation_Error
-syn keyword adaException Time_Error Argument_Error
-syn keyword adaException Tag_Error
-syn keyword adaException Picture_Error
-" Interfaces
-syn keyword adaException Terminator_Error Conversion_Error
-syn keyword adaException Pointer_Error Dereference_Error Update_Error
-" This isn't in the Ada spec, but a GNAT extension.
-syn keyword adaException Assert_Failure
-" We don't list ALL exceptions defined in particular compilers (e.g., GNAT),
-" because it's quite reasonable to define those phrases as non-exceptions.
+" Section: Operatoren {{{1
+"
+syntax keyword  adaOperator abs mod not rem xor
+syntax match    adaOperator "\<and\>"
+syntax match    adaOperator "\<and\s\+then\>"
+syntax match    adaOperator "\<or\>"
+syntax match    adaOperator "\<or\s\+else\>"
+syntax match    adaOperator "[-+*/<>&]"
+syntax keyword  adaOperator **
+syntax match    adaOperator "[/<>]="
+syntax keyword  adaOperator =>
+syntax match    adaOperator "\.\."
+syntax match    adaOperator "="
 
+" Section: <> {{{1
+"
+" Handle the box, <>, specially:
+"
+syntax keyword  adaSpecial	    <>
 
-" We don't normally highlight types in package Standard
-" (Integer, Character, Float, etc.).  I don't think it looks good
-" with the other type keywords, and many Ada programs define
-" so many of their own types that it looks inconsistent.
-" However, if you want this highlighting, turn on "ada_standard_types".
-" For package Standard's definition, see ARM section A.1.
-
-if exists("ada_standard_types")
-  syn keyword adaBuiltinType	Boolean Integer Natural Positive Float
-  syn keyword adaBuiltinType	Character Wide_Character
-  syn keyword adaBuiltinType	String Wide_String
-  syn keyword adaBuiltinType	Duration
-  " These aren't listed in ARM section A.1's code, but they're noted as
-  " options in ARM sections 3.5.4 and 3.5.7:
-  syn keyword adaBuiltinType	Short_Integer Short_Short_Integer
-  syn keyword adaBuiltinType	Long_Integer Long_Long_Integer
-  syn keyword adaBuiltinType	Short_Float Short_Short_Float
-  syn keyword adaBuiltinType	Long_Float Long_Long_Float
+" Section: rainbow color {{{1
+"
+if exists("g:ada_rainbow_color")
+    syntax match	adaSpecial	 "[:;.,]"
+    runtime plugin/Rainbow_Parenthsis.vim
+else
+    syntax match	adaSpecial	 "[:;().,]"
 endif
 
-" There are MANY other predefined types; they've not been added, because
-" determining when they're a type requires context in general.
-" One potential addition would be Unbounded_String.
-
-
-syn keyword adaLabel		others
-
-syn keyword adaOperator		abs mod not rem xor
-syn match adaOperator		"\<and\>"
-syn match adaOperator		"\<and\s\+then\>"
-syn match adaOperator		"\<or\>"
-syn match adaOperator		"\<or\s\+else\>"
-syn match adaOperator		"[-+*/<>&]"
-syn keyword adaOperator		**
-syn match adaOperator		"[/<>]="
-syn keyword adaOperator		=>
-syn match adaOperator		"\.\."
-syn match adaOperator		"="
-
+" Section: := {{{1
+"
 " We won't map "adaAssignment" by default, but we need to map ":=" to
 " something or the "=" inside it will be mislabelled as an operator.
 " Note that in Ada, assignment (:=) is not considered an operator.
-syn match adaAssignment		":="
+"
+syntax match adaAssignment		":="
 
-" Handle the box, <>, specially:
-syn keyword adaSpecial	<>
+" Section: Numbers, including floating point, exponents, and alternate bases. {{{1
+"
+syntax match   adaNumber		"\<\d[0-9_]*\(\.\d[0-9_]*\)\=\([Ee][+-]\=\d[0-9_]*\)\=\>"
+syntax match   adaNumber		"\<\d\d\=#\x[0-9A-Fa-f_]*\(\.\x[0-9A-Fa-f_]*\)\=#\([Ee][+-]\=\d[0-9_]*\)\="
 
-" Numbers, including floating point, exponents, and alternate bases.
-syn match   adaNumber		"\<\d[0-9_]*\(\.\d[0-9_]*\)\=\([Ee][+-]\=\d[0-9_]*\)\=\>"
-syn match   adaNumber		"\<\d\d\=#\x[0-9A-Fa-f_]*\(\.\x[0-9A-Fa-f_]*\)\=#\([Ee][+-]\=\d[0-9_]*\)\="
+" Section: Identify leading numeric signs {{{1
+"
+" In "A-5" the "-" is an operator, " but in "A:=-5" the "-" is a sign. This
+" handles "A3+-5" (etc.) correctly.  " This assumes that if you put a
+" don't put a space after +/- when it's used " as an operator, you won't
+" put a space before it either -- which is true " in code I've seen.
+"
+syntax match adaSign "[[:space:]<>=(,|:;&*/+-][+-]\d"lc=1,hs=s+1,he=e-1,me=e-1
 
-" Identify leading numeric signs. In "A-5" the "-" is an operator,
-" but in "A:=-5" the "-" is a sign. This handles "A3+-5" (etc.) correctly.
-" This assumes that if you put a don't put a space after +/- when it's used
-" as an operator, you won't put a space before it either -- which is true
-" in code I've seen.
-syn match adaSign "[[:space:]<>=(,|:;&*/+-][+-]\d"lc=1,hs=s+1,he=e-1,me=e-1
+" Section: Labels for the goto statement. {{{1
+"
+syntax region  adaLabel		start="<<"  end=">>"
 
-" Labels for the goto statement.
-syn region  adaLabel		start="<<"  end=">>"
-
+" Section: Boolean Constants {{{1
 " Boolean Constants.
-syn keyword adaBoolean	true false
+syntax keyword adaBoolean	true false
 
+" Section: Warn C/C++ {{{1
+"
 " Warn people who try to use C/C++ notation erroneously:
-syn match adaError "//"
-syn match adaError "/\*"
-syn match adaError "=="
+"
+syntax match adaError "//"
+syntax match adaError "/\*"
+syntax match adaError "=="
 
 
-if exists("ada_space_errors")
-  if !exists("ada_no_trail_space_error")
-    syn match   adaSpaceError     excludenl "\s\+$"
-  endif
-  if !exists("ada_no_tab_space_error")
-    syn match   adaSpaceError     " \+\t"me=e-1
-  endif
+" Section: Space Errors {{{1
+"
+if exists("g:ada_space_errors")
+   if !exists("g:ada_no_trail_space_error")
+       syntax match   adaSpaceError	 excludenl "\s\+$"
+   endif
+   if !exists("g:ada_no_tab_space_error")
+      syntax match   adaSpaceError	 " \+\t"me=e-1
+   endif
+   if !exists("g:ada_all_tab_usage")
+      syntax match   adaSpecial	 "\t"
+   endif
 endif
 
+" Section: end {{{1
 " Unless special ("end loop", "end if", etc.), "end" marks the end of a
 " begin, package, task etc. Assiging it to adaEnd.
-syn match adaEnd		"\<end\>"
+syntax match    adaEnd	"\<end\>"
 
-syn keyword adaPreproc		pragma
+syntax keyword  adaPreproc		 pragma
 
-syn keyword adaRepeat		exit for loop reverse while
-syn match adaRepeat		"\<end\s\+loop\>"
+syntax keyword  adaRepeat	 exit for loop reverse while
+syntax match    adaRepeat		   "\<end\s\+loop\>"
 
-syn keyword adaStatement	accept delay goto raise requeue return
-syn keyword adaStatement	terminate
-syn match adaStatement	"\<abort\>"
+syntax keyword  adaStatement accept delay goto raise requeue return
+syntax keyword  adaStatement terminate
+syntax match    adaStatement  "\<abort\>"
 
-" Handle Ada's record keywords.
+" Section: Handle Ada's record keywords. {{{1
+"
 " 'record' usually starts a structure, but "with null record;" does not,
 " and 'end record;' ends a structure.  The ordering here is critical -
 " 'record;' matches a "with null record", so make it a keyword (this can
 " match when the 'with' or 'null' is on a previous line).
 " We see the "end" in "end record" before the word record, so we match that
 " pattern as adaStructure (and it won't match the "record;" pattern).
-syn match adaStructure	"\<record\>"
-syn match adaStructure	"\<end\s\+record\>"
-syn match adaKeyword	"\<record;"me=e-1
+"
+syntax match adaStructure   "\<record\>"	contains=adaRecord
+syntax match adaStructure   "\<end\s\+record\>"	contains=adaRecord
+syntax match adaKeyword	    "\<record;"me=e-1
 
-syn keyword adaStorageClass	abstract access aliased array at constant delta
-syn keyword adaStorageClass	digits limited of private range tagged
-syn keyword adaTypedef		subtype type
+" Section: type classes {{{1
+"
+syntax keyword adaStorageClass	abstract access aliased array at constant delta
+syntax keyword adaStorageClass	digits limited of private range tagged
+syntax keyword adaStorageClass	interface synchronized
+syntax keyword adaTypedef	subtype type
 
-" Conditionals. "abort" after "then" is a conditional of its own.
-syn match adaConditional	"\<then\>"
-syn match adaConditional	"\<then\s\+abort\>"
-syn match adaConditional	"\<else\>"
-syn match adaConditional	"\<end\s\+if\>"
-syn match adaConditional	"\<end\s\+case\>"
-syn match adaConditional	"\<end\s\+select\>"
-syn keyword adaConditional	if case select
-syn keyword adaConditional	elsif when
+" Section: Conditionals {{{1
+"
+" "abort" after "then" is a conditional of its own.
+"
+syntax match    adaConditional  "\<then\>"
+syntax match    adaConditional	"\<then\s\+abort\>"
+syntax match    adaConditional	"\<else\>"
+syntax match    adaConditional	"\<end\s\+if\>"
+syntax match    adaConditional	"\<end\s\+case\>"
+syntax match    adaConditional	"\<end\s\+select\>"
+syntax keyword  adaConditional	if case select
+syntax keyword  adaConditional	elsif when
 
-syn keyword adaKeyword		all do exception in is new null out
-syn keyword adaKeyword		separate until
+" Section: other keywords {{{1
+syntax match    adaKeyword	    "\<is\>" contains=adaRecord
+syntax keyword  adaKeyword	    all do exception in new null out
+syntax keyword  adaKeyword	    separate until overriding
 
+" Section: begin keywords {{{1
+"
 " These keywords begin various constructs, and you _might_ want to
 " highlight them differently.
-syn keyword adaBegin		begin body declare entry function generic
-syn keyword adaBegin		package procedure protected renames task
+"
+syntax keyword  adaBegin	begin body declare entry generic
+syntax keyword  adaBegin	protected renames task
 
+syntax match    adaBegin	"\<function\>" contains=adaFunction
+syntax match    adaBegin	"\<procedure\>" contains=adaProcedure
+syntax match    adaBegin	"\<package\>" contains=adaPackage
 
+if exists("ada_with_gnat_project_files")
+   syntax keyword adaBegin	project
+endif
+
+" Section: with, use {{{1
+"
 if exists("ada_withuse_ordinary")
-" Don't be fancy. Display "with" and "use" as ordinary keywords in all cases.
- syn keyword adaKeyword		with use
+   " Don't be fancy. Display "with" and "use" as ordinary keywords in all cases.
+   syntax keyword adaKeyword		with use
 else
- " Highlight "with" and "use" clauses like C's "#include" when they're used
- " to reference other compilation units; otherwise they're ordinary keywords.
- " If we have vim 6.0 or later, we'll use its advanced pattern-matching
- " capabilities so that we won't match leading spaces.
- syn match adaKeyword	"\<with\>"
- syn match adaKeyword	"\<use\>"
- if version < 600
-  syn match adaBeginWith "^\s*\(\(with\(\s\+type\)\=\)\|\(use\)\)\>" contains=adaInc
-  syn match adaSemiWith	";\s*\(\(with\(\s\+type\)\=\)\|\(use\)\)\>"lc=1 contains=adaInc
- else
-  syn match adaBeginWith "^\s*\zs\(\(with\(\s\+type\)\=\)\|\(use\)\)\>" contains=adaInc
-  syn match adaSemiWith	";\s*\zs\(\(with\(\s\+type\)\=\)\|\(use\)\)\>" contains=adaInc
- endif
- syn match adaInc	"\<with\>" contained contains=NONE
- syn match adaInc	"\<with\s\+type\>" contained contains=NONE
- syn match adaInc	"\<use\>" contained contains=NONE
- " Recognize "with null record" as a keyword (even the "record").
- syn match adaKeyword	"\<with\s\+null\s\+record\>"
- " Consider generic formal parameters of subprograms and packages as keywords.
- if version < 600
-  syn match adaKeyword	";\s*with\s\+\(function\|procedure\|package\)\>"
-  syn match adaKeyword	"^\s*with\s\+\(function\|procedure\|package\)\>"
- else
-  syn match adaKeyword	";\s*\zswith\s\+\(function\|procedure\|package\)\>"
-  syn match adaKeyword	"^\s*\zswith\s\+\(function\|procedure\|package\)\>"
- endif
+   " Highlight "with" and "use" clauses like C's "#include" when they're used
+   " to reference other compilation units; otherwise they're ordinary keywords.
+   " If we have vim 6.0 or later, we'll use its advanced pattern-matching
+   " capabilities so that we won't match leading spaces.
+   syntax match adaKeyword	"\<with\>"
+   syntax match adaKeyword	"\<use\>"
+   syntax match adaBeginWith	"^\s*\zs\(\(with\(\s\+type\)\=\)\|\(use\)\)\>" contains=adaInc
+   syntax match adaSemiWith	";\s*\zs\(\(with\(\s\+type\)\=\)\|\(use\)\)\>" contains=adaInc
+   syntax match adaInc		"\<with\>" contained contains=NONE
+   syntax match adaInc		"\<with\s\+type\>" contained contains=NONE
+   syntax match adaInc		"\<use\>" contained contains=NONE
+   " Recognize "with null record" as a keyword (even the "record").
+   syntax match adaKeyword	"\<with\s\+null\s\+record\>"
+   " Consider generic formal parameters of subprograms and packages as keywords.
+   syntax match adaKeyword	";\s*\zswith\s\+\(function\|procedure\|package\)\>"
+   syntax match adaKeyword	"^\s*\zswith\s\+\(function\|procedure\|package\)\>"
 endif
 
+" Section: String and character constants. {{{1
+"
+syntax region  adaString	contains=@Spell start=+"+ skip=+""+ end=+"+ 
+syntax match   adaCharacter "'.'"
 
-" String and character constants.
-syn region  adaString		start=+"+  skip=+""+  end=+"+
-syn match   adaCharacter	"'.'"
+" Section: Todo (only highlighted in comments) {{{1
+"
+syntax keyword adaTodo contained TODO FIXME XXX NOTE
 
-" Todo (only highlighted in comments)
-syn keyword adaTodo contained	TODO FIXME XXX
+" Section: Comments. {{{1
+"
+syntax region  adaComment 
+    \ oneline 
+    \ contains=adaTodo,adaLineError,@Spell
+    \ start="--" 
+    \ end="$"
 
-" Comments.
-syn region  adaComment	oneline contains=adaTodo start="--"  end="$"
+" Section: line errors {{{1
+"
+" Note: Line errors have become quite slow with Vim 7.0
+"
+if exists("g:ada_line_errors")
+    syntax match adaLineError "\(^.\{79}\)\@<=."  contains=ALL containedin=ALL
+endif
 
+" Section: syntax folding {{{1
+"
+"	Syntax folding is very tricky - for now I still suggest to use
+"	indent folding
+"
+if exists("g:ada_folding") && g:ada_folding[0] == 's'
+   if stridx (g:ada_folding, 'p') >= 0
+      syntax region adaPackage
+         \ start="\(\<package\s\+body\>\|\<package\>\)\s*\z(\k*\)"
+         \ end="end\s\+\z1\s*;"
+         \ keepend extend transparent fold contains=ALL
+   endif
+   if stridx (g:ada_folding, 'f') >= 0
+      syntax region adaProcedure
+         \ start="\<procedure\>\s*\z(\k*\)"
+         \ end="\<end\>\s\+\z1\s*;"
+         \ keepend extend transparent fold contains=ALL
+      syntax region adaFunction
+         \ start="\<procedure\>\s*\z(\k*\)"
+         \ end="end\s\+\z1\s*;"
+         \ keepend extend transparent fold contains=ALL
+   endif
+   if stridx (g:ada_folding, 'f') >= 0
+      syntax region adaRecord
+         \ start="\<is\s\+record\>"
+         \ end="\<end\s\+record\>"
+         \ keepend extend transparent fold contains=ALL
+   endif
+endif
 
+" Section: The default methods for highlighting. Can be overridden later. {{{1
+"
+highlight def link adaCharacter	    Character
+highlight def link adaComment	    Comment
+highlight def link adaConditional   Conditional
+highlight def link adaKeyword	    Keyword
+highlight def link adaLabel	    Label
+highlight def link adaNumber	    Number
+highlight def link adaSign	    Number
+highlight def link adaOperator	    Operator
+highlight def link adaPreproc	    PreProc
+highlight def link adaRepeat	    Repeat
+highlight def link adaSpecial	    Special
+highlight def link adaStatement	    Statement
+highlight def link adaString	    String
+highlight def link adaStructure	    Structure
+highlight def link adaTodo	    Todo
+highlight def link adaType	    Type
+highlight def link adaTypedef	    Typedef
+highlight def link adaStorageClass  StorageClass
+highlight def link adaBoolean	    Boolean
+highlight def link adaException	    Exception
+highlight def link adaAttribute	    Tag
+highlight def link adaInc	    Include
+highlight def link adaError	    Error
+highlight def link adaSpaceError    Error
+highlight def link adaLineError	    Error
+highlight def link adaBuiltinType   Type
+highlight def link adaAssignment    Special
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_ada_syn_inits")
-  if version < 508
-    let did_ada_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
-
-  " The default methods for highlighting. Can be overridden later.
-  HiLink adaCharacter	Character
-  HiLink adaComment	Comment
-  HiLink adaConditional	Conditional
-  HiLink adaKeyword	Keyword
-  HiLink adaLabel	Label
-  HiLink adaNumber	Number
-  HiLink adaSign	Number
-  HiLink adaOperator	Operator
-  HiLink adaPreproc	PreProc
-  HiLink adaRepeat	Repeat
-  HiLink adaSpecial	Special
-  HiLink adaStatement	Statement
-  HiLink adaString	String
-  HiLink adaStructure	Structure
-  HiLink adaTodo	Todo
-  HiLink adaType	Type
-  HiLink adaTypedef	Typedef
-  HiLink adaStorageClass	StorageClass
-  HiLink adaBoolean	Boolean
-  HiLink adaException	Exception
-  HiLink adaInc	Include
-  HiLink adaError	Error
-  HiLink adaSpaceError	Error
-  HiLink adaBuiltinType Type
-
-  if exists("ada_begin_preproc")
+" Subsection: Begin, End {{{2
+"
+if exists ("ada_begin_preproc")
    " This is the old default display:
-   HiLink adaBegin	PreProc
-   HiLink adaEnd	PreProc
-  else
+   highlight def link adaBegin   PreProc
+   highlight def link adaEnd     PreProc
+else
    " This is the new default display:
-   HiLink adaBegin	Keyword
-   HiLink adaEnd	Keyword
-  endif
-
-  delcommand HiLink
+   highlight def link adaBegin   Keyword
+   highlight def link adaEnd     Keyword
 endif
 
-let b:current_syntax = "ada"
 
-" vim: ts=8
+" Section: formatoptions {{{1
+"
+setlocal formatoptions+=ron
+
+" Section: sync {{{1
+"
+" We don't need to look backwards to highlight correctly;
+" this speeds things up greatly.
+syntax sync minlines=1 maxlines=1
+
+finish " 1}}}
+
+"------------------------------------------------------------------------------
+"   Copyright (C) 2006	Martin Krischik
+"
+"   Vim is Charityware - see ":help license" or uganda.txt for licence details.
+"------------------------------------------------------------------------------
+"vim: textwidth=78 nowrap tabstop=8 shiftwidth=3 softtabstop=3 noexpandtab
+"vim: foldmethod=marker

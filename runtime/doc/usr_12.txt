@@ -1,4 +1,4 @@
-*usr_12.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_12.txt*	For Vim version 7.1a.  Last change: 2006 Nov 18
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -38,8 +38,8 @@ match the start of a word: >
 
 	:%s/\<four/4/g
 
-Obviously, this still goes wrong on "fourty".  Use "\>" to match the end of a
-word: >
+Obviously, this still goes wrong on "fourteen".  Use "\>" to match the end of
+a word: >
 
 	:%s/\<four\>/4/g
 

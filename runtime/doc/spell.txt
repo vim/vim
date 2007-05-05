@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.0.  Last change: 2006 Apr 30
+*spell.txt*	For Vim version 7.1a.  Last change: 2007 Apr 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -15,6 +15,10 @@ Spell checking						*spell*
 
 Spell checking is not available when the |+syntax| feature has been disabled
 at compile time.
+
+Note: There also is a vimspell plugin.  If you have it you can do ":help
+vimspell" to find about it.  But you will probably want to get rid of the
+plugin and use the 'spell' option instead, it works better.
 
 ==============================================================================
 1. Quick start						*spell-quickstart*
@@ -409,6 +413,7 @@ done:
 For the second method adding the @NoSpell cluster will disable spell checking
 again.  This can be used, for example, to add @Spell to the comments of a
 program, and add @NoSpell for items that shouldn't be checked.
+Also see |:syn-spell| for text that is not in a syntax item.
 
 
 VIM SCRIPTS
@@ -465,7 +470,7 @@ the word list and keeps it small.
 You can create a Vim spell file from the .aff and .dic files that Myspell
 uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
 find them here:
-	http://lingucomponent.openoffice.org/spell_dic.html
+	http://wiki.services.openoffice.org/wiki/Dictionaries
 You can also use a plain word list.  The results are the same, the choice
 depends on what word lists you can find.
 
@@ -546,7 +551,7 @@ following procedure is recommended:
 2. Make a copy of these files to xx_YY.orig.aff and xx_YY.orig.dic.
 3. Change the xx_YY.aff and xx_YY.dic files to remove bad words, add missing
    words, define word characters with FOL/LOW/UPP, etc.  The distributed
-   "src/spell/*.diff" files can be used.
+   "*.diff" files can be used.
 4. Start Vim with the right locale and use |:mkspell| to generate the Vim
    spell file.
 5. Try out the spell file with ":set spell spelllang=xx" if you wrote it in
@@ -646,7 +651,7 @@ exceptions:
   only ASCII letters for most of the words.
 
 The default "spellfile.vim" plugin uses this autocommand, if you define your
-autocommand afterwars you may want to use ":au! SpellFileMissing" to overrule
+autocommand afterwards you may want to use ":au! SpellFileMissing" to overrule
 it.  If you define your autocommand before the plugin is loaded it will notice
 this and not do anything.
 
@@ -1332,7 +1337,7 @@ With the example "ideeen" has three syllables, counted by "i", "ee" and "e".
 
 Only case-folded letters need to be included.
 
-Above another way to restrict compounding was mentioned above: Adding the
+Another way to restrict compounding was mentioned above: Adding the
 |spell-COMPOUNDFORBIDFLAG| flag to an affix causes all words that are made
 with that affix not be be used for compounding.
 
@@ -1510,7 +1515,7 @@ COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
 
 COMPOUND	(Hunspell)				*spell-COMPOUND*
-		This is one line with the count of COMPOUND items, followd by
+		This is one line with the count of COMPOUND items, followed by
 		that many COMPOUND lines with a pattern.
 		Remove the first line with the count and rename the other
 		items to COMPOUNDRULE |spell-COMPOUNDRULE|

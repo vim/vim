@@ -1,8 +1,8 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			May 02, 2006
-" Version:		9
-" Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
+" Date:			Sep 29, 2006
+" Version:		11
+" Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
 "	Contains many ideas from Michael Toren's <tar.vim>
@@ -18,13 +18,13 @@
 "               of this software.
 
 " ---------------------------------------------------------------------
-" Initialization: {{{1
+" Load Once: {{{1
 let s:keepcpo= &cpo
 set cpo&vim
-if exists("g:loaded_tar")
+if &cp || exists("g:loaded_tar") || v:version < 700
  finish
 endif
-let g:loaded_tar= "v9"
+let g:loaded_tar= "v11"
 "call Decho("loading autoload/tar.vim")
 
 " ---------------------------------------------------------------------
@@ -41,6 +41,13 @@ endif
 if !exists("g:tar_writeoptions")
  let g:tar_writeoptions= "uf"
 endif
+if !exists("g:tar_shq")
+ if has("unix")
+  let g:tar_shq= "'"
+ else
+  let g:tar_shq= '"'
+ endif
+endif
 
 " ----------------
 "  Functions: {{{1
@@ -55,8 +62,9 @@ fun! tar#Browse(tarfile)
 
   " sanity checks
   if !executable(g:tar_cmd)
+   redraw!
    echohl Error | echo '***error*** (tar#Browse) "'.g:tar_cmd.'" not available on your system'
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Browse")
    return
@@ -65,8 +73,9 @@ fun! tar#Browse(tarfile)
 "   call Decho('a:tarfile<'.a:tarfile.'> not filereadable')
    if a:tarfile !~# '^\a\+://'
     " if its an url, don't complain, let url-handlers such as vim do its thing
+    redraw!
     echohl Error | echo "***error*** (tar#Browse) File not readable<".a:tarfile.">" | echohl None
-    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    endif
    let &report= repkeep
 "   call Dret("tar#Browse : file<".a:tarfile."> not readable")
@@ -99,30 +108,26 @@ fun! tar#Browse(tarfile)
   endif
   let curlast= line("$")
   if tarfile =~# '\.\(gz\|tgz\)$'
-"   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - ")
-   exe "silent r! gzip -d -c '".tarfile."'| tar -".g:tar_browseoptions." - "
+"   call Decho("exe silent r! gzip -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_browseoptions." - ")
+   exe "silent r! gzip -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.bz2$'
-"   call Decho("exe silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_browseoptions." - ")
-   exe "silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_browseoptions." - "
+"   call Decho("exe silent r! bzip2 -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_browseoptions." - ")
+   exe "silent r! bzip2 -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_browseoptions." - "
   else
-"   call Decho("exe silent r! ".g:tar_cmd." -".g:tar_browseoptions." '".tarfile."'")
-   exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." '".tarfile."'"
+"   call Decho("exe silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".g:tar_shq.tarfile.g:tar_shq)
+   exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".g:tar_shq.tarfile.g:tar_shq
   endif
   if v:shell_error != 0
+   redraw!
    echohl WarningMsg | echo "***warning*** (tar#Browse) please check your g:tar_browseoptions<".g:tar_browseoptions.">"
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
 "   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
-   silent %d
-   let eikeep= &ei
-   set ei=BufReadCmd,FileReadCmd
-   exe "r ".a:tarfile
-   let &ei= eikeep
-   1d
    return
   endif
-  if line("$") == curlast || ( line("$") == (curlast + 1) && getline("$") =~? '\c\%(warning\|error\|inappropriate\|unrecognized\)')
+  if line("$") == curlast || ( line("$") == (curlast + 1) && getline("$") =~ '\c\%(warning\|error\|inappropriate\|unrecognized\)')
+   redraw!
    echohl WarningMsg | echo "***warning*** (tar#Browse) ".a:tarfile." doesn't appear to be a tar file" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    silent %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
@@ -190,14 +195,14 @@ fun! tar#Read(fname,mode)
 "  call Decho("fname<".fname.">")
 
   if tarfile =~# '\.\(gz\|tgz\)$'
-"   call Decho("exe silent r! gzip -d -c '".tarfile."'| tar -OPxf - '".fname."'")
-   exe "silent r! gzip -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'"
+"   call Decho("exe silent r! gzip -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -OPxf - '".fname."'")
+   exe "silent r! gzip -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_readoptions." - '".fname."'"
   elseif tarfile =~# '\.bz2$'
-"   call Decho("exe silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'")
-   exe "silent r! bzip2 -d -c '".tarfile."'| tar -".g:tar_readoptions." - '".fname."'"
+"   call Decho("exe silent r! bzip2 -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_readoptions." - '".fname."'")
+   exe "silent r! bzip2 -d -c ".g:tar_shq.tarfile.g:tar_shq."| ".g:tar_cmd." -".g:tar_readoptions." - '".fname."'"
   else
-"   call Decho("exe silent r! tar -".g:tar_readoptions." '".tarfile."' '".fname."'")
-   exe "silent r! ".g:tar_cmd." -".g:tar_readoptions." '".tarfile."' '".fname."'"
+"   call Decho("exe silent r! ".g:tar_cmd." -".g:tar_readoptions." ".g:tar_shq.tarfile.g:tar_shq." ".g:tar_shq.fname.g:tar_shq)
+   exe "silent r! ".g:tar_cmd." -".g:tar_readoptions." ".g:tar_shq.tarfile.g:tar_shq." ".g:tar_shq.fname.g:tar_shq
   endif
   let w:tarfile= a:fname
   exe "file tarfile:".fname
@@ -219,15 +224,17 @@ fun! tar#Write(fname)
 
   " sanity checks
   if !executable(g:tar_cmd)
+   redraw!
    echohl Error | echo '***error*** (tar#Browse) "'.g:tar_cmd.'" not available on your system'
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Write")
    return
   endif
   if !exists("*mkdir")
+   redraw!
    echohl Error | echo "***error*** (tar#Write) sorry, mkdir() doesn't work on your system" | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Write")
    return
@@ -246,8 +253,9 @@ fun! tar#Write(fname)
   try
    exe "cd ".escape(tmpdir,' \')
   catch /^Vim\%((\a\+)\)\=:E344/
+   redraw!
    echohl Error | echo "***error*** (tar#Write) cannot cd to temporary directory" | Echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    let &report= repkeep
 "   call Dret("tar#Write")
    return
@@ -282,8 +290,9 @@ fun! tar#Write(fname)
   endif
 
   if v:shell_error != 0
+   redraw!
    echohl Error | echo "***error*** (tar#Write) sorry, unable to update ".tarfile." with ".fname | echohl None
-   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
   else
 
 "   call Decho("tarfile<".tarfile."> fname<".fname.">")
@@ -309,16 +318,18 @@ fun! tar#Write(fname)
 "   call Decho("tar --delete -f '".tarfile."' '".fname."'")
    call system("tar --delete -f '".tarfile."' '".fname."'")
    if v:shell_error != 0
+    redraw!
     echohl Error | echo "***error*** (tar#Write) sorry, unable to update ".tarfile." with ".fname | echohl None
-    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"    call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    else
  
     " update tarfile with new file 
 "    call Decho("tar -".g:tar_writeoptions." '".tarfile."' '".fname."'")
     call system("tar -".g:tar_writeoptions." '".tarfile."' '".fname."'")
     if v:shell_error != 0
+     redraw!
      echohl Error | echo "***error*** (tar#Write) sorry, unable to update ".tarfile." with ".fname | echohl None
-     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
+"     call inputsave()|call input("Press <cr> to continue")|call inputrestore()
     elseif exists("compress")
 "     call Decho("call system(".compress.")")
      call system(compress)
@@ -376,4 +387,4 @@ endfun
 " Modelines And Restoration: {{{1
 let &cpo= s:keepcpo
 unlet s:keepcpo
-" vim:ts=8 fdm=marker
+"  vim:ts=8 fdm=marker

@@ -1,8 +1,10 @@
 " Vim syntax file
 " Language:	Configuration File (ini file) for MSDOS/MS Windows
-" Maintainer:	Sean M. McKee <mckee@misslink.net>
-" Last Change:	2001 May 09
-" Version Info: @(#)dosini.vim	1.6	97/12/15 08:54:12
+" Version Info: @(#)dosini.vim 1.6 97/12/15 08:54:12
+" Author:       Sean M. McKee <mckee@misslink.net>
+" Maintainer:   Nima Talebi <nima@it.net.au>
+" Last Change:	Mon, 26 Jun 2006 22:07:28 +1000
+
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -16,7 +18,7 @@ endif
 syn case ignore
 
 syn match  dosiniLabel		"^.\{-}="
-syn region dosiniHeader		start="\[" end="\]"
+syn region dosiniHeader		start="^\[" end="\]"
 syn match  dosiniComment	"^;.*$"
 
 " Define the default highlighting.

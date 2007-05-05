@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.0.  Last change: 2006 Apr 30
+*pattern.txt*   For Vim version 7.1a.  Last change: 2007 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -587,7 +587,7 @@ overview.
 	{Vi does not have any of these}
 
 	n and m are positive decimal numbers or zero
-
+								*non-greedy*
 	If a "-" appears immediately after the "{", then a shortest match
 	first algorithm is used (see example below).  In particular, "\{-}" is
 	the same as "*" but uses the shortest match first algorithm.  BUT: A
@@ -969,7 +969,7 @@ x	A single character, with no special meaning, matches itself
 	[xyz]		any 'x', 'y' or 'z'
 	[a-zA-Z]$	any alphabetic character at the end of a line
 	\c[a-z]$	same
-
+								*/[\n]*
 	With "\_" prepended the collection also includes the end-of-line.
 	The same can be done by including "\n" in the collection.  The
 	end-of-line is also matched when the collection starts with "^"!  Thus
@@ -1042,6 +1042,7 @@ x	A single character, with no special meaning, matches itself
 		\t	<Tab>
 		\r	<CR>	(NOT end-of-line!)
 		\b	<BS>
+		\n	line break, see above |/[\n]|
 		\d123	decimal number of character
 		\o40	octal number of character up to 0377
 		\x20	hexadecimal number of character up to 0xff
@@ -1068,6 +1069,8 @@ x	A single character, with no special meaning, matches itself
 	You don't often have to use it, but it is possible.  Example: >
 		/\<r\%[[eo]ad]\>
 <	Matches the words "r", "re", "ro", "rea", "roa", "read" and "road".
+	There can be no \(\), \%(\) or \z(\) items inside the [] and \%[] does
+	not nest.
 	{not available when compiled without the +syntax feature}
 
 				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
@@ -1145,7 +1148,7 @@ composing character by itself, except that it doesn't matter what comes before
 this.
 
 The order of composing characters matters, even though changing the order
-doen't change what a character looks like.  This may change in the future.
+doesn't change what a character looks like.  This may change in the future.
 
 ==============================================================================
 9. Compare with Perl patterns				*perl-patterns*
@@ -1218,6 +1221,10 @@ Finally, these constructs are unique to Perl:
 
 		'ignorecase' does not apply, use |/\c| in the pattern to
 		ignore case.  Otherwise case is not ignored.
+
+		When matching end-of-line and Vim redraws only part of the
+		display you may get unexpected results.  That is because Vim
+		looks for a match in the line where redrawing starts.
 
 		Also see |matcharg()|, it returns the highlight group and
 		pattern of a previous :match command.

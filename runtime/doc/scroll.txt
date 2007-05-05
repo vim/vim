@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 7.0.  Last change: 2006 Apr 24
+*scroll.txt*    For Vim version 7.1a.  Last change: 2006 Aug 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -223,7 +223,7 @@ jump to a location where the current window's relative offset is valid.  This
 behavior can be changed by clearing the 'jump' flag from the 'scrollopt'
 option.
 
-							*syncbind* *:syncbind*
+						*syncbind* *:syncbind* *:sync*
 :syncbind		Force all 'scrollbind' windows to have the same
 			relative offset.  I.e., when any of the 'scrollbind'
 			windows is scrolled to the top of its buffer, all of

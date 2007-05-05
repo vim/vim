@@ -1,8 +1,8 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		May 01, 2006
-" Version:	8
+" Date:		May 30, 2006
+" Version:	9
 " Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -22,16 +22,41 @@ if exists("g:loaded_netrwFileHandlers") || &cp
 endif
 let s:keepcpo= &cpo
 set cpo&vim
-let g:loaded_netrwFileHandlers= "v8"
+let g:loaded_netrwFileHandlers= "v9"
 
 " ---------------------------------------------------------------------
 " netrwFileHandlers#Invoke: {{{1
 fun! netrwFileHandlers#Invoke(exten,fname)
 "  call Dfunc("netrwFileHandlers#Invoke(exten<".a:exten."> fname<".a:fname.">)")
+  let fname= a:fname
+  " list of supported special characters.  Consider rcs,v --- that can be
+  " supported with a NFH_rcsCOMMAv() handler
+  if a:fname =~ '[@:,$!=\-+%?;~]'
+   let specials= {
+\   '@' : 'AT',
+\   ':' : 'COLON',
+\   ',' : 'COMMA',
+\   '$' : 'DOLLAR',
+\   '!' : 'EXCLAMATION',
+\   '=' : 'EQUAL',
+\   '-' : 'MINUS',
+\   '+' : 'PLUS',
+\   '%' : 'PERCENT',
+\   '?' : 'QUESTION',
+\   ';' : 'SEMICOLON',
+\   '~' : 'TILDE'}
+   let fname= substitute(a:fname,'[@:,$!=\-+%?;~]','\=specials[submatch(0)]','ge')
+"   call Decho('fname<'.fname.'> done with dictionary')
+  endif
 
-  if a:exten != "" && exists("*s:NFH_".a:exten)
-"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.a:fname.'")')
-   exe "let ret= s:NFH_".a:exten.'("'.a:fname.'")'
+  if a:exten != "" && exists("*NFH_".a:exten)
+   " support user NFH_*() functions
+"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
+   exe "let ret= NFH_".a:exten.'("'.fname.'")'
+  elseif a:exten != "" && exists("*s:NFH_".a:exten)
+   " use builtin-NFH_*() functions
+"   call Decho("let ret= netrwFileHandlers#NFH_".a:exten.'("'.fname.'")')
+   exe "let ret= s:NFH_".a:exten.'("'.fname.'")'
   endif
   
 "  call Dret("netrwFileHandlers#Invoke 0 : ret=".ret)
@@ -48,10 +73,10 @@ fun! s:NFH_html(pagefile)
 
   if executable("mozilla")
 "   call Decho("executing !mozilla ".page)
-   exe "!mozilla \"".page.'"'
+   exe "!mozilla ".g:netrw_shq.page.g:netrw_shq
   elseif executable("netscape")
 "   call Decho("executing !netscape ".page)
-   exe "!netscape \"".page.'"'
+   exe "!netscape ".g:netrw_shq..page.g:netrw_shq
   else
 "   call Dret("s:NFH_html 0")
    return 0
@@ -71,10 +96,10 @@ fun! s:NFH_htm(pagefile)
 
   if executable("mozilla")
 "   call Decho("executing !mozilla ".page)
-   exe "!mozilla \"".page.'"'
+   exe "!mozilla ".g:netrw_shq.page.g:netrw_shq
   elseif executable("netscape")
 "   call Decho("executing !netscape ".page)
-   exe "!netscape \"".page.'"'
+   exe "!netscape ".g:netrw_shq.page.g:netrw_shq
   else
 "   call Dret("s:NFH_htm 0")
    return 0
@@ -90,10 +115,10 @@ fun! s:NFH_jpg(jpgfile)
 "  call Dfunc("s:NFH_jpg(jpgfile<".a:jpgfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".a:jpgfile
+   exe "silent! !gimp -s ".g:netrw_shq.a:jpgfile.g:netrw_shq
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
 "   call Decho("silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".escape(a:jpgfile," []|'"))
-   exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:jpgfile.'"'
+   exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:jpgfile.g:netrw_shq
   else
 "   call Dret("s:NFH_jpg 0")
    return 0
@@ -109,9 +134,9 @@ fun! s:NFH_gif(giffile)
 "  call Dfunc("s:NFH_gif(giffile<".a:giffile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".a:giffile
+   exe "silent! !gimp -s ".g:netrw_shq.a:giffile.g:netrw_shq
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:giffile.'"'
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:giffile.g:netrw_shq
   else
 "   call Dret("s:NFH_gif 0")
    return 0
@@ -127,9 +152,9 @@ fun! s:NFH_png(pngfile)
 "  call Dfunc("s:NFH_png(pngfile<".a:pngfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".a:pngfile
+   exe "silent! !gimp -s ".g:netrw_shq.a:pngfile.g:netrw_shq
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:pngfile.'"'
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:pngfile.g:netrw_shq
   else
 "   call Dret("s:NFH_png 0")
    return 0
@@ -145,9 +170,9 @@ fun! s:NFH_pnm(pnmfile)
 "  call Dfunc("s:NFH_pnm(pnmfile<".a:pnmfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".a:pnmfile
+   exe "silent! !gimp -s ".g:netrw_shq.a:pnmfile.g:netrw_shq
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:pnmfile.'"'
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:pnmfile.g:netrw_shq
   else
 "   call Dret("s:NFH_pnm 0")
    return 0
@@ -165,7 +190,7 @@ fun! s:NFH_bmp(bmpfile)
   if executable("gimp")
    exe "silent! !gimp -s ".a:bmpfile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT \"".a:bmpfile.'"'
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:bmpfile.g:netrw_shq
   else
 "   call Dret("s:NFH_bmp 0")
    return 0
@@ -180,7 +205,9 @@ endfun
 fun! s:NFH_pdf(pdf)
 "  call Dfunc("s:NFH_pdf(pdf<".a:pdf.">)")
   if executable("gs")
-   exe 'silent! !gs "'.a:pdf.'"'
+   exe 'silent! !gs '.g:netrw_shq.a:pdf.g:netrw_shq
+  elseif executable("pdftotext")
+   exe 'silent! pdftotext -nopgbrk '.g:netrw_shq.a:pdf.g:netrw_shq
   else
 "  call Dret("s:NFH_pdf 0")
    return 0
@@ -196,7 +223,7 @@ fun! s:NFH_doc(doc)
 "  call Dfunc("s:NFH_doc(doc<".a:doc.">)")
 
   if executable("oowriter")
-   exe 'silent! !oowriter "'.a:doc.'"'
+   exe 'silent! !oowriter '.g:netrw_shq.a:doc.g:netrw_shq
    redraw!
   else
 "  call Dret("s:NFH_doc 0")
@@ -213,7 +240,7 @@ fun! s:NFH_sxw(sxw)
 "  call Dfunc("s:NFH_sxw(sxw<".a:sxw.">)")
 
   if executable("oowriter")
-   exe 'silent! !oowriter "'.a:sxw.'"'
+   exe 'silent! !oowriter '.g:netrw_shq.a:sxw.g:netrw_shq
    redraw!
   else
 "   call Dret("s:NFH_sxw 0")
@@ -230,7 +257,7 @@ fun! s:NFH_xls(xls)
 "  call Dfunc("s:NFH_xls(xls<".a:xls.">)")
 
   if executable("oocalc")
-   exe 'silent! !oocalc "'.a:xls.'"'
+   exe 'silent! !oocalc '.g:netrw_shq.a:xls.g:netrw_shq
    redraw!
   else
 "  call Dret("s:NFH_xls 0")
@@ -247,15 +274,15 @@ fun! s:NFH_ps(ps)
 "  call Dfunc("s:NFH_ps(ps<".a:ps.">)")
   if executable("gs")
 "   call Decho("exe silent! !gs ".a:ps)
-   exe "silent! !gs ".a:ps
+   exe "silent! !gs ".g:netrw_shq.a:ps.g:netrw_shq
    redraw!
   elseif executable("ghostscript")
 "   call Decho("exe silent! !ghostscript ".a:ps)
-   exe "silent! !ghostscript ".a:ps
+   exe "silent! !ghostscript ".g:netrw_shq.a:ps.g:netrw_shq
    redraw!
   elseif executable("gswin32")
-"   call Decho("exe silent! !gswin32 \"".a:ps.'"')
-   exe "silent! !gswin32 \"".a:ps.'"'
+"   call Decho("exe silent! !gswin32 ".g:netrw_shq.a:ps.g:netrw_shq)
+   exe "silent! !gswin32 ".g:netrw_shq.a:ps.g:netrw_shq
    redraw!
   else
 "   call Dret("s:NFH_ps 0")
@@ -271,16 +298,16 @@ endfun
 fun! s:NFH_eps(eps)
 "  call Dfunc("s:NFH_eps()")
   if executable("gs")
-   exe "silent! !gs ".a:eps
+   exe "silent! !gs ".g:netrw_shq.a:eps.g:netrw_shq
    redraw!
   elseif executable("ghostscript")
-   exe "silent! !ghostscript ".a:eps
+   exe "silent! !ghostscript ".g:netrw_shq.a:eps.g:netrw_shq
    redraw!
   elseif executable("ghostscript")
-   exe "silent! !ghostscript ".a:eps
+   exe "silent! !ghostscript ".g:netrw_shq.a:eps.g:netrw_shq
    redraw!
   elseif executable("gswin32")
-   exe "silent! !gswin32 \"".a:eps.'"'
+   exe "silent! !gswin32 ".g:netrw_shq.a:eps.g:netrw_shq
    redraw!
   else
 "   call Dret("s:NFH_eps 0")
@@ -325,4 +352,4 @@ endfun
 let &cpo= s:keepcpo
 " ---------------------------------------------------------------------
 "  Modelines: {{{1
-"  vim: ts=4 fdm=marker
+"  vim: fdm=marker

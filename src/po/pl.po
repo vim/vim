@@ -1,22 +1,22 @@
 # translation of pl.po to Polish
 # Polish Translation for Vim
 #
-# updated 2006 for vim-7.0
+# updated 2007 for vim-7.0
 #
 # FIRST AUTHOR Marcin Dalecki <martin@dalecki.de>, 2000.
-# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005, 2006.
+# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005, 2006, 2007.
 msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-27 18:27+0200\n"
-"PO-Revision-Date: 2006-04-27 19:15+0200\n"
+"POT-Creation-Date: 2007-04-30 20:03+0200\n"
+"PO-Revision-Date: 2007-04-30 20:07+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
 "Language-Team: Polish <kde-transl@mer.chemia.polsl.gliwice.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.2\n"
+"X-Generator: KBabel 1.11.4\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Nie mogê zarezerwowaæ bufora; zakoñczenie..."
@@ -193,6 +193,9 @@ msgstr "E98: Nie mogê wczytaæ wyj¶cia ró¿nicy"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Bie¿±cy bufor nie jest w trybie ró¿nic"
+
+msgid "E793: No other buffer in diff mode is modifiable"
+msgstr "E793: ¯aden inny bufor w trybie diff nie jest modyfikowalny"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Brak innego bufora w trybie ró¿nic"
@@ -619,6 +622,10 @@ msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Nieprawid³owy typ zmiennej dla: %s"
 
 #, c-format
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: Nie mogê usun±æ zmiennej %s"
+
+#, c-format
 msgid "E741: Value is locked: %s"
 msgstr "E741: Warto¶æ jest zablokowana: %s"
 
@@ -883,6 +890,7 @@ msgstr " zak³adki"
 msgid " FAILED"
 msgstr " NIE POWIOD£O SIÊ"
 
+#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: Plik viminfo jest niezapisywalny: %s"
@@ -1457,6 +1465,9 @@ msgstr "jest katalogiem"
 msgid "is not a file"
 msgstr "nie jest plikiem"
 
+msgid "is a device (disabled with 'opendevice' option"
+msgstr "jest urz±dzeniem (wy³±czonym w opcji 'opendevice'"
+
 msgid "[New File]"
 msgstr "[Nowy Plik]"
 
@@ -1552,6 +1563,9 @@ msgstr "Czê¶ciowy zapis niemo¿liwy dla buforów NetBeans"
 
 msgid "is not a file or writable device"
 msgstr "nie jest plikiem lub zapisywalnym przyrz±dem"
+
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "zapisywanie do urz±dzenia wy³±czone w opcji 'opendevice'"
 
 msgid "is read-only (add ! to override)"
 msgstr "jest tylko do odczytu (wymu¶ poprzez !)"
@@ -3288,6 +3302,9 @@ msgstr ""
 ",\n"
 "lub plik zosta³ uszkodzony."
 
+msgid " has been damaged (page size is smaller than minimum value).\n"
+msgstr " zosta³ uszkodzony (wielko¶æ strony jest mniejsza ni¿ najmniejsza warto¶æ).\n"
+
 #, c-format
 msgid "Using swap file \"%s\""
 msgstr "U¿ywam pliku wymiany \"%s\""
@@ -3625,6 +3642,10 @@ msgstr "E328: Menu istnieje tylko w innym trybie"
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: Nie ma menu \"%s\""
+
+#. Only a mnemonic or accelerator is not valid.
+msgid "E792: Empty menu name"
+msgstr "E792: Pusta nazwa menu"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Trop menu nie mo¿e prowadziæ do podmenu"
@@ -4999,6 +5020,7 @@ msgstr "Przykro mi, brak podpowiedzi"
 msgid "Sorry, only %ld suggestions"
 msgstr "Przykro mi, tylko %ld podpowiedzi"
 
+#. for when 'cmdheight' > 1
 #. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
@@ -5420,6 +5442,13 @@ msgid ""
 msgstr ""
 "\n"
 "16/32 bitowa wersja GUI dla MS-Windows"
+
+msgid ""
+"\n"
+"MS-Windows 64 bit GUI version"
+msgstr ""
+"\n"
+"64 bitowa wersja GUI dla MS-Windows"
 
 msgid ""
 "\n"
@@ -6016,8 +6045,8 @@ msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: Nie mogê zmieniæ zmiennej tylko do odczytu \"%s\""
 
 #, c-format
-msgid "E46: Cannot set variable in the sandbox: \"%s\""
-msgstr "E46: Nie mogê ustawiæ zmiennej w piaskownicy: \"%s\""
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
+msgstr "E794: Nie mogê ustawiæ zmiennej w piaskownicy: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: B³±d w trakcie czytania pliku b³êdów"

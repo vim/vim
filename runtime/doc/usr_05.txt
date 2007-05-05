@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_05.txt*	For Vim version 7.1a.  Last change: 2006 Jul 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -202,8 +202,8 @@ actually two parts here.  "autocmd FileType text" is an autocommand.  This
 defines that when the file type is set to "text" the following command is
 automatically executed.  "setlocal textwidth=78" sets the 'textwidth' option
 to 78, but only locally in one file.
->
 
+							*restore-cursor*  >
 	autocmd BufReadPost *
 	    \ if line("'\"") > 0 && line("'\"") <= line("$") |
 	    \   exe "normal g`\"" |

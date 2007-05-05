@@ -8,6 +8,6 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
-let b:undo_plugin = "setl fo< tw<"
+let b:undo_ftplugin = "setl fo< tw<"
 
 setlocal formatoptions+=tcroql textwidth=78

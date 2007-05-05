@@ -10,7 +10,10 @@ if exists("did_menu_trans")
 endif
 let did_menu_trans = 1
 
-scriptencoding gb2312
+" This causes trouble for a broken iconv (symptom: last character is always
+" ??).  Without this it works fine anyway, because gbk/cp936 is a superset of
+" gb2312. (suggested by Edward L. Fox)
+" scriptencoding gb2312
 
 " Help menu
 menutrans &Help			帮助(&H)
@@ -109,7 +112,7 @@ menutrans &Keymap			键盘映射(&K)
 menutrans &Tools			工具(&T)
 menutrans &Jump\ to\ this\ tag<Tab>g^]	跳转到这个\ tag(&J)<Tab>g^]
 menutrans Jump\ &back<Tab>^T		跳转返回(&B)<Tab>^T
-menutrans Build\ &Tags\ File		建立 Tags 文件(&T)
+menutrans Build\ &Tags\ File		建立\ Tags\ 文件(&T)
 
 " Tools.Spelling Menu
 menutrans &Spelling				拼写检查(&S)
@@ -209,7 +212,7 @@ menutrans Min\ Widt&h<Tab>^W1\|		最小宽度(&H)<Tab>^W1\|
 menutrans &Undo			撤销(&U)
 menutrans Cu&t			剪切(&T)
 menutrans &Copy			复制(&C)
-menutrans &Paste		粘帖(&P)
+menutrans &Paste		粘贴(&P)
 menutrans &Delete		删除(&D)
 menutrans Select\ Blockwise	选择块
 menutrans Select\ &Word		选择单词(&W)
@@ -233,7 +236,7 @@ if has("toolbar")
     tmenu ToolBar.Redo		重做
     tmenu ToolBar.Cut		剪切到剪贴板
     tmenu ToolBar.Copy		复制到剪贴板
-    tmenu ToolBar.Paste		从剪贴板粘帖
+    tmenu ToolBar.Paste		从剪贴板粘贴
     tmenu ToolBar.Find		查找...
     tmenu ToolBar.FindNext	查找下一个
     tmenu ToolBar.FindPrev	查找上一个

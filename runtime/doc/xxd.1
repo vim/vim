@@ -123,7 +123,7 @@ added to file positions found in hexdump.
 start at
 .RI < seek >
 bytes abs. (or rel.) infile offset.
-\fI+ fRindicates that the seek is relative to the current stdin file position
+\fI+ \fRindicates that the seek is relative to the current stdin file position
 (meaningless when not reading from stdin).  \fI\- \fRindicates that the seek
 should be that many characters from the end of the input (or if combined with
 \fI+\fR: before the current stdin file position).
@@ -172,17 +172,17 @@ The following examples may help to clarify (or further confuse!)...
 Rewind stdin before reading; needed because the `cat' has already read to the
 end of stdin.
 .br
-\fI% sh \-c "cat > plain_copy; xxd \-s 0 > hex_copy" < file
+\fI% sh \-c "cat > plain_copy; xxd \-s 0 > hex_copy" < file\fR
 .PP
 Hexdump from file position 0x480 (=1024+128) onwards.
 The `+' sign means "relative to the current position", thus the `128' adds to
 the 1k where dd left off.
 .br
-\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet" < file
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet" < file\fR
 .PP
 Hexdump from file position 0x100 ( = 1024\-768) on.
 .br
-\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +\-768 > hex_snippet" < file
+\fI% sh \-c "dd of=plain_snippet bs=1k count=1; xxd \-s +\-768 > hex_snippet" < file\fR
 .PP
 However, this is a rare situation and the use of `+' is rarely needed.
 The author prefers to monitor the effect of xxd with strace(1) or truss(1), whenever \-s is used.
@@ -192,16 +192,16 @@ The author prefers to monitor the effect of xxd with strace(1) or truss(1), when
 Print everything but the first three lines (hex 0x30 bytes) of
 .BR file .
 .br
-\fI% xxd \-s 0x30 file
+\fI% xxd \-s 0x30 file\fR
 .PP
 .br
 Print 3 lines (hex 0x30 bytes) from the end of
 .BR file .
 .br
-\fI% xxd \-s \-0x30 file
+\fI% xxd \-s \-0x30 file\fR
 .PP
 .br
-Print 120 bytes as continuous hexdump with 40 octets per line.
+Print 120 bytes as continuous hexdump with 20 octets per line.
 .br
 \fI% xxd \-l 120 \-ps \-c 20 xxd.1\fR
 .br

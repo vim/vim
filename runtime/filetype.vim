@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 May 02
+" Last Change:	2007 Apr 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -88,6 +88,11 @@ au BufNewFile,BufRead *.wrm			setf acedb
 
 " Ada (83, 9X, 95)
 au BufNewFile,BufRead *.adb,*.ads,*.ada		setf ada
+if has("vms")
+  au BufNewFile,BufRead *.gpr,*.ada_m,*.adc 	setf ada
+else
+  au BufNewFile,BufRead *.gpr 			setf ada
+endif
 
 " AHDL
 au BufNewFile,BufRead *.tdf			setf ahdl
@@ -194,6 +199,9 @@ au BufNewFile,BufRead *.mar			setf vmasm
 " Atlas
 au BufNewFile,BufRead *.atl,*.as		setf atlas
 
+" Autoit v3
+au BufNewFile,BufRead *.au3			setf autoit
+
 " Automake
 au BufNewFile,BufRead [mM]akefile.am,GNUmakefile.am	setf automake
 
@@ -224,6 +232,12 @@ endfun
 
 " Visual Basic Script (close to Visual Basic)
 au BufNewFile,BufRead *.vbs,*.dsm,*.ctl		setf vb
+
+" IBasic file (similar to QBasic)
+au BufNewFile,BufRead *.iba,*.ibi		setf ibasic
+
+" FreeBasic file (similar to QBasic)
+au BufNewFile,BufRead *.fb,*.bi			setf freebasic
 
 " Batch file for MSDOS.
 au BufNewFile,BufRead *.bat,*.sys		setf dosbatch
@@ -302,6 +316,9 @@ au BufNewFile,BufRead cfengine.conf		setf cfengine
 
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
+
+" Conary Recipe
+au BufNewFile,BufRead *.recipe			setf conaryrecipe
 
 " Controllable Regex Mutilator
 au BufNewFile,BufRead *.crm			setf crm
@@ -435,6 +452,10 @@ au BufNewFile,BufRead *.prg
 
 " Cmake
 au BufNewFile,BufRead CMakeLists.txt,*.cmake,*.cmake.in		setf cmake
+
+" Cmusrc
+au BufNewFile,BufRead ~/.cmus/{autosave,rc,command-history,*.theme} setf cmusrc
+au BufNewFile,BufRead */cmus/{rc,*.theme}			setf cmusrc
 
 " Cobol
 au BufNewFile,BufRead *.cbl,*.cob,*.lib	setf cobol
@@ -614,7 +635,10 @@ au BufNewFile,BufRead *.mas,*.master		setf master
 au BufNewFile,BufRead *.fs,*.ft			setf forth
 
 " Fortran
-au BufNewFile,BufRead *.f,*.F,*.for,*.fpp,*.FPP,*.ftn,*.f77,*.F77,*.f90,*.F90,*.f95,*.F95	setf fortran
+if has("fname_case")
+  au BufNewFile,BufRead *.F,*.FOR,*.FPP,*.FTN,*.F77,*.F90,*.F95	 setf fortran
+endif
+au BufNewFile,BufRead   *.f,*.for,*.fpp,*.ftn,*.f77,*.f90,*.f95  setf fortran
 
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
@@ -659,6 +683,9 @@ au BufNewFile,BufRead /etc/group		setf group
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
+
+" Hamster Classic | Playground files
+au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
 
 " Haskell
 au BufNewFile,BufRead *.hs			setf haskell
@@ -744,8 +771,11 @@ au BufNewFile,BufRead .indent.pro		setf indent
 " Inform
 au BufNewFile,BufRead *.inf,*.INF		setf inform
 
+" Initng
+au BufNewFile,BufRead /etc/initng/**/*.i,*.ii	setf initng
+
 " Ipfilter
-au BufNewFile,BufRead ipf.conf,ipf.rules	setf ipfilter
+au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
 
 " Informix 4GL (source - canonical, include file, I4GL+M4 preproc.)
 au BufNewFile,BufRead *.4gl,*.4gh,*.m4gl	setf fgl
@@ -771,8 +801,8 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 " JavaCC
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
-" JavaScript
-au BufNewFile,BufRead *.js,*.javascript		setf javascript
+" JavaScript, ECMAScript
+au BufNewFile,BufRead *.js,*.javascript,*.es	setf javascript
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -876,7 +906,7 @@ au BufNewFile,BufRead *.m4
 " MaGic Point
 au BufNewFile,BufRead *.mgp			setf mgp
 
-" Mail (for Elm, trn, mutt, rn, slrn)
+" Mail (for Elm, trn, mutt, muttng, rn, slrn)
 au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt\w\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
 
 " Mail aliases
@@ -933,6 +963,9 @@ endfun
 
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
+
+" Messages
+au BufNewFile,BufRead /var/log/messages,/var/log/messages.*[0-9]  setf messages
 
 " Metafont
 au BufNewFile,BufRead *.mf			setf mf
@@ -1015,7 +1048,7 @@ au BufRead,BufNewFile *.mu			setf mupad
 " Mush
 au BufNewFile,BufRead *.mush			setf mush
 
-" Mutt setup file
+" Mutt setup file (also for Muttng)
 au BufNewFile,BufRead Mutt{ng,}rc			setf muttrc
 au BufNewFile,BufRead .mutt{ng,}rc*,*/.mutt{ng,}/mutt{ng,}rc*	call s:StarSetf('muttrc')
 
@@ -1232,6 +1265,9 @@ au BufNewFile,BufRead *.it,*.ih			setf ppwiz
 " Oracle Pro*C/C++
 au BufNewFile,BufRead .pc			setf proc
 
+" Privoxy actions file
+au BufNewFile,BufRead *.action			setf privoxy
+
 " Procmail
 au BufNewFile,BufRead .procmail,.procmailrc	setf procmail
 
@@ -1371,31 +1407,31 @@ endif
 au BufNewFile,BufRead *.r,*.R			call s:FTr()
 
 fun! s:FTr()
-  if getline(1) =~ '^REBOL'
-    setf rebol
-  else
-    let n = 1
-    let max = line("$")
-    if max > 50
-      let max = 50
+  let max = line("$") > 50 ? 50 : line("$")
+
+  for n in range(1, max)
+    " Rebol is easy to recognize, check for that first
+    if getline(n) =~ '\<REBOL\>'
+      setf rebol
+      return
     endif
-    while n < max
-      " R has # comments
-      if getline(n) =~ '^\s*#'
-	setf r
-	break
-      endif
-      " Rexx has /* comments */
-      if getline(n) =~ '^\s*/\*'
-	setf rexx
-	break
-      endif
-      let n = n + 1
-    endwhile
-    if n >= max
+  endfor
+
+  for n in range(1, max)
+    " R has # comments
+    if getline(n) =~ '^\s*#'
+      setf r
+      return
+    endif
+    " Rexx has /* comments */
+    if getline(n) =~ '^\s*/\*'
       setf rexx
+      return
     endif
-  endif
+  endfor
+
+  " Nothing recognized, assume Rexx
+  setf rexx
 endfun
 
 " Remind
@@ -1442,6 +1478,9 @@ au BufNewFile,BufRead *.sa			setf sather
 
 " Scilab
 au BufNewFile,BufRead *.sci,*.sce		setf scilab
+
+" SD: Streaming Descriptors
+au BufNewFile,BufRead *.sd			setf sd
 
 " SDL
 au BufNewFile,BufRead *.sdl,*.pr		setf sdl
@@ -1922,6 +1961,9 @@ au BufNewFile,BufRead *.web
 " Windows Scripting Host and Windows Script Component
 au BufNewFile,BufRead *.ws[fc]			setf wsh
 
+" XHTML
+au BufNewFile,BufRead *.xhtml,*.xht		setf xhtml
+
 " X Pixmap (dynamically sets colors, use BufEnter to make it work better)
 au BufEnter *.xpm
 	\ if getline(1) =~ "XPM2" |
@@ -1972,6 +2014,9 @@ au BufNewFile,BufRead *.csproj,*.csproj.user	setf xml
 
 " Qt Linguist translation source and Qt User Interface Files are XML
 au BufNewFile,BufRead *.ts,*.ui			setf xml
+
+" TPM's are RDF-based descriptions of TeX packages (Nikolai Weibull)
+au BufNewFile,BufRead *.tpm			setf xml
 
 " Xdg menus
 au BufNewFile,BufRead /etc/xdg/menus/*.menu	setf xml
@@ -2052,6 +2097,9 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 au BufNewFile,BufRead *asterisk/*.conf*		call s:StarSetf('asterisk')
 au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
 
+" Bazaar version control
+au BufNewFile,BufRead bzr_log.*			setf bzr
+
 " BIND zone
 au BufNewFile,BufRead */named/db.*,*/bind/db.*	call s:StarSetf('bindzone')
 
@@ -2073,6 +2121,7 @@ au BufNewFile,BufRead /etc/apt/sources.list.d/*	call s:StarSetf('debsources')
 au BufNewFile,BufRead drac.*			call s:StarSetf('dracula')
 
 " Fvwm
+au BufNewFile,BufRead */.fvwm/*			call s:StarSetf('fvwm')
 au BufNewFile,BufRead *fvwmrc*,*fvwm95*.hook
 	\ let b:fvwm_version = 1 | call s:StarSetf('fvwm')
 au BufNewFile,BufRead *fvwm2rc*

@@ -1,7 +1,6 @@
 " Vim syntax file
 " Language:     BibTeX Bibliography Style
-" Maintainer:   Tim Pope <vim@rebelongto.us>
-" Last Change:  2006 Apr 27
+" Maintainer:   Tim Pope <vimNOSPAM@tpope.info>
 " Filenames:    *.bst
 " $Id$
 
@@ -23,7 +22,11 @@ delcommand SetIsk
 
 syn case ignore
 
-syn region  bstString start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=bstField,bstType
+syn match   bstString +"[^"]*\%("\|$\)+ contains=bstField,bstType,bstError
+" Highlight the last character of an unclosed string, but only when the cursor
+" is not beyond it (i.e., it is still being edited). Imperfect.
+syn match   bstError     '[^"]\%#\@!$' contained
+
 syn match   bstNumber         "#-\=\d\+\>"
 syn keyword bstNumber         entry.max$ global.max$
 syn match   bstComment        "%.*"
@@ -77,6 +80,7 @@ if version >= 508 || !exists("did_bst_syn_inits")
     HiLink bstNumber            Number
     HiLink bstType              Type
     HiLink bstIdentifier        Identifier
+    HiLink bstError             Error
     delcommand HiLink
 endif
 

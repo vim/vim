@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.0.  Last change: 2006 Apr 28
+*filetype.txt*  For Vim version 7.1a.  Last change: 2007 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -43,6 +43,8 @@ Detail: The ":filetype on" command will load one of these files:
 	BufNewFile and BufRead events.  If the file type is not found by the
 	name, the file $VIMRUNTIME/scripts.vim is used to detect it from the
 	contents of the file.
+	When the GUI is running or will start soon, the menu.vim script is
+	also sourced.  See |'go-M'| about avoiding that.
 
 To add your own file types, see |new-filetype| below.  To search for help on a
 filetype prepend "ft-" and optionally append "-syntax", "-indent" or
@@ -304,24 +306,28 @@ all loaded.  For example, if this command: >
 
 	set runtimepath
 
-produces this output: >
+produces this output:
 
-	runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim60
+	runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim60 ~
 
-then Vim will load all plugins in these directories: >
+then Vim will load all plugins in these directories and below:
 
-	/etc/vim/plugin/
-	~/.vim/plugin/
-	/usr/local/share/vim/vim60/plugin/
+	/etc/vim/plugin/  ~
+	~/.vim/plugin/  ~
+	/usr/local/share/vim/vim60/plugin/  ~
 
 Note that the last one is the value of $VIMRUNTIME which has been expanded.
 
 What if it looks like your plugin is not being loaded?  You can find out what
 happens when Vim starts up by using the |-V| argument: >
-	vim -V1
+
+	vim -V2
+
 You will see a lot of messages, in between them is a remark about loading the
-plugins.  It starts with: >
-	Searching for "plugin/*.vim" in
+plugins.  It starts with:
+
+	Searching for "plugin/**/*.vim" in ~
+
 There you can see where Vim looks for your plugin scripts.
 
 ==============================================================================

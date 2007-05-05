@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:    Lisp
 " Maintainer:  Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change: Oct 12, 2005
-" Version:     17a
+" Last Change: Apr 12, 2007
+" Version:     19
 " URL:	       http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 "  Thanks to F Xavier Noria for a list of 978 Common Lisp symbols
@@ -33,6 +33,8 @@ if exists("g:lisp_instring")
 else
  syn cluster			 lispListCluster		  contains=@lispBaseListCluster,lispString
 endif
+
+syn case ignore
 
 " ---------------------------------------------------------------------
 " Lists: {{{1
@@ -436,7 +438,7 @@ syn keyword lispVar		 *gensym-counter*		  *print-miser-width*		   *trace-output*
 
 " ---------------------------------------------------------------------
 " Strings: {{{1
-syn region			 lispString			  start=+"+ skip=+\\\\\|\\"+ end=+"+
+syn region			 lispString			  start=+"+ skip=+\\\\\|\\"+ end=+"+	contains=@Spell
 if exists("g:lisp_instring")
  syn region			 lispInString			  keepend matchgroup=Delimiter start=+"(+rs=s+1 skip=+|.\{-}|+ matchgroup=Delimiter end=+)"+ contains=@lispBaseListCluster,lispInStringString
  syn region			 lispInStringString		  start=+\\"+ skip=+\\\\+ end=+\\"+ contained
@@ -454,14 +456,15 @@ syn keyword lispDecl		 do*				  flet				   multiple-value-bind
 " Numbers: supporting integers and floating point numbers {{{1
 syn match lispNumber		 "-\=\(\.\d\+\|\d\+\(\.\d*\)\=\)\(e[-+]\=\d\+\)\="
 
-syn match lispSpecial		 "\*[a-zA-Z_][a-zA-Z_0-9-]*\*"
+syn match lispSpecial		 "\*\w[a-z_0-9-]*\*"
 syn match lispSpecial		 !#|[^()'`,"; \t]\+|#!
-syn match lispSpecial		 !#x[0-9a-fA-F]\+!
-syn match lispSpecial		 !#o[0-7]\+!
+syn match lispSpecial		 !#x\x\+!
+syn match lispSpecial		 !#o\o\+!
 syn match lispSpecial		 !#b[01]\+!
-syn match lispSpecial		 !#\\[ -\~]!
+syn match lispSpecial		 !#\\[ -}\~]!
 syn match lispSpecial		 !#[':][^()'`,"; \t]\+!
 syn match lispSpecial		 !#([^()'`,"; \t]\+)!
+syn match lispSpecial		 !#\\\%(Space\|Newline\|Tab\|Page\|Rubout\|Linefeed\|Return\|Backspace\)!
 
 syn match lispConcat		 "\s\.\s"
 syn match lispParenError	 ")"
@@ -471,9 +474,7 @@ syn match lispParenError	 ")"
 syn cluster lispCommentGroup	 contains=lispTodo,@Spell
 syn match   lispComment		 ";.*$"				  contains=@lispCommentGroup
 syn region  lispCommentRegion	 start="#|" end="|#"		  contains=lispCommentRegion,@lispCommentGroup
-syn case ignore
 syn keyword lispTodo		 contained			  combak			   combak:			    todo			     todo:
-syn case match
 
 " ---------------------------------------------------------------------
 " Synchronization: {{{1

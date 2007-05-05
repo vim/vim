@@ -1,10 +1,11 @@
 " Vim syntax file
 " Language:	TCL/TK
-" Maintainer:	Dean Copsey <copsey@cs.ucdavis.edu>
+" Maintainer:	Brett Cannon <brett@python.org>
+" 		(previously Dean Copsey <copsey@cs.ucdavis.edu>)
 "		(previously Matt Neumann <mattneu@purpleturtle.com>)
 "		(previously Allan Kelly <allan@fruitloaf.co.uk>)
 " Original:	Robin Becker <robin@jessikat.demon.co.uk>
-" Last Change:	2004 May 16
+" Last Change:	2006 Nov 17
 "
 " Keywords TODO: format clock click anchor
 
@@ -17,9 +18,16 @@ elseif exists("b:current_syntax")
 endif
 
 " A bunch of useful keywords
-syn keyword tclStatement	proc global return lindex
-syn keyword tclStatement	llength lappend lreplace lrange list concat incr
-syn keyword tclStatement	upvar set
+syn keyword tclStatement  tell socket subst open eof pwd glob list exec pid
+syn keyword tclStatement  auto_load_index time unknown eval lrange fblocked
+syn keyword tclStatement  lsearch auto_import gets lappend proc variable llength
+syn keyword tclStatement  auto_execok return linsert error catch clock info
+syn keyword tclStatement  split array fconfigure concat join lreplace source
+syn keyword tclStatement  fcopy global auto_qualify update close cd auto_load
+syn keyword tclStatement  file append format read package set binary namespace
+syn keyword tclStatement  scan trace seek flush after vwait uplevel lset rename
+syn keyword tclStatement  fileevent regexp upvar unset encoding expr load regsub
+syn keyword tclStatement interp exit puts incr lindex lsort tclLog string
 syn keyword tclLabel		case default
 syn keyword tclConditional	if then else elseif switch
 syn keyword tclRepeat		while for foreach break continue

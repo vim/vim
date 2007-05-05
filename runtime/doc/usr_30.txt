@@ -1,4 +1,4 @@
-*usr_30.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_30.txt*	For Vim version 7.1a.  Last change: 2007 Apr 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -50,7 +50,7 @@ like this:
 	2 returned ~
 	"main.c" 11L, 111C ~
 	(3 of 6): too many arguments to function 'do_sub' ~
-	Hit ENTER or type command to continue ~
+	Press ENTER or type command to continue ~
 
 From this you can see that you have errors in the file "main.c".  When you
 press <Enter>, Vim displays the file "main.c", with the cursor positioned on
@@ -148,7 +148,7 @@ More about these modifiers here: |filename-modifiers|.
 
 OLD ERROR LISTS
 
-Suppose you ":make" a program.  There is an warning message in one file and an
+Suppose you ":make" a program.  There is a warning message in one file and an
 error message in another.  You fix the error and use ":make" again to check if
 it was really fixed.  Now you want to look at the warning message.  It doesn't
 show up in the last error list, since the file with the warning wasn't
@@ -242,7 +242,7 @@ form is: >
 This indents the current line.  Like with all operators, there are three ways
 to use it.  In Visual mode "=" indents the selected lines.  A useful text
 object is "a{".  This selects the current {} block.  Thus, to re-indent the
-code code block the cursor is in: >
+code block the cursor is in: >
 
 	=a{
 
@@ -315,7 +315,7 @@ In this file the output is:
 
 	filetype=help ~
 
-This you would use "help" for {filetype}.
+Thus you would use "help" for {filetype}.
    For the {directory} part you need to use your runtime directory.  Look at
 the output of this command: >
 
@@ -339,7 +339,7 @@ How to do that is explained here: |indent-expression|.
 The most simple form of automatic indenting is with the 'autoindent' option.
 It uses the indent from the previous line.  A bit smarter is the 'smartindent'
 option.  This is useful for languages where no indent file is available.
-'smartindent'is not as smart as 'cindent', but smarter than 'autoindent'.
+'smartindent' is not as smart as 'cindent', but smarter than 'autoindent'.
    With 'smartindent' set, an extra level of indentation is added for each {
 and removed for each }.  An extra level of indentation will also be added for
 any of the words in the 'cinwords' option.  Lines that begin with # are

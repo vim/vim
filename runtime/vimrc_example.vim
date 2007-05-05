@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2002 Sep 19
+" Last change:	2006 Nov 16
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -37,9 +37,8 @@ set incsearch		" do incremental searching
 " Don't use Ex mode, use Q for formatting
 map Q gq
 
-" This is an alternative that also works in block mode, but the deleted
-" text is lost and it only works for putting the current register.
-"vnoremap p "_dp
+" In many terminal emulators the mouse works just fine, thus enable it.
+set mouse=a
 
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.
@@ -69,7 +68,7 @@ if has("autocmd")
   " (happens when dropping a file on gvim).
   autocmd BufReadPost *
     \ if line("'\"") > 0 && line("'\"") <= line("$") |
-    \   exe "normal g`\"" |
+    \   exe "normal! g`\"" |
     \ endif
 
   augroup END
@@ -79,3 +78,8 @@ else
   set autoindent		" always set autoindenting on
 
 endif " has("autocmd")
+
+" Convenient command to see the difference between the current buffer and the
+" file it was loaded from, thus the changes you made.
+command DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis
+	 	\ | wincmd p | diffthis

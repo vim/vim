@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.0.  Last change: 2006 Apr 30
+*syntax.txt*	For Vim version 7.1a.  Last change: 2007 May 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -467,52 +467,9 @@ abel_obsolete_ok		obsolete keywords are statements, not errors
 abel_cpp_comments_illegal	do not interpret '//' as inline comment leader
 
 
-ADA						*ada.vim* *ft-ada-syntax*
+ADA
 
-This mode is designed for the 1995 edition of Ada ("Ada95"), which
-includes support for objected-programming, protected types, and so on.
-It handles code written for the original Ada language
-("Ada83" or "Ada87") as well, though Ada83 code which uses Ada95-only
-keywords will be wrongly colored (such code should be fixed anyway).
-For more information about Ada, see http://www.adapower.com.
-
-The Ada mode handles a number of situations cleanly.
-For example, it knows that the "-" in "-5" is a number, but the same
-character in "A-5" is an operator.  Normally, a "with" or "use" clause
-referencing another compilation unit is colored the same way as C's
-"#include" is colored.	If you have "Conditional" or "Repeat"
-groups colored differently, then "end if" and "end loop" will be
-colored as part of those respective groups.
-You can set these to different colors using vim's "highlight" command
-(e.g., to change how loops are displayed, enter the command
-":hi Repeat" followed by the color specification; on simple terminals
-the color specification ctermfg=White often shows well).
-
-There are several options you can select in this Ada mode.
-To enable them, assign a value to the option.  For example, to turn one on:
-   let ada_standard_types = 1
-To disable them use ":unlet".  Example:
-   unlet ada_standard_types = 1
-You can just use ":" and type these into the command line to set these
-temporarily before loading an Ada file.  You can make these option settings
-permanent by adding the "let" command(s), without a colon,
-to your "~/.vimrc" file.
-
-Here are the Ada mode options:
-
-Variable		 Action	~
-ada_standard_types	 Highlight types in package Standard (e.g., "Float")
-ada_space_errors	 Highlight extraneous errors in spaces...
-ada_no_trail_space_error   but ignore trailing spaces at the end of a line
-ada_no_tab_space_error	   but ignore tabs after spaces
-ada_withuse_ordinary	 Show "with" and "use" as ordinary keywords
-			   (when used to reference other compilation units
-			   they're normally highlighted specially).
-ada_begin_preproc	 Show all begin-like keywords using the coloring
-			   of C preprocessor commands.
-
-Even on a slow (90Mhz) PC this mode works quickly, but if you find
-the performance unacceptable, turn on ada_withuse_ordinary.
+See |ft-ada-syntax|
 
 
 ANT						*ant.vim* *ft-ant-syntax*
@@ -902,10 +859,6 @@ or in a modeline by appending '.doxygen' to the syntax of the file. Example: >
 	:set syntax=c.doxygen
 or >
 	// vim:syntax=c.doxygen
-
-To use doxygen formatting on top of any filetype, add the following to your
-.vimrc for each filetype, replacing {filetype} with the relevent value. >
-	:let g:syntax_extra_{filetype}='doxygen'
 
 It can also be done automaticly for c, cpp and idl files by setting the global
 or buffer-local variable load_doxygen_syntax.  This is done by adding the
@@ -2339,6 +2292,8 @@ Folding can be enabled by defining "ruby_fold": >
 
 This will set the 'foldmethod' option to "syntax" and allow folding of
 classes, modules, methods, code blocks, heredocs and comments.
+
+
 SCHEME						*scheme.vim* *ft-scheme-syntax*
 
 By default only R5RS keywords are highlighted and properly indented.
@@ -2597,6 +2552,16 @@ If you have a slow computer, you may wish to reduce the values for >
 (especially the latter).  If your computer is fast, you may wish to
 increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
+
+*tex-morecommands* *tex-package*
+Wish To Highlight More Commmands? ~
+
+LaTeX is a programmable language, and so there are thousands of packages full
+of specialized LaTeX commands, syntax, and fonts.  If you're using such a
+package you'll often wish that the distributed syntax/tex.vim would support
+it.  However, clearly this is impractical.  So please consider using the
+techniques in |mysyntaxfile-add| to extend or modify the highlighting provided
+by syntax/tex.vim.
 
 *tex-error*
 Excessive Error Highlighting? ~
@@ -4396,7 +4361,7 @@ Put these lines in your Makefile:
 # Make a highlight file for types.  Requires Exuberant ctags and awk
 types: types.vim
 types.vim: *.[ch]
-	ctags -i=gstuS -o- *.[ch] |\
+	ctags --c-kinds=gstu -o- *.[ch] |\
 		awk 'BEGIN{printf("syntax keyword Type\t")}\
 			{printf("%s ", $$1)}END{print ""}' > $@
 
@@ -4504,7 +4469,7 @@ You probably want to use these X resources (in your ~/.Xdefaults file):
 
 [Note: The cursorColor is required to work around a bug, which changes the
 cursor color to the color of the last drawn text.  This has been fixed by a
-newer version of xterm, but not everybody is it using yet.]
+newer version of xterm, but not everybody is using it yet.]
 
 To get these right away, reload the .Xdefaults file to the X Option database
 Manager (you only need to do this when you just changed the .Xdefaults file): >
@@ -4520,7 +4485,7 @@ these resources:
 	XTerm*cursorColor:	White
 
 							*hpterm-color*
-These settings work (more or less) for a hpterm, which only supports 8
+These settings work (more or less) for an hpterm, which only supports 8
 foreground colors: >
    :if has("terminfo")
    :  set t_Co=8

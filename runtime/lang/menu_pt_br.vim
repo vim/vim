@@ -1,6 +1,6 @@
-" Menu Translations: Português
-" Maintainer: José de Paula <jose_de_paula@ig.com.br>
-" Last Change: 2003 Jun 12
+" Menu Translations: Português do Brasil
+" Maintainer: José de Paula <jose@infoviaweb.com>
+" Last Change: 2006-09-19 02:30:00-03:00
 "
 
 " Quit when menu translations have already been done.
@@ -25,6 +25,7 @@ menutrans &Find\.\.\.		&Procurar\.\.\.
 menutrans &Credits		&Créditos
 menutrans O&rphans		&Órfãos
 menutrans Co&pying		&Licença
+menutrans &Sponsor/Register	&Doar/Registrar
 menutrans &Version		&Versão
 menutrans &About		&Sobre
 
@@ -58,7 +59,8 @@ menutrans Find\ and\ Rep&lace\.\.\.	Procurar\ e\ substit&uir\.\.\.
 menutrans Find\ and\ Rep&lace<Tab>:%s	Procurar\ e\ substit&uir<Tab>:%s
 menutrans Find\ and\ Rep&lace		Procurar\ e\ substit&uir
 menutrans Find\ and\ Rep&lace<Tab>:s	Procurar\ e\ substituir<Tab>:s
-menutrans Settings\ &Window		Op&ções
+menutrans Settings\ &Window		&Opções
+menutrans Startup\ &Settings		&Inicialização
 
 " Edit/Global Settings
 menutrans &Global\ Settings		Opções\ &Globais
@@ -117,7 +119,7 @@ menutrans default	padrão
 
 menutrans Select\ Fo&nt\.\.\.		Selecionar\ fo&nte\.\.\.
 
-menutrans &Keymap	Mapa\ de\ teclado
+menutrans &Keymap	&Mapa\ de\ teclado
 menutrans None		Nenhum
 
 " Programming menu
@@ -125,6 +127,7 @@ menutrans &Tools			&Ferramentas
 menutrans &Jump\ to\ this\ tag<Tab>g^]	&Pular\ para\ este\ tag<Tab>g^]
 menutrans Jump\ &back<Tab>^T		&Voltar<Tab>^T
 menutrans Build\ &Tags\ File		&Construir\ Arquivo\ de\ tags
+menutrans &Spelling			&Ortografia
 menutrans &Folding			&Dobra
 menutrans &Make<Tab>:make		&Make<Tab>:make
 menutrans &List\ Errors<Tab>:cl		&Lista\ de\ erros<Tab>:cl
@@ -134,9 +137,26 @@ menutrans &Previous\ Error<Tab>:cp	&Erro\ anterior<Tab>:cp
 menutrans &Older\ List<Tab>:cold	Listar\ erros\ &antigos<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	Listar\ erros\ &novos<Tab>:cnew
 menutrans Error\ &Window		&Janela\ de\ erros
-menutrans &Set\ Compiler		Def&inir\ Compilador
+menutrans Se&T\ Compiler		Def&inir\ Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converter\ para\ hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
+
+" Tools.Spelling menu
+menutrans &Spell Check On		&Ativar Correção Ortográfica
+menutrans &Spell Check Off		&Desativar Correção Ortográfica
+menutrans To &Next error<Tab>]s		&Próximo Erro<Tab>]s
+menutrans To &Previous Error<Tab>[s	Erro A&nterior<Tab>[s
+menutrans Suggest &Corrections<Tab>z=	&Sugerir Correções<Tab>z=
+menutrans &Repeat correction<Tab>:spellrepall	&Repetir Correção<Tab>:spellrepall
+
+menutrans Set\ language\ to\ "en"               Inglês
+menutrans Set\ language\ to\ "en_au"            Inglês\ (en_au)
+menutrans Set\ language\ to\ "en_ca"            Inglês\ (en_ca)
+menutrans Set\ language\ to\ "en_gb"            Inglês\ (en_gb)
+menutrans Set\ language\ to\ "en_nz"            Inglês\ (en_nz)
+menutrans Set\ language\ to\ "en_us"            Inglês\ (en_us)
+
+menutrans &Find\ More\ Languages                &Buscar mais idiomas
 
 " Tools.Fold Menu
 menutrans &Enable/Disable\ folds<Tab>zi		&Ativar/Desativar\ dobras<Tab>zi

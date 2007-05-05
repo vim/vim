@@ -1,6 +1,6 @@
 " Vim script to work like "less"
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 May 07
+" Last Change:	2006 Dec 05
 
 " Avoid loading this file twice, allow the user to define his own script.
 if exists("loaded_less")
@@ -168,7 +168,7 @@ fun! s:Forward()
   else
     noremap <script> N Hg0Nzt<SID>L
   endif
-  cnoremap <script> <CR> <CR>:cunmap <lt>CR><CR>zt<SID>L
+  cnoremap <silent> <script> <CR> <CR>:cunmap <lt>CR><CR>zt<SID>L
 endfun
 
 fun! s:Backward()
@@ -179,7 +179,7 @@ fun! s:Backward()
     noremap <script> n Hg0nzt<SID>L
   endif
   noremap <script> N H$Nzt<SID>L
-  cnoremap <script> <CR> <CR>:cunmap <lt>CR><CR>zt<SID>L
+  cnoremap <silent> <script> <CR> <CR>:cunmap <lt>CR><CR>zt<SID>L
 endfun
 
 call s:Forward()

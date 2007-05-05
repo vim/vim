@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Feb 14
+" Last Change:	2006 Sep 26
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -48,6 +48,7 @@ if exists("loaded_matchit")
   let b:match_words =
 	\ '\<fu\%[nction]\>:\<retu\%[rn]\>:\<endf\%[unction]\>,' .
 	\ '\<wh\%[ile]\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<endw\%[hile]\>,' .
+	\ '\<for\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<endfo\%[r]\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
 	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
 	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' .

@@ -1,4 +1,4 @@
-*usr_40.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_40.txt*	For Vim version 7.1a.  Last change: 2006 Jun 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -605,8 +605,9 @@ like "doautocmd" except it executes on all the buffers.
 
 USING NORMAL MODE COMMANDS
 
-The commands executed by an autocommand are Command-line command.  If you want
-to use a Normal mode command, the ":normal" command can be used.  Example: >
+The commands executed by an autocommand are Command-line commands.  If you
+want to use a Normal mode command, the ":normal" command can be used.
+Example: >
 
 	:autocmd BufReadPost *.log normal G
 

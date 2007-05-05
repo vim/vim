@@ -1,7 +1,7 @@
 "  matchit.vim: (global plugin) Extended "%" matching
-"  Last Change: Sun Feb 26 10:00 AM 2006 EST
+"  Last Change: Mon May 15 10:00 PM 2006 EDT
 "  Maintainer:  Benji Fisher PhD   <benji@member.AMS.org>
-"  Version:     1.10, for Vim 6.3
+"  Version:     1.11, for Vim 6.3+
 "  URL:		http://www.vim.org/script.php?script_id=39
 
 " Documentation:
@@ -15,7 +15,7 @@
 "  Support for many languages by Johannes Zellner
 "  Suggestions for improvement, bug reports, and support for additional
 "  languages by Jordi-Albert Batalla, Neil Bird, Servatius Brandt, Mark
-"  Collett, Stephen Wall, Dany St-Amant, and Johannes Zellner.
+"  Collett, Stephen Wall, Dany St-Amant, Yuheng Xie, and Johannes Zellner.
 
 " Debugging:
 "  If you'd like to try the built-in debugging commands...
@@ -172,9 +172,10 @@ function! s:Match_wrapper(word, forward, mode) range
   else	" Find the match that ends on or after the cursor and set curcol.
     let regexp = s:Wholematch(matchline, s:all, startcol-1)
     let curcol = match(matchline, regexp)
-    let suf = strlen(matchline) - matchend(matchline, regexp)
-    let prefix = (curcol ? '^.\{'  . curcol . '}\%(' : '^\%(')
-    let suffix = (suf ? '\).\{' . suf . '}$'  : '\)$')
+    let endcol = matchend(matchline, regexp)
+    let suf = strlen(matchline) - endcol
+    let prefix = (curcol ? '^.*\%'  . (curcol + 1) . 'c\%(' : '^\%(')
+    let suffix = (suf ? '\)\%' . (endcol + 1) . 'c.*$'  : '\)$')
     " If the match comes from the defaults, bail out.
     if matchline !~ prefix .
       \ substitute(s:pat, s:notslash.'\zs[,:]\+', '\\|', 'g') . suffix
@@ -262,10 +263,11 @@ function! s:Match_wrapper(word, forward, mode) range
   normal! H
   let restore_cursor = "normal!" . line(".") . "Gzt" . restore_cursor
   execute restore_cursor
-  normal! 0
-  if curcol
-    execute "normal!" . curcol . "l"
-  endif
+  call cursor(0, curcol + 1)
+  " normal! 0
+  " if curcol
+  "   execute "normal!" . curcol . "l"
+  " endif
   if skip =~ 'synID' && !(has("syntax") && exists("g:syntax_on"))
     let skip = "0"
   else
@@ -415,9 +417,9 @@ endfun
 " let match  = matchstr(getline("."), regexp)
 fun! s:Wholematch(string, pat, start)
   let group = '\%(' . a:pat . '\)'
-  let prefix = (a:start ? '\(^.\{,' . a:start . '}\)\zs' : '^')
+  let prefix = (a:start ? '\(^.*\%<' . (a:start + 2) . 'c\)\zs' : '^')
   let len = strlen(a:string)
-  let suffix = (a:start+1 < len ? '\(.\{,'.(len-a:start-1).'}$\)\@=' : '$')
+  let suffix = (a:start+1 < len ? '\(\%>'.(a:start+1).'c.*$\)\@=' : '$')
   if a:string !~ prefix . group . suffix
     let prefix = ''
   endif

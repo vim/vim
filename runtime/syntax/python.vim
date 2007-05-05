@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Python
 " Maintainer:	Neil Schemenauer <nas@python.ca>
-" Updated:	2002-10-18
+" Updated:	2006-10-15
 "		Added Python 2.4 features 2006 May 4 (Dmitry Vasiliev)
 "
 " Options to control Python syntax highlighting:
@@ -40,7 +40,7 @@ endif
 syn keyword pythonStatement	break continue del
 syn keyword pythonStatement	except exec finally
 syn keyword pythonStatement	pass print raise
-syn keyword pythonStatement	return try
+syn keyword pythonStatement	return try with
 syn keyword pythonStatement	global assert
 syn keyword pythonStatement	lambda yield
 syn keyword pythonStatement	def class nextgroup=pythonFunction skipwhite
@@ -50,21 +50,21 @@ syn keyword pythonConditional	if elif else
 syn keyword pythonOperator	and in is not or
 " AS will be a keyword in Python 3
 syn keyword pythonPreCondit	import from as
-syn match   pythonComment	"#.*$" contains=pythonTodo
+syn match   pythonComment	"#.*$" contains=pythonTodo,@Spell
 syn keyword pythonTodo		TODO FIXME XXX contained
 
 " Decorators (new in Python 2.4)
 syn match   pythonDecorator	"@" display nextgroup=pythonFunction skipwhite
 
 " strings
-syn region pythonString		matchgroup=Normal start=+[uU]\='+ end=+'+ skip=+\\\\\|\\'+ contains=pythonEscape
-syn region pythonString		matchgroup=Normal start=+[uU]\="+ end=+"+ skip=+\\\\\|\\"+ contains=pythonEscape
-syn region pythonString		matchgroup=Normal start=+[uU]\="""+ end=+"""+ contains=pythonEscape
-syn region pythonString		matchgroup=Normal start=+[uU]\='''+ end=+'''+ contains=pythonEscape
-syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]'+ end=+'+ skip=+\\\\\|\\'+
-syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]"+ end=+"+ skip=+\\\\\|\\"+
-syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]"""+ end=+"""+
-syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]'''+ end=+'''+
+syn region pythonString		matchgroup=Normal start=+[uU]\='+ end=+'+ skip=+\\\\\|\\'+ contains=pythonEscape,@Spell
+syn region pythonString		matchgroup=Normal start=+[uU]\="+ end=+"+ skip=+\\\\\|\\"+ contains=pythonEscape,@Spell
+syn region pythonString		matchgroup=Normal start=+[uU]\="""+ end=+"""+ contains=pythonEscape,@Spell
+syn region pythonString		matchgroup=Normal start=+[uU]\='''+ end=+'''+ contains=pythonEscape,@Spell
+syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]'+ end=+'+ skip=+\\\\\|\\'+ contains=@Spell
+syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]"+ end=+"+ skip=+\\\\\|\\"+ contains=@Spell
+syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]"""+ end=+"""+ contains=@Spell
+syn region pythonRawString	matchgroup=Normal start=+[uU]\=[rR]'''+ end=+'''+ contains=@Spell
 syn match  pythonEscape		+\\[abfnrtv'"\\]+ contained
 syn match  pythonEscape		"\\\o\{1,3}" contained
 syn match  pythonEscape		"\\x\x\{2}" contained

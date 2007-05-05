@@ -100,7 +100,7 @@ typedef struct
 #ifdef HAVE_SANDBOX
 static Scheme_Object *sandbox_file_guard(int, Scheme_Object **);
 static Scheme_Object *sandbox_network_guard(int, Scheme_Object **);
-static void sandbox_check();
+static void sandbox_check(void);
 #endif
 /*  Buffer-related commands */
 static Scheme_Object *buffer_new(buf_T *buf);
@@ -2441,7 +2441,8 @@ raise_vim_exn(const char *add_info)
     else
 	argv[0] = scheme_make_string(_("Vim error"));
 
-    argv[1] = scheme_current_continuation_marks();
+    /* TODO: proper argument */
+    argv[1] = scheme_current_continuation_marks(NULL);
 
     scheme_raise(scheme_make_struct_instance(vim_exn, 2, argv));
 }
@@ -2659,7 +2660,7 @@ static Scheme_Object *M_execute = NULL;
 static Scheme_Object *M_delete = NULL;
 
     static void
-sandbox_check()
+sandbox_check(void)
 {
     if (sandbox)
 	raise_vim_exn(_("not allowed in the Vim sandbox"));

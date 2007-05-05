@@ -1,4 +1,19 @@
 # Aap recipe for Portuguese Vim spell files.
+#
+# Based on a shell script by Leonardo Fontenelle.
+# His remarks:
+#
+# Makes a Vim pt dictionary from OpenOffice.org's pt_BR and pt_PT.
+#
+# AFAIK, will have to update the script every time a new dictionary is 
+# released for pt_BR. I asked the maintainer to update OOo's FTP site,
+# but it didn't happen yet. As for the pt_PT dictionary, they won't be
+# in OOo's FTP site for some time, because the Portuguese OOo project
+# decided to adapt the pt_BR dictionary, which is much more extensive.
+# I picked the Natura project unofficial dictionary, because it has been
+# developed by a team with linguists, and for a longer time. At least the
+# pt_PT dictionary has a "latest" file to make our lives easier.
+
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -10,15 +25,31 @@ SPELLDIR = ..
 FILES    = pt_PT.aff pt_PT.dic
 	   pt_BR.aff pt_BR.dic
 
+#
+# Fetching the pt_PT files from the Natura project.
+#
+PT_DIR = http://natura.di.uminho.pt/download/sources/Dictionaries/myspell
+PT_FNAME = myspell.pt-latest.zip
+:attr {fetch = $PT_DIR/%file%} $PT_FNAME
+
+#
+# Fetching the pt_BR files from BrOffice.org (Brazilian OOo) 2.1. Should be
+# updated really soon.
+#
+BR_DIR = http://www.deso-se.com.br/downloads/download.php?arquivo=pt_BR-2700g
+BR_FNAME = pt_BR-2700g.zip
+
+:attr {fetch = $BR_DIR} $BR_FNAME
+
 all: $SPELLDIR/pt.latin1.spl $SPELLDIR/pt.utf-8.spl \
         ../README_pt.txt
 
 $SPELLDIR/pt.latin1.spl : $FILES
-        :sys env LANG=pt_PT.ISO8859-1
+        :sys env LANG=pt_PT.ISO8859-1 LC_ALL=pt_PT.ISO8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/pt pt_PT pt_BR" -c q
 
 $SPELLDIR/pt.utf-8.spl : $FILES
-        :sys env LANG=pt_PT.UTF-8
+        :sys env LANG=pt_PT.UTF-8 LC_ALL=pt_PT.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/pt pt_PT pt_BR" -c q
 
 ../README_pt.txt: README_pt_PT.txt README_pt_BR.txt
@@ -26,23 +57,21 @@ $SPELLDIR/pt.utf-8.spl : $FILES
         :cat README_pt_PT.txt | :eval re.sub('\r', '', stdin) >>$target
         :print =================================================== >>$target
         :print pt_BR: >>$target
-        :cat README_pt_BR.txt | :eval re.sub('\r', '', stdin) >>$target
-
-#
-# Fetching the files from OpenOffice.org.
-#
-OODIR = http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
-:attr {fetch = $OODIR/%file%} pt_PT.zip pt_BR.zip
+        :print Information is in Leia-me.pdf, see $BR_DIR >>$target
+        :cat README_pt_BR.txt >>$target
 
 # The files don't depend on the .zip file so that we can delete it.
 # Only download the zip file if the targets don't exist.
 pt_PT.aff pt_PT.dic: {buildcheck=}
         :assertpkg unzip patch
-        :fetch pt_PT.zip
-        :sys $UNZIP pt_PT.zip
-        :delete pt_PT.zip
-        :sys $VIM pt_PT.dic -e -c "set ff=unix" -c update -c q
-        :sys $VIM README_pt_PT.txt -e -c "set ff=unix" -c update -c q
+        :fetch $PT_FNAME
+        :sys $UNZIP $PT_FNAME
+        :delete $PT_FNAME
+        :move myspell.pt-*/pt_PT.dic .
+        :move myspell.pt-*/pt_PT.aff .
+        :move myspell.pt-*/README_pt_PT.txt .
+        :move myspell.pt-*/COPYING COPYING_pt_PT.txt
+        :deldir myspell.pt-*
         @if not os.path.exists('pt_PT.orig.aff'):
             :copy pt_PT.aff pt_PT.orig.aff
         @if not os.path.exists('pt_PT.orig.dic'):
@@ -52,12 +81,22 @@ pt_PT.aff pt_PT.dic: {buildcheck=}
 
 pt_BR.aff pt_BR.dic: {buildcheck=}
         :assertpkg unzip patch
-        :fetch pt_BR.zip
-        :sys $UNZIP pt_BR.zip
-        :delete pt_BR.zip
-        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c update -c q
-        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c update -c q
-        :sys $VIM README_pt_BR.txt -e -c "set ff=unix" -c update -c q
+        :fetch $BR_FNAME
+        :sys $UNZIP $BR_FNAME
+        :delete $BR_FNAME
+        :move Leia-me.pdf Leia-me_pt_BR.pdf
+
+# 1. pt_BR.dic contains a cp1252-specific character.
+#    Changing it to its latin1 equivalent.
+# 2. Vim seems to ignore the dots from the word list.
+#    Removing words with dot to avoid misbehaviour.
+        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c "%s/\%x92/'/g" -c "/\./d" -c update -c q
+
+# Removing /* ... */ header to avoid warnings.  Write it to the README file, it
+# contains the copyright notice.
+        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c "/\/\*/,/\*\//w README_pt_BR.txt" -c "/\/\*/,/\*\//+1d" -c update -c q
+
+        #:sys $VIM README_pt_BR.txt -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('pt_BR.orig.aff'):
             :copy pt_BR.aff pt_BR.orig.aff
         @if not os.path.exists('pt_BR.orig.dic'):
@@ -79,10 +118,11 @@ diff:
 
 # Check for updated OpenOffice spell files.  When there are changes the
 # ".new.aff" and ".new.dic" files are left behind for manual inspection.
+# TO BE IMPLEMENTED
 
-check: check-us check-au
+check: check-pt check-br
 
-check-us:
+check-pt:
         :assertpkg unzip diff
         :fetch pt_PT.zip
         :mkdir tmp
@@ -101,7 +141,7 @@ check-us:
             :delete {r}{f}{q} tmp
             :delete pt_PT.zip
 
-check-au:
+check-br:
         :assertpkg unzip diff
         :fetch pt_BR.zip
         :mkdir tmp

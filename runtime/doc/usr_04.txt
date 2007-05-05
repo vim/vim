@@ -1,4 +1,4 @@
-*usr_04.txt*	For Vim version 7.0.  Last change: 2006 Apr 24
+*usr_04.txt*	For Vim version 7.1a.  Last change: 2006 Jun 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -390,7 +390,7 @@ the clipboard in section |09.3| and here: |clipboard|.
 ==============================================================================
 *04.8*	Text objects
 
-If the cursor is in the middle of a word and want to delete that word, you
+If the cursor is in the middle of a word and you want to delete that word, you
 need to move back to its start before you can do "dw".  There is a simpler way
 to do this: "daw".
 

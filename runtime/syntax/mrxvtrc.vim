@@ -1,129 +1,254 @@
 " Created	: Wed 26 Apr 2006 01:20:53 AM CDT
-" Modified	: Thu 27 Apr 2006 02:29:25 PM CDT
+" Modified	: Mon 20 Nov 2006 12:14:16 AM PST
 " Author	: Gautam Iyer <gi1242@users.sourceforge.net>
-" Description	: Syntax file for mrxvtrc
+" Description	: Vim syntax file for mrxvtrc (for mrxvt-0.5.0 and up)
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
   finish
 endif
 
-" Define options.
-let s:boolOpts = '(highlightTabOnBell|syncTabTitle|hideTabbar|autohideTabbar|bottomTabbar|hideButtons|syncTabIcon|veryBoldFont|maximized|fullscreen|reverseVideo|loginShell|jumpScroll|scrollBar|scrollbarRight|scrollbarFloating|scrollTtyOutputInhibit|scrollTtyKeypress|scrollWithBuffer|transparent|transparentForce|transparentScrollbar|transparentMenubar|transparentTabbar|tabUsePixmap|utmpInhibit|visualBell|mapAlert|meta8|mouseWheelScrollPage|multibyte_cursor|tripleclickwords|showMenu|xft|xftNomFont|xftSlowOutput|xftAntialias|xftHinting|xftAutoHint|xftGlobalAdvance|tabShell|cmdAllTabs|cmdInitTabs|protectSecondary|thai|borderLess|overrideRedirect|holdExit|broadcast|smartResize|smoothResize|pointerBlank|cursorBlink|noSysConfig|disableMacros|linuxHomeEndKey|sessionMgt)'
-
-let s:colorOpts = '(vt\d+.(foreground|background)|background|foreground|ufBackground|textShadow|i?tab(Foreground|Background)|color([0-9]|1[0-5]|BD|UL|RV)|(scroll|trough|highlight|cursor|pointer|border|tint)Color|cursorColor2)'
-
-let s:numOpts = '(vt\d+.saveLines|maxTabWidth|minVisibleTabs|saveLines|scrollbarThickness|xftmSize|xftSize|desktop|externalBorder|internalBorder|lineSpace|pointerBlankDelay|cursorBlinkInterval|initTermNumber|shading|backgroundFade|bgRefreshInterval|fading|opacity|opacityDegree|xftPSize)'
-
-let s:strOpts = '(vt\d+\.(tabTitle|command)|tabTitle|termName|title|clientName|iconName|bellCommand|holdExitText|backspaceKey|deleteKey|printPipe|cutChars|answerbackString|smClientID|geometry|confFileSave|path|boldFont|m?font[1-5]?|xftFont|xftmFont|xftPFont|inputMethod|greektoggle_key|menu|menubarPixmap|vt\d+\.Pixmap|Pixmap|scrollbarPixmap|tabbarPixmap|appIcon|multichar_encoding)'
-
 syn case match
 
-syn match	mrxvtrcComment	contains=@Spell '^\s*!.*$'
-syn match	mrxvtrcComment	'\v^\s*!\s*\w+[.*]\w+.*:.*'
+" Errors
+syn match	mrxvtrcError	contained	'\v\S+'
+
+" Comments
+syn match	mrxvtrcComment	contains=@Spell '^\s*[!#].*$'
+syn match	mrxvtrcComment	'\v^\s*[#!]\s*\w+[.*]\w+.*:.*'
 
 "
-" Generic options (string / color / number / boolean)
+" Options.
 "
-syn match	mrxvtrcOptErr	'\v^\s*\w+[.*]?.{-}(:|$)'
-exec 'syn match	mrxvtrcBoolOpts	nextgroup=mrxvtrcBoolVal,mrxvtrcValErr'
-	    \ '"\v^\w+[.*]'.s:boolOpts.':\s*"'
-exec 'syn match	mrxvtrcNumOpts	nextgroup=mrxvtrcNumVal,mrxvtrcValErr'
-	    \ '"\v^\w+[.*]'.s:numOpts.':\s*"'
-exec 'syn match	mrxvtrcColorOpts	nextgroup=mrxvtrcColorVal'
-	    \ '"\v^\w+[.*]'.s:colorOpts.':\s*"'
-exec 'syn match	mrxvtrcStrOpts	nextgroup=mrxvtrcStrVal,mrxvtrcValErr'
-	    \ '"\v^\w+[.*]'.s:strOpts.':\s*"'
+syn match	mrxvtrcClass	'\v^\s*\w+[.*]'
+	    \ nextgroup=mrxvtrcOptions,mrxvtrcProfile,@mrxvtrcPOpts,mrxvtrcError
 
+" Boolean options
+syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcBColon,mrxvtrcError
+				\ highlightTabOnBell syncTabTitle hideTabbar
+				\ autohideTabbar bottomTabbar hideButtons
+				\ syncTabIcon veryBoldFont maximized
+				\ fullscreen reverseVideo loginShell
+				\ jumpScroll scrollBar scrollbarRight
+				\ scrollbarFloating scrollTtyOutputInhibit
+				\ scrollTtyKeypress scrollWithBuffer
+				\ transparentForce transparentScrollbar
+				\ transparentMenubar transparentTabbar
+				\ tabUsePixmap utmpInhibit visualBell mapAlert
+				\ meta8 mouseWheelScrollPage multibyte_cursor
+				\ tripleclickwords showMenu xft xftNomFont
+				\ xftSlowOutput xftAntialias xftHinting
+				\ xftAutoHint xftGlobalAdvance cmdAllTabs
+				\ protectSecondary thai borderLess
+				\ overrideRedirect broadcast
+				\ smartResize smoothResize pointerBlank
+				\ cursorBlink noSysConfig disableMacros
+				\ linuxHomeEndKey sessionMgt
+syn match	mrxvtrcOptions	contained nextgroup=mrxvtrcBColon,mrxvtrcError
+				\ '\v<transparent>'
+syn match	mrxvtrcBColon	contained skipwhite
+				\ nextgroup=mrxvtrcBoolVal,mrxvtrcError ':'
 syn case ignore
-
-syn match	mrxvtrcValErr	contained '\v.+$'
-syn keyword	mrxvtrcBoolVal	contained 0 1 yes no on off true false
-syn match	mrxvtrcStrVal	contained '\v.+$'
-syn match	mrxvtrcColorVal	contained '\v#[0-9a-f]{6}\s*$'
-syn match	mrxvtrcNumVal	contained '\v[+-]?(0[0-7]+|\d+|0x[0-9a-f]+)$'
-
+syn keyword	mrxvtrcBoolVal	contained skipwhite nextgroup=mrxvtrcError
+				\ 0 1 yes no on off true false
 syn case match
 
-"
-" Options with special values
-"
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcSBstyle,mrxvtrcValErr
-				\ '\v^\w+[.*]scrollbarStyle:\s*'
-syn keyword	mrxvtrcSBstyle	contained plain xterm rxvt next sgi
+" Color options
+syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcCColon,mrxvtrcError
+				\ ufBackground textShadow tabForeground
+				\ itabForeground tabBackground itabBackground
+				\ scrollColor troughColor highlightColor
+				\ cursorColor cursorColor2 pointerColor
+				\ borderColor tintColor
+syn match	mrxvtrcOptions	contained nextgroup=mrxvtrcCColon,mrxvtrcError
+				\ '\v<color([0-9]|1[0-5]|BD|UL|RV)>'
+syn match	mrxvtrcCColon	contained skipwhite
+				\ nextgroup=mrxvtrcColorVal ':'
+syn match	mrxvtrcColorVal	contained skipwhite nextgroup=mrxvtrcError
+				\ '\v#[0-9a-fA-F]{6}'
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcSBalign,mrxvtrcValErr
-				\ '\v^\w+[.*]scrollbarAlign:\s*'
-syn keyword	mrxvtrcSBalign	contained top bottom
+" Numeric options
+syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcNColon,mrxvtrcError
+				\ maxTabWidth minVisibleTabs
+				\ scrollbarThickness xftmSize xftSize desktop
+				\ externalBorder internalBorder lineSpace
+				\ pointerBlankDelay cursorBlinkInterval
+				\ shading backgroundFade bgRefreshInterval
+				\ fading focusDelay opacity opacityDegree
+				\ xftPSize
+syn match	mrxvtrcNColon	contained skipwhite
+				\ nextgroup=mrxvtrcNumVal,mrxvtrcError ':'
+syn match	mrxvtrcNumVal	contained skipwhite nextgroup=mrxvtrcError
+				\ '\v[+-]?<(0[0-7]+|\d+|0x[0-9a-f]+)>'
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcTSmode,mrxvtrcValErr
-				\ '\v^\w+[.*]textShadowMode:\s*'
-syn keyword	mrxvtrcTSmode	contained
+" String options
+syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcSColon,mrxvtrcError
+				\ tabTitle termName title clientName iconName
+				\ bellCommand backspaceKey deleteKey
+				\ printPipe cutChars answerbackString
+				\ smClientID geometry path boldFont xftFont
+				\ xftmFont xftPFont inputMethod
+				\ greektoggle_key menu menubarPixmap
+				\ scrollbarPixmap tabbarPixmap appIcon
+				\ multichar_encoding initProfileList
+				\ winTitleFormat
+syn match	mrxvtrcOptions	contained nextgroup=mrxvtrcSColon,mrxvtrcError
+				\ '\v<m?font[1-5]?>'
+syn match	mrxvtrcSColon	contained skipwhite nextgroup=mrxvtrcStrVal ':'
+syn match	mrxvtrcStrVal	contained '\v\S.*'
+
+" Profile options
+syn cluster	mrxvtrcPOpts	contains=mrxvtrcPSOpts,mrxvtrcPCOpts,mrxvtrcPNOpts
+syn match	mrxvtrcProfile	contained nextgroup=@mrxvtrcPOpts,mrxvtrcError
+				\ '\vprofile\d+\.'
+syn keyword	mrxvtrcPSOpts	contained nextgroup=mrxvtrcSColon,mrxvtrcError
+				\ tabTitle command holdExitText holdExitTitle
+				\ Pixmap workingDirectory titleFormat
+syn keyword	mrxvtrcPCOpts	contained nextgroup=mrxvtrcCColon,mrxvtrcError
+				\ background foreground
+syn keyword	mrxvtrcPNOpts	contained nextgroup=mrxvtrcNColon,mrxvtrcError
+				\ holdExit saveLines
+
+" scrollbarStyle
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcSBstyle,mrxvtrcError
+				\ '\v<scrollbarStyle:'
+syn keyword	mrxvtrcSBstyle	contained skipwhite nextgroup=mrxvtrcError
+				\ plain xterm rxvt next sgi
+
+" scrollbarAlign
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcSBalign,mrxvtrcError
+				\ '\v<scrollbarAlign:'
+syn keyword	mrxvtrcSBalign	contained skipwhite nextgroup=mrxvtrcError
+				\ top bottom
+
+" textShadowMode
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcTSmode,mrxvtrcError
+				\ '\v<textShadowMode:'
+syn keyword	mrxvtrcTSmode	contained skipwhite nextgroup=mrxvtrcError
 				\ none top bottom left right topleft topright
 				\ botleft botright
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcGrkKbd,mrxvtrcValErr
-				\ '\v^\w+[.*]greek_keyboard:\s*'
-syn keyword	mrxvtrcGrkKbd	contained iso ibm
+" greek_keyboard
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcGrkKbd,mrxvtrcError
+				\ '\v<greek_keyboard:'
+syn keyword	mrxvtrcGrkKbd	contained skipwhite nextgroup=mrxvtrcError
+				\ iso ibm
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcXftWt,mrxvtrcValErr
-				\ '\v^\w+[.*]xftWeight:\s*'
-syn keyword	mrxvtrcXftWt	contained light medium bold
+" xftWeight
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcXftWt,mrxvtrcError
+				\ '\v<(xftWeight|xftBoldWeight):'
+syn keyword	mrxvtrcXftWt	contained skipwhite nextgroup=mrxvtrcError
+				\ light medium demibold bold black
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcXftSl,mrxvtrcValErr
-				\ '\v^\w+[.*]xftSlant:\s*'
-syn keyword	mrxvtrcXftSl	contained roman italic oblique
+" xftSlant
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcXftSl,mrxvtrcError
+				\ '\v<xftSlant:'
+syn keyword	mrxvtrcXftSl	contained skipwhite nextgroup=mrxvtrcError
+				\ roman italic oblique
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcXftWd,mrxvtrcValErr
-				\ '\v^\w+[.*]xftWidth:\s*'
-syn keyword	mrxvtrcXftWd	contained
+" xftWidth
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcXftWd,mrxvtrcError
+				\ '\v<xftWidth:'
+syn keyword	mrxvtrcXftWd	contained skipwhite nextgroup=mrxvtrcError
 				\ ultracondensed ultraexpanded
 				\ condensed expanded normal
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcXftHt,mrxvtrcValErr
-				\ '\v^\w+[.*]xftRGBA:\s*'
-syn keyword	mrxvtrcXftHt	contained rgb bgr vrgb vbgr none
+" xftRGBA
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcXftHt,mrxvtrcError
+				\ '\v<xftRGBA:'
+syn keyword	mrxvtrcXftHt	contained skipwhite nextgroup=mrxvtrcError
+				\ rgb bgr vrgb vbgr none
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcPedit,mrxvtrcValErr
-				\ '\v^\w+[.*]preeditType:\s*'
-syn keyword	mrxvtrcPedit	contained OverTheSpot OffTheSpot Root
+" preeditType
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcPedit,mrxvtrcError
+				\ '\v<preeditType:'
+syn keyword	mrxvtrcPedit	contained skipwhite nextgroup=mrxvtrcError
+				\ OverTheSpot OffTheSpot Root
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcMod,mrxvtrcValErr
-				\ '\v^\w+[.*]modifier:\s*'
-syn keyword	mrxvtrcMod	contained
+" modifier
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcMod,mrxvtrcError
+				\ '\v<modifier:'
+syn keyword	mrxvtrcMod	contained skipwhite nextgroup=mrxvtrcError
 				\ alt meta hyper super mod1 mod2 mod3 mod4 mod5
 
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcSelSty,mrxvtrcValErr
-				\ '\v^\w+[.*]selectStyle:\s*'
-syn keyword	mrxvtrcSelSty	contained old oldword
+" selectStyle
+syn match	mrxvtrcOptions	contained skipwhite
+				\ nextgroup=mrxvtrcSelSty,mrxvtrcError
+				\ '\v<selectStyle:'
+syn keyword	mrxvtrcSelSty	contained skipwhite nextgroup=mrxvtrcError
+				\ old oldword
 
 
 "
 " Macros
 "
-syn match	mrxvtrcOptions	nextgroup=mrxvtrcMacro,mrxvtrcValErr
-	    \ '\v\c^\w+[.*]macro.(primary\+)?((ctrl|alt|meta|shift)\+)*\w+:\s*'
-syn keyword	mrxvtrcMacro	contained nextgroup=mrxvtrcMacroArg
-				\ Dummy Esc Str NewTab Close GotoTab MoveTab
-				\ Scroll Copy Paste ToggleSubwin ResizeFont
-				\ ToggleVeryBold ToggleTransparency
-				\ ToggleBroadcast ToggleHold SetTitle
-				\ PrintScreen SaveConfig ToggleMacros
-syn match	mrxvtrcMacroArg	contained '.\+$'
+syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcKey,mrxvtrcError
+				\ macro
+syn case ignore
+syn match	mrxvtrcKey	contained skipwhite
+			    \ nextgroup=mrxvtrcMacro,mrxvtrcError
+			    \ '\v\.((primary|add|ctrl|alt|meta|shift)\+)*\w+:'
+syn case match
 
+" Macros without arguments
+syn keyword	mrxvtrcMacro	contained skipwhite nextgroup=mrxvtrcError
+				\ Dummy Copy Paste ToggleVeryBold
+				\ ToggleTransparency ToggleBroadcast
+				\ ToggleHold SetTitle ToggleMacros
+				\ ToggleFullscreen
 
-unlet s:strOpts s:boolOpts s:colorOpts s:numOpts
+" Macros with a string argument
+syn keyword	mrxvtrcMacro	contained skipwhite nextgroup=mrxvtrcStrVal
+				\ Esc Str Exec Scroll PrintScreen SaveConfig
+
+" Macros with a numeric argument
+syn keyword	mrxvtrcMacro	contained skipwhite
+				\ nextgroup=mrxvtrcNumVal,mrxvtrcError
+				\ Close GotoTab MoveTab ResizeFont
+
+" NewTab macro
+syn keyword	mrxvtrcMacro	contained skipwhite
+				\ nextgroup=mrxvtrcTitle,mrxvtrcShell,mrxvtrcCmd
+				\ NewTab
+syn region	mrxvtrcTitle	contained oneline skipwhite
+				\ nextgroup=mrxvtrcShell,mrxvtrcCmd
+				\ start='"' end='"'
+syn match	mrxvtrcShell	contained nextgroup=mrxvtrcCmd '!' 
+syn match	mrxvtrcCmd	contained '\v[^!" \t].*'
+
+" ToggleSubwin macro
+syn keyword	mrxvtrcMacro	contained skipwhite
+				\ nextgroup=mrxvtrcSubwin,mrxvtrcError
+				\ ToggleSubwin
+syn match	mrxvtrcSubwin	contained skipwhite nextgroup=mrxvtrcError
+				\ '\v[-+]?[bmst]>'
 
 "
 " Highlighting groups
 "
+hi def link mrxvtrcError	Error
 hi def link mrxvtrcComment	Comment
 
-hi def link mrxvtrcBoolOpts	Statement
-hi def link mrxvtrcColorOpts	mrxvtrcBoolOpts
-hi def link mrxvtrcNumOpts	mrxvtrcBoolOpts
-hi def link mrxvtrcStrOpts	mrxvtrcBoolOpts
-hi def link mrxvtrcOptions	mrxvtrcBoolOpts
+hi def link mrxvtrcClass	Statement
+hi def link mrxvtrcOptions	mrxvtrcClass
+hi def link mrxvtrcBColon	mrxvtrcClass
+hi def link mrxvtrcCColon	mrxvtrcClass
+hi def link mrxvtrcNColon	mrxvtrcClass
+hi def link mrxvtrcSColon	mrxvtrcClass
+hi def link mrxvtrcProfile	mrxvtrcClass
+hi def link mrxvtrcPSOpts	mrxvtrcClass
+hi def link mrxvtrcPCOpts	mrxvtrcClass
+hi def link mrxvtrcPNOpts	mrxvtrcClass
 
 hi def link mrxvtrcBoolVal	Boolean
 hi def link mrxvtrcStrVal	String
@@ -143,9 +268,10 @@ hi def link mrxvtrcMod		mrxvtrcStrVal
 hi def link mrxvtrcSelSty	mrxvtrcStrVal
 
 hi def link mrxvtrcMacro	Identifier
-hi def link mrxvtrcMacroArg	String
-
-hi def link mrxvtrcOptErr	Error
-hi def link mrxvtrcValErr	Error
+hi def link mrxvtrcKey		mrxvtrcClass
+hi def link mrxvtrcTitle	mrxvtrcStrVal
+hi def link mrxvtrcShell	Special
+hi def link mrxvtrcCmd		PreProc
+hi def link mrxvtrcSubwin	mrxvtrcStrVal
 
 let b:current_syntax = "mrxvtrc"

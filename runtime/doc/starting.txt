@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.0.  Last change: 2006 Apr 25
+*starting.txt*  For Vim version 7.1a.  Last change: 2007 Apr 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -311,12 +311,16 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Messages will be given for each file that is ":source"d and
 		for reading or writing a viminfo file.  Can be used to find
 		out what is happening upon startup and exit.  {not in Vi}
+		Example: >
+			vim -V8 foobar
 
 -V[N]{filename}
 		Like -V and set 'verbosefile' to {filename}.  The result is
 		that messages are not displayed but written to the file
 		{filename}.  {filename} must not start with a digit.
-
+		Example: >
+			vim -V20vimlog foobar
+<
 							*-D*
 -D		Debugging.  Go to debugging mode when executing the first
 		command from a script. |debug-mode|
@@ -537,7 +541,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		See |--remote-expr|. {not in Vi}
 
 --serverlist	Output a list of Vim server names and exit.  See
-		See |--serverlist|. {not in Vi}
+		|--serverlist|. {not in Vi}
 
 --socketid {id}						*--socketid*
 		GTK+ GUI Vim only.  Make gvim try to use GtkPlug mechanism, so
@@ -905,9 +909,10 @@ set, it will be set to 'nocompatible'.  This has the side effect of setting or
 resetting other options (see 'compatible').  But only the options that have
 not been set or reset will be changed.  This has the same effect like the
 value of 'compatible' had this value when starting Vim.  Note that this
-doesn't happen for the system-wide vimrc file.  It does also happen for gvimrc
-files.  The $MYVIMRC or $MYGVIMRC file will be set to the first found vimrc
-and/or gvimrc file.
+doesn't happen for the system-wide vimrc file nor when Vim was started with
+the |-u| command line argument.  It does also happen for gvimrc files.  The
+$MYVIMRC or $MYGVIMRC file will be set to the first found vimrc and/or gvimrc
+file.
 
 But there is a side effect of setting or resetting 'compatible' at the moment
 a .vimrc file is found: Mappings are interpreted the moment they are
@@ -1200,8 +1205,8 @@ resulting file, when executed with a ":source" command:
    including hidden and unloaded buffers.  Otherwise only buffers in windows
    are restored.
 8. Restores all windows with the same layout.  If 'sessionoptions' contains
-   contains "help", help windows are restored.  If 'sessionoptions' contains
-   "blank", windows editing a buffer without a name will be restored.
+   "help", help windows are restored.  If 'sessionoptions' contains "blank",
+   windows editing a buffer without a name will be restored.
    If 'sessionoptions' contains "winsize" and no (help/blank) windows were
    left out, the window sizes are restored (relative to the screen size).
    Otherwise, the windows are just given sensible sizes.

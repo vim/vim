@@ -1,118 +1,194 @@
 " Vim syntax file
-" Language:	Z shell (zsh)
-" Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
-" Heavily based on sh.vim by Lennart Schultz
-" Last Change:	2003 May 11
+" Language:         Zsh shell script
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-08-06
 
-" For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
-if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
+if exists("b:current_syntax")
   finish
 endif
 
-" String and Character contstants
-" Highlight special characters (those which have a backslash) differently
-syn match   zshSpecial	"\\\d\d\d\|\\[abcfnrtv\\']"
-syn region	zshSinglequote	start=+'+ skip=+\\'+ end=+'+
-" A bunch of useful zsh keywords
-" syn keyword	zshFunction	function
-syn keyword	zshStatement	bg break cd chdir continue echo eval exec
-syn keyword	zshStatement	exit export fg getopts hash jobs kill
-syn keyword	zshStatement	pwd read readonly return set zshift function
-syn keyword	zshStatement	stop suspend test times trap type ulimit
-syn keyword	zshStatement	umask unset wait setopt compctl source
-syn keyword	zshStatement	whence disown shift which unhash unalias
-syn keyword	zshStatement	alias functions unfunction getln disable
-syn keyword	zshStatement	vared getopt enable unsetopt autoload
-syn keyword	zshStatement	bindkey pushln command limit unlimit fc
-syn keyword	zshStatement	print builtin noglob sched r time
-syn keyword	zshStatement	typeset declare local integer
+let s:cpo_save = &cpo
+set cpo&vim
 
-syn keyword	zshConditional	if else esac case then elif fi in
-syn keyword	zshRepeat	while for do done
+setlocal iskeyword=@,48-57,_,-
 
-" Following is worth to notice: command substitution, file redirection and functions (so these features turns red)
-syn match	zshFunctionName	"\h\w*\s*()"
-syn region	zshCommandSub	start=+`+ skip=+\\`+ end=+`+
-" contains=ALLBUT,zshFunction
-syn match	zshRedir	"\d\=\(<\|<<\|>\|>>\)\(|\|&\d\)\="
+syn keyword zshTodo             contained TODO FIXME XXX NOTE
 
-syn keyword	zshTodo contained TODO
+syn region  zshComment          display oneline start='\%(^\|\s\)#' end='$'
+                                \ contains=zshTodo,@Spell
 
-syn keyword	zshShellVariables	USER LOGNAME HOME PATH CDPATH SHELL
-syn keyword	zshShellVariables	LC_TYPE LC_MESSAGE MAIL MAILCHECK
-syn keyword	zshShellVariables	PS1 PS2 IFS EGID EUID ERRNO GID UID
-syn keyword	zshShellVariables	HOST LINENO MACHTYPE OLDPWD OPTARG
-syn keyword	zshShellVariables	OPTIND OSTYPE PPID PWD RANDOM SECONDS
-syn keyword	zshShellVariables	SHLVL TTY signals TTYIDLE USERNAME
-syn keyword	zshShellVariables	VENDOR ZSH_NAME ZSH_VERSION ARGV0
-syn keyword	zshShellVariables	BAUD COLUMNS cdpath DIRSTACKSIZE
-syn keyword	zshShellVariables	FCEDIT fignore fpath histchars HISTCHARS
-syn keyword	zshShellVariables	HISTFILE HISTSIZE KEYTIMEOUT LANG
-syn keyword	zshShellVariables	LC_ALL LC_COLLATE LC_CTYPE LC_MESSAGES
-syn keyword	zshShellVariables	LC_TIME LINES LISTMAX LOGCHECK mailpath
-syn keyword	zshShellVariables	MAILPATH MANPATH manpath module_path
-syn keyword	zshShellVariables	MODULE_PATH NULLCMD path POSTEDIT
-syn keyword	zshShellVariables	PS3 PS4 PROMPT PROMPT2 PROMPT3 PROMPT4
-syn keyword	zshShellVariables	psvar PSVAR prompt READNULLCMD
-syn keyword	zshShellVariables	REPORTTIME RPROMPT RPS1 SAVEHIST
-syn keyword	zshShellVariables	SPROMPT STTY TIMEFMT TMOUT TMPPREFIX
-syn keyword	zshShellVariables	watch WATCH WATCHFMT WORDCHARS ZDOTDIR
-syn match	zshSpecialShellVar	"\$[-#@*$?!0-9]"
-syn keyword	zshSetVariables		ignoreeof noclobber
-syn region	zshDerefOpr	start="\${" end="}" contains=zshShellVariables
-syn match	zshDerefIdentifier	"\$[a-zA-Z_][a-zA-Z0-9_]*\>"
-syn match	zshOperator		"[][}{&;|)(]"
+syn match   zshPreProc          '^\%1l#\%(!\|compdef\|autoload\).*$'
 
+syn match   zshQuoted           '\\.'
+syn region  zshString           matchgroup=zshStringDelimiter start=+"+ end=+"+
+                                \ contains=zshQuoted,@zshDerefs,@zshSubst
+syn region  zshString           matchgroup=zshStringDelimiter start=+'+ end=+'+
+" XXX: This should probably be more precise, but Zsh seems a bit confused about it itself
+syn region  zshPOSIXString      matchgroup=zshStringDelimiter start=+\$'+
+                                \ end=+'+ contains=zshQuoted
+syn match   zshJobSpec          '%\(\d\+\|?\=\w\+\|[%+-]\)'
 
+syn keyword zshPrecommand       noglob nocorrect exec command builtin - time
 
-syn match  zshNumber		"-\=\<\d\+\>"
-syn match  zshComment	"#.*$" contains=zshNumber,zshTodo
+syn keyword zshDelimiter        do done
 
+syn keyword zshConditional      if then elif else fi case in esac select
 
-syn match zshTestOpr	"-\<[oeaznlg][tfqet]\=\>\|!\==\|-\<[b-gkLprsStuwjxOG]\>"
-"syn region zshTest	      start="\[" skip="\\$" end="\]" contains=zshString,zshTestOpr,zshDerefIdentifier,zshDerefOpr
-syn region  zshString	start=+"+  skip=+\\"+  end=+"+  contains=zshSpecial,zshOperator,zshDerefIdentifier,zshDerefOpr,zshSpecialShellVar,zshSinglequote,zshCommandSub
+syn keyword zshRepeat           for while until repeat foreach
 
-" Define the default highlighting.
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_zsh_syntax_inits")
-  if version < 508
-    let did_zsh_syntax_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+syn keyword zshException        always
 
-  HiLink zshSinglequote		zshString
-  HiLink zshConditional		zshStatement
-  HiLink zshRepeat		zshStatement
-  HiLink zshFunctionName	zshFunction
-  HiLink zshCommandSub		zshOperator
-  HiLink zshRedir		zshOperator
-  HiLink zshSetVariables	zshShellVariables
-  HiLink zshSpecialShellVar	zshShellVariables
-  HiLink zshTestOpr		zshOperator
-  HiLink zshDerefOpr		zshSpecial
-  HiLink zshDerefIdentifier	zshShellVariables
-  HiLink zshOperator		Operator
-  HiLink zshStatement		Statement
-  HiLink zshNumber		Number
-  HiLink zshString		String
-  HiLink zshComment		Comment
-  HiLink zshSpecial		Special
-  HiLink zshTodo		Todo
-  HiLink zshShellVariables	Special
-"  hi zshOperator		term=underline ctermfg=6 guifg=Purple gui=bold
-"  hi zshShellVariables	term=underline ctermfg=2 guifg=SeaGreen gui=bold
-"  hi zshFunction		term=bold ctermbg=1 guifg=Red
+syn keyword zshKeyword          function nextgroup=zshKSHFunction skipwhite
 
-  delcommand HiLink
+syn match   zshKSHFunction      contained '\k\+'
+syn match   zshFunction         '^\s*\k\+\ze\s*()'
+
+syn match   zshOperator         '||\|&&\|;\|&!\='
+
+syn match   zshRedir            '\d\=\(<\|<>\|<<<\|<&\s*[0-9p-]\=\)'
+syn match   zshRedir            '\d\=\(>\|>>\|>&\s*[0-9p-]\=\|&>\|>>&\|&>>\)[|!]\='
+syn match   zshRedir            '|&\='
+
+syn region  zshHereDoc          matchgroup=zshRedir start='<<\s*\z(\S*\)'
+                                \ end='^\z1\>' contains=@zshSubst
+syn region  zshHereDoc          matchgroup=zshRedir start='<<-\s*\z(\S*\)'
+                                \ end='^\s*\z1\>' contains=@zshSubst
+syn region  zshHereDoc          matchgroup=zshRedir
+                                \ start=+<<\s*\(["']\)\z(\S*\)\1+  end='^\z1\>'
+syn region  zshHereDoc          matchgroup=zshRedir
+                                \ start=+<<-\s*\(["']\)\z(\S*\)\1+
+                                \ end='^\s*\z1\>'
+
+syn match   zshVariable         '\<\h\w*\ze+\=='
+" XXX: how safe is this?
+syn region  zshVariable         oneline
+                                \ start='\$\@<!\<\h\w*\[' end='\]\ze+\=='
+                                \ contains=@zshSubst
+
+syn cluster zshDerefs           contains=zshShortDeref,zshLongDeref,zshDeref
+
+if !exists("g:zsh_syntax_variables")
+  let s:zsh_syntax_variables = 'all'
+else
+  let s:zsh_syntax_variables = g:zsh_syntax_variables
 endif
+
+if s:zsh_syntax_variables =~ 'short\|all'
+  syn match zshShortDeref       '\$[!#$*@?_-]\w\@!'
+  syn match zshShortDeref       '\$[=^~]*[#+]*\d\+\>'
+endif
+
+if s:zsh_syntax_variables =~ 'long\|all'
+  syn match zshLongDeref        '\$\%(ARGC\|argv\|status\|pipestatus\|CPUTYPE\|EGID\|EUID\|ERRNO\|GID\|HOST\|LINENO\|LOGNAME\)'
+  syn match zshLongDeref        '\$\%(MACHTYPE\|OLDPWD OPTARG\|OPTIND\|OSTYPE\|PPID\|PWD\|RANDOM\|SECONDS\|SHLVL\|signals\)'
+  syn match zshLongDeref        '\$\%(TRY_BLOCK_ERROR\|TTY\|TTYIDLE\|UID\|USERNAME\|VENDOR\|ZSH_NAME\|ZSH_VERSION\|REPLY\|reply\|TERM\)'
+endif
+
+if s:zsh_syntax_variables =~ 'all'
+  syn match zshDeref            '\$[=^~]*[#+]*\h\w*\>'
+else
+  syn match zshDeref            transparent '\$[=^~]*[#+]*\h\w*\>'
+endif
+
+syn match   zshCommands         '\%(^\|\s\)[.:]\ze\s'
+syn keyword zshCommands         alias autoload bg bindkey break bye cap cd
+                                \ chdir clone comparguments compcall compctl
+                                \ compdescribe compfiles compgroups compquote
+                                \ comptags comptry compvalues continue dirs
+                                \ disable disown echo echotc echoti emulate
+                                \ enable eval exec exit export false fc fg
+                                \ functions getcap getln getopts hash history
+                                \ jobs kill let limit log logout popd print
+                                \ printf pushd pushln pwd r read readonly
+                                \ rehash return sched set setcap setopt shift
+                                \ source stat suspend test times trap true
+                                \ ttyctl type ulimit umask unalias unfunction
+                                \ unhash unlimit unset unsetopt vared wait
+                                \ whence where which zcompile zformat zftp zle
+                                \ zmodload zparseopts zprof zpty zregexparse
+                                \ zsocket zstyle ztcp
+
+syn keyword zshTypes            float integer local typeset declare
+
+" XXX: this may be too much
+" syn match   zshSwitches         '\s\zs--\=[a-zA-Z0-9-]\+'
+
+syn match   zshNumber           '[+-]\=\<\d\+\>'
+syn match   zshNumber           '[+-]\=\<0x\x\+\>'
+syn match   zshNumber           '[+-]\=\<0\o\+\>'
+syn match   zshNumber           '[+-]\=\d\+#[-+]\=\w\+\>'
+syn match   zshNumber           '[+-]\=\d\+\.\d\+\>'
+
+syn cluster zshSubst            contains=zshSubst,zshOldSubst,zshMathSubst
+syn region  zshSubst            matchgroup=zshSubstDelim transparent
+                                \ start='\$(' skip='\\)' end=')' contains=TOP
+syn region  zshParentheses      transparent start='(' skip='\\)' end=')'
+syn region  zshMathSubst        matchgroup=zshSubstDelim transparent
+                                \ start='\$((' skip='\\)'
+                                \ matchgroup=zshSubstDelim end='))'
+                                \ contains=zshParentheses,@zshSubst,zshNumber,
+                                \ @zshDerefs,zshString
+syn region  zshBrackets         contained transparent start='{' skip='\\}'
+                                \ end='}'
+syn region  zshSubst            matchgroup=zshSubstDelim start='\${' skip='\\}'
+                                \ end='}' contains=@zshSubst,zshBrackets,zshQuoted
+syn region  zshOldSubst         matchgroup=zshSubstDelim start=+`+ skip=+\\`+
+                                \ end=+`+ contains=TOP,zshOldSubst
+
+hi def link zshTodo             Todo
+hi def link zshComment          Comment
+hi def link zshPreProc          PreProc
+hi def link zshQuoted           SpecialChar
+hi def link zshString           String
+hi def link zshStringDelimiter  zshString
+hi def link zshPOSIXString      zshString
+hi def link zshJobSpec          Special
+hi def link zshPrecommand       Special
+hi def link zshDelimiter        Keyword
+hi def link zshConditional      Conditional
+hi def link zshException        Exception
+hi def link zshRepeat           Repeat
+hi def link zshKeyword          Keyword
+hi def link zshFunction         None
+hi def link zshKSHFunction      zshFunction
+hi def link zshHereDoc          String
+if 0
+  hi def link zshOperator         Operator
+else
+  hi def link zshOperator         None
+endif
+if 1
+  hi def link zshRedir            Operator
+else
+  hi def link zshRedir            None
+endif
+hi def link zshVariable         None
+hi def link zshDereferencing    PreProc
+if s:zsh_syntax_variables =~ 'short\|all'
+  hi def link zshShortDeref     zshDereferencing
+else
+  hi def link zshShortDeref     None
+endif
+if s:zsh_syntax_variables =~ 'long\|all'
+  hi def link zshLongDeref      zshDereferencing
+else
+  hi def link zshLongDeref      None
+endif
+if s:zsh_syntax_variables =~ 'all'
+  hi def link zshDeref          zshDereferencing
+else
+  hi def link zshDeref          None
+endif
+hi def link zshCommands         Keyword
+hi def link zshTypes            Type
+hi def link zshSwitches         Special
+hi def link zshNumber           Number
+hi def link zshSubst            PreProc
+hi def link zshMathSubst        zshSubst
+hi def link zshOldSubst         zshSubst
+hi def link zshSubstDelim       zshSubst
 
 let b:current_syntax = "zsh"
 
-" vim: ts=8
+let &cpo = s:cpo_save
+unlet s:cpo_save

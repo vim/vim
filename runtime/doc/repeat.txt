@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.0.  Last change: 2006 Apr 30
+*repeat.txt*    For Vim version 7.1a.  Last change: 2007 Jan 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -52,6 +52,13 @@ selection, the same SIZE of area is used, see |visual-repeat|.
 							*:v* *:vglobal*
 :[range]v[global]/{pattern}/[cmd]
 			Same as :g!.
+
+Instead of the '/' which surrounds the {pattern}, you can use any other
+single byte character, but not an alphanumeric character, '\', '"' or '|'.
+This is useful if you want to include a '/' in the search pattern or
+replacement string.
+
+For the definition of a pattern, see |pattern|.
 
 The global commands work by first scanning through the [range] lines and
 marking each line where a match occurs (for a multi-line pattern, only the
@@ -655,5 +662,8 @@ mind there are various things that may clobber the results:
 <
 - Profiling may give weird results on multi-processor systems, when sleep
   mode kicks in or the processor frequency is reduced to save power.
+
+- The "self" time is wrong when a function is used recursively.
+
 
  vim:tw=78:ts=8:ft=help:norl:

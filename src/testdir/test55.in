@@ -334,6 +334,14 @@ let l = [0, 1, 2, 3]
 :$put =string(split('abc', '\zs'))
 :$put =string(split('abc', '\zs', 1))
 :"
+:" compare recursively linked list and dict
+:let l = [1, 2, 3, 4]
+:let d = {'1': 1, '2': l, '3': 3}
+:let l[1] = d
+:$put =(l == l)
+:$put =(d == d)
+:$put =(l != deepcopy(l))
+:$put =(d != deepcopy(d))
 :endfun
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while
 :"

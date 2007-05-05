@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Perl POD format
 " Maintainer:	Scott Bigham <dsb@killerbunnies.org>
-" Last Change:	2005 Jul 05
+" Last Change:	2007 Jan 21
 
 " To add embedded POD documentation highlighting to your syntax file, add
 " the commands:
@@ -53,6 +53,7 @@ syn match podSpecial	"[$@%]\I\i*\(::\I\i*\)*\>" contains=@NoSpell
 
 " Special formatting sequences
 syn region podFormat	start="[IBSCLFX]<[^<]"me=e-1 end=">" oneline contains=podFormat,@NoSpell
+syn region podFormat	start="[IBSCLFX]<<\s" end="\s>>" oneline contains=podFormat,@NoSpell
 syn match  podFormat	"Z<>"
 syn match  podFormat	"E<\(\d\+\|\I\i*\)>" contains=podEscape,podEscape2,@NoSpell
 syn match  podEscape	"\I\i*>"me=e-1 contained contains=@NoSpell
