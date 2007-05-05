@@ -1,7 +1,7 @@
 " Keymap file for the editing Tamil language files in TSCII encoding.
 "
 " Maintainer: Yegappan Lakshmanan (yegappan AT yahoo DOT com)
-" Last updated: August 4, 2005
+" Last updated: 2006 June 17
 "
 " You will need a fixed width TSCII font to use this encoding.  The
 " Avarangal TSCII fixed width font (TSC_AvarangalFxd) is used to test
@@ -118,7 +118,7 @@ sA     <char-186><char-161>
 si     <char-186><char-162>
 sii    <char-186><char-163>
 sI     <char-186><char-163>
-su     <char-204>
+su     <char-205>
 suu    <char-221>
 sU     <char-221>
 se     <char-166><char-186>

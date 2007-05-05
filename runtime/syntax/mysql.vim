@@ -249,6 +249,7 @@ syn region mysqlFunction	 start="strcmp(" end=")" contains=ALL
 syn region mysqlFunction	 start="subdate(" end=")" contains=ALL
 syn region mysqlFunction	 start="substring(" end=")" contains=ALL
 syn region mysqlFunction	 start="substring_index(" end=")" contains=ALL
+syn region mysqlFunction	 start="subtime(" end=")" contains=ALL
 syn region mysqlFunction	 start="sum(" end=")" contains=ALL
 syn region mysqlFunction	 start="sysdate(" end=")" contains=ALL
 syn region mysqlFunction	 start="system_user(" end=")" contains=ALL

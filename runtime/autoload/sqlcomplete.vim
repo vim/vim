@@ -1,8 +1,8 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     4.0
-" Last Change: Wed Apr 26 2006 3:00:06 PM
+" Version:     5.0
+" Last Change: Mon Jun 05 2006 3:30:04 PM
 " Usage:       For detailed help
 "              ":help sql.txt" 
 "              or ":help ft-sql-omni" 
@@ -22,7 +22,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish 
 endif
-let g:loaded_sql_completion = 40
+let g:loaded_sql_completion = 50
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -113,7 +113,7 @@ function! sqlcomplete#Complete(findstart, base)
                 " If lastword has already been set for column completion
                 " break from the loop, since we do not also want to pickup
                 " a table name if it was also supplied.
-                if lastword != -1 && compl_type == 'column'
+                if lastword != -1 && compl_type == 'column' 
                     break
                 endif
                 " If column completion was specified stop at the "." if
@@ -176,11 +176,19 @@ function! sqlcomplete#Complete(findstart, base)
             return []
         endif
 
-        if s:sql_file_{compl_type} == ""
-            let compl_type = substitute(compl_type, '\w\+', '\u&', '')
-            let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type)
+        " Allow the user to override the dbext plugin to specify whether
+        " the owner/creator should be included in the list
+        let saved_dbext_show_owner      = 1
+        if exists('g:dbext_default_dict_show_owner')
+            let saved_dbext_show_owner  = g:dbext_default_dict_show_owner
         endif
-        let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type)
+        let g:dbext_default_dict_show_owner = g:omni_sql_include_owner
+
+        let compl_type_uc = substitute(compl_type, '\w\+', '\u&', '')
+        if s:sql_file_{compl_type} == ""
+            let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type_uc)
+        endif
+        let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type_uc)
         if s:sql_file_{compl_type} != ""
             if filereadable(s:sql_file_{compl_type})
                 let compl_list = readfile(s:sql_file_{compl_type})
@@ -194,7 +202,9 @@ function! sqlcomplete#Complete(findstart, base)
                 " endif
             endif
         endif
-    elseif compl_type == 'column'
+
+        let g:dbext_default_dict_show_owner = saved_dbext_show_owner
+    elseif compl_type =~? 'column'
 
         " This type of completion relies upon the dbext.vim plugin
         if s:SQLCCheck4dbext() == -1
@@ -209,33 +219,88 @@ function! sqlcomplete#Complete(findstart, base)
             let base = s:save_prev_table
         endif
 
-        if base != ""
-            let compl_list        = s:SQLCGetColumns(base, '')
+        let owner  = ''
+        let column = ''
+
+        if base =~ '\.'
+            " Check if the owner/creator has been specified
+            let owner  = matchstr( base, '^\zs.*\ze\..*\..*' )
+            let table  = matchstr( base, '^\(.*\.\)\?\zs.*\ze\..*' )
+            let column = matchstr( base, '.*\.\zs.*' )
+
+            " It is pretty well impossible to determine if the user
+            " has entered:
+            "    owner.table
+            "    table.column_prefix
+            " So there are a couple of things we can do to mitigate 
+            " this issue.
+            "    1.  Check if the dbext plugin has the option turned
+            "        on to even allow owners
+            "    2.  Based on 1, if the user is showing a table list
+            "        and the DrillIntoTable (using <C-Right>) then 
+            "        this will be owner.table.  In this case, we can
+            "        check to see the table.column exists in the 
+            "        cached table list.  If it does, then we have
+            "        determined the user has actually chosen 
+            "        owner.table, not table.column_prefix.
+            let found = -1
+            if g:omni_sql_include_owner == 1 && owner == ''
+                if filereadable(s:sql_file_table)
+                    let tbl_list = readfile(s:sql_file_table)
+                    let found    = index( tbl_list, ((table != '')?(table.'.'):'').column)
+                endif
+            endif
+            " If the table.column was found in the table list, we can safely assume
+            " the owner was not provided and shift the items appropriately.
+            " OR
+            " If the user has indicated not to use table owners at all and
+            " the base ends in a '.' we know they are not providing a column
+            " name, so we can shift the items appropriately.
+            if found != -1 || (g:omni_sql_include_owner == 0 && base !~ '\.$')
+                let owner  = table
+                let table  = column
+                let column = ''
+            endif
+        else
+            let table  = base
+        endif
+
+        " Get anything after the . and consider this the table name
+        " If an owner has been specified, then we must consider the 
+        " base to be a partial column name
+        " let base  = matchstr( base, '^\(.*\.\)\?\zs.*' )
+
+        if table != ""
             let s:save_prev_table = base
-            let base              = ''
-        endif
-    elseif compl_type == 'column_csv'
+            let list_type         = ''
 
-        " This type of completion relies upon the dbext.vim plugin
-        if s:SQLCCheck4dbext() == -1
-            return []
-        endif
+            if compl_type == 'column_csv'
+                " Return one array element, with a comma separated
+                " list of values instead of multiple array entries
+                " for each column in the table.
+                let list_type     = 'csv'
+            endif
 
-        if base == ""
-            " The last time we displayed a column list we stored
-            " the table name.  If the user selects a column list 
-            " without a table name of alias present, assume they want
-            " the previous column list displayed.
-            let base = s:save_prev_table
-        endif
+            let compl_list  = s:SQLCGetColumns(table, list_type)
+            if column != ''
+                " If no column prefix has been provided and the table
+                " name was provided, append it to each of the items
+                " returned.
+                let compl_list = map(compl_list, "table.'.'.v:val")
+                if owner != ''
+                    " If an owner has been provided append it to each of the
+                    " items returned.
+                    let compl_list = map(compl_list, "owner.'.'.v:val")
+                endif
+            else
+                let base = ''
+            endif
 
-        if base != ""
-            let compl_list        = s:SQLCGetColumns(base, 'csv')
-            let s:save_prev_table = base
-            " Join the column array into 1 single element array
-            " but make the columns column separated
-            let compl_list        = [join(compl_list, ', ')]
-            let base              = ''
+            if compl_type == 'column_csv'
+                " Join the column array into 1 single element array
+                " but make the columns column separated
+                let compl_list        = [join(compl_list, ', ')]
+            endif
         endif
     elseif compl_type == 'resetCache'
         " Reset all cached items
@@ -256,7 +321,7 @@ function! sqlcomplete#Complete(findstart, base)
     if base != ''
         " Filter the list based on the first few characters the user
         " entered
-        let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "^'.base.'"'
+        let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\([^.]*\\)\\?'.base.'\\)"'
         let compl_list = filter(deepcopy(compl_list), expr)
     endif
 
@@ -274,6 +339,8 @@ function! sqlcomplete#PreCacheSyntax(...)
     else
         let syn_group_arr = g:omni_sql_precache_syntax_groups
     endif
+    " For each group specified in the list, precache all
+    " the sytnax items.
     if !empty(syn_group_arr)
         for group_name in syn_group_arr
             call s:SQLCGetSyntaxList(group_name)
@@ -444,9 +511,23 @@ function! s:SQLCAddAlias(table_name, table_alias, cols)
     return cols
 endfunction
 
+function! s:SQLCGetObjectOwner(object) 
+    " The owner regex matches a word at the start of the string which is
+    " followed by a dot, but doesn't include the dot in the result.
+    " ^    - from beginning of line
+    " "\?  - ignore any quotes
+    " \zs  - start the match now
+    " \w\+ - get owner name
+    " \ze  - end the match
+    " "\?  - ignore any quotes
+    " \.   - must by followed by a .
+    let owner = matchstr( a:object, '^"\?\zs\w\+\ze"\?\.' )
+    return owner
+endfunction 
+
 function! s:SQLCGetColumns(table_name, list_type)
-    let table_name   = matchstr(a:table_name, '^\w\+')
-    let table_name   = matchstr(a:table_name, '^[a-zA-Z0-9_.]\+')
+    " Check if the table name was provided as part of the column name
+    let table_name   = matchstr(a:table_name, '^[a-zA-Z0-9_]\+\ze\.\?')
     let table_cols   = []
     let table_alias  = ''
     let move_to_top  = 1

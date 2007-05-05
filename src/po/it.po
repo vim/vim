@@ -12,12 +12,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2006-04-25 12:03+0200\n"
-"PO-Revision-Date:  2006-05-03 00:02+0200\n"
+"POT-Creation-Date: 2007-04-29 13:02+0200\n"
+"PO-Revision-Date:  2007-04-29 18:02+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
-"                   Vlad Sandrini   <vlad.gently@gmail.com>\n"
+"                   Vlad Sandrini <vlad.gently@gmail.com>"
+"                   Luciano Montanaro <mikelima@cirulla.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
@@ -195,6 +196,9 @@ msgstr "E98: Non riesco a leggere output del comando 'diff'"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Buffer corrente non in modalità 'diff'"
+
+msgid "E793: No other buffer in diff mode is modifiable"
+msgstr "E793: Nessun altro buffer è modificabile in modalità 'diff'"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Non c'è nessun altro buffer in modalità 'diff'"
@@ -621,6 +625,10 @@ msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Tipo di variabile non corrispondente per: %s"
 
 #, c-format
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: Non posso cancellare la variabile %s"
+
+#, c-format
 msgid "E741: Value is locked: %s"
 msgstr "E741: Valore di %s non modificabile"
 
@@ -754,6 +762,7 @@ msgstr " mark"
 msgid " FAILED"
 msgstr " FALLITO"
 
+#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: File viminfo \"%s\" inaccessibile in scrittura"
@@ -1299,7 +1308,7 @@ msgstr ""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
-msgstr "E499: Un nome di file nullo per '%' or '#', va bene solo con \":p:h\""
+msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
 
 msgid "E500: Evaluates to an empty string"
 msgstr "E500: Il valore è una stringa nulla"
@@ -1464,6 +1473,9 @@ msgstr "è una directory"
 msgid "is not a file"
 msgstr "non è un file"
 
+msgid "is a device (disabled with 'opendevice' option"
+msgstr "è una periferica (disabilitata con l'opzione 'opendevice'"
+
 msgid "[New File]"
 msgstr "[File nuovo]"
 
@@ -1546,7 +1558,7 @@ msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Nessun autocomando corrispondente per buffer acwrite"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
-msgstr "E203: Buffer in scrittuta cancellato o scaricato dagli autocomandi"
+msgstr "E203: Buffer in scrittura cancellato o scaricato dagli autocomandi"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: L'autocomando ha modificato numero linee in maniera imprevista"
@@ -1559,6 +1571,9 @@ msgstr "Scrittura parziale disabilitata per i buffer di NetBeans"
 
 msgid "is not a file or writable device"
 msgstr "non è un file o un dispositivo su cui si possa scrivere"
+
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "scrittura su periferica disabilitata con l'opzione 'opendevice'"
 
 msgid "is read-only (add ! to override)"
 msgstr "è in sola letture (aggiungi ! per eseguire comunque)"
@@ -2195,7 +2210,7 @@ msgid "Printed: %s"
 msgstr "Stampato: %s"
 
 msgid "Printing aborted"
-msgstr "Stampa non completata'"
+msgstr "Stampa non completata"
 
 msgid "E455: Error writing to PostScript output file"
 msgstr "E455: Errore in scrittura a file PostScript di output"
@@ -2458,19 +2473,6 @@ msgstr "numero linea non nell'intervallo"
 msgid "not allowed in the Vim sandbox"
 msgstr "non ammesso in ambiente protetto"
 
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Non posso caricare la libreria %s"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
-"Perl."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
-
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2488,7 +2490,7 @@ msgid "softspace must be an integer"
 msgstr "softspace deve essere un numero intero"
 
 msgid "invalid attribute"
-msgstr "atrributo non valido"
+msgstr "attributo non valido"
 
 msgid "writelines() requires list of strings"
 msgstr "writelines() richiede una lista di stringhe"
@@ -2645,7 +2647,7 @@ msgid "E275: Unknown SNiFF+ request: %s"
 msgstr "E275: Richiesta SNiFF+ sconosciuta: %s"
 
 msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Errore connettendosi a SNiFF+"
+msgstr "E276: Errore di connessione a SNiFF+"
 
 msgid "E278: SNiFF+ not connected"
 msgstr "E278: SNiFF+ non connesso"
@@ -2994,17 +2996,17 @@ msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <file>\tApri <file> in un server Vim se possibile"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <files>  Stessa cosa, ignora se non esiste un server"
+msgstr "--remote-silent <file>   Stessa cosa, ignora se non esiste un server"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait <file>  Come --remote ma aspetta che file siano elaborati"
+"--remote-wait <file>   Come --remote ma aspetta che i file siano elaborati"
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr ""
-"--remote-wait-silent <files>  Stessa cosa, ignora se non esiste un server"
+"--remote-wait-silent <file>   Stessa cosa, ignora se non esiste un server"
 
 msgid "--remote-tab <files>  As --remote but open tab page for each file"
 msgstr "--remote-tab <file>  Come --remote ma apre una linguetta per ogni file"
@@ -3207,7 +3209,7 @@ msgid ""
 "# History of marks within files (newest to oldest):\n"
 msgstr ""
 "\n"
-"# Storia dei mark all'interno dei files (dai più recenti ai meno recenti):\n"
+"# Storia dei mark all'interno dei file (dai più recenti ai meno recenti):\n"
 
 msgid "Missing '>'"
 msgstr "Manca '>'"
@@ -3328,6 +3330,10 @@ msgid ""
 msgstr ""
 ",\n"
 "o il file è stato danneggiato."
+
+msgid " has been damaged (page size is smaller than minimum value).\n"
+msgstr ""
+" è stato danneggiato (la dimensione della pagina è inferiore al minimo).\n"
 
 #, c-format
 msgid "Using swap file \"%s\""
@@ -3670,6 +3676,10 @@ msgstr "E328: I Menu esistono solo in un'altra modalità"
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: Nessun Menu \"%s\""
+
+#. Only a mnemonic or accelerator is not valid.
+msgid "E792: Empty menu name"
+msgstr "E792: Nome menu non valido"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Il percorso del Menu non deve condurre a un sotto-Menu"
@@ -4558,7 +4568,7 @@ msgid "E66: \\z( not allowed here"
 msgstr "E66: \\z( non consentito qui"
 
 msgid "E67: \\z1 et al. not allowed here"
-msgstr "E67: \\z1 et al. non consentiti qui"
+msgstr "E67: \\z1 ecc. non consentiti qui"
 
 msgid "E68: Invalid character after \\z"
 msgstr "E68: Carattere non ammesso dopo \\z"
@@ -5025,6 +5035,7 @@ msgstr "Spiacente, nessun suggerimento"
 msgid "Sorry, only %ld suggestions"
 msgstr "Spiacente, solo %ld suggerimenti"
 
+#. for when 'cmdheight' > 1
 #. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
@@ -5450,6 +5461,13 @@ msgstr ""
 
 msgid ""
 "\n"
+"MS-Windows 64 bit GUI version"
+msgstr ""
+"\n"
+"Versione MS-Windows 64 bit GUI"
+
+msgid ""
+"\n"
 "MS-Windows 32 bit GUI version"
 msgstr ""
 "\n"
@@ -5765,6 +5783,19 @@ msgstr "E446: Nessun nome file sotto il cursore"
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
 
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Non posso caricare la libreria %s"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
+"Perl."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
+
 msgid "Edit with &multiple Vims"
 msgstr "Apri con &molti Vim"
 
@@ -6033,9 +6064,9 @@ msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: Non posso cambiare la variabile read-only \"%s\""
 
 #, c-format
-msgid "E46: Cannot set variable in the sandbox: \"%s\""
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr ""
-"E46: Non posso impostare la variabile read-only in ambiente protetto: \"%s\""
+"E794: Non posso impostare la variabile read-only in ambiente protetto: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Errore leggendo il file errori"

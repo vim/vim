@@ -86,13 +86,12 @@ OPTIONS
               found in hexdump.
 
        -s [+][-]seek
-              start at <seek> bytes abs. (or rel.) infile offset.   +  fRindi-
-              cates  that the seek is relative to the current stdin file posi-
-              tion (meaningless when not reading  from  stdin).   -  indicates
-              that the seek should be that many characters from the end of the
-              input (or if combined with +:  before  the  current  stdin  file
-              position).   Without  -s  option, xxd starts at the current file
-              position.
+              start at <seek> bytes abs. (or rel.) infile offset.  + indicates
+              that  the  seek  is  relative to the current stdin file position
+              (meaningless when not reading from stdin).  - indicates that the
+              seek  should  be  that many characters from the end of the input
+              (or if combined with +: before the current stdin file position).
+              Without -s option, xxd starts at the current file position.
 
        -u     use upper case hex letters. Default is lower case.
 
@@ -101,20 +100,20 @@ OPTIONS
 
 CAVEATS
        xxd -r has some builtin magic while evaluating line number information.
-       If  the  output  file is seekable, then the linenumbers at the start of
-       each hexdump line may be out of order, lines may be missing,  or  over-
-       lapping.  In these cases xxd will lseek(2) to the next position. If the
-       output file is not seekable, only  gaps  are  allowed,  which  will  be
+       If the output file is seekable, then the linenumbers at  the  start  of
+       each  hexdump  line may be out of order, lines may be missing, or over-
+       lapping. In these cases xxd will lseek(2) to the next position. If  the
+       output  file  is  not  seekable,  only  gaps are allowed, which will be
        filled by null-bytes.
 
        xxd -r never generates parse errors. Garbage is silently skipped.
 
-       When  editing hexdumps, please note that xxd -r skips everything on the
+       When editing hexdumps, please note that xxd -r skips everything on  the
        input line after reading enough columns of hexadecimal data (see option
-       -c).  This  also means, that changes to the printable ascii (or ebcdic)
-       columns are always ignored. Reverting a  plain  (or  postscript)  style
-       hexdump  with  xxd  -r -p does not depend on the correct number of col-
-       umns. Here anything that looks like a  pair  of  hex-digits  is  inter-
+       -c). This also means, that changes to the printable ascii  (or  ebcdic)
+       columns  are  always  ignored.  Reverting a plain (or postscript) style
+       hexdump with xxd -r -p does not depend on the correct  number  of  col-
+       umns.  Here  anything  that  looks  like a pair of hex-digits is inter-
        preted.
 
        Note the difference between
@@ -122,28 +121,28 @@ CAVEATS
        and
        % xxd -i < file
 
-       xxd  -s +seek may be different from xxd -s seek, as lseek(2) is used to
+       xxd -s +seek may be different from xxd -s seek, as lseek(2) is used  to
        "rewind" input.  A '+' makes a difference if the input source is stdin,
-       and  if  stdin's  file  position is not at the start of the file by the
-       time xxd is started and given its input.  The  following  examples  may
+       and if stdin's file position is not at the start of  the  file  by  the
+       time  xxd  is  started and given its input.  The following examples may
        help to clarify (or further confuse!)...
 
-       Rewind  stdin before reading; needed because the `cat' has already read
+       Rewind stdin before reading; needed because the `cat' has already  read
        to the end of stdin.
        % sh -c "cat > plain_copy; xxd -s 0 > hex_copy" < file
 
-       Hexdump from file position 0x480 (=1024+128)  onwards.   The  `+'  sign
+       Hexdump  from  file  position  0x480 (=1024+128) onwards.  The `+' sign
        means "relative to the current position", thus the `128' adds to the 1k
        where dd left off.
-       % sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 >  hex_snippet"
+       %  sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +128 > hex_snippet"
        < file
 
        Hexdump from file position 0x100 ( = 1024-768) on.
        % sh -c "dd of=plain_snippet bs=1k count=1; xxd -s +-768 > hex_snippet"
        < file
 
-       However, this is a rare situation and the use of `+' is rarely  needed.
-       The  author  prefers  to  monitor  the  effect of xxd with strace(1) or
+       However,  this is a rare situation and the use of `+' is rarely needed.
+       The author prefers to monitor the  effect  of  xxd  with  strace(1)  or
        truss(1), whenever -s is used.
 
 EXAMPLES
@@ -153,7 +152,7 @@ EXAMPLES
        Print 3 lines (hex 0x30 bytes) from the end of file.
        % xxd -s -0x30 file
 
-       Print 120 bytes as continuous hexdump with 40 octets per line.
+       Print 120 bytes as continuous hexdump with 20 octets per line.
        % xxd -l 120 -ps -c 20 xxd.1
        2e54482058584420312022417567757374203139
        39362220224d616e75616c207061676520666f72
@@ -187,7 +186,7 @@ EXAMPLES
        % xxd -s 0x36 -l 13 -c 13 xxd.1
        0000036: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 
-       Create a 65537 byte file with all bytes 0x00, except for the  last  one
+       Create  a  65537 byte file with all bytes 0x00, except for the last one
        which is 'A' (hex 0x41).
        % echo "010000: 41" | xxd -r > file
 
@@ -197,7 +196,7 @@ EXAMPLES
        *
        000fffc: 0000 0000 40                   ....A
 
-       Create  a  1  byte  file containing a single 'A' character.  The number
+       Create a 1 byte file containing a single  'A'  character.   The  number
        after '-r -s' adds to the linenumbers found in the file; in effect, the
        leading bytes are suppressed.
        % echo "010000: 41" | xxd -r -s -0x10000 > file
@@ -239,7 +238,7 @@ SEE ALSO
        uuencode(1), uudecode(1), patch(1)
 
 WARNINGS
-       The tools weirdness matches its creators brain.  Use entirely  at  your
+       The  tools  weirdness matches its creators brain.  Use entirely at your
        own risk. Copy files. Trace it. Become a wizard.
 
 VERSION

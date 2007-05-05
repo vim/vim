@@ -1,5 +1,6 @@
 " tarPlugin.vim -- a Vim plugin for browsing tarfiles
-" Copyright (c) 2002, Michael C. Toren <mct@toren.net>
+" Original was copyright (c) 2002, Michael C. Toren <mct@toren.net>
+" Modified by Charles E. Campbell, Jr.
 " Distributed under the GNU General Public License.
 "
 " Updates are available from <http://michael.toren.net/code/>.  If you
@@ -8,7 +9,17 @@
 " Also look there for further comments and documentation.
 "
 " This part only sets the autocommands.  The functions are in autoload/tar.vim.
+" ---------------------------------------------------------------------
+"  Load Once: {{{1
+if &cp || exists("g:loaded_tarPlugin")
+ finish
+endif
+let g:loaded_tarPlugin = 1
+let s:keepcpo          = &cpo
+set cpo&vim
 
+" ---------------------------------------------------------------------
+"  Public Interface: {{{1
 augroup tar
   au!
   au BufReadCmd   tarfile:*	call tar#Read(expand("<amatch>"), 1)
@@ -30,4 +41,8 @@ augroup tar
   au BufReadCmd   *.tgz		call tar#Browse(expand("<amatch>"))
 augroup END
 
-" vim: ts=8
+" ---------------------------------------------------------------------
+" Restoration And Modelines: {{{1
+" vim: fdm=marker
+let &cpo= s:keepcpo
+unlet s:keepcpo
