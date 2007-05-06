@@ -271,14 +271,14 @@ EXTERN int trylevel INIT(= 0);
 EXTERN int force_abort INIT(= FALSE);
 
 /*
- * "msg_list" points to a variable in the stack of do_cmdline() which keeps the
- * list of arguments of several emsg() calls, one of which is to be converted to
- * an error exception immediately after the failing command returns.  The
- * message to be used for the exception value is pointed to by the "throw_msg"
- * field of the first element in the list.  It is usually the same as the "msg"
- * field of that element, but can be identical to the "msg" field of a later
- * list element, when the "emsg_severe" flag was set when the emsg() call was
- * made.
+ * "msg_list" points to a variable in the stack of do_cmdline() which keeps
+ * the list of arguments of several emsg() calls, one of which is to be
+ * converted to an error exception immediately after the failing command
+ * returns.  The message to be used for the exception value is pointed to by
+ * the "throw_msg" field of the first element in the list.  It is usually the
+ * same as the "msg" field of that element, but can be identical to the "msg"
+ * field of a later list element, when the "emsg_severe" flag was set when the
+ * emsg() call was made.
  */
 EXTERN struct msglist **msg_list INIT(= NULL);
 
