@@ -225,7 +225,7 @@ get_inserted()
 }
 
 /*
- * add string "s" after the current block of buffer "buf"
+ * Add string "s" after the current block of buffer "buf".
  * K_SPECIAL and CSI should have been escaped already.
  */
     static void
@@ -928,6 +928,7 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 	typebuf.tb_change_cnt = 1;
 
     addlen = (int)STRLEN(str);
+
     /*
      * Easy case: there is room in front of typebuf.tb_buf[typebuf.tb_off]
      */
@@ -936,8 +937,9 @@ ins_typebuf(str, noremap, offset, nottyped, silent)
 	typebuf.tb_off -= addlen;
 	mch_memmove(typebuf.tb_buf + typebuf.tb_off, str, (size_t)addlen);
     }
+
     /*
-     * Need to allocate new buffer.
+     * Need to allocate a new buffer.
      * In typebuf.tb_buf there must always be room for 3 * MAXMAPLEN + 4
      * characters.  We add some extra room to avoid having to allocate too
      * often.
@@ -1191,19 +1193,21 @@ del_typebuf(len, offset)
  * If recording is on put the character in the recordbuffer.
  */
     static void
-gotchars(s, len)
-    char_u	*s;
+gotchars(chars, len)
+    char_u	*chars;
     int		len;
 {
+    char_u	*s = chars;
     int		c;
     char_u	buf[2];
+    int		todo = len;
 
     /* remember how many chars were last recorded */
     if (Recording)
 	last_recorded_len += len;
 
     buf[1] = NUL;
-    while (len--)
+    while (todo--)
     {
 	/* Handle one byte at a time; no translation to be done. */
 	c = *s++;
