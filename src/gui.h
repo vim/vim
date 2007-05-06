@@ -71,6 +71,10 @@
 # define ALWAYS_USE_GUI
 #endif
 
+/*
+ * On some systems scrolling needs to be done right away instead of in the
+ * main loop.
+ */
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) || defined(HAVE_GTK2)
 # define USE_ON_FLY_SCROLL
 #endif

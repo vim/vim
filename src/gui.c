@@ -2714,7 +2714,7 @@ gui_wait_for_chars(wtime)
 }
 
 /*
- * Fill buffer with mouse coordinates encoded for check_termcode().
+ * Fill p[4] with mouse coordinates encoded for check_termcode().
  */
     static void
 fill_mouse_coord(p, col, row)
