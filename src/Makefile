@@ -319,7 +319,7 @@ CClink = $(CC)
 #CONF_OPT_GUI = --disable-gui
 
 # Uncomment one of these lines if you have that GUI but don't want to use it.
-# The automatic check will use another one that can be found
+# The automatic check will use another one that can be found.
 # Gnome is disabled by default, it may cause trouble.
 #CONF_OPT_GUI = --disable-gtk-check
 #CONF_OPT_GUI = --disable-gtk2-check
@@ -336,9 +336,10 @@ CClink = $(CC)
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
 #
-# GNOME means GTK with Gnome support.  If using GTK, then GNOME will
-# automatically be used if it is found.  If you have GNOME, but do not want to
-# use it (e.g., want a GTK-only version), then use --enable-gui=gtk.
+# GNOME means GTK with Gnome support.  If using GTK and --enable-gnome-check
+# is used then GNOME will automatically be used if it is found.  If you have
+# GNOME, but do not want to use it (e.g., want a GTK-only version), then use
+# --enable-gui=gtk or leave out --enable-gnome-check.
 #
 # If the selected GUI isn't found, the GUI is disabled automatically
 #CONF_OPT_GUI = --enable-gui=gtk
@@ -885,7 +886,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 0
+VIMMINOR = 1a
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
