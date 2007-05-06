@@ -141,13 +141,13 @@ DOSBIN_S =  dosbin_s
 # - "nmake -f Make_mvc.mak GUI=yes.
 # - move "gvim.exe" to here (otherwise the OLE version will overwrite it).
 # - Move gvim.pdb to here.
-# - Delete vimrun.exe, install.exe and uninstal.exe.
+# - Delete vimrun.exe, install.exe and uninstall.exe.
 # - Copy "GvimExt/gvimext.dll" to here.
 # Win32 GUI version with OLE, PERL, TCL, PYTHON and dynamic IME:
 # - Run src/bigvim.bat ("nmake -f Make_mvc.mak GUI=yes OLE=yes IME=yes ...)
 # - Rename "gvim.exe" to "gvim_ole.exe".
 # - Rename gvim.pdb to "gvim_ole.pdb".
-# - Delete install.exe and uninstal.exe.
+# - Delete install.exe and uninstall.exe.
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:
 # - Set environment for Visual C++ 4.1 (requires a new console window)
