@@ -2734,7 +2734,7 @@ retnomove:
 	    /* When dragging the mouse, while the text has been scrolled up as
 	     * far as it goes, moving the mouse in the top line should scroll
 	     * the text down (done later when recomputing w_topline). */
-	    if (mouse_dragging
+	    if (mouse_dragging > 0
 		    && curwin->w_cursor.lnum
 				       == curwin->w_buffer->b_ml.ml_line_count
 		    && curwin->w_cursor.lnum == curwin->w_topline)

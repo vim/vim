@@ -2948,7 +2948,7 @@ usage()
 	mch_msg(_("\n   or:"));
     }
 #ifdef VMS
-    mch_msg(_("where case is ignored prepend / to make flag upper case"));
+    mch_msg(_("\nWhere case is ignored prepend / to make flag upper case"));
 #endif
 
     mch_msg(_("\n\nArguments:\n"));
@@ -2981,8 +2981,10 @@ usage()
 #endif
     main_msg(_("-C\t\t\tCompatible with Vi: 'compatible'"));
     main_msg(_("-N\t\t\tNot fully Vi compatible: 'nocompatible'"));
-    main_msg(_("-V[N]\t\tVerbose level"));
+    main_msg(_("-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"));
+#ifdef FEAT_EVAL
     main_msg(_("-D\t\t\tDebugging mode"));
+#endif
     main_msg(_("-n\t\t\tNo swap file, use memory only"));
     main_msg(_("-r\t\t\tList swap files and exit"));
     main_msg(_("-r (with file name)\tRecover crashed session"));
@@ -3006,9 +3008,11 @@ usage()
     main_msg(_("-U <gvimrc>\t\tUse <gvimrc> instead of any .gvimrc"));
 #endif
     main_msg(_("--noplugin\t\tDon't load plugin scripts"));
+#ifdef FEAT_WINDOWS
     main_msg(_("-p[N]\t\tOpen N tab pages (default: one for each file)"));
     main_msg(_("-o[N]\t\tOpen N windows (default: one for each file)"));
     main_msg(_("-O[N]\t\tLike -o but split vertically"));
+#endif
     main_msg(_("+\t\t\tStart at end of file"));
     main_msg(_("+<lnum>\t\tStart at line <lnum>"));
     main_msg(_("--cmd <command>\tExecute <command> before loading any vimrc file"));
