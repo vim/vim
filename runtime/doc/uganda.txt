@@ -1,4 +1,4 @@
-*uganda.txt*    For Vim version 7.1a.  Last change: 2007 May 05
+*uganda.txt*    For Vim version 7.1a.  Last change: 2007 Jan 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13,7 +13,6 @@ below or visit the ICCF web site, available at these URLs:
 
 	http://iccf-holland.org/
 	http://www.vim.org/iccf/
-	http://www.iccf.nl/
 
 You can also sponsor the development of Vim.  Vim sponsors can vote for
 features.  See |sponsor|.  The money goes to Uganda anyway.
