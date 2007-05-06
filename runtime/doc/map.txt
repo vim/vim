@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.0.  Last change: 2007 Mar 08
+*map.txt*       For Vim version 7.1a.  Last change: 2007 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -227,10 +227,12 @@ text before the cursor and start omni completion when some condition is met.
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.
 For this reason the following is blocked:
-- changing the buffer text |textlock|
-- editing another buffer
-- the |:normal| command
-- moving the cursor is allowed, but it is restored afterwards
+- Changing the buffer text |textlock|.
+- Editing another buffer.
+- The |:normal| command.
+- Moving the cursor is allowed, but it is restored afterwards.
+- You can use getchar(), but the existing typeahead isn't seen and new
+  typeahead is discarded.
 If you want the mapping to do any of these let the returned characters do
 that.
 
@@ -352,9 +354,11 @@ was already done when typing the mapping.
 When listing mappings the characters in the first two columns are:
 
       CHAR	MODE	~
-     <Space>	Normal, Visual and Operator-pending
+     <Space>	Normal, Visual, Select and Operator-pending
 	n	Normal
-	v	Visual
+	v	Visual and Select
+	s	Select
+	x	Visual
 	o	Operator-pending
 	!	Insert and Command-line
 	i	Insert
@@ -590,7 +594,18 @@ the '<' flag must not be present in 'cpoptions' for this to work). >
    :map <M-g> /foo<CR>cwbar<Esc>
    :map _x    d/END/e<CR>
    :map! qq   quadrillion questions
-<
+
+
+Multiplying a count
+
+When you type a count before triggering a mapping, it's like the count was
+typed before the {lhs}.  For example, with this mapping: >
+   :map <F4>  3w
+Typing 2<F4> will result in "23w". Thus not moving 2 * 3 words but 23 words.
+If you want to multiply counts use the expression register: >
+   :map <F4>  @='3w'<CR>
+The part between quotes is the expression being executed. |@=|
+
 
 1.9 USING MAPPINGS					*map-typing*
 
@@ -1127,7 +1142,7 @@ There are a number of attributes, split into four categories: argument
 handling, completion behavior, range handling, and special cases.  The
 attributes are described below, by category.
 
-Argument handling					*E175* *E176*
+Argument handling				*E175* *E176* *:command-nargs*
 
 By default, a user defined command will take no arguments (and an error is
 reported if any are supplied).  However, it is possible to specify that the
@@ -1155,8 +1170,8 @@ defined, not where it is invoked!  Example:
 Executing script2.vim will result in "None" to be echoed.  Not what you
 intended!  Calling a function may be an alternative.
 
-Completion behavior				*:command-completion*
-							*E179* *E180* *E181*
+Completion behavior				*:command-completion* *E179*
+					*E180* *E181* *:command-complete*
 By default, the arguments of user defined commands do not undergo completion.
 However, by specifying one or the other of the following attributes, argument
 completion can be enabled:
@@ -1228,13 +1243,16 @@ the 'path' option: >
     :endfun
 <
 
-Range handling						*E177* *E178*
-
+Range handling				*E177* *E178* *:command-range*
+							*:command-count*
 By default, user-defined commands do not accept a line number range.  However,
 it is possible to specify that the command does take a range (the -range
 attribute), or that it takes an arbitrary count value, either in the line
 number position (-range=N, like the |:split| command) or as a "count"
-argument (-count=N, like the |:Next| command).  Possible attributes are:
+argument (-count=N, like the |:Next| command).  The count will then be
+available in the argument with |<count>|.
+
+Possible attributes are:
 
 	-range	    Range allowed, default is current line
 	-range=%    Range allowed, default is whole file (1,$)
@@ -1247,8 +1265,8 @@ argument (-count=N, like the |:Next| command).  Possible attributes are:
 Note that -range=N and -count=N are mutually exclusive - only one should be
 specified.
 
-Special cases
-
+Special cases				*:command-bang* *:command-bar*
+					*:command-register* *:command-buffer*
 There are some special cases as well:
 
 	-bang	    The command can take a ! modifier (like :q or :w)

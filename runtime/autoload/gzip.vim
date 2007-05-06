@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Oct 03
+" Last Change: 2006 Oct 09
 
 " These functions are used by the gzip plugin.
 
@@ -177,7 +177,7 @@ endfun
 
 fun s:escape(name)
   " shellescape() was added by patch 7.0.111
-  if v:version > 700 || (v:version == 700 && has('patch111'))
+  if exists("*shellescape")
     return shellescape(a:name)
   endif
   return "'" . a:name . "'"

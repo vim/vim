@@ -3329,7 +3329,7 @@ set_one_cmd_context(xp, buff)
 
 	    /* When still after the command name expand executables. */
 	    if (xp->xp_pattern == skipwhite(arg))
-		    xp->xp_context = EXPAND_SHELLCMD;
+		xp->xp_context = EXPAND_SHELLCMD;
 	}
 #endif
 
