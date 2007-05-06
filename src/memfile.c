@@ -325,9 +325,9 @@ mf_new(mfp, negative, page_count)
     int		negative;
     int		page_count;
 {
-    bhdr_T    *hp;	    /* new bhdr_T */
-    bhdr_T    *freep;	    /* first block in free list */
-    char_u  *p;
+    bhdr_T	*hp;	/* new bhdr_T */
+    bhdr_T	*freep;	/* first block in free list */
+    char_u	*p;
 
     /*
      * If we reached the maximum size for the used memory blocks, release one
@@ -348,10 +348,10 @@ mf_new(mfp, negative, page_count)
 	 * If the block in the free list has more pages, take only the number
 	 * of pages needed and allocate a new bhdr_T with data
 	 *
-	 * If the number of pages matches and mf_release did not return a bhdr_T,
-	 * use the bhdr_T from the free list and allocate the data
+	 * If the number of pages matches and mf_release() did not return a
+	 * bhdr_T, use the bhdr_T from the free list and allocate the data
 	 *
-	 * If the number of pages matches and mf_release returned a bhdr_T,
+	 * If the number of pages matches and mf_release() returned a bhdr_T,
 	 * just use the number and free the bhdr_T from the free list
 	 */
 	if (freep->bh_page_count > page_count)
