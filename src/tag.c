@@ -1625,6 +1625,8 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
 		eof = tag_fgets(lbuf, LSIZE, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
+		    /* The explicit cast is to work around a bug in gcc 3.4.2
+		     * (repeated below). */
 		    search_info.curr_offset = ftell(fp);
 		    if (search_info.curr_offset == search_info.high_offset)
 		    {

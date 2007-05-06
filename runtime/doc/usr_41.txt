@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.0.  Last change: 2007 Apr 26
+*usr_41.txt*	For Vim version 7.1a.  Last change: 2007 Apr 26
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1482,7 +1482,9 @@ commands (there are a few more commands with this restriction).  For the
 	:execute cmd			|" do it
 
 With the '|' character the command is separated from the next one.  And that
-next command is only a comment.
+next command is only a comment.  For the last command you need to do two
+things: |:execute| and use '|': >
+	:exe '!ls *.c'			|" list C files
 
 Notice that there is no white space before the '|' in the abbreviation and
 mapping.  For these commands, any character until the end-of-line or '|' is
@@ -1491,8 +1493,18 @@ trailing whitespace is included: >
 
 	:map <F4> o#include  
 
-To avoid these problems, you can set the 'list' option when editing vimrc
+To spot these problems, you can set the 'list' option when editing vimrc
 files.
+
+For Unix there is one special way to comment a line, that allows making a Vim
+script executable: >
+	#!/usr/bin/env vim -S
+	echo "this is a Vim script"
+	quit
+
+The "#" command by itself lists a line with the line number.  Adding an
+exclamation mark changes it into doing nothing, so that you can add the shell
+command to execute the rest of the file. |:#!| |-S|
 
 
 PITFALLS

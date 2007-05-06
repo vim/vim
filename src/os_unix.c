@@ -1256,9 +1256,11 @@ catch_signals(func_deadly, func_other)
 
 /*
  * Handling of SIGHUP, SIGQUIT and SIGTERM:
- * "when" == a signal: when busy, postpone, otherwise return TRUE
- * "when" == SIGNAL_BLOCK: Going to be busy, block signals
- * "when" == SIGNAL_UNBLOCK: Going wait, unblock signals
+ * "when" == a signal:       when busy, postpone and return FALSE, otherwise
+ *			     return TRUE
+ * "when" == SIGNAL_BLOCK:   Going to be busy, block signals
+ * "when" == SIGNAL_UNBLOCK: Going to wait, unblock signals, use postponed
+ *                           signal
  * Returns TRUE when Vim should exit.
  */
     int

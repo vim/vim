@@ -1257,4 +1257,3 @@
 	    || defined(FEAT_BIG)
 # define FEAT_AUTOCHDIR
 #endif
-
