@@ -232,6 +232,27 @@ typedef struct tagNMTTDISPINFO_NEW
     LPARAM     lParam;
 } NMTTDISPINFO_NEW;
 
+#ifndef LPNMTTDISPINFO
+typedef struct tagNMTTDISPINFOA {
+    NMHDR	hdr;
+    LPSTR	lpszText;
+    char	szText[80];
+    HINSTANCE	hinst;
+    UINT	uFlags;
+    LPARAM	lParam;
+} NMTTDISPINFOA, *LPNMTTDISPINFOA;
+# define LPNMTTDISPINFO LPNMTTDISPINFOA
+
+typedef struct tagNMTTDISPINFOW {
+    NMHDR	hdr;
+    LPWSTR	lpszText;
+    WCHAR	szText[80];
+    HINSTANCE	hinst;
+    UINT	uFlags;
+    LPARAM	lParam;
+} NMTTDISPINFOW, *LPNMTTDISPINFOW;
+#endif
+
 #include <poppack.h>
 
 typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
