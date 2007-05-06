@@ -6104,8 +6104,10 @@ static char *(highlight_init_both[]) =
     {
 	CENT("ErrorMsg term=standout ctermbg=DarkRed ctermfg=White",
 	     "ErrorMsg term=standout ctermbg=DarkRed ctermfg=White guibg=Red guifg=White"),
+#ifdef FEAT_SEARCH_EXTRA
 	CENT("IncSearch term=reverse cterm=reverse",
 	     "IncSearch term=reverse cterm=reverse gui=reverse"),
+#endif
 	CENT("ModeMsg term=bold cterm=bold",
 	     "ModeMsg term=bold cterm=bold gui=bold"),
 	CENT("NonText term=bold ctermfg=Blue",
