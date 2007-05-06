@@ -3818,6 +3818,7 @@ echo "${ECHO_T}$vi_cv_path_mzscheme_pfx" >&6
     fi
   fi
 
+  SCHEME_INC=
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     echo "$as_me:$LINENO: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include" >&5
 echo $ECHO_N "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include... $ECHO_C" >&6
@@ -3827,7 +3828,17 @@ echo "${ECHO_T}\"yes\"" >&6
     else
       echo "$as_me:$LINENO: result: \"no\"" >&5
 echo "${ECHO_T}\"no\"" >&6
-      vi_cv_path_mzscheme_pfx=
+      echo "$as_me:$LINENO: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/plt/include" >&5
+echo $ECHO_N "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/plt/include... $ECHO_C" >&6
+      if test -f $vi_cv_path_mzscheme_pfx/include/plt/scheme.h; then
+	echo "$as_me:$LINENO: result: \"yes\"" >&5
+echo "${ECHO_T}\"yes\"" >&6
+	SCHEME_INC=/plt
+      else
+	echo "$as_me:$LINENO: result: \"no\"" >&5
+echo "${ECHO_T}\"no\"" >&6
+	vi_cv_path_mzscheme_pfx=
+      fi
     fi
   fi
 
@@ -3843,8 +3854,11 @@ echo "${ECHO_T}\"no\"" >&6
 	MZSCHEME_LIBS="$MZSCHEME_LIBS -R ${vi_cv_path_mzscheme_pfx}/lib"
       fi
     fi
-    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include   \
-      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/collects\"'"
+    if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
+      SCHEME_COLLECTS=lib/plt/
+    fi
+    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include${SCHEME_INC}   \
+      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects\"'"
     MZSCHEME_SRC="if_mzsch.c"
     MZSCHEME_OBJ="objects/if_mzsch.o"
     MZSCHEME_PRO="if_mzsch.pro"
@@ -4014,7 +4028,7 @@ rm -f conftest.err conftest.$ac_objext \
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  	  PERL_CFLAGS=`echo "$perlcppflags" | sed 's/-pipe //'`
+	  	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[^ ]*//'`
 	fi
 	if test "X$perlldflags" != "X"; then
 	  LDFLAGS="$perlldflags $LDFLAGS"
