@@ -568,7 +568,8 @@ RT_AMI =	\
 		libs/arp.library \
 		runtime/doc.info \
 		runtime/doc/*.info \
-		runtime/icons \
+		runtime/icons/README.txt \
+		runtime/icons/*.info \
 		runtime/icons.info \
 		runtime/macros.info \
 		runtime/macros/*.info \
@@ -644,7 +645,8 @@ EXTRA =		\
 		$(SRC_EXTRA) \
 		README_extra.txt \
 		src/VisVim/VisVim.dll \
-		farsi \
+		farsi/README.txt \
+		farsi/fonts/*/far* \
 		runtime/vimlogo.xpm \
 		src/swis.s \
 		src/tee/Makefile* \
