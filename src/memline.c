@@ -2570,7 +2570,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
 		if (lineadd)
 		{
 		    --(buf->b_ml.ml_stack_top);
-			/* fix line count for rest of blocks in the stack */
+		    /* fix line count for rest of blocks in the stack */
 		    ml_lineadd(buf, lineadd);
 							/* fix stack itself */
 		    buf->b_ml.ml_stack[buf->b_ml.ml_stack_top].ip_high +=
@@ -2873,12 +2873,12 @@ ml_delete_int(buf, lnum, message)
 		mf_put(mfp, hp, TRUE, FALSE);
 
 		buf->b_ml.ml_stack_top = stack_idx;	/* truncate stack */
-		    /* fix line count for rest of blocks in the stack */
-		if (buf->b_ml.ml_locked_lineadd)
+		/* fix line count for rest of blocks in the stack */
+		if (buf->b_ml.ml_locked_lineadd != 0)
 		{
 		    ml_lineadd(buf, buf->b_ml.ml_locked_lineadd);
 		    buf->b_ml.ml_stack[buf->b_ml.ml_stack_top].ip_high +=
-						buf->b_ml.ml_locked_lineadd;
+						  buf->b_ml.ml_locked_lineadd;
 		}
 		++(buf->b_ml.ml_stack_top);
 
@@ -3208,7 +3208,7 @@ ml_new_ptr(mfp)
  * The stack is updated to lead to the locked block. The ip_high field in
  * the stack is updated to reflect the last line in the block AFTER the
  * insert or delete, also if the pointer block has not been updated yet. But
- * if if ml_locked != NULL ml_locked_lineadd must be added to ip_high.
+ * if ml_locked != NULL ml_locked_lineadd must be added to ip_high.
  *
  * return: NULL for failure, pointer to block header otherwise
  */
@@ -3265,11 +3265,11 @@ ml_find_line(buf, lnum, action)
 					    buf->b_ml.ml_flags & ML_LOCKED_POS);
 	buf->b_ml.ml_locked = NULL;
 
-	    /*
-	     * if lines have been added or deleted in the locked block, need to
-	     * update the line count in pointer blocks
-	     */
-	if (buf->b_ml.ml_locked_lineadd)
+	/*
+	 * If lines have been added or deleted in the locked block, need to
+	 * update the line count in pointer blocks.
+	 */
+	if (buf->b_ml.ml_locked_lineadd != 0)
 	    ml_lineadd(buf, buf->b_ml.ml_locked_lineadd);
     }
 

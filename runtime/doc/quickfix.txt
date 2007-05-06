@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.0.  Last change: 2006 Jul 18
+*quickfix.txt*  For Vim version 7.1a.  Last change: 2007 Apr 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -432,10 +432,10 @@ lists, use ":cnewer 99" first.
 			   errorfile (for Unix it is also echoed on the
 			   screen).
 			5. The errorfile is read using 'errorformat'.
-			6. If [!] is not given the first error is jumped to.
-			7. The errorfile is deleted.
-			8. If vim was built with |+autocmd|, all relevant
+			6. If vim was built with |+autocmd|, all relevant
 			   |QuickFixCmdPost| autocommands are executed.
+			7. If [!] is not given the first error is jumped to.
+			8. The errorfile is deleted.
 			9. You can now move through the errors with commands
 			   like |:cnext| and |:cprevious|, see above.
 			This command does not accept a comment, any "
@@ -1234,15 +1234,32 @@ additionally to the default. >
 Jikes(TM) produces a single-line error message when invoked with the option
 "+E", and can be matched with the following: >
 
-  :set efm=%f:%l:%v:%*\\d:%*\\d:%*\\s%m
+  :setl efm=%f:%l:%v:%*\\d:%*\\d:%*\\s%m
 <
 						*errorformat-javac*
 This 'errorformat' has been reported to work well for javac, which outputs a
 line with "^" to indicate the column of the error: >
-  :set efm=%A%f:%l:\ %m,%-Z%p^,%-C%.%#
+  :setl efm=%A%f:%l:\ %m,%-Z%p^,%-C%.%#
 or: >
-  :set efm=%A%f:%l:\ %m,%+Z%p^,%+C%.%#,%-G%.%#
+  :setl efm=%A%f:%l:\ %m,%+Z%p^,%+C%.%#,%-G%.%#
 <
+Here is an alternative from Michael F. Lamb for Unix that filters the errors
+first: >
+  :setl errorformat=%Z%f:%l:\ %m,%A%p^,%-G%*[^sl]%.%#
+  :setl makeprg=javac\ %\ 2>&1\ \\\|\ vim-javac-filter
+
+You need to put the following in "vim-javac-filter" somewhere in your path
+(e.g., in ~/bin) and make it executable: >
+   #!/bin/sed -f
+   /\^$/s/\t/\ /g;/:[0-9]\+:/{h;d};/^[ \t]*\^/G;
+
+In English, that sed script:
+- Changes single tabs to single spaces and
+- Moves the line with the filename, line number, error message to just after
+  the pointer line. That way, the unused error text between doesn't break
+  vim's notion of a "multi-line message" and also doesn't force us to include
+  it as a "continuation of a multi-line message."
+
 						*errorformat-ant*
 For ant (http://jakarta.apache.org/) the above errorformat has to be modified
 to honour the leading [javac] in front of each javac output line: >
