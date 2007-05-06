@@ -1,6 +1,6 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2006 Sep 09
+" Last Change:	2007 Mar 01
 
 " This small source file is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -35,6 +35,8 @@ else
       let s:ext = ".pl"
     elseif s:lang =~ "Slovak"
       let s:ext = ".sk"
+    elseif s:lang =~ "Czech"
+      let s:ext = ".cs"
     elseif s:lang =~ "Dutch"
       let s:ext = ".nl"
     else
@@ -105,9 +107,22 @@ if s:ext =~? '\.gr\|\.el'
   endif
 endif
 
-" The Slovak tutor is available in two encodings, guess which one to use
-if s:ext =~? '\.sk' && &enc =~ 1250
-  let s:ext = ".sk.cp1250"
+" The Slovak tutor is available in three encodings, guess which one to use
+if s:ext =~? '\.sk'
+  if &enc == 'utf-8'
+    let s:ext = ".sk.utf-8"
+  elseif &enc =~ 1250
+    let s:ext = ".sk.cp1250"
+  endif
+endif
+
+" The Czech tutor is available in three encodings, guess which one to use
+if s:ext =~? '\.cs'
+  if &enc == 'utf-8'
+    let s:ext = ".cs.utf-8"
+  elseif &enc =~ 1250
+    let s:ext = ".cs.cp1250"
+  endif
 endif
 
 " The Russian tutor is available in three encodings, guess which one to use.
@@ -118,6 +133,15 @@ if s:ext =~? '\.ru'
     let s:ext = '.ru.cp1251'
   elseif &enc =~ 'koi8'
     let s:ext = '.ru'
+  endif
+endif
+
+" The Hungarian tutor is available in two encodings, guess which one to use.
+if s:ext =~? '\.hu'
+  if &enc == 'utf-8'
+    let s:ext = '.hu.utf-8'
+  elseif &enc =~ 'iso-8859-2'
+    let s:ext = '.hu'
   endif
 endif
 

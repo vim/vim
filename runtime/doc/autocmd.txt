@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.0.  Last change: 2007 Jan 16
+*autocmd.txt*   For Vim version 7.1a.  Last change: 2007 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -263,7 +263,7 @@ Name			triggered by ~
 	Startup and exit
 |VimEnter|		after doing all the startup stuff
 |GUIEnter|		after starting the GUI successfully
-|TermResponse|		after the termainal response to |t_RV| is received
+|TermResponse|		after the terminal response to |t_RV| is received
 
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
@@ -461,6 +461,9 @@ CursorHold			When the user doesn't press a key for the time
 				make some coffee. :)  See |CursorHold-example|
 				for previewing tags.
 				This event is only triggered in Normal mode.
+				It is not triggered when waiting for a command
+				argument to be typed, or a movement after an
+				operator.
 				While recording the CursorHold event is not
 				triggered. |q|
 				Note: Interactive commands cannot be used for
@@ -528,8 +531,6 @@ FileChangedShell		When Vim notices that the modification time of
 				and the buffer was not changed.  If a
 				FileChangedShell autocommand is present the
 				warning message and prompt is not given.
-				This is useful for reloading related buffers
-				which are affected by a single command.
 				The |v:fcs_reason| variable is set to indicate
 				what happened and |v:fcs_choice| can be used
 				to tell Vim what to do next.
@@ -561,7 +562,8 @@ FileReadPost			After reading a file with a ":read" command.
 							*FileReadPre*
 FileReadPre			Before reading a file with a ":read" command.
 							*FileType*
-FileType			When the 'filetype' option has been set.
+FileType			When the 'filetype' option has been set.  The
+				pattern is matched against the filetype.
 				<afile> can be used for the name of the file
 				where this option was set, and <amatch> for
 				the new value of 'filetype'.
@@ -617,8 +619,9 @@ FocusLost			When Vim lost input focus.  Only for the GUI
 							*FuncUndefined*
 FuncUndefined			When a user function is used but it isn't
 				defined.  Useful for defining a function only
-				when it's used.  Both <amatch> and <afile> are
-				set to the name of the function.
+				when it's used.  The pattern is matched
+				against the function name.  Both <amatch> and
+				<afile> are set to the name of the function.
 				See |autoload-functions|.
 							*GUIEnter*
 GUIEnter			After starting the GUI successfully, and after
@@ -626,6 +629,12 @@ GUIEnter			After starting the GUI successfully, and after
 				VimEnter when using gvim.  Can be used to
 				position the window from a .gvimrc file: >
 	:autocmd GUIEnter * winpos 100 50
+<							*GUIFailed*
+GUIFailed			After starting the GUI failed.  Vim may
+				continue to run in the terminal, if possible
+				(only on Unix and alikes, when connecting the
+				X server fails).  You may want to quit Vim: >
+	:autocmd GUIFailed * qall
 <							*InsertChange*
 InsertChange			When typing <Insert> while in Insert or
 				Replace mode.  The |v:insertmode| variable
@@ -633,8 +642,8 @@ InsertChange			When typing <Insert> while in Insert or
 				Be careful not to move the cursor or do
 				anything else that the user does not expect.
 							*InsertEnter*
-InsertEnter			When starting Insert mode.  Also for Replace
-				mode and Virtual Replace mode.  The
+InsertEnter			Just before starting Insert mode.  Also for
+				Replace mode and Virtual Replace mode.  The
 				|v:insertmode| variable indicates the mode.
 				Be careful not to move the cursor or do
 				anything else that the user does not expect.
@@ -657,7 +666,7 @@ MenuPopup			Just before showing the popup menu (under the
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
 				|:lgrepadd|, |:vimgrep|, |:lvimgrep|,
-				|:vimgrepadd|, |:vimgrepadd|). The pattern is
+				|:vimgrepadd|, |:lvimgrepadd|). The pattern is
 				matched against the command being run.  When
 				|:grep| is used but 'grepprg' is set to
 				"internal" it still matches "grep".
@@ -671,7 +680,8 @@ QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				location.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
-				server was received |server2client()|.
+				server was received |server2client()|.  The
+				pattern is matched against the {serverid}.
 				<amatch> is equal to the {serverid} from which
 				the reply was sent, and <afile> is the actual
 				reply string.
@@ -735,7 +745,8 @@ SwapExists			Detected an existing swap file when starting
 				Note: Do not try to change the buffer, the
 				results are unpredictable.
 							*Syntax*
-Syntax				When the 'syntax' option has been set.
+Syntax				When the 'syntax' option has been set.  The
+				pattern is matched against the syntax name.
 				<afile> can be used for the name of the file
 				where this option was set, and <amatch> for
 				the new value of 'syntax'.

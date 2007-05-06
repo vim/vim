@@ -404,13 +404,21 @@ if test "$enable_mzschemeinterp" = "yes"; then
     fi
   fi
 
+  SCHEME_INC=
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include)
     if test -f $vi_cv_path_mzscheme_pfx/include/scheme.h; then
       AC_MSG_RESULT("yes")
     else
       AC_MSG_RESULT("no")
-      vi_cv_path_mzscheme_pfx=
+      AC_MSG_CHECKING(if scheme.h can be found in $vi_cv_path_mzscheme_pfx/plt/include)
+      if test -f $vi_cv_path_mzscheme_pfx/include/plt/scheme.h; then
+	AC_MSG_RESULT("yes")
+	SCHEME_INC=/plt
+      else
+	AC_MSG_RESULT("no")
+	vi_cv_path_mzscheme_pfx=
+      fi
     fi
   fi
 
@@ -428,8 +436,11 @@ if test "$enable_mzschemeinterp" = "yes"; then
 	MZSCHEME_LIBS="$MZSCHEME_LIBS -R ${vi_cv_path_mzscheme_pfx}/lib"
       fi
     fi
-    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include   \
-      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/collects\"'"
+    if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
+      SCHEME_COLLECTS=lib/plt/
+    fi
+    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include${SCHEME_INC}   \
+      -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects\"'"
     MZSCHEME_SRC="if_mzsch.c"
     MZSCHEME_OBJ="objects/if_mzsch.o"
     MZSCHEME_PRO="if_mzsch.pro"
@@ -508,8 +519,8 @@ if test "$enable_perlinterp" = "yes"; then
       LDFLAGS=$ldflags_save
       if test $perl_ok = yes; then
 	if test "X$perlcppflags" != "X"; then
-	  dnl remove -pipe, it confuses cproto
-	  PERL_CFLAGS=`echo "$perlcppflags" | sed 's/-pipe //'`
+	  dnl remove -pipe and -Wxxx, it confuses cproto
+	  PERL_CFLAGS=`echo "$perlcppflags" | sed -e 's/-pipe //' -e 's/-W[[^ ]]*//'`
 	fi
 	if test "X$perlldflags" != "X"; then
 	  LDFLAGS="$perlldflags $LDFLAGS"
