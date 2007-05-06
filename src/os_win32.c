@@ -1680,8 +1680,8 @@ mch_init(void)
     clip_init(TRUE);
 
     /*
-     * Vim's own clipboard format recognises whether the text is char, line, or
-     * rectangular block.  Only useful for copying between two Vims.
+     * Vim's own clipboard format recognises whether the text is char, line,
+     * or rectangular block.  Only useful for copying between two Vims.
      * "VimClipboard" was used for previous versions, using the first
      * character to specify MCHAR, MLINE or MBLOCK.
      */
