@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.0.  Last change: 2007 Apr 24
+*eval.txt*      For Vim version 7.1a.  Last change: 2007 May 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,7 +192,7 @@ separated by a colon in square brackets: >
 	:let shortlist = mylist[2:-1]	" get List [3, "four"]
 
 Omitting the first index is similar to zero.  Omitting the last index is
-similar to -1.
+similar to -1. >
 	:let endlist = mylist[2:]	" from item 2 to the end: [3, "four"]
 	:let shortlist = mylist[2:2]	" List with one item: [3]
 	:let otherlist = mylist[:]	" make a copy of the List
@@ -444,8 +444,8 @@ To loop over the values use the |values()| function:  >
 
 If you want both the key and the value use the |items()| function.  It returns
 a List in which each item is a  List with two items, the key and the value: >
-	:for entry in items(mydict)
-	:   echo entry[0] . ': ' . entry[1]
+	:for [key, value] in items(mydict)
+	:   echo key . ': ' . value
 	:endfor
 
 
@@ -486,7 +486,7 @@ expect ":echo adict" to show the items from bdict after the older entries in
 adict.
 
 Weeding out entries from a Dictionary can be done with |filter()|: >
-	:call filter(dict 'v:val =~ "x"')
+	:call filter(dict, 'v:val =~ "x"')
 This removes all entries from "dict" with a value not matching 'x'.
 
 
@@ -650,6 +650,9 @@ To keep this readable, using |line-continuation| is suggested: >
 	:\		? "last"
 	:\		: lnum
 
+You should always put a space before the ':', otherwise it can be mistaken for
+use in a variable such as "a:1".
+
 
 expr2 and expr3						*expr2* *expr3*
 ---------------
@@ -750,10 +753,12 @@ results in the mathematical difference (comparing byte values), not
 necessarily the alphabetical difference in the local language.
 
 When using the operators with a trailing '#", or the short version and
-'ignorecase' is off, the comparing is done with strcmp().
+'ignorecase' is off, the comparing is done with strcmp(): case matters.
 
 When using the operators with a trailing '?', or the short version and
-'ignorecase' is set, the comparing is done with stricmp().
+'ignorecase' is set, the comparing is done with stricmp(): case is ignored.
+
+'smartcase' is not used.
 
 The "=~" and "!~" operators match the lefthand argument with the righthand
 argument, which is used as a pattern.  See |pattern| for what a pattern is.
@@ -932,6 +937,10 @@ A string constant accepts these special characters:
 \"	double quote
 \<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.
 
+Note that "\xff" is stored as the byte 255, which may be invalid in some
+encodings.  Use "\u00ff" to store character 255 according to the current value
+of 'encoding'.
+
 Note that "\000" and "\x00" force the end of the string.
 
 
@@ -965,7 +974,7 @@ and there is no buffer-local or window-local value, the global value is used
 anyway.
 
 
-register						*expr-register*
+register						*expr-register* *@r*
 --------
 @r			contents of register 'r'
 
@@ -1079,7 +1088,10 @@ place if you like.
 
 						*local-variable* *l:var*
 Inside functions local variables are accessed without prepending anything.
-But you can also prepend "l:" if you like.
+But you can also prepend "l:" if you like.  However, without prepending "l:"
+you may run into reserved variable names.  For example "count".  By itself it
+refers to "v:count".  Using "l:count" you can have a local variable with the
+same name.
 
 						*script-variable* *s:var*
 In a Vim script variables starting with "s:" can be used.  They cannot be
@@ -1097,8 +1109,8 @@ Thus not in:
 - mappings
 - etc.
 
-script variables can be used to avoid conflicts with global variable names.
-Take this example:
+Script variables can be used to avoid conflicts with global variable names.
+Take this example: >
 
 	let s:counter = 0
 	function MyCounter()
@@ -1889,7 +1901,9 @@ bufname({expr})						*bufname()*
 		"" or "%" can be used for the current buffer, "#" for the
 		alternate buffer.
 		A full match is preferred, otherwise a match at the start, end
-		or middle of the buffer name is accepted.
+		or middle of the buffer name is accepted.  If you only want a
+		full match then put "^" at the start and "$" at the end of the
+		pattern.
 		Listed buffers are found first.  If there is a single match
 		with a listed buffer, that one is returned.  Next unlisted
 		buffers are searched for.
@@ -1934,6 +1948,7 @@ bufwinnr({expr})					*bufwinnr()*
 
 <		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
+		Only deals with the current tab page.
 
 
 byte2line({byte})					*byte2line()*
@@ -1984,8 +1999,8 @@ char2nr({expr})						*char2nr()*
 			char2nr(" ")		returns 32
 			char2nr("ABC")		returns 65
 <		The current 'encoding' is used.  Example for "utf-8": >
-			char2nr("?")		returns 225
-			char2nr("?"[0])		returns 195
+			char2nr("á")		returns 225
+			char2nr("á"[0])		returns 195
 <		nr2char() does the opposite.
 
 cindent({lnum})						*cindent()*
@@ -2005,7 +2020,7 @@ col({expr})	The result is a Number, which is the byte index of the column
 			    number of characters in the cursor line plus one)
 		    'x	    position of mark x (if the mark is not set, 0 is
 			    returned)
-		To get the line number use |col()|.  To get both use
+		To get the line number use |line()|.  To get both use
 		|getpos()|.
 		For the screen column position use |virtcol()|.
 		Note that only marks in the current file can be used.
@@ -2015,6 +2030,8 @@ col({expr})	The result is a Number, which is the byte index of the column
 			col("'t")		column of mark t
 			col("'" . markname)	column of mark markname
 <		The first column is 1.  0 is returned for an error.
+		For an uppercase mark the column may actually be in another
+		buffer.
 		For the cursor position, when 'virtualedit' is active, the
 		column is one higher if the cursor is after the end of the
 		line.  This can be used to obtain the column in Insert mode: >
@@ -2027,8 +2044,8 @@ col({expr})	The result is a Number, which is the byte index of the column
 complete({startcol}, {matches})			*complete()* *E785*
 		Set the matches for Insert mode completion.
 		Can only be used in Insert mode.  You need to use a mapping
-		with an expression argument |:map-<expr>| or CTRL-R =
-		|i_CTRL-R|.  It does not work after CTRL-O.
+		with CTRL-R = |i_CTRL-R|.  It does not work after CTRL-O or
+		with an expression mapping.
 		{startcol} is the byte offset in the line where the completed
 		text start.  The text up to the cursor is the original text
 		that will be replaced by the matches.  Use col('.') for an
@@ -2042,7 +2059,7 @@ complete({startcol}, {matches})			*complete()* *E785*
 		Insert mode completion.  The popup menu will appear if
 		specified, see |ins-completion-menu|.
 		Example: >
-	inoremap <expr> <F5> ListMonths()
+	inoremap <F5> <C-R>=ListMonths()<CR>
 
 	func! ListMonths()
 	  call complete(col('.'), ['January', 'February', 'March',
@@ -2179,8 +2196,8 @@ cscope_connection([{num} , {dbpath} [, {prepend}]])
 <
 cursor({lnum}, {col} [, {off}])				*cursor()*
 cursor({list})
-		Positions the cursor at the column {col} in the line {lnum}.
-		The first column is one.
+		Positions the cursor at the column (byte count) {col} in the
+		line {lnum}.  The first column is one.
 		When there is one argument {list} this is used as a |List|
 		with two or three items {lnum}, {col} and {off}.  This is like
 		the return value of |getpos()|, but without the first item.
@@ -2487,8 +2504,8 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 
 feedkeys({string} [, {mode}])				*feedkeys()*
 		Characters in {string} are queued for processing as if they
-		come from a mapping or were typed by user.  They are added to
-		the end of the typeahead buffer, thus if a mapping is still
+		come from a mapping or were typed by the user.  They are added
+		to the end of the typeahead buffer, thus if a mapping is still
 		being executed these characters come after them.
 		The function does not wait for processing of keys contained in
 		{string}.
@@ -2510,8 +2527,17 @@ filereadable({file})					*filereadable()*
 		name {file} exists, and can be read.  If {file} doesn't exist,
 		or is a directory, the result is FALSE.  {file} is any
 		expression, which is used as a String.
+		If you don't care about the file being readable you can use
+		|glob()|.
 							*file_readable()*
 		Obsolete name: file_readable().
+
+
+filewritable({file})					*filewritable()*
+		The result is a Number, which is 1 when a file with the
+		name {file} exists, and can be written.  If {file} doesn't
+		exist, or is not writable, the result is 0.  If (file) is a
+		directory, and we can write to it, the result is 2.
 
 
 filter({expr}, {string})					*filter()*
@@ -2560,14 +2586,8 @@ findfile({name}[, {path}[, {count}]])				*findfile()*
 		Uses 'suffixesadd'.
 		Example: >
 			:echo findfile("tags.vim", ".;")
-<		Searches from the current directory upwards until it finds
-		the file "tags.vim".
-
-filewritable({file})					*filewritable()*
-		The result is a Number, which is 1 when a file with the
-		name {file} exists, and can be written.  If {file} doesn't
-		exist, or is not writable, the result is 0.  If (file) is a
-		directory, and we can write to it, the result is 2.
+<		Searches from the directory of the current file upwards until
+		it finds the file "tags.vim".
 
 fnamemodify({fname}, {mods})				*fnamemodify()*
 		Modify file name {fname} according to {mods}.  {mods} is a
@@ -2883,6 +2903,8 @@ getline({lnum} [, {end}])
 			:let end = search("^$") - 1
 			:let lines = getline(start, end)
 
+<		To get lines from another buffer see |getbufline()|
+
 getloclist({nr})					*getloclist()*
 		Returns a list with all the entries in the location list for
 		window {nr}. When {nr} is zero the current window is used.
@@ -2940,15 +2962,19 @@ getregtype([{regname}])					*getregtype()*
 		If {regname} is not specified, |v:register| is used.
 
 gettabwinvar({tabnr}, {winnr}, {varname})		*gettabwinvar()*
-		Get the value of an option or local window variable {varname}
-		in window {winnr} in tab page {tabnr}.
+		Get the value of window-local variable {varname} in window
+		{winnr} in tab page {tabnr}.
+		When {varname} starts with "&" get the value of a window-local
+		option.
 		Tabs are numbered starting with one.  For the current tabpage
 		use |getwinvar()|.
 		When {winnr} is zero the current window is used.
 		This also works for a global option, buffer-local option and
 		window-local option, but it doesn't work for a global variable
 		or buffer-local variable.
-		Note that the name without "w:" must be used.
+		When {varname} is empty a dictionary with all window-local
+		variables is returned.
+		Note that {varname} must be the name without "w:".
 		Examples: >
 			:let list_is_on = gettabwinvar(1, 2, '&list')
 			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
@@ -2970,7 +2996,9 @@ getwinvar({winnr}, {varname})				*getwinvar()*
 			:echo "myvar = " . getwinvar(1, 'myvar')
 <
 							*glob()*
-glob({expr})	Expand the file wildcards in {expr}.  The result is a String.
+glob({expr})	Expand the file wildcards in {expr}.  See |wildcards| for the
+		use of special characters.
+		The result is a String.
 		When there are several matches, they are separated by <NL>
 		characters.
 		If the expansion fails, the result is an empty string.
@@ -3254,7 +3282,8 @@ inputlist({textlist})					*inputlist()*
 		is returned.
 		Make sure {textlist} has less then 'lines' entries, otherwise
 		it won't work.  It's a good idea to put the entry number at
-		the start of the string.  Example: >
+		the start of the string.  And put a prompt in the first item.
+		Example: >
 			let color = inputlist(['Select color:', '1. red',
 				\ '2. green', '3. blue'])
 
@@ -3414,7 +3443,8 @@ line({expr})	The result is a Number, which is the line number of the file
 			    returned)
 		    w0	    first line visible in current window
 		    w$	    last line visible in current window
-		Note that a mark in another file can be used.
+		Note that a mark in another file can be used.  The line number
+		then applies to another buffer.
 		To get the column number use |col()|.  To get both use
 		|getpos()|.
 		Examples: >
@@ -3942,7 +3972,10 @@ reltimestr({time})				*reltimestr()*
 			echo reltimestr(reltime(start))
 <		Note that overhead for the commands will be added to the time.
 		The accuracy depends on the system.
-		Also see |profiling|.
+		Leading spaces are used to make the string align nicely.  You
+		can use split() to remove it. >
+			echo split(reltimestr(reltime(start)))[0]
+<		Also see |profiling|.
 		{only available when compiled with the +reltime feature}
 
 							*remote_expr()* *E449*
@@ -4097,6 +4130,8 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 		If the 's' flag is supplied, the ' mark is set, only if the
 		cursor is moved. The 's' flag cannot be combined with the 'n'
 		flag.
+
+		'ignorecase', 'smartcase' and 'magic' are used.
 
 		When the {stopline} argument is given then the search stops
 		after searching this line.  This is useful to restrict the
@@ -4371,6 +4406,9 @@ setpos({expr}, {list})
 		character.
 
 		Also see |getpos()|
+
+		This does not restore the preferred column for moving
+		vertically.  See |winrestview()| for that.
 
 
 setqflist({list} [, {action}])				*setqflist()*
@@ -4666,6 +4704,7 @@ string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 			List		[item, item]
 			Dictionary	{key: value, key: value}
 		Note that in String values the ' character is doubled.
+		Also see |strtrans()|.
 
 							*strlen()*
 strlen({expr})	The result is a Number, which is the length of the String
@@ -4735,7 +4774,7 @@ substitute({expr}, {pat}, {sub}, {flags})		*substitute()*
 		like the ":substitute" command (without any flags).  But the
 		matching with {pat} is always done like the 'magic' option is
 		set and 'cpoptions' is empty (to make scripts portable).
-		'ignorecase' is still relevant.
+		'ignorecase' is still relevant.  'smartcase' is not used.
 		See |string-match| for how {pat} is used.
 		And a "~" in {sub} is not replaced with the previous {sub}.
 		Note that some codes in {sub} have a special meaning
@@ -4888,22 +4927,23 @@ taglist({expr})							*taglist()*
 		entries:
 			name		Name of the tag.
 			filename	Name of the file where the tag is
-					defined.
+					defined.  It is either relative to the
+					current directory or a full path.
 			cmd		Ex command used to locate the tag in
 					the file.
 			kind		Type of the tag.  The value for this
 					entry depends on the language specific
-					kind values generated by the ctags
-					tool.
+					kind values.  Only available when
+					using a tags file generated by
+					Exuberant ctags or hdrtag.
 			static		A file specific tag.  Refer to
 					|static-tag| for more information.
-		The "kind" entry is only available when using Exuberant ctags
-		generated tags file.  More entries may be present, depending
-		on the content of the tags file: access, implementation,
-		inherits and signature.  Refer to the ctags documentation for
-		information about these fields.  For C code the fields
-		"struct", "class" and "enum" may appear, they give the name of
-		the entity the tag is contained in.
+		More entries may be present, depending on the content of the
+		tags file: access, implementation, inherits and signature.
+		Refer to the ctags documentation for information about these
+		fields.  For C code the fields "struct", "class" and "enum"
+		may appear, they give the name of the entity the tag is
+		contained in.
 
 		The ex-command 'cmd' can be either an ex search pattern, a
 		line number or a line number followed by a byte number.
@@ -5005,6 +5045,10 @@ virtcol({expr})						*virtcol()*
   virtcol("$")	   with text "foo^Lbar", returns 9
   virtcol("'t")    with text "    there", with 't at 'h', returns 6
 <		The first column is 1.  0 is returned for an error.
+		A more advanced example that echoes the maximum length of
+		all lines: >
+		    echo max(map(range(1, line('$')), "virtcol([v:val, '$'])"))
+
 
 visualmode([expr])						*visualmode()*
 		The result is a String, which describes the last Visual mode
@@ -5059,9 +5103,11 @@ winnr([{arg}])	The result is a Number, which is the number of the current
 		last window is returned (the window count).
 		When the optional argument is "#", the number of the last
 		accessed window is returned (where |CTRL-W_p| goes to).
-		If there is no previous window 0 is returned.
+		If there is no previous window or it is in another tab page 0
+		is returned.
 		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
+		Also see |tabpagewinnr()|.
 
 							*winrestcmd()*
 winrestcmd()	Returns a sequence of |:resize| commands that should restore
@@ -5146,6 +5192,8 @@ There are three types of features:
     Then the "patch123" feature means that patch 123 has been included for
     this version.  Example (checking version 6.2.148 or later): >
 	:if v:version > 602 || v:version == 602 && has("patch148")
+<   Note that it's possible for patch 147 to be omitted even though 148 is
+    included.
 
 all_builtin_terms	Compiled with all builtin terminals enabled.
 amiga			Amiga version of Vim.
@@ -5447,7 +5495,7 @@ See |:verbose-cmd| for more information.
 						*function-argument* *a:var*
 An argument can be defined by giving its name.  In the function this can then
 be used as "a:name" ("a:" for argument).
-						*a:0* *a:1* *a:000* *E740*
+					*a:0* *a:1* *a:000* *E740* *...*
 Up to 20 arguments can be given, separated by commas.  After the named
 arguments an argument "..." can be specified, which means that more arguments
 may optionally be following.  In the function the extra arguments can be used
@@ -5490,40 +5538,25 @@ This function can then be called with: >
   call Table("Table", "line1", "line2")
   call Table("Empty Table")
 
-To return more than one value, pass the name of a global variable: >
-  :function Compute(n1, n2, divname)
+To return more than one value, return a |List|: >
+  :function Compute(n1, n2)
   :  if a:n2 == 0
-  :    return "fail"
+  :    return ["fail", 0]
   :  endif
-  :  let g:{a:divname} = a:n1 / a:n2
-  :  return "ok"
+  :  return ["ok", a:n1 / a:n2]
   :endfunction
 
 This function can then be called with: >
-  :let success = Compute(13, 1324, "div")
+  :let [success, div] = Compute(102, 6)
   :if success == "ok"
   :  echo div
   :endif
-
-An alternative is to return a command that can be executed.  This also works
-with local variables in a calling function.  Example: >
-  :function Foo()
-  :  execute Bar()
-  :  echo "line " . lnum . " column " . col
-  :endfunction
-
-  :function Bar()
-  :  return "let lnum = " . line(".") . " | let col = " . col(".")
-  :endfunction
-
-The names "lnum" and "col" could also be passed as argument to Bar(), to allow
-the caller to set the names.
-
+<
 						*:cal* *:call* *E107* *E117*
 :[range]cal[l] {name}([arguments])
 		Call a function.  The name of the function and its arguments
 		are as specified with |:function|.  Up to 20 arguments can be
-		used.
+		used.  The returned value is discarded.
 		Without a range and for functions that accept a range, the
 		function is called once.  When a range is given the cursor is
 		positioned at the start of the first line before executing the
@@ -5553,6 +5586,11 @@ the caller to set the names.
 <
 		This function inserts the continuation character "\" in front
 		of all the lines in the range, except the first one.
+
+		When the function returns a composite value it can be further
+		dereferenced, but the range will not be used then.  Example: >
+	:4,8call GetDict().method()
+<		Here GetDict() gets the range but method() does not.
 
 								*E132*
 The recursiveness of user functions is restricted with the |'maxfuncdepth'|
@@ -5740,7 +5778,7 @@ This would call the function "my_func_whizz(parameter)".
 			Append {expr1} to register {reg-name}.  If the
 			register was empty it's like setting it to {expr1}.
 
-:let &{option-name} = {expr1}			*:let-option* *:let-star*
+:let &{option-name} = {expr1}			*:let-option* *:let-&*
 			Set option {option-name} to the result of the
 			expression {expr1}.  A String or Number value is
 			always converted to the type of the option.
@@ -5830,7 +5868,7 @@ This would call the function "my_func_whizz(parameter)".
 				*	Funcref
 
 
-:unl[et][!] {name} ...					*:unlet* *:unl* *E108*
+:unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
 			Remove the internal variable {name}.  Several variable
 			names can be given, they are all removed.  The name
 			may also be a |List| or |Dictionary| item.
@@ -6100,11 +6138,14 @@ This would call the function "my_func_whizz(parameter)".
 			Cannot be followed by a comment.
 			Example: >
 		:echo "the value of 'shell' is" &shell
-<			A later redraw may make the message disappear again.
-			To avoid that a command from before the ":echo" causes
-			a redraw afterwards (redraws are often postponed until
-			you type something), force a redraw with the |:redraw|
-			command.  Example: >
+<							*:echo-redraw*
+			A later redraw may make the message disappear again.
+			And since Vim mostly postpones redrawing until it's
+			finished with a sequence of commands this happens
+			quite often.  To avoid that a command from before the
+			":echo" causes a redraw afterwards (redraws are often
+			postponed until you type something), force a redraw
+			with the |:redraw| command.  Example: >
 		:new | redraw | echo "there is a new window"
 <
 							*:echon*
@@ -6144,10 +6185,16 @@ This would call the function "my_func_whizz(parameter)".
 			Spaces are placed between the arguments as with the
 			|:echo| command.  But unprintable characters are
 			displayed, not interpreted.
+			The parsing works slightly different from |:echo|,
+			more like |:execute|.  All the expressions are first
+			evaluated and concatenated before echoing anything.
+			The expressions must evaluate to a Number or String, a
+			Dictionary or List causes an error.
 			Uses the highlighting set by the |:echohl| command.
 			Example: >
 		:echomsg "It's a Zizzer Zazzer Zuzz, as you can plainly see."
-<
+<			See |:echo-redraw| to avoid the message disappearing
+			when the screen is redrawn.
 							*:echoe* *:echoerr*
 :echoe[rr] {expr1} ..	Echo the expression(s) as an error message, saving the
 			message in the |message-history|.  When used in a
@@ -7198,106 +7245,51 @@ a "E600: Missing :endtry" error message is given, see |except-single-line|.
 ==============================================================================
 9. Examples						*eval-examples*
 
-Printing in Hex ~
+Printing in Binary ~
 >
-  :" The function Nr2Hex() returns the Hex string of a number.
-  :func Nr2Hex(nr)
+  :" The function Nr2Bin() returns the Hex string of a number.
+  :func Nr2Bin(nr)
   :  let n = a:nr
   :  let r = ""
   :  while n
-  :    let r = '0123456789ABCDEF'[n % 16] . r
-  :    let n = n / 16
+  :    let r = '01'[n % 2] . r
+  :    let n = n / 2
   :  endwhile
   :  return r
   :endfunc
 
-  :" The function String2Hex() converts each character in a string to a two
-  :" character Hex string.
-  :func String2Hex(str)
+  :" The function String2Bin() converts each character in a string to a
+  :" binary string, separated with dashes.
+  :func String2Bin(str)
   :  let out = ''
-  :  let ix = 0
-  :  while ix < strlen(a:str)
-  :    let out = out . Nr2Hex(char2nr(a:str[ix]))
-  :    let ix = ix + 1
-  :  endwhile
-  :  return out
+  :  for ix in range(strlen(a:str))
+  :    let out = out . '-' . Nr2Bin(char2nr(a:str[ix]))
+  :  endfor
+  :  return out[1:]
   :endfunc
 
 Example of its use: >
-  :echo Nr2Hex(32)
-result: "20" >
-  :echo String2Hex("32")
-result: "3332"
+  :echo Nr2Bin(32)
+result: "100000" >
+  :echo String2Bin("32")
+result: "110011-110010"
 
 
-Sorting lines (by Robert Webb) ~
+Sorting lines ~
 
-Here is a Vim script to sort lines.  Highlight the lines in Vim and type
-":Sort".  This doesn't call any external programs so it'll work on any
-platform.  The function Sort() actually takes the name of a comparison
-function as its argument, like qsort() does in C.  So you could supply it
-with different comparison functions in order to sort according to date etc.
->
-  :" Function for use with Sort(), to compare two strings.
-  :func! Strcmp(str1, str2)
-  :  if (a:str1 < a:str2)
-  :	return -1
-  :  elseif (a:str1 > a:str2)
-  :	return 1
-  :  else
-  :	return 0
-  :  endif
+This example sorts lines with a specific compare function. >
+
+  :func SortBuffer()
+  :  let lines = getline(1, '$')
+  :  call sort(lines, function("Strcmp"))
+  :  call setline(1, lines)
   :endfunction
 
-  :" Sort lines.  SortR() is called recursively.
-  :func! SortR(start, end, cmp)
-  :  if (a:start >= a:end)
-  :	return
-  :  endif
-  :  let partition = a:start - 1
-  :  let middle = partition
-  :  let partStr = getline((a:start + a:end) / 2)
-  :  let i = a:start
-  :  while (i <= a:end)
-  :	let str = getline(i)
-  :	exec "let result = " . a:cmp . "(str, partStr)"
-  :	if (result <= 0)
-  :	    " Need to put it before the partition.  Swap lines i and partition.
-  :	    let partition = partition + 1
-  :	    if (result == 0)
-  :		let middle = partition
-  :	    endif
-  :	    if (i != partition)
-  :		let str2 = getline(partition)
-  :		call setline(i, str2)
-  :		call setline(partition, str)
-  :	    endif
-  :	endif
-  :	let i = i + 1
-  :  endwhile
+As a one-liner: >
+  :call setline(1, sort(getline(1, '$'), function("Strcmp")))
 
-  :  " Now we have a pointer to the "middle" element, as far as partitioning
-  :  " goes, which could be anywhere before the partition.  Make sure it is at
-  :  " the end of the partition.
-  :  if (middle != partition)
-  :	let str = getline(middle)
-  :	let str2 = getline(partition)
-  :	call setline(middle, str2)
-  :	call setline(partition, str)
-  :  endif
-  :  call SortR(a:start, partition - 1, a:cmp)
-  :  call SortR(partition + 1, a:end, a:cmp)
-  :endfunc
 
-  :" To Sort a range of lines, pass the range to Sort() along with the name of a
-  :" function that will compare two lines.
-  :func! Sort(cmp) range
-  :  call SortR(a:firstline, a:lastline, a:cmp)
-  :endfunc
-
-  :" :Sort takes a range of lines and sorts them.
-  :command! -nargs=0 -range Sort <line1>,<line2>call Sort("Strcmp")
-<
+scanf() replacement ~
 							*sscanf*
 There is no sscanf() function in Vim.  If you need to extract parts from a
 line, you can use matchstr() and substitute() to do it.  This example shows
@@ -7314,6 +7306,35 @@ how to get the file name, line number and column number out of a line like
 
 The input is in the variable "line", the results in the variables "file",
 "lnum" and "col". (idea from Michael Geddes)
+
+
+getting the scriptnames in a Dictionary ~
+						*scriptnames-dictionary*
+The |:scriptnames| command can be used to get a list of all script files that
+have been sourced.  There is no equivalent function or variable for this
+(because it's rarely needed).  In case you need to manipulate the list this
+code can be used: >
+    " Get the output of ":scriptnames" in the scriptnames_output variable.
+    let scriptnames_output = ''
+    redir => scriptnames_output
+    silent scriptnames
+    redir END
+    
+    " Split the output into lines and parse each line.  Add an entry to the
+    " "scripts" dictionary.
+    let scripts = {}
+    for line in split(scriptnames_output, "\n")
+      " Only do non-blank lines.
+      if line =~ '\S'
+	" Get the first number in the line.
+        let nr = matchstr(line, '\d\+')
+	" Get the file name, remove the script number " 123: ".
+        let name = substitute(line, '.\+:\s*', '', '')
+	" Add an item to the Dictionary
+        let scripts[nr] = name
+      endif
+    endfor
+    unlet scriptnames_output
 
 ==============================================================================
 10. No +eval feature				*no-eval-feature*
@@ -7349,6 +7370,7 @@ These items are not allowed in the sandbox:
 	- changing the buffer text
 	- defining or changing mapping, autocommands, functions, user commands
 	- setting certain options (see |option-summary|)
+	- setting certain v: variables (see |v:var|)  *E794*
 	- executing a shell command
 	- reading or writing a file
 	- jumping to another buffer or editing a file
