@@ -2713,7 +2713,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 	char_u *pat_esc = vim_strsave_escaped(pat, (char_u *)"\\");
 
 	if (pat_esc == NULL)
-	    goto theend ;
+	    goto theend;
 	i = (int)STRLEN(pat_esc) + 10;
 	ptr = alloc(i);
 	if (ptr == NULL)
