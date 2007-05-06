@@ -5013,13 +5013,13 @@ buf_write_bytes(ip)
 		 * buffer.  The buffer has been allocated to be big enough. */
 		ip->bw_restlen = 0;
 		needed = MultiByteToWideChar(enc_codepage,
-				  MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen,
+			     MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen,
 								     NULL, 0);
 		if (needed == 0)
 		{
 		    /* When conversion fails there may be a trailing byte. */
 		    needed = MultiByteToWideChar(enc_codepage,
-			      MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen - 1,
+			 MB_ERR_INVALID_CHARS, (LPCSTR)from, (int)fromlen - 1,
 								     NULL, 0);
 		    if (needed == 0)
 		    {
@@ -5032,7 +5032,7 @@ buf_write_bytes(ip)
 		    ip->bw_restlen = 1;
 		}
 		needed = MultiByteToWideChar(enc_codepage, MB_ERR_INVALID_CHARS,
-				       (LPCSTR)from, (int)(fromlen - ip->bw_restlen),
+				(LPCSTR)from, (int)(fromlen - ip->bw_restlen),
 							  (LPWSTR)to, needed);
 		if (needed == 0)
 		{
@@ -5072,7 +5072,8 @@ buf_write_bytes(ip)
 		 * fail. */
 		len = WideCharToMultiByte(FIO_GET_CP(flags), 0,
 			(LPCWSTR)ip->bw_conv_buf, (int)fromlen / sizeof(WCHAR),
-			(LPSTR)to, (int)(ip->bw_conv_buflen - fromlen), 0, &bad);
+			(LPSTR)to, (int)(ip->bw_conv_buflen - fromlen), 0,
+									&bad);
 		if (bad)
 		{
 		    ip->bw_conv_error = TRUE;
@@ -5201,7 +5202,7 @@ buf_write_bytes(ip)
 #endif
 
     /* Repeat the write(), it may be interrupted by a signal. */
-    while (len)
+    while (len > 0)
     {
 	wlen = vim_write(ip->bw_fd, buf, len);
 	if (wlen <= 0)		    /* error! */
