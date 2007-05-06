@@ -1,6 +1,6 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Aug 29
+" Last Change:	2007 May 06
 
 if !exists('g:spellfile_URL')
   let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
@@ -58,19 +58,40 @@ function! spellfile#LoadFile(lang)
     let fname = a:lang . '.' . enc . '.spl'
 
     " Split the window, read the file into a new buffer.
+    " Remember the buffer number, we check it below.
     new
+    let newbufnr = winbufnr(0)
     setlocal bin
     echo 'Downloading ' . fname . '...'
     call spellfile#Nread(fname)
     if getline(2) !~ 'VIMspell'
       " Didn't work, perhaps there is an ASCII one.
-      g/^/d
+      " Careful: Nread() may have opened a new window for the error message,
+      " we need to go back to our own buffer and window.
+      if newbufnr != winbufnr(0)
+	let winnr = bufwinnr(newbufnr)
+	if winnr == -1
+	  " Our buffer has vanished!?  Open a new window.
+	  echomsg "download buffer disappeared, opening a new one"
+	  new
+	  setlocal bin
+	else
+	  exe winnr . "wincmd w"
+	endif
+      endif
+      if newbufnr == winbufnr(0)
+	" We are back the old buffer, remove any (half-finished) download.
+        g/^/d
+      else
+	let newbufnr = winbufnr(0)
+      endif
+
       let fname = a:lang . '.ascii.spl'
       echo 'Could not find it, trying ' . fname . '...'
       call spellfile#Nread(fname)
       if getline(2) !~ 'VIMspell'
 	echo 'Sorry, downloading failed'
-	bwipe!
+	exe newbufnr . "bwipe!"
 	return
       endif
     endif
@@ -96,17 +117,29 @@ function! spellfile#LoadFile(lang)
 	let fname = substitute(fname, '\.spl$', '.sug', '')
 	echo 'Downloading ' . fname . '...'
 	call spellfile#Nread(fname)
-	if getline(2) !~ 'VIMsug'
-	  echo 'Sorry, downloading failed'
-	else
+	if getline(2) =~ 'VIMsug'
 	  1d
 	  exe "write " . escape(dirlist[dirchoice], ' ') . '/' . fname
+	  set nomod
+	else
+	  echo 'Sorry, downloading failed'
+	  " Go back to our own buffer/window, Nread() may have taken us to
+	  " another window.
+	  if newbufnr != winbufnr(0)
+	    let winnr = bufwinnr(newbufnr)
+	    if winnr != -1
+	      exe winnr . "wincmd w"
+	    endif
+	  endif
+	  if newbufnr == winbufnr(0)
+	    set nomod
+	  endif
 	endif
-	set nomod
       endif
     endif
 
-    bwipe
+    " Wipe out the buffer we used.
+    exe newbufnr . "bwipe"
   endif
 endfunc
 

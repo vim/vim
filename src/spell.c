@@ -4105,12 +4105,28 @@ did_set_spelllang(buf)
     int		nobreak = FALSE;
     int		i, j;
     langp_T	*lp, *lp2;
+    static int	recursive = FALSE;
+    char_u	*ret_msg = NULL;
+    char_u	*spl_copy;
+
+    /* We don't want to do this recursively.  May happen when a language is
+     * not available and the SpellFileMissing autocommand opens a new buffer
+     * in which 'spell' is set. */
+    if (recursive)
+	return NULL;
+    recursive = TRUE;
 
     ga_init2(&ga, sizeof(langp_T), 2);
     clear_midword(buf);
 
+    /* Make a copy of 'spellang', the SpellFileMissing autocommands may change
+     * it under our fingers. */
+    spl_copy = vim_strsave(buf->b_p_spl);
+    if (spl_copy == NULL)
+	goto theend;
+
     /* loop over comma separated language names. */
-    for (splp = buf->b_p_spl; *splp != NUL; )
+    for (splp = spl_copy; *splp != NUL; )
     {
 	/* Get one language name. */
 	copy_option_part(&splp, lang, MAXWLEN, ",");
@@ -4176,7 +4192,18 @@ did_set_spelllang(buf)
 	    if (filename)
 		(void)spell_load_file(lang, lang, NULL, FALSE);
 	    else
+	    {
 		spell_load_lang(lang);
+#ifdef FEAT_AUTOCMD
+		/* SpellFileMissing autocommands may do anything, including
+		 * destroying the buffer we are using... */
+		if (!buf_valid(buf))
+		{
+		    ret_msg = (char_u *)"E797: SpellFileMissing autocommand deleted buffer";
+		    goto theend;
+		}
+#endif
+	    }
 	}
 
 	/*
@@ -4215,7 +4242,8 @@ did_set_spelllang(buf)
 		    if (ga_grow(&ga, 1) == FAIL)
 		    {
 			ga_clear(&ga);
-			return e_outofmem;
+			ret_msg = e_outofmem;
+			goto theend;
 		    }
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_slang = slang;
 		    LANGP_ENTRY(ga, ga.ga_len)->lp_region = region_mask;
@@ -4231,7 +4259,7 @@ did_set_spelllang(buf)
      * round 1: load first name in 'spellfile'.
      * round 2: load second name in 'spellfile.
      * etc. */
-    spf = curbuf->b_p_spf;
+    spf = buf->b_p_spf;
     for (round = 0; round == 0 || *spf != NUL; ++round)
     {
 	if (round == 0)
@@ -4357,7 +4385,10 @@ did_set_spelllang(buf)
 	    }
     }
 
-    return NULL;
+theend:
+    vim_free(spl_copy);
+    recursive = FALSE;
+    return ret_msg;
 }
 
 /*

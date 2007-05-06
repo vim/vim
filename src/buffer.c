@@ -1426,6 +1426,13 @@ enter_buffer(buf)
     if (curbuf->b_kmap_state & KEYMAP_INIT)
 	keymap_init();
 #endif
+#ifdef FEAT_SPELL
+    /* May need to set the spell language.  Can only do this after the buffer
+     * has been properly setup. */
+    if (!curbuf->b_help && curwin->w_p_spell && *curbuf->b_p_spl != NUL)
+	did_set_spelllang(curbuf);
+#endif
+
     redraw_later(NOT_VALID);
 }
 
@@ -2414,11 +2421,6 @@ get_winopts(buf)
     /* Set 'foldlevel' to 'foldlevelstart' if it's not negative. */
     if (p_fdls >= 0)
 	curwin->w_p_fdl = p_fdls;
-#endif
-
-#ifdef FEAT_SPELL
-    if (curwin->w_p_spell && *buf->b_p_spl != NUL)
-	did_set_spelllang(buf);
 #endif
 }
 

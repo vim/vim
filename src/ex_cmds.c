@@ -3088,6 +3088,9 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
     char_u	*cp;
 #endif
     char_u	*command = NULL;
+#ifdef FEAT_SPELL
+    int		did_get_winopts = FALSE;
+#endif
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -3365,6 +3368,9 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 		 * before, reset the local window options to the global
 		 * values.  Also restores old folding stuff. */
 		get_winopts(buf);
+#ifdef FEAT_SPELL
+		did_get_winopts = TRUE;
+#endif
 
 #ifdef FEAT_AUTOCMD
 	    }
@@ -3638,6 +3644,13 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	diff_buf_add(curbuf);
 	diff_invalidate(curbuf);
     }
+#endif
+
+#ifdef FEAT_SPELL
+    /* If the window options were changed may need to set the spell language.
+     * Can only do this after the buffer has been properly setup. */
+    if (did_get_winopts && curwin->w_p_spell && *buf->b_p_spl != NUL)
+	did_set_spelllang(buf);
 #endif
 
     if (command == NULL)
