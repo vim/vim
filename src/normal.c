@@ -3567,9 +3567,9 @@ checkclearop(oap)
 }
 
 /*
- * check for operator or Visual active and clear it
+ * Check for operator or Visual active.  Clear active operator.
  *
- * return TRUE if operator was active
+ * Return TRUE if operator or Visual was active.
  */
     static int
 checkclearopq(oap)
