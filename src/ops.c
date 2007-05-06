@@ -1002,18 +1002,18 @@ yank_register_mline(regname)
 #endif
 
 /*
- * start or stop recording into a yank register
+ * Start or stop recording into a yank register.
  *
- * return FAIL for failure, OK otherwise
+ * Return FAIL for failure, OK otherwise.
  */
     int
 do_record(c)
     int c;
 {
-    char_u	*p;
-    static int	regname;
-    struct yankreg *old_y_previous, *old_y_current;
-    int		retval;
+    char_u	    *p;
+    static int	    regname;
+    struct yankreg  *old_y_previous, *old_y_current;
+    int		    retval;
 
     if (Recording == FALSE)	    /* start recording */
     {
@@ -1031,9 +1031,9 @@ do_record(c)
     else			    /* stop recording */
     {
 	/*
-	 * Get the recorded key hits.  K_SPECIAL and CSI will be escaped, so
-	 * that the register can be put into the typeahead buffer without
-	 * translation.
+	 * Get the recorded key hits.  K_SPECIAL and CSI will be escaped, this
+	 * needs to be removed again to put it in a register.  exec_reg then
+	 * adds the escaping back later.
 	 */
 	Recording = FALSE;
 	MSG("");
@@ -1417,13 +1417,14 @@ stuffescaped(arg, literally)
 }
 
 /*
- * If "regname" is a special register, return a pointer to its value.
+ * If "regname" is a special register, return TRUE and store a pointer to its
+ * value in "argp".
  */
     int
 get_spec_reg(regname, argp, allocated, errmsg)
     int		regname;
     char_u	**argp;
-    int		*allocated;
+    int		*allocated;	/* return: TRUE when value was allocated */
     int		errmsg;		/* give error message when failing */
 {
     int		cnt;

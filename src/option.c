@@ -5275,7 +5275,7 @@ insecure_flag(opt_idx, opt_flags)
  * The string is copied into allocated memory.
  * if ("opt_idx" == -1) "name" is used, otherwise "opt_idx" is used.
  * When "set_sid" is zero set the scriptID to current_SID.  When "set_sid" is
- * SID_NONE don't set the scriptID.  Otherwose set the scriptID to "set_sid".
+ * SID_NONE don't set the scriptID.  Otherwise set the scriptID to "set_sid".
  */
 /*ARGSUSED*/
     void
@@ -7144,6 +7144,8 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	if (curbuf->b_p_swf && p_uc)
 	    ml_open_file(curbuf);		/* create the swap file */
 	else
+	    /* no need to reset curbuf->b_may_swap, ml_open_file() will check
+	     * buf->b_p_swf */
 	    mf_close_file(curbuf, TRUE);	/* remove the swap file */
     }
 
