@@ -3840,7 +3840,7 @@ regmatch(scan)
 		pos_T	*pos;
 
 		pos = getmark(mark, FALSE);
-		if (pos == NULL		    /* mark doesn't exist) */
+		if (pos == NULL		     /* mark doesn't exist */
 			|| pos->lnum <= 0    /* mark isn't set (in curbuf) */
 			|| (pos->lnum == reglnum + reg_firstlnum
 				? (pos->col == (colnr_T)(reginput - regline)
