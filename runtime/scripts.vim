@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2006 Jul 08
+" Last change:	2007 Apr 29
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -298,7 +298,7 @@ else
     set ft=baan
 
   " Valgrind
-  elseif s:line1 =~ '^==\d\+== valgrind'
+  elseif s:line1 =~ '^==\d\+== valgrind' || s:line3 =~ '^==\d\+== Using valgrind'
     set ft=valgrind
 
   " Renderman Interface Bytestream
