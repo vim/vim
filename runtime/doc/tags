@@ -4078,6 +4078,7 @@ E793	diff.txt	/*E793*
 E794	eval.txt	/*E794*
 E795	eval.txt	/*E795*
 E796	editing.txt	/*E796*
+E797	spell.txt	/*E797*
 E80	message.txt	/*E80*
 E800	arabic.txt	/*E800*
 E81	map.txt	/*E81*
@@ -4810,6 +4811,7 @@ compile-changes-6	version6.txt	/*compile-changes-6*
 compile-changes-7	version7.txt	/*compile-changes-7*
 compiler-compaqada	ada.txt	/*compiler-compaqada*
 compiler-decada	ada.txt	/*compiler-decada*
+compiler-gcc	quickfix.txt	/*compiler-gcc*
 compiler-gnat	ada.txt	/*compiler-gnat*
 compiler-hpada	ada.txt	/*compiler-hpada*
 compiler-manx	quickfix.txt	/*compiler-manx*
@@ -5437,6 +5439,7 @@ ft-scheme-syntax	syntax.txt	/*ft-scheme-syntax*
 ft-sdl-syntax	syntax.txt	/*ft-sdl-syntax*
 ft-sed-syntax	syntax.txt	/*ft-sed-syntax*
 ft-sgml-syntax	syntax.txt	/*ft-sgml-syntax*
+ft-sh-indent	indent.txt	/*ft-sh-indent*
 ft-sh-syntax	syntax.txt	/*ft-sh-syntax*
 ft-spec-plugin	filetype.txt	/*ft-spec-plugin*
 ft-spup-syntax	syntax.txt	/*ft-spup-syntax*
@@ -5565,6 +5568,7 @@ g:netrw_rmdir_cmd	pi_netrw.txt	/*g:netrw_rmdir_cmd*
 g:netrw_rmf_cmd	pi_netrw.txt	/*g:netrw_rmf_cmd*
 g:netrw_rsync_cmd	pi_netrw.txt	/*g:netrw_rsync_cmd*
 g:netrw_scp_cmd	pi_netrw.txt	/*g:netrw_scp_cmd*
+g:netrw_scpport	pi_netrw.txt	/*g:netrw_scpport*
 g:netrw_sftp_cmd	pi_netrw.txt	/*g:netrw_sftp_cmd*
 g:netrw_shq	pi_netrw.txt	/*g:netrw_shq*
 g:netrw_sort_by	pi_netrw.txt	/*g:netrw_sort_by*
@@ -5572,8 +5576,10 @@ g:netrw_sort_direction	pi_netrw.txt	/*g:netrw_sort_direction*
 g:netrw_sort_sequence	pi_netrw.txt	/*g:netrw_sort_sequence*
 g:netrw_ssh_browse_reject	pi_netrw.txt	/*g:netrw_ssh_browse_reject*
 g:netrw_ssh_cmd	pi_netrw.txt	/*g:netrw_ssh_cmd*
+g:netrw_sshport	pi_netrw.txt	/*g:netrw_sshport*
 g:netrw_timefmt	pi_netrw.txt	/*g:netrw_timefmt*
 g:netrw_uid	pi_netrw.txt	/*g:netrw_uid*
+g:netrw_use_errorwindow	pi_netrw.txt	/*g:netrw_use_errorwindow*
 g:netrw_use_noswf	pi_netrw.txt	/*g:netrw_use_noswf*
 g:netrw_use_nt_rcp	pi_netrw.txt	/*g:netrw_use_nt_rcp*
 g:netrw_win95ftp	pi_netrw.txt	/*g:netrw_win95ftp*
@@ -5584,6 +5590,8 @@ g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*
+g:zip_unzipcmd	pi_zip.txt	/*g:zip_unzipcmd*
+g:zip_zipcmd	pi_zip.txt	/*g:zip_zipcmd*
 g;	motion.txt	/*g;*
 g<	message.txt	/*g<*
 g<Down>	motion.txt	/*g<Down>*
@@ -6720,7 +6728,7 @@ ports-6	version6.txt	/*ports-6*
 posix	vi_diff.txt	/*posix*
 posix-compliance	vi_diff.txt	/*posix-compliance*
 posix-screen-size	vi_diff.txt	/*posix-screen-size*
-postgress	sql.txt	/*postgress*
+postgres	sql.txt	/*postgres*
 postscr.vim	syntax.txt	/*postscr.vim*
 postscript-cjk-printing	print.txt	/*postscript-cjk-printing*
 postscript-print-encoding	print.txt	/*postscript-print-encoding*
@@ -6780,6 +6788,7 @@ quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
+quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
 quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
@@ -8061,9 +8070,11 @@ zi	fold.txt	/*zi*
 zip	pi_zip.txt	/*zip*
 zip-contents	pi_zip.txt	/*zip-contents*
 zip-copyright	pi_zip.txt	/*zip-copyright*
+zip-extension	pi_zip.txt	/*zip-extension*
 zip-history	pi_zip.txt	/*zip-history*
 zip-manual	pi_zip.txt	/*zip-manual*
 zip-usage	pi_zip.txt	/*zip-usage*
+zip_shq	pi_zip.txt	/*zip_shq*
 zj	fold.txt	/*zj*
 zk	fold.txt	/*zk*
 zl	scroll.txt	/*zl*
