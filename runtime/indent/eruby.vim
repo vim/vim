@@ -12,13 +12,27 @@ endif
 
 runtime! indent/ruby.vim
 unlet! b:did_indent
+set indentexpr=
 
-runtime! indent/html.vim
+if exists("b:eruby_subtype")
+  exe "runtime! indent/".b:eruby_subtype.".vim"
+else
+  runtime! indent/html.vim
+endif
 unlet! b:did_indent
+
+if &l:indentexpr == ''
+  if &l:cindent
+    let &l:indentexpr = 'cindent(v:lnum)'
+  else
+    let &l:indentexpr = 'indent(prevnonblank(v:lnum-1))'
+  endif
+endif
+let b:eruby_subtype_indentexpr = &l:indentexpr
 
 let b:did_indent = 1
 
-setlocal indentexpr=GetErubyIndent(v:lnum)
+setlocal indentexpr=GetErubyIndent()
 setlocal indentkeys=o,O,*<Return>,<>>,{,},0),0],o,O,!^F,=end,=else,=elsif,=rescue,=ensure,=when
 
 " Only define the function once.
@@ -26,19 +40,19 @@ if exists("*GetErubyIndent")
   finish
 endif
 
-function! GetErubyIndent(lnum)
+function! GetErubyIndent()
   let vcol = col('.')
-  call cursor(a:lnum,1)
+  call cursor(v:lnum,1)
   let inruby = searchpair('<%','','%>')
-  call cursor(a:lnum,vcol)
-  if inruby && getline(a:lnum) !~ '^<%'
+  call cursor(v:lnum,vcol)
+  if inruby && getline(v:lnum) !~ '^<%'
     let ind = GetRubyIndent()
   else
-    let ind = HtmlIndentGet(a:lnum)
+    exe "let ind = ".b:eruby_subtype_indentexpr
   endif
-  let lnum = prevnonblank(a:lnum-1)
+  let lnum = prevnonblank(v:lnum-1)
   let line = getline(lnum)
-  let cline = getline(a:lnum)
+  let cline = getline(v:lnum)
   if cline =~# '<%\s*\%(end\|else\|\%(ensure\|rescue\|elsif\|when\).\{-\}\)\s*\%(-\=%>\|$\)'
     let ind = ind - &sw
   endif

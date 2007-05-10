@@ -74,7 +74,7 @@
 /* Define if struct sigcontext is present */
 #define HAVE_SIGCONTEXT
 
-/* Define if toupper/tolower only work on lower/upercase characters */
+/* Define if toupper/tolower only work on lower/uppercase characters */
 /* #define BROKEN_TOUPPER */
 
 /* Define if tgetstr() has a second argument that is (char *) */

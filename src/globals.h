@@ -263,7 +263,7 @@ EXTERN int trylevel INIT(= 0);
 /*
  * When "force_abort" is TRUE, always skip commands after an error message,
  * even after the outermost ":endif", ":endwhile" or ":endfor" or for a
- * function whithout the "abort" flag.  It is set to TRUE when "trylevel" is
+ * function without the "abort" flag.  It is set to TRUE when "trylevel" is
  * non-zero (and ":silent!" was not used) or an exception is being thrown at
  * the time an error is detected.  It is set to FALSE when "trylevel" gets
  * zero again and there was no error or interrupt or throw.
@@ -948,7 +948,7 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 #endif
 		    ;
 #ifdef FEAT_EX_EXTRA
-EXTERN int	ex_normal_busy INIT(= 0); /* recursivenes of ex_normal() */
+EXTERN int	ex_normal_busy INIT(= 0); /* recursiveness of ex_normal() */
 EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
 #endif
 EXTERN int	stop_insert_mode;	/* for ":stopinsert" and 'insertmode' */
@@ -984,7 +984,7 @@ EXTERN int	term_console INIT(= FALSE); /* set to TRUE when console used */
 #endif
 EXTERN int	termcap_active INIT(= FALSE);	/* set by starttermcap() */
 EXTERN int	cur_tmode INIT(= TMODE_COOK);	/* input terminal mode */
-EXTERN int	bangredo INIT(= FALSE);	    /* set to TRUE whith ! command */
+EXTERN int	bangredo INIT(= FALSE);	    /* set to TRUE with ! command */
 EXTERN int	searchcmdlen;		    /* length of previous search cmd */
 #ifdef FEAT_SYN_HL
 EXTERN int	reg_do_extmatch INIT(= 0);  /* Used when compiling regexp:
@@ -1304,8 +1304,8 @@ EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 #endif
 
 #ifdef ALT_X_INPUT
-/* we need to be able to go into the displatch loop while processing a command
- * recevied via alternate input. However, we don't want to process another
+/* we need to be able to go into the dispatch loop while processing a command
+ * received via alternate input. However, we don't want to process another
  * command until the first is completed.
  */
 EXTERN int	suppress_alternate_input INIT(= FALSE);

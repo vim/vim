@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         gpg(1) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-05-06
 
 if exists("b:current_syntax")
   finish
@@ -54,7 +54,7 @@ syn keyword gpgOption   contained skipwhite nextgroup=gpgArg
                         \ personal-digest-preferences photo-viewer
                         \ recipient s2k-cipher-algo s2k-digest-algo s2k-mode
                         \ secret-keyring set-filename set-policy-url status-fd
-                        \ trusted-key
+                        \ trusted-key verify-options
 syn keyword gpgOption   contained skipwhite nextgroup=gpgArgError
                         \ allow-freeform-uid allow-non-selfsigned-uid
                         \ allow-secret-key-import always-trust
