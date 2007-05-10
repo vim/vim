@@ -15,9 +15,10 @@
  * (C) 2002,2003  Jason Hildebrand  <jason@peaceworks.ca>
  *		  Daniel Elstner  <daniel.elstner@gmx.net>
  *
- * This is a special purspose container widget, which manages arbitrary childs
- * at arbitrary positions width arbitrary sizes.  This finally puts an end on
- * our resizement problems with which we where struggling for such a long time.
+ * This is a special purpose container widget, which manages arbitrary
+ * children at arbitrary positions width arbitrary sizes.  This finally puts
+ * an end on our resize problems with which we where struggling for such a
+ * long time.
  */
 
 #include "vim.h"

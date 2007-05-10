@@ -111,7 +111,7 @@ error:
 
 // Return the dispatch id of a named service
 // This id can be used in subsequent calls to GetProperty (), SetProperty () and
-// Method (). This is the prefered method when performance is important.
+// Method (). This is the preferred method when performance is important.
 //
 DISPID COleAutomationControl::GetDispatchId (char* Name)
 {
@@ -135,7 +135,7 @@ DISPID COleAutomationControl::GetDispatchId (char* Name)
 //  Name      Name of property or method.
 //
 //  Format    Format string that describes the variable list of parameters that
-//	      follows. The format string can contain the follwoing characters.
+//	      follows. The format string can contain the following characters.
 //	      & = mark the following format character as VT_BYREF
 //	      B = VT_BOOL
 //	      i = VT_I2

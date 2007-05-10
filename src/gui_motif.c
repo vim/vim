@@ -1043,7 +1043,7 @@ gui_motif_add_actext(menu)
 {
     XmString	label;
 
-    /* Add accelrator text, if there is one */
+    /* Add accelerator text, if there is one */
     if (menu->actext != NULL && menu->id != (Widget)0)
     {
 	label = XmStringCreate((char *)menu->actext, STRING_TAG);
@@ -2531,7 +2531,7 @@ create_pixmap_label(parent, name, data, args, arg)
     label = XmCreateLabelGadget(parent, name, args, arg);
 
     /*
-     * We need to be carefull here, since in case of gadgets, there is
+     * We need to be careful here, since in case of gadgets, there is
      * no way to get the background color directly from the widget itself.
      * In such cases we get it from The Core part of his parent instead.
      */
