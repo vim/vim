@@ -60,7 +60,7 @@ windows nt, both files are under c:\winnt\system32 directory. In my windows 95
 system, I got setupapi.dll at c:\windows\system and rundll32.exe at
 c:\windows.  So you might want to try something like:
     rundll32.exe c:\windows\system\setupapi.dll,InstallHinfSection DefaultUninstall 128 %1
-where %1 can be substitued by gvimext.inf
+where %1 can be substituted by gvimext.inf
 
 
 THE SOURCE CODE
