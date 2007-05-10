@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.1a.  Last change: 2006 Aug 08
+*gui.txt*       For Vim version 7.1b.  Last change: 2006 Aug 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

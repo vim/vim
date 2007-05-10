@@ -3042,7 +3042,7 @@ redir_write(str, maxlen)
 }
 
 /*
- * Before giving verbose messsage.
+ * Before giving verbose message.
  * Must always be called paired with verbose_leave()!
  */
     void
@@ -3864,7 +3864,7 @@ tv_str(tvs, idxp)
  *
  * This code is based on snprintf.c - a portable implementation of snprintf
  * by Mark Martinec <mark.martinec@ijs.si>, Version 2.2, 2000-10-06.
- * Included with permission.  It was heavely modified to fit in Vim.
+ * Included with permission.  It was heavily modified to fit in Vim.
  * The original code, including useful comments, can be found here:
  *	http://www.ijs.si/software/snprintf/
  *
@@ -4453,7 +4453,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		/* unrecognized conversion specifier, keep format string
 		 * as-is */
 		zero_padding = 0;  /* turn zero padding off for non-numeric
-				      convers. */
+				      conversion */
 		justify_left = 1;
 		min_field_width = 0;		    /* reset flags */
 
