@@ -419,7 +419,7 @@ get_vim_env(void)
 		vim = default_vim_dir;
 	    else
 		/* Let NSIS know there is no default, it should use
-		 * $PROGRAMFIlES. */
+		 * $PROGRAMFILES. */
 		vim = "";
 	}
     }

@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.1a.  Last change: 2006 Apr 20
+*intro.txt*     For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -235,7 +235,7 @@ Vim would never have become what it is now, without the help of these people!
 	David Leonard		Port of Python extensions to Unix
 	Avner Lottem		Edit in right-to-left windows
 	Flemming Madsen		X11 client-server, various features and patches
-	MicroSoft		Gave me a copy of DevStudio to compile Vim with
+	Microsoft		Gave me a copy of DevStudio to compile Vim with
 	Paul Moore		Python interface extensions, many patches
 	Katsuhito Nagano	Work on multi-byte versions
 	Sung-Hyun Nam		Work on multi-byte versions

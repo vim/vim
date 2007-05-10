@@ -375,7 +375,7 @@ beepcmd(dummy, interp, objc, objv)
 
 /*
  *  "::vim::buffer list" - create a list of buffer commands.
- *  "::vim::bufffer {N}" - create buffer command for buffer N.
+ *  "::vim::buffer {N}" - create buffer command for buffer N.
  *  "::vim::buffer new" - create a new buffer (not implemented)
  */
 /* ARGSUSED */
@@ -1872,7 +1872,7 @@ tcldelthisinterp()
      * callback, which deletes all refs pointing to this interpreter.
      * We could garbage-collect the unused ref structs in all windows and
      * buffers, but unless the user creates hundreds of sub-interpreters
-     * all refering to lots of windows and buffers, this is hardly worth
+     * all referring to lots of windows and buffers, this is hardly worth
      * the effort.  Unused refs are recycled by other interpreters, and
      * all refs are free'd when the window/buffer gets closed by vim.
      */

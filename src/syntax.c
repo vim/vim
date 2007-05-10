@@ -307,7 +307,7 @@ typedef struct state_item
  */
 typedef struct
 {
-    int		flags;		/* flags for contained and transpartent */
+    int		flags;		/* flags for contained and transparent */
     int		keyword;	/* TRUE for ":syn keyword" */
     int		*sync_idx;	/* syntax item for "grouphere" argument, NULL
 				   if not allowed */
@@ -7175,7 +7175,7 @@ do_highlight(line, forceit, init)
 
 	    /*
 	     * The "start" and "stop"  arguments can be a literal escape
-	     * sequence, or a comma seperated list of terminal codes.
+	     * sequence, or a comma separated list of terminal codes.
 	     */
 	    if (STRNCMP(arg, "t_", 2) == 0)
 	    {
@@ -7685,7 +7685,7 @@ hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
 	    /* The Athena widget set cannot currently handle switching between
 	     * displaying a single font and a fontset.
 	     * If the XtNinternational resource is set to True at widget
-	     * creation, then a fontset is always used, othwise an
+	     * creation, then a fontset is always used, otherwise an
 	     * XFontStruct is used.
 	     */
 	    gui.tooltip_fontset = (XFontSet)HL_TABLE()[idx].sg_fontset;

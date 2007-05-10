@@ -3971,7 +3971,7 @@ ex_language(eap)
 
 	    ++_nl_msg_cat_cntr;
 #endif
-	    /* Reset $LC_ALL, otherwise it would overrule everyting. */
+	    /* Reset $LC_ALL, otherwise it would overrule everything. */
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
 
 	    if (what != LC_TIME)

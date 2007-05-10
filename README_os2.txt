@@ -1,32 +1,32 @@
-README_os2.txt for version 7.1a of Vim: Vi IMproved.
+README_os2.txt for version 7.1b of Vim: Vi IMproved.
 
 This file explains the installation of Vim on OS/2 systems.
 See "README.txt" for general information about Vim.
 
 
 NOTE: You will need two archives:
-  vim71art.zip	contains the runtime files (same as for the PC version)
-  vim71aos2.zip	contains the OS/2 executables
+  vim71brt.zip	contains the runtime files (same as for the PC version)
+  vim71bos2.zip	contains the OS/2 executables
 
 1. Go to the directory where you want to put the Vim files.  Examples:
 	cd C:\
 	cd D:\editors
 
-2. Unpack the zip archives.  This will create a new directory "vim/vim71a",
+2. Unpack the zip archives.  This will create a new directory "vim/vim71b",
    in which all the distributed Vim files are placed.  Since the directory
    name includes the version number, it is unlikely that you overwrite
    existing files.
    Examples:
-	pkunzip -d vim71aos2.zip
-	unzip vim71aos2.zip
+	pkunzip -d vim71bos2.zip
+	unzip vim71bos2.zip
 
    After you unpacked the files, you can still move the whole directory tree
    to another location.
 
 3. Add the directory where vim.exe is to your path.  The simplest is to add a
    line to your autoexec.bat.  Examples:
-	set path=%path%;C:\vim\vim71a
-	set path=%path%;D:\editors\vim\vim71a
+	set path=%path%;C:\vim\vim71b
+	set path=%path%;D:\editors\vim\vim71b
 
 That's it!
 
@@ -41,10 +41,10 @@ Extra remarks:
 	C:\vim\_viminfo			Dynamic info for 'viminfo'.
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim71a\vim.exe		The Vim version 7.1a executable.
-	C:\vim\vim71a\doc\*.txt		The version 7.1a documentation files.
-	C:\vim\vim71a\bugreport.vim	A Vim version 7.1a script.
-	C:\vim\vim71a\...		Other version 7.1a distributed files.
+	C:\vim\vim71b\vim.exe		The Vim version 7.1b executable.
+	C:\vim\vim71b\doc\*.txt		The version 7.1b documentation files.
+	C:\vim\vim71b\bugreport.vim	A Vim version 7.1b script.
+	C:\vim\vim71b\...		Other version 7.1b distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
 

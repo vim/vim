@@ -1,4 +1,4 @@
-*sql.txt*	For Vim version 7.1a.  Last change: Wed Apr 26 2006 3:05:33 PM
+*sql.txt*	For Vim version 7.1b.  Last change: Wed Apr 26 2006 3:05:33 PM
 
 by David Fishburn
 
@@ -204,7 +204,7 @@ Press any of the following keys: >
 						*sqlanywhere*
 						*oracle* *plsql* *sqlj*
 						*sqlserver*
-						*mysql* *postgress* *psql*
+						*mysql* *postgres* *psql*
 						*informix*
 
 All relational databases support SQL.  There is a portion of SQL that is

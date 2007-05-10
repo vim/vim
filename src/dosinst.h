@@ -518,7 +518,7 @@ my_fullpath(char *buf, char *fname, int len)
     int		c;
     char	*retval = buf;
 
-    if (strchr(fname, ':') != NULL)	/* allready expanded */
+    if (strchr(fname, ':') != NULL)	/* already expanded */
     {
 	strncpy(buf, fname, len);
     }

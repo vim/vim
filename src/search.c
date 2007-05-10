@@ -125,7 +125,7 @@ typedef struct SearchedFile
  * pat_save == RE_SUBST: save pat in spats[RE_SUBST].pat (:substitute command)
  * pat_save == RE_BOTH: save pat in both patterns (:global command)
  * pat_use  == RE_SEARCH: use previous search pattern if "pat" is NULL
- * pat_use  == RE_SUBST: use previous sustitute pattern if "pat" is NULL
+ * pat_use  == RE_SUBST: use previous substitute pattern if "pat" is NULL
  * pat_use  == RE_LAST: use last used pattern if "pat" is NULL
  * options & SEARCH_HIS: put search string in history
  * options & SEARCH_KEEP: keep previous search pattern
@@ -947,7 +947,7 @@ first_submatch(rp)
 
 /*
  * Highest level string search function.
- * Search for the 'count'th occurence of pattern 'pat' in direction 'dirc'
+ * Search for the 'count'th occurrence of pattern 'pat' in direction 'dirc'
  *		  If 'dirc' is 0: use previous dir.
  *    If 'pat' is NULL or empty : use previous string.
  *    If 'options & SEARCH_REV' : go in reverse of previous dir.
