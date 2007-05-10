@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	    Tcl
 " Maintainer:	    Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-12-20
 
 if exists("b:did_indent")
   finish
@@ -10,6 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetTclIndent()
 setlocal indentkeys=0{,0},!^F,o,O,0]
+setlocal nosmartindent
 
 if exists("*GetTclIndent")
   finish
@@ -36,13 +37,13 @@ function s:count_braces(lnum, count_open)
   while i != -1
     if synIDattr(synID(a:lnum, i + 1, 0), 'name') !~ 'tcl\%(Comment\|String\)'
       if line[i] == '{'
-	let n_open += 1
+        let n_open += 1
       elseif line[i] == '}'
-	if n_open > 0
-	  let n_open -= 1
-	else
-	  let n_close += 1
-	endif
+        if n_open > 0
+          let n_open -= 1
+        else
+          let n_close += 1
+        endif
       endif
     endif
     let i = match(line, pattern, i + 1)

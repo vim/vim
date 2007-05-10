@@ -1,4 +1,4 @@
-/* vi:set ts=8 sts=4 sw=4:
+s, if any./* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				GUI support by Robert Webb
@@ -232,27 +232,6 @@ typedef struct tagNMTTDISPINFO_NEW
     LPARAM     lParam;
 } NMTTDISPINFO_NEW;
 
-#ifndef LPNMTTDISPINFO
-typedef struct tagNMTTDISPINFOA {
-    NMHDR	hdr;
-    LPSTR	lpszText;
-    char	szText[80];
-    HINSTANCE	hinst;
-    UINT	uFlags;
-    LPARAM	lParam;
-} NMTTDISPINFOA, *LPNMTTDISPINFOA;
-# define LPNMTTDISPINFO LPNMTTDISPINFOA
-
-typedef struct tagNMTTDISPINFOW {
-    NMHDR	hdr;
-    LPWSTR	lpszText;
-    WCHAR	szText[80];
-    HINSTANCE	hinst;
-    UINT	uFlags;
-    LPARAM	lParam;
-} NMTTDISPINFOW, *LPNMTTDISPINFOW;
-#endif
-
 #include <poppack.h>
 
 typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
@@ -269,6 +248,35 @@ typedef HRESULT (WINAPI* DLLGETVERSIONPROC)(DLLVERSIONINFO *);
 #endif
 
 #endif /* defined(FEAT_BEVAL) */
+
+#if defined(FEAT_TOOLBAR) || defined(FEAT_GUI_TABLINE)
+/* Older MSVC compilers don't have LPNMTTDISPINFO[AW] thus we need to define
+ * it here if LPNMTTDISPINFO isn't defined.
+ * MingW doesn't define LPNMTTDISPINFO but typedefs it.  Thus we need to check
+ * _MSC_VER. */
+# if !defined(LPNMTTDISPINFO) && defined(_MSC_VER)
+typedef struct tagNMTTDISPINFOA {
+    NMHDR	hdr;
+    LPSTR	lpszText;
+    char	szText[80];
+    HINSTANCE	hinst;
+    UINT	uFlags;
+    LPARAM	lParam;
+} NMTTDISPINFOA, *LPNMTTDISPINFOA;
+#  define LPNMTTDISPINFO LPNMTTDISPINFOA
+
+#  ifdef FEAT_MBYTE
+typedef struct tagNMTTDISPINFOW {
+    NMHDR	hdr;
+    LPWSTR	lpszText;
+    WCHAR	szText[80];
+    HINSTANCE	hinst;
+    UINT	uFlags;
+    LPARAM	lParam;
+} NMTTDISPINFOW, *LPNMTTDISPINFOW;
+#  endif
+# endif
+#endif
 
 #ifndef TTN_GETDISPINFOW
 # define TTN_GETDISPINFOW	(TTN_FIRST - 10)
@@ -3326,7 +3334,7 @@ gui_mch_dialog(
 	 * he/she can use arrow keys.
 	 *
 	 * new NOTE: BS_DEFPUSHBUTTON is required to be able to select the
-	 * right buttun when hitting <Enter>.  E.g., for the ":confirm quit"
+	 * right button when hitting <Enter>.  E.g., for the ":confirm quit"
 	 * dialog.  Also needed for when the textfield is the default control.
 	 * It appears to work now (perhaps not on Win95?).
 	 */
@@ -4048,7 +4056,7 @@ initialise_toolbar(void)
 		    s_hwnd,
 		    WS_CHILD | TBSTYLE_TOOLTIPS | TBSTYLE_FLAT,
 		    4000,		//any old big number
-		    31,			//number of images in inital bitmap
+		    31,			//number of images in initial bitmap
 		    s_hinst,
 		    IDR_TOOLBAR1,	// id of initial bitmap
 		    NULL,

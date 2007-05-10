@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:         GNU C Compiler
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-12-20
 
 if exists("current_compiler")
   finish
@@ -20,7 +20,13 @@ setlocal errorformat=
       \\"%f\"\\,\ line\ %l%*\\D%c%*[^\ ]\ %m,
       \%D%*\\a[%*\\d]:\ Entering\ directory\ `%f',
       \%X%*\\a[%*\\d]:\ Leaving\ directory\ `%f',
+      \%D%*\\a:\ Entering\ directory\ `%f',
+      \%X%*\\a:\ Leaving\ directory\ `%f',
       \%DMaking\ %*\\a\ in\ %f
+
+if exists('g:compiler_gcc_ignore_unmatched_lines')
+  let &errorformat .= ',%-G%.%#'
+endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

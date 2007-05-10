@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-05-06
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -129,6 +129,12 @@ if &filetype == 'changelog'
     let g:changelog_date_entry_search = '^\s*%d\_s*%u'
   endif
 
+  " Regular expression used to find the end of a date entry
+  if !exists('g:changelog_date_end_entry_search')
+    let g:changelog_date_entry_search = '^\s*$'
+  endif
+
+
   " Substitutes specific items in new date-entry formats and search strings.
   " Can be done with substitute of course, but unclean, and need \@! then.
   function! s:substitute_items(str, date, user)
@@ -171,7 +177,7 @@ if &filetype == 'changelog'
     if search(search) > 0
       " Ok, now we look for the end of the date entry, and add an entry.
       call cursor(nextnonblank(line('.') + 1), 1)
-      if search('^\s*$', 'W') > 0
+      if search(g:changelog_date_end_entry_search, 'W') > 0
         let p = line('.') - 1
       else
         let p = line('.')
@@ -240,9 +246,9 @@ else
     let buf = bufnr('ChangeLog')
     if buf != -1
       if bufwinnr(buf) != -1
-        execute buf . 'wincmd w'
+        execute bufwinnr(buf) . 'wincmd w'
       else
-        execute 'bsplit' buf
+        execute 'sbuffer' buf
       endif
     else
       split ChangeLog

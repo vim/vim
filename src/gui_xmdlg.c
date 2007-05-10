@@ -12,7 +12,7 @@
  *
  * Implementation of dialogue functions for the Motif GUI variant.
  *
- * Note about Lesstif: Apparenty lesstif doesn't get the widget layout right,
+ * Note about Lesstif: Apparently lesstif doesn't get the widget layout right,
  * when using a dynamic scrollbar policy.
  */
 
@@ -479,7 +479,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 	    XtFree(list[ENCODING][i]);
 	}
 
-	/* Destroy all the outstandig menu items.
+	/* Destroy all the outstanding menu items.
 	 */
 	for (i = count[ENCODING]; i < n_items; ++i)
 	{

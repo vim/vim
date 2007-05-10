@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         indent(1) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-05-07
 "   indent_is_bsd:  If exists, will change somewhat to match BSD implementation
 "
 " TODO: is the deny-all (a la lilo.vim nice or no?)...
@@ -26,6 +26,20 @@ syn region  indentComment start='/\*' end='\*/'
 syn region  indentComment start='//' skip='\\$' end='$'
                           \ contains=indentTodo,@Spell
 
+syn match   indentOptions '-\%(bli\|c\%([bl]i\|[dip]\)\=\|di\=\|ip\=\|lc\=\|pp\=i\|sbi\|ts\|-\%(brace-indent\|comment-indentation\|case-brace-indentation\|declaration-comment-column\|continuation-indentation\|case-indentation\|else-endif-column\|line-comments-indentation\|declaration-indentation\|indent-level\|parameter-indentation\|line-length\|comment-line-length\|paren-indentation\|preprocessor-indentation\|struct-brace-indentation\|tab-size\)\)'
+                        \ nextgroup=indentNumber skipwhite skipnl
+if !exists("indent_is_bsd")
+  syn match indentOptions '-i\|--indentation-level'
+                        \ nextgroup=indentNumber skipwhite skipnl
+endif
+
+syn match   indentNumber  display contained '\d\+\>'
+
+syn match   indentOptions '-T'
+                        \ nextgroup=indentIdent skipwhite skipnl
+
+syn match   indentIdent   display contained '\h\w*\>'
+
 syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -bad --blank-lines-after-declarations
                         \ -badp --blank-lines-after-procedure-declarations
@@ -41,8 +55,7 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -br --braces-on-if-line
                         \ -brf --braces-on-func-def-line
                         \ -brs --braces-on-struct-decl-line
-                        \ -bs --Bill-Shannon
-                        \ -bs --blank-before-sizeof
+                        \ -bs --Bill-Shannon --blank-before-sizeof
                         \ -c++ --c-plus-plus
                         \ -cdb --comment-delimiters-on-blank-lines
                         \ -cdw --cuddle-do-while
@@ -53,12 +66,9 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -fc1 --format-first-column-comments
                         \ -fca --format-all-comments
                         \ -gnu --gnu-style
-                        \ -h --help
-                        \ -h --usage
+                        \ -h --help --usage
                         \ -hnl --honour-newlines
-                        \ -kr --k-and-r-style
-                        \ -kr --kernighan-and-ritchie
-                        \ -kr --kernighan-and-ritchie-style
+                        \ -kr --k-and-r-style --kernighan-and-ritchie --kernighan-and-ritchie-style
                         \ -lp --continue-at-parentheses
                         \ -lps --leave-preprocessor-space
                         \ -nbacc --no-blank-lines-after-ifdefs
@@ -70,8 +80,7 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -nbc --no-blank-lines-after-commas
                         \ -nbfda --dont-break-function-decl-args
                         \ -nbfde --dont-break-function-decl-args-end
-                        \ -nbs --no-Bill-Shannon
-                        \ -nbs --no-blank-before-sizeof
+                        \ -nbs --no-Bill-Shannon --no-blank-before-sizeof
                         \ -ncdb --no-comment-delimiters-on-blank-lines
                         \ -ncdw --dont-cuddle-do-while
                         \ -nce --dont-cuddle-else
@@ -81,11 +90,11 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -nfc1 --dont-format-first-column-comments
                         \ -nfca --dont-format-comments
                         \ -nhnl --ignore-newlines
-                        \ -nip --dont-indent-parameters
-                        \ -nip --no-parameter-indentation
+                        \ -nip --dont-indent-parameters --no-parameter-indentation
                         \ -nlp --dont-line-up-parentheses
                         \ -nlps --remove-preprocessor-space
                         \ -npcs --no-space-after-function-call-names
+                        \ -npmt
                         \ -npro --ignore-profile
                         \ -nprs --no-space-after-parentheses
                         \ -npsl --dont-break-procedure-type
@@ -99,10 +108,7 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -nv --no-verbosity
                         \ -o --output
                         \ -o --output-file
-                        \ -orig --berkeley
-                        \ -orig --berkeley-style
-                        \ -orig --original
-                        \ -orig --original-style
+                        \ -orig --berkeley --berkeley-style --original --original-style
                         \ -pcs --space-after-procedure-calls
                         \ -pmt --preserve-mtime
                         \ -prs --space-after-parentheses
@@ -117,37 +123,6 @@ syn keyword indentOptions -bacc --blank-lines-after-ifdefs
                         \ -ut --use-tabs
                         \ -v --verbose
                         \ -version --version
-
-syn keyword indentOptions -bli --brace-indent
-                        \ -c --comment-indentation
-                        \ -bli --brace-indent
-                        \ -c --comment-indentation
-                        \ -cbi --case-brace-indentation
-                        \ -cd --declaration-comment-column
-                        \ -ci --continuation-indentation
-                        \ -cli --case-indentation
-                        \ -cp --else-endif-column
-                        \ -d --line-comments-indentation
-                        \ -di --declaration-indentation
-                        \ -i --indent-level
-                        \ -ip --parameter-indentation
-                        \ -l --line-length
-                        \ -lc --comment-line-length
-                        \ -pi --paren-indentation
-                        \ -ppi --preprocessor-indentation
-                        \ -sbi --struct-brace-indentation
-                        \ -ts --tab-size
-                        \ nextgroup=indenNumber skipwhite
-if !exists("indent_is_bsd")
-  syn keyword indentOptions -i --indentation-level
-                          \ nextgroup=indentNumber skipwhite
-endif
-
-syn match   indentNumber  display '\<\d\+\>'
-
-syn keyword indentOptions -T nextgroup=indentIdent skipwhite
-
-syn match   indentIdent   display '\<\h\w*\>'
 
 if exists("indent_is_bsd")
   syn keyword indentOptions -ip -nip -dj -ndj -ei -nei

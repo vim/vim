@@ -1,4 +1,4 @@
-README_amibin.txt for version 7.1a of Vim: Vi IMproved.
+README_amibin.txt for version 7.1b of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_ami.txt" for installation instructions for the Amiga.

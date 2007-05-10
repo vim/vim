@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.1a.  Last change: 2007 May 05
+*options.txt*	For Vim version 7.1b.  Last change: 2007 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7031,7 +7031,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only in Unix and VMS, doesn't work in the GUI; not
 			available when compiled without |+mouse|}
 	Name of the terminal type for which mouse codes are to be recognized.
-	Currently these three strings are valid:
+	Currently these strings are valid:
 							*xterm-mouse*
 	   xterm	xterm-like mouse handling.  The mouse generates
 			"<Esc>[Mscr", where "scr" is three bytes:

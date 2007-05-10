@@ -37,7 +37,7 @@
  *
  * update_screen() is the function that updates all windows and status lines.
  * It is called form the main loop when must_redraw is non-zero.  It may be
- * called from other places when an immediated screen update is needed.
+ * called from other places when an immediate screen update is needed.
  *
  * The part of the buffer that is displayed in a window is set with:
  * - w_topline (first buffer line in window)
@@ -7614,7 +7614,7 @@ windgoto(row, col)
     int		    goto_cost;
     int		    attr;
 
-#define GOTO_COST   7	/* asssume a term_windgoto() takes about 7 chars */
+#define GOTO_COST   7	/* assume a term_windgoto() takes about 7 chars */
 #define HIGHL_COST  5	/* assume unhighlight takes 5 chars */
 
 #define PLAN_LE	    1
@@ -7652,7 +7652,7 @@ windgoto(row, col)
 	 * Don't do this if the cursor went beyond the last column, the cursor
 	 * position is unknown then (some terminals wrap, some don't )
 	 *
-	 * First check if the highlighting attibutes allow us to write
+	 * First check if the highlighting attributes allow us to write
 	 * characters to move the cursor to the right.
 	 */
 	if (row >= screen_cur_row && screen_cur_col < Columns)
