@@ -1031,8 +1031,8 @@ LookupName(dpy, name, delete, loose)
 }
 
 /*
- * Delete any lingering occurences of window id.  We promise that any
- * occurences is not ours since it is not yet put into the registry (by us)
+ * Delete any lingering occurrence of window id.  We promise that any
+ * occurrence is not ours since it is not yet put into the registry (by us)
  *
  * This is necessary in the following scenario:
  * 1. There is an old windowid for an exit'ed vim in the registry
@@ -1150,7 +1150,7 @@ GetRegProp(dpy, regPropp, numItemsp, domsg)
 }
 
 /*
- * This procedure is invoked by the varous X event loops throughout Vims when
+ * This procedure is invoked by the various X event loops throughout Vims when
  * a property changes on the communication window.  This procedure reads the
  * property and handles command requests and responses.
  */

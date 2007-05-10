@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         GNU Arch inventory file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-05-06
 
 if exists("b:current_syntax")
   finish
@@ -17,7 +17,7 @@ syn keyword archTodo    TODO FIXME XXX NOTE
 syn region  archComment display start='^\%(#\|\s\)' end='$'
                         \ contains=archTodo,@Spell
 
-syn match   argBegin    display '^' nextgroup=archKeyword,archComment
+syn match   archBegin   display '^' nextgroup=archKeyword,archComment
 
 syn keyword archKeyword contained implicit tagline explicit names
 syn keyword archKeyword contained untagged-source

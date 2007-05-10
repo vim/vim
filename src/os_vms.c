@@ -323,7 +323,7 @@ vms_read(char *inbuf, size_t nbytes)
 			 inbuf, nbytes-1, 0, 0, &itmlst, sizeof(itmlst));
     len = strlen(inbuf); /* how many chars we got? */
 
-    /* read immedatelly the rest in the IO queue   */
+    /* read immediately the rest in the IO queue   */
     function = (IO$_READLBLK | IO$M_TIMED | IO$M_ESCAPE | IO$M_NOECHO | IO$M_NOFILTR);
     status = sys$qiow(0, iochan, function, &iosb, 0, 0,
 			 inbuf+len, nbytes-1-len, 0, 0, 0, 0);
@@ -338,7 +338,7 @@ vms_read(char *inbuf, size_t nbytes)
  * We want to save each match for later retrieval.
  *
  * Returns:  1 - continue finding matches
- *	     0 - stop trying to find any further mathces
+ *	     0 - stop trying to find any further matches
  */
     static int
 vms_wproc(char *name, int val)
@@ -347,7 +347,8 @@ vms_wproc(char *name, int val)
     int nlen;
     static int vms_match_alloced = 0;
 
-    if (val != DECC$K_FILE) /* Directories and foreing non VMS files are not counting  */
+    if (val != DECC$K_FILE) /* Directories and foreign non VMS files are not
+			       counting  */
 	return 1;
 
     if (vms_match_num == 0) {

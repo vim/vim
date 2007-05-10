@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.1a.  Last change: 2006 Sep 26
+*develop.txt*   For Vim version 7.1b.  Last change: 2007 May 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -437,7 +437,7 @@ the best method is.  Alternatives:
    seconds for English, which can be acceptable for interactive use.  But for
    some languages it takes more than ten seconds (e.g., German, Catalan),
    which is unacceptable slow.  For batch processing (automatic corrections)
-   it's to slow for all languages.
+   it's too slow for all languages.
 2. Use a trie for the soundfolded words, so that searching can be done just
    like how it works without soundfolding.  This requires remembering a list
    of good words for each soundfolded word.  This makes finding matches very
@@ -471,7 +471,7 @@ initialized from words listed in COMMON items in the affix file, so that it
 also works when starting a new file.
 
 This isn't ideal, because the longer Vim is running the higher the counts
-become.  But in practice it is a noticable improvement over not using the word
+become.  But in practice it is a noticeable improvement over not using the word
 count.
 
 ==============================================================================

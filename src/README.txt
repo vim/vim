@@ -138,6 +138,6 @@ DEBUGGING THE GUI
 Remember to prevent that gvim forks and the debugger thinks Vim has exited,
 add the "-f" argument.  In gdb: "run -f -g".
 
-When stepping through display updating code, the focus event is triggerred
+When stepping through display updating code, the focus event is triggered
 when going from the debugger to Vim and back.  To avoid this, recompile with
 some code in gui_focus_change() disabled.

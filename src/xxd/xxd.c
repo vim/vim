@@ -5,7 +5,7 @@
  *	    -c option, mls
  * 26.04.94 better option parser, -ps, -l, -s added.
  *  1.07.94 -r badly needs - as input file.  Per default autoskip over
- *	       consequtive lines of zeroes, as unix od does.
+ *	       consecutive lines of zeroes, as unix od does.
  *	    -a shows them too.
  *	    -i dump as c-style #include "file.h"
  *  1.11.95 if "xxd -i" knows the filename, an 'unsigned char filename_bits[]'
@@ -48,7 +48,7 @@
  * 27.10.98 Fixed: -g option parser required blank.
  *	    option -b added: 01000101 binary output in normal format.
  * 16.05.00 Added VAXC changes by Stephen P. Wall
- * 16.05.00 Improved MMS file and merege for VMS by Zoltan Arpadffy
+ * 16.05.00 Improved MMS file and merge for VMS by Zoltan Arpadffy
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
  *
@@ -774,7 +774,7 @@ char *argv[];
       xxdline(fpo, l, 1);
     }
   else if (autoskip)
-    xxdline(fpo, l, -1);	/* last chance to flush out supressed lines */
+    xxdline(fpo, l, -1);	/* last chance to flush out suppressed lines */
 
   fclose(fp);
   fclose(fpo);
