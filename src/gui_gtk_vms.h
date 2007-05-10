@@ -3,7 +3,7 @@
  * VIM - Vi IMproved    by Bram Moolenaar
  *
  * Do ":help uganda"  in Vim to read copying and usage conditions.
- * Do ":help credits" in Vim to see a list of people who contributedi.
+ * Do ":help credits" in Vim to see a list of people who contributed.
  *
  * File MOTIF_REDEFINES.H originally delivers together with
  * OpenVMS Porting Library

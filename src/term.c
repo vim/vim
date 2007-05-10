@@ -1446,10 +1446,10 @@ static struct builtin_term builtin_termcaps[] =
  */
 char_u *(term_strings[(int)KS_LAST + 1]);
 
-static int	need_gather = FALSE;		/* need to fill termleader[] */
-static char_u	termleader[256 + 1];		/* for check_termcode() */
+static int	need_gather = FALSE;	    /* need to fill termleader[] */
+static char_u	termleader[256 + 1];	    /* for check_termcode() */
 #ifdef FEAT_TERMRESPONSE
-static int	check_for_codes = FALSE;	/* check for key code reponse */
+static int	check_for_codes = FALSE;    /* check for key code response */
 #endif
 
     static struct builtin_term *
@@ -3273,7 +3273,7 @@ stoptermcap()
  * Only do this after switching to raw mode, otherwise the result will be
  * echoed.
  * Only do this after startup has finished, to avoid that the response comes
- * while excuting "-c !cmd" or even after "-c quit".
+ * while executing "-c !cmd" or even after "-c quit".
  * Only do this after termcap mode has been started, otherwise the codes for
  * the cursor keys may be wrong.
  * Only do this when 'esckeys' is on, otherwise the response causes trouble in
@@ -4770,7 +4770,7 @@ check_termcode(max_offset, buf, buflen)
 	 * four bytes which are to be taken as a pointer to the vimmenu_T
 	 * structure.
 	 *
-	 * A tab line event is encodded as K_SPECIAL KS_TABLINE nr, where "nr"
+	 * A tab line event is encoded as K_SPECIAL KS_TABLINE nr, where "nr"
 	 * is one byte with the tab index.
 	 *
 	 * A scrollbar event is K_SPECIAL, KS_VER_SCROLLBAR, KE_FILLER followed

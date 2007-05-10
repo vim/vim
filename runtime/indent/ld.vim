@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:         ld(1) script
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-12-20
 
 if exists("b:did_indent")
   finish
@@ -10,6 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetLDIndent()
 setlocal indentkeys=0{,0},!^F,o,O
+setlocal nosmartindent
 
 if exists("*GetLDIndent")
   finish

@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2006 Sep 04
+# Last change:  2007 May 07
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -326,7 +326,7 @@ all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env r
 mmk_compat :
 	-@ open/write pd pathdef.c
 	-@ write pd "/* Empty file to satisfy MMK depend.  */"
-	-@ write pd "/* It will be owerwritten later on... */"
+	-@ write pd "/* It will be overwritten later on... */"
 	-@ close pd
 clean :
 	-@ if "''F$SEARCH("*.exe")'" .NES. "" then delete/noconfirm/nolog *.exe;*
@@ -431,7 +431,7 @@ perl_env :
 	-@ show symbol perl
 	-@ open/write pd if_perl.c
 	-@ write pd "/* Empty file to satisfy MMK depend.  */"
-	-@ write pd "/* It will be owerwritten later on... */"
+	-@ write pd "/* It will be overwritten later on... */"
 	-@ close pd
 	-@ write sys$output "creating OS_VMS_PERL.OPT file."
 	-@ open/write opt_file OS_VMS_PERL.OPT
