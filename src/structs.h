@@ -265,7 +265,7 @@ typedef struct
 } visualinfo_T;
 
 /*
- * stuctures used for undo
+ * structures used for undo
  */
 
 typedef struct u_entry u_entry_T;
@@ -307,7 +307,7 @@ struct u_header
 #define UH_EMPTYBUF 0x02	/* buffer was empty */
 
 /*
- * stuctures used in undo.c
+ * structures used in undo.c
  */
 #if SIZEOF_INT > 2
 # define ALIGN_LONG	/* longword alignment and use filler byte */
@@ -1946,7 +1946,7 @@ struct window_S
      * entry 2: newest
      */
     taggy_T	w_tagstack[TAGSTACKSIZE];	/* the tag stack */
-    int		w_tagstackidx;		/* idx just below activ entry */
+    int		w_tagstackidx;		/* idx just below active entry */
     int		w_tagstacklen;		/* number of tags on stack */
 
     /*

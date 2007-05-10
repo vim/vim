@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:	    reStructuredText Documentation Format
+" Language:         reStructuredText Documentation Format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-12-20
 
 if exists("b:did_indent")
   finish
@@ -10,6 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetRSTIndent()
 setlocal indentkeys=!^F,o,O
+setlocal nosmartindent
 
 if exists("*GetRSTIndent")
   finish
@@ -40,7 +41,7 @@ function GetRSTIndent()
       let ind = ind - 2
     elseif line =~ '^\s*\d\+\.\s'
       let ind = ind - matchend(substitute(line, '^\s*', '', ''),
-	    \ '\d\+\.\s\+')
+            \ '\d\+\.\s\+')
     elseif line =~ '^\s*\.\.'
       let ind = ind - 3
     else
