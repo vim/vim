@@ -1969,7 +1969,7 @@ u_free_line(ptr, keep)
     }
 
     /*
-     * If the block only containes free memory now, release it.
+     * If the block only contains free memory now, release it.
      */
     if (!keep && curbuf->b_mb_current->mb_size
 			      == curbuf->b_mb_current->mb_info.m_next->m_size)

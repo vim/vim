@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.1a.  Last change: 2006 Nov 18
+*version6.txt*  For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10639,7 +10639,7 @@ Files:	    runtime/menu.vim
 
 Patch 6.2.111
 Problem:    Encoding "cp1251" is not recognized.
-Solution:   Add "cp1251" to the table of encocings. (Alexey Froloff)
+Solution:   Add "cp1251" to the table of encodings. (Alexey Froloff)
 Files:	    src/mbyte.c
 
 Patch 6.2.112
