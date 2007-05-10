@@ -26,8 +26,8 @@ com! -ra   -complete=dir -na=+ -bang MkVimball call vimball#MkVimball(<line1>,<l
 com! -na=? -complete=dir UseVimball  call vimball#Vimball(1,<f-args>)
 com! -na=0               VimballList call vimball#Vimball(0)
 com! -na=* -complete=dir RmVimball   call vimball#RmVimball(<f-args>)
-au BufEnter *.vba.gz,*.vba.bz2,*.vba.zip call vimball#Decompress(expand("<amatch>"))
-au BufEnter *.vba set noma bt=nofile fmr=[[[,]]] fdm=marker|call vimball#ShowMesg(0,"Source this file to extract it! (:so %)")
+au BufEnter  *.vba.gz,*.vba.bz2,*.vba.zip call vimball#Decompress(expand("<amatch>"))
+au BufEnter  *.vba setlocal noma bt=nofile fmr=[[[,]]] fdm=marker|call vimball#ShowMesg(0,"Source this file to extract it! (:so %)")
 
 " =====================================================================
 " Restoration And Modelines: {{{1
