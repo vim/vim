@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         passwd(5) password file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-10-03
 
 if exists("b:current_syntax")
   finish
@@ -12,7 +12,7 @@ set cpo&vim
 
 syn match   passwdBegin         display '^' nextgroup=passwdAccount
 
-syn match   passwdAccount       contained display '[+-]\=[a-z_][a-z0-9_-]*'
+syn match   passwdAccount       contained display '[^:]\+'
                                 \ nextgroup=passwdPasswordColon
 
 syn match   passwdPasswordColon contained display ':'
@@ -26,12 +26,12 @@ syn match   passwdShadow        contained display '[x*!]'
 
 syn match   passwdUIDColon      contained display ':' nextgroup=passwdUID
 
-syn match   passwdUID           contained display '\d*'
+syn match   passwdUID           contained display '\d\{0,10}'
                                 \ nextgroup=passwdGIDColon
 
 syn match   passwdGIDColon      contained display ':' nextgroup=passwdGID
 
-syn match   passwdGID           contained display '\d*'
+syn match   passwdGID           contained display '\d\{0,10}'
                                 \ nextgroup=passwdGecosColon
 
 syn match   passwdGecosColon    contained display ':' nextgroup=passwdGecos
