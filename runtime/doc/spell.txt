@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.1a.  Last change: 2007 Apr 22
+*spell.txt*	For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -624,7 +624,7 @@ ask you where to write the file.
 The plugin has a default place where to look for spell files, on the Vim ftp
 server.  If you want to use another location or another protocol, set the
 g:spellfile_URL variable to the directory that holds the spell files.  The
-|netrw| plugin is used for getting the file, look there for the speficic
+|netrw| plugin is used for getting the file, look there for the specific
 syntax of the URL.  Example: >
 	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
 You may need to escape special characters.
@@ -654,6 +654,9 @@ The default "spellfile.vim" plugin uses this autocommand, if you define your
 autocommand afterwards you may want to use ":au! SpellFileMissing" to overrule
 it.  If you define your autocommand before the plugin is loaded it will notice
 this and not do anything.
+							*E797*
+Note that the SpellFileMissing autocommand must not change or destroy the
+buffer the user was editing.
 
 ==============================================================================
 4. Spell file format					*spell-file-format*

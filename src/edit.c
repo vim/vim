@@ -2055,7 +2055,7 @@ vim_is_ctrl_x_key(c)
 /*
  * This is like ins_compl_add(), but if 'ic' and 'inf' are set, then the
  * case of the originally typed text is used, and the case of the completed
- * text is infered, ie this tries to work out what case you probably wanted
+ * text is inferred, ie this tries to work out what case you probably wanted
  * the rest of the word to be in -- webb
  * TODO: make this work for multi-byte characters.
  */
@@ -4309,7 +4309,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
     }
 
     /* Enter will select a match when the match wasn't inserted and the popup
-     * menu is visislbe. */
+     * menu is visible. */
     compl_enter_selects = !insert_match && compl_match_array != NULL;
 
     /*
@@ -7600,7 +7600,7 @@ ins_ctrl_g()
 		  ins_need_undo = TRUE;
 
 		  /* Need to reset Insstart, esp. because a BS that joins
-		   * aline to the previous one must save for undo. */
+		   * a line to the previous one must save for undo. */
 		  Insstart = curwin->w_cursor;
 		  break;
 
