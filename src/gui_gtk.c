@@ -53,6 +53,9 @@
 # ifdef bindtextdomain
 #  undef bindtextdomain
 # endif
+# ifdef bindtextdomain_codeset
+#  undef bindtextdomain_codeset
+# endif
 # if defined(FEAT_GETTEXT) && !defined(ENABLE_NLS)
 #  define ENABLE_NLS	/* so the texts in the dialog boxes are translated */
 # endif
@@ -449,8 +452,8 @@ menu_item_new(vimmenu_T *menu, GtkWidget *parent_widget)
  *
  * gtk_menu_item_new_with_label(menu->dname);
  *
- * This is neccessary, since there is no other way in GTK+ 1 to get the
- * not automatically parsed accellerator stuff right.
+ * This is necessary, since there is no other way in GTK+ 1 to get the
+ * not automatically parsed accelerator stuff right.
  */
     static void
 menu_item_new(vimmenu_T *menu, GtkWidget *parent_widget)
@@ -828,7 +831,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 
 #if defined(FEAT_MENU) || defined(PROTO)
 /*
- * Enable or disable accelators for the toplevel menus.
+ * Enable or disable accelerators for the toplevel menus.
  */
     void
 gui_gtk_set_mnemonics(int enable)
@@ -2493,7 +2496,7 @@ find_key_press_event(
 	return TRUE;
 #endif
 
-    /* It would be delightfull if it where possible to do search history
+    /* It would be delightful if it where possible to do search history
      * operations on the K_UP and K_DOWN keys here.
      */
 

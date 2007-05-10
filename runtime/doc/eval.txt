@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1a.  Last change: 2007 May 03
+*eval.txt*      For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1684,7 +1684,7 @@ matchlist( {expr}, {pat}[, {start}[, {count}]])
 matchstr( {expr}, {pat}[, {start}[, {count}]])
 				String	{count}'th match of {pat} in {expr}
 max({list})			Number	maximum value of items in {list}
-min({list})			Number	minumum value of items in {list}
+min({list})			Number	minimum value of items in {list}
 mkdir({name} [, {path} [, {prot}]])
 				Number	create directory {name}
 mode()				String	current editing mode
@@ -2511,7 +2511,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		{string}.
 		To include special keys into {string}, use double-quotes
 		and "\..." notation |expr-quote|. For example,
-		feedkeys("\<CR>") simulates pressing of the Enter key. But
+		feedkeys("\<CR>") simulates pressing of the <Enter> key. But
 		feedkeys('\<CR>') pushes 5 characters.
 		If {mode} is absent, keys are remapped.
 		{mode} is a String, which can contain these character flags:
@@ -3677,7 +3677,7 @@ max({list})	Return the maximum value of all items in {list}.
 		An empty |List| results in zero.
 
 							*min()*
-min({list})	Return the minumum value of all items in {list}.
+min({list})	Return the minimum value of all items in {list}.
 		If {list} is not a list or one of the items in {list} cannot
 		be used as a Number this results in an error.
 		An empty |List| results in zero.

@@ -7,7 +7,7 @@
  */
 
 /*
- * Arabic characters are catagorized into following types:
+ * Arabic characters are categorized into following types:
  *
  * Isolated	- iso-8859-6 form	  char denoted with	a_*
  * Initial	- unicode form-B start	  char denoted with	a_i_*

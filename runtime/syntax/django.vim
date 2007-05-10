@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Django template
 " Maintainer:	Dave Hodder <dmh@dmh.org.uk>
-" Last Change:	2007 Jan 26
+" Last Change:	2007 Apr 21
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -27,7 +27,7 @@ syn keyword djangoStatement contained parsed regroup reversed spaceless
 syn keyword djangoStatement contained endspaceless ssi templatetag openblock
 syn keyword djangoStatement contained closeblock openvariable closevariable
 syn keyword djangoStatement contained openbrace closebrace opencomment
-syn keyword djangoStatement contained closecomment widthratio with
+syn keyword djangoStatement contained closecomment widthratio url with endwith
 syn keyword djangoStatement contained get_current_language trans noop blocktrans
 syn keyword djangoStatement contained endblocktrans get_available_languages
 syn keyword djangoStatement contained get_current_language_bidi plural
@@ -53,8 +53,8 @@ syn keyword djangoTodo contained TODO FIXME XXX
 syn region djangoArgument contained start=/"/ skip=/\\"/ end=/"/
 
 " Mark illegal characters within tag and variables blocks
-syn match djangoTagError contained "#}\|{{\|[^%]}}\|[<>!=&#]"
-syn match djangoVarError contained "#}\|{%\|%}\|[<>!=&#%]"
+syn match djangoTagError contained "#}\|{{\|[^%]}}\|[<>!&#]"
+syn match djangoVarError contained "#}\|{%\|%}\|[<>!&#%]"
 
 " Django template tag and variable blocks
 syn region djangoTagBlock start="{%" end="%}" contains=djangoStatement,djangoFilter,djangoArgument,djangoTagError display
