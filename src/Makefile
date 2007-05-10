@@ -886,7 +886,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 1a
+VIMMINOR = 1b
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -1718,7 +1718,7 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 # messages.  Don't worry about that.
 # If there is a real error, there will be a difference between "test.out" and
 # a "test99.ok" file.
-# If everything is allright, the final message will be "ALL DONE".
+# If everything is alright, the final message will be "ALL DONE".
 #
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
@@ -2563,6 +2563,8 @@ install_macosx: gui_bundle
 		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 # Put the link back.
 	ln -s `pwd`/../runtime $(RESDIR)/vim
+# Copy rgb.txt, Mac doesn't always have X11
+	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
 # TODO: Create the vimtutor application.
 
 gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \

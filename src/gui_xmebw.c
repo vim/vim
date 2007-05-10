@@ -50,7 +50,7 @@
  * implementation.  Also missing in Motif 1.2 and earlier.
  *
  * We neither use XmeGetPixmapData or _XmGetPixmapData, since with LessTif the
- * pixmap will not appear in it's caches properly. We cache the interresting
+ * pixmap will not appear in it's caches properly. We cache the interesting
  * values in XmEnhancedButtonPart instead ourself.
  */
 #if defined(LESSTIF_VERSION) || (XmVersion <= 1002)
@@ -1091,7 +1091,7 @@ SetValues(Widget current, Widget request, Widget new, ArgList args, Cardinal *n)
 	    unsigned int    mask;
 
 	    /*
-	     * Aritificially let the highlight appear if the mouse is over us.
+	     * Artificially let the highlight appear if the mouse is over us.
 	     */
 	    /* Best way to get the root window of object: */
 	    XGetGeometry(dpy, XtWindow(cur), &root, &r_x, &r_y, &r_width,

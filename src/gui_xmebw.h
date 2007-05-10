@@ -61,7 +61,7 @@
 #define XmIsEnhancedButton(w) XtIsSubclass(w, xmEnhancedButtonWidgetClass)
 
 /*
- * Convienience creation function.
+ * Convenience creation function.
  */
 extern Widget XgCreateEPushButtonWidget(Widget, char *, ArgList, Cardinal);
 
