@@ -2849,7 +2849,7 @@ save_cmdline(ccp)
 }
 
 /*
- * Resture ccline after it has been saved with save_cmdline().
+ * Restore ccline after it has been saved with save_cmdline().
  */
     static void
 restore_cmdline(ccp)
@@ -3039,7 +3039,7 @@ cmdline_del(from)
 #endif
 
 /*
- * this fuction is called when the screen size changes and with incremental
+ * this function is called when the screen size changes and with incremental
  * search
  */
     void
@@ -6026,7 +6026,7 @@ ex_window()
     apply_autocmds(EVENT_CMDWINLEAVE, typestr, typestr, FALSE, curbuf);
 # endif
 
-    /* Restore the comand line info. */
+    /* Restore the command line info. */
     ccline = save_ccline;
     cmdwin_type = 0;
 

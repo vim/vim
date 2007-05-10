@@ -10,7 +10,7 @@
  * Define the version number, name, etc.
  * The patchlevel is in included_patches[], in version.c.
  *
- * This doesn't use string contatenation, some compilers don't support it.
+ * This doesn't use string concatenation, some compilers don't support it.
  */
 
 #define VIM_VERSION_MAJOR		 7
@@ -19,9 +19,9 @@
 #define VIM_VERSION_MINOR_STR		"1"
 #define VIM_VERSION_100	    (VIM_VERSION_MAJOR * 100 + VIM_VERSION_MINOR)
 
-#define VIM_VERSION_BUILD		 263
-#define VIM_VERSION_BUILD_BCD		0x107
-#define VIM_VERSION_BUILD_STR		"263"
+#define VIM_VERSION_BUILD		 264
+#define VIM_VERSION_BUILD_BCD		0x108
+#define VIM_VERSION_BUILD_STR		"264"
 #define VIM_VERSION_PATCHLEVEL		 0
 #define VIM_VERSION_PATCHLEVEL_STR	"0"
 /* Used by MacOS port should be one of: development, alpha, beta, final */
@@ -33,8 +33,8 @@
  * VIM_VERSION_MEDIUM is used for the startup-screen.
  * VIM_VERSION_LONG is used for the ":version" command and "Vim -h".
  */
-#define VIM_VERSION_NODOT	"vim71a"
-#define VIM_VERSION_SHORT	"7.1a"
-#define VIM_VERSION_MEDIUM	"7.1a BETA"
-#define VIM_VERSION_LONG	"VIM - Vi IMproved 7.1a BETA (2007 May 5)"
-#define VIM_VERSION_LONG_DATE	"VIM - Vi IMproved 7.1a BETA (2007 May 5, compiled "
+#define VIM_VERSION_NODOT	"vim71b"
+#define VIM_VERSION_SHORT	"7.1b"
+#define VIM_VERSION_MEDIUM	"7.1b BETA"
+#define VIM_VERSION_LONG	"VIM - Vi IMproved 7.1b BETA (2007 May 10)"
+#define VIM_VERSION_LONG_DATE	"VIM - Vi IMproved 7.1b BETA (2007 May 10, compiled "

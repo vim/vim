@@ -8,7 +8,7 @@
 /* Modified by Bram Moolenaar for use with VIM - Vi Improved. */
 /* A few bugs removed by Olaf 'Rhialto' Seibert. */
 
-/* TERMLIB: Terminal independant database. */
+/* TERMLIB: Terminal independent database. */
 
 #include "vim.h"
 #include "termlib.pro"
@@ -155,7 +155,7 @@ getent(tbuf, term, termcap, buflen)
 	{
 	    char    *nexttptr;
 
-	    while (*tptr == '|')		/* | seperates names */
+	    while (*tptr == '|')		/* | separates names */
 		tptr++;
 	    nexttptr = _find(tptr, ":|");	/* Rhialto */
 	    if (tptr + tlen == nexttptr &&

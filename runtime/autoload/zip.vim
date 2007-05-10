@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Sep 29, 2006
-" Version:	12
+" Date:		May 08, 2007
+" Version:	14
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if &cp || exists("g:loaded_zip") || v:version < 700
  finish
 endif
 
-let g:loaded_zip     = "v12"
+let g:loaded_zip     = "v14"
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
 let s:WARNING        = 1
@@ -37,6 +37,12 @@ if !exists("g:zip_shq")
   let g:zip_shq= '"'
  endif
 endif
+if !exists("g:zip_zipcmd")
+ let g:zip_zipcmd= "zip"
+endif
+if !exists("g:zip_unzipcmd")
+ let g:zip_unzipcmd= "unzip"
+endif
 
 " ----------------
 "  Functions: {{{1
@@ -50,7 +56,7 @@ fun! zip#Browse(zipfile)
   set report=10
 
   " sanity checks
-  if !executable("unzip")
+  if !executable(g:zip_unzipcmd)
    redraw!
    echohl Error | echo "***error*** (zip#Browse) unzip not available on your system"
 "   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
@@ -73,7 +79,7 @@ fun! zip#Browse(zipfile)
   if &ma != 1
    set ma
   endif
-  let w:zipfile= a:zipfile
+  let b:zipfile= a:zipfile
 
   setlocal noswapfile
   setlocal buftype=nofile
@@ -90,8 +96,8 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-"  call Decho("exe silent r! unzip -l ".s:QuoteFileDir(a:zipfile))
-  exe "silent r! unzip -l ".s:QuoteFileDir(a:zipfile)
+"  call Decho("exe silent r! ".g:zip_unzipcmd." -l ".s:QuoteFileDir(a:zipfile))
+  exe "silent r! ".g:zip_unzipcmd." -l ".s:QuoteFileDir(a:zipfile)
   if v:shell_error != 0
    redraw!
    echohl WarningMsg | echo "***warning*** (zip#Browse) ".a:zipfile." is not a zip file" | echohl None
@@ -125,7 +131,7 @@ endfun
 " ---------------------------------------------------------------------
 " ZipBrowseSelect: {{{2
 fun! s:ZipBrowseSelect()
-"  call Dfunc("ZipBrowseSelect() zipfile<".w:zipfile."> curfile<".expand("%").">")
+"  call Dfunc("ZipBrowseSelect() zipfile<".b:zipfile."> curfile<".expand("%").">")
   let repkeep= &report
   set report=10
   let fname= getline(".")
@@ -148,7 +154,7 @@ fun! s:ZipBrowseSelect()
 "  call Decho("fname<".fname.">")
 
   " get zipfile to the new-window
-  let zipfile = w:zipfile
+  let zipfile = b:zipfile
   let curfile= expand("%")
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("curfile<".curfile.">")
@@ -177,15 +183,13 @@ fun! zip#Read(fname,mode)
   else
    let zipfile = substitute(a:fname,'^.\{-}zipfile:\(.\{-}\)::[^\\].*$','\1','')
    let fname   = substitute(a:fname,'^.\{-}zipfile:.\{-}::\([^\\].*\)$','\1','')
-
-   " TODO Needs to predicated to using InfoZIP's unzip on Windows
    let fname = substitute(fname, '[', '[[]', 'g')
   endif
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! unzip -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
-  exe "silent r! unzip -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname)
+"  call Decho("exe r! ".g:zip_unzipcmd." -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+  exe "silent r! ".g:zip_unzipcmd." -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname)
 
   " cleanup
   0d
@@ -203,7 +207,7 @@ fun! zip#Write(fname)
   set report=10
 
   " sanity checks
-  if !executable("zip")
+  if !executable(g:zip_zipcmd)
    redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, your system doesn't appear to have the zip pgm" | echohl None
 "   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
@@ -273,13 +277,12 @@ fun! zip#Write(fname)
    let zipfile = substitute(system("cygpath ".zipfile),'\n','','e')
   endif
 
-  " TODO Needs to predicated to using InfoZIP's unzip
   if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-"  call Decho("zip -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
-  call system("zip -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+"  call Decho(g:zip_zipcmd." -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+  call system(g:zip_zipcmd." -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
   if v:shell_error != 0
    redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
@@ -367,4 +370,4 @@ endfun
 " Modelines And Restoration: {{{1
 let &cpo= s:keepcpo
 unlet s:keepcpo
-"  vim:ts=8 fdm=marker
+" vim:ts=8 fdm=marker

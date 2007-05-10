@@ -288,7 +288,7 @@ gui_ph_handle_menu_resize(
 
     height = sizes->new_dim.h;
 
-    /* Because vim treats the toolbar and menubar separatly,
+    /* Because vim treats the toolbar and menubar separately,
      * and here they're lumped together into a PtToolbarGroup,
      * we only need either menu_height or toolbar_height set at once */
     if( gui.menu_is_active )
@@ -740,7 +740,7 @@ gui_ph_handle_raw_draw( PtWidget_t *widget, PhTile_t *damage )
 
 #if 0
     /*
-     * This causes some wierd probems, with drawing being done from
+     * This causes some weird problems, with drawing being done from
      * within this raw drawing function (rather than just simple clearing
      * and text drawing done by gui_redraw)
      *
@@ -1116,7 +1116,7 @@ gui_mch_init(void)
     PtArg_t args[10];
     int	    flags = 0, n = 0;
 
-    PhDim_t	window_size = {100, 100}; /* Abitrary values */
+    PhDim_t	window_size = {100, 100}; /* Arbitrary values */
     PhPoint_t	pos = {0, 0};
 
     gui.event_buffer = (PhEvent_t *) alloc( EVENT_BUFFER_SIZE );
@@ -1978,7 +1978,7 @@ hex_digit(int c)
 
 
 /*
- * This should be split out into a seperate file,
+ * This should be split out into a separate file,
  * every port does basically the same thing.
  *
  * This is the gui_w32.c version (i think..)

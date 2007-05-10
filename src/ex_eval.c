@@ -80,7 +80,7 @@ static void	report_pending __ARGS((int action, int pending, void *value));
 static int cause_abort = FALSE;
 
 /*
- * Return TRUE when immdediately aborting on error, or when an interrupt
+ * Return TRUE when immediately aborting on error, or when an interrupt
  * occurred or an exception was thrown but not caught.  Use for ":{range}call"
  * to check whether an aborted function that does not handle a range itself
  * should be called again for the next line in the range.  Also used for
@@ -2191,9 +2191,9 @@ cleanup_conditionals(cstack, searched_cond, inclusive)
 	    break;
 
 	/*
-	 * When leaving a try conditinal that reset "emsg_silent" on its entry
-	 * after saving the original value, restore that value here and free the
-	 * memory used to store it.
+	 * When leaving a try conditional that reset "emsg_silent" on its
+	 * entry after saving the original value, restore that value here and
+	 * free the memory used to store it.
 	 */
 	if ((cstack->cs_flags[idx] & CSF_TRY)
 		&& (cstack->cs_flags[idx] & CSF_SILENT))

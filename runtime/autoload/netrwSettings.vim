@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Jan 05, 2007
+" Date:		Mar 26, 2007
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	9b	ASTRO-ONLY
+" Version:	9
 " Copyright:    Copyright (C) 1999-2007 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v9b"
+let g:loaded_netrwSettings  = "v9"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
@@ -81,11 +81,15 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_ftp               = '.g:netrw_ftp
   put = 'let g:netrw_ftpmode           = '.g:netrw_ftpmode
   put = 'let g:netrw_ignorenetrc       = '.g:netrw_ignorenetrc
+  put = 'let g:netrw_sshport           = '.g:netrw_sshport
   let shqline= line("$")
   put = 'let g:netrw_shq...'
   put = 'let g:netrw_use_nt_rcp        = '.g:netrw_use_nt_rcp
   put = 'let g:netrw_win95ftp          = '.g:netrw_win95ftp
   let s:netrw_xfer_stop= line(".")
+  put =''
+  put ='+ Netrw Messages'
+  put ='let g:netrw_use_errorwindow    = '.g:netrw_use_errorwindow
 
   put = ''
   put ='+ Netrw Browser Control'
@@ -122,12 +126,14 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_sort_direction    = '.g:netrw_sort_direction
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
+  put = 'let g:netrw_scpport           = '.g:netrw_scpport
+  put = 'let g:netrw_sshport           = '.g:netrw_sshport
   put = 'let g:netrw_timefmt           = '.g:netrw_timefmt
   put = 'let g:netrw_use_noswf         = '.g:netrw_use_noswf
   put = 'let g:netrw_winsize           = '.g:netrw_winsize
 
   put =''
-  put ='+ For help, place cursor on line and press ?'
+  put ='+ For help, place cursor on line and press <F1>'
 
   1d
   silent %s/^+/"/e
