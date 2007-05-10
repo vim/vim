@@ -15,6 +15,6 @@ REGEDIT4
 [HKEY_LOCAL_MACHINE\Software\Vim\Gvim]
    "path"="gvim.exe"
 
-[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Vim 7.1a]
-   "DisplayName"="Vim 7.1a: Edit with Vim popup menu entry"
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Vim 7.1b]
+   "DisplayName"="Vim 7.1b: Edit with Vim popup menu entry"
    "UninstallString"="uninstal.exe"

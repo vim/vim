@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.1a.  Last change: 2007 Mar 17
+*indent.txt*    For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -113,7 +113,7 @@ If you really want to reindent when you type 'o', 'O', 'e', '0', '<', '>',
 "<!>", respectively, for those keys.
 
 For an emacs-style indent mode where lines aren't indented every time you
-press Enter but only if you press Tab, I suggest:
+press <Enter> but only if you press Tab, I suggest:
 	:set cinkeys=0{,0},:,0#,!<Tab>,!^F
 You might also want to switch off 'autoindent' then.
 
@@ -514,6 +514,28 @@ Indent after a nested paren: >
 Indent for a continuation line: >
 	let g:pyindent_continue = '&sw * 2'
 
+
+SHELL							*ft-sh-indent*
+
+The amount of indent applied under various circumstances in a shell file can
+be configured by setting the following keys in the |Dictionary|
+b:sh_indent_defaults to a specific amount or to a |Funcref| that references a
+function that will return the amount desired:
+
+b:sh_indent_options['default']	Default amount of indent.
+
+b:sh_indent_options['continuation-line']
+				Amount of indent to add to a continued line.
+
+b:sh_indent_options['case-labels']
+				Amount of indent to add for case labels.
+
+b:sh_indent_options['case-statement']
+				Amount of indent to add for case statements.
+
+b:sh_indent_options['case-breaks']
+				Amount of indent to add (or more likely
+				remove) for case breaks.
 
 VERILOG							*ft-verilog-indent*
 

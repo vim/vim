@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.1a.  Last change: 2006 Sep 29
+*pi_zip.txt*	For Vim version 7.1b.  Last change: 2007 May 08
 
 				+====================+
 				| Zip File Interface |
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
+Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
            Permission is hereby granted to use and distribute this code,
 	   with or without modifications, provided that this copyright
 	   notice is copied with it. Like anything else that's free,
@@ -18,9 +18,10 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
 
 ==============================================================================
 1. Contents					*zip* *zip-contents*
-   1. Contents..................................................|zip-contents|
-   2. Usage.....................................................|zip-usage|
-   3. History...................................................|zip-history|
+   1. Contents................................................|zip-contents|
+   2. Usage...................................................|zip-usage|
+   3. Additional Extensions...................................|zip-extension|
+   4. History.................................................|zip-history|
 
 ==============================================================================
 2. Usage					*zip-usage* *zip-manual*
@@ -31,14 +32,45 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
    also write to the file.  Currently, one may not make a new file in
    zip archives via the plugin.
 
-   The zip program supports one option: >
-   	g:zip_shq
+   OPTIONS
+							*zip_shq*
+   Different operating systems may use one or more shells to execute
+   commands.  Zip will try to guess the correct quoting mechanism to
+   allow spaces and whatnot in filenames; however, if it is incorrectly
+   guessing the quote to use for your setup, you may use >
+	g:zip_shq
 <  which by default is a single quote under Unix (') and a double quote
    under Windows (").  If you'd rather have no quotes, simply set
    g:zip_shq to the empty string (let g:zip_shq= "") in your <.vimrc>.
 
+   							*g:zip_unzipcmd*
+   Use this option to specify the program which does the duty of "unzip".
+   Its used during browsing. By default: >
+   	let g:zip_unzipcmd= "unzip"
+<
+							*g:zip_zipcmd*
+   Use this option to specify the program which does the duty of "zip".
+   Its used during the writing (updating) of a file already in a zip
+   file; by default: >
+   	let g:zip_zipcmd= "zip"
+<
+
 ==============================================================================
-3. History					*zip-history*
+3. Additional Extensions					*zip-extension*
+
+   Apparently there are a number of archivers who generate zip files that
+   don't use the .zip extension (.jar, .xpi, etc).  To handle such files,
+   place a line in your <.vimrc> file: >
+
+	au BufReadCmd *.jar,*.xpi call zip#Browse(expand("<amatch>"))
+<
+   One can simply extend this line to accomdate additional extensions that
+   are actually zip files.
+
+==============================================================================
+4. History					*zip-history* {{{1
+   v14 May 07, 2007 * using b:zipfile instead of w:zipfile to avoid problem
+                      when editing alternate file to bring up a zipfile
    v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
                       of "echo and prompt user"
 		    * g:zip_shq provided to allow for quoting control for the
@@ -62,4 +94,4 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr {{{1 *zip-copyright*
    v1 Sep 15, 2005 * Initial release, had browsing, reading, and writing
 
 ==============================================================================
-vim:tw=78:ts=8:ft=help
+vim:tw=78:ts=8:ft=help:fdm=marker

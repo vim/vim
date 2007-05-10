@@ -2873,7 +2873,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 }
 
 /* Size of buffer has changed.
- * Add one to max since gui.c substracts one more than it should!
+ * Add one to max since gui.c subtracts one more than it should!
  */
     void
 gui_mch_set_scrollbar_thumb(sb, val, size, max)

@@ -90,7 +90,7 @@
 /* Define as the command at the end of signal handlers ("" or "return 0;").  */
 #define SIGRETURN
 
-/* Define if touuper/tolower only work on lower/upercase characters */
+/* Define if toupper/tolower only work on lower/uppercase characters */
 #undef BROKEN_TOUPPER
 
 /* Define if tgetstr() has a second argument that is (char *) */

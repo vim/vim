@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Sep 15, 2006
-" Version:		88
+" Last Change:		Dec 12, 2006
+" Version:		89
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -75,19 +75,22 @@ syn cluster shCaseList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSu
 syn cluster shColonList	contains=@shCaseList
 syn cluster shCommandSubList	contains=shArithmetic,shDeref,shDerefSimple,shNumber,shOperator,shPosnParm,shExSingleQuote,shSingleQuote,shDoubleQuote,shStatement,shVariable,shSubSh,shAlias,shTest,shCtrlSeq
 syn cluster shCurlyList	contains=shNumber,shComma,shDeref,shDerefSimple,shDerefSpecial
-syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shPosnParm,shExSingleQuote,shCtrlSeq
+syn cluster shDblQuoteList	contains=shCommandSub,shDeref,shDerefSimple,shPosnParm,shExSingleQuote,shCtrlSeq,shSpecial
 syn cluster shDerefList	contains=shDeref,shDerefSimple,shDerefVar,shDerefSpecial,shDerefWordError,shDerefPPS
 syn cluster shDerefVarList	contains=shDerefOp,shDerefVarArray,shDerefOpError
 syn cluster shEchoList	contains=shArithmetic,shCommandSub,shDeref,shDerefSimple,shExpr,shExSingleQuote,shSingleQuote,shDoubleQuote,shCtrlSeq
 syn cluster shExprList1	contains=shCharClass,shNumber,shOperator,shExSingleQuote,shSingleQuote,shDoubleQuote,shExpr,shDblBrace,shDeref,shDerefSimple,shCtrlSeq
 syn cluster shExprList2	contains=@shExprList1,@shCaseList,shTest
 syn cluster shFunctionList	contains=@shCommandSubList,shCaseEsac,shColon,shCommandSub,shCommandSub,shComment,shDo,shEcho,shExpr,shFor,shHereDoc,shIf,shRedir,shSetList,shSource,shStatement,shVariable,shOperator,shFunctionStart,shCtrlSeq
+if exists("b:is_kornshell") || exists("b:is_bash")
+ syn cluster shFunctionList	add=shDblBrace,shDblParen
+endif
 syn cluster shHereBeginList	contains=@shCommandSubList
 syn cluster shHereList	contains=shBeginHere,shHerePayload
 syn cluster shHereListDQ	contains=shBeginHere,@shDblQuoteList,shHerePayload
 syn cluster shIdList	contains=shCommandSub,shWrapLineOperator,shIdWhiteSpace,shDeref,shDerefSimple,shRedir,shExSingleQuote,shSingleQuote,shDoubleQuote,shExpr,shCtrlSeq
 syn cluster shLoopList	contains=@shCaseList,shTestOpr,shExpr,shDblBrace,shConditional,shCaseEsac,shTest
-syn cluster shSubShList	contains=@shCaseList
+syn cluster shSubShList	contains=@shCaseList,shOperator
 syn cluster shTestList	contains=shCharClass,shComment,shCommandSub,shDeref,shDerefSimple,shDoubleQuote,shExpr,shExpr,shNumber,shOperator,shExSingleQuote,shSingleQuote,shTestOpr,shTest,shCtrlSeq
 
 
@@ -127,8 +130,16 @@ syn match     shTestError "]"
 syn match   shOption  "\s[\-+][a-zA-Z0-9]\+\>"ms=s+1
 syn match   shOption  "\s--[^ \t$`'"|]\+"ms=s+1
 
+" File Redirection Highlighted As Operators: {{{1
+"===========================================
+syn match      shRedir	"\d\=>\(&[-0-9]\)\="
+syn match      shRedir	"\d\=>>-\="
+syn match      shRedir	"\d\=<\(&[-0-9]\)\="
+syn match      shRedir	"\d<<-\="
+
 " Operators: {{{1
 " ==========
+syn match   shOperator	"<<\|>>"		contained
 syn match   shOperator	"[!&;|]"
 syn match   shOperator	"\[[[^:]\|\]]"
 syn match   shOperator	"!\=="		skipwhite nextgroup=shPattern
@@ -186,7 +197,7 @@ syn match  shComma     contained	","
 " ====
 syn match   shCaseBar	contained skipwhite "[^|"`'()]\{-}|"hs=e		nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 syn match   shCaseStart	contained skipwhite skipnl "("			nextgroup=shCase,shCaseBar
-syn region  shCase	contained skipwhite skipnl matchgroup=shSnglCase start="[^#$()'"]\{-})"ms=s,hs=e  end=";;" end="esac"me=s-1 contains=@shCaseList nextgroup=shCaseStart,shCase,shComment
+syn region  shCase	contained skipwhite skipnl matchgroup=shSnglCase start="\([^#$()'" \t]\|\\.\)\{-})"ms=s,hs=e  end=";;" end="esac"me=s-1 contains=@shCaseList nextgroup=shCaseStart,shCase,shComment
 if g:sh_fold_enabled
  syn region  shCaseEsac	fold matchgroup=shConditional start="\<case\>" end="\<esac\>"	contains=@shCaseEsacList
 else
@@ -255,21 +266,16 @@ endif
 syn region  shSingleQuote	matchgroup=shOperator start=+'+ end=+'+		contains=shStringSpecial,@Spell
 syn region  shDoubleQuote	matchgroup=shOperator start=+"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial,@Spell
 syn match   shStringSpecial	"[^[:print:]]"	contained
-syn match   shSpecial	"\\[\\\"\'`$()#]"
+syn match   shStringSpecial	"\%(\\\\\)*\\[\\"'`$()#]"
+syn match   shSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"
+syn match   shSpecial	"^\%(\\\\\)*\\[\\"'`$()#]"
 
 " Comments: {{{1
 "==========
 syn cluster    shCommentGroup	contains=shTodo,@Spell
 syn keyword    shTodo	contained	COMBAK FIXME TODO XXX
-syn match      shComment	"^#.*$"	contains=@shCommentGroup
-syn match      shComment	"[^0-9]#.*$"	contains=@shCommentGroup
-
-" File Redirection Highlighted As Operators: {{{1
-"===========================================
-syn match      shRedir	"\d\=>\(&[-0-9]\)\="
-syn match      shRedir	"\d\=>>-\="
-syn match      shRedir	"\d\=<\(&[-0-9]\)\="
-syn match      shRedir	"\d<<-\="
+syn match      shComment	"^\s*\zs#.*$"	contains=@shCommentGroup
+syn match      shComment	"#.*$"	contains=@shCommentGroup
 
 " Here Documents: {{{1
 " =========================================
@@ -338,10 +344,11 @@ endif
 
 " Functions: {{{1
 syn keyword shFunctionKey function	skipwhite skipnl nextgroup=shFunctionTwo
-syn match   shFunctionStart	"^\s*{"	contained
+" COMBAK -- look at bash09.  function foo() (line#35) is folding 38 lines.  Not being terminated properly
+"syn match   shFunctionStart	"{"	contained
 if g:sh_fold_enabled
- syn region shFunctionOne transparent fold	start="^\s*\h\w*\s*()\_s*\ze{"    matchgroup=shFunctionStart end="}"	contains=@shFunctionList
- syn region shFunctionTwo transparent fold	start="\h\w*\s*\%(()\)\=\_s*\ze{" matchgroup=shFunctionStart end="}"	contains=shFunctionKey,@shFunctionList contained
+ syn region shFunctionOne transparent fold	start="^\s*\h\w*\s*()\_s*\ze{"    matchgroup=shFunctionStart end="}"	contains=@shFunctionList			skipwhite skipnl nextgroup=shFunctionStart
+ syn region shFunctionTwo transparent fold	start="\h\w*\s*\%(()\)\=\_s*\ze{" matchgroup=shFunctionStart end="}"	contains=shFunctionKey,@shFunctionList contained	skipwhite skipnl nextgroup=shFunctionStart
 else
  syn region shFunctionOne transparent	start="^\s*\h\w*\s*()\_s*\ze{"    matchgroup=shFunctionStart end="}"	contains=@shFunctionList
  syn region shFunctionTwo transparent	start="\h\w*\s*\%(()\)\=\_s*\ze{" matchgroup=shFunctionStart end="}"	contains=shFunctionKey,@shFunctionList contained

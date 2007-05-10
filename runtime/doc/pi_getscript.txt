@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 7.1a.  Last change: 2007 Apr 26
+*pi_getscript.txt*  For Vim version 7.1b.  Last change: 2007 May 08
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell, Jr.
 <
@@ -136,7 +136,7 @@ insures that GetLatestVimScripts will assume that the script it has is
 out-of-date.
 
 The SourceID is extracted by GetLatestVimScripts from the script's page on
-vim.sf.net; whenever its greater than the one stored in the
+vim.sf.net; whenever it's greater than the one stored in the
 GetLatestVimScripts.dat file, the script will be downloaded
 (see |GetLatestVimScripts_dat|).
 
@@ -309,7 +309,7 @@ so-called script-id.  Within the webpage of
 
 is a line specifying the latest source-id (src_id).  The source identifier
 numbers are always increasing, hence if the src_id is greater than the one
-recorded for the script in GetLatestVimScripts then its time to download a
+recorded for the script in GetLatestVimScripts then it's time to download a
 newer copy of that script.
 
 GetLatestVimScripts will then download the script and update its internal
@@ -335,6 +335,8 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v24 Apr 16, 2007 : * removed save&restore of the fo option during script
+                     loading
 v23 Nov 03, 2006 : * ignores comments (#...)
                    * handles vimballs
 v22 Oct 13, 2006 : * supports automatic use of curl if wget is not

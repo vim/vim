@@ -1271,7 +1271,7 @@ retry:
 		    else if (conv_restlen > 0)
 		    {
 			/* Reached end-of-file but some trailing bytes could
-			 * not be converted.  Trucated file? */
+			 * not be converted.  Truncated file? */
 			if (conv_error == 0)
 			    conv_error = linecnt;
 			if (bad_char_behavior != BAD_DROP)
@@ -2192,16 +2192,22 @@ failed:
 	if (filesize == 0)
 	    linecnt = 0;
 	if (newfile || read_buffer)
+	{
 	    redraw_curbuf_later(NOT_VALID);
+#ifdef FEAT_DIFF
+	    /* After reading the text into the buffer the diff info needs to
+	     * be updated. */
+	    diff_invalidate(curbuf);
+#endif
+#ifdef FEAT_FOLDING
+	    /* All folds in the window are invalid now.  Mark them for update
+	     * before triggering autocommands. */
+	    foldUpdateAll(curwin);
+#endif
+	}
 	else if (linecnt)		/* appended at least one line */
 	    appended_lines_mark(from, linecnt);
 
-#ifdef FEAT_DIFF
-	/* After reading the text into the buffer the diff info needs to be
-	 * updated. */
-	if (newfile || read_buffer)
-	    diff_invalidate(curbuf);
-#endif
 #ifndef ALWAYS_USE_GUI
 	/*
 	 * If we were reading from the same terminal as where messages go,
@@ -4026,8 +4032,8 @@ restore_backup:
     /* TODO: Is it need for MACOS_X? (Dany) */
     /*
      * On macintosh copy the original files attributes (i.e. the backup)
-     * This is done in order to preserve the ressource fork and the
-     * Finder attribute (label, comments, custom icons, file creatore)
+     * This is done in order to preserve the resource fork and the
+     * Finder attribute (label, comments, custom icons, file creator)
      */
     if (backup != NULL && overwriting && !append)
     {
@@ -4041,7 +4047,7 @@ restore_backup:
     {
 	if (buf->b_ffname != NULL)
 	    (void)mch_copy_file_attribute(buf->b_ffname, wfname);
-	/* Should copy ressource fork */
+	/* Should copy resource fork */
     }
 #endif
 
@@ -5795,7 +5801,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
 #endif
 	/*
 	 * If the extension doesn't start with '.', and there already is an
-	 * extension, it may need to be tructated
+	 * extension, it may need to be truncated
 	 */
 	else if ((int)STRLEN(e) + extlen > 4)
 	    s = e + 4 - extlen;
@@ -5989,7 +5995,7 @@ vim_rename(from, to)
     /*
      * With MSDOS-compatible filesystems (crossdos, messydos) it is possible
      * that the name of the "to" file is the same as the "from" file, even
-     * though the names are different. To avoid the chance of accidently
+     * though the names are different. To avoid the chance of accidentally
      * deleting the "from" file (horror!) we lock it during the remove.
      *
      * When used for making a backup before writing the file: This should not
@@ -6058,7 +6064,7 @@ vim_rename(from, to)
 	errmsg = _("E210: Error reading \"%s\"");
 	to = from;
     }
-#ifndef UNIX	    /* for Unix mch_open() already set ther permission */
+#ifndef UNIX	    /* for Unix mch_open() already set the permission */
     mch_setperm(to, perm);
 #endif
 #ifdef HAVE_ACL
@@ -8402,7 +8408,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 
 #ifdef FEAT_EVAL
     /*
-     * Quickly return when immdediately aborting on error, or when an interrupt
+     * Quickly return when immediately aborting on error, or when an interrupt
      * occurred or an exception was thrown but not caught.
      */
     if (aborting())

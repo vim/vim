@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.1a.  Last change: 2007 Jan 03
+*pi_vimball.txt*	For Vim version 7.1b.  Last change: 2007 May 08
 
 			       ----------------
 			       Vimball Archiver
@@ -90,6 +90,7 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 ==============================================================================
 3. Vimball History					*vimball-history* {{{1
 
+	22 : Mar 21, 2007 * uses setlocal instead of set during BufEnter
 	21 : Nov 27, 2006 * (tnx to Bill McCarthy) vimball had a header
 	                    handling problem and it now changes \s to /s
 	20 : Nov 20, 2006 * substitute() calls have all had the 'e' flag
@@ -114,7 +115,7 @@ Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*Vimball-copyright*
 	10 : Apr 27, 2006 * moved all setting saving/restoration to a pair of
 			    functions.  Included some more settings in them
 			    which frequently cause trouble.
-	9  : Apr 26, 2006 * various changes to support Windows prediliction
+	9  : Apr 26, 2006 * various changes to support Windows predilection
 			    for backslashes and spaces in file and directory
 			    names.
 	7  : Apr 25, 2006 * bypasses foldenable

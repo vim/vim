@@ -24,7 +24,7 @@
 #>>>>> choose options:
 # set to yes for a debug build
 DEBUG=no
-# set to SIZE for size, SPEED for speed, MAXSPEED for maximium optimization
+# set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 # set to yes to make gvim, no for vim
 GUI=yes

@@ -1531,7 +1531,7 @@ initialise_toolbar(void)
 		    s_hwnd,
 		    WS_CHILD | WS_VISIBLE,
 		    CMD_TB_BASE, /*<vn>*/
-		    31,			//number of images in inital bitmap
+		    31,			//number of images in initial bitmap
 		    s_hinst,
 		    IDR_TOOLBAR1,	// id of initial bitmap
 		    NULL,
