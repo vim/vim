@@ -144,7 +144,7 @@ static void rebuild_tearoff(vimmenu_T *menu);
 static HBITMAP	s_htearbitmap;	    /* bitmap used to indicate tearoff */
 #endif
 
-/* Flag that is set while processing a message that must not be interupted by
+/* Flag that is set while processing a message that must not be interrupted by
  * processing another message. */
 static int		s_busy_processing = FALSE;
 
