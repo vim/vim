@@ -54,7 +54,7 @@ CCommands::~CCommands ()
 void CCommands::SetApplicationObject (IApplication * pApplication)
 {
 	// This function assumes pApplication has already been AddRef'd
-	// for us, which CDSAddIn did in its QueryInterface call
+	// for us, which CDSAddIn did in it's QueryInterface call
 	// just before it called us.
 	m_pApplication = pApplication;
 	if (! m_pApplication)
@@ -494,8 +494,9 @@ static BOOL VimOpenFile (BSTR& FileName, long LineNr)
 {
 
 	// OLE automation object for com. with Vim
-	// When the object goes out of scope, it's desctructor destroys the OLE connection;
-	// This is imortant to avoid blocking the object
+	// When the object goes out of scope, it's destructor destroys the OLE
+	// connection;
+	// This is important to avoid blocking the object
 	// (in this memory corruption would be likely when terminating Vim
 	// while still running DevStudio).
 	// So keep this object local!
