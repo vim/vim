@@ -1097,7 +1097,7 @@ mf_write(mfp, hp)
 	{
 	    /*
 	     * Avoid repeating the error message, this mostly happens when the
-	     * disk is full. We give the message again only after a succesful
+	     * disk is full. We give the message again only after a successful
 	     * write or when hitting a key. We keep on trying, in case some
 	     * space becomes available.
 	     */
@@ -1189,7 +1189,7 @@ mf_trans_add(mfp, hp)
 }
 
 /*
- * Lookup a tranlation from the trans lists and delete the entry
+ * Lookup a translation from the trans lists and delete the entry
  *
  * Return the positive new number when found, the old number when not found
  */

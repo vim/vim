@@ -110,7 +110,7 @@ typedef struct
     float	  max;		/* Maximum value for top */
     Dimension	  length;	/* either height or width */
     Dimension	  thickness;	/* either width or height */
-    Dimension	  min_thumb;	/* minium size for the thumb. */
+    Dimension	  min_thumb;	/* minimum size for the thumb. */
 
      /* private */
     XtIntervalId  timer_id;	/* autorepeat timer; remove on destruction */

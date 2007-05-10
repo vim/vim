@@ -2355,7 +2355,7 @@ clip_x11_set_selection(cbd)
 
 /*
  * Move the cursor to the specified row and column on the screen.
- * Change current window if neccesary.	Returns an integer with the
+ * Change current window if necessary.	Returns an integer with the
  * CURSOR_MOVED bit set if the cursor has moved or unset otherwise.
  *
  * The MOUSE_FOLD_CLOSE bit is set when clicked on the '-' in a fold column.
@@ -2422,7 +2422,7 @@ jump_to_mouse(flags, inclusive, which_button)
 	    && prev_col == mouse_col)
     {
 retnomove:
-	/* before moving the cursor for a left click wich is NOT in a status
+	/* before moving the cursor for a left click which is NOT in a status
 	 * line, stop Visual mode */
 	if (on_status_line)
 	    return IN_STATUS_LINE;

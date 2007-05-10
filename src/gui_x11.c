@@ -643,7 +643,7 @@ gui_x11_expose_cb(w, dud, event, dum)
 /*
  * This function fills in the XRectangle object with the current x,y
  * coordinates and height, width so that an XtVaSetValues to the same shell of
- * those resources will restore the window to its formar position and
+ * those resources will restore the window to its former position and
  * dimensions.
  *
  * Note: This function may fail, in which case the XRectangle will be

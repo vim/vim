@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.1a.  Last change: 2006 Jul 10
+*usr_05.txt*	For Vim version 7.1b.  Last change: 2006 Jul 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

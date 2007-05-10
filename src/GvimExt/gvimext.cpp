@@ -575,7 +575,7 @@ STDMETHODIMP CShellExt::QueryContextMenu(HMENU hMenu,
 
     // Initialize m_cntOfHWnd to 0
     m_cntOfHWnd = 0;
-    // Retieve all the vim instances
+    // Retrieve all the vim instances
     EnumWindows(EnumWindowsProc, (LPARAM)this);
 
     if (cbFiles > 1)

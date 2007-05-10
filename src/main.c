@@ -745,7 +745,7 @@ main
      * switch to another screen. It must be done after settmode(TMODE_RAW),
      * because we want to react on a single key stroke.
      * Call settmode and starttermcap here, so the T_KS and T_TI may be
-     * defined by termcapinit and redifined in .exrc.
+     * defined by termcapinit and redefined in .exrc.
      */
     settmode(TMODE_RAW);
     TIME_MSG("setting raw mode");
@@ -2253,7 +2253,7 @@ check_tty(parmp)
 	 * output coming to the console and XOpenDisplay fails, I get vim
 	 * trying to start with input/output to my console tty.  This fills my
 	 * input buffer so fast I can't even kill the process in under 2
-	 * minutes (and it beeps continuosly the whole time :-)
+	 * minutes (and it beeps continuously the whole time :-)
 	 */
 	if (usingNetbeans && (!parmp->stdout_isatty || !input_isatty))
 	{
@@ -2808,7 +2808,7 @@ main_start_gui()
 }
 
 /*
- * Get an evironment variable, and execute it as Ex commands.
+ * Get an environment variable, and execute it as Ex commands.
  * Returns FAIL if the environment variable was not executed, OK otherwise.
  */
     int

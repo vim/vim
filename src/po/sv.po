@@ -1,12 +1,12 @@
 # Swedish translation for Vim.
-# Copyright (C) 2003-2006 Free Software Foundation, Inc.
-# Johan Svedberg <johan@svedberg.com>, 2003-2006.
+# Copyright (C) 2003-2007 Free Software Foundation, Inc.
+# Johan Svedberg <johan@svedberg.com>, 2003-2007.
 msgid ""
 msgstr ""
-"Project-Id-Version: Vim 7\n"
+"Project-Id-Version: Vim 7.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-10 17:24+0200\n"
-"PO-Revision-Date: 2006-04-11 01:08+0200\n"
+"POT-Creation-Date: 2007-05-09 14:27+0200\n"
+"PO-Revision-Date: 2007-05-09 14:52%z\n"
 "Last-Translator: Johan Svedberg <johan@svedberg.com>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -191,6 +191,9 @@ msgstr "E98: Kan inte läsa skiljeutdata"
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktuell buffert är inte i skiljeläge"
 
+msgid "E793: No other buffer in diff mode is modifiable"
+msgstr "E793: Ingen annan buffert i skiljeläge är ändringsbar"
+
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Ingen annan buffert i skiljeläge"
 
@@ -206,6 +209,9 @@ msgstr "E102: Kan inte hitta buffert \"%s\""
 msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: Buffert \"%s\" är inte i skiljeläge"
 
+msgid "E787: Buffer changed unexpectedly"
+msgstr "E787: Buffert ändrades oväntat"
+
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Escape inte tillåtet i digraf"
 
@@ -215,12 +221,15 @@ msgstr "E544: Keymap-fil hittades inte"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: Användning av :loadkeymap utanför en körd fil"
 
+msgid "E791: Empty keymap entry"
+msgstr "E791: Tomt tangentbords-post"
+
 msgid " Keyword completion (^N^P)"
 msgstr " Nyckelordskomplettering (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
-msgstr " ^X-läge (^]^D^E^F^I^K^L^N^O^P^S^U^V^Y)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " ^X-läge (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
 
 msgid " Whole line completion (^L^N^P)"
 msgstr " Helradskomplettering (^L^N^P)"
@@ -252,8 +261,8 @@ msgstr " Användardefinierad komplettering (^U^N^P)"
 msgid " Omni completion (^O^N^P)"
 msgstr " Omnikomplettering (^O^N^P)"
 
-msgid " Spelling suggestion (^S^N^P)"
-msgstr " Stavningsförslag (^S^N^P)"
+msgid " Spelling suggestion (s^N^P)"
+msgstr " Stavningsförslag (s^N^P)"
 
 msgid " Keyword Local completion (^N^P)"
 msgstr " Lokal nyckelordskomplettering (^N^P)"
@@ -488,6 +497,22 @@ msgstr "E723: Saknar slut på Tabell '}': %s"
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variabel nästlad för djupt för att visas"
 
+#, c-format
+msgid "E117: Unknown function: %s"
+msgstr "E117: Okänd funktion: %s"
+
+#, c-format
+msgid "E119: Not enough arguments for function: %s"
+msgstr "E119: För få argument till funktion: %s"
+
+#, c-format
+msgid "E120: Using <SID> not in a script context: %s"
+msgstr "E120: Använder inte <SID> i ett skriptsammanhang: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: Anropar tabell-funktion utan Tabell: %s"
+
 msgid "E699: Too many arguments"
 msgstr "E699: För många argument"
 
@@ -524,8 +549,8 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "anropade inputrestore() oftare än inputsave()"
 
-msgid "E745: Range not allowed"
-msgstr "E745: Område otillåtet"
+msgid "E786: Range not allowed"
+msgstr "E786: Område otillåtet"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Ogiltig typ för len()"
@@ -593,6 +618,10 @@ msgstr "E705: Variabelnamn konflikterar med existerande funktion %s"
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Variabeltyp matchar inte för: %s"
+
+#, c-format
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: Kan inte ta bort variabel %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -858,6 +887,7 @@ msgstr " märken"
 msgid " FAILED"
 msgstr " MISSLYCKADES"
 
+#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: Viminfo-fil är inte skrivbar: %s"
@@ -1383,6 +1413,9 @@ msgstr "E602: :endtry utan :try"
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction inte inom en funktion"
 
+msgid "E788: Not allowed to edit another buffer now"
+msgstr "E788: Inte tillåtet att redigera en annan buffert nu"
+
 msgid "tagname"
 msgstr "taggnamn"
 
@@ -1426,6 +1459,9 @@ msgstr "är en katalog"
 
 msgid "is not a file"
 msgstr "är inte en fil"
+
+msgid "is a device (disabled with 'opendevice' option"
+msgstr "är en enhet (inaktiverad med 'opendevice'-flagga"
 
 msgid "[New File]"
 msgstr "[Ny fil]"
@@ -1523,6 +1559,9 @@ msgstr "Delvisa skrivningar tillåts inte i NetBeans-buffertar"
 
 msgid "is not a file or writable device"
 msgstr "är inte en fil eller skrivbar enhet"
+
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "skriver till en enhet inaktiverad med 'opendevice'-flagga"
 
 msgid "is read-only (add ! to override)"
 msgstr "är skrivskyddad (lägg till ! för att tvinga)"
@@ -2480,11 +2519,32 @@ msgstr "<fönster %d>"
 msgid "no such window"
 msgstr "inget sådant fönster"
 
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ måste vara en instans av String"
+
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
 "E266: Tyvärr, detta kommandot är inaktiverat, Ruby-biblioteket kunde inte "
 "läsas in."
+
+msgid "E267: unexpected return"
+msgstr "E267: oväntad returnering"
+
+msgid "E268: unexpected next"
+msgstr "E268: oväntad next"
+
+msgid "E269: unexpected break"
+msgstr "E269: oväntad break"
+
+msgid "E270: unexpected redo"
+msgstr "E270: oväntad redo"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: retry utanför rescue-block"
+
+msgid "E272: unhandled exception"
+msgstr "E272: ohanterat undantag"
 
 #, c-format
 msgid "E273: unknown longjmp status %d"
@@ -2755,8 +2815,12 @@ msgstr ""
 "\n"
 "     eller:"
 
-msgid "where case is ignored prepend / to make flag upper case"
-msgstr "där storlek ignoreras börja med / för att göra flagga versal"
+msgid ""
+"\n"
+"Where case is ignored prepend / to make flag upper case"
+msgstr ""
+"\n"
+"Där storlek ignoreras börja med / för att göra flagga versal"
 
 msgid ""
 "\n"
@@ -2824,8 +2888,8 @@ msgstr "-C\t\t\tKompatibelt med Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tInte fullt Vi-kompatibel: 'nocompatible'"
 
-msgid "-V[N]\t\tVerbose level"
-msgstr "-V[N]\t\tMångordigt läge"
+msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgstr "-V[N][fnamn]\t\tVar mångordig [nivå N] [logga meddelanden till fnamn]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tFelsökningsläge"
@@ -3256,6 +3320,9 @@ msgstr ""
 ",\n"
 "eller så har filen blivit skadad."
 
+msgid " has been damaged (page size is smaller than minimum value).\n"
+msgstr " har skadats (sid-storlek är mindre än minimumvärdet).\n"
+
 #, c-format
 msgid "Using swap file \"%s\""
 msgstr "Använder växlingsfil \"%s\""
@@ -3596,6 +3663,10 @@ msgstr "E328: Meny existerar bara i ett annat läge"
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: Ingen meny \"%s\""
+
+#. Only a mnemonic or accelerator is not valid.
+msgid "E792: Empty menu name"
+msgstr "E792: Tomt menynamn"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Menysökväg får inte leda till en undermeny"
@@ -4199,9 +4270,6 @@ msgstr "ANCHOR_BUF_SIZE för liten."
 msgid "I/O ERROR"
 msgstr "I/O-FEL"
 
-msgid "...(truncated)"
-msgstr "...(trunkerade)"
-
 msgid "Message"
 msgstr "Meddelande"
 
@@ -4642,6 +4710,16 @@ msgstr "E388: Kunde inte hitta definition"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Kunde inte hitta mönster"
 
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Senaste %sSökmönster:\n"
+"~"
+
 msgid "E759: Format error in spell file"
 msgstr "E759: Formateringsfel i stavningsfil"
 
@@ -4717,6 +4795,20 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG efter användning av flags i %s rad %d: %s"
 
 #, c-format
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Definiera COMPOUNDFORBIDFLAG efter PFX-post kan ge fel resultat i %s rad %d"
+
+#, c-format
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr "Definiera COMPOUNDPERMITFLAG efter PFX-post kan ge fel resultat i %s "
+"rad %d"
+
+#, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
 msgstr "Fel COMPOUNDWORDMAX-värde i %s rad %d: %s"
 
@@ -4745,8 +4837,8 @@ msgid ""
 "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
 "line %d: %s"
 msgstr ""
-"Affix också använd för BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST i "
-"%s rad %d: %s"
+"Affix också använd för BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST i %"
+"s rad %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -4755,10 +4847,6 @@ msgstr "Förväntade Y eller N i %s rad %d: %s"
 #, c-format
 msgid "Broken condition in %s line %d: %s"
 msgstr "Trasigt villkor i %s rad %d: %s"
-
-#, c-format
-msgid "Affix flags ignored when PFXPOSTPONE used in %s line %d: %s"
-msgstr "Affix-flaggor ignorerade när PFXPOSTPONE används i %s rad %d: %s"
 
 #, c-format
 msgid "Expected REP(SAL) count in %s line %d"
@@ -4948,6 +5036,7 @@ msgstr "Tyvärr, inga föreslag"
 msgid "Sorry, only %ld suggestions"
 msgstr "Tyvärr, bara %ld föreslag"
 
+#. for when 'cmdheight' > 1
 #. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
@@ -5349,6 +5438,13 @@ msgstr "Inget att ångra"
 msgid "number changes  time"
 msgstr "antal ändringar  tid"
 
+#, c-format
+msgid "%ld seconds ago"
+msgstr "%ld sekunder sedan"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: undojoin är inte tillåtet efter undo"
+
 msgid "E439: undo list corrupt"
 msgstr "E439: ångra-lista trasig"
 
@@ -5362,6 +5458,13 @@ msgid ""
 msgstr ""
 "\n"
 "MS-Windows 16/32-bitars GUI-version"
+
+msgid ""
+"\n"
+"MS-Windows 64 bit GUI version"
+msgstr ""
+"\n"
+"MS-Windows 64-bitars GUI-version"
 
 msgid ""
 "\n"
@@ -5655,6 +5758,9 @@ msgstr "VARNING: Windows 95/98/ME upptäckt"
 msgid "type  :help windows95<Enter>  for info on this"
 msgstr "skriv  :help windows95<Enter>  för info om det här"
 
+msgid "Already only one window"
+msgstr "Redan bara ett fönster"
+
 msgid "E441: There is no preview window"
 msgstr "E441: Det finns inget förhandsvisningsfönster"
 
@@ -5666,9 +5772,6 @@ msgstr "E443: Kan inte rotera när ett annat fönster är delat"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: Kan inte stänga senaste fönstret"
-
-msgid "Already only one window"
-msgstr "Redan bara ett fönster"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: Andra fönster innehåller ändringar"
@@ -5961,8 +6064,8 @@ msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: Kan inte ändra skrivskyddad variabel \"%s\""
 
 #, c-format
-msgid "E46: Cannot set variable in the sandbox: \"%s\""
-msgstr "E46: Kan inte sätta variabel i sandlådan: \"%s\""
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
+msgstr "E794: Kan inte sätta variabel i sandlådan: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Fel vid läsning av felfil"

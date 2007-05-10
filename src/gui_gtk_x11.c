@@ -36,6 +36,9 @@
 # ifdef bindtextdomain
 #  undef bindtextdomain
 # endif
+# ifdef bindtextdomain_codeset
+#  undef bindtextdomain_codeset
+# endif
 # if defined(FEAT_GETTEXT) && !defined(ENABLE_NLS)
 #  define ENABLE_NLS	/* so the texts in the dialog boxes are translated */
 # endif
@@ -1566,7 +1569,7 @@ selection_get_cb(GtkWidget	    *widget,
 gui_mch_init_check(void)
 {
 #ifndef HAVE_GTK2
-    /* This is needed to make the locale handling consistant between the GUI
+    /* This is needed to make the locale handling consistent between the GUI
      * and the rest of VIM. */
     gtk_set_locale();
 #endif
@@ -1638,7 +1641,7 @@ process_motion_notify(int x, int y, GdkModifierType state)
     /* translate modifier coding between the main engine and GTK */
     vim_modifiers = modifiers_gdk2mouse(state);
 
-    /* inform the editor engine about the occurence of this event */
+    /* inform the editor engine about the occurrence of this event */
     gui_send_mouse_event(button, x, y, FALSE, vim_modifiers);
 
     if (gtk_main_level() > 0)
@@ -2604,7 +2607,7 @@ mainwin_realize(GtkWidget *widget, gpointer data)
 	int	    number_sizes;
 	/*
 	 * Adjust the icon to the preferences of the actual window manager.
-	 * This is once again a workaround for a defficiency in GTK+ 1.2.
+	 * This is once again a workaround for a deficiency in GTK+ 1.2.
 	 */
 	xdisplay = GDK_WINDOW_XDISPLAY(gui.mainwin->window);
 	root_window = XRootWindow(xdisplay, DefaultScreen(xdisplay));
@@ -2707,7 +2710,7 @@ mainwin_screen_changed_cb(GtkWidget  *widget,
 	return;
 
     /*
-     * Recreate the invisble mouse cursor.
+     * Recreate the invisible mouse cursor.
      */
     if (gui.blank_pointer != NULL)
 	gdk_cursor_unref(gui.blank_pointer);
@@ -2971,7 +2974,7 @@ update_window_manager_hints(int force_width, int force_height)
 # endif
 
     /* GtkSockets use GtkPlug's [gui,mainwin] min-size hints to determine
-     * their actual widget size.  When we set our size ourselve (e.g.,
+     * their actual widget size.  When we set our size ourselves (e.g.,
      * 'set columns=' or init. -geom) we briefly set the min. to the size
      * we wish to be instead of the legitimate minimum so that we actually
      * resize correctly.
@@ -3956,11 +3959,11 @@ mainwin_destroy_cb(GtkObject *object, gpointer data)
  * hints (and thus the required size from -geom), but that after that we
  * put the hints back to normal (the actual minimum size) so we may
  * subsequently be resized smaller.  GtkSocket (the parent end) uses the
- * plug's window 'min hints to set *it's* minum size, but that's also the
+ * plug's window 'min hints to set *it's* minimum size, but that's also the
  * only way we have of making ourselves bigger (by set lines/columns).
  * Thus set hints at start-up to ensure correct init. size, then a
  * second after the final attempt to reset the real minimum hinst (done by
- * scrollbar init.), actually do the sttandard hinst and stop the timer.
+ * scrollbar init.), actually do the standard hinst and stop the timer.
  * We'll not let the default hints be set while this timer's active.
  */
 /*ARGSUSED*/
@@ -5430,7 +5433,7 @@ gui_mch_get_color(char_u *name)
 	/*
 	 * Since we have already called gtk_set_locale here the bugger
 	 * XParseColor will accept only explicit color names in the language
-	 * of the current locale.  However this will interferre with:
+	 * of the current locale.  However this will interfere with:
 	 * 1. Vim's global startup files
 	 * 2. Explicit color names in .vimrc
 	 *
@@ -6359,7 +6362,7 @@ input_timer_cb(gpointer data)
 {
     int *timed_out = (int *) data;
 
-    /* Just inform the caller about the occurence of it */
+    /* Just inform the caller about the occurrence of it */
     *timed_out = TRUE;
 
     if (gtk_main_level() > 0)

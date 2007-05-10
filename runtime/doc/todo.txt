@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.1a.  Last change: 2007 May 05
+*todo.txt*      For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -34,6 +34,9 @@ Patch to make virtcol([123, '$']) do the right thing. (Michael Schaap)
 
 Insert mode completion: CTRL-N and CTRL-P work differently and they both don't
 work as expected. (Bernhard Walle, 2007 Feb 27)
+
+When 'rightleft' is set the completion menu is positioned wrong. (Baha-Eddine
+MOKADEM)
 
 glob() doesn't work correctly with single quotes and 'shell' set to /bin/sh.
 (Adri Verhoef, Charles Campbell 2007 Mar 26)
@@ -93,6 +96,10 @@ Use new dutch wordlist for spelling?  http://www.opentaal.org/
 See remarks from Adri, 2007 Feb 9.
 
 When opening quickfix window, disable spell checking?
+
+Windows 98: pasting from the clipboard with text from another application has
+a trailing NUL.  (Joachim Hofmann)  Perhaps the length specified for CF_TEXT
+isn't right?
 
 Win32: When 'encoding' is "latin1" 'ignorecase' doesn't work for characters
 with umlaut. (Joachim Hofmann)  toupper_tab[] and tolower_tab[] are not filled
@@ -200,6 +207,8 @@ C++ indenting wrong with "=". (James Kanze, 2007 Jan 26)
 10)
 
 ":lockvar" should use copyID to avoid endless loop.
+
+Patch to use xterm mouse codes for screen. (Micah Cowan, 2007 May 8)
 
 Gvim: dialog for closing Vim should check if Vim is busy writing a file.  Then
 use a different dialog: "busy saving, really quit? yes / no".
@@ -364,9 +373,6 @@ GDK_WINDOW_STATE_MAXIMIZED) and set it again?
 
 Another resizing problem when setting 'columns' and 'lines' to a very large
 number. (Tony Mechelynck, 2007 Feb 6)
-
-Mutt files are not always recognized.  Change pattern to include
-non-alphanumeric characters. (Gary Johnson, 2006 Jul 25)
 
 Problem with using :redir in user command completion function? (Hari Krishna
 Dara, 2006 June 21)
@@ -1581,7 +1587,7 @@ Tab pages:
 8   :tabmove -N	 move tab page N pages backward
 7   :tabdup	 duplicate the tab with all its windows.
 7   Option to put tab line at the left or right?  Need an option to specify
-    its witdh.  It's like a separate window with ":tabs" output.
+    its width.  It's like a separate window with ":tabs" output.
 7   Add local variables for each tab page?
 8   Add local options for each tab page?  E.g., 'diffopt' could differ between
     tab pages.

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.1a.  Last change: 2007 May 05
+*version7.txt*  For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1007,15 +1007,15 @@ MatchParen              matching parens |pi_paren.txt| |hl-MatchParen|
 
 New items in search patterns: ~
 |/\%d| \%d123		search for character with decimal number
-|/\]|  [\d123]		idem, in a colletion
+|/\]|  [\d123]		idem, in a collection
 |/\%o| \%o103		search for character with octal number
-|/\]|  [\o1o3]		idem, in a colletion
+|/\]|  [\o1o3]		idem, in a collection
 |/\%x| \%x1a		search for character with 2 pos. hex number
-|/\]|  [\x1a]		idem, in a colletion
+|/\]|  [\x1a]		idem, in a collection
 |/\%u| \%u12ab		search for character with 4 pos. hex number
-|/\]|  [\u12ab]		idem, in a colletion
+|/\]|  [\u12ab]		idem, in a collection
 |/\%U| \%U1234abcd	search for character with 8 pos. hex number
-|/\]|  [\U1234abcd]	idem, in a colletion
+|/\]|  [\U1234abcd]	idem, in a collection
 			    (The above partly by Ciaran McCreesh)
 
 |/[[=| [[=a=]]		an equivalence class (only for latin1 characters)
@@ -2795,7 +2795,7 @@ move the cursor left.
 
 Prevent that using CTRL-R = in Insert mode can start Visual mode.
 
-Fixed a crash that occured when in Insert mode with completion active and a
+Fixed a crash that occurred when in Insert mode with completion active and a
 mapping caused edit() to be called recursively.
 
 When using CTRL-O in Insert mode just after the last character while
@@ -2989,21 +2989,29 @@ Added setting 'mouse' in vimrc_example.vim.
 When building with MZscheme also look for include files in the "plt"
 subdirectory.  That's where they are for FreeBSD.
 
+The Ruby interface module is now called "Vim" instead of "VIM".  But "VIM" is
+an alias, so it's backwards compatible. (Tim Pope)
+
 
 Added							*added-7.1*
 -----
 
 New syntax files:
+	/var/log/messages (Yakov Lerner)
 	AutoIt v3 (Jared Breland)
 	Bazaar commit file "bzr". (Dmitry Vasiliev)
+	Cdrdao TOC (Nikolai Weibull)
 	Cmusrc (Nikolai Weibull)
 	FreeBasic (Mark Manning)
 	Hamster (David Fishburn)
 	IBasic (Mark Manning)
-	initng (Elan Ruusamae)
-	/var/log/messages (Yakov Lerner)
 	Privoxy actions file (Doug Kearns)
 	Streaming Descriptors "sd" (Puria Nafisi Azizi)
+	initng (Elan Ruusamae)
+	Autohotkey (Nikolai Weibull)
+	Framescript (Nikolai Weibull)
+	Ldapconf (Nikolai Weibull)
+	Litestep (Nikolai Weibull)
 
 New tutor files:
 	Hungarian (Arpad Horvath)
@@ -4554,6 +4562,36 @@ Problem:    Win32: When GvimExt is built with MSVC 2005 or later, the "Edit
 Solution:   Embed the linker manifest file into the resources of GvimExt.dll.
 	    (Mathias Michaelis)
 Files:	    src/GvimExt/Makefile
+
+
+Fixes after Vim 7.1a BETA:
+
+The extra archive had CVS directories included below "farsi" and
+"runtime/icons".  CVS was missing the farsi icon files.
+
+Fix compiling with Gnome 2.18, undefine bind_textdomain_codeset. (Daniel
+Drake)
+
+Mac: "make install" didn't copy rgb.txt.
+
+When editing a compressed file while there are folds caused "ml_get" errors
+and some lines could be missing.  When decompressing failed option values were
+not restored.
+
+
+Patch 7.1a.001
+Problem:    Crash when downloading a spell file.  (Szabolcs Horvat)
+Solution:   Avoid that did_set_spelllang() is used recursively when a new
+	    window is opened for the download.
+	    Also avoid wiping out the wrong buffer.
+Files:	    runtime/autoload/spellfile.vim, src/buffer.c, src/ex_cmds.c,
+            src/spell.c
+
+Patch 7.1a.002 (extra)
+Problem:    Compilation error with MingW.
+Solution:   Check for LPTOOLTIPTEXT to be defined.
+Files:	    src/gui_w32.c
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

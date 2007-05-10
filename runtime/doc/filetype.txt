@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.1a.  Last change: 2007 Mar 24
+*filetype.txt*  For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -423,7 +423,8 @@ Global mappings:
 			same as the local <Leader>o described above.
 
 Variables:
-g:changelog_timeformat	The date (and time) format used in ChangeLog entries.
+g:changelog_timeformat  Deprecated; use g:changelog_dateformat instead.
+g:changelog_dateformat	The date (and time) format used in ChangeLog entries.
 			The format accepted is the same as for the
 			|strftime()| function.
 			The default is "%Y-%m-%d" which is the standard format
@@ -472,6 +473,14 @@ g:changelog_date_entry_search
 			matching the form >
 				|2003-01-14  Full Name  <user@host>
 <			and some similar formats.
+
+g:changelog_date_end_entry_search
+			The search pattern to use when searching for the end
+			of a date-entry.
+			The same tokens that can be used for
+			g:changelog_new_date_format can be used here as well.
+			The default is '^\s*$' which finds lines that contain
+			only whitespace or are completely empty.
 
 The Changelog entries are inserted where they add the least amount of text.
 After figuring out the current date and user, the file is searched for an
