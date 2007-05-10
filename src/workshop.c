@@ -1329,7 +1329,7 @@ load_window(
 warp_to_pc(
 	int	 lnum)			/* line number to warp to */
 {
-    char	 lbuf[256];		/* build line comand here */
+    char	 lbuf[256];		/* build line command here */
 
     if (lnum > 0)
     {

@@ -1742,7 +1742,7 @@ gui_mac_doInGrowClick(Point where, WindowPtr whichWindow)
 
     resizeLimitsPtr = GetRegionBounds(GetGrayRgn(), &resizeLimits);
 
-    /* Set the minimun size */
+    /* Set the minimum size */
     /* TODO: Should this come from Vim? */
     resizeLimits.top = 100;
     resizeLimits.left = 100;
@@ -1844,7 +1844,7 @@ gui_mac_doUpdateEvent(EventRecord *event)
 	 */
 	GetPortVisibleRegion(GetWindowPort(whichWindow), updateRgn);
 # if 0
-	/* Would be more appropriate to use the follwing but doesn't
+	/* Would be more appropriate to use the following but doesn't
 	 * seem to work under MacOS X (Dany)
 	 */
 	GetWindowRegion(whichWindow, kWindowUpdateRgn, updateRgn);
@@ -1929,7 +1929,7 @@ gui_mac_doActivateEvent(EventRecord *event)
 	gui_focus_change(FALSE);
 /*	DON'T KNOW what the code below was doing
 	found in the deactivate clause, but the
-	clause writting TRUE into in_focus (BUG)
+	clause writing TRUE into in_focus (BUG)
  */
 
 #if 0	/* Removed by Dany as per above June 2001 */
@@ -1955,7 +1955,7 @@ gui_mac_doSuspendEvent(EventRecord *event)
      */
 
     /* May not need to change focus as the window will
-     * get an activate/desactivate event
+     * get an activate/deactivate event
      */
     if (event->message & 1)
 	/* Resume */
@@ -2748,7 +2748,7 @@ gui_mac_find_font(char_u *font_name)
 
 /*
  * ------------------------------------------------------------
- * GUI_MCH functionnality
+ * GUI_MCH functionality
  * ------------------------------------------------------------
  */
 
@@ -3007,7 +3007,7 @@ gui_mch_init(void)
     display_errors();
 
     /* Get background/foreground colors from system */
-    /* TODO: do the approriate call to get real defaults */
+    /* TODO: do the appropriate call to get real defaults */
     gui.norm_pixel = 0x00000000;
     gui.back_pixel = 0x00FFFFFF;
 
@@ -3036,7 +3036,7 @@ gui_mch_init(void)
     gui.scrollbar_height = gui.scrollbar_width = 15; /* cheat 1 overlap */
     gui.border_offset = gui.border_width = 2;
 
-    /* If Quartz-style text antialiasing is available (see
+    /* If Quartz-style text anti aliasing is available (see
        gui_mch_draw_string() below), enable it for all font sizes. */
     vim_setenv((char_u *)"QDTEXT_MINSIZE", (char_u *)"1");
 
@@ -3212,7 +3212,7 @@ gui_mch_set_shellsize(
  * Get the screen dimensions.
  * Allow 10 pixels for horizontal borders, 40 for vertical borders.
  * Is there no way to find out how wide the borders really are?
- * TODO: Add live udate of those value on suspend/resume.
+ * TODO: Add live update of those value on suspend/resume.
  */
     void
 gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
@@ -5315,7 +5315,8 @@ gui_mch_dialog(
     short	itemType;
     short	useIcon;
     short	width;
-    short	totalButtonWidth = 0;   /* the width of all button together incuding spacing */
+    short	totalButtonWidth = 0;   /* the width of all button together
+					   including spacing */
     short	widestButton = 0;
     short	dfltButtonEdge     = 20;  /* gut feeling */
     short	dfltElementSpacing = 13;  /* from IM:V.2-29 */
@@ -5959,7 +5960,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 	theCPB.dirInfo.ioFDirIndex = -1;
      /* theCPB.dirInfo.ioNamePtr   = directoryName; Already done above. */
 	theCPB.dirInfo.ioVRefNum   = file.vRefNum;
-     /* theCPB.dirInfo.ioDirID     = irrevelant when ioFDirIndex = -1 */
+     /* theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1 */
 	theCPB.dirInfo.ioDrDirID   = theCPB.dirInfo.ioDrParID;
 
 	/* As ioFDirIndex = -1, get the info of ioDrDirID, */
@@ -5986,7 +5987,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     theCPB.dirInfo.ioFDirIndex = -1;
  /* theCPB.dirInfo.ioNamePtr   = directoryName; Already done above. */
     theCPB.dirInfo.ioVRefNum   = file.vRefNum;
- /* theCPB.dirInfo.ioDirID     = irrevelant when ioFDirIndex = -1 */
+ /* theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1 */
     theCPB.dirInfo.ioDrDirID   = theCPB.dirInfo.ioDrParID;
 
     /* As ioFDirIndex = -1, get the info of ioDrDirID, */
@@ -5998,7 +5999,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 
     /* For MacOS Classic always add the volume name	     */
     /* For MacOS X add the volume name preceded by "Volumes" */
-    /*	when we are not refering to the boot volume	     */
+    /*	when we are not referring to the boot volume	     */
 #ifdef USE_UNIXFILENAME
     if (file.vRefNum != dfltVol_vRefNum)
 #endif
