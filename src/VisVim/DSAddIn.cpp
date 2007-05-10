@@ -93,7 +93,7 @@ STDMETHODIMP CDSAddIn::OnDisconnection (VARIANT_BOOL bLastTime)
 
 // Add a command to DevStudio
 // Creates a toolbar button for the command also.
-// 'MethodName' is the name of the methode specified in the .odl file
+// 'MethodName' is the name of the method specified in the .odl file
 // 'StrResId' the resource id of the descriptive string
 // 'GlyphIndex' the image index into the command buttons bitmap
 // Return true on success

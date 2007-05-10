@@ -483,7 +483,7 @@ int mch_rename __ARGS((const char *src, const char *dest));
 # endif
 # ifndef VMS
 #  ifdef __MVS__
-  /* on OS390 Unix getenv() doesn't return a pointer to persistant
+  /* on OS390 Unix getenv() doesn't return a pointer to persistent
    * storage -> use __getenv() */
 #   define mch_getenv(x) (char_u *)__getenv((char *)(x))
 #  else

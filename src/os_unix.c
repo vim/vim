@@ -490,7 +490,7 @@ mch_total_mem(special)
 	    /* avoid overflow as much as possible */
 	    while (shiftright > 0 && (pagesize & 1) == 0)
 	    {
-		pagesize = pagesize >> 1;
+		pagesize = (long_u)pagesize >> 1;
 		--shiftright;
 	    }
 	    mem = (long_u)pagesize * pagecount;

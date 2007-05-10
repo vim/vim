@@ -383,7 +383,7 @@ do_tag(tag, type, count, forceit, verbose)
 			/*
 			 * Beyond the last one, just give an error message and
 			 * go to the last one.  Don't store the cursor
-			 * postition.
+			 * position.
 			 */
 			tagstackidx = tagstacklen - 1;
 			EMSG(_(topmsg));
@@ -1330,7 +1330,7 @@ find_tags(pat, num_matches, matchesp, flags, mincount, buf_ffname)
     } incstack[INCSTACK_SIZE];
 
     int		incstack_idx = 0;	/* index in incstack */
-    char_u     *ebuf;			/* aditional buffer for etag fname */
+    char_u     *ebuf;			/* additional buffer for etag fname */
     int		is_etag;		/* current file is emaces style */
 #endif
 
@@ -2812,7 +2812,7 @@ parse_tag_line(lbuf,
  *
  * Static tags produced by the older ctags program have the format:
  *	'file:tag  file  /pattern'.
- * This is only recognized when both occurences of 'file' are the same, to
+ * This is only recognized when both occurrence of 'file' are the same, to
  * avoid recognizing "string::string" or ":exit".
  *
  * Static tags produced by the new ctags program have the format:

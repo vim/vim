@@ -1,7 +1,7 @@
 " Vim default file
 " Language:         Racc input file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-07-09
 
 if exists("b:current_syntax")
   finish
@@ -109,6 +109,10 @@ syn region  raccInner       transparent matchgroup=raccPreProc
 syn region  raccFooter      transparent matchgroup=raccPreProc
                             \ start='^---- footer.*' end='^----'he=e-4
                             \ contains=@raccRuby
+
+syn sync    match raccSyncHeader    grouphere raccHeader '^---- header'
+syn sync    match raccSyncInner     grouphere raccInner '^---- inner'
+syn sync    match raccSyncFooter    grouphere raccFooter '^---- footer'
 
 hi def link raccTodo        Todo
 hi def link raccComment     Comment

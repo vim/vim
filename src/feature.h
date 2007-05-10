@@ -1096,7 +1096,7 @@
 /*
  * +termresponse	send t_RV to obtain terminal response.  Used for xterm
  *			to check if mouse dragging can be used and if term
- *			codes can be obtaind.
+ *			codes can be obtained.
  */
 #if (defined(FEAT_NORMAL) || defined(FEAT_MOUSE)) && defined(HAVE_TGETENT)
 # define FEAT_TERMRESPONSE
@@ -1155,7 +1155,7 @@
  * +python		Python interface: "--enable-pythoninterp"
  * +tcl			TCL interface: "--enable-tclinterp"
  * +sniff		Sniff interface: "--enable-sniff"
- * +sun_workshop	Sun Workshop integegration
+ * +sun_workshop	Sun Workshop integration
  * +netbeans_intg	Netbeans integration
  */
 
