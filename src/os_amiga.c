@@ -217,7 +217,7 @@ mch_delay(msec, ignoreinput)
     long    msec;
     int	    ignoreinput;
 {
-#ifndef LATTICE		/* SAS declares void Delay(UNLONG) */
+#ifndef LATTICE		/* SAS declares void Delay(ULONG) */
     void	    Delay __ARGS((long));
 #endif
 
@@ -1145,7 +1145,7 @@ out_num(n)
 
     static long
 dos_packet(pid, action, arg)
-    struct MsgPort *pid;    /* process indentifier ... (handlers message port) */
+    struct MsgPort *pid;    /* process identifier ... (handlers message port) */
     long	    action, /* packet type ... (what you want handler to do)   */
 		    arg;    /* single argument */
 {

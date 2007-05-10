@@ -1906,7 +1906,7 @@ skip_var_list(arg, var_count, semicolon)
 }
 
 /*
- * Skip one (assignable) variable name, includig @r, $VAR, &option, d.key,
+ * Skip one (assignable) variable name, including @r, $VAR, &option, d.key,
  * l[idx].
  */
     static char_u *
@@ -4506,8 +4506,8 @@ eval6(arg, rettv, evaluate)
 /*
  * Handle sixth level expression:
  *  number		number constant
- *  "string"		string contstant
- *  'string'		literal string contstant
+ *  "string"		string constant
+ *  'string'		literal string constant
  *  &option-name	option value
  *  @r			register contents
  *  identifier		variable value
@@ -7018,7 +7018,7 @@ static struct fst
     char	f_min_argc;	/* minimal number of arguments */
     char	f_max_argc;	/* maximal number of arguments */
     void	(*f_func) __ARGS((typval_T *args, typval_T *rvar));
-				/* implemenation of function */
+				/* implementation of function */
 } functions[] =
 {
     {"add",		2, 2, f_add},
@@ -20668,7 +20668,7 @@ static int shortpath_for_partial __ARGS((char_u **fnamep, char_u **bufp, int *fn
 
 /*
  * Get the short pathname of a file.
- * Returns 1 on success. *fnamelen is 0 for nonexistant path.
+ * Returns 1 on success. *fnamelen is 0 for nonexistent path.
  */
     static int
 get_short_pathname(fnamep, bufp, fnamelen)
@@ -20735,7 +20735,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
 
     do
     {
-	/* Go back one path-seperator */
+	/* Go back one path-separator */
 	while (s > pbuf2 && !after_pathsep(pbuf2, s + 1))
 	{
 	    --s;
@@ -20745,7 +20745,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
 	if (s <= pbuf2)
 	    break;
 
-	/* Remeber the character that is about to be blatted */
+	/* Remember the character that is about to be splatted */
 	ch = *s;
 	*s = 0; /* get_short_pathname requires a null-terminated string */
 
@@ -20761,7 +20761,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
 
     if (plen > 0)
     {
-	/* Remeber the length of the new string.  */
+	/* Remember the length of the new string.  */
 	*fnamelen = len = plen + slen;
 	vim_free(*bufp);
 	if (len > len2)

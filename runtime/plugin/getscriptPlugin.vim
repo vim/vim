@@ -5,7 +5,7 @@
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
-" GetLatestVimScripts: 642 1 :AutoInstall: GetLatestVimScripts.vim
+" GetLatestVimScripts: 642 1 :AutoInstall: getscript.vim
 "
 " (Rom 15:11 WEB) Again, "Praise the Lord, all you Gentiles!  Let
 " all the peoples praise Him."

@@ -152,7 +152,7 @@ struct data_block
  *
  * If size of block0 changes anyway, adjust MIN_SWAP_PAGE_SIZE in vim.h!!
  *
- * This block is built up of single bytes, to make it portable accros
+ * This block is built up of single bytes, to make it portable across
  * different machines. b0_magic_* is used to check the byte order and size of
  * variables, because the rest of the swap file is not portable.
  */

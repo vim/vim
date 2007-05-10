@@ -68,7 +68,7 @@ general_beval_cb(beval, state)
 
 	    /*
 	     * Temporarily change the curbuf, so that we can determine whether
-	     * the buffer-local balloonexpr option was set insecurly.
+	     * the buffer-local balloonexpr option was set insecurely.
 	     */
 	    save_curbuf = curbuf;
 	    curbuf = wp->w_buffer;
@@ -250,7 +250,7 @@ gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
 
 #if defined(FEAT_BEVAL_TIP) || defined(PROTO)
 /*
- * Destroy a ballon-eval and free its associated memory.
+ * Destroy a balloon-eval and free its associated memory.
  */
     void
 gui_mch_destroy_beval_area(beval)
@@ -741,7 +741,7 @@ pointerEventEH(w, client_data, event, unused)
 
 /*
  * The real event handler. Called by pointerEventEH() whenever an event we are
- * interested in ocurrs.
+ * interested in occurs.
  */
 
     static void

@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.1a.  Last change: 2007 Apr 17
+*quickfix.txt*  For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -713,6 +713,17 @@ not "b:current_compiler".  What the command actually does is the following:
 
 
 For writing a compiler plugin, see |write-compiler-plugin|.
+
+
+GCC					*quickfix-gcc*	*compiler-gcc*
+
+There's one variable you can set for the GCC compiler:
+
+g:compiler_gcc_ignore_unmatched_lines
+				Ignore lines that don't match any patterns
+				defined for GCC.  Useful if output from
+				commands run from make are generating false
+				positives.
 
 
 MANX AZTEC C				*quickfix-manx* *compiler-manx*

@@ -2027,7 +2027,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     extra = 0;
 
     check_line_range(lo, buf->buf);	    /* inclusive */
-    check_line_range(hi - 1, buf->buf);  /* exclisive */
+    check_line_range(hi - 1, buf->buf);	    /* exclusive */
 
     if (SCHEME_FALSEP(line_list) || SCHEME_NULLP(line_list))
     {
