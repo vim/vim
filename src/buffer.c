@@ -550,6 +550,24 @@ buf_freeall(buf, del_buf, wipe_buf)
 #ifdef FEAT_DIFF
     diff_buf_delete(buf);	    /* Can't use 'diff' for unloaded buffer. */
 #endif
+
+#ifdef FEAT_FOLDING
+    /* No folds in an empty buffer. */
+# ifdef FEAT_WINDOWS
+    {
+	win_T		*win;
+	tabpage_T	*tp;
+
+	FOR_ALL_TAB_WINDOWS(tp, win)
+	    if (win->w_buffer == buf)
+		clearFolding(win);
+    }
+# else
+    if (curwin->w_buffer == buf)
+	clearFolding(curwin);
+# endif
+#endif
+
 #ifdef FEAT_TCL
     tcl_buffer_free(buf);
 #endif
@@ -2023,7 +2041,7 @@ buflist_findpat(pattern, pattern_end, unlisted, diffmode)
     /*
      * Try four ways of matching a listed buffer:
      * attempt == 0: without '^' or '$' (at any position)
-     * attempt == 1: with '^' at start (only at postion 0)
+     * attempt == 1: with '^' at start (only at position 0)
      * attempt == 2: with '$' at end (only match at end)
      * attempt == 3: with '^' at start and '$' at end (only full match)
      * Repeat this for finding an unlisted buffer if there was no matching

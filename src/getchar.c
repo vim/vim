@@ -3427,7 +3427,7 @@ do_map(maptype, arg, mode, abbrev)
 			    showmap(mp, map_table != maphash);
 			    did_it = TRUE;
 			}
-			else if (n != len)	/* new entry is ambigious */
+			else if (n != len)	/* new entry is ambiguous */
 			{
 			    mpp = &(mp->m_next);
 			    continue;

@@ -81,7 +81,7 @@ static void win_new_height __ARGS((win_T *, int));
 #define URL_SLASH	1		/* path_is_url() has found "://" */
 #define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
 
-#define NOWIN		(win_T *)-1	/* non-exisiting window */
+#define NOWIN		(win_T *)-1	/* non-existing window */
 
 #ifdef FEAT_WINDOWS
 # define ROWS_AVAIL (Rows - p_ch - tabline_height())
@@ -536,7 +536,7 @@ wingotofile:
 #endif
 
 #ifdef FEAT_FIND_ID
-/* Go to the first occurence of the identifier under cursor along path in a
+/* Go to the first occurrence of the identifier under cursor along path in a
  * new window -- webb
  */
     case 'i':			    /* Go to any match */
