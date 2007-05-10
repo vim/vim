@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Oct 09
+" Last Change: 2007 May 10
 
 " These functions are used by the gzip plugin.
 
@@ -63,6 +63,12 @@ fun gzip#read(cmd)
   " set 'modifiable'
   let ma_save = &ma
   setlocal ma
+  " Reset 'foldenable', otherwise line numbers get adjusted.
+  if has("folding")
+    let fen_save = &fen
+    setlocal nofen
+  endif
+
   " when filtering the whole buffer, it will become empty
   let empty = line("'[") == 1 && line("']") == line("$")
   let tmp = tempname()
@@ -74,42 +80,50 @@ fun gzip#read(cmd)
   if !filereadable(tmp)
     " uncompress didn't work!  Keep the compressed file then.
     echoerr "Error: Could not read uncompressed file"
-    return
-  endif
-  " delete the compressed lines; remember the line number
-  let l = line("'[") - 1
-  if exists(":lockmarks")
-    lockmarks '[,']d _
+    let ok = 0
   else
-    '[,']d _
-  endif
-  " read in the uncompressed lines "'[-1r tmp"
-  " Use ++edit if the buffer was empty, keep the 'ff' and 'fenc' options.
-  setlocal nobin
-  if exists(":lockmarks")
-    if empty
-      execute "silent lockmarks " . l . "r ++edit " . tmp
+    let ok = 1
+    " delete the compressed lines; remember the line number
+    let l = line("'[") - 1
+    if exists(":lockmarks")
+      lockmarks '[,']d _
     else
-      execute "silent lockmarks " . l . "r " . tmp
+      '[,']d _
     endif
-  else
-    execute "silent " . l . "r " . tmp
+    " read in the uncompressed lines "'[-1r tmp"
+    " Use ++edit if the buffer was empty, keep the 'ff' and 'fenc' options.
+    setlocal nobin
+    if exists(":lockmarks")
+      if empty
+	execute "silent lockmarks " . l . "r ++edit " . tmp
+      else
+	execute "silent lockmarks " . l . "r " . tmp
+      endif
+    else
+      execute "silent " . l . "r " . tmp
+    endif
+
+    " if buffer became empty, delete trailing blank line
+    if empty
+      silent $delete _
+      1
+    endif
+    " delete the temp file and the used buffers
+    call delete(tmp)
+    silent! exe "bwipe " . tmp
+    silent! exe "bwipe " . tmpe
   endif
 
-  " if buffer became empty, delete trailing blank line
-  if empty
-    silent $delete _
-    1
-  endif
-  " delete the temp file and the used buffers
-  call delete(tmp)
-  silent! exe "bwipe " . tmp
-  silent! exe "bwipe " . tmpe
+  " Restore saved option values.
   let &pm = pm_save
   let &cpo = cpo_save
   let &l:ma = ma_save
+  if has("folding")
+    let &l:fen = fen_save
+  endif
+
   " When uncompressed the whole buffer, do autocommands
-  if empty
+  if ok && empty
     if &verbose >= 8
       execute "doau BufReadPost " . expand("%:r")
     else

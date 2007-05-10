@@ -33,7 +33,7 @@
 # define HAVE_PATHDEF
 
 /*
- * Check if configure correcly managed to find sizeof(int).  If this failed,
+ * Check if configure correctly managed to find sizeof(int).  If this failed,
  * it becomes zero.  This is likely a problem of not being able to run the
  * test program.  Other items from configure may also be wrong then!
  */
@@ -42,7 +42,7 @@
 # endif
 
 /*
- * Cygwin may have fchdir() in a newer rleease, but in most versions it
+ * Cygwin may have fchdir() in a newer release, but in most versions it
  * doesn't work well and avoiding it keeps the binary backward compatible.
  */
 # if defined(__CYGWIN32__) && defined(HAVE_FCHDIR)

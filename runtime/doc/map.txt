@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.1a.  Last change: 2007 Mar 24
+*map.txt*       For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -792,7 +792,7 @@ stands for.  This can be used to save typing for often used long words.  And
 you can use it to automatically correct obvious spelling errors.
 Examples:
 
-	:iab ms MicroSoft
+	:iab ms Microsoft
 	:iab tihs this
 
 There are three types of abbreviations:

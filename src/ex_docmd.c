@@ -1240,7 +1240,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	trylevel = initial_trylevel + cstack.cs_trylevel;
 
 	/*
-	 * If the outermost try conditional (accross function calls and sourced
+	 * If the outermost try conditional (across function calls and sourced
 	 * files) is aborted because of an error, an interrupt, or an uncaught
 	 * exception, cancel everything.  If it is left normally, reset
 	 * force_abort to get the non-EH compatible abortion behavior for
@@ -1593,8 +1593,8 @@ getline_equal(fgetline, cookie, func)
     struct loop_cookie *cp;
 
     /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
-     * function that's orignally used to obtain the lines.  This may be nested
-     * several levels. */
+     * function that's originally used to obtain the lines.  This may be
+     * nested several levels. */
     gp = fgetline;
     cp = (struct loop_cookie *)cookie;
     while (gp == get_loop_line)
@@ -1624,7 +1624,7 @@ getline_cookie(fgetline, cookie)
     struct loop_cookie *cp;
 
     /* When "fgetline" is "get_loop_line()" use the "cookie" to find the
-     * cookie that's orignally used to obtain the lines.  This may be nested
+     * cookie that's originally used to obtain the lines.  This may be nested
      * several levels. */
     gp = fgetline;
     cp = (struct loop_cookie *)cookie;
