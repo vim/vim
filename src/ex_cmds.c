@@ -3905,7 +3905,7 @@ ex_append(eap)
 	curbuf->b_p_ai = !curbuf->b_p_ai;
 
     /* "start" is set to eap->line2+1 unless that position is invalid (when
-     * eap->line2 pointed to the end of the buffer and nothig was appended)
+     * eap->line2 pointed to the end of the buffer and nothing was appended)
      * "end" is set to lnum when something has been appended, otherwise
      * it is the same than "start"  -- Acevedo */
     curbuf->b_op_start.lnum = (eap->line2 < curbuf->b_ml.ml_line_count) ?
@@ -5256,7 +5256,7 @@ global_exe(cmd)
     if (msg_col == 0 && msg_scrolled == 0)
 	msg_didout = FALSE;
 
-    /* If subsitutes done, report number of substitues, otherwise report
+    /* If substitutes done, report number of substitutes, otherwise report
      * number of extra or deleted lines. */
     if (!do_sub_msg(FALSE))
 	msgmore(curbuf->b_ml.ml_line_count - old_lcount);
