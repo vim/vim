@@ -2716,7 +2716,7 @@ do_mouse(oap, c, dir, count, fixindent)
 
 #ifdef FEAT_VISUAL
     /* Set global flag that we are extending the Visual area with mouse
-     * dragging; temporarily mimimize 'scrolloff'. */
+     * dragging; temporarily minimize 'scrolloff'. */
     if (VIsual_active && is_drag && p_so)
     {
 	/* In the very first line, allow scrolling one line */
@@ -3834,7 +3834,8 @@ display_showcmd()
     }
 
     /*
-     * clear the rest of an old message by outputing up to SHOWCMD_COLS spaces
+     * clear the rest of an old message by outputting up to SHOWCMD_COLS
+     * spaces
      */
     screen_puts((char_u *)"          " + len, (int)Rows - 1, sc_col + len, 0);
 
@@ -5704,7 +5705,7 @@ nv_right(cap)
 # ifdef FEAT_VIRTUALEDIT
     /*
      * In virtual mode, there's no such thing as "PAST_LINE", as lines are
-     * (theoretically) infinitly long.
+     * (theoretically) infinitely long.
      */
     if (virtual_active())
 	PAST_LINE = 0;
@@ -6176,8 +6177,8 @@ nv_brackets(cap)
 
 #ifdef FEAT_FIND_ID
     /*
-     * Find the occurence(s) of the identifier or define under cursor
-     * in current and included files or jump to the first occurence.
+     * Find the occurrence(s) of the identifier or define under cursor
+     * in current and included files or jump to the first occurrence.
      *
      *			search	     list	    jump
      *		      fwd   bwd    fwd	 bwd	 fwd	bwd
@@ -7963,7 +7964,7 @@ nv_g_cmd(cap)
 	break;
 
     /*
-     * "gd": Find first occurence of pattern under the cursor in the
+     * "gd": Find first occurrence of pattern under the cursor in the
      *	 current function
      * "gD": idem, but in the current file.
      */

@@ -259,7 +259,7 @@ distclean: clean
 # messages.  Don't worry about that.
 # If there is a real error, there will be a difference between "test.out" and
 # a "test99.ok" file.
-# If everything is allright, the final message will be "ALL DONE".
+# If everything is alright, the final message will be "ALL DONE".
 #
 test check:
     VimProg = ../$Target
@@ -351,7 +351,7 @@ all: $Target $GUI_BUNDLE
 $Source version.c : auto/osdef.h
 
 # Need to mention that the target also depends on version.c, since it's not
-# inluded in $Source
+# included in $Source
 $Target : version.c
 
 # Some sources are to be found in the "auto" directory.

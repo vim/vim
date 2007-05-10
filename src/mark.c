@@ -215,7 +215,7 @@ movemark(count)
 
 	/*
 	 * if first CTRL-O or CTRL-I command after a jump, add cursor position
-	 * to list.  Careful: If there are duplicates (CTRL-O immidiately after
+	 * to list.  Careful: If there are duplicates (CTRL-O immediately after
 	 * starting Vim on a file), another entry may have been removed.
 	 */
 	if (curwin->w_jumplistidx == curwin->w_jumplistlen)

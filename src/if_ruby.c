@@ -926,7 +926,10 @@ static void ruby_vim_init(void)
     objtbl = rb_hash_new();
     rb_global_variable(&objtbl);
 
-    mVIM = rb_define_module("VIM");
+    /* The Vim module used to be called "VIM", but "Vim" is better.  Make an
+     * alias "VIM" for backwards compatiblity. */
+    mVIM = rb_define_module("Vim");
+    rb_define_const(rb_cObject, "VIM", mVIM);
     rb_define_const(mVIM, "VERSION_MAJOR", INT2NUM(VIM_VERSION_MAJOR));
     rb_define_const(mVIM, "VERSION_MINOR", INT2NUM(VIM_VERSION_MINOR));
     rb_define_const(mVIM, "VERSION_BUILD", INT2NUM(VIM_VERSION_BUILD));

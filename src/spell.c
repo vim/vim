@@ -8226,7 +8226,7 @@ write_vim_spell(spin, fname)
 	putc(SN_NOBREAK, fd);				/* <sectionID> */
 	putc(0, fd);					/* <sectionflags> */
 
-	/* It's empty, the precense of the section flags the feature. */
+	/* It's empty, the presence of the section flags the feature. */
 	put_bytes(fd, (long_u)0, 4);			/* <sectionlen> */
     }
 
@@ -11554,7 +11554,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		if (soundfold)
 		{
 		    /* For soundfolded words we need to find the original
-		     * words, the edit distrance and then add them. */
+		     * words, the edit distance and then add them. */
 		    add_sound_suggest(su, preword, sp->ts_score, lp);
 		}
 		else
@@ -14666,7 +14666,7 @@ soundalike_score(goodstart, badstart)
     goodlen = (int)STRLEN(goodsound);
     badlen = (int)STRLEN(badsound);
 
-    /* Return quickly if the lenghts are too different to be fixed by two
+    /* Return quickly if the lengths are too different to be fixed by two
      * changes. */
     n = goodlen - badlen;
     if (n < -2 || n > 2)
@@ -14862,7 +14862,7 @@ spell_edit_score(slang, badword, goodword)
     char_u	*goodword;
 {
     int		*cnt;
-    int		badlen, goodlen;	/* lenghts including NUL */
+    int		badlen, goodlen;	/* lengths including NUL */
     int		j, i;
     int		t;
     int		bc, gc;

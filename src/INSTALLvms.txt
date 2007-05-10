@@ -1,7 +1,7 @@
 INSTALLvms.txt - Installation of Vim on OpenVMS
 
 Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-Last change:  2006 Apr 30
+Last change:  2007 May 07
 
 This file contains instructions for compiling Vim on Openvms.
 If you already have an executable version of Vim, you don't need this.
@@ -56,7 +56,7 @@ Contents:
      GTK libraries.
 
 NOTE: procedure in chapter 1 describes source code preparation from multi OS
-code,however it is available OpenVMS oprimized (and tested) source code from:
+code, however it is available OpenVMS optimized (and tested) source code from:
 ftp://ftp.polarhome.com/pub/vim/source/vms/
 (http://www.polarhome.com/vim/files/source/vms/)
 
@@ -326,7 +326,7 @@ perl_env :
 	gtk_root:[gtk.gtk]libgtk.exe /share
 
      During runtime it is suggested to have all these files installed and
-     copyed to SYS$LIBRARY: to be able to use it without problems.
+     copied to SYS$LIBRARY: to be able to use it without problems.
      Also VMS_JACKETS.EXE from OpenVMS Porting Library.
 
      Please note, that GTK uses /name=(as_is,short)/float=ieee/ieee=denorm
