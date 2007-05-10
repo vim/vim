@@ -1,7 +1,9 @@
 " Vim completion script
 " Language:	CSS 2.1
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2007 Mar 11
+" Last Change:	2007 May 5
+
+	let s:values = split("azimuth background background-attachment background-color background-image background-position background-repeat border bottom border-collapse border-color border-spacing border-style border-top border-right border-bottom border-left border-top-color border-right-color border-bottom-color border-left-color  border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width border-bottom-width border-left-width border-width caption-side clear clip color content counter-increment counter-reset cue cue-after cue-before cursor display direction elevation empty-cells float font font-family font-size font-style font-variant font-weight height left letter-spacing line-height list-style list-style-image list-style-position list-style-type margin margin-right margin-left margin-top margin-bottom max-height max-width min-height min-width orphans outline outline-color outline-style outline-width overflow padding padding-top padding-right padding-bottom padding-left page-break-after page-break-before page-break-inside pause pause-after pause-before pitch pitch-range play-during position quotes right richness speak speak-header speak-numeral speak-punctuation speech-rate stress table-layout text-align text-decoration text-indent text-transform top unicode-bidi vertical-align visibility voice-family volume white-space width widows word-spacing z-index")
 
 function! csscomplete#CompleteCSS(findstart, base)
 
@@ -13,7 +15,7 @@ if a:findstart
 	while start >= 0 && line[start - 1] =~ '\%(\k\|-\)'
 		let start -= 1
 	endwhile
-	let b:compl_context = getline('.')[0:compl_begin]
+	let b:compl_context = line[0:compl_begin]
 	return start
 endif
 
@@ -84,11 +86,10 @@ endif
 if len(borders) == 0 || borders[max(keys(borders))] =~ '^\%(openbrace\|semicolon\|opencomm\|closecomm\|style\)$'
 	" Complete properties
 
-	let values = split("azimuth background background-attachment background-color background-image background-position background-repeat border bottom border-collapse border-color border-spacing border-style border-top border-right border-bottom border-left border-top-color border-right-color border-bottom-color border-left-color  border-top-style border-right-style border-bottom-style border-left-style border-top-width border-right-width border-bottom-width border-left-width border-width caption-side clear clip color content counter-increment counter-reset cue cue-after cue-before cursor display direction elevation empty-cells float font font-family font-size font-style font-variant font-weight height left letter-spacing line-height list-style list-style-image list-style-position list-style-type margin margin-right margin-left margin-top margin-bottom max-height max-width min-height min-width orphans outline outline-color outline-style outline-width overflow padding padding-top padding-right padding-bottom padding-left page-break-after page-break-before page-break-inside pause pause-after pause-before pitch pitch-range play-during position quotes right richness speak speak-header speak-numeral speak-punctuation speech-rate stress table-layout text-align text-decoration text-indent text-transform top unicode-bidi vertical-align visibility voice-family volume white-space width widows word-spacing z-index")
 
 	let entered_property = matchstr(line, '.\{-}\zs[a-zA-Z-]*$')
 
-	for m in values
+	for m in s:values
 		if m =~? '^'.entered_property
 			call add(res, m . ':')
 		elseif m =~? entered_property
@@ -370,11 +371,9 @@ elseif borders[max(keys(borders))] == 'atrule'
 		if atrulename == 'media'
 			let values = ["screen", "tty", "tv", "projection", "handheld", "print", "braille", "aural", "all"]
 
-			let atruleafterbase = matchstr(line, '.*@media\s\+\ze.*$')
 			let entered_atruleafter = matchstr(line, '.*@media\s\+\zs.*$')
 
 		elseif atrulename == 'import'
-			let atruleafterbase = matchstr(line, '.*@import\s\+\ze.*$')
 			let entered_atruleafter = matchstr(line, '.*@import\s\+\zs.*$')
 
 			if entered_atruleafter =~ "^[\"']"
