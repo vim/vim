@@ -3400,7 +3400,7 @@ mch_print_text_out(p, len)
 #ifdef FEAT_MBYTE
     /* Ideally VIM would create a rearranged CID font to combine a Roman and
      * CJKV font to do what VIM is doing here - use a Roman font for characters
-     * in the ASCII range, and the origingal CID font for everything else.
+     * in the ASCII range, and the original CID font for everything else.
      * The problem is that GhostScript still (as of 8.13) does not support
      * rearranged fonts even though they have been documented by Adobe for 7
      * years!  If they ever do, a lot of this code will disappear.
