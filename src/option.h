@@ -150,7 +150,7 @@
 #define CPO_CW		'w'	/* "cw" only changes one blank */
 #define CPO_FWRITE	'W'	/* "w!" doesn't overwrite readonly files */
 #define CPO_ESC		'x'
-#define CPO_REPLCNT	'X'	/* "R" with a count only delets chars once */
+#define CPO_REPLCNT	'X'	/* "R" with a count only deletes chars once */
 #define CPO_YANK	'y'
 #define CPO_KEEPRO	'Z'	/* don't reset 'readonly' on ":w!" */
 #define CPO_DOLLAR	'$'

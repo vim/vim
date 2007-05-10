@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         MetaPost
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-07-04
 
 if exists("b:did_ftplugin")
   finish
@@ -12,7 +12,7 @@ let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=:% commentstring=%\ %s formatoptions-=t formatoptions+=croql
 
-if !exists(":FixBeginfigs") != 2
+if exists(":FixBeginfigs") != 2
   command -nargs=0 FixBeginfigs call s:fix_beginfigs()
 
   function! s:fix_beginfigs()

@@ -646,7 +646,7 @@ EXTRA =		\
 		README_extra.txt \
 		src/VisVim/VisVim.dll \
 		farsi/README.txt \
-		farsi/fonts/*/far* \
+		farsi/fonts/*/far-* \
 		runtime/vimlogo.xpm \
 		src/swis.s \
 		src/tee/Makefile* \

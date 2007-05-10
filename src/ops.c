@@ -4094,7 +4094,7 @@ do_do_join(count, insert_space)
  * "redraw" is TRUE when the screen should be updated.
  * Caller must have setup for undo.
  *
- * return FAIL for failure, OK ohterwise
+ * return FAIL for failure, OK otherwise
  */
     int
 do_join(insert_space)

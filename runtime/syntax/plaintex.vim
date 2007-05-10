@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         TeX (plain.tex format)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-10-26
 
 if exists("b:current_syntax")
   finish
@@ -14,6 +14,7 @@ syn match   plaintexControlSequence         display contains=@NoSpell
       \ '\\[a-zA-Z@]\+'
 
 runtime! syntax/initex.vim
+unlet b:current_syntax
 
 syn match   plaintexComment                 display
       \ contains=ALLBUT,initexComment,plaintexComment
@@ -30,8 +31,6 @@ syn match   plaintexCommand                 display contains=@NoSpell
       \ '\\\%(plainoutput\|TeX\)\>'
 syn match   plaintexBoxCommand              display contains=@NoSpell
       \ '\\\%(null\|strut\)\>'
-syn match   plaintexCharacterCommand        display contains=@NoSpell
-      \ /\\\%(["#$%&'.=^_`~]\|``\|''\|-\{2,3}\|[?!]`\|^^L\|\~\|\%(a[ae]\|A[AE]\|acute\|[cdHoOPStuvijlL]\|copyright\|d\=dag\|folio\|ldotp\|[lr]q\|oe\|OE\|slash\|ss\|underbar\)\>\)/
 syn match   plaintexDebuggingCommand        display contains=@NoSpell
       \ '\\\%(showhyphens\|tracingall\|wlog\)\>'
 syn match   plaintexFontsCommand            display contains=@NoSpell
@@ -61,12 +60,16 @@ syn match   plaintexTablesCommand           display contains=@NoSpell
 
 if !exists("g:plaintex_no_math")
   syn region  plaintexMath                  matchgroup=plaintexMath
-      \ contains=@plaintexMath
+      \ contains=@plaintexMath,@NoSpell
       \ start='\$' skip='\\\\\|\\\$' end='\$'
   syn region  plaintexMath                  matchgroup=plaintexMath
-      \ contains=@plaintexMath keepend
+      \ contains=@plaintexMath,@NoSpell keepend
       \ start='\$\$' skip='\\\\\|\\\$' end='\$\$'
 endif
+
+" Keep this after plaintexMath, as we don’t want math mode started at a \$.
+syn match   plaintexCharacterCommand        display contains=@NoSpell
+      \ /\\\%(["#$%&'.=^_`~]\|``\|''\|-\{2,3}\|[?!]`\|^^L\|\~\|\%(a[ae]\|A[AE]\|acute\|[cdHoOPStuvijlL]\|copyright\|d\=dag\|folio\|ldotp\|[lr]q\|oe\|OE\|slash\|ss\|underbar\)\>\)/
 
 syn cluster plaintexMath
       \ contains=plaintexMathCommand,plaintexMathBoxCommand,

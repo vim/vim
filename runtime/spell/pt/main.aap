@@ -36,8 +36,9 @@ PT_FNAME = myspell.pt-latest.zip
 # Fetching the pt_BR files from BrOffice.org (Brazilian OOo) 2.1. Should be
 # updated really soon.
 #
-BR_DIR = http://www.deso-se.com.br/downloads/download.php?arquivo=pt_BR-2700g
-BR_FNAME = pt_BR-2700g.zip
+BR_BASENAME = pt_BR-2007-04-11
+BR_DIR = http://www.deso-se.com.br/downloads/download.php?arquivo=$BR_BASENAME
+BR_FNAME = $(BR_BASENAME).zip
 
 :attr {fetch = $BR_DIR} $BR_FNAME
 
@@ -94,7 +95,7 @@ pt_BR.aff pt_BR.dic: {buildcheck=}
 
 # Removing /* ... */ header to avoid warnings.  Write it to the README file, it
 # contains the copyright notice.
-        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c "/\/\*/,/\*\//w README_pt_BR.txt" -c "/\/\*/,/\*\//+1d" -c update -c q
+        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c "/\/\*/,/\*\//w! README_pt_BR.txt" -c "/\/\*/,/\*\//+1d" -c update -c q
 
         #:sys $VIM README_pt_BR.txt -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('pt_BR.orig.aff'):
