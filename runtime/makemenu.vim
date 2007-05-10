@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 May 04
+" Last Change:	2007 May 10
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -87,6 +87,7 @@ SynMenu AB.ASN\.1:asn
 SynMenu AB.Asterisk\ config:asterisk
 SynMenu AB.Asterisk\ voicemail\ config:asteriskvm
 SynMenu AB.Atlas:atlas
+SynMenu AB.AutoHotKey:autohotkey
 SynMenu AB.AutoIt:autoit
 SynMenu AB.Automake:automake
 SynMenu AB.Avenue:ave
@@ -112,11 +113,9 @@ SynMenu C.C:c
 SynMenu C.C++:cpp
 SynMenu C.C#:cs
 SynMenu C.Calendar:calendar
-SynMenu C.CDL:cdl
-SynMenu C.Crontab:crontab
-SynMenu C.Cyn++:cynpp
-SynMenu C.Cynlib:cynlib
 SynMenu C.Cascading\ Style\ Sheets:css
+SynMenu C.CDL:cdl
+SynMenu C.Cdrdao\ TOC:cdrtoc
 SynMenu C.Century\ Term:cterm
 SynMenu C.CH\ script:ch
 SynMenu C.ChangeLog:changelog
@@ -128,18 +127,22 @@ SynMenu C.Clever:cl
 SynMenu C.Clipper:clipper
 SynMenu C.Cmake:cmake
 SynMenu C.Cmusrc:cmusrc
-SynMenu C.Cold\ Fusion:cf
-SynMenu C.Config.Cfg\ Config\ file:cfg
-SynMenu C.Config.Generic\ Config\ file:conf
-SynMenu C.Config.Configure\.in:config
-SynMenu C.CRM114:crm
-SynMenu C.Ctrl-H:ctrlh
 SynMenu C.Cobol:cobol
+SynMenu C.Cold\ Fusion:cf
+SynMenu C.Conary\ Recipe:conaryrecipe
+SynMenu C.Config.Cfg\ Config\ file:cfg
+SynMenu C.Config.Configure\.in:config
+SynMenu C.Config.Generic\ Config\ file:conf
+SynMenu C.CRM114:crm
+SynMenu C.Crontab:crontab
 SynMenu C.CSP:csp
+SynMenu C.Ctrl-H:ctrlh
 SynMenu C.CUPL.CUPL:cupl
 SynMenu C.CUPL.Simulation:cuplsim
 SynMenu C.CVS.commit\ file:cvs
 SynMenu C.CVS.cvsrc:cvsrc
+SynMenu C.Cyn++:cynpp
+SynMenu C.Cynlib:cynlib
 
 SynMenu DE.D:d
 SynMenu DE.Debian.Debian\ ChangeLog:debchangelog
@@ -193,6 +196,7 @@ SynMenu FG.FORM:form
 SynMenu FG.Forth:forth
 SynMenu FG.Fortran:fortran
 SynMenu FG.FoxPro:foxpro
+SynMenu FG.FrameScript:framescript
 SynMenu FG.Fstab:fstab
 SynMenu FG.Fvwm.Fvwm\ configuration:fvwm1
 SynMenu FG.Fvwm.Fvwm2\ configuration:fvwm2
@@ -261,7 +265,8 @@ SynMenu L-Ma.Lace:lace
 SynMenu L-Ma.LamdaProlog:lprolog
 SynMenu L-Ma.Latte:latte
 SynMenu L-Ma.Ld\ script:ld
-SynMenu L-Ma.LDAP\ LDIF:ldif
+SynMenu L-Ma.LDAP.LDIF:ldif
+SynMenu L-Ma.LDAP.Configuration:ldapconf
 SynMenu L-Ma.Lex:lex
 SynMenu L-Ma.LFTP\ config:lftp
 SynMenu L-Ma.Libao:libao
@@ -270,6 +275,7 @@ SynMenu L-Ma.Lilo:lilo
 SynMenu L-Ma.Limits\ config:limits
 SynMenu L-Ma.Lisp:lisp
 SynMenu L-Ma.Lite:lite
+SynMenu L-Ma.LiteStep\ RC:litestep
 SynMenu L-Ma.Locale\ Input:fdcc
 SynMenu L-Ma.Login\.access:loginaccess
 SynMenu L-Ma.Login\.defs:logindefs

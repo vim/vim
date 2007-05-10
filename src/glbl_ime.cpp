@@ -19,10 +19,10 @@
  * Global IME makes capability input Chinese, Japanese, and Korean text into
  * Vim buffer on any language version of Windows 98, Windows 95, and Windows
  * NT 4.0.  See below URL for detail of Global IME.  You can also find
- * various laguage version of Global IME at same place.
+ * various language version of Global IME at same place.
  *
  * RUNTIME REQUIREMENTS:
- * - Internet Exproler 5.01 or higher.
+ * - Internet Explorer 5.01 or higher.
  * - Global IME (with language pack?).
  * - Of course Vim for Windows.
  *
@@ -159,7 +159,7 @@ global_ime_TranslateMessage(CONST MSG *lpMsg)
  * Set position of IME compotision window.
  *
  * You have to call this before starting composition.  If once composition
- * started, this can take no effect until that composition have finised.  So
+ * started, this can take no effect until that composition have finished.  So
  * you should handle WM_IME_STARTCOMPOSITION and call this function.
  */
     void WINAPI

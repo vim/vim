@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Author:	Charles E. Campbell, Jr.
-" Date:		Jan 03, 2007
-" Version:	21
+" Date:		May 07, 2007
+" Version:	22
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball") || v:version < 700
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v21"
+let g:loaded_vimball = "v22"
 set cpo&vim
 
 " =====================================================================
@@ -583,13 +583,14 @@ fun! s:SaveSettings()
   let s:fenkeep = &fen
   let s:hidkeep = &hidden
   let s:ickeep  = &ic
+  let s:lzkeep  = &lz
+  let s:pmkeep  = &pm
   let s:repkeep = &report
   let s:vekeep  = &ve
-  let s:lzkeep  = &lz
   if exists("&acd")
-   set ei=all ve=all noacd nofen noic report=999 nohid bt= ma lz
+   set ei=all ve=all noacd nofen noic report=999 nohid bt= ma lz pm=
   else
-   set ei=all ve=all nofen noic report=999 nohid bt= ma lz
+   set ei=all ve=all nofen noic report=999 nohid bt= ma lz pm=
   endif
 "  call Dret("SaveSettings")
 endfun
@@ -606,6 +607,7 @@ fun! s:RestoreSettings()
   let &hidden = s:hidkeep
   let &ic     = s:ickeep
   let &lz     = s:lzkeep
+  let &pm     = s:pmkeep
   let &report = s:repkeep
   let &ve     = s:vekeep
   let &ei     = s:eikeep
@@ -615,9 +617,9 @@ fun! s:RestoreSettings()
    call setpos("'a",s:makeep)
   endif
   if exists("&acd")
-   unlet s:regakeep s:acdkeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep s:lzkeep
+   unlet s:regakeep s:acdkeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep s:lzkeep s:pmkeep
   else
-   unlet s:regakeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep s:lzkeep
+   unlet s:regakeep s:eikeep s:fenkeep s:hidkeep s:ickeep s:repkeep s:vekeep s:makeep s:lzkeep s:pmkeep
   endif
   set bt=nofile noma
 "  call Dret("RestoreSettings")

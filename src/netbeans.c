@@ -1211,8 +1211,8 @@ static int inAtomic = 0;
 
 /*
  * Do the actual processing of a single netbeans command or function.
- * The differance between a command and function is that a function
- * gets a response (its required) but a command does not.
+ * The difference between a command and function is that a function
+ * gets a response (it's required) but a command does not.
  * For arguments see comment for nb_parse_cmd().
  */
     static int
@@ -2945,7 +2945,7 @@ netbeans_button_release(int button)
 
 
 /*
- * Send a keypress event back to netbeans. This usualy simulates some
+ * Send a keypress event back to netbeans. This usually simulates some
  * kind of function key press. This function operates on a key code.
  */
     void
@@ -2959,7 +2959,7 @@ netbeans_keycommand(int key)
 
 
 /*
- * Send a keypress event back to netbeans. This usualy simulates some
+ * Send a keypress event back to netbeans. This usually simulates some
  * kind of function key press. This function operates on a key string.
  */
     static void

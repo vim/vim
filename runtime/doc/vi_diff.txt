@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.1a.  Last change: 2006 Nov 18
+*vi_diff.txt*   For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -155,7 +155,7 @@ Multi level undo.					|undo|
 	considered changed anymore.  You can exit it with :q, without <!>.
 	When undoing a few changes and then making a new change Vim will
 	create a branch in the undo tree.  This means you can go back to any
-	state of the text, there is no risc of a change causing text to be
+	state of the text, there is no risk of a change causing text to be
 	lost forever. |undo-tree|
 
 Graphical User Interface (GUI).				|gui|
