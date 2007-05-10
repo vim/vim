@@ -3727,7 +3727,7 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 	if (copy_char)	    /* copy at least one char */
 	{
 	    /*
-	     * Recogize the start of a new name, for '~'.
+	     * Recognize the start of a new name, for '~'.
 	     */
 	    at_start = FALSE;
 	    if (src[0] == '\\' && src[1] != NUL)
@@ -4451,7 +4451,7 @@ vim_ispathlistsep(c)
 #ifdef UNIX
     return (c == ':');
 #else
-    return (c == ';');	/* might not be rigth for every system... */
+    return (c == ';');	/* might not be right for every system... */
 #endif
 }
 #endif
@@ -4561,7 +4561,7 @@ vim_fnamencmp(x, y, len)
 
 /*
  * Concatenate file names fname1 and fname2 into allocated memory.
- * Only add a '/' or '\\' when 'sep' is TRUE and it is neccesary.
+ * Only add a '/' or '\\' when 'sep' is TRUE and it is necessary.
  */
     char_u  *
 concat_fnames(fname1, fname2, sep)
@@ -7118,7 +7118,7 @@ get_c_indent()
 		/*
 		 * What happens next depends on the line being terminated.
 		 * If terminated with a ',' only consider it terminating if
-		 * there is anoter unterminated statement behind, eg:
+		 * there is another unterminated statement behind, eg:
 		 *   123,
 		 *   sizeof
 		 *	  here
@@ -7306,7 +7306,7 @@ get_c_indent()
 		    /*
 		     * If we're below an unterminated line that is not an
 		     * "if" or something, we may line up with this line or
-		     * add someting for a continuation line, depending on
+		     * add something for a continuation line, depending on
 		     * the line before this one.
 		     */
 		    else
@@ -8513,7 +8513,7 @@ dos_expandpath(
     char_u	*path,
     int		wildoff,
     int		flags,		/* EW_* flags */
-    int		didstar)	/* expaneded "**" once already */
+    int		didstar)	/* expanded "**" once already */
 {
     char_u	*buf;
     char_u	*path_end;
@@ -9340,7 +9340,7 @@ get_cmd_output(cmd, infile, flags)
      * read the names from the file into memory
      */
 # ifdef VMS
-    /* created temporary file is not allways readable as binary */
+    /* created temporary file is not always readable as binary */
     fd = mch_fopen((char *)tempname, "r");
 # else
     fd = mch_fopen((char *)tempname, READBIN);

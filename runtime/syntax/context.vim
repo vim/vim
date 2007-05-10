@@ -1,13 +1,14 @@
 " Vim syntax file
 " Language:         ConTeXt typesetting engine
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-08-10
 
 if exists("b:current_syntax")
   finish
 endif
 
 runtime! syntax/plaintex.vim
+unlet b:current_syntax
 
 let s:cpo_save = &cpo
 set cpo&vim
@@ -15,6 +16,8 @@ set cpo&vim
 if !exists('g:context_include')
   let g:context_include = ['mp', 'javascript', 'xml']
 endif
+
+syn spell   toplevel
 
 syn match   contextBlockDelim display '\\\%(start\|stop\)\a\+'
                               \ contains=@NoSpell
@@ -27,7 +30,7 @@ syn region  contextEscaped    display matchgroup=contextPreProc
                               \ start='\\type\=<<' end='>>'
 syn region  contextEscaped    matchgroup=contextPreProc
                               \ start='\\start\z(\a*\%(typing\|typen\)\)'
-                              \ end='\\stop\z1'
+                              \ end='\\stop\z1' contains=plaintexComment keepend
 syn region  contextEscaped    display matchgroup=contextPreProc
                               \ start='\\\h\+Type{' end='}'
 syn region  contextEscaped    display matchgroup=contextPreProc

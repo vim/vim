@@ -1,4 +1,4 @@
-*ada.txt*	For Vim version 7.1a.  Last change: 2006 Nov 12
+*ada.txt*	For Vim version 7.1b.  Last change: 2007 May 08
 
 
 		    ADA FILE TYPE PLUG-INS REFERENCE MANUAL~
@@ -125,7 +125,7 @@ NOTE: "gnat xref -v" is very tricky to use as it has almost no diagnostic
 3.2 Omni Completion with "ctags"~
 								   *ada-ctags*
 
-Exuberant Ctags uses it's own multi-language code parser. The parser is quite
+Exuberant Ctags uses its own multi-language code parser. The parser is quite
 fast, produces a lot of extra informations (hence the name "Exuberant Ctags")
 and can run on files which currently do not compile.
 
@@ -302,7 +302,7 @@ g:ada_folding		  set ('sigpft')
 			'x':	lone 'exception' folded with line above
 		    'i':    activate indent folding on load
 
-		Note: Syntax folding is in an early (unuseable) stage and
+		Note: Syntax folding is in an early (unusable) stage and
 		      indent or gnat pretty folding is suggested.
 
 		For gnat pretty folding to work the following settings are

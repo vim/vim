@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:	    XFree86 Configuration File
+" Language:         XFree86 Configuration File
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2006-12-20
 
 if exists("b:did_indent")
   finish
@@ -10,6 +10,7 @@ let b:did_indent = 1
 
 setlocal indentexpr=GetXF86ConfIndent()
 setlocal indentkeys=!^F,o,O,=End
+setlocal nosmartindent
 
 if exists("*GetXF86ConfIndent")
   finish
@@ -28,7 +29,7 @@ function GetXF86ConfIndent()
     let ind = ind + &sw
   endif
 
-  if getline(v:lnum) =~? '^\s*End\>'
+  if getline(v:lnum) =~? '^\s*End\(Sub\)\=Section\>'
     let ind = ind - &sw
   endif
 

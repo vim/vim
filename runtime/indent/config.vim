@@ -1,19 +1,20 @@
 " Vim indent file
-" Language:	    Autoconf configure.{ac,in} file
-" Maintainer:	    Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
-" TODO:		    how about nested [()]'s in one line
-"		    what's wrong with '\\\@!'?
+" Language:         Autoconf configure.{ac,in} file
+" Maintainer:       Nikolai Weibull <now@bitwi.se>
+" Latest Revision:  2006-12-20
+" TODO:             how about nested [()]'s in one line
+"                   what's wrong with '\\\@!'?
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
 endif
 
-runtime! indent/sh.vim		" will set b:did_indent
+runtime! indent/sh.vim          " will set b:did_indent
 
 setlocal indentexpr=GetConfigIndent()
 setlocal indentkeys=!^F,o,O,=then,=do,=else,=elif,=esac,=fi,=fin,=fil,=done
+setlocal nosmartindent
 
 " Only define the function once.
 if exists("*GetConfigIndent")

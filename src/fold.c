@@ -2684,7 +2684,7 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
 	{
 	    if (fp->fd_top + fp->fd_len > bot + 1)
 	    {
-		/* fold coninued below bot */
+		/* fold continued below bot */
 		if (getlevel == foldlevelMarker
 			|| getlevel == foldlevelExpr
 			|| getlevel == foldlevelSyntax)
@@ -2834,7 +2834,7 @@ foldSplit(gap, i, top, bot)
  *	      3     5  6
  *
  * 1: not changed
- * 2: trunate to stop above "top"
+ * 2: truncate to stop above "top"
  * 3: split in two parts, one stops above "top", other starts below "bot".
  * 4: deleted
  * 5: made to start below "bot".
@@ -2900,8 +2900,8 @@ foldRemove(gap, top, bot)
 
 /* foldMerge() {{{2 */
 /*
- * Merge two adjecent folds (and the nested ones in them).
- * This only works correctly when the folds are really adjecent!  Thus "fp1"
+ * Merge two adjacent folds (and the nested ones in them).
+ * This only works correctly when the folds are really adjacent!  Thus "fp1"
  * must end just above "fp2".
  * The resulting fold is "fp1", nested folds are moved from "fp2" to "fp1".
  * Fold entry "fp2" in "gap" is deleted.

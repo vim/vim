@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-09
+" Latest Revision:  2006-07-04
 
 if exists("b:current_syntax")
   finish
@@ -50,7 +50,7 @@ syn match   rstSimpleTableLines     contained display
 syn cluster rstDirectives           contains=rstFootnote,rstCitation,
       \ rstHyperlinkTarget,rstExDirective
 
-syn match   rstExplicitMarkup       '^\.\.\s'
+syn match   rstExplicitMarkup       '^\.\.\_s'
       \ nextgroup=@rstDirectives,rstComment,rstSubstitutionDefinition
 
 let s:ReferenceName = '[[:alnum:]]\+\%([_.-][[:alnum:]]\+\)*'
@@ -91,7 +91,7 @@ execute 'syn match rstSubstitutionDefinition contained' .
 function! s:DefineOneInlineMarkup(name, start, middle, end, char_left, char_right)
   execute 'syn region rst' . a:name .
         \ ' start=+' . a:char_left . '\zs' . a:start .
-        \ '[^[:space:]' . a:char_right . a:start[strlen(a:start) - 1] . ']+' .
+        \ '\ze[^[:space:]' . a:char_right . a:start[strlen(a:start) - 1] . ']+' .
         \ a:middle .
         \ ' end=+\S' . a:end . '\ze\%($\|\s\|[''")\]}>/:.,;!?\\-]\)+'
 endfunction
@@ -130,10 +130,10 @@ execute 'syn match rstFootnoteReference contains=@NoSpell' .
       \ ' +\[\%(\d\+\|#\%(' . s:ReferenceName . '\)\=\|\*\)\]_+'
 
 execute 'syn match rstCitationReference contains=@NoSpell' .
-      \ ' +\[' . s:ReferenceName . '\]_+'
+      \ ' +\[' . s:ReferenceName . '\]_\ze\%($\|\s\|[''")\]}>/:.,;!?\\-]\)+'
 
 execute 'syn match rstHyperlinkReference' .
-      \ ' /\<' . s:ReferenceName . '__\=/'
+      \ ' /\<' . s:ReferenceName . '__\=\ze\%($\|\s\|[''")\]}>/:.,;!?\\-]\)/'
 
 syn match   rstStandaloneHyperlink  contains=@NoSpell
       \ "\<\%(\%(\%(https\=\|file\|ftp\|gopher\)://\|\%(mailto\|news\):\)[^[:space:]'\"<>]\+\|www[[:alnum:]_-]*\.[[:alnum:]_-]\+\.[^[:space:]'\"<>]\+\)[[:alnum:]/]"

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.1a.  Last change: 2007 May 03
+*syntax.txt*	For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -854,15 +854,16 @@ Doxygen generates code documentation using a special documentation format
 (similar to Javadoc).  This syntax script adds doxygen highlighting to c, cpp
 and idl files, and should also work with java.
 
-There are a few of ways to turn on doxygen formatting. It can be done explicity
-or in a modeline by appending '.doxygen' to the syntax of the file. Example: >
+There are a few of ways to turn on doxygen formatting. It can be done
+explicitly or in a modeline by appending '.doxygen' to the syntax of the file.
+Example: >
 	:set syntax=c.doxygen
 or >
 	// vim:syntax=c.doxygen
 
-It can also be done automaticly for c, cpp and idl files by setting the global
-or buffer-local variable load_doxygen_syntax.  This is done by adding the
-following to your .vimrc. >
+It can also be done automatically for c, cpp and idl files by setting the
+global or buffer-local variable load_doxygen_syntax.  This is done by adding
+the following to your .vimrc. >
 	:let g:load_doxygen_syntax=1
 
 There are a couple of variables that have an affect on syntax highlighting, and
@@ -1291,7 +1292,7 @@ are recognized by the html.vim syntax coloring file and change the way normal
 text is shown: <B> <I> <U> <EM> <STRONG> (<EM> is used as an alias for <I>,
 while <STRONG> as an alias for <B>), <H1> - <H6>, <HEAD>, <TITLE> and <A>, but
 only if used as a link (that is, it must include a href as in
-<A href="somfile.html">).
+<A href="somefile.html">).
 
 If you want to change how such text is rendered, you must redefine the
 following syntax groups:
@@ -1408,7 +1409,7 @@ Microsoft land, this is also used for defining COM interfaces and calls.
 
 IDL's structure is simple enough to permit a full grammar based approach to
 rather than using a few heuristics.  The result is large and somewhat
-repetative but seems to work.
+repetitive but seems to work.
 
 There are some Microsoft extensions to idl files that are here.  Some of them
 are disabled by defining idl_no_ms_extensions.
@@ -2248,7 +2249,7 @@ experience slow redrawing (or you are on a terminal with poor color support)
 you may want to turn it off by defining the "ruby_no_expensive" variable: >
 
 	:let ruby_no_expensive = 1
-
+<
 In this case the same color will be used for all control keywords.
 
 If you do want this feature enabled, but notice highlighting errors while
@@ -2256,15 +2257,15 @@ scrolling backwards, which are fixed when redrawing with CTRL-L, try setting
 the "ruby_minlines" variable to a value larger than 50: >
 
 	:let ruby_minlines = 100
-
+<
 Ideally, this value should be a number of lines large enough to embrace your
 largest class or module.
 
-Highlighting of special identifiers can be disabled by defining
-"ruby_no_identifiers": >
+Highlighting of special identifiers can be disabled by removing the
+rubyIdentifier highlighting: >
 
-	:let ruby_no_identifiers = 1
-
+	:hi link rubyIdentifier NONE
+<
 This will prevent highlighting of special identifiers like "ConstantName",
 "$global_var", "@@class_var", "@instance_var", "| block_param |", and
 ":symbol".
@@ -2273,14 +2274,19 @@ Significant methods of Kernel, Module and Object are highlighted by default.
 This can be disabled by defining "ruby_no_special_methods": >
 
 	:let ruby_no_special_methods = 1
-
+<
 This will prevent highlighting of important methods such as "require", "attr",
 "private", "raise" and "proc".
 
+Ruby operators can be highlighted. This is enabled by defining
+"ruby_operators": >
+
+	:let ruby_operators = 1
+<
 Whitespace errors can be highlighted by defining "ruby_space_errors": >
 
 	:let ruby_space_errors = 1
-
+<
 This will highlight trailing whitespace and tabs preceded by a space character
 as errors.  This can be refined by defining "ruby_no_trail_space_error" and
 "ruby_no_tab_space_error" which will ignore trailing whitespace and tabs after
@@ -2289,10 +2295,15 @@ spaces respectively.
 Folding can be enabled by defining "ruby_fold": >
 
 	:let ruby_fold = 1
-
+<
 This will set the 'foldmethod' option to "syntax" and allow folding of
 classes, modules, methods, code blocks, heredocs and comments.
 
+Folding of multiline comments can be disabled by defining
+"ruby_no_comment_fold": >
+
+	:let ruby_no_comment_fold = 1
+<
 
 SCHEME						*scheme.vim* *ft-scheme-syntax*
 

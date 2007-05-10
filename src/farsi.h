@@ -7,7 +7,7 @@
  */
 
 /*
- * Farsi characters are catagorized into following types:
+ * Farsi characters are categorized into following types:
  *
  * TyA	(for capital letter representation)
  * TyB	(for types that look like _X  e.g. AYN)
