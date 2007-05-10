@@ -1,4 +1,4 @@
-s, if any./* vi:set ts=8 sts=4 sw=4:
+/* vi:set ts=8 sts=4 sw=4:
  *
  * VIM - Vi IMproved		by Bram Moolenaar
  *				GUI support by Robert Webb
