@@ -196,7 +196,7 @@ Troubleshooting
 5. When being in insert mode in Vim and selecting a file in Visual Studio,
    the Vim command :e ... is inserted as text instead of being executed.
    Cause:	 You probably know...
-   Explanation:  The Vim OLE automation interface interpretes the VisVim
+   Explanation:  The Vim OLE automation interface interprets the VisVim
 		 commands as if they were typed in by the user.
 		 So if you're in insert mode Vim considers it to be text.
 		 I decided against sending an ESC before the command because

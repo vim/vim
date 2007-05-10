@@ -1,4 +1,4 @@
-*debugger.txt*  For Vim version 7.1a.  Last change: 2005 Mar 29
+*debugger.txt*  For Vim version 7.1b.  Last change: 2005 Mar 29
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur

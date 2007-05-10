@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.1a.  Last change: 2007 Apr 28
+*insert.txt*    For Vim version 7.1b.  Last change: 2007 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1167,14 +1167,14 @@ CTRL-E		  End completion, go back to what was there before selecting a
 <Space> or <Tab>  Stop completion without changing the match and insert the
 		  typed character.
 
-The behavior of the Enter key depends on the state you are in:
+The behavior of the <Enter> key depends on the state you are in:
 first state:	  Use the text as it is and insert a line break.
 second state:	  Insert the currently selected match.
 third state:	  Use the text as it is and insert a line break.
 
 In other words: If you used the cursor keys to select another entry in the
-list of matches then the Enter key inserts that match.  If you typed something
-else then Enter inserts a line break.
+list of matches then the <Enter> key inserts that match.  If you typed
+something else then <Enter> inserts a line break.
 
 
 The colors of the menu can be changed with these highlight groups:
