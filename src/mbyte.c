@@ -1492,7 +1492,7 @@ utf_composinglike(p1, p2)
 #endif
 
 /*
- * Convert a UTF-8 byte string to a wide chararacter.  Also get up to MAX_MCO
+ * Convert a UTF-8 byte string to a wide character.  Also get up to MAX_MCO
  * composing characters.
  */
     int
@@ -1532,7 +1532,7 @@ utfc_ptr2char(p, pcc)
 }
 
 /*
- * Convert a UTF-8 byte string to a wide chararacter.  Also get up to MAX_MCO
+ * Convert a UTF-8 byte string to a wide character.  Also get up to MAX_MCO
  * composing characters.  Use no more than p[maxlen].
  */
     int
@@ -2974,7 +2974,7 @@ enc_canonize(enc)
     }
 # endif
 
-    /* copy "enc" to allocted memory, with room for two '-' */
+    /* copy "enc" to allocated memory, with room for two '-' */
     r = alloc((unsigned)(STRLEN(enc) + 3));
     if (r != NULL)
     {
@@ -4080,7 +4080,7 @@ xim_reset(void)
 
 	/*
 	 * HACK for Ami: This sequence of function calls makes Ami handle
-	 * the IM reset gratiously, without breaking loads of other stuff.
+	 * the IM reset graciously, without breaking loads of other stuff.
 	 * It seems to force English mode as well, which is exactly what we
 	 * want because it makes the Ami status display work reliably.
 	 */
