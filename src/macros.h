@@ -188,7 +188,7 @@
 /*
  * It is possible to force some record format with:
  * #  define mch_open(n, m, p) open(vms_fixfilename(n), (m), (p)), "rat=cr", "rfm=stmlf", "mrs=0")
- * but it is not recomended, because it can destroy indexes etc.
+ * but it is not recommended, because it can destroy indexes etc.
  */
 #  define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
 # else

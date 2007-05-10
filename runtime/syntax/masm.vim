@@ -33,13 +33,15 @@ syn region masmString		start=+"+ end=+"+ oneline contains=@Spell
 
 syn region masmTitleArea	start=+\<TITLE\s+lc=5 start=+\<SUBTITLE\s+lc=8 start=+\<SUBTTL\s+lc=6 end=+$+ end=+;+me=e-1 contains=masmTitle
 syn region masmTextArea		start=+\<NAME\s+lc=4 start=+\<INCLUDE\s+lc=7 start=+\<INCLUDELIB\s+lc=10 end=+$+ end=+;+me=e-1 contains=masmText
-syn match masmTitle		"[^\t ;]\([^;]*[^\t ;]\)\?" contained
+syn match masmTitle		"[^\t ;]\([^;]*[^\t ;]\)\?" contained contains=@Spell
 syn match masmText		"[^\t ;]\([^;]*[^\t ;]\)\?" contained
 
 syn region masmOptionOpt	start=+\<OPTION\s+lc=6 end=+$+ end=+;+me=e-1 contains=masmOption
+syn region masmContextOpt	start=+\<PUSHCONTEXT\s+lc=11 start=+\<POPCONTEXT\s+lc=10 end=+$+ end=+;+me=e-1 contains=masmOption
 syn region masmModelOpt		start=+\.MODEL\s+lc=6 end=+$+ end=+;+me=e-1 contains=masmOption,masmType
 syn region masmSegmentOpt	start=+\<SEGMENT\s+lc=7 end=+$+ end=+;+me=e-1 contains=masmOption,masmString
 syn region masmProcOpt		start=+\<PROC\s+lc=4 end=+$+ end=+;+me=e-1 contains=masmOption,masmType,masmRegister,masmIdentifier
+syn region masmAssumeOpt	start=+\<ASSUME\s+lc=6 end=+$+ end=+;+me=e-1 contains=masmOption,masmOperator,masmType,masmRegister,masmIdentifier
 syn region masmExpression	start=+\.IF\s+lc=3 start=+\.WHILE\s+lc=6 start=+\.UNTIL\s+lc=6 start=+\<IF\s+lc=2 start=+\<IF2\s+lc=3 start=+\<ELSEIF\s+lc=6 start=+\<ELSEIF2\s+lc=7 start=+\<REPEAT\s+lc=6 start=+\<WHILE\s+lc=5 end=+$+ end=+;+me=e-1 contains=masmType,masmOperator,masmRegister,masmIdentifier,masmDecimal,masmBinary,masmHexadecimal,masmFloatRaw,masmString
 
 syn keyword masmOption		TINY SMALL COMPACT MEDIUM LARGE HUGE contained
@@ -58,6 +60,9 @@ syn keyword masmOption		OLDMACROS NOOLDMACROS OLDSTRUCTS contained
 syn keyword masmOption		NOOLDSTRUCTS PROC PROLOGUE READONLY contained
 syn keyword masmOption		NOREADONLY SCOPED NOSCOPED SEGMENT contained
 syn keyword masmOption		SETIF2 contained
+syn keyword masmOption		ABS ALL ASSUMES CPU ERROR EXPORT contained
+syn keyword masmOption		FORCEFRAME LISTING LOADDS NONE contained
+syn keyword masmOption		NONUNIQUE NOTHING OS_DOS RADIX REQ contained
 syn keyword masmType		STDCALL SYSCALL C BASIC FORTRAN PASCAL
 syn keyword masmType		PTR NEAR FAR NEAR16 FAR16 NEAR32 FAR32
 syn keyword masmType		REAL4 REAL8 REAL10 BYTE SBYTE TBYTE

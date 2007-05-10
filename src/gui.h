@@ -147,7 +147,7 @@
 #define GUI_MON_NOCLEAR		0x10	/* don't clear selection */
 
 /* Flags for gui_mch_draw_string() */
-#define DRAW_TRANSP		0x01	/* draw with transparant bg */
+#define DRAW_TRANSP		0x01	/* draw with transparent bg */
 #define DRAW_BOLD		0x02	/* draw bold text */
 #define DRAW_UNDERL		0x04	/* draw underline text */
 #define DRAW_UNDERC		0x08	/* draw undercurl text */
@@ -343,9 +343,9 @@ typedef struct Gui
     guicolor_T	def_norm_pixel;	    /* default Color of normal text */
 
 #ifdef FEAT_GUI_X11
-    char	*rsrc_menu_fg_name;	/* Color of menu and dialog foregound */
+    char	*rsrc_menu_fg_name;	/* Color of menu & dialog foreground */
     guicolor_T	menu_fg_pixel;		/* Same in Pixel format */
-    char	*rsrc_menu_bg_name;	/* Color of menu and dialog backgound */
+    char	*rsrc_menu_bg_name;	/* Color of menu & dialog background */
     guicolor_T	menu_bg_pixel;		/* Same in Pixel format */
     char	*rsrc_scroll_fg_name;	/* Color of scrollbar foreground */
     guicolor_T	scroll_fg_pixel;	/* Same in Pixel format */

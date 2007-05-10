@@ -2399,7 +2399,7 @@ mch_resolve_shortcut(char_u *fname)
     // full path string must be in Unicode.
     MultiByteToWideChar(CP_ACP, 0, fname, -1, wsz, MAX_PATH);
 
-    // "load" the name and resove the link
+    // "load" the name and resolve the link
     hr = ppf->lpVtbl->Load(ppf, wsz, STGM_READ);
     if (hr != S_OK)
 	goto shortcut_error;

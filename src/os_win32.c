@@ -3800,7 +3800,7 @@ standend(void)
 
 
 /*
- * Set normal fg/bg color, based on T_ME.  Called whem t_me has been set.
+ * Set normal fg/bg color, based on T_ME.  Called when t_me has been set.
  */
     void
 mch_set_normal_colors(void)

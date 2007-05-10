@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 7.1a.  Last change: 2006 Apr 30
+*if_ole.txt*    For Vim version 7.1b.  Last change: 2007 May 10
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -39,6 +39,12 @@ instance), code similar to the following should be used:
 [Perl] >
 	use Win32::OLE;
 	$vim = new Win32::OLE 'Vim.Application';
+
+[C#] >
+        // Add a reference to VIM in your project. 
+        // Choose the COM tab.
+        // Select "VIM Ole Interface 1.1 Type Library"
+	Vim.Vim vimobj = new Vim.Vim();
 
 Vim does not support acting as a "hidden" OLE server, like some other OLE
 Automation servers.  When a client starts up an instance of Vim, that instance

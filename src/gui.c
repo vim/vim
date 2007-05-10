@@ -1969,7 +1969,7 @@ gui_screenstr(off, len, flags, fg, bg, back)
  * "flags":
  * GUI_MON_IS_CURSOR should only be used when this function is being called to
  * actually draw (an inverted) cursor.
- * GUI_MON_TRS_CURSOR is used to draw the cursor text with a transparant
+ * GUI_MON_TRS_CURSOR is used to draw the cursor text with a transparent
  * background.
  * GUI_MON_NOCLEAR is used to avoid clearing the selection when drawing over
  * it.
@@ -2179,7 +2179,7 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     if (hl_mask_todo & HL_UNDERCURL)
 	draw_flags |= DRAW_UNDERC;
 
-    /* Do we draw transparantly? */
+    /* Do we draw transparently? */
     if (flags & GUI_MON_TRS_CURSOR)
 	draw_flags |= DRAW_TRANSP;
 
@@ -2675,7 +2675,7 @@ gui_wait_for_chars(wtime)
     }
 
     /*
-     * While we are waiting indefenitely for a character, blink the cursor.
+     * While we are waiting indefinitely for a character, blink the cursor.
      */
     gui_mch_start_blink();
 
