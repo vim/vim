@@ -128,7 +128,7 @@
  *		     |	    +---------------------------+		    |
  *		     +------------------------------------------------------+
  *
- * They all start with a BRANCH for "\|" alternaties, even when there is only
+ * They all start with a BRANCH for "\|" alternatives, even when there is only
  * one alternative.
  */
 
@@ -3110,7 +3110,7 @@ static unsigned	reg_tofreelen;
 
 /*
  * These variables are set when executing a regexp to speed up the execution.
- * Which ones are set depends on whethere a single-line or multi-line match is
+ * Which ones are set depends on whether a single-line or multi-line match is
  * done:
  *			single-line		multi-line
  * reg_match		&regmatch_T		NULL
@@ -5038,7 +5038,7 @@ regmatch(scan)
 		reg_save(&(((regbehind_T *)rp) - 1)->save_after, &backpos);
 
 		/* start looking for a match with operand at the current
-		 * postion.  Go back one character until we find the
+		 * position.  Go back one character until we find the
 		 * result, hitting the start of the line or the previous
 		 * line (for multi-line matching).
 		 * Set behind_pos to where the match should end, BHPOS
@@ -6623,7 +6623,7 @@ regtilde(source, magic)
 		    /* copy prefix */
 		    len = (int)(p - newsub);	/* not including ~ */
 		    mch_memmove(tmpsub, newsub, (size_t)len);
-		    /* interpretate tilde */
+		    /* interpret tilde */
 		    mch_memmove(tmpsub + len, reg_prev_sub, (size_t)prevlen);
 		    /* copy postfix */
 		    if (!magic)
@@ -6862,7 +6862,7 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	{
 	    if (c == K_SPECIAL && src[0] != NUL && src[1] != NUL)
 	    {
-		/* Copy a specialy key as-is. */
+		/* Copy a special key as-is. */
 		if (copy)
 		{
 		    *dst++ = c;
@@ -7046,7 +7046,7 @@ exit:
 
 #ifdef FEAT_EVAL
 /*
- * Used for the submatch() function: get the string from tne n'th submatch in
+ * Used for the submatch() function: get the string from the n'th submatch in
  * allocated memory.
  * Returns NULL when not in a ":s" command and for a non-existing submatch.
  */

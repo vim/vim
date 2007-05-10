@@ -72,7 +72,7 @@ getviscol2(col, coladd)
 }
 
 /*
- * Go to column "wcol", and add/insert white space as neccessary to get the
+ * Go to column "wcol", and add/insert white space as necessary to get the
  * cursor in that column.
  * The caller must have saved the cursor line for undo!
  */
@@ -137,7 +137,7 @@ getvpos(pos, wcol)
 coladvance2(pos, addspaces, finetune, wcol)
     pos_T	*pos;
     int		addspaces;	/* change the text to achieve our goal? */
-    int		finetune;	/* change char offset for the excact column */
+    int		finetune;	/* change char offset for the exact column */
     colnr_T	wcol;		/* column to move to */
 {
 #endif
@@ -1994,7 +1994,7 @@ static struct modmasktable
 
 /*
  * Shifted key terminal codes and their unshifted equivalent.
- * Don't add mouse codes here, they are handled seperately!
+ * Don't add mouse codes here, they are handled separately!
  */
 #define MOD_KEYS_ENTRY_SIZE 5
 
@@ -2825,7 +2825,7 @@ get_pseudo_mouse_code(button, is_click, is_drag)
 #endif
 	    return mouse_table[i].pseudo_code;
 	}
-    return (int)KE_IGNORE;	    /* not recongnized, ignore it */
+    return (int)KE_IGNORE;	    /* not recognized, ignore it */
 }
 #endif /* FEAT_MOUSE */
 
@@ -3538,7 +3538,7 @@ update_mouseshape(shape_idx)
 
 #ifdef FEAT_CRYPT
 /*
- * Optional encryption suypport.
+ * Optional encryption support.
  * Mohsin Ahmed, mosh@sasi.com, 98-09-24
  * Based on zip/crypt sources.
  *
@@ -3799,7 +3799,7 @@ typedef struct ff_visited
 
 /*
  * We might have to manage several visited lists during a search.
- * This is expecially needed for the tags option. If tags is set to:
+ * This is especially needed for the tags option. If tags is set to:
  *      "./++/tags,./++/TAGS,++/tags"  (replace + with *)
  * So we have to do 3 searches:
  *   1) search from the current files directory downward for the file "tags"
@@ -3825,7 +3825,7 @@ typedef struct ff_visited_list_hdr
 
 /*
  * '**' can be expanded to several directory levels.
- * Set the default maximium depth.
+ * Set the default maximum depth.
  */
 #define FF_MAX_STAR_STAR_EXPAND ((char_u)30)
 /*
@@ -4174,7 +4174,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, need_dir,
 
 	/*
 	 * copy wc_path and add restricts to the '**' wildcard.
-	 * The octett after a '**' is used as a (binary) counter.
+	 * The octet after a '**' is used as a (binary) counter.
 	 * So '**3' is transposed to '**^C' ('^C' is ASCII value 3)
 	 * or '**76' is transposed to '**N'( 'N' is ASCII value 76).
 	 * For EBCDIC you get different character values.
@@ -4507,7 +4507,7 @@ vim_findfile(search_ctx)
 		    /*
 		     * Here we copy until the next path separator or the end of
 		     * the path. If we stop at a path separator, there is
-		     * still somthing else left. This is handled below by
+		     * still something else left. This is handled below by
 		     * pushing every directory returned from expand_wildcards()
 		     * on the stack again for further search.
 		     */

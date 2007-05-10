@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.1a.  Last change: 2007 May 05
+*pi_netrw.txt*  For Vim version 7.1b.  Last change: 2007 May 08
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -195,10 +195,16 @@ DIRECTORY LISTING					*netrw-dirlist*
 
 						*netrw-login* *netrw-password*
  CHANGING USERID AND PASSWORD			*netrw-chgup* *netrw-userpass*
+
 	Attempts to use ftp will prompt you for a user-id and a password.
-	These will be saved in g:netrw_uid and g:netrw_passwd Subsequent uses
-	of ftp will re-use those.  If you need to use a different user id
-	and/or password, you'll want to call NetUserPass() first.
+	These will be saved in global variables g:netrw_uid and
+	g:netrw_passwd; subsequent uses of ftp will re-use those two items to
+	simplify the further use of ftp.  However, if you need to use a
+	different user id and/or password, you'll want to call NetUserPass()
+	first.  To work around the need to enter passwords, check if your ftp
+	supports a <.netrc> file in your home directory.  Also see
+	|netrw-passwd| (and if you're using ssh/scp hoping to figure out how
+	to not need to use passwords, look at |netrw-listhack|).
 
 	:NetUserPass [uid [password]]		-- prompts as needed
 	:call NetUserPass()			-- prompts for uid and password
@@ -207,7 +213,7 @@ DIRECTORY LISTING					*netrw-dirlist*
 
 VARIABLES						*netrw-variables*
 
-(see also: |netrw-browse-var| |netrw-protocol| |netrw-settings| |netrw-var|)
+(also see: |netrw-browse-var| |netrw-protocol| |netrw-settings| |netrw-var|)
 
  *b:netrw_lastfile*	last file Network-read/written retained on a per-buffer
 			basis		(supports plain :Nw )
@@ -248,6 +254,16 @@ VARIABLES						*netrw-variables*
 			      (ie. a double quote)
 			Controls the quoting character used during scp and ftp
 			commands.
+
+ *g:netrw_scpport*      = "-P" : option to use to set port for scp
+ *g:netrw_sshport*      = "-p" : option to use to set port for ssh
+
+ *g:netrw_use_errorwindow* =1 : messages from netrw will use a separate one
+                                line window.  This window provides reliable
+				delivery of messages. (default)
+			   =0 : messages from netrw will use echoerr ;
+			        messages don't always seem to show up this
+				way, but one doesn't have to quit the window.
 
  *g:netrw_win95ftp*	=1 if using Win95, will remove four trailing blank
 			   lines that o/s's ftp "provides" on transfers
@@ -518,8 +534,8 @@ below, a {netfile} is an url to a remote file.
 The <netrw.vim> script provides several variables which act as options to
 ffect <netrw.vim>'s behavior.  These variables typically may be set in the
 user's <.vimrc> file:
-(see also: |netrw-settings| |netrw-browse-var| |netrw-protocol|
-|netrw-settings|) >
+(also see:
+|netrw-settings| |netrw-browse-var| |netrw-protocol| |netrw-settings|) >
 
                         -------------
                         Netrw Options
@@ -1463,8 +1479,8 @@ Especially with the remote directory browser, constantly entering the password
 is tedious.
 
 For Linux/Unix systems, the book "Linux Server Hacks - 100 industrial strength
-tips & tools" by Rob Flickenger (O'Reilly, ISBN 0-596-00461-3), gives a tip
-for setting up no-password ssh and scp, plus discusses associated security
+tips & tools" by Rob Flickenger (O'Reilly, ISBN 0-596-00461-3) gives a tip
+for setting up no-password ssh and scp and discusses associated security
 issues.  It used to be available at http://hacks.oreilly.com/pub/h/66 ,
 but apparently that address is now being redirected to some "hackzine".
 I'll attempt a summary:
@@ -1496,7 +1512,7 @@ settings.  You may change any of their values; when you save the file, the
 settings therein will be used.  One may also press "?" on any of the lines for
 help on what each of the variables do.
 
-(see also: |netrw-browse-var| |netrw-protocol| |netrw-var| |netrw-variables|)
+(also see: |netrw-browse-var| |netrw-protocol| |netrw-var| |netrw-variables|)
 
 
 ==============================================================================
@@ -1729,6 +1745,16 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v109: Mar 26, 2007 * if a directory name includes a "$" character,
+			     Explore() will use expand() in an attempt to
+			     decipher the name.
+	      May 07, 2007 * g:netrw_use_errorwindow now allows one to
+	                     have error messages go to a reliable window
+			     or to use a less reliable but recallable 
+			     echoerr method
+	      May 07, 2007 * g:netrw_scpport and g:netrw_sshport support
+	                     use of -P and -p, respectively, to set port
+			     for scp/ssh.
 	v108: Jan 03, 2007 * included preview map (|netrw-p|), supporting
 			     remote browsing
 			   * netrw can now source remote files
@@ -1738,14 +1764,14 @@ which is loaded automatically at startup (assuming :set nocp).
 			     to apply to all remote browsing commands via ssh.
 			     (list, remove/delete, rename)
 	      Jan 31, 2007 * Luis Florit reported that @* was an invalid
-			     register.	The @* register is now only saved and
-			     restored if 'guioptions' contains "a".
+			     register.  The @* register is now only saved and
+			     restored if |'guioptions'| contains "a".
 	      Feb 02, 2007 * Fixed a bug that cropped up when writing files
 			     via scp using cygwin
 	      Feb 08, 2007 * tree listing mode managed to stop working again;
 			     fixed again!
 	      Feb 15, 2007 * Guido Van Hoecke reported that netrw didn't
-			     handle browsing well with M$ ftp servers.	He even
+			     handle browsing well with M$ ftp servers.  He even
 			     set up a temporary account for me to test with
 			     (thanks!).  Netrw now can browse M$ ftp servers.
 	v107: Oct 12, 2006 * bypassed the autowrite option
@@ -1836,7 +1862,7 @@ which is loaded automatically at startup (assuming :set nocp).
 			     was preventing use of the "x" key with browsing.
 	     Jun 05, 2006  * g:netrw_nogx available to prevent making the gx
 			     map (see |g:netrw_nogx|)
-			   * bugfix, Explore woulnd't change directory
+			   * bugfix, Explore wouldn't change directory
 			     properly (vim ., :Explore subdirname)
 	     Jun 06, 2006  * moved history to 2nd line in Netrw menu
 			   * fixed delete for unix-based systems
@@ -1857,7 +1883,7 @@ which is loaded automatically at startup (assuming :set nocp).
 	       now bypassed only when it is
 	v95: * bugfix - Hiding mode worked correctly (don't show any file
 	       matching any of the g:netrw_hide patterns), but
-	       but showing mode was showing only those files that didn't
+	       showing mode was showing only those files that didn't
 	       match any of the g:netrw_hide patterns.  Instead, it now
 	       shows all files that match any of the g:netrw_hide patterns
 	       (the difference between a logical and and logical or).
@@ -1892,7 +1918,7 @@ which is loaded automatically at startup (assuming :set nocp).
 	v81: * FocusGained also used to refresh/wipe local browser directory
 	       buffers
 	     * (bugfix) netrw was leaving [Scratch] buffers behind when the
-	       the user had the "hidden" option set.  The 'hidden' option is
+	       user had the "hidden" option set.  The 'hidden' option is
 	       now bypassed.
 	v80: * ShellCmdPost event used in conjunction with g:netrw_fastbrowse
 	       to refresh/wipe local browser directory buffers.
@@ -2123,12 +2149,12 @@ which is loaded automatically at startup (assuming :set nocp).
 
 	Jérôme Augé		-- also using new buffer method with ftp+.netrc
 	Bram Moolenaar		-- obviously vim itself, :e and v:cmdarg use,
-				   fetch,...
+	                           fetch,...
 	Yasuhiro Matsumoto	-- pointing out undo+0r problem and a solution
 	Erik Warendorph		-- for several suggestions (g:netrw_..._cmd
 				   variables, rsync etc)
 	Doug Claar		-- modifications to test for success with ftp
-				   operation
+	                           operation
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:fdm=marker
