@@ -190,7 +190,25 @@ mf_open(fname, flags)
     mfp->mf_blocknr_min = -1;
     mfp->mf_neg_count = 0;
     mfp->mf_infile_count = mfp->mf_blocknr_max;
-    mfp->mf_used_count_max = p_mm * 1024 / mfp->mf_page_size;
+
+    /*
+     * Compute maximum number of pages ('maxmem' is in Kbyte):
+     *	'mammem' * 1Kbyte / page-size-in-bytes.
+     * Avoid overflow by first reducing page size as much as possible.
+     */
+    {
+	int	    shift = 10;
+	unsigned    page_size = mfp->mf_page_size;
+
+	while (shift > 0 && (page_size & 1) == 0)
+	{
+	    page_size = page_size >> 1;
+	    --shift;
+	}
+	mfp->mf_used_count_max = (p_mm << shift) / page_size;
+	if (mfp->mf_used_count_max < 10)
+	    mfp->mf_used_count_max = 10;
+    }
 
     return mfp;
 }
