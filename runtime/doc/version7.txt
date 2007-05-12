@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.1b.  Last change: 2007 May 10
+*version7.txt*  For Vim version 7.1.  Last change: 2007 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2435,7 +2435,7 @@ Insert mode completion: Using Enter to accept the current match causes
 confusion.  Use CTRL-Y instead.  Also, use CTRL-E to go back to the typed
 text.
 
-GUI: When there are left and righ scrollbars, ":tabedit" kept them instead of
+GUI: When there are left and right scrollbars, ":tabedit" kept them instead of
 using the one that isn't needed.
 
 Using "gP" to replace al the text could leave the cursor below the last line,
@@ -2816,7 +2816,7 @@ like on Unix).
 When using "double" in 'spellsuggest' when the language doesn't support sound
 folding resulted in too many suggestions.
 
-Win32: Dropping a shortcut on the Vim icon did't edit the referred file like
+Win32: Dropping a shortcut on the Vim icon didn't edit the referred file like
 editing it in another way would.  Use fname_expand() in buf_set_name() instead
 of simply make the file name a full path.
 
@@ -2998,24 +2998,25 @@ Added							*added-7.1*
 
 New syntax files:
 	/var/log/messages (Yakov Lerner)
+	Autohotkey (Nikolai Weibull)
 	AutoIt v3 (Jared Breland)
 	Bazaar commit file "bzr". (Dmitry Vasiliev)
 	Cdrdao TOC (Nikolai Weibull)
 	Cmusrc (Nikolai Weibull)
+	Conary recipe (rPath Inc)
+	Framescript (Nikolai Weibull)
 	FreeBasic (Mark Manning)
 	Hamster (David Fishburn)
 	IBasic (Mark Manning)
-	Privoxy actions file (Doug Kearns)
-	Streaming Descriptors "sd" (Puria Nafisi Azizi)
-	initng (Elan Ruusamae)
-	Autohotkey (Nikolai Weibull)
-	Framescript (Nikolai Weibull)
+	Initng (Elan Ruusamae)
 	Ldapconf (Nikolai Weibull)
 	Litestep (Nikolai Weibull)
+	Privoxy actions file (Doug Kearns)
+	Streaming Descriptors "sd" (Puria Nafisi Azizi)
 
 New tutor files:
-	Hungarian (Arpad Horvath)
 	Czech (Lubos Turek)
+	Hungarian (Arpad Horvath)
 	Turkish (Serkan kkk)
 	utf-8 version of Greek tutor.
 	utf-8 version of Russian tutor.
@@ -4591,6 +4592,28 @@ Patch 7.1a.002 (extra)
 Problem:    Compilation error with MingW.
 Solution:   Check for LPTOOLTIPTEXT to be defined.
 Files:	    src/gui_w32.c
+
+
+Fixes after Vim 7.1b BETA:
+
+Made the Mzscheme interface build both with old and new versions of Mzscheme,
+using an #ifdef. (Sergey Khorev)
+Mzscheme interface didn't link, missing function.  Changed order of libraries
+in the configure script.
+
+Ruby interface didn't compile on Mac.  Changed #ifdef. (Kevin Ballard)
+
+Patch 7.1b.001 (extra)
+Problem:    Random text in a source file.  No idea how it got there.
+Solution:   Delete the text.
+Files:	    src/gui_w32.c
+
+Patch 7.1b.002
+Problem:    When 'maxmem' is large there can be an overflow in computations.
+	    (Thomas Wiegner)
+Solution:   Use the same mechanism as in mch_total_mem(): first reduce the
+	    multiplier as much as possible.
+Files:	    src/memfile.c
 
 
 
