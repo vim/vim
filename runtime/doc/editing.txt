@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.1b.  Last change: 2006 Oct 10
+*editing.txt*   For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -749,7 +749,7 @@ Thus you can use the command "vim *.c" to edit all the C files.  From within
 Vim the command ":n *.c" does the same.
 
 White space is used to separate file names.  Put a backslash before a space or
-Tab to include it in a file name.  E.g., to edit the single file "foo bar": >
+tab to include it in a file name.  E.g., to edit the single file "foo bar": >
 	:next foo\ bar
 
 On Unix and a few other systems you can also use backticks, for example: >
