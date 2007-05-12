@@ -1,4 +1,4 @@
-*usr_12.txt*	For Vim version 7.1b.  Last change: 2006 Nov 18
+*usr_12.txt*	For Vim version 7.1.  Last change: 2007 May 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -294,7 +294,7 @@ Later will be explained how you write patterns like this |usr_27.txt|.
    The "to" part of the substitute command is empty: "//".  Thus it replaces
 with nothing, effectively deleting the matched white space.
 
-Another wasteful use of spaces is placing them before a Tab.  Often these can
+Another wasteful use of spaces is placing them before a tab.  Often these can
 be deleted without changing the amount of white space.  But not always!
 Therefore, you can best do this manually.  Use this search command: >
 
@@ -302,7 +302,7 @@ Therefore, you can best do this manually.  Use this search command: >
 
 You cannot see it, but there is a space before a tab in this command.  Thus
 it's "/<Space><Tab>".   Now use "x" to delete the space and check that the
-amount of white space doesn't change.  You might have to insert a Tab if it
+amount of white space doesn't change.  You might have to insert a tab if it
 does change.  Type "n" to find the next match.  Repeat this until no more
 matches can be found.
 
