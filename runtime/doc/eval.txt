@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1b.  Last change: 2007 May 07
+*eval.txt*      For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2211,7 +2211,7 @@ cursor({list})
 		If {col} is zero, the cursor will stay in the current column.
 		When 'virtualedit' is used {off} specifies the offset in
 		screen columns from the start of the character.  E.g., a
-		position within a Tab or after the last character.
+		position within a <Tab> or after the last character.
 
 
 deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
@@ -2978,7 +2978,7 @@ gettabwinvar({tabnr}, {winnr}, {varname})		*gettabwinvar()*
 		Examples: >
 			:let list_is_on = gettabwinvar(1, 2, '&list')
 			:echo "myvar = " . gettabwinvar(3, 1, 'myvar')
-
+<
 							*getwinposx()*
 getwinposx()	The result is a Number, which is the X coordinate in pixels of
 		the left hand side of the GUI Vim window.  The result will be
@@ -3742,7 +3742,7 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		column is 1.
 		The "off" number is zero, unless 'virtualedit' is used.  Then
 		it is the offset in screen columns from the start of the
-		character.  E.g., a position within a Tab or after the last
+		character.  E.g., a position within a <Tab> or after the last
 		character.
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getpos(".")
@@ -4402,7 +4402,7 @@ setpos({expr}, {list})
 
 		The "off" number is only used when 'virtualedit' is set. Then
 		it is the offset in screen columns from the start of the
-		character.  E.g., a position within a Tab or after the last
+		character.  E.g., a position within a <Tab> or after the last
 		character.
 
 		Also see |getpos()|
@@ -4467,7 +4467,7 @@ setreg({regname}, {value} [,{options}])
 		If a number immediately follows "b" or "<CTRL-V>" then this is
 		used as the width of the selection - if it is not specified
 		then the width of the block is set to the number of characters
-		in the longest line (counting a <TAB> as 1 character).
+		in the longest line (counting a <Tab> as 1 character).
 
 		If {options} contains no register settings, then the default
 		is to use character mode unless {value} ends in a <NL>.
@@ -5027,7 +5027,7 @@ virtcol({expr})						*virtcol()*
 		"lnum" or "col" is out of range then virtcol() returns zero.
 		When 'virtualedit' is used it can be [lnum, col, off], where
 		"off" is the offset in screen columns from the start of the
-		character.  E.g., a position within a Tab or after the last
+		character.  E.g., a position within a <Tab> or after the last
 		character.
 		For the byte position use |col()|.
 		When Virtual editing is active in the current mode, a position
