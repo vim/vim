@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.1b.  Last change: 2007 May 10
+*todo.txt*      For Vim version 7.1.  Last change: 2007 May 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2894,7 +2894,7 @@ Virtual edit:
 
 Text objects:
 8   Add test script for text object commands "aw", "iW", etc.
-8   Add text object for part of a CamelHumedWord and under_scored_word.
+8   Add text object for part of a CamelHumpedWord and under_scored_word.
     (Scott Graham)  "ac" and "au"?
 8   Add a text object for any kind of quoting, also with multi-byte
     characters.  Option to specify what quotes are recognized (default: all)
@@ -3311,6 +3311,9 @@ Viminfo:
 7   Can probably remove the code that checks for a writable viminfo file,
     because we now do the chown() for root, and others can't overwrite someone
     else's viminfo file.
+8   When there is no .viminfo file and someone does "su", runs Vim, a
+    root-owned .viminfo file is created.  Is there a good way to avoid this?
+    Perhaps check the owner of the directory.  Only when root?
 8   Add argument to keep the list of buffers when Vim is started with a file
     name. (Schild)
 8   Keep the last used directory of the file browser (File/Open menu).
