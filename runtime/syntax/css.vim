@@ -2,7 +2,7 @@
 " Language:	Cascading Style Sheets
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/css.vim
-" Last Change:	2005 Nov 23
+" Last Change:	2006 Jun 19
 " CSS2 by Nikolai Weibull
 " Full CSS2, HTML4 support by Yeti
 
@@ -187,13 +187,14 @@ syn keyword cssPseudoClassId contained link visited active hover focus before af
 syn match cssPseudoClassId contained "\<first\(-\(line\|letter\|child\)\)\=\>"
 syn region cssPseudoClassLang matchgroup=cssPseudoClassId start=":lang(" end=")" oneline
 
-syn region cssComment start="/\*" end="\*/"
+syn region cssComment start="/\*" end="\*/" contains=@Spell
 
 syn match cssUnicodeEscape "\\\x\{1,6}\s\?"
 syn match cssSpecialCharQQ +\\"+ contained
 syn match cssSpecialCharQ +\\'+ contained
 syn region cssStringQQ start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=cssUnicodeEscape,cssSpecialCharQQ
 syn region cssStringQ start=+'+ skip=+\\\\\|\\'+ end=+'+ contains=cssUnicodeEscape,cssSpecialCharQ
+syn match cssClassName "\.[A-Za-z][A-Za-z0-9-]\+"
 
 if main_syntax == "css"
   syn sync minlines=10
@@ -266,6 +267,7 @@ if version >= 508 || !exists("did_css_syn_inits")
   HiLink cssFontDescriptorProp StorageClass
   HiLink cssFontDescriptorAttr Type
   HiLink cssUnicodeRange Constant
+  HiLink cssClassName Function
   delcommand HiLink
 endif
 
