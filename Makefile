@@ -69,7 +69,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 1b
+MINOR = 1
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -93,16 +93,17 @@ DOSBIN_S =  dosbin_s
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
 # - Add remarks for changes to runtime/doc/version7.txt.
+# - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
+#   ADDITIONS".
 # - In runtime/doc run "make" and "make html" to check for errors.
 # - Check if src/Makefile and src/feature.h don't contain any personal
 #   preferences or the GTK, Perl, etc. mentioned above.
-# - Check that runtime/doc/help.txt doesn't contain entries in "LOCAL
-#   ADDITIONS".
 # - Check file protections to be "644" for text and "755" for executables (run
 #   the "check" script).
 # - Check compiling on Amiga, MS-DOS and MS-Windows.
 # - Delete all *~, *.sw?, *.orig, *.rej files
 # - "make unixall", "make extra", "make lang", "make html"
+# - Make diff files against the previous release: "makediff7 7.1 7.2"
 #
 # Amiga:
 # - "make amisrc", move the archive to the Amiga and compile:
