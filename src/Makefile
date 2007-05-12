@@ -886,7 +886,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 1b
+VIMMINOR = 1
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -2744,7 +2744,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
   ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
   gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
-  arabic.h os_unixx.h
+  arabic.h if_mzsch.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c ./vim.h ./auto/config.h ./feature.h ./os_unix.h \
   ./auto/osdef.h ./ascii.h ./keymap.h ./term.h ./macros.h ./option.h \
   ./structs.h ./regexp.h ./gui.h ./gui_beval.h proto/gui_beval.pro \
