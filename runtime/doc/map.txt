@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.1b.  Last change: 2007 May 07
+*map.txt*       For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -809,7 +809,7 @@ end-id	  The "end-id" type ends in a keyword character, but all the other
 	  Examples: "#i", "..f", "$/7"
 
 non-id	  The "non-id" type ends in a non-keyword character, the other
-	  characters may be of any type, excluding space and Tab.  {this type
+	  characters may be of any type, excluding space and tab.  {this type
 	  is not supported by Vi}
 
 	  Examples: "def#", "4/7$"
@@ -834,12 +834,12 @@ an additional rule:
 full-id	  In front of the match is a non-keyword character, or this is where
 	  the line or insertion starts.  Exception: When the abbreviation is
 	  only one character, it is not recognized if there is a non-keyword
-	  character in front of it, other than a space or a <Tab>.
+	  character in front of it, other than a space or a tab.
 
-end-id	  In front of the match is a keyword character, or a space or a <Tab>,
+end-id	  In front of the match is a keyword character, or a space or a tab,
 	  or this is where the line or insertion starts.
 
-non-id	  In front of the match is a space, <Tab> or the start of the line or
+non-id	  In front of the match is a space, tab or the start of the line or
 	  the insertion.
 
 Examples: ({CURSOR} is where you type a non-keyword character) >
@@ -1154,7 +1154,7 @@ command can take arguments, using the -nargs attribute.  Valid cases are:
 	-nargs=?    0 or 1 arguments are allowed
 	-nargs=+    Arguments must be supplied, but any number are allowed
 
-Arguments are considered to be separated by (unescaped) spaces or Tabs in this
+Arguments are considered to be separated by (unescaped) spaces or tabs in this
 context.
 
 Note that arguments are used as text, not as expressions.  Specifically,
@@ -1324,7 +1324,7 @@ When there is no argument <q-args> is an empty string.
 							*<f-args>*
 To allow commands to pass their arguments on to a user-defined function, there
 is a special form <f-args> ("function args").  This splits the command
-arguments at spaces and Tabs, quotes each argument individually, and the
+arguments at spaces and tabs, quotes each argument individually, and the
 <f-args> sequence is replaced by the comma-separated list of quoted arguments.
 See the Mycmd example below.  If no arguments are given <f-args> is removed.
    To embed whitespace into an argument of <f-args>, prepend a backslash.

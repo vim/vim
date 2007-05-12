@@ -70,7 +70,7 @@
  * MACOS	 compiling for either one
  */
 #if defined(macintosh) && !defined(MACOS_CLASSIC)
-#  define MACOS_CLASSIC
+# define MACOS_CLASSIC
 #endif
 #if defined(MACOS_X_UNIX)
 # define MACOS_X
@@ -1848,7 +1848,7 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #endif
 
 /*
- * The following macros stop displat/event loop nesting at the wrong time.
+ * The following macros stop display/event loop nesting at the wrong time.
  */
 #ifdef ALT_X_INPUT
 # define ALT_INPUT_LOCK_OFF	suppress_alternate_input = FALSE

@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.1b.  Last change: 2006 Nov 18
+*version5.txt*  For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -319,10 +319,10 @@ in $HOME.  See |_vimrc|.
 Tags file format changed				*tags-file-changed*
 ------------------------
 
-Only Tabs are allowed to separate fields in a tags file.  This allows for
+Only tabs are allowed to separate fields in a tags file.  This allows for
 spaces in a file name and is still Vi compatible.  In previous versions of
 Vim, any white space was allowed to separate the fields.  If you have a file
-which doesn't use a single Tab between fields, edit the tags file and execute
+which doesn't use a single tab between fields, edit the tags file and execute
 this command: >
 	:%s/\(\S*\)\s\+\(\S*\)\s\+\(.*\)/\1\t\2\t\3/
 
