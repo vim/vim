@@ -3844,9 +3844,9 @@ echo "${ECHO_T}\"no\"" >&6
 
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
-      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a ${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a"
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
     else
-      MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzgc -lmzscheme"
+      MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
       if test "$GCC" = yes; then
 			MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
       elif test "`(uname) 2>/dev/null`" = SunOS &&
