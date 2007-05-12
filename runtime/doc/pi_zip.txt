@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.1b.  Last change: 2007 May 08
+*pi_zip.txt*	For Vim version 7.1.  Last change: 2007 May 11
 
 				+====================+
 				| Zip File Interface |
@@ -64,7 +64,7 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
 
 	au BufReadCmd *.jar,*.xpi call zip#Browse(expand("<amatch>"))
 <
-   One can simply extend this line to accomdate additional extensions that
+   One can simply extend this line to accommodate additional extensions that
    are actually zip files.
 
 ==============================================================================
