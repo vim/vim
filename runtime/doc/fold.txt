@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.1b.  Last change: 2006 Mar 29
+*fold.txt*      For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -73,7 +73,7 @@ EXPR						*fold-expr*
 The folds are automatically defined by their foldlevel, like with the "indent"
 method.  The value of the 'foldexpr' option is evaluated to get the foldlevel
 of a line.  Examples:
-This will create a fold for all consecutive lines that start with a Tab: >
+This will create a fold for all consecutive lines that start with a tab: >
 	:set foldexpr=getline(v:lnum)[0]==\"\\t\"
 This will call a function to compute the fold level: >
 	:set foldexpr=MyFoldLevel(v:lnum)
