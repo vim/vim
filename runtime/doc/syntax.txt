@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.1b.  Last change: 2007 May 07
+*syntax.txt*	For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -996,7 +996,7 @@ FORM						*form.vim* *ft-form-syntax*
 
 The coloring scheme for syntax elements in the FORM file uses the default
 modes Conditional, Number, Statement, Comment, PreProc, Type, and String,
-following the language specifications in 'Symbolic Manipulation with FORM'' by
+following the language specifications in 'Symbolic Manipulation with FORM' by
 J.A.M. Vermaseren, CAN, Netherlands, 1991.
 
 If you want include your own changes to the default colors, you have to
@@ -3281,7 +3281,7 @@ skipempty						*:syn-skipempty*
 
 These arguments are only used in combination with "nextgroup".	They can be
 used to allow the next group to match after skipping some text:
-	skipwhite	skip over space and Tab characters
+	skipwhite	skip over space and tab characters
 	skipnl		skip over the end of a line
 	skipempty	skip over empty lines (implies a "skipnl")
 
