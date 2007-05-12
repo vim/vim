@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.1b.  Last change: 2006 Jul 10
+*usr_05.txt*	For Vim version 7.1.  Last change: 2007 May 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -567,7 +567,7 @@ visible: >
 
 	:set list
 
-Now every Tab is displayed as ^I.  And a $ is displayed at the end of each
+Now every tab is displayed as ^I.  And a $ is displayed at the end of each
 line, so that you can spot trailing spaces that would otherwise go unnoticed.
    A disadvantage is that this looks ugly when there are many Tabs in a file.
 If you have a color terminal, or are using the GUI, Vim can show the spaces
