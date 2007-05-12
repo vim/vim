@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.1b.  Last change: 2006 Nov 18
+*quickref.txt*  For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -803,7 +803,7 @@ Short explanation of each option:		*option-list*
 'printmbcharset'  'pmbcs'   CJK character set to be used for :hardcopy
 'printmbfont'	  'pmbfn'   font names to be used for CJK output of :hardcopy
 'printoptions'	  'popt'    controls the format of :hardcopy output
-'pumheight''	  'ph'	    maximum height of the popup menu
+'pumheight'	  'ph'	    maximum height of the popup menu
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'remap'			    allow mappings to work recursively
