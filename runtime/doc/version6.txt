@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.1b.  Last change: 2007 May 07
+*version6.txt*  For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4650,7 +4650,7 @@ Patch 6.0.147
 Problem:    It's not easy to mark a Vim version as being modified.  The new
 	    license requires this.
 Solution:   Add the --modified-by argument to configure and the MODIFIED_BY
-	    define.  I's used in the intro screen and the ":version" output.
+	    define.  It's used in the intro screen and the ":version" output.
 Files:	    src/auto/configure, src/configure.in, src/config.h.in,
 	    src/feature.h, src/version.c
 
