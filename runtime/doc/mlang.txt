@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 7.1b.  Last change: 2006 Jul 12
+*mlang.txt*     For Vim version 7.1.  Last change: 2006 Jul 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
