@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.1b.  Last change: 2006 Aug 08
+*gui.txt*       For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -532,7 +532,7 @@ Special characters in a menu name:
 	<Tab>	Separates the menu name from right-aligned text.  This can be
 		used to show the equivalent typed command.  The text "<Tab>"
 		can be used here for convenience.  If you are using a real
-		Tab, don't forget to put a backslash before it!
+		tab, don't forget to put a backslash before it!
 Example: >
 
    :amenu &File.&Open<Tab>:e  :browse e<CR>
