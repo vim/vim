@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.1b.  Last change: 2007 May 09
+*options.txt*	For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4309,11 +4309,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  eol:c		Character to show at the end of each line.  When
 			omitted, there is no extra character at the end of the
 			line.
-	  tab:xy	Two characters to be used to show a Tab.  The first
+	  tab:xy	Two characters to be used to show a tab.  The first
 			char is used once.  The second char is repeated to
-			fill the space that the Tab normally occupies.
-			"tab:>-" will show a Tab that takes four spaces as
-			">---".  When omitted, a Tab is show as ^I.
+			fill the space that the tab normally occupies.
+			"tab:>-" will show a tab that takes four spaces as
+			">---".  When omitted, a tab is show as ^I.
 	  trail:c	Character to show for trailing spaces.  When omitted,
 			trailing spaces are blank.
 	  extends:c	Character to show in the last column, when 'wrap' is
@@ -6007,7 +6007,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When off, a <Tab> always inserts blanks according to 'tabstop' or
 	'softtabstop'.  'shiftwidth' is only used for shifting text left or
 	right |shift-left-right|.
-	What gets inserted (a Tab or spaces) depends on the 'expandtab'
+	What gets inserted (a <Tab> or spaces) depends on the 'expandtab'
 	option.  Also see |ins-expandtab|.  When 'expandtab' is not set, the
 	number of spaces is minimized by using <Tab>s.
 	NOTE: This option is reset when 'compatible' is set.
@@ -6551,7 +6551,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	There are four main ways to use tabs in Vim:
 	1. Always keep 'tabstop' at 8, set 'softtabstop' and 'shiftwidth' to 4
 	   (or 3 or whatever you prefer) and use 'noexpandtab'.  Then Vim
-	   will use a mix of tabs and spaces, but typing Tab and BS will
+	   will use a mix of tabs and spaces, but typing <Tab> and <BS> will
 	   behave like a tab appears every 4 (or 3) characters.
 	2. Set 'tabstop' and 'shiftwidth' to whatever you prefer and use
 	   'expandtab'.  This way you will always insert spaces.  The
@@ -7324,7 +7324,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	    onemore	Allow the cursor to move just past the end of the line
 
 	Virtual editing means that the cursor can be positioned where there is
-	no actual character.  This can be halfway into a Tab or beyond the end
+	no actual character.  This can be halfway into a tab or beyond the end
 	of the line.  Useful for selecting a rectangle in Visual mode and
 	editing a table.
 	"onemore" is not the same, it will only allow moving the cursor just
