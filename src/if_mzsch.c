@@ -22,6 +22,7 @@
  */
 
 #include "vim.h"
+
 #include "if_mzsch.h"
 
 /* Only do the following when the feature is enabled.  Needed for "make
@@ -219,7 +220,11 @@ static Scheme_Object *(*dll_scheme_byte_string_to_char_string)(Scheme_Object *s)
 # endif
 static void (*dll_scheme_close_input_port)(Scheme_Object *port);
 static void (*dll_scheme_count_lines)(Scheme_Object *port);
+#if MZSCHEME_VERSION_MAJOR < 360
 static Scheme_Object *(*dll_scheme_current_continuation_marks)(void);
+#else
+static Scheme_Object *(*dll_scheme_current_continuation_marks)(Scheme_Object *prompt_tag);
+#endif
 static void (*dll_scheme_display)(Scheme_Object *obj, Scheme_Object *port);
 static char *(*dll_scheme_display_to_string)(Scheme_Object *obj, long *len);
 static int (*dll_scheme_eq)(Scheme_Object *obj1, Scheme_Object *obj2);
@@ -2441,8 +2446,11 @@ raise_vim_exn(const char *add_info)
     else
 	argv[0] = scheme_make_string(_("Vim error"));
 
-    /* TODO: proper argument */
+#if MZSCHEME_VERSION_MAJOR < 360
+    argv[1] = scheme_current_continuation_marks();
+#else
     argv[1] = scheme_current_continuation_marks(NULL);
+#endif
 
     scheme_raise(scheme_make_struct_instance(vim_exn, 2, argv));
 }
