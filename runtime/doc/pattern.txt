@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.1b.  Last change: 2007 Apr 24
+*pattern.txt*   For Vim version 7.1.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -865,8 +865,8 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 	values of the current window are used (e.g., 'tabstop').
 	The "23" can be any column number.  The first column is 1.
 	Note that some virtual column positions will never match, because they
-	are halfway a Tab or other character that occupies more than one
-	screen character.  {not in Vi}
+	are halfway through a tab or other character that occupies more than
+	one screen character.  {not in Vi}
 	WARNING: When inserting or deleting text Vim does not automatically
 	update highlighted matches.  This means Syntax highlighting quickly
 	becomes wrong.

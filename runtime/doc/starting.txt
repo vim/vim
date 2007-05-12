@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.1b.  Last change: 2007 Apr 22
+*starting.txt*  For Vim version 7.1.  Last change: 2007 May 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1353,6 +1353,8 @@ Notes for Unix:
   "real" user.  This helps for when you did "su" to become root, but your
   $HOME is still set to a normal user's home directory.  Otherwise Vim would
   create a viminfo file owned by root that nobody else can read.
+- The viminfo file cannot be a symbolic link.  This is to avoid security
+  issues.
 
 Marks are stored for each file separately.  When a file is read and 'viminfo'
 is non-empty, the marks for that file are read from the viminfo file.  NOTE:
