@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.1b.  Last change: 2007 Feb 28
+*term.txt*      For Vim version 7.1.  Last change: 2007 Feb 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
