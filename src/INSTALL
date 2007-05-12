@@ -7,15 +7,15 @@ Contents:
 1. Generic
 2. Unix
 3. RISC OS
-4. Macintosh
-5. OS/2 (with EMX 0.9b)
-6. Atari MiNT
+4. OS/2 (with EMX 0.9b)
+5. Atari MiNT
 
-For OS/390 Unix see ../runtime/doc/os_390.txt
-For BeBox see ../runtime/doc/os_beos.txt.
-For Amiga see INSTALLami.txt
-For PC (MS-DOS, Windows NT, Windows 95) see INSTALLpc.txt
-For Macintosh see INSTALLmac.txt
+See INSTALLami.txt              for Amiga
+See INSTALLmac.txt              for Macintosh
+See INSTALLpc.txt               for PC (MS-DOS, Windows 95/98/NT/XP)
+See INSTALLvms.txt              for VMS
+See ../runtime/doc/os_390.txt   for OS/390 Unix
+See ../runtime/doc/os_beos.txt  for BeBox
 
 
 1. Generic
@@ -37,7 +37,7 @@ Summary:
 
 This will include the GUI and X11 libraries, if you have them.  If you want a
 version of Vim that is small and starts up quickly, see the Makefile for how
-to disable the GUI and X11.  If you don't have Motif and/or X11, these
+to disable the GUI and X11.  If you don't have GUI libraries and/or X11, these
 features will be disabled automatically.
 
 See the start of Makefile for more detailed instructions about how to compile
@@ -87,8 +87,10 @@ that "make shadow" creates won't work.]
 
 Unix: COMPILING WITH/WITHOUT GUI
 
+NOTE: This is incomplete, look in Makefile for more info.
+
 These configure arguments can be used to select which GUI to use:
---enable-gui=	gtk, kde, motif, athena or auto
+--enable-gui=gtk      or: gtk2, motif, athena or auto
 --disable-gtk-check
 --disable-motif-check
 --disable-athena-check
@@ -98,24 +100,28 @@ the order of GTK, Motif, then Athena).  If one is found, then is uses it and
 does not proceed to check any of the remaining ones.  Otherwise, it moves on
 to the next one.
 
---enable-{gtk,kde,motif,athena}-check all default to "yes", such that if
+--enable-{gtk,gtk2,kde,motif,athena}-check all default to "yes", such that if
 --enable-gui is "auto" (which it is by default), GTK, Motif, and Athena will
 be checked for.  If you want to *exclude* a certain check, then you use
---disable-{gtk,kde,motif,athena}-check.
+--disable-{gtk,gtk2,kde,motif,athena}-check.
 
 For example, if --enable-gui is set to "auto", but you don't want it look for
 Motif, you then also specify --disable-motif-check.  This results in only
 checking for GTK and Athena.
 
 Lastly, if you know which one you want to use, then you can just do
---enable-gui={gtk,kde,motif,athena}.  So if you wanted to only use Motif, then
-you'd specify --enable-gui=motif.  Once you specify what you want, the
---enable-{gtk,kde,motif,athena}-check options are ignored.
+--enable-gui={gtk,gtk2,kde,motif,athena}.  So if you wanted to only use Motif,
+then you'd specify --enable-gui=motif.  Once you specify what you want, the
+--enable-{gtk,gtk2,kde,motif,athena}-check options are ignored.
+
+On Linux you usually need GUI "-devel" packages.  You may already have GTK
+libraries installed, but that doesn't mean you can compile Vim with GTK, you
+also need the header files.
 
 For compiling with the GTK+ GUI, you need a recent version of glib and gtk+.
-Configure checks for at least version 1.1.16, but below 2.0.  An older versions
-is not selected automatically.  If you want to use it anyway, run configure
-with "--disable-gtktest".  GTK 2.0 doesn't work yet.
+Configure checks for at least version 1.1.16.  An older version is not selected
+automatically.  If you want to use it anyway, run configure with
+"--disable-gtktest".
 GTK requires an ANSI C compiler.  If you fail to compile Vim with GTK+ (it
 is the preferred choice), try selecting another one in the Makefile.
 If you are sure you have GTK installed, but for some reason configure says you
@@ -124,7 +130,8 @@ do not, you may have left-over header files and/or library files from an older
 auto/config.log for any error messages that may give you a hint as to what's
 happening.
 
-For KDE see INSTALLkde.txt.
+There used to be a KDE version of Vim, using Qt libraries, but since it didn't
+work very well and there was no maintainer it was dropped.
 
 
 Unix: COMPILING WITH MULTI-BYTE
@@ -170,18 +177,11 @@ Try here: http://www.ecs.soton.ac.uk/~tal197
 Do
     :help riscos
 
-within the editor for more information, or read the os_riscos.txt help file.
+within the editor for more information, or read the
+../runtime/doc/os_risc.txt help file.
 
 
-4. Macintosh
-============
-
-Vim should work on the Macintosh, but I don't have a makefile for it.
-Work is being done to update the Macintosh port.  It's a lot of work; don't
-expect it soon.
-
-
-5. OS/2
+4. OS/2
 =======
 
 Summary:
@@ -223,14 +223,15 @@ Prerequisites:
   need to set TERM for other programs, you may consider putting
   set term=os2ansi in the vimrc file.
 
-Check vim_os2.txt for additional info on running Vim.
+Check ../runtime/doc/os_os2.txt for additional info on running Vim.
 
 
-6. Atari MiNT
+5. Atari MiNT
 =============
 
+[NOTE: this is quite old, it might not work anymore]
 
-To compile Vim for MiNT you may either copy makefile.mint to Makefile or use
+To compile Vim for MiNT you may either copy Make_mint.mak to Makefile or use
 the Unix Makefile adapted for the MiNT configuration.
 
 Now proceed as described in the Unix section.
