@@ -1,4 +1,4 @@
-*ada.txt*	For Vim version 7.1b.  Last change: 2007 May 08
+*ada.txt*	For Vim version 7.1.  Last change: 2007 May 08
 
 
 		    ADA FILE TYPE PLUG-INS REFERENCE MANUAL~
