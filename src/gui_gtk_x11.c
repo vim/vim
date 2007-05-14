@@ -36,8 +36,8 @@
 # ifdef bindtextdomain
 #  undef bindtextdomain
 # endif
-# ifdef bindtextdomain_codeset
-#  undef bindtextdomain_codeset
+# ifdef bind_textdomain_codeset
+#  undef bind_textdomain_codeset
 # endif
 # if defined(FEAT_GETTEXT) && !defined(ENABLE_NLS)
 #  define ENABLE_NLS	/* so the texts in the dialog boxes are translated */
