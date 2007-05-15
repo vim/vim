@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 May 10
+" Last Change:	2007 May 15
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1286,7 +1286,7 @@ au BufNewFile,BufRead *.g			setf pccts
 au BufNewFile,BufRead *.it,*.ih			setf ppwiz
 
 " Oracle Pro*C/C++
-au BufNewFile,BufRead .pc			setf proc
+au BufNewFile,BufRead *.pc			setf proc
 
 " Privoxy actions file
 au BufNewFile,BufRead *.action			setf privoxy
