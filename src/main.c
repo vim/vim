@@ -1360,8 +1360,7 @@ init_locale()
 	p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
 	if (p != NULL && *p != NUL)
 	{
-	    STRCPY(NameBuff, p);
-	    STRCAT(NameBuff, "/lang");
+	    vim_snprintf((char *)NameBuff, MAXPATHL, "%s/lang", p);
 	    bindtextdomain(VIMPACKAGE, (char *)NameBuff);
 	}
 	if (mustfree)
