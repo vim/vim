@@ -8219,6 +8219,25 @@ set_option_value(name, number, string, opt_flags)
 	    varp = get_varp(&options[opt_idx]);
 	    if (varp != NULL)	/* hidden option is not changed */
 	    {
+		if (number == 0 && string != NULL)
+		{
+		    int index;
+
+		    /* Either we are given a string or we are setting option
+		     * to zero. */
+		    for (index = 0; string[index] == '0'; ++index)
+			;
+		    if (string[index] != NUL || index == 0)
+		    {
+			/* There's another character after zeros or the string
+			 * is empty.  In both cases, we are trying to set a
+			 * num option using a string. */
+			EMSG3(_("E521: Number required: &%s = '%s'"),
+								name, string);
+			return;     /* do nothing as we hit an error */
+
+		    }
+		}
 		if (flags & P_NUM)
 		    (void)set_num_option(opt_idx, varp, number,
 							  NULL, 0, opt_flags);
