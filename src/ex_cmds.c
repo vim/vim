@@ -3367,7 +3367,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 		 * was in this window (or another window).  If not used
 		 * before, reset the local window options to the global
 		 * values.  Also restores old folding stuff. */
-		get_winopts(buf);
+		get_winopts(curbuf);
 #ifdef FEAT_SPELL
 		did_get_winopts = TRUE;
 #endif
@@ -3649,8 +3649,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_SPELL
     /* If the window options were changed may need to set the spell language.
      * Can only do this after the buffer has been properly setup. */
-    if (did_get_winopts && curwin->w_p_spell && *buf->b_p_spl != NUL)
-	did_set_spelllang(buf);
+    if (did_get_winopts && curwin->w_p_spell && *curbuf->b_p_spl != NUL)
+	did_set_spelllang(curbuf);
 #endif
 
     if (command == NULL)
