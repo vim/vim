@@ -2188,8 +2188,10 @@ write_session_file(char_u *filename)
     escaped_filename = vim_strsave_escaped(filename, escape_chars);
     if (escaped_filename == NULL)
 	return FALSE;
-    mksession_cmdline = g_strconcat("mksession ", (char *)escaped_filename, NULL);
+    mksession_cmdline = g_strconcat("mksession ", (char *)escaped_filename,
+									NULL);
     vim_free(escaped_filename);
+
     /*
      * Use a reasonable hardcoded set of 'sessionoptions' flags to avoid
      * unpredictable effects when the session is saved automatically.  Also,
@@ -2199,7 +2201,7 @@ write_session_file(char_u *filename)
      */
     save_ssop_flags = ssop_flags;
     ssop_flags = (SSOP_BLANK|SSOP_CURDIR|SSOP_FOLDS|SSOP_GLOBALS
-		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE);
+		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE|SSOP_TABPAGES);
 
     do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
     failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
