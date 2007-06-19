@@ -3600,13 +3600,16 @@ current_block(oap, count, include, what, other)
     {
 	oap->start = start_pos;
 	oap->motion_type = MCHAR;
+	oap->inclusive = FALSE;
 	if (sol)
-	{
 	    incl(&curwin->w_cursor);
-	    oap->inclusive = FALSE;
-	}
-	else
+	else if (lt(start_pos, curwin->w_cursor))
+	    /* Include the character under the cursor. */
 	    oap->inclusive = TRUE;
+	else
+	    /* End is before the start (no text in between <>, [], etc.): don't
+	     * operate on any text. */
+	    curwin->w_cursor = start_pos;
     }
 
     return OK;
@@ -3734,7 +3737,7 @@ current_tagblock(oap, count_arg, include)
 
 	if (in_html_tag(FALSE))
 	{
-	    /* cursor on start tag, move to just after it */
+	    /* cursor on start tag, move to its '>' */
 	    while (*ml_get_cursor() != '>')
 		if (inc_cursor() < 0)
 		    break;
@@ -3838,7 +3841,7 @@ again:
 	/* Exclude the start tag. */
 	curwin->w_cursor = start_pos;
 	while (inc_cursor() >= 0)
-	    if (*ml_get_cursor() == '>' && lt(curwin->w_cursor, end_pos))
+	    if (*ml_get_cursor() == '>')
 	    {
 		inc_cursor();
 		start_pos = curwin->w_cursor;
@@ -3860,7 +3863,11 @@ again:
 #ifdef FEAT_VISUAL
     if (VIsual_active)
     {
-	if (*p_sel == 'e')
+	/* If the end is before the start there is no text between tags, select
+	 * the char under the cursor. */
+	if (lt(end_pos, start_pos))
+	    curwin->w_cursor = start_pos;
+	else if (*p_sel == 'e')
 	    ++curwin->w_cursor.col;
 	VIsual = start_pos;
 	VIsual_mode = 'v';
@@ -3872,7 +3879,15 @@ again:
     {
 	oap->start = start_pos;
 	oap->motion_type = MCHAR;
-	oap->inclusive = TRUE;
+	if (lt(end_pos, start_pos))
+	{
+	    /* End is before the start: there is no text between tags; operate
+	     * on an empty area. */
+	    curwin->w_cursor = start_pos;
+	    oap->inclusive = FALSE;
+	}
+	else
+	    oap->inclusive = TRUE;
     }
     retval = OK;
 
