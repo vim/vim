@@ -10136,7 +10136,13 @@ f_getfsize(argvars, rettv)
 	if (mch_isdir(fname))
 	    rettv->vval.v_number = 0;
 	else
+	{
 	    rettv->vval.v_number = (varnumber_T)st.st_size;
+
+	    /* non-perfect check for overflow */
+	    if ((off_t)rettv->vval.v_number != (off_t)st.st_size)
+		rettv->vval.v_number = -2;
+	}
     }
     else
 	  rettv->vval.v_number = -1;

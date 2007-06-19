@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2007 May 11
+*eval.txt*      For Vim version 7.1.  Last change: 2007 Jun 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2824,6 +2824,8 @@ getfsize({fname})					*getfsize()*
 		given file {fname}.
 		If {fname} is a directory, 0 is returned.
 		If the file {fname} can't be found, -1 is returned.
+		If the size of {fname} is too big to fit in a Number then -2
+		is returned.
 
 getfontname([{name}])					*getfontname()*
 		Without an argument returns the name of the normal font being
