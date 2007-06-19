@@ -171,6 +171,13 @@ open_buffer(read_stdin, eap)
 	    /* Put the cursor on the first line. */
 	    curwin->w_cursor.lnum = 1;
 	    curwin->w_cursor.col = 0;
+
+	    /* Set or reset 'modified' before executing autocommands, so that
+	     * it can be changed there. */
+	    if (!readonlymode && !bufempty())
+		changed();
+	    else if (retval != FAIL)
+		unchanged(curbuf, FALSE);
 #ifdef FEAT_AUTOCMD
 # ifdef FEAT_EVAL
 	    apply_autocmds_retval(EVENT_STDINREADPOST, NULL, NULL, FALSE,
@@ -194,16 +201,16 @@ open_buffer(read_stdin, eap)
     /* When reading stdin, the buffer contents always needs writing, so set
      * the changed flag.  Unless in readonly mode: "ls | gview -".
      * When interrupted and 'cpoptions' contains 'i' set changed flag. */
-    if ((read_stdin && !readonlymode && !bufempty())
+    if ((got_int && vim_strchr(p_cpo, CPO_INTMOD) != NULL)
 #ifdef FEAT_AUTOCMD
 		|| modified_was_set	/* ":set modified" used in autocmd */
 # ifdef FEAT_EVAL
 		|| (aborting() && vim_strchr(p_cpo, CPO_INTMOD) != NULL)
 # endif
 #endif
-		|| (got_int && vim_strchr(p_cpo, CPO_INTMOD) != NULL))
+       )
 	changed();
-    else if (retval != FAIL)
+    else if (retval != FAIL && !read_stdin)
 	unchanged(curbuf, FALSE);
     save_file_ff(curbuf);		/* keep this fileformat */
 
