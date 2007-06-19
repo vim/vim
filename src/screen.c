@@ -3459,9 +3459,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_DIFF
 	    if (diff_hlf != (hlf_T)0)
 	    {
-		if (diff_hlf == HLF_CHD && ptr - line >= change_start)
+		if (diff_hlf == HLF_CHD && ptr - line >= change_start
+							      && n_extra == 0)
 		    diff_hlf = HLF_TXD;		/* changed text */
-		if (diff_hlf == HLF_TXD && ptr - line > change_end)
+		if (diff_hlf == HLF_TXD && ptr - line > change_end
+							      && n_extra == 0)
 		    diff_hlf = HLF_CHD;		/* changed line */
 		line_attr = hl_attr(diff_hlf);
 	    }
