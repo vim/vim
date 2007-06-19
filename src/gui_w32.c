@@ -1051,7 +1051,9 @@ _WndProc(
 	    if (pMenu != NULL && pMenu->strings[MENU_INDEX_TIP] != 0
 		    && GetMenuState(s_menuBar, pMenu->id, MF_BYCOMMAND) != -1)
 	    {
+		++msg_hist_off;
 		msg(pMenu->strings[MENU_INDEX_TIP]);
+		--msg_hist_off;
 		setcursor();
 		out_flush();
 		did_menu_tip = TRUE;
