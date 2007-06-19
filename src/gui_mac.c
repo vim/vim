@@ -1676,13 +1676,12 @@ gui_mac_doInContentClick(EventRecord *theEvent, WindowPtr whichWindow)
 	/* TODO: NEEDED? */
 	clickIsPopup = FALSE;
 
-	if ((gui.MacOSHaveCntxMenu) && (mouse_model_popup()))
-	    if (IsShowContextualMenuClick(theEvent))
-	    {
-		vimMouseButton = MOUSE_RIGHT;
-		vimModifiers &= ~MOUSE_CTRL;
-		clickIsPopup = TRUE;
-	    }
+	if (mouse_model_popup() && IsShowContextualMenuClick(theEvent))
+	{
+	    vimMouseButton = MOUSE_RIGHT;
+	    vimModifiers &= ~MOUSE_CTRL;
+	    clickIsPopup = TRUE;
+	}
 
 	/* Is it a double click ? */
 	dblClick = ((theEvent->when - lastMouseTick) < GetDblTime());
@@ -1920,24 +1919,19 @@ gui_mac_doActivateEvent(EventRecord *event)
     WindowPtr	whichWindow;
 
     whichWindow = (WindowPtr) event->message;
-    if ((event->modifiers) & activeFlag)
-	/* Activate */
-	gui_focus_change(TRUE);
-    else
+    /* Dim scrollbars */
+    if (whichWindow == gui.VimWindow)
     {
-	/* Deactivate */
-	gui_focus_change(FALSE);
-/*	DON'T KNOW what the code below was doing
-	found in the deactivate clause, but the
-	clause writing TRUE into in_focus (BUG)
- */
-
-#if 0	/* Removed by Dany as per above June 2001 */
-	a_bool = false;
-	SetPreserveGlyph(a_bool);
-	SetOutlinePreferred(a_bool);
-#endif
+        ControlRef rootControl;
+        GetRootControl(gui.VimWindow, &rootControl);
+        if ((event->modifiers) & activeFlag)
+            ActivateControl(rootControl);
+        else
+            DeactivateControl(rootControl);
     }
+
+    /* Activate */
+    gui_focus_change((event->modifiers) & activeFlag);
 }
 
 
@@ -2559,16 +2553,15 @@ gui_mac_handle_event(EventRecord *event)
     OSErr	error;
 
     /* Handle contextual menu right now (if needed) */
-    if (gui.MacOSHaveCntxMenu)
-	if (IsShowContextualMenuClick(event))
-	{
+    if (IsShowContextualMenuClick(event))
+    {
 # if 0
-	    gui_mac_handle_contextual_menu(event);
+        gui_mac_handle_contextual_menu(event);
 # else
-	    gui_mac_doMouseDownEvent(event);
+        gui_mac_doMouseDownEvent(event);
 # endif
-	    return;
-	}
+        return;
+    }
 
     /* Handle normal event */
     switch (event->what)
@@ -2782,14 +2775,6 @@ gui_mch_prepare(int *argc, char **argv)
     (void) InstallAEHandlers();
 #endif
 
-    if (Gestalt(gestaltContextualMenuAttr, &gestalt_rc) == noErr)
-	gui.MacOSHaveCntxMenu = BitTst(&gestalt_rc, 31-gestaltContextualMenuTrapAvailable);
-    else
-	gui.MacOSHaveCntxMenu = false;
-
-    if (gui.MacOSHaveCntxMenu)
-	gui.MacOSHaveCntxMenu = (InitContextualMenus()==noErr);
-
     pomme = NewMenu(256, "\p\024"); /* 0x14= = Apple Menu */
 
     AppendMenu(pomme, "\pAbout VIM");
@@ -2941,6 +2926,7 @@ gui_mch_init(void)
 #ifdef USE_CARBONKEYHANDLER
     EventHandlerRef keyEventHandlerRef;
 #endif
+    ControlRef rootControl;
 
     if (Gestalt(gestaltSystemVersion, &gMacSystemVersion) != noErr)
 	gMacSystemVersion = 0x1000; /* TODO: Default to minimum sensible value */
@@ -2953,15 +2939,6 @@ gui_mch_init(void)
 #ifdef USE_AEVENT
     (void) InstallAEHandlers();
 #endif
-
-    /* Ctrl click */
-    if (Gestalt(gestaltContextualMenuAttr, &gestalt_rc) == noErr)
-	gui.MacOSHaveCntxMenu = BitTst(&gestalt_rc, 31-gestaltContextualMenuTrapAvailable);
-    else
-	gui.MacOSHaveCntxMenu = false;
-
-    if (gui.MacOSHaveCntxMenu)
-	gui.MacOSHaveCntxMenu = (InitContextualMenus()==noErr);
 
     pomme = NewMenu(256, "\p\024"); /* 0x14= = Apple Menu */
 
@@ -2981,6 +2958,7 @@ gui_mch_init(void)
     gui.VimWindow = NewCWindow(nil, &windRect, "\pgVim on Macintosh", true,
 			zoomDocProc,
 			(WindowPtr)-1L, true, 0);
+    CreateRootControl(gui.VimWindow, &rootControl);
     InstallReceiveHandler((DragReceiveHandlerUPP)receiveHandler,
 	    gui.VimWindow, NULL);
     SetPortWindowPort(gui.VimWindow);
