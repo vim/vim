@@ -466,7 +466,7 @@ pum_set_selected(n, repeat)
 			set_option_value((char_u *)"bh", 0L,
 						 (char_u *)"wipe", OPT_LOCAL);
 			set_option_value((char_u *)"diff", 0L,
-						     (char_u *)"", OPT_LOCAL);
+							     NULL, OPT_LOCAL);
 		    }
 		}
 		if (res == OK)
