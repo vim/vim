@@ -2912,22 +2912,35 @@ not_writing()
 }
 
 /*
- * Check if a buffer is read-only.  Ask for overruling in a dialog.
- * Return TRUE and give an error message when the buffer is readonly.
+ * Check if a buffer is read-only (either 'readonly' option is set or file is
+ * read-only). Ask for overruling in a dialog. Return TRUE and give an error
+ * message when the buffer is readonly.
  */
     static int
 check_readonly(forceit, buf)
     int		*forceit;
     buf_T	*buf;
 {
-    if (!*forceit && buf->b_p_ro)
+    struct stat	st;
+
+    /* Handle a file being readonly when the 'readonly' option is set or when
+     * the file exists and permissions are read-only.
+     * We will send 0777 to check_file_readonly(), as the "perm" variable is
+     * important for device checks but not here. */
+    if (!*forceit && (buf->b_p_ro
+		|| (mch_stat((char *)buf->b_ffname, &st) >= 0
+		    && check_file_readonly(buf->b_ffname, 0777))))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || cmdmod.confirm) && buf->b_fname != NULL)
 	{
 	    char_u	buff[IOSIZE];
 
-	    dialog_msg(buff, _("'readonly' option is set for \"%s\".\nDo you wish to write anyway?"),
+	    if (buf->b_p_ro)
+		dialog_msg(buff, _("'readonly' option is set for \"%s\".\nDo you wish to write anyway?"),
+		    buf->b_fname);
+	    else
+		dialog_msg(buff, _("File permissions of \"%s\" are read-only.\nIt may still be possible to write it.\nDo you wish to try?"),
 		    buf->b_fname);
 
 	    if (vim_dialog_yesno(VIM_QUESTION, NULL, buff, 2) == VIM_YES)
@@ -2941,9 +2954,14 @@ check_readonly(forceit, buf)
 	}
 	else
 #endif
+	if (buf->b_p_ro)
 	    EMSG(_(e_readonly));
+	else
+	    EMSG2(_("E505: \"%s\" is read-only (add ! to override)"),
+		    buf->b_fname);
 	return TRUE;
     }
+
     return FALSE;
 }
 

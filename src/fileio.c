@@ -424,7 +424,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	 */
 	if (!p_odev && mch_nodetype(fname) == NODE_WRITABLE)
 	{
-	    filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option"), 0);
+	    filemess(curbuf, fname, (char_u *)_("is a device (disabled with 'opendevice' option)"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
 	    return FAIL;
@@ -2734,6 +2734,32 @@ set_file_time(fname, atime, mtime)
 #endif
 
 /*
+ * Return TRUE if a file appears to be read-only from the file permissions.
+ */
+    int
+check_file_readonly(fname, perm)
+    char_u	*fname;		/* full path to file */
+    int		perm;		/* known permissions on file */
+{
+#ifndef USE_MCH_ACCESS
+    int	    fd = 0;
+#endif
+
+    return (
+#ifdef USE_MCH_ACCESS
+# ifdef UNIX
+	(perm & 0222) == 0 ||
+# endif
+	mch_access((char *)fname, W_OK)
+#else
+	(fd = mch_open((char *)fname, O_RDWR | O_EXTRA, 0)) < 0
+					? TRUE : (close(fd), FALSE)
+#endif
+	);
+}
+
+
+/*
  * buf_write() - write to file "fname" lines "start" through "end"
  *
  * We do our own buffering here because fwrite() is so slow.
@@ -3219,17 +3245,8 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	 * Check if the file is really writable (when renaming the file to
 	 * make a backup we won't discover it later).
 	 */
-	file_readonly = (
-# ifdef USE_MCH_ACCESS
-#  ifdef UNIX
-		    (perm & 0222) == 0 ||
-#  endif
-		    mch_access((char *)fname, W_OK)
-# else
-		    (fd = mch_open((char *)fname, O_RDWR | O_EXTRA, 0)) < 0
-						   ? TRUE : (close(fd), FALSE)
-# endif
-		    );
+	file_readonly = check_file_readonly(fname, (int)perm);
+
 	if (!forceit && file_readonly)
 	{
 	    if (vim_strchr(p_cpo, CPO_FWRITE) != NULL)
