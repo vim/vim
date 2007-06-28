@@ -3404,7 +3404,9 @@ do_put(regname, dir, count, flags)
 
 #ifdef FEAT_VIRTUALEDIT
 	col += curwin->w_cursor.coladd;
-	if (ve_flags == VE_ALL && curwin->w_cursor.coladd > 0)
+	if (ve_flags == VE_ALL
+		&& (curwin->w_cursor.coladd > 0
+		    || endcol2 == curwin->w_cursor.col))
 	{
 	    if (dir == FORWARD && c == NUL)
 		++col;
