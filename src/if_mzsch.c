@@ -773,8 +773,7 @@ startup_mzscheme(void)
 #ifdef MZSCHEME_COLLECTS
     /* setup 'current-library-collection-paths' parameter */
     scheme_set_param(scheme_config, MZCONFIG_COLLECTION_PATHS,
-	    scheme_make_pair(scheme_make_string(MZSCHEME_COLLECTS),
-		scheme_null));
+	    scheme_build_list(0, scheme_make_string(MZSCHEME_COLLECTS)));
 #endif
 #ifdef HAVE_SANDBOX
     /* setup sandbox guards */

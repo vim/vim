@@ -3843,7 +3843,9 @@ echo "${ECHO_T}\"no\"" >&6
   fi
 
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
-    if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
+    if test "x$MACOSX" = "xyes"; then
+      MZSCHEME_LIBS="-framework PLT_MzScheme"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
     else
       MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
