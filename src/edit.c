@@ -7215,6 +7215,8 @@ in_cinkeys(keytyped, when, line_is_empty)
 		p = ml_get_curline();
 		if (cin_iscase(p) || cin_isscopedecl(p) || cin_islabel(30))
 		    return TRUE;
+		/* Need to get the line again after cin_islabel(). */
+		p = ml_get_curline();
 		if (curwin->w_cursor.col > 2
 			&& p[curwin->w_cursor.col - 1] == ':'
 			&& p[curwin->w_cursor.col - 2] == ':')
