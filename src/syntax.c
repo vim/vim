@@ -4460,8 +4460,8 @@ syn_cmd_include(eap, syncing)
     current_syn_inc_tag = ++running_syn_inc_tag;
     prev_toplvl_grp = curbuf->b_syn_topgrp;
     curbuf->b_syn_topgrp = sgl_id;
-    if (source ? do_source(eap->arg, FALSE, FALSE) == FAIL
-				: source_runtime(eap->arg, DOSO_NONE) == FAIL)
+    if (source ? do_source(eap->arg, FALSE, DOSO_NONE) == FAIL
+				: source_runtime(eap->arg, TRUE) == FAIL)
 	EMSG2(_(e_notopen), eap->arg);
     curbuf->b_syn_topgrp = prev_toplvl_grp;
     current_syn_inc_tag = prev_syn_inc_tag;
