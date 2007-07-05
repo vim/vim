@@ -3456,11 +3456,11 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 		    /* advance to next hotkey and set default hotkey */
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
-			hotkp += (*mb_ptr2len)(hotkp);
+			hotkp += STRLEN(hotkp);
 		    else
 #endif
 			++hotkp;
-		    (void)copy_char(r + 1, hotkp, TRUE);
+		    hotkp[copy_char(r + 1, hotkp, TRUE)] = NUL;
 		    if (dfltbutton)
 			--dfltbutton;
 
@@ -3493,7 +3493,7 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 			*msgp++ = (dfltbutton == 1) ? ']' : ')';
 
 			/* redefine hotkey */
-			(void)copy_char(r, hotkp, TRUE);
+			hotkp[copy_char(r, hotkp, TRUE)] = NUL;
 		    }
 		}
 		else
@@ -3519,8 +3519,6 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	    *msgp++ = ':';
 	    *msgp++ = ' ';
 	    *msgp = NUL;
-	    mb_ptr_adv(hotkp);
-	    *hotkp = NUL;
 	}
 	else
 	{
@@ -3555,8 +3553,9 @@ msg_show_console_dialog(message, buttons, dfltbutton)
 	    msgp = confirm_msg + 1 + STRLEN(message);
 	    hotkp = hotk;
 
-	    /* define first default hotkey */
-	    (void)copy_char(buttons, hotkp, TRUE);
+	    /* Define first default hotkey.  Keep the hotkey string NUL
+	     * terminated to avoid reading past the end. */
+	    hotkp[copy_char(buttons, hotkp, TRUE)] = NUL;
 
 	    /* Remember where the choices start, displaying starts here when
 	     * "hotkp" typed at the more prompt. */
