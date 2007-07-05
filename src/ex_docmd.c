@@ -2118,7 +2118,8 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_USR_CMDS
 	    !USER_CMDIDX(ea.cmdidx) &&
 #endif
-	    cmdnames[ea.cmdidx].cmd_func == ex_ni);
+	    (cmdnames[ea.cmdidx].cmd_func == ex_ni
+	     || cmdnames[ea.cmdidx].cmd_func == ex_script_ni));
 
 #ifndef FEAT_EVAL
     /*
