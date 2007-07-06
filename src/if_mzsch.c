@@ -308,6 +308,8 @@ static void (*dll_scheme_set_param)(Scheme_Config *c, int pos,
 static Scheme_Config *(*dll_scheme_current_config)(void);
 static Scheme_Object *(*dll_scheme_char_string_to_byte_string)
     (Scheme_Object *s);
+static Scheme_Object *(*dll_scheme_char_string_to_path)
+    (Scheme_Object *s);
 # endif
 
 /* arrays are imported directly */
@@ -398,6 +400,8 @@ static Scheme_Object *(*dll_scheme_char_string_to_byte_string)
 #  define scheme_current_config dll_scheme_current_config
 #  define scheme_char_string_to_byte_string \
     dll_scheme_char_string_to_byte_string
+#  define scheme_char_string_to_path \
+    dll_scheme_char_string_to_path
 # endif
 
 typedef struct
@@ -498,6 +502,8 @@ static Thunk_Info mzsch_imports[] = {
     {"scheme_current_config", (void **)&dll_scheme_current_config},
     {"scheme_char_string_to_byte_string",
 	(void **)&dll_scheme_char_string_to_byte_string},
+    {"scheme_char_string_to_path",
+	(void **)&dll_scheme_char_string_to_path},
 # endif
     {NULL, NULL}};
 
@@ -773,7 +779,15 @@ startup_mzscheme(void)
 #ifdef MZSCHEME_COLLECTS
     /* setup 'current-library-collection-paths' parameter */
     scheme_set_param(scheme_config, MZCONFIG_COLLECTION_PATHS,
-	    scheme_build_list(0, scheme_make_string(MZSCHEME_COLLECTS)));
+	    scheme_make_pair(
+# if MZSCHEME_VERSION_MAJOR >= 299
+		scheme_char_string_to_path(
+		    scheme_byte_string_to_char_string(
+			scheme_make_byte_string(MZSCHEME_COLLECTS))),
+# else
+		scheme_make_string(MZSCHEME_COLLECTS),
+# endif
+		scheme_null));
 #endif
 #ifdef HAVE_SANDBOX
     /* setup sandbox guards */
