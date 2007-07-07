@@ -2349,8 +2349,10 @@ keymap_init()
 
     if (*curbuf->b_p_keymap == NUL)
     {
-	/* Stop any active keymap and clear the table. */
+	/* Stop any active keymap and clear the table.  Also remove
+	 * b:keymap_unload, as no keymap is active now. */
 	keymap_unload();
+	do_cmdline_cmd((char_u *)"unlet! b:keymap_name");
     }
     else
     {
@@ -2500,7 +2502,6 @@ keymap_unload()
 
     ga_clear(&curbuf->b_kmap_ga);
     curbuf->b_kmap_state &= ~KEYMAP_LOADED;
-    do_cmdline_cmd((char_u *)"unlet! b:keymap_name");
 #ifdef FEAT_WINDOWS
     status_redraw_curbuf();
 #endif
