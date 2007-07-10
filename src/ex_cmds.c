@@ -408,7 +408,11 @@ ex_sort(eap)
 		goto sortend;
 	    }
 	    *s = NUL;
-	    regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
+	    /* Use last search pattern if sort pattern is empty. */
+	    if (s == p + 1 && last_search_pat() != NULL)
+		regmatch.regprog = vim_regcomp(last_search_pat(), RE_MAGIC);
+	    else
+		regmatch.regprog = vim_regcomp(p + 1, RE_MAGIC);
 	    if (regmatch.regprog == NULL)
 		goto sortend;
 	    p = s;		/* continue after the regexp */

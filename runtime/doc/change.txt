@@ -1571,6 +1571,10 @@ found here: |sort()|.
 			in their original order, right before the sorted
 			lines.
 
+			If {pattern} is empty (e.g. // is specified), the
+			last search pattern is used.  This allows trying out
+			a pattern first.
+
 Note that using ":sort" with ":global" doesn't sort the matching lines, it's
 quite useless.
 
