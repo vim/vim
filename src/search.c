@@ -573,8 +573,12 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
 	/*
 	 * Start searching in current line, unless searching backwards and
 	 * we're in column 0.
+	 * If we are searching backwards, in column 0, and not including the
+	 * current position, gain some efficiency by skipping back a line.
+	 * Otherwise begin the search in the current line.
 	 */
-	if (dir == BACKWARD && start_pos.col == 0)
+	if (dir == BACKWARD && start_pos.col == 0
+					     && (options & SEARCH_START) == 0)
 	{
 	    lnum = pos->lnum - 1;
 	    at_first_line = FALSE;

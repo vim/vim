@@ -13925,6 +13925,8 @@ search_cmn(argvars, match_pos, flagsp)
     /* If 'n' flag is used: restore cursor position. */
     if (flags & SP_NOMOVE)
 	curwin->w_cursor = save_cursor;
+    else
+	curwin->w_set_curswant = TRUE;
 theend:
     p_ws = save_p_ws;
 
