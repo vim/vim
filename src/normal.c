@@ -6379,7 +6379,7 @@ nv_brackets(cap)
      */
     else if (cap->nchar == 'p' || cap->nchar == 'P')
     {
-	if (!checkclearopq(cap->oap))
+	if (!checkclearop(cap->oap))
 	{
 	    prep_redo_cmd(cap);
 	    do_put(cap->oap->regname,
