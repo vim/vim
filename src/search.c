@@ -2124,6 +2124,9 @@ findmatchlimit(oap, initc, flags, maxtravel)
 			else if (!backwards)
 			    inquote = TRUE;
 		    }
+
+		    /* ml_get() only keeps one line, need to get linep again */
+		    linep = ml_get(pos.lnum);
 		}
 	    }
 	}
