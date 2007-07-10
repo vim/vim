@@ -2795,7 +2795,7 @@ fwd_word(count, bigword, eol)
 	i = inc_cursor();
 	if (i == -1 || (i >= 1 && last_line)) /* started at last char in file */
 	    return FAIL;
-	if (i == 1 && eol && count == 0)      /* started at last char in line */
+	if (i >= 1 && eol && count == 0)      /* started at last char in line */
 	    return OK;
 
 	/*
