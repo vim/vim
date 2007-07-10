@@ -508,6 +508,9 @@ int mch_rename __ARGS((const char *src, const char *dest));
 #if !defined(S_ISFIFO) && defined(S_IFIFO)
 # define	S_ISFIFO(m) (((m) & S_IFMT) == S_IFIFO)
 #endif
+#if !defined(S_ISCHR) && defined(S_IFCHR)
+# define	S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
+#endif
 
 /* Note: Some systems need both string.h and strings.h (Savage).  However,
  * some systems can't handle both, only use string.h in that case. */

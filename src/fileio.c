@@ -44,6 +44,10 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
+#if defined(sun) && defined(S_ISCHR)
+# define OPEN_CHR_FILES
+static int is_dev_fd_file(char_u *fname);
+#endif
 #ifdef FEAT_MBYTE
 static char_u *next_fenc __ARGS((char_u **pp));
 # ifdef FEAT_EVAL
@@ -405,6 +409,10 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 # endif
 # ifdef S_ISSOCK
 		      && !S_ISSOCK(perm)	    /* ... or socket */
+# endif
+# ifdef OPEN_CHR_FILES
+		      && !(S_ISCHR(perm) && is_dev_fd_file(fname))
+			/* ... or a character special file named /dev/fd/<n> */
 # endif
 						)
 	{
@@ -2265,6 +2273,13 @@ failed:
 	    }
 #  endif
 # endif
+# ifdef OPEN_CHR_FILES
+	    if (S_ISCHR(perm))			    /* or character special */
+	    {
+		STRCAT(IObuff, _("[character special]"));
+		c = TRUE;
+	    }
+# endif
 #endif
 	    if (curbuf->b_p_ro)
 	    {
@@ -2463,6 +2478,25 @@ failed:
 	return FAIL;
     return OK;
 }
+
+#ifdef OPEN_CHR_FILES
+/*
+ * Returns TRUE if the file name argument is of the form "/dev/fd/\d\+",
+ * which is the name of files used for process substitution output by
+ * some shells on some operating systems, e.g., bash on SunOS.
+ * Do not accept "/dev/fd/[012]", opening these may hang Vim.
+ */
+    static int
+is_dev_fd_file(fname)
+    char_u	*fname;
+{
+    return (STRNCMP(fname, "/dev/fd/", 8) == 0
+	    && VIM_ISDIGIT(fname[8])
+	    && *skipdigits(fname + 9) == NUL
+	    && (fname[9] != NUL
+		|| (fname[8] != '0' && fname[8] != '1' && fname[8] != '2')));
+}
+#endif
 
 #ifdef FEAT_MBYTE
 
