@@ -133,6 +133,7 @@ static linenr_T get_address __ARGS((char_u **, int skip, int to_other_file));
 static void	get_flags __ARGS((exarg_T *eap));
 #if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
 	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
+# define HAVE_EX_SCRIPT_NI
 static void	ex_script_ni __ARGS((exarg_T *eap));
 #endif
 static char_u	*invalid_range __ARGS((exarg_T *eap));
@@ -2119,7 +2120,10 @@ do_one_cmd(cmdlinep, sourcing,
 	    !USER_CMDIDX(ea.cmdidx) &&
 #endif
 	    (cmdnames[ea.cmdidx].cmd_func == ex_ni
-	     || cmdnames[ea.cmdidx].cmd_func == ex_script_ni));
+#ifdef HAVE_EX_SCRIPT_NI
+	     || cmdnames[ea.cmdidx].cmd_func == ex_script_ni
+#endif
+	     ));
 
 #ifndef FEAT_EVAL
     /*
@@ -3998,8 +4002,7 @@ ex_ni(eap)
 	eap->errmsg = (char_u *)N_("E319: Sorry, the command is not available in this version");
 }
 
-#if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
-	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
+#ifdef HAVE_EX_SCRIPT_NI
 /*
  * Function called for script command which is Not Implemented.  NI!
  * Skips over ":perl <<EOF" constructs.
