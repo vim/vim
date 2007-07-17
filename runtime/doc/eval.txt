@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2007 Jun 09
+*eval.txt*      For Vim version 7.1.  Last change: 2007 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2020,6 +2020,10 @@ col({expr})	The result is a Number, which is the byte index of the column
 			    number of characters in the cursor line plus one)
 		    'x	    position of mark x (if the mark is not set, 0 is
 			    returned)
+		Additionally {expr} can be [lnum, col]: a |List| with the line
+		and column number. Most useful when the column is "$", to get
+		the las column of a specific line.  When "lnum" or "col" is
+		out of range then col() returns zero.
 		To get the line number use |line()|.  To get both use
 		|getpos()|.
 		For the screen column position use |virtcol()|.
@@ -5024,14 +5028,12 @@ virtcol({expr})						*virtcol()*
 		position, the returned Number will be the column at the end of
 		the <Tab>.  For example, for a <Tab> in column 1, with 'ts'
 		set to 8, it returns 8.
-		For the use of {expr} see |col()|.  Additionally you can use
-		[lnum, col]: a |List| with the line and column number.  When
-		"lnum" or "col" is out of range then virtcol() returns zero.
-		When 'virtualedit' is used it can be [lnum, col, off], where
+		For the byte position use |col()|.
+		For the use of {expr} see |col()|.
+		When 'virtualedit' is used {expr} can be [lnum, col, off], where
 		"off" is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
 		character.
-		For the byte position use |col()|.
 		When Virtual editing is active in the current mode, a position
 		beyond the end of the line can be returned. |'virtualedit'|
 		The accepted positions are:

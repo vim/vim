@@ -672,7 +672,7 @@ static void f_winwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_writefile __ARGS((typval_T *argvars, typval_T *rettv));
 
 static int list2fpos __ARGS((typval_T *arg, pos_T *posp, int *fnump));
-static pos_T *var2fpos __ARGS((typval_T *varp, int lnum, int *fnum));
+static pos_T *var2fpos __ARGS((typval_T *varp, int dollar_lnum, int *fnum));
 static int get_env_len __ARGS((char_u **arg));
 static int get_id_len __ARGS((char_u **arg));
 static int get_name_len __ARGS((char_u **arg, char_u **alias, int evaluate, int verbose));
@@ -16505,9 +16505,9 @@ f_writefile(argvars, rettv)
  * Returns NULL when there is an error.
  */
     static pos_T *
-var2fpos(varp, lnum, fnum)
+var2fpos(varp, dollar_lnum, fnum)
     typval_T	*varp;
-    int		lnum;		/* TRUE when $ is last line */
+    int		dollar_lnum;	/* TRUE when $ is last line */
     int		*fnum;		/* set to fnum for '0, 'A, etc. */
 {
     char_u		*name;
@@ -16520,6 +16520,7 @@ var2fpos(varp, lnum, fnum)
 	list_T		*l;
 	int		len;
 	int		error = FALSE;
+	listitem_T	*li;
 
 	l = varp->vval.v_list;
 	if (l == NULL)
@@ -16535,6 +16536,14 @@ var2fpos(varp, lnum, fnum)
 	if (error)
 	    return NULL;
 	len = (long)STRLEN(ml_get(pos.lnum));
+
+	/* We accept "$" for the column number: last column. */
+	li = list_find(l, 1L);
+	if (li != NULL && li->li_tv.v_type == VAR_STRING
+		&& li->li_tv.vval.v_string != NULL
+		&& STRCMP(li->li_tv.vval.v_string, "$") == 0)
+	    pos.col = len + 1;
+
 	/* Accept a position up to the NUL after the line. */
 	if (pos.col == 0 || (int)pos.col > len + 1)
 	    return NULL;	/* invalid column number */
@@ -16567,7 +16576,7 @@ var2fpos(varp, lnum, fnum)
     pos.coladd = 0;
 #endif
 
-    if (name[0] == 'w' && lnum)
+    if (name[0] == 'w' && dollar_lnum)
     {
 	pos.col = 0;
 	if (name[1] == '0')		/* "w0": first visible line */
@@ -16585,7 +16594,7 @@ var2fpos(varp, lnum, fnum)
     }
     else if (name[0] == '$')		/* last column or line */
     {
-	if (lnum)
+	if (dollar_lnum)
 	{
 	    pos.lnum = curbuf->b_ml.ml_line_count;
 	    pos.col = 0;
