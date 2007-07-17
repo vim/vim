@@ -484,7 +484,8 @@ getcmdline(firstc, count, indent)
 	if (xpc.xp_context == EXPAND_MENUNAMES && p_wmnu)
 	{
 	    /* Hitting <Down> after "emenu Name.": complete submenu */
-	    if (ccline.cmdbuff[ccline.cmdpos - 1] == '.' && c == K_DOWN)
+	    if (c == K_DOWN && ccline.cmdpos > 0
+				  && ccline.cmdbuff[ccline.cmdpos - 1] == '.')
 		c = p_wc;
 	    else if (c == K_UP)
 	    {
@@ -533,9 +534,11 @@ getcmdline(firstc, count, indent)
 	    upseg[3] = PATHSEP;
 	    upseg[4] = NUL;
 
-	    if (ccline.cmdbuff[ccline.cmdpos - 1] == PATHSEP
-		    && c == K_DOWN
-		    && (ccline.cmdbuff[ccline.cmdpos - 2] != '.'
+	    if (c == K_DOWN
+		    && ccline.cmdpos > 0
+		    && ccline.cmdbuff[ccline.cmdpos - 1] == PATHSEP
+		    && (ccline.cmdpos < 3
+			|| ccline.cmdbuff[ccline.cmdpos - 2] != '.'
 			|| ccline.cmdbuff[ccline.cmdpos - 3] != '.'))
 	    {
 		/* go down a directory */
@@ -730,8 +733,8 @@ getcmdline(firstc, count, indent)
 	    /* In Ex mode a backslash escapes a newline. */
 	    if (exmode_active
 		    && c != ESC
-		    && ccline.cmdpos > 0
 		    && ccline.cmdpos == ccline.cmdlen
+		    && ccline.cmdpos > 0
 		    && ccline.cmdbuff[ccline.cmdpos - 1] == '\\')
 	    {
 		if (c == K_KENTER)
