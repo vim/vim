@@ -4628,7 +4628,7 @@ do_set(arg, opt_flags)
 				    if ((!(flags & P_COMMA) || *s != ',')
 					    && vim_strchr(s + 1, *s) != NULL)
 				    {
-					STRCPY(s, s + 1);
+					mch_memmove(s, s + 1, STRLEN(s));
 					--s;
 				    }
 			    }
