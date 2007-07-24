@@ -90,7 +90,7 @@ get_indent_str(ptr, ts)
  */
     int
 set_indent(size, flags)
-    int		size;
+    int		size;		    /* measured in spaces */
     int		flags;
 {
     char_u	*p;
@@ -98,12 +98,14 @@ set_indent(size, flags)
     char_u	*oldline;
     char_u	*s;
     int		todo;
-    int		ind_len;
+    int		ind_len;	    /* measured in characters */
     int		line_len;
     int		doit = FALSE;
-    int		ind_done;
+    int		ind_done = 0;	    /* measured in spaces */
     int		tab_pad;
     int		retval = FALSE;
+    int		orig_char_len = 0;  /* number of initial whitespace chars when
+				       'et' and 'pi' are both set */
 
     /*
      * First check if there is anything to do and compute the number of
@@ -116,8 +118,10 @@ set_indent(size, flags)
     /* Calculate the buffer size for the new indent, and check to see if it
      * isn't already set */
 
-    /* if 'expandtab' isn't set: use TABs */
-    if (!curbuf->b_p_et)
+    /* if 'expandtab' isn't set: use TABs; if both 'expandtab' and
+     * 'preserveindent' are set count the number of characters at the
+     * beginning of the line to be copied */
+    if (!curbuf->b_p_et || (!(flags & SIN_INSERT) && curbuf->b_p_pi))
     {
 	/* If 'preserveindent' is set then reuse as much as possible of
 	 * the existing indent structure for the new indent */
@@ -148,9 +152,14 @@ set_indent(size, flags)
 		++p;
 	    }
 
+	    /* Set initial number of whitespace chars to copy if we are
+	     * preserving indent but expandtab is set */
+	    if (curbuf->b_p_et)
+		orig_char_len = ind_len;
+
 	    /* Fill to next tabstop with a tab, if possible */
 	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
-	    if (todo >= tab_pad)
+	    if (todo >= tab_pad && orig_char_len == 0)
 	    {
 		doit = TRUE;
 		todo -= tab_pad;
@@ -193,13 +202,38 @@ set_indent(size, flags)
     else
 	p = skipwhite(p);
     line_len = (int)STRLEN(p) + 1;
-    newline = alloc(ind_len + line_len);
-    if (newline == NULL)
-	return FALSE;
+
+    /* If 'preserveindent' and 'expandtab' are both set keep the original
+     * characters and allocate accordingly.  We will fill the rest with spaces
+     * after the if (!curbuf->b_p_et) below. */
+    if (orig_char_len != 0)
+    {
+	newline = alloc(orig_char_len + size - ind_done + line_len);
+	if (newline == NULL)
+	    return FALSE;
+	p = oldline;
+	s = newline;
+	while (orig_char_len > 0)
+	{
+	    *s++ = *p++;
+	    orig_char_len--;
+	}
+	/* Skip over any additional white space (useful when newindent is less
+	 * than old) */
+	while (vim_iswhite(*p))
+	    (void)*p++;
+	todo = size-ind_done;
+    }
+    else
+    {
+	todo = size;
+	newline = alloc(ind_len + line_len);
+	if (newline == NULL)
+	    return FALSE;
+	s = newline;
+    }
 
     /* Put the characters in the new line. */
-    s = newline;
-    todo = size;
     /* if 'expandtab' isn't set: use TABs */
     if (!curbuf->b_p_et)
     {
@@ -1320,8 +1354,8 @@ open_line(dir, flags, old_indent)
 	    newindent += (int)curbuf->b_p_sw;
 	}
 #endif
-	/* Copy the indent only if expand tab is disabled */
-	if (curbuf->b_p_ci && !curbuf->b_p_et)
+	/* Copy the indent */
+	if (curbuf->b_p_ci)
 	{
 	    (void)copy_indent(newindent, saved_line);
 
