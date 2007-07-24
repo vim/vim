@@ -10624,6 +10624,9 @@ save_file_ff(buf)
 file_ff_differs(buf)
     buf_T	*buf;
 {
+    /* In a buffer that was never loaded the options are not valid. */
+    if (buf->b_flags & BF_NEVERLOADED)
+	return FALSE;
     if ((buf->b_flags & BF_NEW)
 	    && buf->b_ml.ml_line_count == 1
 	    && *ml_get_buf(buf, (linenr_T)1, FALSE) == NUL)
