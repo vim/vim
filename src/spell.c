@@ -7829,7 +7829,7 @@ put_bytes(fd, nr, len)
 # if (_MSC_VER <= 1200)
 /* This line is required for VC6 without the service pack.  Also see the
  * matching #pragma below. */
-/* # pragma optimize("", off) */
+ #  pragma optimize("", off)
 # endif
 #endif
 
@@ -7859,7 +7859,7 @@ put_sugtime(spin, fd)
 
 #ifdef _MSC_VER
 # if (_MSC_VER <= 1200)
-/* # pragma optimize("", on) */
+ #  pragma optimize("", on)
 # endif
 #endif
 
