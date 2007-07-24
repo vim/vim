@@ -268,7 +268,9 @@ getcmdline(firstc, count, indent)
     {
 	xpc.xp_context = ccline.xp_context;
 	xpc.xp_pattern = ccline.cmdbuff;
+# if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
 	xpc.xp_arg = ccline.xp_arg;
+# endif
     }
 #endif
 
@@ -4151,13 +4153,19 @@ set_cmd_context(xp, str, len, col)
 
 #ifdef FEAT_EVAL
     if (ccline.cmdfirstc == '=')
+    {
+# ifdef FEAT_CMDL_COMPL
 	/* pass CMD_SIZE because there is no real command */
 	set_context_for_expression(xp, str, CMD_SIZE);
+# endif
+    }
     else if (ccline.input_fn)
     {
 	xp->xp_context = ccline.xp_context;
 	xp->xp_pattern = ccline.cmdbuff;
+# if defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)
 	xp->xp_arg = ccline.xp_arg;
+# endif
     }
     else
 #endif
@@ -4504,6 +4512,12 @@ ExpandGeneric(xp, regmatch, num_file, file, func)
     /* Sort the results.  Keep menu's in the specified order. */
     if (xp->xp_context != EXPAND_MENUNAMES && xp->xp_context != EXPAND_MENUS)
 	sort_strings(*file, *num_file);
+
+#ifdef FEAT_CMDL_COMPL
+    /* Reset the variables used for special highlight names expansion, so that
+     * they don't show up when getting normal highlight names by ID. */
+    reset_expand_highlight();
+#endif
 
     return OK;
 }

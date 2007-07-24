@@ -1411,7 +1411,8 @@ eval_expr(arg, nextcmd)
 }
 
 
-#if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
+#if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) \
+	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
 /*
  * Call some vimL function and return the result in "*rettv".
  * Uses argv[argc] for the function arguments.
@@ -1484,6 +1485,7 @@ call_vim_function(func, argc, argv, safe, rettv)
     return ret;
 }
 
+# if (defined(FEAT_USR_CMDS) && defined(FEAT_CMDL_COMPL)) || defined(PROTO)
 /*
  * Call vimL function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
@@ -1506,8 +1508,9 @@ call_func_retstr(func, argc, argv, safe)
     clear_tv(&rettv);
     return retval;
 }
+# endif
 
-#if defined(FEAT_COMPL_FUNC) || defined(PROTO)
+# if defined(FEAT_COMPL_FUNC) || defined(PROTO)
 /*
  * Call vimL function "func" and return the result as a number.
  * Returns -1 when calling the function fails.
@@ -1530,7 +1533,7 @@ call_func_retnr(func, argc, argv, safe)
     clear_tv(&rettv);
     return retval;
 }
-#endif
+# endif
 
 /*
  * Call vimL function "func" and return the result as a list
@@ -1556,8 +1559,8 @@ call_func_retlist(func, argc, argv, safe)
 
     return rettv.vval.v_list;
 }
-
 #endif
+
 
 /*
  * Save the current function call pointer, and set it to NULL.

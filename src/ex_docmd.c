@@ -3406,14 +3406,13 @@ set_one_cmd_context(xp, buff)
 	case CMD_windo:
 	    return arg;
 
-#ifdef FEAT_SEARCH_EXTRA
+#ifdef FEAT_CMDL_COMPL
+# ifdef FEAT_SEARCH_EXTRA
 	case CMD_match:
 	    if (*arg == NUL || !ends_excmd(*arg))
 	    {
-		/* Dummy call to clear variables. */
-		set_context_in_highlight_cmd(xp, (char_u *)"link n");
-		xp->xp_context = EXPAND_HIGHLIGHT;
-		xp->xp_pattern = arg;
+		/* also complete "None" */
+		set_context_in_echohl_cmd(xp, arg);
 		arg = skipwhite(skiptowhite(arg));
 		if (*arg != NUL)
 		{
@@ -3422,9 +3421,8 @@ set_one_cmd_context(xp, buff)
 		}
 	    }
 	    return find_nextcmd(arg);
-#endif
+# endif
 
-#ifdef FEAT_CMDL_COMPL
 /*
  * All completion for the +cmdline_compl feature goes here.
  */
@@ -3622,8 +3620,7 @@ set_one_cmd_context(xp, buff)
 	    break;
 
 	case CMD_echohl:
-	    xp->xp_context = EXPAND_HIGHLIGHT;
-	    xp->xp_pattern = arg;
+	    set_context_in_echohl_cmd(xp, arg);
 	    break;
 #endif
 	case CMD_highlight:

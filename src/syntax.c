@@ -66,8 +66,10 @@ static garray_T highlight_ga;	/* highlight groups for 'highlight' option */
 #define HL_TABLE() ((struct hl_group *)((highlight_ga.ga_data)))
 
 #ifdef FEAT_CMDL_COMPL
-static int include_default = FALSE;	/* include "default" for expansion */
-static int include_link = FALSE;	/* include "link" for expansion */
+/* Flags to indicate an additional string for highlight name completion. */
+static int include_none = 0;	/* when 1 include "None" */
+static int include_default = 0;	/* when 1 include "default" */
+static int include_link = 0;	/* when 2 include "link" and "clear" */
 #endif
 
 /*
@@ -5968,6 +5970,29 @@ static enum
     EXP_CASE	    /* expand ":syn case" arguments */
 } expand_what;
 
+/*
+ * Reset include_link, include_default, include_none to 0.
+ * Called when we are done expanding.
+ */
+    void
+reset_expand_highlight()
+{
+    include_link = include_default = include_none = 0;
+}
+
+/*
+ * Handle command line completion for :match and :echohl command: Add "None"
+ * as highlight group.
+ */
+    void
+set_context_in_echohl_cmd(xp, arg)
+    expand_T	*xp;
+    char_u	*arg;
+{
+    xp->xp_context = EXPAND_HIGHLIGHT;
+    xp->xp_pattern = arg;
+    include_none = 1;
+}
 
 /*
  * Handle command line completion for :syntax command.
@@ -5983,8 +6008,8 @@ set_context_in_syntax_cmd(xp, arg)
     xp->xp_context = EXPAND_SYNTAX;
     expand_what = EXP_SUBCMD;
     xp->xp_pattern = arg;
-    include_link = FALSE;
-    include_default = FALSE;
+    include_link = 0;
+    include_default = 0;
 
     /* (part of) subcommand already typed */
     if (*arg != NUL)
@@ -8949,7 +8974,7 @@ highlight_changed()
     return OK;
 }
 
-#ifdef FEAT_CMDL_COMPL
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
 static void highlight_list __ARGS((void));
 static void highlight_list_two __ARGS((int cnt, int attr));
@@ -8967,8 +8992,8 @@ set_context_in_highlight_cmd(xp, arg)
     /* Default: expand group names */
     xp->xp_context = EXPAND_HIGHLIGHT;
     xp->xp_pattern = arg;
-    include_link = TRUE;
-    include_default = TRUE;
+    include_link = 2;
+    include_default = 1;
 
     /* (part of) subcommand already typed */
     if (*arg != NUL)
@@ -8976,7 +9001,7 @@ set_context_in_highlight_cmd(xp, arg)
 	p = skiptowhite(arg);
 	if (*p != NUL)			/* past "default" or group name */
 	{
-	    include_default = FALSE;
+	    include_default = 0;
 	    if (STRNCMP("default", arg, p - arg) == 0)
 	    {
 		arg = skipwhite(p);
@@ -8985,7 +9010,7 @@ set_context_in_highlight_cmd(xp, arg)
 	    }
 	    if (*p != NUL)			/* past group name */
 	    {
-		include_link = FALSE;
+		include_link = 0;
 		if (arg[1] == 'i' && arg[0] == 'N')
 		    highlight_list();
 		if (STRNCMP("link", arg, p - arg) == 0
@@ -9045,31 +9070,25 @@ get_highlight_name(xp, idx)
     expand_T	*xp;
     int		idx;
 {
-    if (idx == highlight_ga.ga_len
 #ifdef FEAT_CMDL_COMPL
-	    && include_link
-#endif
-	    )
-	return (char_u *)"link";
-    if (idx == highlight_ga.ga_len + 1
-#ifdef FEAT_CMDL_COMPL
-	    && include_link
-#endif
-	    )
-	return (char_u *)"clear";
-    if (idx == highlight_ga.ga_len + 2
-#ifdef FEAT_CMDL_COMPL
-	    && include_default
-#endif
-	    )
+    if (idx == highlight_ga.ga_len && include_none != 0)
+	return (char_u *)"none";
+    if (idx == highlight_ga.ga_len + include_none && include_default != 0)
 	return (char_u *)"default";
+    if (idx == highlight_ga.ga_len + include_none + include_default
+							 && include_link != 0)
+	return (char_u *)"link";
+    if (idx == highlight_ga.ga_len + include_none + include_default + 1
+							 && include_link != 0)
+	return (char_u *)"clear";
+#endif
     if (idx < 0 || idx >= highlight_ga.ga_len)
 	return NULL;
     return HL_TABLE()[idx].sg_name;
 }
 #endif
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Free all the highlight group fonts.
  * Used when quitting for systems which need it.

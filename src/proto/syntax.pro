@@ -8,6 +8,8 @@ int get_syntax_attr __ARGS((colnr_T col, int *can_spell));
 void syntax_clear __ARGS((buf_T *buf));
 void ex_syntax __ARGS((exarg_T *eap));
 int syntax_present __ARGS((buf_T *buf));
+void reset_expand_highlight __ARGS((void));
+void set_context_in_echohl_cmd __ARGS((expand_T *xp, char_u *arg));
 void set_context_in_syntax_cmd __ARGS((expand_T *xp, char_u *arg));
 char_u *get_syntax_name __ARGS((expand_T *xp, int idx));
 int syn_get_id __ARGS((win_T *wp, long lnum, colnr_T col, int trans, int *spellp));
