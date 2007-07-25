@@ -6374,9 +6374,9 @@ helptags_one(dir, ext, tagfname)
 	for (i = 0; i < ga.ga_len; ++i)
 	{
 	    s = ((char_u **)ga.ga_data)[i];
-	    if (STRNCMP(s, "help-tags", 9) == 0)
+	    if (STRNCMP(s, "help-tags\t", 10) == 0)
 		/* help-tags entry was added in formatted form */
-		fprintf(fd_tags, (char *)s);
+		fputs((char *)s, fd_tags);
 	    else
 	    {
 		fprintf(fd_tags, "%s\t/*", s);
