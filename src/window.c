@@ -75,6 +75,7 @@ static int check_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
 static win_T *restore_snapshot_rec __ARGS((frame_T *sn, frame_T *fr));
 
 #endif /* FEAT_WINDOWS */
+
 static win_T *win_alloc __ARGS((win_T *after));
 static void win_new_height __ARGS((win_T *, int));
 
@@ -4128,6 +4129,10 @@ win_alloc(after)
 #ifdef FEAT_AUTOCMD
 	--autocmd_block;
 #endif
+#ifdef FEAT_SEARCH_EXTRA
+	newwin->w_match_head = NULL;
+	newwin->w_next_match_id = 4;
+#endif
     }
     return newwin;
 }
@@ -4185,11 +4190,11 @@ win_free(wp, tp)
 	vim_free(wp->w_tagstack[i].tagname);
 
     vim_free(wp->w_localdir);
+
 #ifdef FEAT_SEARCH_EXTRA
-    vim_free(wp->w_match[0].regprog);
-    vim_free(wp->w_match[1].regprog);
-    vim_free(wp->w_match[2].regprog);
+    clear_matches(wp);
 #endif
+
 #ifdef FEAT_JUMPLIST
     free_jumplist(wp);
 #endif
@@ -6172,5 +6177,175 @@ win_hasvertsplit()
 		return TRUE;
 
     return FALSE;
+}
+#endif
+
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+/*
+ * Add match to the match list of window 'wp'.  The pattern 'pat' will be
+ * highligted with the group 'grp' with priority 'prio'.
+ * Optionally, a desired ID 'id' can be specified (greater than or equal to 1).
+ * If no particular ID is desired, -1 must be specified for 'id'.
+ * Return ID of added match, -1 on failure.
+ */
+    int
+match_add(wp, grp, pat, prio, id)
+    win_T	*wp;
+    char_u	*grp;
+    char_u	*pat;
+    int		prio;
+    int		id;
+{
+    matchitem_T *cur;
+    matchitem_T *prev;
+    matchitem_T *m;
+    int		hlg_id;
+    regmmatch_T match;
+
+    if (*grp == NUL || *pat == NUL)
+	return -1;
+    if (id < -1 || id == 0)
+    {
+	EMSGN("E799: Invalid ID: %ld (must be greater than or equal to 1)", id);
+	return -1;
+    }
+    if (id != -1)
+    {
+	cur = wp->w_match_head;
+	while (cur != NULL)
+	{
+	    if (cur->id == id)
+	    {
+		EMSGN("E801: ID already taken: %ld", id);
+		return -1;
+	    }
+	    cur = cur->next;
+	}
+    }
+    if ((hlg_id = syn_namen2id(grp, STRLEN(grp))) == 0)
+    {
+	EMSG2(_(e_nogroup), grp);
+	return -1;
+    }
+    if ((match.regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
+    {
+	EMSG2(_(e_invarg2), pat);
+	return -1;
+    }
+
+    /* Find available match ID. */
+    while (id == -1)
+    {
+	cur = wp->w_match_head;
+	while (cur != NULL && cur->id != wp->w_next_match_id)
+	    cur = cur->next;
+	if (cur == NULL)
+	    id = wp->w_next_match_id;
+	wp->w_next_match_id++;
+    }
+
+    /* Build new match. */
+    m = (matchitem_T *)alloc(sizeof(matchitem_T));
+    m->id = id;
+    m->priority = prio;
+    m->pattern = vim_strsave(pat);
+    m->hlg_id = hlg_id;
+    m->match.regprog = match.regprog;
+
+    /* Insert new match.  The match list is in ascending order with regard to
+     * the match priorities. */
+    cur = wp->w_match_head;
+    prev = cur;
+    while (cur != NULL && prio >= cur->priority)
+    {
+	prev = cur;
+	cur = cur->next;
+    }
+    if (cur == prev)
+	wp->w_match_head = m;
+    else
+	prev->next = m;
+    m->next = cur;
+
+    redraw_later(SOME_VALID);
+    return id;
+}
+
+/*
+ * Delete match with ID 'id' in the match list of window 'wp'.
+ * Print error messages if 'perr' is TRUE.
+ */
+    int
+match_delete(wp, id, perr)
+    win_T	*wp;
+    int		id;
+    int		perr;
+{
+    matchitem_T *cur = wp->w_match_head;
+    matchitem_T *prev = cur;
+
+    if (id < 1)
+    {
+	if (perr == TRUE)
+	    EMSGN("E802: Invalid ID: %ld (must be greater than or equal to 1)",
+									  id);
+	return -1;
+    }
+    while (cur != NULL && cur->id != id)
+    {
+	prev = cur;
+	cur = cur->next;
+    }
+    if (cur == NULL)
+    {
+	if (perr == TRUE)
+	    EMSGN("E803: ID not found: %ld", id);
+	return -1;
+    }
+    if (cur == prev)
+	wp->w_match_head = cur->next;
+    else
+	prev->next = cur->next;
+    vim_free(cur->match.regprog);
+    vim_free(cur->pattern);
+    vim_free(cur);
+    redraw_later(SOME_VALID);
+    return 0;
+}
+
+/*
+ * Delete all matches in the match list of window 'wp'.
+ */
+    void
+clear_matches(wp)
+    win_T	*wp;
+{
+    matchitem_T *m;
+
+    while (wp->w_match_head != NULL)
+    {
+	m = wp->w_match_head->next;
+	vim_free(wp->w_match_head->match.regprog);
+	vim_free(wp->w_match_head->pattern);
+	vim_free(wp->w_match_head);
+	wp->w_match_head = m;
+    }
+    redraw_later(SOME_VALID);
+}
+
+/*
+ * Get match from ID 'id' in window 'wp'.
+ * Return NULL if match not found.
+ */
+    matchitem_T *
+get_match(wp, id)
+    win_T	*wp;
+    int		id;
+{
+    matchitem_T *cur = wp->w_match_head;
+
+    while (cur != NULL && cur->id != id)
+	cur = cur->next;
+    return cur;
 }
 #endif

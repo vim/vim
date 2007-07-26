@@ -763,13 +763,22 @@ Folding:
 	foldtextresult()	get the text displayed for a closed fold
 
 Syntax and highlighting:
+	clearmatches()		clear all matches defined by |matchadd()| and
+				the |:match| commands
+	getmatches()		get all matches defined by |matchadd()| and
+				the |:match| commands
 	hlexists()		check if a highlight group exists
 	hlID()			get ID of a highlight group
 	synID()			get syntax ID at a specific position
 	synIDattr()		get a specific attribute of a syntax ID
 	synIDtrans()		get translated syntax ID
 	diff_hlID()		get highlight ID for diff mode at a position
+	matchadd()		define a pattern to highlight (a "match")
 	matcharg()		get info about |:match| arguments
+	matchdelete()		delete a match defined by |matchadd()| or a
+				|:match| command
+	setmatches()		restore a list of matches saved by
+				|getmatches()|
 
 Spelling:
 	spellbadword()		locate badly spelled word at or after cursor

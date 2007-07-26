@@ -475,6 +475,7 @@ static void f_call __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_changenr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_char2nr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_cindent __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_clearmatches __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_col __ARGS((typval_T *argvars, typval_T *rettv));
 #if defined(FEAT_INS_EXPAND)
 static void f_complete __ARGS((typval_T *argvars, typval_T *rettv));
@@ -529,6 +530,7 @@ static void f_getfsize __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getmatches __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
@@ -577,7 +579,9 @@ static void f_map __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_maparg __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mapcheck __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_match __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_matchadd __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matcharg __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_matchdelete __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchend __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchlist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_matchstr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -618,6 +622,7 @@ static void f_setbufvar __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setcmdpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setloclist __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_setmatches __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_setreg __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7046,6 +7051,7 @@ static struct fst
     {"changenr",	0, 0, f_changenr},
     {"char2nr",		1, 1, f_char2nr},
     {"cindent",		1, 1, f_cindent},
+    {"clearmatches",	0, 0, f_clearmatches},
     {"col",		1, 1, f_col},
 #if defined(FEAT_INS_EXPAND)
     {"complete",	2, 2, f_complete},
@@ -7102,6 +7108,7 @@ static struct fst
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 1, f_getqflist},
+    {"getmatches",  	0, 0, f_getmatches},
     {"getpos",		1, 1, f_getpos},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
@@ -7152,7 +7159,9 @@ static struct fst
     {"maparg",		1, 3, f_maparg},
     {"mapcheck",	1, 3, f_mapcheck},
     {"match",		2, 4, f_match},
+    {"matchadd",	2, 4, f_matchadd},
     {"matcharg",	1, 1, f_matcharg},
+    {"matchdelete",	1, 1, f_matchdelete},
     {"matchend",	2, 4, f_matchend},
     {"matchlist",	2, 4, f_matchlist},
     {"matchstr",	2, 4, f_matchstr},
@@ -7193,6 +7202,7 @@ static struct fst
     {"setcmdpos",	1, 1, f_setcmdpos},
     {"setline",		2, 2, f_setline},
     {"setloclist",	2, 3, f_setloclist},
+    {"setmatches",	1, 1, f_setmatches},
     {"setpos",		2, 2, f_setpos},
     {"setqflist",	1, 2, f_setqflist},
     {"setreg",		2, 3, f_setreg},
@@ -8240,6 +8250,20 @@ f_cindent(argvars, rettv)
     else
 #endif
 	rettv->vval.v_number = -1;
+}
+
+/*
+ * "clearmatches()" function
+ */
+/*ARGSUSED*/
+    static void
+f_clearmatches(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    clear_matches(curwin);
+#endif
 }
 
 /*
@@ -10275,6 +10299,40 @@ f_getline(argvars, rettv)
     }
 
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
+}
+
+/*
+ * "getmatches()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getmatches(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    dict_T	*dict;
+    matchitem_T	*cur = curwin->w_match_head;
+
+    rettv->vval.v_number = 0;
+
+    if (rettv_list_alloc(rettv) == OK)
+    {
+	while (cur != NULL)
+	{
+	    dict = dict_alloc();
+	    if (dict == NULL)
+		return;
+	    ++dict->dv_refcount;
+	    dict_add_nr_str(dict, "group", 0L, syn_id2name(cur->hlg_id));
+	    dict_add_nr_str(dict, "pattern", 0L, cur->pattern);
+	    dict_add_nr_str(dict, "priority", (long)cur->priority, NULL);
+	    dict_add_nr_str(dict, "id", (long)cur->id, NULL);
+	    list_append_dict(rettv->vval.v_list, dict);
+	    cur = cur->next;
+	}
+    }
+#endif
 }
 
 /*
@@ -12448,6 +12506,42 @@ f_match(argvars, rettv)
 }
 
 /*
+ * "matchadd()" function
+ */
+    static void
+f_matchadd(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    char_u	buf[NUMBUFLEN];
+    char_u	*grp = get_tv_string_buf_chk(&argvars[0], buf);	/* group */
+    char_u	*pat = get_tv_string_buf_chk(&argvars[1], buf);	/* pattern */
+    int		prio = 10;	/* default priority */
+    int		id = -1;
+    int		error = FALSE;
+
+    rettv->vval.v_number = -1;
+
+    if (grp == NULL || pat == NULL)
+	return;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	prio = get_tv_number_chk(&argvars[2], &error);
+    if (argvars[3].v_type != VAR_UNKNOWN)
+	id = get_tv_number_chk(&argvars[3], &error);
+    if (error == TRUE)
+	return;
+    if (id >= 1 && id <= 3)
+    {
+	EMSGN("E798: ID is reserved for \":match\": %ld", id);
+	return;
+    }
+
+    rettv->vval.v_number = match_add(curwin, grp, pat, prio, id);
+#endif
+}
+
+/*
  * "matcharg()" function
  */
     static void
@@ -12458,17 +12552,39 @@ f_matcharg(argvars, rettv)
     if (rettv_list_alloc(rettv) == OK)
     {
 #ifdef FEAT_SEARCH_EXTRA
-	int	mi = get_tv_number(&argvars[0]);
+	int	    id = get_tv_number(&argvars[0]);
+	matchitem_T *m;
 
-	if (mi >= 1 && mi <= 3)
+	if (id >= 1 && id <= 3)
 	{
-	    list_append_string(rettv->vval.v_list,
-				 syn_id2name(curwin->w_match_id[mi - 1]), -1);
-	    list_append_string(rettv->vval.v_list,
-					     curwin->w_match_pat[mi - 1], -1);
+	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
+	    {
+		list_append_string(rettv->vval.v_list,
+						syn_id2name(m->hlg_id), -1);
+		list_append_string(rettv->vval.v_list, m->pattern, -1);
+	    }
+	    else
+	    {
+		list_append_string(rettv->vval.v_list, NUL, -1);
+		list_append_string(rettv->vval.v_list, NUL, -1);
+	    }
 	}
 #endif
     }
+}
+
+/*
+ * "matchdelete()" function
+ */
+    static void
+f_matchdelete(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    rettv->vval.v_number = match_delete(curwin,
+				       (int)get_tv_number(&argvars[0]), TRUE);
+#endif
 }
 
 /*
@@ -14506,6 +14622,66 @@ f_setloclist(argvars, rettv)
     win = find_win_by_nr(&argvars[0], NULL);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], rettv);
+}
+
+/*
+ * "setmatches()" function
+ */
+    static void
+f_setmatches(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SEARCH_EXTRA
+    list_T	*l;
+    listitem_T	*li;
+    dict_T	*d;
+
+    rettv->vval.v_number = -1;
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	EMSG(_(e_listreq));
+	return;
+    }
+    if ((l = argvars[0].vval.v_list) != NULL)
+    {
+
+	/* To some extent make sure that we are dealing with a list from
+	 * "getmatches()". */
+	li = l->lv_first;
+	while (li != NULL)
+	{
+	    if (li->li_tv.v_type != VAR_DICT
+		    || (d = li->li_tv.vval.v_dict) == NULL)
+	    {
+		EMSG(_(e_invarg));
+		return;
+	    }
+	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
+			&& dict_find(d, (char_u *)"pattern", -1) != NULL
+			&& dict_find(d, (char_u *)"priority", -1) != NULL
+			&& dict_find(d, (char_u *)"id", -1) != NULL))
+	    {
+		EMSG(_(e_invarg));
+		return;
+	    }
+	    li = li->li_next;
+	}
+
+	clear_matches(curwin);
+	li = l->lv_first;
+	while (li != NULL)
+	{
+	    d = li->li_tv.vval.v_dict;
+	    match_add(curwin, get_dict_string(d, (char_u *)"group", FALSE),
+		    get_dict_string(d, (char_u *)"pattern", FALSE),
+		    (int)get_dict_number(d, (char_u *)"priority"),
+		    (int)get_dict_number(d, (char_u *)"id"));
+	    li = li->li_next;
+	}
+	rettv->vval.v_number = 0;
+    }
+#endif
 }
 
 /*

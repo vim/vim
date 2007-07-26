@@ -10817,12 +10817,13 @@ ex_match(eap)
     exarg_T	*eap;
 {
     char_u	*p;
+    char_u	*g;
     char_u	*end;
     int		c;
-    int		mi;
+    int		id;
 
     if (eap->line2 <= 3)
-	mi = eap->line2 - 1;
+	id = eap->line2;
     else
     {
 	EMSG(e_invcmd);
@@ -10831,13 +10832,7 @@ ex_match(eap)
 
     /* First clear any old pattern. */
     if (!eap->skip)
-    {
-	vim_free(curwin->w_match[mi].regprog);
-	curwin->w_match[mi].regprog = NULL;
-	vim_free(curwin->w_match_pat[mi]);
-	curwin->w_match_pat[mi] = NULL;
-	redraw_later(SOME_VALID);	/* always need a redraw */
-    }
+	match_delete(curwin, id, FALSE);
 
     if (ends_excmd(*eap->arg))
 	end = eap->arg;
@@ -10848,15 +10843,7 @@ ex_match(eap)
     {
 	p = skiptowhite(eap->arg);
 	if (!eap->skip)
-	{
-	    curwin->w_match_id[mi] = syn_namen2id(eap->arg,
-							 (int)(p - eap->arg));
-	    if (curwin->w_match_id[mi] == 0)
-	    {
-		EMSG2(_(e_nogroup), eap->arg);
-		return;
-	    }
-	}
+	    g = vim_strnsave(eap->arg, (int)(p - eap->arg));
 	p = skipwhite(p);
 	if (*p == NUL)
 	{
@@ -10880,14 +10867,8 @@ ex_match(eap)
 
 	    c = *end;
 	    *end = NUL;
-	    curwin->w_match[mi].regprog = vim_regcomp(p + 1, RE_MAGIC);
-	    if (curwin->w_match[mi].regprog == NULL)
-	    {
-		EMSG2(_(e_invarg2), p);
-		*end = c;
-		return;
-	    }
-	    curwin->w_match_pat[mi] = vim_strsave(p + 1);
+	    match_add(curwin, g, p + 1, 10, id);
+	    vim_free(g);
 	    *end = c;
 	}
     }

@@ -1212,7 +1212,10 @@ Finally, these constructs are unique to Perl:
 		{group} must exist at the moment this command is executed.
 
 		The {group} highlighting still applies when a character is
-		to be highlighted for 'hlsearch'.
+		to be highlighted for 'hlsearch', as the highlighting for
+		matches is given higher priority than that of 'hlsearch'.
+		Syntax highlighting (see 'syntax') is also overruled by
+		matches.
 
 		Note that highlighting the last used search pattern with
 		'hlsearch' is used in all windows, while the pattern defined
@@ -1226,8 +1229,15 @@ Finally, these constructs are unique to Perl:
 		display you may get unexpected results.  That is because Vim
 		looks for a match in the line where redrawing starts.
 
-		Also see |matcharg()|, it returns the highlight group and
-		pattern of a previous :match command.
+		Also see |matcharg()|and |getmatches()|. The former returns
+		the highlight group and pattern of a previous |:match|
+		command.  The latter returns a list with highlight groups and
+		patterns defined by both |matchadd()| and |:match|.
+
+		Highlighting matches using |:match| are limited to three
+		matches (aside from |:match|, |:2match| and |:3match|are
+		available). |matchadd()| does not have this limitation and in
+		addition makes it possible to prioritize matches.
 
 		Another example, which highlights all characters in virtual
 		column 72 and more: >

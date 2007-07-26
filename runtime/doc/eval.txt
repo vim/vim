@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2007 Jul 11
+*eval.txt*      For Vim version 7.1.  Last change: 2007 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1557,6 +1557,7 @@ call( {func}, {arglist} [, {dict}])
 changenr()			Number  current change number
 char2nr( {expr})		Number	ASCII value of first char in {expr}
 cindent( {lnum})		Number	C indent for line {lnum}
+clearmatches()			None	clear all matches
 col( {expr})			Number	column nr of cursor or mark
 complete({startcol}, {matches})	String  set Insert mode completion
 complete_add( {expr})		Number	add completion match
@@ -1622,6 +1623,7 @@ getftype( {fname})		String	description of type of file {fname}
 getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
+getmatches()			List	list of current matches
 getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
@@ -1676,7 +1678,10 @@ mapcheck( {name}[, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
 match( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} matches in {expr}
+matchadd( {group}, {pattern}[, {priority}[, {id}]])
+				Number	highlight {pattern} with {group}
 matcharg( {nr})			List	arguments of |:match|
+matchdelete( {id})		Number	delete match identified by {id}
 matchend( {expr}, {pat}[, {start}[, {count}]])
 				Number	position where {pat} ends in {expr}
 matchlist( {expr}, {pat}[, {start}[, {count}]])
@@ -1731,6 +1736,7 @@ setcmdpos( {pos})		Number	set cursor position in command-line
 setline( {lnum}, {line})	Number	set line {lnum} to {line}
 setloclist( {nr}, {list}[, {action}])
 				Number	modify location list using {list}
+setmatches( {list})		Number	restore a list of matches
 setpos( {expr}, {list})		none	set the {expr} position to {list}
 setqflist( {list}[, {action}])	Number	modify quickfix list using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
@@ -2011,6 +2017,10 @@ cindent({lnum})						*cindent()*
 		When {lnum} is invalid or Vim was not compiled the |+cindent|
 		feature, -1 is returned.
 		See |C-indenting|.
+
+clearmatches()						*clearmatches()*
+		Clears all matches previously defined by |matchadd()| and the
+		|:match| commands.
 
 							*col()*
 col({expr})	The result is a Number, which is the byte index of the column
@@ -2918,6 +2928,28 @@ getloclist({nr})					*getloclist()*
 		returned.  For an invalid window number {nr}, an empty list is
 		returned. Otherwise, same as getqflist().
 
+getmatches()						*getmatches()*
+		Returns a |List| with all matches previously defined by
+		|matchadd()| and the |:match| commands.  |getmatches()| is
+		useful in combination with |setmatches()|, as |setmatches()|
+		can restore a list of matches saved by |getmatches()|.
+		Example: >
+			:echo getmatches()
+<			[{'group': 'MyGroup1', 'pattern': 'TODO',
+			'priority': 10, 'id': 1}, {'group': 'MyGroup2',
+			'pattern': 'FIXME', 'priority': 10, 'id': 2}] >
+			:let m = getmatches()
+			:call clearmatches()
+			:echo getmatches()
+<			[] >
+			:call setmatches(m)
+			:echo getmatches()
+<			[{'group': 'MyGroup1', 'pattern': 'TODO',
+			'priority': 10, 'id': 1}, {'group': 'MyGroup2',
+			'pattern': 'FIXME', 'priority': 10, 'id': 2}] >
+			:unlet m
+<
+
 getqflist()						*getqflist()*
 		Returns a list with all the current quickfix errors.  Each
 		list item is a dictionary with these entries:
@@ -3622,6 +3654,44 @@ match({expr}, {pat}[, {start}[, {count}]])			*match()*
 		the pattern.  'smartcase' is NOT used.  The matching is always
 		done like 'magic' is set and 'cpoptions' is empty.
 
+					*matchadd()* *E798* *E799* *E801*
+matchadd({group}, {pattern}[, {priority}[, {id}]])
+		Defines a pattern to be highlighted in the current window (a
+		"match").  It will be highlighted with {group}.  Returns an
+		identification number (ID), which can be used to delete the
+		match using |matchdelete()|.
+
+		The optional {priority} argument assigns a priority to the
+		match.  A match with a high priority will have its
+		highlighting overrule that of a match with a lower priority.
+		A priority is specified as an integer (negative numbers are no
+		exception).  If the {priority} argument is not specified, the
+		default priority is 10.  The priority of 'hlsearch' is zero,
+		hence all matches with a priority greater than zero will
+		overrule it.  Syntax highlighting (see 'syntax') is a separate
+		mechanism, and regardless of the chosen priority a match will
+		always overrule syntax highlighting.
+
+		The optional {id} argument allows the request for a specific
+		match ID.  If a specified ID is already taken, an error
+		message will appear and the match will not be added.  An ID
+		is specified as a positive integer (zero excluded).  IDs 1, 2
+		and 3 are reserved for |:match|, |:2match| and |:3match|,
+		respectively.  If the {id} argument is not specified,
+		|matchadd()| automatically chooses a free ID.
+
+		The number of matches is not limited, as it is the case with
+		the |:match| commands.
+
+		Example: >
+			:highlight MyGroup ctermbg=green guibg=green
+			:let m = matchadd("MyGroup", "TODO")
+<		Deletion of the pattern: >
+			:call matchdelete(m)
+
+<		A list of matches defined by |matchadd()| and |:match| are
+		available from |getmatches()|.  All matches can be deleted in
+		one operation by |clearmatches()|.
 
 matcharg({nr})							*matcharg()*
 		Selects the {nr} match item, as set with a |:match|,
@@ -3631,8 +3701,15 @@ matcharg({nr})							*matcharg()*
 			The pattern used.
 		When {nr} is not 1, 2 or 3 returns an empty |List|.
 		When there is no match item set returns ['', ''].
-		This is usef to save and restore a |:match|.
+		This is useful to save and restore a |:match|.
+		Highlighting matches using the |:match| commands are limited
+		to three matches. |matchadd()| does not have this limitation.
 
+matchdelete({id})			       *matchdelete()* *E802* *E803*
+		Deletes a match with ID {id} previously defined by |matchadd()|
+		or one of the |:match| commands.  Returns 0 if succesfull,
+		otherwise -1.  See example for |matchadd()|.  All matches can
+		be deleted in one operation by |clearmatches()|.
 
 matchend({expr}, {pat}[, {start}[, {count}]])			*matchend()*
 		Same as match(), but return the index of first character after
@@ -4385,7 +4462,13 @@ setloclist({nr}, {list} [, {action}])			*setloclist()*
 		When {nr} is zero the current window is used. For a location
 		list window, the displayed location list is modified.  For an
 		invalid window number {nr}, -1 is returned.
-		Otherwise, same as setqflist().
+		Otherwise, same as |setqflist()|.
+		Also see |location-list|.
+
+setmatches({list})					*setmatches()*
+		Restores a list of matches saved by |getmatches()|.  Returns 0
+		if succesfull, otherwise -1.  All current matches are cleared
+		before the list is restored.  See example for |getmatches()|.
 
 							*setpos()*
 setpos({expr}, {list})

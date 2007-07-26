@@ -100,27 +100,7 @@ static int	screen_attr = 0;
 static int	screen_cur_row, screen_cur_col;	/* last known cursor position */
 
 #ifdef FEAT_SEARCH_EXTRA
-/*
- * Struct used for highlighting 'hlsearch' matches for the last use search
- * pattern or a ":match" item.
- * For 'hlsearch' there is one pattern for all windows.  For ":match" there is
- * a different pattern for each window.
- */
-typedef struct
-{
-    regmmatch_T	rm;	/* points to the regexp program; contains last found
-			   match (may continue in next line) */
-    buf_T	*buf;	/* the buffer to search for a match */
-    linenr_T	lnum;	/* the line to search for a match */
-    int		attr;	/* attributes to be used for a match */
-    int		attr_cur; /* attributes currently active in win_line() */
-    linenr_T	first_lnum;	/* first lnum to search for multi-line pat */
-    colnr_T	startcol; /* in win_line() points to char where HL starts */
-    colnr_T	endcol;	 /* in win_line() points to char where HL ends */
-} match_T;
-
 static match_T search_hl;	/* used for 'hlsearch' highlight matching */
-static match_T match_hl[3];	/* used for ":match" highlight matching */
 #endif
 
 #ifdef FEAT_FOLDING
@@ -155,6 +135,7 @@ static void draw_vsep_win __ARGS((win_T *wp, int row));
 static void redraw_custum_statusline __ARGS((win_T *wp));
 #endif
 #ifdef FEAT_SEARCH_EXTRA
+#define SEARCH_HL_PRIORITY 0
 static void start_search_hl __ARGS((void));
 static void end_search_hl __ARGS((void));
 static void prepare_search_hl __ARGS((win_T *wp, linenr_T lnum));
@@ -787,6 +768,7 @@ win_update(wp)
 					   w_topline got smaller a bit */
 #endif
 #ifdef FEAT_SEARCH_EXTRA
+    matchitem_T *cur;		/* points to the match list */
     int		top_to_mod = FALSE;    /* redraw above mod_top */
 #endif
 
@@ -848,18 +830,20 @@ win_update(wp)
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
-    /* Setup for ":match" and 'hlsearch' highlighting.  Disable any previous
+    /* Setup for match and 'hlsearch' highlighting.  Disable any previous
      * match */
-    for (i = 0; i < 3; ++i)
+    cur = wp->w_match_head;
+    while (cur != NULL)
     {
-	match_hl[i].rm = wp->w_match[i];
-	if (wp->w_match_id[i] == 0)
-	    match_hl[i].attr = 0;
+	cur->hl.rm = cur->match;
+	if (cur->hlg_id == 0)
+	    cur->hl.attr = 0;
 	else
-	    match_hl[i].attr = syn_id2attr(wp->w_match_id[i]);
-	match_hl[i].buf = buf;
-	match_hl[i].lnum = 0;
-	match_hl[i].first_lnum = 0;
+	    cur->hl.attr = syn_id2attr(cur->hlg_id);
+	cur->hl.buf = buf;
+	cur->hl.lnum = 0;
+	cur->hl.first_lnum = 0;
+	cur = cur->next;
     }
     search_hl.buf = buf;
     search_hl.lnum = 0;
@@ -923,19 +907,25 @@ win_update(wp)
 	     * change in one line may make the Search highlighting in a
 	     * previous line invalid.  Simple solution: redraw all visible
 	     * lines above the change.
-	     * Same for a ":match" pattern.
+	     * Same for a match pattern.
 	     */
 	    if (search_hl.rm.regprog != NULL
 					&& re_multiline(search_hl.rm.regprog))
 		top_to_mod = TRUE;
 	    else
-		for (i = 0; i < 3; ++i)
-		    if (match_hl[i].rm.regprog != NULL
-				      && re_multiline(match_hl[i].rm.regprog))
+	    {
+		cur = wp->w_match_head;
+		while (cur != NULL)
+		{
+		    if (cur->match.regprog != NULL
+					   && re_multiline(cur->match.regprog))
 		    {
 			top_to_mod = TRUE;
 			break;
 		    }
+		    cur = cur->next;
+		}
+	    }
 #endif
 	}
 #ifdef FEAT_FOLDING
@@ -2626,10 +2616,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		line_attr = 0;		/* atrribute for the whole line */
 #endif
 #ifdef FEAT_SEARCH_EXTRA
-    match_T	*shl;			/* points to search_hl or match_hl */
-#endif
-#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_MBYTE)
-    int		i;
+    matchitem_T *cur;			/* points to the match list */
+    match_T	*shl;			/* points to search_hl or a match */
+    int		shl_flag;		/* flag to indicate whether search_hl
+					   has been processed or not */
+    int		prevcol_hl_flag;	/* flag to indicate whether prevcol
+					   equals startcol of search_hl or one
+					   of the matches */
 #endif
 #ifdef FEAT_ARABIC
     int		prev_c = 0;		/* previous Arabic character */
@@ -3074,12 +3067,20 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_SEARCH_EXTRA
     /*
-     * Handle highlighting the last used search pattern and ":match".
-     * Do this for both search_hl and match_hl[3].
+     * Handle highlighting the last used search pattern and matches.
+     * Do this for both search_hl and the match list.
      */
-    for (i = 3; i >= 0; --i)
+    cur = wp->w_match_head;
+    shl_flag = FALSE;
+    while (cur != NULL || shl_flag == FALSE)
     {
-	shl = (i == 3) ? &search_hl : &match_hl[i];
+	if (shl_flag == FALSE)
+	{
+	    shl = &search_hl;
+	    shl_flag = TRUE;
+	}
+	else
+	    shl = &cur->hl;
 	shl->startcol = MAXCOL;
 	shl->endcol = MAXCOL;
 	shl->attr_cur = 0;
@@ -3122,6 +3123,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		area_highlighting = TRUE;
 	    }
 	}
+	if (shl != &search_hl && cur != NULL)
+	    cur = cur->next;
     }
 #endif
 
@@ -3388,13 +3391,24 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 * After end, check for start/end of next match.
 		 * When another match, have to check for start again.
 		 * Watch out for matching an empty string!
-		 * Do this first for search_hl, then for match_hl, so that
-		 * ":match" overrules 'hlsearch'.
+		 * Do this for 'search_hl' and the match list (ordered by
+		 * priority).
 		 */
 		v = (long)(ptr - line);
-		for (i = 3; i >= 0; --i)
+		cur = wp->w_match_head;
+		shl_flag = FALSE;
+		while (cur != NULL || shl_flag == FALSE)
 		{
-		    shl = (i == 3) ? &search_hl : &match_hl[i];
+		    if (shl_flag == FALSE
+			    && ((cur != NULL
+				    && cur->priority > SEARCH_HL_PRIORITY)
+				|| cur == NULL))
+		    {
+			shl = &search_hl;
+			shl_flag = TRUE;
+		    }
+		    else
+			shl = &cur->hl;
 		    while (shl->rm.regprog != NULL)
 		    {
 			if (shl->startcol != MAXCOL
@@ -3442,17 +3456,32 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			}
 			break;
 		    }
+		    if (shl != &search_hl && cur != NULL)
+			cur = cur->next;
 		}
 
-		/* ":match" highlighting overrules 'hlsearch' */
-		for (i = 0; i <= 3; ++i)
-		    if (i == 3)
-			search_attr = search_hl.attr_cur;
-		    else if (match_hl[i].attr_cur != 0)
+		/* Use attributes from match with highest priority among
+		 * 'search_hl' and the match list. */
+		search_attr = search_hl.attr_cur;
+		cur = wp->w_match_head;
+		shl_flag = FALSE;
+		while (cur != NULL || shl_flag == FALSE)
+		{
+		    if (shl_flag == FALSE
+			    && ((cur != NULL
+				    && cur->priority > SEARCH_HL_PRIORITY)
+				|| cur == NULL))
 		    {
-			search_attr = match_hl[i].attr_cur;
-			break;
+			shl = &search_hl;
+			shl_flag = TRUE;
 		    }
+		    else
+			shl = &cur->hl;
+		    if (shl->attr_cur != 0)
+			search_attr = shl->attr_cur;
+		    if (shl != &search_hl && cur != NULL)
+			cur = cur->next;
+		}
 	    }
 #endif
 
@@ -3613,6 +3642,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			 * Draw it as a space with a composing char. */
 			if (utf_iscomposing(mb_c))
 			{
+			    int i;
+
 			    for (i = Screen_mco - 1; i > 0; --i)
 				u8cc[i] = u8cc[i - 1];
 			    u8cc[0] = mb_c;
@@ -4256,14 +4287,29 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	     * highlight match at end of line. If it's beyond the last
 	     * char on the screen, just overwrite that one (tricky!)  Not
 	     * needed when a '$' was displayed for 'list'. */
+#ifdef FEAT_SEARCH_EXTRA
+	    prevcol_hl_flag = FALSE;
+	    if (prevcol == (long)search_hl.startcol)
+		prevcol_hl_flag = TRUE;
+	    else
+	    {
+		cur = wp->w_match_head;
+		while (cur != NULL)
+		{
+		    if (prevcol == (long)cur->hl.startcol)
+		    {
+			prevcol_hl_flag = TRUE;
+			break;
+		    }
+		    cur = cur->next;
+		}
+	    }
+#endif
 	    if (lcs_eol == lcs_eol_one
 		    && ((area_attr != 0 && vcol == fromcol && c == NUL)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
-			|| ((prevcol == (long)search_hl.startcol
-				|| prevcol == (long)match_hl[0].startcol
-				|| prevcol == (long)match_hl[1].startcol
-				|| prevcol == (long)match_hl[2].startcol)
+			|| (prevcol_hl_flag == TRUE
 # if defined(LINE_ATTR)
 			    && did_line_attr <= 1
 # endif
@@ -4304,15 +4350,27 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_SEARCH_EXTRA
 		if (area_attr == 0)
 		{
-		    for (i = 0; i <= 3; ++i)
+		    /* Use attributes from match with highest priority among
+		     * 'search_hl' and the match list. */
+		    char_attr = search_hl.attr;
+		    cur = wp->w_match_head;
+		    shl_flag = FALSE;
+		    while (cur != NULL || shl_flag == FALSE)
 		    {
-			if (i == 3)
-			    char_attr = search_hl.attr;
-			else if ((ptr - line) - 1 == (long)match_hl[i].startcol)
+			if (shl_flag == FALSE
+				&& ((cur != NULL
+					&& cur->priority > SEARCH_HL_PRIORITY)
+				    || cur == NULL))
 			{
-			    char_attr = match_hl[i].attr;
-			    break;
+			    shl = &search_hl;
+			    shl_flag = TRUE;
 			}
+			else
+			    shl = &cur->hl;
+			if ((ptr - line) - 1 == (long)shl->startcol)
+			    char_attr = shl->attr;
+			if (shl != &search_hl && cur != NULL)
+			    cur = cur->next;
 		    }
 		}
 #endif
@@ -4462,6 +4520,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    {
 		if (mb_utf8)
 		{
+		    int i;
+
 		    ScreenLinesUC[off] = mb_c;
 		    if ((c & 0xff) == 0)
 			ScreenLines[off] = 0x80;   /* avoid storing zero */
@@ -6320,7 +6380,7 @@ screen_puts_len(text, len, row, col, attr)
 
 #ifdef FEAT_SEARCH_EXTRA
 /*
- * Prepare for 'searchhl' highlighting.
+ * Prepare for 'hlsearch' highlighting.
  */
     static void
 start_search_hl()
@@ -6333,7 +6393,7 @@ start_search_hl()
 }
 
 /*
- * Clean up for 'searchhl' highlighting.
+ * Clean up for 'hlsearch' highlighting.
  */
     static void
 end_search_hl()
@@ -6353,18 +6413,28 @@ prepare_search_hl(wp, lnum)
     win_T	*wp;
     linenr_T	lnum;
 {
-    match_T	*shl;		/* points to search_hl or match_hl */
+    matchitem_T *cur;		/* points to the match list */
+    match_T	*shl;		/* points to search_hl or a match */
+    int		shl_flag;	/* flag to indicate whether search_hl
+				   has been processed or not */
     int		n;
-    int		i;
 
     /*
      * When using a multi-line pattern, start searching at the top
      * of the window or just after a closed fold.
-     * Do this both for search_hl and match_hl[3].
+     * Do this both for search_hl and the match list.
      */
-    for (i = 3; i >= 0; --i)
+    cur = wp->w_match_head;
+    shl_flag = FALSE;
+    while (cur != NULL || shl_flag == FALSE)
     {
-	shl = (i == 3) ? &search_hl : &match_hl[i];
+	if (shl_flag == FALSE)
+	{
+	    shl = &search_hl;
+	    shl_flag = TRUE;
+	}
+	else
+	    shl = &cur->hl;
 	if (shl->rm.regprog != NULL
 		&& shl->lnum == 0
 		&& re_multiline(shl->rm.regprog))
@@ -6399,11 +6469,13 @@ prepare_search_hl(wp, lnum)
 		}
 	    }
 	}
+	if (shl != &search_hl && cur != NULL)
+	    cur = cur->next;
     }
 }
 
 /*
- * Search for a next 'searchl' or ":match" match.
+ * Search for a next 'hlsearch' or match.
  * Uses shl->buf.
  * Sets shl->lnum and shl->rm contents.
  * Note: Assumes a previous match is always before "lnum", unless
@@ -6413,7 +6485,7 @@ prepare_search_hl(wp, lnum)
     static void
 next_search_hl(win, shl, lnum, mincol)
     win_T	*win;
-    match_T	*shl;		/* points to search_hl or match_hl */
+    match_T	*shl;		/* points to search_hl or a match */
     linenr_T	lnum;
     colnr_T	mincol;		/* minimal column for a match */
 {
@@ -6481,7 +6553,7 @@ next_search_hl(win, shl, lnum, mincol)
 	    /* Error while handling regexp: stop using this regexp. */
 	    if (shl == &search_hl)
 	    {
-		/* don't free the regprog in match_hl[], it's a copy */
+		/* don't free regprog in the match list, it's a copy */
 		vim_free(shl->rm.regprog);
 		no_hlsearch = TRUE;
 	    }

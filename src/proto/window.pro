@@ -59,4 +59,8 @@ int min_rows __ARGS((void));
 int only_one_window __ARGS((void));
 void check_lnums __ARGS((int do_curwin));
 int win_hasvertsplit __ARGS((void));
+int match_add __ARGS((win_T *wp, char_u *grp, char_u *pat, int prio, int id));
+int match_delete __ARGS((win_T *wp, int id, int perr));
+void clear_matches __ARGS((win_T *wp));
+matchitem_T *get_match __ARGS((win_T *wp, int id));
 /* vim: set ft=c : */

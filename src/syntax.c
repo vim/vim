@@ -8504,7 +8504,7 @@ highlight_exists(name)
 syn_id2name(id)
     int		id;
 {
-    if (id <= 0 || id >= highlight_ga.ga_len)
+    if (id <= 0 || id > highlight_ga.ga_len)
 	return (char_u *)"";
     return HL_TABLE()[id - 1].sg_name;
 }
