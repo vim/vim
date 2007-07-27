@@ -7108,7 +7108,7 @@ static struct fst
     {"getftype",	1, 1, f_getftype},
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 1, f_getqflist},
-    {"getmatches",  	0, 0, f_getmatches},
+    {"getmatches",	0, 0, f_getmatches},
     {"getpos",		1, 1, f_getpos},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
@@ -12526,9 +12526,11 @@ f_matchadd(argvars, rettv)
     if (grp == NULL || pat == NULL)
 	return;
     if (argvars[2].v_type != VAR_UNKNOWN)
+    {
 	prio = get_tv_number_chk(&argvars[2], &error);
-    if (argvars[3].v_type != VAR_UNKNOWN)
-	id = get_tv_number_chk(&argvars[3], &error);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	    id = get_tv_number_chk(&argvars[3], &error);
+    }
     if (error == TRUE)
 	return;
     if (id >= 1 && id <= 3)
