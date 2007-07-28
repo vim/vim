@@ -2095,11 +2095,11 @@ getexmodeline(promptc, dummy, indent)
     garray_T	line_ga;
     char_u	*pend;
     int		startcol = 0;
-    int		c1;
+    int		c1 = 0;
     int		escaped = FALSE;	/* CTRL-V typed */
     int		vcol = 0;
     char_u	*p;
-    int		prev_char = 0;
+    int		prev_char;
 
     /* Switch cursor on now.  This avoids that it happens after the "\n", which
      * confuses the system function that computes tabstops. */
@@ -2152,6 +2152,7 @@ getexmodeline(promptc, dummy, indent)
 
 	/* Get one character at a time.  Don't use inchar(), it can't handle
 	 * special characters. */
+	prev_char = c1;
 	c1 = vgetc();
 
 	/*
@@ -2209,7 +2210,6 @@ add_indent:
 redraw:
 		/* redraw the line */
 		msg_col = startcol;
-		windgoto(msg_row, msg_col);
 		vcol = 0;
 		for (p = (char_u *)line_ga.ga_data;
 			  p < (char_u *)line_ga.ga_data + line_ga.ga_len; ++p)
@@ -2228,6 +2228,7 @@ redraw:
 		    }
 		}
 		msg_clr_eos();
+		windgoto(msg_row, msg_col);
 		continue;
 	    }
 
@@ -2273,7 +2274,6 @@ redraw:
 	if (IS_SPECIAL(c1))
 	    c1 = '?';
 	((char_u *)line_ga.ga_data)[line_ga.ga_len] = c1;
-	prev_char = c1;
 	if (c1 == '\n')
 	    msg_putchar('\n');
 	else if (c1 == TAB)
