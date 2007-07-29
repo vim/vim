@@ -8000,7 +8000,8 @@ ins_shift(c, lastc)
     /*
      * 0^D and ^^D: remove all indent.
      */
-    if ((lastc == '0' || lastc == '^') && curwin->w_cursor.col)
+    if (c == Ctrl_D && (lastc == '0' || lastc == '^')
+						  && curwin->w_cursor.col > 0)
     {
 	--curwin->w_cursor.col;
 	(void)del_char(FALSE);		/* delete the '^' or '0' */
