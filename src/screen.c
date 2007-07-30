@@ -331,6 +331,11 @@ update_screen(type)
     {
 	if (type < must_redraw)	    /* use maximal type */
 	    type = must_redraw;
+
+	/* must_redraw is reset here, so that when we run into some weird
+	 * reason to redraw while busy redrawing (e.g., asynchronous
+	 * scrolling), or update_topline() in win_update() will cause a
+	 * scroll, the screen will be redrawn later or in win_update(). */
 	must_redraw = 0;
     }
 
@@ -1019,6 +1024,13 @@ win_update(wp)
 	    type = VALID;
     }
 
+    /* Trick: we want to avoid clearning the screen twice.  screenclear() will
+     * set "screen_cleared" to TRUE.  The special value MAYBE (which is still
+     * non-zero and thus not FALSE) will indicate that screenclear() was not
+     * called. */
+    if (screen_cleared)
+	screen_cleared = MAYBE;
+
     /*
      * If there are no changes on the screen that require a complete redraw,
      * handle three cases:
@@ -1220,7 +1232,11 @@ win_update(wp)
 	    mid_end = wp->w_height;
 	    if (lastwin == firstwin)
 	    {
-		screenclear();
+		/* Clear the screen when it was not done by win_del_lines() or
+		 * win_ins_lines() above, "screen_cleared" is FALSE or MAYBE
+		 * then. */
+		if (screen_cleared != TRUE)
+		    screenclear();
 #ifdef FEAT_WINDOWS
 		/* The screen was cleared, redraw the tab pages line. */
 		if (redraw_tabline)
@@ -1228,6 +1244,13 @@ win_update(wp)
 #endif
 	    }
 	}
+
+	/* When win_del_lines() or win_ins_lines() caused the screen to be
+	 * cleared (only happens for the first window) or when screenclear()
+	 * was called directly above, "must_redraw" will have been set to
+	 * NOT_VALID, need to reset it here to avoid redrawing twice. */
+	if (screen_cleared == TRUE)
+	    must_redraw = 0;
     }
     else
     {
