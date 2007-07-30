@@ -7014,7 +7014,14 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 #ifdef FEAT_MBYTE
 			    if (has_mbyte)
 			    {
-				int l = mb_ptr2len(s) - 1;
+				int l;
+
+				/* Copy composing characters separately, one
+				 * at a time. */
+				if (enc_utf8)
+				    l = utf_ptr2len(s) - 1;
+				else
+				    l = mb_ptr2len(s) - 1;
 
 				s += l;
 				len -= l;
