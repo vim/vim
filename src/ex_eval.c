@@ -1551,7 +1551,7 @@ ex_catch(eap)
 		}
 		save_cpo  = p_cpo;
 		p_cpo = (char_u *)"";
-		regmatch.regprog = vim_regcomp(pat, TRUE);
+		regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
 		regmatch.rm_ic = FALSE;
 		if (end != NULL)
 		    *end = save_char;
