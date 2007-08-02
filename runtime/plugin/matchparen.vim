@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2006 Oct 12
+" Last Change: 2007 Jul 30
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -62,25 +62,37 @@ function! s:Highlight_Matching_Pair()
   " Figure out the arguments for searchpairpos().
   " Restrict the search to visible lines with "stopline".
   " And avoid searching very far (e.g., for closed folds and long lines)
+  " The "viewable" variables give a range in which we can scroll while keeping
+  " the cursor at the same position
+  " adjustedScrolloff accounts for very large numbers of scrolloff
+  let adjustedScrolloff = min([&scrolloff, (line('w$') - line('w0')) / 2])
+  let bottom_viewable = min([line('$'), c_lnum + &lines - adjustedScrolloff - 2])
+  let top_viewable = max([1, c_lnum-&lines+adjustedScrolloff + 2])
+  " one of these stoplines will be adjusted below, but the current values are
+  " minimal boundaries within the current window
+  let stoplinebottom = line('w$')
+  let stoplinetop = line('w0')
   if i % 2 == 0
     let s_flags = 'nW'
     let c2 = plist[i + 1]
     if has("byte_offset") && has("syntax_items") && &smc > 0
       let stopbyte = min([line2byte("$"), line2byte(".") + col(".") + &smc * 2])
-      let stopline = min([line('w$'), byte2line(stopbyte)])
+      let stopline = min([bottom_viewable, byte2line(stopbyte)])
     else
-      let stopline = min([line('w$'), c_lnum + 100])
+      let stopline = min([bottom_viewable, c_lnum + 100])
     endif
+    let stoplinebottom = stopline
   else
     let s_flags = 'nbW'
     let c2 = c
     let c = plist[i - 1]
     if has("byte_offset") && has("syntax_items") && &smc > 0
       let stopbyte = max([1, line2byte(".") + col(".") - &smc * 2])
-      let stopline = max([line('w0'), byte2line(stopbyte)])
+      let stopline = max([top_viewable, byte2line(stopbyte)])
     else
-      let stopline = max([line('w0'), c_lnum - 100])
+      let stopline = max([top_viewable, c_lnum - 100])
     endif
+    let stoplinetop = stopline
   endif
   if c == '['
     let c = '\['
@@ -106,7 +118,7 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " If a match is found setup match highlighting.
-  if m_lnum > 0 && m_lnum >= line('w0') && m_lnum <= line('w$')
+  if m_lnum > 0 && m_lnum >= stoplinetop && m_lnum <= stoplinebottom 
     exe '3match MatchParen /\(\%' . c_lnum . 'l\%' . (c_col - before) .
 	  \ 'c\)\|\(\%' . m_lnum . 'l\%' . m_col . 'c\)/'
     let w:paren_hl_on = 1
