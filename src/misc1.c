@@ -4820,7 +4820,7 @@ static int	cin_isdo __ARGS((char_u *));
 static int	cin_iswhileofdo __ARGS((char_u *, linenr_T, int));
 static int	cin_iswhileofdo_end __ARGS((int terminated, int	ind_maxparen, int ind_maxcomment));
 static int	cin_isbreak __ARGS((char_u *));
-static int	cin_is_cpp_baseclass __ARGS((char_u *line, colnr_T *col));
+static int	cin_is_cpp_baseclass __ARGS((colnr_T *col));
 static int	get_baseclass_amount __ARGS((int col, int ind_maxparen, int ind_maxcomment, int ind_cpp_baseclass));
 static int	cin_ends_in __ARGS((char_u *, char_u *, char_u *));
 static int	cin_skip2pos __ARGS((pos_T *trypos));
@@ -5585,13 +5585,13 @@ cin_isbreak(p)
  * This is a lot of guessing.  Watch out for "cond ? func() : foo".
  */
     static int
-cin_is_cpp_baseclass(line, col)
-    char_u	*line;
+cin_is_cpp_baseclass(col)
     colnr_T	*col;	    /* return: column to align with */
 {
     char_u	*s;
     int		class_or_struct, lookfor_ctor_init, cpp_base_class;
     linenr_T	lnum = curwin->w_cursor.lnum;
+    char_u	*line = ml_get_curline();
 
     *col = 0;
 
@@ -5619,7 +5619,8 @@ cin_is_cpp_baseclass(line, col)
      */
     while (lnum > 1)
     {
-	s = skipwhite(ml_get(lnum - 1));
+	line = ml_get(lnum - 1);
+	s = skipwhite(line);
 	if (*s == '#' || *s == NUL)
 	    break;
 	while (*s != NUL)
@@ -5636,7 +5637,8 @@ cin_is_cpp_baseclass(line, col)
 	--lnum;
     }
 
-    s = cin_skipcomment(ml_get(lnum));
+    line = ml_get(lnum);
+    s = cin_skipcomment(line);
     for (;;)
     {
 	if (*s == NUL)
@@ -5644,7 +5646,10 @@ cin_is_cpp_baseclass(line, col)
 	    if (lnum == curwin->w_cursor.lnum)
 		break;
 	    /* Continue in the cursor line. */
-	    s = cin_skipcomment(ml_get(++lnum));
+	    line = ml_get(++lnum);
+	    s = cin_skipcomment(line);
+	    if (*s == NUL)
+		continue;
 	}
 
 	if (s[0] == ':')
@@ -7113,7 +7118,7 @@ get_c_indent()
 		n = FALSE;
 		if (lookfor != LOOKFOR_TERM && ind_cpp_baseclass > 0)
 		{
-		    n = cin_is_cpp_baseclass(l, &col);
+		    n = cin_is_cpp_baseclass(&col);
 		    l = ml_get_curline();
 		}
 		if (n)
@@ -7704,7 +7709,7 @@ term_again:
 		n = FALSE;
 		if (ind_cpp_baseclass != 0 && theline[0] != '{')
 		{
-		    n = cin_is_cpp_baseclass(l, &col);
+		    n = cin_is_cpp_baseclass(&col);
 		    l = ml_get_curline();
 		}
 		if (n)
