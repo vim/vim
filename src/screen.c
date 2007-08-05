@@ -2555,7 +2555,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
     char_u	extra[18];		/* "%ld" and 'fdc' must fit in here */
     int		n_extra = 0;		/* number of extra chars */
-    char_u	*p_extra = NULL;	/* string of extra chars */
+    char_u	*p_extra = NULL;	/* string of extra chars, plus NUL */
     int		c_extra = NUL;		/* extra chars, all the same */
     int		extra_attr = 0;		/* attributes when n_extra != 0 */
     static char_u *at_end_str = (char_u *)""; /* used for p_extra when
@@ -3189,10 +3189,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		if (cmdwin_type != 0 && wp == curwin)
 		{
 		    /* Draw the cmdline character. */
-		    *extra = cmdwin_type;
 		    n_extra = 1;
-		    p_extra = extra;
-		    c_extra = NUL;
+		    c_extra = cmdwin_type;
 		    char_attr = hl_attr(HLF_AT);
 		}
 	    }
@@ -3208,6 +3206,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    fill_foldcolumn(extra, wp, FALSE, lnum);
 		    n_extra = wp->w_p_fdc;
 		    p_extra = extra;
+		    p_extra[n_extra] = NUL;
 		    c_extra = NUL;
 		    char_attr = hl_attr(HLF_FC);
 		}
@@ -3550,9 +3549,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	 * Get the next character to put on the screen.
 	 */
 	/*
-	 * The 'extra' array contains the extra stuff that is inserted to
-	 * represent special characters (non-printable stuff).  When all
-	 * characters are the same, c_extra is used.
+	 * The "p_extra" points to the extra stuff that is inserted to
+	 * represent special characters (non-printable stuff) and other
+	 * things.  When all characters are the same, c_extra is used.
+	 * "p_extra" must end in a NUL to avoid mb_ptr2len() reads past
+	 * "p_extra[n_extra]".
 	 * For the '$' of the 'list' option, n_extra == 1, p_extra == "".
 	 */
 	if (n_extra > 0)
@@ -3808,10 +3809,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 * a '<' in the first column. */
 		if (n_skip > 0 && mb_l > 1)
 		{
-		    extra[0] = '<';
-		    p_extra = extra;
 		    n_extra = 1;
-		    c_extra = NUL;
+		    c_extra = '<';
 		    c = ' ';
 		    if (area_attr == 0 && search_attr == 0)
 		    {
@@ -6204,8 +6203,9 @@ screen_puts_len(text, len, row, col, attr)
 	return;
 
     off = LineOffset[row] + col;
-    while (*ptr != NUL && col < screen_Columns
-				      && (len < 0 || (int)(ptr - text) < len))
+    while (col < screen_Columns
+	    && (len < 0 || (int)(ptr - text) < len)
+	    && *ptr != NUL)
     {
 	c = *ptr;
 #ifdef FEAT_MBYTE
