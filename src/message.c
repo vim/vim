@@ -1842,7 +1842,7 @@ msg_puts_display(str, maxlen, attr, recurse)
     int		wrap;
 
     did_wait_return = FALSE;
-    while (*s != NUL && (maxlen < 0 || (int)(s - str) < maxlen))
+    while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
     {
 	/*
 	 * We are at the end of the screen line when:
