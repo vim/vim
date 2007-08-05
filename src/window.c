@@ -6200,7 +6200,7 @@ match_add(wp, grp, pat, prio, id)
     matchitem_T *prev;
     matchitem_T *m;
     int		hlg_id;
-    regmmatch_T match;
+    regprog_T	*regprog;
 
     if (*grp == NUL || *pat == NUL)
 	return -1;
@@ -6227,7 +6227,7 @@ match_add(wp, grp, pat, prio, id)
 	EMSG2(_(e_nogroup), grp);
 	return -1;
     }
-    if ((match.regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
+    if ((regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
     {
 	EMSG2(_(e_invarg2), pat);
 	return -1;
@@ -6250,7 +6250,9 @@ match_add(wp, grp, pat, prio, id)
     m->priority = prio;
     m->pattern = vim_strsave(pat);
     m->hlg_id = hlg_id;
-    m->match.regprog = match.regprog;
+    m->match.regprog = regprog;
+    m->match.rmm_ic = FALSE;
+    m->match.rmm_maxcol = 0;
 
     /* Insert new match.  The match list is in ascending order with regard to
      * the match priorities. */
