@@ -12182,7 +12182,9 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    {
 		n = mb_cptr2len(p);
 		c = mb_ptr2char(p);
-		if (!soundfold && !spell_iswordp(p + n, curbuf))
+		if (p[n] == NUL)
+		    c2 = NUL;
+		else if (!soundfold && !spell_iswordp(p + n, curbuf))
 		    c2 = c; /* don't swap non-word char */
 		else
 		    c2 = mb_ptr2char(p + n);
@@ -12190,10 +12192,19 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    else
 #endif
 	    {
-		if (!soundfold && !spell_iswordp(p + 1, curbuf))
+		if (p[1] == NUL)
+		    c2 = NUL;
+		else if (!soundfold && !spell_iswordp(p + 1, curbuf))
 		    c2 = c; /* don't swap non-word char */
 		else
 		    c2 = p[1];
+	    }
+
+	    /* When the second character is NUL we can't swap. */
+	    if (c2 == NUL)
+	    {
+		sp->ts_state = STATE_REP_INI;
+		break;
 	    }
 
 	    /* When characters are identical, swap won't do anything.
