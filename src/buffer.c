@@ -4860,7 +4860,7 @@ chk_modeline(lnum, flags)
 	     */
 	    for (e = s; *e != ':' && *e != NUL; ++e)
 		if (e[0] == '\\' && e[1] == ':')
-		    STRCPY(e, e + 1);
+		    mch_memmove(e, e + 1, STRLEN(e));
 	    if (*e == NUL)
 		end = TRUE;
 

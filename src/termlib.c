@@ -191,7 +191,7 @@ nextent(tbuf, termcap, buflen)		/* Read 1 entry from TERMCAP file */
 	    lbuf[0] == '\t' &&
 	    lbuf[1] == ':')
 	{
-	    strcpy(lbuf, lbuf+2);
+	    mch_memmove(lbuf, lbuf + 2, strlen(lbuf + 2) + 1);
 	    llen -= 2;
 	}
 	if (lbuf[llen-2] == '\\')		/* and continuations */

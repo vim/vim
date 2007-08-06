@@ -8635,7 +8635,7 @@ dos_expandpath(
     for (p = buf + wildoff; p < s; ++p)
 	if (rem_backslash(p))
 	{
-	    STRCPY(p, p + 1);
+	    mch_memmove(p, p + 1, STRLEN(p));
 	    --e;
 	    --s;
 	}
@@ -8936,7 +8936,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
     for (p = buf + wildoff; p < s; ++p)
 	if (rem_backslash(p))
 	{
-	    STRCPY(p, p + 1);
+	    mch_memmove(p, p + 1, STRLEN(p));
 	    --e;
 	    --s;
 	}

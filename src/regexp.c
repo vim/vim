@@ -6637,9 +6637,9 @@ regtilde(source, magic)
 		}
 	    }
 	    else if (magic)
-		STRCPY(p, p + 1);		/* remove '~' */
+		mch_memmove(p, p + 1, STRLEN(p));	/* remove '~' */
 	    else
-		STRCPY(p, p + 2);		/* remove '\~' */
+		mch_memmove(p, p + 2, STRLEN(p) - 1);	/* remove '\~' */
 	    --p;
 	}
 	else

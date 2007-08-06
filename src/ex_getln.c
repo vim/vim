@@ -4306,10 +4306,11 @@ ExpandFromContext(xp, pat, num_file, file, options)
 			    && pat[i + 1] == '\\'
 			    && pat[i + 2] == '\\'
 			    && pat[i + 3] == ' ')
-			STRCPY(pat + i, pat + i + 3);
+			mch_memmove(pat + i, pat + i + 3,
+						     STRLEN(pat + i + 3) + 1);
 		    if (xp->xp_backslash == XP_BS_ONE
 			    && pat[i + 1] == ' ')
-			STRCPY(pat + i, pat + i + 1);
+			mch_memmove(pat + i, pat + i + 1, STRLEN(pat + i));
 		}
 	}
 
@@ -4552,7 +4553,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
     pat = vim_strsave(filepat);
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
-	    STRCPY(pat + i, pat + i + 1);
+	    mch_memmove(pat + i, pat + i + 1, STRLEN(pat + i));
 
     flags |= EW_FILE | EW_EXEC;
 

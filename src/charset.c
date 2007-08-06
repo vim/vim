@@ -1898,7 +1898,7 @@ backslash_halve(p)
 {
     for ( ; *p; ++p)
 	if (rem_backslash(p))
-	    STRCPY(p, p + 1);
+	    mch_memmove(p, p + 1, STRLEN(p));
 }
 
 /*

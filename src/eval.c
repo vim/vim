@@ -13807,7 +13807,7 @@ f_resolve(argvars, rettv)
 	    }
 	    /* Shorten "remain". */
 	    if (*q != NUL)
-		STRCPY(remain, q - 1);
+		mch_memmove(remain, q - 1, STRLEN(q - 1) + 1);
 	    else
 	    {
 		vim_free(remain);
