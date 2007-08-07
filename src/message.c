@@ -1878,7 +1878,7 @@ msg_puts_display(str, maxlen, attr, recurse)
 		/* output postponed text */
 		t_puts(&t_col, t_s, s, attr);
 
-	    /* When no more prompt an no more room, truncate here */
+	    /* When no more prompt and no more room, truncate here */
 	    if (msg_no_more && lines_left == 0)
 		break;
 
@@ -1927,7 +1927,8 @@ msg_puts_display(str, maxlen, attr, recurse)
 	     * If screen is completely filled and 'more' is set then wait
 	     * for a character.
 	     */
-	    --lines_left;
+	    if (lines_left > 0)
+		--lines_left;
 	    if (p_more && lines_left == 0 && State != HITRETURN
 					    && !msg_no_more && !exmode_active)
 	    {
@@ -2234,7 +2235,7 @@ show_sb_text()
 {
     msgchunk_T	*mp;
 
-    /* Only show somethign if there is more than one line, otherwise it looks
+    /* Only show something if there is more than one line, otherwise it looks
      * weird, typing a command without output results in one line. */
     mp = msg_sb_start(last_msgchunk);
     if (mp == NULL || mp->sb_prev == NULL)
@@ -2622,7 +2623,7 @@ do_more_prompt(typed_char)
 		}
 	    }
 
-	    if (scroll < 0 || (scroll == 0 && mp_last != NULL))
+	    if (scroll <= 0)
 	    {
 		/* displayed the requested text, more prompt again */
 		screen_fill((int)Rows - 1, (int)Rows, 0,
