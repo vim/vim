@@ -889,6 +889,11 @@ getcount:
 
 	++no_mapping;
 	++allow_keys;		/* no mapping for nchar, but allow key codes */
+#ifdef FEAT_AUTOCMD
+	/* Don't generate a CursorHold event here, most commands can't handle
+	 * it, e.g., nv_replace(), nv_csearch(). */
+	did_cursorhold = TRUE;
+#endif
 	if (ca.cmdchar == 'g')
 	{
 	    /*
@@ -6662,6 +6667,13 @@ nv_replace(cap)
     else
 	had_ctrl_v = NUL;
 
+    /* Abort if the character is a special key. */
+    if (IS_SPECIAL(cap->nchar))
+    {
+	clearopbeep(cap->oap);
+	return;
+    }
+
 #ifdef FEAT_VISUAL
     /* Visual mode "r" */
     if (VIsual_active)
@@ -6688,11 +6700,9 @@ nv_replace(cap)
     }
 #endif
 
-    /*
-     * Check for a special key or not enough characters to replace.
-     */
+    /* Abort if not enough characters to replace. */
     ptr = ml_get_cursor();
-    if (IS_SPECIAL(cap->nchar) || STRLEN(ptr) < (unsigned)cap->count1
+    if (STRLEN(ptr) < (unsigned)cap->count1
 #ifdef FEAT_MBYTE
 	    || (has_mbyte && mb_charlen(ptr) < cap->count1)
 #endif
