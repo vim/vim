@@ -101,7 +101,6 @@ static int	    saved_no_hlsearch = 0;
 static char_u	    *mr_pattern = NULL;	/* pattern used by search_regcomp() */
 #ifdef FEAT_RIGHTLEFT
 static int	    mr_pattern_alloced = FALSE; /* mr_pattern was allocated */
-static char_u	    *reverse_text __ARGS((char_u *s));
 #endif
 
 #ifdef FEAT_FIND_ID
@@ -228,12 +227,12 @@ get_search_pat()
     return mr_pattern;
 }
 
-#ifdef FEAT_RIGHTLEFT
+#if defined(FEAT_RIGHTLEFT) || defined(PROTO)
 /*
  * Reverse text into allocated memory.
  * Returns the allocated string, NULL when out of memory.
  */
-    static char_u *
+    char_u *
 reverse_text(s)
     char_u *s;
 {
@@ -1898,7 +1897,7 @@ findmatchlimit(oap, initc, flags, maxtravel)
     }
 
 #ifdef FEAT_RIGHTLEFT
-    /* This is just guessing: when 'rightleft' is set, search for a maching
+    /* This is just guessing: when 'rightleft' is set, search for a matching
      * paren/brace in the other direction. */
     if (curwin->w_p_rl && vim_strchr((char_u *)"()[]{}<>", initc) != NULL)
 	backwards = !backwards;

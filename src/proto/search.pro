@@ -1,6 +1,7 @@
 /* search.c */
 int search_regcomp __ARGS((char_u *pat, int pat_save, int pat_use, int options, regmmatch_T *regmatch));
 char_u *get_search_pat __ARGS((void));
+char_u *reverse_text __ARGS((char_u *s));
 void save_search_patterns __ARGS((void));
 void restore_search_patterns __ARGS((void));
 void free_search_patterns __ARGS((void));
