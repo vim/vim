@@ -954,7 +954,8 @@ main_loop(cmdwin, noexmode)
     int		cmdwin;	    /* TRUE when working in the command-line window */
     int		noexmode;   /* TRUE when return on entering Ex mode */
 {
-    oparg_T	oa;	/* operator arguments */
+    oparg_T	oa;				/* operator arguments */
+    int		previous_got_int = FALSE;	/* "got_int" was TRUE */
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     /* Setup to catch a terminating error from the X server.  Just ignore
@@ -1015,12 +1016,32 @@ main_loop(cmdwin, noexmode)
 		need_fileinfo = FALSE;
 	    }
 	}
-	if (got_int && !global_busy)
+
+	/* Reset "got_int" now that we got back to the main loop.  Except when
+	 * inside a ":g/pat/cmd" command, then the "got_int" needs to abort
+	 * the ":g" command.
+	 * For ":g/pat/vi" we reset "got_int" when used once.  When used
+	 * a second time we go back to Ex mode and abort the ":g" command. */
+	if (got_int)
 	{
-	    if (!quit_more)
-		(void)vgetc();		/* flush all buffers */
-	    got_int = FALSE;
+	    if (noexmode && global_busy && !exmode_active && previous_got_int)
+	    {
+		/* Typed two CTRL-C in a row: go back to ex mode as if "Q" was
+		 * used and keep "got_int" set, so that it aborts ":g". */
+		exmode_active = EXMODE_NORMAL;
+		State = NORMAL;
+	    }
+	    else if (!global_busy || !exmode_active)
+	    {
+		if (!quit_more)
+		    (void)vgetc();		/* flush all buffers */
+		got_int = FALSE;
+	    }
+	    previous_got_int = TRUE;
 	}
+	else
+	    previous_got_int = FALSE;
+
 	if (!exmode_active)
 	    msg_scroll = FALSE;
 	quit_more = FALSE;
