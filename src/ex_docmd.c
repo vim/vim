@@ -10817,7 +10817,7 @@ ex_match(eap)
     exarg_T	*eap;
 {
     char_u	*p;
-    char_u	*g;
+    char_u	*g = NULL;
     char_u	*end;
     int		c;
     int		id;
