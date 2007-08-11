@@ -222,7 +222,10 @@ set_indent(size, flags)
 	 * than old) */
 	while (vim_iswhite(*p))
 	    (void)*p++;
-	todo = size-ind_done;
+	todo = size - ind_done;
+	ind_len += todo;    /* Set total length of indent in characters,
+			     * which may have been undercounted until now  */
+
     }
     else
     {
