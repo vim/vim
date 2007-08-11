@@ -2121,7 +2121,7 @@ win_close(win, free_buf)
 	if (wp->w_p_pvw || bt_quickfix(wp->w_buffer))
 	{
 	    /*
-	     * The cursor goes to the preview or the quickfix window, try
+	     * If the cursor goes to the preview or the quickfix window, try
 	     * finding another window to go to.
 	     */
 	    for (;;)
@@ -2308,7 +2308,6 @@ winframe_remove(win, dirp, tp)
     frame_T	*frp, *frp2, *frp3;
     frame_T	*frp_close = win->w_frame;
     win_T	*wp;
-    int		old_size = 0;
 
     /*
      * If there is only one window there is nothing to remove.
@@ -2329,33 +2328,77 @@ winframe_remove(win, dirp, tp)
     if (frp_close->fr_parent->fr_layout == FR_COL)
     {
 #endif
-	/* When 'winfixheight' is set, remember its old size and restore
-	 * it later (it's a simplistic solution...).  Don't do this if the
-	 * window will occupy the full height of the screen. */
-	if (frp2->fr_win != NULL
-		&& (frp2->fr_next != NULL || frp2->fr_prev != NULL)
-		&& frp2->fr_win->w_p_wfh)
-	    old_size = frp2->fr_win->w_height;
+	/* When 'winfixheight' is set, try to find another frame in the column
+	 * (as close to the closed frame as possible) to distribute the height
+	 * to. */
+	if (frp2->fr_win != NULL && frp2->fr_win->w_p_wfh)
+	{
+	    frp = frp_close->fr_prev;
+	    frp3 = frp_close->fr_next;
+	    while (frp != NULL || frp3 != NULL)
+	    {
+		if (frp != NULL)
+		{
+		    if (frp->fr_win != NULL && !frp->fr_win->w_p_wfh)
+		    {
+			frp2 = frp;
+			wp = frp->fr_win;
+			break;
+		    }
+		    frp = frp->fr_prev;
+		}
+		if (frp3 != NULL)
+		{
+		    if (frp3->fr_win != NULL && !frp3->fr_win->w_p_wfh)
+		    {
+			frp2 = frp3;
+			wp = frp3->fr_win;
+			break;
+		    }
+		    frp3 = frp3->fr_next;
+		}
+	    }
+	}
 	frame_new_height(frp2, frp2->fr_height + frp_close->fr_height,
 			    frp2 == frp_close->fr_next ? TRUE : FALSE, FALSE);
-	if (old_size != 0)
-	    win_setheight_win(old_size, frp2->fr_win);
 #ifdef FEAT_VERTSPLIT
 	*dirp = 'v';
     }
     else
     {
-	/* When 'winfixwidth' is set, remember its old size and restore
-	 * it later (it's a simplistic solution...).  Don't do this if the
-	 * window will occupy the full width of the screen. */
-	if (frp2->fr_win != NULL
-		&& (frp2->fr_next != NULL || frp2->fr_prev != NULL)
-		&& frp2->fr_win->w_p_wfw)
-	    old_size = frp2->fr_win->w_width;
+	/* When 'winfixwidth' is set, try to find another frame in the column
+	 * (as close to the closed frame as possible) to distribute the width
+	 * to. */
+	if (frp2->fr_win != NULL && frp2->fr_win->w_p_wfw)
+	{
+	    frp = frp_close->fr_prev;
+	    frp3 = frp_close->fr_next;
+	    while (frp != NULL || frp3 != NULL)
+	    {
+		if (frp != NULL)
+		{
+		    if (frp->fr_win != NULL && !frp->fr_win->w_p_wfw)
+		    {
+			frp2 = frp;
+			wp = frp->fr_win;
+			break;
+		    }
+		    frp = frp->fr_prev;
+		}
+		if (frp3 != NULL)
+		{
+		    if (frp3->fr_win != NULL && !frp3->fr_win->w_p_wfw)
+		    {
+			frp2 = frp3;
+			wp = frp3->fr_win;
+			break;
+		    }
+		    frp3 = frp3->fr_next;
+		}
+	    }
+	}
 	frame_new_width(frp2, frp2->fr_width + frp_close->fr_width,
 			    frp2 == frp_close->fr_next ? TRUE : FALSE, FALSE);
-	if (old_size != 0)
-	    win_setwidth_win(old_size, frp2->fr_win);
 	*dirp = 'h';
     }
 #endif
