@@ -2499,7 +2499,13 @@ mch_getperm(name)
     if (stat((char *)name, &statb))
 #endif
 	return -1;
+#ifdef __INTERIX
+    /* The top bit makes the value negative, which means the file doesn't
+     * exist.  Remove the bit, we don't use it. */
+    return statb.st_mode & ~S_ADDACE;
+#else
     return statb.st_mode;
+#endif
 }
 
 /*
