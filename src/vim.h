@@ -1380,8 +1380,14 @@ typedef enum
 #endif
 
 #ifdef FEAT_MBYTE
-# define MB_STRICMP(d, s)	(has_mbyte ? mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL) : STRICMP((d), (s)))
-# define MB_STRNICMP(d, s, n)	(has_mbyte ? mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n)) : STRNICMP((d), (s), (n)))
+/* We need to call mb_stricmp() even when we aren't dealing with a multi-byte
+ * encoding because mb_stricmp() takes care of all ascii and non-ascii
+ * encodings, including characters with umluats in latin1, etc., while
+ * STRICMP() only handles the system locale version, which often does not
+ * handle non-ascii properly. */
+
+# define MB_STRICMP(d, s)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)MAXCOL)
+# define MB_STRNICMP(d, s, n)	mb_strnicmp((char_u *)(d), (char_u *)(s), (int)(n))
 #else
 # define MB_STRICMP(d, s)	STRICMP((d), (s))
 # define MB_STRNICMP(d, s, n)	STRNICMP((d), (s), (n))

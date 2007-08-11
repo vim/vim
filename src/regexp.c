@@ -2220,7 +2220,7 @@ collection:
 				break;
 			    case CLASS_LOWER:
 				for (cu = 1; cu <= 255; cu++)
-				    if (islower(cu))
+				    if (MB_ISLOWER(cu))
 					regc(cu);
 				break;
 			    case CLASS_PRINT:
@@ -2240,7 +2240,7 @@ collection:
 				break;
 			    case CLASS_UPPER:
 				for (cu = 1; cu <= 255; cu++)
-				    if (isupper(cu))
+				    if (MB_ISUPPER(cu))
 					regc(cu);
 				break;
 			    case CLASS_XDIGIT:
@@ -3465,7 +3465,7 @@ vim_regexec_both(line, col)
 			(enc_utf8 && utf_fold(prog->regstart) == utf_fold(c)))
 			|| (c < 255 && prog->regstart < 255 &&
 #endif
-			    TOLOWER_LOC(prog->regstart) == TOLOWER_LOC(c)))))
+			    MB_TOLOWER(prog->regstart) == MB_TOLOWER(c)))))
 	    retval = regtry(prog, col);
 	else
 	    retval = 0;
@@ -4200,7 +4200,7 @@ regmatch(scan)
 #ifdef FEAT_MBYTE
 			    !enc_utf8 &&
 #endif
-			    TOLOWER_LOC(*opnd) != TOLOWER_LOC(*reginput))))
+			    MB_TOLOWER(*opnd) != MB_TOLOWER(*reginput))))
 		    status = RA_NOMATCH;
 		else if (*opnd == NUL)
 		{
@@ -4733,10 +4733,10 @@ regmatch(scan)
 		    rst.nextb = *OPERAND(next);
 		    if (ireg_ic)
 		    {
-			if (isupper(rst.nextb))
-			    rst.nextb_ic = TOLOWER_LOC(rst.nextb);
+			if (MB_ISUPPER(rst.nextb))
+			    rst.nextb_ic = MB_TOLOWER(rst.nextb);
 			else
-			    rst.nextb_ic = TOUPPER_LOC(rst.nextb);
+			    rst.nextb_ic = MB_TOUPPER(rst.nextb);
 		    }
 		    else
 			rst.nextb_ic = rst.nextb;
@@ -5558,11 +5558,12 @@ do_class:
 	    int	    cu, cl;
 
 	    /* This doesn't do a multi-byte character, because a MULTIBYTECODE
-	     * would have been used for it. */
+	     * would have been used for it.  It does handle single-byte
+	     * characters, such as latin1. */
 	    if (ireg_ic)
 	    {
-		cu = TOUPPER_LOC(*opnd);
-		cl = TOLOWER_LOC(*opnd);
+		cu = MB_TOUPPER(*opnd);
+		cl = MB_TOLOWER(*opnd);
 		while (count < maxcount && (*scan == cu || *scan == cl))
 		{
 		    count++;
@@ -6490,10 +6491,10 @@ cstrchr(s, c)
 	cc = utf_fold(c);
     else
 #endif
-	 if (isupper(c))
-	cc = TOLOWER_LOC(c);
-    else if (islower(c))
-	cc = TOUPPER_LOC(c);
+	 if (MB_ISUPPER(c))
+	cc = MB_TOLOWER(c);
+    else if (MB_ISLOWER(c))
+	cc = MB_TOUPPER(c);
     else
 	return vim_strchr(s, c);
 

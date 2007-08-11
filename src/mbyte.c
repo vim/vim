@@ -2320,7 +2320,7 @@ mb_strnicmp(s1, s2, nn)
 		/* Single byte: first check normally, then with ignore case. */
 		if (s1[i] != s2[i])
 		{
-		    cdiff = TOLOWER_LOC(s1[i]) - TOLOWER_LOC(s2[i]);
+		    cdiff = MB_TOLOWER(s1[i]) - MB_TOLOWER(s2[i]);
 		    if (cdiff != 0)
 			return cdiff;
 		}
