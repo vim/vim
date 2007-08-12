@@ -572,8 +572,9 @@ $(OUTDIR)/ex_eval.o:	ex_eval.c $(INCL) ex_cmds.h
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
+# Remove -D__IID_DEFINED__ for newer versions of the w32api
 $(OUTDIR)/if_ole.o: if_ole.cpp $(INCL)
-	$(CC) $(CFLAGS) -D__IID_DEFINED__ -c -o $(OUTDIR)/if_ole.o if_ole.cpp
+	$(CC) $(CFLAGS) -c -o $(OUTDIR)/if_ole.o if_ole.cpp
 
 $(OUTDIR)/if_ruby.o: if_ruby.c $(INCL)
 ifeq (16, $(RUBY))

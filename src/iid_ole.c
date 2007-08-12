@@ -16,9 +16,18 @@
 extern "C"{
 #endif
 
+#ifdef __MINGW32__
+# include <w32api.h>
+
+# if __W32API_MAJOR_VERSION == 3 && __W32API_MINOR_VERSION < 10
+   /* This define is missing from older MingW versions of w32api, even though
+    * IID is defined. */
+#  define __IID_DEFINED__
+# endif
+#endif
 
 #ifndef __IID_DEFINED__
-#define __IID_DEFINED__
+# define __IID_DEFINED__
 
 typedef struct _IID
 {
@@ -28,12 +37,12 @@ typedef struct _IID
     unsigned char  c[8];
 } IID;
 
-#endif // __IID_DEFINED__
+#endif
 
 #ifndef CLSID_DEFINED
-#define CLSID_DEFINED
+# define CLSID_DEFINED
 typedef IID CLSID;
-#endif // CLSID_DEFINED
+#endif
 
 const IID IID_IVim = {0x0F0BFAE2,0x4C90,0x11d1,{0x82,0xD7,0x00,0x04,0xAC,0x36,0x85,0x19}};
 
