@@ -2057,7 +2057,6 @@ vim_is_ctrl_x_key(c)
  * case of the originally typed text is used, and the case of the completed
  * text is inferred, ie this tries to work out what case you probably wanted
  * the rest of the word to be in -- webb
- * TODO: make this work for multi-byte characters.
  */
     int
 ins_compl_add_infercase(str, len, icase, fname, dir, flags)
@@ -2068,54 +2067,147 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
     int		dir;
     int		flags;
 {
+    char_u	*p;
+    int		i, c;
+    int		actual_len;		/* Take multi-byte characters */
+    int		actual_compl_length;	/* into account. */
+    int		*wca;		        /* Wide character array. */
     int		has_lower = FALSE;
     int		was_letter = FALSE;
-    int		idx;
 
-    if (p_ic && curbuf->b_p_inf && len < IOSIZE)
+    if (p_ic && curbuf->b_p_inf)
     {
-	/* Infer case of completed part -- webb */
-	/* Use IObuff, str would change text in buffer! */
-	vim_strncpy(IObuff, str, len);
+	/* Infer case of completed part. */
 
-	/* Rule 1: Were any chars converted to lower? */
-	for (idx = 0; idx < compl_length; ++idx)
+	/* Find actual length of completion. */
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
 	{
-	    if (islower(compl_orig_text[idx]))
+	    p = str;
+	    actual_len = 0;
+	    while (*p != NUL)
 	    {
-		has_lower = TRUE;
-		if (isupper(IObuff[idx]))
-		{
-		    /* Rule 1 is satisfied */
-		    for (idx = compl_length; idx < len; ++idx)
-			IObuff[idx] = TOLOWER_LOC(IObuff[idx]);
-		    break;
-		}
+		mb_ptr_adv(p);
+		++actual_len;
 	    }
 	}
+	else
+#endif
+	    actual_len = len;
 
-	/*
-	 * Rule 2: No lower case, 2nd consecutive letter converted to
-	 * upper case.
-	 */
-	if (!has_lower)
+	/* Find actual length of original text. */
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
 	{
-	    for (idx = 0; idx < compl_length; ++idx)
+	    p = compl_orig_text;
+	    actual_compl_length = 0;
+	    while (*p != NUL)
 	    {
-		if (was_letter && isupper(compl_orig_text[idx])
-						      && islower(IObuff[idx]))
-		{
-		    /* Rule 2 is satisfied */
-		    for (idx = compl_length; idx < len; ++idx)
-			IObuff[idx] = TOUPPER_LOC(IObuff[idx]);
-		    break;
-		}
-		was_letter = isalpha(compl_orig_text[idx]);
+		mb_ptr_adv(p);
+		++actual_compl_length;
 	    }
 	}
+	else
+#endif
+	    actual_compl_length = compl_length;
 
-	/* Copy the original case of the part we typed */
-	STRNCPY(IObuff, compl_orig_text, compl_length);
+	/* Allocate wide character array for the completion and fill it. */
+	wca = (int *)alloc(actual_len * sizeof(int));
+	if (wca != NULL)
+	{
+	    p = str;
+	    for (i = 0; i < actual_len; ++i)
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    wca[i] = mb_ptr2char_adv(&p);
+		else
+#endif
+		    wca[i] = *(p++);
+
+	    /* Rule 1: Were any chars converted to lower? */
+	    p = compl_orig_text;
+	    for (i = 0; i < actual_compl_length; ++i)
+	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    c = mb_ptr2char_adv(&p);
+		else
+#endif
+		    c = *(p++);
+		if (MB_ISLOWER(c))
+		{
+		    has_lower = TRUE;
+		    if (MB_ISUPPER(wca[i]))
+		    {
+			/* Rule 1 is satisfied. */
+			for (i = actual_compl_length; i < actual_len; ++i)
+			    wca[i] = MB_TOLOWER(wca[i]);
+			break;
+		    }
+		}
+	    }
+
+	    /*
+	     * Rule 2: No lower case, 2nd consecutive letter converted to
+	     * upper case.
+	     */
+	    if (!has_lower)
+	    {
+		p = compl_orig_text;
+		for (i = 0; i < actual_compl_length; ++i)
+		{
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			c = mb_ptr2char_adv(&p);
+		    else
+#endif
+			c = *(p++);
+		    if (was_letter && MB_ISUPPER(c) && MB_ISLOWER(wca[i]))
+		    {
+			/* Rule 2 is satisfied. */
+			for (i = actual_compl_length; i < actual_len; ++i)
+			    wca[i] = MB_TOUPPER(wca[i]);
+			break;
+		    }
+		    was_letter = MB_ISLOWER(c) || MB_ISUPPER(c);
+		}
+	    }
+
+	    /* Copy the original case of the part we typed. */
+	    p = compl_orig_text;
+	    for (i = 0; i < actual_compl_length; ++i)
+	    {
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    c = mb_ptr2char_adv(&p);
+		else
+#endif
+		    c = *(p++);
+		if (MB_ISLOWER(c))
+		    wca[i] = MB_TOLOWER(wca[i]);
+		else if (MB_ISUPPER(c))
+		    wca[i] = MB_TOUPPER(wca[i]);
+	    }
+
+	    /* 
+	     * Generate encoding specific output from wide character array.
+	     * Multi-byte characters can occupy up to five bytes more than
+	     * ASCII characters, and we also need one byte for NUL, so stay
+	     * six bytes away from the edge of IObuff.
+	     */
+	    p = IObuff;
+	    i = 0;
+	    while (i < actual_len && (p - IObuff + 6) < IOSIZE)
+#ifdef FEAT_MBYTE
+		if (has_mbyte)
+		    p += mb_char2bytes(wca[i++], p);
+		else
+#endif
+		    *(p++) = wca[i++];
+	    *p = NUL;
+
+	    vim_free(wca);
+	}
 
 	return ins_compl_add(IObuff, len, icase, fname, NULL, dir,
 								flags, FALSE);
@@ -2842,6 +2934,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 			/*
 			 * Add the other matches on the line
 			 */
+			ptr = buf;
 			while (!got_int)
 			{
 			    /* Find start of the next word.  Skip white
@@ -2851,7 +2944,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 				break;
 			    wstart = ptr;
 
-			    /* Find end of the word and add it. */
+			    /* Find end of the word. */
 #ifdef FEAT_MBYTE
 			    if (has_mbyte)
 				/* Japanese words may have characters in
@@ -2868,9 +2961,12 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 			    else
 #endif
 				ptr = find_word_end(ptr);
-			    add_r = ins_compl_add_infercase(wstart,
-				    (int)(ptr - wstart),
-				    p_ic, files[i], *dir, 0);
+
+			    /* Add the word. Skip the regexp match. */
+			    if (wstart != regmatch->startp[0])
+				add_r = ins_compl_add_infercase(wstart,
+					(int)(ptr - wstart),
+					p_ic, files[i], *dir, 0);
 			}
 		    }
 		    if (add_r == OK)
