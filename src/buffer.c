@@ -502,6 +502,7 @@ buf_clear_file(buf)
     buf->b_start_eol = TRUE;
 #ifdef FEAT_MBYTE
     buf->b_p_bomb = FALSE;
+    buf->b_start_bomb = FALSE;
 #endif
     buf->b_ml.ml_mfp = NULL;
     buf->b_ml.ml_flags = ML_EMPTY;		/* empty buffer */

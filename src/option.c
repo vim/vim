@@ -7118,6 +7118,11 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     /* when 'endofline' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_eol)
 	need_maketitle = TRUE;
+#ifdef FEAT_MBYTE
+    /* when 'bomb' is changed, redraw the window title */
+    else if ((int *)varp == &curbuf->b_p_bomb)
+	need_maketitle = TRUE;
+#endif
 #endif
 
     /* when 'bin' is set also set some other options */
@@ -10604,6 +10609,8 @@ save_file_ff(buf)
     buf->b_start_ffc = *buf->b_p_ff;
     buf->b_start_eol = buf->b_p_eol;
 #ifdef FEAT_MBYTE
+    buf->b_start_bomb = buf->b_p_bomb;
+
     /* Only use free/alloc when necessary, they take time. */
     if (buf->b_start_fenc == NULL
 			     || STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0)
@@ -10617,7 +10624,8 @@ save_file_ff(buf)
 /*
  * Return TRUE if 'fileformat' and/or 'fileencoding' has a different value
  * from when editing started (save_file_ff() called).
- * Also when 'endofline' was changed and 'binary' is set.
+ * Also when 'endofline' was changed and 'binary' is set, or when 'bomb' was
+ * changed and 'binary' is not set.
  * Don't consider a new, empty buffer to be changed.
  */
     int
@@ -10636,6 +10644,8 @@ file_ff_differs(buf)
     if (buf->b_p_bin && buf->b_start_eol != buf->b_p_eol)
 	return TRUE;
 #ifdef FEAT_MBYTE
+    if (!buf->b_p_bin && buf->b_start_bomb != buf->b_p_bomb)
+	return TRUE;
     if (buf->b_start_fenc == NULL)
 	return (*buf->b_p_fenc != NUL);
     return (STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0);

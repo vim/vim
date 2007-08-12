@@ -654,6 +654,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
 	curbuf->b_start_eol = TRUE;
 #ifdef FEAT_MBYTE
 	curbuf->b_p_bomb = FALSE;
+	curbuf->b_start_bomb = FALSE;
 #endif
     }
 
@@ -912,7 +913,10 @@ retry:
 	file_rewind = FALSE;
 #ifdef FEAT_MBYTE
 	if (set_options)
+	{
 	    curbuf->b_p_bomb = FALSE;
+	    curbuf->b_start_bomb = FALSE;
+	}
 	conv_error = 0;
 #endif
     }
@@ -1361,7 +1365,10 @@ retry:
 		    size -= blen;
 		    mch_memmove(ptr, ptr + blen, (size_t)size);
 		    if (set_options)
+		    {
 			curbuf->b_p_bomb = TRUE;
+			curbuf->b_start_bomb = TRUE;
+		    }
 		}
 
 		if (fio_flags == FIO_UCSBOM)
