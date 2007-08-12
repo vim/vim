@@ -132,7 +132,8 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		the same file.  Make new window N high (default is to use half
 		the height of the current window).  Reduces the current window
 		height to create room (and others, if the 'equalalways' option
-		is set and 'eadirection' isn't "hor").
+		is set, 'eadirection' isn't "hor", and one of them is higher
+		than the current or the new window).
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
@@ -140,9 +141,13 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 CTRL-W CTRL-V						*CTRL-W_CTRL-V*
 CTRL-W v						*CTRL-W_v*
 :[N]vs[plit] [++opt] [+cmd] [file]			*:vs* *:vsplit*
-		Like |:split|, but split vertically.  If 'equalalways' is set
-		and 'eadirection' isn't "ver" the windows will be spread out
-		horizontally, unless a width was specified.
+		Like |:split|, but split vertically.  The windows will be
+		spread out horizontally if
+		1. a width was not specified,
+		2. 'equalalways' is set,
+		3. 'eadirection' isn't "ver", and
+		4. one of the other windows are wider than the current or new
+		   window.
 		Note: In other places CTRL-Q does the same as CTRL-V, but here
 		it doesn't!
 

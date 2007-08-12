@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.1.  Last change: 2007 May 11
+*options.txt*	For Vim version 7.1.  Last change: 2007 Aug 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2415,8 +2415,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When mixing vertically and horizontally split windows, a minimal size
 	is computed and some windows may be larger if there is room.  The
 	'eadirection' option tells in which direction the size is affected.
-	Changing the height of a window can be avoided by setting
-	'winfixheight'.
+	Changing the height and width of a window can be avoided by setting
+	'winfixheight' and 'winfixwidth', respectively.
 
 						*'equalprg'* *'ep'*
 'equalprg' 'ep'		string	(default "")

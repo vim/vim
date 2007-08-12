@@ -733,7 +733,6 @@ win_split_ins(size, flags, newwin, dir)
     if (flags & WSP_VERT)
     {
 	layout = FR_ROW;
-	do_equal = (p_ea && new_size == 0 && *p_ead != 'v');
 
 	/*
 	 * Check if we are able to split the current window and compute its
@@ -770,16 +769,31 @@ win_split_ins(size, flags, newwin, dir)
 	 * instead, if possible. */
 	if (oldwin->w_p_wfw)
 	    win_setwidth_win(oldwin->w_width + new_size, oldwin);
+
+	/* Only make all windows the same width if one of them (except oldwin)
+	 * is wider than one of the split windows. */
+	if (!do_equal && p_ea && size == 0 && *p_ead != 'v'
+	   && oldwin->w_frame->fr_parent != NULL)
+	{
+	    frp = oldwin->w_frame->fr_parent->fr_child;
+	    while (frp != NULL)
+	    {
+		if (frp->fr_win != oldwin && frp->fr_win != NULL
+			&& (frp->fr_win->w_width > new_size
+			    || frp->fr_win->w_width > oldwin->w_width
+						   - new_size - STATUS_HEIGHT))
+		{
+		    do_equal = TRUE;
+		    break;
+		}
+		frp = frp->fr_next;
+	    }
+	}
     }
     else
 #endif
     {
 	layout = FR_COL;
-	do_equal = (p_ea && new_size == 0
-#ifdef FEAT_VERTSPLIT
-		&& *p_ead != 'h'
-#endif
-		);
 
 	/*
 	 * Check if we are able to split the current window and compute its
@@ -831,6 +845,29 @@ win_split_ins(size, flags, newwin, dir)
 	    oldwin_height = oldwin->w_height;
 	    if (need_status)
 		oldwin_height -= STATUS_HEIGHT;
+	}
+
+	/* Only make all windows the same height if one of them (except oldwin)
+	 * is higher than one of the split windows. */
+	if (!do_equal && p_ea && size == 0
+#ifdef FEAT_VERTSPLIT
+		&& *p_ead != 'h'
+#endif
+	   && oldwin->w_frame->fr_parent != NULL)
+	{
+	    frp = oldwin->w_frame->fr_parent->fr_child;
+	    while (frp != NULL)
+	    {
+		if (frp->fr_win != oldwin && frp->fr_win != NULL
+			&& (frp->fr_win->w_height > new_size
+			    || frp->fr_win->w_height > oldwin_height - new_size
+							      - STATUS_HEIGHT))
+		{
+		    do_equal = TRUE;
+		    break;
+		}
+		frp = frp->fr_next;
+	    }
 	}
     }
 
