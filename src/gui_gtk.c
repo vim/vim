@@ -1630,11 +1630,14 @@ dlg_button_clicked(GtkWidget * widget, ButtonData *data)
  */
 /*ARGSUSED*/
     static int
-dlg_key_press_event(GtkWidget * widget, GdkEventKey * event, CancelData *data)
+dlg_key_press_event(GtkWidget *widget, GdkEventKey *event, CancelData *data)
 {
-    /* Ignore hitting Enter when there is no default button. */
-    if (data->ignore_enter && event->keyval == GDK_Return)
+    /* Ignore hitting Enter (or Space) when there is no default button. */
+    if (data->ignore_enter && (event->keyval == GDK_Return
+						     || event->keyval == ' '))
 	return TRUE;
+    else    /* A different key was pressed, return to normal behavior */
+	data->ignore_enter = FALSE;
 
     if (event->keyval != GDK_Escape && event->keyval != GDK_Return)
 	return FALSE;
@@ -2223,6 +2226,13 @@ typedef struct _DialogInfo
 dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     DialogInfo *di = (DialogInfo *)data;
+
+    /* Ignore hitting Enter (or Space) when there is no default button. */
+    if (di->ignore_enter && (event->keyval == GDK_Return
+						     || event->keyval == ' '))
+	return TRUE;
+    else    /* A different key was pressed, return to normal behavior */
+	di->ignore_enter = FALSE;
 
     /* Close the dialog when hitting "Esc". */
     if (event->keyval == GDK_Escape)
