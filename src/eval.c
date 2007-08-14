@@ -6802,7 +6802,7 @@ failret:
  * "numbuf" is used for a number.
  * Does not put quotes around strings, as ":echo" displays values.
  * When "copyID" is not NULL replace recursive lists and dicts with "...".
- * May return NULL;
+ * May return NULL.
  */
     static char_u *
 echo_string(tv, tofree, numbuf, copyID)
@@ -6887,7 +6887,7 @@ echo_string(tv, tofree, numbuf, copyID)
  * If the memory is allocated "tofree" is set to it, otherwise NULL.
  * "numbuf" is used for a number.
  * Puts quotes around strings, so that they can be parsed back by eval().
- * May return NULL;
+ * May return NULL.
  */
     static char_u *
 tv2string(tv, tofree, numbuf, copyID)
@@ -14974,6 +14974,10 @@ item_compare(s1, s2)
 
     p1 = tv2string(&(*(listitem_T **)s1)->li_tv, &tofree1, numbuf1, 0);
     p2 = tv2string(&(*(listitem_T **)s2)->li_tv, &tofree2, numbuf2, 0);
+    if (p1 == NULL)
+	p1 = (char_u *)"";
+    if (p2 == NULL)
+	p2 = (char_u *)"";
     if (item_compare_ic)
 	res = STRICMP(p1, p2);
     else
@@ -15463,7 +15467,8 @@ f_string(argvars, rettv)
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = tv2string(&argvars[0], &tofree, numbuf, 0);
-    if (tofree == NULL)
+    /* Make a copy if we have a value but it's not in allocate memory. */
+    if (rettv->vval.v_string != NULL && tofree == NULL)
 	rettv->vval.v_string = vim_strsave(rettv->vval.v_string);
 }
 
@@ -20167,6 +20172,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 		char_u	buf[MSG_BUF_LEN];
 		char_u	numbuf2[NUMBUFLEN];
 		char_u	*tofree;
+		char_u	*s;
 
 		msg_puts((char_u *)"(");
 		for (i = 0; i < argcount; ++i)
@@ -20177,10 +20183,13 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 			msg_outnum((long)argvars[i].vval.v_number);
 		    else
 		    {
-			trunc_string(tv2string(&argvars[i], &tofree,
-					      numbuf2, 0), buf, MSG_BUF_CLEN);
-			msg_puts(buf);
-			vim_free(tofree);
+			s = tv2string(&argvars[i], &tofree, numbuf2, 0);
+			if (s != NULL)
+			{
+			    trunc_string(s, buf, MSG_BUF_CLEN);
+			    msg_puts(buf);
+			    vim_free(tofree);
+			}
 		    }
 		}
 		msg_puts((char_u *)")");
@@ -20258,14 +20267,18 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    char_u	buf[MSG_BUF_LEN];
 	    char_u	numbuf2[NUMBUFLEN];
 	    char_u	*tofree;
+	    char_u	*s;
 
 	    /* The value may be very long.  Skip the middle part, so that we
 	     * have some idea how it starts and ends. smsg() would always
 	     * truncate it at the end. */
-	    trunc_string(tv2string(fc.rettv, &tofree, numbuf2, 0),
-							   buf, MSG_BUF_CLEN);
-	    smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
-	    vim_free(tofree);
+	    s = tv2string(fc.rettv, &tofree, numbuf2, 0);
+	    if (s != NULL)
+	    {
+		trunc_string(s, buf, MSG_BUF_CLEN);
+		smsg((char_u *)_("%s returning %s"), sourcing_name, buf);
+		vim_free(tofree);
+	    }
 	}
 	msg_puts((char_u *)"\n");   /* don't overwrite this either */
 
