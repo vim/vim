@@ -18022,7 +18022,9 @@ list_one_var_a(prefix, name, type, string)
     int		type;
     char_u	*string;
 {
-    msg_attr(prefix, 0);    /* don't use msg(), it overwrites "v:statusmsg" */
+    /* don't use msg() or msg_attr() to avoid overwriting "v:statusmsg" */
+    msg_start();
+    msg_puts(prefix);
     if (name != NULL)	/* "a:" vars don't have a name stored */
 	msg_puts(name);
     msg_putchar(' ');
