@@ -2894,6 +2894,10 @@ dialog_callback(
 	(void)SetFocus(hwnd);
 	if (dialog_default_button > IDCANCEL)
 	    (void)SetFocus(GetDlgItem(hwnd, dialog_default_button));
+	else
+	    /* We don't have a default, set focus on another element of the
+	     * dialog window, probably the icon */
+	    (void)SetFocus(GetDlgItem(hwnd, DLG_NONBUTTON_CONTROL));
 	return FALSE;
     }
 
