@@ -104,7 +104,7 @@ set_indent(size, flags)
     int		ind_done = 0;	    /* measured in spaces */
     int		tab_pad;
     int		retval = FALSE;
-    int		orig_char_len = 0;  /* number of initial whitespace chars when
+    int		orig_char_len = -1; /* number of initial whitespace chars when
 				       'et' and 'pi' are both set */
 
     /*
@@ -159,7 +159,7 @@ set_indent(size, flags)
 
 	    /* Fill to next tabstop with a tab, if possible */
 	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
-	    if (todo >= tab_pad && orig_char_len == 0)
+	    if (todo >= tab_pad && orig_char_len == -1)
 	    {
 		doit = TRUE;
 		todo -= tab_pad;
@@ -206,11 +206,15 @@ set_indent(size, flags)
     /* If 'preserveindent' and 'expandtab' are both set keep the original
      * characters and allocate accordingly.  We will fill the rest with spaces
      * after the if (!curbuf->b_p_et) below. */
-    if (orig_char_len != 0)
+    if (orig_char_len != -1)
     {
 	newline = alloc(orig_char_len + size - ind_done + line_len);
 	if (newline == NULL)
 	    return FALSE;
+	todo = size - ind_done;
+	ind_len = orig_char_len + todo;    /* Set total length of indent in
+					    * characters, which may have been
+					    * undercounted until now  */
 	p = oldline;
 	s = newline;
 	while (orig_char_len > 0)
@@ -222,9 +226,6 @@ set_indent(size, flags)
 	 * than old) */
 	while (vim_iswhite(*p))
 	    (void)*p++;
-	todo = size - ind_done;
-	ind_len += todo;    /* Set total length of indent in characters,
-			     * which may have been undercounted until now  */
 
     }
     else
