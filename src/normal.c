@@ -3760,7 +3760,8 @@ add_to_showcmd(c)
     extra_len = (int)STRLEN(p);
     overflow = old_len + extra_len - SHOWCMD_COLS;
     if (overflow > 0)
-	STRCPY(showcmd_buf, showcmd_buf + overflow);
+	mch_memmove(showcmd_buf, showcmd_buf + overflow,
+						      old_len - overflow + 1);
     STRCAT(showcmd_buf, p);
 
     if (char_avail())

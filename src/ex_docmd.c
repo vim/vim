@@ -4493,7 +4493,8 @@ separate_nextcmd(eap)
 	    if (eap->argt & (USECTRLV | XFILE))
 		++p;		/* skip CTRL-V and next char */
 	    else
-		STRCPY(p, p + 1);	/* remove CTRL-V and skip next char */
+				/* remove CTRL-V and skip next char */
+		mch_memmove(p, p + 1, STRLEN(p));
 	    if (*p == NUL)		/* stop at NUL after CTRL-V */
 		break;
 	}
