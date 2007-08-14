@@ -4,6 +4,10 @@
 
 VIMPROG = ../vim
 
+# Uncomment this line for using valgrind.
+# The output goes into a file "valgrind.$PID" (sorry, no test number).
+# VALGRIND = valgrind --tool=memcheck --num-callers=15 --logfile=valgrind
+
 SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test7.out test8.out test9.out test10.out test11.out \
 		test12.out  test13.out test14.out test15.out test17.out \
@@ -15,7 +19,8 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test43.out test44.out test45.out test46.out test47.out \
 		test48.out test49.out test51.out test52.out test53.out \
 		test54.out test55.out test56.out test57.out test58.out \
-		test59.out test60.out test61.out test62.out test63.out
+		test59.out test60.out test61.out test62.out test63.out \
+		test64.out
 
 SCRIPTS_GUI = test16.out
 
@@ -38,7 +43,7 @@ clean:
 
 test1.out: test1.in
 	-rm -f $*.failed tiny.vim small.vim mbyte.vim test.ok X* viminfo
-	$(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
+	$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
 	@/bin/sh -c "if diff test.out $*.ok; \
 		then mv -f test.out $*.out; \
 		else echo; \
@@ -51,7 +56,7 @@ test1.out: test1.in
 	cp $*.ok test.ok
 	# Sleep a moment to avoid that the xterm title is messed up
 	@-sleep .2
-	-$(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
+	-$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
 	@/bin/sh -c "if test -f test.out; then\
 		  if diff test.out $*.ok; \
 		  then mv -f test.out $*.out; \

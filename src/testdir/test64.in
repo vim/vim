@@ -1,0 +1,52 @@
+Test for regexp patterns.
+
+A pattern that gives the expected result produces OK, so that we know it was
+actually tried.
+
+STARTTEST
+:so small.vim
+:" tl is a List of Lists with:
+:"    regexp pattern
+:"    text to test the pattern on
+:"    expected match (optional)
+:"    expected submatch 1 (optional)
+:"    expected submatch 2 (optional)
+:"    etc.
+:"  When there is no match use only the first two items.
+:let tl = []
+:call add(tl, ['b', 'abcdef', 'b'])
+:call add(tl, ['bc*', 'abccccdef', 'bcccc'])
+:call add(tl, ['bc\{-}', 'abccccdef', 'b'])
+:call add(tl, ['bc\{-}\(d\)', 'abccccdef', 'bccccd', 'd'])
+:call add(tl, ['x', 'abcdef'])
+:"
+:for t in tl
+:  let l = matchlist(t[1], t[0])
+:" check the match itself
+:  if len(l) == 0 && len(t) > 2
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", did not match, expected: \"' . t[2] . '\"'
+:  elseif len(l) > 0 && len(t) == 2
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected no match'
+:  elseif len(t) > 2 && l[0] != t[2]
+:    $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", match: \"' . l[0] . '\", expected: \"' . t[2] . '\"'
+:  else
+:    $put ='OK'
+:  endif
+:  if len(l) > 0
+:"   check all the nine submatches
+:    for i in range(1, 9)
+:      if len(t) <= i + 2
+:        let e = ''
+:      else
+:        let e = t[i + 2]
+:      endif
+:      if l[i] != e
+:        $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", submatch ' . i . ': \"' . l[i] . '\", expected: \"' . e . '\"'
+:      endif
+:    endfor
+:  endif
+:endfor
+:/^Results/,$wq! test.out
+ENDTEST
+
+Results of test64:
