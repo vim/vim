@@ -1727,6 +1727,13 @@ get_syntax_attr(col, can_spell)
 {
     int	    attr = 0;
 
+    if (can_spell != NULL)
+	/* Default: Only do spelling when there is no @Spell cluster or when
+	 * ":syn spell toplevel" was used. */
+	*can_spell = syn_buf->b_syn_spell == SYNSPL_DEFAULT
+		    ? (syn_buf->b_spell_cluster_id == 0)
+		    : (syn_buf->b_syn_spell == SYNSPL_TOP);
+
     /* check for out of memory situation */
     if (syn_buf->b_sst_array == NULL)
 	return 0;
