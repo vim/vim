@@ -207,7 +207,10 @@ buf_init_chartab(buf, global)
 	    }
 	    while (c <= c2)
 	    {
-		if (!do_isalpha || isalpha(c)
+		/* Use the MB_ functions here, because isalpha() doesn't
+		 * work properly when 'encoding' is "latin1" and the locale is
+		 * "C".  */
+		if (!do_isalpha || MB_ISLOWER(c) || MB_ISUPPER(c)
 #ifdef FEAT_FKMAP
 			|| (p_altkeymap && (F_isalpha(c) || F_isdigit(c)))
 #endif

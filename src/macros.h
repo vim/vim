@@ -54,10 +54,12 @@
 
 /*
  * toupper() and tolower() that use the current locale.
- * On some systems toupper()/tolower() only work on lower/uppercase characters
+ * On some systems toupper()/tolower() only work on lower/uppercase
+ * characters, first use islower() or isupper() then.
  * Careful: Only call TOUPPER_LOC() and TOLOWER_LOC() with a character in the
  * range 0 - 255.  toupper()/tolower() on some systems can't handle others.
- * Note: for UTF-8 use utf_toupper() and utf_tolower().
+ * Note: It is often better to use MB_TOLOWER() and MB_TOUPPER(), because many
+ * toupper() and tolower() implementations only work for ASCII.
  */
 #ifdef MSWIN
 #  define TOUPPER_LOC(c)	toupper_tab[(c) & 255]
