@@ -5117,7 +5117,7 @@ gui_handle_drop(x, y, modifiers, fnames, count)
 		p = vim_strsave_escaped(fnames[i], (char_u *)"\\ \t\"|");
 # endif
 		if (p != NULL)
-		    add_to_input_buf(p, (int)STRLEN(p));
+		    add_to_input_buf_csi(p, (int)STRLEN(p));
 		vim_free(p);
 		vim_free(fnames[i]);
 	    }

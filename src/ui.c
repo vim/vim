@@ -1603,8 +1603,6 @@ set_input_buf(p)
 #if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM) \
 	|| defined(FEAT_XCLIPBOARD) || defined(VMS) \
 	|| defined(FEAT_SNIFF) || defined(FEAT_CLIENTSERVER) \
-	|| (defined(FEAT_GUI) && (!defined(USE_ON_FLY_SCROLL) \
-		|| defined(FEAT_MENU))) \
 	|| defined(PROTO)
 /*
  * Add the given bytes to the input buffer
@@ -1630,7 +1628,9 @@ add_to_input_buf(s, len)
 }
 #endif
 
-#if (defined(FEAT_XIM) && defined(FEAT_GUI_GTK)) \
+#if ((defined(FEAT_XIM) || defined(FEAT_DND)) && defined(FEAT_GUI_GTK)) \
+	|| defined(FEAT_GUI_MSWIN) \
+	|| defined(FEAT_GUI_MAC) \
 	|| (defined(FEAT_MBYTE) && defined(FEAT_MBYTE_IME)) \
 	|| (defined(FEAT_GUI) && (!defined(USE_ON_FLY_SCROLL) \
 		|| defined(FEAT_MENU))) \
