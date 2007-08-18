@@ -12,8 +12,8 @@ This plugin is only available if 'compatible' is not set.
 You can avoid loading this plugin by setting the "loaded_matchparen" variable: >
 	:let loaded_matchparen = 1
 
-The plugin installs CursorMoved autocommands to redefine the match
-highlighting.
+The plugin installs CursorMoved, CursorMovedI and WinEnter autocommands to
+redefine the match highlighting.
 
 To disable the plugin after it was loaded use this command: >
 
