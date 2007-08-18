@@ -69,14 +69,14 @@ getGvimName(char *name, int runtime)
 
     // Registry didn't work, use the search path.
     if (name[0] == 0)
-	strcpy(name, searchpath("gvim.exe"));
+	strcpy(name, searchpath((char *)"gvim.exe"));
 
     if (!runtime)
     {
 	// Only when looking for the executable, not the runtime dir, we can
 	// search for the batch file or a name without a path.
 	if (name[0] == 0)
-	    strcpy(name, searchpath("gvim.bat"));
+	    strcpy(name, searchpath((char *)"gvim.bat"));
 	if (name[0] == 0)
 	    strcpy(name, "gvim");	// finds gvim.bat or gvim.exe
 
@@ -152,9 +152,9 @@ dyn_libintl_init(char *dir)
 	FARPROC	    *ptr;
     } libintl_entry[] =
     {
-	{"gettext",		(FARPROC*)&dyn_libintl_gettext},
-	{"textdomain",		(FARPROC*)&dyn_libintl_textdomain},
-	{"bindtextdomain",	(FARPROC*)&dyn_libintl_bindtextdomain},
+	{(char *)"gettext",		(FARPROC*)&dyn_libintl_gettext},
+	{(char *)"textdomain",		(FARPROC*)&dyn_libintl_textdomain},
+	{(char *)"bindtextdomain",	(FARPROC*)&dyn_libintl_bindtextdomain},
 	{NULL, NULL}
     };
 
@@ -835,7 +835,7 @@ searchpath(char *name)
 		    (LPTSTR)location) > (HINSTANCE)32)
 	    return location;
     }
-    return "";
+    return (char *)"";
 }
 # endif
 #endif
