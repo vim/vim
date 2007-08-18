@@ -3281,32 +3281,27 @@ set_one_cmd_context(xp, buff)
 
     if (ea.argt & XFILE)
     {
-	int in_quote = FALSE;
-	char_u *bow = NULL;	/* Beginning of word */
+	int	c;
+	int	in_quote = FALSE;
+	char_u	*bow = NULL;	/* Beginning of word */
 
 	/*
 	 * Allow spaces within back-quotes to count as part of the argument
 	 * being expanded.
 	 */
 	xp->xp_pattern = skipwhite(arg);
-	for (p = xp->xp_pattern; *p; )
+	p = xp->xp_pattern;
+	while (*p != NUL)
 	{
-	    if (*p == '\\' && p[1] != NUL)
-		++p;
-#ifdef SPACE_IN_FILENAME
-	    else if (vim_iswhite(*p) && (!(ea.argt & NOSPC) || usefilter))
-#else
-	    else if (vim_iswhite(*p))
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		c = mb_ptr2char(p);
+	    else
 #endif
-	    {
-		p = skipwhite(p);
-		if (in_quote)
-		    bow = p;
-		else
-		    xp->xp_pattern = p;
-		--p;
-	    }
-	    else if (*p == '`')
+		c = *p;
+	    if (c == '\\' && p[1] != NUL)
+		++p;
+	    else if (c == '`')
 	    {
 		if (!in_quote)
 		{
@@ -3314,6 +3309,36 @@ set_one_cmd_context(xp, buff)
 		    bow = p + 1;
 		}
 		in_quote = !in_quote;
+	    }
+#ifdef SPACE_IN_FILENAME
+	    else if (!vim_isfilec(c) && (!(ea.argt & NOSPC) || usefilter))
+#else
+	    else if (!vim_isfilec(c))
+#endif
+	    {
+		while (*p != NUL)
+		{
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			c = mb_ptr2char(p);
+		    else
+#endif
+			c = *p;
+		    if (c == '`' || vim_isfilec(c))
+			break;
+#ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			len = (*mb_ptr2len)(p);
+		    else
+#endif
+			len = 1;
+		    mb_ptr_adv(p);
+		}
+		if (in_quote)
+		    bow = p;
+		else
+		    xp->xp_pattern = p;
+		p -= len;
 	    }
 	    mb_ptr_adv(p);
 	}
