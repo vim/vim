@@ -279,7 +279,8 @@ static int keepend_level = -1;
  */
 typedef struct state_item
 {
-    int		si_idx;			/* index of syntax pattern */
+    int		si_idx;			/* index of syntax pattern or
+					   KEYWORD_IDX */
     int		si_id;			/* highlight group ID for keywords */
     int		si_trans_id;		/* idem, transparancy removed */
     int		si_m_lnum;		/* lnum of the match */
@@ -837,9 +838,18 @@ syn_sync(wp, start_lnum, last_valid)
 			    current_lnum = end_lnum;
 			    break;
 			}
-			spp = &(SYN_ITEMS(syn_buf)[cur_si->si_idx]);
-			found_flags = spp->sp_flags;
-			found_match_idx = spp->sp_sync_idx;
+			if (cur_si->si_idx < 0)
+			{
+			    /* Cannot happen? */
+			    found_flags = 0;
+			    found_match_idx = KEYWORD_IDX;
+			}
+			else
+			{
+			    spp = &(SYN_ITEMS(syn_buf)[cur_si->si_idx]);
+			    found_flags = spp->sp_flags;
+			    found_match_idx = spp->sp_sync_idx;
+			}
 			found_current_lnum = current_lnum;
 			found_current_col = current_col;
 			found_m_endpos = cur_si->si_m_endpos;
@@ -2533,6 +2543,10 @@ update_si_attr(idx)
     stateitem_T	*sip = &CUR_STATE(idx);
     synpat_T	*spp;
 
+    /* This should not happen... */
+    if (sip->si_idx < 0)
+	return;
+
     spp = &(SYN_ITEMS(syn_buf)[sip->si_idx]);
     if (sip->si_flags & HL_MATCH)
 	sip->si_id = spp->sp_syn_match_id;
@@ -2648,6 +2662,10 @@ update_si_end(sip, startcol, force)
     lpos_T	end_endpos;
     int		end_idx;
 
+    /* return quickly for a keyword */
+    if (sip->si_idx < 0)
+	return;
+
     /* Don't update when it's already done.  Can be a match of an end pattern
      * that started in a previous line.  Watch out: can also be a "keepend"
      * from a containing item. */
@@ -2759,6 +2777,10 @@ find_endpos(idx, startpos, m_endpos, hl_endpos, flagsp, end_endpos,
     lpos_T	pos;
     char_u	*line;
     int		had_match = FALSE;
+
+    /* just in case we are invoked for a keyword */
+    if (idx < 0)
+	return;
 
     /*
      * Check for being called with a START pattern.
