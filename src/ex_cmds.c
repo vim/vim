@@ -2974,7 +2974,7 @@ check_readonly(forceit, buf)
  * 'fnum' is the number of the file, if zero use ffname/sfname.
  *
  * Return 1 for "normal" error, 2 for "not written" error, 0 for success
- * -1 for succesfully opening another file.
+ * -1 for successfully opening another file.
  * 'lnum' is the line number for the cursor in the new file (if non-zero).
  */
     int
@@ -3584,9 +3584,20 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	curwin_init();
 
 #ifdef FEAT_FOLDING
-	/* It's like all lines in the buffer changed.  Need to update
-	 * automatic folding. */
+	/* It's possible that all lines in the buffer changed.  Need to update
+	 * automatic folding for all windows where it's used. */
+# ifdef FEAT_WINDOWS
+	{
+	    win_T	    *win;
+	    tabpage_T	    *tp;
+
+	    FOR_ALL_TAB_WINDOWS(tp, win)
+		if (win->w_buffer == curbuf)
+		    foldUpdateAll(win);
+	}
+# else
 	foldUpdateAll(curwin);
+# endif
 #endif
 
 	/* Change directories when the 'acd' option is set. */
