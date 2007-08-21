@@ -932,6 +932,23 @@ vim_isfilec(c)
 }
 
 /*
+ * return TRUE if 'c' is a valid file-name character or a wildcard character
+ * Assume characters above 0x100 are valid (multi-byte).
+ * Explicitly interpret ']' as a wildcard character as mch_has_wildcard("]")
+ * returns false.
+ */
+    int
+vim_isfilec_or_wc(c)
+    int c;
+{
+    char_u buf[2];
+
+    buf[0] = (char_u)c;
+    buf[1] = NUL;
+    return vim_isfilec(c) || c == ']' || mch_has_wildcard(buf);
+}
+
+/*
  * return TRUE if 'c' is a printable character
  * Assume characters above 0x100 are printable (multi-byte), except for
  * Unicode.

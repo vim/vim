@@ -3311,9 +3311,10 @@ set_one_cmd_context(xp, buff)
 		in_quote = !in_quote;
 	    }
 #ifdef SPACE_IN_FILENAME
-	    else if (!vim_isfilec(c) && (!(ea.argt & NOSPC) || usefilter))
+	    else if (!vim_isfilec_or_wc(c)
+					 && (!(ea.argt & NOSPC) || usefilter))
 #else
-	    else if (!vim_isfilec(c))
+	    else if (!vim_isfilec_or_wc(c))
 #endif
 	    {
 		while (*p != NUL)
@@ -3324,7 +3325,7 @@ set_one_cmd_context(xp, buff)
 		    else
 #endif
 			c = *p;
-		    if (c == '`' || vim_isfilec(c))
+		    if (c == '`' || vim_isfilec_or_wc(c))
 			break;
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
