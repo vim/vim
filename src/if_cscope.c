@@ -73,6 +73,8 @@ static int	    cs_show __ARGS((exarg_T *eap));
 
 
 static csinfo_T	    csinfo[CSCOPE_MAX_CONNECTIONS];
+static int	    eap_arg_len;    /* length of eap->arg, set in
+				       cs_lookup_cmd() */
 static cscmd_T	    cs_cmds[] =
 {
     { "add",	cs_add,
@@ -260,14 +262,7 @@ cs_fgets(buf, size)
 
     if ((p = cs_manage_matches(NULL, NULL, -1, Get)) == NULL)
 	return TRUE;
-
-    if ((int)strlen(p) > size)
-    {
-	strncpy((char *)buf, p, size - 1);
-	buf[size] = '\0';
-    }
-    else
-	(void)strcpy((char *)buf, p);
+    vim_strncpy(buf, (char_u *)p, size - 1);
 
     return FALSE;
 } /* cs_fgets */
@@ -386,7 +381,7 @@ cs_connection(num, dbpath, ppath)
  * PRIVATE: cs_add
  *
  * add cscope database or a directory name (to look for cscope.out)
- * the the cscope connection list
+ * to the cscope connection list
  *
  * MAXPATHL 256
  */
@@ -966,7 +961,7 @@ cs_find(eap)
     }
 
     pat = opt + strlen(opt) + 1;
-    if (pat == NULL || (pat != NULL && pat[0] == '\0'))
+    if (pat >= (char *)eap->arg + eap_arg_len)
     {
 	cs_usage_msg(Find);
 	return FALSE;
@@ -1317,7 +1312,7 @@ cs_insert_filelist(fname, ppath, flags, sb)
 #else
 	    /* compare pathnames first */
 	    && ((fullpathcmp(csinfo[j].fname, fname, FALSE) & FPC_SAME)
-		/* if not Windows 9x, test index file atributes too */
+		/* if not Windows 9x, test index file attributes too */
 		|| (!mch_windows95()
 		    && csinfo[j].nVolume == bhfi.dwVolumeSerialNumber
 		    && csinfo[j].nIndexHigh == bhfi.nFileIndexHigh
@@ -1400,6 +1395,9 @@ cs_lookup_cmd(eap)
 
     if (eap->arg == NULL)
 	return NULL;
+
+    /* Store length of eap->arg before it gets modified by strtok(). */
+    eap_arg_len = STRLEN(eap->arg);
 
     if ((stok = strtok((char *)(eap->arg), (const char *)" ")) == NULL)
 	return NULL;
@@ -2195,7 +2193,7 @@ cs_reset(eap)
 	    cs_add_common(dblist[i], pplist[i], fllist[i]);
 	    if (p_csverbose)
 	    {
-		/* dont' use smsg_attr because want to display
+		/* don't use smsg_attr() because we want to display the
 		 * connection number in the same line as
 		 * "Added cscope database..."
 		 */
