@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.1.  Last change: 2007 May 07
+*vi_diff.txt*   For Vim version 7.1.  Last change: 2007 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -826,6 +826,8 @@ Only Vim is able to accept options in between and after the file names.
 --servername {name}	Vim: Specify Vim server name
 
 --socketid {id}		Vim: GTK window socket to run Vim in
+
+--windowid {id}		Vim: Win32 window ID to run Vim in
 
 --version	Vim: show version message and exit.
 

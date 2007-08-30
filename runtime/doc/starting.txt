@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.1.  Last change: 2007 May 12
+*starting.txt*  For Vim version 7.1.  Last change: 2007 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -547,6 +547,11 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		GTK+ GUI Vim only.  Make gvim try to use GtkPlug mechanism, so
 		that it runs inside another window.  See |gui-gtk-socketid|
 		for details. {not in Vi}
+
+--windowid {id}						*--windowid*
+		Win32 GUI Vim only.  Make gvim try to use the window {id} as a
+		parent, so that it runs inside that window.  See
+		|gui-w32-windowid| for details. {not in Vi}
 
 --echo-wid						*--echo-wid*
 		GTK+ GUI Vim only.  Make gvim echo the Window ID on stdout,

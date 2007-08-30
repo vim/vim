@@ -275,6 +275,7 @@ main
      *   -display or --display
      *   --server...
      *   --socketid
+     *   --windowid
      */
     early_arg_scan(&params);
 
@@ -1489,7 +1490,7 @@ parse_command_name(parmp)
  * Get the name of the display, before gui_prepare() removes it from
  * argv[].  Used for the xterm-clipboard display.
  *
- * Also find the --server... arguments and --socketid
+ * Also find the --server... arguments and --socketid and --windowid
  */
 /*ARGSUSED*/
     static void
@@ -1536,24 +1537,35 @@ early_arg_scan(parmp)
 #  endif
 	}
 # endif
-# ifdef FEAT_GUI_GTK
+
+# if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)
+#  ifdef FEAT_GUI_W32
+	else if (STRICMP(argv[i], "--windowid") == 0)
+#  else
 	else if (STRICMP(argv[i], "--socketid") == 0)
+#  endif
 	{
-	    unsigned int    socket_id;
+	    unsigned int    id;
 	    int		    count;
 
 	    if (i == argc - 1)
 		mainerr_arg_missing((char_u *)argv[i]);
 	    if (STRNICMP(argv[i+1], "0x", 2) == 0)
-		count = sscanf(&(argv[i + 1][2]), "%x", &socket_id);
+		count = sscanf(&(argv[i + 1][2]), "%x", &id);
 	    else
-		count = sscanf(argv[i+1], "%u", &socket_id);
+		count = sscanf(argv[i+1], "%u", &id);
 	    if (count != 1)
 		mainerr(ME_INVALID_ARG, (char_u *)argv[i]);
 	    else
-		gtk_socket_id = socket_id;
+#  ifdef FEAT_GUI_W32
+		win_socket_id = id;
+#  else
+		gtk_socket_id = id;
+#  endif
 	    i++;
 	}
+# endif
+# ifdef FEAT_GUI_GTK
 	else if (STRICMP(argv[i], "--echo-wid") == 0)
 	    echo_wid_arg = TRUE;
 # endif
@@ -1683,8 +1695,12 @@ command_line_scan(parmp)
 		    }
 		}
 #endif
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)
+# ifdef FEAT_GUI_GTK
 		else if (STRNICMP(argv[0] + argv_idx, "socketid", 8) == 0)
+# else
+		else if (STRNICMP(argv[0] + argv_idx, "windowid", 8) == 0)
+# endif
 		{
 		    /* already processed -- snatch the following arg */
 		    if (argc > 1)
@@ -1693,6 +1709,8 @@ command_line_scan(parmp)
 			++argv;
 		    }
 		}
+#endif
+#ifdef FEAT_GUI_GTK
 		else if (STRNICMP(argv[0] + argv_idx, "echo-wid", 8) == 0)
 		{
 		    /* already processed, skip */
@@ -3120,6 +3138,7 @@ usage()
 #endif
 #ifdef FEAT_GUI_W32
     main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
+    main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
 #endif
 
 #ifdef FEAT_GUI_GNOME

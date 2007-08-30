@@ -23,6 +23,8 @@
  * e.g., replace LONG with LONG_PTR, etc.
  */
 
+#include "vim.h"
+
 /*
  * These are new in Windows ME/XP, only defined in recent compilers.
  */
@@ -1432,16 +1434,29 @@ gui_mch_init(void)
 	}
     }
     else
-	/* Open toplevel window. */
+    {
+	/* If the provided windowid is not valid reset it to zero, so that it
+	 * is ignored and we open our own window. */
+	if (IsWindow((HWND)win_socket_id) <= 0)
+	    win_socket_id = 0;
+
+	/* Create a window.  If win_socket_id is not zero without border and
+	 * titlebar, it will be reparented below. */
 	s_hwnd = CreateWindow(
-	    szVimWndClass, "Vim MSWindows GUI",
-	    WS_OVERLAPPEDWINDOW,
-	    gui_win_x == -1 ? CW_USEDEFAULT : gui_win_x,
-	    gui_win_y == -1 ? CW_USEDEFAULT : gui_win_y,
-	    100,				/* Any value will do */
-	    100,				/* Any value will do */
-	    NULL, NULL,
-	    s_hinst, NULL);
+		szVimWndClass, "Vim MSWindows GUI",
+		win_socket_id == 0 ? WS_OVERLAPPEDWINDOW : WS_POPUP,
+		gui_win_x == -1 ? CW_USEDEFAULT : gui_win_x,
+		gui_win_y == -1 ? CW_USEDEFAULT : gui_win_y,
+		100,				/* Any value will do */
+		100,				/* Any value will do */
+		NULL, NULL,
+		s_hinst, NULL);
+	if (s_hwnd != NULL && win_socket_id != 0)
+	{
+	    SetParent(s_hwnd, (HWND)win_socket_id);
+	    ShowWindow(s_hwnd, SW_SHOWMAXIMIZED);
+	}
+    }
 
     if (s_hwnd == NULL)
 	return FAIL;
