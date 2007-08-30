@@ -369,17 +369,17 @@ static int call_vim_function __ARGS((char_u *func, int argc, char_u **argv, int 
 static int ex_let_vars __ARGS((char_u *arg, typval_T *tv, int copy, int semicolon, int var_count, char_u *nextchars));
 static char_u *skip_var_list __ARGS((char_u *arg, int *var_count, int *semicolon));
 static char_u *skip_var_one __ARGS((char_u *arg));
-static void list_hashtable_vars __ARGS((hashtab_T *ht, char_u *prefix, int empty));
-static void list_glob_vars __ARGS((void));
-static void list_buf_vars __ARGS((void));
-static void list_win_vars __ARGS((void));
+static void list_hashtable_vars __ARGS((hashtab_T *ht, char_u *prefix, int empty, int *first));
+static void list_glob_vars __ARGS((int *first));
+static void list_buf_vars __ARGS((int *first));
+static void list_win_vars __ARGS((int *first));
 #ifdef FEAT_WINDOWS
-static void list_tab_vars __ARGS((void));
+static void list_tab_vars __ARGS((int *first));
 #endif
-static void list_vim_vars __ARGS((void));
-static void list_script_vars __ARGS((void));
-static void list_func_vars __ARGS((void));
-static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg));
+static void list_vim_vars __ARGS((int *first));
+static void list_script_vars __ARGS((int *first));
+static void list_func_vars __ARGS((int *first));
+static char_u *list_arg_vars __ARGS((exarg_T *eap, char_u *arg, int *first));
 static char_u *ex_let_one __ARGS((char_u *arg, typval_T *tv, int copy, char_u *endchars, char_u *op));
 static int check_changedtick __ARGS((char_u *arg));
 static char_u *get_lval __ARGS((char_u *name, typval_T *rettv, lval_T *lp, int unlet, int skip, int quiet, int fne_flags));
@@ -704,8 +704,8 @@ static dictitem_T *find_var_in_ht __ARGS((hashtab_T *ht, char_u *varname, int wr
 static hashtab_T *find_var_ht __ARGS((char_u *name, char_u **varname));
 static void vars_clear_ext __ARGS((hashtab_T *ht, int free_val));
 static void delete_var __ARGS((hashtab_T *ht, hashitem_T *hi));
-static void list_one_var __ARGS((dictitem_T *v, char_u *prefix));
-static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string));
+static void list_one_var __ARGS((dictitem_T *v, char_u *prefix, int *first));
+static void list_one_var_a __ARGS((char_u *prefix, char_u *name, int type, char_u *string, int *first));
 static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
 static int var_check_fixed __ARGS((int flags, char_u *name));
@@ -1699,6 +1699,7 @@ ex_let(eap)
     int		semicolon = 0;
     char_u	op[2];
     char_u	*argend;
+    int		first = TRUE;
 
     argend = skip_var_list(arg, &var_count, &semicolon);
     if (argend == NULL)
@@ -1715,19 +1716,19 @@ ex_let(eap)
 	    EMSG(_(e_invarg));
 	else if (!ends_excmd(*arg))
 	    /* ":let var1 var2" */
-	    arg = list_arg_vars(eap, arg);
+	    arg = list_arg_vars(eap, arg, &first);
 	else if (!eap->skip)
 	{
 	    /* ":let" */
-	    list_glob_vars();
-	    list_buf_vars();
-	    list_win_vars();
+	    list_glob_vars(&first);
+	    list_buf_vars(&first);
+	    list_win_vars(&first);
 #ifdef FEAT_WINDOWS
-	    list_tab_vars();
+	    list_tab_vars(&first);
 #endif
-	    list_script_vars();
-	    list_func_vars();
-	    list_vim_vars();
+	    list_script_vars(&first);
+	    list_func_vars(&first);
+	    list_vim_vars(&first);
 	}
 	eap->nextcmd = check_nextcmd(arg);
     }
@@ -1932,10 +1933,11 @@ skip_var_one(arg)
  * If "empty" is TRUE also list NULL strings as empty strings.
  */
     static void
-list_hashtable_vars(ht, prefix, empty)
+list_hashtable_vars(ht, prefix, empty, first)
     hashtab_T	*ht;
     char_u	*prefix;
     int		empty;
+    int		*first;
 {
     hashitem_T	*hi;
     dictitem_T	*di;
@@ -1950,7 +1952,7 @@ list_hashtable_vars(ht, prefix, empty)
 	    di = HI2DI(hi);
 	    if (empty || di->di_tv.v_type != VAR_STRING
 					   || di->di_tv.vval.v_string != NULL)
-		list_one_var(di, prefix);
+		list_one_var(di, prefix, first);
 	}
     }
 }
@@ -1959,32 +1961,38 @@ list_hashtable_vars(ht, prefix, empty)
  * List global variables.
  */
     static void
-list_glob_vars()
+list_glob_vars(first)
+    int *first;
 {
-    list_hashtable_vars(&globvarht, (char_u *)"", TRUE);
+    list_hashtable_vars(&globvarht, (char_u *)"", TRUE, first);
 }
 
 /*
  * List buffer variables.
  */
     static void
-list_buf_vars()
+list_buf_vars(first)
+    int *first;
 {
     char_u	numbuf[NUMBUFLEN];
 
-    list_hashtable_vars(&curbuf->b_vars.dv_hashtab, (char_u *)"b:", TRUE);
+    list_hashtable_vars(&curbuf->b_vars.dv_hashtab, (char_u *)"b:",
+								 TRUE, first);
 
     sprintf((char *)numbuf, "%ld", (long)curbuf->b_changedtick);
-    list_one_var_a((char_u *)"b:", (char_u *)"changedtick", VAR_NUMBER, numbuf);
+    list_one_var_a((char_u *)"b:", (char_u *)"changedtick", VAR_NUMBER,
+							       numbuf, first);
 }
 
 /*
  * List window variables.
  */
     static void
-list_win_vars()
+list_win_vars(first)
+    int *first;
 {
-    list_hashtable_vars(&curwin->w_vars.dv_hashtab, (char_u *)"w:", TRUE);
+    list_hashtable_vars(&curwin->w_vars.dv_hashtab,
+						 (char_u *)"w:", TRUE, first);
 }
 
 #ifdef FEAT_WINDOWS
@@ -1992,9 +2000,11 @@ list_win_vars()
  * List tab page variables.
  */
     static void
-list_tab_vars()
+list_tab_vars(first)
+    int *first;
 {
-    list_hashtable_vars(&curtab->tp_vars.dv_hashtab, (char_u *)"t:", TRUE);
+    list_hashtable_vars(&curtab->tp_vars.dv_hashtab,
+						 (char_u *)"t:", TRUE, first);
 }
 #endif
 
@@ -2002,39 +2012,44 @@ list_tab_vars()
  * List Vim variables.
  */
     static void
-list_vim_vars()
+list_vim_vars(first)
+    int *first;
 {
-    list_hashtable_vars(&vimvarht, (char_u *)"v:", FALSE);
+    list_hashtable_vars(&vimvarht, (char_u *)"v:", FALSE, first);
 }
 
 /*
  * List script-local variables, if there is a script.
  */
     static void
-list_script_vars()
+list_script_vars(first)
+    int *first;
 {
     if (current_SID > 0 && current_SID <= ga_scripts.ga_len)
-	list_hashtable_vars(&SCRIPT_VARS(current_SID), (char_u *)"s:", FALSE);
+	list_hashtable_vars(&SCRIPT_VARS(current_SID),
+						(char_u *)"s:", FALSE, first);
 }
 
 /*
  * List function variables, if there is a function.
  */
     static void
-list_func_vars()
+list_func_vars(first)
+    int *first;
 {
     if (current_funccal != NULL)
 	list_hashtable_vars(&current_funccal->l_vars.dv_hashtab,
-						       (char_u *)"l:", FALSE);
+						(char_u *)"l:", FALSE, first);
 }
 
 /*
  * List variables in "arg".
  */
     static char_u *
-list_arg_vars(eap, arg)
+list_arg_vars(eap, arg, first)
     exarg_T	*eap;
     char_u	*arg;
+    int		*first;
 {
     int		error = FALSE;
     int		len;
@@ -2091,15 +2106,15 @@ list_arg_vars(eap, arg)
 			{
 			    switch (*name)
 			    {
-				case 'g': list_glob_vars(); break;
-				case 'b': list_buf_vars(); break;
-				case 'w': list_win_vars(); break;
+				case 'g': list_glob_vars(first); break;
+				case 'b': list_buf_vars(first); break;
+				case 'w': list_win_vars(first); break;
 #ifdef FEAT_WINDOWS
-				case 't': list_tab_vars(); break;
+				case 't': list_tab_vars(first); break;
 #endif
-				case 'v': list_vim_vars(); break;
-				case 's': list_script_vars(); break;
-				case 'l': list_func_vars(); break;
+				case 'v': list_vim_vars(first); break;
+				case 's': list_script_vars(first); break;
+				case 'l': list_func_vars(first); break;
 				default:
 					  EMSG2(_("E738: Can't list variables for %s"), name);
 			    }
@@ -2116,7 +2131,9 @@ list_arg_vars(eap, arg)
 			    *arg = NUL;
 			    list_one_var_a((char_u *)"",
 				    arg == arg_subsc ? name : name_start,
-				    tv.v_type, s == NULL ? (char_u *)"" : s);
+				    tv.v_type,
+				    s == NULL ? (char_u *)"" : s,
+				    first);
 			    *arg = c;
 			    vim_free(tf);
 			}
@@ -18001,9 +18018,10 @@ delete_var(ht, hi)
  * List the value of one internal variable.
  */
     static void
-list_one_var(v, prefix)
+list_one_var(v, prefix, first)
     dictitem_T	*v;
     char_u	*prefix;
+    int		*first;
 {
     char_u	*tofree;
     char_u	*s;
@@ -18011,16 +18029,17 @@ list_one_var(v, prefix)
 
     s = echo_string(&v->di_tv, &tofree, numbuf, ++current_copyID);
     list_one_var_a(prefix, v->di_key, v->di_tv.v_type,
-						s == NULL ? (char_u *)"" : s);
+					 s == NULL ? (char_u *)"" : s, first);
     vim_free(tofree);
 }
 
     static void
-list_one_var_a(prefix, name, type, string)
+list_one_var_a(prefix, name, type, string, first)
     char_u	*prefix;
     char_u	*name;
     int		type;
     char_u	*string;
+    int		*first;  /* when TRUE clear rest of screen and set to FALSE */
 {
     /* don't use msg() or msg_attr() to avoid overwriting "v:statusmsg" */
     msg_start();
@@ -18052,6 +18071,11 @@ list_one_var_a(prefix, name, type, string)
 
     if (type == VAR_FUNC)
 	msg_puts((char_u *)"()");
+    if (*first)
+    {
+	msg_clr_eos();
+	*first = FALSE;
+    }
 }
 
 /*
