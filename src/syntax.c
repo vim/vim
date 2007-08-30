@@ -5987,8 +5987,8 @@ syntax_present(buf)
 {
     return (buf->b_syn_patterns.ga_len != 0
 	    || buf->b_syn_clusters.ga_len != 0
-	    || curbuf->b_keywtab.ht_used > 0
-	    || curbuf->b_keywtab_ic.ht_used > 0);
+	    || buf->b_keywtab.ht_used > 0
+	    || buf->b_keywtab_ic.ht_used > 0);
 }
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
