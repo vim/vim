@@ -3149,7 +3149,7 @@ gui_mch_set_winpos(int x, int y)
     /* TODO:  Should make sure the window is move within range
      *	      e.g.: y > ~16 [Menu bar], x > 0, x < screen width
      */
-    MoveWindowStructure(gui.VimWindow, x, y, TRUE);
+    MoveWindowStructure(gui.VimWindow, x, y);
 }
 
     void
@@ -5293,7 +5293,7 @@ gui_mch_dialog(
     short	itemType;
     short	useIcon;
     short	width;
-    short	totalButtonWidth = 0;   /* the width of all button together
+    short	totalButtonWidth = 0;   /* the width of all buttons together
 					   including spacing */
     short	widestButton = 0;
     short	dfltButtonEdge     = 20;  /* gut feeling */
@@ -5483,7 +5483,7 @@ gui_mch_dialog(
     {
 
 	macMoveDialogItem(theDialog, button, buttonItm.box.left, buttonItm.box.top, &box);
-	/* With vertical, it's better to have all button the same lenght */
+	/* With vertical, it's better to have all buttons the same length */
 	if (vertical)
 	{
 	    macSizeDialogItem(theDialog, button, widestButton, 0);
