@@ -801,7 +801,7 @@ EXTERN int (*mb_char2len) __ARGS((int c)) INIT(= latin_char2len);
 EXTERN int (*mb_char2bytes) __ARGS((int c, char_u *buf)) INIT(= latin_char2bytes);
 EXTERN int (*mb_ptr2cells) __ARGS((char_u *p)) INIT(= latin_ptr2cells);
 EXTERN int (*mb_char2cells) __ARGS((int c)) INIT(= latin_char2cells);
-EXTERN int (*mb_off2cells) __ARGS((unsigned off)) INIT(= latin_off2cells);
+EXTERN int (*mb_off2cells) __ARGS((unsigned off, unsigned max_off)) INIT(= latin_off2cells);
 EXTERN int (*mb_ptr2char) __ARGS((char_u *p)) INIT(= latin_ptr2char);
 EXTERN int (*mb_head_off) __ARGS((char_u *base, char_u *p)) INIT(= latin_head_off);
 

@@ -1310,20 +1310,26 @@ dbcs_char2cells(c)
 /*
  * mb_off2cells() function pointer.
  * Return number of display cells for char at ScreenLines[off].
- * Caller must make sure "off" and "off + 1" are valid!
+ * We make sure that the offset used is less than "max_off".
  */
 /*ARGSUSED*/
     int
-latin_off2cells(off)
+latin_off2cells(off, max_off)
     unsigned	off;
+    unsigned	max_off;
 {
     return 1;
 }
 
     int
-dbcs_off2cells(off)
+dbcs_off2cells(off, max_off)
     unsigned	off;
+    unsigned	max_off;
 {
+    /* never check beyond end of the line */
+    if (off >= max_off)
+	return 1;
+
     /* Number of cells is equal to number of bytes, except for euc-jp when
      * the first byte is 0x8e. */
     if (enc_dbcs == DBCS_JPNU && ScreenLines[off] == 0x8e)
@@ -1332,10 +1338,11 @@ dbcs_off2cells(off)
 }
 
     int
-utf_off2cells(off)
+utf_off2cells(off, max_off)
     unsigned	off;
+    unsigned	max_off;
 {
-    return ScreenLines[off + 1] == 0 ? 2 : 1;
+    return (off + 1 < max_off && ScreenLines[off + 1] == 0) ? 2 : 1;
 }
 
 /*
@@ -2899,12 +2906,8 @@ mb_lefthalve(row, col)
     if (composing_hangul)
 	return TRUE;
 #endif
-    if (enc_dbcs != 0)
-	return dbcs_off2cells(LineOffset[row] + col) > 1;
-    if (enc_utf8)
-	return (col + 1 < Columns
-		&& ScreenLines[LineOffset[row] + col + 1] == 0);
-    return FALSE;
+    return (*mb_off2cells)(LineOffset[row] + col,
+					LineOffset[row] + screen_Columns) > 1;
 }
 
 # if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \

@@ -1024,7 +1024,7 @@ win_update(wp)
 	    type = VALID;
     }
 
-    /* Trick: we want to avoid clearning the screen twice.  screenclear() will
+    /* Trick: we want to avoid clearing the screen twice.  screenclear() will
      * set "screen_cleared" to TRUE.  The special value MAYBE (which is still
      * non-zero and thus not FALSE) will indicate that screenclear() was not
      * called. */
@@ -4632,7 +4632,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 	/*
 	 * At end of screen line and there is more to come: Display the line
-	 * so far.  If there is no more to display it is catched above.
+	 * so far.  If there is no more to display it is caught above.
 	 */
 	if ((
 #ifdef FEAT_RIGHTLEFT
@@ -4709,9 +4709,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 #ifdef FEAT_MBYTE
 			 && !(has_mbyte
-			     && ((*mb_off2cells)(LineOffset[screen_row]) == 2
+			     && ((*mb_off2cells)(LineOffset[screen_row],
+				     LineOffset[screen_row] + screen_Columns)
+									  == 2
 				 || (*mb_off2cells)(LineOffset[screen_row - 1]
-							+ (int)Columns - 2) == 2))
+							+ (int)Columns - 2,
+				     LineOffset[screen_row] + screen_Columns)
+									== 2))
 #endif
 		   )
 		{
@@ -4871,6 +4875,10 @@ screen_line(row, coloff, endcol, clear_width
 {
     unsigned	    off_from;
     unsigned	    off_to;
+#ifdef FEAT_MBYTE
+    unsigned	    max_off_from;
+    unsigned	    max_off_to;
+#endif
     int		    col = 0;
 #if defined(FEAT_GUI) || defined(UNIX) || defined(FEAT_VERTSPLIT)
     int		    hl;
@@ -4897,6 +4905,10 @@ screen_line(row, coloff, endcol, clear_width
 
     off_from = (unsigned)(current_ScreenLine - ScreenLines);
     off_to = LineOffset[row] + coloff;
+#ifdef FEAT_MBYTE
+    max_off_from = off_from + screen_Columns;
+    max_off_to = LineOffset[row] + screen_Columns;
+#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (rlflag)
@@ -4931,7 +4943,7 @@ screen_line(row, coloff, endcol, clear_width
     {
 #ifdef FEAT_MBYTE
 	if (has_mbyte && (col + 1 < endcol))
-	    char_cells = (*mb_off2cells)(off_from);
+	    char_cells = (*mb_off2cells)(off_from, max_off_from);
 	else
 	    char_cells = 1;
 #endif
@@ -5008,7 +5020,7 @@ screen_line(row, coloff, endcol, clear_width
 		 * ScreenLinesUC[] is sufficient. */
 		if (char_cells == 1
 			&& col + 1 < endcol
-			&& (*mb_off2cells)(off_to) > 1)
+			&& (*mb_off2cells)(off_to, max_off_to) > 1)
 		{
 		    /* Writing a single-cell character over a double-cell
 		     * character: need to redraw the next cell. */
@@ -5017,8 +5029,8 @@ screen_line(row, coloff, endcol, clear_width
 		}
 		else if (char_cells == 2
 			&& col + 2 < endcol
-			&& (*mb_off2cells)(off_to) == 1
-			&& (*mb_off2cells)(off_to + 1) > 1)
+			&& (*mb_off2cells)(off_to, max_off_to) == 1
+			&& (*mb_off2cells)(off_to + 1, max_off_to) > 1)
 		{
 		    /* Writing the second half of a double-cell character over
 		     * a double-cell character: need to redraw the second
@@ -5037,10 +5049,10 @@ screen_line(row, coloff, endcol, clear_width
 	     * char over the left halve of an existing one. */
 	    if (has_mbyte && col + char_cells == endcol
 		    && ((char_cells == 1
-			    && (*mb_off2cells)(off_to) > 1)
+			    && (*mb_off2cells)(off_to, max_off_to) > 1)
 			|| (char_cells == 2
-			    && (*mb_off2cells)(off_to) == 1
-			    && (*mb_off2cells)(off_to + 1) > 1)))
+			    && (*mb_off2cells)(off_to, max_off_to) == 1
+			    && (*mb_off2cells)(off_to + 1, max_off_to) > 1)))
 		clear_next = TRUE;
 #endif
 
@@ -5180,10 +5192,11 @@ screen_line(row, coloff, endcol, clear_width
 			/* find previous character by counting from first
 			 * column and get its width. */
 			unsigned off = LineOffset[row];
+			unsigned max_off = LineOffset[row] + screen_Columns;
 
 			while (off < off_to)
 			{
-			    prev_cells = (*mb_off2cells)(off);
+			    prev_cells = (*mb_off2cells)(off, max_off);
 			    off += prev_cells;
 			}
 		    }
@@ -5369,7 +5382,7 @@ static int status_match_len __ARGS((expand_T *xp, char_u *s));
 static int skip_status_match_char __ARGS((expand_T *xp, char_u *s));
 
 /*
- * Get the lenght of an item as it will be shown in the status line.
+ * Get the length of an item as it will be shown in the status line.
  */
     static int
 status_match_len(xp, s)
@@ -5435,7 +5448,7 @@ win_redr_status_matches(xp, num_matches, matches, match, showtail)
     int		row;
     char_u	*buf;
     int		len;
-    int		clen;		/* lenght in screen cells */
+    int		clen;		/* length in screen cells */
     int		fillchar;
     int		attr;
     int		i;
@@ -6187,6 +6200,7 @@ screen_puts_len(text, len, row, col, attr)
     char_u	*ptr = text;
     int		c;
 #ifdef FEAT_MBYTE
+    unsigned	max_off;
     int		mbyte_blen = 1;
     int		mbyte_cells = 1;
     int		u8c = 0;
@@ -6203,6 +6217,9 @@ screen_puts_len(text, len, row, col, attr)
 	return;
 
     off = LineOffset[row] + col;
+#ifdef FEAT_MBYTE
+    max_off = LineOffset[row] + screen_Columns;
+#endif
     while (col < screen_Columns
 	    && (len < 0 || (int)(ptr - text) < len)
 	    && *ptr != NUL)
@@ -6326,19 +6343,19 @@ screen_puts_len(text, len, row, col, attr)
 	    else if (has_mbyte
 		    && (len < 0 ? ptr[mbyte_blen] == NUL
 					     : ptr + mbyte_blen >= text + len)
-		    && ((mbyte_cells == 1 && (*mb_off2cells)(off) > 1)
+		    && ((mbyte_cells == 1 && (*mb_off2cells)(off, max_off) > 1)
 			|| (mbyte_cells == 2
-			    && (*mb_off2cells)(off) == 1
-			    && (*mb_off2cells)(off + 1) > 1)))
+			    && (*mb_off2cells)(off, max_off) == 1
+			    && (*mb_off2cells)(off + 1, max_off) > 1)))
 		clear_next_cell = TRUE;
 
 	    /* Make sure we never leave a second byte of a double-byte behind,
 	     * it confuses mb_off2cells(). */
 	    if (enc_dbcs
-		    && ((mbyte_cells == 1 && (*mb_off2cells)(off) > 1)
+		    && ((mbyte_cells == 1 && (*mb_off2cells)(off, max_off) > 1)
 			|| (mbyte_cells == 2
-			    && (*mb_off2cells)(off) == 1
-			    && (*mb_off2cells)(off + 1) > 1)))
+			    && (*mb_off2cells)(off, max_off) == 1
+			    && (*mb_off2cells)(off + 1, max_off) > 1)))
 		ScreenLines[off + mbyte_blen] = 0;
 #endif
 	    ScreenLines[off] = c;
@@ -6924,6 +6941,9 @@ screen_draw_rectangle(row, col, height, width, invert)
 {
     int		r, c;
     int		off;
+#ifdef FEAT_MBYTE
+    int		max_off;
+#endif
 
     /* Can't use ScreenLines unless initialized */
     if (ScreenLines == NULL)
@@ -6934,10 +6954,13 @@ screen_draw_rectangle(row, col, height, width, invert)
     for (r = row; r < row + height; ++r)
     {
 	off = LineOffset[r];
+#ifdef FEAT_MBYTE
+	max_off = off + screen_Columns;
+#endif
 	for (c = col; c < col + width; ++c)
 	{
 #ifdef FEAT_MBYTE
-	    if (enc_dbcs != 0 && dbcs_off2cells(off + c) > 1)
+	    if (enc_dbcs != 0 && dbcs_off2cells(off + c, max_off) > 1)
 	    {
 		screen_char_2(off + c, r, c);
 		++c;
@@ -6947,7 +6970,7 @@ screen_draw_rectangle(row, col, height, width, invert)
 	    {
 		screen_char(off + c, r, c);
 #ifdef FEAT_MBYTE
-		if (utf_off2cells(off + c) > 1)
+		if (utf_off2cells(off + c, max_off) > 1)
 		    ++c;
 #endif
 	    }

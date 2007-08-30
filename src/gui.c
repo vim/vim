@@ -1080,7 +1080,8 @@ gui_update_cursor(force, clear_selection)
 		cur_width = gui.char_width;
 	    }
 #ifdef FEAT_MBYTE
-	    if (has_mbyte && (*mb_off2cells)(LineOffset[gui.row] + gui.col) > 1)
+	    if (has_mbyte && (*mb_off2cells)(LineOffset[gui.row] + gui.col,
+				    LineOffset[gui.row] + screen_Columns) > 1)
 	    {
 		/* Double wide character. */
 		if (shape_table[idx].shape != SHAPE_VER)
@@ -1159,7 +1160,7 @@ gui_position_components(total_width)
 #endif
 
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
- 	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_MAC))
+	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_MAC))
     if (gui_has_tabline())
 	text_area_y += gui.tabline_height;
 #endif
