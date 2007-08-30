@@ -3149,7 +3149,7 @@ gui_mch_set_winpos(int x, int y)
     /* TODO:  Should make sure the window is move within range
      *	      e.g.: y > ~16 [Menu bar], x > 0, x < screen width
      */
-    MoveWindow(gui.VimWindow, x, y, TRUE);
+    MoveWindowStructure(gui.VimWindow, x, y, TRUE);
 }
 
     void
@@ -5556,7 +5556,7 @@ gui_mch_dialog(
  * SetDialogTracksCursor() : Get the I-beam cursor over input box
  * MoveDialogItem():	    Probably better than SetDialogItem
  * SizeDialogItem():		(but is it Carbon Only?)
- * AutoSizeDialog():	    Magic resize of dialog based on text lenght
+ * AutoSizeDialog():	    Magic resize of dialog based on text length
  */
 }
 #endif /* FEAT_DIALOG_GUI */
