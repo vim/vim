@@ -4519,7 +4519,18 @@ gui_focus_change(in_focus)
     xim_set_focus(in_focus);
 # endif
 
-    ui_focus_change(in_focus);
+    /* Put events in the input queue only when allowed.
+     * ui_focus_change() isn't called directly, because it invokes
+     * autocommands and that must not happen asynchronously. */
+    if (!hold_gui_events)
+    {
+	char_u  bytes[3];
+
+	bytes[0] = CSI;
+	bytes[1] = KS_EXTRA;
+	bytes[2] = in_focus ? (int)KE_FOCUSGAINED : (int)KE_FOCUSLOST;
+	add_to_input_buf(bytes, 3);
+    }
 #endif
 }
 

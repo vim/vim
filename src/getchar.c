@@ -1596,8 +1596,15 @@ vgetc()
 		continue;
 	    }
 #endif
-
 #ifdef FEAT_GUI
+	    /* The caller doesn't need to know that the focus event is delayed
+	     * until getting a character. */
+	    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
+	    {
+		ui_focus_change(c == K_FOCUSGAINED);
+		continue;
+	    }
+
 	    /* Translate K_CSI to CSI.  The special key is only used to avoid
 	     * it being recognized as the start of a special key. */
 	    if (c == K_CSI)

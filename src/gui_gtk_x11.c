@@ -813,9 +813,14 @@ focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
 
-    /* make sure keyboard input goes to the draw area (if this is focus for a window) */
+    /* make sure keyboard input goes to the draw area (if this is focus for a
+     * window) */
     if (widget != gui.drawarea)
 	gtk_widget_grab_focus(gui.drawarea);
+
+    /* make sure the input buffer is read */
+    if (gtk_main_level() > 0)
+	gtk_main_quit();
 
     return TRUE;
 }
@@ -828,6 +833,10 @@ focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
 
     if (blink_state != BLINK_NONE)
 	gui_mch_stop_blink();
+
+    /* make sure the input buffer is read */
+    if (gtk_main_level() > 0)
+	gtk_main_quit();
 
     return TRUE;
 }

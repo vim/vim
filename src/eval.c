@@ -9912,18 +9912,24 @@ f_getchar(argvars, rettv)
 
     ++no_mapping;
     ++allow_keys;
-    if (argvars[0].v_type == VAR_UNKNOWN)
-	/* getchar(): blocking wait. */
-	n = safe_vgetc();
-    else if (get_tv_number_chk(&argvars[0], &error) == 1)
-	/* getchar(1): only check if char avail */
-	n = vpeekc();
-    else if (error || vpeekc() == NUL)
-	/* illegal argument or getchar(0) and no char avail: return zero */
-	n = 0;
-    else
-	/* getchar(0) and char avail: return char */
-	n = safe_vgetc();
+    for (;;)
+    {
+	if (argvars[0].v_type == VAR_UNKNOWN)
+	    /* getchar(): blocking wait. */
+	    n = safe_vgetc();
+	else if (get_tv_number_chk(&argvars[0], &error) == 1)
+	    /* getchar(1): only check if char avail */
+	    n = vpeekc();
+	else if (error || vpeekc() == NUL)
+	    /* illegal argument or getchar(0) and no char avail: return zero */
+	    n = 0;
+	else
+	    /* getchar(0) and char avail: return char */
+	    n = safe_vgetc();
+	if (n == K_IGNORE)
+	    continue;
+	break;
+    }
     --no_mapping;
     --allow_keys;
 
