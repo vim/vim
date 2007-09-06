@@ -944,6 +944,7 @@ wait_return(redraw)
 		c = K_IGNORE;
 	    }
 #endif
+
 	    /*
 	     * Allow scrolling back in the messages.
 	     * Also accept scroll-down commands when messages fill the screen,
@@ -1840,6 +1841,7 @@ msg_puts_display(str, maxlen, attr, recurse)
     char_u	*sb_str = str;
     int		sb_col = msg_col;
     int		wrap;
+    int		did_last_char;
 
     did_wait_return = FALSE;
     while ((maxlen < 0 || (int)(s - str) < maxlen) && *s != NUL)
@@ -1909,7 +1911,10 @@ msg_puts_display(str, maxlen, attr, recurse)
 		else
 #endif
 		    msg_screen_putchar(*s++, attr);
+		did_last_char = TRUE;
 	    }
+	    else
+		did_last_char = FALSE;
 
 	    if (p_more)
 		/* store text for scrolling back */
@@ -1944,11 +1949,7 @@ msg_puts_display(str, maxlen, attr, recurse)
 
 	    /* When we displayed a char in last column need to check if there
 	     * is still more. */
-	    if (*s >= ' '
-#ifdef FEAT_RIGHTLEFT
-		    && !cmdmsg_rl
-#endif
-	       )
+	    if (did_last_char)
 		continue;
 	}
 
