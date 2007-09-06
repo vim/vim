@@ -427,6 +427,8 @@ struct vimoption
 #define P_NOGLOB       0x100000L/* do not use local value for global vimrc */
 #define P_NFNAME       0x200000L/* only normal file name chars allowed */
 #define P_INSECURE     0x400000L/* option was set from a modeline */
+#define P_PRI_MKRC     0x800000L/* priority for :mkvimrc (setting option has
+				   side effects) */
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
@@ -773,6 +775,8 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
+			    /* P_PRI_MKRC isn't needed here, optval_default()
+			     * always returns TRUE for 'compatible' */
     {"compatible",  "cp",   P_BOOL|P_RALL,
 			    (char_u *)&p_cp, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)FALSE}},
@@ -1515,7 +1519,7 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    },
-    {"keymap",	    "kmp",  P_STRING|P_ALLOCED|P_VI_DEF|P_RBUF|P_RSTAT|P_NFNAME,
+    {"keymap",	    "kmp",  P_STRING|P_ALLOCED|P_VI_DEF|P_RBUF|P_RSTAT|P_NFNAME|P_PRI_MKRC,
 #ifdef FEAT_KEYMAP
 			    (char_u *)&p_keymap, PV_KMAP,
 			    {(char_u *)"", (char_u *)0L}
@@ -1836,7 +1840,7 @@ static struct vimoption
     {"paragraphs",  "para", P_STRING|P_VI_DEF,
 			    (char_u *)&p_para, PV_NONE,
 			    {(char_u *)"IPLPPPQPP LIpplpipbp", (char_u *)0L}},
-    {"paste",	    NULL,   P_BOOL|P_VI_DEF,
+    {"paste",	    NULL,   P_BOOL|P_VI_DEF|P_PRI_MKRC,
 			    (char_u *)&p_paste, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
     {"pastetoggle", "pt",   P_STRING|P_VI_DEF,
@@ -8535,13 +8539,20 @@ makeset(fd, opt_flags, local_only)
     char_u		*varp_local = NULL;	/* fresh value */
     char		*cmd;
     int			round;
+    int			pri;
 
     /*
      * The options that don't have a default (terminal name, columns, lines)
      * are never written.  Terminal options are also not written.
+     * Do the loop over "options[]" twice: once for options with the
+     * P_PRI_MKRC flag and once without.
      */
-    for (p = &options[0]; !istermoption(p); p++)
-	if (!(p->flags & P_NO_MKRC) && !istermoption(p))
+    for (pri = 1; pri >= 0; --pri)
+    {
+      for (p = &options[0]; !istermoption(p); p++)
+	if (!(p->flags & P_NO_MKRC)
+		&& !istermoption(p)
+		&& ((pri == 1) == ((p->flags & P_PRI_MKRC) != 0)))
 	{
 	    /* skip global option when only doing locals */
 	    if (p->indir == PV_NONE && !(opt_flags & OPT_GLOBAL))
@@ -8637,6 +8648,7 @@ makeset(fd, opt_flags, local_only)
 		}
 	    }
 	}
+    }
     return OK;
 }
 
