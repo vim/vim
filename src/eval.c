@@ -19371,6 +19371,28 @@ trans_function_name(pp, skip, flags, fdp)
 	goto theend;
     }
 
+    /* Check if the name is a Funcref.  If so, use the value. */
+    if (lv.ll_exp_name != NULL)
+    {
+	len = (int)STRLEN(lv.ll_exp_name);
+	name = deref_func_name(lv.ll_exp_name, &len);
+	if (name == lv.ll_exp_name)
+	    name = NULL;
+    }
+    else
+    {
+	len = (int)(end - *pp);
+	name = deref_func_name(*pp, &len);
+	if (name == *pp)
+	    name = NULL;
+    }
+    if (name != NULL)
+    {
+	name = vim_strsave(name);
+	*pp = end;
+	goto theend;
+    }
+
     if (lv.ll_exp_name != NULL)
     {
 	len = (int)STRLEN(lv.ll_exp_name);
