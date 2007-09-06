@@ -24,11 +24,6 @@
     /* not UNIX, must be WIN32 */
 # include "vimio.h"
 # include <fcntl.h>
-# include <process.h>
-# define STDIN_FILENO    0
-# define STDOUT_FILENO   1
-# define STDERR_FILENO   2
-# define pipe(fds) _pipe(fds, 256, O_TEXT|O_NOINHERIT)
 #endif
 #include "if_cscope.h"
 
@@ -65,7 +60,7 @@ static char *	    cs_manage_matches __ARGS((char **, char **, int, mcmd_e));
 static char *	    cs_parse_results __ARGS((int cnumber, char *buf, int bufsize, char **context, char **linenumber, char **search));
 static char *	    cs_pathcomponents __ARGS((char *path));
 static void	    cs_print_tags_priv __ARGS((char **, char **, int));
-static int	    cs_read_prompt __ARGS((int ));
+static int	    cs_read_prompt __ARGS((int));
 static void	    cs_release_csp __ARGS((int, int freefnpp));
 static int	    cs_reset __ARGS((exarg_T *eap));
 static char *	    cs_resolve_file __ARGS((int, char *));
@@ -504,7 +499,7 @@ staterr:
 #if defined(UNIX)
     else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode))
 #else
-	/* substitute define S_ISREG from os_unix.h */
+	/* WIN32 - substitute define S_ISREG from os_unix.h */
     else if (((statbuf.st_mode) & S_IFMT) == S_IFREG)
 #endif
     {
@@ -717,17 +712,23 @@ cs_create_cmd(csoption, pattern)
 cs_create_connection(i)
     int i;
 {
-    int to_cs[2], from_cs[2], len;
-    char *prog, *cmd, *ppath = NULL;
-#ifndef UNIX
-    int in_save, out_save, err_save;
-    long_i ph;
-# ifdef FEAT_GUI
-    HWND activewnd = NULL;
-    HWND consolewnd = NULL;
-# endif
+#ifdef UNIX
+    int		to_cs[2], from_cs[2];
+#endif
+    int		len;
+    char	*prog, *cmd, *ppath = NULL;
+#ifdef WIN32
+    int		fd;
+    SECURITY_ATTRIBUTES sa;
+    PROCESS_INFORMATION pi;
+    STARTUPINFO si;
+    BOOL	pipe_stdin = FALSE, pipe_stdout = FALSE;
+    HANDLE	stdin_rd, stdout_rd;
+    HANDLE	stdout_wr, stdin_wr;
+    BOOL	created;
 #endif
 
+#if defined(UNIX)
     /*
      * Cscope reads from to_cs[0] and writes to from_cs[1]; vi reads from
      * from_cs[0] and writes to to_cs[1].
@@ -748,18 +749,12 @@ err_closing:
 	return CSCOPE_FAILURE;
     }
 
-#if defined(UNIX)
     switch (csinfo[i].pid = fork())
     {
     case -1:
 	(void)EMSG(_("E622: Could not fork for cscope"));
 	goto err_closing;
     case 0:				/* child: run cscope. */
-#else
-	in_save = dup(STDIN_FILENO);
-	out_save = dup(STDOUT_FILENO);
-	err_save = dup(STDERR_FILENO);
-#endif
 	if (dup2(to_cs[0], STDIN_FILENO) == -1)
 	    PERROR("cs_create_connection 1");
 	if (dup2(from_cs[1], STDOUT_FILENO) == -1)
@@ -768,15 +763,32 @@ err_closing:
 	    PERROR("cs_create_connection 3");
 
 	/* close unused */
-#if defined(UNIX)
 	(void)close(to_cs[1]);
 	(void)close(from_cs[0]);
 #else
-	/* On win32 we must close opposite ends because we are the parent */
-	(void)close(to_cs[0]);
-	to_cs[0] = -1;
-	(void)close(from_cs[1]);
-	from_cs[1] = -1;
+	/* WIN32 */
+	/* Create pipes to communicate with cscope */
+	sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+	sa.bInheritHandle = TRUE;
+	sa.lpSecurityDescriptor = NULL;
+
+	if (!(pipe_stdin = CreatePipe(&stdin_rd, &stdin_wr, &sa, 0))
+		|| !(pipe_stdout = CreatePipe(&stdout_rd, &stdout_wr, &sa, 0)))
+	{
+	    (void)EMSG(_("E566: Could not create cscope pipes"));
+err_closing:
+	    if (pipe_stdin)
+	    {
+		CloseHandle(stdin_rd);
+		CloseHandle(stdin_wr);
+	    }
+	    if (pipe_stdout)
+	    {
+		CloseHandle(stdout_rd);
+		CloseHandle(stdout_wr);
+	    }
+	    return CSCOPE_FAILURE;
+	}
 #endif
 	/* expand the cscope exec for env var's */
 	if ((prog = (char *)alloc(MAXPATHL + 1)) == NULL)
@@ -784,6 +796,7 @@ err_closing:
 #ifdef UNIX
 	    return CSCOPE_FAILURE;
 #else
+	    /* WIN32 */
 	    goto err_closing;
 #endif
 	}
@@ -800,6 +813,7 @@ err_closing:
 #ifdef UNIX
 		return CSCOPE_FAILURE;
 #else
+		/* WIN32 */
 		goto err_closing;
 #endif
 	    }
@@ -818,6 +832,7 @@ err_closing:
 #ifdef UNIX
 	    return CSCOPE_FAILURE;
 #else
+	    /* WIN32 */
 	    goto err_closing;
 #endif
 	}
@@ -826,6 +841,7 @@ err_closing:
 #if defined(UNIX)
 	(void)sprintf(cmd, "exec %s -dl -f %s", prog, csinfo[i].fname);
 #else
+	/* WIN32 */
 	(void)sprintf(cmd, "%s -dl -f %s", prog, csinfo[i].fname);
 #endif
 	if (csinfo[i].ppath != NULL)
@@ -851,60 +867,6 @@ err_closing:
 	exit(127);
 	/* NOTREACHED */
     default:	/* parent. */
-#else
-# ifdef FEAT_GUI
-	activewnd = GetForegroundWindow(); /* on win9x cscope steals focus */
-	/* Dirty hack to hide annoying console window */
-	if (AllocConsole())
-	{
-	    char *title;
-	    title = (char *)alloc(1024);
-	    if (title == NULL)
-		FreeConsole();
-	    else
-	    {
-		GetConsoleTitle(title, 1024); /* save for future restore */
-		SetConsoleTitle(
-		    "GVIMCS{5499421B-CBEF-45b0-85EF-38167FDEA5C5}GVIMCS");
-		Sleep(40); /* as stated in MS KB we must wait 40 ms */
-		consolewnd = FindWindow(NULL,
-			"GVIMCS{5499421B-CBEF-45b0-85EF-38167FDEA5C5}GVIMCS");
-		if (consolewnd != NULL)
-		    ShowWindow(consolewnd, SW_HIDE);
-		SetConsoleTitle(title);
-		vim_free(title);
-	    }
-	}
-# endif
-	/* May be use &shell, &shellquote etc */
-# ifdef __BORLANDC__
-	/* BCC 5.5 uses a different function name for spawnlp */
-	ph = (long_i)spawnlp(P_NOWAIT, prog, cmd, NULL);
-# else
-	ph = (long_i)_spawnlp(_P_NOWAIT, prog, cmd, NULL);
-# endif
-	vim_free(prog);
-	vim_free(cmd);
-# ifdef FEAT_GUI
-	/* Dirty hack part two */
-	if (activewnd != NULL)
-	    /* restoring focus */
-	    SetForegroundWindow(activewnd);
-	if (consolewnd != NULL)
-	    FreeConsole();
-
-# endif
-	if (ph == -1)
-	{
-	    PERROR(_("cs_create_connection exec failed"));
-	    (void)EMSG(_("E623: Could not spawn cscope process"));
-	    goto err_closing;
-	}
-	/* else */
-	csinfo[i].pid = 0;
-	csinfo[i].hProc = (HANDLE)ph;
-
-#endif /* !UNIX */
 	/*
 	 * Save the file descriptors for later duplication, and
 	 * reopen as streams.
@@ -914,22 +876,52 @@ err_closing:
 	if ((csinfo[i].fr_fp = fdopen(from_cs[0], "r")) == NULL)
 	    PERROR(_("cs_create_connection: fdopen for fr_fp failed"));
 
-#if defined(UNIX)
 	/* close unused */
 	(void)close(to_cs[0]);
 	(void)close(from_cs[1]);
 
 	break;
     }
+
 #else
-	/* restore stdhandles */
-    dup2(in_save, STDIN_FILENO);
-    dup2(out_save, STDOUT_FILENO);
-    dup2(err_save, STDERR_FILENO);
-    close(in_save);
-    close(out_save);
-    close(err_save);
-#endif
+    /* WIN32 */
+    /* Create a new process to run cscope and use pipes to talk with it */
+    GetStartupInfo(&si);
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+    si.wShowWindow = SW_HIDE;  /* Hide child application window */
+    si.hStdOutput = stdout_wr;
+    si.hStdError  = stdout_wr;
+    si.hStdInput  = stdin_rd;
+    created = CreateProcess(NULL, cmd, NULL, NULL, TRUE, CREATE_NEW_CONSOLE,
+							NULL, NULL, &si, &pi);
+    vim_free(prog);
+    vim_free(cmd);
+
+    if (!created)
+    {
+	PERROR(_("cs_create_connection exec failed"));
+	(void)EMSG(_("E623: Could not spawn cscope process"));
+	goto err_closing;
+    }
+    /* else */
+    csinfo[i].pid = pi.dwProcessId;
+    csinfo[i].hProc = pi.hProcess;
+    CloseHandle(pi.hThread);
+
+    /* TODO - tidy up after failure to create files on pipe handles. */
+    if (((fd = _open_osfhandle((intptr_t)stdin_wr, _O_TEXT|_O_APPEND)) < 0)
+	    || ((csinfo[i].to_fp = _fdopen(fd, "w")) == NULL))
+	PERROR(_("cs_create_connection: fdopen for to_fp failed"));
+    if (((fd = _open_osfhandle((intptr_t)stdout_rd, _O_TEXT|_O_RDONLY)) < 0)
+	    || ((csinfo[i].fr_fp = _fdopen(fd, "r")) == NULL))
+	PERROR(_("cs_create_connection: fdopen for fr_fp failed"));
+
+    /* Close handles for file descriptors inherited by the cscope process */
+    CloseHandle(stdin_rd);
+    CloseHandle(stdout_wr);
+
+#endif /* !UNIX */
+
     return CSCOPE_SUCCESS;
 } /* cs_create_connection */
 
@@ -2097,8 +2089,8 @@ cs_read_prompt(i)
 /*
  * PRIVATE: cs_release_csp
  *
- * does the actual free'ing for the cs ptr with an optional flag of whether
- * or not to free the filename.  called by cs_kill and cs_reset.
+ * Does the actual free'ing for the cs ptr with an optional flag of whether
+ * or not to free the filename.  Called by cs_kill and cs_reset.
  */
     static void
 cs_release_csp(i, freefnpp)
@@ -2116,10 +2108,13 @@ cs_release_csp(i, freefnpp)
 	(void)fputs("q\n", csinfo[i].to_fp);
 	(void)fflush(csinfo[i].to_fp);
     }
-    /* give cscope chance to exit normally */
-    if (csinfo[i].hProc != NULL
-	    && WaitForSingleObject(csinfo[i].hProc, 1000) == WAIT_TIMEOUT)
-	TerminateProcess(csinfo[i].hProc, 0);
+    if (csinfo[i].hProc != NULL)
+    {
+	/* Give cscope a chance to exit normally */
+	if (WaitForSingleObject(csinfo[i].hProc, 1000) == WAIT_TIMEOUT)
+	    TerminateProcess(csinfo[i].hProc, 0);
+	CloseHandle(csinfo[i].hProc);
+    }
 #endif
 
     if (csinfo[i].fr_fp != NULL)
@@ -2301,6 +2296,21 @@ cs_show(eap)
     wait_return(TRUE);
     return CSCOPE_SUCCESS;
 } /* cs_show */
+
+
+/*
+ * PUBLIC: cs_end
+ *
+ * Only called when VIM exits to quit any cscope sessions.
+ */
+    void
+cs_end()
+{
+    int i;
+
+    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	cs_release_csp(i, TRUE);
+}
 
 #endif	/* FEAT_CSCOPE */
 

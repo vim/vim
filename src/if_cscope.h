@@ -72,7 +72,7 @@ typedef struct csi {
     ino_t	    st_ino;	/* inode number of cscope db */
 #else
 # if defined(WIN32)
-    int	    pid;	/* Can't get pid so set it to 0 ;) */
+    DWORD	    pid;	/* PID of the connected cscope process. */
     HANDLE	    hProc;	/* cscope process handle */
     DWORD	    nVolume;	/* Volume serial number, instead of st_dev */
     DWORD	    nIndexHigh;	/* st_ino has no meaning in the Windows */

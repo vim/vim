@@ -1331,6 +1331,9 @@ getout(exitval)
 #ifdef FEAT_NETBEANS_INTG
     netbeans_end();
 #endif
+#ifdef FEAT_CSCOPE
+    cs_end();
+#endif
 
     mch_exit(exitval);
 }
@@ -3671,7 +3674,13 @@ build_drop_cmd(filec, filev, tabs, sendReply)
 	mainerr_arg_missing((char_u *)filev[-1]);
     if (mch_dirname(cwd, MAXPATHL) != OK)
 	return NULL;
-    if ((p = vim_strsave_escaped_ext(cwd, PATH_ESC_CHARS, '\\', TRUE)) == NULL)
+    if ((p = vim_strsave_escaped_ext(cwd,
+#ifdef BACKSLASH_IN_FILENAME
+		    "",  /* rem_backslash() will tell what chars to escape */
+#else
+		    PATH_ESC_CHARS,
+#endif
+		    '\\', TRUE)) == NULL)
 	return NULL;
     ga_init2(&ga, 1, 100);
     ga_concat(&ga, (char_u *)"<C-\\><C-N>:cd ");
