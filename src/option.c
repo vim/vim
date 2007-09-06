@@ -6348,7 +6348,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		errmsg = check_stl_option(p_ruf);
 	}
 	/* check 'statusline' only if it doesn't start with "%!" */
-	else if (varp != &p_stl || s[0] != '%' || s[1] != '!')
+	else if (varp == &p_ruf || s[0] != '%' || s[1] != '!')
 	    errmsg = check_stl_option(s);
 	if (varp == &p_ruf && errmsg == NULL)
 	    comp_col();
