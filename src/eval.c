@@ -6746,20 +6746,24 @@ get_dict_tv(arg, rettv, evaluate)
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
-	key = get_tv_string_buf_chk(&tvkey, buf);
-	if (key == NULL || *key == NUL)
+	if (evaluate)
 	{
-	    /* "key" is NULL when get_tv_string_buf_chk() gave an errmsg */
-	    if (key != NULL)
-		EMSG(_(e_emptykey));
-	    clear_tv(&tvkey);
-	    goto failret;
+	    key = get_tv_string_buf_chk(&tvkey, buf);
+	    if (key == NULL || *key == NUL)
+	    {
+		/* "key" is NULL when get_tv_string_buf_chk() gave an errmsg */
+		if (key != NULL)
+		    EMSG(_(e_emptykey));
+		clear_tv(&tvkey);
+		goto failret;
+	    }
 	}
 
 	*arg = skipwhite(*arg + 1);
 	if (eval1(arg, &tv, evaluate) == FAIL)	/* recursive! */
 	{
-	    clear_tv(&tvkey);
+	    if (evaluate)
+		clear_tv(&tvkey);
 	    goto failret;
 	}
 	if (evaluate)
