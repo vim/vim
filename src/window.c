@@ -584,7 +584,7 @@ wingotofile:
 		++no_mapping;
 		++allow_keys;   /* no mapping for xchar, but allow key codes */
 		if (xchar == NUL)
-		    xchar = safe_vgetc();
+		    xchar = plain_vgetc();
 #ifdef FEAT_LANGMAP
 		LANGMAP_ADJUST(xchar, TRUE);
 #endif

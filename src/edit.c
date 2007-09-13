@@ -788,7 +788,7 @@ edit(cmdchar, startln, count)
 	    ins_redraw(FALSE);
 	    ++no_mapping;
 	    ++allow_keys;
-	    c = safe_vgetc();
+	    c = plain_vgetc();
 	    --no_mapping;
 	    --allow_keys;
 	    if (c != Ctrl_N && c != Ctrl_G && c != Ctrl_O)
@@ -981,7 +981,7 @@ doESCkey:
 #ifdef FEAT_NETBEANS_INTG
 	case K_F21:	/* NetBeans command */
 	    ++no_mapping;		/* don't map the next key hits */
-	    i = safe_vgetc();
+	    i = plain_vgetc();
 	    --no_mapping;
 	    netbeans_keycommand(i);
 	    break;
@@ -5224,10 +5224,7 @@ get_literal()
     i = 0;
     for (;;)
     {
-	do
-	    nc = safe_vgetc();
-	while (nc == K_IGNORE || nc == K_VER_SCROLLBAR
-						    || nc == K_HOR_SCROLLBAR);
+	nc = plain_vgetc();
 #ifdef FEAT_CMDL_INFO
 	if (!(State & CMDLINE)
 # ifdef FEAT_MBYTE
@@ -7575,7 +7572,7 @@ ins_reg()
      * deleted when ESC is hit.
      */
     ++no_mapping;
-    regname = safe_vgetc();
+    regname = plain_vgetc();
 #ifdef FEAT_LANGMAP
     LANGMAP_ADJUST(regname, TRUE);
 #endif
@@ -7586,7 +7583,7 @@ ins_reg()
 #ifdef FEAT_CMDL_INFO
 	add_to_showcmd_c(literally);
 #endif
-	regname = safe_vgetc();
+	regname = plain_vgetc();
 #ifdef FEAT_LANGMAP
 	LANGMAP_ADJUST(regname, TRUE);
 #endif
@@ -7677,7 +7674,7 @@ ins_ctrl_g()
      * deleted when ESC is hit.
      */
     ++no_mapping;
-    c = safe_vgetc();
+    c = plain_vgetc();
     --no_mapping;
     switch (c)
     {
@@ -9356,7 +9353,7 @@ ins_digraph()
      * mode message to be deleted when ESC is hit */
     ++no_mapping;
     ++allow_keys;
-    c = safe_vgetc();
+    c = plain_vgetc();
     --no_mapping;
     --allow_keys;
     if (IS_SPECIAL(c) || mod_mask)	    /* special key */
@@ -9388,7 +9385,7 @@ ins_digraph()
 	}
 	++no_mapping;
 	++allow_keys;
-	cc = safe_vgetc();
+	cc = plain_vgetc();
 	--no_mapping;
 	--allow_keys;
 	if (cc != ESC)

@@ -4498,7 +4498,7 @@ do_sub(eap)
 	     *
 	     * The new text is built up in new_start[].  It has some extra
 	     * room to avoid using alloc()/free() too often.  new_start_len is
-	     * the lenght of the allocated memory at new_start.
+	     * the length of the allocated memory at new_start.
 	     *
 	     * Make a copy of the old line, so it won't be taken away when
 	     * updating the screen or handling a multi-line match.  The "old_"
@@ -4669,7 +4669,7 @@ do_sub(eap)
 #endif
 			    ++no_mapping;	/* don't map this key */
 			    ++allow_keys;	/* allow special keys */
-			    i = safe_vgetc();
+			    i = plain_vgetc();
 			    --allow_keys;
 			    --no_mapping;
 

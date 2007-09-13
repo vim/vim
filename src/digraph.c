@@ -2028,7 +2028,7 @@ get_digraph(cmdline)
 
     ++no_mapping;
     ++allow_keys;
-    c = safe_vgetc();
+    c = plain_vgetc();
     --no_mapping;
     --allow_keys;
     if (c != ESC)		/* ESC cancels CTRL-K */
@@ -2050,7 +2050,7 @@ get_digraph(cmdline)
 #endif
 	++no_mapping;
 	++allow_keys;
-	cc = safe_vgetc();
+	cc = plain_vgetc();
 	--no_mapping;
 	--allow_keys;
 	if (cc != ESC)	    /* ESC cancels CTRL-K */
@@ -2350,7 +2350,7 @@ keymap_init()
     if (*curbuf->b_p_keymap == NUL)
     {
 	/* Stop any active keymap and clear the table.  Also remove
-	 * b:keymap_unload, as no keymap is active now. */
+	 * b:keymap_name, as no keymap is active now. */
 	keymap_unload();
 	do_cmdline_cmd((char_u *)"unlet! b:keymap_name");
     }

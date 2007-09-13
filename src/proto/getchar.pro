@@ -38,6 +38,7 @@ void before_blocking __ARGS((void));
 void updatescript __ARGS((int c));
 int vgetc __ARGS((void));
 int safe_vgetc __ARGS((void));
+int plain_vgetc __ARGS((void));
 int vpeekc __ARGS((void));
 int vpeekc_nomap __ARGS((void));
 int vpeekc_any __ARGS((void));

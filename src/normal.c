@@ -696,7 +696,7 @@ getcount:
 		++allow_keys;		/* no mapping for nchar, but keys */
 	    }
 	    ++no_zero_mapping;		/* don't map zero here */
-	    c = safe_vgetc();
+	    c = plain_vgetc();
 #ifdef FEAT_LANGMAP
 	    LANGMAP_ADJUST(c, TRUE);
 #endif
@@ -721,7 +721,7 @@ getcount:
 	    ca.count0 = 0;
 	    ++no_mapping;
 	    ++allow_keys;		/* no mapping for nchar, but keys */
-	    c = safe_vgetc();		/* get next character */
+	    c = plain_vgetc();		/* get next character */
 #ifdef FEAT_LANGMAP
 	    LANGMAP_ADJUST(c, TRUE);
 #endif
@@ -900,7 +900,7 @@ getcount:
 	     * For 'g' get the next character now, so that we can check for
 	     * "gr", "g'" and "g`".
 	     */
-	    ca.nchar = safe_vgetc();
+	    ca.nchar = plain_vgetc();
 #ifdef FEAT_LANGMAP
 	    LANGMAP_ADJUST(ca.nchar, TRUE);
 #endif
@@ -957,7 +957,7 @@ getcount:
 		im_set_active(TRUE);
 #endif
 
-	    *cp = safe_vgetc();
+	    *cp = plain_vgetc();
 
 	    if (langmap_active)
 	    {
@@ -1045,7 +1045,7 @@ getcount:
 		}
 		if (c > 0)
 		{
-		    c = safe_vgetc();
+		    c = plain_vgetc();
 		    if (c != Ctrl_N && c != Ctrl_G)
 			vungetc(c);
 		    else
@@ -1064,7 +1064,7 @@ getcount:
 	    while (enc_utf8 && lang && (c = vpeekc()) > 0
 				 && (c >= 0x100 || MB_BYTE2LEN(vpeekc()) > 1))
 	    {
-		c = safe_vgetc();
+		c = plain_vgetc();
 		if (!utf_iscomposing(c))
 		{
 		    vungetc(c);		/* it wasn't, put it back */
@@ -4564,7 +4564,7 @@ nv_zet(cap)
 #endif
 	    ++no_mapping;
 	    ++allow_keys;   /* no mapping for nchar, but allow key codes */
-	    nchar = safe_vgetc();
+	    nchar = plain_vgetc();
 #ifdef FEAT_LANGMAP
 	    LANGMAP_ADJUST(nchar, TRUE);
 #endif
@@ -4922,7 +4922,7 @@ dozet:
     case 'u':	/* "zug" and "zuw": undo "zg" and "zw" */
 		++no_mapping;
 		++allow_keys;   /* no mapping for nchar, but allow key codes */
-		nchar = safe_vgetc();
+		nchar = plain_vgetc();
 #ifdef FEAT_LANGMAP
 		LANGMAP_ADJUST(nchar, TRUE);
 #endif

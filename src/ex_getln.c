@@ -641,7 +641,7 @@ getcmdline(firstc, count, indent)
 	{
 	    ++no_mapping;
 	    ++allow_keys;
-	    c = safe_vgetc();
+	    c = plain_vgetc();
 	    --no_mapping;
 	    --allow_keys;
 	    /* CTRL-\ e doesn't work when obtaining an expression. */
@@ -1091,11 +1091,11 @@ getcmdline(firstc, count, indent)
 #endif
 		putcmdline('"', TRUE);
 		++no_mapping;
-		i = c = safe_vgetc();	/* CTRL-R <char> */
+		i = c = plain_vgetc();	/* CTRL-R <char> */
 		if (i == Ctrl_O)
 		    i = Ctrl_R;		/* CTRL-R CTRL-O == CTRL-R CTRL-R */
 		if (i == Ctrl_R)
-		    c = safe_vgetc();	/* CTRL-R CTRL-R <char> */
+		    c = plain_vgetc();	/* CTRL-R CTRL-R <char> */
 		--no_mapping;
 #ifdef FEAT_EVAL
 		/*
