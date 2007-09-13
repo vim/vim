@@ -828,7 +828,7 @@ ex_messages(eap)
 		_("Messages maintainer: Bram Moolenaar <Bram@vim.org>"),
 		hl_attr(HLF_T));
 
-    for (p = first_msg_hist; p != NULL; p = p->next)
+    for (p = first_msg_hist; p != NULL && !got_int; p = p->next)
 	if (p->msg != NULL)
 	    msg_attr(p->msg, p->attr);
 
