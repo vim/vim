@@ -8364,7 +8364,7 @@ nv_wordcmd(cap)
 	n = fwd_word(cap->count1, cap->arg, cap->oap->op_type != OP_NOP);
 
     /* Don't leave the cursor on the NUL past a line */
-    if (curwin->w_cursor.col && gchar_cursor() == NUL)
+    if (n != FAIL && curwin->w_cursor.col > 0 && gchar_cursor() == NUL)
     {
 	--curwin->w_cursor.col;
 	cap->oap->inclusive = TRUE;
