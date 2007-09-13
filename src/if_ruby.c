@@ -789,7 +789,7 @@ static VALUE line_s_current()
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
 
-static VALUE set_current_line(VALUE str)
+static VALUE set_current_line(VALUE self, VALUE str)
 {
     return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
 }
