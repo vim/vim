@@ -40,6 +40,26 @@
 #    define PERL_SUBVERSION SUBVERSION
 #endif
 
+/*
+ * Quoting Jan Dubois of Active State:
+ *    ActivePerl build 822 still identifies itself as 5.8.8 but already
+ *    contains many of the changes from the upcoming Perl 5.8.9 release.
+ *
+ * The changes include addition of two symbols (Perl_sv_2iv_flags,
+ * Perl_newXS_flags) not present in earlier releases.
+ *
+ * Jan Dubois suggested the following guarding scheme:
+ */
+#if (ACTIVEPERL_VERSION >= 822)
+# define PERL589_OR_LATER
+#endif
+#if (PERL_REVISION == 5) && (PERL_VERSION == 8) && (PERL_SUBVERSION >= 9)
+# define PERL589_OR_LATER
+#endif
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 9)
+# define PERL589_OR_LATER
+#endif
+
 #ifndef pTHX
 #    define pTHX void
 #    define pTHX_
@@ -109,6 +129,10 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # else
 #  define Perl_sv_catpvn dll_Perl_sv_catpvn
 # endif
+#ifdef PERL589_OR_LATER
+#  define Perl_sv_2iv_flags dll_Perl_sv_2iv_flags
+#  define Perl_newXS_flags dll_Perl_newXS_flags
+#endif
 # define Perl_sv_free dll_Perl_sv_free
 # define Perl_sv_isa dll_Perl_sv_isa
 # define Perl_sv_magic dll_Perl_sv_magic
@@ -192,6 +216,10 @@ static void (*Perl_sv_catpvn_flags)(pTHX_ SV* , const char*, STRLEN, I32);
 #else
 static void (*Perl_sv_catpvn)(pTHX_ SV*, const char*, STRLEN);
 #endif
+#ifdef PERL589_OR_LATER
+static IV (*Perl_sv_2iv_flags)(pTHX_ SV* sv, I32 flags);
+static CV * (*Perl_newXS_flags)(pTHX_ const char *name, XSUBADDR_t subaddr, const char *const filename, const char *const proto, U32 flags);
+#endif
 static void (*Perl_sv_free)(pTHX_ SV*);
 static int (*Perl_sv_isa)(pTHX_ SV*, const char*);
 static void (*Perl_sv_magic)(pTHX_ SV*, SV*, int, const char*, I32);
@@ -266,6 +294,10 @@ static struct {
     {"Perl_sv_2pv_nolen", (PERL_PROC*)&Perl_sv_2pv_nolen},
 #else
     {"Perl_sv_2pv", (PERL_PROC*)&Perl_sv_2pv},
+#endif
+#ifdef PERL589_OR_LATER
+    {"Perl_sv_2iv_flags", (PERL_PROC*)&Perl_sv_2iv_flags},
+    {"Perl_newXS_flags", (PERL_PROC*)&Perl_newXS_flags},
 #endif
     {"Perl_sv_bless", (PERL_PROC*)&Perl_sv_bless},
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
