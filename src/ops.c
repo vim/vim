@@ -2477,7 +2477,7 @@ op_insert(oap, count1)
 
 	/*
 	 * Spaces and tabs in the indent may have changed to other spaces and
-	 * tabs.  Get the starting column again and correct the lenght.
+	 * tabs.  Get the starting column again and correct the length.
 	 * Don't do this when "$" used, end-of-line will have changed.
 	 */
 	block_prep(oap, &bd2, oap->start.lnum, TRUE);
@@ -2534,7 +2534,9 @@ op_change(oap)
 #ifdef FEAT_VISUALEXTRA
     long		offset;
     linenr_T		linenr;
-    long		ins_len, pre_textlen = 0;
+    long		ins_len;
+    long		pre_textlen = 0;
+    long		pre_indent = 0;
     char_u		*firstline;
     char_u		*ins_text, *newp, *oldp;
     struct block_def	bd;
@@ -2579,7 +2581,9 @@ op_change(oap)
 						    || gchar_cursor() == NUL))
 	    coladvance_force(getviscol());
 # endif
-	pre_textlen = (long)STRLEN(ml_get(oap->start.lnum));
+	firstline = ml_get(oap->start.lnum);
+	pre_textlen = (long)STRLEN(firstline);
+	pre_indent = (long)(skipwhite(firstline) - firstline);
 	bd.textcol = curwin->w_cursor.col;
     }
 #endif
@@ -2598,13 +2602,22 @@ op_change(oap)
      */
     if (oap->block_mode && oap->start.lnum != oap->end.lnum)
     {
+	/* Auto-indenting may have changed the indent.  If the cursor was past
+	 * the indent, exclude that indent change from the inserted text. */
 	firstline = ml_get(oap->start.lnum);
-	/*
-	 * Subsequent calls to ml_get() flush the firstline data - take a
-	 * copy of the required bit.
-	 */
-	if ((ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
+	if (bd.textcol > pre_indent)
 	{
+	    long new_indent = (long)(skipwhite(firstline) - firstline);
+
+	    pre_textlen += new_indent - pre_indent;
+	    bd.textcol += new_indent - pre_indent;
+	}
+
+	ins_len = (long)STRLEN(firstline) - pre_textlen;
+	if (ins_len > 0)
+	{
+	    /* Subsequent calls to ml_get() flush the firstline data - take a
+	     * copy of the inserted text.  */
 	    if ((ins_text = alloc_check((unsigned)(ins_len + 1))) != NULL)
 	    {
 		vim_strncpy(ins_text, firstline + bd.textcol, (size_t)ins_len);
