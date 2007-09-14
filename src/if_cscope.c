@@ -726,6 +726,15 @@ cs_create_connection(i)
     HANDLE	stdin_rd, stdout_rd;
     HANDLE	stdout_wr, stdin_wr;
     BOOL	created;
+# ifdef __BORLANDC__
+#  define OPEN_OH_ARGTYPE long
+# else
+#  if (_MSC_VER >= 1300)
+#   define OPEN_OH_ARGTYPE intptr_t
+#  else
+#   define OPEN_OH_ARGTYPE long
+#  endif
+# endif
 #endif
 
 #if defined(UNIX)
@@ -909,10 +918,12 @@ err_closing:
     CloseHandle(pi.hThread);
 
     /* TODO - tidy up after failure to create files on pipe handles. */
-    if (((fd = _open_osfhandle((intptr_t)stdin_wr, _O_TEXT|_O_APPEND)) < 0)
+    if (((fd = _open_osfhandle((OPEN_OH_ARGTYPE)stdin_wr,
+						      _O_TEXT|_O_APPEND)) < 0)
 	    || ((csinfo[i].to_fp = _fdopen(fd, "w")) == NULL))
 	PERROR(_("cs_create_connection: fdopen for to_fp failed"));
-    if (((fd = _open_osfhandle((intptr_t)stdout_rd, _O_TEXT|_O_RDONLY)) < 0)
+    if (((fd = _open_osfhandle((OPEN_OH_ARGTYPE)stdout_rd,
+						      _O_TEXT|_O_RDONLY)) < 0)
 	    || ((csinfo[i].fr_fp = _fdopen(fd, "r")) == NULL))
 	PERROR(_("cs_create_connection: fdopen for fr_fp failed"));
 
