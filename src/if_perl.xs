@@ -48,13 +48,15 @@
  * The changes include addition of two symbols (Perl_sv_2iv_flags,
  * Perl_newXS_flags) not present in earlier releases.
  *
- * Jan Dubois suggested the following guarding scheme:
+ * Jan Dubois suggested the following guarding scheme.
+ *
+ * Active State defined ACTIVEPERL_VERSION as a string in versions before
+ * 5.8.8; and so the comparison to 822 below needs to be guarded.
  */
-#if (ACTIVEPERL_VERSION >= 822)
-# define PERL589_OR_LATER
-#endif
-#if (PERL_REVISION == 5) && (PERL_VERSION == 8) && (PERL_SUBVERSION >= 9)
-# define PERL589_OR_LATER
+#if (PERL_REVISION == 5) && (PERL_VERSION == 8) && (PERL_SUBVERSION >= 8)
+# if (ACTIVEPERL_VERSION >= 822) || (PERL_SUBVERSION >= 9)
+#  define PERL589_OR_LATER
+# endif
 #endif
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 9)
 # define PERL589_OR_LATER
