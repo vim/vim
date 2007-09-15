@@ -4809,6 +4809,8 @@ check_termcode(max_offset, buf, buflen)
 	    if (num_bytes == -1)
 		return -1;
 	    current_tab = (int)bytes[0];
+	    if (current_tab == 255)	/* -1 in a byte gives 255 */
+		current_tab = -1;
 	    slen += num_bytes;
 	}
 	else if (key_name[0] == (int)KS_TABMENU)

@@ -3223,8 +3223,9 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	{
 	    if (clicked_page == 0)
 	    {
-		/* Click after all tabs moves to next tab page. */
-		if (send_tabline_event(0) && gtk_main_level() > 0)
+		/* Click after all tabs moves to next tab page.  When "x" is
+		 * small guess it's the left button. */
+		if (send_tabline_event(x < 50 ? -1 : 0) && gtk_main_level() > 0)
 		    gtk_main_quit();
 	    }
 #ifndef HAVE_GTK2
