@@ -1612,8 +1612,8 @@ qf_jump(qi, dir, errornr, forceit)
 	}
 
 	/*
-	 * If there is only one window and is the quickfix window, create a new
-	 * one above the quickfix window.
+	 * If there is only one window and it is the quickfix window, create a
+	 * new one above the quickfix window.
 	 */
 	if (((firstwin == lastwin) && bt_quickfix(curbuf)) || !usable_win)
 	{
@@ -2981,6 +2981,7 @@ ex_vimgrep(eap)
     buf_T	*buf;
     int		duplicate_name = FALSE;
     int		using_dummy;
+    int		redraw_for_dummy = FALSE;
     int		found_match;
     buf_T	*first_match_buf = NULL;
     time_t	seconds = 0;
@@ -3097,6 +3098,7 @@ ex_vimgrep(eap)
 	    /* Remember that a buffer with this name already exists. */
 	    duplicate_name = (buf != NULL);
 	    using_dummy = TRUE;
+	    redraw_for_dummy = TRUE;
 
 #if defined(FEAT_AUTOCMD) && defined(FEAT_SYN_HL)
 	    /* Don't do Filetype autocommands to avoid loading syntax and
@@ -3243,10 +3245,28 @@ ex_vimgrep(eap)
     if (qi->qf_lists[qi->qf_curlist].qf_count > 0)
     {
 	if ((flags & VGR_NOJUMP) == 0)
+	{
+	    buf = curbuf;
 	    qf_jump(qi, 0, 0, eap->forceit);
+	    if (buf != curbuf)
+		/* If we jumped to another buffer redrawing will already be
+		 * taken care of. */
+		redraw_for_dummy = FALSE;
+	}
     }
     else
 	EMSG2(_(e_nomatch2), s);
+
+    /* If we loaded a dummy buffer into the current window, the autocommands
+     * may have messed up things, need to redraw and recompute folds. */
+    if (redraw_for_dummy)
+    {
+#ifdef FEAT_FOLDING
+	foldUpdateAll(curwin);
+#else
+	redraw_later(NOT_VALID);
+#endif
+    }
 
 theend:
     vim_free(regmatch.regprog);
