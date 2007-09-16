@@ -11565,14 +11565,12 @@ get_user_input(argvars, rettv, inputdialog)
     char_u	*xp_arg = NULL;
 
     rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
 
 #ifdef NO_CONSOLE_INPUT
     /* While starting up, there is no place to enter text. */
     if (no_console_input())
-    {
-	rettv->vval.v_string = NULL;
 	return;
-    }
 #endif
 
     cmd_silent = FALSE;		/* Want to see the prompt. */
