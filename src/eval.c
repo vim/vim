@@ -1318,7 +1318,6 @@ restore_vimvar(idx, save_tv)
 {
     hashitem_T	*hi;
 
-    clear_tv(&vimvars[idx].vv_tv);
     vimvars[idx].vv_tv = *save_tv;
     if (vimvars[idx].vv_type == VAR_UNKNOWN)
     {
@@ -1362,7 +1361,6 @@ eval_spell_expr(badword, expr)
 
     if (p_verbose == 0)
 	--emsg_off;
-    vimvars[VV_VAL].vv_str = NULL;
     restore_vimvar(VV_VAL, &save_val);
 
     return list;
@@ -9387,15 +9385,16 @@ filter_map_one(tv, expr, map, remp)
 {
     typval_T	rettv;
     char_u	*s;
+    int		retval = FAIL;
 
     copy_tv(tv, &vimvars[VV_VAL].vv_tv);
     s = expr;
     if (eval1(&s, &rettv, TRUE) == FAIL)
-	return FAIL;
+	goto theend;
     if (*s != NUL)  /* check for trailing chars after expr */
     {
 	EMSG2(_(e_invexpr2), s);
-	return FAIL;
+	goto theend;
     }
     if (map)
     {
@@ -9414,10 +9413,12 @@ filter_map_one(tv, expr, map, remp)
 	/* On type error, nothing has been removed; return FAIL to stop the
 	 * loop.  The error message was given by get_tv_number_chk(). */
 	if (error)
-	    return FAIL;
+	    goto theend;
     }
+    retval = OK;
+theend:
     clear_tv(&vimvars[VV_VAL].vv_tv);
-    return OK;
+    return retval;
 }
 
 /*
