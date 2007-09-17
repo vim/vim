@@ -10351,7 +10351,6 @@ f_getmatches(argvars, rettv)
 	    dict = dict_alloc();
 	    if (dict == NULL)
 		return;
-	    ++dict->dv_refcount;
 	    dict_add_nr_str(dict, "group", 0L, syn_id2name(cur->hlg_id));
 	    dict_add_nr_str(dict, "pattern", 0L, cur->pattern);
 	    dict_add_nr_str(dict, "priority", (long)cur->priority, NULL);
