@@ -6704,7 +6704,7 @@ get_dict_tv(arg, rettv, evaluate)
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
-    char_u	*key;
+    char_u	*key = NULL;
     dictitem_T	*item;
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
