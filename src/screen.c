@@ -2305,9 +2305,11 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 			prev_c = u8c;
 #endif
 		    /* Non-BMP character: display as ? or fullwidth ?. */
+#ifdef UNICODE16
 		    if (u8c >= 0x10000)
 			ScreenLinesUC[idx] = (cells == 2) ? 0xff1f : (int)'?';
 		    else
+#endif
 			ScreenLinesUC[idx] = u8c;
 		    for (i = 0; i < Screen_mco; ++i)
 		    {
@@ -3678,13 +3680,18 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    if ((mb_l == 1 && c >= 0x80)
 			    || (mb_l >= 1 && mb_c == 0)
 			    || (mb_l > 1 && (!vim_isprintc(mb_c)
-							 || mb_c >= 0x10000)))
+# ifdef UNICODE16
+							 || mb_c >= 0x10000
+# endif
+							 )))
 		    {
 			/*
 			 * Illegal UTF-8 byte: display as <xx>.
 			 * Non-BMP character : display as ? or fullwidth ?.
 			 */
+# ifdef UNICODE16
 			if (mb_c < 0x10000)
+# endif
 			{
 			    transchar_hex(extra, mb_c);
 # ifdef FEAT_RIGHTLEFT
@@ -3692,11 +3699,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 				rl_mirror(extra);
 # endif
 			}
+# ifdef UNICODE16
 			else if (utf_char2cells(mb_c) != 2)
 			    STRCPY(extra, "?");
 			else
 			    /* 0xff1f in UTF-8: full-width '?' */
 			    STRCPY(extra, "\357\274\237");
+# endif
 
 			p_extra = extra;
 			c = *p_extra;
@@ -6245,6 +6254,7 @@ screen_puts_len(text, len, row, col, attr)
 		else
 		    u8c = utfc_ptr2char(ptr, u8cc);
 		mbyte_cells = utf_char2cells(u8c);
+# ifdef UNICODE16
 		/* Non-BMP character: display as ? or fullwidth ?. */
 		if (u8c >= 0x10000)
 		{
@@ -6252,6 +6262,7 @@ screen_puts_len(text, len, row, col, attr)
 		    if (attr == 0)
 			attr = hl_attr(HLF_8);
 		}
+# endif
 # ifdef FEAT_ARABIC
 		if (p_arshape && !p_tbidi && ARABIC_CHAR(u8c))
 		{
