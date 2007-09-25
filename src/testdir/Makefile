@@ -6,7 +6,7 @@ VIMPROG = ../vim
 
 # Uncomment this line for using valgrind.
 # The output goes into a file "valgrind.$PID" (sorry, no test number).
-# VALGRIND = valgrind --tool=memcheck --num-callers=15 --logfile=valgrind
+# VALGRIND = valgrind --tool=memcheck --leak-check=yes --num-callers=15 --logfile=valgrind
 
 SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test7.out test8.out test9.out test10.out test11.out \
@@ -39,7 +39,7 @@ gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI)
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim test.ok X* viminfo
+	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim test.ok X* valgrind.pid* viminfo
 
 test1.out: test1.in
 	-rm -f $*.failed tiny.vim small.vim mbyte.vim test.ok X* viminfo
@@ -65,6 +65,10 @@ test1.out: test1.in
 		else echo $* NO OUTPUT >>test.log; \
 		fi"
 	-rm -rf X* test.ok viminfo
+
+test49.out: test49.vim
+
+test60.out: test60.vim
 
 nolog:
 	-echo Test results: >test.log

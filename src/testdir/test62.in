@@ -7,6 +7,7 @@ STARTTEST
 :let nr = tabpagenr()
 :q
 :call append(line('$'), 'tab page ' . nr)
+:unlet nr
 :"
 :" Open three tab pages and use ":tabdo"
 :0tabnew
@@ -23,6 +24,7 @@ STARTTEST
 :q!
 :call append(line('$'), line1)
 :call append(line('$'), line2)
+:unlet line1 line2
 :"
 :"
 :/^Results/,$w! test.out

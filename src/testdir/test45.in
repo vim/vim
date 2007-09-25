@@ -55,6 +55,7 @@ endfun
 /kk$
 :call append("$", foldlevel("."))
 :/^last/+1,$w! test.out
+:delfun Flvl
 :qa!
 ENDTEST
 

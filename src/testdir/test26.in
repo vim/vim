@@ -37,6 +37,7 @@ mt:let i = 0
 :    endif
 :  endif
 :endwhile
+:unlet i j
 :'t,$w! test.out
 :qa!
 ENDTEST

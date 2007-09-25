@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2007 Jul 25
+*eval.txt*      For Vim version 7.1.  Last change: 2007 Sep 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1603,7 +1603,7 @@ foldtext( )			String	line displayed for closed fold
 foldtextresult( {lnum})		String	text for closed fold at {lnum}
 foreground( )			Number	bring the Vim window to the foreground
 function( {name})		Funcref reference to function {name}
-garbagecollect()		none	free memory, breaking cyclic references
+garbagecollect( [at_exit])	none	free memory, breaking cyclic references
 get( {list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get( {dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 getbufline( {expr}, {lnum} [, {end}])
@@ -2673,7 +2673,7 @@ function({name})					*function()* *E700*
 		{name} can be a user defined function or an internal function.
 
 
-garbagecollect()					*garbagecollect()*
+garbagecollect([at_exit])				*garbagecollect()*
 		Cleanup unused |Lists| and |Dictionaries| that have circular
 		references.  There is hardly ever a need to invoke this
 		function, as it is automatically done when Vim runs out of
@@ -2683,6 +2683,9 @@ garbagecollect()					*garbagecollect()*
 		This is useful if you have deleted a very big |List| and/or
 		|Dictionary| with circular references in a script that runs
 		for a long time.
+		When the optional "at_exit" argument is one, garbage
+		collection will also be done when exiting Vim, if it wasn't
+		done before.  This is useful when checking for memory leaks.
 
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not

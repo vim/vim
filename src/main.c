@@ -1334,6 +1334,10 @@ getout(exitval)
 #ifdef FEAT_CSCOPE
     cs_end();
 #endif
+#ifdef FEAT_EVAL
+    if (garbage_collect_at_exit)
+	garbage_collect();
+#endif
 
     mch_exit(exitval);
 }

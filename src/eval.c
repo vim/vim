@@ -6128,6 +6128,7 @@ garbage_collect()
     /* Only do this once. */
     want_garbage_collect = FALSE;
     may_garbage_collect = FALSE;
+    garbage_collect_at_exit = FALSE;
 
     /*
      * 1. Go through all accessible variables and mark all lists and dicts
@@ -7110,7 +7111,7 @@ static struct fst
     {"foldtextresult",	1, 1, f_foldtextresult},
     {"foreground",	0, 0, f_foreground},
     {"function",	1, 1, f_function},
-    {"garbagecollect",	0, 0, f_garbagecollect},
+    {"garbagecollect",	0, 1, f_garbagecollect},
     {"get",		2, 3, f_get},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 2, f_getbufvar},
@@ -9719,6 +9720,9 @@ f_garbagecollect(argvars, rettv)
     /* This is postponed until we are back at the toplevel, because we may be
      * using Lists and Dicts internally.  E.g.: ":echo [garbagecollect()]". */
     want_garbage_collect = TRUE;
+
+    if (argvars[0].v_type != VAR_UNKNOWN && get_tv_number(&argvars[0]) == 1)
+	garbage_collect_at_exit = TRUE;
 }
 
 /*

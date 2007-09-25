@@ -44,8 +44,10 @@ STARTTEST
 :        $put ='ERROR: pat: \"' . t[0] . '\", text: \"' . t[1] . '\", submatch ' . i . ': \"' . l[i] . '\", expected: \"' . e . '\"'
 :      endif
 :    endfor
+:    unlet i
 :  endif
 :endfor
+:unlet t tl e l
 :/^Results/,$wq! test.out
 ENDTEST
 

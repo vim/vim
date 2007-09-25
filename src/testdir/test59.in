@@ -90,6 +90,7 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.utf-8.add
 :$put =str
 `m]s:let [str, a] = spellbadword()
 :$put =str
+:unlet str a
 :"
 :" Postponed prefixes
 :call TestOne('2', '1')
@@ -100,6 +101,10 @@ gg:/^addstart/+1,/^addend/-1w! Xtest.utf-8.add
 :call TestOne('5', '5')
 :call TestOne('6', '6')
 :call TestOne('7', '7')
+:"
+:" clean up for valgrind
+:delfunc TestOne
+:set spl= enc=latin1
 :"
 gg:/^test output:/,$wq! test.out
 ENDTEST

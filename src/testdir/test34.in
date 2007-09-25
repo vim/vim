@@ -52,7 +52,15 @@ XX+-XX
 ---*---
 (one
 (two
-[(one again:$-5,$wq! test.out
+[(one again:$-5,$w! test.out
+:delfunc Table
+:delfunc Compute
+:delfunc Expr1
+:delfunc Expr2
+:delfunc ListItem
+:delfunc ListReset
+:unlet retval counter
+:q!
 ENDTEST
 
 here

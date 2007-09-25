@@ -18,6 +18,7 @@ vaBiBD:?Bug?,/Piece/-2w! test.out
 : let tt = "o\<C-V>65\<C-V>x42\<C-V>o103 \<C-V>33a\<C-V>xfg\<C-V>o78\<Esc>"
 :endif
 :exe "normal " . tt
+:unlet tt
 :.w >>test.out
 :set vb
 /^Piece

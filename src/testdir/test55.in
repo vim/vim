@@ -345,6 +345,10 @@ let l = [0, 1, 2, 3]
 :endfun
 :call Test(1, 2, [3, 4], {5: 6})  " This may take a while
 :"
+:delfunc Test
+:unlet dict
+:call garbagecollect(1)
+:"
 :/^start:/,$wq! test.out
 ENDTEST
 

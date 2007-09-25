@@ -301,13 +301,17 @@ EXTERN except_T *caught_stack INIT(= NULL);
 #endif
 
 #ifdef FEAT_EVAL
-/* Garbage collection can only take place when we are sure there are no Lists
+/*
+ * Garbage collection can only take place when we are sure there are no Lists
  * or Dictionaries being used internally.  This is flagged with
  * "may_garbage_collect" when we are at the toplevel.
  * "want_garbage_collect" is set by the garbagecollect() function, which means
- * we do garbage collection before waiting for a char at the toplevel. */
+ * we do garbage collection before waiting for a char at the toplevel.
+ * "garbage_collect_at_exit" indicates garbagecollect(1) was called.
+ */
 EXTERN int	may_garbage_collect INIT(= FALSE);
 EXTERN int	want_garbage_collect INIT(= FALSE);
+EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 /* ID of script being sourced or was sourced to define the current function. */
 EXTERN scid_T	current_SID INIT(= 0);

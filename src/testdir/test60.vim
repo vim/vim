@@ -94,4 +94,5 @@ if !exists('*s:my_script_func')
 else
     echo "FAILED"
 endif
+unlet str
 

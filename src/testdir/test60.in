@@ -569,6 +569,9 @@ endfunction
     redir END
 endfunction
 :call TestExists()
+:delfunc TestExists
+:delfunc RunTest
+:delfunc TestFuncArg
 :edit! test.out
 :set ff=unix
 :w

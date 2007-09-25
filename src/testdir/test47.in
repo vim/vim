@@ -34,6 +34,7 @@ j:let three = three . "-" . winline()
 :call append("$", two)
 :call append("$", three)
 :$-2,$w! test.out
+:unlet one two three
 :qa!
 ENDTEST
 
