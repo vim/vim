@@ -10879,6 +10879,9 @@ f_has(argvars, rettv)
 	"gui_gtk2",
 # endif
 #endif
+#ifdef FEAT_GUI_GNOME
+	"gui_gnome",
+#endif
 #ifdef FEAT_GUI_MAC
 	"gui_mac",
 #endif
