@@ -2605,7 +2605,7 @@ op_change(oap)
 	/* Auto-indenting may have changed the indent.  If the cursor was past
 	 * the indent, exclude that indent change from the inserted text. */
 	firstline = ml_get(oap->start.lnum);
-	if (bd.textcol > pre_indent)
+	if (bd.textcol > (colnr_T)pre_indent)
 	{
 	    long new_indent = (long)(skipwhite(firstline) - firstline);
 
