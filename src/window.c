@@ -5523,6 +5523,7 @@ command_height()
 		{
 		    EMSG(_(e_noroom));
 		    p_ch = old_p_ch;
+		    curtab->tp_ch_used = p_ch;
 		    cmdline_row = Rows - p_ch;
 		    break;
 		}

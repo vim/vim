@@ -7824,6 +7824,8 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    errmsg = e_positive;
 	    p_ch = 1;
 	}
+	if (p_ch > Rows - min_rows() + 1)
+	    p_ch = Rows - min_rows() + 1;
 
 	/* Only compute the new window layout when startup has been
 	 * completed. Otherwise the frame sizes may be wrong. */
