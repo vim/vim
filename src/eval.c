@@ -21308,14 +21308,27 @@ repeat:
 	*usedlen += 2;
 	s = get_past_head(*fnamep);
 	while (tail > s && after_pathsep(s, tail))
-	    --tail;
+	    mb_ptr_back(*fnamep, tail);
 	*fnamelen = (int)(tail - *fnamep);
 #ifdef VMS
 	if (*fnamelen > 0)
 	    *fnamelen += 1; /* the path separator is part of the path */
 #endif
-	while (tail > s && !after_pathsep(s, tail))
-	    mb_ptr_back(*fnamep, tail);
+	if (*fnamelen == 0)
+	{
+	    /* Result is empty.  Turn it into "." to make ":cd %:h" work. */
+	    p = vim_strsave((char_u *)".");
+	    if (p == NULL)
+		return -1;
+	    vim_free(*bufp);
+	    *bufp = *fnamep = tail = p;
+	    *fnamelen = 1;
+	}
+	else
+	{
+	    while (tail > s && !after_pathsep(s, tail))
+		mb_ptr_back(*fnamep, tail);
+	}
     }
 
     /* ":8" - shortname  */
