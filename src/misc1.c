@@ -3506,9 +3506,38 @@ free_homedir()
 #endif
 
 /*
+ * Call expand_env() and store the result in an allocated string.
+ * This is not very memory efficient, this expects the result to be freed
+ * again soon.
+ */
+    char_u *
+expand_env_save(src)
+    char_u	*src;
+{
+    return expand_env_save_opt(src, FALSE);
+}
+
+/*
+ * Idem, but when "one" is TRUE handle the string as one file name, only
+ * expand "~" at the start.
+ */
+    char_u *
+expand_env_save_opt(src, one)
+    char_u	*src;
+    int		one;
+{
+    char_u	*p;
+
+    p = alloc(MAXPATHL);
+    if (p != NULL)
+	expand_env_esc(src, p, MAXPATHL, FALSE, one, NULL);
+    return p;
+}
+
+/*
  * Expand environment variable with path name.
  * "~/" is also expanded, using $HOME.	For Unix "~user/" is expanded.
- * Skips over "\ ", "\~" and "\$".
+ * Skips over "\ ", "\~" and "\$" (not for Win32 though).
  * If anything fails no expansion is done and dst equals src.
  */
     void
@@ -3517,15 +3546,16 @@ expand_env(src, dst, dstlen)
     char_u	*dst;		/* where to put the result */
     int		dstlen;		/* maximum length of the result */
 {
-    expand_env_esc(src, dst, dstlen, FALSE, NULL);
+    expand_env_esc(src, dst, dstlen, FALSE, FALSE, NULL);
 }
 
     void
-expand_env_esc(srcp, dst, dstlen, esc, startstr)
+expand_env_esc(srcp, dst, dstlen, esc, one, startstr)
     char_u	*srcp;		/* input string e.g. "$HOME/vim.hlp" */
     char_u	*dst;		/* where to put the result */
     int		dstlen;		/* maximum length of the result */
     int		esc;		/* escape spaces in expanded variables */
+    int		one;		/* "srcp" is one file name */
     char_u	*startstr;	/* start again after this (can be NULL) */
 {
     char_u	*src;
@@ -3766,6 +3796,8 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 	{
 	    /*
 	     * Recognize the start of a new name, for '~'.
+	     * Don't do this when "one" is TRUE, to avoid expanding "~" in
+	     * ":edit foo ~ foo".
 	     */
 	    at_start = FALSE;
 	    if (src[0] == '\\' && src[1] != NUL)
@@ -3773,7 +3805,7 @@ expand_env_esc(srcp, dst, dstlen, esc, startstr)
 		*dst++ = *src++;
 		--dstlen;
 	    }
-	    else if (src[0] == ' ' || src[0] == ',')
+	    else if ((src[0] == ' ' || src[0] == ',') && !one)
 		at_start = TRUE;
 	    *dst++ = *src++;
 	    --dstlen;
@@ -4067,23 +4099,6 @@ remove_tail(p, pend, name)
 	    && (newend == p || after_pathsep(p, newend)))
 	return newend;
     return pend;
-}
-
-/*
- * Call expand_env() and store the result in an allocated string.
- * This is not very memory efficient, this expects the result to be freed
- * again soon.
- */
-    char_u *
-expand_env_save(src)
-    char_u	*src;
-{
-    char_u	*p;
-
-    p = alloc(MAXPATHL);
-    if (p != NULL)
-	expand_env(src, p, MAXPATHL);
-    return p;
 }
 
 /*
@@ -9139,7 +9154,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	     */
 	    if (vim_strpbrk(p, (char_u *)"$~") != NULL)
 	    {
-		p = expand_env_save(p);
+		p = expand_env_save_opt(p, TRUE);
 		if (p == NULL)
 		    p = pat[i];
 #ifdef UNIX

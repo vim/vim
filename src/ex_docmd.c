@@ -4403,7 +4403,7 @@ expand_filename(eap, cmdlinep, errormsgp)
 			    || vim_strchr(eap->arg, '~') != NULL)
 		    {
 			expand_env_esc(eap->arg, NameBuff, MAXPATHL,
-								 TRUE, NULL);
+							    TRUE, TRUE, NULL);
 			has_wildcards = mch_has_wildcard(NameBuff);
 			p = NameBuff;
 		    }

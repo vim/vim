@@ -4996,7 +4996,7 @@ option_expand(opt_idx, val)
      * For 'spellsuggest' expand after "file:".
      */
     expand_env_esc(val, NameBuff, MAXPATHL,
-	    (char_u **)options[opt_idx].var == &p_tags,
+	    (char_u **)options[opt_idx].var == &p_tags, FALSE,
 #ifdef FEAT_SPELL
 	    (char_u **)options[opt_idx].var == &p_sps ? (char_u *)"file:" :
 #endif
