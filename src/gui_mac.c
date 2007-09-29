@@ -1046,6 +1046,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     {
 	int i;
 	char_u *p;
+	int fnum = -1;
 
 	/* these are the initial files dropped on the Vim icon */
 	for (i = 0 ; i < numFiles; i++)
@@ -1055,6 +1056,18 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 		mch_exit(2);
 	    else
 		alist_add(&global_alist, p, 2);
+	    if (fnum == -1)
+		fnum = GARGLIST[GARGCOUNT - 1].ae_fnum;
+	}
+
+	/* If the file name was already in the buffer list we need to switch
+	 * to it. */
+	if (curbuf->b_fnum != fnum)
+	{
+	    char_u cmd[30];
+
+	    vim_snprintf((char *)cmd, 30, "silent %dbuffer", fnum);
+	    do_cmdline_cmd(cmd);
 	}
 
 	/* Change directory to the location of the first file. */
@@ -2920,7 +2933,6 @@ gui_mch_init(void)
     /* TODO: Move most of this stuff toward gui_mch_init */
     Rect	windRect;
     MenuHandle	pomme;
-    long	gestalt_rc;
     EventTypeSpec   eventTypeSpec;
     EventHandlerRef mouseWheelHandlerRef;
 #ifdef USE_CARBONKEYHANDLER
