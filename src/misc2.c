@@ -972,7 +972,7 @@ free_all_mem()
 	return;
     entered = TRUE;
 
-    ++autocmd_block;	    /* don't want to trigger autocommands here */
+    block_autocmds();	    /* don't want to trigger autocommands here */
 
 #ifdef FEAT_WINDOWS
     /* close all tabs and windows */

@@ -1291,7 +1291,7 @@ make_windows(count, vertical)
      * Don't execute autocommands while creating the windows.  Must do that
      * when putting the buffers in the windows.
      */
-    ++autocmd_block;
+    block_autocmds();
 #endif
 
     /* todo is number of windows left to create */
@@ -1313,7 +1313,7 @@ make_windows(count, vertical)
 	}
 
 #ifdef FEAT_AUTOCMD
-    --autocmd_block;
+    unblock_autocmds();
 #endif
 
     /* return actual number of windows */
@@ -3415,7 +3415,7 @@ make_tabpages(maxcount)
      * Don't execute autocommands while creating the tab pages.  Must do that
      * when putting the buffers in the windows.
      */
-    ++autocmd_block;
+    block_autocmds();
 #endif
 
     for (todo = count - 1; todo > 0; --todo)
@@ -3423,7 +3423,7 @@ make_tabpages(maxcount)
 	    break;
 
 #ifdef FEAT_AUTOCMD
-    --autocmd_block;
+    unblock_autocmds();
 #endif
 
     /* return actual number of tab pages */
@@ -4162,7 +4162,7 @@ win_alloc(after)
 	/* Don't execute autocommands while the window is not properly
 	 * initialized yet.  gui_create_scrollbar() may trigger a FocusGained
 	 * event. */
-	++autocmd_block;
+	block_autocmds();
 #endif
 	/*
 	 * link the window in the window list
@@ -4207,7 +4207,7 @@ win_alloc(after)
 	foldInitWin(newwin);
 #endif
 #ifdef FEAT_AUTOCMD
-	--autocmd_block;
+	unblock_autocmds();
 #endif
 #ifdef FEAT_SEARCH_EXTRA
 	newwin->w_match_head = NULL;
@@ -4232,7 +4232,7 @@ win_free(wp, tp)
 #ifdef FEAT_AUTOCMD
     /* Don't execute autocommands while the window is halfway being deleted.
      * gui_mch_destroy_scrollbar() may trigger a FocusGained event. */
-    ++autocmd_block;
+    block_autocmds();
 #endif
 
 #ifdef FEAT_MZSCHEME
@@ -4295,7 +4295,7 @@ win_free(wp, tp)
     vim_free(wp);
 
 #ifdef FEAT_AUTOCMD
-    --autocmd_block;
+    unblock_autocmds();
 #endif
 }
 

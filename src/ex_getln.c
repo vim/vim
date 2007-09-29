@@ -5925,7 +5925,7 @@ ex_window()
 
 # ifdef FEAT_AUTOCMD
     /* Don't execute autocommands while creating the window. */
-    ++autocmd_block;
+    block_autocmds();
 # endif
     /* don't use a new tab page */
     cmdmod.tab = 0;
@@ -5934,6 +5934,9 @@ ex_window()
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
     {
 	beep_flush();
+# ifdef FEAT_AUTOCMD
+	unblock_autocmds();
+# endif
 	return K_IGNORE;
     }
     cmdwin_type = ccline.cmdfirstc;
@@ -5956,7 +5959,7 @@ ex_window()
 
 # ifdef FEAT_AUTOCMD
     /* Do execute autocommands for setting the filetype (load syntax). */
-    --autocmd_block;
+    unblock_autocmds();
 # endif
 
     /* Showing the prompt may have set need_wait_return, reset it. */
@@ -6110,7 +6113,7 @@ ex_window()
 
 # ifdef FEAT_AUTOCMD
 	/* Don't execute autocommands while deleting the window. */
-	++autocmd_block;
+	block_autocmds();
 # endif
 	wp = curwin;
 	bp = curbuf;
@@ -6122,7 +6125,7 @@ ex_window()
 	win_size_restore(&winsizes);
 
 # ifdef FEAT_AUTOCMD
-	--autocmd_block;
+	unblock_autocmds();
 # endif
     }
 

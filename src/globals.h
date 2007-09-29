@@ -366,7 +366,6 @@ EXTERN int	cterm_normal_bg_color INIT(= 0);
 EXTERN int	autocmd_busy INIT(= FALSE);	/* Is apply_autocmds() busy? */
 EXTERN int	autocmd_no_enter INIT(= FALSE); /* *Enter autocmds disabled */
 EXTERN int	autocmd_no_leave INIT(= FALSE); /* *Leave autocmds disabled */
-EXTERN int	autocmd_block INIT(= 0);	/* block all autocmds */
 EXTERN int	modified_was_set;		/* did ":set modified" */
 EXTERN int	did_filetype INIT(= FALSE);	/* FileType event found */
 EXTERN int	keep_filetype INIT(= FALSE);	/* value for did_filetype when

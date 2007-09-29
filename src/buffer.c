@@ -5515,11 +5515,11 @@ wipe_buffer(buf, aucmd)
 
 #ifdef FEAT_AUTOCMD
     if (!aucmd)		    /* Don't trigger BufDelete autocommands here. */
-	++autocmd_block;
+	block_autocmds();
 #endif
     close_buffer(NULL, buf, DOBUF_WIPE);
 #ifdef FEAT_AUTOCMD
     if (!aucmd)
-	--autocmd_block;
+	unblock_autocmds();
 #endif
 }

@@ -7165,6 +7165,7 @@ static void auto_next_pat __ARGS((AutoPatCmd *apc, int stop_at_last));
 
 static event_T	last_event;
 static int	last_group;
+static int	autocmd_blocked = 0;	/* block all autocmds */
 
 /*
  * Show the autocommands for one AutoPat.
@@ -8454,7 +8455,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      * Quickly return if there are no autocommands for this event or
      * autocommands are blocked.
      */
-    if (first_autopat[(int)event] == NULL || autocmd_block > 0)
+    if (first_autopat[(int)event] == NULL || autocmd_blocked > 0)
 	goto BYPASS_AU;
 
     /*
@@ -8766,6 +8767,40 @@ BYPASS_AU:
 	aubuflocal_remove(buf);
 
     return retval;
+}
+
+# ifdef FEAT_EVAL
+static char_u	*old_termresponse = NULL;
+# endif
+
+/*
+ * Block triggering autocommands until unblock_autocmd() is called.
+ * Can be used recursively, so long as it's symmetric.
+ */
+    void
+block_autocmds()
+{
+# ifdef FEAT_EVAL
+    /* Remember the value of v:termresponse. */
+    if (autocmd_blocked == 0)
+	old_termresponse = get_vim_var_str(VV_TERMRESPONSE);
+# endif
+    ++autocmd_blocked;
+}
+
+    void
+unblock_autocmds()
+{
+    --autocmd_blocked;
+
+# ifdef FEAT_EVAL
+    /* When v:termresponse was set while autocommands were blocked, trigger
+     * the autocommands now.  Esp. useful when executing a shell command
+     * during startup (vimdiff). */
+    if (autocmd_blocked == 0
+		      && get_vim_var_str(VV_TERMRESPONSE) != old_termresponse)
+	apply_autocmds(EVENT_TERMRESPONSE, NULL, NULL, FALSE, curbuf);
+# endif
 }
 
 /*

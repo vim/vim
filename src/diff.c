@@ -840,11 +840,11 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
 		    tmp_orig, tmp_new);
 	    append_redir(cmd, p_srr, tmp_diff);
 #ifdef FEAT_AUTOCMD
-	    ++autocmd_block;	/* Avoid ShellCmdPost stuff */
+	    block_autocmds();	/* Avoid ShellCmdPost stuff */
 #endif
 	    (void)call_shell(cmd, SHELL_FILTER|SHELL_SILENT|SHELL_DOOUT);
 #ifdef FEAT_AUTOCMD
-	    --autocmd_block;
+	    unblock_autocmds();
 #endif
 	    vim_free(cmd);
 	}
@@ -949,11 +949,11 @@ ex_diffpatch(eap)
 # endif
 		eap->arg);
 #ifdef FEAT_AUTOCMD
-	++autocmd_block;	/* Avoid ShellCmdPost stuff */
+	block_autocmds();	/* Avoid ShellCmdPost stuff */
 #endif
 	(void)call_shell(buf, SHELL_FILTER | SHELL_COOKED);
 #ifdef FEAT_AUTOCMD
-	--autocmd_block;
+	unblock_autocmds();
 #endif
     }
 

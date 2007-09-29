@@ -40,6 +40,8 @@ int has_cursorhold __ARGS((void));
 int trigger_cursorhold __ARGS((void));
 int has_cursormoved __ARGS((void));
 int has_cursormovedI __ARGS((void));
+void block_autocmds __ARGS((void));
+void unblock_autocmds __ARGS((void));
 int has_autocmd __ARGS((event_T event, char_u *sfname, buf_T *buf));
 char_u *get_augroup_name __ARGS((expand_T *xp, int idx));
 char_u *set_context_in_autocmd __ARGS((expand_T *xp, char_u *arg, int doautocmd));
