@@ -3301,11 +3301,7 @@ gui_mch_browseW(
     SetFocus(s_hwnd);
 
     /* Shorten the file name if possible */
-    mch_dirname(IObuff, IOSIZE);
-    p = shorten_fname((char_u *)fileBuf, IObuff);
-    if (p == NULL)
-	p = (char_u *)fileBuf;
-    return vim_strsave(p);
+    return vim_strsave(shorten_fname1((char_u *)fileBuf));
 }
 # endif /* FEAT_MBYTE */
 
@@ -3450,11 +3446,7 @@ gui_mch_browse(
     SetFocus(s_hwnd);
 
     /* Shorten the file name if possible */
-    mch_dirname(IObuff, IOSIZE);
-    p = shorten_fname((char_u *)fileBuf, IObuff);
-    if (p == NULL)
-	p = (char_u *)fileBuf;
-    return vim_strsave(p);
+    return vim_strsave(shorten_fname1((char_u *)fileBuf));
 }
 #endif /* FEAT_BROWSE */
 

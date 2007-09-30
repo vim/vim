@@ -4261,12 +4261,12 @@ alist_name(aep)
 do_arg_all(count, forceit, keep_tabs)
     int	count;
     int	forceit;		/* hide buffers in current windows */
-    int keep_tabs;		/* keep curren tabs, for ":tab drop file" */
+    int keep_tabs;		/* keep current tabs, for ":tab drop file" */
 {
     int		i;
     win_T	*wp, *wpnext;
     char_u	*opened;	/* array of flags for which args are open */
-    int		opened_len;	/* lenght of opened[] */
+    int		opened_len;	/* length of opened[] */
     int		use_firstwin = FALSE;	/* use first window for arglist */
     int		split_ret = OK;
     int		p_ea_save;
@@ -4946,10 +4946,7 @@ read_viminfo_bufferlist(virp, writing)
 	/* Expand "~/" in the file name at "line + 1" to a full path.
 	 * Then try shortening it by comparing with the current directory */
 	expand_env(xline, NameBuff, MAXPATHL);
-	mch_dirname(IObuff, IOSIZE);
-	sfname = shorten_fname(NameBuff, IObuff);
-	if (sfname == NULL)
-	    sfname = NameBuff;
+	sfname = shorten_fname1(NameBuff);
 
 	buf = buflist_new(NameBuff, sfname, (linenr_T)0, BLN_LISTED);
 	if (buf != NULL)	/* just in case... */

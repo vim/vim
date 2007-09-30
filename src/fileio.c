@@ -114,7 +114,7 @@ struct bw_info
 {
     int		bw_fd;		/* file descriptor */
     char_u	*bw_buf;	/* buffer with data to be written */
-    int		bw_len;	/* lenght of data */
+    int		bw_len;		/* length of data */
 #ifdef HAS_BW_FLAGS
     int		bw_flags;	/* FIO_ flags */
 #endif
@@ -5552,6 +5552,27 @@ make_bom(buf, name)
     return (int)(p - buf);
 }
 #endif
+
+/*
+ * Try to find a shortname by comparing the fullname with the current
+ * directory.
+ * Returns "full_path" or pointer into "full_path" if shortened.
+ */
+    char_u *
+shorten_fname1(full_path)
+    char_u	*full_path;
+{
+    char_u	dirname[MAXPATHL];
+    char_u	*p = full_path;
+
+    if (mch_dirname(dirname, MAXPATHL) == OK)
+    {
+	p = shorten_fname(full_path, dirname);
+	if (p == NULL || *p == NUL)
+	    p = full_path;
+    }
+    return p;
+}
 
 /*
  * Try to find a shortname by comparing the fullname with the current

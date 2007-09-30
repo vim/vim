@@ -6,6 +6,7 @@ int check_file_readonly __ARGS((char_u *fname, int perm));
 int buf_write __ARGS((buf_T *buf, char_u *fname, char_u *sfname, linenr_T start, linenr_T end, exarg_T *eap, int append, int forceit, int reset_changed, int filtering));
 void msg_add_fname __ARGS((buf_T *buf, char_u *fname));
 void msg_add_lines __ARGS((int insert_space, long lnum, long nchars));
+char_u *shorten_fname1 __ARGS((char_u *full_path));
 char_u *shorten_fname __ARGS((char_u *full_path, char_u *dir_name));
 void shorten_fnames __ARGS((int force));
 void shorten_filenames __ARGS((char_u **fnames, int count));

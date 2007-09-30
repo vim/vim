@@ -276,7 +276,6 @@ static void	ex_popup __ARGS((exarg_T *eap));
 static void	ex_swapname __ARGS((exarg_T *eap));
 static void	ex_syncbind __ARGS((exarg_T *eap));
 static void	ex_read __ARGS((exarg_T *eap));
-static void	ex_cd __ARGS((exarg_T *eap));
 static void	ex_pwd __ARGS((exarg_T *eap));
 static void	ex_equal __ARGS((exarg_T *eap));
 static void	ex_sleep __ARGS((exarg_T *eap));
@@ -7778,7 +7777,7 @@ free_cd_dir()
 /*
  * ":cd", ":lcd", ":chdir" and ":lchdir".
  */
-    static void
+    void
 ex_cd(eap)
     exarg_T	*eap;
 {

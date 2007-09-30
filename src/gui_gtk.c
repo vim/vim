@@ -1272,7 +1272,6 @@ gui_mch_browse(int saving,
     GtkWidget		*fc;
 #endif
     char_u		dirbuf[MAXPATHL];
-    char_u		*p;
 
 # ifdef HAVE_GTK2
     title = CONVERT_TO_UTF8(title);
@@ -1363,11 +1362,7 @@ gui_mch_browse(int saving,
 	return NULL;
 
     /* shorten the file name if possible */
-    mch_dirname(dirbuf, MAXPATHL);
-    p = shorten_fname(gui.browse_fname, dirbuf);
-    if (p == NULL)
-	p = gui.browse_fname;
-    return vim_strsave(p);
+    return vim_strsave(shorten_fname1(gui.browse_fname));
 }
 
 #if defined(HAVE_GTK2) || defined(PROTO)
@@ -1427,11 +1422,7 @@ gui_mch_browsedir(
 	return NULL;
 
     /* shorten the file name if possible */
-    mch_dirname(dirbuf, MAXPATHL);
-    p = shorten_fname(dirname, dirbuf);
-    if (p == NULL || *p == NUL)
-	p = dirname;
-    p = vim_strsave(p);
+    p = vim_strsave(shorten_fname1(dirname));
     g_free(dirname);
     return p;
 
