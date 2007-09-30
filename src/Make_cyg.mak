@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2006 Apr 30
+# Last updated by Dan Sharp.  Last Change: 2007 Sep 29
 #
 # Also read INSTALLpc.txt!
 #
@@ -503,7 +503,7 @@ $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
 	$(CC) -c $(CFLAGS) if_cscope.c -o $(OUTDIR)/if_cscope.o
 
 $(OUTDIR)/if_ole.o:	if_ole.cpp $(INCL)
-	$(CC) -c $(CFLAGS) -D__IID_DEFINED__ if_ole.cpp -o $(OUTDIR)/if_ole.o
+	$(CC) -c $(CFLAGS) if_ole.cpp -o $(OUTDIR)/if_ole.o
 
 if_perl.c: if_perl.xs typemap
 	$(PERL)/bin/perl `cygpath -d $(PERL)/lib/ExtUtils/xsubpp` \
