@@ -3316,6 +3316,10 @@ nextwild(xp, type, options)
  * Return a pointer to alloced memory containing the new string.
  * Return NULL for failure.
  *
+ * "orig" is the originally expanded string, copied to allocated memory.  It
+ * should either be kept in orig_save or freed.  When "mode" is WILD_NEXT or
+ * WILD_PREV "orig" should be NULL.
+ *
  * Results are cached in xp->xp_files and xp->xp_numfiles, except when "mode"
  * is WILD_EXPAND_FREE or WILD_ALL.
  *
@@ -3400,7 +3404,7 @@ ExpandOne(xp, str, orig, options, mode)
 	    return NULL;
     }
 
-/* free old names */
+    /* free old names */
     if (xp->xp_numfiles != -1 && mode != WILD_ALL && mode != WILD_LONGEST)
     {
 	FreeWild(xp->xp_numfiles, xp->xp_files);
@@ -3540,6 +3544,10 @@ ExpandOne(xp, str, orig, options, mode)
 
     if (mode == WILD_EXPAND_FREE || mode == WILD_ALL)
 	ExpandCleanup(xp);
+
+    /* Free "orig" if it wasn't stored in "orig_save". */
+    if (orig != orig_save)
+	vim_free(orig);
 
     return ss;
 }
