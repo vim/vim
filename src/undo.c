@@ -76,6 +76,12 @@
  * buffer is unloaded.
  */
 
+/* Uncomment the next line for including the u_check() function.  This warns
+ * for errors in the debug information. */
+/* #define U_DEBUG 1 */
+#define UH_MAGIC 0x18dade	/* value for uh_magic when in use */
+#define UE_MAGIC 0xabc123	/* value for ue_magic when in use */
+
 #include "vim.h"
 
 /* See below: use malloc()/free() for memory management. */
@@ -112,6 +118,95 @@ static long	u_newcount, u_oldcount;
  * the action that "u" should do.
  */
 static int	undo_undoes = FALSE;
+
+#ifdef U_DEBUG
+/*
+ * Check the undo structures for being valid.  Print a warning when something
+ * looks wrong.
+ */
+static int seen_b_u_curhead;
+static int seen_b_u_newhead;
+static int header_count;
+
+    static void
+u_check_tree(u_header_T *uhp,
+	u_header_T *exp_uh_next,
+	u_header_T *exp_uh_alt_prev)
+{
+    u_entry_T *uep;
+
+    if (uhp == NULL)
+	return;
+    ++header_count;
+    if (uhp == curbuf->b_u_curhead && ++seen_b_u_curhead > 1)
+    {
+	EMSG("b_u_curhead found twice (looping?)");
+	return;
+    }
+    if (uhp == curbuf->b_u_newhead && ++seen_b_u_newhead > 1)
+    {
+	EMSG("b_u_newhead found twice (looping?)");
+	return;
+    }
+
+    if (uhp->uh_magic != UH_MAGIC)
+	EMSG("uh_magic wrong (may be using freed memory)");
+    else
+    {
+	/* Check pointers back are correct. */
+	if (uhp->uh_next != exp_uh_next)
+	{
+	    EMSG("uh_next wrong");
+	    smsg((char_u *)"expected: 0x%x, actual: 0x%x",
+						   exp_uh_next, uhp->uh_next);
+	}
+	if (uhp->uh_alt_prev != exp_uh_alt_prev)
+	{
+	    EMSG("uh_alt_prev wrong");
+	    smsg((char_u *)"expected: 0x%x, actual: 0x%x",
+					   exp_uh_alt_prev, uhp->uh_alt_prev);
+	}
+
+	/* Check the undo tree at this header. */
+	for (uep = uhp->uh_entry; uep != NULL; uep = uep->ue_next)
+	{
+	    if (uep->ue_magic != UE_MAGIC)
+	    {
+		EMSG("ue_magic wrong (may be using freed memory)");
+		break;
+	    }
+	}
+
+	/* Check the next alt tree. */
+	u_check_tree(uhp->uh_alt_next, uhp->uh_next, uhp);
+
+	/* Check the next header in this branch. */
+	u_check_tree(uhp->uh_prev, uhp, NULL);
+    }
+}
+
+    void
+u_check(int newhead_may_be_NULL)
+{
+    seen_b_u_newhead = 0;
+    seen_b_u_curhead = 0;
+    header_count = 0;
+
+    u_check_tree(curbuf->b_u_oldhead, NULL, NULL);
+
+    if (seen_b_u_newhead == 0 && curbuf->b_u_oldhead != NULL
+	    && !(newhead_may_be_NULL && curbuf->b_u_newhead == NULL))
+	EMSGN("b_u_newhead invalid: 0x%x", curbuf->b_u_newhead);
+    if (curbuf->b_u_curhead != NULL && seen_b_u_curhead == 0)
+	EMSGN("b_u_curhead invalid: 0x%x", curbuf->b_u_curhead);
+    if (header_count != curbuf->b_u_numhead)
+    {
+	EMSG("b_u_numhead invalid");
+	smsg((char_u *)"expected: %ld, actual: %ld",
+			       (long)header_count, (long)curbuf->b_u_numhead);
+    }
+}
+#endif
 
 /*
  * Save the current line for both the "u" and "U" command.
@@ -243,6 +338,9 @@ u_savecommon(top, bot, newbot)
     if (!undo_allowed())
 	return FAIL;
 
+#ifdef U_DEBUG
+    u_check(FALSE);
+#endif
 #ifdef FEAT_NETBEANS_INTG
     /*
      * Netbeans defines areas that cannot be modified.  Bail out here when
@@ -294,6 +392,9 @@ u_savecommon(top, bot, newbot)
 	    uhp = (u_header_T *)U_ALLOC_LINE((unsigned)sizeof(u_header_T));
 	    if (uhp == NULL)
 		goto nomem;
+#ifdef U_DEBUG
+	    uhp->uh_magic = UH_MAGIC;
+#endif
 	}
 	else
 	    uhp = NULL;
@@ -316,8 +417,11 @@ u_savecommon(top, bot, newbot)
 	{
 	    u_header_T	    *uhfree = curbuf->b_u_oldhead;
 
-	    /* If there is no branch only free one header. */
-	    if (uhfree->uh_alt_next == NULL)
+	    if (uhfree == old_curhead)
+		/* Can't reconnect the branch, delete all of it. */
+		u_freebranch(curbuf, uhfree, &old_curhead);
+	    else if (uhfree->uh_alt_next == NULL)
+		/* There is no branch, only free one header. */
 		u_freeheader(curbuf, uhfree, &old_curhead);
 	    else
 	    {
@@ -326,6 +430,9 @@ u_savecommon(top, bot, newbot)
 		    uhfree = uhfree->uh_alt_next;
 		u_freebranch(curbuf, uhfree, &old_curhead);
 	    }
+#ifdef U_DEBUG
+	    u_check(TRUE);
+#endif
 	}
 
 	if (uhp == NULL)		/* no undo at all */
@@ -478,6 +585,9 @@ u_savecommon(top, bot, newbot)
     uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
+#ifdef U_DEBUG
+    uep->ue_magic = UE_MAGIC;
+#endif
 
     uep->ue_size = size;
     uep->ue_top = top;
@@ -525,6 +635,9 @@ u_savecommon(top, bot, newbot)
     curbuf->b_u_synced = FALSE;
     undo_undoes = FALSE;
 
+#ifdef U_DEBUG
+    u_check(FALSE);
+#endif
     return OK;
 
 nomem:
@@ -955,6 +1068,9 @@ u_undoredo(undo)
     int		empty_buffer;		    /* buffer became empty */
     u_header_T	*curhead = curbuf->b_u_curhead;
 
+#ifdef U_DEBUG
+    u_check(FALSE);
+#endif
     old_flags = curhead->uh_flags;
     new_flags = (curbuf->b_changed ? UH_CHANGED : 0) +
 	       ((curbuf->b_ml.ml_flags & ML_EMPTY) ? UH_EMPTYBUF : 0);
@@ -1186,6 +1302,9 @@ u_undoredo(undo)
     /* The timestamp can be the same for multiple changes, just use the one of
      * the undone/redone change. */
     curbuf->b_u_seq_time = curhead->uh_time;
+#ifdef U_DEBUG
+    u_check(FALSE);
+#endif
 }
 
 /*
@@ -1515,7 +1634,7 @@ u_getbot()
 }
 
 /*
- * Free one header and its entry list and adjust the pointers.
+ * Free one header "uhp" and its entry list and adjust the pointers.
  */
     static void
 u_freeheader(buf, uhp, uhpp)
@@ -1523,6 +1642,8 @@ u_freeheader(buf, uhp, uhpp)
     u_header_T	    *uhp;
     u_header_T	    **uhpp;	/* if not NULL reset when freeing this header */
 {
+    u_header_T	    *uhap;
+
     /* When there is an alternate redo list free that branch completely,
      * because we can never go there. */
     if (uhp->uh_alt_next != NULL)
@@ -1540,7 +1661,8 @@ u_freeheader(buf, uhp, uhpp)
     if (uhp->uh_prev == NULL)
 	buf->b_u_newhead = uhp->uh_next;
     else
-	uhp->uh_prev->uh_next = uhp->uh_next;
+	for (uhap = uhp->uh_prev; uhap != NULL; uhap = uhap->uh_alt_next)
+	    uhap->uh_next = uhp->uh_next;
 
     u_freeentries(buf, uhp, uhpp);
 }
@@ -1585,6 +1707,8 @@ u_freeentries(buf, uhp, uhpp)
     /* Check for pointers to the header that become invalid now. */
     if (buf->b_u_curhead == uhp)
 	buf->b_u_curhead = NULL;
+    if (buf->b_u_newhead == uhp)
+	buf->b_u_newhead = NULL;  /* freeing the newest entry */
     if (uhpp != NULL && uhp == *uhpp)
 	*uhpp = NULL;
 
@@ -1594,6 +1718,9 @@ u_freeentries(buf, uhp, uhpp)
 	u_freeentry(uep, uep->ue_size);
     }
 
+#ifdef U_DEBUG
+    uhp->uh_magic = 0;
+#endif
     U_FREE_LINE((char_u *)uhp);
     --buf->b_u_numhead;
 }
@@ -1609,6 +1736,9 @@ u_freeentry(uep, n)
     while (n > 0)
 	U_FREE_LINE(uep->ue_array[--n]);
     U_FREE_LINE((char_u *)uep->ue_array);
+#ifdef U_DEBUG
+    uep->ue_magic = 0;
+#endif
     U_FREE_LINE((char_u *)uep);
 }
 

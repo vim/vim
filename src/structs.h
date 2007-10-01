@@ -278,6 +278,9 @@ struct u_entry
     linenr_T	ue_lcount;	/* linecount when u_save called */
     char_u	**ue_array;	/* array of lines in undo block */
     long	ue_size;	/* number of lines in ue_array */
+#ifdef U_DEBUG
+    int		ue_magic;	/* magic number to check allocation */
+#endif
 };
 
 struct u_header
@@ -300,6 +303,9 @@ struct u_header
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
 #endif
     time_t	uh_time;	/* timestamp when the change was made */
+#ifdef U_DEBUG
+    int		uh_magic;	/* magic number to check allocation */
+#endif
 };
 
 /* values for uh_flags */
