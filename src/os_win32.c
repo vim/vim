@@ -2378,7 +2378,7 @@ mch_get_user_name(
     char_u  *s,
     int	    len)
 {
-    char szUserName[MAX_COMPUTERNAME_LENGTH + 1];
+    char szUserName[256 + 1];	/* UNLEN is 256 */
     DWORD cch = sizeof szUserName;
 
     if (GetUserName(szUserName, &cch))
