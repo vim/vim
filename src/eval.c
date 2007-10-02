@@ -10388,7 +10388,8 @@ f_getpos(argvars, rettv)
 	    list_append_number(l, (varnumber_T)0);
 	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->lnum
 							    : (varnumber_T)0);
-	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->col + 1
+	list_append_number(l, (fp != NULL)
+		     ? (varnumber_T)(fp->col == MAXCOL ? MAXCOL : fp->col + 1)
 							    : (varnumber_T)0);
 	list_append_number(l,
 #ifdef FEAT_VIRTUALEDIT
