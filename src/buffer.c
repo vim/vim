@@ -4175,29 +4175,35 @@ fix_fname(fname)
      * mess up the full path name, even though it starts with a '/'.
      * Also expand when there is ".." in the file name, try to remove it,
      * because "c:/src/../README" is equal to "c:/README".
+     * Similarly "c:/src//file" is equal to "c:/src/file".
      * For MS-Windows also expand names like "longna~1" to "longname".
      */
 #ifdef UNIX
     return FullName_save(fname, TRUE);
 #else
-    if (!vim_isAbsName(fname) || strstr((char *)fname, "..") != NULL
-#if defined(MSWIN) || defined(DJGPP)
+    if (!vim_isAbsName(fname)
+	    || strstr((char *)fname, "..") != NULL
+	    || strstr((char *)fname, "//") != NULL
+# ifdef BACKSLASH_IN_FILENAME
+	    || strstr((char *)fname, "\\\\") != NULL
+# endif
+# if defined(MSWIN) || defined(DJGPP)
 	    || vim_strchr(fname, '~') != NULL
-#endif
+# endif
 	    )
 	return FullName_save(fname, FALSE);
 
     fname = vim_strsave(fname);
 
-#ifdef USE_FNAME_CASE
-# ifdef USE_LONG_FNAME
+# ifdef USE_FNAME_CASE
+#  ifdef USE_LONG_FNAME
     if (USE_LONG_FNAME)
-# endif
+#  endif
     {
 	if (fname != NULL)
 	    fname_case(fname, 0);	/* set correct case for file name */
     }
-#endif
+# endif
 
     return fname;
 #endif
