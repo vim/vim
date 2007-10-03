@@ -5553,6 +5553,8 @@ make_bom(buf, name)
 }
 #endif
 
+#if defined(FEAT_VIMINFO) || defined(FEAT_BROWSE) || \
+    defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Try to find a shortname by comparing the fullname with the current
  * directory.
@@ -5573,6 +5575,7 @@ shorten_fname1(full_path)
     }
     return p;
 }
+#endif
 
 /*
  * Try to find a shortname by comparing the fullname with the current
