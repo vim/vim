@@ -92,6 +92,8 @@
 #       Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
 #       doesn't work)
 #
+#       Visual C Version: MSVCVER=m.n (default derived from nmake if undefined)
+#
 # You can combine any of these interfaces
 #
 # Example: To build the non-debug, GUI version with Perl interface:
@@ -101,7 +103,8 @@
 #	This makefile gives a fineness of control which is not supported in
 #	Visual C++ configuration files.  Therefore, debugging requires a bit of
 #	extra work.
-#	Make_dvc.mak is a Visual C++ project to access that support.
+#	Make_dvc.mak is a Visual C++ project to access that support.  It may be
+#	badly out of date for the Visual C++ you are using...
 #	To use Make_dvc.mak:
 #	1) Build Vim with Make_mvc.mak.
 #	     Use a "DEBUG=yes" argument to build Vim with debug support.
@@ -198,14 +201,12 @@ DEFINES=$(DEFINES) /Wp64
 !if "$(DEBUG)" != "yes"
 NODEBUG = 1
 !else
+!undef NODEBUG
 MAKEFLAGS_GVIMEXT = DEBUG=yes
 !endif
 
 
-# Get all sorts of useful, standard macros from the SDK.  (Note that
-# MSVC 2.2 does not install <ntwin32.mak> in the \msvc20\include
-# directory, but you can find it in \msvc20\include on the CD-ROM.
-# You may also need <win32.mak> from the same place.)
+# Get all sorts of useful, standard macros from the Platform SDK.
 
 !include <Win32.mak>
 
@@ -272,12 +273,12 @@ XPM_INC	  = -I $(XPM)\include
 
 # Set which version of the CRT to use
 !if defined(USE_MSVCRT)
-CVARS = $(cvarsdll)
+# CVARS = $(cvarsdll)
 # !elseif defined(MULTITHREADED)
 # CVARS = $(cvarsmt)
 !else
 # CVARS = $(cvars)
-CVARS = $(cvarsmt)
+# CVARS = $(cvarsmt)
 !endif
 
 # need advapi32.lib for GetUserName()
@@ -320,7 +321,44 @@ DEL_TREE = deltree /y
 INTDIR=$(OBJDIR)
 OUTDIR=$(OBJDIR)
 
+# Derive version of VC being used from nmake if not specified
+!if "$(MSVCVER)" == ""
+!if "$(_NMAKE_VER)" == ""
+MSVCVER = 4.0
+!endif
+!if "$(_NMAKE_VER)" == "162"
+MSVCVER = 5.0
+!endif
+!if "$(_NMAKE_VER)" == "6.00.8168.0"
+MSVCVER = 6.0
+!endif
+!if "$(_NMAKE_VER)" == "7.00.9466"
+MSVCVER = 7.0
+!endif
+!if "$(_NMAKE_VER)" == "7.10.3077"
+MSVCVER = 7.1
+!endif
+!if "$(_NMAKE_VER)" == "8.00.50727.42"
+MSVCVER = 8.0
+!endif
+!if "$(_NMAKE_VER)" == "8.00.50727.762"
+MSVCVER = 8.0
+!endif
+!endif
+
+# Abort bulding VIM if version of VC is unrecognised.
+!ifndef MSVCVER
+!message *** ERROR
+!message Cannot determine Visual C version being used.  If you are using the
+!message Windows SDK then you must have the environment variable MSVCVER set to
+!message your version of the VC compiler.  If you are not using the Express
+!message version of Visual C you van either set MSVCVER or update this makefile
+!message to handle the new value for _NMAKE_VER.
+!error Make aborted.
+!endif
+
 # Convert processor ID to MVC-compatible number
+!if "$(MSVCVER)" != "8.0"
 !if "$(CPUNR)" == "i386"
 CPUARG = /G3
 !elseif "$(CPUNR)" == "i486"
@@ -334,6 +372,15 @@ CPUARG = /G7 /arch:SSE2
 !else
 CPUARG =
 !endif
+!else
+# VC8 only allows specifying SSE architecture
+!if "$(CPUNR)" == "pentium4"
+CPUARG = /arch:SSE2
+!endif
+!endif
+
+LIBC =
+DEBUGINFO = /Zi
 
 !ifdef NODEBUG
 VIM = vim
@@ -344,41 +391,40 @@ OPTFLAG = /O2
 !else # MAXSPEED
 OPTFLAG = /Ox
 !endif
+!if "$(MSVCVER)" == "8.0"
+# Use link time code generation if not worried about size
+!if "$(OPTIMIZE)" != "SPACE"
+OPTFLAG = $(OPTFLAG) /GL
+!endif
+!endif
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
 ! ifdef USE_MSVCRT
-CFLAGS = $(CFLAGS) -MD
+CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
-# CFLAGS = $(CFLAGS) $(cvarsdll)
-# ! elseif defined(MULTITHREADED)
-# LIBC = libcmt.lib
-# CFLAGS = $(CFLAGS) $(cvarsmt)
 ! else
-# LIBC = libc.lib
 LIBC = libcmt.lib
-# CFLAGS = $(CFLAGS) $(cvars)
+CFLAGS = $(CFLAGS) /MT
 ! endif
 !else  # DEBUG
 VIM = vimd
+! if "$(CPU)" == "i386"
+DEBUGINFO = /ZI
+! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
 RCFLAGS = $(rcflags) $(rcvars) -D_DEBUG -DDEBUG
 # The /fixed:no is needed for Quantify. Assume not 4.? as unsupported in VC4.0.
-! if "$(_NMAKE_VER)" == ""
+! if "$(MSVCVER)" == "4.0"
 LIBC =
 ! else
 LIBC = /fixed:no
 ! endif
 ! ifdef USE_MSVCRT
-CFLAGS = $(CFLAGS) -MDd
+CFLAGS = $(CFLAGS) /MDd
 LIBC = $(LIBC) msvcrtd.lib
-# CFLAGS = $(CFLAGS) $(cvarsdll)
-# ! elseif defined(MULTITHREADED)
-# LIBC = $(LIBC) libcmtd.lib
-# CFLAGS = $(CFLAGS) $(cvarsmt)
 ! else
-# LIBC = $(LIBC) libcd.lib
 LIBC = $(LIBC) libcmtd.lib
-# CFLAGS = $(CFLAGS) $(cvars)
+CFLAGS = $(CFLAGS) /MTd
 ! endif
 !endif # DEBUG
 
@@ -681,16 +727,18 @@ CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 #
 # Always generate the .pdb file, so that we get debug symbols that can be used
 # on a crash (doesn't add overhead to the executable).
+# Generate edit-and-continue debug info when no optimization - allows to
+# debug more conveniently (able to look at variables which are in registers)
 #
-CFLAGS = $(CFLAGS) /Zi /Fd$(OUTDIR)/
-LINK_PDB = /PDB:$(VIM).pdb -debug # -debug:full -debugtype:cv,fixup
+CFLAGS = $(CFLAGS) /Fd$(OUTDIR)/ $(DEBUGINFO)
+LINK_PDB = /PDB:$(VIM).pdb -debug
 
 #
 # End extra feature include
 #
 !message
 
-conflags = /nologo /subsystem:$(SUBSYSTEM) /incremental:no
+conflags = /nologo /subsystem:$(SUBSYSTEM)
 
 PATHDEF_SRC = $(OUTDIR)\pathdef.c
 
@@ -702,10 +750,19 @@ conflags = $(conflags) /map
 conflags = $(conflags) /map /mapinfo:lines
 !ENDIF
 
-LINKARGS1 = $(linkdebug) $(conflags) /nodefaultlib:libc
+LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
 		$(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+
+# Report link time code generation progress if used. 
+!ifdef NODEBUG
+!if "$(MSVCVER)" == "8.0"
+!if "$(OPTIMIZE)" != "SPACE"
+LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
+!endif
+!endif
+!endif
 
 all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe \
 		GvimExt/gvimext.dll
@@ -794,7 +851,7 @@ testclean:
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
+!IF "$(MSVCVER)" == "4.0"
 .c{$(OUTDIR)/}.obj:
 !ELSE
 .c{$(OUTDIR)/}.obj::
@@ -803,7 +860,7 @@ testclean:
 
 # Create a default rule for transforming .cpp files to .obj files in $(OUTDIR)
 # Batch compilation is supported by nmake 1.62 (part of VS 5.0) and later)
-!IF "$(_NMAKE_VER)" == ""
+!IF "$(MSVCVER)" == "4.0"
 .cpp{$(OUTDIR)/}.obj:
 !ELSE
 .cpp{$(OUTDIR)/}.obj::
