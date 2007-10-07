@@ -3354,6 +3354,7 @@ syn_clear_pattern(buf, i)
     {
 	vim_free(SYN_ITEMS(buf)[i].sp_cont_list);
 	vim_free(SYN_ITEMS(buf)[i].sp_next_list);
+	vim_free(SYN_ITEMS(buf)[i].sp_syn.cont_in_list);
     }
 }
 
