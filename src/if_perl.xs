@@ -445,13 +445,13 @@ msg_split(s, attr)
     char *next;
     char *token = (char *)s;
 
-    while ((next = strchr(token, '\n')))
+    while ((next = strchr(token, '\n')) && !got_int)
     {
 	*next++ = '\0';			/* replace \n with \0 */
 	msg_attr((char_u *)token, attr);
 	token = next;
     }
-    if (*token)
+    if (*token && !got_int)
 	msg_attr((char_u *)token, attr);
 }
 
