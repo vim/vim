@@ -858,7 +858,14 @@ foldUpdate(wp, top, bot)
 	    || foldmethodIsDiff(wp)
 #endif
 	    || foldmethodIsSyntax(wp))
+    {
+	int save_got_int = got_int;
+
+	/* reset got_int here, otherwise it won't work */
+	got_int = FALSE;
 	foldUpdateIEMS(wp, top, bot);
+	got_int |= save_got_int;
+    }
 }
 
 /* foldUpdateAll() {{{2 */
