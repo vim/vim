@@ -690,6 +690,13 @@ getcount:
 		ca.count0 = ca.count0 * 10 + (c - '0');
 	    if (ca.count0 < 0)	    /* got too large! */
 		ca.count0 = 999999999L;
+#ifdef FEAT_EVAL
+	    /* Set v:count here, when called from main() and not a stuffed
+	     * command, so that v:count can be used in an expression mapping
+	     * right after the count. */
+	    if (toplevel && stuff_empty())
+		set_vcount(ca.count0, ca.count0 == 0 ? 1 : ca.count0);
+#endif
 	    if (ctrl_w)
 	    {
 		++no_mapping;
