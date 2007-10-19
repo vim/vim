@@ -4044,6 +4044,8 @@ gui_mch_open(void)
 	unsigned int	w, h;
 	int		x = 0;
 	int		y = 0;
+	guint		pixel_width;
+	guint		pixel_height;
 
 	mask = XParseGeometry((char *)gui.geom, &x, &y, &w, &h);
 
@@ -4055,12 +4057,31 @@ gui_mch_open(void)
 		p_window = h - 1;
 	    Rows = h;
 	}
+
+	pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
+	pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+
+#ifdef HAVE_GTK2
+	pixel_width  += get_menu_tool_width();
+	pixel_height += get_menu_tool_height();
+#endif
+
 	if (mask & (XValue | YValue))
+	{
+	    int w, h;
+	    gui_mch_get_screen_dimensions(&w, &h);
+	    h += p_ghr + get_menu_tool_height();
+	    w += get_menu_tool_width();
+	    if (mask & XNegative)
+		x += w - pixel_width;
+	    if (mask & YNegative)
+		y += h - pixel_height;
 #ifdef HAVE_GTK2
 	    gtk_window_move(GTK_WINDOW(gui.mainwin), x, y);
 #else
 	    gtk_widget_set_uposition(gui.mainwin, x, y);
 #endif
+	}
 	vim_free(gui.geom);
 	gui.geom = NULL;
 
@@ -4071,14 +4092,6 @@ gui_mch_open(void)
 	 */
 	if (gtk_socket_id != 0  &&  (mask & WidthValue || mask & HeightValue))
 	{
-	    guint pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
-	    guint pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
-
-#ifdef HAVE_GTK2
-	    pixel_width  += get_menu_tool_width();
-	    pixel_height += get_menu_tool_height();
-#endif
-
 	    update_window_manager_hints(pixel_width, pixel_height);
 	    init_window_hints_state = 1;
 	    g_timeout_add(1000, check_startup_plug_hints, NULL);
