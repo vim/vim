@@ -129,6 +129,7 @@ static expand_T	  compl_xp;
 
 static void ins_ctrl_x __ARGS((void));
 static int  has_compl_option __ARGS((int dict_opt));
+static int  ins_compl_accept_char __ARGS((int c));
 static int ins_compl_add __ARGS((char_u *str, int len, int icase, char_u *fname, char_u **cptext, int cdir, int flags, int adup));
 static int  ins_compl_equal __ARGS((compl_T *match, char_u *str, int len));
 static void ins_compl_longest_match __ARGS((compl_T *match));
@@ -754,8 +755,9 @@ edit(cmdchar, startln, count)
 		    continue;
 		}
 
-		/* A printable, non-white character: Add to "compl_leader". */
-		if (vim_isprintc(c) && !vim_iswhite(c))
+		/* A non-white character that fits in with the current
+		 * completion: Add to "compl_leader". */
+		if (ins_compl_accept_char(c))
 		{
 		    ins_compl_addleader(c);
 		    continue;
@@ -2053,6 +2055,40 @@ vim_is_ctrl_x_key(c)
 }
 
 /*
+ * Return TRUE when character "c" is part of the item currently being
+ * completed.  Used to decide whether to abandon complete mode when the menu
+ * is visible.
+ */
+    static int
+ins_compl_accept_char(c)
+    int c;
+{
+    if (ctrl_x_mode & CTRL_X_WANT_IDENT)
+	/* When expanding an identifier only accept identifier chars. */
+	return vim_isIDc(c);
+
+    switch (ctrl_x_mode)
+    {
+	case CTRL_X_FILES:
+	    /* When expanding file name only accept file name chars. But not
+	     * path separators, so that "proto/<Tab>" expands files in
+	     * "proto", not "proto/" as a whole */
+	    return vim_isfilec(c) && !vim_ispathsep(c);
+
+	case CTRL_X_CMDLINE:
+	case CTRL_X_OMNI:
+	    /* Command line and Omni completion can work with just about any
+	     * printable character, but do stop at white space. */
+	    return vim_isprintc(c) && !vim_iswhite(c);
+
+	case CTRL_X_WHOLE_LINE:
+	    /* For while line completion a space can be part of the line. */
+	    return vim_isprintc(c);
+    }
+    return vim_iswordc(c);
+}
+
+/*
  * This is like ins_compl_add(), but if 'ic' and 'inf' are set, then the
  * case of the originally typed text is used, and the case of the completed
  * text is inferred, ie this tries to work out what case you probably wanted
@@ -3128,8 +3164,11 @@ ins_compl_bs()
     p = line + curwin->w_cursor.col;
     mb_ptr_back(line, p);
 
-    /* Stop completion when the whole word was deleted. */
-    if ((int)(p - line) - (int)compl_col <= 0)
+    /* Stop completion when the whole word was deleted.  For Omni completion
+     * allow the word to be deleted, we won't match everything. */
+    if ((int)(p - line) - (int)compl_col < 0
+	    || ((int)(p - line) - (int)compl_col == 0
+		&& (ctrl_x_mode & CTRL_X_OMNI) == 0))
 	return K_BS;
 
     /* Deleted more than what was used to find matches or didn't finish
@@ -4591,14 +4630,13 @@ ins_complete(c)
 	curs_col = curwin->w_cursor.col;
 	compl_pending = 0;
 
-	/* if this same ctrl_x_mode has been interrupted use the text from
+	/* If this same ctrl_x_mode has been interrupted use the text from
 	 * "compl_startpos" to the cursor as a pattern to add a new word
 	 * instead of expand the one before the cursor, in word-wise if
-	 * "compl_startpos"
-	 * is not in the same line as the cursor then fix it (the line has
-	 * been split because it was longer than 'tw').  if SOL is set then
-	 * skip the previous pattern, a word at the beginning of the line has
-	 * been inserted, we'll look for that  -- Acevedo. */
+	 * "compl_startpos" is not in the same line as the cursor then fix it
+	 * (the line has been split because it was longer than 'tw').  if SOL
+	 * is set then skip the previous pattern, a word at the beginning of
+	 * the line has been inserted, we'll look for that  -- Acevedo. */
 	if ((compl_cont_status & CONT_INTRPT) == CONT_INTRPT
 					    && compl_cont_mode == ctrl_x_mode)
 	{
