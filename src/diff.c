@@ -1310,7 +1310,7 @@ diff_read(idx_orig, idx_new, fname)
 		    dp->df_count[idx_new] += -off;
 		off = 0;
 	    }
-	    for (i = idx_orig; i < idx_new + !notset; ++i)
+	    for (i = idx_orig; i < idx_new; ++i)
 		if (curtab->tp_diffbuf[i] != NULL)
 		    dp->df_count[i] = dpl->df_lnum[i] + dpl->df_count[i]
 						       - dp->df_lnum[i] + off;
