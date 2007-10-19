@@ -8426,21 +8426,17 @@ ex_redir(eap)
 		    || *arg == '"')
 	    {
 		redir_reg = *arg++;
-		if (*arg == '>' && arg[1] == '>')
+		if (*arg == '>' && arg[1] == '>')  /* append */
 		    arg += 2;
-		else if ((*arg == NUL || (*arg == '>' && arg[1] == NUL)) &&
-			 (islower(redir_reg)
-# ifdef FEAT_CLIPBOARD
-			    || redir_reg == '*'
-			    || redir_reg == '+'
-# endif
-			    || redir_reg == '"'))
+		else
 		{
+		    /* Can use both "@a" and "@a>". */
 		    if (*arg == '>')
 			arg++;
-
-		    /* make register empty */
-		    write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
+		    /* Make register empty when not using @A-@Z and the
+		     * command is valid. */
+		    if (*arg == NUL && !isupper(redir_reg))
+			write_reg_contents(redir_reg, (char_u *)"", -1, FALSE);
 		}
 	    }
 	    if (*arg != NUL)
