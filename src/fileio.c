@@ -4251,7 +4251,8 @@ restore_backup:
 	 * they don't it adds one.
 	 * With other RMS structures it works perfect without this fix.
 	 */
-	if ((buf->b_fab_rat & (FAB$M_FTN | FAB$M_CR)) != 0)
+	if (buf->b_fab_rfm == FAB$C_VFC
+		|| ((buf->b_fab_rat & (FAB$M_FTN | FAB$M_CR)) != 0))
 	{
 	    int b2write;
 
