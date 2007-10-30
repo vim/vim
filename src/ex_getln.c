@@ -3353,6 +3353,7 @@ ExpandOne(xp, str, orig, options, mode)
     char_u	*ss = NULL;
     static int	findex;
     static char_u *orig_save = NULL;	/* kept value of orig */
+    int		orig_saved = FALSE;
     int		i;
     long_u	len;
     int		non_suf_match;		/* number without matching suffix */
@@ -3421,6 +3422,7 @@ ExpandOne(xp, str, orig, options, mode)
     {
 	vim_free(orig_save);
 	orig_save = orig;
+	orig_saved = TRUE;
 
 	/*
 	 * Do the expansion.
@@ -3546,7 +3548,7 @@ ExpandOne(xp, str, orig, options, mode)
 	ExpandCleanup(xp);
 
     /* Free "orig" if it wasn't stored in "orig_save". */
-    if (orig != orig_save)
+    if (!orig_saved)
 	vim_free(orig);
 
     return ss;
