@@ -10265,8 +10265,9 @@ fi
 
 
 
+
 for ac_header in stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
-	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h termio.h \
+	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h sys/types.h termio.h \
 	iconv.h langinfo.h unistd.h stropts.h errno.h \
 	sys/resource.h sys/systeminfo.h locale.h \
 	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
