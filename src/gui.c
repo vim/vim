@@ -4214,7 +4214,19 @@ gui_do_scroll()
 #endif
 	    )
     {
-	redraw_win_later(wp, VALID);
+	int type = VALID;
+
+#ifdef FEAT_INS_EXPAND
+	if (pum_visible())
+	{
+	    type = NOT_VALID;
+	    wp->w_lines_valid = 0;
+	}
+#endif
+	/* Don't set must_redraw here, it may cause the popup menu to
+	 * disappear when losing focus after a scrollbar drag. */
+	if (wp->w_redr_type < type)
+	    wp->w_redr_type = type;
 	updateWindow(wp);   /* update window, status line, and cmdline */
     }
 
