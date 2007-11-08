@@ -395,11 +395,15 @@ set_pixmap(XmEnhancedButtonWidget eb)
 
     /* Create the "highlight" pixmap. */
     color[4].pixel = eb->primitive.bottom_shadow_color;
+#ifdef XpmAllocColor /* SGI doesn't have it */
     attr.valuemask = XpmColorSymbols | XpmCloseness | XpmAllocColor;
+    attr.alloc_color = alloc_color;
+#else
+    attr.valuemask = XpmColorSymbols | XpmCloseness;
+#endif
     attr.closeness = 65535;	/* accuracy isn't crucial */
     attr.colorsymbols = color;
     attr.numsymbols = XtNumber(color);
-    attr.alloc_color = alloc_color;
 
     status = XpmCreatePixmapFromData(dpy, root, data, &pix, NULL, &attr);
     XpmFreeAttributes(&attr);

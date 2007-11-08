@@ -8729,7 +8729,7 @@ f_diff_hlID(argvars, rettv)
     static int		fnum = 0;
     static int		change_start = 0;
     static int		change_end = 0;
-    static hlf_T	hlID = 0;
+    static hlf_T	hlID = (hlf_T)0;
     int			filler_lines;
     int			col;
 

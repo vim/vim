@@ -1774,7 +1774,8 @@ write_viminfo(file, forceit)
 	 * overwrite a user's viminfo file after a "su root", with a
 	 * viminfo file that the user can't read.
 	 */
-	st_old.st_dev = st_old.st_ino = 0;
+	st_old.st_dev = 0;
+	st_old.st_ino = 0;
 	st_old.st_mode = 0600;
 	if (mch_stat((char *)fname, &st_old) == 0
 		&& getuid() != ROOT_UID
