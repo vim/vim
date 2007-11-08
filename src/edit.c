@@ -2111,7 +2111,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
     int		has_lower = FALSE;
     int		was_letter = FALSE;
 
-    if (p_ic && curbuf->b_p_inf)
+    if (p_ic && curbuf->b_p_inf && len > 0)
     {
 	/* Infer case of completed part. */
 
@@ -2225,7 +2225,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 		    wca[i] = MB_TOUPPER(wca[i]);
 	    }
 
-	    /* 
+	    /*
 	     * Generate encoding specific output from wide character array.
 	     * Multi-byte characters can occupy up to five bytes more than
 	     * ASCII characters, and we also need one byte for NUL, so stay
