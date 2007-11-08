@@ -933,9 +933,10 @@ get_register(name, copy)
 #ifdef FEAT_CLIPBOARD
     /* When Visual area changed, may have to update selection.  Obtain the
      * selection too. */
-    if (name == '*' && clip_star.available && clip_isautosel())
+    if (name == '*' && clip_star.available)
     {
-	clip_update_selection();
+	if (clip_isautosel())
+	    clip_update_selection();
 	may_get_selection(name);
     }
 #endif
