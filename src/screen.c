@@ -4315,7 +4315,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    long prevcol = (long)(ptr - line) - (c == NUL);
 
 	    /* we're not really at that column when skipping some text */
-	    if ((wp->w_p_wrap ? wp->w_skipcol : wp->w_leftcol) > prevcol)
+	    if ((long)(wp->w_p_wrap ? wp->w_skipcol : wp->w_leftcol) > prevcol)
 		++prevcol;
 #endif
 
