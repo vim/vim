@@ -1678,6 +1678,14 @@ u_freebranch(buf, uhp, uhpp)
 {
     u_header_T	    *tofree, *next;
 
+    /* If this is the top branch we may need to use u_freeheader() to update
+     * all the pointers. */
+    if (uhp == buf->b_u_oldhead)
+    {
+	u_freeheader(buf, uhp, uhpp);
+	return;
+    }
+
     if (uhp->uh_alt_prev != NULL)
 	uhp->uh_alt_prev->uh_alt_next = NULL;
 
