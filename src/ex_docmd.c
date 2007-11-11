@@ -666,7 +666,7 @@ do_exmode(improved)
 		if (ex_pressedreturn)
 		{
 		    /* go up one line, to overwrite the ":<CR>" line, so the
-		     * output doensn't contain empty lines. */
+		     * output doesn't contain empty lines. */
 		    msg_row = prev_msg_row;
 		    if (prev_msg_row == Rows - 1)
 			msg_row--;
@@ -2760,7 +2760,7 @@ find_command(eap, full)
 
     /*
      * Isolate the command and search for it in the command table.
-     * Exeptions:
+     * Exceptions:
      * - the 'k' command can directly be followed by any character.
      * - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
      *	    but :sre[wind] is another command, as are :scrip[tnames],
@@ -6677,7 +6677,7 @@ ex_shell(eap)
  * The list should be allocated using alloc(), as should each item in the
  * list. This function takes over responsibility for freeing the list.
  *
- * XXX The list is made into the arggument list. This is freed using
+ * XXX The list is made into the argument list. This is freed using
  * FreeWild(), which does a series of vim_free() calls, unless the two defines
  * __EMX__ and __ALWAYS_HAS_TRAILING_NUL_POINTER are set. In this case, a
  * routine _fnexplodefree() is used. This may cause problems, but as the drop
@@ -7795,7 +7795,7 @@ ex_cd(eap)
 	if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged()
 							     && !eap->forceit)
 	{
-	    EMSG(_("E747: Cannot change directory, buffer is modifed (add ! to override)"));
+	    EMSG(_("E747: Cannot change directory, buffer is modified (add ! to override)"));
 	    return;
 	}
 
@@ -9391,7 +9391,7 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
     if (src > srcstart && src[-1] == '\\')
     {
 	*usedlen = 0;
-	STRCPY(src - 1, src);		/* remove backslash */
+	mch_memmove(src - 1, src, STRLEN(src) + 1);	/* remove backslash */
 	return NULL;
     }
 
