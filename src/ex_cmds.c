@@ -4885,7 +4885,8 @@ do_sub(eap)
 			    ++line2;
 			    /* move the cursor to the new line, like Vi */
 			    ++curwin->w_cursor.lnum;
-			    STRCPY(new_start, p1 + 1);	/* copy the rest */
+			    /* copy the rest */
+			    mch_memmove(new_start, p1 + 1, STRLEN(p1 + 1) + 1);
 			    p1 = new_start - 1;
 			}
 		    }
