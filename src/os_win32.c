@@ -1521,7 +1521,12 @@ mch_inchar(
 #endif
 		   )
 		{
+#ifdef FEAT_MBYTE
+		    n = (*mb_char2bytes)(typeahead[typeaheadlen] | 0x80,
+						    typeahead + typeaheadlen);
+#else
 		    typeahead[typeaheadlen] |= 0x80;
+#endif
 		    modifiers &= ~MOD_MASK_ALT;
 		}
 
