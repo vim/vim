@@ -1741,7 +1741,9 @@ do_one_cmd(cmdlinep, sourcing,
 	}
 
 	/* ignore comment and empty lines */
-	if (*ea.cmd == '"' || *ea.cmd == NUL)
+	if (*ea.cmd == '"')
+	    goto doend;
+	if (*ea.cmd == NUL)
 	{
 	    ex_pressedreturn = TRUE;
 	    goto doend;
