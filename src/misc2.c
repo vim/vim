@@ -964,7 +964,6 @@ free_all_mem()
 {
     buf_T	*buf, *nextbuf;
     static int	entered = FALSE;
-    win_T	*win;
 
     /* When we cause a crash here it is caught and Vim tries to exit cleanly.
      * Don't try freeing everything again. */
@@ -972,15 +971,17 @@ free_all_mem()
 	return;
     entered = TRUE;
 
+# ifdef FEAT_AUTOCMD
     block_autocmds();	    /* don't want to trigger autocommands here */
+# endif
 
-#ifdef FEAT_WINDOWS
+# ifdef FEAT_WINDOWS
     /* close all tabs and windows */
     if (first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (firstwin != lastwin)
 	do_cmdline_cmd((char_u *)"only!");
-#endif
+# endif
 
 # if defined(FEAT_SPELL)
     /* Free all spell info. */
@@ -1031,8 +1032,12 @@ free_all_mem()
     free_regexp_stuff();
     free_tag_stuff();
     free_cd_dir();
+# ifdef FEAT_EVAL
     set_expr_line(NULL);
+# endif
+# ifdef FEAT_DIFF
     diff_clear(curtab);
+# endif
     clear_sb_text();	      /* free any scrollback text */
 
     /* Free some global vars. */
@@ -1041,19 +1046,27 @@ free_all_mem()
     vim_free(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
+# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
+# endif
     set_keep_msg(NULL, 0);
     vim_free(ff_expand_buffer);
 
     /* Clear cmdline history. */
     p_hi = 0;
+# ifdef FEAT_CMDHIST
     init_history();
+# endif
 
 #ifdef FEAT_QUICKFIX
-    qf_free_all(NULL);
-    /* Free all location lists */
-    FOR_ALL_WINDOWS(win)
-	qf_free_all(win);
+    {
+	win_T	*win;
+
+	qf_free_all(NULL);
+	/* Free all location lists */
+	FOR_ALL_WINDOWS(win)
+	    qf_free_all(win);
+    }
 #endif
 
     /* Close all script inputs. */

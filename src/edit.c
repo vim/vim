@@ -2236,7 +2236,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 	    while (i < actual_len && (p - IObuff + 6) < IOSIZE)
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
-		    p += mb_char2bytes(wca[i++], p);
+		    p += (*mb_char2bytes)(wca[i++], p);
 		else
 #endif
 		    *(p++) = wca[i++];
@@ -6444,8 +6444,10 @@ free_last_insert()
 {
     vim_free(last_insert);
     last_insert = NULL;
+# ifdef FEAT_INS_EXPAND
     vim_free(compl_orig_text);
     compl_orig_text = NULL;
+# endif
 }
 #endif
 
