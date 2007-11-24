@@ -2963,6 +2963,57 @@ find_ucmd(eap, p, full, xp, compl)
 #endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+static struct cmdmod
+{
+    char	*name;
+    int		minlen;
+    int		has_count;  /* :123verbose  :3tab */
+} cmdmods[] = {
+    {"aboveleft", 3, FALSE},
+    {"belowright", 3, FALSE},
+    {"botright", 2, FALSE},
+    {"browse", 3, FALSE},
+    {"confirm", 4, FALSE},
+    {"hide", 3, FALSE},
+    {"keepalt", 5, FALSE},
+    {"keepjumps", 5, FALSE},
+    {"keepmarks", 3, FALSE},
+    {"leftabove", 5, FALSE},
+    {"lockmarks", 3, FALSE},
+    {"rightbelow", 6, FALSE},
+    {"sandbox", 3, FALSE},
+    {"silent", 3, FALSE},
+    {"tab", 3, TRUE},
+    {"topleft", 2, FALSE},
+    {"verbose", 4, TRUE},
+    {"vertical", 4, FALSE},
+};
+
+/*
+ * Return length of a command modifier (including optional count).
+ * Return zero when it's not a modifier.
+ */
+    int
+modifier_len(cmd)
+    char_u	*cmd;
+{
+    int		i, j;
+    char_u	*p = cmd;
+
+    if (VIM_ISDIGIT(*cmd))
+	p = skipwhite(skipdigits(cmd));
+    for (i = 0; i < sizeof(cmdmods) / sizeof(struct cmdmod); ++i)
+    {
+	for (j = 0; p[j] != NUL; ++j)
+	    if (p[j] != cmdmods[i].name[j])
+		break;
+	if (!isalpha(p[j]) && j >= cmdmods[i].minlen
+					&& (p == cmd || cmdmods[i].has_count))
+	    return j + (p - cmd);
+    }
+    return 0;
+}
+
 /*
  * Return > 0 if an Ex command "name" exists.
  * Return 2 if there is an exact match.
@@ -2977,30 +3028,6 @@ cmd_exists(name)
     int		i;
     int		j;
     char_u	*p;
-    static struct cmdmod
-    {
-	char	*name;
-	int	minlen;
-    } cmdmods[] = {
-	{"aboveleft", 3},
-	{"belowright", 3},
-	{"botright", 2},
-	{"browse", 3},
-	{"confirm", 4},
-	{"hide", 3},
-	{"keepalt", 5},
-	{"keepjumps", 5},
-	{"keepmarks", 3},
-	{"leftabove", 5},
-	{"lockmarks", 3},
-	{"rightbelow", 6},
-	{"sandbox", 3},
-	{"silent", 3},
-	{"tab", 3},
-	{"topleft", 2},
-	{"verbose", 4},
-	{"vertical", 4},
-    };
 
     /* Check command modifiers. */
     for (i = 0; i < sizeof(cmdmods) / sizeof(struct cmdmod); ++i)

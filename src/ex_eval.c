@@ -2269,9 +2269,18 @@ ex_endfunction(eap)
 has_loop_cmd(p)
     char_u	*p;
 {
-    p = skipwhite(p);
-    while (*p == ':')
-	p = skipwhite(p + 1);
+    int		len;
+
+    /* skip modifiers, white space and ':' */
+    for (;;)
+    {
+	while (*p == ' ' || *p == '\t' || *p == ':')
+	    ++p;
+	len = modifier_len(p);
+	if (len == 0)
+	    break;
+	p += len;
+    }
     if ((p[0] == 'w' && p[1] == 'h')
 	    || (p[0] == 'f' && p[1] == 'o' && p[2] == 'r'))
 	return TRUE;
