@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 Jan 09
+" Last Change:	2007 Nov 19
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -658,7 +658,6 @@ func! s:BMShow(...)
   let buf = 1
   while buf <= bufnr('$')
     if bufexists(buf) && !isdirectory(bufname(buf)) && buflisted(buf)
-					    \ && !getbufvar(buf, "&bufsecret")
       let s:bmenu_count = s:bmenu_count + 1
     endif
     let buf = buf + 1
@@ -671,7 +670,6 @@ func! s:BMShow(...)
   let buf = 1
   while buf <= bufnr('$')
     if bufexists(buf) && !isdirectory(bufname(buf)) && buflisted(buf)
-					    \ && !getbufvar(buf, "&bufsecret")
       call <SID>BMFilename(bufname(buf), buf)
     endif
     let buf = buf + 1
