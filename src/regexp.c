@@ -2770,7 +2770,8 @@ skipchr()
     {
 #ifdef FEAT_MBYTE
 	if (enc_utf8)
-	    prevchr_len += utf_char2len(mb_ptr2char(regparse + prevchr_len));
+	    /* exclude composing chars that mb_ptr2len does include */
+	    prevchr_len += utf_ptr2len(regparse + prevchr_len);
 	else if (has_mbyte)
 	    prevchr_len += (*mb_ptr2len)(regparse + prevchr_len);
 	else
