@@ -310,7 +310,7 @@ mch_write(s, len)
 }
 
 /*
- * mch_inchar(): low level input funcion.
+ * mch_inchar(): low level input function.
  * Get a characters from the keyboard.
  * Return the number of characters that are available.
  * If wtime == 0 do not wait for characters.
@@ -1567,18 +1567,19 @@ get_x11_windis()
 #ifdef FEAT_XCLIPBOARD
     if (xterm_dpy != NULL && x11_window != 0)
     {
-	/* Checked it already. */
-	if (x11_display_from == XD_XTERM)
-	    return OK;
-
-	/*
-	 * If the X11 display was opened here before, for the window where Vim
-	 * was started, close that one now to avoid a memory leak.
-	 */
-	if (x11_display_from == XD_HERE && x11_display != NULL)
-	    XCloseDisplay(x11_display);
-	x11_display = xterm_dpy;
-	x11_display_from = XD_XTERM;
+	/* We may have checked it already, but Gnome terminal can move us to
+	 * another window, so we need to check every time. */
+	if (x11_display_from != XD_XTERM)
+	{
+	    /*
+	     * If the X11 display was opened here before, for the window where
+	     * Vim was started, close that one now to avoid a memory leak.
+	     */
+	    if (x11_display_from == XD_HERE && x11_display != NULL)
+		XCloseDisplay(x11_display);
+	    x11_display = xterm_dpy;
+	    x11_display_from = XD_XTERM;
+	}
 	if (test_x11_window(x11_display) == FAIL)
 	{
 	    /* probably bad $WINDOWID */
@@ -2421,7 +2422,7 @@ mch_isFullName(fname)
 /*
  * Set the case of the file name, if it already exists.  This will cause the
  * file name to remain exactly the same.
- * Only required for file systems where case is ingored and preserved.
+ * Only required for file systems where case is ignored and preserved.
  */
 /*ARGSUSED*/
     void
@@ -4653,7 +4654,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 	ret = poll(fds, nfd, towait);
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
-	    /* MzThreads scheduling is required and timeout occured */
+	    /* MzThreads scheduling is required and timeout occurred */
 	    finished = FALSE;
 # endif
 
@@ -4801,7 +4802,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 #endif
 # ifdef FEAT_MZSCHEME
 	if (ret == 0 && mzquantum_used)
-	    /* loop if MzThreads must be scheduled and timeout occured */
+	    /* loop if MzThreads must be scheduled and timeout occurred */
 	    finished = FALSE;
 # endif
 
@@ -5191,7 +5192,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	{
 	    /* When using system() always add extra quotes, because the shell
 	     * is started twice.  Otherwise put a backslash before special
-	     * characters, except insice ``. */
+	     * characters, except inside ``. */
 #ifdef USE_SYSTEM
 	    STRCAT(command, " \"");
 	    STRCAT(command, pat[i]);
@@ -5675,7 +5676,7 @@ gpm_open()
 	    /* gpm library tries to handling TSTP causes
 	     * problems. Anyways, we close connection to Gpm whenever
 	     * we are going to suspend or starting an external process
-	     * so we should'nt  have problem with this
+	     * so we shouldn't  have problem with this
 	     */
 	    signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
 	    return 1; /* succeed */
