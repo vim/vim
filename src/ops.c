@@ -927,8 +927,8 @@ get_register(name, copy)
     int		name;
     int		copy;	/* make a copy, if FALSE make register empty. */
 {
-    static struct yankreg	*reg;
-    int				i;
+    struct yankreg	*reg;
+    int			i;
 
 #ifdef FEAT_CLIPBOARD
     /* When Visual area changed, may have to update selection.  Obtain the
@@ -967,7 +967,7 @@ get_register(name, copy)
 }
 
 /*
- * Put "reg" into register "name".  Free any previous contents.
+ * Put "reg" into register "name".  Free any previous contents and "reg".
  */
     void
 put_register(name, reg)
@@ -977,6 +977,7 @@ put_register(name, reg)
     get_yank_register(name, 0);
     free_yank_all();
     *y_current = *(struct yankreg *)reg;
+    vim_free(reg);
 
 # ifdef FEAT_CLIPBOARD
     /* Send text written to clipboard register to the clipboard. */
