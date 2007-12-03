@@ -290,6 +290,11 @@ static struct
 
 /* Local variables */
 static int		s_button_pending = -1;
+
+/* s_getting_focus is set when we got focus but didn't see mouse-up event yet,
+ * so don't reset s_button_pending. */
+static int		s_getting_focus = FALSE;
+
 static int		s_x_pending;
 static int		s_y_pending;
 static UINT		s_kFlags_pending;
@@ -671,6 +676,8 @@ _OnMouseEvent(
 {
     int vim_modifiers = 0x0;
 
+    s_getting_focus = FALSE;
+
     if (keyFlags & MK_SHIFT)
 	vim_modifiers |= MOUSE_SHIFT;
     if (keyFlags & MK_CONTROL)
@@ -792,6 +799,7 @@ _OnMouseMoveOrRelease(
 {
     int button;
 
+    s_getting_focus = FALSE;
     if (s_button_pending > -1)
     {
 	/* Delayed action for mouse down event */
@@ -1951,8 +1959,10 @@ gui_mch_wait_for_chars(int wtime)
 	    allow_scrollbar = FALSE;
 
 	    /* Clear pending mouse button, the release event may have been
-	     * taken by the dialog window. */
-	    s_button_pending = -1;
+	     * taken by the dialog window.  But don't do this when getting
+	     * focus, we need the mouse-up event then. */
+	    if (!s_getting_focus)
+		s_button_pending = -1;
 
 	    return OK;
 	}
@@ -2702,6 +2712,7 @@ _OnSetFocus(
     HWND hwndOldFocus)
 {
     gui_focus_change(TRUE);
+    s_getting_focus = TRUE;
     (void)MyWindowProc(hwnd, WM_SETFOCUS, (WPARAM)hwndOldFocus, 0);
 }
 
@@ -2711,6 +2722,7 @@ _OnKillFocus(
     HWND hwndNewFocus)
 {
     gui_focus_change(FALSE);
+    s_getting_focus = FALSE;
     (void)MyWindowProc(hwnd, WM_KILLFOCUS, (WPARAM)hwndNewFocus, 0);
 }
 
