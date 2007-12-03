@@ -212,7 +212,7 @@ static void xxdline __P((FILE *, char *, int));
 
 #define TRY_SEEK	/* attempt to use lseek, or skip forward by reading */
 #define COLS 256	/* change here, if you ever need more columns */
-#define LLEN (9 + (5*COLS-1)/2 + 2 + COLS)
+#define LLEN (11 + (9*COLS-1)/1 + COLS + 2)
 
 char hexxa[] = "0123456789abcdef0123456789ABCDEF", *hexx = hexxa;
 
@@ -590,7 +590,8 @@ char *argv[];
       default:			octspergrp = 0; break;
       }
 
-  if (cols < 1 || (!hextype && (cols > COLS)))
+  if (cols < 1 || ((hextype == HEX_NORMAL || hextype == HEX_BITS)
+							    && (cols > COLS)))
     {
       fprintf(stderr, "%s: invalid number of columns (max. %d).\n", pname, COLS);
       exit(1);
@@ -750,6 +751,7 @@ char *argv[];
 	}
       if (ebcdic)
 	e = (e < 64) ? '.' : etoa64[e-64];
+      /* When changing this update definition of LLEN above. */
       l[11 + (grplen * cols - 1)/octspergrp + p] =
 #ifdef __MVS__
 	  (e >= 64)
