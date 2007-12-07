@@ -1186,10 +1186,10 @@ getcmdline(firstc, count, indent)
 	case K_LEFT:
 	case K_S_LEFT:
 	case K_C_LEFT:
+		if (ccline.cmdpos == 0)
+		    goto cmdline_not_changed;
 		do
 		{
-		    if (ccline.cmdpos == 0)
-			break;
 		    --ccline.cmdpos;
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)	/* move to first byte of char */
@@ -1198,7 +1198,8 @@ getcmdline(firstc, count, indent)
 #endif
 		    ccline.cmdspos -= cmdline_charsize(ccline.cmdpos);
 		}
-		while ((c == K_S_LEFT || c == K_C_LEFT
+		while (ccline.cmdpos > 0
+			&& (c == K_S_LEFT || c == K_C_LEFT
 			       || (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_CTRL)))
 			&& ccline.cmdbuff[ccline.cmdpos - 1] != ' ');
 #ifdef FEAT_MBYTE
