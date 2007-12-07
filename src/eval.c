@@ -15826,7 +15826,7 @@ f_system(argvars, rettv)
     FILE	*fd;
 
     if (check_restricted() || check_secure())
-	return;
+	goto done;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -15837,7 +15837,7 @@ f_system(argvars, rettv)
 	if ((infile = vim_tempname('i')) == NULL)
 	{
 	    EMSG(_(e_notmp));
-	    return;
+	    goto done;
 	}
 
 	fd = mch_fopen((char *)infile, WRITEBIN);
