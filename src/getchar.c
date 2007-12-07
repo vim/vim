@@ -253,8 +253,9 @@ add_buff(buf, s, slen)
 	return;
     }
     else if (buf->bh_index != 0)
-	STRCPY(buf->bh_first.b_next->b_str,
-				 buf->bh_first.b_next->b_str + buf->bh_index);
+	mch_memmove(buf->bh_first.b_next->b_str,
+		    buf->bh_first.b_next->b_str + buf->bh_index,
+		    STRLEN(buf->bh_first.b_next->b_str + buf->bh_index) + 1);
     buf->bh_index = 0;
 
     if (buf->bh_space >= (int)slen)
