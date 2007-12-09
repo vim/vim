@@ -1650,7 +1650,7 @@ viminfo_error(errnum, message, line)
 {
     vim_snprintf((char *)IObuff, IOSIZE, _("%sviminfo: %s in line: "),
 							     errnum, message);
-    STRNCAT(IObuff, line, IOSIZE - STRLEN(IObuff));
+    STRNCAT(IObuff, line, IOSIZE - STRLEN(IObuff) - 1);
     if (IObuff[STRLEN(IObuff) - 1] == '\n')
 	IObuff[STRLEN(IObuff) - 1] = NUL;
     emsg(IObuff);

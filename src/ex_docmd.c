@@ -2660,7 +2660,7 @@ doend:
 		errormsg = IObuff;
 	    }
 	    STRCAT(errormsg, ": ");
-	    STRNCAT(errormsg, *cmdlinep, IOSIZE - STRLEN(IObuff));
+	    STRNCAT(errormsg, *cmdlinep, IOSIZE - STRLEN(IObuff) - 1);
 	}
 	emsg(errormsg);
     }
