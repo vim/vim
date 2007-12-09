@@ -8189,6 +8189,29 @@ ins_del()
     AppendCharToRedobuff(K_DEL);
 }
 
+static void ins_bs_one __ARGS((colnr_T *vcolp));
+
+/*
+ * Delete one character for ins_bs().
+ */
+    static void
+ins_bs_one(vcolp)
+    colnr_T	*vcolp;
+{
+    dec_cursor();
+    getvcol(curwin, &curwin->w_cursor, vcolp, NULL, NULL);
+    if (State & REPLACE_FLAG)
+    {
+	/* Don't delete characters before the insert point when in
+	 * Replace mode */
+	if (curwin->w_cursor.lnum != Insstart.lnum
+		|| curwin->w_cursor.col >= Insstart.col)
+	    replace_do_bs();
+    }
+    else
+	(void)del_char(FALSE);
+}
+
 /*
  * Handle Backspace, delete-word and delete-line in Insert mode.
  * Return TRUE when backspace was actually used.
@@ -8418,9 +8441,7 @@ ins_bs(c, mode, inserted_space_p)
 	    int		ts;
 	    colnr_T	vcol;
 	    colnr_T	want_vcol;
-#if 0
-	    int		extra = 0;
-#endif
+	    colnr_T	start_vcol;
 
 	    *inserted_space_p = FALSE;
 	    if (p_sta && in_indent)
@@ -8431,6 +8452,7 @@ ins_bs(c, mode, inserted_space_p)
 	     * 'showbreak' may get in the way, need to get the last column of
 	     * the previous character. */
 	    getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
+	    start_vcol = vcol;
 	    dec_cursor();
 	    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &want_vcol);
 	    inc_cursor();
@@ -8439,30 +8461,7 @@ ins_bs(c, mode, inserted_space_p)
 	    /* delete characters until we are at or before want_vcol */
 	    while (vcol > want_vcol
 		    && (cc = *(ml_get_cursor() - 1), vim_iswhite(cc)))
-	    {
-		dec_cursor();
-		getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
-		if (State & REPLACE_FLAG)
-		{
-		    /* Don't delete characters before the insert point when in
-		     * Replace mode */
-		    if (curwin->w_cursor.lnum != Insstart.lnum
-			    || curwin->w_cursor.col >= Insstart.col)
-		    {
-#if 0	/* what was this for?  It causes problems when sw != ts. */
-			if (State == REPLACE && (int)vcol < want_vcol)
-			{
-			    (void)del_char(FALSE);
-			    extra = 2;	/* don't pop too much */
-			}
-			else
-#endif
-			    replace_do_bs();
-		    }
-		}
-		else
-		    (void)del_char(FALSE);
-	    }
+		ins_bs_one(&vcol);
 
 	    /* insert extra spaces until we are at want_vcol */
 	    while (vcol < want_vcol)
@@ -8479,22 +8478,16 @@ ins_bs(c, mode, inserted_space_p)
 #endif
 		{
 		    ins_str((char_u *)" ");
-		    if ((State & REPLACE_FLAG) /* && extra <= 1 */)
-		    {
-#if 0
-			if (extra)
-			    replace_push_off(NUL);
-			else
-#endif
-			    replace_push(NUL);
-		    }
-#if 0
-		    if (extra == 2)
-			extra = 1;
-#endif
+		    if ((State & REPLACE_FLAG))
+			replace_push(NUL);
 		}
 		getvcol(curwin, &curwin->w_cursor, &vcol, NULL, NULL);
 	    }
+
+	    /* If we are now back where we started delete one character.  Can
+	     * happen when using 'sts' and 'linebreak'. */
+	    if (vcol >= start_vcol)
+		ins_bs_one(&vcol);
 	}
 
 	/*
