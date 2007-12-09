@@ -3810,11 +3810,11 @@ regmatch(scan)
 	    break;
 
 	  case RE_BOF:
-	    /* Passing -1 to the getline() function provided for the search
-	     * should always return NULL if the current line is the first
-	     * line of the file. */
+	    /* We're not at the beginning of the file when below the first
+	     * line where we started, not at the start of the line or we
+	     * didn't start at the first line of the buffer. */
 	    if (reglnum != 0 || reginput != regline
-			|| (REG_MULTI && reg_getline((linenr_T)-1) != NULL))
+					  || (REG_MULTI && reg_firstlnum > 1))
 		status = RA_NOMATCH;
 	    break;
 
