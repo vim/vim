@@ -63,8 +63,9 @@
         @else:
         @   arch = "ppc"
         :print Building for $arch system
+        config_args = `file2string("config.arg")`
         :sys CONFIG_STATUS=auto/config.status
-                ./configure.aap `file2string("config.arg")`
+                ./configure.aap $config_args
                     --with-mac-arch=$arch
                     --cache-file=auto/config.cache
 
@@ -440,11 +441,13 @@ auto/pathdef.c: auto/config.aap
         :print >> $target char_u *all_lflags = (char_u *)"$linkcmd";
         @if _no.get("COMPILEDBY"):
             who = $COMPILEDBY
-            where = ''
+            where =
         @else:
             :syseval whoami | :eval re.sub("\n", "", stdin) | :assign who
 
             :syseval hostname | :eval re.sub("\n", "", stdin) | :assign where
+        @who = string.replace(who, '"', '\\"')
+        @where = string.replace(where, '"', '\\"')
         :print >> $target char_u *compiled_user = (char_u *)"$who";
         :print >> $target char_u *compiled_sys = (char_u *)"$where";
 
