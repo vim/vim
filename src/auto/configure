@@ -4445,7 +4445,7 @@ if test "${with_tclsh+set}" = set; then
   tclsh_name="$withval"; echo "$as_me:$LINENO: result: $tclsh_name" >&5
 echo "${ECHO_T}$tclsh_name" >&6
 else
-  tclsh_name="tclsh8.4"; echo "$as_me:$LINENO: result: no" >&5
+  tclsh_name="tclsh8.5"; echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
 fi;
   # Extract the first word of "$tclsh_name", so it can be a program name with args.
@@ -4489,7 +4489,49 @@ fi
 
 
 
-    if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.4"; then
+    if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.5"; then
+    tclsh_name="tclsh8.4"
+    # Extract the first word of "$tclsh_name", so it can be a program name with args.
+set dummy $tclsh_name; ac_word=$2
+echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6
+if test "${ac_cv_path_vi_cv_path_tcl+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  case $vi_cv_path_tcl in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_vi_cv_path_tcl="$vi_cv_path_tcl" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if $as_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_vi_cv_path_tcl="$as_dir/$ac_word$ac_exec_ext"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+
+  ;;
+esac
+fi
+vi_cv_path_tcl=$ac_cv_path_vi_cv_path_tcl
+
+if test -n "$vi_cv_path_tcl"; then
+  echo "$as_me:$LINENO: result: $vi_cv_path_tcl" >&5
+echo "${ECHO_T}$vi_cv_path_tcl" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+
+  fi
+  if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.4"; then
     tclsh_name="tclsh8.2"
     # Extract the first word of "$tclsh_name", so it can be a program name with args.
 set dummy $tclsh_name; ac_word=$2
@@ -4649,6 +4691,7 @@ echo "${ECHO_T}<not found>" >&6
 echo $ECHO_N "checking for location of tclConfig.sh script... $ECHO_C" >&6
 	if test "x$MACOSX" != "xyes"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
+	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
 	  	  tclcnf="/System/Library/Frameworks/Tcl.framework"
 	fi
@@ -4668,6 +4711,7 @@ echo "${ECHO_T}<not found>" >&6
 	  echo "$as_me:$LINENO: checking for Tcl library by myself" >&5
 echo $ECHO_N "checking for Tcl library by myself... $ECHO_C" >&6
 	  tcllib=`echo $tclinc | sed s/include/lib/g`
+	  tcllib="$tcllib `echo $tclinc | sed s/include/lib64/g`"
 	  for ext in .so .a ; do
 	    for ver in "" $tclver ; do
 	      for try in $tcllib ; do

@@ -759,15 +759,19 @@ AC_MSG_RESULT($enable_tclinterp)
 
 if test "$enable_tclinterp" = "yes"; then
 
-  dnl on FreeBSD tclsh is a silly script, look for tclsh8.[420]
+  dnl on FreeBSD tclsh is a silly script, look for tclsh8.[5420]
   AC_MSG_CHECKING(--with-tclsh argument)
   AC_ARG_WITH(tclsh, [  --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)],
 	tclsh_name="$withval"; AC_MSG_RESULT($tclsh_name),
-	tclsh_name="tclsh8.4"; AC_MSG_RESULT(no))
+	tclsh_name="tclsh8.5"; AC_MSG_RESULT(no))
   AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
   AC_SUBST(vi_cv_path_tcl)
 
-  dnl when no specific version specified, also try 8.2 and 8.0
+  dnl when no specific version specified, also try 8.4, 8.2 and 8.0
+  if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.5"; then
+    tclsh_name="tclsh8.4"
+    AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
+  fi
   if test "X$vi_cv_path_tcl" = "X" -a $tclsh_name = "tclsh8.4"; then
     tclsh_name="tclsh8.2"
     AC_PATH_PROG(vi_cv_path_tcl, $tclsh_name)
@@ -810,6 +814,7 @@ if test "$enable_tclinterp" = "yes"; then
 	AC_MSG_CHECKING(for location of tclConfig.sh script)
 	if test "x$MACOSX" != "xyes"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
+	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
 	  dnl For Mac OS X 10.3, use the OS-provided framework location
 	  tclcnf="/System/Library/Frameworks/Tcl.framework"
@@ -830,6 +835,7 @@ if test "$enable_tclinterp" = "yes"; then
 	  AC_MSG_RESULT(<not found>)
 	  AC_MSG_CHECKING(for Tcl library by myself)
 	  tcllib=`echo $tclinc | sed s/include/lib/g`
+	  tcllib="$tcllib `echo $tclinc | sed s/include/lib64/g`"
 	  for ext in .so .a ; do
 	    for ver in "" $tclver ; do
 	      for try in $tcllib ; do
