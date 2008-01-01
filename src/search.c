@@ -2319,7 +2319,9 @@ check_linecomment(line)
 #endif
     while ((p = vim_strchr(p, '/')) != NULL)
     {
-	if (p[1] == '/')
+	/* accept a double /, unless it's preceded with * and followed by *,
+	 * because * / / * is an end and start of a C comment */
+	if (p[1] == '/' && (p == line || p[-1] != '*' || p[2] != '*'))
 	    break;
 	++p;
     }
