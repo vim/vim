@@ -14,10 +14,123 @@ STARTTEST
 :"    etc.
 :"  When there is no match use only the first two items.
 :let tl = []
+:call add(tl, ['ab', 'aab', 'ab'])
 :call add(tl, ['b', 'abcdef', 'b'])
 :call add(tl, ['bc*', 'abccccdef', 'bcccc'])
 :call add(tl, ['bc\{-}', 'abccccdef', 'b'])
 :call add(tl, ['bc\{-}\(d\)', 'abccccdef', 'bccccd', 'd'])
+:call add(tl, ['bc*', 'abbdef', 'b'])
+:call add(tl, ['c*', 'ccc', 'ccc'])
+:call add(tl, ['bc*', 'abdef', 'b'])
+:call add(tl, ['c*', 'abdef', ''])
+:call add(tl, ['bc\+', 'abccccdef', 'bcccc'])
+:call add(tl, ['bc\+', 'abdef']) "no match
+:"
+:"operator \|
+:call add(tl, ['a\|ab', 'cabd', 'a']) "alternation is ordered
+:"
+:call add(tl, ['c\?', 'ccb', 'c'])
+:call add(tl, ['bc\?', 'abd', 'b'])
+:call add(tl, ['bc\?', 'abccd', 'bc'])
+:"
+:call add(tl, ['\va{1}', 'ab', 'a'])
+:"
+:call add(tl, ['\va{2}', 'aa', 'aa'])
+:call add(tl, ['\va{2}', 'caad', 'aa'])
+:call add(tl, ['\va{2}', 'aba'])
+:call add(tl, ['\va{2}', 'ab'])
+:call add(tl, ['\va{2}', 'abaa', 'aa'])
+:call add(tl, ['\va{2}', 'aaa', 'aa'])
+:"
+:call add(tl, ['\vb{1}', 'abca', 'b'])
+:call add(tl, ['\vba{2}', 'abaa', 'baa'])
+:call add(tl, ['\vba{3}', 'aabaac'])
+:"
+:call add(tl, ['\v(ab){1}', 'ab', 'ab', 'ab'])
+:call add(tl, ['\v(ab){1}', 'dabc', 'ab', 'ab'])
+:call add(tl, ['\v(ab){1}', 'acb'])
+:"
+:call add(tl, ['\v(ab){0,2}', 'acb', "", ""])
+:call add(tl, ['\v(ab){0,2}', 'ab', 'ab', 'ab'])
+:call add(tl, ['\v(ab){1,2}', 'ab', 'ab', 'ab'])
+:call add(tl, ['\v(ab){1,2}', 'ababc', 'abab', 'ab'])
+:call add(tl, ['\v(ab){2,4}', 'ababcab', 'abab', 'ab'])
+:call add(tl, ['\v(ab){2,4}', 'abcababa', 'abab', 'ab'])
+:"
+:call add(tl, ['\v(ab){2}', 'abab', 'abab', 'ab'])
+:call add(tl, ['\v(ab){2}', 'cdababe', 'abab', 'ab'])
+:call add(tl, ['\v(ab){2}', 'abac'])
+:call add(tl, ['\v(ab){2}', 'abacabab', 'abab', 'ab'])
+:call add(tl, ['\v((ab){2}){2}', 'abababab', 'abababab', 'abab', 'ab'])
+:call add(tl, ['\v((ab){2}){2}', 'abacabababab', 'abababab', 'abab', 'ab'])
+:"
+:call add(tl, ['\v(a{1}){1}', 'a', 'a', 'a'])
+:call add(tl, ['\v(a{2}){1}', 'aa', 'aa', 'aa'])
+:call add(tl, ['\v(a{2}){1}', 'aaac', 'aa', 'aa'])
+:call add(tl, ['\v(a{2}){1}', 'daaac', 'aa', 'aa'])
+:call add(tl, ['\v(a{1}){2}', 'daaac', 'aa', 'a'])
+:call add(tl, ['\v(a{1}){2}', 'aaa', 'aa', 'a'])
+:call add(tl, ['\v(a{2})+', 'adaac', 'aa', 'aa'])
+:call add(tl, ['\v(a{2})+', 'aa', 'aa', 'aa'])
+:call add(tl, ['\v(a{2}){1}', 'aa', 'aa', 'aa'])
+:call add(tl, ['\v(a{1}){2}', 'aa', 'aa', 'a'])
+:call add(tl, ['\v(a{1}){1}', 'a', 'a', 'a'])
+:call add(tl, ['\v(a{2}){2}', 'aaaa', 'aaaa', 'aa'])
+:call add(tl, ['\v(a{2}){2}', 'aaabaaaa', 'aaaa', 'aa'])
+:"
+:call add(tl, ['\v(a+){2}', 'dadaac', 'aa', 'a'])
+:call add(tl, ['\v(a{3}){2}', 'aaaaaaa', 'aaaaaa', 'aaa'])
+:"
+:call add(tl, ['\v(a{1,2}){2}', 'daaac', 'aaa', 'a'])
+:call add(tl, ['\v(a{1,3}){2}', 'daaaac', 'aaaa', 'a'])
+:call add(tl, ['\v(a{1,3}){2}', 'daaaaac', 'aaaaa', 'aa'])
+:call add(tl, ['\v(a{1,3}){3}', 'daac'])
+:call add(tl, ['\v(a{1,2}){2}', 'dac'])
+:call add(tl, ['\v(a+)+', 'daac', 'aa', 'aa'])
+:call add(tl, ['\v(a+)+', 'aaa', 'aaa', 'aaa'])
+:call add(tl, ['\v(a+){1,2}', 'aaa', 'aaa', 'aaa'])
+:call add(tl, ['\v(a+)(a+)', 'aaa', 'aaa', 'aa', 'a'])
+:call add(tl, ['\v(a{3})+', 'daaaac', 'aaa', 'aaa'])
+:call add(tl, ['\v(a|b|c)+', 'aacb', 'aacb', 'b'])
+:call add(tl, ['\v(a|b|c){2}', 'abcb', 'ab', 'b'])
+:call add(tl, ['\v(abc){2}', 'abcabd', ])
+:call add(tl, ['\v(abc){2}', 'abdabcabc','abcabc', 'abc'])
+:"
+:call add(tl, ['a*', 'cc', ''])
+:call add(tl, ['\v(a*)+', 'cc', ''])
+:call add(tl, ['\v((ab)+)+', 'ab', 'ab', 'ab', 'ab'])
+:call add(tl, ['\v(((ab)+)+)+', 'ab', 'ab', 'ab', 'ab', 'ab'])
+:call add(tl, ['\v(((ab)+)+)+', 'dababc', 'abab', 'abab', 'abab', 'ab'])
+:call add(tl, ['\v(a{0,2})+', 'cc', ''])
+:call add(tl, ['\v(a*)+', '', ''])
+:call add(tl, ['\v((a*)+)+', '', ''])
+:call add(tl, ['\v((ab)*)+', '', ''])
+:call add(tl, ['\va{1,3}', 'aab', 'aa'])
+:call add(tl, ['\va{2,3}', 'abaa', 'aa'])
+:"
+:call add(tl, ['\v((ab)+|c*)+', 'abcccaba', 'abcccab', '', 'ab'])
+:call add(tl, ['\v(a{2})|(b{3})', 'bbabbbb', 'bbb', '', 'bbb'])
+:call add(tl, ['\va{2}|b{2}', 'abab'])
+:call add(tl, ['\v(a)+|(c)+', 'bbacbaacbbb', 'a', 'a'])
+:call add(tl, ['\vab{2,3}c', 'aabbccccccccccccc', 'abbc'])
+:call add(tl, ['\vab{2,3}c', 'aabbbccccccccccccc', 'abbbc'])
+:call add(tl, ['\vab{2,3}cd{2,3}e', 'aabbbcddee', 'abbbcdde'])
+:call add(tl, ['\va(bc){2}d', 'aabcbfbc' ])
+:call add(tl, ['\va*a{2}', 'a', ])
+:call add(tl, ['\va*a{2}', 'aa', 'aa' ])
+:call add(tl, ['\va*a{2}', 'aaa', 'aaa' ])
+:call add(tl, ['\va*a{2}', 'bbbabcc', ])
+:call add(tl, ['\va*b*|a*c*', 'a', 'a'])
+:call add(tl, ['\va{1}b{1}|a{1}b{1}', ''])
+:"
+:"submatches
+:call add(tl, ['\v(a)', 'ab', 'a', 'a'])
+:call add(tl, ['\v(a)(b)', 'ab', 'ab', 'a', 'b'])
+:call add(tl, ['\v(ab)(b)(c)', 'abbc', 'abbc', 'ab', 'b', 'c'])
+:call add(tl, ['\v((a)(b))', 'ab', 'ab', 'ab', 'a', 'b'])
+:call add(tl, ['\v(a)|(b)', 'ab', 'a', 'a'])
+:"
+:call add(tl, ['\v(a*)+', 'aaaa', 'aaaa', ''])
 :call add(tl, ['x', 'abcdef'])
 :"
 :for t in tl
