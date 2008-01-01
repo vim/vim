@@ -93,6 +93,8 @@ do_debug(cmd)
     int		save_emsg_silent = emsg_silent;
     int		save_redir_off = redir_off;
     tasave_T	typeaheadbuf;
+    int		typeahead_saved = FALSE;
+    int		save_ignore_script;
 # ifdef FEAT_EX_EXTRA
     int		save_ex_normal_busy;
 # endif
@@ -159,18 +161,26 @@ do_debug(cmd)
 	 * This makes sure we get input from the user here and don't interfere
 	 * with the commands being executed.  Reset "ex_normal_busy" to avoid
 	 * the side effects of using ":normal". Save the stuff buffer and make
-	 * it empty. */
+	 * it empty. Set ignore_script to avoid reading from script input. */
 # ifdef FEAT_EX_EXTRA
 	save_ex_normal_busy = ex_normal_busy;
 	ex_normal_busy = 0;
 # endif
 	if (!debug_greedy)
+	{
 	    save_typeahead(&typeaheadbuf);
+	    typeahead_saved = TRUE;
+	    save_ignore_script = ignore_script;
+	    ignore_script = TRUE;
+	}
 
 	cmdline = getcmdline_prompt('>', NULL, 0, EXPAND_NOTHING, NULL);
 
-	if (!debug_greedy)
+	if (typeahead_saved)
+	{
 	    restore_typeahead(&typeaheadbuf);
+	    ignore_script = save_ignore_script;
+	}
 # ifdef FEAT_EX_EXTRA
 	ex_normal_busy = save_ex_normal_busy;
 # endif

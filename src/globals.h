@@ -954,6 +954,9 @@ EXTERN typebuf_T typebuf		/* typeahead buffer */
 EXTERN int	ex_normal_busy INIT(= 0); /* recursiveness of ex_normal() */
 EXTERN int	ex_normal_lock INIT(= 0); /* forbid use of ex_normal() */
 #endif
+#ifdef FEAT_EVAL
+EXTERN int	ignore_script INIT(= FALSE);  /* ignore script input */
+#endif
 EXTERN int	stop_insert_mode;	/* for ":stopinsert" and 'insertmode' */
 
 EXTERN int	KeyTyped;		/* TRUE if user typed current char */

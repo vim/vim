@@ -1279,8 +1279,14 @@ alloc_typebuf()
     void
 free_typebuf()
 {
-    vim_free(typebuf.tb_buf);
-    vim_free(typebuf.tb_noremap);
+    if (typebuf.tb_buf == typebuf_init)
+	EMSG2(_(e_intern2), "Free typebuf 1");
+    else
+	vim_free(typebuf.tb_buf);
+    if (typebuf.tb_buf == noremapbuf_init)
+	EMSG2(_(e_intern2), "Free typebuf 2");
+    else
+	vim_free(typebuf.tb_noremap);
 }
 
 /*
@@ -1359,6 +1365,11 @@ openscript(name, directly)
 	EMSG(_(e_nesting));
 	return;
     }
+#ifdef FEAT_EVAL
+    if (ignore_script)
+	/* Not reading from script, also don't open one.  Warning message? */
+	return;
+#endif
 
     if (scriptin[curscript] != NULL)	/* already reading script */
 	++curscript;
@@ -2346,7 +2357,7 @@ vgetorpeek(advance)
 						   current_menu->silent[idx]);
 				}
 			    }
-#endif /* FEAT_GUI */
+#endif /* FEAT_GUI && FEAT_MENU */
 			    continue;	/* try mapping again */
 			}
 
@@ -2862,11 +2873,15 @@ inchar(buf, maxlen, wait_time, tb_change_cnt)
     undo_off = FALSE;		    /* restart undo now */
 
     /*
-     * first try script file
-     *	If interrupted: Stop reading script files.
+     * Get a character from a script file if there is one.
+     * If interrupted: Stop reading script files, close them all.
      */
     script_char = -1;
-    while (scriptin[curscript] != NULL && script_char < 0)
+    while (scriptin[curscript] != NULL && script_char < 0
+#ifdef FEAT_EVAL
+	    && !ignore_script
+#endif
+	    )
     {
 	if (got_int || (script_char = getc(scriptin[curscript])) < 0)
 	{
