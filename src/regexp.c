@@ -1288,8 +1288,7 @@ reg(paren, flagp)
 }
 
 /*
- * regbranch - one alternative of an | operator
- *
+ * Handle one alternative of an | operator.
  * Implements the & operator.
  */
     static char_u *
@@ -1330,8 +1329,7 @@ regbranch(flagp)
 }
 
 /*
- * regbranch - one alternative of an | or & operator
- *
+ * Handle one alternative of an | or & operator.
  * Implements the concatenation operator.
  */
     static char_u *
@@ -1708,6 +1706,8 @@ regatom(flagp)
       case Magic('|'):
       case Magic('&'):
       case Magic(')'):
+	if (one_exactly)
+	    EMSG_ONE_RET_NULL;
 	EMSG_RET_NULL(_(e_internal));	/* Supposed to be caught earlier. */
 	/* NOTREACHED */
 
@@ -3106,7 +3106,7 @@ static colnr_T	ireg_maxcol;
  * slow, we keep one allocated piece of memory and only re-allocate it when
  * it's too small.  It's freed in vim_regexec_both() when finished.
  */
-static char_u	*reg_tofree;
+static char_u	*reg_tofree = NULL;
 static unsigned	reg_tofreelen;
 
 /*
