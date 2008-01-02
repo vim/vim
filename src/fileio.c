@@ -5556,7 +5556,7 @@ make_bom(buf, name)
 #endif
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_BROWSE) || \
-    defined(FEAT_QUICKFIX) || defined(PROTO)
+    defined(FEAT_QUICKFIX) || defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Try to find a shortname by comparing the fullname with the current
  * directory.
@@ -8546,6 +8546,8 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 
     /*
      * Set the file name to be used for <afile>.
+     * Make a copy to avoid that changing a buffer name or directory makes it
+     * invalid.
      */
     if (fname_io == NULL)
     {
@@ -8558,6 +8560,8 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     }
     else
 	autocmd_fname = fname_io;
+    if (autocmd_fname != NULL)
+	autocmd_fname = FullName_save(autocmd_fname, FALSE);
 
     /*
      * Set the buffer number to be used for <abuf>.
@@ -8740,6 +8744,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     vim_free(sourcing_name);
     sourcing_name = save_sourcing_name;
     sourcing_lnum = save_sourcing_lnum;
+    vim_free(autocmd_fname);
     autocmd_fname = save_autocmd_fname;
     autocmd_bufnr = save_autocmd_bufnr;
     autocmd_match = save_autocmd_match;

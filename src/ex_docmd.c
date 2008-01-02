@@ -7799,6 +7799,7 @@ static char_u	*prev_dir = NULL;
 free_cd_dir()
 {
     vim_free(prev_dir);
+    prev_dir = NULL;
 }
 #endif
 
@@ -9521,6 +9522,7 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 		    *errormsg = (char_u *)_("E495: no autocommand file name to substitute for \"<afile>\"");
 		    return NULL;
 		}
+		result = shorten_fname1(result);
 		break;
 
 	case SPEC_ABUF:		/* buffer number for autocommand */
