@@ -4212,11 +4212,6 @@ do_sub(eap)
 	sub_nlines = 0;
     }
 
-#ifdef FEAT_FKMAP	/* reverse the flow of the Farsi characters */
-    if (p_altkeymap && curwin->w_p_rl)
-	lrF_sub(cmd);
-#endif
-
     if (eap->cmdidx == CMD_tilde)
 	which_pat = RE_LAST;	/* use last used regexp */
     else
@@ -4252,6 +4247,10 @@ do_sub(eap)
 	}
 	else		/* find the end of the regexp */
 	{
+#ifdef FEAT_FKMAP	/* reverse the flow of the Farsi characters */
+	    if (p_altkeymap && curwin->w_p_rl)
+		lrF_sub(cmd);
+#endif
 	    which_pat = RE_LAST;	    /* use last used regexp */
 	    delimiter = *cmd++;		    /* remember delimiter character */
 	    pat = cmd;			    /* remember start of search pat */
