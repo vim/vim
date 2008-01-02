@@ -372,7 +372,7 @@ static void	ex_tag_cmd __ARGS((exarg_T *eap, char_u *name));
 static char_u	*arg_all __ARGS((void));
 #ifdef FEAT_SESSION
 static int	makeopens __ARGS((FILE *fd, char_u *dirnow));
-static int	put_view __ARGS((FILE *fd, win_T *wp, int add_edit, unsigned *flagp));
+static int	put_view __ARGS((FILE *fd, win_T *wp, int add_edit, unsigned *flagp, int current_arg_idx));
 static void	ex_loadview __ARGS((exarg_T *eap));
 static char_u	*get_view_file __ARGS((int c));
 static int	did_lcd;	/* whether ":lcd" was produced for a session */
@@ -8762,7 +8762,8 @@ ex_mkrc(eap)
 	    }
 	    else
 	    {
-		failed |= (put_view(fd, curwin, !using_vdir, flagp) == FAIL);
+		failed |= (put_view(fd, curwin, !using_vdir, flagp,
+								 -1) == FAIL);
 	    }
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)
@@ -9761,6 +9762,8 @@ makeopens(fd, dirnow)
     int		tabnr;
     win_T	*tab_firstwin;
     frame_T	*tab_topframe;
+    int		cur_arg_idx = 0;
+    int		next_arg_idx;
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		/* Save ALL buffers */
@@ -9976,11 +9979,18 @@ makeopens(fd, dirnow)
 	{
 	    if (!ses_do_win(wp))
 		continue;
-	    if (put_view(fd, wp, wp != edited_win, &ssop_flags) == FAIL)
+	    if (put_view(fd, wp, wp != edited_win, &ssop_flags,
+							 cur_arg_idx) == FAIL)
 		return FAIL;
 	    if (nr > 1 && put_line(fd, "wincmd w") == FAIL)
 		return FAIL;
+	    next_arg_idx = wp->w_arg_idx;
 	}
+
+	/* The argument index in the first tab page is zero, need to set it in
+	 * each window.  For further tab pages it's the window where we do
+	 * "tabedit". */
+	cur_arg_idx = next_arg_idx;
 
 	/*
 	 * Restore cursor to the current window if it's not the first one.
@@ -10190,11 +10200,13 @@ ses_do_win(wp)
  * Caller must make sure 'scrolloff' is zero.
  */
     static int
-put_view(fd, wp, add_edit, flagp)
+put_view(fd, wp, add_edit, flagp, current_arg_idx)
     FILE	*fd;
     win_T	*wp;
     int		add_edit;	/* add ":edit" command to view */
     unsigned	*flagp;		/* vop_flags or ssop_flags */
+    int		current_arg_idx; /* current argument index of the window, use
+				  * -1 if unknown */
 {
     win_T	*save_curwin;
     int		f;
@@ -10224,10 +10236,10 @@ put_view(fd, wp, add_edit, flagp)
 
     /* Only when part of a session: restore the argument index.  Some
      * arguments may have been deleted, check if the index is valid. */
-    if (wp->w_arg_idx != 0 && wp->w_arg_idx <= WARGCOUNT(wp)
+    if (wp->w_arg_idx != current_arg_idx && wp->w_arg_idx <= WARGCOUNT(wp)
 						      && flagp == &ssop_flags)
     {
-	if (fprintf(fd, "%ldnext", (long)wp->w_arg_idx) < 0
+	if (fprintf(fd, "%ldargu", (long)wp->w_arg_idx + 1) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
 	did_next = TRUE;
