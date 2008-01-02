@@ -32,6 +32,7 @@ int stuff_inserted __ARGS((int c, long count, int no_esc));
 char_u *get_last_insert __ARGS((void));
 char_u *get_last_insert_save __ARGS((void));
 void replace_push __ARGS((int c));
+int replace_push_mb __ARGS((char_u *p));
 void fixthisline __ARGS((int (*get_the_indent)(void)));
 void fix_indent __ARGS((void));
 int in_cinkeys __ARGS((int keytyped, int when, int line_is_empty));

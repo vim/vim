@@ -591,7 +591,14 @@ open_line(dir, flags, old_indent)
 	replace_push(NUL);
 	p = saved_line + curwin->w_cursor.col;
 	while (*p != NUL)
-	    replace_push(*p++);
+	{
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		p += replace_push_mb(p);
+	    else
+#endif
+		replace_push(*p++);
+	}
 	saved_line[curwin->w_cursor.col] = NUL;
     }
 #endif
@@ -1914,7 +1921,6 @@ ins_char_bytes(buf, charlen)
     int		charlen;
 {
     int		c = buf[0];
-    int		l, j;
 #endif
     int		newlen;		/* nr of bytes inserted */
     int		oldlen;		/* nr of bytes deleted (0 when not replacing) */
@@ -2016,13 +2022,11 @@ ins_char_bytes(buf, charlen)
 	for (i = 0; i < oldlen; ++i)
 	{
 #ifdef FEAT_MBYTE
-	    l = (*mb_ptr2len)(oldp + col + i) - 1;
-	    for (j = l; j >= 0; --j)
-		replace_push(oldp[col + i + j]);
-	    i += l;
-#else
-	    replace_push(oldp[col + i]);
+	    if (has_mbyte)
+		i += replace_push_mb(oldp + col + i) - 1;
+	    else
 #endif
+		replace_push(oldp[col + i]);
 	}
     }
 
