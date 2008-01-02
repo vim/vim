@@ -5849,12 +5849,13 @@ nv_left(cap)
 		/* When the NL before the first char has to be deleted we
 		 * put the cursor on the NUL after the previous line.
 		 * This is a very special case, be careful!
-		 * don't adjust op_end now, otherwise it won't work */
+		 * Don't adjust op_end now, otherwise it won't work. */
 		if (	   (cap->oap->op_type == OP_DELETE
 			    || cap->oap->op_type == OP_CHANGE)
 			&& !lineempty(curwin->w_cursor.lnum))
 		{
-		    ++curwin->w_cursor.col;
+		    if (*ml_get_cursor() != NUL)
+			++curwin->w_cursor.col;
 		    cap->retval |= CA_NO_ADJ_OP_END;
 		}
 		continue;
