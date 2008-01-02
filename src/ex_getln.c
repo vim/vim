@@ -335,7 +335,14 @@ getcmdline(firstc, count, indent)
 	quit_more = FALSE;	/* reset after CTRL-D which had a more-prompt */
 
 	cursorcmd();		/* set the cursor on the right spot */
-	c = safe_vgetc();
+
+	/* Get a character.  Ignore K_IGNORE, it should not do anything, such
+	 * as stop completion. */
+	do
+	{
+	    c = safe_vgetc();
+	} while (c == K_IGNORE);
+
 	if (KeyTyped)
 	{
 	    some_key_typed = TRUE;
@@ -1209,7 +1216,8 @@ getcmdline(firstc, count, indent)
 		goto cmdline_not_changed;
 
 	case K_IGNORE:
-		goto cmdline_not_changed;	/* Ignore mouse */
+		/* Ignore mouse event or ex_window() result. */
+		goto cmdline_not_changed;
 
 #ifdef FEAT_GUI_W32
 	    /* On Win32 ignore <M-F4>, we get it when closing the window was
