@@ -550,7 +550,7 @@ edit(cmdchar, startln, count)
 	i = showmode();
 
     if (!p_im && did_restart_edit == 0)
-	change_warning(i + 1);
+	change_warning(i == 0 ? 0 : i + 1);
 
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
