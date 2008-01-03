@@ -222,10 +222,11 @@ set_indent(size, flags)
 	    *s++ = *p++;
 	    orig_char_len--;
 	}
+
 	/* Skip over any additional white space (useful when newindent is less
 	 * than old) */
 	while (vim_iswhite(*p))
-	    (void)*p++;
+	    ++p;
 
     }
     else
@@ -3024,7 +3025,7 @@ ask_yesno(str, direct)
 	if (direct)
 	    r = get_keystroke();
 	else
-	    r = safe_vgetc();
+	    r = plain_vgetc();
 	if (r == Ctrl_C || r == ESC)
 	    r = 'n';
 	msg_putchar(r);	    /* show what you typed */
