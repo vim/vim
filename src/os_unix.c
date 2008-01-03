@@ -5482,7 +5482,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	{
 	    STRCPY(p, (*file)[i]);
 	    if (dir)
-		STRCAT(p, "/");	    /* add '/' to a directory name */
+		add_pathsep(p);	    /* add '/' to a directory name */
 	    (*file)[j++] = p;
 	}
     }
