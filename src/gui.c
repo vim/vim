@@ -3734,8 +3734,10 @@ gui_drag_scrollbar(sb, value, still_dragging)
     sb->value = value;
 
 #ifdef USE_ON_FLY_SCROLL
-    /* When not allowed to do the scrolling right now, return. */
-    if (dont_scroll || input_available())
+    /* When not allowed to do the scrolling right now, return.
+     * This also checked input_available(), but that causes the first click in
+     * a scrollbar to be ignored when Vim doesn't have focus. */
+    if (dont_scroll)
 	return;
 #endif
 #ifdef FEAT_INS_EXPAND
