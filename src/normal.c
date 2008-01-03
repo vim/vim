@@ -6564,6 +6564,12 @@ nv_brace(cap)
 	clearopbeep(cap->oap);
     else
     {
+	/* Don't leave the cursor on the NUL past a line */
+	if (curwin->w_cursor.col > 0 && gchar_cursor() == NUL)
+	{
+	    --curwin->w_cursor.col;
+	    cap->oap->inclusive = TRUE;
+	}
 #ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
 #endif
