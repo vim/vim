@@ -2468,9 +2468,10 @@ op_insert(oap, count1)
 
     edit(NUL, FALSE, (linenr_T)count1);
 
-    /* if user has moved off this line, we don't know what to do, so do
-     * nothing */
-    if (curwin->w_cursor.lnum != oap->start.lnum)
+    /* If user has moved off this line, we don't know what to do, so do
+     * nothing.
+     * Also don't repeat the insert when Insert mode ended with CTRL-C. */
+    if (curwin->w_cursor.lnum != oap->start.lnum || got_int)
 	return;
 
     if (oap->block_mode)
@@ -2601,8 +2602,9 @@ op_change(oap)
     /*
      * In Visual block mode, handle copying the new text to all lines of the
      * block.
+     * Don't repeat the insert when Insert mode ended with CTRL-C.
      */
-    if (oap->block_mode && oap->start.lnum != oap->end.lnum)
+    if (oap->block_mode && oap->start.lnum != oap->end.lnum && !got_int)
     {
 	/* Auto-indenting may have changed the indent.  If the cursor was past
 	 * the indent, exclude that indent change from the inserted text. */
