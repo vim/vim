@@ -505,9 +505,24 @@ fname2fnum(fm)
     {
 	/*
 	 * First expand "~/" in the file name to the home directory.
-	 * Try to shorten the file name.
+	 * Don't expand the whole name, it may contain other '~' chars.
 	 */
-	expand_env(fm->fname, NameBuff, MAXPATHL);
+	if (fm->fname[0] == '~' && (fm->fname[1] == '/'
+#ifdef BACKSLASH_IN_FILENAME
+		    || fm->fname[1] == '\\'
+#endif
+		    ))
+	{
+	    int len;
+
+	    expand_env((char_u *)"~/", NameBuff, MAXPATHL);
+	    len = STRLEN(NameBuff);
+	    vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
+	}
+	else
+	    vim_strncpy(NameBuff, fm->fname, MAXPATHL - 1);
+
+	/* Try to shorten the file name. */
 	mch_dirname(IObuff, IOSIZE);
 	p = shorten_fname(NameBuff, IObuff);
 
