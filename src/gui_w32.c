@@ -987,6 +987,11 @@ _WndProc(
 			{
 			    LPNMTTDISPINFOW	lpdi = (LPNMTTDISPINFOW)lParam;
 
+			    /* Set the maximum width, this also enables using
+			     * \n for line break. */
+			    SendMessage(lpdi->hdr.hwndFrom, TTM_SETMAXTIPWIDTH,
+								      0, 500);
+
 			    tt_text = enc_to_ucs2(str, NULL);
 			    lpdi->lpszText = tt_text;
 			    /* can't show tooltip if failed */
@@ -995,6 +1000,11 @@ _WndProc(
 # endif
 			{
 			    LPNMTTDISPINFO	lpdi = (LPNMTTDISPINFO)lParam;
+
+			    /* Set the maximum width, this also enables using
+			     * \n for line break. */
+			    SendMessage(lpdi->hdr.hwndFrom, TTM_SETMAXTIPWIDTH,
+								      0, 500);
 
 			    if (STRLEN(str) < sizeof(lpdi->szText)
 				    || ((tt_text = vim_strsave(str)) == NULL))
@@ -4734,12 +4744,12 @@ Handle_WM_Notify(hwnd, pnmh)
 	    cur_beval->showState = ShS_NEUTRAL;
 	    break;
 	case TTN_GETDISPINFO:
-	{
-	    /* if you get there then we have new common controls */
-	    NMTTDISPINFO_NEW *info = (NMTTDISPINFO_NEW *)pnmh;
-	    info->lpszText = (LPSTR)info->lParam;
-	    info->uFlags |= TTF_DI_SETITEM;
-	}
+	    {
+		/* if you get there then we have new common controls */
+		NMTTDISPINFO_NEW *info = (NMTTDISPINFO_NEW *)pnmh;
+		info->lpszText = (LPSTR)info->lParam;
+		info->uFlags |= TTF_DI_SETITEM;
+	    }
 	    break;
 	}
     }
