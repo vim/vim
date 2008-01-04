@@ -507,11 +507,16 @@ check_cursor_col()
 	curwin->w_cursor.col = 0;
     else if (curwin->w_cursor.col >= len)
     {
-	/* Allow cursor past end-of-line in Insert mode, restarting Insert
-	 * mode or when in Visual mode and 'selection' isn't "old" */
+	/* Allow cursor past end-of-line when:
+	 * - in Insert mode or restarting Insert mode
+	 * - in Visual mode and 'selection' isn't "old"
+	 * - 'virtualedit' is set */
 	if ((State & INSERT) || restart_edit
 #ifdef FEAT_VISUAL
 		|| (VIsual_active && *p_sel != 'o')
+#endif
+#ifdef FEAT_VIRTUALEDIT
+		|| (ve_flags & VE_ONEMORE)
 #endif
 		|| virtual_active())
 	    curwin->w_cursor.col = len;
