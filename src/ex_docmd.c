@@ -9765,7 +9765,7 @@ makeopens(fd, dirnow)
     win_T	*tab_firstwin;
     frame_T	*tab_topframe;
     int		cur_arg_idx = 0;
-    int		next_arg_idx;
+    int		next_arg_idx = 0;
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		/* Save ALL buffers */

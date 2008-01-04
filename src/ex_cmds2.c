@@ -94,7 +94,7 @@ do_debug(cmd)
     int		save_redir_off = redir_off;
     tasave_T	typeaheadbuf;
     int		typeahead_saved = FALSE;
-    int		save_ignore_script;
+    int		save_ignore_script = 0;
 # ifdef FEAT_EX_EXTRA
     int		save_ex_normal_busy;
 # endif
