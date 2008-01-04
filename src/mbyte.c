@@ -1642,7 +1642,7 @@ utf_byte2len(b)
  * Get the length of UTF-8 byte sequence "p[size]".  Does not include any
  * following composing characters.
  * Returns 1 for "".
- * Returns 1 for an illegal byte sequence.
+ * Returns 1 for an illegal byte sequence (also in incomplete byte seq.).
  * Returns number > "size" for an incomplete byte sequence.
  */
     int
@@ -1652,13 +1652,14 @@ utf_ptr2len_len(p, size)
 {
     int		len;
     int		i;
+    int		m;
 
     if (*p == NUL)
 	return 1;
-    len = utf8len_tab[*p];
+    m = len = utf8len_tab[*p];
     if (len > size)
-	return len;	/* incomplete byte sequence. */
-    for (i = 1; i < len; ++i)
+	m = size;	/* incomplete byte sequence. */
+    for (i = 1; i < m; ++i)
 	if ((p[i] & 0xc0) != 0x80)
 	    return 1;
     return len;
