@@ -2559,8 +2559,11 @@ install_macosx: gui_bundle
 #	-mkdir $(DESTDIR)$(prefix)/$(APPDIR)/bin
 	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
 		VIMEXE=$$srcdir/$(VIMTARGET) \
-		prefix=$(DESTDIR)$(prefix)/$(RESDIR)/vim \
-		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
+		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
+		exec_prefix=$(DESTDIR)$(prefix)/$(APPDIR)/Contents \
+		BINDIR=$(DESTDIR)$(prefix)/$(APPDIR)/Contents/MacOS \
+		VIMLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
+		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR)/runtime
 # Put the link back.
 	ln -s `pwd`/../runtime $(RESDIR)/vim
 # Copy rgb.txt, Mac doesn't always have X11
