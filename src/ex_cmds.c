@@ -4575,6 +4575,7 @@ do_sub(eap)
 		    {
 			matchcol = (colnr_T)STRLEN(sub_firstline);
 			nmatch = 1;
+			skip_match = TRUE;
 		    }
 		    sub_nsubs++;
 		    did_sub = TRUE;
