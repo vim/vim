@@ -4078,6 +4078,7 @@ addstar(fname, len, context)
 	     * ~ would be at the start of the file name, but not the tail.
 	     * $ could be anywhere in the tail.
 	     * ` could be anywhere in the file name.
+	     * When the name ends in '$' don't add a star, remove the '$'.
 	     */
 	    tail = gettail(retval);
 	    if ((*retval != '~' || tail != retval)
@@ -4085,6 +4086,8 @@ addstar(fname, len, context)
 		    && vim_strchr(tail, '$') == NULL
 		    && vim_strchr(retval, '`') == NULL)
 		retval[len++] = '*';
+	    else if (len > 0 && retval[len - 1] == '$')
+		--len;
 	    retval[len] = NUL;
 	}
     }

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.1.  Last change: 2006 Jul 18
+*cmdline.txt*   For Vim version 7.1.  Last change: 2008 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -316,7 +316,7 @@ The same could be done by typing <S-Up> a number of times until the desired
 command-line is shown.  (Note: the shifted arrow keys do not work on all
 terminals)
 
-							*his* *:history*
+							*:his* *:history*
 :his[tory]	Print the history of last entered commands.
 		{not in Vi}
 		{not available when compiled without the |+cmdline_hist|
@@ -446,6 +446,11 @@ match stays the same.  You can get to the other matches by entering
 extensions matching the 'suffixes' option.
 
 To completely ignore files with some extension use 'wildignore'.
+
+To match only files that end at the end of the typed text append a "$".  For
+example, to match only files that end in ".c": >
+	:e *.c$
+This will not match a file ending in ".cpp".  Without the "$" it does match.
 
 The old value of an option can be obtained by hitting 'wildchar' just after
 the '='.  For example, typing 'wildchar' after ":set dir=" will insert the
