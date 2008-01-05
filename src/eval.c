@@ -3407,6 +3407,7 @@ do_unlet(name, forceit)
     hashtab_T	*ht;
     hashitem_T	*hi;
     char_u	*varname;
+    dictitem_T	*di;
 
     ht = find_var_ht(name, &varname);
     if (ht != NULL && *varname != NUL)
@@ -3414,9 +3415,9 @@ do_unlet(name, forceit)
 	hi = hash_find(ht, varname);
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    if (var_check_fixed(HI2DI(hi)->di_flags, name))
-		return FAIL;
-	    if (var_check_ro(HI2DI(hi)->di_flags, name))
+	    di = HI2DI(hi);
+	    if (var_check_fixed(di->di_flags, name)
+		    || var_check_ro(di->di_flags, name))
 		return FAIL;
 	    delete_var(ht, hi);
 	    return OK;
