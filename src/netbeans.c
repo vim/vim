@@ -1204,6 +1204,54 @@ nb_unquote(char_u *p, char_u **endp)
     return result;
 }
 
+/*
+ * Remove from "first" byte to "last" byte (inclusive), at line "lnum" of the
+ * current buffer.  Remove to end of line when "last" is MAXCOL.
+ */
+    static void
+nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
+{
+    char_u *oldtext, *newtext;
+    int oldlen;
+    int lastbyte = last;
+
+    oldtext = ml_get(lnum);
+    oldlen = STRLEN(oldtext);
+    if (first >= oldlen || oldlen == 0)  /* just in case */
+	return;
+    if (lastbyte >= oldlen)
+	lastbyte = oldlen - 1;
+    newtext = alloc(oldlen - (int)(lastbyte - first));
+    if (newtext != NULL)
+    {
+	mch_memmove(newtext, oldtext, first);
+	mch_memmove(newtext + first, oldtext + lastbyte + 1, STRLEN(oldtext + lastbyte + 1) + 1);
+	nbdebug(("    NEW LINE %d: %s\n", lnum, newtext));
+	ml_replace(lnum, newtext, FALSE);
+    }
+}
+
+/*
+ * Replace the "first" line with the concatenation of the "first" and
+ * the "other" line. The "other" line is not removed.
+ */
+    static void
+nb_joinlines(linenr_T first, linenr_T other)
+{
+    int len_first, len_other;
+    char_u *p;
+
+    len_first = STRLEN(ml_get(first));
+    len_other = STRLEN(ml_get(other));
+    p = alloc((unsigned)(len_first + len_other + 1));
+    if (p != NULL)
+    {
+      mch_memmove(p, ml_get(first), len_first);
+      mch_memmove(p + len_first, ml_get(other), len_other + 1);
+      ml_replace(first, p, FALSE);
+    }
+}
+
 #define SKIP_STOP 2
 #define streq(a,b) (strcmp(a,b) == 0)
 static int needupdate = 0;
@@ -1371,6 +1419,8 @@ nb_do_cmd(
 	    long count;
 	    pos_T first, last;
 	    pos_T *pos;
+	    pos_T *next;
+	    linenr_T del_from_lnum, del_to_lnum;  /* lines to be deleted as a whole */
 	    int oldFire = netbeansFireChanges;
 	    int oldSuppress = netbeansSuppressNoLines;
 	    int wasChanged;
@@ -1420,25 +1470,75 @@ nb_do_cmd(
 		}
 		last = *pos;
 		nbdebug(("    LAST POS: line %d, col %d\n", last.lnum, last.col));
-		curwin->w_cursor = first;
+		del_from_lnum = first.lnum;
+		del_to_lnum = last.lnum;
 		doupdate = 1;
 
-		/* keep part of first line */
-		if (first.lnum == last.lnum && first.col != last.col)
+		/* Get the position of the first byte after the deleted
+		 * section.  "next" is NULL when deleting to the end of the
+		 * file. */
+		next = off2pos(buf->bufp, off + count);
+
+		/* Remove part of the first line. */
+		if (first.col != 0 || (next != NULL && first.lnum == next->lnum))
 		{
-		    /* deletion is within one line */
-		    char_u *p = ml_get(first.lnum);
-		    mch_memmove(p + first.col, p + last.col + 1, STRLEN(p + last.col) + 1);
-		    nbdebug(("    NEW LINE %d: %s\n", first.lnum, p));
-		    ml_replace(first.lnum, p, TRUE);
+		    if (first.lnum != last.lnum
+			    || (next != NULL && first.lnum != next->lnum))
+		    {
+			/* remove to the end of the first line */
+			nb_partialremove(first.lnum, first.col,
+							     (colnr_T)MAXCOL);
+			if (first.lnum == last.lnum)
+			{
+			    /* Partial line to remove includes the end of
+			     * line.  Join the line with the next one, have
+			     * the next line deleted below. */
+			    nb_joinlines(first.lnum, next->lnum);
+			    del_to_lnum = next->lnum;
+			}
+		    }
+		    else
+		    {
+			/* remove within one line */
+			nb_partialremove(first.lnum, first.col, last.col);
+		    }
+		    ++del_from_lnum;  /* don't delete the first line */
 		}
 
-		if (first.lnum < last.lnum)
+		/* Remove part of the last line. */
+		if (first.lnum != last.lnum && next != NULL
+			&& next->col != 0 && last.lnum == next->lnum)
+		{
+		    nb_partialremove(last.lnum, 0, last.col);
+		    if (del_from_lnum > first.lnum)
+		    {
+			/* Join end of last line to start of first line; last
+			 * line is deleted below. */
+			nb_joinlines(first.lnum, last.lnum);
+		    }
+		    else
+			/* First line is deleted as a whole, keep the last
+			 * line. */
+			--del_to_lnum;
+		}
+
+		/* First is partial line; last line to remove includes
+		 * the end of line; join first line to line following last
+		 * line; line following last line is deleted below. */
+		if (first.lnum != last.lnum && del_from_lnum > first.lnum
+			&& next != NULL && last.lnum != next->lnum)
+		{
+		    nb_joinlines(first.lnum, next->lnum);
+		    del_to_lnum = next->lnum;
+		}
+
+		/* Delete whole lines if there are any. */
+		if (del_to_lnum >= del_from_lnum)
 		{
 		    int i;
 
 		    /* delete signs from the lines being deleted */
-		    for (i = first.lnum; i <= last.lnum; i++)
+		    for (i = del_from_lnum; i <= del_to_lnum; i++)
 		    {
 			int id = buf_findsign_id(buf->bufp, (linenr_T)i);
 			if (id > 0)
@@ -1450,10 +1550,15 @@ nb_do_cmd(
 			    nbdebug(("    No sign on line %d\n", i));
 		    }
 
-		    /* delete whole lines */
-		    nbdebug(("    Deleting lines %d through %d\n", first.lnum, last.lnum));
-		    del_lines(last.lnum - first.lnum + 1, FALSE);
+		    nbdebug(("    Deleting lines %d through %d\n", del_from_lnum, del_to_lnum));
+		    curwin->w_cursor.lnum = del_from_lnum;
+		    curwin->w_cursor.col = 0;
+		    del_lines(del_to_lnum - del_from_lnum + 1, FALSE);
 		}
+
+		/* Leave cursor at first deleted byte. */
+		curwin->w_cursor = first;
+		check_cursor_lnum();
 		buf->bufp->b_changed = wasChanged; /* logically unchanged */
 		netbeansFireChanges = oldFire;
 		netbeansSuppressNoLines = oldSuppress;
@@ -2374,8 +2479,7 @@ nb_do_cmd(
  * the current buffer as "buf".
  */
     static void
-nb_set_curbuf(buf)
-    buf_T *buf;
+nb_set_curbuf(buf_T *buf)
 {
     if (curbuf != buf && buf_jump_open_win(buf) == NULL)
 	set_curbuf(buf, DOBUF_GOTO);
