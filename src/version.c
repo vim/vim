@@ -667,6 +667,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    206,
+/**/
     205,
 /**/
     204,
@@ -1587,9 +1589,9 @@ do_intro_line(row, mesg, add_version, attr)
 
     if (*mesg == ' ')
     {
-	vim_strncpy(modby, _("Modified by "), MODBY_LEN - 1);
+	vim_strncpy(modby, (char_u *)_("Modified by "), MODBY_LEN - 1);
 	l = STRLEN(modby);
-	vim_strncpy(modby + l, MODIFIED_BY, MODBY_LEN - l - 1);
+	vim_strncpy(modby + l, (char_u *)MODIFIED_BY, MODBY_LEN - l - 1);
 	mesg = modby;
     }
 #endif
