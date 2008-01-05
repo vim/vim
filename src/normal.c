@@ -141,6 +141,9 @@ static void	nv_redo __ARGS((cmdarg_T *cap));
 static void	nv_Undo __ARGS((cmdarg_T *cap));
 static void	nv_tilde __ARGS((cmdarg_T *cap));
 static void	nv_operator __ARGS((cmdarg_T *cap));
+#ifdef FEAT_EVAL
+static void	set_op_var __ARGS((int optype));
+#endif
 static void	nv_lineop __ARGS((cmdarg_T *cap));
 static void	nv_home __ARGS((cmdarg_T *cap));
 static void	nv_pipe __ARGS((cmdarg_T *cap));
@@ -7180,6 +7183,9 @@ nv_optrans(cap)
 	{
 	    cap->oap->start = curwin->w_cursor;
 	    cap->oap->op_type = OP_DELETE;
+#ifdef FEAT_EVAL
+	    set_op_var(OP_DELETE);
+#endif
 	    cap->count1 = 1;
 	    nv_dollar(cap);
 	    finish_op = TRUE;
@@ -8219,8 +8225,33 @@ nv_operator(cap)
     {
 	cap->oap->start = curwin->w_cursor;
 	cap->oap->op_type = op_type;
+#ifdef FEAT_EVAL
+	set_op_var(op_type);
+#endif
     }
 }
+
+#ifdef FEAT_EVAL
+/*
+ * Set v:operator to the characters for "optype".
+ */
+    static void
+set_op_var(optype)
+    int optype;
+{
+    char_u	opchars[3];
+
+    if (optype == OP_NOP)
+	set_vim_var_string(VV_OP, NULL, 0);
+    else
+    {
+	opchars[0] = get_op_char(optype);
+	opchars[1] = get_extra_op_char(optype);
+	opchars[2] = NUL;
+	set_vim_var_string(VV_OP, opchars, -1);
+    }
+}
+#endif
 
 /*
  * Handle linewise operator "dd", "yy", etc.

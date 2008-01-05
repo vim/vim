@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2007 Sep 25
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1401,10 +1401,24 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 		This is the screen column number, like with |virtcol()|.  The
 		value is zero when there was no mouse button click.
 
+					*v:operator* *operator-variable*
+v:operator	The last operator given in Normal mode.  This is a single
+		character except for commands starting with <g> or <z>,
+		in which case it is two characters.  Best used alongside
+		|v:prevcount| and |v:register|.  Useful if you want to cancel
+		Operator-pending mode and then use the operator, e.g.: >
+			:omap O <Esc>:call MyMotion(v:operator)<CR>
+<		The value remains set until another operator is entered, thus
+		don't expect it to be empty.
+		v:operator is not set for |:delete|, |:yank| or other Ex
+		commands.
+		Read-only.
+
 					*v:prevcount* *prevcount-variable*
 v:prevcount	The count given for the last but one Normal mode command.
 		This is the v:count value of the previous command.  Useful if
-		you want to cancel Visual mode and then use the count. >
+		you want to cancel Visual or Operator-pending mode and then
+		use the count, e.g.: >
 			:vmap % <Esc>:call MyFilter(v:prevcount)<CR>
 <		Read-only.
 

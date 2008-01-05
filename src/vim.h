@@ -1688,7 +1688,8 @@ int vim_memcmp __ARGS((void *, void *, size_t));
 #define VV_MOUSE_WIN	49
 #define VV_MOUSE_LNUM   50
 #define VV_MOUSE_COL	51
-#define VV_LEN		52	/* number of v: vars */
+#define VV_OP		52
+#define VV_LEN		53	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

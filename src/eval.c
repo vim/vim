@@ -345,6 +345,7 @@ static struct vimvar
     {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
     {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
     {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
+    {VV_NAME("operator",	 VAR_STRING), VV_RO},
 };
 
 /* shorthand */
