@@ -4575,11 +4575,15 @@ make_tooltip(beval, text, pt)
     SendMessage(beval->balloon, TTM_ADDTOOL, 0, (LPARAM)pti);
     /* Make tooltip appear sooner */
     SendMessage(beval->balloon, TTM_SETDELAYTIME, TTDT_INITIAL, 10);
+    /* I've performed some tests and it seems the longest possible life time
+     * of tooltip is 30 seconds */
+    SendMessage(beval->balloon, TTM_SETDELAYTIME, TTDT_AUTOPOP, 30000);
     /*
      * HACK: force tooltip to appear, because it'll not appear until
      * first mouse move. D*mn M$
+     * Amazingly moving (2, 2) and then (-1, -1) the mouse doesn't move.
      */
-    mouse_event(MOUSEEVENTF_MOVE, 1, 1, 0, 0);
+    mouse_event(MOUSEEVENTF_MOVE, 2, 2, 0, 0);
     mouse_event(MOUSEEVENTF_MOVE, (DWORD)-1, (DWORD)-1, 0, 0);
     vim_free(pti);
 }
