@@ -2863,15 +2863,17 @@ mb_unescape(pp)
 	    buf[m++] = K_SPECIAL;
 	    n += 2;
 	}
+	else if ((str[n] == K_SPECIAL
 # ifdef FEAT_GUI
-	else if (str[n] == CSI
+		    || str[n] == CSI
+# endif
+		 )
 		&& str[n + 1] == KS_EXTRA
 		&& str[n + 2] == (int)KE_CSI)
 	{
 	    buf[m++] = CSI;
 	    n += 2;
 	}
-# endif
 	else if (str[n] == K_SPECIAL
 # ifdef FEAT_GUI
 		|| str[n] == CSI
