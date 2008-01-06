@@ -3979,7 +3979,7 @@ get_address(ptr, skip, to_other_file)
 					*cmd == '?' ? BACKWARD : FORWARD,
 					(char_u *)"", 1L,
 					SEARCH_MSG + SEARCH_START,
-						      i, (linenr_T)0) != FAIL)
+						i, (linenr_T)0, NULL) != FAIL)
 				lnum = pos.lnum;
 			    else
 			    {

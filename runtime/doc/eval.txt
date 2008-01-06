@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 04
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1733,14 +1733,15 @@ rename( {from}, {to})		Number	rename (move) file from {from} to {to}
 repeat( {expr}, {count})	String	repeat {expr} {count} times
 resolve( {filename})		String	get filename a shortcut points to
 reverse( {list})		List	reverse {list} in-place
-search( {pattern} [, {flags}])	Number	search for {pattern}
+search( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
+				Number	search for {pattern}
 searchdecl({name} [, {global} [, {thisblock}]])
 				Number  search for variable declaration
-searchpair( {start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
+searchpair( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])
 				Number	search for other end of start/end pair
-searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
+searchpairpos( {start}, {middle}, {end} [, {flags} [, {skip} [...]]])
 				List	search for other end of start/end pair
-searchpos( {pattern} [, {flags} [, {stopline}]])
+searchpos( {pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				List	search for {pattern}
 server2client( {clientid}, {string})
 				Number	send reply string
@@ -4212,7 +4213,7 @@ reverse({list})	Reverse the order of items in {list} in-place.  Returns
 		If you want a list to remain unmodified make a copy first: >
 			:let revlist = reverse(copy(mylist))
 
-search({pattern} [, {flags} [, {stopline}]])			*search()*
+search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		Search for regexp pattern {pattern}.  The search starts at the
 		cursor position (you can use |cursor()| to set it).
 
@@ -4240,6 +4241,14 @@ search({pattern} [, {flags} [, {stopline}]])			*search()*
 			let end = search('END', '', line("w$"))
 <		When {stopline} is used and it is not zero this also implies
 		that the search does not wrap around the end of the file.
+		A zero value is equal to not giving the argument.
+
+		When the {timeout} argument is given the search stops when
+		more than this many milli seconds have passed.  Thus when
+		{timeout} is 500 the search stops after half a second.
+		The value must not be negative.  A zero value is like not
+		giving the argument.
+		{only available when compiled with the +reltime feature}
 
 		If there is no match a 0 is returned and the cursor doesn't
 		move.  No error message is given.
@@ -4302,7 +4311,8 @@ searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 			endif
 <
 							*searchpair()*
-searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
+searchpair({start}, {middle}, {end} [, {flags} [, {skip}
+				[, {stopline} [, {timeout}]]]])
 		Search for the match of a nested start-end pair.  This can be
 		used to find the "endif" that matches an "if", while other
 		if/endif pairs in between are ignored.
@@ -4337,7 +4347,7 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 		When evaluating {skip} causes an error the search is aborted
 		and -1 returned.
 
-		For {stopline} see |search()|.
+		For {stopline} and {timeout} see |search()|.
 
 		The value of 'ignorecase' is used.  'magic' is ignored, the
 		patterns are used like it's on.
@@ -4383,7 +4393,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 	     \ 'synIDattr(synID(line("."), col("."), 0), "name") =~? "string"')
 <
 							*searchpairpos()*
-searchpairpos({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
+searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}
+				[, {stopline} [, {timeout}]]]])
 		Same as searchpair(), but returns a |List| with the line and
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of
@@ -4394,7 +4405,7 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip} [, {stopline}]]])
 <
 		See |match-parens| for a bigger and more useful example.
 
-searchpos({pattern} [, {flags} [, {stopline}]])		*searchpos()*
+searchpos({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*searchpos()*
 		Same as |search()|, but returns a |List| with the line and
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of

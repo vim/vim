@@ -4062,7 +4062,7 @@ ins_compl_get_exp(ini)
 		    found_new_match = searchit(NULL, ins_buf, pos,
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
-							RE_LAST, (linenr_T)0);
+						  RE_LAST, (linenr_T)0, NULL);
 		--msg_silent;
 		if (!compl_started)
 		{

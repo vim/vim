@@ -4194,7 +4194,7 @@ find_decl(ptr, len, locally, thisblock, searchflags)
     for (;;)
     {
 	t = searchit(curwin, curbuf, &curwin->w_cursor, FORWARD,
-				  pat, 1L, searchflags, RE_LAST, (linenr_T)0);
+			    pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
 

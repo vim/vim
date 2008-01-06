@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2007 Aug 8
+" Last Change: 2008 Jan 06
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -111,7 +111,12 @@ function! s:Highlight_Matching_Pair()
 	\ '=~?  "string\\|character\\|singlequote\\|comment"'
   execute 'if' s_skip '| let s_skip = 0 | endif'
 
-  let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
+  try
+    " Limit the search time to 500 msec to avoid a hang on very long lines.
+    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, 500)
+  catch /E118/
+    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
+  endtry
 
   if before > 0
     call winrestview(save_cursor)

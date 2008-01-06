@@ -10,7 +10,7 @@ char_u *last_search_pat __ARGS((void));
 void reset_search_dir __ARGS((void));
 void set_last_search_pat __ARGS((char_u *s, int idx, int magic, int setlast));
 void last_pat_prog __ARGS((regmmatch_T *regmatch));
-int searchit __ARGS((win_T *win, buf_T *buf, pos_T *pos, int dir, char_u *pat, long count, int options, int pat_use, linenr_T stop_lnum));
+int searchit __ARGS((win_T *win, buf_T *buf, pos_T *pos, int dir, char_u *pat, long count, int options, int pat_use, linenr_T stop_lnum, proftime_T *tm));
 int do_search __ARGS((oparg_T *oap, int dirc, char_u *pat, long count, int options));
 int search_for_exact_line __ARGS((buf_T *buf, pos_T *pos, int dir, char_u *pat));
 int searchc __ARGS((cmdarg_T *cap, int t_cmd));

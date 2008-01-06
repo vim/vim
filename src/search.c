@@ -494,8 +494,9 @@ last_pat_prog(regmatch)
  * When FEAT_EVAL is defined, returns the index of the first matching
  * subpattern plus one; one if there was none.
  */
+/*ARGSUSED*/
     int
-searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
+searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
     win_T	*win;		/* window to search in; can be NULL for a
 				   buffer without a window! */
     buf_T	*buf;
@@ -506,6 +507,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
     int		options;
     int		pat_use;	/* which pattern to use when "pat" is empty */
     linenr_T	stop_lnum;	/* stop after this line number when != 0 */
+    proftime_T	*tm;		/* timeout limit or NULL */
 {
     int		found;
     linenr_T	lnum;		/* no init to shut up Apollo cc */
@@ -594,6 +596,11 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum)
 		if (stop_lnum != 0 && (dir == FORWARD
 				       ? lnum > stop_lnum : lnum < stop_lnum))
 		    break;
+#ifdef FEAT_RELTIME
+		/* Stop after passing the "tm" time limit. */
+		if (tm != NULL && profile_passed_limit(tm))
+		    break;
+#endif
 
 		/*
 		 * Look for a match somewhere in line "lnum".
@@ -1249,7 +1256,7 @@ do_search(oap, dirc, pat, count, options)
 		       (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
 			+ SEARCH_MSG + SEARCH_START
 			+ ((pat != NULL && *pat == ';') ? 0 : SEARCH_NOOF))),
-		RE_LAST, (linenr_T)0);
+		RE_LAST, (linenr_T)0, NULL);
 
 	if (dircp != NULL)
 	    *dircp = dirc;	/* restore second '/' or '?' for normal_cmd() */
@@ -3780,7 +3787,7 @@ again:
 	if (do_searchpair((char_u *)"<[^ \t>/!]\\+\\%(\\_s\\_[^>]\\{-}[^/]>\\|$\\|\\_s\\=>\\)",
 		    (char_u *)"",
 		    (char_u *)"</[^>]*>", BACKWARD, (char_u *)"", 0,
-						      NULL, (linenr_T)0) <= 0)
+						  NULL, (linenr_T)0, 0L) <= 0)
 	{
 	    curwin->w_cursor = old_pos;
 	    goto theend;
@@ -3814,7 +3821,7 @@ again:
     sprintf((char *)epat, "</%.*s>\\c", len, p);
 
     r = do_searchpair(spat, (char_u *)"", epat, FORWARD, (char_u *)"",
-						       0, NULL, (linenr_T)0);
+						    0, NULL, (linenr_T)0, 0L);
 
     vim_free(spat);
     vim_free(epat);

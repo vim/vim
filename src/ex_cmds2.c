@@ -895,19 +895,61 @@ profile_msg(tm)
     sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
 # else
     sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
-#endif
+# endif
     return buf;
 }
 
-# endif  /* FEAT_PROFILE || FEAT_RELTIME */
-
-# if defined(FEAT_PROFILE) || defined(PROTO)
 /*
- * Functions for profiling.
+ * Put the time "msec" past now in "tm".
  */
-static void script_do_profile __ARGS((scriptitem_T *si));
-static void script_dump_profile __ARGS((FILE *fd));
-static proftime_T prof_wait_time;
+    void
+profile_setlimit(msec, tm)
+    long	msec;
+    proftime_T	*tm;
+{
+    if (msec <= 0)   /* no limit */
+	profile_zero(tm);
+    else
+    {
+# ifdef WIN3264
+	LARGE_INTEGER   fr;
+
+	QueryPerformanceCounter(tm);
+	QueryPerformanceFrequency(&fr);
+	tm->QuadPart +=  (double)msec / 1000.0 * (double)fr.QuadPart;
+# else
+	long	    usec;
+
+	gettimeofday(tm, NULL);
+	usec = (long)tm->tv_usec + (long)msec * 1000;
+	tm->tv_usec = usec % 1000000L;
+	tm->tv_sec += usec / 1000000L;
+# endif
+    }
+}
+
+/*
+ * Return TRUE if the current time is past "tm".
+ */
+    int
+profile_passed_limit(tm)
+    proftime_T	*tm;
+{
+    proftime_T	now;
+
+# ifdef WIN3264
+    if (tm->QuadPart == 0)  /* timer was not set */
+	return FALSE;
+    QueryPerformanceCounter(&now);
+    return (now.QuadPart > tm->QuadPart);
+# else
+    if (tm->tv_sec == 0)    /* timer was not set */
+	return FALSE;
+    gettimeofday(&now, NULL);
+    return (now.tv_sec > tm->tv_sec
+	    || (now.tv_sec == tm->tv_sec && now.tv_usec > tm->tv_usec));
+# endif
+}
 
 /*
  * Set the time in "tm" to zero.
@@ -923,6 +965,16 @@ profile_zero(tm)
     tm->tv_sec = 0;
 # endif
 }
+
+# endif  /* FEAT_PROFILE || FEAT_RELTIME */
+
+# if defined(FEAT_PROFILE) || defined(PROTO)
+/*
+ * Functions for profiling.
+ */
+static void script_do_profile __ARGS((scriptitem_T *si));
+static void script_dump_profile __ARGS((FILE *fd));
+static proftime_T prof_wait_time;
 
 /*
  * Add the time "tm2" to "tm".

@@ -14,6 +14,8 @@ void profile_start __ARGS((proftime_T *tm));
 void profile_end __ARGS((proftime_T *tm));
 void profile_sub __ARGS((proftime_T *tm, proftime_T *tm2));
 char *profile_msg __ARGS((proftime_T *tm));
+void profile_setlimit __ARGS((long msec, proftime_T *tm));
+int profile_passed_limit __ARGS((proftime_T *tm));
 void profile_zero __ARGS((proftime_T *tm));
 void profile_add __ARGS((proftime_T *tm, proftime_T *tm2));
 void profile_self __ARGS((proftime_T *self, proftime_T *total, proftime_T *children));
