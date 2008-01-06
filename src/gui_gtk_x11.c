@@ -6660,6 +6660,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     unsigned	i;
     int		nbytes;
     char_u	*buffer;
+    time_t	start;
 
     for (i = 0; i < N_SELECTION_TARGETS; ++i)
     {
@@ -6670,7 +6671,11 @@ clip_mch_request_selection(VimClipboard *cbd)
 			      cbd->gtk_sel_atom, target,
 			      (guint32)GDK_CURRENT_TIME);
 
-	while (received_selection == RS_NONE)
+	/* Hack: Wait up to three seconds for the selection.  A hang was
+	 * noticed here when using the netrw plugin combined with ":gui"
+	 * during the FocusGained event. */
+	start = time(NULL);
+	while (received_selection == RS_NONE && time(NULL) < start + 3)
 	    gtk_main();	/* wait for selection_received_cb */
 
 	if (received_selection != RS_FAIL)
