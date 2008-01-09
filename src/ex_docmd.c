@@ -7126,7 +7126,7 @@ ex_splitview(eap)
 			 : eap->addr_count == 0 ? 0
 					       : (int)eap->line2 + 1) != FAIL)
 	{
-	    do_exedit(eap, NULL);
+	    do_exedit(eap, old_curwin);
 
 	    /* set the alternate buffer for the window we came from */
 	    if (curwin != old_curwin
