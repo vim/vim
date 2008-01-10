@@ -651,6 +651,7 @@ static void f_substitute __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_synstack __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tabpagebuflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tabpagenr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7252,6 +7253,7 @@ static struct fst
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
+    {"synstack",	2, 2, f_synstack},
     {"system",		1, 2, f_system},
     {"tabpagebuflist",	0, 1, f_tabpagebuflist},
     {"tabpagenr",	0, 1, f_tabpagenr},
@@ -15843,6 +15845,46 @@ f_synIDtrans(argvars, rettv)
 	id = 0;
 
     rettv->vval.v_number = id;
+}
+
+/*
+ * "synstack(lnum, col)" function
+ */
+/*ARGSUSED*/
+    static void
+f_synstack(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+#ifdef FEAT_SYN_HL
+    long	lnum;
+    long	col;
+    int		i;
+    int		id;
+#endif
+
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = NULL;
+
+#ifdef FEAT_SYN_HL
+    lnum = get_tv_lnum(argvars);		/* -1 on type error */
+    col = get_tv_number(&argvars[1]) - 1;	/* -1 on type error */
+
+    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
+	    && col >= 0 && col < (long)STRLEN(ml_get(lnum))
+	    && rettv_list_alloc(rettv) != FAIL)
+    {
+	(void)syn_get_id(curwin, lnum, (colnr_T)col, FALSE, NULL);
+	for (i = 0; ; ++i)
+	{
+	    id = syn_get_stack_item(i);
+	    if (id < 0)
+		break;
+	    if (list_append_number(rettv->vval.v_list, id) == FAIL)
+		break;
+	}
+    }
+#endif
 }
 
 /*

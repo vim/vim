@@ -6105,6 +6105,22 @@ syn_get_id(wp, lnum, col, trans, spellp)
     return (trans ? current_trans_id : current_id);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return the syntax ID at position "i" in the current stack.
+ * The caller must have called syn_get_id() before to fill the stack.
+ * Returns -1 when "i" is out of range.
+ */
+    int
+syn_get_stack_item(i)
+    int i;
+{
+    if (i >= current_state.ga_len )
+	return -1;
+    return CUR_STATE(i).si_id;
+}
+#endif
+
 #if defined(FEAT_FOLDING) || defined(PROTO)
 /*
  * Function called to get folding level for line "lnum" in window "wp".

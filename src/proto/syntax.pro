@@ -13,6 +13,7 @@ void set_context_in_echohl_cmd __ARGS((expand_T *xp, char_u *arg));
 void set_context_in_syntax_cmd __ARGS((expand_T *xp, char_u *arg));
 char_u *get_syntax_name __ARGS((expand_T *xp, int idx));
 int syn_get_id __ARGS((win_T *wp, long lnum, colnr_T col, int trans, int *spellp));
+int syn_get_stack_item __ARGS((int i));
 int syn_get_foldlevel __ARGS((win_T *wp, long lnum));
 void init_highlight __ARGS((int both, int reset));
 int load_colors __ARGS((char_u *name));

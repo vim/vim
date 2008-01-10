@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 06
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1786,6 +1786,7 @@ synID( {lnum}, {col}, {trans})	Number	syntax ID at {lnum} and {col}
 synIDattr( {synID}, {what} [, {mode}])
 				String	attribute {what} of syntax ID {synID}
 synIDtrans( {synID})		Number	translated syntax ID of {synID}
+synstack({lnum}, {col})		List    stack of syntax IDs at {lnum} and {col}
 system( {expr} [, {input}])	String	output of shell command/filter {expr}
 tabpagebuflist( [{arg}])	List	list of buffer numbers in tab page
 tabpagenr( [{arg}])		Number	number of current or last tab page
@@ -4961,6 +4962,24 @@ synIDtrans({synID})					*synIDtrans()*
 		{synID}.  This is the syntax group ID of what is being used to
 		highlight the character.  Highlight links given with
 		":highlight link" are followed.
+
+synstack({lnum}, {col})					*synstack()*
+		Return a |List|, which is the stack of syntax items at the
+		position {lnum} and {col} in the current window.  Each item in
+		the List is an ID like what |synID()| returns.
+		The stack is the situation in between the character at "col"
+		and the next character.  Note that a region of only one
+		character will not show up, it only exists inside that
+		character, not in between characters.
+		The first item in the List is the outer region, following are
+		items contained in that one.  The last one is what |synID()|
+		returns, unless not the whole item is highlighted or it is a
+		transparent item.
+		This function is useful for debugging a syntax file.
+		Example that shows the syntax stack under the cursor: >
+			for id in synstack(line("."), col("."))
+			   echo synIDattr(id, "name")
+			endfor
 
 system({expr} [, {input}])				*system()* *E677*
 		Get the output of the shell command {expr}.
