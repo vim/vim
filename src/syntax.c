@@ -2495,7 +2495,7 @@ check_state_ends()
 		if (current_state.ga_len == 0)
 		    break;
 
-		if (had_extend)
+		if (had_extend && keepend_level >= 0)
 		{
 		    syn_update_ends(FALSE);
 		    if (current_state.ga_len == 0)
