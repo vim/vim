@@ -6091,7 +6091,7 @@ ex_viusage(eap)
 }
 
 #if defined(FEAT_EX_EXTRA) || defined(PROTO)
-static void helptags_one __ARGS((char_u *dir, char_u *ext, char_u *lang));
+static void helptags_one __ARGS((char_u *dir, char_u *ext, char_u *lang, int add_help_tags));
 
 /*
  * ":helptags"
@@ -6110,6 +6110,14 @@ ex_helptags(eap)
     char_u	fname[8];
     int		filecount;
     char_u	**files;
+    int		add_help_tags = FALSE;
+
+    /* Check for ":helptags ++t {dir}". */
+    if (STRNCMP(eap->arg, "++t", 3) == 0 && vim_iswhite(eap->arg[3]))
+    {
+	add_help_tags = TRUE;
+	eap->arg = skipwhite(eap->arg + 3);
+    }
 
     if (!mch_isdir(eap->arg))
     {
@@ -6192,7 +6200,7 @@ ex_helptags(eap)
 	    ext[1] = fname[5];
 	    ext[2] = fname[6];
 	}
-	helptags_one(eap->arg, ext, fname);
+	helptags_one(eap->arg, ext, fname, add_help_tags);
     }
 
     ga_clear(&ga);
@@ -6200,15 +6208,16 @@ ex_helptags(eap)
 
 #else
     /* No language support, just use "*.txt" and "tags". */
-    helptags_one(eap->arg, (char_u *)".txt", (char_u *)"tags");
+    helptags_one(eap->arg, (char_u *)".txt", (char_u *)"tags", add_help_tags);
 #endif
 }
 
     static void
-helptags_one(dir, ext, tagfname)
-    char_u	*dir;	    /* doc directory */
-    char_u	*ext;	    /* suffix, ".txt", ".itx", ".frx", etc. */
-    char_u	*tagfname;    /* "tags" for English, "tags-it" for Italian. */
+helptags_one(dir, ext, tagfname, add_help_tags)
+    char_u	*dir;		/* doc directory */
+    char_u	*ext;		/* suffix, ".txt", ".itx", ".frx", etc. */
+    char_u	*tagfname;      /* "tags" for English, "tags-fr" for French. */
+    int		add_help_tags;  /* add "help-tags" tag */
 {
     FILE	*fd_tags;
     FILE	*fd;
@@ -6259,10 +6268,12 @@ helptags_one(dir, ext, tagfname)
     }
 
     /*
-     * If generating tags for "$VIMRUNTIME/doc" add the "help-tags" tag.
+     * If using the "++t" argument or generating tags for "$VIMRUNTIME/doc"
+     * add the "help-tags" tag.
      */
     ga_init2(&ga, (int)sizeof(char_u *), 100);
-    if (fullpathcmp((char_u *)"$VIMRUNTIME/doc", dir, FALSE) == FPC_SAME)
+    if (add_help_tags || fullpathcmp((char_u *)"$VIMRUNTIME/doc",
+						      dir, FALSE) == FPC_SAME)
     {
 	if (ga_grow(&ga, 1) == FAIL)
 	    got_int = TRUE;

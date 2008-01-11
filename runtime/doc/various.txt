@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.1.  Last change: 2007 Jan 14
+*various.txt*   For Vim version 7.1.  Last change: 2008 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -748,7 +748,8 @@ command: >
 
 					*:helpt* *:helptags*
 				*E154* *E150* *E151* *E152* *E153* *E670*
-:helpt[ags] {dir}	Generate the help tags file(s) for directory {dir}.
+:helpt[ags] [++t] {dir}
+			Generate the help tags file(s) for directory {dir}.
 			All "*.txt" and "*.??x" files in the directory are
 			scanned for a help tag definition in between stars.
 			The "*.??x" files are for translated docs, they
@@ -756,6 +757,9 @@ command: >
 			The generated tags files are sorted.
 			When there are duplicates an error message is given.
 			An existing tags file is silently overwritten.
+			The optional "++t" argument forces adding the
+			"help-tags" tag.  This is also done when the {dir} is
+			equal to $VIMRUNTIME/doc.
 			To rebuild the help tags in the runtime directory
 			(requires write permission there): >
 				:helptags $VIMRUNTIME/doc
