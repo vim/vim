@@ -150,6 +150,7 @@ static void	nv_pipe __ARGS((cmdarg_T *cap));
 static void	nv_bck_word __ARGS((cmdarg_T *cap));
 static void	nv_wordcmd __ARGS((cmdarg_T *cap));
 static void	nv_beginline __ARGS((cmdarg_T *cap));
+static void	adjust_cursor __ARGS((oparg_T *oap));
 #ifdef FEAT_VISUAL
 static void	adjust_for_sel __ARGS((cmdarg_T *cap));
 static int	unadjust_for_sel __ARGS((void));
@@ -6567,12 +6568,8 @@ nv_brace(cap)
 	clearopbeep(cap->oap);
     else
     {
-	/* Don't leave the cursor on the NUL past a line */
-	if (curwin->w_cursor.col > 0 && gchar_cursor() == NUL)
-	{
-	    --curwin->w_cursor.col;
-	    cap->oap->inclusive = TRUE;
-	}
+	/* Don't leave the cursor on the NUL past end of line. */
+	adjust_cursor(cap->oap);
 #ifdef FEAT_VIRTUALEDIT
 	curwin->w_cursor.coladd = 0;
 #endif
@@ -8408,12 +8405,9 @@ nv_wordcmd(cap)
     else
 	n = fwd_word(cap->count1, cap->arg, cap->oap->op_type != OP_NOP);
 
-    /* Don't leave the cursor on the NUL past a line */
-    if (n != FAIL && curwin->w_cursor.col > 0 && gchar_cursor() == NUL)
-    {
-	--curwin->w_cursor.col;
-	cap->oap->inclusive = TRUE;
-    }
+    /* Don't leave the cursor on the NUL past the end of line. */
+    if (n != FAIL)
+	adjust_cursor(cap->oap);
 
     if (n == FAIL && cap->oap->op_type == OP_NOP)
 	clearopbeep(cap->oap);
@@ -8426,6 +8420,39 @@ nv_wordcmd(cap)
 	if ((fdo_flags & FDO_HOR) && KeyTyped && cap->oap->op_type == OP_NOP)
 	    foldOpenCursor();
 #endif
+    }
+}
+
+/*
+ * Used after a movement command: If the cursor ends up on the NUL after the
+ * end of the line, may move it back to the last character and make the motion
+ * inclusive.
+ */
+    static void
+adjust_cursor(oap)
+    oparg_T *oap;
+{
+    /* The cursor cannot remain on the NUL when:
+     * - the column is > 0
+     * - not in Visual mode or 'selection' is "o"
+     * - 'virtualedit' is not "all" and not "onemore".
+     */
+    if (curwin->w_cursor.col > 0 && gchar_cursor() == NUL
+#ifdef FEAT_VISUAL
+		&& (!VIsual_active || *p_sel == 'o')
+#endif
+#ifdef FEAT_VIRTUALEDIT
+		&& !virtual_active() && (ve_flags & VE_ONEMORE) == 0
+#endif
+		)
+    {
+	--curwin->w_cursor.col;
+#ifdef FEAT_MBYTE
+	/* prevent cursor from moving on the trail byte */
+	if (has_mbyte)
+	    mb_adjust_cursor();
+#endif
+	oap->inclusive = TRUE;
     }
 }
 
