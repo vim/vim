@@ -1455,6 +1455,14 @@ ins_redraw(ready)
 # endif
 			     )
 	{
+# ifdef FEAT_SYN_HL
+	    /* Need to update the screen first, to make sure syntax
+	     * highlighting is correct after making a change (e.g., inserting
+	     * a "(".  The autocommand may also require a redraw, so it's done
+	     * again below, unfortunately. */
+	    if (syntax_present(curbuf) && must_redraw)
+		update_screen(0);
+# endif
 	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
 	    last_cursormoved = curwin->w_cursor;
 	}
