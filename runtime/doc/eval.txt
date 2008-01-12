@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 10
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4967,10 +4967,6 @@ synstack({lnum}, {col})					*synstack()*
 		Return a |List|, which is the stack of syntax items at the
 		position {lnum} and {col} in the current window.  Each item in
 		the List is an ID like what |synID()| returns.
-		The stack is the situation in between the character at "col"
-		and the next character.  Note that a region of only one
-		character will not show up, it only exists inside that
-		character, not in between characters.
 		The first item in the List is the outer region, following are
 		items contained in that one.  The last one is what |synID()|
 		returns, unless not the whole item is highlighted or it is a

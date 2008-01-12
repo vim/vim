@@ -378,7 +378,7 @@ static void invalidate_current_state __ARGS((void));
 static int syn_stack_equal __ARGS((synstate_T *sp));
 static void validate_current_state __ARGS((void));
 static int syn_finish_line __ARGS((int syncing));
-static int syn_current_attr __ARGS((int syncing, int displaying, int *can_spell));
+static int syn_current_attr __ARGS((int syncing, int displaying, int *can_spell, int keep_state));
 static int did_match_already __ARGS((int idx, garray_T *gap));
 static stateitem_T *push_next_match __ARGS((stateitem_T *cur_si));
 static void check_state_ends __ARGS((void));
@@ -1691,7 +1691,7 @@ syn_finish_line(syncing)
     {
 	while (!current_finished)
 	{
-	    (void)syn_current_attr(syncing, FALSE, NULL);
+	    (void)syn_current_attr(syncing, FALSE, NULL, FALSE);
 	    /*
 	     * When syncing, and found some item, need to check the item.
 	     */
@@ -1731,9 +1731,10 @@ syn_finish_line(syncing)
  * done.
  */
     int
-get_syntax_attr(col, can_spell)
+get_syntax_attr(col, can_spell, keep_state)
     colnr_T	col;
     int		*can_spell;
+    int		keep_state;	/* keep state of char at "col" */
 {
     int	    attr = 0;
 
@@ -1768,7 +1769,8 @@ get_syntax_attr(col, can_spell)
      */
     while (current_col <= col)
     {
-	attr = syn_current_attr(FALSE, TRUE, can_spell);
+	attr = syn_current_attr(FALSE, TRUE, can_spell,
+				     current_col == col ? keep_state : FALSE);
 	++current_col;
     }
 
@@ -1779,10 +1781,11 @@ get_syntax_attr(col, can_spell)
  * Get syntax attributes for current_lnum, current_col.
  */
     static int
-syn_current_attr(syncing, displaying, can_spell)
+syn_current_attr(syncing, displaying, can_spell, keep_state)
     int		syncing;		/* When 1: called for syncing */
     int		displaying;		/* result will be displayed */
     int		*can_spell;		/* return: do spell checking */
+    int		keep_state;		/* keep syntax stack afterwards */
 {
     int		syn_id;
     lpos_T	endpos;		/* was: char_u *endp; */
@@ -2298,7 +2301,7 @@ syn_current_attr(syncing, displaying, can_spell)
 	 * may be for an empty match and a containing item might end in the
 	 * current column.
 	 */
-	if (!syncing)
+	if (!syncing && !keep_state)
 	{
 	    check_state_ends();
 	    if (current_state.ga_len > 0
@@ -6086,12 +6089,13 @@ get_syntax_name(xp, idx)
  * Function called for expression evaluation: get syntax ID at file position.
  */
     int
-syn_get_id(wp, lnum, col, trans, spellp)
+syn_get_id(wp, lnum, col, trans, spellp, keep_state)
     win_T	*wp;
     long	lnum;
     colnr_T	col;
-    int		trans;	    /* remove transparancy */
-    int		*spellp;    /* return: can do spell checking */
+    int		trans;	     /* remove transparancy */
+    int		*spellp;     /* return: can do spell checking */
+    int		keep_state;  /* keep state of char at "col" */
 {
     /* When the position is not after the current position and in the same
      * line of the same buffer, need to restart parsing. */
@@ -6100,7 +6104,7 @@ syn_get_id(wp, lnum, col, trans, spellp)
 	    || col < current_col)
 	syntax_start(wp, lnum);
 
-    (void)get_syntax_attr(col, spellp);
+    (void)get_syntax_attr(col, spellp, keep_state);
 
     return (trans ? current_trans_id : current_id);
 }
@@ -6115,8 +6119,14 @@ syn_get_id(wp, lnum, col, trans, spellp)
 syn_get_stack_item(i)
     int i;
 {
-    if (i >= current_state.ga_len )
+    if (i >= current_state.ga_len)
+    {
+	/* Need to invalidate the state, because we didn't properly finish it
+	 * for the last character, "keep_state" was TRUE. */
+	invalidate_current_state();
+	current_col = MAXCOL;
 	return -1;
+    }
     return CUR_STATE(i).si_id;
 }
 #endif

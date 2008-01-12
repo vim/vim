@@ -2146,7 +2146,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 			{
 			    col = (int)(p - buf);
 			    (void)syn_get_id(wp, lnum, (colnr_T)col,
-						       FALSE, &can_spell);
+						    FALSE, &can_spell, FALSE);
 			    if (!can_spell)
 				attr = HLF_COUNT;
 			}

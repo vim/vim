@@ -15725,7 +15725,7 @@ f_synID(argvars, rettv)
 
     if (!transerr && lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
 	    && col >= 0 && col < (long)STRLEN(ml_get(lnum)))
-	id = syn_get_id(curwin, lnum, (colnr_T)col, trans, NULL);
+	id = syn_get_id(curwin, lnum, (colnr_T)col, trans, NULL, FALSE);
 #endif
 
     rettv->vval.v_number = id;
@@ -15874,7 +15874,7 @@ f_synstack(argvars, rettv)
 	    && col >= 0 && col < (long)STRLEN(ml_get(lnum))
 	    && rettv_list_alloc(rettv) != FAIL)
     {
-	(void)syn_get_id(curwin, lnum, (colnr_T)col, FALSE, NULL);
+	(void)syn_get_id(curwin, lnum, (colnr_T)col, FALSE, NULL, TRUE);
 	for (i = 0; ; ++i)
 	{
 	    id = syn_get_stack_item(i);

@@ -3885,7 +3885,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # ifdef FEAT_SPELL
 					       has_spell ? &can_spell :
 # endif
-					       NULL);
+					       NULL, FALSE);
 
 		    if (did_emsg)
 		    {
