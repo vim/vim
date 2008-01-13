@@ -3338,12 +3338,13 @@ set_one_cmd_context(xp, buff)
 		}
 		in_quote = !in_quote;
 	    }
+	    /* An argument can contain just about everything, except
+	     * characters that end the command and white space. */
+	    else if (c == '|' || c == '\n' || c == '"' || (vim_iswhite(c)
 #ifdef SPACE_IN_FILENAME
-	    else if (!vim_isfilec_or_wc(c)
-					 && (!(ea.argt & NOSPC) || usefilter))
-#else
-	    else if (!vim_isfilec_or_wc(c))
+					 && (!(ea.argt & NOSPC) || usefilter)
 #endif
+		    ))
 	    {
 		while (*p != NUL)
 		{
