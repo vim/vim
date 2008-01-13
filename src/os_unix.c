@@ -4946,6 +4946,9 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     char_u	*p;
     int		dir;
 #ifdef __EMX__
+    /*
+     * This is the OS/2 implementation.
+     */
 # define EXPL_ALLOC_INC	16
     char_u	**expl_files;
     size_t	files_alloced, files_free;
@@ -5056,20 +5059,26 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     return OK;
 
 #else /* __EMX__ */
-
+    /*
+     * This is the non-OS/2 implementation (really Unix).
+     */
     int		j;
     char_u	*tempname;
     char_u	*command;
     FILE	*fd;
     char_u	*buffer;
-#define STYLE_ECHO  0	    /* use "echo" to expand */
-#define STYLE_GLOB  1	    /* use "glob" to expand, for csh */
-#define STYLE_PRINT 2	    /* use "print -N" to expand, for zsh */
-#define STYLE_BT    3	    /* `cmd` expansion, execute the pattern directly */
+#define STYLE_ECHO	0	/* use "echo", the default */
+#define STYLE_GLOB	1	/* use "glob", for csh */
+#define STYLE_VIMGLOB	2	/* use "vimglob", for Posix sh */
+#define STYLE_PRINT	3	/* use "print -N", for zsh */
+#define STYLE_BT	4	/* `cmd` expansion, execute the pattern
+				 * directly */
     int		shell_style = STYLE_ECHO;
     int		check_spaces;
     static int	did_find_nul = FALSE;
     int		ampersent = FALSE;
+		/* vimglob() function to define for Posix shell */
+    static char *sh_vimglob_func = "vimglob() { while [ $# -ge 1 ]; do echo -n \"$1\"; echo; shift; done }; vimglob >";
 
     *num_file = 0;	/* default: no files found */
     *file = NULL;
@@ -5107,9 +5116,17 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 
     /*
      * Let the shell expand the patterns and write the result into the temp
-     * file.  if expanding `cmd` execute it directly.
-     * If we use csh, glob will work better than echo.
-     * If we use zsh, print -N will work better than glob.
+     * file.
+     * STYLE_BT:	NL separated
+     *	    If expanding `cmd` execute it directly.
+     * STYLE_GLOB:	NUL separated
+     *	    If we use *csh, "glob" will work better than "echo".
+     * STYLE_PRINT:	NL or NUL separated
+     *	    If we use *zsh, "print -N" will work better than "glob".
+     * STYLE_VIMGLOB:	NL separated
+     *	    If we use *sh*, we define "vimglob()".
+     * STYLE_ECHO:	space separated.
+     *	    A shell we don't know, stay safe and use "echo".
      */
     if (num_pat == 1 && *pat[0] == '`'
 	    && (len = STRLEN(pat[0])) > 2
@@ -5122,9 +5139,17 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	else if (STRCMP(p_sh + len - 3, "zsh") == 0)
 	    shell_style = STYLE_PRINT;
     }
+    if (shell_style == STYLE_ECHO && strstr((char *)gettail(p_sh),
+								"sh") != NULL)
+	shell_style = STYLE_VIMGLOB;
 
-    /* "unset nonomatch; print -N >" plus two is 29 */
+    /* Compute the length of the command.  We need 2 extra bytes: for the
+     * optional '&' and for the NUL.
+     * Worst case: "unset nonomatch; print -N >" plus two is 29 */
     len = STRLEN(tempname) + 29;
+    if (shell_style == STYLE_VIMGLOB)
+	len += STRLEN(sh_vimglob_func);
+
     for (i = 0; i < num_pat; ++i)
     {
 	/* Count the length of the patterns in the same way as they are put in
@@ -5183,10 +5208,14 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    STRCAT(command, "glob >");
 	else if (shell_style == STYLE_PRINT)
 	    STRCAT(command, "print -N >");
+	else if (shell_style == STYLE_VIMGLOB)
+	    STRCAT(command, sh_vimglob_func);
 	else
 	    STRCAT(command, "echo >");
     }
+
     STRCAT(command, tempname);
+
     if (shell_style != STYLE_BT)
 	for (i = 0; i < num_pat; ++i)
 	{
@@ -5232,8 +5261,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     if (flags & EW_SILENT)
 	show_shell_mess = FALSE;
     if (ampersent)
-	STRCAT(command, "&");		/* put the '&' back after the
-					   redirection */
+	STRCAT(command, "&");		/* put the '&' after the redirection */
 
     /*
      * Using zsh -G: If a pattern has no matches, it is just deleted from
@@ -5265,7 +5293,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     show_shell_mess = TRUE;
     vim_free(command);
 
-    if (i)				/* mch_call_shell() failed */
+    if (i != 0)				/* mch_call_shell() failed */
     {
 	mch_remove(tempname);
 	vim_free(tempname);
@@ -5336,7 +5364,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     }
     vim_free(tempname);
 
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+# if defined(__CYGWIN__) || defined(__CYGWIN32__)
     /* Translate <CR><NL> into <NL>.  Caution, buffer may contain NUL. */
     p = buffer;
     for (i = 0; i < len; ++i)
@@ -5359,7 +5387,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	}
     }
     /* file names are separated with NL */
-    else if (shell_style == STYLE_BT)
+    else if (shell_style == STYLE_BT || shell_style == STYLE_VIMGLOB)
     {
 	buffer[len] = NUL;		/* make sure the buffer ends in NUL */
 	p = buffer;
@@ -5438,7 +5466,8 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     {
 	(*file)[i] = p;
 	/* Space or NL separates */
-	if (shell_style == STYLE_ECHO || shell_style == STYLE_BT)
+	if (shell_style == STYLE_ECHO || shell_style == STYLE_BT
+					      || shell_style == STYLE_VIMGLOB)
 	{
 	    while (!(shell_style == STYLE_ECHO && *p == ' ')
 						   && *p != '\n' && *p != NUL)
