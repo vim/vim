@@ -1775,7 +1775,8 @@ command_line_scan(parmp)
 
 	    case 'F':		/* "-F" start in Farsi mode: rl + fkmap set */
 #ifdef FEAT_FKMAP
-		curwin->w_p_rl = p_fkmap = TRUE;
+		p_fkmap = TRUE;
+		set_option_value((char_u *)"rl", 1L, NULL, 0);
 #else
 		mch_errmsg(_(e_nofarsi));
 		mch_exit(2);
@@ -1792,7 +1793,8 @@ command_line_scan(parmp)
 
 	    case 'H':		/* "-H" start in Hebrew mode: rl + hkmap set */
 #ifdef FEAT_RIGHTLEFT
-		curwin->w_p_rl = p_hkmap = TRUE;
+		p_hkmap = TRUE;
+		set_option_value((char_u *)"rl", 1L, NULL, 0);
 #else
 		mch_errmsg(_(e_nohebrew));
 		mch_exit(2);
