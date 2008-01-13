@@ -6145,9 +6145,9 @@ do_xterm_trace()
     if (xterm_trace == 1)
     {
 	/* Get the hints just before tracking starts.  The font size might
-	 * have changed recently */
-	XGetWMNormalHints(xterm_dpy, x11_window, &xterm_hints, &got_hints);
-	if (!(got_hints & PResizeInc)
+	 * have changed recently. */
+	if (!XGetWMNormalHints(xterm_dpy, x11_window, &xterm_hints, &got_hints)
+		|| !(got_hints & PResizeInc)
 		|| xterm_hints.width_inc <= 1
 		|| xterm_hints.height_inc <= 1)
 	{
