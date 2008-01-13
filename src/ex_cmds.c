@@ -6106,6 +6106,8 @@ ex_helptags(eap)
 #ifdef FEAT_MULTI_LANG
     char_u	lang[2];
 #endif
+    expand_T	xpc;
+    char_u	*dirname;
     char_u	ext[5];
     char_u	fname[8];
     int		filecount;
@@ -6119,7 +6121,11 @@ ex_helptags(eap)
 	eap->arg = skipwhite(eap->arg + 3);
     }
 
-    if (!mch_isdir(eap->arg))
+    ExpandInit(&xpc);
+    xpc.xp_context = EXPAND_DIRECTORIES;
+    dirname = ExpandOne(&xpc, eap->arg, NULL,
+			    WILD_LIST_NOTFOUND|WILD_SILENT, WILD_EXPAND_FREE);
+    if (dirname == NULL || !mch_isdir(dirname))
     {
 	EMSG2(_("E150: Not a directory: %s"), eap->arg);
 	return;
@@ -6127,7 +6133,7 @@ ex_helptags(eap)
 
 #ifdef FEAT_MULTI_LANG
     /* Get a list of all files in the directory. */
-    STRCPY(NameBuff, eap->arg);
+    STRCPY(NameBuff, dirname);
     add_pathsep(NameBuff);
     STRCAT(NameBuff, "*");
     if (gen_expand_wildcards(1, &NameBuff, &filecount, &files,
@@ -6135,6 +6141,7 @@ ex_helptags(eap)
 	    || filecount == 0)
     {
 	EMSG2("E151: No match: %s", NameBuff);
+	vim_free(dirname);
 	return;
     }
 
@@ -6200,7 +6207,7 @@ ex_helptags(eap)
 	    ext[1] = fname[5];
 	    ext[2] = fname[6];
 	}
-	helptags_one(eap->arg, ext, fname, add_help_tags);
+	helptags_one(dirname, ext, fname, add_help_tags);
     }
 
     ga_clear(&ga);
@@ -6208,8 +6215,9 @@ ex_helptags(eap)
 
 #else
     /* No language support, just use "*.txt" and "tags". */
-    helptags_one(eap->arg, (char_u *)".txt", (char_u *)"tags", add_help_tags);
+    helptags_one(dirname, (char_u *)".txt", (char_u *)"tags", add_help_tags);
 #endif
+    vim_free(dirname);
 }
 
     static void
