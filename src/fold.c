@@ -2676,6 +2676,7 @@ foldUpdateIEMSRecurse(gap, level, startlnum, flp, getlevel, bot, topflags)
     if (fp->fd_len < flp->lnum - fp->fd_top)
     {
 	fp->fd_len = flp->lnum - fp->fd_top;
+	fp->fd_small = MAYBE;
 	fold_changed = TRUE;
     }
 
