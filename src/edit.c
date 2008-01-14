@@ -8618,6 +8618,14 @@ ins_bs(c, mode, inserted_space_p)
     if (vim_strchr(p_cpo, CPO_BACKSPACE) != NULL && dollar_vcol == 0)
 	dollar_vcol = curwin->w_virtcol;
 
+#ifdef FEAT_FOLDING
+    /* When deleting a char the cursor line must never be in a closed fold.
+     * E.g., when 'foldmethod' is indent and deleting the first non-white
+     * char before a Tab. */
+    if (did_backspace)
+	foldOpenCursor();
+#endif
+
     return did_backspace;
 }
 
