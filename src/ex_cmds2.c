@@ -2889,11 +2889,14 @@ do_source(fname, check_other, is_vimrc)
     if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
 	    && apply_autocmds(EVENT_SOURCECMD, fname_exp, fname_exp,
 							       FALSE, curbuf))
+    {
 # ifdef FEAT_EVAL
-	return aborting() ? FAIL : OK;
+	retval = aborting() ? FAIL : OK;
 # else
-	return OK;
+	retval = OK;
 # endif
+	goto theend;
+    }
 
     /* Apply SourcePre autocommands, they may get the file. */
     apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
