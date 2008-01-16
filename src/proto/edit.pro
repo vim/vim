@@ -3,7 +3,7 @@ int edit __ARGS((int cmdchar, int startln, long count));
 void edit_putchar __ARGS((int c, int highlight));
 void edit_unputchar __ARGS((void));
 void display_dollar __ARGS((colnr_T col));
-void change_indent __ARGS((int type, int amount, int round, int replaced));
+void change_indent __ARGS((int type, int amount, int round, int replaced, int call_changed_bytes));
 void truncate_spaces __ARGS((char_u *line));
 void backspace_until_column __ARGS((int col));
 int vim_is_ctrl_x_key __ARGS((int c));

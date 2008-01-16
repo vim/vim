@@ -4,7 +4,7 @@ int op_on_lines __ARGS((int op));
 int get_op_char __ARGS((int optype));
 int get_extra_op_char __ARGS((int optype));
 void op_shift __ARGS((oparg_T *oap, int curs_top, int amount));
-void shift_line __ARGS((int left, int round, int amount));
+void shift_line __ARGS((int left, int round, int amount, int call_changed_bytes));
 void op_reindent __ARGS((oparg_T *oap, int (*how)(void)));
 int get_expr_register __ARGS((void));
 void set_expr_line __ARGS((char_u *new_line));

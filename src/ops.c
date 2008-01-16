@@ -258,7 +258,7 @@ op_shift(oap, curs_top, amount)
 	    if (first_char != '#' || !preprocs_left())
 #endif
 	{
-	    shift_line(oap->op_type == OP_LSHIFT, p_sr, amount);
+	    shift_line(oap->op_type == OP_LSHIFT, p_sr, amount, FALSE);
 	}
 	++curwin->w_cursor.lnum;
     }
@@ -321,10 +321,11 @@ op_shift(oap, curs_top, amount)
  * leaves cursor on first blank in the line
  */
     void
-shift_line(left, round, amount)
+shift_line(left, round, amount, call_changed_bytes)
     int	left;
     int	round;
     int	amount;
+    int call_changed_bytes;	/* call changed_bytes() */
 {
     int		count;
     int		i, j;
@@ -363,10 +364,10 @@ shift_line(left, round, amount)
     /* Set new indent */
 #ifdef FEAT_VREPLACE
     if (State & VREPLACE_FLAG)
-	change_indent(INDENT_SET, count, FALSE, NUL);
+	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
     else
 #endif
-	(void)set_indent(count, SIN_CHANGED);
+	(void)set_indent(count, call_changed_bytes ? SIN_CHANGED : 0);
 }
 
 #if defined(FEAT_VISUALEXTRA) || defined(PROTO)

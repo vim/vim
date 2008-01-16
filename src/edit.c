@@ -1662,11 +1662,12 @@ undisplay_dollar()
  * if round is TRUE, round the indent to 'shiftwidth' (only with _INC and _Dec).
  */
     void
-change_indent(type, amount, round, replaced)
+change_indent(type, amount, round, replaced, call_changed_bytes)
     int		type;
     int		amount;
     int		round;
     int		replaced;	/* replaced character, put on replace stack */
+    int		call_changed_bytes;	/* call changed_bytes() */
 {
     int		vcol;
     int		last_vcol;
@@ -1723,7 +1724,7 @@ change_indent(type, amount, round, replaced)
      * Set the new indent.  The cursor will be put on the first non-blank.
      */
     if (type == INDENT_SET)
-	(void)set_indent(amount, SIN_CHANGED);
+	(void)set_indent(amount, call_changed_bytes ? SIN_CHANGED : 0);
     else
     {
 #ifdef FEAT_VREPLACE
@@ -1733,7 +1734,7 @@ change_indent(type, amount, round, replaced)
 	if (State & VREPLACE_FLAG)
 	    State = INSERT;
 #endif
-	shift_line(type == INDENT_DEC, round, 1);
+	shift_line(type == INDENT_DEC, round, 1, call_changed_bytes);
 #ifdef FEAT_VREPLACE
 	State = save_State;
 #endif
@@ -5921,7 +5922,7 @@ internal_format(textwidth, second_indent, flags, format_only)
 	    {
 #ifdef FEAT_VREPLACE
 		if (State & VREPLACE_FLAG)
-		    change_indent(INDENT_SET, second_indent, FALSE, NUL);
+		    change_indent(INDENT_SET, second_indent, FALSE, NUL, TRUE);
 		else
 #endif
 		    (void)set_indent(second_indent, SIN_CHANGED);
@@ -7227,7 +7228,7 @@ cindent_on()
 fixthisline(get_the_indent)
     int (*get_the_indent) __ARGS((void));
 {
-    change_indent(INDENT_SET, get_the_indent(), FALSE, 0);
+    change_indent(INDENT_SET, get_the_indent(), FALSE, 0, TRUE);
     if (linewhite(curwin->w_cursor.lnum))
 	did_ai = TRUE;	    /* delete the indent if the line stays empty */
 }
@@ -8170,10 +8171,10 @@ ins_shift(c, lastc)
 	    replace_pop_ins();
 	if (lastc == '^')
 	    old_indent = get_indent();	/* remember curr. indent */
-	change_indent(INDENT_SET, 0, TRUE, 0);
+	change_indent(INDENT_SET, 0, TRUE, 0, TRUE);
     }
     else
-	change_indent(c == Ctrl_D ? INDENT_DEC : INDENT_INC, 0, TRUE, 0);
+	change_indent(c == Ctrl_D ? INDENT_DEC : INDENT_INC, 0, TRUE, 0, TRUE);
 
     if (did_ai && *skipwhite(ml_get_curline()) != NUL)
 	did_ai = FALSE;
@@ -9633,7 +9634,7 @@ ins_try_si(c)
 	    curwin->w_cursor = old_pos;
 #ifdef FEAT_VREPLACE
 	    if (State & VREPLACE_FLAG)
-		change_indent(INDENT_SET, i, FALSE, NUL);
+		change_indent(INDENT_SET, i, FALSE, NUL, TRUE);
 	    else
 #endif
 		(void)set_indent(i, SIN_CHANGED);
@@ -9662,7 +9663,7 @@ ins_try_si(c)
 		curwin->w_cursor = old_pos;
 	    }
 	    if (temp)
-		shift_line(TRUE, FALSE, 1);
+		shift_line(TRUE, FALSE, 1, TRUE);
 	}
     }
 
