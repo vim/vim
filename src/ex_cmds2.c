@@ -916,7 +916,7 @@ profile_setlimit(msec, tm)
 
 	QueryPerformanceCounter(tm);
 	QueryPerformanceFrequency(&fr);
-	tm->QuadPart +=  (double)msec / 1000.0 * (double)fr.QuadPart;
+	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
 # else
 	long	    usec;
 

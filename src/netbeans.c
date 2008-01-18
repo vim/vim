@@ -1217,7 +1217,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
 
     oldtext = ml_get(lnum);
     oldlen = STRLEN(oldtext);
-    if (first >= oldlen || oldlen == 0)  /* just in case */
+    if (first >= (colnr_T)oldlen || oldlen == 0)  /* just in case */
 	return;
     if (lastbyte >= oldlen)
 	lastbyte = oldlen - 1;
