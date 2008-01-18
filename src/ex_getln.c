@@ -4655,7 +4655,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 static void * call_user_expand_func __ARGS((void *(*user_expand_func) __ARGS((char_u *, int, char_u **, int)), expand_T	*xp, int *num_file, char_u ***file));
 
 /*
- * call "user_expand_func()" to invoke a user defined VimL function and return
+ * Call "user_expand_func()" to invoke a user defined VimL function and return
  * the result (either a string or a List).
  */
     static void *
@@ -4677,11 +4677,22 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
     *num_file = 0;
     *file = NULL;
 
-    keep = ccline.cmdbuff[ccline.cmdlen];
-    ccline.cmdbuff[ccline.cmdlen] = 0;
-    sprintf((char *)num, "%d", ccline.cmdpos);
+    if (ccline.cmdbuff == NULL)
+    {
+	/* Completion from Insert mode, pass fake arguments. */
+	keep = 0;
+	sprintf((char *)num, "%d", STRLEN(xp->xp_pattern));
+	args[1] = xp->xp_pattern;
+    }
+    else
+    {
+	/* Completion on the command line, pass real arguments. */
+	keep = ccline.cmdbuff[ccline.cmdlen];
+	ccline.cmdbuff[ccline.cmdlen] = 0;
+	sprintf((char *)num, "%d", ccline.cmdpos);
+	args[1] = ccline.cmdbuff;
+    }
     args[0] = xp->xp_pattern;
-    args[1] = ccline.cmdbuff;
     args[2] = num;
 
     /* Save the cmdline, we don't know what the function may do. */
@@ -4694,8 +4705,8 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
 
     ccline = save_ccline;
     current_SID = save_current_SID;
-
-    ccline.cmdbuff[ccline.cmdlen] = keep;
+    if (ccline.cmdbuff != NULL)
+	ccline.cmdbuff[ccline.cmdlen] = keep;
 
     return ret;
 }
