@@ -378,14 +378,6 @@ re_multi_type(c)
 
 static char_u		*reg_prev_sub = NULL;
 
-#if defined(EXITFREE) || defined(PROTO)
-    void
-free_regexp_stuff()
-{
-    vim_free(reg_prev_sub);
-}
-#endif
-
 /*
  * REGEXP_INRANGE contains all characters which are always special in a []
  * range after '\'.
@@ -3206,12 +3198,39 @@ typedef struct backpos_S
 } backpos_T;
 
 /*
- * regstack and backpos are used by regmatch().  They are kept over calls to
- * avoid invoking malloc() and free() often.
+ * "regstack" and "backpos" are used by regmatch().  They are kept over calls
+ * to avoid invoking malloc() and free() often.
+ * "regstack" is a stack with regitem_T items, sometimes preceded by regstar_T
+ * or regbehind_T.
+ * "backpos_T" is a table with backpos_T for BACK
  */
-static garray_T	regstack;	/* stack with regitem_T items, sometimes
-				   preceded by regstar_T or regbehind_T. */
-static garray_T	backpos;	/* table with backpos_T for BACK */
+static garray_T	regstack = {0, 0, 0, 0, NULL};
+static garray_T	backpos = {0, 0, 0, 0, NULL};
+
+/*
+ * Both for regstack and backpos tables we use the following strategy of
+ * allocation (to reduce malloc/free calls):
+ * - Initial size is fairly small.
+ * - When needed, the tables are grown bigger (8 times at first, double after
+ *   that).
+ * - After executing the match we free the memory only if the array has grown.
+ *   Thus the memory is kept allocated when it's at the initial size.
+ * This makes it fast while not keeping a lot of memory allocated.
+ * A three times speed increase was observed when using many simple patterns.
+ */
+#define REGSTACK_INITIAL	2048
+#define BACKPOS_INITIAL		64
+
+#if defined(EXITFREE) || defined(PROTO)
+    void
+free_regexp_stuff()
+{
+    ga_clear(&regstack);
+    ga_clear(&backpos);
+    vim_free(reg_tofree);
+    vim_free(reg_prev_sub);
+}
+#endif
 
 /*
  * Get pointer to the line "lnum", which is relative to "reg_firstlnum".
@@ -3346,15 +3365,25 @@ vim_regexec_both(line, col)
     char_u	*s;
     long	retval = 0L;
 
-    reg_tofree = NULL;
+    /* Create "regstack" and "backpos" if they are not allocated yet.
+     * We allocate *_INITIAL amount of bytes first and then set the grow size
+     * to much bigger value to avoid many malloc calls in case of deep regular
+     * expressions.  */
+    if (regstack.ga_data == NULL)
+    {
+	/* Use an item size of 1 byte, since we push different things
+	 * onto the regstack. */
+	ga_init2(&regstack, 1, REGSTACK_INITIAL);
+	ga_grow(&regstack, REGSTACK_INITIAL);
+	regstack.ga_growsize = REGSTACK_INITIAL * 8;
+    }
 
-    /* Init the regstack empty.  Use an item size of 1 byte, since we push
-     * different things onto it.  Use a large grow size to avoid reallocating
-     * it too often. */
-    ga_init2(&regstack, 1, 10000);
-
-    /* Init the backpos table empty. */
-    ga_init2(&backpos, sizeof(backpos_T), 10);
+    if (backpos.ga_data == NULL)
+    {
+	ga_init2(&backpos, sizeof(backpos_T), BACKPOS_INITIAL);
+	ga_grow(&backpos, BACKPOS_INITIAL);
+	backpos.ga_growsize = BACKPOS_INITIAL * 8;
+    }
 
     if (REG_MULTI)
     {
@@ -3525,9 +3554,17 @@ vim_regexec_both(line, col)
     }
 
 theend:
-    vim_free(reg_tofree);
-    ga_clear(&regstack);
-    ga_clear(&backpos);
+    /* Free "reg_tofree" when it's a bit big.
+     * Free regstack and backpos if they are bigger than their initial size. */
+    if (reg_tofreelen > 400)
+    {
+	vim_free(reg_tofree);
+	reg_tofree = NULL;
+    }
+    if (regstack.ga_maxlen > REGSTACK_INITIAL)
+	ga_clear(&regstack);
+    if (backpos.ga_maxlen > BACKPOS_INITIAL)
+	ga_clear(&backpos);
 
     return retval;
 }
@@ -3717,8 +3754,8 @@ regmatch(scan)
 #define RA_MATCH	4	/* successful match */
 #define RA_NOMATCH	5	/* didn't match */
 
-  /* Init the regstack and backpos table empty.  They are initialized and
-   * freed in vim_regexec_both() to reduce malloc()/free() calls. */
+  /* Make "regstack" and "backpos" empty.  They are allocated and freed in
+   * vim_regexec_both() to reduce malloc()/free() calls. */
   regstack.ga_len = 0;
   backpos.ga_len = 0;
 
