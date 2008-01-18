@@ -1299,7 +1299,9 @@ diff_read(idx_orig, idx_new, fname)
 	    }
 	    else
 		/* second overlap of new block with existing block */
-		dp->df_count[idx_new] += count_new - count_orig;
+		dp->df_count[idx_new] += count_new - count_orig
+		    + dpl->df_lnum[idx_orig] + dpl->df_count[idx_orig]
+		    - (dp->df_lnum[idx_orig] + dp->df_count[idx_orig]);
 
 	    /* Adjust the size of the block to include all the lines to the
 	     * end of the existing block or the new diff, whatever ends last. */
@@ -1628,14 +1630,16 @@ diff_set_topline(fromwin, towin)
     win_T	*fromwin;
     win_T	*towin;
 {
-    buf_T	*buf = fromwin->w_buffer;
+    buf_T	*frombuf = fromwin->w_buffer;
     linenr_T	lnum = fromwin->w_topline;
-    int		idx;
+    int		fromidx;
+    int		toidx;
     diff_T	*dp;
+    int		max_count;
     int		i;
 
-    idx = diff_buf_idx(buf);
-    if (idx == DB_COUNT)
+    fromidx = diff_buf_idx(frombuf);
+    if (fromidx == DB_COUNT)
 	return;		/* safety check */
 
     if (curtab->tp_diff_invalid)
@@ -1645,42 +1649,72 @@ diff_set_topline(fromwin, towin)
 
     /* search for a change that includes "lnum" in the list of diffblocks. */
     for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
-	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
+	if (lnum <= dp->df_lnum[fromidx] + dp->df_count[fromidx])
 	    break;
     if (dp == NULL)
     {
 	/* After last change, compute topline relative to end of file; no
 	 * filler lines. */
 	towin->w_topline = towin->w_buffer->b_ml.ml_line_count
-					   - (buf->b_ml.ml_line_count - lnum);
+				       - (frombuf->b_ml.ml_line_count - lnum);
     }
     else
     {
 	/* Find index for "towin". */
-	i = diff_buf_idx(towin->w_buffer);
-	if (i == DB_COUNT)
+	toidx = diff_buf_idx(towin->w_buffer);
+	if (toidx == DB_COUNT)
 	    return;		/* safety check */
 
-	towin->w_topline = lnum + (dp->df_lnum[i] - dp->df_lnum[idx]);
-	if (lnum >= dp->df_lnum[idx])
+	towin->w_topline = lnum + (dp->df_lnum[toidx] - dp->df_lnum[fromidx]);
+	if (lnum >= dp->df_lnum[fromidx])
 	{
-	    /* Inside a change: compute filler lines. */
-	    if (dp->df_count[i] == dp->df_count[idx])
+	    /* Inside a change: compute filler lines. With three or more
+	     * buffers we need to know the largest count. */
+	    max_count = 0;
+	    for (i = 0; i < DB_COUNT; ++i)
+		if (curtab->tp_diffbuf[i] != NULL
+					       && max_count < dp->df_count[i])
+		    max_count = dp->df_count[i];
+
+	    if (dp->df_count[toidx] == dp->df_count[fromidx])
+	    {
+		/* same number of lines: use same filler count */
 		towin->w_topfill = fromwin->w_topfill;
-	    else if (dp->df_count[i] > dp->df_count[idx])
-	    {
-		if (lnum == dp->df_lnum[idx] + dp->df_count[idx])
-		    towin->w_topline = dp->df_lnum[i] + dp->df_count[i]
-							 - fromwin->w_topfill;
 	    }
-	    else
+	    else if (dp->df_count[toidx] > dp->df_count[fromidx])
 	    {
-		if (towin->w_topline >= dp->df_lnum[i] + dp->df_count[i])
+		if (lnum == dp->df_lnum[fromidx] + dp->df_count[fromidx])
 		{
-		    if (diff_flags & DIFF_FILLER)
-			towin->w_topfill = dp->df_lnum[idx]
-						   + dp->df_count[idx] - lnum;
-		    towin->w_topline = dp->df_lnum[i] + dp->df_count[i];
+		    /* more lines in towin and fromwin doesn't show diff
+		     * lines, only filler lines */
+		    if (max_count - fromwin->w_topfill >= dp->df_count[toidx])
+		    {
+			/* towin also only shows filler lines */
+			towin->w_topline = dp->df_lnum[toidx]
+						       + dp->df_count[toidx];
+			towin->w_topfill = fromwin->w_topfill;
+		    }
+		    else
+			/* towin still has some diff lines to show */
+			towin->w_topline = dp->df_lnum[toidx]
+					     + max_count - fromwin->w_topfill;
+		}
+	    }
+	    else if (towin->w_topline >= dp->df_lnum[toidx]
+							+ dp->df_count[toidx])
+	    {
+		/* less lines in towin and no diff lines to show: compute
+		 * filler lines */
+		towin->w_topline = dp->df_lnum[toidx] + dp->df_count[toidx];
+		if (diff_flags & DIFF_FILLER)
+		{
+		    if (lnum == dp->df_lnum[fromidx] + dp->df_count[fromidx])
+			/* fromwin is also out of diff lines */
+			towin->w_topfill = fromwin->w_topfill;
+		    else
+			/* fromwin has some diff lines */
+			towin->w_topfill = dp->df_lnum[fromidx]
+							   + max_count - lnum;
 		}
 	    }
 	}
