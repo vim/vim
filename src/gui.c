@@ -5052,7 +5052,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
 	/* Search for the next match. */
 	i = msg_scroll;
 	do_search(NULL, down ? '/' : '?', ga.ga_data, 1L,
-						    SEARCH_MSG + SEARCH_MARK);
+					      SEARCH_MSG + SEARCH_MARK, NULL);
 	msg_scroll = i;	    /* don't let an error message set msg_scroll */
     }
 

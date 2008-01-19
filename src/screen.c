@@ -848,11 +848,16 @@ win_update(wp)
 	cur->hl.buf = buf;
 	cur->hl.lnum = 0;
 	cur->hl.first_lnum = 0;
+# ifdef FEAT_RELTIME
+	/* Set the time limit to 'redrawtime'. */
+	profile_setlimit(p_rdt, &(cur->hl.tm));
+# endif
 	cur = cur->next;
     }
     search_hl.buf = buf;
     search_hl.lnum = 0;
     search_hl.first_lnum = 0;
+    /* time limit is set at the toplevel, for all windows */
 #endif
 
 #ifdef FEAT_LINEBREAK
@@ -6462,6 +6467,10 @@ start_search_hl()
     {
 	last_pat_prog(&search_hl.rm);
 	search_hl.attr = hl_attr(HLF_L);
+# ifdef FEAT_RELTIME
+	/* Set the time limit to 'redrawtime'. */
+	profile_setlimit(p_rdt, &search_hl.tm);
+# endif
     }
 }
 
@@ -6587,6 +6596,14 @@ next_search_hl(win, shl, lnum, mincol)
     called_emsg = FALSE;
     for (;;)
     {
+#ifdef FEAT_RELTIME
+	/* Stop searching after passing the time limit. */
+	if (profile_passed_limit(&(shl->tm)))
+	{
+	    shl->lnum = 0;		/* no match found in time */
+	    break;
+	}
+#endif
 	/* Three situations:
 	 * 1. No useful previous match: search from start of line.
 	 * 2. Not Vi compatible or empty match: continue at next character.
@@ -6620,7 +6637,13 @@ next_search_hl(win, shl, lnum, mincol)
 	    matchcol = shl->rm.endpos[0].col;
 
 	shl->lnum = lnum;
-	nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum, matchcol);
+	nmatched = vim_regexec_multi(&shl->rm, win, shl->buf, lnum, matchcol,
+#ifdef FEAT_RELTIME
+		&(shl->tm)
+#else
+		NULL
+#endif
+		);
 	if (called_emsg)
 	{
 	    /* Error while handling regexp: stop using this regexp. */

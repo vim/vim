@@ -3097,7 +3097,7 @@ syn_regexec(rmp, lnum, col)
     colnr_T	col;
 {
     rmp->rmm_maxcol = syn_buf->b_p_smc;
-    if (vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col) > 0)
+    if (vim_regexec_multi(rmp, syn_win, syn_buf, lnum, col, NULL) > 0)
     {
 	rmp->startpos[0].lnum += lnum;
 	rmp->endpos[0].lnum += lnum;

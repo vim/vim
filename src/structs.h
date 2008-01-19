@@ -1717,6 +1717,9 @@ typedef struct
     linenr_T	first_lnum;	/* first lnum to search for multi-line pat */
     colnr_T	startcol; /* in win_line() points to char where HL starts */
     colnr_T	endcol;	 /* in win_line() points to char where HL ends */
+#ifdef FEAT_RELTIME
+    proftime_T	tm;	/* for a time limit */
+#endif
 } match_T;
 
 /*

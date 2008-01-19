@@ -4446,7 +4446,8 @@ do_sub(eap)
 #endif
 		); ++lnum)
     {
-	nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum, (colnr_T)0);
+	nmatch = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
+							    (colnr_T)0, NULL);
 	if (nmatch)
 	{
 	    colnr_T	copycol;
@@ -4957,7 +4958,8 @@ skip:
 			|| (do_ask && !re_lookbehind(regmatch.regprog))
 			|| nmatch_tl > 0
 			|| (nmatch = vim_regexec_multi(&regmatch, curwin,
-				       curbuf, sub_firstlnum, matchcol)) == 0
+							curbuf, sub_firstlnum,
+							 matchcol, NULL)) == 0
 			|| regmatch.startpos[0].lnum > 0)
 		{
 		    if (new_start != NULL)
@@ -5022,7 +5024,7 @@ skip:
 		    }
 		    if (nmatch == -1 && !lastone)
 			nmatch = vim_regexec_multi(&regmatch, curwin, curbuf,
-						     sub_firstlnum, matchcol);
+					       sub_firstlnum, matchcol, NULL);
 
 		    /*
 		     * 5. break if there isn't another match in this line
@@ -5252,7 +5254,8 @@ ex_global(eap)
     for (lnum = eap->line1; lnum <= eap->line2 && !got_int; ++lnum)
     {
 	/* a match on this line? */
-	match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum, (colnr_T)0);
+	match = vim_regexec_multi(&regmatch, curwin, curbuf, lnum,
+							    (colnr_T)0, NULL);
 	if ((type == 'g' && match) || (type == 'v' && !match))
 	{
 	    ml_setmarked(lnum);

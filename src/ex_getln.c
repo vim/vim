@@ -1709,6 +1709,9 @@ cmdline_changed:
 	if (p_is && !cmd_silent && (firstc == '/' || firstc == '?'))
 	{
 	    pos_T	end_pos;
+#ifdef FEAT_RELTIME
+	    proftime_T	tm;
+#endif
 
 	    /* if there is a character waiting, search and redraw later */
 	    if (char_avail())
@@ -1727,8 +1730,18 @@ cmdline_changed:
 		cursor_off();		/* so the user knows we're busy */
 		out_flush();
 		++emsg_off;    /* So it doesn't beep if bad expr */
+#ifdef FEAT_RELTIME
+		/* Set the time limit to half a second. */
+		profile_setlimit(500L, &tm);
+#endif
 		i = do_search(NULL, firstc, ccline.cmdbuff, count,
-			SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK);
+			SEARCH_KEEP + SEARCH_OPT + SEARCH_NOOF + SEARCH_PEEK,
+#ifdef FEAT_RELTIME
+			&tm
+#else
+			NULL
+#endif
+			);
 		--emsg_off;
 		/* if interrupted while searching, behave like it failed */
 		if (got_int)

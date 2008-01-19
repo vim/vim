@@ -3618,6 +3618,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When you get bored looking at the highlighted matches, you can turn it
 	off with |:nohlsearch|.  As soon as you use a search command, the
 	highlighting comes back.
+	'redrawtime' specifies the maximum time spend on finding matches.
 	When the search pattern can match an end-of-line, Vim will try to
 	highlight all of the matched text.  However, this depends on where the
 	search starts.  This will be the first line in the window or the first
@@ -3851,6 +3852,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	original position when no match is found and when pressing <Esc>.  You
 	still need to finish the search command with <Enter> to move the
 	cursor to the match.
+	When compiled with the |+reltime| feature Vim only searches for about
+	half a second.  With a complicated pattern and/or a lot of text the
+	match may not be found.  This is to avoid that Vim hangs while you
+	are typing the pattern.
 	The highlighting can be set with the 'i' flag in 'highlight'.
 	See also: 'hlsearch'.
 	CTRL-L can be used to add one character from after the current match
@@ -5184,6 +5189,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	buffer, unless the 'Z' flag is in 'cpoptions'.
 	{not in Vi:}  When using the ":view" command the 'readonly' option is
 	set for the newly edited buffer.
+
+						*'redrawtime'* *'rdt'*
+'redrawtime' 'rdt'	number	(default 2000)
+			global
+			{not in Vi}
+			{only available when compiled with the |+reltime|
+			feature}
+	The time in milliseconds for redrawing the display.  This applies to
+	searching for patterns for 'hlsearch' and |:match| highlighting.
+	When redrawing takes more than this many milliseconds no further
+	matches will be highlighted.  This is used to avoid that Vim hangs
+	when using a very complicated pattern.
 
 						*'remap'* *'noremap'*
 'remap'			boolean	(default on)

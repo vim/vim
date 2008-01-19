@@ -606,7 +606,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 		 * Look for a match somewhere in line "lnum".
 		 */
 		nmatched = vim_regexec_multi(&regmatch, win, buf,
-							    lnum, (colnr_T)0);
+						      lnum, (colnr_T)0,
+#ifdef FEAT_RELTIME
+						      tm
+#else
+						      NULL
+#endif
+						      );
 		/* Abort searching on an error (e.g., out of stack). */
 		if (called_emsg)
 		    break;
@@ -615,9 +621,9 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 		    /* match may actually be in another line when using \zs */
 		    matchpos = regmatch.startpos[0];
 		    endpos = regmatch.endpos[0];
-# ifdef FEAT_EVAL
+#ifdef FEAT_EVAL
 		    submatch = first_submatch(&regmatch);
-# endif
+#endif
 		    /* Line me be past end of buffer for "\n\zs". */
 		    if (lnum + matchpos.lnum > buf->b_ml.ml_line_count)
 			ptr = (char_u *)"";
@@ -693,7 +699,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-					      matchcol)) == 0)
+					      matchcol,
+#ifdef FEAT_RELTIME
+					      tm
+#else
+					      NULL
+#endif
+					      )) == 0)
 			    {
 				match_ok = FALSE;
 				break;
@@ -799,7 +811,13 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 			    if (ptr[matchcol] == NUL
 				    || (nmatched = vim_regexec_multi(&regmatch,
 					      win, buf, lnum + matchpos.lnum,
-							      matchcol)) == 0)
+					      matchcol,
+#ifdef FEAT_RELTIME
+					      tm
+#else
+					      NULL
+#endif
+					    )) == 0)
 				break;
 
 			    /* Need to get the line pointer again, a
@@ -977,12 +995,13 @@ first_submatch(rp)
  * return 0 for failure, 1 for found, 2 for found and line offset added
  */
     int
-do_search(oap, dirc, pat, count, options)
+do_search(oap, dirc, pat, count, options, tm)
     oparg_T	    *oap;	/* can be NULL */
     int		    dirc;	/* '/' or '?' */
     char_u	   *pat;
     long	    count;
     int		    options;
+    proftime_T	    *tm;	/* timeout limit or NULL */
 {
     pos_T	    pos;	/* position of the last match */
     char_u	    *searchstr;
@@ -1256,7 +1275,7 @@ do_search(oap, dirc, pat, count, options)
 		       (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
 			+ SEARCH_MSG + SEARCH_START
 			+ ((pat != NULL && *pat == ';') ? 0 : SEARCH_NOOF))),
-		RE_LAST, (linenr_T)0, NULL);
+		RE_LAST, (linenr_T)0, tm);
 
 	if (dircp != NULL)
 	    *dircp = dirc;	/* restore second '/' or '?' for normal_cmd() */

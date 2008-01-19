@@ -3040,7 +3040,7 @@ typedef struct
 } save_se_T;
 
 static char_u	*reg_getline __ARGS((linenr_T lnum));
-static long	vim_regexec_both __ARGS((char_u *line, colnr_T col));
+static long	vim_regexec_both __ARGS((char_u *line, colnr_T col, proftime_T *tm));
 static long	regtry __ARGS((regprog_T *prog, colnr_T col));
 static void	cleanup_subexpr __ARGS((void));
 #ifdef FEAT_SYN_HL
@@ -3284,7 +3284,7 @@ vim_regexec(rmp, line, col)
     ireg_icombine = FALSE;
 #endif
     ireg_maxcol = 0;
-    return (vim_regexec_both(line, col) != 0);
+    return (vim_regexec_both(line, col, NULL) != 0);
 }
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) \
@@ -3308,7 +3308,7 @@ vim_regexec_nl(rmp, line, col)
     ireg_icombine = FALSE;
 #endif
     ireg_maxcol = 0;
-    return (vim_regexec_both(line, col) != 0);
+    return (vim_regexec_both(line, col, NULL) != 0);
 }
 #endif
 
@@ -3321,12 +3321,13 @@ vim_regexec_nl(rmp, line, col)
  * match otherwise.
  */
     long
-vim_regexec_multi(rmp, win, buf, lnum, col)
+vim_regexec_multi(rmp, win, buf, lnum, col, tm)
     regmmatch_T	*rmp;
     win_T	*win;		/* window in which to search or NULL */
     buf_T	*buf;		/* buffer in which to search */
     linenr_T	lnum;		/* nr of line to start looking for match */
     colnr_T	col;		/* column to start looking for match */
+    proftime_T	*tm;		/* timeout limit or NULL */
 {
     long	r;
     buf_T	*save_curbuf = curbuf;
@@ -3346,7 +3347,7 @@ vim_regexec_multi(rmp, win, buf, lnum, col)
 
     /* Need to switch to buffer "buf" to make vim_iswordc() work. */
     curbuf = buf;
-    r = vim_regexec_both(NULL, col);
+    r = vim_regexec_both(NULL, col, tm);
     curbuf = save_curbuf;
 
     return r;
@@ -3356,10 +3357,12 @@ vim_regexec_multi(rmp, win, buf, lnum, col)
  * Match a regexp against a string ("line" points to the string) or multiple
  * lines ("line" is NULL, use reg_getline()).
  */
+/*ARGSUSED*/
     static long
-vim_regexec_both(line, col)
+vim_regexec_both(line, col, tm)
     char_u	*line;
     colnr_T	col;		/* column to start looking for match */
+    proftime_T	*tm;		/* timeout limit or NULL */
 {
     regprog_T	*prog;
     char_u	*s;
@@ -3502,6 +3505,9 @@ vim_regexec_both(line, col)
     }
     else
     {
+#ifdef FEAT_RELTIME
+	int tm_count = 0;
+#endif
 	/* Messy cases:  unanchored match. */
 	while (!got_int)
 	{
@@ -3550,6 +3556,15 @@ vim_regexec_both(line, col)
 	    else
 #endif
 		++col;
+#ifdef FEAT_RELTIME
+	    /* Check for timeout once in a twenty times to avoid overhead. */
+	    if (tm != NULL && ++tm_count == 20)
+	    {
+		tm_count = 0;
+		if (profile_passed_limit(tm))
+		    break;
+	    }
+#endif
 	}
     }
 

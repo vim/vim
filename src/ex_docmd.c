@@ -3931,7 +3931,8 @@ get_address(ptr, skip, to_other_file)
 				curwin->w_cursor.col = 0;
 			    searchcmdlen = 0;
 			    if (!do_search(NULL, c, cmd, 1L,
-				      SEARCH_HIS + SEARCH_MSG + SEARCH_START))
+					SEARCH_HIS + SEARCH_MSG + SEARCH_START,
+					NULL))
 			    {
 				curwin->w_cursor = pos;
 				cmd = NULL;

@@ -6093,7 +6093,7 @@ normal_search(cap, dir, pat, opt)
     curwin->w_set_curswant = TRUE;
 
     i = do_search(cap->oap, dir, pat, cap->count1,
-				 opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG);
+			   opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, NULL);
     if (i == 0)
 	clearop(cap->oap);
     else

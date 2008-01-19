@@ -633,6 +633,9 @@ EXTERN char_u	*p_path;	/* 'path' */
 #ifdef FEAT_SEARCHPATH
 EXTERN char_u	*p_cdpath;	/* 'cdpath' */
 #endif
+#ifdef FEAT_RELTIME
+EXTERN long	p_rdt;		/* 'redrawtime' */
+#endif
 EXTERN int	p_remap;	/* 'remap' */
 EXTERN long	p_report;	/* 'report' */
 #if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)

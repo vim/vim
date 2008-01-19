@@ -1803,7 +1803,8 @@ qf_jump(qi, dir, errornr, forceit)
 	    /* Move the cursor to the first line in the buffer */
 	    save_cursor = curwin->w_cursor;
 	    curwin->w_cursor.lnum = 0;
-	    if (!do_search(NULL, '/', qf_ptr->qf_pattern, (long)1, SEARCH_KEEP))
+	    if (!do_search(NULL, '/', qf_ptr->qf_pattern, (long)1,
+							   SEARCH_KEEP, NULL))
 		curwin->w_cursor = save_cursor;
 	}
 
@@ -3159,7 +3160,7 @@ ex_vimgrep(eap)
 	    {
 		col = 0;
 		while (vim_regexec_multi(&regmatch, curwin, buf, lnum,
-								     col) > 0)
+							       col, NULL) > 0)
 		{
 		    ;
 		    if (qf_add_entry(qi, &prevp,

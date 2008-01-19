@@ -1991,6 +1991,13 @@ static struct vimoption
     {"redraw",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L}},
+    {"redrawtime",  "rdt",  P_NUM|P_VI_DEF,
+#ifdef FEAT_RELTIME
+			    (char_u *)&p_rdt, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)2000L, (char_u *)0L}},
     {"remap",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_remap, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)0L}},
