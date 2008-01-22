@@ -703,10 +703,13 @@ edit(cmdchar, startln, count)
 #endif
 
 	/*
-	 * Get a character for Insert mode.
+	 * Get a character for Insert mode.  Ignore K_IGNORE.
 	 */
 	lastc = c;			/* remember previous char for CTRL-D */
-	c = safe_vgetc();
+	do
+	{
+	    c = safe_vgetc();
+	} while (c == K_IGNORE);
 
 #ifdef FEAT_AUTOCMD
 	/* Don't want K_CURSORHOLD for the second key, e.g., after CTRL-V. */
@@ -777,7 +780,7 @@ edit(cmdchar, startln, count)
 	/* Prepare for or stop CTRL-X mode.  This doesn't do completion, but
 	 * it does fix up the text when finishing completion. */
 	compl_get_longest = FALSE;
-	if (c != K_IGNORE && ins_compl_prep(c))
+	if (ins_compl_prep(c))
 	    continue;
 #endif
 
@@ -4516,15 +4519,17 @@ ins_compl_check_keys(frequency)
 	else
 	{
 	    /* Need to get the character to have KeyTyped set.  We'll put it
-	     * back with vungetc() below. */
+	     * back with vungetc() below.  But skip K_IGNORE. */
 	    c = safe_vgetc();
+	    if (c != K_IGNORE)
+	    {
+		/* Don't interrupt completion when the character wasn't typed,
+		 * e.g., when doing @q to replay keys. */
+		if (c != Ctrl_R && KeyTyped)
+		    compl_interrupted = TRUE;
 
-	    /* Don't interrupt completion when the character wasn't typed,
-	     * e.g., when doing @q to replay keys. */
-	    if (c != Ctrl_R && KeyTyped)
-		compl_interrupted = TRUE;
-
-	    vungetc(c);
+		vungetc(c);
+	    }
 	}
     }
     if (compl_pending != 0 && !got_int)
