@@ -4694,7 +4694,7 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
     {
 	/* Completion from Insert mode, pass fake arguments. */
 	keep = 0;
-	sprintf((char *)num, "%d", STRLEN(xp->xp_pattern));
+	sprintf((char *)num, "%d", (int)STRLEN(xp->xp_pattern));
 	args[1] = xp->xp_pattern;
     }
     else
