@@ -3813,7 +3813,7 @@ find_replace_dialog_create(arg, do_replace)
 
     XtAddCallback(frdp->find, XmNactivateCallback,
 	    find_replace_callback,
-	    (XtPointer) (do_replace ? FRD_R_FINDNEXT : FRD_FINDNEXT));
+	    (do_replace ? (XtPointer)FRD_R_FINDNEXT : (XtPointer)FRD_FINDNEXT));
 
     if (do_replace)
     {
