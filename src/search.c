@@ -3637,7 +3637,7 @@ current_block(oap, count, include, what, other)
 	oap->inclusive = FALSE;
 	if (sol)
 	    incl(&curwin->w_cursor);
-	else if (lt(start_pos, curwin->w_cursor))
+	else if (ltoreq(start_pos, curwin->w_cursor))
 	    /* Include the character under the cursor. */
 	    oap->inclusive = TRUE;
 	else
@@ -3754,6 +3754,10 @@ current_tagblock(oap, count_arg, include)
     old_pos = curwin->w_cursor;
     old_end = curwin->w_cursor;		    /* remember where we started */
     old_start = old_end;
+#ifdef FEAT_VISUAL
+    if (!VIsual_active || *p_sel == 'e')
+#endif
+	decl(&old_end);			    /* old_end is inclusive */
 
     /*
      * If we start on "<aaa>" select that block.
