@@ -2197,7 +2197,7 @@ op_tilde(oap)
 #ifdef FEAT_VISUAL
     struct block_def	bd;
 #endif
-    int			did_change;
+    int			did_change = FALSE;
 
     if (u_save((linenr_T)(oap->start.lnum - 1),
 				       (linenr_T)(oap->end.lnum + 1)) == FAIL)
@@ -2242,7 +2242,18 @@ op_tilde(oap)
 	else if (!oap->inclusive)
 	    dec(&(oap->end));
 
-	did_change = swapchars(oap->op_type, &pos, oap->end.col - pos.col + 1);
+	if (pos.lnum == oap->end.lnum)
+	    did_change = swapchars(oap->op_type, &pos,
+						  oap->end.col - pos.col + 1);
+	else
+	    for (;;)
+	    {
+		did_change |= swapchars(oap->op_type, &pos,
+				pos.lnum == oap->end.lnum ? oap->end.col + 1:
+					   (int)STRLEN(ml_get_pos(&pos)));
+		if (ltoreq(oap->end, pos) || inc(&pos) == -1)
+		    break;
+	    }
 	if (did_change)
 	{
 	    changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1,
@@ -2314,17 +2325,11 @@ swapchars(op_type, pos, length)
     for (todo = length; todo > 0; --todo)
     {
 # ifdef FEAT_MBYTE
-	int pos_col = pos->col;
-
 	if (has_mbyte)
 	    /* we're counting bytes, not characters */
 	    todo -= (*mb_ptr2len)(ml_get_pos(pos)) - 1;
 # endif
 	did_change |= swapchar(op_type, pos);
-# ifdef FEAT_MBYTE
-	/* Changing German sharp s to SS increases the column. */
-	todo += pos->col - pos_col;
-# endif
 	if (inc(pos) == -1)    /* at end of file */
 	    break;
     }

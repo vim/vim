@@ -1,8 +1,10 @@
 
 Test Visual block mode commands
+And test "U" in Visual mode, also on German sharp S.
 
 STARTTEST
 :so small.vim
+:so mbyte.vim
 /^abcde
 :" Test shift-right of a block
 jlllljj>wlljlll>
@@ -14,7 +16,22 @@ GklkkkIxyz
 Gllllkkklllrq
 :" Test block-change
 G$khhhhhkkcmno
-:$-4,$wq! test.out
+:$-4,$w! test.out
+:" gUe must uppercase a whole word, also when ß changes to SS
+Gothe youtußeuu endYpk0wgUe
+:" gUfx must uppercase until x, inclusive.
+O- youßtußexu -0fogUfx
+:" VU must uppercase a whole line
+YpkVU
+:" same, when it's the last line in the buffer
+YPGi111VUddP
+:" Uppercase two lines
+Oblah di
+doh dutVkUj
+:" Uppercase part of two lines
+ddppi333k0i222fyllvjfuUk
+:/^the/,$w >> test.out
+:qa!
 ENDTEST
 
 abcdefghijklm
