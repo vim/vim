@@ -195,6 +195,7 @@ static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
 #endif
 static int	deadly_signal = 0;	    /* The signal we caught */
+static int	in_mch_delay = FALSE;	    /* sleeping in mch_delay() */
 
 static int curr_tmode = TMODE_COOK;	/* contains current terminal mode */
 
@@ -538,7 +539,9 @@ mch_delay(msec, ignoreinput)
     if (ignoreinput)
     {
 	/* Go to cooked mode without echo, to allow SIGINT interrupting us
-	 * here */
+	 * here.  But we don't want QUIT to kill us (CTRL-\ used in a
+	 * shell may produce SIGQUIT). */
+	in_mch_delay = TRUE;
 	old_tmode = curr_tmode;
 	if (curr_tmode == TMODE_RAW)
 	    settmode(TMODE_SLEEP);
@@ -602,6 +605,7 @@ mch_delay(msec, ignoreinput)
 #endif
 
 	settmode(old_tmode);
+	in_mch_delay = FALSE;
     }
     else
 	WaitForChar(msec);
@@ -922,6 +926,14 @@ deathtrap SIGDEFARG(sigarg)
 #endif
 
 #ifdef SIGHASARG
+# ifdef SIGQUIT
+    /* While in mch_delay() we go to cooked mode to allow a CTRL-C to
+     * interrupt us.  But in cooked mode we may also get SIGQUIT, e.g., when
+     * pressing CTRL-\, but we don't want Vim to exit then. */
+    if (in_mch_delay && sigarg == SIGQUIT)
+	SIGRETURN;
+# endif
+
     /* When SIGHUP, SIGQUIT, etc. are blocked: postpone the effect and return
      * here.  This avoids that a non-reentrant function is interrupted, e.g.,
      * free().  Calling free() again may then cause a crash. */
