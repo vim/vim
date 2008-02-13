@@ -79,6 +79,12 @@ setmark_pos(c, pos, fnum)
 	return OK;
     }
 
+    if (c == '"')
+    {
+	curbuf->b_last_cursor = *pos;
+	return OK;
+    }
+
     /* Allow setting '[ and '] for an autocommand that simulates reading a
      * file. */
     if (c == '[')

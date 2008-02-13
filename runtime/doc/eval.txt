@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Jan 11
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Feb 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4522,6 +4522,9 @@ setpos({expr}, {list})
 		it is the offset in screen columns from the start of the
 		character.  E.g., a position within a <Tab> or after the last
 		character.
+
+		Returns 0 when the position could be set, -1 otherwise.
+		An error message is given if {expr} is invalid.
 
 		Also see |getpos()|
 

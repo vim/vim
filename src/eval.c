@@ -14776,24 +14776,31 @@ f_setpos(argvars, rettv)
     int		fnum;
     char_u	*name;
 
+    rettv->vval.v_number = -1;
     name = get_tv_string_chk(argvars);
     if (name != NULL)
     {
 	if (list2fpos(&argvars[1], &pos, &fnum) == OK)
 	{
 	    --pos.col;
-	    if (name[0] == '.')		/* cursor */
+	    if (name[0] == '.' && name[1] == NUL)
 	    {
+		/* set cursor */
 		if (fnum == curbuf->b_fnum)
 		{
 		    curwin->w_cursor = pos;
 		    check_cursor();
+		    rettv->vval.v_number = 0;
 		}
 		else
 		    EMSG(_(e_invarg));
 	    }
-	    else if (name[0] == '\'')	/* mark */
-		(void)setmark_pos(name[1], &pos, fnum);
+	    else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
+	    {
+		/* set mark */
+		if (setmark_pos(name[1], &pos, fnum) == OK)
+		    rettv->vval.v_number = 0;
+	    }
 	    else
 		EMSG(_(e_invarg));
 	}
