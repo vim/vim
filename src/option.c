@@ -5671,7 +5671,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     {
 	if (gvarp == &p_fenc)
 	{
-	    if (!curbuf->b_p_ma)
+	    if (!curbuf->b_p_ma && opt_flags != OPT_GLOBAL)
 		errmsg = e_modifiable;
 	    else if (vim_strchr(*varp, ',') != NULL)
 		/* No comma allowed in 'fileencoding'; catches confusing it
