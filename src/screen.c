@@ -2644,7 +2644,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #if defined(FEAT_SIGNS) || (defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)) \
 	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
 # define LINE_ATTR
-    int		line_attr = 0;		/* atrribute for the whole line */
+    int		line_attr = 0;		/* attribute for the whole line */
 #endif
 #ifdef FEAT_SEARCH_EXTRA
     matchitem_T *cur;			/* points to the match list */
@@ -3040,18 +3040,25 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	if (has_spell)
 	{
 	    int		len;
+	    colnr_T	linecol = (colnr_T)(ptr - line);
 	    hlf_T	spell_hlf = HLF_COUNT;
 
 	    pos = wp->w_cursor;
 	    wp->w_cursor.lnum = lnum;
-	    wp->w_cursor.col = (colnr_T)(ptr - line);
+	    wp->w_cursor.col = linecol;
 	    len = spell_move_to(wp, FORWARD, TRUE, TRUE, &spell_hlf);
+
+	    /* spell_move_to() may call ml_get() and make "line" invalid */
+	    line = ml_get_buf(wp->w_buffer, lnum, FALSE);
+	    ptr = line + linecol;
+
 	    if (len == 0 || (int)wp->w_cursor.col > ptr - line)
 	    {
 		/* no bad word found at line start, don't check until end of a
 		 * word */
 		spell_hlf = HLF_COUNT;
-		word_end = (int)(spell_to_word_end(ptr, wp->w_buffer) - line + 1);
+		word_end = (int)(spell_to_word_end(ptr, wp->w_buffer)
+								  - line + 1);
 	    }
 	    else
 	    {
