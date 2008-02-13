@@ -14259,7 +14259,7 @@ echo "${ECHO_T}$TAGPRG" >&6
 echo "$as_me:$LINENO: checking how to run man with a section nr" >&5
 echo $ECHO_N "checking how to run man with a section nr... $ECHO_C" >&6
 MANDEF="man"
-(eval man -s 2 read) < /dev/null > /dev/null 2>&5 && MANDEF="man -s"
+(eval MANPAGER=cat PAGER=cat man -s 2 read) < /dev/null > /dev/null 2>&5 && MANDEF="man -s"
 echo "$as_me:$LINENO: result: $MANDEF" >&5
 echo "${ECHO_T}$MANDEF" >&6
 if test "$MANDEF" = "man -s"; then

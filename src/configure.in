@@ -2726,7 +2726,7 @@ AC_MSG_RESULT($TAGPRG) AC_SUBST(TAGPRG)
 dnl Check how we can run man with a section number
 AC_MSG_CHECKING(how to run man with a section nr)
 MANDEF="man"
-(eval man -s 2 read) < /dev/null > /dev/null 2>&AC_FD_CC && MANDEF="man -s"
+(eval MANPAGER=cat PAGER=cat man -s 2 read) < /dev/null > /dev/null 2>&AC_FD_CC && MANDEF="man -s"
 AC_MSG_RESULT($MANDEF)
 if test "$MANDEF" = "man -s"; then
   AC_DEFINE(USEMAN_S)
