@@ -5,6 +5,8 @@ And test "U" in Visual mode, also on German sharp S.
 STARTTEST
 :so small.vim
 :so mbyte.vim
+:" This only works when 'encoding' is "latin1", don't depend on the environment
+:set enc=latin1
 /^abcde
 :" Test shift-right of a block
 jlllljj>wlljlll>
