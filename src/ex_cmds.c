@@ -365,6 +365,10 @@ ex_sort(eap)
     int		sort_oct;		/* sort on octal number */
     int		sort_hex;		/* sort on hex number */
 
+    /* Sorting one line is really quick! */
+    if (count <= 1)
+	return;
+
     if (u_save((linenr_T)(eap->line1 - 1), (linenr_T)(eap->line2 + 1)) == FAIL)
 	return;
     sortbuf1 = NULL;
