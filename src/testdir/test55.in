@@ -146,7 +146,7 @@ let l = [0, 1, 2, 3]
 :try
 :  let n = d[1500]
 :catch
-:  $put =v:exception[:14] . v:exception[-4:-1]
+:  $put =substitute(v:exception, '\v(.{14}).*( \d{4}).*', '\1\2', '')
 :endtry
 :" lookup each items
 :for i in range(1500)
