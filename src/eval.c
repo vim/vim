@@ -9203,13 +9203,13 @@ f_filewritable(argvars, rettv)
     rettv->vval.v_number = filewritable(get_tv_string(&argvars[0]));
 }
 
-static void findfilendir __ARGS((typval_T *argvars, typval_T *rettv, int dir));
+static void findfilendir __ARGS((typval_T *argvars, typval_T *rettv, int find_what));
 
     static void
-findfilendir(argvars, rettv, dir)
+findfilendir(argvars, rettv, find_what)
     typval_T	*argvars;
     typval_T	*rettv;
-    int		dir;
+    int		find_what;
 {
 #ifdef FEAT_SEARCHPATH
     char_u	*fname;
@@ -9254,8 +9254,11 @@ findfilendir(argvars, rettv, dir)
 		vim_free(fresult);
 	    fresult = find_file_in_path_option(first ? fname : NULL,
 					       first ? (int)STRLEN(fname) : 0,
-					0, first, path, dir, curbuf->b_ffname,
-					dir ? (char_u *)"" : curbuf->b_p_sua);
+					0, first, path,
+					find_what,
+					curbuf->b_ffname,
+					find_what == FINDFILE_DIR
+					    ? (char_u *)"" : curbuf->b_p_sua);
 	    first = FALSE;
 
 	    if (fresult != NULL && rettv->v_type == VAR_LIST)
@@ -9445,7 +9448,7 @@ f_finddir(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    findfilendir(argvars, rettv, TRUE);
+    findfilendir(argvars, rettv, FINDFILE_DIR);
 }
 
 /*
@@ -9456,7 +9459,7 @@ f_findfile(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    findfilendir(argvars, rettv, FALSE);
+    findfilendir(argvars, rettv, FINDFILE_FILE);
 }
 
 /*

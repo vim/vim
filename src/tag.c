@@ -2669,8 +2669,8 @@ get_tagfname(tnp, first, buf)
 
 	    tnp->tn_search_ctx = vim_findfile_init(buf, filename,
 		    r_ptr, 100,
-		    FALSE, /* don't free visited list */
-		    FALSE, /* we search for a file */
+		    FALSE,         /* don't free visited list */
+		    FINDFILE_FILE, /* we search for a file */
 		    tnp->tn_search_ctx, TRUE, curbuf->b_ffname);
 	    if (tnp->tn_search_ctx != NULL)
 		tnp->tn_did_filefind_init = TRUE;
@@ -2691,6 +2691,7 @@ tagname_free(tnp)
 {
     vim_free(tnp->tn_tags);
     vim_findfile_cleanup(tnp->tn_search_ctx);
+    tnp->tn_search_ctx = NULL;
     ga_clear_strings(&tag_fnames);
 }
 

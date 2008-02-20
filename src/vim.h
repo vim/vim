@@ -721,6 +721,11 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 /* Note: mostly EW_NOTFOUND and EW_SILENT are mutually exclusive: EW_NOTFOUND
  * is used when executing commands and EW_SILENT for interactive expanding. */
 
+/* Flags for find_file_*() functions. */
+#define FINDFILE_FILE	0	/* only files */
+#define FINDFILE_DIR	1	/* only directories */
+#define FINDFILE_BOTH	2	/* files and directories */
+
 #ifdef FEAT_VERTSPLIT
 # define W_WINCOL(wp)	(wp->w_wincol)
 # define W_WIDTH(wp)	(wp->w_width)
