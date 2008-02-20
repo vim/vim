@@ -624,7 +624,7 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 #ifdef FEAT_EVAL
 		    submatch = first_submatch(&regmatch);
 #endif
-		    /* Line me be past end of buffer for "\n\zs". */
+		    /* "lnum" may be past end of buffer for "\n\zs". */
 		    if (lnum + matchpos.lnum > buf->b_ml.ml_line_count)
 			ptr = (char_u *)"";
 		    else
@@ -833,21 +833,38 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 			    continue;
 		    }
 
-		    if (options & SEARCH_END && !(options & SEARCH_NOOF))
+		    /* With the SEARCH_END option move to the last character
+		     * of the match.  Don't do it for an empty match, end
+		     * should be same as start then. */
+		    if (options & SEARCH_END && !(options & SEARCH_NOOF)
+			    && !(matchpos.lnum == endpos.lnum
+				&& matchpos.col == endpos.col))
 		    {
+			/* For a match in the first column, set the position
+			 * on the NUL in the previous line. */
 			pos->lnum = lnum + endpos.lnum;
-			pos->col = endpos.col - 1;
-#ifdef FEAT_MBYTE
-			if (has_mbyte)
+			pos->col = endpos.col;
+			if (endpos.col == 0)
 			{
-			    /* 'e' offset may put us just below the last line */
-			    if (pos->lnum > buf->b_ml.ml_line_count)
-				ptr = (char_u *)"";
-			    else
-				ptr = ml_get_buf(buf, pos->lnum, FALSE);
-			    pos->col -= (*mb_head_off)(ptr, ptr + pos->col);
+			    if (pos->lnum > 1)  /* just in case */
+			    {
+				--pos->lnum;
+				pos->col = (colnr_T)STRLEN(ml_get_buf(buf,
+							   pos->lnum, FALSE));
+			    }
 			}
+			else
+			{
+			    --pos->col;
+#ifdef FEAT_MBYTE
+			    if (has_mbyte
+				    && pos->lnum <= buf->b_ml.ml_line_count)
+			    {
+				ptr = ml_get_buf(buf, pos->lnum, FALSE);
+				pos->col -= (*mb_head_off)(ptr, ptr + pos->col);
+			    }
 #endif
+			}
 		    }
 		    else
 		    {
