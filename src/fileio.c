@@ -5514,10 +5514,11 @@ check_for_bom(p, size, lenp, flags)
     else if (p[0] == 0xfe && p[1] == 0xff
 	    && (flags == FIO_ALL || flags == FIO_UCS2 || flags == FIO_UTF16))
     {
-	if (flags == FIO_UTF16)
-	    name = "utf-16";	/* FE FF */
-	else
+	/* Default to utf-16, it works also for ucs-2 text. */
+	if (flags == FIO_UCS2)
 	    name = "ucs-2";	/* FE FF */
+	else
+	    name = "utf-16";	/* FE FF */
     }
     else if (size >= 4 && p[0] == 0 && p[1] == 0 && p[2] == 0xfe
 	    && p[3] == 0xff && (flags == FIO_ALL || flags == FIO_UCS4))
