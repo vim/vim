@@ -8045,9 +8045,13 @@ setcursor()
 	windgoto(W_WINROW(curwin) + curwin->w_wrow,
 		W_WINCOL(curwin) + (
 #ifdef FEAT_RIGHTLEFT
+		/* With 'rightleft' set and the cursor on a double-wide
+		 * character, position it on the leftmost column. */
 		curwin->w_p_rl ? ((int)W_WIDTH(curwin) - curwin->w_wcol - (
 # ifdef FEAT_MBYTE
-			has_mbyte ? (*mb_ptr2cells)(ml_get_cursor()) :
+			(has_mbyte
+			   && (*mb_ptr2cells)(ml_get_cursor()) == 2
+			   && vim_isprintc(gchar_cursor())) ? 2 :
 # endif
 			1)) :
 #endif
