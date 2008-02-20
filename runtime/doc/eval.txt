@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Feb 13
+*eval.txt*      For Vim version 7.1.  Last change: 2008 Feb 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1638,6 +1638,7 @@ getline( {lnum})		String	line {lnum} of current buffer
 getline( {lnum}, {end})		List	lines {lnum} to {end} of current buffer
 getloclist({nr})		List	list of location list items
 getmatches()			List	list of current matches
+getpid()			Number	process ID of Vim
 getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
@@ -3832,6 +3833,10 @@ nr2char({expr})						*nr2char()*
 		nr2char(10), because NULs are represented with newline
 		characters.  nr2char(0) is a real NUL and terminates the
 		string, thus results in an empty string.
+
+							*getpid()*
+getpid()	Return a Number which is the process ID of the Vim process.
+		On Unix this is a unique number.  On MS-DOS it's always zero.
 
 							*getpos()*
 getpos({expr})	Get the position for {expr}.  For possible values of {expr}

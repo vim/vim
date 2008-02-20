@@ -532,6 +532,7 @@ static void f_getftime __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getftype __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getline __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getmatches __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_getpid __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getpos __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getqflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_getreg __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7132,6 +7133,7 @@ static struct fst
     {"getline",		1, 2, f_getline},
     {"getloclist",	1, 1, f_getqflist},
     {"getmatches",	0, 0, f_getmatches},
+    {"getpid",		0, 0, f_getpid},
     {"getpos",		1, 1, f_getpos},
     {"getqflist",	0, 0, f_getqflist},
     {"getreg",		0, 2, f_getreg},
@@ -10371,6 +10373,18 @@ f_getmatches(argvars, rettv)
 	}
     }
 #endif
+}
+
+/*
+ * "getpid()" function
+ */
+/*ARGSUSED*/
+    static void
+f_getpid(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_number = mch_get_pid();
 }
 
 /*
