@@ -1290,7 +1290,8 @@ getvcol(wp, pos, start, cursor, end)
 		    /* If a double-cell char doesn't fit at the end of a line
 		     * it wraps to the next line, it's like this char is three
 		     * cells wide. */
-		    if (incr == 2 && wp->w_p_wrap && in_win_border(wp, vcol))
+		    if (incr == 2 && wp->w_p_wrap && MB_BYTE2LEN(*ptr) > 1
+			    && in_win_border(wp, vcol))
 		    {
 			++incr;
 			head = 1;
