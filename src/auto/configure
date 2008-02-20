@@ -4669,10 +4669,11 @@ echo "${ECHO_T}$tclver - OK" >&6;
       echo "$as_me:$LINENO: checking for location of Tcl include" >&5
 echo $ECHO_N "checking for location of Tcl include... $ECHO_C" >&6
       if test "x$MACOSX" != "xyes"; then
-	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/include"
+	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/include /usr/include/tcl$tclver"
       else
 		tclinc="/System/Library/Frameworks/Tcl.framework/Headers"
       fi
+      TCL_INC=
       for try in $tclinc; do
 	if test -f "$try/tcl.h"; then
 	  echo "$as_me:$LINENO: result: $try/tcl.h" >&5
