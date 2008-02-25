@@ -6894,6 +6894,7 @@ get_c_indent()
 			if (trypos != NULL)
 			{
 			    curwin->w_cursor.lnum = trypos->lnum + 1;
+			    curwin->w_cursor.col = 0;
 			    continue;
 			}
 
@@ -6954,6 +6955,7 @@ get_c_indent()
 			    if (trypos != NULL)
 			    {
 				curwin->w_cursor.lnum = trypos->lnum + 1;
+				curwin->w_cursor.col = 0;
 				continue;
 			    }
 			}
@@ -6991,6 +6993,7 @@ get_c_indent()
 		if ((trypos = find_start_comment(ind_maxcomment)) != NULL)
 		{
 		    curwin->w_cursor.lnum = trypos->lnum + 1;
+		    curwin->w_cursor.col = 0;
 		    continue;
 		}
 
@@ -7114,7 +7117,10 @@ get_c_indent()
 		{
 		    if (find_last_paren(l, '{', '}') && (trypos =
 				    find_start_brace(ind_maxcomment)) != NULL)
+		    {
 			curwin->w_cursor.lnum = trypos->lnum + 1;
+			curwin->w_cursor.col = 0;
+		    }
 		    continue;
 		}
 
@@ -7230,11 +7236,12 @@ get_c_indent()
 			 *     case xx:  if ( asdf &&
 			 *			asdf)
 			 */
-			curwin->w_cursor.lnum = trypos->lnum;
+			curwin->w_cursor = *trypos;
 			l = ml_get_curline();
 			if (cin_iscase(l) || cin_isscopedecl(l))
 			{
 			    ++curwin->w_cursor.lnum;
+			    curwin->w_cursor.col = 0;
 			    continue;
 			}
 		    }
@@ -7254,6 +7261,7 @@ get_c_indent()
 			    if (*l == NUL || l[STRLEN(l) - 1] != '\\')
 				break;
 			    --curwin->w_cursor.lnum;
+			    curwin->w_cursor.col = 0;
 			}
 		    }
 
@@ -7587,11 +7595,12 @@ term_again:
 			     *	   case xx:  if ( asdf &&
 			     *			    asdf)
 			     */
-			    curwin->w_cursor.lnum = trypos->lnum;
+			    curwin->w_cursor = *trypos;
 			    l = ml_get_curline();
 			    if (cin_iscase(l) || cin_isscopedecl(l))
 			    {
 				++curwin->w_cursor.lnum;
+				curwin->w_cursor.col = 0;
 				continue;
 			    }
 			}
@@ -7652,13 +7661,14 @@ term_again:
 				&& (trypos = find_start_brace(ind_maxcomment))
 							    != NULL) /* XXX */
 			{
-			    curwin->w_cursor.lnum = trypos->lnum;
+			    curwin->w_cursor = *trypos;
 			    /* if not "else {" check for terminated again */
 			    /* but skip block for "} else {" */
 			    l = cin_skipcomment(ml_get_curline());
 			    if (*l == '}' || !cin_iselse(l))
 				goto term_again;
 			    ++curwin->w_cursor.lnum;
+			    curwin->w_cursor.col = 0;
 			}
 		    }
 		}
@@ -7727,6 +7737,7 @@ term_again:
 		if ((trypos = find_start_comment(ind_maxcomment)) != NULL)
 		{
 		    curwin->w_cursor.lnum = trypos->lnum + 1;
+		    curwin->w_cursor.col = 0;
 		    continue;
 		}
 
@@ -7777,7 +7788,7 @@ term_again:
 		    if (find_last_paren(l, '(', ')')
 			    && (trypos = find_match_paren(ind_maxparen,
 						     ind_maxcomment)) != NULL)
-			curwin->w_cursor.lnum = trypos->lnum;
+			curwin->w_cursor = *trypos;
 
 		    /* For a line ending in ',' that is a continuation line go
 		     * back to the first line with a backslash:
@@ -7791,6 +7802,7 @@ term_again:
 			if (*l == NUL || l[STRLEN(l) - 1] != '\\')
 			    break;
 			--curwin->w_cursor.lnum;
+			curwin->w_cursor.col = 0;
 		    }
 
 		    amount = get_indent();	    /* XXX */
@@ -7864,7 +7876,7 @@ term_again:
 
 		if ((trypos = find_match_paren(ind_maxparen,
 						     ind_maxcomment)) != NULL)
-		    curwin->w_cursor.lnum = trypos->lnum;
+		    curwin->w_cursor = *trypos;
 		amount = get_indent();	    /* XXX */
 		break;
 	    }

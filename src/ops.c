@@ -692,6 +692,7 @@ op_reindent(oap, how)
 	    }
 	}
 	++curwin->w_cursor.lnum;
+	curwin->w_cursor.col = 0;  /* make sure it's valid */
     }
 
     /* put cursor on first non-blank of indented line */
