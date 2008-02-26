@@ -3346,6 +3346,7 @@ set_one_cmd_context(xp, buff)
 #endif
 		    ))
 	    {
+		len = 0;  /* avoid getting stuck when space is in 'isfname' */
 		while (*p != NUL)
 		{
 #ifdef FEAT_MBYTE
