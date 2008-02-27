@@ -4050,15 +4050,17 @@ check_termcode(max_offset, buf, buflen)
 	{
 	    /* Check for xterm version string: "<Esc>[>{x};{vers};{y}c".  Also
 	     * eat other possible responses to t_RV, rxvt returns
-	     * "<Esc>[?1;2c".  Also accept CSI instead of <Esc>[. */
+	     * "<Esc>[?1;2c".  Also accept CSI instead of <Esc>[.
+	     * mrxvt has been reported to have "+" in the version. Assume
+	     * the escape sequence ends with a letter or one of "{|}~". */
 	    if (*T_CRV != NUL && ((tp[0] == ESC && tp[1] == '[' && len >= 3)
 					       || (tp[0] == CSI && len >= 2)))
 	    {
 		j = 0;
 		extra = 0;
-		for (i = 2 + (tp[0] != CSI);
-			i < len && (VIM_ISDIGIT(tp[i])
-			    || tp[i] == ';' || tp[i] == '.'); ++i)
+		for (i = 2 + (tp[0] != CSI); i < len
+				&& !(tp[i] >= '{' && tp[i] <= '~')
+				&& !ASCII_ISALPHA(tp[i]); ++i)
 		    if (tp[i] == ';' && ++j == 1)
 			extra = atoi((char *)tp + i + 1);
 		if (i == len)
