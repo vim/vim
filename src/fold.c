@@ -2307,7 +2307,7 @@ foldUpdateIEMS(wp, top, bot)
 
     /* If some fold changed, need to redraw and position cursor. */
     if (fold_changed && wp->w_p_fen)
-	changed_window_setting();
+	changed_window_setting_win(wp);
 
     /* If we updated folds past "bot", need to redraw more lines.  Don't do
      * this in other situations, the changed lines will be redrawn anyway and
