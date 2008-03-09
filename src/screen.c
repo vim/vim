@@ -4527,7 +4527,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 		    col == W_WIDTH(wp) - 1)
 		&& (*ptr != NUL
-		    || (wp->w_p_list && lcs_eol != NUL && p_extra != at_end_str)
+		    || (wp->w_p_list && lcs_eol_one > 0)
 		    || (n_extra && (c_extra != NUL || *p_extra != NUL))))
 	{
 	    c = lcs_ext;
