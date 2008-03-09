@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2008 Jan 06
+" Last Change: 2008 Feb 27
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -34,7 +34,8 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " Avoid that we remove the popup menu.
-  if pumvisible()
+  " Return when there are no colors (looks like the cursor jumps).
+  if pumvisible() || (&t_Co < 8 && !has("gui_running"))
     return
   endif
 
@@ -60,39 +61,13 @@ function! s:Highlight_Matching_Pair()
   endif
 
   " Figure out the arguments for searchpairpos().
-  " Restrict the search to visible lines with "stopline".
-  " And avoid searching very far (e.g., for closed folds and long lines)
-  " The "viewable" variables give a range in which we can scroll while keeping
-  " the cursor at the same position
-  " adjustedScrolloff accounts for very large numbers of scrolloff
-  let adjustedScrolloff = min([&scrolloff, (line('w$') - line('w0')) / 2])
-  let bottom_viewable = min([line('$'), c_lnum + &lines - adjustedScrolloff - 2])
-  let top_viewable = max([1, c_lnum-&lines+adjustedScrolloff + 2])
-  " one of these stoplines will be adjusted below, but the current values are
-  " minimal boundaries within the current window
-  let stoplinebottom = line('w$')
-  let stoplinetop = line('w0')
   if i % 2 == 0
     let s_flags = 'nW'
     let c2 = plist[i + 1]
-    if has("byte_offset") && has("syntax_items") && &smc > 0
-      let stopbyte = min([line2byte("$"), line2byte(".") + col(".") + &smc * 2])
-      let stopline = min([bottom_viewable, byte2line(stopbyte)])
-    else
-      let stopline = min([bottom_viewable, c_lnum + 100])
-    endif
-    let stoplinebottom = stopline
   else
     let s_flags = 'nbW'
     let c2 = c
     let c = plist[i - 1]
-    if has("byte_offset") && has("syntax_items") && &smc > 0
-      let stopbyte = max([1, line2byte(".") + col(".") - &smc * 2])
-      let stopline = max([top_viewable, byte2line(stopbyte)])
-    else
-      let stopline = max([top_viewable, c_lnum - 100])
-    endif
-    let stoplinetop = stopline
   endif
   if c == '['
     let c = '\['
@@ -111,10 +86,47 @@ function! s:Highlight_Matching_Pair()
 	\ '=~?  "string\\|character\\|singlequote\\|comment"'
   execute 'if' s_skip '| let s_skip = 0 | endif'
 
+  " Limit the search to lines visible in the window.
+  let stoplinebottom = line('w$')
+  let stoplinetop = line('w0')
+  if i % 2 == 0
+    let stopline = stoplinebottom
+  else
+    let stopline = stoplinetop
+  endif
+
   try
-    " Limit the search time to 500 msec to avoid a hang on very long lines.
-    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, 500)
+    " Limit the search time to 300 msec to avoid a hang on very long lines.
+    " This fails when a timeout is not supported.
+    let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline, 300)
   catch /E118/
+    " Can't use the timeout, restrict the stopline a bit more to avoid taking
+    " a long time on closed folds and long lines.
+    " The "viewable" variables give a range in which we can scroll while
+    " keeping the cursor at the same position.
+    " adjustedScrolloff accounts for very large numbers of scrolloff.
+    let adjustedScrolloff = min([&scrolloff, (line('w$') - line('w0')) / 2])
+    let bottom_viewable = min([line('$'), c_lnum + &lines - adjustedScrolloff - 2])
+    let top_viewable = max([1, c_lnum-&lines+adjustedScrolloff + 2])
+    " one of these stoplines will be adjusted below, but the current values are
+    " minimal boundaries within the current window
+    if i % 2 == 0
+      if has("byte_offset") && has("syntax_items") && &smc > 0
+	let stopbyte = min([line2byte("$"), line2byte(".") + col(".") + &smc * 2])
+	let stopline = min([bottom_viewable, byte2line(stopbyte)])
+      else
+	let stopline = min([bottom_viewable, c_lnum + 100])
+      endif
+      let stoplinebottom = stopline
+    else
+      if has("byte_offset") && has("syntax_items") && &smc > 0
+	let stopbyte = max([1, line2byte(".") + col(".") - &smc * 2])
+	let stopline = max([top_viewable, byte2line(stopbyte)])
+      else
+	let stopline = max([top_viewable, c_lnum - 100])
+      endif
+      let stoplinetop = stopline
+    endif
     let [m_lnum, m_col] = searchpairpos(c, '', c2, s_flags, s_skip, stopline)
   endtry
 
