@@ -538,7 +538,10 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 	return FAIL;
     }
 
-    if (options & SEARCH_START)
+    /* When not accepting a match at the start position set "extra_col" to a
+     * non-zero value.  Don't do that when starting at MAXCOL, since MAXCOL +
+     * 1 is zero. */
+    if ((options & SEARCH_START) || pos->col == MAXCOL)
 	extra_col = 0;
 #ifdef FEAT_MBYTE
     /* Watch out for the "col" being MAXCOL - 2, used in a closed fold. */
