@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.1.  Last change: 2007 Aug 10
+*options.txt*	For Vim version 7.1.  Last change: 2008 Feb 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4878,7 +4878,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|autocmd-osfiletypes|
 
 						*'paragraphs'* *'para'*
-'paragraphs' 'para'	string	(default "IPLPPPQPP LIpplpipbp")
+'paragraphs' 'para'	string	(default "IPLPPPQPP TPHPLIPpLpItpplpipbp")
 			global
 	Specifies the nroff macros that separate paragraphs.  These are pairs
 	of two letters (see |object-motions|).
