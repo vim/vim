@@ -4380,7 +4380,7 @@ op_format(oap, keep_cursor)
     if (keep_cursor)
 	saved_cursor = oap->cursor_start;
 
-    format_lines(oap->line_count);
+    format_lines(oap->line_count, keep_cursor);
 
     /*
      * Leave the cursor at the first non-blank of the last formatted line.
@@ -4495,8 +4495,9 @@ fex_format(lnum, count, c)
  * first line.
  */
     void
-format_lines(line_count)
+format_lines(line_count, avoid_fex)
     linenr_T	line_count;
+    int		avoid_fex;		/* don't use 'formatexpr' */
 {
     int		max_len;
     int		is_not_par;		/* current line not part of parag. */
@@ -4666,7 +4667,7 @@ format_lines(line_count)
 #ifdef FEAT_COMMENTS
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 #endif
-			, second_indent);
+			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
 		State = old_State;
 		p_smd = smd_save;
 		second_indent = -1;

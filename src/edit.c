@@ -5491,7 +5491,7 @@ insertchar(c, flags, second_indent)
 #if defined(FEAT_EVAL)
 	int do_internal = TRUE;
 
-	if (*curbuf->b_p_fex != NUL)
+	if (*curbuf->b_p_fex != NUL && (flags & INSCHAR_NO_FEX) == 0)
 	{
 	    do_internal = (fex_format(curwin->w_cursor.lnum, 1L, c) != 0);
 	    /* It may be required to save for undo again, e.g. when setline()
@@ -6057,7 +6057,7 @@ auto_format(trailblank, prev_line)
      * be adjusted for the text formatting.
      */
     saved_cursor = pos;
-    format_lines((linenr_T)-1);
+    format_lines((linenr_T)-1, FALSE);
     curwin->w_cursor = saved_cursor;
     saved_cursor.lnum = 0;
 

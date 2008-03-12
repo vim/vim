@@ -41,7 +41,7 @@ int do_join __ARGS((int insert_space));
 void op_format __ARGS((oparg_T *oap, int keep_cursor));
 void op_formatexpr __ARGS((oparg_T *oap));
 int fex_format __ARGS((linenr_T lnum, long count, int c));
-void format_lines __ARGS((linenr_T line_count));
+void format_lines __ARGS((linenr_T line_count, int avoid_fex));
 int paragraph_start __ARGS((linenr_T lnum));
 int do_addsub __ARGS((int command, linenr_T Prenum1));
 int read_viminfo_register __ARGS((vir_T *virp, int force));
