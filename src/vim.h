@@ -461,8 +461,9 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 /*
  * Check input method control.
  */
-#if defined(FEAT_XIM) || \
-    (defined(FEAT_GUI) && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
+#if defined(FEAT_XIM) \
+    || (defined(FEAT_GUI) && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
+    || defined(FEAT_GUI_MAC)
 # define USE_IM_CONTROL
 #endif
 

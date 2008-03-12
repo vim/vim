@@ -59,7 +59,33 @@ SInt32 gMacSystemVersion;
 
 #ifdef MACOS_CONVERT
 # define USE_CARBONKEYHANDLER
+
+static int im_is_active = FALSE;
+#if 0
+static int im_start_row = 0;
+static int im_start_col = 0;
+#endif
+
+#define NR_ELEMS(x)	(sizeof(x) / sizeof(x[0]))
+
+static TSMDocumentID gTSMDocument;
+
+static void im_on_window_switch(int active);
 static EventHandlerUPP keyEventHandlerUPP = NULL;
+static EventHandlerUPP winEventHandlerUPP = NULL;
+
+static pascal OSStatus gui_mac_handle_window_activate(
+	EventHandlerCallRef nextHandler, EventRef theEvent, void *data);
+
+static pascal OSStatus gui_mac_handle_text_input(
+	EventHandlerCallRef nextHandler, EventRef theEvent, void *data);
+
+static pascal OSStatus gui_mac_update_input_area(
+	EventHandlerCallRef nextHandler, EventRef theEvent);
+
+static pascal OSStatus gui_mac_unicode_key_event(
+	EventHandlerCallRef nextHandler, EventRef theEvent);
+
 #endif
 
 
@@ -137,7 +163,11 @@ static struct
 
 #ifdef MACOS_CONVERT
 # define USE_ATSUI_DRAWING
+int	    p_macatsui_last;
 ATSUStyle   gFontStyle;
+# ifdef FEAT_MBYTE
+ATSUStyle   gWideFontStyle;
+# endif
 Boolean	    gIsFontFallbackSet;
 #endif
 
@@ -263,6 +293,11 @@ OSErr HandleUnusedParms(const AppleEvent *theAEvent);
 #ifdef FEAT_GUI_TABLINE
 static void initialise_tabline(void);
 static WindowRef drawer = NULL; // TODO: put into gui.h
+#endif
+
+#ifdef USE_ATSUI_DRAWING
+static void gui_mac_set_font_attributes(GuiFont font);
+static void gui_mac_dispose_atsui_style(void);
 #endif
 
 /*
@@ -1935,12 +1970,12 @@ gui_mac_doActivateEvent(EventRecord *event)
     /* Dim scrollbars */
     if (whichWindow == gui.VimWindow)
     {
-        ControlRef rootControl;
-        GetRootControl(gui.VimWindow, &rootControl);
-        if ((event->modifiers) & activeFlag)
-            ActivateControl(rootControl);
-        else
-            DeactivateControl(rootControl);
+	ControlRef rootControl;
+	GetRootControl(gui.VimWindow, &rootControl);
+	if ((event->modifiers) & activeFlag)
+	    ActivateControl(rootControl);
+	else
+	    DeactivateControl(rootControl);
     }
 
     /* Activate */
@@ -1976,15 +2011,87 @@ gui_mac_doSuspendEvent(EventRecord *event)
  * Handle the key
  */
 #ifdef USE_CARBONKEYHANDLER
+    static pascal OSStatus
+gui_mac_handle_window_activate(
+	EventHandlerCallRef nextHandler,
+	EventRef	    theEvent,
+	void		    *data)
+{
+    UInt32 eventClass = GetEventClass(theEvent);
+    UInt32 eventKind  = GetEventKind(theEvent);
 
-static int dialog_busy = FALSE;	    /* TRUE when gui_mch_dialog() wants the keys */
+    if (eventClass == kEventClassWindow)
+    {
+	switch (eventKind)
+	{
+	    case kEventWindowActivated:
+#if defined(USE_IM_CONTROL)
+		im_on_window_switch(TRUE);
+#endif
+		return noErr;
+
+	    case kEventWindowDeactivated:
+#if defined(USE_IM_CONTROL)
+		im_on_window_switch(FALSE);
+#endif
+		return noErr;
+	}
+    }
+
+    return eventNotHandledErr;
+}
+
+    static pascal OSStatus
+gui_mac_handle_text_input(
+	EventHandlerCallRef nextHandler,
+	EventRef	    theEvent,
+	void		    *data)
+{
+    UInt32 eventClass = GetEventClass(theEvent);
+    UInt32 eventKind  = GetEventKind(theEvent);
+
+    if (eventClass != kEventClassTextInput)
+	return eventNotHandledErr;
+
+    if ((kEventTextInputUpdateActiveInputArea != eventKind) &&
+	(kEventTextInputUnicodeForKeyEvent    != eventKind) &&
+	(kEventTextInputOffsetToPos	      != eventKind) &&
+	(kEventTextInputPosToOffset	      != eventKind) &&
+	(kEventTextInputGetSelectedText       != eventKind))
+	      return eventNotHandledErr;
+
+    switch (eventKind)
+    {
+    case kEventTextInputUpdateActiveInputArea:
+	return gui_mac_update_input_area(nextHandler, theEvent);
+    case kEventTextInputUnicodeForKeyEvent:
+	return gui_mac_unicode_key_event(nextHandler, theEvent);
+
+    case kEventTextInputOffsetToPos:
+    case kEventTextInputPosToOffset:
+    case kEventTextInputGetSelectedText:
+	break;
+    }
+
+    return eventNotHandledErr;
+}
+
+    static pascal
+OSStatus gui_mac_update_input_area(
+	EventHandlerCallRef nextHandler,
+	EventRef	    theEvent)
+{
+    return eventNotHandledErr;
+}
+
+static int dialog_busy = FALSE;	    /* TRUE when gui_mch_dialog() wants the
+				       keys */
 
 # define INLINE_KEY_BUFFER_SIZE 80
     static pascal OSStatus
-gui_mac_doKeyEventCarbon(
+gui_mac_unicode_key_event(
 	EventHandlerCallRef nextHandler,
-	EventRef theEvent,
-	void *data)
+	EventRef	    theEvent)
 {
     /* Multibyte-friendly key event handler */
     OSStatus	err = -1;
@@ -2000,7 +2107,7 @@ gui_mac_doKeyEventCarbon(
     char_u	*to = NULL;
     Boolean	isSpecial = FALSE;
     int		i;
-    EventRef keyEvent;
+    EventRef	keyEvent;
 
     /* Mask the mouse (as per user setting) */
     if (p_mh)
@@ -2008,39 +2115,39 @@ gui_mac_doKeyEventCarbon(
 
     /* Don't use the keys when the dialog wants them. */
     if (dialog_busy)
-        return eventNotHandledErr;
+	return eventNotHandledErr;
 
     if (noErr != GetEventParameter(theEvent, kEventParamTextInputSendText,
-                typeUnicodeText, NULL, 0, &actualSize, NULL))
-        return eventNotHandledErr;
+		typeUnicodeText, NULL, 0, &actualSize, NULL))
+	return eventNotHandledErr;
 
     text = (UniChar *)alloc(actualSize);
     if (!text)
-        return eventNotHandledErr;
+	return eventNotHandledErr;
 
     err = GetEventParameter(theEvent, kEventParamTextInputSendText,
-            typeUnicodeText, NULL, actualSize, NULL, text);
+	    typeUnicodeText, NULL, actualSize, NULL, text);
     require_noerr(err, done);
 
     err = GetEventParameter(theEvent, kEventParamTextInputSendKeyboardEvent,
-            typeEventRef, NULL, sizeof(EventRef), NULL, &keyEvent);
+	    typeEventRef, NULL, sizeof(EventRef), NULL, &keyEvent);
     require_noerr(err, done);
 
     err = GetEventParameter(keyEvent, kEventParamKeyModifiers,
-            typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
+	    typeUInt32, NULL, sizeof(UInt32), NULL, &modifiers);
     require_noerr(err, done);
 
     err = GetEventParameter(keyEvent, kEventParamKeyCode,
-            typeUInt32, NULL, sizeof(UInt32), NULL, &key_sym);
+	    typeUInt32, NULL, sizeof(UInt32), NULL, &key_sym);
     require_noerr(err, done);
 
     err = GetEventParameter(keyEvent, kEventParamKeyMacCharCodes,
-            typeChar, NULL, sizeof(char), NULL, &charcode);
+	    typeChar, NULL, sizeof(char), NULL, &charcode);
     require_noerr(err, done);
 
 #ifndef USE_CMD_KEY
     if (modifiers & cmdKey)
-        goto done;  /* Let system handle Cmd+... */
+	goto done;  /* Let system handle Cmd+... */
 #endif
 
     key_char = charcode;
@@ -2048,84 +2155,84 @@ gui_mac_doKeyEventCarbon(
 
     /* Find the special key (eg., for cursor keys) */
     if (actualSize <= sizeof(UniChar) &&
-            ((text[0] < 0x20) || (text[0] == 0x7f)))
+	    ((text[0] < 0x20) || (text[0] == 0x7f)))
     {
-        for (i = 0; special_keys[i].key_sym != (KeySym)0; ++i)
-            if (special_keys[i].key_sym == key_sym)
-            {
-                key_char = TO_SPECIAL(special_keys[i].vim_code0,
-                        special_keys[i].vim_code1);
-                key_char = simplify_key(key_char,
-                        (int *)&vimModifiers);
-                isSpecial = TRUE;
-                break;
-            }
+	for (i = 0; special_keys[i].key_sym != (KeySym)0; ++i)
+	    if (special_keys[i].key_sym == key_sym)
+	    {
+		key_char = TO_SPECIAL(special_keys[i].vim_code0,
+			special_keys[i].vim_code1);
+		key_char = simplify_key(key_char,
+			(int *)&vimModifiers);
+		isSpecial = TRUE;
+		break;
+	    }
     }
 
     /* Intercept CMD-. and CTRL-c */
     if (((modifiers & controlKey) && key_char == 'c') ||
-            ((modifiers & cmdKey) && key_char == '.'))
-        got_int = TRUE;
+	    ((modifiers & cmdKey) && key_char == '.'))
+	got_int = TRUE;
 
     if (!isSpecial)
     {
-        /* remove SHIFT for keys that are already shifted, e.g.,
-         * '(' and '*' */
-        if (key_char < 0x100 && !isalpha(key_char) && isprint(key_char))
-            vimModifiers &= ~MOD_MASK_SHIFT;
+	/* remove SHIFT for keys that are already shifted, e.g.,
+	 * '(' and '*' */
+	if (key_char < 0x100 && !isalpha(key_char) && isprint(key_char))
+	    vimModifiers &= ~MOD_MASK_SHIFT;
 
-        /* remove CTRL from keys that already have it */
-        if (key_char < 0x20)
-            vimModifiers &= ~MOD_MASK_CTRL;
+	/* remove CTRL from keys that already have it */
+	if (key_char < 0x20)
+	    vimModifiers &= ~MOD_MASK_CTRL;
 
-        /* don't process unicode characters here */
-        if (!IS_SPECIAL(key_char))
-        {
-            /* Following code to simplify and consolidate vimModifiers
-             * taken liberally from gui_w48.c */
-            key_char = simplify_key(key_char, (int *)&vimModifiers);
+	/* don't process unicode characters here */
+	if (!IS_SPECIAL(key_char))
+	{
+	    /* Following code to simplify and consolidate vimModifiers
+	     * taken liberally from gui_w48.c */
+	    key_char = simplify_key(key_char, (int *)&vimModifiers);
 
-            /* Interpret META, include SHIFT, etc. */
-            key_char = extract_modifiers(key_char, (int *)&vimModifiers);
-            if (key_char == CSI)
-                key_char = K_CSI;
+	    /* Interpret META, include SHIFT, etc. */
+	    key_char = extract_modifiers(key_char, (int *)&vimModifiers);
+	    if (key_char == CSI)
+		key_char = K_CSI;
 
-            if (IS_SPECIAL(key_char))
-                isSpecial = TRUE;
-        }
+	    if (IS_SPECIAL(key_char))
+		isSpecial = TRUE;
+	}
     }
 
     if (vimModifiers)
     {
-        result[len++] = CSI;
-        result[len++] = KS_MODIFIER;
-        result[len++] = vimModifiers;
+	result[len++] = CSI;
+	result[len++] = KS_MODIFIER;
+	result[len++] = vimModifiers;
     }
 
     if (isSpecial && IS_SPECIAL(key_char))
     {
-        result[len++] = CSI;
-        result[len++] = K_SECOND(key_char);
-        result[len++] = K_THIRD(key_char);
+	result[len++] = CSI;
+	result[len++] = K_SECOND(key_char);
+	result[len++] = K_THIRD(key_char);
     }
     else
     {
-        encLen = actualSize;
-        to = mac_utf16_to_enc(text, actualSize, &encLen);
-        if (to)
-        {
-            /* This is basically add_to_input_buf_csi() */
-            for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
-            {
-                result[len++] = to[i];
-                if (to[i] == CSI)
-                {
-                    result[len++] = KS_EXTRA;
-                    result[len++] = (int)KE_CSI;
-                }
-            }
-            vim_free(to);
-        }
+	encLen = actualSize;
+	to = mac_utf16_to_enc(text, actualSize, &encLen);
+	if (to)
+	{
+	    /* This is basically add_to_input_buf_csi() */
+	    for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
+	    {
+		result[len++] = to[i];
+		if (to[i] == CSI)
+		{
+		    result[len++] = KS_EXTRA;
+		    result[len++] = (int)KE_CSI;
+		}
+	    }
+	    vim_free(to);
+	}
     }
 
     add_to_input_buf(result, len);
@@ -2135,10 +2242,10 @@ done:
     vim_free(text);
     if (err == noErr)
     {
-        /* Fake event to wake up WNE (required to get
-         * key repeat working */
-        PostEvent(keyUp, 0);
-        return noErr;
+	/* Fake event to wake up WNE (required to get
+	 * key repeat working */
+	PostEvent(keyUp, 0);
+	return noErr;
     }
 
     return eventNotHandledErr;
@@ -2334,7 +2441,7 @@ gui_mac_doMouseDownEvent(EventRecord *theEvent)
     /* prevent that the vim window size changes if it's activated by a
        click into the tab pane */
     if (whichWindow == drawer)
-        return;
+	return;
 #endif
 
     switch (thePart)
@@ -2569,11 +2676,11 @@ gui_mac_handle_event(EventRecord *event)
     if (IsShowContextualMenuClick(event))
     {
 # if 0
-        gui_mac_handle_contextual_menu(event);
+	gui_mac_handle_contextual_menu(event);
 # else
-        gui_mac_doMouseDownEvent(event);
+	gui_mac_doMouseDownEvent(event);
 # endif
-        return;
+	return;
     }
 
     /* Handle normal event */
@@ -2832,7 +2939,6 @@ gui_mch_prepare(int *argc, char **argv)
 # else
     /* OSErr GetApplicationBundleFSSpec(FSSpecPtr theFSSpecPtr)
      * of TN2015
-     * This technic remove the ../Contents/MacOS/etc part
      */
     (void)GetCurrentProcess(&psn);
     /* if (err != noErr) return err; */
@@ -2933,10 +3039,9 @@ gui_mch_init(void)
     /* TODO: Move most of this stuff toward gui_mch_init */
     Rect	windRect;
     MenuHandle	pomme;
-    EventTypeSpec   eventTypeSpec;
     EventHandlerRef mouseWheelHandlerRef;
 #ifdef USE_CARBONKEYHANDLER
-    EventHandlerRef keyEventHandlerRef;
+    EventTypeSpec   eventTypeSpec;
 #endif
     ControlRef rootControl;
 
@@ -3042,15 +3147,46 @@ gui_mch_init(void)
     }
 
 #ifdef USE_CARBONKEYHANDLER
-    eventTypeSpec.eventClass = kEventClassTextInput;
-    eventTypeSpec.eventKind = kEventUnicodeForKeyEvent;
-    keyEventHandlerUPP = NewEventHandlerUPP(gui_mac_doKeyEventCarbon);
-    if (noErr != InstallApplicationEventHandler(keyEventHandlerUPP, 1,
-		&eventTypeSpec, NULL, &keyEventHandlerRef))
+    InterfaceTypeList supportedServices = { kUnicodeDocument };
+    NewTSMDocument(1, supportedServices, &gTSMDocument, 0);
+
+    /* We don't support inline input yet, use input window by default */
+    UseInputWindow(gTSMDocument, TRUE);
+
+    /* Should we activate the document by default? */
+    // ActivateTSMDocument(gTSMDocument);
+
+    EventTypeSpec textEventTypes[] = {
+	{ kEventClassTextInput, kEventTextInputUpdateActiveInputArea },
+	{ kEventClassTextInput, kEventTextInputUnicodeForKeyEvent },
+	{ kEventClassTextInput, kEventTextInputPosToOffset },
+	{ kEventClassTextInput, kEventTextInputOffsetToPos },
+    };
+
+    keyEventHandlerUPP = NewEventHandlerUPP(gui_mac_handle_text_input);
+    if (noErr != InstallApplicationEventHandler(keyEventHandlerUPP,
+						NR_ELEMS(textEventTypes),
+						textEventTypes, NULL, NULL))
     {
-	keyEventHandlerRef = NULL;
 	DisposeEventHandlerUPP(keyEventHandlerUPP);
 	keyEventHandlerUPP = NULL;
+    }
+
+    EventTypeSpec windowEventTypes[] = {
+	{ kEventClassWindow, kEventWindowActivated },
+	{ kEventClassWindow, kEventWindowDeactivated },
+    };
+
+    /* Install window event handler to support TSMDocument activate and
+     * deactivate */
+    winEventHandlerUPP = NewEventHandlerUPP(gui_mac_handle_window_activate);
+    if (noErr != InstallWindowEventHandler(gui.VimWindow,
+					   winEventHandlerUPP,
+					   NR_ELEMS(windowEventTypes),
+					   windowEventTypes, NULL, NULL))
+    {
+	DisposeEventHandlerUPP(winEventHandlerUPP);
+	winEventHandlerUPP = NULL;
     }
 #endif
 
@@ -3107,6 +3243,19 @@ gui_mch_open(void)
     return OK;
 }
 
+#ifdef USE_ATSUI_DRAWING
+    static void
+gui_mac_dispose_atsui_style(void)
+{
+    if (p_macatsui && gFontStyle)
+	ATSUDisposeStyle(gFontStyle);
+#ifdef FEAT_MBYTE
+    if (p_macatsui && gWideFontStyle)
+	ATSUDisposeStyle(gWideFontStyle);
+#endif
+}
+#endif
+
     void
 gui_mch_exit(int rc)
 {
@@ -3122,8 +3271,13 @@ gui_mch_exit(int rc)
 	DisposeEventHandlerUPP(mouseWheelHandlerUPP);
 
 #ifdef USE_ATSUI_DRAWING
-    if (p_macatsui && gFontStyle)
-	ATSUDisposeStyle(gFontStyle);
+    gui_mac_dispose_atsui_style();
+#endif
+
+#ifdef USE_CARBONKEYHANDLER
+    FixTSMDocument(gTSMDocument);
+    DeactivateTSMDocument(gTSMDocument);
+    DeleteTSMDocument(gTSMDocument);
 #endif
 
     /* Exit to shell? */
@@ -3263,6 +3417,26 @@ gui_mac_select_font(char_u *font_name)
     return selected_font;
 }
 
+#ifdef USE_ATSUI_DRAWING
+    static void
+gui_mac_create_atsui_style(void)
+{
+    if (p_macatsui && gFontStyle == NULL)
+    {
+	if (ATSUCreateStyle(&gFontStyle) != noErr)
+	    gFontStyle = NULL;
+    }
+#ifdef FEAT_MBYTE
+    if (p_macatsui && gWideFontStyle == NULL)
+    {
+	if (ATSUCreateStyle(&gWideFontStyle) != noErr)
+	    gWideFontStyle = NULL;
+    }
+#endif
+
+    p_macatsui_last = p_macatsui;
+}
+#endif
 
 /*
  * Initialise vim to use the font with the given name.	Return FAIL if the font
@@ -3280,11 +3454,7 @@ gui_mch_init_font(char_u *font_name, int fontset)
     char_u	used_font_name[512];
 
 #ifdef USE_ATSUI_DRAWING
-    if (p_macatsui && gFontStyle == NULL)
-    {
-	if (ATSUCreateStyle(&gFontStyle) != noErr)
-	    gFontStyle = NULL;
-    }
+    gui_mac_create_atsui_style();
 #endif
 
     if (font_name == NULL)
@@ -3348,49 +3518,8 @@ gui_mch_init_font(char_u *font_name, int fontset)
     gui.char_height = font_info.ascent + font_info.descent + p_linespace;
 
 #ifdef USE_ATSUI_DRAWING
-    ATSUFontID			fontID;
-    Fixed			fontSize;
-    ATSStyleRenderingOptions	fontOptions;
-
     if (p_macatsui && gFontStyle)
-    {
-	fontID = font & 0xFFFF;
-	fontSize = Long2Fix(font >> 16);
-
-	/* No antialiasing by default (do not attempt to touch antialising
-	 * options on pre-Jaguar) */
-	fontOptions =
-	    (gMacSystemVersion >= 0x1020) ?
-	    kATSStyleNoAntiAliasing :
-	    kATSStyleNoOptions;
-
-	ATSUAttributeTag attribTags[] =
-	{
-	    kATSUFontTag, kATSUSizeTag, kATSUStyleRenderingOptionsTag,
-	    kATSUMaxATSUITagValue+1
-	};
-	ByteCount attribSizes[] =
-	{
-	    sizeof(ATSUFontID), sizeof(Fixed),
-	    sizeof(ATSStyleRenderingOptions), sizeof font
-	};
-	ATSUAttributeValuePtr attribValues[] =
-	{
-	    &fontID, &fontSize, &fontOptions, &font
-	};
-
-	/* Convert font id to ATSUFontID */
-	if (FMGetFontFromFontFamilyInstance(fontID, 0, &fontID, NULL) == noErr)
-	{
-	    if (ATSUSetAttributes(gFontStyle,
-			(sizeof attribTags)/sizeof(ATSUAttributeTag),
-			attribTags, attribSizes, attribValues) != noErr)
-	    {
-		ATSUDisposeStyle(gFontStyle);
-		gFontStyle = NULL;
-	    }
-	}
-    }
+	gui_mac_set_font_attributes(font);
 #endif
 
     return OK;
@@ -3447,6 +3576,68 @@ gui_mch_get_fontname(GuiFont font, char_u *name)
 }
 #endif
 
+#ifdef USE_ATSUI_DRAWING
+    static void
+gui_mac_set_font_attributes(GuiFont font)
+{
+    ATSUFontID	fontID;
+    Fixed	fontSize;
+    Fixed	fontWidth;
+
+    fontID    = font & 0xFFFF;
+    fontSize  = Long2Fix(font >> 16);
+    fontWidth = Long2Fix(gui.char_width);
+
+    ATSUAttributeTag attribTags[] =
+    {
+	kATSUFontTag, kATSUSizeTag, kATSUImposeWidthTag,
+	kATSUMaxATSUITagValue + 1
+    };
+
+    ByteCount attribSizes[] =
+    {
+	sizeof(ATSUFontID), sizeof(Fixed), sizeof(fontWidth),
+	sizeof(font)
+    };
+
+    ATSUAttributeValuePtr attribValues[] =
+    {
+	&fontID, &fontSize, &fontWidth, &font
+    };
+
+    if (FMGetFontFromFontFamilyInstance(fontID, 0, &fontID, NULL) == noErr)
+    {
+	if (ATSUSetAttributes(gFontStyle,
+		    (sizeof attribTags) / sizeof(ATSUAttributeTag),
+		    attribTags, attribSizes, attribValues) != noErr)
+	{
+# ifndef NDEBUG
+	    fprintf(stderr, "couldn't set font style\n");
+# endif
+	    ATSUDisposeStyle(gFontStyle);
+	    gFontStyle = NULL;
+	}
+
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    /* FIXME: we should use a more mbyte sensitive way to support
+	     * wide font drawing */
+	    fontWidth = Long2Fix(gui.char_width * 2);
+
+	    if (ATSUSetAttributes(gWideFontStyle,
+			(sizeof attribTags) / sizeof(ATSUAttributeTag),
+			attribTags, attribSizes, attribValues) != noErr)
+	    {
+		ATSUDisposeStyle(gWideFontStyle);
+		gWideFontStyle = NULL;
+	    }
+	}
+#endif
+    }
+}
+#endif
+
 /*
  * Set the current text font.
  */
@@ -3456,63 +3647,19 @@ gui_mch_set_font(GuiFont font)
 #ifdef USE_ATSUI_DRAWING
     GuiFont			currFont;
     ByteCount			actualFontByteCount;
-    ATSUFontID			fontID;
-    Fixed			fontSize;
-    ATSStyleRenderingOptions	fontOptions;
 
     if (p_macatsui && gFontStyle)
     {
 	/* Avoid setting same font again */
-	if (ATSUGetAttribute(gFontStyle, kATSUMaxATSUITagValue+1, sizeof font,
-		    &currFont, &actualFontByteCount) == noErr &&
-		actualFontByteCount == (sizeof font))
+	if (ATSUGetAttribute(gFontStyle, kATSUMaxATSUITagValue + 1,
+		    sizeof(font), &currFont, &actualFontByteCount) == noErr
+		&& actualFontByteCount == (sizeof font))
 	{
 	    if (currFont == font)
 		return;
 	}
 
-	fontID = font & 0xFFFF;
-	fontSize = Long2Fix(font >> 16);
-	/* Respect p_antialias setting only for wide font.
-	 * The reason for doing this at the moment is a bit complicated,
-	 * but it's mainly because a) latin (non-wide) aliased fonts
-	 * look bad in OS X 10.3.x and below (due to a bug in ATS), and
-	 * b) wide multibyte input does not suffer from that problem. */
-	/*fontOptions =
-	    (p_antialias && (font == gui.wide_font)) ?
-	    kATSStyleNoOptions : kATSStyleNoAntiAliasing;
-	*/
-	/*fontOptions = kATSStyleAntiAliasing;*/
-
-	ATSUAttributeTag attribTags[] =
-	{
-	    kATSUFontTag, kATSUSizeTag, kATSUStyleRenderingOptionsTag,
-	    kATSUMaxATSUITagValue+1
-	};
-	ByteCount attribSizes[] =
-	{
-	    sizeof(ATSUFontID), sizeof(Fixed),
-	    sizeof(ATSStyleRenderingOptions), sizeof font
-	};
-	ATSUAttributeValuePtr attribValues[] =
-	{
-	    &fontID, &fontSize, &fontOptions, &font
-	};
-
-	if (FMGetFontFromFontFamilyInstance(fontID, 0, &fontID, NULL) == noErr)
-	{
-	    if (ATSUSetAttributes(gFontStyle,
-			(sizeof attribTags)/sizeof(ATSUAttributeTag),
-			attribTags, attribSizes, attribValues) != noErr)
-	    {
-# ifndef NDEBUG
-		fprintf(stderr, "couldn't set font style\n");
-# endif
-		ATSUDisposeStyle(gFontStyle);
-		gFontStyle = NULL;
-	    }
-	}
-
+	gui_mac_set_font_attributes(font);
     }
 
     if (p_macatsui && !gIsFontFallbackSet)
@@ -3536,7 +3683,9 @@ gui_mch_set_font(GuiFont font)
 			&fallbackFonts,
 			NULL) == noErr)
 	    {
-		ATSUSetFontFallbacks((sizeof fallbackFonts)/sizeof(ATSUFontID), &fallbackFonts, kATSUSequentialFallbacksPreferred);
+		ATSUSetFontFallbacks((sizeof fallbackFonts)/sizeof(ATSUFontID),
+				     &fallbackFonts,
+				     kATSUSequentialFallbacksPreferred);
 	    }
 /*
 	ATSUAttributeValuePtr fallbackValues[] = { };
@@ -3921,7 +4070,10 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 
     /* - ATSUI automatically antialiases text (Someone)
      * - for some reason it does not work... (Jussi) */
-
+#ifdef MAC_ATSUI_DEBUG
+    fprintf(stderr, "row = %d, col = %d, len = %d: '%c'\n",
+	    row, col, len, len == 1 ? s[0] : ' ');
+#endif
     /*
      * When antialiasing we're using srcOr mode, we have to clear the block
      * before drawing the text.
@@ -3956,34 +4108,121 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
     }
 
     {
-	/* Use old-style, non-antialiased QuickDraw text rendering. */
 	TextMode(srcCopy);
 	TextFace(normal);
 
-    /*  SelectFont(hdc, gui.currFont); */
-
+	/*  SelectFont(hdc, gui.currFont); */
 	if (flags & DRAW_TRANSP)
 	{
 	    TextMode(srcOr);
 	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
-	ATSUTextLayout textLayout;
 
-	if (ATSUCreateTextLayoutWithTextPtr(tofree,
-		    kATSUFromTextBeginning, kATSUToTextEnd,
-		    utf16_len,
-		    (gFontStyle ? 1 : 0), &utf16_len,
-		    (gFontStyle ? &gFontStyle : NULL),
-		    &textLayout) == noErr)
+	if (gFontStyle && flags & DRAW_BOLD)
 	{
+	    Boolean attValue = true;
+	    ATSUAttributeTag attribTags[] = { kATSUQDBoldfaceTag };
+	    ByteCount attribSizes[] = { sizeof(Boolean) };
+	    ATSUAttributeValuePtr attribValues[] = { &attValue };
+
+	    ATSUSetAttributes(gFontStyle, 1, attribTags, attribSizes, attribValues);
+	}
+
+#ifdef FEAT_MBYTE
+	if (has_mbyte)
+	{
+	    int n, width_in_cell, last_width_in_cell;
+	    UniCharArrayOffset offset = 0;
+	    UniCharCount yet_to_draw = 0;
+	    ATSUTextLayout textLayout;
+	    ATSUStyle      textStyle;
+
+	    last_width_in_cell = 1;
+	    ATSUCreateTextLayout(&textLayout);
+	    ATSUSetTextPointerLocation(textLayout, tofree,
+				       kATSUFromTextBeginning,
+				       kATSUToTextEnd, utf16_len);
+	    /*
+	       ATSUSetRunStyle(textLayout, gFontStyle,
+	       kATSUFromTextBeginning, kATSUToTextEnd); */
+
+	    /* Compute the length in display cells. */
+	    for (n = 0; n < len; n += MB_BYTE2LEN(s[n]))
+	    {
+		width_in_cell = (*mb_ptr2cells)(s + n);
+
+		/* probably we are switching from single byte character
+		 * to multibyte characters (which requires more than one
+		 * cell to draw) */
+		if (width_in_cell != last_width_in_cell)
+		{
+#ifdef MAC_ATSUI_DEBUG
+		    fprintf(stderr, "\tn = %2d, (%d-%d), offset = %d, yet_to_draw = %d\n",
+			    n, last_width_in_cell, width_in_cell, offset, yet_to_draw);
+#endif
+		    textStyle = last_width_in_cell > 1 ? gWideFontStyle
+								 : gFontStyle;
+
+		    ATSUSetRunStyle(textLayout, textStyle, offset, yet_to_draw);
+		    offset += yet_to_draw;
+		    yet_to_draw = 0;
+		    last_width_in_cell = width_in_cell;
+		}
+
+		yet_to_draw++;
+	    }
+
+	    if (yet_to_draw)
+	    {
+#ifdef MAC_ATSUI_DEBUG
+		fprintf(stderr, "\tn = %2d, (%d-%d), offset = %d, yet_to_draw = %d\n",
+			n, last_width_in_cell, width_in_cell, offset, yet_to_draw);
+#endif
+		/* finish the rest style */
+		textStyle = width_in_cell > 1 ? gWideFontStyle : gFontStyle;
+		ATSUSetRunStyle(textLayout, textStyle, offset, kATSUToTextEnd);
+	    }
+
 	    ATSUSetTransientFontMatching(textLayout, TRUE);
-
 	    ATSUDrawText(textLayout,
-		    kATSUFromTextBeginning, kATSUToTextEnd,
-		    kATSUUseGrafPortPenLoc, kATSUUseGrafPortPenLoc);
-
+			 kATSUFromTextBeginning, kATSUToTextEnd,
+			 kATSUUseGrafPortPenLoc, kATSUUseGrafPortPenLoc);
 	    ATSUDisposeTextLayout(textLayout);
+	}
+	else
+#endif
+	{
+	    ATSUTextLayout textLayout;
+
+	    if (ATSUCreateTextLayoutWithTextPtr(tofree,
+			kATSUFromTextBeginning, kATSUToTextEnd,
+			utf16_len,
+			(gFontStyle ? 1 : 0), &utf16_len,
+			(gFontStyle ? &gFontStyle : NULL),
+			&textLayout) == noErr)
+	    {
+		ATSUSetTransientFontMatching(textLayout, TRUE);
+
+		ATSUDrawText(textLayout,
+			kATSUFromTextBeginning, kATSUToTextEnd,
+			kATSUUseGrafPortPenLoc, kATSUUseGrafPortPenLoc);
+
+		ATSUDisposeTextLayout(textLayout);
+	    }
+	}
+
+	/* drawing is done, now reset bold to normal */
+	if (gFontStyle && flags & DRAW_BOLD)
+	{
+	    Boolean attValue = false;
+
+	    ATSUAttributeTag attribTags[] = { kATSUQDBoldfaceTag };
+	    ByteCount attribSizes[] = { sizeof(Boolean) };
+	    ATSUAttributeValuePtr attribValues[] = { &attValue };
+
+	    ATSUSetAttributes(gFontStyle, 1, attribTags, attribSizes,
+								attribValues);
 	}
     }
 
@@ -3998,6 +4237,13 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 {
 #if defined(USE_ATSUI_DRAWING)
+    if (p_macatsui == 0 && p_macatsui_last != 0)
+	/* switch from macatsui to nomacatsui */
+	gui_mac_dispose_atsui_style();
+    else if (p_macatsui != 0 && p_macatsui_last == 0)
+	/* switch from nomacatsui to macatsui */
+	gui_mac_create_atsui_style();
+
     if (p_macatsui)
 	draw_string_ATSUI(row, col, s, len, flags);
     else
@@ -4228,12 +4474,13 @@ gui_mch_wait_for_chars(int wtime)
 	 */
 	/* TODO: reduce wtime accordinly???  */
 	if (wtime > -1)
-	    sleeppyTick = 60*wtime/1000;
+	    sleeppyTick = 60 * wtime / 1000;
 	else
 	    sleeppyTick = 32767;
+
 	if (WaitNextEventWrp(mask, &event, sleeppyTick, dragRgn))
 	{
-		gui_mac_handle_event(&event);
+	    gui_mac_handle_event(&event);
 	    if (input_available())
 	    {
 		allow_scrollbar = FALSE;
@@ -6031,7 +6278,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 }
 
-#if defined(USE_IM_CONTROL) || defined(PROTO)
+#if (defined(USE_IM_CONTROL) || defined(PROTO)) && defined(USE_CARBONKEYHANDLER)
 /*
  * Input Method Control functions.
  */
@@ -6042,7 +6289,71 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     void
 im_set_position(int row, int col)
 {
+#if 0
     /* TODO: Implement me! */
+    im_start_row = row;
+    im_start_col = col;
+#endif
+}
+
+static ScriptLanguageRecord gTSLWindow;
+static ScriptLanguageRecord gTSLInsert;
+static ScriptLanguageRecord gTSLDefault = { 0, 0 };
+
+static Component	     gTSCWindow;
+static Component	     gTSCInsert;
+static Component	     gTSCDefault;
+
+static int		     im_initialized = 0;
+
+    static void
+im_on_window_switch(int active)
+{
+    ScriptLanguageRecord *slptr = NULL;
+    OSStatus err;
+
+    if (! gui.in_use)
+	return;
+
+    if (im_initialized == 0)
+    {
+	im_initialized = 1;
+
+	/* save default TSM component (should be U.S.) to default */
+	GetDefaultInputMethodOfClass(&gTSCDefault, &gTSLDefault,
+				     kKeyboardInputMethodClass);
+    }
+
+    if (active == TRUE)
+    {
+	im_is_active = TRUE;
+	ActivateTSMDocument(gTSMDocument);
+	slptr = &gTSLWindow;
+
+	if (slptr)
+	{
+	    err = SetDefaultInputMethodOfClass(gTSCWindow, slptr,
+					       kKeyboardInputMethodClass);
+	    if (err == noErr)
+		err = SetTextServiceLanguage(slptr);
+
+	    if (err == noErr)
+		KeyScript(slptr->fScript | smKeyForceKeyScriptMask);
+	}
+    }
+    else
+    {
+	err = GetTextServiceLanguage(&gTSLWindow);
+	if (err == noErr)
+	    slptr = &gTSLWindow;
+
+	if (slptr)
+	    GetDefaultInputMethodOfClass(&gTSCWindow, slptr,
+					 kKeyboardInputMethodClass);
+
+	im_is_active = FALSE;
+	DeactivateTSMDocument(gTSMDocument);
+    }
 }
 
 /*
@@ -6051,7 +6362,57 @@ im_set_position(int row, int col)
     void
 im_set_active(int active)
 {
-    KeyScript(active ? smKeySysScript : smKeyRoman);
+    ScriptLanguageRecord *slptr = NULL;
+    OSStatus err;
+
+    if (! gui.in_use)
+	return;
+
+    if (im_initialized == 0)
+    {
+	im_initialized = 1;
+
+	/* save default TSM component (should be U.S.) to default */
+	GetDefaultInputMethodOfClass(&gTSCDefault, &gTSLDefault,
+				     kKeyboardInputMethodClass);
+    }
+
+    if (active == TRUE)
+    {
+	im_is_active = TRUE;
+	ActivateTSMDocument(gTSMDocument);
+	slptr = &gTSLInsert;
+
+	if (slptr)
+	{
+	    err = SetDefaultInputMethodOfClass(gTSCInsert, slptr,
+					       kKeyboardInputMethodClass);
+	    if (err == noErr)
+		err = SetTextServiceLanguage(slptr);
+
+	    if (err == noErr)
+		KeyScript(slptr->fScript | smKeyForceKeyScriptMask);
+	}
+    }
+    else
+    {
+	err = GetTextServiceLanguage(&gTSLInsert);
+	if (err == noErr)
+	    slptr = &gTSLInsert;
+
+	if (slptr)
+	    GetDefaultInputMethodOfClass(&gTSCInsert, slptr,
+					 kKeyboardInputMethodClass);
+
+	/* restore to default when switch to normal mode, so than we could
+	 * enter commands easier */
+	SetDefaultInputMethodOfClass(gTSCDefault, &gTSLDefault,
+				     kKeyboardInputMethodClass);
+	SetTextServiceLanguage(&gTSLDefault);
+
+	im_is_active = FALSE;
+	DeactivateTSMDocument(gTSMDocument);
+    }
 }
 
 /*
@@ -6060,9 +6421,10 @@ im_set_active(int active)
     int
 im_get_status(void)
 {
-    SInt32 script = GetScriptManagerVariable(smKeyScript);
-    return (script != smRoman
-	    && script == GetScriptManagerVariable(smSysScript)) ? 1 : 0;
+    if (! gui.in_use)
+	return 0;
+
+    return im_is_active;
 }
 
 #endif /* defined(USE_IM_CONTROL) || defined(PROTO) */
@@ -6118,7 +6480,7 @@ getTabCount(void)
     int		numTabs = 0;
 
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next)
-        ++numTabs;
+	++numTabs;
     return numTabs;
 }
 
@@ -6126,8 +6488,8 @@ getTabCount(void)
     static OSStatus
 dbItemDataCallback(ControlRef browser,
 	DataBrowserItemID itemID,
-        DataBrowserPropertyID property /* column id */,
-        DataBrowserItemDataRef itemData,
+	DataBrowserPropertyID property /* column id */,
+	DataBrowserItemDataRef itemData,
 	Boolean changeValue)
 {
     OSStatus status = noErr;
@@ -6170,9 +6532,9 @@ dbItemNotificationCallback(ControlRef browser,
     static void
 dbGetContextualMenuCallback(ControlRef browser,
 	MenuRef *menu,
-        UInt32 *helpType,
+	UInt32 *helpType,
 	CFStringRef *helpItemString,
-        AEDesc *selection)
+	AEDesc *selection)
 {
     // on mac os 9: kCMHelpItemNoHelp, but it's not the same
     *helpType = kCMHelpItemRemoveHelp; // OS X only ;-)
@@ -6395,9 +6757,9 @@ initialise_tabline(void)
 gui_mch_show_tabline(int showit)
 {
     if (showit == 0)
-        CloseDrawer(drawer, true);
+	CloseDrawer(drawer, true);
     else
-        OpenDrawer(drawer, kWindowEdgeRight, true);
+	OpenDrawer(drawer, kWindowEdgeRight, true);
 }
 
 /*
@@ -6425,11 +6787,11 @@ gui_mch_update_tabline(void)
     // adjust data browser
     if (tabLabels != NULL)
     {
-        int i;
+	int i;
 
-        for (i = 0; i < tabLabelsSize; ++i)
-            CFRelease(tabLabels[i]);
-        free(tabLabels);
+	for (i = 0; i < tabLabelsSize; ++i)
+	    CFRelease(tabLabels[i]);
+	free(tabLabels);
     }
     tabLabels = (CFStringRef *)malloc(numTabs * sizeof(CFStringRef));
     tabLabelsSize = numTabs;
@@ -6438,7 +6800,7 @@ gui_mch_update_tabline(void)
     {
 	if (tp == curtab)
 	    curtabidx = nr;
-        tabLabels[nr-1] = getTabLabel(tp);
+	tabLabels[nr-1] = getTabLabel(tp);
     }
 
     RemoveDataBrowserItems(dataBrowser, kDataBrowserNoItem, 0, NULL,
