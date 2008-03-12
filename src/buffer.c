@@ -5033,7 +5033,7 @@ buf_spname(buf)
 #if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
     if (bt_quickfix(buf))
     {
-	win_T	    *win;
+	win_T	    *win = NULL;
 	tabpage_T   *tp;
 
 	/*
