@@ -3037,13 +3037,11 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 gui_mch_init(void)
 {
     /* TODO: Move most of this stuff toward gui_mch_init */
-    Rect	windRect;
-    MenuHandle	pomme;
+    Rect	    windRect;
+    MenuHandle	    pomme;
     EventHandlerRef mouseWheelHandlerRef;
-#ifdef USE_CARBONKEYHANDLER
     EventTypeSpec   eventTypeSpec;
-#endif
-    ControlRef rootControl;
+    ControlRef	    rootControl;
 
     if (Gestalt(gestaltSystemVersion, &gMacSystemVersion) != noErr)
 	gMacSystemVersion = 0x1000; /* TODO: Default to minimum sensible value */
