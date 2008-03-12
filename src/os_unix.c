@@ -269,8 +269,9 @@ static struct signalinfo
 #ifdef SIGVTALRM
     {SIGVTALRM,	    "VTALRM",	TRUE},
 #endif
-#if defined(SIGPROF) && !defined(FEAT_MZSCHEME)
-    /* MzScheme uses SIGPROF for its own needs */
+#if defined(SIGPROF) && !defined(FEAT_MZSCHEME) && !defined(WE_ARE_PROFILING)
+    /* MzScheme uses SIGPROF for its own needs; On Linux with profiling
+     * this makes Vim exit.  WE_ARE_PROFILING is defined in Makefile.  */
     {SIGPROF,	    "PROF",	TRUE},
 #endif
 #ifdef SIGXCPU
