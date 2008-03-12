@@ -4912,7 +4912,7 @@ chk_modeline(lnum, flags)
     return retval;
 }
 
-#ifdef FEAT_VIMINFO
+#if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 read_viminfo_bufferlist(virp, writing)
     vir_T	*virp;
@@ -5033,13 +5033,14 @@ buf_spname(buf)
 #if defined(FEAT_QUICKFIX) && defined(FEAT_WINDOWS)
     if (bt_quickfix(buf))
     {
-	win_T	*win;
+	win_T	    *win;
+	tabpage_T   *tp;
 
 	/*
 	 * For location list window, w_llist_ref points to the location list.
 	 * For quickfix window, w_llist_ref is NULL.
 	 */
-	FOR_ALL_WINDOWS(win)
+	FOR_ALL_TAB_WINDOWS(tp, win)
 	    if (win->w_buffer == buf)
 		break;
 	if (win != NULL && win->w_llist_ref != NULL)
