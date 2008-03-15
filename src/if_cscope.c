@@ -2096,6 +2096,18 @@ cs_read_prompt(i)
     return CSCOPE_SUCCESS;
 }
 
+#if defined(UNIX) && defined(SIGALRM)
+/*
+ * Used to catch and ignore SIGALRM below.
+ */
+/* ARGSUSED */
+    static RETSIGTYPE
+sig_handler SIGDEFARG(sigarg)
+{
+    /* do nothing */
+    SIGRETURN;
+}
+#endif
 
 /*
  * PRIVATE: cs_release_csp
@@ -2108,9 +2120,6 @@ cs_release_csp(i, freefnpp)
     int i;
     int freefnpp;
 {
-#if defined(UNIX)
-    int pstat;
-#else
     /*
      * Trying to exit normally (not sure whether it is fit to UNIX cscope
      */
@@ -2119,6 +2128,52 @@ cs_release_csp(i, freefnpp)
 	(void)fputs("q\n", csinfo[i].to_fp);
 	(void)fflush(csinfo[i].to_fp);
     }
+#if defined(UNIX)
+    {
+	int pstat;
+	pid_t pid;
+
+# if defined(HAVE_SIGACTION)
+	struct sigaction sa, old;
+
+        /* Use sigaction() to limit the waiting time to two seconds. */
+	sa.sa_handler = sig_handler;
+	sa.sa_flags = SA_NODEFER;
+	sigaction(SIGALRM, &sa, &old);
+	alarm(2); /* 2 sec timeout */
+
+	/* Block until cscope exits or until timer expires */
+	pid = waitpid(csinfo[i].pid, &pstat, 0);
+
+	/* cancel pending alarm if still there and restore signal */
+	alarm(0);
+	sigaction(SIGALRM, &old, NULL);
+# else
+	int waited;
+
+	/* Can't use sigaction(), loop for two seconds.  First yield the CPU
+	 * to give cscope a chance to exit quickly. */
+	sleep(0);
+	for (waited = 0; waited < 40; ++waited)
+	{
+	    pid = waitpid(csinfo[i].pid, &pstat, WNOHANG);
+	    if (pid != 0)
+		break;  /* break unless the process is still running */
+	    mch_delay(50, FALSE); /* sleep 50 ms */
+	}
+# endif
+	/*
+	 * If the cscope process is still running: kill it.
+	 * Safety check: If the PID would be zero here, the entire X session
+	 * would be killed.  -1 and 1 are dangerous as well.
+	 */
+	if (pid < 0 && csinfo[i].pid > 1)
+	{
+	    kill(csinfo[i].pid, SIGTERM);
+	    (void)waitpid(csinfo[i].pid, &pstat, 0);
+	}
+    }
+#else  /* !UNIX */
     if (csinfo[i].hProc != NULL)
     {
 	/* Give cscope a chance to exit normally */
@@ -2132,18 +2187,6 @@ cs_release_csp(i, freefnpp)
 	(void)fclose(csinfo[i].fr_fp);
     if (csinfo[i].to_fp != NULL)
 	(void)fclose(csinfo[i].to_fp);
-
-    /*
-     * Safety check: If the PID would be zero here, the entire X session would
-     * be killed.  -1 and 1 are dangerous as well.
-     */
-#if defined(UNIX)
-    if (csinfo[i].pid > 1)
-    {
-	kill(csinfo[i].pid, SIGTERM);
-	(void)waitpid(csinfo[i].pid, &pstat, 0);
-    }
-#endif
 
     if (freefnpp)
     {
