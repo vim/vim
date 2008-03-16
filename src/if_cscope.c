@@ -2136,7 +2136,8 @@ cs_release_csp(i, freefnpp)
 # if defined(HAVE_SIGACTION)
 	struct sigaction sa, old;
 
-        /* Use sigaction() to limit the waiting time to two seconds. */
+	/* Use sigaction() to limit the waiting time to two seconds. */
+	sigemptyset(&sa.sa_mask);
 	sa.sa_handler = sig_handler;
 	sa.sa_flags = SA_NODEFER;
 	sigaction(SIGALRM, &sa, &old);
@@ -2169,7 +2170,7 @@ cs_release_csp(i, freefnpp)
 	 */
 	if (pid < 0 && csinfo[i].pid > 1)
 	{
-	    kill(csinfo[i].pid, SIGTERM);
+	    kill(csinfo[i].pid, SIGKILL);
 	    (void)waitpid(csinfo[i].pid, &pstat, 0);
 	}
     }
