@@ -79,7 +79,7 @@ EXTERN_C const IID IID_IVim;
 	virtual HRESULT STDMETHODCALLTYPE SetForeground( void) = 0;
 
 	virtual HRESULT STDMETHODCALLTYPE GetHwnd(
-	    /* [retval][out] */ UINT __RPC_FAR *result) = 0;
+	    /* [retval][out] */ UINT_PTR __RPC_FAR *result) = 0;
 
     };
 
@@ -143,7 +143,7 @@ EXTERN_C const IID IID_IVim;
 
 	HRESULT ( STDMETHODCALLTYPE __RPC_FAR *GetHwnd )(
 	    IVim __RPC_FAR * This,
-	    /* [retval][out] */ UINT __RPC_FAR *result);
+	    /* [retval][out] */ UINT_PTR __RPC_FAR *result);
 
 	END_INTERFACE
     } IVimVtbl;
@@ -236,7 +236,7 @@ void __RPC_STUB IVim_SetForeground_Stub(
 
 HRESULT STDMETHODCALLTYPE IVim_GetHwnd_Proxy(
     IVim __RPC_FAR * This,
-    /* [retval][out] */ UINT __RPC_FAR *result);
+    /* [retval][out] */ UINT_PTR __RPC_FAR *result);
 
 
 void __RPC_STUB IVim_GetHwnd_Stub(

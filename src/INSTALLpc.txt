@@ -82,9 +82,8 @@ To compile and debug Vim with the VC2003 Toolkit, you will also need
 |ms-platform-sdk|, |dotnet-1.1-redist|, |dotnet-1.1-sdk|,
 and |windbg-download|.
 
-It's easier to download Visual C++ 2005 Express Edition, |msvc-2005-express|.
-The advantage of the VC 2003 Toolkit is that it will be freely available
-long after VC 2005 Express Edition stops being free in November 2006.
+It's easier to download Visual C++ 2008 Express Edition, |msvc-2008-express|,
+which is freely available in perpetuity.
 
 The free Code::Blocks IDE works with the VC2003 Toolkit, as described at
     http://wiki.codeblocks.org/index.php?title=Integrating_Microsoft_Visual_Toolkit_2003_with_Code::Blocks_IDE
@@ -150,6 +149,14 @@ This includes the IDE and the debugger. You will also need
 
 Instructions for integrating the Platform SDK into VC Express:
     http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
+
+
+Visual C++ 2008 Express Edition       *msvc-2008-express*
+-------------------------------
+
+Visual C++ 2008 Express Edition can be downloaded for free from:
+    http://msdn2.microsoft.com/en-us/express/default.aspx
+This includes the IDE and the debugger. You can build Vim with Make_mvc.mak.
 
 
 2. MinGW

@@ -1365,7 +1365,7 @@ install_registry(void)
 
 	    printf("Creating \"Edit with Vim\" popup menu entry\n");
 
-	    fprintf(fd, "HKEY_CLASSES_ROOT\\CLSID\\%s\n", vim_ext_clsid);
+	    fprintf(fd, "[HKEY_CLASSES_ROOT\\CLSID\\%s]\n", vim_ext_clsid);
 	    fprintf(fd, "@=\"%s\"\n", vim_ext_name);
 	    fprintf(fd, "[HKEY_CLASSES_ROOT\\CLSID\\%s\\InProcServer32]\n",
 							       vim_ext_clsid);

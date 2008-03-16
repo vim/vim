@@ -2856,7 +2856,7 @@ handler_routine(
 	windgoto((int)Rows - 1, 0);
 	g_fForceExit = TRUE;
 
-	sprintf((char *)IObuff, _("Vim: Caught %s event\n"),
+	vim_snprintf((char *)IObuff, IOSIZE, _("Vim: Caught %s event\n"),
 		(dwCtrlType == CTRL_CLOSE_EVENT
 		     ? _("close")
 		     : dwCtrlType == CTRL_LOGOFF_EVENT
@@ -3282,12 +3282,13 @@ mch_call_shell(
     {
 	/* we use "command" or "cmd" to start the shell; slow but easy */
 	char_u *newcmd;
-
-	newcmd = lalloc((long_u) (
+	long_u cmdlen =  (
 #ifdef FEAT_GUI_W32
 		STRLEN(vimrun_path) +
 #endif
-		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10), TRUE);
+		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10);
+
+	newcmd = lalloc(cmdlen, TRUE);
 	if (newcmd != NULL)
 	{
 	    char_u *cmdbase = (*cmd == '"' ? cmd + 1 : cmd);
@@ -3373,14 +3374,15 @@ mch_call_shell(
 		if (!s_dont_use_vimrun)
 		    /* Use vimrun to execute the command.  It opens a console
 		     * window, which can be closed without killing Vim. */
-		    sprintf((char *)newcmd, "%s%s%s %s %s",
+                    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
 			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
 		else
 #endif
-		    sprintf((char *)newcmd, "%s %s %s", p_sh, p_shcf, cmd);
+                    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
+							   p_sh, p_shcf, cmd);
 		x = mch_system((char *)newcmd, options);
 	    }
 	    vim_free(newcmd);
@@ -4664,12 +4666,29 @@ mch_fopen(char *name, char *mode)
 # endif
        )
     {
+# if defined(DEBUG) && _MSC_VER > 1200
+	/* Work around an annoying assertion in the Microsoft debug CRT
+	 * when mode's text/binary setting doesn't match _get_fmode(). */
+	char newMode = mode[strlen(mode) - 1];
+	int oldMode = 0;
+
+	_get_fmode(&oldMode);
+	if (newMode == 't')
+	    _set_fmode(_O_TEXT);
+	else if (newMode == 'b')
+	    _set_fmode(_O_BINARY);
+# endif
 	wn = enc_to_ucs2(name, NULL);
 	wm = enc_to_ucs2(mode, NULL);
 	if (wn != NULL && wm != NULL)
 	    f = _wfopen(wn, wm);
 	vim_free(wn);
 	vim_free(wm);
+
+# if defined(DEBUG) && _MSC_VER > 1200
+	_set_fmode(oldMode);
+# endif
+
 	if (f != NULL)
 	    return f;
 	/* Retry with non-wide function (for Windows 98). Can't use

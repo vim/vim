@@ -1,6 +1,7 @@
 # Makefile for Vim on Win32 (Windows NT/2000/XP/2003 and Windows 95/98/Me)
 # and Win64, using the Microsoft Visual C++ compilers. Known to work with
-# VC5, VC6 (VS98), VC7.0 (VS2002), VC7.1 (VS2003), and VC8 (VS2005).
+# VC5, VC6 (VS98), VC7.0 (VS2002), VC7.1 (VS2003), VC8 (VS2005),
+# and VC9 (VS2008).
 #
 # To build using other Windows compilers, see INSTALLpc.txt
 #
@@ -285,7 +286,8 @@ XPM_INC	  = -I $(XPM)\include
 # need shell32.lib for ExtractIcon()
 # gdi32.lib and comdlg32.lib for printing support
 # ole32.lib and uuid.lib are needed for FEAT_SHORTCUT
-CON_LIB = advapi32.lib shell32.lib gdi32.lib comdlg32.lib ole32.lib uuid.lib
+CON_LIB = oldnames.lib kernel32.lib advapi32.lib shell32.lib gdi32.lib \
+          comdlg32.lib ole32.lib uuid.lib /machine:$(CPU) /nodefaultlib
 !if "$(DELAYLOAD)" == "yes"
 CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
 !endif
@@ -331,6 +333,7 @@ MSVCVER = 5.0
 !endif
 !if "$(_NMAKE_VER)" == "6.00.8168.0"
 MSVCVER = 6.0
+CPU = ix86
 !endif
 !if "$(_NMAKE_VER)" == "7.00.9466"
 MSVCVER = 7.0
@@ -344,6 +347,9 @@ MSVCVER = 8.0
 !if "$(_NMAKE_VER)" == "8.00.50727.762"
 MSVCVER = 8.0
 !endif
+!if "$(_NMAKE_VER)" == "9.00.20706.01"
+MSVCVER = 9.0
+!endif
 !endif
 
 # Abort bulding VIM if version of VC is unrecognised.
@@ -352,13 +358,13 @@ MSVCVER = 8.0
 !message Cannot determine Visual C version being used.  If you are using the
 !message Windows SDK then you must have the environment variable MSVCVER set to
 !message your version of the VC compiler.  If you are not using the Express
-!message version of Visual C you van either set MSVCVER or update this makefile
-!message to handle the new value for _NMAKE_VER.
+!message version of Visual C, you can either set MSVCVER or update this makefile
+!message to handle the new value for _NMAKE_VER, "$(_NMAKE_VER)".
 !error Make aborted.
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if "$(MSVCVER)" != "8.0"
+!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0")
 !if "$(CPUNR)" == "i386"
 CPUARG = /G3
 !elseif "$(CPUNR)" == "i486"
@@ -373,7 +379,7 @@ CPUARG = /G7 /arch:SSE2
 CPUARG =
 !endif
 !else
-# VC8 only allows specifying SSE architecture
+# VC8/9 only allows specifying SSE architecture
 !if "$(CPUNR)" == "pentium4"
 CPUARG = /arch:SSE2
 !endif
@@ -391,7 +397,7 @@ OPTFLAG = /O2
 !else # MAXSPEED
 OPTFLAG = /Ox
 !endif
-!if "$(MSVCVER)" == "8.0"
+!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0")
 # Use link time code generation if not worried about size
 !if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
@@ -404,11 +410,11 @@ CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
 ! else
 LIBC = libcmt.lib
-CFLAGS = $(CFLAGS) /MT
+CFLAGS = $(CFLAGS) /Zl /MT
 ! endif
 !else  # DEBUG
 VIM = vimd
-! if "$(CPU)" == "i386"
+! if ("$(CPU)" == "i386") || ("$(CPU)" == "ix86")
 DEBUGINFO = /ZI
 ! endif
 CFLAGS = $(CFLAGS) -D_DEBUG -DDEBUG /Od
@@ -424,7 +430,7 @@ CFLAGS = $(CFLAGS) /MDd
 LIBC = $(LIBC) msvcrtd.lib
 ! else
 LIBC = $(LIBC) libcmtd.lib
-CFLAGS = $(CFLAGS) /MTd
+CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
 !endif # DEBUG
 
@@ -534,7 +540,7 @@ GUI_OBJ = \
 	$(OUTDIR)\gui_w32.obj \
 	$(OUTDIR)\os_w32exe.obj
 GUI_LIB = \
-	oldnames.lib kernel32.lib gdi32.lib version.lib $(IME_LIB) \
+	gdi32.lib version.lib $(IME_LIB) \
 	winspool.lib comctl32.lib advapi32.lib shell32.lib \
 	/machine:$(CPU) /nodefaultlib
 !else
@@ -757,7 +763,7 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
-!if "$(MSVCVER)" == "8.0"
+!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0")
 !if "$(OPTIMIZE)" != "SPACE"
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif

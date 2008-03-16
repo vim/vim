@@ -20,7 +20,7 @@ interface IVim : IDispatch
 	HRESULT SendKeys([in]BSTR keys);
 	HRESULT Eval([in]BSTR expr, [out, retval]BSTR* result);
 	HRESULT SetForeground(void);
-	HRESULT GetHwnd([out, retval]UINT* result);
+	HRESULT GetHwnd([out, retval]UINT_PTR* result);
 };
 
 // Component and type library definitions

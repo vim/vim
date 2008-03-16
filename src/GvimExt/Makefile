@@ -24,7 +24,7 @@ gvimext.dll:    gvimext.obj	\
 gvimext.obj: gvimext.h
 
 .cpp.obj:
-    $(cc) $(cflags) -DFEAT_GETTEXT $(cvarsdll) $*.cpp
+    $(cc) $(cflags) -DFEAT_GETTEXT $(cvarsmt) $*.cpp
 
 gvimext.res: gvimext.rc
     $(rc) $(rcflags) $(rcvars)  gvimext.rc
