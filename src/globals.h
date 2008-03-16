@@ -1263,7 +1263,7 @@ EXTERN int	echo_wid_arg INIT(= FALSE);	/* --echo-wid argument */
  * The value of the --windowid argument.
  * For embedding gvim inside another application.
  */
-EXTERN int	win_socket_id INIT(= 0);
+EXTERN long_u	win_socket_id INIT(= 0);
 #endif
 
 #if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)

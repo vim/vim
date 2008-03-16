@@ -6303,7 +6303,7 @@ match_add(wp, grp, pat, prio, id)
 	    cur = cur->next;
 	}
     }
-    if ((hlg_id = syn_namen2id(grp, STRLEN(grp))) == 0)
+    if ((hlg_id = syn_namen2id(grp, (int)STRLEN(grp))) == 0)
     {
 	EMSG2(_(e_nogroup), grp);
 	return -1;

@@ -1400,7 +1400,7 @@ cs_lookup_cmd(eap)
 	return NULL;
 
     /* Store length of eap->arg before it gets modified by strtok(). */
-    eap_arg_len = STRLEN(eap->arg);
+    eap_arg_len = (int)STRLEN(eap->arg);
 
     if ((stok = strtok((char *)(eap->arg), (const char *)" ")) == NULL)
 	return NULL;

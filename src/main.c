@@ -1552,15 +1552,15 @@ early_arg_scan(parmp)
 	else if (STRICMP(argv[i], "--socketid") == 0)
 #  endif
 	{
-	    unsigned int    id;
-	    int		    count;
+	    long_u	id;
+	    int		count;
 
 	    if (i == argc - 1)
 		mainerr_arg_missing((char_u *)argv[i]);
 	    if (STRNICMP(argv[i+1], "0x", 2) == 0)
-		count = sscanf(&(argv[i + 1][2]), "%x", &id);
+		count = sscanf(&(argv[i + 1][2]), SCANF_HEX_LONG_U, &id);
 	    else
-		count = sscanf(argv[i+1], "%u", &id);
+		count = sscanf(argv[i + 1], SCANF_DECIMAL_LONG_U, &id);
 	    if (count != 1)
 		mainerr(ME_INVALID_ARG, (char_u *)argv[i]);
 	    else

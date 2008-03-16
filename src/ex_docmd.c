@@ -3009,7 +3009,7 @@ modifier_len(cmd)
 		break;
 	if (!isalpha(p[j]) && j >= cmdmods[i].minlen
 					&& (p == cmd || cmdmods[i].has_count))
-	    return j + (p - cmd);
+	    return j + (int)(p - cmd);
     }
     return 0;
 }

@@ -337,7 +337,7 @@ pum_redraw()
 
 				if (rt != NULL)
 				{
-				    len = STRLEN(rt);
+				    len = (int)STRLEN(rt);
 				    if (len > pum_width)
 				    {
 					for (j = pum_width; j < len; ++j)

@@ -522,7 +522,7 @@ fname2fnum(fm)
 	    int len;
 
 	    expand_env((char_u *)"~/", NameBuff, MAXPATHL);
-	    len = STRLEN(NameBuff);
+	    len = (int)STRLEN(NameBuff);
 	    vim_strncpy(NameBuff + len, fm->fname + 2, MAXPATHL - len - 1);
 	}
 	else

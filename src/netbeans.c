@@ -1216,7 +1216,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     int lastbyte = last;
 
     oldtext = ml_get(lnum);
-    oldlen = STRLEN(oldtext);
+    oldlen = (int)STRLEN(oldtext);
     if (first >= (colnr_T)oldlen || oldlen == 0)  /* just in case */
 	return;
     if (lastbyte >= oldlen)
@@ -1241,8 +1241,8 @@ nb_joinlines(linenr_T first, linenr_T other)
     int len_first, len_other;
     char_u *p;
 
-    len_first = STRLEN(ml_get(first));
-    len_other = STRLEN(ml_get(other));
+    len_first = (int)STRLEN(ml_get(first));
+    len_other = (int)STRLEN(ml_get(other));
     p = alloc((unsigned)(len_first + len_other + 1));
     if (p != NULL)
     {
