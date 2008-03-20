@@ -14662,6 +14662,8 @@ f_setline(argvars, rettv)
 	appended_lines_mark(lcount, added);
 }
 
+static void set_qf_ll_list __ARGS((win_T *wp, typval_T *list_arg, typval_T *action_arg, typval_T *rettv));
+
 /*
  * Used by "setqflist()" and "setloclist()" functions
  */
