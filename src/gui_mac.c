@@ -153,6 +153,9 @@ ControlActionUPP gScrollDrag;
 /* Keeping track of which scrollbar is being dragged */
 static ControlHandle dragged_sb = NULL;
 
+/* Vector of char_u --> control index for hotkeys in dialogs */
+static short *gDialogHotKeys;
+
 static struct
 {
     FMFontFamily family;
@@ -5519,6 +5522,49 @@ macSetDialogItemText(
 	SetDialogItemText(itemHandle, itemName);
 }
 
+
+/* ModalDialog() handler for message dialogs that have hotkey accelerators.
+ * Expects a mapping of hotkey char to control index in gDialogHotKeys;
+ * setting gDialogHotKeys to NULL disables any hotkey handling.
+ */
+    static pascal Boolean
+DialogHotkeyFilterProc (
+    DialogRef	    theDialog,
+    EventRecord	    *event,
+    DialogItemIndex *itemHit)
+{
+    char_u keyHit;
+
+    if (event->what == keyDown || event->what == autoKey)
+    {
+	keyHit = (event->message & charCodeMask);
+
+	if (gDialogHotKeys && gDialogHotKeys[keyHit])
+	{
+#ifdef DEBUG_MAC_DIALOG_HOTKEYS
+	    printf("user pressed hotkey '%c' --> item %d\n", keyHit, gDialogHotKeys[keyHit]);
+#endif
+	    *itemHit = gDialogHotKeys[keyHit];
+
+	    /* When handing off to StdFilterProc, pretend that the user
+	     * clicked the control manually. Note that this is also supposed
+	     * to cause the button to hilite briefly (to give some user
+	     * feedback), but this seems not to actually work (or it's too
+	     * fast to be seen).
+	     */
+	    event->what = kEventControlSimulateHit;
+
+	    return true; /* we took care of it */
+	}
+
+	/* Defer to the OS's standard behavior for this event.
+	 * This ensures that Enter will still activate the default button. */
+	return StdFilterProc(theDialog, event, itemHit);
+    }
+    return false;      /* Let ModalDialog deal with it */
+}
+
+
 /* TODO: There have been some crashes with dialogs, check your inbox
  * (Jussi)
  */
@@ -5544,6 +5590,8 @@ gui_mch_dialog(
     GrafPtr	oldPort;
     short	itemHit;
     char_u	*buttonChar;
+    short	hotKeys[256];		/* map of hotkey -> control ID */
+    char_u	aHotKey;
     Rect	box;
     short	button;
     short	lastButton;
@@ -5570,6 +5618,8 @@ gui_mch_dialog(
     vgmDlgItm   buttonItm;
 
     WindowRef	theWindow;
+
+    ModalFilterUPP dialogUPP;
 
     /* Check 'v' flag in 'guioptions': vertical button placement. */
     vertical = (vim_strchr(p_go, GO_VERTICAL) != NULL);
@@ -5610,6 +5660,9 @@ gui_mch_dialog(
     buttonChar = buttons;
     button = 0;
 
+    /* initialize the hotkey mapping */
+    memset(hotKeys, 0, sizeof(hotKeys));
+
     for (;*buttonChar != 0;)
     {
 	/* Get the name of the button */
@@ -5619,7 +5672,18 @@ gui_mch_dialog(
 	{
 	    if (*buttonChar != DLG_HOTKEY_CHAR)
 		name[++len] = *buttonChar;
+	    else
+	    {
+		aHotKey = (char_u)*(buttonChar+1);
+		if (aHotKey >= 'A' && aHotKey <= 'Z')
+		    aHotKey = (char_u)((int)aHotKey + (int)'a' - (int)'A');
+		hotKeys[aHotKey] = button;
+#ifdef DEBUG_MAC_DIALOG_HOTKEYS
+		printf("### hotKey for button %d is '%c'\n", button, aHotKey);
+#endif
+	    }
 	}
+
 	if (*buttonChar != 0)
 	  buttonChar++;
 	name[0] = len;
@@ -5688,7 +5752,13 @@ gui_mch_dialog(
 	(void) C2PascalString(textfield, &name);
 	SetDialogItemText(itemHandle, name);
 	inputItm.width = StringWidth(name);
+
+	/* Hotkeys don't make sense if there's a text field */
+	gDialogHotKeys = NULL;
     }
+    else
+	/* Install hotkey table */
+	gDialogHotKeys = (short *)&hotKeys;
 
     /* Set the <ENTER> and <ESC> button. */
     SetDialogDefaultItem(theDialog, dfltbutton);
@@ -5777,10 +5847,13 @@ gui_mch_dialog(
     dialog_busy = TRUE;
 #endif
 
+    /* Prepare the shortcut-handling filterProc for handing to the dialog */
+    dialogUPP = NewModalFilterUPP(DialogHotkeyFilterProc);
+
     /* Hang until one of the button is hit */
     do
     {
-	ModalDialog(nil, &itemHit);
+	ModalDialog(dialogUPP, &itemHit);
     } while ((itemHit < 1) || (itemHit > lastButton));
 
 #ifdef USE_CARBONKEYHANDLER
@@ -5802,6 +5875,9 @@ gui_mch_dialog(
 
     /* Restore the original graphical port */
     SetPort(oldPort);
+
+    /* Free the modal filterProc */
+    DisposeRoutineDescriptor(dialogUPP);
 
     /* Get ride of th edialog (free memory) */
     DisposeDialog(theDialog);
