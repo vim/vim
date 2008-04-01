@@ -2130,6 +2130,7 @@ cs_release_csp(i, freefnpp)
     }
 #if defined(UNIX)
     {
+	int waitpid_errno;
 	int pstat;
 	pid_t pid;
 
@@ -2145,6 +2146,7 @@ cs_release_csp(i, freefnpp)
 
 	/* Block until cscope exits or until timer expires */
 	pid = waitpid(csinfo[i].pid, &pstat, 0);
+	waitpid_errno = errno;
 
 	/* cancel pending alarm if still there and restore signal */
 	alarm(0);
@@ -2158,6 +2160,7 @@ cs_release_csp(i, freefnpp)
 	for (waited = 0; waited < 40; ++waited)
 	{
 	    pid = waitpid(csinfo[i].pid, &pstat, WNOHANG);
+	    waitpid_errno = errno;
 	    if (pid != 0)
 		break;  /* break unless the process is still running */
 	    mch_delay(50, FALSE); /* sleep 50 ms */
@@ -2170,8 +2173,40 @@ cs_release_csp(i, freefnpp)
 	 */
 	if (pid < 0 && csinfo[i].pid > 1)
 	{
-	    kill(csinfo[i].pid, SIGKILL);
-	    (void)waitpid(csinfo[i].pid, &pstat, 0);
+# ifdef ECHILD
+	    int alive = TRUE;
+
+	    if (waitpid_errno == ECHILD)
+	    {
+		/*
+		 * When using 'vim -g', vim is forked and cscope process is
+		 * no longer a child process but a sibling.  So waitpid()
+		 * fails with errno being ECHILD (No child processes).
+		 * Don't send SIGKILL to cscope immediately but wait
+		 * (polling) for it to exit normally as result of sending
+		 * the "q" command, hence giving it a chance to clean up
+		 * its temporary files.
+		 */
+		int waited;
+
+		sleep(0);
+		for (waited = 0; waited < 40; ++waited)
+		{
+		    /* Check whether cscope process is still alive */
+		    if (kill(csinfo[i].pid, 0) != 0)
+		    {
+			alive = FALSE; /* cscope process no longer exists */
+			break;
+		    }
+		    mch_delay(50, FALSE); /* sleep 50ms */
+		}
+	    }
+	    if (alive)
+# endif
+	    {
+		kill(csinfo[i].pid, SIGKILL);
+		(void)waitpid(csinfo[i].pid, &pstat, 0);
+	    }
 	}
     }
 #else  /* !UNIX */
