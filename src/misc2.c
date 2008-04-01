@@ -751,7 +751,7 @@ vim_mem_profile_dump()
 #endif
 
 /*
- * Note: if unsinged is 16 bits we can only allocate up to 64K with alloc().
+ * Note: if unsigned is 16 bits we can only allocate up to 64K with alloc().
  * Use lalloc for larger blocks.
  */
     char_u *
@@ -1082,7 +1082,11 @@ free_all_mem()
     win_free_all();
 #endif
 
-    /* Free all buffers. */
+    /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
+     * were freed already. */
+#ifdef FEAT_AUTOCHDIR
+    p_acd = FALSE;
+#endif
     for (buf = firstbuf; buf != NULL; )
     {
 	nextbuf = buf->b_next;
