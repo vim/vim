@@ -8345,6 +8345,7 @@ nv_wordcmd(cap)
     int		n;
     int		word_end;
     int		flag = FALSE;
+    pos_T	startpos = curwin->w_cursor;
 
     /*
      * Set inclusive for the "E" and "e" command.
@@ -8405,8 +8406,9 @@ nv_wordcmd(cap)
     else
 	n = fwd_word(cap->count1, cap->arg, cap->oap->op_type != OP_NOP);
 
-    /* Don't leave the cursor on the NUL past the end of line. */
-    if (n != FAIL)
+    /* Don't leave the cursor on the NUL past the end of line. Unless we
+     * didn't move it forward. */
+    if (lt(startpos, curwin->w_cursor))
 	adjust_cursor(cap->oap);
 
     if (n == FAIL && cap->oap->op_type == OP_NOP)
