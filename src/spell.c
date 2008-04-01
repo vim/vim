@@ -2268,6 +2268,8 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 /*
  * For spell checking: concatenate the start of the following line "line" into
  * "buf", blanking-out special characters.  Copy less then "maxlen" bytes.
+ * Keep the blanks at the start of the next line, this is used in win_line()
+ * to skip those bytes if the word was OK.
  */
     void
 spell_cat_line(buf, line, maxlen)
@@ -2284,12 +2286,14 @@ spell_cat_line(buf, line, maxlen)
 
     if (*p != NUL)
     {
-	*buf = ' ';
-	vim_strncpy(buf + 1, line, maxlen - 2);
-	n = (int)(p - line);
-	if (n >= maxlen)
-	    n = maxlen - 1;
-	vim_memset(buf + 1, ' ', n);
+	/* Only worth concatenating if there is something else than spaces to
+	 * concatenate. */
+	n = (int)(p - line) + 1;
+	if (n < maxlen - 1)
+	{
+	    vim_memset(buf, ' ', n);
+	    vim_strncpy(buf +  n, p, maxlen - 1 - n);
+	}
     }
 }
 
