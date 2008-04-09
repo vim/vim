@@ -3039,6 +3039,15 @@ typedef struct
     } se_u;
 } save_se_T;
 
+/* used for BEHIND and NOBEHIND matching */
+typedef struct regbehind_S
+{
+    regsave_T	save_after;
+    regsave_T	save_behind;
+    save_se_T   save_start[NSUBEXP];
+    save_se_T   save_end[NSUBEXP];
+} regbehind_T;
+
 static char_u	*reg_getline __ARGS((linenr_T lnum));
 static long	vim_regexec_both __ARGS((char_u *line, colnr_T col, proftime_T *tm));
 static long	regtry __ARGS((regprog_T *prog, colnr_T col));
@@ -3046,6 +3055,8 @@ static void	cleanup_subexpr __ARGS((void));
 #ifdef FEAT_SYN_HL
 static void	cleanup_zsubexpr __ARGS((void));
 #endif
+static void	save_subexpr __ARGS((regbehind_T *bp));
+static void	restore_subexpr __ARGS((regbehind_T *bp));
 static void	reg_nextline __ARGS((void));
 static void	reg_save __ARGS((regsave_T *save, garray_T *gap));
 static void	reg_restore __ARGS((regsave_T *save, garray_T *gap));
@@ -3166,18 +3177,11 @@ typedef struct regitem_S
 	save_se_T  sesave;
 	regsave_T  regsave;
     } rs_un;			/* room for saving reginput */
-    short	rs_no;		/* submatch nr */
+    short	rs_no;		/* submatch nr or BEHIND/NOBEHIND */
 } regitem_T;
 
 static regitem_T *regstack_push __ARGS((regstate_T state, char_u *scan));
 static void regstack_pop __ARGS((char_u **scan));
-
-/* used for BEHIND and NOBEHIND matching */
-typedef struct regbehind_S
-{
-    regsave_T	save_after;
-    regsave_T	save_behind;
-} regbehind_T;
 
 /* used for STAR, PLUS and BRACE_SIMPLE matching */
 typedef struct regstar_S
@@ -4888,6 +4892,10 @@ regmatch(scan)
 		    status = RA_FAIL;
 		else
 		{
+		    /* Need to save the subexpr to be able to restore them
+		     * when there is a match but we don't use it. */
+		    save_subexpr(((regbehind_T *)rp) - 1);
+
 		    rp->rs_no = op;
 		    reg_save(&rp->rs_un.regsave, &backpos);
 		    /* First try if what follows matches.  If it does then we
@@ -5118,15 +5126,20 @@ regmatch(scan)
 		    reg_restore(&(((regbehind_T *)rp) - 1)->save_after,
 								    &backpos);
 		else
-		    /* But we didn't want a match. */
+		{
+		    /* But we didn't want a match.  Need to restore the
+		     * subexpr, because what follows matched, so they have
+		     * been set. */
 		    status = RA_NOMATCH;
+		    restore_subexpr(((regbehind_T *)rp) - 1);
+		}
 		regstack_pop(&scan);
 		regstack.ga_len -= sizeof(regbehind_T);
 	    }
 	    else
 	    {
-		/* No match: Go back one character.  May go to previous
-		 * line once. */
+		/* No match or a match that doesn't end where we want it: Go
+		 * back one character.  May go to previous line once. */
 		no = OK;
 		if (REG_MULTI)
 		{
@@ -5160,6 +5173,13 @@ regmatch(scan)
 		    /* Advanced, prepare for finding match again. */
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 		    scan = OPERAND(rp->rs_scan);
+		    if (status == RA_MATCH)
+		    {
+			/* We did match, so subexpr may have been changed,
+			 * need to restore them for the next try. */
+			status = RA_NOMATCH;
+			restore_subexpr(((regbehind_T *)rp) - 1);
+		    }
 		}
 		else
 		{
@@ -5172,7 +5192,16 @@ regmatch(scan)
 			status = RA_MATCH;
 		    }
 		    else
-			status = RA_NOMATCH;
+		    {
+			/* We do want a proper match.  Need to restore the
+			 * subexpr if we had a match, because they may have
+			 * been set. */
+			if (status == RA_MATCH)
+			{
+			    status = RA_NOMATCH;
+			    restore_subexpr(((regbehind_T *)rp) - 1);
+			}
+		    }
 		    regstack_pop(&scan);
 		    regstack.ga_len -= sizeof(regbehind_T);
 		}
@@ -5818,6 +5847,55 @@ cleanup_zsubexpr()
     }
 }
 #endif
+
+/*
+ * Save the current subexpr to "bp", so that they can be restored
+ * later by restore_subexpr().
+ */
+    static void
+save_subexpr(bp)
+    regbehind_T *bp;
+{
+    int i;
+
+    for (i = 0; i < NSUBEXP; ++i)
+    {
+	if (REG_MULTI)
+	{
+	    bp->save_start[i].se_u.pos = reg_startpos[i];
+	    bp->save_end[i].se_u.pos = reg_endpos[i];
+	}
+	else
+	{
+	    bp->save_start[i].se_u.ptr = reg_startp[i];
+	    bp->save_end[i].se_u.ptr = reg_endp[i];
+	}
+    }
+}
+
+/*
+ * Restore the subexpr from "bp".
+ */
+    static void
+restore_subexpr(bp)
+    regbehind_T *bp;
+{
+    int i;
+
+    for (i = 0; i < NSUBEXP; ++i)
+    {
+	if (REG_MULTI)
+	{
+	    reg_startpos[i] = bp->save_start[i].se_u.pos;
+	    reg_endpos[i] = bp->save_end[i].se_u.pos;
+	}
+	else
+	{
+	    reg_startp[i] = bp->save_start[i].se_u.ptr;
+	    reg_endp[i] = bp->save_end[i].se_u.ptr;
+	}
+    }
+}
 
 /*
  * Advance reglnum, regline and reginput to the next line.
