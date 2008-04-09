@@ -753,6 +753,7 @@ static int set_spell_finish __ARGS((spelltab_T	*new_st));
 static int spell_iswordp __ARGS((char_u *p, buf_T *buf));
 static int spell_iswordp_nmw __ARGS((char_u *p));
 #ifdef FEAT_MBYTE
+static int spell_mb_isword_class __ARGS((int cl));
 static int spell_iswordp_w __ARGS((int *p, buf_T *buf));
 #endif
 static int write_spell_prefcond __ARGS((FILE *fd, garray_T *gap));
@@ -9789,7 +9790,7 @@ spell_iswordp(p, buf)
 
 	c = mb_ptr2char(s);
 	if (c > 255)
-	    return mb_get_class(s) >= 2;
+	    return spell_mb_isword_class(mb_get_class(s));
 	return spelltab.st_isw[c];
     }
 #endif
@@ -9812,7 +9813,7 @@ spell_iswordp_nmw(p)
     {
 	c = mb_ptr2char(p);
 	if (c > 255)
-	    return mb_get_class(p) >= 2;
+	    return spell_mb_isword_class(mb_get_class(p));
 	return spelltab.st_isw[c];
     }
 #endif
@@ -9820,6 +9821,18 @@ spell_iswordp_nmw(p)
 }
 
 #ifdef FEAT_MBYTE
+/*
+ * Return TRUE if word class indicates a word character.
+ * Only for characters above 255.
+ * Unicode subscript and superscript are not considered word characters.
+ */
+    static int
+spell_mb_isword_class(cl)
+    int cl;
+{
+    return cl >= 2 && cl != 0x2070 && cl != 0x2080;
+}
+
 /*
  * Return TRUE if "p" points to a word character.
  * Wide version of spell_iswordp().
@@ -9841,7 +9854,7 @@ spell_iswordp_w(p, buf)
     if (*s > 255)
     {
 	if (enc_utf8)
-	    return utf_class(*s) >= 2;
+	    return spell_mb_isword_class(utf_class(*s));
 	if (enc_dbcs)
 	    return dbcs_class((unsigned)*s >> 8, *s & 0xff) >= 2;
 	return 0;
