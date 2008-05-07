@@ -3,7 +3,7 @@
 vimtutor \- the Vim tutor
 .SH SYNOPSIS
 .br
-.B vimtutor [language]
+.B vimtutor [-g] [language]
 .SH DESCRIPTION
 .B Vimtutor
 starts the
@@ -17,6 +17,9 @@ The
 is useful for people that want to learn their first
 .B Vim
 commands.
+.PP
+The optional argument -g starts vimtutor with gvim rather than vim, if the
+GUI version of vim is available, or falls back to Vim if gvim is not found.
 .PP
 The optional [language] argument is the two-letter name of a language, like
 "it" or "es".

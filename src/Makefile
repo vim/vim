@@ -1867,6 +1867,8 @@ installmacros: $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 installtutorbin: $(DEST_VIM)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
+	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
+	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
 installtutor: $(DEST_RT) $(DEST_TUTOR)
 	-$(INSTALL_DATA) $(TUTORSOURCE)/README* $(TUTORSOURCE)/tutor* $(DEST_TUTOR)
@@ -2075,6 +2077,7 @@ installmanlinks:
 uninstall: uninstall_runtime
 	-rm -f $(DEST_BIN)/$(VIMTARGET)
 	-rm -f $(DEST_BIN)/vimtutor
+	-rm -f $(DEST_BIN)/gvimtutor
 	-rm -f $(DEST_BIN)/$(EXTARGET) $(DEST_BIN)/$(VIEWTARGET)
 	-rm -f $(DEST_BIN)/$(GVIMTARGET) $(DEST_BIN)/$(GVIEWTARGET)
 	-rm -f $(DEST_BIN)/$(RVIMTARGET) $(DEST_BIN)/$(RVIEWTARGET)
@@ -2171,7 +2174,7 @@ SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
 	mkdir $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[ch] ../*.in ../*.sh ../*.xs ../*.xbm ../toolcheck ../proto ../vimtutor ../mkinstalldirs .
+	cd $(SHADOWDIR); ln -s ../*.[ch] ../*.in ../*.sh ../*.xs ../*.xbm ../toolcheck ../proto ../vimtutor ../gvimtutor ../mkinstalldirs .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	cd $(SHADOWDIR); rm -f auto/link.sed
