@@ -299,6 +299,19 @@ case `uname` in
 esac
 fi
 
+dnl Link with -lselinux for SELinux stuff; if not found
+AC_MSG_CHECKING(--disable-selinux argument)
+AC_ARG_ENABLE(selinux,
+	[  --disable-selinux	  Don't check for SELinux support.],
+	, enable_selinux="yes")
+if test "$enable_selinux" = "yes"; then
+  AC_MSG_RESULT(no)
+  AC_CHECK_LIB(selinux, is_selinux_enabled,
+	  [LIBS="$LIBS -lselinux"
+	   AC_DEFINE(HAVE_SELINUX)])
+else
+   AC_MSG_RESULT(yes)
+fi
 
 dnl Check user requested features.
 

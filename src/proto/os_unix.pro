@@ -34,6 +34,7 @@ int mch_isFullName __ARGS((char_u *fname));
 void fname_case __ARGS((char_u *name, int len));
 long mch_getperm __ARGS((char_u *name));
 int mch_setperm __ARGS((char_u *name, long perm));
+void mch_copy_sec __ARGS((char_u *from_file, char_u *to_file));
 vim_acl_T mch_get_acl __ARGS((char_u *fname));
 void mch_set_acl __ARGS((char_u *fname, vim_acl_T aclent));
 void mch_free_acl __ARGS((vim_acl_T aclent));

@@ -1346,5 +1346,10 @@ mf_do_open(mfp, fname, flags)
 	mfp->mf_ffname = NULL;
     }
     else
+    {
+#ifdef HAVE_SELINUX
+	mch_copy_sec(fname, mfp->mf_fname);
+#endif
 	mch_hide(mfp->mf_fname);    /* try setting the 'hidden' flag */
+    }
 }

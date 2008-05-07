@@ -3651,6 +3651,9 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 						)
 			    mch_setperm(backup,
 					  (perm & 0707) | ((perm & 07) << 3));
+# ifdef HAVE_SELINUX
+			mch_copy_sec(fname, backup);
+# endif
 #endif
 
 			/*
@@ -3686,6 +3689,9 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #endif
 #ifdef HAVE_ACL
 			mch_set_acl(backup, acl);
+#endif
+#ifdef HAVE_SELINUX
+			mch_copy_sec(fname, backup);
 #endif
 			break;
 		    }
@@ -4307,6 +4313,12 @@ restore_backup:
 	errmsg = (char_u *)_("E667: Fsync failed");
 	end = 0;
     }
+#endif
+
+#ifdef HAVE_SELINUX
+    /* Probably need to set the security context. */
+    if (!backup_copy)
+	mch_copy_sec(backup, wfname);
 #endif
 
 #ifdef UNIX

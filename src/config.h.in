@@ -155,6 +155,7 @@
 #undef HAVE_READLINK
 #undef HAVE_RENAME
 #undef HAVE_SELECT
+#undef HAVE_SELINUX
 #undef HAVE_SETENV
 #undef HAVE_SETPGID
 #undef HAVE_SETSID
