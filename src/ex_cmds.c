@@ -1160,6 +1160,7 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
     if (!do_out)
 	msg_putchar('\n');
 
+    /* Create the shell command in allocated memory. */
     cmd_buf = make_filter_cmd(cmd, itmp, otmp);
     if (cmd_buf == NULL)
 	goto filterend;
@@ -1180,7 +1181,10 @@ do_filter(line1, line2, eap, cmd, do_in, do_out)
     if (do_out)
     {
 	if (u_save((linenr_T)(line2), (linenr_T)(line2 + 1)) == FAIL)
+	{
+	    vim_free(cmd_buf);
 	    goto error;
+	}
 	redraw_curbuf_later(VALID);
     }
     read_linecount = curbuf->b_ml.ml_line_count;
@@ -4471,7 +4475,7 @@ do_sub(eap)
 	    /*
 	     * The new text is build up step by step, to avoid too much
 	     * copying.  There are these pieces:
-	     * sub_firstline	The old text, unmodifed.
+	     * sub_firstline	The old text, unmodified.
 	     * copycol		Column in the old text where we started
 	     *			looking for a match; from here old text still
 	     *			needs to be copied to the new text.
