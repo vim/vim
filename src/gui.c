@@ -4855,6 +4855,15 @@ gui_update_screen()
 {
     update_topline();
     validate_cursor();
+#ifdef FEAT_AUTOCMD
+    /* Trigger CursorMoved if the cursor moved. */
+    if (!finish_op && has_cursormoved()
+	    && !equalpos(last_cursormoved, curwin->w_cursor))
+    {
+	apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+	last_cursormoved = curwin->w_cursor;
+    }
+#endif
     update_screen(0);	/* may need to update the screen */
     setcursor();
     out_flush();		/* make sure output has been written */
