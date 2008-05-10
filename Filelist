@@ -193,6 +193,7 @@ SRC_UNIX =	\
 		src/vim_icon.xbm \
 		src/vim_mask.xbm \
 		src/vimtutor \
+		src/gvimtutor \
 		src/which.sh \
 		src/workshop.c \
 		src/workshop.h \
