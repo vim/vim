@@ -9357,6 +9357,11 @@ showruler(always)
        )
 	maketitle();
 #endif
+#ifdef FEAT_WINDOWS
+    /* Redraw the tab pages line if needed. */
+    if (redraw_tabline)
+	draw_tabline();
+#endif
 }
 
 #ifdef FEAT_CMDL_INFO
