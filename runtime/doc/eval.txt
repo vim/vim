@@ -1,4 +1,4 @@
-*eval.txt*      For Vim version 7.1.  Last change: 2008 Feb 20
+*eval.txt*      For Vim version 7.1.  Last change: 2008 May 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1609,6 +1609,7 @@ finddir( {name}[, {path}[, {count}]])
 				String	find directory {name} in {path}
 findfile( {name}[, {path}[, {count}]])
 				String	find file {name} in {path}
+fnameescape( {fname})		String	escape special characters in {fname}
 fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
 foldclosedend( {lnum})		Number	last line of fold at {lnum} if closed
@@ -2619,6 +2620,19 @@ findfile({name}[, {path}[, {count}]])				*findfile()*
 			:echo findfile("tags.vim", ".;")
 <		Searches from the directory of the current file upwards until
 		it finds the file "tags.vim".
+
+fnameescape({string})					*fnameescape()*
+		Escape {string} for use as file name command argument.  All
+		characters that have a special meaning, such as '%' and '|'
+		are escaped with a backslash.
+		For most systems the characters escaped are "".  For systems
+		where a backslash appears in a filename, it depends on the
+		value of 'isfname'.
+		Example: >
+			:let fname = 'some str%nge|name'
+			:exe "edit " . fnameescape(fname)
+<		results in executing: >
+			edit some\ str\%nge\|name
 
 fnamemodify({fname}, {mods})				*fnamemodify()*
 		Modify file name {fname} according to {mods}.  {mods} is a

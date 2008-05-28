@@ -24,6 +24,7 @@ char_u *ExpandOne __ARGS((expand_T *xp, char_u *str, char_u *orig, int options, 
 void ExpandInit __ARGS((expand_T *xp));
 void ExpandCleanup __ARGS((expand_T *xp));
 void ExpandEscape __ARGS((expand_T *xp, char_u *str, int numfiles, char_u **files, int options));
+char_u *vim_strsave_fnameescape __ARGS((char_u *fname, int shell));
 void tilde_replace __ARGS((char_u *orig_pat, int num_files, char_u **files));
 char_u *sm_gettail __ARGS((char_u *s));
 char_u *addstar __ARGS((char_u *fname, int len, int context));

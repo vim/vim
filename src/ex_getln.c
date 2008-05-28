@@ -3656,22 +3656,7 @@ ExpandEscape(xp, str, numfiles, files, options)
 #endif
 		    }
 		}
-#ifdef BACKSLASH_IN_FILENAME
-		{
-		    char_u	buf[20];
-		    int		j = 0;
-
-		    /* Don't escape '[' and '{' if they are in 'isfname'. */
-		    for (p = PATH_ESC_CHARS; *p != NUL; ++p)
-			if ((*p != '[' && *p != '{') || !vim_isfilec(*p))
-			    buf[j++] = *p;
-		    buf[j] = NUL;
-		    p = vim_strsave_escaped(files[i], buf);
-		}
-#else
-		p = vim_strsave_escaped(files[i],
-			     xp->xp_shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
-#endif
+		p = vim_strsave_fnameescape(files[i], xp->xp_shell);
 		if (p != NULL)
 		{
 		    vim_free(files[i]);
@@ -3707,6 +3692,31 @@ ExpandEscape(xp, str, numfiles, files, options)
 	    }
 	}
     }
+}
+
+/*
+ * Escape special characters in "fname" for when used as a file name argument
+ * after a Vim command, or, when "shell" is non-zero, a shell command.
+ * Returns the result in allocated memory.
+ */
+    char_u *
+vim_strsave_fnameescape(fname, shell)
+    char_u *fname;
+    int    shell;
+{
+#ifdef BACKSLASH_IN_FILENAME
+    char_u	buf[20];
+    int		j = 0;
+
+    /* Don't escape '[' and '{' if they are in 'isfname'. */
+    for (p = PATH_ESC_CHARS; *p != NUL; ++p)
+	if ((*p != '[' && *p != '{') || !vim_isfilec(*p))
+	    buf[j++] = *p;
+    buf[j] = NUL;
+    return vim_strsave_escaped(fname, buf);
+#else
+    return vim_strsave_escaped(fname, shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
+#endif
 }
 
 /*

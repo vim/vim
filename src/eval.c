@@ -507,6 +507,7 @@ static void f_filewritable __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_filter __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_finddir __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_findfile __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_fnameescape __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_fnamemodify __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_foldclosed __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_foldclosedend __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7107,6 +7108,7 @@ static struct fst
     {"filter",		2, 2, f_filter},
     {"finddir",		1, 3, f_finddir},
     {"findfile",	1, 3, f_findfile},
+    {"fnameescape",	1, 1, f_fnameescape},
     {"fnamemodify",	2, 2, f_fnamemodify},
     {"foldclosed",	1, 1, f_foldclosed},
     {"foldclosedend",	1, 1, f_foldclosedend},
@@ -9462,6 +9464,19 @@ f_findfile(argvars, rettv)
     typval_T	*rettv;
 {
     findfilendir(argvars, rettv, FINDFILE_FILE);
+}
+
+/*
+ * "fnameescape({string})" function
+ */
+    static void
+f_fnameescape(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->vval.v_string = vim_strsave_fnameescape(
+					   get_tv_string(&argvars[0]), FALSE);
+    rettv->v_type = VAR_STRING;
 }
 
 /*
