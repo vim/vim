@@ -190,7 +190,7 @@ func! s:FTasmsyntax()
   let head = " ".getline(1)." ".getline(2)." ".getline(3)." ".getline(4).
 	\" ".getline(5)." "
   if head =~ '\sasmsyntax=\S\+\s'
-    let b:asmsyntax = substitute(head, '.*\sasmsyntax=\(\S\+\)\s.*','\1', "")
+    let b:asmsyntax = substitute(head, '.*\sasmsyntax=\([a-zA-Z0-9]\+\)\s.*','\1', "")
   elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
     let b:asmsyntax = "vmasm"
   endif
