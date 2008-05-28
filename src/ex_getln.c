@@ -3656,7 +3656,11 @@ ExpandEscape(xp, str, numfiles, files, options)
 #endif
 		    }
 		}
+#ifdef BACKSLASH_IN_FILENAME
+		p = vim_strsave_fnameescape(files[i], FALSE);
+#else
 		p = vim_strsave_fnameescape(files[i], xp->xp_shell);
+#endif
 		if (p != NULL)
 		{
 		    vim_free(files[i]);
