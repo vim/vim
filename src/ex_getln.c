@@ -3711,6 +3711,7 @@ vim_strsave_fnameescape(fname, shell)
 #ifdef BACKSLASH_IN_FILENAME
     char_u	buf[20];
     int		j = 0;
+    char_u	*p;
 
     /* Don't escape '[' and '{' if they are in 'isfname'. */
     for (p = PATH_ESC_CHARS; *p != NUL; ++p)
