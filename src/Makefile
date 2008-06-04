@@ -780,6 +780,8 @@ LINT_OPTIONS = -beprxzF
 # 1) make config
 # 2) edit auto/config.mk, add -n32 to LDFLAGS
 # 3) make
+#
+#Alternatively: use -o32 instead of -n32.
 ###
 
 ### (C)  On SCO Unix v3.2.5 (and probably other versions) the termcap library,
@@ -1074,7 +1076,7 @@ PRINTSOURCE = ../runtime/print
 # default vi editor, it will create a link from vi to Vim when doing
 # "make install".  An existing file will be overwritten!
 # When not using it, some make programs can't handle an undefined $(LINKIT).
-#LINKIT = -ln -f -s $(BINDIR)/$(VIMTARGET) /usr/bin/vi
+#LINKIT = ln -f -s $(DEST_BIN)/$(VIMTARGET) $(DESTDIR)/usr/bin/vi
 LINKIT = @echo >/dev/null
 
 ###
@@ -1290,6 +1292,9 @@ LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
+# If you have problems with flags that cproto doesn't support, and you are
+# using GNU make, you can try using the other line to filter out arguments.
+#PFLAGS = $(PROTO_FLAGS) -DPROTO $(filter -D% -I%, $(LINT_CFLAGS))
 PFLAGS = $(PROTO_FLAGS) -DPROTO $(LINT_CFLAGS)
 
 ALL_LIB_DIRS = $(GUI_LIBS_DIR) $(X_LIBS_DIR)
@@ -2174,7 +2179,7 @@ SHADOWDIR = shadow
 
 shadow:	runtime pixmaps
 	mkdir $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[ch] ../*.in ../*.sh ../*.xs ../*.xbm ../toolcheck ../proto ../vimtutor ../gvimtutor ../mkinstalldirs .
+	cd $(SHADOWDIR); ln -s ../*.[ch] ../*.in ../*.sh ../*.xs ../*.xbm ../toolcheck ../proto ../po ../vimtutor ../gvimtutor ../mkinstalldirs .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	cd $(SHADOWDIR); rm -f auto/link.sed
@@ -2193,7 +2198,7 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/vimrc.unix \
 				 ../../testdir/*.in \
-				 ../../testdir/unix.vim \
+				 ../../testdir/*.vim \
 				 ../../testdir/*.ok .
 
 # Link needed for doing "make install" in a shadow directory.
