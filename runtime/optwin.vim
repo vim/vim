@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Oct 10
+" Last Change:	2008 May 12
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -147,7 +147,7 @@ endwhile
 
 " Open the window
 new option-window
-setlocal ts=15 tw=0
+setlocal ts=15 tw=0 noro
 
 " Insert help and a "set" command for each option.
 call append(0, '" Each "set" line shows the current value of an option (on the left).')
@@ -350,6 +350,10 @@ call append("$", "lines\tnumber of lines in the display")
 call append("$", " \tset lines=" . &lines)
 call append("$", "lazyredraw\tdon't redraw while executing macros")
 call <SID>BinOptionG("lz", &lz)
+if has("reltime")
+  call append("$", "redrawtime\ttimeout for 'hlsearch' and :match highlighting in msec")
+  call append("$", " \tset rdt=" . &rdt)
+endif
 call append("$", "writedelay\tdelay in msec for each char written to the display")
 call append("$", "\t(for debugging)")
 call append("$", " \tset wd=" . &wd)
