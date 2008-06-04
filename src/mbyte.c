@@ -5520,13 +5520,13 @@ preedit_callback_setup(GdkIC *ic)
     preedit_caret_cb.callback = (XIMProc)preedit_caret_cbproc;
     preedit_done_cb.callback = (XIMProc)preedit_done_cbproc;
     preedit_attr
-	= XVaCreateNestedList (0,
+	 = XVaCreateNestedList(0,
 			       XNPreeditStartCallback, &preedit_start_cb,
 			       XNPreeditDrawCallback, &preedit_draw_cb,
 			       XNPreeditCaretCallback, &preedit_caret_cb,
 			       XNPreeditDoneCallback, &preedit_done_cb,
-			       0);
-    XSetICValues (xxic, XNPreeditAttributes, preedit_attr, 0);
+			       NULL);
+    XSetICValues(xxic, XNPreeditAttributes, preedit_attr, NULL);
     XFree(preedit_attr);
 }
 
@@ -5536,7 +5536,8 @@ reset_state_setup(GdkIC *ic)
 {
 #ifdef USE_X11R6_XIM
     /* don't change the input context when we call reset */
-    XSetICValues(((GdkICPrivate*)ic)->xic, XNResetState, XIMPreserveState, 0);
+    XSetICValues(((GdkICPrivate *)ic)->xic, XNResetState, XIMPreserveState,
+									NULL);
 #endif
 }
 
