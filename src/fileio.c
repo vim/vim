@@ -1288,12 +1288,49 @@ retry:
 #ifdef FEAT_MBYTE
 		    else if (conv_restlen > 0)
 		    {
-			/* Reached end-of-file but some trailing bytes could
-			 * not be converted.  Truncated file? */
-			if (conv_error == 0)
-			    conv_error = linecnt;
-			if (bad_char_behavior != BAD_DROP)
+			/*
+			 * Reached end-of-file but some trailing bytes could
+			 * not be converted.  Truncated file?
+			 */
+
+			/* When we did a conversion report an error. */
+			if (fio_flags != 0
+# ifdef USE_ICONV
+				|| iconv_fd != (iconv_t)-1
+# endif
+			   )
 			{
+			    if (conv_error == 0)
+				conv_error = curbuf->b_ml.ml_line_count
+								- linecnt + 1;
+			}
+			/* Remember the first linenr with an illegal byte */
+			else if (illegal_byte == 0)
+			    illegal_byte = curbuf->b_ml.ml_line_count
+								- linecnt + 1;
+			if (bad_char_behavior == BAD_DROP)
+			{
+			    *(ptr - conv_restlen) = NUL;
+			    conv_restlen = 0;
+			}
+			else
+			{
+			    /* Replace the trailing bytes with the replacement
+			     * character if we were converting; if we weren't,
+			     * leave the UTF8 checking code to do it, as it
+			     * works slightly differently. */
+			    if (bad_char_behavior != BAD_KEEP && (fio_flags != 0
+# ifdef USE_ICONV
+				    || iconv_fd != (iconv_t)-1
+# endif
+			       ))
+			    {
+				while (conv_restlen > 0)
+				{
+				    *(--ptr) = bad_char_behavior;
+				    --conv_restlen;
+				}
+			    }
 			    fio_flags = 0;	/* don't convert this */
 # ifdef USE_ICONV
 			    if (iconv_fd != (iconv_t)-1)
@@ -1302,20 +1339,6 @@ retry:
 				iconv_fd = (iconv_t)-1;
 			    }
 # endif
-			    if (bad_char_behavior == BAD_KEEP)
-			    {
-				/* Keep the trailing bytes as-is. */
-				size = conv_restlen;
-				ptr -= conv_restlen;
-			    }
-			    else
-			    {
-				/* Replace the trailing bytes with the
-				 * replacement character. */
-				size = 1;
-				*--ptr = bad_char_behavior;
-			    }
-			    conv_restlen = 0;
 			}
 		    }
 #endif
@@ -1397,6 +1420,11 @@ retry:
 		    goto retry;
 		}
 	    }
+
+	    /* Include not converted bytes. */
+	    ptr -= conv_restlen;
+	    size += conv_restlen;
+	    conv_restlen = 0;
 #endif
 	    /*
 	     * Break here for a read error or end-of-file.
@@ -1405,11 +1433,6 @@ retry:
 		break;
 
 #ifdef FEAT_MBYTE
-
-	    /* Include not converted bytes. */
-	    ptr -= conv_restlen;
-	    size += conv_restlen;
-	    conv_restlen = 0;
 
 # ifdef USE_ICONV
 	    if (iconv_fd != (iconv_t)-1)
@@ -1872,12 +1895,12 @@ retry:
 		size = (long)((ptr + real_size) - dest);
 		ptr = dest;
 	    }
-	    else if (enc_utf8 && conv_error == 0 && !curbuf->b_p_bin)
+	    else if (enc_utf8 && !curbuf->b_p_bin)
 	    {
-		/* Reading UTF-8: Check if the bytes are valid UTF-8.
-		 * Need to start before "ptr" when part of the character was
-		 * read in the previous read() call. */
-		for (p = ptr - utf_head_off(buffer, ptr); ; ++p)
+		int  incomplete_tail = FALSE;
+
+		/* Reading UTF-8: Check if the bytes are valid UTF-8. */
+		for (p = ptr; ; ++p)
 		{
 		    int	 todo = (int)((ptr + size) - p);
 		    int	 l;
@@ -1891,43 +1914,56 @@ retry:
 			 * read() will get the next bytes, we'll check it
 			 * then. */
 			l = utf_ptr2len_len(p, todo);
-			if (l > todo)
+			if (l > todo && !incomplete_tail)
 			{
-			    /* Incomplete byte sequence, the next read()
-			     * should get them and check the bytes. */
-			    p += todo;
-			    break;
+			    /* Avoid retrying with a different encoding when
+			     * a truncated file is more likely, or attempting
+			     * to read the rest of an incomplete sequence when
+			     * we have already done so. */
+			    if (p > ptr || filesize > 0)
+				incomplete_tail = TRUE;
+			    /* Incomplete byte sequence, move it to conv_rest[]
+			     * and try to read the rest of it, unless we've
+			     * already done so. */
+			    if (p > ptr)
+			    {
+				conv_restlen = todo;
+				mch_memmove(conv_rest, p, conv_restlen);
+				size -= conv_restlen;
+				break;
+			    }
 			}
-			if (l == 1)
+			if (l == 1 || l > todo)
 			{
 			    /* Illegal byte.  If we can try another encoding
-			     * do that. */
-			    if (can_retry)
+			     * do that, unless at EOF where a truncated
+			     * file is more likely than a conversion error. */
+			    if (can_retry && !incomplete_tail)
 				break;
-
-			    /* Remember the first linenr with an illegal byte */
-			    if (illegal_byte == 0)
-				illegal_byte = readfile_linenr(linecnt, ptr, p);
 # ifdef USE_ICONV
 			    /* When we did a conversion report an error. */
 			    if (iconv_fd != (iconv_t)-1 && conv_error == 0)
 				conv_error = readfile_linenr(linecnt, ptr, p);
 # endif
+			    /* Remember the first linenr with an illegal byte */
+			    if (conv_error == 0 && illegal_byte == 0)
+				illegal_byte = readfile_linenr(linecnt, ptr, p);
 
 			    /* Drop, keep or replace the bad byte. */
 			    if (bad_char_behavior == BAD_DROP)
 			    {
-				mch_memmove(p, p+1, todo - 1);
+				mch_memmove(p, p + 1, todo - 1);
 				--p;
 				--size;
 			    }
 			    else if (bad_char_behavior != BAD_KEEP)
 				*p = bad_char_behavior;
 			}
-			p += l - 1;
+			else
+			    p += l - 1;
 		    }
 		}
-		if (p < ptr + size)
+		if (p < ptr + size && !incomplete_tail)
 		{
 		    /* Detected a UTF-8 error. */
 rewind_retry:
