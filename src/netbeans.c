@@ -16,6 +16,10 @@
  * See ":help netbeans-protocol" for explanation.
  */
 
+#if defined(MSDOS) || defined(MSWIN)
+# include "vimio.h"	/* for mch_open(), must be before vim.h */
+#endif
+
 #include "vim.h"
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
@@ -1974,13 +1978,16 @@ nb_do_cmd(
 	}
 	else if (streq((char *)cmd, "setModified"))
 	{
+	    int prev_b_changed;
+
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
 /*		EMSG("E646: null bufp in setModified"); */
 		return FAIL;
 	    }
+	    prev_b_changed = buf->bufp->b_changed;
 	    if (streq((char *)args, "T"))
-		buf->bufp->b_changed = 1;
+		buf->bufp->b_changed = TRUE;
 	    else
 	    {
 		struct stat	st;
@@ -1990,9 +1997,20 @@ nb_do_cmd(
 		if (buf->bufp->b_ffname != NULL
 			&& mch_stat((char *)buf->bufp->b_ffname, &st) >= 0)
 		    buf_store_time(buf->bufp, &st, buf->bufp->b_ffname);
-		buf->bufp->b_changed = 0;
+		buf->bufp->b_changed = FALSE;
 	    }
 	    buf->modified = buf->bufp->b_changed;
+	    if (prev_b_changed != buf->bufp->b_changed)
+	    {
+#ifdef FEAT_WINDOWS
+		check_status(buf->bufp);
+		redraw_tabline = TRUE;
+#endif
+#ifdef FEAT_TITLE
+		maketitle();
+#endif
+		update_screen(0);
+	    }
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setModtime"))
