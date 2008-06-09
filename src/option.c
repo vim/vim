@@ -243,7 +243,8 @@
 /* WV_ and BV_ values get typecasted to this for the "indir" field */
 typedef enum
 {
-    PV_NONE = 0
+    PV_NONE = 0,
+    PV_MAXVAL = 0xffff    /* to avoid warnings for value out of range */
 } idopt_T;
 
 /*
@@ -8713,7 +8714,7 @@ put_setstring(fd, cmd, name, valuep, expand)
 	{
 	    s = *valuep;
 	    while (*s != NUL)
-		if (fputs((char *)str2special(&s, FALSE), fd) < 0)
+		if (put_escstr(fd, str2special(&s, FALSE), 2) == FAIL)
 		    return FAIL;
 	}
 	else if (expand)
