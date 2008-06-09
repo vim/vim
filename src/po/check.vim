@@ -1,7 +1,8 @@
 " Vim script for checking .po files.
 "
-" Go through the file and verify that all %...s items in "msgid" are identical
-" to the ones in "msgstr".
+" Go through the file and verify that:
+" - All %...s items in "msgid" are identical to the ones in "msgstr".
+" - An error or warning code in "msgid" matches the one in "msgstr".
 
 if 1	" Only execute this if the eval feature is available.
 
@@ -55,6 +56,20 @@ while 1
     break
   endif
 endwhile
+
+" Check that error code in msgid matches the one in msgstr.
+"
+" Examples of mismatches found with msgid "E123: ..."
+" - msgstr "E321: ..."    error code mismatch
+" - msgstr "W123: ..."    warning instead of error
+" - msgstr "E123 ..."     missing colon
+" - msgstr "..."          missing error code
+"
+1
+if search('msgid "\("\n"\)\?\([EW][0-9]\+:\).*\nmsgstr "\("\n"\)\?[^"]\@=\2\@!') > 0
+  echo 'Mismatching error/warning code in line ' . line('.')
+  let error = 1
+endif
 
 if error == 0
   echo "OK"
