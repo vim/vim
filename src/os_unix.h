@@ -432,7 +432,13 @@ typedef struct dsc$descriptor   DESC;
  * Unix has plenty of memory, use large buffers
  */
 #define CMDBUFFSIZE 1024	/* size of the command processing buffer */
-#define MAXPATHL    1024	/* Unix has long paths and plenty of memory */
+
+/* Use the system path length if it makes sense. */
+#if defined(PATH_MAX) && (PATH_MAX > 1000)
+# define MAXPATHL	PATH_MAX
+#else
+# define MAXPATHL	1024
+#endif
 
 #define CHECK_INODE		/* used when checking if a swap file already
 				    exists for a file */
