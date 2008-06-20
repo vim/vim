@@ -36,7 +36,7 @@ The currently preferred method is using the free Visual C++ Toolkit 2003.
 Visual Studio
 -------------
 
-Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, and VS .NET 2005)
+Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, and VS 2008)
 is straightforward. (These instructions should also work for VS 4 and VS 5.)
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
@@ -139,7 +139,7 @@ to debug Vim itself. An earlier version of the Debugging Tools
 is also available through the Platform SDK, |ms-platform-sdk|.
 
 
-Visual C++ 2005 Express Edition
+Visual C++ 2005 Express Edition       *msvc-2005-express*
 -------------------------------
 
 Visual C++ 2005 Express Edition can be downloaded for free from:
@@ -149,6 +149,14 @@ This includes the IDE and the debugger. You will also need
 
 Instructions for integrating the Platform SDK into VC Express:
     http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
+
+
+Visual C++ 2008 Express Edition       *msvc-2008-express*
+-------------------------------
+
+Visual C++ 2008 Express Edition can be downloaded for free from:
+    http://msdn2.microsoft.com/en-us/express/default.aspx
+This includes the IDE and the debugger. You can build Vim with Make_mvc.mak.
 
 
 Visual C++ 2008 Express Edition       *msvc-2008-express*
