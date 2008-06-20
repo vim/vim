@@ -209,6 +209,7 @@ typedef struct
 {
     SmcConn smcconn;	    /* The SM connection ID */
     IceConn iceconn;	    /* The ICE connection ID */
+    char *clientid;         /* The client ID for the current smc session */
     Bool save_yourself;     /* If we're in the middle of a save_yourself */
     Bool shutdown;	    /* If we're in shutdown mode */
 } xsmp_config_T;
@@ -2887,16 +2888,28 @@ mch_free_mem()
     if (clip_plus.owned)
 	clip_lose_selection(&clip_plus);
 # endif
-# if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)) || defined(PROTO)
+# if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     if (xterm_Shell != (Widget)0)
 	XtDestroyWidget(xterm_Shell);
+#  ifndef LESSTIF_VERSION
+    /* Lesstif crashes here, lose some memory */
     if (xterm_dpy != NULL)
 	XtCloseDisplay(xterm_dpy);
     if (app_context != (XtAppContext)NULL)
+    {
 	XtDestroyApplicationContext(app_context);
+#   ifdef FEAT_X11
+	x11_display = NULL; /* freed by XtDestroyApplicationContext() */
+#   endif
+    }
+#  endif
 # endif
 # ifdef FEAT_X11
-    if (x11_display != NULL && x11_display != xterm_dpy)
+    if (x11_display != NULL
+#  ifdef FEAT_XCLIPBOARD
+	    && x11_display != xterm_dpy
+#  endif
+	    )
 	XCloseDisplay(x11_display);
 # endif
 # if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
@@ -6290,22 +6303,22 @@ clear_xterm_clip()
     }
     if (xterm_dpy != NULL)
     {
-#if 0
+#  if 0
 	/* Lesstif and Solaris crash here, lose some memory */
 	XtCloseDisplay(xterm_dpy);
-#endif
+#  endif
 	if (x11_display == xterm_dpy)
 	    x11_display = NULL;
 	xterm_dpy = NULL;
     }
-#if 0
+#  if 0
     if (app_context != (XtAppContext)NULL)
     {
 	/* Lesstif and Solaris crash here, lose some memory */
 	XtDestroyApplicationContext(app_context);
 	app_context = (XtAppContext)NULL;
     }
-#endif
+#  endif
 }
 # endif
 
@@ -6557,7 +6570,6 @@ static int dummy;
 xsmp_init(void)
 {
     char		errorstring[80];
-    char		*clientid;
     SmcCallbacks	smcallbacks;
 #if 0
     SmPropValue		smname;
@@ -6599,7 +6611,7 @@ xsmp_init(void)
 		     | SmcSaveCompleteProcMask | SmcShutdownCancelledProcMask,
 	    &smcallbacks,
 	    NULL,
-	    &clientid,
+	    &xsmp.clientid,
 	    sizeof(errorstring),
 	    errorstring);
     if (xsmp.smcconn == NULL)
@@ -6638,6 +6650,8 @@ xsmp_close()
     if (xsmp_icefd != -1)
     {
 	SmcCloseConnection(xsmp.smcconn, 0, NULL);
+	vim_free(xsmp.clientid);
+	xsmp.clientid = NULL;
 	xsmp_icefd = -1;
     }
 }

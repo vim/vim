@@ -1538,8 +1538,11 @@ gui_mch_init()
     attr.depth = DefaultDepthOfScreen(scr);
 
     if (!icon)
+    {
 	XpmCreatePixmapFromData(dsp, root_window, magick, &icon,
 							   &icon_mask, &attr);
+	XpmFreeAttributes(&attr);
+    }
 
 # ifdef FEAT_GUI_ATHENA
     XtVaSetValues(vimShell, XtNiconPixmap, icon, XtNiconMask, icon_mask, NULL);
