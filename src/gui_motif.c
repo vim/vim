@@ -686,8 +686,8 @@ manage_centered(dialog_child)
 
     /* Temporarily set value of XmNmappedWhenManaged
        to stop the dialog from popping up right away */
-    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, 0);
-    XtVaSetValues(shell, XmNmappedWhenManaged, False, 0);
+    XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
+    XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
 
     XtManageChild(dialog_child);
 
@@ -723,7 +723,7 @@ manage_centered(dialog_child)
     XtMapWidget(shell);
 
     /* Restore the value of XmNmappedWhenManaged */
-    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, 0);
+    XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
 #if defined(FEAT_MENU) || defined(FEAT_SUN_WORKSHOP) \
@@ -1993,7 +1993,7 @@ do_mnemonic(Widget w, unsigned int keycode)
     {
 	if (XtClass(w) == xmRowColumnWidgetClass)
 	{
-	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
 	    isMenu = (rowColType != (unsigned char)XmWORK_AREA);
 	}
 	else
@@ -2001,14 +2001,14 @@ do_mnemonic(Widget w, unsigned int keycode)
 	if (!isMenu)
 	{
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
-			  &numChildren, 0);
+			  &numChildren, NULL);
 	    for (i = 0; i < numChildren; i++)
 		do_mnemonic(children[i], keycode);
 	}
     }
     else
     {
-	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
 	if (mnemonic != '\0')
 	{
 	    mneString[0] = mnemonic;
@@ -2019,7 +2019,7 @@ do_mnemonic(Widget w, unsigned int keycode)
 		if (XtClass(w) == xmLabelWidgetClass
 			|| XtClass(w) == xmLabelGadgetClass)
 		{
-		    XtVaGetValues(w, XmNuserData, &userData, 0);
+		    XtVaGetValues(w, XmNuserData, &userData, NULL);
 		    if (userData != NULL && XtIsWidget(userData))
 			XmProcessTraversal(userData, XmTRAVERSE_CURRENT);
 		}
@@ -2073,7 +2073,7 @@ add_mnemonic_grabs(Widget dialog, Widget w)
     {
 	if (XtClass(w) == xmRowColumnWidgetClass)
 	{
-	    XtVaGetValues(w, XmNrowColumnType, &rowColType, 0);
+	    XtVaGetValues(w, XmNrowColumnType, &rowColType, NULL);
 	    isMenu = (rowColType != (unsigned char)XmWORK_AREA);
 	}
 	else
@@ -2081,14 +2081,14 @@ add_mnemonic_grabs(Widget dialog, Widget w)
 	if (!isMenu)
 	{
 	    XtVaGetValues(w, XmNchildren, &children, XmNnumChildren,
-							     &numChildren, 0);
+							  &numChildren, NULL);
 	    for (i = 0; i < numChildren; i++)
 		add_mnemonic_grabs(dialog, children[i]);
 	}
     }
     else
     {
-	XtVaGetValues(w, XmNmnemonic, &mnemonic, 0);
+	XtVaGetValues(w, XmNmnemonic, &mnemonic, NULL);
 	if (mnemonic != '\0')
 	{
 	    mneString[0] = mnemonic;
