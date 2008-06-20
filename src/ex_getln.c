@@ -2053,10 +2053,10 @@ set_cmdspos_cursor()
 	if (has_mbyte)
 	    correct_cmdspos(i, c);
 #endif
-	/* If the cmdline doesn't fit, put cursor on last visible char. */
+	/* If the cmdline doesn't fit, show cursor on last visible char.
+	 * Don't move the cursor itself, so we can still append. */
 	if ((ccline.cmdspos += c) >= m)
 	{
-	    ccline.cmdpos = i - 1;
 	    ccline.cmdspos -= c;
 	    break;
 	}
@@ -2829,10 +2829,11 @@ put_on_cmdline(str, len, redraw)
 		if (has_mbyte)
 		    correct_cmdspos(ccline.cmdpos, c);
 #endif
-		/* Stop cursor at the end of the screen */
-		if (ccline.cmdspos + c >= m)
-		    break;
-		ccline.cmdspos += c;
+		/* Stop cursor at the end of the screen, but do increment the
+		 * insert position, so that entering a very long command
+		 * works, even though you can't see it. */
+		if (ccline.cmdspos + c < m)
+		    ccline.cmdspos += c;
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
 		{
@@ -3332,7 +3333,7 @@ nextwild(xp, type, options)
 /*
  * Do wildcard expansion on the string 'str'.
  * Chars that should not be expanded must be preceded with a backslash.
- * Return a pointer to alloced memory containing the new string.
+ * Return a pointer to allocated memory containing the new string.
  * Return NULL for failure.
  *
  * "orig" is the originally expanded string, copied to allocated memory.  It
@@ -6111,7 +6112,7 @@ ex_window()
 
     exmode_active = save_exmode;
 
-    /* Safety check: The old window or buffer was deleted: It's a a bug when
+    /* Safety check: The old window or buffer was deleted: It's a bug when
      * this happens! */
     if (!win_valid(old_curwin) || !buf_valid(old_curbuf))
     {
