@@ -2142,7 +2142,9 @@ do_one_cmd(cmdlinep, sourcing,
 
 #endif
 
-    if (*p == '!' && ea.cmdidx != CMD_substitute)    /* forced commands */
+    /* forced commands */
+    if (*p == '!' && ea.cmdidx != CMD_substitute
+	    && ea.cmdidx != CMD_smagic && ea.cmdidx != CMD_snomagic)
     {
 	++p;
 	ea.forceit = TRUE;
