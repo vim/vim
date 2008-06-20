@@ -9300,7 +9300,7 @@ ex_tag_cmd(eap, name)
 		  break;
 	default:			/* ":tag" */
 #ifdef FEAT_CSCOPE
-		  if (p_cst)
+		  if (p_cst && *eap->arg != NUL)
 		  {
 		      do_cstag(eap);
 		      return;
