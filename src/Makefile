@@ -1113,7 +1113,7 @@ GTK_IPATH	= $(GUI_INC_LOC)
 GTK_LIBS_DIR	= $(GUI_LIB_LOC)
 GTK_LIBS1	=
 GTK_LIBS2	= $(GTK_LIBNAME)
-GTK_INSTALL     = install_normal
+GTK_INSTALL     = install_normal install_gui_extra
 GTK_TARGETS	= installglinks
 GTK_MAN_TARGETS = yes
 GTK_TESTTARGET  = gui
@@ -1130,7 +1130,7 @@ MOTIF_IPATH	= $(GUI_INC_LOC)
 MOTIF_LIBS_DIR	= $(GUI_LIB_LOC)
 MOTIF_LIBS1	=
 MOTIF_LIBS2	= $(MOTIF_LIBNAME) -lXt
-MOTIF_INSTALL   = install_normal
+MOTIF_INSTALL   = install_normal install_gui_extra
 MOTIF_TARGETS	= installglinks
 MOTIF_MAN_TARGETS = yes
 MOTIF_TESTTARGET = gui
@@ -1160,7 +1160,7 @@ ATHENA_IPATH	= $(GUI_INC_LOC)
 ATHENA_LIBS_DIR = $(GUI_LIB_LOC)
 ATHENA_LIBS1	= $(XAW_LIB)
 ATHENA_LIBS2	= -lXt
-ATHENA_INSTALL  = install_normal
+ATHENA_INSTALL  = install_normal install_gui_extra
 ATHENA_TARGETS	= installglinks
 ATHENA_MAN_TARGETS = yes
 ATHENA_TESTTARGET = gui
@@ -1178,7 +1178,7 @@ NEXTAW_IPATH	= $(GUI_INC_LOC)
 NEXTAW_LIBS_DIR = $(GUI_LIB_LOC)
 NEXTAW_LIBS1	= $(NEXTAW_LIB)
 NEXTAW_LIBS2	= -lXt
-NEXTAW_INSTALL  =  install_normal
+NEXTAW_INSTALL  =  install_normal install_gui_extra
 NEXTAW_TARGETS	=  installglinks
 NEXTAW_MAN_TARGETS = yes
 NEXTAW_TESTTARGET = gui
@@ -1203,7 +1203,7 @@ PHOTONGUI_IPATH	=
 PHOTONGUI_LIBS_DIR =
 PHOTONGUI_LIBS1	= -lph -lphexlib
 PHOTONGUI_LIBS2	=
-PHOTONGUI_INSTALL = install_normal
+PHOTONGUI_INSTALL = install_normal install_gui_extra
 PHOTONGUI_TARGETS = installglinks
 PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
@@ -1219,7 +1219,7 @@ CARBONGUI_IPATH	= -I. -Iproto
 CARBONGUI_LIBS_DIR =
 CARBONGUI_LIBS1	= -framework Carbon
 CARBONGUI_LIBS2	=
-CARBONGUI_INSTALL = install_macosx
+CARBONGUI_INSTALL = install_macosx install_gui_extra
 CARBONGUI_TARGETS =
 CARBONGUI_MAN_TARGETS =
 CARBONGUI_TESTTARGET = gui
@@ -1741,6 +1741,15 @@ testclean:
 		cd $(PODIR); $(MAKE) checkclean; \
 	fi
 
+install: $(GUI_INSTALL)
+
+install_normal: installvim installtools $(INSTALL_LANGS) install-icons
+
+install_gui_extra: installgtutorbin
+
+installvim: installvimbin installtutorbin \
+		installruntime installlinks installmanlinks
+
 #
 # Avoid overwriting an existing executable, somebody might be running it and
 # overwriting it could cause it to crash.  Deleting it is OK, it won't be
@@ -1750,13 +1759,6 @@ testclean:
 # If you want to keep an older version, rename it before running "make
 # install".
 #
-install: $(GUI_INSTALL)
-
-install_normal: installvim installtools $(INSTALL_LANGS) install-icons
-
-installvim: installvimbin installtutorbin \
-		installruntime installlinks installmanlinks
-
 installvimbin: $(VIMTARGET) $(DESTDIR)$(exec_prefix) $(DEST_BIN)
 	-if test -f $(DEST_BIN)/$(VIMTARGET); then \
 	  mv -f $(DEST_BIN)/$(VIMTARGET) $(DEST_BIN)/$(VIMNAME).rm; \
@@ -1872,6 +1874,8 @@ installmacros: $(DEST_VIM) $(DEST_RT) $(DEST_MACRO)
 installtutorbin: $(DEST_VIM)
 	$(INSTALL_DATA) vimtutor $(DEST_BIN)/$(VIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(VIMNAME)tutor
+
+installgtutorbin: $(DEST_VIM)
 	$(INSTALL_DATA) gvimtutor $(DEST_BIN)/$(GVIMNAME)tutor
 	chmod $(SCRIPTMOD) $(DEST_BIN)/$(GVIMNAME)tutor
 
