@@ -3515,6 +3515,10 @@ line({expr})	The result is a Number, which is the line number of the file
 			    returned)
 		    w0	    first line visible in current window
 		    w$	    last line visible in current window
+		    v	    In Visual mode: the start of the Visual area (the
+			    cursor is the end).  When not in Visual mode
+			    returns the cursor position.  Differs from |'<| in
+			    that it's updated right away.
 		Note that a mark in another file can be used.  The line number
 		then applies to another buffer.
 		To get the column number use |col()|.  To get both use

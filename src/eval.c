@@ -16907,9 +16907,17 @@ var2fpos(varp, dollar_lnum, fnum)
     name = get_tv_string_chk(varp);
     if (name == NULL)
 	return NULL;
-    if (name[0] == '.')		/* cursor */
+    if (name[0] == '.')				/* cursor */
 	return &curwin->w_cursor;
-    if (name[0] == '\'')	/* mark */
+#ifdef FEAT_VISUAL
+    if (name[0] == 'v' && name[1] == NUL)	/* Visual start */
+    {
+	if (VIsual_active)
+	    return &VIsual;
+	return &curwin->w_cursor;
+    }
+#endif
+    if (name[0] == '\'')			/* mark */
     {
 	pp = getmark_fnum(name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
