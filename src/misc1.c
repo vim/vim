@@ -1880,15 +1880,20 @@ ins_bytes_len(p, len)
 # ifdef FEAT_MBYTE
     int		n;
 
-    for (i = 0; i < len; i += n)
-    {
-	n = (*mb_ptr2len)(p + i);
-	ins_char_bytes(p + i, n);
-    }
-# else
-    for (i = 0; i < len; ++i)
-	ins_char(p[i]);
+    if (has_mbyte)
+	for (i = 0; i < len; i += n)
+	{
+	    if (enc_utf8)
+		/* avoid reading past p[len] */
+		n = utfc_ptr2len_len(p + i, len - i);
+	    else
+		n = (*mb_ptr2len)(p + i);
+	    ins_char_bytes(p + i, n);
+	}
+    else
 # endif
+	for (i = 0; i < len; ++i)
+	    ins_char(p[i]);
 }
 #endif
 
