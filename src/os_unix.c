@@ -2278,6 +2278,10 @@ mch_FullName(fname, buf, len, force)
     char_u	olddir[MAXPATHL];
     char_u	*p;
     int		retval = OK;
+#ifdef __CYGWIN__
+    char_u	posix_fname[MAX_PATH];
+#endif
+
 
 #ifdef VMS
     fname = vms_fixfilename(fname);
@@ -2287,7 +2291,8 @@ mch_FullName(fname, buf, len, force)
     /*
      * This helps for when "/etc/hosts" is a symlink to "c:/something/hosts".
      */
-    cygwin_conv_to_posix_path(fname, fname);
+    cygwin_conv_to_posix_path(fname, posix_fname);
+    fname = posix_fname;
 #endif
 
     /* expand it if forced or not an absolute path */
