@@ -4863,6 +4863,7 @@ comp_char_differs(off_from, off_to)
  * - the (first byte of the) character is different
  * - the attributes are different
  * - the character is multi-byte and the next byte is different
+ * - the character is two cells wide and the second cell differs.
  */
     static int
 char_needs_redraw(off_from, off_to, cols)
@@ -4884,7 +4885,9 @@ char_needs_redraw(off_from, off_to, cols)
 		|| (enc_utf8
 		    && (ScreenLinesUC[off_from] != ScreenLinesUC[off_to]
 			|| (ScreenLinesUC[off_from] != 0
-			    && comp_char_differs(off_from, off_to))))
+			    && comp_char_differs(off_from, off_to))
+			|| (cols > 1 && ScreenLines[off_from + 1]
+						 != ScreenLines[off_to + 1])))
 #endif
 	       ))
 	return TRUE;
