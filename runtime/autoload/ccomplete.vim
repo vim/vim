@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 May 08
+" Last Change:	2007 Aug 30
 
 
 " This function is used for the 'omnifunc' option.
@@ -119,6 +119,27 @@ function! ccomplete#Complete(findstart, base)
     " TODO: join previous line if it makes sense
     let line = getline('.')
     let col = col('.')
+    if stridx(strpart(line, 0, col), ';') != -1
+      " Handle multiple declarations on the same line.
+      let col2 = col - 1
+      while line[col2] != ';'
+	let col2 -= 1
+      endwhile
+      let line = strpart(line, col2 + 1)
+      let col -= col2
+    endif
+    if stridx(strpart(line, 0, col), ',') != -1
+      " Handle multiple declarations on the same line in a function
+      " declaration.
+      let col2 = col - 1
+      while line[col2] != ','
+	let col2 -= 1
+      endwhile
+      if strpart(line, col2 + 1, col - col2 - 1) =~ ' *[^ ][^ ]*  *[^ ]'
+	let line = strpart(line, col2 + 1)
+	let col -= col2
+      endif
+    endif
     if len(items) == 1
       " Completing one word and it's a local variable: May add '[', '.' or
       " '->'.
@@ -140,7 +161,7 @@ function! ccomplete#Complete(findstart, base)
       let res = [{'match': match, 'tagline' : '', 'kind' : kind, 'info' : line}]
     else
       " Completing "var.", "var.something", etc.
-      let res = s:Nextitem(strpart(line, 0, col), items[1:], 0, 1)
+      let res = s:Nextitem(strpart(line, 0, col), items[-1], 0, 1)
     endif
   endif
 

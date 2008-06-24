@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:		C-shell (tcsh)
 " Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Modified:	Wed 04 Feb 2004 04:36:07 PM CST
+" Last Modified:	Sat 16 Jun 2007 04:27:45 PM PDT
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -11,7 +11,7 @@ endif
 let b:did_indent = 1
 
 setlocal indentexpr=TcshGetIndent()
-setlocal indentkeys+=e,0=end,0=endsw,*<return> indentkeys-=0{,0},0),:,0#
+setlocal indentkeys+=e,0=end,0=endsw indentkeys-=0{,0},0),:,0#
 
 " Only define the function once.
 if exists("*TcshGetIndent")

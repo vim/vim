@@ -3016,34 +3016,43 @@ syn_add_end_off(result, regmatch, spp, idx, extra)
     int		extra;		/* extra chars for offset to start */
 {
     int		col;
-    int		len;
+    int		off;
+    char_u	*base;
+    char_u	*p;
 
     if (spp->sp_off_flags & (1 << idx))
     {
 	result->lnum = regmatch->startpos[0].lnum;
-	col = regmatch->startpos[0].col + extra;
+	col = regmatch->startpos[0].col;
+	off = spp->sp_offsets[idx] + extra;
     }
     else
     {
 	result->lnum = regmatch->endpos[0].lnum;
 	col = regmatch->endpos[0].col;
+	off = spp->sp_offsets[idx];
     }
-    col += spp->sp_offsets[idx];
-    if (col < 0)
-	result->col = 0;
-    else
+    /* Don't go past the end of the line.  Matters for "rs=e+2" when there
+     * is a matchgroup. Watch out for match with last NL in the buffer. */
+    if (result->lnum > syn_buf->b_ml.ml_line_count)
+	col = 0;
+    else if (off != 0)
     {
-	/* Don't go past the end of the line.  Matters for "rs=e+2" when there
-	 * is a matchgroup. Watch out for match with last NL in the buffer. */
-	if (result->lnum > syn_buf->b_ml.ml_line_count)
-	    len = 0;
-	else
-	    len = (int)STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
-	if (col > len)
-	    result->col = len;
-	else
-	    result->col = col;
+	base = ml_get_buf(syn_buf, result->lnum, FALSE);
+	p = base + col;
+	if (off > 0)
+	{
+	    while (off-- > 0 && *p != NUL)
+		mb_ptr_adv(p);
+	}
+	else if (off < 0)
+	{
+	    while (off++ < 0 && base < p)
+		mb_ptr_back(base, p);
+	}
+	col = (int)(p - base);
     }
+    result->col = col;
 }
 
 /*
@@ -3059,22 +3068,39 @@ syn_add_start_off(result, regmatch, spp, idx, extra)
     int		extra;	    /* extra chars for offset to end */
 {
     int		col;
+    int		off;
+    char_u	*base;
+    char_u	*p;
 
     if (spp->sp_off_flags & (1 << (idx + SPO_COUNT)))
     {
 	result->lnum = regmatch->endpos[0].lnum;
-	col = regmatch->endpos[0].col + extra;
+	col = regmatch->endpos[0].col;
+	off = spp->sp_offsets[idx] + extra;
     }
     else
     {
 	result->lnum = regmatch->startpos[0].lnum;
 	col = regmatch->startpos[0].col;
+	off = spp->sp_offsets[idx];
     }
-    col += spp->sp_offsets[idx];
-    if (col < 0)
-	result->col = 0;
-    else
-	result->col = col;
+    if (off != 0)
+    {
+	base = ml_get_buf(syn_buf, result->lnum, FALSE);
+	p = base + col;
+	if (off > 0)
+	{
+	    while (off-- && *p != NUL)
+		mb_ptr_adv(p);
+	}
+	else if (off < 0)
+	{
+	    while (off++ && base < p)
+		mb_ptr_back(base, p);
+	}
+	col = (int)(p - base);
+    }
+    result->col = col;
 }
 
 /*

@@ -41,10 +41,6 @@
 
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 #include <signal.h>
 
 #ifdef __CYGWIN32__

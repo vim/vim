@@ -1,4 +1,4 @@
-*usr_30.txt*	For Vim version 7.1.  Last change: 2007 Apr 22
+*usr_30.txt*	For Vim version 7.2a.  Last change: 2007 Nov 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -200,14 +200,14 @@ Then have Vim read this file with: >
 Jumping to errors will work like with the ":make" command.
 
 ==============================================================================
-*30.2*	Indenting C files
+*30.2*	Indenting C style text
 
 A program is much easier to understand when the lines have been properly
-indented.  Vim offers various ways to make this less work.
-   For C programs set the 'cindent' option.  Vim knows a lot about C programs
-and will try very hard to automatically set the indent for you.  Set the
-'shiftwidth' option to the amount of spaces you want for a deeper level.  Four
-spaces will work fine.  One ":set" command will do it: >
+indented.  Vim offers various ways to make this less work.  For C or C style
+programs like Java or C++, set the 'cindent' option.  Vim knows a lot about C
+programs and will try very hard to automatically set the indent for you.  Set
+the 'shiftwidth' option to the amount of spaces you want for a deeper level.
+Four spaces will work fine.  One ":set" command will do it: >
 
 	:set cindent shiftwidth=4
 
@@ -451,7 +451,7 @@ in your text.  The second time, Vim takes out the 4 spaces and puts in a <Tab>
 (thus taking you to column 8).  Thus Vim uses as many <Tab>s as possible, and
 then fills up with spaces.
    When backspacing it works the other way around.  A <BS> will always delete
-the amount specified with 'softtabstop'.  Then <Tabs> are used as many as
+the amount specified with 'softtabstop'.  Then <Tab>s are used as many as
 possible and spaces to fill the gap.
    The following shows what happens pressing <Tab> a few times, and then using
 <BS>.  A "." stands for a space and "------->" for a <Tab>.

@@ -2,7 +2,7 @@
 " Language:	Cascading Style Sheets
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/css.vim
-" Last Change:	2006 Jun 19
+" Last Change:	2007 Nov 06
 " CSS2 by Nikolai Weibull
 " Full CSS2, HTML4 support by Yeti
 
@@ -194,7 +194,7 @@ syn match cssSpecialCharQQ +\\"+ contained
 syn match cssSpecialCharQ +\\'+ contained
 syn region cssStringQQ start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=cssUnicodeEscape,cssSpecialCharQQ
 syn region cssStringQ start=+'+ skip=+\\\\\|\\'+ end=+'+ contains=cssUnicodeEscape,cssSpecialCharQ
-syn match cssClassName "\.[A-Za-z][A-Za-z0-9-]\+"
+syn match cssClassName "\.[A-Za-z][A-Za-z0-9_-]\+"
 
 if main_syntax == "css"
   syn sync minlines=10

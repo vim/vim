@@ -2538,6 +2538,7 @@ keymap_unload()
     char_u	buf[KMAP_MAXLEN + 10];
     int		i;
     char_u	*save_cpo = p_cpo;
+    kmap_T	*kp;
 
     if (!(curbuf->b_kmap_state & KEYMAP_LOADED))
 	return;
@@ -2546,11 +2547,13 @@ keymap_unload()
     p_cpo = (char_u *)"C";
 
     /* clear the ":lmap"s */
+    kp = (kmap_T *)curbuf->b_kmap_ga.ga_data;
     for (i = 0; i < curbuf->b_kmap_ga.ga_len; ++i)
     {
-	vim_snprintf((char *)buf, sizeof(buf), "<buffer> %s",
-			       ((kmap_T *)curbuf->b_kmap_ga.ga_data)[i].from);
+	vim_snprintf((char *)buf, sizeof(buf), "<buffer> %s", kp[i].from);
 	(void)do_map(1, buf, LANGMAP, FALSE);
+	vim_free(kp[i].from);
+	vim_free(kp[i].to);
     }
 
     p_cpo = save_cpo;

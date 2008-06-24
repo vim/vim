@@ -11,9 +11,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 7.0\n"
-"POT-Creation-Date: 2007-04-29 13:02+0200\n"
-"PO-Revision-Date:  2007-04-29 18:02+0200\n"
+"Project-Id-Version: vim 7.1\n"
+"POT-Creation-Date: 2008-06-20 23:58+0200\n"
+"PO-Revision-Date:  2008-06-21 06:00+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -323,7 +323,7 @@ msgstr "corrispondenza %d di %d"
 
 #, c-format
 msgid "match %d"
-msgstr "corripondenza %d"
+msgstr "corrispondenza %d"
 
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Caratteri non previsti in :let"
@@ -351,10 +351,10 @@ msgid "E713: Cannot use empty key for Dictionary"
 msgstr "E713: Non posso usare una chiave nulla per il Dizionario"
 
 msgid "E714: List required"
-msgstr "E714: E' necessaria una Lista"
+msgstr "E714: È necessaria una Lista"
 
 msgid "E715: Dictionary required"
-msgstr "E715: E' necessario un Dizionario"
+msgstr "E715: È necessario un Dizionario"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
@@ -418,7 +418,7 @@ msgid "E711: List value has not enough items"
 msgstr "E711: Il valore Lista non ha elementi sufficienti"
 
 msgid "E690: Missing \"in\" after :for"
-msgstr "E69: Manca \"in\" dopo :for"
+msgstr "E690: Manca \"in\" dopo :for"
 
 #, c-format
 msgid "E107: Missing braces: %s"
@@ -667,7 +667,7 @@ msgstr ""
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
-msgstr "E131: Non posso eliminare la funzione %s: E' in uso"
+msgstr "E131: Non posso eliminare la funzione %s: È in uso"
 
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
 msgstr ""
@@ -829,6 +829,20 @@ msgstr ""
 "opzione 'readonly' attiva per \"%s\".\n"
 "Vuoi scrivere comunque?"
 
+#, c-format
+msgid ""
+"File permissions of \"%s\" are read-only.\n"
+"It may still be possible to write it.\n"
+"Do you wish to try?"
+msgstr ""
+"I permessi di \"%s\" sono di sola lettura.\n"
+"Questo potrebbe non impedire la scrittura.\n"
+"Vuoi provare?"
+
+#, c-format
+msgid "E505: \"%s\" is read-only (add ! to override)"
+msgstr "E505: \"%s\" è in sola lettura (aggiungi ! per eseguire comunque)"
+
 msgid "Edit File"
 msgstr "Elabora File"
 
@@ -926,7 +940,7 @@ msgstr "E670: Codifiche diverse fra file di aiuto nella stessa lingua: %s"
 
 #, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s/%s"
-msgstr "E154: Tag duplicata \"%s\" nel file %s/%s"
+msgstr "E154: Tag duplicato \"%s\" nel file %s/%s"
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -1231,7 +1245,7 @@ msgstr "Non posso creare un file di swap"
 msgid "Append File"
 msgstr "In aggiunta al File"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
 "E747: Non posso cambiare directory, buffer modificato (aggiungi ! per "
 "eseguire comunque)"
@@ -1473,8 +1487,8 @@ msgstr "è una directory"
 msgid "is not a file"
 msgstr "non è un file"
 
-msgid "is a device (disabled with 'opendevice' option"
-msgstr "è una periferica (disabilitata con l'opzione 'opendevice'"
+msgid "is a device (disabled with 'opendevice' option)"
+msgstr "è una periferica (disabilitata con l'opzione 'opendevice')"
 
 msgid "[New File]"
 msgstr "[File nuovo]"
@@ -1489,7 +1503,7 @@ msgid "[Permission Denied]"
 msgstr "[Tipo di accesso non consentito]"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
-msgstr "E200: Gli autocomand *ReadPre hanno reso il file illeggibile"
+msgstr "E200: Gli autocomandi *ReadPre hanno reso il file illeggibile"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr "E201: Gli autocomandi *ReadPre non devono modificare il buffer in uso"
@@ -1512,6 +1526,9 @@ msgstr "[fifo]"
 
 msgid "[socket]"
 msgstr "[socket]"
+
+msgid "[character special]"
+msgstr "[character special]"
 
 msgid "[RO]"
 msgstr "[Sola Lettura]"
@@ -1576,7 +1593,7 @@ msgid "writing to device disabled with 'opendevice' option"
 msgstr "scrittura su periferica disabilitata con l'opzione 'opendevice'"
 
 msgid "is read-only (add ! to override)"
-msgstr "è in sola letture (aggiungi ! per eseguire comunque)"
+msgstr "è in sola lettura (aggiungi ! per eseguire comunque)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
@@ -1661,7 +1678,7 @@ msgid "E206: patchmode: can't touch empty original file"
 msgstr "E206: patchmode: non posso alterare il file vuoto originale"
 
 msgid "E207: Can't delete backup file"
-msgstr "E193: Non riesco a cancellare il file di backup"
+msgstr "E207: Non riesco a cancellare il file di backup"
 
 msgid ""
 "\n"
@@ -1733,7 +1750,7 @@ msgid "E210: Error reading \"%s\""
 msgstr "E210: Errore in lettura di \"%s\""
 
 msgid "E246: FileChangedShell autocommand deleted buffer"
-msgstr "E246: L'autocomando 'FileChnagedShell' ha cancellato il buffer"
+msgstr "E246: L'autocomando 'FileChangedShell' ha cancellato il buffer"
 
 #, c-format
 msgid "E211: File \"%s\" no longer available"
@@ -1790,7 +1807,7 @@ msgstr "--Cancellato--"
 
 #, c-format
 msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "auto-rimozione dell'autocommand: %s <buffer=%d>"
+msgstr "auto-rimozione dell'autocomando: %s <buffer=%d>"
 
 #. the group doesn't exist
 #, c-format
@@ -2287,7 +2304,7 @@ msgid "Kill a connection"
 msgstr "Termina una connessione"
 
 msgid "Reinit all connections"
-msgstr "Rinizializza tutte le connessioni"
+msgstr "Reinizializza tutte le connessioni"
 
 msgid "Show connections"
 msgstr "Visualizza connessioni"
@@ -2303,7 +2320,7 @@ msgid "E562: Usage: cstag <ident>"
 msgstr "E562: Uso: cstag <ident>"
 
 msgid "E257: cstag: tag not found"
-msgstr "E257: cstag: tag non trovata"
+msgstr "E257: cstag: tag non trovato"
 
 #, c-format
 msgid "E563: stat(%s) error: %d"
@@ -2336,14 +2353,14 @@ msgstr "E622: Non riesco a fare fork per cscope"
 msgid "cs_create_connection exec failed"
 msgstr "cs_create_connection exec fallita"
 
-msgid "E623: Could not spawn cscope process"
-msgstr "E623: Non riesco a generare processo cscope"
-
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen di to_fp fallita"
 
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fdopen di fr_fp fallita"
+
+msgid "E623: Could not spawn cscope process"
+msgstr "E623: Non riesco a generare processo cscope"
 
 msgid "E567: no cscope connections"
 msgstr "E567: nessuna connessione cscope"
@@ -2407,7 +2424,7 @@ msgid "E609: Cscope error: %s"
 msgstr "E609: Errore cscope: %s"
 
 msgid "All cscope databases reset"
-msgstr "Tutti i databese cscope annullati"
+msgstr "Tutti i database cscope annullati"
 
 msgid "no cscope connections\n"
 msgstr "nessuna connessione cscope\n"
@@ -2473,6 +2490,19 @@ msgstr "numero linea non nell'intervallo"
 msgid "not allowed in the Vim sandbox"
 msgstr "non ammesso in ambiente protetto"
 
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Non posso caricare la libreria %s"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
+"Perl."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
+
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
 "loaded."
@@ -2505,8 +2535,8 @@ msgid "line number out of range"
 msgstr "numero linea non nell'intervallo"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<buffer oggetto (cancellato) a %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<buffer oggetto (cancellato) a %p>"
 
 msgid "invalid mark name"
 msgstr "nome di mark non valido"
@@ -2524,12 +2554,12 @@ msgid "cursor position outside buffer"
 msgstr "posizione cursore fuori dal buffer"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<finestra oggetto (cancellata) a %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<finestra oggetto (cancellata) a %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<finestra oggetto (sconosciuta) a %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<finestra oggetto (sconosciuta) a %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -2809,7 +2839,7 @@ msgid "-               read text from stdin"
 msgstr "-               leggi testo da 'stdin'"
 
 msgid "-t tag          edit file where tag is defined"
-msgstr "-t tag          apri file in cui è definita la tag"
+msgstr "-t tag          apri file in cui è definito il tag"
 
 msgid "-q [errorfile]  edit file with first error"
 msgstr "-q [errorfile]  apri file col primo errore"
@@ -2833,9 +2863,12 @@ msgstr ""
 "\n"
 "    o:"
 
-msgid "where case is ignored prepend / to make flag upper case"
+msgid ""
+"\n"
+"Where case is ignored prepend / to make flag upper case"
 msgstr ""
-"quando si ignorano maiusc./minusc. preporre / per rendere il flag maiusc."
+"\n"
+"Quando si ignorano maiusc./minusc. preporre / per rendere il flag maiusc."
 
 msgid ""
 "\n"
@@ -2903,8 +2936,8 @@ msgstr "-C\t\t\tCompatibile con Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tNon interamente compatibile con Vi: 'nocompatible'"
 
-msgid "-V[N]\t\tVerbose level"
-msgstr "-V[N]\t\tLivello Verbosità"
+msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgstr "-V[N][fname]\t\tVerbosità [livello N] [log su file fname]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tModalità Debug"
@@ -3008,8 +3041,11 @@ msgid ""
 msgstr ""
 "--remote-wait-silent <file>   Stessa cosa, ignora se non esiste un server"
 
-msgid "--remote-tab <files>  As --remote but open tab page for each file"
-msgstr "--remote-tab <file>  Come --remote ma apre una linguetta per ogni file"
+msgid ""
+"--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
+msgstr ""
+"--remote-tab[-wait][-silent] <file>  Come --remote ma apre una linguetta per "
+"file"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tasti>\tInvia <tasti> a un server Vim ed esci"
@@ -3132,10 +3168,13 @@ msgstr ""
 "principale"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
-msgstr "--socketid <xid>\tApri Vim dentro un altro 'widget' GTK"
+msgstr "--socketid <xid>\tApri Vim dentro un altro widget GTK"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <titolo padre>\tApri Vim in un'applicazione padre"
+
+msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
+msgstr "--windowid <HWND>\tApri Vim dentro un altro widget win32"
 
 msgid "No display"
 msgstr "Manca display"
@@ -3282,7 +3321,7 @@ msgstr "E302: Non riesco a rinominare lo swap file"
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Non riesco ad aprile lo swap file per \"%s\", recupero impossible"
+"E303: Non riesco ad aprile lo swap file per \"%s\", recupero impossibile"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Non riesco a leggere blocco 0??"
@@ -3555,7 +3594,7 @@ msgid "E323: line count wrong in block %ld"
 msgstr "E323: contatore linee errato nel blocco %ld"
 
 msgid "Stack size increases"
-msgstr "Dimensione 'stack' aumentata"
+msgstr "Dimensione stack aumentata"
 
 msgid "E317: pointer block id wrong 2"
 msgstr "E317: ID blocco puntatori errato 2"
@@ -4054,15 +4093,15 @@ msgstr "%ld Col.; "
 
 #, c-format
 msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "Selezionate %s%ld di %ld linee; %ld di %ld parole; %ld di %ld caratt."
+msgstr "Selezionate %s%ld di %ld Linee; %ld di %ld Parole; %ld di %ld Caratt."
 
 #, c-format
 msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
 msgstr ""
-"Selezionate %s%ld di %ld linee; %ld di %ld parole; %ld di %ld caratt.; %ld "
-"di %ld bytes"
+"Selezionate %s%ld di %ld Linee; %ld di %ld Parole; %ld di %ld Caratt.; %ld "
+"di %ld Bytes"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -4194,6 +4233,13 @@ msgstr "E594: Servono almeno %d colonne"
 #, c-format
 msgid "E355: Unknown option: %s"
 msgstr "E355: Opzione inesistente: %s"
+
+#. There's another character after zeros or the string
+#. * is empty.  In both cases, we are trying to set a
+#. * num option using a string.
+#, c-format
+msgid "E521: Number required: &%s = '%s'"
+msgstr "E521: Ci vuole un numero: &%s = '%s'"
 
 msgid ""
 "\n"
@@ -4347,6 +4393,20 @@ msgstr "Apertura visualizzazione X: tempo scaduto"
 
 msgid ""
 "\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Non posso ottenere il contesto di sicurezza per "
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Non posso impostare il contesto di sicurezza per "
+
+msgid ""
+"\n"
 "Cannot execute shell "
 msgstr ""
 "\n"
@@ -4448,7 +4508,7 @@ msgid ""
 "See  :help win32-vimrun  for more information."
 msgstr ""
 "VIMRUN.EXE non trovato nel tuo $PATH.\n"
-"I comandi esterni non farano una pausa dopo aver finito l'esecuzione.\n"
+"I comandi esterni non faranno una pausa dopo aver finito l'esecuzione.\n"
 "Vedi  :help win32-vimrun  per ulteriori informazioni."
 
 msgid "Vim Warning"
@@ -4489,10 +4549,10 @@ msgid " (line deleted)"
 msgstr " (linea cancellata)"
 
 msgid "E380: At bottom of quickfix stack"
-msgstr "E380: Al fondo della 'stack' di quickfix"
+msgstr "E380: Al fondo dello stack di quickfix"
 
 msgid "E381: At top of quickfix stack"
-msgstr "E381: In cima alla 'stack' di quickfix"
+msgstr "E381: In cima allo stack di quickfix"
 
 #, c-format
 msgid "error list %d of %d; %d errors"
@@ -5092,7 +5152,7 @@ msgid "syncing on C-style comments"
 msgstr "sincronizzo i commenti nello stile C"
 
 msgid "no syncing"
-msgstr "nessuna ssincronizzazione"
+msgstr "nessuna sincronizzazione"
 
 msgid "syncing starts "
 msgstr "la sincronizzazione inizia "
@@ -5270,17 +5330,17 @@ msgid "W18: Invalid character in group name"
 msgstr "W18: Carattere non ammesso in un nome di gruppo"
 
 msgid "E555: at bottom of tag stack"
-msgstr "E555: al fondo della 'stack' delle tag"
+msgstr "E555: al fondo dello stack dei tag"
 
 msgid "E556: at top of tag stack"
-msgstr "E556: in cima alla 'stack' delle tag"
+msgstr "E556: in cima allo stack dei tag"
 
 msgid "E425: Cannot go before first matching tag"
-msgstr "E425: Non posso andare prima della prima tag corrispondente"
+msgstr "E425: Non posso andare prima del primo tag corrispondente"
 
 #, c-format
 msgid "E426: tag not found: %s"
-msgstr "E426: tag non trovata: %s"
+msgstr "E426: tag non trovato: %s"
 
 msgid "  # pri kind tag"
 msgstr "  # pri tipo tag"
@@ -5289,10 +5349,10 @@ msgid "file\n"
 msgstr "file\n"
 
 msgid "E427: There is only one matching tag"
-msgstr "E427: C'è solo una tag corrispondente"
+msgstr "E427: C'è solo un tag corrispondente"
 
 msgid "E428: Cannot go beyond last matching tag"
-msgstr "E428: Non posso andare oltre l'ultima tag corrispondente"
+msgstr "E428: Non posso andare oltre l'ultimo tag corrispondente"
 
 #, c-format
 msgid "File \"%s\" does not exist"
@@ -5454,24 +5514,24 @@ msgstr "E440: linea di 'undo' mancante"
 #. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
-"MS-Windows 16/32 bit GUI version"
+"MS-Windows 16/32-bit GUI version"
 msgstr ""
 "\n"
-"versione MS-Windows 16/32 bit GUI"
+"versione MS-Windows 16/32-bit GUI"
 
 msgid ""
 "\n"
-"MS-Windows 64 bit GUI version"
+"MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
-"Versione MS-Windows 64 bit GUI"
+"Versione MS-Windows 64-bit GUI"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit GUI version"
+"MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"Versione MS-Windows 32 bit GUI"
+"Versione MS-Windows 32-bit GUI"
 
 msgid " in Win32s mode"
 msgstr " in modalità Win32s"
@@ -5481,31 +5541,38 @@ msgstr " con supporto OLE"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit console version"
+"MS-Windows 64-bit console version"
 msgstr ""
 "\n"
-"Versione MS-Windows 32 bit console"
+"Versione MS-Windows 64-bit console"
 
 msgid ""
 "\n"
-"MS-Windows 16 bit version"
+"MS-Windows 32-bit console version"
 msgstr ""
 "\n"
-"Versione MS-Windows 16 bit"
+"Versione MS-Windows 32-bit console"
 
 msgid ""
 "\n"
-"32 bit MS-DOS version"
+"MS-Windows 16-bit version"
 msgstr ""
 "\n"
-"Version MS-DOS 32 bit"
+"Versione MS-Windows 16-bit"
 
 msgid ""
 "\n"
-"16 bit MS-DOS version"
+"32-bit MS-DOS version"
 msgstr ""
 "\n"
-"Versione MS-DOS 16 bit"
+"Version MS-DOS 32-bit"
+
+msgid ""
+"\n"
+"16-bit MS-DOS version"
+msgstr ""
+"\n"
+"Versione MS-DOS 16-bit"
 
 msgid ""
 "\n"
@@ -5782,19 +5849,6 @@ msgstr "E446: Nessun nome file sotto il cursore"
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Non posso caricare la libreria %s"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
-"Perl."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
 
 msgid "Edit with &multiple Vims"
 msgstr "Apri con &molti Vim"

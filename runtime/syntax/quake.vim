@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Quake[1-3] configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-06-17
 "               quake_is_quake1 - the syntax is to be used for quake1 configs
 "               quake_is_quake2 - the syntax is to be used for quake2 configs
 "               quake_is_quake3 - the syntax is to be used for quake3 configs
@@ -14,7 +14,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,+,-,_
+setlocal iskeyword+=-,+
 
 syn keyword quakeTodo         contained TODO FIXME XXX NOTE
 

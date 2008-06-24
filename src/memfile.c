@@ -38,10 +38,6 @@
 
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 /*
  * Some systems have the page size in statfs.f_bsize, some in stat.st_blksize
  */

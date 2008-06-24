@@ -27,6 +27,7 @@
 #define HAVE_FCNTL_H
 #define HAVE_QSORT
 #define HAVE_ST_MODE		/* have stat.st_mode */
+#define HAVE_MATH_H
 //#define USE_FNAME_CASE	/* adjust case of file names */
 #ifndef FEAT_CLIPBOARD
 # define FEAT_CLIPBOARD		/* include clipboard support */

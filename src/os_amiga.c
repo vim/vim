@@ -19,10 +19,6 @@
 # undef Window	/* Amiga has its own Window definition */
 #endif
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 #undef TRUE		/* will be redefined by exec/types.h */
 #undef FALSE
 

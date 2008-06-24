@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.1.  Last change: 2007 May 11
+*syntax.txt*	For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -103,7 +103,7 @@ To put this into a mapping, you can use: >
 	\ endif <CR>
 [using the |<>| notation, type this literally]
 
-Details
+Details:
 The ":syntax" commands are implemented by sourcing a file.  To see exactly how
 this works, look in the file:
     command		file ~
@@ -531,12 +531,12 @@ one of the first five lines in the file.
 
 The syntax type can always be overruled for a specific buffer by setting the
 b:asmsyntax variable: >
-	:let b:asmsyntax=nasm
+	:let b:asmsyntax = "nasm"
 
 If b:asmsyntax is not set, either automatically or by hand, then the value of
 the global variable asmsyntax is used.	This can be seen as a default assembly
 language: >
-	:let asmsyntax=nasm
+	:let asmsyntax = "nasm"
 
 As a last resort, if nothing is defined, the "asm" syntax is used.
 
@@ -613,7 +613,7 @@ C							*c.vim* *ft-c-syntax*
 
 A few things in C highlighting are optional.  To enable them assign any value
 to the respective variable.  Example: >
-	:let c_comment_strings=1
+	:let c_comment_strings = 1
 To disable them use ":unlet".  Example: >
 	:unlet c_comment_strings
 
@@ -626,6 +626,8 @@ c_no_tab_space_error	 ... but no spaces before a <Tab>
 c_no_bracket_error	don't highlight {}; inside [] as errors
 c_no_curly_error	don't highlight {}; inside [] and () as errors;
 				except { and } in first column
+c_curly_error		highlight a missing }; this forces syncing from the
+			start of the file, can be slow
 c_no_ansi		don't do standard ANSI types and constants
 c_ansi_typedefs		 ... but do standard ANSI types
 c_ansi_constants	 ... but do standard ANSI constants
@@ -674,7 +676,6 @@ highlighting for cErrInParen and cErrInBracket.
 If you want to use folding in your C files, you can add these lines in a file
 an the "after" directory in 'runtimepath'.  For Unix this would be
 ~/.vim/after/syntax/c.vim. >
-    syn region myFold start="{" end="}" transparent fold
     syn sync fromstart
     set foldmethod=syntax
 
@@ -1475,11 +1476,10 @@ which are used for the statement itself, special characters used in debug
 strings, strings, boolean constants and types (this, super) respectively.  I
 have opted to chose another background for those statements.
 
-In order to help you to write code that can be easily ported between
-Java and C++, all C++ keywords are marked as error in a Java program.
-However, if you use them regularly, you may want to define the following
-variable in your .vimrc file: >
-	:let java_allow_cpp_keywords=1
+In order to help you write code that can be easily ported between Java and
+C++, all C++ keywords can be marked as an error in a Java program.  To
+have this add this line in your .vimrc file: >
+	:let java_allow_cpp_keywords = 0
 
 Javadoc is a program that takes special comments out of Java program files and
 creates HTML pages.  The standard configuration will highlight this HTML code
@@ -2402,7 +2402,7 @@ vimrc file: >
 
 SH		*sh.vim* *ft-sh-syntax* *ft-bash-syntax* *ft-ksh-syntax*
 
-This covers the "normal" Unix (Borne) sh, bash and the Korn shell.
+This covers the "normal" Unix (Bourne) sh, bash and the Korn shell.
 
 Vim attempts to determine which shell type is in use by specifying that
 various filenames are of specific types: >
@@ -2425,23 +2425,30 @@ variables in your <.vimrc>:
 	let g:is_posix     = 1
 <   bash: >
 	let g:is_bash	   = 1
-<   sh: (default) Borne shell >
+<   sh: (default) Bourne shell >
 	let g:is_sh	   = 1
 
 If there's no "#! ..." line, and the user hasn't availed himself/herself of a
 default sh.vim syntax setting as just shown, then syntax/sh.vim will assume
-the Borne shell syntax.  No need to quote RFCs or market penetration
-statistics in error reports, please -- just select the default version of
-the sh your system uses in your <.vimrc>.
+the Bourne shell syntax.  No need to quote RFCs or market penetration
+statistics in error reports, please -- just select the default version of the
+sh your system uses in your <.vimrc>.
 
-If, in your <.vimrc>, you set >
-	let g:sh_fold_enabled= 1
+The syntax/sh.vim file provides several levels of syntax-based folding: >
+
+	let g:sh_fold_enabled= 0     (default, no syntax folding)
+	let g:sh_fold_enabled= 1     (enable function folding)
+	let g:sh_fold_enabled= 2     (enable heredoc folding)
+	let g:sh_fold_enabled= 4     (enable if/do/for folding)
 >
 then various syntax items (HereDocuments and function bodies) become
-syntax-foldable (see |:syn-fold|).
+syntax-foldable (see |:syn-fold|).  You also may add these together
+to get multiple types of folding: >
 
-If you notice highlighting errors while scrolling backwards, which are fixed
-when redrawing with CTRL-L, try setting the "sh_minlines" internal variable
+	let g:sh_fold_enabled= 3     (enables function and heredoc folding)
+
+If you notice highlighting errors while scrolling backwards which are fixed
+when one redraws with CTRL-L, try setting the "sh_minlines" internal variable
 to a larger number.  Example: >
 
 	let sh_minlines = 500
@@ -2504,7 +2511,7 @@ scripts.  You can change Vim's default from Oracle to any of the current SQL
 supported types.  You can also easily alter the SQL dialect being used on a
 buffer by buffer basis.
 
-For more detailed instructions see |sql.txt|.
+For more detailed instructions see |ft_sql.txt|.
 
 
 TCSH						*tcsh.vim* *ft-tcsh-syntax*
@@ -2531,7 +2538,7 @@ number is that redrawing can become slow.
 
 TEX						*tex.vim* *ft-tex-syntax*
 
-*tex-folding*
+								*tex-folding*
 Want Syntax Folding? ~
 
 As of version 28 of <syntax/tex.vim>, syntax-based folding of parts, chapters,
@@ -2541,7 +2548,15 @@ in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
 modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
 <
-*tex-runon*
+								*tex-nospell*
+Don't Want Spell Checking In Comments? ~
+
+Some folks like to include things like source code in comments and so would
+prefer that spell checking be disabled in comments in LaTeX files.  To do
+this, put the following in your <.vimrc>: >
+      let g:tex_comment_nospell= 1
+<
+								*tex-runon*
 Run-on Comments/Math? ~
 
 The <syntax/tex.vim> highlighting supports TeX, LaTeX, and some AmsTeX.  The
@@ -2554,7 +2569,7 @@ special "TeX comment" has been provided >
 which will forcibly terminate the highlighting of either a texZone or a
 texMathZone.
 
-*tex-slow*
+								*tex-slow*
 Slow Syntax Highlighting? ~
 
 If you have a slow computer, you may wish to reduce the values for >
@@ -2564,8 +2579,8 @@ If you have a slow computer, you may wish to reduce the values for >
 increase them.	This primarily affects synchronizing (i.e. just what group,
 if any, is the text at the top of the screen supposed to be in?).
 
-*tex-morecommands* *tex-package*
-Wish To Highlight More Commmands? ~
+					    *tex-morecommands* *tex-package*
+Want To Highlight More Commands? ~
 
 LaTeX is a programmable language, and so there are thousands of packages full
 of specialized LaTeX commands, syntax, and fonts.  If you're using such a
@@ -2574,7 +2589,7 @@ it.  However, clearly this is impractical.  So please consider using the
 techniques in |mysyntaxfile-add| to extend or modify the highlighting provided
 by syntax/tex.vim.
 
-*tex-error*
+								*tex-error*
 Excessive Error Highlighting? ~
 
 The <tex.vim> supports lexical error checking of various sorts.  Thus,
@@ -2584,7 +2599,7 @@ you may put in your <.vimrc> the following statement: >
 	let tex_no_error=1
 and all error checking by <syntax/tex.vim> will be suppressed.
 
-*tex-math*
+								*tex-math*
 Need a new Math Group? ~
 
 If you want to include a new math group in your LaTeX, the following
@@ -2599,7 +2614,7 @@ and then to the call to it in .vim/after/syntax/tex.vim.
 The "starform" variable, if true, implies that your new math group
 has a starred form (ie. eqnarray*).
 
-*tex-style*
+								*tex-style*
 Starting a New Style? ~
 
 One may use "\makeatletter" in *.tex files, thereby making the use of "@" in
@@ -2624,36 +2639,56 @@ set "tf_minlines" to the value you desire.  Example: >
 	:let tf_minlines = your choice
 
 
-VIM						*vim.vim* *ft-vim-syntax*
+VIM			*vim.vim*		*ft-vim-syntax*
+			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
+There is a tradeoff between more accurate syntax highlighting versus screen
+updating speed.  To improve accuracy, you may wish to increase the
+g:vimsyn_minlines variable.  The g:vimsyn_maxlines variable may be used to
+improve screen updating rates (see |:syn-sync| for more on this). >
 
-There is a tradeoff between more accurate syntax highlighting versus
-screen updating speed.  To improve accuracy, you may wish to increase
-the g:vim_minlines variable.  The g:vim_maxlines variable may be used
-to improve screen updating rates (see |:syn-sync| for more on this).
+	g:vimsyn_minlines : used to set synchronization minlines
+	g:vimsyn_maxlines : used to set synchronization maxlines
+<
+	(g:vim_minlines and g:vim_maxlines are deprecated variants of
+	these two options)
 
-	g:vim_minlines : used to set synchronization minlines
-	g:vim_maxlines : used to set synchronization maxlines
+						*g:vimsyn_embed*
+The g:vimsyn_embed option allows users to select what, if any, types of
+embedded script highlighting they wish to have. >
 
-The g:vimembedscript option allows for somewhat faster loading of syntax
-highlighting for vim scripts at the expense of supporting syntax highlighting
-for external scripting languages (currently perl, python, ruby, and tcl).
+   g:vimsyn_embed == 0   : don't embed any scripts
+   g:vimsyn_embed =~ 'm' : embed mzscheme (but only if vim supports it)
+   g:vimsyn_embed =~ 'p' : embed perl     (but only if vim supports it)
+   g:vimsyn_embed =~ 'P' : embed python   (but only if vim supports it)
+   g:vimsyn_embed =~ 'r' : embed ruby     (but only if vim supports it)
+   g:vimsyn_embed =~ 't' : embed tcl      (but only if vim supports it)
+<
+By default, g:vimsyn_embed is "mpPr"; ie. syntax/vim.vim will support
+highlighting mzscheme, perl, python, and ruby by default.  Vim's has("tcl")
+test appears to hang vim when tcl is not truly available.  Thus, by default,
+tcl is not supported for embedding (but those of you who like tcl embedded in
+their vim syntax highlighting can simply include it in the g:vimembedscript
+option).
+						*g:vimsyn_folding*
 
-	g:vimembedscript == 1 (default)  <vim.vim> will allow highlighting
-	g:vimembedscript doesn't exist	 of supported embedded scripting
-					 languages: perl, python, ruby and
-					 tcl.
+Some folding is now supported with syntax/vim.vim: >
 
-	g:vimembedscript == 0		 Syntax highlighting for embedded
-					 scripting languages will not be
-					 loaded.
+   g:vimsyn_folding == 0 or doesn't exist: no syntax-based folding
+   g:vimsyn_folding =~ 'a' : augroups
+   g:vimsyn_folding =~ 'f' : fold functions
+   g:vimsyn_folding =~ 'm' : fold mzscheme script
+   g:vimsyn_folding =~ 'p' : fold perl     script
+   g:vimsyn_folding =~ 'P' : fold python   script
+   g:vimsyn_folding =~ 'r' : fold ruby     script
+   g:vimsyn_folding =~ 't' : fold tcl      script
 
+							*g:vimsyn_noerror*
 Not all error highlighting that syntax/vim.vim does may be correct; VimL is a
 difficult language to highlight correctly.  A way to suppress error
-highlighting is to put: >
+highlighting is to put the following line in your |vimrc|: >
 
-	let g:vimsyntax_noerror = 1
-
-in your |vimrc|.
+	let g:vimsyn_noerror = 1
+<
 
 
 XF86CONFIG				*xf86conf.vim* *ft-xf86conf-syntax*
@@ -3158,7 +3193,7 @@ line break.
 
 fold							*:syn-fold*
 
-The "fold" argument makes the fold level increased by one for this item.
+The "fold" argument makes the fold level increase by one for this item.
 Example: >
    :syn region myFold start="{" end="}" transparent fold
    :syn sync fromstart
@@ -3320,7 +3355,7 @@ use another character that is not used in the pattern.	Examples: >
   :syntax region String   start=+"+    end=+"+	 skip=+\\"+
 
 See |pattern| for the explanation of what a pattern is.  Syntax patterns are
-always interpreted like the 'magic' options is set, no matter what the actual
+always interpreted like the 'magic' option is set, no matter what the actual
 value of 'magic' is.  And the patterns are interpreted like the 'l' flag is
 not included in 'cpoptions'.  This was done to make syntax files portable and
 independent of 'compatible' and 'magic' settings.
@@ -3379,6 +3414,8 @@ Notes:
 - The highlighted area will never be outside of the matched text.
 - A negative offset for an end pattern may not always work, because the end
   pattern may be detected when the highlighting should already have stopped.
+- Until Vim 7.2 the offsets were counted in bytes instead of characters.  This
+  didn't work well for multi-byte characters.
 - The start of a match cannot be in a line other than where the pattern
   matched.  This doesn't work: "a\nb"ms=e.  You can make the highlighting
   start in another line, this does work: "a\nb"hs=e.
@@ -3500,9 +3537,9 @@ single name.
 	remove={group-name}..
 		The specified groups are removed from the cluster.
 
-A cluster so defined may be referred to in a contains=.., nextgroup=.., add=..
-or remove=.. list with a "@" prefix.  You can also use this notation to
-implicitly declare a cluster before specifying its contents.
+A cluster so defined may be referred to in a contains=.., containedin=..,
+nextgroup=.., add=..  or remove=.. list with a "@" prefix.  You can also use
+this notation to implicitly declare a cluster before specifying its contents.
 
 Example: >
    :syntax match Thing "# [^#]\+ #" contains=@ThingMembers
@@ -4194,7 +4231,7 @@ WildMenu	current match in 'wildmenu' completion
 The 'statusline' syntax allows the use of 9 different highlights in the
 statusline and ruler (via 'rulerformat').  The names are User1 to User9.
 
-For the GUI you can use these groups to set the colors for the menu,
+For the GUI you can use the following groups to set the colors for the menu,
 scrollbars and tooltips.  They don't have defaults.  This doesn't work for the
 Win32 GUI.  Only three highlight arguments have any effect here: font, guibg,
 and guifg.

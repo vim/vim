@@ -458,4 +458,3 @@ let g:xmldata_xhtml10t = {
 \ 'param': ['/>', ''],
 \ }
 \ }
-" vim:ft=vim:ff=unix

@@ -393,13 +393,13 @@ msgid "called inputrestore() more often than inputsave()"
 msgstr "Функция inputrestore() вызывается чаще, чем функция inputsave()"
 
 msgid "E655: Too many symbolic links (cycle?)"
-msgstr "E656: Слишком много символических ссылок (цикл?)"
+msgstr "E655: Слишком много символических ссылок (цикл?)"
 
 msgid "E240: No connection to Vim server"
 msgstr "E240: Нет связи с сервером Vim"
 
 msgid "E277: Unable to read a server reply"
-msgstr "E227: Сервер не отвечает"
+msgstr "E277: Сервер не отвечает"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Не могу ответить клиенту"
@@ -1867,7 +1867,7 @@ msgstr ""
 "\n"
 
 msgid "E256: Hangul automata ERROR"
-msgstr "У256Ж ОШИБКА автоматики Хангыл"
+msgstr "E256: ОШИБКА автоматики Хангыл"
 
 msgid "Add a new database"
 msgstr "Добавить новую базу данных"
@@ -1902,7 +1902,7 @@ msgstr "E257: cstag: метка не найдена"
 
 #, c-format
 msgid "E563: stat(%s) error: %d"
-msgstr "ошибка stat(%s): %d"
+msgstr "E563: ошибка stat(%s): %d"
 
 msgid "E563: stat error"
 msgstr "E563: ошибка stat"
@@ -3054,7 +3054,7 @@ msgid "E316: ml_get: cannot find line %ld"
 msgstr "E316: ml_get: невозможно найти строку %ld"
 
 msgid "E317: pointer block id wrong 3"
-msgstr "неправильное значение указателя блока 3"
+msgstr "E317: неправильное значение указателя блока 3"
 
 msgid "stack_idx should be 0"
 msgstr "значение stack_idx должно быть равно 0"
@@ -3467,7 +3467,7 @@ msgid "E662: At start of changelist"
 msgstr "E662: В начале списка изменений"
 
 msgid "E663: At end of changelist"
-msgstr "E662: В конце списка изменений"
+msgstr "E663: В конце списка изменений"
 
 msgid "Type  :quit<Enter>  to exit Vim"
 msgstr "Введите :quit<Enter>  для выхода из Vim"
@@ -3787,7 +3787,7 @@ msgid "'columns' is not 80, cannot execute external commands"
 msgstr "Значение опции 'columns' не равно 80, внешние программы не выполняются"
 
 msgid "E237: Printer selection failed"
-msgstr "E327: Неудачное завершение выбора принтера"
+msgstr "E237: Неудачное завершение выбора принтера"
 
 #, c-format
 msgid "to %s on %s"
@@ -5027,7 +5027,7 @@ msgid "E19: Mark has invalid line number"
 msgstr "E19: Отметка указывает на неправильный номер строки"
 
 msgid "E20: Mark not set"
-msgstr "Отметка не определена"
+msgstr "E20: Отметка не определена"
 
 msgid "E21: Cannot make changes, 'modifiable' is off"
 msgstr "E21: Изменения невозможны, так как отключена опция 'modifiable'"

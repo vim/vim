@@ -381,4 +381,3 @@ let g:xmldata_html32 = {
 \ 'param': ['/>', ''],
 \ }
 \ }
-" vim:ft=vim:ff=unix

@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.1.  Last change: 2007 May 10
+*filetype.txt*  For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -122,7 +122,7 @@ The file types are also used for syntax highlighting.  If the ":syntax on"
 command is used, the file type detection is installed too.  There is no need
 to do ":filetype on" after ":syntax on".
 
-To disable one of the file types, add a line in the your filetype file, see
+To disable one of the file types, add a line in your filetype file, see
 |remove-filetype|.
 
 							*filetype-detect*
@@ -502,6 +502,13 @@ For further discussion of fortran_have_tabs and the method used for the
 detection of source format see |ft-fortran-syntax|.
 
 
+GIT COMMIT                                              *ft-gitcommit-plugin*
+
+One command, :DiffGitCached, is provided to show a diff of the current commit
+in the preview window.  It is equivalent to calling "git diff --cached" plus
+any arguments given to the command.
+
+
 MAIL							*ft-mail-plugin*
 
 Options:
@@ -546,6 +553,20 @@ CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
 
 
+PDF							*ft-pdf-plugin*
+
+Two maps, <C-]> and <C-T>, are provided to simulate a tag stack for navigating
+the PDF.  The following are treated as tags:
+
+- The byte offset after "startxref" to the xref table
+- The byte offset after the /Prev key in the trailer to an earlier xref table
+- A line of the form "0123456789 00000 n" in the xref table
+- An object reference like "1 0 R" anywhere in the PDF
+
+These maps can be disabled with >
+	:let g:no_pdf_maps = 1
+<
+
 RPM SPEC						*ft-spec-plugin*
 
 Since the text for this plugin is rather long it has been put in a separate
@@ -555,7 +576,7 @@ file: |pi_spec.txt|.
 SQL							*ft-sql*
 
 Since the text for this plugin is rather long it has been put in a separate
-file: |sql.txt|.
+file: |ft_sql.txt|.
 
 
 TEX							*ft-tex-plugin*

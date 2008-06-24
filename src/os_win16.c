@@ -23,7 +23,6 @@
 #include "vimio.h"
 #include "vim.h"
 
-#include <fcntl.h>
 #include <dos.h>
 #include <string.h>
 #include <sys/types.h>

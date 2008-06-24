@@ -14,10 +14,6 @@
 #include "vim.h"
 #include "version.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>		/* for chdir() */
-#endif
-
 static char_u *vim_version_dir __ARGS((char_u *vimdir));
 static char_u *remove_tail __ARGS((char_u *p, char_u *pend, char_u *name));
 static int copy_indent __ARGS((int size, char_u	*src));
@@ -8680,7 +8676,7 @@ dos_expandpath(
     for (p = buf + wildoff; p < s; ++p)
 	if (rem_backslash(p))
 	{
-	    mch_memmove(p, p + 1, STRLEN(p));
+	    STRMOVE(p, p + 1);
 	    --e;
 	    --s;
 	}
@@ -8981,7 +8977,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
     for (p = buf + wildoff; p < s; ++p)
 	if (rem_backslash(p))
 	{
-	    mch_memmove(p, p + 1, STRLEN(p));
+	    STRMOVE(p, p + 1);
 	    --e;
 	    --s;
 	}

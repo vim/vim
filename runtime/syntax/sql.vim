@@ -36,4 +36,4 @@ endif
 " Source the appropriate file
 exec 'runtime syntax/'.filename.'.vim'
 
-" vim:sw=4:ff=unix:
+" vim:sw=4:

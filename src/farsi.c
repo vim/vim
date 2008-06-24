@@ -1939,7 +1939,9 @@ lrFswap(cmdbuf, len)
 }
 
 /*
- * Reverse the characters in the search path and substitute section accordingly
+ * Reverse the characters in the search path and substitute section
+ * accordingly.
+ * TODO: handle different separator characters.  Use skip_regexp().
  */
     char_u *
 lrF_sub(ibuf)

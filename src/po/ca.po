@@ -1,17 +1,20 @@
 # Catalan messages for vim.
-# Copyright (C) 2003, 2004, Ernest Adrogué <eadrogue@gmx.net>.
+# Copyright (C) 2003-2008 Ernest Adrogué <eadrogue@gmx.net>.
 # This file is distributed under the GNU General Public License.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 6.2\n"
-"POT-Creation-Date: 2003-11-01 20:10+0100\n"
-"PO-Revision-Date: 2004-01-19 13:57+0100\n"
+"Project-Id-Version: vim 7.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-24 14:27+0200\n"
+"PO-Revision-Date: 2008-06-06 14:40+0100\n"
 "Last-Translator: Ernest Adrogué <eadrogue@gmx.net>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Catalan\n"
+"X-Poedit-Country: SPAIN\n"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: No s'ha pogut assignar memòria per cap buffer, sortint..."
@@ -22,7 +25,6 @@ msgstr "E83: No s'ha pogut assignar memòria pel buffer, usant-ne un altre..."
 # unload: Treu el buffer de la memòria però el deixa a la llista
 # delete: Treu el buffer de la memòria i de la llista de buffers
 # wipe out: Elimina el buffer amb totes les opcions, marques, etc.
-#
 msgid "E515: No buffers were unloaded"
 msgstr "E515: No s'ha alliberat cap buffer"
 
@@ -61,8 +63,8 @@ msgid "E85: There is no listed buffer"
 msgstr "E85: No hi ha cap buffer a la llista"
 
 #, c-format
-msgid "E86: Cannot go to buffer %ld"
-msgstr "E86: No s'ha pogut anar al buffer %ld"
+msgid "E86: Buffer %ld does not exist"
+msgstr "E86: El buffer %ld no existeix"
 
 msgid "E87: Cannot go beyond last buffer"
 msgstr "E87: No es pot anar més enllà de l'últim buffer"
@@ -86,11 +88,11 @@ msgstr "E92: No s'ha trobat el buffer %ld"
 
 #, c-format
 msgid "E93: More than one match for %s"
-msgstr "E93: Hi ha més d'una coincidència per %s"
+msgstr "E93: Hi ha més d'una coincidència per a %s"
 
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr "E94: No hi ha cap coincidència per %s"
+msgstr "E94: No hi ha cap coincidència per a %s"
 
 #, c-format
 msgid "line %ld"
@@ -109,7 +111,7 @@ msgid "[New file]"
 msgstr "[Fitxer nou]"
 
 msgid "[Read errors]"
-msgstr "[Lectura errònia]"
+msgstr "[Errors de lectura]"
 
 msgid "[readonly]"
 msgstr "[només lectura]"
@@ -126,15 +128,15 @@ msgstr "%ld línies --%d%%--"
 msgid "line %ld of %ld --%d%%-- col "
 msgstr "línia %ld de %ld --%d%%-- col "
 
-msgid "[No file]"
-msgstr "[Cap fitxer]"
+msgid "[No Name]"
+msgstr "[Sense nom]"
 
 #. must be a help buffer
 msgid "help"
 msgstr "ajuda"
 
-msgid "[help]"
-msgstr "[ajuda]"
+msgid "[Help]"
+msgstr "[Ajuda]"
 
 msgid "[Preview]"
 msgstr "[Vista prèvia]"
@@ -148,25 +150,30 @@ msgstr "Baix"
 msgid "Top"
 msgstr "Dalt"
 
+#, c-format
 msgid ""
 "\n"
 "# Buffer list:\n"
-msgstr "\n# Llista de buffers:\n"
+msgstr ""
+"\n"
+"# Llista de buffers:\n"
 
-msgid "[Error List]"
-msgstr "[Llista d'errors]"
+msgid "[Location List]"
+msgstr "[Llista de posicions]"
 
-msgid "[No File]"
-msgstr "[Cap fitxer]"
+msgid "[Quickfix List]"
+msgstr "[Llista Quickfix]"
 
 msgid ""
 "\n"
 "--- Signs ---"
-msgstr "\n--- Senyals ---"
+msgstr ""
+"\n"
+"--- Senyals ---"
 
 #, c-format
 msgid "Signs for %s:"
-msgstr "Senyals per %s:"
+msgstr "Senyals per a %s:"
 
 #, c-format
 msgid "    line=%ld  id=%d  name=%s"
@@ -189,6 +196,9 @@ msgstr "E98: No s'ha pogut llegir la sortida de diff"
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: El buffer actual no es troba en mode diff"
 
+msgid "E793: No other buffer in diff mode is modifiable"
+msgstr "E793: No hi ha cap altre buffer en mode diff que sigui modificable"
+
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: No hi ha cap altre buffer en mode diff"
 
@@ -203,6 +213,9 @@ msgstr "E102: No s'ha trobat el buffer \"%s\""
 msgid "E103: Buffer \"%s\" is not in diff mode"
 msgstr "E103: El buffer \"%s\" no es troba en mode diff"
 
+msgid "E787: Buffer changed unexpectedly"
+msgstr "E787: El buffer ha canviat inesperadament"
+
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: No es permeten caràcters d'escapada en un dígraf"
 
@@ -213,60 +226,72 @@ msgstr "E544: No s'ha trobat el fitxer de mapa de tecles"
 msgid "E105: Using :loadkeymap not in a sourced file"
 msgstr "E105: L'ordre :loadkeymap només es pot usar en fitxers"
 
+msgid "E791: Empty keymap entry"
+msgstr "E791: Entrada al mapa de tecles no conté res"
+
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Keyword completion (^N/^P)"
-msgstr " Completar paraules clau (^N/^P)"
+msgid " Keyword completion (^N^P)"
+msgstr " Compleció de paraules clau (^N^P)"
 
 #. ctrl_x_mode == 0, ^P/^N compl.
-msgid " ^X mode (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
-msgstr " Mode ^X (^E/^Y/^L/^]/^F/^I/^K/^D/^V/^N/^P)"
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " Mode ^X (^]^D^E^F^|^K^L^N^O^Ps^U^V^Y)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-#. Scroll has it's own msgs, in it's place there is the msg for local
-#. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
-msgid " Keyword Local completion (^N/^P)"
-msgstr " Completar paraules clau locals (^N/^P)"
+msgid " Whole line completion (^L^N^P)"
+msgstr " Compleció de línies senceres (^L^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Whole line completion (^L/^N/^P)"
-msgstr " Completar línies senceres (^L/^N/^P)"
+msgid " File name completion (^F^N^P)"
+msgstr " Compleció de noms de fitxer (^F^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " File name completion (^F/^N/^P)"
-msgstr " Completar noms de fitxer (^F/^N/^P)"
+msgid " Tag completion (^]^N^P)"
+msgstr " Compleció d'etiquetes (^]^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Tag completion (^]/^N/^P)"
-msgstr " Completar etiquetes (^]/^N/^P)"
+msgid " Path pattern completion (^N^P)"
+msgstr " Compleció d'ubicacions (^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Path pattern completion (^N/^P)"
-msgstr " Completar ubicacions (^N/^P)"
+msgid " Definition completion (^D^N^P)"
+msgstr " Compleció de definicions (^D^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Definition completion (^D/^N/^P)"
-msgstr " Completar definicions (^D/^N/^P)"
+msgid " Dictionary completion (^K^N^P)"
+msgstr " Compleció de paraules de diccionari (^K^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Dictionary completion (^K/^N/^P)"
-msgstr " Completar paraules de diccionari (^K/^N/^P)"
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " Compleció de sinònims (^T^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Thesaurus completion (^T/^N/^P)"
-msgstr " Completar sinònims (^T/^N/^P)"
+msgid " Command-line completion (^V^N^P)"
+msgstr " Compleció d'ordres (^V^N^P)"
 
 # buscar un nom, en lloc del verb «completar».  eac
-msgid " Command-line completion (^V/^N/^P)"
-msgstr " Completar ordres (^V/^N/^P)"
+msgid " User defined completion (^U^N^P)"
+msgstr " Compleció definida per l'usuari (^U^N^P)"
+
+# buscar un nom, en lloc del verb «completar».  eac
+msgid " Omni completion (^O^N^P)"
+msgstr " Omni-compleció (^O^N^P)"
+
+msgid " Spelling suggestion (s^N^P)"
+msgstr "Suggeriment ortogràfic (s^N^P)"
+
+# buscar un nom, en lloc del verb «completar».  eac
+msgid " Keyword Local completion (^N^P)"
+msgstr " Compleció de paraules clau locals (^N^P)"
 
 msgid "Hit end of paragraph"
 msgstr "S'ha arribat al final del paràgraf"
 
-msgid "'thesaurus' option is empty"
-msgstr "L'opció 'thesaurus' no està definida"
-
 msgid "'dictionary' option is empty"
 msgstr "L'opció 'dictionary' no està definida"
+
+msgid "'thesaurus' option is empty"
+msgstr "L'opció 'thesaurus' no està definida"
 
 #, c-format
 msgid "Scanning dictionary: %s"
@@ -282,8 +307,9 @@ msgstr " (substituir) Desplaçar (^E/^Y)"
 msgid "Scanning: %s"
 msgstr "Examinant: %s"
 
+#, c-format
 msgid "Scanning tags."
-msgstr "S'estan examinant les etiquetes."
+msgstr "Examinant les etiquetes."
 
 msgid " Adding"
 msgstr " Afegint"
@@ -302,7 +328,7 @@ msgid "Word from other line"
 msgstr "Paraula d'una altra línia"
 
 msgid "The only match"
-msgstr "Única coincidència"
+msgstr "L'única coincidència"
 
 #, c-format
 msgid "match %d of %d"
@@ -312,28 +338,138 @@ msgstr "coincidència %d de %d"
 msgid "match %d"
 msgstr "coincidència %d"
 
-#. Skip further arguments but do continue to
-#. * search for a trailing command.
+msgid "E18: Unexpected characters in :let"
+msgstr "E18: Caràcters inesperats :let"
+
 #, c-format
-msgid "E106: Unknown variable: \"%s\""
-msgstr "E106: La variable és desconeguda: \"%s\""
+msgid "E684: list index out of range: %ld"
+msgstr "E684: índex de llista fora d'abast: %ld"
+
+#, c-format
+msgid "E121: Undefined variable: %s"
+msgstr "E121: Variable no definida: %s"
+
+msgid "E111: Missing ']'"
+msgstr "E111: Falta un ']'"
+
+#, c-format
+msgid "E686: Argument of %s must be a List"
+msgstr "E686: L'argument de %s ha de ser una llista"
+
+#, c-format
+msgid "E712: Argument of %s must be a List or Dictionary"
+msgstr "E712: L'argument de %s ha de ser una llista o un diccionari"
+
+msgid "E713: Cannot use empty key for Dictionary"
+msgstr "E713: Els diccionaris no admeten claus buides"
+
+msgid "E714: List required"
+msgstr "E714: Es requereix una llista"
+
+msgid "E715: Dictionary required"
+msgstr "E715: Es requereix un diccionari"
+
+#, c-format
+msgid "E118: Too many arguments for function: %s"
+msgstr "E118: Massa arguments per a la funció: %s"
+
+#, c-format
+msgid "E716: Key not present in Dictionary: %s"
+msgstr "E716: La clau no existeix al diccionari: %s"
+
+#, c-format
+msgid "E122: Function %s already exists, add ! to replace it"
+msgstr "E122: La funció %s ja existeix, afegiu ! per substituir-la"
+
+msgid "E717: Dictionary entry already exists"
+msgstr "E717: Ja existeix l'entrada al diccionari"
+
+msgid "E718: Funcref required"
+msgstr "E718: Es requereix una referència de funció"
+
+msgid "E719: Cannot use [:] with a Dictionary"
+msgstr "E719: No es pot usar [:] amb un diccionari"
+
+#, c-format
+msgid "E734: Wrong variable type for %s="
+msgstr "E734: Tipus de variable incorrecte per a %s="
+
+#, c-format
+msgid "E130: Unknown function: %s"
+msgstr "E130: Funció desconeguda: %s"
+
+#, c-format
+msgid "E461: Illegal variable name: %s"
+msgstr "E461: El nom de la variable és il·legal: %s"
+
+msgid "E687: Less targets than List items"
+msgstr "E687: Hi ha menys valors objectiu que elements a la llista"
+
+msgid "E688: More targets than List items"
+msgstr "E688: Hi ha més valors objectiu que elements a la llista"
+
+msgid "Double ; in list of variables"
+msgstr "Doble ; a la llista de variables"
+
+#, c-format
+msgid "E738: Can't list variables for %s"
+msgstr "E738: No es poden llistar les variables per a %s"
+
+msgid "E689: Can only index a List or Dictionary"
+msgstr "E689: Només admeten índexs les llistes i els diccionaris"
+
+msgid "E708: [:] must come last"
+msgstr "E708: [:] ha d'anar al final"
+
+msgid "E709: [:] requires a List value"
+msgstr "E709: [:] requereix un valor tipus llista"
+
+msgid "E710: List value has more items than target"
+msgstr "E710: La llista té més elements que valors objectiu"
+
+msgid "E711: List value has not enough items"
+msgstr "E711: La llista no té prou elements"
+
+msgid "E690: Missing \"in\" after :for"
+msgstr "E690: Falta un \"in\" després de :for"
 
 #, c-format
 msgid "E107: Missing braces: %s"
-msgstr "E107: Falten parèntesis: %s"
+msgstr "E107: Falten claus '{}': %s"
 
 #, c-format
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: No existeix tal variable: \"%s\""
 
+msgid "E743: variable nested too deep for (un)lock"
+msgstr "E743: variable està massa imbricada per a (des)bloquejar-la"
+
 msgid "E109: Missing ':' after '?'"
 msgstr "E109: Falta un ':' després de '?'"
+
+msgid "E691: Can only compare List with List"
+msgstr "E691: Una llista només es pot comparar amb una llista"
+
+msgid "E692: Invalid operation for Lists"
+msgstr "E692: Operació no vàlida en llistes"
+
+msgid "E735: Can only compare Dictionary with Dictionary"
+msgstr "E735: Un diccionari només es pot comparar amb un diccionari"
+
+msgid "E736: Invalid operation for Dictionary"
+msgstr "E736: Operació no vàlida en diccionaris"
+
+msgid "E693: Can only compare Funcref with Funcref"
+msgstr "E693: Una referència de funció només es pot comparar amb una referència de funció"
+
+msgid "E694: Invalid operation for Funcrefs"
+msgstr "E694: Operació no vàlida per a referències de funcions"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Falta un ')'"
 
-msgid "E111: Missing ']'"
-msgstr "E111: Falta un ']'"
+msgid "E695: Cannot index a Funcref"
+msgstr "E695: No es pot indexar una referència de funció"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -341,7 +477,7 @@ msgstr "E112: Falta el nom de l'opció: %s"
 
 #, c-format
 msgid "E113: Unknown option: %s"
-msgstr "E113: L'opció és desconeguda: %s"
+msgstr "E113: Opció desconeguda: %s"
 
 #, c-format
 msgid "E114: Missing quote: %s"
@@ -352,25 +488,53 @@ msgid "E115: Missing quote: %s"
 msgstr "E115: Falten cometes: %s"
 
 #, c-format
-msgid "E116: Invalid arguments for function %s"
-msgstr "E116: Arguments no vàlids per la funció %s"
+msgid "E696: Missing comma in List: %s"
+msgstr "E696: Falta una coma a la llista: %s"
+
+#, c-format
+msgid "E697: Missing end of List ']': %s"
+msgstr "E697: Falta un final de llista ']': %s"
+
+#, c-format
+msgid "E720: Missing colon in Dictionary: %s"
+msgstr "E720: Falta un caràcter de dos punts al diccionari: %s"
+
+#, c-format
+msgid "E721: Duplicate key in Dictionary: \"%s\""
+msgstr "E721: Clau duplicada al diccionari: \"%s\""
+
+#, c-format
+msgid "E722: Missing comma in Dictionary: %s"
+msgstr "E722: Falta una coma al diccionari: %s"
+
+#, c-format
+msgid "E723: Missing end of Dictionary '}': %s"
+msgstr "E723: Falta un final de diccionari '}': %s"
+
+msgid "E724: variable nested too deep for displaying"
+msgstr "E724: variable imbricada massa profundament per a mostrar-la"
 
 #, c-format
 msgid "E117: Unknown function: %s"
-msgstr "E117: La funció és desconeguda: %s"
-
-#, c-format
-msgid "E118: Too many arguments for function: %s"
-msgstr "E118: Massa arguments per la funció: %s"
+msgstr "E117: Funció desconeguda: %s"
 
 #, c-format
 msgid "E119: Not enough arguments for function: %s"
-msgstr "E119: Falten arguments per la funció: %s"
+msgstr "E119: Falten arguments per a la funció: %s"
 
-# traducció "lliure".  eac
 #, c-format
 msgid "E120: Using <SID> not in a script context: %s"
-msgstr "E120: Heu usat <SID> en un context no vàlid: %s"
+msgstr "E120: Ús de <SID> en un context no vàlid: %s"
+
+#, c-format
+msgid "E725: Calling dict function without Dictionary: %s"
+msgstr "E725: Crida a una funció dict sense diccionari: %s"
+
+msgid "E699: Too many arguments"
+msgstr "E699: Sobren arguments"
+
+msgid "E785: complete() can only be used in Insert mode"
+msgstr "E785: complete() només es pot utilitzar en el mode d'inserció"
 
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
@@ -381,8 +545,16 @@ msgid "&Ok"
 msgstr "&D'acord"
 
 #, c-format
+msgid "E737: Key already exists: %s"
+msgstr "E737: La clau ja existeix: %s"
+
+#, c-format
 msgid "+-%s%3ld lines: "
 msgstr "+-%s%3ld línies: "
+
+#, c-format
+msgid "E700: Unknown function: %s"
+msgstr "E700: Funció desconeguda: %s"
 
 msgid ""
 "&OK\n"
@@ -394,39 +566,95 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "s'ha cridat inputrestore() més sovint que inputsave()"
 
+msgid "E786: Range not allowed"
+msgstr "E786: Interval no permès"
+
+msgid "E701: Invalid type for len()"
+msgstr "E701: El tipus per a len() no és vàlid"
+
+msgid "E726: Stride is zero"
+msgstr "E726: L'increment entre passos és zero"
+
+msgid "E727: Start past end"
+msgstr "E727: Inici més enllà del final"
+
+msgid "<empty>"
+msgstr "<buit>"
+
 msgid "E240: No connection to Vim server"
 msgstr "E240: No hi ha connexió amb el servidor Vim"
-
-msgid "E277: Unable to read a server reply"
-msgstr "E277: No s'ha pogut llegir la resposta del servidor"
-
-# «res» ?  eac
-msgid "E258: Unable to send to client"
-msgstr "E258: No s'ha pogut enviar res al client"
 
 # «res» ?  eac
 #, c-format
 msgid "E241: Unable to send to %s"
-msgstr "E241: No s'ha pogut enviar res a %s"
+msgstr "E241: No s'ha pogut enviar a %s"
+
+msgid "E277: Unable to read a server reply"
+msgstr "E277: No s'ha pogut llegir la resposta del servidor"
+
+msgid "E655: Too many symbolic links (cycle?)"
+msgstr "E655: Massa enllaços simbòlics (circulars?)"
+
+# «res» ?  eac
+msgid "E258: Unable to send to client"
+msgstr "E258: No s'ha pogut enviar al client"
+
+msgid "E702: Sort compare function failed"
+msgstr "E702: La funció ordena-compara ha fallat"
 
 msgid "(Invalid)"
 msgstr "(No vàlid)"
 
-#, c-format
-msgid "E121: Undefined variable: %s"
-msgstr "E121: La variable no està definida: %s"
+msgid "E677: Error writing temp file"
+msgstr "E677: Error en escriure el fitxer temporal"
+
+msgid "E703: Using a Funcref as a number"
+msgstr "E703: Ús d'una referència de funció com a número"
+
+msgid "E745: Using a List as a number"
+msgstr "E745: Ús d'una llista com a número"
+
+msgid "E728: Using a Dictionary as a number"
+msgstr "E728: Ús d'un diccionari com a número"
+
+msgid "E729: using Funcref as a String"
+msgstr "E729: ús d'una referència de funció com a cadena"
+
+msgid "E730: using List as a String"
+msgstr "E730: ús d'una llista com a cadena"
+
+msgid "E731: using Dictionary as a String"
+msgstr "E731: ús d'un diccionari com a cadena"
 
 #, c-format
-msgid "E461: Illegal variable name: %s"
-msgstr "E461: El nom de la variable és il·legal: %s"
+msgid "E704: Funcref variable name must start with a capital: %s"
+msgstr "E704: El nom d'una variable Funcref ha de començar en majúscula: %s"
 
 #, c-format
-msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E122: La funció %s ja existeix, afegiu ! per substituir-la"
+msgid "E705: Variable name conflicts with existing function: %s"
+msgstr "E705: El nom de la variable entra en conflicte amb una funció existent: %s"
 
 #, c-format
-msgid "E123: Undefined function: %s"
-msgstr "E123: La funció no està definida: %s"
+msgid "E706: Variable type mismatch for: %s"
+msgstr "E706: Tipus de variables no coincidents: %s"
+
+#, c-format
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: No s'ha pogut eliminar la variable %s"
+
+#, c-format
+msgid "E741: Value is locked: %s"
+msgstr "E741: El valor està bloquejat: %s"
+
+msgid "Unknown"
+msgstr "Desconegut"
+
+#, c-format
+msgid "E742: Cannot change value of %s"
+msgstr "E742: No s'ha pogut canviar el valor de %s"
+
+msgid "E698: variable nested too deep for making a copy"
+msgstr "E698: la variable està massa imbricada per fer-ne una còpia"
 
 #, c-format
 msgid "E124: Missing '(': %s"
@@ -434,37 +662,32 @@ msgstr "E124: Falta un '(': %s"
 
 #, c-format
 msgid "E125: Illegal argument: %s"
-msgstr "E125: L'argument és il·legal: %s"
+msgstr "E125: Argument il·legal: %s"
 
 msgid "E126: Missing :endfunction"
-msgstr "E126: Falta una declaració :endfunction"
+msgstr "E126: Falta un :endfunction"
 
 #, c-format
-msgid "E127: Cannot redefine function %s: It is in use"
-msgstr "E127: No s'ha pogut redefinir la funció %s: s'està utilitzant"
+msgid "E746: Function name does not match script file name: %s"
+msgstr "E746: El nom de la funció no coincideix amb el nom de l'script: %s"
 
 msgid "E129: Function name required"
-msgstr "E129: Es requereix un nom de funció"
+msgstr "E129: Es necessita un nom de funció"
 
 #, c-format
-msgid "E128: Function name must start with a capital: %s"
-msgstr "E128: El nom de la funció ha de començar en majúscula: %s"
-
-#, c-format
-msgid "E130: Undefined function: %s"
-msgstr "E130: La funció no està definida: %s"
+msgid "E128: Function name must start with a capital or contain a colon: %s"
+msgstr "E128: El nom de la funció ha de començar en majúscula o contenir dos punts: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
-msgstr "E131: No s'ha pogut eliminar la funció %s: s'està utilitzant"
+msgstr "E131: No s'ha pogut eliminar la funció %s: S'està utilitzant"
 
 msgid "E132: Function call depth is higher than 'maxfuncdepth'"
-msgstr "E132: La profunditat de crides a funcions és superior a 'maxfuncdeptg'"
+msgstr "E132: Profunditat de crides a funcions superior a 'maxfuncdeptg'"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "calling %s"
-msgstr "cridant a %s"
+msgstr "cridant %s"
 
 #, c-format
 msgid "%s aborted"
@@ -475,24 +698,33 @@ msgid "%s returning #%ld"
 msgstr "%s ha retornat #%ld"
 
 #, c-format
-msgid "%s returning \"%s\""
+msgid "%s returning %s"
 msgstr "%s ha retornat \"%s\""
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "continuing in %s"
 msgstr "continuant a %s"
 
 msgid "E133: :return not inside a function"
-msgstr "E133: L'ordre :return no es troba dins d'una funció"
+msgstr "E133: :return fora d'una funció"
 
+#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
-msgstr "\n# variables globals:\n"
+msgstr ""
+"\n"
+"# variables globals:\n"
+
+msgid ""
+"\n"
+"\tLast set from "
+msgstr ""
+"\n"
+"\tDefinit per últim cop a "
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Mode de depuració. Escriviu \"cont\" per continuar."
+msgstr "Entrant en mode de depuració. Escriviu \"cont\" per a continuar."
 
 #, c-format
 msgid "line %ld: %s"
@@ -508,7 +740,7 @@ msgstr "Punt de ruptura a \"%s%s\" línia %ld"
 
 #, c-format
 msgid "E161: Breakpoint not found: %s"
-msgstr "E161: No s'ha trobat el punt de ruptura: %s"
+msgstr "E161: Punt de ruptura no trobat: %s"
 
 msgid "No breakpoints defined"
 msgstr "No s'han definit punts de ruptura"
@@ -517,13 +749,16 @@ msgstr "No s'han definit punts de ruptura"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  línia %ld"
 
+msgid "E750: First use :profile start <fname>"
+msgstr "E750: Primer useu :profile start <nomfitxer>"
+
 # Títol d'un diàleg [:browse w].  eac
 msgid "Save As"
 msgstr "Anomena i desa"
 
 #, c-format
-msgid "Save changes to \"%.*s\"?"
-msgstr "Voleu desar els canvis a \"%.*s\"?"
+msgid "Save changes to \"%s\"?"
+msgstr "Voleu desar els canvis a \"%s\"?"
 
 msgid "Untitled"
 msgstr "Sense-nom"
@@ -545,6 +780,10 @@ msgid "E165: Cannot go beyond last file"
 msgstr "E165: No es pot anar més enllà de l'últim fitxer"
 
 #, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: el compilador no està suportat: %s"
+
+#, c-format
 msgid "Searching for \"%s\" in \"%s\""
 msgstr "Cercant \"%s\" a \"%s\""
 
@@ -559,31 +798,46 @@ msgstr "no s'ha trobat en el 'runtimepath': \"%s\""
 
 # Títol d'un diàleg [:browse source].  eac
 msgid "Source Vim script"
-msgstr "Executa un script Vim"
+msgstr "Interpreta un script Vim"
 
 #, c-format
 msgid "Cannot source a directory: \"%s\""
-msgstr "No es pot executar un directori: \"%s\""
+msgstr "No es pot interpretar un directori: \"%s\""
 
 #, c-format
 msgid "could not source \"%s\""
-msgstr "no s'ha pogut executar \"%s\""
+msgstr "no s'ha pogut interpretar \"%s\""
 
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "línia %ld: no s'ha pogut executar \"%s\""
+msgstr "línia %ld: no s'ha pogut interpretar \"%s\""
 
 #, c-format
 msgid "sourcing \"%s\""
-msgstr "executant \"%s\""
+msgstr "interpretant \"%s\""
 
 #, c-format
 msgid "line %ld: sourcing \"%s\""
-msgstr "línia %ld: executant \"%s\""
+msgstr "línia %ld: interpretant \"%s\""
 
 #, c-format
 msgid "finished sourcing %s"
-msgstr "ha finalitzat l'execució de %s"
+msgstr "ha finalitzat l'interpretació de %s"
+
+msgid "modeline"
+msgstr "modeline"
+
+msgid "--cmd argument"
+msgstr "--cmd argument"
+
+msgid "-c argument"
+msgstr "-c argument"
+
+msgid "environment variable"
+msgstr "variable d'entorn"
+
+msgid "error handler"
+msgstr "gestor d'errors"
 
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: Atenció: El separador de línia no és vàlid, potser falta un ^M"
@@ -595,78 +849,6 @@ msgstr "E167: L'ordre :scriptencoding només es pot utilitzar en scripts"
 # «sourced file».  eac
 msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: L'ordre :finish només es pot utilitzar en scripts"
-
-#, c-format
-msgid "Page %d"
-msgstr "Pàgina %d"
-
-msgid "No text to be printed"
-msgstr "No hi ha text per imprimir"
-
-#, c-format
-msgid "Printing page %d (%d%%)"
-msgstr "S'està imprimint la pàgina %d (%d%%)"
-
-#, c-format
-msgid " Copy %d of %d"
-msgstr " Còpia %d de %d"
-
-#, c-format
-msgid "Printed: %s"
-msgstr "S'ha imprès: %s"
-
-msgid "Printing aborted"
-msgstr "S'ha avortat l'impressió"
-
-msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Error en escriure el fitxer PostScript"
-
-#, c-format
-msgid "E624: Can't open file \"%s\""
-msgstr "E624: No s'ha pogut obrir el fitxer \"%s\""
-
-#, c-format
-msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: No s'ha pogut llegir el fitxer de recursos PostScript \"%s\""
-
-#, c-format
-msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: El fitxer \"%s\" no és un fitxer de recursos PostScript"
-
-#, c-format
-msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: El fitxer de recursos PostScript \"%s\" no està suportat"
-
-#, c-format
-msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: La versió del fitxer de recursos \"%s\" no és vàlida"
-
-msgid "E324: Can't open PostScript output file"
-msgstr "E324: No s'ha pogut obrir el fitxer PostScript generat"
-
-#, c-format
-msgid "E456: Can't open file \"%s\""
-msgstr "E456: No s'ha pogut obrir el fitxer \"%s\""
-
-msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: No s'ha trobat el fitxer de recursos PostScript \"prolog.ps\""
-
-#, c-format
-msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: No s'ha trobat el fitxer de recursos PostScript \"%s.ps\""
-
-#, c-format
-msgid "E620: Unable to convert from multi-byte to \"%s\" encoding"
-msgstr "E620: No s'ha pogut convertir la codificació multi-octet a \"%s\""
-
-msgid "Sending to printer..."
-msgstr "S'està enviant a la impressora..."
-
-msgid "E365: Failed to print PostScript file"
-msgstr "E365: Error en imprimir el fitxer PostScript"
-
-msgid "Print job sent."
-msgstr "S'ha enviat la tasca d'impressió."
 
 # les cadenes substituïdes no es poden traduïr.  eac
 #, c-format
@@ -681,6 +863,16 @@ msgstr "E197: No s'ha pogut canviar l'idioma a \"%s\""
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
 msgstr "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
+
+# E.G: :ascii
+#, c-format
+msgid "> %d, Hex %04x, Octal %o"
+msgstr "> %d, Hex %04x, Octal %o"
+
+# E.G: :ascii
+#, c-format
+msgid "> %d, Hex %08x, Octal %o"
+msgstr "> %d, Hex %08x, Octal %o"
 
 msgid "E134: Move lines into themselves"
 msgstr "E134: No es poden moure línies cap a elles mateixes"
@@ -707,7 +899,7 @@ msgid "%sviminfo: %s in line: "
 msgstr "%sviminfo: %s a la línia: "
 
 msgid "E136: viminfo: Too many errors, skipping rest of file"
-msgstr "E136: viminfo: Hi han massa errors, s'omet la resta del fitxer"
+msgstr "E136: viminfo: Hi ha massa errors, s'omet la resta del fitxer"
 
 # les tres següents van juntes.  eac
 #, c-format
@@ -723,9 +915,10 @@ msgstr " per marques"
 msgid " FAILED"
 msgstr " ERROR"
 
+#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
-msgstr "E137: El fitxer viminfo no es pot escriure: %s"
+msgstr "E137: El fitxer viminfo no és modificable: %s"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
@@ -740,21 +933,20 @@ msgstr "Escrivint el fitxer viminfo \"%s\""
 msgid "# This viminfo file was generated by Vim %s.\n"
 msgstr "# Aquest fitxer viminfo ha estat generat pel Vim %s.\n"
 
+#, c-format
 msgid ""
 "# You may edit it if you're careful!\n"
 "\n"
-msgstr "# El podeu editar, si aneu amb compte!\n\n"
+msgstr ""
+"# El podeu editar si aneu amb compte!\n"
+"\n"
 
+#, c-format
 msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Valor de 'encoding' en el moment d'escriure aquest fitxer\n"
 
 msgid "Illegal starting char"
 msgstr "Caràcter inicial il·legal"
-
-#. Overwriting a file that is loaded in another buffer is not a
-#. * good idea.
-msgid "E139: File is loaded in another buffer"
-msgstr "E139: El fitxer està carregat en un altre buffer"
 
 msgid "Write partial file?"
 msgstr "Voleu escriure un fitxer parcial?"
@@ -763,23 +955,31 @@ msgid "E140: Use ! to write partial buffer"
 msgstr "E140: Useu ! per desar una part del buffer"
 
 #, c-format
-msgid "Overwrite existing file \"%.*s\"?"
-msgstr "Voleu sobrescriure el fitxer existent \"%.*s\"?"
+msgid "Overwrite existing file \"%s\"?"
+msgstr "Voleu sobrescriure el fitxer existent \"%s\"?"
+
+#, c-format
+msgid "Swap file \"%s\" exists, overwrite anyway?"
+msgstr "El fitxer d'intercanvi \"%s\" existeix, sobreescriure igualment?"
+
+#, c-format
+msgid "E768: Swap file exists: %s (:silent! overrides)"
+msgstr "E768: El fitxer d'intercanvi existeix: %s (:silent! per a confirmar)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
-msgstr "E141: No hi ha nom de fitxer pel buffer %ld"
+msgstr "E141: No hi ha nom de fitxer per al buffer %ld"
 
 msgid "E142: File not written: Writing is disabled by 'write' option"
 msgstr "E142: No s'ha escrit el fitxer: L'opció 'write' ho impedeix"
 
 #, c-format
 msgid ""
-"'readonly' option is set for \"%.*s\".\n"
+"'readonly' option is set for \"%s\".\n"
 "Do you wish to write anyway?"
 msgstr ""
-"L'opció 'readonly' està activa per \"%.*s\",\n"
-"Voleu escriure'l de totes maneres?"
+"L'opció 'readonly' està definida per a \"%s\".\n"
+"Voleu escriure de totes maneres?"
 
 # és un títol de diàleg [:browse edit].  eac
 msgid "Edit File"
@@ -790,10 +990,10 @@ msgid "E143: Autocommands unexpectedly deleted new buffer %s"
 msgstr "E143: Una auto-ordre ha eliminat el buffer nou %s inesperadament"
 
 msgid "E144: non-numeric argument to :z"
-msgstr "E144: Argument no numèric per :z"
+msgstr "E144: Argument no numèric per a :z"
 
 msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Les ordres shell no estan permeses en rvim"
+msgstr "E145: Les ordres shell no estan permeses en l'rvim"
 
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Les expressions regulars no poden estar delimitades per lletres"
@@ -806,8 +1006,15 @@ msgstr "substituir amb %s (y/n/a/q/l/^E/^Y)?"
 msgid "(Interrupted) "
 msgstr "(Interromput) "
 
+msgid "1 match"
+msgstr "1 coincidència "
+
 msgid "1 substitution"
 msgstr "1 substitució"
+
+#, c-format
+msgid "%ld matches"
+msgstr "%ld coincidències"
 
 #, c-format
 msgid "%ld substitutions"
@@ -830,6 +1037,7 @@ msgstr "E148: Les ordres globals requereixen una expressió regular"
 msgid "Pattern found in every line: %s"
 msgstr "S'ha trobat el patró a cada línia: %s"
 
+#, c-format
 msgid ""
 "\n"
 "# Last Substitute String:\n"
@@ -838,6 +1046,13 @@ msgstr ""
 "\n"
 "# Última cadena substituïda:\n"
 "$"
+
+msgid "E478: Don't panic!"
+msgstr "E478: Calma!"
+
+#, c-format
+msgid "E661: Sorry, no '%s' help for %s"
+msgstr "E661: No hi ha ajuda en '%s' per a %s"
 
 #, c-format
 msgid "E149: Sorry, no help for %s"
@@ -860,8 +1075,12 @@ msgid "E153: Unable to open %s for reading"
 msgstr "E153: No s'ha pogut obrir %s amb permís de lectura"
 
 #, c-format
-msgid "E154: Duplicate tag \"%s\" in file %s"
-msgstr "E154: L'etiqueta \"%s\" està duplicada en el fitxer %s"
+msgid "E670: Mix of help file encodings within a language: %s"
+msgstr "E670: Conjunts de caràcters diferents dins del mateix idioma: %s"
+
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s/%s"
+msgstr "E154: L'etiqueta \"%s\" està duplicada en el fitxer %s/%s"
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -871,7 +1090,7 @@ msgid "E156: Missing sign name"
 msgstr "E156: Falta el nom del senyal"
 
 msgid "E612: Too many signs defined"
-msgstr "E612: Hi han massa senyals definits"
+msgstr "E612: S'han definit massa senyals"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
@@ -892,13 +1111,18 @@ msgstr "E158: El nom del buffer no és vàlid: %s"
 msgid "E157: Invalid sign ID: %ld"
 msgstr "E157: L'ID del senyal no és vàlida: %ld"
 
+msgid " (NOT FOUND)"
+msgstr " (NO TROBAT)"
+
+msgid " (not supported)"
+msgstr " (no suportat)"
+
 msgid "[Deleted]"
 msgstr "[Eliminat]"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Mode Ex. Escriviu \"visual\" per tornar al mode Normal."
 
-#. must be at EOF
 msgid "E501: At end-of-file"
 msgstr "E501: Final del fitxer"
 
@@ -910,7 +1134,7 @@ msgid "E605: Exception not caught: %s"
 msgstr "E605: No s'ha interceptat l'excepció: %s"
 
 msgid "End of sourced file"
-msgstr "Final del fitxer executat"
+msgstr "Final del fitxer interpretat"
 
 msgid "End of function"
 msgstr "Final de la funció"
@@ -920,9 +1144,6 @@ msgstr "E464: Ús ambigu d'una ordre definida per l'usuari"
 
 msgid "E492: Not an editor command"
 msgstr "E492: No és una ordre d'edició"
-
-msgid "E478: Don't panic!"
-msgstr "E478: Calma!"
 
 msgid "E493: Backwards range given"
 msgstr "E493: Heu especificat un interval decreixent"
@@ -960,7 +1181,9 @@ msgstr "E174: L'ordre ja existeix: afegiu ! per substituir-la"
 msgid ""
 "\n"
 "    Name        Args Range Complete  Definition"
-msgstr "\n    Nom         Args Abast Completar Definició"
+msgstr ""
+"\n"
+"    Nom         Args Abast Completar Definició"
 
 msgid "No user-defined commands found"
 msgstr "No s'han trobat ordres definides per l'usuari"
@@ -978,21 +1201,8 @@ msgid "E178: Invalid default value for count"
 msgstr "E178: El valor per omissió del comptador no és vàlid"
 
 # «completar»  eac
-msgid "E179: argument required for complete"
-msgstr "E179: La funció completar requereix un argument"
-
-# «completar»  eac
-#, c-format
-msgid "E180: Invalid complete value: %s"
-msgstr "E180: El valor per la funció completar no és vàlid: %s"
-
-# «completar»  eac
-msgid "E467: Custom completion requires a function argument"
-msgstr "E467: Els esquemes de completar requereixen una funció com a argument"
-
-# «completar»  eac
-msgid "E468: Completion argument only allowed for custom completion"
-msgstr "E468: L'argument de completar només està permès en esquemes personalitzats"
+msgid "E179: argument required for -complete"
+msgstr "E179: -complete requereix un argument"
 
 #, c-format
 msgid "E181: Invalid attribute: %s"
@@ -1008,6 +1218,19 @@ msgstr "E183: Les ordres definides per l'usuari han de començar en majúscula"
 msgid "E184: No such user-defined command: %s"
 msgstr "E184: No existeix tal ordre definida per l'usuari: %s"
 
+# «completar»  eac
+#, c-format
+msgid "E180: Invalid complete value: %s"
+msgstr "E180: El valor per la funció completar no és vàlid: %s"
+
+# «completar»  eac
+msgid "E468: Completion argument only allowed for custom completion"
+msgstr "E468: L'argument de completar només està permès en esquemes personalitzats"
+
+# «completar»  eac
+msgid "E467: Custom completion requires a function argument"
+msgstr "E467: Els esquemes de completar requereixen una funció com a argument"
+
 #, c-format
 msgid "E185: Cannot find color scheme %s"
 msgstr "E185: No s'ha trobat l'esquema de colors %s"
@@ -1015,9 +1238,19 @@ msgstr "E185: No s'ha trobat l'esquema de colors %s"
 msgid "Greetings, Vim user!"
 msgstr "Salutacions, usuari de Vim!"
 
+msgid "E784: Cannot close last tab page"
+msgstr "E784: No es pot tancar l'última pestanya"
+
+msgid "Already only one tab page"
+msgstr "Només hi ha una pestanya"
+
 # Títol d'un diàleg [:browse split]  eac
 msgid "Edit File in new window"
 msgstr "Edita un fitxer en una finestra nova"
+
+#, c-format
+msgid "Tab page %d"
+msgstr "Pestanya %d"
 
 msgid "No swap file"
 msgstr "No hi ha fitxer d'intercanvi"
@@ -1025,6 +1258,9 @@ msgstr "No hi ha fitxer d'intercanvi"
 # És un títol d'un diàleg [:browse read]  eac
 msgid "Append File"
 msgstr "Afegeix un fitxer"
+
+msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgstr "E747: No es pot canviar de directori, el buffer ha estat modificat (afegiu ! per confirmar)"
 
 msgid "E186: No previous directory"
 msgstr "E186: No hi ha cap directori anterior"
@@ -1060,6 +1296,10 @@ msgstr "Desa la sessió"
 # És el títol d'un diàleg.  eac
 msgid "Save Setup"
 msgstr "Desa la configuració"
+
+#, c-format
+msgid "E739: Cannot create directory: %s"
+msgstr "E739: No s'ha pogut crear el directori: %s"
 
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
@@ -1172,14 +1412,20 @@ msgstr "E583: Múltiples :else"
 msgid "E584: :elseif after :else"
 msgstr "E584: Declaració :elseif després de :else"
 
-msgid "E585: :while nesting too deep"
-msgstr "E585: Imbricació de :while massa profunda"
+msgid "E585: :while/:for nesting too deep"
+msgstr "E585: Imbricació de :while/:for massa profunda"
 
-msgid "E586: :continue without :while"
-msgstr "E586: Declaració :continue sense :while"
+msgid "E586: :continue without :while or :for"
+msgstr "E586: :continue sense :while o :for"
 
-msgid "E587: :break without :while"
-msgstr "E587: Declaració :break sense :while"
+msgid "E587: :break without :while or :for"
+msgstr "E587: :break sense :while"
+
+msgid "E732: Using :endfor with :while"
+msgstr "E732: Ús incorrecte de :endfor amb :while"
+
+msgid "E733: Using :endwhile with :for"
+msgstr "E733: Ús incorrecte de :endwhile amb :for"
 
 msgid "E601: :try nesting too deep"
 msgstr "E601: Imbricació de :try massa profunda"
@@ -1205,6 +1451,9 @@ msgstr "E602: Declaració :endtry sense :try"
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: Declaració :endfunction fora d'una funció"
 
+msgid "E788: Not allowed to edit another buffer now"
+msgstr "E788: No podeu editar un altre buffer ara"
+
 # context?  eac
 msgid "tagname"
 msgstr "nom de l'etiqueta"
@@ -1220,7 +1469,9 @@ msgstr "l'opció 'history' és zero"
 msgid ""
 "\n"
 "# %s History (newest to oldest):\n"
-msgstr "\n# Historial %s (de més a menys recent):\n"
+msgstr ""
+"\n"
+"# Historial %s (de més a menys recent):\n"
 
 msgid "Command Line"
 msgstr "d'ordres"
@@ -1249,8 +1500,17 @@ msgstr "és un directori"
 msgid "is not a file"
 msgstr "no és un fitxer"
 
+msgid "is a device (disabled with 'opendevice' option"
+msgstr "és un dispositiu (deshabilitat amb l'opció 'opendevice'"
+
 msgid "[New File]"
 msgstr "[Fitxer nou]"
+
+msgid "[New DIRECTORY]"
+msgstr "[Nou DIRECTORI]"
+
+msgid "[File too big]"
+msgstr "[Fitxer massa gran]"
 
 msgid "[Permission Denied]"
 msgstr "[Permís denegat]"
@@ -1303,8 +1563,9 @@ msgstr "[convertit]"
 msgid "[crypted]"
 msgstr "[xifrat]"
 
-msgid "[CONVERSION ERROR]"
-msgstr "[ERROR DE CONVERSIÓ]"
+#, c-format
+msgid "[CONVERSION ERROR in line %ld]"
+msgstr "[ERROR DE CONVERSIÓ a la línia %ld]"
 
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
@@ -1322,14 +1583,26 @@ msgstr "La conversió amb 'charconvert' ha fallat"
 msgid "can't read output of 'charconvert'"
 msgstr "No s'ha pogut llegir la sortida de 'charconvert'"
 
+msgid "E676: No matching autocommands for acwrite buffer"
+msgstr "E676: No hi ha cap auto-ordre coincident per al buffer acwrite"
+
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr "E203: Auto-ordres han eliminat o alliberat el buffer a escriure"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Una auto-ordre ha canviat el nombre de línies de forma inesperada"
 
+msgid "NetBeans dissallows writes of unmodified buffers"
+msgstr "NetBeans no permet escriure buffers no modificats"
+
+msgid "Partial writes disallowed for NetBeans buffers"
+msgstr "L'escriptura parcial no està permesa en buffers NetBeans"
+
 msgid "is not a file or writable device"
 msgstr "no és un fitxer o dispositiu que es pugui escriure"
+
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "escriptura a un dispositiu deshabilitat amb l'opció 'opendevice'"
 
 msgid "is read-only (add ! to override)"
 msgstr "és un fitxer de només lectura (afegiu ! per confirmar)"
@@ -1365,11 +1638,14 @@ msgstr "E166: No s'ha pogut obrir el fitxer enllaçat per escriure-hi"
 msgid "E212: Can't open file for writing"
 msgstr "E212: No s'ha pogut obrir el fitxer amb permís d'escriptura"
 
+msgid "E667: Fsync failed"
+msgstr "E667: Fsync ha fallat"
+
 msgid "E512: Close failed"
 msgstr "E512: Error en tancar"
 
-msgid "E513: write error, conversion failed"
-msgstr "E512: Error d'escriptura, ha fallat la conversió"
+msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+msgstr "E513: error d'escriptura, conversió fallida (anul·leu 'fenc' per a ometre)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: Error d'escriptura (sistema de fitxers ple?)"
@@ -1407,7 +1683,9 @@ msgstr "E207: No s'ha pogut eliminar la còpia de seguretat"
 msgid ""
 "\n"
 "WARNING: Original file may be lost or damaged\n"
-msgstr "\nATENCIÓ: El fitxer original es pot haver fet malbé\n"
+msgstr ""
+"\n"
+"ATENCIÓ: El fitxer original es pot haver fet malbé\n"
 
 msgid "don't quit the editor until the file is successfully written!"
 msgstr "no sortiu de l'editor fins que s'hagi desat el fitxer amb èxit!"
@@ -1477,24 +1755,31 @@ msgid "E246: FileChangedShell autocommand deleted buffer"
 msgstr "E246: L'auto-ordre FileChangedShell ha eliminat el buffer"
 
 #, c-format
-msgid "E211: Warning: File \"%s\" no longer available"
-msgstr "E211: Atenció: El fitxer \"%s\" ha deixat d'estar disponible"
+msgid "E211: File \"%s\" no longer available"
+msgstr "E211: El fitxer \"%s\" ha deixat d'estar disponible"
 
 #, c-format
-msgid ""
-"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
-"well"
+msgid "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as well"
 msgstr "W12: Atenció: Tant el fitxer \"%s\" com el buffer del Vim han canviat"
+
+msgid "See \":help W12\" for more info."
+msgstr "Vegeu \":help W12\" per a més info."
 
 # massa llarg?  eac
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr "W11: Atenció: El fitxer \"%s\" ha canviat des de que s'ha començat a editar"
 
+msgid "See \":help W11\" for more info."
+msgstr "Vegeu \":help W11\" per a més info."
+
 # massa llarg?  eac
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr "W16: Atenció: Els permisos de \"%s\" han canviat des que s'ha començat a editar"
+
+msgid "See \":help W16\" for more info."
+msgstr "Vegeu \":help W16\" per a més info."
 
 # massa llarg?  eac
 #, c-format
@@ -1522,6 +1807,10 @@ msgstr "E321: No s'ha pogut rellegir \"%s\""
 msgid "--Deleted--"
 msgstr "--Eliminat--"
 
+#, c-format
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "auto-eliminant auto-ordre: %s <buffer=%d>"
+
 #. the group doesn't exist
 #, c-format
 msgid "E367: No such group: \"%s\""
@@ -1535,11 +1824,21 @@ msgstr "E215: Caràcter il·legal després de *: %s"
 msgid "E216: No such event: %s"
 msgstr "E216: No existeix tal esdeveniment: %s"
 
+#, c-format
+msgid "E216: No such group or event: %s"
+msgstr "E216: No existeix tal grup o esdeveniment: %s"
+
 #. Highlight title
 msgid ""
 "\n"
 "--- Auto-Commands ---"
-msgstr "\n--- Auto-ordres ---"
+msgstr ""
+"\n"
+"--- Auto-ordres ---"
+
+#, c-format
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <buffer=%d>: número de buffer no vàlid"
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: No es poden executar auto-ordres per TOTS els esdeveniments"
@@ -1558,7 +1857,6 @@ msgstr "auto-ordres %s per \"%s\""
 msgid "Executing %s"
 msgstr "Executant %s"
 
-#. always scroll up, don't overwrite
 #, c-format
 msgid "autocommand %s"
 msgstr "auto-ordre %s"
@@ -1577,6 +1875,10 @@ msgstr "E350: No es pot crear cap plec amb el 'foldmethod' actual"
 
 msgid "E351: Cannot delete fold with current 'foldmethod'"
 msgstr "E351: No pot eliminar el plec amb el 'foldmethod' actual"
+
+#, c-format
+msgid "+--%3ld lines folded "
+msgstr "+--%3ld línies plegades "
 
 msgid "E222: Add to read buffer"
 msgstr "E222: No es pot modificar un buffer de lectura"
@@ -1614,7 +1916,7 @@ msgstr "<no es pot obrir> "
 
 #, c-format
 msgid "E616: vim_SelFile: can't get font %s"
-msgstr "E616: vim_SelFile: no s'ha pogut obtenir la font %s"
+msgstr "E616: vim_SelFile: no s'ha pogut obtenir la fosa %s"
 
 msgid "E614: vim_SelFile: can't return to current directory"
 msgstr "E614: vim_SelFile: no s'ha pogut tornar al directori actual"
@@ -1637,8 +1939,8 @@ msgstr "Diàleg del Vim"
 msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
 msgstr "Barra de desplaçament: No s'ha pogut obtenir la mida del mapa de bits."
 
-#~ msgid "E232: Cannot create BalloonEval with both message and callback"
-#~ msgstr ""
+msgid "E232: Cannot create BalloonEval with both message and callback"
+msgstr "E232: No es pot crear un BalloonEval amb missatge i callback alhora"
 
 msgid "E229: Cannot start the GUI"
 msgstr "E229: No s'ha pogut iniciar l'interfície gràfica"
@@ -1647,12 +1949,21 @@ msgstr "E229: No s'ha pogut iniciar l'interfície gràfica"
 msgid "E230: Cannot read from \"%s\""
 msgstr "E230: No s'ha pogut llegir \"%s\""
 
+msgid "E665: Cannot start GUI, no valid font found"
+msgstr "E665: No es pot iniciar l'IUG, no s'ha trobat cap fosa vàlida"
+
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: El valor de 'guifontwide' no és vàlid"
+
+msgid "E599: Value of 'imactivatekey' is invalid"
+msgstr "E599: El valor de 'imactivatekey' no és vàlid"
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: No s'ha pogut assignar memòria pel color %s"
+
+msgid "No match at cursor, finding next"
+msgstr "Cap coincidència al cursor, cercant la següent"
 
 msgid "Vim dialog..."
 msgstr "Diàleg del Vim..."
@@ -1711,55 +2022,105 @@ msgstr "Substitueix-les totes"
 msgid "Vim: Received \"die\" request from session manager\n"
 msgstr "Vim: S'ha rebut una petició \"die\" del gestor de sessions\n"
 
+msgid "Close"
+msgstr "Tanca"
+
+msgid "New tab"
+msgstr "Nova pestanya"
+
+msgid "Open Tab..."
+msgstr "Obre una pestanya..."
+
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim: La finestra principal ha estat destruïda inesperadament\n"
 
 msgid "Font Selection"
-msgstr "Selecció de tipus de lletra"
+msgstr "Selecció de fosa"
 
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "S'ha usat CUT_BUFFER0 en lloc d'una selecció buida"
 
-msgid "Filter"
-msgstr "Filtre"
+msgid "&Filter"
+msgstr "&Filtre"
+
+msgid "&Cancel"
+msgstr "&Cancel·la"
 
 msgid "Directories"
 msgstr "Directoris"
 
-msgid "Help"
-msgstr "Ajuda"
+msgid "Filter"
+msgstr "Filtre"
+
+msgid "&Help"
+msgstr "&Ajuda"
 
 msgid "Files"
 msgstr "Fitxers"
 
+msgid "&OK"
+msgstr "&D'acord"
+
 msgid "Selection"
 msgstr "Selecció"
 
-msgid "Undo"
-msgstr "Desfés"
+msgid "Find &Next"
+msgstr "Cerca el &següent"
+
+msgid "&Replace"
+msgstr "&Substitueix"
+
+msgid "Replace &All"
+msgstr "Substitueix-les &totes"
+
+msgid "&Undo"
+msgstr "&Desfés"
 
 #, c-format
 msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: No s'ha pogut carregar el tipus Zap '%s'"
+msgstr "E610: No s'ha pogut carregar la fosa Zap '%s'"
 
 #, c-format
 msgid "E611: Can't use font %s"
-msgstr "E611: No es pot utilitzar el tipus %s"
+msgstr "E611: No es pot utilitzar la fosa %s"
 
 msgid ""
 "\n"
 "Sending message to terminate child process.\n"
-msgstr "\nEnviant un missatge per finalitzar el procés fill.\n"
+msgstr ""
+"\n"
+"Enviant un missatge per finalitzar el procés fill.\n"
+
+#, c-format
+msgid "E671: Cannot find window title \"%s\""
+msgstr "E671: No s'ha trobat el títol de finestra \"%s\""
 
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
 msgstr "E243: Argument no suportat: \"-%s\"; Useu la versió OLE."
+
+msgid "E672: Unable to open window inside MDI application"
+msgstr "E672: No s'ha pogut obrir una finestra dins l'aplicació MDI"
+
+msgid "Close tab"
+msgstr "Tanca la pestanya"
+
+msgid "Open tab..."
+msgstr "Obre una pestanya..."
 
 msgid "Find string (use '\\\\' to find  a '\\')"
 msgstr "Cerca una cadena (useu '\\\\' per cercar '\\')"
 
 msgid "Find & Replace (use '\\\\' to find  a '\\')"
 msgstr "Cerca i substitueix (useu '\\\\' per cercar '\\')"
+
+#. We fake this: Use a filter that doesn't select anything and a default
+#. * file name that won't be used.
+msgid "Not Used"
+msgstr "No Usat"
+
+msgid "Directory\t*.nothing\n"
+msgstr "Directori\t*.res\n"
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr "Vim E458: No s'ha pogut assignar memòria per colors, poden ser incorrectes"
@@ -1774,7 +2135,7 @@ msgstr "E252: Nom del conjunt de tipus: %s"
 
 #, c-format
 msgid "Font '%s' is not fixed-width"
-msgstr "El tipus '%s' no és d'amplada fixa"
+msgstr "La fosa '%s' no és d'amplada fixa"
 
 #, c-format
 msgid "E253: Fontset name: %s\n"
@@ -1782,28 +2143,154 @@ msgstr "E253: Nom del conjunt de tipus: %s\n"
 
 #, c-format
 msgid "Font0: %s\n"
-msgstr "Tipus0: %s\n"
+msgstr "Fosa0: %s\n"
 
 #, c-format
 msgid "Font1: %s\n"
-msgstr "Tipus1: %s\n"
+msgstr "Fosa1: %s\n"
 
 #, c-format
-msgid "Font%d width is not twice that of font0\n"
-msgstr "L'amplada del tipus%d no és el doble que la del tipus0\n"
+msgid "Font%ld width is not twice that of font0\n"
+msgstr "L'amplada de la fosa%ld no és el doble que la de la fosa0\n"
 
 #, c-format
 msgid "Font0 width: %ld\n"
-msgstr "Amplada del tipus0: %ld\n"
+msgstr "Amplada de de la Fosa0: %ld\n"
 
 #, c-format
 msgid ""
 "Font1 width: %ld\n"
 "\n"
-msgstr "Amplada del tipus1: %ld\n\n"
+msgstr ""
+"Amplada de la Fosa1: %ld\n"
+"\n"
+
+msgid "Invalid font specification"
+msgstr "Especificació de fosa no vàlida"
+
+msgid "&Dismiss"
+msgstr "&Ignora"
+
+msgid "no specific match"
+msgstr "cap coincidència específica"
+
+msgid "Vim - Font Selector"
+msgstr "Vim - Selector de fosa"
+
+msgid "Name:"
+msgstr "Nom:"
+
+#. create toggle button
+msgid "Show size in Points"
+msgstr "Mostra la mida en punts"
+
+msgid "Encoding:"
+msgstr "Codificació:"
+
+msgid "Font:"
+msgstr "Fosa:"
+
+msgid "Style:"
+msgstr "Estil:"
+
+msgid "Size:"
+msgstr "Mida:"
 
 msgid "E256: Hangul automata ERROR"
 msgstr "E256: ERROR de l'autòmata hangul"
+
+msgid "E550: Missing colon"
+msgstr "E550: Falta un caràcter \":\""
+
+msgid "E551: Illegal component"
+msgstr "E551: Component il·legal"
+
+msgid "E552: digit expected"
+msgstr "E552: S'esperava un dígit"
+
+#, c-format
+msgid "Page %d"
+msgstr "Pàgina %d"
+
+msgid "No text to be printed"
+msgstr "No hi ha text per imprimir"
+
+#, c-format
+msgid "Printing page %d (%d%%)"
+msgstr "S'està imprimint la pàgina %d (%d%%)"
+
+#, c-format
+msgid " Copy %d of %d"
+msgstr " Còpia %d de %d"
+
+#, c-format
+msgid "Printed: %s"
+msgstr "S'ha imprès: %s"
+
+msgid "Printing aborted"
+msgstr "S'ha avortat l'impressió"
+
+msgid "E455: Error writing to PostScript output file"
+msgstr "E455: Error en escriure el fitxer PostScript"
+
+#, c-format
+msgid "E624: Can't open file \"%s\""
+msgstr "E624: No s'ha pogut obrir el fitxer \"%s\""
+
+#, c-format
+msgid "E457: Can't read PostScript resource file \"%s\""
+msgstr "E457: No s'ha pogut llegir el fitxer de recursos PostScript \"%s\""
+
+#, c-format
+msgid "E618: file \"%s\" is not a PostScript resource file"
+msgstr "E618: El fitxer \"%s\" no és un fitxer de recursos PostScript"
+
+#, c-format
+msgid "E619: file \"%s\" is not a supported PostScript resource file"
+msgstr "E619: El fitxer de recursos PostScript \"%s\" no està suportat"
+
+#, c-format
+msgid "E621: \"%s\" resource file has wrong version"
+msgstr "E621: La versió del fitxer de recursos \"%s\" no és vàlida"
+
+msgid "E673: Incompatible multi-byte encoding and character set."
+msgstr "E673: Joc de caràcters i codificació multi-octet no compatibles."
+
+msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
+msgstr "E674: printmbcharset no pot estar buit si la codificació és multi-octet"
+
+msgid "E675: No default font specified for multi-byte printing."
+msgstr "E675: No heu especificat cap fosa per defecte per a la impressió multi-octet."
+
+msgid "E324: Can't open PostScript output file"
+msgstr "E324: No s'ha pogut obrir el fitxer PostScript generat"
+
+#, c-format
+msgid "E456: Can't open file \"%s\""
+msgstr "E456: No s'ha pogut obrir el fitxer \"%s\""
+
+msgid "E456: Can't find PostScript resource file \"prolog.ps\""
+msgstr "E456: No s'ha trobat el fitxer de recursos PostScript \"prolog.ps\""
+
+msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
+msgstr "E456: No s'ha trobat el fitxer de recursos PostScript \"cidfont.ps\""
+
+#, c-format
+msgid "E456: Can't find PostScript resource file \"%s.ps\""
+msgstr "E456: No s'ha trobat el fitxer de recursos PostScript \"%s.ps\""
+
+#, c-format
+msgid "E620: Unable to convert to print encoding \"%s\""
+msgstr "E620: No s'ha pogut convertir a la codificació d'impressió \"%s\""
+
+msgid "Sending to printer..."
+msgstr "S'està enviant a la impressora..."
+
+msgid "E365: Failed to print PostScript file"
+msgstr "E365: Error en imprimir el fitxer PostScript"
+
+msgid "Print job sent."
+msgstr "S'ha enviat la tasca d'impressió."
 
 msgid "Add a new database"
 msgstr "Afegeix una base de dades nova"
@@ -1926,7 +2413,9 @@ msgstr "Etiqueta cscope: %s"
 msgid ""
 "\n"
 "   #   line"
-msgstr "\n   #   línia"
+msgstr ""
+"\n"
+"   #   línia"
 
 msgid "filename / context / line\n"
 msgstr "fitxer / context / línia\n"
@@ -1944,10 +2433,65 @@ msgstr "no hi ha connexions cscope\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    base de dades                       prefix d'ubicació\n"
 
-msgid ""
-"E263: Sorry, this command is disabled, the Python library could not be "
-"loaded."
+msgid "???: Sorry, this command is disabled, the MzScheme library could not be loaded."
+msgstr "???: Aquesta ordre no està habilitada, la biblioteca MzScheme no s'ha pogut carregar."
+
+msgid "invalid expression"
+msgstr "l'expressió no és vàlida"
+
+msgid "expressions disabled at compile time"
+msgstr "no s'ha compilat suport per expressions"
+
+msgid "hidden option"
+msgstr "opció amagada"
+
+msgid "unknown option"
+msgstr "opció desconeguda"
+
+msgid "window index is out of range"
+msgstr "índex de finestra fora d'abast"
+
+msgid "couldn't open buffer"
+msgstr "no s'ha pogut obrir el buffer"
+
+msgid "cannot save undo information"
+msgstr "no s'ha pogut desar l'informació de desfer"
+
+msgid "cannot delete line"
+msgstr "no s'ha pogut esborrar la línia"
+
+msgid "cannot replace line"
+msgstr "no s'ha pogut substituir la línia"
+
+msgid "cannot insert line"
+msgstr "no s'ha pogut inserir la línia"
+
+msgid "string cannot contain newlines"
+msgstr "la cadena no pot contenir salts de línia"
+
+msgid "Vim error: ~a"
+msgstr "Error del Vim: ~a"
+
+msgid "Vim error"
+msgstr "Error del Vim"
+
+msgid "buffer is invalid"
+msgstr "el buffer no és vàlid"
+
+msgid "window is invalid"
+msgstr "la finestra no és vàlida"
+
+msgid "linenr out of range"
+msgstr "nombre de línia fora d'abast"
+
+msgid "not allowed in the Vim sandbox"
+msgstr "no permès a la gàbia del Vim"
+
+msgid "E263: Sorry, this command is disabled, the Python library could not be loaded."
 msgstr "E263: Aquesta ordre està deshabilitada, no s'ha pogut carregar Python."
+
+msgid "E659: Cannot invoke Python recursively"
+msgstr "E659: No es pot invocar Python de forma recursiva"
 
 msgid "can't delete OutputObject attributes"
 msgstr "no s'han pogut eliminar els atributs de l'OutputObject"
@@ -1963,12 +2507,6 @@ msgstr "la funció writelines() requereix una llista de cadenes"
 
 msgid "E264: Python: Error initialising I/O objects"
 msgstr "E264: Python: Error en inicialitzar els objectes d'E/S"
-
-msgid "invalid expression"
-msgstr "l'expressió no és vàlida"
-
-msgid "expressions disabled at compile time"
-msgstr "no s'ha compilat suport per expressions"
 
 msgid "attempt to refer to deleted buffer"
 msgstr "intent de referència a un buffer eliminat"
@@ -2010,24 +2548,29 @@ msgstr "<finestra %d>"
 msgid "no such window"
 msgstr "no existeix tal finestra"
 
-msgid "cannot save undo information"
-msgstr "no s'ha pogut desar l'informació de desfer"
+msgid "E265: $_ must be an instance of String"
+msgstr "E265: $_ ha de ser una instància d'una cadena"
 
-msgid "cannot delete line"
-msgstr "no s'ha pogut esborrar la línia"
-
-msgid "cannot replace line"
-msgstr "no s'ha pogut substituir la línia"
-
-msgid "cannot insert line"
-msgstr "no s'ha pogut inserir la línia"
-
-msgid "string cannot contain newlines"
-msgstr "la cadena no pot contenir salts de línia"
-
-msgid ""
-"E266: Sorry, this command is disabled, the Ruby library could not be loaded."
+msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr "E266: Ordre deshabilitada, no s'ha pogut carregar la biblioteca Ruby."
+
+msgid "E267: unexpected return"
+msgstr "E267: retorn inesperat"
+
+msgid "E268: unexpected next"
+msgstr "E268: 'next' inesperat"
+
+msgid "E269: unexpected break"
+msgstr "E269: tall inesperat"
+
+msgid "E270: unexpected redo"
+msgstr "E270: 'redo' inesperat"
+
+msgid "E271: retry outside of rescue clause"
+msgstr "E271: 'retry' fora d'una clàusula de rescat"
+
+msgid "E272: unhandled exception"
+msgstr "E272: excepció no manejada"
 
 #, c-format
 msgid "E273: unknown longjmp status %d"
@@ -2087,9 +2630,7 @@ msgstr "Mostra docu de"
 msgid "Generate docu for"
 msgstr "Genera docu per"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
+msgid "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in $PATH).\n"
 msgstr "No s'ha pogut connectar amb SNiFF+. Reviseu l'entorn (sniffemacs ha d'estar en el $PATH).\n"
 
 msgid "E274: Sniff: Error during read. Disconnected"
@@ -2126,9 +2667,6 @@ msgstr "nombre de buffer no vàlid"
 msgid "not implemented yet"
 msgstr "no implementat (encara)"
 
-msgid "unknown option"
-msgstr "opció desconeguda"
-
 #. ???
 msgid "cannot set line(s)"
 msgstr "no s'ha pogut establir el nombre de línies"
@@ -2158,26 +2696,25 @@ msgstr "error de vim"
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "no s'ha pogut crear l'ordre de buffer/finestra: l'objecte està siguent eliminat"
 
-#~ msgid ""
-#~ "cannot register callback command: buffer/window is already being deleted"
-#~ msgstr ""
+msgid "cannot register callback command: buffer/window is already being deleted"
+msgstr "no s'ha pogut registrar l'ordre callback: el búfer/finestra ja està sent eliminat"
 
 #. This should never happen.  Famous last word?
-msgid ""
-"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
-"org"
+msgid "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"
 msgstr "E280: ERROR FATAL DE TCL: llista de referències corrupta!? Comuniqueu-ho a vim-dev@vim.org."
 
-#~ msgid "cannot register callback command: buffer/window reference not found"
-#~ msgstr ""
+msgid "cannot register callback command: buffer/window reference not found"
+msgstr "no s'ha pogut registrar l'ordre callback: referència del búfer/finestra no trobada"
 
-msgid ""
-"E571: Sorry, this command is disabled: the Tcl library could not be loaded."
+msgid "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
 msgstr "E571: Aquesta ordre està deshabilitada: No s'ha pogut carregar la llibreria Tcl."
 
-msgid ""
-"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
+msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
 msgstr "E281: ERROR DE TCL: el codi de retorn no és un enter!? Comuniqueu-ho a vim-dev@vim.org."
+
+#, c-format
+msgid "E572: exit code %d"
+msgstr "E572: codi de sortida %d"
 
 msgid "cannot get line"
 msgstr "no s'ha pogut obtenir la línia"
@@ -2195,8 +2732,8 @@ msgstr "E573: S'ha usat una ID de servidor no vàlida: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: El registre de l'instància de VIM està mal format. S'ha esborrat!"
 
-msgid "Unknown option"
-msgstr "L'opció és desconeguda"
+msgid "Unknown option argument"
+msgstr "Argument d'opció desconegut"
 
 msgid "Too many edit arguments"
 msgstr "Massa arguments d'edició"
@@ -2204,8 +2741,8 @@ msgstr "Massa arguments d'edició"
 msgid "Argument missing after"
 msgstr "Falta un argument després de"
 
-msgid "Garbage after option"
-msgstr "Porqueria després de l'opció"
+msgid "Garbage after option argument"
+msgstr "Porqueria després de l'argument d'opció"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr "Massa arguments \"+ordre\", \"-c ordre\" o \"--cmd ordre\""
@@ -2213,14 +2750,15 @@ msgstr "Massa arguments \"+ordre\", \"-c ordre\" o \"--cmd ordre\""
 msgid "Invalid argument for"
 msgstr "Argument no vàlid per"
 
+#, c-format
+msgid "%d files to edit\n"
+msgstr "%d fitxers per editar\n"
+
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Aquest Vim no ha estat compilat amb suport per diff."
 
 msgid "Attempt to open script file again: \""
 msgstr "Reintent d'obrir l'script: \""
-
-msgid "\"\n"
-msgstr "\"\n"
 
 msgid "Cannot open for reading: \""
 msgstr "No s'ha pogut obrir amb permís de lectura: \""
@@ -2228,9 +2766,8 @@ msgstr "No s'ha pogut obrir amb permís de lectura: \""
 msgid "Cannot open for script output: \""
 msgstr "No s'ha pogut obrir per desar-hi l'exida de l'script: \""
 
-#, c-format
-msgid "%d files to edit\n"
-msgstr "%d fitxers per editar\n"
+msgid "Vim: Error: Failure to start gvim from NetBeans\n"
+msgstr "Vim: Error: Ha fallat l'arrencada del gvim des de NetBeans\n"
 
 msgid "Vim: Warning: Output is not to a terminal\n"
 msgstr "Vim: Atenció: La sortida no està connectada a un terminal\n"
@@ -2249,7 +2786,9 @@ msgstr "E282: No s'ha pogut llegir \"%s\""
 msgid ""
 "\n"
 "More info with: \"vim -h\"\n"
-msgstr "\nMés informació amb: \"vim -h\"\n"
+msgstr ""
+"\n"
+"Més informació amb: \"vim -h\"\n"
 
 msgid "[file ..]       edit specified file(s)"
 msgstr "[fitxer ...]    edita el(s) fitxer(s) especificat(s)"
@@ -2267,7 +2806,10 @@ msgid ""
 "\n"
 "\n"
 "usage:"
-msgstr "\n\n  ús:"
+msgstr ""
+"\n"
+"\n"
+"  ús:"
 
 msgid " vim [arguments] "
 msgstr " vim [arguments] "
@@ -2275,13 +2817,25 @@ msgstr " vim [arguments] "
 msgid ""
 "\n"
 "   or:"
-msgstr "\no bé:"
+msgstr ""
+"\n"
+"o bé:"
+
+msgid ""
+"\n"
+"Where case is ignored prepend / to make flag upper case"
+msgstr ""
+"\n"
+"On s'ignora la capitalizació, afegiu el prefix / per a indicar majúscules"
 
 msgid ""
 "\n"
 "\n"
 "Arguments:\n"
-msgstr "\n\nArguments:\n"
+msgstr ""
+"\n"
+"\n"
+"Arguments:\n"
 
 msgid "--\t\t\tOnly file names after this"
 msgstr "--\t\t\tDesprés d'això només noms de fitxers"
@@ -2340,8 +2894,8 @@ msgstr "-C\t\t\tCompatible amb Vi"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tNo del tot compatible amb Vi"
 
-msgid "-V[N]\t\tVerbose level"
-msgstr "-V[N]\t\tNivell de loquacitat"
+msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgstr "-V[N][nomf]\t\tLoquacitat [nivell N] [desa els missatges a nomf]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tMode de depuració"
@@ -2384,6 +2938,9 @@ msgstr "-U <gvimrc>\t\tUsa <gvimrc> en lloc de qualsevol altre .gvimrc"
 
 msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tNo carrega cap plugin"
+
+msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
+msgstr "-p[N]\t\tObre N pestanyes (per omissió: una per fitxer)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
 msgstr "-o[N]\t\tObre N finestres (per omissió: una per fitxer)"
@@ -2430,13 +2987,14 @@ msgstr "--remote <fitxers>\tEdita <fitxers> en un servidor Vim, si és possible"
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-silent <fitxers>  Igual, no es queixa si no hi ha servidor"
 
-msgid ""
-"--remote-wait <files>  As --remote but wait for files to have been edited"
+msgid "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr "--remote-wait <fitxers>  Com --remote, però espera que s'editin els fitxers"
 
-msgid ""
-"--remote-wait-silent <files>  Same, don't complain if there is no server"
+msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-wait-silent <fitxers>  Igual, no es queixa si no hi ha servidor"
+
+msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgstr "--remote-tab <fitxers>  Com --remote, però obre una pestanya per fitxer"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tecles>  Envia <tecles> a un servidor Vim i surt"
@@ -2462,17 +3020,23 @@ msgstr "--version\t\tMostra informació sobre la versió i surt"
 msgid ""
 "\n"
 "Arguments recognised by gvim (Motif version):\n"
-msgstr "\nArguments reconeguts pel gvim (versió Motif):\n"
+msgstr ""
+"\n"
+"Arguments reconeguts pel gvim (versió Motif):\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (neXtaw version):\n"
-msgstr "\nArguments reconeguts pel gvim (versió neXtaw>:\n"
+msgstr ""
+"\n"
+"Arguments reconeguts pel gvim (versió neXtaw>:\n"
 
 msgid ""
 "\n"
 "Arguments recognised by gvim (Athena version):\n"
-msgstr "\nArguments reconeguts pel gvim (versió Athena):\n"
+msgstr ""
+"\n"
+"Arguments reconeguts pel gvim (versió Athena):\n"
 
 msgid "-display <display>\tRun vim on <display>"
 msgstr "-display <pantalla>\tExecuta vim a <pantalla>"
@@ -2493,13 +3057,13 @@ msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
 msgstr "-foreground <color>\tUsa <color> pel text normal (també: -fg)"
 
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
-msgstr "-font <tipus>\tUsa <tipus> pel text normal (també: -fn)"
+msgstr "-font <fosa>\tUsa <fosa> pel text normal (també: -fn)"
 
 msgid "-boldfont <font>\tUse <font> for bold text"
-msgstr "-boldfont <tipus>\tUsa <tipus> pel text en negreta"
+msgstr "-boldfont <fosa>\tUsa <fosa> pel text en negreta"
 
 msgid "-italicfont <font>\tUse <font> for italic text"
-msgstr "-italicfont <tipus>\tUsa <tipus> pel text en cursiva"
+msgstr "-italicfont <fosa>\tUsa <fosa> pel text en cursiva"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
 msgstr "-geometry <geom>\tUsa <geom> com a geometria inicial (també: -geom)"
@@ -2525,7 +3089,9 @@ msgstr "-xrm <recurs>\tEstableix el recurs especificat"
 msgid ""
 "\n"
 "Arguments recognised by gvim (RISC OS version):\n"
-msgstr "\nArguments reconeguts pel gvim (versió RISC OS):\n"
+msgstr ""
+"\n"
+"Arguments reconeguts pel gvim (versió RISC OS):\n"
 
 msgid "--columns <number>\tInitial width of window in columns"
 msgstr "--columns <nombre>\tAmplada inicial de la finestra en columnes"
@@ -2536,7 +3102,9 @@ msgstr "--rows <nombre>\tAlçada inicial de la finestra en files"
 msgid ""
 "\n"
 "Arguments recognised by gvim (GTK+ version):\n"
-msgstr "\nArguments reconeguts pel gvim (versió GTK+):\n"
+msgstr ""
+"\n"
+"Arguments reconeguts pel gvim (versió GTK+):\n"
 
 msgid "-display <display>\tRun vim on <display> (also: --display)"
 msgstr "-display <pantalla>\tExecuta vim a <pantalla> (també: --display)"
@@ -2547,8 +3115,8 @@ msgstr "--role <rol>\t\tUsa un únic rol per identificar la finestra principal"
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tObre el vim dins d'una altra aplicació GTK"
 
-msgid "--help\t\tShow Gnome arguments"
-msgstr "--help\t\tMostra els arguments per Gnome"
+msgid "-P <parent title>\tOpen Vim inside parent application"
+msgstr "-P <títol pare>\tObre el Vim en una aplicació pare"
 
 msgid "No display"
 msgstr "No hi ha cap pantalla"
@@ -2582,29 +3150,50 @@ msgstr "E283: Cap marca coincideix amb \"%s\""
 msgid ""
 "\n"
 "mark line  col file/text"
-msgstr "\nmarca lín  col fitxer/text"
+msgstr ""
+"\n"
+"marca lín  col fitxer/text"
 
 #. Highlight title
 msgid ""
 "\n"
 " jump line  col file/text"
-msgstr "\n salt  lín  col fitxer/text"
+msgstr ""
+"\n"
+" salt  lín  col fitxer/text"
 
+#. Highlight title
+msgid ""
+"\n"
+"change line  col text"
+msgstr ""
+"\n"
+"canvi  línia col text"
+
+#, c-format
 msgid ""
 "\n"
 "# File marks:\n"
-msgstr "\n# Marques de fitxer:\n"
+msgstr ""
+"\n"
+"# Marques de fitxer:\n"
 
 #. Write the jumplist with -'
+#, c-format
 msgid ""
 "\n"
 "# Jumplist (newest first):\n"
-msgstr "\n# Llista de salts (de més a menys recent):\n"
+msgstr ""
+"\n"
+"# Llista de salts (de més a menys recent):\n"
 
+#, c-format
 msgid ""
 "\n"
 "# History of marks within files (newest to oldest):\n"
-msgstr "\n# Historial de marques en fitxers (de més a menys recent):\n"
+msgstr ""
+"\n"
+"# Historial de marques en fitxers (de més a menys recent):\n"
 
 msgid "Missing '>'"
 msgstr "Falta un '>'"
@@ -2621,8 +3210,8 @@ msgstr "E285: Error en crear el context d'entrada"
 msgid "E286: Failed to open input method"
 msgstr "E286: Error en obrir el mètode d'entrada"
 
-#~ msgid "E287: Warning: Could not set destroy callback to IM"
-#~ msgstr ""
+msgid "E287: Warning: Could not set destroy callback to IM"
+msgstr "E287: Atenció: No s'ha pogut establir el callback de destrucció a IM"
 
 msgid "E288: input method doesn't support any style"
 msgstr "E288: el mètode d'entrada no suporta cap estil"
@@ -2677,8 +3266,8 @@ msgstr "E302: No s'ha pogut reanomenar el fitxer d'intercanvi"
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr "E303: Error en obrir el fitxer d'intercanvi de \"%s\", no es podrà recuperar"
 
-msgid "E304: ml_timestamp: Didn't get block 0??"
-msgstr "E304: ml_timestamp: No s'ha pogut obtenir el bloc 0??"
+msgid "E304: ml_upd_block0(): Didn't get block 0??"
+msgstr "E304: ml_upd_block0(): No s'ha obtingut el bloc 0??"
 
 #, c-format
 msgid "E305: No swap file found for %s"
@@ -2697,7 +3286,9 @@ msgstr "No s'ha pogut llegir el bloc 0 de "
 msgid ""
 "\n"
 "Maybe no changes were made or Vim did not update the swap file."
-msgstr "\nO bé no s'han fet canvis, o el Vim no ha actualitzat el fitxer d'intercanvi."
+msgstr ""
+"\n"
+"O bé no s'han fet canvis, o el Vim no ha actualitzat el fitxer d'intercanvi."
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " no es pot utilitzar amb aquesta versió de Vim.\n"
@@ -2722,6 +3313,9 @@ msgstr ""
 ",\n"
 "o el fitxer està fet malbé."
 
+msgid " has been damaged (page size is smaller than minimum value).\n"
+msgstr " ha estat danyat (la mida de pàgina és inferior al valor mínim).\n"
+
 #, c-format
 msgid "Using swap file \"%s\""
 msgstr "S'està utilitzant el fitxer d'intercanvi \"%s\""
@@ -2741,7 +3335,7 @@ msgid "???MANY LINES MISSING"
 msgstr "???FALTEN MOLTES LÍNIES"
 
 msgid "???LINE COUNT WRONG"
-msgstr "???COMPTADOR DE LÍNIA INCORRECTE"
+msgstr "???RECOMPTE DE LÍNIES INCORRECTE"
 
 msgid "???EMPTY BLOCK"
 msgstr "???BLOC BUIT"
@@ -2768,9 +3362,11 @@ msgstr "???FINAL"
 msgid "E311: Recovery Interrupted"
 msgstr "E311: S'ha interromput la recuperació"
 
-msgid ""
-"E312: Errors detected while recovering; look for lines starting with ???"
+msgid "E312: Errors detected while recovering; look for lines starting with ???"
 msgstr "E312: S'han detectat errors en la recuperació; busqueu línies amb ???"
+
+msgid "See \":help E312\" for more information."
+msgstr "Vegeu \":help E312\" per a més informació."
 
 msgid "Recovery completed. You should check if everything is OK."
 msgstr "S'ha completat la recuperació. Haurieu de revisar que tot sigui correcte."
@@ -2778,7 +3374,9 @@ msgstr "S'ha completat la recuperació. Haurieu de revisar que tot sigui correcte
 msgid ""
 "\n"
 "(You might want to write out this file under another name\n"
-msgstr "\n(Potser voleu desar aquest fitxer amb un altre nom\n"
+msgstr ""
+"\n"
+"(Potser voleu desar aquest fitxer amb un altre nom\n"
 
 msgid "and run diff with the original file to check for changes)\n"
 msgstr "i fer un diff amb el fitxer original per veure els canvis)\n"
@@ -2786,7 +3384,9 @@ msgstr "i fer un diff amb el fitxer original per veure els canvis)\n"
 msgid ""
 "Delete the .swp file afterwards.\n"
 "\n"
-msgstr "Elimina el fitxer .swp tot seguit.\n\n"
+msgstr ""
+"Elimina el fitxer .swp tot seguit.\n"
+"\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -2825,7 +3425,9 @@ msgstr "    nom del fitxer: "
 msgid ""
 "\n"
 "          modified: "
-msgstr "\n         modificat: "
+msgstr ""
+"\n"
+"         modificat: "
 
 msgid "YES"
 msgstr "SÍ"
@@ -2836,7 +3438,9 @@ msgstr "no"
 msgid ""
 "\n"
 "         user name: "
-msgstr "\n   nom de l'usuari: "
+msgstr ""
+"\n"
+"   nom de l'usuari: "
 
 msgid "   host name: "
 msgstr "    màquina: "
@@ -2844,12 +3448,16 @@ msgstr "    màquina: "
 msgid ""
 "\n"
 "         host name: "
-msgstr "\n           màquina: "
+msgstr ""
+"\n"
+"           màquina: "
 
 msgid ""
 "\n"
 "        process ID: "
-msgstr "\n     ID del procés: "
+msgstr ""
+"\n"
+"     ID del procés: "
 
 msgid " (still running)"
 msgstr " (encara funcionant)"
@@ -2857,12 +3465,16 @@ msgstr " (encara funcionant)"
 msgid ""
 "\n"
 "         [not usable with this version of Vim]"
-msgstr "\n          [no usable amb aquesta versió de Vim]"
+msgstr ""
+"\n"
+"          [no usable amb aquesta versió de Vim]"
 
 msgid ""
 "\n"
 "         [not usable on this computer]"
-msgstr "\n          [no usable en aquesta computadora]"
+msgstr ""
+"\n"
+"          [no usable en aquesta computadora]"
 
 msgid "         [cannot be read]"
 msgstr "         [no es pot llegir]"
@@ -2926,13 +3538,19 @@ msgstr "La mida de la pila s'incrementa"
 msgid "E317: pointer block id wrong 2"
 msgstr "E317: Punter a la id d'un bloc incorrecte 2"
 
+#, c-format
+msgid "E773: Symlink loop for \"%s\""
+msgstr "E773: Bucle d'enllaços simbòlics per a \"%s\""
+
 msgid "E325: ATTENTION"
 msgstr "E325: ATENCIÓ"
 
 msgid ""
 "\n"
 "Found a swap file by the name \""
-msgstr "\nS'ha trobat un fitxer d'intercanvi de nom \""
+msgstr ""
+"\n"
+"S'ha trobat un fitxer d'intercanvi de nom \""
 
 msgid "While opening file \""
 msgstr "Mentre s'obria el fitxer \""
@@ -2959,7 +3577,9 @@ msgstr "    Sortiu, o continueu amb precaució.\n"
 msgid ""
 "\n"
 "(2) An edit session for this file crashed.\n"
-msgstr "\n(2) El Vim s'ha estrellat mentre s'editava aquest fitxer.\n"
+msgstr ""
+"\n"
+"(2) El Vim s'ha estrellat mentre s'editava aquest fitxer.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    En aquest cas, useu \":recover\" o bé \"vim -r "
@@ -2997,25 +3617,29 @@ msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
 "&Recover\n"
-"&Quit"
+"&Quit\n"
+"&Abort"
 msgstr ""
-"&Obre en mode només lectura\n"
-"&Edita\n"
-"&Recupera\n"
-"&Surt"
+"&Obrir només-lectura\n"
+"&Editar igualment\n"
+"&Recuperar\n"
+"&Sortir\n"
+"&Avortar"
 
 msgid ""
 "&Open Read-Only\n"
 "&Edit anyway\n"
 "&Recover\n"
+"&Delete it\n"
 "&Quit\n"
-"&Delete it"
+"&Abort"
 msgstr ""
-"&Obre en mode només lectura\n"
-"&Edita\n"
-"&Recupera\n"
-"&Surt\n"
-"E&limina'l"
+"&Obrir només-lectura\n"
+"&Editar igualment\n"
+"&Recuperar\n"
+"E&liminar-lo\n"
+"&Sortir\n"
+"&Avortar"
 
 msgid "E326: Too many swap files found"
 msgstr "E326: S'han trobat massa fitxers d'intercanvi"
@@ -3026,8 +3650,13 @@ msgstr "E327: Part de l'ubicació del menú no és submenú"
 msgid "E328: Menu only exists in another mode"
 msgstr "E328: El menú només existeix en un altre mode"
 
-msgid "E329: No menu of that name"
-msgstr "E329: No hi ha cap menú amb aquest nom"
+#, c-format
+msgid "E329: No menu \"%s\""
+msgstr "E329: No hi ha cap menú \"%s\""
+
+#. Only a mnemonic or accelerator is not valid.
+msgid "E792: Empty menu name"
+msgstr "E792: Nom de menú buit"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: L'ubicació del menú no pot portar a un submenú"
@@ -3043,7 +3672,9 @@ msgstr "E332: Un separador no pot formar part de l'ubicació de menú"
 msgid ""
 "\n"
 "--- Menus ---"
-msgstr "\n--- Menús ---"
+msgstr ""
+"\n"
+"--- Menús ---"
 
 msgid "Tear off this menu"
 msgstr "Estripa aquest menú"
@@ -3073,8 +3704,9 @@ msgstr "S'ha detectat un error en processar %s:"
 msgid "line %4ld:"
 msgstr "línia %4ld:"
 
-msgid "[string too long]"
-msgstr "[cadena massa llarga]"
+#, c-format
+msgid "E354: Invalid register name: '%s'"
+msgstr "E354: El nom de registre no és vàlid: '%s'"
 
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
 msgstr "Traducció dels missatges: Ernest Adrogué <eadrogue@gmx.net>"
@@ -3082,20 +3714,18 @@ msgstr "Traducció dels missatges: Ernest Adrogué <eadrogue@gmx.net>"
 msgid "Interrupt: "
 msgstr "Interrupció: "
 
-msgid "Hit ENTER to continue"
-msgstr "Premeu ENTRAR per continuar"
+msgid "Press ENTER or type command to continue"
+msgstr "Premeu ENTRAR o introduïu una ordre per a continuar"
 
-msgid "Hit ENTER or type command to continue"
-msgstr "Premeu ENTRAR o introduïu una ordre per continuar"
+#, c-format
+msgid "%s line %ld"
+msgstr "%s línia %ld"
 
 msgid "-- More --"
 msgstr "-- Més --"
 
-msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
-msgstr " (ENTRAR/RETROCÉS: línia, ESPAI/b; pàgina, d/u; mitja pàgina, q: surt)"
-
-msgid " (RET: line, SPACE: page, d: half page, q: quit)"
-msgstr " (ENTRAR: línia, ESPAI: pàgina, d: mitja pàgina, q: surt)"
+msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
+msgstr " ESPAI/d/j: pantalla/pàgina/línia avall, b/u/k: amunt, q: sortir"
 
 msgid "Question"
 msgstr "Pregunta"
@@ -3120,6 +3750,9 @@ msgstr ""
 "&Descarta-ho tot\n"
 "&Cancel·la"
 
+msgid "Select Directory dialog"
+msgstr "Diàleg de selecció de directori"
+
 msgid "Save File dialog"
 msgstr "Diàleg de desar fitxer"
 
@@ -3130,8 +3763,20 @@ msgstr "Diàleg d'obrir fitxer"
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: No hi ha un explorador de fitxers en mode consola"
 
+msgid "E766: Insufficient arguments for printf()"
+msgstr "E766: Falten arguments per a printf()"
+
+msgid "E767: Too many arguments to printf()"
+msgstr "E767: Sobren arguments per a printf()"
+
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Atenció: S'està canviant un fitxer de només lectura"
+
+msgid "Type number or click with mouse (<Enter> cancels): "
+msgstr "Introduïu un número o feu clic amb el ratolí (<Entrar> per a cancel·lar): "
+
+msgid "Choice number (<Enter> cancels): "
+msgstr "Trieu un número (<Entrar> per a cancel·lar): "
 
 msgid "1 more line"
 msgstr "1 línia més"
@@ -3150,6 +3795,9 @@ msgstr "%ld línies menys"
 msgid " (Interrupted)"
 msgstr " (Interromput)"
 
+msgid "Beep!"
+msgstr "Bip!"
+
 msgid "Vim: preserving files...\n"
 msgstr "Vim: preservant els fitxers...\n"
 
@@ -3157,6 +3805,7 @@ msgstr "Vim: preservant els fitxers...\n"
 msgid "Vim: Finished.\n"
 msgstr "Vim: Finalitzat.\n"
 
+#, c-format
 msgid "ERROR: "
 msgstr "ERROR: "
 
@@ -3164,13 +3813,17 @@ msgstr "ERROR: "
 msgid ""
 "\n"
 "[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
-msgstr "\n[octets] total assignat-alliberat %lu-%lu, en ús %lu, màxim ús %lu\n"
+msgstr ""
+"\n"
+"[octets] total assignat-alliberat %lu-%lu, en ús %lu, màxim ús %lu\n"
 
 #, c-format
 msgid ""
 "[calls] total re/malloc()'s %lu, total free()'s %lu\n"
 "\n"
-msgstr "[crides] total re/malloc() %lu, total free() %lu\n\n"
+msgstr ""
+"[crides] total re/malloc() %lu, total free() %lu\n"
+"\n"
 
 msgid "E340: Line is becoming too long"
 msgstr "E340: La línia s'està tornant massa llarga"
@@ -3212,9 +3865,7 @@ msgid "Keys don't match!"
 msgstr "La claus no coincideixen!"
 
 #, c-format
-msgid ""
-"E343: Invalid path: '**[number]' must be at the end of the path or be "
-"followed by '%s'."
+msgid "E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."
 msgstr "E343: Path no vàlid: '**[núm]' ha d'estar al final del path, o seguit de '%s'"
 
 #, c-format
@@ -3233,15 +3884,6 @@ msgstr "E346: No s'ha trobat cap més directori \"%s\" en el cdpath"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: No s'ha trobat cap més fitxer \"%s\" en el path"
 
-msgid "E550: Missing colon"
-msgstr "E550: Falta un caràcter \":\""
-
-msgid "E551: Illegal component"
-msgstr "E551: Component il·legal"
-
-msgid "E552: digit expected"
-msgstr "E552: S'esperava un dígit"
-
 #. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "No s'ha pogut connectar amb Netbeans #2"
@@ -3249,8 +3891,25 @@ msgstr "No s'ha pogut connectar amb Netbeans #2"
 msgid "Cannot connect to Netbeans"
 msgstr "No s'ha pogut connectar amb Netbeans"
 
+#, c-format
+msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
+msgstr "E668: Mode d'accés incorrecte per al fitxer d'info de la connexió NetBeans: \"%s\""
+
 msgid "read from Netbeans socket"
 msgstr "lectura d'un socket Netbeans"
+
+#, c-format
+msgid "E658: NetBeans connection lost for buffer %ld"
+msgstr "E658: S'ha perdut la connexió NetBeans per al buffer %ld"
+
+msgid "E505: "
+msgstr "E505:"
+
+msgid "E774: 'operatorfunc' is empty"
+msgstr "E774: 'operatorfunc' no conté res"
+
+msgid "E775: Eval feature not available"
+msgstr "E775: La funció eval no està disponible"
 
 msgid "Warning: terminal cannot highlight"
 msgstr "Atenció: el terminal no suporta ressalt"
@@ -3263,6 +3922,19 @@ msgstr "E349: No hi ha cap identificador sota el cursor"
 
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: No es poden eliminar plecs amb el 'foldmethod' actual"
+
+msgid "E664: changelist is empty"
+msgstr "E664: La llista de canvis no conté res"
+
+msgid "E662: At start of changelist"
+msgstr "E662: A l'inici de la llista de canvis"
+
+msgid "E663: At end of changelist"
+msgstr "E663: A l'inici de la llista de canvis"
+
+# amplada 53 caràcters
+msgid "Type  :quit<Enter>  to exit Vim"
+msgstr "Feu  :quit<Entrar>  per sortir"
 
 #, c-format
 msgid "1 line %sed 1 time"
@@ -3291,6 +3963,9 @@ msgstr "1 línia sagnada "
 msgid "%ld lines indented "
 msgstr "%ld línies sagnades "
 
+msgid "E748: No previously used register"
+msgstr "E748: No hi ha cap registre usat amb anterioritat"
+
 #. must display the prompt
 msgid "cannot yank; delete anyway"
 msgstr "no s'ha pogut copiar; voleu elimiar el text de totes maneres"
@@ -3306,8 +3981,15 @@ msgstr "%ld línies canviades"
 msgid "freeing %ld lines"
 msgstr "alliberant %ld línies"
 
+msgid "block of 1 line yanked"
+msgstr "bloc d'1 línia copiat"
+
 msgid "1 line yanked"
 msgstr "1 línia copiada"
+
+#, c-format
+msgid "block of %ld lines yanked"
+msgstr "bloc de %ld línies copiat"
 
 #, c-format
 msgid "%ld lines yanked"
@@ -3321,23 +4003,24 @@ msgstr "E353: No hi ha res en el registre %s"
 msgid ""
 "\n"
 "--- Registers ---"
-msgstr "\n--- Registres ---"
+msgstr ""
+"\n"
+"--- Registres ---"
 
 msgid "Illegal register name"
 msgstr "El nom de registre és il·legal"
 
+#, c-format
 msgid ""
 "\n"
 "# Registers:\n"
-msgstr "\n# Registres:\n"
+msgstr ""
+"\n"
+"# Registres:\n"
 
 #, c-format
 msgid "E574: Unknown register type %d"
 msgstr "E574: El tipus de registre %d és desconegut"
-
-#, c-format
-msgid "E354: Invalid register name: '%s'"
-msgstr "E354: El nom de registre no és vàlid: '%s'"
 
 #, c-format
 msgid "%ld Cols; "
@@ -3345,11 +4028,19 @@ msgstr "%ld Cols; "
 
 #, c-format
 msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
-msgstr "%s%ld de %ld Línies seleccionades; %ld de %ld Paraules; %ld de %ld Octets"
+msgstr "Selecció %s%ld de %ld Línies; %ld de %ld Paraules; %ld de %ld Octets"
+
+#, c-format
+msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"
+msgstr "Selecció %s%ld de %ld Línies; %ld de %ld Paraules; %ld de %ld Caràcters; %ld de %ld Octets"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
 msgstr "Col %s de %s; Línia %ld de %ld; Paraula %ld de %ld; Octet %ld de %ld"
+
+#, c-format
+msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"
+msgstr "Col %s de %s; Línia %ld de %ld; Paraula %ld de %ld; Caràcter %ld de %ld; Octet %ld de %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -3369,11 +4060,6 @@ msgstr "E519: L'opció no està suportada"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: No està permès en una línia de mode"
-
-msgid ""
-"\n"
-"\tLast set from "
-msgstr "\n        Definit per últim cop a "
 
 msgid "E521: Number required after ="
 msgstr "E521: Es requereix un número després de ="
@@ -3420,7 +4106,7 @@ msgid "E595: contains unprintable or wide character"
 msgstr "E595: Conté un caràcter no imprimible o ample"
 
 msgid "E596: Invalid font(s)"
-msgstr "E596: El tipus de lletra no és vàlid"
+msgstr "E596: Fosa no vàlida"
 
 msgid "E597: can't select fontset"
 msgstr "E597: No s'ha pogut seleccionar el conjunt de tipus"
@@ -3429,10 +4115,10 @@ msgid "E598: Invalid fontset"
 msgstr "E598: El conjunt de tipus de lletra no és vàlid"
 
 msgid "E533: can't select wide font"
-msgstr "E533: No s'ha pogut seleccionar el tipus de lletra ample"
+msgstr "E533: No s'ha pogut seleccionar una fosa ampla"
 
 msgid "E534: Invalid wide font"
-msgstr "E534: El tipus de lletra ample no és vàlid"
+msgstr "E534: Fosa ampla no vàlida"
 
 #, c-format
 msgid "E535: Illegal character after <%c>"
@@ -3478,22 +4164,30 @@ msgstr "E355: L'opció és desconeguda: %s"
 msgid ""
 "\n"
 "--- Terminal codes ---"
-msgstr "\n--- Codis de terminal ---"
+msgstr ""
+"\n"
+"--- Codis de terminal ---"
 
 msgid ""
 "\n"
 "--- Global option values ---"
-msgstr "\n--- Valors de les opcions globals ---"
+msgstr ""
+"\n"
+"--- Valors de les opcions globals ---"
 
 msgid ""
 "\n"
 "--- Local option values ---"
-msgstr "\n--- Valors de les opcions locals ---"
+msgstr ""
+"\n"
+"--- Valors de les opcions locals ---"
 
 msgid ""
 "\n"
 "--- Options ---"
-msgstr "\n--- Opcions ---"
+msgstr ""
+"\n"
+"--- Opcions ---"
 
 msgid "E356: get_varp ERROR"
 msgstr "E356: Error en get_varp()"
@@ -3554,8 +4248,8 @@ msgstr "un valor ANCHOR_BUF_SIZE massa petit."
 msgid "I/O ERROR"
 msgstr "ERROR d'E/S"
 
-msgid "...(truncated)"
-msgstr "...(truncat)"
+msgid "Message"
+msgstr "Missatge"
 
 msgid "'columns' is not 80, cannot execute external commands"
 msgstr "L'opció 'columns' no és 80, no es poden executar ordres externes"
@@ -3570,14 +4264,11 @@ msgstr "a %s a %s"
 
 #, c-format
 msgid "E613: Unknown printer font: %s"
-msgstr "E613: Tipus de lletra d'impressió desconegut: %s"
+msgstr "E613: Fosa d'impressió desconeguda: %s"
 
 #, c-format
 msgid "E238: Print error: %s"
 msgstr "E238: Error d'impressió: %s"
-
-msgid "Unknown"
-msgstr "Desconegut"
 
 #, c-format
 msgid "Printing '%s'"
@@ -3601,6 +4292,7 @@ msgstr "Vim: S'ha rebut un doble senyal, sortint\n"
 msgid "Vim: Caught deadly signal %s\n"
 msgstr "Vim: S'ha rebut un senyal letal %s\n"
 
+#, c-format
 msgid "Vim: Caught deadly signal\n"
 msgstr "Vim: S'ha rebut un senyal letal\n"
 
@@ -3612,7 +4304,9 @@ msgstr "S'ha trigat %ld mseg en obrir el display X"
 msgid ""
 "\n"
 "Vim: Got X error\n"
-msgstr "\nVim: Error de X\n"
+msgstr ""
+"\n"
+"Vim: Error de X\n"
 
 # display
 msgid "Testing the X display failed"
@@ -3625,35 +4319,51 @@ msgstr "S'ha esgotat el temps mentre es tractava d'obrir el display X"
 msgid ""
 "\n"
 "Cannot execute shell "
-msgstr "\nNo s'ha pogut executar la shell "
+msgstr ""
+"\n"
+"No s'ha pogut executar la shell "
 
 msgid ""
 "\n"
 "Cannot execute shell sh\n"
-msgstr "\nNo s'ha pogut executar la shell sh\n"
+msgstr ""
+"\n"
+"No s'ha pogut executar la shell sh\n"
 
 msgid ""
 "\n"
 "shell returned "
-msgstr "\nla shell ha retornat "
+msgstr ""
+"\n"
+"la shell ha retornat "
 
 msgid ""
 "\n"
 "Cannot create pipes\n"
-msgstr "\nNo s'han pogut crear canonades\n"
+msgstr ""
+"\n"
+"No s'han pogut crear canonades\n"
 
 msgid ""
 "\n"
 "Cannot fork\n"
-msgstr "\nNo s'ha pogut bifurcar\n"
+msgstr ""
+"\n"
+"No s'ha pogut bifurcar\n"
 
 msgid ""
 "\n"
 "Command terminated\n"
-msgstr "\nL'ordre ha finalitzat\n"
+msgstr ""
+"\n"
+"L'ordre ha finalitzat\n"
 
 msgid "XSMP lost ICE connection"
 msgstr "XSMP: s'ha perdut la connexió ICE"
+
+#, c-format
+msgid "dlerror = \"%s\""
+msgstr "dlerror = \"%s\""
 
 # display
 msgid "Opening the X display failed"
@@ -3675,14 +4385,11 @@ msgstr "XSMP: Ha fallat la rutina SmcOpenConnection: %s"
 msgid "At line"
 msgstr "A la línia"
 
-msgid "Could not allocate memory for command line."
-msgstr "No s'ha pogut assignar memòria per la línia d'ordres."
+msgid "Could not load vim32.dll!"
+msgstr "No s'ha pogut carregar vim32.dll!"
 
 msgid "VIM Error"
 msgstr "Error del VIM"
-
-msgid "Could not load vim32.dll!"
-msgstr "No s'ha pogut carregar vim32.dll!"
 
 msgid "Could not fix up function pointers to the DLL!"
 msgstr "No s'han pogut reassignar els punters de funcions a la DLL!"
@@ -3728,7 +4435,7 @@ msgid "E373: Unexpected %%%c in format string"
 msgstr "E373: %%%c inesperat a la cadena de format"
 
 msgid "E374: Missing ] in format string"
-msgstr "E364: Falta un ] a la cadena de format"
+msgstr "E374: Falta un ] a la cadena de format"
 
 #, c-format
 msgid "E375: Unsupported %%%c in format string"
@@ -3771,6 +4478,19 @@ msgstr "llista d'errors %d de %d; %d errors"
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: No s'ha pogut escriure, l'opció 'buftype' no està definida"
 
+msgid "E683: File name missing or invalid pattern"
+msgstr "E683: Falta el nom de fitxer o el patró no és vàlid"
+
+#, c-format
+msgid "Cannot open file \"%s\""
+msgstr "No s'ha pogut obrir el fitxer \"%s\""
+
+msgid "E681: Buffer is not loaded"
+msgstr "E681: El buffer no està carregat"
+
+msgid "E777: String or List expected"
+msgstr "E777: S'esperava una cadena o una llista"
+
 #, c-format
 msgid "E369: invalid item in %s%%[]"
 msgstr "E369: Ítem no vàlid a %s%%[]"
@@ -3801,20 +4521,8 @@ msgid "E55: Unmatched %s)"
 msgstr "E55: %s) desequilibrat"
 
 #, c-format
-msgid "E56: %s* operand could be empty"
-msgstr "E56: L'operand %s* podria estar buit"
-
-#, c-format
-msgid "E57: %s+ operand could be empty"
-msgstr "E57: L'operand %s+ podria estar buit"
-
-#, c-format
 msgid "E59: invalid character after %s@"
 msgstr "E59: Hi ha un caràcter no vàlid després de %s@"
-
-#, c-format
-msgid "E58: %s{ operand could be empty"
-msgstr "E58: L'operand %s{ podria estar buit"
 
 #, c-format
 msgid "E60: Too many complex %s{...}s"
@@ -3833,7 +4541,7 @@ msgstr "E63: Ús no vàlid de \\_"
 
 #, c-format
 msgid "E64: %s%c follows nothing"
-msgstr "E46: No ha ha res abans de %s%c"
+msgstr "E64: No ha ha res abans de %s%c"
 
 msgid "E65: Illegal back reference"
 msgstr "E65: Referència il·legal a l'element anterior"
@@ -3856,25 +4564,23 @@ msgid "E70: Empty %s%%[]"
 msgstr "E70: Element %s%%[] buit"
 
 #, c-format
+msgid "E678: Invalid character after %s%%[dxouU]"
+msgstr "E678: Caràcter invàlid després de %s%%[dxouU]"
+
+#, c-format
 msgid "E71: Invalid character after %s%%"
 msgstr "E71: Hi ha un caràcter invàlid després de %s%%"
+
+#, c-format
+msgid "E769: Missing ] after %s["
+msgstr "E769: Falta un ] després de %s["
 
 #, c-format
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Error de sintaxi a %s{...}"
 
-msgid "E361: Crash intercepted; regexp too complex?"
-msgstr "E361: Programa inestable; expressió regular massa complexa?"
-
-msgid "E363: pattern caused out-of-stack error"
-msgstr "E363: El patró ha provocat un error de desbordament de pila"
-
 msgid "External submatches:\n"
 msgstr "Subcoincidències externes:\n"
-
-#, c-format
-msgid "+--%3ld lines folded "
-msgstr "+--%3ld línies plegades "
 
 msgid " VREPLACE"
 msgstr " SUBSTITUIRV"
@@ -3911,26 +4617,26 @@ msgstr " (lang)"
 msgid " (paste)"
 msgstr " (enganxar)"
 
-msgid " SELECT"
-msgstr " SELECCIONAR"
-
 msgid " VISUAL"
 msgstr " VISUAL"
 
-msgid " BLOCK"
-msgstr " BLOC"
+msgid " VISUAL LINE"
+msgstr " VISUAL LÍNIA"
 
-msgid " LINE"
-msgstr " LÍNIA"
+msgid " VISUAL BLOCK"
+msgstr " VISUAL BLOC"
+
+msgid " SELECT"
+msgstr " SELECCIONAR"
+
+msgid " SELECT LINE"
+msgstr " SELECCIÓ LÍNIA"
+
+msgid " SELECT BLOCK"
+msgstr " SELECCIÓ BLOC"
 
 msgid "recording"
 msgstr "enregistrant"
-
-msgid "search hit TOP, continuing at BOTTOM"
-msgstr "la cerca ha arribat a DALT, es continua a BAIX"
-
-msgid "search hit BOTTOM, continuing at TOP"
-msgstr "la cerca ha arribat a BAIX, es continua a DALT"
 
 #, c-format
 msgid "E383: Invalid search string: %s"
@@ -3970,6 +4676,10 @@ msgstr "  NO TROBAT"
 msgid "Scanning included file: %s"
 msgstr "Examinant el fitxer inclòs: %s"
 
+#, c-format
+msgid "Searching included file %s"
+msgstr "Cercant al fitxer inclòs %s"
+
 msgid "E387: Match is on current line"
 msgstr "E387: El resultat es troba a la línia actual"
 
@@ -3984,6 +4694,364 @@ msgstr "E388: No s'ha trobat la definició"
 
 msgid "E389: Couldn't find pattern"
 msgstr "E389: No s'ha trobat el patró"
+
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Últim %sPatró de Cerca:\n"
+"~"
+
+msgid "E759: Format error in spell file"
+msgstr "E759: Error de format en el fitxer d'ortografia"
+
+msgid "E758: Truncated spell file"
+msgstr "E758: Fitxer d'ortografia truncat"
+
+#, c-format
+msgid "Trailing text in %s line %d: %s"
+msgstr "Text sobrant a %s línia %d: %s"
+
+#, c-format
+msgid "Affix name too long in %s line %d: %s"
+msgstr "El nom de l'afix és massa llarg a %s línia %d: %s"
+
+msgid "E761: Format error in affix file FOL, LOW or UPP"
+msgstr "E761: Error de format en el fitxer d'afixos FOL, LOW o UPP"
+
+msgid "E762: Character in FOL, LOW or UPP is out of range"
+msgstr "E762: Caràcter a FOL, LOW o UPP fora d'abast"
+
+msgid "Compressing word tree..."
+msgstr "Comprimint l'arbre de paraules..."
+
+msgid "E756: Spell checking is not enabled"
+msgstr "E756: La correcció ortogràfica no està activada"
+
+#, c-format
+msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
+msgstr "Atenció: No s'ha trobat la llista de paraules \"%s.%s.spl\" o \"%s.ascii.spl\""
+
+#, c-format
+msgid "Reading spell file \"%s\""
+msgstr "Llegint el fitxer d'ortografia \"%s\""
+
+msgid "E757: This does not look like a spell file"
+msgstr "E757: Això no té pinta de ser un fitxer d'ortografia"
+
+msgid "E771: Old spell file, needs to be updated"
+msgstr "E771: Fitxer d'ortografia vell, ha de ser actualitzat"
+
+msgid "E772: Spell file is for newer version of Vim"
+msgstr "E772: El fitxer d'ortografia és per a una versió més recent del Vim"
+
+msgid "E770: Unsupported section in spell file"
+msgstr "E770: Secció en el fitxer d'ortografia no suportada"
+
+#, c-format
+msgid "Warning: region %s not supported"
+msgstr "Atenció: la regió %s no està suportada"
+
+#, c-format
+msgid "Reading affix file %s ..."
+msgstr "Llegint el fitxer d'afixos %s ..."
+
+#, c-format
+msgid "Conversion failure for word in %s line %d: %s"
+msgstr "No s'ha pogut convertir una paraula a %s línia %d: %s"
+
+#, c-format
+msgid "Conversion in %s not supported: from %s to %s"
+msgstr "La conversió a %s no està suportada: de %s a %s"
+
+#, c-format
+msgid "Conversion in %s not supported"
+msgstr "Conversió a %s no suportada"
+
+#, c-format
+msgid "Invalid value for FLAG in %s line %d: %s"
+msgstr "Valor de marca no vàlid a %s línia %d: %s"
+
+#, c-format
+msgid "FLAG after using flags in %s line %d: %s"
+msgstr "FLAG després d'usar marques a %s línia %d: %s"
+
+#, c-format
+msgid "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"
+msgstr "Definir COMPOUNDFORBIDFLAG després de l'element PFX pot tenir resultats inesperats a %s línia %d"
+
+#, c-format
+msgid "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"
+msgstr "Definir COMPOUNDPERMITFLAG després de l'element PFX pot tenir resultats inesperats a %s línia %d"
+
+#, c-format
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "Valor de COMPOUNDWORDMAX incorrecte a %s línia %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
+msgstr "Valor de COMPOUNDMIN incorrecte a %s línia %d: %s"
+
+#, c-format
+msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
+msgstr "Valor de COMPOUNDSYLMAX incorrecte a %s línia %d: %s"
+
+#, c-format
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "Valor de CHECKCOMPOUNDPATTERN incorrecte a %s línia %d: %s"
+
+#, c-format
+msgid "Different combining flag in continued affix block in %s line %d: %s"
+msgstr "Marca de combinació diferent en bloc continuat d'afixos a %s línia %d: %s"
+
+#, c-format
+msgid "Duplicate affix in %s line %d: %s"
+msgstr "Afix duplicat a %s línia %d: %s"
+
+#, c-format
+msgid "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"
+msgstr "Afix també utilitzat per a BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST a %s línia %d: %s"
+
+#, c-format
+msgid "Expected Y or N in %s line %d: %s"
+msgstr "S'esperava Y o N a %s línia %d: %s"
+
+#, c-format
+msgid "Broken condition in %s line %d: %s"
+msgstr "Condició errònia a %s línia %d: %s"
+
+#, c-format
+msgid "Expected REP(SAL) count in %s line %d"
+msgstr "S'esperava recompte REP(SAL) a %s línia %d"
+
+#, c-format
+msgid "Expected MAP count in %s line %d"
+msgstr "S'esperava un recompte MAP a %s línia %d"
+
+#, c-format
+msgid "Duplicate character in MAP in %s line %d"
+msgstr "Caràcter duplicat en un element MAP a %s línia %d"
+
+#, c-format
+msgid "Unrecognized or duplicate item in %s line %d: %s"
+msgstr "Element duplicat o no reconegut a %s línia %d: %s"
+
+#, c-format
+msgid "Missing FOL/LOW/UPP line in %s"
+msgstr "Falta una línia FOL/LOW/UPP a %s"
+
+msgid "COMPOUNDSYLMAX used without SYLLABLE"
+msgstr "Element COMPOUNDSYLMAX sense síl·laba"
+
+msgid "Too many postponed prefixes"
+msgstr "Sobren prefixes posposats"
+
+msgid "Too many compound flags"
+msgstr "Sobren marques de composició"
+
+msgid "Too many posponed prefixes and/or compound flags"
+msgstr "Massa prefixes posposats i/o marques de composició"
+
+#, c-format
+msgid "Missing SOFO%s line in %s"
+msgstr "Falta una línia SOFO%s a %s"
+
+#, c-format
+msgid "Both SAL and SOFO lines in %s"
+msgstr "Línies SAL i SOFO a %s"
+
+#, c-format
+msgid "Flag is not a number in %s line %d: %s"
+msgstr "La marca no és un número a %s línia %d: %s"
+
+#, c-format
+msgid "Illegal flag in %s line %d: %s"
+msgstr "Marca il·legal a %s línia %d: %s"
+
+#, c-format
+msgid "%s value differs from what is used in another .aff file"
+msgstr "el valor %s difereix de l'usat en un altre fitxer .aff"
+
+#, c-format
+msgid "Reading dictionary file %s ..."
+msgstr "Llefint el fitxer de diccionari %s ..."
+
+#, c-format
+msgid "E760: No word count in %s"
+msgstr "E760: No hi ha recompte de paraules a %s"
+
+#, c-format
+msgid "line %6d, word %6d - %s"
+msgstr "línia %6d, paraula %6d - %s"
+
+#, c-format
+msgid "Duplicate word in %s line %d: %s"
+msgstr "Paraula duplicada a %s línia %d: %s"
+
+#, c-format
+msgid "First duplicate word in %s line %d: %s"
+msgstr "Primera paraula duplicada a %s línia %d: %s"
+
+#, c-format
+msgid "%d duplicate word(s) in %s"
+msgstr "%d paraula/es duplada/es a %s"
+
+#, c-format
+msgid "Ignored %d word(s) with non-ASCII characters in %s"
+msgstr "%d paraula/es ignorada/es amb caràcters no-ASCII a %s"
+
+#, c-format
+msgid "Reading word file %s ..."
+msgstr "Llegint el fitxer de paraules %s ..."
+
+#, c-format
+msgid "Duplicate /encoding= line ignored in %s line %d: %s"
+msgstr "S'ignora la línia /encoding= duplicada a %s línia %d: %s"
+
+#, c-format
+msgid "/encoding= line after word ignored in %s line %d: %s"
+msgstr "S'ignora una línia /encoding= després d'una paraula a %s línia %d: %s"
+
+#, c-format
+msgid "Duplicate /regions= line ignored in %s line %d: %s"
+msgstr "S'ignora la línia /regions= duplicada a %s línia %d: %s"
+
+#, c-format
+msgid "Too many regions in %s line %d: %s"
+msgstr "Massa regions a %s línia %d: %s"
+
+#, c-format
+msgid "/ line ignored in %s line %d: %s"
+msgstr "Línia / ignorada a %s línia %d: %s"
+
+#, c-format
+msgid "Invalid region nr in %s line %d: %s"
+msgstr "Número de regió no vàlid a %s línia %d: %s"
+
+#, c-format
+msgid "Unrecognized flags in %s line %d: %s"
+msgstr "Marques no reconegudes a %s línia %d: %s"
+
+#, c-format
+msgid "Ignored %d words with non-ASCII characters"
+msgstr "S'ignoren %d paraules amb caràcters no-ASCII"
+
+#, c-format
+msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
+msgstr "Comprimits %d de %d nodes; %d (%d%%) pendents"
+
+msgid "Reading back spell file..."
+msgstr "Tornant a llegir el fitxer d'ortografia..."
+
+#.
+#. * Go through the trie of good words, soundfold each word and add it to
+#. * the soundfold trie.
+#.
+msgid "Performing soundfolding..."
+msgstr "Efectuant expansió per similitud fonètica..."
+
+#, c-format
+msgid "Number of words after soundfolding: %ld"
+msgstr "Nombre de paraules després de l'expansió per similitud fonètica: %ld"
+
+#, c-format
+msgid "Total number of words: %d"
+msgstr "Nombre total de paraules: %d"
+
+#, c-format
+msgid "Writing suggestion file %s ..."
+msgstr "Escrivint el fitxer de suggeriments %s ..."
+
+#, c-format
+msgid "Estimated runtime memory use: %d bytes"
+msgstr "Ús estimat de memòria en funcionament: %d octets"
+
+msgid "E751: Output file name must not have region name"
+msgstr "E751: El fitxer de sortida no pot tenir un nom de regió"
+
+msgid "E754: Only up to 8 regions supported"
+msgstr "E754: Només es suporten fins a 8 regions"
+
+#, c-format
+msgid "E755: Invalid region in %s"
+msgstr "E755: Regió no vàlida a %s"
+
+msgid "Warning: both compounding and NOBREAK specified"
+msgstr "Atenció: heu especificat composició i NOBREAK alhora"
+
+#, c-format
+msgid "Writing spell file %s ..."
+msgstr "Escrivint el fitxer d'ortografia %s ..."
+
+msgid "Done!"
+msgstr "Fet!"
+
+#, c-format
+msgid "E765: 'spellfile' does not have %ld entries"
+msgstr "E765: 'spellfile' no té %ld entrades"
+
+#, c-format
+msgid "Word removed from %s"
+msgstr "Paraula eliminada de %s"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "Paraula afegida a %s"
+
+msgid "E763: Word characters differ between spell files"
+msgstr "E763: Els caràcters de paraula difereixen entre fitxers d'ortografia"
+
+msgid "Sorry, no suggestions"
+msgstr "Cap suggeriment"
+
+#, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "Llàstima, només %ld suggeriments"
+
+#. for when 'cmdheight' > 1
+#. avoid more prompt
+#, c-format
+msgid "Change \"%.*s\" to:"
+msgstr "Canviar \"%.*s\" per:"
+
+#, c-format
+msgid " < \"%.*s\""
+msgstr " < \"%.*s\""
+
+msgid "E752: No previous spell replacement"
+msgstr "E752: No hi ha cap correcció ortogràfica anterior"
+
+#, c-format
+msgid "E753: Not found: %s"
+msgstr "E753: No trobat: %s"
+
+#, c-format
+msgid "E778: This does not look like a .sug file: %s"
+msgstr "E778: No sembla pas un fitxer .sug: %s"
+
+#, c-format
+msgid "E779: Old .sug file, needs to be updated: %s"
+msgstr "E779: Fitxer .sug antic, ha de ser actualitzat: %s"
+
+#, c-format
+msgid "E780: .sug file is for newer version of Vim: %s"
+msgstr "E780: El fitxer .sug és per a una versió més nova del Vim: %s"
+
+#, c-format
+msgid "E781: .sug file doesn't match .spl file: %s"
+msgstr "E781: El fitxer .sug no coincideix amb el fitxer .spl: %s"
+
+#, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: error en llegir el fitxer .sug: %s"
+
+#. This should have been checked when generating the .spl
+#. * file.
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: Caràcter duplicat a l'entrada MAP"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -4013,17 +5081,23 @@ msgstr " línies abans de la línia superior"
 msgid ""
 "\n"
 "--- Syntax sync items ---"
-msgstr "\n--- Ítems de sincronització de sintaxi ---"
+msgstr ""
+"\n"
+"--- Ítems de sincronització de sintaxi ---"
 
 msgid ""
 "\n"
 "syncing on items"
-msgstr "\ns'està sincronitzant a partir d'ítems"
+msgstr ""
+"\n"
+"s'està sincronitzant a partir d'ítems"
 
 msgid ""
 "\n"
 "--- Syntax items ---"
-msgstr "\n--- Ítems de sintaxi ---"
+msgstr ""
+"\n"
+"--- Ítems de sintaxi ---"
 
 #, c-format
 msgid "E392: No such syntax cluster: %s"
@@ -4041,6 +5115,12 @@ msgstr "; coincidència "
 msgid " line breaks"
 msgstr " salts de línia"
 
+msgid "E395: contains argument not accepted here"
+msgstr "E395: Conté un argument que no s'accepta aquí"
+
+msgid "E396: containedin argument not accepted here"
+msgstr "E396: L'argument 'containedin' no s'accepta aquí"
+
 msgid "E393: group[t]here not accepted here"
 msgstr "E393: L'opció group[t]here no s'accepta aquí"
 
@@ -4048,14 +5128,12 @@ msgstr "E393: L'opció group[t]here no s'accepta aquí"
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: No s'ha trobat cap regió d'ítems per %s"
 
-msgid "E395: contains argument not accepted here"
-msgstr "E395: Conté un argument que no s'accepta aquí"
-
-msgid "E396: containedin argument not accepted here"
-msgstr "E396: L'argument 'containedin' no s'accepta aquí"
-
 msgid "E397: Filename required"
 msgstr "E397: Es requereix un nom de fitxer"
+
+#, c-format
+msgid "E789: Missing ']': %s"
+msgstr "E789: Falta un ']': %s"
 
 #, c-format
 msgid "E398: Missing '=': %s"
@@ -4094,7 +5172,7 @@ msgstr "E406: Argument buit: %s"
 
 #, c-format
 msgid "E407: %s not allowed here"
-msgstr "E402: %s no està permès aquí"
+msgstr "E407: %s no està permès aquí"
 
 #, c-format
 msgid "E408: %s must be first in contains list"
@@ -4107,6 +5185,9 @@ msgstr "E409: El nom del grup és desconegut: %s"
 #, c-format
 msgid "E410: Invalid :syntax subcommand: %s"
 msgstr "E410: Sub-ordre de sintaxi no vàlida: %s"
+
+msgid "E679: recursive loop loading syncolor.vim"
+msgstr "E679: Iteració recursiva en carregar syncolor.vim"
 
 #, c-format
 msgid "E411: highlight group not found: %s"
@@ -4160,6 +5241,12 @@ msgstr "E423: L'argument és il·legal: %s"
 msgid "E424: Too many different highlighting attributes in use"
 msgstr "E424: Hi ha massa atributs de ressalt diferents en ús"
 
+msgid "E669: Unprintable character in group name"
+msgstr "E669: Caràcter no imprimible en el nom del grup"
+
+msgid "W18: Invalid character in group name"
+msgstr "W18: Hi ha un caràcter no vàlid en el nom del grup"
+
 msgid "E555: at bottom of tag stack"
 msgstr "E555: Baix de la pila d'etiquetes"
 
@@ -4178,13 +5265,6 @@ msgstr "  # pri tip  etiqueta"
 
 msgid "file\n"
 msgstr "fitxer\n"
-
-#.
-#. * Ask to select a tag from the list.
-#. * When using ":silent" assume that <CR> was entered.
-#.
-msgid "Enter nr of choice (<CR> to abort): "
-msgstr "Entreu un número (<Entrar> per avortar): "
 
 msgid "E427: There is only one matching tag"
 msgstr "E427: Només hi ha una sola etiqueta que coincideixi"
@@ -4215,7 +5295,9 @@ msgstr "E429: El fitxer \"%s\" no existeix"
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
-msgstr "\n  #  A etiq     DES DE línia  en fitxer/text"
+msgstr ""
+"\n"
+"  #  A etiq     DES DE línia  en fitxer/text"
 
 #, c-format
 msgid "Searching tags file %s"
@@ -4274,7 +5356,9 @@ msgstr "E437: Es requereix la capacitat \"cm\" per part del terminal"
 msgid ""
 "\n"
 "--- Terminal keys ---"
-msgstr "\n--- Tecles del terminal ---"
+msgstr ""
+"\n"
+"--- Tecles del terminal ---"
 
 msgid "new shell started\n"
 msgstr "s'ha iniciat una nova shell\n"
@@ -4286,15 +5370,59 @@ msgstr "Vim: Error en llegir l'entrada, sortint...\n"
 msgid "No undo possible; continue anyway"
 msgstr "No es pot desfer res; voleu continuar"
 
+msgid "Already at oldest change"
+msgstr "Ja sou en el canvi més vell"
+
+msgid "Already at newest change"
+msgstr "Ja sou en el canvi més recent"
+
+#, c-format
+msgid "Undo number %ld not found"
+msgstr "Línia de desfer número %ld no trobada"
+
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: els nombres de línia no són correctes"
 
-msgid "1 change"
-msgstr "1 canvi"
+msgid "more line"
+msgstr "línia més"
+
+msgid "more lines"
+msgstr "línies més"
+
+msgid "line less"
+msgstr "línia menys"
+
+msgid "fewer lines"
+msgstr "línies menys"
+
+msgid "change"
+msgstr "canvi"
+
+msgid "changes"
+msgstr "canvis"
 
 #, c-format
-msgid "%ld changes"
-msgstr "%ld canvis"
+msgid "%ld %s; %s #%ld  %s"
+msgstr "%ld %s; %s #%ld  %s"
+
+msgid "before"
+msgstr "abans"
+
+msgid "after"
+msgstr "després"
+
+msgid "Nothing to undo"
+msgstr "No hi ha res per desfer"
+
+msgid "number changes  time"
+msgstr "número canvis   hora"
+
+#, c-format
+msgid "%ld seconds ago"
+msgstr "fa %ld segons"
+
+msgid "E790: undojoin is not allowed after undo"
+msgstr "E790: undojoin no està permès després de undo"
 
 msgid "E439: undo list corrupt"
 msgstr "E439: La llista de desfer està corrompuda"
@@ -4306,12 +5434,23 @@ msgstr "E440: Falta una línia de desfer"
 msgid ""
 "\n"
 "MS-Windows 16/32 bit GUI version"
-msgstr "\nVersió GUI per MS-Windows 16/32 bits"
+msgstr ""
+"\n"
+"Versió GUI per MS-Windows 16/32 bits"
+
+msgid ""
+"\n"
+"MS-Windows 64 bit GUI version"
+msgstr ""
+"\n"
+"Versió GUI per a MS-Windows 64 bits"
 
 msgid ""
 "\n"
 "MS-Windows 32 bit GUI version"
-msgstr "\nVersió GUI per MS-Windows 32 bits"
+msgstr ""
+"\n"
+"Versió GUI per MS-Windows 32 bits"
 
 msgid " in Win32s mode"
 msgstr " en mode Win32s"
@@ -4322,47 +5461,65 @@ msgstr " amb suport per OLE"
 msgid ""
 "\n"
 "MS-Windows 32 bit console version"
-msgstr "\nVersió consola per MS-Windows 32 bits"
+msgstr ""
+"\n"
+"Versió consola per MS-Windows 32 bits"
 
 msgid ""
 "\n"
 "MS-Windows 16 bit version"
-msgstr "\nVersió per MS-Windows 16 bits"
+msgstr ""
+"\n"
+"Versió per MS-Windows 16 bits"
 
 msgid ""
 "\n"
 "32 bit MS-DOS version"
-msgstr "\nVersió per MS-DOS 32 bits"
+msgstr ""
+"\n"
+"Versió per MS-DOS 32 bits"
 
 msgid ""
 "\n"
 "16 bit MS-DOS version"
-msgstr "\nVersió per MS-DOS 16 bits"
+msgstr ""
+"\n"
+"Versió per MS-DOS 16 bits"
 
 msgid ""
 "\n"
 "MacOS X (unix) version"
-msgstr "\nVersió per MacOS X (Unix)"
+msgstr ""
+"\n"
+"Versió per MacOS X (Unix)"
 
 msgid ""
 "\n"
 "MacOS X version"
-msgstr "\nVersió per MacOS X"
+msgstr ""
+"\n"
+"Versió per MacOS X"
 
 msgid ""
 "\n"
 "MacOS version"
-msgstr "\nVersió per MacOS"
+msgstr ""
+"\n"
+"Versió per MacOS"
 
 msgid ""
 "\n"
 "RISC OS version"
-msgstr "\nVersió per RISC OS"
+msgstr ""
+"\n"
+"Versió per RISC OS"
 
 msgid ""
 "\n"
 "Included patches: "
-msgstr "\nModificacions incloses: "
+msgstr ""
+"\n"
+"Modificacions incloses: "
 
 msgid "Modified by "
 msgstr "Modificat per "
@@ -4370,7 +5527,9 @@ msgstr "Modificat per "
 msgid ""
 "\n"
 "Compiled "
-msgstr "\nCompilat "
+msgstr ""
+"\n"
+"Compilat "
 
 msgid "by "
 msgstr "per "
@@ -4378,27 +5537,37 @@ msgstr "per "
 msgid ""
 "\n"
 "Huge version "
-msgstr "\nVersió enorme "
+msgstr ""
+"\n"
+"Versió enorme "
 
 msgid ""
 "\n"
 "Big version "
-msgstr "\nVersió gran "
+msgstr ""
+"\n"
+"Versió gran "
 
 msgid ""
 "\n"
 "Normal version "
-msgstr "\nVersió normal "
+msgstr ""
+"\n"
+"Versió normal "
 
 msgid ""
 "\n"
 "Small version "
-msgstr "\nVersió reduïda "
+msgstr ""
+"\n"
+"Versió reduïda "
 
 msgid ""
 "\n"
 "Tiny version "
-msgstr "\nVersió mínima "
+msgstr ""
+"\n"
+"Versió mínima "
 
 msgid "without GUI."
 msgstr "sense GUI."
@@ -4423,9 +5592,6 @@ msgstr "amb GUI X11-neXtaw."
 
 msgid "with X11-Athena GUI."
 msgstr "amb GUI X11-Athena."
-
-msgid "with BeOS GUI."
-msgstr "amb GUI BeOS."
 
 msgid "with Photon GUI."
 msgstr "amb GUI Photon."
@@ -4519,41 +5685,41 @@ msgid "by Bram Moolenaar et al."
 msgstr "per Bram Moolenaar et al."
 
 msgid "Vim is open source and freely distributable"
-msgstr "Vim és un programa de codi obert i lliure distribució"
+msgstr "Vim és un programa obert i lliure distribució"
 
 msgid "Help poor children in Uganda!"
 msgstr "Ajudeu els nens pobres d'Uganda!"
 
 # amplada 53 caràcters
 msgid "type  :help iccf<Enter>       for information "
-msgstr "feu  :help iccf<Entrar>       per més informació     "
+msgstr "feu  :help iccf<Entrar>          per a més informació     "
 
 # amplada 53 caràcters
 msgid "type  :q<Enter>               to exit         "
-msgstr "feu  :q<Entrar>               per sortir             "
+msgstr "feu  :q<Entrar>                  per a sortir             "
 
 # amplada 53 caràcters
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
-msgstr "feu  :help<Entrar> o <F1>     per obtenir ajuda      "
+msgstr "feu  :help<Entrar> o <F1>        per a obtenir ajuda      "
 
 # amplada 53 caràcters
-msgid "type  :help version6<Enter>   for version info"
-msgstr "feu  :help version6<Entrar>   per info de la versió  "
+msgid "type  :help version7<Enter>   for version info"
+msgstr "feu  :help version7<Entrar>      per a info de la versió  "
 
 msgid "Running in Vi compatible mode"
 msgstr "Funcionant en mode compatible amb Vi"
 
 # amplada 53 caràcters
 msgid "type  :set nocp<Enter>        for Vim defaults"
-msgstr "feu  :set nocp<Entrar>        pels valors per omissió"
+msgstr "feu  :set nocp<Entrar>           per al mode no compatible"
 
 # amplada 53 caràcters
 msgid "type  :help cp-default<Enter> for info on this"
-msgstr "feu  :help cp-default<Entrar> per info sobre el tema "
+msgstr "feu  :help cp-default<Entrar>    per a info sobre el tema "
 
 # amplada 53 caràcters
 msgid "menu  Help->Orphans           for information    "
-msgstr "menú  Ajuda->Orfes                     per informació"
+msgstr "menú  Ajuda->Orfes               per a informació      "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "Funcionant sense modes, el text escrit s'insereix"
@@ -4561,27 +5727,48 @@ msgstr "Funcionant sense modes, el text escrit s'insereix"
 # Això ha de lligar amb la traducció del menú
 # amplada 53 caràcters
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "menú  Edita->Opcions globals->Mode d'inserció        "
+msgstr "menú  Edita->Opcions globals->Mode d'inserció          "
 
 # amplada 53 caràcters
 msgid "                              for two modes      "
-msgstr "                                        per dos modes"
+msgstr "                                 per a dos modes       "
 
 # Això ha de lligar amb la traducció del menú
 # amplada 53 caràcters
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "menú  Edita->Opcions globals->Compatible amb Vi      "
+msgstr "menú  Edita->Opcions globals->Compatible amb Vi        "
 
 # amplada 53 caràcters
 msgid "                              for Vim defaults   "
-msgstr "                              pels valors per omissió"
+msgstr "                                 per al mode compatible"
+
+msgid "Sponsor Vim development!"
+msgstr "Patrocineu el desenvolupament del Vim!"
+
+msgid "Become a registered Vim user!"
+msgstr "Feu-vos usuari de Vim registrat!"
+
+# amplada 53 caràcters
+msgid "type  :help sponsor<Enter>    for information "
+msgstr "feu  :help sponsor<Entrar>       per a informació         "
+
+# amplada 53 caràcters
+msgid "type  :help register<Enter>   for information "
+msgstr "feu  :help register<Entrar>      per a informació         "
+
+# amplada 53 caràcters
+msgid "menu  Help->Sponsor/Register  for information    "
+msgstr "menú  Ajuda->Patrocini/Registre  per a informació      "
 
 msgid "WARNING: Windows 95/98/ME detected"
 msgstr "ATENCIÓ: S'ha detectat Windows 95/98/ME"
 
 # amplada 53 caràcters
 msgid "type  :help windows95<Enter>  for info on this"
-msgstr "feu  :help windows95<Entrar>  per info sobre el tema "
+msgstr "feu  :help windows95<Entrar>     per a info sobre el tema "
+
+msgid "Already only one window"
+msgstr "Només hi ha una finestra"
 
 msgid "E441: There is no preview window"
 msgstr "E441: No hi ha cap finestra de previsualització"
@@ -4590,13 +5777,10 @@ msgid "E442: Can't split topleft and botright at the same time"
 msgstr "E442: No es pot dividir horitzontal i verticalment al mateix temps"
 
 msgid "E443: Cannot rotate when another window is split"
-msgstr "E442: No hi pot haver rotació quan hi ha finestres dividides"
+msgstr "E443: No hi pot haver rotació quan hi ha finestres dividides"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: No es pot tancar l'última finestra"
-
-msgid "Already only one window"
-msgstr "Només hi ha una finestra"
 
 msgid "E445: Other window contains changes"
 msgstr "E445: Hi han altres finestres que contenen canvis"
@@ -4615,8 +5799,8 @@ msgstr "E370: No s'ha pogut carregar la biblioteca %s"
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Aquesta ordre no està habilitada: no s'ha pogut carregar la biblioteca Perl."
 
-#~ msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-#~ msgstr ""
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr "E299: Avaluació Perl en una gàbia no permesa sense el mòdul Safe"
 
 msgid "Edit with &multiple Vims"
 msgstr "Edita en &múltiples Vims"
@@ -4624,15 +5808,15 @@ msgstr "Edita en &múltiples Vims"
 msgid "Edit with single &Vim"
 msgstr "Edita en un sol &Vim"
 
-msgid "&Diff with Vim"
-msgstr "Mostra les &diferències amb Vim"
+msgid "Diff with Vim"
+msgstr "Mostra les diferències amb Vim"
 
 msgid "Edit with &Vim"
 msgstr "Edita amb el &Vim"
 
 #. Now concatenate
-msgid "Edit with existing Vim - &"
-msgstr "Edita amb el Vim existent - &"
+msgid "Edit with existing Vim - "
+msgstr "Edita amb un Vim existent - "
 
 msgid "Edits the selected file(s) with Vim"
 msgstr "Edita el(s) fitxer(s) seleccionat(s) amb el Vim"
@@ -4677,8 +5861,14 @@ msgstr "E600: Falta una declaració :endtry"
 msgid "E170: Missing :endwhile"
 msgstr "E170: Falta una declaració :endwhile"
 
+msgid "E170: Missing :endfor"
+msgstr "E170: Falta un :endfor"
+
 msgid "E588: :endwhile without :while"
 msgstr "E588: Declaració :endwhile sense :while"
+
+msgid "E588: :endfor without :for"
+msgstr "E588: :endfor sense :for"
 
 msgid "E13: File exists (add ! to override)"
 msgstr "E13: El fitxer existeix (afegiu ! per confirmar)"
@@ -4692,11 +5882,11 @@ msgstr "E234: Conjunt de tipus desconegut: %s"
 
 #, c-format
 msgid "E235: Unknown font: %s"
-msgstr "E235: Tipus de lletra desconegut: %s"
+msgstr "E235: Fosa desconeguda: %s"
 
 #, c-format
 msgid "E236: Font \"%s\" is not fixed-width"
-msgstr "E236: El tipus de lletra \"%s\" no és d'amplada fixa"
+msgstr "E236: La fosa \"%s\" no és d'amplada fixa"
 
 msgid "E473: Internal error"
 msgstr "E473: Error intern"
@@ -4727,9 +5917,6 @@ msgstr "E476: L'ordre no és vàlida"
 #, c-format
 msgid "E17: \"%s\" is a directory"
 msgstr "E17: \"%s\" és un directori"
-
-msgid "E18: Unexpected characters before '='"
-msgstr "E18: Caràcters inesperats abans de '='"
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
@@ -4864,6 +6051,9 @@ msgstr "E459: No es pot tornar al directori anterior"
 msgid "E42: No Errors"
 msgstr "E42: No hi han errors"
 
+msgid "E776: No location list"
+msgstr "E776: No hi ha cap llista de posicions"
+
 msgid "E43: Damaged match string"
 msgstr "E43: S'ha corromput la cadena amb l'expressió regular"
 
@@ -4874,14 +6064,18 @@ msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: L'opció 'readonly' està definida (afegiu ! per confirmar)"
 
 #, c-format
-msgid "E46: Cannot set read-only variable \"%s\""
-msgstr "E46: No s'ha pogut definir la variable de només lectura \"%s\""
+msgid "E46: Cannot change read-only variable \"%s\""
+msgstr "E46: No s'ha pogut canviar la variable de només lectura \"%s\""
+
+#, c-format
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
+msgstr "E794: No s'ha pogut definir la variable dins la gàbia: \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Error en llegir el fitxer d'errors"
 
-#~ msgid "E48: Not allowed in sandbox"
-#~ msgstr ""
+msgid "E48: Not allowed in sandbox"
+msgstr "E48: No està permès dins d'una gàbia"
 
 msgid "E523: Not allowed here"
 msgstr "E523: No està permès aquí"
@@ -4945,3 +6139,83 @@ msgstr "E449: S'ha rebut una expressió no vàlida"
 
 msgid "E463: Region is guarded, cannot modify"
 msgstr "E463: La regió està protegida, no es pot modificar"
+
+msgid "E744: NetBeans does not allow changes in read-only files"
+msgstr "E744: NetBeans no permet canvis a fitxers de només-lectura"
+
+#, c-format
+msgid "E685: Internal error: %s"
+msgstr "E685: Error intern: %s"
+
+msgid "E363: pattern uses more memory than 'maxmempattern'"
+msgstr "E363: el patró usa més memòria que 'maxmempattern'"
+
+msgid "E749: empty buffer"
+msgstr "E749: buffer buit"
+
+msgid "E682: Invalid search pattern or delimiter"
+msgstr "E682: Patró de cerca o delimitador no vàlid"
+
+msgid "E139: File is loaded in another buffer"
+msgstr "E139: El fitxer està carregat en un altre buffer"
+
+#, c-format
+msgid "E764: Option '%s' is not set"
+msgstr "E764: L'opció '%s' no està definida"
+
+msgid "search hit TOP, continuing at BOTTOM"
+msgstr "la cerca ha arribat a DALT, es continua a BAIX"
+
+msgid "search hit BOTTOM, continuing at TOP"
+msgstr "la cerca ha arribat a BAIX, es continua a DALT"
+
+#~ msgid "[Error List]"
+#~ msgstr "[Llista d'errors]"
+#~ msgid "[No File]"
+#~ msgstr "[Cap fitxer]"
+#~ msgid "E106: Unknown variable: \"%s\""
+#~ msgstr "E106: La variable és desconeguda: \"%s\""
+#~ msgid "E123: Undefined function: %s"
+#~ msgstr "E123: La funció no està definida: %s"
+#~ msgid "E127: Cannot redefine function %s: It is in use"
+#~ msgstr "E127: No s'ha pogut redefinir la funció %s: s'està utilitzant"
+#~ msgid "E130: Undefined function: %s"
+#~ msgstr "E130: La funció no està definida: %s"
+#~ msgid "\"\n"
+#~ msgstr "\"\n"
+#~ msgid "-V[N]\t\tVerbose level"
+#~ msgstr "-V[N]\t\tNivell de loquacitat"
+#~ msgid "--help\t\tShow Gnome arguments"
+#~ msgstr "--help\t\tMostra els arguments per Gnome"
+#~ msgid "[string too long]"
+#~ msgstr "[cadena massa llarga]"
+#~ msgid "Hit ENTER to continue"
+#~ msgstr "Premeu ENTRAR per continuar"
+#~ msgid " (RET/BS: line, SPACE/b: page, d/u: half page, q: quit)"
+#~ msgstr ""
+#~ " (ENTRAR/RETROCÉS: línia, ESPAI/b; pàgina, d/u; mitja pàgina, q: surt)"
+#~ msgid " (RET: line, SPACE: page, d: half page, q: quit)"
+#~ msgstr " (ENTRAR: línia, ESPAI: pàgina, d: mitja pàgina, q: surt)"
+#~ msgid "...(truncated)"
+#~ msgstr "...(truncat)"
+#~ msgid "Could not allocate memory for command line."
+#~ msgstr "No s'ha pogut assignar memòria per la línia d'ordres."
+#~ msgid "E56: %s* operand could be empty"
+#~ msgstr "E56: L'operand %s* podria estar buit"
+#~ msgid "E57: %s+ operand could be empty"
+#~ msgstr "E57: L'operand %s+ podria estar buit"
+#~ msgid "E58: %s{ operand could be empty"
+#~ msgstr "E58: L'operand %s{ podria estar buit"
+#~ msgid "E361: Crash intercepted; regexp too complex?"
+#~ msgstr "E361: Programa inestable; expressió regular massa complexa?"
+#~ msgid "E363: pattern caused out-of-stack error"
+#~ msgstr "E363: El patró ha provocat un error de desbordament de pila"
+#~ msgid " BLOCK"
+#~ msgstr " BLOC"
+#~ msgid " LINE"
+#~ msgstr " LÍNIA"
+#~ msgid "Enter nr of choice (<CR> to abort): "
+#~ msgstr "Entreu un número (<Entrar> per avortar): "
+#~ msgid "with BeOS GUI."
+#~ msgstr "amb GUI BeOS."
+

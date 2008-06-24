@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.1.  Last change: 2008 Jan 11
+*various.txt*   For Vim version 7.2a.  Last change: 2008 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -123,7 +123,7 @@ g8			Print the hex values of the bytes used in the
 
 							*:#!*
 :#!{anything}		Ignored, so that you can start a Vim script with: >
-				#!/usr/bin/env vim -S
+				#!vim -S
 				echo "this is a Vim script"
 				quit
 <
@@ -226,7 +226,8 @@ g8			Print the hex values of the bytes used in the
 			":!echo ! \! \\!" executes "echo ls ! \!".
 			After the command has been executed, the timestamp of
 			the current file is checked |timestamp|.
-			There cannot be a '|' in {cmd}, see |:bar|.
+			A '|' in {cmd} is passed to the shell, you cannot use
+			it to append a Vim command.  See |:bar|.
 			A newline character ends {cmd}, what follows is
 			interpreted as a following ":" command.  However, if
 			there is a backslash before the newline it is removed
@@ -315,6 +316,7 @@ N  *+find_in_path*	include file searches: |[I|, |:isearch|,
 N  *+folding*		|folding|
    *+footer*		|gui-footer|
    *+fork*		Unix only: |fork| shell commands
+   *+float*		Floating point support
 N  *+gettext*		message translations |multi-lang|
    *+GUI_Athena*	Unix only: Athena |GUI|
    *+GUI_neXtaw*	Unix only: neXtaw |GUI|
@@ -343,6 +345,7 @@ B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
 B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
+N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
 B  *+multi_byte*	Korean and other languages |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
@@ -362,7 +365,8 @@ H  *+profile*		|:profile| command
 m  *+python*		Python interface |python|
 m  *+python/dyn*	Python interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
-N  *+reltime*		|reltime()| function
+N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
+			'redrawtime' option
 B  *+rightleft*		Right to left typing |'rightleft'|
 m  *+ruby*		Ruby interface |ruby|
 m  *+ruby/dyn*		Ruby interface |ruby-dynamic| |/dyn|
@@ -435,10 +439,11 @@ N  *+X11*		Unix only: can restore window title |X11|
 :redi[r] >> {file}	Redirect messages to file {file}.  Append if {file}
 			already exists.  {not in Vi}
 
+:redi[r] @{a-zA-Z}
 :redi[r] @{a-zA-Z}>	Redirect messages to register {a-z}.  Append to the
 			contents of the register if its name is given
-			uppercase {A-Z}.  For backward compatibility, the ">"
-			after the register name can be omitted. {not in Vi}
+			uppercase {A-Z}.  The ">" after the register name is
+			optional. {not in Vi}
 :redi[r] @{a-z}>>	Append messages to register {a-z}. {not in Vi}
 
 :redi[r] @*>		
@@ -674,10 +679,14 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 				:helpgrep uganda\c
 <			Example for searching in French help: >
 				:helpgrep backspace@fr
-<			Cannot be followed by another command, everything is
+<			The pattern does not support line breaks, it must
+			match within one line.  You can use |:grep| instead,
+			but then you need to get the list of help files in a
+			complicated way.
+			Cannot be followed by another command, everything is
 			used as part of the pattern.  But you can use
 			|:execute| when needed.
-			Compressed help files will not be searched (Debian
+			Compressed help files will not be searched (Fedora
 			compresses the help files).
 			{not in Vi}
 

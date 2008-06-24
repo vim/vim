@@ -12,15 +12,10 @@
  */
 
 #if defined(WIN32) && defined(FEAT_CSCOPE)
-# include "vimio.h"
+# include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
 #include "vim.h"
-
-#if defined(WIN32) && defined(FEAT_CSCOPE)
-# include <fcntl.h>
-#endif
-
 #include "version.h"
 
 static void	cmd_source __ARGS((char_u *fname, exarg_T *eap));
@@ -43,8 +38,8 @@ typedef struct scriptitem_S
     int		sn_pr_nest;	/* nesting for sn_pr_child */
     /* profiling the script as a whole */
     int		sn_pr_count;	/* nr of times sourced */
-    proftime_T	sn_pr_total;	/* time spend in script + children */
-    proftime_T	sn_pr_self;	/* time spend in script itself */
+    proftime_T	sn_pr_total;	/* time spent in script + children */
+    proftime_T	sn_pr_self;	/* time spent in script itself */
     proftime_T	sn_pr_start;	/* time at script start */
     proftime_T	sn_pr_children; /* time in children after script start */
     /* profiling the script per line */
@@ -65,8 +60,8 @@ static garray_T script_items = {0, 0, sizeof(scriptitem_T), 4, NULL};
 typedef struct sn_prl_S
 {
     int		snp_count;	/* nr of times line was executed */
-    proftime_T	sn_prl_total;	/* time spend in a line + children */
-    proftime_T	sn_prl_self;	/* time spend in a line itself */
+    proftime_T	sn_prl_total;	/* time spent in a line + children */
+    proftime_T	sn_prl_self;	/* time spent in a line itself */
 } sn_prl_T;
 
 #  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
@@ -3579,7 +3574,7 @@ script_line_start()
     si = &SCRIPT_ITEM(current_SID);
     if (si->sn_prof_on && sourcing_lnum >= 1)
     {
-	/* Grow the array before starting the timer, so that the time spend
+	/* Grow the array before starting the timer, so that the time spent
 	 * here isn't counted. */
 	ga_grow(&si->sn_prl_ga, (int)(sourcing_lnum - si->sn_prl_ga.ga_len));
 	si->sn_prl_idx = sourcing_lnum - 1;
@@ -4024,7 +4019,13 @@ ex_language(eap)
 	    loc = "";
 	else
 #endif
+	{
 	    loc = setlocale(what, (char *)name);
+#if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+	    /* Make sure strtod() uses a decimal point, not a comma. */
+	    setlocale(LC_NUMERIC, "C");
+#endif
+	}
 	if (loc == NULL)
 	    EMSG2(_("E197: Cannot set language to \"%s\""), name);
 	else

@@ -1,7 +1,7 @@
 " Menu translations for Catalan
 "
 " Maintainer:	Ernest Adrogué <eadrogue@gmx.net>
-" Last Change:	18 Jan 2004
+" Last Change:	6 Jun 2008
 "
 
 " Quit when menu translations have already been done.
@@ -16,7 +16,6 @@ if &enc != "cp1252" && &enc != "iso-8859-15"
   scriptencoding latin1
 endif
 
-
 " menú Ajuda
 menutrans &Help				&Ajuda
 menutrans &Overview<Tab><F1>		&Introducció<Tab><F1>
@@ -25,17 +24,18 @@ menutrans &How-to\ links		Com\ &fer\.\.\.?
 menutrans &Find\.\.\.			&Cerca\.\.\.
 menutrans &Credits			&Autors
 menutrans Co&pying			Con&dicions
+menutrans &Sponsor/Register	&Patrocini/Registre
 menutrans O&rphans			&Orfes
 menutrans &Version			&Versió
 menutrans &About			&Quant\ a\.\.\.
 " text del diàleg Ajuda/Cerca...
 let g:menutrans_help_dialog = "Introduïu el terme sobre el qual necessiteu ajuda.\n\nUseu el prefix i_ per ordres d'entrada (p.ex.: i_CTRL-X)\nUseu el prefix c_ per ordres de la línia d'ordres (p.ex.: c_<Del>)\nUseu el prefix ' per noms d'opcions (p.ex.: 'shiftwidth')"
 
-
 " menú Fitxer
 menutrans &File				&Fitxer
 menutrans &Open\.\.\.<Tab>:e		&Obre\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	Obre\ en\ una\ &finestra\ nova\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Obre\ pestanya\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		&Nou<Tab>:enew
 menutrans &Close<Tab>:close		&Tanca<Tab>:close
 menutrans &Save<Tab>:w			&Desa<Tab>:w
@@ -45,7 +45,6 @@ menutrans Split\ Patched\ &By\.\.\.	Aplica\ les\ modificacions\ de\.\.\.
 menutrans &Print			&Imprimeix
 menutrans Sa&ve-Exit<Tab>:wqa		Desa\ i\ s&urt<Tab>:wqa
 menutrans E&xit<Tab>:qa			&Surt<Tab>:qa
-
 
 " menú Edita
 menutrans &Edit				&Edita
@@ -58,14 +57,15 @@ menutrans &Paste<Tab>"+gP		Engan&xa<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Posa\ &abans<Tab>[p
 menutrans Put\ &After<Tab>]p		P&osa\ després<Tab>]p
 menutrans &Delete<Tab>x			Suprimeix<Tab>x
-menutrans &Select\ all<Tab>ggVG		&Selecciona-ho\ tot<Tab>ggVG
+menutrans &Select\ All<Tab>ggVG		&Selecciona-ho\ tot<Tab>ggVG
 menutrans &Find\.\.\.			&Cerca\.\.\.
 menutrans &Find<Tab>/			&Cerca<Tab>/
 menutrans Find\ and\ Rep&lace		Cerca\ i\ s&ubstitueix
 menutrans Find\ and\ Rep&lace\.\.\.	Cerca\ i\ s&ubstitueix\.\.\.
 menutrans Find\ and\ Rep&lace<Tab>:%s	Cerca\ i\ s&ubstitueix<Tab>:%s
 menutrans Find\ and\ Rep&lace<Tab>:s	Cerca\ i\ s&ubstitueix<Tab>:s
-menutrans Settings\ &Window		&Finestra\ d'opcions
+menutrans Settings\ &Window		Fin&estra\ d'opcions
+menutrans Startup\ &Settings    Opcions\ i&nicials
 menutrans &Global\ Settings		Opcions\ &globals
 " submenú Edita/Opcions Globals
   menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Ressalt\ de\ &patrons<Tab>:set\ hls!
@@ -100,7 +100,7 @@ menutrans F&ile\ Settings				Opcions\ del\ f&itxer
   menutrans Soft\ &Tabstop				Amplada\ de\ &tabulació
   menutrans Te&xt\ Width\.\.\.				&Amplada\ del\ text\.\.\.
   menutrans &File\ Format\.\.\.				&Format\ del\ fitxer\.\.\.
-menutrans Select\ Fo&nt\.\.\.		Tipus\ de\ &lletra\.\.\.
+menutrans Select\ Fo&nt\.\.\.		&Fosa\.\.\.
 menutrans C&olor\ Scheme		Es&quema\ de\ colors
 " submenú Edita/Esquema de colors
   menutrans blue			blau
@@ -144,6 +144,25 @@ menutrans &Tools			Ei&nes
 menutrans &Jump\ to\ this\ tag<Tab>g^]	&Salta\ a\ aquesta\ etiqueta<Tab>g^]
 menutrans Jump\ &back<Tab>^T		Salta\ en&rere<Tab>^T
 menutrans Build\ &Tags\ File		Crea\ un\ fitxer\ d'eti&quetes
+menutrans &Spelling         &Ortografia
+" submenú Eines/Ortografia
+  menutrans &Spell\ Check\ On         Activa\ la\ &revisió\ ortogràfica
+  menutrans Spell\ Check\ &Off        &Desactiva\ la\ revisió\ ortogràfica
+  menutrans To\ &Next\ error<Tab>]s       Error\ &següent<tab>]s
+  menutrans To\ &Previous\ error<Tab>[s   Error\ &anterior<tab>[s
+  menutrans Suggest\ &Corrections<Tab>z=  Su&ggeriments<Tab>z=
+  menutrans &Repeat\ correction<Tab>:spellrepall  Re&peteix\ la\ correcció<Tab>:spellrepall
+  menutrans Set\ language\ to\ "en"       Selecciona\ l'idioma\ "en"
+  menutrans Set\ language\ to\ "en_au"    Selecciona\ l'idioma\ "en_au"
+  menutrans Set\ language\ to\ "en_ca"    Selecciona\ l'idioma\ "en_ca"
+  menutrans Set\ language\ to\ "en_gb"    Selecciona\ l'idioma\ "en_gb"
+  menutrans Set\ language\ to\ "en_nz"    Selecciona\ l'idioma\ "en_nz"
+  menutrans Set\ language\ to\ "en_us"    Selecciona\ l'idioma\ "en_us"
+  menutrans Set\ language\ to\ "ca"       Selecciona\ l'idioma\ "ca"
+  menutrans Set\ language\ to\ "es"       Selecciona\ l'idioma\ "es"
+  menutrans Set\ language\ to\ "fr"       Selecciona\ l'idioma\ "fr"
+  menutrans Set\ language\ to\ "it"       Selecciona\ l'idioma\ "it"
+  menutrans &Find\ More\ Languages        &Cerca\ altres\ idiomes
 menutrans &Folding			&Plecs
 " submenú Eines/Plecs
   menutrans &Enable/Disable\ folds<Tab>zi  &Habilita/Deshabilita\ els\ plecs<Tab>zi
@@ -183,6 +202,7 @@ menutrans Error\ &Window		F&inestra\ d'errors
   menutrans &Open<Tab>:copen		&Obre<Tab>:copen
   menutrans &Close<Tab>:cclose		&Tanca<Tab>:cclose
 menutrans &Set\ Compiler		&Compilador
+menutrans &SeT\ Compiler        &Compilador
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converteix\ a\ &HEX<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Torna\ al\ format\ &original<Tab>:%!xxd\ -r
 

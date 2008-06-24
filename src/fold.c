@@ -2076,7 +2076,7 @@ foldtext_cleanup(str)
 	{
 	    while (vim_iswhite(s[len]))
 		++len;
-	    mch_memmove(s, s + len, STRLEN(s + len) + 1);
+	    STRMOVE(s, s + len);
 	}
 	else
 	{

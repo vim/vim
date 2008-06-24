@@ -14,6 +14,7 @@
 
 static void save_re_pat __ARGS((int idx, char_u *pat, int magic));
 #ifdef FEAT_EVAL
+static void set_vv_searchforward __ARGS((void));
 static int first_submatch __ARGS((regmmatch_T *rp));
 #endif
 static int check_prevcol __ARGS((char_u *linep, int col, int ch, int *prevcol));
@@ -61,7 +62,7 @@ static void wvsp_one __ARGS((FILE *fp, int idx, char *s, int sc));
 /* Note: only spats[0].off is really used */
 struct soffset
 {
-    int		dir;		/* search direction */
+    int		dir;		/* search direction, '/' or '?' */
     int		line;		/* search has line offset */
     int		end;		/* search set cursor at end */
     long	off;		/* line or char offset */
@@ -325,6 +326,9 @@ restore_search_patterns()
     {
 	vim_free(spats[0].pat);
 	spats[0] = saved_spats[0];
+#if defined(FEAT_EVAL)
+	set_vv_searchforward();
+#endif
 	vim_free(spats[1].pat);
 	spats[1] = saved_spats[1];
 	last_idx = saved_last_idx;
@@ -379,9 +383,18 @@ ignorecase(pat)
 	    }
 	    else
 #endif
-		if (*p == '\\' && p[1] != NUL)	/* skip "\S" et al. */
-		    p += 2;
-		else if (isupper(*p))
+                if (*p == '\\')
+		{
+		    if (p[1] == '_' && p[2] != NUL)  /* skip "\_X" */
+			p += 3;
+		    else if (p[1] == '%' && p[2] != NUL)  /* skip "\%X" */
+			p += 3;
+		    else if (p[1] != NUL)  /* skip "\X" */
+			p += 2;
+		    else
+			p += 1;
+		}
+		else if (MB_ISUPPER(*p))
 		{
 		    ic = FALSE;
 		    break;
@@ -408,6 +421,9 @@ last_search_pat()
 reset_search_dir()
 {
     spats[0].off.dir = '/';
+#if defined(FEAT_EVAL)
+    set_vv_searchforward();
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_VIMINFO)
@@ -431,6 +447,9 @@ set_last_search_pat(s, idx, magic, setlast)
     spats[idx].magic = magic;
     spats[idx].no_scs = FALSE;
     spats[idx].off.dir = '/';
+#if defined(FEAT_EVAL)
+    set_vv_searchforward();
+#endif
     spats[idx].off.line = FALSE;
     spats[idx].off.end = FALSE;
     spats[idx].off.off = 0;
@@ -970,6 +989,19 @@ searchit(win, buf, pos, dir, pat, count, options, pat_use, stop_lnum, tm)
 }
 
 #ifdef FEAT_EVAL
+    void
+set_search_direction(cdir)
+    int		cdir;
+{
+    spats[0].off.dir = cdir;
+}
+
+    static void
+set_vv_searchforward()
+{
+    set_vim_var_nr(VV_SEARCHFORWARD, (long)(spats[0].off.dir == '/'));
+}
+
 /*
  * Return the number of the first subpat that matched.
  */
@@ -1018,7 +1050,7 @@ first_submatch(rp)
 do_search(oap, dirc, pat, count, options, tm)
     oparg_T	    *oap;	/* can be NULL */
     int		    dirc;	/* '/' or '?' */
-    char_u	   *pat;
+    char_u	    *pat;
     long	    count;
     int		    options;
     proftime_T	    *tm;	/* timeout limit or NULL */
@@ -1056,7 +1088,12 @@ do_search(oap, dirc, pat, count, options, tm)
     if (dirc == 0)
 	dirc = spats[0].off.dir;
     else
+    {
 	spats[0].off.dir = dirc;
+#if defined(FEAT_EVAL)
+	set_vv_searchforward();
+#endif
+    }
     if (options & SEARCH_REV)
     {
 #ifdef WIN32
@@ -1330,21 +1367,19 @@ do_search(oap, dirc, pat, count, options, tm)
 	    else if (pos.col < MAXCOL - 2)	/* just in case */
 	    {
 		/* to the right, check for end of file */
-		if (spats[0].off.off > 0)
+		c = spats[0].off.off;
+		if (c > 0)
 		{
-		    for (c = spats[0].off.off; c; --c)
+		    while (c-- > 0)
 			if (incl(&pos) == -1)
 			    break;
 		}
 		/* to the left, check for start of file */
 		else
 		{
-		    if ((c = pos.col + spats[0].off.off) >= 0)
-			pos.col = c;
-		    else
-			for (c = spats[0].off.off; c; ++c)
-			    if (decl(&pos) == -1)
-				break;
+		    while (c++ < 0)
+			if (decl(&pos) == -1)
+			    break;
 		}
 	    }
 	}

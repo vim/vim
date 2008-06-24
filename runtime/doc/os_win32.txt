@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 7.1.  Last change: 2007 Apr 22
+*os_win32.txt*  For Vim version 7.2a.  Last change: 2008 May 02
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -306,7 +306,7 @@ A. When using :! to run an external command, you can run it with "start": >
 	:!start winfile.exe<CR>
 <  Using "start" stops Vim switching to another screen, opening a new console,
    or waiting for the program to complete; it indicates that you are running a
-   program that does not effect the files you are editing.  Programs begun
+   program that does not affect the files you are editing.  Programs begun
    with :!start do not get passed Vim's open file handles, which means they do
    not have to be closed before Vim.
    To avoid this special treatment, use ":! start".

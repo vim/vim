@@ -6476,6 +6476,11 @@ gui_mch_wait_for_chars(long wtime)
 	    focus = gui.in_focus;
 	}
 
+#if defined(FEAT_NETBEANS_INTG)
+	/* Process the queued netbeans messages. */
+	netbeans_parse_messages();
+#endif
+
 	/*
 	 * Loop in GTK+ processing  until a timeout or input occurs.
 	 * Skip this if input is available anyway (can happen in rare

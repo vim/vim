@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.1.  Last change: 2007 May 10
+*quickfix.txt*  For Vim version 7.2a.  Last change: 2008 Mar 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -141,8 +141,11 @@ command with 'l'.
 			current window is used instead of the quickfix list.
 
 							*:cq* *:cquit*
-:cq[uit]		Quit Vim with an error code, so that the compiler
+:cq[uit][!]		Quit Vim with an error code, so that the compiler
 			will not compile the same file again.
+			WARNING: All changes in files are lost!  Also when the
+			[!] is not used.  It works like ":qall!" |:qall|,
+			except that Vim returns a non-zero exit code.
 
 							*:cf* *:cfile*
 :cf[ile][!] [errorfile]	Read the error file and jump to the first error.
@@ -159,12 +162,12 @@ command with 'l'.
 			the location list.
 
 
-:cg[etfile][!] [errorfile]				*:cg* *:cgetfile*
+:cg[etfile] [errorfile]					*:cg* *:cgetfile*
 			Read the error file.  Just like ":cfile" but don't
 			jump to the first error.
 
 
-:lg[etfile][!] [errorfile]				*:lg* *:lgetfile*
+:lg[etfile] [errorfile]					*:lg* *:lgetfile*
 			Same as ":cgetfile", except the location list for the
 			current window is used instead of the quickfix list.
 
@@ -229,15 +232,15 @@ command with 'l'.
 			current window is used instead of the quickfix list.
 
 							*:cgete* *:cgetexpr*
-:cgete[xpr][!] {expr}	Create a quickfix list using the result of {expr}.
+:cgete[xpr] {expr}	Create a quickfix list using the result of {expr}.
 			Just like ":cexpr", but don't jump to the first error.
 
 							*:lgete* *:lgetexpr*
-:lgete[xpr][!] {expr}	Same as ":cgetexpr", except the location list for the
+:lgete[xpr] {expr}	Same as ":cgetexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cad* *:caddexpr*
-:cad[dexpr][!] {expr}	Evaluate {expr} and add the resulting lines to the
+:cad[dexpr] {expr}	Evaluate {expr} and add the resulting lines to the
 			current quickfix list. If a quickfix list is not
 			present, then a new list is created. The current
 			cursor position will not be changed. See |:cexpr| for
@@ -246,7 +249,7 @@ command with 'l'.
     :g/mypattern/caddexpr expand("%") . ":" . line(".") .  ":" . getline(".")
 <
 							*:lad* *:laddexpr*
-:lad[dexpr][!] {expr}	Same as ":caddexpr", except the location list for the
+:lad[dexpr] {expr}	Same as ":caddexpr", except the location list for the
 			current window is used instead of the quickfix list.
 
 							*:cl* *:clist*
@@ -279,6 +282,21 @@ marks are lost and the error locations may not be correct anymore.
 If vim is built with |+autocmd| support, two autocommands are available for
 running commands before and after a quickfix command (':make', ':grep' and so
 on) is executed. See |QuickFixCmdPre| and |QuickFixCmdPost| for details.
+
+						*QuickFixCmdPost-example*
+When 'encoding' differs from the locale, the error messages may have a
+different encoding from what Vim is using.  To convert the messages you can
+use this code: >
+	function QfMakeConv()
+	   let qflist = getqflist()
+	   for i in qflist
+	      let i.text = iconv(i.text, "cp936", "utf-8")
+	   endfor
+	   call setqflist(qflist)
+	endfunction
+
+	au QuickfixCmdPost make call QfMakeConv()
+
 
 =============================================================================
 2. The error window					*quickfix-window*
@@ -434,6 +452,7 @@ lists, use ":cnewer 99" first.
 			5. The errorfile is read using 'errorformat'.
 			6. If vim was built with |+autocmd|, all relevant
 			   |QuickFixCmdPost| autocommands are executed.
+			   See example below.
 			7. If [!] is not given the first error is jumped to.
 			8. The errorfile is deleted.
 			9. You can now move through the errors with commands
@@ -480,6 +499,25 @@ the screen and saved in a file the same time.  Depending on the shell used
 
 If 'shellpipe' is empty, the {errorfile} part will be omitted.  This is useful
 for compilers that write to an errorfile themselves (e.g., Manx's Amiga C).
+
+
+Using QuickFixCmdPost to fix the encoding ~
+
+It may be that 'encoding' is set to an encoding that differs from the messages
+your build program produces.  This example shows how to fix this after Vim has
+read the error messages: >
+
+	function QfMakeConv()
+	   let qflist = getqflist()
+	   for i in qflist
+	      let i.text = iconv(i.text, "cp936", "utf-8")
+	   endfor
+	   call setqflist(qflist)
+	endfunction
+
+	au QuickfixCmdPost make call QfMakeConv()
+
+(Example by Faque Cheng)
 
 ==============================================================================
 5. Using :vimgrep and :grep				*grep* *lid*
@@ -749,6 +787,18 @@ up to 25 remaining errors will be found.
 If Vim was started from the compiler, the :sh and some :!  commands will not
 work, because Vim is then running in the same process as the compiler and
 stdin (standard input) will not be interactive.
+
+
+PERL					*quickfix-perl* *compiler-perl*
+
+The Perl compiler plugin doesn't actually compile, but invokes Perl's internal
+syntax checking feature and parses the output for possible errors so you can
+correct them in quick-fix mode.
+
+Warnings are forced regardless of "no warnings" or "$^W = 0" within the file
+being checked.  To disable this set g:perl_compiler_force_warnings to a zero
+value.  For example: >
+	let g:perl_compiler_force_warnings = 0
 
 
 PYUNIT COMPILER						*compiler-pyunit*
@@ -1379,7 +1429,8 @@ by Vim.
 						*errorformat-Perl*
 In $VIMRUNTIME/tools you can find the efm_perl.pl script, which filters Perl
 error messages into a format that quickfix mode will understand.  See the
-start of the file about how to use it.
+start of the file about how to use it.  (This script is deprecated, see
+|compiler-perl|.)
 
 
 

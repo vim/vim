@@ -1,8 +1,8 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     5.0
-" Last Change: Mon Jun 05 2006 3:30:04 PM
+" Version:     6.0
+" Last Change: Thu 03 Apr 2008 10:37:54 PM Eastern Daylight Time
 " Usage:       For detailed help
 "              ":help sql.txt" 
 "              or ":help ft-sql-omni" 
@@ -106,7 +106,7 @@ function! sqlcomplete#Complete(findstart, base)
             let begindot = 1
         endif
         while start > 0
-            if line[start - 1] =~ '\w'
+            if line[start - 1] =~ '\(\w\|\s\+\)'
                 let start -= 1
             elseif line[start - 1] =~ '\.' && 
                         \ compl_type =~ 'column\|table\|view\|procedure'
@@ -178,11 +178,10 @@ function! sqlcomplete#Complete(findstart, base)
 
         " Allow the user to override the dbext plugin to specify whether
         " the owner/creator should be included in the list
-        let saved_dbext_show_owner      = 1
-        if exists('g:dbext_default_dict_show_owner')
-            let saved_dbext_show_owner  = g:dbext_default_dict_show_owner
+        if g:loaded_dbext >= 300
+            let saveSetting = DB_listOption('dict_show_owner')
+            exec 'DBSetOption dict_show_owner='.(g:omni_sql_include_owner==1?'1':'0')
         endif
-        let g:dbext_default_dict_show_owner = g:omni_sql_include_owner
 
         let compl_type_uc = substitute(compl_type, '\w\+', '\u&', '')
         if s:sql_file_{compl_type} == ""
@@ -192,18 +191,12 @@ function! sqlcomplete#Complete(findstart, base)
         if s:sql_file_{compl_type} != ""
             if filereadable(s:sql_file_{compl_type})
                 let compl_list = readfile(s:sql_file_{compl_type})
-                " let dic_list = readfile(s:sql_file_{compl_type})
-                " if !empty(dic_list)
-                "     for elem in dic_list
-                "         let kind = (compl_type=='table'?'m':(compl_type=='procedure'?'f':'v'))
-                "         let item = {'word':elem, 'menu':elem, 'kind':kind, 'info':compl_type}
-                "         let compl_list += [item]
-                "     endfor
-                " endif
             endif
         endif
 
-        let g:dbext_default_dict_show_owner = saved_dbext_show_owner
+        if g:loaded_dbext > 300
+            exec 'DBSetOption dict_show_owner='.saveSetting
+        endif
     elseif compl_type =~? 'column'
 
         " This type of completion relies upon the dbext.vim plugin
@@ -450,8 +443,8 @@ function! s:SQLCCheck4dbext()
         " Leave time for the user to read the error message
         :sleep 2
         return -1
-    elseif g:loaded_dbext < 300
-        let msg = "The dbext plugin must be at least version 3.00 " .
+    elseif g:loaded_dbext < 600
+        let msg = "The dbext plugin must be at least version 5.30 " .
                     \ " for dynamic SQL completion"
         call s:SQLCErrorMsg(msg)
         " Leave time for the user to read the error message
@@ -514,34 +507,42 @@ endfunction
 function! s:SQLCGetObjectOwner(object) 
     " The owner regex matches a word at the start of the string which is
     " followed by a dot, but doesn't include the dot in the result.
-    " ^    - from beginning of line
-    " "\?  - ignore any quotes
-    " \zs  - start the match now
-    " \w\+ - get owner name
-    " \ze  - end the match
-    " "\?  - ignore any quotes
-    " \.   - must by followed by a .
-    let owner = matchstr( a:object, '^"\?\zs\w\+\ze"\?\.' )
+    " ^           - from beginning of line
+    " \("\|\[\)\? - ignore any quotes
+    " \zs         - start the match now
+    " .\{-}       - get owner name
+    " \ze         - end the match
+    " \("\|\[\)\? - ignore any quotes
+    " \.          - must by followed by a .
+    " let owner = matchstr( a:object, '^\s*\zs.*\ze\.' )
+    let owner = matchstr( a:object, '^\("\|\[\)\?\zs\.\{-}\ze\("\|\]\)\?\.' )
     return owner
 endfunction 
 
 function! s:SQLCGetColumns(table_name, list_type)
     " Check if the table name was provided as part of the column name
-    let table_name   = matchstr(a:table_name, '^[a-zA-Z0-9_]\+\ze\.\?')
+    let table_name   = matchstr(a:table_name, '^["\[\]a-zA-Z0-9_ ]\+\ze\.\?')
     let table_cols   = []
     let table_alias  = ''
     let move_to_top  = 1
 
+    let table_name   = substitute(table_name, '\s*\(.\{-}\)\s*$', '\1', 'g')
+
+    " If the table name was given as:
+    "     where c.
+    let table_name   = substitute(table_name, '^\c\(WHERE\|AND\|OR\)\s\+', '', '')
     if g:loaded_dbext >= 300
         let saveSettingAlias = DB_listOption('use_tbl_alias')
         exec 'DBSetOption use_tbl_alias=n'
     endif
 
+    let table_name_stripped = substitute(table_name, '["\[\]]*', '', 'g')
+
     " Check if we have already cached the column list for this table
     " by its name
-    let list_idx = index(s:tbl_name, table_name, 0, &ignorecase)
+    let list_idx = index(s:tbl_name, table_name_stripped, 0, &ignorecase)
     if list_idx > -1
-        let table_cols = split(s:tbl_cols[list_idx])
+        let table_cols = split(s:tbl_cols[list_idx], '\n')
     else
         " Check if we have already cached the column list for this table 
         " by its alias, assuming the table_name provided was actually
@@ -549,11 +550,11 @@ function! s:SQLCGetColumns(table_name, list_type)
         "     select *
         "       from area a
         "      where a.
-        let list_idx = index(s:tbl_alias, table_name, 0, &ignorecase)
+        let list_idx = index(s:tbl_alias, table_name_stripped, 0, &ignorecase)
         if list_idx > -1
-            let table_alias = table_name
+            let table_alias = table_name_stripped
             let table_name  = s:tbl_name[list_idx]
-            let table_cols  = split(s:tbl_cols[list_idx])
+            let table_cols  = split(s:tbl_cols[list_idx], '\n')
         endif
     endif
 
@@ -609,8 +610,8 @@ function! s:SQLCGetColumns(table_name, list_type)
              " '.*'  - Exclude the rest of the line in the match
              let table_name_new = matchstr(@y, 
                          \ 'from.\{-}'.
-                         \ '\zs\(\(\<\w\+\>\)\.\)\?'.
-                         \ '\<\w\+\>\ze'.
+                         \ '\zs\(\("\|\[\)\?.\{-}\("\|\]\)\.\)\?'.
+                         \ '\("\|\[\)\?.\{-}\("\|\]\)\ze'.
                          \ '\s\+\%(as\s\+\)\?\<'.
                          \ matchstr(table_name, '.\{-}\ze\.\?$').
                          \ '\>'.
@@ -618,6 +619,7 @@ function! s:SQLCGetColumns(table_name, list_type)
                          \ '\(\<where\>\|$\)'.
                          \ '.*'
                          \ )
+
              if table_name_new != ''
                  let table_alias = table_name
                  let table_name  = table_name_new
@@ -668,7 +670,7 @@ function! s:SQLCGetColumns(table_name, list_type)
             let s:tbl_name  = add( s:tbl_name,  table_name )
             let s:tbl_alias = add( s:tbl_alias, table_alias )
             let s:tbl_cols  = add( s:tbl_cols,  table_cols_str )
-            let table_cols  = split(table_cols_str)
+            let table_cols  = split(table_cols_str, '\n')
         endif
 
     endif

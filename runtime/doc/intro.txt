@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.1.  Last change: 2007 May 07
+*intro.txt*     For Vim version 7.2a.  Last change: 2008 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -120,27 +120,13 @@ NOTE:
 
 						*subscribe-maillist*
 If you want to join, send a message to
-	<vim-help@vim.org>
+	<vim-subscribe@vim.org>
 Make sure that your "From:" address is correct.  Then the list server will
 give you help on how to subscribe.
 
-You can retrieve old messages from the maillist software, and an index of
-messages.  Ask vim-help for instructions.
-
-Archives are kept at:				*maillist-archive*
-http://groups.yahoo.com/group/vim
-http://groups.yahoo.com/group/vimdev
-http://groups.yahoo.com/group/vimannounce
-http://groups.yahoo.com/group/vim-multibyte
-http://groups.yahoo.com/group/vim-mac
-
-
-Additional maillists:
-
-<vim-fr@club.voila.fr>				*french-maillist*
-	Vim list in the French language.  Subscribe by sending a message to
-		<vim-fr-subscribe@club.voila.fr>
-	Or go to http://groups.yahoo.com/group/vim-fr.
+						*maillist-archive*
+For more information and archives look on the Vim maillist page:
+http://www.vim.org/maillist.php
 
 
 Bug reports:				*bugs* *bug-reports* *bugreport.vim*
@@ -220,6 +206,7 @@ Vim would never have become what it is now, without the help of these people!
 	Eric Fischer		Mac port, 'cindent', and other improvements
 	Benji Fisher		Answering lots of user questions
 	Bill Foster		Athena GUI port
+	Google			Lets me work on Vim one day a week
 	Loic Grenie		xvim (ideas for multi windows version)
 	Sven Guckes		Vim promotor and previous WWW page maintainer
 	Darren Hiebert		Exuberant ctags
@@ -231,7 +218,7 @@ Vim would never have become what it is now, without the help of these people!
 	Steve Kirkendall	Elvis
 	Roger Knobbe		original port to Windows NT
 	Sergey Laskavy		Vim's help from Moscow
-	Felix von Leitner	Maintainer of Vim Mailing Lists
+	Felix von Leitner	Previous maintainer of Vim Mailing Lists
 	David Leonard		Port of Python extensions to Unix
 	Avner Lottem		Edit in right-to-left windows
 	Flemming Madsen		X11 client-server, various features and patches
@@ -241,6 +228,8 @@ Vim would never have become what it is now, without the help of these people!
 	Sung-Hyun Nam		Work on multi-byte versions
 	Vince Negri		Win32 GUI and generic console enhancements
 	Steve Oualline		Author of the first Vim book |frombook|
+	Dominique Pelle		figuring out valgrind reports and fixes
+	A.Politz		Many bug reports and some fixes
 	George V. Reilly	Win32 port, Win32 GUI start-off
 	Stephen Riehm		bug collector
 	Stefan Roemer		various patches and help to users
@@ -560,7 +549,7 @@ Ex mode			Like Command-line mode, but after entering a command
 			you remain in Ex mode.  Very limited editing of the
 			command line.  |Ex-mode|
 
-There are five ADDITIONAL modes.  These are variants of the BASIC modes:
+There are six ADDITIONAL modes.  These are variants of the BASIC modes:
 
 				*Operator-pending* *Operator-pending-mode*
 Operator-pending mode	This is like Normal mode, but after an operator
@@ -572,6 +561,12 @@ Replace mode		Replace mode is a special case of Insert mode.  You
 			each character you enter, one character of the existing
 			text is deleted.  See |Replace-mode|.
 			If the 'showmode' option is on "-- REPLACE --" is
+			shown at the bottom of the window.
+
+Virtual Replace mode	Virtual Replace mode is similar to Replace mode, but
+			instead of file characters you are replacing screen
+			real estate.  See |Virtual-Replace-mode|.
+			If the 'showmode' option is on "-- VREPLACE --" is
 			shown at the bottom of the window.
 
 Insert Normal mode	Entered when CTRL-O given in Insert mode.  This is
@@ -608,7 +603,7 @@ CTRL-O in Insert mode you get a beep but you are still in Insert mode, type
 		TO mode						    ~
 		Normal	Visual	Select	Insert	  Replace   Cmd-line  Ex ~
 FROM mode								 ~
-Normal			v V ^V	  *4	 *1	    R	    : / ? !   Q
+Normal			v V ^V	  *4	 *1	   R gR     : / ? !   Q
 Visual		 *2		  ^G	 c C	    --	      :       --
 Select		 *5	^O ^G		 *6	    --	      --      --
 Insert		 <Esc>	  --	  --		  <Insert>    --      --

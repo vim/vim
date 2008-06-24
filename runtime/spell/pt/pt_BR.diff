@@ -1,12 +1,34 @@
-*** pt_BR.orig.aff	Mon Apr 16 15:38:54 2007
---- pt_BR.aff	Mon Apr 16 15:49:01 2007
+*** pt_BR.orig.aff	2008-02-21 19:41:04.000000000 -0300
+--- pt_BR.aff	2008-02-24 11:08:15.000000000 -0300
 ***************
-*** 3,4 ****
---- 3,9 ----
+*** 1,3 ****
+  SET ISO8859-1
+! TRY באדגיךםףץפתüחesianrtolcdugmphbyfvkwjqxz
   
+--- 1,3 ----
+  SET ISO8859-1
+! 
+  
+***************
+*** 13,14 ****
+--- 13,32 ----
+  
++ NAME    Brazilian Portuguese
++ VERSION 20080221V
++ HOME	http://www.broffice.org/verortografico
++ AUTHOR  Raimundo Santos Moura
++ EMAIL   raimundomoura AT openoffice DOT org
++ AUTHOR  Leonardo Ferreira Fontenelle
++ EMAIL   leo DOT fontenelle AT gmail DOT org
++ COPYRIGHT   LGPL
++ 
++ 
 + FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
 + 
++ 
 + MIDWORD	'-.
-  
++ 
++ 
+  MAP 6

@@ -109,6 +109,9 @@ exec_prefix	= @exec_prefix@
 ### Prefix for location of data files
 BINDIR		= @bindir@
 
+### For autoconf 2.60 and later (avoid a warning)
+datarootdir	= @datarootdir@
+
 ### Prefix for location of data files
 DATADIR		= @datadir@
 

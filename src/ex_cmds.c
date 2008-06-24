@@ -11,10 +11,11 @@
  * ex_cmds.c: some functions for command line commands
  */
 
-#include "vim.h"
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
+#if defined(MSDOS) || defined(MSWIN)
+# include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
+
+#include "vim.h"
 #include "version.h"
 
 #ifdef FEAT_EX_EXTRA
@@ -977,7 +978,7 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 					)
 	    {
 		if (p > newcmd && p[-1] == '\\')
-		    mch_memmove(p - 1, p, (size_t)(STRLEN(p) + 1));
+		    STRMOVE(p - 1, p);
 		else
 		{
 		    trailarg = p;
@@ -4895,7 +4896,7 @@ do_sub(eap)
 		for (p1 = new_end; *p1; ++p1)
 		{
 		    if (p1[0] == '\\' && p1[1] != NUL)  /* remove backslash */
-			mch_memmove(p1, p1 + 1, STRLEN(p1));
+			STRMOVE(p1, p1 + 1);
 		    else if (*p1 == CAR)
 		    {
 			if (u_inssub(lnum) == OK)   /* prepare for undo */
@@ -4919,7 +4920,7 @@ do_sub(eap)
 			    /* move the cursor to the new line, like Vi */
 			    ++curwin->w_cursor.lnum;
 			    /* copy the rest */
-			    mch_memmove(new_start, p1 + 1, STRLEN(p1 + 1) + 1);
+			    STRMOVE(new_start, p1 + 1);
 			    p1 = new_start - 1;
 			}
 		    }

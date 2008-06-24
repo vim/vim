@@ -1,5 +1,5 @@
 " Created	: Wed 26 Apr 2006 01:20:53 AM CDT
-" Modified	: Mon 20 Nov 2006 12:14:16 AM PST
+" Modified	: Mon 27 Aug 2007 12:10:37 PM PDT
 " Author	: Gautam Iyer <gi1242@users.sourceforge.net>
 " Description	: Vim syntax file for mrxvtrc (for mrxvt-0.5.0 and up)
 
@@ -31,19 +31,19 @@ syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcBColon,mrxvtrcError
 				\ fullscreen reverseVideo loginShell
 				\ jumpScroll scrollBar scrollbarRight
 				\ scrollbarFloating scrollTtyOutputInhibit
-				\ scrollTtyKeypress scrollWithBuffer
-				\ transparentForce transparentScrollbar
-				\ transparentMenubar transparentTabbar
-				\ tabUsePixmap utmpInhibit visualBell mapAlert
-				\ meta8 mouseWheelScrollPage multibyte_cursor
+				\ scrollTtyKeypress transparentForce
+				\ transparentScrollbar transparentMenubar
+				\ transparentTabbar tabUsePixmap utmpInhibit
+				\ visualBell mapAlert meta8
+				\ mouseWheelScrollPage multibyte_cursor
 				\ tripleclickwords showMenu xft xftNomFont
 				\ xftSlowOutput xftAntialias xftHinting
 				\ xftAutoHint xftGlobalAdvance cmdAllTabs
 				\ protectSecondary thai borderLess
-				\ overrideRedirect broadcast
-				\ smartResize smoothResize pointerBlank
-				\ cursorBlink noSysConfig disableMacros
-				\ linuxHomeEndKey sessionMgt
+				\ overrideRedirect broadcast smartResize
+				\ pointerBlank cursorBlink noSysConfig
+				\ disableMacros linuxHomeEndKey sessionMgt
+				\ boldColors smoothResize useFifo veryBright
 syn match	mrxvtrcOptions	contained nextgroup=mrxvtrcBColon,mrxvtrcError
 				\ '\v<transparent>'
 syn match	mrxvtrcBColon	contained skipwhite
@@ -74,8 +74,7 @@ syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcNColon,mrxvtrcError
 				\ externalBorder internalBorder lineSpace
 				\ pointerBlankDelay cursorBlinkInterval
 				\ shading backgroundFade bgRefreshInterval
-				\ fading focusDelay opacity opacityDegree
-				\ xftPSize
+				\ fading opacity opacityDegree xftPSize
 syn match	mrxvtrcNColon	contained skipwhite
 				\ nextgroup=mrxvtrcNumVal,mrxvtrcError ':'
 syn match	mrxvtrcNumVal	contained skipwhite nextgroup=mrxvtrcError
@@ -91,7 +90,6 @@ syn keyword	mrxvtrcOptions	contained nextgroup=mrxvtrcSColon,mrxvtrcError
 				\ greektoggle_key menu menubarPixmap
 				\ scrollbarPixmap tabbarPixmap appIcon
 				\ multichar_encoding initProfileList
-				\ winTitleFormat
 syn match	mrxvtrcOptions	contained nextgroup=mrxvtrcSColon,mrxvtrcError
 				\ '\v<m?font[1-5]?>'
 syn match	mrxvtrcSColon	contained skipwhite nextgroup=mrxvtrcStrVal ':'
@@ -104,6 +102,7 @@ syn match	mrxvtrcProfile	contained nextgroup=@mrxvtrcPOpts,mrxvtrcError
 syn keyword	mrxvtrcPSOpts	contained nextgroup=mrxvtrcSColon,mrxvtrcError
 				\ tabTitle command holdExitText holdExitTitle
 				\ Pixmap workingDirectory titleFormat
+				\ winTitleFormat
 syn keyword	mrxvtrcPCOpts	contained nextgroup=mrxvtrcCColon,mrxvtrcError
 				\ background foreground
 syn keyword	mrxvtrcPNOpts	contained nextgroup=mrxvtrcNColon,mrxvtrcError
@@ -205,7 +204,7 @@ syn keyword	mrxvtrcMacro	contained skipwhite nextgroup=mrxvtrcError
 				\ Dummy Copy Paste ToggleVeryBold
 				\ ToggleTransparency ToggleBroadcast
 				\ ToggleHold SetTitle ToggleMacros
-				\ ToggleFullscreen
+				\ ToggleFullscreen Raise
 
 " Macros with a string argument
 syn keyword	mrxvtrcMacro	contained skipwhite nextgroup=mrxvtrcStrVal
@@ -214,7 +213,7 @@ syn keyword	mrxvtrcMacro	contained skipwhite nextgroup=mrxvtrcStrVal
 " Macros with a numeric argument
 syn keyword	mrxvtrcMacro	contained skipwhite
 				\ nextgroup=mrxvtrcNumVal,mrxvtrcError
-				\ Close GotoTab MoveTab ResizeFont
+				\ Close GotoTab MoveTab ResizeFont UseFifo
 
 " NewTab macro
 syn keyword	mrxvtrcMacro	contained skipwhite

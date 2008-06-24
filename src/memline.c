@@ -43,14 +43,11 @@
  */
 
 #if defined(MSDOS) || defined(WIN32) || defined(_WIN64)
-# include "vimio.h"
+# include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 #ifndef UNIX		/* it's in os_unix.h for Unix */
 # include <time.h>
 #endif
@@ -3435,7 +3432,8 @@ ml_add_stack(buf)
 					(buf->b_ml.ml_stack_size + STACK_INCR));
 	if (newstack == NULL)
 	    return -1;
-	mch_memmove(newstack, buf->b_ml.ml_stack, (size_t)top * sizeof(infoptr_T));
+	mch_memmove(newstack, buf->b_ml.ml_stack,
+					     (size_t)top * sizeof(infoptr_T));
 	vim_free(buf->b_ml.ml_stack);
 	buf->b_ml.ml_stack = newstack;
 	buf->b_ml.ml_stack_size += STACK_INCR;
