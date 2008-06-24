@@ -1,4 +1,4 @@
-*sponsor.txt*   For Vim version 7.1.  Last change: 2007 Jan 05
+*sponsor.txt*   For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -51,7 +51,7 @@ vote for the items Bram should work on.  How does this voting work?
 4.  The voting results appear on the results page, which is visible for
     everybody:  http://www.vim.org/sponsor/vote_results.php
 
-Additionally, once you have send 100 euro or more in total, your name appears
+Additionally, once you have sent 100 euro or more in total, your name appears
 in the "Vim hall of honour":   http://www.vim.org/sponsor/hall_of_honour.php
 But only if you enable this on your account page.
 
@@ -74,7 +74,7 @@ Other methods	See |iccf-donations|.
 		amount you transferred if you want to vote for features and
 		show others you are a registered Vim user or sponsor.
 
-Cash		Small amounts can be send with ordinary mail.  Put something
+Cash		Small amounts can be sent with ordinary mail.  Put something
 		around the money, so that it's not noticeable from the
 		outside.  Mention your e-mail address if you want to vote for
 		features and show others you are a registered Vim user or
@@ -82,9 +82,9 @@ Cash		Small amounts can be send with ordinary mail.  Put something
 
 You can use this permanent address:
 			Bram Moolenaar
-			Molenstraat 2
-			2161 HP Lisse
-			The Netherlands
+			Finsterruetihof 1
+			8134 Adliswil
+			Switzerland
 
 
 

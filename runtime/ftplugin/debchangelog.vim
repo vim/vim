@@ -1,10 +1,11 @@
-" Vim filetype plugin file (GUI menu and folding)
+" Vim filetype plugin file (GUI menu, folding and completion)
 " Language:	Debian Changelog
-" Maintainer:	Michael Piefel <piefel@informatik.hu-berlin.de>
-"		Stefano Zacchiroli <zack@debian.org>
-" Last Change:	$LastChangedDate: 2006-08-24 23:41:26 +0200 (gio, 24 ago 2006) $
+" Maintainer:	Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainers:	Michael Piefel <piefel@informatik.hu-berlin.de>
+"			Stefano Zacchiroli <zack@debian.org>
+" Last Change:	2008-03-08
 " License:	GNU GPL, version 2.0 or later
-" URL:		http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/ftplugin/debchangelog.vim?op=file&rev=0&sc=0
+" URL:		http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/ftplugin/debchangelog.vim;hb=debian
 
 if exists("b:did_ftplugin")
   finish
@@ -12,9 +13,11 @@ endif
 let b:did_ftplugin=1
 
 " {{{1 Local settings (do on every load)
-setlocal foldmethod=expr
-setlocal foldexpr=GetDebChangelogFold(v:lnum)
-setlocal foldtext=DebChangelogFoldText()
+if exists("g:debchangelog_fold_enable")
+  setlocal foldmethod=expr
+  setlocal foldexpr=DebGetChangelogFold(v:lnum)
+  setlocal foldtext=DebChangelogFoldText()
+endif
 
 " Debian changelogs are not supposed to have any other text width,
 " so the user cannot override this setting
@@ -107,9 +110,8 @@ function NewVersion()
     call append(2, "")
     call append(3, " -- ")
     call append(4, "")
-    call Distribution("unstable")
     call Urgency("low")
-    normal 1G
+    normal 1G0
     call search(")")
     normal h
     normal 
@@ -240,6 +242,22 @@ function! s:getAuthor(zonestart, zoneend)
   return '[unknown]'
 endfunction
 
+" Look for a package source name searching backward from the givenline and
+" returns it. Return the empty string if the package name can't be found
+function! DebGetPkgSrcName(lineno)
+  let lineidx = a:lineno
+  let pkgname = ''
+  while lineidx > 0
+    let curline = getline(lineidx)
+    if curline =~ '^\S'
+      let pkgname = matchlist(curline, '^\(\S\+\).*$')[1]
+      break
+    endif
+    let lineidx = lineidx - 1
+  endwhile
+  return pkgname
+endfunction
+
 function! DebChangelogFoldText()
   if v:folddashes == '-'  " changelog entry fold
     return foldtext() . ' -- ' . s:getAuthor(v:foldstart, v:foldend) . ' '
@@ -247,7 +265,7 @@ function! DebChangelogFoldText()
   return foldtext()
 endfunction
 
-function! GetDebChangelogFold(lnum)
+function! DebGetChangelogFold(lnum)
   let line = getline(a:lnum)
   if line =~ '^\w\+'
     return '>1' " beginning of a changelog entry
@@ -261,7 +279,50 @@ function! GetDebChangelogFold(lnum)
   return '='
 endfunction
 
-foldopen!   " unfold the entry the cursor is on (usually the first one)
+silent! foldopen!   " unfold the entry the cursor is on (usually the first one)
+
+" }}}
+
+" {{{1 omnicompletion for Closes: #
+
+if !exists('g:debchangelog_listbugs_severities')
+  let g:debchangelog_listbugs_severities = 'critical,grave,serious,important,normal,minor,wishlist'
+endif
+
+fun! DebCompleteBugs(findstart, base)
+  if a:findstart
+    " it we are just after an '#', the completion should start at the '#',
+    " otherwise no completion is possible
+    let line = getline('.')
+    let colidx = col('.')
+    if colidx > 1 && line[colidx - 2] =~ '#'
+      let colidx = colidx - 2
+    else
+      let colidx = -1
+    endif
+    return colidx
+  else
+    if ! filereadable('/usr/sbin/apt-listbugs')
+      echoerr 'apt-listbugs not found, you should install it to use Closes bug completion'
+      return
+    endif
+    let pkgsrc = DebGetPkgSrcName(line('.'))
+    let listbugs_output = system('apt-listbugs -s ' . g:debchangelog_listbugs_severities . ' list ' . pkgsrc . ' | grep "^ #" 2> /dev/null')
+    let bug_lines = split(listbugs_output, '\n')
+    let completions = []
+    for line in bug_lines
+      let parts = matchlist(line, '^\s*\(#\S\+\)\s*-\s*\(.*\)$')
+      let completion = {}
+      let completion['word'] = parts[1]
+      let completion['menu'] = parts[2]
+      let completion['info'] = parts[0]
+      let completions += [completion]
+    endfor
+    return completions
+  endif
+endfun
+
+setlocal omnifunc=DebCompleteBugs
 
 " }}}
 

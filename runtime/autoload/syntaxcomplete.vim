@@ -1,8 +1,8 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
-" Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     3.0
-" Last Change: Wed Nov 08 2006 10:46:46 AM
+" Maintainer:  David Fishburn <dfishburn.vim@gmail.com>
+" Version:     4.0
+" Last Change: Fri 26 Oct 2007 05:27:03 PM Eastern Daylight Time
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
 " Set completion with CTRL-X CTRL-O to autoloaded function.
@@ -19,7 +19,7 @@ endif
 if exists('g:loaded_syntax_completion')
     finish 
 endif
-let g:loaded_syntax_completion = 30
+let g:loaded_syntax_completion = 40
 
 " Set ignorecase to the ftplugin standard
 " This is the default setting, but if you define a buffer local
@@ -353,9 +353,11 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
         else
             let accept_chars = ','.&iskeyword.','
             " Remove all character ranges
-            let accept_chars = substitute(accept_chars, ',[^,]\+-[^,]\+,', ',', 'g')
+            " let accept_chars = substitute(accept_chars, ',[^,]\+-[^,]\+,', ',', 'g')
+            let accept_chars = substitute(accept_chars, ',\@<=[^,]\+-[^,]\+,', '', 'g')
             " Remove all numeric specifications
-            let accept_chars = substitute(accept_chars, ',\d\{-},', ',', 'g')
+            " let accept_chars = substitute(accept_chars, ',\d\{-},', ',', 'g')
+            let accept_chars = substitute(accept_chars, ',\@<=\d\{-},', '', 'g')
             " Remove all commas
             let accept_chars = substitute(accept_chars, ',', '', 'g')
             " Escape special regex characters

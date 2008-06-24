@@ -48,7 +48,9 @@
 #	- Uncomment the line with --disable-acl to disable ACL support even
 #	  though your system supports it.
 #	- Uncomment the line with --disable-gpm to disable gpm support
-#	  even though you have gpm libraries and includes
+#	  even though you have gpm libraries and includes.
+#	- Uncomment the line with --disable-sysmouse to disable sysmouse
+#	  support even though you have /dev/sysmouse and includes.
 #	- Uncomment one of the lines with CFLAGS and/or CC if you have
 #	  something very special or want to tune the optimizer.
 #	- Search for the name of your system to see if it needs anything
@@ -447,8 +449,13 @@ CClink = $(CC)
 
 # gpm - For mouse support on Linux console via gpm
 # Uncomment this when you do not want to include gpm support, even
-# though you have gpm libraries and includes
+# though you have gpm libraries and includes.
 #CONF_OPT_GPM = --disable-gpm
+
+# sysmouse - For mouse support on FreeBSD and DragonFly console via sysmouse
+# Uncomment this when you do not want do include sysmouse support, even
+# though you have /dev/sysmouse and includes.
+#CONF_OPT_SYSMOUSE = --disable-sysmouse
 
 # FEATURES - For creating Vim with more or less features
 # Uncomment one of these lines when you want to include few to many features.
@@ -535,6 +542,10 @@ CClink = $(CC)
 
 # PURIFY - remove the # to use the "purify" program (hoi Nia++!)
 #PURIFY = purify
+
+# NBDEBUG - debugging the netbeans interface.
+#EXTRA_DEFS = -DNBDEBUG
+
 # }}}
 
 # LINT - for running lint
@@ -888,7 +899,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 1
+VIMMINOR = 2a
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -1219,7 +1230,7 @@ CARBONGUI_IPATH	= -I. -Iproto
 CARBONGUI_LIBS_DIR =
 CARBONGUI_LIBS1	= -framework Carbon
 CARBONGUI_LIBS2	=
-CARBONGUI_INSTALL = install_macosx install_gui_extra
+CARBONGUI_INSTALL = install_macosx
 CARBONGUI_TARGETS =
 CARBONGUI_MAN_TARGETS =
 CARBONGUI_TESTTARGET = gui
@@ -1566,7 +1577,8 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
 		$(CONF_OPT_SNIFF) $(CONF_OPT_FEAT) $(CONF_TERM_LIB) \
 		$(CONF_OPT_COMPBY) $(CONF_OPT_ACL)  $(CONF_OPT_NETBEANS) \
-		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME)
+		$(CONF_ARGS) $(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
+		$(CONF_OPT_SYSMOUSE)
 
 # Use "make reconfig" to rerun configure without cached values.
 # When config.h changes, most things will be recompiled automatically.
@@ -2580,7 +2592,7 @@ install_macosx: gui_bundle
 	ln -s `pwd`/../runtime $(RESDIR)/vim
 # Copy rgb.txt, Mac doesn't always have X11
 	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-# TODO: Create the vimtutor application.
+# TODO: Create the vimtutor and/or gvimtutor application.
 
 gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
 	bundle-language
@@ -2759,7 +2771,7 @@ objects/option.o: option.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h 
 objects/os_unix.o: os_unix.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
   ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
   gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
-  arabic.h if_mzsch.h os_unixx.h
+  arabic.h os_unixx.h
 objects/pathdef.o: auto/pathdef.c ./vim.h ./auto/config.h ./feature.h ./os_unix.h \
   ./auto/osdef.h ./ascii.h ./keymap.h ./term.h ./macros.h ./option.h \
   ./structs.h ./regexp.h ./gui.h ./gui_beval.h proto/gui_beval.pro \

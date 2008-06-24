@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.1.  Last change: 2007 May 11
+*editing.txt*   For Vim version 7.2a.  Last change: 2008 Apr 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -364,6 +364,9 @@ all over again.  The ":e" command is only useful if you have changed the
 current file name.
 
 							*:filename* *{file}*
+Besides the things mentioned here, more special items for where a filename is
+expected are mentioned at |cmdline-special|.
+
 Note for systems other than Unix and MS-DOS: When using a command that
 accepts a single file name (like ":edit file") spaces in the file name are
 allowed, but trailing spaces are ignored.  This is useful on systems that
@@ -888,8 +891,10 @@ Note: When the 'write' option is off, you are not able to write any file.
 			the previous command |:!|.
 
 The default [range] for the ":w" command is the whole buffer (1,$).  If you
-write the whole buffer, it is no longer considered changed.  Also when you
-write it to a different file with ":w somefile"!
+write the whole buffer, it is no longer considered changed.  When you
+write it to a different file with ":w somefile" it depends on the "+" flag in
+'cpoptions'.  When included, the write command will reset the 'modified' flag,
+even though the buffer itself may still be different from its file.
 
 If a file name is given with ":w" it becomes the alternate file.  This can be
 used, for example, when the write fails and you want to try again later with
@@ -1105,6 +1110,8 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 		changed.  See |:confirm|. {not in Vi}
 
 :qa[ll]!	Exit Vim.  Any changes to buffers are lost. {not in Vi}
+		Also see |:cquit|, it does the same but exits with a non-zero
+		value.
 
 							*:quita* *:quitall*
 :quita[ll][!]	Same as ":qall". {not in Vi}
@@ -1478,7 +1485,9 @@ There are three different types of searching:
    supported by your operating system.  '*' and '**' are handled inside Vim, so
    they work on all operating systems.
 
-   The usage of '*' is quite simple: It matches 0 or more characters.
+   The usage of '*' is quite simple: It matches 0 or more characters.  In a
+   search pattern this would be ".*".  Note that the "." is not used for file
+   searching.
 
    '**' is more sophisticated:
       - It ONLY matches directories.
@@ -1498,7 +1507,7 @@ There are three different types of searching:
 	levels.
 	The allowed number range is 0 ('**0' is removed) to 255.
 	If the given number is smaller than 0 it defaults to 30, if it's
-	bigger than 255 it defaults to 255.
+	bigger than 255 then 255 is used.
       - '**' can only be at the end of the path or be followed by a path
 	separator or by a number and a path separator.
 

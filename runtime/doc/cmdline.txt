@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.1.  Last change: 2008 Jan 04
+*cmdline.txt*   For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -62,7 +62,7 @@ Notes:
   old one is removed (to avoid repeated commands moving older commands out of
   the history).
 - Only commands that are typed are remembered.  Ones that completely come from
-  mappings are not put in the history
+  mappings are not put in the history.
 - All searches are put in the search history, including the ones that come
   from commands like "*" and "#".  But for a mapping, only the last search is
   remembered (to avoid that long mappings trash the history).
@@ -226,6 +226,8 @@ CTRL-J						*c_CTRL-J* *c_<NL>* *c_<CR>*
 <Esc>		When typed and 'x' not present in 'cpoptions', quit
 		Command-line mode without executing.  In macros or when 'x'
 		present in 'cpoptions', start entered command.
+		Note: If your <Esc> key is hard to hit on your keyboard, train
+		yourself to use CTRL-[.
 							*c_CTRL-C*
 CTRL-C		quit command-line without executing
 
@@ -482,7 +484,7 @@ argument.
 line.  If you want to use '|' in an argument, precede it with '\'.
 
 These commands see the '|' as their argument, and can therefore not be
-followed by another command:
+followed by another Vim command:
     :argdo
     :autocmd
     :bufdo
@@ -718,6 +720,9 @@ to insert special things while typing you can use the CTRL-R command.  For
 example, "%" stands for the current file name, while CTRL-R % inserts the
 current file name right away.  See |c_CTRL-R|.
 
+Note: If you want to avoid the special characters in a Vim script you may want
+to use |fnameescape()|.
+
 
 In Ex commands, at places where a file name can be used, the following
 characters have a special meaning.  These can also be used in the expression
@@ -893,10 +898,10 @@ Examples: (alternate file name is "?readme?")
 	:cd <cfile>*	:cd {file name under cursor plus "*" and then expanded}
 
 When the expanded argument contains a "!" and it is used for a shell command
-(":!cmd", ":r !cmd" or ":w !cmd"), it is escaped with a backslash to avoid it
-being expanded into a previously used command.  When the 'shell' option
-contains "sh", this is done twice, to avoid the shell trying to expand the
-"!".
+(":!cmd", ":r !cmd" or ":w !cmd"), the "!" is escaped with a backslash to
+avoid it being expanded into a previously used command.  When the 'shell'
+option contains "sh", this is done twice, to avoid the shell trying to expand
+the "!".
 
 							*filename-backslash*
 For filesystems that use a backslash as directory separator (MS-DOS, Windows,

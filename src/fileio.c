@@ -21,10 +21,6 @@
 
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 #ifdef __TANDEM
 # include <limits.h>		/* for SSIZE_MAX */
 #endif
@@ -4702,7 +4698,7 @@ nofail:
 	 * front of the file name. */
 	if (errnum != NULL)
 	{
-	    mch_memmove(IObuff + numlen, IObuff, STRLEN(IObuff) + 1);
+	    STRMOVE(IObuff + numlen, IObuff);
 	    mch_memmove(IObuff, errnum, (size_t)numlen);
 	}
 	STRCAT(IObuff, errmsg);
@@ -5976,7 +5972,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
 #endif
 				)
     {
-	mch_memmove(e + 1, e, STRLEN(e) + 1);
+	STRMOVE(e + 1, e);
 #ifdef RISCOS
 	*e = '/';
 #else
@@ -6593,7 +6589,8 @@ buf_check_timestamp(buf, focus)
 	buf_reload(buf, orig_mode);
 
 #ifdef FEAT_AUTOCMD
-    if (buf_valid(buf))
+    /* Trigger FileChangedShell when the file was changed in any way. */
+    if (buf_valid(buf) && retval != 0)
 	(void)apply_autocmds(EVENT_FILECHANGEDSHELLPOST,
 				      buf->b_fname, buf->b_fname, FALSE, buf);
 #endif

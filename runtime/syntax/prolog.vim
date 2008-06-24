@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:    PROLOG
 " Maintainers: Thomas Koehler <jean-luc@picard.franken.de>
-" Last Change: 2005 Mar 14
+" Last Change: 2008 April 5
 " URL:	       http://gott-gehabt/800_wer_wir_sind/thomas/Homepage/Computer/vim/syntax/prolog.vim
 
 " There are two sets of highlighting in here:
@@ -26,9 +26,9 @@ syn match    prologComment	+%.*+
 
 syn keyword  prologKeyword	module meta_predicate multifile dynamic
 syn match    prologCharCode	+0'\\\=.+
-syn region   prologString	start=+"+ skip=+\\"+ end=+"+
-syn region   prologAtom		start=+'+ skip=+\\'+ end=+'+
-syn region   prologClauseHead   start=+^[a-z][^(]*(+ skip=+\.[^			    ]+ end=+:-\|\.$\|\.[	]\|-->+
+syn region   prologString      start=+"+ skip=+\\\\\|\\"+ end=+"+
+syn region   prologAtom                start=+'+ skip=+\\\\\|\\'+ end=+'+
+syn region   prologClauseHead   start=+^[a-z][^(]*(+ skip=+\.[^		]+ end=+:-\|\.$\|\.[	 ]\|-->+ contains=prologComment,prologCComment,prologString
 
 if !exists("prolog_highlighting_clean")
 

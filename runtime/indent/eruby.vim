@@ -43,7 +43,7 @@ endif
 function! GetErubyIndent()
   let vcol = col('.')
   call cursor(v:lnum,1)
-  let inruby = searchpair('<%','','%>')
+  let inruby = searchpair('<%','','%>','W')
   call cursor(v:lnum,vcol)
   if inruby && getline(v:lnum) !~ '^<%'
     let ind = GetRubyIndent()
@@ -70,4 +70,4 @@ function! GetErubyIndent()
   return ind
 endfunction
 
-" vim:set sw=2 sts=2 ts=8 noet ff=unix:
+" vim:set sw=2 sts=2 ts=8 noet:

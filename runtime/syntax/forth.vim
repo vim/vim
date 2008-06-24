@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Di 06 Jul 2004 18:40:33 CEST
+" Last Change: Sa 14 Jul 2007 21:39:53 CEST
 " Filenames:   *.fs,*.ft
-" URL:         http://www.cvjb.de/comp/vim/forth.vim
+" URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
 " $Id$
 
@@ -13,30 +13,48 @@
 
 " Many Thanks to...
 "
-" 2004-07-06:
-" Changed "syn sync ccomment maxlines=200" line: splitted it into two separate
-" lines.
+" 2007-07-11:
+" Benjamin Krill <ben at codiert dot org> send me a patch
+" to highlight space errors.
+" You can toggle this feature on through setting the
+" flag forth_space_errors in you vimrc. If you have switched it on,
+" you can turn off highlighting of trailing spaces in comments by
+" setting forth_no_trail_space_error in your vimrc. If you do not want
+" the highlighting of a tabulator following a space in comments, you
+" can turn this off by setting forth_no_tab_space_error.
 "
+" 2006-05-25:
+" Bill McCarthy <WJMc@...> and Ilya Sher <ilya-vim@...>
+" Who found a bug in the ccomment line in 2004!!!
+" I'm really very sorry, that it has taken two years to fix that
+" in the offical version of this file. Shame on me.
+" I think my face will be red the next ten years...
+"
+" 2006-05-21:
+" Thomas E. Vaughan <tevaugha at ball dot com> send me a patch
+" for the parenthesis comment word, so words with a trailing
+" parenthesis will not start the highlighting for such comments.
+" 
 " 2003-05-10:
 " Andrew Gaul <andrew at gaul.org> send me a patch for
 " forthOperators.
 "
 " 2003-04-03:
-" Ron Aaron <ronaharon at yahoo.com> made updates for an
+" Ron Aaron <ron at ronware dot org> made updates for an
 " improved Win32Forth support.
 "
 " 2002-04-22:
-" Charles Shattuck <charley at forth.org> helped me to settle up with the
+" Charles Shattuck <charley at forth dot org> helped me to settle up with the
 " binary and hex number highlighting.
 "
 " 2002-04-20:
-" Charles Shattuck <charley at forth.org> send me some code for correctly
+" Charles Shattuck <charley at forth dot org> send me some code for correctly
 " highlighting char and [char] followed by an opening paren. He also added
 " some words for operators, conditionals, and definitions; and added the
 " highlighting for s" and c".
 "
 " 2000-03-28:
-" John Providenza <john at probo.com> made improvements for the
+" John Providenza <john at probo dot com> made improvements for the
 " highlighting of strings, and added the code for highlighting hex numbers.
 "
 
@@ -68,6 +86,15 @@ else
     set iskeyword=!,@,33-35,%,$,38-64,A-Z,91-96,a-z,123-126,128-255
 endif
 
+" when wanted, highlight trailing white space
+if exists("forth_space_errors")
+    if !exists("forth_no_trail_space_error")
+        syn match forthSpaceError display excludenl "\s\+$"
+    endif
+    if !exists("forth_no_tab_space_error")
+        syn match forthSpaceError display " \+\t"me=e-1
+    endif
+endif
 
 " Keywords
 
@@ -177,12 +204,11 @@ syn region forthString start=+s\"+ end=+"+ end=+$+
 syn region forthString start=+c\"+ end=+"+ end=+$+
 
 " Comments
-syn match forthComment '\\\s.*$' contains=forthTodo
-syn region forthComment start='\\S\s' end='.*' contains=forthTodo
-syn match forthComment '\.(\s[^)]*)' contains=forthTodo
-syn region forthComment start='(\s' skip='\\)' end=')' contains=forthTodo
-syn region forthComment start='/\*' end='\*/' contains=forthTodo
-"syn match forthComment '(\s[^\-]*\-\-[^\-]*)' contains=forthTodo
+syn match forthComment '\\\s.*$' contains=forthTodo,forthSpaceError
+syn region forthComment start='\\S\s' end='.*' contains=forthTodo,forthSpaceError
+syn match forthComment '\.(\s[^)]*)' contains=forthTodo,forthSpaceError
+syn region forthComment start='\s(\s' skip='\\)' end=')' contains=forthTodo,forthSpaceError
+syn region forthComment start='/\*' end='\*/' contains=forthTodo,forthSpaceError
 
 " Include files
 syn match forthInclude '^INCLUDE\s\+\k\+'
@@ -194,10 +220,10 @@ syn match forthInclude '^needs\s\+'
 " For version 5.8 and later: only when an item doesn't have highlighting yet
 if version >= 508 || !exists("did_forth_syn_inits")
     if version < 508
-        let did_forth_syn_inits = 1
-        command -nargs=+ HiLink hi link <args>
+	let did_forth_syn_inits = 1
+	command -nargs=+ HiLink hi link <args>
     else
-        command -nargs=+ HiLink hi def link <args>
+	command -nargs=+ HiLink hi def link <args>
     endif
 
     " The default methods for highlighting. Can be overriden later.
@@ -231,6 +257,7 @@ if version >= 508 || !exists("did_forth_syn_inits")
     HiLink forthObjectDef Define
     HiLink forthEndOfObjectDef Define
     HiLink forthInclude Include
+    HiLink forthSpaceError Error
 
     delcommand HiLink
 endif

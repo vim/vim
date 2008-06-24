@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.1.  Last change: 2007 May 11
+*pi_zip.txt*	For Vim version 7.2a.  Last change: 2008 Jun 12
 
 				+====================+
 				| Zip File Interface |
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
+Copyright: Copyright (C) 2005-2008 Charles E Campbell, Jr *zip-copyright*
            Permission is hereby granted to use and distribute this code,
 	   with or without modifications, provided that this copyright
 	   notice is copied with it. Like anything else that's free,
@@ -33,7 +33,13 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
    zip archives via the plugin.
 
    OPTIONS
-							*zip_shq*
+
+   							*g:zip_nomax*
+
+   If this variable exists and is true, the file window will not be
+   automatically maximized when opened.
+
+							*g:zip_shq*
    Different operating systems may use one or more shells to execute
    commands.  Zip will try to guess the correct quoting mechanism to
    allow spaces and whatnot in filenames; however, if it is incorrectly
@@ -45,12 +51,12 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
 
    							*g:zip_unzipcmd*
    Use this option to specify the program which does the duty of "unzip".
-   Its used during browsing. By default: >
+   It's used during browsing. By default: >
    	let g:zip_unzipcmd= "unzip"
 <
 							*g:zip_zipcmd*
    Use this option to specify the program which does the duty of "zip".
-   Its used during the writing (updating) of a file already in a zip
+   It's used during the writing (updating) of a file already in a zip
    file; by default: >
    	let g:zip_zipcmd= "zip"
 <
@@ -64,11 +70,13 @@ Copyright: Copyright (C) 2005,2006 Charles E Campbell, Jr *zip-copyright*
 
 	au BufReadCmd *.jar,*.xpi call zip#Browse(expand("<amatch>"))
 <
-   One can simply extend this line to accommodate additional extensions that
-   are actually zip files.
+   One simply can extend this line to accomodate additional extensions that
+   should be treated as zip files.
 
 ==============================================================================
 4. History					*zip-history* {{{1
+   v17 May 09, 2008 * arno caught a security bug
+   v15 Sep 07, 2007 * &shq now used if not the empty string for g:zip_shq
    v14 May 07, 2007 * using b:zipfile instead of w:zipfile to avoid problem
                       when editing alternate file to bring up a zipfile
    v10 May 02, 2006 * now using "redraw then echo" to show messages, instead

@@ -27,9 +27,6 @@
 # include "if_mzsch.h"
 #endif
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 #include <sys/types.h>
 #include <errno.h>
 #include <signal.h>

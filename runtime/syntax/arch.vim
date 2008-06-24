@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         GNU Arch inventory file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-05-06
+" Latest Revision:  2007-06-17
 
 if exists("b:current_syntax")
   finish
@@ -10,7 +10,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,_,-
+setlocal iskeyword+=-
 
 syn keyword archTodo    TODO FIXME XXX NOTE
 

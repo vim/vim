@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.1.  Last change: 2007 May 11
+*quickref.txt*  For Vim version 7.2a.  Last change: 2008 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -458,18 +458,29 @@ In Insert or Command-line mode:
 ------------------------------------------------------------------------------
 *Q_to*		Text objects (only in Visual mode or after an operator)
 
-|v_aw|	N  aw		Select "a word"
-|v_iw|	N  iw		Select "inner word"
-|v_aW|	N  aW		Select "a |WORD|"
-|v_iW|	N  iW		Select "inner |WORD|"
-|v_as|	N  as		Select "a sentence"
-|v_is|	N  is		Select "inner sentence"
-|v_ap|	N  ap		Select "a paragraph"
-|v_ip|	N  ip		Select "inner paragraph"
-|v_ab|	N  ab		Select "a block" (from "[(" to "])")
-|v_ib|	N  ib		Select "inner block" (from "[(" to "])")
-|v_aB|	N  aB		Select "a Block" (from "[{" to "]}")
-|v_iB|	N  iB		Select "inner Block" (from "[{" to "]}")
+|v_aw|	   N  aw	Select "a word"
+|v_iw|	   N  iw	Select "inner word"
+|v_aW|	   N  aW	Select "a |WORD|"
+|v_iW|	   N  iW	Select "inner |WORD|"
+|v_as|	   N  as	Select "a sentence"
+|v_is|	   N  is	Select "inner sentence"
+|v_ap|	   N  ap	Select "a paragraph"
+|v_ip|	   N  ip	Select "inner paragraph"
+|v_ab|	   N  ab	Select "a block" (from "[(" to "])")
+|v_ib|	   N  ib	Select "inner block" (from "[(" to "])")
+|v_aB|	   N  aB	Select "a Block" (from "[{" to "]}")
+|v_iB|	   N  iB	Select "inner Block" (from "[{" to "]}")
+|v_a>|	   N  a>	Select "a <> block"
+|v_i>|	   N  i>	Select "inner <> block"
+|v_at|	   N  at	Select "a tag block" (from <aaa> to </aaa>)
+|v_it|	   N  it	Select "inner tag block" (from <aaa> to </aaa>)
+|v_a'|	   N  a'	Select "a single quoted string"
+|v_i'|	   N  i'	Select "inner single quoted string"
+|v_aquote| N  a"	Select "a double quoted string"
+|v_iquote| N  i"	Select "inner double quoted string"
+|v_a`|	   N  a`	Select "a backward quoted string"
+|v_i`|	   N  i`	Select "inner backward quoted string"
+
 ------------------------------------------------------------------------------
 *Q_re*		Repeating commands
 
@@ -806,6 +817,7 @@ Short explanation of each option:		*option-list*
 'pumheight'	  'ph'	    maximum height of the popup menu
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
+'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting
 'remap'			    allow mappings to work recursively
 'report'		    threshold for reporting nr. of lines changed
 'restorescreen'   'rs'	    Win32: restore screen when exiting
@@ -857,7 +869,7 @@ Short explanation of each option:		*option-list*
 'spellsuggest'	  'sps'     method(s) used to suggest spelling corrections
 'splitbelow'	  'sb'	    new window from split is below the current one
 'splitright'	  'spr'     new window is put right of the current one
-'startofline'	  'sol'     commands move cursor to first blank in line
+'startofline'	  'sol'     commands move cursor to first non-blank in line
 'statusline'	  'stl'     custom format for the status line
 'suffixes'	  'su'	    suffixes that are ignored with multiple match
 'suffixesadd'	  'sua'     suffixes added when searching for a file

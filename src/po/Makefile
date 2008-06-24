@@ -10,7 +10,9 @@ LANGUAGES = \
 		cs \
 		de \
 		en_GB \
+		eo \
 		es \
+		fi \
 		fr \
 		ga \
 		it \
@@ -34,7 +36,9 @@ MOFILES = \
 		cs.mo \
 		de.mo \
 		en_GB.mo \
+		eo.mo \
 		es.mo \
+		fi.mo \
 		fr.mo \
 		ga.mo \
 		it.mo \
@@ -68,7 +72,9 @@ CHECKFILES = \
 		cs.ck \
 		de.ck \
 		en_GB.ck \
+		eo.ck \
 		es.ck \
+		fi.ck \
 		fr.ck \
 		ga.ck \
 		it.ck \
@@ -199,8 +205,8 @@ ru.cp1251.po: ru.po
 # Convert uk.po to create uk.cp1251.po.
 uk.cp1251.po: uk.po
 	rm -f uk.cp1251.po
-	iconv -f koi8-u -t cp1251 uk.po | \
-		sed -e 's/charset=koi8-u/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
+	iconv -f utf-8 -t cp1251 uk.po | \
+		sed -e 's/charset=utf-8/charset=cp1251/' -e 's/# Original translations/# Generated from uk.po, DO NOT EDIT/' > uk.cp1251.po
 
 prefixcheck:
 	@if test "x" = "x$(prefix)"; then \

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 7.1.  Last change: 2007 Apr 26
+*usr_41.txt*	For Vim version 7.2a.  Last change: 2008 Jun 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -579,9 +579,12 @@ the function name to jump to detailed help on it.
 String manipulation:
 	nr2char()		get a character by its ASCII value
 	char2nr()		get ASCII value of a character
-	str2nr()		convert a string to a number
+	str2nr()		convert a string to a Number
+	str2float()		convert a string to a Float
 	printf()		format a string according to % items
 	escape()		escape characters in a string with a '\'
+	shellescape()		escape a string for use with a shell command
+	fnameescape()		escape a file name for use with a Vim command
 	tr()			translate characters from one set to another
 	strtrans()		translate a string to make it printable
 	tolower()		turn a string to lowercase
@@ -645,6 +648,20 @@ Dictionary manipulation:
 	max()			maximum value in a Dictionary
 	min()			minimum value in a Dictionary
 	count()			count number of times a value appears
+
+Floating point computation:
+	float2nr()		convert Float to Number
+	abs()			absolute value (also works for Number)
+	round()			round off
+	ceil()			round up
+	floor()			round down
+	trunc()			remove value after decimal point
+	log10()			logarithm to base 10
+	pow()			value of x to the exponent y
+	sqrt()			square root
+	sin()			sine
+	cos()			cosine
+	atan()			arc tangent
 
 Variables:
 	type()			type of a variable
@@ -797,6 +814,7 @@ Interactive:
 	confirm()		let the user make a choice
 	getchar()		get a character from the user
 	getcharmod()		get modifiers for the last typed character
+	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
 	inputlist()		let the user pick an entry from a list
 	inputsecret()		get a line from the user without showing it
@@ -838,6 +856,7 @@ Various:
 	cscope_connection()	check if a cscope connection exists
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
+	getpid()		get process ID of Vim
 
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
@@ -887,8 +906,8 @@ are local unless prefixed by something like "g:", "a:", or "s:".
 
 	Note:
 	To access a global variable from inside a function you must prepend
-	"g:" to it.  Thus "g:count" inside a function is used for the global
-	variable "count", and "count" is another variable, local to the
+	"g:" to it.  Thus "g:today" inside a function is used for the global
+	variable "today", and "today" is another variable, local to the
 	function.
 
 You now use the ":return" statement to return the smallest number to the user.
@@ -947,13 +966,13 @@ These will have the line numbers from the range the function was called with.
 Example: >
 
 	:function Count_words() range
-	:  let n = a:firstline
-	:  let count = 0
-	:  while n <= a:lastline
-	:    let count = count + Wordcount(getline(n))
-	:    let n = n + 1
+	:  let lnum = a:firstline
+	:  let n = 0
+	:  while lnum <= a:lastline
+	:    let n = n + len(split(getline(lnum)))
+	:    let lnum = lnum + 1
 	:  endwhile
-	:  echo "found " . count . " words"
+	:  echo "found " . n . " words"
 	:endfunction
 
 You can call this function with: >
@@ -1205,7 +1224,7 @@ over them: >
 	one ~
 	two ~
 
-The will notice the keys are not ordered.  You can sort the list to get a
+You will notice the keys are not ordered.  You can sort the list to get a
 specific order: >
 
 	:for key in sort(keys(uk2nl))
@@ -2238,7 +2257,7 @@ that could be ~/.vim/after/compiler.
 *41.14*	Writing a plugin that loads quickly	*write-plugin-quickload*
 
 A plugin may grow and become quite long.  The startup delay may become
-noticeable, while you hardly every use the plugin.  Then it's time for a
+noticeable, while you hardly ever use the plugin.  Then it's time for a
 quickload plugin.
 
 The basic idea is that the plugin is loaded twice.  The first time user

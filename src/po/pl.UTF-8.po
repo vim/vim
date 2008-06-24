@@ -73,7 +73,7 @@ msgstr "E88: Nie mogę przejść przed pierwszy bufor"
 
 #, c-format
 msgid "E89: No write since last change for buffer %ld (add ! to override)"
-msgstr "E89 Nie zapisano zmian w buforze %ld (wymuś przez !)"
+msgstr "E89: Nie zapisano zmian w buforze %ld (wymuś przez !)"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Nie mogę wyładować ostatniego bufora"
@@ -339,7 +339,7 @@ msgstr "E111: Brak ']'"
 
 #, c-format
 msgid "E686: Argument of %s must be a List"
-msgstr "E487: Argument %s musi być Listą"
+msgstr "E686: Argument %s musi być Listą"
 
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
@@ -385,7 +385,7 @@ msgstr "E130: Nieznana funkcja: %s"
 
 #, c-format
 msgid "E461: Illegal variable name: %s"
-msgstr "E418: Niedozwolona nazwa zmiennej: %s"
+msgstr "E461: Niedozwolona nazwa zmiennej: %s"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Mniej celów niż elementów Listy"
@@ -1064,7 +1064,7 @@ msgid "E156: Missing sign name"
 msgstr "E156: Brak nazwy znaku"
 
 msgid "E612: Too many signs defined"
-msgstr "E255: Zbyt wiele nazw znaków"
+msgstr "E612: Zbyt wiele nazw znaków"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
@@ -1228,7 +1228,7 @@ msgstr "Brak pliku wymiany"
 msgid "Append File"
 msgstr "Dołącz plik"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
 "E747: Nie mogę zmienić katalogu, bufor został zmodyfikowany (dodaj ! aby "
 "wymusić)"
@@ -1465,8 +1465,8 @@ msgstr "jest katalogiem"
 msgid "is not a file"
 msgstr "nie jest plikiem"
 
-msgid "is a device (disabled with 'opendevice' option"
-msgstr "jest urządzeniem (wyłączonym w opcji 'opendevice'"
+msgid "is a device (disabled with 'opendevice' option)"
+msgstr "jest urządzeniem (wyłączonym w opcji 'opendevice')"
 
 msgid "[New File]"
 msgstr "[Nowy Plik]"
@@ -2523,8 +2523,7 @@ msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ musi być reprezentacją Łańcucha"
 
 msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
-msgstr ""
-"E263: Przykro mi, ta komenda jest wyłączona, bo nie można załadować "
+msgstr "E266: Przykro mi, ta komenda jest wyłączona, bo nie można załadować "
 "biblioteki Ruby."
 
 msgid "E267: unexpected return"
@@ -2692,7 +2691,7 @@ msgstr ""
 "bufora/okna"
 
 msgid "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
-msgstr "Przykro mi, ta komenda jest wyłączona, bo nie można załadować biblioteki Tcl."
+msgstr "E571: Przykro mi, ta komenda jest wyłączona, bo nie można załadować biblioteki Tcl."
 
 msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
 msgstr ""
@@ -3843,7 +3842,7 @@ msgid "E548: digit expected"
 msgstr "E548: oczekiwano cyfry"
 
 msgid "E549: Illegal percentage"
-msgstr "E459: Niedozwolony procent"
+msgstr "E549: Niedozwolony procent"
 
 msgid "Enter encryption key: "
 msgstr "Wprowadź klucz do odkodowania: "

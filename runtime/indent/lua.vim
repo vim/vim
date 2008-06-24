@@ -2,7 +2,7 @@
 " Language:	Lua script
 " Maintainer:	Marcus Aurelius Farias <marcus.cf 'at' bol.com.br>
 " First Author:	Max Ischenko <mfi 'at' ukr.net>
-" Last Change:	2005 Jun 23
+" Last Change:	2007 Jul 23
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -25,33 +25,37 @@ endif
 
 function! GetLuaIndent()
   " Find a non-blank line above the current line.
-  let lnum = prevnonblank(v:lnum - 1)
+  let prevlnum = prevnonblank(v:lnum - 1)
 
   " Hit the start of the file, use zero indent.
-  if lnum == 0
+  if prevlnum == 0
     return 0
   endif
 
   " Add a 'shiftwidth' after lines that start a block:
   " 'function', 'if', 'for', 'while', 'repeat', 'else', 'elseif', '{'
-  let ind = indent(lnum)
-  let flag = 0
-  let prevline = getline(lnum)
-  if prevline =~ '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)'
-        \ || prevline =~ '{\s*$' || prevline =~ '\<function\>\s*\%(\k\|[.:]\)\{-}\s*('
-    let ind = ind + &shiftwidth
-    let flag = 1
+  let ind = indent(prevlnum)
+  let prevline = getline(prevlnum)
+  let midx = match(prevline, '^\s*\%(if\>\|for\>\|while\>\|repeat\>\|else\>\|elseif\>\|do\>\|then\>\)')
+  if midx == -1
+    let midx = match(prevline, '{\s*$')
+    if midx == -1
+      let midx = match(prevline, '\<function\>\s*\%(\k\|[.:]\)\{-}\s*(')
+    endif
   endif
 
-  " Subtract a 'shiftwidth' after lines ending with
-  " 'end' when they begin with 'while', 'if', 'for', etc. too.
-  if flag == 1 && prevline =~ '\<end\>\|\<until\>'
-    let ind = ind - &shiftwidth
+  if midx != -1
+    " Add 'shiftwidth' if what we found previously is not in a comment and
+    " an "end" or "until" is not present on the same line.
+    if synIDattr(synID(prevlnum, midx + 1, 1), "name") != "luaComment" && prevline !~ '\<end\>\|\<until\>'
+      let ind = ind + &shiftwidth
+    endif
   endif
 
   " Subtract a 'shiftwidth' on end, else (and elseif), until and '}'
   " This is the part that requires 'indentkeys'.
-  if getline(v:lnum) =~ '^\s*\%(end\|else\|until\|}\)'
+  let midx = match(getline(v:lnum), '^\s*\%(end\|else\|until\|}\)')
+  if midx != -1 && synIDattr(synID(v:lnum, midx + 1, 1), "name") != "luaComment"
     let ind = ind - &shiftwidth
   endif
 

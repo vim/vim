@@ -1,4 +1,4 @@
-*usr_42.txt*	For Vim version 7.1.  Last change: 2006 Apr 24
+*usr_42.txt*	For Vim version 7.2a.  Last change: 2008 May 05
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -255,14 +255,14 @@ This deletes the Syntax menu and all the items in it.
 *42.3*	Various
 
 You can change the appearance of the menus with flags in 'guioptions'.  In the
-default value they are all included.  You can remove a flag with a command
-like: >
+default value they are all included, except "M".  You can remove a flag with a
+command like: >
 
 	:set guioptions-=m
 <
 	m		When removed the menubar is not displayed.
 
-	M		When removed the default menus are not loaded.
+	M		When added the default menus are not loaded.
 
 	g		When removed the inactive menu items are not made grey
 			but are completely removed.  (Does not work on all

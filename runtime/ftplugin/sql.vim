@@ -1,8 +1,8 @@
 " SQL filetype plugin file
 " Language:    SQL (Common for Oracle, Microsoft SQL Server, Sybase)
-" Version:     3.0
+" Version:     4.0
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: Wed Apr 26 2006 3:02:32 PM
+" Last Change: Wed 27 Feb 2008 04:35:21 PM Eastern Standard Time
 " Download:    http://vim.sourceforge.net/script.php?script_id=454
 
 " For more details please use:
@@ -38,6 +38,13 @@ endif
 
 let s:save_cpo = &cpo
 set cpo=
+
+" Disable autowrapping for code, but enable for comments
+" t	Auto-wrap text using textwidth
+" c     Auto-wrap comments using textwidth, inserting the current comment
+"       leader automatically.
+setlocal formatoptions-=t
+setlocal formatoptions-=c
 
 " Functions/Commands to allow the user to change SQL syntax dialects
 " through the use of :SQLSetType <tab> for completion.
@@ -278,10 +285,10 @@ nmap <buffer> <silent> ]] :call search('\\c^\\s*begin\\>', 'W' )<CR>
 nmap <buffer> <silent> [[ :call search('\\c^\\s*begin\\>', 'bW' )<CR>
 nmap <buffer> <silent> ][ :call search('\\c^\\s*end\\W*$', 'W' )<CR>
 nmap <buffer> <silent> [] :call search('\\c^\\s*end\\W*$', 'bW' )<CR>
-vmap <buffer> <silent> ]] /\\c^\\s*begin\\><CR>
-vmap <buffer> <silent> [[ ?\\c^\\s*begin\\><CR>
-vmap <buffer> <silent> ][ /\\c^\\s*end\\W*$<CR>
-vmap <buffer> <silent> [] ?\\c^\\s*end\\W*$<CR>
+vmap <buffer> <silent> ]] :<C-U>exec "normal! gv"<Bar>call search('\\c^\\s*begin\\>', 'W' )<CR>
+vmap <buffer> <silent> [[ :<C-U>exec "normal! gv"<Bar>call search('\\c^\\s*begin\\>', 'bW' )<CR>
+vmap <buffer> <silent> ][ :<C-U>exec "normal! gv"<Bar>call search('\\c^\\s*end\\W*$', 'W' )<CR>
+vmap <buffer> <silent> [] :<C-U>exec "normal! gv"<Bar>call search('\\c^\\s*end\\W*$', 'bW' )<CR>
 
 
 " By default only look for CREATE statements, but allow
@@ -343,10 +350,10 @@ let b:comment_skip_back  = "call search('".
             \ '^\\(\\s*'.b:comment_leader.'.*\\n\\)\\@<!'.
             \ "', 'bW')"
 " Move to the start and end of comments
-exec 'nnoremap <silent><buffer> ]" /'.b:comment_start.'<CR>'
-exec 'nnoremap <silent><buffer> [" /'.b:comment_end.'<CR>'
-exec 'vnoremap <silent><buffer> ]" /'.b:comment_start.'<CR>'
-exec 'vnoremap <silent><buffer> [" /'.b:comment_end.'<CR>'
+exec 'nnoremap <silent><buffer> ]" :call search('."'".b:comment_start."'".', "W" )<CR>'
+exec 'nnoremap <silent><buffer> [" :call search('."'".b:comment_end."'".', "W" )<CR>'
+exec 'vnoremap <silent><buffer> ]" :<C-U>exec "normal! gv"<Bar>call search('."'".b:comment_start."'".', "W" )<CR>'
+exec 'vnoremap <silent><buffer> [" :<C-U>exec "normal! gv"<Bar>call search('."'".b:comment_end."'".', "W" )<CR>'
 
 " Comments can be of the form:
 "   /*

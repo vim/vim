@@ -2779,7 +2779,7 @@ msgid "E296: Seek error in swap file write"
 msgstr "E296: Lỗi tìm kiếm khi ghi nhớ tập tin trao đổi (swap)"
 
 msgid "E297: Write error in swap file"
-msgstr "E295: Lỗi ghi nhớ tập tin trao đổi (swap)"
+msgstr "E297: Lỗi ghi nhớ tập tin trao đổi (swap)"
 
 msgid "E300: Swap file already exists (symlink attack?)"
 msgstr ""
@@ -3772,7 +3772,7 @@ msgid "'columns' is not 80, cannot execute external commands"
 msgstr "Tùy chọn 'columns' khác 80, chương trình ngoại trú không thể thực hiện"
 
 msgid "E237: Printer selection failed"
-msgstr "E327: Chọn máy in không thành công"
+msgstr "E237: Chọn máy in không thành công"
 
 #, c-format
 msgid "to %s on %s"

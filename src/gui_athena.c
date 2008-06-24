@@ -2245,7 +2245,7 @@ gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield)
 	for (next = p; *next; ++next)
 	{
 	    if (*next == DLG_HOTKEY_CHAR)
-		mch_memmove(next, next + 1, STRLEN(next));
+		STRMOVE(next, next + 1);
 	    if (*next == DLG_BUTTON_SEP)
 	    {
 		*next++ = NUL;

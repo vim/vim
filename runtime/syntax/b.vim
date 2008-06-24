@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:	B (A Formal Method with refinement and mathematical proof)
-" Maintainer:	Mathieu Clabaut <mathieu.clabaut@free.fr>
-" LastChange:	25 Apr 2001
+" Maintainer:	Mathieu Clabaut <mathieu.clabaut@gmail.com>
+" Contributor:  Csaba Hoch
+" LastChange:	8 Dec 2007
 
 
 " For version 5.x: Clear all syntax items
@@ -14,20 +15,20 @@ endif
 
 
 " A bunch of useful B keywords
-syn keyword bStatement	MACHINE SEES OPERATIONS INCLUDES DEFINITIONS CONSTRAINTS CONSTANTS VARIABLES CONCRETE_CONSTANTS CONCRETE_VARIABLES ABSTRACT_CONSTANTS ABSTRACT_VARIABLES HIDDEN_CONSTANTS HIDDEN_VARIABLES ASSERT ASSERTIONS  EXTENDS IMPLEMENTATION REFINEMENT IMPORTS USES INITIALISATION INVARIANT PROMOTES PROPERTIES REFINES SETS VALUES VARIANT VISIBLE_CONSTANTS VISIBLE_VARIABLES THEORY
+syn keyword bStatement	        MACHINE MODEL SEES OPERATIONS INCLUDES DEFINITIONS CONSTRAINTS CONSTANTS VARIABLES CONCRETE_CONSTANTS CONCRETE_VARIABLES ABSTRACT_CONSTANTS ABSTRACT_VARIABLES HIDDEN_CONSTANTS HIDDEN_VARIABLES ASSERT ASSERTIONS  EXTENDS IMPLEMENTATION REFINEMENT IMPORTS USES INITIALISATION INVARIANT PROMOTES PROPERTIES REFINES SETS VALUES VARIANT VISIBLE_CONSTANTS VISIBLE_VARIABLES THEORY XLS THEOREMS LOCAL_OPERATIONS
 syn keyword bLabel		CASE IN EITHER OR CHOICE DO OF
 syn keyword bConditional	IF ELSE SELECT ELSIF THEN WHEN
 syn keyword bRepeat		WHILE FOR
 syn keyword bOps		bool card conc closure closure1 dom first fnc front not or id inter iseq iseq1 iterate last max min mod perm pred prj1 prj2 ran rel rev seq seq1 size skip succ tail union
 syn keyword bKeywords		LET VAR BE IN BEGIN END  POW POW1 FIN FIN1  PRE  SIGMA STRING UNION IS ANY WHERE
-syn match bKeywords	"||"
 
 syn keyword bBoolean	TRUE FALSE bfalse btrue
 syn keyword bConstant	PI MAXINT MININT User_Pass PatchProver PatchProverH0 PatchProverB0 FLAT ARI DED SUB RES
 syn keyword bGuard binhyp band bnot bguard bsearch bflat bfresh bguardi bget bgethyp barith bgetresult bresult bgoal bmatch bmodr bnewv  bnum btest bpattern bprintf bwritef bsubfrm  bvrb blvar bcall bappend bclose
 
 syn keyword bLogic	or not
-syn match bLogic	"\&\|=>\|<=>"
+syn match bLogic	"\(!\|#\|%\|&\|+->>\|+->\|-->>\|->>\|-->\|->\|/:\|/<:\|/<<:\|/=\|/\\\|/|\\\|::\|:\|;:\|<+\|<->\|<--\|<-\|<:\|<<:\|<<|\|<=>\|<|\|==\|=>\|>+>>\|>->\|>+>\|||\||->\)"
+syn match bNothing      /:=/
 
 syn keyword cTodo contained	TODO FIXME XXX
 
@@ -51,23 +52,8 @@ syn match bNumber		"\<[0-9]\+\>"
 "syn match bIdentifier	"\<[a-z_][a-z0-9_]*\>"
 syn case match
 
-if exists("b_comment_strings")
-  " A comment can contain bString, bCharacter and bNumber.
-  " But a "*/" inside a bString in a bComment DOES end the comment!  So we
-  " need to use a special type of bString: bCommentString, which also ends on
-  " "*/", and sees a "*" at the start of the line as comment again.
-  " Unfortunately this doesn't very well work for // type of comments :-(
-  syntax match bCommentSkip	contained "^\s*\*\($\|\s\+\)"
-  syntax region bCommentString	contained start=+"+ skip=+\\\\\|\\"+ end=+"+ end=+\*/+me=s-1 contains=bSpecial,bCommentSkip
-  syntax region bComment2String	contained start=+"+ skip=+\\\\\|\\"+ end=+"+ end="$" contains=bSpecial
-  syntax region bComment	start="/\*" end="\*/" contains=bTodo,bCommentString,bCharacter,bNumber,bFloat
-  syntax region bComment	start="/\?\*" end="\*\?/" contains=bTodo,bCommentString,bCharacter,bNumber,bFloat
-  syntax match  bComment	"//.*" contains=bTodo,bComment2String,bCharacter,bNumber
-else
   syn region bComment		start="/\*" end="\*/" contains=bTodo
-  syn region bComment		start="/\?\*" end="\*\?/" contains=bTodo
   syn match bComment		"//.*" contains=bTodo
-endif
 syntax match bCommentError	"\*/"
 
 syn keyword bType		INT INTEGER BOOL NAT NATURAL NAT1 NATURAL1
@@ -79,7 +65,6 @@ syn match bInclude		"^\s*#\s*include\>\s*["<]" contains=bIncluded
 
 syn region bDefine		start="^\s*#\s*\(define\>\|undef\>\)" skip="\\$" end="$" contains=ALLBUT,bPreCondit,bIncluded,bInclude,bDefine,bInParen
 syn region bPreProc		start="^\s*#\s*\(pragma\>\|line\>\|warning\>\|warn\>\|error\>\)" skip="\\$" end="$" contains=ALLBUT,bPreCondit,bIncluded,bInclude,bDefine,bInParen
-
 
 syn sync ccomment bComment minlines=10
 

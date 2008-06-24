@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 Feb 13
+" Last Change:	2008 Mar 19
 
 " Quit when a (custom) syntax file was already loaded
 if exists("b:current_syntax")
@@ -65,12 +65,17 @@ if exists("c_space_errors")
 endif
 
 " This should be before cErrInParen to avoid problems with #define ({ xxx })
-syntax region	cBlock		start="{" end="}" transparent fold
+if exists("c_curly_error")
+  syntax match cCurlyError "}"
+  syntax region	cBlock		start="{" end="}" contains=ALLBUT,cCurlyError,@cParenGroup,cErrInParen,cCppParen,cErrInBracket,cCppBracket,cCppString,@Spell fold
+else
+  syntax region	cBlock		start="{" end="}" transparent fold
+endif
 
 "catch errors caused by wrong parenthesis and brackets
 " also accept <% for {, %> for }, <: for [ and :> for ] (C99)
 " But avoid matching <::.
-syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserCont,cUserLabel,cBitField,cCommentSkip,cOctalZero,cCppOut,cCppOut2,cCppSkip,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
+syn cluster	cParenGroup	contains=cParenError,cIncluded,cSpecial,cCommentSkip,cCommentString,cComment2String,@cCommentGroup,cCommentStartError,cUserCont,cUserLabel,cBitField,cOctalZero,cCppOut,cCppOut2,cCppSkip,cFormat,cNumber,cFloat,cOctal,cOctalError,cNumbersCom
 if exists("c_no_curly_error")
   syn region	cParen		transparent start='(' end=')' contains=ALLBUT,@cParenGroup,cCppParen,cCppString,@Spell
   " cCppParen: same as cParen but ends at end-of-line; used in cDefine
@@ -144,9 +149,9 @@ if exists("c_comment_strings")
 else
   syn region	cCommentL	start="//" skip="\\$" end="$" keepend contains=@cCommentGroup,cSpaceError,@Spell
   if exists("c_no_comment_fold")
-    syn region	cComment	matchgroup=cCommentStart start="/\*" end="\*/" contains=@cCommentGroup,cCommentStartError,cSpaceError,@Spell
+    syn region	cComment	matchgroup=cCommentStart start="/\*" end="\*/" contains=@cCommentGroup,cCommentStartError,cSpaceError,@Spell extend
   else
-    syn region	cComment	matchgroup=cCommentStart start="/\*" end="\*/" contains=@cCommentGroup,cCommentStartError,cSpaceError,@Spell fold
+    syn region	cComment	matchgroup=cCommentStart start="/\*" end="\*/" contains=@cCommentGroup,cCommentStartError,cSpaceError,@Spell fold extend
   endif
 endif
 " keep a // comment separately, it terminates a preproc. conditional
@@ -203,7 +208,7 @@ if !exists("c_no_ansi") || exists("c_ansi_constants") || exists("c_gnu")
   syn keyword cConstant SCHAR_MAX SINT_MAX SLONG_MAX SSHRT_MAX
   if !exists("c_no_c99")
     syn keyword cConstant __func__
-    syn keyword cConstant LLONG_MAX ULLONG_MAX
+    syn keyword cConstant LLONG_MIN LLONG_MAX ULLONG_MAX
     syn keyword cConstant INT8_MIN INT16_MIN INT32_MIN INT64_MIN
     syn keyword cConstant INT8_MAX INT16_MAX INT32_MAX INT64_MAX
     syn keyword cConstant UINT8_MAX UINT16_MAX UINT32_MAX UINT64_MAX
@@ -304,7 +309,11 @@ else
     let b:c_minlines = 15	" mostly for () constructs
   endif
 endif
-exec "syn sync ccomment cComment minlines=" . b:c_minlines
+if exists("c_curly_error")
+  syn sync fromstart
+else
+  exec "syn sync ccomment cComment minlines=" . b:c_minlines
+endif
 
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
@@ -330,6 +339,7 @@ hi def link cCommentError	cError
 hi def link cCommentStartError	cError
 hi def link cSpaceError		cError
 hi def link cSpecialError	cError
+hi def link cCurlyError		cError
 hi def link cOperator		Operator
 hi def link cStructure		Structure
 hi def link cStorageClass	StorageClass

@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 7.1.  Last change: 2007 May 08
+*pi_getscript.txt*  For Vim version 7.2a.  Last change: 2008 Jan 07
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell, Jr.
 <
@@ -136,7 +136,7 @@ insures that GetLatestVimScripts will assume that the script it has is
 out-of-date.
 
 The SourceID is extracted by GetLatestVimScripts from the script's page on
-vim.sf.net; whenever it's greater than the one stored in the
+vim.sf.net; whenever its greater than the one stored in the
 GetLatestVimScripts.dat file, the script will be downloaded
 (see |GetLatestVimScripts_dat|).
 
@@ -335,6 +335,12 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v29 Jan 07, 2008 : * Bram M pointed out that cpo is a global option and that
+                     getscriptPlugin.vim was setting it but not restoring it.
+v28 Jan 02, 2008 : * improved shell quoting character handling, cygwin
+		     interface, register-a bypass
+    Oct 29, 2007   * Bill McCarthy suggested a change to getscript that avoids
+                     creating pop-up windows
 v24 Apr 16, 2007 : * removed save&restore of the fo option during script
                      loading
 v23 Nov 03, 2006 : * ignores comments (#...)

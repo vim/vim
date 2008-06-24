@@ -28,6 +28,9 @@
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H
 #endif
+#ifndef HAVE_MATH_H
+# define HAVE_MATH_H
+#endif
 #define HAVE_STRCSPN
 #ifndef __GNUC__
 #define HAVE_STRICMP

@@ -19,8 +19,8 @@ $SPELLDIR/nl.utf-8.spl : $FILES
         :sys env LANG=nl_NL.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/nl nl_NL" -c q
 
-../README_nl.txt : README_nl_NL.txt
-        :copy $source $target
+../README_nl.txt : README_nl_NL.txt README_vim.txt
+        :cat $source >! $target
 
 #
 # Fetching the files from OpenOffice.org.

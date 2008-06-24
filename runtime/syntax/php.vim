@@ -83,7 +83,7 @@ if version < 600
   endif
   so <sfile>:p:h/html.vim
 else
-  runtime syntax/html.vim
+  runtime! syntax/html.vim
   unlet b:current_syntax
 endif
 

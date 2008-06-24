@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.1.  Last change: 2006 Jul 18
+*digraph.txt*   For Vim version 7.2a.  Last change: 2007 Sep 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -130,10 +130,10 @@ a standard meaning:
 	Exclamation mark	!	Grave
 	Apostrophe		'	Acute accent
 	Greater-Than sign	>	Circumflex accent
-	Question Mark		?	tilde
+	Question mark		?	Tilde
 	Hyphen-Minus		-	Macron
 	Left parenthesis	(	Breve
-	Full Stop		.	Dot Above
+	Full stop		.	Dot above
 	Colon			:	Diaeresis
 	Comma			,	Cedilla
 	Underline		_	Underline

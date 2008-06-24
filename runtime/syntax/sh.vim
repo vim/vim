@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Dec 12, 2006
-" Version:		89
+" Last Change:		Apr 24, 2008
+" Version:		90
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Using the following VIM variables: {{{1
@@ -206,6 +206,7 @@ endif
 syn keyword shCaseIn	contained skipwhite skipnl in			nextgroup=shCase,shCaseStart,shCaseBar,shComment,shCaseExSingleQuote,shCaseSingleQuote,shCaseDoubleQuote
 if exists("b:is_bash")
  syn region  shCaseExSingleQuote	matchgroup=shOperator start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
+ syn region  shCaseExDoubleQuote	matchgroup=shOperator start=+\$"+ skip=+\\\\\|\\.+ end=+"+	contains=shStringSpecial,shSpecial,shCommandSub,shDeref	skipwhite skipnl nextgroup=shCaseBar	contained
 else
  syn region  shCaseExSingleQuote	matchgroup=Error start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial	skipwhite skipnl nextgroup=shCaseBar	contained
 endif
@@ -260,6 +261,7 @@ if exists("b:is_bash")
 endif
 if exists("b:is_bash")
  syn region  shExSingleQuote	matchgroup=shOperator start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial,shSpecial
+ syn region  shExDoubleQuote	matchgroup=shOperator start=+\$"+ skip=+\\\\\|\\.+ end=+"+	contains=shStringSpecial,shSpecial,shCommandSub,shDeref
 else
  syn region  shExSingleQuote	matchGroup=Error start=+\$'+ skip=+\\\\\|\\.+ end=+'+	contains=shStringSpecial
 endif
@@ -465,6 +467,7 @@ hi def link shCaseCommandSub	shCommandSub
 hi def link shCaseDoubleQuote	shDoubleQuote
 hi def link shCaseIn	shConditional
 hi def link shCaseSingleQuote	shSingleQuote
+hi def link shCaseDoubleQuote	shSingleQuote
 hi def link shCaseStart	shConditional
 hi def link shCmdSubRegion	shShellVariables
 hi def link shColon	shStatement
@@ -480,6 +483,7 @@ hi def link shDoubleQuote	shString
 hi def link shEcho	shString
 hi def link shEmbeddedEcho	shString
 hi def link shExSingleQuote	shSingleQuote
+hi def link shExDoubleQuote	shSingleQuote
 hi def link shFunctionStart	Delimiter
 hi def link shHereDoc	shString
 hi def link shHerePayload	shHereDoc

@@ -1,15 +1,38 @@
-*** pt_PT.orig.aff	Mon Apr 16 15:20:13 2007
---- pt_PT.aff	Mon Apr 16 15:52:13 2007
+*** pt_PT.orig.aff	2008-02-21 19:40:49.000000000 -0300
+--- pt_PT.aff	2008-02-24 11:14:39.000000000 -0300
 ***************
-*** 3,4 ****
---- 3,7 ----
+*** 1,4 ****
+  SET ISO8859-1
+- TRY aerisontcdmlupvgbfzבhחqjםxדףיךגתץACMPSBTELGRIFVDkHJONפywUKXZWQÁYÍÉאÓטÂÚ
   
+  
+--- 1,17 ----
+  SET ISO8859-1
+  
++ NAME European Portuguese
++ VERSION 2008-03-20
++ HOME http://natura.di.uminho.pt/
++ AUTHOR Rui Vilela
++ EMAIL ruivilela AT di DOT uminho DOT pt
++ AUTHOR Josי Joדo de Almeira
++ EMAIL jj AT di DOT uminho DOT pt
++ AUTHOR Alberto Simץes
++ EMAIL ambs AT di DOT uminho DOT pt
++ COPYRIGHT GPL, LGPL, MPL
++ 
 + FOL  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + LOW  ‗אבגדהוזחטיךכלםמןנסעףפץצרשתûü‎‏ÿ
 + UPP  ‗ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞÿ
   
 ***************
-*** 1065,1078 ****
+*** 1047,1048 ****
+--- 1060,1063 ----
+  SFX J   e              ףdromo         e
++ 
++ 
+  REP 24
+***************
+*** 1073,1086 ****
   
 ! MAP 11
 ! MAP aב
@@ -24,7 +47,7 @@
 ! MAP oץ
 ! MAP uת
 ! 
---- 1068,1075 ----
+--- 1088,1095 ----
   
 ! MAP 6
 ! MAP aבדגAÁÃÂ

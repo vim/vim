@@ -3497,7 +3497,7 @@ get_tabline_label(tp, tooltip)
 	    if (modified)
 		STRCAT(buf, "+");
 	    STRCAT(buf, " ");
-	    mch_memmove(NameBuff + STRLEN(buf), NameBuff, STRLEN(NameBuff) + 1);
+	    STRMOVE(NameBuff + STRLEN(buf), NameBuff);
 	    mch_memmove(NameBuff, buf, STRLEN(buf));
 	}
     }

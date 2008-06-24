@@ -1,10 +1,12 @@
 " Vim completion script
 " Language:	XML
 " Maintainer:	Mikolaj Machowski ( mikmach AT wp DOT pl )
-" Last Change:	2006 Jul 18
-" Version: 1.8
+" Last Change:	2006 Aug 15
+" Version: 1.9
 "
 " Changelog:
+" 1.9 - 2007 Aug 15
+" 		- fix closing of namespaced tags (Johannes Weiss)
 " 1.8 - 2006 Jul 18
 "       - allow for closing of xml tags even when data file isn't available
 
@@ -413,12 +415,12 @@ function! xmlcomplete#GetLastOpenTag(unaryTagsStack)
 
 	if exists("b:xml_namespace")
 		if b:xml_namespace == 'DEFAULT'
-			let tagpat='</\=\(\k\|[.-]\)\+\|/>'
+			let tagpat='</\=\(\k\|[.:-]\)\+\|/>'
 		else
 			let tagpat='</\='.b:xml_namespace.':\(\k\|[.-]\)\+\|/>'
 		endif
 	else
-		let tagpat='</\=\(\k\|[.-]\)\+\|/>'
+		let tagpat='</\=\(\k\|[.:-]\)\+\|/>'
 	endif
 	while (linenum>0)
 		let line=getline(linenum)

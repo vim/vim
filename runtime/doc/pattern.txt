@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.1.  Last change: 2007 May 11
+*pattern.txt*   For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,6 +138,7 @@ CTRL-C			Interrupt current (search) command.  Use CTRL-Break on
 			This command doesn't work in an autocommand, because
 			the highlighting state is saved and restored when
 			executing autocommands |autocmd-searchpat|.
+			Same thing for when invoking a user function.
 
 While typing the search pattern the current match will be shown if the
 'incsearch' option is on.  Remember that you still have to finish the search
@@ -497,8 +498,8 @@ Character classes {not in Vi}:				*/character-classes*
 |/[]|	[]	\[]	any character specified inside the []
 |/\%[]| \%[]	\%[]	a sequence of optionally matched atoms
 
-|/\c|	\c	\c	ignore case
-|/\C|	\C	\C	match case
+|/\c|	\c	\c	ignore case, do not use the 'ignorecase' option
+|/\C|	\C	\C	match case, do not use the 'ignorecase' option
 |/\m|	\m	\m	'magic' on for the following chars in the pattern
 |/\M|	\M	\M	'magic' off for the following chars in the pattern
 |/\v|	\v	\v	the following chars in the pattern are "very magic"
@@ -596,9 +597,9 @@ overview.
 
 	Example			matches ~
 	ab\{2,3}c		"abbc" or "abbbc"
-	a\{5}			"aaaaa".
-	ab\{2,}c		"abbc", "abbbc", "abbbbc", etc
-	ab\{,3}c		"ac", "abc", "abbc" or "abbbc".
+	a\{5}			"aaaaa"
+	ab\{2,}c		"abbc", "abbbc", "abbbbc", etc.
+	ab\{,3}c		"ac", "abc", "abbc" or "abbbc"
 	a[bc]\{3}d		"abbbd", "abbcd", "acbcd", "acccd", etc.
 	a\(bc\)\{1,2}d		"abcd" or "abcbcd"
 	a[bc]\{-}[cd]		"abc" in "abcd"
@@ -681,11 +682,11 @@ overview.
 	for a match).
 	Example			matches ~
 	\(foo\)\@<!bar		any "bar" that's not in "foobar"
-	\(\/\/.*\)\@\<!in	"in" which is not after "//"
+	\(\/\/.*\)\@<!in	"in" which is not after "//"
 
 							*/\@>*
 \@>	Matches the preceding atom like matching a whole pattern. {not in Vi}
-	Like '(?>pattern)" in Perl.
+	Like "(?>pattern)" in Perl.
 	Example		matches ~
 	\(a*\)\@>a	nothing (the "a*" takes all the "a"'s, there can't be
 			another one following)
@@ -720,7 +721,7 @@ An ordinary atom can be:
 			start-of-line
 
 							*/$*
-$	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
+$	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	matches end-of-line <EOL>; at other positions, matches literal '$'.
 	|/zero-width|
 
@@ -870,7 +871,7 @@ $	At end of pattern or in front of "\|" or "\)" ("|" or ")" after "\v"):
 	WARNING: When inserting or deleting text Vim does not automatically
 	update highlighted matches.  This means Syntax highlighting quickly
 	becomes wrong.
-	Example, to highlight the all characters after virtual column 72: >
+	Example, to highlight all the characters after virtual column 72: >
 		/\%>72v.*
 <	When 'hlsearch' is set and you move the cursor around and make changes
 	this will clearly show when the match is updated or not.
@@ -1071,6 +1072,9 @@ x	A single character, with no special meaning, matches itself
 <	Matches the words "r", "re", "ro", "rea", "roa", "read" and "road".
 	There can be no \(\), \%(\) or \z(\) items inside the [] and \%[] does
 	not nest.
+	To include a "[" use "[[]" and for "]" use []]", e.g.,: >
+		/index\%[[[]0[]]]
+<	matches "index" "index[", "index[0" and "index[0]".
 	{not available when compiled without the +syntax feature}
 
 				*/\%d* */\%x* */\%o* */\%u* */\%U* *E678*
@@ -1225,11 +1229,14 @@ Finally, these constructs are unique to Perl:
 		'ignorecase' does not apply, use |/\c| in the pattern to
 		ignore case.  Otherwise case is not ignored.
 
+		'redrawtime' defines the maximum time searched for pattern
+		matches.
+
 		When matching end-of-line and Vim redraws only part of the
 		display you may get unexpected results.  That is because Vim
 		looks for a match in the line where redrawing starts.
 
-		Also see |matcharg()|and |getmatches()|. The former returns
+		Also see |matcharg()| and |getmatches()|. The former returns
 		the highlight group and pattern of a previous |:match|
 		command.  The latter returns a list with highlight groups and
 		patterns defined by both |matchadd()| and |:match|.

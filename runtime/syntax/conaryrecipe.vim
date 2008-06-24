@@ -1,21 +1,39 @@
 " Vim syntax file
 " Language:	Conary Recipe
 " Maintainer:	rPath Inc <http://www.rpath.com>
-" Updated:	2007-05-07
+" Updated:	2007-12-08
 
 if exists("b:current_syntax")
   finish
 endif
 
 runtime! syntax/python.vim
+
 syn keyword conarySFunction	mainDir addAction addSource addArchive addPatch
 syn keyword conarySFunction	addRedirect addSvnSnapshot addMercurialSnapshot
-syn keyword conarySFunction	addCvsSnapshot
+syn keyword conarySFunction	addCvsSnapshot addGitSnapshot addBzrSnapshot
 
-syn keyword conaryGFunction     add addAll addNewGroup addReference createGroup
-syn keyword conaryGFunction     addNewGroup startGroup remove removeComponents
-syn keyword conaryGFunction     replace setByDefault setDefaultGroup 
-syn keyword conaryGFunction     setLabelPath addCopy setSearchPath
+syn keyword conaryGFunction	add addAll addNewGroup addReference createGroup
+syn keyword conaryGFunction	addNewGroup startGroup remove removeComponents
+syn keyword conaryGFunction	replace setByDefault setDefaultGroup 
+syn keyword conaryGFunction	setLabelPath addCopy setSearchPath AddAllFlags
+syn keyword conaryGFunction	GroupRecipe GroupReference TroveCacheWrapper
+syn keyword conaryGFunction	TroveCache buildGroups findTrovesForGroups
+syn keyword conaryGFunction	followRedirect processAddAllDirectives
+syn keyword conaryGFunction	processOneAddAllDirective removeDifferences
+syn keyword conaryGFunction	addTrovesToGroup addCopiedComponents
+syn keyword conaryGFunction	findAllWeakTrovesToRemove checkForRedirects
+syn keyword conaryGFunction	addPackagesForComponents getResolveSource
+syn keyword conaryGFunction	resolveGroupDependencies checkGroupDependencies
+syn keyword conaryGFunction	calcSizeAndCheckHashes findSourcesForGroup
+syn keyword conaryGFunction	addPostInstallScript addPostRollbackScript
+syn keyword conaryGFunction	addPostUpdateScript addPreUpdateScript
+syn keyword conaryGFunction	addTrove moveComponents copyComponents
+syn keyword conaryGFunction	removeItemsAlsoInNewGroup removeItemsAlsoInGroup
+syn keyword conaryGFunction	addResolveSource iterReplaceSpecs
+syn keyword conaryGFunction	setCompatibilityClass getLabelPath
+syn keyword conaryGFunction	getResolveTroveSpecs getSearchFlavor
+syn keyword conaryGFunction	getChildGroups getGroupMap
 
 syn keyword conaryBFunction 	Run Automake Configure ManualConfigure 
 syn keyword conaryBFunction 	Make MakeParallelSubdir MakeInstall
@@ -25,7 +43,8 @@ syn keyword conaryBFunction 	Install Copy Move Symlink Link Remove Doc
 syn keyword conaryBFunction 	Create MakeDirs disableParallelMake
 syn keyword conaryBFunction 	ConsoleHelper Replace SGMLCatalogEntry
 syn keyword conaryBFunction 	XInetdService XMLCatalogEntry TestSuite
-syn keyword conaryBFunction     PythonSetup
+syn keyword conaryBFunction	PythonSetup CMake Ant JavaCompile ClassPath
+syn keyword conaryBFunction	JavaDoc IncludeLicense MakeFIFO
 
 syn keyword conaryPFunction 	NonBinariesInBindirs FilesInMandir 
 syn keyword conaryPFunction 	ImproperlyShared CheckSonames CheckDestDir
@@ -45,10 +64,28 @@ syn keyword conaryPFunction 	Provides RequireChkconfig Requires TagHandler
 syn keyword conaryPFunction 	TagDescription Transient User UtilizeGroup
 syn keyword conaryPFunction 	WorldWritableExecutables UtilizeUser
 syn keyword conaryPFunction 	WarnWritable Strip CheckDesktopFiles
+syn keyword conaryPFunction	FixDirModes LinkType reportMissingBuildRequires
+syn keyword conaryPFunction	reportErrors FixupManpagePaths FixObsoletePaths
+syn keyword conaryPFunction	NonLSBPaths PythonEggs
+syn keyword conaryPFunction	EnforcePythonBuildRequirements
+syn keyword conaryPFunction	EnforceJavaBuildRequirements
+syn keyword conaryPFunction	EnforceCILBuildRequirements
+syn keyword conaryPFunction	EnforcePerlBuildRequirements
+syn keyword conaryPFunction	EnforceFlagBuildRequirements
+syn keyword conaryPFunction	FixupMultilibPaths ExecutableLibraries
+syn keyword conaryPFunction	NormalizeLibrarySymlinks NormalizeCompression
+syn keyword conaryPFunction	NormalizeManPages NormalizeInfoPages
+syn keyword conaryPFunction	NormalizeInitscriptLocation
+syn keyword conaryPFunction	NormalizeInitscriptContents
+syn keyword conaryPFunction	NormalizeAppDefaults NormalizeInterpreterPaths
+syn keyword conaryPFunction	NormalizePamConfig ReadableDocs
+syn keyword conaryPFunction	WorldWriteableExecutables NormalizePkgConfig
+syn keyword conaryPFunction	EtcConfig InstallBucket SupplementalGroup
+syn keyword conaryPFunction	FixBuilddirSymlink RelativeSymlinks
 
 " Most destdirPolicy aren't called from recipes, except for these
-syn keyword conaryPFunction     AutoDoc RemoveNonPackageFiles TestSuiteFiles
-syn keyword conaryPFunction     TestSuiteLinks
+syn keyword conaryPFunction	AutoDoc RemoveNonPackageFiles TestSuiteFiles
+syn keyword conaryPFunction	TestSuiteLinks
 
 syn match   conaryMacro		"%(\w\+)[sd]" contained
 syn match   conaryBadMacro	"%(\w*)[^sd]" contained " no final marker
@@ -56,8 +93,8 @@ syn keyword conaryArches	contained x86 x86_64 alpha ia64 ppc ppc64 s390
 syn keyword conaryArches	contained sparc sparc64
 syn keyword conarySubArches	contained sse2 3dnow 3dnowext cmov i486 i586
 syn keyword conarySubArches	contained i686 mmx mmxext nx sse sse2
-syn keyword conaryBad		RPM_BUILD_ROOT EtcConfig InstallBucket subDir subdir 
-syn keyword conaryBad		RPM_OPT_FLAGS 
+syn keyword conaryBad		RPM_BUILD_ROOT EtcConfig InstallBucket subDir
+syn keyword conaryBad		RPM_OPT_FLAGS subdir 
 syn cluster conaryArchFlags 	contains=conaryArches,conarySubArches
 syn match   conaryArch		"Arch\.[a-z0-9A-Z]\+" contains=conaryArches,conarySubArches
 syn match   conaryArch		"Arch\.[a-z0-9A-Z]\+" contains=conaryArches,conarySubArches
@@ -97,3 +134,4 @@ hi def link conaryKeywords		Special
 hi def link conaryUseFlag		Typedef
 
 let b:current_syntax = "conaryrecipe"
+

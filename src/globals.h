@@ -168,6 +168,8 @@ EXTERN int	emsg_off INIT(= 0);	    /* don't display errors for now,
 EXTERN int	info_message INIT(= FALSE); /* printing informative message */
 EXTERN int      msg_hist_off INIT(= FALSE); /* don't add messages to history */
 #ifdef FEAT_EVAL
+EXTERN int	need_clr_eos INIT(= FALSE); /* need to clear text before
+					       displaying a message. */
 EXTERN int	emsg_skip INIT(= 0);	    /* don't display errors for
 					       expression that is skipped */
 EXTERN int	emsg_severe INIT(= FALSE);   /* use message of next of several
@@ -1172,7 +1174,7 @@ EXTERN int      stl_syntax INIT(= 0);
 EXTERN int	no_hlsearch INIT(= FALSE);
 #endif
 
-#ifdef FEAT_BEVAL
+#if defined(FEAT_BEVAL) && !defined(NO_X11_INCLUDES)
 EXTERN BalloonEval	*balloonEval INIT(= NULL);
 # if defined(FEAT_NETBEANS_INTG) || defined(FEAT_SUN_WORKSHOP)
 EXTERN int bevalServers INIT(= 0);

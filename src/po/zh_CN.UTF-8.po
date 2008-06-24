@@ -1207,7 +1207,7 @@ msgstr "无交换文件"
 msgid "Append File"
 msgstr "追加文件"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr "E747: 不能改变目录，缓冲区已修改 (请加 ! 强制执行)"
 
 msgid "E186: No previous directory"

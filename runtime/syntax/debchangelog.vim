@@ -1,9 +1,10 @@
 " Vim syntax file
 " Language:    Debian changelog files
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
-" Former Maintainer: Wichert Akkerman <wakkerma@debian.org>
-" Last Change: $LastChangedDate: 2006-04-16 21:50:31 -0400 (dom, 16 apr 2006) $
-" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/debchangelog.vim?op=file&rev=0&sc=0
+" Former Maintainers: Gerfried Fuchs <alfie@ist.org>
+"                     Wichert Akkerman <wakkerma@debian.org>
+" Last Change: 2008-01-16
+" URL: http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/syntax/debchangelog.vim;hb=debian
 
 " Standard syntax initialization
 if version < 600
@@ -18,16 +19,17 @@ syn case ignore
 " Define some common expressions we can use later on
 syn match debchangelogName	contained "^[[:alpha:]][[:alnum:].+-]\+ "
 syn match debchangelogUrgency	contained "; urgency=\(low\|medium\|high\|critical\|emergency\)\( \S.*\)\="
-syn match debchangelogTarget	contained "\( stable\| frozen\| unstable\| testing-proposed-updates\| experimental\| sarge-backports\| sarge-volatile\| stable-security\| testing-security\)\+"
+syn match debchangelogTarget	contained "\( \(old\)\=stable\| frozen\| unstable\| testing-proposed-updates\| experimental\| \%(sarge\|etch\|lenny\)-\%(backports\|-volatile\)\| \(old\)\=stable-security\| testing-security\| \(dapper\|edgy\|feisty\|gutsy\|hardy\)\(-\(security\|proposed\|updates\|backports\|commercial\|partner\)\)\?\)\+"
 syn match debchangelogVersion	contained "(.\{-})"
-syn match debchangelogCloses	contained "closes:\s*\(bug\)\=#\=\s\=\d\+\(,\s*\(bug\)\=#\=\s\=\d\+\)*"
+syn match debchangelogCloses	contained "closes:\_s*\(bug\)\=#\=\_s\=\d\+\(,\_s*\(bug\)\=#\=\_s\=\d\+\)*"
+syn match debchangelogLP	contained "\clp:\s\+#\d\+\(,\s*#\d\+\)*"
 syn match debchangelogEmail	contained "[_=[:alnum:].+-]\+@[[:alnum:]./\-]\+"
 syn match debchangelogEmail	contained "<.\{-}>"
 
 " Define the entries that make up the changelog
 syn region debchangelogHeader start="^[^ ]" end="$" contains=debchangelogName,debchangelogUrgency,debchangelogTarget,debchangelogVersion oneline
 syn region debchangelogFooter start="^ [^ ]" end="$" contains=debchangelogEmail oneline
-syn region debchangelogEntry start="^  " end="$" contains=debchangelogCloses oneline
+syn region debchangelogEntry start="^  " end="$" contains=debchangelogCloses,debchangelogLP oneline
 
 " Associate our matches and regions with pretty colours
 if version >= 508 || !exists("did_debchangelog_syn_inits")
@@ -42,6 +44,7 @@ if version >= 508 || !exists("did_debchangelog_syn_inits")
   HiLink debchangelogFooter		Identifier
   HiLink debchangelogEntry		Normal
   HiLink debchangelogCloses		Statement
+  HiLink debchangelogLP			Statement
   HiLink debchangelogUrgency		Identifier
   HiLink debchangelogName		Comment
   HiLink debchangelogVersion		Identifier

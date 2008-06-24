@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 7.1.  Last change: 2007 May 07
+*insert.txt*    For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -882,12 +882,12 @@ a Vim script.
 CTRL-X CTRL-V		Guess what kind of item is in front of the cursor and
 			find the first match for it.
 			Note: When CTRL-V is mapped you can often use CTRL-Q
-			instead |i_CTRL-Q|.
+			instead of |i_CTRL-Q|.
 	CTRL-V	or
 	CTRL-N		Search forwards for next match.  This match replaces
 			the previous one.
 
-	CTRL-P		Search backward for previous match.  This match
+	CTRL-P		Search backwards for previous match.  This match
 			replaces the previous one.
 
 	CTRL-X CTRL-V	Further use of CTRL-X CTRL-V will do the same as

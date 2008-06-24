@@ -1,13 +1,13 @@
-*pi_tar.txt*	For Vim version 7.1.  Last change: 2006 Sep 29
+*pi_tar.txt*	For Vim version 7.2a.  Last change: 2008 Jun 12
 
-       	       	       +====================+
-       	       	       | Tar File Interface |
-       	       	       +====================+
+		       +====================+
+		       | Tar File Interface |
+		       +====================+
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: The GPL (gnu public license) applies to	*tar-copyright*
-	   tarPlugin.vim, and pi_tar.txt.
+Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
+	   tar.vim, tarPlugin.vim, and pi_tar.txt.
 	   No warranty, express or implied.  Use At-Your-Own-Risk.
 
 ==============================================================================
@@ -36,32 +36,42 @@ Copyright: The GPL (gnu public license) applies to	*tar-copyright*
    *g:tar_browseoptions*  "Ptf"   used to get a list of contents
    *g:tar_readoptions*    "OPxf"  used to extract a file from a tarball
    *g:tar_cmd*            "tar"   the name of the tar program
+   *g:tar_nomax*            0     if true, file window will not be maximized
    *g:tar_writeoptions*   "uf"    used to update/replace a file
 
 
 ==============================================================================
 4. History						*tar-history*
 
+   v16 Jun 06, 2008 * tarfile:: used instead of tarfile: when editing files
+		      inside tarballs.  Fixes a problem with tarballs called
+		      things like c:\abc.tar. (tnx to Bill McCarthy)
+   v14 May 09, 2008 * arno caught a security bug
+       May 28, 2008 * various security improvements.  Now requires patch 299
+		      which provides the fnameescape() function
+       May 30, 2008 * allows one to view *.gz and *.bz2 files that are in
+		    *.tar files.
+   v12 Sep 07, 2007 * &shq now used if not the empty string for g:tar_shq
    v10 May 02, 2006 * now using "redraw then echo" to show messages, instead
-                      of "echo and prompt user"
+		      of "echo and prompt user"
    v9 May 02, 2006 * improved detection of masquerading as tar file
    v8 May 02, 2006 * allows editing of files that merely masquerade as tar
-                     files
+		     files
    v7 Mar 22, 2006 * work on making tar plugin work across network
       Mar 27, 2006 * g:tar_cmd now available for users to change the name
-                     of the tar program to be used.  By default, of course,
-		     its "tar".
+		     of the tar program to be used.  By default, of course,
+		     it's "tar".
    v6 Dec 21, 2005 * writing to files not in directories caused problems -
-                     fixed (pointed out by Christian Robinson)
+		     fixed (pointed out by Christian Robinson)
    v5 Nov 22, 2005 * report option workaround installed
    v3 Sep 16, 2005 * handles writing files in an archive back to the
-                     archive
+		     archive
       Oct 18, 2005 * <amatch> used instead of <afile> in autocmds
       Oct 18, 2005 * handles writing to compressed archives
       Nov 03, 2005 * handles writing tarfiles across a network using
-                     netrw#NetWrite()
+		     netrw#NetWrite()
    v2              * converted to use Vim7's new autoload feature by
-                     Bram Moolenaar
+		     Bram Moolenaar
    v1 (original)   * Michael Toren (see http://michael.toren.net/code/)
 
 ==============================================================================
