@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Sep 26
+" Last Change:	2008 Feb 27
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -33,14 +33,20 @@ endif
 setlocal commentstring=\"%s
 
 " Move around functions.
-noremap <silent><buffer> [[ m':call search('^\s*fu\%[nction]\>', "bW")<CR>
-noremap <silent><buffer> ]] m':call search('^\s*fu\%[nction]\>', "W")<CR>
-noremap <silent><buffer> [] m':call search('^\s*endf*\%[unction]\>', "bW")<CR>
-noremap <silent><buffer> ][ m':call search('^\s*endf*\%[unction]\>', "W")<CR>
+nnoremap <silent><buffer> [[ m':call search('^\s*fu\%[nction]\>', "bW")<CR>
+vnoremap <silent><buffer> [[ m':<C-U>exe "normal! gv"<Bar>call search('^\s*fu\%[nction]\>', "bW")<CR>
+nnoremap <silent><buffer> ]] m':call search('^\s*fu\%[nction]\>', "W")<CR>
+vnoremap <silent><buffer> ]] m':<C-U>exe "normal! gv"<Bar>call search('^\s*fu\%[nction]\>', "W")<CR>
+nnoremap <silent><buffer> [] m':call search('^\s*endf*\%[unction]\>', "bW")<CR>
+vnoremap <silent><buffer> [] m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf*\%[unction]\>', "bW")<CR>
+nnoremap <silent><buffer> ][ m':call search('^\s*endf*\%[unction]\>', "W")<CR>
+vnoremap <silent><buffer> ][ m':<C-U>exe "normal! gv"<Bar>call search('^\s*endf*\%[unction]\>', "W")<CR>
 
 " Move around comments
-noremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
-noremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
+nnoremap <silent><buffer> ]" :call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
+vnoremap <silent><buffer> ]" :<C-U>exe "normal! gv"<Bar>call search('^\(\s*".*\n\)\@<!\(\s*"\)', "W")<CR>
+nnoremap <silent><buffer> [" :call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
+vnoremap <silent><buffer> [" :<C-U>exe "normal! gv"<Bar>call search('\%(^\s*".*\n\)\%(^\s*"\)\@!', "bW")<CR>
 
 " Let the matchit plugin know what items can be matched.
 if exists("loaded_matchit")

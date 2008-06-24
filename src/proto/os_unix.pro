@@ -19,6 +19,7 @@ int mch_can_restore_icon __ARGS((void));
 void mch_settitle __ARGS((char_u *title, char_u *icon));
 void mch_restore_title __ARGS((int which));
 int vim_is_xterm __ARGS((char_u *name));
+int use_xterm_like_mouse __ARGS((char_u *name));
 int use_xterm_mouse __ARGS((void));
 int vim_is_iris __ARGS((char_u *name));
 int vim_is_vt300 __ARGS((char_u *name));

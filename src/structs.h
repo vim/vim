@@ -1005,6 +1005,7 @@ typedef long	varnumber_T;
 #else
 typedef int	varnumber_T;
 #endif
+typedef double	float_T;
 
 typedef struct listvar_S list_T;
 typedef struct dictvar_S dict_T;
@@ -1019,6 +1020,9 @@ typedef struct
     union
     {
 	varnumber_T	v_number;	/* number value */
+#ifdef FEAT_FLOAT
+	float_T		v_float;	/* floating number value */
+#endif
 	char_u		*v_string;	/* string value (can be NULL!) */
 	list_T		*v_list;	/* list value (can be NULL!) */
 	dict_T		*v_dict;	/* dict value (can be NULL!) */
@@ -1032,6 +1036,7 @@ typedef struct
 #define VAR_FUNC    3	/* "v_string" is function name */
 #define VAR_LIST    4	/* "v_list" is used */
 #define VAR_DICT    5	/* "v_dict" is used */
+#define VAR_FLOAT   6	/* "v_float" is used */
 
 /* Values for "v_lock". */
 #define VAR_LOCKED  1	/* locked with lock(), can use unlock() */

@@ -56,7 +56,7 @@ pum_display(array, size, selected)
     int		i;
     int		top_clear;
     int		row;
-    int		height;
+    int		context_lines;
     int		col;
     int		above_row = cmdline_row;
     int		redo_count = 0;
@@ -73,8 +73,7 @@ redo:
     validate_cursor_col();
     pum_array = NULL;
 
-    row = curwin->w_cline_row + W_WINROW(curwin);
-    height = curwin->w_cline_height;
+    row = curwin->w_wrow + W_WINROW(curwin);
 
     if (firstwin->w_p_pvw)
 	top_clear = firstwin->w_height;
@@ -99,19 +98,26 @@ redo:
 
     /* Put the pum below "row" if possible.  If there are few lines decide on
      * where there is more room. */
-    if (row >= above_row - pum_height
-			      && row > (above_row - top_clear - height) / 2)
+    if (row  + 2 >= above_row - pum_height
+					 && row > (above_row - top_clear) / 2)
     {
 	/* pum above "row" */
-	if (row >= size)
+
+	/* Leave two lines of context if possible */
+	if (curwin->w_wrow - curwin->w_cline_row >= 2)
+	    context_lines = 2;
+	else
+	    context_lines = curwin->w_wrow - curwin->w_cline_row;
+
+	if (row >= size + context_lines)
 	{
-	    pum_row = row - size;
+	    pum_row = row - size - context_lines;
 	    pum_height = size;
 	}
 	else
 	{
 	    pum_row = 0;
-	    pum_height = row;
+	    pum_height = row - context_lines;
 	}
 	if (p_ph > 0 && pum_height > p_ph)
 	{
@@ -122,7 +128,15 @@ redo:
     else
     {
 	/* pum below "row" */
-	pum_row = row + height;
+
+	/* Leave two lines of context if possible */
+	if (curwin->w_cline_row + curwin->w_cline_height - curwin->w_wrow >= 3)
+	    context_lines = 3;
+	else
+	    context_lines = curwin->w_cline_row
+				+ curwin->w_cline_height - curwin->w_wrow;
+
+	pum_row = row + context_lines;
 	if (size > above_row - pum_row)
 	    pum_height = above_row - pum_row;
 	else

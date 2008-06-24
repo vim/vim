@@ -1,0 +1,809 @@
+===============================================================================
+= B i e n v e n u e  dans le  T u t o r i e l  de  V I M  -  Version 1.5.fr.2 =
+===============================================================================
+
+     Vim est un éditeur très puissant qui a trop de commandes pour pouvoir
+     toutes les expliquer dans un cours comme celui-ci, qui est conçu pour en
+     décrire suffisamment afin de vous permettre d'utiliser simplement Vim.
+
+     Le temps requis pour suivre ce cours est d'environ 25 à 30 minutes, selon
+     le temps que vous passerez à expérimenter.  Les commandes utilisées dans
+     les leçons modifieront le texte. Faites une copie de ce fichier afin de
+     vous entraîner dessus (si vous avez lancé "vimtutor" ceci est déjà une
+     copie).
+
+     Il est important de garder en tête que ce cours est conçu pour apprendre
+     par la pratique.  Cela signifie que vous devez exécuter les commandes
+     pour les apprendre correctement.  Si vous vous contentez de lire le
+     texte, vous oublierez les commandes !
+
+     Maintenant, vérifiez que votre clavier n'est PAS verouillé en majuscules,
+     et appuyez la touche  j  le nombre de fois suffisant pour que la leçon
+     1.1 remplisse complètement l'écran.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		      Leçon 1.1 : DÉPLACEMENT DU CURSEUR
+
+
+  ** Pour déplacer le curseur, appuyez les touches h,j,k,l comme indiqué. **
+	    ^
+	    k	     Astuce:  La touche h est à gauche et déplace à gauche.
+      < h      l >	      La touche l est à droite et déplace à droite.
+	   j		      La touche j ressemble à une flèche vers le bas.
+	   v
+  1. Déplacez le curseur sur l'écran jusqu'à vous sentir à l'aise.
+
+  2. Maintenez la touche Bas (j) enfoncée jusqu'à ce qu'elle se répète.
+---> Maintenant vous êtes capable de vous déplacer jusqu'à la leçon suivante.
+
+  3. En utilisant la touche Bas, allez à la Leçon 1.2.
+
+Note: Si jamais vous doutez de ce que vous venez de taper, appuyez <Échap>
+      pour revenir en mode Normal. Puis retapez la commande que vous vouliez.
+
+Note: Les touches fléchées devraient également fonctionner. Mais en utilisant
+      hjkl vous pourrez vous déplacer beaucoup plus rapidement, une fois que
+      vous aurez pris l'habitude.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Leçon 1.2 : ENTRÉE ET SORTIE DE VIM
+
+
+ !! NOTE: Avant d'effectuer les étapes ci-dessous, lisez toute cette leçon !!
+
+  1. Appuyez la touche	<Échap>  (pour être sûr d'être en mode Normal).
+
+  2. Tapez:			:q! <Entrée>
+
+---> Ceci quitte l'éditeur SANS sauver les changements que vous avez faits.
+     Si vous voulez enregistrer les changements et sortir, tapez:
+				:wq <Entrée>
+
+  3. Lorsque l'invite du 'shell' vous sera présentée, tapez la commande qui
+     vous a amené dans ce tutoriel.  Cela pourrait être:    vimtutor <Entrée>
+     Normalement, vous utiliseriez:			    vim tutor <Entrée>
+
+---> 'vim' lance l'éditeur, 'tutor' est le fichier que vous souhaitez éditer.
+
+  4. Si vous avez mémorisé ces étapes et êtes confiant, effectuez les étapes
+     1 à 3 pour sortir puis rentrer dans l'éditeur.  Déplacez ensuite le
+      curseur jusqu'à la Leçon 1.3.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		  Leçon 1.3 : ÉDITION DE TEXTE - EFFACEMENT
+
+
+ ** En mode Normal, appuyez  x	pour effacer le caractère sous le curseur. **
+
+  1. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
+
+  2. Pour corriger les erreurs, déplacez le curseur jusqu'à ce qu'il soit
+     sur un caractère à effacer.
+
+  3. Appuyez la touche	x  pour effacer le caractère redondant.
+
+  4. Répétez les étapes 2 à 4 jusqu'à ce que la phrase soit correcte.
+
+---> La vvache à sautéé au-ddessus dde la luune.
+
+  5. Maintenant que la ligne est correcte, passez à la leçon 1.4.
+
+NOTE: En avançant dans ce cours, n'essayez pas de mémoriser, apprenez par
+      la pratique.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Leçon 1.4 : ÉDITION DE TEXTE - INSERTION
+
+
+	   ** En mode Normal, appuyez  i  pour insérer du texte. **
+
+  1. Déplacez le curseur sur la première ligne marquée ---> ci-dessous.
+
+  2. Pour rendre la première ligne identique à la seconde, mettez le curseur
+     sur le premier caractère APRÈS l'endroit où insérer le texte.
+
+  3. Appuyez  i  et tapez les caractères qui manquent.
+
+  4. Une fois qu'une erreur est corrigée, appuyez <Échap> pour revenir en mode
+     Normal. Répétez les étapes 2 à 4 pour corriger la phrase.
+
+---> Il mnqe caractères cette .
+---> Il manque des caractères dans cette ligne.
+
+  5. Une fois que vous êtes à l'aise avec l'insertion de texte, allez au
+     résumé ci-dessous.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 1
+
+  1. Le curseur se déplace avec les touches fléchées ou les touches hjkl.
+	 h (gauche)	j (bas)        k (haut)       l (droite)
+
+  2. Pour entrer dans Vim (à l'invite %) tapez:  vim FICHIER <Entrée>
+
+  3. Pour quitter Vim tapez:  <Échap> :q! <Entrée>  pour perdre tous les
+						    changements.
+		   OU tapez:  <Échap> :wq <Entrée>  pour enregistrer les
+						    changements.
+
+  4. Pour effacer un caractère sous le curseur en mode Normal tapez:  x
+
+  5. Pour insérer du texte au niveau du curseur en mode Normal tapez:
+	 i   tapez le texte   <Échap>
+
+NOTE: Appuyer  <Échap>	vous place en mode Normal ou annule une commande
+      partiellement tapée dont vous ne voudriez plus.
+
+Passez maintenant à la Leçon 2.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			   Leçon 2.1 : EFFACEMENTS
+
+
+	    ** Tapez  dw  pour effacer jusqu'à la fin d'un mot. **
+
+  1. Appuyez  <Échap>  pour être sûr d'être en mode Normal.
+
+  2. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
+
+  3. Placez le curseur sur le début d'un mot qui a besoin d'être effacé.
+
+  4. Tapez  dw	pour faire disparaître ce mot.
+
+NOTE: Les lettres  dw  apparaîtront sur la dernière ligne de l'écran lors de
+      votre frappe. Si vous avez mal tapé quelque chose, appuyez <Échap> et
+      recommencez.
+
+---> Il y a quelques drôle mots qui n'ont rien à faire papier sur cette ligne.
+
+  5. Répétez les étapes 3 et 4 jusqu'à ce que la phrase soit correcte et allez
+     à la Leçon 2.2.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			Leçon 2.2 : PLUS D'EFFACEMENTS
+
+
+	  ** Tapez  d$	pour effacer jusqu'à la fin de la ligne. **
+
+  1. Appuyez  <Échap>  pour être sûr d'être en mode Normal.
+
+  2. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
+
+  3. Déplacez le curseur jusqu'à la fin correcte de la ligne
+     (APRÈS le premier . ).
+
+  4. Tapez  d$	pour effacer jusqu'à la fin de la ligne.
+
+---> Quelqu'un a tapé la fin de cette ligne deux fois. cette ligne deux fois.
+
+  5. Allez à la Leçon 2.3 pour comprendre ce qui se passe.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Leçon 2.3 : DES COMMANDES ET DES OBJETS
+
+
+  Le format de la commande d'effacement  d  est le suivant:
+
+	 [nombre]  d  objet	   OU	     d	[nombre]  objet
+  où:
+    nombre - est combien de fois exécuter la commande (optionnel, défaut: 1).
+    d - est la commande d'effacement.
+    objet - est ce sur quoi la commande va opérer (liste ci-dessous).
+
+  Une courte liste d'objets:
+    w - du curseur jusqu'à la fin du mot, y compris l'espace qui suit.
+    e - du curseur jusqu'à la fin du mot, SANS l'espace qui suit.
+    $ - du curseur jusqu'à la fin de la ligne.
+
+NOTE: Pour les aventureux, le seul appui d' objet  en mode Normal, sans
+      commande, déplace le curseur comme indiqué dans la liste des objets.
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 Leçon 2.4 : UNE EXCEPTION À 'COMMANDE-OBJET'
+
+	      ** Tapez	dd  pour effacer une ligne complète. **
+
+  Vu le nombre de fois où l'on efface des lignes complètes, les concepteurs
+  de Vi ont décidé qu'il serait plus facile de taper simplement deux d à la
+  suite pour effacer une ligne.
+
+  1. Placez le curseur sur la seconde ligne de la phrase ci-dessous.
+  2. Tapez  dd	pour effacer la ligne.
+  3. Maintenant allez à la quatrième ligne.
+  4. Tapez  2dd  (rappelez-vous, nombre-commande-objet) pour effacer les
+     deux lignes.
+
+      1)  Les roses sont rouges,
+      2)  La boue c'est drôle,
+      3)  Les violettes sont bleues,
+      4)  J'ai une voiture,
+      5)  Les horloges donnent l'heure,
+      6)  Le sucre est doux
+      7)  Tout comme vous.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    Leçon 2.5 : L'ANNULATION
+
+	    ** Tapez  u  pour annuler les dernières commandes. **
+	       ** Tapez  U  pour récupérer toute une ligne. **
+
+  1. Déplacez le curseur sur la ligne marquée ---> ci-dessous et placez-le sur
+     la première erreur.
+  2. Tapez  x  pour effacer le premier caractère redondant.
+  3. Puis tapez  u  pour annuler la dernière commande exécutée.
+  4. Cette fois, corrigez toutes les erreurs de la ligne avec la commande  x .
+  5. Puis tapez un  U  majuscule pour remettre la ligne dans son état initial.
+  6. Puis tapez  u  deux-trois fois pour annuler le  U	et les commandes
+     précédentes.
+  7. Maintenant tapez  Ctrl-R  (maintenez la touche Ctrl enfoncée pendant que
+     vous appuyez sur R) deux-trois fois pour refaire les commandes (annuler
+     les annulations).
+
+---> Coorrigez les erreurs suur ccette ligne et reemettez-les avvec 'annuler'.
+
+  8. Ce sont des commandes très utiles. Maintenant, allez au résumé de la
+     Leçon 2.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 2
+
+
+  1. Pour effacer du curseur jusqu'à la fin d'un mot tapez:	dw
+
+  2. Pour effacer du curseur jusqu'à la fin d'une ligne tapez:	d$
+
+  3. Pour effacer toute une ligne tapez:  dd
+
+  4. Le format d'une commande en mode Normal est:
+
+       [nombre]  commande  objet     OU     commande  [nombre]	objet
+     où:
+       nombre - est combien de fois répéter la commande
+       commande - est ce qu'il faut faire, par exemple	d  pour effacer
+       objet - est ce sur quoi la commande devrait agir, par exemple w (mot),
+	       $ (jusqu'à la fin de la ligne), etc.
+
+  5. Pour annuler des actions précédentes, tapez:	     u	(u minuscule)
+     Pour annuler tous les changements sur une ligne tapez:  U	(U majuscule)
+     Pour annuler l'annulation tapez:			     Ctrl-R
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     Leçon 3.1 : LE COLLAGE
+
+
+   ** Tapez  p	pour placer après le curseur ce qui vient d'être effacé. **
+
+  1. Placez le curseur sur la première ligne du "poème" ci-dessous.
+
+  2. Tapez  dd	pour effacer la ligne et la placer dans le tampon de Vim.
+
+  3. Déplacez le curseur sur la ligne qui PRÉCÈDE l'endroit où vous voulez
+     remettre la ligne effacée.
+
+  4. En mode Normal, tapez  p  pour remettre la ligne.
+
+  5. Répétez les étapes 2 à 4 pour mettre toutes les lignes dans le bon ordre.
+
+     d) Et vous, qu'apprenez-vous ?
+     b) Les violettes sont bleues,
+     c) L'intelligence s'apprend,
+     a) Les roses sont rouges,
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			 Leçon 3.2 : LE REMPLACEMENT
+
+
+ ** Tapez  r  et un caractère pour remplacer le caractère sous le curseur. **
+
+  1. Déplacez le curseur sur la première ligne marquée ---> ci-dessous.
+
+  2. Placez le curseur de manière à ce qu'il surplombe la première erreur.
+
+  3. Tapez  r  suivi du caractère qui doit corriger l'erreur.
+
+  4. Répétez les étapes 2 et 3 jusqu'à ce que la première ligne soit correcte.
+
+--->  Quand cette ligne a été sauvie, quelqu'un a lait des faunes de frappe !
+--->  Quand cette ligne a été saisie, quelqu'un a fait des fautes de frappe !
+
+  5. Maintenant, allez à la Leçon 3.3.
+
+NOTE: N'oubliez pas que vous devriez apprendre par la pratique, pas par
+      mémorisation.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			  Leçon 3.3 : LE CHANGEMENT
+
+
+	    ** Pour changer tout ou partie d'un mot, tapez  cw .**
+
+  1. Déplacez le curseur sur la première ligne marquée ---> ci-dessous.
+
+  2. Placez le curseur sur le u de luhko.
+
+  3. Tapez  cw	et corrigez le mot (dans notre cas, tapez  'igne'.)
+
+  4. Appuyez <Échap> et placez-vous sur l'erreur suivante (le premier
+     caractère qui doit être changé).
+
+  5. Répétez les étapes 3 et 4 jusqu'à ce que la première phrase soit
+     identique à la seconde.
+
+---> Cette luhko contient quelques myqa qui ont ricne d'être chantufip.
+---> Cette ligne contient quelques mots qui ont besoin d'être changés.
+
+Notez que  cw  efface le mot et vous place ensuite en mode Insertion.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Leçon 3.4 : PLUS DE CHANGEMENTS AVEC c
+
+
+    ** Le changement fonctionne avec les mêmes objets que l'effacement. **
+
+  1. Le changement fonctionne de la même manière que l'effacement.
+     Le format est:
+
+	 [nombre]  c  objet	   OU	     c	[nombre]  objet
+
+  2. Les objets sont également les mêmes:  w (mot), $ (fin de ligne), etc.
+
+  3. Déplacez-vous à la première ligne marquée ---> ci-dessous.
+
+  4. Placez le curseur sur la première erreur.
+
+  5. Tapez  c$	pour changer la fin de la ligne, rendez-là identique à la
+     seconde ligne, puis tapez <Échap>.
+
+---> La fin de cette ligne doit être rendue identique à la seconde.
+---> La fin de cette ligne doit être corrigée avec la commande	c$ .
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 3
+
+
+  1. Pour remettre du texte qui vient d'être effacé, tapez  p . Cela Place le
+     texte effacé APRÈS le curseur (si une ligne complète a été effacée, elle
+     sera placée sous la ligne du curseur).
+
+  2. Pour remplacer le caractère sous le curseur, tapez  r  suivi du caractère
+     qui remplacera l'original.
+
+  3. Le changement vous permet de changer l'objet spécifié, du curseur jusqu'à
+     la fin de l'objet. Par exemple, tapez  cw	pour changer du curseur
+     jusqu'à la fin du mot,  c$  pour changer jusqu'à la fin d'une ligne.
+
+  4. Le format pour le changement est:
+
+	 [nombre]  c  objet	   OU	     c	[nombre]  objet
+
+Passez maintenant à la leçon suivante.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		   Leçon 4.1 : POSITION ET ÉTAT DU FICHIER
+
+
+  ** Tapez Ctrl-G pour afficher votre position dans le fichier et son état.
+     Utilisez Maj-G pour vous rendre à une ligne donnée du fichier. **
+
+  Note: Lisez toute cette leçon avant d'effectuer l'une des étapes !
+
+  1. Maintenez enfoncée la touche Ctrl et appuyez sur  G .  Une ligne d'état
+     va apparaître en bas de l'écran avec le nom du fichier et le numéro de la
+     ligne où vous êtes.  Notez ce numéro, il servira lors de l'étape 3.
+
+  2. Tapez  G  majuscule (Maj-G) pour vous rendre à la fin du fichier.
+
+  3. Tapez le numéro de la ligne où vous étiez suivi de Maj-G.	Cela vous
+     ramènera à la ligne où vous étiez au départ.
+     (Lorsque vous tapez les chiffres, ils n'apparaissent PAS à l'écran).
+
+  4. Si vous vous sentez prêt à faire ceci, effectuez les étapes 1 à 3.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    Leçon 4.2 : LA RECHERCHE
+
+
+	  ** Tapez  /  suivi d'un texte pour rechercher ce texte. **
+
+  1. Tapez le caractère  /  en mode Normal. Notez que celui-ci et le curseur
+     apparaissent en bas de l'écran, comme lorsque l'on utilise  : .
+
+  2. Puis tapez 'errreuur' <Entrée>.  C'est le mot que vous voulez rechercher.
+
+  3. Pour rechercher à nouveau le même texte, tapez simplement	n .
+     Pour rechercher le même texte dans la direction opposée, tapez  Maj-N .
+
+  4. Si vous voulez rechercher un texte vers le haut du fichier, utilisez  ?
+     à la place de  / .
+
+---> erreur ne s'écrit pas "errreuur"; errreuur est une erreur.
+
+Note: Quand la recherche atteint la fin du fichier, elle reprend au début.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	    Leçon 4.3 : RECHERCHE DES PARENTHÈSES CORRESPONDANTES
+
+
+	   ** Tapez  %	pour trouver des ), ] ou } correspondants. **
+
+  1. Placez le curseur sur l'un des (, [ ou { de la ligne marquée --->
+     ci-dessous.
+
+  2. Puis tapez le caractère  % .
+
+  3. Le curseur devrait se placer sur la parenthèse correspondante.
+
+  4. Tapez  %  pour replacer le curseur sur l'autre parenthèse.
+
+---> Voici ( une ligne de test contenant des (, des [ ] et des { } )).
+
+Note: Cette fonctionnalité est très utile lors du débogage d'un programme qui
+      contient des parenthèses déséquilibrées !
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	       Leçon 4.4 : UNE MANIÈRE DE CORRIGER LES ERREURS
+
+
+  ** Tapez  :s/ancien/nouveau/g  pour remplacer 'ancien' par 'nouveau'.  **
+
+  1. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
+
+  2. Tapez  :s/lee/le <Entrée> . Notez que cette commande change seulement la
+     première occurence sur la ligne.
+
+  3. Puis tapez  :s/lee/le/g  qui ordonne de faire une substitution globale
+     sur la ligne. Cela change toutes les occurences sur la ligne
+
+---> lee meilleur moment pour regarder lees fleurs est pendant lee Printemps.
+
+  4. Pour changer toutes les occurences d'un texte, entre deux lignes,
+     tapez  :#,#s/ancien/nouveau/g  où #,# sont les numéros des deux lignes.
+     Tapez  :%s/ancien/nouveau/g    pour changer chaque occurence dans tout
+				    le fichier.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 4
+
+
+  1. Ctrl-G  affiche votre position dans le fichier et l'état de celui-ci.
+     Maj-G  vous place à la fin du fichier. Un numéro de ligne suivi de Maj-G
+     vous place à cette ligne.
+
+  2. Taper  /  suivi d'un texte recherche ce texte vers l'AVANT.
+     Taper  ?  suivi d'un texte recherche ce texte vers l'ARRIÈRE.
+     Après une recherche tapez	n  pour trouver l'occurence suivante dans la
+     même direction ou	Maj-N  pour rechercher dans la direction opposée.
+
+  3. Taper  %  lorsque le curseur est sur  (, ), [, ], { ou }  déplace
+     celui-ci sur le caractère correspondant.
+
+  4. Pour remplacer le premier aa par bb sur une ligne tapez	 :s/aa/bb
+     Pour remplacer tous les aa par bb sur une ligne tapez	 :s/aa/bb/g
+     Pour remplacer du texte entre deux numéros de ligne tapez	 :#,#s/aa/bb/g
+     Pour remplacer toutes les occurences dans le fichier tapez  :%s/aa/bb/g
+     Pour demander une confirmation à chaque fois ajoutez 'c'	 :%s/aa/bb/gc
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	      Leçon 5.1 : COMMENT EXÉCUTER UNE COMMANDE EXTERNE
+
+
+ ** Tapez  :!  suivi d'une commande externe pour exécuter cette commande. **
+
+  1. Tapez le  :  familier pour mettre le curseur en bas de l'écran. Cela vous
+     permet de saisir une commande.
+
+  2. Puis tapez un  !  (point d'exclamation). Cela vous permet d'exécuter
+     n'importe quelle commande valide pour votre interpréteur (shell).
+
+  3. Par exemple, tapez  ls  après le  !  et appuyez <Entrée>. Ceci affichera
+     la liste des fichiers du dossier courant, comme si vous aviez tapé la
+     commande à l'invite du shell. Utilisez  :!dir  si	:!ls  ne marche pas.
+
+Note:  Il est possible d'exécuter n'importe quelle commande externe de cette
+       manière.
+
+Note:  Toutes les commandes  :  doivent finir par la frappe de <Entrée>.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 Leçon 5.2 : PLUS DE DÉTAILS SUR L'ENREGISTREMENT DE FICHIERS
+
+
+ ** Pour enregistrer les changements faits au fichier, tapez  :w FICHIER . **
+
+  1. Tapez  :!dir  ou  :!ls  pour avoir la liste des fichiers du dossier
+     courant. Vous savez déjà qu'il faut appuyer <Entrée> après cela.
+
+  2. Choisissez un nom de fichier qui n'existe pas encore, par exemple TEST.
+
+  3. Puis tapez  :w TEST  (où TEST est le nom que vous avez choisi).
+
+  4. Cela sauvegarde tout le fichier (Tutoriel Vim) sous le nom TEST.
+     Pour le vérifier, tapez  :!dir  pour revisualiser le contenu du dossier.
+
+Notez que si vous quittez Vim et y retournez avec le fichier TEST, celui-ci
+sera une copie exacte du cours au moment où vous l'avez sauvé.
+
+  5. Maintenant, effacez le fichier en tapant (MS-DOS):    :!del TEST
+					   ou (Unix):	   :!rm TEST
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Leçon 5.3 : UN ENREGISTREMENT SÉLECTIF
+
+
+     ** Pour enregistrer une portion de fichier, tapez	:#,#w FICHIER **
+
+  1. Tapez à nouveau  :!dir  ou  :!ls  pour visualiser le contenu du dossier
+     courant et choisissez un nom de fichier, tel que TEST.
+
+  2. Déplacez le curseur jusqu'en haut de cette page et tapez  Ctrl-G  pour
+     connaître le numéro de cette ligne. NOTEZ CE NUMÉRO !
+
+  3. Puis rendez-vous au bas de cette page et tapez à nouveau  Ctrl-G .
+     NOTEZ ÉGALEMENT CE NUMÉRO !
+
+  4. Pour enregistrer SEULEMENT une portion d'un fichier, tapez  :#,#w TEST
+     où #,# sont les deux numéros que vous avez notés (haut,bas) et TEST est
+     le nom du fichier.
+
+  5. Une fois encore, vérifiez la présence du fichier avec  :!dir  mais NE
+     L'EFFACEZ PAS.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		 Leçon 5.4 : RÉCUPÉRATION ET FUSION DE FICHIERS
+
+
+	** Pour insérer le contenu d'un fichier, tapez	:r FICHIER **
+
+  1. Tapez  :!dir  pour vérifier que votre fichier TEST est encore là.
+
+  2. Placez le curseur en haut de cette page.
+
+NOTE:  Après avoir suivi l'étape 3 vous verrez à l'écran la Leçon 5.3.
+       Déplacez-vous vers le bas jusqu'à revenir à cette leçon.
+
+  3. Maintenant récupérez votre fichier TEST en utilisant la commande  :r TEST
+     où TEST est le nom de votre fichier.
+
+NOTE:  Le fichier que vous récupérez est placé là où se trouve le curseur.
+
+  4. Pour vérifier que le fichier a bien été inséré, remontez et vérifiez
+     qu'il y a maintenant deux copies de la Leçon 5.3, l'originale et celle
+     contenue dans le fichier.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 5
+
+
+  1.  :!commande  exécute une commande externe.
+
+      Quelques exemples pratiques:
+	(MS-DOS)	(Unix)
+	 :!dir		 :!ls		 affiche le contenu du dossier courant.
+	 :!del FICHIER   :!rm FICHIER    efface FICHIER.
+
+  2.  :w FICHIER  enregistre le fichier Vim courant sur le disque avec pour
+		  nom FICHIER.
+
+  3.  :#,#w FICHIER  enregistre les lignes # à # dans le fichier FICHIER.
+
+  4.  :r FICHIER  récupère le fichier FICHIER et l'insère dans le fichier
+		  courant à partir de la position du curseur.
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			    Leçon 6.1 : L'OUVERTURE
+
+
+** Tapez  o  pour ouvrir une ligne sous le curseur et y aller en Insertion. **
+
+  1. Déplacez le curseur sur la ligne marquée ---> ci-dessous.
+
+  2. Tapez  o  (minuscule) pour ouvrir une ligne SOUS le curseur et vous y
+     placer en mode Insertion.
+
+  3. Puis recopiez la ligne marquée ---> et appuyez sur <Échap> pour quitter
+     le mode Insertion.
+
+---> En tapant	o  le curseur se met sur la ligne ouverte, en mode Insertion.
+
+  4. Pour ouvrir une ligne au DESSUS du curseur, tapez simplement un  O
+     majuscule, plutôt qu'un  o  minuscule. Faites un essai sur la ligne
+     ci-dessous.
+Ouvrez une ligne ci-dessus en tapant MAJ-O lorsque le curseur est ici.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			      Leçon 6.2 : L'AJOUT
+
+
+	    ** Tapez  a  pour insérer du texte APRÈS le curseur. **
+
+  1. Placez le curseur à la fin de la première ligne marquée ---> ci-dessous
+     en tapant	$  en mode Normal.
+
+  2. Tapez un  a  (minuscule) pour ajouter du texte APRÈS le caractère situé
+     sous le curseur. ( A  majuscule ajoute du texte à la fin de la ligne).
+
+Note: Ceci évite de taper  i , le dernier caractère, le texte à insérer,
+      <Échap>, curseur-à-droite, et finalement	x , juste pour ajouter du
+      texte à la fin d'une ligne !
+
+  3. Maintenant, complétez la première ligne. Notez également que l'ajout est
+     identique au mode Insertion, hormis la position où le texte est inséré.
+
+---> Cette ligne vous permet de pratiquer
+---> Cette ligne vous permet de pratiquer l'ajout de texte en fin de ligne.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		Leçon 6.3 : UNE AUTRE VERSION DU REMPLACEMENT
+
+
+       ** Tapez un  R  majuscule pour remplacer plus d'un caractère. **
+
+  1. Déplacez le curseur sur la première ligne marquée ---> ci-dessous.
+
+  2. Placez le curseur au début du premier mot qui diffère de la seconde ligne
+     marquée ---> (le mot 'celle').
+
+  3. Puis tapez  R  et remplacez le reste du texte de la première ligne en
+     tapant par dessus celui-ci, de manière à rendre la première ligne
+     identique à la seconde.
+
+---> Pour rendre cette ligne identique à celle du dessous utilisez le clavier.
+---> Pour rendre cette ligne identique à la seconde, tapez R et la correction.
+
+  4. Notez que lorsque vous appuyez <Échap>, le texte qui n'a pas encore été
+     remplacé reste.
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		       Leçon 6.4 : RÉGLAGE DES OPTIONS
+
+
+  ** Réglons une option afin que la recherche et la substitution ignorent la
+     casse des caractères. **
+
+  1. Recherchez 'ignore' en tapant  /ignore .
+     Répétez ceci plusieurs fois en utilisant la touche  n .
+
+  2. Activez l'option 'ic' (Ignorer casse) en tapant  :set ic .
+
+  3. Puis poursuivez votre recherche en utilisant  n .
+     Répétez cette recherche plusieurs fois avec la touche  n .
+
+  4. Activez les options 'hlsearch' et 'incsearch' avec  :set hls is .
+
+  5. Puis recommencez une recherche, et faites bien attention à ce qui se
+     produit:  /ignore .
+
+  6. Pour interrompre la mise en surbrillance des résultats, tapez:
+     :nohlsearch
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			     RÉSUMÉ DE LA LEÇON 6
+
+
+  1. Taper  o  ouvre une ligne SOUS le curseur et y place celui-ci en mode
+     Insertion. Taper un  O  majuscule ouvre une ligne au DESSUS de la ligne
+     où se trouve le curseur.
+
+  2. Tapez un  a  pour insérer du texte APRÈS le caractère où se trouve le
+     curseur. Taper un	A  majuscule ajoute du texte automatiquement à la fin
+     de la ligne.
+
+  3. Taper un  R  majuscule active le mode Remplacement jusqu'à ce que la
+     touche  <Échap>  soit appuyée pour en sortir.
+
+  4. Taper  :set xxx  active l'option 'xxx'.
+
+
+
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		     Leçon 7 : ACCÉDER À L'AIDE EN LIGNE
+
+		  ** Utiliser le système d'aide en ligne. **
+
+  Vim a un système complet d'aide en ligne.  Pour y accéder, essayez l'une de
+  ces trois méthodes:
+	- appuyez la touche <Help> (si vous en avez une)
+	- appuyez la touche <F1> (si vous en avez une)
+	- tapez  :help <Entrée>
+
+  Tapez  :q <Entrée>  pour fermer la fenêtre d'aide.
+
+  Vous pouvez accéder à l'aide sur à peu près n'importe quel sujet en donnant
+  des arguments à la commande  :help . Essayez par exemple (n'oubliez pas
+  d'appuyer sur <Entrée>):
+
+	:help w
+	:help c_<T
+	:help insert-index
+	:help user-manual
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		    Leçon 8 : CRÉER UN SCRIPT DE DÉMARRAGE
+
+		  ** Activer les fonctionnalités de Vim. **
+
+  Vim a beaucoup plus de fonctionnalités que Vi, mais la plupart de celles-ci
+  sont désactivées par défaut.  Pour commencer à les utiliser, vous devez
+  créer un fichier "vimrc".
+
+  1. Commencez à éditer le fichier "vimrc". Ceci dépend de votre système:
+	:edit ~/.vimrc			pour Unix
+	:edit $VIM/_vimrc		pour MS-Windows
+
+  2. Intégrez maintenant le texte du fichier "vimrc" d'exemple:
+	:read $VIMRUNTIME/vimrc_example.vim
+
+  3. Enregistrez le fichier avec:
+	:write
+
+  La prochaine fois que vous démarrerez Vim, le surlignage syntactique sera
+  activé. Vous pouvez ajouter tous vos réglages préférés dans ce fichier.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Ceci conclut le Tutoriel Vim.  Le but était de vous donner un bref aperçu de
+  l'éditeur Vim, juste assez pour vous permettre d'utiliser l'éditeur
+  relativement facilement.  Il est loin d'être complet, vu que Vim a beaucoup
+  beaucoup plus de commandes.  Un Manuel de l'utilisateur est disponible en
+  anglais:  :help user-manual .
+
+  Pour continuer à découvrir et à apprendre Vim, il existe un livre traduit en
+  français. Il parle plus de Vi que de Vim, mais pourra vous être utile.
+	L'éditeur Vi - Collection Précis et concis - par Arnold Robbins
+	Éditeur: O'Reilly France
+	ISBN: 2-84177-102-4
+
+  Deux livres en anglais sont également mentionnés dans la version originale
+  de ce tutoriel, dont un qui traite spécifiquement de Vim. Merci de vous y
+  référer si vous êtes intéressé.
+
+  Ce tutoriel a été écrit par Michael C. Pierce et Robert K. Ware de l'École
+  des Mines du Colorado et reprend des idées fournies par Charles Smith,
+  Universté d'État du Colorado.  E-mail: bware@mines.colorado.edu.
+
+  Modifié pour Vim par Bram Moolenar.
+
+  Traduit en Français par Adrien Beau, en avril 2001.
+  E-mail:	version.francaise@free.fr
+  Last Change:	2003 May 29
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

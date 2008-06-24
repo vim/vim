@@ -1,19 +1,5 @@
 # Aap recipe for Portuguese Vim spell files.
 #
-# Based on a shell script by Leonardo Fontenelle.
-# His remarks:
-#
-# Makes a Vim pt dictionary from OpenOffice.org's pt_BR and pt_PT.
-#
-# AFAIK, will have to update the script every time a new dictionary is 
-# released for pt_BR. I asked the maintainer to update OOo's FTP site,
-# but it didn't happen yet. As for the pt_PT dictionary, they won't be
-# in OOo's FTP site for some time, because the Portuguese OOo project
-# decided to adapt the pt_BR dictionary, which is much more extensive.
-# I picked the Natura project unofficial dictionary, because it has been
-# developed by a team with linguists, and for a longer time. At least the
-# pt_PT dictionary has a "latest" file to make our lives easier.
-
 
 # Use a freshly compiled Vim if it exists.
 @if os.path.exists('../../../src/vim'):
@@ -33,13 +19,10 @@ PT_FNAME = myspell.pt-latest.zip
 :attr {fetch = $PT_DIR/%file%} $PT_FNAME
 
 #
-# Fetching the pt_BR files from BrOffice.org (Brazilian OOo) 2.1. Should be
-# updated really soon.
+# Fetching the pt_BR files from BrOffice.org (Brazilian OOo).
 #
-BR_BASENAME = pt_BR-2007-04-11
-BR_DIR = http://www.deso-se.com.br/downloads/download.php?arquivo=$BR_BASENAME
-BR_FNAME = $(BR_BASENAME).zip
-
+BR_FNAME = pt_BR-V.zip
+BR_DIR = http://www.deso-se.com.br/downloads/broffice.org/$(BR_FNAME)
 :attr {fetch = $BR_DIR} $BR_FNAME
 
 all: $SPELLDIR/pt.latin1.spl $SPELLDIR/pt.utf-8.spl \
@@ -58,8 +41,7 @@ $SPELLDIR/pt.utf-8.spl : $FILES
         :cat README_pt_PT.txt | :eval re.sub('\r', '', stdin) >>$target
         :print =================================================== >>$target
         :print pt_BR: >>$target
-        :print Information is in Leia-me.pdf, see $BR_DIR >>$target
-        :cat README_pt_BR.txt >>$target
+        :cat README_pt_BR.txt | :eval re.sub('\r', '', stdin) >>$target
 
 # The files don't depend on the .zip file so that we can delete it.
 # Only download the zip file if the targets don't exist.
@@ -85,19 +67,13 @@ pt_BR.aff pt_BR.dic: {buildcheck=}
         :fetch $BR_FNAME
         :sys $UNZIP $BR_FNAME
         :delete $BR_FNAME
-        :move Leia-me.pdf Leia-me_pt_BR.pdf
+        :sys $VIM README_pt_BR.TXT -e -c "set ff=unix" -c update -c q
+        :move README_pt_BR.TXT README_pt_BR.txt
 
-# 1. pt_BR.dic contains a cp1252-specific character.
-#    Changing it to its latin1 equivalent.
-# 2. Vim seems to ignore the dots from the word list.
-#    Removing words with dot to avoid misbehaviour.
-        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c "%s/\%x92/'/g" -c "/\./d" -c update -c q
-
-# Removing /* ... */ header to avoid warnings.  Write it to the README file, it
-# contains the copyright notice.
-        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c "/\/\*/,/\*\//w! README_pt_BR.txt" -c "/\/\*/,/\*\//+1d" -c update -c q
-
-        #:sys $VIM README_pt_BR.txt -e -c "set ff=unix" -c update -c q
+# Vim seems to ignore the dots from the word list.
+# Removing words with dot to avoid misbehaviour.
+        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c "/\./d" -c update -c q
+        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('pt_BR.orig.aff'):
             :copy pt_BR.aff pt_BR.orig.aff
         @if not os.path.exists('pt_BR.orig.dic'):
@@ -125,12 +101,12 @@ check: check-pt check-br
 
 check-pt:
         :assertpkg unzip diff
-        :fetch pt_PT.zip
+        :fetch $PT_FNAME
         :mkdir tmp
         :cd tmp
         @try:
             @import stat
-            :sys $UNZIP ../pt_PT.zip
+            :sys $UNZIP ../$PT_FNAME
             :sys {force} diff ../pt_PT.orig.aff pt_PT.aff >d
             @if os.stat('d')[stat.ST_SIZE] > 0:
                 :copy pt_PT.aff ../pt_PT.new.aff
@@ -140,16 +116,16 @@ check-pt:
         @finally:
             :cd ..
             :delete {r}{f}{q} tmp
-            :delete pt_PT.zip
+            :delete $PT_FNAME
 
 check-br:
         :assertpkg unzip diff
-        :fetch pt_BR.zip
+        :fetch $BR_FNAME
         :mkdir tmp
         :cd tmp
         @try:
             @import stat
-            :sys $UNZIP ../pt_BR.zip
+            :sys $UNZIP ../$BR_FNAME
             :sys {force} diff ../pt_BR.orig.aff pt_BR.aff >d
             @if os.stat('d')[stat.ST_SIZE] > 0:
                 :copy pt_BR.aff ../pt_BR.new.aff
@@ -159,6 +135,6 @@ check-br:
         @finally:
             :cd ..
             :delete {r}{f}{q} tmp
-            :delete pt_BR.zip
+            :delete $BR_FNAME
 
 # vim: set sts=4 sw=4 :

@@ -52,7 +52,7 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "gvim.exe.mnf"
 // Type Library
 //
 #ifdef FEAT_OLE
- 1 TYPELIB "VIM.TLB"
+ 1 TYPELIB "vim.tlb"
 #endif
 
 //
@@ -91,7 +91,7 @@ BEGIN
 	VALUE "FileDescription",	"Vi Improved - A Text Editor\0"
 	VALUE "FileVersion",		VIM_VERSION_MAJOR_STR ", " VIM_VERSION_MINOR_STR ", " VIM_VERSION_BUILD_STR ", " VIM_VERSION_PATCHLEVEL_STR  "\0"
 	VALUE "InternalName",		"VIM\0"
-	VALUE "LegalCopyright",		"Copyright \251 1996-2005\0"
+	VALUE "LegalCopyright",		"Copyright \251 1996-2008\0"
 	VALUE "LegalTrademarks",	"Vim\0"
 	VALUE "OriginalFilename",	"VIM.EXE\0"
 	VALUE "ProductName",		"Vim\0"

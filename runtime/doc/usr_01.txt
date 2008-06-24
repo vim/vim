@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 7.1.  Last change: 2006 Oct 08
+*usr_01.txt*	For Vim version 7.2a.  Last change: 2008 May 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -117,6 +117,9 @@ the risk of damaging the original.
 available, use the two-letter language code.  For French: >
 
 	vimtutor fr
+
+On Unix, if you prefer using the GUI version of Vim, use "gvimtutor" or
+"vimtutor -g" instead of "vimtutor".
 
 For OpenVMS, if Vim has been properly installed, you can start vimtutor from a
 VMS prompt with: >

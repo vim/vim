@@ -516,7 +516,7 @@ shift_block(oap, amount)
 	copy_spaces(newp + bd.textcol + i, (size_t)j);
 
 	/* the end */
-	mch_memmove(newp + STRLEN(newp), midp, (size_t)STRLEN(midp) + 1);
+	STRMOVE(newp + STRLEN(newp), midp);
     }
     /* replace the line */
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
@@ -616,7 +616,7 @@ block_insert(oap, s, b_insert, bdp)
 
 	if (spaces > 0)
 	    offset += count;
-	mch_memmove(newp + offset, oldp, (size_t)(STRLEN(oldp) + 1));
+	STRMOVE(newp + offset, oldp);
 
 	ml_replace(lnum, newp, FALSE);
 
@@ -1759,8 +1759,7 @@ op_delete(oap)
 				     (size_t)(bd.startspaces + bd.endspaces));
 	    /* copy the part after the deleted part */
 	    oldp += bd.textcol + bd.textlen;
-	    mch_memmove(newp + bd.textcol + bd.startspaces + bd.endspaces,
-						      oldp, STRLEN(oldp) + 1);
+	    STRMOVE(newp + bd.textcol + bd.startspaces + bd.endspaces, oldp);
 	    /* replace the line */
 	    ml_replace(lnum, newp, FALSE);
 	}
@@ -2081,7 +2080,7 @@ op_replace(oap, c)
 		/* insert post-spaces */
 		copy_spaces(newp + STRLEN(newp), (size_t)bd.endspaces);
 		/* copy the part after the changed part */
-		mch_memmove(newp + STRLEN(newp), oldp, STRLEN(oldp) + 1);
+		STRMOVE(newp + STRLEN(newp), oldp);
 	    }
 	    /* replace the line */
 	    ml_replace(curwin->w_cursor.lnum, newp, FALSE);
@@ -2696,7 +2695,7 @@ op_change(oap)
 			mch_memmove(newp + offset, ins_text, (size_t)ins_len);
 			offset += ins_len;
 			oldp += bd.textcol;
-			mch_memmove(newp + offset, oldp, STRLEN(oldp) + 1);
+			STRMOVE(newp + offset, oldp);
 			ml_replace(linenr, newp, FALSE);
 		    }
 		}
@@ -3662,7 +3661,7 @@ do_put(regname, dir, count, flags)
 		    mch_memmove(ptr, y_array[0], (size_t)yanklen);
 		    ptr += yanklen;
 		}
-		mch_memmove(ptr, oldp + col, STRLEN(oldp + col) + 1);
+		STRMOVE(ptr, oldp + col);
 		ml_replace(lnum, newp, FALSE);
 		/* Put cursor on last putted char. */
 		curwin->w_cursor.col += (colnr_T)(totlen - 1);

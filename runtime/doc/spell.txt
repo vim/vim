@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.1.  Last change: 2007 May 07
+*spell.txt*	For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -21,7 +21,7 @@ vimspell" to find about it.  But you will probably want to get rid of the
 plugin and use the 'spell' option instead, it works better.
 
 ==============================================================================
-1. Quick start						*spell-quickstart*
+1. Quick start					*spell-quickstart* *E756*
 
 This command switches on spell checking: >
 
@@ -46,7 +46,7 @@ won't work.
 
 To search for the next misspelled word:
 
-							*]s* *E756*
+							*]s*
 ]s			Move to next misspelled word after the cursor.
 			A count before the command can be used to repeat.
 			'wrapscan' applies.
@@ -619,7 +619,8 @@ SPELL FILE MISSING		*spell-SpellFileMissing* *spellfile.vim*
 If the spell file for the language you are using is not available, you will
 get an error message.  But if the "spellfile.vim" plugin is active it will
 offer you to download the spell file.  Just follow the instructions, it will
-ask you where to write the file.
+ask you where to write the file (there must be a writable directory in
+'runtimepath' for this).
 
 The plugin has a default place where to look for spell files, on the Vim ftp
 server.  If you want to use another location or another protocol, set the

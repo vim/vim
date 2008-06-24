@@ -2,16 +2,16 @@
 " Language:     PostScript - all Levels, selectable
 " Maintainer:   Mike Williams <mrw@eandem.co.uk>
 " Filenames:    *.ps,*.eps
-" Last Change:  27th June 2002
-" URL:		http://www.eandem.co.uk/mrw/vim
+" Last Change:  31st October 2007
+" URL:          http://www.eandem.co.uk/mrw/vim
 "
 " Options Flags:
-" postscr_level			- language level to use for highligting (1, 2, or 3)
-" postscr_display		- include display PS operators
-" postscr_ghostscript		- include GS extensions
-" postscr_fonts			- highlight standard font names (a lot for PS 3)
-" postscr_encodings		- highlight encoding names (there are a lot)
-" postscr_andornot_binary	- highlight and, or, and not as binary operators (not logical)
+" postscr_level                 - language level to use for highligting (1, 2, or 3)
+" postscr_display               - include display PS operators
+" postscr_ghostscript           - include GS extensions
+" postscr_fonts                 - highlight standard font names (a lot for PS 3)
+" postscr_encodings             - highlight encoding names (there are a lot)
+" postscr_andornot_binary       - highlight and, or, and not as binary operators (not logical)
 "
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -35,16 +35,16 @@ endif
 syn keyword postscrTodo contained  TODO
 
 " Comment
-syn match postscrComment	"%.*$" contains=postscrTodo
+syn match postscrComment        "%.*$" contains=postscrTodo,@Spell
 " DSC comment start line (NB: defines DSC level, not PS level!)
-syn match  postscrDSCComment    "^%!PS-Adobe-\d\+\.\d\+\s*.*$"
+syn match postscrDSCComment    	"^%!PS-Adobe-\d\+\.\d\+\s*.*$"
 " DSC comment line (no check on possible comments - another language!)
-syn match  postscrDSCComment    "^%%\u\+.*$" contains=@postscrString,@postscrNumber
+syn match postscrDSCComment    	"^%%\u\+.*$" contains=@postscrString,@postscrNumber,@Spell
 " DSC continuation line (no check that previous line is DSC comment)
-syn match  postscrDSCComment    "^%%+ *.*$" contains=@postscrString,@postscrNumber
+syn match  postscrDSCComment    "^%%+ *.*$" contains=@postscrString,@postscrNumber,@Spell
 
 " Names
-syn match postscrName		"\k\+"
+syn match postscrName           "\k\+"
 
 " Identifiers
 syn match postscrIdentifierError "/\{1,2}[[:space:]\[\]{}]"me=e-1
@@ -53,18 +53,18 @@ syn match postscrIdentifier     "/\{1,2}\k\+" contains=postscrConstant,postscrBo
 " Numbers
 syn case ignore
 " In file hex data - usually complete lines
-syn match postscrHex		"^[[:xdigit:]][[:xdigit:][:space:]]*$"
-"syn match postscrHex		 "\<\x\{2,}\>"
+syn match postscrHex            "^[[:xdigit:]][[:xdigit:][:space:]]*$"
+"syn match postscrHex            "\<\x\{2,}\>"
 " Integers
-syn match postscrInteger	"\<[+-]\=\d\+\>"
+syn match postscrInteger        "\<[+-]\=\d\+\>"
 " Radix
-syn match postscrRadix		"\d\+#\x\+\>"
+syn match postscrRadix          "\d\+#\x\+\>"
 " Reals - upper and lower case e is allowed
-syn match postscrFloat		"[+-]\=\d\+\.\>"
-syn match postscrFloat		"[+-]\=\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
-syn match postscrFloat		"[+-]\=\.\d\+\(e[+-]\=\d\+\)\=\>"
-syn match postscrFloat		"[+-]\=\d\+e[+-]\=\d\+\>"
-syn cluster postscrNumber	contains=postscrInteger,postscrRadix,postscrFloat
+syn match postscrFloat          "[+-]\=\d\+\.\>"
+syn match postscrFloat          "[+-]\=\d\+\.\d*\(e[+-]\=\d\+\)\=\>"
+syn match postscrFloat          "[+-]\=\.\d\+\(e[+-]\=\d\+\)\=\>"
+syn match postscrFloat          "[+-]\=\d\+e[+-]\=\d\+\>"
+syn cluster postscrNumber       contains=postscrInteger,postscrRadix,postscrFloat
 syn case match
 
 " Escaped characters
@@ -75,7 +75,8 @@ syn match postscrSpecialChar    contained "\\\o\{1,3}"
 
 " Strings
 " ASCII strings
-syn region postscrASCIIString   start=+(+ end=+)+ skip=+([^)]*)+ contains=postscrSpecialChar,postscrSpecialCharError
+syn region postscrASCIIString   start=+(+ end=+)+ skip=+([^)]*)+ contains=postscrSpecialChar,postscrSpecialCharError,@Spell
+syn match postscrASCIIStringError ")"
 " Hex strings
 syn match postscrHexCharError   contained "[^<>[:xdigit:][:space:]]"
 syn region postscrHexString     start=+<\($\|[^<]\)+ end=+>+ contains=postscrHexCharError
@@ -342,61 +343,61 @@ endif
 " By default level 3 includes all level 2 operators
 if postscr_level == 2 || postscr_level == 3
 " Dictionary operators
-  syn match postscrOperator     "\(<<\|>>\)"
-  syn keyword postscrOperator   undef
+  syn match postscrL2Operator     "\(<<\|>>\)"
+  syn keyword postscrL2Operator   undef
   syn keyword postscrConstant   globaldict shareddict
 
 " Device operators
-  syn keyword postscrOperator   setpagedevice currentpagedevice
+  syn keyword postscrL2Operator   setpagedevice currentpagedevice
 
 " Path operators
-  syn keyword postscrOperator   rectclip setbbox uappend ucache upath ustrokepath arct
+  syn keyword postscrL2Operator   rectclip setbbox uappend ucache upath ustrokepath arct
 
 " Painting operators
-  syn keyword postscrOperator   rectfill rectstroke ufill ueofill ustroke
+  syn keyword postscrL2Operator   rectfill rectstroke ufill ueofill ustroke
 
 " Array operators
-  syn keyword postscrOperator   currentpacking setpacking packedarray
+  syn keyword postscrL2Operator   currentpacking setpacking packedarray
 
 " Misc operators
-  syn keyword postscrOperator   languagelevel
+  syn keyword postscrL2Operator   languagelevel
 
 " Insideness operators
-  syn keyword postscrOperator   infill ineofill instroke inufill inueofill inustroke
+  syn keyword postscrL2Operator   infill ineofill instroke inufill inueofill inustroke
 
 " GState operators
-  syn keyword postscrOperator   gstate setgstate currentgstate setcolor
-  syn keyword postscrOperator   setcolorspace currentcolorspace setstrokeadjust currentstrokeadjust
-  syn keyword postscrOperator   currentcolor
+  syn keyword postscrL2Operator   gstate setgstate currentgstate setcolor
+  syn keyword postscrL2Operator   setcolorspace currentcolorspace setstrokeadjust currentstrokeadjust
+  syn keyword postscrL2Operator   currentcolor
 
 " Device gstate operators
-  syn keyword postscrOperator   sethalftone currenthalftone setoverprint currentoverprint
-  syn keyword postscrOperator   setcolorrendering currentcolorrendering
+  syn keyword postscrL2Operator   sethalftone currenthalftone setoverprint currentoverprint
+  syn keyword postscrL2Operator   setcolorrendering currentcolorrendering
 
 " Character operators
-  syn keyword postscrConstant   GlobalFontDirectory SharedFontDirectory
-  syn keyword postscrOperator   glyphshow selectfont
-  syn keyword postscrOperator   addglyph undefinefont xshow xyshow yshow
+  syn keyword postscrL2Constant   GlobalFontDirectory SharedFontDirectory
+  syn keyword postscrL2Operator   glyphshow selectfont
+  syn keyword postscrL2Operator   addglyph undefinefont xshow xyshow yshow
 
 " Pattern operators
-  syn keyword postscrOperator   makepattern setpattern execform
+  syn keyword postscrL2Operator   makepattern setpattern execform
 
 " Resource operators
-  syn keyword postscrOperator   defineresource undefineresource findresource resourcestatus
-  syn keyword postscrRepeat     resourceforall
+  syn keyword postscrL2Operator   defineresource undefineresource findresource resourcestatus
+  syn keyword postscrL2Repeat     resourceforall
 
 " File operators
-  syn keyword postscrOperator   filter printobject writeobject setobjectformat currentobjectformat
+  syn keyword postscrL2Operator   filter printobject writeobject setobjectformat currentobjectformat
 
 " VM operators
-  syn keyword postscrOperator   currentshared setshared defineuserobject execuserobject undefineuserobject
-  syn keyword postscrOperator   gcheck scheck startjob currentglobal setglobal
+  syn keyword postscrL2Operator   currentshared setshared defineuserobject execuserobject undefineuserobject
+  syn keyword postscrL2Operator   gcheck scheck startjob currentglobal setglobal
   syn keyword postscrConstant   UserObjects
 
 " Interpreter operators
-  syn keyword postscrOperator   setucacheparams setvmthreshold ucachestatus setsystemparams
-  syn keyword postscrOperator   setuserparams currentuserparams setcacheparams currentcacheparams
-  syn keyword postscrOperator   currentdevparams setdevparams vmreclaim currentsystemparams
+  syn keyword postscrL2Operator   setucacheparams setvmthreshold ucachestatus setsystemparams
+  syn keyword postscrL2Operator   setuserparams currentuserparams setcacheparams currentcacheparams
+  syn keyword postscrL2Operator   currentdevparams setdevparams vmreclaim currentsystemparams
 
 " PS2 constants
   syn keyword postscrConstant   contained DeviceCMYK Pattern Indexed Separation Cyan Magenta Yellow Black
@@ -491,52 +492,52 @@ if postscr_level == 2 || postscr_level == 3
   syn keyword postscrConstant   contained Predictor
 
 " Paper Size operators
-  syn keyword postscrOperator   letter lettersmall legal ledger 11x17 a4 a3 a4small b5 note
+  syn keyword postscrL2Operator   letter lettersmall legal ledger 11x17 a4 a3 a4small b5 note
 
 " Paper Tray operators
-  syn keyword postscrOperator   lettertray legaltray ledgertray a3tray a4tray b5tray 11x17tray
+  syn keyword postscrL2Operator   lettertray legaltray ledgertray a3tray a4tray b5tray 11x17tray
 
 " SCC compatibility operators
-  syn keyword postscrOperator   sccbatch sccinteractive setsccbatch setsccinteractive
+  syn keyword postscrL2Operator   sccbatch sccinteractive setsccbatch setsccinteractive
 
 " Page duplexing operators
-  syn keyword postscrOperator   duplexmode firstside newsheet setduplexmode settumble tumble
+  syn keyword postscrL2Operator   duplexmode firstside newsheet setduplexmode settumble tumble
 
 " Device compatability operators
-  syn keyword postscrOperator   devdismount devformat devmount devstatus
-  syn keyword postscrRepeat     devforall
+  syn keyword postscrL2Operator   devdismount devformat devmount devstatus
+  syn keyword postscrL2Repeat     devforall
 
 " Imagesetter compatability operators
-  syn keyword postscrOperator   accuratescreens checkscreen pagemargin pageparams setaccuratescreens setpage
-  syn keyword postscrOperator   setpagemargin setpageparams
+  syn keyword postscrL2Operator   accuratescreens checkscreen pagemargin pageparams setaccuratescreens setpage
+  syn keyword postscrL2Operator   setpagemargin setpageparams
 
 " Misc compatability operators
-  syn keyword postscrOperator   appletalktype buildtime byteorder checkpassword defaulttimeouts diskonline
-  syn keyword postscrOperator   diskstatus manualfeed manualfeedtimeout margins mirrorprint pagecount
-  syn keyword postscrOperator   pagestackorder printername processcolors sethardwareiomode setjobtimeout
-  syn keyword postscrOperator   setpagestockorder setprintername setresolution doprinterrors dostartpage
-  syn keyword postscrOperator   hardwareiomode initializedisk jobname jobtimeout ramsize realformat resolution
-  syn keyword postscrOperator   setdefaulttimeouts setdoprinterrors setdostartpage setdosysstart
-  syn keyword postscrOperator   setuserdiskpercent softwareiomode userdiskpercent waittimeout
-  syn keyword postscrOperator   setsoftwareiomode dosysstart emulate setmargins setmirrorprint
+  syn keyword postscrL2Operator   appletalktype buildtime byteorder checkpassword defaulttimeouts diskonline
+  syn keyword postscrL2Operator   diskstatus manualfeed manualfeedtimeout margins mirrorprint pagecount
+  syn keyword postscrL2Operator   pagestackorder printername processcolors sethardwareiomode setjobtimeout
+  syn keyword postscrL2Operator   setpagestockorder setprintername setresolution doprinterrors dostartpage
+  syn keyword postscrL2Operator   hardwareiomode initializedisk jobname jobtimeout ramsize realformat resolution
+  syn keyword postscrL2Operator   setdefaulttimeouts setdoprinterrors setdostartpage setdosysstart
+  syn keyword postscrL2Operator   setuserdiskpercent softwareiomode userdiskpercent waittimeout
+  syn keyword postscrL2Operator   setsoftwareiomode dosysstart emulate setmargins setmirrorprint
 
 endif " PS2 highlighting
 
 if postscr_level == 3
 " Shading operators
-  syn keyword postscrOperator   setsmoothness currentsmoothness shfill
+  syn keyword postscrL3Operator setsmoothness currentsmoothness shfill
 
 " Clip operators
-  syn keyword postscrOperator   clipsave cliprestore
+  syn keyword postscrL3Operator clipsave cliprestore
 
 " Pagedevive operators
-  syn keyword postscrOperator   setpage setpageparams
+  syn keyword postscrL3Operator setpage setpageparams
 
 " Device gstate operators
-  syn keyword postscrOperator   findcolorrendering
+  syn keyword postscrL3Operator findcolorrendering
 
 " Font operators
-  syn keyword postscrOperator   composefont
+  syn keyword postscrL3Operator composefont
 
 " PS LL3 Output device resource entries
   syn keyword postscrConstant   contained DeviceN TrappingDetailsType
@@ -658,56 +659,56 @@ endif " PS LL3 highlighting
 
 if exists("postscr_ghostscript")
   " GS gstate operators
-  syn keyword postscrOperator   .setaccuratecurves .currentaccuratecurves .setclipoutside
-  syn keyword postscrOperator   .setdashadapt .currentdashadapt .setdefaultmatrix .setdotlength
-  syn keyword postscrOperator   .currentdotlength .setfilladjust2 .currentfilladjust2
-  syn keyword postscrOperator   .currentclipoutside .setcurvejoin .currentcurvejoin
-  syn keyword postscrOperator   .setblendmode .currentblendmode .setopacityalpha .currentopacityalpha .setshapealpha .currentshapealpha
-  syn keyword postscrOperator   .setlimitclamp .currentlimitclamp .setoverprintmode .currentoverprintmode
+  syn keyword postscrGSOperator   .setaccuratecurves .currentaccuratecurves .setclipoutside
+  syn keyword postscrGSOperator   .setdashadapt .currentdashadapt .setdefaultmatrix .setdotlength
+  syn keyword postscrGSOperator   .currentdotlength .setfilladjust2 .currentfilladjust2
+  syn keyword postscrGSOperator   .currentclipoutside .setcurvejoin .currentcurvejoin
+  syn keyword postscrGSOperator   .setblendmode .currentblendmode .setopacityalpha .currentopacityalpha .setshapealpha .currentshapealpha
+  syn keyword postscrGSOperator   .setlimitclamp .currentlimitclamp .setoverprintmode .currentoverprintmode
 
   " GS path operators
-  syn keyword postscrOperator   .dashpath .rectappend
+  syn keyword postscrGSOperator   .dashpath .rectappend
 
   " GS painting operators
-  syn keyword postscrOperator   .setrasterop .currentrasterop .setsourcetransparent
-  syn keyword postscrOperator   .settexturetransparent .currenttexturetransparent
-  syn keyword postscrOperator   .currentsourcetransparent
+  syn keyword postscrGSOperator   .setrasterop .currentrasterop .setsourcetransparent
+  syn keyword postscrGSOperator   .settexturetransparent .currenttexturetransparent
+  syn keyword postscrGSOperator   .currentsourcetransparent
 
   " GS character operators
-  syn keyword postscrOperator   .charboxpath .type1execchar %Type1BuildChar %Type1BuildGlyph
+  syn keyword postscrGSOperator   .charboxpath .type1execchar %Type1BuildChar %Type1BuildGlyph
 
   " GS mathematical operators
-  syn keyword postscrMathOperator arccos arcsin
+  syn keyword postscrGSMathOperator arccos arcsin
 
   " GS dictionary operators
-  syn keyword postscrOperator   .dicttomark .forceput .forceundef .knownget .setmaxlength
+  syn keyword postscrGSOperator   .dicttomark .forceput .forceundef .knownget .setmaxlength
 
   " GS byte and string operators
-  syn keyword postscrOperator   .type1encrypt .type1decrypt
-  syn keyword postscrOperator   .bytestring .namestring .stringmatch
+  syn keyword postscrGSOperator   .type1encrypt .type1decrypt
+  syn keyword postscrGSOperator   .bytestring .namestring .stringmatch
 
   " GS relational operators (seem like math ones to me!)
-  syn keyword postscrMathOperator max min
+  syn keyword postscrGSMathOperator max min
 
   " GS file operators
-  syn keyword postscrOperator   findlibfile unread writeppmfile
-  syn keyword postscrOperator   .filename .fileposition .peekstring .unread
+  syn keyword postscrGSOperator   findlibfile unread writeppmfile
+  syn keyword postscrGSOperator   .filename .fileposition .peekstring .unread
 
   " GS vm operators
-  syn keyword postscrOperator   .forgetsave
+  syn keyword postscrGSOperator   .forgetsave
 
   " GS device operators
-  syn keyword postscrOperator   copydevice .getdevice makeimagedevice makewordimagedevice copyscanlines
-  syn keyword postscrOperator   setdevice currentdevice getdeviceprops putdeviceprops flushpage
-  syn keyword postscrOperator   finddevice findprotodevice .getbitsrect
+  syn keyword postscrGSOperator   copydevice .getdevice makeimagedevice makewordimagedevice copyscanlines
+  syn keyword postscrGSOperator   setdevice currentdevice getdeviceprops putdeviceprops flushpage
+  syn keyword postscrGSOperator   finddevice findprotodevice .getbitsrect
 
   " GS misc operators
-  syn keyword postscrOperator   getenv .makeoperator .setdebug .oserrno .oserror .execn
+  syn keyword postscrGSOperator   getenv .makeoperator .setdebug .oserrno .oserror .execn
 
   " GS rendering stack operators
-  syn keyword postscrOperator   .begintransparencygroup .discardtransparencygroup .endtransparencygroup
-  syn keyword postscrOperator   .begintransparencymask .discardtransparencymask .endtransparencymask .inittransparencymask
-  syn keyword postscrOperator   .settextknockout .currenttextknockout
+  syn keyword postscrGSOperator   .begintransparencygroup .discardtransparencygroup .endtransparencygroup
+  syn keyword postscrGSOperator   .begintransparencymask .discardtransparencymask .endtransparencymask .inittransparencymask
+  syn keyword postscrGSOperator   .settextknockout .currenttextknockout
 
   " GS filters
   syn keyword postscrConstant   contained BCPEncode BCPDecode eexecEncode eexecDecode PCXDecode
@@ -739,41 +740,54 @@ if version >= 508 || !exists("did_postscr_syntax_inits")
     command -nargs=+ HiLink hi def link <args>
   endif
 
-  HiLink postscrComment		Comment
+  HiLink postscrComment         Comment
 
-  HiLink postscrConstant	Constant
-  HiLink postscrString		String
-  HiLink postscrASCIIString	postscrString
-  HiLink postscrHexString	postscrString
-  HiLink postscrASCII85String	postscrString
-  HiLink postscrNumber		Number
-  HiLink postscrInteger		postscrNumber
-  HiLink postscrHex		postscrNumber
-  HiLink postscrRadix		postscrNumber
-  HiLink postscrFloat		Float
-  HiLink postscrBoolean		Boolean
+  HiLink postscrConstant        Constant
+  HiLink postscrString          String
+  HiLink postscrASCIIString     postscrString
+  HiLink postscrHexString       postscrString
+  HiLink postscrASCII85String   postscrString
+  HiLink postscrNumber          Number
+  HiLink postscrInteger         postscrNumber
+  HiLink postscrHex             postscrNumber
+  HiLink postscrRadix           postscrNumber
+  HiLink postscrFloat           Float
+  HiLink postscrBoolean         Boolean
 
-  HiLink postscrIdentifier	Identifier
-  HiLink postscrProcedure	Function
+  HiLink postscrIdentifier      Identifier
+  HiLink postscrProcedure       Function
 
-  HiLink postscrName		Statement
-  HiLink postscrConditional	Conditional
-  HiLink postscrRepeat		Repeat
-  HiLink postscrOperator	Operator
-  HiLink postscrMathOperator	postscrOperator
+  HiLink postscrName            Statement
+  HiLink postscrConditional     Conditional
+  HiLink postscrRepeat          Repeat
+  HiLink postscrL2Repeat        postscrRepeat
+  HiLink postscrOperator        Operator
+  HiLink postscrL1Operator      postscrOperator
+  HiLink postscrL2Operator      postscrOperator
+  HiLink postscrL3Operator      postscrOperator
+  HiLink postscrMathOperator    postscrOperator
   HiLink postscrLogicalOperator postscrOperator
-  HiLink postscrBinaryOperator	postscrOperator
+  HiLink postscrBinaryOperator  postscrOperator
 
-  HiLink postscrDSCComment	SpecialComment
-  HiLink postscrSpecialChar	SpecialChar
+  HiLink postscrDSCComment      SpecialComment
+  HiLink postscrSpecialChar     SpecialChar
 
-  HiLink postscrTodo		Todo
+  HiLink postscrTodo            Todo
 
-  HiLink postscrError		Error
+  HiLink postscrError           Error
   HiLink postscrSpecialCharError postscrError
   HiLink postscrASCII85CharError postscrError
-  HiLink postscrHexCharError	postscrError
+  HiLink postscrHexCharError    postscrError
+  HiLink postscrASCIIStringError postscrError
   HiLink postscrIdentifierError postscrError
+
+  if exists("postscr_ghostscript")
+    HiLink postscrGSOperator      postscrOperator
+    HiLink postscrGSMathOperator  postscrMathOperator
+  else
+    HiLink postscrGSOperator      postscrError
+    HiLink postscrGSMathOperator  postscrError
+  endif
 
   delcommand HiLink
 endif

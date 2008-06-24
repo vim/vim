@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:		Mail file
 " Previous Maintainer:	Felix von Leitner <leitner@math.fu-berlin.de>
-" Maintainer:		Gautam Iyer <gautam@math.uchicago.edu>
-" Last Change:		Wed 01 Jun 2005 02:11:07 PM CDT
+" Maintainer:		Gautam Iyer <gi1242@users.sourceforge.net>
+" Last Change:		Thu 17 Jan 2008 11:25:44 AM PST
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -24,13 +24,15 @@ syn case match
 " emails
 " According to RFC 2822 any printable ASCII character can appear in a field
 " name, except ':'.
-syn region	mailHeader	contains=@mailHeaderFields,@NoSpell start="^From " skip="^\s" end="\v^[!-9;-~]*([^!-~]|$)"me=s-1
-syn match	mailHeaderKey	contained contains=mailEmail,@NoSpell "^From\s.*$"
+syn region	mailHeader	contains=@mailHeaderFields,@NoSpell start="^From .*\d\d\d\d$" skip="^\s" end="\v^[!-9;-~]*([^!-~]|$)"me=s-1
+syn match	mailHeaderKey	contained contains=mailEmail,@NoSpell "^From\s.*\d\d\d\d$"
+" Usenet headers
+syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(Newsgroups|Followup-To|Message-ID|Supersedes|Control):.*$"
 
 syn case ignore
 " Nothing else depends on case. Headers in properly quoted (with "> " or ">")
 " emails are matched
-syn region	mailHeader	keepend contains=@mailHeaderFields,@mailQuoteExps,@NoSpell start="^\z(\(> \?\)*\)\v(newsgroups|from|((in-)?reply-)?to|b?cc|subject|return-path|received|date|replied):" skip="^\z1\s" end="\v^\z1[!-9;-~]*([^!-~]|$)"me=s-1 end="\v^\z1@!"me=s-1 end="\v^\z1(\> ?)+"me=s-1
+syn region	mailHeader	keepend contains=@mailHeaderFields,@mailQuoteExps,@NoSpell start="^\z(\(> \?\)*\)\v(newsgroups|x-([a-z\-])*|path|xref|message-id|from|((in-)?reply-)?to|b?cc|subject|return-path|received|date|replied):" skip="^\z1\s" end="\v^\z1[!-9;-~]*([^!-~]|$)"me=s-1 end="\v^\z1@!"me=s-1 end="\v^\z1(\> ?)+"me=s-1
 
 syn region	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@mailQuoteExps,@NoSpell start="\v(^(\> ?)*)@<=(to|b?cc):" skip=",$" end="$"
 syn match	mailHeaderKey	contained contains=mailHeaderEmail,mailEmail,@NoSpell "\v(^(\> ?)*)@<=(from|reply-to):.*$"

@@ -1,7 +1,7 @@
 " Vim Compiler File
 " Compiler:     Perl syntax checks (perl -Wc)
 " Maintainer:   Christian J. Robinson <infynity@onewest.net>
-" Last Change:  2004 Mar 27
+" Last Change:  2006 Aug 13
 
 if exists("current_compiler")
   finish
@@ -15,11 +15,19 @@ endif
 let s:savecpo = &cpo
 set cpo&vim
 
-if getline(1) =~# '-[^ ]*T'
-	CompilerSet makeprg=perl\ -WTc\ %
+if exists('g:perl_compiler_force_warnings') && g:perl_compiler_force_warnings == 0
+	let s:warnopt = 'w'
 else
-	CompilerSet makeprg=perl\ -Wc\ %
+	let s:warnopt = 'W'
 endif
+
+if getline(1) =~# '-[^ ]*T'
+	let s:taintopt = 'T'
+else
+	let s:taintopt = ''
+endif
+
+exe 'CompilerSet makeprg=perl\ -' . s:warnopt . s:taintopt . 'c\ %'
 
 CompilerSet errorformat=
 	\%-G%.%#had\ compilation\ errors.,

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.1.  Last change: 2007 Mar 17
+*windows.txt*   For Vim version 7.2a.  Last change: 2007 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -146,7 +146,7 @@ CTRL-W v						*CTRL-W_v*
 		1. a width was not specified,
 		2. 'equalalways' is set,
 		3. 'eadirection' isn't "ver", and
-		4. one of the other windows are wider than the current or new
+		4. one of the other windows is wider than the current or new
 		   window.
 		Note: In other places CTRL-Q does the same as CTRL-V, but here
 		it doesn't!
@@ -1033,8 +1033,8 @@ list of buffers. |unlisted-buffer|
 		[!].  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 
-:[N]b[uffer][!] {filename}
-		Edit buffer for {filename} from the buffer list.  See
+:[N]b[uffer][!] {bufname}
+		Edit buffer for {bufname} from the buffer list.  See
 		|:buffer-!| for [!].  This will also edit a buffer that is not
 		in the buffer list, without setting the 'buflisted' flag.
 
@@ -1045,8 +1045,8 @@ list of buffers. |unlisted-buffer|
 		also edit a buffer that is not in the buffer list, without
 		setting the 'buflisted' flag.
 
-:[N]sb[uffer] {filename}
-		Split window and edit buffer for {filename} from the buffer
+:[N]sb[uffer] {bufname}
+		Split window and edit buffer for {bufname} from the buffer
 		list.  This will also edit a buffer that is not in the buffer
 		list, without setting the 'buflisted' flag.
 		Note: If what you want to do is split the buffer, make a copy

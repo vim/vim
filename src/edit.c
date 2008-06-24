@@ -9300,7 +9300,7 @@ ins_tab()
 	    i = cursor->col - fpos.col;
 	    if (i > 0)
 	    {
-		mch_memmove(ptr, ptr + i, STRLEN(ptr + i) + 1);
+		STRMOVE(ptr, ptr + i);
 		/* correct replace stack. */
 		if ((State & REPLACE_FLAG)
 #ifdef FEAT_VREPLACE

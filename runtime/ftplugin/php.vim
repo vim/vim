@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	php
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2006 Jul 15
+" Last Changed: 2007 Nov 10
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -42,7 +42,9 @@ endif
 " ###
 " Provided by Mikolaj Machowski <mikmach at wp dot pl>
 setlocal include=\\\(require\\\|include\\\)\\\(_once\\\)\\\?
-setlocal iskeyword+=$
+" Disabled changing 'iskeyword', it breaks a command such as "*"
+" setlocal iskeyword+=$
+
 if exists("loaded_matchit")
     let b:match_words = '<?php:?>,\<switch\>:\<endswitch\>,' .
 		      \ '\<if\>:\<elseif\>:\<else\>:\<endif\>,' .
@@ -55,15 +57,24 @@ if exists("loaded_matchit")
 endif
 " ###
 
-if exists('&ofu')
-  setlocal ofu=phpcomplete#CompletePHP
+if exists('&omnifunc')
+  setlocal omnifunc=phpcomplete#CompletePHP
 endif
 
+" Section jumping: [[ and ]] provided by Antony Scriven <adscriven at gmail dot com>
+let s:function = '\(abstract\s\+\|final\s\+\|private\s\+\|protected\s\+\|public\s\+\|static\s\+\)*function'
+let s:class = '\(abstract\s\+\|final\s\+\)*class'
+let s:interface = 'interface'
+let s:section = '\(.*\%#\)\@!\_^\s*\zs\('.s:function.'\|'.s:class.'\|'.s:interface.'\)'
+exe 'nno <buffer> <silent> [[ ?' . escape(s:section, '|') . '?<CR>:nohls<CR>'
+exe 'nno <buffer> <silent> ]] /' . escape(s:section, '|') . '/<CR>:nohls<CR>'
+exe 'ono <buffer> <silent> [[ ?' . escape(s:section, '|') . '?<CR>:nohls<CR>'
+exe 'ono <buffer> <silent> ]] /' . escape(s:section, '|') . '/<CR>:nohls<CR>'
 
 setlocal commentstring=/*%s*/
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal cms< inc< isk<" .
+let b:undo_ftplugin = "setlocal commentstring< include< omnifunc<" .
 	    \	      " | unlet! b:browsefilter b:match_words | " .
 	    \	      s:undo_ftplugin
 

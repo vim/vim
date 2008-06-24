@@ -50,6 +50,9 @@ If you think you have a color scheme that is good enough to be used by others,
 please check the following items:
 
 - Does it work in a color terminal as well as in the GUI?
+- Is "g:colors_name" set to a meaningful value?  In case of doubt you can do
+  it this way:
+  	let g:colors_name = expand('<sfile>:t:r')
 - Is 'background' either used or appropriately set to "light" or "dark"?
 - Try setting 'hlsearch' and searching for a pattern, is the match easy to
   spot?

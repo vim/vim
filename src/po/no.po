@@ -1249,7 +1249,7 @@ msgstr "Ingen swapfil"
 msgid "Append File"
 msgstr "Legg til fil"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
 "E747: Kan ikke skifte katalog, bufferen er forandret (legg til ! for å "
 "overstyre)"
@@ -1492,8 +1492,8 @@ msgstr "er en katalog"
 msgid "is not a file"
 msgstr "er ikke en fil"
 
-msgid "is a device (disabled with 'opendevice' option"
-msgstr "er en enhet (frakoblet med 'opendevice'-valg"
+msgid "is a device (disabled with 'opendevice' option)"
+msgstr "er en enhet (frakoblet med 'opendevice'-valg)"
 
 msgid "[New File]"
 msgstr "[Ny fil]"
@@ -4742,7 +4742,7 @@ msgid "E759: Format error in spell file"
 msgstr "E759: Formateringsfeil i stavefil"
 
 msgid "E758: Truncated spell file"
-msgstr "E237: Valg av skriver feilet"
+msgstr "E758: Valg av skriver feilet"
 
 #, c-format
 msgid "Trailing text in %s line %d: %s"
@@ -5034,7 +5034,7 @@ msgstr "Ferdig!"
 
 #, c-format
 msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E764: 'spellfile' har ikke %ld poster"
+msgstr "E765: 'spellfile' har ikke %ld poster"
 
 #, c-format
 msgid "Word removed from %s"
@@ -6168,7 +6168,7 @@ msgid "E749: empty buffer"
 msgstr "E749: Tom buffer"
 
 msgid "E682: Invalid search pattern or delimiter"
-msgstr "E683: Ugyldig søkestreng eller skilletegn"
+msgstr "E682: Ugyldig søkestreng eller skilletegn"
 
 msgid "E139: File is loaded in another buffer"
 msgstr "E139: Filen er lastet i en annen buffer"

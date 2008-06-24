@@ -1,4 +1,4 @@
-*usr_28.txt*	For Vim version 7.1.  Last change: 2006 Apr 24
+*usr_28.txt*	For Vim version 7.2a.  Last change: 2008 Jun 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -378,7 +378,7 @@ More about folding by expression in the reference manual: |fold-expr|
 This is useful when you set the 'diff' option in the same window.  The
 |vimdiff| command does this for you.  Example: >
 
-	setlocal diff foldmethod=diff scrollbind nowrap foldlevel=1
+	:setlocal diff foldmethod=diff scrollbind nowrap foldlevel=1
 
 Do this in every window that shows a different version of the same file.  You
 will clearly see the differences between the files, while the text that didn't
@@ -389,7 +389,7 @@ For more details see |fold-diff|.
 ==============================================================================
 *28.10* Which fold method to use?
 
-All these possibilities makes you wonder which method you should chose.
+All these possibilities make you wonder which method you should chose.
 Unfortunately, there is no golden rule.  Here are some hints.
 
 If there is a syntax file with folding for the language you are editing, that
