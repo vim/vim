@@ -1,8 +1,8 @@
 " Vim indent file
 " Language:    SQL
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: Wed Sep 14 2005 10:21:15 PM
-" Version:     1.4
+" Last Change: Mon Apr 02 2007 9:13:47 AM
+" Version:     1.5
 " Download:    http://vim.sourceforge.net/script.php?script_id=495
 
 " Notes:
@@ -106,7 +106,7 @@ function s:CheckToIgnoreRightParan( prev_lnum, num_levels )
 
         " if getline(".") =~ '^)'
         let matching_paran = searchpair('(', '', ')', 'bW',
-                    \ 'IsColComment(line("."), col("."))')
+                    \ 's:IsColComment(line("."), col("."))')
 
         if matching_paran < 1
             " No match found
@@ -165,7 +165,7 @@ function s:GetStmtStarterIndent( keyword, curr_lnum )
                     \ '\%(\%(\<end\s\+\)\@<!\<if\>\)'.
                     \ '\)'
         let matching_lnum = searchpair(stmts, '', '\<end\>\zs', 'bW',
-                    \ 'IsColComment(line("."), col(".")) == 1')
+                    \ 's:IsColComment(line("."), col(".")) == 1')
         exec 'normal! $'
         if matching_lnum > 0 && matching_lnum < a:curr_lnum
             let ind = indent(matching_lnum)
@@ -177,7 +177,7 @@ function s:GetStmtStarterIndent( keyword, curr_lnum )
                     \ '',
                     \ '\%(\%(\<when\s\+others\>\)\|\%(\<end\s\+case\>\)\)',
                     \ 'bW',
-                    \ 'IsColComment(line("."), col(".")) == 1')
+                    \ 's:IsColComment(line("."), col(".")) == 1')
         exec 'normal! $'
         if matching_lnum > 0 && matching_lnum < a:curr_lnum
             let ind = indent(matching_lnum)
@@ -191,7 +191,7 @@ endfunction
 
 
 " Check if the line is a comment
-function IsLineComment(lnum)
+function s:IsLineComment(lnum)
     let rc = synIDattr(
                 \ synID(a:lnum,
                 \     match(getline(a:lnum), '\S')+1, 0)
@@ -203,7 +203,7 @@ endfunction
 
 
 " Check if the column is a comment
-function IsColComment(lnum, cnum)
+function s:IsColComment(lnum, cnum)
     let rc = synIDattr(synID(a:lnum, a:cnum, 0), "name")
                 \           =~? "comment"
 
@@ -211,8 +211,9 @@ function IsColComment(lnum, cnum)
 endfunction
 
 
-" Check if the column is a comment
-function ModuloIndent(ind)
+" Instead of returning a column position, return
+" an appropriate value as a factor of shiftwidth.
+function s:ModuloIndent(ind)
     let ind = a:ind
 
     if ind > 0
@@ -235,7 +236,7 @@ function GetSQLIndent()
     " If the current line is a comment, leave the indent as is
     " Comment out this additional check since it affects the
     " indenting of =, and will not reindent comments as it should
-    " if IsLineComment(lnum) == 1
+    " if s:IsLineComment(lnum) == 1
     "     return ind
     " endif
 
@@ -246,9 +247,9 @@ function GetSQLIndent()
             return ind
         endif
 
-        if IsLineComment(prevlnum) == 1
+        if s:IsLineComment(prevlnum) == 1
             if getline(v:lnum) =~ '^\s*\*'
-                let ind = ModuloIndent(indent(prevlnum))
+                let ind = s:ModuloIndent(indent(prevlnum))
                 return ind + 1
             endif
             " If the previous line is a comment, then return -1
@@ -378,7 +379,7 @@ function GetSQLIndent()
     endif
 
     " echom 'final - indent ' . ind
-    return ModuloIndent(ind)
+    return s:ModuloIndent(ind)
 endfunction
 
-" vim:sw=4:ff=unix:
+" vim:sw=4:

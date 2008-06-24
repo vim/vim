@@ -311,10 +311,6 @@
 
 #if defined(FEAT_SPELL) || defined(PROTO)
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
 #ifndef UNIX		/* it's in os_unix.h for Unix */
 # include <time.h>	/* for time_t */
 #endif
@@ -2945,7 +2941,7 @@ read_cnt_string(fd, cnt_bytes, cntp)
 
 /*
  * Read a string of length "cnt" from "fd" into allocated memory.
- * Returns NULL when out of memory.
+ * Returns NULL when out of memory or unable to read that many bytes.
  */
     static char_u *
 read_string(fd, cnt)
@@ -2954,14 +2950,23 @@ read_string(fd, cnt)
 {
     char_u	*str;
     int		i;
+    int		c;
 
     /* allocate memory */
     str = alloc((unsigned)cnt + 1);
     if (str != NULL)
     {
-	/* Read the string.  Doesn't check for truncated file. */
+	/* Read the string.  Quit when running into the EOF. */
 	for (i = 0; i < cnt; ++i)
-	    str[i] = getc(fd);
+	{
+	    c = getc(fd);
+	    if (c == EOF)
+	    {
+		vim_free(str);
+		return NULL;
+	    }
+	    str[i] = c;
+	}
 	str[i] = NUL;
     }
     return str;
@@ -3291,6 +3296,7 @@ read_words_section(fd, lp, len)
 {
     int		done = 0;
     int		i;
+    int		c;
     char_u	word[MAXWLEN];
 
     while (done < len)
@@ -3298,7 +3304,10 @@ read_words_section(fd, lp, len)
 	/* Read one word at a time. */
 	for (i = 0; ; ++i)
 	{
-	    word[i] = getc(fd);
+	    c = getc(fd);
+	    if (c == EOF)
+		return SP_TRUNCERROR;
+	    word[i] = c;
 	    if (word[i] == NUL)
 		break;
 	    if (i == MAXWLEN - 1)
@@ -3545,6 +3554,11 @@ read_compound(fd, slang, len)
     while (todo-- > 0)
     {
 	c = getc(fd);					/* <compflags> */
+	if (c == EOF)
+	{
+	    vim_free(pat);
+	    return SP_TRUNCERROR;
+	}
 
 	/* Add all flags to "sl_compallflags". */
 	if (vim_strchr((char_u *)"+*[]/", c) == NULL
@@ -6024,7 +6038,7 @@ aff_process_flags(affile, entry)
 	    flag = get_affitem(affile->af_flagtype, &p);
 	    if (flag == affile->af_comppermit || flag == affile->af_compforbid)
 	    {
-		mch_memmove(prevp, p, STRLEN(p) + 1);
+		STRMOVE(prevp, p);
 		p = prevp;
 		if (flag == affile->af_comppermit)
 		    entry->ae_comppermit = TRUE;
@@ -6515,7 +6529,7 @@ spell_read_dic(spin, fname, affile)
 	for (p = w; *p != NUL; mb_ptr_adv(p))
 	{
 	    if (*p == '\\' && (p[1] == '\\' || p[1] == '/'))
-		mch_memmove(p, p + 1, STRLEN(p));
+		STRMOVE(p, p + 1);
 	    else if (*p == '/')
 	    {
 		*p = NUL;
@@ -12574,7 +12588,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		    tl = (int)STRLEN(ftp->ft_to);
 		    if (fl != tl)
 		    {
-			mch_memmove(p + tl, p + fl, STRLEN(p + fl) + 1);
+			STRMOVE(p + tl, p + fl);
 			repextra += tl - fl;
 		    }
 		    mch_memmove(p, ftp->ft_to, tl);
@@ -12604,7 +12618,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
 	    p = fword + sp->ts_fidx;
 	    if (fl != tl)
 	    {
-		mch_memmove(p + fl, p + tl, STRLEN(p + tl) + 1);
+		STRMOVE(p + fl, p + tl);
 		repextra -= tl - fl;
 	    }
 	    mch_memmove(p, ftp->ft_from, fl);
@@ -13035,7 +13049,7 @@ stp_sal_score(stp, su, slang, badsound)
 	if (vim_iswhite(su->su_badptr[su->su_badlen])
 					 && *skiptowhite(stp->st_word) == NUL)
 	    for (p = fword; *(p = skiptowhite(p)) != NUL; )
-		mch_memmove(p, p + 1, STRLEN(p));
+		STRMOVE(p, p + 1);
 
 	spell_soundfold(slang, fword, TRUE, badsound2);
 	pbad = badsound2;
@@ -14281,8 +14295,7 @@ spell_soundfold_sal(slang, inword, res)
 			    s++;
 			}
 			if (k > k0)
-			    mch_memmove(word + i + k0, word + i + k,
-						    STRLEN(word + i + k) + 1);
+			    STRMOVE(word + i + k0, word + i + k);
 
 			/* new "actual letter" */
 			c = word[i];
@@ -14304,8 +14317,7 @@ spell_soundfold_sal(slang, inword, res)
 			{
 			    if (c != NUL)
 				res[reslen++] = c;
-			    mch_memmove(word, word + i + 1,
-						    STRLEN(word + i + 1) + 1);
+			    STRMOVE(word, word + i + 1);
 			    i = 0;
 			    z0 = 1;
 			}

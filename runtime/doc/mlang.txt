@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 7.1.  Last change: 2006 Jul 12
+*mlang.txt*     For Vim version 7.2a.  Last change: 2008 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -73,6 +73,9 @@ use of "-" and "_".
 			This sets $LC_TIME.
 			Without an argument both are set, and additionally
 			$LANG is set.
+			When compiled with the |+float| feature the LC_NUMERIC
+			value will always be set to "C", so that floating
+			point numbers use '.' as the decimal point.
 			This will make a difference for items that depend on
 			the language (some messages, time and date format).
 			Not fully supported on all systems

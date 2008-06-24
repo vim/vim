@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.1.  Last change: 2007 May 11
+*map.txt*       For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -266,12 +266,13 @@ as a special key.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
+			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
 
 There are five sets of mappings
 - For Normal mode: When typing commands.
 - For Visual mode: When typing commands while the Visual area is highlighted.
 - For Operator-pending mode: When an operator is pending (after "d", "y", "c",
-  etc.).  Example: ":omap { w" makes "y{" work like "yw" and "d{" like "dw".
+  etc.).  See below: |omap-info|.
 - For Insert mode.  These are also used in Replace mode.
 - For Command-line mode: When entering a ":" or "/" command.
 
@@ -282,7 +283,6 @@ to type a count with a zero.
 						*map-overview* *map-modes*
 Overview of which map command works in which mode:
 
-			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
     commands:				      modes: ~
 				       Normal  Visual+Select  Operator-pending ~
 :map   :noremap   :unmap   :mapclear	 yes	    yes		   yes
@@ -317,6 +317,19 @@ Normal/Visual/Operator-pending mode and for Insert/Command-line mode.
 Therefore the ":map" and ":map!" commands enter and display mappings for
 several modes.  In Vim you can use the ":nmap", ":vmap", ":omap", ":cmap" and
 ":imap" commands to enter mappings for each mode separately.
+
+							*omap-info*
+Operator-pending mappings can be used to define a movement command that can be
+used with any operator.  Simple example: ":omap { w" makes "y{" work like "yw"
+and "d{" like "dw".
+
+To ignore the starting cursor position and select different text, you can have
+the omap start Visual mode to select the text to be operated upon.  Example
+that operates on a function name in the current line: >
+	onoremap <silent> F :<C-U>normal! 0f(hviw<CR>
+The CTRL-U (<C-U>) is used to remove the range that Vim may insert.  The
+Normal mode commands find the first '(' character and select the first word
+before it.  That usually is the function name.
 
 To enter a mapping for Normal and Visual mode, but not Operator-pending mode,
 first define it for all three modes, then unmap it for Operator-pending mode:
@@ -473,7 +486,7 @@ scenario: >
 	:imap <M-C> foo
 	:set encoding=utf-8
 The mapping for <M-C> is defined with the latin1 encoding, resulting in a 0xc3
-byte.  If you type the character á (0xea <M-a>) in UTF-8 encoding this is the
+byte.  If you type the character á (0xe1 <M-a>) in UTF-8 encoding this is the
 two bytes 0xc3 0xa1.  You don't want the 0xc3 byte to be mapped then,
 otherwise it would be impossible to type the á character.
 
@@ -494,9 +507,9 @@ defined.  Changing "mapleader" after that has no effect for already defined
 mappings.
 
 					*<LocalLeader>* *maplocalleader*
-Just like <Leader>, except that it uses "maplocalleader" instead of
-"mapleader".  <LocalLeader> is to be used for mappings which are local to a
-buffer.  Example: >
+<LocalLeader> is just like <Leader>, except that it uses "maplocalleader"
+instead of "mapleader".  <LocalLeader> is to be used for mappings which are
+local to a buffer.  Example: >
       :map <LocalLeader>q  \DoItNow
 <
 In a global plugin <Leader> should be used and in a filetype plugin
@@ -1167,7 +1180,7 @@ defined, not where it is invoked!  Example:
 	:source script1.vim
 	:let s:error = "Wrong!"
 	:Error s:error
-Executing script2.vim will result in "None" to be echoed.  Not what you
+Executing script2.vim will result in "None" being echoed.  Not what you
 intended!  Calling a function may be an alternative.
 
 Completion behavior				*:command-completion* *E179*
@@ -1203,7 +1216,7 @@ Custom completion			*:command-completion-custom*
 					*E467* *E468*
 It is possible to define customized completion schemes via the "custom,{func}"
 or the "customlist,{func}" completion argument.  The {func} part should be a
-function with the following prototype >
+function with the following signature: >
 
 	:function {func}(ArgLead, CmdLine, CursorPos)
 
@@ -1370,10 +1383,10 @@ This will invoke: >
 
    :" A more substantial example
    :function Allargs(command)
-   :	let i = 0
-   :	while i < argc()
-   :	   if filereadable(argv(i))
-   :	    execute "e " . argv(i)
+   :   let i = 0
+   :   while i < argc()
+   :	  if filereadable(argv(i))
+   :	     execute "e " . argv(i)
    :	     execute a:command
    :      endif
    :      let i = i + 1

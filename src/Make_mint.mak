@@ -11,7 +11,7 @@
 # Otherwise the postprocessing won't get done.
 #
 
-### This Makefile has been succesfully tested on these systems.
+### This Makefile has been successfully tested on these systems.
 ### Check the (*) column for remarks, listed below.
 ### Later code changes may cause small problems, otherwise Vim is supposed to
 ### compile and run without problems.

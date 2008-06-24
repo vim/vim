@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.1.  Last change: 2007 Apr 22
+*print.txt*     For Vim version 7.2a.  Last change: 2008 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,6 +25,9 @@ On MS-Windows Vim can print your text on any installed printer.  On other
 systems a PostScript file is produced.  This can be directly sent to a
 PostScript printer.  For other printers a program like ghostscript needs to be
 used.
+
+Note: If you have problems printing with |:hardcopy|, an alternative is to use
+|:TOhtml| and print the resulting html file from a browser.
 
 					*:ha* *:hardcopy* *E237* *E238* *E324*
 :[range]ha[rdcopy][!] [arguments]
@@ -193,7 +196,8 @@ the font.  When omitted, the point size is 10.
 This defines the format of the header produced in |:hardcopy| output.  The
 option is defined in the same way as the 'statusline' option.  If Vim has not
 been compiled with the |+statusline| feature, this option has no effect and a
-simple default header is used, which shows the page number.
+simple default header is used, which shows the page number.  The same simple
+header is used when this option is empty.
 
 							*pmbcs-option*
 'printmbcharset' 'pmbcs'  string (default "")

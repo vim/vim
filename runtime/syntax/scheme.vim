@@ -1,6 +1,6 @@
 " Vim syntax file
 " Language:	Scheme (R5RS)
-" Last Change:	Nov 28, 2004
+" Last Change:	2007 Jun 16
 " Maintainer:	Sergey Khorev <sergey.khorev@gmail.com>
 " Original author:	Dirk van Deun <dirk@igwe.vub.ac.be>
 
@@ -265,6 +265,9 @@ if exists("b:is_chicken") || exists("is_chicken")
 	syn region ChickenC matchgroup=schemeComment start=+#>%+ end=+<#+ contains=@ChickenC
     endif
 
+    " suggested by Alex Queiroz
+    syn match schemeExtSyntax oneline    "#![-a-z!$%&*/:<=>?^_~0-9+.@#%]\+"
+    syn region schemeString start=+#<#\s*\z(.*\)+ end=+^\z1$+ 
 endif
 
 " Synchronization and the wrapping up...

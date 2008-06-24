@@ -1,6 +1,6 @@
 " Vim script to clean the ll.xxxxx.add files of commented out entries
 " Author:	Antonio Colombo, Bram Moolenaar
-" Last Update:	2006 Jan 19
+" Last Update:	2008 Jun 3
 
 " Time in seconds after last time an ll.xxxxx.add file was updated
 " Default is one second.
@@ -14,12 +14,19 @@ endif
 " Delete all comment lines, except the ones starting with ##.
 for s:fname in split(globpath(&rtp, "spell/*.add"), "\n")
   if filewritable(s:fname) && localtime() - getftime(s:fname) > g:spell_clean_limit
-    silent exe "tab split " . escape(s:fname, ' \')
-    echo "Processing" s:fname
+    if exists('*fnameescape')
+      let s:f = fnameescape(s:fname)
+    else
+      let s:f = escape(s:fname, ' \|<')
+    endif
+    silent exe "tab split " . s:f
+    echo "Processing" s:f
     silent! g/^#[^#]/d
     silent update
     close
+    unlet s:f
   endif
 endfor
+unlet s:fname
 
 echo "Done"

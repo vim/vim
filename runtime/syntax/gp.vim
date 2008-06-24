@@ -1,7 +1,7 @@
 " Vim syntax file
-" Language:	gp (version 2.2)
+" Language:	gp (version 2.4)
 " Maintainer:	Karim Belabas <Karim.Belabas@math.u-bordeaux.fr>
-" Last change:	2006 Apr 12
+" Last change:	2007 Oct 1
 " URL:		http://pari.math.u-bordeaux.fr
 
 if version < 600
@@ -15,7 +15,7 @@ syntax keyword gpStatement	break return next
 syntax keyword gpConditional	if
 syntax keyword gpRepeat		until while for fordiv forprime forstep forvec
 " storage class
-syntax keyword gpScope		local global
+syntax keyword gpScope		my local global
 " defaults
 syntax keyword gpInterfaceKey	colors compatible datadir debug debugfiles
 syntax keyword gpInterfaceKey	debugmem echo factor_add_primes format help

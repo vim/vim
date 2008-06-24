@@ -14,13 +14,12 @@ VIMEXE = vim
 include ../../src/auto/config.mk
 
 DOCS = \
-	ada.txt \
 	arabic.txt \
 	autocmd.txt \
 	change.txt \
 	cmdline.txt \
-	debugger.txt \
 	debug.txt \
+	debugger.txt \
 	develop.txt \
 	diff.txt \
 	digraph.txt \
@@ -29,6 +28,8 @@ DOCS = \
 	farsi.txt \
 	filetype.txt \
 	fold.txt \
+	ft_ada.txt \
+	ft_sql.txt \
 	gui.txt \
 	gui_w16.txt \
 	gui_w32.txt \
@@ -50,10 +51,10 @@ DOCS = \
 	insert.txt \
 	intro.txt \
 	map.txt \
-	message.txt \
-	motion.txt \
 	mbyte.txt \
+	message.txt \
 	mlang.txt \
+	motion.txt \
 	netbeans.txt \
 	options.txt \
 	os_390.txt \
@@ -89,10 +90,9 @@ DOCS = \
 	russian.txt \
 	scroll.txt \
 	sign.txt \
+	spell.txt \
 	sponsor.txt \
 	starting.txt \
-	spell.txt \
-	sql.txt \
 	syntax.txt \
 	tabpage.txt \
 	tagsrch.txt \
@@ -145,7 +145,6 @@ DOCS = \
 	workshop.txt
 
 HTMLS = \
-	ada.html \
 	arabic.html \
 	autocmd.html \
 	change.html \
@@ -160,6 +159,8 @@ HTMLS = \
 	farsi.html \
 	filetype.html \
 	fold.html \
+	ft_ada.html \
+	ft_sql.html \
 	gui.html \
 	gui_w16.html \
 	gui_w32.html \
@@ -177,14 +178,13 @@ HTMLS = \
 	if_tcl.html \
 	indent.html \
 	index.html \
-	vimindex.html \
 	insert.html \
 	intro.html \
 	map.html \
-	message.html \
-	motion.html \
 	mbyte.html \
+	message.html \
 	mlang.html \
+	motion.html \
 	netbeans.html \
 	options.html \
 	os_390.html \
@@ -220,10 +220,9 @@ HTMLS = \
 	russian.html \
 	scroll.html \
 	sign.html \
+	spell.html \
 	sponsor.html \
 	starting.html \
-	spell.html \
-	sql.html \
 	syntax.html \
 	tabpage.html \
 	tags.html \
@@ -272,6 +271,7 @@ HTMLS = \
 	version6.html \
 	version7.html \
 	vi_diff.html \
+	vimindex.html \
 	visual.html \
 	windows.html \
 	workshop.html
@@ -291,7 +291,7 @@ CONVERTED = \
 	evim-ru.UTF-8.1 \
 	vimdiff-ru.UTF-8.1 \
 	vimtutor-ru.UTF-8.1 \
-	xxd-ru.UTF-8.1 \
+	xxd-ru.UTF-8.1
 
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html

@@ -466,4 +466,3 @@ let g:xmldata_html401t = {
 \ 'param': ['/>', ''],
 \ }
 \ }
-" vim:ft=vim:ff=unix

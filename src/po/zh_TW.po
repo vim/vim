@@ -698,7 +698,7 @@ msgstr "E478: 不要驚慌!"
 
 #, c-format
 msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E149: 抱歉, 沒有關於 %s-%s 的說明"
+msgstr "E661: 抱歉, 沒有關於 %s-%s 的說明"
 
 #, c-format
 msgid "E149: Sorry, no help for %s"
@@ -1677,7 +1677,7 @@ msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 不正確的 'guifontwide'"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "E559: 'imactivatekey' 的值不正確"
+msgstr "E599: 'imactivatekey' 的值不正確"
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
@@ -4004,7 +4004,7 @@ msgstr "E56: %s* 運算元可以是空的"
 
 #, c-format
 msgid "E57: %s+ operand could be empty"
-msgstr "E56: %s+ 運算元可以是空的"
+msgstr "E57: %s+ 運算元可以是空的"
 
 #, c-format
 msgid "E59: invalid character after %s@"
@@ -4930,7 +4930,7 @@ msgstr "E234: 不正確的字元集 (Fontset): %s"
 
 #, c-format
 msgid "E235: Unknown font: %s"
-msgstr "不正確的字型名稱: %s"
+msgstr "E235: 不正確的字型名稱: %s"
 
 #, c-format
 msgid "E236: Font \"%s\" is not fixed-width"

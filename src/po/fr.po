@@ -5,7 +5,7 @@
 #
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
-#  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006
+#  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
@@ -80,18 +80,15 @@
 #                         - 1 message fixed, 2 messages translated.
 # 2006-05-02    DB      VIM 7.0g
 #                         - 3 message fixed.
+# 2007-05-13    DB      VIM 7.1
+#                         - 7 new message.
+# 2007-07-03    DB      Fixed a typo (François Pinard).
+# 2008-05-28    DB      VIM 7.1.199
+#                         - 14 new messages.
+#                         - Fixed error number mistakes (Dominique Pelle)
+#                         - Fixed spelling mistakes (Patrick Texier)
 #
-# Translated:	 1694/1694 (100.00%)
-#
-# Polishing done on:
-#  buffer.c
-#  diff.c
-#  digraph.c
-#  edit.c
-#  eval.c
-#  ex_cmds.c
-#
-# Other files still to do.
+# Translated:	 1708/1708 (100.00%)
 #
 # Notations used in the comments of the unpolished part of this file:
 # TODO		There's work to do there, and it's important
@@ -102,7 +99,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-05-01 19:42+0200\n"
+"POT-Creation-Date: 2008-05-28 23:07+0200\n"
 "PO-Revision-Date: 2006-05-02 14:15+0200\n"
 "Last-Translator: David Blanchet <david.blanchet@free.fr>\n"
 "Language-Team: Adrien Beau <version.francaise@free.fr>\n"
@@ -319,6 +316,9 @@ msgstr "E98: Le fichier intermédiaire produit par diff n'a pu être lu"
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Le tampon courant n'est pas en mode diff"
+
+msgid "E793: No other buffer in diff mode is modifiable"
+msgstr "E793: Aucun autre tampon en mode diff n'est modifiable"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Aucun autre tampon n'est en mode diff"
@@ -565,7 +565,7 @@ msgid "E689: Can only index a List or Dictionary"
 msgstr "E689: Seul une Liste ou un Dictionnaire peut être indexé"
 
 msgid "E708: [:] must come last"
-msgstr "E709: [:] ne peut être spécifié qu'en dernier"
+msgstr "E708: [:] ne peut être spécifié qu'en dernier"
 
 msgid "E709: [:] requires a List value"
 msgstr "E709: [:] requiert une Liste"
@@ -728,7 +728,7 @@ msgid "called inputrestore() more often than inputsave()"
 msgstr "inputrestore() a été appelé plus de fois qu'inputsave()"
 
 msgid "E786: Range not allowed"
-msgstr "E786: Les plages ne sont pas autorisés"
+msgstr "E786: Les plages ne sont pas autorisées"
 
 msgid "E701: Invalid type for len()"
 msgstr "E701: Type invalide avec len()"
@@ -801,6 +801,10 @@ msgstr "E705: Le nom d'une variable entre en conflit avec la fonction %s"
 #, c-format
 msgid "E706: Variable type mismatch for: %s"
 msgstr "E706: Type de variable incohérent pour %s"
+
+#, c-format
+msgid "E795: Cannot delete variable %s"
+msgstr "E795: Impossible de supprimer la variable %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -971,7 +975,7 @@ msgstr "E165: Impossible d'aller au-delà du dernier fichier"
 
 #, c-format
 msgid "E666: compiler not supported: %s"
-msgstr "E432: Compilateur %s non supporté"
+msgstr "E666: Compilateur %s non supporté"
 
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
@@ -1126,6 +1130,7 @@ msgstr " ÉCHEC"
 #      ses droits d'accès.
 # AB - Le mot "viminfo" a été retiré pour que le message ne dépasse pas 80
 #      caractères dans le cas courant où %s = /home/12345678/.viminfo
+#. avoid a wait_return for this message, it's annoying
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
 msgstr "E137: L'écriture dans le fichier %s est interdite"
@@ -1206,6 +1211,20 @@ msgid ""
 msgstr ""
 "L'option 'readonly' est activée pour \"%s\".\n"
 "Voulez-vous tout de même enregistrer ?"
+
+#, c-format
+msgid ""
+"File permissions of \"%s\" are read-only.\n"
+"It may still be possible to write it.\n"
+"Do you wish to try?"
+msgstr ""
+"Les droits du fichier \"%s\" sont restreints à la lecture seule.\n"
+"Il peut être possible de l'écrire tout de même.\n"
+"Tenter ?"
+
+#, c-format
+msgid "E505: \"%s\" is read-only (add ! to override)"
+msgstr "E505: \"%s\" est en lecture seule (ajoutez ! pour passer outre)"
 
 # AB - Ceci est un titre de boîte de dialogue.
 msgid "Edit File"
@@ -1516,7 +1535,7 @@ msgstr "Pas de fichier d'échange"
 msgid "Append File"
 msgstr "Ajouter fichier"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
 "E747: Tampon modifié : impossible de changer de répertoire (ajoutez ! pour "
 "passer outre)"
@@ -1761,6 +1780,9 @@ msgstr "est un répertoire"
 msgid "is not a file"
 msgstr "n'est pas un fichier"
 
+msgid "is a device (disabled with 'opendevice' option)"
+msgstr "est un périphérique (desactivé par l'option 'opendevice')"
+
 msgid "[New File]"
 msgstr "[Nouveau fichier]"
 
@@ -1799,6 +1821,9 @@ msgstr "[fifo]"
 
 msgid "[socket]"
 msgstr "[socket]"
+
+msgid "[character special]"
+msgstr "[caractère spécial]"
 
 msgid "[RO]"
 msgstr "[RO]"
@@ -1861,6 +1886,9 @@ msgstr "Netbeans interdit l'écriture partielle de ses tampons"
 msgid "is not a file or writable device"
 msgstr "n'est pas un fichier ou un périphérique inscriptible"
 
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "écriture vers un périphérique désactivé par l'option 'opendevice'"
+
 msgid "is read-only (add ! to override)"
 msgstr "est en lecture seule (ajoutez ! pour passer outre)"
 
@@ -1888,7 +1916,7 @@ msgstr ""
 "E460: Les ressources partagées seraient perdues (ajoutez ! pour passer outre)"
 
 msgid "E214: Can't find temp file for writing"
-msgstr "Impossible de générer un fichier temporaire pour y écrire"
+msgstr "E214: Impossible de générer un fichier temporaire pour y écrire"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr "E213: Impossible de convertir (ajoutez ! pour écrire sans convertir)"
@@ -2226,7 +2254,7 @@ msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' est invalide"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "E599 : Valeur de 'imactivatekey' invalide"
+msgstr "E599: Valeur de 'imactivatekey' invalide"
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
@@ -2648,14 +2676,14 @@ msgstr "E622: Impossible de forker pour cscope"
 msgid "cs_create_connection exec failed"
 msgstr "exec de cs_create_connection a échoué"
 
-msgid "E623: Could not spawn cscope process"
-msgstr "E623: Impossible d'engendrer le processus cscope"
-
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen pour to_fp a échoué"
 
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fdopen pour fr_fp a échoué"
+
+msgid "E623: Could not spawn cscope process"
+msgstr "E623: Impossible d'engendrer le processus cscope"
 
 msgid "E567: no cscope connections"
 msgstr "E567: Aucune connexion cscope"
@@ -3151,8 +3179,11 @@ msgstr ""
 "    ou :"
 
 # DB - todo (VMS uniquement).
-msgid "where case is ignored prepend / to make flag upper case"
+msgid ""
+"\n"
+"Where case is ignored prepend / to make flag upper case"
 msgstr ""
+"\n"
 "pour lesquels la casse est indifférente (/ pour que le drapeau soit "
 "majuscule)"
 
@@ -3224,8 +3255,8 @@ msgstr "-C\t\tCompatible avec Vi : 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\tPas totalement compatible avec Vi : 'nocompatible'"
 
-msgid "-V[N]\t\tVerbose level"
-msgstr "-V[N]\tNiveau de verbosité"
+msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgstr "-V[N][<fichier>]\tMode verbeux [niveau N] [dans <fichier>]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\tMode débogage"
@@ -3329,9 +3360,10 @@ msgid ""
 msgstr ""
 "--remote-wait-silent\tPareil, mais pas d'erreur s'il n'y a aucun serveur"
 
-msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgid ""
+"--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab <fich>\tComme --remote mais ouvrir un onglet pour chaque fichier"
+"--remote-tab[-wait][-silent] <fich>\tComme --remote mais ouvrir un onglet pour chaque fichier"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tche>\tEnvoyer <touches> à un serveur Vim puis quitter"
@@ -3462,6 +3494,9 @@ msgstr "--socketid <xid>\tOuvrir Vim dans un autre widget GTK"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <titre parent>\tOuvrir Vim dans une application parente"
+
+msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
+msgstr "--windowid <HWND>\tOuvrir Vim dans un autre widget win32"
 
 msgid "No display"
 msgstr "Aucun display"
@@ -3662,6 +3697,9 @@ msgid ""
 msgstr ""
 ",\n"
 "ou le fichier a été endommagé."
+
+msgid " has been damaged (page size is smaller than minimum value).\n"
+msgstr " a été endommagé (taille de page inférieure à la valeur minimale).\n"
 
 #, c-format
 msgid "Using swap file \"%s\""
@@ -4006,6 +4044,10 @@ msgstr "E328: Le menu n'existe que dans un autre mode"
 #, c-format
 msgid "E329: No menu \"%s\""
 msgstr "E329: Aucun menu \"%s\""
+
+#. Only a mnemonic or accelerator is not valid.
+msgid "E792: Empty menu name"
+msgstr "E792: Nom de menu vide"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Le chemin de menu ne doit pas conduire à un sous-menu"
@@ -4535,6 +4577,13 @@ msgstr "E594: Au moins %d colonnes sont nécessaires"
 msgid "E355: Unknown option: %s"
 msgstr "E355: Option inconnue : %s"
 
+#. There's another character after zeros or the string
+#. * is empty.  In both cases, we are trying to set a
+#. * num option using a string.
+#, c-format
+msgid "E521: Number required: &%s = '%s'"
+msgstr "E521: Nombre requis: &%s = '%s'"
+
 msgid ""
 "\n"
 "--- Terminal codes ---"
@@ -4686,6 +4735,20 @@ msgstr "Le test du display X a échoué"
 
 msgid "Opening the X display timed out"
 msgstr "L'ouverture du display X a dépassé le délai d'attente"
+
+msgid ""
+"\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Impossible d'obtenir le contexte de sécurité pour "
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Impossible de modifier le contexte de sécurité pour "
 
 msgid ""
 "\n"
@@ -5399,6 +5462,7 @@ msgstr "Désolé, aucune suggestion"
 msgid "Sorry, only %ld suggestions"
 msgstr "Désolé, seulement %ld suggestions"
 
+#. for when 'cmdheight' > 1
 #. avoid more prompt
 #, c-format
 msgid "Change \"%.*s\" to:"
@@ -5414,7 +5478,7 @@ msgstr "E752: Pas de suggestion orthographique précédente"
 
 #, c-format
 msgid "E753: Not found: %s"
-msgstr "E334: Introuvable : %s"
+msgstr "E753: Introuvable : %s"
 
 #, c-format
 msgid "E778: This does not look like a .sug file: %s"
@@ -5511,7 +5575,7 @@ msgid "E396: containedin argument not accepted here"
 msgstr "E396: L'argument « containedin » n'est pas accepté ici"
 
 msgid "E393: group[t]here not accepted here"
-msgstr "E394: L'argument « group[t]here » n'est pas accepté ici"
+msgstr "E393: L'argument « group[t]here » n'est pas accepté ici"
 
 #, c-format
 msgid "E394: Didn't find region item for %s"
@@ -5829,6 +5893,13 @@ msgid ""
 msgstr ""
 "\n"
 "Version graphique MS-Windows 16/32 bits"
+
+msgid ""
+"\n"
+"MS-Windows 64 bit GUI version"
+msgstr ""
+"\n"
+"Version graphique MS-Windows 64 bits"
 
 msgid ""
 "\n"
@@ -6362,7 +6433,7 @@ msgid "E35: No previous regular expression"
 msgstr "E35: Aucune expression régulière précédente"
 
 msgid "E481: No range allowed"
-msgstr "E481: Les plages ne sont pas autorisés"
+msgstr "E481: Les plages ne sont pas autorisées"
 
 msgid "E36: Not enough room"
 msgstr "E36: Pas assez de place"
@@ -6439,9 +6510,9 @@ msgid "E46: Cannot change read-only variable \"%s\""
 msgstr "E46: La variable \"%s\" est en lecture seule"
 
 #, c-format
-msgid "E46: Cannot set variable in the sandbox: \"%s\""
+msgid "E794: Cannot set variable in the sandbox: \"%s\""
 msgstr ""
-"E46: Impossible de modifier une variable depuis le bac à sable : \"%s\""
+"E794: Impossible de modifier une variable depuis le bac à sable : \"%s\""
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Erreur lors de la lecture du fichier d'erreurs"
@@ -6518,7 +6589,7 @@ msgstr ""
 
 #, c-format
 msgid "E685: Internal error: %s"
-msgstr "E473: Erreur interne : %s"
+msgstr "E685: Erreur interne : %s"
 
 msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: le motif utilise plus de mémoire que 'maxmempattern'"

@@ -36,4 +36,4 @@ endif
 exec 'runtime indent/'.filename.'.vim'
 
 
-" vim:sw=4:ff=unix:
+" vim:sw=4:

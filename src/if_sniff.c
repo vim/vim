@@ -11,7 +11,6 @@
 
 #ifdef WIN32
 # include <stdio.h>
-# include <fcntl.h>
 # include "vimio.h"
 # include <process.h>
 # include <string.h>

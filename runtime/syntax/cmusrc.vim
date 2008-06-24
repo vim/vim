@@ -1,6 +1,6 @@
 " Vim syntax file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-07-22
+" Latest Revision:  2007-06-17
 
 if exists("b:current_syntax")
   finish
@@ -9,7 +9,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,_,-
+setlocal iskeyword+=-
 
 syn keyword cmusrcTodo          contained TODO FIXME XXX NOTE
 

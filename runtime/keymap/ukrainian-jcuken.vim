@@ -4,7 +4,7 @@
 " Useful mainly with utf-8 but may work with other encodings
 
 " Maintainer:   Anatoli Sakhnik <sakhnik@gmail.com>
-" Last Changed: 2006 Mar 15
+" Last Changed: 2007 Nov 11
 
 " All characters are given literally, conversion to another encoding (e.g.,
 " UTF-8) should work.
@@ -88,3 +88,5 @@ $	*
 ^	,
 &	.
 *	;
+~       ~
+~~      <char-0x301>        Stress

@@ -2,7 +2,7 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change:  2007 February 25th
+" Last Change:  2007 Jun 24
 " Newsletter:   http://www.2072productions.com/?to=php-indent-for-vim-newsletter.php
 " Version:	1.24
 "
@@ -310,11 +310,11 @@ function! ResetOptions()
 
 	    setlocal comments=s1:/*,mb:*,ex:*/,://,:#
 
-	    setlocal formatoptions-=t
+	    " setlocal formatoptions-=t
 	    setlocal formatoptions+=q
 	    setlocal formatoptions+=r
 	    setlocal formatoptions+=o
-	    setlocal formatoptions+=w
+	    " setlocal formatoptions+=w
 	    setlocal formatoptions+=c
 	    setlocal formatoptions+=b
 	endif

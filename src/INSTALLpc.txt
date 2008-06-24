@@ -155,16 +155,11 @@ Visual C++ 2008 Express Edition       *msvc-2008-express*
 -------------------------------
 
 Visual C++ 2008 Express Edition can be downloaded for free from:
-    http://msdn2.microsoft.com/en-us/express/default.aspx
-This includes the IDE and the debugger. You can build Vim with Make_mvc.mak.
+    http://www.microsoft.com/express/vc/Default.aspx
+This includes the IDE and the debugger.
 
-
-Visual C++ 2008 Express Edition       *msvc-2008-express*
--------------------------------
-
-Visual C++ 2008 Express Edition can be downloaded for free from:
-    http://msdn2.microsoft.com/en-us/express/default.aspx
-This includes the IDE and the debugger. You can build Vim with Make_mvc.mak.
+To set the environment execute the msvc2008.bat script.  You can then build
+Vim with Make_mvc.mak.
 
 
 2. MinGW
@@ -258,8 +253,9 @@ If you like, you can compile the 'mingw' Win32 version from the comfort of
 your Linux (or other unix) box.  To do this, you need to follow a few steps:
     1) Install the mingw32 cross-compiler. See
 	http://www.libsdl.org/extras/win32/cross/README.txt
-    2) get the *unix* version of the vim sources
-    3) in 'Make_ming.mak', set 'CROSS' to '1' instead of '0'.
+    2) Get and unpack both the Unix sources and the extra archive
+    3) in 'Make_ming.mak', set 'CROSS' to 'yes' instead of 'no'.
+       Make further changes to 'Make_ming.mak' as you wish.
     4) make -f Make_ming.mak gvim.exe
 
 Now you have created the Windows binary from your Linux box!  Have fun...

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(deutsch)\n"
 "POT-Creation-Date: 2006-04-02 11:30+0200\n"
-"PO-Revision-Date: 2006-06-18 12:34+0200\n"
-"Last-Translator: Georg Dahn <gorgyd@yahoo.co.uk>\n"
+"PO-Revision-Date: 2008-05-24 17:26+0200\n"
+"Last-Translator: Georg Dahn <georg.dahn@gmail.com>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-1\n"
@@ -25,20 +25,20 @@ msgid "E83: Cannot allocate buffer, using other one..."
 msgstr "E83: Kann den Puffer nicht zuweisen; benutze einen anderen..."
 
 msgid "E515: No buffers were unloaded"
-msgstr "E515: Keine Puffer wurden ausgeladen"
+msgstr "E515: Keine Puffer wurden entladen"
 
 msgid "E516: No buffers were deleted"
-msgstr "E516: Keine Puffer wurden gelöscht"
+msgstr "E516: Keine Puffer wurden vollständig gelöscht"
 
 msgid "E517: No buffers were wiped out"
-msgstr "E517: Keine Puffer wurden gelöscht"
+msgstr "E517: Keine Puffer wurden vollständig gelöscht"
 
 msgid "1 buffer unloaded"
-msgstr "ein Puffer ausgeladen"
+msgstr "ein Puffer entladen"
 
 #, c-format
 msgid "%d buffers unloaded"
-msgstr "%d Puffer ausgeladen"
+msgstr "%d Puffer entladen"
 
 msgid "1 buffer deleted"
 msgstr "ein Puffer gelöscht"
@@ -48,11 +48,11 @@ msgid "%d buffers deleted"
 msgstr "%d Puffer gelöscht"
 
 msgid "1 buffer wiped out"
-msgstr "ein Puffer gelöscht"
+msgstr "ein Puffer vollständig gelöscht"
 
 #, c-format
 msgid "%d buffers wiped out"
-msgstr "%d Puffer gelöscht"
+msgstr "%d Puffer vollständig gelöscht"
 
 msgid "E84: No modified buffer found"
 msgstr "E84: Kein veränderter Puffer gefunden"
@@ -87,11 +87,11 @@ msgstr "E92: Kein Puffer %ld gefunden"
 
 #, c-format
 msgid "E93: More than one match for %s"
-msgstr "E93: Mehr als eine Möglichkeit für %s"
+msgstr "E93: Mehr als ein Treffer für %s"
 
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr "E94: Kein Puffer passt zu %s"
+msgstr "E94: Kein übereinstimmender Puffer für %s"
 
 #, c-format
 msgid "line %ld"
@@ -334,16 +334,16 @@ msgstr "E686: Argument von %s muss eine Liste sein"
 
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "E712: Argument von %s muss eine Liste oder ein Dictionary"
+msgstr "E712: Argument von %s muss eine Liste oder ein Wörterbuch"
 
 msgid "E713: Cannot use empty key for Dictionary"
-msgstr "E713: Der Schlüssel für das Dictionary darf nicht leer sein"
+msgstr "E713: Der Schlüssel für das Wörterbuch darf nicht leer sein"
 
 msgid "E714: List required"
 msgstr "E714: Liste benötigt"
 
 msgid "E715: Dictionary required"
-msgstr "E715: Dictionary benötigt"
+msgstr "E715: Wörterbuch benötigt"
 
 #, c-format
 msgid "E118: Too many arguments for function: %s"
@@ -351,20 +351,20 @@ msgstr "E118: Zu viele Argumente für Funktion: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: %s"
-msgstr "E716: Schlüssel nicht vorhanden im Dictionary: %s"
+msgstr "E716: Schlüssel nicht vorhanden im Wörterbuch: %s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
 msgstr "E122: Funktion %s existiert bereits; zum Ersetzen ! hinzufügen"
 
 msgid "E717: Dictionary entry already exists"
-msgstr "E717: Dictionary-Eintrag existiert bereits"
+msgstr "E717: Wörterbuch-Eintrag existiert bereits"
 
 msgid "E718: Funcref required"
-msgstr "E718: Funcref benötigt"
+msgstr "E718: Funktionsreferenz benötigt"
 
 msgid "E719: Cannot use [:] with a Dictionary"
-msgstr "E719: Kann [:] nicht mit einem Dictionary verwenden"
+msgstr "E719: Kann [:] nicht mit einem Wörterbuch verwenden"
 
 #, c-format
 msgid "E734: Wrong variable type for %s="
@@ -392,7 +392,7 @@ msgid "E738: Can't list variables for %s"
 msgstr "E738: Kann Variablen nicht auflisten: %s"
 
 msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: Kann nur Listen und Dictionarys indizieren"
+msgstr "E689: Kann nur Listen und Wörterbücher indizieren"
 
 msgid "E708: [:] must come last"
 msgstr "E708: [:] muss am Schluss kommen"
@@ -430,22 +430,22 @@ msgid "E692: Invalid operation for Lists"
 msgstr "E692: Unzulässige Operation für Listen"
 
 msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Kann nur ein Dictionary mit einem Dictionary vergleichen"
+msgstr "E735: Kann nur ein Wörterbuch mit einem Wörterbuch vergleichen"
 
 msgid "E736: Invalid operation for Dictionary"
-msgstr "E736: Unzulässige Operation für ein Dictionary"
+msgstr "E736: Unzulässige Operation für ein Wörterbuch"
 
 msgid "E693: Can only compare Funcref with Funcref"
-msgstr "E693: Kann nur eine Funcref mit einer Funcref vergleichen"
+msgstr "E693: Kann nur eine Funktionsreferenz mit einer Funktionsreferenz vergleichen"
 
 msgid "E694: Invalid operation for Funcrefs"
-msgstr "E694: Unzulässige Operation für Funcrefs"
+msgstr "E694: Unzulässige Operation für Funktionsreferenzen"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Fehlende ')'"
 
 msgid "E695: Cannot index a Funcref"
-msgstr "E695: Kann keine Funcref indizieren"
+msgstr "E695: Kann keine Funktionsreferenz indizieren"
 
 #, c-format
 msgid "E112: Option name missing: %s"
@@ -473,19 +473,19 @@ msgstr "E697: Fehlendes Ende der Liste ']': %s"
 
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
-msgstr "E720: Fehlender Doppelpunkt im Dictionary: %s"
+msgstr "E720: Fehlender Doppelpunkt im Wörterbuch: %s"
 
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr "E721: Doppelter Schlüssel im Dictionary: \"%s\""
+msgstr "E721: Doppelter Schlüssel im Wörterbuch: \"%s\""
 
 #, c-format
 msgid "E722: Missing comma in Dictionary: %s"
-msgstr "E722: Fehlendes Komma im Dictionary: %s"
+msgstr "E722: Fehlendes Komma im Wörterbuch: %s"
 
 #, c-format
 msgid "E723: Missing end of Dictionary '}': %s"
-msgstr "E723: Fehlendes Ende des Dictionarys '}': %s"
+msgstr "E723: Fehlendes Ende des Wörterbuchs '}': %s"
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: Variable ist zu tief verschachtelt für die Anzeige"
@@ -494,7 +494,7 @@ msgid "E699: Too many arguments"
 msgstr "E699: Zu viele Argumente"
 
 msgid "E785: complete() can only be used in Insert mode"
-msgstr "E785: complete() kann nur im Insert Modus verwendet werden"
+msgstr "E785: complete() kann nur im Einfüge-Modus verwendet werden"
 
 #.
 #. * Yes this is ugly, I don't particularly like it either.  But doing it
@@ -567,26 +567,26 @@ msgid "E677: Error writing temp file"
 msgstr "E677: Fehler beim Schreiben einer temporären Datei"
 
 msgid "E703: Using a Funcref as a number"
-msgstr "E703: Funcref als Zahl verwendet"
+msgstr "E703: Funktionsreferenz als Zahl verwendet"
 
 msgid "E745: Using a List as a number"
 msgstr "E745: Liste als Zahl verwendet"
 
 msgid "E728: Using a Dictionary as a number"
-msgstr "E728: Dictionary als Zahl verwendet"
+msgstr "E728: Wörterbuch als Zahl verwendet"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: Funcref als String verwendet"
+msgstr "E729: Funktionsreferenz als String verwendet"
 
 msgid "E730: using List as a String"
 msgstr "E730: Liste als String verwendet"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: Dictionary als String verwendet"
+msgstr "E731: Wörterbuch als String verwendet"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: Funcref Variable muss mit einem Großbuchstaben beginnen: %s"
+msgstr "E704: Funktionsreferenz-Variable muss mit einem Großbuchstaben beginnen: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
@@ -623,7 +623,7 @@ msgstr "E126: Fehlendes :endfunction"
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
-msgstr "E746: Funktionsname stimmt nicht mit dem Namen der Skript-Datei überein: %s"
+msgstr "E746: Funktionsname stimmt mit dem Namen der Skript-Datei nicht überein: %s"
 
 msgid "E129: Function name required"
 msgstr "E129: Funktionsname wird verlangt"
@@ -1170,7 +1170,7 @@ msgstr "E467: Eigene Vervollständigung benötigt eine Funktion als Argument"
 
 #, c-format
 msgid "E185: Cannot find color scheme %s"
-msgstr "E185: Zeile %s kann nicht gefunden werden"
+msgstr "E185: Kann Farbschema %s nicht finden"
 
 msgid "Greetings, Vim user!"
 msgstr "Herzliche Grüße, Vim Benutzer!"
@@ -1269,7 +1269,7 @@ msgid "E195: Cannot open viminfo file for reading"
 msgstr "E195: viminfo kann nicht zum Lesen geöffnet werden"
 
 msgid "E196: No digraphs in this version"
-msgstr "E196 Keine Digraphen in dieser Version"
+msgstr "E196: Keine Digraphen in dieser Version"
 
 msgid "E608: Cannot :throw exceptions with 'Vim' prefix"
 msgstr "E608: Kann nicht :throw Exceptions mit 'Vim' Präfix"
@@ -1504,7 +1504,7 @@ msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Puffer"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
-msgstr "E203: Autokommandos haben den zu schreibenden Puffer gelöscht oder heraus geladen"
+msgstr "E203: Autokommandos haben den zu schreibenden Puffer gelöscht oder entladen"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autokommandos haben die Anzahl der Zeilen in unerwarteter Weise verändert"
@@ -1894,21 +1894,21 @@ msgstr "Ersetzen mit:"
 
 #. whole word only button
 msgid "Match whole word only"
-msgstr "Übereinstimmung nur mit ganzen Wörtern"
+msgstr "Nur ganzes Wort suchen"
 
 #. match case button
 msgid "Match case"
-msgstr "Klein-/Großschreibung beachten"
+msgstr "Groß-/Kleinschreibung"
 
 msgid "Direction"
 msgstr "Richtung"
 
 #. 'Up' and 'Down' buttons
 msgid "Up"
-msgstr "Auf"
+msgstr "Aufwärts"
 
 msgid "Down"
-msgstr "Ab"
+msgstr "Abwärts"
 
 msgid "Find Next"
 msgstr "Suche Nächstes"
@@ -2268,7 +2268,7 @@ msgstr "E567: Keine cscope Verbindungen"
 
 #, c-format
 msgid "E259: no matches found for cscope query %s of %s"
-msgstr "E259: keine Treffer gefunden für cscope Anfragen %s aus %s"
+msgstr "E259: keine Übereinstimmungen gefunden für cscope Abfrage %s aus %s"
 
 #, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
@@ -2790,7 +2790,7 @@ msgid "-V[N]\t\tVerbose level"
 msgstr "-V[N]\t\tVerbose Stufe"
 
 msgid "-D\t\t\tDebugging mode"
-msgstr "-D\t\t\tDebug Modus"
+msgstr "-D\t\t\tDebug-Modus"
 
 msgid "-n\t\t\tNo swap file, use memory only"
 msgstr "-n\t\t\tKeine Auslagerungsdatei, verwende nur Speicher"
@@ -3383,7 +3383,7 @@ msgstr "E315: ml_get: unzulässige lnum: %ld"
 
 #, c-format
 msgid "E316: ml_get: cannot find line %ld"
-msgstr "E316: ml_get: Zeile %ld kann nicht gefunden werden"
+msgstr "E316: ml_get: kann Zeile %ld nicht finden"
 
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: Zeiger Block id falsch 3"
@@ -3402,7 +3402,7 @@ msgstr "Block 1 gelöscht?"
 
 #, c-format
 msgid "E320: Cannot find line %ld"
-msgstr "E320: Zeile %ld kann nicht gefunden werden"
+msgstr "E320: Kann Zeile %ld nicht finden"
 
 msgid "E317: pointer block id wrong"
 msgstr "E317: Zeiger Block id ist falsch"
@@ -3748,11 +3748,11 @@ msgstr ""
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: Verzeichnis \"%s\" kann im 'cdpath' nicht gefunden werden"
+msgstr "E344: Kann Verzeichnis \"%s\" nicht im 'cdpath' finden"
 
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: Datei \"%s\" kann im Pfad nicht gefunden werden"
+msgstr "E345: Kann Datei \"%s\" nicht im Pfad finden"
 
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
@@ -3784,7 +3784,7 @@ msgid "E505: "
 msgstr "E505: "
 
 msgid "E774: 'operatorfunc' is empty"
-msgstr "E775: 'operatorfunc' is empty"
+msgstr "E774: 'operatorfunc' is empty"
 
 msgid "E775: Eval feature not available"
 msgstr "E775: Evaluierungsfunktion nicht verfügbar"
@@ -4388,19 +4388,19 @@ msgid "E51: Too many %s("
 msgstr "E51: Zu viele %s("
 
 msgid "E52: Unmatched \\z("
-msgstr "E52: \\z( ohne Übereinstimmung"
+msgstr "E52: \\z( ohne Gegenstück"
 
 #, c-format
 msgid "E53: Unmatched %s%%("
-msgstr "E53: %s%%( ohne Übereinstimmung"
+msgstr "E53: %s%%( ohne Gegenstück"
 
 #, c-format
 msgid "E54: Unmatched %s("
-msgstr "E54: %s( ohne Übereinstimmung"
+msgstr "E54: %s( ohne Gegenstück"
 
 #, c-format
 msgid "E55: Unmatched %s)"
-msgstr "E55: %s) ohne Übereinstimmung"
+msgstr "E55: %s) ohne Gegenstück"
 
 #, c-format
 msgid "E59: invalid character after %s@"
@@ -4554,32 +4554,32 @@ msgstr "  NICHT GEFUNDEN"
 
 #, c-format
 msgid "Scanning included file: %s"
-msgstr "Scanne eingefügte Datei: %s"
+msgstr "Durchsuche inkludierte Datei: %s"
 
 #, c-format
 msgid "Searching included file %s"
-msgstr "Suche eingefügte Datei %s"
+msgstr "Suche inkludierte Datei %s"
 
 msgid "E387: Match is on current line"
 msgstr "E387: Treffer ist auf der momentanen Zeile"
 
 msgid "All included files were found"
-msgstr "Alle eingefügten Dateien wurden gefunden"
+msgstr "Alle inkludierten Dateien wurden gefunden"
 
 msgid "No included files"
-msgstr "Keine eingefügten Dateien"
+msgstr "Keine inkludierten Dateien"
 
 msgid "E388: Couldn't find definition"
-msgstr "E388: Definition konnte nicht gefunden werden"
+msgstr "E388: Konnte Definition nicht finden"
 
 msgid "E389: Couldn't find pattern"
-msgstr "E389: Muster konnte nicht gefunden werden"
+msgstr "E389: Konnte Muster nicht finden"
 
 msgid "E759: Format error in spell file"
 msgstr "E759: Format-Fehler im Rechtschreibwörterbuch"
 
 msgid "E758: Truncated spell file"
-msgstr "E758 Abgeschnittenes Rechtschreibwörterbuch"
+msgstr "E758: Abgeschnittenes Rechtschreibwörterbuch"
 
 #, c-format
 msgid "Trailing text in %s line %d: %s"
@@ -4610,16 +4610,16 @@ msgid "Reading spell file \"%s\""
 msgstr "Lese Rechtschreibwörterbuch \"%s\" ein"
 
 msgid "E757: This does not look like a spell file"
-msgstr "E757: Das sieht nicht nach einem Wörterbuch für die Rechtschreibprüfung aus"
+msgstr "E757: Das sieht nicht nach einem Rechtschreibwörterbuch aus"
 
 msgid "E771: Old spell file, needs to be updated"
-msgstr "E771: Altes Wörterbuch für die Rechtschreibprüfung, benötigt Aktualisierung"
+msgstr "E771: Altes Rechtschreibwörterbuch, benötigt Aktualisierung"
 
 msgid "E772: Spell file is for newer version of Vim"
-msgstr "E772: Wörterbuch für die Rechtschreibprüfung ist für eine neuere Version von Vim"
+msgstr "E772: Rechtschreibwörterbuch ist für eine neuere Version von Vim"
 
 msgid "E770: Unsupported section in spell file"
-msgstr "E770: Nicht unterstützter Abschnitt im Wörterbuch für die Rechtschreibprüfung"
+msgstr "E770: Nicht unterstützter Abschnitt im Rechtschreibwörterbuch"
 
 #, c-format
 msgid "Warning: region %s not supported"
@@ -4987,7 +4987,7 @@ msgstr "E393: \"group[t]here\" ist an dieser Stelle ungültig"
 
 #, c-format
 msgid "E394: Didn't find region item for %s"
-msgstr "E394: \"region\"-Element für \"%s\" konnte nicht gefunden werden"
+msgstr "E394: Konnte kein \"region\"-Element für \"%s\" finden"
 
 msgid "E395: contains argument not accepted here"
 msgstr "E395: \"contains\"-Argument ist an dieser Stelle ungültig"
@@ -5065,10 +5065,10 @@ msgstr "E412: Nicht ausreichend viele Argumente: \":highlight link %s\""
 
 #, c-format
 msgid "E413: Too many arguments: \":highlight link %s\""
-msgstr "E412: Zu viele Argumente: \":highlight link %s\""
+msgstr "E413: Zu viele Argumente: \":highlight link %s\""
 
 msgid "E414: group has settings, highlight link ignored"
-msgstr "E414: Gruppe hat Einstellungen, Unterstreichung Link ignoriert"
+msgstr "E414: Gruppe hat Einstellungen, highlight link ignorieren"
 
 #, c-format
 msgid "E415: unexpected equal sign: %s"
@@ -5124,7 +5124,7 @@ msgstr "E425: Kann nicht vor den ersten passenden Tag hinausgehen"
 
 #, c-format
 msgid "E426: tag not found: %s"
-msgstr "E426: Tag \"%s\" konnte nicht gefunden werden"
+msgstr "E426: Konnte Tag \"%s\" nicht finden"
 
 msgid "  # pri kind tag"
 msgstr "   # pri verw. tag"
@@ -5190,10 +5190,10 @@ msgid "E433: No tags file"
 msgstr "E433: Keine Tag-Datei"
 
 msgid "E434: Can't find tag pattern"
-msgstr "E434: Tag-Muster kann nicht gefunden werden"
+msgstr "E434: Kann Tag-Muster nicht finden"
 
 msgid "E435: Couldn't find tag, just guessing!"
-msgstr "E435: Tag konnte nicht gefunden werden, das ist nur eine Vermutung!"
+msgstr "E435: Konnte Tag möglicherweise nicht finden!"
 
 msgid "' not known. Available builtin terminals are:"
 msgstr "' nicht bekannt. Die folgenden eingebauten Terminals stehen zur Verfügung:"
@@ -5205,14 +5205,14 @@ msgid "E557: Cannot open termcap file"
 msgstr "E557: Termcap-Datei kann nicht geöffnet werden"
 
 msgid "E558: Terminal entry not found in terminfo"
-msgstr "E558: Terminal-Eintrag konnte in der Terminfo-Datenbank nicht gefunden werden"
+msgstr "E558: Kein Terminal-Eintrag in der Terminfo-Datenbank gefunden"
 
 msgid "E559: Terminal entry not found in termcap"
-msgstr "E559: Terminaleintrag konnte in der Termcap-Datei nicht gefunden werden"
+msgstr "E559: Kein Terminal-Eintrag in der Termcap-Datei gefunden"
 
 #, c-format
 msgid "E436: No \"%s\" entry in termcap"
-msgstr "E436: Kein \"%s\" Eintrag in termcap"
+msgstr "E436: Kein \"%s\" Eintrag in der Termcap-Datei"
 
 msgid "E437: terminal capability \"cm\" required"
 msgstr "E437: Terminalfähigkeit \"cm\" wird benötigt"
@@ -5232,7 +5232,7 @@ msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Fehler beim Lesen der Eingabe, Abbruch...\n"
 
 msgid "No undo possible; continue anyway"
-msgstr "Wiederherstellung nicht möglich; setze trotz dem fort"
+msgstr "Wiederherstellung nicht möglich; setze trotzdem fort"
 
 msgid "Already at oldest change"
 msgstr "Bereits bei der ältesten Änderung"
@@ -5615,11 +5615,11 @@ msgstr "E446: Kein Dateiname unter dem Cursor"
 
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: Datei \"%s\" kann im Pfad nicht gefunden werden"
+msgstr "E447: Kann Datei \"%s\" nicht im Pfad finden"
 
 #, c-format
 msgid "E370: Could not load library %s"
-msgstr "E370: Bibliothek %s konnte nicht geladen werden"
+msgstr "E370: Konnte Bibliothek %s nicht laden"
 
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Dieser Befehl ist nicht verfügbar, da die Perl-Bibliothek nicht geladen werden konnte"
@@ -5734,7 +5734,7 @@ msgid "E21: Cannot make changes, 'modifiable' is off"
 msgstr "E21: Kann keine Änderungen machen, 'modifiable' ist aus"
 
 msgid "E22: Scripts nested too deep"
-msgstr "E22: Skript-Schachtelung zu tief"
+msgstr "E22: Skript ist zu tief verschachtelt"
 
 msgid "E23: No alternate file"
 msgstr "E23: Keine alternative Datei"
@@ -5875,7 +5875,7 @@ msgid "E523: Not allowed here"
 msgstr "E523: Hier nicht erlaubt"
 
 msgid "E359: Screen mode setting not supported"
-msgstr "E359: Bildschirm Modus wird nicht unterstützt"
+msgstr "E359: Bildschirm-Modus wird nicht unterstützt"
 
 msgid "E49: Invalid scroll size"
 msgstr "E49: Ungültige Scroll-Größe"
@@ -6013,7 +6013,7 @@ msgstr "E120: <SID> wurde nicht in einer Skript-Umgebung benutzt: %s"
 
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
-msgstr "E725: Aufruf der 'dict' Funktion ohne Dictionary: %s"
+msgstr "E725: Aufruf der 'dict' Funktion ohne Wörterbuch: %s"
 
 msgid "E786: Range not allowed"
 msgstr "E786: Bereich nicht erlaubt"

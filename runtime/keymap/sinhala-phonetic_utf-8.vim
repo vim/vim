@@ -1,7 +1,7 @@
 " Vim Keymap file for Sinhala (Sri Lanka) (2003-11-02)
 " Maintainer  : Harshula Jayasuriya <harshula@gmail.com>
-" Last Updated: 2006-06-08
-" This is a static phonetic mapping for a standard US-English keyboard
+" Last Updated: 2007-06-30
+" This is a phonetic static mapping for a standard US-English keyboard
 " (qwerty)
 " http://www.nongnu.org/sinhala/doc/keymaps/sinhala-keyboard_3.html
 
@@ -48,18 +48,18 @@ J	<char-0x0da3>	" ඣ - mahaapraana jayanna (jha)
 z	<char-0x0da4>	" ඤ - taaluja naasikyaya (nya)
 Z	<char-0x0da5>	" ඥ - taaluja sanyooga naasikyaya (jnya)
 <A-j>	<char-0x0da6>	" ඦ - sanyaka jayanna (nyja)
-t	<char-0x0da7>	" ට - alpapraana ttayanna (tta)
-T	<char-0x0da8>	" ඨ - mahaapraana ttayanna (ttha)
-d	<char-0x0da9>	" ඩ - alpapraana ddayanna (dda)
-D	<char-0x0daa>	" ඪ - mahaapraana ddayanna (ddha)
+<A-t>	<char-0x0da7>	" ට - alpapraana ttayanna (tta)
+<A-T>	<char-0x0da8>	" ඨ - mahaapraana ttayanna (ttha)
+<A-d>	<char-0x0da9>	" ඩ - alpapraana ddayanna (dda)
+<A-D>	<char-0x0daa>	" ඪ - mahaapraana ddayanna (ddha)
 N	<char-0x0dab>	" ණ - muurdhaja nayanna (nna)
-x	<char-0x0dac>	" ඬ - sanyaka ddayanna (nndda)
-<A-t>	<char-0x0dad>	" ත - alpapraana tayanna (ta)
-<A-T>	<char-0x0dae>	" ථ - mahaapraana tayanna (tha)
-<A-d>	<char-0x0daf>	" ද - alpapraana dayanna (da)
-<A-D>	<char-0x0db0>	" ධ - mahaapraana dayanna (dha)
+X	<char-0x0dac>	" ඬ - sanyaka ddayanna (nndda)
+t	<char-0x0dad>	" ත - alpapraana tayanna (ta)
+T	<char-0x0dae>	" ථ - mahaapraana tayanna (tha)
+d	<char-0x0daf>	" ද - alpapraana dayanna (da)
+D	<char-0x0db0>	" ධ - mahaapraana dayanna (dha)
 n	<char-0x0db1>	" න - dantaja nayanna (na)
-X	<char-0x0db3>	" ඳ - sanyaka dayanna (nda)
+x	<char-0x0db3>	" ඳ - sanyaka dayanna (nda)
 p	<char-0x0db4>	" ප - alpapraana payanna (pa)
 P	<char-0x0db5>	" ඵ - mahaapraana payanna (pha)
 b	<char-0x0db6>	" බ - alpapraana bayanna (ba)
@@ -70,13 +70,13 @@ y	<char-0x0dba>	" ය - yayanna (ya)
 r	<char-0x0dbb>	" ර - rayanna (ra)
 l	<char-0x0dbd>	" ල - dantaja layanna (la)
 v	<char-0x0dc0>	" ව - vayanna (va)
-<A-s>	<char-0x0dc1>	" ශ - taaluja sayanna (sha)
-S	<char-0x0dc2>	" ෂ - muurdhaja sayanna (ssa)
+S	<char-0x0dc1>	" ශ - taaluja sayanna (sha)
+<A-s>	<char-0x0dc2>	" ෂ - muurdhaja sayanna (ssa)
 s	<char-0x0dc3>	" ස - dantaja sayanna (sa)
 h	<char-0x0dc4>	" හ - hayanna (ha)
 L	<char-0x0dc5>	" ළ - muurdhaja layanna (lla)
 f	<char-0x0dc6>	" ෆ - fayanna (fa)
-<A-a>	<char-0x0dca>	" ් - al-lakuna
+<A-a>	<char-0x0dca>	"  ් - al-lakuna
 <A-A>	<char-0x0dcf>	"  ා - aela-pilla (aa)
 <A-w>	<char-0x0dd0>	"  ැ - ketti aeda-pilla (ae)
 <A-W>	<char-0x0dd1>	"  ෑ - diga aeda-pilla (aae)
@@ -96,12 +96,12 @@ f	<char-0x0dc6>	" ෆ - fayanna (fa)
 <A-L>	<char-0x0df3>	"  ෳ - diga gayanukitta (ll)
 <A-.>	<char-0x0df4>	" ෴ - kunddaliya (punctuation)
 
-R	<char-0x0dca><char-0x200d><char-0x0dbb>	"  ්‍ර - rakaransaya
+R	<char-0x0dca><char-0x200d><char-0x0dbb>	"  ්‍ර - rakaaranshaya
 Y	<char-0x0dca><char-0x200d><char-0x0dba>	"  ්‍ය - yansaya
-<A-r>	<char-0x0dbb><char-0x0dca><char-0x200d>	"  ර්‍ - repaya
+<A-r>	<char-0x0dbb><char-0x0dca><char-0x200d>	" ර්‍ - repaya
 
-<A-\>	<char-0x0dca><char-0x200d>	" join - conjunct letters cons 0DCA ZWJ cons
-<A-|>	<char-0x200d><char-0x0dca>	" touch - cons ZWJ 0DCA cons
+<A-,>	<char-0x0dca><char-0x200d>	" join - conjunct letters cons 0DCA ZWJ cons
+<A-/>	<char-0x200d><char-0x0dca>	" touch - cons ZWJ 0DCA cons
 
-<S-space>	<char-0x00a0>	" - no-break space. <S-space> didn't work.
-<C-space>	<char-0x200c>	" - ZWNJ. <A-space> doesn't work!
+<C-space>	<char-0x00a0>	" - no-break space. <S-space> didn't work.
+<A-space>	<char-0x200c>	" - ZWNJ. <A-space> doesn't work!

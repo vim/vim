@@ -15,6 +15,10 @@
 
 #include "vim.h"
 
+#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
+# include <math.h>
+#endif
+
 static int other_sourcing_name __ARGS((void));
 static char_u *get_emsg_source __ARGS((void));
 static char_u *get_emsg_lnum __ARGS((void));
@@ -314,7 +318,7 @@ trunc_string(s, buf, room)
 
     /* Set the middle and copy the last part. */
     mch_memmove(buf + e, "...", (size_t)3);
-    mch_memmove(buf + e + 3, s + i, STRLEN(s + i) + 1);
+    STRMOVE(buf + e + 3, s + i);
 }
 
 /*
@@ -603,7 +607,7 @@ emsg(s)
 #endif
 
 	/*
-	 * When using ":silent! cmd" ignore error messsages.
+	 * When using ":silent! cmd" ignore error messages.
 	 * But do write it to the redirection file.
 	 */
 	if (emsg_silent != 0)
@@ -803,6 +807,8 @@ delete_first_msg()
 	return FAIL;
     p = first_msg_hist;
     first_msg_hist = p->next;
+    if (first_msg_hist == NULL)
+        last_msg_hist = NULL;  /* history is empty */
     vim_free(p->msg);
     vim_free(p);
     --msg_hist_len;
@@ -1131,6 +1137,17 @@ msg_start()
 
     vim_free(keep_msg);
     keep_msg = NULL;			/* don't display old message now */
+
+#ifdef FEAT_EVAL
+    if (need_clr_eos)
+    {
+	/* Halfway an ":echo" command and getting an (error) message: clear
+	 * any text from the command. */
+	need_clr_eos = FALSE;
+	msg_clr_eos();
+    }
+#endif
+
     if (!msg_scroll && full_screen)	/* overwrite last message */
     {
 	msg_row = cmdline_row;
@@ -3819,6 +3836,9 @@ static char *e_printf = N_("E766: Insufficient arguments for printf()");
 
 static long tv_nr __ARGS((typval_T *tvs, int *idxp));
 static char *tv_str __ARGS((typval_T *tvs, int *idxp));
+# ifdef FEAT_FLOAT
+static double tv_float __ARGS((typval_T *tvs, int *idxp));
+# endif
 
 /*
  * Get number argument from "idxp" entry in "tvs".  First entry is 1.
@@ -3865,6 +3885,32 @@ tv_str(tvs, idxp)
     }
     return s;
 }
+
+# ifdef FEAT_FLOAT
+/*
+ * Get float argument from "idxp" entry in "tvs".  First entry is 1.
+ */
+    static double
+tv_float(tvs, idxp)
+    typval_T	*tvs;
+    int		*idxp;
+{
+    int		idx = *idxp - 1;
+    double	f = 0;
+
+    if (tvs[idx].v_type == VAR_UNKNOWN)
+	EMSG(_(e_printf));
+    else
+    {
+	++*idxp;
+	if (tvs[idx].v_type == VAR_FLOAT)
+	    f = tvs[idx].vval.v_float;
+	else
+	    EMSG(_("E807: Expected Float argument for printf()"));
+    }
+    return f;
+}
+# endif
 #endif
 
 /*
@@ -3882,6 +3928,8 @@ tv_str(tvs, idxp)
  * s, c, d, u, o, x, X, p  (and synonyms: i, D, U, O - see below)
  * with flags: '-', '+', ' ', '0' and '#'.
  * An asterisk is supported for field width as well as precision.
+ *
+ * Limited support for floating point was added: 'f', 'e', 'E', 'g', 'G'.
  *
  * Length modifiers 'h' (short int) and 'l' (long int) are supported.
  * 'll' (long long int) is not supported.
@@ -3983,7 +4031,14 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    char    length_modifier = '\0';
 
 	    /* temporary buffer for simple numeric->string conversion */
-	    char    tmp[32];
+#ifdef FEAT_FLOAT
+# define TMP_LEN 350	/* On my system 1e308 is the biggest number possible.
+			 * That sounds reasonable to use as the maximum
+			 * printable. */
+#else
+# define TMP_LEN 32
+#endif
+	    char    tmp[TMP_LEN];
 
 	    /* string address in case of string argument */
 	    char    *str_arg;
@@ -4124,6 +4179,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		case 'D': fmt_spec = 'd'; length_modifier = 'l'; break;
 		case 'U': fmt_spec = 'u'; length_modifier = 'l'; break;
 		case 'O': fmt_spec = 'o'; length_modifier = 'l'; break;
+		case 'F': fmt_spec = 'f'; break;
 		default: break;
 	    }
 
@@ -4459,6 +4515,136 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 		    break;
 		}
 
+#ifdef FEAT_FLOAT
+	    case 'f':
+	    case 'e':
+	    case 'E':
+	    case 'g':
+	    case 'G':
+		{
+		    /* Floating point. */
+		    double	f;
+		    double	abs_f;
+		    char	format[40];
+		    int		l;
+		    int		remove_trailing_zeroes = FALSE;
+
+		    f =
+# ifndef HAVE_STDARG_H
+			get_a_arg(arg_idx);
+# else
+#  if defined(FEAT_EVAL)
+			tvs != NULL ? tv_float(tvs, &arg_idx) :
+#  endif
+			    va_arg(ap, double);
+# endif
+		    abs_f = f < 0 ? -f : f;
+
+		    if (fmt_spec == 'g' || fmt_spec == 'G')
+		    {
+			/* Would be nice to use %g directly, but it prints
+			 * "1.0" as "1", we don't want that. */
+			if ((abs_f >= 0.001 && abs_f < 10000000.0)
+							      || abs_f == 0.0)
+			    fmt_spec = 'f';
+			else
+			    fmt_spec = fmt_spec == 'g' ? 'e' : 'E';
+			remove_trailing_zeroes = TRUE;
+		    }
+
+		    if (fmt_spec == 'f' && abs_f > 1.0e307)
+		    {
+			/* Avoid a buffer overflow */
+			strcpy(tmp, "inf");
+			str_arg_l = 3;
+		    }
+		    else
+		    {
+			format[0] = '%';
+			l = 1;
+			if (precision_specified)
+			{
+			    size_t max_prec = TMP_LEN - 10;
+
+			    /* Make sure we don't get more digits than we
+			     * have room for. */
+			    if (fmt_spec == 'f' && abs_f > 1.0)
+				max_prec -= (size_t)log10(abs_f);
+			    if (precision > max_prec)
+				precision = max_prec;
+			    l += sprintf(format + 1, ".%d", (int)precision);
+			}
+			format[l] = fmt_spec;
+			format[l + 1] = NUL;
+			str_arg_l = sprintf(tmp, format, f);
+
+			if (remove_trailing_zeroes)
+			{
+			    int i;
+			    char *p;
+
+			    /* Using %g or %G: remove superfluous zeroes. */
+			    if (fmt_spec == 'f')
+				p = tmp + str_arg_l - 1;
+			    else
+			    {
+				p = (char *)vim_strchr((char_u *)tmp,
+						 fmt_spec == 'e' ? 'e' : 'E');
+				if (p != NULL)
+				{
+				    /* Remove superfluous '+' and leading
+				     * zeroes from the exponent. */
+				    if (p[1] == '+')
+				    {
+					/* Change "1.0e+07" to "1.0e07" */
+					STRMOVE(p + 1, p + 2);
+					--str_arg_l;
+				    }
+				    i = (p[1] == '-') ? 2 : 1;
+				    while (p[i] == '0')
+				    {
+					/* Change "1.0e07" to "1.0e7" */
+					STRMOVE(p + i, p + i + 1);
+					--str_arg_l;
+				    }
+				    --p;
+				}
+			    }
+
+			    if (p != NULL && !precision_specified)
+				/* Remove trailing zeroes, but keep the one
+				 * just after a dot. */
+				while (p > tmp + 2 && *p == '0' && p[-1] != '.')
+				{
+				    STRMOVE(p, p + 1);
+				    --p;
+				    --str_arg_l;
+				}
+			}
+			else
+			{
+			    char *p;
+
+			    /* Be consistent: some printf("%e") use 1.0e+12
+			     * and some 1.0e+012.  Remove one zero in the last
+			     * case. */
+			    p = (char *)vim_strchr((char_u *)tmp,
+						 fmt_spec == 'e' ? 'e' : 'E');
+			    if (p != NULL && (p[1] == '+' || p[1] == '-')
+					  && p[2] == '0'
+					  && vim_isdigit(p[3])
+					  && vim_isdigit(p[4]))
+			    {
+				STRMOVE(p + 2, p + 3);
+				--str_arg_l;
+			    }
+			}
+		    }
+		    str_arg = tmp;
+		    break;
+		}
+#endif
+
 	    default:
 		/* unrecognized conversion specifier, keep format string
 		 * as-is */
@@ -4566,7 +4752,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	    if (justify_left)
 	    {
 		/* right blank padding to the field width */
-		int pn = (int)(min_field_width - (str_arg_l + number_of_zeros_to_pad));
+		int pn = (int)(min_field_width
+				      - (str_arg_l + number_of_zeros_to_pad));
 
 		if (pn > 0)
 		{

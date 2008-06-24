@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.50
-" Last Change: 2007 Jan 29
+" Version:     1.54
+" Last Change: 2007 Aug 17
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -28,13 +28,13 @@ let s:ES = '\s*\%(--.*\)\=$'
 let s:NE = '\%(\<end\s\+\)\@<!'
 
 " option to disable alignment of generic/port mappings
-if !exists("g:vhdl_align_genportmap")
-  let g:vhdl_align_genportmap = 1
+if !exists("g:vhdl_indent_genportmap")
+  let g:vhdl_indent_genportmap = 1
 endif
 
 " option to disable alignment of right-hand side assignment "<=" statements
-if !exists("g:vhdl_align_rhsassign")
-  let g:vhdl_align_rhsassign = 1
+if !exists("g:vhdl_indent_rhsassign")
+  let g:vhdl_indent_rhsassign = 1
 endif
 
 " only define indent function once
@@ -54,6 +54,7 @@ function GetVHDLindent()
     let prevn = prevnonblank(prevn - 1)
     let prevs = getline(prevn)
   endwhile
+  let prevs_noi = substitute(prevs, '^\s*', '', '')
 
   " default indent starts as previous non-comment line's indent
   let ind = prevn > 0 ? indent(prevn) : 0
@@ -77,8 +78,8 @@ function GetVHDLindent()
   if curs =~ '^\s*--'
     let pn = curn - 1
     let ps = getline(pn)
-    if ps =~ '--'
-      return stridx(ps, '--')
+    if curs =~ '^\s*--\s' && ps =~ '--'
+      return indent(pn) + stridx(substitute(ps, '^\s*', '', ''), '--')
     else
       " find nextnonblank line that is not a comment
       let nn = nextnonblank(curn + 1)
@@ -106,14 +107,14 @@ function GetVHDLindent()
   if (curs =~ '^\s*)' || curs =~? '^\s*\%(\<\%(generic\|map\|port\)\>.*\)\@<!\S\+\s*\%(=>\s*\S\+\|:[^=]\@=\s*\%(\%(in\|out\|inout\|buffer\|linkage\)\>\|\w\+\s\+:=\)\)') && (prevs =~? s:NC.'\<\%(generic\|map\|port\)\s*(\%(\s*\w\)\=' || (ps =~? s:NC.'\<\%(generic\|map\|port\)'.s:ES && prevs =~ '^\s*('))
     " align closing ")" with opening "("
     if curs =~ '^\s*)'
-      return stridx(prevs, '(')
+      return ind2 + stridx(prevs_noi, '(')
     endif
-    let m = matchend(prevs, '(\s*\ze\w')
+    let m = matchend(prevs_noi, '(\s*\ze\w')
     if m != -1
-      return m
+      return ind2 + m
     else
-      if g:vhdl_align_genportmap
-        return stridx(prevs, '(') + &sw
+      if g:vhdl_indent_genportmap
+        return ind2 + stridx(prevs_noi, '(') + &sw
       else
         return ind2 + &sw
       endif
@@ -124,8 +125,8 @@ function GetVHDLindent()
   " keywords: variable + "<=" without ";" ending
   " where:    start of previous line
   if prevs =~? '^\s*\S\+\s*<=[^;]*'.s:ES
-    if g:vhdl_align_rhsassign
-      return matchend(prevs, '<=\s*\ze.')
+    if g:vhdl_indent_rhsassign
+      return ind2 + matchend(prevs_noi, '<=\s*\ze.')
     else
       return ind2 + &sw
     endif

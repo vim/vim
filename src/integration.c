@@ -25,7 +25,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h>
 
 #ifdef INET_SOCKETS
 #include <netdb.h>

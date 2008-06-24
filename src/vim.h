@@ -1329,6 +1329,10 @@ typedef enum
  */
 #define MAXMAPLEN   50
 
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+
 #ifdef BINARY_FILE_IO
 # define WRITEBIN   "wb"	/* no CR-LF translation */
 # define READBIN    "rb"
@@ -1378,6 +1382,9 @@ typedef enum
 #  define STRICMP(d, s)	    vim_stricmp((char *)(d), (char *)(s))
 # endif
 #endif
+
+/* Like strcpy() but allows overlapped source and destination. */
+#define STRMOVE(d, s)	    mch_memmove((d), (s), STRLEN(s) + 1)
 
 #ifdef HAVE_STRNCASECMP
 # define STRNICMP(d, s, n)  strncasecmp((char *)(d), (char *)(s), (size_t)(n))
@@ -1709,7 +1716,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_MOUSE_LNUM   50
 #define VV_MOUSE_COL	51
 #define VV_OP		52
-#define VV_LEN		53	/* number of v: vars */
+#define VV_SEARCHFORWARD 53
+#define VV_LEN		54	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 

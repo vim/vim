@@ -109,6 +109,7 @@
 # define HAVE_FCNTL_H
 # define HAVE_QSORT
 # define HAVE_ST_MODE		/* have stat.st_mode */
+# define HAVE_MATH_H
 
 # if defined(__DATE__) && defined(__TIME__)
 #  define HAVE_DATE_TIME
@@ -217,10 +218,7 @@
  */
 #define CMDBUFFSIZE 1024	/* size of the command processing buffer */
 
-#if defined(MACOS_X_UNIX)
-# define MAXPATHL	1024
-# define BASENAMELEN	(MAXNAMLEN - 5)	/* length of base of filename */
-#else
+#if !defined(MACOS_X_UNIX)
 # define MAXPATHL	256		/* Limited by the Pascal Strings */
 # define BASENAMELEN	(32-5-1)	/* length of base of filename */
 #endif

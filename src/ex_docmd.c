@@ -13,10 +13,6 @@
 
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>	    /* for chdir() */
-#endif
-
 static int	quitmore = 0;
 static int	ex_pressedreturn = FALSE;
 #ifndef FEAT_PRINTER
@@ -1132,7 +1128,7 @@ do_cmdline(cmdline, getline, cookie, flags)
 	{
 	    /* need to copy the command after the '|' to cmdline_copy, for the
 	     * next do_one_cmd() */
-	    mch_memmove(cmdline_copy, next_cmdline, STRLEN(next_cmdline) + 1);
+	    STRMOVE(cmdline_copy, next_cmdline);
 	    next_cmdline = cmdline_copy;
 	}
 
@@ -2375,7 +2371,7 @@ do_one_cmd(cmdlinep, sourcing,
 	     * Halving the number of backslashes is incompatible with previous
 	     * versions. */
 	    if (*p == '\\' && p[1] == '\n')
-		mch_memmove(p, p + 1, STRLEN(p));
+		STRMOVE(p, p + 1);
 	    else if (*p == '\n')
 	    {
 		ea.nextcmd = p + 1;
@@ -4551,7 +4547,7 @@ separate_nextcmd(eap)
 		++p;		/* skip CTRL-V and next char */
 	    else
 				/* remove CTRL-V and skip next char */
-		mch_memmove(p, p + 1, STRLEN(p));
+		STRMOVE(p, p + 1);
 	    if (*p == NUL)		/* stop at NUL after CTRL-V */
 		break;
 	}
@@ -4582,7 +4578,7 @@ separate_nextcmd(eap)
 	    if ((vim_strchr(p_cpo, CPO_BAR) == NULL
 			      || !(eap->argt & USECTRLV)) && *(p - 1) == '\\')
 	    {
-		mch_memmove(p - 1, p, STRLEN(p) + 1);	/* remove the '\' */
+		STRMOVE(p - 1, p);	/* remove the '\' */
 		--p;
 	    }
 	    else
@@ -4640,7 +4636,7 @@ skip_cmd_arg(p, rembs)
 	if (*p == '\\' && p[1] != NUL)
 	{
 	    if (rembs)
-		mch_memmove(p, p + 1, STRLEN(p));
+		STRMOVE(p, p + 1);
 	    else
 		++p;
 	}
@@ -7167,7 +7163,6 @@ theend:
 # endif
 }
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
 /*
  * Open a new tab page.
  */
@@ -7182,7 +7177,6 @@ tabpage_new()
     ea.arg = (char_u *)"";
     ex_splitview(&ea);
 }
-#endif
 
 /*
  * :tabnext command
@@ -9425,7 +9419,7 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
     if (src > srcstart && src[-1] == '\\')
     {
 	*usedlen = 0;
-	mch_memmove(src - 1, src, STRLEN(src) + 1);	/* remove backslash */
+	STRMOVE(src - 1, src);	/* remove backslash */
 	return NULL;
     }
 

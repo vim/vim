@@ -2464,6 +2464,8 @@ do_mouse(oap, c, dir, count, fixindent)
     /* Check for clicking in the tab page line. */
     if (mouse_row == 0 && firstwin->w_winrow > 0)
     {
+	if (is_drag)
+	    return FALSE;
 	got_click = FALSE;	/* ignore mouse-up and drag events */
 
 	/* click in a tab selects that tab page */
