@@ -891,7 +891,7 @@ msgid "E156: Missing sign name"
 msgstr "E156: Ontbrekende tekennaam"
 
 msgid "E612: Too many signs defined"
-msgstr "Te veel tekens gedefinieer"
+msgstr "E612: Te veel tekens gedefinieer"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"

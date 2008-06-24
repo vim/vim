@@ -25,7 +25,6 @@
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
 /* Note: when making changes here also adjust configure.in. */
-# include <fcntl.h>
 #ifdef WIN32
 # ifdef DEBUG
 #  include <tchar.h>	/* for _T definition for TRACEn macros */
@@ -327,6 +326,7 @@ netbeans_connect(void)
 
     if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
     {
+	nbdebug(("error in socket() in netbeans_connect()\n"));
 	PERROR("socket() in netbeans_connect()");
 	goto theend;
     }
@@ -344,6 +344,7 @@ netbeans_connect(void)
 	    sd = mch_open(hostname, O_RDONLY, 0);
 	    goto theend;
 	}
+	nbdebug(("error in gethostbyname() in netbeans_connect()\n"));
 	PERROR("gethostbyname() in netbeans_connect()");
 	sd = -1;
 	goto theend;
@@ -352,7 +353,8 @@ netbeans_connect(void)
 #else
     if ((sd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
     {
-	PERROR("socket()");
+	nbdebug(("error in socket() in netbeans_connect()\n"));
+	PERROR("socket() in netbeans_connect()");
 	goto theend;
     }
 
@@ -369,12 +371,14 @@ netbeans_connect(void)
 #ifdef INET_SOCKETS
 	    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
 	    {
+		nbdebug(("socket()#2 in netbeans_connect()\n"));
 		PERROR("socket()#2 in netbeans_connect()");
 		goto theend;
 	    }
 #else
 	    if ((sd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 	    {
+		nbdebug(("socket()#2 in netbeans_connect()\n"));
 		PERROR("socket()#2 in netbeans_connect()");
 		goto theend;
 	    }
@@ -398,6 +402,7 @@ netbeans_connect(void)
 		if (!success)
 		{
 		    /* Get here when the server can't be found. */
+		    nbdebug(("Cannot connect to Netbeans #2\n"));
 		    PERROR(_("Cannot connect to Netbeans #2"));
 		    getout(1);
 		}
@@ -406,6 +411,7 @@ netbeans_connect(void)
 	}
 	else
 	{
+	    nbdebug(("Cannot connect to Netbeans\n"));
 	    PERROR(_("Cannot connect to Netbeans"));
 	    getout(1);
 	}
@@ -450,6 +456,8 @@ getConnInfo(char *file, char **host, char **port, char **auth)
      */
     if (mch_stat(file, &st) == 0 && (st.st_mode & 0077) != 0)
     {
+	nbdebug(("Wrong access mode for NetBeans connection info file: \"%s\"\n",
+								       file));
 	EMSG2(_("E668: Wrong access mode for NetBeans connection info file: \"%s\""),
 									file);
 	return FAIL;
@@ -459,6 +467,7 @@ getConnInfo(char *file, char **host, char **port, char **auth)
     fp = mch_fopen(file, "r");
     if (fp == NULL)
     {
+	nbdebug(("Cannot open NetBeans connection info file\n"));
 	PERROR("E660: Cannot open NetBeans connection info file");
 	return FAIL;
     }
@@ -621,13 +630,13 @@ save(char_u *buf, int len)
 /*
  * While there's still a command in the work queue, parse and execute it.
  */
-    static void
-nb_parse_messages(void)
+    void
+netbeans_parse_messages(void)
 {
     char_u	*p;
     queue_T	*node;
 
-    while (head.next != &head)
+    while (head.next != NULL && head.next != &head)
     {
 	node = head.next;
 
@@ -640,7 +649,8 @@ nb_parse_messages(void)
 	     * prepend the text to that buffer and delete this one.  */
 	    if (node->next == &head)
 		return;
-	    p = alloc((unsigned)(STRLEN(node->buffer) + STRLEN(node->next->buffer) + 1));
+	    p = alloc((unsigned)(STRLEN(node->buffer)
+					   + STRLEN(node->next->buffer) + 1));
 	    if (p == NULL)
 		return;	    /* out of memory */
 	    STRCPY(p, node->buffer);
@@ -679,7 +689,7 @@ nb_parse_messages(void)
 	    else
 	    {
 		/* more follows, move to the start */
-		mch_memmove(node->buffer, p, STRLEN(p) + 1);
+		STRMOVE(node->buffer, p);
 	    }
 	}
     }
@@ -711,7 +721,9 @@ messageFromNetbeans(gpointer clientData, gint unused1,
     static char_u	*buf = NULL;
     int			len;
     int			readlen = 0;
+#ifndef FEAT_GUI_GTK
     static int		level = 0;
+#endif
 
     if (sd < 0)
     {
@@ -719,7 +731,9 @@ messageFromNetbeans(gpointer clientData, gint unused1,
 	return;
     }
 
+#ifndef FEAT_GUI_GTK
     ++level;  /* recursion guard; this will be called from the X event loop */
+#endif
 
     /* Allocate a buffer to read into. */
     if (buf == NULL)
@@ -749,15 +763,23 @@ messageFromNetbeans(gpointer clientData, gint unused1,
 	netbeans_disconnect();
 	nbdebug(("messageFromNetbeans: Error in read() from socket\n"));
 	if (len < 0)
+	{
+	    nbdebug(("read from Netbeans socket\n"));
 	    PERROR(_("read from Netbeans socket"));
+	}
 	return; /* don't try to parse it */
     }
 
+#ifdef FEAT_GUI_GTK
+    if (gtk_main_level() > 0)
+	gtk_main_quit();
+#else
     /* Parse the messages, but avoid recursion. */
     if (level == 1)
-	nb_parse_messages();
+	netbeans_parse_messages();
 
     --level;
+#endif
 }
 
 /*
@@ -809,6 +831,7 @@ nb_parse_cmd(char_u *cmd)
 
     if (*verb != ':')
     {
+	nbdebug(("    missing colon: %s\n", cmd));
 	EMSG2("E627: missing colon: %s", cmd);
 	return;
     }
@@ -832,6 +855,7 @@ nb_parse_cmd(char_u *cmd)
 
     if (isfunc < 0)
     {
+	nbdebug(("    missing ! or / in: %s\n", cmd));
 	EMSG2("E628: missing ! or / in: %s", cmd);
 	return;
     }
@@ -1037,13 +1061,19 @@ nb_send(char *buf, char *fun)
     if (sd < 0)
     {
 	if (!did_error)
+	{
+	    nbdebug(("    %s(): write while not connected\n", fun));
 	    EMSG2("E630: %s(): write while not connected", fun);
+	}
 	did_error = TRUE;
     }
     else if (sock_write(sd, buf, (int)STRLEN(buf)) != (int)STRLEN(buf))
     {
 	if (!did_error)
+	{
+	    nbdebug(("    %s(): write failed\n", fun));
 	    EMSG2("E631: %s(): write failed", fun);
+	}
 	did_error = TRUE;
     }
     else
@@ -1229,7 +1259,7 @@ nb_partialremove(linenr_T lnum, colnr_T first, colnr_T last)
     if (newtext != NULL)
     {
 	mch_memmove(newtext, oldtext, first);
-	mch_memmove(newtext + first, oldtext + lastbyte + 1, STRLEN(oldtext + lastbyte + 1) + 1);
+	STRMOVE(newtext + first, oldtext + lastbyte + 1);
 	nbdebug(("    NEW LINE %d: %s\n", lnum, newtext));
 	ml_replace(lnum, newtext, FALSE);
     }
@@ -1329,8 +1359,8 @@ nb_do_cmd(
 #ifdef FEAT_SIGNS
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in getAnno"));
-		EMSG("E652: null bufp in getAnno");
+		nbdebug(("    Invalid buffer identifier in getAnno\n"));
+		EMSG("E652: Invalid buffer identifier in getAnno");
 		retval = FAIL;
 	    }
 	    else
@@ -1352,8 +1382,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in getLength"));
-		EMSG("E632: null bufp in getLength");
+		nbdebug(("    invalid buffer identifier in getLength\n"));
+		EMSG("E632: invalid buffer identifier in getLength");
 		retval = FAIL;
 	    }
 	    else
@@ -1374,8 +1404,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in getText"));
-		EMSG("E633: null bufp in getText");
+		nbdebug(("    invalid buffer identifier in getText\n"));
+		EMSG("E633: invalid buffer identifier in getText");
 		retval = FAIL;
 	    }
 	    else
@@ -1438,8 +1468,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in remove"));
-		EMSG("E634: null bufp in remove");
+		nbdebug(("    invalid buffer identifier in remove\n"));
+		EMSG("E634: invalid buffer identifier in remove");
 		retval = FAIL;
 	    }
 	    else
@@ -1457,6 +1487,7 @@ nb_do_cmd(
 		pos = off2pos(buf->bufp, off);
 		if (!pos)
 		{
+		    nbdebug(("    !bad position\n"));
 		    nb_reply_text(cmdno, (char_u *)"!bad position");
 		    netbeansFireChanges = oldFire;
 		    netbeansSuppressNoLines = oldSuppress;
@@ -1467,6 +1498,7 @@ nb_do_cmd(
 		pos = off2pos(buf->bufp, off+count-1);
 		if (!pos)
 		{
+		    nbdebug(("    !bad count\n"));
 		    nb_reply_text(cmdno, (char_u *)"!bad count");
 		    netbeansFireChanges = oldFire;
 		    netbeansSuppressNoLines = oldSuppress;
@@ -1599,8 +1631,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in insert"));
-		EMSG("E635: null bufp in insert");
+		nbdebug(("    invalid buffer identifier in insert\n"));
+		EMSG("E635: invalid buffer identifier in insert");
 		retval = FAIL;
 	    }
 	    else if (args != NULL)
@@ -1756,7 +1788,8 @@ nb_do_cmd(
 	    /* Create a buffer without a name. */
 	    if (buf == NULL)
 	    {
-		EMSG("E636: null buf in create");
+		nbdebug(("    invalid buffer identifier in create\n"));
+		EMSG("E636: invalid buffer identifier in create");
 		return FAIL;
 	    }
 	    vim_free(buf->displayname);
@@ -1775,7 +1808,7 @@ nb_do_cmd(
 	{
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in insertDone"));
+		nbdebug(("    invalid buffer identifier in insertDone\n"));
 	    }
 	    else
 	    {
@@ -1793,7 +1826,7 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in saveDone"));
+		nbdebug(("    invalid buffer identifier in saveDone\n"));
 	    }
 	    else
 		print_save_msg(buf, savedChars);
@@ -1803,7 +1836,8 @@ nb_do_cmd(
 	{
 	    if (buf == NULL)
 	    {
-		EMSG("E637: null buf in startDocumentListen");
+		nbdebug(("    invalid buffer identifier in startDocumentListen\n"));
+		EMSG("E637: invalid buffer identifier in startDocumentListen");
 		return FAIL;
 	    }
 	    buf->fireChanges = 1;
@@ -1813,15 +1847,19 @@ nb_do_cmd(
 	{
 	    if (buf == NULL)
 	    {
-		EMSG("E638: null buf in stopDocumentListen");
+		nbdebug(("    invalid buffer identifier in stopDocumentListen\n"));
+		EMSG("E638: invalid buffer identifier in stopDocumentListen");
 		return FAIL;
 	    }
 	    buf->fireChanges = 0;
 	    if (buf->bufp != NULL && buf->bufp->b_was_netbeans_file)
 	    {
 		if (!buf->bufp->b_netbeans_file)
+		{
+		    nbdebug(("E658: NetBeans connection lost for buffer %ld\n", buf->bufp->b_fnum));
 		    EMSGN(_("E658: NetBeans connection lost for buffer %ld"),
 							   buf->bufp->b_fnum);
+		}
 		else
 		{
 		    /* NetBeans uses stopDocumentListen when it stops editing
@@ -1838,7 +1876,8 @@ nb_do_cmd(
 	{
 	    if (buf == NULL)
 	    {
-		EMSG("E639: null buf in setTitle");
+		nbdebug(("    invalid buffer identifier in setTitle\n"));
+		EMSG("E639: invalid buffer identifier in setTitle");
 		return FAIL;
 	    }
 	    vim_free(buf->displayname);
@@ -1849,7 +1888,8 @@ nb_do_cmd(
 	{
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		EMSG("E640: null buf in initDone");
+		nbdebug(("    invalid buffer identifier in initDone\n"));
+		EMSG("E640: invalid buffer identifier in initDone");
 		return FAIL;
 	    }
 	    doupdate = 1;
@@ -1871,7 +1911,8 @@ nb_do_cmd(
 
 	    if (buf == NULL)
 	    {
-		EMSG("E641: null buf in setBufferNumber");
+		nbdebug(("    invalid buffer identifier in setBufferNumber\n"));
+		EMSG("E641: invalid buffer identifier in setBufferNumber");
 		return FAIL;
 	    }
 	    path = (char_u *)nb_unquote(args, NULL);
@@ -1881,6 +1922,7 @@ nb_do_cmd(
 	    vim_free(path);
 	    if (bufp == NULL)
 	    {
+	    	nbdebug(("    File %s not found in setBufferNumber\n", args));
 		EMSG2("E642: File %s not found in setBufferNumber", args);
 		return FAIL;
 	    }
@@ -1910,7 +1952,8 @@ nb_do_cmd(
 	{
 	    if (buf == NULL)
 	    {
-		EMSG("E643: null buf in setFullName");
+		nbdebug(("    invalid buffer identifier in setFullName\n"));
+		EMSG("E643: invalid buffer identifier in setFullName");
 		return FAIL;
 	    }
 	    vim_free(buf->displayname);
@@ -1929,7 +1972,8 @@ nb_do_cmd(
 	{
 	    if (buf == NULL)
 	    {
-		EMSG("E644: null buf in editFile");
+		nbdebug(("    invalid buffer identifier in editFile\n"));
+		EMSG("E644: invalid buffer identifier in editFile");
 		return FAIL;
 	    }
 	    /* Edit a file: like create + setFullName + read the file. */
@@ -1950,7 +1994,11 @@ nb_do_cmd(
 	{
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-/*		EMSG("E645: null bufp in setVisible"); */
+		nbdebug(("    invalid buffer identifier in setVisible\n"));
+		/* This message was commented out, probably because it can
+		 * happen when shutting down. */
+		if (p_verbose > 0)
+		    EMSG("E645: invalid buffer identifier in setVisible");
 		return FAIL;
 	    }
 	    if (streq((char *)args, "T") && buf->bufp != curbuf)
@@ -1982,7 +2030,11 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-/*		EMSG("E646: null bufp in setModified"); */
+		nbdebug(("    invalid buffer identifier in setModified\n"));
+		/* This message was commented out, probably because it can
+		 * happen when shutting down. */
+		if (p_verbose > 0)
+		    EMSG("E646: invalid buffer identifier in setModified");
 		return FAIL;
 	    }
 	    prev_b_changed = buf->bufp->b_changed;
@@ -2016,7 +2068,7 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "setModtime"))
 	{
 	    if (buf == NULL || buf->bufp == NULL)
-		nbdebug(("    null bufp in setModtime"));
+		nbdebug(("    invalid buffer identifier in setModtime\n"));
 	    else
 		buf->bufp->b_mtime = atoi((char *)args);
 /* =====================================================================*/
@@ -2024,7 +2076,7 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "setReadOnly"))
 	{
 	    if (buf == NULL || buf->bufp == NULL)
-		nbdebug(("    null bufp in setReadOnly"));
+		nbdebug(("    invalid buffer identifier in setReadOnly\n"));
 	    else if (streq((char *)args, "T"))
 		buf->bufp->b_p_ro = TRUE;
 	    else
@@ -2065,7 +2117,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		EMSG("E647: null bufp in setDot");
+		nbdebug(("    invalid buffer identifier in setDot\n"));
+		EMSG("E647: invalid buffer identifier in setDot");
 		return FAIL;
 	    }
 
@@ -2117,7 +2170,8 @@ nb_do_cmd(
 
 	    if (buf == NULL)
 	    {
-		EMSG("E648: null buf in close");
+		nbdebug(("    invalid buffer identifier in close\n"));
+		EMSG("E648: invalid buffer identifier in close");
 		return FAIL;
 	    }
 
@@ -2125,8 +2179,14 @@ nb_do_cmd(
 	    if (buf->displayname != NULL)
 		name = buf->displayname;
 #endif
-/*	    if (buf->bufp == NULL) */
-/*		EMSG("E649: null bufp in close"); */
+	    if (buf->bufp == NULL)
+	    {
+		nbdebug(("    invalid buffer identifier in close\n"));
+		/* This message was commented out, probably because it can
+		 * happen when shutting down. */
+		if (p_verbose > 0)
+		    EMSG("E649: invalid buffer identifier in close");
+	    }
 	    nbdebug(("    CLOSE %d: %s\n", bufno, name));
 	    need_mouse_correct = TRUE;
 	    if (buf->bufp != NULL)
@@ -2139,7 +2199,7 @@ nb_do_cmd(
 	}
 	else if (streq((char *)cmd, "setStyle")) /* obsolete... */
 	{
-	    nbdebug(("    setStyle is obsolete!"));
+	    nbdebug(("    setStyle is obsolete!\n"));
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setExitDelay"))
@@ -2162,7 +2222,8 @@ nb_do_cmd(
 
 	    if (buf == NULL)
 	    {
-		EMSG("E650: null buf in defineAnnoType");
+		nbdebug(("    invalid buffer identifier in defineAnnoType\n"));
+		EMSG("E650: invalid buffer identifier in defineAnnoType");
 		return FAIL;
 	    }
 
@@ -2224,7 +2285,8 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		EMSG("E651: null bufp in addAnno");
+		nbdebug(("    invalid buffer identifier in addAnno\n"));
+		EMSG("E651: invalid buffer identifier in addAnno");
 		return FAIL;
 	    }
 
@@ -2250,12 +2312,12 @@ nb_do_cmd(
 # ifdef NBDEBUG
 	    if (len != -1)
 	    {
-		nbdebug(("    partial line annotation -- Not Yet Implemented!"));
+		nbdebug(("    partial line annotation -- Not Yet Implemented!\n"));
 	    }
 # endif
 	    if (serNum >= GUARDEDOFFSET)
 	    {
-		nbdebug(("    too many annotations! ignoring..."));
+		nbdebug(("    too many annotations! ignoring...\n"));
 		return FAIL;
 	    }
 	    if (pos)
@@ -2276,7 +2338,7 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in removeAnno"));
+		nbdebug(("    invalid buffer identifier in removeAnno\n"));
 		return FAIL;
 	    }
 	    doupdate = 1;
@@ -2292,7 +2354,7 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "moveAnnoToFront"))
 	{
 #ifdef FEAT_SIGNS
-	    nbdebug(("    moveAnnoToFront: Not Yet Implemented!"));
+	    nbdebug(("    moveAnnoToFront: Not Yet Implemented!\n"));
 #endif
 /* =====================================================================*/
 	}
@@ -2315,7 +2377,7 @@ nb_do_cmd(
 
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in %s command", cmd));
+		nbdebug(("    invalid buffer identifier in %s command\n", cmd));
 		return FAIL;
 	    }
 	    nb_set_curbuf(buf->bufp);
@@ -2399,7 +2461,7 @@ nb_do_cmd(
 	     */
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in %s command", cmd));
+		nbdebug(("    invalid buffer identifier in %s command\n", cmd));
 		return FAIL;
 	    }
 
@@ -2423,13 +2485,17 @@ nb_do_cmd(
 #endif
 		}
 	    }
+	    else
+	    {
+	        nbdebug(("    Buffer has no changes!\n"));
+	    }
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "netbeansBuffer"))
 	{
 	    if (buf == NULL || buf->bufp == NULL)
 	    {
-		nbdebug(("    null bufp in %s command", cmd));
+		nbdebug(("    invalid buffer identifier in %s command\n", cmd));
 		return FAIL;
 	    }
 	    if (*args == 'T')
@@ -2454,6 +2520,10 @@ nb_do_cmd(
 	else if (streq((char *)cmd, "version"))
 	{
 	    /* not used yet */
+	}
+	else
+	{
+	    nbdebug(("Unrecognised command: %s\n", cmd));
 	}
 	/*
 	 * Unrecognized command is ignored.
@@ -2994,7 +3064,7 @@ netbeans_removed(
 
     if (len < 0)
     {
-	nbdebug(("Negative len %ld in netbeans_removed()!", len));
+	nbdebug(("Negative len %ld in netbeans_removed()!\n", len));
 	return;
     }
 
@@ -3635,6 +3705,7 @@ print_save_msg(buf, nchars)
 	STRCAT(ebuf, IObuff);
 	STRCAT(ebuf, (char_u *)_("is read-only (add ! to override)"));
 	STRCPY(IObuff, ebuf);
+	nbdebug(("    %s\n", ebuf ));
 	emsg(IObuff);
     }
 }

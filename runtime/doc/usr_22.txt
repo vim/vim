@@ -1,4 +1,4 @@
-*usr_22.txt*	For Vim version 7.1.  Last change: 2006 Apr 24
+*usr_22.txt*	For Vim version 7.2a.  Last change: 2007 Aug 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -10,7 +10,7 @@ ways to browse the directory tree.  There are commands to jump to a file that
 is mentioned in another.  And Vim remembers which files have been edited
 before.
 
-|22.1|	The file explorer
+|22.1|	The file browser
 |22.2|	The current directory
 |22.3|	Finding a file
 |22.4|	The buffer list
@@ -20,7 +20,7 @@ before.
 Table of contents: |usr_toc.txt|
 
 ==============================================================================
-*22.1*	The file explorer
+*22.1*	The file browser
 
 Vim has a plugin that makes it possible to edit a directory.  Try this: >
 
@@ -29,85 +29,121 @@ Vim has a plugin that makes it possible to edit a directory.  Try this: >
 Through the magic of autocommands and Vim scripts, the window will be filled
 with the contents of the directory.  It looks like this:
 
-	" Press ? for keyboard shortcuts ~
-	" Sorted by name (.bak,~,.o,.h,.info,.swp,.obj,.orig,.rej at end of list) ~
-	"= /home/mool/vim/vim6/runtime/doc/ ~
-	../ ~
-	check/ ~
-	Makefile ~
-	autocmd.txt ~
-	change.txt ~
-	eval.txt~ ~
-	filetype.txt~ ~
-	help.txt.info ~
+" ============================================================================ ~
+" Netrw Directory Listing                                        (netrw v109) ~
+"   Sorted by      name ~
+"   Sort sequence: [\/]$,\.h$,\.c$,\.cpp$,*,\.info$,\.swp$,\.o$\.obj$,\.bak$ ~
+"   Quick Help: <F1>:help  -:go up dir  D:delete  R:rename  s:sort-by  x:exec ~
+" ============================================================================ ~
+../ ~
+./ ~
+check/ ~
+Makefile ~
+autocmd.txt ~
+change.txt ~
+eval.txt~ ~
+filetype.txt~ ~
+help.txt.info ~
 
 You can see these items:
-1.  A comment about using ? to get help for the functionality of the file
-    explorer.
-2.  The second line mentions how the items in the directory are listed.  They
-    can be sorted in several ways.
-3.  The third line is the name of the current directory.
-4.  The "../" directory item.  This is the parent directory.
-5.  The directory names.
-6.  The ordinary file names.  As mentioned in the second line, some are not
-    here but "at the end of the list".
-7.  The less ordinary file names.  You are expected to use these less often,
-    therefore they have been moved to the end.
+
+1.  The name of the browsing tool and its version number
+2.  The name of the browsing directory
+3.  The method of sorting (may be by name, time, or size)
+4.  How names are to be sorted (directories first, then *.h files,
+    *.c files, etc)
+5.  How to get help (use the <F1> key), and an abbreviated listing
+    of available commands
+6.  A listing of files, including "../", which allows one to to list
+    the parent directory.
 
 If you have syntax highlighting enabled, the different parts are highlighted
-to make it easier to spot them.
+so as to make it easier to spot them.
 
 You can use Normal mode Vim commands to move around in the text.  For example,
-move to a file and press <Enter>.  Now you are editing that file.  To go back
-to the explorer use ":edit ." again.  CTRL-O also works.
-   Try using <Enter> while the cursor is on a directory name.  The result is
-that the explorer moves into that directory and displays the items found
+move the cursor atop a file and press <Enter>; you will then be editing that
+file.  To go back to the browser use ":edit ." again, or use ":Explore".
+CTRL-O also works.
+
+Try using <Enter> while the cursor is atop a directory name.  The result is
+that the file browser moves into that directory and displays the items found
 there.  Pressing <Enter> on the first directory "../" moves you one level
 higher.  Pressing "-" does the same thing, without the need to move to the
 "../" item first.
 
-You can press ? to get short help on the things you can do in the explorer.
-This is what you get:
+You can press <F1> to get help on the things you can do in the netrw file
+browser.  This is what you get: >
 
-	" <enter> : open file or directory ~
-	" o : open new window for file/directory ~
-	" O : open file in previously visited window ~
-	" p : preview the file ~
-	" i : toggle size/date listing ~
-	" s : select sort field    r : reverse sort ~
-	" - : go up one level      c : cd to this dir ~
-	" R : rename file	   D : delete file ~
-	" :help file-explorer for detailed help ~
+    9. Directory Browsing	 netrw-browse   netrw-dir   netrw-list   netrw-help 
 
-The first few commands are for selecting a file to display.  Depending on what
-command you use, the file appears somewhere:
+    MAPS								 netrw-maps 
+     	 <F1>.............Help.......................................|netrw-help|
+     	 <cr>.............Browsing...................................|netrw-cr|
+     	 <del>............Deleting Files or Directories..............|netrw-delete|
+     	 -................Going Up...................................|netrw--|
+     	 a................Hiding Files or Directories................|netrw-a|
+     	 mb...............Bookmarking a Directory....................|netrw-mb|
+     	 gb...............Changing to a Bookmarked Directory.........|netrw-gb|
+     	 c................Make Browsing Directory The Current Dir....|netrw-c|
+     	 d................Make A New Directory.......................|netrw-d|
+     	 D................Deleting Files or Directories..............|netrw-D|
+     	 <c-h>............Edit File/Directory Hiding List............|netrw-ctrl-h|
+     	 i................Change Listing Style.......................|netrw-i|
+     	 <c-l>............Refreshing the Listing.....................|netrw-ctrl-l|
+     	 o................Browsing with a Horizontal Split...........|netrw-o|
+     	 p................Use Preview Window.........................|netrw-p|
+     	 P................Edit in Previous Window....................|netrw-p|
+     	 q................Listing Bookmarks and History..............|netrw-q|
+     	 r................Reversing Sorting Order....................|netrw-r|
+<    	(etc)
 
-	<Enter>		Uses the current window.
-	o		Opens a new window.
-	O		Uses the previously visited window.
-	p		Uses the preview window, and moves the cursor back
-			into the explorer window. |preview-window|
+The <F1> key thus brings you to a netrw directory browsing contents help page.
+Its a regular help page; use the usual |CTRL-]| to jump to tagged help items
+and |CTRL-O| to jump back.
 
-The following commands are used to display other information:
+To select files for display and editing: (with the cursor is atop a filename)
 
-	i		Display the size and date for the file.  Using i again
-			will hide the information.
-	s		Use the field the cursor is in to sort on.  First
-			display the size and date with i.  Then Move the
-			cursor to the size of any file and press s.  The files
-			will now be sorted on size.  Press s while the cursor
-			is on a date and the items will be sorted on date.
-	r		reverse the sorting order (either size or date)
+	<enter>		Open the file in the current window.	   |netrw-cr|
+	o		Horizontally split window and display file |netrw-o|
+	v		Vertically split window and display file   |netrw-v|
+	p		Use the |preview-window| 		   |netrw-p|
+	P		Edit in the previous window		   |netrw-P|
+	t		Open file in a new tab			   |netrw-t|
 
-There are a few extra commands:
+The following normal-mode commands may be used to control the browser display:
 
-	c		Change the current directory to the displayed
-			directory.  You can then type an ":edit" command for
-			one of the files without prepending the path.
-	R		Rename the file under the cursor.  You will be
-			prompted for the new name.
-	D		Delete the file under the cursor.  You will get a
-			prompt to confirm this.
+	i		Controls listing style (thin, long, wide, and tree).
+			The long listing includes size and date information.
+	s		Repeatedly pressing s will change the way the files
+			are sorted; one may sort on name, modification time,
+			or size.
+	r		Reverse the sorting order.
+
+As a sampling of extra normal-mode commands:
+
+	c		Change Vim's notion of the current directory to be
+			the same as the browser directory.  (see
+			|g:netrw_keepdir| to control this, too)
+	R		Rename the file or directory under the cursor; a
+			prompt will be issued for the new name.
+	D		Delete the file or directory under the cursor; a
+			confirmation request will be issued.
+	mb gb		Make bookmark/goto bookmark
+
+
+One may also use command mode; again, just a sampling:
+
+	:Explore [directory]	Browse specified/current directory
+	:NetrwSettings		A comprehensive list of your current netrw
+				settings with help linkage.
+
+The netrw browser is not limited to just your local machine; one may use
+urls such as:    (that trailing / is important)
+
+	:Explore ftp://somehost/path/to/dir/
+	:e scp://somehost/path/to/dir/
+
+See |netrw-browse| for more.
 
 ==============================================================================
 *22.2*	The current directory
@@ -255,8 +291,8 @@ solution for you: >
 The buffer "one.txt" disappears from the screen, but Vim still knows that you
 are editing this buffer, so it keeps the modified text.  This is called a
 hidden buffer: The buffer contains text, but you can't see it.
-   The ":hide" command argument is another command.  It makes that command
-behave like the 'hidden' option was set.  You could also set this option
+   The argument of ":hide" is another command.  ":hide" makes that command
+behave as if the 'hidden' option was set.  You could also set this option
 yourself.  The effect is that when any buffer is abandoned, it becomes hidden.
    Be careful!  When you have hidden buffers with changes, don't exit Vim
 without making sure you have saved all the buffers.

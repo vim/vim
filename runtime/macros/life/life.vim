@@ -1,6 +1,7 @@
 " Macros to play Conway's Game of Life in vi
 " Version 1.0m: edges wrap
-" by Eli-the-Bearded (eli@netusa.net), Sept 1996
+" by Eli-the-Bearded Benjamin Elijah Griffin <vim@eli.users.panix.com>
+" Sept 1996
 " This file may be free distributed so long as these credits remain unchanged.
 "
 " Modified by Bram Moolenaar (Bram@vim.org), 1996 Sept 10

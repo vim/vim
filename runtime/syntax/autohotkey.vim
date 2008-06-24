@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         AutoHotkey script file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-05-09
+" Latest Revision:  2007-06-01
 
 if exists("b:current_syntax")
   finish
@@ -242,6 +242,10 @@ syn keyword autohotkeyType
       \ local
       \ global
 
+syn keyword autohotkeyBoolean
+      \ true
+      \ false
+
 hi def link autohotkeyTodo                Todo
 hi def link autohotkeyComment             Comment
 hi def link autohotkeyCommentStart        autohotkeyComment
@@ -271,6 +275,7 @@ hi def link autohotkeyNumber              Number
 hi def link autohotkeyInteger             autohotkeyNumber
 hi def link autohotkeyFloat               autohotkeyNumber
 hi def link autohotkeyType                Type
+hi def link autohotkeyBoolean             Boolean
 
 let b:current_syntax = "autohotkey"
 

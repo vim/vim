@@ -1,4 +1,4 @@
-*usr_45.txt*	For Vim version 7.1.  Last change: 2006 Apr 24
+*usr_45.txt*	For Vim version 7.2a.  Last change: 2008 Apr 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -195,7 +195,7 @@ though.  Example: >
 If it doesn't work well, try getting a fontpack.  If Microsoft didn't move it,
 you can find it here:
 
-	http://www.microsoft.com/typography/fontpack/default.htm ~
+	http://www.microsoft.com/typography/fonts/default.aspx ~
 
 Now you have told Vim to use Unicode internally and display text with a
 Unicode font.  Typed characters still arrive in the encoding of your original

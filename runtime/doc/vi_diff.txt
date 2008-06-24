@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.1.  Last change: 2007 Aug 14
+*vi_diff.txt*   For Vim version 7.2a.  Last change: 2008 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -192,7 +192,7 @@ Syntax highlighting.					|:syntax|
 Spell checking.						|spell|
 	When the 'spell' option is set Vim will highlight spelling mistakes.
 	About 40 languages are currently supported, selected with the
-	'spellang' option.  In source code only comments and strings are
+	'spelllang' option.  In source code only comments and strings are
 	checked for spelling.
 
 Folding.						|folding|
@@ -427,8 +427,9 @@ Printing.						|printing|
 
 Mouse support.						|mouse-using|
 	The mouse is supported in the GUI version, in an xterm for Unix, for
-	Linux with gpm, for MS-DOS, and Win32.  It can be used to position the
-	cursor, select the visual area, paste a register, etc.
+	BSDs with sysmouse, for Linux with gpm, for MS-DOS, and Win32.  It
+	can be used to position the cursor, select the visual area, paste a
+	register, etc.
 
 Usage of key names.					|<>| |key-notation|
 	Special keys now all have a name like <Up>, <End>, etc.

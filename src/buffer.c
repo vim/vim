@@ -1233,12 +1233,13 @@ do_buffer(action, start, dir, count, forceit)
     if (action == DOBUF_SPLIT)	    /* split window first */
     {
 # ifdef FEAT_WINDOWS
-	/* jump to first window containing buf if one exists ("useopen") */
-	if (vim_strchr(p_swb, 'o') != NULL && buf_jump_open_win(buf))
+	/* If 'switchbuf' contains "useopen": jump to first window containing
+	 * "buf" if one exists */
+	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
 	    return OK;
-	/* jump to first window in any tab page containing buf if one exists
-	 * ("usetab") */
-	if (vim_strchr(p_swb, 'a') != NULL && buf_jump_open_tab(buf))
+	/* If 'switchbuf' contians "usetab": jump to first window in any tab
+	 * page containing "buf" if one exists */
+	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
 	    return OK;
 	if (win_split(0, 0) == FAIL)
 # endif
@@ -1874,16 +1875,21 @@ buflist_getfile(n, lnum, options, forceit)
 #ifdef FEAT_WINDOWS
     if (options & GETF_SWITCH)
     {
-	/* use existing open window for buffer if wanted */
-	if (vim_strchr(p_swb, 'o') != NULL)	/* useopen */
+	/* If 'switchbuf' contains "useopen": jump to first window containing
+	 * "buf" if one exists */
+	if (swb_flags & SWB_USEOPEN)
 	    wp = buf_jump_open_win(buf);
-	/* use existing open window in any tab page for buffer if wanted */
-	if (vim_strchr(p_swb, 'a') != NULL)	/* usetab */
+	/* If 'switchbuf' contians "usetab": jump to first window in any tab
+	 * page containing "buf" if one exists */
+	if (wp == NULL && (swb_flags & SWB_USETAB))
 	    wp = buf_jump_open_tab(buf);
-	/* split window if wanted ("split") */
-	if (wp == NULL && vim_strchr(p_swb, 'l') != NULL && !bufempty())
+	/* If 'switchbuf' contains "split" or "newtab" and the current buffer
+	 * isn't empty: open new window */
+	if (wp == NULL && (swb_flags & (SWB_SPLIT | SWB_NEWTAB)) && !bufempty())
 	{
-	    if (win_split(0, 0) == FAIL)
+	    if (swb_flags & SWB_NEWTAB)		/* Open in a new tab */
+		tabpage_new();
+	    else if (win_split(0, 0) == FAIL)	/* Open in a new window */
 		return FAIL;
 # ifdef FEAT_SCROLLBIND
 	    curwin->w_p_scb = FALSE;
@@ -4023,7 +4029,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 #endif
 		n = width - maxwidth + 1;
 	    p = s + n;
-	    mch_memmove(s + 1, p, STRLEN(p) + 1);
+	    STRMOVE(s + 1, p);
 	    *s = '<';
 
 	    /* Fill up for half a double-wide character. */
@@ -4054,7 +4060,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 	if (l < itemcnt)
 	{
 	    p = item[l].start + maxwidth - width;
-	    mch_memmove(p, item[l].start, STRLEN(item[l].start) + 1);
+	    STRMOVE(p, item[l].start);
 	    for (s = item[l].start; s < p; s++)
 		*s = fillchar;
 	    for (l++; l < itemcnt; l++)
@@ -4867,7 +4873,7 @@ chk_modeline(lnum, flags)
 	     */
 	    for (e = s; *e != ':' && *e != NUL; ++e)
 		if (e[0] == '\\' && e[1] == ':')
-		    mch_memmove(e, e + 1, STRLEN(e));
+		    STRMOVE(e, e + 1);
 	    if (*e == NUL)
 		end = TRUE;
 

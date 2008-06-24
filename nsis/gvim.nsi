@@ -22,7 +22,7 @@
 !define HAVE_NLS
 
 !define VER_MAJOR 7
-!define VER_MINOR 1
+!define VER_MINOR 2a
 
 # ----------- No configurable settings below this line -----------
 
@@ -139,7 +139,7 @@ FunctionEnd
 Function .onInstSuccess
   WriteUninstaller vim${VER_MAJOR}${VER_MINOR}\uninstall-gui.exe
   MessageBox MB_YESNO|MB_ICONQUESTION \
-	"The installation process has been successfull. Happy Vimming! \
+	"The installation process has been successful. Happy Vimming! \
 	$\n$\n Do you want to see the README file now?" IDNO NoReadme
       Exec '$0\gvim.exe -R "$0\README.txt"'
   NoReadme:

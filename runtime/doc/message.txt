@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.1.  Last change: 2007 Mar 20
+*message.txt*   For Vim version 7.2a.  Last change: 2007 Aug 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,7 @@ If you are lazy, it also works without the shift key: >
 	:help e72
 
 ==============================================================================
-2. Error messages					*error-messages*
+2. Error messages				*error-messages* *errors*
 
 When an error message is displayed, but it is removed before you could read
 it, you can see it again with: >
