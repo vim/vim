@@ -1,4 +1,4 @@
-*hebrew.txt*    For Vim version 7.1.  Last change: 2003 May 11
+*hebrew.txt*    For Vim version 7.2a.  Last change: 2007 Jun 14
 
 
 	   VIM REFERENCE MANUAL    by Ron Aaron (and Avner Lottem)
@@ -7,11 +7,8 @@
 Hebrew Language support (options & mapping) for Vim		*hebrew*
 
 The supporting 'rightleft' functionality was originally created by Avner
-Lottem:
-   E-mail: alottem@iil.intel.com
-   Phone:  +972-4-8307322
-
-Ron Aaron <ron@ronware.org> is currently helping support these features.
+Lottem. <alottem at gmail dot com>  Ron Aaron <ron at ronware dot org> is
+currently helping support these features.
 
 {Vi does not have any of these commands}
 

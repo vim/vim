@@ -85,7 +85,8 @@ static void got_code_from_term __ARGS((char_u *code, int len));
 static void check_for_codes_from_term __ARGS((void));
 #endif
 #if defined(FEAT_GUI) \
-    || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM)))
+    || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM) \
+		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 static int get_bytes_from_buf __ARGS((char_u *, char_u *, int));
 #endif
 static void del_termcode_idx __ARGS((int idx));
@@ -1923,7 +1924,7 @@ set_termname(term)
 #    endif
 	    clip_init(FALSE);
 #   endif
-	if (term_is_xterm)
+	if (use_xterm_like_mouse(term))
 	{
 	    if (use_xterm_mouse())
 		p = NULL;	/* keep existing value, might be "xterm2" */
@@ -2067,9 +2068,7 @@ set_termname(term)
 static int has_mouse_termcode = 0;
 # endif
 
-# if (!defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_MOUSE_NET) \
-	|| defined(FEAT_MOUSE_DEC)) || defined(FEAT_MOUSE_JSB) \
-	|| defined(FEAT_MOUSE_PTERM) || defined(PROTO)
+# if (!defined(UNIX) || defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
 set_mouse_termcode(n, s)
     int		n;	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
@@ -2107,9 +2106,7 @@ set_mouse_termcode(n, s)
 # endif
 
 # if ((defined(UNIX) || defined(VMS) || defined(OS2)) \
-	&& (defined(FEAT_MOUSE_XTERM) || defined(FEAT_MOUSE_DEC) \
-	    || defined(FEAT_MOUSE_GPM) || defined(FEAT_MOUSE_PTERM))) \
-	    || defined(PROTO)
+	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
 del_mouse_termcode(n)
     int		n;	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
@@ -2951,7 +2948,8 @@ get_long_from_buf(buf, val)
 #endif
 
 #if defined(FEAT_GUI) \
-    || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM)))
+    || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM) \
+		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 /*
  * Read the next num_bytes bytes from buf, and store them in bytes.  Assume
  * that buf has been through inchar().	Returns the actual number of bytes used
@@ -3583,7 +3581,7 @@ add_termcode(name, string, flags)
     /* Change leading <Esc>[ to CSI, change <Esc>O to <M-O>. */
     if (flags != 0 && flags != ATC_FROM_TERM && term_7to8bit(string) != 0)
     {
-	mch_memmove(s, s + 1, STRLEN(s));
+	STRMOVE(s, s + 1);
 	s[0] = term_7to8bit(string);
     }
     len = (int)STRLEN(s);
@@ -3768,8 +3766,7 @@ switch_to_8bit()
 	    c = term_7to8bit(termcodes[i].code);
 	    if (c != 0)
 	    {
-		mch_memmove(termcodes[i].code + 1, termcodes[i].code + 2,
-					       STRLEN(termcodes[i].code + 1));
+		STRMOVE(termcodes[i].code + 1, termcodes[i].code + 2);
 		termcodes[i].code[0] = c;
 	    }
 	}
@@ -3838,7 +3835,8 @@ check_termcode(max_offset, buf, buflen)
     int		i, j;
     int		idx = 0;
 #ifdef FEAT_MOUSE
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI)
+# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+    || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
     char_u	bytes[6];
     int		num_bytes;
 # endif
@@ -4181,7 +4179,8 @@ check_termcode(max_offset, buf, buflen)
 	{
 	    is_click = is_drag = FALSE;
 
-# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI)
+# if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
+	    || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
 	    if (key_name[0] == (int)KS_MOUSE)
 	    {
 		/*

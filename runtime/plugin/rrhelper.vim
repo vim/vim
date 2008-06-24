@@ -1,6 +1,6 @@
 " Vim plugin with helper function(s) for --remote-wait
 " Maintainer: Flemming Madsen <fma@cci.dk>
-" Last Change: 2004 May 30
+" Last Change: 2008 May 29
 
 " Has this already been loaded?
 if exists("loaded_rrhelper")
@@ -27,7 +27,12 @@ if has("clientserver")
 
       " Path separators are always forward slashes for the autocommand pattern.
       " Escape special characters with a backslash.
-      let f = escape(substitute(argv(cnt), '\\', '/', "g"), ' *,?[{')
+      let f = substitute(argv(cnt), '\\', '/', "g")
+      if exists('*fnameescape')
+	let f = fnameescape(f)
+      else
+	let f = escape(f, " \t\n*?[{`$\\%#'\"|!<")
+      endif
       execute "augroup ".uniqueGroup
       execute "autocmd ".uniqueGroup." BufUnload ". f ."  call DoRemoteReply('".id."', '".cnt."', '".uniqueGroup."', '". f ."')"
       let cnt = cnt + 1

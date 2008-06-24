@@ -1,7 +1,7 @@
 "  matchit.vim: (global plugin) Extended "%" matching
-"  Last Change: Mon May 15 10:00 PM 2006 EDT
+"  Last Change: Fri Jan 25 10:00 AM 2008 EST
 "  Maintainer:  Benji Fisher PhD   <benji@member.AMS.org>
-"  Version:     1.11, for Vim 6.3+
+"  Version:     1.13.2, for Vim 6.3+
 "  URL:		http://www.vim.org/script.php?script_id=39
 
 " Documentation:
@@ -42,7 +42,7 @@ if exists("loaded_matchit") || &cp
 endif
 let loaded_matchit = 1
 let s:last_mps = ""
-let s:last_words = ""
+let s:last_words = ":"
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -100,12 +100,9 @@ function! s:Match_wrapper(word, forward, mode) range
   " In s:CleanUp(), we may need to check whether the cursor moved forward.
   let startline = line(".")
   let startcol = col(".")
-  " Use default behavior if called with a count or if no patterns are defined.
+  " Use default behavior if called with a count.
   if v:count
     exe "normal! " . v:count . "%"
-    return s:CleanUp(restore_options, a:mode, startline, startcol)
-  elseif !exists("b:match_words") || b:match_words == ""
-    silent! normal! %
     return s:CleanUp(restore_options, a:mode, startline, startcol)
   end
 
@@ -114,8 +111,10 @@ function! s:Match_wrapper(word, forward, mode) range
   "   s:pat	parsed version of b:match_words
   "   s:all	regexp based on s:pat and the default groups
   "
-  " Allow b:match_words = "GetVimMatchWords()" .
-  if b:match_words =~ ":"
+  if !exists("b:match_words") || b:match_words == ""
+    let match_words = ""
+    " Allow b:match_words = "GetVimMatchWords()" .
+  elseif b:match_words =~ ":"
     let match_words = b:match_words
   else
     execute "let match_words =" b:match_words
@@ -125,13 +124,6 @@ function! s:Match_wrapper(word, forward, mode) range
     \ exists("b:match_debug")
     let s:last_words = match_words
     let s:last_mps = &mps
-    if match_words !~ s:notslash . '\\\d'
-      let s:do_BR = 0
-      let s:pat = match_words
-    else
-      let s:do_BR = 1
-      let s:pat = s:ParseWords(match_words)
-    endif
     " The next several lines were here before
     " BF started messing with this script.
     " quote the special chars in 'matchpairs', replace [,:] with \| and then
@@ -141,8 +133,15 @@ function! s:Match_wrapper(word, forward, mode) range
     let default = escape(&mps, '[$^.*~\\/?]') . (strlen(&mps) ? "," : "") .
       \ '\/\*:\*\/,#if\%(def\)\=:#else\>:#elif\>:#endif\>'
     " s:all = pattern with all the keywords
-    let s:all = s:pat . (strlen(s:pat) ? "," : "") . default
-    let s:all = substitute(s:all, s:notslash . '\zs[,:]\+', '\\|', 'g')
+    let match_words = match_words . (strlen(match_words) ? "," : "") . default
+    if match_words !~ s:notslash . '\\\d'
+      let s:do_BR = 0
+      let s:pat = match_words
+    else
+      let s:do_BR = 1
+      let s:pat = s:ParseWords(match_words)
+    endif
+    let s:all = substitute(s:pat, s:notslash . '\zs[,:]\+', '\\|', 'g')
     let s:all = '\%(' . s:all . '\)'
     " let s:all = '\%(' . substitute(s:all, '\\\ze[,:]', '', 'g') . '\)'
     if exists("b:match_debug")
@@ -172,16 +171,14 @@ function! s:Match_wrapper(word, forward, mode) range
   else	" Find the match that ends on or after the cursor and set curcol.
     let regexp = s:Wholematch(matchline, s:all, startcol-1)
     let curcol = match(matchline, regexp)
+    " If there is no match, give up.
+    if curcol == -1
+      return s:CleanUp(restore_options, a:mode, startline, startcol)
+    endif
     let endcol = matchend(matchline, regexp)
     let suf = strlen(matchline) - endcol
     let prefix = (curcol ? '^.*\%'  . (curcol + 1) . 'c\%(' : '^\%(')
     let suffix = (suf ? '\)\%' . (endcol + 1) . 'c.*$'  : '\)$')
-    " If the match comes from the defaults, bail out.
-    if matchline !~ prefix .
-      \ substitute(s:pat, s:notslash.'\zs[,:]\+', '\\|', 'g') . suffix
-      silent! norm! %
-      return s:CleanUp(restore_options, a:mode, startline, startcol)
-    endif
   endif
   if exists("b:match_debug")
     let b:match_match = matchstr(matchline, regexp)
@@ -401,6 +398,7 @@ fun! s:ParseWords(groups)
     endwhile " Now, tail has been used up.
     let parsed = parsed . ","
   endwhile " groups =~ '[^,:]'
+  let parsed = substitute(parsed, ',$', '', '')
   return parsed
 endfun
 
@@ -651,7 +649,7 @@ fun! s:MultiMatch(spflag, mode)
   "   s:all	regexp based on s:pat and the default groups
   " This part is copied and slightly modified from s:Match_wrapper().
   let default = escape(&mps, '[$^.*~\\/?]') . (strlen(&mps) ? "," : "") .
-    \ '\/\*:\*\/,#if\%(def\)\=:$else\>:#elif\>:#endif\>'
+    \ '\/\*:\*\/,#if\%(def\)\=:#else\>:#elif\>:#endif\>'
   " Allow b:match_words = "GetVimMatchWords()" .
   if b:match_words =~ ":"
     let match_words = b:match_words
@@ -682,10 +680,12 @@ fun! s:MultiMatch(spflag, mode)
   " - maybe even more functionality should be split off
   " - into separate functions!
   let cdefault = (s:pat =~ '[^,]$' ? "," : "") . default
-  let open =  substitute(s:pat . cdefault, ':[^,]*,', '\\),\\(', 'g')
-  let open =  '\(' . substitute(open, ':[^,]*$', '\\)', '')
-  let close = substitute(s:pat . cdefault, ',[^,]*:', '\\),\\(', 'g')
-  let close = substitute(close, '[^,]*:', '\\(', '') . '\)'
+  let open =  substitute(s:pat . cdefault,
+	\ s:notslash . '\zs:.\{-}' . s:notslash . ',', '\\),\\(', 'g')
+  let open =  '\(' . substitute(open, s:notslash . '\zs:.*$', '\\)', '')
+  let close = substitute(s:pat . cdefault,
+	\ s:notslash . '\zs,.\{-}' . s:notslash . ':', '\\),\\(', 'g')
+  let close = substitute(close, '^.\{-}' . s:notslash . ':', '\\(', '') . '\)'
   if exists("b:match_skip")
     let skip = b:match_skip
   elseif exists("b:match_comment") " backwards compatibility and testing!

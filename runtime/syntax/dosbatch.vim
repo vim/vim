@@ -2,7 +2,7 @@
 " Language:	MSDOS batch file (with NT command extensions)
 " Maintainer:	Mike Williams <mrw@eandem.co.uk>
 " Filenames:    *.bat
-" Last Change:	16th March 2004
+" Last Change:	10th May 2008
 " Web Page:     http://www.eandem.co.uk/mrw/vim
 "
 " Options Flags:
@@ -43,8 +43,8 @@ syn match dosbatchOperator      "\s\(&\||\|^\|<<\|>>\)=\=\s"
 syn match dosbatchIfOperator    "if\s\+\(\(not\)\=\s\+\)\=\(exist\|defined\|errorlevel\|cmdextversion\)\="lc=2
 
 " String - using "'s is a convenience rather than a requirement outside of FOR
-syn match dosbatchString	"\"[^"]*\"" contains=dosbatchVariable,dosBatchArgument,@dosbatchNumber
-syn match dosbatchString	"\<echo[^)>|]*"lc=4 contains=dosbatchVariable,dosbatchArgument,@dosbatchNumber
+syn match dosbatchString	"\"[^"]*\"" contains=dosbatchVariable,dosBatchArgument,dosbatchSpecialChar,@dosbatchNumber,@Spell
+syn match dosbatchString	"\<echo\([^)>|]\|\^\@<=[)>|]\)*"lc=4 contains=dosbatchVariable,dosbatchArgument,dosbatchSpecialChar,@dosbatchNumber,@Spell
 syn match dosbatchEchoOperator  "\<echo\s\+\(on\|off\)\s*$"lc=4
 
 " For embedded commands
@@ -91,12 +91,12 @@ syn match dosbatchLabel		"\<goto\s\+\h\w*\>"lc=4
 syn match dosbatchLabel		":\h\w*\>"
 
 " Comments - usual rem but also two colons as first non-space is an idiom
-syn match dosbatchComment	"^rem\($\|\s.*$\)"lc=3 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument
-syn match dosbatchComment	"\srem\($\|\s.*$\)"lc=4 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument
-syn match dosbatchComment	"\s*:\s*:.*$" contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument
+syn match dosbatchComment	"^rem\($\|\s.*$\)"lc=3 contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
+syn match dosbatchComment	"\srem\($\|\s.*$\)"lc=4 contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
+syn match dosbatchComment	"\s*:\s*:.*$" contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
 
 " Comments in ()'s - still to handle spaces before rem
-syn match dosbatchComment	"(rem[^)]*"lc=4 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument
+syn match dosbatchComment	"(rem\([^)]\|\^\@<=)\)*"lc=4 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
 
 syn keyword dosbatchImplicit    append assoc at attrib break cacls cd chcp chdir
 syn keyword dosbatchImplicit    chkdsk chkntfs cls cmd color comp compact convert copy
@@ -127,12 +127,12 @@ if version >= 508 || !exists("did_dosbatch_syntax_inits")
   HiLink dosbatchConditional	Conditional
   HiLink dosbatchRepeat		Repeat
 
-  HiLink dosbatchOperator	Operator
-  HiLink dosbatchEchoOperator	dosbatchOperator
-  HiLink dosbatchIfOperator	dosbatchOperator
+  HiLink dosbatchOperator       Operator
+  HiLink dosbatchEchoOperator   dosbatchOperator
+  HiLink dosbatchIfOperator     dosbatchOperator
 
   HiLink dosbatchArgument	Identifier
-  HiLink dosbatchIdentifier	Identifier
+  HiLink dosbatchIdentifier     Identifier
   HiLink dosbatchVariable	dosbatchIdentifier
 
   HiLink dosbatchSpecialChar	SpecialChar

@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.1.  Last change: 2007 Jan 07
+*repeat.txt*    For Vim version 7.2a.  Last change: 2007 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -89,10 +89,11 @@ This replaces all occurrences of "pat" with "PAT".  The same can be done with:
 	:%s/pat/PAT/g
 Which is two characters shorter!
 
-A special case is using ":visual" as a command.  This will move to a matching
-line, go to Normal mode to let you execute commands there until you use |Q| to
-return to Ex mode.  This will be repeated for each matching line.  While doing
-this you cannot use ":global".
+When using "global" in Ex mode, a special case is using ":visual" as a
+command.  This will move to a matching line, go to Normal mode to let you
+execute commands there until you use |Q| to return to Ex mode.  This will be
+repeated for each matching line.  While doing this you cannot use ":global".
+To abort this type CTRL-C twice.
 
 ==============================================================================
 3. Complex repeats					*complex-repeat*

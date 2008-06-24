@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Javascript
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:  2007 Feb 21
+" Last Change:  2008 Jun 15
 " URL:		http://gus.gscit.monash.edu.au/~djkea2/vim/ftplugin/javascript.vim
 
 if exists("b:did_ftplugin")
@@ -28,7 +28,7 @@ setlocal commentstring=//%s
 
 " Change the :browse e filter to primarily show Java-related files.
 if has("gui_win32")
-    let  b:browsefilter="Javascript Files (*.js)\t*.js\n"
+    let  b:browsefilter="Javascript Files (*.js)\t*.js\n" .
 		\	"All Files (*.*)\t*.*\n"
 endif
        

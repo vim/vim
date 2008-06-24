@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.1.  Last change: 2007 Aug 14
+*starting.txt*  For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1386,9 +1386,13 @@ using this command: >
 
 	vim -c "normal '0"
 
-In a shell you could make an alias for it: >
+In a csh compatible shell you could make an alias for it: >
 
 	alias lvim vim -c '"'normal "'"0'"'
+
+For a bash-like shell: >
+
+	alias lvim='vim -c "normal '\''0"'
 
 Use the "r" flag in 'viminfo' to specify for which files no marks should be
 remembered.
