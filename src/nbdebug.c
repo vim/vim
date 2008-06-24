@@ -36,7 +36,7 @@ void		 nbdb(char *, ...);
 void		 nbtrace(char *, ...);
 
 static int	 lookup(char *);
-#ifndef FEAT_GUI_W32
+#ifdef USE_NB_ERRORHANDLER
 static int	 errorHandler(Display *, XErrorEvent *);
 #endif
 
@@ -92,6 +92,9 @@ nbdebug_log_init(
 		} else {
 			nb_dlevel = NB_TRACE;	/* default level */
 		}
+#ifdef USE_NB_ERRORHANDLER
+		XSetErrorHandler(errorHandler);
+#endif
 	}
 
 }    /* end nbdebug_log_init */
@@ -166,7 +169,7 @@ lookup(
 
 }    /* end lookup */
 
-#ifndef FEAT_GUI_W32
+#ifdef USE_NB_ERRORHANDLER
 static int
 errorHandler(
 	Display		*dpy,

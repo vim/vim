@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         mplayer(1) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-06-17
 
 if exists("b:current_syntax")
   finish
@@ -10,7 +10,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,-
+setlocal iskeyword+=-
 
 syn keyword mplayerconfTodo     contained TODO FIXME XXX NOTE
 

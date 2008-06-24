@@ -2952,8 +2952,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		 * next line. */
 		nextlinecol = 0;
 		mch_memmove(nextline, line, (size_t)v);
-		mch_memmove(nextline + v, nextline + SPWORDLEN,
-					    STRLEN(nextline + SPWORDLEN) + 1);
+		STRMOVE(nextline + v, nextline + SPWORDLEN);
 		nextline_idx = v + 1;
 	    }
 	    else

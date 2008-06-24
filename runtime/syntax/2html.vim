@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2007 Mar 10
+" Last Change: 2007 Aug 31
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 "	       (made w3 compliant by Edd Barrett <vext01@gmail.com>)
@@ -162,9 +162,9 @@ else
     let s:html_encoding = 'iso-8859-1'
   elseif s:vim_encoding =~ "^cp12"
     let s:html_encoding = substitute(s:vim_encoding, 'cp', 'windows-', '')
-  elseif s:vim_encoding == 'sjis'
+  elseif s:vim_encoding == 'sjis' || s:vim_encoding == 'cp932'
     let s:html_encoding = 'Shift_JIS'
-  elseif s:vim_encoding == 'big5'
+  elseif s:vim_encoding == 'big5' || s:vim_encoding == 'cp950'
     let s:html_encoding = "Big5"
   elseif s:vim_encoding == 'euc-cn'
     let s:html_encoding = 'GB_2312-80'

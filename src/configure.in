@@ -23,6 +23,11 @@ AC_CHECK_PROG(STRIP, strip, strip, :)
 dnl Check for extension of executables
 AC_EXEEXT
 
+dnl Check for standard headers.  We don't use this in Vim but other stuff
+dnl in autoconf needs it, where it uses STDC_HEADERS.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+
 dnl Set default value for CFLAGS if none is defined or it's empty
 if test -z "$CFLAGS"; then
   CFLAGS="-O"
@@ -47,11 +52,10 @@ if test "$GCC" = yes; then
   fi
 fi
 
-dnl If configure thinks we are cross compiling, there is probably something
-dnl wrong with the CC or CFLAGS settings, give an understandable error message
+dnl If configure thinks we are cross compiling, there might be something
+dnl wrong with the CC or CFLAGS settings, give a useful warning message
 if test "$cross_compiling" = yes; then
-  AC_MSG_ERROR([cannot compile a simple program, check CC and CFLAGS
-  (cross compiling doesn't work)])
+  AC_MSG_RESULT([cannot compile a simple program; if not cross compiling check CC and CFLAGS])
 fi
 
 dnl gcc-cpp has the wonderful -MM option to produce nicer dependencies.
@@ -186,25 +190,28 @@ AC_SUBST(OS_EXTRA_OBJ)
 dnl Add /usr/local/lib to $LDFLAGS and /usr/local/include to CFLAGS.
 dnl Only when the directory exists and it wasn't there yet.
 dnl For gcc don't do this when it is already in the default search path.
-have_local_include=''
-have_local_lib=''
-if test "$GCC" = yes; then
-  echo 'void f(){}' > conftest.c
-  dnl -no-cpp-precomp is needed for OS X 10.2 (Ben Fowler)
-  have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep '/usr/local/include'`
-  have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep '/usr/local/lib'`
-  rm -f conftest.c conftest.o
-fi
-if test -z "$have_local_lib" -a -d /usr/local/lib; then
-  tt=`echo "$LDFLAGS" | sed -e 's+-L/usr/local/lib ++g' -e 's+-L/usr/local/lib$++g'`
-  if test "$tt" = "$LDFLAGS"; then
-    LDFLAGS="$LDFLAGS -L/usr/local/lib"
+dnl Skip all of this when cross-compiling.
+if test "$cross_compiling" = no; then
+  have_local_include=''
+  have_local_lib=''
+  if test "$GCC" = yes; then
+    echo 'void f(){}' > conftest.c
+    dnl -no-cpp-precomp is needed for OS X 10.2 (Ben Fowler)
+    have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep '/usr/local/include'`
+    have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep '/usr/local/lib'`
+    rm -f conftest.c conftest.o
   fi
-fi
-if test -z "$have_local_include" -a -d /usr/local/include; then
-  tt=`echo "$CPPFLAGS" | sed -e 's+-I/usr/local/include ++g' -e 's+-I/usr/local/include$++g'`
-  if test "$tt" = "$CPPFLAGS"; then
-    CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+  if test -z "$have_local_lib" -a -d /usr/local/lib; then
+    tt=`echo "$LDFLAGS" | sed -e 's+-L/usr/local/lib ++g' -e 's+-L/usr/local/lib$++g'`
+    if test "$tt" = "$LDFLAGS"; then
+      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+    fi
+  fi
+  if test -z "$have_local_include" -a -d /usr/local/include; then
+    tt=`echo "$CPPFLAGS" | sed -e 's+-I/usr/local/include ++g' -e 's+-I/usr/local/include$++g'`
+    if test "$tt" = "$CPPFLAGS"; then
+      CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+    fi
   fi
 fi
 
@@ -1422,6 +1429,10 @@ AC_DEFUN(AM_PATH_GTK,
       AC_TRY_RUN([
 #include <gtk/gtk.h>
 #include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 
 int
 main ()
@@ -2008,14 +2019,30 @@ fi
 
 dnl Checks for libraries and include files.
 
-AC_MSG_CHECKING(quality of toupper)
-AC_TRY_RUN([#include <ctype.h>
-main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }],
-	AC_DEFINE(BROKEN_TOUPPER) AC_MSG_RESULT(bad),
-	AC_MSG_RESULT(good), AC_MSG_ERROR(failed to compile test program))
+AC_CACHE_CHECK([whether toupper is broken], [vim_cv_toupper_broken],
+  [
+    AC_RUN_IFELSE([[
+#include "confdefs.h"
+#include <ctype.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+main() { exit(toupper('A') == 'A' && tolower('z') == 'z'); }
+  ]],[
+    vim_cv_toupper_broken=yes
+  ],[
+    vim_cv_toupper_broken=no
+  ],[
+    AC_MSG_ERROR(cross-compiling: please set 'vim_cv_toupper_broken')
+  ])])
+
+if test "x$vim_cv_toupper_broken" = "xyes" ; then
+  AC_DEFINE(BROKEN_TOUPPER)
+fi
 
 AC_MSG_CHECKING(whether __DATE__ and __TIME__ work)
-AC_TRY_COMPILE(, [printf("(" __DATE__ " " __TIME__ ")");],
+AC_TRY_COMPILE([#include <stdio.h>], [printf("(" __DATE__ " " __TIME__ ")");],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DATE_TIME),
 	AC_MSG_RESULT(no))
 
@@ -2027,11 +2054,6 @@ if test "$HAS_ELF" = 1; then
 fi
 
 AC_HEADER_DIRENT
-
-dnl check for standard headers, we don't use this in Vim but other stuff
-dnl in autoconf needs it
-AC_HEADER_STDC
-AC_HEADER_SYS_WAIT
 
 dnl If sys/wait.h is not found it might still exist but not be POSIX
 dnl compliant. In that case we define HAVE_UNION_WAIT (for NeXT)
@@ -2047,7 +2069,7 @@ fi
 
 AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h sys/types.h termio.h \
-	iconv.h langinfo.h unistd.h stropts.h errno.h \
+	iconv.h langinfo.h math.h unistd.h stropts.h errno.h \
 	sys/resource.h sys/systeminfo.h locale.h \
 	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
@@ -2118,11 +2140,11 @@ changequote([,]),
   [
 #include <sys/types.h>
 #if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
+# include <stdlib.h>
+# include <stddef.h>
 #endif
 #ifdef HAVE_SYS_RESOURCE_H
-#include <sys/resource.h>
+# include <sys/resource.h>
 #endif
 	  ], ac_cv_type_rlim_t=yes, ac_cv_type_rlim_t=no)
 	  AC_MSG_RESULT($ac_cv_type_rlim_t)
@@ -2141,8 +2163,8 @@ else
   [
 #include <sys/types.h>
 #if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
+# include <stdlib.h>
+# include <stddef.h>
 #endif
 #include <signal.h>
 	  ], ac_cv_type_stack_t=yes, ac_cv_type_stack_t=no)
@@ -2159,8 +2181,8 @@ AC_MSG_CHECKING(whether stack_t has an ss_base field)
 AC_TRY_COMPILE([
 #include <sys/types.h>
 #if STDC_HEADERS
-#include <stdlib.h>
-#include <stddef.h>
+# include <stdlib.h>
+# include <stddef.h>
 #endif
 #include <signal.h>
 #include "confdefs.h"
@@ -2200,6 +2222,10 @@ else
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
 #endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 main() {char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(0); }],
 			  res="OK", res="FAIL", res="FAIL")
       if test "$res" = "OK"; then
@@ -2224,28 +2250,61 @@ if test "x$olibs" = "x$LIBS"; then
       Or specify the name of the library with --with-tlib.]))
 fi
 
-AC_MSG_CHECKING(whether we talk terminfo)
-AC_TRY_RUN([
+AC_CACHE_CHECK([whether we talk terminfo], [vim_cv_terminfo],
+  [
+    AC_RUN_IFELSE([[
+#include "confdefs.h"
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
 #endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 main()
-{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }],
-	  AC_MSG_RESULT([no -- we are in termcap land]),
-	  AC_MSG_RESULT([yes -- terminfo spoken here]); AC_DEFINE(TERMINFO),
-	  AC_MSG_ERROR(failed to compile test program.))
+{char *s; s=(char *)tgoto("%p1%d", 0, 1); exit(!strcmp(s==0 ? "" : s, "1")); }
+    ]],[
+      vim_cv_terminfo=no
+    ],[
+      vim_cv_terminfo=yes
+    ],[
+      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_terminfo')
+    ])
+  ])
+
+if test "x$vim_cv_terminfo" = "xyes" ; then
+  AC_DEFINE(TERMINFO)
+fi
 
 if test "x$olibs" != "x$LIBS"; then
-  AC_MSG_CHECKING(what tgetent() returns for an unknown terminal)
-  AC_TRY_RUN([
+  AC_CACHE_CHECK([what tgetent() returns for an unknown terminal], [vim_cv_tgent],
+    [
+      AC_RUN_IFELSE([[
+#include "confdefs.h"
 #ifdef HAVE_TERMCAP_H
 # include <termcap.h>
 #endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 main()
-{char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }],
-	  AC_MSG_RESULT(zero); AC_DEFINE(TGETENT_ZERO_ERR, 0),
-	  AC_MSG_RESULT(non-zero),
-	  AC_MSG_ERROR(failed to compile test program.))
+{char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist"); exit(res != 0); }
+      ]],[
+	vim_cv_tgent=zero
+      ],[
+	vim_cv_tgent=non-zero
+      ],[
+	AC_MSG_ERROR(failed to compile test program.)
+      ])
+    ])
+  
+  if test "x$vim_cv_tgent" = "xzero" ; then
+    AC_DEFINE(TGETENT_ZERO_ERR, 0)
+  fi
 fi
 
 AC_MSG_CHECKING(whether termcap.h contains ospeed)
@@ -2355,10 +2414,19 @@ fi
 dnl    ****  pty mode/group handling ****
 dnl
 dnl support provided by Luke Mewburn <lm@rmit.edu.au>, 931222
-AC_MSG_CHECKING(default tty permissions/group)
 rm -f conftest_grp
-AC_TRY_RUN([
+AC_CACHE_CHECK([default tty permissions/group], [vim_cv_tty_group],
+  [
+    AC_RUN_IFELSE([[
+#include "confdefs.h"
 #include <sys/types.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/stat.h>
 #include <stdio.h>
 main()
@@ -2385,19 +2453,34 @@ main()
   fclose(fp);
   exit(0);
 }
-],[
-    if test -f conftest_grp; then
-	ptygrp=`cat conftest_grp`
-	AC_MSG_RESULT([pty mode: 0620, group: $ptygrp])
-	AC_DEFINE(PTYMODE, 0620)
-	AC_DEFINE_UNQUOTED(PTYGROUP,$ptygrp)
-    else
+    ]],[
+      if test -f conftest_grp; then
+	vim_cv_tty_group=`cat conftest_grp`
+	if test "x$vim_cv_tty_mode" = "x" ; then
+	  vim_cv_tty_mode=0620
+	fi
+	AC_MSG_RESULT([pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group])
+      else
+	vim_cv_tty_group=world
 	AC_MSG_RESULT([ptys are world accessable])
-    fi
-],
-    AC_MSG_RESULT([can't determine - assume ptys are world accessable]),
-    AC_MSG_ERROR(failed to compile test program))
+      fi
+    ],[
+      vim_cv_tty_group=world
+      AC_MSG_RESULT([can't determine - assume ptys are world accessable])
+    ],[
+      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_tty_group' and 'vim_cv_tty_mode')
+    ])
+  ])
 rm -f conftest_grp
+
+if test "x$vim_cv_tty_group" != "xworld" ; then
+  AC_DEFINE_UNQUOTED(PTYGROUP,$vim_cv_tty_group)
+  if test "x$vim_cv_tty_mode" = "x" ; then
+    AC_MSG_ERROR([It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (propably 0620)])
+  else
+    AC_DEFINE(PTYMODE, 0620)
+  fi
+fi
 
 dnl Checks for library functions. ===================================
 
@@ -2426,8 +2509,13 @@ test_sig()
 
 dnl tricky stuff: try to find out if getcwd() is implemented with
 dnl system("sh -c pwd")
-AC_MSG_CHECKING(getcwd implementation)
-AC_TRY_RUN([
+AC_CACHE_CHECK([getcwd implementation is broken], [vim_cv_getcwd_broken],
+  [
+    AC_RUN_IFELSE([[
+#include "confdefs.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 char *dagger[] = { "IFS=pwd", 0 };
 main()
 {
@@ -2435,11 +2523,19 @@ main()
   extern char **environ;
   environ = dagger;
   return getcwd(buffer, 500) ? 0 : 1;
-}],
-	AC_MSG_RESULT(it is usable),
-	AC_MSG_RESULT(it stinks)
-		AC_DEFINE(BAD_GETCWD),
-	AC_MSG_ERROR(failed to compile test program))
+}
+    ]],[
+      vim_cv_getcwd_broken=no
+    ],[
+      vim_cv_getcwd_broken=yes
+    ],[
+      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_getcwd_broken')
+    ])
+  ])
+
+if test "x$vim_cv_getcwd_broken" = "xyes" ; then
+  AC_DEFINE(BAD_GETCWD)
+fi
 
 dnl Check for functions in one big call, to reduce the size of configure
 AC_CHECK_FUNCS(bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
@@ -2463,14 +2559,30 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ST_BLKSIZE),
 	AC_MSG_RESULT(no))
 
-AC_MSG_CHECKING(whether stat() ignores a trailing slash)
-AC_TRY_RUN(
-[#include <sys/types.h>
+AC_CACHE_CHECK([whether stat() ignores a trailing slash], [vim_cv_stat_ignores_slash],
+  [
+    AC_RUN_IFELSE([[
+#include "confdefs.h"
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <sys/types.h>
 #include <sys/stat.h>
-main() {struct stat st;  exit(stat("configure/", &st) != 0); }],
-	AC_MSG_RESULT(yes); AC_DEFINE(STAT_IGNORES_SLASH),
-	AC_MSG_RESULT(no), AC_MSG_ERROR(failed to compile test program))
+main() {struct stat st;  exit(stat("configure/", &st) != 0); }
+    ]],[
+      vim_cv_stat_ignores_slash=yes
+    ],[
+      vim_cv_stat_ignores_slash=no
+    ],[
+      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_stat_ignores_slash')
+    ])
+  ])
 
+if test "x$vim_cv_stat_ignores_slash" = "xyes" ; then
+  AC_DEFINE(STAT_IGNORES_SLASH)
+fi
+  
 dnl Link with iconv for charset translation, if not found without library.
 dnl check for iconv() requires including iconv.h
 dnl Add "-liconv" when possible; Solaris has iconv but use GNU iconv when it
@@ -2501,6 +2613,33 @@ AC_TRY_LINK([
 #endif
 ], [char *cs = nl_langinfo(CODESET);],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_NL_LANGINFO_CODESET),
+	AC_MSG_RESULT(no))
+
+dnl Need various functions for floating point support.  Only enable
+dnl floating point when they are all present.
+AC_CHECK_LIB(m, strtod)
+AC_MSG_CHECKING([for strtod() and other floating point functions])
+AC_TRY_LINK([
+#ifdef HAVE_MATH_H
+# include <math.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+], [char *s; double d;
+    d = strtod("1.1", &s);
+    d = fabs(1.11);
+    d = ceil(1.11);
+    d = floor(1.11);
+    d = log10(1.11);
+    d = pow(1.11, 2.22);
+    d = sqrt(1.11);
+    d = sin(1.11);
+    d = cos(1.11);
+    d = atan(1.11);
+    ],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOAT_FUNCS),
 	AC_MSG_RESULT(no))
 
 dnl Link with -lposix1e for ACL stuff; if not found, try -lacl for SGI
@@ -2538,6 +2677,10 @@ AC_TRY_LINK([
 
 AC_MSG_CHECKING(for AIX ACL support)
 AC_TRY_LINK([
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 #ifdef HAVE_SYS_ACL_H
 # include <sys/acl.h>
 #endif
@@ -2582,6 +2725,36 @@ if test "$enable_gpm" = "yes"; then
   if test $vi_cv_have_gpm = yes; then
     LIBS="$LIBS -lgpm"
     AC_DEFINE(HAVE_GPM)
+  fi
+else
+  AC_MSG_RESULT(yes)
+fi
+
+AC_MSG_CHECKING(--disable-sysmouse argument)
+AC_ARG_ENABLE(sysmouse,
+	[  --disable-sysmouse    Don't use sysmouse (mouse in *BSD console).], ,
+	[enable_sysmouse="yes"])
+
+if test "$enable_sysmouse" = "yes"; then
+  AC_MSG_RESULT(no)
+  dnl Checking if sysmouse support can be compiled
+  dnl Configure defines HAVE_SYSMOUSE, if it is defined feature.h
+  dnl defines FEAT_SYSMOUSE if mouse support is included
+  AC_CACHE_CHECK([for sysmouse], vi_cv_have_sysmouse,
+	AC_TRY_LINK(
+	    [#include <sys/consio.h>
+	     #include <signal.h>
+	     #include <sys/fbio.h>],
+	    [struct mouse_info   mouse;
+	     mouse.operation = MOUSE_MODE;
+	     mouse.operation = MOUSE_SHOW;
+	     mouse.u.mode.mode = 0;
+	     mouse.u.mode.signal = SIGUSR2;],
+	    [vi_cv_have_sysmouse=yes],
+	    [vi_cv_have_sysmouse=no])
+    )
+  if test $vi_cv_have_sysmouse = yes; then
+    AC_DEFINE(HAVE_SYSMOUSE)
   fi
 else
   AC_MSG_RESULT(yes)
@@ -2649,22 +2822,38 @@ dnl be printed with "%d", and avoids a warning for cross-compiling.
 
 AC_MSG_CHECKING(size of int)
 AC_CACHE_VAL(ac_cv_sizeof_int,
-	[AC_TRY_RUN([#include <stdio.h>
-		main()
-		{
-		  FILE *f=fopen("conftestval", "w");
-		  if (!f) exit(1);
-		  fprintf(f, "%d\n", (int)sizeof(int));
-		  exit(0);
-		}],
+	[AC_TRY_RUN([
+#include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", (int)sizeof(int));
+  exit(0);
+}],
 	    ac_cv_sizeof_int=`cat conftestval`,
 	    ac_cv_sizeof_int=0,
 	    AC_MSG_ERROR(failed to compile test program))])
 AC_MSG_RESULT($ac_cv_sizeof_int)
 AC_DEFINE_UNQUOTED(SIZEOF_INT, $ac_cv_sizeof_int)
 
-AC_MSG_CHECKING(whether memmove/bcopy/memcpy handle overlaps)
+
+dnl Check for memmove() before bcopy(), makes memmove() be used when both are
+dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.
+
 [bcopy_test_prog='
+#include "confdefs.h"
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
 main() {
   char buf[10];
   strcpy(buf, "abcdefghi");
@@ -2678,18 +2867,54 @@ main() {
   exit(0); /* libc version works properly.  */
 }']
 
-dnl Check for memmove() before bcopy(), makes memmove() be used when both are
-dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.
+AC_CACHE_CHECK([whether memmove handles overlaps],[vim_cv_memmove_handles_overlap],
+  [
+    AC_RUN_IFELSE([[#define mch_memmove(s,d,l) memmove(d,s,l) $bcopy_test_prog]],
+      [
+	vim_cv_memmove_handles_overlap=yes
+      ],[
+	vim_cv_memmove_handles_overlap=no
+      ],[
+	AC_MSG_ERROR(cross-compiling: please set 'vim_cv_memmove_handles_overlap')
+      ])
+  ])
 
-AC_TRY_RUN([#define mch_memmove(s,d,l) memmove(d,s,l) $bcopy_test_prog],
-    AC_DEFINE(USEMEMMOVE) AC_MSG_RESULT(memmove does),
-    AC_TRY_RUN([#define mch_memmove(s,d,l) bcopy(d,s,l) $bcopy_test_prog],
-	AC_DEFINE(USEBCOPY) AC_MSG_RESULT(bcopy does),
-	AC_TRY_RUN([#define mch_memmove(s,d,l) memcpy(d,s,l) $bcopy_test_prog],
-	    AC_DEFINE(USEMEMCPY) AC_MSG_RESULT(memcpy does), AC_MSG_RESULT(no),
-	    AC_MSG_ERROR(failed to compile test program)),
-	AC_MSG_ERROR(failed to compile test program)),
-    AC_MSG_ERROR(failed to compile test program))
+if test "x$vim_cv_memmove_handles_overlap" = "xyes" ; then
+  AC_DEFINE(USEMEMMOVE)
+else
+  AC_CACHE_CHECK([whether bcopy handles overlaps],[vim_cv_bcopy_handles_overlap],
+    [
+      AC_RUN_IFELSE([[#define mch_bcopy(s,d,l) bcopy(d,s,l) $bcopy_test_prog]],
+      [
+	vim_cv_bcopy_handles_overlap=yes
+      ],[
+	vim_cv_bcopy_handles_overlap=no
+      ],[
+	AC_MSG_ERROR(cross-compiling: please set 'vim_cv_bcopy_handles_overlap')
+      ])
+    ])
+
+  if test "x$vim_cv_bcopy_handles_overlap" = "xyes" ; then
+    AC_DEFINE(USEBCOPY)
+  else
+    AC_CACHE_CHECK([whether memcpy handles overlaps],[vim_cv_memcpy_handles_overlap],
+      [
+	AC_RUN_IFELSE([[#define mch_memcpy(s,d,l) memcpy(d,s,l) $bcopy_test_prog]],
+	  [
+	    vim_cv_memcpy_handles_overlap=yes
+	  ],[
+	    vim_cv_memcpy_handles_overlap=no
+	  ],[
+	    AC_MSG_ERROR(cross-compiling: please set 'vim_cv_memcpy_handles_overlap')
+	  ])
+      ])
+
+    if test "x$vim_cv_memcpy_handles_overlap" = "xyes" ; then
+      AC_DEFINE(USEMEMCPY)
+    fi
+  fi
+fi
+
 
 dnl Check for multibyte locale functions
 dnl Find out if _Xsetlocale() is supported by libX11.

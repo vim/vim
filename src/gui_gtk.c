@@ -1510,7 +1510,7 @@ gui_gnome_dialog( int	type,
 	for (next = p; *next; ++next)
 	{
 	    if (*next == DLG_HOTKEY_CHAR)
-		mch_memmove(next, next + 1, STRLEN(next));
+		STRMOVE(next, next + 1);
 	    if (*next == DLG_BUTTON_SEP)
 	    {
 		*next++ = NUL;

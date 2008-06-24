@@ -1,4 +1,4 @@
-*usr_29.txt*	For Vim version 7.1.  Last change: 2006 Apr 24
+*usr_29.txt*	For Vim version 7.2a.  Last change: 2007 Nov 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -384,7 +384,7 @@ pairs of {} at the same level.  "]}" jumps to the end.
 
 When writing C++ or Java, the outer {} block is for the class.  The next level
 of {} is for a method.  When somewhere inside a class use "[m" to find the
-previous start of a method.  "]m" finds the next end of a method.
+previous start of a method.  "]m" finds the next start of a method.
 
 Additionally, "[]" moves backward to the end of a function and "]]" moves
 forward to the start of the next function.  The end of a function is defined
@@ -497,7 +497,7 @@ use: >
 
 	:set path+=/usr/local/X11
 
-When there are many subdirectories, you an use the "*" wildcard.  Example: >
+When there are many subdirectories, you can use the "*" wildcard.  Example: >
 
 	:set path+=/usr/*/include
 

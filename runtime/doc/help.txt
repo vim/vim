@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.1.  Last change: 2006 Nov 07
+*help.txt*	For Vim version 7.2a.  Last change: 2008 Jun 21
 
 			VIM - main help file
 									 k
@@ -143,7 +143,7 @@ Special issues ~
 |farsi.txt|	Farsi (Persian) editing
 |hebrew.txt|	Hebrew language support and editing
 |russian.txt|	Russian language support and editing
-|ada.txt|	Ada (the programming language) support
+|ft_ada.txt|	Ada (the programming language) support
 |hangulin.txt|	Hangul (Korean) input mode
 |rileft.txt|	right-to-left editing mode
 

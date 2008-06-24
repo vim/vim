@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.1.  Last change: 2007 Feb 28
+*term.txt*      For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -139,7 +139,7 @@ want in either case you could use these settings: >
 	:set notimeout		" don't timeout on mappings
 	:set ttimeout		" do timeout on terminal key codes
 	:set timeoutlen=100	" timeout after 100 msec
-This requires the key-codes to be sent within 100msec in order to recognize
+This requires the key-codes to be sent within 100 msec in order to recognize
 them as a cursor key.  When you type you normally are not that fast, so they
 are recognized as individual typed commands, even though Vim receives the same
 sequence of bytes.
@@ -583,8 +583,9 @@ Don't forget to enable the mouse with this commands: >
 	:set mouse=a
 Otherwise Vim won't recognize the mouse in all modes (See 'mouse').
 
-Currently the mouse is supported for Unix in an xterm window, in a Linux
-console (with GPM |gpm-mouse|), for MS-DOS and in a Windows console.
+Currently the mouse is supported for Unix in an xterm window, in a *BSD
+console with |sysmouse|, in a Linux console (with GPM |gpm-mouse|), for
+MS-DOS and in a Windows console.
 Mouse clicks can be used to position the cursor, select an area and paste.
 
 These characters in the 'mouse' option tell in which situations the mouse will
@@ -788,6 +789,10 @@ In Insert mode, when a selection is started, Vim goes into Normal mode
 temporarily.  When Visual or Select mode ends, it returns to Insert mode.
 This is like using CTRL-O in Insert mode.  Select mode is used when the
 'selectmode' option contains "mouse".
+							*sysmouse*
+The sysmouse is only supported when the |+mouse_sysmouse| feature was enabled
+at compile time.  The sysmouse driver (*BSD console) does not support keyboard
+modifiers.
 
 							*drag-status-line*
 When working with several windows, the size of the windows can be changed by

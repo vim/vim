@@ -1,7 +1,13 @@
 " Vim syntax file
-" Language:	Verilog-AMS
-" Maintainer:	S. Myles Prather <smprather@gmail.com>
-" Last Update:  Sun Aug 14 03:58:00 CST 2003
+" Language:    Verilog-AMS
+" Maintainer:  S. Myles Prather <smprather@gmail.com>
+"
+" Version 1.1  S. Myles Prather <smprather@gmail.com>
+"              Moved some keywords to the type category.
+"              Added the metrix suffixes to the number matcher.
+" Version 1.2  Prasanna Tamhankar <pratam@gmail.com>
+"              Minor reserved keyword updates.
+" Last Update: Thursday September 15 15:36:03 CST 2005 
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -21,17 +27,17 @@ endif
 " Annex B.1 'All keywords'
 syn keyword verilogamsStatement above abs absdelay acos acosh ac_stim
 syn keyword verilogamsStatement always analog analysis and asin
-syn keyword verilogamsStatement asinh assign atan atan2 atanh branch
-syn keyword verilogamsStatement buf bufif1 ceil cmos
+syn keyword verilogamsStatement asinh assign atan atan2 atanh
+syn keyword verilogamsStatement buf bufif0 bufif1 ceil cmos connectmodule
 syn keyword verilogamsStatement connectrules cos cosh cross ddt ddx deassign
 syn keyword verilogamsStatement defparam disable discipline
 syn keyword verilogamsStatement driver_update edge enddiscipline
-syn keyword verilogamsStatement endconnectrules endmodule endfunction
+syn keyword verilogamsStatement endconnectrules endmodule endfunction endgenerate
 syn keyword verilogamsStatement endnature endparamset endprimitive endspecify
 syn keyword verilogamsStatement endtable endtask event exp final_step
 syn keyword verilogamsStatement flicker_noise floor flow force fork
-syn keyword verilogamsStatement function generate genvar highz0
-syn keyword verilogamsStatement highz1 hypot idt idtmod if ifnone initial
+syn keyword verilogamsStatement function generate highz0
+syn keyword verilogamsStatement highz1 hypot idt idtmod if ifnone inf initial
 syn keyword verilogamsStatement initial_step inout input join
 syn keyword verilogamsStatement laplace_nd laplace_np laplace_zd laplace_zp
 syn keyword verilogamsStatement large last_crossing limexp ln localparam log
@@ -40,17 +46,18 @@ syn keyword verilogamsStatement negedge net_resolution nmos noise_table nor not
 syn keyword verilogamsStatement notif0 notif1 or output paramset pmos
 syn keyword verilogamsType      parameter real integer electrical input output
 syn keyword verilogamsType      inout reg tri tri0 tri1 triand trior trireg
-syn keyword verilogamsType      string from exclude aliasparam ground
+syn keyword verilogamsType      string from exclude aliasparam ground genvar
+syn keyword verilogamsType      branch time realtime
 syn keyword verilogamsStatement posedge potential pow primitive pull0 pull1
 syn keyword verilogamsStatement pullup pulldown rcmos release
 syn keyword verilogamsStatement rnmos rpmos rtran rtranif0 rtranif1
 syn keyword verilogamsStatement scalared sin sinh slew small specify specparam
 syn keyword verilogamsStatement sqrt strong0 strong1 supply0 supply1
-syn keyword verilogamsStatement table tan tanh task time timer tran tranif0
+syn keyword verilogamsStatement table tan tanh task timer tran tranif0
 syn keyword verilogamsStatement tranif1 transition
 syn keyword verilogamsStatement vectored wait wand weak0 weak1
 syn keyword verilogamsStatement white_noise wire wor wreal xnor xor zi_nd
-syn keyword verilogamsStatement zi_np zi_zd
+syn keyword verilogamsStatement zi_np zi_zd zi_zp
 syn keyword verilogamsRepeat    forever repeat while for
 syn keyword verilogamsLabel     begin end
 syn keyword verilogamsConditional if else case casex casez default endcase
@@ -95,7 +102,7 @@ syn match   verilogamsNumber "\(\<\d\+\|\)'[bB]\s*[0-1_xXzZ?]\+\>"
 syn match   verilogamsNumber "\(\<\d\+\|\)'[oO]\s*[0-7_xXzZ?]\+\>"
 syn match   verilogamsNumber "\(\<\d\+\|\)'[dD]\s*[0-9_xXzZ?]\+\>"
 syn match   verilogamsNumber "\(\<\d\+\|\)'[hH]\s*[0-9a-fA-F_xXzZ?]\+\>"
-syn match   verilogamsNumber "\<[+-]\=[0-9_]\+\(\.[0-9_]*\|\)\(e[0-9_]*\|\)\>"
+syn match   verilogamsNumber "\<[+-]\=[0-9_]\+\(\.[0-9_]*\|\)\(e[0-9_]*\|\)[TGMKkmunpfa]\=\>"
 
 syn region  verilogamsString start=+"+ skip=+\\"+ end=+"+ contains=verilogamsEscape
 syn match   verilogamsEscape +\\[nt"\\]+ contained

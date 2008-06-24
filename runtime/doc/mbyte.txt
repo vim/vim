@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.1.  Last change: 2006 Aug 11
+*mbyte.txt*     For Vim version 7.2a.  Last change: 2008 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -235,7 +235,7 @@ You could make a small shell script for this.
 ==============================================================================
 3.  Encoding				*mbyte-encoding*
 
-Vim uses the 'encoding' option to specify how characters identified and
+Vim uses the 'encoding' option to specify how characters are identified and
 encoded when they are used inside Vim.  This applies to all the places where
 text is used, including buffers (files loaded into memory), registers and
 variables.
@@ -351,6 +351,8 @@ u   unicode	same as ucs-2
 u   ucs2be	same as ucs-2 (big endian)
 u   ucs-2be	same as ucs-2 (big endian)
 u   ucs-4be	same as ucs-4 (big endian)
+u   utf-32	same as ucs-4
+u   utf-32le	same as ucs-4le
     default     stands for the default value of 'encoding', depends on the
 		environment
 
@@ -966,11 +968,11 @@ WHAT IS GLOBAL IME					*global-ime*
     - Active Input Method Manager (Global IME)
 	http://msdn.microsoft.com/workshop/misc/AIMM/aimm.asp
 
-    Support Global IME is a experimental feature.
+    Support for Global IME is an experimental feature.
 
 NOTE: For IME to work you must make sure the input locales of your language
 are added to your system.  The exact location of this depends on the version
-of Windows you use.  For example, on my W2P box:
+of Windows you use.  For example, on my Windows 2000 box:
 1. Control Panel
 2. Regional Options
 3. Input Locales Tab
@@ -1295,7 +1297,7 @@ Useful commands:
   characters, as hex numbers.
 - ":set encoding=utf-8 fileencodings=" forces using UTF-8 for all files.  The
   default is to use the current locale for 'encoding' and set 'fileencodings'
-  to automatically the encoding of a file.
+  to automatically detect the encoding of a file.
 
 
 STARTING VIM

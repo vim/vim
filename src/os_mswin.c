@@ -25,9 +25,6 @@
 #include "vimio.h"
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 #ifdef WIN16
 # define SHORT_FNAME		/* always 8.3 file name */
 # include <dos.h>

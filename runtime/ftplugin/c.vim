@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2005 Sep 01
+" Last Change:	2007 Sep 25
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -33,6 +33,11 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 if has("vms")
   setlocal iskeyword+=$
 endif
+
+" When the matchit plugin is loaded, this makes the % command skip parens and
+" braces in comments.
+let b:match_words = &matchpairs
+let b:match_skip = 's:comment\|string\|character'
 
 " Win32 can filter files in the browse dialog
 if has("gui_win32") && !exists("b:browsefilter")

@@ -533,6 +533,7 @@ getcmdline(firstc, count, indent)
 	    }
 	}
 	if ((xpc.xp_context == EXPAND_FILES
+			      || xpc.xp_context == EXPAND_DIRECTORIES
 			      || xpc.xp_context == EXPAND_SHELLCMD) && p_wmnu)
 	{
 	    char_u upseg[5];
@@ -4354,11 +4355,10 @@ ExpandFromContext(xp, pat, num_file, file, options)
 			    && pat[i + 1] == '\\'
 			    && pat[i + 2] == '\\'
 			    && pat[i + 3] == ' ')
-			mch_memmove(pat + i, pat + i + 3,
-						     STRLEN(pat + i + 3) + 1);
+			STRMOVE(pat + i, pat + i + 3);
 		    if (xp->xp_backslash == XP_BS_ONE
 			    && pat[i + 1] == ' ')
-			mch_memmove(pat + i, pat + i + 1, STRLEN(pat + i));
+			STRMOVE(pat + i, pat + i + 1);
 		}
 	}
 
@@ -4601,7 +4601,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
     pat = vim_strsave(filepat);
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
-	    mch_memmove(pat + i, pat + i + 1, STRLEN(pat + i));
+	    STRMOVE(pat + i, pat + i + 1);
 
     flags |= EW_FILE | EW_EXEC;
 
@@ -4654,7 +4654,7 @@ expand_shellcmd(filepat, num_file, file, flagsarg)
 		    if (STRLEN(s) > l)
 		    {
 			/* Remove the path again. */
-			mch_memmove(s, s + l, STRLEN(s + l) + 1);
+			STRMOVE(s, s + l);
 			((char_u **)ga.ga_data)[ga.ga_len++] = s;
 		    }
 		    else
@@ -5535,7 +5535,7 @@ remove_key_from_history()
 		for (i = 0; p[i] && !vim_iswhite(p[i]); ++i)
 		    if (p[i] == '\\' && p[i + 1])
 			++i;
-		mch_memmove(p, p + i, STRLEN(p + i) + 1);
+		STRMOVE(p, p + i);
 		--p;
 	    }
 }
@@ -6004,7 +6004,7 @@ ex_window()
 
     /* Create the command-line buffer empty. */
     (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE);
-    (void)setfname(curbuf, (char_u *)"command-line", NULL, TRUE);
+    (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
     set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
     curbuf->b_p_ma = TRUE;

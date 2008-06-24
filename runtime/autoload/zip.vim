@@ -1,16 +1,16 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		May 08, 2007
-" Version:	14
+" Date:		Jun 12, 2008
+" Version:	18
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
-" Copyright:    Copyright (C) 2005 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 2005-2008 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
-"               zipPlugin.vim is provided *as is* and comes with no warranty
-"               of any kind, either expressed or implied. By using this
-"               plugin, you agree that in no event will the copyright
+"               zip.vim and zipPlugin.vim are provided *as is* and comes with
+"               no warranty of any kind, either expressed or implied. By using
+"               this plugin, you agree that in no event will the copyright
 "               holder be liable for any damages resulting from the use
 "               of this software.
 
@@ -22,7 +22,7 @@ if &cp || exists("g:loaded_zip") || v:version < 700
  finish
 endif
 
-let g:loaded_zip     = "v14"
+let g:loaded_zip     = "v18"
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
 let s:WARNING        = 1
@@ -31,7 +31,9 @@ let s:NOTE           = 0
 " ---------------------------------------------------------------------
 "  Global Values: {{{1
 if !exists("g:zip_shq")
- if has("unix")
+ if &shq != ""
+  let g:zip_shq= &shq
+ elseif has("unix")
   let g:zip_shq= "'"
  else
   let g:zip_shq= '"'
@@ -160,7 +162,9 @@ fun! s:ZipBrowseSelect()
 "  call Decho("curfile<".curfile.">")
 
   new
-  wincmd _
+  if !exists("g:zip_nomax") || g:zip_nomax == 0
+   wincmd _
+  endif
   let s:zipfile_{winnr()}= curfile
 "  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape))
   exe "e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape)
@@ -319,8 +323,13 @@ endfun
 " QuoteFileDir: {{{2
 fun! s:QuoteFileDir(fname)
 "  call Dfunc("QuoteFileDir(fname<".a:fname.">)")
-"  call Dret("QuoteFileDir")
-  return g:zip_shq.a:fname.g:zip_shq
+  if has("*shellescape")
+   let qnameq= shellescape(a:fname)
+  else
+   let qnameq= g:zip_shq.escape(a:fname,g:zip_shq).g:zip_shq
+  endif
+"  call Dret("QuoteFileDir <".qnameq.">")
+  return qnameq
 endfun
 
 " ---------------------------------------------------------------------

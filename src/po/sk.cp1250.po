@@ -346,7 +346,7 @@ msgid "E716: Key not present in Dictionary: %s"
 msgstr "E716: k¾úè sa v Slovníku (Dictionary) nenachádza: %s"
 
 msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E112: Funkcia %s u existuje. Pouite ! pre jej nahradenie."
+msgstr "E122: Funkcia %s u existuje. Pouite ! pre jej nahradenie."
 
 msgid "E717: Dictionary entry already exists"
 msgstr "E717: Záznam v Slovníku (Dictionary) u existuje"
@@ -527,7 +527,7 @@ msgid "E241: Unable to send to %s"
 msgstr "E241: Nemôem posla na %s"
 
 msgid "E277: Unable to read a server reply"
-msgstr "E227: Nemôem èíta odpoveï servra"
+msgstr "E277: Nemôem èíta odpoveï servra"
 
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Príliš mnoho symbolickıch odkazov (sluèka?)"
@@ -866,7 +866,7 @@ msgid "E156: Missing sign name"
 msgstr "E156: Chıba meno pre znaèku"
 
 msgid "E612: Too many signs defined"
-msgstr "E255: Príliš mnoho definovanıch znaèiek"
+msgstr "E612: Príliš mnoho definovanıch znaèiek"
 
 #, c-format
 msgid "E239: Invalid sign text: %s"
@@ -1128,7 +1128,7 @@ msgstr "iadny odkladací súbor"
 msgid "Append File"
 msgstr "Pripoji súbor"
 
-msgid "E747: Cannot change directory, buffer is modifed (add ! to override)"
+msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr "E747: Nemono zmeni adresár, buffer je modifikovanı (pouite ! pre vynútenie)"
 
 msgid "E186: No previous directory"
@@ -1260,13 +1260,13 @@ msgid "E579: :if nesting too deep"
 msgstr "E579: vnorenie :if je príliš hlboké"
 
 msgid "E580: :endif without :if"
-msgstr "E580 :endif bez zodpovedajúceho :if"
+msgstr "E580: :endif bez zodpovedajúceho :if"
 
 msgid "E581: :else without :if"
-msgstr "E581 :else bez zodpovedajúceho :if"
+msgstr "E581: :else bez zodpovedajúceho :if"
 
 msgid "E582: :elseif without :if"
-msgstr "E582 :elseif bez zodpovedajúceho :if"
+msgstr "E582: :elseif bez zodpovedajúceho :if"
 
 msgid "E583: multiple :else"
 msgstr "E583: viacnásobné :else"

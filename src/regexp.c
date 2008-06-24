@@ -951,7 +951,7 @@ skip_regexp(startp, dirc, magic, newp)
 			p = *newp + (p - startp);
 		}
 		if (*newp != NULL)
-		    mch_memmove(p, p + 1, STRLEN(p));
+		    STRMOVE(p, p + 1);
 		else
 		    ++p;
 	    }
@@ -6781,9 +6781,9 @@ regtilde(source, magic)
 		}
 	    }
 	    else if (magic)
-		mch_memmove(p, p + 1, STRLEN(p));	/* remove '~' */
+		STRMOVE(p, p + 1);	/* remove '~' */
 	    else
-		mch_memmove(p, p + 2, STRLEN(p) - 1);	/* remove '\~' */
+		STRMOVE(p, p + 2);	/* remove '\~' */
 	    --p;
 	}
 	else

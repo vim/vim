@@ -184,8 +184,8 @@
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
 #if _MSC_VER < 1300
-/* Work around old versions of basetsd.h which wrongly declare
- * UINT_PTR as unsigned long */
+/* Work around old versions of basetsd.h which wrongly declares
+ * UINT_PTR as unsigned long. */
 # define UINT_PTR UINT
 #endif
 
@@ -4447,7 +4447,7 @@ gui_mch_destroy_sign(sign)
  * async request to debugger
  * 4) gui_mch_post_balloon (invoked from netbeans.c) creates tooltip control
  * and performs some actions to show it ASAP
- * 5) WM_NOTOFY:TTN_POP destroys created tooltip
+ * 5) WM_NOTIFY:TTN_POP destroys created tooltip
  */
 
 /*

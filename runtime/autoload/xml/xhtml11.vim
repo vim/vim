@@ -432,4 +432,3 @@ let g:xmldata_xhtml11 = {
 \ 'param': ['/>', ''],
 \ }
 \ }
-" vim:ft=vim:ff=unix

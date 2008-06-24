@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2006 Apr 30
+" Last Change:  2007 Dec 21
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -121,6 +121,11 @@ syn match   javaUserLabel       "^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contai
 syn keyword javaLabel		default
 
 if !exists("java_allow_cpp_keywords")
+  " The default used to be to highlight C++ keywords.  But several people
+  " don't like that, so default to not highlighting these.
+  let java_allow_cpp_keywords = 1
+endif
+if !java_allow_cpp_keywords
   syn keyword javaError auto delete extern friend inline redeclared
   syn keyword javaError register signed sizeof struct template typedef union
   syn keyword javaError unsigned operator

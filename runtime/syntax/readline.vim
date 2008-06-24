@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         readline(3) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-06-17
 "   readline_has_bash - if defined add support for bash specific
 "                       settings/functions
 
@@ -12,7 +12,7 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-setlocal iskeyword=@,48-57,-
+setlocal iskeyword+=-
 
 syn keyword readlineTodo        contained TODO FIXME XXX NOTE
 

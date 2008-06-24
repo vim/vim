@@ -1600,7 +1600,8 @@ set_input_buf(p)
 }
 #endif
 
-#if defined(FEAT_GUI) || defined(FEAT_MOUSE_GPM) \
+#if defined(FEAT_GUI) \
+	|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE) \
 	|| defined(FEAT_XCLIPBOARD) || defined(VMS) \
 	|| defined(FEAT_SNIFF) || defined(FEAT_CLIENTSERVER) \
 	|| defined(PROTO)

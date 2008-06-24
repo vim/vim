@@ -12,10 +12,6 @@
  */
 #include "vim.h"
 
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>	    /* for chdir() */
-#endif
-
 static char_u	*username = NULL; /* cached result of mch_get_user_name() */
 
 static char_u	*ff_expand_buffer = NULL; /* used for expanding filenames */
@@ -347,13 +343,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 }
 
 /*
- * inc(p)
- *
- * Increment the line pointer 'p' crossing line boundaries as necessary.
- * Return 1 when going to the next line.
- * Return 2 when moving forward onto a NUL at the end of the line).
- * Return -1 when at the end of file.
- * Return 0 otherwise.
+ * Increment the cursor position.  See inc() for return values.
  */
     int
 inc_cursor()
@@ -361,6 +351,13 @@ inc_cursor()
     return inc(&curwin->w_cursor);
 }
 
+/*
+ * Increment the line pointer "lp" crossing line boundaries as necessary.
+ * Return 1 when going to the next line.
+ * Return 2 when moving forward onto a NUL at the end of the line).
+ * Return -1 when at the end of file.
+ * Return 0 otherwise.
+ */
     int
 inc(lp)
     pos_T  *lp;
@@ -4302,7 +4299,7 @@ vim_findfile_stopdir(buf)
 	    /* overwrite the escape char,
 	     * use STRLEN(r_ptr) to move the trailing '\0'
 	     */
-	    mch_memmove(r_ptr, r_ptr + 1, STRLEN(r_ptr));
+	    STRMOVE(r_ptr, r_ptr + 1);
 	    r_ptr++;
 	}
 	r_ptr++;
@@ -4514,9 +4511,7 @@ vim_findfile(search_ctx_arg)
 			if (*p == 0)
 			{
 			    /* remove '**<numb> from wildcards */
-			    mch_memmove(rest_of_wildcards,
-				    rest_of_wildcards + 3,
-				    STRLEN(rest_of_wildcards + 3) + 1);
+			    STRMOVE(rest_of_wildcards, rest_of_wildcards + 3);
 			}
 			else
 			    rest_of_wildcards += 3;
@@ -4662,8 +4657,7 @@ vim_findfile(search_ctx_arg)
 				    p = shorten_fname(file_path,
 							    ff_expand_buffer);
 				    if (p != NULL)
-					mch_memmove(file_path, p,
-							       STRLEN(p) + 1);
+					STRMOVE(file_path, p);
 				}
 #ifdef FF_VERBOSE
 				if (p_verbose >= 5)

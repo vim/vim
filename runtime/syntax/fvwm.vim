@@ -1,8 +1,8 @@
-" Vim syntax file
+" Vim syntax file for Fvwm-2.5.22
 " Language:		Fvwm{1,2} configuration file
 " Maintainer:		Gautam Iyer <gi1242@users.sourceforge.net>
 " Previous Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
-" Last Change:		Sat 04 Nov 2006 11:28:37 PM PST
+" Last Change:		Sat 29 Sep 2007 11:08:34 AM PDT
 "
 " Thanks to David Necas (Yeti) for adding Fvwm 2.4 support.
 "
@@ -43,7 +43,9 @@ syn match   fvwmRGBValue	"#\x\{9}"
 syn match   fvwmRGBValue	"#\x\{12}"
 syn match   fvwmRGBValue	"rgb:\x\{1,4}/\x\{1,4}/\x\{1,4}"
 
-syn region  fvwmComment		contains=@Spell start="^\s*#" skip='\\$' end='$'
+syn region  fvwmComment		contains=@Spell
+				\ start='^\s*#\s' skip='\\$' end='$'
+syn region  fvwmComment		start="\v^\s*#(\S|$)" skip='\\$' end='$'
 
 if (exists("b:fvwm_version") && b:fvwm_version == 1)
 	    \ || (exists("use_fvwm_1") && use_fvwm_1)
@@ -130,12 +132,16 @@ else
     syn match   fvwmShortcutKey	contained "&."
 
     syn keyword fvwmModuleName	FvwmAnimate FvwmAudio FvwmAuto FvwmBacker
-				\ FvwmBanner FvwmButtons FvwmCommandS
-				\ FvwmConsole FvwmCpp FvwmDebug FvwmDragWell
-				\ FvwmEvent FvwmForm FvwmGtk FvwmIconBox
+				\ FvwmBanner FvwmButtons FvwmCascade
+				\ FvwmCommandS FvwmConsole FvwmConsoleC
+				\ FvwmCpp FvwmDebug FvwmDragWell FvwmEvent
+				\ FvwmForm FvwmGtkDebug FvwmIconBox
 				\ FvwmIconMan FvwmIdent FvwmM4 FvwmPager
-				\ FvwmSave FvwmSaveDesk FvwmScript FvwmScroll
-				\ FvwmTaskBar FvwmWinList FvwmWharf
+				\ FvwmPerl FvwmProxy FvwmRearrange FvwmSave
+				\ FvwmSaveDesk FvwmScript FvwmScroll FvwmTabs
+				\ FvwmTalk FvwmTaskBar FvwmTheme FvwmTile
+				\ FvwmWharf FvwmWindowMenu FvwmWinList
+
     " Obsolete fvwmModuleName: FvwmTheme
 
     syn keyword fvwmKeyword	AddToMenu ChangeMenuStyle CopyMenuStyle
@@ -162,21 +168,22 @@ else
 				\ WindowShadeAnimate IgnoreModifiers
 				\ EdgeCommand EdgeLeaveCommand GnomeButton
 				\ Stroke StrokeFunc FocusStyle DestroyStyle
-				\ UpdateStyles AddToDecor BorderStyle
-				\ ChangeDecor DestroyDecor UpdateDecor
-				\ DesktopName DeskTopSize EdgeResistance
-				\ EdgeScroll EdgeThickness EwmhBaseStruts
-				\ EWMHNumberOfDesktops GotoDeskAndPage
-				\ GotoPage Scroll Xinerama
+				\ DestroyWindowStyle UpdateStyles AddToDecor
+				\ BorderStyle ChangeDecor DestroyDecor
+				\ UpdateDecor DesktopName DeskTopSize
+				\ EdgeResistance EdgeScroll EdgeThickness
+				\ EwmhBaseStruts EWMHNumberOfDesktops
+				\ GotoDeskAndPage GotoPage Scroll Xinerama
 				\ XineramaPrimaryScreen XineramaSls
 				\ XineramaSlsSize XineramaSlsScreens AddToFunc
 				\ Beep DestroyFunc Echo Exec ExecUseShell
 				\ Function Nop PipeRead Read SetEnv Silent
 				\ UnsetEnv Wait DestroyModuleConfig KillModule
-				\ Module ModuleSynchronous ModuleTimeout
-				\ SendToModule Quit QuitScreen QuitSession
-				\ Restart SaveSession SaveQuitSession KeepRc
-				\ NoWindow Break CleanupColorsets
+				\ Module ModuleListenOnly ModuleSynchronous
+				\ ModuleTimeout SendToModule Quit QuitScreen
+				\ QuitSession Restart SaveSession
+				\ SaveQuitSession KeepRc NoWindow Break
+				\ CleanupColorsets EchoFuncDefinition
 
     " Conditional commands
     syn keyword fvwmKeyword	nextgroup=fvwmCondition skipwhite
@@ -200,9 +207,12 @@ else
 				\ CurrentPageAnyDesk CurrentScreen FixedSize
 				\ Focused HasHandles HasPointer Iconic
 				\ Iconifiable Maximizable Maximized
-				\ Overlapped PlacedByButton3 PlacedByFvwm Raised
-				\ Shaded Sticky StickyAcrossDesks
-				\ StickyAcrossPages Transient Visible
+				\ Overlapped PlacedByButton PlacedByButton3
+				\ PlacedByFvwm Raised Shaded Sticky
+				\ StickyAcrossDesks StickyAcrossPages
+				\ Transient Visible StickyIcon
+				\ StickyAcrossPagesIcon StickyAcrossDesksIcon
+
     syn keyword fvwmCondNames	contained skipwhite nextgroup=@fvwmConstants
 				\ State Layer
 
@@ -288,7 +298,7 @@ else
 				\ MinOverlapPlacement
 				\ MinOverlapPercentPlacement
 				\ TileManualPlacement TileCascadePlacement
-				\ CenterPlacement MinOverlapPlacementPenalties
+				\ MinOverlapPlacementPenalties
 				\ MinOverlapPercentPlacementPenalties
 				\ DecorateTransient NakedTransient
 				\ DontRaiseTransient RaiseTransient
@@ -353,7 +363,8 @@ else
 				\ EWMHUseStackingOrderHints
 				\ EWMHIgnoreStackingOrderHints
 				\ EWMHIgnoreStateHints EWMHUseStateHints
-				\ EWMHIgnoreStrutHints EWMHUseStrutHints
+				\ EWMHIgnoreStrutHints EWMHIgnoreWindowType
+				\ EWMHUseStrutHints
 				\ EWMHMaximizeIgnoreWorkingArea
 				\ EWMHMaximizeUseWorkingArea
 				\ EWMHMaximizeUseDynamicWorkingArea
@@ -361,6 +372,14 @@ else
 				\ EWMHPlacementUseWorkingArea
 				\ EWMHPlacementUseDynamicWorkingArea
 				\ MoveByProgramMethod Unmanaged State
+				\ StippledIconTitle StickyStippledTitle
+				\ StickyStippledIconTitle
+				\ PositionPlacement
+				\ UnderMousePlacementHonorsStartsOnPage
+				\ UnderMousePlacementIgnoresStartsOnPage
+				\ MinOverlapPlacementPenalties
+				\ MinOverlapPercentPlacementPenalties
+				\ MinWindowSize StartShaded
 
     " Cursor styles
     syn keyword fvwmKeyword	nextgroup=fvwmCursorStyle skipwhite
@@ -400,6 +419,7 @@ else
 				\ SelectOnRelease ItemFormat
 				\ VerticalItemSpacing VerticalTitleSpacing
 				\ AutomaticHotkeys AutomaticHotkeysOff
+				\ TitleFont TitleColorset HilightTitleBack
 
     " Button style
     syn keyword fvwmKeyword	nextgroup=fvwmBNum	skipwhite

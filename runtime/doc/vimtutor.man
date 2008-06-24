@@ -6,7 +6,7 @@ NAME
        vimtutor - the Vim tutor
 
 SYNOPSIS
-       vimtutor [language]
+       vimtutor [-g] [language]
 
 DESCRIPTION
        Vimtutor starts the Vim tutor.  It copies the tutor file first, so that
@@ -14,6 +14,10 @@ DESCRIPTION
 
        The Vimtutor is useful for people that want to learn  their  first  Vim
        commands.
+
+       The  optional argument -g starts vimtutor with gvim rather than vim, if
+       the GUI version of vim is available, or falls back to Vim  if  gvim  is
+       not found.
 
        The  optional [language] argument is the two-letter name of a language,
        like "it" or "es".  If the [language] argument is missing, the language

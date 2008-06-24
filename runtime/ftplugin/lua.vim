@@ -1,7 +1,7 @@
 " Vim filetype plugin file.
 " Language:	Lua 4.0+
 " Maintainer:	Max Ischenko <mfi@ukr.net>
-" Last Change:	2001 Sep 17
+" Last Change:	2008 Mar 25
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -16,7 +16,7 @@ let b:did_ftplugin = 1
 setlocal fo-=t fo+=croql
 
 setlocal com=:--
-setlocal cms="--%s"
+setlocal cms=--%s
 setlocal suffixesadd=.lua
 
 

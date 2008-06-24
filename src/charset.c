@@ -476,14 +476,12 @@ str_foldcase(str, orglen, buf, buflen)
 			{
 			    if (buf == NULL)
 			    {
-				mch_memmove(GA_PTR(i) + nl, GA_PTR(i) + ol,
-						  STRLEN(GA_PTR(i) + ol) + 1);
+				STRMOVE(GA_PTR(i) + nl, GA_PTR(i) + ol);
 				ga.ga_len += nl - ol;
 			    }
 			    else
 			    {
-				mch_memmove(buf + i + nl, buf + i + ol,
-						    STRLEN(buf + i + ol) + 1);
+				STRMOVE(buf + i + nl, buf + i + ol);
 				len += nl - ol;
 			    }
 			}
@@ -1744,7 +1742,6 @@ vim_isblankline(lbuf)
  * If "len" is not NULL, the length of the number in characters is returned.
  * If "nptr" is not NULL, the signed result is returned in it.
  * If "unptr" is not NULL, the unsigned result is returned in it.
- * If "unptr" is not NULL, the unsigned result is returned in it.
  * If "dooct" is non-zero recognize octal numbers, when > 1 always assume
  * octal number.
  * If "dohex" is non-zero recognize hex numbers, when > 1 always assume
@@ -1919,7 +1916,7 @@ backslash_halve(p)
 {
     for ( ; *p; ++p)
 	if (rem_backslash(p))
-	    mch_memmove(p, p + 1, STRLEN(p));
+	    STRMOVE(p, p + 1);
 }
 
 /*

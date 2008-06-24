@@ -1,10 +1,10 @@
 " Vim syntax file
 " Language:			ESTEREL
 " Maintainer:		Maurizio Tranchero <maurizio.tranchero@polito.it> - <maurizio.tranchero@gmail.com>
-" Credits:			Luca Necchi	<luca.necchi@polito.it>
+" Credits:			Luca Necchi	<luca.necchi@polito.it>, Nikos Andrikos <nick.andrik@gmail.com>
 " First Release:	Tue May 17 23:49:39 CEST 2005
-" Last Change:		Sat Apr 22 14:56:41 CEST 2006
-" Version:			0.5
+" Last Change:		Tue May  6 13:29:56 CEST 2008
+" Version:			0.8
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -28,7 +28,7 @@ syn region esterelIfThen					start=/if/			end=/then/			oneline
 " Esterel Keywords
 syn keyword esterelIO			input output inputoutput constant
 syn keyword esterelBoolean		and or not xor xnor nor nand
-syn keyword esterelExpressions	mod 
+syn keyword esterelExpressions	mod pre
 syn keyword esterelStatement	nothing halt
 syn keyword esterelStatement	module signal sensor end
 syn keyword esterelStatement	every do loop abort weak
@@ -43,20 +43,26 @@ syn keyword esterelStatement	relation
 syn keyword esterelFunctions	function procedure task
 syn keyword esterelSysCall		call trap exit exec
 " Esterel Types
-syn keyword esterelType integer float bolean
+syn keyword esterelType 		integer float bolean
 " Esterel Comment
-syn match esterelComment	"%.*$"
+syn match esterelComment		"%.*$"
 " Operators and special characters
-syn match esterelSpecial	":"
-syn match esterelSpecial	"<="
-syn match esterelSpecial	">="
-syn match esterelSpecial	";"
-syn match esterelOperator	"\["
-syn match esterelOperator	"\]"
-syn match esterelOperator	":="
-syn match esterelStatement	"\<\(if\|else\)\>"
-syn match esterelNone		"\<else\s\+if\>$"
-syn match esterelNone		"\<else\s\+if\>\s"
+syn match esterelSpecial		":"
+syn match esterelSpecial		"<="
+syn match esterelSpecial		">="
+syn match esterelSpecial		"+"
+syn match esterelSpecial		"-"
+syn match esterelSpecial		"="
+syn match esterelSpecial		";"
+syn match esterelSpecial		"/"
+syn match esterelSpecial		"?"
+syn match esterelOperator		"\["
+syn match esterelOperator		"\]"
+syn match esterelOperator		":="
+syn match esterelOperator		"||"
+syn match esterelStatement		"\<\(if\|else\)\>"
+syn match esterelNone			"\<else\s\+if\>$"
+syn match esterelNone			"\<else\s\+if\>\s"
 
 " Class Linking
 if version >= 508 || !exists("did_esterel_syntax_inits")

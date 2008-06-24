@@ -1,4 +1,4 @@
-*pi_paren.txt*  For Vim version 7.1.  Last change: 2006 Jun 14
+*pi_paren.txt*  For Vim version 7.2a.  Last change: 2008 Jun 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,6 +15,7 @@ You can avoid loading this plugin by setting the "loaded_matchparen" variable: >
 The plugin installs CursorMoved, CursorMovedI and WinEnter autocommands to
 redefine the match highlighting.
 
+					*:NoMatchParen* *:DoMatchParen*
 To disable the plugin after it was loaded use this command: >
 
 	:NoMatchParen
@@ -45,6 +46,12 @@ are:
   closed folds.
 - 'synmaxcol' times 2 bytes before or after the cursor to avoid a delay
   in a long line with syntax highlighting.
+
+
+If you would like the |%| command to work better, the matchit plugin can be
+used, see |matchit-install|.  This plugin also helps to skip matches in
+comments.  This is unrelated to the matchparen highlighting, they use a
+different mechanism.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

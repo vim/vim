@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.1.  Last change: 2007 Mar 27
+*autocmd.txt*   For Vim version 7.2a.  Last change: 2008 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -104,7 +104,7 @@ local to the script and use mappings local to the script.  When the event is
 triggered and the command executed, it will run in the context of the script
 it was defined in.  This matters if |<SID>| is used in a command.
 
-When executing the commands, the messages from one command overwrites a
+When executing the commands, the message from one command overwrites a
 previous message.  This is different from when executing the commands
 manually.  Mostly the screen will not scroll up, thus there is no hit-enter
 prompt.  When one command outputs two messages this can happen anyway.
@@ -334,7 +334,7 @@ BufDelete			Before deleting a buffer from the buffer list.
 				list is renamed.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
-				buffer being deleted "<afile>".
+				buffer being deleted "<afile>" and "<abuf>".
 							*BufEnter*
 BufEnter			After entering a buffer.  Useful for setting
 				options for a file type.  Also executed when
@@ -400,10 +400,15 @@ BufUnload			Before unloading a buffer.  This is when the
 							*BufWinEnter*
 BufWinEnter			After a buffer is displayed in a window.  This
 				can be when the buffer is loaded (after
-				processing the modelines), when a hidden
+				processing the modelines) or when a hidden
 				buffer is displayed in a window (and is no
-				longer hidden) or a buffer already visible in
-				a window is also displayed in another window.
+				longer hidden).
+				Does not happen for |:split| without
+				arguments, since you keep editing the same
+				buffer, or ":split" with a file that's already
+				open in a window.  But it does happen for
+				a ":split" with the name of the current
+				buffer, since it reloads that buffer.
 							*BufWinLeave*
 BufWinLeave			Before a buffer is removed from a window.
 				Not when it's still visible in another window.
@@ -677,7 +682,7 @@ QuickFixCmdPre			Before a quickfix command is run (|:make|,
 							*QuickFixCmdPost*
 QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 				command is run, before jumping to the first
-				location.
+				location.  See |QuickFixCmdPost-example|.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as
 				server was received |server2client()|.  The
@@ -848,7 +853,7 @@ This autocommand will for example be executed for "/tmp/doc/xx.txt" and
 
 
 The file name that the pattern is matched against is after expanding
-wildcards.  Thus is you issue this command: >
+wildcards.  Thus if you issue this command: >
 	:e $ROOTDIR/main.$EXT
 The argument is first expanded to: >
 	/usr/root/main.py
@@ -927,7 +932,7 @@ simply use the special string instead of the pattern.  Examples: >
 				     " current buffer
     :au! * <buffer=33>		     " remove buffer-local autocommands for
 				     " buffer #33
-    :dobuf :au! CursorHold <buffer>  " remove autocmd for given event for all
+    :bufdo :au! CursorHold <buffer>  " remove autocmd for given event for all
 				     " buffers
     :au * <buffer>		     " list buffer-local autocommands for
 				     " current buffer
@@ -1031,8 +1036,9 @@ option will not cause any commands to be executed.
 			undefined group name, Vim gives you an error message.
 
 			After applying the autocommands the modelines are
-			processed, so that their overrule the settings from
-			autocommands, like what happens when editing a file.
+			processed, so that their settings overrule the
+			settings from autocommands, like what happens when
+			editing a file.
 
 						*:doautoa* *:doautoall*
 :doautoa[ll] [group] {event} [fname]

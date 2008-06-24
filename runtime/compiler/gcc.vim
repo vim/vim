@@ -11,7 +11,7 @@ let current_compiler = "gcc"
 let s:cpo_save = &cpo
 set cpo-=C
 
-setlocal errorformat=
+CompilerSet errorformat=
       \%*[^\"]\"%f\"%*\\D%l:\ %m,
       \\"%f\"%*\\D%l:\ %m,
       \%-G%f:%l:\ %trror:\ (Each\ undeclared\ identifier\ is\ reported\ only\ once,
@@ -25,7 +25,7 @@ setlocal errorformat=
       \%DMaking\ %*\\a\ in\ %f
 
 if exists('g:compiler_gcc_ignore_unmatched_lines')
-  let &errorformat .= ',%-G%.%#'
+  CompilerSet errorformat+=%-G%.%#
 endif
 
 let &cpo = s:cpo_save

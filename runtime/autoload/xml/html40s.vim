@@ -408,4 +408,3 @@ let g:xmldata_html40s = {
 \ 'param': ['/>', ''],
 \ }
 \ }
-" vim:ft=vim:ff=unix

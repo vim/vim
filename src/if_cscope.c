@@ -23,7 +23,6 @@
 #else
     /* not UNIX, must be WIN32 */
 # include "vimio.h"
-# include <fcntl.h>
 #endif
 #include "if_cscope.h"
 
@@ -171,7 +170,7 @@ do_cstag(eap)
 
     cs_init();
 
-    if (eap->arg == NULL || strlen((const char *)(eap->arg)) == 0)
+    if (*eap->arg == NUL)
     {
 	(void)EMSG(_("E562: Usage: cstag <ident>"));
 	return;
@@ -1225,7 +1224,7 @@ clear_csinfo(i)
     csinfo[i].nIndexHigh = 0;
     csinfo[i].nIndexLow = 0;
 #endif
-    csinfo[i].pid    = -1;
+    csinfo[i].pid    = 0;
     csinfo[i].fr_fp  = NULL;
     csinfo[i].to_fp  = NULL;
 #if defined(WIN32)

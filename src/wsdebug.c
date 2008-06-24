@@ -40,7 +40,9 @@ void		 wsdebug(char *, ...);
 void		 wstrace(char *, ...);
 
 static int	 lookup(char *);
+#ifdef USE_WS_ERRORHANDLER
 static int	 errorHandler(Display *, XErrorEvent *);
+#endif
 
 
 /*
@@ -96,7 +98,9 @@ wsdebug_log_init(
 		} else {
 			ws_dlevel = WS_TRACE;	/* default level */
 		}
-		/* XSetErrorHandler(errorHandler); */
+#ifdef USE_WS_ERRORHANDLER
+		XSetErrorHandler(errorHandler);
+#endif
 	}
 
 }    /* end wsdebug_log_init */
@@ -149,6 +153,7 @@ lookup(
 
 }    /* end lookup */
 
+#ifdef USE_WS_ERRORHANDLER
 static int
 errorHandler(
 	Display		*dpy,
@@ -172,6 +177,7 @@ errorHandler(
 
 	return 0;
 }
+#endif
 
 
 

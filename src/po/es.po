@@ -434,11 +434,11 @@ msgstr "E121: Variable sin definir: %s."
 
 #, c-format
 msgid "E461: Illegal variable name: %s"
-msgstr "E244: ¡Nombre ilegal para una variable! %s"
+msgstr "E461: ¡Nombre ilegal para una variable! %s"
 
 #, c-format
 msgid "E122: Function %s already exists, add ! to replace it"
-msgstr "E226: La función %s ya existe, añada «!» para reemplazarla."
+msgstr "E122: La función %s ya existe, añada «!» para reemplazarla."
 
 #, c-format
 msgid "E123: Undefined function: %s"
@@ -698,7 +698,7 @@ msgstr "E478: ¡No entre en pánico!"
 
 #, c-format
 msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E149: Lo siento, no hay ayuda «%s» para %s."
+msgstr "E661: Lo siento, no hay ayuda «%s» para %s."
 
 #, c-format
 msgid "E149: Sorry, no help for %s"
@@ -752,7 +752,7 @@ msgstr "E159: Falta el número del signo."
 
 #, c-format
 msgid "E158: Invalid buffer name: %s"
-msgstr "E159: El nombre del «buffer» no es válido: %s"
+msgstr "E158: El nombre del «buffer» no es válido: %s"
 
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
@@ -901,7 +901,7 @@ msgstr "E455: Error escribiendo al fichero PostScript de salida."
 
 #, c-format
 msgid "E624: Can't open file \"%s\""
-msgstr "E456: No se puede abrir el fichero «%s»."
+msgstr "E624: No se puede abrir el fichero «%s»."
 
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
@@ -997,7 +997,7 @@ msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Uso ambiguo de un comando definido por el usuario."
 
 msgid "E492: Not an editor command"
-msgstr "E371: No es un comando del editor."
+msgstr "E492: No es un comando del editor."
 
 msgid "E493: Backwards range given"
 msgstr "E493: Me ha dado un rango invertido."
@@ -1267,7 +1267,7 @@ msgid "E587: :break without :while"
 msgstr "E587: :break sin :while"
 
 msgid "E601: :try nesting too deep"
-msgstr "E218: ¡«:try» se anida muy profundamente!"
+msgstr "E601: ¡«:try» se anida muy profundamente!"
 
 msgid "E603: :catch without :try"
 msgstr "E603: :catch sin un :try"
@@ -1482,7 +1482,7 @@ msgid "E667: Fsync failed"
 msgstr "E667: falló «fsync»"
 
 msgid "E512: Close failed"
-msgstr "E314: Falló el cierre del fichero."
+msgstr "E512: Falló el cierre del fichero."
 
 msgid "E513: write error, conversion failed"
 msgstr "E513: Error de escritura, la conversión falló."
@@ -3262,7 +3262,7 @@ msgid "Stack size increases"
 msgstr "El tamaño de la pila aumenta"
 
 msgid "E317: pointer block id wrong 2"
-msgstr "E310: El id del bloque de punteros está equivocado. 2"
+msgstr "E317: El id del bloque de punteros está equivocado. 2"
 
 msgid "E325: ATTENTION"
 msgstr "E325: ATENCIÓN"
@@ -4636,7 +4636,7 @@ msgid "E427: There is only one matching tag"
 msgstr "E427: Hay sólo un «tag» que coincide"
 
 msgid "E428: Cannot go beyond last matching tag"
-msgstr "E420: No se puede ir más allá del último «tag» que coincida"
+msgstr "E428: No se puede ir más allá del último «tag» que coincida"
 
 #, c-format
 msgid "File \"%s\" does not exist"

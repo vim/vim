@@ -4,7 +4,7 @@ For instructions on installing this file, type
 	:help matchit-install
 inside Vim.
 
-For Vim version 6.3.  Last change:  2006 Feb 23
+For Vim version 6.3.  Last change:  2007 Aug 29
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher
@@ -34,7 +34,7 @@ in your |vimrc| file: >
 
 							*g%* *v_g%* *o_g%*
 g%	Cycle backwards through matching groups, as specified by
-	|b:match_words|.  For example, go from "endif" to "else" to "if".
+	|b:match_words|.  For example, go from "if" to "endif" to "else".
 
 							*[%* *v_[%* *o_[%*
 [%	Go to [count] previous unmatched group, as specified by
@@ -64,9 +64,9 @@ option.  The matchit plugin extends this in several ways:
 	    By default, words inside comments and strings are ignored, unless
 	the cursor is inside a comment or string when you type "%".  If the
 	only thing you want to do is modify the behavior of "%" so that it
-	behaves this way, you can >
-		:let b:match_words = &matchpairs
-<
+	behaves this way, you do not have to define |b:match_words|, since the
+	script uses the 'matchpairs' option as well as this variable.
+
 See |matchit-details| for details on what the script does, and |b:match_words|
 for how to specify matching patterns.
 
@@ -84,7 +84,7 @@ LANGUAGES:					*matchit-languages*
 Currently, the following languages are supported:  Ada, ASP with VBS, Csh,
 DTD, Entity, Essbase, Fortran, HTML, JSP (same as HTML), LaTeX, Lua, Pascal,
 SGML, Shell, Tcsh, Vim, XML.  Other languages may already have support via
-|filetype-plugin|s.
+the default |filetype-plugin|s in the standard vim distribution.
 
 To support a new language, see |matchit-newlang| below.
 
@@ -109,7 +109,6 @@ The script follows these rules:
 	Prefer a match that includes the cursor position (that is, one that
 		starts on or before the cursor).
 	Prefer a match that starts as close to the cursor as possible.
-	Prefer a match in |b:match_words| to a match in 'matchpairs'.
 	If more than one pattern in |b:match_words| matches, choose the one
 		that is listed first.
 
@@ -131,9 +130,10 @@ Examples:
 	cursor starts on the "end " then "end if" is chosen.  (You can avoid
 	this problem by using a more complicated pattern.)
 
-If there is no match, the script falls back on the usual behavior of |%|.  If
-debugging is turned on, the matched bit of text is saved as |b:match_match|
-and the cursor column of the start of the match is saved as |b:match_col|.
+If there is no match, the cursor does not move.  (Before version 1.13 of the
+script, it would fall back on the usual behavior of |%|).  If debugging is
+turned on, the matched bit of text is saved as |b:match_match| and the cursor
+column of the start of the match is saved as |b:match_col|.
 
 Next, the script looks through |b:match_words| (original and parsed versions)
 for the group and pattern that match.  If debugging is turned on, the group is
@@ -160,11 +160,13 @@ or >
 	:runtime macros/matchit.vim
 Either way, the script should start working the next time you start up Vim.
 
-The script does nothing unless it finds a |buffer-variable| named
-|b:match_words|.  The script contains autocommands that set this variable for
-various file types:  see |matchit-languages| above.  For a new language, you
-can add autocommands to the script or to your vimrc file, but the recommended
-method is to add a line such as >
+(Earlier versions of the script did nothing unless a |buffer-variable| named
+|b:match_words| was defined.  Even earlier versions contained autocommands
+that set this variable for various file types.  Now, |b:match_words| is
+defined in many of the default |filetype-plugin|s instead.)
+
+For a new language, you can add autocommands to the script or to your vimrc
+file, but the recommended method is to add a line such as >
 	let b:match_words = '\<foo\>:\<bar\>'
 to the |filetype-plugin| for your language.  See |b:match_words| below for how
 this variable is interpreted.

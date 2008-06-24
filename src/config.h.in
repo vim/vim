@@ -150,6 +150,7 @@
 #undef HAVE_MEMSET
 #undef HAVE_NANOSLEEP
 #undef HAVE_OPENDIR
+#undef HAVE_FLOAT_FUNCS
 #undef HAVE_PUTENV
 #undef HAVE_QSORT
 #undef HAVE_READLINK
@@ -200,6 +201,7 @@
 #undef HAVE_LIBGEN_H
 #undef HAVE_LIBINTL_H
 #undef HAVE_LOCALE_H
+#undef HAVE_MATH_H
 #undef HAVE_NDIR_H
 #undef HAVE_POLL_H
 #undef HAVE_PTHREAD_NP_H
@@ -307,6 +309,9 @@
 
 /* Define if you want to add support of GPM (Linux console mouse daemon) */
 #undef HAVE_GPM
+
+/* Define if you want to add support of sysmouse (*BSD console mouse) */
+#undef HAVE_SYSMOUSE
 
 /* Define if you want to include the Cscope interface. */
 #undef FEAT_CSCOPE

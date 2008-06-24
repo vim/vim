@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Mar 26, 2007
+" Date:		Mar 11, 2008
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	9
+" Version:	11
 " Copyright:    Copyright (C) 1999-2007 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,13 +19,13 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v9"
+let g:loaded_netrwSettings  = "v11"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
 fun! netrwSettings#NetrwSettings()
   " this call is here largely just to insure that netrw has been loaded
-  call netrw#NetSavePosn()
+  call netrw#NetrwSavePosn()
   if !exists("g:loaded_netrw")
    echohl WarningMsg | echomsg "***sorry*** netrw needs to be loaded prior to using NetrwSettings" | echohl None
    return
@@ -101,23 +101,36 @@ fun! netrwSettings#NetrwSettings()
   else
    put = 'let g:netrw_browsex_viewer    = (not defined)'
   endif
+  let cdescline= line("$")
+  put ='let g:netrw_cd_escape...'
+  put = 'let g:netrw_compress          = '.g:netrw_compress
+  let decompressline= line("$")
+  put ='let g:netrw_decompress...'
   put = 'let g:netrw_dirhistmax        = '.g:netrw_dirhistmax
   put = 'let g:netrw_fastbrowse        = '.g:netrw_fastbrowse
+  let fnameescline= line("$")
+  put = 'let g:netrw_fname_escape...'
   put = 'let g:netrw_ftp_browse_reject = '.g:netrw_ftp_browse_reject
   put = 'let g:netrw_ftp_list_cmd      = '.g:netrw_ftp_list_cmd
   put = 'let g:netrw_ftp_sizelist_cmd  = '.g:netrw_ftp_sizelist_cmd
   put = 'let g:netrw_ftp_timelist_cmd  = '.g:netrw_ftp_timelist_cmd
+  let globescline= line("$")
+  put ='let g:netrw_glob_escape...'
   put = 'let g:netrw_hide              = '.g:netrw_hide
   put = 'let g:netrw_keepdir           = '.g:netrw_keepdir
   put = 'let g:netrw_list_cmd          = '.g:netrw_list_cmd
   put = 'let g:netrw_list_hide         = '.g:netrw_list_hide
-  put = 'let g:netrw_local_mkdir       = '.g:netrw_local_mkdir
-  put = 'let g:netrw_local_rmdir       = '.g:netrw_local_rmdir
   put = 'let g:netrw_liststyle         = '.g:netrw_liststyle
+  put = 'let g:netrw_localcopycmd      = '.g:netrw_localcopycmd
+  put = 'let g:netrw_local_mkdir       = '.g:netrw_local_mkdir
+  put = 'let g:netrw_localmovecmd      = '.g:netrw_localmovecmd
+  put = 'let g:netrw_local_rmdir       = '.g:netrw_local_rmdir
   put = 'let g:netrw_maxfilenamelen    = '.g:netrw_maxfilenamelen
   put = 'let g:netrw_menu              = '.g:netrw_menu
   put = 'let g:netrw_mkdir_cmd         = '.g:netrw_mkdir_cmd
+  put = 'let g:netrw_preview           = '.g:netrw_preview
   put = 'let g:netrw_rename_cmd        = '.g:netrw_rename_cmd
+  put = 'let g:netrw_retmap            = '.g:netrw_retmap
   put = 'let g:netrw_rm_cmd            = '.g:netrw_rm_cmd
   put = 'let g:netrw_rmdir_cmd         = '.g:netrw_rmdir_cmd
   put = 'let g:netrw_rmf_cmd           = '.g:netrw_rmf_cmd
@@ -125,11 +138,15 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_sort_by           = '.g:netrw_sort_by
   put = 'let g:netrw_sort_direction    = '.g:netrw_sort_direction
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
+  put = 'let g:netrw_special_syntax    = '.g:netrw_special_syntax
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
   put = 'let g:netrw_scpport           = '.g:netrw_scpport
   put = 'let g:netrw_sshport           = '.g:netrw_sshport
   put = 'let g:netrw_timefmt           = '.g:netrw_timefmt
+  let tmpfileescline= line("$")
+  put ='let g:netrw_tmpfile_escape...'
   put = 'let g:netrw_use_noswf         = '.g:netrw_use_noswf
+  put = 'let g:netrw_xstrlen           = '.g:netrw_xstrlen
   put = 'let g:netrw_winsize           = '.g:netrw_winsize
 
   put =''
@@ -142,13 +159,18 @@ fun! netrwSettings#NetrwSettings()
   silent %s/= $/= ''/e
   1
 
-  " Put in shq setting.
+  " Put in g:netrw_shq setting and g:netrw_cd_escape
   " (deferred so as to avoid the quote manipulation just preceding)
   if g:netrw_shq == "'"
-   call setline(shqline,'let g:netrw_shq               = "'.g:netrw_shq.'"')
+   call setline(shqline,      'let g:netrw_shq               = "'.g:netrw_shq.'"')
   else
-   call setline(shqline,"let g:netrw_shq               = '".g:netrw_shq."'")
+   call setline(shqline,      "let g:netrw_shq               = '".g:netrw_shq."'")
   endif
+  call setline(cdescline,     "let g:netrw_cd_escape         = ".'"'.escape(g:netrw_cd_escape,'\"').'"')
+  call setline(decompressline,"let g:netrw_decompress        = ".substitute(string(g:netrw_decompress),"^'\\(.*\\)'$",'\1',''))
+  call setline(fnameescline,  "let g:netrw_fname_escape      = '".escape(g:netrw_fname_escape,"'")."'")
+  call setline(globescline,   "let g:netrw_glob_escape       = '".escape(g:netrw_glob_escape,"'")."'")
+  call setline(tmpfileescline,"let g:netrw_tmpfile_escape    = '".escape(g:netrw_tmpfile_escape,"'")."'")
 
   set nomod
 

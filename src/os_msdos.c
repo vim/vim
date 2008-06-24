@@ -25,9 +25,6 @@
 #include "vim.h"
 
 #include <conio.h>
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
 
 /*
  * MS-DOS only code, not used for Win16.
@@ -1629,8 +1626,7 @@ mch_FullName(
 		    {
 			added -= (tail - head);
 			if (added != 0)
-			    mch_memmove(tail + 1 + added, tail + 1,
-							STRLEN(tail + 1) + 1);
+			    STRMOVE(tail + 1 + added, tail + 1);
 			STRCPY(head, fb.ff_name);
 			tail += added;
 		    }

@@ -1,11 +1,11 @@
 " =============================================================================
-"
+" 
 "   Program:   CMake - Cross-Platform Makefile Generator
 "   Module:    $RCSfile$
 "   Language:  VIM
 "   Date:      $Date$
 "   Version:   $Revision$
-"
+" 
 " =============================================================================
 
 " Vim indent file
@@ -65,8 +65,8 @@ fun! CMakeGetIndent(lnum)
                     \            ')\s*' .
                     \            '\(' . cmake_regex_comment . '\)\?$'
 
-  let cmake_indent_begin_regex = '^\s*\(IF\|MACRO\|FOREACH\|ELSE\|WHILE\)\s*('
-  let cmake_indent_end_regex = '^\s*\(ENDIF\|ENDFOREACH\|ENDMACRO\|ELSE\|ENDWHILE\)\s*('
+  let cmake_indent_begin_regex = '^\s*\(IF\|MACRO\|FOREACH\|ELSE\|ELSEIF\|WHILE\)\s*('
+  let cmake_indent_end_regex = '^\s*\(ENDIF\|ENDFOREACH\|ENDMACRO\|ELSE\|ELSEIF\|ENDWHILE\)\s*('
 
   " Add
   if previous_line =~? cmake_indent_comment_line " Handle comments

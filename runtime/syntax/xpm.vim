@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	X Pixmap
 " Maintainer:	Ronald Schild <rs@scutum.de>
-" Last Change:	2001 May 09
+" Last Change:	2008 May 28
 " Version:	5.4n.1
 
 " For version 5.x: Clear all syntax items
@@ -38,9 +38,15 @@ while i <= line("$")		" scanning all lines
 	 let colors = substitute(s, '"\s*\d\+\s\+\d\+\s\+\(\d\+\).*"', '\1', '')
 	 " get the 4th value: cpp = number of character per pixel
 	 let cpp = substitute(s, '"\s*\d\+\s\+\d\+\s\+\d\+\s\+\(\d\+\).*"', '\1', '')
+	 if cpp =~ '[^0-9]'
+	    break  " if cpp is not made of digits there must be something wrong
+	 endif
 
-	 " highlight the Values string as normal string (no pixel string)
-	 exe 'syn match xpmValues /'.s.'/'
+	 " Highlight the Values string as normal string (no pixel string).
+	 " Only when there is no slash, it would terminate the pattern.
+	 if s !~ '/'
+	    exe 'syn match xpmValues /' . s . '/'
+	 endif
 	 hi link xpmValues String
 
 	 let n = 1		" n = color index
@@ -103,7 +109,7 @@ while i <= line("$")		" scanning all lines
 	 if color == ""  ||  substitute(color, '.*', '\L&', '') == 'none'
 	    exe 'hi xpmColor'.n.' guifg=bg'
 	    exe 'hi xpmColor'.n.' guibg=NONE'
-	 else
+	 elseif color !~ "'"
 	    exe 'hi xpmColor'.n." guifg='".color."'"
 	    exe 'hi xpmColor'.n." guibg='".color."'"
 	 endif

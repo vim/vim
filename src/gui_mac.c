@@ -484,7 +484,7 @@ menu_title_removing_mnemonic(vimmenu_T *menu)
     CFMutableStringRef	cleanedName;
 
     menuTitleLen = STRLEN(menu->dname);
-    name = mac_enc_to_cfstring(menu->dname, menuTitleLen);
+    name = (CFStringRef) mac_enc_to_cfstring(menu->dname, menuTitleLen);
 
     if (name)
     {
@@ -6073,7 +6073,7 @@ gui_mch_settitle(char_u *title, char_u *icon)
 
 #ifdef MACOS_CONVERT
     windowTitleLen = STRLEN(title);
-    windowTitle  = mac_enc_to_cfstring(title, windowTitleLen);
+    windowTitle  = (CFStringRef)mac_enc_to_cfstring(title, windowTitleLen);
 
     if (windowTitle)
     {
@@ -6520,7 +6520,7 @@ getTabLabel(tabpage_T *page)
 {
     get_tabline_label(page, FALSE);
 #ifdef MACOS_CONVERT
-    return mac_enc_to_cfstring(NameBuff, STRLEN(NameBuff));
+    return (CFStringRef)mac_enc_to_cfstring(NameBuff, STRLEN(NameBuff));
 #else
     // TODO: check internal encoding?
     return CFStringCreateWithCString(kCFAllocatorDefault, (char *)NameBuff,

@@ -35,6 +35,7 @@
 #define HAVE_MEMSET
 #define HAVE_QSORT
 #define HAVE_ST_MODE		/* have stat.st_mode */
+#define HAVE_MATH_H
 #if defined(__DATE__) && defined(__TIME__)
 # define HAVE_DATE_TIME
 #endif

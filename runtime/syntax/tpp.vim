@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:	tpp - Text Presentation Program
-" Maintainer:   Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainer:	Gerfried Fuchs <alfie@ist.org>
-" Last Change:	$LastChangedDate: 2006-04-16 22:06:40 -0400 (dom, 16 apr 2006) $
-" URL: http://svn.debian.org/wsvn/pkg-vim/trunk/runtime/syntax/tpp.vim?op=file&rev=0&sc=0
+" Last Change:	2007-10-14
+" URL: http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/syntax/tpp.vim;hb=debian
 " Filenames:	*.tpp
 " License:	BSD
 "

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.1.  Last change: 2008 Feb 24
+*options.txt*	For Vim version 7.2a.  Last change: 2008 Jun 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -111,19 +111,31 @@ and the following arguments will be ignored.
 When 'verbose' is non-zero, displaying an option value will also tell where it
 was last set.  Example: >
 	:verbose set shiftwidth cindent?
-	  shiftwidth=4
-		  Last set from modeline
-	  cindent
-		  Last set from /usr/local/share/vim/vim60/ftplugin/c.vim
-This is only done when specific option values are requested, not for ":set
-all" or ":set" without an argument.
-When the option was set by hand there is no "Last set" message.  There is only
-one value for all local options with the same name.  Thus the message applies
-to the option name, not necessarily its value.
+<	  shiftwidth=4 ~
+		  Last set from modeline ~
+	  cindent ~
+		  Last set from /usr/local/share/vim/vim60/ftplugin/c.vim ~
+This is only done when specific option values are requested, not for ":verbose
+set all" or ":verbose set" without an argument.
+When the option was set by hand there is no "Last set" message.
 When the option was set while executing a function, user command or
 autocommand, the script in which it was defined is reported.
 Note that an option may also have been set as a side effect of setting
 'compatible'.
+A few special texts:
+	Last set from modeline ~
+		Option was set in a |modeline|.
+	Last set from --cmd argument ~
+		Option was set with command line argument |--cmd| or +.
+	Last set from -c argument ~
+		Option was set with command line argument |-c|, +, |-S| or
+		|-q|.
+	Last set from environment variable ~
+		Option was set from an environment variable, $VIMINIT,
+		$GVIMINIT or $EXINIT.
+	Last set from error handler ~
+		Option was cleared when evaluating it resulted in an error.
+
 {not available when compiled without the +eval feature}
 
 							*:set-termcap* *E522*
@@ -265,7 +277,10 @@ You will not get back the 'list' value as it was the last time you edited
 			Without argument: Display all local option's local
 			values which are different from the default.
 			When displaying a specific local option, show the
-			local value.  For a global option the global value is
+			local value.  For a global/local boolean option, when
+			the global value is being used, "--" is displayed
+			before the option name.
+			For a global option the global value is
 			shown (but that might change in the future).
 			{not in Vi}
 
@@ -797,7 +812,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When 'background' is set Vim will adjust the default color groups for
 	the new value.  But the colors used for syntax highlighting will not
-	change.
+	change.					*g:colors_name*
 	When a color scheme is loaded (the "colors_name" variable is set)
 	setting 'background' will cause the color scheme to be reloaded.  If
 	the color scheme adjusts to the value of 'background' this will work.
@@ -1148,9 +1163,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'browsedir'* *'bsdir'*
 'browsedir' 'bsdir'	string	(default: "last")
 			global
-			{not in Vi} {only for Motif and Win32 GUI}
+			{not in Vi} {only for Motif, Athena, GTK, Mac and
+			Win32 GUI}
 	Which directory to use for the file browser:
-	   last		Use same directory as with last file browser.
+	   last		Use same directory as with last file browser, where a
+	   		file was opened or saved.
 	   buffer	Use the directory of the related buffer.
 	   current	Use the current directory.
 	   {path}	Use the specified directory
@@ -1343,7 +1360,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+cindent|
 			feature}
-	Enables automatic C program indenting  See 'cinkeys' to set the keys
+	Enables automatic C program indenting.  See 'cinkeys' to set the keys
 	that trigger reindenting in insert mode and 'cinoptions' to set your
 	preferred indent style.
 	If 'indentexpr' is not empty, it overrules 'cindent'.
@@ -1711,7 +1728,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	tabs followed by spaces as required (unless |'expandtab'| is enabled,
 	in which case only spaces are used).  Enabling this option makes the
 	new line copy whatever characters were used for indenting on the
-	existing line.  If the new indent is greater than on the existing
+	existing line.  'expandtab' has no effect on these characters, a Tab
+	remains a Tab.  If the new indent is greater than on the existing
 	line, the remaining space is filled in the normal manner.
 	NOTE: 'copyindent' is reset when 'compatible' is set.
 	Also see 'preserveindent'.
@@ -2423,8 +2441,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 			{not in Vi}
 	External program to use for "=" command.  When this option is empty
-	the internal formatting functions are used ('lisp', 'cindent' or
-	'indentexpr').
+	the internal formatting functions are used; either 'lisp', 'cindent'
+	or 'indentexpr'.
 	Environment variables are expanded |:set_env|.  See |option-backslash|
 	about including spaces and backslashes.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
@@ -3362,7 +3380,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		'guitablabel' can be used to change the text in the labels.
 		When 'e' is missing a non-GUI tab pages line may be used.
 		The GUI tabs are only supported on some systems, currently
-		GTK, Motif and MS-Windows.
+		GTK, Motif, Mac OS/X and MS-Windows.
 								*'go-f'*
 	  'f'	Foreground: Don't use fork() to detach the GUI from the shell
 		where it was started.  Use this for programs that wait for the
@@ -3618,7 +3636,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When you get bored looking at the highlighted matches, you can turn it
 	off with |:nohlsearch|.  As soon as you use a search command, the
 	highlighting comes back.
-	'redrawtime' specifies the maximum time spend on finding matches.
+	'redrawtime' specifies the maximum time spent on finding matches.
 	When the search pattern can match an end-of-line, Vim will try to
 	highlight all of the matched text.  However, this depends on where the
 	search starts.  This will be the first line in the window or the first
@@ -3917,12 +3935,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 			{not in Vi}
 	When doing keyword completion in insert mode |ins-completion|, and
-	'ignorecase' is also on, the case of the match is adjusted.  If the
-	typed text contains a lowercase letter where the match has an upper
-	case letter, the completed part is made lowercase.  If the typed text
-	has no lowercase letters and the match has a lowercase letter where
-	the typed text has an uppercase letter, and there is a letter before
-	it, the completed part is made uppercase.
+	'ignorecase' is also on, the case of the match is adjusted depending
+	on the typed text.  If the typed text contains a lowercase letter
+	where the match has an upper case letter, the completed part is made
+	lowercase.  If the typed text has no lowercase letters and the match
+	has a lowercase letter where the typed text has an uppercase letter,
+	and there is a letter before it, the completed part is made uppercase.
+	With 'noinfercase' the match is used as-is.
 
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
@@ -3967,6 +3986,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Multi-byte characters 256 and above are always included, only the
 	characters up to 255 are specified with this option.
 	For UTF-8 the characters 0xa0 to 0xff are included as well.
+	Think twice before adding white space to this option.  Although a
+	space may appear inside a file name, the effect will be that Vim
+	doesn't know where a file name starts or ends when doing completion.
+	It most likely works better without a space in 'isfname'.
 
 	Note that on systems using a backslash as path separator, Vim tries to
 	do its best to make it work as you would expect.  That is a bit
@@ -3993,7 +4016,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	are included.  Normally these are the characters a to z and A to Z,
 	plus accented characters.  To include '@' itself use "@-@".  Examples:
 		"@,^a-z"	All alphabetic characters, excluding lower
-				case letters.
+				case ASCII letters.
 		"a-z,A-Z,@-@"	All letters plus the '@' character.
 	A comma can be included by using it where a character number is
 	expected.  Example:
@@ -4617,8 +4640,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 			{not in Vi}
 	Enable the use of the mouse.  Only works for certain terminals
-	(xterm, MS-DOS, Win32 |win32-mouse|, QNX pterm, and Linux console
-	with gpm).  For using the mouse in the GUI, see |gui-mouse|.
+	(xterm, MS-DOS, Win32 |win32-mouse|, QNX pterm, *BSD console with
+	sysmouse and Linux console with gpm).  For using the mouse in the
+	GUI, see |gui-mouse|.
 	The mouse can be enabled for different modes:
 		n	Normal mode
 		v	Visual mode
@@ -4948,6 +4972,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that typing <F10> in paste mode inserts "<F10>", since in paste
 	mode everything is inserted literally, except the 'pastetoggle' key
 	sequence.
+	When the value has several bytes 'ttimeoutlen' applies.
 
 						*'pex'* *'patchexpr'*
 'patchexpr' 'pex'	string	(default "")
@@ -5054,6 +5079,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	enabled, in which case only spaces are used).  Enabling this option
 	means the indent will preserve as many existing characters as possible
 	for indenting, and only add additional tabs or spaces as required.
+	'expandtab' does not apply to the preserved white space, a Tab remains
+	a Tab.
 	NOTE: When using ">>" multiple times the resulting indent is a mix of
 	tabs and spaces.  You might not like this.
 	NOTE: 'preserveindent' is reset when 'compatible' is set.
@@ -5894,6 +5921,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	pattern (if there is one) as possible matches.  Thus, if you have
 	matched a C function, you can see a template for what arguments are
 	required (coding style permitting).
+	Note that this doesn't work well together with having "longest" in
+	'completeopt', because the completion from the search pattern may not
+	match the typed text.
 
 				 *'showmatch'* *'sm'* *'noshowmatch'* *'nosm'*
 'showmatch' 'sm'	boolean	(default off)
@@ -6478,6 +6508,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   split	If included, split the current window before loading
 			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.
+	   newtab	Like "split", but open a new tab page.  Overrules
+	   		"split" when both are present.
 
 						*'synmaxcol'* *'smc'*
 'synmaxcol' 'smc'	number	(default 3000)
@@ -6602,7 +6634,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	Linear searching is done anyway, for one file, when Vim finds a line
 	at the start of the file indicating that it's not sorted: >
-   !_TAG_FILE_SORTED	0	/some command/
+   !_TAG_FILE_SORTED	0	/some comment/
 <	[The whitespace before and after the '0' must be a single <Tab>]
 
 	When a binary search was done and no match was found in any of the
@@ -7089,7 +7121,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"xterm", when the terminal name doesn't start with "xterm", but it can
 	handle xterm mouse codes.
 	The "xterm2" value will be set if the xterm version is reported to be
-	95 of higher.  This only works when compiled with the |+termresponse|
+	95 or higher.  This only works when compiled with the |+termresponse|
 	feature and if |t_RV| is set to the escape sequence to request the
 	xterm version number.  Otherwise "xterm2" must be set explicitly.
 	If you do not want 'ttymouse' to be set to "xterm2" automatically, set
@@ -7424,6 +7456,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Character you have to type to start wildcard expansion in the
 	command-line, as specified with 'wildmode'.
+	More info here: |cmdline-completion|.
 	The character is not recognized when used inside a macro.  See
 	'wildcharm' for that.
 	Although 'wc' is a number option, you can set it to a special key: >
@@ -7441,7 +7474,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	you'll never actually type 'wildcharm', just use it in mappings that
 	automatically invoke completion mode, e.g.: >
 		:set wcm=<C-Z>
-		:cmap ss so $vim/sessions/*.vim<C-Z>
+		:cnoremap ss so $vim/sessions/*.vim<C-Z>
 <	Then after typing :ss you can use CTRL-P & CTRL-N.
 
 						*'wildignore'* *'wig'*
@@ -7536,6 +7569,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	List all matches without completing, then each full match >
 		:set wildmode=longest,list
 <	Complete longest common string, then list alternatives.
+	More info here: |cmdline-completion|.
 
 						*'wildoptions'* *'wop'*
 'wildoptions' 'wop'	string	(default "")
@@ -7596,13 +7630,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 	Minimal number of lines for the current window.  This is not a hard
 	minimum, Vim will use fewer lines if there is not enough room.  If the
-	current window is smaller, its size is increased, at the cost of the
-	height of other windows.  Set it to 999 to make the current window
-	always fill the screen (although this has the drawback that ":all"
-	will create only two windows).  Set it to a small number for normal
-	editing.
-	Minimum value is 1.
-	The height is not adjusted after one of the commands to change the
+	focus goes to a window that is smaller, its size is increased, at the
+	cost of the height of other windows.
+	Set 'winheight' to a small number for normal editing.
+	Set it to 999 to make the current window fill most of the screen.
+	Other windows will be only 'winminheight' high.  This has the drawback
+	that ":all" will create only two windows.  To avoid "vim -o 1 2 3 4"
+	to create only two windows, set the option after startup is done,
+	using the |VimEnter| event: >
+		au VimEnter * set winheight=999
+<	Minimum value is 1.
+	The height is not adjusted after one of the commands that change the
 	height of the current window.
 	'winheight' applies to the current window.  Use 'winminheight' to set
 	the minimal height for other windows.

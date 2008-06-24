@@ -1415,6 +1415,7 @@ qf_jump(qi, dir, errornr, forceit)
     char_u		*line;
 #ifdef FEAT_WINDOWS
     char_u		*old_swb = p_swb;
+    unsigned		old_swb_flags = swb_flags;
     int			opened_window = FALSE;
     win_T		*win;
     win_T		*altwin;
@@ -1594,10 +1595,10 @@ qf_jump(qi, dir, errornr, forceit)
 	    }
 
 	/*
-	 * If no usable window is found and 'switchbuf' is set to 'usetab'
+	 * If no usable window is found and 'switchbuf' contains "usetab"
 	 * then search in other tabs.
 	 */
-	if (!usable_win && vim_strchr(p_swb, 'a') != NULL)
+	if (!usable_win && (swb_flags & SWB_USETAB))
 	{
 	    tabpage_T	*tp;
 	    win_T	*wp;
@@ -1625,6 +1626,7 @@ qf_jump(qi, dir, errornr, forceit)
 		goto failed;		/* not enough room for window */
 	    opened_window = TRUE;	/* close it when fail */
 	    p_swb = empty_option;	/* don't split again */
+	    swb_flags = 0;
 # ifdef FEAT_SCROLLBIND
 	    curwin->w_p_scb = FALSE;
 # endif
@@ -1866,7 +1868,10 @@ theend:
 	/* Restore old 'switchbuf' value, but not when an autocommand or
 	 * modeline has changed the value. */
 	if (p_swb == empty_option)
+	{
 	    p_swb = old_swb;
+	    swb_flags = old_swb_flags;
+	}
 	else
 	    free_string_option(old_swb);
     }

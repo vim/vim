@@ -3,7 +3,7 @@
 " Maintainer:	Nam SungHyun <namsh@kldp.org>
 " Previous Maintainer:	Gautam H. Mudunuri <gmudunur@informatica.com>
 " Version Info:
-" Last Change:	2004 May 16
+" Last Change:	2007 Dec 30
 
 " Additional highlighting by Johannes Tanzler <johannes.tanzler@aon.at>:
 "	* manSubHeading
@@ -36,7 +36,7 @@ syn match  manLongOptionDesc  "^\s*--[a-z0-9-]\S*"
 if getline(1) =~ '^[a-zA-Z_]\+([23])'
   syntax include @cCode <sfile>:p:h/c.vim
   syn match manCFuncDefinition  display "\<\h\w*\>\s*("me=e-1 contained
-  syn region manSynopsis start="^SYNOPSIS"hs=s+8 end="^\u\+\s*$"he=e-12 keepend contains=manSectionHeading,@cCode,manCFuncDefinition
+  syn region manSynopsis start="^SYNOPSIS"hs=s+8 end="^\u\+\s*$"me=e-12 keepend contains=manSectionHeading,@cCode,manCFuncDefinition
 endif
 
 

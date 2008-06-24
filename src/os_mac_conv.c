@@ -318,10 +318,12 @@ mac_conv_cleanup()
 
 /*
  * Conversion from UTF-16 UniChars to 'encoding'
+ * The function signature uses the real type of UniChar (as typedef'ed in
+ * CFBase.h) to avoid clashes with X11 header files in the .pro file
  */
     char_u *
 mac_utf16_to_enc(from, fromLen, actualLen)
-    UniChar *from;
+    unsigned short *from;
     size_t fromLen;
     size_t *actualLen;
 {
@@ -370,8 +372,10 @@ mac_utf16_to_enc(from, fromLen, actualLen)
 
 /*
  * Conversion from 'encoding' to UTF-16 UniChars
+ * The function return uses the real type of UniChar (as typedef'ed in
+ * CFBase.h) to avoid clashes with X11 header files in the .pro file
  */
-    UniChar *
+    unsigned short *
 mac_enc_to_utf16(from, fromLen, actualLen)
     char_u *from;
     size_t fromLen;
@@ -428,8 +432,9 @@ mac_enc_to_utf16(from, fromLen, actualLen)
 
 /*
  * Converts from UTF-16 UniChars to CFString
+ * The void * return type is actually a CFStringRef
  */
-    CFStringRef
+    void *
 mac_enc_to_cfstring(from, fromLen)
     char_u  *from;
     size_t  fromLen;
@@ -445,7 +450,7 @@ mac_enc_to_cfstring(from, fromLen)
 	vim_free(utf16_str);
     }
 
-    return result;
+    return (void *)result;
 }
 
 /*
@@ -554,5 +559,26 @@ mac_utf8_to_utf16(from, fromLen, actualLen)
 	*actualLen = convertRange.length * sizeof(UniChar);
 
     return result;
+}
+
+/*
+ * Sets LANG environment variable in Vim from Mac locale
+ */
+    void
+mac_lang_init() {
+    if (mch_getenv((char_u *)"LANG") == NULL)
+    {
+	char	buf[20];
+	if (LocaleRefGetPartString(NULL,
+		    kLocaleLanguageMask | kLocaleLanguageVariantMask |
+		    kLocaleRegionMask | kLocaleRegionVariantMask,
+		    sizeof buf, buf) == noErr && *buf)
+	{
+	    vim_setenv((char_u *)"LANG", (char_u *)buf);
+#   ifdef HAVE_LOCALE_H
+	    setlocale(LC_ALL, "");
+#   endif
+	}
+    }
 }
 #endif /* MACOS_CONVERT */
