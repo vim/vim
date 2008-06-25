@@ -1,4 +1,4 @@
-README.txt for version 7.1 of Vim: Vi IMproved.
+README.txt for version 7.2a of Vim: Vi IMproved.
 
 
 WHAT IS VIM
@@ -133,9 +133,6 @@ MAIN AUTHOR
 Send any other comments, patches, pizza and suggestions to:
 
 	Bram Moolenaar		E-mail:	Bram@vim.org
-	Molenstraat 2
-	2161 HP  Lisse
-	The Netherlands
-
-This is the address of my parents, they will forward mail and eat the pizza.
-My actual address will change a couple of times in 2006.
+	Finsterruetihof 1
+	8134 Adliswil
+	Switzerland

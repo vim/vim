@@ -69,7 +69,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 1
+MINOR = 2a
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -87,8 +87,8 @@ DOSBIN_S =  dosbin_s
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
 # - "make lint" and check the output (ignore GTK warnings).
-# - Enable the efence library in "src/Makefile" and run "make test".  May
-#   require disabling Python and Ruby to avoid trouble with threads.
+# - Enable the efence library in "src/Makefile" and run "make test".  Disable
+#   Python and Ruby to avoid trouble with threads (efence is not threadsafe).
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
 # - Check for missing options in runtime/optwin.vim et al. (with check.vim).
 # - Do "make menu" to update the runtime/synmenu.vim file.
@@ -120,17 +120,20 @@ DOSBIN_S =  dosbin_s
 # - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
 #   case set environment for compiling with Borland C++ 4.0 and do
 #   "make -f make_bc3.mak BOR=E:\BC4 xxd/xxd.exe").
+#   NOTE: this currently fails because Vim is too big.
 # - "make test" and check the output.
 # - Rename the executables to "vimd16.exe", "xxdd16.exe", "installd16.exe" and
 #   "uninstald16.exe".
 # 32 bit DOS version:
 # - Set environment for compiling with DJGPP; "gmake -f Make_djg.mak".
-# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output.
+# - "rm testdir/*.out", "gmake -f Make_djg.mak test" and check the output for
+#   "ALL DONE".
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the
-#   paths when necessary).
+# - Set environment for Visual C++ 2008 Express Edition: "msvc2008.bat".  Or,
+#   when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the paths
+#   when necessary).
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".

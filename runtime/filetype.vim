@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 May 15
+" Last Change:	2008 Jun 20
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -320,6 +320,9 @@ au BufNewFile,BufRead *.cs			setf cs
 " Cdrdao TOC
 au BufNewFile,BufRead *.toc			setf cdrtoc
 
+" Cdrdao config
+au BufNewFile,BufRead etc/cdrdao.conf,etc/defaults/cdrdao,etc/default/cdrdao,~/.cdrdao						setf cdrdaoconf
+
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
 
@@ -349,12 +352,22 @@ else
   au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.moc,*.tcc,*.inl setf cpp
 endif
 
-" .h files can be C, Ch or C++, set c_syntax_for_h if you want C,
-" ch_syntax_for_h if you want Ch.
-au BufNewFile,BufRead *.h
-	\ if exists("c_syntax_for_h") | setf c |
-	\ elseif exists("ch_syntax_for_h") | setf ch |
-	\ else | setf cpp | endif
+" .h files can be C, Ch C++, ObjC or ObjC++.
+" Set c_syntax_for_h if you want C, ch_syntax_for_h if you want Ch. ObjC is
+" detected automatically.
+au BufNewFile,BufRead *.h			call s:FTheader()
+
+func! s:FTheader()
+  if match(getline(1, min([line("$"), 200])), '^@\(interface\|end\|class\)') > -1
+    setf objc
+  elseif exists("c_syntax_for_h")
+    setf c
+  elseif exists("ch_syntax_for_h")
+    setf ch
+  else
+    setf cpp
+  endif
+endfunc
 
 " Ch (CHscript)
 au BufNewFile,BufRead *.chf			setf ch
@@ -476,11 +489,17 @@ au BufNewFile,BufRead *.cpy
 	\   setf cobol |
 	\ endif
 
+" Coco/R
+au BufNewFile,BufRead *.atg			setf coco
+
 " Cold Fusion
 au BufNewFile,BufRead *.cfm,*.cfi,*.cfc		setf cf
 
 " Configure scripts
 au BufNewFile,BufRead configure.in,configure.ac setf config
+
+" CUDA  Cumpute Unified Device Architecture
+au BufNewFile,BufRead *.cu			setf cuda
 
 " WildPackets EtherPeek Decoder
 au BufNewFile,BufRead *.dcd			setf dcd
@@ -513,15 +532,31 @@ au BufNewFile,BufRead *.si			setf cuplsim
 
 " Debian Control
 au BufNewFile,BufRead */debian/control		setf debcontrol
+au BufNewFile,BufRead control
+	\  if getline(1) =~ '^Source:'
+	\|   setf debcontrol
+	\| endif
 
 " Debian Sources.list
 au BufNewFile,BufRead /etc/apt/sources.list	setf debsources
 
+" Deny hosts
+au BufNewFile,BufRead denyhosts.conf		setf denyhosts
+
 " ROCKLinux package description
 au BufNewFile,BufRead *.desc			setf desc
 
-" the D language
-au BufNewFile,BufRead *.d			setf d
+" the D language or dtrace
+au BufNewFile,BufRead *.d			call s:DtraceCheck()
+
+func! s:DtraceCheck()
+  let lines = getline(1, min([line("$"), 100]))
+  if match(lines, '^#!\S\+dtrace\|#pragma\s\+D\s\+option\|:\S\{-}:\S\{-}:') > -1
+    setf dtrace
+  else
+    setf d
+  endif
+endfunc
 
 " Desktop files
 au BufNewFile,BufRead *.desktop,.directory	setf desktop
@@ -597,8 +632,8 @@ func! s:FTe()
   setf eiffel
 endfunc
 
-" ERicsson LANGuage
-au BufNewFile,BufRead *.erl			setf erlang
+" ERicsson LANGuage; Yaws is erlang too
+au BufNewFile,BufRead *.erl,*.yaws		setf erlang
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
@@ -643,11 +678,14 @@ au BufNewFile,BufRead *.mas,*.master		setf master
 " Forth
 au BufNewFile,BufRead *.fs,*.ft			setf forth
 
+" Reva Forth
+au BufNewFile,BufRead *.frt			setf reva
+
 " Fortran
 if has("fname_case")
   au BufNewFile,BufRead *.F,*.FOR,*.FPP,*.FTN,*.F77,*.F90,*.F95	 setf fortran
 endif
-au BufNewFile,BufRead   *.f,*.for,*.fpp,*.ftn,*.f77,*.f90,*.f95  setf fortran
+au BufNewFile,BufRead   *.f,*.for,*.fortran,*.fpp,*.ftn,*.f77,*.f90,*.f95  setf fortran
 
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
@@ -660,6 +698,19 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 
 " Gedcom
 au BufNewFile,BufRead *.ged			setf gedcom
+
+" Git
+autocmd BufNewFile,BufRead *.git/COMMIT_EDITMSG    setf gitcommit
+autocmd BufNewFile,BufRead *.git/config,.gitconfig setf gitconfig
+autocmd BufNewFile,BufRead git-rebase-todo         setf gitrebase
+autocmd BufNewFile,BufRead .msg.[0-9]*
+      \ if getline(1) =~ '^From.*# This line is ignored.$' |
+      \   setf gitsendemail |
+      \ endif
+autocmd BufNewFile,BufRead *.git/**
+      \ if getline(1) =~ '^\x\{40\}\>\|^ref: ' |
+      \   setf git |
+      \ endif
 
 " Gkrellmrc
 au BufNewFile,BufRead gkrellmrc,gkrellmrc_?	setf gkrellmrc
@@ -701,6 +752,9 @@ au BufNewFile,BufRead *.hs			setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 
+" Haste
+au BufNewFile,BufRead *.ht			setf haste
+
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.rs,*.sum,*.errsum	setf hercules
 
@@ -738,6 +792,9 @@ au BufNewFile,BufRead *.html.m4			setf htmlm4
 
 " HTML Cheetah template
 au BufNewFile,BufRead *.tmpl			setf htmlcheetah
+
+" Host config
+au BufNewFile,BufRead /etc/host.conf		setf hostconf
 
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
@@ -922,6 +979,9 @@ au BufNewFile,BufRead *.lou,*.lout		setf lout
 " Lua
 au BufNewFile,BufRead *.lua			setf lua
 
+" Linden Scripting Language (Second Life)
+au BufNewFile,BufRead *.lsl			setf lsl
+
 " Lynx style file (or LotusScript!)
 au BufNewFile,BufRead *.lss			setf lss
 
@@ -933,7 +993,7 @@ au BufNewFile,BufRead *.m4
 au BufNewFile,BufRead *.mgp			setf mgp
 
 " Mail (for Elm, trn, mutt, muttng, rn, slrn)
-au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt[[:alnum:]._-]\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
+au BufNewFile,BufRead snd.\d\+,.letter,.letter.\d\+,.followup,.article,.article.\d\+,pico.\d\+,mutt{ng,}-*-\w\+,mutt[[:alnum:]_-]\{6\},ae\d\+.txt,/tmp/SLRN[0-9A-Z.]\+,*.eml setf mail
 
 " Mail aliases
 au BufNewFile,BufRead /etc/mail/aliases,/etc/aliases	setf mailaliases
@@ -987,6 +1047,9 @@ func! s:FTm()
   endif
 endfunc
 
+" Mathematica notebook
+au BufNewFile,BufRead *.nb			setf mma
+
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
 
@@ -1004,6 +1067,9 @@ au BufNewFile,BufRead *.mgl			setf mgl
 
 " MMIX or VMS makefile
 au BufNewFile,BufRead *.mms			call s:FTmms()
+
+" Symbian meta-makefile definition (MMP)
+au BufNewFile,BufRead *.mmp			setf mmp
 
 func! s:FTmms()
   let n = 1
@@ -1075,8 +1141,7 @@ au BufRead,BufNewFile *.mu			setf mupad
 au BufNewFile,BufRead *.mush			setf mush
 
 " Mutt setup file (also for Muttng)
-au BufNewFile,BufRead Mutt{ng,}rc			setf muttrc
-au BufNewFile,BufRead .mutt{ng,}rc*,*/.mutt{ng,}/mutt{ng,}rc*	call s:StarSetf('muttrc')
+au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
 
 " Nano
 au BufNewFile,BufRead /etc/nanorc,.nanorc	setf nanorc
@@ -1169,6 +1234,9 @@ au BufNewFile,BufRead *.pas			setf pascal
 " Delphi project file
 au BufNewFile,BufRead *.dpr			setf pascal
 
+" PDF
+au BufNewFile,BufRead *.pdf			setf pdf
+
 " Perl
 if has("fname_case")
   au BufNewFile,BufRead *.pl,*.PL		call s:FTpl()
@@ -1206,10 +1274,9 @@ au BufNewFile,BufRead *.pm
 au BufNewFile,BufRead *.pod			setf pod
 
 " Php, php3, php4, etc.
-au BufNewFile,BufRead *.php,*.php\d		setf php
-
-" Phtml
-au BufNewFile,BufRead *.phtml			setf phtml
+" Also Phtml (was used for PHP 2 in the past)
+" Also .ctp for Cake template file
+au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp	setf php
 
 " Pike
 au BufNewFile,BufRead *.pike,*.lpc,*.ulpc,*.pmod setf pike
@@ -1377,6 +1444,9 @@ au BufNewFile,BufRead INDEX,INFO
 " Prolog
 au BufNewFile,BufRead *.pdb			setf prolog
 
+" Promela
+au BufNewFile,BufRead *.pml			setf promela
+
 " Protocols
 au BufNewFile,BufRead /etc/protocols		setf protocols
 
@@ -1406,7 +1476,7 @@ au BufNewFile,BufRead *.reg
 au BufNewFile,BufRead *.rib			setf rib
 
 " Rexx
-au BufNewFile,BufRead *.rexx,*.rex		setf rexx
+au BufNewFile,BufRead *.rexx,*.rex,*.jrexx,*.rxj,*.orx	setf rexx
 
 " R (Splus)
 if has("fname_case")
@@ -1437,7 +1507,7 @@ func! s:FTr()
 
   for n in range(1, max)
     " Rebol is easy to recognize, check for that first
-    if getline(n) =~ '\<REBOL\>'
+    if getline(n) =~? '\<REBOL\>'
       setf rebol
       return
     endif
@@ -1523,8 +1593,24 @@ au BufNewFile,BufRead *.siv			setf sieve
 " Sendmail
 au BufNewFile,BufRead sendmail.cf		setf sm
 
-" Sendmail .mc files are actually m4
-au BufNewFile,BufRead *.mc			setf m4
+" Sendmail .mc files are actually m4.  Could also be MS Message text file.
+au BufNewFile,BufRead *.mc			call s:McSetf()
+
+func! s:McSetf()
+  " Rely on the file to start with a comment.
+  " MS message text files use ';', Sendmail files use '#' or 'dnl'
+  for lnum in range(1, min([line("$"), 20]))
+    let line = getline(lnum)
+    if line =~ '^\s*\(#\|dnl\)'
+      setf m4  " Sendmail .mc file
+      return
+    elseif line =~ '^\s*;'
+      setf msmessages  " MS Message text file
+      return
+    endif
+  endfor
+  setf m4  " Default: Sendmail .mc file
+endfunc
 
 " Services
 au BufNewFile,BufRead /etc/services		setf services
@@ -1710,17 +1796,21 @@ au BufNewFile,BufRead *.rules			call s:FTRules()
 
 let s:ft_rules_udev_rules_pattern = '^\s*\cudev_rules\s*=\s*"\([^"]\{-1,}\)/*".*'
 func! s:FTRules()
+  if expand('<amatch>:p') =~ '^/etc/udev/rules\.d/.*\.rules$'
+    setf udevrules
+    return
+  endif
   try
     let config_lines = readfile('/etc/udev/udev.conf')
   catch /^Vim\%((\a\+)\)\=:E484/
     setf hog
     return
   endtry
+  let dir = expand('<amatch>:p:h')
   for line in config_lines
     if line =~ s:ft_rules_udev_rules_pattern
       let udev_rules = substitute(line, s:ft_rules_udev_rules_pattern, '\1', "")
-      let amatch_dirname = substitute(expand('<amatch>'), '^\(.*\)/[^/]\+$', '\1', "")
-      if amatch_dirname == udev_rules
+      if dir == udev_rules
         setf udevrules
       endif
       break
@@ -1785,6 +1875,9 @@ au BufNewFile,BufRead *.stp			setf stp
 
 " Standard ML
 au BufNewFile,BufRead *.sml			setf sml
+
+" Sratus VOS command macro
+au BufNewFile,BufRead *.cm			setf voscm
 
 " Sysctl
 au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
@@ -1892,8 +1985,8 @@ func! s:FTtex()
   return
 endfunc
 
-" Context
-au BufNewFile,BufRead tex/context/*/*.tex	setf context
+" ConTeXt
+au BufNewFile,BufRead tex/context/*/*.tex,*.mkii,*.mkiv   setf context
 
 " Texinfo
 au BufNewFile,BufRead *.texinfo,*.texi,*.txi	setf texinfo
@@ -1927,9 +2020,6 @@ au BufNewFile,BufRead *.uit,*.uil		setf uil
 
 " Udev conf
 au BufNewFile,BufRead /etc/udev/udev.conf	setf udevconf
-
-" Udev rules
-au BufNewFile,BufRead /etc/udev/rules.d/*.rules setf udevrules
 
 " Udev permissions
 au BufNewFile,BufRead /etc/udev/permissions.d/*.permissions setf udevperm
@@ -2049,14 +2139,26 @@ au BufNewFile,BufRead *.msc,*.msf		setf xmath
 au BufNewFile,BufRead *.ms
 	\ if !s:FTnroff() | setf xmath | endif
 
-" XML
-au BufNewFile,BufRead *.xml
-	\ if getline(1) . getline(2) . getline(3) =~ '<!DOCTYPE.*DocBook' |
-	\   let b:docbk_type="xml" |
-	\   setf docbk |
-	\ else |
-	\   setf xml |
-	\ endif
+" XML  specific variants: docbk and xbl
+au BufNewFile,BufRead *.xml			call s:FTxml()
+
+func! s:FTxml()
+  let n = 1
+  while n < 100 && n < line("$")
+    let line = getline(n)
+    if line =~ '<!DOCTYPE.*DocBook'
+      let b:docbk_type = "xml"
+      setf docbk
+      return
+    endif
+    if line =~ 'xmlns:xbl="http://www.mozilla.org/xbl"'
+      setf xbl
+      return
+    endif
+    let n += 1
+  endwhile
+  setf xml
+endfunc
 
 " XMI (holding UML models) is also XML
 au BufNewFile,BufRead *.xmi			setf xml
@@ -2072,6 +2174,16 @@ au BufNewFile,BufRead *.tpm			setf xml
 
 " Xdg menus
 au BufNewFile,BufRead /etc/xdg/menus/*.menu	setf xml
+
+" ATI graphics driver configuration
+au BufNewFile,BufRead fglrxrc			setf xml
+
+" XLIFF (XML Localisation Interchange File Format) is also XML
+au BufNewFile,BufRead *.xlf			setf xml
+au BufNewFile,BufRead *.xliff			setf xml
+
+" X11 xmodmap (also see below)
+au BufNewFile,BufRead *Xmodmap			setf xmodmap
 
 " Xquery
 au BufNewFile,BufRead *.xq,*.xql,*.xqm,*.xquery,*.xqy	setf xquery
@@ -2201,13 +2313,17 @@ au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
 " Makefile
 au BufNewFile,BufRead [mM]akefile*		call s:StarSetf('make')
 
-" Modconf
-au BufNewFile,BufRead /etc/modprobe.*		call s:StarSetf('modconf')
-
 " Ruby Makefile
 au BufNewFile,BufRead [rR]akefile*		call s:StarSetf('ruby')
 
+" Mail (also matches muttrc.vim, so this is below the other checks)
+au BufNewFile,BufRead mutt[[:alnum:]._-]\{6\}	setf mail
+
+" Modconf
+au BufNewFile,BufRead /etc/modprobe.*		call s:StarSetf('modconf')
+
 " Mutt setup file
+au BufNewFile,BufRead .mutt{ng,}rc*,*/.mutt{ng,}/mutt{ng,}rc*	call s:StarSetf('muttrc')
 au BufNewFile,BufRead mutt{ng,}rc*,Mutt{ng,}rc*		call s:StarSetf('muttrc')
 
 " Nroff macros

@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2007 Apr 29
+" Last change:	2008 Apr 28
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -234,6 +234,10 @@ else
   elseif s:line1 =~ '\<DTD\s\+XHTML\s'
     set ft=xhtml
 
+    " PDF
+  elseif s:line1 =~ '^%PDF-'
+    set ft=pdf
+
     " XXD output
   elseif s:line1 =~ '^\x\{7}: \x\{2} \=\x\{2} \=\x\{2} \=\x\{2} '
     set ft=xxd
@@ -308,6 +312,10 @@ else
   " Scheme scripts
   elseif s:line1 =~ 'exec\s\+\S*scheme' || s:line2 =~ 'exec\s\+\S*scheme'
     set ft=scheme
+
+  " Git output
+  elseif s:line1 =~ '^\(commit\|tree\|object\) \x\{40\}$\|^tag \S\+$'
+    set ft=git
 
   " CVS diff
   else
