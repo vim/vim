@@ -1120,11 +1120,13 @@ else
 
 
   dnl Check if the X11 header files are correctly installed. On some systems
-  dnl Xlib.h includes files that don't exist
+  dnl Xlib.h includes files that don't exist.  On some systems X11/Intrinsic.h
+  dnl is missing.
   AC_MSG_CHECKING(if X11 header files can be found)
   cflags_save=$CFLAGS
   CFLAGS="$CFLAGS $X_CFLAGS"
-  AC_TRY_COMPILE([#include <X11/Xlib.h>], ,
+  AC_TRY_COMPILE([#include <X11/Xlib.h>
+#include <X11/Intrinsic.h>], ,
 	AC_MSG_RESULT(yes),
 	AC_MSG_RESULT(no); no_x=yes)
   CFLAGS=$cflags_save
@@ -2071,10 +2073,17 @@ AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h sys/types.h termio.h \
 	iconv.h langinfo.h math.h unistd.h stropts.h errno.h \
 	sys/resource.h sys/systeminfo.h locale.h \
-	sys/stream.h sys/ptem.h termios.h libc.h sys/statfs.h \
+	sys/stream.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
 	libgen.h util/debug.h util/msg18n.h frame.h \
 	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h wctype.h)
+
+dnl sys/ptem.h depends on sys/stream.h on Solaris
+AC_CHECK_HEADERS(sys/ptem.h, [], [],
+[#if defined HAVE_SYS_STREAM_H
+#  include <sys/stream.h>
+#endif])
+
 
 dnl pthread_np.h may exist but can only be used after including pthread.h
 AC_MSG_CHECKING([for pthread_np.h])
