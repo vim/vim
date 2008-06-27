@@ -10442,17 +10442,12 @@ f_getbufvar(argvars, rettv)
 
     if (buf != NULL && varname != NULL)
     {
+	/* set curbuf to be our buf, temporarily */
+	save_curbuf = curbuf;
+	curbuf = buf;
+
 	if (*varname == '&')	/* buffer-local-option */
-	{
-	    /* set curbuf to be our buf, temporarily */
-	    save_curbuf = curbuf;
-	    curbuf = buf;
-
 	    get_option_tv(&varname, rettv, TRUE);
-
-	    /* restore previous notion of curbuf */
-	    curbuf = save_curbuf;
-	}
 	else
 	{
 	    if (*varname == NUL)
@@ -10461,10 +10456,13 @@ f_getbufvar(argvars, rettv)
 		 * find_var_in_ht(). */
 		varname = (char_u *)"b:" + 2;
 	    /* look up the variable */
-	    v = find_var_in_ht(&buf->b_vars.dv_hashtab, varname, FALSE);
+	    v = find_var_in_ht(&curbuf->b_vars.dv_hashtab, varname, FALSE);
 	    if (v != NULL)
 		copy_tv(&v->di_tv, rettv);
 	}
+
+	/* restore previous notion of curbuf */
+	curbuf = save_curbuf;
     }
 
     --emsg_off;
