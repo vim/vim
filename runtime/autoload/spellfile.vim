@@ -1,9 +1,15 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 May 29
+" Last Change:	2008 Jun 27
 
 if !exists('g:spellfile_URL')
-  let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
+  " Prefer using http:// when netrw should be able to use it, since
+  " more firewalls let this through.
+  if executable("curl") || executable("wget") || executable("fetch")
+    let g:spellfile_URL = 'http://ftp.vim.org/pub/vim/runtime/spell'
+  else
+    let g:spellfile_URL = 'ftp://ftp.vim.org/pub/vim/runtime/spell'
+  endif
 endif
 let s:spellfile_URL = ''    " Start with nothing so that s:donedict is reset.
 
