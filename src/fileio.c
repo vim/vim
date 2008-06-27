@@ -2456,7 +2456,7 @@ failed:
 	/*
 	 * Work around a weird problem: When a file has two links (only
 	 * possible on NTFS) and we write through one link, then stat() it
-	 * throught the other link, the timestamp information may be wrong.
+	 * through the other link, the timestamp information may be wrong.
 	 * It's correct again after reading the file, thus reset the timestamp
 	 * here.
 	 */
@@ -3906,7 +3906,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #ifdef VMS
     vms_remove_version(fname); /* remove version */
 #endif
-    /* Default: write the the file directly.  May write to a temp file for
+    /* Default: write the file directly.  May write to a temp file for
      * multi-byte conversion. */
     wfname = fname;
 
@@ -5770,7 +5770,7 @@ shorten_filenames(fnames, count)
 #endif
 
 /*
- * add extention to file name - change path/fo.o.h to path/fo.o.h.ext or
+ * add extension to file name - change path/fo.o.h to path/fo.o.h.ext or
  * fo_o_h.ext for MSDOS or when shortname option set.
  *
  * Assumed that fname is a valid name found in the filesystem we assure that
@@ -5952,7 +5952,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
 #endif
 
     /*
-     * Append the extention.
+     * Append the extension.
      * ext can start with '.' and cannot exceed 3 more characters.
      */
     STRCPY(s, ext);
@@ -6164,7 +6164,12 @@ vim_rename(from, to)
 #endif
     fd_in = mch_open((char *)from, O_RDONLY|O_EXTRA, 0);
     if (fd_in == -1)
+    {
+#ifdef HAVE_ACL
+	mch_free_acl(acl);
+#endif
 	return -1;
+    }
 
     /* Create the new file with same permissions as the original. */
     fd_out = mch_open((char *)to,
@@ -6172,14 +6177,20 @@ vim_rename(from, to)
     if (fd_out == -1)
     {
 	close(fd_in);
+#ifdef HAVE_ACL
+	mch_free_acl(acl);
+#endif
 	return -1;
     }
 
     buffer = (char *)alloc(BUFSIZE);
     if (buffer == NULL)
     {
-	close(fd_in);
 	close(fd_out);
+	close(fd_in);
+#ifdef HAVE_ACL
+	mch_free_acl(acl);
+#endif
 	return -1;
     }
 
@@ -6204,6 +6215,7 @@ vim_rename(from, to)
 #endif
 #ifdef HAVE_ACL
     mch_set_acl(to, acl);
+    mch_free_acl(acl);
 #endif
     if (errmsg != NULL)
     {
