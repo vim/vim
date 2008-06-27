@@ -3203,7 +3203,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	    else
 	    {
 		errnum = (char_u *)"E656: ";
-		errmsg = (char_u *)_("NetBeans dissallows writes of unmodified buffers");
+		errmsg = (char_u *)_("NetBeans disallows writes of unmodified buffers");
 		buffer = NULL;
 		goto fail;
 	    }

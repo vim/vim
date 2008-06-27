@@ -18502,11 +18502,11 @@ get_tv_number_chk(varp, denote)
 	    return (long)(varp->vval.v_number);
 #ifdef FEAT_FLOAT
 	case VAR_FLOAT:
-	    EMSG(_("E805: Using a Float as a number"));
+	    EMSG(_("E805: Using a Float as a Number"));
 	    break;
 #endif
 	case VAR_FUNC:
-	    EMSG(_("E703: Using a Funcref as a number"));
+	    EMSG(_("E703: Using a Funcref as a Number"));
 	    break;
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
@@ -18514,10 +18514,10 @@ get_tv_number_chk(varp, denote)
 							TRUE, TRUE, &n, NULL);
 	    return n;
 	case VAR_LIST:
-	    EMSG(_("E745: Using a List as a number"));
+	    EMSG(_("E745: Using a List as a Number"));
 	    break;
 	case VAR_DICT:
-	    EMSG(_("E728: Using a Dictionary as a number"));
+	    EMSG(_("E728: Using a Dictionary as a Number"));
 	    break;
 	default:
 	    EMSG2(_(e_intern2), "get_tv_number()");
