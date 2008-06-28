@@ -405,8 +405,8 @@ static int eval2 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval3 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval4 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int eval5 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-static int eval6 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
-static int eval7 __ARGS((char_u **arg, typval_T *rettv, int evaluate));
+static int eval6 __ARGS((char_u **arg, typval_T *rettv, int evaluate, int want_string));
+static int eval7 __ARGS((char_u **arg, typval_T *rettv, int evaluate, int want_string));
 
 static int eval_index __ARGS((char_u **arg, typval_T *rettv, int evaluate, int verbose));
 static int get_option_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
@@ -4458,7 +4458,7 @@ eval5(arg, rettv, evaluate)
     /*
      * Get the first variable.
      */
-    if (eval6(arg, rettv, evaluate) == FAIL)
+    if (eval6(arg, rettv, evaluate, FALSE) == FAIL)
 	return FAIL;
 
     /*
@@ -4494,7 +4494,7 @@ eval5(arg, rettv, evaluate)
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(*arg + 1);
-	if (eval6(arg, &var2, evaluate) == FAIL)
+	if (eval6(arg, &var2, evaluate, op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
@@ -4624,10 +4624,11 @@ eval5(arg, rettv, evaluate)
  * Return OK or FAIL.
  */
     static int
-eval6(arg, rettv, evaluate)
+eval6(arg, rettv, evaluate, want_string)
     char_u	**arg;
     typval_T	*rettv;
     int		evaluate;
+    int		want_string;  /* after "." operator */
 {
     typval_T	var2;
     int		op;
@@ -4641,7 +4642,7 @@ eval6(arg, rettv, evaluate)
     /*
      * Get the first variable.
      */
-    if (eval7(arg, rettv, evaluate) == FAIL)
+    if (eval7(arg, rettv, evaluate, want_string) == FAIL)
 	return FAIL;
 
     /*
@@ -4676,7 +4677,7 @@ eval6(arg, rettv, evaluate)
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(*arg + 1);
-	if (eval7(arg, &var2, evaluate) == FAIL)
+	if (eval7(arg, &var2, evaluate, FALSE) == FAIL)
 	    return FAIL;
 
 	if (evaluate)
@@ -4790,10 +4791,11 @@ eval6(arg, rettv, evaluate)
  * Return OK or FAIL.
  */
     static int
-eval7(arg, rettv, evaluate)
+eval7(arg, rettv, evaluate, want_string)
     char_u	**arg;
     typval_T	*rettv;
     int		evaluate;
+    int		want_string;	/* after "." operator */
 {
     long	n;
     int		len;
@@ -4838,8 +4840,10 @@ eval7(arg, rettv, evaluate)
 
 		/* We accept a float when the format matches
 		 * "[0-9]\+\.[0-9]\+\([eE][+-]\?[0-9]\+\)\?".  This is very
-		 * strict to avoid backwards compatibility problems. */
-		if (p[0] == '.' && vim_isdigit(p[1]))
+		 * strict to avoid backwards compatibility problems.
+		 * Don't look for a float after the "." operator, so that
+		 * ":let vers = 1.2.3" doesn't fail. */
+		if (!want_string && p[0] == '.' && vim_isdigit(p[1]))
 		{
 		    get_float = TRUE;
 		    p = skipdigits(p + 2);
