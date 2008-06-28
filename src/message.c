@@ -3905,6 +3905,8 @@ tv_float(tvs, idxp)
 	++*idxp;
 	if (tvs[idx].v_type == VAR_FLOAT)
 	    f = tvs[idx].vval.v_float;
+	else if (tvs[idx].v_type == VAR_NUMBER)
+	    f = tvs[idx].vval.v_number;
 	else
 	    EMSG(_("E807: Expected Float argument for printf()"));
     }
