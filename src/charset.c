@@ -449,13 +449,15 @@ str_foldcase(str, orglen, buf, buflen)
 	{
 	    if (enc_utf8)
 	    {
-		int	c, lc;
+		int	c = utf_ptr2char(STR_PTR(i));
+		int	ol = utf_ptr2len(STR_PTR(i));
+		int	lc = utf_tolower(c);
 
-		c = utf_ptr2char(STR_PTR(i));
-		lc = utf_tolower(c);
-		if (c != lc)
+		/* Only replace the character when it is not an invalid
+		 * sequence (ASCII character or more than one byte) and
+		 * utf_tolower() doesn't return the original character. */
+		if ((c < 0x80 || ol > 1) && c != lc)
 		{
-		    int	    ol = utf_char2len(c);
 		    int	    nl = utf_char2len(lc);
 
 		    /* If the byte length changes need to shift the following
