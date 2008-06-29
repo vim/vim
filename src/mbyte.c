@@ -1387,7 +1387,7 @@ utf_ptr2char(p)
 	return p[0];
 
     len = utf8len_tab[p[0]];
-    if ((p[1] & 0xc0) == 0x80)
+    if (len > 1 && (p[1] & 0xc0) == 0x80)
     {
 	if (len == 2)
 	    return ((p[0] & 0x1f) << 6) + (p[1] & 0x3f);
@@ -1753,14 +1753,27 @@ utfc_ptr2len_len(p, size)
 #endif
     while (len < size)
     {
-	if (p[len] < 0x80 || !UTF_COMPOSINGLIKE(p + prevlen, p + len))
+	int	len_next_char;
+
+	if (p[len] < 0x80)
+	    break;
+
+	/*
+	 * Next character length should not go beyond size to ensure that
+	 * UTF_COMPOSINGLIKE(...) does not read beyond size.
+	 */
+	len_next_char = utf_ptr2len_len(p + len, size - len);
+	if (len_next_char > size - len)
+	    break;
+
+	if (!UTF_COMPOSINGLIKE(p + prevlen, p + len))
 	    break;
 
 	/* Skip over composing char */
 #ifdef FEAT_ARABIC
 	prevlen = len;
 #endif
-	len += utf_ptr2len_len(p + len, size - len);
+	len += len_next_char;
     }
     return len;
 }
