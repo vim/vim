@@ -20,7 +20,9 @@
 
 #ifdef __CYGWIN__
 # ifndef WIN32
-#  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() */
+#  include <cygwin/version.h>
+#  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() and/or
+				 * cygwin_conv_path() */
 # endif
 # include <limits.h>
 #endif
@@ -2213,7 +2215,11 @@ scripterror:
 	    {
 		char posix_path[PATH_MAX];
 
+# if CYGWIN_VERSION_DLL_MAJOR >= 1007
+		cygwin_conv_path(CCP_WIN_A_TO_POSIX, p, posix_path, PATH_MAX);
+# else
 		cygwin_conv_to_posix_path(p, posix_path);
+# endif
 		vim_free(p);
 		p = vim_strsave(posix_path);
 		if (p == NULL)

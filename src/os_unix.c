@@ -58,7 +58,9 @@ static int selinux_enabled = -1;
 
 #ifdef __CYGWIN__
 # ifndef WIN32
-#  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() */
+#  include <cygwin/version.h>
+#  include <sys/cygwin.h>	/* for cygwin_conv_to_posix_path() and/or
+				 * for cygwin_conv_path() */
 # endif
 #endif
 
@@ -2312,7 +2314,11 @@ mch_FullName(fname, buf, len, force)
     /*
      * This helps for when "/etc/hosts" is a symlink to "c:/something/hosts".
      */
+# if CYGWIN_VERSION_DLL_MAJOR >= 1007
+    cygwin_conv_path(CCP_WIN_A_TO_POSIX, fname, posix_fname, MAXPATHL);
+# else
     cygwin_conv_to_posix_path(fname, posix_fname);
+# endif
     fname = posix_fname;
 #endif
 
