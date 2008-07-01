@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jun 16
+" Last Change:	2008 Jun 30
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -186,17 +186,17 @@ an 20.435	 &Edit.Startup\ &Settings		:call <SID>EditVimrc()<CR>
 
 fun! s:EditVimrc()
   if $MYVIMRC != ''
-    let fname = "$MYVIMRC"
+    let fname = $MYVIMRC
   elseif has("win32") || has("dos32") || has("dos16") || has("os2")
     if $HOME != ''
-      let fname = "$HOME/_vimrc"
+      let fname = $HOME . "/_vimrc"
     else
-      let fname = "$VIM/_vimrc"
+      let fname = $VIM . "/_vimrc"
     endif
   elseif has("amiga")
     let fname = "s:.vimrc"
   else
-    let fname = "$HOME/.vimrc"
+    let fname = $HOME . "/.vimrc"
   endif
   let fname = s:FnameEscape(fname)
   if &mod
