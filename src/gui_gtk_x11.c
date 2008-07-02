@@ -3166,7 +3166,7 @@ add_tabline_menu_item(GtkWidget *menu, char_u *text, int resp)
     gtk_container_add(GTK_CONTAINER(menu), item);
     gtk_signal_connect(GTK_OBJECT(item), "activate",
 	    GTK_SIGNAL_FUNC(tabline_menu_handler),
-	    (gpointer)resp);
+	    (gpointer)(long)resp);
 }
 
 /*
@@ -3354,7 +3354,8 @@ gui_mch_update_tabline(void)
 	}
 
 	event_box = gtk_notebook_get_tab_label(GTK_NOTEBOOK(gui.tabline), page);
-	gtk_object_set_user_data(GTK_OBJECT(event_box), (gpointer)tab_num);
+	gtk_object_set_user_data(GTK_OBJECT(event_box),
+						     (gpointer)(long)tab_num);
 	label = GTK_BIN(event_box)->child;
 	get_tabline_label(tp, FALSE);
 	labeltext = CONVERT_TO_UTF8(NameBuff);
@@ -3711,7 +3712,7 @@ gui_mch_init(void)
 	gtk_widget_show(label);
 	event_box = gtk_event_box_new();
 	gtk_widget_show(event_box);
-	gtk_object_set_user_data(GTK_OBJECT(event_box), (gpointer)1);
+	gtk_object_set_user_data(GTK_OBJECT(event_box), (gpointer)1L);
 	gtk_misc_set_padding(GTK_MISC(label), 2, 2);
 	gtk_container_add(GTK_CONTAINER(event_box), label);
 	gtk_notebook_set_tab_label(GTK_NOTEBOOK(gui.tabline), page, event_box);
