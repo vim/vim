@@ -7059,8 +7059,8 @@ ex_splitview(eap)
 
 # ifdef FEAT_QUICKFIX
     /* A ":split" in the quickfix window works like ":new".  Don't want two
-     * quickfix windows. */
-    if (bt_quickfix(curbuf))
+     * quickfix windows.  But it's OK when doing ":tab split". */
+    if (bt_quickfix(curbuf) && cmdmod.tab == 0)
     {
 	if (eap->cmdidx == CMD_split)
 	    eap->cmdidx = CMD_new;
@@ -9321,6 +9321,58 @@ ex_tag_cmd(eap, name)
 }
 
 /*
+ * Check "str" for starting with a special cmdline variable.
+ * If found return one of the SPEC_ values and set "*usedlen" to the length of
+ * the variable.  Otherwise return -1 and "*usedlen" is unchanged.
+ */
+    int
+find_cmdline_var(src, usedlen)
+    char_u	*src;
+    int		*usedlen;
+{
+    int		len;
+    int		i;
+    static char *(spec_str[]) = {
+		    "%",
+#define SPEC_PERC   0
+		    "#",
+#define SPEC_HASH   1
+		    "<cword>",		/* cursor word */
+#define SPEC_CWORD  2
+		    "<cWORD>",		/* cursor WORD */
+#define SPEC_CCWORD 3
+		    "<cfile>",		/* cursor path name */
+#define SPEC_CFILE  4
+		    "<sfile>",		/* ":so" file name */
+#define SPEC_SFILE  5
+#ifdef FEAT_AUTOCMD
+		    "<afile>",		/* autocommand file name */
+# define SPEC_AFILE 6
+		    "<abuf>",		/* autocommand buffer number */
+# define SPEC_ABUF  7
+		    "<amatch>",		/* autocommand match name */
+# define SPEC_AMATCH 8
+#endif
+#ifdef FEAT_CLIENTSERVER
+		    "<client>"
+# define SPEC_CLIENT 9
+#endif
+    };
+#define SPEC_COUNT  (sizeof(spec_str) / sizeof(char *))
+
+    for (i = 0; i < SPEC_COUNT; ++i)
+    {
+	len = (int)STRLEN(spec_str[i]);
+	if (STRNCMP(src, spec_str[i], len) == 0)
+	{
+	    *usedlen = len;
+	    return i;
+	}
+    }
+    return -1;
+}
+
+/*
  * Evaluate cmdline variables.
  *
  * change '%'	    to curbuf->b_ffname
@@ -9360,34 +9412,6 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 #ifdef FEAT_MODIFY_FNAME
     int		skip_mod = FALSE;
 #endif
-    static char *(spec_str[]) =
-	{
-		    "%",
-#define SPEC_PERC   0
-		    "#",
-#define SPEC_HASH   1
-		    "<cword>",		/* cursor word */
-#define SPEC_CWORD  2
-		    "<cWORD>",		/* cursor WORD */
-#define SPEC_CCWORD 3
-		    "<cfile>",		/* cursor path name */
-#define SPEC_CFILE  4
-		    "<sfile>",		/* ":so" file name */
-#define SPEC_SFILE  5
-#ifdef FEAT_AUTOCMD
-		    "<afile>",		/* autocommand file name */
-# define SPEC_AFILE 6
-		    "<abuf>",		/* autocommand buffer number */
-# define SPEC_ABUF  7
-		    "<amatch>",		/* autocommand match name */
-# define SPEC_AMATCH 8
-#endif
-#ifdef FEAT_CLIENTSERVER
-		    "<client>"
-# define SPEC_CLIENT 9
-#endif
-		};
-#define SPEC_COUNT  (sizeof(spec_str) / sizeof(char *))
 
 #if defined(FEAT_AUTOCMD) || defined(FEAT_CLIENTSERVER)
     char_u	strbuf[30];
@@ -9400,13 +9424,8 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
     /*
      * Check if there is something to do.
      */
-    for (spec_idx = 0; spec_idx < SPEC_COUNT; ++spec_idx)
-    {
-	*usedlen = (int)STRLEN(spec_str[spec_idx]);
-	if (STRNCMP(src, spec_str[spec_idx], *usedlen) == 0)
-	    break;
-    }
-    if (spec_idx == SPEC_COUNT)	    /* no match */
+    spec_idx = find_cmdline_var(src, usedlen);
+    if (spec_idx < 0)	/* no match */
     {
 	*usedlen = 1;
 	return NULL;

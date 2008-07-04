@@ -1262,16 +1262,19 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
  * Escape "string" for use as a shell argument with system().
  * This uses single quotes, except when we know we need to use double qoutes
  * (MS-DOS and MS-Windows without 'shellslash' set).
+ * Also replace "%", "#" and things like "<cfile>" when "do_special" is TRUE.
  * Returns the result in allocated memory, NULL if we have run out.
  */
     char_u *
-vim_strsave_shellescape(string)
+vim_strsave_shellescape(string, do_special)
     char_u	*string;
+    int		do_special;
 {
     unsigned	length;
     char_u	*p;
     char_u	*d;
     char_u	*escaped_string;
+    int		l;
 
     /* First count the number of extra bytes required. */
     length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
@@ -1287,6 +1290,11 @@ vim_strsave_shellescape(string)
 # endif
 	if (*p == '\'')
 	    length += 3;		/* ' => '\'' */
+	if (do_special && find_cmdline_var(p, &l) >= 0)
+	{
+	    ++length;			/* insert backslash */
+	    p += l - 1;
+	}
     }
 
     /* Allocate memory for the result and fill it. */
@@ -1320,12 +1328,18 @@ vim_strsave_shellescape(string)
 # endif
 	    if (*p == '\'')
 	    {
-		*d++='\'';
-		*d++='\\';
-		*d++='\'';
-		*d++='\'';
+		*d++ = '\'';
+		*d++ = '\\';
+		*d++ = '\'';
+		*d++ = '\'';
 		++p;
 		continue;
+	    }
+	    if (do_special && find_cmdline_var(p, &l) >= 0)
+	    {
+		*d++ = '\\';		/* insert backslash */
+		while (--l >= 0)	/* copy the var */
+		    *d++ = *p++;
 	    }
 
 	    MB_COPY_CHAR(p, d);
@@ -2776,7 +2790,7 @@ get_special_key_code(name)
     return 0;
 }
 
-#ifdef FEAT_CMDL_COMPL
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(i)
     int	    i;
@@ -2787,7 +2801,7 @@ get_key_name(i)
 }
 #endif
 
-#ifdef FEAT_MOUSE
+#if defined(FEAT_MOUSE) || defined(PROTO)
 /*
  * Look up the given mouse code to return the relevant information in the other
  * arguments.  Return which button is down or was released.

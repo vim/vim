@@ -46,6 +46,7 @@ int vim_mkdir_emsg __ARGS((char_u *name, int prot));
 FILE *open_exfile __ARGS((char_u *fname, int forceit, char *mode));
 void update_topline_cursor __ARGS((void));
 void exec_normal_cmd __ARGS((char_u *cmd, int remap, int silent));
+int find_cmdline_var __ARGS((char_u *src, int *usedlen));
 char_u *eval_vars __ARGS((char_u *src, char_u *srcstart, int *usedlen, linenr_T *lnump, char_u **errormsg, int *escaped));
 char_u *expand_sfile __ARGS((char_u *arg));
 int put_eol __ARGS((FILE *fd));

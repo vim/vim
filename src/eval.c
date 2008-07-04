@@ -462,6 +462,7 @@ static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static int call_func __ARGS((char_u *name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static void emsg_funcname __ARGS((char *ermsg, char_u *name));
+static int non_zero_arg __ARGS((typval_T *argvars));
 
 #ifdef FEAT_FLOAT
 static void f_abs __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7611,7 +7612,7 @@ static struct fst
     {"setreg",		2, 3, f_setreg},
     {"settabwinvar",	4, 4, f_settabwinvar},
     {"setwinvar",	3, 3, f_setwinvar},
-    {"shellescape",	1, 1, f_shellescape},
+    {"shellescape",	1, 2, f_shellescape},
     {"simplify",	1, 1, f_simplify},
 #ifdef FEAT_FLOAT
     {"sin",		1, 1, f_sin},
@@ -8092,6 +8093,20 @@ emsg_funcname(ermsg, name)
     EMSG2(_(ermsg), p);
     if (p != name)
 	vim_free(p);
+}
+
+/*
+ * Return TRUE for a non-zero Number and a non-empty String.
+ */
+    static int
+non_zero_arg(argvars)
+    typval_T	*argvars;
+{
+    return ((argvars[0].v_type == VAR_NUMBER
+		&& argvars[0].vval.v_number != 0)
+	    || (argvars[0].v_type == VAR_STRING
+		&& argvars[0].vval.v_string != NULL
+		&& *argvars[0].vval.v_string != NUL));
 }
 
 /*********************************************
@@ -13480,10 +13495,9 @@ f_mode(argvars, rettv)
 	    buf[1] = 'o';
     }
 
-    /* A zero number or empty string argument: return only major mode. */
-    if (!(argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number != 0)
-	    && !(argvars[0].v_type == VAR_STRING
-				       && *get_tv_string(&argvars[0]) != NUL))
+    /* Clear out the minor mode when the argument is not a non-zero number or
+     * non-empty string.  */
+    if (!non_zero_arg(&argvars[0]))
 	buf[1] = NUL;
 
     rettv->vval.v_string = vim_strsave(buf);
@@ -15684,7 +15698,8 @@ f_shellescape(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_string = vim_strsave_shellescape(get_tv_string(&argvars[0]));
+    rettv->vval.v_string = vim_strsave_shellescape(
+		       get_tv_string(&argvars[0]), non_zero_arg(&argvars[1]));
     rettv->v_type = VAR_STRING;
 }
 
@@ -17273,9 +17288,7 @@ f_visualmode(argvars, rettv)
     rettv->vval.v_string = vim_strsave(str);
 
     /* A non-zero number or non-empty string argument: reset mode. */
-    if ((argvars[0].v_type == VAR_NUMBER && argvars[0].vval.v_number != 0)
-	    || (argvars[0].v_type == VAR_STRING
-				       && *get_tv_string(&argvars[0]) != NUL))
+    if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
 #else
     rettv->vval.v_number = 0; /* return anything, it won't work anyway */
