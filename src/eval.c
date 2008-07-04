@@ -4724,7 +4724,7 @@ eval6(arg, rettv, evaluate, want_string)
 		}
 		else
 		{
-		    EMSG(_("E804: Cannot use % with float"));
+		    EMSG(_("E804: Cannot use '%' with Float"));
 		    return FAIL;
 		}
 		rettv->v_type = VAR_FLOAT;
