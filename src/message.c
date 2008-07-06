@@ -1390,8 +1390,10 @@ msg_outtrans_len_attr(msgstr, len, attr)
 									attr);
 		plain_start = str + 1;
 		msg_puts_attr(s, attr == 0 ? hl_attr(HLF_8) : attr);
+		retval += STRLEN(s);
 	    }
-	    retval += char2cells(*str);
+	    else
+		++retval;
 	    ++str;
 	}
     }
