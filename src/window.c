@@ -149,12 +149,18 @@ do_window(nchar, Prenum, xchar)
     case Ctrl_V:
     case 'v':
 		CHECK_CMDWIN
-#ifdef FEAT_VISUAL
+# ifdef FEAT_VISUAL
 		reset_VIsual_and_resel();	/* stop Visual mode */
-#endif
-#ifdef FEAT_GUI
+# endif
+# ifdef FEAT_QUICKFIX
+		/* When splitting the quickfix window open a new buffer in it,
+		 * don't replicate the quickfix buffer. */
+		if (bt_quickfix(curbuf))
+		    goto newwindow;
+# endif
+# ifdef FEAT_GUI
 		need_mouse_correct = TRUE;
-#endif
+# endif
 		win_split((int)Prenum, WSP_VERT);
 		break;
 #endif
@@ -168,7 +174,8 @@ do_window(nchar, Prenum, xchar)
 #endif
 		STRCPY(cbuf, "split #");
 		if (Prenum)
-		    sprintf((char *)cbuf + 7, "%ld", Prenum);
+		    vim_snprintf((char *)cbuf + 7, sizeof(cbuf) - 7,
+							       "%ld", Prenum);
 		do_cmdline_cmd(cbuf);
 		break;
 
@@ -183,9 +190,14 @@ do_window(nchar, Prenum, xchar)
 newwindow:
 #endif
 		if (Prenum)
-		    sprintf((char *)cbuf, "%ld", Prenum); /* window height */
+		    /* window height */
+		    vim_snprintf((char *)cbuf, sizeof(cbuf) - 5, "%ld", Prenum);
 		else
 		    cbuf[0] = NUL;
+#if defined(FEAT_VERTSPLIT) && defined(FEAT_QUICKFIX)
+		if (nchar == 'v' || nchar == Ctrl_V)
+		    STRCAT(cbuf, "v");
+#endif
 		STRCAT(cbuf, "new");
 		do_cmdline_cmd(cbuf);
 		break;
