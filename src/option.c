@@ -8222,7 +8222,7 @@ set_option_value(name, number, string, opt_flags)
 	    set_string_option(opt_idx, string, opt_flags);
 	else
 	{
-	    varp = get_varp(&options[opt_idx]);
+	    varp = get_varp_scope(&(options[opt_idx]), opt_flags);
 	    if (varp != NULL)	/* hidden option is not changed */
 	    {
 		if (number == 0 && string != NULL)
