@@ -22,6 +22,7 @@
  */
 
 #include "vim.h"
+
 #ifdef FEAT_GUI_GNOME
 /* Gnome redefines _() and N_().  Grrr... */
 # ifdef _
@@ -1592,7 +1593,7 @@ gui_mch_init_check(void)
     if (!gtk_init_check(&gui_argc, &gui_argv))
     {
 	gui.dying = TRUE;
-	EMSG(_(e_opendisp));
+	EMSG(_((char *)e_opendisp));
 	return FAIL;
     }
 
@@ -2345,9 +2346,9 @@ sm_client_die(GnomeClient *client, gpointer data)
     /* Don't write messages to the GUI anymore */
     full_screen = FALSE;
 
-    vim_strncpy(IObuff,
+    vim_strncpy(IObuff, (char_u *)
 		    _("Vim: Received \"die\" request from session manager\n"),
-	    IOSIZE - 1);
+		    IOSIZE - 1);
     preserve_exit();
 }
 
@@ -5244,7 +5245,7 @@ gui_mch_get_font(char_u *name, int report_error)
     if (font == NULL)
     {
 	if (report_error)
-	    EMSG2(_(e_font), name);
+	    EMSG2(_((char *)e_font), name);
 	return NULL;
     }
 
