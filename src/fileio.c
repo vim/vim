@@ -8235,7 +8235,7 @@ ex_doautoall(eap)
      */
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
     {
-	if (curbuf->b_ml.ml_mfp != NULL)
+	if (buf->b_ml.ml_mfp != NULL)
 	{
 	    /* find a window for this buffer and save some values */
 	    aucmd_prepbuf(&aco, buf);
