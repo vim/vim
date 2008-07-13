@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.2a.  Last change: 2007 May 11
+*version5.txt*  For Vim version 7.2b.  Last change: 2008 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1992,7 +1992,7 @@ because the compare with other tags was wrong.  E.g., when "mnuFileSave" was
 already there, "mnuFile" would be skipped. (Negri)
 
 When scrolling up/down, a syntax item with "keepend" didn't work properly.
-Now the flags are also stored for the syntax state a the start of each line.
+Now the flags are also stored for the syntax state at the start of each line.
 
 When 'ic' was changed while 'hlsearch' is on, there was no redraw to show the
 effect.
@@ -3067,7 +3067,7 @@ character in the line, instead of just after it.
 
 5.2.7: Win32 GUI: scrollbar was one pixel too big.
 
-5.2.8: Completion of "PopUp" menu showed the derivates "PopUpc", "PopUPi",
+5.2.8: Completion of "PopUp" menu showed the derivatives "PopUpc", "PopUPi",
 etc.  ":menu" also showed these.
 
 5.2.9: When using two input() functions on a row, the prompt would not be

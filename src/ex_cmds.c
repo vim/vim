@@ -11,7 +11,7 @@
  * ex_cmds.c: some functions for command line commands
  */
 
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
 # include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
@@ -5892,7 +5892,7 @@ find_help_tags(arg, num_matches, matches, keep_lang)
     flags = TAG_HELP | TAG_REGEXP | TAG_NAMES | TAG_VERBOSE;
     if (keep_lang)
 	flags |= TAG_KEEP_LANG;
-    if (find_tags(IObuff, num_matches, matches, flags, (int)MAXCOL, NULL) == OK
+    if (find_tags(IObuff, num_matches, matches, flags, TAG_MANY, NULL) == OK
 	    && *num_matches > 0)
 	/* Sort the matches found on the heuristic number that is after the
 	 * tag name. */

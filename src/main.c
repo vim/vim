@@ -7,7 +7,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-#if defined(MSDOS) || defined(WIN32) || defined(_WIN64)
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
 # include "vimio.h"		/* for close() and dup() */
 #endif
 

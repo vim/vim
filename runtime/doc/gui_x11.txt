@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.2a.  Last change: 2007 Dec 09
+*gui_x11.txt*   For Vim version 7.2b.  Last change: 2007 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

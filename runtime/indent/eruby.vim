@@ -12,7 +12,7 @@ endif
 
 runtime! indent/ruby.vim
 unlet! b:did_indent
-set indentexpr=
+setlocal indentexpr=
 
 if exists("b:eruby_subtype")
   exe "runtime! indent/".b:eruby_subtype.".vim"
@@ -40,12 +40,17 @@ if exists("*GetErubyIndent")
   finish
 endif
 
-function! GetErubyIndent()
+function! GetErubyIndent(...)
+  if a:0 && a:1 == '.'
+    let v:lnum = line('.')
+  elseif a:0 && a:1 =~ '^\d'
+    let v:lnum = a:1
+  endif
   let vcol = col('.')
   call cursor(v:lnum,1)
   let inruby = searchpair('<%','','%>','W')
   call cursor(v:lnum,vcol)
-  if inruby && getline(v:lnum) !~ '^<%'
+  if inruby && getline(v:lnum) !~ '^<%\|^\s*-\=%>'
     let ind = GetRubyIndent()
   else
     exe "let ind = ".b:eruby_subtype_indentexpr
@@ -53,15 +58,15 @@ function! GetErubyIndent()
   let lnum = prevnonblank(v:lnum-1)
   let line = getline(lnum)
   let cline = getline(v:lnum)
-  if cline =~# '<%\s*\%(end\|else\|\%(ensure\|rescue\|elsif\|when\).\{-\}\)\s*\%(-\=%>\|$\)'
+  if cline =~# '<%-\=\s*\%(}\|end\|else\|\%(ensure\|rescue\|elsif\|when\).\{-\}\)\s*\%(-\=%>\|$\)'
     let ind = ind - &sw
   endif
-  if line =~# '\<do\%(\s*|[^|]*|\)\=\s*-\=%>'
+  if line =~# '\%({\|\<do\)\%(\s*|[^|]*|\)\=\s*-\=%>'
     let ind = ind + &sw
-  elseif line =~# '<%\s*\%(module\|class\|def\|if\|for\|while\|until\|else\|elsif\|case\|when\|unless\|begin\|ensure\|rescue\)\>.*%>'
+  elseif line =~# '<%-\=\s*\%(module\|class\|def\|if\|for\|while\|until\|else\|elsif\|case\|when\|unless\|begin\|ensure\|rescue\)\>.*%>'
     let ind = ind + &sw
   endif
-  if line =~# '^\s*<%[=#]\=\s*$' && cline !~# '^\s*end\>'
+  if line =~# '^\s*<%[=#-]\=\s*$' && cline !~# '^\s*end\>'
     let ind = ind + &sw
   endif
   if cline =~# '^\s*-\=%>\s*$'

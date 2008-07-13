@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.2a.  Last change: 2008 Jun 08
+*various.txt*   For Vim version 7.2b.  Last change: 2008 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -816,7 +816,7 @@ The second one finds the English user manual, even when 'helplang' is set to
 "it".
 
 When using command-line completion for the ":help" command, the "@en"
-extention is only shown when a tag exists for multiple languages.  When the
+extension is only shown when a tag exists for multiple languages.  When the
 tag only exists for English "@en" is omitted.
 
 When using |CTRL-]| or ":help!" in a non-English help file Vim will try to

@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.2a.  Last change: 2008 Jun 05
+*pi_vimball.txt*	For Vim version 7.2b.  Last change: 2008 Jun 05
 
 			       ----------------
 			       Vimball Archiver
@@ -164,7 +164,7 @@ Copyright: (c) 2004-2008 by Charles E. Campbell, Jr.	*Vimball-copyright*
 			    will extract plugin/somefile to the AsNeeded/
 			    directory
 	17 : Jun 28, 2006 * changes all \s to /s internally for Windows
-	16 : Jun 15, 2006 * A. Mechylynck's idea to allow users to specify
+	16 : Jun 15, 2006 * A. Mechelynck's idea to allow users to specify
 			    installation root paths implemented for
 			    UseVimball, MkVimball, and RmVimball.
 			  * RmVimball implemented

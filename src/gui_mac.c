@@ -2543,7 +2543,6 @@ gui_mac_doMouseUpEvent(EventRecord *theEvent)
 gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 								   void *data)
 {
-    EventRef	bogusEvent;
     Point	point;
     Rect	bounds;
     UInt32	mod;
@@ -2574,16 +2573,6 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
     if (mod & optionKey)
 	vim_mod |= MOUSE_ALT;
 
-    /* post a bogus event to wake up WaitNextEvent */
-    if (noErr != CreateEvent(NULL, kEventClassMouse, kEventMouseMoved, 0,
-					    kEventAttributeNone, &bogusEvent))
-	goto bail;
-    if (noErr != PostEventToQueue(GetMainEventQueue(), bogusEvent,
-							   kEventPriorityLow))
-	goto bail;
-
-    ReleaseEvent(bogusEvent);
-
     if (noErr == GetWindowBounds(gui.VimWindow, kWindowContentRgn, &bounds))
     {
 	point.h -= bounds.left;
@@ -2592,6 +2581,9 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
 
     gui_send_mouse_event((delta > 0) ? MOUSE_4 : MOUSE_5,
 					    point.h, point.v, FALSE, vim_mod);
+
+    /* post a bogus event to wake up WaitNextEvent */
+    PostEvent(keyUp, 0);
 
     return noErr;
 

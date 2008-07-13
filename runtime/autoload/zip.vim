@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Jun 12, 2008
-" Version:	18
+" Date:		Jul 12, 2008
+" Version:	21 (modified by Bram)
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005-2008 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if &cp || exists("g:loaded_zip") || v:version < 700
  finish
 endif
 
-let g:loaded_zip     = "v18"
+let g:loaded_zip     = "v21+b"
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
 let s:WARNING        = 1
@@ -91,23 +91,24 @@ fun! zip#Browse(zipfile)
   set ft=tar
 
   " give header
-  exe "$put ='".'\"'." zip.vim version ".g:loaded_zip."'"
-  exe "$put ='".'\"'." Browsing zipfile ".a:zipfile."'"
-  exe "$put ='".'\"'." Select a file with cursor and press ENTER"."'"
+  let lastline= line("$")
+  call setline(lastline+1,'" zip.vim version '.g:loaded_zip)
+  call setline(lastline+2,'" Browsing zipfile '.a:zipfile)
+  call setline(lastline+3,'" Select a file with cursor and press ENTER')
   $put =''
   0d
   $
 
-"  call Decho("exe silent r! ".g:zip_unzipcmd." -l ".s:QuoteFileDir(a:zipfile))
-  exe "silent r! ".g:zip_unzipcmd." -l ".s:QuoteFileDir(a:zipfile)
+"  call Decho("exe silent r! ".g:zip_unzipcmd." -l ".s:Escape(a:zipfile,1))
+  exe "silent r! ".g:zip_unzipcmd." -l ".s:Escape(a:zipfile,1)
   if v:shell_error != 0
    redraw!
-   echohl WarningMsg | echo "***warning*** (zip#Browse) ".a:zipfile." is not a zip file" | echohl None
+   echohl WarningMsg | echo "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file" | echohl None
 "   call inputsave()|call input("Press <cr> to continue")|call inputrestore()
    silent %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
-   exe "r ".a:zipfile
+   exe "r ".fnameescape(a:zipfile)
    let &ei= eikeep
    1d
 "   call Dret("zip#Browse")
@@ -166,8 +167,8 @@ fun! s:ZipBrowseSelect()
    wincmd _
   endif
   let s:zipfile_{winnr()}= curfile
-"  call Decho("exe e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape))
-  exe "e zipfile:".escape(zipfile,s:zipfile_escape).'::'.escape(fname,s:zipfile_escape)
+"  call Decho("exe e ".fnameescape("zipfile:".zipfile.'::'.fname))
+  exe "e ".fnameescape("zipfile:".zipfile.'::'.fname)
   filetype detect
 
   let &report= repkeep
@@ -192,8 +193,8 @@ fun! zip#Read(fname,mode)
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! ".g:zip_unzipcmd." -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
-  exe "silent r! ".g:zip_unzipcmd." -p ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname)
+"  call Decho("exe r! ".g:zip_unzipcmd." -p ".s:Escape(zipfile,1)." ".s:Escape(fname,1))
+  exe "silent r! ".g:zip_unzipcmd." -p ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
 
   " cleanup
   0d
@@ -266,7 +267,7 @@ fun! zip#Write(fname)
   if fname =~ '/'
    let dirpath = substitute(fname,'/[^/]\+$','','e')
    if executable("cygpath")
-    let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
+    let dirpath = substitute(system("cygpath ".s:Escape(dirpath,0)),'\n','','e')
    endif
 "   call Decho("mkdir(dirpath<".dirpath.">,p)")
    call mkdir(dirpath,"p")
@@ -276,17 +277,17 @@ fun! zip#Write(fname)
   endif
 "  call Decho("zipfile<".zipfile."> fname<".fname.">")
 
-  exe "w! ".escape(fname,s:zipfile_escape)
+  exe "w! ".fnameescape(fname)
   if executable("cygpath")
-   let zipfile = substitute(system("cygpath ".zipfile),'\n','','e')
+   let zipfile = substitute(system("cygpath ".s:Escape(zipfile,0)),'\n','','e')
   endif
 
   if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-"  call Decho(g:zip_zipcmd." -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
-  call system(g:zip_zipcmd." -u ".s:QuoteFileDir(zipfile)." ".s:QuoteFileDir(fname))
+"  call Decho(g:zip_zipcmd." -u ".s:Escape(zipfile,0)." ".s:Escape(fname,0))
+  call system(g:zip_zipcmd." -u ".s:Escape(zipfile,0)." ".s:Escape(fname,0))
   if v:shell_error != 0
    redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
@@ -300,7 +301,7 @@ fun! zip#Write(fname)
    let binkeep= &binary
    let eikeep = &ei
    set binary ei=all
-   exe "e! ".zipfile
+   exe "e! ".fnameescape(zipfile)
    call netrw#NetWrite(netzipfile)
    let &ei     = eikeep
    let &binary = binkeep
@@ -320,11 +321,15 @@ fun! zip#Write(fname)
 endfun
 
 " ---------------------------------------------------------------------
-" QuoteFileDir: {{{2
-fun! s:QuoteFileDir(fname)
-"  call Dfunc("QuoteFileDir(fname<".a:fname.">)")
-  if has("*shellescape")
-   let qnameq= shellescape(a:fname)
+" s:Escape: {{{2
+fun! s:Escape(fname,isfilt)
+"  call Dfunc("QuoteFileDir(fname<".a:fname."> isfilt=".a:isfilt.")")
+  if exists("*shellescape")
+   if a:isfilt
+    let qnameq= shellescape(a:fname,1)
+   else
+    let qnameq= shellescape(a:fname)
+   endif
   else
    let qnameq= g:zip_shq.escape(a:fname,g:zip_shq).g:zip_shq
   endif
@@ -337,14 +342,9 @@ endfun
 fun! s:ChgDir(newdir,errlvl,errmsg)
 "  call Dfunc("ChgDir(newdir<".a:newdir."> errlvl=".a:errlvl."  errmsg<".a:errmsg.">)")
 
-  if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
-   let newdir= escape(a:newdir,' ')
-  else
-   let newdir= escape(a:newdir,'\ ')
-  endif
 
   try
-   exe "cd ".newdir
+   exe "cd ".fnameescape(newdir)
   catch /^Vim\%((\a\+)\)\=:E344/
    redraw!
    if a:errlvl == s:NOTE
@@ -364,13 +364,13 @@ fun! s:ChgDir(newdir,errlvl,errmsg)
 endfun
 
 " ---------------------------------------------------------------------
-" Rmdir: {{{2
+" s:Rmdir: {{{2
 fun! s:Rmdir(fname)
 "  call Dfunc("Rmdir(fname<".a:fname.">)")
   if (has("win32") || has("win95") || has("win64") || has("win16")) && &shell !~? 'sh$'
-   call system("rmdir /S/Q ".s:QuoteFileDir(a:fname))
+   call system("rmdir /S/Q ".s:Escape(a:fname,0))
   else
-   call system("/bin/rm -rf ".s:QuoteFileDir(a:fname))
+   call system("/bin/rm -rf ".s:Escape(a:fname,0))
   endif
 "  call Dret("Rmdir")
 endfun

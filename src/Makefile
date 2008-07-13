@@ -310,6 +310,8 @@ CClink = $(CC)
 #CONF_ARGS = --exec-prefix=/usr
 #CONF_ARGS = --with-vim-name=vim7 --with-ex-name=ex7 --with-view-name=view7
 #CONF_ARGS = --with-global-runtime=/etc/vim
+#CONF_ARGS = --with-local-dir=/usr/share
+#CONF_ARGS = --without-local-dir
 
 # Use this one if you distribute a modified version of Vim.
 #CONF_ARGS = --with-modified-by="John Doe"
@@ -899,7 +901,7 @@ MAN1DIR = /man1
 
 ### Vim version (adjusted by a script)
 VIMMAJOR = 7
-VIMMINOR = 2a
+VIMMINOR = 2b
 
 ### Location of Vim files (should not need to be changed, and  {{{1
 ### some things might not work when they are changed!)
@@ -1742,7 +1744,7 @@ test check:
 	-if test -n "$(MAKEMO)" -a -f $(PODIR)/Makefile; then \
 		cd $(PODIR); $(MAKE) -f Makefile check VIM=../$(VIMTARGET); \
 	fi
-	-if test $(VIMTARGET) != vim -a ! -e vim; then \
+	-if test $(VIMTARGET) != vim -a ! -r vim; then \
 		ln -s $(VIMTARGET) vim; \
 	fi
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) $(GUI_TESTARG)

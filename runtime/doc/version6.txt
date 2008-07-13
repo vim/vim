@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.2a.  Last change: 2007 May 11
+*version6.txt*  For Vim version 7.2b.  Last change: 2007 May 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -13235,7 +13235,7 @@ Files:	    src/fileio.c
 
 Patch 6.2.499
 Problem:    When writing a file and halting the system, the file might be lost
-	    when using a journalling file system.
+	    when using a journaling file system.
 Solution:   Use fsync() to flush the file data to disk after writing a file.
 	    (Radim Kolar)
 Files:	    src/fileio.c

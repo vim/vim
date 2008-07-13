@@ -19,7 +19,7 @@ syn case ignore
 " Define some common expressions we can use later on
 syn match debchangelogName	contained "^[[:alpha:]][[:alnum:].+-]\+ "
 syn match debchangelogUrgency	contained "; urgency=\(low\|medium\|high\|critical\|emergency\)\( \S.*\)\="
-syn match debchangelogTarget	contained "\( \(old\)\=stable\| frozen\| unstable\| testing-proposed-updates\| experimental\| \%(sarge\|etch\|lenny\)-\%(backports\|-volatile\)\| \(old\)\=stable-security\| testing-security\| \(dapper\|edgy\|feisty\|gutsy\|hardy\)\(-\(security\|proposed\|updates\|backports\|commercial\|partner\)\)\?\)\+"
+syn match debchangelogTarget	contained "\v %(%(old)=stable|frozen|unstable|%(testing-|%(old)=stable-)=proposed-updates|experimental|%(sarge|etch|lenny)-%(backports|volatile)|%(testing|%(old)=stable)-security|%(dapper|feisty|gutsy|hardy|intrepid)%(-%(security|proposed|updates|backports|commercial|partner))=)+"
 syn match debchangelogVersion	contained "(.\{-})"
 syn match debchangelogCloses	contained "closes:\_s*\(bug\)\=#\=\_s\=\d\+\(,\_s*\(bug\)\=#\=\_s\=\d\+\)*"
 syn match debchangelogLP	contained "\clp:\s\+#\d\+\(,\s*#\d\+\)*"

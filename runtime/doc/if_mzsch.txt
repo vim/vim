@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.2a.  Last change: 2007 May 03
+*if_mzsch.txt*  For Vim version 7.2b.  Last change: 2008 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -55,7 +55,7 @@ In the case of :mzscheme, the code to execute is in the command-line.
 In the case of :mzfile, the code to execute is the contents of the given file.
 
 Each buffer has its own MzScheme namespace. Global namespace is bound to
-the `global-namespace' value from the 'vimext' module.
+the "global-namespace" value from the 'vimext' module.
 MzScheme interface defines exception exn:vim, derived from exn.
 It is raised for various Vim errors.
 
@@ -218,7 +218,7 @@ Buffers							 *mzscheme-buffer*
 				    {linenr}. If {linenr} is 0, lines will be
 				    inserted at start.
     (curr-buff)			    Get the current buffer. Use procedures
-				    from `vimcmd' module to change it.
+				    from "vimcmd" module to change it.
     (buff-count)		    Get count of total buffers in the editor.
     (get-next-buff [buffer])	    Get next buffer.
     (get-prev-buff [buffer])	    Get previous buffer. Return #f when there

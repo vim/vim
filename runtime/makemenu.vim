@@ -1,6 +1,6 @@
 " Script to define the syntax menu in synmenu.vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jun 24
+" Last Change:	2008 Jul 13
 
 " This is used by "make menu" in the src directory.
 edit <sfile>:p:h/synmenu.vim
@@ -228,11 +228,13 @@ SynMenu FG.Groff:groff
 SynMenu FG.Groovy:groovy
 SynMenu FG.GTKrc:gtkrc
 
+SynMenu HIJK.Haml:haml
 SynMenu HIJK.Hamster:hamster
 SynMenu HIJK.Haskell.Haskell:haskell
 SynMenu HIJK.Haskell.Haskell-c2hs:chaskell
 SynMenu HIJK.Haskell.Haskell-literate:lhaskell
 SynMenu HIJK.HASTE:haste
+SynMenu HIJK.HASTE\ preproc:hastepreproc
 SynMenu HIJK.Hercules:hercules
 SynMenu HIJK.Hex\ dump.XXD:xxd
 SynMenu HIJK.Hex\ dump.Intel\ MCS51:hex
@@ -426,6 +428,7 @@ SynMenu R-Sg.Ruby:ruby
 SynMenu R-Sg.S-Lang:slang
 SynMenu R-Sg.Samba\ config:samba
 SynMenu R-Sg.SAS:sas
+SynMenu R-Sg.Sass:sass
 SynMenu R-Sg.Sather:sather
 SynMenu R-Sg.Scheme:scheme
 SynMenu R-Sg.Scilab:scilab

@@ -5460,6 +5460,7 @@ ft-papp-syntax	syntax.txt	/*ft-papp-syntax*
 ft-pascal-syntax	syntax.txt	/*ft-pascal-syntax*
 ft-pdf-plugin	filetype.txt	/*ft-pdf-plugin*
 ft-perl-syntax	syntax.txt	/*ft-perl-syntax*
+ft-php-indent	indent.txt	/*ft-php-indent*
 ft-php-omni	insert.txt	/*ft-php-omni*
 ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
@@ -5583,8 +5584,8 @@ g:netrw_alto	pi_netrw.txt	/*g:netrw_alto*
 g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
 g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
-g:netrw_cd_escape	pi_netrw.txt	/*g:netrw_cd_escape*
 g:netrw_compress	pi_netrw.txt	/*g:netrw_compress*
+g:netrw_ctags	pi_netrw.txt	/*g:netrw_ctags*
 g:netrw_cygwin	pi_netrw.txt	/*g:netrw_cygwin*
 g:netrw_dav_cmd	pi_netrw.txt	/*g:netrw_dav_cmd*
 g:netrw_decompress	pi_netrw.txt	/*g:netrw_decompress*
@@ -5625,10 +5626,10 @@ g:netrw_rsync_cmd	pi_netrw.txt	/*g:netrw_rsync_cmd*
 g:netrw_scp_cmd	pi_netrw.txt	/*g:netrw_scp_cmd*
 g:netrw_scpport	pi_netrw.txt	/*g:netrw_scpport*
 g:netrw_sftp_cmd	pi_netrw.txt	/*g:netrw_sftp_cmd*
-g:netrw_shq	pi_netrw.txt	/*g:netrw_shq*
 g:netrw_silent	pi_netrw.txt	/*g:netrw_silent*
 g:netrw_sort_by	pi_netrw.txt	/*g:netrw_sort_by*
 g:netrw_sort_direction	pi_netrw.txt	/*g:netrw_sort_direction*
+g:netrw_sort_options	pi_netrw.txt	/*g:netrw_sort_options*
 g:netrw_sort_sequence	pi_netrw.txt	/*g:netrw_sort_sequence*
 g:netrw_special_syntax	pi_netrw.txt	/*g:netrw_special_syntax*
 g:netrw_ssh_browse_reject	pi_netrw.txt	/*g:netrw_ssh_browse_reject*
@@ -6475,6 +6476,7 @@ netbeans-support	netbeans.txt	/*netbeans-support*
 netbeans.txt	netbeans.txt	/*netbeans.txt*
 netreadfixup	pi_netrw.txt	/*netreadfixup*
 netrw	pi_netrw.txt	/*netrw*
+netrw-%	pi_netrw.txt	/*netrw-%*
 netrw--	pi_netrw.txt	/*netrw--*
 netrw-D	pi_netrw.txt	/*netrw-D*
 netrw-O	pi_netrw.txt	/*netrw-O*
@@ -6707,6 +6709,7 @@ nice	todo.txt	/*nice*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
 non-greedy	pattern.txt	/*non-greedy*
+non-zero-arg	eval.txt	/*non-zero-arg*
 normal-index	index.txt	/*normal-index*
 not-compatible	usr_01.txt	/*not-compatible*
 not-edited	editing.txt	/*not-edited*
@@ -6812,6 +6815,9 @@ pfn-option	print.txt	/*pfn-option*
 pheader-option	print.txt	/*pheader-option*
 photon-fonts	os_qnx.txt	/*photon-fonts*
 photon-gui	os_qnx.txt	/*photon-gui*
+php-comment	indent.txt	/*php-comment*
+php-indent	indent.txt	/*php-indent*
+php-indenting	indent.txt	/*php-indenting*
 php.vim	syntax.txt	/*php.vim*
 php3.vim	syntax.txt	/*php3.vim*
 phtml.vim	syntax.txt	/*phtml.vim*

@@ -14,7 +14,7 @@
 if &cp || exists("g:loaded_tarPlugin")
  finish
 endif
-let g:loaded_tarPlugin = "v16"
+let g:loaded_tarPlugin = "v19"
 let s:keepcpo          = &cpo
 set cpo&vim
 

@@ -2,7 +2,7 @@
 "
 " Language:	Logtalk
 " Maintainer:	Paulo Moura <pmoura@logtalk.org>
-" Last Change:	February 24, 2006
+" Last Change:	June 16, 2008
 
 
 " Quit when a syntax file was already loaded:
@@ -32,12 +32,15 @@ syn match	logtalkOperator		":-"
 " Logtalk quoted atoms and strings
 
 syn region	logtalkString		start=+"+	skip=+\\"+	end=+"+
-syn region	logtalkAtom		start=+'+	skip=+\\'+	end=+'+
+syn region	logtalkAtom		start=+'+	skip=+\\'+	end=+'+		contains=logtalkEscapeSequence
+
+syn match	logtalkEscapeSequence	contained	"\\\([\\abfnrtv\"\']\|\(x[a-fA-F0-9]\+\|[0-7]\+\)\\\)"
 
 
 " Logtalk message sending operators
 
 syn match	logtalkOperator		"::"
+syn match	logtalkOperator		":"
 syn match	logtalkOperator		"\^\^"
 
 
@@ -48,7 +51,7 @@ syn region	logtalkExtCall		matchgroup=logtalkExtCallTag		start="{"		matchgroup=l
 
 " Logtalk opening entity directives
 
-syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- object("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
+syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- object("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom,logtalkEntityRel
 syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- protocol("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
 syn region	logtalkOpenEntityDir	matchgroup=logtalkOpenEntityDirTag	start=":- category("	matchgroup=logtalkOpenEntityDirTag	end=")\."	contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkEntityRel
 
@@ -62,17 +65,19 @@ syn match	logtalkCloseEntityDir	":- end_category\."
 
 " Logtalk entity relations
 
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="instantiates("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="specializes("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="extends("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="imports("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
-syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="implements("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="instantiates("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="specializes("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="extends("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="imports("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="implements("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
+syn region	logtalkEntityRel	matchgroup=logtalkEntityRelTag	start="complements("	matchgroup=logtalkEntityRelTag	end=")"		contains=logtalkEntity,logtalkVariable,logtalkNumber,logtalkOperator,logtalkString,logtalkAtom	contained
 
 
 " Logtalk directives
 
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- alias("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- encoding("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- calls("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- encoding("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- initialization("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- info("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- mode("		matchgroup=logtalkDirTag	end=")\."	contains=logtalkOperator, logtalkAtom
@@ -83,17 +88,18 @@ syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- multifile("		matchgrou
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- public("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- protected("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- private("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- metapredicate("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- meta_predicate("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- op("			matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- calls("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- synchronized("	matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn match	logtalkDirTag		":- synchronized\."
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- uses("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
+syn match	logtalkDirTag		":- threaded\."
 
 
 " Module directives
 
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- module("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- export("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
-syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- meta_predicate("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 syn region	logtalkDir		matchgroup=logtalkDirTag	start=":- use_module("		matchgroup=logtalkDirTag	end=")\."	contains=ALL
 
 
@@ -103,18 +109,21 @@ syn match	logtalkBuiltIn		"\<\(abolish\|c\(reate\|urrent\)\)_\(object\|protocol\
 
 syn match	logtalkBuiltIn		"\<\(object\|protocol\|category\)_property\ze("
 
-syn match	logtalkBuiltIn		"\<extends_\(object\|protocol\)\ze("
+syn match	logtalkBuiltIn		"\<complements_object\ze("
+syn match	logtalkBuiltIn		"\<extends_\(object\|protocol\|category\)\ze("
 syn match	logtalkBuiltIn		"\<imp\(orts_category\|lements_protocol\)\ze("
-syn match	logtalkBuiltIn		"\<\(instantiates\|specializes\)_class\ze("
+syn match	logtalkBuiltIn		"\<\(instantiat\|specializ\)es_class\ze("
 
 syn match	logtalkBuiltIn		"\<\(abolish\|define\)_events\ze("
 syn match	logtalkBuiltIn		"\<current_event\ze("
 
-syn match	logtalkBuiltIn		"\<\(current\|set\)_logtalk_flag\ze("
+syn match	logtalkBuiltIn		"\<\(curren\|se\)t_logtalk_flag\ze("
 
 syn match	logtalkBuiltIn		"\<logtalk_\(compile\|l\(ibrary_path\|oad\)\)\ze("
 
 syn match	logtalkBuiltIn		"\<\(for\|retract\)all\ze("
+
+syn match	logtalkBuiltIn		"\<threaded\(_\(call\|once\|ignore\|exit\|peek\|wait\|notify\)\)\?\ze("
 
 
 " Logtalk built-in methods
@@ -137,7 +146,7 @@ syn match	logtalkBuiltInMethod	"\<before\ze("
 syn match	logtalkBuiltInMethod	"\<after\ze("
 
 syn match	logtalkBuiltInMethod	"\<expand_term\ze("
-syn match	logtalkBuiltInMethod	"\<term_expansion\ze("
+syn match	logtalkBuiltInMethod	"\<\(goal\|term\)_expansion\ze("
 syn match	logtalkBuiltInMethod	"\<phrase\ze("
 
 
@@ -212,7 +221,7 @@ syn match	logtalkOperator		">="
 
 " Stream selection and control
 
-syn match	logtalkKeyword		"\<\(current\|set\)_\(in\|out\)put\ze("
+syn match	logtalkKeyword		"\<\(curren\|se\)t_\(in\|out\)put\ze("
 syn match	logtalkKeyword		"\<open\ze("
 syn match	logtalkKeyword		"\<close\ze("
 syn match	logtalkKeyword		"\<flush_output\ze("
@@ -235,7 +244,7 @@ syn match	logtalkKeyword		"\<nl\>"
 syn match	logtalkKeyword		"\<read\(_term\)\?\ze("
 syn match	logtalkKeyword		"\<write\(q\|_\(canonical\|term\)\)\?\ze("
 syn match	logtalkKeyword		"\<\(current_\)\?op\ze("
-syn match	logtalkKeyword		"\<\(current\)\?char_conversion\ze("
+syn match	logtalkKeyword		"\<\(current_\)\?char_conversion\ze("
 
 
 " Logic and control
@@ -250,12 +259,12 @@ syn match	logtalkKeyword		"\<repeat\>"
 syn match	logtalkKeyword		"\<atom_\(length\|c\(hars\|o\(ncat\|des\)\)\)\ze("
 syn match	logtalkKeyword		"\<sub_atom\ze("
 syn match	logtalkKeyword		"\<char_code\ze("
-syn match	logtalkKeyword		"\<number_\(c\(hars\|odes\)\)\ze("
+syn match	logtalkKeyword		"\<number_c\(har\|ode\)s\ze("
 
 
 " Implementation defined hooks functions
 
-syn match	logtalkKeyword		"\<\(current\|set\)_prolog_flag\ze("
+syn match	logtalkKeyword		"\<\(curren\|se\)t_prolog_flag\ze("
 syn match	logtalkKeyword		"\<halt\ze("
 syn match	logtalkKeyword		"\<halt\>"
 
@@ -302,13 +311,13 @@ syn match	logtalkOperator		"\\"
 syn match	logtalkOperator		"|"
 
 
-" Logtalk numbers 
+" Logtalk numbers
 
 syn match	logtalkNumber		"\<\d\+\>"
 syn match	logtalkNumber		"\<\d\+\.\d\+\>"
 syn match	logtalkNumber		"\<\d\+[eE][-+]\=\d\+\>"
 syn match	logtalkNumber		"\<\d\+\.\d\+[eE][-+]\=\d\+\>"
-syn match	logtalkNumber		"\<0'.\>"
+syn match	logtalkNumber		"\<0'.\|0''\|0'\"\>"
 syn match	logtalkNumber		"\<0b[0-1]\+\>"
 syn match	logtalkNumber		"\<0o\o\+\>"
 syn match	logtalkNumber		"\<0x\x\+\>"
@@ -346,7 +355,7 @@ if version >= 508 || !exists("did_logtalk_syn_inits")
 	else
 		command -nargs=+ HiLink hi def link <args>
 	endif
-	
+
 	HiLink	logtalkBlockComment	Comment
 	HiLink	logtalkLineComment	Comment
 
@@ -365,6 +374,7 @@ if version >= 508 || !exists("did_logtalk_syn_inits")
 
 	HiLink	logtalkAtom		String
 	HiLink	logtalkString		String
+	HiLink	logtalkEscapeSequence	SpecialChar
 
 	HiLink	logtalkNumber		Number
 
@@ -386,7 +396,3 @@ endif
 
 
 let b:current_syntax = "logtalk"
-
-setlocal ts=4
-setlocal fdm=syntax
-setlocal fdc=2

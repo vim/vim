@@ -6261,6 +6261,17 @@ screen_puts_len(text, len, row, col, attr)
     if (ScreenLines == NULL || row >= screen_Rows)	/* safety check */
 	return;
 
+#ifdef FEAT_MBYTE
+    /* When drawing over the right halve of a double-wide char clear out the
+     * left halve.  Only needed in a terminal. */
+    if (has_mbyte
+# ifdef FEAT_GUI
+	    && !gui.in_use
+# endif
+	    && mb_fix_col(col, row) != col)
+	screen_puts_len(" ", 1, row, col - 1, 0);
+#endif
+
     off = LineOffset[row] + col;
 #ifdef FEAT_MBYTE
     max_off = LineOffset[row] + screen_Columns;
@@ -7116,6 +7127,23 @@ screen_fill(start_row, end_row, start_col, end_col, c1, c2, attr)
 			    t_colors <= 1);
     for (row = start_row; row < end_row; ++row)
     {
+#ifdef FEAT_MBYTE
+	if (has_mbyte
+# ifdef FEAT_GUI
+		&& !gui.in_use
+# endif
+	   )
+	{
+	    /* When drawing over the right halve of a double-wide char clear
+	     * out the left halve.  When drawing over the left halve of a
+	     * double wide-char clear out the right halve.  Only needed in a
+	     * terminal. */
+	    if (mb_fix_col(start_col, row) != start_col)
+		screen_puts_len(" ", 1, row, start_col - 1, 0);
+	    if (mb_fix_col(end_col, row) != end_col)
+		screen_puts_len(" ", 1, row, end_col, 0);
+	}
+#endif
 	/*
 	 * Try to use delete-line termcap code, when no attributes or in a
 	 * "normal" terminal, where a bold/italic space is just a
@@ -8855,8 +8883,18 @@ showmode()
 	{
 	    MSG_PUTS_ATTR("--", attr);
 #if defined(FEAT_XIM)
+# if 0  /* old version, changed by SungHyun Nam July 2008 */
 	    if (xic != NULL && im_get_status() && !p_imdisable
 					&& curbuf->b_p_iminsert == B_IMODE_IM)
+# else
+	    if (
+#  ifdef HAVE_GTK2
+		    preedit_get_status()
+#  else
+		    im_get_status()
+#  endif
+	       )
+# endif
 # ifdef HAVE_GTK2 /* most of the time, it's not XIM being used */
 		MSG_PUTS_ATTR(" IM", attr);
 # else

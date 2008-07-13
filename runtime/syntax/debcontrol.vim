@@ -34,6 +34,7 @@ syn match debcontrolPriority contained "\(extra\|important\|optional\|required\|
 syn match debcontrolSection contained "\(\(contrib\|non-free\|non-US/main\|non-US/contrib\|non-US/non-free\|restricted\|universe\|multiverse\)/\)\=\(admin\|base\|comm\|devel\|doc\|editors\|electronics\|embedded\|games\|gnome\|graphics\|hamradio\|interpreters\|kde\|libs\|libdevel\|mail\|math\|misc\|net\|news\|oldlibs\|otherosfs\|perl\|python\|science\|shells\|sound\|text\|tex\|utils\|web\|x11\|debian-installer\)"
 syn match debcontrolPackageType contained "u\?deb"
 syn match debcontrolVariable contained "\${.\{-}}"
+syn match debcontrolDmUpload contained "\cyes"
 
 " A URL (using the domain name definitions from RFC 1034 and 1738), right now
 " only enforce protocol and some sanity on the server/path part;
@@ -52,7 +53,7 @@ syn match debcontrolComment "^#.*$"
 syn case ignore
 
 " List of all legal keys
-syn match debcontrolKey contained "^\(Source\|Package\|Section\|Priority\|Maintainer\|Uploaders\|Build-Depends\|Build-Conflicts\|Build-Depends-Indep\|Build-Conflicts-Indep\|Standards-Version\|Pre-Depends\|Depends\|Recommends\|Suggests\|Provides\|Replaces\|Conflicts\|Essential\|Architecture\|Description\|Bugs\|Origin\|Enhances\|Homepage\|\(XS-\)\=Vcs-\(Browser\|Arch\|Bzr\|Cvs\|Darcs\|Git\|Hg\|Mtn\|Svn\)\|XC-Package-Type\): *"
+syn match debcontrolKey contained "^\(Source\|Package\|Section\|Priority\|Maintainer\|Uploaders\|Build-Depends\|Build-Conflicts\|Build-Depends-Indep\|Build-Conflicts-Indep\|Standards-Version\|Pre-Depends\|Depends\|Recommends\|Suggests\|Provides\|Replaces\|Conflicts\|Essential\|Architecture\|Description\|Bugs\|Origin\|Enhances\|Homepage\|\(XS-\)\=Vcs-\(Browser\|Arch\|Bzr\|Cvs\|Darcs\|Git\|Hg\|Mtn\|Svn\)\|XC-Package-Type\|\%(XS-\)\=DM-Upload-Allowed\): *"
 
 " Fields for which we do strict syntax checking
 syn region debcontrolStrictField start="^Architecture" end="$" contains=debcontrolKey,debcontrolArchitecture,debcontrolSpace oneline
@@ -65,6 +66,7 @@ syn region debcontrolStrictField start="^\%(XS-\)\?Vcs-\%(Browser\|Arch\|Bzr\|Da
 syn region debcontrolStrictField start="^\%(XS-\)\?Vcs-Svn" end="$" contains=debcontrolKey,debcontrolVcsSvn,debcontrolHTTPUrl oneline keepend
 syn region debcontrolStrictField start="^\%(XS-\)\?Vcs-Cvs" end="$" contains=debcontrolKey,debcontrolVcsCvs oneline keepend
 syn region debcontrolStrictField start="^\%(XS-\)\?Vcs-Git" end="$" contains=debcontrolKey,debcontrolVcsGit oneline keepend
+syn region debcontrolStrictField start="^\%(XS-\)\?DM-Upload-Allowed" end="$" contains=debcontrolKey,debcontrolDmUpload oneline
 
 " Catch-all for the other legal fields
 syn region debcontrolField start="^\(Maintainer\|Standards-Version\|Essential\|Bugs\|Origin\|X\(S\|B\)-Python-Version\|XSBC-Original-Maintainer\|\(XS-\)\?Vcs-Mtn\):" end="$" contains=debcontrolKey,debcontrolVariable,debcontrolEmail oneline
@@ -94,6 +96,7 @@ if version >= 508 || !exists("did_debcontrol_syn_inits")
   HiLink debcontrolVcsCvs	Identifier
   HiLink debcontrolVcsGit	Identifier
   HiLink debcontrolHTTPUrl	Identifier
+  HiLink debcontrolDmUpload	Identifier
   HiLink debcontrolComment	Comment
   HiLink debcontrolElse		Special
 

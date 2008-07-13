@@ -82,6 +82,7 @@ void xim_init __ARGS((void));
 void im_shutdown __ARGS((void));
 int xim_get_status_area_height __ARGS((void));
 int im_get_status __ARGS((void));
+int preedit_get_status __ARGS((void));
 int im_is_preediting __ARGS((void));
 int convert_setup __ARGS((vimconv_T *vcp, char_u *from, char_u *to));
 int convert_input __ARGS((char_u *ptr, int len, int maxlen));

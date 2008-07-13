@@ -10,7 +10,7 @@
 /*
  * eval.c: Expression evaluation.
  */
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
 # include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
@@ -9697,15 +9697,19 @@ f_filereadable(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    FILE	*fd;
+    int		fd;
     char_u	*p;
     int		n;
 
+#ifndef O_NONBLOCK
+# define O_NONBLOCK 0
+#endif
     p = get_tv_string(&argvars[0]);
-    if (*p && !mch_isdir(p) && (fd = mch_fopen((char *)p, "r")) != NULL)
+    if (*p && !mch_isdir(p) && (fd = mch_open((char *)p,
+					      O_RDONLY | O_NONBLOCK, 0)) >= 0)
     {
 	n = TRUE;
-	fclose(fd);
+	close(fd);
     }
     else
 	n = FALSE;
@@ -21975,7 +21979,7 @@ shortpath_for_invalid_fname(fname, bufp, fnamelen)
 	ch = *endp;
 	*endp = 0;
 	short_fname = save_fname;
-	len = STRLEN(short_fname) + 1;
+	len = (int)STRLEN(short_fname) + 1;
 	if (get_short_pathname(&short_fname, &pbuf_unused, &len) == FAIL)
 	{
 	    retval = FAIL;

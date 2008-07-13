@@ -3,17 +3,19 @@
 "     Language: Ada (2005)
 "	   $Id$
 "    Copyright: Copyright (C) 2006 Martin Krischik
-"   Maintainer: Martin Krischik
+"   Maintainer: Martin Krischik <krischik@users.sourceforge.net>
 "		Neil Bird <neil@fnxweb.com>
+"		Ned Okie <nokie@radford.edu>
 "      $Author$
 "	 $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/indent/ada.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/indent/ada.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		16.07.2006 MK Ada-Mode as vim-ball
 "		15.10.2006 MK Bram's suggestion for runtime integration
 "		05.11.2006 MK Bram suggested to save on spaces
+"		19.09.2007 NO g: missing before ada#Comment
 "    Help Page: ft-vim-indent
 "------------------------------------------------------------------------------
 " ToDo:
@@ -27,7 +29,7 @@ if exists("b:did_indent") || version < 700
    finish
 endif
 
-let b:did_indent = 1
+let b:did_indent = 45
 
 setlocal indentexpr=GetAdaIndent()
 setlocal indentkeys-=0{,0}
@@ -58,7 +60,7 @@ endif
 " Seems to work OK as it 'starts' with the indent of the /previous/ line.
 function s:MainBlockIndent (prev_indent, prev_lnum, blockstart, stop_at)
    let lnum = a:prev_lnum
-   let line = substitute( getline(lnum), ada#Comment, '', '' )
+   let line = substitute( getline(lnum), g:ada#Comment, '', '' )
    while lnum > 1
       if a:stop_at != ''  &&  line =~ '^\s*' . a:stop_at  &&  indent(lnum) < a:prev_indent
 	 return a:prev_indent
@@ -72,7 +74,7 @@ function s:MainBlockIndent (prev_indent, prev_lnum, blockstart, stop_at)
       let lnum = prevnonblank(lnum - 1)
       " Get previous non-blank/non-comment-only line
       while 1
-	 let line = substitute( getline(lnum), ada#Comment, '', '' )
+	 let line = substitute( getline(lnum), g:ada#Comment, '', '' )
 	 if line !~ '^\s*$' && line !~ '^\s*#'
 	    break
 	 endif
@@ -116,7 +118,7 @@ function s:EndBlockIndent( prev_indent, prev_lnum, blockstart, blockend )
       " Get previous non-blank/non-comment-only line
       while 1
 	 let line = getline(lnum)
-	 let line = substitute( line, ada#Comment, '', '' )
+	 let line = substitute( line, g:ada#Comment, '', '' )
 	 if line !~ '^\s*$'
 	    break
 	 endif
@@ -143,7 +145,8 @@ function s:StatementIndent( current_indent, prev_lnum )
       let lnum = prevnonblank(lnum - 1)
       " Get previous non-blank/non-comment-only line
       while 1
-	 let line = substitute( getline(lnum), ada#Comment, '', '' )
+	 let line = substitute( getline(lnum), g:ada#Comment, '', '' )
+	 
 	 if line !~ '^\s*$' && line !~ '^\s*#'
 	    break
 	 endif
@@ -222,7 +225,7 @@ function GetAdaIndent()
       exe lnum
       exe 'normal! $F)%'
       if getline('.') =~ '^\s*('
-	 " Dire layout - use previous indent (could check for ada#Comment here)
+	 " Dire layout - use previous indent (could check for g:ada#Comment here)
 	 let ind = indent( prevnonblank( line('.')-1 ) )
       else
 	 let ind = indent('.')

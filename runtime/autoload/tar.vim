@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Jun 12, 2008
-" Version:		16
+" Date:			Jul 12, 2008
+" Version:		19 + changes by Bram
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
@@ -24,7 +24,7 @@ set cpo&vim
 if &cp || exists("g:loaded_tar") || v:version < 700
  finish
 endif
-let g:loaded_tar= "v16"
+let g:loaded_tar= "v19+b"
 "call Decho("loading autoload/tar.vim")
 if v:version < 701 || (v:version == 701 && !has("patch299"))
  echoerr "(autoload/tar.vim) need vim v7.1 with patchlevel 299"
@@ -130,21 +130,21 @@ fun! tar#Browse(tarfile)
   let tarfile= a:tarfile
   if has("win32") && executable("cygpath")
    " assuming cygwin
-   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile)),'\n$','','e')
+   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile,0)),'\n$','','e')
   endif
   let curlast= line("$")
   if tarfile =~# '\.\(gz\|tgz\)$'
-"   call Decho("1: exe silent r! gzip -d -c ".s:Escape(tarfile)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
-   exe "silent r! gzip -d -c -- ".s:Escape(tarfile)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
+"   call Decho("1: exe silent r! gzip -d -c ".s:Escape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
+   exe "silent r! gzip -d -c -- ".s:Escape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.lrp'
-"   call Decho("2: exe silent r! cat -- ".s:Escape(tarfile)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - ")
-   exe "silent r! cat -- ".s:Escape(tarfile)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - "
+"   call Decho("2: exe silent r! cat -- ".s:Escape(tarfile,1)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - ")
+   exe "silent r! cat -- ".s:Escape(tarfile,1)."|gzip -d -c -|".g:tar_cmd." -".g:tar_browseoptions." - "
   elseif tarfile =~# '\.bz2$'
-"   call Decho("3: exe silent r! bzip2 -d -c ".s:Escape(tarfile)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
-   exe "silent r! bzip2 -d -c -- ".s:Escape(tarfile)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
+"   call Decho("3: exe silent r! bzip2 -d -c ".s:Escape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - ")
+   exe "silent r! bzip2 -d -c -- ".s:Escape(tarfile,1)." | ".g:tar_cmd." -".g:tar_browseoptions." - "
   else
-"   call Decho("4: exe silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".s:Escape(tarfile))
-   exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".s:Escape(tarfile)
+"   call Decho("4: exe silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".s:Escape(tarfile,0))
+   exe "silent r! ".g:tar_cmd." -".g:tar_browseoptions." ".s:Escape(tarfile,1)
   endif
   if v:shell_error != 0
    redraw!
@@ -160,7 +160,7 @@ fun! tar#Browse(tarfile)
    silent %d
    let eikeep= &ei
    set ei=BufReadCmd,FileReadCmd
-   exe "r ".a:tarfile
+   exe "r ".fnameescape(a:tarfile)
    let &ei= eikeep
    1d
 "   call Dret("tar#Browse : a:tarfile<".a:tarfile.">")
@@ -195,7 +195,7 @@ fun! s:TarBrowseSelect()
   let curfile= expand("%")
   if has("win32") && executable("cygpath")
    " assuming cygwin
-   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile)),'\n$','','e')
+   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile,0)),'\n$','','e')
   endif
 
   new
@@ -220,7 +220,7 @@ fun! tar#Read(fname,mode)
   let fname   = substitute(a:fname,'tarfile:.\{-}::\(.*\)$','\1','')
   if has("win32") && executable("cygpath")
    " assuming cygwin
-   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile)),'\n$','','e')
+   let tarfile=substitute(system("cygpath -u ".s:Escape(tarfile,0)),'\n$','','e')
   endif
 "  call Decho("tarfile<".tarfile.">")
 "  call Decho("fname<".fname.">")
@@ -240,17 +240,17 @@ fun! tar#Read(fname,mode)
   endif
 
   if tarfile =~# '\.\(gz\|tgz\)$'
-"   call Decho("5: exe silent r! gzip -d -c -- ".s:Escape(tarfile)."| ".g:tar_cmd.' -'.g:tar_readoptions.' - '.s:Escape(fname))
-   exe "silent r! gzip -d -c -- ".s:Escape(tarfile)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname).decmp
+"   call Decho("5: exe silent r! gzip -d -c -- ".s:Escape(tarfile,1)."| ".g:tar_cmd.' -'.g:tar_readoptions.' - '.s:Escape(fname,1))
+   exe "silent r! gzip -d -c -- ".s:Escape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname,1).decmp
   elseif tarfile =~# '\.lrp$'
-"   call Decho("6: exe silent r! cat ".s:Escape(tarfile)." | gzip -d -c - | ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname).decmp)
-   exe "silent r! cat -- ".s:Escape(tarfile)." | gzip -d -c - | ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname).decmp
+"   call Decho("6: exe silent r! cat ".s:Escape(tarfile,1)." | gzip -d -c - | ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname,1).decmp)
+   exe "silent r! cat -- ".s:Escape(tarfile,1)." | gzip -d -c - | ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname,1).decmp
   elseif tarfile =~# '\.bz2$'
-"   call Decho("7: exe silent r! bzip2 -d -c ".s:Escape(tarfile)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname).decmp)
-   exe "silent r! bzip2 -d -c -- ".s:Escape(tarfile)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname).decmp
+"   call Decho("7: exe silent r! bzip2 -d -c ".s:Escape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname,1).decmp)
+   exe "silent r! bzip2 -d -c -- ".s:Escape(tarfile,1)."| ".g:tar_cmd." -".g:tar_readoptions." - ".s:Escape(fname,1).decmp
   else
-"   call Decho("8: exe silent r! ".g:tar_cmd." -".g:tar_readoptions." -- ".s:Escape(tarfile)." ".s:Escape(fname))
-   exe "silent r! ".g:tar_cmd." -".g:tar_readoptions." ".s:Escape(tarfile)." -- ".s:Escape(fname).decmp
+"   call Decho("8: exe silent r! ".g:tar_cmd." -".g:tar_readoptions." -- ".s:Escape(tarfile,1)." ".s:Escape(fname,1))
+   exe "silent r! ".g:tar_cmd." -".g:tar_readoptions." ".s:Escape(tarfile,1)." -- ".s:Escape(fname,1).decmp
   endif
 
   if doro
@@ -259,7 +259,7 @@ fun! tar#Read(fname,mode)
   endif
 
   let w:tarfile= a:fname
-  exe "file tarfile::".fname
+  exe "file tarfile::".fnameescape(fname)
 
   " cleanup
   0d
@@ -329,18 +329,18 @@ fun! tar#Write(fname)
 
   " handle compressed archives
   if tarfile =~# '\.gz'
-   call system("gzip -d -- ".tarfile)
+   call system("gzip -d -- ".s:Escape(tarfile,0))
    let tarfile = substitute(tarfile,'\.gz','','e')
-   let compress= "gzip ".s:Escape(tarfile)
+   let compress= "gzip ".s:Escape(tarfile,0)
   elseif tarfile =~# '\.tgz'
-   call system("gzip -d -- ".s:Escape(tarfile))
+   call system("gzip -d -- ".s:Escape(tarfile,0))
    let tarfile = substitute(tarfile,'\.tgz','.tar','e')
-   let compress= "gzip -- ".s:Escape(tarfile)
+   let compress= "gzip -- ".s:Escape(tarfile,0)
    let tgz     = 1
   elseif tarfile =~# '\.bz2'
-   call system("bzip2 -d -- ".s:Escape(tarfile))
+   call system("bzip2 -d -- ".s:Escape(tarfile,0))
    let tarfile = substitute(tarfile,'\.bz2','','e')
-   let compress= "bzip2 -- ".s:Escape(tarfile)
+   let compress= "bzip2 -- ".s:Escape(tarfile,0)
   endif
 "  call Decho("tarfile<".tarfile.">")
 "  call Decho("compress<".compress.">")
@@ -356,7 +356,7 @@ fun! tar#Write(fname)
    if fname =~ '/'
     let dirpath = substitute(fname,'/[^/]\+$','','e')
     if executable("cygpath")
-     let dirpath = substitute(system("cygpath ".dirpath),'\n','','e')
+     let dirpath = substitute(system("cygpath ".s:Escape(dirpath, 0)),'\n','','e')
     endif
     call mkdir(dirpath,"p")
    endif
@@ -367,12 +367,12 @@ fun! tar#Write(fname)
  
    exe "w! ".fnameescape(fname)
    if executable("cygpath")
-    let tarfile = substitute(system("cygpath ".s:Escape(tarfile)),'\n','','e')
+    let tarfile = substitute(system("cygpath ".s:Escape(tarfile,0)),'\n','','e')
    endif
  
    " delete old file from tarfile
-"   call Decho("system(tar --delete -f ".s:Escape(tarfile)." -- ".s:Escape(fname).")")
-   call system("tar --delete -f ".s:Escape(tarfile)." -- ".s:Escape(fname))
+"   call Decho("system(tar --delete -f ".s:Escape(tarfile,0)." -- ".s:Escape(fname,0).")")
+   call system("tar --delete -f ".s:Escape(tarfile,0)." -- ".s:Escape(fname,0))
    if v:shell_error != 0
     redraw!
     echohl Error | echo "***error*** (tar#Write) sorry, unable to update ".fnameescape(tarfile)." with ".fnameescape(fname) | echohl None
@@ -380,8 +380,8 @@ fun! tar#Write(fname)
    else
  
     " update tarfile with new file 
-"    call Decho("tar -".g:tar_writeoptions." ".s:Escape(tarfile)." -- ".s:Escape(fname))
-    call system("tar -".g:tar_writeoptions." ".s:Escape(tarfile)." -- ".s:Escape(fname))
+"    call Decho("tar -".g:tar_writeoptions." ".s:Escape(tarfile,0)." -- ".s:Escape(fname,0))
+    call system("tar -".g:tar_writeoptions." ".s:Escape(tarfile,0)." -- ".s:Escape(fname,0))
     if v:shell_error != 0
      redraw!
      echohl Error | echo "***error*** (tar#Write) sorry, unable to update ".fnameescape(tarfile)." with ".fnameescape(fname) | echohl None
@@ -404,7 +404,7 @@ fun! tar#Write(fname)
     let binkeep= &binary
     let eikeep = &ei
     set binary ei=all
-    exe "e! ".tarfile
+    exe "e! ".fnameescape(tarfile)
     call netrw#NetWrite(tblfile)
     let &ei     = eikeep
     let &binary = binkeep
@@ -416,7 +416,7 @@ fun! tar#Write(fname)
   " cleanup and restore current directory
   cd ..
   call s:Rmdir("_ZIPVIM_")
-  exe "cd ".escape(curdir,' \')
+  exe "cd ".fnameescape(curdir)
   setlocal nomod
 
   let &report= repkeep
@@ -428,12 +428,12 @@ endfun
 fun! s:Rmdir(fname)
 "  call Dfunc("Rmdir(fname<".a:fname.">)")
   if has("unix")
-   call system("/bin/rm -rf -- ".s:Escape(a:fname))
+   call system("/bin/rm -rf -- ".s:Escape(a:fname,0))
   elseif has("win32") || has("win95") || has("win64") || has("win16")
    if &shell =~? "sh$"
-    call system("/bin/rm -rf -- ".s:Escape(a:fname))
+    call system("/bin/rm -rf -- ".s:Escape(a:fname,0))
    else
-    call system("del /S ".s:Escape(a:fname))
+    call system("del /S ".s:Escape(a:fname,0))
    endif
   endif
 "  call Dret("Rmdir")
@@ -441,10 +441,14 @@ endfun
 
 " ---------------------------------------------------------------------
 " s:Escape: {{{2
-fun s:Escape(name)
+fun s:Escape(name,isfilt)
   " shellescape() was added by patch 7.0.111
   if exists("*shellescape")
-   let qnameq= shellescape(a:name)
+   if a:isfilt
+    let qnameq= shellescape(a:name,1)
+   else
+    let qnameq= shellescape(a:name)
+   endif
   else
    let qnameq= g:tar_shq . a:name . g:tar_shq
   endif

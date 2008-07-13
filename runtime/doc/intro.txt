@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.2a.  Last change: 2008 Jun 24
+*intro.txt*     For Vim version 7.2b.  Last change: 2008 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -208,7 +208,7 @@ Vim would never have become what it is now, without the help of these people!
 	Bill Foster		Athena GUI port
 	Google			Lets me work on Vim one day a week
 	Loic Grenie		xvim (ideas for multi windows version)
-	Sven Guckes		Vim promotor and previous WWW page maintainer
+	Sven Guckes		Vim promoter and previous WWW page maintainer
 	Darren Hiebert		Exuberant ctags
 	Jason Hildebrand	GTK+ 2 port
 	Bruce Hunsaker		improvements for VMS port

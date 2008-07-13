@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.2a.  Last change: 2008 Jun 22
+*netbeans.txt*  For Vim version 7.2b.  Last change: 2008 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -69,7 +69,7 @@ Initially just a Java IDE, NetBeans has had C, C++, and Fortran support added
 in recent releases.
 
 For more information visit the main NetBeans web site http://www.netbeans.org.
-The External Editor is now, unfortunately, declared Obsolte.  See
+The External Editor is now, unfortunately, declared obsolete.  See
  http://externaleditor.netbeans.org.
 
 Sun Microsystems, Inc. also ships NetBeans under the name Sun ONE Studio.
@@ -418,7 +418,7 @@ moveAnnoToFront serNum
 		Not implemented.
 
 netbeansBuffer isNetbeansBuffer
-		If "isNetbeansBuffer" is "T" then this buffer is ``owned'' by
+		If "isNetbeansBuffer" is "T" then this buffer is "owned" by
 		NetBeans.
 		New in version 2.2.
 

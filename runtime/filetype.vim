@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jun 20
+" Last Change:	2008 Jul 08
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -17,7 +17,7 @@ augroup filetypedetect
 
 " Ignored extensions
 if exists("*fnameescape")
-au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.rpmsave,?\+.rpmnew
+au BufNewFile,BufRead ?\+.orig,?\+.bak,?\+.old,?\+.new,?\+.dpkg-dist,?\+.dpkg-old,?\+.rpmsave,?\+.rpmnew
 	\ exe "doau filetypedetect BufRead " . fnameescape(expand("<afile>:r"))
 au BufNewFile,BufRead *~
 	\ let s:name = expand("<afile>") |
@@ -633,7 +633,7 @@ func! s:FTe()
 endfunc
 
 " ERicsson LANGuage; Yaws is erlang too
-au BufNewFile,BufRead *.erl,*.yaws		setf erlang
+au BufNewFile,BufRead *.erl,*.hrl,*.yaws	setf erlang
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
@@ -739,10 +739,13 @@ au BufNewFile,BufRead *.groovy			setf groovy
 au BufNewFile,BufRead *.gsp			setf gsp
 
 " Group file
-au BufNewFile,BufRead /etc/group		setf group
+au BufNewFile,BufRead /etc/group,/etc/group-,/etc/group.edit,/etc/gshadow,/etc/gshadow-,/etc/gshadow.edit,/var/backups/group.bak,/var/backups/gshadow.bak		setf group
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
+
+" Haml
+au BufNewFile,BufRead *.haml			setf haml
 
 " Hamster Classic | Playground files
 au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
@@ -754,6 +757,7 @@ au BufNewFile,BufRead *.chs			setf chaskell
 
 " Haste
 au BufNewFile,BufRead *.ht			setf haste
+au BufNewFile,BufRead *.htpp			setf hastepreproc
 
 " Hercules
 au BufNewFile,BufRead *.vc,*.ev,*.rs,*.sum,*.errsum	setf hercules
@@ -1016,6 +1020,9 @@ au BufNewFile,BufRead /etc/man.conf,man.config	setf manconf
 " Maple V
 au BufNewFile,BufRead *.mv,*.mpl,*.mws		setf maple
 
+" Map (UMN mapserver config file)
+au BufNewFile,BufRead *.map			setf map
+
 " Mason
 au BufNewFile,BufRead *.mason,*.mhtml		setf mason
 
@@ -1226,7 +1233,7 @@ au BufNewFile,BufRead /etc/pam.conf		setf pamconf
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
 
 " Password file
-au BufNewFile,BufRead /etc/passwd,/etc/shadow,/etc/shadow- setf passwd
+au BufNewFile,BufRead /etc/passwd,/etc/passwd-,/etc/passwd.edit,/etc/shadow,/etc/shadow-,/var/backups/passwd.bak,/var/backups/shadow.bak setf passwd
 
 " Pascal (also *.p)
 au BufNewFile,BufRead *.pas			setf pascal
@@ -1572,6 +1579,9 @@ au BufNewFile,BufRead smb.conf			setf samba
 " SAS script
 au BufNewFile,BufRead *.sas			setf sas
 
+" Sass
+au BufNewFile,BufRead *.sass			setf sass
+
 " Sather
 au BufNewFile,BufRead *.sa			setf sather
 
@@ -1796,7 +1806,7 @@ au BufNewFile,BufRead *.rules			call s:FTRules()
 
 let s:ft_rules_udev_rules_pattern = '^\s*\cudev_rules\s*=\s*"\([^"]\{-1,}\)/*".*'
 func! s:FTRules()
-  if expand('<amatch>:p') =~ '^/etc/udev/rules\.d/.*\.rules$'
+  if expand('<amatch>:p') =~ '^/etc/udev/\%(rules\.d/\)\=.*\.rules$'
     setf udevrules
     return
   endif
@@ -2257,6 +2267,9 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 " Most of these should call s:StarSetf() to avoid names ending in .gz and the
 " like are used.
 
+" More Apache files.
+au BufNewFile,BufRead /etc/apache2/conf.*/*,/etc/apache2/sites-*/*,/etc/apache2/mods-*/*		call s:StarSetf('apache')
+
 " Asterisk config file
 au BufNewFile,BufRead *asterisk/*.conf*		call s:StarSetf('asterisk')
 au BufNewFile,BufRead *asterisk*/*voicemail.conf* call s:StarSetf('asteriskvm')
@@ -2276,7 +2289,7 @@ au BufNewFile,BufRead [cC]hange[lL]og*
 	\|endif
 
 " Crontab
-au BufNewFile,BufRead crontab,crontab.*		call s:StarSetf('crontab')
+au BufNewFile,BufRead crontab,crontab.*,/etc/cron.d/*		call s:StarSetf('crontab')
 
 " Debian Sources.list
 au BufNewFile,BufRead /etc/apt/sources.list.d/*	call s:StarSetf('debsources')

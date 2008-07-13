@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.2a.  Last change: 2008 Jun 24
+*eval.txt*	For Vim version 7.2b.  Last change: 2008 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2524,9 +2524,15 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 					|internal-variables|).	Also works
 					for |curly-braces-names|, |Dictionary|
 					entries, |List| items, etc.  Beware
-					that this may cause functions to be
-					invoked cause an error message for an
-					invalid expression.
+					that evaluating an index may cause an
+					error message for an invalid
+					expression.  E.g.: >
+					   :let l = [1, 2, 3]
+					   :echo exists("l[5]")
+<					   0 >
+					   :echo exists("l[xx]")
+<					   E121: Undefined variable: xx
+					   0
 			:cmdname	Ex command: built-in command, user
 					command or command modifier |:command|.
 					Returns:
@@ -2945,6 +2951,8 @@ getbufvar({expr}, {varname})				*getbufvar()*
 		The result is the value of option or local buffer variable
 		{varname} in buffer {expr}.  Note that the name without "b:"
 		must be used.
+		When {varname} is empty returns a dictionary with all the
+		buffer-local variables.
 		This also works for a global or buffer-local option, but it
 		doesn't work for a global variable, window-local variable or
 		window-local option.
@@ -3296,7 +3304,9 @@ globpath({path}, {expr})				*globpath()*
 		For example, to find all "README.txt" files in the directories
 		in 'runtimepath' and below: >
 			:echo globpath(&rtp, "**/README.txt")
-<
+<		Upwards search and limiting the depth of "**" is not
+		supported, thus using 'path' will not always work properly.
+
 							*has()*
 has({feature})	The result is a Number, which is 1 if the feature {feature} is
 		supported, zero otherwise.  The {feature} argument is a
@@ -3361,13 +3371,13 @@ histdel({history} [, {item}])				*histdel()*
 		Clear {history}, i.e. delete all its entries.  See |hist-names|
 		for the possible values of {history}.
 
-		If the parameter {item} is given as String, this is seen
-		as regular expression.	All entries matching that expression
-		will be removed from the history (if there are any).
+		If the parameter {item} evaluates to a String, it is used as a
+		regular expression.  All entries matching that expression will
+		be removed from the history (if there are any).
 		Upper/lowercase must match, unless "\c" is used |/\c|.
-		If {item} is a Number, it will be interpreted as index, see
-		|:history-indexing|.  The respective entry will be removed
-		if it exists.
+		If {item} evaluates to a Number, it will be interpreted as
+		an index, see |:history-indexing|.  The respective entry will
+		be removed if it exists.
 
 		The result is a Number: 1 for a successful operation,
 		otherwise 0 is returned.
@@ -4278,9 +4288,11 @@ printf({fmt}, {expr1} ...)				*printf()*
 		%	A '%' is written.  No argument is converted.  The
 			complete conversion specification is "%%".
 
-		Each argument can be Number or String and is converted
-		automatically to fit the conversion specifier.	Any other
-		argument type results in an error message.
+		When a Number argument is expected a String argument is also
+		accepted and automatically converted.
+		When a Float or String argument is expected a Number argument
+		is also accepted and automatically converted.
+		Any other argument type results in an error message.
 
 							*E766* *E767*
 		The number of {exprN} arguments must exactly match the number
@@ -4506,7 +4518,7 @@ reverse({list})	Reverse the order of items in {list} in-place.	Returns
 			:let revlist = reverse(copy(mylist))
 
 round({expr})							*round()*
-		Round off {expr} to a the nearest integral value and return it
+		Round off {expr} to the nearest integral value and return it
 		as a |Float|.  If {expr} lies halfway between two integral
 		values, then use the larger one (away from zero).
 		{expr} must evaluate to a |Float| or a |Number|.
@@ -5098,6 +5110,7 @@ sqrt({expr})						*sqrt()*
 <			10.0 >
 			:echo sqrt(-4.01)
 <			nan
+		"nan" may be different, it depends on system libraries.
 		{only available when compiled with the |+float| feature}
 		
 
@@ -5484,7 +5497,7 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 <		returns "{blob}"
 
 trunc({expr})							*trunc()*
-		Return the largest integral value with magnituted less than or
+		Return the largest integral value with magnitude less than or
 		equal to {expr} as a |Float| (truncate towards zero).
 		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
@@ -6394,6 +6407,11 @@ This would call the function "my_func_whizz(parameter)".
 <			One item from a |Dictionary| can be removed at a time: >
 				:unlet dict['two']
 				:unlet dict.two
+<			This is especially useful to clean up used global
+			variables and script-local variables (these are not
+			deleted when the script ends).  Function-local
+			variables are automatically deleted when the function
+			ends.
 
 :lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
 			Lock the internal variable {name}.  Locking means that

@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 7.2a.  Last change: Wed Apr 26 2006 3:05:33 PM
+*ft_sql.txt*	For Vim version 7.2b.  Last change: Wed Apr 26 2006 3:05:33 PM
 
 by David Fishburn
 

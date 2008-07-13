@@ -27,7 +27,9 @@ Contents:
 8. Windows 3.1
 9. MS-DOS
 
-The currently preferred method is using the free Visual C++ Toolkit 2003.
+The currently preferred method is using the free Visual C++ Toolkit 2008
+|msvc-2008-express|.  If you need the executable to run on Windows 98 or ME,
+use the 2003 one |msvc-2003-toolkit|.
 
 
 1. Microsoft Visual C++
@@ -71,11 +73,16 @@ These files have been supplied by George V. Reilly, Ben Singer, Ken Scott and
 Ron Aaron; they have been tested.
 
 
-Visual C++ Toolkit 2003
+Visual C++ Toolkit 2003				*msvc-2003-toolkit*
 -----------------------
 
-You can download the Microsoft Visual C++ Toolkit 2003 from
+You could download the Microsoft Visual C++ Toolkit 2003 from
     http://msdn.microsoft.com/visualc/vctoolkit2003/
+Unfortunately this URL is no longer valid.  Inofficial downloads appear to be
+available from links mentioned on these pages (use at your own risk):
+   http://www.filewatcher.com/m/VCToolkitSetup.exe.32952488.0.0.html
+   http://feargame.net/wiki/index.php?title=Building_Source_with_the_VC2003_Toolkit
+
 This contains the command-line tools (compiler, linker, CRT headers,
 and libraries) for Visual Studio .NET 2003, but not the Visual Studio IDE.
 To compile and debug Vim with the VC2003 Toolkit, you will also need

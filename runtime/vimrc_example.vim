@@ -1,7 +1,7 @@
 " An example for a vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2008 Jun 16
+" Last change:	2008 Jul 02
 "
 " To use it, copy it to
 "     for Unix and OS/2:  ~/.vimrc
@@ -42,7 +42,9 @@ map Q gq
 inoremap <C-U> <C-G>u<C-U>
 
 " In many terminal emulators the mouse works just fine, thus enable it.
-set mouse=a
+if has('mouse')
+  set mouse=a
+endif
 
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.

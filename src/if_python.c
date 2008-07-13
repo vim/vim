@@ -1764,7 +1764,7 @@ RangeRepr(PyObject *self)
 
 	if (name == NULL)
 	    name = "";
-	len = strlen(name);
+	len = (int)strlen(name);
 
 	if (len > 45)
 	    name = name + (45 - len);

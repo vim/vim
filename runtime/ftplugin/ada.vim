@@ -2,13 +2,14 @@
 "  Description: Perform Ada specific completion & tagging.
 "     Language: Ada (2005)
 "	   $Id$
-"   Maintainer: Martin Krischik
+"   Maintainer: Martin Krischik <krischik@users.sourceforge.net>
+"		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
 "      $Author$
 "	 $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/ftplugin/ada.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/ftplugin/ada.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		26.05.2006 MK ' should not be in iskeyword.
 "		16.07.2006 MK Ada-Mode as vim-ball
@@ -17,6 +18,7 @@
 "               05.11.2006 MK Bram suggested not to use include protection for
 "                             autoload
 "		05.11.2006 MK Bram suggested to save on spaces
+"		08.07.2007 TV fix default compiler problems.
 "    Help Page: ft-ada-plugin
 "------------------------------------------------------------------------------
 " Provides mapping overrides for tag jumping that figure out the current
@@ -30,7 +32,7 @@ if exists ("b:did_ftplugin") || version < 700
 endif
 
 " Don't load another plugin for this buffer
-let b:did_ftplugin = 38
+let b:did_ftplugin = 45
 
 "
 " Temporarily set cpoptions to ensure the script loads OK
@@ -38,11 +40,20 @@ let b:did_ftplugin = 38
 let s:cpoptions = &cpoptions
 set cpoptions-=C
 
-" Section: Comments {{{1
+" Section: Comments  {{{1
 "
 setlocal comments=O:--,:--\ \
 setlocal commentstring=--\ \ %s
 setlocal complete=.,w,b,u,t,i
+
+" Section: case	     {{{1
+"
+setlocal nosmartcase
+setlocal ignorecase
+
+" Section: formatoptions {{{1
+"
+setlocal formatoptions+=ron
 
 " Section: Tagging {{{1
 "
@@ -104,8 +115,17 @@ if !exists ("b:match_words")  &&
       \ s:notend . '\<record\>:\<end\>\s\+\<record\>'
 endif
 
+
 " Section: Compiler {{{1
 "
+if ! exists("g:ada_default_compiler")
+   if has("vms")
+      let g:ada_default_compiler = 'decada'
+   else
+      let g:ada_default_compiler = 'gnat'
+   endif
+endif
+
 if ! exists("current_compiler")			||
    \ current_compiler != g:ada_default_compiler
    execute "compiler " . g:ada_default_compiler

@@ -1,4 +1,4 @@
-*usr_29.txt*	For Vim version 7.2a.  Last change: 2007 Nov 10
+*usr_29.txt*	For Vim version 7.2b.  Last change: 2008 Jun 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -594,8 +594,8 @@ use this command: >
 
 This will go back to the start of the current function and find the first
 occurrence of the word under the cursor.  Actually, it searches backwards to
-an empty line above the a "{" in the first column.  From there it searches
-forward for the identifier.  Example (cursor on "idx"):
+an empty line above a "{" in the first column.  From there it searches forward
+for the identifier.  Example (cursor on "idx"):
 
 		int find_entry(char *name)
 		{

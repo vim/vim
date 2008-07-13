@@ -16,7 +16,7 @@
  * See ":help netbeans-protocol" for explanation.
  */
 
-#if defined(MSDOS) || defined(MSWIN)
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
 # include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 
@@ -29,7 +29,6 @@
 # ifdef DEBUG
 #  include <tchar.h>	/* for _T definition for TRACEn macros */
 # endif
-# include "vimio.h"
 /* WinSock API is separated from C API, thus we can't use read(), write(),
  * errno... */
 # define sock_errno WSAGetLastError()

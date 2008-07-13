@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.2a.  Last change: 2008 Jun 21
+*cmdline.txt*   For Vim version 7.2b.  Last change: 2008 Jul 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -369,7 +369,9 @@ word before the cursor.  This is available for:
 - Variable and function names: Only after a ":if", ":call" or similar command.
 
 When Vim was compiled with the |+cmdline_compl| feature disabled, only file
-names, directories and help items can be completed.
+names, directories and help items can be completed.  The number of help item
+matches is limited (currently to 300) to avoid a long delay when there are
+very many matches.
 
 These are the commands that can be used:
 

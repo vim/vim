@@ -2,13 +2,15 @@
 "  Description: Perform Ada specific completion & tagging.
 "     Language: Ada (2005)
 "	   $Id$
-"   Maintainer: Martin Krischik
+"   Maintainer: Martin Krischik <krischik@users.sourceforge.net>
+"		Taylor Venable <taylor@metasyntax.net>
 "		Neil Bird <neil@fnxweb.com>
+"		Ned Okie <nokie@radford.edu>
 "      $Author$
 "	 $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/ada.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/ada.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		26.05.2006 MK ' should not be in iskeyword.
 "		16.07.2006 MK Ada-Mode as vim-ball
@@ -17,6 +19,10 @@
 "		05.11.2006 MK Bram suggested not to use include protection for
 "			      autoload
 "		05.11.2006 MK Bram suggested to save on spaces
+"		08.07.2007 TV fix mapleader problems.
+"	        09.05.2007 MK Session just won't work no matter how much
+"			      tweaking is done
+"		19.09.2007 NO still some mapleader problems
 "    Help Page: ft-ada-functions
 "------------------------------------------------------------------------------
 
@@ -425,30 +431,49 @@ function ada#Create_Tags (option)
    execute '!ctags --excmd=number ' . l:Filename
 endfunction ada#Create_Tags
 
-function ada#Switch_Session (New_Session)   "{{{1
-   if a:New_Session != v:this_session
-      "
-      "  We actualy got a new session - otherwise there
-      "  is nothing to do.
-      "
-      if strlen (v:this_session) > 0
-	 execute 'mksession! ' . v:this_session
+" Section: ada#Switch_Session {{{1
+"
+function ada#Switch_Session (New_Session)
+   " 
+   " you should not save to much date into the seession since they will
+   " be sourced
+   "
+   let l:sessionoptions=&sessionoptions
+
+   try
+      set sessionoptions=buffers,curdir,folds,globals,resize,slash,tabpages,tabpages,unix,winpos,winsize
+
+      if a:New_Session != v:this_session
+	 "
+	 "  We actualy got a new session - otherwise there
+	 "  is nothing to do.
+	 "
+	 if strlen (v:this_session) > 0
+	    execute 'mksession! ' . v:this_session
+	 endif
+
+	 let v:this_session = a:New_Session
+
+	 "if filereadable (v:this_session)
+	    "execute 'source ' . v:this_session
+	 "endif
+
+	 augroup ada_session
+	    autocmd!
+	    autocmd VimLeavePre * execute 'mksession! ' . v:this_session
+	 augroup END
+	 
+	 "if exists ("g:Tlist_Auto_Open") && g:Tlist_Auto_Open
+	    "TlistOpen
+	 "endif
+
       endif
-
-      let v:this_session = a:New_Session
-
-      if filereadable (v:this_session)
-	 execute 'source ' . v:this_session
-      endif
-
-      augroup ada_session
-	 autocmd!
-	 autocmd VimLeavePre * execute 'mksession! ' . v:this_session
-      augroup END
-   endif
+   finally
+      let &sessionoptions=l:sessionoptions
+   endtry
 
    return
-endfunction ada#Switch_Session	 "}}}1
+endfunction ada#Switch_Session	
 
 " Section: GNAT Pretty Printer folding {{{1
 "
@@ -546,18 +571,23 @@ function ada#Map_Menu (Text, Keys, Command)
 	\ a:Keys		 .
 	\" <C-O>:" . a:Command . "<CR>"
    else
+      if exists("g:mapleader")
+         let l:leader = g:mapleader
+      else
+         let l:leader = '\'
+      endif
       execute
 	\ "50amenu " .
 	\ "Ada."  . escape(a:Text, ' ') .
-	\ "<Tab>" . escape(g:mapleader . "a" . a:Keys , '\') .
+	\ "<Tab>" . escape(l:leader . "a" . a:Keys , '\') .
 	\ " :"	  . a:Command . "<CR>"
       execute
 	\ "nnoremap <buffer>" .
-	\ escape(g:mapleader . "a" . a:Keys , '\') .
+	\ escape(l:leader . "a" . a:Keys , '\') .
 	\" :" . a:Command
       execute
 	\ "inoremap <buffer>" .
-	\ escape(g:mapleader . "a" . a:Keys , '\') .
+	\ escape(l:leader . "a" . a:Keys , '\') .
 	\" <C-O>:" . a:Command
    endif
    return
@@ -566,10 +596,15 @@ endfunction
 " Section: ada#Map_Popup {{{2
 "
 function ada#Map_Popup (Text, Keys, Command)
+   if exists("g:mapleader")
+      let l:leader = g:mapleader
+   else
+      let l:leader = '\'
+   endif
    execute
      \ "50amenu " .
      \ "PopUp."   . escape(a:Text, ' ') .
-     \ "<Tab>"	  . escape(g:mapleader . "a" . a:Keys , '\') .
+     \ "<Tab>"	  . escape(l:leader . "a" . a:Keys , '\') .
      \ " :"	  . a:Command . "<CR>"
 
    call ada#Map_Menu (a:Text, a:Keys, a:Command)

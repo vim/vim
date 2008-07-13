@@ -4,8 +4,8 @@
 "			\begin{code} \end{code} blocks
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
 " Original Author:	Arthur van Leeuwen <arthurvl@cs.uu.nl>
-" Last Change:		2004 Aug 31
-" Version:		1.01
+" Last Change:		2008 Jul 01
+" Version:		1.02
 "
 " Thanks to Ian Lynagh for thoughtful comments on initial versions and
 " for the inspiration for writing this in the first place.
@@ -29,6 +29,8 @@
 " 2004 February 20: Cleaned up the guessing and overriding a bit
 " 2004 February 23: Cleaned up syntax highlighting for \begin{code} and
 "		    \end{code}, added some clarification to the attributions
+" 2008 July 1:      Removed % from guess list, as it totally breaks  plain
+"		    text markup guessing
 "
 
 
@@ -71,14 +73,14 @@ call cursor(1,1)
 "   - \begin{env}       (for env != code)
 "   - \part, \chapter, \section, \subsection, \subsubsection, etc
 if b:lhs_markup == "unknown"
-    if search('%\|\\documentclass\|\\begin{\(code}\)\@!\|\\\(sub\)*section\|\\chapter|\\part','W') != 0
+    if search('\\documentclass\|\\begin{\(code}\)\@!\|\\\(sub \)*section\|\\chapter|\\part','W') != 0
 	let b:lhs_markup = "tex"
     else
 	let b:lhs_markup = "plain"
     endif
 endif
 
-" If user wants us to highlight TeX syntax, read it.
+" If user wants us to highlight TeX syntax or guess thinks it's TeX,  read it.
 if b:lhs_markup == "tex"
     if version < 600
 	source <sfile>:p:h/tex.vim

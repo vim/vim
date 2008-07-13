@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.2a.  Last change: 2008 Jun 24
+*options.txt*	For Vim version 7.2b.  Last change: 2008 Jul 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1280,7 +1280,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+file_in_path| feature}
 	This is a list of directories which will be searched when using the
 	|:cd| and |:lcd| commands, provided that the directory being searched
-	for has a relative path (not starting with "/", "./" or "../").
+	for has a relative path, not an absolute part starting with "/", "./"
+	or "../", the 'cdpath' option is not used then.
 	The 'cdpath' option's value has the same form and semantics as
 	|'path'|.  Also see |file-searching|.
 	The default value is taken from $CDPATH, with a "," prepended to look
@@ -5011,9 +5012,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global or local to buffer |global-local|
 			{not in Vi}
 	This is a list of directories which will be searched when using the
-	|gf|, [f, ]f, ^Wf, |:find| and other commands, provided that the file
-	being searched for has a relative path (not starting with '/').  The
-	directories in the 'path' option may be relative or absolute.
+	|gf|, [f, ]f, ^Wf, |:find|, |:sfind|, |:tabfind| and other commands,
+	provided that the file being searched for has a relative path (not
+	starting with "/", "./" or "../").  The directories in the 'path'
+	option may be relative or absolute.
 	- Use commas to separate directory names: >
 		:set path=.,/usr/local/include,/usr/include
 <	- Spaces can also be used to separate directory names (for backwards
@@ -5032,19 +5034,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- Environment variables are expanded |:set_env|.
 	- When using |netrw.vim| URLs can be used.  For example, adding
 	  "http://www.vim.org" will make ":find index.html" work.
-	- Search upwards and downwards in a directory tree:
-	  1) "*" matches a sequence of characters, e.g.: >
-		:set path=/usr/include/*
-<	     means all subdirectories in /usr/include (but not /usr/include
-	     itself). >
-		:set path=/usr/*c
-<	     matches /usr/doc and /usr/src.
-	  2) "**" matches a subtree, up to 100 directories deep.  Example: >
-		:set path=/home/user_x/src/**
-<	     means search in the whole subtree under "/home/usr_x/src".
-	  3) If the path ends with a ';', this path is the startpoint
-	     for upward search.
-	  See |file-searching| for more info and exact syntax.
+	- Search upwards and downwards in a directory tree using "*", "**" and
+	  ";".  See |file-searching| for info and syntax.
 	  {not available when compiled without the |+path_extra| feature}
 	- Careful with '\' characters, type two to get one in the option: >
 		:set path=.,c:\\include

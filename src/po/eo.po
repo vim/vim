@@ -8,8 +8,6 @@
 #                 Antono MECHELYNCK <antoine.mechelynck ĉe skynet.be>
 #                 Yves NEVELSTEEN
 #
-# Lasta ŝanĝo: 26 Apr 2008
-#
 # Uzitaj vortaroj kaj fakvortaroj:
 #   Revo:                http://www.reta-vortaro.de/revo/
 #   Komputeko:           http://komputeko.net/index_eo.php
@@ -25,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-01-12 18:05+0100\n"
-"PO-Revision-Date: 2008-04-26 18:14+0100\n"
+"POT-Creation-Date: 2008-06-27 22:52+0200\n"
+"PO-Revision-Date: 2008-06-27 23:01+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -470,6 +468,9 @@ msgstr "E693: Eblas nur kompari Funcref kun Funcref"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Nevalida operacio de Funcref-oj"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Ne eblas uzi '%' kun glitpunktnombro"
+
 msgid "E110: Missing ')'"
 msgstr "E110: Mankas ')'"
 
@@ -534,6 +535,9 @@ msgstr "E120: <SID> estas uzata ekster kunteksto de skripto: %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Alvoko de funkcio dict sen Vortaro: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Nombro aŭ Glitpunktnombro bezonata"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Tro da argumentoj"
@@ -611,23 +615,29 @@ msgstr "(Nevalida)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Eraro dum skribo de provizora dosiero"
 
-msgid "E703: Using a Funcref as a number"
-msgstr "E703: Uzo de Funcref kiel nombro"
+msgid "E805: Using a Float as a Number"
+msgstr "E805: Uzo de Glitpunktnombro kiel Nombro"
 
-msgid "E745: Using a List as a number"
-msgstr "E745: Uzo de Listo kiel nombro"
+msgid "E703: Using a Funcref as a Number"
+msgstr "E703: Uzo de Funcref kiel Nombro"
 
-msgid "E728: Using a Dictionary as a number"
-msgstr "E728: Uzo de Vortaro kiel nombro"
+msgid "E745: Using a List as a Number"
+msgstr "E745: Uzo de Listo kiel Nombro"
+
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: Uzo de Vortaro kiel Nombro"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: uzo de Funcref kiel ĉeno"
+msgstr "E729: uzo de Funcref kiel Ĉeno"
 
 msgid "E730: using List as a String"
 msgstr "E730: uzo de Listo kiel Ĉeno"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: uzo de Vortaro kiel Ĉeno"
+
+msgid "E806: using Float as a String"
+msgstr "E806: uzo de Glitpunktnumbro kiel Ĉeno"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -1328,7 +1338,8 @@ msgstr "E495: neniu dosiernomo de aŭtokomando por anstataŭigi al \"<afile>\""
 # DP: mi ne certas, ĉu <abuf> tradukeblas
 # AM: laŭ mi ne
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
-msgstr "E496: neniu numero de bufro de aŭtokomando por anstataŭigi al \"<abuf>\""
+msgstr ""
+"E496: neniu numero de bufro de aŭtokomando por anstataŭigi al \"<abuf>\""
 
 # DP: mi ne certas, ĉu <amatch> tradukeblas
 # AM: laŭ mi ne
@@ -1604,7 +1615,7 @@ msgstr "E203: Aŭtokomandoj forviŝis aŭ malŝargis la skribendan bufron"
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Aŭtokomando ŝanĝis la nombron de linioj neatendite"
 
-msgid "NetBeans dissallows writes of unmodified buffers"
+msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans malpermesas skribojn de neŝanĝitaj bufroj"
 
 msgid "Partial writes disallowed for NetBeans buffers"
@@ -2539,8 +2550,8 @@ msgid "line number out of range"
 msgstr "numero de linio ekster limoj"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<bufra objekto (forviŝita) ĉe %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<bufra objekto (forviŝita) ĉe %p>"
 
 msgid "invalid mark name"
 msgstr "nevalida nomo de marko"
@@ -2558,12 +2569,12 @@ msgid "cursor position outside buffer"
 msgstr "kursoro poziciita ekster bufro"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<fenestra objekto (forviŝita) ĉe %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<fenestra objekto (forviŝita) ĉe %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<objekta fenestro (nekonata) ĉe %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<objekta fenestro (nekonata) ĉe %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -2903,7 +2914,7 @@ msgid "-g\t\t\tRun using GUI (like \"gvim\")"
 msgstr "-g\t\t\tRuli per grafika interfaco (kiel \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
-msgstr "-f, --nofork\tMalfono: ne forki kiam lanĉas grafikan interfacon"
+msgstr "-f  aŭ  --nofork\tMalfono: ne forki kiam lanĉas grafikan interfacon"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tReĝimo Vi (kiel \"vi\")"
@@ -3057,7 +3068,8 @@ msgstr ""
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab[-wait][-silent] <dosieroj> Kiel --remote sed uzi langeton por ĉiu dosiero"
+"--remote-tab[-wait][-silent] <dosieroj> Kiel --remote sed uzi langeton por "
+"ĉiu dosiero"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <klavoj> Sendi <klavoj>-n al Vim-servilo kaj eliri"
@@ -3147,7 +3159,7 @@ msgid "-reverse\t\tUse reverse video (also: -rv)"
 msgstr "-reverse\t\tUzi inversan videon (ankaŭ: -rv)"
 
 msgid "+reverse\t\tDon't use reverse video (also: +rv)"
-msgstr "+reverse\t\t\t Ne uzi inversan videon (ankaŭ: +rv)"
+msgstr "+reverse\t\tNe uzi inversan videon (ankaŭ: +rv)"
 
 msgid "-xrm <resource>\tSet the specified resource"
 msgstr "-xrm <rimedo>\tAgordi la specifitan <rimedo>-n"
@@ -3334,7 +3346,8 @@ msgstr "E302: Ne eblis renomi la permutodosieron .swp"
 
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
-msgstr "E303: Ne eblas malfermi permutodosieron .swp de \"%s\", restaŭro neeblas"
+msgstr ""
+"E303: Ne eblas malfermi permutodosieron .swp de \"%s\", restaŭro neeblas"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Ne akiris blokon 0??"
@@ -3842,6 +3855,9 @@ msgstr "E338: Bedaŭrinde ne estas dosierfoliumilo en konzola reĝimo"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Ne sufiĉaj argumentoj por printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Atendis Glitpunktnombron kiel argumento de printf()"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Tro da argumentoj al printf()"
 
@@ -3965,7 +3981,6 @@ msgstr "E346: Ne plu trovis dosierujon \"%s\" en cdpath"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Ne plu trovis dosieron \"%s\" en serĉvojo"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Ne eblas konekti al Netbeans n-ro 2"
 
@@ -3974,7 +3989,8 @@ msgstr "Ne eblas konekti al Netbeans"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: Nevalida permeso de dosiero de informo de konekto NetBeans: \"%s\""
+msgstr ""
+"E668: Nevalida permeso de dosiero de informo de konekto NetBeans: \"%s\""
 
 msgid "read from Netbeans socket"
 msgstr "lego el kontaktoskatolo de Netbeans"
@@ -4408,6 +4424,20 @@ msgstr "Testo de la vidigo X fiaskis"
 
 msgid "Opening the X display timed out"
 msgstr "Tempolimo okazis dum malfermo de vidigo X"
+
+msgid ""
+"\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Ne povis akiri kuntekston de sekureco por "
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Ne povis ŝalti kuntekston de sekureco por "
 
 msgid ""
 "\n"
@@ -5534,24 +5564,24 @@ msgstr "E440: linio de malfaro mankas"
 #. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
-"MS-Windows 16/32 bit GUI version"
+"MS-Windows 16/32-bit GUI version"
 msgstr ""
 "\n"
-"Grafika versio MS-Vindozo 16/32 bitoj"
+"Grafika versio MS-Vindozo 16/32-bitoj"
 
 msgid ""
 "\n"
-"MS-Windows 64 bit GUI version"
+"MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
-"Grafika versio MS-Vindozo 64 bitoj"
+"Grafika versio MS-Vindozo 64-bitoj"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit GUI version"
+"MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"Grafika versio MS-Vindozo 32 bitoj"
+"Grafika versio MS-Vindozo 32-bitoj"
 
 msgid " in Win32s mode"
 msgstr " en reĝimo Win32s"
@@ -5561,31 +5591,38 @@ msgstr " kun subteno de OLE"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit console version"
+"MS-Windows 64-bit console version"
 msgstr ""
 "\n"
-"Versio konzola MS-Vindozo 32 bitoj"
+"Versio konzola MS-Vindozo 64-bitoj"
 
 msgid ""
 "\n"
-"MS-Windows 16 bit version"
+"MS-Windows 32-bit console version"
 msgstr ""
 "\n"
-"Versio MS-Vindozo 16 bitoj"
+"Versio konzola MS-Vindozo 32-bitoj"
 
 msgid ""
 "\n"
-"32 bit MS-DOS version"
+"MS-Windows 16-bit version"
 msgstr ""
 "\n"
-"Versio MS-DOS 32 bitoj"
+"Versio MS-Vindozo 16-bitoj"
 
 msgid ""
 "\n"
-"16 bit MS-DOS version"
+"32-bit MS-DOS version"
 msgstr ""
 "\n"
-"Versio MS-DOS 16 bitoj"
+"Versio MS-DOS 32-bitoj"
+
+msgid ""
+"\n"
+"16-bit MS-DOS version"
+msgstr ""
+"\n"
+"Versio MS-DOS 16-bitoj"
 
 msgid ""
 "\n"

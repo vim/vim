@@ -3,12 +3,13 @@
 "     Language: Ada (GNAT)
 "          $Id$
 "    Copyright: Copyright (C) 2006 Martin Krischik
-"   Maintainer:	Martin Krischik
+"   Maintainer:	Martin Krischi <krischik@users.sourceforge.net>k
+"		Ned Okie <nokie@radford.edu>
 "      $Author$
 "        $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/gnat.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/gnat.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		16.07.2006 MK Ada-Mode as vim-ball
 "		05.08.2006 MK Add session support
@@ -16,6 +17,7 @@
 "               05.11.2006 MK Bram suggested not to use include protection for
 "                             autoload
 "		05.11.2006 MK Bram suggested to save on spaces
+"		19.09.2007 NO use project file only when there is a project
 "    Help Page: compiler-gnat
 "------------------------------------------------------------------------------
 
@@ -71,13 +73,19 @@ function gnat#Set_Project_File (...) dict			     " {{{1
       execute 'mksession! ' . v:this_session
    endif
 
-   if strlen (self.Project_File) > 0
-      call ada#Switch_Session (
-	 \ expand('~') . "/vimfiles/session/" .
-	 \ fnamemodify (self.Project_File, ":t:r") . ".vim")
-   else
-      call ada#Switch_Session ('')
-   endif
+   "if strlen (self.Project_File) > 0
+      "if has("vms")
+	 "call ada#Switch_Session (
+	    "\ expand('~')[0:-2] . ".vimfiles.session]gnat_" .
+	    "\ fnamemodify (self.Project_File, ":t:r") . ".vim")
+      "else
+	 "call ada#Switch_Session (
+	    "\ expand('~') . "/vimfiles/session/gnat_" .
+	    "\ fnamemodify (self.Project_File, ":t:r") . ".vim")
+      "endif
+   "else
+      "call ada#Switch_Session ('')
+   "endif
 
    return
 endfunction gnat#Set_Project_File				     " }}}1

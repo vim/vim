@@ -1,4 +1,4 @@
-README_srcdos.txt for version 7.2a of Vim: Vi IMproved.
+README_srcdos.txt for version 7.2b of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.

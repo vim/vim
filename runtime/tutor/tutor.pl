@@ -142,12 +142,12 @@ UWAGA: Ucz siê przez æwiczenie, nie wkuwanie.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			  Lekcja 1.6.: EDYCJA PLIKU
 
-
 		  ** U¿yj  :wq  aby zapisaæ plik i wyj¶æ. **
 
    !! UWAGA: zanim wykonasz jakiekolwiek polecenia przeczyaj ca³± lekcjê !!
 
   1. Zakoñcz tutorial tak jak w lekcji 1.2.:  :q!
+     Lub je¶li masz dostêp do innego terminala zrób kolejne kroki tam.
 
   2. W pow³oce wydaj polecenie:  vim tutor<ENTER>
      "vim" jest poleceniem uruchamiaj±cym edytor Vim. 'tutor' to nazwa pliku
@@ -157,10 +157,10 @@ UWAGA: Ucz siê przez æwiczenie, nie wkuwanie.
 
   4. Zapisz plik ze zmianami i opu¶æ Vima:  :wq<ENTER>
 
-  5. Uruchom ponownie vimtutor i przejd¼ do podsumowania lekcji.
+  5. Je¶li zakoñczy³e¶ vimtutor w kroku 1. uruchom go ponownie i przejd¼
+     do podsumowania poni¿ej.
 
   6. Po przeczytaniu wszystkich kroków i ich zrozumieniu: wykonaj je.
-
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			     LEKCJA 1. PODSUMOWANIE

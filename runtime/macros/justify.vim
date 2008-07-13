@@ -256,17 +256,18 @@ function! Justify(...) range
 	let str = substitute(str, '\s\+$', '', '')
 	let str = substitute(str, '^\s\+', '', '')
 	let str = substitute(str, '\s\+', ' ', 'g')
-	let str_n = strlen(str)
+	" Use substitute() hack to get strlen in characters instead of bytes
+	let str_n = strlen(substitute(str, '.', 'x', 'g'))
 
 	" Possible addition of space after punctuation
 	if exists("join_str")
 	    let str = substitute(str, join_str, '\1 ', 'g')
 	endif
-	let join_n = strlen(str) - str_n
+	let join_n = strlen(substitute(str, '.', 'x', 'g')) - str_n
 
 	" Can extraspaces be added?
 	" Note that str_n may be less than strlen(str) [joinspaces above]
-	if strlen(str) < tw - indent_n && str_n > 0
+	if strlen(substitute(str, '.', 'x', 'g')) < tw - indent_n && str_n > 0
 	    " How many spaces should be added
 	    let s_add = tw - str_n - indent_n - join_n
 	    let s_nr  = strlen(substitute(str, '\S', '', 'g') ) - join_n

@@ -1,4 +1,4 @@
-*os_risc.txt*   For Vim version 7.2a.  Last change: 2005 Mar 29
+*os_risc.txt*   For Vim version 7.2b.  Last change: 2008 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Thomas Leonard
@@ -7,7 +7,7 @@
 						*riscos* *RISCOS* *RISC-OS*
 This file contains the particularities for the RISC OS version of Vim.
 
-The RISC OS port is a completely new port and is not based on the old `archi'
+The RISC OS port is a completely new port and is not based on the old "archi"
 port.
 
 1.  File locations		|riscos-locations|
@@ -46,7 +46,7 @@ run the command-line versions of Vim (see |riscos-commandline|).
 distribution, but modified slightly to work within the limits of ADFS, plus
 some extra files such as the window templates.
 
-User choices are read from `Choices:*' and are saved to `<Choices$Write>.*'.
+User choices are read from "Choices:*" and are saved to "<Choices$Write>.*".
 If you have the new !Boot structure then these should be set up already.  If
 not, set Choices$Path to a list of directories to search when looking for
 user configuration files.  Set Choices$Write to the directory you want files
@@ -58,22 +58,22 @@ sessions).
 2. Filename munging
 
 All pathname munging is disabled by default, so Vim should behave like a
-normal RISC OS application now.  So, if you want to edit `doc/html' then you
-actually type `*vi doc/html'.
+normal RISC OS application now.  So, if you want to edit "doc/html" then you
+actually type "*vi doc/html".
 
 The only times munging is done is when:
 
 - Searching included files from C programs, since these are always munged.
   See |[I|.
   Note: make sure you are in the right directory when you use this
-	command (i.e. the one with subdirectories 'c' and 'h').
+	command (i.e. the one with subdirectories "c" and "h").
 
 - Sourcing files using |:so|.
-  Paths starting `$VIM/' are munged like this:
+  Paths starting "$VIM/" are munged like this:
 
   $VIM/syntax/help.vim  ->  Vim:syntax.help
 
-  Also, files ending in `.vim' have their extensions removed, and slashes
+  Also, files ending in ".vim" have their extensions removed, and slashes
   replaced with dots.
 
 Some tag files and script files may have to be edited to work under this port.
@@ -82,10 +82,10 @@ Some tag files and script files may have to be edited to work under this port.
 							*riscos-commandline*
 3. Command-line use
 
-To use Vim from the command-line use the `*vi' command (or '*ex' for
+To use Vim from the command-line use the "*vi" command (or "*ex" for
 |Ex-mode|).
 
-Type `*vi -h' for a list of options.
+Type "*vi -h" for a list of options.
 
 Running the command-line version of Vim in a large high-color mode may cause
 the scrolling to be very slow.  Either change to a mode with fewer colors or
@@ -149,7 +149,7 @@ font via ZapRedraw and any of the Zap fonts via ZapRedraw: >
 			point is used.
 
 Thanks to John Kortink, Vim can use the ZapRedraw module.  Start the font name
-with '!' (or '!!' for double height), like this: >
+with "!" (or "!!" for double height), like this: >
 
   :set guifont=!!
 <			Use the system font, but via ZapRedraw.  This gives a
@@ -158,13 +158,13 @@ with '!' (or '!!' for double height), like this: >
 >
   :set guifont=!script
 <			Uses the named Zap font (a directory in VimFont$Path).
-			The redraw is the same speed as for '!!', but you get
+			The redraw is the same speed as for "!!", but you get
 			a nicer looking font.
 			Only the "man+" and "script" fonts are supplied
 			currently, but you can use any of the Zap fonts if
 			they are in VimFont$Path.
-			Vim will try to load font files '0', 'B', 'I' and 'IB'
-			from the named directory.  Only '0' (normal style) MUST
+			Vim will try to load font files "0", "B", "I" and "IB"
+			from the named directory.  Only "0" (normal style) MUST
 			be present.  Link files are not currently supported.
 
 Note that when using ZapRedraw the edit bar is drawn in front of the character
@@ -191,7 +191,7 @@ allow other codes to be used if you want to use Vim from a remote terminal.
 Although I do not have an internet connection to my Acorn, I have managed to
 run Vim in a FreeTerm window using the loopback connection.
 
-It seems to work pretty well now, using '*vi -T ansi'.
+It seems to work pretty well now, using "*vi -T ansi".
 
 ==============================================================================
 							*riscos-temp-files*
@@ -203,7 +203,7 @@ files are in <Wimp$ScrapDir> (i.e. inside !Scrap) and backups are in the
 directory you were saving to.  Vim will allow you to try and recover the file
 when you next try to edit it.
 
-To see a list of swap files, press <F12> and type `*vi -r'.
+To see a list of swap files, press <F12> and type "*vi -r".
 
 Vim no longer brings up ATTENTION warnings if you try to edit two files with
 the same name in different directories.
@@ -228,8 +228,8 @@ older machines then edit the !RunTxt and GVim files.  I don't know what UnixLib
 does by default on these machines so I'm playing safe.
 
 It doesn't work at all well without dynamic areas, since it can't change its
-memory allocation once running.  Hence you should edit `!Vim.GVim' and
-`!Vim.!RunTxt' to choose the best size for you.  You probably need at least
+memory allocation once running.  Hence you should edit "!Vim.GVim" and
+"!Vim.!RunTxt" to choose the best size for you.  You probably need at least
 about 1400K.
 
 ==============================================================================
@@ -252,7 +252,7 @@ The system has changed from version 5.3.  The new sequence of events is:
 Some examples may make this clearer:
 
   Kind of file loaded	osfiletype	filetype ~
-  C code 'c.hellow'	Text (&fff)	C
+  C code "c.hellow"	Text (&fff)	C
   LaTeX document	LaTeX (&2a8)	TeX
   Draw document		DrawFile (&aff)	(not changed)
 
@@ -263,7 +263,7 @@ Some examples may make this clearer:
 - Bangs (!s) are only replaced if they are followed by a space or end-of-line,
   since many pathnames contain them.
 
-- You can prefix the command with '~', which stops any output from being
+- You can prefix the command with "~", which stops any output from being
   displayed.  This also means that you don't have to press <Enter> afterwards,
   and stops the screen from being redrawn. {only in the GUI version}
 
@@ -275,7 +275,7 @@ Downloading everything you need:
 
 - Get the latest source distribution (see www.vim.org)
 - Get the runtime environment files (e.g. these help files)
-- Get the `extra' archive (contains the RISC OS specific bits)
+- Get the "extra" archive (contains the RISC OS specific bits)
 - Get the RISC OS binary distribution (if possible)
 
 
@@ -289,19 +289,19 @@ Unarchiving:
 Recompiling the sources:
 
 - Create c, s, and h directories.
-- Put all the header files in 'h'.	     \
-- Put all the C files in `c'.		     | And lose the extensions
-- Put the assembler file (`swis/s') in 's'.  /
-- Rename all the files in `proto' to `h', like this:
+- Put all the header files in "h".	     \
+- Put all the C files in "c".		     | And lose the extensions
+- Put the assembler file ("swis/s") in "s".  /
+- Rename all the files in "proto" to "h", like this:
     raFS::VimSrc.source.proto.file/pro
 	  becomes
     raFS::VimSrc.source.h.file_pro
-- In the files `h.proto' and `c.termlib', search and replace
+- In the files "h.proto" and "c.termlib", search and replace
     .pro"
        with
     _pro.h"
-- Create a simple Makefile if desired and do '*make -k'.
-  Use 'CC = gcc -DRISCOS -DUSE_GUI -O2 -x c' in the Makefile.
+- Create a simple Makefile if desired and do "*make -k".
+  Use "CC = gcc -DRISCOS -DUSE_GUI -O2 -x c" in the Makefile.
 - Save the binary as !Vim.Vim in the binary distribution.
 
 
@@ -309,15 +309,15 @@ Updating the run-time environment:
 
 - Replace old or missing files inside !Vim.Resources with the
   new files.
-- Remove files in `doc' not ending in `/txt', except for `tags'.
-- Lose the extensions from the files in `doc'.
-- Edit the `doc.tags' file.  Remove extensions from the second column: >
+- Remove files in "doc" not ending in "/txt", except for "tags".
+- Lose the extensions from the files in "doc".
+- Edit the "doc.tags" file.  Remove extensions from the second column: >
 	:%s/^\(.[^\t]*\t.*\)\.txt\t/\1\t/
 - Remove extensions from the syntax files.  Split them into two directories
   to avoid the 77 entry limit on old ADFS filesystems.
-- Edit `Vim:FileType' to match `*.c.*' as well as `*/c' and so on.
+- Edit "Vim:FileType" to match "*.c.*" as well as "*/c" and so on.
   Add filetype checking too.
-- Edit `Vim:Menu' and remove all the keys from the menus: >
+- Edit "Vim:Menu" and remove all the keys from the menus: >
 	:%s/<Tab>[^ \t]*//
 <
  vim:tw=78:ts=8:ft=help:norl:

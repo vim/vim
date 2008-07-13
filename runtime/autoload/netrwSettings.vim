@@ -1,7 +1,7 @@
 " netrwSettings.vim: makes netrw settings simpler
-" Date:		Mar 11, 2008
+" Date:		Jul 02, 2008
 " Maintainer:	Charles E Campbell, Jr <drchipNOSPAM at campbellfamily dot biz>
-" Version:	11
+" Version:	12
 " Copyright:    Copyright (C) 1999-2007 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
@@ -19,7 +19,7 @@
 if exists("g:loaded_netrwSettings") || &cp
   finish
 endif
-let g:loaded_netrwSettings  = "v11"
+let g:loaded_netrwSettings  = "v12"
 
 " ---------------------------------------------------------------------
 " NetrwSettings: {{{1
@@ -82,8 +82,6 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_ftpmode           = '.g:netrw_ftpmode
   put = 'let g:netrw_ignorenetrc       = '.g:netrw_ignorenetrc
   put = 'let g:netrw_sshport           = '.g:netrw_sshport
-  let shqline= line("$")
-  put = 'let g:netrw_shq...'
   put = 'let g:netrw_use_nt_rcp        = '.g:netrw_use_nt_rcp
   put = 'let g:netrw_win95ftp          = '.g:netrw_win95ftp
   let s:netrw_xfer_stop= line(".")
@@ -101,8 +99,6 @@ fun! netrwSettings#NetrwSettings()
   else
    put = 'let g:netrw_browsex_viewer    = (not defined)'
   endif
-  let cdescline= line("$")
-  put ='let g:netrw_cd_escape...'
   put = 'let g:netrw_compress          = '.g:netrw_compress
   let decompressline= line("$")
   put ='let g:netrw_decompress...'
@@ -137,6 +133,7 @@ fun! netrwSettings#NetrwSettings()
   put = 'let g:netrw_silent            = '.g:netrw_silent
   put = 'let g:netrw_sort_by           = '.g:netrw_sort_by
   put = 'let g:netrw_sort_direction    = '.g:netrw_sort_direction
+  put = 'let g:netrw_sort_options      = '.g:netrw_sort_options
   put = 'let g:netrw_sort_sequence     = '.g:netrw_sort_sequence
   put = 'let g:netrw_special_syntax    = '.g:netrw_special_syntax
   put = 'let g:netrw_ssh_browse_reject = '.g:netrw_ssh_browse_reject
@@ -159,14 +156,6 @@ fun! netrwSettings#NetrwSettings()
   silent %s/= $/= ''/e
   1
 
-  " Put in g:netrw_shq setting and g:netrw_cd_escape
-  " (deferred so as to avoid the quote manipulation just preceding)
-  if g:netrw_shq == "'"
-   call setline(shqline,      'let g:netrw_shq               = "'.g:netrw_shq.'"')
-  else
-   call setline(shqline,      "let g:netrw_shq               = '".g:netrw_shq."'")
-  endif
-  call setline(cdescline,     "let g:netrw_cd_escape         = ".'"'.escape(g:netrw_cd_escape,'\"').'"')
   call setline(decompressline,"let g:netrw_decompress        = ".substitute(string(g:netrw_decompress),"^'\\(.*\\)'$",'\1',''))
   call setline(fnameescline,  "let g:netrw_fname_escape      = '".escape(g:netrw_fname_escape,"'")."'")
   call setline(globescline,   "let g:netrw_glob_escape       = '".escape(g:netrw_glob_escape,"'")."'")

@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 7.2a.  Last change: 2008 May 24
+*remote.txt*    For Vim version 7.2b.  Last change: 2008 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

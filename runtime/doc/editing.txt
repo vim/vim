@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.2a.  Last change: 2008 Apr 29
+*editing.txt*   For Vim version 7.2b.  Last change: 2008 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -302,9 +302,9 @@ CTRL-^			Edit the alternate file (equivalent to ":e #").
 			Uses the 'isfname' option to find out which characters
 			are supposed to be in a file name.  Trailing
 			punctuation characters ".,:;!" are ignored.
-			Uses the 'path' option as a list of directory names
-			to look for the file.  Also looks for the file
-			relative to the current file.
+			Uses the 'path' option as a list of directory names to
+			look for the file.  See the 'path' option for details
+			about relative directories and wildcards.
 			Uses the 'suffixesadd' option to check for file names
 			with a suffix added.
 			If the file can't be found, 'includeexpr' is used to
@@ -367,13 +367,13 @@ current file name.
 Besides the things mentioned here, more special items for where a filename is
 expected are mentioned at |cmdline-special|.
 
-Note for systems other than Unix and MS-DOS: When using a command that
-accepts a single file name (like ":edit file") spaces in the file name are
-allowed, but trailing spaces are ignored.  This is useful on systems that
-allow file names with embedded spaces (like MS-Windows and the Amiga).
-Example: The command ":e   Long File Name " will edit the file "Long File
-Name".  When using a command that accepts more than one file name (like ":next
-file1 file2") embedded spaces must be escaped with a backslash.
+Note for systems other than Unix: When using a command that accepts a single
+file name (like ":edit file") spaces in the file name are allowed, but
+trailing spaces are ignored.  This is useful on systems that regularly embed
+spaces in file names (like MS-Windows and the Amiga).  Example: The command
+":e   Long File Name " will edit the file "Long File Name".  When using a
+command that accepts more than one file name (like ":next file1 file2")
+embedded spaces must be escaped with a backslash.
 
 						*wildcard* *wildcards*
 Wildcards in {file} are expanded.  Which wildcards are supported depends on
@@ -391,6 +391,8 @@ is to use "path\[[]abc]".  Then the file "path[abc]" literally.
 					*starstar-wildcard*
 Expanding "**" is possible on Unix, Win32, Mac OS/X and a few other systems.
 This allows searching a directory tree.  This goes up to 100 directories deep.
+Note there are some commands where this works slightly different, see
+|file-searching|.
 Example: >
 	:n **/*.txt
 Finds files:
@@ -1476,14 +1478,16 @@ problem goes away the next day.
 {not available when compiled without the |+path_extra| feature}
 
 The file searching is currently used for the 'path', 'cdpath' and 'tags'
-options, for |finddir()| and |findfile()|.
+options, for |finddir()| and |findfile()|.  Other commands use |wildcards|
+which is slightly different.
 
 There are three different types of searching:
 
 1) Downward search:					*starstar*
    Downward search uses the wildcards '*', '**' and possibly others
-   supported by your operating system.  '*' and '**' are handled inside Vim, so
-   they work on all operating systems.
+   supported by your operating system.  '*' and '**' are handled inside Vim,
+   so they work on all operating systems.  Note that "**" only acts as a
+   special wildcard when it is at the start of a name.
 
    The usage of '*' is quite simple: It matches 0 or more characters.  In a
    search pattern this would be ".*".  Note that the "." is not used for file
@@ -1491,8 +1495,8 @@ There are three different types of searching:
 
    '**' is more sophisticated:
       - It ONLY matches directories.
-      - It matches up to 30 directories deep, so you can use it to search an
-	entire directory tree
+      - It matches up to 30 directories deep by default, so you can use it to
+	search an entire directory tree
       - The maximum number of levels matched can be given by appending a number
 	to '**'.
 	Thus '/usr/**2' can match: >
@@ -1505,15 +1509,16 @@ There are three different types of searching:
 		....
 <	It does NOT match '/usr/include/g++/std' as this would be three
 	levels.
-	The allowed number range is 0 ('**0' is removed) to 255.
+	The allowed number range is 0 ('**0' is removed) to 100
 	If the given number is smaller than 0 it defaults to 30, if it's
-	bigger than 255 then 255 is used.
+	bigger than 100 then 100 is used.  The system also has a limit on the
+	path length, usually 256 or 1024 bytes.
       - '**' can only be at the end of the path or be followed by a path
 	separator or by a number and a path separator.
 
    You can combine '*' and '**' in any order: >
 	/usr/**/sys/*
-	/usr/*/sys/**
+	/usr/*tory/sys/**
 	/usr/**2/sys/*
 
 2) Upward search:

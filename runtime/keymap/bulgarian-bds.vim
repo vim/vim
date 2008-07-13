@@ -1,31 +1,39 @@
-" Vim keymap file for Bulgarian and Russian characters, `bds' layout.
-" Can be used with utf-8 or cp1251 file encodings.
-" This file itself is in utf-8
+" Vim keymap file for Bulgarian and Russian characters, "bds" layout.
+" Most of it can be used with both utf-8 and cp1251 file encodings, except
+" the accented vowels which can only be stored in utf-8.
+" This file itself is in utf-8.
 
 " Maintainer: Boyko Bantchev <boykobb@gmail.com>
-" URI: http://www.math.bas.bg/softeng/bantchev/misc/vim/bulgarian-bds.vim
-" Last Changed: 2006 Oct 18
+" URI: http://www.math.bas.bg/bantchev/vim/bulgarian-bds.vim
+" Last Changed: 2008 June 28
 
-" This keymap corresponds to what is called Bulgarian standard,
-" or BDS (БДС) typewriter keyboard layout.
-" In addition to the Bulgarian alphabet, BDS prescribes the presence
-" of the following characters:
-"     —  The Cyrillic letters Э (capital), and ы and э (small)
-"        (these are present in the Russian alphabet).
-"     —  The latin capital letters I and V (these are used to type
-"        Roman numerals without having to leave Cyrillic mode).
-"     —  „ and “ (Bulgarian quotation style), and « and » (Russian quotation
-"        style).
-"     —  §, №, —, •, ·, ±, ¬, ¤, and €
+" This keymap corresponds to what is called Bulgarian standard typewriter
+" keyboard layout (BDS, БДС).
 "
-" Some punctuation characters that are present in ascii are mapped in BDS
-" to keys different from the ones they occupy in the qwerty layout, because
-" the latter are used to type other characters.
+" Note that, in addition to the Bulgarian alphabet, the BDS layout prescribes
+" the presence of the following characters:
+"     —  The Russian letters ы (small), and Э and э (capital and small).
+"     —  The latin capital letters I and V – used to type Roman numerals
+"        without having to leave Cyrillic mode.
 "
-" In this keymap also defined (not in BDS) are the Russian letters Ё (capital)
-" and ё (small), as well as the Russian capital letter Ы (see above the small
-" counterpart).  This way, using the bulgarian-bds keymap, one can access both
-" the Bulgarian and the Russian alphabets.
+" Some punctuation characters present in ascii are mapped in BDS to keys
+" different from the ones they occupy in the qwerty layout, because the latter
+" keys are used to type other characters.
+"
+" In this keymap, also defined (besides BDS) are:
+"     —  The Russian letters Ё and ё (capital and small), as well as the
+"        Russian capital letter Ы (see above for the small counterpart).
+"        This way, using the bulgarian-bds keymap, one can access both
+"        the Bulgarian and the Russian alphabets.
+"     —  The quotation marks „ “ ” ‘ ’ (used in the Bulgarian and English
+"        quotation styles), as well as « » (Russian quotation style).
+"     —  The characters §, №, – (en-dash), — (em-dash), …, •, ·, ±, °, ¬,
+"        ¤, and €.
+"
+" The keymap also defines key combinations for accented vowels in Bulgarian.
+"
+" For details of what key or key combination maps to what character, please
+" see below the map table itself.
 
 scriptencoding utf-8
 
@@ -114,14 +122,38 @@ q       ,       COMMA
 @       ?       QUESTION MARK
 }       §       SECTION SIGN (PARAGRAPH SIGN)
 )       №       NUMERO SIGN
---      —       EM DASH
+--      –       EN DASH
+---     —       EM DASH
+..      …       HORIZONTAL ELLIPSIS
+``      “       LEFT DOUBLE QUOTATION MARK
+''      ”       RIGHT DOUBLE QUOTATION MARK
 ,,      „       DOUBLE LOW-9 QUOTATION MARK
-``      “       LEFT DOUBLE QUOTATION  MARK
+`.      ‘       LEFT SINGLE QUOTATION MARK
+'.      ’       RIGHT SINGLE QUOTATION MARK
 <<      «       LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
 >>      »       RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
-00      •       BULLET
-..      ·       MIDDLE DOT      
+**      •       BULLET
+,.      ·       MIDDLE DOT      
 +-      ±       PLUS-MINUS SIGN
+^o      °       DEGREE SIGN
 ~~      ¬       NOT SIGN
 @@      ¤       CURRENCY SIGN
 $$      €       EURO SIGN
+
+" accented vowels cannot map onto cp1251 – use utf-8 file encoding
+`D      А̀       CYRILLIC CAPITAL LETTER A + GRAVE ACCENT (COMPOSED)
+`d      а̀       CYRILLIC SMALL LETTER A + GRAVE ACCENT (COMPOSED)
+`E      Ѐ       CYRILLIC CAPITAL LETTER IE + GRAVE ACCENT (COMPOSED)
+`e      ѐ       CYRILLIC SMALL LETTER IE + GRAVE ACCENT (COMPOSED)
+`R      Ѝ       CYRILLIC CAPITAL LETTER I + GRAVE ACCENT (COMPOSED)
+`r      ѝ       CYRILLIC SMALL LETTER I + GRAVE ACCENT (COMPOSED)
+`F      О̀       CYRILLIC CAPITAL LETTER O + GRAVE ACCENT (COMPOSED)
+`f      о̀       CYRILLIC SMALL LETTER O + GRAVE ACCENT (COMPOSED)
+`W      У̀       CYRILLIC CAPITAL LETTER U + GRAVE ACCENT (COMPOSED)
+`w      у̀       CYRILLIC SMALL LETTER U + GRAVE ACCENT (COMPOSED)
+`C      Ъ̀       CYRILLIC CAPITAL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
+`c      ъ̀       CYRILLIC SMALL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
+`Z      Ю̀       CYRILLIC CAPITAL LETTER YU + GRAVE ACCENT (COMPOSED)
+`z      ю̀       CYRILLIC SMALL LETTER YU + GRAVE ACCENT (COMPOSED)
+`S      Я̀       CYRILLIC CAPITAL LETTER YA + GRAVE ACCENT (COMPOSED)
+`s      я̀       CYRILLIC SMALL LETTER YA + GRAVE ACCENT (COMPOSED)

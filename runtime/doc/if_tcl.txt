@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.2a.  Last change: 2006 Mar 06
+*if_tcl.txt*    For Vim version 7.2b.  Last change: 2008 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -407,7 +407,7 @@ Options:
 <	See |tcl-window-cmds| for the available options.
 
 	$buf command [-quiet] {cmd}			*tcl-buffer-command*
-	$buf expr {exr}					*tcl-buffer-expr*
+	$buf expr {expr}				*tcl-buffer-expr*
 	$buf option {opt} [val]				*tcl-buffer-option*
 	These are similar to "::vim::command" etc., except that everything is
 	done in the context of the buffer represented by $buf, instead of the

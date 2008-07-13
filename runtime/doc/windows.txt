@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.2a.  Last change: 2007 Oct 07
+*windows.txt*   For Vim version 7.2b.  Last change: 2008 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -190,8 +190,8 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		Same as ":split", but set 'readonly' option for this buffer.
 
 :[N]sf[ind] [++opt] [+cmd] {file}		*:sf* *:sfind* *splitfind*
-		Same as ":split", but search for {file} in 'path'.  Doesn't
-		split if {file} is not found.
+		Same as ":split", but search for {file} in 'path' like in
+		|:find|.  Doesn't split if {file} is not found.
 
 CTRL-W CTRL-^					*CTRL-W_CTRL-^* *CTRL-W_^*
 CTRL-W ^	Does ":split #", split window in two and edit alternate file.

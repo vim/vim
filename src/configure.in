@@ -192,25 +192,43 @@ dnl Only when the directory exists and it wasn't there yet.
 dnl For gcc don't do this when it is already in the default search path.
 dnl Skip all of this when cross-compiling.
 if test "$cross_compiling" = no; then
+  AC_MSG_CHECKING(--with-local-dir argument)
   have_local_include=''
   have_local_lib=''
-  if test "$GCC" = yes; then
+  AC_ARG_WITH([local-dir], [  --with-local-dir=PATH   search PATH instead of /usr/local for local libraries.
+  --without-local-dir     do not search /usr/local for local libraries.], [
+    local_dir="$withval"
+    case "$withval" in
+    */*) ;;
+    no)
+      # avoid adding local dir to LDFLAGS and CPPFLAGS
+      have_local_dir=yes
+      have_local_lib=yes
+      ;;
+    *) AC_MSG_ERROR(must pass path argument to --with-local-dir) ;;
+    esac
+	AC_MSG_RESULT($local_dir)
+  ], [
+    local_dir=/usr/local
+    AC_MSG_RESULT(Defaulting to $local_dir)
+  ])
+  if test "$GCC" = yes -a "$local_dir" != no; then
     echo 'void f(){}' > conftest.c
     dnl -no-cpp-precomp is needed for OS X 10.2 (Ben Fowler)
-    have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep '/usr/local/include'`
-    have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep '/usr/local/lib'`
+    have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep "${local_dir}/include"`
+    have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep "${local_dir}/lib"`
     rm -f conftest.c conftest.o
   fi
-  if test -z "$have_local_lib" -a -d /usr/local/lib; then
-    tt=`echo "$LDFLAGS" | sed -e 's+-L/usr/local/lib ++g' -e 's+-L/usr/local/lib$++g'`
+  if test -z "$have_local_lib" -a -d "${local_dir}/lib"; then
+    tt=`echo "$LDFLAGS" | sed -e "s+-L${local_dir}/lib ++g" -e "s+-L${local_dir}/lib$++g"`
     if test "$tt" = "$LDFLAGS"; then
-      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+      LDFLAGS="$LDFLAGS -L${local_dir}/lib"
     fi
   fi
-  if test -z "$have_local_include" -a -d /usr/local/include; then
-    tt=`echo "$CPPFLAGS" | sed -e 's+-I/usr/local/include ++g' -e 's+-I/usr/local/include$++g'`
+  if test -z "$have_local_include" -a -d "${local_dir}/include"; then
+    tt=`echo "$CPPFLAGS" | sed -e "s+-I${local_dir}/include ++g" -e "s+-I${local_dir}/include$++g"`
     if test "$tt" = "$CPPFLAGS"; then
-      CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+      CPPFLAGS="$CPPFLAGS -I${local_dir}/include"
     fi
   fi
 fi

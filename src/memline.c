@@ -42,7 +42,7 @@
  *  mf_get().
  */
 
-#if defined(MSDOS) || defined(WIN32) || defined(_WIN64)
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
 # include "vimio.h"	/* for mch_open(), must be before vim.h */
 #endif
 

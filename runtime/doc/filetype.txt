@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.2a.  Last change: 2008 Jun 21
+*filetype.txt*  For Vim version 7.2b.  Last change: 2008 Jun 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -55,7 +55,7 @@ filetype prepend "ft-" and optionally append "-syntax", "-indent" or
 
 If the file type is not detected automatically, or it finds the wrong type,
 you can either set the 'filetype' option manually, or add a modeline to your
-file.  Example, for in an IDL file use the command: >
+file.  Example, for an IDL file use the command: >
 	:set filetype=idl
 
 or add this |modeline| to the file:
@@ -284,8 +284,8 @@ match in angle brackets in place of a pattern, like this: >
 
 This will match:
 
-- Any file whose name ends in `.html'
-- Any file whose type is `&faf' or 'HTML', where the meaning of these types
+- Any file whose name ends in ".html"
+- Any file whose type is "&faf" or "HTML", where the meaning of these types
   depends on which version of Vim you are using.
   Unknown types are considered NOT to match.
 
@@ -294,7 +294,7 @@ must both match): >
 
 	:au BufRead <&fff>diff*
 
-This will match files of type `&fff' whose names start with `diff'.
+This will match files of type "&fff" whose names start with "diff".
 
 Note that osfiletype checking is skipped if Vim is compiled without the
 |+osfiletype| feature.

@@ -2,9 +2,9 @@
 " Language:	Mutt setup files
 " Original:	Preben 'Peppe' Guldberg <peppe-vim@wielders.org>
 " Maintainer:	Kyle Wheeler <kyle-muttrc.vim@memoryhole.net>
-" Last Change:	15 Aug 2007
+" Last Change:	12 Jun 2008
 
-" This file covers mutt version 1.5.16 (and most of CVS HEAD)
+" This file covers mutt version 1.5.18 (and most of the mercurial tip)
 " Included are also a few features from 1.4.2.1
 
 " For version 5.x: Clear all syntax items
@@ -76,6 +76,7 @@ syn region  muttrcKey		contained start=+'+ skip=+\\\\\|\\'+ end=+'+	contains=mut
 syn match   muttrcKeyName	contained "\<f\%(\d\|10\)\>"
 syn match   muttrcKeyName	contained "\\[trne]"
 syn match   muttrcKeyName	contained "\c<\%(BackSpace\|Delete\|Down\|End\|Enter\|Esc\|Home\|Insert\|Left\|PageDown\|PageUp\|Return\|Right\|Space\|Tab\|Up\)>"
+syn match   muttrcKeyName	contained "<F[0-9]\+>"
 
 syn keyword muttrcVarBool	contained allow_8bit allow_ansi arrow_cursor ascii_chars askbcc
 syn keyword muttrcVarBool	contained askcc attach_split auto_tag autoedit beep beep_new
@@ -217,6 +218,7 @@ syn match muttrcFormatErrors contained /%./
 
 syn region muttrcIndexFormatStr	contained keepend start=+"+ skip=+\\"+ end=+"+ contains=muttrcIndexFormatEscapes,muttrcIndexFormatConditionals,muttrcFormatErrors,muttrcTimeEscapes
 syn region muttrcIndexFormatStr	contained keepend start=+'+ skip=+\\'+ end=+'+ contains=muttrcIndexFormatEscapes,muttrcIndexFormatConditionals,muttrcFormatErrors,muttrcTimeEscapes
+syn region muttrcQueryFormatStr contained keepend start=+"+ skip=+\\"+ end=+"+ contains=muttrcQueryFormatEscapes,muttrcQueryFormatConditionals,muttrcFormatErrors
 syn region muttrcAliasFormatStr	contained keepend start=+"+ skip=+\\"+ end=+"+ contains=muttrcAliasFormatEscapes,muttrcFormatErrors
 syn region muttrcAliasFormatStr	contained keepend start=+'+ skip=+\\'+ end=+'+ contains=muttrcAliasFormatEscapes,muttrcFormatErrors
 syn region muttrcAttachFormatStr	contained keepend start=+"+ skip=+\\"+ end=+"+ contains=muttrcAttachFormatEscapes,muttrcAttachFormatConditionals,muttrcFormatErrors
@@ -243,6 +245,9 @@ syn match muttrcIndexFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\
 syn match muttrcIndexFormatConditionals contained /%?[EFHlLMNOXyY]?/ nextgroup=muttrcFormatConditionals2
 " The following info was pulled from alias_format_str in addrbook.c
 syn match muttrcAliasFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[afnrt%]/
+" The following info was pulled from query_format_str in query.c
+syn match muttrcQueryFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[acent%]/
+syn match muttrcQueryFormatConditionals contained /%?[e]?/ nextgroup=muttrcFormatConditionals2
 " The following info was pulled from mutt_attach_fmt in recvattach.c
 syn match muttrcAttachFormatEscapes contained /%\%(\%(-\?[0-9]\+\)\?\%(\.[0-9]\+\)\?\)\?[:_]\?[CcDdefImMnQstTuX%]/
 syn match muttrcAttachFormatEscapes contained /%[>|*]./
@@ -287,27 +292,29 @@ syn region muttrcTimeEscapes contained start=+%<+ end=+>+ contains=muttrcStrftim
 syn region muttrcPGPTimeEscapes contained start=+%\[+ end=+\]+ contains=muttrcStrftimeEscapes
 
 syn keyword muttrcVarStr	contained attribution index_format message_format pager_format nextgroup=muttrcVarEqualsIdxFmt
-syn match muttrcVarEqualsIdxFmt contained "=" nextgroup=muttrcIndexFormatStr
+syn match muttrcVarEqualsIdxFmt contained " *= *" nextgroup=muttrcIndexFormatStr
 syn keyword muttrcVarStr	contained alias_format nextgroup=muttrcVarEqualsAliasFmt
-syn match muttrcVarEqualsAliasFmt contained "=" nextgroup=muttrcAliasFormatStr
+syn match muttrcVarEqualsAliasFmt contained " *= *" nextgroup=muttrcAliasFormatStr
 syn keyword muttrcVarStr	contained attach_format nextgroup=muttrcVarEqualsAttachFmt
-syn match muttrcVarEqualsAttachFmt contained "=" nextgroup=muttrcAttachFormatStr
+syn match muttrcVarEqualsAttachFmt contained " *= *" nextgroup=muttrcAttachFormatStr
 syn keyword muttrcVarStr	contained compose_format nextgroup=muttrcVarEqualsComposeFmt
-syn match muttrcVarEqualsComposeFmt contained "=" nextgroup=muttrcComposeFormatStr
+syn match muttrcVarEqualsComposeFmt contained " *= *" nextgroup=muttrcComposeFormatStr
 syn keyword muttrcVarStr	contained folder_format nextgroup=muttrcVarEqualsFolderFmt
-syn match muttrcVarEqualsFolderFmt contained "=" nextgroup=muttrcFolderFormatStr
+syn match muttrcVarEqualsFolderFmt contained " *= *" nextgroup=muttrcFolderFormatStr
 syn keyword muttrcVarStr	contained mix_entry_format nextgroup=muttrcVarEqualsMixFmt
-syn match muttrcVarEqualsMixFmt contained "=" nextgroup=muttrcMixFormatStr
+syn match muttrcVarEqualsMixFmt contained " *= *" nextgroup=muttrcMixFormatStr
 syn keyword muttrcVarStr	contained pgp_entry_format nextgroup=muttrcVarEqualsPGPFmt
-syn match muttrcVarEqualsPGPFmt contained "=" nextgroup=muttrcPGPFormatStr
+syn match muttrcVarEqualsPGPFmt contained " *= *" nextgroup=muttrcPGPFormatStr
+syn keyword muttrcVarStr	contained query_format nextgroup=muttrcVarEqualsQueryFmt
+syn match muttrcVarEqualsQueryFmt contained " *= *" nextgroup=muttrcQueryFormatStr
 syn keyword muttrcVarStr	contained pgp_decode_command pgp_verify_command pgp_decrypt_command pgp_clearsign_command pgp_sign_command pgp_encrypt_sign_command pgp_encrypt_only_command pgp_import_command pgp_export_command pgp_verify_key_command pgp_list_secring_command pgp_list_pubring_command nextgroup=muttrcVarEqualsPGPCmdFmt
-syn match muttrcVarEqualsPGPCmdFmt contained "=" nextgroup=muttrcPGPCmdFormatStr
+syn match muttrcVarEqualsPGPCmdFmt contained " *= *" nextgroup=muttrcPGPCmdFormatStr
 syn keyword muttrcVarStr	contained status_format nextgroup=muttrcVarEqualsStatusFmt
-syn match muttrcVarEqualsStatusFmt contained "=" nextgroup=muttrcStatusFormatStr
+syn match muttrcVarEqualsStatusFmt contained " *= *" nextgroup=muttrcStatusFormatStr
 syn keyword muttrcVarStr	contained pgp_getkeys_command nextgroup=muttrcVarEqualsPGPGetKeysFmt
-syn match muttrcVarEqualsPGPGetKeysFmt contained "=" nextgroup=muttrcPGPGetKeysFormatStr
+syn match muttrcVarEqualsPGPGetKeysFmt contained " *= *" nextgroup=muttrcPGPGetKeysFormatStr
 syn keyword muttrcVarStr	contained smime_decrypt_command smime_verify_command smime_verify_opaque_command smime_sign_command smime_sign_opaque_command smime_encrypt_command smime_pk7out_command smime_get_cert_command smime_get_signer_cert_command smime_import_cert_command smime_get_cert_email_command nextgroup=muttrcVarEqualsSmimeFmt
-syn match muttrcVarEqualsSmimeFmt contained "=" nextgroup=muttrcSmimeFormatStr
+syn match muttrcVarEqualsSmimeFmt contained " *= *" nextgroup=muttrcSmimeFormatStr
 
 syn match muttrcVarStr		contained 'my_[a-zA-Z0-9_]\+'
 syn keyword muttrcVarStr	contained alias_file assumed_charset attach_charset attach_sep
@@ -373,7 +380,7 @@ syn region muttrcAlternatesLine keepend start=+^\s*\%(un\)\?alternates\s+ skip=+
 syn match muttrcVariable	"\$[a-zA-Z_-]\+"
 
 syn match muttrcBadAction	contained "[^<>]\+" contains=muttrcEmail
-syn match muttrcFunction	contained "\<\%(attach\|bounce\|copy\|delete\|display\|flag\|forward\|parent\|pipe\|postpone\|print\|recall\|resent\|save\|send\|tag\|undelete\)-message\>"
+syn match muttrcFunction	contained "\<\%(attach\|bounce\|copy\|delete\|display\|flag\|forward\|parent\|pipe\|postpone\|print\|recall\|resend\|save\|send\|tag\|undelete\)-message\>"
 syn match muttrcFunction	contained "\<\%(delete\|next\|previous\|read\|tag\|undelete\)-thread\>"
 syn match muttrcFunction	contained "\<\%(backward\|capitalize\|downcase\|forward\|kill\|upcase\)-word\>"
 syn match muttrcFunction	contained "\<\%(delete\|filter\|first\|last\|next\|pipe\|previous\|print\|save\|select\|tag\|undelete\)-entry\>"
@@ -389,7 +396,7 @@ syn match muttrcFunction	contained "\<enter-\%(command\|mask\)\>"
 syn match muttrcFunction	contained "\<half-\%(up\|down\)\>"
 syn match muttrcFunction	contained "\<history-\%(up\|down\)\>"
 syn match muttrcFunction	contained "\<kill-\%(eol\|eow\|line\)\>"
-syn match muttrcFunction	contained "\<next-\%(line\|new\|page\|subthread\|undeleted\|unread\)\>"
+syn match muttrcFunction	contained "\<next-\%(line\|new\|page\|subthread\|undeleted\|unread\|unread-mailbox\)\>"
 syn match muttrcFunction	contained "\<previous-\%(line\|new\|page\|subthread\|undeleted\|unread\)\>"
 syn match muttrcFunction	contained "\<search\%(-\%(next\|opposite\|reverse\|toggle\)\)\?\>"
 syn match muttrcFunction	contained "\<show-\%(limit\|version\)\>"
@@ -428,8 +435,8 @@ syn region muttrcMacroDescr	contained keepend skipwhite start=+'+ms=e skip=+\\'+
 syn region muttrcMacroDescr	contained keepend skipwhite start=+"+ms=e skip=+\\"+ end=+"+me=s
 syn match muttrcMacroDescrNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
 syn region muttrcMacroBody	contained skipwhite start="\S" skip='\\ \|\\$' end=' \|$' contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
-syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+'+ms=e skip=+\\'+ end=+'+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
-syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+"+ms=e skip=+\\"+ end=+"+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+'+ms=e skip=+\\'\|\\$+ end=+'\|$+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
+syn region muttrcMacroBody matchgroup=Type contained skipwhite start=+"+ms=e skip=+\\"\|\\$+ end=+"\|$+me=s contains=muttrcEscape,muttrcSet,muttrcUnset,muttrcReset,muttrcToggle,muttrcCommand,muttrcAction nextgroup=muttrcMacroDescr,muttrcMacroDescrNL
 syn match muttrcMacroBodyNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroBody,muttrcMacroBodyNL
 syn match muttrcMacroKey	contained /\S\+/ skipwhite contains=muttrcKey nextgroup=muttrcMacroBody,muttrcMacroBodyNL
 syn match muttrcMacroKeyNL	contained /\s*\\$/ skipwhite skipnl nextgroup=muttrcMacroKey,muttrcMacroKeyNL

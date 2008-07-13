@@ -3,15 +3,17 @@
 "     Language: Ada (GNAT)
 "          $Id$
 "    Copyright: Copyright (C) 2006 Martin Krischik
-"   Maintainer:	Martin Krischik
+"   Maintainer:	Martin Krischi <krischik@users.sourceforge.net>k
+"		Ned Okie <nokie@radford.edu>
 "      $Author$
 "        $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/compiler/gnat.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/compiler/gnat.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		16.07.2006 MK Ada-Mode as vim-ball
 "               15.10.2006 MK Bram's suggestion for runtime integration
+"		19.09.2007 NO use project file only when there is a project
 "    Help Page: compiler-gnat
 "------------------------------------------------------------------------------
 
@@ -46,6 +48,8 @@ if !exists("g:gnat")
       \ 'GNAT.Set Projectfile\.\.\.',
       \ ':SetProject',
       \ 'call gnat.Set_Project_File ()')
+
+   call g:gnat.Set_Session ()
 endif
 
 if exists(":CompilerSet") != 2
@@ -54,8 +58,6 @@ if exists(":CompilerSet") != 2
    "
    command -nargs=* CompilerSet setlocal <args>
 endif
-
-call g:gnat.Set_Session ()
 
 execute "CompilerSet makeprg="     . escape (g:gnat.Get_Command('Make'), ' ')
 execute "CompilerSet errorformat=" . escape (g:gnat.Error_Format, ' ')

@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2008 Apr 28
+" Last change:	2008 Jun 30
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -168,7 +168,7 @@ else
     set ft=zsh
 
   " ELM Mail files
-  elseif s:line1 =~ '^From [a-zA-Z][a-zA-Z_0-9\.=-]*\(@[^ ]*\)\= .*[12][09]\d\d$'
+  elseif s:line1 =~ '^From \([a-zA-Z][a-zA-Z_0-9\.=-]*\(@[^ ]*\)\=\|-\) .* \(19\|20\)\d\d$'
     set ft=mail
 
     " Mason

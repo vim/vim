@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.2a.  Last change: 2008 Jun 21
+*pi_netrw.txt*  For Vim version 7.2b.  Last change: 2008 Jul 13
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -313,13 +313,6 @@ settings are described below, in |netrw-browser-options|, and in
 			=1 preview window shown in a vertically split window.
 			Also affects the "previous window" (see |netrw-P|) in
 			the same way.
-
- *g:netrw_shq*		= "'" for Unix/Linux systems (ie. a single quote)
-			= "'" for Windows + cygwin systems (ie. a single quote)
-			= '"' for Windows systems, not using cygwin
-			      (ie. a double quote)
-			Controls the quoting character used during scp and ftp
-			commands.
 
  *g:netrw_scpport*      = "-P" : option to use to set port for scp
  *g:netrw_sshport*      = "-p" : option to use to set port for ssh
@@ -864,6 +857,7 @@ QUICK HELP						*netrw-quickhelp* {{{2
 	Sorted by
 	  Select sorting style (name/time/size).........|netrw-s|
 	  Editing the sorting sequence..................|netrw-S|
+	  Sorting options...............................|g:netrw_sort_options|
 	  Associated setting variable...................|g:netrw_sort_sequence|
 	  Reverse sorting order.........................|netrw-r|
 
@@ -920,6 +914,8 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   v	Enter the file/directory under the cursor in a new   |netrw-v|
 	   	browser window.  A vertical split is used.
 	   x	View file with an associated program                 |netrw-x|
+
+	   %	Open a new file in netrw's current directory         |netrw-%|
 
 	<leftmouse>	(gvim only) selects word under mouse as if a <cr>
 			had been pressed (ie. edit file, change directory)
@@ -1362,8 +1358,8 @@ will end up.  One may change the sorting sequence by modifying the
 g:netrw_sort_sequence variable (either manually or in your <.vimrc>) or by
 using the "S" map.
 
-Related topics:              |netrw-s|
-Associated setting variable: |g:netrw_sort_sequence|
+Related topics:               |netrw-s|               |netrw-S|
+Associated setting variables: |g:netrw_sort_sequence| |g:netrw_sort_options|
 
 
 GOING UP							*netrw--* {{{2
@@ -1657,7 +1653,7 @@ MARKED FILES: TAGGING						*netrw-mT* {{{2
 	    (See |netrw-mf| and |netrw-mr| for how to mark files)
 		      (uses the global marked file list)
 
-The "mt" mapping will apply the command in g:netrw_ctags (by default, its
+The "mt" mapping will apply the command in |g:netrw_ctags| (by default, its
 "ctags") to marked files.  For remote browsing, in order to create a tags file
 netrw will use ssh (see |g:netrw_ssh_cmd|), and so ssh must be available for
 this to work on remote systems.  For your local system, see |ctags| on how to
@@ -1676,7 +1672,7 @@ preceded by the netrw-compatible url used to obtain it.  When one subsequently
 uses one of the go to tag actions (|tags|), the url will be used by netrw to
 edit the desired file and go to the tag.
 
-Associated setting variables: |g:netrw_ssh_cmd|
+Associated setting variables: |g:netrw_ctags| |g:netrw_ssh_cmd|
 
 
 MARKED FILES: SETTING THE TARGET DIRECTORY			*netrw-mt* {{{2
@@ -1738,13 +1734,12 @@ your browsing preferences.  (see also: |netrw-settings|)
 				a script/function to handle the given
 				extension.  (see |netrw_filehandler|).
 
-  *g:netrw_cd_escape*		="[]#*$%'\" ?`!&();<>\\"
-  				This option is used to escape directory names
-				before changing directory to them.
-
   *g:netrw_compress*		="gzip"
 				    Will compress marked files with this
 				    command
+
+  *g:netrw_ctags*		="ctags"
+				The default external program used to create tags
 
   *g:netrw_decompress*		= { ".gz" : "gunzip" ,
 				    ".bz2" : "bunzip2" ,
@@ -1888,6 +1883,14 @@ your browsing preferences.  (see also: |netrw-settings|)
   *g:netrw_sort_direction*	sorting direction: "normal" or "reverse"
 				 default: "normal"
 
+  *g:netrw_sort_options*	sorting is done using |:sort|; this
+				variable's value is appended to the
+				sort command.  Thus one may ignore case,
+				for example, with the following in your
+				.vimrc: >
+					let g:netrw_sort_options="i"
+<				 default: ""
+
   *g:netrw_sort_sequence*	when sorting by name, first sort by the
 				comma-separated pattern sequence
 				 default: '[\/]$,*,\.bak$,\.o$,\.h$,
@@ -2029,6 +2032,13 @@ Related topics:
  * To make the currently browsed directory the current directory, see |netrw-c|
  * To automatically make the currently browsed directory the current
    directory, see |g:netrw_keepdir|.
+
+
+OPEN A NEW FILE IN NETRW'S CURRENT DIRECTORY		*netrw-%*
+
+To open a file in netrw's current directory, press "%".  This map will
+query the user for a new filename; an empty file by that name will be
+placed in the netrw's current directory (ie. b:netrw_curdir).
 
 
 PREVIEW WINDOW				*netrw-p* *netrw-preview* {{{2
@@ -2377,6 +2387,23 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v126: Jun 30, 2008 * after having gone to a remote directory,
+	                     <f1> was no longer taking one to the correct
+			     entry in the help (|netrw-quickhelp|).  Fixed.
+	      Jul 01, 2008 * extracting the last filename from a wide listing
+			     missed the last letter when |'virtualedit'| not
+			     enabled.
+	      Jul 01, 2008 * vim foo/bar  was creating [Scratch] buffers,
+			     where bar was also a directory
+	      Jul 01, 2008 * numerous additional changes were made to netrw
+			     to use fnameescape() and shellescape() instead
+			     of escape().  Not all changes have been tested
+			     as yet...
+	      Jul 01, 2008 * (James Vega reported) some problems with
+			     :NetrwSettings (due to no longer used setting
+			     variables).
+	      Jul 07, 2008 * Additional numerous changes to support security;
+	                     shellescape(arg,1), etc.
 	v125: Apr 07, 2008 * (Cristian Rigamonti) CR provides a patch; he
 			     noted that gx was failing since its call to
 			     netrw#NetBrowseX() wasn't updated to
@@ -2570,7 +2597,7 @@ which is loaded automatically at startup (assuming :set nocp).
 	v110: May 10, 2007 * added [ and ] maps to NetrwTreeListing
 	      May 25, 2007 * |g:netrw_preview| included
 	      May 29, 2007 * modifed netrw#NetBrowseX to consistently use
-			    |g:netrw_shq| instead of hardcoded quotes,
+			     g:netrw_shq instead of hardcoded quotes,
 			     and modified the snippet that sets up redir
 			     so Windows machines use "nul" instead of
 			     "/dev/null".

@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 7.2a.  Last change: 2008 May 05
+*vi_diff.txt*   For Vim version 7.2b.  Last change: 2008 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -383,7 +383,7 @@ Improved indenting for programs.			|'cindent'|
 Searching for words in included files.			|include-search|
 	The |[i| command can be used to search for a match of the word under
 	the cursor in the current and included files.  The 'include' option
-	can be set the a pattern that describes a command to include a file
+	can be set to a pattern that describes a command to include a file
 	(the default is for C programs).
 	The |[I| command lists all matches, the |[_CTRL-I| command jumps to
 	a match.

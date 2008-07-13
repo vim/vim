@@ -5,9 +5,9 @@
 "   Maintainer:	Martin Krischik
 "      $Author$
 "	 $Date$
-"      Version: 4.2
+"      Version: 4.6
 "    $Revision$
-"     $HeadURL: https://svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/adacomplete.vim $
+"     $HeadURL: https://gnuada.svn.sourceforge.net/svnroot/gnuada/trunk/tools/vim/autoload/adacomplete.vim $
 "      History: 24.05.2006 MK Unified Headers
 "		26.05.2006 MK improved search for begin of word.
 "		16.07.2006 MK Ada-Mode as vim-ball

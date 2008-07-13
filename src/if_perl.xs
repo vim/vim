@@ -163,6 +163,23 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # define Perl_Isv_yes_ptr dll_Perl_Isv_yes_ptr
 # define boot_DynaLoader dll_boot_DynaLoader
 
+# define Perl_sys_init3 dll_Perl_sys_init3
+# define Perl_sys_term dll_Perl_sys_term
+# define Perl_ISv_ptr dll_Perl_ISv_ptr
+# define Perl_Istack_max_ptr dll_Perl_Istack_max_ptr
+# define Perl_Istack_base_ptr dll_Perl_Istack_base_ptr
+# define Perl_Itmps_ix_ptr dll_Perl_Itmps_ix_ptr
+# define Perl_Itmps_floor_ptr dll_Perl_Itmps_floor_ptr
+# define Perl_IXpv_ptr dll_Perl_IXpv_ptr
+# define Perl_Ina_ptr dll_Perl_Ina_ptr
+# define Perl_Imarkstack_ptr_ptr dll_Perl_Imarkstack_ptr_ptr
+# define Perl_Imarkstack_max_ptr dll_Perl_Imarkstack_max_ptr
+# define Perl_Istack_sp_ptr dll_Perl_Istack_sp_ptr
+# define Perl_Iop_ptr dll_Perl_Iop_ptr
+# define Perl_call_list dll_Perl_call_list
+# define Perl_Iscopestack_ix_ptr dll_Perl_Iscopestack_ix_ptr
+# define Perl_Iunitcheckav_ptr dll_Perl_Iunitcheckav_ptr
+
 #ifndef DYNAMIC_PERL /* just generating prototypes */
 typedef int HANDLE;
 typedef int XSINIT_t;
@@ -250,6 +267,24 @@ static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
 static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+static void (*Perl_sys_init3)(int* argc, char*** argv, char*** env);
+static void (*Perl_sys_term)(void);
+static SV** (*Perl_ISv_ptr)(register PerlInterpreter*);
+static SV*** (*Perl_Istack_max_ptr)(register PerlInterpreter*);
+static SV*** (*Perl_Istack_base_ptr)(register PerlInterpreter*);
+static XPV** (*Perl_IXpv_ptr)(register PerlInterpreter*);
+static I32* (*Perl_Itmps_ix_ptr)(register PerlInterpreter*);
+static I32* (*Perl_Itmps_floor_ptr)(register PerlInterpreter*);
+static STRLEN* (*Perl_Ina_ptr)(register PerlInterpreter*);
+static I32** (*Perl_Imarkstack_ptr_ptr)(register PerlInterpreter*);
+static I32** (*Perl_Imarkstack_max_ptr)(register PerlInterpreter*);
+static SV*** (*Perl_Istack_sp_ptr)(register PerlInterpreter*);
+static OP** (*Perl_Iop_ptr)(register PerlInterpreter*);
+static void (*Perl_call_list)(pTHX_ I32, AV*);
+static I32* (*Perl_Iscopestack_ix_ptr)(register PerlInterpreter*);
+static AV** (*Perl_Iunitcheckav_ptr)(register PerlInterpreter*);
+#endif
 
 /*
  * Table of name to function pointer of perl.
@@ -319,6 +354,7 @@ static struct {
     {"Perl_sv_setsv", (PERL_PROC*)&Perl_sv_setsv},
 #endif
     {"Perl_sv_upgrade", (PERL_PROC*)&Perl_sv_upgrade},
+#if (PERL_REVISION == 5) && (PERL_VERSION < 10)
     {"Perl_Tstack_sp_ptr", (PERL_PROC*)&Perl_Tstack_sp_ptr},
     {"Perl_Top_ptr", (PERL_PROC*)&Perl_Top_ptr},
     {"Perl_Tstack_base_ptr", (PERL_PROC*)&Perl_Tstack_base_ptr},
@@ -330,6 +366,25 @@ static struct {
     {"Perl_TSv_ptr", (PERL_PROC*)&Perl_TSv_ptr},
     {"Perl_TXpv_ptr", (PERL_PROC*)&Perl_TXpv_ptr},
     {"Perl_Tna_ptr", (PERL_PROC*)&Perl_Tna_ptr},
+#else
+    {"Perl_sys_init3", (PERL_PROC*)&Perl_sys_init3},
+    {"Perl_sys_term", (PERL_PROC*)&Perl_sys_term},
+    {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
+    {"Perl_Istack_sp_ptr", (PERL_PROC*)&Perl_Istack_sp_ptr},
+    {"Perl_Iop_ptr", (PERL_PROC*)&Perl_Iop_ptr},
+    {"Perl_Istack_base_ptr", (PERL_PROC*)&Perl_Istack_base_ptr},
+    {"Perl_Istack_max_ptr", (PERL_PROC*)&Perl_Istack_max_ptr},
+    {"Perl_Itmps_ix_ptr", (PERL_PROC*)&Perl_Itmps_ix_ptr},
+    {"Perl_Itmps_floor_ptr", (PERL_PROC*)&Perl_Itmps_floor_ptr},
+    {"Perl_Imarkstack_ptr_ptr", (PERL_PROC*)&Perl_Imarkstack_ptr_ptr},
+    {"Perl_Imarkstack_max_ptr", (PERL_PROC*)&Perl_Imarkstack_max_ptr},
+    {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
+    {"Perl_IXpv_ptr", (PERL_PROC*)&Perl_IXpv_ptr},
+    {"Perl_Ina_ptr", (PERL_PROC*)&Perl_Ina_ptr},
+    {"Perl_call_list", (PERL_PROC*)&Perl_call_list},
+    {"Perl_Iscopestack_ix_ptr", (PERL_PROC*)&Perl_Iscopestack_ix_ptr},
+    {"Perl_Iunitcheckav_ptr", (PERL_PROC*)&Perl_Iunitcheckav_ptr},
+#endif
     {"Perl_Idefgv_ptr", (PERL_PROC*)&Perl_Idefgv_ptr},
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
     {"Perl_Isv_yes_ptr", (PERL_PROC*)&Perl_Isv_yes_ptr},
@@ -395,12 +450,16 @@ perl_enabled(verbose)
     static void
 perl_init()
 {
-    char	*bootargs[] = { "VI", NULL };
-    static char *args[] = { "", "-e", "" };
+    char *bootargs[] = { "VI", NULL };
+    int argc = 3;
+    static char *argv[] = { "", "-e", "" };
 
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+    Perl_sys_init3(&argc, (char***)&argv, NULL);
+#endif
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
-    perl_parse(perl_interp, xs_init, 3, args, 0);
+    perl_parse(perl_interp, xs_init, argc, argv, 0);
     perl_call_argv("VIM::bootstrap", (long)G_DISCARD, bootargs);
     VIM_init();
 #ifdef USE_SFIO
@@ -423,6 +482,9 @@ perl_end()
 	perl_destruct(perl_interp);
 	perl_free(perl_interp);
 	perl_interp = NULL;
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+        Perl_sys_term();
+#endif
     }
 #ifdef DYNAMIC_PERL
     if (hPerlLib)

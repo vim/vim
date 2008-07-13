@@ -6728,6 +6728,10 @@ handle_drop(filec, filev, split)
     if (curbuf_locked())
 	return;
 #endif
+    /* When the screen is being updated we should not change buffers and
+     * windows structures, it may cause freed memory to be used. */
+    if (updating_screen)
+	return;
 
     /* Check whether the current buffer is changed. If so, we will need
      * to split the current window or data could be lost.

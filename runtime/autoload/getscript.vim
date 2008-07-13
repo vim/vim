@@ -1,8 +1,8 @@
 " ---------------------------------------------------------------------
 " getscript.vim
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	May 30, 2008
-"  Version:	30
+"  Date:	Jul 10, 2008
+"  Version:	31
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -23,7 +23,7 @@ set cpo&vim
 if exists("g:loaded_getscript")
  finish
 endif
-let g:loaded_getscript= "v30"
+let g:loaded_getscript= "v31"
 
 " ---------------------------
 " Global Variables: {{{1
@@ -140,6 +140,12 @@ fun! getscript#GetLatestVimScripts()
    return
   endif
 
+  " insure that fnameescape() is available
+  if !exists("*fnameescape")
+   echoerr "GetLatestVimScripts needs fnameescape() (provided by 7.1.299 or later)"
+   return
+  endif
+
   " Find the .../GetLatest subdirectory under the runtimepath
   for datadir in split(&rtp,',') + ['']
    if isdirectory(datadir."/GetLatest")
@@ -181,7 +187,8 @@ fun! getscript#GetLatestVimScripts()
 
   " don't let any events interfere (like winmanager's, taglist's, etc)
   let eikeep= &ei
-  set ei=all
+  let hlskeep= &hls
+  set ei=all hls&vim
 
   " record current directory, change to datadir, open split window with
   " datafile
@@ -316,6 +323,7 @@ fun! getscript#GetLatestVimScripts()
   " restore events and current directory
   exe "cd ".fnameescape(substitute(origdir,'\','/','ge'))
   let &ei= eikeep
+  let &hls= hlskeep
   setlocal nolz
 "  call Dredir("BUFFER TEST (GetLatestVimScripts 2)","ls!")
 "  call Dret("GetLatestVimScripts : did ".s:downloads." downloads")
@@ -506,14 +514,14 @@ fun! s:GetOneScript(...)
     new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id='.latestsrcid)|q
    else
 "    call Decho("exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id='))
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id=')
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id=').latestsrcid
    endif
 
    " AutoInstall: only if doautoinstall has been requested by the plugin itself
    if doautoinstall
 "    call Decho("attempting to do autoinstall: getcwd<".getcwd()."> filereadable(".sname.")=".filereadable(sname))
     if filereadable(sname)
-     call Decho("exe silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".s:Escape(s:autoinstall))
+"     call Decho("exe silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".s:Escape(s:autoinstall))
      exe "silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".s:Escape(s:autoinstall)
      let curdir    = escape(substitute(getcwd(),'\','/','ge'),"|[]*'\" #")
      let installdir= curdir."/Installed"

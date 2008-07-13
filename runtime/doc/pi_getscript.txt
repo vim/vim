@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 7.2a.  Last change: 2008 Jan 07
+*pi_getscript.txt*  For Vim version 7.2b.  Last change: 2008 Jun 29
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell, Jr.
 <
@@ -335,6 +335,9 @@ The AutoInstall process will:
 ==============================================================================
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
+v31 Jun 29, 2008 : * (Bill McCarthy) fixed having hls enabled with getscript
+v30 Jun 13, 2008 : * GLVS now checks for existence of fnameescape() and will
+		     issue an error message if its not supported
 v29 Jan 07, 2008 : * Bram M pointed out that cpo is a global option and that
                      getscriptPlugin.vim was setting it but not restoring it.
 v28 Jan 02, 2008 : * improved shell quoting character handling, cygwin

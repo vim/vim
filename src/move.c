@@ -876,7 +876,7 @@ validate_cheight()
 }
 
 /*
- * validate w_wcol and w_virtcol only.	Only correct when 'wrap' on!
+ * Validate w_wcol and w_virtcol only.
  */
     void
 validate_cursor_col()
@@ -892,13 +892,19 @@ validate_cursor_col()
 	col += off;
 
 	/* long line wrapping, adjust curwin->w_wrow */
-	if (curwin->w_p_wrap && col >= (colnr_T)W_WIDTH(curwin)
+	if (curwin->w_p_wrap
+		&& col >= (colnr_T)W_WIDTH(curwin)
 		&& W_WIDTH(curwin) - off + curwin_col_off2() > 0)
 	{
 	    col -= W_WIDTH(curwin);
 	    col = col % (W_WIDTH(curwin) - off + curwin_col_off2());
 	}
+	if (col > (int)curwin->w_leftcol)
+	    col -= curwin->w_leftcol;
+	else
+	    col = 0;
 	curwin->w_wcol = col;
+
 	curwin->w_valid |= VALID_WCOL;
     }
 }

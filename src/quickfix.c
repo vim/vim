@@ -774,7 +774,7 @@ restofline:
 		    *namebuf = NUL;
 		    if (tail && *tail)
 		    {
-			STRCPY(IObuff, skipwhite(tail));
+			STRMOVE(IObuff, skipwhite(tail));
 			multiscan = TRUE;
 			goto restofline;
 		    }

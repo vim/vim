@@ -87,19 +87,17 @@
 #                         - 14 new messages.
 #                         - Fixed error number mistakes (Dominique Pelle)
 #                         - Fixed spelling mistakes (Patrick Texier)
+# 2008-07-01    DB      VIM 7.2a
+#                         - Updated messages.
+#                         - 6 new messages.
 #
-# Translated:	 1708/1708 (100.00%)
-#
-# Notations used in the comments of the unpolished part of this file:
-# TODO		There's work to do there, and it's important
-# todo		There's work to do there, but it's less important
-# (no comment)	Perhaps there's work to do there?
+# Translated:	 1714/1714 (100.00%)
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-28 23:07+0200\n"
+"POT-Creation-Date: 2008-07-01 22:08+0200\n"
 "PO-Revision-Date: 2006-05-02 14:15+0200\n"
 "Last-Translator: David Blanchet <david.blanchet@free.fr>\n"
 "Language-Team: Adrien Beau <version.francaise@free.fr>\n"
@@ -617,6 +615,9 @@ msgstr "E693: Une Funcref ne peut être comparée qu'à une Funcref"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Opération invalide avec les Funcrefs"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Impossible d'utiliser '%' avec un Flottant"
+
 msgid "E110: Missing ')'"
 msgstr "E110: ')' manquant"
 
@@ -686,6 +687,9 @@ msgstr "E120: <SID> utilisé en dehors d'un script : %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Appel d'une fonction « dict » sans Dictionnaire : %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Nombre ou Flottant requis"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Trop d'arguments"
@@ -771,13 +775,16 @@ msgstr "(Invalide)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Erreur lors de l'écriture du fichier temporaire"
 
-msgid "E703: Using a Funcref as a number"
+msgid "E805: Using a Float as a Number"
+msgstr "E805: Utilisation d'un Flottant comme un Nombre"
+
+msgid "E703: Using a Funcref as a Number"
 msgstr "E703: Utilisation d'une Funcref comme un Nombre"
 
-msgid "E745: Using a List as a number"
+msgid "E745: Using a List as a Number"
 msgstr "E745: Utilisation d'une Liste comme un Nombre"
 
-msgid "E728: Using a Dictionary as a number"
+msgid "E728: Using a Dictionary as a Number"
 msgstr "E728: Utilisation d'un Dictionnaire comme un Nombre"
 
 msgid "E729: using Funcref as a String"
@@ -788,6 +795,9 @@ msgstr "E730: Utilisation d'une Liste comme une Chaîne"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Utilisation d'un Dictionnaire comme une Chaîne"
+
+msgid "E806: using Float as a String"
+msgstr "E806: Utilisation d'un Flottant comme une Chaîne"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -1877,7 +1887,7 @@ msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr ""
 "E204: L'autocommande a modifié le nombre de lignes de manière inattendue"
 
-msgid "NetBeans dissallows writes of unmodified buffers"
+msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans interdit l'écriture des tampons non modifiés"
 
 msgid "Partial writes disallowed for NetBeans buffers"
@@ -2848,8 +2858,8 @@ msgid "line number out of range"
 msgstr "numéro de ligne hors limites"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<objet tampon (effacé) à %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<objet tampon (effacé) à %p>"
 
 msgid "invalid mark name"
 msgstr "nom de marque invalide"
@@ -2867,12 +2877,12 @@ msgid "cursor position outside buffer"
 msgstr "curseur positionné en dehors du tampon"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<objet fenêtre (effacé) à %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<objet fenêtre (effacé) à %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<objet fenêtre (inconnu) à %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<objet fenêtre (inconnu) à %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -3363,7 +3373,8 @@ msgstr ""
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab[-wait][-silent] <fich>\tComme --remote mais ouvrir un onglet pour chaque fichier"
+"--remote-tab[-wait][-silent] <fich>\tComme --remote mais ouvrir un onglet "
+"pour chaque fichier"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <tche>\tEnvoyer <touches> à un serveur Vim puis quitter"
@@ -4161,6 +4172,9 @@ msgstr "E338: Désolé, pas de sélecteur de fichiers en mode console"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Pas assez d'arguments pour printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: printf() attend un argument de type Flottant"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Trop d'arguments pour printf()"
 
@@ -4283,7 +4297,6 @@ msgstr "E346: Plus de répertoire \"%s\" dans 'cdpath'"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Plus de fichier \"%s\" dans 'path'"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Impossible de se connecter à Netbeans n°2"
 
@@ -4439,8 +4452,8 @@ msgid ""
 "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
 "Bytes"
 msgstr ""
-"%s%ld sur %ld Lignes ; %ld sur %ld Mots ; %ld sur %ld Caractères ; %ld sur "
-"%ld octets sélectionnés"
+"%s%ld sur %ld Lignes ; %ld sur %ld Mots ; %ld sur %ld Caractères ; %ld sur %"
+"ld octets sélectionnés"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
@@ -4452,8 +4465,8 @@ msgid ""
 "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
 "%ld"
 msgstr ""
-"Colonne %s sur %s ; Ligne %ld sur %ld ; Mot %ld sur %ld ; Caractère %ld sur "
-"%ld ; Octet %ld sur %ld"
+"Colonne %s sur %s ; Ligne %ld sur %ld ; Mot %ld sur %ld ; Caractère %ld sur %"
+"ld ; Octet %ld sur %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -5889,21 +5902,21 @@ msgstr "E440: ligne d'annulation manquante"
 #. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
-"MS-Windows 16/32 bit GUI version"
+"MS-Windows 16/32-bit GUI version"
 msgstr ""
 "\n"
 "Version graphique MS-Windows 16/32 bits"
 
 msgid ""
 "\n"
-"MS-Windows 64 bit GUI version"
+"MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
 "Version graphique MS-Windows 64 bits"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit GUI version"
+"MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
 "Version graphique MS-Windows 32 bits"
@@ -5916,28 +5929,35 @@ msgstr " supportant l'OLE"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit console version"
+"MS-Windows 64-bit console version"
+msgstr ""
+"\n"
+"Version console MS-Windows 64 bits"
+
+msgid ""
+"\n"
+"MS-Windows 32-bit console version"
 msgstr ""
 "\n"
 "Version console MS-Windows 32 bits"
 
 msgid ""
 "\n"
-"MS-Windows 16 bit version"
+"MS-Windows 16-bit version"
 msgstr ""
 "\n"
 "Version MS-Windows 16 bits"
 
 msgid ""
 "\n"
-"32 bit MS-DOS version"
+"32-bit MS-DOS version"
 msgstr ""
 "\n"
 "Version MS-DOS 32 bits"
 
 msgid ""
 "\n"
-"16 bit MS-DOS version"
+"16-bit MS-DOS version"
 msgstr ""
 "\n"
 "Version MS-DOS 16 bits"

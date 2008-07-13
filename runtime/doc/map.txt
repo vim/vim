@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.2a.  Last change: 2008 Jun 21
+*map.txt*       For Vim version 7.2b.  Last change: 2008 Jul 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -162,8 +162,8 @@ be used in any order.  They must appear right after the command, before any
 other arguments.
 
 				*:map-local* *:map-<buffer>* *E224* *E225*
-If the first argument to one of these commands is "<buffer>" it will apply to
-mappings locally to the current buffer only.  Example: >
+If the first argument to one of these commands is "<buffer>" the mapping will
+be effective in the current buffer only.  Example: >
 	:map <buffer>  ,w  /[.,;]<CR>
 Then you can map ",w" to something else in another buffer: >
 	:map <buffer>  ,w  /[#&!]<CR>

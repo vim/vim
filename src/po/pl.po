@@ -1,18 +1,18 @@
 # translation of pl.po to Polish
 # Polish Translation for Vim
 #
-# updated 2007 for vim-7.0
+# updated 2008 for vim-7.2
 #
 # FIRST AUTHOR Marcin Dalecki <martin@dalecki.de>, 2000.
-# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005, 2006, 2007.
+# Mikolaj Machowski <mikmach@wp.pl>, 2004, 2005, 2006, 2007, 2008.
 msgid ""
 msgstr ""
 "Project-Id-Version: pl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-04-30 20:03+0200\n"
-"PO-Revision-Date: 2007-04-30 20:07+0200\n"
+"POT-Creation-Date: 2008-06-25 19:40+0200\n"
+"PO-Revision-Date: 2008-06-25 19:55+0200\n"
 "Last-Translator: Mikolaj Machowski <mikmach@wp.pl>\n"
-"Language-Team: Polish <kde-transl@mer.chemia.polsl.gliwice.pl>\n"
+"Language-Team: Polish <mikmach@wp.pl>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -450,6 +450,9 @@ msgstr "E693: Funcref mogê porównaæ tylko z Funcref"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Nieprawid³owa operacja dla Funcref"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Nie mogê u¿yæ '%' w Zmiennoprzecinkowej"
+
 msgid "E110: Missing ')'"
 msgstr "E110: Brak ')'"
 
@@ -514,6 +517,9 @@ msgstr "E120: U¿ycie <SID> poza kontekstem skryptu: %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Wywo³anie funkcji \"dict\" bez S³ownika: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Wymagana Liczba lub Zmiennoprzecinkowa"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Za du¿o argumentów"
@@ -591,23 +597,29 @@ msgstr "(Niew³a¶ciwe)"
 msgid "E677: Error writing temp file"
 msgstr "E677: B³±d zapisywania pliku tymczasowego"
 
+msgid "E805: Using a Float as a Number"
+msgstr "E805: U¿ycie Zmiennoprzecinkowej jako Liczby"
+
 msgid "E703: Using a Funcref as a number"
 msgstr "E703: U¿ycie Funcref jako liczby"
 
-msgid "E745: Using a List as a number"
-msgstr "E745: U¿ycie Listy jako liczby"
+msgid "E745: Using a List as a Number"
+msgstr "E745: U¿ycie Listy jako Liczby"
 
-msgid "E728: Using a Dictionary as a number"
-msgstr "E728: U¿ycie S³ownika jako liczby"
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: U¿ycie S³ownika jako Liczby"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: U¿ycie Funcref jako ³añcucha"
+msgstr "E729: U¿ycie Funcref jako £añcucha"
 
 msgid "E730: using List as a String"
-msgstr "E730: U¿ycie Listy jako ³añcucha"
+msgstr "E730: U¿ycie Listy jako £añcucha"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: U¿ycie S³ownika jako ³añcucha"
+msgstr "E731: U¿ycie S³ownika jako £añcucha"
+
+msgid "E806: using Float as a String"
+msgstr "E806: U¿ycie Zmiennoprzecinkowej jako £añcucha"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -955,6 +967,20 @@ msgid ""
 msgstr ""
 "opcja 'readonly' nastawiona dla \"%s\".\n"
 "Czy chcesz go pomimo tego zapisaæ?"
+
+#, c-format
+msgid ""
+"File permissions of \"%s\" are read-only.\n"
+"It may still be possible to write it.\n"
+"Do you wish to try?"
+msgstr ""
+"Prawa pliku \"%s\" s± tylko do odczytu.\n"
+"Mimo to byæ mo¿e uda siê zmieniæ ten plik.\n"
+"Chcesz spróbowaæ?"
+
+#, c-format
+msgid "E505: \"%s\" is read-only (add ! to override)"
+msgstr "E505: \"%s\" jest tylko do odczytu (dodaj ! aby wymusiæ)"
 
 msgid "Edit File"
 msgstr "Edytuj Plik"
@@ -1505,6 +1531,9 @@ msgstr "[fifo]"
 msgid "[socket]"
 msgstr "[socket]"
 
+msgid "[character special]"
+msgstr "[specjalny znak]"
+
 msgid "[RO]"
 msgstr "[RO]"
 
@@ -1555,7 +1584,7 @@ msgstr "E203: Autokomendy skasowa³y lub wy³adowa³y bufor przeznaczony do zapisu"
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: Autokomenda zmieni³a liczbê wierszy w nieoczekiwany sposób"
 
-msgid "NetBeans dissallows writes of unmodified buffers"
+msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans nie pozwala na zapis niezmodyfikowanych buforów"
 
 msgid "Partial writes disallowed for NetBeans buffers"
@@ -2317,14 +2346,14 @@ msgstr "E622: Nie mog³em utworzyæ rozwidlenia dla cscope"
 msgid "cs_create_connection exec failed"
 msgstr "wykonanie cs_create_connection nie powiod³o siê"
 
-msgid "E623: Could not spawn cscope process"
-msgstr "E623: Nie mog³em stworzyæ procesu cscope"
-
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen dla to_fp nie powiod³o siê"
 
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fdopen dla fr_fp nie powiod³o siê"
+
+msgid "E623: Could not spawn cscope process"
+msgstr "E623: Nie mog³em stworzyæ procesu cscope"
 
 msgid "E567: no cscope connections"
 msgstr "E567: brak po³±czenia z cscope"
@@ -2486,8 +2515,8 @@ msgid "line number out of range"
 msgstr "numer wiersza poza zakresem"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<obiekt bufora (skasowany) w %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<obiekt bufora (skasowany) w %p>"
 
 msgid "invalid mark name"
 msgstr "niepoprawna nazwa zak³adki"
@@ -2505,12 +2534,12 @@ msgid "cursor position outside buffer"
 msgstr "pozycja kursora poza buforem"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<obiekt okna (skasowany) w %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<obiekt okna (skasowany) w %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<obiekt okna (nieznany) w %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<obiekt okna (nieznany) w %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -2523,7 +2552,8 @@ msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ musi byæ reprezentacj± £añcucha"
 
 msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
-msgstr "E266: Przykro mi, ta komenda jest wy³±czona, bo nie mo¿na za³adowaæ "
+msgstr ""
+"E266: Przykro mi, ta komenda jest wy³±czona, bo nie mo¿na za³adowaæ "
 "biblioteki Ruby."
 
 msgid "E267: unexpected return"
@@ -2691,7 +2721,9 @@ msgstr ""
 "bufora/okna"
 
 msgid "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
-msgstr "E571: Przykro mi, ta komenda jest wy³±czona, bo nie mo¿na za³adowaæ biblioteki Tcl."
+msgstr ""
+"E571: Przykro mi, ta komenda jest wy³±czona, bo nie mo¿na za³adowaæ "
+"biblioteki Tcl."
 
 msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
 msgstr ""
@@ -2807,8 +2839,11 @@ msgstr ""
 "\n"
 "   lub:"
 
-msgid "where case is ignored prepend / to make flag upper case"
+msgid ""
+"\n"
+"Where case is ignored prepend / to make flag upper case"
 msgstr ""
+"\n"
 "gdzie wielko¶æ znaków jest ignorowana dodaj na pocz±tku / by flaga by³a "
 "wielk± liter±"
 
@@ -2878,8 +2913,8 @@ msgstr "-C\t\t\tB±d¼ zgodny z Vi: 'compatible'"
 msgid "-N\t\t\tNot fully Vi compatible: 'nocompatible'"
 msgstr "-N\t\t\tB±d¼ niezupe³nie zgodny z Vi: 'nocompatible'"
 
-msgid "-V[N]\t\tVerbose level"
-msgstr "-V[N]\t\tStopieñ gadatliwo¶ci"
+msgid "-V[N][fname]\t\tBe verbose [level N] [log messages to fname]"
+msgstr "-V[N][nazwap]\t\tGadatliwy [poziom N] [zapisuj wiadomo¶ci do nazwap]"
 
 msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tTryb odpluskwiania"
@@ -2979,10 +3014,8 @@ msgstr "--remote-wait <pliki>\tTak jak --remote, lecz czekaj na pliki przed edyc
 msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
 msgstr "--remote-wait-silent <pliki>  To samo, nie narzekaj je¶li nie ma serwera"
 
-msgid "--remote-tab <files>  As --remote but open tab page for each file"
-msgstr ""
-"--remote-tab <pliki>\tTak jak --remote ale otwórz jedn± kartê dla ka¿dego "
-"pliku"
+msgid "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
+msgstr "--remote-tab[-wait][-silent] <pliki>  tak jak --remote ale u¿ywa jednej karty na plik"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <klawisze>\tWy¶lij <klawisze> do serwera Vima i zakoñcz"
@@ -3105,6 +3138,9 @@ msgstr "--socketid <xid>\tOtwórz Vim wewn±trz innego widgetu GTK"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <tytu³ rodzica>\tOtwórz Vima wewn±trz rodzicielskiej aplikacji"
+
+msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
+msgstr "--windowid <HWND>\tOtwórz Vima wewn±trz innego elementu win32"
 
 msgid "No display"
 msgstr "Brak display"
@@ -3754,6 +3790,9 @@ msgstr "E338: Przykro mi, nie ma przegl±darki plików w trybie konsoli"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Za ma³o argumentów dla printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Spodziewany argument Zmiennoprzecinkowy w printf()"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Za du¿o argumentów dla printf()"
 
@@ -3877,7 +3916,6 @@ msgstr "E346: Katalogu \"%s\" nie ma wiêcej w cdpath"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Pliku \"%s\" nie ma wiêcej w tropie"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Nie mo¿na po³±czyæ z Netbeans #2"
 
@@ -4161,6 +4199,13 @@ msgstr "E594: Potrzebujê przynajmniej %d kolumn"
 msgid "E355: Unknown option: %s"
 msgstr "E355: Nieznana opcja: %s"
 
+#. There's another character after zeros or the string
+#. * is empty.  In both cases, we are trying to set a
+#. * num option using a string.
+#, c-format
+msgid "E521: Number required: &%s = '%s'"
+msgstr "E521: Wymagana Liczba: &%s = '%s'"
+
 msgid ""
 "\n"
 "--- Terminal codes ---"
@@ -4311,6 +4356,20 @@ msgstr "Test ekranu X nie powiód³ siê"
 
 msgid "Opening the X display timed out"
 msgstr "Próba otwarcia ekranu X trwa³a zbyt d³ugo"
+
+msgid ""
+"\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Nie mogê uzyskaæ kontekstu bezpieczeñstwa dla"
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Nie mo¿na uzyskaæ kontekstu bezpieczeñstwa dla"
 
 msgid ""
 "\n"
@@ -5437,21 +5496,21 @@ msgstr "E440: brak wiersza cofania"
 #. Only MS VC 4.1 and earlier can do Win32s
 msgid ""
 "\n"
-"MS-Windows 16/32 bit GUI version"
+"MS-Windows 16/32-bit GUI version"
 msgstr ""
 "\n"
-"16/32 bitowa wersja GUI dla MS-Windows"
+"16/32-bit wersja GUI dla MS-Windows"
 
 msgid ""
 "\n"
-"MS-Windows 64 bit GUI version"
+"MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
 "64 bitowa wersja GUI dla MS-Windows"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit GUI version"
+"MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
 "32 bitowa wersja GUI dla MS-Windows"
@@ -5464,28 +5523,35 @@ msgstr " ze wspomaganiem OLE"
 
 msgid ""
 "\n"
-"MS-Windows 32 bit console version"
+"MS-Windows 64-bit console version"
 msgstr ""
 "\n"
 "32 bitowa wersja na konsolê dla MS-Windows"
 
 msgid ""
 "\n"
-"MS-Windows 16 bit version"
+"MS-Windows 32-bit console version"
+msgstr ""
+"\n"
+"32 bitowa wersja na konsolê dla MS-Windows"
+
+msgid ""
+"\n"
+"MS-Windows 16-bit version"
 msgstr ""
 "\n"
 "16 bitowa wersja dla MS-Windows"
 
 msgid ""
 "\n"
-"32 bit MS-DOS version"
+"32-bit MS-DOS version"
 msgstr ""
 "\n"
 "32 bitowa wersja dla MS-DOS"
 
 msgid ""
 "\n"
-"16 bit MS-DOS version"
+"16-bit MS-DOS version"
 msgstr ""
 "\n"
 "16 bitowa wersja dla MS-DOS"
@@ -5703,7 +5769,7 @@ msgid "type  :help cp-default<Enter> for info on this"
 msgstr "wprowad¼ :help cp-default<Enter>  dla informacji to tym  "
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "wprowad¼ :help iccf<Enter>        dla informacji to tym  "
+msgstr "menu Pomoc->Sieroty        dla informacji to tym  "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "Uruchomiony bez trybów, wpisany tekst jest wprowadzany"

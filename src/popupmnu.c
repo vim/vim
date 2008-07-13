@@ -183,11 +183,10 @@ redo:
     /* Calculate column */
 #ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl)
-	col = W_WINCOL(curwin) + W_WIDTH(curwin) - curwin->w_wcol -
-							curwin->w_leftcol - 1;
+	col = W_WINCOL(curwin) + W_WIDTH(curwin) - curwin->w_wcol - 1;
     else
 #endif
-	col = W_WINCOL(curwin) + curwin->w_wcol - curwin->w_leftcol;
+	col = W_WINCOL(curwin) + curwin->w_wcol;
 
     /* if there are more items than room we need a scrollbar */
     if (pum_height < size)

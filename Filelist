@@ -516,6 +516,7 @@ RT_SCRIPTS =	\
 		runtime/indent/*.vim \
 		runtime/indent/README.txt \
 		runtime/ftplugin/*.vim \
+		runtime/ftplugin/logtalk.dict \
 		runtime/ftplugin/README.txt \
 		runtime/plugin/*.vim \
 		runtime/plugin/README.txt \

@@ -772,6 +772,7 @@ ac_user_opts='
 enable_option_checking
 enable_darwin
 with_mac_arch
+with_local_dir
 with_vim_name
 with_ex_name
 with_view_name
@@ -1488,6 +1489,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-mac-arch=ARCH    current, intel, ppc or both
+  --with-local-dir=PATH   search PATH instead of /usr/local for local libraries.
+  --without-local-dir     do not search /usr/local for local libraries.
   --with-vim-name=NAME    what to call the Vim executable
   --with-ex-name=NAME     what to call the Ex executable
   --with-view-name=NAME   what to call the View executable
@@ -4176,24 +4179,53 @@ fi
 
 
 if test "$cross_compiling" = no; then
+  { $as_echo "$as_me:$LINENO: checking --with-local-dir argument" >&5
+$as_echo_n "checking --with-local-dir argument... " >&6; }
   have_local_include=''
   have_local_lib=''
-  if test "$GCC" = yes; then
+
+# Check whether --with-local-dir was given.
+if test "${with_local_dir+set}" = set; then
+  withval=$with_local_dir;
+    local_dir="$withval"
+    case "$withval" in
+    */*) ;;
+    no)
+      # avoid adding local dir to LDFLAGS and CPPFLAGS
+      have_local_dir=yes
+      have_local_lib=yes
+      ;;
+    *) { { $as_echo "$as_me:$LINENO: error: must pass path argument to --with-local-dir" >&5
+$as_echo "$as_me: error: must pass path argument to --with-local-dir" >&2;}
+   { (exit 1); exit 1; }; } ;;
+    esac
+	{ $as_echo "$as_me:$LINENO: result: $local_dir" >&5
+$as_echo "$local_dir" >&6; }
+
+else
+
+    local_dir=/usr/local
+    { $as_echo "$as_me:$LINENO: result: Defaulting to $local_dir" >&5
+$as_echo "Defaulting to $local_dir" >&6; }
+
+fi
+
+  if test "$GCC" = yes -a "$local_dir" != no; then
     echo 'void f(){}' > conftest.c
-        have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep '/usr/local/include'`
-    have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep '/usr/local/lib'`
+        have_local_include=`${CC-cc} -no-cpp-precomp -c -v conftest.c 2>&1 | grep "${local_dir}/include"`
+    have_local_lib=`${CC-cc} -c -v conftest.c 2>&1 | grep "${local_dir}/lib"`
     rm -f conftest.c conftest.o
   fi
-  if test -z "$have_local_lib" -a -d /usr/local/lib; then
-    tt=`echo "$LDFLAGS" | sed -e 's+-L/usr/local/lib ++g' -e 's+-L/usr/local/lib$++g'`
+  if test -z "$have_local_lib" -a -d "${local_dir}/lib"; then
+    tt=`echo "$LDFLAGS" | sed -e "s+-L${local_dir}/lib ++g" -e "s+-L${local_dir}/lib$++g"`
     if test "$tt" = "$LDFLAGS"; then
-      LDFLAGS="$LDFLAGS -L/usr/local/lib"
+      LDFLAGS="$LDFLAGS -L${local_dir}/lib"
     fi
   fi
-  if test -z "$have_local_include" -a -d /usr/local/include; then
-    tt=`echo "$CPPFLAGS" | sed -e 's+-I/usr/local/include ++g' -e 's+-I/usr/local/include$++g'`
+  if test -z "$have_local_include" -a -d "${local_dir}/include"; then
+    tt=`echo "$CPPFLAGS" | sed -e "s+-I${local_dir}/include ++g" -e "s+-I${local_dir}/include$++g"`
     if test "$tt" = "$CPPFLAGS"; then
-      CPPFLAGS="$CPPFLAGS -I/usr/local/include"
+      CPPFLAGS="$CPPFLAGS -I${local_dir}/include"
     fi
   fi
 fi

@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 7.2a.  Last change: 2007 Aug 30
+*gui_w32.txt*   For Vim version 7.2b.  Last change: 2007 Aug 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -129,7 +129,7 @@ the makefile by double clicking it and use the "Edit with Vim" entry to edit
 the makefile.
 
 You can select any files and right-click to see a menu option called "Edit
-with gvim".  Chosing this menu option will invoke gvim with the file you have
+with gvim".  Choosing this menu option will invoke gvim with the file you have
 selected.  If you select multiple files, you will find two gvim-related menu
 options:
 "Edit with multiple gvims"  -- one gvim for each file in the selection

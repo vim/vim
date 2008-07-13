@@ -1,9 +1,12 @@
 " Vim syntax file
-" Language:	HASTE
+" Language:	HASTE - a language for VLSI IC programming
 " Maintainer:	M. Tranchero - maurizio.tranchero?gmail.com
 " Credits:	some parts have been taken from vhdl, verilog, and C syntax
 "		files
-" version: 0.5
+" Version:	0.9
+" Last Change:	0.9 improvement of haste numbers detection
+" Change:	0.8 error matching for wrong hierarchical connections 
+" Change:	0.7 added more rules to highlight pre-processor directives
 
 " HASTE
 if exists("b:current_syntax")
@@ -50,6 +53,7 @@ syn match   hasteStatement	"\<\(for\|do\|od\)\>"
 syn match   hasteStatement	"\<\(do\|or\|od\)\>"
 syn match   hasteStatement	"\<\(sel\|les\)\>"
 syn match   hasteError		"\<\d\+[_a-zA-Z]\+\>"
+syn match   hasteError		"\(\([[:alnum:]]\+\s*(\s\+\|)\s*,\)\)\s*\([[:alnum:]]\+\s*(\)"
 
 " Predifined Haste types
 syn keyword hasteType bool
@@ -60,39 +64,28 @@ syn keyword hasteType bool
 syn match  hasteVector "0b\"[01_]\+\""
 syn match  hasteVector "0x\"[0-9a-f_]\+\""
 syn match  hasteCharacter "'.'"
-syn region hasteString start=+"+  end=+"+
-" C pre-processor directives
-"syn region hasteIncluded	display contained start=+"+ skip=+\\\\\|\\"+ end=+"+
+" syn region hasteString start=+"+  end=+"+
 syn match  hasteIncluded	display contained "<[^>]*>"
 syn match  hasteIncluded	display contained "<[^"]*>"
-syn match  hasteInclude		display "^\s*#include\>\s*["<]" contains=hasteIncluded
-syn region hasteDefine	start="^\s*\(%:\|#\)\s*\(define\|undef\)\>" skip="\\$" end="$" end="//"me=s-1 contains=ALLBUT,@hastePreProcGroup,@Spell
-syn region hasteDefine	start="^\s*\(%:\|#\)\s*\(ifndef\|ifdef\|endif\)\>" skip="\\$" end="$" end="//"me=s-1 contains=@Spell
-syn region hastePreCondit	start="^\s*\(%:\|#\)\s*\(if\|ifdef\|ifndef\|elif\)\>" skip="\\$" end="$" end="//"me=s-1 contains=hasteComment,hasteCppString,hasteCharacter,hasteCppParen,hasteParenError,hasteNumbers,hasteCommentError,hasteSpaceError
-syn region hastePreProc	start="^\s*\(%:\|#\)\s*\(pragma\>\|line\>\|warning\>\|warn\>\|error\>\)" skip="\\$" end="$" keepend contains=ALLBUT,@hastePreProcGroup,@Spell
-syn cluster hastePreProcGroup	contains=hasteIncluded,hasteInclude,hasteDefine
-syn region hasteCppSkip	contained start="^\s*\(%:\|#\)\s*\(if\>\|ifdef\>\|ifndef\>\)" skip="\\$" end="^\s*\(%:\|#\)\s*endif\>" contains=hasteSpaceError,hasteCppSkip
+syn region hasteInclude	start="^\s*#include\>\s*" end="$" contains=hasteIncluded,hasteString
 
-" floating numbers
-syn match hasteNumber "-\=\<\d\+\.\d\+\(E[+\-]\=\d\+\)\>"
-syn match hasteNumber "-\=\<\d\+\.\d\+\>"
-syn match hasteNumber "0*2#[01_]\+\.[01_]\+#\(E[+\-]\=\d\+\)\="
-syn match hasteNumber "0*16#[0-9a-f_]\+\.[0-9a-f_]\+#\(E[+\-]\=\d\+\)\="
 " integer numbers
-syn match hasteNumber "-\=\<\d\+\(E[+\-]\=\d\+\)\>"
+syn match hasteNumber "\d\+\^[[:alnum:]]*[-+]\{0,1\}[[:alnum:]]*"
+syn match hasteNumber "-\=\<\d\+\(\^[+\-]\=\d\+\)\>"
 syn match hasteNumber "-\=\<\d\+\>"
-syn match hasteNumber "0*2#[01_]\+#\(E[+\-]\=\d\+\)\="
-syn match hasteNumber "0*16#[0-9a-f_]\+#\(E[+\-]\=\d\+\)\="
+" syn match hasteNumber "0*2#[01_]\+#\(\^[+\-]\=\d\+\)\="
+" syn match hasteNumber "0*16#[0-9a-f_]\+#\(\^[+\-]\=\d\+\)\="
 " operators
-syn keyword hasteSeparators	& , . \| : 
+syn keyword hasteSeparators	& , . \| 
 syn keyword hasteExecution	\|\| ; @
-syn keyword hasteOperator	:= ? !
+syn keyword hasteOperator	:= ? ! :
 syn keyword hasteTypeConstr	"[" << >> .. "]" ~
 syn keyword hasteExprOp		< <= >= > = # <> + - * == ##
 syn keyword hasteMisc		( ) 0x 0b
 "
 syn match   hasteSeparators	"[&:\|,.]"
 syn match   hasteOperator	":="
+syn match   hasteOperator	":"
 syn match   hasteOperator	"?"
 syn match   hasteOperator	"!"
 syn match   hasteExecution	"||"
@@ -110,7 +103,7 @@ syn match   hasteExprOp		"<>"
 syn match   hasteExprOp		"="
 syn match   hasteExprOp		"=="
 syn match   hasteExprOp		"##"
-syn match   hasteExprOp		"#"
+" syn match   hasteExprOp		"#"
 syn match   hasteExprOp		"*"
 syn match   hasteExprOp		"+"
 
@@ -133,6 +126,7 @@ hi def link hasteType		Type
 hi def link hasteGlobal		Error
 hi def link hasteError		Error
 hi def link hasteAttribute	Type
+"
 hi def link hasteSeparators	Special
 hi def link hasteExecution	Special
 hi def link hasteTypeConstr	Special
@@ -143,7 +137,8 @@ hi def link hasteFutureExt 	Error
 hi def link hasteVerilog	Error
 hi def link hasteDefine		Macro
 hi def link hasteInclude	Include
-hi def link hastePreProc	PreProc
+" hi def link hastePreProc	Preproc
+" hi def link hastePreProcVar	Special
 
 let b:current_syntax = "haste"
 

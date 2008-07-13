@@ -163,6 +163,16 @@ Add the "-posix" argument to the compiler by using one of these commands:
 	export CC='cc -posix' (sh)
 And run configure with "--disable-motif-check".
 
+Unix: LOCAL HEADERS AND LIBRARIES NOT IN /usr/local
+
+Sometimes it is necessary to search different path than /usr/local for locally
+installed headers (/usr/local/include) and libraries (/usr/local/lib).
+To search /stranger/include and /stranger/lib for locally installed
+headers and libraries, use:
+	./configure --with-local-dir=/stranger
+And to not search for locally installed headers and libraries at all, use:
+	./configure --without-local-dir
+
 
 3. RISC OS
 =============

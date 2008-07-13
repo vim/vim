@@ -7,6 +7,9 @@
 " License:	GNU GPL, version 2.0 or later
 " URL:		http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/ftplugin/debchangelog.vim;hb=debian
 
+" Bug completion requires apt-listbugs installed for Debian packages or
+" python-launchpad-bugs installed for Ubuntu packages
+
 if exists("b:did_ftplugin")
   finish
 endif
@@ -116,7 +119,9 @@ function NewVersion()
     normal h
     normal 
     call setline(1, substitute(getline(1), '-\$\$', '-', ''))
-    normal zo
+    if exists("g:debchangelog_fold_enable")
+        foldopen
+    endif
     call AddEntry()
 endfunction
 
@@ -279,7 +284,9 @@ function! DebGetChangelogFold(lnum)
   return '='
 endfunction
 
-silent! foldopen!   " unfold the entry the cursor is on (usually the first one)
+if exists("g:debchangelog_fold_enable")
+  silent! foldopen!   " unfold the entry the cursor is on (usually the first one)
+endif
 
 " }}}
 
@@ -291,27 +298,65 @@ endif
 
 fun! DebCompleteBugs(findstart, base)
   if a:findstart
-    " it we are just after an '#', the completion should start at the '#',
-    " otherwise no completion is possible
     let line = getline('.')
-    let colidx = col('.')
-    if colidx > 1 && line[colidx - 2] =~ '#'
-      let colidx = colidx - 2
-    else
-      let colidx = -1
-    endif
+
+    " try to detect whether this is closes: or lp:
+    let g:debchangelog_complete_mode = 'debbugs'
+    let try_colidx = col('.') - 1
+    let colidx = -1 " default to no-completion-possible
+
+    while try_colidx > 0 && line[try_colidx - 1] =~ '\s\|\d\|#\|,\|:'
+      let try_colidx = try_colidx - 1
+      if line[try_colidx] == '#' && colidx == -1
+        " found hash, where we complete from:
+        let colidx = try_colidx
+      elseif line[try_colidx] == ':'
+        if try_colidx > 1 && strpart(line, try_colidx - 2, 3) =~ '\clp:'
+          let g:debchangelog_complete_mode = 'lp'
+        endif
+        break
+      endif
+    endwhile
     return colidx
-  else
-    if ! filereadable('/usr/sbin/apt-listbugs')
-      echoerr 'apt-listbugs not found, you should install it to use Closes bug completion'
-      return
+  else " return matches:
+    let bug_lines = []
+    if g:debchangelog_complete_mode == 'lp'
+      if ! has('python')
+        echoerr 'vim must be built with Python support to use LP bug completion'
+        return
+      endif
+      let pkgsrc = DebGetPkgSrcName(line('.'))
+      python << EOF
+import vim
+try:
+    from launchpadbugs import connector
+    buglist = connector.ConnectBugList()
+    bl = list(buglist('https://bugs.launchpad.net/ubuntu/+source/%s' % vim.eval('pkgsrc')))
+    bl.sort(None, int)
+    liststr = '['
+    for bug in bl:
+        liststr += "'#%d - %s'," % (int(bug), bug.summary.replace('\'', '\'\''))
+    liststr += ']'
+    vim.command('silent let bug_lines = %s' % liststr)
+except ImportError:
+    vim.command('echoerr \'python-launchpad-bugs needs to be installed to use Launchpad bug completion\'')
+EOF
+    else
+      if ! filereadable('/usr/sbin/apt-listbugs')
+        echoerr 'apt-listbugs not found, you should install it to use Closes bug completion'
+        return
+      endif
+      let pkgsrc = DebGetPkgSrcName(line('.'))
+      let listbugs_output = system('/usr/sbin/apt-listbugs -s ' . g:debchangelog_listbugs_severities . ' list ' . pkgsrc . ' | grep "^ #" 2> /dev/null')
+      let bug_lines = split(listbugs_output, '\n')
     endif
-    let pkgsrc = DebGetPkgSrcName(line('.'))
-    let listbugs_output = system('apt-listbugs -s ' . g:debchangelog_listbugs_severities . ' list ' . pkgsrc . ' | grep "^ #" 2> /dev/null')
-    let bug_lines = split(listbugs_output, '\n')
     let completions = []
     for line in bug_lines
       let parts = matchlist(line, '^\s*\(#\S\+\)\s*-\s*\(.*\)$')
+      " filter only those which match a:base:
+      if parts[1] !~ "^" . a:base
+        continue
+      endif
       let completion = {}
       let completion['word'] = parts[1]
       let completion['menu'] = parts[2]

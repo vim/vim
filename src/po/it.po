@@ -11,9 +11,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 7.1\n"
-"POT-Creation-Date: 2008-06-20 23:58+0200\n"
-"PO-Revision-Date:  2008-06-21 06:00+0200\n"
+"Project-Id-Version: vim 7.2\n"
+"POT-Creation-Date: 2008-06-25 09:10+0200\n"
+"PO-Revision-Date:  2008-06-27 23:00+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -452,6 +452,9 @@ msgstr "E693: Posso confrontare un Funcref solo con un Funcref"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Operazione non valida per Funcref"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Non si può usare '%' con un numero con virgola"
+
 msgid "E110: Missing ')'"
 msgstr "E110: Manca ')'"
 
@@ -516,6 +519,9 @@ msgstr "E120: Uso di <SID> fuori dal contesto di uno script: %s"
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Chiamata di funzione dict in assenza di Dizionario: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Ci vuole un numero intero o con virgola"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Troppi argomenti"
@@ -593,6 +599,9 @@ msgstr "(Non valido)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Errore in scrittura su file temporaneo"
 
+msgid "E805: Using a Float as a number"
+msgstr "E805: Uso di un numero con virgola come intero"
+
 msgid "E703: Using a Funcref as a number"
 msgstr "E703: Uso di Funcref come numero"
 
@@ -610,6 +619,9 @@ msgstr "E730: uso di Lista come Stringa"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: uso di Dizionario come Stringa"
+
+msgid "E806: using Float as a String"
+msgstr "E806: uso di un numero con virgola come stringa"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -1580,7 +1592,7 @@ msgstr "E203: Buffer in scrittura cancellato o scaricato dagli autocomandi"
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr "E204: L'autocomando ha modificato numero linee in maniera imprevista"
 
-msgid "NetBeans dissallows writes of unmodified buffers"
+msgid "NetBeans disallows writes of unmodified buffers"
 msgstr "NetBeans non permette la scrittura di un buffer non modificato"
 
 msgid "Partial writes disallowed for NetBeans buffers"
@@ -2489,19 +2501,6 @@ msgstr "numero linea non nell'intervallo"
 
 msgid "not allowed in the Vim sandbox"
 msgstr "non ammesso in ambiente protetto"
-
-#, c-format
-msgid "E370: Could not load library %s"
-msgstr "E370: Non posso caricare la libreria %s"
-
-msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr ""
-"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
-"Perl."
-
-msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
 
 msgid ""
 "E263: Sorry, this command is disabled, the Python library could not be "
@@ -3829,6 +3828,9 @@ msgstr "E338: Spiacente, niente esplorazione file in modalità console"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Argomenti non sufficienti per printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Numero con virgola atteso come argomento per printf()"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Troppi argomenti per printf()"
 
@@ -3950,7 +3952,6 @@ msgstr "E346: Nessun altra directory \"%s\" trovata nel 'cdpath'"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Nessun altro file \"%s\" trovato nel percorso"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Non posso connettermi a Netbeans #2"
 
@@ -5849,6 +5850,19 @@ msgstr "E446: Nessun nome file sotto il cursore"
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
+
+#, c-format
+msgid "E370: Could not load library %s"
+msgstr "E370: Non posso caricare la libreria %s"
+
+msgid "Sorry, this command is disabled: the Perl library could not be loaded."
+msgstr ""
+"Spiacente, comando non disponibile, non riesco a caricare libreria programmi "
+"Perl."
+
+msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
+msgstr ""
+"E299: Valorizzazione Perl vietata in ambiente protetto senza il modulo Safe"
 
 msgid "Edit with &multiple Vims"
 msgstr "Apri con &molti Vim"

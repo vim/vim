@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	generic git output
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2008 Feb 27
+" Last Change:	2008 Jun 20
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
@@ -15,7 +15,7 @@ if !exists('b:git_dir')
     elseif $GIT_DIR != ''
         let b:git_dir = $GIT_DIR
     endif
-    if has('win32') || has('win64')
+    if (has('win32') || has('win64')) && exists('b:git_dir')
         let b:git_dir = substitute(b:git_dir,'\\','/','g')
     endif
 endif

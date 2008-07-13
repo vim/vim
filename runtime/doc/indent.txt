@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.2a.  Last change: 2008 Jun 21
+*indent.txt*    For Vim version 7.2b.  Last change: 2008 Jun 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -504,6 +504,81 @@ autocommand such as >
 
 to get do loops indented in .f90 files and left alone in Fortran files with
 other extensions such as .for.
+
+
+PHP				*ft-php-indent* *php-indent* *php-indenting*
+
+NOTE:	PHP files will be indented correctly only if PHP |syntax| is active.
+
+If you are editing a file in Unix 'fileformat' and '\r' characters are present
+before new lines, indentation won't proceed correctly ; you have to remove
+those useless characters first with a command like: >
+
+    :%s /\r$//g
+
+Or, you can simply |:let| the variable PHP_removeCRwhenUnix to 1 and the
+script will silently remove them when Vim loads a PHP file (at each|BufRead|).
+
+OPTIONS: ~
+
+PHP indenting can be altered in several ways by modifying the values of some
+variables:
+
+								*php-comment*
+To not enable auto-formating of comments by default (if you want to use your
+own 'formatoptions'): >
+    :let g:PHP_autoformatcomment = 0
+
+Else, 't' will be removed from the 'formatoptions' string and "qrowcb" will be
+added, see|fo-table|for more information.
+-------------
+
+To add an extra indent to every PHP lines with N being the number of
+'shiftwidth' to add: >
+    :let g:PHP_default_indenting = N
+
+For example, with N = 1, this will give:
+>
+    <?php
+	if (!isset($History_lst_sel))
+	    if (!isset($History_lst_sel))
+		if (!isset($History_lst_sel)) {
+		    $History_lst_sel=0;
+		} else
+		    $foo="bar";
+
+	$command_hist = TRUE;
+    ?>
+(Notice the extra indent between the PHP container markers and the code)
+-------------
+
+To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
+    :let g:PHP_removeCRwhenUnix = 1
+-------------
+
+To indent braces at the same level than the code they contain: >
+    :let g:PHP_BracesAtCodeLevel = 1
+    
+This will give the following result: >
+    if ($foo)
+	{
+	foo();
+	}
+Instead of: >
+    if ($foo)
+    {
+	foo();
+    }
+
+NOTE:	Indenting will be a bit slower if this option is used because some
+	optimizations won't be available.
+-------------
+
+To indent 'case:' and 'default:' statements in switch() blocks: >
+    :let g:PHP_vintage_case_default_indent = 1
+
+(By default they are indented at the same level than the 'switch()' to avoid
+unnecessary indentation)
 
 
 PYTHON							*ft-python-indent*

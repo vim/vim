@@ -1,6 +1,6 @@
 " Vim autoload file for editing compressed files.
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2008 May 29
+" Last Change: 2008 Jul 04
 
 " These functions are used by the gzip plugin.
 
@@ -153,9 +153,9 @@ fun gzip#write(cmd)
     let nmt = s:tempname(nm)
     if rename(nm, nmt) == 0
       if exists("b:gzip_comp_arg")
-	call system(a:cmd . " " . b:gzip_comp_arg . " " . s:escape(nmt))
+	call system(a:cmd . " " . b:gzip_comp_arg . " -- " . s:escape(nmt))
       else
-	call system(a:cmd . " " . s:escape(nmt))
+	call system(a:cmd . " -- " . s:escape(nmt))
       endif
       call rename(nmt . "." . expand("<afile>:e"), nm)
     endif
@@ -180,10 +180,10 @@ fun gzip#appre(cmd)
     if rename(nm, nmte) == 0
       if &patchmode != "" && getfsize(nm . &patchmode) == -1
 	" Create patchmode file by creating the decompressed file new
-	call system(a:cmd . " -c " . s:escape(nmte) . " > " . s:escape(nmt))
+	call system(a:cmd . " -c -- " . s:escape(nmte) . " > " . s:escape(nmt))
 	call rename(nmte, nm . &patchmode)
       else
-	call system(a:cmd . " " . s:escape(nmte))
+	call system(a:cmd . " -- " . s:escape(nmte))
       endif
       call rename(nmt, nm)
     endif

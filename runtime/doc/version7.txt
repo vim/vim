@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.2a.  Last change: 2008 Jun 24
+*version7.txt*  For Vim version 7.2b.  Last change: 2008 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -263,7 +263,7 @@ Currently supported languages:
 	Ruby					|ft-ruby-omni|
 	SQL					|ft-sql-omni|
 	XML					|ft-xml-omni|
-	any language wih syntax highligting	|ft-syntax-omni|
+	any language with syntax highlighting	|ft-syntax-omni|
 
 You can add your own omni completion scripts.
 
@@ -3397,7 +3397,7 @@ Solution:   Include vim.h as before. (Mark S. Williams)
 Files:	    src/if_ole.cpp
 
 Patch 7.0.058
-Problem:    The gbk and and gb18030 encodings are not recognized.
+Problem:    The gbk and gb18030 encodings are not recognized.
 Solution:   Add aliases to cp936. (Edward L. Fox)
 Files:	    src/mbyte.c
 
@@ -4655,27 +4655,35 @@ Moved including fcntl.h to vim.h and removed it from all .c files.
 Introduce macro STRMOVE(d, s), like STRCPY() for overlapping strings.
 Use it instead of mch_memmove(p, p + x, STRLEN(p + x) + 1).
 
+Removed the bulgarian.vim keymap file, two more standard ones replace it.
+(Boyko Bantchev)
+
+Increased the maximum number of tag matches for command line completion from
+200 to 300.
+
 
 Added							*added-7.2*
 -----
 
 New syntax files:
+	CUDA (Timothy B. Terriberry)
 	Cdrdao config (Nikolai Weibull)
 	Coco/R (Ashish Shukla)
-	CUDA (Timothy B. Terriberry)
-	denyhosts config (Nikolai Weibull)
 	Dtrace script (Nicolas Weber)
 	Git output, commit, config, rebase, send-email (Tim Pope)
-	HASTE (M. Tranchero)
+	HASTE and HastePreProc (M. Tranchero)
+	Haml (Tim Pope)
 	Host conf (Nikolai Weibull)
 	Linden script (Timo Frenay)
-	Symbian meta-makefile, MMP (Ron Aaron)
 	MS messages (Kevin Locke)
 	PDF (Tim Pope)
 	ProMeLa (Maurizio Tranchero)
 	Reva Foth (Ron Aaron)
+	Sass (Tim Pope)
+	Symbian meta-makefile, MMP (Ron Aaron)
 	VOS CM macro (Andrew McGill)
 	XBL (Doug Kearns)
+	denyhosts config (Nikolai Weibull)
 
 New tutor files:
 	Made UTF-8 versions of all the tutor files.
@@ -4690,21 +4698,31 @@ New filetype plugins:
 	Dos .ini file (Nikolai Weibull)
 	Dtrace script (Nicolas Weber)
 	Git, Git config, Git commit, Git rebase, Git send-email (Tim Pope)
+	Haml (Tim Pope)
 	Host conf (Nikolai Weibull)
+	Logtalk (Paulo Moura)
 	MS messages (Kevin Locke)
 	PDF (Tim Pope)
 	Reva Forth (Ron Aaron)
+	Sass (Tim Pope)
 
 New indent files:
 	Dtrace script (Nicolas Weber)
 	Erlang (Csaba Hoch)
 	Git config (Tim Pope)
+	Haml (Tim Pope)
+	Logtalk (Paulo Moura)
+	Sass (Tim Pope)
 	Tiny Fugue (Christian J. Robinson)
+
+New compiler plugins:
+	RSpec (Tim Pope)
 
 New keymap files:
 	Croatian (Paul B. Mahol)
 	Russian Dvorak (Serhiy Boiko)
 	Ukrainian Dvorak (Serhiy Boiko)
+	Removed plain Bulgarian, "bds" and phonetic are sufficient.
 
 Other new runtime files:
 	Esperanto menus and message translations. (Dominique Pelle)
@@ -5116,7 +5134,7 @@ Solution:   Adjust ind_len. (Chris Lubinski)
 Files:	    src/misc1.c
 
 Patch 7.1.063 (after 7.1.040)
-Problem:    Warning for unitialized variable.
+Problem:    Warning for uninitialized variable.
 Solution:   Initialise it to NULL.
 Files:	    src/ex_docmd.c
 
@@ -5184,7 +5202,7 @@ Solution:   Handle the situation that we start without indent. (Chris
 Files:	    src/misc1.c
 
 Patch 7.1.074
-Problem:    Crash when calling string() on a recurively nested List.
+Problem:    Crash when calling string() on a recursively nested List.
 Solution:   Check result value for being NULL. (Yukihiro Nakadaira)
 Files:	    src/eval.c
 
@@ -5487,7 +5505,7 @@ Patch 7.1.124 (extra)
 Problem:    Mac: When dropping a file on Vim.app that is already in the buffer
 	    list (from .viminfo) results in editing an empty, unnamed buffer.
 	    (Axel Kielhorn)  Also: warning for unused variable.
-Solution:   Move to the buffer of the first agument.  Delete unused variable.
+Solution:   Move to the buffer of the first argument.  Delete unused variable.
 Files:	    src/gui_mac.c
 
 Patch 7.1.125
@@ -6098,7 +6116,7 @@ Solution:   use set_option_value() to set 'rightleft'.
 Files:	    src/main.c
 
 Patch 7.1.225
-Problem:    Using unitialized value when XGetWMNormalHints() fails.
+Problem:    Using uninitialized value when XGetWMNormalHints() fails.
 Solution:   Check the return value. (Dominique Pelle)
 Files:	    src/os_unix.c
 
@@ -6195,7 +6213,7 @@ Problem:    When "gUe" turns a German sharp s into SS the operation stops
 	    not changed to SS there.
 Solution:   Make sure all the characters are operated upon.  Detect the sharp
 	    s in latin2.  Also fixes that changing case of a multi-byte
-	    character that changes the byte cound doesn't always work.
+	    character that changes the byte count doesn't always work.
 Files:	    src/ops.c
 
 Patch 7.1.241
@@ -6350,7 +6368,7 @@ Solution:   Assume the escape sequence ends in a letter.
 Files:	    src/term.c
 
 Patch 7.1.267
-Problem:    When changing folds cursor may be posioned in the wrong place.
+Problem:    When changing folds cursor may be positioned in the wrong place.
 Solution:   Call changed_window_setting_win() instead of
 	    changed_window_setting().
 Files:	    src/fold.c
@@ -6676,7 +6694,7 @@ Solution:   Add the 'v' argument to getpos().
 Files:	    runtime/doc/eval.txt, src/eval.c
 
 Patch 7.1.323
-Problem:    Test 19 fails with some termcaps. (Dominque Pelle)
+Problem:    Test 19 fails with some termcaps. (Dominique Pelle)
 Solution:   Set the t_kb and t_kD termcap values.
 Files:	    src/testdir/test19.in, src/testdir/test38.in
 
@@ -6770,6 +6788,153 @@ Setting 'pastetoggle' to "jj" didn't work.
 
 'ic' and 'smartcase' don't work properly when using \%V in a search pattern.
 (Kana Natsuno)
+
+Patch 7.2a.001
+Problem:    On some systems X11/Xlib.h exists (from X11-dev package) but
+	    X11/Intrinsic.h does not (in Xt-dev package).  This breaks the
+	    build.  Also, on Solaris 9 sys/ptem.h isn't found.
+Solution:   Have configure only accept X11 when X11/Intrinsic.h exists.
+	    Check for sys/ptem.h while including sys/stream.h. (Vladimir
+	    Marek)
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2a.002
+Problem:    getbufvar(N, "") gets the dictionary of the current buffer instead
+	    of buffer N.
+Solution:   Set curbuf before calling find_var_in_ht(). (Kana Natsuno)
+Files:	    src/eval.c
+
+Patch 7.2a.003
+Problem:    Leaking memory when using ":file name" and using access control
+	    lists.
+Solution:   Invoke mch_free_acl() in vim_rename(). (Dominique Pelle)
+Files:	    src/fileio.c
+
+Patch 7.2a.004
+Problem:    Some systems can't get spell files by ftp.
+Solution:   Use http when it looks like it's possible. (James Vega)
+Files:	    runtime/autoload/spellfile.vim
+
+Patch 7.2a.005
+Problem:    A few error messages use confusing names.  Misspelling.
+Solution:   Change "dissallows" to "disallows". (Dominique Pelle)  Change
+	    "number" to "Number".
+Files:	    src/eval.c, src/fileio.c
+
+Patch 7.2a.006
+Problem:    Reading past NUL in a string.
+Solution:   Check for invalid utf-8 byte sequence. (Dominique Pelle)
+Files:	    src/charset.c
+
+Patch 7.2a.007
+Problem:    ":let v = 1.2.3" was OK in Vim 7.1, now it gives an error.
+Solution:   Don't look for a floating point number after the "." operator.
+Files:	    src/eval.c
+
+Patch 7.2a.008
+Problem:    printf("%g", 1) doesn't work.
+Solution:   Convert Number to Float when needed.
+Files:	    src/message.c
+
+Patch 7.2a.009
+Problem:    cygwin_conv_to_posix_path() does not specify buffer size.
+Solution:   Use new Cygwin function: cygwin_conv_path(). (Corinna Vinschen)
+Files:	    src/main.c, src/os_unix.c
+
+Patch 7.2a.010
+Problem:    When a file name has an illegal byte sequence Vim may read
+	    uninitialised memory.
+Solution:   Don't use UTF_COMPOSINGLIKE() on an illegal byte.  In
+	    msg_outtrans_len_attr() use char2cells() instead of ptr2cells().
+	    In utf_ptr2char() don't check second byte when first byte is
+	    illega.  (Dominique Pelle)
+Files:	    src/mbyte.c, src/message.c
+
+Patch 7.2a.011
+Problem:    The Edit/Startup Settings menu doesn't work.
+Solution:   Expand environment variables. (Ben Schmidt)
+Files:	    runtime/menu.vim
+
+Patch 7.2a.012
+Problem:    Compiler warnings for casting int to pointer.
+Solution:   Add cast to long in between. (Martin Toft)
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2a.013
+Problem:    shellescape() does not escape "%" and "#" characters.
+Solution:   Add find_cmdline_var() and use it when the second argument to
+	    shellescape() is non-zero.
+Files:	    runtime/doc/eval.txt, src/eval.c, src/ex_docmd.c,
+	    src/proto/ex_docmd.pro, src/proto/misc2.pro, src/misc2.c
+
+Patch 7.2a.014
+Problem:    Problem with % in message.
+Solution:   Put % in single quotes.
+Files:	    src/eval.c
+
+Patch 7.2a.015 (after 7.2a.010)
+Problem:    Misaligned messages.
+Solution:   Compute length of unprintable chars correctly.
+Files:	    src/message.c
+
+Patch 7.2a.016
+Problem:    Using CTRL-W v in the quickfix window results in two quickfix
+	    windows, which is not allowed.  ":tab split" should be allowed to
+	    open a new quickfix window in another tab.
+Solution:   For CTRL-W v instead of splitting the window open a new one.
+	    When using ":tab" do allow splitting the quickfix window (was
+	    already included in patch 7.2a.013).
+Files:	    src/window.c
+
+Patch 7.2a.017
+Problem:    ":doautoall" executes autocommands for all buffers instead of just
+	    for loaded buffers.
+Solution:   Change "curbuf" to "buf".
+Files:	    src/fileio.c
+
+Patch 7.2a.018
+Problem:    Compiler warnings when compiling with Gnome. (Tony Mechelynck)
+Solution:   Add type casts.
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2a.019
+Problem:    ":let &g:tw = 44" sets the local option value. (Cyril Slobin)
+Solution:   Use get_varp_scope() instead of get_varp(). (Ian Kelling)
+Files:	    src/option.c
+
+There is no way to avoid adding /usr/local/{include|lib} to the build
+commands.  Add the --with-local-dir argument to configure. (Michael
+Haubenwallner)
+
+When using CTRL-D after ":help", the number of matches could be thousands.
+Restrict to TAG_MANY to avoid this taking too long. (Ian Kelling)
+
+The popup menu could be placed at a weird location.  Caused by w_wcol computed
+by curs_columns().  (Dominique Pelle)
+
+Overlapping STRCPY() arguments when using %r item in 'errorformat'.  Use
+STRMOVE() instead. (Ralf Wildenhues)
+
+Mac: On Leopard gvim, when using the mouse wheel nothing would happen until
+another event occures, such as moving the mouse.  Then the recorded scrolling
+would take place all at once. (Eckehard Berns)
+
+Solution for cursor color not reflecting IM status for GTK 2.  Add
+preedit_is_active flag. (SungHyun Nam)
+
+filereadable() can hang on a FIFO on Linux.  Use open() instead of fopen(),
+with O_NONBLOCK. (suggested by Lars Kotthoff)
+
+Included patch to support Perl 5.10. (Yasuhiro Matsumoto)
+
+When files are dropped on gvim while the screen is being updated, ignore the
+drop command to avoid freeing memory that is being used.
+
+In a terminal, when drawing the popup menu over double-wide characters, half
+characters may not be cleared properly. (Yukihiro Nakadaira)
+
+The #ifdef for including "vimio.h" was inconsistent.  In a few files it
+depended on MSWIN, which isn't defined until later.
 
 
  vim:tw=78:ts=8:ft=help:norl:

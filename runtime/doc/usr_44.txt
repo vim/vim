@@ -1,4 +1,4 @@
-*usr_44.txt*	For Vim version 7.2a.  Last change: 2006 Apr 24
+*usr_44.txt*	For Vim version 7.2b.  Last change: 2006 Apr 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

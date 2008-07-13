@@ -1,7 +1,8 @@
 " Vim syntax file
 " Language:         /var/log/messages file
 " Maintainer:       Yakov Lerner <iler.ml@gmail.com>
-" Latest Revision:  2006-06-19
+" Latest Revision:  2008-06-29
+" Changes:          2008-06-29 support for RFC3339 tuimestamps James Vega
 
 if exists("b:current_syntax")
   finish
@@ -10,12 +11,21 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-syn match   messagesBegin       display '^' nextgroup=messagesDate
+syn match   messagesBegin       display '^' nextgroup=messagesDate,messagesDateRFC3339
 
 syn match   messagesDate        contained display '\a\a\a [ 0-9]\d *'
                                 \ nextgroup=messagesHour
 
 syn match   messagesHour        contained display '\d\d:\d\d:\d\d\s*'
+                                \ nextgroup=messagesHost
+
+syn match   messagesDateRFC3339 contained display '\d\{4}-\d\d-\d\d'
+                                \ nextgroup=messagesRFC3339T
+
+syn match   messagesRFC3339T    contained display '\cT'
+                                \ nextgroup=messagesHourRFC3339
+
+syn match   messagesHourRFC3339 contained display '\c\d\d:\d\d:\d\d\(\.\d\+\)\=\([+-]\d\d:\d\d\|Z\)'
                                 \ nextgroup=messagesHost
 
 syn match   messagesHost        contained display '\S*\s*'
@@ -43,6 +53,9 @@ syn match   messagesError       contained '\c.*\<\(FATAL\|ERROR\|ERRORS\|FAILED\
 
 hi def link messagesDate        Constant
 hi def link messagesHour        Type
+hi def link messagesDateRFC3339 Constant
+hi def link messagesHourRFC3339 Type
+hi def link messagesRFC3339T    Normal
 hi def link messagesHost        Identifier
 hi def link messagesLabel       Operator
 hi def link messagesPID         Constant

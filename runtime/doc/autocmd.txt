@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.2a.  Last change: 2008 Jun 24
+*autocmd.txt*   For Vim version 7.2b.  Last change: 2008 Jun 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -406,9 +406,10 @@ BufWinEnter			After a buffer is displayed in a window.  This
 				Does not happen for |:split| without
 				arguments, since you keep editing the same
 				buffer, or ":split" with a file that's already
-				open in a window.  But it does happen for
-				a ":split" with the name of the current
-				buffer, since it reloads that buffer.
+				open in a window, because it re-uses an
+				existing buffer.  But it does happen for a
+				":split" with the name of the current buffer,
+				since it reloads that buffer.
 							*BufWinLeave*
 BufWinLeave			Before a buffer is removed from a window.
 				Not when it's still visible in another window.
