@@ -6269,7 +6269,7 @@ screen_puts_len(text, len, row, col, attr)
 	    && !gui.in_use
 # endif
 	    && mb_fix_col(col, row) != col)
-	screen_puts_len(" ", 1, row, col - 1, 0);
+	screen_puts_len((char_u *)" ", 1, row, col - 1, 0);
 #endif
 
     off = LineOffset[row] + col;
@@ -7139,9 +7139,9 @@ screen_fill(start_row, end_row, start_col, end_col, c1, c2, attr)
 	     * double wide-char clear out the right halve.  Only needed in a
 	     * terminal. */
 	    if (mb_fix_col(start_col, row) != start_col)
-		screen_puts_len(" ", 1, row, start_col - 1, 0);
+		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
 	    if (mb_fix_col(end_col, row) != end_col)
-		screen_puts_len(" ", 1, row, end_col, 0);
+		screen_puts_len((char_u *)" ", 1, row, end_col, 0);
 	}
 #endif
 	/*
