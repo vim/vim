@@ -2448,8 +2448,6 @@ dbcs_head_off(base, p)
     return (q == p) ? 0 : 1;
 }
 
-#if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \
-	|| defined(PROTO)
 /*
  * Special version of dbcs_head_off() that works for ScreenLines[], where
  * single-width DBCS_JPNU characters are stored separately.
@@ -2484,7 +2482,6 @@ dbcs_screen_head_off(base, p)
     }
     return (q == p) ? 0 : 1;
 }
-#endif
 
     int
 utf_head_off(base, p)
@@ -2934,8 +2931,6 @@ mb_lefthalve(row, col)
 					LineOffset[row] + screen_Columns) > 1;
 }
 
-# if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \
-	|| defined(PROTO)
 /*
  * Correct a position on the screen, if it's the right halve of a double-wide
  * char move it to the left halve.  Returns the corrected column.
@@ -2956,7 +2951,6 @@ mb_fix_col(col, row)
 	return col - 1;
     return col;
 }
-# endif
 #endif
 
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT) || defined(PROTO)
