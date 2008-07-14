@@ -1911,7 +1911,7 @@ ui_cursor_shape()
 #endif
 
 #if defined(FEAT_CLIPBOARD) || defined(FEAT_GUI) || defined(FEAT_RIGHTLEFT) \
-	|| defined(PROTO)
+	|| defined(FEAT_MBYTE) || defined(PROTO)
 /*
  * Check bounds for column number
  */
