@@ -3779,7 +3779,7 @@ ex_helpgrep(eap)
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
 #ifdef FEAT_MULTI_LANG
     /* Check for a specified language */
@@ -3889,7 +3889,11 @@ ex_helpgrep(eap)
 	qi->qf_lists[qi->qf_curlist].qf_index = 1;
     }
 
-    p_cpo = save_cpo;
+    if (p_cpo == empty_option)
+	p_cpo = save_cpo;
+    else
+	/* Darn, some plugin changed the value. */
+	free_string_option(save_cpo);
 
 #ifdef FEAT_WINDOWS
     qf_update_buffer(qi);

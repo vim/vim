@@ -14997,7 +14997,7 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos,
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
 #ifdef FEAT_RELTIME
     /* Set the time limit, if there is one. */
@@ -15112,7 +15112,11 @@ do_searchpair(spat, mpat, epat, dir, skip, flags, match_pos,
 theend:
     vim_free(pat2);
     vim_free(pat3);
-    p_cpo = save_cpo;
+    if (p_cpo == empty_option)
+	p_cpo = save_cpo;
+    else
+	/* Darn, evaluating the {skip} expression changed the value. */
+	free_string_option(save_cpo);
 
     return retval;
 }
@@ -22503,7 +22507,7 @@ do_string_sub(str, pat, sub, flags)
 
     /* Make 'cpoptions' empty, so that the 'l' flag doesn't work here */
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     ga_init2(&ga, 1, 200);
 
@@ -22564,7 +22568,11 @@ do_string_sub(str, pat, sub, flags)
 
     ret = vim_strsave(ga.ga_data == NULL ? str : (char_u *)ga.ga_data);
     ga_clear(&ga);
-    p_cpo = save_cpo;
+    if (p_cpo == empty_option)
+	p_cpo = save_cpo;
+    else
+	/* Darn, evaluating {sub} expression changed the value. */
+	free_string_option(save_cpo);
 
     return ret;
 }
