@@ -1262,7 +1262,9 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
  * Escape "string" for use as a shell argument with system().
  * This uses single quotes, except when we know we need to use double qoutes
  * (MS-DOS and MS-Windows without 'shellslash' set).
- * Also replace "%", "#" and things like "<cfile>" when "do_special" is TRUE.
+ * Escape a newline, depending on the 'shell' option.
+ * When "do_special" is TRUE also replace "!", "%", "#" and things starting
+ * with "<" like "<cfile>".
  * Returns the result in allocated memory, NULL if we have run out.
  */
     char_u *
@@ -1275,6 +1277,13 @@ vim_strsave_shellescape(string, do_special)
     char_u	*d;
     char_u	*escaped_string;
     int		l;
+    int		csh_like;
+
+    /* Only csh and similar shells expand '!' within single quotes.  For sh and
+     * the like we must not put a backslash before it, it will be taken
+     * literally.  If do_special is set the '!' will be escaped twice.
+     * Csh also needs to have "\n" escaped twice when do_special is set. */
+    csh_like = (strstr((char *)gettail(p_sh), "csh") != NULL);
 
     /* First count the number of extra bytes required. */
     length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
@@ -1290,6 +1299,12 @@ vim_strsave_shellescape(string, do_special)
 # endif
 	if (*p == '\'')
 	    length += 3;		/* ' => '\'' */
+	if (*p == '\n' || (*p == '!' && (csh_like || do_special)))
+	{
+	    ++length;			/* insert backslash */
+	    if (csh_like && do_special)
+		++length;		/* insert backslash */
+	}
 	if (do_special && find_cmdline_var(p, &l) >= 0)
 	{
 	    ++length;			/* insert backslash */
@@ -1333,6 +1348,14 @@ vim_strsave_shellescape(string, do_special)
 		*d++ = '\'';
 		*d++ = '\'';
 		++p;
+		continue;
+	    }
+	    if (*p == '\n' || (*p == '!' && (csh_like || do_special)))
+	    {
+		*d++ = '\\';
+		if (csh_like && do_special)
+		    *d++ = '\\';
+		*d++ = *p++;
 		continue;
 	    }
 	    if (do_special && find_cmdline_var(p, &l) >= 0)
