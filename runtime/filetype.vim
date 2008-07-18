@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jul 08
+" Last Change:	2008 Jul 17
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -92,9 +92,9 @@ au BufNewFile,BufRead *.wrm			setf acedb
 " Ada (83, 9X, 95)
 au BufNewFile,BufRead *.adb,*.ads,*.ada		setf ada
 if has("vms")
-  au BufNewFile,BufRead *.gpr,*.ada_m,*.adc 	setf ada
+  au BufNewFile,BufRead *.gpr,*.ada_m,*.adc	setf ada
 else
-  au BufNewFile,BufRead *.gpr 			setf ada
+  au BufNewFile,BufRead *.gpr			setf ada
 endif
 
 " AHDL
@@ -290,6 +290,9 @@ endfunc
 
 " Blank
 au BufNewFile,BufRead *.bl			setf blank
+
+" Blkid cache file
+au BufNewFile,BufRead /etc/blkid.tab,/etc/blkid.tab.old   setf xml
 
 " C or lpc
 au BufNewFile,BufRead *.c			call s:FTlpc()
@@ -739,7 +742,7 @@ au BufNewFile,BufRead *.groovy			setf groovy
 au BufNewFile,BufRead *.gsp			setf gsp
 
 " Group file
-au BufNewFile,BufRead /etc/group,/etc/group-,/etc/group.edit,/etc/gshadow,/etc/gshadow-,/etc/gshadow.edit,/var/backups/group.bak,/var/backups/gshadow.bak		setf group
+au BufNewFile,BufRead /etc/group,/etc/group-,/etc/group.edit,/etc/gshadow,/etc/gshadow-,/etc/gshadow.edit,/var/backups/group.bak,/var/backups/gshadow.bak  setf group
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
@@ -800,6 +803,9 @@ au BufNewFile,BufRead *.tmpl			setf htmlcheetah
 " Host config
 au BufNewFile,BufRead /etc/host.conf		setf hostconf
 
+" Hosts access
+au BufNewFile,BufRead /etc/hosts.allow,/etc/hosts.deny  setf hostsaccess
+
 " Hyper Builder
 au BufNewFile,BufRead *.hb			setf hb
 
@@ -850,7 +856,7 @@ endfunc
 
 
 " Indent RC
-au BufNewFile,BufRead indentrc			setf indentrc
+au BufNewFile,BufRead indentrc			setf indent
 
 " Inform
 au BufNewFile,BufRead *.inf,*.INF		setf inform
@@ -1463,6 +1469,9 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 " Python
 au BufNewFile,BufRead *.py,*.pyw		setf python
 
+" Quixote (Python-based web framework)
+au BufNewFile,BufRead *.ptl			setf python
+
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
 
@@ -1560,6 +1569,9 @@ au BufNewFile,BufRead *.rst			setf rst
 
 " RTF
 au BufNewFile,BufRead *.rtf			setf rtf
+
+" Interactive Ruby shell
+au BufNewFile,BufRead .irbrc,irbrc		setf ruby
 
 " Ruby
 au BufNewFile,BufRead *.rb,*.rbw,*.gem,*.gemspec	setf ruby
