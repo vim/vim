@@ -5375,7 +5375,7 @@ write_viminfo_search_pattern(fp)
 	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
 #endif
 	wvsp_one(fp, RE_SEARCH, "", '/');
-	wvsp_one(fp, RE_SUBST, "Substitute ", '&');
+	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
     }
 }
 
