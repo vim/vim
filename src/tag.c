@@ -3854,6 +3854,8 @@ get_tags(list, pat)
 			    /* Skip field without colon. */
 			    while (*p != NUL && *p >= ' ')
 				++p;
+			if (*p == NUL)
+			    break;
 		    }
 		}
 	    }
