@@ -7140,7 +7140,7 @@ screen_fill(start_row, end_row, start_col, end_col, c1, c2, attr)
 	     * terminal. */
 	    if (mb_fix_col(start_col, row) != start_col)
 		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
-	    if (mb_fix_col(end_col, row) != end_col)
+	    if (end_col < screen_Columns && mb_fix_col(end_col, row) != end_col)
 		screen_puts_len((char_u *)" ", 1, row, end_col, 0);
 	}
 #endif
