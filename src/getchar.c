@@ -4539,7 +4539,7 @@ makemap(fd, buf)
     buf_T	*buf;	    /* buffer for local mappings or NULL */
 {
     mapblock_T	*mp;
-    char_u	c1, c2;
+    char_u	c1, c2, c3;
     char_u	*p;
     char	*cmd;
     int		abbr;
@@ -4592,8 +4592,12 @@ makemap(fd, buf)
 		if (*p != NUL)
 		    continue;
 
+		/* It's possible to create a mapping and then ":unmap" certain
+		 * modes.  We recreate this here by mapping the individual
+		 * modes, which requires up to three of them. */
 		c1 = NUL;
 		c2 = NUL;
+		c3 = NUL;
 		if (abbr)
 		    cmd = "abbr";
 		else
@@ -4605,9 +4609,6 @@ makemap(fd, buf)
 		    case NORMAL:
 			c1 = 'n';
 			break;
-		    case VISUAL + SELECTMODE:
-			c1 = 'v';
-			break;
 		    case VISUAL:
 			c1 = 'x';
 			break;
@@ -4617,16 +4618,45 @@ makemap(fd, buf)
 		    case OP_PENDING:
 			c1 = 'o';
 			break;
+		    case NORMAL + VISUAL:
+			c1 = 'n';
+			c2 = 'x';
+			break;
+		    case NORMAL + SELECTMODE:
+			c1 = 'n';
+			c2 = 's';
+			break;
+		    case NORMAL + OP_PENDING:
+			c1 = 'n';
+			c2 = 'o';
+			break;
+		    case VISUAL + SELECTMODE:
+			c1 = 'v';
+			break;
+		    case VISUAL + OP_PENDING:
+			c1 = 'x';
+			c2 = 'o';
+			break;
+		    case SELECTMODE + OP_PENDING:
+			c1 = 's';
+			c2 = 'o';
+			break;
 		    case NORMAL + VISUAL + SELECTMODE:
 			c1 = 'n';
 			c2 = 'v';
 			break;
+		    case NORMAL + VISUAL + OP_PENDING:
+			c1 = 'n';
+			c2 = 'x';
+			c3 = 'o';
+			break;
+		    case NORMAL + SELECTMODE + OP_PENDING:
+			c1 = 'n';
+			c2 = 's';
+			c3 = 'o';
+			break;
 		    case VISUAL + SELECTMODE + OP_PENDING:
 			c1 = 'v';
-			c2 = 'o';
-			break;
-		    case NORMAL + OP_PENDING:
-			c1 = 'n';
 			c2 = 'o';
 			break;
 		    case CMDLINE + INSERT:
@@ -4646,7 +4676,7 @@ makemap(fd, buf)
 			EMSG(_("E228: makemap: Illegal mode"));
 			return FAIL;
 		}
-		do	/* may do this twice if c2 is set */
+		do	/* do this twice if c2 is set, 3 times with c3 */
 		{
 		    /* When outputting <> form, need to make sure that 'cpo'
 		     * is set to the Vim default. */
@@ -4693,9 +4723,9 @@ makemap(fd, buf)
 			    || put_eol(fd) < 0)
 			return FAIL;
 		    c1 = c2;
-		    c2 = NUL;
-		}
-		while (c1);
+		    c2 = c3;
+		    c3 = NUL;
+		} while (c1 != NUL);
 	    }
 	}
 
