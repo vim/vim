@@ -5537,7 +5537,7 @@ check_for_bom(p, size, lenp, flags)
     int		len = 2;
 
     if (p[0] == 0xef && p[1] == 0xbb && size >= 3 && p[2] == 0xbf
-	    && (flags == FIO_ALL || flags == 0))
+	    && (flags == FIO_ALL || flags == FIO_UTF8 || flags == 0))
     {
 	name = "utf-8";		/* EF BB BF */
 	len = 3;
