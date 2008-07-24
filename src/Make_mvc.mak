@@ -207,9 +207,9 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 
 !include <Win32.mak>
 
-# Turn on Win64 compatibility warnings for 32-bit compiler in VC8. (/Wp64 is
-# deprecated in VC9.)
-!if ("$(MSVCVER)" == "8.0") 
+# Turn on Win64 compatibility warnings for VC7.x and VC8.
+# (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
+!if ("$(MSVCVER)" == "7.0") || ("$(MSVCVER)" == "7.1") || ("$(MSVCVER)" == "8.0") 
 DEFINES=$(DEFINES) /Wp64
 !endif
 

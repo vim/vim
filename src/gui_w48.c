@@ -3154,12 +3154,12 @@ mch_set_mouse_shape(int shape)
 	    idc = MAKEINTRESOURCE(IDC_ARROW);
 	else
 	    idc = mshape_idcs[shape];
-#ifdef _WIN64
-	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (LONG_PTR)LoadCursor(NULL, idc));
+#ifdef SetClassLongPtr
+	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (__int3264)(LONG_PTR)LoadCursor(NULL, idc));
 #else
 # ifdef WIN32
-	SetClassLong(s_textArea, GCL_HCURSOR, (LONG)LoadCursor(NULL, idc));
-# else
+	SetClassLong(s_textArea, GCL_HCURSOR, (long_u)LoadCursor(NULL, idc));
+# else /* Win16 */
 	SetClassWord(s_textArea, GCW_HCURSOR, (WORD)LoadCursor(NULL, idc));
 # endif
 #endif

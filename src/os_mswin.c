@@ -1729,7 +1729,7 @@ swap_me(COLORREF colorref)
 }
 
 /*ARGSUSED*/
-    static BOOL CALLBACK
+    static INT_PTR CALLBACK
 PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 #ifdef FEAT_GETTEXT
@@ -2125,8 +2125,8 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	char_u	*port_name = (char_u *)devname +devname->wOutputOffset;
 	char_u	*text = _("to %s on %s");
 
-	prt_name = alloc(STRLEN(printer_name) + STRLEN(port_name)
-							      + STRLEN(text));
+	prt_name = alloc((unsigned)(STRLEN(printer_name) + STRLEN(port_name)
+							     + STRLEN(text)));
 	if (prt_name != NULL)
 	    wsprintf(prt_name, text, printer_name, port_name);
     }
