@@ -479,10 +479,13 @@ ex_sort(eap)
 	    c = *s2;
 	    (*s2) = 0;
 	    /* Sorting on number: Store the number itself. */
+	    p = s + start_col;
 	    if (sort_hex)
-		s = skiptohex(s + start_col);
+		s = skiptohex(p);
 	    else
-		s = skiptodigit(s + start_col);
+		s = skiptodigit(p);
+	    if (s > p && s[-1] == '-')
+		--s;  /* include preceding negative sign */
 	    vim_str2nr(s, NULL, NULL, sort_oct, sort_hex,
 					&nrs[lnum - eap->line1].start_col_nr, NULL);
 	    (*s2) = c;

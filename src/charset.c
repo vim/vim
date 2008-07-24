@@ -1466,9 +1466,11 @@ getvcols(wp, pos1, pos2, left, right)
  * skipwhite: skip over ' ' and '\t'.
  */
     char_u *
-skipwhite(p)
-    char_u	*p;
+skipwhite(q)
+    char_u	*q;
 {
+    char_u	*p = q;
+
     while (vim_iswhite(*p)) /* skip to next non-white */
 	++p;
     return p;
@@ -1478,9 +1480,11 @@ skipwhite(p)
  * skip over digits
  */
     char_u *
-skipdigits(p)
-    char_u	*p;
+skipdigits(q)
+    char_u	*q;
 {
+    char_u	*p = q;
+
     while (VIM_ISDIGIT(*p))	/* skip to next non-digit */
 	++p;
     return p;
@@ -1491,9 +1495,11 @@ skipdigits(p)
  * skip over digits and hex characters
  */
     char_u *
-skiphex(p)
-    char_u	*p;
+skiphex(q)
+    char_u	*q;
 {
+    char_u	*p = q;
+
     while (vim_isxdigit(*p))	/* skip to next non-digit */
 	++p;
     return p;
@@ -1505,9 +1511,11 @@ skiphex(p)
  * skip to digit (or NUL after the string)
  */
     char_u *
-skiptodigit(p)
-    char_u	*p;
+skiptodigit(q)
+    char_u	*q;
 {
+    char_u	*p = q;
+
     while (*p != NUL && !VIM_ISDIGIT(*p))	/* skip to next digit */
 	++p;
     return p;
@@ -1517,9 +1525,11 @@ skiptodigit(p)
  * skip to hex character (or NUL after the string)
  */
     char_u *
-skiptohex(p)
-    char_u	*p;
+skiptohex(q)
+    char_u	*q;
 {
+    char_u	*p = q;
+
     while (*p != NUL && !vim_isxdigit(*p))	/* skip to next digit */
 	++p;
     return p;
