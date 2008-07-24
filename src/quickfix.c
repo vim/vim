@@ -2999,14 +2999,14 @@ ex_vimgrep(eap)
     char_u	*save_ei = NULL;
 #endif
     aco_save_T	aco;
-#ifdef FEAT_AUTOCMD
-    char_u	*au_name =  NULL;
     int		flags = 0;
     colnr_T	col;
     long	tomatch;
     char_u	dirname_start[MAXPATHL];
     char_u	dirname_now[MAXPATHL];
     char_u	*target_dir = NULL;
+#ifdef FEAT_AUTOCMD
+    char_u	*au_name =  NULL;
 
     switch (eap->cmdidx)
     {

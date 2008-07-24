@@ -18073,7 +18073,6 @@ get_vim_var_nr(idx)
     return vimvars[idx].vv_nr;
 }
 
-#if defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
  * Get string v: variable value.  Uses a static buffer, can only be used once.
  */
@@ -18083,7 +18082,6 @@ get_vim_var_str(idx)
 {
     return get_tv_string(&vimvars[idx].vv_tv);
 }
-#endif
 
 /*
  * Set v:count, v:count1 and v:prevcount.

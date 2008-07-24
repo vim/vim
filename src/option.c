@@ -8622,8 +8622,9 @@ makeset(fd, opt_flags, local_only)
 #  endif
 # endif
 # if defined(FEAT_AUTOCMD)
-			    p->indir == PV_FT)
+			    p->indir == PV_FT
 # endif
+			    )
 		    {
 			if (fprintf(fd, "if &%s != '%s'", p->fullname,
 						       *(char_u **)(varp)) < 0

@@ -3141,10 +3141,11 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 #ifdef FEAT_BROWSE
 	if (cmdmod.browse)
 	{
+# ifdef FEAT_AUTOCMD
 	    if (
-# ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 		!gui.in_use &&
-# endif
+#  endif
 		    au_has_group((char_u *)"FileExplorer"))
 	    {
 		/* No browsing supported but we do have the file explorer:
@@ -3153,6 +3154,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 		    ffname = (char_u *)".";
 	    }
 	    else
+# endif
 	    {
 		browse_file = do_browse(0, (char_u *)_("Edit File"), ffname,
 						    NULL, NULL, NULL, curbuf);

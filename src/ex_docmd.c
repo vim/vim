@@ -7095,10 +7095,11 @@ ex_splitview(eap)
 # endif
 	    && eap->cmdidx != CMD_new)
     {
+# ifdef FEAT_AUTOCMD
 	if (
-# ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 	    !gui.in_use &&
-# endif
+#  endif
 		au_has_group((char_u *)"FileExplorer"))
 	{
 	    /* No browsing supported but we do have the file explorer:
@@ -7107,6 +7108,7 @@ ex_splitview(eap)
 		eap->arg = (char_u *)".";
 	}
 	else
+# endif
 	{
 	    fname = do_browse(0, (char_u *)_("Edit File in new window"),
 					  eap->arg, NULL, NULL, NULL, curbuf);
