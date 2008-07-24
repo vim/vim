@@ -5598,7 +5598,7 @@ $as_echo_n "checking for location of tclConfig.sh script... " >&6; }
 $as_echo "$try/tclConfig.sh" >&6; }
 	    . $try/tclConfig.sh
 	    	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
-	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
+	    	    	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[^-]/d' -e '/^-[^D]/d' -e '/-D[^_]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
 	    break
 	  fi
 	done

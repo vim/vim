@@ -866,7 +866,7 @@ if test "$enable_tclinterp" = "yes"; then
 	    TCL_LIBS=`eval echo "$TCL_LIB_SPEC $TCL_LIBS"`
 	    dnl Use $TCL_DEFS for -D_THREAD_SAFE et al.  But only use the
 	    dnl "-D_ABC" items.  Watch out for -DFOO=long\ long.
-	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
+	    TCL_DEFS=`echo $TCL_DEFS | sed -e 's/\\\\ /\\\\X/g' | tr ' ' '\012' | sed -e '/^[[^-]]/d' -e '/^-[[^D]]/d' -e '/-D[[^_]]/d' -e 's/-D_/ -D_/' | tr '\012' ' ' | sed -e 's/\\\\X/\\\\ /g'`
 	    break
 	  fi
 	done
