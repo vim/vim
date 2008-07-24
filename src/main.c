@@ -2245,7 +2245,12 @@ scripterror:
 		/* Remember this argument has been added to the argument list.
 		 * Needed when 'encoding' is changed. */
 		used_file_arg(argv[0], parmp->literal, parmp->full_path,
-							    parmp->diff_mode);
+# ifdef FEAT_DIFF
+							    parmp->diff_mode
+# else
+							    FALSE
+# endif
+							    );
 	    }
 #endif
 	}
