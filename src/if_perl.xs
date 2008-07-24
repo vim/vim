@@ -843,6 +843,12 @@ err:
     }
 }
 
+#ifndef FEAT_WINDOWS
+int win_valid(win_T *w) { return TRUE; }
+int win_count() { return 1; }
+win_T *win_find_nr(int n) { return curwin; }
+#endif
+
 XS(XS_VIM_Msg);
 XS(XS_VIM_SetOption);
 XS(XS_VIM_DoCommand);

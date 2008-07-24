@@ -1120,6 +1120,7 @@ VimCommand(PyObject *self, PyObject *args)
     return result;
 }
 
+#ifdef FEAT_EVAL
 /*
  * Function to translate a typval_T into a PyObject; this will recursively
  * translate lists/dictionaries into their Python equivalents.
@@ -1162,7 +1163,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	result = Py_BuildValue("s", buf);
 	PyDict_SetItemString(lookupDict, ptrBuf, result);
     }
-#ifdef FEAT_FLOAT
+# ifdef FEAT_FLOAT
     else if (our_tv->v_type == VAR_FLOAT)
     {
 	char buf[NUMBUFLEN];
@@ -1171,7 +1172,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	result = Py_BuildValue("s", buf);
 	PyDict_SetItemString(lookupDict, ptrBuf, result);
     }
-#endif
+# endif
     else if (our_tv->v_type == VAR_LIST)
     {
 	list_T		*list = our_tv->vval.v_list;
@@ -1224,6 +1225,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
     return result;
 }
+#endif
 
 /*ARGSUSED*/
     static PyObject *

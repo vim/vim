@@ -678,8 +678,9 @@ if test "$enable_pythoninterp" = "yes"; then
 	dnl    see what the interpreter is built from
 	AC_CACHE_VAL(vi_cv_path_python_plibs,
 	[
-	    tmp_mkf="/tmp/Makefile-conf$$"
-	    cat ${PYTHON_CONFDIR}/Makefile - <<'eof' >${tmp_mkf}
+	    pwd=`pwd`
+	    tmp_mkf="$pwd/config-PyMake$$"
+	    cat -- "${PYTHON_CONFDIR}/Makefile" - <<'eof' >"${tmp_mkf}"
 __:
 	@echo "python_MODLIBS='$(MODLIBS)'"
 	@echo "python_LIBS='$(LIBS)'"
@@ -687,8 +688,8 @@ __:
 	@echo "python_LINKFORSHARED='$(LINKFORSHARED)'"
 eof
 	    dnl -- delete the lines from make about Entering/Leaving directory
-	    eval "`cd ${PYTHON_CONFDIR} && make -f ${tmp_mkf} __ | sed '/ directory /d'`"
-	    rm -f ${tmp_mkf}
+	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
+	    rm -f -- "${tmp_mkf}"
 	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"

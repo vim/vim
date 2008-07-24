@@ -5114,16 +5114,17 @@ $as_echo "can't find it!" >&6; }
   $as_echo_n "(cached) " >&6
 else
 
-	    tmp_mkf="/tmp/Makefile-conf$$"
-	    cat ${PYTHON_CONFDIR}/Makefile - <<'eof' >${tmp_mkf}
+	    pwd=`pwd`
+	    tmp_mkf="$pwd/config-PyMake$$"
+	    cat -- "${PYTHON_CONFDIR}/Makefile" - <<'eof' >"${tmp_mkf}"
 __:
 	@echo "python_MODLIBS='$(MODLIBS)'"
 	@echo "python_LIBS='$(LIBS)'"
 	@echo "python_SYSLIBS='$(SYSLIBS)'"
 	@echo "python_LINKFORSHARED='$(LINKFORSHARED)'"
 eof
-	    	    eval "`cd ${PYTHON_CONFDIR} && make -f ${tmp_mkf} __ | sed '/ directory /d'`"
-	    rm -f ${tmp_mkf}
+	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
+	    rm -f -- "${tmp_mkf}"
 	    if test "x$MACOSX" = "xyes" && ${vi_cv_path_python} -c \
 		"import sys; sys.exit(${vi_cv_var_python_version} < 2.3)"; then
 	      vi_cv_path_python_plibs="-framework Python"
