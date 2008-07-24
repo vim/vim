@@ -3707,10 +3707,10 @@ vim_strsave_fnameescape(fname, shell)
     char_u *fname;
     int    shell;
 {
+    char_u	*p;
 #ifdef BACKSLASH_IN_FILENAME
     char_u	buf[20];
     int		j = 0;
-    char_u	*p;
 
     /* Don't escape '[' and '{' if they are in 'isfname'. */
     for (p = PATH_ESC_CHARS; *p != NUL; ++p)
@@ -3719,7 +3719,18 @@ vim_strsave_fnameescape(fname, shell)
     buf[j] = NUL;
     return vim_strsave_escaped(fname, buf);
 #else
-    return vim_strsave_escaped(fname, shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
+    p = vim_strsave_escaped(fname, shell ? SHELL_ESC_CHARS : PATH_ESC_CHARS);
+    if (shell && csh_like_shell() && p != NULL)
+    {
+	char_u	    *s;
+
+	/* For csh and similar shells need to put two backslashes before '!'.
+	 * One is taken by Vim, one by the shell. */
+	s = vim_strsave_escaped(p, (char_u *)"!");
+	vim_free(p);
+	p = s;
+    }
+    return p;
 #endif
 }
 
@@ -5960,7 +5971,9 @@ ex_window()
     linenr_T		lnum;
     int			histtype;
     garray_T		winsizes;
+#ifdef FEAT_AUTOCMD
     char_u		typestr[2];
+#endif
     int			save_restart_edit = restart_edit;
     int			save_State = State;
     int			save_exmode = exmode_active;

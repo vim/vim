@@ -1257,6 +1257,17 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
     return escaped_string;
 }
 
+#if !defined(BACKSLASH_IN_FILENAME) || defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE when 'shell' has "csh" in the tail.
+ */
+    int
+csh_like_shell()
+{
+    return (strstr((char *)gettail(p_sh), "csh") != NULL);
+}
+#endif
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Escape "string" for use as a shell argument with system().
@@ -1283,7 +1294,7 @@ vim_strsave_shellescape(string, do_special)
      * the like we must not put a backslash before it, it will be taken
      * literally.  If do_special is set the '!' will be escaped twice.
      * Csh also needs to have "\n" escaped twice when do_special is set. */
-    csh_like = (strstr((char *)gettail(p_sh), "csh") != NULL);
+    csh_like = csh_like_shell();
 
     /* First count the number of extra bytes required. */
     length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */

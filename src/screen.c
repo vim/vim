@@ -5447,8 +5447,7 @@ status_match_len(xp, s)
 
     while (*s != NUL)
     {
-	if (skip_status_match_char(xp, s))
-	    ++s;
+	s += skip_status_match_char(xp, s);
 	len += ptr2cells(s);
 	mb_ptr_adv(s);
     }
@@ -5457,7 +5456,7 @@ status_match_len(xp, s)
 }
 
 /*
- * Return TRUE for characters that are not displayed in a status match.
+ * Return the number of characters that should be skipped in a status match.
  * These are backslashes used for escaping.  Do show backslashes in help tags.
  */
     static int
@@ -5465,13 +5464,21 @@ skip_status_match_char(xp, s)
     expand_T	*xp;
     char_u	*s;
 {
-    return ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
+    if ((rem_backslash(s) && xp->xp_context != EXPAND_HELP)
 #ifdef FEAT_MENU
 	    || ((xp->xp_context == EXPAND_MENUS
 		    || xp->xp_context == EXPAND_MENUNAMES)
 			  && (s[0] == '\t' || (s[0] == '\\' && s[1] != NUL)))
 #endif
-	   );
+	   )
+    {
+#ifndef BACKSLASH_IN_FILENAME
+	if (xp->xp_shell && csh_like_shell() && s[1] == '\\' && s[2] == '!')
+	    return 2;
+#endif
+	return 1;
+    }
+    return 0;
 }
 
 /*
@@ -5609,8 +5616,7 @@ win_redr_status_matches(xp, num_matches, matches, match, showtail)
 #endif
 	    for ( ; *s != NUL; ++s)
 	{
-	    if (skip_status_match_char(xp, s))
-		++s;
+	    s += skip_status_match_char(xp, s);
 	    clen += ptr2cells(s);
 #ifdef FEAT_MBYTE
 	    if (has_mbyte && (l = (*mb_ptr2len)(s)) > 1)
@@ -6264,7 +6270,7 @@ screen_puts_len(text, len, row, col, attr)
 #ifdef FEAT_MBYTE
     /* When drawing over the right halve of a double-wide char clear out the
      * left halve.  Only needed in a terminal. */
-    if (has_mbyte
+    if (has_mbyte && col > 0 && col < screen_Columns
 # ifdef FEAT_GUI
 	    && !gui.in_use
 # endif
@@ -7138,7 +7144,7 @@ screen_fill(start_row, end_row, start_col, end_col, c1, c2, attr)
 	     * out the left halve.  When drawing over the left halve of a
 	     * double wide-char clear out the right halve.  Only needed in a
 	     * terminal. */
-	    if (mb_fix_col(start_col, row) != start_col)
+	    if (start_col > 0 && mb_fix_col(start_col, row) != start_col)
 		screen_puts_len((char_u *)" ", 1, row, start_col - 1, 0);
 	    if (end_col < screen_Columns && mb_fix_col(end_col, row) != end_col)
 		screen_puts_len((char_u *)" ", 1, row, end_col, 0);
