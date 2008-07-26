@@ -565,7 +565,6 @@ normal_cmd(oap, toplevel)
     oparg_T	*oap;
     int		toplevel;		/* TRUE when called from main() */
 {
-    static long	opcount = 0;		/* ca.opcount saved here */
     cmdarg_T	ca;			/* command arguments */
     int		c;
     int		ctrl_w = FALSE;		/* got CTRL-W command */

@@ -8913,6 +8913,7 @@ ex_normal(eap)
     tasave_T	tabuf;
     int		save_insertmode = p_im;
     int		save_finish_op = finish_op;
+    int		save_opcount = opcount;
 #ifdef FEAT_MBYTE
     char_u	*arg = NULL;
     int		l;
@@ -9040,6 +9041,7 @@ ex_normal(eap)
     restart_edit = save_restart_edit;
     p_im = save_insertmode;
     finish_op = save_finish_op;
+    opcount = save_opcount;
     msg_didout |= save_msg_didout;	/* don't reset msg_didout now */
 
     /* Restore the state (needed when called from a function executed for
