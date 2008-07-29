@@ -3196,11 +3196,17 @@ settmode(tmode)
 	if (tmode != TMODE_COOK || cur_tmode != TMODE_COOK)
 	{
 #ifdef FEAT_TERMRESPONSE
-	    /* May need to check for T_CRV response and termcodes, it doesn't
-	     * work in Cooked mode, an external program may get them. */
-	    if (tmode != TMODE_RAW && crv_status == CRV_SENT)
-		(void)vpeekc_nomap();
-	    check_for_codes_from_term();
+# ifdef FEAT_GUI
+	    if (!gui.in_use && !gui.starting)
+# endif
+	    {
+		/* May need to check for T_CRV response and termcodes, it
+		 * doesn't work in Cooked mode, an external program may get
+		 * them. */
+		if (tmode != TMODE_RAW && crv_status == CRV_SENT)
+		    (void)vpeekc_nomap();
+		check_for_codes_from_term();
+	    }
 #endif
 #ifdef FEAT_MOUSE_TTY
 	    if (tmode != TMODE_RAW)
@@ -3232,10 +3238,16 @@ starttermcap()
 	termcap_active = TRUE;
 	screen_start();			/* don't know where cursor is now */
 #ifdef FEAT_TERMRESPONSE
-	may_req_termresponse();
-	/* Immediately check for a response.  If t_Co changes, we don't want
-	 * to redraw with wrong colors first. */
-	check_for_codes_from_term();
+# ifdef FEAT_GUI
+	if (!gui.in_use && !gui.starting)
+# endif
+	{
+	    may_req_termresponse();
+	    /* Immediately check for a response.  If t_Co changes, we don't
+	     * want to redraw with wrong colors first. */
+	    if (crv_status != CRV_GET)
+		check_for_codes_from_term();
+	}
 #endif
     }
 }
@@ -3248,12 +3260,17 @@ stoptermcap()
     if (termcap_active)
     {
 #ifdef FEAT_TERMRESPONSE
-	/* May need to check for T_CRV response. */
-	if (crv_status == CRV_SENT)
-	    (void)vpeekc_nomap();
-	/* Check for termcodes first, otherwise an external program may get
-	 * them. */
-	check_for_codes_from_term();
+# ifdef FEAT_GUI
+	if (!gui.in_use && !gui.starting)
+# endif
+	{
+	    /* May need to check for T_CRV response. */
+	    if (crv_status == CRV_SENT)
+		(void)vpeekc_nomap();
+	    /* Check for termcodes first, otherwise an external program may
+	     * get them. */
+	    check_for_codes_from_term();
+	}
 #endif
 	out_str(T_KE);			/* stop "keypad transmit" mode */
 	out_flush();
