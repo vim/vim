@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Perl
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Change:  2007 Nov 30
+" Last Change:  17 Jul 2008
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -13,6 +13,7 @@ let s:save_cpo = &cpo
 set cpo-=C
 
 setlocal formatoptions+=crq
+setlocal keywordprg=perldoc\ -f
 
 setlocal comments=:#
 setlocal commentstring=#%s
@@ -63,7 +64,7 @@ let &l:path=perlpath
 "---------------------------------------------
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf<" .
+let b:undo_ftplugin = "setlocal fo< com< cms< inc< inex< def< isf< kp<" .
 	    \	      " | unlet! b:browsefilter"
 
 " Restore the saved compatibility options.

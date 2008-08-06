@@ -1,8 +1,9 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
-" Last Change:	2008 Jun 21
+" Maintainer: Bram Moolenaar
+" Last Change:	2008 Jul 21
 
-" This small source file is used for detecting if a translation of the
+" This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
 " If the translation does not exist, or no extension is given,
 " it defaults to the english version.
@@ -160,7 +161,7 @@ endif
 
 " If 'encoding' is utf-8 s:ext must end in utf-8.
 if &enc == 'utf-8' && s:ext !~ '\.utf-8'
-  s:ext .= '.utf-8'
+  let s:ext .= '.utf-8'
 endif
 
 " 2. Build the name of the file:

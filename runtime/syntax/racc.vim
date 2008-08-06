@@ -1,7 +1,7 @@
 " Vim default file
 " Language:         Racc input file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-07-09
+" Latest Revision:  2008-06-22
 
 if exists("b:current_syntax")
   finish
@@ -31,7 +31,7 @@ syn keyword raccPrecSpec    contained nonassoc left right
                             \ nextgroup=raccPrecToken,raccPrecString skipwhite
                             \ skipnl
 
-syn match   raccPrecToken   contained '\<\u[A-Z0-9]*\>'
+syn match   raccPrecToken   contained '\<\u[A-Z0-9_]*\>'
                             \ nextgroup=raccPrecToken,raccPrecString skipwhite
                             \ skipnl
 
@@ -48,7 +48,7 @@ syn region  raccPrecString  matchgroup=raccPrecString start=+'+
 syn keyword raccTokenDecl   contained token
                             \ nextgroup=raccTokenR skipwhite skipnl
 
-syn match   raccTokenR      contained '\<\u[A-Z0-9]*\>'
+syn match   raccTokenR      contained '\<\u[A-Z0-9_]*\>'
                             \ nextgroup=raccTokenR skipwhite skipnl
 
 syn keyword raccExpect      contained expect
@@ -67,13 +67,13 @@ syn region  raccConvert     transparent contained matchgroup=raccKeyword
                             \ contains=raccComment,raccConvToken skipwhite
                             \ skipnl
 
-syn match   raccConvToken   contained '\<\u[A-Z0-9]*\>'
+syn match   raccConvToken   contained '\<\u[A-Z0-9_]*\>'
                             \ nextgroup=raccString skipwhite skipnl
 
 syn keyword raccStart       contained start
                             \ nextgroup=raccTargetS skipwhite skipnl
 
-syn match   raccTargetS     contained '\<\l[a-z0-9]*\>'
+syn match   raccTargetS     contained '\<\l[a-z0-9_]*\>'
 
 syn match   raccSpecial     contained '\\["'\\]'
 
@@ -87,11 +87,11 @@ syn region  raccRules       transparent matchgroup=raccKeyword start='\<rule\>'
                             \ raccNumber,raccToken,raccTarget,raccDelimiter,
                             \ raccAction
 
-syn match   raccTarget      contained '\<\l[a-z0-9]*\>'
+syn match   raccTarget      contained '\<\l[a-z0-9_]*\>'
 
 syn match   raccDelimiter   contained '[:|]'
 
-syn match   raccToken       contained '\<\u[A-Z0-9]*\>'
+syn match   raccToken       contained '\<\u[A-Z0-9_]*\>'
 
 syn include @raccRuby       syntax/ruby.vim
 

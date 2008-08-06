@@ -3944,7 +3944,7 @@ mch_call_shell(cmd, options)
 # ifdef HAVE_SETSID
 		/* Create our own process group, so that the child and all its
 		 * children can be kill()ed.  Don't do this when using pipes,
-		 * because stdin is not a tty, we would loose /dev/tty. */
+		 * because stdin is not a tty, we would lose /dev/tty. */
 		if (p_stmp)
 		    (void)setsid();
 # endif
@@ -3973,7 +3973,7 @@ mch_call_shell(cmd, options)
 # else
 		/*
 		 * Putenv does not copy the string, it has to remain valid.
-		 * Use a static array to avoid loosing allocated memory.
+		 * Use a static array to avoid losing allocated memory.
 		 */
 		putenv("TERM=dumb");
 		sprintf(envbuf_Rows, "ROWS=%ld", Rows);
@@ -4306,7 +4306,7 @@ mch_call_shell(cmd, options)
 			/*
 			 * Write the characters to the child, unless EOF has
 			 * been typed for pipes.  Write one character at a
-			 * time, to avoid loosing too much typeahead.
+			 * time, to avoid losing too much typeahead.
 			 * When writing buffer lines, drop the typed
 			 * characters (only check for CTRL-C).
 			 */
@@ -4438,7 +4438,7 @@ mch_call_shell(cmd, options)
 
 		    /*
 		     * Check if the child still exists, before checking for
-		     * typed characters (otherwise we would loose typeahead).
+		     * typed characters (otherwise we would lose typeahead).
 		     */
 # ifdef __NeXT__
 		    wait_pid = wait4(pid, &status, WNOHANG, (struct rusage *) 0);

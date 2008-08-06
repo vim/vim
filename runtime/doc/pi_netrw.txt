@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.2b.  Last change: 2008 Jul 13
+*pi_netrw.txt*  For Vim version 7.2c.  Last change: 2008 Aug 01
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -1437,21 +1437,56 @@ tips & tools" by Rob Flickenger (O'Reilly, ISBN 0-596-00461-3) gives a tip
 for setting up no-password ssh and scp and discusses associated security
 issues.  It used to be available at http://hacks.oreilly.com/pub/h/66 ,
 but apparently that address is now being redirected to some "hackzine".
-I'll attempt a summary:
+I'll attempt a summary based on that article and on a communication from
+Ben Schmidt:
 
-	1. Generate a public/private key pair on the ssh server:
-	   ssh-keygen -t rsa
-	   (saving the file in ~/.ssh/id_rsa is ok)
-	2. Just hit the <CR> when asked for passphrase (twice).
-	3. This creates two files:
-	     ~/.ssh/id_rsa
-	     ~/.ssh/id_rsa.pub
-	4. On the client:
-	    cd
-	    mkdir .ssh
-	    chmod 0700 .ssh
-	    scp {serverhostname}:.ssh/id_rsa.pub .
-	    cat id_rsa.pub >> .ssh/authorized_keys2
+	1. Generate a public/private key pair on the local machine
+	   (ssh client): >
+		ssh-keygen -t rsa
+		(saving the file in ~/.ssh/id_rsa as prompted)
+<
+	2. Just hit the <CR> when asked for passphrase (twice) for no
+	   passphrase.  If you do use a passphrase, you will also need to use
+	   ssh-agent so you only have to type the passphrase once per session.
+	   If you don't use a passphrase, simply logging onto your local
+	   computer or getting access to the keyfile in any way will suffice
+	   to access any ssh servers which have that key authorized for login.
+
+	3. This creates two files: >
+		~/.ssh/id_rsa
+		~/.ssh/id_rsa.pub
+<
+	4. On the target machine (ssh server): >
+		cd
+		mkdir -p .ssh
+		chmod 0700 .ssh
+<
+	5. On your local machine (ssh client): (one line) >
+		ssh {serverhostname}
+		  cat '>>' '~/.ssh/authorized_keys2' < ~/.ssh/id_rsa.pub
+<
+	   or, for OpenSSH, (one line) >
+		ssh {serverhostname}
+		  cat '>>' '~/.ssh/authorized_keys' < ~/.ssh/id_rsa.pub
+<
+You can test it out with >
+	ssh {serverhostname}
+and you should be log onto the server machine without further need to type
+anything.
+
+If you decided to use a passphrase, do: >
+	ssh-agent $SHELL
+	ssh-add
+	ssh {serverhostname}
+You will be prompted for your key passphrase when you use ssh-add, but not
+subsequently when you use ssh.  For use with vim, you can use >
+	ssh-agent vim
+and, when next within vim, use >
+	:!ssh-add
+Alternatively, you can apply ssh-agent to the terminal you're planning on
+running vim in: >
+	ssh-agent xterm &
+and do ssh-add whenever you need.
 
 For Windows, folks on the vim mailing list have mentioned that Pageant helps
 with avoiding the constant need to enter the password.
@@ -1627,6 +1662,13 @@ Related topics: |netrw-a| |g:netrw_list_hide|
 MARKED FILES: MOVING						*netrw-mm* {{{2
 	    (See |netrw-mf| and |netrw-mr| for how to mark files)
 		      (uses the global marked file list)
+
+	WARNING: moving files is more dangerous than copying them.
+	A file being moved is first copied and then deleted; if the
+	copy operation fails and the delete succeeds, you will lose
+	the file.  Either try things out with unimportant files
+	first or do the copy and then delete yourself using mc and D.
+	Use at your own risk!
 
 Select a target directory with mT (|netrw-mt|).  Then change directory,
 select file(s) (see |netrw-mf|), and press "mm".
@@ -2387,6 +2429,16 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v130: Jul 31, 2008 * trying out elinks/links for http://host/
+			     requests.  One problem: in-page links
+			     (such as with ...#LABEL) are not supported
+			   * verified that Bram's modified netrwPlugin works
+	      Aug 01, 2008 * fixed a bug: when sourcing a file via ftp, the
+			     "filter window" was left behind.
+	v129: Jul 31, 2008 * bug found in non-mouse enabled vim and some
+			     local maps
+	v128: Jul 30, 2008 * much work done in using shellescape() and
+			     fnameescape()
 	v126: Jun 30, 2008 * after having gone to a remote directory,
 	                     <f1> was no longer taking one to the correct
 			     entry in the help (|netrw-quickhelp|).  Fixed.

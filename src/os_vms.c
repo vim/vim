@@ -397,7 +397,7 @@ vms_wproc(char *name, int val)
  *	mch_expand_wildcards	this code does wild-card pattern
  *				matching NOT using the shell
  *
- *	return OK for success, FAIL for error (you may loose some
+ *	return OK for success, FAIL for error (you may lose some
  *	memory) and put an error message in *file.
  *
  *	num_pat	   number of input patterns

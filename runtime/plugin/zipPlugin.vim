@@ -20,16 +20,7 @@
 if &cp || exists("g:loaded_zipPlugin")
  finish
 endif
-
-" Don't use the plugin if fnameescape() is not available
-if !exists("*fnameescape")
-  if &verbose > 1
-   echoerr "zipPlugin not loaded because fnameescape() is not available"
- endif
- finish
-endif
-
-let g:loaded_zipPlugin = "v21+b"
+let g:loaded_zipPlugin = "v22"
 let s:keepcpo          = &cpo
 set cpo&vim
 

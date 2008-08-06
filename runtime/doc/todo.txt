@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2b.  Last change: 2008 Jul 13
+*todo.txt*      For Vim version 7.2c.  Last change: 2008 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,9 +31,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 ":pedit %" with a BufReadPre autocommand causes the cursor to move to the
-first line. (Ingo Karkat, 2008 Jul 1)
+first line. (Ingo Karkat, 2008 Jul 1)  Ian Kelling is working on this.
 
 Have a look at patch for utf-8 line breaking. (Yongwei Wu, 2008 Mar 1, Mar 23)
+
+netrw: dragging status line causes selection of entry.  Should check row
+number to be below last visible line.
 
 Runtime files for Clojure. (Toralf Wittner, 2008 Jun 25)
 
@@ -52,6 +55,13 @@ Wildmenu not deleted: "gvim -u NONE", ":set nocp wildmenu cmdheight=3
 laststatus=2", CTRL-D CTRL-H CTRL-H CTRL-H. (A.Politz, 2008 April 1)
 Works OK with Vim in an xterm.
 
+When using ":e ++enc=foo file" and the file is already loaded with
+'fileencoding' set to "bar", then do_ecmd() uses that buffer, even though the
+fileencoding differs.  Reload the buffer in this situation?  Need to check for
+the buffer to be unmodified.
+Unfinished patch by Ian Kelling, 2008 Jul 11.  Followup Jul 14, need to have
+another look at it.
+
 Fix for matchparen HL doesn't work.  beep.
 
 Win32: associating a type with Vim doesn't take care of space after a
@@ -59,16 +69,21 @@ backslash? (Robert Vibrant, 2008 Jun 5)
 
 After using <Tab> for command line completion after ":ta blah" and getting E33
 (no tags file), further editing the command to e.g., ":echo 'blah'", the
-command is not executed.
+command is not executed.  Fix by Ian Kelling?
 
 When 'bomb' is changed the window title is updated to show/hide a "+", but the
 tab page label isn't. (Patrick Texier, 2008 Jun 24)
+
+":help s/~" jumps to *s/\~*, while ":help s/\~" doesn't find anything. (Tim
+Chase)  Fix by Ian Kelling, 2008 Jul 14.
 
 Despite adding save_subexpr() this still doesn't work properly:
 Regexp: matchlist('12a4aaa', '^\(.\{-}\)\(\%5c\@<=a\+\)\(.\+\)\?')
 Returns ['12a4', 'aaa', '4aaa'], should be ['12a4', 'aaa', '']
 Backreference not cleared when retrying after \@<= fails?
 (Brett Stahlman, 2008 March 8)
+
+Patch for 2html.vim to avoid "&amp;nbsp;". (Markus Heidelberg, 2008 Jul 19)
 
 Win32: remote editing fails when the current directory name contains "[".
 (Ivan Tishchenko, Liu Yubao)  Suggested patch by Chris Lubinski: Avoid
@@ -111,6 +126,9 @@ changed or the window is resized.
 Mac: Patch for configure: remove arch from ruby link args. (Knezevic, 2008
 Mar 5)  Alternative: Kazuki Sakamoto, Mar 7.
 
+Mac: trouble compiling with Motif, requires --disable-darwin. (Raf, 2008 Aug
+1)  Reply by Ben Schmidt.
+
 ":emenu" works with the translated menu name.  Should also work with the
 untranslated name.  Would need to store both the English and the translated
 name.  Patch by Bjorn Winckler, 2008 Mar 30.
@@ -124,8 +142,6 @@ Await response to question to make the register writable.
 
 Problem with 'ts' set to 9 and 'showbreak' to ">>>". (Matthew Winn, 2007 Oct
 1)
-
-"vim -O aa aa" gives only one window. (Zdenek Sekera, 2008 Apr 16)
 
 Including NFA regexp code:
 Use "\%#= to set the engine: 0 = automatic, 1 = backtracking, 2 = new.
@@ -158,6 +174,10 @@ New PHP syntax file, use it? (Peter Hodge)
 'foldcolumn' in modeline applied to wrong window when using a session. (Teemu
 Likonen, March 19)
 
+The documentation mentions the priority for ":2match" and ":3match", but it
+appears the last one wins. (John Beckett, 2008 Jul 22)  Caused by adding
+matchadd()?  Suggested patch by John, 2008 Jul 24.
+
 Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520
 by Vissale Neang.  (Martin Stubenschrott)
 Asked Vissale to make the scripts more friendly for the Vim distribution.
@@ -168,8 +188,9 @@ Asked about latest version: 0.77.1 is on www.vim.org.
 
 More AmigaOS4 patches. (Peter Bengtsson, Nov 9)
 
-Error when cancelling completion menu and auto-formatting. (Tim Weber, 2008
-Apr 17)
+Insert mode completion: When editing the text and pressing CTRL-N again goes
+back to originally completed text, edited text is gone. (Peng Yu, 2008 Jul 24)
+Suggestion by Ben Schmidt, 2008 Aug 6.
 
 Problem with compound words?  (Bert, 2008 May 6)
 No warning for when flags are defined after they are used in an affix.
@@ -193,6 +214,9 @@ popup menu over it, first draw the new popup menu, remember its position and
 size and then redraw the text, skipping the characters under the popup menu.
 This should avoid flicker.  Other solution by A.Politz, 2007 Aug 22.
 
+When the popup menu is close to the edge of the window it is truncated.  Patch
+to anchor the popup menu in a different way. (James Vega, 2008 Jul 30)
+
 Spell checking: Add a way to specify punctuation characters.  Add the
 superscript numbers by default: 0x2070, 0xb9, 0xb2, 0xb3, 0x2074 - 0x2079.
 
@@ -200,9 +224,9 @@ Windows 98: pasting from the clipboard with text from another application has
 a trailing NUL.  (Joachim Hofmann)  Perhaps the length specified for CF_TEXT
 isn't right?
 
-Completion: Scanning for tags doesn't check for typed key now and then?
-Hangs for about 5 seconds.  Appears to be caused by finding include files with
-"foo/**" in 'path'.  (Kalisiak, 2006 July 15)
+Command line completion: Scanning for tags doesn't check for typed key now and
+then?  Hangs for about 5 seconds.  Appears to be caused by finding include
+files with "foo/**" in 'path'.  (Kalisiak, 2006 July 15)
 Additional info: When using the |wildcards| ** globing, vim hangs
 indefinitely on lots of directories. The |file-searching| globing, like in
 ":set path=/**" does not hang as often as with globing with |wildcards|, like
@@ -247,6 +271,9 @@ Win32: Patch for convert_filterW(). (Taro Muraoka, 2007 Mar 2)
 
 Win32: Patch for cscope external command. (Mike Williams, 2007 Aug 7)
 
+":cscope find f  filename" doesn't work because of the extra space. (Ethan
+Mallove)
+
 Win32: XPM support only works with path without spaces.  Patch by Mathias
 Michaelis, 2006 Jun 9.  Another patch for more path names, 2006 May 31.
 New version: http://members.tcnet.ch/michaelis/vim/patches.zip (also for other
@@ -279,6 +306,10 @@ Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
 pointer in long and seek offset in 64 bit var.
 
 Win32: patch for fullscreen mode. (Liushaolin, 2008 April 17)
+
+When file b is a link to file a and editing b twice you get the correct
+warning for existing swap file, but when trying to recover it doesn't find the
+swapfile. (Matt Wozniski, 2008 Aug 5)
 
 Pressing the 'pastetoggle' key doesn't update the statusline. (Jan Christoph
 Ebersbach, 2008 Feb 1)
@@ -320,6 +351,8 @@ use a different dialog: "busy saving, really quit? yes / no".
 
 Check other interfaces for changing curbuf in a wrong way.  Patch like for
 if_ruby.c.
+
+Problem with cursorcolumn highlighting and folds. (John Mullin, 2008 Jul 18)
 
 Spell checking in popup menu: If the only problem is the case of the first
 character, don't offer "ignore" and "add to word list".
@@ -381,11 +414,18 @@ Jun 5)
 
 Mac: Using gvim: netrw window disappears. (Nick Lo, 2006 Jun 21)
 
+When 'ff' is "mac" then "ga" on a ^J shows 0x0d instead of 0x0a.  Compare with
+using "ga" on a NUL when 'ff' is "unix". (Andy Wokula, 2008 Jul 16)
+
 Add an option to specify the character to use when a double-width character is
 moved to the next line.  Default '>', set to a space to blank it out.  Check
 that char is single width when it's set (compare with 'listchars').
 
 The generated vim.bat can avoid the loop for NT. (Carl Zmola, 2006 Sep 3)
+
+In a C file with spell checking, in "% integer" "nteger" is seen as an error,
+but "]s" doesn't find it.  "nteger" by itself is found. (Ralf Wildenhues, 2008
+Jul 22)
 
 Session file creation: 'autochdir' causes trouble.  Keep it off until after
 loading all files.
@@ -443,7 +483,7 @@ show more text of the completions.  Shorten the items that don't fit in the
 middle?
 
 When running inside screen it's possible to kill the X server and restart it
-(using pty's the program can keep on running).  Vim dies because it looses the
+(using pty's the program can keep on running).  Vim dies because it loses the
 connection to the X server.  Can Vim simply quit using the X server instead of
 dying?  Also relevant when running in a console.
 
@@ -462,9 +502,6 @@ Problem with ":call" and dictionary function. Hari Krishna Dara, Charles
 Campbell 2006 Jul 06.
 
 Syntax HL error caused by "containedin". (Peter Hodge, 2006 Oct 6)
-
-":help s/~" jumps to *s/\~*, while ":help s/\~" doesn't find anything. (Tim
-Chase)
 
 A custom completion function in a ":command" cannot be a Funcref. (Andy
 Wokula, 2007 Aug 25)
@@ -486,10 +523,6 @@ number. (Tony Mechelynck, 2007 Feb 6)
 
 GTK: when using the -geom argument with an offset from the right edge and the
 size is smaller than the default, the Vim window is not positioned properly.
-
-GTK: when editing a directory with the netrw plugin in a terminal and doing
-":gui" Vim hangs in obtaining the selection.  Workaround patch 7.1.209 is a
-hack (timeout after 3 seconds).  Why don't we get the selection here?
 
 After starting Vim, using '0 to jump somewhere in a file, ":sp" doesn't center
 the cursor line.  It works OK after some other commands.
@@ -626,6 +659,16 @@ More patches:
 -   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2007 Sep 13,
     2008 Jun 12)
 -   recognize hex numbers better. (Mark Manning, 2006 Sep 13)
+-   Add <AbbrExpand> key, to expand an abbreviation in a mapping. (Kana
+    Natsuno, 2008 Jul 17)
+-   Add 'wspara' option, also accept blank lines like empty lines for "{" and
+    "}". (Mark Lundquist, 2008 Jul 18)
+-   Patch to add CTRL-T to delete part of a path on cmdline. (Adek, 2008 Jul
+    21)
+-   Instead of creating a copy of the tutor in all the shell scripts, do it in
+    vimtutor.vim. (Jan Minar, 2008 Jul 20)
+-   When fsync() fails there is no hint about what went wrong.  Patch by Ben
+    Schmidt, 2008 Jul 22.
 
 
 Awaiting updated patches:
@@ -1204,11 +1247,6 @@ Macintosh:
     the :catch commands are always executed, also when the file is edited
     normally.  Should reset did_emsg and undo side effects.  Also make sure
     the ATTENTION message shows up.  Servatius Brandt works on this.
-9   When using ":e ++enc=foo file" and the file is already loaded with
-    'fileencoding' set to "bar", then do_ecmd() uses that buffer, even though
-    the fileencoding differs.  Reload the buffer in this situation?  Need to
-    check for the buffer to be unmodified.
-    Unfinished patch by Ian Kelling, 2008 Jul 11.
 8   ":g//" gives "Pattern not found error" with E486.  Should not use the
     error number, it's not a regular error message.
 7   Vimtutor leaves escape sequence in terminal. This is the xterm response to
@@ -1307,7 +1345,7 @@ Macintosh:
 9   When editing a file with 'readonly' set, there is no check for an existing
     swap file.  Then using ":write" (without making any changes) doesn't give
     a warning either.  Should check for an existing swap file without creating
-    one. Unfinished patch by Ian Kelling, 2008 July 7.
+    one. Unfinished patch by Ian Kelling, 2008 July 14.
 7   When 'showbreak' is set, the amount of space a Tab occupies changes.
     Should work like 'showbreak' is inserted without changing the Tabs.
 7   When 'mousefocus' is set and switching to another window with a typed
@@ -1477,6 +1515,13 @@ Problems that will (probably) not be solved:
 -   GTK: when using the popup menu with spelling suggestions and releasing the
     right mouse button before the menu appears selecting an item with the
     right mouse button has no effect.  GTK does not produce an event for this.
+-   GTK 2: Cannot use the file selector.  When using it many things become
+    slow.  This is caused by some code in GTK that writes
+    ~/.recently-used.xbel every time an event is handled.  It assumes the main
+    loop is never quit, which is a wrong assumption.  Also, it overwrites the
+    file with different file permissions, which is a privacy issue.  This
+    needs to be fixed in GTK.  A solution in Vim would be really complicated.
+    (2008 Jul 31)
 -   xterm title: The following scenario may occur (esp. when running the Vim
     test script): Vim 1 sets the title to "file1", then restores the title to
     "xterm" with an ESC sequence when exiting.  Vim 2 obtains the old title

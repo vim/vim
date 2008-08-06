@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2007 Aug 31
+" Last Change: 2008 Jul 17
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 "	       (made w3 compliant by Edd Barrett <vext01@gmail.com>)
@@ -238,7 +238,7 @@ let s:LeadingSpace = ' '
 let s:HtmlEndline = ''
 if exists("html_no_pre")
   let s:HtmlEndline = '<br' . s:tag_close
-    let s:LeadingSpace = '&nbsp;'
+  let s:LeadingSpace = '&nbsp;'
   let s:HtmlSpace = '\' . s:LeadingSpace
 endif
 

@@ -32,6 +32,7 @@ shift
 evimname=$9
 
 helpsubloc=$scriptloc/doc
+printsubloc=$scriptloc/print
 synsubloc=$scriptloc/syntax
 tutorsubloc=$scriptloc/tutor
 
@@ -47,6 +48,7 @@ if test $what = "install"; then
    echo installing $destdir/$exename.1
    sed -e s+/usr/local/lib/vim+$vimloc+ \
 	   -e s+$vimloc/doc+$helpsubloc+ \
+	   -e s+$vimloc/print+$printsubloc+ \
 	   -e s+$vimloc/syntax+$synsubloc+ \
 	   -e s+$vimloc/tutor+$tutorsubloc+ \
 	   -e s+$vimloc/vimrc+$vimrcloc/vimrc+ \
@@ -54,7 +56,6 @@ if test $what = "install"; then
 	   -e s+$vimloc/menu.vim+$scriptloc/menu.vim+ \
 	   -e s+$vimloc/bugreport.vim+$scriptloc/bugreport.vim+ \
 	   -e s+$vimloc/filetype.vim+$scriptloc/filetype.vim+ \
-	   -e s+$vimloc/ftoff.vim+$scriptloc/ftoff.vim+ \
 	   -e s+$vimloc/scripts.vim+$scriptloc/scripts.vim+ \
 	   -e s+$vimloc/optwin.vim+$scriptloc/optwin.vim+ \
 	   -e 's+$vimloc/\*.ps+$scriptloc/\*.ps+' \
@@ -76,6 +77,7 @@ if test $what = "install"; then
    # evim.1
    echo installing $destdir/$evimname.1
    sed -e s+/usr/local/lib/vim+$vimloc+ \
+	   -e s+$vimloc/evim.vim+$scriptloc/evim.vim+ \
 	   $helpsource/evim$langadd.1 > $destdir/$evimname.1
    chmod $manmod $destdir/$evimname.1
 fi

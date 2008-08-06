@@ -3,7 +3,7 @@
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
 #
-# UNUA TRADUKISTO Dominique PELLE   <dominique.pelle ĉe free.fr> Novembro 2007
+# UNUA TRADUKISTO Dominique PELLE   <dominique.pelle ĉe gmail.com>
 # PROVLEGANTO(J)  Felipe CASTRO     <fefcas ĉe gmail.com>
 #                 Antono MECHELYNCK <antoine.mechelynck ĉe skynet.be>
 #                 Yves NEVELSTEEN
@@ -13,8 +13,8 @@
 #   Komputeko:           http://komputeko.net/index_eo.php
 #   Komputada leksikono: http://bertilow.com/div/komputada_leksikono/
 #
-# Mallongigoj:
-#   http://www.kafejo.com/lingvoj/auxlangs/eo/mallongi.htm
+# Lasta versio:
+#   http://svn.ikso.net/programtradukoj/vim/vim7/src/po/eo.po
 #
 # Ĉiu komento estas bonvenata...
 # Every remark is welcome...
@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-27 22:52+0200\n"
-"PO-Revision-Date: 2008-06-27 23:01+0200\n"
+"POT-Creation-Date: 2008-07-19 10:37+0200\n"
+"PO-Revision-Date: 2008-07-19 10:43+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -469,7 +469,7 @@ msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Nevalida operacio de Funcref-oj"
 
 msgid "E804: Cannot use '%' with Float"
-msgstr "E804: Ne eblas uzi '%' kun glitpunktnombro"
+msgstr "E804: Ne eblas uzi '%' kun Glitpunktnombro"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Mankas ')'"
@@ -1356,7 +1356,7 @@ msgstr "E498: neniu dosiernomo \":source\" por anstataŭigi al \"<sfile>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
-msgstr "E499: Malplena dosiernomo por '%'aŭ '#', nur funkcias kun \":p:h\""
+msgstr "E499: Malplena dosiernomo por '%' aŭ '#', nur funkcias kun \":p:h\""
 
 msgid "E500: Evaluates to an empty string"
 msgstr "E500: Liveras malplenan ĉenon"
@@ -3049,15 +3049,15 @@ msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNe konekti al X-servilo"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
-msgstr "--remote <fich>\tRedakti <dosierojn> en Vim-servilo se eblas"
+msgstr "--remote <dosieroj>\tRedakti <dosieroj>-n en Vim-servilo se eblas"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <dosierojn>  Same, sed ne plendi se ne estas servilo"
+msgstr "--remote-silent <dosieroj>  Same, sed ne plendi se ne estas servilo"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait <dosierojn>  Kiel --remote sed atendi ĝis dosieroj estas "
+"--remote-wait <dosieroj>  Kiel --remote sed atendi ĝis dosieroj estas "
 "redaktitaj"
 
 msgid ""
@@ -4817,6 +4817,9 @@ msgstr "E388: Ne eblis trovi difinon"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Ne eblis trovi ŝablonon"
 
+msgid "Substitute "
+msgstr "Anstataŭigi "
+
 #, c-format
 msgid ""
 "\n"
@@ -4986,7 +4989,7 @@ msgstr "Tro da prokrastitaj prefiksoj"
 msgid "Too many compound flags"
 msgstr "Tro da kunmetitaj flagoj"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Tro da prokrastitaj prefiksoj kaj/aŭ kunmetitaj flagoj"
 
 #, c-format

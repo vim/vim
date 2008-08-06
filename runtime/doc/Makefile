@@ -287,6 +287,11 @@ CONVERTED = \
 	vimdiff-it.UTF-8.1 \
 	vimtutor-it.UTF-8.1 \
 	xxd-it.UTF-8.1 \
+	vim-pl.UTF-8.1 \
+	evim-pl.UTF-8.1 \
+	vimdiff-pl.UTF-8.1 \
+	vimtutor-pl.UTF-8.1 \
+	xxd-pl.UTF-8.1 \
 	vim-ru.UTF-8.1 \
 	evim-ru.UTF-8.1 \
 	vimdiff-ru.UTF-8.1 \
@@ -296,7 +301,7 @@ CONVERTED = \
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html
 
-all: tags vim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
+all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
@@ -313,6 +318,9 @@ doctags: doctags.c
 
 vim.man: vim.1
 	nroff -man vim.1 | sed -e s/.//g > vim.man
+
+evim.man: evim.1
+	nroff -man evim.1 | sed -e s/.//g > evim.man
 
 vimdiff.man: vimdiff.1
 	nroff -man vimdiff.1 | sed -e s/.//g > vimdiff.man
@@ -444,6 +452,21 @@ vimtutor-it.UTF-8.1: vimtutor-it.1
 
 xxd-it.UTF-8.1: xxd-it.1
 	iconv -f latin1 -t utf-8 $< >$@
+
+vim-pl.UTF-8.1: vim-pl.1
+	iconv -f latin2 -t utf-8 $< >$@
+
+evim-pl.UTF-8.1: evim-pl.1
+	iconv -f latin2 -t utf-8 $< >$@
+
+vimdiff-pl.UTF-8.1: vimdiff-pl.1
+	iconv -f latin2 -t utf-8 $< >$@
+
+vimtutor-pl.UTF-8.1: vimtutor-pl.1
+	iconv -f latin2 -t utf-8 $< >$@
+
+xxd-pl.UTF-8.1: xxd-pl.1
+	iconv -f latin2 -t utf-8 $< >$@
 
 vim-ru.UTF-8.1: vim-ru.1
 	iconv -f KOI8-R -t utf-8 $< >$@

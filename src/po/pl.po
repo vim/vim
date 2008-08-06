@@ -4916,7 +4916,7 @@ msgstr "Zbyt wiele opó¼nionych prefiksów"
 msgid "Too many compound flags"
 msgstr "Zbyt wiele flag z³o¿eñ"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Zbyt wiele opó¼nionych prefiksów i/lub flag z³o¿eñ"
 
 #, c-format

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.2b.  Last change: 2008 Jul 09
+*eval.txt*	For Vim version 7.2c.  Last change: 2008 Jul 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -967,11 +967,16 @@ These are INVALID:
 	3.		empty {M}
 	1e40		missing .{M}
 
+							*float-pi* *float-e*
+A few useful values to copy&paste: >
+	:let pi = 3.14159265359
+	:let e  = 2.71828182846
+
 Rationale:
 Before floating point was introduced, the text "123.456" was interpreted as
 the two numbers "123" and "456", both converted to a string and concatenated,
 resulting in the string "123456".  Since this was considered pointless, and we
-could not find it actually being used in Vim scripts, this backwards
+could not find it intentionally being used in Vim scripts, this backwards
 incompatibility was accepted in favor of being able to use the normal notation
 for floating point numbers.
 
@@ -4963,9 +4968,16 @@ shellescape({string} [, {special}])			*shellescape()*
 		and replace all "'" with "'\''".
 		When the {special} argument is present and it's a non-zero
 		Number or a non-empty String (|non-zero-arg|), then special
-		items such as "%", "#" and "<cword>" will be preceded by a
-		backslash.  This backslash will be removed again by the |:!|
+		items such as "!", "%", "#" and "<cword>" will be preceded by
+		a backslash.  This backslash will be removed again by the |:!|
 		command.
+		The "!" character will be escaped (again with a |non-zero-arg|
+		{special}) when 'shell' contains "csh" in the tail.  That is
+		because for csh and tcsh "!" is used for history replacement
+		even when inside single quotes.
+		The <NL> character is also escaped.  With a |non-zero-arg|
+		{special} and 'shell' containing "csh" in the tail it's
+		escaped a second time.
 		Example of use with a |:!| command: >
 		    :exe '!dir ' . shellescape(expand('<cfile>'), 1)
 <		This results in a directory listing for the file under the
@@ -5918,7 +5930,7 @@ It's also possible to use curly braces, see |curly-braces-names|.  And the
 A function local to a script must start with "s:".  A local script function
 can only be called from within the script and from functions, user commands
 and autocommands defined in the script.  It is also possible to call the
-function from a mappings defined in the script, but then |<SID>| must be used
+function from a mapping defined in the script, but then |<SID>| must be used
 instead of "s:" when the mapping is expanded outside of the script.
 
 					*:fu* *:function* *E128* *E129* *E123*
@@ -6028,7 +6040,7 @@ can be 0).  "a:000" is set to a |List| that contains these arguments.  Note
 that "a:1" is the same as "a:000[0]".
 								*E742*
 The a: scope and the variables in it cannot be changed, they are fixed.
-However, if a |List| or |Dictionary| is used, you can changes their contents.
+However, if a |List| or |Dictionary| is used, you can change their contents.
 Thus you can pass a |List| to a function and have the function add an item to
 it.  If you want to make sure the function cannot change a |List| or
 |Dictionary| use |:lockvar|.

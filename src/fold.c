@@ -2341,7 +2341,7 @@ foldUpdateIEMS(wp, top, bot)
  * "flp->off" is the offset to the real line number in the buffer.
  *
  * All this would be a lot simpler if all folds in the range would be deleted
- * and then created again.  But we would loose all information about the
+ * and then created again.  But we would lose all information about the
  * folds, even when making changes that don't affect the folding (e.g. "vj~").
  *
  * Returns bot, which may have been increased for lines that also need to be

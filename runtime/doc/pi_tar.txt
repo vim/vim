@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.2b.  Last change: 2008 Jul 13
+*pi_tar.txt*	For Vim version 7.2c.  Last change: 2008 Jul 13
 
 		       +====================+
 		       | Tar File Interface |

@@ -3,19 +3,19 @@ VIMDIFF(1)                                                          VIMDIFF(1)
 
 
 NAME
-       vimdiff  -  edit two or three versions of a file with Vim and show dif-
-       ferences
+       vimdiff  - edit two, three or four versions of a file with Vim and show
+       differences
 
 SYNOPSIS
-       vimdiff [options] file1 file2 [file3]
+       vimdiff [options] file1 file2 [file3 [file4]]
 
        gvimdiff
 
 DESCRIPTION
-       Vimdiff starts Vim on two (or three) files.  Each  file  gets  its  own
-       window.   The differences between the files are highlighted.  This is a
-       nice way to inspect changes and to move changes  from  one  version  to
-       another version of the same file.
+       Vimdiff starts Vim on two (or three or four) files.  Each file gets its
+       own  window.   The differences between the files are highlighted.  This
+       is a nice way to inspect changes and to move changes from  one  version
+       to another version of the same file.
 
        See vim(1) for details about Vim itself.
 

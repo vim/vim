@@ -4979,7 +4979,7 @@ msgstr "An iomarca réimíreanna curtha siar"
 msgid "Too many compound flags"
 msgstr "An iomarca bratach comhfhocail"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "An iomarca réimíreanna curtha siar agus/nó bratacha comhfhocal"
 
 #, c-format

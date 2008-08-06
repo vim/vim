@@ -5,7 +5,8 @@
 "              Stefano Zacchiroli  <zack@bononia.it>
 "              Vincent Aravantinos <firstname.name@imag.fr>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2007 Sep 09 - Added .annot support for ocamlbuild, python not 
+" Last Change: 2008 Jul 17 - Bugfix related to fnameescape (VA)
+"              2007 Sep 09 - Added .annot support for ocamlbuild, python not 
 "                            needed anymore (VA)
 "              2006 May 01 - Added .annot support for file.whateverext (SZ)
 "	             2006 Apr 11 - Fixed an initialization bug; fixed ASS abbrev (MM)
@@ -15,6 +16,17 @@ if exists("b:did_ftplugin")
   finish
 endif
 let b:did_ftplugin=1
+
+" some macro
+if exists('*fnameescape')
+  function! s:Fnameescape(s)
+    return fnameescape(a:s)
+  endfun
+else
+  function! s:Fnameescape(s)
+    return escape(a:s," \t\n*?[{`$\\%#'\"|!<")
+  endfun
+endif
 
 " Error handling -- helps moving where the compiler wants you to go
 let s:cposet=&cpoptions
@@ -71,14 +83,14 @@ if !exists("g:did_ocaml_switch")
   map <LocalLeader>S :call OCaml_switch(1)<CR>
   fun OCaml_switch(newwin)
     if (match(bufname(""), "\\.mli$") >= 0)
-      let fname = substitute(bufname(""), "\\.mli$", ".ml", "")
+      let fname = s:Fnameescape(substitute(bufname(""), "\\.mli$", ".ml", ""))
       if (a:newwin == 1)
         exec "new " . fname
       else
         exec "arge " . fname
       endif
     elseif (match(bufname(""), "\\.ml$") >= 0)
-      let fname = bufname("") . "i"
+      let fname = s:Fnameescape(bufname("")) . "i"
       if (a:newwin == 1)
         exec "new " . fname
       else
@@ -260,6 +272,7 @@ endfunction
   "      For the moment, the only possible keyword is \"type\"."
   " >>
 
+
 " 1. Finding the annotation file even if we use ocamlbuild
 
     " In:  two strings representing paths
@@ -286,16 +299,16 @@ endfunction
   function! s:Locate_annotation()
     if !b:annotation_file_located
 
-      silent exe 'cd' expand('%:p:h')
+      silent exe 'cd' s:Fnameescape(expand('%:p:h'))
 
-      let annot_file_name = expand('%:r').'.annot'
+      let annot_file_name = s:Fnameescape(expand('%:r')).'.annot'
 
       " 1st case : the annot file is in the same directory as the buffer (no ocamlbuild)
       let b:annot_file_path = findfile(annot_file_name,'.')
       if b:annot_file_path != ''
         let b:annot_file_path = getcwd().'/'.b:annot_file_path
         let b:_build_path = ''
-        let b:source_file_relative_path = expand('%')
+        let b:source_file_relative_path = s:Fnameescape(expand('%'))
       else
         " 2nd case : the buffer and the _build directory are in the same directory
         "      ..
@@ -310,7 +323,7 @@ endfunction
           if b:annot_file_path != ''
             let b:annot_file_path = getcwd().'/'.b:annot_file_path
           endif
-          let b:source_file_relative_path = expand('%')
+          let b:source_file_relative_path = s:Fnameescape(expand('%'))
         else
           " 3rd case : the _build directory is in a directory higher in the file hierarchy 
           "            (it can't be deeper by ocamlbuild requirements)
@@ -325,9 +338,9 @@ endfunction
           let b:_build_path = finddir('_build',';')
           if b:_build_path != ''
             let project_path                = substitute(b:_build_path,'/_build$','','')
-            let path_relative_to_project    = substitute(expand('%:p:h'),project_path.'/','','')
+            let path_relative_to_project    = s:Fnameescape(substitute(expand('%:p:h'),project_path.'/','',''))
             let b:annot_file_path           = findfile(annot_file_name,project_path.'/_build/'.path_relative_to_project)
-            let b:source_file_relative_path = substitute(expand('%:p'),project_path.'/','','')
+            let b:source_file_relative_path = s:Fnameescape(substitute(expand('%:p'),project_path.'/','',''))
           else
             let b:annot_file_path = findfile(annot_file_name,'**')
             "4th case : what if the user decided to change the name of the _build directory ?
@@ -339,7 +352,7 @@ endfunction
                 let b:annot_file_path = getcwd().'/'.b:annot_file_path
                 let b:_build_path     = getcwd().'/'.b:_build_path
               endif
-              let b:source_file_relative_path = expand('%')
+              let b:source_file_relative_path = s:Fnameescape(expand('%'))
             else
               " 4b. anarchy : the renamed _build directory may be higher in the hierarchy
               " this will work if the file for which we are looking annotations has a unique name in the whole project
@@ -380,16 +393,16 @@ endfunction
       set hidden
       let s:current_buf = bufname('%')
       if bufloaded(b:annot_file_path)
-        silent exe 'keepj keepalt' 'buffer' b:annot_file_path
+        silent exe 'keepj keepalt' 'buffer' s:Fnameescape(b:annot_file_path)
       else
-        silent exe 'keepj keepalt' 'view' b:annot_file_path
+        silent exe 'keepj keepalt' 'view' s:Fnameescape(b:annot_file_path)
       endif
     endfun
 
       " After call:
       "   The original buffer has been restored in the exact same state as before.
     function! s:Exit_annotation_buffer()
-      silent exe 'keepj keepalt' 'buffer' s:current_buf
+      silent exe 'keepj keepalt' 'buffer' s:Fnameescape(s:current_buf)
       let &l:hidden = s:current_hidden
       call setpos('.',s:current_pos)
     endfun

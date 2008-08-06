@@ -22,6 +22,7 @@ LANGUAGES = \
 		ko \
 		no \
 		pl \
+		pt_BR \
 		ru \
 		sk \
 		sv \
@@ -48,6 +49,7 @@ MOFILES = \
 		ko.mo \
 		no.mo \
 		pl.mo \
+		pt_BR.mo \
 		ru.mo \
 		sk.mo \
 		sv.mo \

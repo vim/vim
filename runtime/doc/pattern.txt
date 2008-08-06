@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.2b.  Last change: 2008 Jun 21
+*pattern.txt*   For Vim version 7.2c.  Last change: 2008 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1122,7 +1122,7 @@ in the file.  {Vi cannot handle <Nul> characters in the file at all}
 
 						*CR-used-for-NL*
 When 'fileformat' is "mac", <NL> characters in the file are stored as <CR>
-characters internally.  In the display they are shown as "^M".  Otherwise this
+characters internally.  In the text they are shown as "^J".  Otherwise this
 works similar to the usage of <NL> for a <Nul>.
 
 When working with expression evaluation, a <NL> character in the pattern

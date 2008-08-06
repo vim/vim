@@ -94,7 +94,7 @@ open_buffer(read_stdin, eap)
 		break;
 	/*
 	 * if there is no memfile at all, exit
-	 * This is OK, since there are no changes to loose.
+	 * This is OK, since there are no changes to lose.
 	 */
 	if (curbuf == NULL)
 	{

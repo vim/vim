@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.2b.  Last change: 2008 Jul 05
+*options.txt*	For Vim version 7.2c.  Last change: 2008 Aug 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2292,6 +2292,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  or "\\", the swap file name will be built from the complete path to
 	  the file with all path separators substituted to percent '%' signs.
 	  This will ensure file name uniqueness in the preserve directory.
+	  On Win32, when a separating comma is following, you must use "//",
+	  since "\\" will include the comma in the file name.
 	- Spaces after the comma are ignored, other spaces are considered part
 	  of the directory name.  To have a space at the start of a directory
 	  name, precede it with a backslash.
@@ -4898,7 +4900,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	name, datestamp and permissions.  This option contains the extra
 	information, the nature of which will vary between systems.
 	The value of this option is usually set when the file is loaded, and
-	use to set the file type when file is written.
+	is used to set the operating system file type when file is written.
 	It can affect the pattern matching of the automatic commands.
 	|autocmd-osfiletypes|
 
@@ -6306,15 +6308,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      directory.
 	F S   Full path to the file in the buffer.
 	t S   File name (tail) of file in the buffer.
-	m F   Modified flag, text is " [+]"; " [-]" if 'modifiable' is off.
+	m F   Modified flag, text is "[+]"; "[-]" if 'modifiable' is off.
 	M F   Modified flag, text is ",+" or ",-".
-	r F   Readonly flag, text is " [RO]".
+	r F   Readonly flag, text is "[RO]".
 	R F   Readonly flag, text is ",RO".
-	h F   Help buffer flag, text is " [help]".
+	h F   Help buffer flag, text is "[help]".
 	H F   Help buffer flag, text is ",HLP".
-	w F   Preview window flag, text is " [Preview]".
+	w F   Preview window flag, text is "[Preview]".
 	W F   Preview window flag, text is ",PRV".
-	y F   Type of file in the buffer, e.g., " [vim]".  See 'filetype'.
+	y F   Type of file in the buffer, e.g., "[vim]".  See 'filetype'.
 	Y F   Type of file in the buffer, e.g., ",VIM".  See 'filetype'.
 	      {not available when compiled without |+autocmd| feature}
 	k S   Value of "b:keymap_name" or 'keymap' when |:lmap| mappings are
@@ -6361,14 +6363,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      to StatusLineNC for the statusline of non-current windows.
 	      The number N must be between 1 and 9.  See |hl-User1..9|
 
-	Display of flags are controlled by the following heuristic:
-	If a flag text starts with comma it is assumed that it wants to
-	separate itself from anything but preceding plaintext.  If it starts
-	with a space it is assumed that it wants to separate itself from
-	anything but other flags.  That is: A leading comma is removed if the
-	preceding character stems from plaintext.  A leading space is removed
-	if the preceding character stems from another active flag.  This will
-	make a nice display when flags are used like in the examples below.
+	When displaying a flag, Vim removes the leading comma, if any, when
+	that flag comes right after plaintext.  This will make a nice display
+	when flags are used like in the examples below.
 
 	When all items in a group becomes an empty string (i.e. flags that are
 	not set) and a minwid is not set for the group, the whole group will

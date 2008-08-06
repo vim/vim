@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.2b.  Last change: 2008 Jul 09
+*change.txt*    For Vim version 7.2c.  Last change: 2008 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1561,10 +1561,12 @@ found here: |sort()|.
 
 			With [n] sorting is done on the first decimal number
 			in the line (after or inside a {pattern} match).
+			One leading '-' is included in the number.
 
 			With [x] sorting is done on the first hexadecimal
 			number in the line (after or inside a {pattern}
 			match).  A leading "0x" or "0X" is ignored.
+			One leading '-' is included in the number.
 
 			With [o] sorting is done on the first octal number in
 			the line (after or inside a {pattern} match).

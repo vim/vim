@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.2b.  Last change: 2008 Jun 21
+*syntax.txt*	For Vim version 7.2c.  Last change: 2008 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -852,8 +852,8 @@ If this variable is undefined or zero, btm syntax is selected.
 DOXYGEN						*doxygen.vim* *doxygen-syntax*
 
 Doxygen generates code documentation using a special documentation format
-(similar to Javadoc).  This syntax script adds doxygen highlighting to c, cpp
-and idl files, and should also work with java.
+(similar to Javadoc).  This syntax script adds doxygen highlighting to c, cpp,
+idl and php files, and should also work with java.
 
 There are a few of ways to turn on doxygen formatting. It can be done
 explicitly or in a modeline by appending '.doxygen' to the syntax of the file.

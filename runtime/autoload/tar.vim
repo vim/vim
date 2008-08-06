@@ -1,7 +1,7 @@
 " tar.vim: Handles browsing tarfiles
 "            AUTOLOAD PORTION
-" Date:			Jul 12, 2008
-" Version:		19 + changes by Bram
+" Date:			Jul 30, 2008
+" Version:		20
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:		Vim License  (see vim's :help license)
 "
@@ -24,7 +24,7 @@ set cpo&vim
 if &cp || exists("g:loaded_tar") || v:version < 700
  finish
 endif
-let g:loaded_tar= "v19+b"
+let g:loaded_tar= "v20"
 "call Decho("loading autoload/tar.vim")
 if v:version < 701 || (v:version == 701 && !has("patch299"))
  echoerr "(autoload/tar.vim) need vim v7.1 with patchlevel 299"

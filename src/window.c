@@ -6272,7 +6272,7 @@ win_hasvertsplit()
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
 /*
  * Add match to the match list of window 'wp'.  The pattern 'pat' will be
- * highligted with the group 'grp' with priority 'prio'.
+ * highlighted with the group 'grp' with priority 'prio'.
  * Optionally, a desired ID 'id' can be specified (greater than or equal to 1).
  * If no particular ID is desired, -1 must be specified for 'id'.
  * Return ID of added match, -1 on failure.

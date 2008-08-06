@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.2b.  Last change: 2008 Jul 13
+*version7.txt*  For Vim version 7.2c.  Last change: 2008 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4727,6 +4727,7 @@ New keymap files:
 Other new runtime files:
 	Esperanto menus and message translations. (Dominique Pelle)
 	Finnish translation of menus and messages. (Flammie Pirinen)
+	Brazilian Portugese message translations. (Eduardo Dobay)
 
 Added floating point support. |Float|
 
@@ -6847,7 +6848,7 @@ Problem:    When a file name has an illegal byte sequence Vim may read
 Solution:   Don't use UTF_COMPOSINGLIKE() on an illegal byte.  In
 	    msg_outtrans_len_attr() use char2cells() instead of ptr2cells().
 	    In utf_ptr2char() don't check second byte when first byte is
-	    illega.  (Dominique Pelle)
+	    illegal.  (Dominique Pelle)
 Files:	    src/mbyte.c, src/message.c
 
 Patch 7.2a.011
@@ -6916,7 +6917,7 @@ Overlapping STRCPY() arguments when using %r item in 'errorformat'.  Use
 STRMOVE() instead. (Ralf Wildenhues)
 
 Mac: On Leopard gvim, when using the mouse wheel nothing would happen until
-another event occures, such as moving the mouse.  Then the recorded scrolling
+another event occurs, such as moving the mouse.  Then the recorded scrolling
 would take place all at once. (Eckehard Berns)
 
 Solution for cursor color not reflecting IM status for GTK 2.  Add
@@ -6935,6 +6936,180 @@ characters may not be cleared properly. (Yukihiro Nakadaira)
 
 The #ifdef for including "vimio.h" was inconsistent.  In a few files it
 depended on MSWIN, which isn't defined until later.
+
+Patch 7.2b.001
+Problem:    Compilation problem: mb_fix_col() missing with multi-byte feature
+	    but without GUI or clipboard.
+Solution:   Remove #ifdef.
+Files:	    src/mbyte.c
+
+Patch 7.2b.002
+Problem:    Compiler warnings for signed/unsigned mismatch.
+Solution:   Add type casts.
+Files:	    src/screen.c
+
+Patch 7.2b.003
+Problem:    Still a compilation problem, check_col() and check_row() missing.
+Solution:   Add FEAT_MBYTE to the #if.
+Files:	    src/ui.c
+
+Patch 7.2b.004
+Problem:    Trying to free memory for a static string when using ":helpgrep".
+	    (George Reilly)
+Solution:   Set 'cpo' to empty_option instead of an empty string.  Also for
+	    searchpair() and substitute().
+Files:	    src/quickfix.c, src/eval.c
+
+Patch 7.2b.005
+Problem:    The special character "!" isn't handled properly in shellescape().
+	    (Jan Minar)
+Solution:   Escape "!" when using a "csh" like shell and with
+	    shellescape(s, 1).  Twice for both.  Also escape <NL>.
+Files:	    src/misc2.c
+
+Patch 7.2b.006
+Problem:    Reading past end of string when reading info from tags line.
+Solution:   Break the loop when encountering a NUL. (Dominique Pelle)
+Files:	    src/tag.c
+
+Patch 7.2b.007
+Problem:    Part of a message cannot be translated.
+Solution:   Put _() around the message.
+Files:	    src/search.c
+
+Patch 7.2b.008
+Problem:    A few filetypes are not detected or not detected properly.
+Solution:   Add filetype detection patterns. (Nikolai Weibull)
+Files:	    runtime/filetype.vim
+
+Patch 7.2b.009
+Problem:    Reading past end of screen line. (Epicurus)
+Solution:   Avoid going past the value of Columns.
+Files:	    src/screen.c
+
+Patch 7.2b.010
+Problem:    ":mksession" doesn't work for ":map , foo", ":sunmap ,". (Ethan
+	    Mallove)
+Solution:   Check for "nxo", "nso" and other strange mapping combinations.
+Files:	    src/getchar.c
+
+Patch 7.2b.011
+Problem:    Configure for TCL ends up with include file in compiler command.
+	    (Richard Hogg)
+Solution:   Delete items from $TCL_DEFS that do not start with a dash.
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2b.012
+Problem:    Build failure with +multi_byte but without +diff.
+Solution:   Add #ifdef. (Patrick Texier)
+Files:	    src/main.c
+
+Patch 7.2b.013
+Problem:    Build fails with tiny features and Perl. (Dominique Pelle)
+Solution:   Define missing functions.  Also when compiling Python.
+Files:	    src/if_perl.xs, src/if_python.c
+
+Patch 7.2b.014
+Problem:    Configure uses an unsafe temp file to store commands.
+Solution:   Create the temp file in local directory.
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2b.015
+Problem:    Build fails on Mac when using Aap.
+Solution:   Fix typo in configure script.
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2b.016
+Problem:    Build fails with normal features but without +autocmd.
+Solution:   Fix #ifdefs. (Ian Kelling)
+Files:	    src/eval.c, src/ex_cmds.c, src/quickfix.c, src/option.c,
+	    src/ex_docmd.c
+
+Patch 7.2b.017
+Problem:    "vim -O foo foo" results in only one window.  (Zdenek Sekera)
+Solution:   Handle result of ATTENTION prompt properly. (Ian Kelling)
+Files:	    src/main.c
+
+Patch 7.2b.018
+Problem:    When doing command line completion on a file name for a csh-like
+	    shell argument a '!' character isn't escaped properly.
+Solution:   Add another backslash.
+Files:	    src/ex_getln.c, src/misc2.c, src/proto/misc2.pro, src/screen.c
+
+Patch 7.2b.019 (extra)
+Problem:    Win32: Various compiler warnings.
+Solution:   Use __w64 attribute.  Comment-out unused parameters.  Adjust a few
+	    #ifdefs. (George Reilly)
+Files:	    src/gui_w48.c, src/GvimExt/gvimext.cpp, src/Make_mvc.mak,
+	    src/os_mswin.c, src/os_win32.c, src/vim.h
+
+Patch 7.2b.020
+Problem:    ":sort n" doesn't handle negative numbers. (James Vega)
+Solution:   Include '-' in the number.
+Files:	    src/charset.c, src/ex_cmds.c
+
+Patch 7.2b.021
+Problem:    Reloading doesn't read the BOM correctly. (Steve Gardner)
+Solution:   Accept utf-8 BOM when specified file encoding is utf-8.
+Files:	    src/fileio.c
+
+Patch 7.2b.022
+Problem:    When using ":normal" while updating the status line the count of
+	    an operator is lost. (Dominique Pelle)
+Solution:   Save and restore "opcount".
+Files:	    src/ex_docmd.c, src/globals.h, src/normal.c
+
+Patch 7.2b.023
+Problem:    Crash when using the result of synstack(0,0). (Matt Wozniski)
+Solution:   Check for v_list to be NULL in a few more places.
+Files:	    src/eval.c
+
+Patch 7.2b.024
+Problem:    Using ":gui" while the netrw plugin is active causes a delay in
+	    updating the display.
+Solution:   Don't check for terminal codes when starting the GUI.
+Files:	    src/term.c
+
+Patch 7.2b.025
+Problem:    When the CursorHold event triggers a pending count is lost.
+	    (Juergen Kraemer)
+Solution:   Save the counts and restore them.
+Files:	    src/normal.c, src/structs.h
+
+Patch 7.2b.026
+Problem:    The GTK 2 file chooser causes the ~/.recently-used.xbel file to be
+	    written over and over again.  This may cause a significant
+	    slowdown. (Guido Berhoerster)
+Solution:   Don't use the GTK 2 file chooser.
+Files:	    src/gui_gtk.c
+
+Patch 7.2b.027
+Problem:    Memory leak for Python, Perl, etc. script command with end marker.
+Solution:   Free the memory of the end marker. (Andy Kittner)
+Files:	    src/ex_getln.c
+
+Patch 7.2b.028
+Problem:    Reading uninitialized memory when doing ":gui -f". (Dominique
+	    Pelle)
+Solution:   Don't position the cursor when the screen size is invalid.
+Files:	    src/gui.c
+
+Patch 7.2b.029
+Problem:    ":help a" doesn't jump to "a" tag in docs. (Tony Mechelynck)
+Solution:   Get all tags and throw away more than TAG_MANY after sorting.
+	    When there is no argument find matches for "help" to avoid a long
+	    delay.
+Files:	    src/ex_cmds.c, src/ex_getln.c
+
+Patch 7.2b.030
+Problem:    When changing the value of t_Co from 8 to 16 the Visual
+	    highlighting keeps both reverse and a background color.
+Solution:   Remove the attribute when setting the default highlight color.
+	    (Markus Heidelberg)
+Files:	    src/syntax.c
+
+Error when cancelling completion menu and auto-formatting. (fixed by Ian
+Kelling)
 
 
  vim:tw=78:ts=8:ft=help:norl:

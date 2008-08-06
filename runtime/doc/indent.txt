@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.2b.  Last change: 2008 Jun 30
+*indent.txt*    For Vim version 7.2c.  Last change: 2008 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -584,8 +584,8 @@ unnecessary indentation)
 PYTHON							*ft-python-indent*
 
 The amount of indent can be set for the following situations.  The examples
-given are de the defaults.  Note that the variables are set to an expression,
-so that you can change the value of 'shiftwidth' later.
+given are the defaults.  Note that the variables are set to an expression, so
+that you can change the value of 'shiftwidth' later.
 
 Indent after an open paren: >
 	let g:pyindent_open_paren = '&sw * 2'

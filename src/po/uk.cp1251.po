@@ -4983,7 +4983,7 @@ msgstr "Забагато відкладених префіксів"
 msgid "Too many compound flags"
 msgstr "Забагато складних прапорців"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Забагато відкладених префіксів і/або складних прапорців"
 
 #, c-format

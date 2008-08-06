@@ -30,6 +30,7 @@ LANGUAGES =	af \
 		no \
 		pl \
 		pl.cp1250 \
+		pt_BR \
 		ru \
 		ru.cp1251 \
 		sk \
@@ -62,6 +63,7 @@ MOFILES =	af.mo \
 		no.mo \
 		pl.cp1250.mo \
 		pl.mo \
+		pt_BR.mo \
 		ru.cp1251.mo \
 		ru.mo \
 		sk.cp1250.mo \

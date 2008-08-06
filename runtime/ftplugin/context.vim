@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         ConTeXt typesetting engine
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2008-07-09
 
 if exists("b:did_ftplugin")
   finish
@@ -29,8 +29,7 @@ if exists("loaded_matchit")
   let b:match_skip = 'r:\\\@<!\%(\\\\\)*%'
   let b:match_words = '(:),\[:],{:},\\(:\\),\\\[:\\],' .
         \ '\\start\(\a\+\):\\stop\1'
-endif " exists("loaded_matchit")
-
+endif
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

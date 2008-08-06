@@ -1,6 +1,6 @@
 " Vim color file
 " Maintainer:	Bohdan Vlasyuk <bohdan@vstu.edu.ua>
-" Last Change:	2006 Apr 30
+" Last Change:	2008 Jul 18
 
 " darkblue -- for those who prefer dark background
 " [note: looks bit uglier with come terminal palettes,
@@ -58,3 +58,9 @@ hi PreProc	ctermfg=magenta guifg=#ff80ff gui=none cterm=none
 hi type		ctermfg=green guifg=#60ff60 gui=none cterm=none
 hi Underlined	cterm=underline term=underline
 hi Ignore	guifg=bg ctermfg=bg
+
+" suggested by tigmoid, 2008 Jul 18
+hi Pmenu guifg=#c0c0c0 guibg=#404080
+hi PmenuSel guifg=#c0c0c0 guibg=#2050d0
+hi PmenuSbar guifg=blue guibg=darkgray
+hi PmenuThumb guifg=#c0c0c0

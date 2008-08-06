@@ -1,4 +1,4 @@
-README_mac.txt for version 7.2b of Vim: Vi IMproved.
+README_mac.txt for version 7.2c of Vim: Vi IMproved.
 
 This file explains the installation of Vim on Macintosh systems.
 See "README.txt" for general information about Vim.

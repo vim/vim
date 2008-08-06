@@ -1,11 +1,11 @@
 " DoxyGen syntax hilighting extension for c/c++/idl/java
-" Language:     doxygen on top of c, cpp, idl, java
+" Language:     doxygen on top of c, cpp, idl, java, php
 " Maintainer:   Michael Geddes <vimmer@frog.wheelycreek.net>
 " Author:       Michael Geddes
-" Last Change:  April 2007
-" Version:      1.20
+" Last Change:  July 2008
+" Version:      1.22
 "
-" Copyright 2004-2006 Michael Geddes
+" Copyright 2004-2008 Michael Geddes
 " Please feel free to use, modify & distribute all or part of this script,
 " providing this copyright message remains.
 " I would appreciate being acknowledged in any derived scripts, and would
@@ -30,11 +30,13 @@
 " also be set to any highlight attribute. Alternatively, a highlight for doxygenCodeWord
 " can be used to override it.
 "
-" By default, highlighting is done assumng you have the JAVADOC_AUTOBRIEF
+" By default, highlighting is done assuming you have the JAVADOC_AUTOBRIEF
 " setting turned on in your Doxygen configuration.  If you don't, you
 " can set the variable g:doxygen_javadoc_autobrief to 0 to have the
 " highlighting more accurately reflect the way Doxygen will interpret your
 " comments.
+"
+" Support for cpp, c, idl, doxygen and php.
 "
 " Special thanks to:  Wu Yongwei, Toby Allsopp
 "
@@ -56,10 +58,10 @@ try
   "
 
   " C/C++ Style line comments
-  syn region doxygenComment start=+/\*\(\*/\)\@![*!]+  end=+\*/+ contains=doxygenSyncStart,doxygenStart,doxygenTODO keepend fold
-  syn region doxygenCommentL start=+//[/!]<\@!+me=e-1 end=+$+ contains=doxygenStartL keepend skipwhite skipnl nextgroup=doxygenComment2 fold
-  syn region doxygenCommentL start=+//[/!]<+me=e-2 end=+$+ contains=doxygenStartL keepend skipwhite skipnl fold
-  syn region doxygenCommentL start=+//@\ze[{}]+ end=+$+ contains=doxygenGroupDefine,doxygenGroupDefineSpecial fold
+  syn region doxygenComment start=+/\*\(\*/\)\@![*!]+  end=+\*/+ contains=doxygenSyncStart,doxygenStart,doxygenTODO keepend fold containedin=phpRegion
+  syn region doxygenCommentL start=+//[/!]<\@!+me=e-1 end=+$+ contains=doxygenStartL,@Spell keepend skipwhite skipnl nextgroup=doxygenComment2 fold containedin=phpRegion
+  syn region doxygenCommentL start=+//[/!]<+me=e-2 end=+$+ contains=doxygenStartL,@Spell keepend skipwhite skipnl fold containedin=phpRegion
+  syn region doxygenCommentL start=+//@\ze[{}]+ end=+$+ contains=doxygenGroupDefine,doxygenGroupDefineSpecial,@Spell fold containedin=phpRegion
 
   " Single line brief followed by multiline comment.
   syn region doxygenComment2 start=+/\*\(\*/\)\@![*!]+ end=+\*/+ contained contains=doxygenSyncStart2,doxygenStart2,doxygenTODO keepend fold
@@ -98,7 +100,7 @@ try
   " This helps with sync-ing as for some reason, syncing behaves differently to a normal region, and the start pattern does not get matched.
   syn match doxygenSyncStart +\ze[^*/]+ contained nextgroup=doxygenBrief,doxygenPrev,doxygenStartSpecial,doxygenFindBriefSpecial,doxygenStartSkip,doxygenPage skipwhite skipnl
 
-  syn region doxygenBriefLine contained start=+\<\k+ end=+\(\n\s*\*\=\s*\([@\\]\([npcbea]\>\|em\>\|ref\>\|link\>\|f\$\|[$\\&<>#]\)\@!\)\|\s*$\)\@=+ contains=doxygenContinueComment,doxygenFindBriefSpecial,doxygenSmallSpecial,@doxygenHtmlGroup,doxygenTODO,doxygenHyperLink,doxygenHashLink  skipwhite keepend
+  syn region doxygenBriefLine contained start=+\<\k+ end=+\(\n\s*\*\=\s*\([@\\]\([npcbea]\>\|em\>\|ref\>\|link\>\|f\$\|[$\\&<>#]\)\@!\)\|\s*$\)\@=+ contains=doxygenContinueComment,doxygenFindBriefSpecial,doxygenSmallSpecial,@doxygenHtmlGroup,doxygenTODO,doxygenHyperLink,doxygenHashLink,@Spell  skipwhite keepend
 
   " Match a '<' for applying a comment to the previous element.
   syn match doxygenPrev +<+ contained nextgroup=doxygenBrief,doxygenBody,doxygenSpecial,doxygenStartSkip skipwhite

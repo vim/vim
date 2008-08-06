@@ -816,7 +816,7 @@
  * +writebackup		'writebackup' is default on:
  *			Use a backup file while overwriting a file.  But it's
  *			deleted again when 'backup' is not set.  Changing this
- *			is strongly discouraged: You can loose all your
+ *			is strongly discouraged: You can lose all your
  *			changes when the computer crashes while writing the
  *			file.
  *			VMS note: It does work on VMS as well, but because of

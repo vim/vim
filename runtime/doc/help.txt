@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 7.2b.  Last change: 2008 Jun 21
+*help.txt*	For Vim version 7.2c.  Last change: 2008 Jul 21
 
 			VIM - main help file
 									 k
@@ -126,7 +126,7 @@ Advanced editing ~
 |tabpage.txt|	commands for using multiple tab pages
 |syntax.txt|	syntax highlighting
 |spell.txt|	spell checking
-|diff.txt|	working with two or three versions of the same file
+|diff.txt|	working with two to four versions of the same file
 |autocmd.txt|	automatically executing commands on an event
 |filetype.txt|	settings done specifically for a type of file
 |eval.txt|	expression evaluation, conditional commands

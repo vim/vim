@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Author:	Charles E. Campbell, Jr.
-" Date:		Jun 05, 2008
-" Version:	27
+" Date:		Jul 30, 2008
+" Version:	29
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2008 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -15,7 +15,7 @@ if &cp || exists("g:loaded_vimball") || v:version < 700
  finish
 endif
 let s:keepcpo        = &cpo
-let g:loaded_vimball = "v27"
+let g:loaded_vimball = "v29"
 set cpo&vim
 "DechoTabOn
 
@@ -169,9 +169,8 @@ fun! vimball#MkVimball(line1,line2,writelevel,...) range
    call setline(lastline+1,0)
 
    " write the file from the tab
-   let svfilepath= s:Path(svfile,'')
-"   call Decho("exe $r ".fnameescape(svfilepath))
-   exe "$r ".fnameescape(svfilepath)
+"   call Decho("exe $r ".fnameescape(svfile))
+   exe "$r ".fnameescape(svfile)
 
    call setline(lastline+1,line("$") - lastline - 1)
 "   call Decho("lastline=".lastline." line$=".line("$"))
@@ -186,13 +185,11 @@ fun! vimball#MkVimball(line1,line2,writelevel,...) range
   call s:ChgDir(curdir)
   setlocal ff=unix
   if a:writelevel
-   let vbnamepath= s:Path(vbname,'')
-"   call Decho("exe w! ".fnameescape(vbnamepath))
-   exe "w! ".fnameescape(vbnamepath)
+"   call Decho("exe w! ".fnameescape(vbname))
+   exe "w! ".fnameescape(vbname)
   else
-   let vbnamepath= s:Path(vbname,'')
-"   call Decho("exe w ".fnameescape(vbnamepath))
-   exe "w ".fnameescape(vbnamepath)
+"   call Decho("exe w ".fnameescape(vbname))
+   exe "w ".fnameescape(vbname)
   endif
 "  call Decho("Vimball<".vbname."> created")
   echo "Vimball<".vbname."> created"
@@ -215,8 +212,8 @@ endfun
 fun! vimball#Vimball(really,...)
 "  call Dfunc("vimball#Vimball(really=".a:really.") a:0=".a:0)
 
-  if v:version < 701 || (v:version == 701 && !has("patch299"))
-   echoerr "This version of vimball requires vim 7.1 with patch 299"
+  if v:version < 701 || (v:version == 701 && !exists('*fnameescape'))
+   echoerr "your vim is missing the fnameescape() function"
 "   call Dret("vimball#Vimball : needs 7.1 with patch 299")
    return
   endif
@@ -338,7 +335,7 @@ fun! vimball#Vimball(really,...)
 
    " write tab to file
    if a:really
-    let fnamepath= s:Path(home."/".fname,'')
+    let fnamepath= home."/".fname
 "    call Decho("exe w! ".fnameescape(fnamepath))
 	exe "silent w! ".fnameescape(fnamepath)
     echo "wrote ".fnamepath
@@ -364,9 +361,9 @@ fun! vimball#Vimball(really,...)
   " set up help
 "  call Decho("about to set up help: didhelp<".didhelp.">")
   if didhelp != ""
-   let htpath= s:Path(home."/".didhelp,"")
+   let htpath= home."/".didhelp
 "   call Decho("exe helptags ".htpath)
-   exe "helptags ".htpath
+   exe "helptags ".fnameescape(htpath)
    echo "did helptags"
   endif
 
@@ -578,27 +575,6 @@ fun! s:ChgDir(newdir)
 endfun
 
 " ---------------------------------------------------------------------
-" s:Path: prepend and append quotes and do escaping {{{2
-fun! s:Path(cmd,quote)
-"  call Dfunc("Path(cmd<".a:cmd."> quote<".a:quote.">) vimball_path_escape<".g:vimball_path_escape.">")
-  if (has("win32") || has("win95") || has("win64") || has("win16"))
-"   let cmdpath= a:quote.substitute(a:cmd,'/','\\','g').a:quote
-   let cmdpath= a:quote.substitute(a:cmd,'\\','/','g').a:quote
-"   call Decho("cmdpath<".cmdpath."> (win32 mod)")
-  else
-   let cmdpath= a:quote.a:cmd.a:quote
-"   call Decho("cmdpath<".cmdpath."> (not-win32 mod)")
-  endif
-  if a:quote == "" && g:vimball_path_escape !~ ' '
-   let cmdpath= escape(cmdpath,' ')
-"   call Decho("cmdpath<".cmdpath."> (empty quote case)")
-  endif
-  let cmdpath= escape(cmdpath,g:vimball_path_escape)
-"  call Dret("Path <".cmdpath.">")
-  return cmdpath
-endfun
-
-" ---------------------------------------------------------------------
 " s:RecordInVar: record a un-vimball command in the .VimballRecord file {{{2
 fun! s:RecordInVar(home,cmd)
 "  call Dfunc("RecordInVar(home<".a:home."> cmd<".a:cmd.">)")
@@ -719,14 +695,14 @@ fun! vimball#SaveSettings()
    let s:acdkeep = &acd
   endif
   let s:eikeep  = &ei
-  let s:fenkeep = &fen
+  let s:fenkeep = &l:fen
   let s:hidkeep = &hidden
   let s:ickeep  = &ic
   let s:lzkeep  = &lz
   let s:pmkeep  = &pm
   let s:repkeep = &report
   let s:vekeep  = &ve
-  let s:ffkeep  = &ff
+  let s:ffkeep  = &l:ff
   if exists("&acd")
    setlocal ei=all ve=all noacd nofen noic report=999 nohid bt= ma lz pm= ff=unix
   else
@@ -745,7 +721,7 @@ fun! vimball#RestoreSettings()
   if exists("&acd")
    let &acd   = s:acdkeep
   endif
-  let &fen    = s:fenkeep
+  let &l:fen  = s:fenkeep
   let &hidden = s:hidkeep
   let &ic     = s:ickeep
   let &lz     = s:lzkeep
@@ -753,7 +729,7 @@ fun! vimball#RestoreSettings()
   let &report = s:repkeep
   let &ve     = s:vekeep
   let &ei     = s:eikeep
-  let &ff     = s:ffkeep
+  let &l:ff   = s:ffkeep
   if s:makeep[0] != 0
    " restore mark a
 "   call Decho("restore mark-a: makeep=".string(makeep))

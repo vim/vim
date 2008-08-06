@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Sieve filtering language input file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-10-25
 
 if exists("b:current_syntax")
   finish
@@ -33,7 +33,7 @@ syn keyword sieveTest         address allof anyof envelope exists false header
                               \ not size true
 syn keyword sievePreProc      require stop
 syn keyword sieveAction       reject fileinto redirect keep discard
-syn match   sieveKeyword      '\<\h\w*\>'
+syn keyword sieveKeyword      vacation
 
 syn case match
 
@@ -46,7 +46,7 @@ hi def link sieveString      String
 hi def link sieveConditional Conditional
 hi def link sieveTest        Keyword
 hi def link sievePreProc     PreProc
-hi def link sieveAction      Keyword
+hi def link sieveAction      Function
 hi def link sieveKeyword     Keyword
 
 let b:current_syntax = "sieve"

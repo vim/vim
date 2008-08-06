@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Zsh shell script
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-06-17
+" Latest Revision:  2008-07-17
 
 if exists("b:current_syntax")
   finish
@@ -34,7 +34,9 @@ syn keyword zshDelimiter        do done
 
 syn keyword zshConditional      if then elif else fi case in esac select
 
-syn keyword zshRepeat           for while until repeat foreach
+syn keyword zshRepeat           while until repeat
+
+syn keyword zshRepeat           for foreach nextgroup=zshVariable skipwhite
 
 syn keyword zshException        always
 
@@ -49,19 +51,30 @@ syn match   zshRedir            '\d\=\(<\|<>\|<<<\|<&\s*[0-9p-]\=\)'
 syn match   zshRedir            '\d\=\(>\|>>\|>&\s*[0-9p-]\=\|&>\|>>&\|&>>\)[|!]\='
 syn match   zshRedir            '|&\='
 
-syn region  zshHereDoc          matchgroup=zshRedir start='<<\s*\z(\S*\)'
-                                \ end='^\z1\>' contains=@zshSubst
-syn region  zshHereDoc          matchgroup=zshRedir start='<<-\s*\z(\S*\)'
-                                \ end='^\s*\z1\>' contains=@zshSubst
 syn region  zshHereDoc          matchgroup=zshRedir
-                                \ start=+<<\s*\(["']\)\z(\S*\)\1+  end='^\z1\>'
+                                \ start='<\@<!<<\s*\z([^<]\S*\)'
+                                \ end='^\z1\>'
+                                \ contains=@zshSubst
 syn region  zshHereDoc          matchgroup=zshRedir
-                                \ start=+<<-\s*\(["']\)\z(\S*\)\1+
+                                \ start='<\@<!<<\s*\\\z(\S\+\)'
+                                \ end='^\z1\>'
+                                \ contains=@zshSubst
+syn region  zshHereDoc          matchgroup=zshRedir
+                                \ start='<\@<!<<-\s*\\\=\z(\S\+\)'
+                                \ end='^\s*\z1\>'
+                                \ contains=@zshSubst
+syn region  zshHereDoc          matchgroup=zshRedir
+                                \ start=+<\@<!<<\s*\(["']\)\z(\S\+\)\1+ 
+                                \ end='^\z1\>'
+syn region  zshHereDoc          matchgroup=zshRedir
+                                \ start=+<\@<!<<-\s*\(["']\)\z(\S\+\)\1+
                                 \ end='^\s*\z1\>'
 
-syn match   zshVariable         '\<\h\w*\ze+\=='
+syn match   zshVariable         '\<\h\w*' contained
+
+syn match   zshVariableDef      '\<\h\w*\ze+\=='
 " XXX: how safe is this?
-syn region  zshVariable         oneline
+syn region  zshVariableDef      oneline
                                 \ start='\$\@<!\<\h\w*\[' end='\]\ze+\=='
                                 \ contains=@zshSubst
 
@@ -87,7 +100,7 @@ endif
 if s:zsh_syntax_variables =~ 'all'
   syn match zshDeref            '\$[=^~]*[#+]*\h\w*\>'
 else
-  syn match zshDeref            transparent '\$[=^~]*[#+]*\h\w*\>'
+  syn match zshDeref            transparent contains=NONE '\$[=^~]*[#+]*\h\w*\>'
 endif
 
 syn match   zshCommands         '\%(^\|\s\)[.:]\ze\s'
@@ -119,6 +132,7 @@ syn match   zshNumber           '[+-]\=\<0\o\+\>'
 syn match   zshNumber           '[+-]\=\d\+#[-+]\=\w\+\>'
 syn match   zshNumber           '[+-]\=\d\+\.\d\+\>'
 
+" TODO: $[...] is the same as $((...)), so add that as well.
 syn cluster zshSubst            contains=zshSubst,zshOldSubst,zshMathSubst
 syn region  zshSubst            matchgroup=zshSubstDelim transparent
                                 \ start='\$(' skip='\\)' end=')' contains=TOP
@@ -131,9 +145,13 @@ syn region  zshMathSubst        matchgroup=zshSubstDelim transparent
 syn region  zshBrackets         contained transparent start='{' skip='\\}'
                                 \ end='}'
 syn region  zshSubst            matchgroup=zshSubstDelim start='\${' skip='\\}'
-                                \ end='}' contains=@zshSubst,zshBrackets,zshQuoted
+                                \ end='}' contains=@zshSubst,zshBrackets,zshQuoted,zshString
 syn region  zshOldSubst         matchgroup=zshSubstDelim start=+`+ skip=+\\`+
                                 \ end=+`+ contains=TOP,zshOldSubst
+
+syn sync    minlines=50
+syn sync    match zshHereDocSync    grouphere   NONE '<<-\=\s*\%(\\\=\S\+\|\(["']\)\S\+\1\)'
+syn sync    match zshHereDocEndSync groupthere  NONE '^\s*EO\a\+\>'
 
 hi def link zshTodo             Todo
 hi def link zshComment          Comment
@@ -163,6 +181,7 @@ else
   hi def link zshRedir            None
 endif
 hi def link zshVariable         None
+hi def link zshVariableDef      zshVariable
 hi def link zshDereferencing    PreProc
 if s:zsh_syntax_variables =~ 'short\|all'
   hi def link zshShortDeref     zshDereferencing

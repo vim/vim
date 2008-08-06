@@ -1,6 +1,6 @@
 # Finnish translation for Vim.
 # Copyright (C) 2003-2006 Free Software Foundation, Inc.
-# 2007, Flammie Pirinen <flammie@iki.fi>
+# 2007-2008, Flammie Pirinen <flammie@iki.fi>
 #
 # Vimin käyttäjät on nörttejä. Sanasto on jargonia :-p
 #
@@ -14,14 +14,12 @@
 #   analogian mukaan
 # source v. lataa tiedoston, kuten bash-komento source (tai .)
 #
-# Kääntämättä:
-# if_sniff.c, tags.c, spell.c, regexp.c
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim 7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-09-04 01:30+0300\n"
-"PO-Revision-Date: 2007-09-04 01:44+0300\n"
+"POT-Creation-Date: 2008-07-23 16:57+0300\n"
+"PO-Revision-Date: 2008-07-23 17:15+0300\n"
 "Last-Translator: Flammie Pirinen <flammie@iki.fi>\n"
 "Language-Team: Finnish <laatu@lokalisointi.org>\n"
 "MIME-Version: 1.0\n"
@@ -465,6 +463,9 @@ msgstr "E693: Funcrefiä voi verrata vain funcrefiin"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Virheellinen toiminto funcrefille"
 
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Ei voi käyttää '%':a Floatin kanssa"
+
 msgid "E110: Missing ')'"
 msgstr "E110: ) puuttuu"
 
@@ -530,6 +531,9 @@ msgstr "E120: <SID> skriptin ulkopuolella: %s"
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: dict-funktio ilman sanakirjaa: %s"
 
+msgid "E808: Number or Float required"
+msgstr "E808: Number tai Float vaaditaan"
+
 msgid "E699: Too many arguments"
 msgstr "E699: Liikaa argumentteja"
 
@@ -592,7 +596,7 @@ msgid "E277: Unable to read a server reply"
 msgstr "E277: Palvelimen vastauksen lukeminen ei onnistunut"
 
 msgid "E655: Too many symbolic links (cycle?)"
-msgstr "E655: Liikaa symbolisia linkkejä (sykli)"
+msgstr "E655: Liikaa symbolisia linkkejä (mahdollinen sykli)"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: Asiakkaalle lähetys ei onnistunut"
@@ -606,14 +610,17 @@ msgstr "(Virheellinen)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Väliaikaistiedostoon kirjoittaminen ei onnistunut"
 
+msgid "E805: Using a Float as a Number"
+msgstr "E805: Float ei käy Numberista"
+
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Funcref ei käy numerosta"
+msgstr "E703: Funcref ei käy Numberista"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: Lista ei käy numerosta"
+msgstr "E745: Lista ei käy Numberista"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Sanakirja ei käy numerosta"
+msgstr "E728: Sanakirja ei käy Numberista"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: Funcref ei käy merkkijonosta"
@@ -623,6 +630,9 @@ msgstr "E730: Lista ei käy merkkijonosta"
 
 msgid "E731: using Dictionary as a String"
 msgstr "E731: Sanakirja ei käy merkkijonosta"
+
+msgid "E806: using Float as a String"
+msgstr "E806: Float ei käy merkkijonosta"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
@@ -723,6 +733,136 @@ msgstr ""
 "\n"
 "\tViimeksi asetettu kohteesta "
 
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "Siirrytään vianetsintätilaan, kirjoita cont jatkaaksesi."
+
+#, c-format
+msgid "line %ld: %s"
+msgstr "rivi %ld: %s"
+
+#, c-format
+msgid "cmd: %s"
+msgstr "kmnt: %s"
+
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Katkaisukohta %s%s rivillä %ld"
+
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Katkaisukohta puuttuu: %s"
+
+msgid "No breakpoints defined"
+msgstr "Ei katkaisukohtia"
+
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d  %s %s  rivi %ld"
+
+msgid "E750: First use :profile start <fname>"
+msgstr "E750: Aloita käskyllä :profile start <fname>"
+
+msgid "Save As"
+msgstr "Tallenna nimellä"
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr "Tallennetaanko muutokset tiedostoon %s?"
+
+msgid "Untitled"
+msgstr "Nimetön"
+
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Muutoksia ei ole kirjoitettu puskurin %s viime muutoksen jälkeen"
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr "Varoitus: Puskuri vaihtui odottamatta (tarkista autocommands)"
+
+msgid "E163: There is only one file to edit"
+msgstr "E163: Vain yksi tiedosto muokattavana"
+
+msgid "E164: Cannot go before first file"
+msgstr "E164: Ensimmäisen tiedoston ohi ei voi mennä"
+
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Viimeisen tiedoston ohi ei voi mennä"
+
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: kääntäjää ei tueta: %s"
+
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Etsitään ilmausta %s kohteesta %s"
+
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Etsitään ilmausta %s"
+
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "ei löydy runtimepathista: %s"
+
+msgid "Source Vim script"
+msgstr "Lataa vim-skripti"
+
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Hakemistoa ei voi ladata: %s"
+
+#, c-format
+msgid "could not source \"%s\""
+msgstr "ei voitu ladata %s"
+
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "rivi %ld: ei voitu ladata %s"
+
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "ladataan %s"
+
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "rivi %ld: ladataan %s"
+
+#, c-format
+msgid "finished sourcing %s"
+msgstr "ladattu %s"
+
+msgid "modeline"
+msgstr "mode-rivi"
+
+msgid "--cmd argument"
+msgstr "--cmd-argumentti"
+
+msgid "-c argument"
+msgstr "-c-argumentti"
+
+msgid "environment variable"
+msgstr "ympäristömuuttuja"
+
+msgid "error handler"
+msgstr "virhekäsittelin"
+
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr "W15: Varoitus: Väärä rivierotin, ^M saattaa puuttua"
+
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: :scriptencoding ladatun tiedoston ulkopuolella"
+
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: :finish ladatun tiedoston ulkopuolella"
+
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Käytössä oleva %skieli: %s"
+
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Kieleksi ei voitu asettaa kieltä %s"
+
 # puhutaan merkin ulkoasusta snprintf(..., c, c, c, c)
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -751,7 +891,7 @@ msgid "%ld lines filtered"
 msgstr "%ld riviä suodatettu"
 
 msgid "E135: *Filter* Autocommands must not change current buffer"
-msgstr "E135: Suodatin-autocommand ei voi vaihtaa puskuria"
+msgstr "E135: *Filter*-autocommand ei voi vaihtaa puskuria"
 
 msgid "[No write since last change]\n"
 msgstr "[Viimeisintä muutosta ei ole kirjoitettu]\n"
@@ -808,9 +948,6 @@ msgstr "# encoding-muuttujan arvo tiedostoa kirjoitettaessa\n"
 
 msgid "Illegal starting char"
 msgstr "Virheellinen aloitusmerkki"
-
-msgid "Save As"
-msgstr "Tallenna nimellä"
 
 msgid "Write partial file?"
 msgstr "Kirjoita osittainen tiedosto"
@@ -996,133 +1133,6 @@ msgstr " (ei tuettu)"
 
 msgid "[Deleted]"
 msgstr "[Poistettu]"
-
-msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Siirrytään vianetsintätilaan, kirjoita cont jatkaaksesi."
-
-#, c-format
-msgid "line %ld: %s"
-msgstr "rivi %ld: %s"
-
-#, c-format
-msgid "cmd: %s"
-msgstr "kmnt: %s"
-
-#, c-format
-msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Katkaisukohta %s%s rivillä %ld"
-
-#, c-format
-msgid "E161: Breakpoint not found: %s"
-msgstr "E161: Katkaisukohta puuttuu: %s"
-
-msgid "No breakpoints defined"
-msgstr "Ei katkaisukohtia"
-
-#, c-format
-msgid "%3d  %s %s  line %ld"
-msgstr "%3d  %s %s  rivi %ld"
-
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Aloita käskyllä :profile start <fname>"
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr "Tallennetaanko muutokset tiedostoon %s?"
-
-msgid "Untitled"
-msgstr "Nimetön"
-
-#, c-format
-msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Muutoksia ei ole kirjoitettu puskurin %s viime muutoksen jälkeen"
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr "Varoitus: Puskuri vaihtui odottamatta (tarkista autocommands)"
-
-msgid "E163: There is only one file to edit"
-msgstr "E163: Vain yksi tiedosto muokattavana"
-
-msgid "E164: Cannot go before first file"
-msgstr "E164: Ensimmäisen tiedoston ohi ei voi mennä"
-
-msgid "E165: Cannot go beyond last file"
-msgstr "E165: Viimeisen tiedoston ohi ei voi mennä"
-
-#, c-format
-msgid "E666: compiler not supported: %s"
-msgstr "E666: kääntäjää ei tueta: %s"
-
-#, c-format
-msgid "Searching for \"%s\" in \"%s\""
-msgstr "Etsitään ilmausta %s kohteesta %s"
-
-#, c-format
-msgid "Searching for \"%s\""
-msgstr "Etsitään ilmausta %s"
-
-#, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "ei löydy runtimepathista: %s"
-
-msgid "Source Vim script"
-msgstr "Lataa vim-skripti"
-
-#, c-format
-msgid "Cannot source a directory: \"%s\""
-msgstr "Hakemistoa ei voi ladata: %s"
-
-#, c-format
-msgid "could not source \"%s\""
-msgstr "ei voitu ladata %s"
-
-#, c-format
-msgid "line %ld: could not source \"%s\""
-msgstr "rivi %ld: ei voitu ladata %s"
-
-#, c-format
-msgid "sourcing \"%s\""
-msgstr "ladataan %s"
-
-#, c-format
-msgid "line %ld: sourcing \"%s\""
-msgstr "rivi %ld: ladataan %s"
-
-#, c-format
-msgid "finished sourcing %s"
-msgstr "ladattu %s"
-
-msgid "modeline"
-msgstr "mode-rivi"
-
-msgid "--cmd argument"
-msgstr "--cmd-argumentti"
-
-msgid "-c argument"
-msgstr "-c-argumentti"
-
-msgid "environment variable"
-msgstr "ympäristömuuttuja"
-
-msgid "error handler"
-msgstr "virhekäsittelin"
-
-msgid "W15: Warning: Wrong line separator, ^M may be missing"
-msgstr "W15: Varoitus: Väärä rivierotin, ^M saattaa puuttua"
-
-msgid "E167: :scriptencoding used outside of a sourced file"
-msgstr "E167: :scriptencoding ladatun tiedoston ulkopuolella"
-
-msgid "E168: :finish used outside of a sourced file"
-msgstr "E168: :finish ladatun tiedoston ulkopuolella"
-
-#, c-format
-msgid "Current %slanguage: \"%s\""
-msgstr "Käytössä oleva %skieli: %s"
-
-#, c-format
-msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Kieleksi ei voitu asettaa kieltä %s"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Siirrytään Ex-tilaan, kirjoita visual palataksesi normaaliin tilaan."
@@ -1845,7 +1855,7 @@ msgid ""
 "--- Auto-Commands ---"
 msgstr ""
 "\n"
-"--- Autocommands ---"
+"--- Autocommandit ---"
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
@@ -2136,37 +2146,6 @@ msgstr "Ei käytössä"
 msgid "Directory\t*.nothing\n"
 msgstr "Hakemisto\t*.nothing\n"
 
-msgid "Invalid font specification"
-msgstr "Virheellinen fonttimääritys"
-
-msgid "&Dismiss"
-msgstr "&Ohita"
-
-msgid "no specific match"
-msgstr "ei tarkkaa täsmäystä"
-
-msgid "Vim - Font Selector"
-msgstr "Vim - fonttivalitsin"
-
-msgid "Name:"
-msgstr "Nimi:"
-
-#. create toggle button
-msgid "Show size in Points"
-msgstr "Näytä koko pisteinä"
-
-msgid "Encoding:"
-msgstr "Koodaus:"
-
-msgid "Font:"
-msgstr "Fontti:"
-
-msgid "Style:"
-msgstr "Tyyli:"
-
-msgid "Size:"
-msgstr "Koko:"
-
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
 msgstr "Vim E458: Ei voi varata värikartan alkiota, värit voivat mennä väärin"
 
@@ -2209,6 +2188,37 @@ msgid ""
 msgstr ""
 "Fontti1:n leveys: %ld\n"
 "\n"
+
+msgid "Invalid font specification"
+msgstr "Virheellinen fonttimääritys"
+
+msgid "&Dismiss"
+msgstr "&Ohita"
+
+msgid "no specific match"
+msgstr "ei tarkkaa täsmäystä"
+
+msgid "Vim - Font Selector"
+msgstr "Vim - fonttivalitsin"
+
+msgid "Name:"
+msgstr "Nimi:"
+
+#. create toggle button
+msgid "Show size in Points"
+msgstr "Näytä koko pisteinä"
+
+msgid "Encoding:"
+msgstr "Koodaus:"
+
+msgid "Font:"
+msgstr "Fontti:"
+
+msgid "Style:"
+msgstr "Tyyli:"
+
+msgid "Size:"
+msgstr "Koko:"
 
 msgid "E256: Hangul automata ERROR"
 msgstr "E256: Hangu-automaattivirhe"
@@ -2368,14 +2378,14 @@ msgstr "E622: Ei voitu haarauttaa cscopea"
 msgid "cs_create_connection exec failed"
 msgstr "cs_create_connection epäonnistui"
 
-msgid "E623: Could not spawn cscope process"
-msgstr "E623: Cscope-prosessin luonti epäonnistui"
-
 msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection: fdopen to_fp epäonnistui"
 
 msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection: fdopen fr_fp epäonnistui"
+
+msgid "E623: Could not spawn cscope process"
+msgstr "E623: Cscope-prosessin luonti epäonnistui"
 
 msgid "E567: no cscope connections"
 msgstr "E567: ei cscope-yhteyksiä"
@@ -2534,8 +2544,8 @@ msgid "line number out of range"
 msgstr "rivinumero arvoalueen ulkopuolella"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<puskuriolio (poistettu) kohdassa %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<puskuriolio (poistettu) kohdassa %p>"
 
 msgid "invalid mark name"
 msgstr "virheellinen merkin nimi"
@@ -2553,12 +2563,12 @@ msgid "cursor position outside buffer"
 msgstr "kursorin sijainti puskurin ulkopuolella"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<ikkunaolio (poistettu) kohdassa %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<ikkunaolio (poistettu) kohdassa %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<ikkunaolio (tuntematon) kohdassa %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<ikkunaolio (tuntematon) kohdassa %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -2635,14 +2645,14 @@ msgstr "Näytä luokka rajoitetussa hierarkiassa"
 msgid "Xref refers to"
 msgstr "Xref viittaa kohteeseen"
 
-#~ msgid "Xref referred by"
-#~ msgstr ""
+msgid "Xref referred by"
+msgstr "Xref viitattu kohteesta"
 
-#~ msgid "Xref has a"
-#~ msgstr ""
+msgid "Xref has a"
+msgstr "Xref sisältää kohteen"
 
-#~ msgid "Xref used by"
-#~ msgstr ""
+msgid "Xref used by"
+msgstr "Xrefiä käyttää"
 
 msgid "Show docu of"
 msgstr "Näytä dokumentti kohteelle"
@@ -2650,38 +2660,40 @@ msgstr "Näytä dokumentti kohteelle"
 msgid "Generate docu for"
 msgstr "Luo dokumentti kohteelle"
 
-#~ msgid ""
-#~ "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-#~ "$PATH).\n"
-#~ msgstr ""
+msgid ""
+"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
+"$PATH).\n"
+msgstr ""
+"Ei voida yhdistää SNiFF+:aan. Tarkista ympäristömuuttujat (sniffemacsin "
+"löytyä polkumuuttujasta $PATH).\n"
 
-#~ msgid "E274: Sniff: Error during read. Disconnected"
-#~ msgstr ""
+msgid "E274: Sniff: Error during read. Disconnected"
+msgstr "E274: Sniff: Virhe luettaessa, yhteys katkaistu"
 
-#~ msgid "SNiFF+ is currently "
-#~ msgstr ""
+msgid "SNiFF+ is currently "
+msgstr "SNiFF+ "
 
-#~ msgid "not "
-#~ msgstr ""
+msgid "not "
+msgstr "ei ole "
 
-#~ msgid "connected"
-#~ msgstr ""
+msgid "connected"
+msgstr "yhdistetty"
 
 #, c-format
-#~ msgid "E275: Unknown SNiFF+ request: %s"
-#~ msgstr ""
+msgid "E275: Unknown SNiFF+ request: %s"
+msgstr "E275: Tuntematon SNiFF+-pyyntö: %s"
 
-#~ msgid "E276: Error connecting to SNiFF+"
-#~ msgstr ""
+msgid "E276: Error connecting to SNiFF+"
+msgstr "E276: Virhe yhdistettäessä SNiFF+:aan"
 
-#~ msgid "E278: SNiFF+ not connected"
-#~ msgstr ""
+msgid "E278: SNiFF+ not connected"
+msgstr "E278: SNiFF+ ei ole yhdistetty"
 
-#~ msgid "E279: Not a SNiFF+ buffer"
-#~ msgstr ""
+msgid "E279: Not a SNiFF+ buffer"
+msgstr "E279: Ei ole SNiFF+-puskuri"
 
-#~ msgid "Sniff: Error during write. Disconnected"
-#~ msgstr ""
+msgid "Sniff: Error during write. Disconnected"
+msgstr "Sniff: Virhe kirjoituksessa, yhteys katkaistu"
 
 msgid "invalid buffer number"
 msgstr "virheellinen puskurinumero"
@@ -2776,7 +2788,7 @@ msgid "Garbage after option argument"
 msgstr "Roskaa argumentin perässä"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
-msgstr "Liikaa +komentoja, -c komentoja tai --cmd komentoja"
+msgstr "Liikaa +komentoja, -c-komentoja tai --cmd-komentoja"
 
 msgid "Invalid argument for"
 msgstr "Väärä argumentti valitsimelle"
@@ -3035,10 +3047,11 @@ msgstr ""
 "--remote-wait-silent <tiedostoja>  sama, mutta älä ilmoita puuttuvasta "
 "palvelimesta"
 
-msgid "--remote-tab <files>  As --remote but open tab page for each file"
+msgid ""
+"--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab <tiedostoja>  kuten --remote, mutta avaa välilehti joka "
-"tiedostolle"
+"--remote-tab[-wait][-silent] <tiedostoja>  kuten --remote, mutta avaa "
+"välilehti joka tiedostolle"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr ""
@@ -3168,9 +3181,8 @@ msgstr "--socketid <xid>\tAvaa Vim annettuun GTK-olioon "
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <otsikko>\tAvaa Vim isäntäohjelman sisään"
 
-#, fuzzy
-#~ msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
-#~ msgstr "--socketid <xid>\tAvaa Vim annettuun GTK-olioon "
+msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
+msgstr "--windowid <HWND>\tAvaa Vim annettuun win32-olioon "
 
 msgid "No display"
 msgstr "Ei näyttöä"
@@ -3274,8 +3286,8 @@ msgstr "E288: syötemetodi ei tue tyylejä"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: syötemetodi ei tue tätä preedit-tyyppiä"
 
-#~ msgid "E290: over-the-spot style requires fontset"
-#~ msgstr ""
+msgid "E290: over-the-spot style requires fontset"
+msgstr "E290: over-the-spot-tyylissä pitää olla fontset"
 
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: GTK+-versio vanhempi kuin 1.2.3: Tila-alue poistettu käytöstä"
@@ -3822,6 +3834,9 @@ msgstr "E338: Sori, tiedostonselain puuttuu konsolitilasta"
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: printf():lle ei annettu tarpeeksi argumentteja"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Odotettiin Float-argumenttia printf():lle"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: printf():lle annettiin liikaa argumentteja"
 
@@ -3944,7 +3959,6 @@ msgstr "E346: Hakemisto %s ei ole enää cdpathissa"
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: Tiedosto %s ei ole enää polulla"
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Ei voi yhdistää Netbeans #2:een"
 
@@ -4383,6 +4397,21 @@ msgstr "X-näytön testaus epäonnistui"
 msgid "Opening the X display timed out"
 msgstr "X-näytön avaus aikakatkaistiin"
 
+# mikä security context?
+msgid ""
+"\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Ei saatu turvallisuuskontekstia kohteelle "
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Ei voitu asettaa turvallisuuskontekstia kohteelle "
+
 msgid ""
 "\n"
 "Cannot execute shell "
@@ -4425,8 +4454,8 @@ msgstr ""
 "\n"
 "Komento loppui\n"
 
-#~ msgid "XSMP lost ICE connection"
-#~ msgstr ""
+msgid "XSMP lost ICE connection"
+msgstr "XSMP kadotti ICE-yhteyden"
 
 #, c-format
 msgid "dlerror = \"%s\""
@@ -4435,21 +4464,30 @@ msgstr "dlerror = %s"
 msgid "Opening the X display failed"
 msgstr "X-näytön avaus epäonnistui"
 
-#~ msgid "XSMP handling save-yourself request"
-#~ msgstr ""
+msgid "XSMP handling save-yourself request"
+msgstr "XSMP käsittelee save-yourself-pyyntöä"
 
-#~ msgid "XSMP opening connection"
-#~ msgstr ""
+msgid "XSMP opening connection"
+msgstr "XSMP avaa yhteyttä"
 
-#~ msgid "XSMP ICE connection watch failed"
-#~ msgstr ""
+msgid "XSMP ICE connection watch failed"
+msgstr "XSMP:n ICE-yhteyden tarkkailu epäonnistui"
 
 #, c-format
-#~ msgid "XSMP SmcOpenConnection failed: %s"
-#~ msgstr ""
+msgid "XSMP SmcOpenConnection failed: %s"
+msgstr "XSMP SmcOpenConnection epäonnistui: %s"
 
 msgid "At line"
 msgstr "Rivillä"
+
+msgid "Could not load vim32.dll!"
+msgstr "Vim32.dll:ää ei voitu ladata"
+
+msgid "VIM Error"
+msgstr "VIM-virhe"
+
+msgid "Could not fix up function pointers to the DLL!"
+msgstr "Ei voitu korjata funktio-osoittimia DLL:ssä"
 
 #, c-format
 msgid "shell returned %d"
@@ -4482,15 +4520,6 @@ msgstr ""
 
 msgid "Vim Warning"
 msgstr "Vim-varoitus"
-
-msgid "Could not load vim32.dll!"
-msgstr "Vim32.dll:ää ei voitu ladata"
-
-msgid "VIM Error"
-msgstr "VIM-virhe"
-
-msgid "Could not fix up function pointers to the DLL!"
-msgstr "Ei voitu korjata funktio-osoittimia DLL:ssä"
 
 #, c-format
 msgid "E372: Too many %%%c in format string"
@@ -4760,13 +4789,18 @@ msgstr "E388: Määritelmä ei löydy"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: kuvio ei löydy"
 
-#, c-format
-#~ msgid ""
-#~ "\n"
-#~ "# Last %sSearch Pattern:\n"
-#~ "~"
-#~ msgstr ""
+msgid "Substitute "
+msgstr "Korvaa "
 
+#, c-format
+msgid ""
+"\n"
+"# Last %sSearch Pattern:\n"
+"~"
+msgstr ""
+"\n"
+"# Edellinen %sHakulauseke:\n"
+"~"
 
 msgid "E759: Format error in spell file"
 msgstr "E759: Muotoiluvirhe oikolukutiedostossa"
@@ -4782,345 +4816,352 @@ msgstr "Tekstiä rivin perässä tiedostossa %s rivillä %d: %s"
 msgid "Affix name too long in %s line %d: %s"
 msgstr "Affiksin nimi on liian pitkä tiedostossa %s rivillä %d: %s"
 
-#~ msgid "E761: Format error in affix file FOL, LOW or UPP"
-#~ msgstr ""
+msgid "E761: Format error in affix file FOL, LOW or UPP"
+msgstr "E761: Affiksitiedoston FOL-, LOW- tai UPP-muotovirhe "
 
-#~ msgid "E762: Character in FOL, LOW or UPP is out of range"
-#~ msgstr ""
+msgid "E762: Character in FOL, LOW or UPP is out of range"
+msgstr "E762: Merkki FOL:ssä, LOW:ssä tai UPP:ssä ei kuulu arvoalueeseen"
 
-#~ msgid "Compressing word tree..."
-#~ msgstr ""
+msgid "Compressing word tree..."
+msgstr "Tiivistetään sanapuuta..."
 
-#~ msgid "E756: Spell checking is not enabled"
-#~ msgstr ""
-
-#, c-format
-#~ msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
-#~ msgstr ""
+msgid "E756: Spell checking is not enabled"
+msgstr "E756: Oikaisuluku ei ole päällä"
 
 #, c-format
-#~ msgid "Reading spell file \"%s\""
-#~ msgstr ""
-
-#~ msgid "E757: This does not look like a spell file"
-#~ msgstr ""
-
-#~ msgid "E771: Old spell file, needs to be updated"
-#~ msgstr ""
-
-#~ msgid "E772: Spell file is for newer version of Vim"
-#~ msgstr ""
-
-#~ msgid "E770: Unsupported section in spell file"
-#~ msgstr ""
+msgid "Warning: Cannot find word list \"%s.%s.spl\" or \"%s.ascii.spl\""
+msgstr "Varoitus: Ei löydetty sanalistaa %s.%s.spl tai %s.ascii.spl"
 
 #, c-format
-#~ msgid "Warning: region %s not supported"
-#~ msgstr ""
+msgid "Reading spell file \"%s\""
+msgstr "Luetaan oikaisulukutiedosta %s"
+
+msgid "E757: This does not look like a spell file"
+msgstr "E757: Ei vaikuta oikaisulukutiedostolta"
+
+msgid "E771: Old spell file, needs to be updated"
+msgstr "E771: Vanha oikaisulukutiedosto vaatii päivittämistä"
+
+msgid "E772: Spell file is for newer version of Vim"
+msgstr "E772: Oikaisulukutiedosto on uudemmalle Vimille"
+
+msgid "E770: Unsupported section in spell file"
+msgstr "E770: Tukematon osio oikaisulukutiedostossa"
 
 #, c-format
-#~ msgid "Reading affix file %s ..."
-#~ msgstr ""
+msgid "Warning: region %s not supported"
+msgstr "Varoitus: osaa %s ei tueta"
 
 #, c-format
-#~ msgid "Conversion failure for word in %s line %d: %s"
-#~ msgstr ""
+msgid "Reading affix file %s ..."
+msgstr "Luetaan affiksitiedostoa %s..."
 
 #, c-format
-#~ msgid "Conversion in %s not supported: from %s to %s"
-#~ msgstr ""
+msgid "Conversion failure for word in %s line %d: %s"
+msgstr "Muunnosvirhe sanalle %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Conversion in %s not supported"
-#~ msgstr ""
+msgid "Conversion in %s not supported: from %s to %s"
+msgstr "Muunnosta kohteessa %s ei tueta: kohteesta %s kohteeseen %s"
 
 #, c-format
-#~ msgid "Invalid value for FLAG in %s line %d: %s"
-#~ msgstr ""
+msgid "Conversion in %s not supported"
+msgstr "Muutosta kohteessa %s ei tueta"
 
 #, c-format
-#~ msgid "FLAG after using flags in %s line %d: %s"
-#~ msgstr ""
+msgid "Invalid value for FLAG in %s line %d: %s"
+msgstr "Tuntematon FLAG kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid ""
-#~ "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
-#~ "%d"
-#~ msgstr ""
+msgid "FLAG after using flags in %s line %d: %s"
+msgstr "FLAG kohteessa %s lippujen jälkeen rivillä %d: %s"
 
 #, c-format
-#~ msgid ""
-#~ "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
-#~ "%d"
-#~ msgstr ""
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"COMPOUNDFORBIDFLAG PFX:n jälkeen voi antaa vääriä tuloksia kohteessa %s "
+"rivillä %d"
 
 #, c-format
-#~ msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
-#~ msgstr ""
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"COMPOUNDPERMITFLAG PFX:n jälkeen voi antaa vääriä tuloksia kohteessa %s "
+"rivillä %d"
 
 #, c-format
-#~ msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
-#~ msgstr ""
+msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
+msgstr "Väärä COMPOUNDWORDMAX-arvo kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
-#~ msgstr ""
+msgid "Wrong COMPOUNDMIN value in %s line %d: %s"
+msgstr "Väärä COMPOUNDMIN-arvo kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
-#~ msgstr ""
+msgid "Wrong COMPOUNDSYLMAX value in %s line %d: %s"
+msgstr "Väärä COMPOUNDSYLMAX-arvo kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Different combining flag in continued affix block in %s line %d: %s"
-#~ msgstr ""
+msgid "Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"
+msgstr "Väärä CHECKCOMPOUNDPATTERN-arvo kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Duplicate affix in %s line %d: %s"
-#~ msgstr ""
+msgid "Different combining flag in continued affix block in %s line %d: %s"
+msgstr ""
+"Eri yhdistelmälippu jatketussa affiksilohkossa kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid ""
-#~ "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
-#~ "line %d: %s"
-#~ msgstr ""
+msgid "Duplicate affix in %s line %d: %s"
+msgstr "Kaksoiskappale affiksista kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Expected Y or N in %s line %d: %s"
-#~ msgstr ""
+msgid ""
+"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
+"line %d: %s"
+msgstr ""
+"Affiksia käytetty myös BAD-, RARE-, KEEPCASE-, NEEDAFFIX-, NEEDCOMPOUND- tai "
+"NOSUGGEST-arvossa kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Broken condition in %s line %d: %s"
-#~ msgstr ""
+msgid "Expected Y or N in %s line %d: %s"
+msgstr "Odotettiin Y:tä tai N:ää kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Expected REP(SAL) count in %s line %d"
-#~ msgstr ""
+msgid "Broken condition in %s line %d: %s"
+msgstr "Viallinen ehto kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Expected MAP count in %s line %d"
-#~ msgstr ""
+msgid "Expected REP(SAL) count in %s line %d"
+msgstr "Odotettiin REP(SAL)-arvoa kohteessa %s rivillä %d"
 
 #, c-format
-#~ msgid "Duplicate character in MAP in %s line %d"
-#~ msgstr ""
+msgid "Expected MAP count in %s line %d"
+msgstr "Odotettiin MAP-arvoa kohteessa %s rivillä %d"
 
 #, c-format
-#~ msgid "Unrecognized or duplicate item in %s line %d: %s"
-#~ msgstr ""
+msgid "Duplicate character in MAP in %s line %d"
+msgstr "Kaksoiskappale merkistä MAP:ssä kohteessa %s rivillä %d"
 
 #, c-format
-#~ msgid "Missing FOL/LOW/UPP line in %s"
-#~ msgstr ""
-
-#~ msgid "COMPOUNDSYLMAX used without SYLLABLE"
-#~ msgstr ""
-
-#~ msgid "Too many postponed prefixes"
-#~ msgstr ""
-
-#~ msgid "Too many compound flags"
-#~ msgstr ""
-
-#~ msgid "Too many posponed prefixes and/or compound flags"
-#~ msgstr ""
+msgid "Unrecognized or duplicate item in %s line %d: %s"
+msgstr "Tunnistamaton tai kaksoiskappale arvosta kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Missing SOFO%s line in %s"
-#~ msgstr ""
+msgid "Missing FOL/LOW/UPP line in %s"
+msgstr "Puuttuva FOL, LOW tai UPP rivi kohteessa %s"
+
+msgid "COMPOUNDSYLMAX used without SYLLABLE"
+msgstr "COMPOUNDSYLMAX ilman SYLLABLEa"
+
+msgid "Too many postponed prefixes"
+msgstr "Liikaa jälkikäteistettyjä prefiksejä"
+
+msgid "Too many compound flags"
+msgstr "Liikaa yhdyssanalippuja"
+
+msgid "Too many posponed prefixes and/or compound flags"
+msgstr "Liikaa jälkikäteistettyjä prefiksejä tai yhdyssanalippuja"
 
 #, c-format
-#~ msgid "Both SAL and SOFO lines in %s"
-#~ msgstr ""
+msgid "Missing SOFO%s line in %s"
+msgstr "Puuttuva SOFO%s-rivi kohteessa %s"
 
 #, c-format
-#~ msgid "Flag is not a number in %s line %d: %s"
-#~ msgstr ""
+msgid "Both SAL and SOFO lines in %s"
+msgstr "SAL- ja SOFO-rivit kohteessa %s"
 
 #, c-format
-#~ msgid "Illegal flag in %s line %d: %s"
-#~ msgstr ""
+msgid "Flag is not a number in %s line %d: %s"
+msgstr "Lippu ei ole lukuarvo kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "%s value differs from what is used in another .aff file"
-#~ msgstr ""
+msgid "Illegal flag in %s line %d: %s"
+msgstr "Tuntematon lippu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Reading dictionary file %s ..."
-#~ msgstr ""
+msgid "%s value differs from what is used in another .aff file"
+msgstr "%s-arvo eroaa toisessa .aff-tiedostossa olevasta"
 
 #, c-format
-#~ msgid "E760: No word count in %s"
-#~ msgstr ""
+msgid "Reading dictionary file %s ..."
+msgstr "Luetaan sanakirjatiedostoa %s"
 
 #, c-format
-#~ msgid "line %6d, word %6d - %s"
-#~ msgstr ""
+msgid "E760: No word count in %s"
+msgstr "E760: Ei sanalaskuria kohteessa %s"
 
 #, c-format
-#~ msgid "Duplicate word in %s line %d: %s"
-#~ msgstr ""
+msgid "line %6d, word %6d - %s"
+msgstr "rivi %6d, sana %6d - %s"
 
 #, c-format
-#~ msgid "First duplicate word in %s line %d: %s"
-#~ msgstr ""
+msgid "Duplicate word in %s line %d: %s"
+msgstr "Toistettu sana kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "%d duplicate word(s) in %s"
-#~ msgstr ""
+msgid "First duplicate word in %s line %d: %s"
+msgstr "Ensimmäinen kappale kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Ignored %d word(s) with non-ASCII characters in %s"
-#~ msgstr ""
+msgid "%d duplicate word(s) in %s"
+msgstr "toistettuja sanoja %d kohteessa %s"
 
 #, c-format
-#~ msgid "Reading word file %s ..."
-#~ msgstr ""
+msgid "Ignored %d word(s) with non-ASCII characters in %s"
+msgstr "Ei-ASCII-merkkien takia ohitettuja sanoja %d kohteessa %s"
 
 #, c-format
-#~ msgid "Duplicate /encoding= line ignored in %s line %d: %s"
-#~ msgstr ""
+msgid "Reading word file %s ..."
+msgstr "Luetaan sanatiedostoa %s..."
 
 #, c-format
-#~ msgid "/encoding= line after word ignored in %s line %d: %s"
-#~ msgstr ""
+msgid "Duplicate /encoding= line ignored in %s line %d: %s"
+msgstr "Toistettu /encoding= ohitettu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Duplicate /regions= line ignored in %s line %d: %s"
-#~ msgstr ""
+msgid "/encoding= line after word ignored in %s line %d: %s"
+msgstr "/encoding= sanojen jälkeen ohitettu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Too many regions in %s line %d: %s"
-#~ msgstr ""
+msgid "Duplicate /regions= line ignored in %s line %d: %s"
+msgstr "Toistettu /regions= ohitettu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "/ line ignored in %s line %d: %s"
-#~ msgstr ""
+msgid "Too many regions in %s line %d: %s"
+msgstr "Liikaa regionseja kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Invalid region nr in %s line %d: %s"
-#~ msgstr ""
+msgid "/ line ignored in %s line %d: %s"
+msgstr "/ ohitettu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Unrecognized flags in %s line %d: %s"
-#~ msgstr ""
+msgid "Invalid region nr in %s line %d: %s"
+msgstr "Virheellinen region-luku kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Ignored %d words with non-ASCII characters"
-#~ msgstr ""
+msgid "Unrecognized flags in %s line %d: %s"
+msgstr "Tunnistamaton lippu kohteessa %s rivillä %d: %s"
 
 #, c-format
-#~ msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
-#~ msgstr ""
+msgid "Ignored %d words with non-ASCII characters"
+msgstr "Ei-ASCIIn takia ohitettuja sanoja %d"
 
-#~ msgid "Reading back spell file..."
-#~ msgstr ""
+#, c-format
+msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
+msgstr "Tiivistetty %d/%d noodia. %d (%d %%) jäljellä"
+
+msgid "Reading back spell file..."
+msgstr "Luetaan taas oikaisulukutiedostoa..."
 
 #.
 #. * Go through the trie of good words, soundfold each word and add it to
 #. * the soundfold trie.
 #.
-#~ msgid "Performing soundfolding..."
-#~ msgstr ""
+msgid "Performing soundfolding..."
+msgstr "Ääntämyksen mukaan yhdistellään..."
 
 #, c-format
-#~ msgid "Number of words after soundfolding: %ld"
-#~ msgstr ""
+msgid "Number of words after soundfolding: %ld"
+msgstr "Sanoja ääntämysyhdistelyn jälkeen: %ld"
 
 #, c-format
-#~ msgid "Total number of words: %d"
-#~ msgstr ""
+msgid "Total number of words: %d"
+msgstr "Sanoja yhteensä: %d"
 
 #, c-format
-#~ msgid "Writing suggestion file %s ..."
-#~ msgstr ""
+msgid "Writing suggestion file %s ..."
+msgstr "Kirjoitetaan ehdotustiedostoa %s..."
 
 #, c-format
-#~ msgid "Estimated runtime memory use: %d bytes"
-#~ msgstr ""
+msgid "Estimated runtime memory use: %d bytes"
+msgstr "Arvioitu käyttömuisti: %d tavua"
 
-#~ msgid "E751: Output file name must not have region name"
-#~ msgstr ""
+msgid "E751: Output file name must not have region name"
+msgstr "E751: Tulostetiedostonimessä ei saa olla alueen nimeä"
 
-#~ msgid "E754: Only up to 8 regions supported"
-#~ msgstr ""
-
-#, c-format
-#~ msgid "E755: Invalid region in %s"
-#~ msgstr ""
-
-#~ msgid "Warning: both compounding and NOBREAK specified"
-#~ msgstr ""
+msgid "E754: Only up to 8 regions supported"
+msgstr "E754: Enintään 8 aluetta tuetaan"
 
 #, c-format
-#~ msgid "Writing spell file %s ..."
-#~ msgstr ""
+msgid "E755: Invalid region in %s"
+msgstr "E755: Virheellinen alue kohteelle %s"
 
-#~ msgid "Done!"
-#~ msgstr ""
-
-#, c-format
-#~ msgid "E765: 'spellfile' does not have %ld entries"
-#~ msgstr ""
+msgid "Warning: both compounding and NOBREAK specified"
+msgstr "Varoitus: sekä yhdyssanamuodostus että NOBREAK käytössä"
 
 #, c-format
-#~ msgid "Word removed from %s"
-#~ msgstr ""
+msgid "Writing spell file %s ..."
+msgstr "Kirjoitetaan oikaisulukutiedostoa %s..."
+
+msgid "Done!"
+msgstr "Valmista."
 
 #, c-format
-#~ msgid "Word added to %s"
-#~ msgstr ""
-
-#~ msgid "E763: Word characters differ between spell files"
-#~ msgstr ""
-
-#~ msgid "Sorry, no suggestions"
-#~ msgstr ""
+msgid "E765: 'spellfile' does not have %ld entries"
+msgstr "E765: spellfile ei sisällä %ld kohtaa"
 
 #, c-format
-#~ msgid "Sorry, only %ld suggestions"
-#~ msgstr ""
+msgid "Word removed from %s"
+msgstr "Sana poistettu kohteesta %s"
+
+#, c-format
+msgid "Word added to %s"
+msgstr "Sana lisätty kohteeseen %s"
+
+msgid "E763: Word characters differ between spell files"
+msgstr "E763: Sanan merkit muuttuvat oikaisulukutiedostojen välillä"
+
+msgid "Sorry, no suggestions"
+msgstr "Sori, ei ehdotuksia"
+
+#, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "Sori, vain %ld ehdotusta"
 
 #. for when 'cmdheight' > 1
 #. avoid more prompt
 #, c-format
-#~ msgid "Change \"%.*s\" to:"
-#~ msgstr ""
+msgid "Change \"%.*s\" to:"
+msgstr "Muuta %.*s:"
 
 #, c-format
-#~ msgid " < \"%.*s\""
-#~ msgstr ""
+msgid " < \"%.*s\""
+msgstr " < %.*s"
 
-#~ msgid "E752: No previous spell replacement"
-#~ msgstr ""
-
-#, c-format
-#~ msgid "E753: Not found: %s"
-#~ msgstr ""
+msgid "E752: No previous spell replacement"
+msgstr "E752: Ei edellistä oikaisulukukorjausta"
 
 #, c-format
-#~ msgid "E778: This does not look like a .sug file: %s"
-#~ msgstr ""
+msgid "E753: Not found: %s"
+msgstr "E753: Ei löytynyt: %s"
 
 #, c-format
-#~ msgid "E779: Old .sug file, needs to be updated: %s"
-#~ msgstr ""
+msgid "E778: This does not look like a .sug file: %s"
+msgstr "E778: Ei vaikuta .sug-tiedostolta: %s"
 
 #, c-format
-#~ msgid "E780: .sug file is for newer version of Vim: %s"
-#~ msgstr ""
+msgid "E779: Old .sug file, needs to be updated: %s"
+msgstr "E779: Vanha .sug-tiedosto pitää päivittää: %s"
 
 #, c-format
-#~ msgid "E781: .sug file doesn't match .spl file: %s"
-#~ msgstr ""
+msgid "E780: .sug file is for newer version of Vim: %s"
+msgstr "E780: .sug-tiedosto on uudemmalle Vimille: %s"
 
 #, c-format
-#~ msgid "E782: error while reading .sug file: %s"
-#~ msgstr ""
+msgid "E781: .sug file doesn't match .spl file: %s"
+msgstr "E781: .sug-tiedosto ei täsmää .spl-tiedostoon: %s"
+
+#, c-format
+msgid "E782: error while reading .sug file: %s"
+msgstr "E782: virhe luettaessa .sug-tiedostoa: %s"
 
 #. This should have been checked when generating the .spl
 #. * file.
-#~ msgid "E783: duplicate char in MAP entry"
-#~ msgstr ""
+msgid "E783: duplicate char in MAP entry"
+msgstr "E783: kaksoiskappale merkistä MAP-kohdassa"
 
 #, c-format
 msgid "E390: Illegal argument: %s"
@@ -5326,8 +5367,8 @@ msgstr "E425: Ei voida mennä ensimmäistä täsmäävää tägiä alummaksi"
 msgid "E426: tag not found: %s"
 msgstr "E426: tägi puuttuu: %s"
 
-#~ msgid "  # pri kind tag"
-#~ msgstr ""
+msgid "  # pri kind tag"
+msgstr "  # arvo tyyppi tägi"
 
 msgid "file\n"
 msgstr "tiedosto\n"
@@ -5350,8 +5391,8 @@ msgstr "tägi %d/%d%s"
 msgid " or more"
 msgstr " tai useammasta"
 
-#~ msgid "  Using tag with different case!"
-#~ msgstr ""
+msgid "  Using tag with different case!"
+msgstr "  Tägissä eri kirjaintaso"
 
 #, c-format
 msgid "E429: File \"%s\" does not exist"
@@ -5370,8 +5411,8 @@ msgid "Searching tags file %s"
 msgstr "Etsitään tägitiedostoa %s"
 
 #, c-format
-#~ msgid "E430: Tag file path truncated for %s\n"
-#~ msgstr ""
+msgid "E430: Tag file path truncated for %s\n"
+msgstr "E430: Tägitiedoston polku katkaistu kohdassa %s\n"
 
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
@@ -5516,7 +5557,7 @@ msgid ""
 "MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"MS-Windows 32-bitars GUI-version"
+"MS-Windows 32-bittinen GUI-version"
 
 msgid " in Win32s mode"
 msgstr " Win32s-tilassa"
@@ -5526,31 +5567,38 @@ msgstr " OLE-tuella"
 
 msgid ""
 "\n"
+"MS-Windows 64-bit console version"
+msgstr ""
+"\n"
+"MS-Windows 32-bittinen konsoliversio"
+
+msgid ""
+"\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 "\n"
-"MS-Windows 32-bitars konsollversion"
+"MS-Windows 32-bittinen konsoliversio"
 
 msgid ""
 "\n"
 "MS-Windows 16-bit version"
 msgstr ""
 "\n"
-"MS-Windows 16-bitars version"
+"MS-Windows 16-bittinen versio"
 
 msgid ""
 "\n"
 "32-bit MS-DOS version"
 msgstr ""
 "\n"
-"32-bitars MS-DOS-version"
+"32-bittinen MS-DOS-versio"
 
 msgid ""
 "\n"
 "16-bit MS-DOS version"
 msgstr ""
 "\n"
-"16-bitars MS-DOS-version"
+"16-bittinen MS-DOS-versio"
 
 msgid ""
 "\n"
@@ -5585,7 +5633,7 @@ msgid ""
 "Included patches: "
 msgstr ""
 "\n"
-"Inkluderade patchar: "
+"Pätsit: "
 
 msgid "Modified by "
 msgstr "Muokannut "
@@ -5605,35 +5653,35 @@ msgid ""
 "Huge version "
 msgstr ""
 "\n"
-"Enorm version "
+"Huge-versio "
 
 msgid ""
 "\n"
 "Big version "
 msgstr ""
 "\n"
-"Stor version "
+"Big-version "
 
 msgid ""
 "\n"
 "Normal version "
 msgstr ""
 "\n"
-"Normal version "
+"Normal-versio "
 
 msgid ""
 "\n"
 "Small version "
 msgstr ""
 "\n"
-"Liten version "
+"Small-versio "
 
 msgid ""
 "\n"
 "Tiny version "
 msgstr ""
 "\n"
-"Jätteliten version "
+"Tiny-versio "
 
 msgid "without GUI."
 msgstr "ilman GUIta."
@@ -5735,7 +5783,7 @@ msgid "version "
 msgstr "versio "
 
 msgid "by Bram Moolenaar et al."
-msgstr "tekijät Bram Molenaar et al."
+msgstr "tekijät Bram Moolenaar et al."
 
 msgid "Vim is open source and freely distributable"
 msgstr "Vim on avointa lähdekoodia ja vapaasti jaossa"
@@ -5744,28 +5792,28 @@ msgid "Help poor children in Uganda!"
 msgstr "Auta Ugandan köyhiä lapsia"
 
 msgid "type  :help iccf<Enter>       for information "
-msgstr "kirjoita :help iccf<Enter>     lisätietoa varten"
+msgstr "kirjoita :help iccf<Enter>    lisätietoa varten            "
 
 msgid "type  :q<Enter>               to exit         "
-msgstr "kirjoita :q<Enter>             lopettaaksesi"
+msgstr "kirjoita :q<Enter>            lopettaaksesi                "
 
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
-msgstr "kirjoita :help<Enter> tai <F1> ohjetta varten"
+msgstr "kirjoita :help<Enter> tai <F1> ohjetta varten              "
 
 msgid "type  :help version7<Enter>   for version info"
-msgstr "kirjoita :help version7<Enter> versiotietoja varten"
+msgstr "kirjoita :help version7<Enter> versiotietoja varten        "
 
 msgid "Running in Vi compatible mode"
 msgstr "Suoritetaan Vi-yhteensopivuustilaa"
 
 msgid "type  :set nocp<Enter>        for Vim defaults"
-msgstr "kirjoita :set nocp<Enter>      Vimin oletuksiin"
+msgstr "kirjoita :set nocp<Enter>      Vimin oletuksiin            "
 
 msgid "type  :help cp-default<Enter> for info on this"
 msgstr "kirjoita :help cp-default<Enter> ohjetta oletuksista varten"
 
 msgid "menu  Help->Orphans           for information    "
-msgstr "valikko Ohje->Orvot            lisätietoja varten"
+msgstr "valikko Ohje->Orvot            lisätietoja varten          "
 
 msgid "Running modeless, typed text is inserted"
 msgstr "Suoritetaan tilattomana, kirjoitettu teksti syötetään"
@@ -5887,8 +5935,8 @@ msgstr "E11: Virheellinen komentorivi-ikkuna, <CR> suorittaa, Ctrl C lopettaa"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Kommando inte tillåtet från exrc/vimrc i aktuell katalog eller "
-"taggsökning"
+"E12: Komentoa ei tueta exrc:ssä tai vimrc:ssä tässä hakemistossa tai"
+" tägihaussa"
 
 msgid "E171: Missing :endif"
 msgstr "E171: :endif puuttuu"

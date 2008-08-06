@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         modules.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-06-17
+" Latest Revision:  2007-10-25
 
 if exists("b:current_syntax")
   finish
@@ -21,7 +21,7 @@ syn keyword modconfConditional  if else elseif endif
 
 syn keyword modconfPreProc      alias define include keep prune
                                 \ post-install post-remove pre-install
-                                \ pre-remove persistdir
+                                \ pre-remove persistdir blacklist
 
 syn keyword modconfKeyword      add above below install options probe probeall
                                 \ remove

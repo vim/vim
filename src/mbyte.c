@@ -2932,8 +2932,8 @@ mb_lefthalve(row, col)
 }
 
 /*
- * Correct a position on the screen, if it's the right halve of a double-wide
- * char move it to the left halve.  Returns the corrected column.
+ * Correct a position on the screen, if it's the right half of a double-wide
+ * char move it to the left half.  Returns the corrected column.
  */
     int
 mb_fix_col(col, row)

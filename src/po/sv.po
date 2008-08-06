@@ -4877,7 +4877,7 @@ msgstr "För många uppskjutna prefix"
 msgid "Too many compound flags"
 msgstr "För många sammansatta flaggor"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "För många uppskjutna prefix och/eller sammansatta flaggor"
 
 #, c-format

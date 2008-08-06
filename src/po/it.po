@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.2\n"
-"POT-Creation-Date: 2008-06-25 09:10+0200\n"
-"PO-Revision-Date:  2008-06-27 23:00+0200\n"
+"POT-Creation-Date: 2008-07-18 23:42+0200\n"
+"PO-Revision-Date:  2008-07-18 23:42+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -599,17 +599,17 @@ msgstr "(Non valido)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Errore in scrittura su file temporaneo"
 
-msgid "E805: Using a Float as a number"
+msgid "E805: Using a Float as a Number"
 msgstr "E805: Uso di un numero con virgola come intero"
 
-msgid "E703: Using a Funcref as a number"
-msgstr "E703: Uso di Funcref come numero"
+msgid "E703: Using a Funcref as a Number"
+msgstr "E703: Uso di Funcref come Numero"
 
-msgid "E745: Using a List as a number"
-msgstr "E745: Uso di Lista come numero"
+msgid "E745: Using a List as a Number"
+msgstr "E745: Uso di Lista come Numero"
 
-msgid "E728: Using a Dictionary as a number"
-msgstr "E728: Uso di Dizionario come numero"
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: Uso di Dizionario come Numero"
 
 msgid "E729: using Funcref as a String"
 msgstr "E729: uso di Funcref come Stringa"
@@ -4768,6 +4768,9 @@ msgstr "E388: Non sono riuscito a trovare la definizione"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Non sono riuscito a trovare il modello"
 
+msgid "Substitute "
+msgstr "Sostituisci "
+
 #, c-format
 msgid ""
 "\n"
@@ -4938,7 +4941,7 @@ msgstr "Troppi suffissi"
 msgid "Too many compound flags"
 msgstr "Troppi flag composti"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Troppi suffissi e/o flag composti"
 
 #, c-format

@@ -4852,7 +4852,7 @@ msgstr "Sobren prefixes posposats"
 msgid "Too many compound flags"
 msgstr "Sobren marques de composició"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Massa prefixes posposats i/o marques de composició"
 
 #, c-format

@@ -1,7 +1,11 @@
 " Vim syntax file
 " Language:	SAS
 " Maintainer:	James Kidd <james.kidd@covance.com>
-" Last Change:	02 Jun 2003
+" Last Change:  18 Jul 2008 by Paulo Tanimoto <ptanimoto@gmail.com>
+"               Fixed comments with * taking multiple lines.
+"               Fixed highlighting of macro keywords.
+"               Added words to cases that didn't fit anywhere.
+"             	02 Jun 2003
 "		Added highlighting for additional keywords and such;
 "		Attempted to match SAS default syntax colors;
 "		Changed syncing so it doesn't lose colors on large blocks;
@@ -25,18 +29,18 @@ syn region sasCards	start="^\s*DATALINES.*" end="^\s*;\s*$"
 
 syn match sasNumber	"-\=\<\d*\.\=[0-9_]\>"
 
+" Block comment
 syn region sasComment	start="/\*"  end="\*/" contains=sasTodo
+
 " Ignore misleading //JCL SYNTAX... (Bob Heckel)
 syn region sasComment	start="[^/][^/]/\*"  end="\*/" contains=sasTodo
 
-" Allow highlighting of embedded TODOs (Bob Heckel)
-syn match sasComment	"^\s*\*.*;" contains=sasTodo
+" Previous code for comments was written by Bob Heckel
+" Comments with * may take multiple lines (Paulo Tanimoto)
+syn region sasComment start=";\s*\*"hs=s+1 end=";" contains=sasTodo
 
-" Allow highlighting of embedded TODOs (Bob Heckel)
-syn match sasComment	";\s*\*.*;"hs=s+1 contains=sasTodo
-
-" Handle macro comments too (Bob Heckel).
-syn match sasComment	"^\s*%*\*.*;" contains=sasTodo
+" Comments with * starting after a semicolon (Paulo Tanimoto)
+syn region sasComment start="^\s*\*" end=";" contains=sasTodo
 
 " This line defines macro variables in code.  HiLink at end of file
 " defines the color scheme. Begin region with ampersand and end with
@@ -84,24 +88,71 @@ syn keyword sasStatement	NULL ON OR ORDER PRIMARY REFERENCES
 syn keyword sasStatement	RESET RESTRICT SELECT SET TABLE
 syn keyword sasStatement	UNIQUE UPDATE VALIDATE VIEW WHERE
 
+" Match declarations have to appear one per line (Paulo Tanimoto)
+syn match sasStatement	"FOOTNOTE\d"
+syn match sasStatement	"TITLE\d"
 
-syn match sasStatement	"FOOTNOTE\d" "TITLE\d"
-
-syn match sasMacro	"%BQUOTE" "%NRBQUOTE" "%CMPRES" "%QCMPRES"
-syn match sasMacro	"%COMPSTOR" "%DATATYP" "%DISPLAY" "%DO"
-syn match sasMacro	"%ELSE" "%END" "%EVAL" "%GLOBAL"
-syn match sasMacro	"%GOTO" "%IF" "%INDEX" "%INPUT"
-syn match sasMacro	"%KEYDEF" "%LABEL" "%LEFT" "%LENGTH"
-syn match sasMacro	"%LET" "%LOCAL" "%LOWCASE" "%MACRO"
-syn match sasMacro	"%MEND" "%NRBQUOTE" "%NRQUOTE" "%NRSTR"
-syn match sasMacro	"%PUT" "%QCMPRES" "%QLEFT" "%QLOWCASE"
-syn match sasMacro	"%QSCAN" "%QSUBSTR" "%QSYSFUNC" "%QTRIM"
-syn match sasMacro	"%QUOTE" "%QUPCASE" "%SCAN" "%STR"
-syn match sasMacro	"%SUBSTR" "%SUPERQ" "%SYSCALL" "%SYSEVALF"
-syn match sasMacro	"%SYSEXEC" "%SYSFUNC" "%SYSGET" "%SYSLPUT"
-syn match sasMacro	"%SYSPROD" "%SYSRC" "%SYSRPUT" "%THEN"
-syn match sasMacro	"%TO" "%TRIM" "%UNQUOTE" "%UNTIL"
-syn match sasMacro	"%UPCASE" "%VERIFY" "%WHILE" "%WINDOW"
+" Match declarations have to appear one per line (Paulo Tanimoto)
+syn match sasMacro "%BQUOTE"
+syn match sasMacro "%NRBQUOTE"
+syn match sasMacro "%CMPRES"
+syn match sasMacro "%QCMPRES"
+syn match sasMacro "%COMPSTOR"
+syn match sasMacro "%DATATYP"
+syn match sasMacro "%DISPLAY"
+syn match sasMacro "%DO"
+syn match sasMacro "%ELSE"
+syn match sasMacro "%END"
+syn match sasMacro "%EVAL"
+syn match sasMacro "%GLOBAL"
+syn match sasMacro "%GOTO"
+syn match sasMacro "%IF"
+syn match sasMacro "%INDEX"
+syn match sasMacro "%INPUT"
+syn match sasMacro "%KEYDEF"
+syn match sasMacro "%LABEL"
+syn match sasMacro "%LEFT"
+syn match sasMacro "%LENGTH"
+syn match sasMacro "%LET"
+syn match sasMacro "%LOCAL"
+syn match sasMacro "%LOWCASE"
+syn match sasMacro "%MACRO"
+syn match sasMacro "%MEND"
+syn match sasMacro "%NRBQUOTE"
+syn match sasMacro "%NRQUOTE"
+syn match sasMacro "%NRSTR"
+syn match sasMacro "%PUT"
+syn match sasMacro "%QCMPRES"
+syn match sasMacro "%QLEFT"
+syn match sasMacro "%QLOWCASE"
+syn match sasMacro "%QSCAN"
+syn match sasMacro "%QSUBSTR"
+syn match sasMacro "%QSYSFUNC"
+syn match sasMacro "%QTRIM"
+syn match sasMacro "%QUOTE"
+syn match sasMacro "%QUPCASE"
+syn match sasMacro "%SCAN"
+syn match sasMacro "%STR"
+syn match sasMacro "%SUBSTR"
+syn match sasMacro "%SUPERQ"
+syn match sasMacro "%SYSCALL"
+syn match sasMacro "%SYSEVALF"
+syn match sasMacro "%SYSEXEC"
+syn match sasMacro "%SYSFUNC"
+syn match sasMacro "%SYSGET"
+syn match sasMacro "%SYSLPUT"
+syn match sasMacro "%SYSPROD"
+syn match sasMacro "%SYSRC"
+syn match sasMacro "%SYSRPUT"
+syn match sasMacro "%THEN"
+syn match sasMacro "%TO"
+syn match sasMacro "%TRIM"
+syn match sasMacro "%UNQUOTE"
+syn match sasMacro "%UNTIL"
+syn match sasMacro "%UPCASE"
+syn match sasMacro "%VERIFY"
+syn match sasMacro "%WHILE"
+syn match sasMacro "%WINDOW"
 
 " SAS Functions
 
@@ -159,13 +210,17 @@ syn keyword sasErrMsg	ERROR
 syn keyword sasTodo	TODO TBD FIXME contained
 
 " These don't fit anywhere else (Bob Heckel).
-syn match sasUnderscore	"_NULL_"
+" Added others that were missing.
+syn match sasUnderscore	"_ALL_"
+syn match sasUnderscore "_AUTOMATIC_"
+syn match sasUnderscore	"_CHARACTER_"
 syn match sasUnderscore	"_INFILE_"
 syn match sasUnderscore	"_N_"
-syn match sasUnderscore	"_WEBOUT_"
+syn match sasUnderscore "_NAME_"
+syn match sasUnderscore	"_NULL_"
 syn match sasUnderscore	"_NUMERIC_"
-syn match sasUnderscore	"_CHARACTER_"
-syn match sasUnderscore	"_ALL_"
+syn match sasUnderscore "_USER_"
+syn match sasUnderscore	"_WEBOUT_"
 
 " End of SAS Functions
 

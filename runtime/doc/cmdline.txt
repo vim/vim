@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.2b.  Last change: 2008 Jul 11
+*cmdline.txt*   For Vim version 7.2c.  Last change: 2008 Jul 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -99,19 +99,20 @@ CTRL-E or <End>						*c_CTRL-E* *c_<End>*
 		cursor to end of command-line
 
 							*c_<LeftMouse>*
-<LeftMouse>	cursor to position of mouse click.
+<LeftMouse>	Move the cursor to the position of the mouse click.
 
 CTRL-H							*c_<BS>* *c_CTRL-H*
-<BS>		delete the character in front of the cursor (see |:fixdel| if
+<BS>		Delete the character in front of the cursor (see |:fixdel| if
 		your <BS> key does not do what you want).
 							*c_<Del>*
-<Del>		delete the character under the cursor (at end of line:
+<Del>		Delete the character under the cursor (at end of line:
 		character before the cursor) (see |:fixdel| if your <Del>
 		key does not do what you want).
 							*c_CTRL-W*
-CTRL-W		delete the word before the cursor
+CTRL-W		Delete the |word| before the cursor.  This depends on the
+		'iskeyword' option.
 							*c_CTRL-U*
-CTRL-U		remove all characters between the cursor position and
+CTRL-U		Remove all characters between the cursor position and
 		the beginning of the line.  Previous versions of vim
 		deleted all characters on the line.  If that is the
 		preferred behavior, add the following to your .vimrc: >
@@ -997,7 +998,7 @@ other than the one that is executed with <CR> are lost.
 If you would like to execute the command under the cursor and then have the
 command-line window open again, you may find this mapping useful: >
 
-	:map <F5> <CR>q:
+	:autocmd CmdwinEnter * map <buffer> <F5> <CR>q:
 
 
 VARIOUS
@@ -1044,9 +1045,9 @@ events are not triggered.  You can use the Cmdwin events to do settings
 specifically for the command-line window.  Be careful not to cause side
 effects!
 Example: >
-	:au CmdwinEnter :  let b:cpt_save = &cpt | set cpt=v
+	:au CmdwinEnter :  let b:cpt_save = &cpt | set cpt=.
 	:au CmdwinLeave :  let &cpt = b:cpt_save
-This sets 'complete' to use command-line completion in Insert mode for CTRL-N.
+This sets 'complete' to use completion in the current window for |i_CTRL-N|.
 Another example: >
 	:au CmdwinEnter [/?]  startinsert
 This will make Vim start in Insert mode in the command-line window.

@@ -12,8 +12,14 @@ let b:did_ftplugin = 1
 let s:save_cpo = &cpo
 set cpo-=C
 
-setlocal commentstring=<!--%s-->
 setlocal matchpairs+=<:>
+setlocal commentstring=<!--%s-->
+setlocal comments=s:<!--,m:\ \ \ \ ,e:-->
+
+if exists("g:ft_html_autocomment") && (g:ft_html_autocomment == 1)
+    setlocal formatoptions-=t formatoptions+=croql
+endif
+
 
 if exists('&omnifunc')
     " Distinguish between HTML versions
@@ -77,7 +83,7 @@ if has("gui_win32")
 endif
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal commentstring< matchpairs< omnifunc<"
+let b:undo_ftplugin = "setlocal commentstring< matchpairs< omnifunc< comments< formatoptions<" .
     \	" | unlet! b:match_ignorecase b:match_skip b:match_words b:browsefilter"
 
 " Restore the saved compatibility options.

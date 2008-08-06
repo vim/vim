@@ -1,6 +1,6 @@
 " Vim filetype plugin file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-09-18
+" Latest Revision:  2007-12-04
 
 if exists("b:did_ftplugin")
   finish
@@ -14,5 +14,5 @@ let b:undo_ftplugin = "setl com< cms< fo<"
 
 setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 
-let s:cpo_save = &cpo
-set cpo&vim
+let &cpo = s:cpo_save
+unlet s:cpo_save

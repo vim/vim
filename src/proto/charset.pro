@@ -32,11 +32,11 @@ void getvcol __ARGS((win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, col
 colnr_T getvcol_nolist __ARGS((pos_T *posp));
 void getvvcol __ARGS((win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, colnr_T *end));
 void getvcols __ARGS((win_T *wp, pos_T *pos1, pos_T *pos2, colnr_T *left, colnr_T *right));
-char_u *skipwhite __ARGS((char_u *p));
-char_u *skipdigits __ARGS((char_u *p));
-char_u *skiphex __ARGS((char_u *p));
-char_u *skiptodigit __ARGS((char_u *p));
-char_u *skiptohex __ARGS((char_u *p));
+char_u *skipwhite __ARGS((char_u *q));
+char_u *skipdigits __ARGS((char_u *q));
+char_u *skiphex __ARGS((char_u *q));
+char_u *skiptodigit __ARGS((char_u *q));
+char_u *skiptohex __ARGS((char_u *q));
 int vim_isdigit __ARGS((int c));
 int vim_isxdigit __ARGS((int c));
 int vim_islower __ARGS((int c));

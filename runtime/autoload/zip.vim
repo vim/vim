@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Jul 12, 2008
-" Version:	21 (modified by Bram)
+" Date:		Jul 30, 2008
+" Version:	22
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005-2008 Charles E. Campbell, Jr. {{{1
@@ -22,7 +22,7 @@ if &cp || exists("g:loaded_zip") || v:version < 700
  finish
 endif
 
-let g:loaded_zip     = "v21+b"
+let g:loaded_zip     = "v22"
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
 let s:WARNING        = 1
@@ -58,6 +58,12 @@ fun! zip#Browse(zipfile)
   set report=10
 
   " sanity checks
+  if !exists("*fnameescape")
+   if &verbose > 1
+    echoerr "the zip plugin is not available (your vim doens't support fnameescape())"
+   endif
+   return
+  endif
   if !executable(g:zip_unzipcmd)
    redraw!
    echohl Error | echo "***error*** (zip#Browse) unzip not available on your system"
@@ -99,8 +105,8 @@ fun! zip#Browse(zipfile)
   0d
   $
 
-"  call Decho("exe silent r! ".g:zip_unzipcmd." -l ".s:Escape(a:zipfile,1))
-  exe "silent r! ".g:zip_unzipcmd." -l ".s:Escape(a:zipfile,1)
+"  call Decho("exe silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1))
+  exe "silent r! ".g:zip_unzipcmd." -l -- ".s:Escape(a:zipfile,1)
   if v:shell_error != 0
    redraw!
    echohl WarningMsg | echo "***warning*** (zip#Browse) ".fnameescape(a:zipfile)." is not a zip file" | echohl None
@@ -193,8 +199,8 @@ fun! zip#Read(fname,mode)
 "  call Decho("zipfile<".zipfile.">")
 "  call Decho("fname  <".fname.">")
 
-"  call Decho("exe r! ".g:zip_unzipcmd." -p ".s:Escape(zipfile,1)." ".s:Escape(fname,1))
-  exe "silent r! ".g:zip_unzipcmd." -p ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
+"  call Decho("exe r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1))
+  exe "silent r! ".g:zip_unzipcmd." -p -- ".s:Escape(zipfile,1)." ".s:Escape(fname,1)
 
   " cleanup
   0d
@@ -286,8 +292,8 @@ fun! zip#Write(fname)
     let fname = substitute(fname, '[', '[[]', 'g')
   endif
 
-"  call Decho(g:zip_zipcmd." -u ".s:Escape(zipfile,0)." ".s:Escape(fname,0))
-  call system(g:zip_zipcmd." -u ".s:Escape(zipfile,0)." ".s:Escape(fname,0))
+"  call Decho(g:zip_zipcmd." -u ".s:Escape(fnamemodify(zipfile,":p"),0)." ".s:Escape(fname,0))
+  call system(g:zip_zipcmd." -u ".s:Escape(fnamemodify(zipfile,":p"),0)." ".s:Escape(fname,0))
   if v:shell_error != 0
    redraw!
    echohl Error | echo "***error*** (zip#Write) sorry, unable to update ".zipfile." with ".fname | echohl None
@@ -342,9 +348,8 @@ endfun
 fun! s:ChgDir(newdir,errlvl,errmsg)
 "  call Dfunc("ChgDir(newdir<".a:newdir."> errlvl=".a:errlvl."  errmsg<".a:errmsg.">)")
 
-
   try
-   exe "cd ".fnameescape(newdir)
+   exe "cd ".fnameescape(a:newdir)
   catch /^Vim\%((\a\+)\)\=:E344/
    redraw!
    if a:errlvl == s:NOTE

@@ -2,8 +2,8 @@
 " Language:		shell (sh) Korn shell (ksh) bash (sh)
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
-" Last Change:		Jul 01, 2008
-" Version:		100
+" Last Change:		Jul 11, 2008
+" Version:		102
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from Éric Brunet (eric.brunet@ens.fr)
@@ -41,9 +41,6 @@ if !exists("b:is_kornshell") && !exists("b:is_bash")
     let b:is_sh= 1
   endif
 endif
-
-" adjust iskeyword for shell characters
-"setlocal isk=@,48-57,_,192-255,#,.,/
 
 " set up default g:sh_fold_enabled {{{1
 if !exists("g:sh_fold_enabled")
@@ -275,7 +272,7 @@ else
 endif
 syn region  shSingleQuote	matchgroup=shOperator start=+'+ end=+'+		contains=shStringSpecial,@Spell
 syn region  shDoubleQuote	matchgroup=shOperator start=+"+ skip=+\\"+ end=+"+	contains=@shDblQuoteList,shStringSpecial,@Spell
-syn match   shStringSpecial	"[^[:print:]]"	contained
+syn match   shStringSpecial	"[^[:print:] \t]"	contained
 syn match   shStringSpecial	"\%(\\\\\)*\\[\\"'`$()#]"
 syn match   shSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"
 syn match   shSpecial	"^\%(\\\\\)*\\[\\"'`$()#]"

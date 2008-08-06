@@ -1729,7 +1729,7 @@ swap_me(COLORREF colorref)
 }
 
 /*ARGSUSED*/
-    static INT_PTR CALLBACK
+    static BOOL CALLBACK
 PrintDlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 #ifdef FEAT_GETTEXT

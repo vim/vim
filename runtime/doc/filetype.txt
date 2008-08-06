@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 7.2b.  Last change: 2008 Jun 27
+*filetype.txt*  For Vim version 7.2c.  Last change: 2008 Jul 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -481,6 +481,29 @@ g:changelog_date_end_entry_search
 			g:changelog_new_date_format can be used here as well.
 			The default is '^\s*$' which finds lines that contain
 			only whitespace or are completely empty.
+
+b:changelog_name					*b:changelog_name*
+			Name of the ChangeLog file to look for.
+			The default is 'ChangeLog'.
+
+b:changelog_path
+			Path of the ChangeLog to use for the current buffer.
+			The default is empty, thus looking for a file named
+			|b:changelog_name| in the same directory as the
+			current buffer.  If not found, the parent directory of
+			the current buffer is searched.  This continues
+			recursively until a file is found or there are no more
+			parent directories to search.
+
+b:changelog_entry_prefix
+			Name of a function to call to generate a prefix to a
+			new entry.  This function takes no arguments and
+			should return a string containing the prefix.
+			Returning an empty prefix is fine.
+			The default generates the shortest path between the
+			ChangeLog's pathname and the current buffers pathname.
+			In the future, it will also be possible to use other
+			variable contexts for this variable, for example, g:.
 
 The Changelog entries are inserted where they add the least amount of text.
 After figuring out the current date and user, the file is searched for an

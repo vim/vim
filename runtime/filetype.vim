@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jul 17
+" Last Change:	2008 Aug 03
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -25,7 +25,7 @@ au BufNewFile,BufRead *~
 	\ if s:name != s:short && s:short != "" |
 	\   exe "doau filetypedetect BufRead " . fnameescape(s:short) |
 	\ endif |
-	\ unlet s:name s:short
+	\ unlet! s:name s:short
 au BufNewFile,BufRead ?\+.in
 	\ if expand("<afile>:t") != "configure.in" |
 	\   exe "doau filetypedetect BufRead " . fnameescape(expand("<afile>:r")) |
@@ -181,7 +181,7 @@ func! s:FTasm()
     endif
   endif
 
-  exe "setf " . b:asmsyntax
+  exe "setf " . fnameescape(b:asmsyntax)
 endfunc
 
 func! s:FTasmsyntax()
@@ -189,8 +189,9 @@ func! s:FTasmsyntax()
   " b:asmsyntax appropriately
   let head = " ".getline(1)." ".getline(2)." ".getline(3)." ".getline(4).
 	\" ".getline(5)." "
-  if head =~ '\sasmsyntax=\S\+\s'
-    let b:asmsyntax = substitute(head, '.*\sasmsyntax=\([a-zA-Z0-9]\+\)\s.*','\1', "")
+  let match = matchstr(head, '\sasmsyntax=\zs[a-zA-Z0-9]\+\ze\s')
+  if match != ''
+    let b:asmsyntax = match
   elseif ((head =~? '\.title') || (head =~? '\.ident') || (head =~? '\.macro') || (head =~? '\.subtitle') || (head =~? '\.library'))
     let b:asmsyntax = "vmasm"
   endif
@@ -689,6 +690,9 @@ if has("fname_case")
   au BufNewFile,BufRead *.F,*.FOR,*.FPP,*.FTN,*.F77,*.F90,*.F95	 setf fortran
 endif
 au BufNewFile,BufRead   *.f,*.for,*.fortran,*.fpp,*.ftn,*.f77,*.f90,*.f95  setf fortran
+
+" Framescript
+au BufNewFile,BufRead *.fsl			setf framescript
 
 " FStab
 au BufNewFile,BufRead fstab,mtab		setf fstab
@@ -1347,7 +1351,7 @@ func! s:FTinc()
     else
       call s:FTasmsyntax()
       if exists("b:asmsyntax")
-	exe "setf " . b:asmsyntax
+	exe "setf " . fnameescape(b:asmsyntax)
       else
 	setf pov
       endif
@@ -1751,6 +1755,7 @@ endfunc
 " Z-Shell script
 au BufNewFile,BufRead .zprofile,/etc/zprofile,.zfbfmarks  setf zsh
 au BufNewFile,BufRead .zsh*,.zlog*,.zcompdump*  call s:StarSetf('zsh')
+au BufNewFile,BufRead *.zsh 			setf zsh
 
 " Scheme
 au BufNewFile,BufRead *.scm,*.ss		setf scheme

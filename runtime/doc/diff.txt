@@ -1,12 +1,12 @@
-*diff.txt*      For Vim version 7.2b.  Last change: 2006 Oct 02
+*diff.txt*      For Vim version 7.2c.  Last change: 2008 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 				*diff* *vimdiff* *gvimdiff* *diff-mode*
-This file describes the +diff feature: Showing differences between two or
-three versions of the same file.
+This file describes the +diff feature: Showing differences between two,
+three or four versions of the same file.
 
 The basics are explained in section |08.7| of the user manual.
 
@@ -49,7 +49,7 @@ What happens is that Vim opens a window for each of the files.  This is like
 using the |-O| argument.  This uses vertical splits.  If you prefer horizontal
 splits add the |-o| argument: >
 
-	vimdiff -o file1 file2 [file3]
+	vimdiff -o file1 file2 [file3 [file4]]
 
 If you always prefer horizontal splits include "horizontal" in 'diffopt'.
 

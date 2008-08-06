@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         aliases(5) local alias database file
 " Maintainer:       Nikolai Weibull <nikolai@bitwi.se>
-" Latest Revision:  2006-01-14
+" Latest Revision:  2008-04-14
 
 if exists("b:current_syntax")
   finish
@@ -19,7 +19,7 @@ syn match   mailaliasesBegin        display '^'
                                     \ nextgroup=mailaliasesName,
                                     \ mailaliasesComment
 
-syn match   mailaliasesName         contained '[0-9A-Za-z_-]\+'
+syn match   mailaliasesName         contained '[[:alnum:]\._-]\+'
                                     \ nextgroup=mailaliasesColon
 
 syn region  mailaliasesName         contained oneline start=+"+

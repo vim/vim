@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	dtd
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2003 Sep 29
+" Last Changed: 30 Jun 2008
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -13,6 +13,12 @@ let s:save_cpo = &cpo
 set cpo-=C
 
 setlocal commentstring=<!--%s-->
+setlocal comments=s:<!--,m:\ \ \ \ \ ,e:-->
+
+setlocal formatoptions-=t
+if !exists("g:ft_dtd_autocomment") || (g:ft_dtd_autocomment == 1)
+    setlocal formatoptions+=croql
+endif
 
 if exists("loaded_matchit")
     let b:match_words = '<!--:-->,<!:>'
@@ -26,7 +32,7 @@ if has("gui_win32")
 endif
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal commentstring<" .
+let b:undo_ftplugin = "setlocal commentstring< comments< formatoptions<" .
 		\     " | unlet! b:matchwords b:browsefilter"
 
 " Restore the saved compatibility options.

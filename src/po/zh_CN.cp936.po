@@ -4789,7 +4789,7 @@ msgstr "太多延迟前缀"
 msgid "Too many compound flags"
 msgstr "太多组合标志"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "太多延迟前缀和/或组合标志"
 
 #, c-format

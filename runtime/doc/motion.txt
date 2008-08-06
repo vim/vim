@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.2b.  Last change: 2008 May 02
+*motion.txt*    For Vim version 7.2c.  Last change: 2008 Aug 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -851,16 +851,16 @@ when using blockwise Visual mode.  These commands do not work when no change
 was made yet in the current file.
 
 							*'<* *`<*
-'<  `<			To the first character of the last selected Visual
-			area in the current buffer.  For block mode it may
-			also be the last character in the first line (to be
-			able to define the block).  {not in Vi}.
+'<  `<			To the first line or character of the last selected
+			Visual area in the current buffer.  For block mode it
+			may also be the last character in the first line (to
+			be able to define the block).  {not in Vi}.
 
 							*'>* *`>*
-'>  `>			To the last character of the last selected Visual
-			area in the current buffer.  For block mode it may
-			also be the first character of the last line (to be
-			able to define the block).  Note that 'selection'
+'>  `>			To the last line or character of the last selected
+			Visual area in the current buffer.  For block mode it
+			may also be the first character of the last line (to
+			be able to define the block).  Note that 'selection'
 			applies, the position may be just after the Visual
 			area.  {not in Vi}.
 

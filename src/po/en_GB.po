@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(UK English)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-05 14:54+0100\n"
+"POT-Creation-Date: 2008-07-19 18:03+0100\n"
 "PO-Revision-Date: 2003-02-25 11:05+0000\n"
 "Last-Translator: Mike Williams <mrw@eandem.co.uk>\n"
 "Language-Team: Mike Williams <mrw@eandem.co.uk>\n"
@@ -28,6 +28,9 @@ msgstr ""
 #, c-format
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: Cannot diff more than %ld buffers"
+
+msgid "E101: More than two buffers in diff mode, don't know which one to use"
+msgstr "E101: More than two buffers in diff mode, do not know which one to use"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -93,6 +96,9 @@ msgstr "E206: patchmode: cannot touch empty original file"
 
 msgid "E207: Can't delete backup file"
 msgstr "E207: Cannot delete backup file"
+
+msgid "don't quit the editor until the file is successfully written!"
+msgstr "do not quit the editor until the file is successfully written!"
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Cannot execute autocommands for ALL events"

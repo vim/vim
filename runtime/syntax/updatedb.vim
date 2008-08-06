@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         updatedb.conf(5) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2007-10-25
 
 if exists("b:current_syntax")
   finish
@@ -18,7 +18,7 @@ syn region  updatedbComment display oneline start='^\s*#' end='$'
 syn match   updatedbBegin   display '^'
                             \ nextgroup=updatedbName,updatedbComment skipwhite
 
-syn keyword updatedbName    contained PRUNEFS PRUNEPATHS
+syn keyword updatedbName    contained PRUNEFS PRUNEPATHS PRUNE_BIND_MOUNTS
                             \ nextgroup=updatedbNameEq
 
 syn match   updatedbNameEq  contained display '=' nextgroup=updatedbValue

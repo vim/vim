@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 7.2b.  Last change: 2007 May 11
+*version6.txt*  For Vim version 7.2c.  Last change: 2008 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -5894,7 +5894,7 @@ Files:	    src/move.c
 
 Patch 6.1b.023
 Problem:    On MS-Windows system() may cause checking timestamps, because Vim
-	    looses and gains input focus, while this doesn't happen on Unix.
+	    loses and gains input focus, while this doesn't happen on Unix.
 Solution:   Don't check timestamps while system() is busy.
 Files:	    src/ex_cmds2.c, src/fileio.c, src/globals.h, src/misc1.c
 

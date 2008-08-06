@@ -4615,6 +4615,7 @@ a{	motion.txt	/*a{*
 a}	motion.txt	/*a}*
 b	motion.txt	/*b*
 b:changedtick-variable	eval.txt	/*b:changedtick-variable*
+b:changelog_name	filetype.txt	/*b:changelog_name*
 b:current_syntax-variable	syntax.txt	/*b:current_syntax-variable*
 b:netrw_lastfile	pi_netrw.txt	/*b:netrw_lastfile*
 b:var	eval.txt	/*b:var*
@@ -5329,6 +5330,8 @@ fixed-6.4	version6.txt	/*fixed-6.4*
 fixed-7.1	version7.txt	/*fixed-7.1*
 fixed-7.2	version7.txt	/*fixed-7.2*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
+float-e	eval.txt	/*float-e*
+float-pi	eval.txt	/*float-pi*
 float2nr()	eval.txt	/*float2nr()*
 floating-point-format	eval.txt	/*floating-point-format*
 floating-point-precision	eval.txt	/*floating-point-precision*

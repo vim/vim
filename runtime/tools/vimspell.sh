@@ -11,6 +11,7 @@
 #
 # Neil Schemenauer <nascheme@ucalgary.ca>
 # March 1999
+# updated 2008 Jul 17 by Bram
 #
 # Safe method for the temp file by Javier Fernández-Sanguino_Peña
 
@@ -22,7 +23,7 @@ OUTFILE=`mktemp -t vimspellXXXXXX || tempfile -p vimspell || echo none`
 # create a file in the safest way possible.
 if test "$OUTFILE" = none; then
         OUTFILE=$tmp/vimspell$$
-	[ -e $OUTFILE ] && { echo "Cannot use temporary file $OUTFILE, it already exists!; exit 1 ; } 
+	[ -e $OUTFILE ] && { echo "Cannot use temporary file $OUTFILE, it already exists!"; exit 1 ; } 
         (umask 077; touch $OUTFILE)
 fi
 # Note the copy of vimspell cannot be deleted on exit since it is

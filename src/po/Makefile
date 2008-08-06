@@ -20,6 +20,7 @@ LANGUAGES = \
 		ko \
 		no \
 		pl \
+		pt_BR \
 		ru \
 		sk \
 		sv \
@@ -46,6 +47,7 @@ MOFILES = \
 		ko.mo \
 		no.mo \
 		pl.mo \
+		pt_BR.mo \
 		ru.mo \
 		sk.mo \
 		sv.mo \
@@ -82,6 +84,7 @@ CHECKFILES = \
 		ko.ck \
 		no.ck \
 		pl.ck \
+		pt_BR.ck \
 		ru.ck \
 		sk.ck \
 		sv.ck \
@@ -114,7 +117,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot .ck
-.PHONY: all install uninstall prefixcheck check clean distclean $(LANGUAGES)
+.PHONY: all install uninstall prefixcheck converted check clean checkclean distclean update-po $(LANGUAGES)
 
 .po.mo:
 	$(MSGFMT) -o $@ $<
@@ -233,6 +236,8 @@ $(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h
 		--add-comments --keyword=_ --keyword=N_ \
 		*.c if_perl.xs GvimExt/gvimext.cpp globals.h
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
+
+update-po: $(LANGUAGES)
 
 # Don't add a dependency here, we only want to update the .po files manually
 $(LANGUAGES):

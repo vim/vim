@@ -5314,7 +5314,7 @@ msgstr "Trop de préfixes reportés (PFXPOSTPONE)"
 msgid "Too many compound flags"
 msgstr "Trop de drapeaux de composition"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Trop de préfixes reportés et/ou de drapeaux de composition"
 
 #, c-format

@@ -1,9 +1,9 @@
 " netrwPlugin.vim: Handles file transfer and remote directory listing across a network
 "            PLUGIN SECTION
-" Date:		Apr 07, 2008
+" Date:		Aug 01, 2008
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
-" Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
+" Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -22,7 +22,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v127"
+let g:loaded_netrwPlugin = "v131"
 let s:keepcpo            = &cpo
 if v:version < 700
  echohl WarningMsg | echo "***netrw*** you need vim version 7.0 for this version of netrw" | echohl None
@@ -47,19 +47,19 @@ augroup END
 augroup Network
  au!
  if has("win32") || has("win95") || has("win64") || has("win16")
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "bwipe ".expand("<amatch>")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
+  au BufReadCmd  file://*		exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',""))|exe "bwipe ".fnameescape(expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
  else
-  au BufReadCmd  file://*		exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',"")|exe "bwipe ".expand("<amatch>")|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
-  au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".netrw#RFC2396(expand("<amatch>"))|exe 'e '.substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',"")|exe "bwipe ".substitute(expand("<amatch>"),'file://\(\k\+@\)\=','','')|exe "silent doau BufReadPost ".netrw#RFC2396(expand("<amatch>"))
+  au BufReadCmd  file://*		exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://\(.*\)','\1',""))|exe "bwipe ".fnameescape(expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
+  au BufReadCmd  file://localhost/*	exe "silent doau BufReadPre ".fnameescape(netrw#RFC2396(expand("<amatch>")))|exe 'e '.fnameescape(substitute(netrw#RFC2396(expand("<amatch>")),'file://localhost/\(.*\)','\1',""))|exe "bwipe ".fnameescape(substitute(expand("<amatch>"),'file://\(\k\+@\)\=','',''))|exe "silent doau BufReadPost ".fnameescape(netrw#RFC2396(expand("<amatch>")))
  endif
- au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".expand("<amatch>")|exe '2Nread "'.expand("<amatch>").'"'|exe "silent doau BufReadPost ".expand("<amatch>")
- au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".expand("<amatch>")|exe 'Nread "'   .expand("<amatch>").'"'|exe "silent doau FileReadPost ".expand("<amatch>")
- au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".expand("<amatch>")|exe 'Nwrite "' .expand("<amatch>").'"'|exe "silent doau BufWritePost ".expand("<amatch>")
- au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".expand("<amatch>")|exe "'[,']".'Nwrite "' .expand("<amatch>").'"'|exe "silent doau FileWritePost ".expand("<amatch>")
+ au BufReadCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau BufReadPre ".fnameescape(expand("<amatch>"))|exe '2Nread '.fnameescape(expand("<amatch>"))|exe "silent doau BufReadPost ".fnameescape(expand("<amatch>"))
+ au FileReadCmd  ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe "silent doau FileReadPre ".fnameescape(expand("<amatch>"))|exe 'Nread '.fnameescape(expand("<amatch>"))|exe "silent doau FileReadPost ".fnameescape(expand("<amatch>"))
+ au BufWriteCmd  ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*		exe "silent doau BufWritePre ".fnameescape(expand("<amatch>"))|exe 'Nwrite '.fnameescape(expand("<amatch>"))|exe "silent doau BufWritePost ".fnameescape(expand("<amatch>"))
+ au FileWriteCmd ftp://*,rcp://*,scp://*,dav://*,davs://*,rsync://*,sftp://*		exe "silent doau FileWritePre ".fnameescape(expand("<amatch>"))|exe "'[,']".'Nwrite '.fnameescape(expand("<amatch>"))|exe "silent doau FileWritePost ".fnameescape(expand("<amatch>"))
  try
-  au SourceCmd    ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource "'.expand("<amatch>").'"'
+  au SourceCmd   ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
  catch /^Vim\%((\a\+)\)\=:E216/
-  au SourcePre    ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource "'.expand("<amatch>").'"'
+  au SourcePre   ftp://*,rcp://*,scp://*,http://*,dav://*,davs://*,rsync://*,sftp://*	exe 'Nsource '.fnameescape(expand("<amatch>"))
  endtry
 augroup END
 

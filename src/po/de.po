@@ -4722,7 +4722,7 @@ msgstr "Zu viele zurück gestellte Präfixe"
 msgid "Too many compound flags"
 msgstr "Zu viele zusammengesetzte Flags"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Zu viele zurück gestellte Präfixe und/oder zusammengesetzte Flags"
 
 #, c-format

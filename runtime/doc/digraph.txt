@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 7.2b.  Last change: 2007 Sep 10
+*digraph.txt*   For Vim version 7.2c.  Last change: 2008 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,9 @@ this file.
 The decimal number normally is the Unicode number of the character.  Note that
 the meaning doesn't change when 'encoding' changes.  The character will be
 converted from Unicode to 'encoding' when needed.  This does require the
-conversion to be available, it might fail.
+conversion to be available, it might fail.  For the NUL character you will see
+"10".  That's because NUL characters are internally represented with a NL
+character.  When you write the file it will become a NUL character.
 
 When Vim was compiled without the +multi_byte feature, you need to specify the
 character in the encoding given with 'encoding'.  You might want to use

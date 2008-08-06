@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	xml
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2003 Sep 29
+" Last Changed: 30 Jun 2008
 " URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
@@ -13,6 +13,13 @@ let s:save_cpo = &cpo
 set cpo-=C
 
 setlocal commentstring=<!--%s-->
+setlocal comments=s:<!--,m:\ \ \ \ \ ,e:-->
+
+setlocal formatoptions-=t
+if !exists("g:ft_xml_autocomment") || (g:ft_xml_autocomment == 1)
+    setlocal formatoptions+=croql
+endif
+
 
 " XML:  thanks to Johannes Zellner and Akbar Ibrahim
 " - case sensitive
@@ -49,7 +56,7 @@ if has("gui_win32")
 endif
 
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal cms<" .
+let b:undo_ftplugin = "setlocal commentstring< comments< formatoptions<" .
 		\     " | unlet! b:match_ignorecase b:match_words b:browsefilter"
 
 " Restore the saved compatibility options.
