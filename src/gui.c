@@ -901,9 +901,10 @@ gui_update_cursor(force, clear_selection)
     int		attr;
     attrentry_T *aep = NULL;
 
-    /* Don't update the cursor when halfway busy scrolling.
-     * ScreenLines[] isn't valid then. */
-    if (!can_update_cursor)
+    /* Don't update the cursor when halfway busy scrolling or the screen size
+     * doesn't match 'columns' and 'lines.  ScreenLines[] isn't valid then. */
+    if (!can_update_cursor || screen_Columns != gui.num_cols
+					       || screen_Rows != gui.num_rows)
 	return;
 
     gui_check_pos();
