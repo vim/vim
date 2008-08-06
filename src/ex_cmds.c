@@ -5897,12 +5897,17 @@ find_help_tags(arg, num_matches, matches, keep_lang)
     flags = TAG_HELP | TAG_REGEXP | TAG_NAMES | TAG_VERBOSE;
     if (keep_lang)
 	flags |= TAG_KEEP_LANG;
-    if (find_tags(IObuff, num_matches, matches, flags, TAG_MANY, NULL) == OK
+    if (find_tags(IObuff, num_matches, matches, flags, (int)MAXCOL, NULL) == OK
 	    && *num_matches > 0)
+    {
 	/* Sort the matches found on the heuristic number that is after the
 	 * tag name. */
 	qsort((void *)*matches, (size_t)*num_matches,
 					      sizeof(char_u *), help_compare);
+	/* Delete more than TAG_MANY to reduce the size of the listing. */
+	while (*num_matches > TAG_MANY)
+	    vim_free((*matches)[--*num_matches]);
+    }
     return OK;
 }
 
