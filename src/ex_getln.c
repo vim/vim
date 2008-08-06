@@ -6252,7 +6252,10 @@ script_get(eap, cmd)
 	    NUL, eap->cookie, 0);
 
 	if (theline == NULL || STRCMP(end_pattern, theline) == 0)
+	{
+	    vim_free(theline);
 	    break;
+	}
 
 	ga_concat(&ga, theline);
 	ga_append(&ga, '\n');
