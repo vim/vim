@@ -6459,13 +6459,16 @@ init_highlight(both, reset)
     /* Reverse looks ugly, but grey may not work for 8 colors.  Thus let it
      * depend on the number of colors available.
      * With 8 colors brown is equal to yellow, need to use black for Search fg
-     * to avoid Statement highlighted text disappears. */
+     * to avoid Statement highlighted text disappears.
+     * Clear the attributes, needed when changing the t_Co value. */
     if (t_colors > 8)
-	do_highlight((char_u *)(*p_bg == 'l' ? "Visual ctermbg=LightGrey"
-				   : "Visual ctermbg=DarkGrey"), FALSE, TRUE);
+	do_highlight((char_u *)(*p_bg == 'l'
+		    ? "Visual cterm=NONE ctermbg=LightGrey"
+		    : "Visual cterm=NONE ctermbg=DarkGrey"), FALSE, TRUE);
     else
     {
-	do_highlight((char_u *)"Visual cterm=reverse", FALSE, TRUE);
+	do_highlight((char_u *)"Visual cterm=reverse ctermbg=NONE",
+								 FALSE, TRUE);
 	if (*p_bg == 'l')
 	    do_highlight((char_u *)"Search ctermfg=black", FALSE, TRUE);
     }
