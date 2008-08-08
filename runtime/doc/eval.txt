@@ -2681,7 +2681,11 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
-<		Use |add()| to concatenate one item to a list.	To concatenate
+<		When {expr1} is the same List as {expr2} then the number of
+		items copied is equal to the original length of the List.
+		E.g., when {expr3} is 1 you get N new copies of the first item
+		(where N is the original length of the List).
+		Use |add()| to concatenate one item to a list.	To concatenate
 		two lists into a new list use the + operator: >
 			:let newlist = [1, 2, 3] + [4, 5]
 <

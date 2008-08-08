@@ -6231,8 +6231,11 @@ list_extend(l1, l2, bef)
     listitem_T	*bef;
 {
     listitem_T	*item;
+    int		todo = l2->lv_len;
 
-    for (item = l2->lv_first; item != NULL; item = item->li_next)
+    /* We also quit the loop when we have inserted the original item count of
+     * the list, avoid a hang when we extend a list with itself. */
+    for (item = l2->lv_first; item != NULL && --todo >= 0; item = item->li_next)
 	if (list_insert_tv(l1, &item->li_tv, bef) == FAIL)
 	    return FAIL;
     return OK;
