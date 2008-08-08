@@ -2832,11 +2832,13 @@ fnameescape({string})					*fnameescape()*
 		For most systems the characters escaped are
 		" \t\n*?[{`$\\%#'\"|!<".  For systems where a backslash
 		appears in a filename, it depends on the value of 'isfname'.
+		A leading '+' and '>' is also escaped (special after |:edit|
+		and |:write|).  And a "-" by itself (special after |:cd|).
 		Example: >
-			:let fname = 'some str%nge|name'
+			:let fname = '+some str%nge|name'
 			:exe "edit " . fnameescape(fname)
 <		results in executing: >
-			edit some\ str\%nge\|name
+			edit \+some\ str\%nge\|name
 
 fnamemodify({fname}, {mods})				*fnamemodify()*
 		Modify file name {fname} according to {mods}.  {mods} is a
