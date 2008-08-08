@@ -1899,7 +1899,7 @@ regatom(flagp)
 					  br = regnext(br);
 				  }
 			      }
-			      *flagp &= ~HASWIDTH;
+			      *flagp &= ~(HASWIDTH | SIMPLE);
 			      break;
 			  }
 
