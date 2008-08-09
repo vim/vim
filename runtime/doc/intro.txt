@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 7.2c.  Last change: 2008 Jun 24
+*intro.txt*     For Vim version 7.2.  Last change: 2008 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

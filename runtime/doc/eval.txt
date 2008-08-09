@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.2c.  Last change: 2008 Jul 16
+*eval.txt*	For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4033,8 +4033,12 @@ mkdir({name} [, {path} [, {prot}]])
 		If {prot} is given it is used to set the protection bits of
 		the new directory.  The default is 0755 (rwxr-xr-x: r/w for
 		the user readable for others).	Use 0700 to make it unreadable
-		for others.
-		This function is not available in the |sandbox|.
+		for others.  This is only used for the last part of {name}.
+		Thus if you create /tmp/foo/bar then /tmp/foo will be created
+		with 0755.
+		Example: >
+			:call mkdir($HOME . "/tmp/foo/bar", "p", 0700)
+<		This function is not available in the |sandbox|.
 		Not available on all systems.  To check use: >
 			:if exists("*mkdir")
 <

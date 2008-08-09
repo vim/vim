@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.2c.  Last change: 2008 Jul 13
+*pi_tar.txt*	For Vim version 7.2.  Last change: 2008 Aug 09
 
 		       +====================+
 		       | Tar File Interface |
@@ -37,12 +37,24 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
    *g:tar_readoptions*    "OPxf"  used to extract a file from a tarball
    *g:tar_cmd*            "tar"   the name of the tar program
    *g:tar_nomax*            0     if true, file window will not be maximized
+   *g:tar_secure*         undef   if exists:
+					"--" will be used to prevent unwanted
+					option expansion in tar commands.
+					Please be sure that your tar command
+					accepts "--"; Posix compliant tar
+					utilities do accept it.
+				  if not exists:
+					The tar plugin will reject any member
+					files that begin with "-"
+				  Not all tar's support the "--" which is why
+				  it isn't default.
    *g:tar_writeoptions*   "uf"    used to update/replace a file
 
 
 ==============================================================================
 4. History						*tar-history*
 
+   v22 Aug 08, 2008 * security fixes
    v16 Jun 06, 2008 * tarfile:: used instead of tarfile: when editing files
 		      inside tarballs.  Fixes a problem with tarballs called
 		      things like c:\abc.tar. (tnx to Bill McCarthy)

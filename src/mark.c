@@ -907,7 +907,10 @@ ex_jumps(eap)
 
 	    msg_putchar('\n');
 	    if (got_int)
+	    {
+		vim_free(name);
 		break;
+	    }
 	    sprintf((char *)IObuff, "%c %2d %5ld %4d ",
 		i == curwin->w_jumplistidx ? '>' : ' ',
 		i > curwin->w_jumplistidx ? i - curwin->w_jumplistidx

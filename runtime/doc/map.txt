@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.2c.  Last change: 2008 Jul 09
+*map.txt*       For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1300,7 +1300,7 @@ The replacement text for a user defined command is scanned for special escape
 sequences, using <...> notation.  Escape sequences are replaced with values
 from the entered command line, and all other text is copied unchanged.  The
 resulting string is executed as an Ex command.  To avoid the replacement use
-<lt> in plade of the initial <.  Thus to include "<bang>" literally use
+<lt> in place of the initial <.  Thus to include "<bang>" literally use
 "<lt>bang>".
 
 The valid escape sequences are

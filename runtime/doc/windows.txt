@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.2c.  Last change: 2008 Jul 05
+*windows.txt*   For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -627,7 +627,7 @@ can also get to them with the buffer list commands, like ":bnext".
 		not split.  Also see |++opt| and |+cmd|.
 
 						*:dr* *:drop*
-:dr[op] {file} ..
+:dr[op] [++opt] [+cmd] {file} ..
 		Edit the first {file} in a window.
 		- If the file is already open in a window change to that
 		  window.
@@ -639,6 +639,7 @@ can also get to them with the buffer list commands, like ":bnext".
 		program that wants Vim to edit another file, e.g., a debugger.
 		When using the |:tab| modifier each argument is opened in a
 		tab page.  The last window is used if it's empty.
+		Also see |++opt| and |+cmd|.
 		{only available when compiled with the +gui feature}
 
 ==============================================================================

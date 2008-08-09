@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.2c.  Last change: 2008 Aug 01
+*pi_netrw.txt*  For Vim version 7.2.  Last change: 2008 Aug 08
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -2429,6 +2429,10 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v132: Aug 06, 2008 * Fixed marked file-based obtain
+	      Aug 08, 2008 * sourcing a file via ftp from a netrw-generated
+	                     buffer (or any buffer with |'nobl'|) left an
+			     empty no-name buffer in its wake.  Fixed.
 	v130: Jul 31, 2008 * trying out elinks/links for http://host/
 			     requests.  One problem: in-page links
 			     (such as with ...#LABEL) are not supported

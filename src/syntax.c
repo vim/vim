@@ -2619,7 +2619,9 @@ check_keepend()
 	    break;
 
     maxpos.lnum = 0;
+    maxpos.col = 0;
     maxpos_h.lnum = 0;
+    maxpos_h.col = 0;
     for ( ; i < current_state.ga_len; ++i)
     {
 	sip = &CUR_STATE(i);

@@ -1,7 +1,7 @@
 " netrw.vim: Handles file transfer and remote directory listing across
 "            AUTOLOAD SECTION
-" Date:		Aug 01, 2008
-" Version:	131
+" Date:		Aug 08, 2008
+" Version:	132
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " GetLatestVimScripts: 1075 1 :AutoInstall: netrw.vim
 " Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
@@ -27,7 +27,7 @@ if !exists("s:NOTE")
  let s:WARNING = 1
  let s:ERROR   = 2
 endif
-let g:loaded_netrw = "v131"
+let g:loaded_netrw = "v132"
 
 " sanity checks
 if v:version < 700
@@ -743,7 +743,12 @@ fun! netrw#NetRead(mode,...)
       call netrw#ErrorMsg(s:ERROR,getline(1),4)
       let &debug    = debugkeep
      endif
-     call s:SaveBufVars()|bd!|call s:RestoreBufVars()
+     call s:SaveBufVars()
+     bd!
+     if bufname("%") == "" && line("$") == 1 && getline("$") == ""
+      q!
+     endif
+     call s:RestoreBufVars()
      let result           = s:NetrwGetFile(readcmd, tmpfile, b:netrw_method)
      let b:netrw_lastfile = choice
 
@@ -3737,6 +3742,9 @@ endfun
 "  Creates a marked file match string
 "    s:netrwmarfilemtch_#   -- used with 2match to display marked files
 "
+"  Creates a buffer version of islocal
+"    b:netrw_islocal
+"
 fun! s:NetrwMarkFile(islocal,fname)
 "  call Dfunc("s:NetrwMarkFile(islocal=".a:islocal." fname<".a:fname.">)")
   let curbufnr= bufnr("%")
@@ -3745,15 +3753,16 @@ fun! s:NetrwMarkFile(islocal,fname)
    " markfile list exists
 "   call Decho("starting s:netrwmarkfilelist_{curbufnr}<".string(s:netrwmarkfilelist_{curbufnr}).">")
 "   call Decho("starting s:netrwmarkfilemtch_{curbufnr}<".s:netrwmarkfilemtch_{curbufnr}.">")
+   let b:netrw_islocal= a:islocal
 
    if index(s:netrwmarkfilelist_{curbufnr},a:fname) == -1
-    " append filename to local-directory markfilelist
+    " append filename to buffer's markfilelist
 "    call Decho("append filename<".a:fname."> to local markfilelist_".curbufnr."<".string(s:netrwmarkfilelist_{curbufnr}).">")
     call add(s:netrwmarkfilelist_{curbufnr},a:fname)
     let s:netrwmarkfilemtch_{curbufnr}= s:netrwmarkfilemtch_{curbufnr}.'\|\<'.escape(a:fname,g:netrw_markfileesc."'".g:netrw_markfileesc."'").'\>'
 
    else
-    " remove filename from local markfilelist
+    " remove filename from buffer's markfilelist
 "    call Decho("remove filename<".a:fname."> from local markfilelist_".curbufnr."<".string(s:netrwmarkfilelist_{curbufnr}).">")
     call filter(s:netrwmarkfilelist_{curbufnr},'v:val != a:fname')
     if s:netrwmarkfilelist_{curbufnr} == []
@@ -4760,20 +4769,22 @@ fun! netrw#NetrwObtain(islocal,fname,...)
   endif
 "  call Decho("tgtdir<".tgtdir.">")
 
-  if a:islocal
-   " obtain a file from b:netrw_curdir to getcwd()
-"   call Decho("obtain a local file from ".b:netrw_curdir." to ".tgtdir
+  if b:netrw_islocal
+   " obtain a file from local b:netrw_curdir to (local) tgtdir
+"   call Decho("obtain a file from local ".b:netrw_curdir." to ".tgtdir)
    if exists("b:netrw_curdir") && getcwd() != b:netrw_curdir
     let topath= s:ComposePath(tgtdir,"")
     if (has("win32") || has("win95") || has("win64") || has("win16"))
      " transfer files one at time
+"     call Decho("transfer files one at a time")
      for fname in fnamelist
 "      call Decho("system(".g:netrw_localcopycmd." ".shellescape(fname)." ".shellescape(topath).")")
       call system(g:netrw_localcopycmd." ".shellescape(fname)." ".shellescape(topath))
      endfor
     else
      " transfer files with one command
-     let filelist= join(map(deepcopy(fname),"shellescape(v:val)"))
+"     call Decho("transfer files with one command")
+     let filelist= join(map(deepcopy(fnamelist),"shellescape(v:val)"))
 "     call Decho("system(".g:netrw_localcopycmd." ".filelist." ".shellescape(topath).")")
      call system(g:netrw_localcopycmd." ".filelist." ".shellescape(topath))
     endif
@@ -4784,7 +4795,8 @@ fun! netrw#NetrwObtain(islocal,fname,...)
    endif
 
   else
-"   call Decho("obtain a remote file from ".b:netrw_curdir." to ".tgtdir)
+   " obtain files from remote b:netrw_curdir to local tgtdir
+"   call Decho("obtain a file from remote ".b:netrw_curdir." to ".tgtdir)
    if type(a:fname) == 1
     call s:SetupNetrwStatusLine('%f %h%m%r%=%9*Obtaining '.a:fname)
    endif

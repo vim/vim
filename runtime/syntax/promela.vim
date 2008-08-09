@@ -1,9 +1,9 @@
 " Vim syntax file
-" Language:		ProMeLa
+" Language:			ProMeLa
 " Maintainer:		Maurizio Tranchero <maurizio.tranchero@polito.it> - <maurizio.tranchero@gmail.com>
 " First Release:	Mon Oct 16 08:49:46 CEST 2006
-" Last Change:		Sat May 16 12:20:43 CEST 2007
-" Version:		0.2
+" Last Change:		Thu Aug 7 21:22:48 CEST 2008
+" Version:			0.5
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -19,17 +19,9 @@ endif
 syn keyword promelaStatement	proctype if else while chan do od fi break goto unless
 syn keyword promelaStatement	active assert label atomic
 syn keyword promelaFunctions	skip timeout run
-" check what it is the following
+syn keyword promelaTodo         contained TODO
 " ProMeLa Types
 syn keyword promelaType			bit bool byte short int
-" ProMeLa Regions
-syn region promelaComment		start="\/\/" end="$" keepend
-syn region promelaString		start="\"" end="\""
-" syn region promelaComment		start="//" end="$" contains=ALL
-" syn region promelaComment		start="/\*" end="\*/" contains=ALL
-" ProMeLa Comment
-syn match promelaComment	"\/.*$"
-syn match promelaComment	"/\*.*\*/"
 " Operators and special characters
 syn match promelaOperator	"!"
 syn match promelaOperator	"?"
@@ -47,14 +39,18 @@ syn match promelaSpecial	"\["
 syn match promelaSpecial	"\]"
 syn match promelaSpecial	";"
 syn match promelaSpecial	"::"
+" ProMeLa Comments
+syn region promelaComment start="/\*" end="\*/" contains=promelaTodo,@Spell
+syn match  promelaComment "//.*" contains=promelaTodo,@Spell
 
 " Class Linking
-hi def link promelaStatement		Statement
-hi def link promelaType			Type
-hi def link promelaComment		Comment
-hi def link promelaOperator		Type
-hi def link promelaSpecial		Special
-hi def link promelaFunctions		Special
+hi def link promelaStatement    Statement
+hi def link promelaType	        Type
+hi def link promelaComment      Comment
+hi def link promelaOperator	    Type
+hi def link promelaSpecial      Special
+hi def link promelaFunctions    Special
 hi def link promelaString		String
+hi def link promelaTodo	        Todo
 
 let b:current_syntax = "promela"

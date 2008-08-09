@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.2c.  Last change: 2008 Jul 05
+*editing.txt*   For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -719,23 +719,23 @@ list of the current window.
 			and |+cmd|.  {not in Vi}
 
 							*:wn* *:wnext*
-:[count]wn[ext] [++opt] [+cmd]
+:[count]wn[ext] [++opt]
 			Write current file and start editing the [count]
 			next file.  Also see |++opt| and |+cmd|.  {not in Vi}
 
-:[count]wn[ext] [++opt] [+cmd] {file}
+:[count]wn[ext] [++opt] {file}
 			Write current file to {file} and start editing the
 			[count] next file, unless {file} already exists and
 			the 'writeany' option is off.  Also see |++opt| and
 			|+cmd|.  {not in Vi}
 
-:[count]wn[ext]! [++opt] [+cmd] {file}
+:[count]wn[ext]! [++opt] {file}
 			Write current file to {file} and start editing the
 			[count] next file.  Also see |++opt| and |+cmd|.  {not
 			in Vi}
 
-:[count]wN[ext][!] [++opt] [+cmd] [file]		*:wN* *:wNext*
-:[count]wp[revious][!] [++opt] [+cmd] [file]		*:wp* *:wprevious*
+:[count]wN[ext][!] [++opt] [file]		*:wN* *:wNext*
+:[count]wp[revious][!] [++opt] [file]		*:wp* *:wprevious*
 			Same as :wnext, but go to previous file instead of
 			next.  {not in Vi}
 
@@ -855,39 +855,46 @@ Note: When the 'write' option is off, you are not able to write any file.
 							*:w* *:write*
 						*E502* *E503* *E504* *E505*
 						*E512* *E514* *E667* *E796*
-:w[rite]		Write the whole buffer to the current file.  This is
+:w[rite] [++opt]	Write the whole buffer to the current file.  This is
 			the normal way to save changes to a file.  It fails
 			when the 'readonly' option is set or when there is
 			another reason why the file can't be written.
+			For ++opt see |++opt|, but only ++bin, ++nobin, ++ff
+			and ++enc are effective.
 
-:w[rite]!		Like ":write", but forcefully write when 'readonly' is
+:w[rite]! [++opt]	Like ":write", but forcefully write when 'readonly' is
 			set or there is another reason why writing was
 			refused.
 			Note: This may change the permission and ownership of
 			the file and break (symbolic) links.  Add the 'W' flag
 			to 'cpoptions' to avoid this.
 
-:[range]w[rite][!]	Write the specified lines to the current file.  This
+:[range]w[rite][!] [++opt]
+			Write the specified lines to the current file.  This
 			is unusual, because the file will not contain all
 			lines in the buffer.
 
 							*:w_f* *:write_f*
-:[range]w[rite]	{file}	Write the specified lines to {file}, unless it
+:[range]w[rite] [++opt]	{file}
+			Write the specified lines to {file}, unless it
 			already exists and the 'writeany' option is off.
 
 							*:w!*
-:[range]w[rite]! {file}	Write the specified lines to {file}.  Overwrite an
+:[range]w[rite]! [++opt] {file}
+			Write the specified lines to {file}.  Overwrite an
 			existing file.
 
 						*:w_a* *:write_a* *E494*
-:[range]w[rite][!] >>	Append the specified lines to the current file.
+:[range]w[rite][!] [++opt] >>
+			Append the specified lines to the current file.
 
-:[range]w[rite][!] >> {file}
+:[range]w[rite][!] [++opt] >> {file}
 			Append the specified lines to {file}.  '!' forces the
 			write even if file does not exist.
 
 							*:w_c* *:write_c*
-:[range]w[rite] !{cmd}	Execute {cmd} with [range] lines as standard input
+:[range]w[rite] [++opt] !{cmd}
+			Execute {cmd} with [range] lines as standard input
 			(note the space in front of the '!').  {cmd} is
 			executed like with ":!{cmd}", any '!' is replaced with
 			the previous command |:!|.
@@ -904,7 +911,8 @@ used, for example, when the write fails and you want to try again later with
 'cpoptions' option.
 
 							*:sav* *:saveas*
-:sav[eas][!] {file}	Save the current buffer under the name {file} and set
+:sav[eas][!] [++opt] {file}
+			Save the current buffer under the name {file} and set
 			the filename of the current buffer to {file}.  The
 			previous name is used for the alternate file name.
 			The [!] is needed to overwrite an existing file.
@@ -914,7 +922,7 @@ used, for example, when the write fails and you want to try again later with
 			{not in Vi}
 
 							*:up* *:update*
-:[range]up[date][!] [>>] [file]
+:[range]up[date][!] [++opt] [>>] [file]
 			Like ":write", but only write when the buffer has been
 			modified.  {not in Vi}
 
@@ -1063,30 +1071,31 @@ The names can be in upper- or lowercase.
 			|quickfix|).  {not in Vi}
 
 							*:wq*
-:wq			Write the current file and quit.  Writing fails when
+:wq [++opt]		Write the current file and quit.  Writing fails when
 			the file is read-only or the buffer does not have a
 			name.  Quitting fails when the last file in the
 			argument list has not been edited.
 
-:wq!			Write the current file and quit.  Writing fails when
+:wq! [++opt]		Write the current file and quit.  Writing fails when
 			the current buffer does not have a name.
 
-:wq {file}		Write to {file} and quit.  Quitting fails when the
+:wq [++opt] {file}	Write to {file} and quit.  Quitting fails when the
 			last file in the argument list has not been edited.
 
-:wq! {file}		Write to {file} and quit.
+:wq! [++opt] {file}	Write to {file} and quit.
 
-:[range]wq[!] [file]	Same as above, but only write the lines in [range].
+:[range]wq[!] [++opt] [file]
+			Same as above, but only write the lines in [range].
 
 							*:x* *:xit*
-:[range]x[it][!] [file]
+:[range]x[it][!] [++opt] [file]
 			Like ":wq", but write only when changes have been
 			made.
 			When 'hidden' is set and there are more windows, the
 			current buffer becomes hidden, after writing the file.
 
 							*:exi* *:exit*
-:[range]exi[t][!] [file]
+:[range]exi[t][!] [++opt] [file]
 			Same as :xit.
 
 							*ZZ*
@@ -1118,18 +1127,18 @@ MULTIPLE WINDOWS AND BUFFERS				*window-exit*
 							*:quita* *:quitall*
 :quita[ll][!]	Same as ":qall". {not in Vi}
 
-:wqa[ll]					*:wqa* *:wqall* *:xa* *:xall*
+:wqa[ll] [++opt]				*:wqa* *:wqall* *:xa* *:xall*
 :xa[ll]		Write all changed buffers and exit Vim.  If there are buffers
 		without a file name, which are readonly or which cannot be
 		written for another reason, Vim will not quit. {not in Vi}
 
-:conf[irm] wqa[ll]
+:conf[irm] wqa[ll] [++opt]
 :conf[irm] xa[ll]
 		Write all changed buffers and exit Vim.  Bring up a prompt
 		when some buffers are readonly or cannot be written for
 		another reason.  See |:confirm|. {not in Vi}
 
-:wqa[ll]!
+:wqa[ll]! [++opt]
 :xa[ll]!	Write all changed buffers, even the ones that are readonly,
 		and exit Vim.  If there are buffers without a file name or
 		which cannot be written for another reason, Vim will not quit.

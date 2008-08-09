@@ -42,11 +42,15 @@ syn region  hamlRuby   matchgroup=hamlRubyChar       start="-"    end="$" contai
 syn match   hamlPlainChar "\\" contained
 syn region hamlInterpolatable matchgroup=hamlInterpolatableChar start="==" end="$" keepend contained contains=hamlInterpolation
 syn region hamlInterpolation matchgroup=hamlInterpolationDelimiter start="#{" end="}" contained contains=@hamlRubyTop
+syn region hamlErbInterpolation matchgroup=hamlInterpolationDelimiter start="<%[=-]\=" end="-\=%>" contained contains=@hamlRubyTop
 
 syn match   hamlHelper  "\<action_view?\|\.\@<!\<\%(flatten\|open\|puts\)" contained containedin=@hamlEmbeddedRuby,@hamlRubyTop,rubyInterpolation
 syn keyword hamlHelper   capture_haml find_and_preserve  html_attrs init_haml_helpers list_of preced preserve succeed surround tab_down tab_up page_class contained containedin=@hamlEmbeddedRuby,@hamlRubyTop,rubyInterpolation
 
-syn region  hamlPlainFilter matchgroup=hamlFilter start="^\z(\s*\):\%(plain\|preserve\|erb\|redcloth\|textile\|markdown\)\s*$" end="^\%(\z1 \)\@!" contains=htmlTag,htmlEndTag,htmlSpecialChar,htmlComment,@htmlTop
+syn cluster hamlHtmlTop contains=@htmlTop,htmlBold,htmlItalic,htmlUnderline
+syn region  hamlPlainFilter matchgroup=hamlFilter start="^\z(\s*\):\%(plain\|preserve\|erb\|redcloth\|textile\|markdown\)\s*$" end="^\%(\z1 \)\@!" contains=@hamlHtmlTop,rubyInterpolation
+syn region  hamlEscapedFilter matchgroup=hamlFilter start="^\z(\s*\):\%(escaped\)\s*$" end="^\%(\z1 \)\@!" contains=rubyInterpolation
+syn region  hamlErbFilter  matchgroup=hamlFilter start="^\z(\s*\):erb\s*$" end="^\%(\z1 \)\@!" contains=@hamlHtmlTop,hamlErbInterpolation
 syn region  hamlRubyFilter  matchgroup=hamlFilter start="^\z(\s*\):ruby\s*$" end="^\%(\z1 \)\@!" contains=@hamlRubyTop
 syn region  hamlSassFilter  matchgroup=hamlFilter start="^\z(\s*\):sass\s*$" end="^\%(\z1 \)\@!" contains=@hamlSassTop
 

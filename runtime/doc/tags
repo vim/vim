@@ -5079,6 +5079,7 @@ diff-patchexpr	diff.txt	/*diff-patchexpr*
 diff.txt	diff.txt	/*diff.txt*
 diff_filler()	eval.txt	/*diff_filler()*
 diff_hlID()	eval.txt	/*diff_hlID()*
+digraph	digraph.txt	/*digraph*
 digraph-arg	change.txt	/*digraph-arg*
 digraph-encoding	digraph.txt	/*digraph-encoding*
 digraph-table	digraph.txt	/*digraph-table*
@@ -5651,6 +5652,7 @@ g:tar_browseoptions	pi_tar.txt	/*g:tar_browseoptions*
 g:tar_cmd	pi_tar.txt	/*g:tar_cmd*
 g:tar_nomax	pi_tar.txt	/*g:tar_nomax*
 g:tar_readoptions	pi_tar.txt	/*g:tar_readoptions*
+g:tar_secure	pi_tar.txt	/*g:tar_secure*
 g:tar_writeoptions	pi_tar.txt	/*g:tar_writeoptions*
 g:var	eval.txt	/*g:var*
 g:vimball_home	pi_vimball.txt	/*g:vimball_home*

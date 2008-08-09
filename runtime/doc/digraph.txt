@@ -1,15 +1,15 @@
-*digraph.txt*   For Vim version 7.2c.  Last change: 2008 Jul 17
+*digraph.txt*   For Vim version 7.2.  Last change: 2008 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Digraphs						*digraphs* *Digraphs*
+Digraphs					*digraph* *digraphs* *Digraphs*
 
 Digraphs are used to enter characters that normally cannot be entered by
-an ordinary keyboard.  These are mostly accented characters which have the
-eighth bit set.  The digraphs are easier to remember than the decimal number
-that can be entered with CTRL-V (see |i_CTRL-V|).
+an ordinary keyboard.  These are mostly printable non-ASCII characters.  The
+digraphs are easier to remember than the decimal number that can be entered
+with CTRL-V (see |i_CTRL-V|).
 
 There is a brief introduction on digraphs in the user manual: |24.9|
 An alternative is using the 'keymap' option.

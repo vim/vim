@@ -177,6 +177,9 @@
 # ifdef FEAT_X11
 #  undef FEAT_X11
 # endif
+# ifdef FEAT_GUI_X11
+#  undef FEAT_GUI_X11
+# endif
 # ifdef FEAT_XCLIPBOARD
 #  undef FEAT_XCLIPBOARD
 # endif
@@ -2014,8 +2017,9 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # ifdef instr
 #  undef instr
 # endif
-  /* bool causes trouble on MACOS but is required on a few other systems */
-# if defined(bool) && defined(MACOS)
+  /* bool may cause trouble on MACOS but is required on a few other systems
+   * and for Perl */
+# if defined(bool) && defined(MACOS) && !defined(FEAT_PERL)
 #  undef bool
 # endif
 

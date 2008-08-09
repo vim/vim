@@ -62,6 +62,7 @@ SInt32 gMacSystemVersion;
 
 static int im_is_active = FALSE;
 #if 0
+    /* TODO: Implement me! */
 static int im_start_row = 0;
 static int im_start_col = 0;
 #endif

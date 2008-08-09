@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2c.  Last change: 2008 Aug 06
+*todo.txt*      For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -70,9 +70,6 @@ backslash? (Robert Vibrant, 2008 Jun 5)
 After using <Tab> for command line completion after ":ta blah" and getting E33
 (no tags file), further editing the command to e.g., ":echo 'blah'", the
 command is not executed.  Fix by Ian Kelling?
-
-When 'bomb' is changed the window title is updated to show/hide a "+", but the
-tab page label isn't. (Patrick Texier, 2008 Jun 24)
 
 ":help s/~" jumps to *s/\~*, while ":help s/\~" doesn't find anything. (Tim
 Chase)  Fix by Ian Kelling, 2008 Jul 14.
@@ -258,7 +255,7 @@ go to Insert mode and add a few lines.  Then backspacing every other time
 moves the cursor instead of deleting. (Chris Kaiser, 2007 Sep 25)
 
 Redraw problem when appending digraph causes line to wrap. (James Vega, 2007
-Sep 18)
+Sep 18)  Patch by Ian Kelling, 2008 Aug 8.
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -293,7 +290,10 @@ Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
 Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
 
 Win32: using CTRL-S in Insert mode doesn't remove the "+" from the tab pages
-label.  (Tsakiridis, 2007 Feb 18)
+label.  (Tsakiridis, 2007 Feb 18)  Patch from Ian Kelling, 2008 Aug 6.
+
+When 'bomb' is changed the window title is updated to show/hide a "+", but the
+tab page label isn't. (Patrick Texier, 2008 Jun 24)
 
 Win32: using "gvim --remote-tab-silent fname" sometimes gives an empty screen
 with the more prompt.  Caused by setting the guitablabel?  (Thomas Michael

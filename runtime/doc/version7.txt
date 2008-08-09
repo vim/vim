@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.2c.  Last change: 2008 Aug 06
+*version7.txt*  For Vim version 7.2.  Last change: 2008 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4661,6 +4661,8 @@ Removed the bulgarian.vim keymap file, two more standard ones replace it.
 Increased the maximum number of tag matches for command line completion from
 200 to 300.
 
+Renamed help file sql.txt to ft_sql.txt and ada.txt to ft_ada.txt.
+
 
 Added							*added-7.2*
 -----
@@ -4669,6 +4671,7 @@ New syntax files:
 	CUDA (Timothy B. Terriberry)
 	Cdrdao config (Nikolai Weibull)
 	Coco/R (Ashish Shukla)
+	Denyhosts config (Nikolai Weibull)
 	Dtrace script (Nicolas Weber)
 	Git output, commit, config, rebase, send-email (Tim Pope)
 	HASTE and HastePreProc (M. Tranchero)
@@ -4683,7 +4686,6 @@ New syntax files:
 	Symbian meta-makefile, MMP (Ron Aaron)
 	VOS CM macro (Andrew McGill)
 	XBL (Doug Kearns)
-	denyhosts config (Nikolai Weibull)
 
 New tutor files:
 	Made UTF-8 versions of all the tutor files.
@@ -4697,18 +4699,23 @@ New filetype plugins:
 	Denyhosts (Nikolai Weibull)
 	Dos .ini file (Nikolai Weibull)
 	Dtrace script (Nicolas Weber)
+	FnameScript (Nikolai Weibull)
 	Git, Git config, Git commit, Git rebase, Git send-email (Tim Pope)
 	Haml (Tim Pope)
 	Host conf (Nikolai Weibull)
+	Host access (Nikolai Weibull)
 	Logtalk (Paulo Moura)
 	MS messages (Kevin Locke)
+	NSIS script (Nikolai Weibull)
 	PDF (Tim Pope)
 	Reva Forth (Ron Aaron)
 	Sass (Tim Pope)
 
 New indent files:
+	DTD (Nikolai Weibull)
 	Dtrace script (Nicolas Weber)
 	Erlang (Csaba Hoch)
+	FrameScript (Nikolai Weibull)
 	Git config (Tim Pope)
 	Haml (Tim Pope)
 	Logtalk (Paulo Moura)
@@ -4725,8 +4732,8 @@ New keymap files:
 	Removed plain Bulgarian, "bds" and phonetic are sufficient.
 
 Other new runtime files:
-	Esperanto menus and message translations. (Dominique Pelle)
-	Finnish translation of menus and messages. (Flammie Pirinen)
+	Esperanto menu and message translations. (Dominique Pelle)
+	Finnish menu and message translations. (Flammie Pirinen)
 	Brazilian Portugese message translations. (Eduardo Dobay)
 
 Added floating point support. |Float|
@@ -7110,6 +7117,30 @@ Files:	    src/syntax.c
 
 Error when cancelling completion menu and auto-formatting. (fixed by Ian
 Kelling)
+
+Patch 7.2c.001
+Problem:    ":let x=[''] | let x += x" causes hang. (Matt Wozniski)
+Solution:   Only insert elements up to the original length of the List.
+Files:	    runtime/doc/eval.txt, src/eval.c
+
+Patch 7.2c.002
+Problem:    fnameescape() doesn't handle a leading '+' or '>'. (Jan Minar)
+Solution:   Escape a leading '+' and '>'.  And a single '-'.
+Files:	    runtime/doc/eval.txt, src/ex_getln.c
+
+Patch 7.2c.003
+Problem:    Searching for "foo\%[bar]\+" gives a "Corrupted regexp program"
+	    error. (Joachim Hofmann)
+Solution:   Mark the \%[] item as not being simple.
+Files:	    src/regexp.c
+
+On Vista access to system directories is virtualized. (Michael Mutschler)
+Adjusted the manifest file to avoid this. (George Reilly)
+
+Memory leak when using CTRL-C to cancel listing the jump list. (Dominique
+Pelle)
+
+Mac: Could not build with Perl interface.
 
 
  vim:tw=78:ts=8:ft=help:norl:
