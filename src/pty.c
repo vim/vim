@@ -270,9 +270,10 @@ OpenPTY(ttyn)
 }
 #endif
 
-#if defined(HAVE_SVR4_PTYS) && !defined(PTY_DONE) && !defined(hpux)
+#if defined(HAVE_SVR4_PTYS) && !defined(PTY_DONE) && !defined(hpux) && !defined(MACOS_X)
 
-/* NOTE: Even though HPUX can have /dev/ptmx, the code below doesn't work! */
+/* NOTE: Even though HPUX can have /dev/ptmx, the code below doesn't work!
+ * Same for Mac OS X Leopard. */
 #define PTY_DONE
     int
 OpenPTY(ttyn)
