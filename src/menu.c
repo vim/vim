@@ -1120,6 +1120,7 @@ show_menus(path_name, modes)
 	parent = menu;
 	menu = menu->children;
     }
+    vim_free(path_name);
 
     /* Now we have found the matching menu, and we list the mappings */
 						    /* Highlight title */
