@@ -77,7 +77,7 @@
 
 /*
  * Do the opposite: based on a maximum end score and a known sound score,
- * compute the the maximum word score that can be used.
+ * compute the maximum word score that can be used.
  */
 #define MAXSCORE(word_score, sound_score) ((4 * word_score - sound_score) / 3)
 
@@ -625,7 +625,7 @@ typedef struct suggest_S
 /* TRUE if a word appears in the list of banned words.  */
 #define WAS_BANNED(su, word) (!HASHITEM_EMPTY(hash_find(&su->su_banned, word)))
 
-/* Number of suggestions kept when cleaning up.  we need to keep more than
+/* Number of suggestions kept when cleaning up.  We need to keep more than
  * what is displayed, because when rescore_suggestions() is called the score
  * may change and wrong suggestions may be removed later. */
 #define SUG_CLEAN_COUNT(su)    ((su)->su_maxcount < 130 ? 150 : (su)->su_maxcount + 20)
@@ -5980,7 +5980,7 @@ spell_read_aff(spin, fname)
 	else if (spin->si_newprefID == 0 || spin->si_newprefID == 127)
 	    MSG(_("Too many compound flags"));
 	else
-	    MSG(_("Too many posponed prefixes and/or compound flags"));
+	    MSG(_("Too many postponed prefixes and/or compound flags"));
     }
 
     if (syllable != NULL)
