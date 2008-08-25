@@ -3657,8 +3657,8 @@ item_lock(tv, deep, lock)
 }
 
 /*
- * Return TRUE if typeval "tv" is locked: Either tha value is locked itself or
- * it refers to a List or Dictionary that is locked.
+ * Return TRUE if typeval "tv" is locked: Either that value is locked itself
+ * or it refers to a List or Dictionary that is locked.
  */
     static int
 tv_islocked(tv)
@@ -15838,10 +15838,9 @@ item_compare2(s1, s2)
     if (res == FAIL)
 	res = ITEM_COMPARE_FAIL;
     else
-	/* return value has wrong type */
 	res = get_tv_number_chk(&rettv, &item_compare_func_err);
     if (item_compare_func_err)
-	res = ITEM_COMPARE_FAIL;
+	res = ITEM_COMPARE_FAIL;  /* return value has wrong type */
     clear_tv(&rettv);
     return res;
 }
@@ -20590,6 +20589,9 @@ func_dump_profile(fd)
     int		st_len = 0;
 
     todo = (int)func_hashtab.ht_used;
+    if (todo == 0)
+	return;     /* nothing to dump */
+
     sorttab = (ufunc_T **)alloc((unsigned)(sizeof(ufunc_T) * todo));
 
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
@@ -20638,6 +20640,8 @@ func_dump_profile(fd)
 							      prof_self_cmp);
 	prof_sort_list(fd, sorttab, st_len, "SELF", TRUE);
     }
+
+    vim_free(sorttab);
 }
 
     static void
@@ -21204,7 +21208,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
 	    func_do_profile(fp);
 	if (fp->uf_profiling
-		       || (fc.caller != NULL && &fc.caller->func->uf_profiling))
+		       || (fc.caller != NULL && fc.caller->func->uf_profiling))
 	{
 	    ++fp->uf_tm_count;
 	    profile_start(&call_start);
@@ -21235,13 +21239,13 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc.caller != NULL && &fc.caller->func->uf_profiling)))
+		    || (fc.caller != NULL && fc.caller->func->uf_profiling)))
     {
 	profile_end(&call_start);
 	profile_sub_wait(&wait_start, &call_start);
 	profile_add(&fp->uf_tm_total, &call_start);
 	profile_self(&fp->uf_tm_self, &call_start, &fp->uf_tm_children);
-	if (fc.caller != NULL && &fc.caller->func->uf_profiling)
+	if (fc.caller != NULL && fc.caller->func->uf_profiling)
 	{
 	    profile_add(&fc.caller->func->uf_tm_children, &call_start);
 	    profile_add(&fc.caller->func->uf_tml_children, &call_start);
