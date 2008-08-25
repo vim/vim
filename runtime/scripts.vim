@@ -234,6 +234,10 @@ else
   elseif s:line1 =~ '\<DTD\s\+XHTML\s'
     set ft=xhtml
 
+    " HTML (e.g.: <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN")
+  elseif s:line1 =~? '\<DOCTYPE\s\+html\>'
+    set ft=html
+
     " PDF
   elseif s:line1 =~ '^%PDF-'
     set ft=pdf
