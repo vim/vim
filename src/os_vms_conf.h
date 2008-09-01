@@ -114,6 +114,8 @@
 #define HAVE_PUTENV
 #define HAVE_SETENV
 #define HAVE_SETJMP_H
+#define HAVE_MATH_H
+#define HAVE_FLOAT_FUNCS
 
 #undef	HAVE_DIRENT_H
 #undef	HAVE_SYS_NDIR_H

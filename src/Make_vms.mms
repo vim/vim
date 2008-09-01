@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2007 Oct 22
+# Last change:  2008 Aug 16
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -36,7 +36,7 @@ DECC = YES
 # BIG    - Many features enabled, as rich as possible. (default)
 # HUGE   - All possible featues enabled.
 # Please select one of these alternatives above.
-MODEL = BIG
+MODEL = HUGE
 
 # GUI or terminal mode executable.
 # Comment out if you want just the character terminal mode only.

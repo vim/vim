@@ -4,9 +4,9 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2008 Jun 19
+# Last change:  2008 Aug 19
 #
-# This has been tested on VMS 6.2 to 7.2 on DEC Alpha and VAX.
+# This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
 #
 # Execute with:
@@ -32,6 +32,15 @@
 # and directory handling.
 # WANT_UNIX = YES
 
+# Comment out if you want to run Win32 specific tests as well, but please
+# be aware, that on OpenVMS will fail, because of cat, rm, etc commands
+# and directory handling.
+# WANT_WIN = YES
+
+# Comment out if you want to run spell checker tests. 
+# They fail because VMS does not support file names.
+# WANT_SPELL = YES
+
 # Comment out if you have gzip on your system
 # HAVE_GZIP = YES
 
@@ -53,12 +62,12 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test13.out test14.out test15.out test17.out \
 	 test18.out test19.out test20.out test21.out test22.out \
 	 test23.out test24.out test26.out \
-	 test28.out test29.out test31.out test32.out \
+	 test28.out test29.out test30.out test31.out test32.out \
 	 test33.out test34.out test35.out test36.out test37.out \
 	 test38.out test39.out test40.out test41.out test42.out \
 	 test43.out test44.out test45.out test46.out \
 	 test48.out test51.out test53.out test54.out test55.out \
-	 test56.out test57.out test58.out test59.out test60.out \
+	 test56.out test57.out test60.out \
 	 test61.out test62.out test63.out test64.out test65.out
 
 .IFDEF WANT_GUI
@@ -67,7 +76,15 @@ GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test12.out test25.out test27.out test30.out test49.out
+SCRIPT_UNIX = test10.out test12.out test25.out test27.out test49.out
+.ENDIF
+
+.IFDEF WANT_WIN
+SCRIPT_WIN = test50.out test52.out
+.ENDIF
+
+.IFDEF WANT_SPELL
+SCRIPT_SPELL = test58.out test59.out 
 .ENDIF
 
 .IFDEF HAVE_GZIP
@@ -84,11 +101,11 @@ SCRIPT_GDIFF = test47.out
 	-@ write sys$output "                "$*" "
 	-@ write sys$output "-----------------------------------------------"
 	-@ create/term/wait mcr $(VIMPROG) $(GUI_OPTION) -u vms.vim --noplugin -s dotest.in $*.in
-	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then differences test.out $*.ok;
+	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then differences /par test.out $*.ok;
 	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then rename test.out $*.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 
-all : clean nolog $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_GZIP) $(SCRIPT_GDIFF)
+all : clean nolog $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_GZIP) $(SCRIPT_GDIFF) 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
@@ -113,6 +130,8 @@ nolog :
 	-@ write sys$output "MAKE_VMS.MMS options:"
 	-@ write sys$output "   WANT_GUI  = ""$(WANT_GUI)"" "
 	-@ write sys$output "   WANT_UNIX = ""$(WANT_UNIX)"" "
+	-@ write sys$output "   WANT_WIN  = ""$(WANT_WIN)"" "
+	-@ write sys$output "   WANT_SPELL= ""$(WANT_SPELL)"" "
 	-@ write sys$output "   HAVE_GZIP = ""$(HAVE_GZIP)"" "
 	-@ write sys$output "   HAVE_GDIFF= ""$(HAVE_GDIFF)"" "
 	-@ write sys$output "Default vimrc file is VMS.VIM:
@@ -122,5 +141,13 @@ nolog :
 clean :
 	-@ if "''F$SEARCH("*.out")'"     .NES. "" then delete/noconfirm/nolog *.out.*
 	-@ if "''F$SEARCH("test.log")'"  .NES. "" then delete/noconfirm/nolog test.log.*
+	-@ if "''F$SEARCH("test.ok")'"   .NES. "" then delete/noconfirm/nolog test.ok.*
 	-@ if "''F$SEARCH("Xdotest.*")'" .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("*.*_sw*")'"   .NES. "" then delete/noconfirm/nolog *.*_sw*.*
+	-@ if "''F$SEARCH("*.failed")'"  .NES. "" then delete/noconfirm/nolog *.failed.*
+	-@ if "''F$SEARCH("*.rej")'"     .NES. "" then delete/noconfirm/nolog *.rej.*
+	-@ if "''F$SEARCH("tiny.vim")'"  .NES. "" then delete/noconfirm/nolog tiny.vim.*
+	-@ if "''F$SEARCH("small.vim")'" .NES. "" then delete/noconfirm/nolog small.vim.*
+	-@ if "''F$SEARCH("mbyte.vim")'" .NES. "" then delete/noconfirm/nolog mbyte.vim.*
+	-@ if "''F$SEARCH("viminfo.*")'" .NES. "" then delete/noconfirm/nolog viminfo.*.*
+

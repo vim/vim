@@ -24,10 +24,17 @@ STARTTEST
 :set nobin eol
 :bwipe XXUnix XXDos XXMac
 :" create mixed format files
-:!cat XXUnix XXDos >XXUxDs
-:!cat XXUnix XXMac >XXUxMac
-:!cat XXDos XXMac >XXDosMac
-:!cat XXUnix XXDos XXMac >XXUxDsMc
+:if has("vms")
+: !copy XXUnix,XXDos XXUxDs.
+: !copy XXUnix,XXMac XXUxMac.
+: !copy XXDos,XXMac  XXDosMac.
+: !copy XXUnix,XXDos,XXMac XXUxDsMc.
+:else
+: !cat XXUnix XXDos >XXUxDs
+: !cat XXUnix XXMac >XXUxMac
+: !cat XXDos XXMac >XXDosMac
+: !cat XXUnix XXDos XXMac >XXUxDsMc
+:endif
 :"
 :" try reading and writing with 'fileformats' empty
 :set fileformat=unix

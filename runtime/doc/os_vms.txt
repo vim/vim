@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.2.  Last change: 2006 Nov 18
+*os_vms.txt*    For Vim version 7.2.  Last change: 2008 Aug 19
 
 
 		  VIM REFERENCE MANUAL
@@ -312,7 +312,7 @@ features, it is worth to choose non GUI executables.
 
 8. Useful notes						*vms-notes*
 
-8.1 backspace/delete
+8.1 Backspace/delete
 8.2 Filters
 8.3 VMS file version numbers
 8.4 Directory conversion
@@ -326,8 +326,10 @@ features, it is worth to choose non GUI executables.
 8.12 diff-mode
 8.13 Allow '$' in C keywords
 8.14 VIMTUTOR for beginners
+8.15 Slow start in console mode issue 
+8.16 Common VIM directory - different architectures 
 
-8.1 backspace/delete
+8.1 Backspace/delete
 
 There are backspace/delete key inconsistencies with VMS.
 :fixdel doesn't do the trick, but the solution is: >
@@ -663,12 +665,130 @@ start it with: >
 
 (Thomas.R.Wyant III, Vim 6.1)
 
+8.14 Slow start in console mode issue
+
+As GUI/GTK Vim works equally well in console mode, many administartors
+deploy those executables system wide.
+Unfortunately, on a remote slow connections GUI/GTK executables behave rather
+slow when user wants to run Vim just in the console mode - because of X environment detection timeout.
+
+Luckily, there is a simple solution for that. Administrators need to deploy
+both GUI/GTK build and just console build executables, like below: >
+
+    |- vim72
+    |----- doc
+    |----- syntax        
+       vimrc    (system rc files)
+       gvimrc
+       gvim.exe (the remaned GUI or GTK built vim.exe)      
+       vim.exe  (the console only executable) 
+
+Define system symbols like below in for ex in LOGIN.COM or SYLOGIN.COM: >
+
+	$ define/nolog VIM RF10:[UTIL.VIM72] ! where you VIM directory is
+	$ vi*m  :== mcr VIM:VIM.EXE
+	$ gvi*m :== mcr VIM:GVIM.EXE
+	$ ! or you can try to spawn with
+	$ gv*im :== spawn/nowait/input=NLA0 mcr VIM:GVIM.EXE -g -GEOMETRY 80x40
+
+
+Like this, users that do not have X environment and want to use Vim just in 
+console mode can avoid performance problems.
+
+(Zoltan Arpadffy, Vim 7.2)
+
+8.15 Common VIM directory - different architectures
+
+In a cluster that contains nodes with different architectures like below:
+
+$show cluster
+View of Cluster from system ID 11655  node: TOR                                                                     18-AUG-2008 11:58:31
++---------------------------------+
+¦        SYSTEMS        ¦ MEMBERS ¦
++-----------------------+---------¦
+¦  NODE  ¦   SOFTWARE   ¦  STATUS ¦
++--------+--------------+---------¦
+¦ TOR    ¦ VMS V7.3-2   ¦ MEMBER  ¦
+¦ TITAN2 ¦ VMS V8.3     ¦ MEMBER  ¦
+¦ ODIN   ¦ VMS V7.3-2   ¦ MEMBER  ¦
++---------------------------------+
+
+It is convinient to have a common VIM directory but execute different
+executables. 
+There are more solutions for this problem:
+
+solution 1. all executables in the same directory with different names
+This is easily done with the following script that can be added
+to the login.com or sylogin.com: >
+
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "VAX"
+	$ then
+	$       say "VAX platform"
+	$       vi*m:== mcr vim:VIM.EXE_VAX
+	$ endif
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPH"
+	$ then
+	$       say "ALPHA platform"
+	$       vi*m :== mcr vim:VIM.EXE_AXP
+	$ endif
+	$ if f$getsyi("ARCH_NAME") .eqs. "IA64"
+	$ then
+	$      say "IA64 platform"
+	$      vi*m :== mcr vim:VIM.EXE_IA64
+	$ endif
+
+solution 2. different directories: >
+
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "VAX"
+	$ then
+	$       say "VAX platform"
+	$       define/nolog VIM RF10:[UTIL.VAX_EXE] ! VAX executables
+	$ endif
+	$ if f$getsyi("NODE_HWTYPE") .eqs. "ALPH"
+	$ then
+	$       say "ALPHA platform"
+	$       define/nolog VIM RF10:[UTIL.AXP_EXE] ! AXP executables
+	$ endif
+	$ if f$getsyi("ARCH_NAME") .eqs. "IA64"
+	$ then
+	$      say "IA64 platform"
+	$      define/nolog VIM RF10:[UTIL.IA64_EXE] ! IA64 executables
+	$ endif
+        $! VIMRUNTIME must be defined in order to find runtime files
+	$ define/nolog VIMRUNTIME RF10:[UTIL.VIM72]
+
+A good examle for this approach is the [GNU]gnu_tools.com script from GNU_TOOLS.ZIP
+package downloadable from http://www.polarhome.com/vim/
+
+(Zoltan Arpadffy, Vim 7.2)
+
 ==============================================================================
 
 9. VMS related changes					*vms-changes*
 
-Version 7
+Recent changes
+- The following plugins are included into VMS runtime: 
+  genutils 2.4, multiselect 2.2, multvals 3.1, selectbuf 4.3,
+  bufexplorer 7.1.7, taglist 4.5
+- minor changes in vimrc (just in VMS runtime) 
+- make_vms.mms - HUGE model is the default
+- [TESTDIR]make_vms.mms include as many tests possible
+- modify test30 and test54 for VMS
+- enable FLOAT feature in VMS port
+- os_vms.txt updated  
+
+Version 7.2 (2008 Aug 9)
+- VCF files write corrected
+- CTAGS 5.7 included
+- corrected make_vms.mms (on VAX gave syntax error) 
+
+Version 7.1 (2007 Jun 15)
+- create TAGS file from menu 
+
+Version 7 (2006 May 8)
 - Improved low level char input (affects just console mode)
+- Fixed plugin bug
+- CTAGS 5.6 included
 
 Version 6.4 (2005 Oct 15)
 - GTKLIB and Vim build on IA64
@@ -806,6 +926,7 @@ Version 4.5 (1996 Dec 16)
 
 OpenVMS documentation and executables are maintained by:
 Zoltan Arpadffy <arpadffy@polarhome.com>
+OpenVMS Vim page: http://www.polarhome.com/vim/
 
 This document uses parts and remarks from earlier authors and contributors
 of OS_VMS.TXT:
