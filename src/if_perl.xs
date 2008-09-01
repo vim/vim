@@ -136,6 +136,9 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 #  define Perl_newXS_flags dll_Perl_newXS_flags
 #endif
 # define Perl_sv_free dll_Perl_sv_free
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+#  define Perl_sv_free2 dll_Perl_sv_free2
+# endif
 # define Perl_sv_isa dll_Perl_sv_isa
 # define Perl_sv_magic dll_Perl_sv_magic
 # define Perl_sv_setiv dll_Perl_sv_setiv
@@ -268,6 +271,7 @@ static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
 static void (*boot_DynaLoader)_((pTHX_ CV*));
 
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+static void (*Perl_sv_free2)(pTHX_ SV*);
 static void (*Perl_sys_init3)(int* argc, char*** argv, char*** env);
 static void (*Perl_sys_term)(void);
 static SV** (*Perl_ISv_ptr)(register PerlInterpreter*);
@@ -367,6 +371,7 @@ static struct {
     {"Perl_TXpv_ptr", (PERL_PROC*)&Perl_TXpv_ptr},
     {"Perl_Tna_ptr", (PERL_PROC*)&Perl_Tna_ptr},
 #else
+    {"Perl_sv_free2", (PERL_PROC*)&Perl_sv_free2},
     {"Perl_sys_init3", (PERL_PROC*)&Perl_sys_init3},
     {"Perl_sys_term", (PERL_PROC*)&Perl_sys_term},
     {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
