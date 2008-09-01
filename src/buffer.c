@@ -1351,11 +1351,12 @@ set_curbuf(buf, action)
 	}
     }
 #ifdef FEAT_AUTOCMD
+    /* An autocommand may have deleted "buf", already entered it (e.g., when
+     * it did ":bunload") or aborted the script processing! */
 # ifdef FEAT_EVAL
-    /* An autocommand may have deleted buf or aborted the script processing! */
-    if (buf_valid(buf) && !aborting())
+    if (buf_valid(buf) && buf != curbuf && !aborting())
 # else
-    if (buf_valid(buf))	    /* an autocommand may have deleted buf! */
+    if (buf_valid(buf) && buf != curbuf)
 # endif
 #endif
 	enter_buffer(buf);
