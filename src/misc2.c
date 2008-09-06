@@ -1257,7 +1257,6 @@ vim_strsave_escaped_ext(string, esc_chars, cc, bsl)
     return escaped_string;
 }
 
-#if !defined(BACKSLASH_IN_FILENAME) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE when 'shell' has "csh" in the tail.
  */
@@ -1266,9 +1265,7 @@ csh_like_shell()
 {
     return (strstr((char *)gettail(p_sh), "csh") != NULL);
 }
-#endif
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Escape "string" for use as a shell argument with system().
  * This uses single quotes, except when we know we need to use double qoutes
@@ -1391,7 +1388,6 @@ vim_strsave_shellescape(string, do_special)
 
     return escaped_string;
 }
-#endif
 
 /*
  * Like vim_strsave(), but make all characters uppercase.

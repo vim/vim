@@ -5469,6 +5469,11 @@ nv_ident(cap)
 		STRCPY(buf, "he! ");
 	    else
 	    {
+		/* An external command will probably use an argument starting
+		 * with "-" as an option.  To avoid trouble we skip the "-". */
+		while (*ptr == '-')
+		    ++ptr;
+
 		/* When a count is given, turn it into a range.  Is this
 		 * really what we want? */
 		isman = (STRCMP(kp, "man") == 0);
@@ -5511,37 +5516,57 @@ nv_ident(cap)
     /*
      * Now grab the chars in the identifier
      */
-    if (cmdchar == '*')
-	aux_ptr = (char_u *)(p_magic ? "/.*~[^$\\" : "/^$\\");
-    else if (cmdchar == '#')
-	aux_ptr = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
-    else if (cmdchar == 'K' && !kp_help)
-	aux_ptr = (char_u *)" \t\\\"|!";
-    else
-	/* Don't escape spaces and Tabs in a tag with a backslash */
-	aux_ptr = (char_u *)"\\|\"";
-
-    p = buf + STRLEN(buf);
-    while (n-- > 0)
+    if (cmdchar == 'K' && !kp_help)
     {
-	/* put a backslash before \ and some others */
-	if (vim_strchr(aux_ptr, *ptr) != NULL)
-	    *p++ = '\\';
-#ifdef FEAT_MBYTE
-	/* When current byte is a part of multibyte character, copy all bytes
-	 * of that character. */
-	if (has_mbyte)
+	/* Escape the argument properly for a shell command */
+	p = vim_strsave_shellescape(ptr, TRUE);
+	if (p == NULL)
 	{
-	    int i;
-	    int len = (*mb_ptr2len)(ptr) - 1;
-
-	    for (i = 0; i < len && n >= 1; ++i, --n)
-		*p++ = *ptr++;
+	    vim_free(buf);
+	    return;
 	}
-#endif
-	*p++ = *ptr++;
+	buf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
+	if (buf == NULL)
+	{
+	    vim_free(buf);
+	    vim_free(p);
+	    return;
+	}
+	STRCAT(buf, p);
+	vim_free(p);
     }
-    *p = NUL;
+    else
+    {
+	if (cmdchar == '*')
+	    aux_ptr = (char_u *)(p_magic ? "/.*~[^$\\" : "/^$\\");
+	else if (cmdchar == '#')
+	    aux_ptr = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
+	else
+	    /* Don't escape spaces and Tabs in a tag with a backslash */
+	    aux_ptr = (char_u *)"\\|\"\n*?[";
+
+	p = buf + STRLEN(buf);
+	while (n-- > 0)
+	{
+	    /* put a backslash before \ and some others */
+	    if (vim_strchr(aux_ptr, *ptr) != NULL)
+		*p++ = '\\';
+#ifdef FEAT_MBYTE
+	    /* When current byte is a part of multibyte character, copy all
+	     * bytes of that character. */
+	    if (has_mbyte)
+	    {
+		int i;
+		int len = (*mb_ptr2len)(ptr) - 1;
+
+		for (i = 0; i < len && n >= 1; ++i, --n)
+		    *p++ = *ptr++;
+	    }
+#endif
+	    *p++ = *ptr++;
+	}
+	*p = NUL;
+    }
 
     /*
      * Execute the command.
