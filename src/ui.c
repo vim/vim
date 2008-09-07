@@ -2110,6 +2110,8 @@ clip_x11_request_selection(myShell, dpy, cbd)
     int		i;
     int		nbytes = 0;
     char_u	*buffer;
+    time_t	start_time;
+    int		timed_out = FALSE;
 
     for (i =
 #ifdef FEAT_MBYTE
@@ -2129,6 +2131,7 @@ clip_x11_request_selection(myShell, dpy, cbd)
 	    case 3:  type = text_atom;		break;
 	    default: type = XA_STRING;
 	}
+	success = FALSE;
 	XtGetSelectionValue(myShell, cbd->sel_atom, type,
 	    clip_x11_request_selection_cb, (XtPointer)&success, CurrentTime);
 
@@ -2141,27 +2144,46 @@ clip_x11_request_selection(myShell, dpy, cbd)
 	 * characters, then they will appear before the one that requested the
 	 * paste!  Don't worry, we will catch up with any other events later.
 	 */
+	start_time = time(NULL);
 	for (;;)
 	{
 	    if (XCheckTypedEvent(dpy, SelectionNotify, &event))
+	    {
+		/* this is where clip_x11_request_selection_cb() is actually
+		 * called */
+		XtDispatchEvent(&event);
 		break;
+	    }
 	    if (XCheckTypedEvent(dpy, SelectionRequest, &event))
 		/* We may get a SelectionRequest here and if we don't handle
 		 * it we hang.  KDE klipper does this, for example. */
 		XtDispatchEvent(&event);
 
+	    /* Time out after 2 to 3 seconds to avoid that we hang when the
+	     * other process doesn't respond.  Note that the SelectionNotify
+	     * event may still come later when the selection owner comes back
+	     * to life and the text gets inserted unexpectedly (by xterm).
+	     * Don't know how to avoid that :-(. */
+	    if (time(NULL) > start_time + 2)
+	    {
+		timed_out = TRUE;
+		break;
+	    }
+
 	    /* Do we need this?  Probably not. */
 	    XSync(dpy, False);
 
-	    /* Bernhard Walle solved a slow paste response in an X terminal by
-	     * adding: usleep(10000); here. */
+	    /* Wait for 1 msec to avoid that we eat up all CPU time. */
+	    ui_delay(1L, TRUE);
 	}
-
-	/* this is where clip_x11_request_selection_cb() is actually called */
-	XtDispatchEvent(&event);
 
 	if (success)
 	    return;
+
+	/* don't do a retry with another type after timing out, otherwise we
+	 * hang for 15 seconds. */
+	if (timed_out)
+	    break;
     }
 
     /* Final fallback position - use the X CUT_BUFFER0 store */
