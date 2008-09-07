@@ -1256,23 +1256,26 @@ skip_expr(pp)
 
 /*
  * Top level evaluation function, returning a string.
+ * When "convert" is TRUE convert a List into a sequence of lines and convert
+ * a Float to a String.
  * Return pointer to allocated memory, or NULL for failure.
  */
     char_u *
-eval_to_string(arg, nextcmd, dolist)
+eval_to_string(arg, nextcmd, convert)
     char_u	*arg;
     char_u	**nextcmd;
-    int		dolist;		/* turn List into sequence of lines */
+    int		convert;
 {
     typval_T	tv;
     char_u	*retval;
     garray_T	ga;
+    char_u	numbuf[NUMBUFLEN];
 
     if (eval0(arg, &tv, nextcmd, TRUE) == FAIL)
 	retval = NULL;
     else
     {
-	if (dolist && tv.v_type == VAR_LIST)
+	if (convert && tv.v_type == VAR_LIST)
 	{
 	    ga_init2(&ga, (int)sizeof(char), 80);
 	    if (tv.vval.v_list != NULL)
@@ -1280,6 +1283,13 @@ eval_to_string(arg, nextcmd, dolist)
 	    ga_append(&ga, NUL);
 	    retval = (char_u *)ga.ga_data;
 	}
+#ifdef FEAT_FLOAT
+	else if (convert && tv.v_type == VAR_FLOAT)
+	{
+	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv.vval.v_float);
+	    retval = vim_strsave(numbuf);
+	}
+#endif
 	else
 	    retval = vim_strsave(get_tv_string(&tv));
 	clear_tv(&tv);
