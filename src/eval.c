@@ -16667,7 +16667,7 @@ f_synstack(argvars, rettv)
     col = get_tv_number(&argvars[1]) - 1;	/* -1 on type error */
 
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
-	    && col >= 0 && col < (long)STRLEN(ml_get(lnum))
+	    && col >= 0 && (col == 0 || col < (long)STRLEN(ml_get(lnum)))
 	    && rettv_list_alloc(rettv) != FAIL)
     {
 	(void)syn_get_id(curwin, lnum, (colnr_T)col, FALSE, NULL, TRUE);
