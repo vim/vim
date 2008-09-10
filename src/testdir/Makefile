@@ -26,15 +26,17 @@ SCRIPTS_GUI = test16.out
 
 .SUFFIXES: .in .out
 
-nongui:	nolog $(SCRIPTS)
-	@echo
-	@cat test.log
-	@echo ALL DONE
+nongui:	nolog $(SCRIPTS) report
 
-gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI)
+gui:	nolog $(SCRIPTS) $(SCRIPTS_GUI) report
+
+report:
 	@echo
-	@cat test.log
-	@echo ALL DONE
+	@echo 'Test results:'
+	@/bin/sh -c "if test -f test.log; \
+		then cat test.log; echo TEST FAILURE; exit 1; \
+		else echo ALL DONE; \
+		fi"
 
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
@@ -71,4 +73,4 @@ test49.out: test49.vim
 test60.out: test60.vim
 
 nolog:
-	-echo Test results: >test.log
+	-rm -f test.log
