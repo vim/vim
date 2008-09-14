@@ -31,6 +31,8 @@ struct cmdline_info
     int		cmdattr;	/* attributes for prompt */
     int		overstrike;	/* Typing mode on the command line.  Shared by
 				   getcmdline() and put_on_cmdline(). */
+    expand_T	*xpc;		/* struct being used for expansion, xp_pattern
+				   may point into cmdbuff */
     int		xp_context;	/* type of expansion */
 # ifdef FEAT_EVAL
     char_u	*xp_arg;	/* user-defined expansion arg */
@@ -38,7 +40,11 @@ struct cmdline_info
 # endif
 };
 
-static struct cmdline_info ccline;	/* current cmdline_info */
+/* The current cmdline_info.  It is initialized in getcmdline() and after that
+ * used by other functions.  When invoking getcmdline() recursively it needs
+ * to be saved with save_cmdline() and restored with restore_cmdline().
+ * TODO: make it local to getcmdline() and pass it around. */
+static struct cmdline_info ccline;
 
 static int	cmd_showtail;		/* Only show path tail in lists ? */
 
@@ -238,6 +244,7 @@ getcmdline(firstc, count, indent)
     }
 
     ExpandInit(&xpc);
+    ccline.xpc = &xpc;
 
 #ifdef FEAT_RIGHTLEFT
     if (curwin->w_p_rl && *curwin->w_p_rlc == 's'
@@ -408,9 +415,10 @@ getcmdline(firstc, count, indent)
 #endif
 
 	/*
-	 * <S-Tab> works like CTRL-P (unless 'wc' is <S-Tab>).
+	 * When there are matching completions to select <S-Tab> works like
+	 * CTRL-P (unless 'wc' is <S-Tab>).
 	 */
-	if (c != p_wc && c == K_S_TAB && xpc.xp_numfiles != -1)
+	if (c != p_wc && c == K_S_TAB && xpc.xp_numfiles > 0)
 	    c = Ctrl_P;
 
 #ifdef FEAT_WILDMENU
@@ -1513,6 +1521,7 @@ getcmdline(firstc, count, indent)
 		    int		old_firstc;
 
 		    vim_free(ccline.cmdbuff);
+		    xpc.xp_context = EXPAND_NOTHING;
 		    if (hiscnt == hislen)
 			p = lookfor;	/* back to the old one */
 		    else
@@ -1839,6 +1848,7 @@ returncmd:
 #endif
 
     ExpandCleanup(&xpc);
+    ccline.xpc = NULL;
 
 #ifdef FEAT_SEARCH_EXTRA
     if (did_incsearch)
@@ -2508,6 +2518,20 @@ realloc_cmdbuff(len)
     }
     mch_memmove(ccline.cmdbuff, p, (size_t)ccline.cmdlen + 1);
     vim_free(p);
+
+    if (ccline.xpc != NULL
+	    && ccline.xpc->xp_pattern != NULL
+	    && ccline.xpc->xp_context != EXPAND_NOTHING
+	    && ccline.xpc->xp_context != EXPAND_UNSUCCESSFUL)
+    {
+	int i = ccline.xpc->xp_pattern - p;
+
+	/* If xp_pattern points inside the old cmdbuff it needs to be adjusted
+	 * to point into the newly allocated memory. */
+	if (i >= 0 && i <= ccline.cmdlen)
+	    ccline.xpc->xp_pattern = ccline.cmdbuff + i;
+    }
+
     return OK;
 }
 
@@ -2875,6 +2899,7 @@ save_cmdline(ccp)
     prev_ccline = ccline;
     ccline.cmdbuff = NULL;
     ccline.cmdprompt = NULL;
+    ccline.xpc = NULL;
 }
 
 /*
@@ -3582,6 +3607,7 @@ ExpandOne(xp, str, orig, options, mode)
 ExpandInit(xp)
     expand_T	*xp;
 {
+    xp->xp_pattern = NULL;
     xp->xp_backslash = XP_BS_NONE;
 #ifndef BACKSLASH_IN_FILENAME
     xp->xp_shell = FALSE;
