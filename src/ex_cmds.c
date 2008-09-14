@@ -5059,6 +5059,7 @@ skip:
 
 	    if (did_sub)
 		++sub_nlines;
+	    vim_free(new_start);	/* for when substitute was cancelled */
 	    vim_free(sub_firstline);	/* free the copy of the original line */
 	    sub_firstline = NULL;
 	}
