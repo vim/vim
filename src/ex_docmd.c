@@ -9542,6 +9542,15 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 #ifdef FEAT_AUTOCMD
 	case SPEC_AFILE:	/* file name for autocommand */
 		result = autocmd_fname;
+		if (result != NULL && !autocmd_fname_full)
+		{
+		    /* Still need to turn the fname into a full path.  It is
+		     * postponed to avoid a delay when <afile> is not used. */
+		    autocmd_fname_full = TRUE;
+		    result = FullName_save(autocmd_fname, FALSE);
+		    vim_free(autocmd_fname);
+		    autocmd_fname = result;
+		}
 		if (result == NULL)
 		{
 		    *errormsg = (char_u *)_("E495: no autocommand file name to substitute for \"<afile>\"");

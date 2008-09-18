@@ -8523,6 +8523,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
     char_u	*save_autocmd_fname;
+    int		save_autocmd_fname_full;
     int		save_autocmd_bufnr;
     char_u	*save_autocmd_match;
     int		save_autocmd_busy;
@@ -8601,6 +8602,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
      * Save the autocmd_* variables and info about the current buffer.
      */
     save_autocmd_fname = autocmd_fname;
+    save_autocmd_fname_full = autocmd_fname_full;
     save_autocmd_bufnr = autocmd_bufnr;
     save_autocmd_match = autocmd_match;
     save_autocmd_busy = autocmd_busy;
@@ -8618,14 +8620,15 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
 	if (fname != NULL && *fname != NUL)
 	    autocmd_fname = fname;
 	else if (buf != NULL)
-	    autocmd_fname = buf->b_fname;
+	    autocmd_fname = buf->b_ffname;
 	else
 	    autocmd_fname = NULL;
     }
     else
 	autocmd_fname = fname_io;
     if (autocmd_fname != NULL)
-	autocmd_fname = FullName_save(autocmd_fname, FALSE);
+	autocmd_fname = vim_strsave(autocmd_fname);
+    autocmd_fname_full = FALSE; /* call FullName_save() later */
 
     /*
      * Set the buffer number to be used for <abuf>.
@@ -8810,6 +8813,7 @@ apply_autocmds_group(event, fname, fname_io, force, group, buf, eap)
     sourcing_lnum = save_sourcing_lnum;
     vim_free(autocmd_fname);
     autocmd_fname = save_autocmd_fname;
+    autocmd_fname_full = save_autocmd_fname_full;
     autocmd_bufnr = save_autocmd_bufnr;
     autocmd_match = save_autocmd_match;
 #ifdef FEAT_EVAL
@@ -8918,7 +8922,7 @@ auto_next_pat(apc, stop_at_last)
     {
 	apc->curpat = NULL;
 
-	/* only use a pattern when it has not been removed, has commands and
+	/* Only use a pattern when it has not been removed, has commands and
 	 * the group matches. For buffer-local autocommands only check the
 	 * buffer number. */
 	if (ap->pat != NULL && ap->cmds != NULL
