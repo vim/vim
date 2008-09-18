@@ -2978,6 +2978,7 @@ static struct cmdmod
     {"keepmarks", 3, FALSE},
     {"leftabove", 5, FALSE},
     {"lockmarks", 3, FALSE},
+    {"noautocmd", 3, FALSE},
     {"rightbelow", 6, FALSE},
     {"sandbox", 3, FALSE},
     {"silent", 3, FALSE},
