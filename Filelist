@@ -285,6 +285,7 @@ SRC_DOS =	\
 		src/proto/os_win32.pro \
 		src/proto/os_mswin.pro \
 		src/testdir/Make_dos.mak \
+		src/testdir/Make_ming.mak \
 		src/testdir/dos.vim \
 		src/uninstal.c \
 		src/vim.def \
