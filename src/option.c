@@ -7974,6 +7974,11 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	else /* curwin->w_p_scr > curwin->w_height */
 	    curwin->w_p_scr = curwin->w_height;
     }
+    if (p_hi < 0)
+    {
+	errmsg = e_positive;
+	p_hi = 0;
+    }
     if (p_report < 0)
     {
 	errmsg = e_positive;
