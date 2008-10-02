@@ -1132,7 +1132,8 @@ getcount:
 	out_flush();
 #endif
 #ifdef FEAT_AUTOCMD
-    did_cursorhold = FALSE;
+    if (ca.cmdchar != K_IGNORE)
+	did_cursorhold = FALSE;
 #endif
 
     State = NORMAL;
