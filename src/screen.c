@@ -2439,9 +2439,17 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 
 #ifdef FEAT_SYN_HL
     /* Show 'cursorcolumn' in the fold line. */
-    if (wp->w_p_cuc && (int)wp->w_virtcol + txtcol < W_WIDTH(wp))
-	ScreenAttrs[off + wp->w_virtcol + txtcol] = hl_combine_attr(
-		 ScreenAttrs[off + wp->w_virtcol + txtcol], hl_attr(HLF_CUC));
+    if (wp->w_p_cuc)
+    {
+	txtcol += wp->w_virtcol;
+	if (wp->w_p_wrap)
+	    txtcol -= wp->w_skipcol;
+	else
+	    txtcol -= wp->w_leftcol;
+	if (txtcol >= 0 && txtcol < W_WIDTH(wp))
+	    ScreenAttrs[off + txtcol] = hl_combine_attr(
+				 ScreenAttrs[off + txtcol], hl_attr(HLF_CUC));
+    }
 #endif
 
     SCREEN_LINE(row + W_WINROW(wp), W_WINCOL(wp), (int)W_WIDTH(wp),
