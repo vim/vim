@@ -183,6 +183,8 @@ static void	nv_drop __ARGS((cmdarg_T *cap));
 static void	nv_cursorhold __ARGS((cmdarg_T *cap));
 #endif
 
+static char *e_noident = N_("E349: No identifier under cursor");
+
 /*
  * Function to be called for a Normal or Visual mode command.
  * The argument is a cmdarg_T.
@@ -3510,7 +3512,7 @@ find_ident_at_pos(wp, lnum, startcol, string, find_type)
 	if (find_type & FIND_STRING)
 	    EMSG(_("E348: No string under cursor"));
 	else
-	    EMSG(_("E349: No identifier under cursor"));
+	    EMSG(_(e_noident));
 	return 0;
     }
     ptr += col;
@@ -5472,8 +5474,17 @@ nv_ident(cap)
 	    {
 		/* An external command will probably use an argument starting
 		 * with "-" as an option.  To avoid trouble we skip the "-". */
-		while (*ptr == '-')
+		while (*ptr == '-' && n > 0)
+		{
 		    ++ptr;
+		    --n;
+		}
+		if (n == 0)
+		{
+		    EMSG(_(e_noident));	 /* found dashes only */
+		    vim_free(buf);
+		    return;
+		}
 
 		/* When a count is given, turn it into a range.  Is this
 		 * really what we want? */
@@ -5520,7 +5531,9 @@ nv_ident(cap)
     if (cmdchar == 'K' && !kp_help)
     {
 	/* Escape the argument properly for a shell command */
+	ptr = vim_strnsave(ptr, n);
 	p = vim_strsave_shellescape(ptr, TRUE);
+	vim_free(ptr);
 	if (p == NULL)
 	{
 	    vim_free(buf);
