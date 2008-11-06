@@ -3287,7 +3287,7 @@ ex_call(eap)
 
     if (*startarg != '(')
     {
-	EMSG2(_("E107: Missing braces: %s"), eap->arg);
+	EMSG2(_("E107: Missing parentheses: %s"), eap->arg);
 	goto end;
     }
 
