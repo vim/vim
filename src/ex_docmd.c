@@ -3609,6 +3609,7 @@ set_one_cmd_context(xp, buff)
 	    return set_context_in_autocmd(xp, arg, FALSE);
 
 	case CMD_doautocmd:
+	case CMD_doautoall:
 	    return set_context_in_autocmd(xp, arg, TRUE);
 #endif
 	case CMD_set:
