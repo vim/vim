@@ -846,8 +846,8 @@ eval_clear()
 	p = &vimvars[i];
 	if (p->vv_di.di_tv.v_type == VAR_STRING)
 	{
-	    vim_free(p->vv_string);
-	    p->vv_string = NULL;
+	    vim_free(p->vv_str);
+	    p->vv_str = NULL;
 	}
 	else if (p->vv_di.di_tv.v_type == VAR_LIST)
 	{
