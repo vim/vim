@@ -24,7 +24,7 @@ static int linelen __ARGS((int *has_tab));
 static void do_filter __ARGS((linenr_T line1, linenr_T line2, exarg_T *eap, char_u *cmd, int do_in, int do_out));
 #ifdef FEAT_VIMINFO
 static char_u *viminfo_filename __ARGS((char_u	*));
-static void do_viminfo __ARGS((FILE *fp_in, FILE *fp_out, int want_info, int want_marks, int force_read));
+static void do_viminfo __ARGS((FILE *fp_in, FILE *fp_out, int flags));
 static int viminfo_encoding __ARGS((vir_T *virp));
 static int read_viminfo_up_to_marks __ARGS((vir_T *virp, int forceit, int writing));
 #endif
@@ -1676,14 +1676,12 @@ viminfo_error(errnum, message, line)
 
 /*
  * read_viminfo() -- Read the viminfo file.  Registers etc. which are already
- * set are not over-written unless force is TRUE. -- webb
+ * set are not over-written unless "flags" includes VIF_FORCEIT. -- webb
  */
     int
-read_viminfo(file, want_info, want_marks, forceit)
-    char_u	*file;
-    int		want_info;
-    int		want_marks;
-    int		forceit;
+read_viminfo(file, flags)
+    char_u	*file;	    /* file name or NULL to use default name */
+    int		flags;	    /* VIF_WANT_INFO et al. */
 {
     FILE	*fp;
     char_u	*fname;
@@ -1691,7 +1689,7 @@ read_viminfo(file, want_info, want_marks, forceit)
     if (no_viminfo())
 	return FAIL;
 
-    fname = viminfo_filename(file);	    /* may set to default if NULL */
+    fname = viminfo_filename(file);	/* get file name in allocated buffer */
     if (fname == NULL)
 	return FAIL;
     fp = mch_fopen((char *)fname, READBIN);
@@ -1701,8 +1699,9 @@ read_viminfo(file, want_info, want_marks, forceit)
 	verbose_enter();
 	smsg((char_u *)_("Reading viminfo file \"%s\"%s%s%s"),
 		fname,
-		want_info ? _(" info") : "",
-		want_marks ? _(" marks") : "",
+		(flags & VIF_WANT_INFO) ? _(" info") : "",
+		(flags & VIF_WANT_MARKS) ? _(" marks") : "",
+		(flags & VIF_GET_OLDFILES) ? _(" oldfiles") : "",
 		fp == NULL ? _(" FAILED") : "");
 	verbose_leave();
     }
@@ -1712,10 +1711,9 @@ read_viminfo(file, want_info, want_marks, forceit)
 	return FAIL;
 
     viminfo_errcnt = 0;
-    do_viminfo(fp, NULL, want_info, want_marks, forceit);
+    do_viminfo(fp, NULL, flags);
 
     fclose(fp);
-
     return OK;
 }
 
@@ -1968,7 +1966,7 @@ write_viminfo(file, forceit)
     }
 
     viminfo_errcnt = 0;
-    do_viminfo(fp_in, fp_out, !forceit, !forceit, FALSE);
+    do_viminfo(fp_in, fp_out, forceit ? 0 : (VIF_WANT_INFO | VIF_WANT_MARKS));
 
     fclose(fp_out);	    /* errors are ignored !? */
     if (fp_in != NULL)
@@ -2041,12 +2039,10 @@ viminfo_filename(file)
  * do_viminfo() -- Should only be called from read_viminfo() & write_viminfo().
  */
     static void
-do_viminfo(fp_in, fp_out, want_info, want_marks, force_read)
+do_viminfo(fp_in, fp_out, flags)
     FILE	*fp_in;
     FILE	*fp_out;
-    int		want_info;
-    int		want_marks;
-    int		force_read;
+    int		flags;
 {
     int		count = 0;
     int		eof = FALSE;
@@ -2061,8 +2057,9 @@ do_viminfo(fp_in, fp_out, want_info, want_marks, force_read)
 
     if (fp_in != NULL)
     {
-	if (want_info)
-	    eof = read_viminfo_up_to_marks(&vir, force_read, fp_out != NULL);
+	if (flags & VIF_WANT_INFO)
+	    eof = read_viminfo_up_to_marks(&vir,
+					 flags & VIF_FORCEIT, fp_out != NULL);
 	else
 	    /* Skip info, find start of marks */
 	    while (!(eof = viminfo_readline(&vir))
@@ -2092,8 +2089,9 @@ do_viminfo(fp_in, fp_out, want_info, want_marks, force_read)
 	write_viminfo_bufferlist(fp_out);
 	count = write_viminfo_marks(fp_out);
     }
-    if (fp_in != NULL && want_marks)
-	copy_viminfo_marks(&vir, fp_out, count, eof);
+    if (fp_in != NULL
+	    && (flags & (VIF_WANT_MARKS | VIF_GET_OLDFILES | VIF_FORCEIT)))
+	copy_viminfo_marks(&vir, fp_out, count, eof, flags);
 
     vim_free(vir.vir_line);
 #ifdef FEAT_MBYTE

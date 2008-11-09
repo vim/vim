@@ -459,7 +459,7 @@ typedef struct expand
 typedef struct
 {
     int		hide;			/* TRUE when ":hide" was used */
-# ifdef FEAT_BROWSE
+# ifdef FEAT_BROWSE_CMD
     int		browse;			/* TRUE to invoke file dialog */
 # endif
 # ifdef FEAT_WINDOWS

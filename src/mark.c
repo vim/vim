@@ -1627,15 +1627,17 @@ write_one_mark(fp_out, c, pos)
 
 /*
  * Handle marks in the viminfo file:
- * fp_out == NULL   read marks for current buffer only
- * fp_out != NULL   copy marks for buffers not in buffer list
+ * fp_out != NULL: copy marks for buffers not in buffer list
+ * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf only
+ * fp_out == NULL && (flags & VIF_GET_OLDFILES | VIF_FORCEIT): fill v:oldfiles
  */
     void
-copy_viminfo_marks(virp, fp_out, count, eof)
+copy_viminfo_marks(virp, fp_out, count, eof, flags)
     vir_T	*virp;
     FILE	*fp_out;
     int		count;
     int		eof;
+    int		flags;
 {
     char_u	*line = virp->vir_line;
     buf_T	*buf;
@@ -1647,10 +1649,23 @@ copy_viminfo_marks(virp, fp_out, count, eof)
     char_u	*p;
     char_u	*name_buf;
     pos_T	pos;
+#ifdef FEAT_EVAL
+    list_T	*list = NULL;
+#endif
 
     if ((name_buf = alloc(LSIZE)) == NULL)
 	return;
     *name_buf = NUL;
+
+#ifdef FEAT_EVAL
+    if (fp_out == NULL && (flags & (VIF_GET_OLDFILES | VIF_FORCEIT)))
+    {
+	list = list_alloc();
+	if (list != NULL)
+	    set_vim_var_list(VV_OLDFILES, list);
+    }
+#endif
+
     num_marked_files = get_viminfo_parameter('\'');
     while (!eof && (count < num_marked_files || fp_out == NULL))
     {
@@ -1681,6 +1696,11 @@ copy_viminfo_marks(virp, fp_out, count, eof)
 	    p++;
 	*p = NUL;
 
+#ifdef FEAT_EVAL
+	if (list != NULL)
+	    list_append_string(list, str, -1);
+#endif
+
 	/*
 	 * If fp_out == NULL, load marks for current buffer.
 	 * If fp_out != NULL, copy marks for buffers not in buflist.
@@ -1688,7 +1708,7 @@ copy_viminfo_marks(virp, fp_out, count, eof)
 	load_marks = copy_marks_out = FALSE;
 	if (fp_out == NULL)
 	{
-	    if (curbuf->b_ffname != NULL)
+	    if ((flags & VIF_WANT_MARKS) && curbuf->b_ffname != NULL)
 	    {
 		if (*name_buf == NUL)	    /* only need to do this once */
 		    home_replace(NULL, curbuf->b_ffname, name_buf, LSIZE, TRUE);

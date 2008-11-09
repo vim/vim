@@ -1,4 +1,4 @@
-*usr_21.txt*	For Vim version 7.2.  Last change: 2007 May 01
+*usr_21.txt*	For Vim version 7.2.  Last change: 2008 Nov 09
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -153,7 +153,7 @@ information.  This may cause information that previously exiting Vims stored
 to be lost.  Each item can be remembered only once.
 
 
-GETTING BACK TO WHERE YOU WERE
+GETTING BACK TO WHERE YOU STOPPED VIM
 
 You are halfway editing a file and it's time to leave for holidays.  You exit
 Vim and go enjoy yourselves, forgetting all about your work.  After a couple
@@ -166,6 +166,48 @@ And you are right back where you left Vim.  So you can get on with your work.
 position that '0 pointed to is made '1.  And '1 is made to '2, and so forth.
 Mark '9 is lost.
    The |:marks| command is useful to find out where '0 to '9 will take you.
+
+
+GETTING BACK TO SOME FILE
+
+If you want to go back to a file that you edited recently, but not when
+exiting Vim, there is a slightly more complicated way.  You can see a list of
+files by typing the command: >
+
+	:oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+
+Now you would like to edit the second file, which is in the list preceded by
+"2:".  You type: >
+
+	:e #<2
+
+Instead of ":e" you can use any command that has a file name argument, the
+"#<2" item works in the same place as "%" (current file name) and "#"
+(alternate file name).  So you can also split the window to edit the third
+file: >
+
+	:split #<3
+
+That #<123 thing is a bit complicated when you just want to edit a file.
+Fortunately there is a simpler way: >
+
+	:browse oldfiles
+<	1: ~/.viminfo ~
+	2: ~/text/resume.txt ~
+	3: /tmp/draft ~
+	-- More --
+
+You get the same list of files as with |:oldfiles|.  If you want to edit
+"resume.txt" first press "q" to stop the listing.  You will get a prompt:
+
+	Type number and <Enter> (empty cancels): ~
+
+Type "2" and press <Enter> to edit the second file.
+
+More info at |:oldfiles|, |v:oldfiles| and |c_#<|.
 
 
 MOVE INFO FROM ONE VIM TO ANOTHER

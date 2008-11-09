@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.2.  Last change: 2008 Jun 21
+*starting.txt*  For Vim version 7.2.  Last change: 2008 Nov 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1337,8 +1337,9 @@ enter Vim and directly start working in your desired setup. |session-file|
 							*viminfo-read*
 When Vim is started and the 'viminfo' option is non-empty, the contents of
 the viminfo file are read and the info can be used in the appropriate places.
-The marks are not read in at startup (but file marks are).  See
-|initialization| for how to set the 'viminfo' option upon startup.
+The |v:oldfiles| variable is filled.  The marks are not read in at startup
+(but file marks are).  See |initialization| for how to set the 'viminfo'
+option upon startup.
 
 							*viminfo-write*
 When Vim exits and 'viminfo' is non-empty, the info is stored in the viminfo
@@ -1372,6 +1373,8 @@ cursor position when the file was last exited.  No marks are saved for files
 that start with any string given with the "r" flag in 'viminfo'.  This can be
 used to avoid saving marks for files on removable media (for MS-DOS you would
 use "ra:,rb:", for Amiga "rdf0:,rdf1:,rdf2:").
+The |v:oldfiles| variable is filled with the file names that the viminfo file
+has marks for.
 
 							*viminfo-file-marks*
 Uppercase marks ('A to 'Z) are stored when writing the viminfo file.  The
@@ -1463,8 +1466,8 @@ most of the information will be restored).
 						   *:rv* *:rviminfo* *E195*
 :rv[iminfo][!] [file]	Read from viminfo file [file] (default: see above).
 			If [!] is given, then any information that is
-			already set (registers, marks, etc.) will be
-			overwritten.  {not in Vi}
+			already set (registers, marks, |v:oldfiles|, etc.)
+			will be overwritten   {not in Vi}
 
 					*:wv* *:wviminfo* *E137* *E138* *E574*
 :wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
@@ -1478,5 +1481,21 @@ most of the information will be restored).
 			~/.viminf*) and that you can write in the directory of
 			the .viminfo file.
 			{not in Vi}
+
+						*:ol* *:oldfiles*
+:ol[dfiles]		List the files that have marks stored in the viminfo
+			file.  This list is read on startup and only changes
+			afterwards with ":rviminfo!".  Also see |v:oldfiles|.
+			The number can be used with |c_#<|.
+			{not in Vi, only when compiled with the +eval feature}
+
+:bro[wse] ol[dfiles][!]
+			List file names as with |:oldfiles|, and then prompt
+			for a number.  When the number is valid that file from
+			the list is edited.
+			If you get the |press-enter| prompt you can press "q"
+			and still get the prompt to enter a file number.
+			Use ! to abondon a modified buffer. |abandon|
+			{not when compiled with tiny or small features}
 
  vim:tw=78:ts=8:ft=help:norl:

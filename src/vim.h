@@ -1728,7 +1728,8 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 #define VV_MOUSE_COL	51
 #define VV_OP		52
 #define VV_SEARCHFORWARD 53
-#define VV_LEN		54	/* number of v: vars */
+#define VV_OLDFILES	54
+#define VV_LEN		55	/* number of v: vars */
 
 #ifdef FEAT_CLIPBOARD
 
@@ -2053,5 +2054,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define DOSO_NONE	0
 #define DOSO_VIMRC	1	/* loading vimrc file */
 #define DOSO_GVIMRC	2	/* loading gvimrc file */
+
+/* flags for read_viminfo() and children */
+#define VIF_WANT_INFO		1	/* load non-mark info */
+#define VIF_WANT_MARKS		2	/* load file marks */
+#define VIF_FORCEIT		4	/* overwrite info already read */
+#define VIF_GET_OLDFILES	8	/* load v:oldfiles */
 
 #endif /* VIM__H */

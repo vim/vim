@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.2.  Last change: 2008 Jul 29
+*cmdline.txt*   For Vim version 7.2.  Last change: 2008 Sep 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,6 +157,11 @@ CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
 				(doesn't work at the expression prompt; some
 				things such as changing the buffer or current
 				window are not allowed to avoid side effects)
+				When the result is a |List| the items are used
+				as lines.  They can have line breaks inside
+				too.
+				When the result is a Float it's automatically
+				converted to a String.
 		See |registers| about registers.  {not in Vi}
 		Implementation detail: When using the |expression| register
 		and invoking setcmdpos(), this sets the position before
@@ -730,19 +735,29 @@ to use |fnameescape()|.
 In Ex commands, at places where a file name can be used, the following
 characters have a special meaning.  These can also be used in the expression
 function expand() |expand()|.
-	%	is replaced with the current file name			*:_%*
-	#	is replaced with the alternate file name		*:_#*
+	%	Is replaced with the current file name.		  *:_%* *c_%*
+	#	Is replaced with the alternate file name.	  *:_#* *c_#*
 	#n	(where n is a number) is replaced with the file name of
-		buffer n.  "#0" is the same as "#"
-	##	is replaced with all names in the argument list		*:_##*
+		buffer n.  "#0" is the same as "#".
+	##	Is replaced with all names in the argument list	  *:_##* *c_##*
 		concatenated, separated by spaces.  Each space in a name
 		is preceded with a backslash.
-Note that these give the file name as it was typed.  If an absolute path is
-needed (when using the file name from a different directory), you need to add
-":p".  See |filename-modifiers|.
+	#<n	(where n is a number > 0) is replaced with old	  *:_#<* *c_#<*
+		file name n.  See |:oldfiles| or |v:oldfiles| to get the
+		number.							*E809*
+		{only when compiled with the +eval and +viminfo features}
+
+Note that these, except "#<n", give the file name as it was typed.  If an
+absolute path is needed (when using the file name from a different directory),
+you need to add ":p".  See |filename-modifiers|.
+
+The "#<n" item returns an absolute path, but it will start with "~/" for files
+below your home directory.
+
 Note that backslashes are inserted before spaces, so that the command will
 correctly interpret the file name.  But this doesn't happen for shell
-commands.  For those you probably have to use quotes: >
+commands.  For those you probably have to use quotes (this fails for files
+that contain a quote and wildcards): >
 	:!ls "%"
 	:r !spell "%"
 

@@ -348,6 +348,7 @@ static struct vimvar
     {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
     {VV_NAME("operator",	 VAR_STRING), VV_RO},
     {VV_NAME("searchforward",	 VAR_NUMBER), 0},
+    {VV_NAME("oldfiles",	 VAR_LIST), 0},
 };
 
 /* shorthand */
@@ -355,6 +356,7 @@ static struct vimvar
 #define vv_nr		vv_di.di_tv.vval.v_number
 #define vv_float	vv_di.di_tv.vval.v_float
 #define vv_str		vv_di.di_tv.vval.v_string
+#define vv_list		vv_di.di_tv.vval.v_list
 #define vv_tv		vv_di.di_tv
 
 /*
@@ -426,7 +428,6 @@ static long list_find_nr __ARGS((list_T *l, long idx, int *errorp));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
 static int list_append_tv __ARGS((list_T *l, typval_T *tv));
-static int list_append_string __ARGS((list_T *l, char_u *str, int len));
 static int list_append_number __ARGS((list_T *l, varnumber_T n));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
@@ -845,8 +846,13 @@ eval_clear()
 	p = &vimvars[i];
 	if (p->vv_di.di_tv.v_type == VAR_STRING)
 	{
-	    vim_free(p->vv_di.di_tv.vval.v_string);
-	    p->vv_di.di_tv.vval.v_string = NULL;
+	    vim_free(p->vv_string);
+	    p->vv_string = NULL;
+	}
+	else if (p->vv_di.di_tv.v_type == VAR_LIST)
+	{
+	    list_unref(p->vv_list);
+	    p->vv_list = NULL;
 	}
     }
     hash_clear(&vimvarht);
@@ -6057,6 +6063,25 @@ list_find_nr(l, idx, errorp)
 }
 
 /*
+ * Get list item "l[idx - 1]" as a string.  Returns NULL for failure.
+ */
+    char_u *
+list_find_str(l, idx)
+    list_T	*l;
+    long	idx;
+{
+    listitem_T	*li;
+
+    li = list_find(l, idx - 1);
+    if (li == NULL)
+    {
+	EMSGN(_(e_listidx), idx);
+	return NULL;
+    }
+    return get_tv_string(&li->li_tv);
+}
+
+/*
  * Locate "item" list "l" and return its index.
  * Returns -1 when "item" is not in the list.
  */
@@ -6147,7 +6172,7 @@ list_append_dict(list, dict)
  * When "len" >= 0 use "str[len]".
  * Returns FAIL when out of memory.
  */
-    static int
+    int
 list_append_string(l, str, len)
     list_T	*l;
     char_u	*str;
@@ -6507,6 +6532,9 @@ garbage_collect()
 	set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID);
     }
 
+    /* v: vars */
+    set_ref_in_ht(&vimvarht, copyID);
+
     /*
      * 2. Go through the list of dicts and free items without the copyID.
      */
@@ -6597,7 +6625,7 @@ set_ref_in_item(tv, copyID)
     {
 	case VAR_DICT:
 	    dd = tv->vval.v_dict;
-	    if (dd->dv_copyID != copyID)
+	    if (dd != NULL && dd->dv_copyID != copyID)
 	    {
 		/* Didn't see this dict yet. */
 		dd->dv_copyID = copyID;
@@ -6607,7 +6635,7 @@ set_ref_in_item(tv, copyID)
 
 	case VAR_LIST:
 	    ll = tv->vval.v_list;
-	    if (ll->lv_copyID != copyID)
+	    if (ll != NULL && ll->lv_copyID != copyID)
 	    {
 		/* Didn't see this list yet. */
 		ll->lv_copyID = copyID;
@@ -18106,6 +18134,17 @@ get_vim_var_str(idx)
 }
 
 /*
+ * Get List v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    list_T *
+get_vim_var_list(idx)
+    int		idx;
+{
+    return vimvars[idx].vv_list;
+}
+
+/*
  * Set v:count, v:count1 and v:prevcount.
  */
     void
@@ -18138,6 +18177,20 @@ set_vim_var_string(idx, val, len)
 	vimvars[idx].vv_str = vim_strsave(val);
     else
 	vimvars[idx].vv_str = vim_strnsave(val, len);
+}
+
+/*
+ * Set List v: variable to "val".
+ */
+    void
+set_vim_var_list(idx, val)
+    int		idx;
+    list_T	*val;
+{
+    list_unref(vimvars[idx].vv_list);
+    vimvars[idx].vv_list = val;
+    if (val != NULL)
+	++val->lv_refcount;
 }
 
 /*
@@ -21897,6 +21950,62 @@ last_set_msg(scriptID)
 	    vim_free(p);
 	    verbose_leave();
 	}
+    }
+}
+
+/*
+ * List v:oldfiles in a nice way.
+ */
+/*ARGSUSED*/
+    void
+ex_oldfiles(eap)
+    exarg_T	*eap;
+{
+    list_T	*l = vimvars[VV_OLDFILES].vv_list;
+    listitem_T	*li;
+    int		nr = 0;
+
+    if (l == NULL)
+	msg((char_u *)_("No old files"));
+    else
+    {
+	msg_start();
+	msg_scroll = TRUE;
+	for (li = l->lv_first; li != NULL && !got_int; li = li->li_next)
+	{
+	    msg_outnum((long)++nr);
+	    MSG_PUTS(": ");
+	    msg_outtrans(get_tv_string(&li->li_tv));
+	    msg_putchar('\n');
+	    out_flush();	    /* output one line at a time */
+	    ui_breakcheck();
+	}
+	/* Assume "got_int" was set to truncate the listing. */
+	got_int = FALSE;
+
+#ifdef FEAT_BROWSE_CMD
+	if (cmdmod.browse)
+	{
+	    quit_more = FALSE;
+	    nr = prompt_for_number(FALSE);
+	    msg_starthere();
+	    if (nr > 0)
+	    {
+		char_u *p = list_find_str(get_vim_var_list(VV_OLDFILES),
+								    (long)nr);
+
+		if (p != NULL)
+		{
+		    p = expand_env_save(p);
+		    eap->arg = p;
+		    eap->cmdidx = CMD_edit;
+		    cmdmod.browse = FALSE;
+		    do_exedit(eap, NULL);
+		    vim_free(p);
+		}
+	    }
+	}
+#endif
     }
 }
 

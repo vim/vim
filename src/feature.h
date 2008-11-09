@@ -767,9 +767,13 @@
 
 /*
  * +browse		":browse" command.
+ *			or just the ":browse" command modifier
  */
-#if defined(FEAT_NORMAL) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
-# define FEAT_BROWSE
+#if defined(FEAT_NORMAL)
+# define FEAT_BROWSE_CMD
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+#  define FEAT_BROWSE
+# endif
 #endif
 
 /*

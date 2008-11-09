@@ -11,7 +11,7 @@ void do_shell __ARGS((char_u *cmd, int flags));
 char_u *make_filter_cmd __ARGS((char_u *cmd, char_u *itmp, char_u *otmp));
 void append_redir __ARGS((char_u *buf, char_u *opt, char_u *fname));
 int viminfo_error __ARGS((char *errnum, char *message, char_u *line));
-int read_viminfo __ARGS((char_u *file, int want_info, int want_marks, int forceit));
+int read_viminfo __ARGS((char_u *file, int flags));
 void write_viminfo __ARGS((char_u *file, int forceit));
 int viminfo_readline __ARGS((vir_T *virp));
 char_u *viminfo_readstring __ARGS((vir_T *virp, int off, int convert));

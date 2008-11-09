@@ -364,6 +364,7 @@ static void	ex_tag_cmd __ARGS((exarg_T *eap, char_u *name));
 # define ex_function		ex_ni
 # define ex_delfunction		ex_ni
 # define ex_return		ex_ni
+# define ex_oldfiles		ex_ni
 #endif
 static char_u	*arg_all __ARGS((void));
 #ifdef FEAT_SESSION
@@ -1770,7 +1771,7 @@ do_one_cmd(cmdlinep, sourcing,
 			}
 			if (checkforcmd(&ea.cmd, "browse", 3))
 			{
-#ifdef FEAT_BROWSE
+#ifdef FEAT_BROWSE_CMD
 			    cmdmod.browse = TRUE;
 #endif
 			    continue;
@@ -9508,24 +9509,50 @@ eval_vars(src, srcstart, usedlen, lnump, errormsg, escaped)
 		    break;
 		}
 		s = src + 1;
+		if (*s == '<')		/* "#<99" uses v:oldfiles */
+		    ++s;
 		i = (int)getdigits(&s);
 		*usedlen = (int)(s - src); /* length of what we expand */
 
-		buf = buflist_findnr(i);
-		if (buf == NULL)
+		if (src[1] == '<')
 		{
-		    *errormsg = (char_u *)_("E194: No alternate file name to substitute for '#'");
+		    if (*usedlen < 2)
+		    {
+			/* Should we give an error message for #<text? */
+			*usedlen = 1;
+			return NULL;
+		    }
+#ifdef FEAT_EVAL
+		    result = list_find_str(get_vim_var_list(VV_OLDFILES),
+								     (long)i);
+		    if (result == NULL)
+		    {
+			*errormsg = (char_u *)"";
+			return NULL;
+		    }
+#else
+		    *errormsg = (char_u *)_("E809: #< is not available without the +eval feature");
 		    return NULL;
-		}
-		if (lnump != NULL)
-		    *lnump = ECMD_LAST;
-		if (buf->b_fname == NULL)
-		{
-		    result = (char_u *)"";
-		    valid = 0;	    /* Must have ":p:h" to be valid */
+#endif
 		}
 		else
-		    result = buf->b_fname;
+		{
+		    buf = buflist_findnr(i);
+		    if (buf == NULL)
+		    {
+			*errormsg = (char_u *)_("E194: No alternate file name to substitute for '#'");
+			return NULL;
+		    }
+		    if (lnump != NULL)
+			*lnump = ECMD_LAST;
+		    if (buf->b_fname == NULL)
+		    {
+			result = (char_u *)"";
+			valid = 0;	    /* Must have ":p:h" to be valid */
+		    }
+		    else
+			result = buf->b_fname;
+		}
 		break;
 
 #ifdef FEAT_SEARCHPATH
@@ -10700,7 +10727,8 @@ ex_viminfo(eap)
 	p_viminfo = (char_u *)"'100";
     if (eap->cmdidx == CMD_rviminfo)
     {
-	if (read_viminfo(eap->arg, TRUE, TRUE, eap->forceit) == FAIL)
+	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
+				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
 	    EMSG(_("E195: Cannot open viminfo file for reading"));
     }
     else

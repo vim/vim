@@ -3245,9 +3245,9 @@ prompt_for_number(mouse_used)
 
     /* When using ":silent" assume that <CR> was entered. */
     if (mouse_used != NULL)
-	MSG_PUTS(_("Type number or click with mouse (<Enter> cancels): "));
+	MSG_PUTS(_("Type number and <Enter> or click with mouse (empty cancels): "));
     else
-	MSG_PUTS(_("Choice number (<Enter> cancels): "));
+	MSG_PUTS(_("Type number and <Enter> (empty cancels): "));
 
     /* Set the state such that text can be selected/copied/pasted and we still
      * get mouse events. */

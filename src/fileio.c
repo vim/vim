@@ -2711,7 +2711,7 @@ check_marks_read()
 {
     if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
 						  && curbuf->b_ffname != NULL)
-	read_viminfo(NULL, FALSE, TRUE, FALSE);
+	read_viminfo(NULL, VIF_WANT_MARKS);
 
     /* Always set b_marks_read; needed when 'viminfo' is changed to include
      * the ' parameter after opening a buffer. */
@@ -9108,7 +9108,7 @@ static int include_groups = FALSE;
 set_context_in_autocmd(xp, arg, doautocmd)
     expand_T	*xp;
     char_u	*arg;
-    int		doautocmd;	/* TRUE for :doautocmd, FALSE for :autocmd */
+    int		doautocmd;	/* TRUE for :doauto*, FALSE for :autocmd */
 {
     char_u	*p;
     int		group;

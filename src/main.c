@@ -645,11 +645,12 @@ main
 
 #ifdef FEAT_VIMINFO
     /*
-     * Read in registers, history etc, but not marks, from the viminfo file
+     * Read in registers, history etc, but not marks, from the viminfo file.
+     * This is where v:oldfiles gets filled.
      */
     if (*p_viminfo != NUL)
     {
-	read_viminfo(NULL, TRUE, FALSE, FALSE);
+	read_viminfo(NULL, VIF_WANT_INFO | VIF_GET_OLDFILES);
 	TIME_MSG("reading viminfo");
     }
 #endif
