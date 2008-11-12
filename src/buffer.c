@@ -647,6 +647,9 @@ free_buffer_stuff(buf, free_options)
     vim_free(buf->b_start_fenc);
     buf->b_start_fenc = NULL;
 #endif
+#ifdef FEAT_SPELL
+    ga_clear(&buf->b_langp);
+#endif
 }
 
 /*
@@ -1237,7 +1240,7 @@ do_buffer(action, start, dir, count, forceit)
 	 * "buf" if one exists */
 	if ((swb_flags & SWB_USEOPEN) && buf_jump_open_win(buf))
 	    return OK;
-	/* If 'switchbuf' contians "usetab": jump to first window in any tab
+	/* If 'switchbuf' contains "usetab": jump to first window in any tab
 	 * page containing "buf" if one exists */
 	if ((swb_flags & SWB_USETAB) && buf_jump_open_tab(buf))
 	    return OK;
@@ -3964,7 +3967,7 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
     width = vim_strsize(out);
     if (maxwidth > 0 && width > maxwidth)
     {
-	/* Result is too long, must trunctate somewhere. */
+	/* Result is too long, must truncate somewhere. */
 	l = 0;
 	if (itemcnt == 0)
 	    s = out;
