@@ -2936,7 +2936,8 @@ mch_free_mem()
     }
 #  endif
 # endif
-# ifdef FEAT_X11
+    /* Don't close the display for GTK 1, it is done in exit(). */
+# if defined(FEAT_X11) && (!defined(FEAT_GUI_GTK) || defined(HAVE_GTK2))
     if (x11_display != NULL
 #  ifdef FEAT_XCLIPBOARD
 	    && x11_display != xterm_dpy
