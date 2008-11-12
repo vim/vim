@@ -736,7 +736,7 @@ ServerReplyFind(w, op)
 		+ serverReply.ga_len;
 	    e.id = w;
 	    ga_init2(&e.strings, 1, 100);
-	    memcpy(p, &e, sizeof(e));
+	    mch_memmove(p, &e, sizeof(e));
 	    serverReply.ga_len++;
 	}
     }
@@ -1018,7 +1018,7 @@ LookupName(dpy, name, delete, loose)
 	p++;
 	count = numItems - (p - regProp);
 	if (count > 0)
-	    memcpy(entry, p, count);
+	    mch_memmove(entry, p, count);
 	XChangeProperty(dpy, RootWindow(dpy, 0), registryProperty, XA_STRING,
 			8, PropModeReplace, regProp,
 			(int)(numItems - (p - entry)));
@@ -1072,7 +1072,7 @@ DeleteAnyLingerer(dpy, win)
 		p++;
 		lastHalf = numItems - (p - regProp);
 		if (lastHalf > 0)
-		    memcpy(entry, p, lastHalf);
+		    mch_memmove(entry, p, lastHalf);
 		numItems = (entry - regProp) + lastHalf;
 		p = entry;
 		continue;
