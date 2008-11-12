@@ -873,7 +873,7 @@ lalloc(size, message)
 	    /* 3. check for available memory: call mch_avail_mem() */
 	    if (mch_avail_mem(TRUE) < KEEP_ROOM && !releasing)
 	    {
-		vim_free((char *)p);	/* System is low... no go! */
+		free((char *)p);	/* System is low... no go! */
 		p = NULL;
 	    }
 	    else

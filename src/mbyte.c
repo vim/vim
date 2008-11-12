@@ -5384,7 +5384,7 @@ preedit_draw_cbproc(XIC xic, XPointer client_data, XPointer call_data)
 			draw_feedback = (char *)alloc(draw_data->chg_first
 							      + text->length);
 		    else
-			draw_feedback = realloc(draw_feedback,
+			draw_feedback = vim_realloc(draw_feedback,
 					 draw_data->chg_first + text->length);
 		    if (draw_feedback != NULL)
 		    {

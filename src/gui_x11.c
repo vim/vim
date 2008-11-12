@@ -2450,7 +2450,7 @@ find_closest_color(colormap, colorPtr)
 	*colorPtr = colortable[closest];
     }
 
-    free(colortable);
+    vim_free(colortable);
     return OK;
 }
 

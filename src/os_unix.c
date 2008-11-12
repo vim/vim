@@ -2905,7 +2905,7 @@ mch_early_init()
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    signal_stack = malloc(SIGSTKSZ);
+    signal_stack = (char *)alloc(SIGSTKSZ);
     init_signal_stack();
 #endif
 }
@@ -6814,7 +6814,8 @@ xsmp_close()
     if (xsmp_icefd != -1)
     {
 	SmcCloseConnection(xsmp.smcconn, 0, NULL);
-	vim_free(xsmp.clientid);
+	if (xsmp.clientid != NULL)
+	    free(xsmp.clientid);
 	xsmp.clientid = NULL;
 	xsmp_icefd = -1;
     }
