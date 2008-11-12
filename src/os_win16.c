@@ -121,7 +121,8 @@ WinMain(
     pmain(argc, argv);
 
     free(argv);
-    free(tofree);
+    if (tofree != NULL)
+	free(tofree);
 
     return 0;
 }

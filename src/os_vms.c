@@ -228,7 +228,7 @@ mch_getenv(char_u *lognam)
     else if ((sbuf = getenv((char *)lognam)))
     {
 	lengte = strlen(sbuf) + 1;
-	cp = (char_u *)malloc((size_t)lengte);
+	cp = (char_u *)alloc((size_t)lengte);
 	if (cp)
 	    strcpy((char *)cp, sbuf);
 	return cp;
@@ -381,7 +381,7 @@ vms_wproc(char *name, int val)
     if (--vms_match_free == 0) {
 	/* add more space to store matches */
 	vms_match_alloced += EXPL_ALLOC_INC;
-	vms_fmatch = (char_u **)realloc(vms_fmatch,
+	vms_fmatch = (char_u **)vim_realloc(vms_fmatch,
 		sizeof(char **) * vms_match_alloced);
 	if (!vms_fmatch)
 	    return 0;
@@ -460,7 +460,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    if (--files_free < 1)
 	    {
 		files_alloced += EXPL_ALLOC_INC;
-		*file = (char_u **)realloc(*file,
+		*file = (char_u **)vim_realloc(*file,
 		    sizeof(char_u **) * files_alloced);
 		if (*file == NULL)
 		{
@@ -614,14 +614,14 @@ vms_fixfilename(void *instring)
     {
 	buflen = len + 128;
 	if (buf)
-	    buf = (char *)realloc(buf, buflen);
+	    buf = (char *)vim_realloc(buf, buflen);
 	else
-	    buf = (char *)calloc(buflen, sizeof(char));
+	    buf = (char *)alloc(buflen * sizeof(char));
     }
 
 #ifdef DEBUG
      char		 *tmpbuf = NULL;
-     tmpbuf = (char *)calloc(buflen, sizeof(char));
+     tmpbuf = (char *)alloc(buflen * sizeof(char));
      strcpy(tmpbuf, instring);
 #endif
 

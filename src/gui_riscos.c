@@ -695,7 +695,7 @@ gui_mch_set_winpos(int x, int y)
 gui_mch_set_shellsize(width, height, min_width, min_height, base_width, base_height, direction)
     int width;		/* In OS units */
     int height;
-    int min_width;	/* Smallest permissable window size (ignored) */
+    int min_width;	/* Smallest permissible window size (ignored) */
     int min_height;
     int base_width;	/* Space for scroll bars, etc */
     int base_height;
@@ -863,7 +863,7 @@ zap_load_file(name, style)
     if (strncmp(file, "ZapFont\015", 8) == 0)
 	return file;	/* Loaded OK! */
 
-    free(file);
+    vim_free(file);
     return NULL;	/* Not a valid font file */
 }
 

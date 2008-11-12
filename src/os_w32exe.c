@@ -129,7 +129,8 @@ WinMain(
 errout:
 #endif
     free(argv);
-    free(tofree);
+    if (tofree != NULL)
+	free(tofree);
 #ifdef FEAT_MBYTE
     free_cmd_argsW();
 #endif

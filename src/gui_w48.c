@@ -3335,7 +3335,7 @@ gui_mch_browseW(
 
 /*
  * Convert the string s to the proper format for a filter string by replacing
- * the \t and \n delimeters with \0.
+ * the \t and \n delimiters with \0.
  * Returns the converted string in allocated memory.
  *
  * Keep in sync with convert_filterW() above!
@@ -3674,7 +3674,8 @@ _OnScroll(
  * Use "prog" as the name of the program and "cmdline" as the arguments.
  * Copy the arguments to allocated memory.
  * Return the number of arguments (including program name).
- * Return pointers to the arguments in "argvp".
+ * Return pointers to the arguments in "argvp".  Memory is allocated with
+ * malloc(), use free() instead of vim_free().
  * Return pointer to buffer in "tofree".
  * Returns zero when out of memory.
  */
@@ -3691,6 +3692,8 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
     int		argc;
     char	**argv = NULL;
     int		round;
+
+    *tofree = NULL;
 
 #ifdef FEAT_MBYTE
     /* Try using the Unicode version first, it takes care of conversion when
@@ -3802,15 +3805,15 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 	    argv = (char **)malloc((argc + 1) * sizeof(char *));
 	    if (argv == NULL )
 	    {
-		vim_free(newcmdline);
+		free(newcmdline);
 		return 0;		   /* malloc error */
 	    }
 	    pnew = newcmdline;
+	    *tofree = newcmdline;
 	}
     }
 
 done:
-
     argv[argc] = NULL;		/* NULL-terminated list */
     *argvp = argv;
     return argc;
