@@ -7488,7 +7488,8 @@ do_exedit(eap, old_curwin)
 	/* ":new" or ":tabnew" without argument: edit an new empty buffer */
 	setpcmark();
 	(void)do_ecmd(0, NULL, NULL, eap, ECMD_ONE,
-			       ECMD_HIDE + (eap->forceit ? ECMD_FORCEIT : 0));
+		      ECMD_HIDE + (eap->forceit ? ECMD_FORCEIT : 0),
+		      old_curwin == NULL ? curwin : NULL);
     }
     else if ((eap->cmdidx != CMD_split
 #ifdef FEAT_VERTSPLIT
@@ -7525,7 +7526,7 @@ do_exedit(eap, old_curwin)
 #ifdef FEAT_LISTCMDS
 		    + (eap->cmdidx == CMD_badd ? ECMD_ADDBUF : 0 )
 #endif
-		    ) == FAIL)
+		    , old_curwin == NULL ? curwin : NULL) == FAIL)
 	{
 	    /* Editing the file failed.  If the window was split, close it. */
 #ifdef FEAT_WINDOWS

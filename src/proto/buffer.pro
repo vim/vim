@@ -33,7 +33,7 @@ buf_T *setaltfname __ARGS((char_u *ffname, char_u *sfname, linenr_T lnum));
 char_u *getaltfname __ARGS((int errmsg));
 int buflist_add __ARGS((char_u *fname, int flags));
 void buflist_slash_adjust __ARGS((void));
-void buflist_altfpos __ARGS((void));
+void buflist_altfpos __ARGS((win_T *win));
 int otherfile __ARGS((char_u *ffname));
 void buf_setino __ARGS((buf_T *buf));
 void fileinfo __ARGS((int fullname, int shorthelp, int dont_truncate));

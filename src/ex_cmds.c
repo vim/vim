@@ -3052,7 +3052,8 @@ getfile(fnum, ffname, sfname, setpm, lnum, forceit)
 	retval = 0;	/* it's in the same file */
     }
     else if (do_ecmd(fnum, ffname, sfname, NULL, lnum,
-		(P_HID(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0)) == OK)
+		(P_HID(curbuf) ? ECMD_HIDE : 0) + (forceit ? ECMD_FORCEIT : 0),
+		curwin) == OK)
 	retval = -1;	/* opened another file */
     else
 	retval = 1;	/* error encountered */
@@ -3085,17 +3086,21 @@ theend:
  *	 ECMD_OLDBUF: use existing buffer if it exists
  *	ECMD_FORCEIT: ! used for Ex command
  *	 ECMD_ADDBUF: don't edit, just add to buffer list
+ *   oldwin: Should be "curwin" when editing a new buffer in the current
+ *           window, NULL when splitting the window first.  When not NULL info
+ *           of the previous buffer for "oldwin" is stored.
  *
  * return FAIL for failure, OK otherwise
  */
     int
-do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
+do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
     int		fnum;
     char_u	*ffname;
     char_u	*sfname;
     exarg_T	*eap;			/* can be NULL! */
     linenr_T	newlnum;
     int		flags;
+    win_T	*oldwin;
 {
     int		other_file;		/* TRUE if editing another file */
     int		oldbuf;			/* TRUE if using existing buffer */
@@ -3267,7 +3272,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 	{
 	    if (!cmdmod.keepalt)
 		curwin->w_alt_fnum = curbuf->b_fnum;
-	    buflist_altfpos();
+	    if (oldwin != NULL)
+		buflist_altfpos(oldwin);
 	}
 
 	if (fnum)
@@ -3371,7 +3377,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags)
 
 		/* close the link to the current buffer */
 		u_sync(FALSE);
-		close_buffer(curwin, curbuf,
+		close_buffer(oldwin, curbuf,
 				      (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD);
 
 #ifdef FEAT_AUTOCMD
@@ -5609,7 +5615,13 @@ ex_help(eap)
 	     */
 	    alt_fnum = curbuf->b_fnum;
 	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_LASTL,
-						   ECMD_HIDE + ECMD_SET_HELP);
+			  ECMD_HIDE + ECMD_SET_HELP,
+#ifdef FEAT_WINDOWS
+			  NULL  /* buffer is still open, don't store info */
+#else
+			  curwin
+#endif
+		    );
 	    if (!cmdmod.keepalt)
 		curwin->w_alt_fnum = alt_fnum;
 	    empty_fnum = curbuf->b_fnum;

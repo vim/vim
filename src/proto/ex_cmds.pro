@@ -27,7 +27,7 @@ void ex_wnext __ARGS((exarg_T *eap));
 void do_wqall __ARGS((exarg_T *eap));
 int not_writing __ARGS((void));
 int getfile __ARGS((int fnum, char_u *ffname, char_u *sfname, int setpm, linenr_T lnum, int forceit));
-int do_ecmd __ARGS((int fnum, char_u *ffname, char_u *sfname, exarg_T *eap, linenr_T newlnum, int flags));
+int do_ecmd __ARGS((int fnum, char_u *ffname, char_u *sfname, exarg_T *eap, linenr_T newlnum, int flags, win_T *oldwin));
 void ex_append __ARGS((exarg_T *eap));
 void ex_change __ARGS((exarg_T *eap));
 void ex_z __ARGS((exarg_T *eap));

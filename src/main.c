@@ -2588,7 +2588,7 @@ edit_buffers(parmp)
 # endif
 	    (void)do_ecmd(0, arg_idx < GARGCOUNT
 			  ? alist_name(&GARGLIST[arg_idx]) : NULL,
-			  NULL, NULL, ECMD_LASTL, ECMD_HIDE);
+			  NULL, NULL, ECMD_LASTL, ECMD_HIDE, curwin);
 # ifdef HAS_SWAP_EXISTS_ACTION
 	    if (swap_exists_did_quit)
 	    {

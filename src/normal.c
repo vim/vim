@@ -6050,7 +6050,7 @@ nv_gotofile(cap)
 	    autowrite(curbuf, FALSE);
 	setpcmark();
 	(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LAST,
-					       P_HID(curbuf) ? ECMD_HIDE : 0);
+				       P_HID(curbuf) ? ECMD_HIDE : 0, curwin);
 	if (cap->nchar == 'F' && lnum >= 0)
 	{
 	    curwin->w_cursor.lnum = lnum;

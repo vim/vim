@@ -1114,7 +1114,8 @@ vi_open_file(fname)
     char *fname;
 {
     ++no_wait_return;
-    do_ecmd(0, (char_u *)fname, NULL, NULL, ECMD_ONE, ECMD_HIDE+ECMD_OLDBUF);
+    do_ecmd(0, (char_u *)fname, NULL, NULL, ECMD_ONE, ECMD_HIDE+ECMD_OLDBUF,
+	    curwin);
     curbuf->b_sniff = TRUE;
     --no_wait_return;					/* [ex_docmd.c] */
 }

@@ -1795,7 +1795,7 @@ nb_do_cmd(
 	    buf->displayname = NULL;
 
 	    netbeansReadFile = 0; /* don't try to open disk file */
-	    do_ecmd(0, NULL, 0, 0, ECMD_ONE, ECMD_HIDE + ECMD_OLDBUF);
+	    do_ecmd(0, NULL, 0, 0, ECMD_ONE, ECMD_HIDE + ECMD_OLDBUF, curwin);
 	    netbeansReadFile = 1;
 	    buf->bufp = curbuf;
 	    maketitle();
@@ -1960,7 +1960,7 @@ nb_do_cmd(
 
 	    netbeansReadFile = 0; /* don't try to open disk file */
 	    do_ecmd(0, (char_u *)buf->displayname, 0, 0, ECMD_ONE,
-						     ECMD_HIDE + ECMD_OLDBUF);
+					     ECMD_HIDE + ECMD_OLDBUF, curwin);
 	    netbeansReadFile = 1;
 	    buf->bufp = curbuf;
 	    maketitle();
@@ -1979,7 +1979,7 @@ nb_do_cmd(
 	    vim_free(buf->displayname);
 	    buf->displayname = nb_unquote(args, NULL);
 	    do_ecmd(0, (char_u *)buf->displayname, NULL, NULL, ECMD_ONE,
-						     ECMD_HIDE + ECMD_OLDBUF);
+					     ECMD_HIDE + ECMD_OLDBUF, curwin);
 	    buf->bufp = curbuf;
 	    buf->initDone = TRUE;
 	    doupdate = 1;

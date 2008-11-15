@@ -573,7 +573,7 @@ pum_set_selected(n, repeat)
 		{
 		    /* Don't want to sync undo in the current buffer. */
 		    ++no_u_sync;
-		    res = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, 0);
+		    res = do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, 0, NULL);
 		    --no_u_sync;
 		    if (res == OK)
 		    {

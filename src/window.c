@@ -531,7 +531,8 @@ wingotofile:
 # ifdef FEAT_SCROLLBIND
 			curwin->w_p_scb = FALSE;
 # endif
-			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL, ECMD_HIDE);
+			(void)do_ecmd(0, ptr, NULL, NULL, ECMD_LASTL,
+							   ECMD_HIDE, NULL);
 			if (nchar == 'F' && lnum >= 0)
 			{
 			    curwin->w_cursor.lnum = lnum;

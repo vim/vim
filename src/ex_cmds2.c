@@ -2132,8 +2132,8 @@ do_argfile(eap, argn)
 	 * argument index. */
 	if (do_ecmd(0, alist_name(&ARGLIST[curwin->w_arg_idx]), NULL,
 		      eap, ECMD_LAST,
-		      (P_HID(curwin->w_buffer) ? ECMD_HIDE : 0) +
-				   (eap->forceit ? ECMD_FORCEIT : 0)) == FAIL)
+		      (P_HID(curwin->w_buffer) ? ECMD_HIDE : 0)
+			 + (eap->forceit ? ECMD_FORCEIT : 0), curwin) == FAIL)
 	    curwin->w_arg_idx = old_arg_idx;
 	/* like Vi: set the mark where the cursor is in the file. */
 	else if (eap->cmdidx != CMD_argdo)

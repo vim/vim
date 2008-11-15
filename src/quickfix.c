@@ -1420,6 +1420,7 @@ qf_jump(qi, dir, errornr, forceit)
     win_T		*win;
     win_T		*altwin;
 #endif
+    win_T		*oldwin = curwin;
     int			print_message = TRUE;
     int			len;
 #ifdef FEAT_FOLDING
@@ -1744,7 +1745,8 @@ qf_jump(qi, dir, errornr, forceit)
 	    }
 	    else
 		ok = do_ecmd(qf_ptr->qf_fnum, NULL, NULL, NULL, (linenr_T)1,
-						   ECMD_HIDE + ECMD_SET_HELP);
+					   ECMD_HIDE + ECMD_SET_HELP,
+					   oldwin == curwin ? curwin : NULL);
 	}
 	else
 	    ok = buflist_getfile(qf_ptr->qf_fnum,
@@ -2267,6 +2269,7 @@ ex_copen(eap)
     win_T	*win;
     tabpage_T	*prevtab = curtab;
     buf_T	*qf_buf;
+    win_T	*oldwin = curwin;
 
     if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
     {
@@ -2326,14 +2329,16 @@ ex_copen(eap)
 	    win->w_llist->qf_refcount++;
 	}
 
+	if (oldwin != curwin)
+	    oldwin = NULL;  /* don't store info when in another window */
 	if (qf_buf != NULL)
 	    /* Use the existing quickfix buffer */
 	    (void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
-						     ECMD_HIDE + ECMD_OLDBUF);
+					     ECMD_HIDE + ECMD_OLDBUF, oldwin);
 	else
 	{
 	    /* Create a new quickfix buffer */
-	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE);
+	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
 	    /* switch off 'swapfile' */
 	    set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
 	    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
