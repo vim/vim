@@ -1401,6 +1401,9 @@ enter_buffer(buf)
     curwin->w_cursor.coladd = 0;
 #endif
     curwin->w_set_curswant = TRUE;
+#ifdef FEAT_AUTOCMD
+    curwin->w_topline_was_set = FALSE;
+#endif
 
     /* Make sure the buffer is loaded. */
     if (curbuf->b_ml.ml_mfp == NULL)	/* need to load the file */
@@ -1440,7 +1443,8 @@ enter_buffer(buf)
     maketitle();
 #endif
 #ifdef FEAT_AUTOCMD
-    if (curwin->w_topline == 1)		/* when autocmds didn't change it */
+	/* when autocmds didn't change it */
+    if (curwin->w_topline == 1 && !curwin->w_topline_was_set)
 #endif
 	scroll_cursor_halfway(FALSE);	/* redisplay at correct position */
 

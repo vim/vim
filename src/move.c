@@ -280,18 +280,20 @@ update_topline()
 
 	if (curwin->w_botline <= curbuf->b_ml.ml_line_count)
 	{
-	    if (curwin->w_cursor.lnum < curwin->w_botline
-		    && ((long)curwin->w_cursor.lnum
+	    if (curwin->w_cursor.lnum < curwin->w_botline)
+	    {
+	      if (((long)curwin->w_cursor.lnum
 					     >= (long)curwin->w_botline - p_so
 #ifdef FEAT_FOLDING
 			|| hasAnyFolding(curwin)
 #endif
 			))
-	    {
+	      {
 		lineoff_T	loff;
 
-		/* Cursor is above botline, check if there are 'scrolloff'
-		 * window lines below the cursor.  If not, need to scroll. */
+		/* Cursor is (a few lines) above botline, check if there are
+		 * 'scrolloff' window lines below the cursor.  If not, need to
+		 * scroll. */
 		n = curwin->w_empty_rows;
 		loff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
@@ -317,6 +319,10 @@ update_topline()
 		if (n >= p_so)
 		    /* sufficient context, no need to scroll */
 		    check_botline = FALSE;
+	      }
+	      else
+		  /* sufficient context, no need to scroll */
+		  check_botline = FALSE;
 	    }
 	    if (check_botline)
 	    {
@@ -509,6 +515,9 @@ set_topline(wp, lnum)
     /* Approximate the value of w_botline */
     wp->w_botline += lnum - wp->w_topline;
     wp->w_topline = lnum;
+#ifdef FEAT_AUTOCMD
+    wp->w_topline_was_set = TRUE;
+#endif
 #ifdef FEAT_DIFF
     wp->w_topfill = 0;
 #endif

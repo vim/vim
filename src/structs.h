@@ -1784,10 +1784,15 @@ struct window_S
 #endif
 
     /*
-     * The next three specify the offsets for displaying the buffer:
+     * "w_topline", "w_leftcol" and "w_skipcol" specify the offsets for
+     * displaying the buffer.
      */
     linenr_T	w_topline;	    /* buffer line number of the line at the
 				       top of the window */
+#ifdef FEAT_AUTOCMD
+    char	w_topline_was_set;  /* flag set to TRUE when topline is set,
+				       e.g. by winrestview() */
+#endif
 #ifdef FEAT_DIFF
     int		w_topfill;	    /* number of filler lines above w_topline */
     int		w_old_topfill;	    /* w_topfill at last redraw */
