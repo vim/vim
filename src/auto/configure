@@ -16819,21 +16819,29 @@ if test "x$MACARCH" = "xboth"; then
   LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 
-{ $as_echo "$as_me:$LINENO: checking for GCC 3 or later" >&5
-$as_echo_n "checking for GCC 3 or later... " >&6; }
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
+  { $as_echo "$as_me:$LINENO: checking for GCC 3 or later" >&5
+$as_echo_n "checking for GCC 3 or later... " >&6; }
   gccmajor=`echo "$gccversion" | sed -e 's/^\([1-9]\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
-  fi
-fi
-if test "$DEPEND_CFLAGS_FILTER" = ""; then
-  { $as_echo "$as_me:$LINENO: result: no" >&5
-$as_echo "no" >&6; }
-else
-  { $as_echo "$as_me:$LINENO: result: yes" >&5
+    { $as_echo "$as_me:$LINENO: result: yes" >&5
 $as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+      { $as_echo "$as_me:$LINENO: checking whether we need -D_FORTIFY_SOURCE=1" >&5
+$as_echo_n "checking whether we need -D_FORTIFY_SOURCE=1... " >&6; }
+  if test "$gccmajor" -gt "3"; then
+    CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=1"
+    { $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
+  else
+    { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+  fi
 fi
 
 

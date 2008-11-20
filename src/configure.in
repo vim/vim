@@ -3152,18 +3152,25 @@ dnl use "-isystem" instead of "-I" for all non-Vim include dirs.
 dnl But only when making dependencies, cproto and lint don't take "-isystem".
 dnl Mac gcc returns "powerpc-apple-darwin8-gcc-4.0.1 (GCC)...", need to allow
 dnl the number before the version number.
-AC_MSG_CHECKING(for GCC 3 or later)
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
+  AC_MSG_CHECKING(for GCC 3 or later)
   gccmajor=`echo "$gccversion" | sed -e 's/^\([[1-9]]\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
   fi
-fi
-if test "$DEPEND_CFLAGS_FILTER" = ""; then
-  AC_MSG_RESULT(no)
-else
-  AC_MSG_RESULT(yes)
+  dnl -D_FORTIFY_SOURCE=2 crashes Vim on strcpy(buf, "000") when buf is
+  dnl declared as char x[1] but actually longer.  Introduced in gcc 4.0.
+  AC_MSG_CHECKING(whether we need -D_FORTIFY_SOURCE=1)
+  if test "$gccmajor" -gt "3"; then
+    CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=1"
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
 fi
 AC_SUBST(DEPEND_CFLAGS_FILTER)
 
