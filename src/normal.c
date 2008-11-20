@@ -580,6 +580,9 @@ normal_cmd(oap, toplevel)
     static int	old_mapped_len = 0;
 #endif
     int		idx;
+#ifdef FEAT_EVAL
+    int		set_prevcount = FALSE;
+#endif
 
     vim_memset(&ca, 0, sizeof(ca));	/* also resets ca.retval */
     ca.oap = oap;
@@ -615,7 +618,12 @@ normal_cmd(oap, toplevel)
     /* When not finishing an operator and no register name typed, reset the
      * count. */
     if (!finish_op && !oap->regname)
+    {
 	ca.opcount = 0;
+#ifdef FEAT_EVAL
+	set_prevcount = TRUE;
+#endif
+    }
 
 #ifdef FEAT_AUTOCMD
     /* Restore counts from before receiving K_CURSORHOLD.  This means after
@@ -719,7 +727,15 @@ getcount:
 	     * command, so that v:count can be used in an expression mapping
 	     * right after the count. */
 	    if (toplevel && stuff_empty())
-		set_vcount(ca.count0, ca.count0 == 0 ? 1 : ca.count0);
+	    {
+		long count = ca.count0;
+
+		/* multiply with ca.opcount the same way as below */
+		if (ca.opcount != 0)
+		    count = ca.opcount * (count == 0 ? 1 : count);
+		set_vcount(count, count == 0 ? 1 : count, set_prevcount);
+		set_prevcount = FALSE;  /* only set v:prevcount once */
+	    }
 #endif
 	    if (ctrl_w)
 	    {
@@ -806,7 +822,7 @@ getcount:
      * Only set v:count when called from main() and not a stuffed command.
      */
     if (toplevel && stuff_empty())
-	set_vcount(ca.count0, ca.count1);
+	set_vcount(ca.count0, ca.count1, set_prevcount);
 #endif
 
     /*

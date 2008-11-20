@@ -18146,14 +18146,17 @@ get_vim_var_list(idx)
 }
 
 /*
- * Set v:count, v:count1 and v:prevcount.
+ * Set v:count to "count" and v:count1 to "count1".
+ * When "set_prevcount" is TRUE first set v:prevcount from v:count.
  */
     void
-set_vcount(count, count1)
+set_vcount(count, count1, set_prevcount)
     long	count;
     long	count1;
+    int		set_prevcount;
 {
-    vimvars[VV_PREVCOUNT].vv_nr = vimvars[VV_COUNT].vv_nr;
+    if (set_prevcount)
+	vimvars[VV_PREVCOUNT].vv_nr = vimvars[VV_COUNT].vv_nr;
     vimvars[VV_COUNT].vv_nr = count;
     vimvars[VV_COUNT1].vv_nr = count1;
 }

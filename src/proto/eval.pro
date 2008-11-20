@@ -61,7 +61,7 @@ void set_vim_var_nr __ARGS((int idx, long val));
 long get_vim_var_nr __ARGS((int idx));
 char_u *get_vim_var_str __ARGS((int idx));
 list_T *get_vim_var_list __ARGS((int idx));
-void set_vcount __ARGS((long count, long count1));
+void set_vcount __ARGS((long count, long count1, int set_prevcount));
 void set_vim_var_string __ARGS((int idx, char_u *val, int len));
 void set_vim_var_list __ARGS((int idx, list_T *val));
 void set_reg_var __ARGS((int c));
