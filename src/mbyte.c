@@ -3131,7 +3131,7 @@ enc_locale()
 	else
 	    s = p + 1;
     }
-    for (i = 0; s[i] != NUL && s + i < buf + sizeof(buf) - 1; ++i)
+    for (i = 0; s[i] != NUL && i < sizeof(buf) - 1; ++i)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
