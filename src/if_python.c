@@ -531,6 +531,12 @@ Python_Init(void)
 	if (PythonMod_Init())
 	    goto fail;
 
+	/* Remove the element from sys.path that was added because of our
+	 * argv[0] value in PythonMod_Init().  Previously we used an empty
+	 * string, but dependinding on the OS we then get an empty entry or
+	 * the current directory in sys.path. */
+	PyRun_SimpleString("import sys; sys.path = filter(lambda x: x != '/must>not&exist', sys.path)");
+
 	/* the first python thread is vim's, release the lock */
 	Python_SaveThread();
 
@@ -2345,7 +2351,8 @@ PythonMod_Init(void)
 {
     PyObject *mod;
     PyObject *dict;
-    static char *(argv[2]) = {"", NULL};
+    /* The special value is removed from sys.path in Python_Init(). */
+    static char *(argv[2]) = {"/must>not&exist/foo", NULL};
 
     /* Fixups... */
     BufferType.ob_type = &PyType_Type;
