@@ -1510,7 +1510,8 @@ parse_command_name(parmp)
 early_arg_scan(parmp)
     mparm_T	*parmp;
 {
-#if defined(FEAT_XCLIPBOARD) || defined(FEAT_CLIENTSERVER)
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_CLIENTSERVER) \
+	|| !defined(FEAT_NETBEANS_INTG)
     int		argc = parmp->argc;
     char	**argv = parmp->argv;
     int		i;
@@ -1582,6 +1583,14 @@ early_arg_scan(parmp)
 	else if (STRICMP(argv[i], "--echo-wid") == 0)
 	    echo_wid_arg = TRUE;
 # endif
+# ifndef FEAT_NETBEANS_INTG
+	else if (strncmp(argv[i], "-nb", (size_t)3) == 0)
+        {
+            mch_errmsg(_("'-nb' cannot be used: not enabled at compile time\n"));
+            mch_exit(2);
+        }
+# endif
+
     }
 #endif
 }

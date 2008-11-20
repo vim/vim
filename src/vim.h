@@ -1986,6 +1986,9 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 # endif
 #endif
 
+#ifndef FEAT_NETBEANS_INTG
+# undef NBDEBUG
+#endif
 #ifdef NBDEBUG /* Netbeans debugging. */
 # include "nbdebug.h"
 #else
