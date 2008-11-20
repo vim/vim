@@ -341,8 +341,14 @@
 #ifdef BACKSLASH_IN_FILENAME
 # define PATH_ESC_CHARS ((char_u *)" \t\n*?[{`%#'\"|!<")
 #else
-# define PATH_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<")
-# define SHELL_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<>();&")
+# ifdef VMS
+    /* VMS allows a lot of characters in the file name */
+#  define PATH_ESC_CHARS ((char_u *)" \t\n*?{`\\%#'\"|!")
+#  define SHELL_ESC_CHARS ((char_u *)" \t\n*?{`\\%#'|!()&")
+# else
+#  define PATH_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<")
+#  define SHELL_ESC_CHARS ((char_u *)" \t\n*?[{`$\\%#'\"|!<>();&")
+# endif
 #endif
 
 #define NUMBUFLEN 30	    /* length of a buffer to store a number in ASCII */
@@ -370,7 +376,7 @@ typedef		 __int64        long_i;
    * Define __w64 as an empty token for everything but MSVC 7.x or later.
    */
 # if !defined(_MSC_VER)	|| (_MSC_VER < 1300)
-#  define __w64 
+#  define __w64
 # endif
 typedef unsigned long __w64	long_u;
 typedef		 long __w64     long_i;
