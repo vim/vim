@@ -309,7 +309,7 @@ mch_settitle(
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
 	    /* Convert the title from 'encoding' to the active codepage. */
-	    WCHAR	*wp = enc_to_ucs2(title, NULL);
+	    WCHAR	*wp = enc_to_utf16(title, NULL);
 	    int	n;
 
 	    if (wp != NULL)
@@ -406,10 +406,10 @@ mch_FullName(
 	     * - invoke _wfullpath()
 	     * - convert the result from UCS2 to 'encoding'.
 	     */
-	    wname = enc_to_ucs2(fname, NULL);
+	    wname = enc_to_utf16(fname, NULL);
 	    if (wname != NULL && _wfullpath(wbuf, wname, MAX_PATH - 1) != NULL)
 	    {
-		cname = ucs2_to_enc((short_u *)wbuf, NULL);
+		cname = utf16_to_enc((short_u *)wbuf, NULL);
 		if (cname != NULL)
 		{
 		    vim_strncpy(buf, cname, len - 1);
@@ -507,7 +507,7 @@ vim_stat(const char *name, struct stat *stp)
 # endif
        )
     {
-	WCHAR	*wp = enc_to_ucs2(buf, NULL);
+	WCHAR	*wp = enc_to_utf16(buf, NULL);
 	int	n;
 
 	if (wp != NULL)
@@ -668,7 +668,7 @@ mch_chdir(char *path)
 #ifdef FEAT_MBYTE
     if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-	WCHAR	*p = enc_to_ucs2(path, NULL);
+	WCHAR	*p = enc_to_utf16(path, NULL);
 	int	n;
 
 	if (p != NULL)
@@ -891,19 +891,20 @@ mch_libcall(
 
 #if defined(FEAT_MBYTE) || defined(PROTO)
 /*
- * Convert an UTF-8 string to UCS-2.
+ * Convert an UTF-8 string to UTF-16.
  * "instr[inlen]" is the input.  "inlen" is in bytes.
- * When "outstr" is NULL only return the number of UCS-2 words produced.
+ * When "outstr" is NULL only return the number of UTF-16 words produced.
  * Otherwise "outstr" must be a buffer of sufficient size.
- * Returns the number of UCS-2 words produced.
+ * Returns the number of UTF-16 words produced.
  */
     int
-utf8_to_ucs2(char_u *instr, int inlen, short_u *outstr, int *unconvlenp)
+utf8_to_utf16(char_u *instr, int inlen, short_u *outstr, int *unconvlenp)
 {
     int		outlen = 0;
     char_u	*p = instr;
     int		todo = inlen;
     int		l;
+    int		ch;
 
     while (todo > 0)
     {
@@ -917,8 +918,19 @@ utf8_to_ucs2(char_u *instr, int inlen, short_u *outstr, int *unconvlenp)
 	    break;
 	}
 
-	if (outstr != NULL)
-	    *outstr++ = utf_ptr2char(p);
+	ch = utf_ptr2char(p);
+	if (ch >= 0x10000)
+	{
+	    /* non-BMP character, encoding with surrogate pairs */
+	    ++outlen;
+	    if (outstr != NULL)
+	    {
+		*outstr++ = (0xD800 - (0x10000 >> 10)) + (ch >> 10);
+		*outstr++ = 0xDC00 | (ch & 0x3FF);
+	    }
+	}
+	else if (outstr != NULL)
+	    *outstr++ = ch;
 	++outlen;
 	p += l;
 	todo -= l;
@@ -928,29 +940,42 @@ utf8_to_ucs2(char_u *instr, int inlen, short_u *outstr, int *unconvlenp)
 }
 
 /*
- * Convert an UCS-2 string to UTF-8.
- * The input is "instr[inlen]" with "inlen" in number of ucs-2 words.
+ * Convert an UTF-16 string to UTF-8.
+ * The input is "instr[inlen]" with "inlen" in number of UTF-16 words.
  * When "outstr" is NULL only return the required number of bytes.
  * Otherwise "outstr" must be a buffer of sufficient size.
  * Return the number of bytes produced.
  */
     int
-ucs2_to_utf8(short_u *instr, int inlen, char_u *outstr)
+utf16_to_utf8(short_u *instr, int inlen, char_u *outstr)
 {
     int		outlen = 0;
     int		todo = inlen;
     short_u	*p = instr;
     int		l;
+    int		ch, ch2;
 
     while (todo > 0)
     {
+	ch = *p;
+	if (ch >= 0xD800 && ch <= 0xDBFF && todo > 1)
+	{
+	    /* surrogate pairs handling */
+	    ch2 = p[1];
+	    if (ch2 >= 0xDC00 && ch2 <= 0xDFFF)
+	    {
+		ch = ((ch - 0xD800) << 10) + (ch2 & 0x3FF) + 0x10000;
+		++p;
+		--todo;
+	    }
+	}
 	if (outstr != NULL)
 	{
-	    l = utf_char2bytes(*p, outstr);
+	    l = utf_char2bytes(ch, outstr);
 	    outstr += l;
 	}
 	else
-	    l = utf_char2len(*p);
+	    l = utf_char2len(ch);
 	++p;
 	outlen += l;
 	--todo;
@@ -1079,14 +1104,14 @@ crnl_to_nl(const char_u *str, int *size)
  */
 
 /*
- * Convert "str" from 'encoding' to UCS-2.
+ * Convert "str" from 'encoding' to UTF-16.
  * Input in "str" with length "*lenp".  When "lenp" is NULL, use strlen().
  * Output is returned as an allocated string.  "*lenp" is set to the length of
  * the result.  A trailing NUL is always added.
  * Returns NULL when out of memory.
  */
     short_u *
-enc_to_ucs2(char_u *str, int *lenp)
+enc_to_utf16(char_u *str, int *lenp)
 {
     vimconv_T	conv;
     WCHAR	*ret;
@@ -1102,7 +1127,7 @@ enc_to_ucs2(char_u *str, int *lenp)
 
     if (enc_codepage > 0)
     {
-	/* We can do any CP### -> UCS-2 in one pass, and we can do it
+	/* We can do any CP### -> UTF-16 in one pass, and we can do it
 	 * without iconv() (convert_* may need iconv). */
 	MultiByteToWideChar_alloc(enc_codepage, 0, str, *lenp, &ret, &length);
     }
@@ -1123,11 +1148,11 @@ enc_to_ucs2(char_u *str, int *lenp)
 	}
 	convert_setup(&conv, NULL, NULL);
 
-	length = utf8_to_ucs2(str, *lenp, NULL, NULL);
+	length = utf8_to_utf16(str, *lenp, NULL, NULL);
 	ret = (WCHAR *)alloc((unsigned)((length + 1) * sizeof(WCHAR)));
 	if (ret != NULL)
 	{
-	    utf8_to_ucs2(str, *lenp, (short_u *)ret, NULL);
+	    utf8_to_utf16(str, *lenp, (short_u *)ret, NULL);
 	    ret[length] = 0;
 	}
 
@@ -1139,7 +1164,7 @@ enc_to_ucs2(char_u *str, int *lenp)
 }
 
 /*
- * Convert an UCS-2 string to 'encoding'.
+ * Convert an UTF-16 string to 'encoding'.
  * Input in "str" with length (counted in wide characters) "*lenp".  When
  * "lenp" is NULL, use wcslen().
  * Output is returned as an allocated string.  If "*lenp" is not NULL it is
@@ -1147,7 +1172,7 @@ enc_to_ucs2(char_u *str, int *lenp)
  * Returns NULL when out of memory.
  */
     char_u *
-ucs2_to_enc(short_u *str, int *lenp)
+utf16_to_enc(short_u *str, int *lenp)
 {
     vimconv_T	conv;
     char_u	*utf8_str = NULL, *enc_str = NULL;
@@ -1161,7 +1186,7 @@ ucs2_to_enc(short_u *str, int *lenp)
 
     if (enc_codepage > 0)
     {
-	/* We can do any UCS-2 -> CP### in one pass. */
+	/* We can do any UTF-16 -> CP### in one pass. */
 	int length;
 
 	WideCharToMultiByte_alloc(enc_codepage, 0, str, *lenp,
@@ -1171,10 +1196,10 @@ ucs2_to_enc(short_u *str, int *lenp)
     }
 
     /* Avoid allocating zero bytes, it generates an error message. */
-    utf8_str = alloc(ucs2_to_utf8(str, *lenp == 0 ? 1 : *lenp, NULL));
+    utf8_str = alloc(utf16_to_utf8(str, *lenp == 0 ? 1 : *lenp, NULL));
     if (utf8_str != NULL)
     {
-	*lenp = ucs2_to_utf8(str, *lenp, utf8_str);
+	*lenp = utf16_to_utf8(str, *lenp, utf8_str);
 
 	/* We might be called before we have p_enc set up. */
 	conv.vc_type = CONV_NONE;
@@ -1308,7 +1333,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 		    if (hMemWstr[str_size] == NUL)
 			break;
 	    }
-	    to_free = str = ucs2_to_enc((short_u *)hMemWstr, &str_size);
+	    to_free = str = utf16_to_enc((short_u *)hMemWstr, &str_size);
 	    GlobalUnlock(hMemW);
 	}
     }
@@ -1340,7 +1365,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 
 # if defined(FEAT_MBYTE) && defined(WIN3264)
 	    /* The text is in the active codepage.  Convert to 'encoding',
-	     * going through UCS-2. */
+	     * going through UTF-16. */
 	    acp_to_enc(str, str_size, &to_free, &maxlen);
 	    if (to_free != NULL)
 	    {
@@ -1404,7 +1429,7 @@ acp_to_enc(str, str_size, out, outlen)
     if (widestr != NULL)
     {
 	++*outlen;	/* Include the 0 after the string */
-	*out = ucs2_to_enc((short_u *)widestr, outlen);
+	*out = utf16_to_enc((short_u *)widestr, outlen);
 	vim_free(widestr);
     }
 }
@@ -1466,9 +1491,9 @@ clip_mch_set_selection(VimClipboard *cbd)
 	WCHAR		*out;
 	int		len = metadata.txtlen;
 
-	/* Convert the text to UCS-2. This is put on the clipboard as
+	/* Convert the text to UTF-16. This is put on the clipboard as
 	 * CF_UNICODETEXT. */
-	out = (WCHAR *)enc_to_ucs2(str, &len);
+	out = (WCHAR *)enc_to_utf16(str, &len);
 	if (out != NULL)
 	{
 	    WCHAR *lpszMemW;
@@ -1488,7 +1513,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    WideCharToMultiByte(GetACP(), 0, out, len,
 						  str, metadata.txtlen, 0, 0);
 
-	    /* Allocate memory for the UCS-2 text, add one NUL word to
+	    /* Allocate memory for the UTF-16 text, add one NUL word to
 	     * terminate the string. */
 	    hMemW = (LPSTR)GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
 						   (len + 1) * sizeof(WCHAR));

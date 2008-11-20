@@ -547,7 +547,7 @@ char_to_string(int ch, char_u *string, int slen, int had_alt)
 	else
 	{
 	    len = 1;
-	    ws = ucs2_to_enc(wstring, &len);
+	    ws = utf16_to_enc(wstring, &len);
 	    if (ws == NULL)
 		len = 0;
 	    else
@@ -2128,7 +2128,7 @@ GetTextWidthEnc(HDC hdc, char_u *str, int len)
     {
 	/* 'encoding' differs from active codepage: convert text and use wide
 	 * function */
-	wstr = enc_to_ucs2(str, &wlen);
+	wstr = enc_to_utf16(str, &wlen);
 	if (wstr != NULL)
 	{
 	    n = GetTextExtentPointW(hdc, wstr, wlen, &size);
@@ -2252,7 +2252,7 @@ add_tabline_popup_menu_entry(HMENU pmenu, UINT item_id, char_u *item_text)
     {
 	/* 'encoding' differs from active codepage: convert menu name
 	 * and use wide function */
-	wn = enc_to_ucs2(item_text, NULL);
+	wn = enc_to_utf16(item_text, NULL);
 	if (wn != NULL)
 	{
 	    MENUITEMINFOW	infow;
@@ -2422,7 +2422,7 @@ gui_mch_update_tabline(void)
 	if (use_unicode)
 	{
 	    /* Need to go through Unicode. */
-	    wstr = enc_to_ucs2(NameBuff, NULL);
+	    wstr = enc_to_utf16(NameBuff, NULL);
 	    if (wstr != NULL)
 	    {
 		TCITEMW		tiw;
@@ -2521,8 +2521,8 @@ set_window_title(HWND hwnd, char *title)
 	WCHAR	*wbuf;
 	int	n;
 
-	/* Convert the title from 'encoding' to ucs2. */
-	wbuf = (WCHAR *)enc_to_ucs2((char_u *)title, NULL);
+	/* Convert the title from 'encoding' to UTF-16. */
+	wbuf = (WCHAR *)enc_to_utf16((char_u *)title, NULL);
 	if (wbuf != NULL)
 	{
 	    n = SetWindowTextW(hwnd, wbuf);
@@ -3222,7 +3222,7 @@ gui_mch_browseW(
 	char_u *initdir,
 	char_u *filter)
 {
-    /* We always use the wide function.  This means enc_to_ucs2() must work,
+    /* We always use the wide function.  This means enc_to_utf16() must work,
      * otherwise it fails miserably! */
     OPENFILENAMEW	fileStruct;
     WCHAR		fileBuf[MAXPATHL];
@@ -3238,7 +3238,7 @@ gui_mch_browseW(
 	fileBuf[0] = NUL;
     else
     {
-	wp = enc_to_ucs2(dflt, NULL);
+	wp = enc_to_utf16(dflt, NULL);
 	if (wp == NULL)
 	    fileBuf[0] = NUL;
 	else
@@ -3263,11 +3263,11 @@ gui_mch_browseW(
 #endif
 
     if (title != NULL)
-	titlep = enc_to_ucs2(title, NULL);
+	titlep = enc_to_utf16(title, NULL);
     fileStruct.lpstrTitle = titlep;
 
     if (ext != NULL)
-	extp = enc_to_ucs2(ext, NULL);
+	extp = enc_to_utf16(ext, NULL);
     fileStruct.lpstrDefExt = extp;
 
     fileStruct.lpstrFile = fileBuf;
@@ -3278,7 +3278,7 @@ gui_mch_browseW(
     if (initdir != NULL && *initdir != NUL)
     {
 	/* Must have backslashes here, no matter what 'shellslash' says */
-	initdirp = enc_to_ucs2(initdir, NULL);
+	initdirp = enc_to_utf16(initdir, NULL);
 	if (initdirp != NULL)
 	{
 	    for (wp = initdirp; *wp != NUL; ++wp)
@@ -3318,7 +3318,7 @@ gui_mch_browseW(
     vim_free(extp);
 
     /* Convert from UCS2 to 'encoding'. */
-    p = ucs2_to_enc(fileBuf, NULL);
+    p = utf16_to_enc(fileBuf, NULL);
     if (p != NULL)
 	/* when out of memory we get garbage for non-ASCII chars */
 	STRCPY(fileBuf, p);
@@ -3518,7 +3518,7 @@ _OnDropFiles(
 	{
 #ifdef FEAT_MBYTE
 	    if (DragQueryFileW(hDrop, i, wszFile, BUFPATHLEN) > 0)
-		fnames[i] = ucs2_to_enc(wszFile, NULL);
+		fnames[i] = utf16_to_enc(wszFile, NULL);
 	    else
 #endif
 	    {

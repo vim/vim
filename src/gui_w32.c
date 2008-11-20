@@ -992,7 +992,7 @@ _WndProc(
 			    SendMessage(lpdi->hdr.hwndFrom, TTM_SETMAXTIPWIDTH,
 								      0, 500);
 
-			    tt_text = enc_to_ucs2(str, NULL);
+			    tt_text = enc_to_utf16(str, NULL);
 			    lpdi->lpszText = tt_text;
 			    /* can't show tooltip if failed */
 			}
@@ -1935,7 +1935,7 @@ GetResultStr(HWND hwnd, int GCS, int *lenp)
     if (buf == NULL)
 	return NULL;
 
-    convbuf = ucs2_to_enc(buf, lenp);
+    convbuf = utf16_to_enc(buf, lenp);
     pImmReleaseContext(hwnd, hIMC);
     vim_free(buf);
     return convbuf;
@@ -2566,7 +2566,7 @@ gui_mch_add_menu(
 	    {
 		/* 'encoding' differs from active codepage: convert menu name
 		 * and use wide function */
-		wn = enc_to_ucs2(menu->name, NULL);
+		wn = enc_to_utf16(menu->name, NULL);
 		if (wn != NULL)
 		{
 		    MENUITEMINFOW	infow;
@@ -2728,7 +2728,7 @@ gui_mch_add_menu_item(
 	{
 	    /* 'encoding' differs from active codepage: convert menu item name
 	     * and use wide function */
-	    wn = enc_to_ucs2(menu->name, NULL);
+	    wn = enc_to_utf16(menu->name, NULL);
 	    if (wn != NULL)
 	    {
 		n = InsertMenuW(parent->submenu_id, (UINT)idx,
@@ -3570,7 +3570,7 @@ nCopyAnsiToWideChar(
     if (enc_codepage == 0 && (int)GetACP() != enc_codepage)
     {
 	/* Not a codepage, use our own conversion function. */
-	wn = enc_to_ucs2(lpAnsiIn, NULL);
+	wn = enc_to_utf16(lpAnsiIn, NULL);
 	if (wn != NULL)
 	{
 	    wcscpy(lpWCStr, wn);

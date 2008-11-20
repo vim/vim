@@ -8728,7 +8728,7 @@ dos_expandpath(
 	/* The active codepage differs from 'encoding'.  Attempt using the
 	 * wide function.  If it fails because it is not implemented fall back
 	 * to the non-wide version (for Windows 98) */
-	wn = enc_to_ucs2(buf, NULL);
+	wn = enc_to_utf16(buf, NULL);
 	if (wn != NULL)
 	{
 	    hFind = FindFirstFileW(wn, &wfb);
@@ -8756,7 +8756,7 @@ dos_expandpath(
 #ifdef WIN3264
 # ifdef FEAT_MBYTE
 	if (wn != NULL)
-	    p = ucs2_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
+	    p = utf16_to_enc(wfb.cFileName, NULL);   /* p is allocated here */
 	else
 # endif
 	    p = (char_u *)fb.cFileName;
@@ -8830,7 +8830,7 @@ dos_expandpath(
 	    if (wn != NULL)
 	    {
 		vim_free(wn);
-		wn = enc_to_ucs2(buf, NULL);
+		wn = enc_to_utf16(buf, NULL);
 		if (wn != NULL)
 		    hFind = FindFirstFileW(wn, &wfb);
 	    }
