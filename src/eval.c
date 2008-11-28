@@ -16648,8 +16648,11 @@ f_synIDattr(argvars, rettv)
 		p = highlight_has_attr(id, HL_INVERSE, modec);
 		break;
 
-	case 's':					/* standout */
-		p = highlight_has_attr(id, HL_STANDOUT, modec);
+	case 's':
+		if (TOLOWER_ASC(what[1]) == 'p')	/* sp[#] */
+		    p = highlight_color(id, what, modec);
+		else					/* standout */
+		    p = highlight_has_attr(id, HL_STANDOUT, modec);
 		break;
 
 	case 'u':

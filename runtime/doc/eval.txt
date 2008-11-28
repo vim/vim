@@ -5348,10 +5348,12 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"fg"		foreground color (GUI: color name used to set
 				the color, cterm: color number as a string,
 				term: empty string)
-		"bg"		background color (like "fg")
+		"bg"		background color (as with "fg")
+		"sp"		special color (as with "fg") |highlight-guisp|
 		"fg#"		like "fg", but for the GUI and the GUI is
 				running the name in "#RRGGBB" form
 		"bg#"		like "fg#" for "bg"
+		"sp#"		like "fg#" for "sp"
 		"bold"		"1" if bold
 		"italic"	"1" if italic
 		"reverse"	"1" if reverse
