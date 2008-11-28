@@ -1121,8 +1121,12 @@ workshop_get_positions(
 				      ? (char *)curbuf->b_sfname : "<None>");
 #endif
 
-    strcpy(ffname, (char *) curbuf->b_ffname);
-    *filename = ffname;		/* copy so nobody can change b_ffname */
+    if (curbuf->b_ffname == NULL)
+	ffname[0] = NUL;
+    else
+	/* copy so nobody can change b_ffname */
+	strcpy(ffname, (char *) curbuf->b_ffname);
+    *filename = ffname;
     *curLine = curwin->w_cursor.lnum;
     *curCol = curwin->w_cursor.col;
 
