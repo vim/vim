@@ -7926,6 +7926,8 @@ write_vim_spell(spin, fname)
     char_u	*p;
     int		rr;
     int		retval = OK;
+    int		fwv = 1;  /* collect return value of fwrite() to avoid
+			     warnings from picky compiler */
 
     fd = mch_fopen((char *)fname, "w");
     if (fd == NULL)
@@ -7936,11 +7938,7 @@ write_vim_spell(spin, fname)
 
     /* <HEADER>: <fileID> <versionnr> */
 							    /* <fileID> */
-    if (fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, fd) != 1)
-    {
-	EMSG(_(e_write));
-	retval = FAIL;
-    }
+    fwv &= fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, fd);
     putc(VIMSPELLVERSION, fd);				    /* <versionnr> */
 
     /*
@@ -7955,7 +7953,7 @@ write_vim_spell(spin, fname)
 
 	i = (int)STRLEN(spin->si_info);
 	put_bytes(fd, (long_u)i, 4);			/* <sectionlen> */
-	fwrite(spin->si_info, (size_t)i, (size_t)1, fd); /* <infotext> */
+	fwv &= fwrite(spin->si_info, (size_t)i, (size_t)1, fd); /* <infotext> */
     }
 
     /* SN_REGION: <regionname> ...
@@ -7966,7 +7964,7 @@ write_vim_spell(spin, fname)
 	putc(SNF_REQUIRED, fd);				/* <sectionflags> */
 	l = spin->si_region_count * 2;
 	put_bytes(fd, (long_u)l, 4);			/* <sectionlen> */
-	fwrite(spin->si_region_name, (size_t)l, (size_t)1, fd);
+	fwv &= fwrite(spin->si_region_name, (size_t)l, (size_t)1, fd);
 							/* <regionname> ... */
 	regionmask = (1 << spin->si_region_count) - 1;
     }
@@ -8016,7 +8014,7 @@ write_vim_spell(spin, fname)
 	}
 
 	put_bytes(fd, (long_u)l, 2);			/* <folcharslen> */
-	fwrite(folchars, (size_t)l, (size_t)1, fd);	/* <folchars> */
+	fwv &= fwrite(folchars, (size_t)l, (size_t)1, fd); /* <folchars> */
     }
 
     /* SN_MIDWORD: <midword> */
@@ -8027,7 +8025,8 @@ write_vim_spell(spin, fname)
 
 	i = (int)STRLEN(spin->si_midword);
 	put_bytes(fd, (long_u)i, 4);			/* <sectionlen> */
-	fwrite(spin->si_midword, (size_t)i, (size_t)1, fd); /* <midword> */
+	fwv &= fwrite(spin->si_midword, (size_t)i, (size_t)1, fd);
+							/* <midword> */
     }
 
     /* SN_PREFCOND: <prefcondcnt> <prefcond> ... */
@@ -8113,7 +8112,7 @@ write_vim_spell(spin, fname)
 		p = rr == 1 ? ftp->ft_from : ftp->ft_to;
 		l = (int)STRLEN(p);
 		putc(l, fd);
-		fwrite(p, l, (size_t)1, fd);
+		fwv &= fwrite(p, l, (size_t)1, fd);
 	    }
 	}
 
@@ -8131,11 +8130,11 @@ write_vim_spell(spin, fname)
 							/* <sectionlen> */
 
 	put_bytes(fd, (long_u)l, 2);			/* <sofofromlen> */
-	fwrite(spin->si_sofofr, l, (size_t)1, fd);	/* <sofofrom> */
+	fwv &= fwrite(spin->si_sofofr, l, (size_t)1, fd); /* <sofofrom> */
 
 	l = (int)STRLEN(spin->si_sofoto);
 	put_bytes(fd, (long_u)l, 2);			/* <sofotolen> */
-	fwrite(spin->si_sofoto, l, (size_t)1, fd);	/* <sofoto> */
+	fwv &= fwrite(spin->si_sofoto, l, (size_t)1, fd); /* <sofoto> */
     }
 
     /* SN_WORDS: <word> ...
@@ -8160,7 +8159,7 @@ write_vim_spell(spin, fname)
 		    l = (int)STRLEN(hi->hi_key) + 1;
 		    len += l;
 		    if (round == 2)			/* <word> */
-			fwrite(hi->hi_key, (size_t)l, (size_t)1, fd);
+			fwv &= fwrite(hi->hi_key, (size_t)l, (size_t)1, fd);
 		    --todo;
 		}
 	    if (round == 1)
@@ -8176,7 +8175,7 @@ write_vim_spell(spin, fname)
 	putc(0, fd);					/* <sectionflags> */
 	l = spin->si_map.ga_len;
 	put_bytes(fd, (long_u)l, 4);			/* <sectionlen> */
-	fwrite(spin->si_map.ga_data, (size_t)l, (size_t)1, fd);
+	fwv &= fwrite(spin->si_map.ga_data, (size_t)l, (size_t)1, fd);
 							/* <mapstr> */
     }
 
@@ -8232,10 +8231,11 @@ write_vim_spell(spin, fname)
 	{
 	    p = ((char_u **)(spin->si_comppat.ga_data))[i];
 	    putc((int)STRLEN(p), fd);			/* <comppatlen> */
-	    fwrite(p, (size_t)STRLEN(p), (size_t)1, fd);/* <comppattext> */
+	    fwv &= fwrite(p, (size_t)STRLEN(p), (size_t)1, fd);
+							/* <comppattext> */
 	}
 							/* <compflags> */
-	fwrite(spin->si_compflags, (size_t)STRLEN(spin->si_compflags),
+	fwv &= fwrite(spin->si_compflags, (size_t)STRLEN(spin->si_compflags),
 							       (size_t)1, fd);
     }
 
@@ -8259,7 +8259,8 @@ write_vim_spell(spin, fname)
 
 	l = (int)STRLEN(spin->si_syllable);
 	put_bytes(fd, (long_u)l, 4);			/* <sectionlen> */
-	fwrite(spin->si_syllable, (size_t)l, (size_t)1, fd); /* <syllable> */
+	fwv &= fwrite(spin->si_syllable, (size_t)l, (size_t)1, fd);
+							/* <syllable> */
     }
 
     /* end of <SECTIONS> */
@@ -8295,12 +8296,17 @@ write_vim_spell(spin, fname)
 	(void)put_node(fd, tree, 0, regionmask, round == 3);
     }
 
-    /* Write another byte to check for errors. */
+    /* Write another byte to check for errors (file system full). */
     if (putc(0, fd) == EOF)
 	retval = FAIL;
 
     if (fclose(fd) == EOF)
 	retval = FAIL;
+
+    if (fwv != 1)
+	retval = FAIL;
+    if (retval == FAIL)
+	EMSG(_(e_write));
 
     return retval;
 }
@@ -9890,6 +9896,7 @@ write_spell_prefcond(fd, gap)
     char_u	*p;
     int		len;
     int		totlen;
+    int		x = 1;  /* collect return value of fwrite() */
 
     if (fd != NULL)
 	put_bytes(fd, (long_u)gap->ga_len, 2);	    /* <prefcondcnt> */
@@ -9906,7 +9913,7 @@ write_spell_prefcond(fd, gap)
 	    if (fd != NULL)
 	    {
 		fputc(len, fd);
-		fwrite(p, (size_t)len, (size_t)1, fd);
+		x &= fwrite(p, (size_t)len, (size_t)1, fd);
 	    }
 	    totlen += len;
 	}
