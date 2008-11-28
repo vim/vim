@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.2.  Last change: 2008 Aug 06
+*options.txt*	For Vim version 7.2.  Last change: 2008 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7472,7 +7472,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+wildignore|
 			feature}
 	A list of file patterns.  A file that matches with one of these
-	patterns is ignored when completing file or directory names.
+	patterns is ignored when completing file or directory names, and
+	influences the result of |expand()|, |glob()| and |globpath()| unless
+	a flag is passed to disable this.
 	The pattern is used like with |:autocmd|, see |autocmd-patterns|.
 	Also see 'suffixes'.
 	Example: >

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.2.  Last change: 2008 Nov 02
+*eval.txt*	For Vim version 7.2.  Last change: 2008 Nov 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1706,7 +1706,7 @@ executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
 extend({expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
-expand( {expr})			String	expand special keywords in {expr}
+expand( {expr} [, {flag}])	String	expand special keywords in {expr}
 feedkeys( {string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable( {file})		Number	TRUE if {file} is a readable file
 filewritable( {file})		Number	TRUE if {file} is a writable file
@@ -1758,8 +1758,9 @@ gettabwinvar( {tabnr}, {winnr}, {name})
 getwinposx()			Number	X coord in pixels of GUI Vim window
 getwinposy()			Number	Y coord in pixels of GUI Vim window
 getwinvar( {nr}, {varname})	any	variable {varname} in window {nr}
-glob( {expr})			String	expand file wildcards in {expr}
-globpath( {path}, {expr})	String	do glob({expr}) for all dirs in {path}
+glob( {expr} [, {flag}])	String	expand file wildcards in {expr}
+globpath( {path}, {expr} [, {flag}])
+				String	do glob({expr}) for all dirs in {path}
 has( {feature})			Number	TRUE if feature {feature} supported
 has_key( {dict}, {key})		Number	TRUE if {dict} has entry {key}
 haslocaldir()			Number	TRUE if current window executed |:lcd|
@@ -3286,14 +3287,16 @@ getwinvar({winnr}, {varname})				*getwinvar()*
 			:let list_is_on = getwinvar(2, '&list')
 			:echo "myvar = " . getwinvar(1, 'myvar')
 <
-							*glob()*
-glob({expr})	Expand the file wildcards in {expr}.  See |wildcards| for the
+glob({expr} [, {flag}])					*glob()*
+		Expand the file wildcards in {expr}.  See |wildcards| for the
 		use of special characters.
 		The result is a String.
 		When there are several matches, they are separated by <NL>
 		characters.
-		The 'wildignore' option applies: Names matching one of the
-		patterns in 'wildignore' will be skipped.
+		Unless the optional {flag} argument is given and is non-zero,
+		the 'suffixes' and 'wildignore' options apply: Names matching
+		one of the patterns in 'wildignore' will be skipped and
+		'suffixes' affect the ordering of matches.
 		If the expansion fails, the result is an empty string.
 		A name for a non-existing file is not included.
 
@@ -3307,20 +3310,22 @@ glob({expr})	Expand the file wildcards in {expr}.  See |wildcards| for the
 		See |expand()| for expanding special Vim variables.  See
 		|system()| for getting the raw output of an external command.
 
-globpath({path}, {expr})				*globpath()*
+globpath({path}, {expr} [, {flag}])			*globpath()*
 		Perform glob() on all directories in {path} and concatenate
 		the results.  Example: >
 			:echo globpath(&rtp, "syntax/c.vim")
 <		{path} is a comma-separated list of directory names.  Each
 		directory name is prepended to {expr} and expanded like with
-		glob().  A path separator is inserted when needed.
+		|glob()|.  A path separator is inserted when needed.
 		To add a comma inside a directory name escape it with a
 		backslash.  Note that on MS-Windows a directory may have a
 		trailing backslash, remove it if you put a comma after it.
 		If the expansion fails for one of the directories, there is no
 		error message.
-		The 'wildignore' option applies: Names matching one of the
-		patterns in 'wildignore' will be skipped.
+		Unless the optional {flag} argument is given and is non-zero,
+		the 'suffixes' and 'wildignore' options apply: Names matching
+		one of the patterns in 'wildignore' will be skipped and
+		'suffixes' affect the ordering of matches.
 
 		The "**" item can be used to search in a directory tree.
 		For example, to find all "README.txt" files in the directories
