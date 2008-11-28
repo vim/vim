@@ -48,7 +48,7 @@ static int checkCloseRec __ARGS((garray_T *gap, linenr_T lnum, int level));
 static int foldFind __ARGS((garray_T *gap, linenr_T lnum, fold_T **fpp));
 static int foldLevelWin __ARGS((win_T *wp, linenr_T lnum));
 static void checkupdate __ARGS((win_T *wp));
-static void setFoldRepeat __ARGS((linenr_T lnum, long count, int open));
+static void setFoldRepeat __ARGS((linenr_T lnum, long count, int do_open));
 static linenr_T setManualFold __ARGS((linenr_T lnum, int opening, int recurse, int *donep));
 static linenr_T setManualFoldWin __ARGS((win_T *wp, linenr_T lnum, int opening, int recurse, int *donep));
 static void foldOpenNested __ARGS((fold_T *fpr));
@@ -1241,10 +1241,10 @@ checkupdate(wp)
  * Repeat "count" times.
  */
     static void
-setFoldRepeat(lnum, count, open)
+setFoldRepeat(lnum, count, do_open)
     linenr_T	lnum;
     long	count;
-    int		open;
+    int		do_open;
 {
     int		done;
     long	n;
@@ -1252,7 +1252,7 @@ setFoldRepeat(lnum, count, open)
     for (n = 0; n < count; ++n)
     {
 	done = DONE_NOTHING;
-	(void)setManualFold(lnum, open, FALSE, &done);
+	(void)setManualFold(lnum, do_open, FALSE, &done);
 	if (!(done & DONE_ACTION))
 	{
 	    /* Only give an error message when no fold could be opened. */

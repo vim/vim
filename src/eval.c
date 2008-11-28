@@ -10641,7 +10641,7 @@ f_getchar(argvars, rettv)
 # ifdef FEAT_WINDOWS
 	    win_T	*wp;
 # endif
-	    int		n = 1;
+	    int		winnr = 1;
 
 	    if (row >= 0 && col >= 0)
 	    {
@@ -10651,9 +10651,9 @@ f_getchar(argvars, rettv)
 		(void)mouse_comp_pos(win, &row, &col, &lnum);
 # ifdef FEAT_WINDOWS
 		for (wp = firstwin; wp != win; wp = wp->w_next)
-		    ++n;
+		    ++winnr;
 # endif
-		vimvars[VV_MOUSE_WIN].vv_nr = n;
+		vimvars[VV_MOUSE_WIN].vv_nr = winnr;
 		vimvars[VV_MOUSE_LNUM].vv_nr = lnum;
 		vimvars[VV_MOUSE_COL].vv_nr = col + 1;
 	    }

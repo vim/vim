@@ -1549,6 +1549,14 @@ EXTERN int xsmp_icefd INIT(= -1);   /* The actual connection */
 EXTERN time_t starttime;
 
 /*
+ * Some compilers warn for not using a return value, but in some situations we
+ * can't do anything useful with the value.  Assign to this variable to avoid
+ * the warning.
+ */
+EXTERN int ignored;
+EXTERN char *ignoredp;
+
+/*
  * Optional Farsi support.  Include it here, so EXTERN and INIT are defined.
  */
 #ifdef FEAT_FKMAP

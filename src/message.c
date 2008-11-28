@@ -4585,61 +4585,62 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			if (remove_trailing_zeroes)
 			{
 			    int i;
-			    char *p;
+			    char *tp;
 
 			    /* Using %g or %G: remove superfluous zeroes. */
 			    if (fmt_spec == 'f')
-				p = tmp + str_arg_l - 1;
+				tp = tmp + str_arg_l - 1;
 			    else
 			    {
-				p = (char *)vim_strchr((char_u *)tmp,
+				tp = (char *)vim_strchr((char_u *)tmp,
 						 fmt_spec == 'e' ? 'e' : 'E');
-				if (p != NULL)
+				if (tp != NULL)
 				{
 				    /* Remove superfluous '+' and leading
 				     * zeroes from the exponent. */
-				    if (p[1] == '+')
+				    if (tp[1] == '+')
 				    {
 					/* Change "1.0e+07" to "1.0e07" */
-					STRMOVE(p + 1, p + 2);
+					STRMOVE(tp + 1, tp + 2);
 					--str_arg_l;
 				    }
-				    i = (p[1] == '-') ? 2 : 1;
-				    while (p[i] == '0')
+				    i = (tp[1] == '-') ? 2 : 1;
+				    while (tp[i] == '0')
 				    {
 					/* Change "1.0e07" to "1.0e7" */
-					STRMOVE(p + i, p + i + 1);
+					STRMOVE(tp + i, tp + i + 1);
 					--str_arg_l;
 				    }
-				    --p;
+				    --tp;
 				}
 			    }
 
-			    if (p != NULL && !precision_specified)
+			    if (tp != NULL && !precision_specified)
 				/* Remove trailing zeroes, but keep the one
 				 * just after a dot. */
-				while (p > tmp + 2 && *p == '0' && p[-1] != '.')
+				while (tp > tmp + 2 && *tp == '0'
+							     && tp[-1] != '.')
 				{
-				    STRMOVE(p, p + 1);
-				    --p;
+				    STRMOVE(tp, tp + 1);
+				    --tp;
 				    --str_arg_l;
 				}
 			}
 			else
 			{
-			    char *p;
+			    char *tp;
 
 			    /* Be consistent: some printf("%e") use 1.0e+12
 			     * and some 1.0e+012.  Remove one zero in the last
 			     * case. */
-			    p = (char *)vim_strchr((char_u *)tmp,
+			    tp = (char *)vim_strchr((char_u *)tmp,
 						 fmt_spec == 'e' ? 'e' : 'E');
-			    if (p != NULL && (p[1] == '+' || p[1] == '-')
-					  && p[2] == '0'
-					  && vim_isdigit(p[3])
-					  && vim_isdigit(p[4]))
+			    if (tp != NULL && (tp[1] == '+' || tp[1] == '-')
+					  && tp[2] == '0'
+					  && vim_isdigit(tp[3])
+					  && vim_isdigit(tp[4]))
 			    {
-				STRMOVE(p + 2, p + 3);
+				STRMOVE(tp + 2, tp + 3);
 				--str_arg_l;
 			    }
 			}

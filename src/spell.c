@@ -4950,7 +4950,7 @@ static int node_equal __ARGS((wordnode_T *n1, wordnode_T *n2));
 static void put_sugtime __ARGS((spellinfo_T *spin, FILE *fd));
 static int write_vim_spell __ARGS((spellinfo_T *spin, char_u *fname));
 static void clear_node __ARGS((wordnode_T *node));
-static int put_node __ARGS((FILE *fd, wordnode_T *node, int index, int regionmask, int prefixtree));
+static int put_node __ARGS((FILE *fd, wordnode_T *node, int idx, int regionmask, int prefixtree));
 static void spell_make_sugfile __ARGS((spellinfo_T *spin, char_u *wfname));
 static int sug_filltree __ARGS((spellinfo_T *spin, slang_T *slang));
 static int sug_maketable __ARGS((spellinfo_T *spin));

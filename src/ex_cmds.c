@@ -1941,7 +1941,7 @@ write_viminfo(file, forceit)
 	     * root.
 	     */
 	    if (fp_out != NULL)
-		(void)fchown(fileno(fp_out), st_old.st_uid, st_old.st_gid);
+		ignored = fchown(fileno(fp_out), st_old.st_uid, st_old.st_gid);
 #endif
 	}
     }

@@ -2214,7 +2214,7 @@ failed:
     {
 	/* Use stderr for stdin, makes shell commands work. */
 	close(0);
-	dup(2);
+	ignored = dup(2);
     }
 #endif
 
@@ -3449,7 +3449,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		{
 # ifdef UNIX
 #  ifdef HAVE_FCHOWN
-		    fchown(fd, st_old.st_uid, st_old.st_gid);
+		    ignored = fchown(fd, st_old.st_uid, st_old.st_gid);
 #  endif
 		    if (mch_stat((char *)IObuff, &st) < 0
 			    || st.st_uid != st_old.st_uid
@@ -4365,7 +4365,7 @@ restore_backup:
 		|| st.st_uid != st_old.st_uid
 		|| st.st_gid != st_old.st_gid)
 	{
-	    fchown(fd, st_old.st_uid, st_old.st_gid);
+	    ignored = fchown(fd, st_old.st_uid, st_old.st_gid);
 	    if (perm >= 0)	/* set permission again, may have changed */
 		(void)mch_setperm(wfname, perm);
 	}
@@ -6030,9 +6030,9 @@ vim_fgets(buf, size, fp)
 	{
 	    tbuf[FGETS_SIZE - 2] = NUL;
 #ifdef USE_CR
-	    fgets_cr((char *)tbuf, FGETS_SIZE, fp);
+	    ignoredp = fgets_cr((char *)tbuf, FGETS_SIZE, fp);
 #else
-	    fgets((char *)tbuf, FGETS_SIZE, fp);
+	    ignoredp = fgets((char *)tbuf, FGETS_SIZE, fp);
 #endif
 	} while (tbuf[FGETS_SIZE - 2] != NUL && tbuf[FGETS_SIZE - 2] != '\n');
     }

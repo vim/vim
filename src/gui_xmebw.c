@@ -1256,7 +1256,7 @@ Redisplay(Widget w, XEvent *event, Region region)
     }
     else
     {
-	int adjust = 0;
+	adjust = 0;
 
 #if !defined(LESSTIF_VERSION) && (XmVersion > 1002)
 	/*
@@ -1268,12 +1268,11 @@ Redisplay(Widget w, XEvent *event, Region region)
 	{
 	    case XmEXTERNAL_HIGHLIGHT:
 		adjust = (eb->primitive.highlight_thickness -
-			(eb->pushbutton.default_button_shadow_thickness ?
-			 Xm3D_ENHANCE_PIXEL : 0));
+			 (eb->pushbutton.default_button_shadow_thickness
+			  ?  Xm3D_ENHANCE_PIXEL : 0));
 		break;
 
 	    case XmINTERNAL_HIGHLIGHT:
-		adjust = 0;
 		break;
 
 	    default:

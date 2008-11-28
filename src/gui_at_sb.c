@@ -1078,6 +1078,12 @@ NotifyThumb(w, event, params, num_params)
     Cardinal	*num_params;	/* unused */
 {
     ScrollbarWidget sbw = (ScrollbarWidget)w;
+    /* Use a union to avoid a warning for the weird conversion from float to
+     * XtPointer.  Comes from Xaw/Scrollbar.c. */
+    union {
+	XtPointer xtp;
+	float xtf;
+    } xtpf;
 
     if (LookAhead(w, event))
 	return;
@@ -1085,7 +1091,8 @@ NotifyThumb(w, event, params, num_params)
     /* thumbProc is not pretty, but is necessary for backwards
        compatibility on those architectures for which it work{s,ed};
        the intent is to pass a (truncated) float by value. */
-    XtCallCallbacks(w, XtNthumbProc, *(XtPointer*)&sbw->scrollbar.top);
+    xtpf.xtf = sbw->scrollbar.top;
+    XtCallCallbacks(w, XtNthumbProc, xtpf.xtp);
     XtCallCallbacks(w, XtNjumpProc, (XtPointer)&sbw->scrollbar.top);
 }
 

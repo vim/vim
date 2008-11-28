@@ -4070,14 +4070,14 @@ gui_mch_open(void)
 
 	if (mask & (XValue | YValue))
 	{
-	    int w, h;
-	    gui_mch_get_screen_dimensions(&w, &h);
-	    h += p_ghr + get_menu_tool_height();
-	    w += get_menu_tool_width();
+	    int ww, hh;
+	    gui_mch_get_screen_dimensions(&ww, &hh);
+	    hh += p_ghr + get_menu_tool_height();
+	    ww += get_menu_tool_width();
 	    if (mask & XNegative)
-		x += w - pixel_width;
+		x += ww - pixel_width;
 	    if (mask & YNegative)
-		y += h - pixel_height;
+		y += hh - pixel_height;
 #ifdef HAVE_GTK2
 	    gtk_window_move(GTK_WINDOW(gui.mainwin), x, y);
 #else

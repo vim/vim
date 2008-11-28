@@ -4029,14 +4029,14 @@ win_enter_ext(wp, undo_sync, curwin_invalid)
 	    if (mch_dirname(cwd, MAXPATHL) == OK)
 		globaldir = vim_strsave(cwd);
 	}
-	mch_chdir((char *)curwin->w_localdir);
-	shorten_fnames(TRUE);
+	if (mch_chdir((char *)curwin->w_localdir) == 0)
+	    shorten_fnames(TRUE);
     }
     else if (globaldir != NULL)
     {
 	/* Window doesn't have a local directory and we are not in the global
 	 * directory: Change to the global directory. */
-	mch_chdir((char *)globaldir);
+	ignored = mch_chdir((char *)globaldir);
 	vim_free(globaldir);
 	globaldir = NULL;
 	shorten_fnames(TRUE);

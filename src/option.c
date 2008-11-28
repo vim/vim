@@ -8232,13 +8232,13 @@ set_option_value(name, number, string, opt_flags)
 	    {
 		if (number == 0 && string != NULL)
 		{
-		    int index;
+		    int idx;
 
 		    /* Either we are given a string or we are setting option
 		     * to zero. */
-		    for (index = 0; string[index] == '0'; ++index)
+		    for (idx = 0; string[idx] == '0'; ++idx)
 			;
-		    if (string[index] != NUL || index == 0)
+		    if (string[idx] != NUL || idx == 0)
 		    {
 			/* There's another character after zeros or the string
 			 * is empty.  In both cases, we are trying to set a

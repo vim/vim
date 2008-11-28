@@ -369,10 +369,10 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
     char	buf[TEMP_BUF_SIZE];
     XmString	items[MAX_ENTRIES_IN_LIST];
     int		i;
-    int		index;
+    int		idx;
 
-    for (index = (int)ENCODING; index < (int)NONE; ++index)
-	count[index] = 0;
+    for (idx = (int)ENCODING; idx < (int)NONE; ++idx)
+	count[idx] = 0;
 
     /* First we insert the wild char into every single list. */
     if (fix != ENCODING)
@@ -503,14 +503,14 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
     /*
      * Now loop trough the remaining lists and set them up.
      */
-    for (index = (int)NAME; index < (int)NONE; ++index)
+    for (idx = (int)NAME; idx < (int)NONE; ++idx)
     {
 	Widget w;
 
-	if (fix == (enum ListSpecifier)index)
+	if (fix == (enum ListSpecifier)idx)
 	    continue;
 
-	switch ((enum ListSpecifier)index)
+	switch ((enum ListSpecifier)idx)
 	{
 	    case NAME:
 		w = data->list[NAME];
@@ -525,21 +525,21 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 		w = (Widget)0;	/* for lint */
 	}
 
-	for (i = 0; i < count[index]; ++i)
+	for (i = 0; i < count[idx]; ++i)
 	{
-	    items[i] = XmStringCreateLocalized(list[index][i]);
-	    XtFree(list[index][i]);
+	    items[i] = XmStringCreateLocalized(list[idx][i]);
+	    XtFree(list[idx][i]);
 	}
 	XmListDeleteAllItems(w);
-	XmListAddItems(w, items, count[index], 1);
-	if (data->sel[index])
+	XmListAddItems(w, items, count[idx], 1);
+	if (data->sel[idx])
 	{
 	    XmStringFree(items[0]);
-	    items[0] = XmStringCreateLocalized(data->sel[index]);
+	    items[0] = XmStringCreateLocalized(data->sel[idx]);
 	    XmListSelectItem(w, items[0], False);
 	    XmListSetBottomItem(w, items[0]);
 	}
-	for (i = 0; i < count[index]; ++i)
+	for (i = 0; i < count[idx]; ++i)
 	    XmStringFree(items[i]);
     }
 }
@@ -695,14 +695,14 @@ do_choice(Widget w,
 	int	    n;
 	XmString    str;
 	Arg	    args[4];
-	char	    *msg = _("no specific match");
+	char	    *nomatch_msg = _("no specific match");
 
 	n = 0;
-	str = XmStringCreateLocalized(msg);
+	str = XmStringCreateLocalized(nomatch_msg);
 	XtSetArg(args[n], XmNlabelString, str); ++n;
 	XtSetValues(data->sample, args, n);
 	apply_fontlist(data->sample);
-	XmTextSetString(data->name, msg);
+	XmTextSetString(data->name, nomatch_msg);
 	XmStringFree(str);
 
 	return False;
@@ -886,21 +886,21 @@ gui_xm_select_font(char_u *current)
     {
 	int	i;
 	int	max;
-	int	index = 0;
+	int	idx = 0;
 	int	size;
-	char	str[128];
+	char	buf[128];
 
 	for (i = 0, max = 0; i < data->num; i++)
 	{
-	    get_part(fn(data, i), 7, str);
-	    size = atoi(str);
+	    get_part(fn(data, i), 7, buf);
+	    size = atoi(buf);
 	    if ((size > max) && (size < MAX_DISPLAY_SIZE))
 	    {
-		index = i;
+		idx = i;
 		max = size;
 	    }
 	}
-	strcpy(big_font, fn(data, index));
+	strcpy(big_font, fn(data, idx));
     }
     data->old = XLoadQueryFont(XtDisplay(parent), big_font);
     data->old_list = gui_motif_create_fontlist(data->old);
@@ -1217,28 +1217,28 @@ gui_xm_select_font(char_u *current)
 
 	if (i != 0)
 	{
-	    char name[TEMP_BUF_SIZE];
-	    char style[TEMP_BUF_SIZE];
-	    char size[TEMP_BUF_SIZE];
-	    char encoding[TEMP_BUF_SIZE];
+	    char namebuf[TEMP_BUF_SIZE];
+	    char stylebuf[TEMP_BUF_SIZE];
+	    char sizebuf[TEMP_BUF_SIZE];
+	    char encodingbuf[TEMP_BUF_SIZE];
 	    char *found;
 
 	    found = names[0];
 
-	    name_part(found, name);
-	    style_part(found, style);
-	    size_part(found, size, data->in_pixels);
-	    encoding_part(found, encoding);
+	    name_part(found, namebuf);
+	    style_part(found, stylebuf);
+	    size_part(found, sizebuf, data->in_pixels);
+	    encoding_part(found, encodingbuf);
 
-	    if (strlen(name) > 0
-		    && strlen(style) > 0
-		    && strlen(size) > 0
-		    && strlen(encoding) > 0)
+	    if (strlen(namebuf) > 0
+		    && strlen(stylebuf) > 0
+		    && strlen(sizebuf) > 0
+		    && strlen(encodingbuf) > 0)
 	    {
-		data->sel[NAME] = XtNewString(name);
-		data->sel[STYLE] = XtNewString(style);
-		data->sel[SIZE] = XtNewString(size);
-		data->sel[ENCODING] = XtNewString(encoding);
+		data->sel[NAME] = XtNewString(namebuf);
+		data->sel[STYLE] = XtNewString(stylebuf);
+		data->sel[SIZE] = XtNewString(sizebuf);
+		data->sel[ENCODING] = XtNewString(encodingbuf);
 		data->font_name = XtNewString(names[0]);
 		display_sample(data);
 		XmTextSetString(data->name, data->font_name);

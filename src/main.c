@@ -2372,7 +2372,7 @@ read_stdin()
      * Is there any other system that cannot do this?
      */
     close(0);
-    dup(2);
+    ignored = dup(2);
 #endif
 }
 

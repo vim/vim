@@ -717,7 +717,7 @@ codepage_invalid:
 		     * where mblen() returns 0 for invalid character.
 		     * Therefore, following condition includes 0.
 		     */
-		    (void)mblen(NULL, 0);	/* First reset the state. */
+		    ignored = mblen(NULL, 0);	/* First reset the state. */
 		    if (mblen(buf, (size_t)1) <= 0)
 			n = 2;
 		    else
@@ -5278,7 +5278,7 @@ xim_decide_input_style()
 
 /*ARGSUSED*/
     static void
-preedit_start_cbproc(XIC xic, XPointer client_data, XPointer call_data)
+preedit_start_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
 {
 #ifdef XIM_DEBUG
     xim_log("xim_decide_input_style()\n");
@@ -5312,7 +5312,7 @@ static gboolean processing_queued_event = FALSE;
 
 /*ARGSUSED*/
     static void
-preedit_draw_cbproc(XIC xic, XPointer client_data, XPointer call_data)
+preedit_draw_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
 {
     XIMPreeditDrawCallbackStruct *draw_data;
     XIMText	*text;
@@ -5453,7 +5453,7 @@ im_get_feedback_attr(int col)
 
 /*ARGSUSED*/
     static void
-preedit_caret_cbproc(XIC xic, XPointer client_data, XPointer call_data)
+preedit_caret_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
 {
 #ifdef XIM_DEBUG
     xim_log("preedit_caret_cbproc()\n");
@@ -5462,7 +5462,7 @@ preedit_caret_cbproc(XIC xic, XPointer client_data, XPointer call_data)
 
 /*ARGSUSED*/
     static void
-preedit_done_cbproc(XIC xic, XPointer client_data, XPointer call_data)
+preedit_done_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
 {
 #ifdef XIM_DEBUG
     xim_log("preedit_done_cbproc()\n");

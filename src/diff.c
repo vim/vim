@@ -661,6 +661,7 @@ ex_diffupdate(eap)
     char_u	*tmp_diff;
     FILE	*fd;
     int		ok;
+    int		io_error = FALSE;
 
     /* Delete all diffblocks. */
     diff_clear(curtab);
@@ -697,18 +698,26 @@ ex_diffupdate(eap)
     {
 	ok = FALSE;
 	fd = mch_fopen((char *)tmp_orig, "w");
-	if (fd != NULL)
+	if (fd == NULL)
+	    io_error = TRUE;
+	else
 	{
-	    fwrite("line1\n", (size_t)6, (size_t)1, fd);
+	    if (fwrite("line1\n", (size_t)6, (size_t)1, fd) != 1)
+		io_error = TRUE;
 	    fclose(fd);
 	    fd = mch_fopen((char *)tmp_new, "w");
-	    if (fd != NULL)
+	    if (fd == NULL)
+		io_error = TRUE;
+	    else
 	    {
-		fwrite("line2\n", (size_t)6, (size_t)1, fd);
+		if (fwrite("line2\n", (size_t)6, (size_t)1, fd) != 1)
+		    io_error = TRUE;
 		fclose(fd);
 		diff_file(tmp_orig, tmp_new, tmp_diff);
 		fd = mch_fopen((char *)tmp_diff, "r");
-		if (fd != NULL)
+		if (fd == NULL)
+		    io_error = TRUE;
+		else
 		{
 		    char_u	linebuf[LBUFLEN];
 
@@ -761,6 +770,8 @@ ex_diffupdate(eap)
     }
     if (!ok)
     {
+	if (io_error)
+	    EMSG(_("E810: Cannot read or write temp files"));
 	EMSG(_("E97: Cannot create diffs"));
 	diff_a_works = MAYBE;
 #if defined(MSWIN) || defined(MSDOS)
@@ -925,10 +936,10 @@ ex_diffpatch(eap)
     {
 # ifdef TEMPDIRNAMES
 	if (vim_tempdir != NULL)
-	    mch_chdir((char *)vim_tempdir);
+	    ignored = mch_chdir((char *)vim_tempdir);
 	else
 # endif
-	    mch_chdir("/tmp");
+	    ignored = mch_chdir("/tmp");
 	shorten_fnames(TRUE);
     }
 #endif

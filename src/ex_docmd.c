@@ -8753,8 +8753,8 @@ ex_mkrc(eap)
 		else if (*dirnow != NUL
 			&& (ssop_flags & SSOP_CURDIR) && globaldir != NULL)
 		{
-		    (void)mch_chdir((char *)globaldir);
-		    shorten_fnames(TRUE);
+		    if (mch_chdir((char *)globaldir) == OK)
+			shorten_fnames(TRUE);
 		}
 
 		failed |= (makeopens(fd, dirnow) == FAIL);
