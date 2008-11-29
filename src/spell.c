@@ -7926,7 +7926,7 @@ write_vim_spell(spin, fname)
     char_u	*p;
     int		rr;
     int		retval = OK;
-    int		fwv = 1;  /* collect return value of fwrite() to avoid
+    size_t	fwv = 1;  /* collect return value of fwrite() to avoid
 			     warnings from picky compiler */
 
     fd = mch_fopen((char *)fname, "w");
@@ -7939,6 +7939,10 @@ write_vim_spell(spin, fname)
     /* <HEADER>: <fileID> <versionnr> */
 							    /* <fileID> */
     fwv &= fwrite(VIMSPELLMAGIC, VIMSPELLMAGICL, (size_t)1, fd);
+    if (fwv != (size_t)1)
+	/* Catch first write error, don't try writing more. */
+	goto theend;
+
     putc(VIMSPELLVERSION, fd);				    /* <versionnr> */
 
     /*
@@ -8300,11 +8304,11 @@ write_vim_spell(spin, fname)
     /* Write another byte to check for errors (file system full). */
     if (putc(0, fd) == EOF)
 	retval = FAIL;
-
+theend:
     if (fclose(fd) == EOF)
 	retval = FAIL;
 
-    if (fwv != 1)
+    if (fwv != (size_t)1)
 	retval = FAIL;
     if (retval == FAIL)
 	EMSG(_(e_write));
@@ -9897,7 +9901,7 @@ write_spell_prefcond(fd, gap)
     char_u	*p;
     int		len;
     int		totlen;
-    int		x = 1;  /* collect return value of fwrite() */
+    size_t	x = 1;  /* collect return value of fwrite() */
 
     if (fd != NULL)
 	put_bytes(fd, (long_u)gap->ga_len, 2);	    /* <prefcondcnt> */
