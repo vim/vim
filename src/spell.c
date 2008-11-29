@@ -8112,7 +8112,8 @@ write_vim_spell(spin, fname)
 		p = rr == 1 ? ftp->ft_from : ftp->ft_to;
 		l = (int)STRLEN(p);
 		putc(l, fd);
-		fwv &= fwrite(p, l, (size_t)1, fd);
+		if (l > 0)
+		    fwv &= fwrite(p, l, (size_t)1, fd);
 	    }
 	}
 
