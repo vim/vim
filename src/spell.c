@@ -469,6 +469,7 @@ struct slang_S
     garray_T	sl_comppat;	/* CHECKCOMPOUNDPATTERN items */
     regprog_T	*sl_compprog;	/* COMPOUNDRULE turned into a regexp progrm
 				 * (NULL when no compounding) */
+    char_u	*sl_comprules;	/* all COMPOUNDRULE concatenated (or NULL) */
     char_u	*sl_compstartflags; /* flags for first compound word */
     char_u	*sl_compallflags; /* all flags for compound words */
     char_u	sl_nobreak;	/* When TRUE: no spaces between words */
@@ -839,7 +840,10 @@ static void slang_free __ARGS((slang_T *lp));
 static void slang_clear __ARGS((slang_T *lp));
 static void slang_clear_sug __ARGS((slang_T *lp));
 static void find_word __ARGS((matchinf_T *mip, int mode));
+static int match_checkcompoundpattern __ARGS((char_u *ptr, int wlen, garray_T *gap));
 static int can_compound __ARGS((slang_T *slang, char_u *word, char_u *flags));
+static int can_be_compound __ARGS((trystate_T *sp, slang_T *slang, char_u *compflags, int flag));
+static int match_compoundrule __ARGS((slang_T *slang, char_u *compflags));
 static int valid_word_prefix __ARGS((int totprefcnt, int arridx, int flags, char_u *word, slang_T *slang, int cond_req));
 static void find_prefix __ARGS((matchinf_T *mip, int mode));
 static int fold_more __ARGS((matchinf_T *mip));
@@ -1519,6 +1523,11 @@ find_word(mip, mode)
 					    ((unsigned)flags >> 24)))
 		    continue;
 
+		/* If there is a match with a CHECKCOMPOUNDPATTERN rule
+		 * discard the compound word. */
+		if (match_checkcompoundpattern(ptr, wlen, &slang->sl_comppat))
+		    continue;
+
 		if (mode == FIND_COMPOUND)
 		{
 		    int	    capflags;
@@ -1577,6 +1586,11 @@ find_word(mip, mode)
 		    if (!can_compound(slang, fword, mip->mi_compflags))
 			continue;
 		}
+		else if (slang->sl_comprules != NULL
+			     && !match_compoundrule(slang, mip->mi_compflags))
+		    /* The compound flags collected so far do not match any
+		     * COMPOUNDRULE, discard the compounded word. */
+		    continue;
 	    }
 
 	    /* Check NEEDCOMPOUND: can't use word without compounding. */
@@ -1727,6 +1741,39 @@ find_word(mip, mode)
 }
 
 /*
+ * Return TRUE if there is a match between the word ptr[wlen] and
+ * CHECKCOMPOUNDPATTERN rules, assuming that we will concatenate with another
+ * word.
+ * A match means that the first part of CHECKCOMPOUNDPATTERN matches at the
+ * end of ptr[wlen] and the second part matches after it.
+ */
+    static int
+match_checkcompoundpattern(ptr, wlen, gap)
+    char_u	*ptr;
+    int		wlen;
+    garray_T	*gap;  /* &sl_comppat */
+{
+    int		i;
+    char_u	*p;
+    int		len;
+
+    for (i = 0; i + 1 < gap->ga_len; i += 2)
+    {
+	p = ((char_u **)gap->ga_data)[i + 1];
+	if (STRNCMP(ptr + wlen, p, STRLEN(p)) == 0)
+	{
+	    /* Second part matches at start of following compound word, now
+	     * check if first part matches at end of previous word. */
+	    p = ((char_u **)gap->ga_data)[i];
+	    len = STRLEN(p);
+	    if (len <= wlen && STRNCMP(ptr + wlen - len, p, len) == 0)
+		return TRUE;
+	}
+    }
+    return FALSE;
+}
+
+/*
  * Return TRUE if "flags" is a valid sequence of compound flags and "word"
  * does not have too many syllables.
  */
@@ -1770,6 +1817,98 @@ can_compound(slang, word, flags)
 		       && count_syllables(slang, word) > slang->sl_compsylmax)
 	return (int)STRLEN(flags) < slang->sl_compmax;
     return TRUE;
+}
+
+/*
+ * Return TRUE when the sequence of flags in "compflags" plus "flag" can
+ * possibly form a valid compounded word.  This also checks the COMPOUNDRULE
+ * lines if they don't contain wildcards.
+ */
+    static int
+can_be_compound(sp, slang, compflags, flag)
+    trystate_T	*sp;
+    slang_T	*slang;
+    char_u	*compflags;
+    int		flag;
+{
+    /* If the flag doesn't appear in sl_compstartflags or sl_compallflags
+     * then it can't possibly compound. */
+    if (!byte_in_str(sp->ts_complen == sp->ts_compsplit
+		? slang->sl_compstartflags : slang->sl_compallflags, flag))
+	return FALSE;
+
+    /* If there are no wildcards, we can check if the flags collected so far
+     * possibly can form a match with COMPOUNDRULE patterns.  This only
+     * makes sense when we have two or more words. */
+    if (slang->sl_comprules != NULL && sp->ts_complen > sp->ts_compsplit)
+    {
+	int v;
+
+	compflags[sp->ts_complen] = flag;
+	compflags[sp->ts_complen + 1] = NUL;
+	v = match_compoundrule(slang, compflags + sp->ts_compsplit);
+	compflags[sp->ts_complen] = NUL;
+	return v;
+    }
+
+    return TRUE;
+}
+
+
+/*
+ * Return TRUE if the compound flags in compflags[] match the start of any
+ * compound rule.  This is used to stop trying a compound if the flags
+ * collected so far can't possibly match any compound rule.
+ * Caller must check that slang->sl_comprules is not NULL.
+ */
+    static int
+match_compoundrule(slang, compflags)
+    slang_T	*slang;
+    char_u	*compflags;
+{
+    char_u	*p;
+    int		i;
+    int		c;
+
+    /* loop over all the COMPOUNDRULE entries */
+    for (p = slang->sl_comprules; *p != NUL; ++p)
+    {
+	/* loop over the flags in the compound word we have made, match
+	 * them against the current rule entry */
+	for (i = 0; ; ++i)
+	{
+	    c = compflags[i];
+	    if (c == NUL)
+		/* found a rule that matches for the flags we have so far */
+		return TRUE;
+	    if (*p == '/' || *p == NUL)
+		break;  /* end of rule, it's too short */
+	    if (*p == '[')
+	    {
+		int match = FALSE;
+
+		/* compare against all the flags in [] */
+		++p;
+		while (*p != ']' && *p != NUL)
+		    if (*p++ == c)
+			match = TRUE;
+		if (!match)
+		    break;  /* none matches */
+	    }
+	    else if (*p != c)
+		break;  /* flag of word doesn't match flag in pattern */
+	    ++p;
+	}
+
+	/* Skip to the next "/", where the next pattern starts. */
+	p = vim_strchr(p, '/');
+	if (p == NULL)
+	    break;
+    }
+
+    /* Checked all the rules and none of them match the flags, so there
+     * can't possibly be a compound starting with these flags. */
+    return FALSE;
 }
 
 /*
@@ -2513,9 +2652,11 @@ slang_clear(lp)
     lp->sl_midword = NULL;
 
     vim_free(lp->sl_compprog);
+    vim_free(lp->sl_comprules);
     vim_free(lp->sl_compstartflags);
     vim_free(lp->sl_compallflags);
     lp->sl_compprog = NULL;
+    lp->sl_comprules = NULL;
     lp->sl_compstartflags = NULL;
     lp->sl_compallflags = NULL;
 
@@ -3460,6 +3601,7 @@ read_compound(fd, slang, len)
     char_u	*pp;
     char_u	*cp;
     char_u	*ap;
+    char_u	*crp;
     int		cnt;
     garray_T	*gap;
 
@@ -3545,6 +3687,12 @@ read_compound(fd, slang, len)
     slang->sl_compallflags = ap;
     *ap = NUL;
 
+    /* And a list of all patterns in their original form, for checking whether
+     * compounding may work in match_compoundrule().  This is freed when we
+     * encounter a wildcard, the check doesn't work then. */
+    crp = alloc(todo + 1);
+    slang->sl_comprules = crp;
+
     pp = pat;
     *pp++ = '^';
     *pp++ = '\\';
@@ -3587,6 +3735,20 @@ read_compound(fd, slang, len)
 		    atstart = 0;
 	    }
 	}
+
+	/* Copy flag to "sl_comprules", unless we run into a wildcard. */
+	if (crp != NULL)
+	{
+	    if (c == '+' || c == '*')
+	    {
+		vim_free(slang->sl_comprules);
+		slang->sl_comprules = NULL;
+		crp = NULL;
+	    }
+	    else
+		*crp++ = c;
+	}
+
 	if (c == '/')	    /* slash separates two items */
 	{
 	    *pp++ = '\\';
@@ -3610,6 +3772,9 @@ read_compound(fd, slang, len)
     *pp++ = ')';
     *pp++ = '$';
     *pp = NUL;
+
+    if (crp != NULL)
+	*crp = NUL;
 
     slang->sl_compprog = vim_regcomp(pat, RE_MAGIC + RE_STRING + RE_STRICT);
     vim_free(pat);
@@ -4915,6 +5080,7 @@ typedef struct spellinfo_S
 } spellinfo_T;
 
 static afffile_T *spell_read_aff __ARGS((spellinfo_T *spin, char_u *fname));
+static int is_aff_rule __ARGS((char_u **items, int itemcnt, char *rulename, int	 mincount));
 static void aff_process_flags __ARGS((afffile_T *affile, affentry_T *entry));
 static int spell_info_item __ARGS((char_u *s));
 static unsigned affitem2flag __ARGS((int flagtype, char_u *item, char_u	*fname, int lnum));
@@ -5223,8 +5389,7 @@ spell_read_aff(spin, fname)
 	/* Handle non-empty lines. */
 	if (itemcnt > 0)
 	{
-	    if (STRCMP(items[0], "SET") == 0 && itemcnt == 2
-						       && aff->af_enc == NULL)
+	    if (is_aff_rule(items, itemcnt, "SET", 2) && aff->af_enc == NULL)
 	    {
 #ifdef FEAT_MBYTE
 		/* Setup for conversion from "ENC" to 'encoding'. */
@@ -5239,7 +5404,7 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Conversion in %s not supported"), fname);
 #endif
 	    }
-	    else if (STRCMP(items[0], "FLAG") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "FLAG", 2)
 					      && aff->af_flagtype == AFT_CHAR)
 	    {
 		if (STRCMP(items[1], "long") == 0)
@@ -5284,69 +5449,71 @@ spell_read_aff(spin, fname)
 			spin->si_info = p;
 		    }
 	    }
-	    else if (STRCMP(items[0], "MIDWORD") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "MIDWORD", 2)
 							   && midword == NULL)
 	    {
 		midword = getroom_save(spin, items[1]);
 	    }
-	    else if (STRCMP(items[0], "TRY") == 0 && itemcnt == 2)
+	    else if (is_aff_rule(items, itemcnt, "TRY", 2))
 	    {
 		/* ignored, we look in the tree for what chars may appear */
 	    }
 	    /* TODO: remove "RAR" later */
-	    else if ((STRCMP(items[0], "RAR") == 0
-			|| STRCMP(items[0], "RARE") == 0) && itemcnt == 2
-						       && aff->af_rare == 0)
+	    else if ((is_aff_rule(items, itemcnt, "RAR", 2)
+			|| is_aff_rule(items, itemcnt, "RARE", 2))
+							 && aff->af_rare == 0)
 	    {
 		aff->af_rare = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
 	    /* TODO: remove "KEP" later */
-	    else if ((STRCMP(items[0], "KEP") == 0
-		    || STRCMP(items[0], "KEEPCASE") == 0) && itemcnt == 2
+	    else if ((is_aff_rule(items, itemcnt, "KEP", 2)
+			|| is_aff_rule(items, itemcnt, "KEEPCASE", 2))
 						     && aff->af_keepcase == 0)
 	    {
 		aff->af_keepcase = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "BAD") == 0 && itemcnt == 2
-						       && aff->af_bad == 0)
+	    else if ((is_aff_rule(items, itemcnt, "BAD", 2)
+			|| is_aff_rule(items, itemcnt, "FORBIDDENWORD", 2))
+							  && aff->af_bad == 0)
 	    {
 		aff->af_bad = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "NEEDAFFIX") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "NEEDAFFIX", 2)
 						    && aff->af_needaffix == 0)
 	    {
 		aff->af_needaffix = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "CIRCUMFIX") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "CIRCUMFIX", 2)
 						    && aff->af_circumfix == 0)
 	    {
 		aff->af_circumfix = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "NOSUGGEST") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "NOSUGGEST", 2)
 						    && aff->af_nosuggest == 0)
 	    {
 		aff->af_nosuggest = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "NEEDCOMPOUND") == 0 && itemcnt == 2
+	    else if ((is_aff_rule(items, itemcnt, "NEEDCOMPOUND", 2)
+			|| is_aff_rule(items, itemcnt, "ONLYINCOMPOUND", 2))
 						     && aff->af_needcomp == 0)
 	    {
 		aff->af_needcomp = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDROOT") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDROOT", 2)
 						     && aff->af_comproot == 0)
 	    {
 		aff->af_comproot = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDFORBIDFLAG") == 0
-				   && itemcnt == 2 && aff->af_compforbid == 0)
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDFORBIDFLAG", 2)
+						   && aff->af_compforbid == 0)
 	    {
 		aff->af_compforbid = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
@@ -5354,8 +5521,8 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"),
 			    fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDPERMITFLAG") == 0
-				   && itemcnt == 2 && aff->af_comppermit == 0)
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDPERMITFLAG", 2)
+						   && aff->af_comppermit == 0)
 	    {
 		aff->af_comppermit = affitem2flag(aff->af_flagtype, items[1],
 								 fname, lnum);
@@ -5363,7 +5530,7 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"),
 			    fname, lnum);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDFLAG") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDFLAG", 2)
 							 && compflags == NULL)
 	    {
 		/* Turn flag "c" into COMPOUNDRULE compatible string "c+",
@@ -5376,7 +5543,15 @@ spell_read_aff(spin, fname)
 		    compflags = p;
 		}
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDRULE") == 0 && itemcnt == 2)
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDRULES", 2))
+	    {
+		/* We don't use the count, but do check that it's a number and
+		 * not COMPOUNDRULE mistyped. */
+		if (atoi((char *)items[1]) == 0)
+		    smsg((char_u *)_("Wrong COMPOUNDRULES value in %s line %d: %s"),
+						       fname, lnum, items[1]);
+	    }
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDRULE", 2))
 	    {
 		/* Concatenate this string to previously defined ones, using a
 		 * slash to separate them. */
@@ -5395,7 +5570,7 @@ spell_read_aff(spin, fname)
 		    compflags = p;
 		}
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDWORDMAX") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDWORDMAX", 2)
 							      && compmax == 0)
 	    {
 		compmax = atoi((char *)items[1]);
@@ -5403,7 +5578,7 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Wrong COMPOUNDWORDMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDMIN") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDMIN", 2)
 							   && compminlen == 0)
 	    {
 		compminlen = atoi((char *)items[1]);
@@ -5411,7 +5586,7 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Wrong COMPOUNDMIN value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
-	    else if (STRCMP(items[0], "COMPOUNDSYLMAX") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "COMPOUNDSYLMAX", 2)
 							   && compsylmax == 0)
 	    {
 		compsylmax = atoi((char *)items[1]);
@@ -5419,32 +5594,29 @@ spell_read_aff(spin, fname)
 		    smsg((char_u *)_("Wrong COMPOUNDSYLMAX value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDDUP") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDDUP", 1))
 	    {
 		compoptions |= COMP_CHECKDUP;
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDREP") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDREP", 1))
 	    {
 		compoptions |= COMP_CHECKREP;
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDCASE") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDCASE", 1))
 	    {
 		compoptions |= COMP_CHECKCASE;
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDTRIPLE") == 0
-							      && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDTRIPLE", 1))
 	    {
 		compoptions |= COMP_CHECKTRIPLE;
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDPATTERN") == 0
-							      && itemcnt == 2)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDPATTERN", 2))
 	    {
 		if (atoi((char *)items[1]) == 0)
 		    smsg((char_u *)_("Wrong CHECKCOMPOUNDPATTERN value in %s line %d: %s"),
 						       fname, lnum, items[1]);
 	    }
-	    else if (STRCMP(items[0], "CHECKCOMPOUNDPATTERN") == 0
-							      && itemcnt == 3)
+	    else if (is_aff_rule(items, itemcnt, "CHECKCOMPOUNDPATTERN", 3))
 	    {
 		garray_T    *gap = &spin->si_comppat;
 		int	    i;
@@ -5463,24 +5635,24 @@ spell_read_aff(spin, fname)
 					       = getroom_save(spin, items[2]);
 		}
 	    }
-	    else if (STRCMP(items[0], "SYLLABLE") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "SYLLABLE", 2)
 							  && syllable == NULL)
 	    {
 		syllable = getroom_save(spin, items[1]);
 	    }
-	    else if (STRCMP(items[0], "NOBREAK") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "NOBREAK", 1))
 	    {
 		spin->si_nobreak = TRUE;
 	    }
-	    else if (STRCMP(items[0], "NOSPLITSUGS") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "NOSPLITSUGS", 1))
 	    {
 		spin->si_nosplitsugs = TRUE;
 	    }
-	    else if (STRCMP(items[0], "NOSUGFILE") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "NOSUGFILE", 1))
 	    {
 		spin->si_nosugfile = TRUE;
 	    }
-	    else if (STRCMP(items[0], "PFXPOSTPONE") == 0 && itemcnt == 1)
+	    else if (is_aff_rule(items, itemcnt, "PFXPOSTPONE", 1))
 	    {
 		aff->af_pfxpostpone = TRUE;
 	    }
@@ -5771,24 +5943,20 @@ spell_read_aff(spin, fname)
 		    }
 		}
 	    }
-	    else if (STRCMP(items[0], "FOL") == 0 && itemcnt == 2
-							       && fol == NULL)
+	    else if (is_aff_rule(items, itemcnt, "FOL", 2) && fol == NULL)
 	    {
 		fol = vim_strsave(items[1]);
 	    }
-	    else if (STRCMP(items[0], "LOW") == 0 && itemcnt == 2
-							       && low == NULL)
+	    else if (is_aff_rule(items, itemcnt, "LOW", 2) && low == NULL)
 	    {
 		low = vim_strsave(items[1]);
 	    }
-	    else if (STRCMP(items[0], "UPP") == 0 && itemcnt == 2
-							       && upp == NULL)
+	    else if (is_aff_rule(items, itemcnt, "UPP", 2) && upp == NULL)
 	    {
 		upp = vim_strsave(items[1]);
 	    }
-	    else if ((STRCMP(items[0], "REP") == 0
-			|| STRCMP(items[0], "REPSAL") == 0)
-		    && itemcnt == 2)
+	    else if (is_aff_rule(items, itemcnt, "REP", 2)
+		     || is_aff_rule(items, itemcnt, "REPSAL", 2))
 	    {
 		/* Ignore REP/REPSAL count */;
 		if (!isdigit(*items[1]))
@@ -5819,7 +5987,7 @@ spell_read_aff(spin, fname)
 					 : &spin->si_rep, items[1], items[2]);
 		}
 	    }
-	    else if (STRCMP(items[0], "MAP") == 0 && itemcnt == 2)
+	    else if (is_aff_rule(items, itemcnt, "MAP", 2))
 	    {
 		/* MAP item or count */
 		if (!found_map)
@@ -5856,9 +6024,8 @@ spell_read_aff(spin, fname)
 		    ga_append(&spin->si_map, '/');
 		}
 	    }
-	    /* Accept "SAL from to" and "SAL from to # comment". */
-	    else if (STRCMP(items[0], "SAL") == 0
-		    && (itemcnt == 3 || (itemcnt > 3 && items[3][0] == '#')))
+	    /* Accept "SAL from to" and "SAL from to  #comment". */
+	    else if (is_aff_rule(items, itemcnt, "SAL", 3))
 	    {
 		if (do_sal)
 		{
@@ -5877,12 +6044,12 @@ spell_read_aff(spin, fname)
 								: items[2]);
 		}
 	    }
-	    else if (STRCMP(items[0], "SOFOFROM") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "SOFOFROM", 2)
 							  && sofofrom == NULL)
 	    {
 		sofofrom = getroom_save(spin, items[1]);
 	    }
-	    else if (STRCMP(items[0], "SOFOTO") == 0 && itemcnt == 2
+	    else if (is_aff_rule(items, itemcnt, "SOFOTO", 2)
 							    && sofoto == NULL)
 	    {
 		sofoto = getroom_save(spin, items[1]);
@@ -6014,6 +6181,22 @@ spell_read_aff(spin, fname)
     vim_free(pc);
     fclose(fd);
     return aff;
+}
+
+/*
+ * Return TRUE when items[0] equals "rulename", there are "mincount" items or
+ * a comment is following after item "mincount".
+ */
+    static int
+is_aff_rule(items, itemcnt, rulename, mincount)
+    char_u	**items;
+    int		itemcnt;
+    char	*rulename;
+    int		mincount;
+{
+    return (STRCMP(items[0], rulename) == 0
+	    && (itemcnt == mincount
+		|| (itemcnt > mincount && items[mincount][0] == '#')));
 }
 
 /*
@@ -11492,14 +11675,23 @@ suggest_trie_walk(su, lp, fword, soundfold)
 		    vim_strncpy(preword + sp->ts_prewordlen,
 			    tword + sp->ts_splitoff,
 			    sp->ts_twordlen - sp->ts_splitoff);
-		    p = preword;
-		    while (*skiptowhite(p) != NUL)
-			p = skipwhite(skiptowhite(p));
-		    if (fword_ends && !can_compound(slang, p,
-						compflags + sp->ts_compsplit))
-			/* Compound is not allowed.  But it may still be
-			 * possible if we add another (short) word. */
+
+		    /* Verify CHECKCOMPOUNDPATTERN  rules. */
+		    if (match_checkcompoundpattern(preword,  sp->ts_prewordlen,
+							  &slang->sl_comppat))
 			compound_ok = FALSE;
+
+		    if (compound_ok)
+		    {
+			p = preword;
+			while (*skiptowhite(p) != NUL)
+			    p = skipwhite(skiptowhite(p));
+			if (fword_ends && !can_compound(slang, p,
+						compflags + sp->ts_compsplit))
+			    /* Compound is not allowed.  But it may still be
+			     * possible if we add another (short) word. */
+			    compound_ok = FALSE;
+		    }
 
 		    /* Get pointer to last char of previous word. */
 		    p = preword + sp->ts_prewordlen;
@@ -11697,10 +11889,9 @@ suggest_trie_walk(su, lp, fword, soundfold)
 			&& (slang->sl_compsylmax < MAXWLEN
 			    || sp->ts_complen + 1 - sp->ts_compsplit
 							  < slang->sl_compmax)
-			&& (byte_in_str(sp->ts_complen == sp->ts_compsplit
-					    ? slang->sl_compstartflags
-					    : slang->sl_compallflags,
-						    ((unsigned)flags >> 24))))
+			&& (can_be_compound(sp, slang,
+					 compflags, ((unsigned)flags >> 24))))
+
 		{
 		    try_compound = TRUE;
 		    compflags[sp->ts_complen] = ((unsigned)flags >> 24);

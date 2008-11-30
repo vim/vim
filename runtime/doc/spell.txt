@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.2.  Last change: 2008 Jun 21
+*spell.txt*	For Vim version 7.2.  Last change: 2008 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -831,8 +831,11 @@ Comment lines in the .aff file start with a '#':
 
 	# comment line ~
 
-With some items it's also possible to put a comment after it, but this isn't
-supported in general.
+Items with a fixed number of arguments can be followed by a comment.  But only
+if none of the arguments can contain white space.  The comment must start with
+a "#" character.  Example:
+
+	KEEPCASE =  # fix case for words with this flag ~
 
 
 ENCODING							*spell-SET*
@@ -964,6 +967,9 @@ When using "caplong" the two-character flags all start with a capital: "Aa",
 common items and two-character flags for uncommon items.
 
 Note: When using utf-8 only characters up to 65000 may be used for flags.
+
+Note: even when using "num" or "long" the number of flags available to
+compounding and prefixes is limited to about 250.
 
 
 AFFIXES
@@ -1178,6 +1184,9 @@ word as good.
 The flag also applies to the word with affixes, thus this can be used to mark
 a whole bunch of related words as bad.
 
+							*spell-FORBIDDENWORD*
+FORBIDDENWORD can be used just like BAD.  For compatibility with Hunspell.
+
 							*spell-NEEDAFFIX*
 The NEEDAFFIX flag is used to require that a word is used with an affix.  The
 word itself is not a good word (unless there is an empty affix).  Example:
@@ -1268,6 +1277,10 @@ compound word.  The word itself is not a good word.  Example:
 
 	NEEDCOMPOUND & ~
 
+							*spell-ONLYINCOMPOUND*
+The ONLYINCOMPOUND does exactly the same as NEEDCOMPOUND.  Supported for
+compatiblity with Hunspell.
+
 							*spell-COMPOUNDMIN*
 The minimal character length of a word used for compounding is specified with
 COMPOUNDMIN.  Example:
@@ -1327,6 +1340,20 @@ The COMPOUNDROOT flag is used for words in the dictionary that are already a
 compound.  This means it counts for two words when checking the compounding
 rules.  Can also be used for an affix to count the affix as a compounding
 word.
+
+						*spell-CHECKCOMPOUNDPATTERN*
+CHECKCOMPOUNDPATTERN is used to define patterns that, when matching at the
+position where two words are compounded together forbids the compound.
+For example:
+	CHECKCOMPOUNDPATTERN o e ~
+
+This forbids compounding if the first word ends in "o" and the second word
+starts with "e".
+
+The arguments must be plain text, no patterns are actually supported, despite
+the item name.  Case is always ignored.
+
+The Hunspell feature to use three arguments and flags is not supported.
 
 							*spell-SYLLABLE*
 The SYLLABLE item defines characters or character sequences that are used to
@@ -1496,6 +1523,10 @@ ignored, not supported or defined in another way.
 ACCENT		(Hunspell)				*spell-ACCENT*
 		Use MAP instead. |spell-MAP|
 
+BREAK		(Hunspell)				*spell-BREAK*
+		Define break points.  Unclear how it works exactly.
+		Not supported.
+
 CHECKCOMPOUNDCASE  (Hunspell)			*spell-CHECKCOMPOUNDCASE*
 		Disallow uppercase letters at compound word boundaries.
 		Not supported.
@@ -1511,9 +1542,6 @@ CHECKCOMPOUNDREP  (Hunspell)			*spell-CHECKCOMPOUNDREP*
 CHECKCOMPOUNDTRIPLE  (Hunspell)			*spell-CHECKCOMPOUNDTRIPLE*
 		Forbid three identical characters when compounding.  Not
 		supported.
-
-CHECKCOMPOUNDPATTERN  (Hunspell)		*spell-CHECKCOMPOUNDPATTERN*
-		Forbid compounding when patterns match.  Not supported.
 
 COMPLEXPREFIXES  (Hunspell)				*spell-COMPLEXPREFIXES*
 		Enables using two prefixes.  Not supported.
@@ -1536,13 +1564,18 @@ COMPOUNDEND	(Hunspell)				*spell-COMPOUNDEND*
 COMPOUNDMIDDLE	(Hunspell)				*spell-COMPOUNDMIDDLE*
 		Use COMPOUNDRULE instead. |spell-COMPOUNDRULE|
 
+COMPOUNDRULES	(Hunspell)				*spell-COMPOUNDRULES*
+		Number of COMPOUNDRULE lines following.  Ignored, but the
+		argument must be a number.
+
 COMPOUNDSYLLABLE  (Hunspell)			*spell-COMPOUNDSYLLABLE*
 		Use SYLLABLE and COMPOUNDSYLMAX instead. |spell-SYLLABLE|
 		|spell-COMPOUNDSYLMAX|
 
-FORBIDDENWORD	(Hunspell)				*spell-FORBIDDENWORD*
-		Use BAD instead. |spell-BAD|
-
+KEY		(Hunspell)				*spell-KEY*
+		Define characters that are close together on the keyboard.
+		Used to give better suggestions.  Not supported.
+		
 LANG		(Hunspell)				*spell-LANG*
 		This specifies language-specific behavior.  This actually
 		moves part of the language knowledge into the program,
@@ -1553,10 +1586,7 @@ LEMMA_PRESENT	(Hunspell)				*spell-LEMMA_PRESENT*
 		Only needed for morphological analysis.
 
 MAXNGRAMSUGS	(Hunspell)				*spell-MAXNGRAMSUGS*
-		Not supported.
-
-ONLYINCOMPOUND	(Hunspell)				*spell-ONLYINCOMPOUND*
-		Use NEEDCOMPOUND instead. |spell-NEEDCOMPOUND|
+		Set number of n-gram suggestions.  Not supported.
 
 PSEUDOROOT	(Hunspell)				*spell-PSEUDOROOT*
 		Use NEEDAFFIX instead. |spell-NEEDAFFIX|
