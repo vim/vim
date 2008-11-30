@@ -73,6 +73,8 @@ diff_buf_delete(buf)
 	{
 	    tp->tp_diffbuf[i] = NULL;
 	    tp->tp_diff_invalid = TRUE;
+	    if (tp == curtab)
+		diff_redraw(TRUE);
 	}
     }
 }
@@ -102,6 +104,7 @@ diff_buf_adjust(win)
 	    {
 		curtab->tp_diffbuf[i] = NULL;
 		curtab->tp_diff_invalid = TRUE;
+		diff_redraw(TRUE);
 	    }
 	}
     }
@@ -131,6 +134,7 @@ diff_buf_add(buf)
 	{
 	    curtab->tp_diffbuf[i] = buf;
 	    curtab->tp_diff_invalid = TRUE;
+	    diff_redraw(TRUE);
 	    return;
 	}
 
