@@ -166,7 +166,7 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # define Perl_Isv_yes_ptr dll_Perl_Isv_yes_ptr
 # define boot_DynaLoader dll_boot_DynaLoader
 
-# define Perl_sys_init3 dll_Perl_sys_init3
+# define Perl_sys_init dll_Perl_sys_init
 # define Perl_sys_term dll_Perl_sys_term
 # define Perl_ISv_ptr dll_Perl_ISv_ptr
 # define Perl_Istack_max_ptr dll_Perl_Istack_max_ptr
@@ -272,7 +272,7 @@ static void (*boot_DynaLoader)_((pTHX_ CV*));
 
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
 static void (*Perl_sv_free2)(pTHX_ SV*);
-static void (*Perl_sys_init3)(int* argc, char*** argv, char*** env);
+static void (*Perl_sys_init)(int* argc, char*** argv);
 static void (*Perl_sys_term)(void);
 static SV** (*Perl_ISv_ptr)(register PerlInterpreter*);
 static SV*** (*Perl_Istack_max_ptr)(register PerlInterpreter*);
@@ -372,7 +372,7 @@ static struct {
     {"Perl_Tna_ptr", (PERL_PROC*)&Perl_Tna_ptr},
 #else
     {"Perl_sv_free2", (PERL_PROC*)&Perl_sv_free2},
-    {"Perl_sys_init3", (PERL_PROC*)&Perl_sys_init3},
+    {"Perl_sys_init", (PERL_PROC*)&Perl_sys_init},
     {"Perl_sys_term", (PERL_PROC*)&Perl_sys_term},
     {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
     {"Perl_Istack_sp_ptr", (PERL_PROC*)&Perl_Istack_sp_ptr},
@@ -460,7 +460,7 @@ perl_init()
     static char *argv[] = { "", "-e", "" };
 
 #if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
-    Perl_sys_init3(&argc, (char***)&argv, NULL);
+    Perl_sys_init(&argc, (char***)&argv);
 #endif
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
