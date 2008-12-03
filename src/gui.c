@@ -3241,7 +3241,7 @@ gui_init_which_components(oldval)
 	    i = Rows;
 	    gui_update_tabline();
 	    Rows = i;
-	    need_set_size = RESIZE_VERT;
+	    need_set_size |= RESIZE_VERT;
 	    if (using_tabline)
 		fix_size = TRUE;
 	    if (!gui_use_tabline())
@@ -3275,9 +3275,9 @@ gui_init_which_components(oldval)
 		if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
 		{
 		    if (i == SBAR_BOTTOM)
-			need_set_size = RESIZE_VERT;
+			need_set_size |= RESIZE_VERT;
 		    else
-			need_set_size = RESIZE_HOR;
+			need_set_size |= RESIZE_HOR;
 		    if (gui.which_scrollbars[i])
 			fix_size = TRUE;
 		}
@@ -3297,7 +3297,7 @@ gui_init_which_components(oldval)
 	    gui_mch_enable_menu(gui.menu_is_active);
 	    Rows = i;
 	    prev_menu_is_active = gui.menu_is_active;
-	    need_set_size = RESIZE_VERT;
+	    need_set_size |= RESIZE_VERT;
 	    if (gui.menu_is_active)
 		fix_size = TRUE;
 	}
@@ -3308,7 +3308,7 @@ gui_init_which_components(oldval)
 	{
 	    gui_mch_show_toolbar(using_toolbar);
 	    prev_toolbar = using_toolbar;
-	    need_set_size = RESIZE_VERT;
+	    need_set_size |= RESIZE_VERT;
 	    if (using_toolbar)
 		fix_size = TRUE;
 	}
@@ -3318,7 +3318,7 @@ gui_init_which_components(oldval)
 	{
 	    gui_mch_enable_footer(using_footer);
 	    prev_footer = using_footer;
-	    need_set_size = RESIZE_VERT;
+	    need_set_size |= RESIZE_VERT;
 	    if (using_footer)
 		fix_size = TRUE;
 	}
@@ -3330,10 +3330,11 @@ gui_init_which_components(oldval)
 	    prev_tearoff = using_tearoff;
 	}
 #endif
-	if (need_set_size)
+	if (need_set_size != 0)
 	{
 #ifdef FEAT_GUI_GTK
-	    long    c = Columns;
+	    long    prev_Columns = Columns;
+	    long    prev_Rows = Rows;
 #endif
 	    /* Adjust the size of the window to make the text area keep the
 	     * same size and to avoid that part of our window is off-screen
@@ -3349,11 +3350,14 @@ gui_init_which_components(oldval)
 	     * If you remove this, please test this command for resizing
 	     * effects (with optional left scrollbar): ":vsp|q|vsp|q|vsp|q".
 	     * Don't do this while starting up though.
-	     * And don't change Rows, it may have be reduced intentionally
-	     * when adding menu/toolbar/tabline. */
-	    if (!gui.starting)
+	     * Don't change Rows when adding menu/toolbar/tabline.
+	     * Don't change Columns when adding vertical toolbar. */
+	    if (!gui.starting && need_set_size != (RESIZE_VERT | RESIZE_HOR))
 		(void)char_avail();
-	    Columns = c;
+	    if ((need_set_size & RESIZE_VERT) == 0)
+		Rows = prev_Rows;
+	    if ((need_set_size & RESIZE_HOR) == 0)
+		Columns = prev_Columns;
 #endif
 	}
 #ifdef FEAT_WINDOWS
