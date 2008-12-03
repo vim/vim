@@ -5118,7 +5118,7 @@ buf_spname(buf)
     {
 	if (buf->b_sfname != NULL)
 	    return (char *)buf->b_sfname;
-	return "[Scratch]";
+	return _("[Scratch]");
     }
 #endif
     if (buf->b_fname == NULL)
