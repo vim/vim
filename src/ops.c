@@ -2209,12 +2209,15 @@ op_tilde(oap)
     {
 	for (; pos.lnum <= oap->end.lnum; ++pos.lnum)
 	{
+	    int one_change;
+
 	    block_prep(oap, &bd, pos.lnum, FALSE);
 	    pos.col = bd.textcol;
-	    did_change = swapchars(oap->op_type, &pos, bd.textlen);
+	    one_change = swapchars(oap->op_type, &pos, bd.textlen);
+	    did_change |= one_change;
 
 # ifdef FEAT_NETBEANS_INTG
-	    if (usingNetbeans && did_change)
+	    if (usingNetbeans && one_change)
 	    {
 		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 
