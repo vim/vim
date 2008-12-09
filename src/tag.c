@@ -2725,7 +2725,24 @@ parse_tag_line(lbuf,
 	 */
 	p_7f = vim_strchr(lbuf, 0x7f);
 	if (p_7f == NULL)
+	{
+etag_fail:
+	    if (vim_strchr(lbuf, '\n') == NULL)
+	    {
+		/* Truncated line.  Ignore it. */
+		if (p_verbose >= 5)
+		{
+		    verbose_enter();
+		    MSG(_("Ignoring long line in tags file"));
+		    verbose_leave();
+		}
+		tagp->command = lbuf;
+		tagp->tagname = lbuf;
+		tagp->tagname_end = lbuf;
+		return OK;
+	    }
 	    return FAIL;
+	}
 
 	/* Find ^A.  If not found the line number is after the 0x7f */
 	p = vim_strchr(p_7f, Ctrl_A);
@@ -2735,7 +2752,7 @@ parse_tag_line(lbuf,
 	    ++p;
 
 	if (!VIM_ISDIGIT(*p))	    /* check for start of line number */
-	    return FAIL;
+	    goto etag_fail;
 	tagp->command = p;
 
 
@@ -2749,7 +2766,7 @@ parse_tag_line(lbuf,
 	    /* find end of tagname */
 	    for (p = p_7f - 1; !vim_iswordc(*p); --p)
 		if (p == lbuf)
-		    return FAIL;
+		    goto etag_fail;
 	    tagp->tagname_end = p + 1;
 	    while (p >= lbuf && vim_iswordc(*p))
 		--p;
