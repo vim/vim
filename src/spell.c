@@ -1765,7 +1765,7 @@ match_checkcompoundpattern(ptr, wlen, gap)
 	    /* Second part matches at start of following compound word, now
 	     * check if first part matches at end of previous word. */
 	    p = ((char_u **)gap->ga_data)[i];
-	    len = STRLEN(p);
+	    len = (int)STRLEN(p);
 	    if (len <= wlen && STRNCMP(ptr + wlen - len, p, len) == 0)
 		return TRUE;
 	}
