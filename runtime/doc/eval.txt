@@ -5841,7 +5841,8 @@ mouse_netterm		Compiled with support for netterm mouse.
 mouse_pterm		Compiled with support for qnx pterm mouse.
 mouse_sysmouse		Compiled with support for sysmouse (*BSD console mouse)
 mouse_xterm		Compiled with support for xterm mouse.
-multi_byte		Compiled with support for editing Korean et al.
+multi_byte		Compiled with support for 'encoding'
+multi_byte_encoding	'encoding' is set to a multi-byte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.

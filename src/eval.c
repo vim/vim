@@ -11842,6 +11842,10 @@ f_has(argvars, rettv)
 	    n = has_patch(atoi((char *)name + 5));
 	else if (STRICMP(name, "vim_starting") == 0)
 	    n = (starting != 0);
+#ifdef FEAT_MBYTE
+	else if (STRICMP(name, "multi_byte_encoding") == 0)
+	    n = has_mbyte;
+#endif
 #if defined(FEAT_BEVAL) && defined(FEAT_GUI_W32)
 	else if (STRICMP(name, "balloon_multiline") == 0)
 	    n = multiline_balloon_available();
