@@ -32,6 +32,9 @@
 
 #define DICT_MAXNEST 100	/* maximum nesting of lists and dicts */
 
+#define DO_NOT_FREE_CNT 99999	/* refcount for dict or list that should not
+				   be freed. */
+
 /*
  * In a hashtab item "hi_key" points to "di_key" in a dictitem.
  * This avoids adding a pointer to the hashtab item.
@@ -789,6 +792,8 @@ static void func_free __ARGS((ufunc_T *fp));
 static void func_unref __ARGS((char_u *name));
 static void func_ref __ARGS((char_u *name));
 static void call_user_func __ARGS((ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, linenr_T firstline, linenr_T lastline, dict_T *selfdict));
+static int can_free_funccal __ARGS((funccall_T *fc, int copyID)) ;
+static void free_funccal __ARGS((funccall_T *fc, int free_val));
 static void add_nr_var __ARGS((dict_T *dp, dictitem_T *v, char *name, varnumber_T nr));
 static win_T *find_win_by_nr __ARGS((typval_T *vp, tabpage_T *tp));
 static void getwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
@@ -922,6 +927,10 @@ func_level(cookie)
 
 /* pointer to funccal for currently active function */
 funccall_T *current_funccal = NULL;
+
+/* pointer to list of previously used funccal, still around because some
+ * item in it is still being used. */
+funccall_T *previous_funccal = NULL;
 
 /*
  * Return TRUE when a function was ended by a ":return" command.
@@ -6490,7 +6499,7 @@ garbage_collect()
     buf_T	*buf;
     win_T	*wp;
     int		i;
-    funccall_T	*fc;
+    funccall_T	*fc, **pfc;
     int		did_free = FALSE;
 #ifdef FEAT_WINDOWS
     tabpage_T	*tp;
@@ -6573,6 +6582,20 @@ garbage_collect()
 	}
 	else
 	    ll = ll->lv_used_next;
+
+    /* check if any funccal can be freed now */
+    for (pfc = &previous_funccal; *pfc != NULL; )
+    {
+	if (can_free_funccal(*pfc, copyID))
+	{
+	    fc = *pfc;
+	    *pfc = fc->caller;
+	    free_funccal(fc, TRUE);
+	    did_free = TRUE;
+	}
+	else
+	    pfc = &(*pfc)->caller;
+    }
 
     return did_free;
 }
@@ -18962,7 +18985,7 @@ init_var_dict(dict, dict_var)
     dictitem_T	*dict_var;
 {
     hash_init(&dict->dv_hashtab);
-    dict->dv_refcount = 99999;
+    dict->dv_refcount = DO_NOT_FREE_CNT;
     dict_var->di_tv.vval.v_dict = dict;
     dict_var->di_tv.v_type = VAR_DICT;
     dict_var->di_tv.v_lock = VAR_FIXED;
@@ -19299,6 +19322,8 @@ tv_check_lock(lock, name)
  * Copy the values from typval_T "from" to typval_T "to".
  * When needed allocates string or increases reference count.
  * Does not make a copy of a list or dict but copies the reference!
+ * It is OK for "from" and "to" to point to the same item.  This is used to
+ * make a copy later.
  */
     static void
 copy_tv(from, to)
@@ -21111,7 +21136,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     char_u	*save_sourcing_name;
     linenr_T	save_sourcing_lnum;
     scid_T	save_current_SID;
-    funccall_T	fc;
+    funccall_T	*fc;
     int		save_did_emsg;
     static int	depth = 0;
     dictitem_T	*v;
@@ -21137,36 +21162,37 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
     line_breakcheck();		/* check for CTRL-C hit */
 
-    fc.caller = current_funccal;
-    current_funccal = &fc;
-    fc.func = fp;
-    fc.rettv = rettv;
+    fc = (funccall_T *)alloc(sizeof(funccall_T));
+    fc->caller = current_funccal;
+    current_funccal = fc;
+    fc->func = fp;
+    fc->rettv = rettv;
     rettv->vval.v_number = 0;
-    fc.linenr = 0;
-    fc.returned = FALSE;
-    fc.level = ex_nesting_level;
+    fc->linenr = 0;
+    fc->returned = FALSE;
+    fc->level = ex_nesting_level;
     /* Check if this function has a breakpoint. */
-    fc.breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name, (linenr_T)0);
-    fc.dbg_tick = debug_tick;
+    fc->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name, (linenr_T)0);
+    fc->dbg_tick = debug_tick;
 
     /*
-     * Note about using fc.fixvar[]: This is an array of FIXVAR_CNT variables
+     * Note about using fc->fixvar[]: This is an array of FIXVAR_CNT variables
      * with names up to VAR_SHORT_LEN long.  This avoids having to alloc/free
      * each argument variable and saves a lot of time.
      */
     /*
      * Init l: variables.
      */
-    init_var_dict(&fc.l_vars, &fc.l_vars_var);
+    init_var_dict(&fc->l_vars, &fc->l_vars_var);
     if (selfdict != NULL)
     {
 	/* Set l:self to "selfdict".  Use "name" to avoid a warning from
 	 * some compiler that checks the destination size. */
-	v = &fc.fixvar[fixvar_idx++].var;
+	v = &fc->fixvar[fixvar_idx++].var;
 	name = v->di_key;
 	STRCPY(name, "self");
 	v->di_flags = DI_FLAGS_RO + DI_FLAGS_FIX;
-	hash_add(&fc.l_vars.dv_hashtab, DI2HIKEY(v));
+	hash_add(&fc->l_vars.dv_hashtab, DI2HIKEY(v));
 	v->di_tv.v_type = VAR_DICT;
 	v->di_tv.v_lock = 0;
 	v->di_tv.vval.v_dict = selfdict;
@@ -21178,31 +21204,31 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
      * Set a:0 to "argcount".
      * Set a:000 to a list with room for the "..." arguments.
      */
-    init_var_dict(&fc.l_avars, &fc.l_avars_var);
-    add_nr_var(&fc.l_avars, &fc.fixvar[fixvar_idx++].var, "0",
+    init_var_dict(&fc->l_avars, &fc->l_avars_var);
+    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount - fp->uf_args.ga_len));
     /* Use "name" to avoid a warning from some compiler that checks the
      * destination size. */
-    v = &fc.fixvar[fixvar_idx++].var;
+    v = &fc->fixvar[fixvar_idx++].var;
     name = v->di_key;
     STRCPY(name, "000");
     v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-    hash_add(&fc.l_avars.dv_hashtab, DI2HIKEY(v));
+    hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
     v->di_tv.v_type = VAR_LIST;
     v->di_tv.v_lock = VAR_FIXED;
-    v->di_tv.vval.v_list = &fc.l_varlist;
-    vim_memset(&fc.l_varlist, 0, sizeof(list_T));
-    fc.l_varlist.lv_refcount = 99999;
-    fc.l_varlist.lv_lock = VAR_FIXED;
+    v->di_tv.vval.v_list = &fc->l_varlist;
+    vim_memset(&fc->l_varlist, 0, sizeof(list_T));
+    fc->l_varlist.lv_refcount = DO_NOT_FREE_CNT;
+    fc->l_varlist.lv_lock = VAR_FIXED;
 
     /*
      * Set a:firstline to "firstline" and a:lastline to "lastline".
      * Set a:name to named arguments.
      * Set a:N to the "..." arguments.
      */
-    add_nr_var(&fc.l_avars, &fc.fixvar[fixvar_idx++].var, "firstline",
+    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
 						      (varnumber_T)firstline);
-    add_nr_var(&fc.l_avars, &fc.fixvar[fixvar_idx++].var, "lastline",
+    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
 						       (varnumber_T)lastline);
     for (i = 0; i < argcount; ++i)
     {
@@ -21218,7 +21244,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	}
 	if (fixvar_idx < FIXVAR_CNT && STRLEN(name) <= VAR_SHORT_LEN)
 	{
-	    v = &fc.fixvar[fixvar_idx++].var;
+	    v = &fc->fixvar[fixvar_idx++].var;
 	    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
 	}
 	else
@@ -21230,7 +21256,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    v->di_flags = DI_FLAGS_RO;
 	}
 	STRCPY(v->di_key, name);
-	hash_add(&fc.l_avars.dv_hashtab, DI2HIKEY(v));
+	hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
 
 	/* Note: the values are copied directly to avoid alloc/free.
 	 * "argvars" must have VAR_FIXED for v_lock. */
@@ -21239,9 +21265,9 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
 	if (ai >= 0 && ai < MAX_FUNC_ARGS)
 	{
-	    list_append(&fc.l_varlist, &fc.l_listitems[ai]);
-	    fc.l_listitems[ai].li_tv = argvars[i];
-	    fc.l_listitems[ai].li_tv.v_lock = VAR_FIXED;
+	    list_append(&fc->l_varlist, &fc->l_listitems[ai]);
+	    fc->l_listitems[ai].li_tv = argvars[i];
+	    fc->l_listitems[ai].li_tv.v_lock = VAR_FIXED;
 	}
     }
 
@@ -21306,7 +21332,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
 	    func_do_profile(fp);
 	if (fp->uf_profiling
-		       || (fc.caller != NULL && fc.caller->func->uf_profiling))
+		    || (fc->caller != NULL && fc->caller->func->uf_profiling))
 	{
 	    ++fp->uf_tm_count;
 	    profile_start(&call_start);
@@ -21322,7 +21348,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     did_emsg = FALSE;
 
     /* call do_cmdline() to execute the lines */
-    do_cmdline(NULL, get_func_line, (void *)&fc,
+    do_cmdline(NULL, get_func_line, (void *)fc,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
     --RedrawingDisabled;
@@ -21337,16 +21363,16 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc.caller != NULL && fc.caller->func->uf_profiling)))
+		    || (fc->caller != NULL && fc->caller->func->uf_profiling)))
     {
 	profile_end(&call_start);
 	profile_sub_wait(&wait_start, &call_start);
 	profile_add(&fp->uf_tm_total, &call_start);
 	profile_self(&fp->uf_tm_self, &call_start, &fp->uf_tm_children);
-	if (fc.caller != NULL && fc.caller->func->uf_profiling)
+	if (fc->caller != NULL && fc->caller->func->uf_profiling)
 	{
-	    profile_add(&fc.caller->func->uf_tm_children, &call_start);
-	    profile_add(&fc.caller->func->uf_tml_children, &call_start);
+	    profile_add(&fc->caller->func->uf_tm_children, &call_start);
+	    profile_add(&fc->caller->func->uf_tml_children, &call_start);
 	}
     }
 #endif
@@ -21359,9 +21385,9 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
 	if (aborting())
 	    smsg((char_u *)_("%s aborted"), sourcing_name);
-	else if (fc.rettv->v_type == VAR_NUMBER)
+	else if (fc->rettv->v_type == VAR_NUMBER)
 	    smsg((char_u *)_("%s returning #%ld"), sourcing_name,
-					       (long)fc.rettv->vval.v_number);
+					       (long)fc->rettv->vval.v_number);
 	else
 	{
 	    char_u	buf[MSG_BUF_LEN];
@@ -21372,7 +21398,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 	    /* The value may be very long.  Skip the middle part, so that we
 	     * have some idea how it starts and ends. smsg() would always
 	     * truncate it at the end. */
-	    s = tv2string(fc.rettv, &tofree, numbuf2, 0);
+	    s = tv2string(fc->rettv, &tofree, numbuf2, 0);
 	    if (s != NULL)
 	    {
 		trunc_string(s, buf, MSG_BUF_CLEN);
@@ -21408,14 +21434,84 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     }
 
     did_emsg |= save_did_emsg;
-    current_funccal = fc.caller;
-
-    /* The a: variables typevals were not allocated, only free the allocated
-     * variables. */
-    vars_clear_ext(&fc.l_avars.dv_hashtab, FALSE);
-
-    vars_clear(&fc.l_vars.dv_hashtab);		/* free all l: variables */
+    current_funccal = fc->caller;
     --depth;
+
+    /* if the a:000 list and the a: dict are not referenced we can free the
+     * funccall_T and what's in it. */
+    if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
+	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
+	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)
+    {
+	free_funccal(fc, FALSE);
+    }
+    else
+    {
+	hashitem_T	*hi;
+	listitem_T	*li;
+	int		todo;
+
+	/* "fc" is still in use.  This can happen when returning "a:000" or
+	 * assigning "l:" to a global variable.
+	 * Link "fc" in the list for garbage collection later. */
+	fc->caller = previous_funccal;
+	previous_funccal = fc;
+
+	/* Make a copy of the a: variables, since we didn't do that above. */
+	todo = (int)fc->l_avars.dv_hashtab.ht_used;
+	for (hi = fc->l_avars.dv_hashtab.ht_array; todo > 0; ++hi)
+	{
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		--todo;
+		v = HI2DI(hi);
+		copy_tv(&v->di_tv, &v->di_tv);
+	    }
+	}
+
+	/* Make a copy of the a:000 items, since we didn't do that above. */
+	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+	    copy_tv(&li->li_tv, &li->li_tv);
+    }
+}
+
+/*
+ * Return TRUE if items in "fc" do not have "copyID".  That means they are not
+ * referenced from anywyere.
+ */
+    static int
+can_free_funccal(fc, copyID)
+    funccall_T	*fc;
+    int		copyID;
+{
+    return (fc->l_varlist.lv_copyID != copyID
+	    && fc->l_vars.dv_copyID != copyID
+	    && fc->l_avars.dv_copyID != copyID);
+}
+
+/*
+ * Free "fc" and what it contains.
+ */
+   static void
+free_funccal(fc, free_val)
+    funccall_T	*fc;
+    int		free_val;  /* a: vars were allocated */
+{
+    listitem_T	*li;
+
+    /* The a: variables typevals may not have been allocated, only free the
+     * allocated variables. */
+    vars_clear_ext(&fc->l_avars.dv_hashtab, free_val);
+
+    /* free all l: variables */
+    vars_clear(&fc->l_vars.dv_hashtab);
+
+    /* Free the a:000 variables if they were allocated. */
+    if (free_val)
+	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+	    clear_tv(&li->li_tv);
+
+    vim_free(fc);
 }
 
 /*
