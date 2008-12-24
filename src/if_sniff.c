@@ -2,8 +2,6 @@
  *
  * if_sniff.c Interface between Vim and SNiFF+
  *
- * $Id$
- *
  * See README.txt for an overview of the Vim source code.
  */
 
@@ -716,8 +714,10 @@ ConnectToSniffEmacs()
 #else		/* UNIX Version of the Code */
     int ToSniffEmacs[2], FromSniffEmacs[2];
 
-    pipe(ToSniffEmacs);
-    pipe(FromSniffEmacs);
+    if (pipe(ToSniffEmacs) != 0)
+	return 1;
+    if (pipe(FromSniffEmacs) != 0)
+	return 1;
 
     /* fork */
     if ((sniffemacs_pid=fork()) == 0)
