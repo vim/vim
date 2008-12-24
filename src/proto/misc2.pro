@@ -59,7 +59,7 @@ int simplify_key __ARGS((int key, int *modifiers));
 int handle_x_keys __ARGS((int key));
 char_u *get_special_key_name __ARGS((int c, int modifiers));
 int trans_special __ARGS((char_u **srcp, char_u *dst, int keycode));
-int find_special_key __ARGS((char_u **srcp, int *modp, int keycode));
+int find_special_key __ARGS((char_u **srcp, int *modp, int keycode, int keep_x_key));
 int extract_modifiers __ARGS((int key, int *modp));
 int find_special_key_in_table __ARGS((int c));
 int get_special_key_code __ARGS((char_u *name));
