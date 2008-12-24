@@ -769,11 +769,14 @@ messageFromNetbeans(gpointer clientData, gint unused1,
 	return; /* don't try to parse it */
     }
 
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)
+    /* Let the main loop handle messages. */
+# ifdef FEAT_GUI_GTK
     if (gtk_main_level() > 0)
 	gtk_main_quit();
+# endif
 #else
-    /* Parse the messages, but avoid recursion. */
+    /* Parse the messages now, but avoid recursion. */
     if (level == 1)
 	netbeans_parse_messages();
 

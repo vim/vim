@@ -1937,6 +1937,11 @@ gui_mch_wait_for_chars(int wtime)
 	    s_need_activate = FALSE;
 	}
 
+#ifdef FEAT_NETBEANS_INTG
+	/* Process the queued netbeans messages. */
+	netbeans_parse_messages();
+#endif
+
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use GetMessage() to hang until an
