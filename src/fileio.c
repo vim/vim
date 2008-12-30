@@ -6119,6 +6119,47 @@ vim_rename(from, to)
     if (mch_stat((char *)from, &st) < 0)
 	return -1;
 
+#ifdef UNIX
+    {
+	struct stat	st_to;
+	char		tempname[MAXPATHL + 1];
+
+	/* It's possible for the source and destination to be the same file.
+	 * This happens when "from" and "to" differ in case and are on a FAT32
+	 * filesystem.  In that case go through a temp file name. */
+	if (mch_stat((char *)to, &st_to) >= 0
+		&& st.st_dev == st_to.st_dev
+		&& st.st_ino == st_to.st_ino)
+	{
+	    /* Find a name that doesn't exist and is in the same directory.
+	     * Move "from" to "tempname" and then to "to". */
+	    if (STRLEN(from) >= MAXPATHL - 5)
+		return -1;
+	    STRCPY(tempname, from);
+	    for (n = 123; n < 99999; ++n)
+	    {
+		sprintf(gettail(tempname), "%d", n);
+		if (mch_stat(tempname, &st_to) < 0)
+		{
+		    if (mch_rename((char *)from, tempname) == 0)
+		    {
+			if (mch_rename(tempname, (char *)to) == 0)
+			    return 0;
+			/* Strange, the second step failed.  Try moving the
+			 * file back and return failure. */
+			mch_rename(tempname, (char *)from);
+			return -1;
+		    }
+		    /* If it fails for one temp name it will most likely fail
+		     * for any temp name, give up. */
+		    return -1;
+		}
+	    }
+	    return -1;
+	}
+    }
+#endif
+
     /*
      * Delete the "to" file, this is required on some systems to make the
      * mch_rename() work, on other systems it makes sure that we don't have
