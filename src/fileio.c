@@ -6106,12 +6106,24 @@ vim_rename(from, to)
 #ifdef HAVE_ACL
     vim_acl_T	acl;		/* ACL from original file */
 #endif
+#if defined(UNIX) || defined(CASE_INSENSITIVE_FILENAME)
+    int		use_tmp_file = FALSE;
+#endif
 
     /*
-     * When the names are identical, there is nothing to do.
+     * When the names are identical, there is nothing to do.  When they refer
+     * to the same file (ignoring case and slash/backslash differences) but
+     * the file name differs we need to go through a temp file.
      */
     if (fnamecmp(from, to) == 0)
-	return 0;
+    {
+#ifdef CASE_INSENSITIVE_FILENAME
+	if (STRCMP(gettail(from), gettail(to)) != 0)
+	    use_tmp_file = TRUE;
+	else
+#endif
+	    return 0;
+    }
 
     /*
      * Fail if the "from" file doesn't exist.  Avoids that "to" is deleted.
@@ -6122,7 +6134,6 @@ vim_rename(from, to)
 #ifdef UNIX
     {
 	struct stat	st_to;
-	char		tempname[MAXPATHL + 1];
 
 	/* It's possible for the source and destination to be the same file.
 	 * This happens when "from" and "to" differ in case and are on a FAT32
@@ -6130,33 +6141,42 @@ vim_rename(from, to)
 	if (mch_stat((char *)to, &st_to) >= 0
 		&& st.st_dev == st_to.st_dev
 		&& st.st_ino == st_to.st_ino)
+	    use_tmp_file = TRUE;
+    }
+#endif
+
+#if defined(UNIX) || defined(CASE_INSENSITIVE_FILENAME)
+    if (use_tmp_file)
+    {
+	char	tempname[MAXPATHL + 1];
+
+	/*
+	 * Find a name that doesn't exist and is in the same directory.
+	 * Rename "from" to "tempname" and then rename "tempname" to "to".
+	 */
+	if (STRLEN(from) >= MAXPATHL - 5)
+	    return -1;
+	STRCPY(tempname, from);
+	for (n = 123; n < 99999; ++n)
 	{
-	    /* Find a name that doesn't exist and is in the same directory.
-	     * Move "from" to "tempname" and then to "to". */
-	    if (STRLEN(from) >= MAXPATHL - 5)
-		return -1;
-	    STRCPY(tempname, from);
-	    for (n = 123; n < 99999; ++n)
+	    sprintf((char *)gettail((char_u *)tempname), "%d", n);
+	    if (mch_stat(tempname, &st) < 0)
 	    {
-		sprintf(gettail(tempname), "%d", n);
-		if (mch_stat(tempname, &st_to) < 0)
+		if (mch_rename((char *)from, tempname) == 0)
 		{
-		    if (mch_rename((char *)from, tempname) == 0)
-		    {
-			if (mch_rename(tempname, (char *)to) == 0)
-			    return 0;
-			/* Strange, the second step failed.  Try moving the
-			 * file back and return failure. */
-			mch_rename(tempname, (char *)from);
-			return -1;
-		    }
-		    /* If it fails for one temp name it will most likely fail
-		     * for any temp name, give up. */
+		    if (mch_rename(tempname, (char *)to) == 0)
+			return 0;
+		    /* Strange, the second step failed.  Try moving the
+		     * file back and return failure. */
+		    mch_rename(tempname, (char *)from);
 		    return -1;
 		}
+		/* If it fails for one temp name it will most likely fail
+		 * for any temp name, give up. */
+		return -1;
 	    }
-	    return -1;
 	}
+	return -1;
     }
 #endif
 
