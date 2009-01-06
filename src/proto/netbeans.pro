@@ -11,7 +11,7 @@ void netbeans_send_disconnect __ARGS((void));
 void netbeans_frame_moved __ARGS((int new_x, int new_y));
 void netbeans_file_activated __ARGS((buf_T *bufp));
 void netbeans_file_opened __ARGS((buf_T *bufp));
-void netbeans_file_closed __ARGS((buf_T *bufp));
+void netbeans_file_killed __ARGS((buf_T *bufp));
 void netbeans_inserted __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, char_u *txt, int newlen));
 void netbeans_removed __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, long len));
 void netbeans_unmodified __ARGS((buf_T *bufp));

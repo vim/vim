@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.2.  Last change: 2008 Jun 28
+*netbeans.txt*  For Vim version 7.2.  Last change: 2009 Jan 06
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -722,8 +722,10 @@ keyAtPos keyName lnum/col
 		of the cursor.
 		New in version 2.1.
 
-killed		A file was closed by the user.  Only for files that have been
-		assigned a number by the IDE.
+killed		A file was deleted or wiped out by the user and the buffer
+		annotations have been removed.  The bufID number for this
+		buffer has become invalid.  Only for files that have been
+		assigned a bufID number by the IDE.
 
 newDotAndMark off off
 		Reports the position of the cursor being at "off" bytes into

@@ -2921,44 +2921,26 @@ netbeans_file_opened(buf_T *bufp)
 }
 
 /*
- * Tell netbeans a file was closed.
+ * Tell netbeans that a file was deleted or wiped out.
  */
     void
-netbeans_file_closed(buf_T *bufp)
+netbeans_file_killed(buf_T *bufp)
 {
     int		bufno = nb_getbufno(bufp);
     nbbuf_T	*nbbuf = nb_get_buf(bufno);
     char	buffer[2*MAXPATHL];
 
-    if (!haveConnection || bufno < 0)
+    if (!haveConnection || bufno == -1)
 	return;
 
-    if (!netbeansCloseFile)
-    {
-	nbdebug(("Ignoring file_closed for %s. File was closed from IDE\n",
-		    bufp->b_ffname));
-	return;
-    }
-
-    nbdebug(("netbeans_file_closed:\n"));
-    nbdebug(("    Closing bufno: %d", bufno));
-    if (curbuf != NULL && curbuf != bufp)
-    {
-	nbdebug(("    Curbuf bufno:  %d\n", nb_getbufno(curbuf)));
-    }
-    else if (curbuf == bufp)
-    {
-	nbdebug(("    curbuf == bufp\n"));
-    }
-
-    if (bufno <= 0)
-	return;
+    nbdebug(("netbeans_file_killed:\n"));
+    nbdebug(("    Killing bufno: %d", bufno));
 
     sprintf(buffer, "%d:killed=%d\n", bufno, r_cmdno);
 
     nbdebug(("EVT: %s", buffer));
 
-    nb_send(buffer, "netbeans_file_closed");
+    nb_send(buffer, "netbeans_file_killed");
 
     if (nbbuf != NULL)
 	nbbuf->bufp = NULL;
