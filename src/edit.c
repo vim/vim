@@ -147,6 +147,7 @@ static void ins_compl_clear __ARGS((void));
 static int  ins_compl_bs __ARGS((void));
 static void ins_compl_new_leader __ARGS((void));
 static void ins_compl_addleader __ARGS((int c));
+static int ins_compl_len __ARGS((void));
 static void ins_compl_restart __ARGS((void));
 static void ins_compl_set_original_text __ARGS((char_u *str));
 static void ins_compl_addfrommatch __ARGS((void));
@@ -197,7 +198,8 @@ static void replace_pop_ins __ARGS((void));
 static void mb_replace_pop_ins __ARGS((int cc));
 #endif
 static void replace_flush __ARGS((void));
-static void replace_do_bs __ARGS((void));
+static void replace_do_bs __ARGS((int limit_col));
+static int del_char_after_col __ARGS((int limit_col));
 #ifdef FEAT_CINDENT
 static int cindent_on __ARGS((void));
 #endif
@@ -1933,6 +1935,8 @@ truncate_spaces(line)
 /*
  * Backspace the cursor until the given column.  Handles REPLACE and VREPLACE
  * modes correctly.  May also be used when not in insert mode at all.
+ * Will attempt not to go before "col" even when there is a composing
+ * character.
  */
     void
 backspace_until_column(col)
@@ -1942,12 +1946,48 @@ backspace_until_column(col)
     {
 	curwin->w_cursor.col--;
 	if (State & REPLACE_FLAG)
-	    replace_do_bs();
-	else
-	    (void)del_char(FALSE);
+	    replace_do_bs(col);
+	else if (!del_char_after_col(col))
+	    break;
     }
 }
 #endif
+
+/*
+ * Like del_char(), but make sure not to go before column "limit_col".
+ * Only matters when there are composing characters.
+ * Return TRUE when something was deleted.
+ */
+   static int
+del_char_after_col(limit_col)
+    int limit_col;
+{
+#ifdef FEAT_MBYTE
+    if (enc_utf8 && limit_col >= 0)
+    {
+	int ecol = curwin->w_cursor.col + 1;
+
+	/* Make sure the cursor is at the start of a character, but
+	 * skip forward again when going too far back because of a
+	 * composing character. */
+	mb_adjust_cursor();
+	while (curwin->w_cursor.col < limit_col)
+	{
+	    int l = utf_ptr2len(ml_get_cursor());
+
+	    if (l == 0)  /* end of line */
+		break;
+	    curwin->w_cursor.col += l;
+	}
+	if (*ml_get_cursor() == NUL || curwin->w_cursor.col == ecol)
+	    return FALSE;
+	del_bytes((long)(ecol - curwin->w_cursor.col), FALSE, TRUE);
+    }
+    else
+#endif
+	(void)del_char(FALSE);
+    return TRUE;
+}
 
 #if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
@@ -2418,7 +2458,7 @@ ins_compl_longest_match(match)
 	{
 	    had_match = (curwin->w_cursor.col > compl_col);
 	    ins_compl_delete();
-	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    ins_bytes(compl_leader + ins_compl_len());
 	    ins_redraw(FALSE);
 
 	    /* When the match isn't there (to avoid matching itself) remove it
@@ -2470,7 +2510,7 @@ ins_compl_longest_match(match)
 	    *p = NUL;
 	    had_match = (curwin->w_cursor.col > compl_col);
 	    ins_compl_delete();
-	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    ins_bytes(compl_leader + ins_compl_len());
 	    ins_redraw(FALSE);
 
 	    /* When the match isn't there (to avoid matching itself) remove it
@@ -3209,7 +3249,7 @@ ins_compl_new_leader()
 {
     ins_compl_del_pum();
     ins_compl_delete();
-    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+    ins_bytes(compl_leader + ins_compl_len());
     compl_used_match = FALSE;
 
     if (compl_started)
@@ -3261,6 +3301,20 @@ ins_compl_new_leader()
     /* Don't let Enter select the original text when there is no popup menu. */
     if (compl_match_array == NULL)
 	compl_enter_selects = FALSE;
+}
+
+/*
+ * Return the length of the completion, from the completion start column to
+ * the cursor column.  Making sure it never goes below zero.
+ */
+    static int
+ins_compl_len()
+{
+    int off = curwin->w_cursor.col - compl_col;
+
+    if (off < 0)
+	return 0;
+    return off;
 }
 
 /*
@@ -3621,10 +3675,9 @@ ins_compl_prep(c)
 	    {
 		ins_compl_delete();
 		if (compl_leader != NULL)
-		    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+		    ins_bytes(compl_leader + ins_compl_len());
 		else if (compl_first_match != NULL)
-		    ins_bytes(compl_orig_text
-					  + curwin->w_cursor.col - compl_col);
+		    ins_bytes(compl_orig_text + ins_compl_len());
 		retval = TRUE;
 	    }
 
@@ -4256,7 +4309,7 @@ ins_compl_delete()
     static void
 ins_compl_insert()
 {
-    ins_bytes(compl_shown_match->cp_str + curwin->w_cursor.col - compl_col);
+    ins_bytes(compl_shown_match->cp_str + ins_compl_len());
     if (compl_shown_match->cp_flags & ORIGINAL_TEXT)
 	compl_used_match = FALSE;
     else
@@ -4425,7 +4478,7 @@ ins_compl_next(allow_get_expansion, count, insert_match)
 	if (!compl_get_longest || compl_used_match)
 	    ins_compl_insert();
 	else
-	    ins_bytes(compl_leader + curwin->w_cursor.col - compl_col);
+	    ins_bytes(compl_leader + ins_compl_len());
     }
     else
 	compl_used_match = FALSE;
@@ -7123,9 +7176,12 @@ replace_flush()
  * cc == 0: character was inserted, delete it
  * cc > 0: character was replaced, put cc (first byte of original char) back
  * and check for more characters to be put back
+ * When "limit_col" is >= 0, don't delete before this column.  Matters when
+ * using composing characters, use del_char_after_col() instead of del_char().
  */
     static void
-replace_do_bs()
+replace_do_bs(limit_col)
+    int		limit_col;
 {
     int		cc;
 #ifdef FEAT_VREPLACE
@@ -7153,7 +7209,7 @@ replace_do_bs()
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    del_char(FALSE);
+	    (void)del_char_after_col(limit_col);
 # ifdef FEAT_VREPLACE
 	    if (State & VREPLACE_FLAG)
 		orig_len = (int)STRLEN(ml_get_cursor());
@@ -7203,7 +7259,7 @@ replace_do_bs()
 	changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
     }
     else if (cc == 0)
-	(void)del_char(FALSE);
+	(void)del_char_after_col(limit_col);
 }
 
 #ifdef FEAT_CINDENT
@@ -8239,7 +8295,7 @@ ins_bs_one(vcolp)
 	 * Replace mode */
 	if (curwin->w_cursor.lnum != Insstart.lnum
 		|| curwin->w_cursor.col >= Insstart.col)
-	    replace_do_bs();
+	    replace_do_bs(-1);
     }
     else
 	(void)del_char(FALSE);
@@ -8556,7 +8612,7 @@ ins_bs(c, mode, inserted_space_p)
 		break;
 	    }
 	    if (State & REPLACE_FLAG)
-		replace_do_bs();
+		replace_do_bs(-1);
 	    else
 	    {
 #ifdef FEAT_MBYTE
