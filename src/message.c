@@ -4556,7 +4556,13 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			remove_trailing_zeroes = TRUE;
 		    }
 
-		    if (fmt_spec == 'f' && abs_f > 1.0e307)
+		    if (fmt_spec == 'f' &&
+#ifdef VAX
+			    abs_f > 1.0e38
+#else
+			    abs_f > 1.0e307
+#endif
+			    )
 		    {
 			/* Avoid a buffer overflow */
 			strcpy(tmp, "inf");
