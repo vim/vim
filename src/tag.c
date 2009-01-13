@@ -515,7 +515,7 @@ do_tag(tag, type, count, forceit, verbose)
 	     * If a count is supplied to the ":tag <name>" command, then
 	     * jump to count'th matching tag.
 	     */
-	    if (type == DT_TAG && count > 0)
+	    if (type == DT_TAG && *tag != NUL && count > 0)
 		cur_match = count - 1;
 
 	    if (type == DT_SELECT || type == DT_JUMP
