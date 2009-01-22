@@ -1224,6 +1224,25 @@ utf16_to_enc(short_u *str, int *lenp)
 #endif /* FEAT_MBYTE */
 
 /*
+ * Wait for another process to Close the Clipboard.
+ * Returns TRUE for success.
+ */
+    int
+vim_open_clipboard()
+{
+    int delay = 10;
+
+    while (!OpenClipboard(NULL))
+    {
+        if (delay > 500)
+            return FALSE;  /* waited too long, give up */
+        Sleep(delay);
+        delay *= 2;	/* wait for 10, 20, 40, 80, etc. msec */
+    }
+    return TRUE;
+}
+
+/*
  * Get the current selection and put it in the clipboard register.
  *
  * NOTE: Must use GlobalLock/Unlock here to ensure Win32s compatibility.
@@ -1254,7 +1273,7 @@ clip_mch_request_selection(VimClipboard *cbd)
      * Don't pass GetActiveWindow() as an argument to OpenClipboard() because
      * then we can't paste back into the same window for some reason - webb.
      */
-    if (!OpenClipboard(NULL))
+    if (!vim_open_clipboard())
 	return;
 
     /* Check for vim's own clipboard format first.  This only gets the type of
@@ -1562,7 +1581,7 @@ clip_mch_set_selection(VimClipboard *cbd)
      * because then we can't paste back into the same window for some
      * reason - webb.
      */
-    if (OpenClipboard(NULL))
+    if (vim_open_clipboard())
     {
 	if (EmptyClipboard())
 	{
