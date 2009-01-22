@@ -4920,7 +4920,15 @@ check_termcode(max_offset, buf, buflen)
 	key_name[0] = KEY2TERMCAP0(key);
 	key_name[1] = KEY2TERMCAP1(key);
 	if (key_name[0] == KS_KEY)
-	    string[new_slen++] = key_name[1];	/* from ":set <M-b>=xx" */
+	{
+	    /* from ":set <M-b>=xx" */
+#ifdef FEAT_MBYTE
+	    if (has_mbyte)
+		new_slen += (*mb_char2bytes)(key_name[1], string + new_slen);
+	    else
+#endif
+		string[new_slen++] = key_name[1];
+	}
 	else
 	{
 	    string[new_slen++] = K_SPECIAL;
