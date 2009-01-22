@@ -4696,7 +4696,8 @@ vim_findfile(search_ctx_arg)
 				stackp->ffs_filearray_cur = i + 1;
 				ff_push(search_ctx, stackp);
 
-				simplify_filename(file_path);
+				if (!path_with_url(file_path))
+				    simplify_filename(file_path);
 				if (mch_dirname(ff_expand_buffer, MAXPATHL)
 									== OK)
 				{
