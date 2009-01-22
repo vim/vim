@@ -8,7 +8,7 @@
  */
 
 /*
- * diff.c: code for diff'ing two or three buffers.
+ * diff.c: code for diff'ing two, three or four buffers.
  */
 
 #include "vim.h"
@@ -116,7 +116,7 @@ diff_buf_adjust(win)
  * Add a buffer to make diffs for.
  * Call this when a new buffer is being edited in the current window where
  * 'diff' is set.
- * Marks the current buffer as being part of the diff and requireing updating.
+ * Marks the current buffer as being part of the diff and requiring updating.
  * This must be done before any autocmd, because a command may use info
  * about the screen contents.
  */
@@ -929,7 +929,7 @@ ex_diffpatch(eap)
 	goto theend;
 
 #ifdef UNIX
-    /* Temporaraly chdir to /tmp, to avoid patching files in the current
+    /* Temporarily chdir to /tmp, to avoid patching files in the current
      * directory when the patch file contains more than one patch.  When we
      * have our own temp dir use that instead, it will be cleaned up when we
      * exit (any .rej files created).  Don't change directory if we can't
@@ -2129,6 +2129,8 @@ ex_diffgetput(eap)
 	    EMSG2(_("E102: Can't find buffer \"%s\""), eap->arg);
 	    return;
 	}
+	if (buf == curbuf)
+	    return;		/* nothing to do */
 	idx_other = diff_buf_idx(buf);
 	if (idx_other == DB_COUNT)
 	{
