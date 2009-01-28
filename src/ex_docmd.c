@@ -5482,6 +5482,9 @@ invalid_count:
     return OK;
 }
 
+/*
+ * ":command ..."
+ */
     static void
 ex_command(eap)
     exarg_T   *eap;
@@ -5914,6 +5917,7 @@ do_ucmd(eap)
 
     char_u	*start;
     char_u	*end;
+    char_u	*ksp;
     size_t	len, totlen;
 
     size_t	split_len = 0;
@@ -5930,16 +5934,51 @@ do_ucmd(eap)
 
     /*
      * Replace <> in the command by the arguments.
+     * First round: "buf" is NULL, compute length, allocate "buf".
+     * Second round: copy result into "buf".
      */
     buf = NULL;
     for (;;)
     {
-	p = cmd->uc_rep;
-	q = buf;
+	p = cmd->uc_rep;    /* source */
+	q = buf;	    /* destinateion */
 	totlen = 0;
-	while ((start = vim_strchr(p, '<')) != NULL
-	       && (end = vim_strchr(start + 1, '>')) != NULL)
+
+	for (;;)
 	{
+	    start = vim_strchr(p, '<');
+	    if (start != NULL)
+		end = vim_strchr(start + 1, '>');
+	    if (buf != NULL)
+	    {
+		ksp = vim_strchr(p, K_SPECIAL);
+		if (ksp != NULL && (start == NULL || ksp < start || end == NULL)
+			&& ((ksp[1] == KS_SPECIAL && ksp[2] == KE_FILLER)
+# ifdef FEAT_GUI
+			    || (ksp[1] == KS_EXTRA && ksp[2] == (int)KE_CSI)
+# endif
+			    ))
+		{
+		    /* K_SPECIAL han been put in the buffer as K_SPECIAL
+		     * KS_SPECIAL KE_FILLER, like for mappings, but
+		     * do_cmdline() doesn't handle that, so convert it back.
+		     * Also change K_SPECIAL KS_EXTRA KE_CSI into CSI. */
+		    len = ksp - p;
+		    if (len > 0)
+		    {
+			mch_memmove(q, p, len);
+			q += len;
+		    }
+		    *q++ = ksp[1] == KS_SPECIAL ? K_SPECIAL : CSI;
+		    p = ksp + 3;
+		    continue;
+		}
+	    }
+
+	    /* break if there no <item> is found */
+	    if (start == NULL || end == NULL)
+		break;
+
 	    /* Include the '>' */
 	    ++end;
 
