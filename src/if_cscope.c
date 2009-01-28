@@ -1177,8 +1177,16 @@ cs_help(eap)
     (void)MSG_PUTS(_("cscope commands:\n"));
     while (cmdp->name != NULL)
     {
-	(void)smsg((char_u *)_("%-5s: %-30s (Usage: %s)"),
-				      cmdp->name, _(cmdp->help), cmdp->usage);
+	char *help = _(cmdp->help);
+	int  space_cnt = 30 - vim_strsize((char_u *)help);
+
+	/* Use %*s rather than %30s to ensure proper alignment in utf-8 */
+	if (space_cnt < 0)
+	    space_cnt = 0;
+	(void)smsg((char_u *)_("%-5s: %s%*s (Usage: %s)"),
+				      cmdp->name,
+				      help, space_cnt, " ",
+				      cmdp->usage);
 	if (strcmp(cmdp->name, "find") == 0)
 	    MSG_PUTS(_("\n"
 		       "       c: Find functions calling this function\n"
