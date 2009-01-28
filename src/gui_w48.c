@@ -1663,8 +1663,17 @@ process_message(void)
     if (msg.message == WM_OLE)
     {
 	char_u *str = (char_u *)msg.lParam;
-	add_to_input_buf(str, (int)STRLEN(str));
-	vim_free(str);
+	if (str == NULL || *str == NUL)
+	{
+	    /* Message can't be ours, forward it.  Fixes problem with Ultramon
+	     * 3.0.4 */
+	    DispatchMessage(&msg);
+	}
+	else
+	{
+	    add_to_input_buf(str, (int)STRLEN(str));
+	    vim_free(str);  /* was allocated in CVim::SendKeys() */
+	}
 	return;
     }
 #endif

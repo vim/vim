@@ -353,9 +353,13 @@ CVim::SendKeys(BSTR keys)
     }
 
     /* Pass the string to the main input loop. The memory will be freed when
-     * the message is processed.
+     * the message is processed.  Except for an empty message, we don't need
+     * to post it then.
      */
-    PostMessage(NULL, WM_OLE, 0, (LPARAM)str);
+    if (*str == NUL)
+	vim_free(str);
+    else
+	PostMessage(NULL, WM_OLE, 0, (LPARAM)str);
 
     return S_OK;
 }
