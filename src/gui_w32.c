@@ -1582,6 +1582,17 @@ gui_mch_init(void)
     s_findrep_struct.lpstrReplaceWith[0] = NUL;
     s_findrep_struct.wFindWhatLen = MSWIN_FR_BUFSIZE;
     s_findrep_struct.wReplaceWithLen = MSWIN_FR_BUFSIZE;
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+    s_findrep_struct_w.lStructSize = sizeof(s_findrep_struct_w);
+    s_findrep_struct_w.lpstrFindWhat =
+			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
+    s_findrep_struct_w.lpstrFindWhat[0] = NUL;
+    s_findrep_struct_w.lpstrReplaceWith =
+			      (LPWSTR)alloc(MSWIN_FR_BUFSIZE * sizeof(WCHAR));
+    s_findrep_struct_w.lpstrReplaceWith[0] = NUL;
+    s_findrep_struct_w.wFindWhatLen = MSWIN_FR_BUFSIZE;
+    s_findrep_struct_w.wReplaceWithLen = MSWIN_FR_BUFSIZE;
+# endif
 #endif
 
 theend:
@@ -2938,8 +2949,27 @@ dialog_callback(
 
 	/* If the edit box exists, copy the string. */
 	if (s_textfield != NULL)
-	    GetDlgItemText(hwnd, DLG_NONBUTTON_CONTROL + 2,
+	{
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+	    /* If the OS is Windows NT, and 'encoding' differs from active
+	     * codepage: use wide function and convert text. */
+	    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
+		    && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+            {
+	       WCHAR  *wp = (WCHAR *)alloc(IOSIZE * sizeof(WCHAR));
+	       char_u *p;
+
+	       GetDlgItemTextW(hwnd, DLG_NONBUTTON_CONTROL + 2, wp, IOSIZE);
+	       p = utf16_to_enc(wp, NULL);
+	       vim_strncpy(s_textfield, p, IOSIZE);
+	       vim_free(p);
+	       vim_free(wp);
+	    }
+	    else
+# endif
+		GetDlgItemText(hwnd, DLG_NONBUTTON_CONTROL + 2,
 							 s_textfield, IOSIZE);
+	}
 
 	/*
 	 * Need to check for IDOK because if the user just hits Return to

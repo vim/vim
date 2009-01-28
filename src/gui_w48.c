@@ -153,6 +153,9 @@ static int		destroying = FALSE;	/* call DestroyWindow() ourselves */
 #ifdef MSWIN_FIND_REPLACE
 static UINT		s_findrep_msg = 0;	/* set in gui_w[16/32].c */
 static FINDREPLACE	s_findrep_struct;
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+static FINDREPLACEW	s_findrep_struct_w;
+# endif
 static HWND		s_findrep_hwnd = NULL;
 static int		s_findrep_is_find;	/* TRUE for find dialog, FALSE
 						   for find/replace dialog */
@@ -884,6 +887,45 @@ _OnMenu(
 #endif
 
 #ifdef MSWIN_FIND_REPLACE
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+/*
+ * copy useful data from structure LPFINDREPLACE to structure LPFINDREPLACEW
+ */
+    static void
+findrep_atow(LPFINDREPLACEW lpfrw, LPFINDREPLACE lpfr)
+{
+    WCHAR *wp;
+
+    lpfrw->hwndOwner = lpfr->hwndOwner;
+    lpfrw->Flags = lpfr->Flags;
+
+    wp = enc_to_utf16(lpfr->lpstrFindWhat, NULL);
+    wcsncpy(lpfrw->lpstrFindWhat, wp, lpfrw->wFindWhatLen - 1);
+    vim_free(wp);
+
+    /* the field "lpstrReplaceWith" doesn't need to be copied */
+}
+
+/*
+ * copy useful data from structure LPFINDREPLACEW to structure LPFINDREPLACE
+ */
+    static void
+findrep_wtoa(LPFINDREPLACE lpfr, LPFINDREPLACEW lpfrw)
+{
+    char_u *p;
+
+    lpfr->Flags = lpfrw->Flags;
+
+    p = utf16_to_enc(lpfrw->lpstrFindWhat, NULL);
+    vim_strncpy(lpfr->lpstrFindWhat, p, lpfr->wFindWhatLen - 1);
+    vim_free(p);
+
+    p = utf16_to_enc(lpfrw->lpstrReplaceWith, NULL);
+    vim_strncpy(lpfr->lpstrReplaceWith, p, lpfr->wReplaceWithLen - 1);
+    vim_free(p);
+}
+# endif
+
 /*
  * Handle a Find/Replace window message.
  */
@@ -892,6 +934,16 @@ _OnFindRepl(void)
 {
     int	    flags = 0;
     int	    down;
+
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+    /* If the OS is Windows NT, and 'encoding' differs from active codepage:
+     * convert text from wide string. */
+    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
+			&& enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+    {
+        findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
+    }
+# endif
 
     if (s_findrep_struct.Flags & FR_DIALOGTERM)
 	/* Give main window the focus back. */
@@ -2562,7 +2614,19 @@ gui_mch_find_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    s_findrep_hwnd = FindText((LPFINDREPLACE) &s_findrep_struct);
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+	    /* If the OS is Windows NT, and 'encoding' differs from active
+	     * codepage: convert text and use wide function. */
+	    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
+		    && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	    {
+	        findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
+		s_findrep_hwnd = FindTextW(
+					(LPFINDREPLACEW) &s_findrep_struct_w);
+	    }
+	    else
+# endif
+		s_findrep_hwnd = FindText((LPFINDREPLACE) &s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd,
@@ -2587,7 +2651,18 @@ gui_mch_replace_dialog(exarg_T *eap)
 	if (!IsWindow(s_findrep_hwnd))
 	{
 	    initialise_findrep(eap->arg);
-	    s_findrep_hwnd = ReplaceText((LPFINDREPLACE) &s_findrep_struct);
+# if defined(FEAT_MBYTE) && defined(WIN3264)
+	    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
+		    && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	    {
+		findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
+		s_findrep_hwnd = ReplaceTextW(
+					(LPFINDREPLACEW) &s_findrep_struct_w);
+	    }
+	    else
+# endif
+		s_findrep_hwnd = ReplaceText(
+					   (LPFINDREPLACE) &s_findrep_struct);
 	}
 
 	set_window_title(s_findrep_hwnd,
