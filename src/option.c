@@ -5407,6 +5407,10 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     int		did_chartab = FALSE;
     char_u	**gvarp;
     long_u	free_oldval = (options[opt_idx].flags & P_ALLOCED);
+#ifdef FEAT_GUI
+    /* set when changing an option that only requires a redraw in the GUI */
+    int		redraw_gui_only = FALSE;
+#endif
 
     /* Get the global option to compare with, otherwise we would have to check
      * two values for all local options. */
@@ -6055,6 +6059,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		    errmsg = (char_u *)N_("E596: Invalid font(s)");
 	    }
 	}
+	redraw_gui_only = TRUE;
     }
 # ifdef FEAT_XFONTSET
     else if (varp == &p_guifontset)
@@ -6063,6 +6068,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    errmsg = (char_u *)N_("E597: can't select fontset");
 	else if (gui.in_use && gui_init_font(p_guifontset, TRUE) != OK)
 	    errmsg = (char_u *)N_("E598: Invalid fontset");
+	redraw_gui_only = TRUE;
     }
 # endif
 # ifdef FEAT_MBYTE
@@ -6072,6 +6078,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    errmsg = (char_u *)N_("E533: can't select wide font");
 	else if (gui_get_wide_font() == FAIL)
 	    errmsg = (char_u *)N_("E534: Invalid wide font");
+	redraw_gui_only = TRUE;
     }
 # endif
 #endif
@@ -6133,13 +6140,24 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #ifdef FEAT_GUI
     /* 'guioptions' */
     else if (varp == &p_go)
+    {
 	gui_init_which_components(oldval);
+	redraw_gui_only = TRUE;
+    }
 #endif
 
 #if defined(FEAT_GUI_TABLINE)
     /* 'guitablabel' */
     else if (varp == &p_gtl)
+    {
 	redraw_tabline = TRUE;
+	redraw_gui_only = TRUE;
+    }
+    /* 'guitabtooltip' */
+    else if (varp == &p_gtt)
+    {
+	redraw_gui_only = TRUE;
+    }
 #endif
 
 #if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))
@@ -6717,7 +6735,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 
     if (curwin->w_curswant != MAXCOL)
 	curwin->w_set_curswant = TRUE;  /* in case 'showbreak' changed */
-    check_redraw(options[opt_idx].flags);
+#ifdef FEAT_GUI
+    /* check redraw when it's not a GUI option or the GUI is active. */
+    if (!redraw_gui_only || gui.in_use)
+#endif
+	check_redraw(options[opt_idx].flags);
 
     return errmsg;
 }
