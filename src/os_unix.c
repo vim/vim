@@ -3950,7 +3950,17 @@ mch_call_shell(cmd, options)
 		 * children can be kill()ed.  Don't do this when using pipes,
 		 * because stdin is not a tty, we would lose /dev/tty. */
 		if (p_stmp)
+		{
 		    (void)setsid();
+#  if defined(SIGHUP)
+		    /* When doing "!xterm&" and 'shell' is bash: the shell
+		     * will exit and send SIGHUP to all processes in its
+		     * group, killing the just started process.  Ignore SIGHUP
+		     * to avoid that. (suggested by Simon Schubert)
+		     */
+		    signal(SIGHUP, SIG_IGN);
+#  endif
+		}
 # endif
 # ifdef FEAT_GUI
 		if (pty_slave_fd >= 0)
