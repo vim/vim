@@ -1958,6 +1958,7 @@ backspace_until_column(col)
  * Only matters when there are composing characters.
  * Return TRUE when something was deleted.
  */
+/*ARGSUSED*/
    static int
 del_char_after_col(limit_col)
     int limit_col;
@@ -1971,7 +1972,7 @@ del_char_after_col(limit_col)
 	 * skip forward again when going too far back because of a
 	 * composing character. */
 	mb_adjust_cursor();
-	while (curwin->w_cursor.col < limit_col)
+	while (curwin->w_cursor.col < (colnr_T)limit_col)
 	{
 	    int l = utf_ptr2len(ml_get_cursor());
 
@@ -4240,7 +4241,7 @@ ins_compl_get_exp(ini)
 	}
 
 	/* check if compl_curr_match has changed, (e.g. other type of
-	 * expansion added somenthing) */
+	 * expansion added something) */
 	if (type != 0 && compl_curr_match != old_match)
 	    found_new_match = OK;
 
@@ -4741,7 +4742,7 @@ ins_complete(c)
 		}
 		compl_length = curwin->w_cursor.col - (int)compl_col;
 		/* IObuff is used to add a "word from the next line" would we
-		 * have enough space?  just being paranoic */
+		 * have enough space?  just being paranoid */
 #define	MIN_SPACE 75
 		if (compl_length > (IOSIZE - MIN_SPACE))
 		{
@@ -8206,7 +8207,7 @@ ins_ctrl_o()
 /*
  * If the cursor is on an indent, ^T/^D insert/delete one
  * shiftwidth.	Otherwise ^T/^D behave like a "<<" or ">>".
- * Always round the indent to 'shiftwith', this is compatible
+ * Always round the indent to 'shiftwidth', this is compatible
  * with vi.  But vi only supports ^T and ^D after an
  * autoindent, we support it everywhere.
  */
