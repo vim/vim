@@ -2842,6 +2842,7 @@ do_source(fname, check_other, is_vimrc)
     linenr_T		    save_sourcing_lnum;
     char_u		    *p;
     char_u		    *fname_exp;
+    char_u		    *firstline = NULL;
     int			    retval = FAIL;
 #ifdef FEAT_EVAL
     scid_T		    save_current_SID;
@@ -2992,23 +2993,6 @@ do_source(fname, check_other, is_vimrc)
 
     cookie.level = ex_nesting_level;
 #endif
-#ifdef FEAT_MBYTE
-    cookie.conv.vc_type = CONV_NONE;		/* no conversion */
-
-    /* Try reading the first few bytes to check for a UTF-8 BOM. */
-    {
-	char_u	    buf[3];
-
-	if (fread((char *)buf, sizeof(char_u), (size_t)3, cookie.fp)
-								  == (size_t)3
-		&& buf[0] == 0xef && buf[1] == 0xbb && buf[2] == 0xbf)
-	    /* Found BOM, setup conversion and skip over it. */
-	    convert_setup(&cookie.conv, (char_u *)"utf-8", p_enc);
-	else
-	    /* No BOM found, rewind. */
-	    fseek(cookie.fp, 0L, SEEK_SET);
-    }
-#endif
 
     /*
      * Keep the sourcing name/lnum, for recursive calls.
@@ -3017,6 +3001,25 @@ do_source(fname, check_other, is_vimrc)
     sourcing_name = fname_exp;
     save_sourcing_lnum = sourcing_lnum;
     sourcing_lnum = 0;
+
+#ifdef FEAT_MBYTE
+    cookie.conv.vc_type = CONV_NONE;		/* no conversion */
+
+    /* Read the first line so we can check for a UTF-8 BOM. */
+    firstline = getsourceline(0, (void *)&cookie, 0);
+    if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
+			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
+    {
+	/* Found BOM; setup conversion, skip over BOM and recode the line. */
+	convert_setup(&cookie.conv, (char_u *)"utf-8", p_enc);
+	p = string_convert(&cookie.conv, firstline + 3, NULL);
+	if (p != NULL)
+	{
+	    vim_free(firstline);
+	    firstline = p;
+	}
+    }
+#endif
 
 #ifdef STARTUPTIME
     time_push(&tv_rel, &tv_start);
@@ -3111,9 +3114,8 @@ do_source(fname, check_other, is_vimrc)
     /*
      * Call do_cmdline, which will call getsourceline() to get the lines.
      */
-    do_cmdline(NULL, getsourceline, (void *)&cookie,
+    do_cmdline(firstline, getsourceline, (void *)&cookie,
 				     DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_REPEAT);
-
     retval = OK;
 
 #ifdef FEAT_PROFILE
@@ -3171,6 +3173,7 @@ almosttheend:
 #endif
     fclose(cookie.fp);
     vim_free(cookie.nextline);
+    vim_free(firstline);
 #ifdef FEAT_MBYTE
     convert_setup(&cookie.conv, NULL, NULL);
 #endif
