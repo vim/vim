@@ -3928,7 +3928,7 @@ eval0(arg, rettv, nextcmd, evaluate)
 
 /*
  * Handle top level expression:
- *	expr1 ? expr0 : expr0
+ *	expr2 ? expr1 : expr1
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to the next non-white after the recognized expression.
@@ -19912,7 +19912,7 @@ ex_function(eap)
 						      : eval_isnamec(arg[j])))
 		++j;
 	    if (arg[j] != NUL)
-		emsg_funcname(e_invarg2, arg);
+		emsg_funcname((char *)e_invarg2, arg);
 	}
     }
 
