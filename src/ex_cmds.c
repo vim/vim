@@ -2417,8 +2417,8 @@ print_line(lnum, use_number, list)
 	cursor_on();		/* msg_start() switches it off */
 	out_flush();
 	silent_mode = save_silent;
-	info_message = FALSE;
     }
+    info_message = FALSE;
 }
 
 /*
