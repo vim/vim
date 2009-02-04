@@ -354,6 +354,9 @@ MSVCVER = 9.0
 !if "$(_NMAKE_VER)" == "9.00.21022.08"
 MSVCVER = 9.0
 !endif
+!if "$(_NMAKE_VER)" == "9.00.30729.01"
+MSVCVER = 9.0
+!endif
 !endif
 
 # Abort bulding VIM if version of VC is unrecognised.
