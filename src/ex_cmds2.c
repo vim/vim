@@ -3013,6 +3013,8 @@ do_source(fname, check_other, is_vimrc)
 	/* Found BOM; setup conversion, skip over BOM and recode the line. */
 	convert_setup(&cookie.conv, (char_u *)"utf-8", p_enc);
 	p = string_convert(&cookie.conv, firstline + 3, NULL);
+	if (p == NULL)
+	    p = vim_strsave(firstline + 3);
 	if (p != NULL)
 	{
 	    vim_free(firstline);
