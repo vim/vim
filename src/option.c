@@ -4127,6 +4127,7 @@ do_set(arg, opt_flags)
 		    errmsg = (char_u *)_("E520: Not allowed in a modeline");
 		    goto skip;
 		}
+#ifdef FEAT_DIFF
 		/* In diff mode some options are overruled.  This avoids that
 		 * 'foldmethod' becomes "marker" instead of "diff" and that
 		 * "wrap" gets set. */
@@ -4134,6 +4135,7 @@ do_set(arg, opt_flags)
 			&& (options[opt_idx].indir == PV_FDM
 			    || options[opt_idx].indir == PV_WRAP))
 		    goto skip;
+#endif
 	    }
 
 #ifdef HAVE_SANDBOX
