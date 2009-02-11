@@ -2707,7 +2707,12 @@ do_write(eap)
 	if (eap->cmdidx == CMD_saveas)
 	{
 	    if (retval == OK)
+	    {
 		curbuf->b_p_ro = FALSE;
+#ifdef FEAT_WINDOWS
+		redraw_tabline = TRUE;
+#endif
+	    }
 	    /* Change directories when the 'acd' option is set. */
 	    DO_AUTOCHDIR
 	}
