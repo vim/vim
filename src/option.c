@@ -4119,11 +4119,21 @@ do_set(arg, opt_flags)
 					   && options[opt_idx].var == VAR_WIN)
 		goto skip;
 
-	    /* Disallow changing some options from modelines */
-	    if ((opt_flags & OPT_MODELINE) && (flags & P_SECURE))
+	    /* Disallow changing some options from modelines. */
+	    if (opt_flags & OPT_MODELINE)
 	    {
-		errmsg = (char_u *)_("E520: Not allowed in a modeline");
-		goto skip;
+		if (flags & P_SECURE)
+		{
+		    errmsg = (char_u *)_("E520: Not allowed in a modeline");
+		    goto skip;
+		}
+		/* In diff mode some options are overruled.  This avoids that
+		 * 'foldmethod' becomes "marker" instead of "diff" and that
+		 * "wrap" gets set. */
+		if (curwin->w_p_diff
+			&& (options[opt_idx].indir == PV_FDM
+			    || options[opt_idx].indir == PV_WRAP))
+		    goto skip;
 	    }
 
 #ifdef HAVE_SANDBOX
