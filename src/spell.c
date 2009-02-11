@@ -2376,7 +2376,7 @@ spell_move_to(wp, dir, allwords, curline, attrp)
 
 	    /* If we are back at the starting line and there is no match then
 	     * give up. */
-	    if (lnum == wp->w_cursor.lnum && !found_one)
+	    if (lnum == wp->w_cursor.lnum && (!found_one || wrapped))
 		break;
 
 	    /* Skip the characters at the start of the next line that were
@@ -4956,13 +4956,16 @@ typedef struct compitem_S
  * Structure that is used to store the items in the word tree.  This avoids
  * the need to keep track of each allocated thing, everything is freed all at
  * once after ":mkspell" is done.
+ * Note: "sb_next" must be just before "sb_data" to make sure the alignment of
+ * "sb_data" is correct for systems where pointers must be aligned on
+ * pointer-size boundaries and sizeof(pointer) > sizeof(int) (e.g., Sparc).
  */
 #define  SBLOCKSIZE 16000	/* size of sb_data */
 typedef struct sblock_S sblock_T;
 struct sblock_S
 {
-    sblock_T	*sb_next;	/* next block in list */
     int		sb_used;	/* nr of bytes already in use */
+    sblock_T	*sb_next;	/* next block in list */
     char_u	sb_data[1];	/* data, actually longer */
 };
 
@@ -15011,7 +15014,7 @@ soundalike_score(goodstart, badstart)
 
 	case 0:
 	    /*
-	     * Lenghts are equal, thus changes must result in same length: An
+	     * Lengths are equal, thus changes must result in same length: An
 	     * insert is only possible in combination with a delete.
 	     * 1: check if for identical strings
 	     */
