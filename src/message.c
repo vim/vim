@@ -3309,7 +3309,10 @@ do_dialog(type, title, message, buttons, dfltbutton, textfield)
     {
 	c = gui_mch_dialog(type, title, message, buttons, dfltbutton,
 								   textfield);
-	msg_end_prompt();
+	/* avoid a hit-enter prompt without clearing the cmdline */
+	need_wait_return = FALSE;
+	emsg_on_display = FALSE;
+	cmdline_row = msg_row;
 
 	/* Flush output to avoid that further messages and redrawing is done
 	 * in the wrong order. */
