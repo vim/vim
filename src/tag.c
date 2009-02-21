@@ -2542,6 +2542,15 @@ free_tag_stuff()
 {
     ga_clear_strings(&tag_fnames);
     do_tag(NULL, DT_FREE, 0, 0, 0);
+    tag_freematch();
+
+# if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+    if (ptag_entry.tagname)
+    {
+        vim_free(ptag_entry.tagname);
+        ptag_entry.tagname = NULL;
+    }
+# endif
 }
 #endif
 
