@@ -43,8 +43,6 @@ typedef enum {
 
 
 void		 nbdbg(char *, ...);
-void		 nbprt(char *, ...);
-void		 nbtrace(char *, ...);
 
 void nbdebug_wait __ARGS((u_int wait_flags, char *wait_var, u_int wait_secs));
 void nbdebug_log_init __ARGS((char *log_var, char *level_var));
@@ -65,20 +63,6 @@ extern u_int	 nb_dlevel;		/* nb_debug verbosity level */
 
 void
 nbdbg(
-	char		*fmt,
-	...)
-{
-}
-
-void
-nbprt(
-	char		*fmt,
-	...)
-{
-}
-
-void
-nbtrace(
 	char		*fmt,
 	...)
 {
