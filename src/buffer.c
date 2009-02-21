@@ -5098,7 +5098,8 @@ buf_spname(buf)
 	 */
 	FOR_ALL_TAB_WINDOWS(tp, win)
 	    if (win->w_buffer == buf)
-		break;
+		goto win_found;
+win_found:
 	if (win != NULL && win->w_llist_ref != NULL)
 	    return _("[Location List]");
 	else

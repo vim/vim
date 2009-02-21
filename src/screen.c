@@ -7452,10 +7452,13 @@ screenalloc(clear)
 	{
 	    outofmem = TRUE;
 #ifdef FEAT_WINDOWS
-	    break;
+	    goto give_up;
 #endif
 	}
     }
+#ifdef FEAT_WINDOWS
+give_up:
+#endif
 
 #ifdef FEAT_MBYTE
     for (i = 0; i < p_mco; ++i)

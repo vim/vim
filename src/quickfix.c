@@ -1610,10 +1610,11 @@ qf_jump(qi, dir, errornr, forceit)
 		{
 		    goto_tabpage_win(tp, wp);
 		    usable_win = 1;
-		    break;
+		    goto win_found;
 		}
 	    }
 	}
+win_found:
 
 	/*
 	 * If there is only one window and it is the quickfix window, create a
