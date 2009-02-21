@@ -3422,6 +3422,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			&& (*mb_ptr2cells)(ptr) > 1)
 #endif
 		    || ((int)vcol_prev == fromcol_prev
+			&& vcol_prev < vcol	/* not at margin */
 			&& vcol < tocol))
 		area_attr = attr;		/* start highlighting */
 	    else if (area_attr != 0
