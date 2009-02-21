@@ -2596,6 +2596,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		noinvcur = FALSE;	/* don't invert the cursor */
 #ifdef FEAT_VISUAL
     pos_T	*top, *bot;
+    int		lnum_in_visual_area = FALSE;
 #endif
     pos_T	pos;
     long	v;
@@ -2792,9 +2793,10 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    top = &VIsual;
 	    bot = &curwin->w_cursor;
 	}
+	lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
 	if (VIsual_mode == Ctrl_V)	/* block mode */
 	{
-	    if (lnum >= top->lnum && lnum <= bot->lnum)
+	    if (lnum_in_visual_area)
 	    {
 		fromcol = wp->w_old_cursor_fcol;
 		tocol = wp->w_old_cursor_lcol;
@@ -4557,7 +4559,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	 * highlight the cursor position itself. */
 	if (wp->w_p_cuc && vcol == (long)wp->w_virtcol
 		&& lnum != wp->w_cursor.lnum
-		&& draw_state == WL_LINE)
+		&& draw_state == WL_LINE
+		&& !lnum_in_visual_area)
 	{
 	    vcol_save_attr = char_attr;
 	    char_attr = hl_combine_attr(char_attr, hl_attr(HLF_CUC));
