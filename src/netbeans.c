@@ -1924,7 +1924,7 @@ nb_do_cmd(
 	    vim_free(path);
 	    if (bufp == NULL)
 	    {
-	    	nbdebug(("    File %s not found in setBufferNumber\n", args));
+		nbdebug(("    File %s not found in setBufferNumber\n", args));
 		EMSG2("E642: File %s not found in setBufferNumber", args);
 		return FAIL;
 	    }
@@ -2318,7 +2318,7 @@ nb_do_cmd(
 	    }
 	    if (pos)
 	    {
-		coloncmd(":sign place %d line=%d name=%d buffer=%d",
+		coloncmd(":sign place %d line=%ld name=%d buffer=%d",
 			   serNum, pos->lnum, typeNum, buf->bufp->b_fnum);
 		if (typeNum == curPCtype)
 		    coloncmd(":sign jump %d buffer=%d", serNum,
@@ -2422,7 +2422,7 @@ nb_do_cmd(
 				GUARDED) == 0)
 			    {
 				coloncmd(
-				    ":sign place %d line=%d name=%d buffer=%d",
+				    ":sign place %d line=%ld name=%d buffer=%d",
 				     guardId++, lnum, GUARDED,
 				     buf->bufp->b_fnum);
 			    }
