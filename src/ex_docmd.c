@@ -5916,7 +5916,7 @@ do_ucmd(eap)
     char_u	*q;
 
     char_u	*start;
-    char_u	*end;
+    char_u	*end = NULL;
     char_u	*ksp;
     size_t	len, totlen;
 
