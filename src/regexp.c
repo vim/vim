@@ -4532,7 +4532,7 @@ regmatch(scan)
 		cleanup_subexpr();
 		if (!REG_MULTI)		/* Single-line regexp */
 		{
-		    if (reg_endp[no] == NULL)
+		    if (reg_startp[no] == NULL || reg_endp[no] == NULL)
 		    {
 			/* Backref was not set: Match an empty string. */
 			len = 0;
@@ -4548,7 +4548,7 @@ regmatch(scan)
 		}
 		else				/* Multi-line regexp */
 		{
-		    if (reg_endpos[no].lnum < 0)
+		    if (reg_startpos[no].lnum < 0 || reg_endpos[no].lnum < 0)
 		    {
 			/* Backref was not set: Match an empty string. */
 			len = 0;
@@ -7279,13 +7279,11 @@ reg_submatch(no)
     }
     else
     {
-	if (submatch_match->endp[no] == NULL)
+	s = submatch_match->startp[no];
+	if (s == NULL || submatch_match->endp[no] == NULL)
 	    retval = NULL;
 	else
-	{
-	    s = submatch_match->startp[no];
 	    retval = vim_strnsave(s, (int)(submatch_match->endp[no] - s));
-	}
     }
 
     return retval;
