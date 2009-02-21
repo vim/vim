@@ -44,6 +44,7 @@ void set_imsearch_global __ARGS((void));
 void set_context_in_set_cmd __ARGS((expand_T *xp, char_u *arg, int opt_flags));
 int ExpandSettings __ARGS((expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file));
 int ExpandOldSetting __ARGS((int *num_file, char_u ***file));
+int langmap_adjust_mb __ARGS((int c));
 int has_format_option __ARGS((int x));
 int shortmess __ARGS((int x));
 void vimrc_found __ARGS((char_u *fname, char_u *envname));

@@ -4175,9 +4175,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	be able to execute Normal mode commands.
 	This is the opposite of the 'keymap' option, where characters are
 	mapped in Insert mode.
-	This only works for 8-bit characters.  The value of 'langmap' may be
-	specified with multi-byte characters (e.g., UTF-8), but only the lower
-	8 bits of each character will be used.
 
 	Example (for Greek, in UTF-8):				*greek*  >
 	    :set langmap=ΑA,ΒB,ΨC,ΔD,ΕE,ΦF,ΓG,ΗH,ΙI,ΞJ,ΚK,ΛL,ΜM,ΝN,ΟO,ΠP,QQ,ΡR,ΣS,ΤT,ΘU,ΩV,WW,ΧX,ΥY,ΖZ,αa,βb,ψc,δd,εe,φf,γg,ηh,ιi,ξj,κk,λl,μm,νn,οo,πp,qq,ρr,σs,τt,θu,ωv,ςw,χx,υy,ζz

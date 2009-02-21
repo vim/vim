@@ -7703,9 +7703,7 @@ ins_reg()
      */
     ++no_mapping;
     regname = plain_vgetc();
-#ifdef FEAT_LANGMAP
     LANGMAP_ADJUST(regname, TRUE);
-#endif
     if (regname == Ctrl_R || regname == Ctrl_O || regname == Ctrl_P)
     {
 	/* Get a third key for literal register insertion */
@@ -7714,9 +7712,7 @@ ins_reg()
 	add_to_showcmd_c(literally);
 #endif
 	regname = plain_vgetc();
-#ifdef FEAT_LANGMAP
 	LANGMAP_ADJUST(regname, TRUE);
-#endif
     }
     --no_mapping;
 

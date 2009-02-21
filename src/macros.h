@@ -127,15 +127,31 @@
 #ifdef FEAT_LANGMAP
 /*
  * Adjust chars in a language according to 'langmap' option.
- * NOTE that there is NO overhead if 'langmap' is not set; but even
- * when set we only have to do 2 ifs and an array lookup.
+ * NOTE that there is no noticeable overhead if 'langmap' is not set.
+ * When set the overhead for characters < 256 is small.
  * Don't apply 'langmap' if the character comes from the Stuff buffer.
  * The do-while is just to ignore a ';' after the macro.
  */
-# define LANGMAP_ADJUST(c, condition) do { \
-	if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0 && (c) < 256) \
-	    c = langmap_mapchar[c]; \
+# ifdef FEAT_MBYTE
+#  define LANGMAP_ADJUST(c, condition) \
+    do { \
+        if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0) \
+	{ \
+	    if ((c) < 256) \
+		c = langmap_mapchar[c]; \
+	    else \
+		c = langmap_adjust_mb(c); \
+	} \
     } while (0)
+# else
+#  define LANGMAP_ADJUST(c, condition) \
+    do { \
+        if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0 && (c) < 256) \
+            c = langmap_mapchar[c]; \
+    } while (0)
+# endif
+#else
+# define LANGMAP_ADJUST(c, condition) /* nop */
 #endif
 
 /*
