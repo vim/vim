@@ -4092,6 +4092,9 @@ mch_call_shell(cmd, options)
 		int	    fromshell_fd;
 		garray_T    ga;
 		int	    noread_cnt;
+# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+		struct timeval  start_tv;
+# endif
 
 # ifdef FEAT_GUI
 		if (pty_master_fd >= 0)
@@ -4201,7 +4204,9 @@ mch_call_shell(cmd, options)
 		    ga_init2(&ga, 1, BUFLEN);
 
 		noread_cnt = 0;
-
+# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+		gettimeofday(&start_tv, NULL);
+# endif
 		for (;;)
 		{
 		    /*
@@ -4214,25 +4219,34 @@ mch_call_shell(cmd, options)
 		     * that a typed password is echoed for ssh or gpg command.
 		     * Don't get characters when the child has already
 		     * finished (wait_pid == 0).
-		     * Don't get extra characters when we already have one.
 		     * Don't read characters unless we didn't get output for a
-		     * while, avoids that ":r !ls" eats typeahead.
+		     * while (noread_cnt > 4), avoids that ":r !ls" eats
+		     * typeahead.
 		     */
 		    len = 0;
 		    if (!(options & SHELL_EXPAND)
 			    && ((options &
 					 (SHELL_READ|SHELL_WRITE|SHELL_COOKED))
 				      != (SHELL_READ|SHELL_WRITE|SHELL_COOKED)
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 						    || gui.in_use
-#endif
+# endif
 						    )
 			    && wait_pid == 0
-			    && (ta_len > 0
-				|| (noread_cnt > 4
-				    && (len = ui_inchar(ta_buf,
-						       BUFLEN, 10L, 0)) > 0)))
+			    && (ta_len > 0 || noread_cnt > 4))
 		    {
+		      if (ta_len == 0)
+		      {
+			  /* Get extra characters when we don't have any.
+			   * Reset the counter and timer. */
+			  noread_cnt = 0;
+# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+			  gettimeofday(&start_tv, NULL);
+# endif
+			  len = ui_inchar(ta_buf, BUFLEN, 10L, 0);
+		      }
+		      if (ta_len > 0 || len > 0)
+		      {
 			/*
 			 * For pipes:
 			 * Check for CTRL-C: send interrupt signal to child.
@@ -4334,9 +4348,9 @@ mch_call_shell(cmd, options)
 			    {
 				ta_len -= len;
 				mch_memmove(ta_buf, ta_buf + len, ta_len);
-				noread_cnt = 0;
 			    }
 			}
+		      }
 		    }
 
 		    if (got_int)
@@ -4444,6 +4458,25 @@ mch_call_shell(cmd, options)
 			out_flush();
 			if (got_int)
 			    break;
+
+# if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+			{
+			    struct timeval  now_tv;
+			    long	    msec;
+
+			    /* Avoid that we keep looping here without
+			     * checking for a CTRL-C for a long time.  Don't
+			     * break out too often to avoid losing typeahead. */
+			    gettimeofday(&now_tv, NULL);
+			    msec = (now_tv.tv_sec - start_tv.tv_sec) * 1000L
+				+ (now_tv.tv_usec - start_tv.tv_usec) / 1000L;
+			    if (msec > 2000)
+			    {
+				noread_cnt = 5;
+				break;
+			    }
+			}
+# endif
 		    }
 
 		    /* If we already detected the child has finished break the
