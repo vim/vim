@@ -6362,7 +6362,7 @@ screen_puts_len(text, len, row, col, attr)
 		    && c == 0x8e
 		    && ScreenLines2[off] != ptr[1])
 		|| (enc_utf8
-		    && (ScreenLinesUC[off] != (u8char_T)u8c
+		    && (ScreenLinesUC[off] != (u8char_T)(c >= 0x80 ? u8c : 0)
 			|| screen_comp_differs(off, u8cc)))
 #endif
 		|| ScreenAttrs[off] != attr
