@@ -618,7 +618,7 @@ do_tag(tag, type, count, forceit, verbose)
 		taglen_advance(taglen);
 		MSG_PUTS_ATTR(_("file\n"), hl_attr(HLF_T));
 
-		for (i = 0; i < num_matches; ++i)
+		for (i = 0; i < num_matches && !got_int; ++i)
 		{
 		    parse_match(matches[i], &tagp);
 		    if (!new_tag && (
@@ -655,6 +655,8 @@ do_tag(tag, type, count, forceit, verbose)
 		    }
 		    if (msg_col > 0)
 			msg_putchar('\n');
+		    if (got_int)
+			break;
 		    msg_advance(15);
 
 		    /* print any extra fields */
@@ -689,6 +691,8 @@ do_tag(tag, type, count, forceit, verbose)
 				if (msg_col + ptr2cells(p) >= Columns)
 				{
 				    msg_putchar('\n');
+				    if (got_int)
+					break;
 				    msg_advance(15);
 				}
 				p = msg_outtrans_one(p, attr);
@@ -704,6 +708,8 @@ do_tag(tag, type, count, forceit, verbose)
 			if (msg_col > 15)
 			{
 			    msg_putchar('\n');
+			    if (got_int)
+				break;
 			    msg_advance(15);
 			}
 		    }
@@ -734,6 +740,8 @@ do_tag(tag, type, count, forceit, verbose)
 		    {
 			if (msg_col + (*p == TAB ? 1 : ptr2cells(p)) > Columns)
 			    msg_putchar('\n');
+			if (got_int)
+			    break;
 			msg_advance(15);
 
 			/* skip backslash used for escaping command char */
@@ -760,12 +768,9 @@ do_tag(tag, type, count, forceit, verbose)
 		    if (msg_col)
 			msg_putchar('\n');
 		    ui_breakcheck();
-		    if (got_int)
-		    {
-			got_int = FALSE;	/* only stop the listing */
-			break;
-		    }
 		}
+		if (got_int)
+		    got_int = FALSE;	/* only stop the listing */
 		ask_for_selection = TRUE;
 	    }
 #if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
