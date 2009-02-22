@@ -1057,6 +1057,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define WSP_HELP	16	/* creating the help window */
 #define WSP_BELOW	32	/* put new window below/right */
 #define WSP_ABOVE	64	/* put new window above/left */
+#define WSP_NEWLOC	128	/* don't copy location list */
 
 /*
  * arguments for gui_set_shellsize()

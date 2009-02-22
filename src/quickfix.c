@@ -1419,6 +1419,7 @@ qf_jump(qi, dir, errornr, forceit)
     int			opened_window = FALSE;
     win_T		*win;
     win_T		*altwin;
+    int			flags;
 #endif
     win_T		*oldwin = curwin;
     int			print_message = TRUE;
@@ -1531,7 +1532,6 @@ qf_jump(qi, dir, errornr, forceit)
     if (qf_ptr->qf_type == 1 && (!curwin->w_buffer->b_help || cmdmod.tab != 0))
     {
 	win_T	*wp;
-	int	n;
 
 	if (cmdmod.tab != 0)
 	    wp = NULL;
@@ -1547,13 +1547,16 @@ qf_jump(qi, dir, errornr, forceit)
 	     * Split off help window; put it at far top if no position
 	     * specified, the current window is vertically split and narrow.
 	     */
-	    n = WSP_HELP;
+	    flags = WSP_HELP;
 # ifdef FEAT_VERTSPLIT
 	    if (cmdmod.split == 0 && curwin->w_width != Columns
 						      && curwin->w_width < 80)
-		n |= WSP_TOP;
+		flags |= WSP_TOP;
 # endif
-	    if (win_split(0, n) == FAIL)
+	    if (qi != &ql_info)
+		flags |= WSP_NEWLOC;  /* don't copy the location list */
+
+	    if (win_split(0, flags) == FAIL)
 		goto theend;
 	    opened_window = TRUE;	/* close it when fail */
 
@@ -1563,7 +1566,6 @@ qf_jump(qi, dir, errornr, forceit)
 	    if (qi != &ql_info)	    /* not a quickfix list */
 	    {
 		/* The new window should use the supplied location list */
-		qf_free_all(curwin);
 		curwin->w_llist = qi;
 		qi->qf_refcount++;
 	    }
@@ -1624,7 +1626,10 @@ win_found:
 	{
 	    ll_ref = curwin->w_llist_ref;
 
-	    if (win_split(0, WSP_ABOVE) == FAIL)
+	    flags = WSP_ABOVE;
+	    if (ll_ref != NULL)
+		flags |= WSP_NEWLOC;
+	    if (win_split(0, flags) == FAIL)
 		goto failed;		/* not enough room for window */
 	    opened_window = TRUE;	/* close it when fail */
 	    p_swb = empty_option;	/* don't split again */
@@ -1636,7 +1641,6 @@ win_found:
 	    {
 		/* The new window should use the location list from the
 		 * location list window */
-		qf_free_all(curwin);
 		curwin->w_llist = ll_ref;
 		ll_ref->qf_refcount++;
 	    }
@@ -2311,14 +2315,11 @@ ex_copen(eap)
 	if (eap->cmdidx == CMD_copen || eap->cmdidx == CMD_cwindow)
 	    /* Create the new window at the very bottom. */
 	    win_goto(lastwin);
-	if (win_split(height, WSP_BELOW) == FAIL)
+	if (win_split(height, WSP_BELOW | WSP_NEWLOC) == FAIL)
 	    return;		/* not enough room for window */
 #ifdef FEAT_SCROLLBIND
 	curwin->w_p_scb = FALSE;
 #endif
-
-	/* Remove the location list for the quickfix window */
-	qf_free_all(curwin);
 
 	if (eap->cmdidx == CMD_lopen || eap->cmdidx == CMD_lwindow)
 	{
