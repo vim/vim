@@ -7368,7 +7368,11 @@ screenalloc(clear)
 #endif
     static int	    entered = FALSE;		/* avoid recursiveness */
     static int	    done_outofmem_msg = FALSE;	/* did outofmem message */
+#ifdef FEAT_AUTOCMD
+    int		    retry_count = 0;
 
+retry:
+#endif
     /*
      * Allocation of the screen buffers is done only when the size changes and
      * when Rows and Columns have been set and we have started doing full
@@ -7643,8 +7647,17 @@ give_up:
     --RedrawingDisabled;
 
 #ifdef FEAT_AUTOCMD
-    if (starting == 0)
+    /*
+     * Do not apply autocommands more than 3 times to avoid an endless loop
+     * in case applying autocommands always changes Rows or Columns.
+     */
+    if (starting == 0 && ++retry_count <= 3)
+    {
 	apply_autocmds(EVENT_VIMRESIZED, NULL, NULL, FALSE, curbuf);
+	/* In rare cases, autocommands may have altered Rows or Columns,
+	 * jump back to check if we need to allocate the screen again. */
+	goto retry;
+    }
 #endif
 }
 
