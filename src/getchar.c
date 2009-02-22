@@ -3816,7 +3816,11 @@ showmap(mp, local)
     int len = 1;
 
     if (msg_didout || msg_silent != 0)
+    {
 	msg_putchar('\n');
+	if (got_int)	    /* 'q' typed at MORE prompt */
+	    return;
+    }
     if ((mp->m_mode & (INSERT + CMDLINE)) == INSERT + CMDLINE)
 	msg_putchar('!');			/* :map! */
     else if (mp->m_mode & INSERT)
