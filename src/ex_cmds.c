@@ -6541,6 +6541,7 @@ static sign_T	*first_sign = NULL;
 static int	last_sign_typenr = MAX_TYPENR;	/* is decremented */
 
 static void sign_list_defined __ARGS((sign_T *sp));
+static void sign_undefine __ARGS((sign_T *sp, sign_T *sp_prev));
 
 /*
  * ":sign" command
@@ -6749,24 +6750,8 @@ ex_sign(eap)
 		/* ":sign list {name}" */
 		sign_list_defined(sp);
 	    else
-	    {
 		/* ":sign undefine {name}" */
-		vim_free(sp->sn_name);
-		vim_free(sp->sn_icon);
-#ifdef FEAT_SIGN_ICONS
-		if (sp->sn_image != NULL)
-		{
-		    out_flush();
-		    gui_mch_destroy_sign(sp->sn_image);
-		}
-#endif
-		vim_free(sp->sn_text);
-		if (sp_prev == NULL)
-		    first_sign = sp->sn_next;
-		else
-		    sp_prev->sn_next = sp->sn_next;
-		vim_free(sp);
-	    }
+		sign_undefine(sp, sp_prev);
 	}
     }
     else
@@ -7015,6 +7000,31 @@ sign_list_defined(sp)
 }
 
 /*
+ * Undefine a sign and free its memory.
+ */
+    static void
+sign_undefine(sp, sp_prev)
+    sign_T	*sp;
+    sign_T	*sp_prev;
+{
+    vim_free(sp->sn_name);
+    vim_free(sp->sn_icon);
+#ifdef FEAT_SIGN_ICONS
+    if (sp->sn_image != NULL)
+    {
+	out_flush();
+	gui_mch_destroy_sign(sp->sn_image);
+    }
+#endif
+    vim_free(sp->sn_text);
+    if (sp_prev == NULL)
+	first_sign = sp->sn_next;
+    else
+	sp_prev->sn_next = sp->sn_next;
+    vim_free(sp);
+}
+
+/*
  * Get highlighting attribute for sign "typenr".
  * If "line" is TRUE: line highl, if FALSE: text highl.
  */
@@ -7087,6 +7097,18 @@ sign_typenr2name(typenr)
 	    return sp->sn_name;
     return (char_u *)_("[Deleted]");
 }
+
+#if defined(EXITFREE) || defined(PROTO)
+/*
+ * Undefine/free all signs.
+ */
+    void
+free_signs()
+{
+    while (first_sign != NULL)
+	sign_undefine(first_sign, NULL);
+}
+#endif
 
 #endif
 

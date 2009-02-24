@@ -1010,6 +1010,9 @@ free_all_mem()
 # if defined(FEAT_PROFILE)
     do_cmdline_cmd((char_u *)"profdel *");
 # endif
+# if defined(FEAT_KEYMAP)
+    do_cmdline_cmd((char_u *)"set keymap=");
+#endif
 
 # ifdef FEAT_TITLE
     free_titles();
@@ -1034,6 +1037,9 @@ free_all_mem()
     free_regexp_stuff();
     free_tag_stuff();
     free_cd_dir();
+# ifdef FEAT_SIGNS
+    free_signs();
+# endif
 # ifdef FEAT_EVAL
     set_expr_line(NULL);
 # endif
