@@ -1587,6 +1587,8 @@ gui_mch_uninit()
     XtCloseDisplay(gui.dpy);
     gui.dpy = NULL;
     vimShell = (Widget)0;
+    vim_free(gui_argv);
+    gui_argv = NULL;
 }
 
 /*
@@ -1761,6 +1763,8 @@ gui_mch_exit(rc)
      * says that this isn't needed when exiting, so just skip it. */
     XtCloseDisplay(gui.dpy);
 #endif
+    vim_free(gui_argv);
+    gui_argv = NULL;
 }
 
 /*
@@ -3439,47 +3443,37 @@ gui_mch_register_sign(signfile)
     char_u	    *signfile;
 {
     XpmAttributes   attrs;
-    XImage	    *sign;
+    XImage	    *sign = NULL;
     int		    status;
 
     /*
      * Setup the color substitution table.
      */
-    sign = NULL;
     if (signfile[0] != NUL && signfile[0] != '-')
     {
-	sign = (XImage *)alloc(sizeof(XImage));
-	if (sign != NULL)
+	XpmColorSymbol color[5] =
 	{
-	    XpmColorSymbol color[5] =
-	    {
-		{"none", NULL, 0},
-		{"iconColor1", NULL, 0},
-		{"bottomShadowColor", NULL, 0},
-		{"topShadowColor", NULL, 0},
-		{"selectColor", NULL, 0}
-	    };
-	    attrs.valuemask = XpmColorSymbols;
-	    attrs.numsymbols = 2;
-	    attrs.colorsymbols = color;
-	    attrs.colorsymbols[0].pixel = gui.back_pixel;
-	    attrs.colorsymbols[1].pixel = gui.norm_pixel;
-	    status = XpmReadFileToImage(gui.dpy, (char *)signfile,
+	    {"none", NULL, 0},
+	    {"iconColor1", NULL, 0},
+	    {"bottomShadowColor", NULL, 0},
+	    {"topShadowColor", NULL, 0},
+	    {"selectColor", NULL, 0}
+	};
+	attrs.valuemask = XpmColorSymbols;
+	attrs.numsymbols = 2;
+	attrs.colorsymbols = color;
+	attrs.colorsymbols[0].pixel = gui.back_pixel;
+	attrs.colorsymbols[1].pixel = gui.norm_pixel;
+	status = XpmReadFileToImage(gui.dpy, (char *)signfile,
 							 &sign, NULL, &attrs);
-
-	    if (status == 0)
-	    {
-		/* Sign width is fixed at two columns now.
-		if (sign->width > gui.sign_width)
-		    gui.sign_width = sign->width + 8; */
-	    }
-	    else
-	    {
-		vim_free(sign);
-		sign = NULL;
-		EMSG(_(e_signdata));
-	    }
+	if (status == 0)
+	{
+	    /* Sign width is fixed at two columns now.
+	    if (sign->width > gui.sign_width)
+	        gui.sign_width = sign->width + 8; */
 	}
+	else
+	    EMSG(_(e_signdata));
     }
 
     return (void *)sign;
@@ -3489,8 +3483,7 @@ gui_mch_register_sign(signfile)
 gui_mch_destroy_sign(sign)
     void *sign;
 {
-    XFree(((XImage *)sign)->data);
-    vim_free(sign);
+    XDestroyImage((XImage*)sign);
 }
 #endif
 
