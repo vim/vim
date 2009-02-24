@@ -2553,7 +2553,6 @@ do_more_prompt(typed_char)
 	    {
 		/* Jump to the choices of the dialog. */
 		retval = TRUE;
-		lines_left = Rows - 1;
 	    }
 	    else
 #endif
@@ -2561,6 +2560,9 @@ do_more_prompt(typed_char)
 		got_int = TRUE;
 		quit_more = TRUE;
 	    }
+	    /* When there is some more output (wrapping line) display that
+	     * without another prompt. */
+	    lines_left = Rows - 1;
 	    break;
 
 #ifdef FEAT_CLIPBOARD
