@@ -8792,7 +8792,7 @@ ex_mkrc(eap)
 		else if (*dirnow != NUL
 			&& (ssop_flags & SSOP_CURDIR) && globaldir != NULL)
 		{
-		    if (mch_chdir((char *)globaldir) == OK)
+		    if (mch_chdir((char *)globaldir) == 0)
 			shorten_fnames(TRUE);
 		}
 
