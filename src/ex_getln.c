@@ -6047,9 +6047,7 @@ ex_window()
 # endif
 	return K_IGNORE;
     }
-    cmdwin_type = ccline.cmdfirstc;
-    if (cmdwin_type == NUL)
-	cmdwin_type = '-';
+    cmdwin_type = get_cmdline_type();
 
     /* Create the command-line buffer empty. */
     (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL);
@@ -6073,7 +6071,7 @@ ex_window()
     /* Showing the prompt may have set need_wait_return, reset it. */
     need_wait_return = FALSE;
 
-    histtype = hist_char2type(ccline.cmdfirstc);
+    histtype = hist_char2type(cmdwin_type);
     if (histtype == HIST_CMD || histtype == HIST_DEBUG)
     {
 	if (p_wc == TAB)
