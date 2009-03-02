@@ -181,7 +181,8 @@ static RETSIGTYPE catch_sigpwr __ARGS(SIGPROTOARG);
 	&& defined(FEAT_TITLE) && !defined(FEAT_GUI_GTK)
 # define SET_SIG_ALARM
 static RETSIGTYPE sig_alarm __ARGS(SIGPROTOARG);
-static int sig_alarm_called;
+/* volatile because it is used in signal handler sig_alarm(). */
+static volatile int sig_alarm_called;
 #endif
 static RETSIGTYPE deathtrap __ARGS(SIGPROTOARG);
 
@@ -201,13 +202,16 @@ static int save_patterns __ARGS((int num_pat, char_u **pat, int *num_file, char_
 # define SIG_ERR	((RETSIGTYPE (*)())-1)
 #endif
 
-static int	do_resize = FALSE;
+/* volatile because it is used in signal handler sig_winch(). */
+static volatile int do_resize = FALSE;
 #ifndef __EMX__
 static char_u	*extra_shell_arg = NULL;
 static int	show_shell_mess = TRUE;
 #endif
-static int	deadly_signal = 0;	    /* The signal we caught */
-static int	in_mch_delay = FALSE;	    /* sleeping in mch_delay() */
+/* volatile because it is used in signal handler deathtrap(). */
+static volatile int deadly_signal = 0;	    /* The signal we caught */
+/* volatile because it is used in signal handler deathtrap(). */
+static volatile int in_mch_delay = FALSE;    /* sleeping in mch_delay() */
 
 static int curr_tmode = TMODE_COOK;	/* contains current terminal mode */
 
@@ -802,7 +806,7 @@ init_signal_stack()
 #endif
 
 /*
- * We need correct potatotypes for a signal function, otherwise mean compilers
+ * We need correct prototypes for a signal function, otherwise mean compilers
  * will barf when the second argument to signal() is ``wrong''.
  * Let me try it with a few tricky defines from my own osdef.h	(jw).
  */
@@ -1068,13 +1072,18 @@ deathtrap SIGDEFARG(sigarg)
     SIGRETURN;
 }
 
-#ifdef _REENTRANT
+#if defined(_REENTRANT) && defined(SIGCONT)
 /*
  * On Solaris with multi-threading, suspending might not work immediately.
  * Catch the SIGCONT signal, which will be used as an indication whether the
  * suspending has been done or not.
+ *
+ * On Linux, signal is not always handled immediately either.
+ * See https://bugs.launchpad.net/bugs/291373
+ *
+ * volatile because it is used in in signal handler sigcont_handler().
  */
-static int sigcont_received;
+static volatile int sigcont_received;
 static RETSIGTYPE sigcont_handler __ARGS(SIGPROTOARG);
 
 /*
@@ -1118,15 +1127,28 @@ mch_suspend()
     }
 # endif
 
-# ifdef _REENTRANT
+# if defined(_REENTRANT) && defined(SIGCONT)
     sigcont_received = FALSE;
 # endif
     kill(0, SIGTSTP);	    /* send ourselves a STOP signal */
-# ifdef _REENTRANT
-    /* When we didn't suspend immediately in the kill(), do it now.  Happens
-     * on multi-threaded Solaris. */
-    if (!sigcont_received)
-	pause();
+# if defined(_REENTRANT) && defined(SIGCONT)
+    /*
+     * Wait for the SIGCONT signal to be handled. It generally happens
+     * immediately, but somehow not all the time. Do not call pause()
+     * because there would be race condition which would hang Vim if
+     * signal happened in between the test of sigcont_received and the
+     * call to pause(). If signal is not yet received, call sleep(0)
+     * to just yield CPU. Signal should then be received. If somehow
+     * it's still not received, sleep 1, 2, 3 ms. Don't bother waiting
+     * further if signal is not received after 1+2+3+4 ms (not expected
+     * to happen).
+     */
+    {
+	long wait;
+	for (wait = 0; !sigcont_received && wait <= 3L; wait++)
+	    /* Loop is not entered most of the time */
+	    mch_delay(wait, FALSE);
+    }
 # endif
 
 # ifdef FEAT_TITLE
@@ -1175,7 +1197,7 @@ set_signals()
 #ifdef SIGTSTP
     signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
 #endif
-#ifdef _REENTRANT
+#if defined(_REENTRANT) && defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
 
@@ -1234,7 +1256,7 @@ catch_int_signal()
 reset_signals()
 {
     catch_signals(SIG_DFL, SIG_DFL);
-#ifdef _REENTRANT
+#if defined(_REENTRANT) && defined(SIGCONT)
     /* SIGCONT isn't in the list, because its default action is ignore */
     signal(SIGCONT, SIG_DFL);
 #endif
@@ -5899,7 +5921,9 @@ gpm_open()
 	     * we are going to suspend or starting an external process
 	     * so we shouldn't  have problem with this
 	     */
+# ifdef SIGTSTP
 	    signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
+# endif
 	    return 1; /* succeed */
 	}
 	if (gpm_fd == -2)

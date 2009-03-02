@@ -50,6 +50,9 @@
 /* Define to empty if the keyword does not work.  */
 #undef const
 
+/* Define to empty if the keyword does not work.  */
+#undef volatile
+
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef mode_t
 

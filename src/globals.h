@@ -482,8 +482,10 @@ EXTERN char	*foreground_argument INIT(= NULL);
 /*
  * While executing external commands or in Ex mode, should not insert GUI
  * events in the input buffer: Set hold_gui_events to non-zero.
+ *
+ * volatile because it is used in signal handler sig_sysmouse().
  */
-EXTERN int	hold_gui_events INIT(= 0);
+EXTERN volatile int hold_gui_events INIT(= 0);
 
 /*
  * When resizing the shell is postponed, remember the new size, and call
@@ -597,7 +599,8 @@ EXTERN int	exiting INIT(= FALSE);
 EXTERN int	really_exiting INIT(= FALSE);
 				/* TRUE when we are sure to exit, e.g., after
 				 * a deadly signal */
-EXTERN int	full_screen INIT(= FALSE);
+/* volatile because it is used in signal handler deathtrap(). */
+EXTERN volatile int full_screen INIT(= FALSE);
 				/* TRUE when doing full-screen output
 				 * otherwise only writing some messages */
 
@@ -739,10 +742,12 @@ EXTERN JMP_BUF x_jump_env;
  */
 EXTERN JMP_BUF lc_jump_env;	/* argument to SETJMP() */
 # ifdef SIGHASARG
-EXTERN int lc_signal;		/* catched signal number, 0 when no was signal
-				   catched; used for mch_libcall() */
+/* volatile because it is used in signal handlers. */
+EXTERN volatile int lc_signal;	/* caught signal number, 0 when no was signal
+				   caught; used for mch_libcall() */
 # endif
-EXTERN int lc_active INIT(= FALSE); /* TRUE when lc_jump_env is valid. */
+/* volatile because it is used in signal handler deathtrap(). */
+EXTERN volatile int lc_active INIT(= FALSE); /* TRUE when lc_jump_env is valid. */
 #endif
 
 #if defined(FEAT_MBYTE) || defined(FEAT_POSTSCRIPT)
@@ -986,7 +991,8 @@ EXTERN int	curscript INIT(= 0);	    /* index in scriptin[] */
 EXTERN FILE	*scriptout  INIT(= NULL);   /* stream to write script to */
 EXTERN int	read_cmd_fd INIT(= 0);	    /* fd to read commands from */
 
-EXTERN int	got_int INIT(= FALSE);	    /* set to TRUE when interrupt
+/* volatile because it is used in signal handler catch_sigint(). */
+EXTERN volatile int got_int INIT(= FALSE);    /* set to TRUE when interrupt
 						signal occurred */
 #ifdef USE_TERM_CONSOLE
 EXTERN int	term_console INIT(= FALSE); /* set to TRUE when console used */
