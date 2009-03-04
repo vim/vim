@@ -5797,14 +5797,28 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	/* load or unload key mapping tables */
 	errmsg = keymap_init();
 
-	/* When successfully installed a new keymap switch on using it. */
-	if (*curbuf->b_p_keymap != NUL && errmsg == NULL)
+	if (errmsg == NULL)
 	{
-	    curbuf->b_p_iminsert = B_IMODE_LMAP;
-	    if (curbuf->b_p_imsearch != B_IMODE_USE_INSERT)
-		curbuf->b_p_imsearch = B_IMODE_LMAP;
-	    set_iminsert_global();
-	    set_imsearch_global();
+	    if (*curbuf->b_p_keymap != NUL)
+	    {
+		/* Installed a new keymap, switch on using it. */
+		curbuf->b_p_iminsert = B_IMODE_LMAP;
+		if (curbuf->b_p_imsearch != B_IMODE_USE_INSERT)
+		    curbuf->b_p_imsearch = B_IMODE_LMAP;
+	    }
+	    else
+	    {
+		/* Cleared the keymap, may reset 'iminsert' and 'imsearch'. */
+		if (curbuf->b_p_iminsert == B_IMODE_LMAP)
+		    curbuf->b_p_iminsert = B_IMODE_NONE;
+		if (curbuf->b_p_imsearch == B_IMODE_LMAP)
+		    curbuf->b_p_imsearch = B_IMODE_USE_INSERT;
+	    }
+	    if ((opt_flags & OPT_LOCAL) == 0)
+	    {
+		set_iminsert_global();
+		set_imsearch_global();
+	    }
 # ifdef FEAT_WINDOWS
 	    status_redraw_curbuf();
 # endif
