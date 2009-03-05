@@ -4,6 +4,7 @@ char_u *getcmdline_prompt __ARGS((int firstc, char_u *prompt, int attr, int xp_c
 int text_locked __ARGS((void));
 void text_locked_msg __ARGS((void));
 int curbuf_locked __ARGS((void));
+int allbuf_locked __ARGS((void));
 char_u *getexline __ARGS((int c, void *dummy, int indent));
 char_u *getexmodeline __ARGS((int promptc, void *dummy, int indent));
 int cmdline_overstrike __ARGS((void));

@@ -2000,8 +2000,8 @@ text_locked_msg()
 
 #if defined(FEAT_AUTOCMD) || defined(PROTO)
 /*
- * Check if "curbuf_lock" is set and return TRUE when it is and give an error
- * message.
+ * Check if "curbuf_lock" or "allbuf_lock" is set and return TRUE when it is
+ * and give an error message.
  */
     int
 curbuf_locked()
@@ -2009,6 +2009,21 @@ curbuf_locked()
     if (curbuf_lock > 0)
     {
 	EMSG(_("E788: Not allowed to edit another buffer now"));
+	return TRUE;
+    }
+    return allbuf_locked();
+}
+
+/*
+ * Check if "allbuf_lock" is set and return TRUE when it is and give an error
+ * message.
+ */
+    int
+allbuf_locked()
+{
+    if (allbuf_lock > 0)
+    {
+	EMSG(_("E811: Not allowed to change buffer information now"));
 	return TRUE;
     }
     return FALSE;

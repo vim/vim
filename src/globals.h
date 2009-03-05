@@ -619,6 +619,11 @@ EXTERN int	textlock INIT(= 0);
 EXTERN int	curbuf_lock INIT(= 0);
 				/* non-zero when the current buffer can't be
 				 * changed.  Used for FileChangedRO. */
+EXTERN int	allbuf_lock INIT(= 0);
+				/* non-zero when no buffer name can be
+				 * changed, no buffer can be deleted and
+				 * current directory can't be changed.
+				 * Used for SwapExists et al. */
 #endif
 #ifdef FEAT_EVAL
 # define HAVE_SANDBOX
