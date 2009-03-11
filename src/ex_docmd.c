@@ -7875,6 +7875,10 @@ ex_cd(eap)
     else
 #endif
     {
+#ifdef FEAT_AUTOCMD
+	if (allbuf_locked())
+	    return;
+#endif
 	if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged()
 							     && !eap->forceit)
 	{
