@@ -5132,8 +5132,8 @@ screen_line(row, coloff, endcol, clear_width
 #endif
 
 #if defined(FEAT_GUI) || defined(UNIX)
-	    /* The bold trick makes a single row of pixels appear in the next
-	     * character.  When a bold character is removed, the next
+	    /* The bold trick makes a single column of pixels appear in the
+	     * next character.  When a bold character is removed, the next
 	     * character should be redrawn too.  This happens for our own GUI
 	     * and for some xterms. */
 	    if (
@@ -6276,9 +6276,15 @@ screen_puts_len(text, len, row, col, attr)
     int		pcc[MAX_MCO];
 # endif
 #endif
+#if defined(FEAT_MBYTE) || defined(FEAT_GUI) || defined(UNIX)
+    int		force_redraw_this;
+    int		force_redraw_next = FALSE;
+#endif
+    int		need_redraw;
 
     if (ScreenLines == NULL || row >= screen_Rows)	/* safety check */
 	return;
+    off = LineOffset[row] + col;
 
 #ifdef FEAT_MBYTE
     /* When drawing over the right halve of a double-wide char clear out the
@@ -6288,10 +6294,21 @@ screen_puts_len(text, len, row, col, attr)
 	    && !gui.in_use
 # endif
 	    && mb_fix_col(col, row) != col)
-	screen_puts_len((char_u *)" ", 1, row, col - 1, 0);
+    {
+	ScreenLines[off - 1] = ' ';
+	ScreenAttrs[off - 1] = 0;
+	if (enc_utf8)
+	{
+	    ScreenLinesUC[off - 1] = 0;
+	    ScreenLinesC[0][off - 1] = 0;
+	}
+	/* redraw the previous cell, make it empty */
+	screen_char(off - 1, row, col - 1);
+	/* force the cell at "col" to be redrawn */
+	force_redraw_next = TRUE;
+    }
 #endif
 
-    off = LineOffset[row] + col;
 #ifdef FEAT_MBYTE
     max_off = LineOffset[row] + screen_Columns;
 #endif
@@ -6355,7 +6372,12 @@ screen_puts_len(text, len, row, col, attr)
 	}
 #endif
 
-	if (ScreenLines[off] != c
+#if defined(FEAT_MBYTE) || defined(FEAT_GUI) || defined(UNIX)
+	force_redraw_this = force_redraw_next;
+	force_redraw_next = FALSE;
+#endif
+
+	need_redraw = ScreenLines[off] != c
 #ifdef FEAT_MBYTE
 		|| (mbyte_cells == 2
 		    && ScreenLines[off + 1] != (enc_dbcs ? ptr[1] : 0))
@@ -6367,20 +6389,20 @@ screen_puts_len(text, len, row, col, attr)
 			|| screen_comp_differs(off, u8cc)))
 #endif
 		|| ScreenAttrs[off] != attr
-		|| exmode_active
+		|| exmode_active;
+
+	if (need_redraw
+#if defined(FEAT_MBYTE) || defined(FEAT_GUI) || defined(UNIX)
+		|| force_redraw_this
+#endif
 		)
 	{
 #if defined(FEAT_GUI) || defined(UNIX)
 	    /* The bold trick makes a single row of pixels appear in the next
 	     * character.  When a bold character is removed, the next
 	     * character should be redrawn too.  This happens for our own GUI
-	     * and for some xterms.
-	     * Force the redraw by setting the attribute to a different value
-	     * than "attr", the contents of ScreenLines[] may be needed by
-	     * mb_off2cells() further on.
-	     * Don't do this for the last drawn character, because the next
-	     * character may not be redrawn. */
-	    if (
+	     * and for some xterms. */
+	    if (need_redraw && ScreenLines[off] != ' ' && (
 # ifdef FEAT_GUI
 		    gui.in_use
 # endif
@@ -6390,23 +6412,14 @@ screen_puts_len(text, len, row, col, attr)
 # ifdef UNIX
 		    term_is_xterm
 # endif
-	       )
+		    ))
 	    {
-		int		n;
+		int	n = ScreenAttrs[off];
 
-		n = ScreenAttrs[off];
-# ifdef FEAT_MBYTE
-		if (col + mbyte_cells < screen_Columns
-			&& (n > HL_ALL || (n & HL_BOLD))
-			&& (len < 0 ? ptr[mbyte_blen] != NUL
-					     : ptr + mbyte_blen < text + len))
-		    ScreenAttrs[off + mbyte_cells] = attr + 1;
-# else
-		if (col + 1 < screen_Columns
-			&& (n > HL_ALL || (n & HL_BOLD))
-			&& (len < 0 ? ptr[1] != NUL : ptr + 1 < text + len))
-		    ScreenLines[off + 1] = 0;
-# endif
+		if (n > HL_ALL)
+		    n = syn_attr2attr(n);
+		if (n & HL_BOLD)
+		    force_redraw_next = TRUE;
 	    }
 #endif
 #ifdef FEAT_MBYTE
@@ -6493,6 +6506,20 @@ screen_puts_len(text, len, row, col, attr)
 	    ++ptr;
 	}
     }
+
+#if defined(FEAT_MBYTE) || defined(FEAT_GUI) || defined(UNIX)
+    /* If we detected the next character needs to be redrawn, but the text
+     * doesn't extend up to there, update the character here. */
+    if (force_redraw_next && col < screen_Columns)
+    {
+# ifdef FEAT_MBYTE
+	if (enc_dbcs != 0 && dbcs_off2cells(off, max_off) > 1)
+	    screen_char_2(off, row, col);
+	else
+# endif
+	    screen_char(off, row, col);
+    }
+#endif
 }
 
 #ifdef FEAT_SEARCH_EXTRA
