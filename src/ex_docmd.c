@@ -5124,7 +5124,11 @@ uc_add_command(name, name_len, rep, argt, def, flags, compl, compl_arg, force)
 	    }
 
 	    vim_free(cmd->uc_rep);
-	    cmd->uc_rep = 0;
+	    cmd->uc_rep = NULL;
+#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+	    vim_free(cmd->uc_compl_arg);
+	    cmd->uc_compl_arg = NULL;
+#endif
 	    break;
 	}
 
@@ -5941,7 +5945,7 @@ do_ucmd(eap)
     for (;;)
     {
 	p = cmd->uc_rep;    /* source */
-	q = buf;	    /* destinateion */
+	q = buf;	    /* destination */
 	totlen = 0;
 
 	for (;;)
@@ -7846,6 +7850,9 @@ free_cd_dir()
 {
     vim_free(prev_dir);
     prev_dir = NULL;
+
+    vim_free(globaldir);
+    globaldir = NULL;
 }
 #endif
 
