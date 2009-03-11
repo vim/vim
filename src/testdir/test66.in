@@ -1,0 +1,25 @@
+
+Test for visual block shift and tab characters.
+
+STARTTEST
+:so small.vim
+/^abcdefgh
+4jI    j<<11|D
+7|a		
+7|a		   
+7|a	       	4k13|4j<
+:$-4,$w! test.out
+:$-4,$s/\s\+//g
+4kI    j<<
+7|a		
+7|a					
+7|a	       		4k13|4j3<
+:$-4,$w >> test.out
+:qa!
+ENDTEST
+
+abcdefghijklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz
+abcdefghijklmnopqrstuvwxyz

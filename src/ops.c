@@ -72,11 +72,11 @@ static struct yankreg	*y_previous = NULL; /* ptr to last written yankreg */
  */
 struct block_def
 {
-    int		startspaces;	/* 'extra' cols of first char */
-    int		endspaces;	/* 'extra' cols of first char */
+    int		startspaces;	/* 'extra' cols before first char */
+    int		endspaces;	/* 'extra' cols after last char */
     int		textlen;	/* chars in block */
-    char_u	*textstart;	/* pointer to 1st char in block */
-    colnr_T	textcol;	/* cols of chars (at least part.) in block */
+    char_u	*textstart;	/* pointer to 1st char (partially) in block */
+    colnr_T	textcol;	/* index of chars (partially) in block */
     colnr_T	start_vcol;	/* start col of 1st char wholly inside block */
     colnr_T	end_vcol;	/* start col of 1st char wholly after block */
 #ifdef FEAT_VISUALEXTRA
@@ -382,15 +382,14 @@ shift_block(oap, amount)
 {
     int			left = (oap->op_type == OP_LSHIFT);
     int			oldstate = State;
-    int			total, split;
-    char_u		*newp, *oldp, *midp, *ptr;
+    int			total;
+    char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
     int			p_sw = (int)curbuf->b_p_sw;
     int			p_ts = (int)curbuf->b_p_ts;
     struct block_def	bd;
-    int			internal = 0;
     int			incr;
-    colnr_T		vcol, col = 0, ws_vcol;
+    colnr_T		ws_vcol;
     int			i = 0, j = 0;
     int			len;
 
@@ -456,67 +455,89 @@ shift_block(oap, amount)
     }
     else /* left */
     {
-	vcol = oap->start_vcol;
-	/* walk vcol past ws to be removed */
-	for (midp = oldp + bd.textcol;
-	      vcol < (oap->start_vcol + total) && vim_iswhite(*midp); )
-	{
-	    incr = lbr_chartabsize_adv(&midp, (colnr_T)vcol);
-	    vcol += incr;
-	}
-	/* internal is the block-internal ws replacing a split TAB */
-	if (vcol > (oap->start_vcol + total))
-	{
-	    /* we have to split the TAB *(midp-1) */
-	    internal = vcol - (oap->start_vcol + total);
-	}
-	/* if 'expandtab' is not set, use TABs */
+	colnr_T	    destination_col;	/* column to which text in block will
+					   be shifted */
+	char_u	    *verbatim_copy_end;	/* end of the part of the line which is
+					   copied verbatim */
+	colnr_T	    verbatim_copy_width;/* the (displayed) width of this part
+					   of line */
+	unsigned    fill;		/* nr of spaces that replace a TAB */
+	unsigned    new_line_len;	/* the length of the line after the
+					   block shift */
+	size_t	    block_space_width;
+	size_t	    shift_amount;
+	char_u	    *non_white = bd.textstart;
+	colnr_T	    non_white_col;
 
-	split = bd.startspaces + internal;
-	if (split > 0)
-	{
-	    if (!curbuf->b_p_et)
-	    {
-		for (ptr = oldp, col = 0; ptr < oldp+bd.textcol; )
-		    col += lbr_chartabsize_adv(&ptr, (colnr_T)col);
+	/*
+	 * Firstly, let's find the first non-whitespace character that is
+	 * displayed after the block's start column and the character's column
+	 * number. Also, let's calculate the width of all the whitespace
+	 * characters that are displayed in the block and precede the searched
+	 * non-whitespace character.
+	 */
 
-		/* col+1 now equals the start col of the first char of the
-		 * block (may be < oap.start_vcol if we're splitting a TAB) */
-		i = ((col % p_ts) + split) / p_ts; /* number of tabs */
-	    }
-	    if (i)
-		j = ((col % p_ts) + split) % p_ts; /* number of spp */
-	    else
-		j = split;
+	/* If "bd.startspaces" is set, "bd.textstart" points to the character,
+	 * the part of which is displayed at the block's beginning. Let's start
+	 * searching from the next character. */
+	if (bd.startspaces)
+	    mb_ptr_adv(non_white);
+
+	/* The character's column is in "bd.start_vcol".  */
+	non_white_col = bd.start_vcol;
+
+	while (vim_iswhite(*non_white))
+	{
+	    incr = lbr_chartabsize_adv(&non_white, non_white_col);
+	    non_white_col += incr;
 	}
 
-	newp = alloc_check(bd.textcol + i + j + (unsigned)STRLEN(midp) + 1);
+	block_space_width = non_white_col - oap->start_vcol;
+	/* We will shift by "total" or "block_space_width", whichever is less.
+	 */
+	shift_amount = (block_space_width < total? block_space_width: total);
+
+	/* The column to which we will shift the text.  */
+	destination_col = non_white_col - shift_amount;
+
+	/* Now let's find out how much of the beginning of the line we can
+	 * reuse without modification.  */
+	verbatim_copy_end = bd.textstart;
+	verbatim_copy_width = bd.start_vcol;
+
+	/* If "bd.startspaces" is set, "bd.textstart" points to the character
+	 * preceding the block. We have to subtract its width to obtain its
+	 * column number.  */
+	if (bd.startspaces)
+	    verbatim_copy_width -= bd.start_char_vcols;
+	while (verbatim_copy_width < destination_col)
+	{
+	    incr = lbr_chartabsize(verbatim_copy_end, verbatim_copy_width);
+	    if (verbatim_copy_width + incr > destination_col)
+		break;
+	    verbatim_copy_width += incr;
+	    mb_ptr_adv(verbatim_copy_end);
+	}
+
+	/* If "destination_col" is different from the width of the initial
+	 * part of the line that will be copied, it means we encountered a tab
+	 * character, which we will have to partly replace with spaces.  */
+	fill = destination_col - verbatim_copy_width;
+
+	/* The replacement line will consist of:
+	 * - the beginning of the original line up to "verbatim_copy_end",
+	 * - "fill" number of spaces,
+	 * - the rest of the line, pointed to by non_white.  */
+	new_line_len = (unsigned)(verbatim_copy_end - oldp)
+		       + fill
+		       + (unsigned)STRLEN(non_white) + 1;
+
+	newp = alloc_check(new_line_len);
 	if (newp == NULL)
 	    return;
-	vim_memset(newp, NUL, (size_t)(bd.textcol + i + j + STRLEN(midp) + 1));
-
-	/* copy first part we want to keep */
-	mch_memmove(newp, oldp, (size_t)bd.textcol);
-	/* Now copy any TABS and spp to ensure correct alignment! */
-	while (vim_iswhite(*midp))
-	{
-	    if (*midp == TAB)
-		i++;
-	    else /*space */
-		j++;
-	    midp++;
-	}
-	/* We might have an extra TAB worth of spp now! */
-	if (j / p_ts && !curbuf->b_p_et)
-	{
-	    i++;
-	    j -= p_ts;
-	}
-	copy_chars(newp + bd.textcol, (size_t)i, TAB);
-	copy_spaces(newp + bd.textcol + i, (size_t)j);
-
-	/* the end */
-	STRMOVE(newp + STRLEN(newp), midp);
+	mch_memmove(newp, oldp, (size_t)(verbatim_copy_end - oldp));
+	copy_spaces(newp + (verbatim_copy_end - oldp), (size_t)fill);
+	STRMOVE(newp + (verbatim_copy_end - oldp) + fill, non_white);
     }
     /* replace the line */
     ml_replace(curwin->w_cursor.lnum, newp, FALSE);
@@ -4851,7 +4872,8 @@ paragraph_start(lnum)
  * - textlen includes the first/last char to be (partly) deleted
  * - start/endspaces is the number of columns that are taken by the
  *   first/last deleted char minus the number of columns that have to be
- *   deleted.  for yank and tilde:
+ *   deleted.
+ * for yank and tilde:
  * - textlen includes the first/last char to be wholly yanked
  * - start/endspaces is the number of columns of the first/last yanked char
  *   that are to be yanked.
