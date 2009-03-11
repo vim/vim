@@ -3555,7 +3555,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		/* Use line_attr when not in the Visual or 'incsearch' area
 		 * (area_attr may be 0 when "noinvcur" is set). */
 	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)
-					|| (vcol < fromcol || vcol >= tocol)))
+				|| vcol < fromcol || vcol_prev < fromcol_prev
+				|| vcol >= tocol))
 		char_attr = line_attr;
 #endif
 	    else
