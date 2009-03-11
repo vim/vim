@@ -496,7 +496,8 @@ check_cursor_col()
 {
     colnr_T len;
 #ifdef FEAT_VIRTUALEDIT
-    colnr_T oldcol = curwin->w_cursor.col + curwin->w_cursor.coladd;
+    colnr_T oldcol = curwin->w_cursor.col;
+    colnr_T oldcoladd = curwin->w_cursor.col + curwin->w_cursor.coladd;
 #endif
 
     len = (colnr_T)STRLEN(ml_get_curline());
@@ -535,7 +536,13 @@ check_cursor_col()
     if (oldcol == MAXCOL)
 	curwin->w_cursor.coladd = 0;
     else if (ve_flags == VE_ALL)
-	curwin->w_cursor.coladd = oldcol - curwin->w_cursor.col;
+    {
+	if (oldcoladd > curwin->w_cursor.col)
+	    curwin->w_cursor.coladd = oldcoladd - curwin->w_cursor.col;
+	else
+	    /* avoid weird number when there is a miscalculation or overflow */
+	    curwin->w_cursor.coladd = 0;
+    }
 #endif
 }
 
