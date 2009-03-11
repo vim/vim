@@ -1153,7 +1153,7 @@ ex_diffoff(eap)
 
     for (wp = firstwin; wp != NULL; wp = wp->w_next)
     {
-	if (wp == curwin || eap->forceit)
+	if (wp == curwin || (eap->forceit && wp->w_p_diff))
 	{
 	    /* Set 'diff', 'scrollbind' off and 'wrap' on. */
 	    wp->w_p_diff = FALSE;
