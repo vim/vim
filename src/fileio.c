@@ -5288,13 +5288,16 @@ buf_write_bytes(ip)
 	    /* Convert with iconv(). */
 	    if (ip->bw_restlen > 0)
 	    {
+		char *fp;
+
 		/* Need to concatenate the remainder of the previous call and
 		 * the bytes of the current call.  Use the end of the
 		 * conversion buffer for this. */
 		fromlen = len + ip->bw_restlen;
-		from = (char *)ip->bw_conv_buf + ip->bw_conv_buflen - fromlen;
-		mch_memmove((void *)from, ip->bw_rest, (size_t)ip->bw_restlen);
-		mch_memmove((void *)(from + ip->bw_restlen), buf, (size_t)len);
+		fp = (char *)ip->bw_conv_buf + ip->bw_conv_buflen - fromlen;
+		mch_memmove(fp, ip->bw_rest, (size_t)ip->bw_restlen);
+		mch_memmove(fp + ip->bw_restlen, buf, (size_t)len);
+		from = fp;
 		tolen = ip->bw_conv_buflen - fromlen;
 	    }
 	    else
