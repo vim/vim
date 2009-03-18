@@ -4665,7 +4665,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    --n_skip;
 
 	/* Only advance the "vcol" when after the 'number' column. */
-	if (draw_state >= WL_SBR
+	if (draw_state > WL_NR
 #ifdef FEAT_DIFF
 		&& filler_todo <= 0
 #endif
