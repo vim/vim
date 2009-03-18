@@ -2889,8 +2889,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	}
 	else
 	    tocol = MAXCOL;
-	if (fromcol == tocol)		/* do at least one character */
-	    tocol = fromcol + 1;	/* happens when past end of line */
+	/* do at least one character; happens when past end of line */
+	if (fromcol == tocol)
+	    tocol = fromcol + 1;
 	area_highlighting = TRUE;
 	attr = hl_attr(HLF_I);
     }
@@ -4118,6 +4119,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 # endif
 				    (col < W_WIDTH(wp)))
 				&& !(noinvcur
+				    && lnum == wp->w_cursor.lnum
 				    && (colnr_T)vcol == wp->w_virtcol)))
 			&& lcs_eol_one >= 0)
 		{
@@ -4259,7 +4261,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	 * preedit_changed and commit.  Thus Vim can't set "im_is_active", use
 	 * im_is_preediting() here. */
 	if (xic != NULL
-		&& lnum == curwin->w_cursor.lnum
+		&& lnum == wp->w_cursor.lnum
 		&& (State & INSERT)
 		&& !p_imdisable
 		&& im_is_preediting()
@@ -4268,7 +4270,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    colnr_T tcol;
 
 	    if (preedit_end_col == MAXCOL)
-		getvcol(curwin, &(curwin->w_cursor), &tcol, NULL, NULL);
+		getvcol(curwin, &(wp->w_cursor), &tcol, NULL, NULL);
 	    else
 		tcol = preedit_end_col;
 	    if ((long)preedit_start_col <= vcol && vcol < (long)tcol)
@@ -4365,7 +4367,13 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 #endif
 	    if (lcs_eol == lcs_eol_one
-		    && ((area_attr != 0 && vcol == fromcol && c == NUL)
+		    && ((area_attr != 0 && vcol == fromcol
+#ifdef FEAT_VISUAL
+			    && (VIsual_mode != Ctrl_V
+				|| lnum == VIsual.lnum
+				|| lnum == curwin->w_cursor.lnum)
+#endif
+			    && c == NUL)
 #ifdef FEAT_SEARCH_EXTRA
 			/* highlight 'hlsearch' match at end of line */
 			|| (prevcol_hl_flag == TRUE
@@ -4459,7 +4467,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	if (c == NUL)
 	{
 #ifdef FEAT_SYN_HL
-	    if (eol_hl_off > 0 && vcol - eol_hl_off == (long)wp->w_virtcol)
+	    if (eol_hl_off > 0 && vcol - eol_hl_off == (long)wp->w_virtcol
+		    && lnum == wp->w_cursor.lnum)
 	    {
 		/* highlight last char after line */
 		--col;
