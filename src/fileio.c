@@ -6647,6 +6647,11 @@ buf_check_timestamp(buf, focus)
 	    tbuf = alloc((unsigned)(STRLEN(path) + STRLEN(mesg)
 							+ STRLEN(mesg2) + 2));
 	    sprintf((char *)tbuf, mesg, path);
+#ifdef FEAT_EVAL
+	    /* Set warningmsg here, before the unimportant and output-specific
+	     * mesg2 has been appended. */
+	    set_vim_var_string(VV_WARNINGMSG, tbuf, -1);
+#endif
 #if defined(FEAT_CON_DIALOG) || defined(FEAT_GUI_DIALOG)
 	    if (can_reload)
 	    {

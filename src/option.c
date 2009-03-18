@@ -7563,9 +7563,13 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	     * set. */
 	    if (STRCMP(p_enc, "utf-8") != 0)
 	    {
+		static char *w_arabic = N_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'");
+
 		msg_source(hl_attr(HLF_W));
-		MSG_ATTR(_("W17: Arabic requires UTF-8, do ':set encoding=utf-8'"),
-			hl_attr(HLF_W));
+		MSG_ATTR(_(w_arabic), hl_attr(HLF_W));
+#ifdef FEAT_EVAL
+		set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_arabic), -1);
+#endif
 	    }
 
 # ifdef FEAT_MBYTE

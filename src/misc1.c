@@ -2955,6 +2955,8 @@ change_warning(col)
     int	    col;		/* column for message; non-zero when in insert
 				   mode and 'showmode' is on */
 {
+    static char *w_readonly = N_("W10: Warning: Changing a readonly file");
+
     if (curbuf->b_did_warn == FALSE
 	    && curbufIsChanged() == 0
 #ifdef FEAT_AUTOCMD
@@ -2977,8 +2979,10 @@ change_warning(col)
 	if (msg_row == Rows - 1)
 	    msg_col = col;
 	msg_source(hl_attr(HLF_W));
-	MSG_PUTS_ATTR(_("W10: Warning: Changing a readonly file"),
-						   hl_attr(HLF_W) | MSG_HIST);
+	MSG_PUTS_ATTR(_(w_readonly), hl_attr(HLF_W) | MSG_HIST);
+#ifdef FEAT_EVAL
+	set_vim_var_string(VV_WARNINGMSG, (char_u *)_(w_readonly), -1);
+#endif
 	msg_clr_eos();
 	(void)msg_end();
 	if (msg_silent == 0 && !silent_mode)
