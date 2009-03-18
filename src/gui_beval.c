@@ -1291,6 +1291,23 @@ drawBalloon(beval)
 		XtNy, ty,
 		NULL);
 #endif
+	/* Set tooltip colors */
+	{
+	    Arg args[2];
+
+#ifdef FEAT_GUI_MOTIF
+	    args[0].name = XmNbackground;
+	    args[0].value = gui.tooltip_bg_pixel;
+	    args[1].name = XmNforeground;
+	    args[1].value = gui.tooltip_fg_pixel;
+#else /* Athena */
+	    args[0].name = XtNbackground;
+	    args[0].value = gui.tooltip_bg_pixel;
+	    args[1].name = XtNforeground;
+	    args[1].value = gui.tooltip_fg_pixel;
+#endif
+	    XtSetValues(beval->balloonLabel, &args[0], XtNumber(args));
+	}
 
 	XtPopup(beval->balloonShell, XtGrabNone);
 
