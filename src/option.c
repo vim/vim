@@ -6022,15 +6022,23 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	/* ":set t_Co=0" and ":set t_Co=1" do ":set t_Co=" */
 	if (varp == &T_CCO)
 	{
-	    t_colors = atoi((char *)T_CCO);
-	    if (t_colors <= 1)
+	    int colors = atoi((char *)T_CCO);
+
+	    /* Only reinitialize colors if t_Co value has really changed to
+	     * avoid expensive reload of colorscheme if t_Co is set to the
+	     * same value multiple times. */
+	    if (colors != t_colors)
 	    {
-		if (new_value_alloced)
-		    vim_free(T_CCO);
-		T_CCO = empty_option;
+		t_colors = colors;
+		if (t_colors <= 1)
+		{
+		    if (new_value_alloced)
+			vim_free(T_CCO);
+		    T_CCO = empty_option;
+		}
+		/* We now have a different color setup, initialize it again. */
+		init_highlight(TRUE, FALSE);
 	    }
-	    /* We now have a different color setup, initialize it again. */
-	    init_highlight(TRUE, FALSE);
 	}
 	ttest(FALSE);
 	if (varp == &T_ME)
