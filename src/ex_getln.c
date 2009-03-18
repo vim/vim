@@ -4518,6 +4518,9 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	    {EXPAND_EVENTS, get_event_name, TRUE},
 	    {EXPAND_AUGROUP, get_augroup_name, TRUE},
 #endif
+#ifdef FEAT_CSCOPE
+	    {EXPAND_CSCOPE, get_cscope_name, TRUE},
+#endif
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
 	    {EXPAND_LANGUAGE, get_lang_arg, TRUE},

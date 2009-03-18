@@ -3683,6 +3683,11 @@ set_one_cmd_context(xp, buff)
 	case CMD_highlight:
 	    set_context_in_highlight_cmd(xp, arg);
 	    break;
+#ifdef FEAT_CSCOPE
+	case CMD_cscope:
+	    set_context_in_cscope_cmd(xp, arg);
+	    break;
+#endif
 #ifdef FEAT_LISTCMDS
 	case CMD_bdelete:
 	case CMD_bwipeout:
@@ -5187,6 +5192,9 @@ static struct
     {EXPAND_AUGROUP, "augroup"},
     {EXPAND_BUFFERS, "buffer"},
     {EXPAND_COMMANDS, "command"},
+#if defined(FEAT_CSCOPE)
+    {EXPAND_CSCOPE, "cscope"},
+#endif
 #if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},

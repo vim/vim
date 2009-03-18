@@ -1,4 +1,6 @@
 /* if_cscope.c */
+char_u *get_cscope_name __ARGS((expand_T *xp, int idx));
+void set_context_in_cscope_cmd __ARGS((expand_T *xp, char_u *arg));
 void do_cscope __ARGS((exarg_T *eap));
 void do_scscope __ARGS((exarg_T *eap));
 void do_cstag __ARGS((exarg_T *eap));

@@ -93,12 +93,117 @@ cs_usage_msg(x)
     (void)EMSG2(_("E560: Usage: cs[cope] %s"), cs_cmds[(int)x].usage);
 }
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+
+static enum
+{
+    EXP_CSCOPE_SUBCMD,	/* expand ":cscope" sub-commands */
+    EXP_CSCOPE_FIND,	/* expand ":cscope find" arguments */
+    EXP_CSCOPE_KILL	/* expand ":cscope kill" arguments */
+} expand_what;
+
+/*
+ * Function given to ExpandGeneric() to obtain the cscope command
+ * expansion.
+ */
+/*ARGSUSED*/
+    char_u *
+get_cscope_name(xp, idx)
+    expand_T	*xp;
+    int		idx;
+{
+    switch (expand_what)
+    {
+    case EXP_CSCOPE_SUBCMD:
+	/* Complete with sub-commands of ":cscope":
+	 * add, find, help, kill, reset, show */
+	return (char_u *)cs_cmds[idx].name;
+    case EXP_CSCOPE_FIND:
+	{
+	    const char *query_type[] =
+	    {
+		"c", "d", "e", "f", "g", "i", "s", "t", NULL
+	    };
+
+	    /* Complete with query type of ":cscope find {query_type}".
+	     * {query_type} can be letters (c, d, ... t) or numbers (0, 1,
+	     * ..., 8) but only complete with letters, since numbers are
+	     * redundant. */
+	    return (char_u *)query_type[idx];
+	}
+    case EXP_CSCOPE_KILL:
+	{
+	    int			i;
+	    int			current_idx = 0;
+	    static char_u	connection[2];
+
+	    /* ":cscope kill" accepts connection numbers or partial names of
+	     * the pathname of the cscope database as argument.  Only complete
+	     * with connection numbers. -1 can also be used to kill all
+	     * connections. */
+	    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	    {
+		if (csinfo[i].fname == NULL)
+		    continue;
+		if (current_idx++ == idx)
+		{
+		    /* Connection number fits in one character since
+		     * CSCOPE_MAX_CONNECTIONS is < 10 */
+		    connection[0] = i + '0';
+		    connection[1] = NUL;
+		    return connection;
+		}
+	    }
+	    return (current_idx == idx && idx > 0) ? (char_u *)"-1" : NULL;
+	}
+    default:
+	return NULL;
+    }
+}
+
+/*
+ * Handle command line completion for :cscope command.
+ */
+    void
+set_context_in_cscope_cmd(xp, arg)
+    expand_T	*xp;
+    char_u	*arg;
+{
+    char_u	*p;
+
+    /* Default: expand subcommands */
+    xp->xp_context = EXPAND_CSCOPE;
+    expand_what = EXP_CSCOPE_SUBCMD;
+    xp->xp_pattern = arg;
+
+    /* (part of) subcommand already typed */
+    if (*arg != NUL)
+    {
+	p = skiptowhite(arg);
+	if (*p != NUL)		    /* past first word */
+	{
+	    xp->xp_pattern = skipwhite(p);
+	    if (*skiptowhite(xp->xp_pattern) != NUL)
+		xp->xp_context = EXPAND_NOTHING;
+	    else if (STRNICMP(arg, "add", p - arg) == 0)
+		xp->xp_context = EXPAND_FILES;
+	    else if (STRNICMP(arg, "kill", p - arg) == 0)
+		expand_what = EXP_CSCOPE_KILL;
+	    else if (STRNICMP(arg, "find", p - arg) == 0)
+		expand_what = EXP_CSCOPE_FIND;
+	    else
+		xp->xp_context = EXPAND_NOTHING;
+	}
+    }
+}
+
+#endif /* FEAT_CMDL_COMPL */
+
 /*
  * PRIVATE: do_cscope_general
  *
- * find the command, print help if invalid, and the then call the
- * corresponding command function,
- * called from do_cscope and do_scscope
+ * Find the command, print help if invalid, and then call the corresponding
+ * command function.
  */
     static void
 do_cscope_general(eap, make_split)
