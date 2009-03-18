@@ -764,6 +764,7 @@ cs_create_cmd(csoption, pattern)
 {
     char *cmd;
     short search;
+    char *pat;
 
     switch (csoption[0])
     {
@@ -797,10 +798,17 @@ cs_create_cmd(csoption, pattern)
 	return NULL;
     }
 
-    if ((cmd = (char *)alloc((unsigned)(strlen(pattern) + 2))) == NULL)
+    /* Skip white space before the patter, except for text and pattern search,
+     * they may want to use the leading white space. */
+    pat = pattern;
+    if (search != 4 && search != 6)
+	while vim_iswhite(*pat)
+	    ++pat;
+
+    if ((cmd = (char *)alloc((unsigned)(strlen(pat) + 2))) == NULL)
 	return NULL;
 
-    (void)sprintf(cmd, "%d%s", search, pattern);
+    (void)sprintf(cmd, "%d%s", search, pat);
 
     return cmd;
 } /* cs_create_cmd */

@@ -1,4 +1,4 @@
-*if_cscop.txt*  For Vim version 7.2.  Last change: 2005 Mar 29
+*if_cscop.txt*  For Vim version 7.2.  Last change: 2009 Mar 18
 
 
 		  VIM REFERENCE MANUAL    by Andy Kahn
@@ -131,11 +131,22 @@ The available subcommands are:
 		7 or f: Find this file
 		8 or i: Find files #including this file
 
+	For all types, except 4 and 6, leading white space for {name} is
+	removed.  For 4 and 6 there is exactly one space between {querytype}
+	and {name}.  Further white space is included in {name}.
+
 	EXAMPLES >
 	    :cscope find c vim_free
-	    :cscope find 3 vim_free
+	    :cscope find 3  vim_free
 <
-	    These two examples perform the same query. >
+	    These two examples perform the same query: functions calling
+	    "vim_free". >
+
+	    :cscope find t initOnce
+	    :cscope find t  initOnce
+<
+	    The first one searches for the text "initOnce", the second one for
+	    " initOnce". >
 
 	    :cscope find 0 DEFAULT_TERM
 <
