@@ -345,6 +345,15 @@ free_search_patterns()
 {
     vim_free(spats[0].pat);
     vim_free(spats[1].pat);
+
+# ifdef FEAT_RIGHTLEFT
+    if (mr_pattern_alloced)
+    {
+        vim_free(mr_pattern);
+        mr_pattern_alloced = FALSE;
+        mr_pattern = NULL;
+    }
+# endif
 }
 #endif
 
