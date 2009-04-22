@@ -2327,8 +2327,8 @@ findmatchlimit(oap, initc, flags, maxtravel)
 		    for (col = pos.col; check_prevcol(linep, col, '\\', &col);)
 			bslcnt++;
 		}
-		/* Only accept a match when 'M' is in 'cpo' or when ecaping is
-		 * what we expect. */
+		/* Only accept a match when 'M' is in 'cpo' or when escaping
+		 * is what we expect. */
 		if (cpo_bsl || (bslcnt & 1) == match_escaped)
 		{
 		    if (c == initc)
@@ -4663,7 +4663,7 @@ find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 			    msg_putchar('\n');	    /* cursor below last one */
 			    if (!got_int)	    /* don't display if 'q'
 						       typed at "--more--"
-						       mesage */
+						       message */
 			    {
 				msg_home_replace_hl(new_fname);
 				MSG_PUTS(_(" (includes previously listed match)"));
@@ -4975,7 +4975,7 @@ search_line:
 					    || IObuff[i-2] == '!'))))
 				IObuff[i++] = ' ';
 			}
-			/* copy as much as posible of the new word */
+			/* copy as much as possible of the new word */
 			if (p - aux >= IOSIZE - i)
 			    p = aux + IOSIZE - i - 1;
 			STRNCPY(IObuff + i, aux, p - aux);
@@ -5010,7 +5010,7 @@ search_line:
 		    if (did_show)
 			msg_putchar('\n');	/* cursor below last one */
 		    if (!got_int)		/* don't display if 'q' typed
-						    at "--more--" mesage */
+						    at "--more--" message */
 			msg_home_replace_hl(curr_fname);
 		    prev_fname = curr_fname;
 		}
@@ -5092,7 +5092,7 @@ search_line:
 		}
 		if (action != ACTION_SHOW)
 		{
-		    curwin->w_cursor.col = (colnr_T) (startp - line);
+		    curwin->w_cursor.col = (colnr_T)(startp - line);
 		    curwin->w_set_curswant = TRUE;
 		}
 
@@ -5119,7 +5119,8 @@ exit_matched:
 		    && action == ACTION_EXPAND
 		    && !(compl_cont_status & CONT_SOL)
 #endif
-		    && *(p = startp + 1))
+		    && *startp != NUL
+		    && *(p = startp + 1) != NUL)
 		goto search_line;
 	}
 	line_breakcheck();
