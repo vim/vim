@@ -5686,7 +5686,7 @@ ex_history(eap)
 	histype1 = get_histtype(arg);
 	if (histype1 == -1)
 	{
-	    if (STRICMP(arg, "all") == 0)
+	    if (STRNICMP(arg, "all", STRLEN(arg)) == 0)
 	    {
 		histype1 = 0;
 		histype2 = HIST_COUNT-1;
