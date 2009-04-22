@@ -2952,7 +2952,7 @@ dnl Check if X_LOCALE should be defined.
 if test "$enable_multibyte" = "yes"; then
   cflags_save=$CFLAGS
   ldflags_save=$LDFLAGS
-  if test -n "$x_includes" ; then
+  if test "x$x_includes" != "xNONE" ; then
     CFLAGS="$CFLAGS -I$x_includes"
     LDFLAGS="$X_LIBS $LDFLAGS -lX11"
     AC_MSG_CHECKING(whether X_LOCALE needed)

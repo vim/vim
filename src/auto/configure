@@ -15519,7 +15519,7 @@ fi
 if test "$enable_multibyte" = "yes"; then
   cflags_save=$CFLAGS
   ldflags_save=$LDFLAGS
-  if test -n "$x_includes" ; then
+  if test "x$x_includes" != "xNONE" ; then
     CFLAGS="$CFLAGS -I$x_includes"
     LDFLAGS="$X_LIBS $LDFLAGS -lX11"
     { $as_echo "$as_me:$LINENO: checking whether X_LOCALE needed" >&5
