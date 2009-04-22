@@ -3771,8 +3771,10 @@ do_swapexists(buf, fname)
     set_vim_var_string(VV_SWAPCHOICE, NULL, -1);
 
     /* Trigger SwapExists autocommands with <afile> set to the file being
-     * edited. */
+     * edited.  Disallow changing directory here. */
+    ++allbuf_lock;
     apply_autocmds(EVENT_SWAPEXISTS, buf->b_fname, NULL, FALSE, NULL);
+    --allbuf_lock;
 
     set_vim_var_string(VV_SWAPNAME, NULL, -1);
 
@@ -3798,6 +3800,7 @@ do_swapexists(buf, fname)
  *
  * Note: If BASENAMELEN is not correct, you will get error messages for
  *	 not being able to open the swapfile
+ * Note: May trigger SwapExists autocmd, pointers may change!
  */
     static char_u *
 findswapname(buf, dirp, old_fname)
