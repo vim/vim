@@ -122,6 +122,9 @@ BEGIN
     CONTROL         "&Open file in DevStudio editor simultaneously",
                     IDC_DEVSTUDIO_EDITOR,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
                     WS_TABSTOP,7,7,153,10
+    CONTROL         "Open files in new tabs",
+                    IDC_NEW_TABS,"Button",BS_AUTOCHECKBOX | WS_GROUP | 
+                    WS_TABSTOP,7,21,153,10
     GROUPBOX        "Current directory",IDC_STATIC,7,35,164,58,WS_GROUP
     CONTROL         "Set to &source file path",IDC_CD_SOURCE_PATH,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,49,85,10
