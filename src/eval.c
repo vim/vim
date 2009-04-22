@@ -1285,7 +1285,9 @@ eval_to_string(arg, nextcmd, convert)
     typval_T	tv;
     char_u	*retval;
     garray_T	ga;
+#ifdef FEAT_FLOAT
     char_u	numbuf[NUMBUFLEN];
+#endif
 
     if (eval0(arg, &tv, nextcmd, TRUE) == FAIL)
 	retval = NULL;
@@ -8018,7 +8020,8 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
     /* execute the function if no errors detected and executing */
     if (evaluate && error == ERROR_NONE)
     {
-	rettv->v_type = VAR_NUMBER;	/* default is number rettv */
+	rettv->v_type = VAR_NUMBER;	/* default rettv is number zero */
+	rettv->vval.v_number = 0;
 	error = ERROR_UNKNOWN;
 
 	if (!builtin_function(fname))
@@ -8268,7 +8271,6 @@ f_append(argvars, rettv)
 		return;
 	    li = l->lv_first;
 	}
-	rettv->vval.v_number = 0;	/* Default: Success */
 	for (;;)
 	{
 	    if (l == NULL)
@@ -8728,7 +8730,6 @@ f_call(argvars, rettv)
     int		dummy;
     dict_T	*selfdict = NULL;
 
-    rettv->vval.v_number = 0;
     if (argvars[1].v_type != VAR_LIST)
     {
 	EMSG(_(e_listreq));
@@ -9036,13 +9037,9 @@ f_confirm(argvars, rettv)
     if (buttons == NULL || *buttons == NUL)
 	buttons = (char_u *)_("&Ok");
 
-    if (error)
-	rettv->vval.v_number = 0;
-    else
+    if (!error)
 	rettv->vval.v_number = do_dialog(type, NULL, message, buttons,
 								   def, NULL);
-#else
-    rettv->vval.v_number = 0;
 #endif
 }
 
@@ -9181,15 +9178,14 @@ f_cscope_connection(argvars, rettv)
     }
 
     rettv->vval.v_number = cs_connection(num, dbpath, prepend);
-#else
-    rettv->vval.v_number = 0;
 #endif
 }
 
 /*
  * "cursor(lnum, col)" function
  *
- * Moves the cursor to the specified line and column
+ * Moves the cursor to the specified line and column.
+ * Returns 0 when the position could be set, -1 otherwise.
  */
 /*ARGSUSED*/
     static void
@@ -9202,6 +9198,7 @@ f_cursor(argvars, rettv)
     long	coladd = 0;
 #endif
 
+    rettv->vval.v_number = -1;
     if (argvars[1].v_type == VAR_UNKNOWN)
     {
 	pos_T	    pos;
@@ -9246,6 +9243,7 @@ f_cursor(argvars, rettv)
 #endif
 
     curwin->w_set_curswant = TRUE;
+    rettv->vval.v_number = 0;
 }
 
 /*
@@ -9291,8 +9289,6 @@ f_did_filetype(argvars, rettv)
 {
 #ifdef FEAT_AUTOCMD
     rettv->vval.v_number = did_filetype;
-#else
-    rettv->vval.v_number = 0;
 #endif
 }
 
@@ -9605,7 +9601,6 @@ f_extend(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
     {
 	list_T		*l1, *l2;
@@ -9733,7 +9728,6 @@ f_feedkeys(argvars, rettv)
     if (check_secure())
 	return;
 
-    rettv->vval.v_number = 0;
     keys = get_tv_string(&argvars[0]);
     if (*keys != NUL)
     {
@@ -9901,7 +9895,6 @@ filter_map(argvars, rettv, map)
     char_u	*ermsg = map ? (char_u *)"map()" : (char_u *)"filter()";
     int		save_did_emsg;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
@@ -10084,8 +10077,6 @@ f_float2nr(argvars, rettv)
 	else
 	    rettv->vval.v_number = (varnumber_T)f;
     }
-    else
-	rettv->vval.v_number = 0;
 }
 
 /*
@@ -10219,9 +10210,7 @@ f_foldlevel(argvars, rettv)
     lnum = get_tv_lnum(argvars);
     if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
 	rettv->vval.v_number = foldLevel(lnum);
-    else
 #endif
-	rettv->vval.v_number = 0;
 }
 
 /*
@@ -10337,7 +10326,6 @@ f_foreground(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = 0;
 #ifdef FEAT_GUI
     if (gui.in_use)
 	gui_mch_set_foreground();
@@ -10359,7 +10347,6 @@ f_function(argvars, rettv)
 {
     char_u	*s;
 
-    rettv->vval.v_number = 0;
     s = get_tv_string(&argvars[0]);
     if (s == NULL || *s == NUL || VIM_ISDIGIT(*s))
 	EMSG2(_(e_invarg2), s);
@@ -10429,9 +10416,7 @@ f_get(argvars, rettv)
 
     if (tv == NULL)
     {
-	if (argvars[2].v_type == VAR_UNKNOWN)
-	    rettv->vval.v_number = 0;
-	else
+	if (argvars[2].v_type != VAR_UNKNOWN)
 	    copy_tv(&argvars[2], rettv);
     }
     else
@@ -10456,13 +10441,8 @@ get_buffer_lines(buf, start, end, retlist, rettv)
 {
     char_u	*p;
 
-    if (retlist)
-    {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    return;
-    }
-    else
-	rettv->vval.v_number = 0;
+    if (retlist && rettv_list_alloc(rettv) == FAIL)
+	return;
 
     if (buf == NULL || buf->b_ml.ml_mfp == NULL || start < 0)
 	return;
@@ -11009,8 +10989,6 @@ f_getmatches(argvars, rettv)
     dict_T	*dict;
     matchitem_T	*cur = curwin->w_match_head;
 
-    rettv->vval.v_number = 0;
-
     if (rettv_list_alloc(rettv) == OK)
     {
 	while (cur != NULL)
@@ -11089,7 +11067,6 @@ f_getqflist(argvars, rettv)
     win_T	*wp;
 #endif
 
-    rettv->vval.v_number = 0;
 #ifdef FEAT_QUICKFIX
     if (rettv_list_alloc(rettv) == OK)
     {
@@ -11935,7 +11912,6 @@ f_has_key(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT)
     {
 	EMSG(_(e_dictreq));
@@ -12052,8 +12028,6 @@ f_histdel(argvars, rettv)
 	n = del_history_entry(get_histtype(str),
 				      get_tv_string_buf(&argvars[1], buf));
     rettv->vval.v_number = n;
-#else
-    rettv->vval.v_number = 0;
 #endif
 }
 
@@ -12415,7 +12389,6 @@ f_inputlist(argvars, rettv)
     int		selected;
     int		mouse_used;
 
-    rettv->vval.v_number = 0;
 #ifdef NO_CONSOLE_INPUT
     /* While starting up, there is no place to enter text. */
     if (no_console_input())
@@ -12464,7 +12437,7 @@ f_inputrestore(argvars, rettv)
 	--ga_userinput.ga_len;
 	restore_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
-	rettv->vval.v_number = 0; /* OK */
+	/* default return is zero == OK */
     }
     else if (p_verbose > 1)
     {
@@ -12488,7 +12461,7 @@ f_inputsave(argvars, rettv)
 	save_typeahead((tasave_T *)(ga_userinput.ga_data)
 						       + ga_userinput.ga_len);
 	++ga_userinput.ga_len;
-	rettv->vval.v_number = 0; /* OK */
+	/* default return is zero == OK */
     }
     else
 	rettv->vval.v_number = 1; /* Failed */
@@ -12522,7 +12495,6 @@ f_insert(argvars, rettv)
     list_T	*l;
     int		error = FALSE;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL
@@ -12641,7 +12613,6 @@ dict_list(argvars, rettv, what)
     dict_T	*d;
     int		todo;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT)
     {
 	EMSG(_(e_dictreq));
@@ -12729,7 +12700,6 @@ f_join(argvars, rettv)
     garray_T	ga;
     char_u	*sep;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
     {
 	EMSG(_(e_listreq));
@@ -12827,9 +12797,7 @@ libcall_common(argvars, rettv, type)
 #endif
 
     rettv->v_type = type;
-    if (type == VAR_NUMBER)
-	rettv->vval.v_number = 0;
-    else
+    if (type != VAR_NUMBER)
 	rettv->vval.v_string = NULL;
 
     if (check_restricted() || check_secure())
@@ -13770,7 +13738,6 @@ f_pumvisible(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = 0;
 #ifdef FEAT_INS_EXPAND
     if (pum_visible())
 	rettv->vval.v_number = 1;
@@ -13804,7 +13771,6 @@ f_range(argvars, rettv)
 	    stride = get_tv_number_chk(&argvars[2], &error);
     }
 
-    rettv->vval.v_number = 0;
     if (error)
 	return;		/* type error; errmsg already given */
     if (stride == 0)
@@ -14193,7 +14159,6 @@ f_remote_foreground(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-    rettv->vval.v_number = 0;
 #ifdef FEAT_CLIENTSERVER
 # ifdef WIN32
     /* On Win32 it's done in this application. */
@@ -14249,7 +14214,6 @@ f_remote_peek(argvars, rettv)
 	rettv->vval.v_number = (s != NULL);
     }
 # else
-    rettv->vval.v_number = 0;
     if (check_connection() == FAIL)
 	return;
 
@@ -14338,7 +14302,6 @@ f_remove(argvars, rettv)
     dict_T	*d;
     dictitem_T	*di;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type == VAR_DICT)
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -14696,7 +14659,6 @@ f_reverse(argvars, rettv)
     list_T	*l;
     listitem_T	*li, *ni;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "reverse()");
     else if ((l = argvars[0].vval.v_list) != NULL
@@ -15048,8 +15010,6 @@ f_searchpairpos(argvars, rettv)
     int		lnum = 0;
     int		col = 0;
 
-    rettv->vval.v_number = 0;
-
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
@@ -15236,8 +15196,6 @@ f_searchpos(argvars, rettv)
     int		n;
     int		flags = 0;
 
-    rettv->vval.v_number = 0;
-
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
 
@@ -15323,8 +15281,6 @@ f_setbufvar(argvars, rettv)
     typval_T	*varp;
     char_u	nbuf[NUMBUFLEN];
 
-    rettv->vval.v_number = 0;
-
     if (check_restricted() || check_secure())
 	return;
     (void)get_tv_number(&argvars[0]);	    /* issue errmsg if type error */
@@ -15404,7 +15360,7 @@ f_setline(argvars, rettv)
     else
 	line = get_tv_string_chk(&argvars[1]);
 
-    rettv->vval.v_number = 0;		/* OK */
+    /* default result is zero == OK */
     for (;;)
     {
 	if (l != NULL)
@@ -15717,6 +15673,7 @@ f_setwinvar(argvars, rettv)
 /*
  * "setwinvar()" and "settabwinvar()" functions
  */
+/*ARGSUSED*/
     static void
 setwinvar(argvars, rettv, off)
     typval_T	*argvars;
@@ -15732,8 +15689,6 @@ setwinvar(argvars, rettv, off)
     typval_T	*varp;
     char_u	nbuf[NUMBUFLEN];
     tabpage_T	*tp;
-
-    rettv->vval.v_number = 0;
 
     if (check_restricted() || check_secure())
 	return;
@@ -15947,7 +15902,6 @@ f_sort(argvars, rettv)
     long	len;
     long	i;
 
-    rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_LIST)
 	EMSG2(_(e_listarg), "sort()");
     else
@@ -16870,9 +16824,7 @@ f_tabpagebuflist(argvars, rettv)
     typval_T	*argvars;
     typval_T	*rettv;
 {
-#ifndef FEAT_WINDOWS
-    rettv->vval.v_number = 0;
-#else
+#ifdef FEAT_WINDOWS
     tabpage_T	*tp;
     win_T	*wp = NULL;
 
@@ -16884,19 +16836,12 @@ f_tabpagebuflist(argvars, rettv)
 	if (tp != NULL)
 	    wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
     }
-    if (wp == NULL)
-	rettv->vval.v_number = 0;
-    else
+    if (wp != NULL && rettv_list_alloc(rettv) != FAIL)
     {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    rettv->vval.v_number = 0;
-	else
-	{
-	    for (; wp != NULL; wp = wp->w_next)
-		if (list_append_number(rettv->vval.v_list,
+	for (; wp != NULL; wp = wp->w_next)
+	    if (list_append_number(rettv->vval.v_list,
 						wp->w_buffer->b_fnum) == FAIL)
-		    break;
-	}
+		break;
     }
 #endif
 }
@@ -17024,10 +16969,7 @@ f_tagfiles(argvars, rettv)
     int		first;
 
     if (rettv_list_alloc(rettv) == FAIL)
-    {
-	rettv->vval.v_number = 0;
 	return;
-    }
 
     for (first = TRUE; ; first = FALSE)
 	if (get_tagfname(&tn, first, fname) == FAIL
@@ -17401,8 +17343,6 @@ f_visualmode(argvars, rettv)
     /* A non-zero number or non-empty string argument: reset mode. */
     if (non_zero_arg(&argvars[0]))
 	curbuf->b_visual_mode_eval = NUL;
-#else
-    rettv->vval.v_number = 0; /* return anything, it won't work anyway */
 #endif
 }
 

@@ -2414,6 +2414,7 @@ cursor({list})
 		When 'virtualedit' is used {off} specifies the offset in
 		screen columns from the start of the character.  E.g., a
 		position within a <Tab> or after the last character.
+		Returns 0 when the position could be set, -1 otherwise.
 
 
 deepcopy({expr}[, {noref}])				*deepcopy()* *E698*
@@ -4516,6 +4517,7 @@ rename({from}, {to})					*rename()*
 		should also work to move files across file systems.  The
 		result is a Number, which is 0 if the file was renamed
 		successfully, and non-zero when the renaming failed.
+		NOTE: If {to} exists it is overwritten without warning.
 		This function is not available in the |sandbox|.
 
 repeat({expr}, {count})					*repeat()*
