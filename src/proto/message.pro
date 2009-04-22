@@ -54,6 +54,7 @@ void msg_clr_eos_force __ARGS((void));
 void msg_clr_cmdline __ARGS((void));
 int msg_end __ARGS((void));
 void msg_check __ARGS((void));
+int redirecting __ARGS((void));
 void verbose_enter __ARGS((void));
 void verbose_leave __ARGS((void));
 void verbose_enter_scroll __ARGS((void));

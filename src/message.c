@@ -3023,11 +3023,7 @@ redir_write(str, maxlen)
     if (*p_vfile != NUL)
 	verbose_write(s, maxlen);
 
-    if (redir_fd != NULL
-#ifdef FEAT_EVAL
-			  || redir_reg || redir_vname
-#endif
-				       )
+    if (redirecting())
     {
 	/* If the string doesn't start with CR or NL, go to msg_col */
 	if (*s != '\n' && *s != '\r')
@@ -3072,6 +3068,16 @@ redir_write(str, maxlen)
 	if (msg_silent != 0)	/* should update msg_col */
 	    msg_col = cur_col;
     }
+}
+
+    int
+redirecting()
+{
+    return redir_fd != NULL
+#ifdef FEAT_EVAL
+			  || redir_reg || redir_vname
+#endif
+				       ;
 }
 
 /*
