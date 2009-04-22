@@ -495,10 +495,11 @@ shift_block(oap, amount)
 	block_space_width = non_white_col - oap->start_vcol;
 	/* We will shift by "total" or "block_space_width", whichever is less.
 	 */
-	shift_amount = (block_space_width < total? block_space_width: total);
+	shift_amount = (block_space_width < (size_t)total
+					 ? block_space_width : (size_t)total);
 
 	/* The column to which we will shift the text.  */
-	destination_col = non_white_col - shift_amount;
+	destination_col = (colnr_T)(non_white_col - shift_amount);
 
 	/* Now let's find out how much of the beginning of the line we can
 	 * reuse without modification.  */
