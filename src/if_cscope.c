@@ -98,6 +98,7 @@ cs_usage_msg(x)
 static enum
 {
     EXP_CSCOPE_SUBCMD,	/* expand ":cscope" sub-commands */
+    EXP_SCSCOPE_SUBCMD,	/* expand ":scscope" sub-commands */
     EXP_CSCOPE_FIND,	/* expand ":cscope find" arguments */
     EXP_CSCOPE_KILL	/* expand ":cscope kill" arguments */
 } expand_what;
@@ -112,12 +113,23 @@ get_cscope_name(xp, idx)
     expand_T	*xp;
     int		idx;
 {
+    int		current_idx;
+    int		i;
+
     switch (expand_what)
     {
     case EXP_CSCOPE_SUBCMD:
 	/* Complete with sub-commands of ":cscope":
 	 * add, find, help, kill, reset, show */
 	return (char_u *)cs_cmds[idx].name;
+    case EXP_SCSCOPE_SUBCMD:
+	/* Complete with sub-commands of ":scscope": same sub-commands as
+	 * ":cscope" but skip commands which don't support split windows */
+	for (i = 0, current_idx = 0; cs_cmds[i].name != NULL; i++)
+	    if (cs_cmds[i].cansplit)
+		if (current_idx++ == idx)
+		    break;
+	return (char_u *)cs_cmds[i].name;
     case EXP_CSCOPE_FIND:
 	{
 	    const char *query_type[] =
@@ -133,15 +145,13 @@ get_cscope_name(xp, idx)
 	}
     case EXP_CSCOPE_KILL:
 	{
-	    int			i;
-	    int			current_idx = 0;
 	    static char_u	connection[2];
 
 	    /* ":cscope kill" accepts connection numbers or partial names of
 	     * the pathname of the cscope database as argument.  Only complete
 	     * with connection numbers. -1 can also be used to kill all
 	     * connections. */
-	    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	    for (i = 0, current_idx = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
 	    {
 		if (csinfo[i].fname == NULL)
 		    continue;
@@ -165,16 +175,18 @@ get_cscope_name(xp, idx)
  * Handle command line completion for :cscope command.
  */
     void
-set_context_in_cscope_cmd(xp, arg)
+set_context_in_cscope_cmd(xp, arg, cmdidx)
     expand_T	*xp;
     char_u	*arg;
+    cmdidx_T	cmdidx;
 {
     char_u	*p;
 
     /* Default: expand subcommands */
     xp->xp_context = EXPAND_CSCOPE;
-    expand_what = EXP_CSCOPE_SUBCMD;
     xp->xp_pattern = arg;
+    expand_what = (cmdidx == CMD_scscope)
+			? EXP_SCSCOPE_SUBCMD : EXP_CSCOPE_SUBCMD;
 
     /* (part of) subcommand already typed */
     if (*arg != NUL)

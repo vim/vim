@@ -3690,7 +3690,9 @@ set_one_cmd_context(xp, buff)
 	    break;
 #ifdef FEAT_CSCOPE
 	case CMD_cscope:
-	    set_context_in_cscope_cmd(xp, arg);
+	case CMD_lcscope:
+	case CMD_scscope:
+	    set_context_in_cscope_cmd(xp, arg, ea.cmdidx);
 	    break;
 #endif
 #ifdef FEAT_LISTCMDS
