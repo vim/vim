@@ -1554,10 +1554,15 @@ recover_names(fname, list, nr)
 	    for (i = 0; i < num_files; ++i)
 		if (fullpathcmp(p, files[i], TRUE) & FPC_SAME)
 		{
+		    /* Remove the name from files[i].  Move further entries
+		     * down.  When the array becomes empty free it here, since
+		     * FreeWild() won't be called below. */
 		    vim_free(files[i]);
-		    --num_files;
-		    for ( ; i < num_files; ++i)
-			files[i] = files[i + 1];
+		    if (--num_files == 0)
+			vim_free(files);
+		    else
+			for ( ; i < num_files; ++i)
+			    files[i] = files[i + 1];
 		}
 	}
 	if (nr > 0)
@@ -3522,7 +3527,7 @@ resolve_symlink(fname, buf)
 	    if (errno == EINVAL || errno == ENOENT)
 	    {
 		/* Found non-symlink or not existing file, stop here.
-		 * When at the first level use the unmodifed name, skip the
+		 * When at the first level use the unmodified name, skip the
 		 * call to vim_FullName(). */
 		if (depth == 1)
 		    return FAIL;
@@ -4560,7 +4565,7 @@ ml_updatechunk(buf, line, len, updtype)
 			buf->b_ml.ml_chunksize + curix,
 			(buf->b_ml.ml_usedchunks - curix) *
 			sizeof(chunksize_T));
-	    /* Compute length of first half of lines in the splitted chunk */
+	    /* Compute length of first half of lines in the split chunk */
 	    size = 0;
 	    linecnt = 0;
 	    while (curline < buf->b_ml.ml_line_count
