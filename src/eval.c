@@ -19720,6 +19720,7 @@ ex_function(eap)
 			    list_func_head(fp, FALSE);
 		    }
 		}
+		vim_free(regmatch.regprog);
 	    }
 	}
 	if (*p == '/')
