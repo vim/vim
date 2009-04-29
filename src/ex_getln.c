@@ -6073,6 +6073,9 @@ ex_window()
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
     set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
+#ifdef FEAT_FOLDING
+    curwin->w_p_fen = FALSE;
+#endif
 # ifdef FEAT_RIGHTLEFT
     curwin->w_p_rl = cmdmsg_rl;
     cmdmsg_rl = FALSE;
