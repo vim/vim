@@ -2346,7 +2346,13 @@ ex_copen(eap)
 	    set_option_value((char_u *)"bt", 0L, (char_u *)"quickfix",
 								   OPT_LOCAL);
 	    set_option_value((char_u *)"bh", 0L, (char_u *)"wipe", OPT_LOCAL);
-	    set_option_value((char_u *)"diff", 0L, NULL, OPT_LOCAL);
+#ifdef FEAT_DIFF
+	    curwin->w_p_diff = FALSE;
+#endif
+#ifdef FEAT_FOLDING
+	    set_option_value((char_u *)"fdm", 0L, (char_u *)"manual",
+								   OPT_LOCAL);
+#endif
 	}
 
 	/* Only set the height when still in the same tab page and there is no
@@ -2607,10 +2613,12 @@ qf_fill_buffer(qi)
     curbuf->b_p_ma = FALSE;
 
 #ifdef FEAT_AUTOCMD
+    keep_filetype = TRUE;		/* don't detect 'filetype' */
     apply_autocmds(EVENT_BUFREADPOST, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
     apply_autocmds(EVENT_BUFWINENTER, (char_u *)"quickfix", NULL,
 							       FALSE, curbuf);
+    keep_filetype = FALSE;
 #endif
 
     /* make sure it will be redrawn */
