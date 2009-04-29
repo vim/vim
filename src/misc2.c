@@ -1075,11 +1075,12 @@ free_all_mem()
 
 #ifdef FEAT_QUICKFIX
     {
-	win_T	*win;
+	win_T	    *win;
+	tabpage_T   *tab;
 
 	qf_free_all(NULL);
 	/* Free all location lists */
-	FOR_ALL_WINDOWS(win)
+	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
 #endif

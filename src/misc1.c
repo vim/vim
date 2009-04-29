@@ -2717,6 +2717,9 @@ changed_common(lnum, col, lnume, xtra)
     long	xtra;
 {
     win_T	*wp;
+#ifdef FEAT_WINDOWS
+    tabpage_T	*tp;
+#endif
     int		i;
 #ifdef FEAT_JUMPLIST
     int		cols;
@@ -2769,7 +2772,7 @@ changed_common(lnum, col, lnume, xtra)
 		    curbuf->b_changelistlen = JUMPLISTSIZE - 1;
 		    mch_memmove(curbuf->b_changelist, curbuf->b_changelist + 1,
 					  sizeof(pos_T) * (JUMPLISTSIZE - 1));
-		    FOR_ALL_WINDOWS(wp)
+		    FOR_ALL_TAB_WINDOWS(tp, wp)
 		    {
 			/* Correct position in changelist for other windows on
 			 * this buffer. */
@@ -2777,7 +2780,7 @@ changed_common(lnum, col, lnume, xtra)
 			    --wp->w_changelistidx;
 		    }
 		}
-		FOR_ALL_WINDOWS(wp)
+		FOR_ALL_TAB_WINDOWS(tp, wp)
 		{
 		    /* For other windows, if the position in the changelist is
 		     * at the end it stays at the end. */
@@ -2796,7 +2799,7 @@ changed_common(lnum, col, lnume, xtra)
 #endif
     }
 
-    FOR_ALL_WINDOWS(wp)
+    FOR_ALL_TAB_WINDOWS(tp, wp)
     {
 	if (wp->w_buffer == curbuf)
 	{

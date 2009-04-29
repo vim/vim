@@ -6846,10 +6846,11 @@ buf_reload(buf, orig_mode)
 #endif
 #ifdef FEAT_FOLDING
 	{
-	    win_T *wp;
+	    win_T	*wp;
+	    tabpage_T	*tp;
 
 	    /* Update folds unless they are defined manually. */
-	    FOR_ALL_WINDOWS(wp)
+	    FOR_ALL_TAB_WINDOWS(tp, wp)
 		if (wp->w_buffer == curwin->w_buffer
 			&& !foldmethodIsManual(wp))
 		    foldUpdateAll(wp);
