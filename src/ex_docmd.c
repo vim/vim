@@ -3695,6 +3695,11 @@ set_one_cmd_context(xp, buff)
 	    set_context_in_cscope_cmd(xp, arg, ea.cmdidx);
 	    break;
 #endif
+#ifdef FEAT_SIGNS
+	case CMD_sign:
+	    set_context_in_sign_cmd(xp, arg);
+	    break;
+#endif
 #ifdef FEAT_LISTCMDS
 	case CMD_bdelete:
 	case CMD_bwipeout:
@@ -5218,6 +5223,9 @@ static struct
     {EXPAND_MENUS, "menu"},
     {EXPAND_SETTINGS, "option"},
     {EXPAND_SHELLCMD, "shellcmd"},
+#if defined(FEAT_SIGNS)
+    {EXPAND_SIGN, "sign"},
+#endif
     {EXPAND_TAGS, "tag"},
     {EXPAND_TAGS_LISTFILES, "tag_listfiles"},
     {EXPAND_USER_VARS, "var"},

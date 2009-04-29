@@ -6543,6 +6543,43 @@ static int	last_sign_typenr = MAX_TYPENR;	/* is decremented */
 static void sign_list_defined __ARGS((sign_T *sp));
 static void sign_undefine __ARGS((sign_T *sp, sign_T *sp_prev));
 
+static char *cmds[] = {
+			"define",
+#define SIGNCMD_DEFINE	0
+			"undefine",
+#define SIGNCMD_UNDEFINE 1
+			"list",
+#define SIGNCMD_LIST	2
+			"place",
+#define SIGNCMD_PLACE	3
+			"unplace",
+#define SIGNCMD_UNPLACE	4
+			"jump",
+#define SIGNCMD_JUMP	5
+			NULL
+#define SIGNCMD_LAST	6
+};
+
+/*
+ * Find index of a ":sign" subcmd from its name.
+ * "*end_cmd" must be writable.
+ */
+    static int
+sign_cmd_idx(begin_cmd, end_cmd)
+    char	*begin_cmd;	/* begin of sign subcmd */
+    char	*end_cmd;	/* just after sign subcmd */
+{
+    int		idx;
+    char	save = *end_cmd;
+
+    *end_cmd = NUL;
+    for (idx = 0; ; ++idx)
+	if (cmds[idx] == NULL || STRCMP(begin_cmd, cmds[idx]) == 0)
+	    break;
+    *end_cmd = save;
+    return idx;
+}
+
 /*
  * ":sign" command
  */
@@ -6556,35 +6593,14 @@ ex_sign(eap)
     sign_T	*sp;
     sign_T	*sp_prev;
     buf_T	*buf;
-    static char	*cmds[] = {
-			"define",
-#define SIGNCMD_DEFINE	0
-			"undefine",
-#define SIGNCMD_UNDEFINE 1
-			"list",
-#define SIGNCMD_LIST	2
-			"place",
-#define SIGNCMD_PLACE	3
-			"unplace",
-#define SIGNCMD_UNPLACE	4
-			"jump",
-#define SIGNCMD_JUMP	5
-#define SIGNCMD_LAST	6
-    };
 
     /* Parse the subcommand. */
     p = skiptowhite(arg);
-    if (*p != NUL)
-	*p++ = NUL;
-    for (idx = 0; ; ++idx)
+    idx = sign_cmd_idx(arg, p);
+    if (idx == SIGNCMD_LAST)
     {
-	if (idx == SIGNCMD_LAST)
-	{
-	    EMSG2(_("E160: Unknown sign command: %s"), arg);
-	    return;
-	}
-	if (STRCMP(arg, cmds[idx]) == 0)
-	    break;
+	EMSG2(_("E160: Unknown sign command: %s"), arg);
+	return;
     }
     arg = skipwhite(p);
 
@@ -7110,6 +7126,186 @@ free_signs()
 }
 #endif
 
+#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
+static enum
+{
+    EXP_SUBCMD,		/* expand :sign sub-commands */
+    EXP_DEFINE,		/* expand :sign define {name} args */
+    EXP_PLACE,		/* expand :sign place {id} args */
+    EXP_UNPLACE,	/* expand :sign unplace" */
+    EXP_SIGN_NAMES	/* expand with name of placed signs */
+} expand_what;
+
+/*
+ * Function given to ExpandGeneric() to obtain the sign command
+ * expansion.
+ */
+/*ARGSUSED*/
+    char_u *
+get_sign_name(xp, idx)
+    expand_T	*xp;
+    int		idx;
+{
+    sign_T	*sp;
+    int		current_idx;
+
+    switch (expand_what)
+    {
+    case EXP_SUBCMD:
+	return (char_u *)cmds[idx];
+    case EXP_DEFINE:
+	{
+	    char *define_arg[] =
+	    {
+		"icon=", "linehl=", "text=", "texthl=", NULL
+	    };
+	    return (char_u *)define_arg[idx];
+	}
+    case EXP_PLACE:
+	{
+	    char *place_arg[] =
+	    {
+		"line=", "name=", "file=", "buffer=", NULL
+	    };
+	    return (char_u *)place_arg[idx];
+	}
+    case EXP_UNPLACE:
+	{
+	    char *unplace_arg[] = { "file=", "buffer=", NULL };
+	    return (char_u *)unplace_arg[idx];
+	}
+    case EXP_SIGN_NAMES:
+	/* Complete with name of signs already defined */
+	current_idx = 0;
+	for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+	    if (current_idx++ == idx)
+		return sp->sn_name;
+	return NULL;
+    default:
+	return NULL;
+    }
+}
+
+/*
+ * Handle command line completion for :sign command.
+ */
+    void
+set_context_in_sign_cmd(xp, arg)
+    expand_T	*xp;
+    char_u	*arg;
+{
+    char_u	*p;
+    char_u	*end_subcmd;
+    char_u	*last;
+    int		cmd_idx;
+    char_u	*begin_subcmd_args;
+
+    /* Default: expand subcommands. */
+    xp->xp_context = EXPAND_SIGN;
+    expand_what = EXP_SUBCMD;
+    xp->xp_pattern = arg;
+
+    end_subcmd = skiptowhite(arg);
+    if (*end_subcmd == NUL)
+	/* expand subcmd name
+	 * :sign {subcmd}<CTRL-D>*/
+	return;
+
+    cmd_idx = sign_cmd_idx(arg, end_subcmd);
+
+    /* :sign {subcmd} {subcmd_args}
+     *                |
+     *                begin_subcmd_args */
+    begin_subcmd_args = skipwhite(end_subcmd);
+    p = skiptowhite(begin_subcmd_args);
+    if (*p == NUL)
+    {
+	/*
+	 * Expand first argument of subcmd when possible.
+	 * For ":jump {id}" and ":unplace {id}", we could
+	 * possibly expand the ids of all signs already placed.
+	 */
+	xp->xp_pattern = begin_subcmd_args;
+	switch (cmd_idx)
+	{
+	    case SIGNCMD_LIST:
+	    case SIGNCMD_UNDEFINE:
+		/* :sign list <CTRL-D>
+		 * :sign undefine <CTRL-D> */
+		expand_what = EXP_SIGN_NAMES;
+		break;
+	    default:
+		xp->xp_context = EXPAND_NOTHING;
+	}
+	return;
+    }
+
+    /* expand last argument of subcmd */
+
+    /* :sign define {name} {args}...
+     *              |
+     *              p */
+
+    /* Loop until reaching last argument. */
+    do
+    {
+	p = skipwhite(p);
+	last = p;
+	p = skiptowhite(p);
+    } while (*p != NUL);
+
+    p = vim_strchr(last, '=');
+
+    /* :sign define {name} {args}... {last}=
+     *                               |     |
+     *                            last     p */
+    if (p == NUL)
+    {
+	/* Expand last argument name (before equal sign). */
+	xp->xp_pattern = last;
+	switch (cmd_idx)
+	{
+	    case SIGNCMD_DEFINE:
+		expand_what = EXP_DEFINE;
+		break;
+	    case SIGNCMD_PLACE:
+		expand_what = EXP_PLACE;
+		break;
+	    case SIGNCMD_JUMP:
+	    case SIGNCMD_UNPLACE:
+		expand_what = EXP_UNPLACE;
+		break;
+	    default:
+		xp->xp_context = EXPAND_NOTHING;
+	}
+    }
+    else
+    {
+	/* Expand last argument value (after equal sign). */
+	xp->xp_pattern = p + 1;
+	switch (cmd_idx)
+	{
+	    case SIGNCMD_DEFINE:
+		if (STRNCMP(last, "texthl", p - last) == 0 ||
+		    STRNCMP(last, "linehl", p - last) == 0)
+		    xp->xp_context = EXPAND_HIGHLIGHT;
+		else if (STRNCMP(last, "icon", p - last) == 0)
+		    xp->xp_context = EXPAND_FILES;
+		else
+		    xp->xp_context = EXPAND_NOTHING;
+		break;
+	    case SIGNCMD_PLACE:
+		if (STRNCMP(last, "name", p - last) == 0)
+		    expand_what = EXP_SIGN_NAMES;
+		else
+		    xp->xp_context = EXPAND_NOTHING;
+		break;
+	    default:
+		xp->xp_context = EXPAND_NOTHING;
+	}
+    }
+}
+#endif
 #endif
 
 #if defined(FEAT_GUI) || defined(FEAT_CLIENTSERVER) || defined(PROTO)

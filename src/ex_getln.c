@@ -325,7 +325,7 @@ getcmdline(firstc, count, indent)
 #endif
 
 #ifdef FEAT_DIGRAPHS
-    do_digraph(-1);		/* init digraph typahead */
+    do_digraph(-1);		/* init digraph typeahead */
 #endif
 
     /*
@@ -4520,6 +4520,9 @@ ExpandFromContext(xp, pat, num_file, file, options)
 #endif
 #ifdef FEAT_CSCOPE
 	    {EXPAND_CSCOPE, get_cscope_name, TRUE},
+#endif
+#ifdef FEAT_SIGNS
+	    {EXPAND_SIGN, get_sign_name, TRUE},
 #endif
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))

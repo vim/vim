@@ -40,7 +40,6 @@ void global_exe __ARGS((char_u *cmd));
 int read_viminfo_sub_string __ARGS((vir_T *virp, int force));
 void write_viminfo_sub_string __ARGS((FILE *fp));
 void free_old_sub __ARGS((void));
-void free_signs __ARGS((void));
 int prepare_tagpreview __ARGS((int undo_sync));
 void ex_help __ARGS((exarg_T *eap));
 char_u *check_help_lang __ARGS((char_u *arg));
@@ -56,5 +55,8 @@ int sign_get_attr __ARGS((int typenr, int line));
 char_u *sign_get_text __ARGS((int typenr));
 void *sign_get_image __ARGS((int typenr));
 char_u *sign_typenr2name __ARGS((int typenr));
+void free_signs __ARGS((void));
+char_u *get_sign_name __ARGS((expand_T *xp, int idx));
+void set_context_in_sign_cmd __ARGS((expand_T *xp, char_u *arg));
 void ex_drop __ARGS((exarg_T *eap));
 /* vim: set ft=c : */
