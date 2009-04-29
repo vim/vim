@@ -392,7 +392,6 @@ shift_block(oap, amount)
     colnr_T		ws_vcol;
     int			i = 0, j = 0;
     int			len;
-
 #ifdef FEAT_RIGHTLEFT
     int			old_p_ri = p_ri;
 
@@ -6284,11 +6283,20 @@ cursor_pos_info()
 
 	    if (VIsual_mode == Ctrl_V)
 	    {
+#ifdef FEAT_LINEBREAK
+		char_u * saved_sbr = p_sbr;
+
+		/* Make 'sbr' empty for a moment to get the correct size. */
+		p_sbr = empty_option;
+#endif
 		oparg.is_VIsual = 1;
 		oparg.block_mode = TRUE;
 		oparg.op_type = OP_NOP;
 		getvcols(curwin, &min_pos, &max_pos,
 					  &oparg.start_vcol, &oparg.end_vcol);
+#ifdef FEAT_LINEBREAK
+		p_sbr = saved_sbr;
+#endif
 		if (curwin->w_curswant == MAXCOL)
 		    oparg.end_vcol = MAXCOL;
 		/* Swap the start, end vcol if needed */

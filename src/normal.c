@@ -3709,13 +3709,13 @@ clear_showcmd()
 #ifdef FEAT_VISUAL
     if (VIsual_active && !char_avail())
     {
-	int		i = lt(VIsual, curwin->w_cursor);
+	int		cursor_bot = lt(VIsual, curwin->w_cursor);
 	long		lines;
 	colnr_T		leftcol, rightcol;
 	linenr_T	top, bot;
 
 	/* Show the size of the Visual area. */
-	if (i)
+	if (cursor_bot)
 	{
 	    top = VIsual.lnum;
 	    bot = curwin->w_cursor.lnum;
@@ -3734,14 +3734,23 @@ clear_showcmd()
 
 	if (VIsual_mode == Ctrl_V)
 	{
+#ifdef FEAT_LINEBREAK
+	    char_u *saved_sbr = p_sbr;
+
+	    /* Make 'sbr' empty for a moment to get the correct size. */
+	    p_sbr = empty_option;
+#endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
+#ifdef FEAT_LINEBREAK
+	    p_sbr = saved_sbr;
+#endif
 	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
 	}
 	else if (VIsual_mode == 'V' || VIsual.lnum != curwin->w_cursor.lnum)
 	    sprintf((char *)showcmd_buf, "%ld", lines);
 	else
-	    sprintf((char *)showcmd_buf, "%ld", (long)(i
+	    sprintf((char *)showcmd_buf, "%ld", (long)(cursor_bot
 		    ? curwin->w_cursor.col - VIsual.col
 		    : VIsual.col - curwin->w_cursor.col) + (*p_sel != 'e'));
 	showcmd_buf[SHOWCMD_COLS] = NUL;	/* truncate */
