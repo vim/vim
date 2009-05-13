@@ -15707,6 +15707,7 @@ test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
   TAGPRG="ctags -I INIT+ --fields=+S"
 else
+  TAGPRG="ctags"
   (eval etags	   /dev/null) < /dev/null 1>&5 2>&1 && TAGPRG="etags"
   (eval etags -c   /dev/null) < /dev/null 1>&5 2>&1 && TAGPRG="etags -c"
   (eval ctags	   /dev/null) < /dev/null 1>&5 2>&1 && TAGPRG="ctags"

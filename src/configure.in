@@ -2968,7 +2968,7 @@ fi
 dnl Link with xpg4, it is said to make Korean locale working
 AC_CHECK_LIB(xpg4, _xpg4_setrunelocale, [LIBS="$LIBS -lxpg4"],,)
 
-dnl Check how we can run ctags
+dnl Check how we can run ctags.  Default to "ctags" when nothing works.
 dnl --version for Exuberant ctags (preferred)
 dnl       Add --fields=+S to get function signatures for omni completion.
 dnl -t for typedefs (many ctags have this)
@@ -2980,6 +2980,7 @@ test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
   TAGPRG="ctags -I INIT+ --fields=+S"
 else
+  TAGPRG="ctags"
   (eval etags	   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags"
   (eval etags -c   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags -c"
   (eval ctags	   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="ctags"
