@@ -53,7 +53,9 @@
 #endif
 
 #ifdef HAVE_UNISTD_H
-# include <unistd.h>
+# ifndef S_SPLINT_S  /* splint crashes on bits/confname.h */
+#  include <unistd.h>
+# endif
 #endif
 
 #ifdef HAVE_LIBC_H

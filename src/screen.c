@@ -9481,13 +9481,15 @@ win_redr_ruler(wp, always)
     win_T	*wp;
     int		always;
 {
-    char_u	buffer[70];
+#define RULER_BUF_LEN 70
+    char_u	buffer[RULER_BUF_LEN];
     int		row;
     int		fillchar;
     int		attr;
     int		empty_line = FALSE;
     colnr_T	virtcol;
     int		i;
+    size_t	len;
     int		o;
 #ifdef FEAT_VERTSPLIT
     int		this_ru_col;
@@ -9602,11 +9604,12 @@ win_redr_ruler(wp, always)
 	 * Some sprintfs return the length, some return a pointer.
 	 * To avoid portability problems we use strlen() here.
 	 */
-	sprintf((char *)buffer, "%ld,",
+	vim_snprintf((char *)buffer, RULER_BUF_LEN, "%ld,",
 		(wp->w_buffer->b_ml.ml_flags & ML_EMPTY)
 		    ? 0L
 		    : (long)(wp->w_cursor.lnum));
-	col_print(buffer + STRLEN(buffer),
+	len = STRLEN(buffer);
+	col_print(buffer + len, RULER_BUF_LEN - len,
 			empty_line ? 0 : (int)wp->w_cursor.col + 1,
 			(int)virtcol + 1);
 
@@ -9616,7 +9619,7 @@ win_redr_ruler(wp, always)
 	 * screen up on some terminals).
 	 */
 	i = (int)STRLEN(buffer);
-	get_rel_pos(wp, buffer + i + 1);
+	get_rel_pos(wp, buffer + i + 1, RULER_BUF_LEN - i - 1);
 	o = i + vim_strsize(buffer + i + 1);
 #ifdef FEAT_WINDOWS
 	if (wp->w_status_height == 0)	/* can't use last char of screen */
@@ -9643,7 +9646,7 @@ win_redr_ruler(wp, always)
 		    buffer[i++] = fillchar;
 		++o;
 	    }
-	    get_rel_pos(wp, buffer + i);
+	    get_rel_pos(wp, buffer + i, RULER_BUF_LEN - i);
 	}
 	/* Truncate at window boundary. */
 #ifdef FEAT_MBYTE

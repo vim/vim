@@ -551,7 +551,12 @@ CClink = $(CC)
 # }}}
 
 # LINT - for running lint
-LINT_OPTIONS = -beprxzF
+#  For standard lint
+#LINT = lint
+#LINT_OPTIONS = -beprxzF
+#  For splint  (see cleanlint.vim for filtering the output)
+LINT = splint
+LINT_OPTIONS = +unixlib -weak -macrovarprefixexclude -showfunc -linelen 9999
 
 # PROFILING - Uncomment the next two lines to do profiling with gcc and gprof.
 # Might not work with GUI or Perl.
@@ -1259,16 +1264,16 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 #     This is for cproto 3 patchlevel 8 or below
 #     __inline, __attribute__ and __extension__ are not recognized by cproto
 #     G_IMPLEMENT_INLINES is to avoid functions defined in glib/gutils.h.
-NO_ATTR = -D__inline= -D__inline__= -DG_IMPLEMENT_INLINES \
-	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
-	  -D__extension__= -D__restrict="" \
-	  -D__gnuc_va_list=char -D__builtin_va_list=char
+#NO_ATTR = -D__inline= -D__inline__= -DG_IMPLEMENT_INLINES \
+#	  -D"__attribute__\\(x\\)=" -D"__asm__\\(x\\)=" \
+#	  -D__extension__= -D__restrict="" \
+#	  -D__gnuc_va_list=char -D__builtin_va_list=char
 
 #
-#     This is for cproto 3 patchlevel 9 or above (currently 4.6)
+#     This is for cproto 3 patchlevel 9 or above (currently 4.6, 4.7g)
 #     __inline and __attribute__ are now recognized by cproto
 #     -D"foo()=" is not supported by all compilers so do not use it
-# NO_ATTR=
+NO_ATTR=
 #
 #     maybe the "/usr/bin/cc -E" has to be adjusted for some systems
 # This is for cproto 3.5 patchlevel 3:
@@ -1432,6 +1437,7 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(TCL_SRC) \
 	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC) $(NETBEANS_SRC)
 #LINT_SRC = $(SRC)
 #LINT_SRC = $(ALL_SRC)
+#LINT_SRC = $(BASIC_SRC)
 
 OBJ = \
 	objects/buffer.o \
@@ -2272,12 +2278,12 @@ depend:
 
 # Run lint.  Clean up the *.ln files that are sometimes left behind.
 lint:
-	lint $(LINT_OPTIONS) $(LINT_CFLAGS) $(LINT_EXTRA) $(LINT_SRC)
+	$(LINT) $(LINT_OPTIONS) $(LINT_CFLAGS) $(LINT_EXTRA) $(LINT_SRC)
 	-rm -f *.ln
 
 # Check dosinst.c with lint.
 lintinstall:
-	lint $(LINT_OPTIONS) -DWIN32 -DUNIX_LINT dosinst.c
+	$(LINT) $(LINT_OPTIONS) -DWIN32 -DUNIX_LINT dosinst.c
 	-rm -f dosinst.ln
 
 ###########################################################################

@@ -199,7 +199,9 @@ static int save_patterns __ARGS((int num_pat, char_u **pat, int *num_file, char_
 #endif
 
 #ifndef SIG_ERR
-# define SIG_ERR	((RETSIGTYPE (*)())-1)
+# ifndef S_SPLINT_S
+#  define SIG_ERR	((RETSIGTYPE (*)())-1)
+# endif
 #endif
 
 /* volatile because it is used in signal handler sig_winch(). */
@@ -441,7 +443,9 @@ mch_char_avail()
 
 #if defined(HAVE_TOTAL_MEM) || defined(PROTO)
 # ifdef HAVE_SYS_RESOURCE_H
-#  include <sys/resource.h>
+#  ifndef S_SPLINT_S  /* splint crashes on bits/resource.h */
+#   include <sys/resource.h>
+#  endif
 # endif
 # if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTL)
 #  include <sys/sysctl.h>

@@ -524,7 +524,7 @@ EXTERN win_T	*lastwin;		/* last window */
 EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 # define W_NEXT(wp) ((wp)->w_next)
 # define FOR_ALL_WINDOWS(wp) for (wp = firstwin; wp != NULL; wp = wp->w_next)
-#define FOR_ALL_TAB_WINDOWS(tp, wp) \
+# define FOR_ALL_TAB_WINDOWS(tp, wp) \
     for ((tp) = first_tabpage; (tp) != NULL; (tp) = (tp)->tp_next) \
 	for ((wp) = ((tp) == curtab) \
 		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
@@ -718,7 +718,7 @@ EXTERN int	can_si_back INIT(= FALSE);
 
 EXTERN pos_T	saved_cursor		/* w_cursor before formatting text. */
 # ifdef DO_INIT
-	= INIT_POS_T
+	= INIT_POS_T(0, 0, 0)
 # endif
 	;
 
@@ -1039,7 +1039,7 @@ EXTERN char_u	*autocmd_match INIT(= NULL); /* name for <amatch> on cmdline */
 EXTERN int	did_cursorhold INIT(= FALSE); /* set when CursorHold t'gerd */
 EXTERN pos_T	last_cursormoved	    /* for CursorMoved event */
 # ifdef DO_INIT
-			= INIT_POS_T
+			= INIT_POS_T(0, 0, 0)
 # endif
 			;
 #endif

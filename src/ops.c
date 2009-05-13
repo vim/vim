@@ -6400,7 +6400,7 @@ cursor_pos_info()
 	    {
 		getvcols(curwin, &min_pos, &max_pos, &min_pos.col,
 								&max_pos.col);
-		sprintf((char *)buf1, _("%ld Cols; "),
+		vim_snprintf((char *)buf1, sizeof(buf1), _("%ld Cols; "),
 			(long)(oparg.end_vcol - oparg.start_vcol + 1));
 	    }
 	    else
@@ -6408,13 +6408,15 @@ cursor_pos_info()
 
 	    if (char_count_cursor == byte_count_cursor
 						  && char_count == byte_count)
-		sprintf((char *)IObuff, _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
+		vim_snprintf((char *)IObuff, IOSIZE,
+			_("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"),
 			buf1, line_count_selected,
 			(long)curbuf->b_ml.ml_line_count,
 			word_count_cursor, word_count,
 			byte_count_cursor, byte_count);
 	    else
-		sprintf((char *)IObuff, _("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
+		vim_snprintf((char *)IObuff, IOSIZE,
+			_("Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"),
 			buf1, line_count_selected,
 			(long)curbuf->b_ml.ml_line_count,
 			word_count_cursor, word_count,
@@ -6426,20 +6428,22 @@ cursor_pos_info()
 	{
 	    p = ml_get_curline();
 	    validate_virtcol();
-	    col_print(buf1, (int)curwin->w_cursor.col + 1,
+	    col_print(buf1, sizeof(buf1), (int)curwin->w_cursor.col + 1,
 		    (int)curwin->w_virtcol + 1);
-	    col_print(buf2, (int)STRLEN(p), linetabsize(p));
+	    col_print(buf2, sizeof(buf2), (int)STRLEN(p), linetabsize(p));
 
 	    if (char_count_cursor == byte_count_cursor
 		    && char_count == byte_count)
-		sprintf((char *)IObuff, _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
+		vim_snprintf((char *)IObuff, IOSIZE,
+		    _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"),
 		    (char *)buf1, (char *)buf2,
 		    (long)curwin->w_cursor.lnum,
 		    (long)curbuf->b_ml.ml_line_count,
 		    word_count_cursor, word_count,
 		    byte_count_cursor, byte_count);
 	    else
-		sprintf((char *)IObuff, _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
+		vim_snprintf((char *)IObuff, IOSIZE,
+		    _("Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"),
 		    (char *)buf1, (char *)buf2,
 		    (long)curwin->w_cursor.lnum,
 		    (long)curbuf->b_ml.ml_line_count,

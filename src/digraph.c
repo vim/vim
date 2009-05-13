@@ -32,7 +32,7 @@ static int getexactdigraph __ARGS((int, int, int));
 static void printdigraph __ARGS((digr_T *));
 
 /* digraphs added by the user */
-static garray_T	user_digraphs = {0, 0, sizeof(digr_T), 10, NULL};
+static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
 
 /*
  * Note: Characters marked with XX are not included literally, because some
@@ -481,7 +481,7 @@ static digr_T digraphdefault[] =
 	{'\'', ' ', 213},	/* ' */
 	{'-', ':', 214},	/* ÷ */
 	{'D', 'I', 215},	/* × */
-	{'y', ':', 216},	/* ÿ */
+	{'y', ':', 216},	/* <8e> */
 	{'Y', ':', 217},	/*  */
 	{'/', '/', 218},	/* Ž */
 	{'E', '=', 219},	/* ¤ Euro System >=8.5 */
@@ -2371,10 +2371,10 @@ printdigraph(dp)
 	}
 	else
 #endif
-	    *p++ = dp->result;
+	    *p++ = (char_u)dp->result;
 	if (char2cells(dp->result) == 1)
 	    *p++ = ' ';
-	sprintf((char *)p, " %3d", dp->result);
+	vim_snprintf((char *)p, sizeof(buf) - (p - buf), " %3d", dp->result);
 	msg_outtrans(buf);
     }
 }
@@ -2395,7 +2395,10 @@ typedef struct
 static void keymap_unload __ARGS((void));
 
 /*
- * Set up key mapping tables for the 'keymap' option
+ * Set up key mapping tables for the 'keymap' option.
+ * Returns NULL if OK, an error message for failure.  This only needs to be
+ * used when setting the option, not later when the value has already been
+ * checked.
  */
     char_u *
 keymap_init()
@@ -2412,25 +2415,29 @@ keymap_init()
     else
     {
 	char_u	*buf;
+	size_t  buflen;
 
 	/* Source the keymap file.  It will contain a ":loadkeymap" command
 	 * which will call ex_loadkeymap() below. */
-	buf = alloc((unsigned)(STRLEN(curbuf->b_p_keymap)
+	buflen = STRLEN(curbuf->b_p_keymap)
 # ifdef FEAT_MBYTE
-						       + STRLEN(p_enc)
+					   + STRLEN(p_enc)
 # endif
-						       + 14));
+						       + 14;
+	buf = alloc((unsigned)buflen);
 	if (buf == NULL)
 	    return e_outofmem;
 
 # ifdef FEAT_MBYTE
 	/* try finding "keymap/'keymap'_'encoding'.vim"  in 'runtimepath' */
-	sprintf((char *)buf, "keymap/%s_%s.vim", curbuf->b_p_keymap, p_enc);
+	vim_snprintf((char *)buf, buflen, "keymap/%s_%s.vim",
+						   curbuf->b_p_keymap, p_enc);
 	if (source_runtime(buf, FALSE) == FAIL)
 # endif
 	{
 	    /* try finding "keymap/'keymap'.vim" in 'runtimepath'  */
-	    sprintf((char *)buf, "keymap/%s.vim", curbuf->b_p_keymap);
+	    vim_snprintf((char *)buf, buflen, "keymap/%s.vim",
+							  curbuf->b_p_keymap);
 	    if (source_runtime(buf, FALSE) == FAIL)
 	    {
 		vim_free(buf);

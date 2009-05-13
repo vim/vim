@@ -57,7 +57,7 @@ static char *ctrl_x_msgs[] =
     N_(" Keyword Local completion (^N^P)"),
 };
 
-static char_u e_hitend[] = N_("Hit end of paragraph");
+static char e_hitend[] = N_("Hit end of paragraph");
 
 /*
  * Structure used to store one match for insert completion.
@@ -69,7 +69,11 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	/* matched text */
     char	cp_icase;	/* TRUE or FALSE: ignore case */
+#ifdef S_SPLINT_S  /* splint can't handle array of pointers */
+    char_u	**cp_text;	/* text for the menu */
+#else
     char_u	*(cp_text[CPT_COUNT]);	/* text for the menu */
+#endif
     char_u	*cp_fname;	/* file containing the match, allocated when
 				 * cp_flags has FREE_FNAME */
     int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
@@ -306,7 +310,7 @@ edit(cmdchar, startln, count)
     int		c = 0;
     char_u	*ptr;
     int		lastc;
-    colnr_T	mincol;
+    int		mincol;
     static linenr_T o_lnum = 0;
     int		i;
     int		did_backspace = TRUE;	    /* previous char was backspace */
@@ -387,7 +391,7 @@ edit(cmdchar, startln, count)
 	if (startln)
 	    Insstart.col = 0;
     }
-    Insstart_textlen = linetabsize(ml_get_curline());
+    Insstart_textlen = (colnr_T)linetabsize(ml_get_curline());
     Insstart_blank_vcol = MAXCOL;
     if (!did_ai)
 	ai_col = 0;
@@ -653,7 +657,7 @@ edit(cmdchar, startln, count)
 	    mincol = curwin->w_wcol;
 	    validate_cursor_col();
 
-	    if ((int)curwin->w_wcol < (int)mincol - curbuf->b_p_ts
+	    if ((int)curwin->w_wcol < mincol - curbuf->b_p_ts
 		    && curwin->w_wrow == W_WINROW(curwin)
 						 + curwin->w_height - 1 - p_so
 		    && (curwin->w_cursor.lnum != curwin->w_topline
@@ -1773,7 +1777,7 @@ change_indent(type, amount, round, replaced, call_changed_bytes)
 	 * Compute the screen column where the cursor should be.
 	 */
 	vcol = get_indent() - vcol;
-	curwin->w_virtcol = (vcol < 0) ? 0 : vcol;
+	curwin->w_virtcol = (colnr_T)((vcol < 0) ? 0 : vcol);
 
 	/*
 	 * Advance the cursor until we reach the right screen column.
@@ -1800,9 +1804,9 @@ change_indent(type, amount, round, replaced, call_changed_bytes)
 	 */
 	if (vcol != (int)curwin->w_virtcol)
 	{
-	    curwin->w_cursor.col = new_cursor_col;
+	    curwin->w_cursor.col = (colnr_T)new_cursor_col;
 	    i = (int)curwin->w_virtcol - vcol;
-	    ptr = alloc(i + 1);
+	    ptr = alloc((unsigned)(i + 1));
 	    if (ptr != NULL)
 	    {
 		new_cursor_col += i;
@@ -1826,7 +1830,7 @@ change_indent(type, amount, round, replaced, call_changed_bytes)
     if (new_cursor_col <= 0)
 	curwin->w_cursor.col = 0;
     else
-	curwin->w_cursor.col = new_cursor_col;
+	curwin->w_cursor.col = (colnr_T)new_cursor_col;
     curwin->w_set_curswant = TRUE;
     changed_cline_bef_curs();
 
@@ -1966,7 +1970,7 @@ del_char_after_col(limit_col)
 #ifdef FEAT_MBYTE
     if (enc_utf8 && limit_col >= 0)
     {
-	int ecol = curwin->w_cursor.col + 1;
+	colnr_T ecol = curwin->w_cursor.col + 1;
 
 	/* Make sure the cursor is at the start of a character, but
 	 * skip forward again when going too far back because of a
@@ -1982,7 +1986,7 @@ del_char_after_col(limit_col)
 	}
 	if (*ml_get_cursor() == NUL || curwin->w_cursor.col == ecol)
 	    return FALSE;
-	del_bytes((long)(ecol - curwin->w_cursor.col), FALSE, TRUE);
+	del_bytes((long)((int)ecol - curwin->w_cursor.col), FALSE, TRUE);
     }
     else
 #endif
@@ -2201,7 +2205,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 	    actual_compl_length = compl_length;
 
 	/* Allocate wide character array for the completion and fill it. */
-	wca = (int *)alloc(actual_len * sizeof(int));
+	wca = (int *)alloc((unsigned)(actual_len * sizeof(int)));
 	if (wca != NULL)
 	{
 	    p = str;
@@ -2580,7 +2584,7 @@ ins_compl_make_cyclic()
  */
     void
 set_completion(startcol, list)
-    int	    startcol;
+    colnr_T startcol;
     list_T  *list;
 {
     /* If already doing completions stop it. */
@@ -2591,10 +2595,10 @@ set_completion(startcol, list)
     if (stop_arrow() == FAIL)
 	return;
 
-    if (startcol > (int)curwin->w_cursor.col)
+    if (startcol > curwin->w_cursor.col)
 	startcol = curwin->w_cursor.col;
     compl_col = startcol;
-    compl_length = curwin->w_cursor.col - startcol;
+    compl_length = (int)curwin->w_cursor.col - (int)startcol;
     /* compl_pattern doesn't need to be set */
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
@@ -2860,7 +2864,6 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
     regmatch_T	regmatch;
     char_u	**files;
     int		count;
-    int		i;
     int		save_p_scs;
     int		dir = compl_direction;
 
@@ -2892,17 +2895,18 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
     if (ctrl_x_mode == CTRL_X_WHOLE_LINE)
     {
 	char_u *pat_esc = vim_strsave_escaped(pat, (char_u *)"\\");
+	size_t len;
 
 	if (pat_esc == NULL)
 	    goto theend;
-	i = (int)STRLEN(pat_esc) + 10;
-	ptr = alloc(i);
+	len = STRLEN(pat_esc) + 10;
+	ptr = alloc((unsigned)len);
 	if (ptr == NULL)
 	{
 	    vim_free(pat_esc);
 	    goto theend;
 	}
-	vim_snprintf((char *)ptr, i, "^\\s*\\zs\\V%s", pat_esc);
+	vim_snprintf((char *)ptr, len, "^\\s*\\zs\\V%s", pat_esc);
 	regmatch.regprog = vim_regcomp(ptr, RE_MAGIC);
 	vim_free(pat_esc);
 	vim_free(ptr);
@@ -2993,7 +2997,7 @@ ins_compl_files(count, files, thesaurus, flags, regmatch, buf, dir)
 	{
 	    vim_snprintf((char *)IObuff, IOSIZE,
 			      _("Scanning dictionary: %s"), (char *)files[i]);
-	    msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+	    (void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 	}
 
 	if (fp != NULL)
@@ -3311,7 +3315,7 @@ ins_compl_new_leader()
     static int
 ins_compl_len()
 {
-    int off = curwin->w_cursor.col - compl_col;
+    int off = (int)curwin->w_cursor.col - (int)compl_col;
 
     if (off < 0)
 	return 0;
@@ -3347,7 +3351,7 @@ ins_compl_addleader(c)
 
     vim_free(compl_leader);
     compl_leader = vim_strnsave(ml_get_curline() + compl_col,
-					    curwin->w_cursor.col - compl_col);
+				     (int)(curwin->w_cursor.col - compl_col));
     if (compl_leader != NULL)
 	ins_compl_new_leader();
 }
@@ -3395,7 +3399,7 @@ ins_compl_set_original_text(str)
 ins_compl_addfrommatch()
 {
     char_u	*p;
-    int		len = curwin->w_cursor.col - compl_col;
+    int		len = (int)curwin->w_cursor.col - (int)compl_col;
     int		c;
     compl_T	*cp;
 
@@ -3961,7 +3965,7 @@ ins_compl_get_exp(ini)
 			    : ins_buf->b_sfname == NULL
 				? (char *)ins_buf->b_fname
 				: (char *)ins_buf->b_sfname);
-		msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+		(void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 	    }
 	    else if (*e_cpt == NUL)
 		break;
@@ -3991,7 +3995,7 @@ ins_compl_get_exp(ini)
 		{
 		    type = CTRL_X_TAGS;
 		    sprintf((char*)IObuff, _("Scanning tags."));
-		    msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
+		    (void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 		}
 		else
 		    type = -1;
@@ -6320,7 +6324,7 @@ stop_arrow()
 	    ins_need_undo = FALSE;
 	}
 	Insstart = curwin->w_cursor;	/* new insertion starts here */
-	Insstart_textlen = linetabsize(ml_get_curline());
+	Insstart_textlen = (colnr_T)linetabsize(ml_get_curline());
 	ai_col = 0;
 #ifdef FEAT_VREPLACE
 	if (State & VREPLACE_FLAG)

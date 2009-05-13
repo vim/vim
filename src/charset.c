@@ -17,7 +17,7 @@ static int win_chartabsize __ARGS((win_T *wp, char_u *p, colnr_T col));
 static int win_nolbr_chartabsize __ARGS((win_T *wp, char_u *s, colnr_T col, int *headp));
 #endif
 
-static int nr2hex __ARGS((int c));
+static unsigned nr2hex __ARGS((unsigned c));
 
 static int    chartab_initialized = FALSE;
 
@@ -664,7 +664,7 @@ transchar_hex(buf, c)
     }
 #endif
     buf[++i] = nr2hex((unsigned)c >> 4);
-    buf[++i] = nr2hex(c);
+    buf[++i] = nr2hex((unsigned)c);
     buf[++i] = '>';
     buf[++i] = NUL;
 }
@@ -674,9 +674,9 @@ transchar_hex(buf, c)
  * Lower case letters are used to avoid the confusion of <F1> being 0xf1 or
  * function key 1.
  */
-    static int
+    static unsigned
 nr2hex(c)
-    int		c;
+    unsigned	c;
 {
     if ((c & 0xf) <= 9)
 	return (c & 0xf) + '0';
@@ -884,7 +884,7 @@ vim_iswordc(c)
     if (c >= 0x100)
     {
 	if (enc_dbcs != 0)
-	    return dbcs_class((unsigned)c >> 8, c & 0xff) >= 2;
+	    return dbcs_class((unsigned)c >> 8, (unsigned)(c & 0xff)) >= 2;
 	if (enc_utf8)
 	    return utf_class(c) >= 2;
     }
@@ -1090,7 +1090,7 @@ win_lbr_chartabsize(wp, s, col, headp)
 	 */
 	numberextra = win_col_off(wp);
 	col2 = col;
-	colmax = W_WIDTH(wp) - numberextra;
+	colmax = (colnr_T)(W_WIDTH(wp) - numberextra);
 	if (col >= colmax)
 	{
 	    n = colmax + win_col_off2(wp);
@@ -1201,17 +1201,17 @@ in_win_border(wp, vcol)
     win_T	*wp;
     colnr_T	vcol;
 {
-    colnr_T	width1;		/* width of first line (after line number) */
-    colnr_T	width2;		/* width of further lines */
+    int		width1;		/* width of first line (after line number) */
+    int		width2;		/* width of further lines */
 
 #ifdef FEAT_VERTSPLIT
     if (wp->w_width == 0)	/* there is no border */
 	return FALSE;
 #endif
     width1 = W_WIDTH(wp) - win_col_off(wp);
-    if (vcol < width1 - 1)
+    if ((int)vcol < width1 - 1)
 	return FALSE;
-    if (vcol == width1 - 1)
+    if ((int)vcol == width1 - 1)
 	return TRUE;
     width2 = width1 + win_col_off2(wp);
     return ((vcol - width1) % width2 == width2 - 1);
@@ -1396,13 +1396,13 @@ getvvcol(wp, pos, start, cursor, end)
 # ifdef FEAT_MBYTE
 	/* Cannot put the cursor on part of a wide character. */
 	ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
-	if (pos->col < STRLEN(ptr))
+	if (pos->col < (colnr_T)STRLEN(ptr))
 	{
 	    int c = (*mb_ptr2char)(ptr + pos->col);
 
 	    if (c != TAB && vim_isprintc(c))
 	    {
-		endadd = char2cells(c) - 1;
+		endadd = (colnr_T)(char2cells(c) - 1);
 		if (coladd > endadd)	/* past end of line */
 		    endadd = 0;
 		else
@@ -1573,10 +1573,16 @@ vim_isxdigit(c)
 #define LATIN1LOWER 'l'
 #define LATIN1UPPER 'U'
 
+#ifdef S_SPLINT_S   /* splint can't handle some 8 bit chars */
+static char_u latin1flags[] = (char_u *)" ";
+static char_u latin1upper[] = (char_u *)" ";
+static char_u latin1lower[] = (char_u *)" ";
+#else
 /*                                                                 !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]%_'abcdefghijklmnopqrstuvwxyz{|}~                                  ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ */
 static char_u latin1flags[257] = "                                                                 UUUUUUUUUUUUUUUUUUUUUUUUUU      llllllllllllllllllllllllll                                                                     UUUUUUUUUUUUUUUUUUUUUUU UUUUUUUllllllllllllllllllllllll llllllll";
 static char_u latin1upper[257] = "                                 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`ABCDEFGHIJKLMNOPQRSTUVWXYZ{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ÷ØÙÚÛÜİŞÿ";
 static char_u latin1lower[257] = "                                 !\"#$%&'()*+,-./0123456789:;<=>?@abcdefghijklmnopqrstuvwxyz[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~€‚ƒ„…†‡ˆ‰Š‹Œ‘’“”•–—˜™š›œŸ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿àáâãäåæçèéêëìíîïğñòóôõö×øùúûüışßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ";
+#endif
 
     int
 vim_islower(c)
