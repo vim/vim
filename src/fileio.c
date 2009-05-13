@@ -4416,7 +4416,7 @@ restore_backup:
 # endif
 	buf_setino(buf);
     }
-    else if (buf->b_dev < 0)
+    else if (!buf->b_dev_valid)
 	/* Set the inode when creating a new file. */
 	buf_setino(buf);
 #endif

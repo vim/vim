@@ -1166,7 +1166,8 @@ struct file_buffer
     char_u	*b_fname;	/* current file name */
 
 #ifdef UNIX
-    dev_t	b_dev;		/* device number (-1 if not set) */
+    int		b_dev_valid;	/* TRUE when b_dev has a valid number */
+    dev_t	b_dev;		/* device number */
     ino_t	b_ino;		/* inode number */
 #endif
 #ifdef FEAT_CW_EDITOR

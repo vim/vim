@@ -1678,9 +1678,10 @@ buflist_new(ffname, sfname, lnum, flags)
     buf->b_fname = buf->b_sfname;
 #ifdef UNIX
     if (st.st_dev == (dev_T)-1)
-	buf->b_dev = -1;
+	buf->b_dev_valid = FALSE;
     else
     {
+	buf->b_dev_valid = TRUE;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
@@ -2693,9 +2694,10 @@ setfname(buf, ffname, sfname, message)
     buf->b_fname = buf->b_sfname;
 #ifdef UNIX
     if (st.st_dev == (dev_T)-1)
-	buf->b_dev = -1;
+	buf->b_dev_valid = FALSE;
     else
     {
+	buf->b_dev_valid = TRUE;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
@@ -2889,7 +2891,7 @@ otherfile_buf(buf, ffname
 	/* If no struct stat given, get it now */
 	if (stp == NULL)
 	{
-	    if (buf->b_dev < 0 || mch_stat((char *)ffname, &st) < 0)
+	    if (!buf->b_dev_valid || mch_stat((char *)ffname, &st) < 0)
 		st.st_dev = (dev_T)-1;
 	    stp = &st;
 	}
@@ -2926,11 +2928,12 @@ buf_setino(buf)
 
     if (buf->b_fname != NULL && mch_stat((char *)buf->b_fname, &st) >= 0)
     {
+	buf->b_dev_valid = TRUE;
 	buf->b_dev = st.st_dev;
 	buf->b_ino = st.st_ino;
     }
     else
-	buf->b_dev = -1;
+	buf->b_dev_valid = FALSE;
 }
 
 /*
@@ -2941,7 +2944,7 @@ buf_same_ino(buf, stp)
     buf_T	*buf;
     struct stat *stp;
 {
-    return (buf->b_dev >= 0
+    return (buf->b_dev_valid
 	    && stp->st_dev == buf->b_dev
 	    && stp->st_ino == buf->b_ino);
 }
