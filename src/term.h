@@ -96,7 +96,11 @@ enum SpecialKey
  * - there should be code in term.c to obtain the value from the termcap
  */
 
+#ifdef S_SPLINT_S  /* splint doesn't understand array of pointers */
+extern char_u **term_strings;    /* current terminal strings */
+#else
 extern char_u *(term_strings[]);    /* current terminal strings */
+#endif
 
 /*
  * strings used for terminal

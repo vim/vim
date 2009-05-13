@@ -16,7 +16,7 @@
  */
 #if defined(SASC) && SASC < 658
 typedef long		linenr_T;
-typedef unsigned	colnr_T;
+typedef int		colnr_T;
 typedef unsigned short	short_u;
 #endif
 

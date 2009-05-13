@@ -827,6 +827,7 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
     char_u	*tmp_diff;
 {
     char_u	*cmd;
+    size_t	len;
 
 #ifdef FEAT_EVAL
     if (*p_dex != NUL)
@@ -835,8 +836,9 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
     else
 #endif
     {
-	cmd = alloc((unsigned)(STRLEN(tmp_orig) + STRLEN(tmp_new)
-				+ STRLEN(tmp_diff) + STRLEN(p_srr) + 27));
+	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
+				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
+	cmd = alloc((unsigned)len);
 	if (cmd != NULL)
 	{
 	    /* We don't want $DIFF_OPTIONS to get in the way. */
@@ -846,7 +848,7 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
 	    /* Build the diff command and execute it.  Always use -a, binary
 	     * differences are of no use.  Ignore errors, diff returns
 	     * non-zero when differences have been found. */
-	    sprintf((char *)cmd, "diff %s%s%s%s%s %s",
+	    vim_snprintf((char *)cmd, len, "diff %s%s%s%s%s %s",
 		    diff_a_works == FALSE ? "" : "-a ",
 #if defined(MSWIN) || defined(MSDOS)
 		    diff_bin_works == TRUE ? "--binary " : "",
@@ -856,7 +858,7 @@ diff_file(tmp_orig, tmp_new, tmp_diff)
 		    (diff_flags & DIFF_IWHITE) ? "-b " : "",
 		    (diff_flags & DIFF_ICASE) ? "-i " : "",
 		    tmp_orig, tmp_new);
-	    append_redir(cmd, p_srr, tmp_diff);
+	    append_redir(cmd, (int)len, p_srr, tmp_diff);
 #ifdef FEAT_AUTOCMD
 	    block_autocmds();	/* Avoid ShellCmdPost stuff */
 #endif
@@ -881,6 +883,7 @@ ex_diffpatch(eap)
     char_u	*tmp_orig;	/* name of original temp file */
     char_u	*tmp_new;	/* name of patched temp file */
     char_u	*buf = NULL;
+    size_t	buflen;
     win_T	*old_curwin = curwin;
     char_u	*newname = NULL;	/* name of patched file buffer */
 #ifdef UNIX
@@ -920,11 +923,12 @@ ex_diffpatch(eap)
     /* Get the absolute path of the patchfile, changing directory below. */
     fullname = FullName_save(eap->arg, FALSE);
 #endif
-    buf = alloc((unsigned)(STRLEN(tmp_orig) + (
+    buflen = STRLEN(tmp_orig) + (
 # ifdef UNIX
 		    fullname != NULL ? STRLEN(fullname) :
 # endif
-		    STRLEN(eap->arg)) + STRLEN(tmp_new) + 16));
+		    STRLEN(eap->arg)) + STRLEN(tmp_new) + 16;
+    buf = alloc((unsigned)buflen);
     if (buf == NULL)
 	goto theend;
 
@@ -961,7 +965,8 @@ ex_diffpatch(eap)
     {
 	/* Build the patch command and execute it.  Ignore errors.  Switch to
 	 * cooked mode to allow the user to respond to prompts. */
-	sprintf((char *)buf, "patch -o %s %s < \"%s\"", tmp_new, tmp_orig,
+	vim_snprintf((char *)buf, buflen, "patch -o %s %s < \"%s\"",
+		tmp_new, tmp_orig,
 # ifdef UNIX
 		fullname != NULL ? fullname :
 # endif

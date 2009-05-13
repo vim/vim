@@ -1460,8 +1460,8 @@ typedef enum
 # define PERROR(msg)		    perror(msg)
 #endif
 
-typedef long	    linenr_T;		/* line number type */
-typedef unsigned    colnr_T;		/* column number type */
+typedef long	linenr_T;		/* line number type */
+typedef int	colnr_T;		/* column number type */
 typedef unsigned short disptick_T;	/* display tick type */
 
 #define MAXLNUM (0x7fffffffL)		/* maximum (invalid) line number */

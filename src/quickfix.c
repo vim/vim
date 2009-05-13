@@ -2774,7 +2774,7 @@ ex_make(eap)
     sprintf((char *)cmd, "%s%s%s", (char *)p_shq, (char *)eap->arg,
 							       (char *)p_shq);
     if (*p_sp != NUL)
-	append_redir(cmd, p_sp, fname);
+	append_redir(cmd, len, p_sp, fname);
     /*
      * Output a newline if there's something else than the :make command that
      * was typed (in which case the cursor is in column 0).

@@ -87,13 +87,14 @@ do_ascii(eap)
 			       ))
 	{
 	    transchar_nonprint(buf3, c);
-	    sprintf(buf1, "  <%s>", (char *)buf3);
+	    vim_snprintf(buf1, sizeof(buf1), "  <%s>", (char *)buf3);
 	}
 	else
 	    buf1[0] = NUL;
 #ifndef EBCDIC
 	if (c >= 0x80)
-	    sprintf(buf2, "  <M-%s>", transchar(c & 0x7f));
+	    vim_snprintf(buf2, sizeof(buf2), "  <M-%s>",
+						 (char *)transchar(c & 0x7f));
 	else
 #endif
 	    buf2[0] = NUL;
@@ -358,7 +359,7 @@ ex_sort(eap)
     linenr_T	lnum;
     long	maxlen = 0;
     sorti_T	*nrs;
-    size_t	count = eap->line2 - eap->line1 + 1;
+    size_t	count = (size_t)(eap->line2 - eap->line1 + 1);
     size_t	i;
     char_u	*p;
     char_u	*s;
@@ -957,7 +958,7 @@ do_bang(addr_count, eap, forceit, do_in, do_out)
 	    }
 	    len += (int)STRLEN(prevcmd);
 	}
-	if ((t = alloc(len)) == NULL)
+	if ((t = alloc((unsigned)len)) == NULL)
 	{
 	    vim_free(newcmd);
 	    return;
@@ -1548,7 +1549,7 @@ make_filter_cmd(cmd, itmp, otmp)
      * redirecting input and/or output.
      */
     if (itmp != NULL || otmp != NULL)
-	sprintf((char *)buf, "(%s)", (char *)cmd);
+	vim_snprintf((char *)buf, len, "(%s)", (char *)cmd);
     else
 	STRCPY(buf, cmd);
     if (itmp != NULL)
@@ -1597,37 +1598,41 @@ make_filter_cmd(cmd, itmp, otmp)
     }
 #endif
     if (otmp != NULL)
-	append_redir(buf, p_srr, otmp);
+	append_redir(buf, (int)len, p_srr, otmp);
 
     return buf;
 }
 
 /*
- * Append output redirection for file "fname" to the end of string buffer "buf"
+ * Append output redirection for file "fname" to the end of string buffer
+ * "buf[buflen]"
  * Works with the 'shellredir' and 'shellpipe' options.
  * The caller should make sure that there is enough room:
  *	STRLEN(opt) + STRLEN(fname) + 3
  */
     void
-append_redir(buf, opt, fname)
+append_redir(buf, buflen, opt, fname)
     char_u	*buf;
+    int		buflen;
     char_u	*opt;
     char_u	*fname;
 {
     char_u	*p;
+    char_u	*end;
 
-    buf += STRLEN(buf);
+    end = buf + STRLEN(buf);
     /* find "%s", skipping "%%" */
     for (p = opt; (p = vim_strchr(p, '%')) != NULL; ++p)
 	if (p[1] == 's')
 	    break;
     if (p != NULL)
     {
-	*buf = ' '; /* not really needed? Not with sh, ksh or bash */
-	sprintf((char *)buf + 1, (char *)opt, (char *)fname);
+	*end = ' '; /* not really needed? Not with sh, ksh or bash */
+	vim_snprintf((char *)end + 1, (size_t)(buflen - (end + 1 - buf)),
+						  (char *)opt, (char *)fname);
     }
     else
-	sprintf((char *)buf,
+	vim_snprintf((char *)end, (size_t)(buflen - (end - buf)),
 #ifdef FEAT_QUICKFIX
 # ifndef RISCOS
 		opt != p_sp ? " %s%s" :
@@ -2390,7 +2395,8 @@ print_line_no_prefix(lnum, use_number, list)
 
     if (curwin->w_p_nu || use_number)
     {
-	sprintf((char *)numbuf, "%*ld ", number_width(curwin), (long)lnum);
+	vim_snprintf((char *)numbuf, sizeof(numbuf),
+				   "%*ld ", number_width(curwin), (long)lnum);
 	msg_puts_attr(numbuf, hl_attr(HLF_N));	/* Highlight line nrs */
     }
     msg_prt_line(ml_get(lnum), list);
@@ -4486,7 +4492,7 @@ do_sub(eap)
 	    char_u	*p1;
 	    int		did_sub = FALSE;
 	    int		lastone;
-	    unsigned	len, needed_len;
+	    int		len, copy_len, needed_len;
 	    long	nmatch_tl = 0;	/* nr of lines matched below lnum */
 	    int		do_again;	/* do it again after joining lines */
 	    int		skip_match = FALSE;
@@ -4631,6 +4637,8 @@ do_sub(eap)
 
 		if (do_ask)
 		{
+		    int typed;
+
 		    /* change State to CONFIRM, so that the mouse works
 		     * properly */
 		    save_State = State;
@@ -4669,7 +4677,7 @@ do_sub(eap)
 			    resp = getexmodeline('?', NULL, 0);
 			    if (resp != NULL)
 			    {
-				i = *resp;
+				typed = *resp;
 				vim_free(resp);
 			    }
 			}
@@ -4721,7 +4729,7 @@ do_sub(eap)
 #endif
 			    ++no_mapping;	/* don't map this key */
 			    ++allow_keys;	/* allow special keys */
-			    i = plain_vgetc();
+			    typed = plain_vgetc();
 			    --allow_keys;
 			    --no_mapping;
 
@@ -4732,35 +4740,35 @@ do_sub(eap)
 			}
 
 			need_wait_return = FALSE; /* no hit-return prompt */
-			if (i == 'q' || i == ESC || i == Ctrl_C
+			if (typed == 'q' || typed == ESC || typed == Ctrl_C
 #ifdef UNIX
-				|| i == intr_char
+				|| typed == intr_char
 #endif
 				)
 			{
 			    got_quit = TRUE;
 			    break;
 			}
-			if (i == 'n')
+			if (typed == 'n')
 			    break;
-			if (i == 'y')
+			if (typed == 'y')
 			    break;
-			if (i == 'l')
+			if (typed == 'l')
 			{
 			    /* last: replace and then stop */
 			    do_all = FALSE;
 			    line2 = lnum;
 			    break;
 			}
-			if (i == 'a')
+			if (typed == 'a')
 			{
 			    do_ask = FALSE;
 			    break;
 			}
 #ifdef FEAT_INS_EXPAND
-			if (i == Ctrl_E)
+			if (typed == Ctrl_E)
 			    scrollup_clamp();
-			else if (i == Ctrl_Y)
+			else if (typed == Ctrl_Y)
 			    scrolldown_clamp();
 #endif
 		    }
@@ -4771,7 +4779,7 @@ do_sub(eap)
 		    if (vim_strchr(p_cpo, CPO_UNDO) != NULL)
 			--no_u_sync;
 
-		    if (i == 'n')
+		    if (typed == 'n')
 		    {
 			/* For a multi-line match, put matchcol at the NUL at
 			 * the end of the line and set nmatch to one, so that
@@ -4822,9 +4830,9 @@ do_sub(eap)
 		    p1 = ml_get(sub_firstlnum + nmatch - 1);
 		    nmatch_tl += nmatch - 1;
 		}
-		i = regmatch.startpos[0].col - copycol;
-		needed_len = i + ((unsigned)STRLEN(p1) - regmatch.endpos[0].col)
-								 + sublen + 1;
+		copy_len = regmatch.startpos[0].col - copycol;
+		needed_len = copy_len + ((unsigned)STRLEN(p1)
+				       - regmatch.endpos[0].col) + sublen + 1;
 		if (new_start == NULL)
 		{
 		    /*
@@ -4847,7 +4855,7 @@ do_sub(eap)
 		     */
 		    len = (unsigned)STRLEN(new_start);
 		    needed_len += len;
-		    if (needed_len > new_start_len)
+		    if (needed_len > (int)new_start_len)
 		    {
 			new_start_len = needed_len + 50;
 			if ((p1 = alloc_check(new_start_len)) == NULL)
@@ -4865,8 +4873,8 @@ do_sub(eap)
 		/*
 		 * copy the text up to the part that matched
 		 */
-		mch_memmove(new_end, sub_firstline + copycol, (size_t)i);
-		new_end += i;
+		mch_memmove(new_end, sub_firstline + copycol, (size_t)copy_len);
+		new_end += copy_len;
 
 		(void)vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
@@ -5768,6 +5776,10 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 {
     char_u	*s, *d;
     int		i;
+#ifdef S_SPLINT_S  /* splint doesn't understand array of pointers */
+    static char **mtable;
+    static char **rtable;
+#else
     static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
 			       "/*", "/\\*", "\"*", "**",
 			       "/\\(\\)",
@@ -5782,6 +5794,7 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]", "\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$"};
+#endif
     int flags;
 
     d = IObuff;		    /* assume IObuff is long enough! */
@@ -5790,7 +5803,7 @@ find_help_tags(arg, num_matches, matches, keep_lang)
      * Recognize a few exceptions to the rule.	Some strings that contain '*'
      * with "star".  Otherwise '*' is recognized as a wildcard.
      */
-    for (i = sizeof(mtable) / sizeof(char *); --i >= 0; )
+    for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
 	if (STRCMP(arg, mtable[i]) == 0)
 	{
 	    STRCPY(d, rtable[i]);

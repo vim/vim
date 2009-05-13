@@ -16151,11 +16151,9 @@ spell_expand_check_cap(col)
  * Returns the number of matches.  The matches are in "matchp[]", array of
  * allocated strings.
  */
-/*ARGSUSED*/
     int
-expand_spelling(lnum, col, pat, matchp)
+expand_spelling(lnum, pat, matchp)
     linenr_T	lnum;
-    int		col;
     char_u	*pat;
     char_u	***matchp;
 {

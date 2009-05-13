@@ -169,7 +169,7 @@ static int  ins_compl_pum_key __ARGS((int c));
 static int  ins_compl_key2count __ARGS((int c));
 static int  ins_compl_use_match __ARGS((int c));
 static int  ins_complete __ARGS((int c));
-static int  quote_meta __ARGS((char_u *dest, char_u *str, int len));
+static unsigned  quote_meta __ARGS((char_u *dest, char_u *str, int len));
 #endif /* FEAT_INS_EXPAND */
 
 #define BACKSPACE_CHAR		    1
@@ -757,7 +757,7 @@ edit(cmdchar, startln, count)
 		 * there is nothing to add, CTRL-L works like CTRL-P then. */
 		if (c == Ctrl_L
 			&& (ctrl_x_mode != CTRL_X_WHOLE_LINE
-			    || STRLEN(compl_shown_match->cp_str)
+			    || (int)STRLEN(compl_shown_match->cp_str)
 					  > curwin->w_cursor.col - compl_col))
 		{
 		    ins_compl_addfrommatch();
@@ -3837,7 +3837,11 @@ ins_compl_add_tv(tv, dir)
     char_u	*word;
     int		icase = FALSE;
     int		adup = FALSE;
+#ifdef S_SPLINT_S  /* splint doesn't parse array of pointers correctly */
+    char_u	**cptext;
+#else
     char_u	*(cptext[CPT_COUNT]);
+#endif
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
@@ -3994,7 +3998,7 @@ ins_compl_get_exp(ini)
 		else if (*e_cpt == ']' || *e_cpt == 't')
 		{
 		    type = CTRL_X_TAGS;
-		    sprintf((char*)IObuff, _("Scanning tags."));
+		    vim_snprintf((char *)IObuff, IOSIZE, _("Scanning tags."));
 		    (void)msg_trunc_attr(IObuff, TRUE, hl_attr(HLF_R));
 		}
 		else
@@ -4093,7 +4097,7 @@ ins_compl_get_exp(ini)
 	case CTRL_X_SPELL:
 #ifdef FEAT_SPELL
 	    num_matches = expand_spelling(first_match_pos.lnum,
-				 first_match_pos.col, compl_pattern, &matches);
+						     compl_pattern, &matches);
 	    if (num_matches > 0)
 		ins_compl_add_matches(num_matches, matches, p_ic);
 #endif
@@ -4803,10 +4807,9 @@ ins_complete(c)
 	    {
 		char_u	    *prefix = (char_u *)"\\<";
 
-		/* we need 3 extra chars, 1 for the NUL and
-		 * 2 >= strlen(prefix)	-- Acevedo */
+		/* we need up to 2 extra chars for the prefix */
 		compl_pattern = alloc(quote_meta(NULL, line + compl_col,
-							   compl_length) + 3);
+							   compl_length) + 2);
 		if (compl_pattern == NULL)
 		    return FAIL;
 		if (!vim_iswordp(line + compl_col)
@@ -4881,7 +4884,7 @@ ins_complete(c)
 		else
 		{
 		    compl_pattern = alloc(quote_meta(NULL, line + compl_col,
-							   compl_length) + 3);
+							   compl_length) + 2);
 		    if (compl_pattern == NULL)
 			return FAIL;
 		    STRCPY((char *)compl_pattern, "\\<");
@@ -4963,7 +4966,7 @@ ins_complete(c)
 	    if (col < 0)
 		col = curs_col;
 	    compl_col = col;
-	    if ((colnr_T)compl_col > curs_col)
+	    if (compl_col > curs_col)
 		compl_col = curs_col;
 
 	    /* Setup variables for completion.  Need to obtain "line" again,
@@ -5236,15 +5239,15 @@ ins_complete(c)
  * a backslash) the metachars, and dest would be NUL terminated.
  * Returns the length (needed) of dest
  */
-    static int
+    static unsigned
 quote_meta(dest, src, len)
     char_u	*dest;
     char_u	*src;
     int		len;
 {
-    int	m;
+    unsigned	m = (unsigned)len + 1;  /* one extra for the NUL */
 
-    for (m = len; --len >= 0; src++)
+    for ( ; --len >= 0; src++)
     {
 	switch (*src)
 	{
@@ -6073,7 +6076,7 @@ auto_format(trailblank, prev_line)
      * in 'formatoptions' and there is a single character before the cursor.
      * Otherwise the line would be broken and when typing another non-white
      * next they are not joined back together. */
-    wasatend = (pos.col == STRLEN(old));
+    wasatend = (pos.col == (colnr_T)STRLEN(old));
     if (*old != NUL && !trailblank && wasatend)
     {
 	dec_cursor();
@@ -6250,7 +6253,7 @@ redo_literal(c)
      * three digits. */
     if (VIM_ISDIGIT(c))
     {
-	sprintf((char *)buf, "%03d", c);
+	vim_snprintf((char *)buf, sizeof(buf), "%03d", c);
 	AppendToRedobuff(buf);
     }
     else
@@ -6453,10 +6456,11 @@ stop_insert(end_insert_pos, esc)
 	     * deleted characters. */
 	    if (VIsual_active && VIsual.lnum == curwin->w_cursor.lnum)
 	    {
-		cc = (int)STRLEN(ml_get_curline());
-		if (VIsual.col > (colnr_T)cc)
+		int len = (int)STRLEN(ml_get_curline());
+
+		if (VIsual.col > len)
 		{
-		    VIsual.col = cc;
+		    VIsual.col = len;
 # ifdef FEAT_VIRTUALEDIT
 		    VIsual.coladd = 0;
 # endif
@@ -8315,6 +8319,7 @@ ins_bs(c, mode, inserted_space_p)
     linenr_T	lnum;
     int		cc;
     int		temp = 0;	    /* init for GCC */
+    colnr_T	save_col;
     colnr_T	mincol;
     int		did_backspace = FALSE;
     int		in_indent;
@@ -8472,13 +8477,13 @@ ins_bs(c, mode, inserted_space_p)
 		 */
 		while (cc > 0)
 		{
-		    temp = curwin->w_cursor.col;
+		    save_col = curwin->w_cursor.col;
 #ifdef FEAT_MBYTE
 		    mb_replace_pop_ins(cc);
 #else
 		    ins_char(cc);
 #endif
-		    curwin->w_cursor.col = temp;
+		    curwin->w_cursor.col = save_col;
 		    cc = replace_pop();
 		}
 		/* restore the characters that NL replaced */
@@ -8510,11 +8515,11 @@ ins_bs(c, mode, inserted_space_p)
 #endif
 			    )
 	{
-	    temp = curwin->w_cursor.col;
+	    save_col = curwin->w_cursor.col;
 	    beginline(BL_WHITE);
 	    if (curwin->w_cursor.col < (colnr_T)temp)
 		mincol = curwin->w_cursor.col;
-	    curwin->w_cursor.col = temp;
+	    curwin->w_cursor.col = save_col;
 	}
 
 	/*

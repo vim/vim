@@ -2737,7 +2737,7 @@ checkforcmd(pp, cmd, len)
     int		i;
 
     for (i = 0; cmd[i] != NUL; ++i)
-	if (cmd[i] != (*pp)[i])
+	if (((char_u *)cmd)[i] != (*pp)[i])
 	    break;
     if (i >= len && !isalpha((*pp)[i]))
     {
@@ -2803,7 +2803,7 @@ find_command(eap, full)
 	    /* Check for ":dl", ":dell", etc. to ":deletel": that's
 	     * :delete with the 'l' flag.  Same for 'p'. */
 	    for (i = 0; i < len; ++i)
-		if (eap->cmd[i] != "delete"[i])
+		if (eap->cmd[i] != ((char_u *)"delete")[i])
 		    break;
 	    if (i == len - 1)
 	    {
@@ -3823,7 +3823,7 @@ skip_range(cmd, ctx)
     char_u	*cmd;
     int		*ctx;	/* pointer to xp_context or NULL */
 {
-    int		delim;
+    unsigned	delim;
 
     while (vim_strchr((char_u *)" \t0123456789.$%'/?-+,;", *cmd) != NULL)
     {
@@ -9417,7 +9417,13 @@ find_cmdline_var(src, usedlen)
 {
     int		len;
     int		i;
-    static char *(spec_str[]) = {
+#ifdef S_SPLINT_S  /* splint can't handle array of pointers */
+    static char **spec_str;
+    static char *(nospec_str[])
+#else
+    static char *(spec_str[])
+#endif
+	= {
 		    "%",
 #define SPEC_PERC   0
 		    "#",
@@ -9443,9 +9449,8 @@ find_cmdline_var(src, usedlen)
 # define SPEC_CLIENT 9
 #endif
     };
-#define SPEC_COUNT  (sizeof(spec_str) / sizeof(char *))
 
-    for (i = 0; i < SPEC_COUNT; ++i)
+    for (i = 0; i < (int)(sizeof(spec_str) / sizeof(char *)); ++i)
     {
 	len = (int)STRLEN(spec_str[i]);
 	if (STRNCMP(src, spec_str[i], len) == 0)
@@ -9796,7 +9801,7 @@ arg_all()
 	}
 
 	/* allocate memory */
-	retval = alloc(len + 1);
+	retval = alloc((unsigned)len + 1);
 	if (retval == NULL)
 	    break;
     }

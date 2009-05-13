@@ -3373,7 +3373,7 @@ getsourceline(c, cookie, indent)
 	    p = skipwhite(sp->nextline);
 	    if (*p != '\\')
 		break;
-	    s = alloc((int)(STRLEN(line) + STRLEN(p)));
+	    s = alloc((unsigned)(STRLEN(line) + STRLEN(p)));
 	    if (s == NULL)	/* out of memory */
 		break;
 	    STRCPY(s, line);
