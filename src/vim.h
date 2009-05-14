@@ -262,6 +262,14 @@
 # define __PARMS(x) __ARGS(x)
 #endif
 
+/* Mark unused function arguments with UNUSED, so that gcc -Wunused-parameter
+ * can be used to check for mistakes. */
+#ifdef HAVE_ATTRIBUTE_UNUSED
+# define UNUSED __attribute__((unused))
+#else
+# define UNUSED
+#endif
+
 /* if we're compiling in C++ (currently only KVim), the system
  * headers must have the correct prototypes or nothing will build.
  * conversely, our prototypes might clash due to throw() specifiers and

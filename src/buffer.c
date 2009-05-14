@@ -512,12 +512,11 @@ buf_clear_file(buf)
  * buf_freeall() - free all things allocated for a buffer that are related to
  * the file.
  */
-/*ARGSUSED*/
     void
 buf_freeall(buf, del_buf, wipe_buf)
     buf_T	*buf;
-    int		del_buf;	/* buffer is going to be deleted */
-    int		wipe_buf;	/* buffer is going to be wiped out */
+    int		del_buf UNUSED;	    /* buffer is going to be deleted */
+    int		wipe_buf UNUSED;    /* buffer is going to be wiped out */
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
@@ -2437,11 +2436,10 @@ wininfo_other_tab_diff(wip)
  * another tab page.
  * Returns NULL when there isn't any info.
  */
-/*ARGSUSED*/
     static wininfo_T *
 find_wininfo(buf, skip_diff_buffer)
     buf_T	*buf;
-    int		skip_diff_buffer;
+    int		skip_diff_buffer UNUSED;
 {
     wininfo_T	*wip;
 
@@ -4278,10 +4276,9 @@ fix_fname(fname)
  * Make "ffname" a full file name, set "sfname" to "ffname" if not NULL.
  * "ffname" becomes a pointer to allocated memory (or NULL).
  */
-/*ARGSUSED*/
     void
 fname_expand(buf, ffname, sfname)
-    buf_T	*buf;
+    buf_T	*buf UNUSED;
     char_u	**ffname;
     char_u	**sfname;
 {
@@ -5577,11 +5574,10 @@ buf_contents_changed(buf)
  * this buffer.  Call this to wipe out a temp buffer that does not contain any
  * marks.
  */
-/*ARGSUSED*/
     void
 wipe_buffer(buf, aucmd)
     buf_T	*buf;
-    int		aucmd;	    /* When TRUE trigger autocommands. */
+    int		aucmd UNUSED;	    /* When TRUE trigger autocommands. */
 {
     if (buf->b_fnum == top_file_num - 1)
 	--top_file_num;

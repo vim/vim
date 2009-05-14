@@ -1447,10 +1447,9 @@ force_cindent:
  * Only redraw when there are no characters available.  This speeds up
  * inserting sequences of characters (e.g., for CTRL-R).
  */
-/*ARGSUSED*/
     static void
 ins_redraw(ready)
-    int		ready;	    /* not busy with something */
+    int		ready UNUSED;	    /* not busy with something */
 {
     if (!char_avail())
     {
@@ -1962,10 +1961,9 @@ backspace_until_column(col)
  * Only matters when there are composing characters.
  * Return TRUE when something was deleted.
  */
-/*ARGSUSED*/
    static int
 del_char_after_col(limit_col)
-    int limit_col;
+    int limit_col UNUSED;
 {
 #ifdef FEAT_MBYTE
     if (enc_utf8 && limit_col >= 0)

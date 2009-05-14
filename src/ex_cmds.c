@@ -43,10 +43,9 @@ static int
 /*
  * ":ascii" and "ga".
  */
-/*ARGSUSED*/
     void
 do_ascii(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     int		c;
     int		cval;
@@ -2373,10 +2372,9 @@ viminfo_writestring(fd, p)
  *   ^?		^H
  * not ^?	^?
  */
-/*ARGSUSED*/
     void
 do_fixdel(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     char_u  *p;
 
@@ -6127,10 +6125,9 @@ fix_help_buffer()
 /*
  * ":exusage"
  */
-/*ARGSUSED*/
     void
 ex_exusage(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     do_cmdline_cmd((char_u *)"help ex-cmd-index");
 }
@@ -6138,10 +6135,9 @@ ex_exusage(eap)
 /*
  * ":viusage"
  */
-/*ARGSUSED*/
     void
 ex_viusage(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     do_cmdline_cmd((char_u *)"help normal-index");
 }
@@ -7154,10 +7150,9 @@ static enum
  * Function given to ExpandGeneric() to obtain the sign command
  * expansion.
  */
-/*ARGSUSED*/
     char_u *
 get_sign_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     sign_T	*sp;

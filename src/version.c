@@ -677,6 +677,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    173,
+/**/
     172,
 /**/
     171,
@@ -1623,10 +1625,9 @@ do_intro_line(row, mesg, add_version, attr)
 /*
  * ":intro": clear screen, display intro screen and wait for return.
  */
-/*ARGSUSED*/
     void
 ex_intro(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     screenclear();
     intro_message(TRUE);

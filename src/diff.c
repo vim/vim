@@ -652,10 +652,9 @@ diff_write(buf, fname)
  * The buffers are written to a file, also for unmodified buffers (the file
  * could have been produced by autocommands, e.g. the netrw plugin).
  */
-/*ARGSUSED*/
     void
 ex_diffupdate(eap)
-    exarg_T	*eap;	    /* can be NULL, it's not used */
+    exarg_T	*eap UNUSED;	    /* can be NULL */
 {
     buf_T	*buf;
     int		idx_orig;
@@ -1094,10 +1093,9 @@ ex_diffsplit(eap)
 /*
  * Set options to show difs for the current window.
  */
-/*ARGSUSED*/
     void
 ex_diffthis(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     /* Set 'diff', 'scrollbind' on and 'wrap' off. */
     diff_win_options(curwin, TRUE);

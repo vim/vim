@@ -2067,6 +2067,11 @@ AC_TRY_COMPILE([#include <stdio.h>], [printf("(" __DATE__ " " __TIME__ ")");],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DATE_TIME),
 	AC_MSG_RESULT(no))
 
+AC_MSG_CHECKING(whether __attribute__((unused)) is allowed)
+AC_TRY_COMPILE([#include <stdio.h>], [int x __attribute__((unused));],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_ATTRIBUTE_UNUSED),
+	AC_MSG_RESULT(no))
+
 dnl Checks for header files.
 AC_CHECK_HEADER(elf.h, HAS_ELF=1)
 dnl AC_CHECK_HEADER(dwarf.h, SVR4=1)

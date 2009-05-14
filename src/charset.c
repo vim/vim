@@ -1026,13 +1026,12 @@ lbr_chartabsize_adv(s, col)
  * string at start of line.  Warning: *headp is only set if it's a non-zero
  * value, init to 0 before calling.
  */
-/*ARGSUSED*/
     int
 win_lbr_chartabsize(wp, s, col, headp)
     win_T	*wp;
     char_u	*s;
     colnr_T	col;
-    int		*headp;
+    int		*headp UNUSED;
 {
 #ifdef FEAT_LINEBREAK
     int		c;
