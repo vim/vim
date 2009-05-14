@@ -1227,8 +1227,8 @@ utf16_to_enc(short_u *str, int *lenp)
  * Wait for another process to Close the Clipboard.
  * Returns TRUE for success.
  */
-    int
-vim_open_clipboard()
+    static int
+vim_open_clipboard(void)
 {
     int delay = 10;
 
