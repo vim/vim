@@ -4637,7 +4637,7 @@ do_sub(eap)
 
 		if (do_ask)
 		{
-		    int typed;
+		    int typed = 0;
 
 		    /* change State to CONFIRM, so that the mouse works
 		     * properly */
@@ -6553,6 +6553,7 @@ struct sign
 static sign_T	*first_sign = NULL;
 static int	last_sign_typenr = MAX_TYPENR;	/* is decremented */
 
+static int sign_cmd_idx __ARGS((char_u *begin_cmd, char_u *end_cmd));
 static void sign_list_defined __ARGS((sign_T *sp));
 static void sign_undefine __ARGS((sign_T *sp, sign_T *sp_prev));
 
@@ -6579,8 +6580,8 @@ static char *cmds[] = {
  */
     static int
 sign_cmd_idx(begin_cmd, end_cmd)
-    char	*begin_cmd;	/* begin of sign subcmd */
-    char	*end_cmd;	/* just after sign subcmd */
+    char_u	*begin_cmd;	/* begin of sign subcmd */
+    char_u	*end_cmd;	/* just after sign subcmd */
 {
     int		idx;
     char	save = *end_cmd;
