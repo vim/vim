@@ -1105,10 +1105,9 @@ taglen_advance(l)
 /*
  * Print the tag stack
  */
-/*ARGSUSED*/
     void
 do_tags(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     int		i;
     char_u	*name;
@@ -2530,11 +2529,10 @@ static void found_tagfile_cb __ARGS((char_u *fname, void *cookie));
  * Callback function for finding all "tags" and "tags-??" files in
  * 'runtimepath' doc directories.
  */
-/*ARGSUSED*/
     static void
 found_tagfile_cb(fname, cookie)
     char_u	*fname;
-    void	*cookie;
+    void	*cookie UNUSED;
 {
     if (ga_grow(&tag_fnames, 1) == OK)
 	((char_u **)(tag_fnames.ga_data))[tag_fnames.ga_len++] =

@@ -8991,7 +8991,10 @@ ins_right()
 	foldOpenCursor();
 #endif
     undisplay_dollar();
-    if (gchar_cursor() != NUL || virtual_active()
+    if (gchar_cursor() != NUL
+#ifdef FEAT_VIRTUALEDIT
+	    || virtual_active()
+#endif
 	    )
     {
 	start_arrow(&curwin->w_cursor);

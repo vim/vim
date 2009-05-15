@@ -458,10 +458,9 @@ mch_char_avail()
  * Return total amount of memory available in Kbyte.
  * Doesn't change when memory has been allocated.
  */
-/* ARGSUSED */
     long_u
 mch_total_mem(special)
-    int special;
+    int special UNUSED;
 {
 # ifdef __EMX__
     return ulimit(3, 0L) >> 10;   /* always 32MB? */
@@ -815,7 +814,6 @@ init_signal_stack()
  * Let me try it with a few tricky defines from my own osdef.h	(jw).
  */
 #if defined(SIGWINCH)
-/* ARGSUSED */
     static RETSIGTYPE
 sig_winch SIGDEFARG(sigarg)
 {
@@ -1355,11 +1353,10 @@ vim_handle_signal(sig)
 /*
  * Check_win checks whether we have an interactive stdout.
  */
-/* ARGSUSED */
     int
 mch_check_win(argc, argv)
-    int	    argc;
-    char    **argv;
+    int	    argc UNUSED;
+    char    **argv UNUSED;
 {
 #ifdef OS2
     /*
@@ -2467,7 +2464,7 @@ mch_FullName(fname, buf, len, force)
     }
 
     /* Catch file names which are too long. */
-    if (retval == FAIL || STRLEN(buf) + STRLEN(fname) >= len)
+    if (retval == FAIL || (int)(STRLEN(buf) + STRLEN(fname)) >= len)
 	return FAIL;
 
     /* Do not append ".", "/dir/." is equal to "/dir". */
@@ -2686,7 +2683,7 @@ mch_copy_sec(from_file, to_file)
  */
     vim_acl_T
 mch_get_acl(fname)
-    char_u	*fname;
+    char_u	*fname UNUSED;
 {
     vim_acl_T	ret = NULL;
 #ifdef HAVE_POSIX_ACL
@@ -2746,7 +2743,7 @@ mch_get_acl(fname)
  */
     void
 mch_set_acl(fname, aclent)
-    char_u	*fname;
+    char_u	*fname UNUSED;
     vim_acl_T	aclent;
 {
     if (aclent == NULL)
@@ -2789,10 +2786,9 @@ mch_free_acl(aclent)
 /*
  * Set hidden flag for "name".
  */
-/* ARGSUSED */
     void
 mch_hide(name)
-    char_u	*name;
+    char_u	*name UNUSED;
 {
     /* can't hide a file */
 }
@@ -3481,10 +3477,9 @@ check_mouse_termcode()
 /*
  * set screen mode, always fails.
  */
-/* ARGSUSED */
     int
 mch_screenmode(arg)
-    char_u   *arg;
+    char_u   *arg UNUSED;
 {
     EMSG(_(e_screenmode));
     return FAIL;
@@ -4189,9 +4184,10 @@ mch_call_shell(cmd, options)
 			    {
 				s = vim_strchr(lp + written, NL);
 				len = write(toshell_fd, (char *)lp + written,
-					   s == NULL ? l : s - (lp + written));
+					   s == NULL ? l
+					      : (size_t)(s - (lp + written)));
 			    }
-			    if (len == l)
+			    if (len == (int)l)
 			    {
 				/* Finished a line, add a NL, unless this line
 				 * should not have one. */
@@ -4746,7 +4742,6 @@ WaitForChar(msec)
  * Returns also, when a request from Sniff is waiting -- toni.
  * Or when a Linux GPM mouse event is waiting.
  */
-/* ARGSUSED */
 #if defined(__BEOS__)
     int
 #else
@@ -4755,7 +4750,7 @@ WaitForChar(msec)
 RealWaitForChar(fd, msec, check_for_gpm)
     int		fd;
     long	msec;
-    int		*check_for_gpm;
+    int		*check_for_gpm UNUSED;
 {
     int		ret;
 #if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
@@ -5572,7 +5567,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     i = fread((char *)buffer, 1, len, fd);
     fclose(fd);
     mch_remove(tempname);
-    if (i != len)
+    if (i != (int)len)
     {
 	/* unexpected read error */
 	EMSG2(_(e_notread), tempname);
@@ -5633,7 +5628,7 @@ mch_expand_wildcards(num_pat, pat, num_file, file, flags)
 	if (shell_style == STYLE_PRINT && !did_find_nul)
 	{
 	    /* If there is a NUL, set did_find_nul, else set check_spaces */
-	    if (len && (int)STRLEN(buffer) < len - 1)
+	    if (len && (int)STRLEN(buffer) < (int)len - 1)
 		did_find_nul = TRUE;
 	    else
 		check_spaces = TRUE;

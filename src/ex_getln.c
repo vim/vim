@@ -140,11 +140,10 @@ static int	ex_window __ARGS((void));
  * Return pointer to allocated string if there is a commandline, NULL
  * otherwise.
  */
-/*ARGSUSED*/
     char_u *
 getcmdline(firstc, count, indent)
     int		firstc;
-    long	count;		/* only used for incremental search */
+    long	count UNUSED;	/* only used for incremental search */
     int		indent;		/* indent for inside conditionals */
 {
     int		c;
@@ -2113,11 +2112,10 @@ correct_cmdspos(idx, cells)
 /*
  * Get an Ex command line for the ":" command.
  */
-/* ARGSUSED */
     char_u *
-getexline(c, dummy, indent)
+getexline(c, cookie, indent)
     int		c;		/* normally ':', NUL for ":append" */
-    void	*dummy;		/* cookie not used */
+    void	*cookie UNUSED;
     int		indent;		/* indent for inside conditionals */
 {
     /* When executing a register, remove ':' that's in front of each line. */
@@ -2132,12 +2130,11 @@ getexline(c, dummy, indent)
  * mappings or abbreviations.
  * Returns a string in allocated memory or NULL.
  */
-/* ARGSUSED */
     char_u *
-getexmodeline(promptc, dummy, indent)
+getexmodeline(promptc, cookie, indent)
     int		promptc;	/* normally ':', NUL for ":append" and '?' for
 				   :s prompt */
-    void	*dummy;		/* cookie not used */
+    void	*cookie UNUSED;
     int		indent;		/* indent for inside conditionals */
 {
     garray_T	line_ga;
@@ -3832,11 +3829,10 @@ tilde_replace(orig_pat, num_files, files)
  * Returns EXPAND_NOTHING when the character that triggered expansion should
  * be inserted like a normal character.
  */
-/*ARGSUSED*/
     static int
 showmatches(xp, wildmenu)
     expand_T	*xp;
-    int		wildmenu;
+    int		wildmenu UNUSED;
 {
 #define L_SHOWFILE(m) (showtail ? sm_gettail(files_found[m]) : files_found[m])
     int		num_files;

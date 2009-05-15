@@ -1578,11 +1578,10 @@ free_cmdlines(gap)
  * If "fgetline" is get_loop_line(), return TRUE if the getline it uses equals
  * "func".  * Otherwise return TRUE when "fgetline" equals "func".
  */
-/*ARGSUSED*/
     int
 getline_equal(fgetline, cookie, func)
     char_u	*(*fgetline) __ARGS((int, void *, int));
-    void	*cookie;		/* argument for fgetline() */
+    void	*cookie UNUSED;		/* argument for fgetline() */
     char_u	*(*func) __ARGS((int, void *, int));
 {
 #ifdef FEAT_EVAL
@@ -1610,10 +1609,9 @@ getline_equal(fgetline, cookie, func)
  * If "fgetline" is get_loop_line(), return the cookie used by the original
  * getline function.  Otherwise return "cookie".
  */
-/*ARGSUSED*/
     void *
 getline_cookie(fgetline, cookie)
-    char_u	*(*fgetline) __ARGS((int, void *, int));
+    char_u	*(*fgetline) __ARGS((int, void *, int)) UNUSED;
     void	*cookie;		/* argument for fgetline() */
 {
 # ifdef FEAT_EVAL
@@ -2754,11 +2752,10 @@ checkforcmd(pp, cmd, len)
  * "full" is set to TRUE if the whole command name matched.
  * Returns NULL for an ambiguous user command.
  */
-/*ARGSUSED*/
     static char_u *
 find_command(eap, full)
     exarg_T	*eap;
-    int		*full;
+    int		*full UNUSED;
 {
     int		len;
     char_u	*p;
@@ -5053,10 +5050,9 @@ check_more(message, forceit)
 /*
  * Function given to ExpandGeneric() to obtain the list of command names.
  */
-/*ARGSUSED*/
     char_u *
 get_command_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     if (idx >= (int)CMD_SIZE)
@@ -5573,10 +5569,9 @@ ex_command(eap)
  * ":comclear"
  * Clear all user commands, global and for current buffer.
  */
-/*ARGSUSED*/
     void
 ex_comclear(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     uc_clear(&ucmds);
     uc_clear(&curbuf->b_ucmds);
@@ -6072,10 +6067,9 @@ get_user_command_name(idx)
 /*
  * Function given to ExpandGeneric() to obtain the list of user command names.
  */
-/*ARGSUSED*/
     char_u *
 get_user_commands(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     if (idx < curbuf->b_ucmds.ga_len)
@@ -6090,10 +6084,9 @@ get_user_commands(xp, idx)
  * Function given to ExpandGeneric() to obtain the list of user command
  * attributes.
  */
-/*ARGSUSED*/
     char_u *
 get_user_cmd_flags(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     static char *user_cmd_flags[] =
@@ -6108,10 +6101,9 @@ get_user_cmd_flags(xp, idx)
 /*
  * Function given to ExpandGeneric() to obtain the list of values for -nargs.
  */
-/*ARGSUSED*/
     char_u *
 get_user_cmd_nargs(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     static char *user_cmd_nargs[] = {"0", "1", "*", "?", "+"};
@@ -6124,10 +6116,9 @@ get_user_cmd_nargs(xp, idx)
 /*
  * Function given to ExpandGeneric() to obtain the list of values for -complete.
  */
-/*ARGSUSED*/
     char_u *
 get_user_cmd_complete(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     return (char_u *)command_complete[idx].name;
@@ -6305,10 +6296,9 @@ ex_quit(eap)
 /*
  * ":cquit".
  */
-/*ARGSUSED*/
     static void
 ex_cquit(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     getout(1);	/* this does not always pass on the exit code to the Manx
 		   compiler. why? */
@@ -6750,10 +6740,9 @@ ex_goto(eap)
 /*
  * ":shell".
  */
-/*ARGSUSED*/
     static void
 ex_shell(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     do_shell(NULL, 0);
 }
@@ -7057,10 +7046,9 @@ alist_slash_adjust()
 /*
  * ":preserve".
  */
-/*ARGSUSED*/
     static void
 ex_preserve(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     curbuf->b_flags |= BF_PRESERVED;
     ml_preserve(curbuf, TRUE);
@@ -7292,10 +7280,9 @@ ex_tabmove(eap)
 /*
  * :tabs command: List tabs and their contents.
  */
-/*ARGSUSED*/
     static void
 ex_tabs(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     tabpage_T	*tp;
     win_T	*wp;
@@ -7482,7 +7469,6 @@ ex_edit(eap)
 /*
  * ":edit <file>" command and alikes.
  */
-/*ARGSUSED*/
     void
 do_exedit(eap, old_curwin)
     exarg_T	*eap;
@@ -7694,10 +7680,9 @@ ex_popup(eap)
 }
 #endif
 
-/*ARGSUSED*/
     static void
 ex_swapname(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     if (curbuf->b_ml.ml_mfp == NULL || curbuf->b_ml.ml_mfp->mf_fname == NULL)
 	MSG(_("No swap file"));
@@ -7710,10 +7695,9 @@ ex_swapname(eap)
  * offset.
  * (1998-11-02 16:21:01  R. Edward Ralston <eralston@computer.org>)
  */
-/*ARGSUSED*/
     static void
 ex_syncbind(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
 #ifdef FEAT_SCROLLBIND
     win_T	*wp;
@@ -7983,10 +7967,9 @@ ex_cd(eap)
 /*
  * ":pwd".
  */
-/*ARGSUSED*/
     static void
 ex_pwd(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     if (mch_dirname(NameBuff, MAXPATHL) == OK)
     {
@@ -8417,10 +8400,9 @@ ex_bang(eap)
 /*
  * ":undo".
  */
-/*ARGSUSED*/
     static void
 ex_undo(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     if (eap->addr_count == 1)	    /* :undo 123 */
 	undo_time(eap->line2, FALSE, TRUE);
@@ -8431,10 +8413,9 @@ ex_undo(eap)
 /*
  * ":redo".
  */
-/*ARGSUSED*/
     static void
 ex_redo(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     u_redo(1);
 }
@@ -8442,7 +8423,6 @@ ex_redo(eap)
 /*
  * ":earlier" and ":later".
  */
-/*ARGSUSED*/
     static void
 ex_later(eap)
     exarg_T	*eap;
@@ -8627,10 +8607,9 @@ ex_redraw(eap)
 /*
  * ":redrawstatus": force redraw of status line(s)
  */
-/*ARGSUSED*/
     static void
 ex_redrawstatus(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
 #if defined(FEAT_WINDOWS)
     int		r = RedrawingDisabled;
@@ -8891,11 +8870,10 @@ theend:
 
 #if ((defined(FEAT_SESSION) || defined(FEAT_EVAL)) && defined(vim_mkdir)) \
 	|| defined(PROTO)
-/*ARGSUSED*/
     int
 vim_mkdir_emsg(name, prot)
     char_u	*name;
-    int		prot;
+    int		prot UNUSED;
 {
     if (vim_mkdir(name, prot) != 0)
     {
@@ -10968,10 +10946,9 @@ ex_setfiletype(eap)
 }
 #endif
 
-/*ARGSUSED*/
     static void
 ex_digraphs(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
 #ifdef FEAT_DIGRAPHS
     if (*eap->arg != NUL)
@@ -11005,10 +10982,9 @@ ex_set(eap)
 /*
  * ":nohlsearch"
  */
-/*ARGSUSED*/
     static void
 ex_nohlsearch(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     no_hlsearch = TRUE;
     redraw_all_later(SOME_VALID);
@@ -11087,10 +11063,9 @@ ex_match(eap)
 /*
  * ":X": Get crypt key
  */
-/*ARGSUSED*/
     static void
 ex_X(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     (void)get_crypt_key(TRUE, TRUE);
 }

@@ -2188,12 +2188,11 @@ del_chars(count, fixpos)
  *
  * return FAIL for failure, OK otherwise
  */
-/*ARGSUSED*/
     int
 del_bytes(count, fixpos_arg, use_delcombine)
     long	count;
     int		fixpos_arg;
-    int		use_delcombine;	    /* 'delcombine' option applies */
+    int		use_delcombine UNUSED;	    /* 'delcombine' option applies */
 {
     char_u	*oldp, *newp;
     colnr_T	oldlen;

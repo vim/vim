@@ -471,7 +471,7 @@ get_char_class(pp)
 
     if ((*pp)[1] == ':')
     {
-	for (i = 0; i < sizeof(class_names) / sizeof(*class_names); ++i)
+	for (i = 0; i < (int)(sizeof(class_names) / sizeof(*class_names)); ++i)
 	    if (STRNCMP(*pp + 2, class_names[i], STRLEN(class_names[i])) == 0)
 	    {
 		*pp += STRLEN(class_names[i]) + 2;
@@ -3362,12 +3362,11 @@ vim_regexec_multi(rmp, win, buf, lnum, col, tm)
  * Match a regexp against a string ("line" points to the string) or multiple
  * lines ("line" is NULL, use reg_getline()).
  */
-/*ARGSUSED*/
     static long
 vim_regexec_both(line, col, tm)
     char_u	*line;
     colnr_T	col;		/* column to start looking for match */
-    proftime_T	*tm;		/* timeout limit or NULL */
+    proftime_T	*tm UNUSED;	/* timeout limit or NULL */
 {
     regprog_T	*prog;
     char_u	*s;

@@ -1238,11 +1238,10 @@ curs_columns(scroll)
 /*
  * Scroll the current window down by "line_count" logical lines.  "CTRL-Y"
  */
-/*ARGSUSED*/
     void
 scrolldown(line_count, byfold)
     long	line_count;
-    int		byfold;		/* TRUE: count a closed fold as one line */
+    int		byfold UNUSED;	/* TRUE: count a closed fold as one line */
 {
     long	done = 0;	/* total # of physical lines done */
     int		wrow;
@@ -1349,11 +1348,10 @@ scrolldown(line_count, byfold)
 /*
  * Scroll the current window up by "line_count" logical lines.  "CTRL-E"
  */
-/*ARGSUSED*/
     void
 scrollup(line_count, byfold)
     long	line_count;
-    int		byfold;		/* TRUE: count a closed fold as one line */
+    int		byfold UNUSED;	/* TRUE: count a closed fold as one line */
 {
 #if defined(FEAT_FOLDING) || defined(FEAT_DIFF)
     linenr_T	lnum;

@@ -5302,14 +5302,13 @@ static void redraw_titles()
  * When "set_sid" is zero set the scriptID to current_SID.  When "set_sid" is
  * SID_NONE don't set the scriptID.  Otherwise set the scriptID to "set_sid".
  */
-/*ARGSUSED*/
     void
 set_string_option_direct(name, opt_idx, val, opt_flags, set_sid)
     char_u	*name;
     int		opt_idx;
     char_u	*val;
     int		opt_flags;	/* OPT_FREE, OPT_LOCAL and/or OPT_GLOBAL */
-    int		set_sid;
+    int		set_sid UNUSED;
 {
     char_u	*s;
     char_u	**varp;
@@ -9357,10 +9356,9 @@ check_win_options(win)
 /*
  * Check for NULL pointers in a winopt_T and replace them with empty_option.
  */
-/*ARGSUSED*/
     void
 check_winopt(wop)
-    winopt_T	*wop;
+    winopt_T	*wop UNUSED;
 {
 #ifdef FEAT_FOLDING
     check_string_option(&wop->wo_fdi);
@@ -9382,10 +9380,9 @@ check_winopt(wop)
 /*
  * Free the allocated memory inside a winopt_T.
  */
-/*ARGSUSED*/
     void
 clear_winopt(wop)
-    winopt_T	*wop;
+    winopt_T	*wop UNUSED;
 {
 #ifdef FEAT_FOLDING
     clear_string_option(&wop->wo_fdi);

@@ -3498,7 +3498,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 		    if (mch_stat((char *)IObuff, &st) < 0
 			    || st.st_uid != st_old.st_uid
 			    || st.st_gid != st_old.st_gid
-			    || st.st_mode != perm)
+			    || (long)st.st_mode != perm)
 			backup_copy = TRUE;
 # endif
 		    /* Close the file before removing it, on MS-Windows we
@@ -5963,7 +5963,7 @@ buf_modname(shortname, fname, ext, prepend_dot)
 	else if (*ext == '.')
 #endif
 	{
-	    if (s - ptr > (size_t)8)
+	    if ((size_t)(s - ptr) > (size_t)8)
 	    {
 		s = ptr + 8;
 		*s = '\0';
@@ -6460,11 +6460,10 @@ move_lines(frombuf, tobuf)
  * return 2 if a message has been displayed.
  * return 0 otherwise.
  */
-/*ARGSUSED*/
     int
 buf_check_timestamp(buf, focus)
     buf_T	*buf;
-    int		focus;		/* called for GUI focus event */
+    int		focus UNUSED;	/* called for GUI focus event */
 {
     struct stat	st;
     int		stat_res;
@@ -6868,12 +6867,11 @@ buf_reload(buf, orig_mode)
     /* Careful: autocommands may have made "buf" invalid! */
 }
 
-/*ARGSUSED*/
     void
 buf_store_time(buf, st, fname)
     buf_T	*buf;
     struct stat	*st;
-    char_u	*fname;
+    char_u	*fname UNUSED;
 {
     buf->b_mtime = (long)st->st_mtime;
     buf->b_orig_size = (size_t)st->st_size;
@@ -6936,10 +6934,9 @@ vim_deltempdir()
  * The returned pointer is to allocated memory.
  * The returned pointer is NULL if no valid name was found.
  */
-/*ARGSUSED*/
     char_u  *
 vim_tempname(extra_char)
-    int	    extra_char;	    /* character to use in the name instead of '?' */
+    int	    extra_char UNUSED;  /* char to use in the name instead of '?' */
 {
 #ifdef USE_TMPNAM
     char_u	itmp[L_tmpnam];	/* use tmpnam() */
@@ -6968,7 +6965,7 @@ vim_tempname(extra_char)
 	/*
 	 * Try the entries in TEMPDIRNAMES to create the temp directory.
 	 */
-	for (i = 0; i < sizeof(tempdirs) / sizeof(char *); ++i)
+	for (i = 0; i < (int)(sizeof(tempdirs) / sizeof(char *)); ++i)
 	{
 	    /* expand $TMP, leave room for "/v1100000/999999999" */
 	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
@@ -9588,13 +9585,12 @@ match_file_list(list, sfname, ffname)
  *
  * Returns NULL when out of memory.
  */
-/*ARGSUSED*/
     char_u *
 file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
     char_u	*pat;
     char_u	*pat_end;	/* first char after pattern or NULL */
     char	*allow_dirs;	/* Result passed back out in here */
-    int		no_bslash;	/* Don't use a backward slash as pathsep */
+    int		no_bslash UNUSED; /* Don't use a backward slash as pathsep */
 {
     int		size;
     char_u	*endp;

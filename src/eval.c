@@ -8303,10 +8303,9 @@ f_append(argvars, rettv)
 /*
  * "argc()" function
  */
-/* ARGSUSED */
     static void
 f_argc(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     rettv->vval.v_number = ARGCOUNT;
@@ -8315,10 +8314,9 @@ f_argc(argvars, rettv)
 /*
  * "argidx()" function
  */
-/* ARGSUSED */
     static void
 f_argidx(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     rettv->vval.v_number = curwin->w_arg_idx;
@@ -8396,10 +8394,9 @@ f_atan(argvars, rettv)
 /*
  * "browse(save, title, initdir, default)" function
  */
-/* ARGSUSED */
     static void
 f_browse(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_BROWSE
@@ -8431,10 +8428,9 @@ f_browse(argvars, rettv)
 /*
  * "browsedir(title, initdir)" function
  */
-/* ARGSUSED */
     static void
 f_browsedir(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_BROWSE
@@ -8801,10 +8797,9 @@ f_ceil(argvars, rettv)
 /*
  * "changenr()" function
  */
-/*ARGSUSED*/
     static void
 f_changenr(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
     rettv->vval.v_number = curbuf->b_u_seq_cur;
@@ -8854,10 +8849,9 @@ f_cindent(argvars, rettv)
 /*
  * "clearmatches()" function
  */
-/*ARGSUSED*/
     static void
 f_clearmatches(argvars, rettv)
-    typval_T	*argvars;
+    typval_T	*argvars UNUSED;
     typval_T	*rettv;
 {
 #ifdef FEAT_SEARCH_EXTRA

@@ -4040,8 +4040,10 @@ ex_z(eap)
 	bigness = curwin->w_height;
     else if (firstwin == lastwin)
 	bigness = curwin->w_p_scr * 2;
+#ifdef FEAT_WINDOWS
     else
 	bigness = curwin->w_height - 3;
+#endif
     if (bigness < 1)
 	bigness = 1;
 
