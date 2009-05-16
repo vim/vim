@@ -28,7 +28,8 @@ typedef struct scriptitem_S
 {
     char_u	*sn_name;
 # ifdef UNIX
-    int		sn_dev;
+    int		sn_dev_valid;
+    dev_t	sn_dev;
     ino_t	sn_ino;
 # endif
 # ifdef FEAT_PROFILE
@@ -3049,7 +3050,7 @@ do_source(fname, check_other, is_vimrc)
 		    /* Compare dev/ino when possible, it catches symbolic
 		     * links.  Also compare file names, the inode may change
 		     * when the file was edited. */
-		    ((stat_ok && si->sn_dev != -1)
+		    ((stat_ok && si->sn_dev_valid)
 			&& (si->sn_dev == st.st_dev
 			    && si->sn_ino == st.st_ino)) ||
 # endif
@@ -3076,11 +3077,12 @@ do_source(fname, check_other, is_vimrc)
 # ifdef UNIX
 	if (stat_ok)
 	{
+	    si->sn_dev_valid = TRUE;
 	    si->sn_dev = st.st_dev;
 	    si->sn_ino = st.st_ino;
 	}
 	else
-	    si->sn_dev = -1;
+	    si->sn_dev_valid = FALSE;
 # endif
 
 	/* Allocate the local script variables to use for this script. */
