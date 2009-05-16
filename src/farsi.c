@@ -103,7 +103,8 @@ toF_Xor_X_(c)
 	case F_HE:
 		tempc = _HE;
 
-		if (p_ri && (curwin->w_cursor.col+1 < STRLEN(ml_get_curline())))
+		if (p_ri && (curwin->w_cursor.col + 1
+					 < (colnr_T)STRLEN(ml_get_curline())))
 		{
 		    inc_cursor();
 
@@ -344,7 +345,7 @@ put_curr_and_l_to_X(c)
     if (curwin->w_p_rl && p_ri)
 	return;
 
-    if ( (curwin->w_cursor.col < STRLEN(ml_get_curline())))
+    if ((curwin->w_cursor.col < (colnr_T)STRLEN(ml_get_curline())))
     {
 	if ((p_ri && curwin->w_cursor.col) || !p_ri)
 	{
@@ -565,7 +566,7 @@ chg_c_to_X_or_X ()
 
     tempc = gchar_cursor();
 
-    if (curwin->w_cursor.col+1 < STRLEN(ml_get_curline()))
+    if (curwin->w_cursor.col + 1 < (colnr_T)STRLEN(ml_get_curline()))
     {
 	inc_cursor();
 
@@ -594,8 +595,8 @@ chg_l_to_X_orX_ ()
 {
     int	tempc;
 
-    if (!curwin->w_cursor.col &&
-	(curwin->w_cursor.col+1 == STRLEN(ml_get_curline())))
+    if (curwin->w_cursor.col != 0 &&
+	(curwin->w_cursor.col + 1 == (colnr_T)STRLEN(ml_get_curline())))
 	return;
 
     if (!curwin->w_cursor.col && p_ri)
@@ -663,8 +664,8 @@ chg_l_toXor_X ()
 {
     int	tempc;
 
-    if (!curwin->w_cursor.col &&
-	(curwin->w_cursor.col+1 == STRLEN(ml_get_curline())))
+    if (curwin->w_cursor.col != 0 &&
+	(curwin->w_cursor.col + 1 == (colnr_T)STRLEN(ml_get_curline())))
 	return;
 
     if (!curwin->w_cursor.col && p_ri)

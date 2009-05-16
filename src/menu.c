@@ -231,7 +231,7 @@ ex_menu(eap)
 		if (skipdigits(menu_path + 7) == p)
 		{
 		    menuarg.iconidx = atoi((char *)menu_path + 7);
-		    if (menuarg.iconidx >= TOOLBAR_NAME_COUNT)
+		    if (menuarg.iconidx >= (int)TOOLBAR_NAME_COUNT)
 			menuarg.iconidx = -1;
 		    else
 			menuarg.icon_builtin = TRUE;
@@ -239,7 +239,7 @@ ex_menu(eap)
 	    }
 	    else
 	    {
-		for (i = 0; i < TOOLBAR_NAME_COUNT; ++i)
+		for (i = 0; i < (int)TOOLBAR_NAME_COUNT; ++i)
 		    if (STRNCMP(toolbar_names[i], menu_path, p - menu_path)
 									 == 0)
 		    {
@@ -1341,10 +1341,9 @@ set_context_in_menu_cmd(xp, cmd, arg, forceit)
  * Function given to ExpandGeneric() to obtain the list of (sub)menus (not
  * entries).
  */
-/*ARGSUSED*/
     char_u *
 get_menu_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     static vimmenu_T	*menu = NULL;
@@ -1378,10 +1377,9 @@ get_menu_name(xp, idx)
  * Function given to ExpandGeneric() to obtain the list of menus and menu
  * entries.
  */
-/*ARGSUSED*/
     char_u *
 get_menu_names(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     static vimmenu_T	*menu = NULL;
@@ -1739,10 +1737,9 @@ menu_is_hidden(name)
 /*
  * Return TRUE if the menu is the tearoff menu.
  */
-/*ARGSUSED*/
     static int
 menu_is_tearoff(name)
-    char_u *name;
+    char_u *name UNUSED;
 {
 #ifdef FEAT_GUI
     return (STRCMP(name, TEAR_STRING) == 0);

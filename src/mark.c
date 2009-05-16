@@ -884,10 +884,9 @@ ex_delmarks(eap)
 /*
  * print the jumplist
  */
-/*ARGSUSED*/
     void
 ex_jumps(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     int		i;
     char_u	*name;
@@ -933,10 +932,9 @@ ex_jumps(eap)
 /*
  * print the changelist
  */
-/*ARGSUSED*/
     void
 ex_changes(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     int		i;
     char_u	*name;

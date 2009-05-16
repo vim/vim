@@ -60,7 +60,9 @@ static char_u	*get_end_emsg __ARGS((struct condstack *cstack));
 #else
 /* Values used for the Vim release. */
 # define THROW_ON_ERROR		TRUE
+# define THROW_ON_ERROR_TRUE
 # define THROW_ON_INTERRUPT	TRUE
+# define THROW_ON_INTERRUPT_TRUE
 #endif
 
 static void	catch_exception __ARGS((except_T *excp));
@@ -1320,16 +1322,20 @@ do_throw(cstack)
      * and reset the did_emsg or got_int flag, so this won't happen again at
      * the next surrounding try conditional.
      */
+#ifndef THROW_ON_ERROR_TRUE
     if (did_emsg && !THROW_ON_ERROR)
     {
 	inactivate_try = TRUE;
 	did_emsg = FALSE;
     }
+#endif
+#ifndef THROW_ON_INTERRUPT_TRUE
     if (got_int && !THROW_ON_INTERRUPT)
     {
 	inactivate_try = TRUE;
 	got_int = FALSE;
     }
+#endif
     idx = cleanup_conditionals(cstack, 0, inactivate_try);
     if (idx >= 0)
     {
@@ -2254,10 +2260,9 @@ rewind_conditionals(cstack, idx, cond_type, cond_level)
 /*
  * ":endfunction" when not after a ":function"
  */
-/*ARGSUSED*/
     void
 ex_endfunction(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     EMSG(_("E193: :endfunction not inside a function"));
 }

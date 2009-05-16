@@ -83,7 +83,7 @@ static cscmd_T	    cs_cmds[] =
 		N_("Reinit all connections"), "reset", 0 },
     { "show",	cs_show,
 		N_("Show connections"),       "show", 0 },
-    { NULL }
+    { NULL, NULL, NULL, NULL, 0 }
 };
 
     static void
@@ -107,10 +107,9 @@ static enum
  * Function given to ExpandGeneric() to obtain the cscope command
  * expansion.
  */
-/*ARGSUSED*/
     char_u *
 get_cscope_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     int		current_idx;
@@ -496,10 +495,9 @@ cs_connection(num, dbpath, ppath)
  *
  * MAXPATHL 256
  */
-/* ARGSUSED */
     static int
 cs_add(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     char *fname, *ppath, *flags = NULL;
 
@@ -1292,10 +1290,9 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
  *
  * print help
  */
-/* ARGSUSED */
     static int
 cs_help(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     cscmd_T *cmdp = cs_cmds;
 
@@ -1399,13 +1396,12 @@ GetWin32Error()
  *
  * insert a new cscope database filename into the filelist
  */
-/*ARGSUSED*/
     static int
 cs_insert_filelist(fname, ppath, flags, sb)
     char *fname;
     char *ppath;
     char *flags;
-    struct stat *sb;
+    struct stat *sb UNUSED;
 {
     short	i, j;
 #ifndef UNIX
@@ -1561,10 +1557,9 @@ cs_lookup_cmd(eap)
  *
  * nuke em
  */
-/* ARGSUSED */
     static int
 cs_kill(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     char *stok;
     short i;
@@ -2241,7 +2236,6 @@ cs_read_prompt(i)
 /*
  * Used to catch and ignore SIGALRM below.
  */
-/* ARGSUSED */
     static RETSIGTYPE
 sig_handler SIGDEFARG(sigarg)
 {
@@ -2381,10 +2375,9 @@ cs_release_csp(i, freefnpp)
  *
  * calls cs_kill on all cscope connections then reinits
  */
-/* ARGSUSED */
     static int
 cs_reset(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     char	**dblist = NULL, **pplist = NULL, **fllist = NULL;
     int	i;
@@ -2497,10 +2490,9 @@ cs_resolve_file(i, name)
  *
  * show all cscope connections
  */
-/* ARGSUSED */
     static int
 cs_show(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     short i;
     if (cs_cnt_connections() == 0)

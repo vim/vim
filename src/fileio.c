@@ -9085,12 +9085,11 @@ auto_next_pat(apc, stop_at_last)
  * Called by do_cmdline() to get the next line for ":if".
  * Returns allocated string, or NULL for end of autocommands.
  */
-/* ARGSUSED */
     static char_u *
 getnextac(c, cookie, indent)
-    int	    c;		    /* not used */
+    int	    c UNUSED;
     void    *cookie;
-    int	    indent;	    /* not used */
+    int	    indent UNUSED;
 {
     AutoPatCmd	    *acp = (AutoPatCmd *)cookie;
     char_u	    *retval;
@@ -9201,10 +9200,9 @@ has_autocmd(event, sfname, buf)
  * Function given to ExpandGeneric() to obtain the list of autocommand group
  * names.
  */
-/*ARGSUSED*/
     char_u *
 get_augroup_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     if (idx == augroups.ga_len)		/* add "END" add the end */
@@ -9270,10 +9268,9 @@ set_context_in_autocmd(xp, arg, doautocmd)
 /*
  * Function given to ExpandGeneric() to obtain the list of event names.
  */
-/*ARGSUSED*/
     char_u *
 get_event_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     if (idx < augroups.ga_len)		/* First list group names, if wanted */

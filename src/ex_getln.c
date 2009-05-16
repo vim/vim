@@ -4533,7 +4533,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	 * right function to do the expansion.
 	 */
 	ret = FAIL;
-	for (i = 0; i < sizeof(tab) / sizeof(struct expgen); ++i)
+	for (i = 0; i < (int)(sizeof(tab) / sizeof(struct expgen)); ++i)
 	    if (xp->xp_context == tab[i].context)
 	    {
 		if (tab[i].ic)

@@ -682,7 +682,7 @@ serverGetVimNames(dpy)
      * Scan all of the names out of the property.
      */
     ga_init2(&ga, 1, 100);
-    for (p = regProp; (p - regProp) < numItems; p++)
+    for (p = regProp; (long_u)(p - regProp) < numItems; p++)
     {
 	entry = p;
 	while (*p != 0 && !isspace(*p))
@@ -969,7 +969,7 @@ LookupName(dpy, name, delete, loose)
      */
     returnValue = (int_u)None;
     entry = NULL;	/* Not needed, but eliminates compiler warning. */
-    for (p = regProp; (p - regProp) < numItems; )
+    for (p = regProp; (long_u)(p - regProp) < numItems; )
     {
 	entry = p;
 	while (*p != 0 && !isspace(*p))
@@ -986,7 +986,7 @@ LookupName(dpy, name, delete, loose)
 
     if (loose != NULL && returnValue == (int_u)None && !IsSerialName(name))
     {
-	for (p = regProp; (p - regProp) < numItems; )
+	for (p = regProp; (long_u)(p - regProp) < numItems; )
 	{
 	    entry = p;
 	    while (*p != 0 && !isspace(*p))
@@ -1056,7 +1056,7 @@ DeleteAnyLingerer(dpy, win)
 	return;
 
     /* Scan the property for the window id.  */
-    for (p = regProp; (p - regProp) < numItems; )
+    for (p = regProp; (long_u)(p - regProp) < numItems; )
     {
 	if (*p != 0)
 	{
@@ -1196,7 +1196,7 @@ serverEventProc(dpy, eventPtr)
      * one time;  each iteration through the outer loop handles a
      * single command or result.
      */
-    for (p = propInfo; (p - propInfo) < numItems; )
+    for (p = propInfo; (long_u)(p - propInfo) < numItems; )
     {
 	/*
 	 * Ignore leading NULs; each command or result starts with a
@@ -1230,7 +1230,7 @@ serverEventProc(dpy, eventPtr)
 	    serial = (char_u *)"";
 	    script = NULL;
 	    enc = NULL;
-	    while (p - propInfo < numItems && *p == '-')
+	    while ((long_u)(p - propInfo) < numItems && *p == '-')
 	    {
 		switch (p[1])
 		{
@@ -1333,7 +1333,7 @@ serverEventProc(dpy, eventPtr)
 	    res = (char_u *)"";
 	    code = 0;
 	    enc = NULL;
-	    while ((p-propInfo) < numItems && *p == '-')
+	    while ((long_u)(p - propInfo) < numItems && *p == '-')
 	    {
 		switch (p[1])
 		{
@@ -1401,7 +1401,7 @@ serverEventProc(dpy, eventPtr)
 	    gotWindow = 0;
 	    str = (char_u *)"";
 	    enc = NULL;
-	    while ((p-propInfo) < numItems && *p == '-')
+	    while ((long_u)(p - propInfo) < numItems && *p == '-')
 	    {
 		switch (p[1])
 		{
@@ -1489,11 +1489,10 @@ AppendPropCarefully(dpy, window, property, value, length)
 /*
  * Another X Error handler, just used to check for errors.
  */
-/* ARGSUSED */
     static int
 x_error_check(dpy, error_event)
-    Display	*dpy;
-    XErrorEvent	*error_event;
+    Display	*dpy UNUSED;
+    XErrorEvent	*error_event UNUSED;
 {
     got_x_error = TRUE;
     return 0;

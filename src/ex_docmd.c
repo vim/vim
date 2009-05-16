@@ -3004,7 +3004,7 @@ modifier_len(cmd)
 
     if (VIM_ISDIGIT(*cmd))
 	p = skipwhite(skipdigits(cmd));
-    for (i = 0; i < sizeof(cmdmods) / sizeof(struct cmdmod); ++i)
+    for (i = 0; i < (int)(sizeof(cmdmods) / sizeof(struct cmdmod)); ++i)
     {
 	for (j = 0; p[j] != NUL; ++j)
 	    if (p[j] != cmdmods[i].name[j])
@@ -3032,7 +3032,7 @@ cmd_exists(name)
     char_u	*p;
 
     /* Check command modifiers. */
-    for (i = 0; i < sizeof(cmdmods) / sizeof(struct cmdmod); ++i)
+    for (i = 0; i < (int)(sizeof(cmdmods) / sizeof(struct cmdmod)); ++i)
     {
 	for (j = 0; name[j] != NUL; ++j)
 	    if (name[j] != cmdmods[i].name[j])
@@ -6093,7 +6093,7 @@ get_user_cmd_flags(xp, idx)
 	{"bang", "bar", "buffer", "complete", "count",
 	    "nargs", "range", "register"};
 
-    if (idx >= sizeof(user_cmd_flags) / sizeof(user_cmd_flags[0]))
+    if (idx >= (int)(sizeof(user_cmd_flags) / sizeof(user_cmd_flags[0])))
 	return NULL;
     return (char_u *)user_cmd_flags[idx];
 }
@@ -6108,7 +6108,7 @@ get_user_cmd_nargs(xp, idx)
 {
     static char *user_cmd_nargs[] = {"0", "1", "*", "?", "+"};
 
-    if (idx >= sizeof(user_cmd_nargs) / sizeof(user_cmd_nargs[0]))
+    if (idx >= (int)(sizeof(user_cmd_nargs) / sizeof(user_cmd_nargs[0])))
 	return NULL;
     return (char_u *)user_cmd_nargs[idx];
 }
@@ -9144,10 +9144,9 @@ ex_startinsert(eap)
 /*
  * ":stopinsert"
  */
-/*ARGSUSED*/
     static void
 ex_stopinsert(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     restart_edit = 0;
     stop_insert_mode = TRUE;
