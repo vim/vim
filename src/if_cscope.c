@@ -994,7 +994,7 @@ err_closing:
 	vim_free(ppath);
 
 #if defined(UNIX)
-	if (execl("/bin/sh", "sh", "-c", cmd, NULL) == -1)
+	if (execl("/bin/sh", "sh", "-c", cmd, (char *)NULL) == -1)
 	    PERROR(_("cs_create_connection exec failed"));
 
 	exit(127);
