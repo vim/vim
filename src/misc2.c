@@ -2841,7 +2841,7 @@ get_special_key_code(name)
 get_key_name(i)
     int	    i;
 {
-    if (i >= KEY_NAMES_TABLE_LEN)
+    if (i >= (int)KEY_NAMES_TABLE_LEN)
 	return NULL;
     return  key_names_table[i].name;
 }
@@ -3869,7 +3869,8 @@ typedef struct ff_visited
      * use filename.
      */
 #ifdef UNIX
-    int			ffv_dev;	/* device number (-1 if not set) */
+    int			ffv_dev_valid;	/* ffv_dev and ffv_ino were set */
+    dev_t		ffv_dev;	/* device number */
     ino_t		ffv_ino;	/* inode number */
 #endif
     /* The memory for this struct is allocated according to the length of
@@ -4059,13 +4060,12 @@ vim_findnext()
  * This function silently ignores a few errors, vim_findfile() will have
  * limited functionality then.
  */
-/*ARGSUSED*/
     void *
 vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 					   search_ctx_arg, tagfile, rel_fname)
     char_u	*path;
     char_u	*filename;
-    char_u	*stopdirs;
+    char_u	*stopdirs UNUSED;
     int		level;
     int		free_visited;
     int		find_what;
@@ -5063,10 +5063,9 @@ ff_check_visited(visited_list, fname
     {
 	if (
 #ifdef UNIX
-		!url
-		    ? (vp->ffv_dev == st.st_dev
-			&& vp->ffv_ino == st.st_ino)
-		    :
+		!url ? (vp->ffv_dev_valid && vp->ffv_dev == st.st_dev
+						  && vp->ffv_ino == st.st_ino)
+		     :
 #endif
 		fnamecmp(vp->ffv_fname, ff_expand_buffer) == 0
 	   )
@@ -5091,14 +5090,14 @@ ff_check_visited(visited_list, fname
 #ifdef UNIX
 	if (!url)
 	{
+	    vp->ffv_dev_valid = TRUE;
 	    vp->ffv_ino = st.st_ino;
 	    vp->ffv_dev = st.st_dev;
 	    vp->ffv_fname[0] = NUL;
 	}
 	else
 	{
-	    vp->ffv_ino = 0;
-	    vp->ffv_dev = -1;
+	    vp->ffv_dev_valid = FALSE;
 #endif
 	    STRCPY(vp->ffv_fname, ff_expand_buffer);
 #ifdef UNIX
