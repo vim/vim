@@ -1646,11 +1646,7 @@ struct tabpage_S
 #endif
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
-# ifdef S_SPLINT_S  /* splint doesn't understand the array of pointers */
-    buf_T	    **tp_diffbuf;
-# else
     buf_T	    *(tp_diffbuf[DB_COUNT]);
-# endif
     int		    tp_diff_invalid;	/* list of diffs is outdated */
 #endif
     frame_T	    *tp_snapshot;    /* window layout snapshot */

@@ -5776,10 +5776,6 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 {
     char_u	*s, *d;
     int		i;
-#ifdef S_SPLINT_S  /* splint doesn't understand array of pointers */
-    static char **mtable;
-    static char **rtable;
-#else
     static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
 			       "/*", "/\\*", "\"*", "**",
 			       "/\\(\\)",
@@ -5794,7 +5790,6 @@ find_help_tags(arg, num_matches, matches, keep_lang)
 			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
 			       "\\[count]", "\\[quotex]", "\\[range]",
 			       "\\[pattern]", "\\\\bar", "/\\\\%\\$"};
-#endif
     int flags;
 
     d = IObuff;		    /* assume IObuff is long enough! */

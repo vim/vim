@@ -69,11 +69,7 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	/* matched text */
     char	cp_icase;	/* TRUE or FALSE: ignore case */
-#ifdef S_SPLINT_S  /* splint can't handle array of pointers */
-    char_u	**cp_text;	/* text for the menu */
-#else
     char_u	*(cp_text[CPT_COUNT]);	/* text for the menu */
-#endif
     char_u	*cp_fname;	/* file containing the match, allocated when
 				 * cp_flags has FREE_FNAME */
     int		cp_flags;	/* ORIGINAL_TEXT, CONT_S_IPOS or FREE_FNAME */
@@ -3835,11 +3831,7 @@ ins_compl_add_tv(tv, dir)
     char_u	*word;
     int		icase = FALSE;
     int		adup = FALSE;
-#ifdef S_SPLINT_S  /* splint doesn't parse array of pointers correctly */
-    char_u	**cptext;
-#else
     char_u	*(cptext[CPT_COUNT]);
-#endif
 
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {

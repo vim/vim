@@ -9395,13 +9395,7 @@ find_cmdline_var(src, usedlen)
 {
     int		len;
     int		i;
-#ifdef S_SPLINT_S  /* splint can't handle array of pointers */
-    static char **spec_str;
-    static char *(nospec_str[])
-#else
-    static char *(spec_str[])
-#endif
-	= {
+    static char *(spec_str[]) = {
 		    "%",
 #define SPEC_PERC   0
 		    "#",
