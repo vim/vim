@@ -707,7 +707,7 @@ messageFromNetbeansW32()
 #else
 # ifdef FEAT_GUI_MOTIF
     static void
-messageFromNetbeans(XtPointer clientData UNUSED
+messageFromNetbeans(XtPointer clientData UNUSED,
 		    int *unused1 UNUSED,
 		    XtInputId *unused2 UNUSED)
 # endif
