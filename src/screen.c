@@ -270,11 +270,10 @@ redraw_buf_later(buf, type)
  * Note that when also inserting/deleting lines w_redraw_top and w_redraw_bot
  * may become invalid and the whole window will have to be redrawn.
  */
-/*ARGSUSED*/
     void
 redrawWinline(lnum, invalid)
     linenr_T	lnum;
-    int		invalid;	/* window line height is invalid now */
+    int		invalid UNUSED;	/* window line height is invalid now */
 {
 #ifdef FEAT_FOLDING
     int		i;
@@ -2413,7 +2412,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 			&& (lnume < bot->lnum
 			    || (lnume == bot->lnum
 				&& (bot->col - (*p_sel == 'e'))
-		>= STRLEN(ml_get_buf(wp->w_buffer, lnume, FALSE)))))))
+		>= (colnr_T)STRLEN(ml_get_buf(wp->w_buffer, lnume, FALSE)))))))
 	{
 	    if (VIsual_mode == Ctrl_V)
 	    {
@@ -2549,14 +2548,13 @@ fill_foldcolumn(p, wp, closed, lnum)
  *
  * Return the number of last row the line occupies.
  */
-/* ARGSUSED */
     static int
 win_line(wp, lnum, startrow, endrow, nochange)
     win_T	*wp;
     linenr_T	lnum;
     int		startrow;
     int		endrow;
-    int		nochange;		/* not updating for changed text */
+    int		nochange UNUSED;	/* not updating for changed text */
 {
     int		col;			/* visual column on screen */
     unsigned	off;			/* offset in ScreenLines/ScreenAttrs */
@@ -6098,7 +6096,7 @@ win_redr_custom(wp, draw_ruler)
 				fillchar, maxwidth, hltab, tabtab);
     len = (int)STRLEN(buf);
 
-    while (width < maxwidth && len < sizeof(buf) - 1)
+    while (width < maxwidth && len < (int)sizeof(buf) - 1)
     {
 #ifdef FEAT_MBYTE
 	len += (*mb_char2bytes)(fillchar, buf + len);
@@ -8655,7 +8653,6 @@ screen_ins_lines(off, row, line_count, end, wp)
  *
  * Return OK for success, FAIL if the lines are not deleted.
  */
-/*ARGSUSED*/
     int
 screen_del_lines(off, row, line_count, end, force, wp)
     int		off;
@@ -8663,7 +8660,7 @@ screen_del_lines(off, row, line_count, end, force, wp)
     int		line_count;
     int		end;
     int		force;		/* even when line_count > p_ttyscroll */
-    win_T	*wp;		/* NULL or window to use width from */
+    win_T	*wp UNUSED;	/* NULL or window to use width from */
 {
     int		j;
     int		i;

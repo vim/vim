@@ -1015,10 +1015,9 @@ dbcs_class(lead, trail)
  * Return length in bytes of character "c".
  * Returns 1 for a single-byte character.
  */
-/* ARGSUSED */
     int
 latin_char2len(c)
-    int		c;
+    int		c UNUSED;
 {
     return 1;
 }
@@ -1248,10 +1247,9 @@ utf_char2cells(c)
  * Return the number of display cells character at "*p" occupies.
  * This doesn't take care of unprintable characters, use ptr2cells() for that.
  */
-/*ARGSUSED*/
     int
 latin_ptr2cells(p)
-    char_u	*p;
+    char_u	*p UNUSED;
 {
     return 1;
 }
@@ -1293,10 +1291,9 @@ dbcs_ptr2cells(p)
  * Return the number of display cells character "c" occupies.
  * Only takes care of multi-byte chars, not "^C" and such.
  */
-/*ARGSUSED*/
     int
 latin_char2cells(c)
-    int		c;
+    int		c UNUSED;
 {
     return 1;
 }
@@ -1318,11 +1315,10 @@ dbcs_char2cells(c)
  * Return number of display cells for char at ScreenLines[off].
  * We make sure that the offset used is less than "max_off".
  */
-/*ARGSUSED*/
     int
 latin_off2cells(off, max_off)
-    unsigned	off;
-    unsigned	max_off;
+    unsigned	off UNUSED;
+    unsigned	max_off UNUSED;
 {
     return 1;
 }
@@ -2419,11 +2415,10 @@ show_utf8()
  * Return offset from "p" to the first byte of the character it points into.
  * Returns 0 when already at the first byte of a character.
  */
-/*ARGSUSED*/
     int
 latin_head_off(base, p)
-    char_u	*base;
-    char_u	*p;
+    char_u	*base UNUSED;
+    char_u	*p UNUSED;
 {
     return 0;
 }
@@ -3131,7 +3126,7 @@ enc_locale()
 	else
 	    s = p + 1;
     }
-    for (i = 0; s[i] != NUL && i < sizeof(buf) - 1; ++i)
+    for (i = 0; s[i] != NUL && i < (int)sizeof(buf) - 1; ++i)
     {
 	if (s[i] == '_' || s[i] == '-')
 	    buf[i] = '-';
@@ -3582,9 +3577,10 @@ im_show_info(void)
  * Callback invoked when the user finished preediting.
  * Put the final string into the input buffer.
  */
-/*ARGSUSED0*/
     static void
-im_commit_cb(GtkIMContext *context, const gchar *str, gpointer data)
+im_commit_cb(GtkIMContext *context UNUSED,
+	     const gchar *str,
+	     gpointer data UNUSED)
 {
     int	slen = (int)STRLEN(str);
     int	add_to_input = TRUE;
@@ -3670,9 +3666,8 @@ im_commit_cb(GtkIMContext *context, const gchar *str, gpointer data)
 /*
  * Callback invoked after start to the preedit.
  */
-/*ARGSUSED*/
     static void
-im_preedit_start_cb(GtkIMContext *context, gpointer data)
+im_preedit_start_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("im_preedit_start_cb()\n");
@@ -3687,9 +3682,8 @@ im_preedit_start_cb(GtkIMContext *context, gpointer data)
 /*
  * Callback invoked after end to the preedit.
  */
-/*ARGSUSED*/
     static void
-im_preedit_end_cb(GtkIMContext *context, gpointer data)
+im_preedit_end_cb(GtkIMContext *context UNUSED, gpointer data UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("im_preedit_end_cb()\n");
@@ -3748,9 +3742,8 @@ im_preedit_end_cb(GtkIMContext *context, gpointer data)
  * remaining input from within the "retrieve_surrounding" signal handler, this
  * might not be necessary.  Gotta ask on vim-dev for opinions.
  */
-/*ARGSUSED1*/
     static void
-im_preedit_changed_cb(GtkIMContext *context, gpointer data)
+im_preedit_changed_cb(GtkIMContext *context, gpointer data UNUSED)
 {
     char    *preedit_string = NULL;
     int	    cursor_index    = 0;
@@ -4616,11 +4609,10 @@ xim_set_focus(focus)
     }
 }
 
-/*ARGSUSED*/
     void
 im_set_position(row, col)
-    int		row;
-    int		col;
+    int		row UNUSED;
+    int		col UNUSED;
 {
     xim_set_preedit();
 }
@@ -4927,12 +4919,11 @@ static int xim_real_init __ARGS((Window x11_window, Display *x11_display));
 static void xim_instantiate_cb __ARGS((Display *display, XPointer client_data, XPointer	call_data));
 static void xim_destroy_cb __ARGS((XIM im, XPointer client_data, XPointer call_data));
 
-/*ARGSUSED*/
     static void
 xim_instantiate_cb(display, client_data, call_data)
     Display	*display;
-    XPointer	client_data;
-    XPointer	call_data;
+    XPointer	client_data UNUSED;
+    XPointer	call_data UNUSED;
 {
     Window	x11_window;
     Display	*x11_display;
@@ -4952,12 +4943,11 @@ xim_instantiate_cb(display, client_data, call_data)
 					 xim_instantiate_cb, NULL);
 }
 
-/*ARGSUSED*/
     static void
 xim_destroy_cb(im, client_data, call_data)
-    XIM		im;
-    XPointer	client_data;
-    XPointer	call_data;
+    XIM		im UNUSED;
+    XPointer	client_data UNUSED;
+    XPointer	call_data UNUSED;
 {
     Window	x11_window;
     Display	*x11_display;
@@ -5276,9 +5266,10 @@ xim_decide_input_style()
     }
 }
 
-/*ARGSUSED*/
     static void
-preedit_start_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
+preedit_start_cbproc(XIC thexic UNUSED,
+	             XPointer client_data UNUSED,
+		     XPointer call_data UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("xim_decide_input_style()\n");
@@ -5310,9 +5301,10 @@ xim_back_delete(int n)
 static GSList *key_press_event_queue = NULL;
 static gboolean processing_queued_event = FALSE;
 
-/*ARGSUSED*/
     static void
-preedit_draw_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
+preedit_draw_cbproc(XIC thexic UNUSED,
+		    XPointer client_data UNUSED,
+		    XPointer call_data)
 {
     XIMPreeditDrawCallbackStruct *draw_data;
     XIMText	*text;
@@ -5451,18 +5443,20 @@ im_get_feedback_attr(int col)
     return -1;
 }
 
-/*ARGSUSED*/
     static void
-preedit_caret_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
+preedit_caret_cbproc(XIC thexic UNUSED,
+		     XPointer client_data UNUSED,
+		     XPointer call_data UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("preedit_caret_cbproc()\n");
 #endif
 }
 
-/*ARGSUSED*/
     static void
-preedit_done_cbproc(XIC thexic, XPointer client_data, XPointer call_data)
+preedit_done_cbproc(XIC thexic UNUSED,
+		    XPointer client_data UNUSED,
+		    XPointer call_data UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("preedit_done_cbproc()\n");
@@ -5501,9 +5495,8 @@ xim_reset(void)
     }
 }
 
-/*ARGSUSED*/
     int
-xim_queue_key_press_event(GdkEventKey *event, int down)
+xim_queue_key_press_event(GdkEventKey *event, int down UNUSED)
 {
 #ifdef XIM_DEBUG
     xim_log("xim_queue_key_press_event()\n");
@@ -5519,9 +5512,8 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
     return TRUE;
 }
 
-/*ARGSUSED*/
     static void
-preedit_callback_setup(GdkIC *ic)
+preedit_callback_setup(GdkIC *ic UNUSED)
 {
     XIC xxic;
     XVaNestedList preedit_attr;
@@ -5546,9 +5538,8 @@ preedit_callback_setup(GdkIC *ic)
     XFree(preedit_attr);
 }
 
-/*ARGSUSED*/
     static void
-reset_state_setup(GdkIC *ic)
+reset_state_setup(GdkIC *ic UNUSED)
 {
 #ifdef USE_X11R6_XIM
     /* don't change the input context when we call reset */

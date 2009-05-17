@@ -2906,7 +2906,7 @@ add_long_to_buf(val, dst)
     int	    i;
     int	    shift;
 
-    for (i = 1; i <= sizeof(long_u); i++)
+    for (i = 1; i <= (int)sizeof(long_u); i++)
     {
 	shift = 8 * (sizeof(long_u) - i);
 	dst[i - 1] = (char_u) ((val >> shift) & 0xff);
@@ -2937,7 +2937,7 @@ get_long_from_buf(buf, val)
     len = get_bytes_from_buf(buf, bytes, (int)sizeof(long_u));
     if (len != -1)
     {
-	for (i = 0; i < sizeof(long_u); i++)
+	for (i = 0; i < (int)sizeof(long_u); i++)
 	{
 	    shift = 8 * (sizeof(long_u) - 1 - i);
 	    *val += (long_u)bytes[i] << shift;

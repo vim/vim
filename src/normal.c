@@ -9243,10 +9243,9 @@ nv_open(cap)
 }
 
 #ifdef FEAT_SNIFF
-/*ARGSUSED*/
     static void
 nv_sniff(cap)
-    cmdarg_T	*cap;
+    cmdarg_T	*cap UNUSED;
 {
     ProcessSniffRequests();
 }
@@ -9262,10 +9261,9 @@ nv_nbcmd(cap)
 #endif
 
 #ifdef FEAT_DND
-/*ARGSUSED*/
     static void
 nv_drop(cap)
-    cmdarg_T	*cap;
+    cmdarg_T	*cap UNUSED;
 {
     do_put('~', BACKWARD, 1L, PUT_CURSEND);
 }
@@ -9277,7 +9275,6 @@ nv_drop(cap)
  * When waiting for a character for 'updatetime' K_CURSORHOLD is put in the
  * input buffer.  "did_cursorhold" is set to avoid retriggering.
  */
-/*ARGSUSED*/
     static void
 nv_cursorhold(cap)
     cmdarg_T	*cap;

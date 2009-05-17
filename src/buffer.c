@@ -2025,13 +2025,12 @@ buflist_findname_stat(ffname, stp)
  * Return fnum of the found buffer.
  * Return < 0 for error.
  */
-/*ARGSUSED*/
     int
 buflist_findpat(pattern, pattern_end, unlisted, diffmode)
     char_u	*pattern;
     char_u	*pattern_end;	/* pointer to first char after pattern */
     int		unlisted;	/* find unlisted buffers */
-    int		diffmode;	/* find diff-mode buffers only */
+    int		diffmode UNUSED; /* find diff-mode buffers only */
 {
     buf_T	*buf;
     regprog_T	*prog;
@@ -2539,7 +2538,6 @@ buflist_findlnum(buf)
 /*
  * List all know file names (for :files and :buffers command).
  */
-/*ARGSUSED*/
     void
 buflist_list(eap)
     exarg_T	*eap;
@@ -3346,14 +3344,13 @@ free_titles()
  * If maxwidth is not zero, the string will be filled at any middle marker
  * or truncated if too long, fillchar is used for all whitespace.
  */
-/*ARGSUSED*/
     int
 build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, tabtab)
     win_T	*wp;
     char_u	*out;		/* buffer to write into != NameBuff */
     size_t	outlen;		/* length of out[] */
     char_u	*fmt;
-    int		use_sandbox;	/* "fmt" was set insecurely, use sandbox */
+    int		use_sandbox UNUSED; /* "fmt" was set insecurely, use sandbox */
     int		fillchar;
     int		maxwidth;
     struct stl_hlrec *hltab;	/* return: HL attributes (can be NULL) */

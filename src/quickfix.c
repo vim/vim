@@ -2240,7 +2240,6 @@ ex_cwindow(eap)
  * ":cclose": close the window showing the list of errors.
  * ":lclose": close the window showing the location list
  */
-/*ARGSUSED*/
     void
 ex_cclose(eap)
     exarg_T	*eap;
@@ -3211,7 +3210,7 @@ ex_vimgrep(eap)
 			break;
 		    col = regmatch.endpos[0].col
 					    + (col == regmatch.endpos[0].col);
-		    if (col > STRLEN(ml_get_buf(buf, lnum, FALSE)))
+		    if (col > (colnr_T)STRLEN(ml_get_buf(buf, lnum, FALSE)))
 			break;
 		}
 		line_breakcheck();

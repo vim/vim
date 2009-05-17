@@ -4527,12 +4527,11 @@ linewhite(lnum)
  * Find identifiers or defines in included files.
  * if p_ic && (compl_cont_status & CONT_SOL) then ptr must be in lowercase.
  */
-/*ARGSUSED*/
     void
 find_pattern_in_path(ptr, dir, len, whole, skip_comments,
 				    type, count, action, start_lnum, end_lnum)
     char_u	*ptr;		/* pointer to search pattern */
-    int		dir;		/* direction of expansion */
+    int		dir UNUSED;	/* direction of expansion */
     int		len;		/* length of search pattern */
     int		whole;		/* match whole words only */
     int		skip_comments;	/* don't match inside comments */

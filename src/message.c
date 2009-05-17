@@ -818,10 +818,9 @@ delete_first_msg()
 /*
  * ":messages" command.
  */
-/*ARGSUSED*/
     void
 ex_messages(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     struct msg_hist *p;
     char_u	    *s;
@@ -3290,15 +3289,15 @@ msg_advance(col)
  * A '&' in a button name becomes a shortcut, so each '&' should be before a
  * different letter.
  */
-/* ARGSUSED */
     int
 do_dialog(type, title, message, buttons, dfltbutton, textfield)
-    int		type;
-    char_u	*title;
+    int		type UNUSED;
+    char_u	*title UNUSED;
     char_u	*message;
     char_u	*buttons;
     int		dfltbutton;
-    char_u	*textfield;	/* IObuff for inputdialog(), NULL otherwise */
+    char_u	*textfield UNUSED;	/* IObuff for inputdialog(), NULL
+					   otherwise */
 {
     int		oldState;
     int		retval = 0;
@@ -4021,7 +4020,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 	if (*p != '%')
 	{
 	    char    *q = strchr(p + 1, '%');
-	    size_t  n = (q == NULL) ? STRLEN(p) : (q - p);
+	    size_t  n = (q == NULL) ? STRLEN(p) : (size_t)(q - p);
 
 	    /* Copy up to the next '%' or NUL without any changes. */
 	    if (str_l < str_m)
@@ -4268,7 +4267,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 				  precision <= (size_t)0x7fffffffL ? precision
 						       : (size_t)0x7fffffffL);
 #endif
-			str_arg_l = (q == NULL) ? precision : q - str_arg;
+			str_arg_l = (q == NULL) ? precision
+						      : (size_t)(q - str_arg);
 		    }
 		    break;
 
@@ -4368,7 +4368,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					    tvs != NULL ? tv_nr(tvs, &arg_idx) :
+					    tvs != NULL ? (unsigned)
+							tv_nr(tvs, &arg_idx) :
 # endif
 						va_arg(ap, unsigned int);
 #endif
@@ -4381,7 +4382,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 					    get_a_arg(arg_idx);
 #else
 # if defined(FEAT_EVAL)
-					    tvs != NULL ? tv_nr(tvs, &arg_idx) :
+					    tvs != NULL ? (unsigned long)
+							tv_nr(tvs, &arg_idx) :
 # endif
 						va_arg(ap, unsigned long int);
 #endif
@@ -4704,7 +4706,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			size_t avail = str_m - str_l;
 
 			vim_memset(str + str_l, zero_padding ? '0' : ' ',
-					     (size_t)pn > avail ? avail : pn);
+					     (size_t)pn > avail ? avail
+								: (size_t)pn);
 		    }
 		    str_l += pn;
 		}
@@ -4731,7 +4734,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			size_t avail = str_m - str_l;
 
 			mch_memmove(str + str_l, str_arg,
-					     (size_t)zn > avail ? avail : zn);
+					     (size_t)zn > avail ? avail
+								: (size_t)zn);
 		    }
 		    str_l += zn;
 		}
@@ -4746,7 +4750,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			size_t avail = str_m-str_l;
 
 			vim_memset(str + str_l, '0',
-					     (size_t)zn > avail ? avail : zn);
+					     (size_t)zn > avail ? avail
+								: (size_t)zn);
 		    }
 		    str_l += zn;
 		}
@@ -4765,7 +4770,7 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 
 			mch_memmove(str + str_l,
 				str_arg + zero_padding_insertion_ind,
-				(size_t)sn > avail ? avail : sn);
+				(size_t)sn > avail ? avail : (size_t)sn);
 		    }
 		    str_l += sn;
 		}
@@ -4785,7 +4790,8 @@ vim_snprintf(str, str_m, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10)
 			size_t avail = str_m - str_l;
 
 			vim_memset(str + str_l, ' ',
-					     (size_t)pn > avail ? avail : pn);
+					     (size_t)pn > avail ? avail
+								: (size_t)pn);
 		    }
 		    str_l += pn;
 		}

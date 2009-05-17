@@ -3224,11 +3224,10 @@ check_keyword_id(line, startcol, endcolp, flagsp, next_listp, cur_si)
 /*
  * Handle ":syntax case" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_case(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg = eap->arg;
     char_u	*next;
@@ -3249,11 +3248,10 @@ syn_cmd_case(eap, syncing)
 /*
  * Handle ":syntax spell" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_spell(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg = eap->arg;
     char_u	*next;
@@ -3517,11 +3515,10 @@ syn_clear_one(id, syncing)
 /*
  * Handle ":syntax on" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_on(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	/* not used */
+    int		syncing UNUSED;
 {
     syn_cmd_onoff(eap, "syntax");
 }
@@ -3529,11 +3526,10 @@ syn_cmd_on(eap, syncing)
 /*
  * Handle ":syntax enable" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_enable(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	/* not used */
+    int		syncing UNUSED;
 {
     set_internal_string_var((char_u *)"syntax_cmd", (char_u *)"enable");
     syn_cmd_onoff(eap, "syntax");
@@ -3543,11 +3539,10 @@ syn_cmd_enable(eap, syncing)
 /*
  * Handle ":syntax reset" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_reset(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	/* not used */
+    int		syncing UNUSED;
 {
     eap->nextcmd = check_nextcmd(eap->arg);
     if (!eap->skip)
@@ -3561,11 +3556,10 @@ syn_cmd_reset(eap, syncing)
 /*
  * Handle ":syntax manual" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_manual(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	/* not used */
+    int		syncing UNUSED;
 {
     syn_cmd_onoff(eap, "manual");
 }
@@ -3573,11 +3567,10 @@ syn_cmd_manual(eap, syncing)
 /*
  * Handle ":syntax off" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_off(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	/* not used */
+    int		syncing UNUSED;
 {
     syn_cmd_onoff(eap, "nosyntax");
 }
@@ -4461,11 +4454,10 @@ syn_incl_toplevel(id, flagsp)
 /*
  * Handle ":syntax include [@{group-name}] filename" command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_include(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg = eap->arg;
     int		sgl_id = 1;
@@ -4532,11 +4524,10 @@ syn_cmd_include(eap, syncing)
 /*
  * Handle ":syntax keyword {group-name} [{option}] keyword .." command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_keyword(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg = eap->arg;
     char_u	*group_name_end;
@@ -5275,11 +5266,10 @@ syn_add_cluster(name)
  * Handle ":syntax cluster {cluster-name} [contains={groupname},..]
  *		[add={groupname},..] [remove={groupname},..]".
  */
-/* ARGSUSED */
     static void
 syn_cmd_cluster(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg = eap->arg;
     char_u	*group_name_end;
@@ -5464,11 +5454,10 @@ get_syn_pattern(arg, ci)
 /*
  * Handle ":syntax sync .." command.
  */
-/* ARGSUSED */
     static void
 syn_cmd_sync(eap, syncing)
     exarg_T	*eap;
-    int		syncing;	    /* not used */
+    int		syncing UNUSED;
 {
     char_u	*arg_start = eap->arg;
     char_u	*arg_end;
@@ -6099,10 +6088,9 @@ static char *(case_args[]) = {"match", "ignore", NULL};
  * Function given to ExpandGeneric() to obtain the list syntax names for
  * expansion.
  */
-/*ARGSUSED*/
     char_u *
 get_syntax_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
     if (expand_what == EXP_SUBCMD)
@@ -7744,14 +7732,13 @@ fontset_name2handle(name, fixed_width)
 /*
  * Get the font or fontset for one highlight group.
  */
-/*ARGSUSED*/
     static void
 hl_do_font(idx, arg, do_normal, do_menu, do_tooltip)
     int		idx;
     char_u	*arg;
-    int		do_normal;	/* set normal font */
-    int		do_menu;	/* set menu font */
-    int		do_tooltip;	/* set tooltip font */
+    int		do_normal;		/* set normal font */
+    int		do_menu UNUSED;		/* set menu font */
+    int		do_tooltip UNUSED;	/* set tooltip font */
 {
 # ifdef FEAT_XFONTSET
     /* If 'guifontset' is not empty, first try using the name as a
@@ -9150,10 +9137,9 @@ highlight_list_two(cnt, attr)
  * Function given to ExpandGeneric() to obtain the list of group names.
  * Also used for synIDattr() function.
  */
-/*ARGSUSED*/
     char_u *
 get_highlight_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
 #ifdef FEAT_CMDL_COMPL

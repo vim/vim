@@ -100,7 +100,7 @@ static char_u	*tagmatchname = NULL;	/* name of last used tag */
  * Tag for preview window is remembered separately, to avoid messing up the
  * normal tagstack.
  */
-static taggy_T ptag_entry = {NULL};
+static taggy_T ptag_entry = {NULL, {INIT_POS_T(0, 0, 0), 0}, 0, 0};
 #endif
 
 /*
@@ -3791,7 +3791,7 @@ add_tag_field(dict, field_name, start, end)
 		--end;
 	}
 	len = (int)(end - start);
-	if (len > sizeof(buf) - 1)
+	if (len > (int)sizeof(buf) - 1)
 	    len = sizeof(buf) - 1;
 	vim_strncpy(buf, start, len);
     }

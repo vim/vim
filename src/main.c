@@ -1505,10 +1505,9 @@ parse_command_name(parmp)
  *
  * Also find the --server... arguments and --socketid and --windowid
  */
-/*ARGSUSED*/
     static void
 early_arg_scan(parmp)
-    mparm_T	*parmp;
+    mparm_T	*parmp UNUSED;
 {
 #if defined(FEAT_XCLIPBOARD) || defined(FEAT_CLIENTSERVER) \
 	|| !defined(FEAT_NETBEANS_INTG)
@@ -2380,10 +2379,9 @@ read_stdin()
  * Create the requested number of windows and edit buffers in them.
  * Also does recovery if "recoverymode" set.
  */
-/*ARGSUSED*/
     static void
 create_windows(parmp)
-    mparm_T	*parmp;
+    mparm_T	*parmp UNUSED;
 {
 #ifdef FEAT_WINDOWS
     int		dorewind;
@@ -3851,10 +3849,9 @@ eval_client_expr_to_string(expr)
  * return an allocated string.  Otherwise return "data".
  * "*tofree" is set to the result when it needs to be freed later.
  */
-/*ARGSUSED*/
     char_u *
 serverConvert(client_enc, data, tofree)
-    char_u *client_enc;
+    char_u *client_enc UNUSED;
     char_u *data;
     char_u **tofree;
 {

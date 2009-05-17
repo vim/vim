@@ -950,8 +950,8 @@ static void close_spellbuf __ARGS((buf_T *buf));
  */
 #ifndef FEAT_MBYTE
 /* Non-multi-byte implementation. */
-# define SPELL_TOFOLD(c) ((c) < 256 ? spelltab.st_fold[c] : (c))
-# define SPELL_TOUPPER(c) ((c) < 256 ? spelltab.st_upper[c] : (c))
+# define SPELL_TOFOLD(c) ((c) < 256 ? (int)spelltab.st_fold[c] : (c))
+# define SPELL_TOUPPER(c) ((c) < 256 ? (int)spelltab.st_upper[c] : (c))
 # define SPELL_ISUPPER(c) ((c) < 256 ? spelltab.st_isu[c] : FALSE)
 #else
 # if defined(HAVE_WCHAR_H)
@@ -962,18 +962,18 @@ static void close_spellbuf __ARGS((buf_T *buf));
  * the "w" library function for characters above 255 if available. */
 # ifdef HAVE_TOWLOWER
 #  define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
-	    : (c) < 256 ? spelltab.st_fold[c] : towlower(c))
+	    : (c) < 256 ? (int)spelltab.st_fold[c] : (int)towlower(c))
 # else
 #  define SPELL_TOFOLD(c) (enc_utf8 && (c) >= 128 ? utf_fold(c) \
-	    : (c) < 256 ? spelltab.st_fold[c] : (c))
+	    : (c) < 256 ? (int)spelltab.st_fold[c] : (c))
 # endif
 
 # ifdef HAVE_TOWUPPER
 #  define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
-	    : (c) < 256 ? spelltab.st_upper[c] : towupper(c))
+	    : (c) < 256 ? (int)spelltab.st_upper[c] : (int)towupper(c))
 # else
 #  define SPELL_TOUPPER(c) (enc_utf8 && (c) >= 128 ? utf_toupper(c) \
-	    : (c) < 256 ? spelltab.st_upper[c] : (c))
+	    : (c) < 256 ? (int)spelltab.st_upper[c] : (c))
 # endif
 
 # ifdef HAVE_ISWUPPER
@@ -8052,7 +8052,7 @@ put_sugtime(spin, fd)
     /* time_t can be up to 8 bytes in size, more than long_u, thus we
      * can't use put_bytes() here. */
     for (i = 7; i >= 0; --i)
-	if (i + 1 > sizeof(time_t))
+	if (i + 1 > (int)sizeof(time_t))
 	    /* ">>" doesn't work well when shifting more bits than avail */
 	    putc(0, fd);
 	else
@@ -10541,10 +10541,9 @@ check_need_cap(lnum, col)
 /*
  * ":spellrepall"
  */
-/*ARGSUSED*/
     void
 ex_spellrepall(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     pos_T	pos = curwin->w_cursor;
     char_u	*frompat;
@@ -15604,10 +15603,9 @@ pop:
 /*
  * ":spellinfo"
  */
-/*ARGSUSED*/
     void
 ex_spellinfo(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     int		lpi;
     langp_T	*lp;
@@ -16153,7 +16151,7 @@ spell_expand_check_cap(col)
  */
     int
 expand_spelling(lnum, pat, matchp)
-    linenr_T	lnum;
+    linenr_T	lnum UNUSED;
     char_u	*pat;
     char_u	***matchp;
 {

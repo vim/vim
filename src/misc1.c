@@ -4147,10 +4147,9 @@ vim_setenv(name, val)
 /*
  * Function given to ExpandGeneric() to obtain an environment variable name.
  */
-/*ARGSUSED*/
     char_u *
 get_env_name(xp, idx)
-    expand_T	*xp;
+    expand_T	*xp UNUSED;
     int		idx;
 {
 # if defined(AMIGA) || defined(__MRC__) || defined(__SC__)
@@ -4742,9 +4741,9 @@ find_start_comment(ind_maxcomment)	    /* XXX */
 	 * If it is then restrict the search to below this line and try again.
 	 */
 	line = ml_get(pos->lnum);
-	for (p = line; *p && (unsigned)(p - line) < pos->col; ++p)
+	for (p = line; *p && (colnr_T)(p - line) < pos->col; ++p)
 	    p = skip_string(p);
-	if ((unsigned)(p - line) <= pos->col)
+	if ((colnr_T)(p - line) <= pos->col)
 	    break;
 	cur_maxcomment = curwin->w_cursor.lnum - pos->lnum - 1;
 	if (cur_maxcomment <= 0)
@@ -6275,7 +6274,7 @@ get_c_indent()
      * check for that.
      */
     if ((State & INSERT)
-	    && curwin->w_cursor.col < STRLEN(linecopy)
+	    && curwin->w_cursor.col < (colnr_T)STRLEN(linecopy)
 	    && linecopy[curwin->w_cursor.col] == ')')
 	linecopy[curwin->w_cursor.col] = NUL;
 

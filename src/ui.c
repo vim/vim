@@ -320,10 +320,9 @@ ui_get_shellsize()
  * The gui_set_shellsize() or mch_set_shellsize() function will try to set the
  * new size.  If this is not possible, it will adjust Rows and Columns.
  */
-/*ARGSUSED*/
     void
 ui_set_shellsize(mustset)
-    int		mustset;	/* set by the user */
+    int		mustset UNUSED;	/* set by the user */
 {
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -1127,10 +1126,9 @@ clip_invert_rectangle(row, col, height, width, invert)
  * available for pasting.
  * When "both" is TRUE also copy to the '+' register.
  */
-/*ARGSUSED*/
     void
 clip_copy_modeless_selection(both)
-    int		both;
+    int		both UNUSED;
 {
     char_u	*buffer;
     char_u	*bufp;
@@ -1701,10 +1699,9 @@ read_from_input_buf(buf, maxlen)
     return (int)maxlen;
 }
 
-/*ARGSUSED*/
     void
 fill_input_buf(exit_on_error)
-    int	exit_on_error;
+    int	exit_on_error UNUSED;
 {
 #if defined(UNIX) || defined(OS2) || defined(VMS) || defined(MACOS_X_UNIX)
     int		len;
@@ -1992,11 +1989,10 @@ x11_setup_atoms(dpy)
 
 static void  clip_x11_request_selection_cb __ARGS((Widget, XtPointer, Atom *, Atom *, XtPointer, long_u *, int *));
 
-/* ARGSUSED */
     static void
 clip_x11_request_selection_cb(w, success, sel_atom, type, value, length,
 			      format)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	success;
     Atom	*sel_atom;
     Atom	*type;
@@ -2202,10 +2198,9 @@ clip_x11_request_selection(myShell, dpy, cbd)
 
 static Boolean	clip_x11_convert_selection_cb __ARGS((Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *));
 
-/* ARGSUSED */
     static Boolean
 clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
-    Widget	w;
+    Widget	w UNUSED;
     Atom	*sel_atom;
     Atom	*target;
     Atom	*type;
@@ -2332,10 +2327,9 @@ clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
 
 static void  clip_x11_lose_ownership_cb __ARGS((Widget, Atom *));
 
-/* ARGSUSED */
     static void
 clip_x11_lose_ownership_cb(w, sel_atom)
-    Widget  w;
+    Widget  w UNUSED;
     Atom    *sel_atom;
 {
     if (*sel_atom == clip_plus.sel_atom)
@@ -2368,10 +2362,9 @@ clip_x11_own_selection(myShell, cbd)
  * Send the current selection to the clipboard.  Do nothing for X because we
  * will fill in the selection only when requested by another app.
  */
-/*ARGSUSED*/
     void
 clip_x11_set_selection(cbd)
-    VimClipboard *cbd;
+    VimClipboard *cbd UNUSED;
 {
 }
 #endif
@@ -2922,11 +2915,10 @@ mouse_comp_pos(win, rowp, colp, lnump)
  * Find the window at screen position "*rowp" and "*colp".  The positions are
  * updated to become relative to the top-left of the window.
  */
-/*ARGSUSED*/
     win_T *
 mouse_find_win(rowp, colp)
     int		*rowp;
-    int		*colp;
+    int		*colp UNUSED;
 {
     frame_T	*fp;
 

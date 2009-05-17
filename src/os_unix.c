@@ -821,7 +821,6 @@ sig_winch SIGDEFARG(sigarg)
 #endif
 
 #if defined(SIGINT)
-/* ARGSUSED */
     static RETSIGTYPE
 catch_sigint SIGDEFARG(sigarg)
 {
@@ -833,7 +832,6 @@ catch_sigint SIGDEFARG(sigarg)
 #endif
 
 #if defined(SIGPWR)
-/* ARGSUSED */
     static RETSIGTYPE
 catch_sigpwr SIGDEFARG(sigarg)
 {
@@ -853,7 +851,6 @@ catch_sigpwr SIGDEFARG(sigarg)
 /*
  * signal function for alarm().
  */
-/* ARGSUSED */
     static RETSIGTYPE
 sig_alarm SIGDEFARG(sigarg)
 {
@@ -1087,7 +1084,6 @@ static RETSIGTYPE sigcont_handler __ARGS(SIGPROTOARG);
 /*
  * signal handler for SIGCONT
  */
-/* ARGSUSED */
     static RETSIGTYPE
 sigcont_handler SIGDEFARG(sigarg)
 {
@@ -1436,11 +1432,10 @@ x_error_handler(dpy, error_event)
 /*
  * Another X Error handler, just used to check for errors.
  */
-/* ARGSUSED */
     static int
 x_error_check(dpy, error_event)
-    Display *dpy;
-    XErrorEvent	*error_event;
+    Display *dpy UNUSED;
+    XErrorEvent	*error_event UNUSED;
 {
     got_x_error = TRUE;
     return 0;
@@ -1453,15 +1448,12 @@ x_error_check(dpy, error_event)
  */
 static int x_IOerror_check __ARGS((Display *dpy));
 
-/* ARGSUSED */
     static int
 x_IOerror_check(dpy)
-    Display *dpy;
+    Display *dpy UNUSED;
 {
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(lc_jump_env, 1);
-    /*NOTREACHED*/
-    return 0;
 }
 # endif
 
@@ -1470,10 +1462,9 @@ x_IOerror_check(dpy)
  */
 static int x_IOerror_handler __ARGS((Display *dpy));
 
-/* ARGSUSED */
     static int
 x_IOerror_handler(dpy)
-    Display *dpy;
+    Display *dpy UNUSED;
 {
     xterm_dpy = NULL;
     x11_window = 0;
@@ -1482,8 +1473,6 @@ x_IOerror_handler(dpy)
 
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(x_jump_env, 1);
-    /*NOTREACHED*/
-    return 0;
 }
 #endif
 
@@ -1919,10 +1908,9 @@ set_x11_icon(icon)
 
 #else  /* FEAT_X11 */
 
-/*ARGSUSED*/
     static int
 get_x11_title(test_only)
-    int	    test_only;
+    int	    test_only UNUSED;
 {
     return FALSE;
 }
@@ -2497,11 +2485,10 @@ mch_isFullName(fname)
  * file name to remain exactly the same.
  * Only required for file systems where case is ignored and preserved.
  */
-/*ARGSUSED*/
     void
 fname_case(name, len)
     char_u	*name;
-    int		len;	    /* buffer size, only used when name gets longer */
+    int		len UNUSED;  /* buffer size, only used when name gets longer */
 {
     struct stat st;
     char_u	*slash, *tail;
@@ -5141,7 +5128,6 @@ mch_expandpath(gap, path, flags)
 
 #define SHELL_SPECIAL (char_u *)"\t \"&'$;<>()\\|"
 
-/* ARGSUSED */
     int
 mch_expand_wildcards(num_pat, pat, num_file, file, flags)
     int		   num_pat;
@@ -6068,7 +6054,6 @@ sysmouse_close()
 /*
  * Gets info from sysmouse and adds special keys to input buf.
  */
-/* ARGSUSED */
     static RETSIGTYPE
 sig_sysmouse SIGDEFARG(sigarg)
 {
@@ -6632,11 +6617,10 @@ static void xsmp_handle_interaction __ARGS((SmcConn smc_conn, SmPointer client_d
  * This is our chance to ask the user if they want to save,
  * or abort the logout
  */
-/*ARGSUSED*/
     static void
 xsmp_handle_interaction(smc_conn, client_data)
     SmcConn	smc_conn;
-    SmPointer	client_data;
+    SmPointer	client_data UNUSED;
 {
     cmdmod_T	save_cmdmod;
     int		cancel_shutdown = False;
@@ -6669,16 +6653,15 @@ xsmp_handle_interaction(smc_conn, client_data)
 /*
  * Callback that starts save-yourself.
  */
-/*ARGSUSED*/
     static void
 xsmp_handle_save_yourself(smc_conn, client_data, save_type,
 					       shutdown, interact_style, fast)
     SmcConn	smc_conn;
-    SmPointer	client_data;
-    int		save_type;
+    SmPointer	client_data UNUSED;
+    int		save_type UNUSED;
     Bool	shutdown;
-    int		interact_style;
-    Bool	fast;
+    int		interact_style UNUSED;
+    Bool	fast UNUSED;
 {
     /* Handle already being in saveyourself */
     if (xsmp.save_yourself)
@@ -6712,11 +6695,10 @@ xsmp_handle_save_yourself(smc_conn, client_data, save_type,
 /*
  * Callback to warn us of imminent death.
  */
-/*ARGSUSED*/
     static void
 xsmp_die(smc_conn, client_data)
-    SmcConn	smc_conn;
-    SmPointer	client_data;
+    SmcConn	smc_conn UNUSED;
+    SmPointer	client_data UNUSED;
 {
     xsmp_close();
 
@@ -6728,11 +6710,10 @@ xsmp_die(smc_conn, client_data)
 /*
  * Callback to tell us that save-yourself has completed.
  */
-/*ARGSUSED*/
     static void
 xsmp_save_complete(smc_conn, client_data)
-    SmcConn	smc_conn;
-    SmPointer	client_data;
+    SmcConn	smc_conn UNUSED;
+    SmPointer	client_data UNUSED;
 {
     xsmp.save_yourself = False;
 }
@@ -6742,11 +6723,10 @@ xsmp_save_complete(smc_conn, client_data)
  * Callback to tell us that an instigated shutdown was cancelled
  * (maybe even by us)
  */
-/*ARGSUSED*/
     static void
 xsmp_shutdown_cancelled(smc_conn, client_data)
     SmcConn	smc_conn;
-    SmPointer	client_data;
+    SmPointer	client_data UNUSED;
 {
     if (xsmp.save_yourself)
 	SmcSaveYourselfDone(smc_conn, True);
@@ -6758,13 +6738,12 @@ xsmp_shutdown_cancelled(smc_conn, client_data)
 /*
  * Callback to tell us that a new ICE connection has been established.
  */
-/*ARGSUSED*/
     static void
 xsmp_ice_connection(iceConn, clientData, opening, watchData)
     IceConn	iceConn;
-    IcePointer	clientData;
+    IcePointer	clientData UNUSED;
     Bool	opening;
-    IcePointer	*watchData;
+    IcePointer	*watchData UNUSED;
 {
     /* Intercept creation of ICE connection fd */
     if (opening)
