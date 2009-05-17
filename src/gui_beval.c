@@ -15,7 +15,6 @@
 /*
  * Common code, invoked when the mouse is resting for a moment.
  */
-/*ARGSUSED*/
     void
 general_beval_cb(beval, state)
     BalloonEval *beval;
@@ -551,9 +550,8 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
     return FALSE; /* continue emission */
 }
 
-/*ARGSUSED*/
     static gint
-mainwin_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
+mainwin_event_cb(GtkWidget *widget UNUSED, GdkEvent *event, gpointer data)
 {
     BalloonEval *beval = (BalloonEval *)data;
 
@@ -663,9 +661,10 @@ timeout_cb(gpointer data)
     return FALSE; /* don't call me again */
 }
 
-/*ARGSUSED2*/
     static gint
-balloon_expose_event_cb(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+balloon_expose_event_cb(GtkWidget *widget,
+			GdkEventExpose *event,
+			gpointer data UNUSED)
 {
     gtk_paint_flat_box(widget->style, widget->window,
 		       GTK_STATE_NORMAL, GTK_SHADOW_OUT,
@@ -676,7 +675,6 @@ balloon_expose_event_cb(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 }
 
 # ifndef HAVE_GTK2
-/*ARGSUSED2*/
     static void
 balloon_draw_cb(GtkWidget *widget, GdkRectangle *area, gpointer data)
 {
@@ -726,7 +724,6 @@ removeEventHandler(beval)
 /*
  * The X event handler. All it does is call the real event handler.
  */
-/*ARGSUSED*/
     static void
 pointerEventEH(w, client_data, event, unused)
     Widget	w;
@@ -877,7 +874,6 @@ pointerEvent(beval, event)
     }
 }
 
-/*ARGSUSED*/
     static void
 timerRoutine(dx, id)
     XtPointer	    dx;

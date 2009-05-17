@@ -619,9 +619,10 @@ gui_mch_free_all()
  * Doesn't seem possible, since check_copy_area() relies on
  * this information.  --danielk
  */
-/*ARGSUSED*/
     static gint
-visibility_event(GtkWidget *widget, GdkEventVisibility *event, gpointer data)
+visibility_event(GtkWidget *widget UNUSED,
+		 GdkEventVisibility *event,
+		 gpointer data UNUSED)
 {
     gui.visibility = event->state;
     /*
@@ -638,9 +639,10 @@ visibility_event(GtkWidget *widget, GdkEventVisibility *event, gpointer data)
 /*
  * Redraw the corresponding portions of the screen.
  */
-/*ARGSUSED*/
     static gint
-expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+expose_event(GtkWidget *widget UNUSED,
+	     GdkEventExpose *event,
+	     gpointer data UNUSED)
 {
     /* Skip this when the GUI isn't set up yet, will redraw later. */
     if (gui.starting)
@@ -668,9 +670,10 @@ expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 /*
  * Handle changes to the "Comm" property
  */
-/*ARGSUSED2*/
     static gint
-property_event(GtkWidget *widget, GdkEventProperty *event, gpointer data)
+property_event(GtkWidget *widget,
+	       GdkEventProperty *event,
+	       gpointer data UNUSED)
 {
     if (event->type == GDK_PROPERTY_NOTIFY
 	    && event->state == (int)GDK_PROPERTY_NEW_VALUE
@@ -740,9 +743,8 @@ gui_mch_stop_blink(void)
     blink_state = BLINK_NONE;
 }
 
-/*ARGSUSED*/
     static gint
-blink_cb(gpointer data)
+blink_cb(gpointer data UNUSED)
 {
     if (blink_state == BLINK_ON)
     {
@@ -781,9 +783,10 @@ gui_mch_start_blink(void)
     }
 }
 
-/*ARGSUSED*/
     static gint
-enter_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer data)
+enter_notify_event(GtkWidget *widget UNUSED,
+		   GdkEventCrossing *event UNUSED,
+		   gpointer data UNUSED)
 {
     if (blink_state == BLINK_NONE)
 	gui_mch_start_blink();
@@ -795,9 +798,10 @@ enter_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer data)
     return FALSE;
 }
 
-/*ARGSUSED*/
     static gint
-leave_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer data)
+leave_notify_event(GtkWidget *widget UNUSED,
+		   GdkEventCrossing *event UNUSED,
+		   gpointer data UNUSED)
 {
     if (blink_state != BLINK_NONE)
 	gui_mch_stop_blink();
@@ -805,9 +809,10 @@ leave_notify_event(GtkWidget *widget, GdkEventCrossing *event, gpointer data)
     return FALSE;
 }
 
-/*ARGSUSED*/
     static gint
-focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
+focus_in_event(GtkWidget *widget,
+	       GdkEventFocus *event UNUSED,
+	       gpointer data UNUSED)
 {
     gui_focus_change(TRUE);
 
@@ -826,9 +831,10 @@ focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
     return TRUE;
 }
 
-/*ARGSUSED*/
     static gint
-focus_out_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
+focus_out_event(GtkWidget *widget UNUSED,
+	        GdkEventFocus *event UNUSED,
+		gpointer data UNUSED)
 {
     gui_focus_change(FALSE);
 
@@ -956,9 +962,10 @@ modifiers_gdk2mouse(guint state)
 /*
  * Main keyboard handler:
  */
-/*ARGSUSED*/
     static gint
-key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
+key_press_event(GtkWidget *widget UNUSED,
+		GdkEventKey *event,
+		gpointer data UNUSED)
 {
 #ifdef HAVE_GTK2
     /* 256 bytes is way over the top, but for safety let's reduce it only
@@ -1225,9 +1232,10 @@ key_press_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 }
 
 #if defined(FEAT_XIM) && defined(HAVE_GTK2)
-/*ARGSUSED0*/
     static gboolean
-key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
+key_release_event(GtkWidget *widget UNUSED,
+		  GdkEventKey *event,
+		  gpointer data UNUSED)
 {
     /*
      * GTK+ 2 input methods may do fancy stuff on key release events too.
@@ -1243,11 +1251,10 @@ key_release_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
  * Selection handlers:
  */
 
-/*ARGSUSED*/
     static gint
-selection_clear_event(GtkWidget		*widget,
+selection_clear_event(GtkWidget		*widget UNUSED,
 		      GdkEventSelection	*event,
-		      gpointer		user_data)
+		      gpointer		user_data UNUSED)
 {
     if (event->selection == clip_plus.gtk_sel_atom)
 	clip_lose_selection(&clip_plus);
@@ -1265,12 +1272,11 @@ selection_clear_event(GtkWidget		*widget,
 #define RS_FAIL	2	/* selection_received_cb() called and failed */
 static int received_selection = RS_NONE;
 
-/*ARGSUSED*/
     static void
-selection_received_cb(GtkWidget		*widget,
+selection_received_cb(GtkWidget		*widget UNUSED,
 		      GtkSelectionData	*data,
-		      guint		time_,
-		      gpointer		user_data)
+		      guint		time_ UNUSED,
+		      gpointer		user_data UNUSED)
 {
     VimClipboard    *cbd;
     char_u	    *text;
@@ -1414,13 +1420,12 @@ selection_received_cb(GtkWidget		*widget,
  * Prepare our selection data for passing it to the external selection
  * client.
  */
-/*ARGSUSED*/
     static void
-selection_get_cb(GtkWidget	    *widget,
+selection_get_cb(GtkWidget	    *widget UNUSED,
 		 GtkSelectionData   *selection_data,
 		 guint		    info,
-		 guint		    time_,
-		 gpointer	    user_data)
+		 guint		    time_ UNUSED,
+		 gpointer	    user_data UNUSED)
 {
     char_u	    *string;
     char_u	    *tmpbuf;
@@ -1678,7 +1683,7 @@ process_motion_notify(int x, int y, GdkModifierType state)
 
 	offshoot = dx > dy ? dx : dy;
 
-	/* Make a linearly declaying timer delay with a threshold of 5 at a
+	/* Make a linearly decaying timer delay with a threshold of 5 at a
 	 * distance of 127 pixels from the main window.
 	 *
 	 * One could think endlessly about the most ergonomic variant here.
@@ -1707,9 +1712,8 @@ process_motion_notify(int x, int y, GdkModifierType state)
 /*
  * Timer used to recognize multiple clicks of the mouse button.
  */
-/*ARGSUSED0*/
     static gint
-motion_repeat_timer_cb(gpointer data)
+motion_repeat_timer_cb(gpointer data UNUSED)
 {
     int		    x;
     int		    y;
@@ -1749,9 +1753,10 @@ motion_repeat_timer_cb(gpointer data)
     return FALSE;
 }
 
-/*ARGSUSED2*/
     static gint
-motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
+motion_notify_event(GtkWidget *widget,
+		    GdkEventMotion *event,
+		    gpointer data UNUSED)
 {
     if (event->is_hint)
     {
@@ -1777,9 +1782,10 @@ motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
  * by our own timeout mechanism instead of the one provided by GTK+ itself.
  * This is due to the way the generic VIM code is recognizing multiple clicks.
  */
-/*ARGSUSED2*/
     static gint
-button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+button_press_event(GtkWidget *widget,
+		   GdkEventButton *event,
+		   gpointer data UNUSED)
 {
     int button;
     int repeated_click = FALSE;
@@ -1855,9 +1861,10 @@ button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
  * GTK+ 2 doesn't handle mouse buttons 4, 5, 6 and 7 the same way as GTK+ 1.
  * Instead, it abstracts scrolling via the new GdkEventScroll.
  */
-/*ARGSUSED2*/
     static gboolean
-scroll_event(GtkWidget *widget, GdkEventScroll *event, gpointer data)
+scroll_event(GtkWidget *widget,
+	     GdkEventScroll *event,
+	     gpointer data UNUSED)
 {
     int	    button;
     int_u   vim_modifiers;
@@ -1896,9 +1903,10 @@ scroll_event(GtkWidget *widget, GdkEventScroll *event, gpointer data)
 #endif /* HAVE_GTK2 */
 
 
-/*ARGSUSED*/
     static gint
-button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+button_release_event(GtkWidget *widget UNUSED,
+		     GdkEventButton *event,
+		     gpointer data UNUSED)
 {
     int x, y;
     int_u vim_modifiers;
@@ -2100,7 +2108,6 @@ drag_handle_text(GdkDragContext	    *context,
 /*
  * DND receiver.
  */
-/*ARGSUSED2*/
     static void
 drag_data_received_cb(GtkWidget		*widget,
 		      GdkDragContext	*context,
@@ -2109,7 +2116,7 @@ drag_data_received_cb(GtkWidget		*widget,
 		      GtkSelectionData	*data,
 		      guint		info,
 		      guint		time_,
-		      gpointer		user_data)
+		      gpointer		user_data UNUSED)
 {
     GdkModifierType state;
 
@@ -2143,7 +2150,6 @@ drag_data_received_cb(GtkWidget		*widget,
  * be abandoned and pop up a dialog asking the user for confirmation if
  * necessary.
  */
-/*ARGSUSED0*/
     static void
 sm_client_check_changed_any(GnomeClient	    *client,
 			    gint	    key,
@@ -2251,7 +2257,6 @@ write_session_file(char_u *filename)
  * for confirmation if necessary.  Save the current editing session and tell
  * the session manager how to restart Vim.
  */
-/*ARGSUSED1*/
     static gboolean
 sm_client_save_yourself(GnomeClient	    *client,
 			gint		    phase,
@@ -2339,7 +2344,6 @@ sm_client_save_yourself(GnomeClient	    *client,
  * here since "save_yourself" has been emitted before (unless serious trouble
  * is happening).
  */
-/*ARGSUSED0*/
     static void
 sm_client_die(GnomeClient *client, gpointer data)
 {
@@ -2379,10 +2383,9 @@ setup_save_yourself(void)
 /*
  * GTK tells us that XSMP needs attention
  */
-/*ARGSUSED*/
     static gboolean
 local_xsmp_handle_requests(source, condition, data)
-    GIOChannel		*source;
+    GIOChannel		*source UNUSED;
     GIOCondition	condition;
     gpointer		data;
 {
@@ -2480,16 +2483,18 @@ setup_save_yourself(void)
  * WM_SAVE_YOURSELF hack it actually stores the session...  And yes,
  * it should work with KDE as well.
  */
-/*ARGSUSED1*/
     static GdkFilterReturn
-global_event_filter(GdkXEvent *xev, GdkEvent *event, gpointer data)
+global_event_filter(GdkXEvent *xev,
+		    GdkEvent *event UNUSED,
+		    gpointer data UNUSED)
 {
     XEvent *xevent = (XEvent *)xev;
 
     if (xevent != NULL
 	    && xevent->type == ClientMessage
 	    && xevent->xclient.message_type == GET_X_ATOM(wm_protocols_atom)
-	    && xevent->xclient.data.l[0] == GET_X_ATOM(save_yourself_atom))
+	    && (long_u)xevent->xclient.data.l[0]
+					    == GET_X_ATOM(save_yourself_atom))
     {
 	out_flush();
 	ml_sync_all(FALSE, FALSE); /* preserve all swap files */
@@ -2512,7 +2517,6 @@ global_event_filter(GdkXEvent *xev, GdkEvent *event, gpointer data)
 /*
  * GDK handler for X ClientMessage events.
  */
-/*ARGSUSED2*/
     static GdkFilterReturn
 gdk_wm_protocols_filter(GdkXEvent *xev, GdkEvent *event, gpointer data)
 {
@@ -2558,9 +2562,8 @@ gdk_wm_protocols_filter(GdkXEvent *xev, GdkEvent *event, gpointer data)
 /*
  * Setup the window icon & xcmdsrv comm after the main window has been realized.
  */
-/*ARGSUSED*/
     static void
-mainwin_realize(GtkWidget *widget, gpointer data)
+mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
 /* If you get an error message here, you still need to unpack the runtime
  * archive! */
@@ -2712,11 +2715,10 @@ create_blank_pointer(void)
 }
 
 #ifdef HAVE_GTK_MULTIHEAD
-/*ARGSUSED1*/
     static void
 mainwin_screen_changed_cb(GtkWidget  *widget,
-			  GdkScreen  *previous_screen,
-			  gpointer   data)
+			  GdkScreen  *previous_screen UNUSED,
+			  gpointer   data UNUSED)
 {
     if (!gtk_widget_has_screen(widget))
 	return;
@@ -2757,9 +2759,8 @@ mainwin_screen_changed_cb(GtkWidget  *widget,
  * Don't try to set any VIM scrollbar sizes anywhere here. I'm relying on the
  * fact that the main VIM engine doesn't take them into account anywhere.
  */
-/*ARGSUSED1*/
     static void
-drawarea_realize_cb(GtkWidget *widget, gpointer data)
+drawarea_realize_cb(GtkWidget *widget, gpointer data UNUSED)
 {
     GtkWidget *sbar;
 
@@ -2789,9 +2790,8 @@ drawarea_realize_cb(GtkWidget *widget, gpointer data)
 /*
  * Properly clean up on shutdown.
  */
-/*ARGSUSED0*/
     static void
-drawarea_unrealize_cb(GtkWidget *widget, gpointer data)
+drawarea_unrealize_cb(GtkWidget *widget UNUSED, gpointer data UNUSED)
 {
     /* Don't write messages to the GUI anymore */
     full_screen = FALSE;
@@ -2827,11 +2827,10 @@ drawarea_unrealize_cb(GtkWidget *widget, gpointer data)
 #endif
 }
 
-/*ARGSUSED0*/
     static void
-drawarea_style_set_cb(GtkWidget	*widget,
-		      GtkStyle	*previous_style,
-		      gpointer	data)
+drawarea_style_set_cb(GtkWidget	*widget UNUSED,
+		      GtkStyle	*previous_style UNUSED,
+		      gpointer	data UNUSED)
 {
     gui_mch_new_colors();
 }
@@ -2840,9 +2839,10 @@ drawarea_style_set_cb(GtkWidget	*widget,
  * Callback routine for the "delete_event" signal on the toplevel window.
  * Tries to vim gracefully, or refuses to exit with changed buffers.
  */
-/*ARGSUSED*/
     static gint
-delete_event_cb(GtkWidget *widget, GdkEventAny *event, gpointer data)
+delete_event_cb(GtkWidget *widget UNUSED,
+		GdkEventAny *event UNUSED,
+		gpointer data UNUSED)
 {
     gui_shell_closed();
     return TRUE;
@@ -2964,7 +2964,7 @@ update_window_manager_hints(int force_width, int force_height)
 
     /* At start-up, don't try to set the hints until the initial
      * values have been used (those that dictate our initial size)
-     * Let forced (i.e., correct) values thruogh always.
+     * Let forced (i.e., correct) values through always.
      */
     if (!(force_width && force_height)  &&  init_window_hints_state > 0)
     {
@@ -3142,9 +3142,8 @@ static int clicked_page;	    /* page clicked in tab line */
 /*
  * Handle selecting an item in the tab line popup menu.
  */
-/*ARGSUSED*/
     static void
-tabline_menu_handler(GtkMenuItem *item, gpointer user_data)
+tabline_menu_handler(GtkMenuItem *item UNUSED, gpointer user_data)
 {
     /* Add the string cmd into input buffer */
     send_tabline_menu_event(clicked_page, (int)(long)user_data);
@@ -3244,13 +3243,12 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 /*
  * Handle selecting one of the tabs.
  */
-/*ARGSUSED*/
     static void
 on_select_tab(
-	GtkNotebook	*notebook,
-	GtkNotebookPage *page,
+	GtkNotebook	*notebook UNUSED,
+	GtkNotebookPage *page UNUSED,
 	gint		idx,
-	gpointer	data)
+	gpointer	data UNUSED)
 {
     if (!ignore_tabline_evt)
     {
@@ -3784,7 +3782,7 @@ gui_mch_init(void)
 #endif
 
     if (gtk_socket_id != 0)
-	/* make sure keybord input can go to the drawarea */
+	/* make sure keyboard input can go to the drawarea */
 	GTK_WIDGET_SET_FLAGS(gui.drawarea, GTK_CAN_FOCUS);
 
     /*
@@ -3922,10 +3920,10 @@ gui_mch_new_colors(void)
 /*
  * This signal informs us about the need to rearrange our sub-widgets.
  */
-/*ARGSUSED*/
     static gint
-form_configure_event(GtkWidget *widget, GdkEventConfigure *event,
-		     gpointer data)
+form_configure_event(GtkWidget *widget UNUSED,
+		     GdkEventConfigure *event,
+		     gpointer data UNUSED)
 {
     int usable_height = event->height;
 
@@ -3948,9 +3946,8 @@ form_configure_event(GtkWidget *widget, GdkEventConfigure *event,
  * We can't do much more here than to trying to preserve what had been done,
  * since the window is already inevitably going away.
  */
-/*ARGSUSED0*/
     static void
-mainwin_destroy_cb(GtkObject *object, gpointer data)
+mainwin_destroy_cb(GtkObject *object UNUSED, gpointer data UNUSED)
 {
     /* Don't write messages to the GUI anymore */
     full_screen = FALSE;
@@ -3980,9 +3977,8 @@ mainwin_destroy_cb(GtkObject *object, gpointer data)
  * scrollbar init.), actually do the standard hinst and stop the timer.
  * We'll not let the default hints be set while this timer's active.
  */
-/*ARGSUSED*/
     static gboolean
-check_startup_plug_hints(gpointer data)
+check_startup_plug_hints(gpointer data UNUSED)
 {
     if (init_window_hints_state == 1)
     {
@@ -4055,7 +4051,7 @@ gui_mch_open(void)
 	    Columns = w;
 	if (mask & HeightValue)
 	{
-	    if (p_window > h - 1 || !option_was_set((char_u *)"window"))
+	    if (p_window > (long)h - 1 || !option_was_set((char_u *)"window"))
 		p_window = h - 1;
 	    Rows = h;
 	}
@@ -4229,9 +4225,8 @@ gui_mch_open(void)
 }
 
 
-/*ARGSUSED0*/
     void
-gui_mch_exit(int rc)
+gui_mch_exit(int rc UNUSED)
 {
     if (gui.mainwin != NULL)
 	gtk_widget_destroy(gui.mainwin);
@@ -4286,7 +4281,6 @@ static int resize_idle_installed = FALSE;
  * report the new size through form_configure_event().  That caused the window
  * layout to be messed up.
  */
-/*ARGSUSED0*/
     static gboolean
 force_shell_resize_idle(gpointer data)
 {
@@ -4314,12 +4308,11 @@ force_shell_resize_idle(gpointer data)
 /*
  * Set the windows size.
  */
-/*ARGSUSED2*/
     void
 gui_mch_set_shellsize(int width, int height,
-		      int min_width,  int min_height,
-		      int base_width, int base_height,
-		      int direction)
+		      int min_width UNUSED,  int min_height UNUSED,
+		      int base_width UNUSED, int base_height UNUSED,
+		      int direction UNUSED)
 {
 #ifndef HAVE_GTK2
     /* Hack: When the form already is at the desired size, the window might
@@ -4413,9 +4406,8 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
 }
 
 #if defined(FEAT_TITLE) || defined(PROTO)
-/*ARGSUSED*/
     void
-gui_mch_settitle(char_u *title, char_u *icon)
+gui_mch_settitle(char_u *title, char_u *icon UNUSED)
 {
 # ifdef HAVE_GTK2
     if (title != NULL && output_conv.vc_type != CONV_NONE)
@@ -4493,7 +4485,6 @@ gui_mch_show_toolbar(int showit)
  * Get a font structure for highlighting.
  * "cbdata" is a pointer to the global gui structure.
  */
-/*ARGSUSED*/
     static void
 font_sel_ok(GtkWidget *wgt, gpointer cbdata)
 {
@@ -4509,7 +4500,6 @@ font_sel_ok(GtkWidget *wgt, gpointer cbdata)
 	gtk_main_quit();
 }
 
-/*ARGSUSED*/
     static void
 font_sel_cancel(GtkWidget *wgt, gpointer cbdata)
 {
@@ -4520,7 +4510,6 @@ font_sel_cancel(GtkWidget *wgt, gpointer cbdata)
 	gtk_main_quit();
 }
 
-/*ARGSUSED*/
     static void
 font_sel_destroy(GtkWidget *wgt, gpointer cbdata)
 {
@@ -4620,7 +4609,6 @@ gui_mch_adjust_charheight(void)
 /*
  * Try to load the requested fontset.
  */
-/*ARGSUSED2*/
     GuiFontset
 gui_mch_get_fontset(char_u *name, int report_error, int fixed_width)
 {
@@ -4863,7 +4851,7 @@ get_styled_font_variants(char_u * font_name)
     styled_font[1] = &gui.ital_font;
     styled_font[2] = &gui.boldital_font;
 
-    /* First free whatever was freviously there. */
+    /* First free whatever was previously there. */
     for (i = 0; i < 3; ++i)
 	if (*styled_font[i])
 	{
@@ -5012,9 +5000,8 @@ ascii_glyph_table_init(void)
  * Initialize Vim to use the font or fontset with the given name.
  * Return FAIL if the font could not be loaded, OK otherwise.
  */
-/*ARGSUSED1*/
     int
-gui_mch_init_font(char_u *font_name, int fontset)
+gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 {
 #ifdef HAVE_GTK2
     PangoFontDescription    *font_desc;
@@ -5326,9 +5313,8 @@ gui_mch_get_font(char_u *name, int report_error)
 /*
  * Return the name of font "font" in allocated memory.
  */
-/*ARGSUSED*/
     char_u *
-gui_mch_get_fontname(GuiFont font, char_u *name)
+gui_mch_get_fontname(GuiFont font, char_u *name UNUSED)
 {
 # ifdef HAVE_GTK2
     if (font != NOFONT)
@@ -5732,7 +5718,7 @@ draw_under(int flags, int row, int col, int cells)
 {
     int			i;
     int			offset;
-    const static int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
+    static const int	val[8] = {1, 0, 0, 0, 1, 2, 2, 2 };
     int			y = FILL_Y(row + 1) - 1;
 
     /* Undercurl: draw curl at the bottom of the character cell. */
@@ -6402,7 +6388,6 @@ input_timer_cb(gpointer data)
 /*
  * Callback function, used when data is available on the SNiFF connection.
  */
-/* ARGSUSED */
     static void
 sniff_request_cb(
     gpointer	data,
@@ -6711,9 +6696,8 @@ clip_mch_request_selection(VimClipboard *cbd)
 /*
  * Disown the selection.
  */
-/*ARGSUSED*/
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(VimClipboard *cbd UNUSED)
 {
     /* WEIRD: when using NULL to actually disown the selection, we lose the
      * selection the first time we own it. */
@@ -6741,9 +6725,8 @@ clip_mch_own_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.  Do nothing for X because we
  * will fill in the selection only when requested by another app.
  */
-/*ARGSUSED*/
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(VimClipboard *cbd UNUSED)
 {
 }
 
@@ -6950,7 +6933,7 @@ mch_set_mouse_shape(int shape)
 	    else
 		id &= ~1;	/* they are always even (why?) */
 	}
-	else if (shape < sizeof(mshape_ids) / sizeof(int))
+	else if (shape < (int)(sizeof(mshape_ids) / sizeof(int)))
 	    id = mshape_ids[shape];
 	else
 	    return;

@@ -227,14 +227,13 @@ gtk_form_get_type(void)
 
     if (!form_type)
     {
-	GtkTypeInfo form_info =
-	{
-	    "GtkForm",
-	    sizeof(GtkForm),
-	    sizeof(GtkFormClass),
-	    (GtkClassInitFunc) gtk_form_class_init,
-	    (GtkObjectInitFunc) gtk_form_init
-	};
+	GtkTypeInfo form_info;
+
+	form_info.type_name = "GtkForm";
+	form_info.object_size = sizeof(GtkForm);
+	form_info.class_size = sizeof(GtkFormClass);
+	form_info.class_init_func = (GtkClassInitFunc)gtk_form_class_init;
+	form_info.object_init_func = (GtkObjectInitFunc)gtk_form_init;
 
 	form_type = gtk_type_unique(GTK_TYPE_CONTAINER, &form_info);
     }
@@ -611,10 +610,9 @@ gtk_form_remove(GtkContainer *container, GtkWidget *widget)
     }
 }
 
-/*ARGSUSED1*/
     static void
 gtk_form_forall(GtkContainer	*container,
-		gboolean	include_internals,
+		gboolean	include_internals UNUSED,
 		GtkCallback	callback,
 		gpointer	callback_data)
 {
@@ -786,9 +784,8 @@ gtk_form_position_children(GtkForm *form)
  * them or discards them, depending on whether we are obscured
  * or not.
  */
-/*ARGSUSED1*/
     static GdkFilterReturn
-gtk_form_filter(GdkXEvent *gdk_xevent, GdkEvent *event, gpointer data)
+gtk_form_filter(GdkXEvent *gdk_xevent, GdkEvent *event UNUSED, gpointer data)
 {
     XEvent *xevent;
     GtkForm *form;
@@ -821,9 +818,10 @@ gtk_form_filter(GdkXEvent *gdk_xevent, GdkEvent *event, gpointer data)
  * there is no corresponding event in GTK, so we have
  * to get the events from a filter
  */
-/*ARGSUSED1*/
     static GdkFilterReturn
-gtk_form_main_filter(GdkXEvent *gdk_xevent, GdkEvent *event, gpointer data)
+gtk_form_main_filter(GdkXEvent *gdk_xevent,
+		     GdkEvent *event UNUSED,
+		     gpointer data)
 {
     XEvent *xevent;
     GtkForm *form;
@@ -911,9 +909,8 @@ gtk_form_send_configure(GtkForm *form)
 #endif
 }
 
-/*ARGSUSED0*/
     static void
-gtk_form_child_map(GtkWidget *widget, gpointer user_data)
+gtk_form_child_map(GtkWidget *widget UNUSED, gpointer user_data)
 {
     GtkFormChild *child;
 
@@ -923,9 +920,8 @@ gtk_form_child_map(GtkWidget *widget, gpointer user_data)
     gdk_window_show(child->window);
 }
 
-/*ARGSUSED0*/
     static void
-gtk_form_child_unmap(GtkWidget *widget, gpointer user_data)
+gtk_form_child_unmap(GtkWidget *widget UNUSED, gpointer user_data)
 {
     GtkFormChild *child;
 

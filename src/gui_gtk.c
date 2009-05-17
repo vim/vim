@@ -285,14 +285,14 @@ create_menu_icon(vimmenu_T *menu, GtkIconSize icon_size)
     return image;
 }
 
-/*ARGSUSED*/
     static gint
-toolbar_button_focus_in_event(GtkWidget *widget, GdkEventFocus *event, gpointer data)
+toolbar_button_focus_in_event(GtkWidget *widget UNUSED,
+			      GdkEventFocus *event UNUSED,
+			      gpointer data UNUSED)
 {
-    /* When we're in a GtkPlug, we don't have window focus events, only widget focus.
-     * To emulate stand-alone gvim, if a button gets focus (e.g., <Tab> into GtkPlug)
-     * immediately pass it to mainwin.
-     */
+    /* When we're in a GtkPlug, we don't have window focus events, only widget
+     * focus.  To emulate stand-alone gvim, if a button gets focus (e.g.,
+     * <Tab> into GtkPlug) immediately pass it to mainwin. */
     if (gtk_socket_id != 0)
 	gtk_widget_grab_focus(gui.drawarea);
 
@@ -585,9 +585,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     gtk_menu_prepend(GTK_MENU(menu->submenu_id), menu->tearoff_handle);
 }
 
-/*ARGSUSED*/
     static void
-menu_item_activate(GtkWidget *widget, gpointer data)
+menu_item_activate(GtkWidget *widget UNUSED, gpointer data)
 {
     gui_menu_cb((vimmenu_T *)data);
 
@@ -1202,9 +1201,8 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
 #endif
 
 #ifndef USE_FILE_CHOOSER
-/*ARGSUSED*/
     static void
-browse_ok_cb(GtkWidget *widget, gpointer cbdata)
+browse_ok_cb(GtkWidget *widget UNUSED, gpointer cbdata)
 {
     gui_T *vw = (gui_T *)cbdata;
 
@@ -1218,9 +1216,8 @@ browse_ok_cb(GtkWidget *widget, gpointer cbdata)
 	gtk_main_quit();
 }
 
-/*ARGSUSED*/
     static void
-browse_cancel_cb(GtkWidget *widget, gpointer cbdata)
+browse_cancel_cb(GtkWidget *widget UNUSED, gpointer cbdata)
 {
     gui_T *vw = (gui_T *)cbdata;
 
@@ -1234,9 +1231,8 @@ browse_cancel_cb(GtkWidget *widget, gpointer cbdata)
 	gtk_main_quit();
 }
 
-/*ARGSUSED*/
     static gboolean
-browse_destroy_cb(GtkWidget * widget)
+browse_destroy_cb(GtkWidget *widget UNUSED)
 {
     if (gui.browse_fname != NULL)
     {
@@ -1262,14 +1258,13 @@ browse_destroy_cb(GtkWidget * widget)
  * initdir			initial directory, NULL for current dir
  * filter			not used (file name filter)
  */
-/*ARGSUSED*/
     char_u *
-gui_mch_browse(int saving,
+gui_mch_browse(int saving UNUSED,
 	       char_u *title,
 	       char_u *dflt,
-	       char_u *ext,
+	       char_u *ext UNUSED,
 	       char_u *initdir,
-	       char_u *filter)
+	       char_u *filter UNUSED)
 {
 #ifdef USE_FILE_CHOOSER
     GtkWidget		*fc;
@@ -1377,7 +1372,6 @@ gui_mch_browse(int saving,
  * dflt				default name
  * initdir			initial directory, NULL for current dir
  */
-/*ARGSUSED*/
     char_u *
 gui_mch_browsedir(
 	       char_u *title,
@@ -1460,7 +1454,6 @@ dlg_destroy(GtkWidget *dlg)
 }
 
 # ifdef FEAT_GUI_GNOME
-/* ARGSUSED */
     static int
 gui_gnome_dialog( int	type,
 		char_u	*title,
@@ -1611,7 +1604,6 @@ typedef struct _CancelData
     GtkWidget	*dialog;
 } CancelData;
 
-/* ARGSUSED */
     static void
 dlg_button_clicked(GtkWidget * widget, ButtonData *data)
 {
@@ -1622,7 +1614,6 @@ dlg_button_clicked(GtkWidget * widget, ButtonData *data)
 /*
  * This makes the Escape key equivalent to the cancel button.
  */
-/*ARGSUSED*/
     static int
 dlg_key_press_event(GtkWidget *widget, GdkEventKey *event, CancelData *data)
 {
@@ -1655,7 +1646,6 @@ dlg_destroy_cb(int *p)
 	gtk_main_quit();
 }
 
-/* ARGSUSED */
     int
 gui_mch_dialog(	int	type,		/* type of dialog */
 		char_u	*title,		/* title of dialog */
@@ -2215,7 +2205,6 @@ typedef struct _DialogInfo
     GtkDialog	*dialog;	    /* Widget of the dialog */
 } DialogInfo;
 
-/*ARGSUSED2*/
     static gboolean
 dialog_key_press_event_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
@@ -2398,14 +2387,13 @@ static int popup_mouse_pos;
  * Note: The push_in output argument seems to affect scrolling of huge
  * menus that don't fit on the screen.	Leave it at the default for now.
  */
-/*ARGSUSED0*/
     static void
-popup_menu_position_func(GtkMenu *menu,
+popup_menu_position_func(GtkMenu *menu UNUSED,
 			 gint *x, gint *y,
 # ifdef HAVE_GTK2
-			 gboolean *push_in,
+			 gboolean *push_in UNUSED,
 # endif
-			 gpointer user_data)
+			 gpointer user_data UNUSED)
 {
     gdk_window_get_origin(gui.drawarea->window, x, y);
 
@@ -2464,13 +2452,12 @@ typedef struct _SharedFindReplace
     GtkWidget *all;	/* 'Replace All' action button */
 } SharedFindReplace;
 
-static SharedFindReplace find_widgets = { NULL, };
-static SharedFindReplace repl_widgets = { NULL, };
+static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
-/* ARGSUSED */
     static int
 find_key_press_event(
-		GtkWidget	*widget,
+		GtkWidget	*widget UNUSED,
 		GdkEventKey	*event,
 		SharedFindReplace *frdp)
 {
@@ -2962,9 +2949,8 @@ gui_gtk_synch_fonts(void)
 /*
  * Callback for actions of the find and replace dialogs
  */
-/*ARGSUSED*/
     static void
-find_replace_cb(GtkWidget *widget, gpointer data)
+find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
 {
     int			flags;
     char_u		*find_text;
@@ -3010,9 +2996,8 @@ find_replace_cb(GtkWidget *widget, gpointer data)
 }
 
 /* our usual callback function */
-/*ARGSUSED*/
     static void
-entry_activate_cb(GtkWidget *widget, gpointer data)
+entry_activate_cb(GtkWidget *widget UNUSED, gpointer data)
 {
     gtk_widget_grab_focus(GTK_WIDGET(data));
 }
@@ -3055,10 +3040,9 @@ entry_changed_cb(GtkWidget * entry, GtkWidget * dialog)
 /*
  * ":helpfind"
  */
-/*ARGSUSED*/
     void
 ex_helpfind(eap)
-    exarg_T	*eap;
+    exarg_T	*eap UNUSED;
 {
     /* This will fail when menus are not loaded.  Well, it's only for
      * backwards compatibility anyway. */

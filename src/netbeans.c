@@ -700,7 +700,6 @@ netbeans_parse_messages(void)
 /*
  * Read and process a command from netbeans.
  */
-/*ARGSUSED*/
 #if defined(FEAT_GUI_W32) || defined(PROTO)
 /* Use this one when generating prototypes, the others are static. */
     void
@@ -708,12 +707,15 @@ messageFromNetbeansW32()
 #else
 # ifdef FEAT_GUI_MOTIF
     static void
-messageFromNetbeans(XtPointer clientData, int *unused1, XtInputId *unused2)
+messageFromNetbeans(XtPointer clientData UNUSED
+		    int *unused1 UNUSED,
+		    XtInputId *unused2 UNUSED)
 # endif
 # ifdef FEAT_GUI_GTK
     static void
-messageFromNetbeans(gpointer clientData, gint unused1,
-						    GdkInputCondition unused2)
+messageFromNetbeans(gpointer clientData UNUSED,
+		    gint unused1 UNUSED,
+		    GdkInputCondition unused2 UNUSED)
 # endif
 #endif
 {
@@ -1585,7 +1587,9 @@ nb_do_cmd(
 			    buf_delsign(buf->bufp, id);
 			}
 			else
+			{
 			    nbdebug(("    No sign on line %d\n", i));
+			}
 		    }
 
 		    nbdebug(("    Deleting lines %d through %d\n", del_from_lnum, del_to_lnum));
@@ -2144,7 +2148,9 @@ nb_do_cmd(
 #endif
 	    }
 	    else
+	    {
 		nbdebug(("    BAD POSITION in setDot: %s\n", s));
+	    }
 
 	    /* gui_update_cursor(TRUE, FALSE); */
 	    /* update_curbuf(NOT_VALID); */
@@ -2744,11 +2750,10 @@ netbeans_keyname(int key, char *buf)
  * cursor and sends it to the debugger for evaluation.  The debugger should
  * respond with a showBalloon command when there is a useful result.
  */
-/*ARGSUSED*/
     void
 netbeans_beval_cb(
 	BalloonEval	*beval,
-	int		 state)
+	int		 state UNUSED)
 {
     win_T	*wp;
     char_u	*text;
@@ -3061,9 +3066,8 @@ netbeans_removed(
 /*
  * Send netbeans an unmodufied command.
  */
-/*ARGSUSED*/
     void
-netbeans_unmodified(buf_T *bufp)
+netbeans_unmodified(buf_T *bufp UNUSED)
 {
 #if 0
     char_u	buf[128];
@@ -3370,13 +3374,12 @@ netbeans_gutter_click(linenr_T lnum)
  * buf->signmapused[]	maps buffer-local annotation IDs to an index in
  *			globalsignmap[].
  */
-/*ARGSUSED*/
     static void
 addsigntype(
     nbbuf_T	*buf,
     int		typeNum,
     char_u	*typeName,
-    char_u	*tooltip,
+    char_u	*tooltip UNUSED,
     char_u	*glyphFile,
     int		use_fg,
     int		fg,

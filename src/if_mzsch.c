@@ -667,13 +667,11 @@ static void remove_timer(void);
     static void CALLBACK
 timer_proc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
 # elif defined(FEAT_GUI_GTK)
-/*ARGSUSED*/
     static gint
-timer_proc(gpointer data)
+timer_proc(gpointer data UNUSED)
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
-/* ARGSUSED */
     static void
-timer_proc(XtPointer timed_out, XtIntervalId *interval_id)
+timer_proc(XtPointer timed_out UNUSED, XtIntervalId *interval_id UNUSED)
 # elif defined(FEAT_GUI_MAC)
     pascal void
 timer_proc(EventLoopTimerRef theTimer, void *userData)
