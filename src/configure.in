@@ -2100,12 +2100,18 @@ AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
 	sys/stream.h termios.h libc.h sys/statfs.h \
 	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
 	libgen.h util/debug.h util/msg18n.h frame.h \
-	sys/acl.h sys/access.h sys/sysctl.h sys/sysinfo.h wchar.h wctype.h)
+	sys/acl.h sys/access.h sys/sysinfo.h wchar.h wctype.h)
 
 dnl sys/ptem.h depends on sys/stream.h on Solaris
 AC_CHECK_HEADERS(sys/ptem.h, [], [],
 [#if defined HAVE_SYS_STREAM_H
 #  include <sys/stream.h>
+#endif])
+
+dnl sys/sysctl.h depends on sys/param.h on OpenBSD
+AC_CHECK_HEADERS(sys/sysctl.h, [], [],
+[#if defined HAVE_SYS_PARAM_H
+#  include <sys/param.h>
 #endif])
 
 
