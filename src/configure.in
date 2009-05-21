@@ -1193,6 +1193,28 @@ else
 
     LDFLAGS="$ac_save_LDFLAGS"
 
+    AC_MSG_CHECKING(size of wchar_t is 2 bytes)
+    AC_CACHE_VAL(ac_cv_small_wchar_t,
+	[AC_TRY_RUN([
+#include <X11/Xlib.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+		main()
+		{
+		  if (sizeof(wchar_t) <= 2)
+		    exit(1);
+		  exit(0);
+		}],
+		ac_cv_small_wchar_t="no",
+		ac_cv_small_wchar_t="yes",
+		AC_MSG_ERROR(failed to compile test program))])
+    AC_MSG_RESULT($ac_cv_small_wchar_t)
+    if test "x$ac_cv_small_wchar_t" = "xyes" ; then
+      AC_DEFINE(SMALL_WCHAR_T)
+    fi
+
   fi
 fi
 
@@ -2880,7 +2902,6 @@ main()
 	    AC_MSG_ERROR(failed to compile test program))])
 AC_MSG_RESULT($ac_cv_sizeof_int)
 AC_DEFINE_UNQUOTED(SIZEOF_INT, $ac_cv_sizeof_int)
-
 
 dnl Check for memmove() before bcopy(), makes memmove() be used when both are
 dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.

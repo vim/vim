@@ -3119,7 +3119,7 @@ static int	prev_which_scrollbars[3];
  */
     void
 gui_init_which_components(oldval)
-    char_u	*oldval;
+    char_u	*oldval UNUSED;
 {
 #ifdef FEAT_MENU
     static int	prev_menu_is_active = -1;
@@ -4668,8 +4668,8 @@ gui_mouse_correct()
  */
     static win_T *
 xy2win(x, y)
-    int		x;
-    int		y;
+    int		x UNUSED;
+    int		y UNUSED;
 {
 #ifdef FEAT_WINDOWS
     int		row;
@@ -5121,8 +5121,8 @@ gui_wingoto_xy(x, y)
  */
     void
 gui_handle_drop(x, y, modifiers, fnames, count)
-    int		x;
-    int		y;
+    int		x UNUSED;
+    int		y UNUSED;
     int_u	modifiers;
     char_u	**fnames;
     int		count;

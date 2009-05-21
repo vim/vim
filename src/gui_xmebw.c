@@ -235,13 +235,12 @@ bump_color(unsigned short value)
     return tmp;
 }
 
-/*ARGSUSED*/
     static int
 alloc_color(Display	*display,
 	Colormap	colormap,
 	char		*colorname,
 	XColor		*xcolor,
-	void		*closure)
+	void		*closure UNUSED)
 {
     int status;
 
@@ -595,9 +594,10 @@ draw_unhighlight(XmEnhancedButtonWidget eb)
 		       XtHeight(eb), eb->primitive.highlight_thickness);
 }
 
-/*ARGSUSED*/
     static void
-draw_pixmap(XmEnhancedButtonWidget eb, XEvent *event, Region region)
+draw_pixmap(XmEnhancedButtonWidget eb,
+	    XEvent *event UNUSED,
+	    Region region UNUSED)
 {
     Pixmap	pix;
     GC		gc = eb->label.normal_GC;
@@ -641,7 +641,7 @@ draw_pixmap(XmEnhancedButtonWidget eb, XEvent *event, Region region)
     height = eb->core.height - 2 * y;
     if (h < height)
 	height = h;
-    if (depth == eb->core.depth)
+    if (depth == (int)eb->core.depth)
 	XCopyArea(XtDisplay(eb), pix, XtWindow(eb), gc, 0, 0,
 		width, height, x, y);
     else if (depth == 1)
@@ -731,9 +731,11 @@ draw_label(XmEnhancedButtonWidget eb, XEvent *event, Region region)
 	eb->label.normal_GC = tmp_gc;
 }
 
-/*ARGSUSED*/
     static void
-Enter(Widget wid, XEvent *event, String *params, Cardinal *num_params)
+Enter(Widget wid,
+      XEvent *event,
+      String *params UNUSED,
+      Cardinal *num_params UNUSED)
 {
     XmEnhancedButtonWidget eb = (XmEnhancedButtonWidget) wid;
     XmPushButtonCallbackStruct call_value;
@@ -818,9 +820,11 @@ Enter(Widget wid, XEvent *event, String *params, Cardinal *num_params)
     }
 }
 
-/*ARGSUSED*/
     static void
-Leave(Widget wid, XEvent *event, String *params, Cardinal *num_params)
+Leave(Widget wid,
+      XEvent *event,
+      String *params UNUSED,
+      Cardinal *num_params UNUSED)
 {
     XmEnhancedButtonWidget eb = (XmEnhancedButtonWidget)wid;
     XmPushButtonCallbackStruct call_value;
@@ -976,9 +980,8 @@ set_size(XmEnhancedButtonWidget newtb)
     }
 }
 
-/*ARGSUSED*/
     static void
-Initialize(Widget rq, Widget ebw, ArgList args, Cardinal *n)
+Initialize(Widget rq, Widget ebw, ArgList args UNUSED, Cardinal *n UNUSED)
 {
     XmEnhancedButtonWidget  request = (XmEnhancedButtonWidget)rq;
     XmEnhancedButtonWidget  eb = (XmEnhancedButtonWidget)ebw;
@@ -1056,9 +1059,12 @@ Destroy(Widget w)
     free_pixmaps((XmEnhancedButtonWidget)w);
 }
 
-/*ARGSUSED*/
     static Boolean
-SetValues(Widget current, Widget request, Widget new, ArgList args, Cardinal *n)
+SetValues(Widget current,
+	  Widget request UNUSED,
+	  Widget new,
+	  ArgList args UNUSED,
+	  Cardinal *n UNUSED)
 {
     XmEnhancedButtonWidget  cur = (XmEnhancedButtonWidget) current;
     XmEnhancedButtonWidget  eb = (XmEnhancedButtonWidget) new;
@@ -1108,7 +1114,7 @@ SetValues(Widget current, Widget request, Widget new, ArgList args, Cardinal *n)
 		if ((win_x < 0) || (win_y < 0))
 		    return False;
 
-		if ((win_x > r_width) || (win_y > r_height))
+		if ((win_x > (int)r_width) || (win_y > (int)r_height))
 		    return False;
 		draw_highlight(eb);
 		draw_shadows(eb);

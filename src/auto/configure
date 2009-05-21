@@ -7977,6 +7977,82 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 
     LDFLAGS="$ac_save_LDFLAGS"
 
+    { $as_echo "$as_me:$LINENO: checking size of wchar_t is 2 bytes" >&5
+$as_echo_n "checking size of wchar_t is 2 bytes... " >&6; }
+    if test "${ac_cv_small_wchar_t+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then
+  { { $as_echo "$as_me:$LINENO: error: failed to compile test program" >&5
+$as_echo "$as_me: error: failed to compile test program" >&2;}
+   { (exit 1); exit 1; }; }
+else
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#include <X11/Xlib.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+		main()
+		{
+		  if (sizeof(wchar_t) <= 2)
+		    exit(1);
+		  exit(0);
+		}
+_ACEOF
+rm -f conftest$ac_exeext
+if { (ac_try="$ac_link"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_link") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
+  { (case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:$LINENO: $ac_try_echo\""
+$as_echo "$ac_try_echo") >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_cv_small_wchar_t="no"
+else
+  $as_echo "$as_me: program exited with status $ac_status" >&5
+$as_echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+( exit $ac_status )
+ac_cv_small_wchar_t="yes"
+fi
+rm -rf conftest.dSYM
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
+fi
+
+
+fi
+
+    { $as_echo "$as_me:$LINENO: result: $ac_cv_small_wchar_t" >&5
+$as_echo "$ac_cv_small_wchar_t" >&6; }
+    if test "x$ac_cv_small_wchar_t" = "xyes" ; then
+      cat >>confdefs.h <<\_ACEOF
+#define SMALL_WCHAR_T 1
+_ACEOF
+
+    fi
+
   fi
 fi
 
@@ -15414,7 +15490,6 @@ $as_echo "$ac_cv_sizeof_int" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define SIZEOF_INT $ac_cv_sizeof_int
 _ACEOF
-
 
 
 

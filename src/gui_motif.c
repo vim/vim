@@ -117,10 +117,9 @@ static void gui_motif_scroll_colors __ARGS((Widget id));
  * Call-back routines.
  */
 
-/* ARGSUSED */
     static void
 scroll_cb(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data, call_data;
 {
     scrollbar_T *sb;
@@ -136,11 +135,11 @@ scroll_cb(w, client_data, call_data)
 }
 
 #ifdef FEAT_GUI_TABLINE
-/*ARGSUSED*/
     static void
 tabline_cb(w, client_data, call_data)
-    Widget	w;
-    XtPointer	client_data, call_data;
+    Widget	w UNUSED;
+    XtPointer	client_data UNUSED;
+    XtPointer	call_data;
 {
     XmNotebookCallbackStruct *nptr;
 
@@ -149,11 +148,11 @@ tabline_cb(w, client_data, call_data)
 	send_tabline_event(nptr->page_number);
 }
 
-/*ARGSUSED*/
     static void
 tabline_button_cb(w, client_data, call_data)
     Widget	w;
-    XtPointer	client_data, call_data;
+    XtPointer	client_data UNUSED;
+    XtPointer	call_data UNUSED;
 {
     int		cmd, tab_idx;
 
@@ -166,11 +165,10 @@ tabline_button_cb(w, client_data, call_data)
 /*
  * Tabline single mouse click timeout handler
  */
-/*ARGSUSED*/
     static void
 motif_tabline_timer_cb (timed_out, interval_id)
     XtPointer		timed_out;
-    XtIntervalId	*interval_id;
+    XtIntervalId	*interval_id UNUSED;
 {
     *((int *)timed_out) = TRUE;
 }
@@ -203,13 +201,12 @@ tabline_scroller_clicked(scroller_name, event)
     return FALSE;
 }
 
-/*ARGSUSED*/
     static void
 tabline_menu_cb(w, closure, e, continue_dispatch)
     Widget	w;
-    XtPointer	closure;
+    XtPointer	closure UNUSED;
     XEvent	*e;
-    Boolean	*continue_dispatch;
+    Boolean	*continue_dispatch UNUSED;
 {
     Widget			tab_w;
     XButtonPressedEvent		*event;
@@ -277,11 +274,10 @@ tabline_menu_cb(w, closure, e, continue_dispatch)
     XtManageChild(tabLine_menu);
 }
 
-/*ARGSUSED*/
     static void
 tabline_balloon_cb(beval, state)
     BalloonEval	*beval;
-    int		state;
+    int		state UNUSED;
 {
     int		nr;
     tabpage_T	*tp;
@@ -642,13 +638,12 @@ gui_x11_destroy_widgets()
 #endif
 }
 
-/*ARGSUSED*/
     void
 gui_mch_set_text_area_pos(x, y, w, h)
-    int	    x;
-    int	    y;
-    int	    w;
-    int	    h;
+    int	    x UNUSED;
+    int	    y UNUSED;
+    int	    w UNUSED;
+    int	    h UNUSED;
 {
 #ifdef FEAT_TOOLBAR
     /* Give keyboard focus to the textArea instead of the toolbar. */
@@ -1261,7 +1256,7 @@ get_toolbar_pixmap(menu, fname)
     if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
     {
 	if (menu->iconidx >= 0 && menu->iconidx
-		   < (sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
+	       < (int)(sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
 	    xpm = built_in_pixmaps[menu->iconidx];
 	else
 	    xpm = tb_blank_xpm;
@@ -1716,10 +1711,9 @@ gui_mch_destroy_menu(menu)
     }
 }
 
-/* ARGSUSED */
     void
 gui_mch_show_popupmenu(menu)
-    vimmenu_T *menu;
+    vimmenu_T *menu UNUSED;
 {
 #ifdef MOTIF_POPUP
     XmMenuPosition(menu->submenu_id, gui_x11_get_last_mouse_event());
@@ -2046,9 +2040,8 @@ do_mnemonic(Widget w, unsigned int keycode)
 /*
  * Callback routine for dialog mnemonic processing.
  */
-/*ARGSUSED*/
     static void
-mnemonic_event(Widget w, XtPointer call_data, XKeyEvent *event)
+mnemonic_event(Widget w, XtPointer call_data UNUSED, XKeyEvent *event)
 {
     do_mnemonic(w, event->keycode);
 }
@@ -2287,13 +2280,12 @@ set_predefined_fontlist(parent, name)
  * Put up a file requester.
  * Returns the selected name in allocated memory, or NULL for Cancel.
  */
-/* ARGSUSED */
     char_u *
 gui_mch_browse(saving, title, dflt, ext, initdir, filter)
-    int		saving;		/* select file to write */
+    int		saving UNUSED;	/* select file to write */
     char_u	*title;		/* title for the window */
     char_u	*dflt;		/* default name */
-    char_u	*ext;		/* not used (extension added) */
+    char_u	*ext UNUSED;	/* not used (extension added) */
     char_u	*initdir;	/* initial directory, NULL for current dir */
     char_u	*filter;	/* file name filter */
 {
@@ -2413,12 +2405,11 @@ gui_mch_browse(saving, title, dflt, ext, initdir, filter)
 /*
  * Process callback from Dialog cancel actions.
  */
-/* ARGSUSED */
     static void
 DialogCancelCB(w, client_data, call_data)
-    Widget	w;		/*  widget id		*/
-    XtPointer	client_data;	/*  data from application   */
-    XtPointer	call_data;	/*  data from widget class  */
+    Widget	w UNUSED;		/*  widget id		*/
+    XtPointer	client_data UNUSED;	/*  data from application   */
+    XtPointer	call_data UNUSED;	/*  data from widget class  */
 {
     if (browse_fname != NULL)
     {
@@ -2431,12 +2422,11 @@ DialogCancelCB(w, client_data, call_data)
 /*
  * Process callback from Dialog actions.
  */
-/* ARGSUSED */
     static void
 DialogAcceptCB(w, client_data, call_data)
-    Widget	w;		/*  widget id		*/
-    XtPointer	client_data;	/*  data from application   */
-    XtPointer	call_data;	/*  data from widget class  */
+    Widget	w UNUSED;		/*  widget id		*/
+    XtPointer	client_data UNUSED;	/*  data from application   */
+    XtPointer	call_data;		/*  data from widget class  */
 {
     XmFileSelectionBoxCallbackStruct *fcb;
 
@@ -2467,13 +2457,12 @@ static void butproc __ARGS((Widget w, XtPointer client_data, XtPointer call_data
  * Callback function for the textfield.  When CR is hit this works like
  * hitting the "OK" button, ESC like "Cancel".
  */
-/* ARGSUSED */
     static void
 keyhit_callback(w, client_data, event, cont)
     Widget		w;
-    XtPointer		client_data;
+    XtPointer		client_data UNUSED;
     XEvent		*event;
-    Boolean		*cont;
+    Boolean		*cont UNUSED;
 {
     char	buf[2];
     KeySym	key_sym;
@@ -2490,12 +2479,11 @@ keyhit_callback(w, client_data, event, cont)
 	XmTextFieldClearSelection(w, XtLastTimestampProcessed(gui.dpy));
 }
 
-/* ARGSUSED */
     static void
 butproc(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     dialogStatus = (int)(long)client_data + 1;
 }
@@ -2567,10 +2555,9 @@ create_pixmap_label(parent, name, data, args, arg)
 }
 #endif
 
-/* ARGSUSED */
     int
 gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
-    int		type;
+    int		type UNUSED;
     char_u	*title;
     char_u	*message;
     char_u	*button_names;
@@ -3197,7 +3184,7 @@ gui_mch_compute_toolbar_height()
 		XmNchildren, &children,
 		XmNnumChildren, &numChildren, NULL);
 	borders += tst + tmh;
-	for (i = 0; i < numChildren; i++)
+	for (i = 0; i < (int)numChildren; i++)
 	{
 	    whgt = 0;
 	    XtVaGetValues(children[i], XmNheight, &whgt, NULL);
@@ -3237,13 +3224,12 @@ motif_get_toolbar_colors(bgp, fgp, bsp, tsp, hsp)
  * I have to use footer help for backwards compatability.  Hopefully both will
  * get implemented and the user will have a choice.
  */
-/*ARGSUSED*/
     static void
 toolbarbutton_enter_cb(w, client_data, event, cont)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XEvent	*event;
-    Boolean	*cont;
+    XEvent	*event UNUSED;
+    Boolean	*cont UNUSED;
 {
     vimmenu_T	*menu = (vimmenu_T *) client_data;
 
@@ -3254,13 +3240,12 @@ toolbarbutton_enter_cb(w, client_data, event, cont)
     }
 }
 
-/*ARGSUSED*/
     static void
 toolbarbutton_leave_cb(w, client_data, event, cont)
-    Widget	w;
-    XtPointer	client_data;
-    XEvent	*event;
-    Boolean	*cont;
+    Widget	w UNUSED;
+    XtPointer	client_data UNUSED;
+    XEvent	*event UNUSED;
+    Boolean	*cont UNUSED;
 {
     gui_mch_set_footer((char_u *) "");
 }
@@ -3492,10 +3477,9 @@ gui_motif_scroll_colors(id)
 /*
  * Set the fontlist for Widget "id" to use gui.menu_fontset or gui.menu_font.
  */
-/*ARGSUSED*/
     void
 gui_motif_menu_fontlist(id)
-    Widget  id;
+    Widget  id UNUSED;
 {
 #ifdef FEAT_MENU
 #ifdef FONTSET_ALWAYS
@@ -3566,8 +3550,8 @@ typedef struct _SharedFindReplace
     Widget cancel;
 } SharedFindReplace;
 
-static SharedFindReplace find_widgets = { NULL };
-static SharedFindReplace repl_widgets = { NULL };
+static SharedFindReplace find_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+static SharedFindReplace repl_widgets = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
 
 static void find_replace_destroy_callback __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
 static void find_replace_dismiss_callback __ARGS((Widget w, XtPointer client_data, XtPointer call_data));
@@ -3576,12 +3560,11 @@ static void find_replace_callback __ARGS((Widget w, XtPointer client_data, XtPoi
 static void find_replace_keypress __ARGS((Widget w, SharedFindReplace * frdp, XKeyEvent * event));
 static void find_replace_dialog_create __ARGS((char_u *entry_text, int do_replace));
 
-/*ARGSUSED*/
     static void
 find_replace_destroy_callback(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     SharedFindReplace *cd = (SharedFindReplace *)client_data;
 
@@ -3590,12 +3573,11 @@ find_replace_destroy_callback(w, client_data, call_data)
 	cd->dialog = (Widget)0;
 }
 
-/*ARGSUSED*/
     static void
 find_replace_dismiss_callback(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     SharedFindReplace *cd = (SharedFindReplace *)client_data;
 
@@ -3603,22 +3585,20 @@ find_replace_dismiss_callback(w, client_data, call_data)
 	XtUnmanageChild(cd->dialog);
 }
 
-/*ARGSUSED*/
     static void
 entry_activate_callback(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     XmProcessTraversal((Widget)client_data, XmTRAVERSE_CURRENT);
 }
 
-/*ARGSUSED*/
     static void
 find_replace_callback(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     long_u	flags = (long_u)client_data;
     char	*find_text, *repl_text;
@@ -3668,10 +3648,9 @@ find_replace_callback(w, client_data, call_data)
 	XtFree(repl_text);
 }
 
-/*ARGSUSED*/
     static void
 find_replace_keypress(w, frdp, event)
-    Widget		w;
+    Widget		w UNUSED;
     SharedFindReplace	*frdp;
     XKeyEvent		*event;
 {

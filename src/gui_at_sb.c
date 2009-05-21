@@ -198,10 +198,13 @@ ScrollbarClassRec vim_scrollbarClassRec =
     /* extension	*/  NULL
   },
   { /* simple fields */
-    /* change_sensitive	*/  XtInheritChangeSensitive
+    /* change_sensitive	*/  XtInheritChangeSensitive,
+#ifndef OLDXAW
+    /* extension */	    NULL
+#endif
   },
   { /* scrollbar fields */
-    /* ignore	    */	0
+    /* empty	    */	    0
   }
 };
 
@@ -241,7 +244,8 @@ FillArea(sbw, top, bottom, fill, draw_shadow)
 
     if (bottom <= 0 || bottom <= top)
 	return;
-    if ((sw = sbw->scrollbar.shadow_width) < 0)
+    sw = sbw->scrollbar.shadow_width;
+    if (sw < 0)
 	sw = 0;
     margin = MARGIN (sbw);
     floor = sbw->scrollbar.length - margin + 2;
@@ -516,13 +520,12 @@ SetDimensions(sbw)
     }
 }
 
-/* ARGSUSED */
     static void
 Initialize(request, new, args, num_args)
-    Widget	request;	/* what the client asked for */
+    Widget	request UNUSED;	/* what the client asked for */
     Widget	new;		/* what we're going to give him */
-    ArgList	args;
-    Cardinal	*num_args;
+    ArgList	args UNUSED;
+    Cardinal	*num_args UNUSED;
 {
     ScrollbarWidget sbw = (ScrollbarWidget) new;
 
@@ -556,14 +559,13 @@ Realize(w, valueMask, attributes)
 	(w, valueMask, attributes);
 }
 
-/* ARGSUSED */
     static Boolean
 SetValues(current, request, desired, args, num_args)
-    Widget  current,	    /* what I am */
-	    request,	    /* what he wants me to be */
-	    desired;	    /* what I will become */
-    ArgList args;
-    Cardinal *num_args;
+    Widget  current;	    /* what I am */
+    Widget  request UNUSED; /* what he wants me to be */
+    Widget  desired;	    /* what I will become */
+    ArgList args UNUSED;
+    Cardinal *num_args UNUSED;
 {
     ScrollbarWidget	sbw = (ScrollbarWidget) current;
     ScrollbarWidget	dsbw = (ScrollbarWidget) desired;
@@ -609,7 +611,6 @@ Resize(w)
 }
 
 
-/* ARGSUSED */
     static void
 Redisplay(w, event, region)
     Widget w;
@@ -789,11 +790,10 @@ HandleThumb(w, event, params, num_params)
     }
 }
 
-/* ARGSUSED */
     static void
 RepeatNotify(client_data, idp)
     XtPointer client_data;
-    XtIntervalId *idp;
+    XtIntervalId *idp UNUSED;
 {
     ScrollbarWidget sbw = (ScrollbarWidget) client_data;
     int		    call_data;
@@ -839,46 +839,42 @@ FloatInRange(num, small, big)
     return (num < small) ? small : ((num > big) ? big : num);
 }
 
-/* ARGSUSED */
     static void
 ScrollOneLineUp(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollSome(w, event, -ONE_LINE_DATA);
 }
 
-/* ARGSUSED */
     static void
 ScrollOneLineDown(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollSome(w, event, ONE_LINE_DATA);
 }
 
-/* ARGSUSED */
     static void
 ScrollPageDown(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollSome(w, event, ONE_PAGE_DATA);
 }
 
-/* ARGSUSED */
     static void
 ScrollPageUp(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollSome(w, event, -ONE_PAGE_DATA);
 }
@@ -901,13 +897,12 @@ ScrollSome(w, event, call_data)
     XtCallCallbacks(w, XtNscrollProc, (XtPointer)call_data);
 }
 
-/* ARGSUSED */
     static void
 NotifyScroll(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;
-    Cardinal	*num_params;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollbarWidget sbw = (ScrollbarWidget) w;
     Position	    x, y, loc;
@@ -991,13 +986,12 @@ NotifyScroll(w, event, params, num_params)
 					   delay, RepeatNotify, (XtPointer)w);
 }
 
-/* ARGSUSED */
     static void
 EndScroll(w, event, params, num_params)
     Widget w;
-    XEvent *event;	/* unused */
-    String *params;	/* unused */
-    Cardinal *num_params;   /* unused */
+    XEvent *event UNUSED;
+    String *params UNUSED;
+    Cardinal *num_params UNUSED;
 {
     ScrollbarWidget sbw = (ScrollbarWidget) w;
 
@@ -1023,13 +1017,12 @@ FractionLoc(sbw, x, y)
     return PICKLENGTH(sbw, x / width, y / height);
 }
 
-/* ARGSUSED */
     static void
 MoveThumb(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollbarWidget	sbw = (ScrollbarWidget)w;
     Position		x, y;
@@ -1069,13 +1062,12 @@ MoveThumb(w, event, params, num_params)
 }
 
 
-/* ARGSUSED */
     static void
 NotifyThumb(w, event, params, num_params)
     Widget	w;
     XEvent	*event;
-    String	*params;	/* unused */
-    Cardinal	*num_params;	/* unused */
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
     ScrollbarWidget sbw = (ScrollbarWidget)w;
     /* Use a union to avoid a warning for the weird conversion from float to
@@ -1096,7 +1088,6 @@ NotifyThumb(w, event, params, num_params)
     XtCallCallbacks(w, XtNjumpProc, (XtPointer)&sbw->scrollbar.top);
 }
 
-/* ARGSUSED */
     static void
 AllocTopShadowGC(w)
     Widget w;
@@ -1110,7 +1101,6 @@ AllocTopShadowGC(w)
     sbw->scrollbar.top_shadow_GC = XtGetGC(w, valuemask, &myXGCV);
 }
 
-/* ARGSUSED */
     static void
 AllocBotShadowGC(w)
     Widget w;
@@ -1124,11 +1114,10 @@ AllocBotShadowGC(w)
     sbw->scrollbar.bot_shadow_GC = XtGetGC(w, valuemask, &myXGCV);
 }
 
-/* ARGSUSED */
     static void
 _Xaw3dDrawShadows(gw, event, region, out)
     Widget  gw;
-    XEvent  *event;
+    XEvent  *event UNUSED;
     Region  region;
     int	    out;
 {

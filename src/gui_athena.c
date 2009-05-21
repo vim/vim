@@ -86,10 +86,9 @@ static int		puller_width = 0;
  * Scrollbar callback (XtNjumpProc) for when the scrollbar is dragged with the
  * left or middle mouse button.
  */
-/* ARGSUSED */
     static void
 gui_athena_scroll_cb_jump(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data, call_data;
 {
     scrollbar_T *sb, *sb_info;
@@ -122,10 +121,9 @@ gui_athena_scroll_cb_jump(w, client_data, call_data)
  * Scrollbar callback (XtNscrollProc) for paging up or down with the left or
  * right mouse buttons.
  */
-/* ARGSUSED */
     static void
 gui_athena_scroll_cb_scroll(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data, call_data;
 {
     scrollbar_T *sb, *sb_info;
@@ -492,7 +490,7 @@ get_toolbar_pixmap(menu, sen)
     if (menu->icon_builtin || gui_find_bitmap(menu->name, buf, "xpm") == FAIL)
     {
 	if (menu->iconidx >= 0 && menu->iconidx
-		   < (sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
+	      < (int)(sizeof(built_in_pixmaps) / sizeof(built_in_pixmaps[0])))
 	    xpm = built_in_pixmaps[menu->iconidx];
 	else
 	    xpm = tb_blank_xpm;
@@ -763,7 +761,7 @@ athena_calculate_ins_pos(widget)
     XtGetValues(XtParent(widget), args, n);
 
     retval = num_children;
-    for (i = 0; i < num_children; ++i)
+    for (i = 0; i < (int)num_children; ++i)
     {
 	Widget	current = children[i];
 	vimmenu_T	*menu = NULL;
@@ -780,11 +778,10 @@ athena_calculate_ins_pos(widget)
     return retval;
 }
 
-/* ARGSUSED */
     void
 gui_mch_add_menu(menu, idx)
     vimmenu_T	*menu;
-    int		idx;
+    int		idx UNUSED;
 {
     char_u	*pullright_name;
     Dimension	height, space, border;
@@ -869,7 +866,7 @@ gui_mch_add_menu(menu, idx)
 	    XtVaGetValues(parent->submenu_id, XtNchildren, &children,
 					      XtNnumChildren, &num_children,
 					      NULL);
-	    for (i = 0; i < num_children; ++i)
+	    for (i = 0; i < (int)num_children; ++i)
 	    {
 		XtVaSetValues(children[i],
 			      XtNrightMargin, puller_width,
@@ -913,7 +910,7 @@ gui_athena_menu_has_submenus(id, ignore)
     XtVaGetValues(id, XtNchildren, &children,
 		      XtNnumChildren, &num_children,
 		      NULL);
-    for (i = 0; i < num_children; ++i)
+    for (i = 0; i < (int)num_children; ++i)
     {
 	if (children[i] == ignore)
 	    continue;
@@ -1175,11 +1172,10 @@ make_pull_name(name)
     return pname;
 }
 
-/* ARGSUSED */
     void
 gui_mch_add_menu_item(menu, idx)
     vimmenu_T	*menu;
-    int		idx;
+    int		idx UNUSED;
 {
     vimmenu_T	*parent = menu->parent;
 
@@ -1444,7 +1440,7 @@ gui_mch_compute_toolbar_height()
 		XtNchildren,	    &children,
 		XtNnumChildren,	    &numChildren,
 		NULL);
-	for (i = 0; i < numChildren; i++)
+	for (i = 0; i < (int)numChildren; i++)
 	{
 	    whgt = 0;
 
@@ -1473,10 +1469,9 @@ gui_mch_get_toolbar_colors(bgp, fgp, bsp, tsp, hsp)
 #endif
 
 
-/* ARGSUSED */
     void
 gui_mch_toggle_tearoffs(enable)
-    int		enable;
+    int		enable UNUSED;
 {
     /* no tearoff menus */
 }
@@ -1537,7 +1532,7 @@ gui_mch_destroy_menu(menu)
 	    else
 		get_left_margin = True;
 
-	    for (i = 0; i < num_children; ++i)
+	    for (i = 0; i < (int)num_children; ++i)
 	    {
 		if (children[i] == menu->id)
 		    continue;
@@ -1645,11 +1640,10 @@ gui_mch_destroy_menu(menu)
     }
 }
 
-/*ARGSUSED*/
     static void
 gui_athena_menu_timeout(client_data, id)
     XtPointer	    client_data;
-    XtIntervalId    *id;
+    XtIntervalId    *id UNUSED;
 {
     Widget  w = (Widget)client_data;
     Widget  popup;
@@ -1678,12 +1672,11 @@ gui_athena_menu_timeout(client_data, id)
  *
  * This is called when XtPopup() is called.
  */
-/*ARGSUSED*/
     static void
 gui_athena_popup_callback(w, client_data, call_data)
     Widget	w;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     /* Assumption: XtIsSubclass(XtParent(w),simpleMenuWidgetClass) */
     vimmenu_T	*menu = (vimmenu_T *)client_data;
@@ -1711,7 +1704,6 @@ gui_athena_popup_callback(w, client_data, call_data)
 		     NULL);
 }
 
-/* ARGSUSED */
     static void
 gui_athena_popdown_submenus_action(w, event, args, nargs)
     Widget	w;
@@ -1756,7 +1748,6 @@ has_submenu(widget)
     return False;
 }
 
-/* ARGSUSED */
     static void
 gui_athena_delayed_arm_action(w, event, args, nargs)
     Widget	w;
@@ -1837,7 +1828,6 @@ submenu_widget(widget)
      * (XtIsSubclass(popup,simpleMenuWidgetClass) == True) */
 }
 
-/* ARGSUSED */
     void
 gui_mch_show_popupmenu(menu)
     vimmenu_T *menu;
@@ -2046,15 +2036,14 @@ gui_x11_get_wid()
  * Put up a file requester.
  * Returns the selected name in allocated memory, or NULL for Cancel.
  */
-/* ARGSUSED */
     char_u *
 gui_mch_browse(saving, title, dflt, ext, initdir, filter)
-    int		saving;		/* select file to write */
-    char_u	*title;		/* not used (title for the window) */
-    char_u	*dflt;		/* not used (default name) */
-    char_u	*ext;		/* not used (extension added) */
+    int		saving UNUSED;	/* select file to write */
+    char_u	*title;		/* title for the window */
+    char_u	*dflt;		/* default name */
+    char_u	*ext UNUSED;	/* extension added */
     char_u	*initdir;	/* initial directory, NULL for current dir */
-    char_u	*filter;	/* not used (file name filter) */
+    char_u	*filter UNUSED;	/* file name filter */
 {
     Position x, y;
     char_u	dirbuf[MAXPATHL];
@@ -2100,13 +2089,12 @@ static void dialog_wm_handler __ARGS((Widget w, XtPointer client_data, XEvent *e
  * Callback function for the textfield.  When CR is hit this works like
  * hitting the "OK" button, ESC like "Cancel".
  */
-/* ARGSUSED */
     static void
 keyhit_callback(w, client_data, event, cont)
-    Widget		w;
-    XtPointer		client_data;
+    Widget		w UNUSED;
+    XtPointer		client_data UNUSED;
     XEvent		*event;
-    Boolean		*cont;
+    Boolean		*cont UNUSED;
 {
     char	buf[2];
 
@@ -2119,12 +2107,11 @@ keyhit_callback(w, client_data, event, cont)
     }
 }
 
-/* ARGSUSED */
     static void
 butproc(w, client_data, call_data)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
-    XtPointer	call_data;
+    XtPointer	call_data UNUSED;
 {
     dialogStatus = (int)(long)client_data + 1;
 }
@@ -2132,27 +2119,25 @@ butproc(w, client_data, call_data)
 /*
  * Function called when dialog window closed.
  */
-/*ARGSUSED*/
     static void
 dialog_wm_handler(w, client_data, event, dum)
-    Widget	w;
-    XtPointer	client_data;
+    Widget	w UNUSED;
+    XtPointer	client_data UNUSED;
     XEvent	*event;
-    Boolean	*dum;
+    Boolean	*dum UNUSED;
 {
     if (event->type == ClientMessage
-	    && ((XClientMessageEvent *)event)->data.l[0] == dialogatom)
+	    && (Atom)((XClientMessageEvent *)event)->data.l[0] == dialogatom)
 	dialogStatus = 0;
 }
 
-/* ARGSUSED */
     int
 gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield)
-    int		type;
+    int		type UNUSED;
     char_u	*title;
     char_u	*message;
     char_u	*buttons;
-    int		dfltbutton;
+    int		dfltbutton UNUSED;
     char_u	*textfield;
 {
     char_u		*buts;

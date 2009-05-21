@@ -448,7 +448,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 
 	    items[i] = XmStringCreateLocalized(list[ENCODING][i]);
 
-	    if (i < n_items)
+	    if (i < (int)n_items)
 	    {
 		/* recycle old button */
 		XtVaSetValues(children[i],
@@ -481,7 +481,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 
 	/* Destroy all the outstanding menu items.
 	 */
-	for (i = count[ENCODING]; i < n_items; ++i)
+	for (i = count[ENCODING]; i < (int)n_items; ++i)
 	{
 	    XtUnmanageChild(children[i]);
 	    XtDestroyWidget(children[i]);
@@ -544,9 +544,8 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
     }
 }
 
-/*ARGSUSED*/
     static void
-stoggle_callback(Widget w,
+stoggle_callback(Widget w UNUSED,
 	SharedFontSelData *data,
 	XmToggleButtonCallbackStruct *call_data)
 {
@@ -709,11 +708,10 @@ do_choice(Widget w,
     }
 }
 
-/*ARGSUSED*/
     static void
 encoding_callback(Widget w,
 	SharedFontSelData *data,
-	XtPointer dummy)
+	XtPointer dummy UNUSED)
 {
     XmString str;
     XmListCallbackStruct fake_data;
@@ -752,11 +750,10 @@ size_callback(Widget w,
     do_choice(w, data, call_data, SIZE);
 }
 
-/*ARGSUSED*/
     static void
-cancel_callback(Widget w,
+cancel_callback(Widget w UNUSED,
 	SharedFontSelData *data,
-	XmListCallbackStruct *call_data)
+	XmListCallbackStruct *call_data UNUSED)
 {
     if (data->sel[ENCODING])
     {
@@ -789,11 +786,10 @@ cancel_callback(Widget w,
     data->exit = True;
 }
 
-/*ARGSUSED*/
     static void
-ok_callback(Widget w,
+ok_callback(Widget w UNUSED,
 	SharedFontSelData *data,
-	XmPushButtonCallbackStruct *call_data)
+	XmPushButtonCallbackStruct *call_data UNUSED)
 {
     char    *pattern;
     char    **name;

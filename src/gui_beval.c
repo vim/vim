@@ -18,7 +18,7 @@
     void
 general_beval_cb(beval, state)
     BalloonEval *beval;
-    int state;
+    int		state UNUSED;
 {
     win_T	*wp;
     int		col;
@@ -726,10 +726,10 @@ removeEventHandler(beval)
  */
     static void
 pointerEventEH(w, client_data, event, unused)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	client_data;
     XEvent	*event;
-    Boolean	*unused;
+    Boolean	*unused UNUSED;
 {
     BalloonEval *beval = (BalloonEval *)client_data;
     pointerEvent(beval, event);
@@ -877,7 +877,7 @@ pointerEvent(beval, event)
     static void
 timerRoutine(dx, id)
     XtPointer	    dx;
-    XtIntervalId    *id;
+    XtIntervalId    *id UNUSED;
 {
     BalloonEval *beval = (BalloonEval *)dx;
 

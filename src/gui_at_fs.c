@@ -829,7 +829,7 @@ SFsetText(path)
     text.format = FMT8BIT;
 
 #ifdef XtNinternational
-    if (_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
+    if ((unsigned long)_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
     {
 	XawTextReplace(selFileField, (XawTextPosition)0,
 				    (XawTextPosition)WcsLen((wchar_t *)&SFtextBuffer[0]), &text);
@@ -851,17 +851,15 @@ SFsetText(path)
 #endif
 }
 
-/* ARGSUSED */
     static void
 SFbuttonPressList(w, n, event)
-    Widget		w;
-    int			n;
-    XButtonPressedEvent	*event;
+    Widget		w UNUSED;
+    int			n UNUSED;
+    XButtonPressedEvent	*event UNUSED;
 {
     SFbuttonPressed = 1;
 }
 
-/* ARGSUSED */
     static void
 SFbuttonReleaseList(w, n, event)
     Widget		 w;
@@ -989,11 +987,10 @@ SFcheckFiles(dir)
     return result;
 }
 
-/* ARGSUSED */
     static void
 SFdirModTimer(cl, id)
-    XtPointer		cl;
-    XtIntervalId	*id;
+    XtPointer		cl UNUSED;
+    XtIntervalId	*id UNUSED;
 {
     static int		n = -1;
     static int		f = 0;
@@ -1596,11 +1593,10 @@ SFscrollTimerInterval()
 
 static void SFscrollTimer __ARGS((XtPointer p, XtIntervalId *id));
 
-/* ARGSUSED */
     static void
 SFscrollTimer(p, id)
     XtPointer		p;
-    XtIntervalId	*id;
+    XtIntervalId	*id UNUSED;
 {
     SFDir	*dir;
     int		save;
@@ -1695,10 +1691,9 @@ SFnewInvertEntry(n, event)
     }
 }
 
-/* ARGSUSED */
     static void
 SFenterList(w, n, event)
-    Widget		w;
+    Widget		w UNUSED;
     int			n;
     XEnterWindowEvent	*event;
 {
@@ -1719,12 +1714,11 @@ SFenterList(w, n, event)
     }
 }
 
-/* ARGSUSED */
     static void
 SFleaveList(w, n, event)
-    Widget	w;
+    Widget	w UNUSED;
     int		n;
-    XEvent	*event;
+    XEvent	*event UNUSED;
 {
     if (SFcurrentInvert[n] != -1)
     {
@@ -1733,10 +1727,9 @@ SFleaveList(w, n, event)
     }
 }
 
-/* ARGSUSED */
     static void
 SFmotionList(w, n, event)
-    Widget		w;
+    Widget		w UNUSED;
     int			n;
     XMotionEvent	*event;
 {
@@ -1754,7 +1747,6 @@ SFmotionList(w, n, event)
     }
 }
 
-/* ARGSUSED */
     static void
 SFvFloatSliderMovedCallback(w, n, fnew)
     Widget	w;
@@ -1767,10 +1759,9 @@ SFvFloatSliderMovedCallback(w, n, fnew)
     SFvSliderMovedCallback(w, (int)(long)n, nw);
 }
 
-/* ARGSUSED */
     static void
 SFvSliderMovedCallback(w, n, nw)
-    Widget	w;
+    Widget	w UNUSED;
     int		n;
     int		nw;
 {
@@ -1853,10 +1844,9 @@ SFvSliderMovedCallback(w, n, nw)
     }
 }
 
-/* ARGSUSED */
     static void
 SFvAreaSelectedCallback(w, n, pnew)
-    Widget		w;
+    Widget	w;
     XtPointer	n;
     XtPointer	pnew;
 {
@@ -1914,10 +1904,9 @@ SFvAreaSelectedCallback(w, n, pnew)
     SFvSliderMovedCallback(w, (int)(long)n, nw);
 }
 
-/* ARGSUSED */
     static void
 SFhSliderMovedCallback(w, n, nw)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	n;
     XtPointer	nw;
 {
@@ -1933,10 +1922,9 @@ SFhSliderMovedCallback(w, n, nw)
     SFdrawList((int)(long)n, SF_DO_NOT_SCROLL);
 }
 
-/* ARGSUSED */
     static void
 SFhAreaSelectedCallback(w, n, pnew)
-    Widget		w;
+    Widget	w;
     XtPointer	n;
     XtPointer	pnew;
 {
@@ -1994,11 +1982,10 @@ SFhAreaSelectedCallback(w, n, pnew)
     }
 }
 
-/* ARGSUSED */
     static void
 SFpathSliderMovedCallback(w, client_data, nw)
-    Widget		w;
-    XtPointer	client_data;
+    Widget	w UNUSED;
+    XtPointer	client_data UNUSED;
     XtPointer	nw;
 {
     SFDir		*dir;
@@ -2031,11 +2018,10 @@ SFpathSliderMovedCallback(w, client_data, nw)
     XawTextSetInsertionPoint(selFileField, pos);
 }
 
-/* ARGSUSED */
     static void
 SFpathAreaSelectedCallback(w, client_data, pnew)
     Widget	w;
-    XtPointer	client_data;
+    XtPointer	client_data UNUSED;
     XtPointer	pnew;
 {
     int		nw = (int)(long)pnew;
@@ -2206,13 +2192,12 @@ static char *oneLineTextEditTranslations = "\
 
 static void SFexposeList __ARGS((Widget w, XtPointer n, XEvent *event, Boolean *cont));
 
-/* ARGSUSED */
     static void
 SFexposeList(w, n, event, cont)
-    Widget	w;
+    Widget	w UNUSED;
     XtPointer	n;
     XEvent	*event;
-    Boolean	*cont;
+    Boolean	*cont UNUSED;
 {
     if ((event->type == NoExpose) || event->xexpose.count)
 	return;
@@ -2222,13 +2207,12 @@ SFexposeList(w, n, event, cont)
 
 static void SFmodVerifyCallback __ARGS((Widget w, XtPointer client_data, XEvent *event, Boolean *cont));
 
-/* ARGSUSED */
     static void
 SFmodVerifyCallback(w, client_data, event, cont)
-    Widget		w;
-    XtPointer		client_data;
+    Widget		w UNUSED;
+    XtPointer		client_data UNUSED;
     XEvent		*event;
-    Boolean		*cont;
+    Boolean		*cont UNUSED;
 {
     char	buf[2];
 
@@ -2241,11 +2225,11 @@ SFmodVerifyCallback(w, client_data, event, cont)
 
 static void SFokCallback __ARGS((Widget w, XtPointer cl, XtPointer cd));
 
-/* ARGSUSED */
     static void
 SFokCallback(w, cl, cd)
-    Widget	w;
-    XtPointer	cl, cd;
+    Widget	w UNUSED;
+    XtPointer	cl UNUSED;
+    XtPointer	cd UNUSED;
 {
     SFstatus = SEL_FILE_OK;
 }
@@ -2258,11 +2242,11 @@ static XtCallbackRec SFokSelect[] =
 
 static void SFcancelCallback __ARGS((Widget w, XtPointer cl, XtPointer cd));
 
-/* ARGSUSED */
     static void
 SFcancelCallback(w, cl, cd)
-    Widget	w;
-    XtPointer	cl, cd;
+    Widget	w UNUSED;
+    XtPointer	cl UNUSED;
+    XtPointer	cd UNUSED;
 {
     SFstatus = SEL_FILE_CANCEL;
 }
@@ -2275,16 +2259,15 @@ static XtCallbackRec SFcancelSelect[] =
 
 static void SFdismissAction __ARGS((Widget w, XEvent *event, String *params, Cardinal *num_params));
 
-/* ARGSUSED */
     static void
 SFdismissAction(w, event, params, num_params)
-    Widget	w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+    Widget	w UNUSED;
+    XEvent	*event;
+    String	*params UNUSED;
+    Cardinal	*num_params UNUSED;
 {
-    if (event->type == ClientMessage &&
-	    event->xclient.data.l[0] != SFwmDeleteWindow)
+    if (event->type == ClientMessage
+	    && (Atom)event->xclient.data.l[0] != SFwmDeleteWindow)
 	return;
 
     SFstatus = SEL_FILE_CANCEL;
@@ -2703,7 +2686,7 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 SFtextChanged()
 {
 #if defined(FEAT_XFONTSET) && defined(XtNinternational)
-    if (_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
+    if ((unsigned long)_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
     {
 	wchar_t *wcbuf=(wchar_t *)SFtextBuffer;
 
@@ -2749,7 +2732,7 @@ SFgetText()
 #if defined(FEAT_XFONTSET) && defined(XtNinternational)
     char *buf;
 
-    if (_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
+    if ((unsigned long)_XawTextFormat((TextWidget)selFileField) == XawFmtWide)
     {
 	wchar_t *wcbuf;
 	int mbslength;

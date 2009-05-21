@@ -39,6 +39,9 @@
 /* Defined to the size of an int */
 #undef SIZEOF_INT
 
+/* Define when wchar_t is only 2 bytes. */
+#undef SMALL_WCHAR_T
+
 /*
  * If we cannot trust one of the following from the libraries, we use our
  * own safe but probably slower vim_memmove().

@@ -1163,12 +1163,11 @@ win_split_ins(size, flags, newwin, dir)
  * WSP_NEWLOC may be specified in flags to prevent the location list from
  * being copied.
  */
-/*ARGSUSED*/
     static void
 win_init(newp, oldp, flags)
     win_T	*newp;
     win_T	*oldp;
-    int		 flags;
+    int		 flags UNUSED;
 {
     int		i;
 
@@ -1268,11 +1267,10 @@ win_count()
  * Must be called when there is just one window, filling the whole screen
  * (excluding the command line).
  */
-/*ARGSUSED*/
     int
 make_windows(count, vertical)
     int		count;
-    int		vertical;	/* split windows vertically if TRUE */
+    int		vertical UNUSED;  /* split windows vertically if TRUE */
 {
     int		maxcount;
     int		todo;
@@ -2353,11 +2351,10 @@ win_free_all()
  * Remove a window and its frame from the tree of frames.
  * Returns a pointer to the window that got the freed up space.
  */
-/*ARGSUSED*/
     static win_T *
 winframe_remove(win, dirp, tp)
     win_T	*win;
-    int		*dirp;		/* set to 'v' or 'h' for direction if 'ea' */
+    int		*dirp UNUSED;	/* set to 'v' or 'h' for direction if 'ea' */
     tabpage_T	*tp;		/* tab page "win" is in, NULL for current */
 {
     frame_T	*frp, *frp2, *frp3;
@@ -3500,10 +3497,9 @@ tabpage_index(ftp)
  * FAIL.
  * Careful: When OK is returned need to get a new tab page very very soon!
  */
-/*ARGSUSED*/
     static int
 leave_tabpage(new_curbuf)
-    buf_T	*new_curbuf;	    /* what is going to be the new curbuf,
+    buf_T	*new_curbuf UNUSED;    /* what is going to be the new curbuf,
 				       NULL if unknown */
 {
     tabpage_T	*tp = curtab;
@@ -3545,11 +3541,10 @@ leave_tabpage(new_curbuf)
  * Start using tab page "tp".
  * Only to be used after leave_tabpage() or freeing the current tab page.
  */
-/*ARGSUSED*/
     static void
 enter_tabpage(tp, old_curbuf)
     tabpage_T	*tp;
-    buf_T	*old_curbuf;
+    buf_T	*old_curbuf UNUSED;
 {
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
@@ -4157,10 +4152,9 @@ buf_jump_open_tab(buf)
 /*
  * allocate a window structure and link it in the window list
  */
-/*ARGSUSED*/
     static win_T *
 win_alloc(after)
-    win_T	*after;
+    win_T	*after UNUSED;
 {
     win_T	*newwin;
 

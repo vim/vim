@@ -204,12 +204,11 @@ workshop_get_editor_version()
  * Function:
  *	Load a given file into the WorkShop buffer.
  */
-/*ARGSUSED*/
     void
 workshop_load_file(
 	char	*filename,		/* the file to load */
 	int	 line,			/* an optional line number (or 0) */
-	char	*frameid)		/* used for multi-frame support */
+	char	*frameid UNUSED)	/* used for multi-frame support */
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -263,10 +262,9 @@ workshop_goto_line(
     load_window(filename, lineno);
 }
 
-/*ARGSUSED*/
     void
 workshop_front_file(
-	char	*filename)
+	char	*filename UNUSED)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -538,9 +536,8 @@ workshop_adjust_marks(Widget *window, int pos,
  * breakpoints have moved when a program has been recompiled and
  * reloaded into dbx.
  */
-/*ARGSUSED*/
     void
-workshop_moved_marks(char *filename)
+workshop_moved_marks(char *filename UNUSED)
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -575,11 +572,10 @@ workshop_get_font_height()
     return (int)h;
 }
 
-/*ARGSUSED*/
     void
 workshop_footer_message(
-	char		*message,
-	int		 severity)	/* severity is currently unused */
+	char	*message,
+	int	severity UNUSED)	/* severity is currently unused */
 {
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE | WS_TRACE))
@@ -687,15 +683,14 @@ workshop_submenu_end()
  * command. The globals curMenuName and curMenuPriority contain the name and
  * priority of the parent menu tree.
  */
-/*ARGSUSED*/
     void
 workshop_menu_item(
 	char		*label,
 	char		*verb,
-	char		*accelerator,
+	char		*accelerator UNUSED,
 	char		*acceleratorText,
-	char		*name,
-	char		*filepos,
+	char		*name UNUSED,
+	char		*filepos UNUSED,
 	char		*sensitive)
 {
     char		 cbuf[BUFSIZ];
@@ -810,13 +805,12 @@ workshop_toolbar_end()
     workshopInitDone = True;
 }
 
-/*ARGSUSED*/
     void
 workshop_toolbar_button(
 	char	*label,
 	char	*verb,
-	char	*senseVerb,
-	char	*filepos,
+	char	*senseVerb UNUSED,
+	char	*filepos UNUSED,
 	char	*help,
 	char	*sense,
 	char	*file,
@@ -968,7 +962,9 @@ workshop_set_option(
 	    if (strcmp(option, "syntax") == 0)
 		vim_snprintf(cbuf, sizeof(cbuf), "syntax %s", value);
 	    else if (strcmp(option, "savefiles") == 0)
-		; /* XXX - Not yet implemented */
+	    {
+		/* XXX - Not yet implemented */
+	    }
 	    break;
 
 	case 'l':
@@ -1098,10 +1094,9 @@ workshop_hotkeys(
 /*
  * A button in the toolbar has been pushed.
  */
-/*ARGSUSED*/
     int
 workshop_get_positions(
-	void		*clientData,	/* unused */
+	void		*clientData UNUSED,
 	char	       **filename,	/* output data */
 	int		*curLine,	/* output data */
 	int		*curCol,	/* output data */
@@ -1526,9 +1521,8 @@ workshop_test_getselectedtext()
 	return NULL;
 }
 
-/*ARGSUSED*/
     void
-workshop_save_sensitivity(char *filename)
+workshop_save_sensitivity(char *filename UNUSED)
 {
 }
 

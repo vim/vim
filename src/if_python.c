@@ -1096,9 +1096,8 @@ static struct PyMethodDef VimMethods[] = {
 
 /* Vim module - Implementation
  */
-/*ARGSUSED*/
     static PyObject *
-VimCommand(PyObject *self, PyObject *args)
+VimCommand(PyObject *self UNUSED, PyObject *args)
 {
     char *cmd;
     PyObject *result;
@@ -1242,9 +1241,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 }
 #endif
 
-/*ARGSUSED*/
     static PyObject *
-VimEval(PyObject *self, PyObject *args)
+VimEval(PyObject *self UNUSED, PyObject *args)
 {
 #ifdef FEAT_EVAL
     char	*expr;
@@ -1894,9 +1892,8 @@ static PyTypeObject BufListType = {
 /* Buffer list object - Implementation
  */
 
-/*ARGSUSED*/
     static PyInt
-BufListLength(PyObject *self)
+BufListLength(PyObject *self UNUSED)
 {
     buf_T	*b = firstbuf;
     PyInt	n = 0;
@@ -1910,9 +1907,8 @@ BufListLength(PyObject *self)
     return n;
 }
 
-/*ARGSUSED*/
     static PyObject *
-BufListItem(PyObject *self, PyInt n)
+BufListItem(PyObject *self UNUSED, PyInt n)
 {
     buf_T *b;
 
@@ -2210,9 +2206,8 @@ static PyTypeObject WinListType = {
 
 /* Window list object - Implementation
  */
-/*ARGSUSED*/
     static PyInt
-WinListLength(PyObject *self)
+WinListLength(PyObject *self UNUSED)
 {
     win_T	*w = firstwin;
     PyInt	n = 0;
@@ -2226,9 +2221,8 @@ WinListLength(PyObject *self)
     return n;
 }
 
-/*ARGSUSED*/
     static PyObject *
-WinListItem(PyObject *self, PyInt n)
+WinListItem(PyObject *self UNUSED, PyInt n)
 {
     win_T *w;
 
@@ -2274,9 +2268,8 @@ static PyTypeObject CurrentType = {
 
 /* Current items object - Implementation
  */
-/*ARGSUSED*/
     static PyObject *
-CurrentGetattr(PyObject *self, char *name)
+CurrentGetattr(PyObject *self UNUSED, char *name)
 {
     if (strcmp(name, "buffer") == 0)
 	return (PyObject *)BufferNew(curbuf);
@@ -2295,9 +2288,8 @@ CurrentGetattr(PyObject *self, char *name)
     }
 }
 
-/*ARGSUSED*/
     static int
-CurrentSetattr(PyObject *self, char *name, PyObject *value)
+CurrentSetattr(PyObject *self UNUSED, char *name, PyObject *value)
 {
     if (strcmp(name, "line") == 0)
     {
