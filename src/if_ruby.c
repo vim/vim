@@ -492,7 +492,7 @@ static void error_print(int state)
     }
 }
 
-static VALUE vim_message(VALUE self, VALUE str)
+static VALUE vim_message(VALUE self UNUSED, VALUE str)
 {
     char *buff, *p;
 
@@ -505,20 +505,20 @@ static VALUE vim_message(VALUE self, VALUE str)
     return Qnil;
 }
 
-static VALUE vim_set_option(VALUE self, VALUE str)
+static VALUE vim_set_option(VALUE self UNUSED, VALUE str)
 {
     do_set((char_u *)STR2CSTR(str), 0);
     update_screen(NOT_VALID);
     return Qnil;
 }
 
-static VALUE vim_command(VALUE self, VALUE str)
+static VALUE vim_command(VALUE self UNUSED, VALUE str)
 {
     do_cmdline_cmd((char_u *)STR2CSTR(str));
     return Qnil;
 }
 
-static VALUE vim_evaluate(VALUE self, VALUE str)
+static VALUE vim_evaluate(VALUE self UNUSED, VALUE str)
 {
 #ifdef FEAT_EVAL
     char_u *value = eval_to_string((char_u *)STR2CSTR(str), NULL, TRUE);
@@ -580,7 +580,7 @@ static VALUE buffer_s_count()
     return INT2NUM(n);
 }
 
-static VALUE buffer_s_aref(VALUE self, VALUE num)
+static VALUE buffer_s_aref(VALUE self UNUSED, VALUE num)
 {
     buf_T *b;
     int n = NUM2INT(num);
@@ -629,7 +629,9 @@ static VALUE get_buffer_line(buf_T *buf, linenr_T n)
 	return line ? rb_str_new2(line) : Qnil;
     }
     rb_raise(rb_eIndexError, "index %d out of buffer", n);
+#ifndef __GNUC__
     return Qnil; /* For stop warning */
+#endif
 }
 
 static VALUE buffer_aref(VALUE self, VALUE num)
@@ -668,7 +670,9 @@ static VALUE set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
     else
     {
 	rb_raise(rb_eIndexError, "index %d out of buffer", n);
+#ifndef __GNUC__
 	return Qnil; /* For stop warning */
+#endif
     }
     return str;
 }
@@ -789,7 +793,7 @@ static VALUE line_s_current()
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
 
-static VALUE set_current_line(VALUE self, VALUE str)
+static VALUE set_current_line(VALUE self UNUSED, VALUE str)
 {
     return set_buffer_line(curbuf, curwin->w_cursor.lnum, str);
 }
@@ -815,7 +819,7 @@ static VALUE window_s_count()
 #endif
 }
 
-static VALUE window_s_aref(VALUE self, VALUE num)
+static VALUE window_s_aref(VALUE self UNUSED, VALUE num)
 {
     win_T *w;
     int n = NUM2INT(num);
@@ -897,7 +901,7 @@ static VALUE window_set_cursor(VALUE self, VALUE pos)
     return Qnil;
 }
 
-static VALUE f_p(int argc, VALUE *argv, VALUE self)
+static VALUE f_p(int argc, VALUE *argv, VALUE self UNUSED)
 {
     int i;
     VALUE str = rb_str_new("", 0);

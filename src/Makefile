@@ -105,8 +105,8 @@
 # 4. "make test"  {{{1
 #	This is optional.  This will run Vim scripts on a number of test
 #	files, and compare the produced output with the expected output.
-#	If all is well, you will get the "ALL DONE" message in the end.  See
-#	below (search for "/^test").
+#	If all is well, you will get the "ALL DONE" message in the end.  If a
+#	test fails you get "TEST FAILURE".  See below (search for "/^test").
 #
 # 5. "make install"  {{{1
 #	If the new Vim seems to be working OK you can install it and the
@@ -533,6 +533,11 @@ CClink = $(CC)
 #CFLAGS = -g -DDEBUG -Wall -Wshadow -Wmissing-prototypes
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
+# Use this with GCC to check for mistakes, unused arguments, etc.
+#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code
+#PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
+#MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code
+
 # EFENCE - Electric-Fence malloc debugging: catches memory accesses beyond
 # allocated memory (and makes every malloc()/free() very slow).
 # Electric Fence is free (search ftp sites).
@@ -551,12 +556,13 @@ CClink = $(CC)
 # }}}
 
 # LINT - for running lint
-#  For standard lint
-#LINT = lint
-#LINT_OPTIONS = -beprxzF
-#  For splint  (see cleanlint.vim for filtering the output)
-LINT = splint
-LINT_OPTIONS = +unixlib -weak -macrovarprefixexclude -showfunc -linelen 9999
+#  For standard Unix lint
+LINT = lint
+LINT_OPTIONS = -beprxzF
+#  For splint
+#  It doesn't work well, crashes on include files and non-ascii characters.
+#LINT = splint
+#LINT_OPTIONS = +unixlib -weak -macrovarprefixexclude -showfunc -linelen 9999
 
 # PROFILING - Uncomment the next two lines to do profiling with gcc and gprof.
 # Might not work with GUI or Perl.
@@ -1743,7 +1749,8 @@ types.vim: $(TAGS_SRC) $(TAGS_INCL)
 # messages.  Don't worry about that.
 # If there is a real error, there will be a difference between "test.out" and
 # a "test99.ok" file.
-# If everything is alright, the final message will be "ALL DONE".
+# If everything is alright, the final message will be "ALL DONE".  If not you
+# get "TEST FAILURE".
 #
 test check:
 	$(MAKE) -f Makefile $(VIMTARGET)
@@ -2427,7 +2434,7 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
 objects/if_mzsch.o: if_mzsch.c
-	$(CCC) -o $@ if_mzsch.c
+	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
 
 objects/if_perl.o: auto/if_perl.c
 	$(CCC) -o $@ auto/if_perl.c
@@ -2436,7 +2443,7 @@ objects/if_perlsfio.o: if_perlsfio.c
 	$(CCC) -o $@ if_perlsfio.c
 
 objects/if_python.o: if_python.c
-	$(CCC) -o $@ if_python.c
+	$(CCC) -o $@ $(PYTHON_CFLAGS_EXTRA) if_python.c
 
 objects/if_ruby.o: if_ruby.c
 	$(CCC) -o $@ if_ruby.c
