@@ -161,7 +161,7 @@ typedef int HANDLE;
 # endif
 
 /*
- * Declare HANDLE for perl.dll and function pointers.
+ * Declare HANDLE for tcl.dll and function pointers.
  */
 static HANDLE hTclLib = NULL;
 Tcl_Interp* (*dll_Tcl_CreateInterp)();
@@ -182,7 +182,7 @@ static struct {
  * Make all runtime-links of tcl.
  *
  * 1. Get module handle using LoadLibraryEx.
- * 2. Get pointer to perl function by GetProcAddress.
+ * 2. Get pointer to tcl function by GetProcAddress.
  * 3. Repeat 2, until get all functions will be used.
  *
  * Parameter 'libname' provides name of DLL.
@@ -1670,23 +1670,31 @@ channel_gethandle(instance, direction, handleptr)
 
 static Tcl_ChannelType channel_type =
 {
-    "vimmessage",
-    NULL,   /* blockmode */
-    channel_close,
-    channel_input,
-    channel_output,
-    NULL,   /* seek */
-    NULL,   /* set option */
-    NULL,   /* get option */
-    channel_watch,
-    channel_gethandle,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL
+    "vimmessage",	/* typeName */
+    NULL,		/* version */
+    channel_close,	/* closeProc */
+    channel_input,	/* inputProc */
+    channel_output,	/* outputProc */
+    NULL,		/* seekProc */
+    NULL,		/* setOptionProc */
+    NULL,		/* getOptionProc */
+    channel_watch,	/* watchProc */
+    channel_gethandle,	/* getHandleProc */
+    NULL,		/* close2Proc */
+    NULL,		/* blockModeProc */
+#ifdef TCL_CHANNEL_VERSION_2
+    NULL,		/* flushProc */
+    NULL,		/* handlerProc */
+#endif
+#ifdef TCL_CHANNEL_VERSION_3
+    NULL,		/* wideSeekProc */
+#endif
+#ifdef TCL_CHANNEL_VERSION_4
+    NULL,		/* threadActionProc */
+#endif
+#ifdef TCL_CHANNEL_VERSION_5
+    NULL		/* truncateProc */
+#endif
 };
 
 /**********************************
