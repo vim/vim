@@ -129,8 +129,11 @@ static hashtab_T	compat_hashtab;
 /*
  * When recursively copying lists and dicts we need to remember which ones we
  * have done to avoid endless recursiveness.  This unique ID is used for that.
+ * The last bit is used for previous_funccal, ignored when comparing.
  */
 static int current_copyID = 0;
+#define COPYID_INC 2
+#define COPYID_MASK (~0x1)
 
 /*
  * Array to hold the hashtab with variables local to each sourced script.
@@ -439,6 +442,7 @@ static list_T *list_copy __ARGS((list_T *orig, int deep, int copyID));
 static void list_remove __ARGS((list_T *l, listitem_T *item, listitem_T *item2));
 static char_u *list2string __ARGS((typval_T *tv, int copyID));
 static int list_join __ARGS((garray_T *gap, list_T *l, char_u *sep, int echo, int copyID));
+static int free_unref_items __ARGS((int copyID));
 static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
@@ -6494,14 +6498,13 @@ list_join(gap, l, sep, echo, copyID)
     int
 garbage_collect()
 {
-    dict_T	*dd;
-    list_T	*ll;
-    int		copyID = ++current_copyID;
+    int		copyID;
     buf_T	*buf;
     win_T	*wp;
     int		i;
     funccall_T	*fc, **pfc;
-    int		did_free = FALSE;
+    int		did_free;
+    int		did_free_funccal = FALSE;
 #ifdef FEAT_WINDOWS
     tabpage_T	*tp;
 #endif
@@ -6511,10 +6514,25 @@ garbage_collect()
     may_garbage_collect = FALSE;
     garbage_collect_at_exit = FALSE;
 
+    /* We advance by two because we add one for items referenced through
+     * previous_funccal. */
+    current_copyID += COPYID_INC;
+    copyID = current_copyID;
+
     /*
      * 1. Go through all accessible variables and mark all lists and dicts
      *    with copyID.
      */
+
+    /* Don't free variables in the previous_funccal list unless they are only
+     * referenced through previous_funccal.  This must be first, because if
+     * the item is referenced elsewhere it must not be freed. */
+    for (fc = previous_funccal; fc != NULL; fc = fc->caller)
+    {
+	set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1);
+	set_ref_in_ht(&fc->l_avars.dv_hashtab, copyID + 1);
+    }
+
     /* script-local variables */
     for (i = 1; i <= ga_scripts.ga_len; ++i)
 	set_ref_in_ht(&SCRIPT_VARS(i), copyID);
@@ -6546,11 +6564,47 @@ garbage_collect()
     /* v: vars */
     set_ref_in_ht(&vimvarht, copyID);
 
+    /* Free lists and dictionaries that are not referenced. */
+    did_free = free_unref_items(copyID);
+
+    /* check if any funccal can be freed now */
+    for (pfc = &previous_funccal; *pfc != NULL; )
+    {
+	if (can_free_funccal(*pfc, copyID))
+	{
+	    fc = *pfc;
+	    *pfc = fc->caller;
+	    free_funccal(fc, TRUE);
+	    did_free = TRUE;
+	    did_free_funccal = TRUE;
+	}
+	else
+	    pfc = &(*pfc)->caller;
+    }
+    if (did_free_funccal)
+	/* When a funccal was freed some more items might be garbage
+	 * collected, so run again. */
+	(void)garbage_collect();
+
+    return did_free;
+}
+
+/*
+ * Free lists and dictionaries that are no longer referenced.
+ */
+    static int
+free_unref_items(copyID)
+    int copyID;
+{
+    dict_T	*dd;
+    list_T	*ll;
+    int		did_free = FALSE;
+
     /*
-     * 2. Go through the list of dicts and free items without the copyID.
+     * Go through the list of dicts and free items without the copyID.
      */
     for (dd = first_dict; dd != NULL; )
-	if (dd->dv_copyID != copyID)
+	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
 	    /* Free the Dictionary and ordinary items it contains, but don't
 	     * recurse into Lists and Dictionaries, they will be in the list
@@ -6565,12 +6619,13 @@ garbage_collect()
 	    dd = dd->dv_used_next;
 
     /*
-     * 3. Go through the list of lists and free items without the copyID.
-     *    But don't free a list that has a watcher (used in a for loop), these
-     *    are not referenced anywhere.
+     * Go through the list of lists and free items without the copyID.
+     * But don't free a list that has a watcher (used in a for loop), these
+     * are not referenced anywhere.
      */
     for (ll = first_list; ll != NULL; )
-	if (ll->lv_copyID != copyID && ll->lv_watch == NULL)
+	if ((ll->lv_copyID & COPYID_MASK) != (copyID & COPYID_MASK)
+						      && ll->lv_watch == NULL)
 	{
 	    /* Free the List and ordinary items it contains, but don't recurse
 	     * into Lists and Dictionaries, they will be in the list of dicts
@@ -6583,20 +6638,6 @@ garbage_collect()
 	}
 	else
 	    ll = ll->lv_used_next;
-
-    /* check if any funccal can be freed now */
-    for (pfc = &previous_funccal; *pfc != NULL; )
-    {
-	if (can_free_funccal(*pfc, copyID))
-	{
-	    fc = *pfc;
-	    *pfc = fc->caller;
-	    free_funccal(fc, TRUE);
-	    did_free = TRUE;
-	}
-	else
-	    pfc = &(*pfc)->caller;
-    }
 
     return did_free;
 }
@@ -18842,6 +18883,7 @@ init_var_dict(dict, dict_var)
 {
     hash_init(&dict->dv_hashtab);
     dict->dv_refcount = DO_NOT_FREE_CNT;
+    dict->dv_copyID = 0;
     dict_var->di_tv.vval.v_dict = dict;
     dict_var->di_tv.v_type = VAR_DICT;
     dict_var->di_tv.v_lock = VAR_FIXED;
@@ -21294,8 +21336,8 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
     current_funccal = fc->caller;
     --depth;
 
-    /* if the a:000 list and the a: dict are not referenced we can free the
-     * funccall_T and what's in it. */
+    /* If the a:000 list and the l: and a: dicts are not referenced we can
+     * free the funccall_T and what's in it. */
     if (fc->l_varlist.lv_refcount == DO_NOT_FREE_CNT
 	    && fc->l_vars.dv_refcount == DO_NOT_FREE_CNT
 	    && fc->l_avars.dv_refcount == DO_NOT_FREE_CNT)
@@ -21334,7 +21376,7 @@ call_user_func(fp, argcount, argvars, rettv, firstline, lastline, selfdict)
 
 /*
  * Return TRUE if items in "fc" do not have "copyID".  That means they are not
- * referenced from anywhere.
+ * referenced from anywhere that is in use.
  */
     static int
 can_free_funccal(fc, copyID)
