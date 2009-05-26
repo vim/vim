@@ -701,6 +701,8 @@ PERL_SRC
 shrpenv
 vi_cv_perllib
 vi_cv_path_perl
+MZSCHEME_MZC
+MZSCHEME_EXTRA
 MZSCHEME_CFLAGS
 MZSCHEME_LIBS
 MZSCHEME_PRO
@@ -4641,8 +4643,8 @@ $as_echo_n "checking PLTHOME environment var... " >&6; }
 $as_echo "\"$PLTHOME\"" >&6; }
 	vi_cv_path_mzscheme_pfx="$PLTHOME"
     else
-	{ $as_echo "$as_me:$LINENO: result: \"not set\"" >&5
-$as_echo "\"not set\"" >&6; }
+	{ $as_echo "$as_me:$LINENO: result: not set" >&5
+$as_echo "not set" >&6; }
 		# Extract the first word of "mzscheme", so it can be a program name with args.
 set dummy mzscheme; ac_word=$2
 { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
@@ -4697,16 +4699,16 @@ $as_echo_n "checking MzScheme install prefix... " >&6; }
 if test "${vi_cv_path_mzscheme_pfx+set}" = set; then
   $as_echo_n "(cached) " >&6
 else
-   vi_cv_path_mzscheme_pfx=`
-	    ${vi_cv_path_mzscheme} -evm \
-	    "(display (simplify-path		\
+  	    	    echo "(display (simplify-path		\
 	       (build-path (call-with-values	\
 		(lambda () (split-path (find-system-path (quote exec-file)))) \
-		(lambda (base name must-be-dir?) base)) (quote up))))"`
+		(lambda (base name must-be-dir?) base)) (quote up))))" > mzdirs.scm
+	    	     vi_cv_path_mzscheme_pfx=`${vi_cv_path_mzscheme} -r mzdirs.scm | \
+		sed -e 's+/$++'`
 fi
 { $as_echo "$as_me:$LINENO: result: $vi_cv_path_mzscheme_pfx" >&5
 $as_echo "$vi_cv_path_mzscheme_pfx" >&6; }
-	    	    vi_cv_path_mzscheme_pfx=`echo "$vi_cv_path_mzscheme_pfx" | sed 's+/$++'`
+	    rm -f mzdirs.scm
 	fi
     fi
   fi
@@ -4716,21 +4718,32 @@ $as_echo "$vi_cv_path_mzscheme_pfx" >&6; }
     { $as_echo "$as_me:$LINENO: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include" >&5
 $as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include... " >&6; }
     if test -f $vi_cv_path_mzscheme_pfx/include/scheme.h; then
-      { $as_echo "$as_me:$LINENO: result: \"yes\"" >&5
-$as_echo "\"yes\"" >&6; }
+      SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include
+      { $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
     else
-      { $as_echo "$as_me:$LINENO: result: \"no\"" >&5
-$as_echo "\"no\"" >&6; }
-      { $as_echo "$as_me:$LINENO: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/plt/include" >&5
-$as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/plt/include... " >&6; }
+      { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+      { $as_echo "$as_me:$LINENO: checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt" >&5
+$as_echo_n "checking if scheme.h can be found in $vi_cv_path_mzscheme_pfx/include/plt... " >&6; }
       if test -f $vi_cv_path_mzscheme_pfx/include/plt/scheme.h; then
-	{ $as_echo "$as_me:$LINENO: result: \"yes\"" >&5
-$as_echo "\"yes\"" >&6; }
-	SCHEME_INC=/plt
+	{ $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
+	SCHEME_INC=${vi_cv_path_mzscheme_pfx}/include/plt
       else
-	{ $as_echo "$as_me:$LINENO: result: \"no\"" >&5
-$as_echo "\"no\"" >&6; }
-	vi_cv_path_mzscheme_pfx=
+	{ $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+	{ $as_echo "$as_me:$LINENO: checking if scheme.h can be found in /usr/include/plt/" >&5
+$as_echo_n "checking if scheme.h can be found in /usr/include/plt/... " >&6; }
+	if test -f /usr/include/plt/scheme.h; then
+	  { $as_echo "$as_me:$LINENO: result: yes" >&5
+$as_echo "yes" >&6; }
+	  SCHEME_INC=/usr/include/plt
+	else
+	  { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+	  vi_cv_path_mzscheme_pfx=
+	fi
       fi
     fi
   fi
@@ -4738,21 +4751,34 @@ $as_echo "\"no\"" >&6; }
   if test "X$vi_cv_path_mzscheme_pfx" != "X"; then
     if test "x$MACOSX" = "xyes"; then
       MZSCHEME_LIBS="-framework PLT_MzScheme"
+    elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"; then
+      MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.a"
+      MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
     elif test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"; then
       MZSCHEME_LIBS="${vi_cv_path_mzscheme_pfx}/lib/libmzscheme.a ${vi_cv_path_mzscheme_pfx}/lib/libmzgc.a"
     else
-      MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
+            if test -f "${vi_cv_path_mzscheme_pfx}/lib/libmzscheme3m.so"; then
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme3m"
+	MZSCHEME_CFLAGS="-DMZ_PRECISE_GC"
+      else
+        MZSCHEME_LIBS="-L${vi_cv_path_mzscheme_pfx}/lib -lmzscheme -lmzgc"
+      fi
       if test "$GCC" = yes; then
-			MZSCHEME_LIBS="$MZSCHEME_LIBS -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
+			MZSCHEME_LIBS="${MZSCHEME_LIBS} -Wl,-rpath -Wl,${vi_cv_path_mzscheme_pfx}/lib"
       elif test "`(uname) 2>/dev/null`" = SunOS &&
 			       uname -r | grep '^5' >/dev/null; then
-	MZSCHEME_LIBS="$MZSCHEME_LIBS -R ${vi_cv_path_mzscheme_pfx}/lib"
+	MZSCHEME_LIBS="${MZSCHEME_LIBS} -R ${vi_cv_path_mzscheme_pfx}/lib"
       fi
     fi
     if test -d $vi_cv_path_mzscheme_pfx/lib/plt/collects; then
       SCHEME_COLLECTS=lib/plt/
     fi
-    MZSCHEME_CFLAGS="-I${vi_cv_path_mzscheme_pfx}/include${SCHEME_INC}   \
+    if test -f "${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects/scheme/base.ss" ; then
+            MZSCHEME_EXTRA="mzscheme_base.c"
+      MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -DINCLUDE_MZSCHEME_BASE"
+      MZSCHEME_MZC="${vi_cv_path_mzscheme_pfx}/bin/mzc"
+    fi
+    MZSCHEME_CFLAGS="${MZSCHEME_CFLAGS} -I${SCHEME_INC} \
       -DMZSCHEME_COLLECTS='\"${vi_cv_path_mzscheme_pfx}/${SCHEME_COLLECTS}collects\"'"
     MZSCHEME_SRC="if_mzsch.c"
     MZSCHEME_OBJ="objects/if_mzsch.o"
@@ -4762,6 +4788,8 @@ $as_echo "\"no\"" >&6; }
 _ACEOF
 
   fi
+
+
 
 
 

@@ -11,6 +11,7 @@
 
 /* #ifdef needed for "make depend" */
 #ifdef FEAT_MZSCHEME
+# include <schvers.h>
 # include <scheme.h>
 #endif
 
@@ -44,6 +45,33 @@
 # define SCHEME_BYTE_STRLEN_VAL SCHEME_STRLEN_VAL
 # define SCHEME_BYTE_STR_VAL SCHEME_STR_VAL
 # define scheme_byte_string_to_char_string(obj) (obj)
+#endif
+
+/* Precise GC macros */
+#ifndef MZ_GC_DECL_REG
+# define MZ_GC_DECL_REG(size)            /* empty */
+#endif
+#ifndef MZ_GC_VAR_IN_REG
+# define MZ_GC_VAR_IN_REG(x, v)          /* empty */
+#endif
+#ifndef MZ_GC_ARRAY_VAR_IN_REG
+# define MZ_GC_ARRAY_VAR_IN_REG(x, v, l) /* empty */
+#endif
+#ifndef MZ_GC_REG
+# define MZ_GC_REG()                     /* empty */
+#endif
+#ifndef MZ_GC_UNREG
+# define MZ_GC_UNREG()                   /* empty */
+#endif
+
+#ifdef MZSCHEME_FORCE_GC
+/*
+ * force garbage collection to check all references are registered
+ * seg faults will indicate not registered refs
+ */
+# define MZ_GC_CHECK() scheme_collect_garbage();
+#else
+# define MZ_GC_CHECK()			/* empty */
 #endif
 
 #endif /* _IF_MZSCH_H_ */

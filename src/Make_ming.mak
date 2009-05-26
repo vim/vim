@@ -115,8 +115,21 @@ ifndef MZSCHEME_VER
 MZSCHEME_VER=205_000
 endif
 
+ifndef MZSCHEME_PRECISE_GC
+MZSCHEME_PRECISE_GC=no
+endif
+
+# for version 4.x we need to generate byte-code for Scheme base
+ifndef MZSCHEME_GENERATE_BASE
+MZSCHEME_GENERATE_BASE=no
+endif
+
 ifeq (no,$(DYNAMIC_MZSCHEME))
+ifeq (yes,$(MZSCHEME_PRECISE_GC))
+MZSCHEME_LIB=-lmzsch$(MZSCHEME_VER)
+else
 MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+endif
 # the modern MinGW can dynamically link to dlls directly.
 # point MZSCHEME_DLLS to where you put libmzschXXXXXXX.dll and libgcXXXXXXX.dll
 ifndef MZSCHEME_DLLS
@@ -410,6 +423,13 @@ endif
 ifdef MZSCHEME
 OBJ += $(OUTDIR)/if_mzsch.o
 MZSCHEME_INCL = if_mzsch.h
+ifeq (yes,$(MZSCHEME_GENERATE_BASE))
+CFLAGS += -DINCLUDE_MZSCHEME_BASE
+MZ_EXTRA_DEP += mzscheme_base.c
+endif
+ifeq (yes,$(MZSCHEME_PRECISE_GC))
+CFLAGS += -DMZ_PRECISE_GC
+endif
 endif
 ifdef PYTHON
 OBJ += $(OUTDIR)/if_python.o
@@ -587,6 +607,12 @@ if_perl.c: if_perl.xs typemap
 
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_INCL) $(NBDEBUG_SRC)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
+
+$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
+	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+
+mzscheme_base.c:
+	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))

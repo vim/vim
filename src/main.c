@@ -935,8 +935,14 @@ main
 
     /*
      * Call the main command loop.  This never returns.
+     * For embedded MzScheme the main_loop will be called by Scheme
+     * for proper stack tracking
      */
+#ifndef FEAT_MZSCHEME
     main_loop(FALSE, FALSE);
+#else
+    mzscheme_main();
+#endif
 
     return 0;
 }

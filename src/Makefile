@@ -536,7 +536,7 @@ CClink = $(CC)
 # Use this with GCC to check for mistakes, unused arguments, etc.
 #CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
-#MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code
+#MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
 
 # EFENCE - Electric-Fence malloc debugging: catches memory accesses beyond
 # allocated memory (and makes every malloc()/free() very slow).
@@ -2200,6 +2200,7 @@ clean celan: testclean
 	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c
 	-rm -f conftest* *~ auto/link.sed
 	-rm -rf $(APPDIR)
+	-rm -rf mzscheme_base.c
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -2433,8 +2434,11 @@ objects/if_cscope.o: if_cscope.c
 objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
-objects/if_mzsch.o: if_mzsch.c
+objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c
+ 
+mzscheme_base.c:
+	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
 objects/if_perl.o: auto/if_perl.c
 	$(CCC) -o $@ auto/if_perl.c

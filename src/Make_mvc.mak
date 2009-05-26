@@ -34,6 +34,7 @@
 #	  MZSCHEME=[Path to MzScheme directory]
 #	  DYNAMIC_MZSCHEME=yes (to load the MzScheme DLLs dynamically)
 #	  MZSCHEME_VER=[version, 205_000, ...]
+#	  MZSCHEME_DEBUG=no
 #
 #	Perl interface:
 #	  PERL=[Path to Perl directory]
@@ -621,14 +622,36 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 MZSCHEME_VER = 205_000
 !endif
 CFLAGS = $(CFLAGS) -DFEAT_MZSCHEME -I $(MZSCHEME)\include
+!if EXIST("$(MZSCHEME)\collects\scheme\base.ss")
+# for MzScheme 4.x we need to include byte code for basic Scheme stuff
+MZSCHEME_EXTRA_DEP = mzscheme_base.c
+CFLAGS = $(CFLAGS) -DINCLUDE_MZSCHEME_BASE
+!endif
+!if EXIST("$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib") \
+	&& !EXIST("$(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib")
+!message Building with Precise GC
+MZSCHEME_PRECISE_GC = yes
+CFLAGS = $(CFLAGS) -DMZ_PRECISE_GC
+!endif
 !if "$(DYNAMIC_MZSCHEME)" == "yes"
+!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+!error MzScheme with Precise GC cannot be loaded dynamically
+!endif
 !message MzScheme DLLs will be loaded dynamically
 CFLAGS = $(CFLAGS) -DDYNAMIC_MZSCHEME \
 		-DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" \
 		-DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
 !else
+!if "$(MZSCHEME_DEBUG)" == "yes"
+CFLAGS = $(CFLAGS) -DMZSCHEME_FORCE_GC
+!endif
+!if "$(MZSCHEME_PRECISE_GC)" == "yes"
+# Precise GC does not use separate dll
+MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
+!else
 MZSCHEME_LIB = $(MZSCHEME)\lib\msvc\libmzgc$(MZSCHEME_VER).lib \
 		$(MZSCHEME)\lib\msvc\libmzsch$(MZSCHEME_VER).lib
+!endif
 !endif
 MZSCHEME_OBJ = $(OUTDIR)\if_mzsch.obj
 !endif
@@ -930,9 +953,11 @@ $(OUTDIR)/if_perl.obj: $(OUTDIR) if_perl.c  $(INCL)
 $(OUTDIR)/if_perlsfio.obj: $(OUTDIR) if_perlsfio.c  $(INCL)
 	$(CC) $(CFLAGS) $(PERL_INC) if_perlsfio.c
 
-$(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c  $(INCL)
+$(OUTDIR)/if_mzsch.obj: $(OUTDIR) if_mzsch.c  $(INCL) $(MZSCHEME_EXTRA_DEP)
 	$(CC) $(CFLAGS) if_mzsch.c \
 		-DMZSCHEME_COLLECTS=\"$(MZSCHEME:\=\\)\\collects\"
+mzscheme_base.c:
+	$(MZSCHEME)\mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c

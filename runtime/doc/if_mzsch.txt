@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.2.  Last change: 2008 Jun 28
+*if_mzsch.txt*  For Vim version 7.2.  Last change: 2009 May 26
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -42,10 +42,6 @@ Note: On FreeBSD you should use the "drscheme" port.
 
 							*:mzfile* *:mzf*
 :[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
-			All statements are executed in the namespace of the
-			buffer that was current during :mzfile start.
-			If you want to access other namespaces, use
-			'parameterize'.
 
 All of these commands do essentially the same thing - they execute a piece of
 MzScheme code, with the "current range" set to the given line
@@ -54,8 +50,6 @@ range.
 In the case of :mzscheme, the code to execute is in the command-line.
 In the case of :mzfile, the code to execute is the contents of the given file.
 
-Each buffer has its own MzScheme namespace. Global namespace is bound to
-the "global-namespace" value from the 'vimext' module.
 MzScheme interface defines exception exn:vim, derived from exn.
 It is raised for various Vim errors.
 
@@ -79,40 +73,8 @@ To avoid clashes with MzScheme, consider using prefix when requiring module,
 e.g.: >
 	:mzscheme (require (prefix vim- vimext))
 <
-All the examples below assume this naming scheme.  Note that you need to do
-this again for every buffer.
+All the examples below assume this naming scheme. 
 
-The auto-instantiation can be achieved with autocommands, e.g. you can put
-something like this in your .vimrc (EOFs should not have indentation): >
-    function s:MzRequire()
-	if has("mzscheme")
-	    :mz << EOF
-	    (require (prefix vim- vimext))
-	    (let ((buf (vim-get-buff-by-name (vim-eval "expand(\"<afile>\")"))))
-	      (when (and buf (not (eq? buf (vim-curr-buff))))
-		(parameterize ((current-namespace (vim-get-buff-namespace buf)))
-		  (namespace-attach-module vim-global-namespace 'vimext)
-		  (namespace-require '(prefix vim vimext)))))
-    EOF
-	endif
-    endfunction
-
-    function s:MzStartup()
-	if has("mzscheme")
-	    au BufNew,BufNewFile,BufAdd,BufReadPre * :call s:MzRequire()
-	    :mz << EOF
-	    (current-library-collection-paths
-		(cons
-		    (build-path (find-system-path 'addon-dir) (version) "collects")
-		    (current-library-collection-paths)))
-    EOF
-	endif
-    endfunction
-
-    call s:MzStartup()
-<
-
-The global namespace just instantiated this module with the prefix "vimext:".
 							*mzscheme-sandbox*
 When executed in the |sandbox|, access to some filesystem and Vim interface
 procedures is restricted.
@@ -121,15 +83,20 @@ procedures is restricted.
 2. Examples						*mzscheme-examples*
 >
 	:mzscheme (display "Hello")
+	:mz (display (string-append "Using MzScheme version " (version)))
+	:mzscheme (require (prefix vim- vimext)) ; for MzScheme < 4.x
+	:mzscheme (require (prefix-in vim- 'vimext)) ; MzScheme 4.x
 	:mzscheme (vim-set-buff-line 10 "This is line #10")
 <
 Inline script usage: >
 	function! <SID>SetFirstLine()
 	    :mz << EOF
 	    (display "!!!")
+	    (require (prefix vim- vimext))
+	    ; for newer versions (require (prefix-in vim- 'vimext))
 	    (vim-set-buff-line 1 "This is line #1")
 	    (vim-beep)
-	    EOF
+	EOF
 	endfunction
 
 	nmap <F9> :call <SID>SetFirstLine() <CR>
@@ -137,17 +104,33 @@ Inline script usage: >
 File execution: >
 	:mzfile supascript.scm
 <
-Accessing the current buffer namespace from an MzScheme program running in
-another buffer within |:mzfile|-executed script : >
-	; Move to the window below
-	(vim-command "wincmd j")
-	; execute in the context of buffer, to which window belongs
-	; assume that buffer has 'textstring' defined
-	(parameterize ((current-namespace
-			(vim-get-buff-namespace (vim-curr-buff))))
-	 (eval '(vim-set-buff-line 1 textstring)))
+Vim exception handling: >
+	:mz << EOF
+	(require (prefix vim- vimext))
+	; for newer versions (require (prefix-in vim- 'vimext))
+	(with-handlers
+	  ([exn:vim? (lambda (e) (display (exn-message e)))])
+	  (vim-eval "nonsense-string"))
+	EOF
 <
+Auto-instantiation of vimext module (can be placed in your |vimrc|): >
+    function! MzRequire()
+	:redir => l:mzversion
+	:mz (version)
+	:redir END
+	if strpart(l:mzversion, 1, 1) < "4"
+	    " MzScheme versions < 4.x:
+	    :mz (require (prefix vim- vimext))
+	else
+	    " newer versions:
+	    :mz (require (prefix-in vim- 'vimext))
+	endif
+    endfunction
 
+    if has("mzscheme")
+	silent call MzRequire()
+    endif
+<
 ==============================================================================
 3. Threads						*mzscheme-threads*
 
@@ -168,11 +151,11 @@ interface.
 Common
 ------
     (command {command-string})	    Perform the vim ":Ex" style command.
-    (eval {expr-string})	    Evaluate the vim expression to a string.
-				    A |List| is turned into a string by
-				    joining the items and inserting line
-				    breaks.
-				    NOTE clashes with MzScheme eval
+    (eval {expr-string})	    Evaluate the vim expression into
+				    respective MzScheme object: |Lists| are
+				    represented as Scheme lists,
+				    |Dictionaries| as hash tables.
+				    NOTE the name clashes with MzScheme eval
     (range-start)		    Start/End of the range passed with
     (range-end)			    the Scheme command.
     (beep)			    beep
@@ -186,7 +169,6 @@ Common
 				    be set. The symbol 'global can be passed
 				    as {buffer-or-window}. Then |:setglobal|
 				    will be used.
-    global-namespace		    The MzScheme main namespace.
 
 Buffers							 *mzscheme-buffer*
 -------
@@ -228,7 +210,6 @@ Buffers							 *mzscheme-buffer*
 					if there is no such buffer.
     (get-buff-by-num {buffernum})   Get a buffer by its number (return #f if
 				    there is no buffer with this number).
-    (get-buff-namespace [buffer])   Get buffer namespace.
 
 Windows							    *mzscheme-window*
 ------
@@ -250,7 +231,7 @@ Windows							    *mzscheme-window*
     (set-cursor (line . col) [window])  Set cursor position.
 
 ==============================================================================
-5. Dynamic loading					*mzscheme-dynamic*
+5. Dynamic loading				    *mzscheme-dynamic* *E812*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.
