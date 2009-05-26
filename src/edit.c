@@ -6420,13 +6420,17 @@ stop_insert(end_insert_pos, esc)
 
 	/* If we just did an auto-indent, remove the white space from the end
 	 * of the line, and put the cursor back.
-	 * Do this when ESC was used or moving the cursor up/down. */
+	 * Do this when ESC was used or moving the cursor up/down.
+	 * Check for the old position still being valid, just in case the text
+	 * got changed unexpectedly. */
 	if (did_ai && (esc || (vim_strchr(p_cpo, CPO_INDENT) == NULL
-			&& curwin->w_cursor.lnum != end_insert_pos->lnum)))
+			&& curwin->w_cursor.lnum != end_insert_pos->lnum))
+		&& end_insert_pos->lnum <= curbuf->b_ml.ml_line_count)
 	{
 	    pos_T	tpos = curwin->w_cursor;
 
 	    curwin->w_cursor = *end_insert_pos;
+	    check_cursor_col();  /* make sure it is not past the line */
 	    for (;;)
 	    {
 		if (gchar_cursor() == NUL && curwin->w_cursor.col > 0)
@@ -6434,7 +6438,8 @@ stop_insert(end_insert_pos, esc)
 		cc = gchar_cursor();
 		if (!vim_iswhite(cc))
 		    break;
-		(void)del_char(TRUE);
+		if (del_char(TRUE) == FAIL)
+		    break;  /* should not happen */
 	    }
 	    if (curwin->w_cursor.lnum != tpos.lnum)
 		curwin->w_cursor = tpos;
