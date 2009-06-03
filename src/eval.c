@@ -6526,7 +6526,7 @@ garbage_collect()
 
     /* Don't free variables in the previous_funccal list unless they are only
      * referenced through previous_funccal.  This must be first, because if
-     * the item is referenced elsewhere it must not be freed. */
+     * the item is referenced elsewhere the funccal must not be freed. */
     for (fc = previous_funccal; fc != NULL; fc = fc->caller)
     {
 	set_ref_in_ht(&fc->l_vars.dv_hashtab, copyID + 1);
@@ -6564,10 +6564,14 @@ garbage_collect()
     /* v: vars */
     set_ref_in_ht(&vimvarht, copyID);
 
-    /* Free lists and dictionaries that are not referenced. */
+    /*
+     * 2. Free lists and dictionaries that are not referenced.
+     */
     did_free = free_unref_items(copyID);
 
-    /* check if any funccal can be freed now */
+    /*
+     * 3. Check if any funccal can be freed now.
+     */
     for (pfc = &previous_funccal; *pfc != NULL; )
     {
 	if (can_free_funccal(*pfc, copyID))
@@ -9286,7 +9290,10 @@ f_deepcopy(argvars, rettv)
     if (noref < 0 || noref > 1)
 	EMSG(_(e_invarg));
     else
-	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? ++current_copyID : 0);
+    {
+	current_copyID += COPYID_INC;
+	item_copy(&argvars[0], rettv, TRUE, noref == 0 ? current_copyID : 0);
+    }
 }
 
 /*
@@ -18966,7 +18973,8 @@ list_one_var(v, prefix, first)
     char_u	*s;
     char_u	numbuf[NUMBUFLEN];
 
-    s = echo_string(&v->di_tv, &tofree, numbuf, ++current_copyID);
+    current_copyID += COPYID_INC;
+    s = echo_string(&v->di_tv, &tofree, numbuf, current_copyID);
     list_one_var_a(prefix, v->di_key, v->di_tv.v_type,
 					 s == NULL ? (char_u *)"" : s, first);
     vim_free(tofree);
@@ -19401,7 +19409,8 @@ ex_echo(eap)
 	    }
 	    else if (eap->cmdidx == CMD_echo)
 		msg_puts_attr((char_u *)" ", echo_attr);
-	    p = echo_string(&rettv, &tofree, numbuf, ++current_copyID);
+	    current_copyID += COPYID_INC;
+	    p = echo_string(&rettv, &tofree, numbuf, current_copyID);
 	    if (p != NULL)
 		for ( ; *p != NUL && !got_int; ++p)
 		{
