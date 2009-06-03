@@ -412,6 +412,7 @@ static const char *role_argument = NULL;
 #endif
 #if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
 static const char *restart_command = NULL;
+static       char *abs_restart_command = NULL;
 #endif
 static int found_iconic_arg = FALSE;
 
@@ -449,8 +450,10 @@ gui_mch_prepare(int *argc, char **argv)
 	char_u buf[MAXPATHL];
 
 	if (mch_FullName((char_u *)argv[0], buf, (int)sizeof(buf), TRUE) == OK)
-	    /* Tiny leak; doesn't matter, and usually we don't even get here */
-	    restart_command = (char *)vim_strsave(buf);
+	{
+	    abs_restart_command = (char *)vim_strsave(buf);
+	    restart_command = abs_restart_command;
+	}
     }
 #endif
 
@@ -611,6 +614,9 @@ gui_mch_prepare(int *argc, char **argv)
 gui_mch_free_all()
 {
     vim_free(gui_argv);
+#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+    vim_free(abs_restart_command);
+#endif
 }
 #endif
 
