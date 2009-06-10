@@ -960,7 +960,7 @@ EXTERN struct buffheader stuffbuff	/* stuff buffer */
 		    ;
 EXTERN typebuf_T typebuf		/* typeahead buffer */
 #ifdef DO_INIT
-		    = {NULL, NULL}
+		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
 #ifdef FEAT_EX_EXTRA
