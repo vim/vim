@@ -6077,12 +6077,15 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 # ifdef FEAT_MBYTE
 	    if (enc_utf8)
 	    {
-		c = utf_ptr2char(p);
+		int pcc[MAX_MCO];
+
+		/* TODO: use the composing characters */
+		c = utfc_ptr2char_len(p, &pcc, len - (p - s));
 		if (c >= 0x10000)	/* show chars > 0xffff as ? */
 		    c = 0xbf;
 		buf[textlen].byte1 = c >> 8;
 		buf[textlen].byte2 = c;
-		p += utf_ptr2len(p);
+		p += utfc_ptr2len_len(p, len - (p - s));
 		width += utf_char2cells(c);
 	    }
 	    else
@@ -6106,8 +6109,8 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 	if (has_mbyte)
 	{
 	    width = 0;
-	    for (p = s; p < s + len; p += (*mb_ptr2len)(p))
-		width += (*mb_ptr2cells)(p);
+	    for (p = s; p < s + len; p += (*mb_ptr2len_len)(p, len - (p - s)))
+		width += (*mb_ptr2cells_len)(p, len - (p - s));
 	}
 	else
 # endif

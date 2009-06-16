@@ -127,7 +127,10 @@ static int enc_canon_search __ARGS((char_u *name));
 static int dbcs_char2len __ARGS((int c));
 static int dbcs_char2bytes __ARGS((int c, char_u *buf));
 static int dbcs_ptr2len __ARGS((char_u *p));
+static int dbcs_ptr2len_len __ARGS((char_u *p, int size));
+static int utf_ptr2cells_len __ARGS((char_u *p, int size));
 static int dbcs_char2cells __ARGS((int c));
+static int dbcs_ptr2cells_len __ARGS((char_u *p, int size));
 static int dbcs_ptr2char __ARGS((char_u *p));
 
 /* Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -606,9 +609,11 @@ codepage_invalid:
     if (enc_utf8)
     {
 	mb_ptr2len = utfc_ptr2len;
+	mb_ptr2len_len = utfc_ptr2len_len;
 	mb_char2len = utf_char2len;
 	mb_char2bytes = utf_char2bytes;
 	mb_ptr2cells = utf_ptr2cells;
+	mb_ptr2cells_len = utf_ptr2cells_len;
 	mb_char2cells = utf_char2cells;
 	mb_off2cells = utf_off2cells;
 	mb_ptr2char = utf_ptr2char;
@@ -617,9 +622,11 @@ codepage_invalid:
     else if (enc_dbcs != 0)
     {
 	mb_ptr2len = dbcs_ptr2len;
+	mb_ptr2len_len = dbcs_ptr2len_len;
 	mb_char2len = dbcs_char2len;
 	mb_char2bytes = dbcs_char2bytes;
 	mb_ptr2cells = dbcs_ptr2cells;
+	mb_ptr2cells_len = dbcs_ptr2cells_len;
 	mb_char2cells = dbcs_char2cells;
 	mb_off2cells = dbcs_off2cells;
 	mb_ptr2char = dbcs_ptr2char;
@@ -628,9 +635,11 @@ codepage_invalid:
     else
     {
 	mb_ptr2len = latin_ptr2len;
+	mb_ptr2len_len = latin_ptr2len_len;
 	mb_char2len = latin_char2len;
 	mb_char2bytes = latin_char2bytes;
 	mb_ptr2cells = latin_ptr2cells;
+	mb_ptr2cells_len = latin_ptr2cells_len;
 	mb_char2cells = latin_char2cells;
 	mb_off2cells = latin_off2cells;
 	mb_ptr2char = latin_ptr2char;
@@ -1069,7 +1078,6 @@ dbcs_char2bytes(c, buf)
  * Get byte length of character at "*p" but stop at a NUL.
  * For UTF-8 this includes following composing characters.
  * Returns 0 when *p is NUL.
- *
  */
     int
 latin_ptr2len(p)
@@ -1085,6 +1093,40 @@ dbcs_ptr2len(p)
     int		len;
 
     /* Check if second byte is not missing. */
+    len = MB_BYTE2LEN(*p);
+    if (len == 2 && p[1] == NUL)
+	len = 1;
+    return len;
+}
+
+/*
+ * mb_ptr2len_len() function pointer.
+ * Like mb_ptr2len(), but limit to read "size" bytes.
+ * Returns 0 for an empty string.
+ * Returns 1 for an illegal char or an incomplete byte sequence.
+ */
+    int
+latin_ptr2len_len(p, size)
+    char_u	*p;
+    int		size;
+{
+    if (size < 1 || *p == NUL)
+	return 0;
+    return 1;
+}
+
+    static int
+dbcs_ptr2len_len(p, size)
+    char_u	*p;
+    int		size;
+{
+    int		len;
+
+    if (size < 1 || *p == NUL)
+	return 0;
+    if (size == 1)
+	return 1;
+    /* Check that second byte is not missing. */
     len = MB_BYTE2LEN(*p);
     if (len == 2 && p[1] == NUL)
 	len = 1;
@@ -1282,6 +1324,55 @@ dbcs_ptr2cells(p)
     /* Number of cells is equal to number of bytes, except for euc-jp when
      * the first byte is 0x8e. */
     if (enc_dbcs == DBCS_JPNU && *p == 0x8e)
+	return 1;
+    return MB_BYTE2LEN(*p);
+}
+
+/*
+ * mb_ptr2cells_len() function pointer.
+ * Like mb_ptr2cells(), but limit string length to "size".
+ * For an empty string or truncated character returns 1.
+ */
+    int
+latin_ptr2cells_len(p, size)
+    char_u	*p UNUSED;
+    int		size UNUSED;
+{
+    return 1;
+}
+
+    static int
+utf_ptr2cells_len(p, size)
+    char_u	*p;
+    int		size;
+{
+    int		c;
+
+    /* Need to convert to a wide character. */
+    if (size > 0 && *p >= 0x80)
+    {
+	if (utf_ptr2len_len(p, size) < utf8len_tab[*p])
+	    return 1;
+	c = utf_ptr2char(p);
+	/* An illegal byte is displayed as <xx>. */
+	if (utf_ptr2len(p) == 1 || c == NUL)
+	    return 4;
+	/* If the char is ASCII it must be an overlong sequence. */
+	if (c < 0x80)
+	    return char2cells(c);
+	return utf_char2cells(c);
+    }
+    return 1;
+}
+
+    static int
+dbcs_ptr2cells_len(p, size)
+    char_u	*p;
+    int		size;
+{
+    /* Number of cells is equal to number of bytes, except for euc-jp when
+     * the first byte is 0x8e. */
+    if (size <= 1 || (enc_dbcs == DBCS_JPNU && *p == 0x8e))
 	return 1;
     return MB_BYTE2LEN(*p);
 }
@@ -1716,6 +1807,7 @@ utfc_ptr2len(p)
 /*
  * Return the number of bytes the UTF-8 encoding of the character at "p[size]"
  * takes.  This includes following composing characters.
+ * Returns 0 for an empty string.
  * Returns 1 for an illegal char or an incomplete byte sequence.
  */
     int
@@ -1728,7 +1820,7 @@ utfc_ptr2len_len(p, size)
     int		prevlen;
 #endif
 
-    if (*p == NUL)
+    if (size < 1 || *p == NUL)
 	return 0;
     if (p[0] < 0x80 && (size == 1 || p[1] < 0x80)) /* be quick for ASCII */
 	return 1;

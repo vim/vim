@@ -4305,7 +4305,8 @@ mch_call_shell(cmd, options)
 				ta_buf[i] = '\n';
 # ifdef FEAT_MBYTE
 			    if (has_mbyte)
-				i += (*mb_ptr2len)(ta_buf + i) - 1;
+				i += (*mb_ptr2len_len)(ta_buf + i,
+							ta_len + len - i) - 1;
 # endif
 			}
 

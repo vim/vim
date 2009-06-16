@@ -810,11 +810,14 @@ EXTERN vimconv_T output_conv;			/* type of output conversion */
  */
 /* length of char in bytes, including following composing chars */
 EXTERN int (*mb_ptr2len) __ARGS((char_u *p)) INIT(= latin_ptr2len);
+/* idem, with limit on string length */
+EXTERN int (*mb_ptr2len_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2len_len);
 /* byte length of char */
 EXTERN int (*mb_char2len) __ARGS((int c)) INIT(= latin_char2len);
 /* convert char to bytes, return the length */
 EXTERN int (*mb_char2bytes) __ARGS((int c, char_u *buf)) INIT(= latin_char2bytes);
 EXTERN int (*mb_ptr2cells) __ARGS((char_u *p)) INIT(= latin_ptr2cells);
+EXTERN int (*mb_ptr2cells_len) __ARGS((char_u *p, int size)) INIT(= latin_ptr2cells_len);
 EXTERN int (*mb_char2cells) __ARGS((int c)) INIT(= latin_char2cells);
 EXTERN int (*mb_off2cells) __ARGS((unsigned off, unsigned max_off)) INIT(= latin_off2cells);
 EXTERN int (*mb_ptr2char) __ARGS((char_u *p)) INIT(= latin_ptr2char);
