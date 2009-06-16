@@ -4824,6 +4824,8 @@ set_rw_fname(fname, sfname)
     char_u	*sfname;
 {
 #ifdef FEAT_AUTOCMD
+    buf_T	*buf = curbuf;
+
     /* It's like the unnamed buffer is deleted.... */
     if (curbuf->b_p_bl)
 	apply_autocmds(EVENT_BUFDELETE, NULL, NULL, FALSE, curbuf);
@@ -4832,6 +4834,12 @@ set_rw_fname(fname, sfname)
     if (aborting())	    /* autocmds may abort script processing */
 	return FAIL;
 # endif
+    if (curbuf != buf)
+    {
+	/* We are in another buffer now, don't do the renaming. */
+	EMSG(_(e_auchangedbuf));
+	return FAIL;
+    }
 #endif
 
     if (setfname(curbuf, fname, sfname, FALSE) == OK)
