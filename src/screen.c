@@ -5743,6 +5743,13 @@ win_redr_status(wp)
     int		fillchar;
     int		attr;
     int		this_ru_col;
+    static int  busy = FALSE;
+
+    /* It's possible to get here recursively when 'statusline' (indirectly)
+     * invokes ":redrawstatus".  Simply ignore the call then. */
+    if (busy)
+	return;
+    busy = TRUE;
 
     wp->w_redr_status = FALSE;
     if (wp->w_status_height == 0)
@@ -5881,6 +5888,7 @@ win_redr_status(wp)
 									attr);
     }
 #endif
+    busy = FALSE;
 }
 
 #ifdef FEAT_STL_OPT
