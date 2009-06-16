@@ -1040,7 +1040,7 @@ $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 $(OUTDIR)/xpm_w32.obj: $(OUTDIR) xpm_w32.c
 	$(CC) $(CFLAGS) $(XPM_INC) xpm_w32.c
 
-$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc version.h tools.bmp tearoff.bmp \
+$(OUTDIR)/vim.res:	$(OUTDIR) vim.rc gvim.exe.mnf version.h tools.bmp tearoff.bmp \
 		vim.ico vim_error.ico vim_alert.ico vim_info.ico vim_quest.ico
 	$(RC) /l 0x409 /Fo$(OUTDIR)/vim.res $(RCFLAGS) vim.rc
 
