@@ -5555,7 +5555,7 @@ check_for_codes_from_term()
  * respects the current B/k/< settings of 'cpoption'.
  *
  * This function is called when expanding mappings/abbreviations on the
- * command-line, and for building the "Ambiguous mapping..." error messæge.
+ * command-line, and for building the "Ambiguous mapping..." error message.
  *
  * It uses a growarray to build the translation string since the
  * latter can be wider than the original description. The caller has to
