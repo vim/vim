@@ -4006,7 +4006,7 @@ do_set(arg, opt_flags)
 	else
 	{
 	    prefix = 1;
-	    if (STRNCMP(arg, "no", 2) == 0)
+	    if (STRNCMP(arg, "no", 2) == 0 && STRNCMP(arg, "novice", 6) != 0)
 	    {
 		prefix = 0;
 		arg += 2;
@@ -9757,7 +9757,7 @@ set_context_in_set_cmd(xp, arg, opt_flags)
 	}
 	--p;
     }
-    if (STRNCMP(p, "no", 2) == 0)
+    if (STRNCMP(p, "no", 2) == 0 && STRNCMP(p, "novice", 6) != 0)
     {
 	xp->xp_context = EXPAND_BOOL_SETTINGS;
 	p += 2;
