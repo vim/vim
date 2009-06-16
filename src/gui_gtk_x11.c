@@ -107,6 +107,7 @@ enum
     TARGET_UTF8_STRING,
     TARGET_STRING,
     TARGET_COMPOUND_TEXT,
+    TARGET_HTML,
     TARGET_TEXT,
     TARGET_TEXT_URI_LIST,
     TARGET_TEXT_PLAIN,
@@ -123,6 +124,7 @@ static const GtkTargetEntry selection_targets[] =
     {VIMENC_ATOM_NAME,	0, TARGET_VIMENC},
     {VIM_ATOM_NAME,	0, TARGET_VIM},
 #ifdef FEAT_MBYTE
+    {"text/html",	0, TARGET_HTML},
     {"UTF8_STRING",	0, TARGET_UTF8_STRING},
 #endif
     {"COMPOUND_TEXT",	0, TARGET_COMPOUND_TEXT},
@@ -140,6 +142,7 @@ static const GtkTargetEntry dnd_targets[] =
 {
     {"text/uri-list",	0, TARGET_TEXT_URI_LIST},
 # ifdef FEAT_MBYTE
+    {"text/html",	0, TARGET_HTML},
     {"UTF8_STRING",	0, TARGET_UTF8_STRING},
 # endif
     {"STRING",		0, TARGET_STRING},
@@ -178,6 +181,7 @@ static GdkAtom save_yourself_atom = GDK_NONE;
  * Atoms used to control/reference X11 selections.
  */
 #ifdef FEAT_MBYTE
+static GdkAtom html_atom = GDK_NONE;
 static GdkAtom utf8_string_atom = GDK_NONE;
 #endif
 #ifndef HAVE_GTK2
@@ -1364,6 +1368,24 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 	    else
 		text = tmpbuf_utf8;
 	}
+	else if (len >= 2 && text[0] == 0xff && text[1] == 0xfe)
+	{
+	    vimconv_T conv;
+
+	    /* UTF-16, we get this for HTML */
+	    conv.vc_type = CONV_NONE;
+	    convert_setup_ext(&conv, (char_u *)"utf-16le", FALSE, p_enc, TRUE);
+
+	    if (conv.vc_type != CONV_NONE)
+	    {
+		text += 2;
+		len -= 2;
+		tmpbuf = string_convert(&conv, text, &len);
+		convert_setup(&conv, NULL, NULL);
+	    }
+	    if (tmpbuf != NULL)
+		text = tmpbuf;
+	}
     }
 #else /* !HAVE_GTK2 */
 # ifdef FEAT_MBYTE
@@ -1451,6 +1473,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 
     if (info != (guint)TARGET_STRING
 #ifdef FEAT_MBYTE
+	    && (!clip_html || info != (guint)TARGET_HTML)
 	    && info != (guint)TARGET_UTF8_STRING
 	    && info != (guint)TARGET_VIMENC
 #endif
@@ -1486,6 +1509,40 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     }
 
 #ifdef FEAT_MBYTE
+    else if (info == (guint)TARGET_HTML)
+    {
+	vimconv_T conv;
+
+	/* Since we get utf-16, we probably should set it as well. */
+	conv.vc_type = CONV_NONE;
+	convert_setup_ext(&conv, p_enc, TRUE, (char_u *)"utf-16le", FALSE);
+	if (conv.vc_type != CONV_NONE)
+	{
+	    tmpbuf = string_convert(&conv, string, &length);
+	    convert_setup(&conv, NULL, NULL);
+	    vim_free(string);
+	    string = tmpbuf;
+	}
+
+	/* Prepend the BOM: "fffe" */
+	if (string != NULL)
+	{
+	    tmpbuf = alloc(length + 2);
+	    tmpbuf[0] = 0xff;
+	    tmpbuf[1] = 0xfe;
+	    mch_memmove(tmpbuf + 2, string, (size_t)length);
+	    vim_free(string);
+	    string = tmpbuf;
+	    length += 2;
+
+	    selection_data->type = selection_data->target;
+	    selection_data->format = 16;	/* 16 bits per char */
+	    gtk_selection_data_set(selection_data, html_atom, 16,
+							      string, length);
+	    vim_free(string);
+	}
+	return;
+    }
     else if (info == (guint)TARGET_VIMENC)
     {
 	int l = STRLEN(p_enc);
@@ -3464,6 +3521,7 @@ gui_mch_init(void)
 
     /* Initialise atoms */
 #ifdef FEAT_MBYTE
+    html_atom = gdk_atom_intern("text/html", FALSE);
     utf8_string_atom = gdk_atom_intern("UTF8_STRING", FALSE);
 #endif
 #ifndef HAVE_GTK2
@@ -6665,6 +6723,10 @@ clip_mch_request_selection(VimClipboard *cbd)
 
     for (i = 0; i < N_SELECTION_TARGETS; ++i)
     {
+#ifdef FEAT_MBYTE
+	if (!clip_html && selection_targets[i].info == TARGET_HTML)
+	    continue;
+#endif
 	received_selection = RS_NONE;
 	target = gdk_atom_intern(selection_targets[i].target, FALSE);
 

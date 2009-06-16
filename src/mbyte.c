@@ -3265,7 +3265,7 @@ encname2codepage(name)
 
 # if defined(USE_ICONV) || defined(PROTO)
 
-static char_u *iconv_string __ARGS((vimconv_T *vcp, char_u *str, int slen, int *unconvlenp));
+static char_u *iconv_string __ARGS((vimconv_T *vcp, char_u *str, int slen, int *unconvlenp, int *resultlenp));
 
 /*
  * Call iconv_open() with a check if iconv() works properly (there are broken
@@ -3326,13 +3326,15 @@ my_iconv_open(to, from)
  * If "unconvlenp" is not NULL handle the string ending in an incomplete
  * sequence and set "*unconvlenp" to the length of it.
  * Returns the converted string in allocated memory.  NULL for an error.
+ * If resultlenp is not NULL, sets it to the result length in bytes.
  */
     static char_u *
-iconv_string(vcp, str, slen, unconvlenp)
+iconv_string(vcp, str, slen, unconvlenp, resultlenp)
     vimconv_T	*vcp;
     char_u	*str;
     int		slen;
     int		*unconvlenp;
+    int		*resultlenp;
 {
     const char	*from;
     size_t	fromlen;
@@ -3418,6 +3420,9 @@ iconv_string(vcp, str, slen, unconvlenp)
 	/* Not enough room or skipping illegal sequence. */
 	done = to - (char *)result;
     }
+
+    if (resultlenp != NULL)
+	*resultlenp = (int)(to - (char *)result);
     return result;
 }
 
@@ -5837,8 +5842,25 @@ convert_setup(vcp, from, to)
     char_u	*from;
     char_u	*to;
 {
+    return convert_setup_ext(vcp, from, TRUE, to, TRUE);
+}
+
+/*
+ * As convert_setup(), but only when from_unicode_is_utf8 is TRUE will all
+ * "from" unicode charsets be considered utf-8.  Same for "to".
+ */
+    int
+convert_setup_ext(vcp, from, from_unicode_is_utf8, to, to_unicode_is_utf8)
+    vimconv_T	*vcp;
+    char_u	*from;
+    int		from_unicode_is_utf8;
+    char_u	*to;
+    int		to_unicode_is_utf8;
+{
     int		from_prop;
     int		to_prop;
+    int		from_is_utf8;
+    int		to_is_utf8;
 
     /* Reset to no conversion. */
 # ifdef USE_ICONV
@@ -5856,37 +5878,46 @@ convert_setup(vcp, from, to)
 
     from_prop = enc_canon_props(from);
     to_prop = enc_canon_props(to);
-    if ((from_prop & ENC_LATIN1) && (to_prop & ENC_UNICODE))
+    if (from_unicode_is_utf8)
+	from_is_utf8 = from_prop & ENC_UNICODE;
+    else
+	from_is_utf8 = from_prop == ENC_UNICODE;
+    if (to_unicode_is_utf8)
+	to_is_utf8 = to_prop & ENC_UNICODE;
+    else
+	to_is_utf8 = to_prop == ENC_UNICODE;
+
+    if ((from_prop & ENC_LATIN1) && to_is_utf8)
     {
 	/* Internal latin1 -> utf-8 conversion. */
 	vcp->vc_type = CONV_TO_UTF8;
 	vcp->vc_factor = 2;	/* up to twice as long */
     }
-    else if ((from_prop & ENC_LATIN9) && (to_prop & ENC_UNICODE))
+    else if ((from_prop & ENC_LATIN9) && to_is_utf8)
     {
 	/* Internal latin9 -> utf-8 conversion. */
 	vcp->vc_type = CONV_9_TO_UTF8;
 	vcp->vc_factor = 3;	/* up to three as long (euro sign) */
     }
-    else if ((from_prop & ENC_UNICODE) && (to_prop & ENC_LATIN1))
+    else if (from_is_utf8 && (to_prop & ENC_LATIN1))
     {
 	/* Internal utf-8 -> latin1 conversion. */
 	vcp->vc_type = CONV_TO_LATIN1;
     }
-    else if ((from_prop & ENC_UNICODE) && (to_prop & ENC_LATIN9))
+    else if (from_is_utf8 && (to_prop & ENC_LATIN9))
     {
 	/* Internal utf-8 -> latin9 conversion. */
 	vcp->vc_type = CONV_TO_LATIN9;
     }
 #ifdef WIN3264
     /* Win32-specific codepage <-> codepage conversion without iconv. */
-    else if (((from_prop & ENC_UNICODE) || encname2codepage(from) > 0)
-	    && ((to_prop & ENC_UNICODE) || encname2codepage(to) > 0))
+    else if ((from_is_utf8 || encname2codepage(from) > 0)
+	    && (to_is_utf8 || encname2codepage(to) > 0))
     {
 	vcp->vc_type = CONV_CODEPAGE;
 	vcp->vc_factor = 2;	/* up to twice as long */
-	vcp->vc_cpfrom = (from_prop & ENC_UNICODE) ? 0 : encname2codepage(from);
-	vcp->vc_cpto = (to_prop & ENC_UNICODE) ? 0 : encname2codepage(to);
+	vcp->vc_cpfrom = from_is_utf8 ? 0 : encname2codepage(from);
+	vcp->vc_cpto = to_is_utf8 ? 0 : encname2codepage(to);
     }
 #endif
 #ifdef MACOS_X
@@ -5894,7 +5925,7 @@ convert_setup(vcp, from, to)
     {
 	vcp->vc_type = CONV_MAC_LATIN1;
     }
-    else if ((from_prop & ENC_MACROMAN) && (to_prop & ENC_UNICODE))
+    else if ((from_prop & ENC_MACROMAN) && to_is_utf8)
     {
 	vcp->vc_type = CONV_MAC_UTF8;
 	vcp->vc_factor = 2;	/* up to twice as long */
@@ -5903,7 +5934,7 @@ convert_setup(vcp, from, to)
     {
 	vcp->vc_type = CONV_LATIN1_MAC;
     }
-    else if ((from_prop & ENC_UNICODE) && (to_prop & ENC_MACROMAN))
+    else if (from_is_utf8 && (to_prop & ENC_MACROMAN))
     {
 	vcp->vc_type = CONV_UTF8_MAC;
     }
@@ -5913,8 +5944,8 @@ convert_setup(vcp, from, to)
     {
 	/* Use iconv() for conversion. */
 	vcp->vc_fd = (iconv_t)my_iconv_open(
-		(to_prop & ENC_UNICODE) ? (char_u *)"utf-8" : to,
-		(from_prop & ENC_UNICODE) ? (char_u *)"utf-8" : from);
+		to_is_utf8 ? (char_u *)"utf-8" : to,
+		from_is_utf8 ? (char_u *)"utf-8" : from);
 	if (vcp->vc_fd != (iconv_t)-1)
 	{
 	    vcp->vc_type = CONV_ICONV;
@@ -6170,9 +6201,7 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 
 # ifdef USE_ICONV
 	case CONV_ICONV:	/* conversion with output_conv.vc_fd */
-	    retval = iconv_string(vcp, ptr, len, unconvlenp);
-	    if (retval != NULL && lenp != NULL)
-		*lenp = (int)STRLEN(retval);
+	    retval = iconv_string(vcp, ptr, len, unconvlenp, lenp);
 	    break;
 # endif
 # ifdef WIN3264

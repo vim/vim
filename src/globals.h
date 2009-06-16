@@ -509,6 +509,7 @@ EXTERN VimClipboard clip_plus;	/* CLIPBOARD selection in X11 */
 EXTERN int	clip_unnamed INIT(= FALSE);
 EXTERN int	clip_autoselect INIT(= FALSE);
 EXTERN int	clip_autoselectml INIT(= FALSE);
+EXTERN int	clip_html INIT(= FALSE);
 EXTERN regprog_T *clip_exclude_prog INIT(= NULL);
 #endif
 

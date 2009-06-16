@@ -1443,6 +1443,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	autoselectml	Like "autoselect", but for the modeless selection
 			only.  Compare to the 'A' flag in 'guioptions'.
 
+	html		When the clipboard contains HTML, use this when
+			pasting.  When putting text on the clipboard, mark it
+			as HTML.  This works to copy rendered HTML from
+			Firefox, paste it as raw HTML in Vim, select the HTML
+			in Vim and paste it in a rich edit box in Firefox.
+			Only supported for GTK version 2 and later.
+			Only available with the |+multi_byte| feature.
+
 	exclude:{pattern}
 			Defines a pattern that is matched against the name of
 			the terminal 'term'.  If there is a match, no
