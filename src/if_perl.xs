@@ -1234,7 +1234,7 @@ Delete(vimbuf, ...)
 		    {
 			ml_delete(lnum, 0);
 			deleted_lines_mark(lnum, 1L);
-			if (aco.save_buf == curbuf)
+			if (aco.save_curbuf == curbuf)
 			    check_cursor();
 		    }
 

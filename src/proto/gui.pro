@@ -43,6 +43,7 @@ void gui_remove_scrollbars __ARGS((void));
 void gui_create_scrollbar __ARGS((scrollbar_T *sb, int type, win_T *wp));
 scrollbar_T *gui_find_scrollbar __ARGS((long ident));
 void gui_drag_scrollbar __ARGS((scrollbar_T *sb, long value, int still_dragging));
+void gui_may_update_scrollbars __ARGS((void));
 void gui_update_scrollbars __ARGS((int force));
 int gui_do_scroll __ARGS((void));
 int gui_do_horiz_scroll __ARGS((void));

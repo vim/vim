@@ -8365,7 +8365,7 @@ ex_doautoall(eap)
 
 	    /* Execute the modeline settings, but don't set window-local
 	     * options if we are using the current window for another buffer. */
-	    do_modelines(aco.save_curwin == NULL ? OPT_NOWIN : 0);
+	    do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
 
 	    /* restore the current window */
 	    aucmd_restbuf(&aco);
@@ -8381,8 +8381,8 @@ ex_doautoall(eap)
 
 /*
  * Prepare for executing autocommands for (hidden) buffer "buf".
- * Search a window for the current buffer.  Save the cursor position and
- * screen offset.
+ * Search for a visible window containing the current buffer.  If there isn't
+ * one then use "aucmd_win".
  * Set "curbuf" and "curwin" to match "buf".
  * When FEAT_AUTOCMD is not defined another version is used, see below.
  */
@@ -8392,8 +8392,9 @@ aucmd_prepbuf(aco, buf)
     buf_T	*buf;		/* new curbuf */
 {
     win_T	*win;
-
-    aco->new_curbuf = buf;
+#ifdef FEAT_WINDOWS
+    int		save_ea;
+#endif
 
     /* Find a window that is for the new buffer */
     if (buf == curbuf)		/* be quick when buf is curbuf */
@@ -8407,42 +8408,53 @@ aucmd_prepbuf(aco, buf)
 	win = NULL;
 #endif
 
-    /*
-     * Prefer to use an existing window for the buffer, it has the least side
-     * effects (esp. if "buf" is curbuf).
-     * Otherwise, use curwin for "buf".  It might make some items in the
-     * window invalid.  At least save the cursor and topline.
-     */
+    /* Allocate "aucmd_win" when needed.  If this fails (out of memory) fall
+     * back to using the current window. */
+    if (win == NULL && aucmd_win == NULL)
+    {
+	win_alloc_aucmd_win();
+	if (aucmd_win == NULL)
+	    win = curwin;
+    }
+
+    aco->save_curwin = curwin;
+    aco->save_curbuf = curbuf;
     if (win != NULL)
     {
-	/* there is a window for "buf", make it the curwin */
-	aco->save_curwin = curwin;
+	/* There is a window for "buf" in the current tab page, make it the
+	 * curwin.  This is preferred, it has the least side effects (esp. if
+	 * "buf" is curbuf). */
 	curwin = win;
-	aco->save_buf = win->w_buffer;
-	aco->new_curwin = win;
     }
     else
     {
-	/* there is no window for "buf", use curwin */
-	aco->save_curwin = NULL;
-	aco->save_buf = curbuf;
-	--curbuf->b_nwindows;
+	/* There is no window for "buf", use "aucmd_win".  To minimize the side
+	 * effects, insert it in a the current tab page.
+	 * Anything related to a window (e.g., setting folds) may have
+	 * unexpected results. */
+	curwin = aucmd_win;
 	curwin->w_buffer = buf;
 	++buf->b_nwindows;
 
-	/* save cursor and topline, set them to safe values */
-	aco->save_cursor = curwin->w_cursor;
-	curwin->w_cursor.lnum = 1;
-	curwin->w_cursor.col = 0;
-	aco->save_topline = curwin->w_topline;
-	curwin->w_topline = 1;
-#ifdef FEAT_DIFF
-	aco->save_topfill = curwin->w_topfill;
-	curwin->w_topfill = 0;
+#ifdef FEAT_WINDOWS
+	/* Split the current window, put the aucmd_win in the upper half. */
+	make_snapshot(SNAP_AUCMD_IDX);
+	save_ea = p_ea;
+	p_ea = FALSE;
+	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
+	(void)win_comp_pos();   /* recompute window positions */
+	p_ea = save_ea;
+#endif
+	/* set cursor and topline to safe values */
+	curwin_init();
+#ifdef FEAT_VERTSPLIT
+	curwin->w_wincol = 0;
+	curwin->w_width = Columns;
 #endif
     }
-
     curbuf = buf;
+    aco->new_curwin = curwin;
+    aco->new_curbuf = curbuf;
 }
 
 /*
@@ -8454,55 +8466,92 @@ aucmd_prepbuf(aco, buf)
 aucmd_restbuf(aco)
     aco_save_T	*aco;		/* structure holding saved values */
 {
-    if (aco->save_curwin != NULL)
+#ifdef FEAT_WINDOWS
+    int dummy;
+#endif
+
+    if (aco->new_curwin == aucmd_win)
+    {
+	--curbuf->b_nwindows;
+#ifdef FEAT_WINDOWS
+	/* Find "aucmd_win", it can't be closed, but it may be in another tab
+	 * page. */
+	if (curwin != aucmd_win)
+	{
+	    tabpage_T	*tp;
+	    win_T	*wp;
+
+	    FOR_ALL_TAB_WINDOWS(tp, wp)
+	    {
+		if (wp == aucmd_win)
+		{
+		    if (tp != curtab)
+			goto_tabpage_tp(tp);
+		    win_goto(aucmd_win);
+		    break;
+		}
+	    }
+	}
+
+	/* Remove the window and frame from the tree of frames. */
+	(void)winframe_remove(curwin, &dummy, NULL);
+	win_remove(curwin, NULL);
+	last_status(FALSE);	    /* may need to remove last status line */
+	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
+	(void)win_comp_pos();   /* recompute window positions */
+
+	if (win_valid(aco->save_curwin))
+	    curwin = aco->save_curwin;
+	else
+	    /* Hmm, original window disappeared.  Just use the first one. */
+	    curwin = firstwin;
+# ifdef FEAT_EVAL
+	vars_clear(&aucmd_win->w_vars.dv_hashtab);  /* free all w: variables */
+# endif
+#else
+	curwin = aco->save_curwin;
+#endif
+	curbuf = curwin->w_buffer;
+
+	/* the buffer contents may have changed */
+	check_cursor();
+	if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+	{
+	    curwin->w_topline = curbuf->b_ml.ml_line_count;
+#ifdef FEAT_DIFF
+	    curwin->w_topfill = 0;
+#endif
+	}
+#if defined(FEAT_GUI)
+	/* Hide the scrollbars from the aucmd_win and update. */
+	gui_mch_enable_scrollbar(&aucmd_win->w_scrollbars[SBAR_LEFT], FALSE);
+	gui_mch_enable_scrollbar(&aucmd_win->w_scrollbars[SBAR_RIGHT], FALSE);
+	gui_may_update_scrollbars();
+#endif
+    }
+    else
     {
 	/* restore curwin */
 #ifdef FEAT_WINDOWS
 	if (win_valid(aco->save_curwin))
 #endif
 	{
-	    /* restore the buffer which was previously edited by curwin, if
-	     * it's still the same window and it's valid */
+	    /* Restore the buffer which was previously edited by curwin, if
+	     * it was chagned, we are still the same window and the buffer is
+	     * valid. */
 	    if (curwin == aco->new_curwin
-		    && buf_valid(aco->save_buf)
-		    && aco->save_buf->b_ml.ml_mfp != NULL)
+		    && curbuf != aco->new_curbuf
+		    && buf_valid(aco->new_curbuf)
+		    && aco->new_curbuf->b_ml.ml_mfp != NULL)
 	    {
 		--curbuf->b_nwindows;
-		curbuf = aco->save_buf;
+		curbuf = aco->new_curbuf;
 		curwin->w_buffer = curbuf;
 		++curbuf->b_nwindows;
 	    }
 
 	    curwin = aco->save_curwin;
 	    curbuf = curwin->w_buffer;
-	}
-    }
-    else
-    {
-	/* restore buffer for curwin if it still exists and is loaded */
-	if (buf_valid(aco->save_buf) && aco->save_buf->b_ml.ml_mfp != NULL)
-	{
-	    --curbuf->b_nwindows;
-	    curbuf = aco->save_buf;
-	    curwin->w_buffer = curbuf;
-	    ++curbuf->b_nwindows;
-	    curwin->w_cursor = aco->save_cursor;
-	    check_cursor();
-	    /* check topline < line_count, in case lines got deleted */
-	    if (aco->save_topline <= curbuf->b_ml.ml_line_count)
-	    {
-		curwin->w_topline = aco->save_topline;
-#ifdef FEAT_DIFF
-		curwin->w_topfill = aco->save_topfill;
-#endif
-	    }
-	    else
-	    {
-		curwin->w_topline = curbuf->b_ml.ml_line_count;
-#ifdef FEAT_DIFF
-		curwin->w_topfill = 0;
-#endif
-	    }
 	}
     }
 }
@@ -9419,9 +9468,11 @@ aucmd_prepbuf(aco, buf)
     aco_save_T	*aco;		/* structure to save values in */
     buf_T	*buf;		/* new curbuf */
 {
-    aco->save_buf = curbuf;
+    aco->save_curbuf = curbuf;
+    --curbuf->b_nwindows;
     curbuf = buf;
     curwin->w_buffer = buf;
+    ++curbuf->b_nwindows;
 }
 
 /*
@@ -9432,8 +9483,10 @@ aucmd_prepbuf(aco, buf)
 aucmd_restbuf(aco)
     aco_save_T	*aco;		/* structure holding saved values */
 {
-    curbuf = aco->save_buf;
+    --curbuf->b_nwindows;
+    curbuf = aco->save_curbuf;
     curwin->w_buffer = curbuf;
+    ++curbuf->b_nwindows;
 }
 
 #endif	/* FEAT_AUTOCMD */

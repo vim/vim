@@ -3879,6 +3879,21 @@ gui_drag_scrollbar(sb, value, still_dragging)
  * Scrollbar stuff:
  */
 
+/*
+ * Called when something in the window layout has changed.
+ */
+    void
+gui_may_update_scrollbars()
+{
+    if (gui.in_use && starting == 0)
+    {
+	out_flush();
+	gui_init_which_components(NULL);
+	gui_update_scrollbars(TRUE);
+    }
+    need_mouse_correct = TRUE;
+}
+
     void
 gui_update_scrollbars(force)
     int		force;	    /* Force all scrollbars to get updated */

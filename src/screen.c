@@ -7495,6 +7495,10 @@ retry:
 #endif
 	}
     }
+#ifdef FEAT_AUTOCMD
+    if (aucmd_win != NULL && win_alloc_lines(aucmd_win) == FAIL)
+	outofmem = TRUE;
+#endif
 #ifdef FEAT_WINDOWS
 give_up:
 #endif

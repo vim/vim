@@ -539,6 +539,10 @@ EXTERN win_T	*prevwin INIT(= NULL);	/* previous window */
 
 EXTERN win_T	*curwin;	/* currently active window */
 
+#ifdef FEAT_AUTOCMD
+EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
+#endif
+
 /*
  * The window layout is kept in a tree of frames.  topframe points to the top
  * of the tree.
