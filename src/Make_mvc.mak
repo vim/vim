@@ -1,18 +1,18 @@
 # Makefile for Vim on Win32 (Windows NT/2000/XP/2003 and Windows 95/98/Me)
 # and Win64, using the Microsoft Visual C++ compilers. Known to work with
 # VC5, VC6 (VS98), VC7.0 (VS2002), VC7.1 (VS2003), VC8 (VS2005),
-# and VC9 (VS2008).
+# VC9 (VS2008), and VC10 (VS2010).
 #
 # To build using other Windows compilers, see INSTALLpc.txt
 #
 # This makefile can build the console, GUI, OLE-enable, Perl-enabled and
-# Python-enabled versions of vim for Win32 platforms.
+# Python-enabled versions of Vim for Win32 platforms.
 #
-# The basic command line to build vim is:
+# The basic command line to build Vim is:
 #
 #	nmake -f Make_mvc.mak
 #
-# This will build the console version of vim with no additional interfaces.
+# This will build the console version of Vim with no additional interfaces.
 # To add features, define any of the following:
 #
 #	!!!!  After changing features do "nmake clean" first  !!!!
@@ -358,6 +358,9 @@ MSVCVER = 9.0
 !if "$(_NMAKE_VER)" == "9.00.30729.01"
 MSVCVER = 9.0
 !endif
+!if "$(_NMAKE_VER)" == "10.00.20506.01"
+MSVCVER = 10.0
+!endif
 !endif
 
 # Abort bulding VIM if version of VC is unrecognised.
@@ -372,7 +375,7 @@ MSVCVER = 9.0
 !endif
 
 # Convert processor ID to MVC-compatible number
-!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0")
+!if ("$(MSVCVER)" != "8.0") && ("$(MSVCVER)" != "9.0") && ("$(MSVCVER)" != "10.0")
 !if "$(CPUNR)" == "i386"
 CPUARG = /G3
 !elseif "$(CPUNR)" == "i486"
@@ -405,7 +408,7 @@ OPTFLAG = /O2
 !else # MAXSPEED
 OPTFLAG = /Ox
 !endif
-!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0")
+!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0")
 # Use link time code generation if not worried about size
 !if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
@@ -793,7 +796,7 @@ LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
-!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0")
+!if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0")
 !if "$(OPTIMIZE)" != "SPACE"
 LINKARGS1 = $(LINKARGS1) /LTCG:STATUS
 !endif
