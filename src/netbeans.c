@@ -32,6 +32,7 @@
 /* WinSock API is separated from C API, thus we can't use read(), write(),
  * errno... */
 # define sock_errno WSAGetLastError()
+# undef ECONNREFUSED
 # define ECONNREFUSED WSAECONNREFUSED
 # ifdef EINTR
 #  undef EINTR
