@@ -1345,11 +1345,11 @@ typedef enum
 # define MSG_BUF_CLEN  MSG_BUF_LEN	    /* cell length */
 #endif
 
-#if defined(AMIGA) || defined(__linux__) || defined(__QNX__) || defined(__CYGWIN32__) || defined(_AIX)
-# define TBUFSZ 2048		/* buffer size for termcap entry */
-#else
-# define TBUFSZ 1024		/* buffer size for termcap entry */
-#endif
+/* Size of the buffer used for tgetent().  Unfortunately this is largely
+ * undocumented, some systems use 1024.  Using a buffer that is too small
+ * causes a buffer overrun and a crash.  Use the maximum known value to stay
+ * on the safe side. */
+#define TBUFSZ 2048		/* buffer size for termcap entry */
 
 /*
  * Maximum length of key sequence to be mapped.
