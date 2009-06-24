@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.2.  Last change: 2009 May 26
+*if_mzsch.txt*  For Vim version 7.2.  Last change: 2009 Jun 24
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -231,7 +231,7 @@ Windows							    *mzscheme-window*
     (set-cursor (line . col) [window])  Set cursor position.
 
 ==============================================================================
-5. Dynamic loading				    *mzscheme-dynamic* *E812*
+5. Dynamic loading				    *mzscheme-dynamic* *E815*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.

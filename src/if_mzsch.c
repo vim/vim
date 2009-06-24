@@ -1040,7 +1040,7 @@ mzscheme_init(void)
 #ifdef DYNAMIC_MZSCHEME
 	if (!mzscheme_enabled(TRUE))
 	{
-	    EMSG(_("E812: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
+	    EMSG(_("E815: Sorry, this command is disabled, the MzScheme libraries could not be loaded."));
 	    return -1;
 	}
 #endif
