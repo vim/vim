@@ -9193,7 +9193,7 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 		else if (vim_strpbrk(p, (char_u *)"$~") != NULL)
 		{
 		    vim_free(p);
-		    ga_clear(&ga);
+		    ga_clear_strings(&ga);
 		    i = mch_expand_wildcards(num_pat, pat, num_file, file,
 								       flags);
 		    recursive = FALSE;
