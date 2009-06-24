@@ -4874,14 +4874,14 @@ ExpandUserList(xp, num_file, file)
     /* Loop over the items in the list. */
     for (li = retlist->lv_first; li != NULL; li = li->li_next)
     {
-	if (li->li_tv.v_type != VAR_STRING)
-	    continue;  /* Skip non-string items */
+	if (li->li_tv.v_type != VAR_STRING || li->li_tv.vval.v_string == NULL)
+	    continue;  /* Skip non-string items and empty strings */
 
 	if (ga_grow(&ga, 1) == FAIL)
 	    break;
 
 	((char_u **)ga.ga_data)[ga.ga_len] =
-	    vim_strsave(li->li_tv.vval.v_string);
+					 vim_strsave(li->li_tv.vval.v_string);
 	++ga.ga_len;
     }
     list_unref(retlist);
