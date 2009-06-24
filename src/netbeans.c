@@ -2586,7 +2586,7 @@ coloncmd(char *cmd, ...)
     va_list ap;
 
     va_start(ap, cmd);
-    vsprintf(buf, cmd, ap);
+    vim_vsnprintf(buf, sizeof(buf), cmd, ap, NULL);
     va_end(ap);
 
     nbdebug(("    COLONCMD %s\n", buf));
