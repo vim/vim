@@ -6627,7 +6627,10 @@ buf_check_timestamp(buf, focus)
 			mesg = _("W16: Warning: Mode of file \"%s\" has changed since editing started");
 			mesg2 = _("See \":help W16\" for more info.");
 		    }
-		    /* Else: only timestamp changed, ignored */
+		    else
+			/* Only timestamp changed, store it to avoid a warning
+			 * in check_mtime() later. */
+			buf->b_mtime_read = buf->b_mtime;
 		}
 	    }
 	}
