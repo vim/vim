@@ -959,7 +959,7 @@ gui_update_cursor(force, clear_selection)
 		guicolor_T fg, bg;
 
 		if (
-# ifdef HAVE_GTK2
+# if defined(HAVE_GTK2) && !defined(FEAT_HANGULIN)
 			preedit_get_status()
 # else
 			im_get_status()
