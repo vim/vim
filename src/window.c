@@ -2354,13 +2354,6 @@ win_free_mem(win, dirp, tp)
     frame_T	*frp;
     win_T	*wp;
 
-#ifdef FEAT_FOLDING
-    clearFolding(win);
-#endif
-
-    /* reduce the reference count to the argument list. */
-    alist_unlink(win->w_alist);
-
     /* Remove the window and its frame from the tree of frames. */
     frp = win->w_frame;
     wp = winframe_remove(win, dirp, tp);
@@ -2386,9 +2379,6 @@ win_free_all()
 	tabpage_close(TRUE);
 # endif
 
-    while (firstwin != NULL)
-	(void)win_free_mem(firstwin, &dummy, NULL);
-
 # ifdef FEAT_AUTOCMD
     if (aucmd_win != NULL)
     {
@@ -2396,6 +2386,9 @@ win_free_all()
 	aucmd_win = NULL;
     }
 # endif
+
+    while (firstwin != NULL)
+	(void)win_free_mem(firstwin, &dummy, NULL);
 }
 #endif
 
@@ -3204,27 +3197,34 @@ close_others(message, forceit)
     void
 curwin_init()
 {
-    redraw_win_later(curwin, NOT_VALID);
-    curwin->w_lines_valid = 0;
-    curwin->w_cursor.lnum = 1;
-    curwin->w_curswant = curwin->w_cursor.col = 0;
+    win_init_empty(curwin);
+}
+
+    void
+win_init_empty(wp)
+    win_T *wp;
+{
+    redraw_win_later(wp, NOT_VALID);
+    wp->w_lines_valid = 0;
+    wp->w_cursor.lnum = 1;
+    wp->w_curswant = wp->w_cursor.col = 0;
 #ifdef FEAT_VIRTUALEDIT
-    curwin->w_cursor.coladd = 0;
+    wp->w_cursor.coladd = 0;
 #endif
-    curwin->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
-    curwin->w_pcmark.col = 0;
-    curwin->w_prev_pcmark.lnum = 0;
-    curwin->w_prev_pcmark.col = 0;
-    curwin->w_topline = 1;
+    wp->w_pcmark.lnum = 1;	/* pcmark not cleared but set to line 1 */
+    wp->w_pcmark.col = 0;
+    wp->w_prev_pcmark.lnum = 0;
+    wp->w_prev_pcmark.col = 0;
+    wp->w_topline = 1;
 #ifdef FEAT_DIFF
-    curwin->w_topfill = 0;
+    wp->w_topfill = 0;
 #endif
-    curwin->w_botline = 2;
+    wp->w_botline = 2;
 #ifdef FEAT_FKMAP
-    if (curwin->w_p_rl)
-	curwin->w_farsi = W_CONV + W_R_L;
+    if (wp->w_p_rl)
+	wp->w_farsi = W_CONV + W_R_L;
     else
-	curwin->w_farsi = W_CONV;
+	wp->w_farsi = W_CONV;
 #endif
 }
 
@@ -4325,6 +4325,13 @@ win_free(wp, tp)
 {
     int		i;
 
+#ifdef FEAT_FOLDING
+    clearFolding(wp);
+#endif
+
+    /* reduce the reference count to the argument list. */
+    alist_unlink(wp->w_alist);
+
 #ifdef FEAT_AUTOCMD
     /* Don't execute autocommands while the window is halfway being deleted.
      * gui_mch_destroy_scrollbar() may trigger a FocusGained event. */
@@ -4387,7 +4394,10 @@ win_free(wp, tp)
     }
 #endif /* FEAT_GUI */
 
-    win_remove(wp, tp);
+#ifdef FEAT_AUTOCMD
+    if (wp != aucmd_win)
+#endif
+	win_remove(wp, tp);
     vim_free(wp);
 
 #ifdef FEAT_AUTOCMD

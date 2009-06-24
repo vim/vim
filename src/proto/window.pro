@@ -14,6 +14,7 @@ void win_free_all __ARGS((void));
 win_T *winframe_remove __ARGS((win_T *win, int *dirp, tabpage_T *tp));
 void close_others __ARGS((int message, int forceit));
 void curwin_init __ARGS((void));
+void win_init_empty __ARGS((win_T *wp));
 int win_alloc_first __ARGS((void));
 void win_alloc_aucmd_win __ARGS((void));
 void win_init_size __ARGS((void));

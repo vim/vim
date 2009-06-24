@@ -3411,14 +3411,15 @@ load_dummy_buffer(fname)
     /* Init the options. */
     buf_copy_options(newbuf, BCO_ENTER | BCO_NOHELP);
 
-    /* set curwin/curbuf to buf and save a few things */
-    aucmd_prepbuf(&aco, newbuf);
-
-    /* Need to set the filename for autocommands. */
-    (void)setfname(curbuf, fname, NULL, FALSE);
-
-    if (ml_open(curbuf) == OK)
+    /* need to open the memfile before putting the buffer in a window */
+    if (ml_open(newbuf) == OK)
     {
+	/* set curwin/curbuf to buf and save a few things */
+	aucmd_prepbuf(&aco, newbuf);
+
+	/* Need to set the filename for autocommands. */
+	(void)setfname(curbuf, fname, NULL, FALSE);
+
 	/* Create swap file now to avoid the ATTENTION message. */
 	check_need_swap(TRUE);
 
@@ -3441,10 +3442,10 @@ load_dummy_buffer(fname)
 		newbuf = curbuf;
 	    }
 	}
-    }
 
-    /* restore curwin/curbuf and a few other things */
-    aucmd_restbuf(&aco);
+	/* restore curwin/curbuf and a few other things */
+	aucmd_restbuf(&aco);
+    }
 
     if (!buf_valid(newbuf))
 	return NULL;
