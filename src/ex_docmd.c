@@ -8686,6 +8686,8 @@ ex_mkrc(eap)
     }
 
 #ifdef FEAT_SESSION
+    /* Use the short file name until ":lcd" is used.  We also don't use the
+     * short file name when 'acd' is set, that is checked later. */
     did_lcd = FALSE;
 
     /* ":mkview" or ":mkview 9": generate file name with 'viewdir' */
@@ -10573,6 +10575,9 @@ ses_fname(fd, buf, flagp)
     if (buf->b_sfname != NULL
 	    && flagp == &ssop_flags
 	    && (ssop_flags & (SSOP_CURDIR | SSOP_SESDIR))
+#ifdef FEAT_AUTOCHDIR
+	    && !p_acd
+#endif
 	    && !did_lcd)
 	name = buf->b_sfname;
     else
