@@ -838,7 +838,12 @@ gui_ph_handle_window_open(
     static void
 gui_ph_draw_start( void )
 {
+    PhGC_t *gc;
+
+    gc = PgGetGC();
     PgSetRegion( PtWidgetRid( PtFindDisjoint( gui.vimTextArea ) ) );
+    PgClearClippingsCx( gc );
+    PgClearTranslationCx( gc );
 
     PtWidgetOffset( gui.vimTextArea, &gui_ph_raw_offset );
     PhTranslatePoint( &gui_ph_raw_offset, PtWidgetPos( gui.vimTextArea, NULL ) );
@@ -2970,7 +2975,7 @@ gui_mch_init_font(char_u *vim_font_name, int fontset)
     if( vim_font_name == NULL )
     {
 	/* Default font */
-	vim_font_name = "PC Term";
+	vim_font_name = "PC Terminal";
     }
 
     if( STRCMP( vim_font_name, "*" ) == 0 )
