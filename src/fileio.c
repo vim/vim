@@ -8441,13 +8441,16 @@ aucmd_prepbuf(aco, buf)
 	win_init_empty(aucmd_win); /* set cursor and topline to safe values */
 
 #ifdef FEAT_WINDOWS
-	/* Split the current window, put the aucmd_win in the upper half. */
+	/* Split the current window, put the aucmd_win in the upper half.
+	 * We don't want the BufEnter or WinEnter autocommands. */
+	block_autocmds();
 	make_snapshot(SNAP_AUCMD_IDX);
 	save_ea = p_ea;
 	p_ea = FALSE;
 	(void)win_split_ins(0, WSP_TOP, aucmd_win, 0);
 	(void)win_comp_pos();   /* recompute window positions */
 	p_ea = save_ea;
+	unblock_autocmds();
 #endif
 	curwin = aucmd_win;
     }
@@ -8474,7 +8477,8 @@ aucmd_restbuf(aco)
 	--curbuf->b_nwindows;
 #ifdef FEAT_WINDOWS
 	/* Find "aucmd_win", it can't be closed, but it may be in another tab
-	 * page. */
+	 * page. Do not trigger autocommands here. */
+	block_autocmds();
 	if (curwin != aucmd_win)
 	{
 	    tabpage_T	*tp;
@@ -8498,6 +8502,7 @@ aucmd_restbuf(aco)
 	last_status(FALSE);	    /* may need to remove last status line */
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
 	(void)win_comp_pos();   /* recompute window positions */
+	unblock_autocmds();
 
 	if (win_valid(aco->save_curwin))
 	    curwin = aco->save_curwin;
