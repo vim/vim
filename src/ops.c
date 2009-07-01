@@ -5591,6 +5591,29 @@ x11_export_final_selection()
     if (dpy != NULL && str != NULL && motion_type >= 0
 					       && len < 1024*1024 && len > 0)
     {
+#ifdef FEAT_MBYTE
+	/* The CUT_BUFFER0 is supposed to always contain latin1.  Convert from
+	 * 'enc' when it is a multi-byte encoding.  When 'enc' is an 8-bit
+	 * encoding conversion usually doesn't work, so keep the text as-is.
+	 */
+	if (has_mbyte)
+	{
+	    char_u	*conv_str = str;
+	    vimconv_T	vc;
+
+	    vc.vc_type = CONV_NONE;
+	    if (convert_setup(&vc, p_enc, (char_u *)"latin1") == OK)
+	    {
+		conv_str = string_convert(&vc, str, (int*)&len);
+		if (conv_str != NULL)
+		{
+		    vim_free(str);
+		    str = conv_str;
+		}
+		convert_setup(&vc, NULL, NULL);
+	    }
+	}
+#endif
 	XStoreBuffer(dpy, (char *)str, (int)len, 0);
 	XFlush(dpy);
     }

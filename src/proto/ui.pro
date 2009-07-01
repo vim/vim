@@ -48,6 +48,7 @@ int check_row __ARGS((int row));
 void open_app_context __ARGS((void));
 void x11_setup_atoms __ARGS((Display *dpy));
 void clip_x11_request_selection __ARGS((Widget myShell, Display *dpy, VimClipboard *cbd));
+void yank_cut_buffer0 __ARGS((Display *dpy, VimClipboard *cbd));
 void clip_x11_lose_selection __ARGS((Widget myShell, VimClipboard *cbd));
 int clip_x11_own_selection __ARGS((Widget myShell, VimClipboard *cbd));
 void clip_x11_set_selection __ARGS((VimClipboard *cbd));

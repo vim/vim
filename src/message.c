@@ -107,7 +107,7 @@ msg(s)
 }
 
 #if defined(FEAT_EVAL) || defined(FEAT_X11) || defined(USE_XSMP) \
-    || defined(PROTO)
+    || defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Like msg() but keep it silent when 'verbosefile' is set.
  */

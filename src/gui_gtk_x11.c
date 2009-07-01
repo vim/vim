@@ -6717,8 +6717,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 {
     GdkAtom	target;
     unsigned	i;
-    int		nbytes;
-    char_u	*buffer;
     time_t	start;
 
     for (i = 0; i < N_SELECTION_TARGETS; ++i)
@@ -6746,22 +6744,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     }
 
     /* Final fallback position - use the X CUT_BUFFER0 store */
-    nbytes = 0;
-    buffer = (char_u *)XFetchBuffer(GDK_WINDOW_XDISPLAY(gui.mainwin->window),
-				    &nbytes, 0);
-    if (nbytes > 0)
-    {
-	/* Got something */
-	clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
-	if (p_verbose > 0)
-	{
-	    verbose_enter();
-	    smsg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
-	    verbose_leave();
-	}
-    }
-    if (buffer != NULL)
-	XFree(buffer);
+    yank_cut_buffer0(GDK_WINDOW_XDISPLAY(gui.mainwin->window), cbd);
 }
 
 /*

@@ -2104,8 +2104,6 @@ clip_x11_request_selection(myShell, dpy, cbd)
     Atom	type;
     static int	success;
     int		i;
-    int		nbytes = 0;
-    char_u	*buffer;
     time_t	start_time;
     int		timed_out = FALSE;
 
@@ -2185,15 +2183,7 @@ clip_x11_request_selection(myShell, dpy, cbd)
     }
 
     /* Final fallback position - use the X CUT_BUFFER0 store */
-    buffer = (char_u *)XFetchBuffer(dpy, &nbytes, 0);
-    if (nbytes > 0)
-    {
-	/* Got something */
-	clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
-	XFree((void *)buffer);
-	if (p_verbose > 0)
-	    verb_msg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
-    }
+    yank_cut_buffer0(dpy, cbd);
 }
 
 static Boolean	clip_x11_convert_selection_cb __ARGS((Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *));
@@ -2366,6 +2356,60 @@ clip_x11_own_selection(myShell, cbd)
 clip_x11_set_selection(cbd)
     VimClipboard *cbd UNUSED;
 {
+}
+#endif
+
+#if defined(FEAT_XCLIPBOARD) || defined(FEAT_GUI_X11) \
+    || defined(FEAT_GUI_GTK) || defined(PROTO)
+/*
+ * Get the contents of the X CUT_BUFFER0 and put it in "cbd".
+ */
+    void
+yank_cut_buffer0(dpy, cbd)
+    Display		*dpy;
+    VimClipboard	*cbd;
+{
+    int		nbytes = 0;
+    char_u	*buffer = (char_u *)XFetchBuffer(dpy, &nbytes, 0);
+
+    if (nbytes > 0)
+    {
+#ifdef FEAT_MBYTE
+	int  done = FALSE;
+
+	/* CUT_BUFFER0 is supposed to be always latin1.  Convert to 'enc' when
+	 * using a multi-byte encoding.  Conversion between two 8-bit
+	 * character sets usually fails and the text might actually be in
+	 * 'enc' anyway. */
+	if (has_mbyte)
+	{
+	    char_u	*conv_buf = buffer;
+	    vimconv_T	vc;
+
+	    vc.vc_type = CONV_NONE;
+	    if (convert_setup(&vc, (char_u *)"latin1", p_enc) == OK)
+	    {
+		conv_buf = string_convert(&vc, buffer, &nbytes);
+		if (conv_buf != NULL)
+		{
+		    clip_yank_selection(MCHAR, conv_buf, (long)nbytes, cbd);
+		    vim_free(conv_buf);
+		    done = TRUE;
+		}
+		convert_setup(&vc, NULL, NULL);
+	    }
+	}
+	if (!done)  /* use the text without conversion */
+#endif
+	    clip_yank_selection(MCHAR, buffer, (long)nbytes, cbd);
+	XFree((void *)buffer);
+	if (p_verbose > 0)
+	{
+	    verbose_enter();
+	    verb_msg((char_u *)_("Used CUT_BUFFER0 instead of empty selection"));
+	    verbose_leave();
+	}
+    }
 }
 #endif
 
