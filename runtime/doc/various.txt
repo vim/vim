@@ -508,6 +508,17 @@ N  *+X11*		Unix only: can restore window title |X11|
 			messages though.  Use ":silent" in the command itself
 			to avoid that: ":silent menu .... :silent command".
 
+						*:uns* *:unsilent*
+:uns[ilent] {command}	Execute {command} not silently.  Only makes a
+			difference when |:silent| was used to get to this
+			command.
+			Use this for giving a message even when |:silent| was
+			used.  In this example |:silent| is used to avoid the
+			message about reading the file and |:unsilent| to be
+			able to list the first line of each file. >
+    		:silent argdo unsilent echo expand('%') . ": " . getline(1)
+<
+
 						*:verb* *:verbose*
 :[count]verb[ose] {command}
 			Execute {command} with 'verbose' set to [count].  If

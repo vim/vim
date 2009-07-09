@@ -1677,8 +1677,8 @@ do_one_cmd(cmdlinep, sourcing,
     char_u		*errormsg = NULL;	/* error message */
     exarg_T		ea;			/* Ex command arguments */
     long		verbose_save = -1;
-    int			save_msg_scroll = 0;
-    int			did_silent = 0;
+    int			save_msg_scroll = msg_scroll;
+    int			save_msg_silent = -1;
     int			did_esilent = 0;
 #ifdef HAVE_SANDBOX
     int			did_sandbox = FALSE;
@@ -1856,9 +1856,9 @@ do_one_cmd(cmdlinep, sourcing,
 			}
 			if (!checkforcmd(&ea.cmd, "silent", 3))
 			    break;
-			++did_silent;
+			if (save_msg_silent == -1)
+			    save_msg_silent = msg_silent;
 			++msg_silent;
-			save_msg_scroll = msg_scroll;
 			if (*ea.cmd == '!' && !vim_iswhite(ea.cmd[-1]))
 			{
 			    /* ":silent!", but not "silent !cmd" */
@@ -1884,6 +1884,13 @@ do_one_cmd(cmdlinep, sourcing,
 #ifdef FEAT_WINDOWS
 			cmdmod.split |= WSP_TOP;
 #endif
+			continue;
+
+	    case 'u':	if (!checkforcmd(&ea.cmd, "unsilent", 3))
+			    break;
+			if (save_msg_silent == -1)
+			    save_msg_silent = msg_silent;
+			msg_silent = 0;
 			continue;
 
 	    case 'v':	if (checkforcmd(&ea.cmd, "vertical", 4))
@@ -2684,13 +2691,12 @@ doend:
 
     cmdmod = save_cmdmod;
 
-    if (did_silent > 0)
+    if (save_msg_silent != -1)
     {
 	/* messages could be enabled for a serious error, need to check if the
 	 * counters don't become negative */
-	msg_silent -= did_silent;
-	if (msg_silent < 0)
-	    msg_silent = 0;
+	if (!did_emsg)
+	    msg_silent = save_msg_silent;
 	emsg_silent -= did_esilent;
 	if (emsg_silent < 0)
 	    emsg_silent = 0;
@@ -2987,6 +2993,7 @@ static struct cmdmod
     {"silent", 3, FALSE},
     {"tab", 3, TRUE},
     {"topleft", 2, FALSE},
+    {"unsilent", 3, FALSE},
     {"verbose", 4, TRUE},
     {"vertical", 4, FALSE},
 };
