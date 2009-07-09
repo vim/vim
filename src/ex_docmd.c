@@ -7964,7 +7964,7 @@ ex_cd(eap)
 	    shorten_fnames(TRUE);
 
 	    /* Echo the new current directory if the command was typed. */
-	    if (KeyTyped)
+	    if (KeyTyped || p_verbose >= 5)
 		ex_pwd(eap);
 	}
 	vim_free(tofree);
