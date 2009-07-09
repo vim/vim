@@ -114,6 +114,10 @@ static int	  compl_restarting = FALSE;	/* don't insert match */
  * FALSE the word to be completed must be located. */
 static int	  compl_started = FALSE;
 
+/* Set when doing something for completion that may call edit() recursively,
+ * which is not allowed. */
+static int	  compl_busy = FALSE;
+
 static int	  compl_matches = 0;
 static char_u	  *compl_pattern = NULL;
 static int	  compl_direction = FORWARD;
@@ -346,7 +350,7 @@ edit(cmdchar, startln, count)
 
 #ifdef FEAT_INS_EXPAND
     /* Don't allow recursive insert mode when busy with completion. */
-    if (compl_started || pum_visible())
+    if (compl_started || compl_busy || pum_visible())
     {
 	EMSG(_(e_secure));
 	return FALSE;
@@ -1340,8 +1344,10 @@ doESCkey:
 		goto normalchar;
 
 docomplete:
+	    compl_busy = TRUE;
 	    if (ins_complete(c) == FAIL)
 		compl_cont_status = 0;
+	    compl_busy = FALSE;
 	    break;
 #endif /* FEAT_INS_EXPAND */
 
@@ -3172,6 +3178,7 @@ ins_compl_free()
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
+    compl_shown_match = NULL;
 }
 
     static void
