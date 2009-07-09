@@ -7845,10 +7845,10 @@ ex_read(eap)
 		if (*ml_get(lnum) == NUL && u_savedel(lnum, 1L) == OK)
 		{
 		    ml_delete(lnum, FALSE);
-		    deleted_lines_mark(lnum, 1L);
 		    if (curwin->w_cursor.lnum > 1
 					     && curwin->w_cursor.lnum >= lnum)
 			--curwin->w_cursor.lnum;
+		    deleted_lines_mark(lnum, 1L);
 		}
 	    }
 	    redraw_curbuf_later(VALID);

@@ -4013,6 +4013,9 @@ ex_change(eap)
 	    break;
 	ml_delete(eap->line1, FALSE);
     }
+
+    /* make sure the cursor is not beyond the end of the file now */
+    check_cursor_lnum();
     deleted_lines_mark(eap->line1, (long)(eap->line2 - lnum));
 
     /* ":append" on the line above the deleted lines. */

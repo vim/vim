@@ -1233,9 +1233,8 @@ Delete(vimbuf, ...)
 		    if (u_savedel(lnum, 1) == OK)
 		    {
 			ml_delete(lnum, 0);
+			check_cursor();
 			deleted_lines_mark(lnum, 1L);
-			if (aco.save_curbuf == curbuf)
-			    check_cursor();
 		    }
 
 		    /* restore curwin/curbuf and a few other things */

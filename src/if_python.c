@@ -2497,9 +2497,9 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    PyErr_SetVim(_("cannot delete line"));
 	else
 	{
-	    deleted_lines_mark((linenr_T)n, 1L);
 	    if (buf == curwin->w_buffer)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
+	    deleted_lines_mark((linenr_T)n, 1L);
 	}
 
 	curbuf = savebuf;
@@ -2596,10 +2596,9 @@ SetBufferLineList(buf_T *buf, PyInt lo, PyInt hi, PyObject *list, PyInt *len_cha
 		    break;
 		}
 	    }
-	    deleted_lines_mark((linenr_T)lo, (long)i);
-
 	    if (buf == curwin->w_buffer)
 		py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)-n);
+	    deleted_lines_mark((linenr_T)lo, (long)i);
 	}
 
 	curbuf = savebuf;

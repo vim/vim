@@ -2345,12 +2345,13 @@ del_lines(nlines, undo)
     int		undo;		/* if TRUE, prepare for undo */
 {
     long	n;
+    linenr_T	first = curwin->w_cursor.lnum;
 
     if (nlines <= 0)
 	return;
 
     /* save the deleted lines for undo */
-    if (undo && u_savedel(curwin->w_cursor.lnum, nlines) == FAIL)
+    if (undo && u_savedel(first, nlines) == FAIL)
 	return;
 
     for (n = 0; n < nlines; )
@@ -2358,18 +2359,21 @@ del_lines(nlines, undo)
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    /* nothing to delete */
 	    break;
 
-	ml_delete(curwin->w_cursor.lnum, TRUE);
+	ml_delete(first, TRUE);
 	++n;
 
 	/* If we delete the last line in the file, stop */
-	if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+	if (first > curbuf->b_ml.ml_line_count)
 	    break;
     }
-    /* adjust marks, mark the buffer as changed and prepare for displaying */
-    deleted_lines_mark(curwin->w_cursor.lnum, n);
 
+    /* Correct the cursor position before calling deleted_lines_mark(), it may
+     * trigger a callback to display the cursor. */
     curwin->w_cursor.col = 0;
     check_cursor_lnum();
+
+    /* adjust marks, mark the buffer as changed and prepare for displaying */
+    deleted_lines_mark(first, n);
 }
 
     int
@@ -2621,6 +2625,8 @@ deleted_lines(lnum, count)
 
 /*
  * Like deleted_lines(), but adjust marks first.
+ * Make sure the cursor is on a valid line before calling, a GUI callback may
+ * be triggered to display the cursor.
  */
     void
 deleted_lines_mark(lnum, count)
