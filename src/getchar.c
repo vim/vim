@@ -1309,6 +1309,9 @@ save_typebuf()
     return OK;
 }
 
+static int old_char = -1;	/* character put back by vungetc() */
+static int old_mod_mask;	/* mod_mask for ungotten character */
+
 #if defined(FEAT_EVAL) || defined(FEAT_EX_EXTRA) || defined(PROTO)
 
 /*
@@ -1322,6 +1325,10 @@ save_typeahead(tp)
     tp->typebuf_valid = (alloc_typebuf() == OK);
     if (!tp->typebuf_valid)
 	typebuf = tp->save_typebuf;
+
+    tp->old_char = old_char;
+    tp->old_mod_mask = old_mod_mask;
+    old_char = -1;
 
     tp->save_stuffbuff = stuffbuff;
     stuffbuff.bh_first.b_next = NULL;
@@ -1343,6 +1350,9 @@ restore_typeahead(tp)
 	free_typebuf();
 	typebuf = tp->save_typebuf;
     }
+
+    old_char = tp->old_char;
+    old_mod_mask = tp->old_mod_mask;
 
     free_buff(&stuffbuff);
     stuffbuff = tp->save_stuffbuff;
@@ -1498,9 +1508,6 @@ updatescript(c)
 
 #define KL_PART_KEY -1		/* keylen value for incomplete key-code */
 #define KL_PART_MAP -2		/* keylen value for incomplete mapping */
-
-static int old_char = -1;	/* character put back by vungetc() */
-static int old_mod_mask;	/* mod_mask for ungotten character */
 
 /*
  * Get the next input character.
