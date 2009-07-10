@@ -355,13 +355,8 @@ cscope version for Win32 see:
 The DJGPP-built version from http://cscope.sourceforge.net is known to not
 work with Vim.
 
-There are a couple of hard-coded limitations:
-
-    1. The maximum number of cscope connections allowed is 8.  Do you
-    really need more?
-
-    2. Doing a |:tjump| when |:cstag| searches the tag files is not
-    configurable (e.g., you can't do a tselect instead).
+Hard-coded limitation: doing a |:tjump| when |:cstag| searches the tag files
+is not configurable (e.g., you can't do a tselect instead).
 
 ==============================================================================
 6. Suggested usage					*cscope-suggestions*

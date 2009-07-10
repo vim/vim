@@ -46,7 +46,6 @@ static void	    cs_fill_results __ARGS((char *, int , int *, char ***,
 static int	    cs_find __ARGS((exarg_T *eap));
 static int	    cs_find_common __ARGS((char *opt, char *pat, int, int, int));
 static int	    cs_help __ARGS((exarg_T *eap));
-static void	    cs_init __ARGS((void));
 static void	    clear_csinfo __ARGS((int i));
 static int	    cs_insert_filelist __ARGS((char *, char *, char *,
 			struct stat *));
@@ -66,7 +65,10 @@ static char *	    cs_resolve_file __ARGS((int, char *));
 static int	    cs_show __ARGS((exarg_T *eap));
 
 
-static csinfo_T	    csinfo[CSCOPE_MAX_CONNECTIONS];
+static csinfo_T *   csinfo = NULL;
+static int	    csinfo_size = 0;	/* number of items allocated in
+					   csinfo[] */
+
 static int	    eap_arg_len;    /* length of eap->arg, set in
 				       cs_lookup_cmd() */
 static cscmd_T	    cs_cmds[] =
@@ -144,23 +146,20 @@ get_cscope_name(xp, idx)
 	}
     case EXP_CSCOPE_KILL:
 	{
-	    static char_u	connection[2];
+	    static char	connection[5];
 
 	    /* ":cscope kill" accepts connection numbers or partial names of
 	     * the pathname of the cscope database as argument.  Only complete
 	     * with connection numbers. -1 can also be used to kill all
 	     * connections. */
-	    for (i = 0, current_idx = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	    for (i = 0, current_idx = 0; i < csinfo_size; i++)
 	    {
 		if (csinfo[i].fname == NULL)
 		    continue;
 		if (current_idx++ == idx)
 		{
-		    /* Connection number fits in one character since
-		     * CSCOPE_MAX_CONNECTIONS is < 10 */
-		    connection[0] = i + '0';
-		    connection[1] = NUL;
-		    return connection;
+		    vim_snprintf(connection, sizeof(connection), "%d", i);
+		    return (char_u *)connection;
 		}
 	    }
 	    return (current_idx == idx && idx > 0) ? (char_u *)"-1" : NULL;
@@ -223,7 +222,6 @@ do_cscope_general(eap, make_split)
 {
     cscmd_T *cmdp;
 
-    cs_init();
     if ((cmdp = cs_lookup_cmd(eap)) == NULL)
     {
 	cs_help(eap);
@@ -283,8 +281,6 @@ do_cstag(eap)
     exarg_T *eap;
 {
     int ret = FALSE;
-
-    cs_init();
 
     if (*eap->arg == NUL)
     {
@@ -441,7 +437,7 @@ cs_connection(num, dbpath, ppath)
     if (num < 0 || num > 4 || (num > 0 && !dbpath))
 	return FALSE;
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (!csinfo[i].fname)
 	    continue;
@@ -684,7 +680,7 @@ cs_cnt_connections()
     short i;
     short cnt = 0;
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (csinfo[i].fname != NULL)
 	    cnt++;
@@ -1112,7 +1108,8 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 {
     int i;
     char *cmd;
-    int nummatches[CSCOPE_MAX_CONNECTIONS], totmatches;
+    int *nummatches;
+    int totmatches;
 #ifdef FEAT_QUICKFIX
     char cmdletter;
     char *qfpos;
@@ -1123,13 +1120,17 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
     if (cmd == NULL)
 	return FALSE;
 
+    nummatches = (int *)alloc(sizeof(int)*csinfo_size);
+    if (nummatches == NULL)
+	return FALSE;
+
     /* send query to all open connections, then count the total number
      * of matches so we can alloc matchesp all in one swell foop
      */
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
 	nummatches[i] = 0;
     totmatches = 0;
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (csinfo[i].fname == NULL || csinfo[i].to_fp == NULL)
 	    continue;
@@ -1154,7 +1155,10 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	char *buf;
 
 	if (!verbose)
+	{
+	    vim_free(nummatches);
 	    return FALSE;
+	}
 
 	buf = (char *)alloc((unsigned)(strlen(opt) + strlen(pat) + strlen(nf)));
 	if (buf == NULL)
@@ -1165,6 +1169,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	    (void)EMSG(buf);
 	    vim_free(buf);
 	}
+	vim_free(nummatches);
 	return FALSE;
     }
 
@@ -1217,6 +1222,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 		(void)EMSG(buf);
 		vim_free(buf);
 	    }
+	    vim_free(nummatches);
 	    return FALSE;
 	}
     }
@@ -1264,6 +1270,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	}
 	mch_remove(tmp);
 	vim_free(tmp);
+	vim_free(nummatches);
 	return TRUE;
     }
     else
@@ -1275,6 +1282,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 	/* read output */
 	cs_fill_results((char *)pat, totmatches, nummatches, &matches,
 							 &contexts, &matched);
+	vim_free(nummatches);
 	if (matches == NULL)
 	    return FALSE;
 
@@ -1327,26 +1335,6 @@ cs_help(eap)
     return 0;
 } /* cs_help */
 
-
-/*
- * PRIVATE: cs_init
- *
- * initialize cscope structure if not already
- */
-    static void
-cs_init()
-{
-    short i;
-    static int init_already = FALSE;
-
-    if (init_already)
-	return;
-
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
-	clear_csinfo(i);
-
-    init_already = TRUE;
-} /* cs_init */
 
     static void
 clear_csinfo(i)
@@ -1444,7 +1432,7 @@ cs_insert_filelist(fname, ppath, flags, sb)
 #endif
 
     i = -1; /* can be set to the index of an empty item in csinfo */
-    for (j = 0; j < CSCOPE_MAX_CONNECTIONS; j++)
+    for (j = 0; j < csinfo_size; j++)
     {
 	if (csinfo[j].fname != NULL
 #if defined(UNIX)
@@ -1471,9 +1459,25 @@ cs_insert_filelist(fname, ppath, flags, sb)
 
     if (i == -1)
     {
-	if (p_csverbose)
-	    (void)EMSG(_("E569: maximum number of cscope connections reached"));
-	return -1;
+	i = csinfo_size;
+	if (csinfo_size == 0)
+	{
+	    /* First time allocation: allocate only 1 connection. It should
+	     * be enough for most users.  If more is needed, csinfo will be
+	     * reallocated. */
+	    csinfo_size = 1;
+	    csinfo = (csinfo_T *)alloc_clear(sizeof(csinfo_T));
+	}
+	else
+	{
+	    /* Reallocate space for more connections. */
+	    csinfo_size *= 2;
+	    csinfo = vim_realloc(csinfo, sizeof(csinfo_T)*csinfo_size);
+	}
+	if (csinfo == NULL)
+	    return -1;
+	for (j = csinfo_size/2; j < csinfo_size; j++)
+	    clear_csinfo(j);
     }
 
     if ((csinfo[i].fname = (char *)alloc((unsigned)strlen(fname)+1)) == NULL)
@@ -1580,15 +1584,14 @@ cs_kill(eap)
 	/* It must be part of a name.  We will try to find a match
 	 * within all the names in the csinfo data structure
 	 */
-	for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	for (i = 0; i < csinfo_size; i++)
 	{
 	    if (csinfo[i].fname != NULL && strstr(csinfo[i].fname, stok))
 		break;
 	}
     }
 
-    if ((i >= CSCOPE_MAX_CONNECTIONS || i < -1 || csinfo[i].fname == NULL)
-	    && i != -1)
+    if ((i != -1) && (i >= csinfo_size || i < -1 || csinfo[i].fname == NULL))
     {
 	if (p_csverbose)
 	    (void)EMSG2(_("E261: cscope connection %s not found"), stok);
@@ -1597,7 +1600,7 @@ cs_kill(eap)
     {
 	if (i == -1)
 	{
-	    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	    for (i = 0; i < csinfo_size; i++)
 	    {
 		if (csinfo[i].fname)
 		    cs_kill_execute(i, csinfo[i].fname);
@@ -1857,7 +1860,7 @@ cs_file_results(f, nummatches_a)
     if (buf == NULL)
 	return;
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (nummatches_a[i] < 1)
 	    continue;
@@ -1929,7 +1932,7 @@ cs_fill_results(tagstr, totmatches, nummatches_a, matches_p, cntxts_p, matched)
     if ((cntxts = (char **)alloc(sizeof(char *) * totmatches)) == NULL)
 	goto parse_out;
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (nummatches_a[i] < 1)
 	    continue;
@@ -2383,10 +2386,13 @@ cs_reset(eap)
     int	i;
     char buf[20]; /* for sprintf " (#%d)" */
 
+    if (csinfo_size == 0)
+	return CSCOPE_SUCCESS;
+
     /* malloc our db and ppath list */
-    dblist = (char **)alloc(CSCOPE_MAX_CONNECTIONS * sizeof(char *));
-    pplist = (char **)alloc(CSCOPE_MAX_CONNECTIONS * sizeof(char *));
-    fllist = (char **)alloc(CSCOPE_MAX_CONNECTIONS * sizeof(char *));
+    dblist = (char **)alloc(csinfo_size * sizeof(char *));
+    pplist = (char **)alloc(csinfo_size * sizeof(char *));
+    fllist = (char **)alloc(csinfo_size * sizeof(char *));
     if (dblist == NULL || pplist == NULL || fllist == NULL)
     {
 	vim_free(dblist);
@@ -2395,7 +2401,7 @@ cs_reset(eap)
 	return CSCOPE_FAILURE;
     }
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	dblist[i] = csinfo[i].fname;
 	pplist[i] = csinfo[i].ppath;
@@ -2405,7 +2411,7 @@ cs_reset(eap)
     }
 
     /* rebuild the cscope connection list */
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
     {
 	if (dblist[i] != NULL)
 	{
@@ -2502,7 +2508,7 @@ cs_show(eap)
 	MSG_PUTS_ATTR(
 	    _(" # pid    database name                       prepend path\n"),
 	    hl_attr(HLF_T));
-	for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+	for (i = 0; i < csinfo_size; i++)
 	{
 	    if (csinfo[i].fname == NULL)
 		continue;
@@ -2531,8 +2537,10 @@ cs_end()
 {
     int i;
 
-    for (i = 0; i < CSCOPE_MAX_CONNECTIONS; i++)
+    for (i = 0; i < csinfo_size; i++)
 	cs_release_csp(i, TRUE);
+    vim_free(csinfo);
+    csinfo_size = 0;
 }
 
 #endif	/* FEAT_CSCOPE */

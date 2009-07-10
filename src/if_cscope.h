@@ -25,7 +25,6 @@
 
 #define CSCOPE_SUCCESS		0
 #define CSCOPE_FAILURE		-1
-#define CSCOPE_MAX_CONNECTIONS	8   /* you actually need more? */
 
 #define	CSCOPE_DBFILE		"cscope.out"
 #define	CSCOPE_PROMPT		">> "
