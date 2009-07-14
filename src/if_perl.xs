@@ -720,9 +720,11 @@ ex_perl(eap)
 #ifdef HAVE_SANDBOX
     if (sandbox)
     {
+# ifndef MAKE_TEST  /* avoid a warning for unreachable code */
 	if ((safe = perl_get_sv( "VIM::safe", FALSE )) == NULL || !SvTRUE(safe))
 	    EMSG(_("E299: Perl evaluation forbidden in sandbox without the Safe module"));
 	else
+# endif
 	{
 	    PUSHMARK(SP);
 	    XPUSHs(safe);
