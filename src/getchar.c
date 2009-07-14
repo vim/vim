@@ -3708,11 +3708,10 @@ get_map_mode(cmdp, forceit)
  * Clear all mappings or abbreviations.
  * 'abbr' should be FALSE for mappings, TRUE for abbreviations.
  */
-/*ARGSUSED*/
     void
 map_clear(cmdp, arg, forceit, abbr)
     char_u	*cmdp;
-    char_u	*arg;
+    char_u	*arg UNUSED;
     int		forceit;
     int		abbr;
 {
@@ -3741,13 +3740,12 @@ map_clear(cmdp, arg, forceit, abbr)
 /*
  * Clear all mappings in "mode".
  */
-/*ARGSUSED*/
     void
 map_clear_int(buf, mode, local, abbr)
-    buf_T	*buf;	    /* buffer for local mappings */
-    int		mode;	    /* mode in which to delete */
-    int		local;	    /* TRUE for buffer-local mappings */
-    int		abbr;	    /* TRUE for abbreviations */
+    buf_T	*buf UNUSED;	/* buffer for local mappings */
+    int		mode;		/* mode in which to delete */
+    int		local UNUSED;	/* TRUE for buffer-local mappings */
+    int		abbr;		/* TRUE for abbreviations */
 {
     mapblock_T	*mp, **mpp;
     int		hash;
