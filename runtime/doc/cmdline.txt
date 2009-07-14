@@ -441,12 +441,19 @@ between files with almost the same name.  If there are multiple matches,
 those files with an extension that is in the 'suffixes' option are ignored.
 The default is ".bak,~,.o,.h,.info,.swp,.obj", which means that files ending
 in ".bak", "~", ".o", ".h", ".info", ".swp" and ".obj" are sometimes ignored.
-It is impossible to ignore suffixes with two dots.  Examples:
+
+An empty entry, two consecutive commas, match a file name that does not
+contain a ".", thus has no suffix.  This is useful to ignore "prog" and prefer
+"prog.c".
+
+Examples:
 
   pattern:	files:				match:	~
    test*	test.c test.h test.o		test.c
    test*	test.h test.o			test.h and test.o
    test*	test.i test.h test.c		test.i and test.c
+
+It is impossible to ignore suffixes with two dots.
 
 If there is more than one matching file (after ignoring the ones matching
 the 'suffixes' option) the first file name is inserted.  You can see that

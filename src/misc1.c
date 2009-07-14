@@ -8533,11 +8533,25 @@ match_suffix(fname)
     for (setsuf = p_su; *setsuf; )
     {
 	setsuflen = copy_option_part(&setsuf, suf_buf, MAXSUFLEN, ".,");
-	if (fnamelen >= setsuflen
-		&& fnamencmp(suf_buf, fname + fnamelen - setsuflen,
-					      (size_t)setsuflen) == 0)
-	    break;
-	setsuflen = 0;
+	if (setsuflen == 0)
+	{
+	    char_u *tail = gettail(fname);
+
+	    /* empty entry: match name without a '.' */
+	    if (vim_strchr(tail, '.') == NULL)
+	    {
+		setsuflen = 1;
+		break;
+	    }
+	}
+	else
+	{
+	    if (fnamelen >= setsuflen
+		    && fnamencmp(suf_buf, fname + fnamelen - setsuflen,
+						  (size_t)setsuflen) == 0)
+		break;
+	    setsuflen = 0;
+	}
     }
     return (setsuflen != 0);
 }
