@@ -1,4 +1,5 @@
 /* os_unix.c */
+int mch_chdir __ARGS((char *path));
 void mch_write __ARGS((char_u *s, int len));
 int mch_inchar __ARGS((char_u *buf, int maxlen, long wtime, int tb_change_cnt));
 int mch_char_avail __ARGS((void));

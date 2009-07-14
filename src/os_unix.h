@@ -482,11 +482,6 @@ typedef struct dsc$descriptor   DESC;
 # else
 int mch_rename __ARGS((const char *src, const char *dest));
 # endif
-# ifdef VMS
-#  define mch_chdir(s) chdir(vms_fixfilename(s))
-# else
-#  define mch_chdir(s) chdir(s)
-# endif
 # ifndef VMS
 #  ifdef __MVS__
   /* on OS390 Unix getenv() doesn't return a pointer to persistent
