@@ -1138,10 +1138,10 @@ mch_suspend()
      * to happen).
      */
     {
-	long wait;
-	for (wait = 0; !sigcont_received && wait <= 3L; wait++)
+	long wait_time;
+	for (wait_time = 0; !sigcont_received && wait_time <= 3L; wait_time++)
 	    /* Loop is not entered most of the time */
-	    mch_delay(wait, FALSE);
+	    mch_delay(wait_time, FALSE);
     }
 # endif
 
