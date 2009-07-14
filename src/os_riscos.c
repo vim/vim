@@ -1203,6 +1203,12 @@ mch_chdir(dir)
     int	    retval;
     char_u  *new_dir;
 
+    if (p_verbose >= 5)
+    {
+	verbose_enter();
+	smsg((char_u *)"chdir(%s)", dir);
+	verbose_leave();
+    }
     length = strlen(dir);
     if (dir[length - 1] != '.')
 	return chdir(dir);	    /* No trailing dots - nothing to do. */

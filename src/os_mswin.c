@@ -653,6 +653,12 @@ mch_chdir(char *path)
     if (path[0] == NUL)		/* just checking... */
 	return -1;
 
+    if (p_verbose >= 5)
+    {
+	verbose_enter();
+	smsg((char_u *)"chdir(%s)", path);
+	verbose_leave();
+    }
     if (isalpha(path[0]) && path[1] == ':')	/* has a drive name */
     {
 	/* If we can change to the drive, skip that part of the path.  If we

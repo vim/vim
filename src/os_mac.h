@@ -291,7 +291,6 @@
 #  define HAVE_SETENV
 #  define HAVE_RENAME
 # endif
-# define mch_chdir(s) chdir(s)
 #endif
 
 #if defined(MACOS_X) && !defined(HAVE_CONFIG_H)

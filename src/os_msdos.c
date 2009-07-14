@@ -2039,6 +2039,12 @@ mch_chdir(char *path)
 {
     if (path[0] == NUL)		    /* just checking... */
 	return 0;
+    if (p_verbose >= 5)
+    {
+	verbose_enter();
+	smsg((char_u *)"chdir(%s)", path);
+	verbose_leave();
+    }
     if (path[1] == ':')		    /* has a drive name */
     {
 	if (change_drive(TOLOWER_ASC(path[0]) - 'a' + 1))
