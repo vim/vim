@@ -1734,9 +1734,9 @@ get_x11_icon(test_only)
     if (oldicon == NULL && !test_only)
     {
 	if (STRNCMP(T_NAME, "builtin_", 8) == 0)
-	    oldicon = T_NAME + 8;
+	    oldicon = vim_strsave(T_NAME + 8);
 	else
-	    oldicon = T_NAME;
+	    oldicon = vim_strsave(T_NAME);
     }
 
     return retval;
@@ -1939,9 +1939,9 @@ get_x11_icon(test_only)
     if (!test_only)
     {
 	if (STRNCMP(T_NAME, "builtin_", 8) == 0)
-	    oldicon = T_NAME + 8;
+	    oldicon = vim_strsave(T_NAME + 8);
 	else
-	    oldicon = T_NAME;
+	    oldicon = vim_strsave(T_NAME);
     }
     return FALSE;
 }
