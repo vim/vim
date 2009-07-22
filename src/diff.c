@@ -893,6 +893,7 @@ ex_diffpatch(eap)
     char_u	*browseFile = NULL;
     int		browse_flag = cmdmod.browse;
 #endif
+    struct stat st;
 
 #ifdef FEAT_BROWSE
     if (cmdmod.browse)
@@ -999,44 +1000,51 @@ ex_diffpatch(eap)
     STRCAT(buf, ".rej");
     mch_remove(buf);
 
-    if (curbuf->b_fname != NULL)
+    /* Only continue if the output file was created. */
+    if (mch_stat((char *)tmp_new, &st) < 0 || st.st_size == 0)
+	EMSG(_("E816: Cannot read patch output"));
+    else
     {
-	newname = vim_strnsave(curbuf->b_fname,
+	if (curbuf->b_fname != NULL)
+	{
+	    newname = vim_strnsave(curbuf->b_fname,
 					  (int)(STRLEN(curbuf->b_fname) + 4));
-	if (newname != NULL)
-	    STRCAT(newname, ".new");
-    }
+	    if (newname != NULL)
+		STRCAT(newname, ".new");
+	}
 
 #ifdef FEAT_GUI
-    need_mouse_correct = TRUE;
+	need_mouse_correct = TRUE;
 #endif
-    /* don't use a new tab page, each tab page has its own diffs */
-    cmdmod.tab = 0;
+	/* don't use a new tab page, each tab page has its own diffs */
+	cmdmod.tab = 0;
 
-    if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
-    {
-	/* Pretend it was a ":split fname" command */
-	eap->cmdidx = CMD_split;
-	eap->arg = tmp_new;
-	do_exedit(eap, old_curwin);
-
-	if (curwin != old_curwin)		/* split must have worked */
+	if (win_split(0, (diff_flags & DIFF_VERTICAL) ? WSP_VERT : 0) != FAIL)
 	{
-	    /* Set 'diff', 'scrollbind' on and 'wrap' off. */
-	    diff_win_options(curwin, TRUE);
-	    diff_win_options(old_curwin, TRUE);
+	    /* Pretend it was a ":split fname" command */
+	    eap->cmdidx = CMD_split;
+	    eap->arg = tmp_new;
+	    do_exedit(eap, old_curwin);
 
-	    if (newname != NULL)
+	    /* check that split worked and editing tmp_new */
+	    if (curwin != old_curwin && win_valid(old_curwin))
 	    {
-		/* do a ":file filename.new" on the patched buffer */
-		eap->arg = newname;
-		ex_file(eap);
+		/* Set 'diff', 'scrollbind' on and 'wrap' off. */
+		diff_win_options(curwin, TRUE);
+		diff_win_options(old_curwin, TRUE);
+
+		if (newname != NULL)
+		{
+		    /* do a ":file filename.new" on the patched buffer */
+		    eap->arg = newname;
+		    ex_file(eap);
 
 #ifdef FEAT_AUTOCMD
-		/* Do filetype detection with the new name. */
-		if (au_has_group((char_u *)"filetypedetect"))
-		    do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
+		    /* Do filetype detection with the new name. */
+		    if (au_has_group((char_u *)"filetypedetect"))
+			do_cmdline_cmd((char_u *)":doau filetypedetect BufRead");
 #endif
+		}
 	    }
 	}
     }
