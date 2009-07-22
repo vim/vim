@@ -403,8 +403,9 @@ struct vimoption
 #define P_NUM		0x02	/* the option is numeric */
 #define P_STRING	0x04	/* the option is a string */
 #define P_ALLOCED	0x08	/* the string option is in allocated memory,
-				    must use vim_free() when assigning new
-				    value. Not set if default is the same. */
+				   must use free_string_option() when
+				   assigning new value. Not set if default is
+				   the same. */
 #define P_EXPAND	0x10	/* environment expansion.  NOTE: P_EXPAND can
 				   never be used for local or hidden options! */
 #define P_NODEFAULT	0x40	/* don't set to default value */
@@ -8924,6 +8925,28 @@ free_termoptions()
 	    p->flags &= ~(P_ALLOCED|P_DEF_ALLOCED);
 	}
     clear_termcodes();
+}
+
+/*
+ * Free the string for one term option, if it was allocated.
+ * Set the string to empty_option and clear allocated flag.
+ * "var" points to the option value.
+ */
+    void
+free_one_termoption(var)
+    char_u *var;
+{
+    struct vimoption   *p;
+
+    for (p = &options[0]; p->fullname != NULL; p++)
+	if (p->var == var)
+	{
+	    if (p->flags & P_ALLOCED)
+		free_string_option(*(char_u **)(p->var));
+	    *(char_u **)(p->var) = empty_option;
+	    p->flags &= ~P_ALLOCED;
+	    break;
+	}
 }
 
 /*

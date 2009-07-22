@@ -2881,7 +2881,7 @@ ttest(pairs)
 
 	/* if 'Sb' and 'AB' are not defined, reset "Co" */
 	if (*T_CSB == NUL && *T_CAB == NUL)
-	    T_CCO = empty_option;
+	    free_one_termoption(T_CCO);
 
 	/* Set 'weirdinvert' according to value of 't_xs' */
 	p_wiv = (*T_XS != NUL);

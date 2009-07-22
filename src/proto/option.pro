@@ -29,6 +29,7 @@ int makeset __ARGS((FILE *fd, int opt_flags, int local_only));
 int makefoldset __ARGS((FILE *fd));
 void clear_termoptions __ARGS((void));
 void free_termoptions __ARGS((void));
+void free_one_termoption __ARGS((char_u *var));
 void set_term_defaults __ARGS((void));
 void comp_col __ARGS((void));
 char_u *get_equalprg __ARGS((void));
