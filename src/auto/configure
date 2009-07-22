@@ -5780,7 +5780,10 @@ $as_echo "$rubyhdrdir" >&6; }
 	fi
 	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["LDFLAGS"]'`
 	if test "X$rubyldflags" != "X"; then
-	  LDFLAGS="$rubyldflags $LDFLAGS"
+	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//'`
+	  if test "X$rubyldflags" != "X"; then
+	    LDFLAGS="$rubyldflags $LDFLAGS"
+	  fi
 	fi
 	RUBY_SRC="if_ruby.c"
 	RUBY_OBJ="objects/if_ruby.o"
