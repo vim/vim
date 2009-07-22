@@ -10252,6 +10252,7 @@ spell_suggest(count)
     int		limit;
     int		selected = count;
     int		badlen = 0;
+    int		msg_scroll_save = msg_scroll;
 
     if (no_spell_checking(curwin))
 	return;
@@ -10416,7 +10417,9 @@ spell_suggest(count)
 	selected = prompt_for_number(&mouse_used);
 	if (mouse_used)
 	    selected -= lines_left;
-	lines_left = Rows;	/* avoid more prompt */
+	lines_left = Rows;		/* avoid more prompt */
+	/* don't delay for 'smd' in normal_cmd() */
+	msg_scroll = msg_scroll_save;
     }
 
     if (selected > 0 && selected <= sug.su_ga.ga_len && u_save_cursor() == OK)
@@ -10441,7 +10444,8 @@ spell_suggest(count)
 	}
 
 	/* Replace the word. */
-	p = alloc((unsigned)STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
+	p = alloc((unsigned)STRLEN(line) - stp->st_orglen
+						       + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
 	    c = (int)(sug.su_badptr - line);

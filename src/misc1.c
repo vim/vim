@@ -3276,6 +3276,7 @@ prompt_for_number(mouse_used)
 	cmdline_row = msg_row - 1;
 	need_wait_return = FALSE;
 	msg_didany = FALSE;
+	msg_didout = FALSE;
     }
     else
 	cmdline_row = save_cmdline_row;
