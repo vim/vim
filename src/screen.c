@@ -7467,6 +7467,10 @@ retry:
      */
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	win_free_lsize(wp);
+#ifdef FEAT_AUTOCMD
+    if (aucmd_win != NULL)
+	win_free_lsize(aucmd_win);
+#endif
 
     new_ScreenLines = (schar_T *)lalloc((long_u)(
 			      (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
@@ -7504,7 +7508,8 @@ retry:
 	}
     }
 #ifdef FEAT_AUTOCMD
-    if (aucmd_win != NULL && win_alloc_lines(aucmd_win) == FAIL)
+    if (aucmd_win != NULL && aucmd_win->w_lines == NULL
+					&& win_alloc_lines(aucmd_win) == FAIL)
 	outofmem = TRUE;
 #endif
 #ifdef FEAT_WINDOWS
