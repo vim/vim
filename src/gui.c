@@ -5004,6 +5004,19 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     char_u	*p;
     regmatch_T	regmatch;
     int		save_did_emsg = did_emsg;
+    static int  busy = FALSE;
+
+    /* When the screen is being updated we should not change buffers and
+     * windows structures, it may cause freed memory to be used.  Also don't
+     * do this recursively (pressing "Find" quickly several times. */
+    if (updating_screen || busy)
+	return FALSE;
+
+    /* refuse replace when text cannot be changed */
+    if ((type == FRD_REPLACE || type == FRD_REPLACEALL) && text_locked())
+	return FALSE;
+
+    busy = TRUE;
 
     ga_init2(&ga, 1, 100);
     if (type == FRD_REPLACEALL)
@@ -5094,6 +5107,7 @@ gui_do_findrepl(flags, find_text, repl_text, down)
     }
 
     vim_free(ga.ga_data);
+    busy = FALSE;
     return (ga.ga_len > 0);
 }
 
