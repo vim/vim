@@ -134,7 +134,7 @@ static int  buf_write_bytes __ARGS((struct bw_info *ip));
 #ifdef FEAT_MBYTE
 static linenr_T readfile_linenr __ARGS((linenr_T linecnt, char_u *p, char_u *endp));
 static int ucs2bytes __ARGS((unsigned c, char_u **pp, int flags));
-static int same_encoding __ARGS((char_u *a, char_u *b));
+static int need_conversion __ARGS((char_u *fenc));
 static int get_fio_flags __ARGS((char_u *ptr));
 static char_u *check_for_bom __ARGS((char_u *p, long size, int *lenp, int flags));
 static int make_bom __ARGS((char_u *buf, char_u *name));
@@ -1043,13 +1043,12 @@ retry:
     }
 
     /*
-     * Conversion is required when the encoding of the file is different
-     * from 'encoding' or 'encoding' is UTF-16, UCS-2 or UCS-4 (requires
-     * conversion to UTF-8).
+     * Conversion may be required when the encoding of the file is different
+     * from 'encoding' or 'encoding' is UTF-16, UCS-2 or UCS-4.
      */
     fio_flags = 0;
-    converted = (*fenc != NUL && !same_encoding(p_enc, fenc));
-    if (converted || enc_unicode != 0)
+    converted = need_conversion(fenc);
+    if (converted)
     {
 
 	/* "ucs-bom" means we need to check the first bytes of the file
@@ -3969,10 +3968,9 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 	fenc = buf->b_p_fenc;
 
     /*
-     * The file needs to be converted when 'fileencoding' is set and
-     * 'fileencoding' differs from 'encoding'.
+     * Check if the file needs to be converted.
      */
-    converted = (*fenc != NUL && !same_encoding(p_enc, fenc));
+    converted = need_conversion(fenc);
 
     /*
      * Check if UTF-8 to UCS-2/4 or Latin1 conversion needs to be done.  Or
@@ -5502,20 +5500,37 @@ ucs2bytes(c, pp, flags)
 }
 
 /*
- * Return TRUE if "a" and "b" are the same 'encoding'.
- * Ignores difference between "ansi" and "latin1", "ucs-4" and "ucs-4be", etc.
+ * Return TRUE if file encoding "fenc" requires conversion from or to
+ * 'encoding'.
  */
     static int
-same_encoding(a, b)
-    char_u	*a;
-    char_u	*b;
+need_conversion(fenc)
+    char_u	*fenc;
 {
-    int		f;
+    int		same_encoding;
+    int		enc_flags;
+    int		fenc_flags;
 
-    if (STRCMP(a, b) == 0)
-	return TRUE;
-    f = get_fio_flags(a);
-    return (f != 0 && get_fio_flags(b) == f);
+    if (*fenc == NUL || STRCMP(p_enc, fenc) == 0)
+	same_encoding = TRUE;
+    else
+    {
+	/* Ignore difference between "ansi" and "latin1", "ucs-4" and
+	 * "ucs-4be", etc. */
+	enc_flags = get_fio_flags(p_enc);
+	fenc_flags = get_fio_flags(fenc);
+	same_encoding = (enc_flags != 0 && fenc_flags == enc_flags);
+    }
+    if (same_encoding)
+    {
+	/* Specified encoding matches with 'encoding'.  This requires
+	 * conversion when 'encoding' is Unicode but not UTF-8. */
+	return enc_unicode != 0;
+    }
+
+    /* Encodings differ.  However, conversion is not needed when 'enc' is any
+     * Unicode encoding and the file is UTF-8. */
+    return !(enc_utf8 && fenc_flags == FIO_UTF8);
 }
 
 /*
