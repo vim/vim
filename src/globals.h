@@ -541,6 +541,7 @@ EXTERN win_T	*curwin;	/* currently active window */
 
 #ifdef FEAT_AUTOCMD
 EXTERN win_T	*aucmd_win;	/* window used in aucmd_prepbuf() */
+EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
 #endif
 
 /*

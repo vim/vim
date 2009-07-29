@@ -8420,6 +8420,10 @@ aucmd_prepbuf(aco, buf)
 	if (aucmd_win == NULL)
 	    win = curwin;
     }
+    if (win == NULL && aucmd_win_used)
+	/* Strange recursive autocommand, fall back to using the current
+	 * window.  Expect a few side effects... */
+	win = curwin;
 
     aco->save_curwin = curwin;
     aco->save_curbuf = curbuf;
@@ -8428,6 +8432,7 @@ aucmd_prepbuf(aco, buf)
 	/* There is a window for "buf" in the current tab page, make it the
 	 * curwin.  This is preferred, it has the least side effects (esp. if
 	 * "buf" is curbuf). */
+	aco->use_aucmd_win = FALSE;
 	curwin = win;
     }
     else
@@ -8436,9 +8441,20 @@ aucmd_prepbuf(aco, buf)
 	 * effects, insert it in a the current tab page.
 	 * Anything related to a window (e.g., setting folds) may have
 	 * unexpected results. */
+	aco->use_aucmd_win = TRUE;
+	aucmd_win_used = TRUE;
 	aucmd_win->w_buffer = buf;
 	++buf->b_nwindows;
 	win_init_empty(aucmd_win); /* set cursor and topline to safe values */
+	vim_free(aucmd_win->w_localdir);
+	aucmd_win->w_localdir = NULL;
+
+	/* Make sure w_localdir and globaldir are NULL to avoid a chdir() in
+	 * win_enter_ext(). */
+	aucmd_win->w_localdir = NULL;
+	aco->globaldir = globaldir;
+	globaldir = NULL;
+
 
 #ifdef FEAT_WINDOWS
 	/* Split the current window, put the aucmd_win in the upper half.
@@ -8472,7 +8488,7 @@ aucmd_restbuf(aco)
     int dummy;
 #endif
 
-    if (aco->new_curwin == aucmd_win)
+    if (aco->use_aucmd_win)
     {
 	--curbuf->b_nwindows;
 #ifdef FEAT_WINDOWS
@@ -8499,6 +8515,7 @@ aucmd_restbuf(aco)
 	/* Remove the window and frame from the tree of frames. */
 	(void)winframe_remove(curwin, &dummy, NULL);
 	win_remove(curwin, NULL);
+	aucmd_win_used = FALSE;
 	last_status(FALSE);	    /* may need to remove last status line */
 	restore_snapshot(SNAP_AUCMD_IDX, FALSE);
 	(void)win_comp_pos();   /* recompute window positions */
@@ -8516,6 +8533,9 @@ aucmd_restbuf(aco)
 	curwin = aco->save_curwin;
 #endif
 	curbuf = curwin->w_buffer;
+
+	vim_free(globaldir);
+	globaldir = aco->globaldir;
 
 	/* the buffer contents may have changed */
 	check_cursor();
@@ -8541,7 +8561,7 @@ aucmd_restbuf(aco)
 #endif
 	{
 	    /* Restore the buffer which was previously edited by curwin, if
-	     * it was chagned, we are still the same window and the buffer is
+	     * it was changed, we are still the same window and the buffer is
 	     * valid. */
 	    if (curwin == aco->new_curwin
 		    && curbuf != aco->new_curbuf

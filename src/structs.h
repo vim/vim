@@ -2288,9 +2288,11 @@ typedef struct
 {
     buf_T	*save_curbuf;	/* saved curbuf */
 #ifdef FEAT_AUTOCMD
+    int		use_aucmd_win;	/* using aucmd_win */
     win_T	*save_curwin;	/* saved curwin */
     win_T	*new_curwin;	/* new curwin */
     buf_T	*new_curbuf;	/* new curbuf */
+    char_u	*globaldir;	/* saved value of globaldir */
 #endif
 } aco_save_T;
 
