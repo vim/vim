@@ -121,6 +121,8 @@ struct bw_info
     char_u	*bw_conv_buf;	/* buffer for writing converted chars */
     int		bw_conv_buflen; /* size of bw_conv_buf */
     int		bw_conv_error;	/* set for conversion error */
+    linenr_T	bw_conv_error_lnum;  /* first line with error or zero */
+    linenr_T	bw_start_lnum;  /* line number at start of buffer */
 # ifdef USE_ICONV
     iconv_t	bw_iconv_fd;	/* descriptor for iconv() or -1 */
 # endif
@@ -2924,6 +2926,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     linenr_T	    lnum;
     long	    nchars;
     char_u	    *errmsg = NULL;
+    int		    errmsg_allocated = FALSE;
     char_u	    *errnum = NULL;
     char_u	    *buffer;
     char_u	    smallbuf[SMBUFSIZE];
@@ -2987,6 +2990,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
     /* must init bw_conv_buf and bw_iconv_fd before jumping to "fail" */
     write_info.bw_conv_buf = NULL;
     write_info.bw_conv_error = FALSE;
+    write_info.bw_conv_error_lnum = 0;
     write_info.bw_restlen = 0;
 # ifdef USE_ICONV
     write_info.bw_iconv_fd = (iconv_t)-1;
@@ -4243,6 +4247,7 @@ restore_backup:
 		nchars += write_info.bw_len;
 	}
     }
+    write_info.bw_start_lnum = start;
 #endif
 
     write_info.bw_len = bufsize;
@@ -4278,6 +4283,9 @@ restore_backup:
 	    nchars += bufsize;
 	    s = buffer;
 	    len = 0;
+#ifdef FEAT_MBYTE
+	    write_info.bw_start_lnum = lnum;
+#endif
 	}
 	/* write failed or last line has no EOL: stop here */
 	if (end == 0
@@ -4474,7 +4482,17 @@ restore_backup:
 	{
 #ifdef FEAT_MBYTE
 	    if (write_info.bw_conv_error)
-		errmsg = (char_u *)_("E513: write error, conversion failed (make 'fenc' empty to override)");
+	    {
+		if (write_info.bw_conv_error_lnum == 0)
+		    errmsg = (char_u *)_("E513: write error, conversion failed (make 'fenc' empty to override)");
+		else
+		{
+		    errmsg_allocated = TRUE;
+		    errmsg = alloc(300);
+		    vim_snprintf((char *)errmsg, 300, _("E513: write error, conversion failed in line %ld (make 'fenc' empty to override)"),
+					 (long)write_info.bw_conv_error_lnum);
+		}
+	    }
 	    else
 #endif
 		if (got_int)
@@ -4550,6 +4568,12 @@ restore_backup:
 	{
 	    STRCAT(IObuff, _(" CONVERSION ERROR"));
 	    c = TRUE;
+	    if (write_info.bw_conv_error_lnum != 0)
+	    {
+		int l = STRLEN(IObuff);
+		vim_snprintf((char *)IObuff + l, IOSIZE - l, _(" in line %ld;"),
+			(long)write_info.bw_conv_error_lnum);
+	    }
 	}
 	else if (notconverted)
 	{
@@ -4746,6 +4770,8 @@ nofail:
 	}
 	STRCAT(IObuff, errmsg);
 	emsg(IObuff);
+	if (errmsg_allocated)
+	    vim_free(errmsg);
 
 	retval = FAIL;
 	if (end == 0)
@@ -5105,7 +5131,13 @@ buf_write_bytes(ip)
 			c = buf[wlen];
 		}
 
-		ip->bw_conv_error |= ucs2bytes(c, &p, flags);
+		if (ucs2bytes(c, &p, flags) && !ip->bw_conv_error)
+		{
+		    ip->bw_conv_error = TRUE;
+		    ip->bw_conv_error_lnum = ip->bw_start_lnum;
+		}
+		if (c == NL)
+		    ++ip->bw_start_lnum;
 	    }
 	    if (flags & FIO_LATIN1)
 		len = (int)(p - buf);
@@ -5386,6 +5418,7 @@ buf_write_bytes(ip)
 #ifdef FEAT_MBYTE
 /*
  * Convert a Unicode character to bytes.
+ * Return TRUE for an error, FALSE when it's OK.
  */
     static int
 ucs2bytes(c, pp, flags)
