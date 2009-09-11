@@ -3233,7 +3233,7 @@ if test "$GCC" = yes; then
   dnl declared as char x[1] but actually longer.  Introduced in gcc 4.0.
   AC_MSG_CHECKING(whether we need -D_FORTIFY_SOURCE=1)
   if test "$gccmajor" -gt "3"; then
-    CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=1"
+    CFLAGS=`echo "$CFLAGS -D_FORTIFY_SOURCE=1" | sed -e 's/-Wp,-D_FORTIFY_SOURCE=2//g' -e 's/-D_FORTIFY_SOURCE=2//g'`
     AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
