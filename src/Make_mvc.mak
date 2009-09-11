@@ -865,6 +865,7 @@ clean:
 	- if exist dimm_i.c del dimm_i.c
 	- if exist dimm.tlb del dimm.tlb
 	- if exist dosinst.exe del dosinst.exe
+	- if exist mzscheme_base.c del mzscheme_base.c
 	cd xxd
 	$(MAKE) /NOLOGO -f Make_mvc.mak clean
 	cd ..

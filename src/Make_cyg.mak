@@ -212,13 +212,34 @@ ifndef MZSCHEME_VER
 MZSCHEME_VER = 209_000
 endif
 
+ifndef MZSCHEME_PRECISE_GC
+MZSCHEME_PRECISE_GC=no
+endif
+
+# for version 4.x we need to generate byte-code for Scheme base
+ifndef MZSCHEME_GENERATE_BASE
+MZSCHEME_GENERATE_BASE=no
+endif
+
 ifeq (yes, $(DYNAMIC_MZSCHEME))
 DEFINES += -DDYNAMIC_MZSCHEME -DDYNAMIC_MZSCH_DLL=\"libmzsch$(MZSCHEME_VER).dll\" -DDYNAMIC_MZGC_DLL=\"libmzgc$(MZSCHEME_VER).dll\"
 else
 ifndef MZSCHEME_DLLS
 MZSCHEME_DLLS = $(MZSCHEME)
 endif
-EXTRA_LIBS += -L$(MZSCHEME_DLLS) -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+ifeq (yes,$(MZSCHEME_PRECISE_GC))
+MZSCHEME_LIB=-lmzsch$(MZSCHEME_VER)
+else
+MZSCHEME_LIB = -lmzsch$(MZSCHEME_VER) -lmzgc$(MZSCHEME_VER)
+endif
+EXTRA_LIBS += -L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)/lib $(MZSCHEME_LIB)
+endif
+ifeq (yes,$(MZSCHEME_GENERATE_BASE))
+DEFINES += -DINCLUDE_MZSCHEME_BASE
+MZ_EXTRA_DEP += mzscheme_base.c
+endif
+ifeq (yes,$(MZSCHEME_PRECISE_GC))
+DEFINES += -DMZ_PRECISE_GC
 endif
 endif
 
@@ -473,6 +494,9 @@ clean:
 ifdef PERL
 	-$(DEL) if_perl.c
 endif
+ifdef MZSCHEME
+	-$(DEL) mzscheme_base.c
+endif
 	-$(DEL) pathdef.c
 	$(MAKE) -C xxd -f Make_cyg.mak clean
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
@@ -523,8 +547,14 @@ endif
 $(OUTDIR)/netbeans.o:	netbeans.c $(INCL) $(NBDEBUG_DEP)
 	$(CC) -c $(CFLAGS) netbeans.c -o $(OUTDIR)/netbeans.o
 
+$(OUTDIR)/if_mzsch.o:	if_mzsch.c $(INCL) if_mzsch.h $(MZ_EXTRA_DEP)
+	$(CC) -c $(CFLAGS) if_mzsch.c -o $(OUTDIR)/if_mzsch.o
+
 $(OUTDIR)/vimrc.o:	vim.rc version.h gui_w32_rc.h
 	$(RC) $(RCFLAGS) vim.rc -o $(OUTDIR)/vimrc.o
+
+mzscheme_base.c:
+	$(MZSCHEME)/mzc --c-mods mzscheme_base.c ++lib scheme/base
 
 pathdef.c: $(INCL)
 ifneq (sh.exe, $(SHELL))

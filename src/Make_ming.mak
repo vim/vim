@@ -135,7 +135,7 @@ endif
 ifndef MZSCHEME_DLLS
 MZSCHEME_DLLS=$(MZSCHEME)
 endif
-MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS)
+MZSCHEME_LIBDIR=-L$(MZSCHEME_DLLS) -L$(MZSCHEME_DLLS)\lib
 endif
 
 endif
@@ -562,6 +562,9 @@ clean:
 	-$(DEL) pathdef.c
 ifdef PERL
 	-$(DEL) if_perl.c
+endif
+ifdef MZSCHEME
+	-$(DEL) mzscheme_base.c
 endif
 	$(MAKE) -C GvimExt -f Make_ming.mak clean
 	$(MAKE) -C xxd -f Make_cyg.mak clean
