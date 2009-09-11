@@ -4568,7 +4568,7 @@ restore_backup:
 	    c = TRUE;
 	    if (write_info.bw_conv_error_lnum != 0)
 	    {
-		int l = STRLEN(IObuff);
+		size_t l = STRLEN(IObuff);
 		vim_snprintf((char *)IObuff + l, IOSIZE - l, _(" in line %ld;"),
 			(long)write_info.bw_conv_error_lnum);
 	    }
