@@ -3055,18 +3055,17 @@ vcol2col(wp, lnum, vcol)
     int		vcol;
 {
     /* try to advance to the specified column */
-    int		col = 0;
     int		count = 0;
     char_u	*ptr;
+    char_u	*start;
 
-    ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
+    start = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
     while (count <= vcol && *ptr != NUL)
     {
-	++col;
 	count += win_lbr_chartabsize(wp, ptr, count, NULL);
 	mb_ptr_adv(ptr);
     }
-    return col;
+    return (int)(ptr - start);
 }
 #endif
 
