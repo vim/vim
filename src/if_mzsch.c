@@ -635,8 +635,10 @@ dynamic_mzscheme_end(void)
 #endif /* DYNAMIC_MZSCHEME */
 
 /* need to put it here for dynamic stuff to work */
-#ifdef INCLUDE_MZSCHEME_BASE
+#if defined(INCLUDE_MZSCHEME_BASE)
 # include "mzscheme_base.c"
+#elif MZSCHEME_VERSION_MAJOR >= 400
+# error MzScheme 4.x must include mzscheme_base.c, for MinGW32 you need to define MZSCHEME_GENERATE_BASE=yes
 #endif
 
 /*
@@ -875,14 +877,14 @@ startup_mzscheme(void)
 #ifdef INCLUDE_MZSCHEME_BASE
     {
 	/*
-	 * versions 4.x do not provide Scheme bindings by defaults
+	 * versions 4.x do not provide Scheme bindings by default
 	 * we need to add them explicitly
 	 */
 	Scheme_Object *scheme_base_symbol = NULL;
 	MZ_GC_DECL_REG(1);
 	MZ_GC_VAR_IN_REG(0, scheme_base_symbol);
 	MZ_GC_REG();
-	/* invoke function from generated and included base.c */
+	/* invoke function from generated and included mzscheme_base.c */
 	declare_modules(environment);
 	scheme_base_symbol = scheme_intern_symbol("scheme/base");
 	MZ_GC_CHECK();
