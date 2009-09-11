@@ -860,11 +860,9 @@ gtk_form_main_filter(GdkXEvent *gdk_xevent,
 gtk_form_set_static_gravity(GdkWindow *window, gboolean use_static)
 {
 #ifdef HAVE_GTK2
-    gboolean static_gravity_supported;
-
-    static_gravity_supported = gdk_window_set_static_gravities(window,
-							       use_static);
-    g_return_if_fail(static_gravity_supported);
+    /* We don't check if static gravity is actually supported, because it
+     * results in an annoying assertion error message. */
+    gdk_window_set_static_gravities(window, use_static);
 #else
     XSetWindowAttributes xattributes;
 
