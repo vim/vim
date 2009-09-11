@@ -481,7 +481,8 @@ bit of code) was adapted from the cscope interface in nvi.  Please report
 any problems, suggestions, patches, et al., you have for the usage of
 cscope within Vim to him.
 							*cscope-win32*
-For a cscope version for Win32 see: http://iamphet.nm.ru/cscope/index.html
+For a cscope version for Win32 see:
+	http://code.google.com/p/cscope-win32/
 
 Win32 support was added by Sergey Khorev <sergey.khorev@gmail.com>.  Contact
 him if you have Win32-specific issues.
