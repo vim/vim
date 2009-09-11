@@ -4729,6 +4729,9 @@ gui_mch_font_dialog(char_u *oldval)
     if (oldval != NULL && *oldval != NUL)
 	gtk_font_selection_dialog_set_font_name(
 		GTK_FONT_SELECTION_DIALOG(gui.fontdlg), (char *)oldval);
+    else
+	gtk_font_selection_dialog_set_font_name(
+		GTK_FONT_SELECTION_DIALOG(gui.fontdlg), DEFAULT_FONT);
 
     if (gui.fontname)
     {
@@ -4816,6 +4819,9 @@ gui_mch_font_dialog(char_u *oldval)
 	if (oldname != oldval)
 	    vim_free(oldname);
     }
+    else
+	gtk_font_selection_dialog_set_font_name(
+		GTK_FONT_SELECTION_DIALOG(dialog), DEFAULT_FONT);
 
     response = gtk_dialog_run(GTK_DIALOG(dialog));
 
