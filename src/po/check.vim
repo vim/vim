@@ -23,6 +23,9 @@ func! GetMline()
   " remove '%', not used for formatting.
   let idline = substitute(idline, "'%'", '', 'g')
 
+  " remove '%' used for plural forms.
+  let idline = substitute(idline, '\\nPlural-Forms: .\+;\\n', '', '')
+
   " remove everything but % items.
   return substitute(idline, '[^%]*\(%[-+ #''.0-9*]*l\=[dsuxXpoc%]\)\=', '\1', 'g')
 endfunc
