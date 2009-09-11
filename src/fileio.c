@@ -9498,15 +9498,10 @@ au_exists(arg)
     ap = first_autopat[(int)event];
     if (ap == NULL)
 	goto theend;
-    if (pattern == NULL)
-    {
-	retval = TRUE;
-	goto theend;
-    }
 
     /* if pattern is "<buffer>", special handling is needed which uses curbuf */
     /* for pattern "<buffer=N>, fnamecmp() will work fine */
-    if (STRICMP(pattern, "<buffer>") == 0)
+    if (pattern != NULL && STRICMP(pattern, "<buffer>") == 0)
 	buflocal_buf = curbuf;
 
     /* Check if there is an autocommand with the given pattern. */
@@ -9515,9 +9510,10 @@ au_exists(arg)
 	/* For buffer-local autocommands, fnamecmp() works fine. */
 	if (ap->pat != NULL && ap->cmds != NULL
 	    && (group == AUGROUP_ALL || ap->group == group)
-	    && (buflocal_buf == NULL
-		 ? fnamecmp(ap->pat, pattern) == 0
-		 : ap->buflocal_nr == buflocal_buf->b_fnum))
+	    && (pattern == NULL
+		|| (buflocal_buf == NULL
+		    ? fnamecmp(ap->pat, pattern) == 0
+		    : ap->buflocal_nr == buflocal_buf->b_fnum)))
 	{
 	    retval = TRUE;
 	    break;
