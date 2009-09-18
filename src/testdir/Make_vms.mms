@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2009 Mar 05
+# Last change:  2009 Sep 11
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -69,7 +69,7 @@ SCRIPT = test1.out  test2.out  test3.out  test4.out  test5.out  \
 	 test48.out test51.out test53.out test54.out test55.out \
 	 test56.out test57.out test60.out \
 	 test61.out test62.out test63.out test64.out test65.out \
-	 test66.out
+	 test66.out test67.out
 
 .IFDEF WANT_GUI
 SCRIPT_GUI = test16.out
