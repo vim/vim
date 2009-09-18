@@ -3266,7 +3266,6 @@ nextwild(xp, type, options)
     int		i, j;
     char_u	*p1;
     char_u	*p2;
-    int		oldlen;
     int		difflen;
     int		v;
 
@@ -3291,7 +3290,7 @@ nextwild(xp, type, options)
     out_flush();
 
     i = (int)(xp->xp_pattern - ccline.cmdbuff);
-    oldlen = ccline.cmdpos - i;
+    xp->xp_pattern_len = ccline.cmdpos - i;
 
     if (type == WILD_NEXT || type == WILD_PREV)
     {
@@ -3305,18 +3304,20 @@ nextwild(xp, type, options)
 	/*
 	 * Translate string into pattern and expand it.
 	 */
-	if ((p1 = addstar(&ccline.cmdbuff[i], oldlen, xp->xp_context)) == NULL)
+	if ((p1 = addstar(xp->xp_pattern, xp->xp_pattern_len,
+						     xp->xp_context)) == NULL)
 	    p2 = NULL;
 	else
 	{
-	    p2 = ExpandOne(xp, p1, vim_strnsave(&ccline.cmdbuff[i], oldlen),
+	    p2 = ExpandOne(xp, p1,
+			 vim_strnsave(&ccline.cmdbuff[i], xp->xp_pattern_len),
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT|WILD_ESCAPE
 							      |options, type);
 	    vim_free(p1);
 	    /* longest match: make sure it is not shorter (happens with :help */
 	    if (p2 != NULL && type == WILD_LONGEST)
 	    {
-		for (j = 0; j < oldlen; ++j)
+		for (j = 0; j < xp->xp_pattern_len; ++j)
 		     if (ccline.cmdbuff[i + j] == '*'
 			     || ccline.cmdbuff[i + j] == '?')
 			 break;
@@ -3331,7 +3332,7 @@ nextwild(xp, type, options)
 
     if (p2 != NULL && !got_int)
     {
-	difflen = (int)STRLEN(p2) - oldlen;
+	difflen = (int)STRLEN(p2) - xp->xp_pattern_len;
 	if (ccline.cmdlen + difflen > ccline.cmdbufflen - 4)
 	{
 	    v = realloc_cmdbuff(ccline.cmdlen + difflen);
@@ -3620,6 +3621,7 @@ ExpandInit(xp)
     expand_T	*xp;
 {
     xp->xp_pattern = NULL;
+    xp->xp_pattern_len = 0;
     xp->xp_backslash = XP_BS_NONE;
 #ifndef BACKSLASH_IN_FILENAME
     xp->xp_shell = FALSE;
@@ -4311,8 +4313,8 @@ expand_cmdline(xp, str, col, matchcount, matches)
     }
 
     /* add star to file name, or convert to regexp if not exp. files. */
-    file_str = addstar(xp->xp_pattern,
-			   (int)(str + col - xp->xp_pattern), xp->xp_context);
+    xp->xp_pattern_len = (int)(str + col - xp->xp_pattern);
+    file_str = addstar(xp->xp_pattern, xp->xp_pattern_len, xp->xp_context);
     if (file_str == NULL)
 	return EXPAND_UNSUCCESSFUL;
 
@@ -4781,7 +4783,7 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
 	sprintf((char *)num, "%d", ccline.cmdpos);
 	args[1] = ccline.cmdbuff;
     }
-    args[0] = xp->xp_pattern;
+    args[0] = vim_strnsave(xp->xp_pattern, xp->xp_pattern_len);
     args[2] = num;
 
     /* Save the cmdline, we don't know what the function may do. */
@@ -4797,6 +4799,7 @@ call_user_expand_func(user_expand_func, xp, num_file, file)
     if (ccline.cmdbuff != NULL)
 	ccline.cmdbuff[ccline.cmdlen] = keep;
 
+    vim_free(args[0]);
     return ret;
 }
 
