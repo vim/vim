@@ -1607,11 +1607,11 @@ foldMarkAdjustRecurse(gap, line1, line2, amount, amount_after)
 	    }
 	    else
 	    {
-		/* 2, 3, or 5: need to correct nested folds too */
-		foldMarkAdjustRecurse(&fp->fd_nested, line1 - fp->fd_top,
-				  line2 - fp->fd_top, amount, amount_after);
 		if (fp->fd_top < top)
 		{
+		    /* 2 or 3: need to correct nested folds too */
+		    foldMarkAdjustRecurse(&fp->fd_nested, line1 - fp->fd_top,
+				  line2 - fp->fd_top, amount, amount_after);
 		    if (last <= line2)
 		    {
 			/* 2. fold contains line1, line2 is below fold */
@@ -1628,7 +1628,11 @@ foldMarkAdjustRecurse(gap, line1, line2, amount, amount_after)
 		}
 		else
 		{
-		    /* 5. fold is below line1 and contains line2 */
+		    /* 5. fold is below line1 and contains line2; need to
+		     * correct nested folds too */
+		    foldMarkAdjustRecurse(&fp->fd_nested, line1 - fp->fd_top,
+				  line2 - fp->fd_top, amount,
+				  amount_after + (fp->fd_top - top));
 		    if (amount == MAXLNUM)
 		    {
 			fp->fd_len -= line2 - fp->fd_top + 1;
