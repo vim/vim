@@ -1386,6 +1386,10 @@ gui_set_shellsize(mustset, fit_to_display, direction)
     int		min_height;
     int		screen_w;
     int		screen_h;
+#ifdef HAVE_GTK2
+    int		un_maximize = mustset;
+    int         did_adjust = 0;
+#endif
 
     if (!gui.shell_created)
 	return;
@@ -1425,22 +1429,47 @@ gui_set_shellsize(mustset, fit_to_display, direction)
 	    if (Columns < MIN_COLUMNS)
 		Columns = MIN_COLUMNS;
 	    width = Columns * gui.char_width + base_width;
+#ifdef HAVE_GTK2
+	    ++did_adjust;
+#endif
 	}
 	if ((direction & RESIZE_VERT) && height > screen_h)
 	{
 	    Rows = (screen_h - base_height) / gui.char_height;
 	    check_shellsize();
 	    height = Rows * gui.char_height + base_height;
+#ifdef HAVE_GTK2
+	    ++did_adjust;
+#endif
 	}
+#ifdef HAVE_GTK2
+	if (did_adjust == 2 || (width + gui.char_width >= screen_w
+				     && height + gui.char_height >= screen_h))
+	    /* don't unmaximize if at maximum size */
+	    un_maximize = FALSE;
+#endif
     }
     gui.num_cols = Columns;
     gui.num_rows = Rows;
 
     min_width = base_width + MIN_COLUMNS * gui.char_width;
     min_height = base_height + MIN_LINES * gui.char_height;
-# ifdef FEAT_WINDOWS
+#ifdef FEAT_WINDOWS
     min_height += tabline_height() * gui.char_height;
-# endif
+#endif
+
+#ifdef HAVE_GTK2
+    if (un_maximize)
+    {
+	/* If the window size is smaller than the screen unmaximize the
+	 * window, otherwise resizing won't work. */
+	gui_mch_get_screen_dimensions(&screen_w, &screen_h);
+	if ((width + gui.char_width < screen_w
+				   || height + gui.char_height * 2 < screen_h)
+		&& gui_mch_maximized())
+	    gui_mch_unmaximize();
+    }
+#endif
 
     gui_mch_set_shellsize(width, height, min_width, min_height,
 					  base_width, base_height, direction);

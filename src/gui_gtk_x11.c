@@ -4376,6 +4376,29 @@ force_shell_resize_idle(gpointer data)
 #endif
 #endif /* HAVE_GTK2 */
 
+#if defined(HAVE_GTK2) || defined(PROTO)
+/*
+ * Return TRUE if the main window is maximized.
+ */
+    int
+gui_mch_maximized()
+{
+    return (gui.mainwin != NULL && gui.mainwin->window != NULL
+	    && (gdk_window_get_state(gui.mainwin->window)
+					       & GDK_WINDOW_STATE_MAXIMIZED));
+}
+
+/*
+ * Unmaximize the main window
+ */
+    void
+gui_mch_unmaximize()
+{
+    if (gui.mainwin != NULL)
+	gtk_window_unmaximize(GTK_WINDOW(gui.mainwin));
+}
+#endif
+
 /*
  * Set the windows size.
  */
