@@ -4066,6 +4066,8 @@ gui_mch_open(void)
 {
     guicolor_T fg_pixel = INVALCOLOR;
     guicolor_T bg_pixel = INVALCOLOR;
+    guint		pixel_width;
+    guint		pixel_height;
 
 #ifdef HAVE_GTK2
     /*
@@ -4106,8 +4108,6 @@ gui_mch_open(void)
 	unsigned int	w, h;
 	int		x = 0;
 	int		y = 0;
-	guint		pixel_width;
-	guint		pixel_height;
 
 	mask = XParseGeometry((char *)gui.geom, &x, &y, &w, &h);
 
@@ -4160,9 +4160,16 @@ gui_mch_open(void)
 	}
     }
 
-    gtk_form_set_size(GTK_FORM(gui.formwin),
-	    (guint)(gui_get_base_width() + Columns * gui.char_width),
-	    (guint)(gui_get_base_height() + Rows * gui.char_height));
+    pixel_width = (guint)(gui_get_base_width() + Columns * gui.char_width);
+    pixel_height = (guint)(gui_get_base_height() + Rows * gui.char_height);
+#ifdef HAVE_GTK2
+    /* For GTK2 changing the size of the form widget doesn't cause window
+     * resizing. */
+    if (gtk_socket_id == 0) 
+	gtk_window_resize(GTK_WINDOW(gui.mainwin), pixel_width, pixel_height);
+#else
+    gtk_form_set_size(GTK_FORM(gui.formwin), pixel_width, pixel_height);
+#endif
     update_window_manager_hints(0, 0);
 
     if (foreground_argument != NULL)
