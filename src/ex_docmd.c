@@ -2695,7 +2695,7 @@ doend:
     {
 	/* messages could be enabled for a serious error, need to check if the
 	 * counters don't become negative */
-	if (!did_emsg)
+	if (!did_emsg || msg_silent > save_msg_silent)
 	    msg_silent = save_msg_silent;
 	emsg_silent -= did_esilent;
 	if (emsg_silent < 0)
