@@ -129,7 +129,7 @@ static void	map_free __ARGS((mapblock_T **));
 static void	validate_maphash __ARGS((void));
 static void	showmap __ARGS((mapblock_T *mp, int local));
 #ifdef FEAT_EVAL
-static char_u	*eval_map_expr __ARGS((char_u *str));
+static char_u	*eval_map_expr __ARGS((char_u *str, int c));
 #endif
 
 /*
@@ -2446,7 +2446,7 @@ vgetorpeek(advance)
 			    if (tabuf.typebuf_valid)
 			    {
 				vgetc_busy = 0;
-				s = eval_map_expr(mp->m_str);
+				s = eval_map_expr(mp->m_str, NUL);
 				vgetc_busy = save_vgetc_busy;
 			    }
 			    else
@@ -4367,9 +4367,9 @@ check_abbr(c, ptr, col, mincol)
 	     * abbreviation, but is not inserted into the input stream.
 	     */
 	    j = 0;
-					/* special key code, split up */
 	    if (c != Ctrl_RSB)
 	    {
+					/* special key code, split up */
 		if (IS_SPECIAL(c) || c == K_SPECIAL)
 		{
 		    tb[j++] = K_SPECIAL;
@@ -4398,7 +4398,7 @@ check_abbr(c, ptr, col, mincol)
 	    }
 #ifdef FEAT_EVAL
 	    if (mp->m_expr)
-		s = eval_map_expr(mp->m_str);
+		s = eval_map_expr(mp->m_str, c);
 	    else
 #endif
 		s = mp->m_str;
@@ -4434,8 +4434,9 @@ check_abbr(c, ptr, col, mincol)
  * special characters.
  */
     static char_u *
-eval_map_expr(str)
+eval_map_expr(str, c)
     char_u	*str;
+    int		c;	    /* NUL or typed character for abbreviation */
 {
     char_u	*res;
     char_u	*p;
@@ -4452,6 +4453,7 @@ eval_map_expr(str)
 #ifdef FEAT_EX_EXTRA
     ++ex_normal_lock;
 #endif
+    set_vim_var_char(c);  /* set v:char to the typed character */
     save_cursor = curwin->w_cursor;
     p = eval_to_string(str, NULL, FALSE);
     --textlock;

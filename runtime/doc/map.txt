@@ -224,6 +224,10 @@ expression is evaluated to obtain the {rhs} that is used.  Example: >
 The result of the InsertDot() function will be inserted.  It could check the
 text before the cursor and start omni completion when some condition is met.
 
+For abbreviations |v:char| is set to the character that was typed to trigger
+the abbreviation.  You can use this to decide how to expand the {lhs}.  You
+can't change v:char and you should not insert it.
+
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.
 For this reason the following is blocked:

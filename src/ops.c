@@ -4473,11 +4473,6 @@ fex_format(lnum, count, c)
     int		use_sandbox = was_set_insecurely((char_u *)"formatexpr",
 								   OPT_LOCAL);
     int		r;
-#ifdef FEAT_MBYTE
-    char_u	buf[MB_MAXBYTES];
-#else
-    char_u	buf[2];
-#endif
 
     /*
      * Set v:lnum to the first line number and v:count to the number of lines.
@@ -4485,17 +4480,7 @@ fex_format(lnum, count, c)
      */
     set_vim_var_nr(VV_LNUM, lnum);
     set_vim_var_nr(VV_COUNT, count);
-
-#ifdef FEAT_MBYTE
-    if (has_mbyte)
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
-    else
-#endif
-    {
-	buf[0] = c;
-	buf[1] = NUL;
-    }
-    set_vim_var_string(VV_CHAR, buf, -1);
+    set_vim_var_char(c);
 
     /*
      * Evaluate the function.

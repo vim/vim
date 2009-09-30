@@ -18101,6 +18101,31 @@ get_vim_var_list(idx)
 }
 
 /*
+ * Set v:char to character "c".
+ */
+    void
+set_vim_var_char(c)
+    int c;
+{
+#ifdef FEAT_MBYTE
+    char_u	buf[MB_MAXBYTES];
+#else
+    char_u	buf[2];
+#endif
+
+#ifdef FEAT_MBYTE
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+    else
+#endif
+    {
+	buf[0] = c;
+	buf[1] = NUL;
+    }
+    set_vim_var_string(VV_CHAR, buf, -1);
+}
+
+/*
  * Set v:count to "count" and v:count1 to "count1".
  * When "set_prevcount" is TRUE first set v:prevcount from v:count.
  */
