@@ -1218,6 +1218,8 @@ in_win_border(wp, vcol)
     if ((int)vcol == width1 - 1)
 	return TRUE;
     width2 = width1 + win_col_off2(wp);
+    if (width2 <= 0)
+	return FALSE;
     return ((vcol - width1) % width2 == width2 - 1);
 }
 #endif /* FEAT_MBYTE */
