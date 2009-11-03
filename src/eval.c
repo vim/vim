@@ -988,13 +988,14 @@ var_redir_start(name, append)
     int		err;
     typval_T	tv;
 
-    /* Make sure a valid variable name is specified */
+    /* Catch a bad name early. */
     if (!eval_isnamec1(*name))
     {
 	EMSG(_(e_invarg));
 	return FAIL;
     }
 
+    /* Make a copy of the name, it is used in redir_lval until redir ends. */
     redir_varname = vim_strsave(name);
     if (redir_varname == NULL)
 	return FAIL;
@@ -1019,6 +1020,7 @@ var_redir_start(name, append)
 	    EMSG(_(e_trailing));
 	else
 	    EMSG(_(e_invarg));
+	redir_endp = NULL;  /* don't store a value, only cleanup */
 	var_redir_stop();
 	return FAIL;
     }
@@ -1037,6 +1039,7 @@ var_redir_start(name, append)
     did_emsg |= save_emsg;
     if (err)
     {
+	redir_endp = NULL;  /* don't store a value, only cleanup */
 	var_redir_stop();
 	return FAIL;
     }
@@ -1085,6 +1088,7 @@ var_redir_str(value, value_len)
 
 /*
  * Stop redirecting command output to a variable.
+ * Frees the allocated memory.
  */
     void
 var_redir_stop()
@@ -1093,14 +1097,18 @@ var_redir_stop()
 
     if (redir_lval != NULL)
     {
-	/* Append the trailing NUL. */
-	ga_append(&redir_ga, NUL);
+	/* If there was no error: assign the text to the variable. */
+	if (redir_endp != NULL)
+	{
+	    ga_append(&redir_ga, NUL);  /* Append the trailing NUL. */
+	    tv.v_type = VAR_STRING;
+	    tv.vval.v_string = redir_ga.ga_data;
+	    set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
+	}
 
-	/* Assign the text to the variable. */
-	tv.v_type = VAR_STRING;
-	tv.vval.v_string = redir_ga.ga_data;
-	set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
-	vim_free(tv.vval.v_string);
+	/* free the collected output */
+	vim_free(redir_ga.ga_data);
+	redir_ga.ga_data = NULL;
 
 	clear_lval(redir_lval);
 	vim_free(redir_lval);
