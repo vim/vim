@@ -1285,7 +1285,7 @@ ml_recover()
 		    for (i = 0; i < dp->db_line_count; ++i)
 		    {
 			txt_start = (dp->db_index[i] & DB_INDEX_MASK);
-			if (txt_start <= HEADER_SIZE
+			if (txt_start <= (int)HEADER_SIZE
 					  || txt_start >= (int)dp->db_txt_end)
 			{
 			    p = (char_u *)"???";
@@ -1296,7 +1296,8 @@ ml_recover()
 			ml_append(lnum++, p, (colnr_T)0, TRUE);
 		    }
 		    if (has_error)
-			ml_append(lnum++, (char_u *)_("???END"), (colnr_T)0, TRUE);
+			ml_append(lnum++, (char_u *)_("???END"),
+							    (colnr_T)0, TRUE);
 		}
 	    }
 	}
@@ -3576,11 +3577,10 @@ resolve_symlink(fname, buf)
  * Make swap file name out of the file name and a directory name.
  * Returns pointer to allocated memory or NULL.
  */
-/*ARGSUSED*/
     char_u *
 makeswapname(fname, ffname, buf, dir_name)
     char_u	*fname;
-    char_u	*ffname;
+    char_u	*ffname UNUSED;
     buf_T	*buf;
     char_u	*dir_name;
 {
