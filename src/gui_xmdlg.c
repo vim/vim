@@ -10,7 +10,7 @@
 /*
  * (C) 2001,2005 by Marcin Dalecki <martin@dalecki.de>
  *
- * Implementation of dialogue functions for the Motif GUI variant.
+ * Implementation of dialog functions for the Motif GUI variant.
  *
  * Note about Lesstif: Apparently lesstif doesn't get the widget layout right,
  * when using a dynamic scrollbar policy.
@@ -633,16 +633,19 @@ do_choice(Widget w,
 	data->sel[which] = XtNewString(sel);
     else
     {
-	XtFree(data->sel[which]);
 	if (!strcmp(data->sel[which], sel))
 	{
 	    /* unselecting current selection */
+	    XtFree(data->sel[which]);
 	    data->sel[which] = NULL;
 	    if (w)
 		XmListDeselectItem(w, call_data->item);
 	}
 	else
+	{
+	    XtFree(data->sel[which]);
 	    data->sel[which] = XtNewString(sel);
+	}
     }
     XtFree(sel);
 
