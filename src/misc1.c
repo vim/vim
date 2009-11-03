@@ -2886,6 +2886,13 @@ changed_common(lnum, col, lnume, xtra)
 		    }
 #endif
 		}
+
+#ifdef FEAT_FOLDING
+	    /* Take care of side effects for setting w_topline when folds have
+	     * changed.  Esp. when the buffer was changed in another window. */
+	    if (hasAnyFolding(wp))
+		set_topline(wp, wp->w_topline);
+#endif
 	}
     }
 
