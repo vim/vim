@@ -864,21 +864,24 @@ ml_recover()
     recoverymode = TRUE;
     called_from_main = (curbuf->b_ml.ml_mfp == NULL);
     attr = hl_attr(HLF_E);
-/*
- * If the file name ends in ".sw?" we use it directly.
- * Otherwise a search is done to find the swap file(s).
- */
+
+    /*
+     * If the file name ends in ".s[uvw][a-z]" we assume this is the swap file.
+     * Otherwise a search is done to find the swap file(s).
+     */
     fname = curbuf->b_fname;
     if (fname == NULL)		    /* When there is no file name */
 	fname = (char_u *)"";
     len = (int)STRLEN(fname);
     if (len >= 4 &&
 #if defined(VMS) || defined(RISCOS)
-	    STRNICMP(fname + len - 4, "_sw" , 3)
+	    STRNICMP(fname + len - 4, "_s" , 2)
 #else
-	    STRNICMP(fname + len - 4, ".sw" , 3)
+	    STRNICMP(fname + len - 4, ".s" , 2)
 #endif
-		== 0)
+		== 0
+		&& vim_strchr((char_u *)"UVWuvw", fname[len - 2]) != NULL
+		&& ASCII_ISALPHA(fname[len - 1]))
     {
 	directly = TRUE;
 	fname = vim_strsave(fname); /* make a copy for mf_open() */
