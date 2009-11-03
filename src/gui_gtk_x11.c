@@ -5267,8 +5267,24 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 # endif
 #endif /* !HAVE_GTK2 */
 
-    /* Preserve the logical dimensions of the screen. */
-    update_window_manager_hints(0, 0);
+#ifdef HAVE_GTK2
+    if (gui_mch_maximized())
+    {
+	int w, h;
+
+	/* Update lines and columns in accordance with the new font, keep the
+	 * window maximized. */
+	gtk_window_get_size(GTK_WINDOW(gui.mainwin), &w, &h);
+	w -= get_menu_tool_width();
+	h -= get_menu_tool_height();
+	gui_resize_shell(w, h);
+    }
+    else
+#endif
+    {
+	/* Preserve the logical dimensions of the screen. */
+	update_window_manager_hints(0, 0);
+    }
 
     return OK;
 }
