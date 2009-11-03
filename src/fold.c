@@ -2851,6 +2851,8 @@ foldSplit(gap, i, top, bot)
     fp[1].fd_top = bot + 1;
     fp[1].fd_len = fp->fd_len - (fp[1].fd_top - fp->fd_top);
     fp[1].fd_flags = fp->fd_flags;
+    fp[1].fd_small = MAYBE;
+    fp->fd_small = MAYBE;
 
     /* Move nested folds below bot to new fold.  There can't be
      * any between top and bot, they have been removed by the caller. */
