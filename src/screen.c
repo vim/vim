@@ -3008,11 +3008,33 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    mb_ptr_adv(ptr);
 	}
 
-#ifdef FEAT_VIRTUALEDIT
-	/* When 'virtualedit' is set the end of the line may be before the
-	 * start of the displayed part. */
-	if (vcol < v && *ptr == NUL && virtual_active())
+#if defined(FEAT_SYN_HL) || defined(FEAT_VIRTUALEDIT) || defined(FEAT_VISUAL)
+	/* When:
+	 * - 'cuc' is set, or
+	 * - 'virtualedit' is set, or
+	 * - the visual mode is active,
+	 * the end of the line may be before the start of the displayed part.
+	 */
+	if (vcol < v && (
+# ifdef FEAT_SYN_HL
+	     wp->w_p_cuc
+#  if defined(FEAT_VIRTUALEDIT) || defined(FEAT_VISUAL)
+	     ||
+#  endif
+# endif
+# ifdef FEAT_VIRTUALEDIT
+	     virtual_active()
+#  ifdef FEAT_VISUAL
+	     ||
+#  endif
+# endif
+# ifdef FEAT_VISUAL
+	     (VIsual_active && wp->w_buffer == curwin->w_buffer)
+# endif
+	     ))
+	{
 	    vcol = v;
+	}
 #endif
 
 	/* Handle a character that's not completely on the screen: Put ptr at
