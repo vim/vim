@@ -1932,7 +1932,7 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 #ifdef FEAT_EVAL
     if (*wp->w_p_fdt != NUL)
     {
-	char_u	dashes[51];
+	char_u	dashes[MAX_LEVEL + 2];
 	win_T	*save_curwin;
 	int	level;
 	char_u	*p;
@@ -1944,8 +1944,8 @@ get_foldtext(wp, lnum, lnume, foldinfo, buf)
 	/* Set "v:folddashes" to a string of "level" dashes. */
 	/* Set "v:foldlevel" to "level". */
 	level = foldinfo->fi_level;
-	if (level > 50)
-	    level = 50;
+	if (level > (int)sizeof(dashes) - 1)
+	    level = (int)sizeof(dashes) - 1;
 	vim_memset(dashes, '-', (size_t)level);
 	dashes[level] = NUL;
 	set_vim_var_string(VV_FOLDDASHES, dashes, -1);
