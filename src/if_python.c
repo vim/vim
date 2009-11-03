@@ -2058,6 +2058,7 @@ WindowSetattr(PyObject *self, char *name, PyObject *val)
     {
 	long lnum;
 	long col;
+	long len;
 
 	if (!PyArg_Parse(val, "(ll)", &lnum, &col))
 	    return -1;
@@ -2072,10 +2073,16 @@ WindowSetattr(PyObject *self, char *name, PyObject *val)
 	if (VimErrorCheck())
 	    return -1;
 
-	/* NO CHECK ON COLUMN - SEEMS NOT TO MATTER */
+	/* When column is out of range silently correct it. */
+	len = STRLEN(ml_get_buf(this->win->w_buffer, lnum, FALSE));
+	if (col > len)
+	    col = len;
 
 	this->win->w_cursor.lnum = lnum;
 	this->win->w_cursor.col = col;
+#ifdef FEAT_VIRTUALEDIT
+	this->win->w_cursor.coladd = 0;
+#endif
 	update_screen(VALID);
 
 	return 0;
