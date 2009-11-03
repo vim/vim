@@ -156,7 +156,7 @@ coladvance2(pos, addspaces, finetune, wcol)
 		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL)
 #endif
 		    ;
-    line = ml_get_curline();
+    line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
     {
@@ -332,9 +332,9 @@ coladvance2(pos, addspaces, finetune, wcol)
 #endif
 
 #ifdef FEAT_MBYTE
-    /* prevent cursor from moving on the trail byte */
+    /* prevent from moving onto a trail byte */
     if (has_mbyte)
-	mb_adjust_cursor();
+	mb_adjustpos(pos);
 #endif
 
     if (col < wcol)

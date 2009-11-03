@@ -2020,6 +2020,7 @@ op_replace(oap, c)
 	bd.is_MAX = (curwin->w_curswant == MAXCOL);
 	for ( ; curwin->w_cursor.lnum <= oap->end.lnum; ++curwin->w_cursor.lnum)
 	{
+	    curwin->w_cursor.col = 0;  /* make sure cursor position is valid */
 	    block_prep(oap, &bd, curwin->w_cursor.lnum, TRUE);
 	    if (bd.textlen == 0 && (!virtual_op || bd.is_MAX))
 		continue;	    /* nothing to replace */
@@ -2035,6 +2036,7 @@ op_replace(oap, c)
 	    {
 		pos_T vpos;
 
+		vpos.lnum = curwin->w_cursor.lnum;
 		getvpos(&vpos, oap->start_vcol);
 		bd.startspaces += vpos.coladd;
 		n = bd.startspaces;
@@ -2693,11 +2695,8 @@ op_change(oap)
 			 * initial coladd offset as part of "startspaces" */
 			if (bd.is_short)
 			{
-			    linenr_T lnum = curwin->w_cursor.lnum;
-
-			    curwin->w_cursor.lnum = linenr;
+			    vpos.lnum = linenr;
 			    (void)getvpos(&vpos, oap->start_vcol);
-			    curwin->w_cursor.lnum = lnum;
 			}
 			else
 			    vpos.coladd = 0;
