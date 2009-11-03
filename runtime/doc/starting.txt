@@ -144,6 +144,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 			-u NORC			no		    yes
 			--noplugin		yes		    no
 
+--startuptime={fname}					*--startuptime*
+		During startup write timing messages to the file {fname}.
+		This can be used to find out where time is spent while loading
+		your .vimrc and plugins.
+		When {fname} already exists new messages are appended.
+		{only when compiled with this feature}
+
 							*--literal*
 --literal	Take file names literally, don't expand wildcards.  Not needed
 		for Unix, because Vim always takes file names literally (the
@@ -471,6 +478,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		window title and copy/paste using the X clipboard.  This
 		avoids a long startup time when running Vim in a terminal
 		emulator and the connection to the X server is slow.
+		See |--startuptime| to find out if affects you.
 		Only makes a difference on Unix or VMS, when compiled with the
 		|+X11| feature.  Otherwise it's ignored.
 		To disable the connection only for specific terminals, see the

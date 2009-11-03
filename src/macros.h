@@ -243,7 +243,7 @@
 #endif
 
 #ifdef STARTUPTIME
-# define TIME_MSG(s) time_msg(s, NULL)
+# define TIME_MSG(s) { if (time_fd != NULL) time_msg(s, NULL); }
 #else
 # define TIME_MSG(s)
 #endif

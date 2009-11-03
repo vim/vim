@@ -1567,6 +1567,10 @@ EXTERN int xsmp_icefd INIT(= -1);   /* The actual connection */
 /* For undo we need to know the lowest time possible. */
 EXTERN time_t starttime;
 
+#ifdef STARTUPTIME
+EXTERN FILE *time_fd INIT(= NULL);  /* where to write startup timing */
+#endif
+
 /*
  * Some compilers warn for not using a return value, but in some situations we
  * can't do anything useful with the value.  Assign to this variable to avoid

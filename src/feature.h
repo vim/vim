@@ -844,10 +844,14 @@
 /* #define DEBUG */
 
 /*
- * STARTUPTIME		Time the startup process.  Writes a "vimstartup" file
- *			with timestamps.
+ * STARTUPTIME		Time the startup process.  Writes a file with
+ *			timestamps.
  */
-/* #define STARTUPTIME "vimstartup" */
+#if defined(FEAT_NORMAL) \
+	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)) \
+		|| defined(WIN3264))
+# define STARTUPTIME 1
+#endif
 
 /*
  * MEM_PROFILE		Debugging of memory allocation and freeing.
