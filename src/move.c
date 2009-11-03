@@ -183,9 +183,6 @@ update_topline()
 	if (curwin->w_topline != 1)
 	    redraw_later(NOT_VALID);
 	curwin->w_topline = 1;
-#ifdef FEAT_DIFF
-	curwin->w_topfill = 0;
-#endif
 	curwin->w_botline = 2;
 	curwin->w_valid |= VALID_BOTLINE|VALID_BOTLINE_AP;
 #ifdef FEAT_SCROLLBIND
@@ -1257,7 +1254,8 @@ scrolldown(line_count, byfold)
     while (line_count-- > 0)
     {
 #ifdef FEAT_DIFF
-	if (curwin->w_topfill < diff_check(curwin, curwin->w_topline))
+	if (curwin->w_topfill < diff_check(curwin, curwin->w_topline)
+		&& curwin->w_topfill < curwin->w_height - 1)
 	{
 	    ++curwin->w_topfill;
 	    ++done;
