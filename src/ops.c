@@ -422,8 +422,9 @@ shift_block(oap, amount)
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 		bd.textstart += (*mb_ptr2len)(bd.textstart);
+	    else
 #endif
-	    ++bd.textstart;
+		++bd.textstart;
 	}
 	for ( ; vim_iswhite(*bd.textstart); )
 	{
