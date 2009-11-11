@@ -8519,7 +8519,7 @@ ins_bs(c, mode, inserted_space_p)
 	{
 	    save_col = curwin->w_cursor.col;
 	    beginline(BL_WHITE);
-	    if (curwin->w_cursor.col < (colnr_T)temp)
+	    if (curwin->w_cursor.col < save_col)
 		mincol = curwin->w_cursor.col;
 	    curwin->w_cursor.col = save_col;
 	}
