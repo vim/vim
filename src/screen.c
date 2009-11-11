@@ -6413,7 +6413,8 @@ screen_puts_len(text, len, row, col, attr)
 		    }
 		    else
 		    {
-			nc = utfc_ptr2char(ptr + mbyte_blen, pcc);
+			nc = utfc_ptr2char_len(ptr + mbyte_blen, pcc,
+				      (int)((text + len) - ptr - mbyte_blen));
 			nc1 = pcc[0];
 		    }
 		    pc = prev_c;
