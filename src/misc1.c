@@ -1026,12 +1026,14 @@ open_line(dir, flags, old_indent)
 		    int		c = 0;
 		    int		off = 0;
 
-		    for (p = lead_flags; *p && *p != ':'; ++p)
+		    for (p = lead_flags; *p != NUL && *p != ':'; )
 		    {
 			if (*p == COM_RIGHT || *p == COM_LEFT)
-			    c = *p;
+			    c = *p++;
 			else if (VIM_ISDIGIT(*p) || *p == '-')
 			    off = getdigits(&p);
+			else
+			    ++p;
 		    }
 		    if (c == COM_RIGHT)    /* right adjusted leader */
 		    {
