@@ -204,9 +204,9 @@ main
 #ifdef STARTUPTIME
     for (i = 1; i < argc; ++i)
     {
-	if (STRNICMP(argv[i], "--startuptime=", 14) == 0)
+	if (STRICMP(argv[i], "--startuptime") == 0 && i + 1 < argc)
 	{
-	    time_fd = mch_fopen(argv[i] + 14, "a");
+	    time_fd = mch_fopen(argv[i + 1], "a");
 	    TIME_MSG("--- VIM STARTING ---");
 	    break;
 	}
@@ -1726,6 +1726,11 @@ command_line_scan(parmp)
 		    want_argument = TRUE;
 		    argv_idx += 3;
 		}
+		else if (STRNICMP(argv[0] + argv_idx, "startuptime", 11) == 0)
+		{
+		    want_argument = TRUE;
+		    argv_idx += 11;
+		}
 #ifdef FEAT_CLIENTSERVER
 		else if (STRNICMP(argv[0] + argv_idx, "serverlist", 10) == 0)
 		    ; /* already processed -- no arg */
@@ -1761,10 +1766,6 @@ command_line_scan(parmp)
 		    /* already processed, skip */
 		}
 #endif
-		else if (STRNICMP(argv[0] + argv_idx, "startuptime", 11) == 0)
-		{
-		    /* already processed, skip */
-		}
 		else
 		{
 		    if (argv[0][argv_idx])
@@ -2061,7 +2062,7 @@ command_line_scan(parmp)
 		    mainerr(ME_GARBAGE, (char_u *)argv[0]);
 
 		--argc;
-		if (argc < 1 && c != 'S')
+		if (argc < 1 && c != 'S')  /* -S has an optional argument */
 		    mainerr_arg_missing((char_u *)argv[0]);
 		++argv;
 		argv_idx = -1;
@@ -2102,11 +2103,16 @@ command_line_scan(parmp)
 							    (char_u *)argv[0];
 		    break;
 
-		case '-':	/* "--cmd {command}" execute command */
-		    if (parmp->n_pre_commands >= MAX_ARG_CMDS)
-			mainerr(ME_EXTRA_CMD, NULL);
-		    parmp->pre_commands[parmp->n_pre_commands++] =
+		case '-':
+		    if (argv[-1][2] == 'c')
+		    {
+			/* "--cmd {command}" execute command */
+			if (parmp->n_pre_commands >= MAX_ARG_CMDS)
+			    mainerr(ME_EXTRA_CMD, NULL);
+			parmp->pre_commands[parmp->n_pre_commands++] =
 							    (char_u *)argv[0];
+		    }
+		    /* "--startuptime <file>" already handled */
 		    break;
 
 	    /*	case 'd':   -d {device} is handled in mch_check_win() for the
@@ -3143,6 +3149,9 @@ usage()
     main_msg(_("--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"));
     main_msg(_("--serverlist\t\tList available Vim server names and exit"));
     main_msg(_("--servername <name>\tSend to/become the Vim server <name>"));
+#endif
+#ifdef STARTUPTIME
+    main_msg(_("--startuptime=<file>\tWrite startup timing messages to <file>"));
 #endif
 #ifdef FEAT_VIMINFO
     main_msg(_("-i <viminfo>\t\tUse <viminfo> instead of .viminfo"));

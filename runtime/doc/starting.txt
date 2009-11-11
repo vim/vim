@@ -144,12 +144,13 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 			-u NORC			no		    yes
 			--noplugin		yes		    no
 
---startuptime={fname}					*--startuptime*
+--startuptime {fname}					*--startuptime*
 		During startup write timing messages to the file {fname}.
 		This can be used to find out where time is spent while loading
-		your .vimrc and plugins.
+		your .vimrc, plugins and opening the first file.
 		When {fname} already exists new messages are appended.
-		{only when compiled with this feature}
+		(Only available when compiled with the |+startuptime|
+		feature).
 
 							*--literal*
 --literal	Take file names literally, don't expand wildcards.  Not needed

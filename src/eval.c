@@ -11736,6 +11736,9 @@ f_has(argvars, rettv)
 #ifdef FEAT_SNIFF
 	"sniff",
 #endif
+#ifdef STARTUPTIME
+	"startuptime",
+#endif
 #ifdef FEAT_STL_OPT
 	"statusline",
 #endif
