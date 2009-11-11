@@ -1005,9 +1005,14 @@ free_all_mem()
 # ifdef FEAT_MENU
     /* Clear menus. */
     do_cmdline_cmd((char_u *)"aunmenu *");
+#  ifdef FEAT_MULTI_LANG
+    do_cmdline_cmd((char_u *)"menutranslate clear");
+#  endif
 # endif
 
     /* Clear mappings, abbreviations, breakpoints. */
+    do_cmdline_cmd((char_u *)"lmapclear");
+    do_cmdline_cmd((char_u *)"xmapclear");
     do_cmdline_cmd((char_u *)"mapclear");
     do_cmdline_cmd((char_u *)"mapclear!");
     do_cmdline_cmd((char_u *)"abclear");
@@ -1282,7 +1287,7 @@ csh_like_shell()
 
 /*
  * Escape "string" for use as a shell argument with system().
- * This uses single quotes, except when we know we need to use double qoutes
+ * This uses single quotes, except when we know we need to use double quotes
  * (MS-DOS and MS-Windows without 'shellslash' set).
  * Escape a newline, depending on the 'shell' option.
  * When "do_special" is TRUE also replace "!", "%", "#" and things starting
@@ -1537,7 +1542,7 @@ copy_spaces(ptr, count)
 #if defined(FEAT_VISUALEXTRA) || defined(PROTO)
 /*
  * Copy a character a number of times.
- * Does not work for multi-byte charactes!
+ * Does not work for multi-byte characters!
  */
     void
 copy_chars(ptr, count, c)
@@ -4260,7 +4265,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	 * or '**76' is transposed to '**N'( 'N' is ASCII value 76).
 	 * For EBCDIC you get different character values.
 	 * If no restrict is given after '**' the default is used.
-	 * Due to this technic the path looks awful if you print it as a
+	 * Due to this technique the path looks awful if you print it as a
 	 * string.
 	 */
 	len = 0;
@@ -4649,7 +4654,7 @@ vim_findfile(search_ctx_arg)
 				      && !mch_isdir(stackp->ffs_filearray[i]))
 			    continue;   /* not a directory */
 
-			/* prepare the filename to be checked for existance
+			/* prepare the filename to be checked for existence
 			 * below */
 			STRCPY(file_path, stackp->ffs_filearray[i]);
 			add_pathsep(file_path);
@@ -5438,7 +5443,7 @@ find_file_in_path_option(ptr, len, options, first, path_option, find_what, rel_f
 #if defined(MSWIN) || defined(MSDOS) || defined(OS2)
 	    /* handle "\tmp" as absolute path */
 	    || vim_ispathsep(ff_file_to_find[0])
-	    /* handle "c:name" as absulute path */
+	    /* handle "c:name" as absolute path */
 	    || (ff_file_to_find[0] != NUL && ff_file_to_find[1] == ':')
 #endif
 #ifdef AMIGA
@@ -5681,7 +5686,7 @@ qsort(base, elm_count, elm_size, cmp)
 		p2 = (char_u *)base + (j + gap) * elm_size;
 		if ((*cmp)((void *)p1, (void *)p2) <= 0)
 		    break;
-		/* Exchange the elemets. */
+		/* Exchange the elements. */
 		mch_memmove(buf, p1, elm_size);
 		mch_memmove(p1, p2, elm_size);
 		mch_memmove(p2, buf, elm_size);
