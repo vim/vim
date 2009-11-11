@@ -22,7 +22,7 @@
  * These buffers are used for storing:
  * - stuffed characters: A command that is translated into another command.
  * - redo characters: will redo the last change.
- * - recorded chracters: for the "q" command.
+ * - recorded characters: for the "q" command.
  *
  * The bytes are stored like in the typeahead buffer:
  * - K_SPECIAL introduces a special key (two more bytes follow).  A literal
@@ -1283,7 +1283,7 @@ free_typebuf()
 	EMSG2(_(e_intern2), "Free typebuf 1");
     else
 	vim_free(typebuf.tb_buf);
-    if (typebuf.tb_buf == noremapbuf_init)
+    if (typebuf.tb_noremap == noremapbuf_init)
 	EMSG2(_(e_intern2), "Free typebuf 2");
     else
 	vim_free(typebuf.tb_noremap);
@@ -1516,7 +1516,7 @@ updatescript(c)
  * wanted.
  * This translates escaped K_SPECIAL and CSI bytes to a K_SPECIAL or CSI byte.
  * Collects the bytes of a multibyte character into the whole character.
- * Returns the modifers in the global "mod_mask".
+ * Returns the modifiers in the global "mod_mask".
  */
     int
 vgetc()
@@ -3320,7 +3320,7 @@ do_map(maptype, arg, mode, abbrev)
 			    retval = 1;
 			    goto theend;
 			}
-	    /* An abbrevation cannot contain white space. */
+	    /* An abbreviation cannot contain white space. */
 	    for (n = 0; n < len; ++n)
 		if (vim_iswhite(keys[n]))
 		{
@@ -4272,7 +4272,7 @@ check_abbr(c, ptr, col, mincol)
 
     /*
      * Check for word before the cursor: If it ends in a keyword char all
-     * chars before it must be al keyword chars or non-keyword chars, but not
+     * chars before it must be keyword chars or non-keyword chars, but not
      * white space. If it ends in a non-keyword char we accept any characters
      * before it except white space.
      */
