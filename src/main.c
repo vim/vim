@@ -3151,7 +3151,7 @@ usage()
     main_msg(_("--servername <name>\tSend to/become the Vim server <name>"));
 #endif
 #ifdef STARTUPTIME
-    main_msg(_("--startuptime=<file>\tWrite startup timing messages to <file>"));
+    main_msg(_("--startuptime <file>\tWrite startup timing messages to <file>"));
 #endif
 #ifdef FEAT_VIMINFO
     main_msg(_("-i <viminfo>\t\tUse <viminfo> instead of .viminfo"));
