@@ -1121,7 +1121,7 @@ open_line(dir, flags, old_indent)
 			    if (i != lead_repl_len)
 			    {
 				mch_memmove(p + lead_repl_len, p + i,
-				       (size_t)(lead_len - i - (leader - p)));
+				       (size_t)(lead_len - i - (p - leader)));
 				lead_len += lead_repl_len - i;
 			    }
 			}
