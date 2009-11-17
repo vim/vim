@@ -3802,7 +3802,8 @@ map({expr}, {string})					*map()*
 		Replace each item in {expr} with the result of evaluating
 		{string}.
 		Inside {string} |v:val| has the value of the current item.
-		For a |Dictionary| |v:key| has the key of the current item.
+		For a |Dictionary| |v:key| has the key of the current item
+		and for a |List| |v:key| has the index of the current item.
 		Example: >
 			:call map(mylist, '"> " . v:val . " <"')
 <		This puts "> " before and " <" after each item in "mylist".

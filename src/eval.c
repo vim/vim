@@ -9928,6 +9928,7 @@ filter_map(argvars, rettv, map)
     int		todo;
     char_u	*ermsg = map ? (char_u *)"map()" : (char_u *)"filter()";
     int		save_did_emsg;
+    int		index = 0;
 
     if (argvars[0].v_type == VAR_LIST)
     {
@@ -9961,9 +9962,9 @@ filter_map(argvars, rettv, map)
 	save_did_emsg = did_emsg;
 	did_emsg = FALSE;
 
+	prepare_vimvar(VV_KEY, &save_key);
 	if (argvars[0].v_type == VAR_DICT)
 	{
-	    prepare_vimvar(VV_KEY, &save_key);
 	    vimvars[VV_KEY].vv_type = VAR_STRING;
 
 	    ht = &d->dv_hashtab;
@@ -9987,24 +9988,27 @@ filter_map(argvars, rettv, map)
 		}
 	    }
 	    hash_unlock(ht);
-
-	    restore_vimvar(VV_KEY, &save_key);
 	}
 	else
 	{
+	    vimvars[VV_KEY].vv_type = VAR_NUMBER;
+
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
 		if (tv_check_lock(li->li_tv.v_lock, ermsg))
 		    break;
 		nli = li->li_next;
+		vimvars[VV_KEY].vv_nr = index;
 		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
 								  || did_emsg)
 		    break;
 		if (!map && rem)
 		    listitem_remove(l, li);
+		++index;
 	    }
 	}
 
+	restore_vimvar(VV_KEY, &save_key);
 	restore_vimvar(VV_VAL, &save_val);
 
 	did_emsg |= save_did_emsg;
