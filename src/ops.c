@@ -3991,6 +3991,14 @@ ex_display(eap)
 	}
 	else
 	    yb = &(y_regs[i]);
+
+#ifdef FEAT_EVAL
+	if (name == MB_TOLOWER(redir_reg)
+		|| (redir_reg == '"' && yb == y_previous))
+	    continue;	    /* do not list register being written to, the
+			     * pointer can be freed */
+#endif
+
 	if (yb->y_array != NULL)
 	{
 	    msg_putchar('\n');
@@ -6090,7 +6098,7 @@ str_to_reg(y_ptr, type, str, len, blocklen)
     long	maxlen;
 #endif
 
-    if (y_ptr->y_array == NULL)		/* NULL means emtpy register */
+    if (y_ptr->y_array == NULL)		/* NULL means empty register */
 	y_ptr->y_size = 0;
 
     /*
