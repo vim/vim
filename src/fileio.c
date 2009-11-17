@@ -146,6 +146,7 @@ static int get_mac_fio_flags __ARGS((char_u *ptr));
 # endif
 #endif
 static int move_lines __ARGS((buf_T *frombuf, buf_T *tobuf));
+static void vim_settempdir __ARGS((char_u *tempdir));
 #ifdef FEAT_AUTOCMD
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 #endif
@@ -6987,6 +6988,33 @@ vim_deltempdir()
 #endif
 
 /*
+ * Directory "tempdir" was created.  Expand this name to a full path and put
+ * it in "vim_tempdir".  This avoids that using ":cd" would confuse us.
+ * "tempdir" must be no longer than MAXPATHL.
+ */
+    static void
+vim_settempdir(tempdir)
+    char_u	*tempdir;
+{
+    char_u	*buf;
+
+    buf = alloc((unsigned)MAXPATHL + 2);
+    if (buf != NULL)
+    {
+	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)
+	    STRCPY(buf, tempdir);
+# ifdef __EMX__
+	if (vim_strchr(buf, '/') != NULL)
+	    STRCAT(buf, "/");
+	else
+# endif
+	    add_pathsep(buf);
+	vim_tempdir = vim_strsave(buf);
+	vim_free(buf);
+    }
+}
+
+/*
  * vim_tempname(): Return a unique name that can be used for a temp file.
  *
  * The temp file is NOT created.
@@ -7007,8 +7035,6 @@ vim_tempname(extra_char)
 #ifdef TEMPDIRNAMES
     static char	*(tempdirs[]) = {TEMPDIRNAMES};
     int		i;
-    long	nr;
-    long	off;
 # ifndef EEXIST
     struct stat	st;
 # endif
@@ -7027,6 +7053,12 @@ vim_tempname(extra_char)
 	 */
 	for (i = 0; i < (int)(sizeof(tempdirs) / sizeof(char *)); ++i)
 	{
+	    size_t	itmplen;
+# ifndef HAVE_MKDTEMP
+	    long	nr;
+	    long	off;
+# endif
+
 	    /* expand $TMP, leave room for "/v1100000/999999999" */
 	    expand_env((char_u *)tempdirs[i], itmp, TEMPNAMELEN - 20);
 	    if (mch_isdir(itmp))		/* directory exists */
@@ -7040,7 +7072,14 @@ vim_tempname(extra_char)
 		else
 # endif
 		    add_pathsep(itmp);
+		itmplen = STRLEN(itmp);
 
+# ifdef HAVE_MKDTEMP
+		/* Leave room for filename */
+		STRCAT(itmp, "vXXXXXX");
+		if (mkdtemp((char *)itmp) != NULL)
+		    vim_settempdir(itmp);
+# else
 		/* Get an arbitrary number of up to 6 digits.  When it's
 		 * unlikely that it already exists it will be faster,
 		 * otherwise it doesn't matter.  The use of mkdir() avoids any
@@ -7052,59 +7091,41 @@ vim_tempname(extra_char)
 		for (off = 0; off < 10000L; ++off)
 		{
 		    int		r;
-#if defined(UNIX) || defined(VMS)
+#  if defined(UNIX) || defined(VMS)
 		    mode_t	umask_save;
-#endif
+#  endif
 
-		    sprintf((char *)itmp + STRLEN(itmp), "v%ld", nr + off);
-# ifndef EEXIST
+		    sprintf((char *)itmp + itmplen, "v%ld", nr + off);
+#  ifndef EEXIST
 		    /* If mkdir() does not set errno to EEXIST, check for
 		     * existing file here.  There is a race condition then,
 		     * although it's fail-safe. */
 		    if (mch_stat((char *)itmp, &st) >= 0)
 			continue;
-# endif
-#if defined(UNIX) || defined(VMS)
+#  endif
+#  if defined(UNIX) || defined(VMS)
 		    /* Make sure the umask doesn't remove the executable bit.
 		     * "repl" has been reported to use "177". */
 		    umask_save = umask(077);
-#endif
+#  endif
 		    r = vim_mkdir(itmp, 0700);
-#if defined(UNIX) || defined(VMS)
+#  if defined(UNIX) || defined(VMS)
 		    (void)umask(umask_save);
-#endif
+#  endif
 		    if (r == 0)
 		    {
-			char_u	*buf;
-
-			/* Directory was created, use this name.
-			 * Expand to full path; When using the current
-			 * directory a ":cd" would confuse us. */
-			buf = alloc((unsigned)MAXPATHL + 1);
-			if (buf != NULL)
-			{
-			    if (vim_FullName(itmp, buf, MAXPATHL, FALSE)
-								      == FAIL)
-				STRCPY(buf, itmp);
-# ifdef __EMX__
-			    if (vim_strchr(buf, '/') != NULL)
-				STRCAT(buf, "/");
-			    else
-# endif
-				add_pathsep(buf);
-			    vim_tempdir = vim_strsave(buf);
-			    vim_free(buf);
-			}
+			vim_settempdir(itmp);
 			break;
 		    }
-# ifdef EEXIST
+#  ifdef EEXIST
 		    /* If the mkdir() didn't fail because the file/dir exists,
 		     * we probably can't create any dir here, try another
 		     * place. */
 		    if (errno != EEXIST)
-# endif
+#  endif
 			break;
 		}
+# endif /* HAVE_MKDTEMP */
 		if (vim_tempdir != NULL)
 		    break;
 	    }
