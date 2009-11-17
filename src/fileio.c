@@ -8597,6 +8597,7 @@ aucmd_restbuf(aco)
 	    curwin = firstwin;
 # ifdef FEAT_EVAL
 	vars_clear(&aucmd_win->w_vars.dv_hashtab);  /* free all w: variables */
+	hash_init(&aucmd_win->w_vars.dv_hashtab);   /* re-use the hashtab */
 # endif
 #else
 	curwin = aco->save_curwin;
