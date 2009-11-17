@@ -388,3 +388,6 @@
 
 /* Define if you want XSMP interaction as well as vanilla swapfile safety */
 #undef USE_XSMP_INTERACT
+
+/* Define if fcntl()'s F_SETFD command knows about FD_CLOEXEC */
+#undef HAVE_FD_CLOEXEC

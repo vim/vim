@@ -1343,6 +1343,11 @@ mf_do_open(mfp, fname, flags)
     }
     else
     {
+#ifdef HAVE_FD_CLOEXEC
+	int fdflags = fcntl(mfp->mf_fd, F_GETFD);
+	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
+	    fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
+#endif
 #ifdef HAVE_SELINUX
 	mch_copy_sec(fname, mfp->mf_fname);
 #endif

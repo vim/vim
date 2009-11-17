@@ -2855,6 +2855,16 @@ else
   AC_MSG_RESULT(yes)
 fi
 
+dnl make sure the FD_CLOEXEC flag for fcntl()'s F_SETFD command is known
+AC_MSG_CHECKING(for FD_CLOEXEC)
+AC_TRY_COMPILE(
+[#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif],
+[	int flag = FD_CLOEXEC;],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FD_CLOEXEC),
+	AC_MSG_RESULT(not usable))
+
 dnl rename needs to be checked separately to work on Nextstep with cc
 AC_MSG_CHECKING(for rename)
 AC_TRY_LINK([#include <stdio.h>], [rename("this", "that")],

@@ -2254,6 +2254,14 @@ failed:
 
     if (!read_buffer && !read_stdin)
 	close(fd);				/* errors are ignored */
+#ifdef HAVE_FD_CLOEXEC
+    else
+    {
+	int fdflags = fcntl(fd, F_GETFD);
+	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
+	    fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
+    }
+#endif
     vim_free(buffer);
 
 #ifdef HAVE_DUP

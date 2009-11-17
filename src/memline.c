@@ -382,7 +382,7 @@ ml_open(buf)
     dp->db_index[0] = --dp->db_txt_start;	/* at end of block */
     dp->db_free -= 1 + INDEX_SIZE;
     dp->db_line_count = 1;
-    *((char_u *)dp + dp->db_txt_start) = NUL;	/* emtpy line */
+    *((char_u *)dp + dp->db_txt_start) = NUL;	/* empty line */
 
     return OK;
 
@@ -490,6 +490,13 @@ ml_setname(buf)
 	    EMSG(_("E301: Oops, lost the swap file!!!"));
 	    return;
 	}
+#ifdef HAVE_FD_CLOEXEC
+	{
+	    int fdflags = fcntl(mfp->mf_fd, F_GETFD);
+	    if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
+		fcntl(mfp->mf_fd, F_SETFD, fdflags | FD_CLOEXEC);
+	}
+#endif
     }
     if (!success)
 	EMSG(_("E302: Could not rename swap file"));
