@@ -1,0 +1,56 @@
+Test for text formatting.
+
+Results of test68:
+
+STARTTEST
+:so small.vim
+/^{/+1
+:set noai tw=2 fo=t
+gRa b
+ENDTEST
+
+{
+    
+
+}
+
+STARTTEST
+/^{/+1
+:set ai tw=2 fo=tw
+gqgqjjllab
+ENDTEST
+
+{
+a  b  
+
+a    
+}
+
+STARTTEST
+/^{/+1
+:set tw=3 fo=t
+gqgqo
+a 
+ENDTEST
+
+{
+a 
+}
+
+STARTTEST
+/^{/+1
+:set tw=2 fo=tcq1 comments=:#
+gqgqjgqgqo
+a b
+#a b
+ENDTEST
+
+{
+a b
+#a b
+}
+
+STARTTEST
+:g/^STARTTEST/.,/^ENDTEST/d
+:1;/^Results/,$wq! test.out
+ENDTEST

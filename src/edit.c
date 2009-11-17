@@ -181,7 +181,7 @@ static void ins_redraw __ARGS((int ready));
 static void ins_ctrl_v __ARGS((void));
 static void undisplay_dollar __ARGS((void));
 static void insert_special __ARGS((int, int, int));
-static void internal_format __ARGS((int textwidth, int second_indent, int flags, int format_only));
+static void internal_format __ARGS((int textwidth, int second_indent, int flags, int format_only, int c));
 static void check_auto_format __ARGS((int));
 static void redo_literal __ARGS((int c));
 static void start_arrow __ARGS((pos_T *end_insert_pos));
@@ -2164,7 +2164,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
     int		i, c;
     int		actual_len;		/* Take multi-byte characters */
     int		actual_compl_length;	/* into account. */
-    int		*wca;		        /* Wide character array. */
+    int		*wca;			/* Wide character array. */
     int		has_lower = FALSE;
     int		was_letter = FALSE;
 
@@ -5558,7 +5558,7 @@ insertchar(c, flags, second_indent)
 	}
 	if (do_internal)
 #endif
-	    internal_format(textwidth, second_indent, flags, c == NUL);
+	    internal_format(textwidth, second_indent, flags, c == NUL, c);
     }
 
     if (c == NUL)	    /* only formatting was wanted */
@@ -5738,11 +5738,12 @@ insertchar(c, flags, second_indent)
  * Format text at the current insert position.
  */
     static void
-internal_format(textwidth, second_indent, flags, format_only)
+internal_format(textwidth, second_indent, flags, format_only, c)
     int		textwidth;
     int		second_indent;
     int		flags;
     int		format_only;
+    int		c; /* character to be inserted (can be NUL) */
 {
     int		cc;
     int		save_char = NUL;
@@ -5763,7 +5764,11 @@ internal_format(textwidth, second_indent, flags, format_only)
      * When 'ai' is off we don't want a space under the cursor to be
      * deleted.  Replace it with an 'x' temporarily.
      */
-    if (!curbuf->b_p_ai)
+    if (!curbuf->b_p_ai
+#ifdef FEAT_VREPLACE
+	    && !(State & VREPLACE_FLAG)
+#endif
+	    )
     {
 	cc = gchar_cursor();
 	if (vim_iswhite(cc))
@@ -5789,9 +5794,11 @@ internal_format(textwidth, second_indent, flags, format_only)
 	char_u	*saved_text = NULL;
 #endif
 	colnr_T	col;
+	colnr_T	end_col;
 
-	virtcol = get_nolist_virtcol();
-	if (virtcol < (colnr_T)textwidth)
+	virtcol = get_nolist_virtcol()
+		+ char2cells(c != NUL ? c : gchar_cursor());
+	if (virtcol <= (colnr_T)textwidth)
 	    break;
 
 #ifdef FEAT_COMMENTS
@@ -5831,12 +5838,7 @@ internal_format(textwidth, second_indent, flags, format_only)
 	coladvance((colnr_T)textwidth);
 	wantcol = curwin->w_cursor.col;
 
-	curwin->w_cursor.col = startcol - 1;
-#ifdef FEAT_MBYTE
-	/* Correct cursor for multi-byte character. */
-	if (has_mbyte)
-	    mb_adjust_cursor();
-#endif
+	curwin->w_cursor.col = startcol;
 	foundcol = 0;
 
 	/*
@@ -5847,11 +5849,14 @@ internal_format(textwidth, second_indent, flags, format_only)
 		    || curwin->w_cursor.lnum != Insstart.lnum
 		    || curwin->w_cursor.col >= Insstart.col)
 	{
-	    cc = gchar_cursor();
+	    if (curwin->w_cursor.col == startcol && c != NUL)
+		cc = c;
+	    else
+		cc = gchar_cursor();
 	    if (WHITECHAR(cc))
 	    {
 		/* remember position of blank just before text */
-		end_foundcol = curwin->w_cursor.col;
+		end_col = curwin->w_cursor.col;
 
 		/* find start of sequence of blanks */
 		while (curwin->w_cursor.col > 0 && WHITECHAR(cc))
@@ -5871,7 +5876,11 @@ internal_format(textwidth, second_indent, flags, format_only)
 		    /* do not break after one-letter words */
 		    if (curwin->w_cursor.col == 0)
 			break;	/* one-letter word at begin */
-
+#ifdef FEAT_COMMENTS
+		    /* do not break "#a b" when 'tw' is 2 */
+		    if (curwin->w_cursor.col <= leader_len)
+			break;
+#endif
 		    col = curwin->w_cursor.col;
 		    dec_cursor();
 		    cc = gchar_cursor();
@@ -5880,26 +5889,60 @@ internal_format(textwidth, second_indent, flags, format_only)
 			continue;	/* one-letter, continue */
 		    curwin->w_cursor.col = col;
 		}
-#ifdef FEAT_MBYTE
-		if (has_mbyte)
-		    foundcol = curwin->w_cursor.col
-					 + (*mb_ptr2len)(ml_get_cursor());
-		else
-#endif
-		    foundcol = curwin->w_cursor.col + 1;
-		if (curwin->w_cursor.col < (colnr_T)wantcol)
+
+		inc_cursor();
+
+		end_foundcol = end_col + 1;
+		foundcol = curwin->w_cursor.col;
+		if (curwin->w_cursor.col <= (colnr_T)wantcol)
 		    break;
 	    }
 #ifdef FEAT_MBYTE
-	    else if (cc >= 0x100 && fo_multibyte
-			      && curwin->w_cursor.col <= (colnr_T)wantcol)
+	    else if (cc >= 0x100 && fo_multibyte)
 	    {
 		/* Break after or before a multi-byte character. */
+		if (curwin->w_cursor.col != startcol)
+		{
+#ifdef FEAT_COMMENTS
+		    /* Don't break until after the comment leader */
+		    if (curwin->w_cursor.col < leader_len)
+			break;
+#endif
+		    col = curwin->w_cursor.col;
+		    inc_cursor();
+		    /* Don't change end_foundcol if already set. */
+		    if (foundcol != curwin->w_cursor.col)
+		    {
+			foundcol = curwin->w_cursor.col;
+			end_foundcol = foundcol;
+			if (curwin->w_cursor.col <= (colnr_T)wantcol)
+			    break;
+		    }
+		    curwin->w_cursor.col = col;
+		}
+
+		if (curwin->w_cursor.col == 0)
+		    break;
+
+		col = curwin->w_cursor.col;
+
+		dec_cursor();
+		cc = gchar_cursor();
+
+		if (WHITECHAR(cc))
+		    continue;		/* break with space */
+#ifdef FEAT_COMMENTS
+		/* Don't break until after the comment leader */
+		if (curwin->w_cursor.col < leader_len)
+		    break;
+#endif
+
+		curwin->w_cursor.col = col;
+
 		foundcol = curwin->w_cursor.col;
-		if (curwin->w_cursor.col < (colnr_T)wantcol)
-		    foundcol += (*mb_char2len)(cc);
 		end_foundcol = foundcol;
-		break;
+		if (curwin->w_cursor.col <= (colnr_T)wantcol)
+		    break;
 	    }
 #endif
 	    if (curwin->w_cursor.col == 0)
@@ -5926,14 +5969,15 @@ internal_format(textwidth, second_indent, flags, format_only)
 	    orig_col = startcol;	/* Will start backspacing from here */
 	else
 #endif
-	    replace_offset = startcol - end_foundcol - 1;
+	    replace_offset = startcol - end_foundcol;
 
 	/*
 	 * adjust startcol for spaces that will be deleted and
 	 * characters that will remain on top line
 	 */
 	curwin->w_cursor.col = foundcol;
-	while (cc = gchar_cursor(), WHITECHAR(cc))
+	while ((cc = gchar_cursor(), WHITECHAR(cc))
+		    && (!fo_white_par || curwin->w_cursor.col < startcol))
 	    inc_cursor();
 	startcol -= curwin->w_cursor.col;
 	if (startcol < 0)
@@ -8509,7 +8553,7 @@ ins_bs(c, mode, inserted_space_p)
 	if (mode == BACKSPACE_LINE
 		&& (curbuf->b_p_ai
 #ifdef FEAT_CINDENT
-                    || cindent_on()
+		    || cindent_on()
 #endif
 		   )
 #ifdef FEAT_RIGHTLEFT

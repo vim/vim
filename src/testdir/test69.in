@@ -1,0 +1,139 @@
+Test for multi-byte text formatting.
+
+STARTTEST
+:so mbyte.vim
+:set encoding=utf-8
+ENDTEST
+
+Results of test69:
+
+STARTTEST
+/^{/+1
+:set tw=2 fo=t
+gqgqjgqgqo
+ＸＹＺ
+abc ＸＹＺ
+ENDTEST
+
+{
+ＸＹＺ
+abc ＸＹＺ
+}
+
+STARTTEST
+/^{/+1
+:set tw=1 fo=tm
+gqgqjgqgqjgqgqjgqgqjgqgqo
+Ｘ
+Ｘa
+Ｘ a
+ＸＹ
+Ｘ Ｙ
+ENDTEST
+
+{
+Ｘ
+Ｘa
+Ｘ a
+ＸＹ
+Ｘ Ｙ
+}
+
+STARTTEST
+/^{/+1
+:set tw=2 fo=tm
+gqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqo
+Ｘ
+Ｘa
+Ｘ a
+ＸＹ
+Ｘ Ｙ
+aＸ
+abＸ
+abcＸ
+abＸ c
+abＸＹ
+ENDTEST
+
+{
+Ｘ
+Ｘa
+Ｘ a
+ＸＹ
+Ｘ Ｙ
+aＸ
+abＸ
+abcＸ
+abＸ c
+abＸＹ
+}
+
+STARTTEST
+/^{/+1
+:set ai tw=2 fo=tm
+gqgqjgqgqo
+Ｘ
+Ｘa
+ENDTEST
+
+{
+  Ｘ
+  Ｘa
+}
+
+STARTTEST
+/^{/+1
+:set noai tw=2 fo=tm
+gqgqjgqgqo
+  Ｘ
+  Ｘa
+ENDTEST
+
+{
+  Ｘ
+  Ｘa
+}
+
+STARTTEST
+/^{/+1
+:set tw=2 fo=cqm comments=n:Ｘ
+gqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqo
+Ｘ
+Ｘa
+ＸaＹ
+ＸＹ
+ＸＹＺ
+Ｘ Ｙ
+Ｘ ＹＺ
+ＸＸ
+ＸＸa
+ＸＸＹ
+ENDTEST
+
+{
+Ｘ
+Ｘa
+ＸaＹ
+ＸＹ
+ＸＹＺ
+Ｘ Ｙ
+Ｘ ＹＺ
+ＸＸ
+ＸＸa
+ＸＸＹ
+}
+
+STARTTEST
+/^{/+1
+:set tw=2 fo=tm
+RＸa
+ENDTEST
+
+{
+
+}
+
+STARTTEST
+:g/^STARTTEST/.,/^ENDTEST/d
+:1;/^Results/,$wq! test.out
+ENDTEST
