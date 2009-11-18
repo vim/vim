@@ -146,7 +146,9 @@ static int get_mac_fio_flags __ARGS((char_u *ptr));
 # endif
 #endif
 static int move_lines __ARGS((buf_T *frombuf, buf_T *tobuf));
+#ifdef TEMPDIRNAMES
 static void vim_settempdir __ARGS((char_u *tempdir));
+#endif
 #ifdef FEAT_AUTOCMD
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 #endif
@@ -6995,6 +6997,7 @@ vim_deltempdir()
 }
 #endif
 
+#ifdef TEMPDIRNAMES
 /*
  * Directory "tempdir" was created.  Expand this name to a full path and put
  * it in "vim_tempdir".  This avoids that using ":cd" would confuse us.
@@ -7021,6 +7024,7 @@ vim_settempdir(tempdir)
 	vim_free(buf);
     }
 }
+#endif
 
 /*
  * vim_tempname(): Return a unique name that can be used for a temp file.
