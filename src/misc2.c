@@ -1390,6 +1390,7 @@ vim_strsave_shellescape(string, do_special)
 		*d++ = '\\';		/* insert backslash */
 		while (--l >= 0)	/* copy the var */
 		    *d++ = *p++;
+		continue;
 	    }
 
 	    MB_COPY_CHAR(p, d);
