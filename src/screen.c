@@ -323,6 +323,7 @@ update_screen(type)
     int		did_one;
 #endif
 
+    /* Don't do anything if the screen structures are (not yet) valid. */
     if (!screen_valid(TRUE))
 	return;
 
@@ -342,7 +343,9 @@ update_screen(type)
     if (curwin->w_lines_valid == 0 && type < NOT_VALID)
 	type = NOT_VALID;
 
-    if (!redrawing())
+    /* Postpone the redrawing when it's not needed and when being called
+     * recursively. */
+    if (!redrawing() || updating_screen)
     {
 	redraw_later(type);		/* remember type for next time */
 	must_redraw = type;
@@ -582,6 +585,7 @@ static void update_finish __ARGS((void));
 
 /*
  * Prepare for updating one or more windows.
+ * Caller must check for "updating_screen" already set to avoid recursiveness.
  */
     static void
 update_prepare()
@@ -663,7 +667,9 @@ update_debug_sign(buf, lnum)
 	    doit = TRUE;
     }
 
-    if (!doit)
+    /* Return when there is nothing to do or screen updating already
+     * happening. */
+    if (!doit || updating_screen)
 	return;
 
     /* update all windows that need updating */
@@ -696,6 +702,10 @@ update_debug_sign(buf, lnum)
 updateWindow(wp)
     win_T	*wp;
 {
+    /* return if already busy updating */
+    if (updating_screen)
+	return;
+
     update_prepare();
 
 #ifdef FEAT_CLIPBOARD
