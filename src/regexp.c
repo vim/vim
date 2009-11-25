@@ -6828,6 +6828,8 @@ static int can_f_submatch = FALSE;	/* TRUE when submatch() can be used */
  * that contains a call to substitute() and submatch(). */
 static regmatch_T	*submatch_match;
 static regmmatch_T	*submatch_mmatch;
+static linenr_T		submatch_firstlnum;
+static linenr_T		submatch_maxline;
 #endif
 
 #if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL) || defined(PROTO)
@@ -6941,7 +6943,6 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	}
 	else
 	{
-	    linenr_T	save_reg_maxline;
 	    win_T	*save_reg_win;
 	    int		save_ireg_ic;
 
@@ -6953,7 +6954,8 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	     * vim_regexec_multi() can't be called recursively. */
 	    submatch_match = reg_match;
 	    submatch_mmatch = reg_mmatch;
-	    save_reg_maxline = reg_maxline;
+	    submatch_firstlnum = reg_firstlnum;
+	    submatch_maxline = reg_maxline;
 	    save_reg_win = reg_win;
 	    save_ireg_ic = ireg_ic;
 	    can_f_submatch = TRUE;
@@ -6976,7 +6978,8 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 
 	    reg_match = submatch_match;
 	    reg_mmatch = submatch_mmatch;
-	    reg_maxline = save_reg_maxline;
+	    reg_firstlnum = submatch_firstlnum;
+	    reg_maxline = submatch_maxline;
 	    reg_win = save_reg_win;
 	    ireg_ic = save_ireg_ic;
 	    can_f_submatch = FALSE;
@@ -7212,6 +7215,29 @@ exit:
 
 #ifdef FEAT_EVAL
 /*
+ * Call reg_getline() with the line numbers from the submatch.  If a
+ * substitute() was used the reg_maxline and other values have been
+ * overwritten.
+ */
+    static char_u *
+reg_getline_submatch(lnum)
+    linenr_T	lnum;
+{
+    char_u *s;
+    linenr_T save_first = reg_firstlnum;
+    linenr_T save_max = reg_maxline;
+
+    reg_firstlnum = submatch_firstlnum;
+    reg_maxline = submatch_maxline;
+
+    s = reg_getline(lnum);
+
+    reg_firstlnum = save_first;
+    reg_maxline = save_max;
+    return s;
+}
+
+/*
  * Used for the submatch() function: get the string from the n'th submatch in
  * allocated memory.
  * Returns NULL when not in a ":s" command and for a non-existing submatch.
@@ -7241,7 +7267,7 @@ reg_submatch(no)
 	    if (lnum < 0 || submatch_mmatch->endpos[no].lnum < 0)
 		return NULL;
 
-	    s = reg_getline(lnum) + submatch_mmatch->startpos[no].col;
+	    s = reg_getline_submatch(lnum) + submatch_mmatch->startpos[no].col;
 	    if (s == NULL)  /* anti-crash check, cannot happen? */
 		break;
 	    if (submatch_mmatch->endpos[no].lnum == lnum)
@@ -7267,7 +7293,7 @@ reg_submatch(no)
 		++lnum;
 		while (lnum < submatch_mmatch->endpos[no].lnum)
 		{
-		    s = reg_getline(lnum++);
+		    s = reg_getline_submatch(lnum++);
 		    if (round == 2)
 			STRCPY(retval + len, s);
 		    len += (int)STRLEN(s);
@@ -7276,7 +7302,7 @@ reg_submatch(no)
 		    ++len;
 		}
 		if (round == 2)
-		    STRNCPY(retval + len, reg_getline(lnum),
+		    STRNCPY(retval + len, reg_getline_submatch(lnum),
 					     submatch_mmatch->endpos[no].col);
 		len += submatch_mmatch->endpos[no].col;
 		if (round == 2)
