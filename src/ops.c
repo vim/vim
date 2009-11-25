@@ -5597,7 +5597,10 @@ x11_export_final_selection()
 	    vc.vc_type = CONV_NONE;
 	    if (convert_setup(&vc, p_enc, (char_u *)"latin1") == OK)
 	    {
-		conv_str = string_convert(&vc, str, (int*)&len);
+	        int intlen = len;
+
+		conv_str = string_convert(&vc, str, &intlen);
+		len = intlen;
 		if (conv_str != NULL)
 		{
 		    vim_free(str);
