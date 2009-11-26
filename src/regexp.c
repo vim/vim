@@ -7214,6 +7214,8 @@ exit:
 }
 
 #ifdef FEAT_EVAL
+static char_u *reg_getline_submatch __ARGS((linenr_T lnum));
+
 /*
  * Call reg_getline() with the line numbers from the submatch.  If a
  * substitute() was used the reg_maxline and other values have been
