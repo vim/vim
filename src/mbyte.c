@@ -133,19 +133,37 @@ static int dbcs_char2cells __ARGS((int c));
 static int dbcs_ptr2cells_len __ARGS((char_u *p, int size));
 static int dbcs_ptr2char __ARGS((char_u *p));
 
-/* Lookup table to quickly get the length in bytes of a UTF-8 character from
- * the first byte of a UTF-8 string.  Bytes which are illegal when used as the
- * first byte have a one, because these will be used separately. */
+/*
+ * Lookup table to quickly get the length in bytes of a UTF-8 character from
+ * the first byte of a UTF-8 string.
+ * Bytes which are illegal when used as the first byte have a 1.
+ * The NUL byte has length 1.
+ */
 static char utf8len_tab[256] =
 {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /*bogus*/
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, /*bogus*/
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,1,1,
+};
+
+/*
+ * Like utf8len_tab above, but using a zero for illegal lead bytes.
+ */
+static char utf8len_tab_zero[256] =
+{
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+    3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,5,5,5,5,6,6,0,0,
 };
 
 /*
@@ -1352,7 +1370,7 @@ utf_ptr2cells_len(p, size)
     if (size > 0 && *p >= 0x80)
     {
 	if (utf_ptr2len_len(p, size) < utf8len_tab[*p])
-	    return 1;
+	    return 1;  /* truncated */
 	c = utf_ptr2char(p);
 	/* An illegal byte is displayed as <xx>. */
 	if (utf_ptr2len(p) == 1 || c == NUL)
@@ -1473,7 +1491,7 @@ utf_ptr2char(p)
     if (p[0] < 0x80)	/* be quick for ASCII */
 	return p[0];
 
-    len = utf8len_tab[p[0]];
+    len = utf8len_tab_zero[p[0]];
     if (len > 1 && (p[1] & 0xc0) == 0x80)
     {
 	if (len == 2)
@@ -1723,6 +1741,7 @@ utf_ptr2len(p)
 /*
  * Return length of UTF-8 character, obtained from the first byte.
  * "b" must be between 0 and 255!
+ * Returns 1 for an invalid first byte value.
  */
     int
 utf_byte2len(b)
@@ -1737,6 +1756,7 @@ utf_byte2len(b)
  * Returns 1 for "".
  * Returns 1 for an illegal byte sequence (also in incomplete byte seq.).
  * Returns number > "size" for an incomplete byte sequence.
+ * Never returns zero.
  */
     int
 utf_ptr2len_len(p, size)
@@ -1747,11 +1767,13 @@ utf_ptr2len_len(p, size)
     int		i;
     int		m;
 
-    if (*p == NUL)
-	return 1;
-    m = len = utf8len_tab[*p];
+    len = utf8len_tab[*p];
+    if (len == 1)
+	return 1;	/* NUL, ascii or illegal lead byte */
     if (len > size)
 	m = size;	/* incomplete byte sequence. */
+    else
+	m = len;
     for (i = 1; i < m; ++i)
 	if ((p[i] & 0xc0) != 0x80)
 	    return 1;
@@ -2505,6 +2527,7 @@ show_utf8()
 /*
  * mb_head_off() function pointer.
  * Return offset from "p" to the first byte of the character it points into.
+ * If "p" points to the NUL at the end of the string return 0.
  * Returns 0 when already at the first byte of a character.
  */
     int
@@ -2524,7 +2547,7 @@ dbcs_head_off(base, p)
 
     /* It can't be a trailing byte when not using DBCS, at the start of the
      * string or the previous byte can't start a double-byte. */
-    if (p <= base || MB_BYTE2LEN(p[-1]) == 1)
+    if (p <= base || MB_BYTE2LEN(p[-1]) == 1 || *p == NUL)
 	return 0;
 
     /* This is slow: need to start at the base and go forward until the
@@ -2552,7 +2575,8 @@ dbcs_screen_head_off(base, p)
      * lead byte in the current cell. */
     if (p <= base
 	    || (enc_dbcs == DBCS_JPNU && p[-1] == 0x8e)
-	    || MB_BYTE2LEN(p[-1]) == 1)
+	    || MB_BYTE2LEN(p[-1]) == 1
+	    || *p == NUL)
 	return 0;
 
     /* This is slow: need to start at the base and go forward until the
@@ -2578,6 +2602,7 @@ utf_head_off(base, p)
     char_u	*q;
     char_u	*s;
     int		c;
+    int		len;
 #ifdef FEAT_ARABIC
     char_u	*j;
 #endif
@@ -2597,8 +2622,8 @@ utf_head_off(base, p)
 	    --q;
 	/* Check for illegal sequence. Do allow an illegal byte after where we
 	 * started. */
-	if (utf8len_tab[*q] != (int)(s - q + 1)
-				       && utf8len_tab[*q] != (int)(p - q + 1))
+	len = utf8len_tab[*q];
+	if (len != (int)(s - q + 1) && len != (int)(p - q + 1))
 	    return 0;
 
 	if (q <= base)
@@ -2810,9 +2835,9 @@ utf_valid_string(s, end)
 
     while (end == NULL ? *p != NUL : p < end)
     {
-	if ((*p & 0xc0) == 0x80)
+	l = utf8len_tab_zero[*p];
+	if (l == 0)
 	    return FALSE;	/* invalid lead byte */
-	l = utf8len_tab[*p];
 	if (end != NULL && p + l > end)
 	    return FALSE;	/* incomplete byte sequence */
 	++p;
@@ -6117,12 +6142,20 @@ string_convert_ext(vcp, ptr, lenp, unconvlenp)
 	    d = retval;
 	    for (i = 0; i < len; ++i)
 	    {
-		l = utf_ptr2len(ptr + i);
+		l = utf_ptr2len_len(ptr + i, len - i);
 		if (l == 0)
 		    *d++ = NUL;
 		else if (l == 1)
 		{
-		    if (unconvlenp != NULL && utf8len_tab[ptr[i]] > len - i)
+		    int l_w = utf8len_tab_zero[ptr[i]];
+
+		    if (l_w == 0)
+		    {
+			/* Illegal utf-8 byte cannot be converted */
+			vim_free(retval);
+			return NULL;
+		    }
+		    if (unconvlenp != NULL && l_w > len - i)
 		    {
 			/* Incomplete sequence at the end. */
 			*unconvlenp = len - i;
