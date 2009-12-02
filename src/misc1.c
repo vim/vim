@@ -4666,7 +4666,6 @@ concat_fnames(fname1, fname2, sep)
     return dest;
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_GETTEXT) || defined(PROTO)
 /*
  * Concatenate two strings and return the result in allocated memory.
  * Returns NULL when out of memory.
@@ -4687,7 +4686,6 @@ concat_str(str1, str2)
     }
     return dest;
 }
-#endif
 
 /*
  * Add a path separator to a file name, unless it already ends in a path
