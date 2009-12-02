@@ -686,7 +686,7 @@ if test "$enable_pythoninterp" = "yes"; then
       [
 	vi_cv_path_python_conf=
 	for path in "${vi_cv_path_python_pfx}" "${vi_cv_path_python_epfx}"; do
-	  for subdir in lib share; do
+	  for subdir in lib64 lib share; do
 	    d="${path}/${subdir}/python${vi_cv_var_python_version}/config"
 	    if test -d "$d" && test -f "$d/config.c"; then
 	      vi_cv_path_python_conf="$d"
@@ -2557,11 +2557,11 @@ main()
 	AC_MSG_RESULT([pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group])
       else
 	vim_cv_tty_group=world
-	AC_MSG_RESULT([ptys are world accessable])
+	AC_MSG_RESULT([ptys are world accessible])
       fi
     ],[
       vim_cv_tty_group=world
-      AC_MSG_RESULT([can't determine - assume ptys are world accessable])
+      AC_MSG_RESULT([can't determine - assume ptys are world accessible])
     ],[
       AC_MSG_ERROR(cross-compiling: please set 'vim_cv_tty_group' and 'vim_cv_tty_mode')
     ])

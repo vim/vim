@@ -5126,7 +5126,7 @@ else
 
 	vi_cv_path_python_conf=
 	for path in "${vi_cv_path_python_pfx}" "${vi_cv_path_python_epfx}"; do
-	  for subdir in lib share; do
+	  for subdir in lib64 lib share; do
 	    d="${path}/${subdir}/python${vi_cv_var_python_version}/config"
 	    if test -d "$d" && test -f "$d/config.c"; then
 	      vi_cv_path_python_conf="$d"
@@ -13718,8 +13718,8 @@ $as_echo "$ac_try_echo") >&5
 $as_echo "pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group" >&6; }
       else
 	vim_cv_tty_group=world
-	{ $as_echo "$as_me:$LINENO: result: ptys are world accessable" >&5
-$as_echo "ptys are world accessable" >&6; }
+	{ $as_echo "$as_me:$LINENO: result: ptys are world accessible" >&5
+$as_echo "ptys are world accessible" >&6; }
       fi
 
 else
@@ -13730,8 +13730,8 @@ sed 's/^/| /' conftest.$ac_ext >&5
 ( exit $ac_status )
 
       vim_cv_tty_group=world
-      { $as_echo "$as_me:$LINENO: result: can't determine - assume ptys are world accessable" >&5
-$as_echo "can't determine - assume ptys are world accessable" >&6; }
+      { $as_echo "$as_me:$LINENO: result: can't determine - assume ptys are world accessible" >&5
+$as_echo "can't determine - assume ptys are world accessible" >&6; }
 
 fi
 rm -rf conftest.dSYM
