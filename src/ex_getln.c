@@ -4422,7 +4422,8 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	    flags |= EW_FILE;
 	else
 	    flags = (flags | EW_DIR) & ~EW_FILE;
-	ret = expand_wildcards(1, &pat, num_file, file, flags);
+	/* Expand wildcards, supporting %:h and the like. */
+	ret = expand_wildcards_eval(&pat, num_file, file, flags);
 	if (free_pat)
 	    vim_free(pat);
 	return ret;
