@@ -21,7 +21,7 @@
 
 #include "vim.h"
 
-#ifdef __TANDEM
+#if defined(__TANDEM) || defined(__MINT__)
 # include <limits.h>		/* for SSIZE_MAX */
 #endif
 
