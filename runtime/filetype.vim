@@ -2400,6 +2400,12 @@ au BufNewFile,BufRead /etc/xinetd.d/*		call s:StarSetf('xinetd')
 au BufNewFile,BufRead zsh*,zlog*		call s:StarSetf('zsh')
 
 
+
+" Use the filetype detect plugins.  They may overrule any of the previously
+" detected filetypes.
+runtime! ftdetect/*.vim
+
+
 " Generic configuration file (check this last, it's just guessing!)
 au BufNewFile,BufRead,StdinReadPost *
 	\ if !did_filetype() && expand("<amatch>") !~ g:ft_ignore_pat
@@ -2407,10 +2413,6 @@ au BufNewFile,BufRead,StdinReadPost *
 	\	|| getline(4) =~ '^#' || getline(5) =~ '^#') |
 	\   setf conf |
 	\ endif
-
-" Use the plugin-filetype checks last, they may overrule any of the previously
-" detected filetypes.
-runtime! ftdetect/*.vim
 
 augroup END
 
