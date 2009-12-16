@@ -366,14 +366,21 @@ main
      * Check if the GUI can be started.  Reset gui.starting if not.
      * Don't know about other systems, stay on the safe side and don't check.
      */
-    if (gui.starting && gui_init_check() == FAIL)
+    if (gui.starting)
     {
-	gui.starting = FALSE;
+	if (gui_init_check() == FAIL)
+	{
+	    gui.starting = FALSE;
 
-	/* When running "evim" or "gvim -y" we need the menus, exit if we
-	 * don't have them. */
-	if (params.evim_mode)
-	    mch_exit(1);
+	    /* When running "evim" or "gvim -y" we need the menus, exit if we
+	     * don't have them. */
+	    if (params.evim_mode)
+		mch_exit(1);
+	}
+#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+	/* Re-initialize locale, it may have been altered by gui_init_check() */
+	init_locale();
+#  endif
     }
 # endif
 #endif
@@ -3685,7 +3692,7 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
 	}
 	else if (STRICMP(argv[i], "--servername") == 0)
 	{
-	    /* Alredy processed. Take it out of the command line */
+	    /* Already processed. Take it out of the command line */
 	    i++;
 	    continue;
 	}
