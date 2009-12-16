@@ -206,7 +206,7 @@ typedef struct syn_pattern
 static int current_attr = 0;	    /* attr of current syntax word */
 #ifdef FEAT_EVAL
 static int current_id = 0;	    /* ID of current char for syn_get_id() */
-static int current_trans_id = 0;    /* idem, transparancy removed */
+static int current_trans_id = 0;    /* idem, transparency removed */
 #endif
 
 typedef struct syn_cluster_S
@@ -282,7 +282,7 @@ typedef struct state_item
     int		si_idx;			/* index of syntax pattern or
 					   KEYWORD_IDX */
     int		si_id;			/* highlight group ID for keywords */
-    int		si_trans_id;		/* idem, transparancy removed */
+    int		si_trans_id;		/* idem, transparency removed */
     int		si_m_lnum;		/* lnum of the match */
     int		si_m_startcol;		/* starting column of the match */
     lpos_T	si_m_endpos;		/* just after end posn of the match */
@@ -1274,7 +1274,7 @@ syn_stack_cleanup()
 	dist = syn_buf->b_ml.ml_line_count / (syn_buf->b_sst_len - Rows) + 1;
 
     /*
-     * Go throught the list to find the "tick" for the oldest entry that can
+     * Go through the list to find the "tick" for the oldest entry that can
      * be removed.  Set "above" when the "tick" for the oldest entry is above
      * "b_sst_lasttick" (the display tick wraps around).
      */
@@ -2319,7 +2319,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 		    ? (syn_buf->b_spell_cluster_id == 0)
 		    : (syn_buf->b_syn_spell == SYNSPL_TOP);
 
-    /* nextgroup ends at end of line, unless "skipnl" or "skipemtpy" present */
+    /* nextgroup ends at end of line, unless "skipnl" or "skipempty" present */
     if (current_next_list != NULL
 	    && syn_getcurline()[current_col + 1] == NUL
 	    && !(current_next_flags & (HL_SKIPNL | HL_SKIPEMPTY)))
@@ -6108,7 +6108,7 @@ syn_get_id(wp, lnum, col, trans, spellp, keep_state)
     win_T	*wp;
     long	lnum;
     colnr_T	col;
-    int		trans;	     /* remove transparancy */
+    int		trans;	     /* remove transparency */
     int		*spellp;     /* return: can do spell checking */
     int		keep_state;  /* keep state of char at "col" */
 {
@@ -7523,7 +7523,7 @@ highlight_clear(idx)
 #if defined(FEAT_GUI) || defined(PROTO)
 /*
  * Set the normal foreground and background colors according to the "Normal"
- * highlighighting group.  For X11 also set "Menu", "Scrollbar", and
+ * highlighting group.  For X11 also set "Menu", "Scrollbar", and
  * "Tooltip" colors.
  */
     void
@@ -8647,6 +8647,7 @@ syn_add_group(name)
 	if (!vim_isprintc(*p))
 	{
 	    EMSG(_("E669: Unprintable character in group name"));
+	    vim_free(name);
 	    return 0;
 	}
 	else if (!ASCII_ISALNUM(*p) && *p != '_')
