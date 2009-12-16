@@ -1274,13 +1274,12 @@ gui_xm_select_font(char_u *current)
 	XtAppProcessEvent(XtWidgetToApplicationContext(data->dialog),
 							(XtInputMask)XtIMAll);
 
-    XtDestroyWidget(data->dialog);
-
     if (data->old)
     {
 	XFreeFont(XtDisplay(data->dialog),  data->old);
 	XmFontListFree(data->old_list);
     }
+    XtDestroyWidget(data->dialog);
 
     gui_motif_synch_fonts();
 
