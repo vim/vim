@@ -13,8 +13,6 @@ win_T *get_valid_window __ARGS((void *));
 void mzvim_check_threads __ARGS((void));
 void mzvim_reset_timer __ARGS((void));
 void *mzvim_eval_string __ARGS((char_u *str));
-struct Scheme_Object *mzvim_apply __ARGS((struct Scheme_Object *, int argc,
-    struct Scheme_Object **));
 int mzthreads_allowed __ARGS((void));
 void mzscheme_main __ARGS((void));
 /* vim: set ft=c : */

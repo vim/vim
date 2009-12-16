@@ -70,14 +70,6 @@ typedef struct
     Scheme_Object   *port;
 } Port_Info;
 
-/* info for do_apply */
-typedef struct
-{
-    Scheme_Object   *proc;
-    int		    argc;
-    Scheme_Object   **argv;
-} Apply_Info;
-
 /*
  *========================================================================
  *  Vim-Control Commands
@@ -160,7 +152,6 @@ static Scheme_Object *_apply_thunk_catch_exceptions(
 static Scheme_Object *extract_exn_message(Scheme_Object *v);
 static Scheme_Object *do_eval(void *, int noargc, Scheme_Object **noargv);
 static Scheme_Object *do_load(void *, int noargc, Scheme_Object **noargv);
-static Scheme_Object *do_apply(void *, int noargc, Scheme_Object **noargv);
 static void register_vim_exn(void);
 static vim_mz_buffer *get_buffer_arg(const char *fname, int argnum,
 	int argc, Scheme_Object **argv);
@@ -1056,7 +1047,7 @@ mzscheme_init(void)
 	MZ_GC_REG();
 	config = scheme_config;
 	MZ_GC_CHECK();
-	/* recreate ports each call effectivelly clearing these ones */
+	/* recreate ports each call effectively clearing these ones */
 	curout = scheme_make_string_output_port();
 	MZ_GC_CHECK();
 	curerr = scheme_make_string_output_port();
@@ -1196,36 +1187,6 @@ ex_mzscheme(exarg_T *eap)
     }
 }
 
-/*
- * apply MzScheme procedure with arguments,
- * handling errors
- */
-    Scheme_Object *
-mzvim_apply(Scheme_Object *proc, int argc, Scheme_Object **argv)
-{
-    if (mzscheme_init())
-	return FAIL;
-    else
-    {
-	Apply_Info	data = {NULL, 0, NULL};
-	Scheme_Object	*ret = NULL;
-
-	MZ_GC_DECL_REG(5);
-	MZ_GC_VAR_IN_REG(0, ret);
-	MZ_GC_VAR_IN_REG(1, data.proc);
-	MZ_GC_ARRAY_VAR_IN_REG(2, data.argv, argc);
-	MZ_GC_REG();
-
-	data.proc = proc;
-	data.argc = argc;
-	data.argv = argv;
-
-	eval_with_exn_handling(&data, do_apply, &ret);
-	MZ_GC_UNREG();
-	return ret;
-    }
-}
-
     static Scheme_Object *
 do_load(void *data, int noargc, Scheme_Object **noargv)
 {
@@ -1257,7 +1218,7 @@ do_load(void *data, int noargc, Scheme_Object **noargv)
 	MZ_GC_CHECK();
     }
 
-    /* errors will be caught in do_mzscheme_comamnd and ex_mzfile */
+    /* errors will be caught in do_mzscheme_command and ex_mzfile */
     scheme_close_input_port(pinfo->port);
     MZ_GC_CHECK();
     pinfo->port = NULL;
@@ -1346,13 +1307,6 @@ extract_exn_message(Scheme_Object *v)
 do_eval(void *s, int noargc, Scheme_Object **noargv)
 {
     return scheme_eval_string_all((char *)s, environment, TRUE);
-}
-
-    static Scheme_Object *
-do_apply(void *a, int noargc, Scheme_Object **noargv)
-{
-    Apply_Info	*info = (Apply_Info *)a;
-    return scheme_apply(info->proc, info->argc, info->argv);
 }
 
 /*
@@ -2128,7 +2082,7 @@ get_buffer_line_list(void *data, int argc, Scheme_Object **argv)
     static Scheme_Object *
 set_buffer_line(void *data, int argc, Scheme_Object **argv)
 {
-    /* First of all, we check the the of the supplied MzScheme object.
+    /* First of all, we check the value of the supplied MzScheme object.
      * There are three cases:
      *	  1. #f - this is a deletion.
      *	  2. A string	   - this is a replacement.
@@ -2428,7 +2382,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 /*
  * (insert-buff-line-list {linenr} {string/string-list} [buffer])
  *
- * Insert a number of lines into the specified buffer after the specifed line.
+ * Insert a number of lines into the specified buffer after the specified line.
  * The line number is in Vim format (1-based). The lines to be inserted are
  * given as an MzScheme list of string objects or as a single string. The lines
  * to be added are checked for validity and correct format. Errors are
