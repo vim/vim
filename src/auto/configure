@@ -17185,10 +17185,10 @@ $as_echo "yes" >&6; }
     { $as_echo "$as_me:$LINENO: result: no" >&5
 $as_echo "no" >&6; }
   fi
-      { $as_echo "$as_me:$LINENO: checking whether we need -D_FORTIFY_SOURCE=1" >&5
+        { $as_echo "$as_me:$LINENO: checking whether we need -D_FORTIFY_SOURCE=1" >&5
 $as_echo_n "checking whether we need -D_FORTIFY_SOURCE=1... " >&6; }
   if test "$gccmajor" -gt "3"; then
-    CFLAGS=`echo "$CFLAGS -D_FORTIFY_SOURCE=1" | sed -e 's/-Wp,-D_FORTIFY_SOURCE=2//g' -e 's/-D_FORTIFY_SOURCE=2//g'`
+    CFLAGS=`echo "$CFLAGS" | sed -e 's/-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/-D_FORTIFY_SOURCE=.//g' -e 's/$/ -D_FORTIFY_SOURCE=1/'`
     { $as_echo "$as_me:$LINENO: result: yes" >&5
 $as_echo "yes" >&6; }
   else
