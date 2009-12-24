@@ -7397,6 +7397,10 @@ in_cinkeys(keytyped, when, line_is_empty)
     int		icase;
     int		i;
 
+    if (keytyped == NUL)
+	/* Can happen with CTRL-Y and CTRL-E on a short line. */
+	return FALSE;
+
 #ifdef FEAT_EVAL
     if (*curbuf->b_p_inde != NUL)
 	look = curbuf->b_p_indk;	/* 'indentexpr' set: use 'indentkeys' */
