@@ -12014,6 +12014,7 @@ f_histadd(argvars, rettv)
 	str = get_tv_string_buf(&argvars[1], buf);
 	if (*str != NUL)
 	{
+	    init_history();
 	    add_to_history(histype, str, FALSE, NUL);
 	    rettv->vval.v_number = TRUE;
 	    return;

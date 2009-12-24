@@ -5602,6 +5602,7 @@ nv_ident(cap)
 	    STRCAT(buf, "\\>");
 #ifdef FEAT_CMDHIST
 	/* put pattern in search history */
+	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
 #endif
 	normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
