@@ -2981,6 +2981,13 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 
     if (fname == NULL || *fname == NUL)	/* safety check */
 	return FAIL;
+    if (buf->b_ml.ml_mfp == NULL)
+    {
+	/* This can happen during startup when there is a stray "w" in the
+	 * vimrc file. */
+	EMSG(_(e_emptybuf));
+	return FAIL;
+    }
 
     /*
      * Disallow writing from .exrc and .vimrc in current directory for
