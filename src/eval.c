@@ -15542,7 +15542,8 @@ f_setpos(argvars, rettv)
     {
 	if (list2fpos(&argvars[1], &pos, &fnum) == OK)
 	{
-	    --pos.col;
+	    if (--pos.col < 0)
+		pos.col = 0;
 	    if (name[0] == '.' && name[1] == NUL)
 	    {
 		/* set cursor */

@@ -528,6 +528,8 @@ check_cursor_col()
 #endif
 	}
     }
+    else if (curwin->w_cursor.col < 0)
+	curwin->w_cursor.col = 0;
 
 #ifdef FEAT_VIRTUALEDIT
     /* If virtual editing is on, we can leave the cursor on the old position,
