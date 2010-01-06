@@ -3470,7 +3470,9 @@ init_homedir()
 
 	homedrive = mch_getenv((char_u *)"HOMEDRIVE");
 	homepath = mch_getenv((char_u *)"HOMEPATH");
-	if (homedrive != NULL && homepath != NULL
+	if (homepath == NULL || *homepath == NUL)
+	    homepath = "\\";
+	if (homedrive != NULL
 			   && STRLEN(homedrive) + STRLEN(homepath) < MAXPATHL)
 	{
 	    sprintf((char *)NameBuff, "%s%s", homedrive, homepath);
