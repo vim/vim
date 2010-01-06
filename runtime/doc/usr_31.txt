@@ -245,7 +245,7 @@ you can set the 'lines' option to set a different window size: >
 
 	:set lines=55
 
-You don't want to do this in a terminal, since it's size is fixed (except for
+You don't want to do this in a terminal, since its size is fixed (except for
 an xterm that supports resizing).
    The gvimrc file is searched for in the same locations as the vimrc file.
 Normally its name is "~/.gvimrc" for Unix and "$VIM/_gvimrc" for MS-Windows.

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.2.  Last change: 2008 Jun 27
+*autocmd.txt*   For Vim version 7.2.  Last change: 2009 Nov 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,10 +59,10 @@ Note: The ":autocmd" command cannot be followed by another command, since any
 :au[tocmd] [group] {event} {pat} [nested] {cmd}
 			Add {cmd} to the list of commands that Vim will
 			execute automatically on {event} for a file matching
-			{pat}.  Vim always adds the {cmd} after existing
-			autocommands, so that the autocommands execute in the
-			order in which they were given.  See |autocmd-nested|
-			for [nested].
+			{pat} |autocmd-patterns|.
+			Vim always adds the {cmd} after existing autocommands,
+			so that the autocommands execute in the order in which
+			they were given.  See |autocmd-nested| for [nested].
 
 The special pattern <buffer> or <buffer=N> defines a buffer-local autocommand.
 See |autocmd-buflocal|.
@@ -551,7 +551,7 @@ FileChangedShell		When Vim notices that the modification time of
 				buffer that was changed "<afile>".
 				NOTE: The commands must not change the current
 				buffer, jump to another buffer or delete a
-				buffer.  *E246*
+				buffer.  *E246* *E811*
 				NOTE: This event never nests, to avoid an
 				endless loop.  This means that while executing
 				commands for the FileChangedShell event no
@@ -835,9 +835,9 @@ The file pattern {pat} is tested for a match against the file name in one of
 two ways:
 1. When there is no '/' in the pattern, Vim checks for a match against only
    the tail part of the file name (without its leading directory path).
-2. When there is a '/' in the pattern,  Vim checks for a match against the
-   both short file name (as you typed it) and the full file name (after
-   expanding it to a full path and resolving symbolic links).
+2. When there is a '/' in the pattern, Vim checks for a match against both the
+   short file name (as you typed it) and the full file name (after expanding
+   it to a full path and resolving symbolic links).
 
 The special pattern <buffer> or <buffer=N> is used for buffer-local
 autocommands |autocmd-buflocal|.  This pattern is not matched against the name
@@ -1052,7 +1052,7 @@ option will not cause any commands to be executed.
 						*:doautoa* *:doautoall*
 :doautoa[ll] [group] {event} [fname]
 			Like ":doautocmd", but apply the autocommands to each
-			loaded buffer.  Note that {fname} is used to select
+			loaded buffer.  Note that [fname] is used to select
 			the autocommands, not the buffers to which they are
 			applied.
 			Careful: Don't use this for autocommands that delete a

@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 7.2.  Last change: 2008 Jun 28
+*version5.txt*  For Vim version 7.2.  Last change: 2008 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -460,10 +460,10 @@ See |--|.
 Regular expression patterns				*added-regexp*
 ---------------------------
 
-Added specifying a range for the number of matches of a atom: "\{a,b}". |/\{|
+Added specifying a range for the number of matches of an atom: "\{a,b}". |/\{|
 Added the "shortest match" regexp "\{-}" (Webb).
-Added "\s", matches a white character.  Can replace "[ \t]".		|/\s|
-Added "\S", matches a non-white character.  Can replace "[^ \t]".	|/\S|
+Added "\s", matches a white character.  Can replace "[ \t]".		 |/\s|
+Added "\S", matches a non-white character.  Can replace "[^ \t]".	 |/\S|
 
 
 Overloaded tags						*tag-overloaded*

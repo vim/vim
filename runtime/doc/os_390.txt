@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 7.2.  Last change: 2005 Mar 29
+*os_390.txt*    For Vim version 7.2.  Last change: 2008 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl
@@ -282,7 +282,7 @@ not an exhaustive summary of all the modifications made to the code base.
 
 5.6-390c:
   I grepped through the source and examined every spot with a character
-  involved in a operation (+-).  I hope I now found all EBCDIC/ASCII
+  involved in an operation (+-).  I hope I now found all EBCDIC/ASCII
   stuff, but ....
 
   Fixed:
@@ -311,7 +311,7 @@ not an exhaustive summary of all the modifications made to the code base.
 	- added special compiler and linker options if building with X11
     - configure:
 	- after created via autoconf hand-edited it to make the test for
-	  ICEConnectionNumber work.  This is a autoconf problem.  OS/390 UNIX
+	  ICEConnectionNumber work.  This is an autoconf problem.  OS/390 UNIX
 	  needs -lX11 for this.
     - Makefile
 	- Don't include the lib directories ('-L...') into the variable

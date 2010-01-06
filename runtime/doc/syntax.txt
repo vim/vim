@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.2.  Last change: 2008 Jul 22
+*syntax.txt*	For Vim version 7.2.  Last change: 2009 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,6 +113,9 @@ this works, look in the file:
     :syntax off		$VIMRUNTIME/syntax/nosyntax.vim
 Also see |syntax-loading|.
 
+NOTE: If displaying long lines is slow and switching off syntax highlighting
+makes it fast, consider setting the 'synmaxcol' option to a lower value.
+
 ==============================================================================
 2. Syntax files						*:syn-files*
 
@@ -198,8 +201,12 @@ that you write the syntax file in a directory that is early in 'runtimepath'.
 Vim will only load the first syntax file found.
 
 
-NAMING CONVENTIONS
-				    *group-name* *{group-name}* *E669* *W18*
+NAMING CONVENTIONS		    *group-name* *{group-name}* *E669* *W18*
+
+A syntax group name is to be used for syntax items that match the same kind of
+thing.  These are then linked to a highlight group that specifies the color.
+A syntax group name doesn't specify any color or attributes itself.
+
 The name for a highlight or syntax group must consist of ASCII letters, digits
 and the underscore.  As a regexp: "[a-zA-Z0-9_]*"
 
@@ -379,8 +386,8 @@ Or use the ":TOhtml" user command.  It is defined in a standard plugin.
 
 	:10,40TOhtml
 
-After you save the resulting file, you can view it with any HTML viewer, such
-as Netscape.  The colors should be exactly the same as you see them in Vim.
+After you save the resulting file, you can view it with any browser.  The
+colors should be exactly the same as you see them in Vim.
 
 To restrict the conversion to a range of lines set "html_start_line" and
 "html_end_line" to the first and last line to be converted.  Example, using
@@ -398,14 +405,44 @@ Force to omit the line numbers by using a zero value: >
 Go back to the default to use 'number' by deleting the variable: >
    :unlet html_number_lines
 
-Closed folds are put in the HTML as they are displayed.  If you don't want
-this, use the |zR| command before invoking 2html, or use: >
-   :let html_ignore_folding = 1
-
 By default, HTML optimized for old browsers is generated.  If you prefer using
 cascading style sheets (CSS1) for the attributes (resulting in considerably
 shorter and valid HTML 4 file), use: >
    :let html_use_css = 1
+
+Closed folds are put in the HTML as they are displayed.  If you don't want
+this, use the |zR| command before invoking 2html, or use: >
+   :let html_ignore_folding = 1
+
+You may want to generate HTML that includes all the data within the folds, and
+allow the user to view the folded data similar to how they would in Vim. To
+generate this dynamic fold information, use: >
+   :let html_dynamic_folds = 1
+
+Using html_dynamic_folds will imply html_use_css, because it would be far too
+difficult to do it for old browsers. However, html_ignore_folding overrides
+html_dynamic_folds.
+
+Using html_dynamic_folds will default to generating a foldcolumn in the html
+similar to Vim's foldcolumn, that will use javascript to open and close the
+folds in the HTML document. The width of this foldcolumn starts at the current
+setting of |'foldcolumn'| but grows to fit the greatest foldlevel in your
+document. If you do not want to show a foldcolumn at all, use: >
+   :let html_no_foldcolumn = 1
+
+Using this option, there will be no foldcolumn available to open the folds in
+the HTML. For this reason, another option is provided: html_hover_unfold.
+Enabling this option will use CSS 2.0 to allow a user to open a fold by
+hovering the mouse pointer over it. Note that old browsers (notably Internet
+Explorer 6) will not support this feature.  Browser-specific markup for IE6 is
+included to fall back to the normal CSS1 code so that the folds show up
+correctly for this browser, but they will not be openable without a
+foldcolumn. Note that using html_hover_unfold will allow modern browsers with
+disabled javascript to view closed folds. To use this option, use: >
+   :let html_hover_unfold = 1
+
+Setting html_no_foldcolumn with html_dynamic_folds will automatically set
+html_hover_unfold, because otherwise the folds wouldn't be dynamic.
 
 By default "<pre>" and "</pre>" is used around the text.  This makes it show
 up as you see it in Vim, but without wrapping.	If you prefer wrapping, at the
@@ -525,9 +562,10 @@ files are included:
 	pic		PIC assembly (currently for PIC16F84)
 
 The most flexible is to add a line in your assembly file containing: >
-	:asmsyntax=nasm
+	asmsyntax=nasm
 Replace "nasm" with the name of the real assembly syntax.  This line must be
-one of the first five lines in the file.
+one of the first five lines in the file.  No non-white text must be
+immediately before or after this text.
 
 The syntax type can always be overruled for a specific buffer by setting the
 b:asmsyntax variable: >
@@ -2529,11 +2567,13 @@ If you notice highlighting errors while scrolling backwards, which are fixed
 when redrawing with CTRL-L, try setting the "tcsh_minlines" internal variable
 to a larger number: >
 
-	:let tcsh_minlines = 100
+	:let tcsh_minlines = 1000
 
-This will make the syntax synchronization start 100 lines before the first
-displayed line.  The default value is 15.  The disadvantage of using a larger
-number is that redrawing can become slow.
+This will make the syntax synchronization start 1000 lines before the first
+displayed line.  If you set "tcsh_minlines" to "fromstart", then
+synchronization is done from the start of the file. The default value for
+tcsh_minlines is 100.  The disadvantage of using a larger number is that
+redrawing can become slow.
 
 
 TEX						*tex.vim* *ft-tex-syntax*
@@ -3414,8 +3454,9 @@ Notes:
 - The highlighted area will never be outside of the matched text.
 - A negative offset for an end pattern may not always work, because the end
   pattern may be detected when the highlighting should already have stopped.
-- Until Vim 7.2 the offsets were counted in bytes instead of characters.  This
-  didn't work well for multi-byte characters.
+- Before Vim 7.2 the offsets were counted in bytes instead of characters.
+  This didn't work well for multi-byte characters, so it was changed with the
+  Vim 7.2 release.
 - The start of a match cannot be in a line other than where the pattern
   matched.  This doesn't work: "a\nb"ms=e.  You can make the highlighting
   start in another line, this does work: "a\nb"hs=e.
@@ -3466,7 +3507,8 @@ expected, but there are a few exceptions.
 
 When using a start pattern with an offset, the start of the match is not
 allowed to start in a following line.  The highlighting can start in a
-following line though.
+following line though.  Using the "\zs" item also requires that the start of
+the match doesn't move to another line.
 
 The skip pattern can include the "\n", but the search for an end pattern will
 continue in the first character of the next line, also when that character is
@@ -3832,10 +3874,11 @@ in their own color.
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
 			for the file "colors/{name}.vim.  The first one that
 			is found is loaded.
-			To see the name of the currently active color scheme
-			(if there is one): >
+			To see the name of the currently active color scheme: >
 				:echo g:colors_name
-<			Doesn't work recursively, thus you can't use
+<			When using the default colors you will get an E121
+			error.
+			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
@@ -4032,7 +4075,7 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	colors.
 	When a colorscheme is being used, changing 'background' causes it to
 	be reloaded, which may reset all colors (including Normal).  First
-	delete the "colors_name" variable when you don't want this.
+	delete the "g:colors_name" variable when you don't want this.
 
 	When you have set "ctermfg" or "ctermbg" for the Normal group, Vim
 	needs to reset the color when exiting.	This is done with the "op"

@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 7.2.  Last change: 2008 Jul 16
+*pattern.txt*   For Vim version 7.2.  Last change: 2008 Nov 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -32,12 +32,13 @@ explanations are in chapter 27 |usr_27.txt|.
 			|linewise|.
 
 							*/<CR>*
-/<CR>			Search forward for the [count]'th latest used
-			pattern |last-pattern| with latest used |{offset}|.
+/<CR>			Search forward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with latest used
+			|{offset}|.
 
-//{offset}<CR>		Search forward for the [count]'th latest used
-			pattern |last-pattern| with new |{offset}|.  If
-			{offset} is empty no offset is used.
+//{offset}<CR>		Search forward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with new
+			|{offset}|.  If {offset} is empty no offset is used.
 
 							*?*
 ?{pattern}[?]<CR>	Search backward for the [count]'th previous
@@ -48,12 +49,13 @@ explanations are in chapter 27 |usr_27.txt|.
 			down |linewise|.
 
 							*?<CR>*
-?<CR>			Search backward for the [count]'th latest used
-			pattern |last-pattern| with latest used |{offset}|.
+?<CR>			Search backward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with latest used
+			|{offset}|.
 
-??{offset}<CR>		Search backward for the [count]'th latest used
-			pattern |last-pattern| with new |{offset}|.  If
-			{offset} is empty no offset is used.
+??{offset}<CR>		Search backward for the [count]'th occurrence of the
+			latest used pattern |last-pattern| with new
+			|{offset}|.  If {offset} is empty no offset is used.
 
 							*n*
 n			Repeat the latest "/" or "?" [count] times.
@@ -507,7 +509,7 @@ Character classes {not in Vi}:				*/character-classes*
 |/\Z|	\Z	\Z	ignore differences in Unicode "combining characters".
 			Useful when searching voweled Hebrew or Arabic text.
 
-|/\%d|	\%d	\%d	match specified decimal character (eg \%d123
+|/\%d|	\%d	\%d	match specified decimal character (eg \%d123)
 |/\%x|	\%x	\%x	match specified hex character (eg \%x2a)
 |/\%o|	\%o	\%o	match specified octal character (eg \%o040)
 |/\%u|	\%u	\%u	match specified multibyte character (eg \%u20ac)
@@ -794,7 +796,11 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 						*/\%V*
 \%V	Match inside the Visual area.  When Visual mode has already been
 	stopped match in the area that |gv| would reselect.
-	Only works for the current buffer.
+	This is a |/zero-width| match.  To make sure the whole pattern is
+	inside the Visual area put it at the start and end of the pattern,
+	e.g.: >
+		/\%Vfoo.*bar\%V
+<	Only works for the current buffer.
 
 						*/\%#* *cursor-position*
 \%#	Matches with the cursor position.  Only works when matching in a
@@ -877,10 +883,13 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	this will clearly show when the match is updated or not.
 	To match the text up to column 17: >
 		/.*\%17v
-<	Column 17 is not included, because that's where the "\%17v" matches,
-	and since this is a |/zero-width| match, column 17 isn't included in
-	the match.  This does the same: >
-		/.*\%<18v
+<	Column 17 is included, because that's where the "\%17v" matches,
+	even though this is a |/zero-width| match.  Adding a dot to match the
+	next character has the same result: >
+		/.*\%17v.
+<	This command does the same thing, but also matches when there is no
+	character in column 17: >
+		/.*\%<18v.
 <
 
 Character classes: {not in Vi}

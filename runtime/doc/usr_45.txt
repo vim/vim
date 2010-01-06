@@ -1,4 +1,4 @@
-*usr_45.txt*	For Vim version 7.2.  Last change: 2008 Apr 30
+*usr_45.txt*	For Vim version 7.2.  Last change: 2008 Nov 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -265,7 +265,7 @@ actually view a file that way, if you have lots of time at hand.
 
 Suppose you have setup Vim to use Unicode, and you want to edit a file that is
 in 16-bit Unicode.  Sounds simple, right?  Well, Vim actually uses utf-8
-encoding internally, thus the 16-bit encoding must be converted.  Thus there
+encoding internally, thus the 16-bit encoding must be converted, since there
 is a difference between the character set (Unicode) and the encoding (utf-8 or
 16-bit).
    Vim will try to detect what kind of file you are editing.  It uses the
@@ -283,7 +283,7 @@ if it's one of these encodings:
 When you start editing that 16-bit Unicode file, and it has a BOM, Vim will
 detect this and convert the file to utf-8 when reading it.  The 'fileencoding'
 option (without s at the end) is set to the detected value.  In this case it
-is "ucs-2le".  That means it's Unicode, two bytes and little-endian.  This
+is "utf-16le".  That means it's Unicode, 16-bit and little-endian.  This
 file format is common on MS-Windows (e.g., for registry files).
    When writing the file, Vim will compare 'fileencoding' with 'encoding'.  If
 they are different, the text will be converted.

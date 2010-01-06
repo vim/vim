@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 7.2.  Last change: 2008 Jun 26
+*if_tcl.txt*    For Vim version 7.2.  Last change: 2008 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -83,7 +83,7 @@ The following commands are implemented: >
 	::vim::beep			# Guess.
 	::vim::buffer {n}		# Create Tcl command for one buffer.
 	::vim::buffer list		# Create Tcl commands for all buffers.
-	::vim::command [-quiet] {cmd}	# Execute an ex command.
+	::vim::command [-quiet] {cmd}	# Execute an Ex command.
 	::vim::expr {expr}		# Use Vim's expression evaluator.
 	::vim::option {opt}		# Get vim option.
 	::vim::option {opt} {val}	# Set vim option.
@@ -116,7 +116,7 @@ Commands:
 
 	::vim::command {cmd}				*tcl-command*
 	::vim::command -quiet {cmd}
-	Execute the vim (ex-mode) command {cmd}.  Any ex command that affects
+	Execute the vim (ex-mode) command {cmd}.  Any Ex command that affects
 	a buffer or window uses the current buffer/current window.  Does not
 	return a result other than a standard Tcl error code.  After this
 	command is completed, the "::vim::current" variable is updated.
@@ -210,7 +210,7 @@ Variables:
 
 	line						*tcl-var-line*
 	lnum						*tcl-var-lnum*
-	These global variables are only available if the ":tcldo" ex command
+	These global variables are only available if the ":tcldo" Ex command
 	is being executed.  They contain the text and line number of the
 	current line.  When the Tcl command invoked by ":tcldo" is completed,
 	the current line is set to the contents of the "line" variable, unless
@@ -233,7 +233,7 @@ Let's assume the name of the window command is stored in the Tcl variable "win",
 i.e. "$win" calls the command.  The following options are available: >
 
 	$win buffer		# Create Tcl command for window's buffer.
-	$win command {cmd}	# Execute ex command in windows context.
+	$win command {cmd}	# Execute Ex command in windows context.
 	$win cursor		# Get current cursor position.
 	$win cursor {var}	# Set cursor position from array variable.
 	$win cursor {row} {col}	# Set cursor position.
@@ -312,7 +312,7 @@ Let's assume the name of the buffer command is stored in the Tcl variable "buf",
 i.e. "$buf" calls the command.  The following options are available: >
 
 	$buf append {n} {str}	# Append a line to buffer, after line {n}.
-	$buf command {cmd}	# Execute ex command in buffers context.
+	$buf command {cmd}	# Execute Ex command in buffers context.
 	$buf count		# Report number of lines in buffer.
 	$buf delcmd {cmd}	# Call Tcl command when buffer is deleted.
 	$buf delete {n}		# Delete a single line.
@@ -438,7 +438,7 @@ used to display messages in vim.
 ==============================================================================
 7. Known bugs & problems				*tcl-bugs*
 
-Calling one of the Tcl ex commands from inside Tcl (via "::vim::command") may
+Calling one of the Tcl Ex commands from inside Tcl (via "::vim::command") may
 have unexpected side effects.  The command creates a new interpreter, which
 has the same abilities as the standard interpreter - making "::vim::command"
 available in a safe child interpreter therefore makes the child unsafe.  (It
@@ -487,11 +487,11 @@ This script adds a consecutive number to each line in the current range:
 		incr i ; incr n
 	}
 
-The same can also be done quickly with two ex commands, using ":tcldo":
+The same can also be done quickly with two Ex commands, using ":tcldo":
 	:tcl set n 1
 	:[range]tcldo set line "$n\t$line" ; incr n
 
-This procedure runs an ex command on each buffer (idea stolen from Ron Aaron):
+This procedure runs an Ex command on each buffer (idea stolen from Ron Aaron):
 	proc eachbuf { cmd } {
 		foreach b [::vim::buffer list] {
 			$b command $cmd
@@ -500,7 +500,7 @@ This procedure runs an ex command on each buffer (idea stolen from Ron Aaron):
 Use it like this:
 	:tcl eachbuf %s/foo/bar/g
 Be careful with Tcl's string and backslash substitution, tough.  If in doubt,
-surround the ex command with curly braces.
+surround the Ex command with curly braces.
 
 
 If you want to add some Tcl procedures permanently to vim, just place them in

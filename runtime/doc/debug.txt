@@ -1,4 +1,4 @@
-*debug.txt*     For Vim version 7.2.  Last change: 2006 May 01
+*debug.txt*     For Vim version 7.2.  Last change: 2009 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10,7 +10,8 @@ This is for debugging Vim itself, when it doesn't work properly.
 For debugging Vim scripts, functions, etc. see |debug-scripts|
 
 1. Location of a crash, using gcc and gdb	|debug-gcc|
-2. Windows Bug Reporting			|debug-win32|
+2. Locating memory leaks			|debug-leaks|
+3. Windows Bug Reporting			|debug-win32|
 
 ==============================================================================
 
@@ -38,7 +39,25 @@ This also applies when using the MingW tools.
 
 ==============================================================================
 
-2. Windows Bug Reporting				*debug-win32*
+2. Locating memory leaks				*debug-leaks*
+
+If you suspect Vim is leaking memory and you are using Linux, the valgrind
+tool is very useful to pinpoint memory leaks.
+
+First of all, build Vim with EXITFREE defined.  Search for this in MAKEFILE
+and uncomment the line.
+
+Use this command to start Vim:				*valgrind*
+>
+	valgrind --log-file=valgrind.log ./vim
+
+Note: Vim will run much slower.  If your .vimrc is big or you have several
+plugins you need to be patient for startup, or run with the "-u NONE"
+argument.
+
+==============================================================================
+
+3. Windows Bug Reporting				*debug-win32*
 
 If the Windows version of Vim crashes in a reproducible manner, you can take
 some steps to provide a useful bug report.

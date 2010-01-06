@@ -1,4 +1,4 @@
-*usr_06.txt*	For Vim version 7.2.  Last change: 2006 Apr 24
+*usr_06.txt*	For Vim version 7.2.  Last change: 2009 Oct 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -244,9 +244,13 @@ commands to move in Visual mode, of course.
 
 This also works on Unix, if you have a PostScript printer.  Otherwise, you
 will have to do a bit more work.  You need to convert the text to HTML first,
-and then print it from a web browser such as Netscape.
+and then print it from a web browser.
 
 Convert the current file to HTML with this command: >
+
+	:TOhtml
+
+In case that doesn't work: >
 
 	:source $VIMRUNTIME/syntax/2html.vim
 

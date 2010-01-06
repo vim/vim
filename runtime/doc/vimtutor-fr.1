@@ -3,7 +3,7 @@
 vimtutor \- tutoriel Vim
 .SH SYNOPSIS
 .br
-.B vimtutor [langue]
+.B vimtutor [-g] [langue]
 .SH DESCRIPTION
 .B Vimtutor
 lance le tutoriel
@@ -16,6 +16,10 @@ sans altérer le fichier original.
 est utile pour les personnes souhaitant apprendre leurs premières commandes
 .B Vim
 \.
+.PP
+L'argument optionnel -g lance vimtutor avec gvim plutôt qu'avec vim, si l'IHM
+graphique de vim est disponible, ou le lance avec vim si gvim n'est pas
+disponible.
 .PP
 L'argument optionnel [langue] est le nom d'une langue, spécifiée par son
 symbole à deux lettres, tels que "it" ou "es". Si l'argument [langue] est omis,

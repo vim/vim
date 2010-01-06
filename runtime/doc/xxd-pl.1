@@ -18,7 +18,7 @@
 \-r[evert] [opcje] [plik_we [plik_wy]]
 .SH OPIS
 .I xxd
-tworzy zrzut heksowy podanego pliku na standardowe wyj¶cie.
+tworzy zrzut heksowy podanego pliku lub standardowego wej¶cia.
 Mo¿e tak¿e przetworzyæ zrzut heksowy z powrotem do oryginalnej,
 binarnej formy.
 Podobnie jak
@@ -27,13 +27,13 @@ i
 .BR uudecode (1)
 pozwala na przekazanie danych binarnych w bezpiecznej w poczcie formie
 ASCII, ale ma zalety dekodowania na standardowe wyj¶cie.
-Ponadto mo¿na go u¿yæ do przeprowadzenia ³atania plików binarnych.
+Ponadto mo¿na go u¿yæ do binarnego ³atania plików.
 .SH OPCJE
 Je¶li nie podano
 .I plik_we
-xxd czyta ze standardowego wej¶cie.
+xxd czyta ze standardowego wej¶cia.
 Je¶li okre¶lono
-.I plik_wy
+.I plik_we
 jako znak
 .RB \` \- '
 wtedy dane wej¶ciowe czytane s± ze standardowego wej¶cia.
@@ -63,9 +63,9 @@ wy³±czone.
 .TP
 .IR \-b " | " \-bits
 Prze³±cza do zrzutu bitowego (cyfr binarnych) zamiast heksowego.
-Opcja ta zapisuje oktety ajko osiem cyfr 1 lub 0 zamias normalnego
+Opcja ta zapisuje oktety jako osiem cyfr 1 lub 0 zamiast normalnego
 zrzutu heksowego. Ka¿da linia jest poprzedzona przez
-heksadecymalny numer linii a za nim jego reprezentacja w ascii (lub
+heksadecymalny numer linii a po nim jego reprezentacj± w ascii (lub
 ebcdic). Opcje linii poleceñ \-r, \-p, \-i nie dzia³aj± w tym
 trybie.
 .TP
@@ -103,7 +103,7 @@ nie czyta ze standardowego wej¶cia.
 .TP
 .IR "\-l len " | "\-len len"
 zakoñcz po wypisaniu
-.RI < len>
+.RI < len >
 oktetów.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
@@ -117,7 +117,7 @@ bez obcinania go. U¿yj kombinacji
 .I \-r \-p
 by odczytaæ zwyk³y zrzut heksadecymalny bez numerów linii
 i okre¶lonego uk³adu kolumn. Dodatkowe bia³e znaki i ³amanie wierszy
-s± dozwolone wszêdzie.
+s± wszêdzie dozwolone.
 .TP
 .I \-seek offset
 Kiedy u¿yty po
@@ -129,11 +129,11 @@ dodanym do pozycji w pliku odnalezionym w zrzucie heksowym.
 .I \-s [+][\-]seek
 zaczyna na
 .RI < seek >
-bajtów abs. (lub wzg.) offsecie pliku wej¶ciowego.
-\fI+ fRwskazuje, ¿e seek jest wzglêdne do bie¿±cej pozycji pliku (bez
+bajtów bezwglêdnego (lub wzglêdnego) offsetu pliku wej¶ciowego.
+\fI+ \fRwskazuje, ¿e seek jest wzglêdne do bie¿±cej pozycji pliku (bez
 znaczenia je¶li nie wczytuje ze standardowego wej¶cia). \fI\- \fRwskazuje
 ¿e seek powinno byæ o tyle znaków od koñca wej¶cia (lub je¶li
-po³±czone z \fI+\fR: przezhd bie¿±c± pozycj± pliku na standardowym
+po³±czone z \fI+\fR: przed bie¿±c± pozycj± pliku na standardowym
 wej¶ciu).
 Bez opcji \-s xxd zaczyna od bie¿±cej pozycji w pliku.
 .TP
@@ -153,7 +153,7 @@ pozycjê. Je¶li plik wyj¶ciowy nie jest mo¿liwy do przeszukania mo¿liwe
 s± tylko przerwy, które zostan± wype³nione bajtami null.
 .PP
 .I xxd \-r
-nigdy nie podaje b³êdów analizy. ¦mieci s± ignorowane.
+nigdy nie podaje b³êdów analizy. ¦mieci s± po cichu ignorowane.
 .PP
 W czasie edycji zrzutów heksowych, proszê zauwa¿yæ ¿e
 .I xxd \-r
@@ -161,8 +161,8 @@ pomija wszystko w linii wej¶cia po odczytaniu wystarczaj±cej ilo¶ci
 kolumn danych heksadecymalnych (zobacz opcjê \-c). Oznacza to tak¿e,
 ¿e zmiany w drukowanych kolumnach ascii (lub ebcdic) s± zawsze
 ignorowane. Odwrócenie zwyk³ego (lub postscriptowego) stylu zrzutu
-poprzez xxd \-r \-p nie zale¿y od kolejno¶ci kolumn. Tutaj cokolwiej
-co wygl±da jak para cyfr heks jest interpretowane.
+poprzez xxd \-r \-p nie zale¿y od kolejno¶ci kolumn. Tutaj cokolwiek
+co wygl±da jak para znaków heks jest interpretowane.
 .PP
 Zauwa¿ ró¿nicê miêdzy
 .br
@@ -175,7 +175,7 @@ i
 .I xxd \-s \+seek
 mo¿e byæ ró¿ne od
 .IR "xxd \-s seek" ,
-poniewa¿ lseek(2) jest u¿yty do "przewiniêcie" wej¶cia. '+' robi
+poniewa¿ lseek(2) jest u¿yty do "przewiniêcie" wej¶cia. '+' stanowi
 ró¿nicê je¶li ¼ród³em wej¶cia jest standardowe wej¶cie i je¶li pozycja
 w pliku ze standardowego wej¶cia nie jest pocz±tkiem pliku w chwili
 uruchomienia xxd. Nastêpuj±ce przyk³ady mog± wyja¶niæ (lub bardziej
@@ -184,17 +184,17 @@ zmyliæ!)...
 Przewiñ standardowe wej¶cie przed przeczytaniem; potrzebne poniewa¿
 `cat' ju¿ odczyta³ do koñca standardowego wej¶cia.
 .br
-\fI% sh \-c 'cat > zwyk³a_kopia; xxd \-s 0 > hex_kopia' < plik
+\fI% sh \-c 'cat > zwyk³a_kopia; xxd \-s 0 > hex_kopia' < plik\fR
 .PP
 Zrzut heksowy od pozycji pliku 0x480 (=1024+128) w przód.
 Znak `+' oznacza "wzglêdny wobec bie¿±cej pozycji", st±d `128' dodaje
 do 1k gdzie zakoñczy³ dd.
 .br
-\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet' < file
+\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +128 > hex_snippet' < file\fR
 .PP
 Zrzut heksowy od pozycji pliku 0x100 ( = 1024\-768) dalej.
 .br
-\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +-768 > hex_snippet' < file
+\fI% sh \-c 'dd of=plain_snippet bs=1k count=1; xxd \-s +-768 > hex_snippet' < file\fR
 .PP
 Jakkolwiek, jest to rzadka sytuacja i u¿ycie `+' jest rzadko
 potrzebne.
@@ -206,14 +206,14 @@ Wypisz wszystko z wyj±tkiem pierwszych trzech linii (heksowe 0x30 bajtów)
 .B pliku
 \.
 .br
-\fI% xxd \-s 0x30 plik
+\fI% xxd \-s 0x30 plik\fR
 .PP
 .br
 Wypisz trzy linie (heksowe 0x30 bajtów) z koñca
 .B pliku
 \.
 .br
-\fI% xxd \-s \-0x30 plik
+\fI% xxd \-s \-0x30 plik\fR
 .PP
 .br
 Wypisz 120 bajtów jako ci±g³y zrzut heksowy z 20 oktetami na liniê.

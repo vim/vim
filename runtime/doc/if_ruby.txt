@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 7.2.  Last change: 2006 Apr 30
+*if_ruby.txt*   For Vim version 7.2.  Last change: 2008 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -79,7 +79,7 @@ Ruby code gets all of its access to vim via the "VIM" module.
 
 Overview >
 	print "Hello"			      # displays a message
-	VIM.command(cmd)		      # execute an ex command
+	VIM.command(cmd)		      # execute an Ex command
 	num = VIM::Window.count		      # gets the number of windows
 	w = VIM::Window[n]		      # gets window "n"
 	cw = VIM::Window.current	      # gets the current window

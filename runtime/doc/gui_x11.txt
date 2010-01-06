@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 7.2.  Last change: 2007 Dec 09
+*gui_x11.txt*   For Vim version 7.2.  Last change: 2009 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -540,13 +540,16 @@ Of these three, Vim uses PRIMARY when reading and writing the "* register
 register.  Vim does not access the SECONDARY selection.
 
 Examples: (assuming the default option values)
-- Select an URL in Visual mode in Vim.  Go to a text field in Netscape and
-  click the middle mouse button.  The selected text will be inserted
-  (hopefully!).
-- Select some text in Netscape by dragging with the mouse.  Go to Vim and
+- Select an URL in Visual mode in Vim.  Go to your browser and click the
+  middle mouse button in the URL text field.  The selected text will be
+  inserted (hopefully!).  Note: in Firefox you can set the
+  middlemouse.contentLoadURL preference to true in about:config, then the
+  selected URL will be used when pressing middle mouse button in most places
+  in the window.
+- Select some text in your browser by dragging with the mouse.  Go to Vim and
   press the middle mouse button: The selected text is inserted.
-- Select some text in Vim and do "+y.  Go to Netscape, select some text in a
-  textfield by dragging with the mouse.  Now use the right mouse button and
+- Select some text in Vim and do "+y.  Go to your browser, select some text in
+  a textfield by dragging with the mouse.  Now use the right mouse button and
   select "Paste" from the popup menu.  The selected text is overwritten by the
   text from Vim.
 Note that the text in the "+ register remains available when making a Visual

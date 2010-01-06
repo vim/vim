@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 7.2.  Last change: 2008 Apr 30
+*print.txt*     For Vim version 7.2.  Last change: 2008 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -704,7 +704,7 @@ print output, turn it over and place it back in the paper feeder.  Now print
 even.ps with your platform's print command.  All the even pages should now
 appear on the back of the odd pages.
 
-There a couple of points to bear in mind:
+There are a couple of points to bear in mind:
 
 1. Position of the first page.  If the first page is on top of the printout
    when printing the odd pages then you need to reverse the order that the odd

@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.2.  Last change: 2006 Apr 30
+*if_pyth.txt*   For Vim version 7.2.  Last change: 2008 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -93,7 +93,7 @@ module before using it: >
 
 Overview >
 	:py print "Hello"		# displays a message
-	:py vim.command(cmd)		# execute an ex command
+	:py vim.command(cmd)		# execute an Ex command
 	:py w = vim.windows[n]		# gets window "n"
 	:py cw = vim.current.window	# gets the current window
 	:py b = vim.buffers[n]		# gets buffer "n"

@@ -304,7 +304,7 @@ want to enable one, use the following command: >
 One horizontal scrollbar will appear at the bottom of the Vim window.
 
 If you don't have a scrollbar or don't want to use it, use these commands to
-scroll the text.  The cursor will stay in the same place, but it's move back
+scroll the text.  The cursor will stay in the same place, but it's moved back
 into the visible text if necessary.
 
 	zh		scroll right
@@ -547,7 +547,7 @@ The layout is messed up.  To avoid that, use the "gr" command:
 What happens is that the "gr" command makes sure the new character takes the
 right amount of screen space.  Extra spaces or tabs are inserted to fill the
 gap.  Thus what actually happens is that a tab is replaced by "x" and then
-blanks added to make the text after it keep it's place.  In this case a
+blanks added to make the text after it keep its place.  In this case a
 tab is inserted.
    When you need to replace more than one character, you use the "R" command
 to go to Replace mode (see |04.9|).  This messes up the layout and replaces

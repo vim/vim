@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 7.2.  Last change: 2006 Apr 30
+*undo.txt*      For Vim version 7.2.  Last change: 2009 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -105,6 +105,10 @@ change again.  But you can do something like this: >
 
 After this an "u" command will undo the delete command and the previous
 change.
+
+To do the opposite, break a change into two undo blocks, in Insert mode use
+CTRL-G u.  This is useful if you want an insert command to be undoable in
+parts.  E.g., for each sentence.  |i_CTRL-G_u|
 
 ==============================================================================
 4. Undo branches				*undo-branches* *undo-tree*

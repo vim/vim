@@ -1,4 +1,4 @@
-*usr_43.txt*	For Vim version 7.2.  Last change: 2006 Apr 24
+*usr_43.txt*	For Vim version 7.2.  Last change: 2008 Dec 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -57,7 +57,8 @@ default value or the value from the last ":set" command.
 Likewise, the mapping for "\c" will disappear when editing another buffer.
 The ":map <buffer>" command creates a mapping that is local to the current
 buffer.  This works with any mapping command: ":map!", ":vmap", etc.  The
-|<LocalLeader>| in the mapping is replaced with the value of "maplocalleader".
+|<LocalLeader>| in the mapping is replaced with the value of the
+"maplocalleader" variable.
 
 You can find examples for filetype plugins in this directory: >
 

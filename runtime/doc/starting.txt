@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 7.2.  Last change: 2008 Nov 09
+*starting.txt*  For Vim version 7.2.  Last change: 2009 Dec 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -338,12 +338,19 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 							*-C*
 -C		Compatible mode.  Sets the 'compatible' option.  You can use
 		this to get 'compatible', even though a .vimrc file exists.
-		But the command ":set nocompatible" overrules it anyway.
-		Also see |compatible-default|.  {not in Vi}
+		Keep in mind that the command ":set nocompatible" in some
+		plugin or startup script overrules this, so you may end up
+		with 'nocmpatible' anyway.  To find out, use: >
+			:verbose set compatible?
+<		Several plugins won't work with 'compatible' set.  You may
+		want to set it after startup this way: >
+			vim "+set cp" filename
+<		Also see |compatible-default|.  {not in Vi}
 
 							*-N*
 -N		Not compatible mode.  Resets the 'compatible' option.  You can
-		use this to get 'nocompatible', when there is no .vimrc file.
+		use this to get 'nocompatible', when there is no .vimrc file
+		or when using "-u NONE".
 		Also see |compatible-default|.  {not in Vi}
 
 							*-y* *easy*
@@ -361,6 +368,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		Can also be done with ":set updatecount=0".  You can switch it
 		on again by setting the 'updatecount' option to some value,
 		e.g., ":set uc=100".
+		NOTE: Don't combine -n with -b, making -nb, because that has a
+		different meaning: |-nb|.
 		'updatecount' is set to 0 AFTER executing commands from a
 		vimrc file, but before the GUI initializations.  Thus it
 		overrides a setting for 'updatecount' in a vimrc file, but not
@@ -593,17 +602,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		it.  The second form specifies a file to read connection info
 		from.  The third form specifies the hostname, address and
 		password for connecting to Netbeans. |netbeans-run|
-
-Example for using a script file to change a name in several files:
-	Create a file "subs.vi" containing substitute commands and a :wq
-	command: >
-		:%s/Jones/Smith/g
-		:%s/Allen/Peter/g
-		:wq
-<
-	Execute Vim on all files you want to change: >
-
-		foreach i ( *.let ) vim -s subs.vi $i
+		{only available when compiled with the |+netbeans_intg|
+		feature; if not then -nb will make Vim exit}
 
 If the executable is called "view", Vim will start in Readonly mode.  This is
 useful if you can make a hard or symbolic link from "view" to "vim".
@@ -777,10 +777,11 @@ accordingly.  Vim proceeds in this order:
 	nocp" command if you like.
 	For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
-			  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc*
+	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
      c. Four places are searched for initializations.  The first that exists
 	is used, the others are ignored.  The $MYVIMRC environment variable is
-	set to the file that was first found, unless $MYVIMRC was already set.
+	set to the file that was first found, unless $MYVIMRC was already set
+	and when using VIMINIT.
 	-  The environment variable VIMINIT (see also |compatible-default|) (*)
 	   The value of $VIMINIT is used as an Ex command line.
 	-  The user vimrc file(s):
@@ -969,7 +970,8 @@ part of the line in the tags file) is always done in secure mode.  This works
 just like executing a command from a vimrc/exrc in the current directory.
 
 							*slow-start*
-If Vim takes a long time to start up, there may be a few causes:
+If Vim takes a long time to start up, use the |--startuptime| argument to find
+out what happens.  There are a few common causes:
 - If the Unix version was compiled with the GUI and/or X11 (check the output
   of ":version" for "+GUI" and "+X11"), it may need to load shared libraries
   and connect to the X11 server.  Try compiling a version with GUI and X11
@@ -990,7 +992,7 @@ there is not enough room, you will see only part of it).
 
 							*info-message*
 The |--help| and |--version| arguments cause Vim to print a message and then
-exit.  Normally the message is send to stdout, thus can be redirected to a
+exit.  Normally the message is sent to stdout, thus can be redirected to a
 file with: >
 
 	vim --help >file
@@ -1441,7 +1443,7 @@ requires Vim to be compiled with the |+iconv| feature.  Filenames are not
 converted.
 
 
-MANUALLY READING AND WRITING
+MANUALLY READING AND WRITING				*viminfo-read-write*
 
 Two commands can be used to read and write the viminfo file manually.  This
 can be used to exchange registers between two running Vim programs: First
@@ -1504,7 +1506,7 @@ most of the information will be restored).
 			the list is edited.
 			If you get the |press-enter| prompt you can press "q"
 			and still get the prompt to enter a file number.
-			Use ! to abondon a modified buffer. |abandon|
+			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
 
  vim:tw=78:ts=8:ft=help:norl:

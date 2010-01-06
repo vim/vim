@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 7.2.  Last change: 2008 Mar 14
+*quickfix.txt*  For Vim version 7.2.  Last change: 2009 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -630,14 +630,20 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 			Just like ":grep", but instead of making a new list of
 			errors the matches are appended to the current list.
 			Example: >
-				:grep nothing %
+				:call setqflist([])
 				:bufdo grepadd! something %
 <			The first command makes a new error list which is
 			empty.  The second command executes "grepadd" for each
 			listed buffer.  Note the use of ! to avoid that
 			":grepadd" jumps to the first error, which is not
 			allowed with |:bufdo|.
-
+			An example that uses the argument list and avoids
+			errors for files without matches: >
+                                :silent argdo try 
+				  \ | grepadd! something %
+				  \ | catch /E480:/
+				  \ | endtry"
+<
 							*:lgrepa* *:lgrepadd*
 :lgrepa[dd][!] [arguments]
 			Same as ":grepadd", except the location list for the

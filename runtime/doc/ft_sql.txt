@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 7.2.  Last change: Wed Apr 26 2006 3:05:33 PM
+*sql.txt*	For Vim version 7.2.  Last change: 2009 Nov 03
 
 by David Fishburn
 
@@ -15,7 +15,8 @@ features for navigation, indentation and syntax highlighting.
     1.4 Macros					|sql-macros|
 2. SQL Dialects					|sql-dialects|
     2.1 SQLSetType				|SQLSetType|
-    2.2 SQL Dialect Default			|sql-type-default|
+    2.2 SQLGetType				|SQLGetType|
+    2.3 SQL Dialect Default			|sql-type-default|
 3. Adding new SQL Dialects			|sql-adding-dialects|
 4. OMNI SQL Completion				|sql-completion|
     4.1 Static mode				|sql-completion-static|
@@ -204,7 +205,7 @@ Press any of the following keys: >
 						*sqlanywhere*
 						*oracle* *plsql* *sqlj*
 						*sqlserver*
-						*mysql* *postgres* *psql*
+						*mysql* *postgress* *psql*
 						*informix*
 
 All relational databases support SQL.  There is a portion of SQL that is
@@ -231,7 +232,7 @@ be nice to specify a default in your |vimrc|.
 
 2.1 SQLSetType					*sqlsettype* *SQLSetType*
 --------------
-For the people that work with many different databases, it would be nice to be
+For the people that work with many different databases, it is nice to be
 able to flip between the various vendors rules (indent, syntax) on a per
 buffer basis, at any time.  The ftplugin/sql.vim file defines this function: >
     SQLSetType
@@ -259,7 +260,17 @@ of available Vim script names: >
     :SQL<Tab><space><Tab>
 
 
-2.2 SQL Dialect Default				*sql-type-default*
+2.2 SQLGetType					*sqlgettype* *SQLGetType*
+--------------
+At anytime you can determine which SQL dialect you are using by calling the
+SQLGetType command.  The ftplugin/sql.vim file defines this function: >
+    SQLGetType
+
+This will echo: >
+    Current SQL dialect in use:sqlanywhere
+
+
+2.3 SQL Dialect Default				*sql-type-default*
 -----------------------
 As mentioned earlier, the default syntax rules for Vim is based on Oracle
 (PL/SQL).  You can override this default by placing one of the following in
@@ -331,6 +342,10 @@ The defaults static maps are: >
     imap <buffer> <C-C>T <C-\><C-O>:call sqlcomplete#Map('sqlType')<CR><C-X><C-O>
     imap <buffer> <C-C>s <C-\><C-O>:call sqlcomplete#Map('sqlStatement')<CR><C-X><C-O>
 
+The use of "<C-C>" can be user chosen by using the following in your |.vimrc| as it 
+may not work properly on all platforms: >
+    let g:ftplugin_sql_omni_key = '<C-C>'
+>
 The static maps (which are based on the syntax highlight groups) follow this
 format: >
     imap <buffer> <C-C>k <C-\><C-O>:call sqlcomplete#Map('sqlKeyword')<CR><C-X><C-O>
@@ -406,21 +421,25 @@ to display a list of tables, procedures, views and columns. >
 To enable the popup, while in INSERT mode, use the following key combinations
 for each group (where <C-C> means hold the CTRL key down while pressing
 the space bar):
-     Table List		    - <C-C>t
-			    - <C-X><C-O> (the default map assumes tables)
-     Stored Procedure List  - <C-C>p
-     View List		    - <C-C>v
-     Column List	    - <C-C>c
+     Table List		   - <C-C>t
+			   - <C-X><C-O> (the default map assumes tables)
+     Stored Procedure List - <C-C>p
+     View List		   - <C-C>v
+     Column List	   - <C-C>c
 
-     Windows platform only  - When viewing a popup window displaying the list
-			      of tables, you can press <C-Right>, this will
-			      replace the table currently highlighted with
-			      the column list for that table.
-			    - When viewing a popup window displaying the list
-			      of columns, you can press <C-Left>, this will
-			      replace the column list with the list of tables.
-			    - This allows you to quickly drill down into a
-			      table to view it's columns and back again.
+     Drilling In / Out     - When viewing a popup window displaying the list
+			     of tables, you can press <Right>, this will
+			     replace the table currently highlighted with
+			     the column list for that table.
+			   - When viewing a popup window displaying the list
+			     of columns, you can press <Left>, this will
+			     replace the column list with the list of tables.
+			   - This allows you to quickly drill down into a
+			     table to view it's columns and back again.
+			   - <Right> and <Left> can be also be chosen via
+			     your |.vimrc| >
+                                let g:ftplugin_sql_omni_key_right = '<Right>'
+                                let g:ftplugin_sql_omni_key_left  = '<Left>'
 
 The SQL completion plugin caches various lists that are displayed in
 the popup window.  This makes the re-displaying of these lists very
@@ -498,30 +517,24 @@ beginning with those characters.  >
 The SQL completion plugin can also display a list of columns for particular
 tables.  The column completion is trigger via <C-C>c.
 
-NOTE: The following example uses <C-Right> to trigger a column list while
-the popup window is active.  This map is only available on the Windows
-platforms since *nix does not recognize CTRL and the right arrow held down
-together.  If you wish to enable this functionality on a *nix platform choose
-a key and create one of these mappings (see |sql-completion-maps| for further
-details on where to create this imap): >
-    imap <buffer> <your_keystroke> <C-R>=sqlcomplete#DrillIntoTable()<CR>
-    imap <buffer> <your_keystroke> <C-Y><C-\><C-O>:call sqlcomplete#Map('column')<CR><C-X><C-O>
+NOTE: The following example uses <Right> to trigger a column list while
+      the popup window is active.  
 
 Example of using column completion:
      - Press <C-C>t again to display the list of tables.
-     - When the list is displayed in the completion window, press <C-Right>,
+     - When the list is displayed in the completion window, press <Right>,
        this will replace the list of tables, with a list of columns for the
        table highlighted (after the same short delay).
-     - If you press <C-Left>, this will again replace the column list with the
+     - If you press <Left>, this will again replace the column list with the
        list of tables.  This allows you to drill into tables and column lists
        very quickly.
-     - Press <C-Right> again while the same table is highlighted.  You will
+     - Press <Right> again while the same table is highlighted.  You will
        notice there is no delay since the column list has been cached.  If you
        change the schema of a cached table you can press <C-C>R, which
        clears the SQL completion cache.
-     - NOTE: <C-Right> and <C-Left> have been designed to work while the
+     - NOTE: <Right> and <Left> have been designed to work while the
        completion window is active.  If the completion popup window is
-       not active, a normal <C-Right> or <C-Left> will be executed.
+       not active, a normal <Right> or <Left> will be executed.
 
 Lets look how we can build a SQL statement dynamically.  A select statement
 requires a list of columns.  There are two ways to build a column list using
@@ -529,7 +542,7 @@ the SQL completion plugin. >
     One column at a time:
 <       1. After typing SELECT press <C-C>t to display a list of tables.
 	2. Choose a table from the list.
-	3. Press <C-Right> to display a list of columns.
+	3. Press <Right> to display a list of columns.
 	4. Choose the column from the list and press enter.
 	5. Enter a "," and press <C-C>c.  Generating a column list
 	   generally requires having the cursor on a table name.  The plugin
@@ -632,7 +645,7 @@ your |vimrc|: >
 	- When completing tables, procedure or views and using dbext.vim 3.00
 	  or higher the list of objects will also include the owner name.
 	  When completing these objects and omni_sql_include_owner is enabled
-	  the owner name will be replaced. >
+	  the owner name will be be replaced. >
 
     omni_sql_precache_syntax_groups
 <	- Default:
@@ -684,15 +697,15 @@ plugin. >
     <C-C>L
 <       - Displays a comma separated list of columns for a specific table.
 	  This should only be used when the completion window is active. >
-    <C-Right>
+    <Right>
 <	- Displays a list of columns for the table currently highlighted in
-	  the completion window.  <C-Right> is not recognized on most Unix
+	  the completion window.  <Right> is not recognized on most Unix
 	  systems, so this maps is only created on the Windows platform.
 	  If you would like the same feature on Unix, choose a different key
 	  and make the same map in your vimrc. >
-    <C-Left>
+    <Left>
 <	- Displays the list of tables.
-	  <C-Left> is not recognized on most Unix systems, so this maps is
+	  <Left> is not recognized on most Unix systems, so this maps is
 	  only created on the Windows platform.  If you would like the same
 	  feature on Unix, choose a different key and make the same map in
 	  your vimrc. >

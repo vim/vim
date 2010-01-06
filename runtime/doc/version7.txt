@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.2.  Last change: 2008 Aug 09
+*version7.txt*  For Vim version 7.2.  Last change: 2009 Dec 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -224,7 +224,7 @@ The 'spelllang'    option is used to specify the accepted language(s)
 The 'spellfile'    option specifies where new words are added
 The 'spellsuggest' option specifies the methods used for making suggestions
 
-The |[s| and |]s| commands can be used to move to the next or previous error
+The |]s| and |[s| commands can be used to move to the next or previous error
 The |zg| and |zw| commands can be used to add good and wrong words
 The |z=|	  command can be used to list suggestions and correct the word
 The |:mkspell|    command is used to generate a Vim spell file from word lists
@@ -1868,7 +1868,7 @@ message for the next buffer.  Temporarily clear 'shortmess' to avoid that.
 Win32: Cannot edit a file starting with # with --remote.  Do escape % and #
 when building the ":drop" command.
 
-A comment or | just after a expression-backtick argument was not recognized.
+A comment or | just after an expression-backtick argument was not recognized.
 E.g. in :e `="foo"`"comment.
 
 "(" does not stop at an empty sentence (single dot and white space) while ")"
@@ -4741,7 +4741,7 @@ Added floating point support. |Float|
 Added argument to mode() to return a bit more detail about the current mode.
 (Ben Schmidt)
 
-Added support for BSD console mouse: |sysmouse|.  (Paul Mahol)
+Added support for BSD console mouse: |sysmouse|.  (Paul B. Mahol)
 
 Added the "newtab" value for the 'switchbuf' option.  (partly by Yegappan
 Lakshmanan)
@@ -5903,7 +5903,7 @@ Files:	    src/ex_getln.c
 
 Patch 7.1.188
 Problem:    When 'showmode' is off the message for changing a readonly file is
-	    given in the second column instead of the first.  (Payl B.  Mahol)
+	    given in the second column instead of the first.  (Payl B. Mahol)
 Solution:   Put the W10 message in the first column.
 Files:	    src/edit.c
 

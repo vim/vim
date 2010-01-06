@@ -1,4 +1,4 @@
-*usr_04.txt*	For Vim version 7.2.  Last change: 2006 Jun 21
+*usr_04.txt*	For Vim version 7.2.  Last change: 2008 Sep 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -263,7 +263,7 @@ When using blockwise selection, you have four corners.  "o" only takes you to
 one of the other corners, diagonally.  Use "O" to move to the other corner in
 the same line.
 
-Note that "o" and "O" in Visual mode work very different from Normal mode,
+Note that "o" and "O" in Visual mode work very differently from Normal mode,
 where they open a new line below or above the cursor.
 
 ==============================================================================

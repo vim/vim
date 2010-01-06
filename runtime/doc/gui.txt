@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.2.  Last change: 2008 Jun 14
+*gui.txt*       For Vim version 7.2.  Last change: 2009 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35,13 +35,13 @@ GUI version of Vim with:
 The X11 version of Vim can run both in GUI and in non-GUI mode.  See
 |gui-x11-start|.
 
-					*gui-init* *gvimrc* *.gvimrc* *_gvimrc*
+			*gui-init* *gvimrc* *.gvimrc* *_gvimrc* *$MYGVIMRC*
 The gvimrc file is where GUI-specific startup commands should be placed.  It
 is always sourced after the |vimrc| file.  If you have one then the $MYGVIMRC
 environment variable has its name.
 
 When the GUI starts up initializations are carried out, in this order:
-- The 'term' option is set to "builgin_gui" and terminal options are reset to
+- The 'term' option is set to "builtin_gui" and terminal options are reset to
   their default value for the GUI |terminal-options|.
 - If the system menu file exists, it is sourced.  The name of this file is
   normally "$VIMRUNTIME/menu.vim".  You can check this with ":version".  Also
@@ -473,9 +473,11 @@ this line to your .vimrc file (NOT your .gvimrc file!): >
 	:let did_install_default_menus = 1
 If you also want to avoid the Syntax menu: >
 	:let did_install_syntax_menu = 1
-If you do want the Syntax menu but not all the entries for each available
-syntax file (which take quite a bit of time to load): >
-	:let skip_syntax_sel_menu = 1
+The first item in the Syntax menu can be used to show all available filetypes
+in the menu (which can take a bit of time to load).  If you want to have all
+filetypes already present at startup, add: >
+	:let do_syntax_sel_menu = 1
+
 <
 							*console-menus*
 Although this documentation is in the GUI section, you can actually use menus

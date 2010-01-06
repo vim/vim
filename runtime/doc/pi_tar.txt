@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.2.  Last change: 2008 Aug 09
+*pi_tar.txt*	For Vim version 7.2.  Last change: 2009 Dec 28
 
 		       +====================+
 		       | Tar File Interface |
@@ -26,6 +26,33 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
    also write to the file.  Currently, one may not make a new file in
    tar archives via the plugin.
 
+						*:Untarvim*
+   UNTARVIM~
+
+   :Untarvim [vimhome]
+
+	This command copies, if necessary, the tarball to the .vim or vimfiles
+	directory using the first writable directory in the |'runtimepath'|
+	when no [vimhome] is specified.  Otherwise, the [vimhome] argument
+	allows the user to specify that directory, instead.
+
+	The copy is done using the command in *g:tar_copycmd* , which is >
+		cp   for cygwin, unix, macunix
+		copy for windows (32, 95, 64, 16)
+<	The extraction is done with the command specified with
+	*g:tar_extractcmd* , which by default is >
+		"tar -xf"
+<
+   PREVENTING LOADING~
+
+   If for some reason you do not wish to use vim to examine tar'd files,
+   you may put the following two variables into your <.vimrc> to prevent
+   the tar plugin from loading: >
+
+	let g:loaded_tarPlugin= 1
+	let g:loaded_tar      = 1
+<
+
 ==============================================================================
 3. Options						*tar-options*
 
@@ -38,14 +65,15 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
    *g:tar_cmd*            "tar"   the name of the tar program
    *g:tar_nomax*            0     if true, file window will not be maximized
    *g:tar_secure*         undef   if exists:
-					"--" will be used to prevent unwanted
+					"--"s will be used to prevent unwanted
 					option expansion in tar commands.
 					Please be sure that your tar command
 					accepts "--"; Posix compliant tar
-					utilities do accept it.
+					utilities do accept them.
 				  if not exists:
-					The tar plugin will reject any member
-					files that begin with "-"
+				  	The tar plugin will reject any tar
+					files or member files that begin with
+					"-"
 				  Not all tar's support the "--" which is why
 				  it isn't default.
    *g:tar_writeoptions*   "uf"    used to update/replace a file
@@ -54,6 +82,9 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
 ==============================================================================
 4. History						*tar-history*
 
+
+   v24 Apr 07, 2009 * :Untarvim command implemented
+       Sep 28, 2009 * Added lzma support
    v22 Aug 08, 2008 * security fixes
    v16 Jun 06, 2008 * tarfile:: used instead of tarfile: when editing files
 		      inside tarballs.  Fixes a problem with tarballs called

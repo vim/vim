@@ -3,10 +3,10 @@
 vimtutor \- nauczyciel Vima
 .SH SYNOPSIS
 .br
-.B vimtutor [jêzyk]
+.B vimtutor -g [jêzyk]
 .SH OPIS
 .B Vimtutor
-uruchamia nauczycie
+uruchamia nauczyciela
 .B Vima.
 Najpierw kopiuje w³a¶ciwy plik, dziêki temu mo¿na go zmieniaæ bez obaw
 utraty tre¶ci.
@@ -14,6 +14,9 @@ utraty tre¶ci.
 .B Vimtutor
 przyda siê ludziom, którzy chc± siê nauczyæ pierwszych poleceñ
 .B Vima
+.PP
+Opcjonalny argument \-g uruchamia vimtutor w gvimie a nie w Vimie je¶li
+graficzna wersja Vima jest dostêpna, je¶li nie zostanie uruchomiony Vim.
 .PP
 Opcjonalny argument [jêzyk] jest dwu literowym kodem jêzyka, tak jak
 "it" lub "es".
@@ -26,7 +29,7 @@ wypadku zostanie wykorzystana wersja angielska.
 jest uruchamiany zawsze w trybie kompatybilno¶ci z Vi
 .SH PLIKI
 .TP 15
-/usr/local/lib/vim/tutor/tutor[.languague]
+/usr/local/lib/vim/tutor/tutor[.jêzyk]
 Tekstowe pliki
 .B Vimtutora.
 .TP 15
@@ -35,7 +38,7 @@ Skrypt Vima u¿ywany do kopiowania pliku
 .B Vimtutora.
 .SH AUTOR
 .B Vimtutor
-zosta³ pocz±tkowo napisany dla Vim przez Michaela C. Pierce'a
+zosta³ pocz±tkowo napisany dla Vi przez Michaela C. Pierce'a
 i Roberta K. Ware'a z Colorado School of Mines zainspirowani przez
 Charlesa Smitha z Colorado State University.
 E-mail: bware@mines.colorado.edu

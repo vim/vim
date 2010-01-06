@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.2.  Last change: 2008 Jun 21
+*mbyte.txt*     For Vim version 7.2.  Last change: 2009 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -555,7 +555,7 @@ Unfortunately, using fonts in X11 is complicated.  The name of a single-byte
 font is a long string.  For multi-byte fonts we need several of these...
 
 Note: Most of this is no longer relevant for GTK+ 2.  Selecting a font via
-its XLFD is not supported anymore; see 'guifont' for an example of how to
+its XLFD is not supported; see 'guifont' for an example of how to
 set the font.  Do yourself a favor and ignore the |XLFD| and |xfontset|
 sections below.
 
@@ -1030,7 +1030,7 @@ For Command-line mode the flag is NOT remembered.  You are expected to type an
 Ex command first, which is ASCII.
 For typing search patterns the 'imsearch' option is used.  It can be set to
 use the same value as for 'iminsert'.
-
+								*lCursor*
 It is possible to give the GUI cursor another color when the language mappings
 are being used.  This is disabled by default, to avoid that the cursor becomes
 invisible when you use a non-standard background color.  Here is an example to
@@ -1246,20 +1246,36 @@ character sets.  Therefore it is possible to write text in any language using
 Unicode (with a few rarely used languages excluded).  And it's mostly possible
 to mix these languages in one file, which is impossible with other encodings.
 
-Unicode can be encoded in several ways.  The two most popular ones are UCS-2,
-which uses 16-bit words and UTF-8, which uses one or more bytes for each
-character.  Vim can support all of these encodings, but always uses UTF-8
+Unicode can be encoded in several ways.  The most popular one is UTF-8, which
+uses one or more bytes for each character and is backwards compatible with
+ASCII.   On MS-Windows UTF-16 is also used (previously UCS-2), which uses
+16-bit words.  Vim can support all of these encodings, but always uses UTF-8
 internally.
 
-Vim has comprehensive UTF-8 support.  It appears to work in:
+Vim has comprehensive UTF-8 support.  It works well in:
 - xterm with utf-8 support enabled
 - Athena, Motif and GTK GUI
 - MS-Windows GUI
+- several other platforms
 
 Double-width characters are supported.  This works best with 'guifontwide' or
 'guifontset'.  When using only 'guifont' the wide characters are drawn in the
 normal width and a space to fill the gap.  Note that the 'guifontset' option
 is no longer relevant in the GTK+ 2 GUI.
+
+							*bom-bytes*
+When reading a file a BOM (Byte Order Mark) can be used to recognize the
+Unicode encoding:
+	EF BB BF     utf-8
+	FF FE        utf-16 big endian
+	FE FF        utf-16 little endian
+	00 00 FE FF  utf-32 big endian
+	FF FE 00 00  utf-32 little endian
+
+Utf-8 is the recommended encoding.  Note that it's difficult to tell utf-16
+and utf-32 apart.  Utf-16 is often used on MS-Windows, utf-32 is not
+widespread as file format.
+
 
 					*mbyte-combining* *mbyte-composing*
 A composing or combining character is used to change the meaning of the
@@ -1402,7 +1418,7 @@ options.txt for detailed information.
 
 Contributions specifically for the multi-byte features by:
 	Chi-Deok Hwang <hwang@mizi.co.kr>
-	Nam SungHyun <namsh@kldp.org>
+	SungHyun Nam <goweol@gmail.com>
 	K.Nagano <nagano@atese.advantest.co.jp>
 	Taro Muraoka  <koron@tka.att.ne.jp>
 	Yasuhiro Matsumoto <mattn@mail.goo.ne.jp>

@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 7.2.  Last change: 2007 May 10
+*if_ole.txt*    For Vim version 7.2.  Last change: 2008 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -115,7 +115,7 @@ Example (Visual Basic syntax) >
 3. The "normal" command					*ole-normal*
 
 Due to the way Vim processes OLE Automation commands, combined with the method
-of implementation of the ex command :normal, it is not possible to execute the
+of implementation of the Ex command :normal, it is not possible to execute the
 :normal command via OLE automation.  Any attempt to do so will fail, probably
 harmlessly, although possibly in unpredictable ways.
 

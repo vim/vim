@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.2.  Last change: 2008 Nov 30
+*spell.txt*	For Vim version 7.2.  Last change: 2009 Oct 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1279,7 +1279,7 @@ compound word.  The word itself is not a good word.  Example:
 
 							*spell-ONLYINCOMPOUND*
 The ONLYINCOMPOUND does exactly the same as NEEDCOMPOUND.  Supported for
-compatiblity with Hunspell.
+compatibility with Hunspell.
 
 							*spell-COMPOUNDMIN*
 The minimal character length of a word used for compounding is specified with

@@ -247,7 +247,7 @@ transition - as an Editor it is so much better in many ways: keyboard layout,
 memory usage, text alteration to name 3.  (Mark Adam)
 
 In fact, now if I want to know what a particular setting does in vi, I fire up
-VIM and check out it's help!  (Nikhil Patel, USA)
+VIM and check out its help!  (Nikhil Patel, USA)
 
 As a vi user, VIM has made working with text a far more pleasant task than
 before I encountered this program.  (Steinar Knutsen, Norway)

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.2.  Last change: 2008 Jan 22
+*quickref.txt*  For Vim version 7.2.  Last change: 2009 Jan 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,13 +40,13 @@ N is used to indicate an optional count that can be given before the command.
 |^|	   ^		to first non-blank character in the line
 |$|	N  $		to the last character in the line (N-1 lines lower)
 			   (also: <End> key)
-|g0|	N  g0		to first character in screen line (differs from "0"
+|g0|	   g0		to first character in screen line (differs from "0"
 			   when lines wrap)
-|g^|	N  g^		to first non-blank character in screen line (differs
+|g^|	   g^		to first non-blank character in screen line (differs
 			   from "^" when lines wrap)
 |g$|	N  g$		to last character in screen line (differs from "$"
 			   when lines wrap)
-|gm|	N  gm		to middle of the screen line
+|gm|	   gm		to middle of the screen line
 |bar|	N  |		to column N (default: 1)
 |f|	N  f{char}	to the Nth occurrence of {char} to the right
 |F|	N  F{char}	to the Nth occurrence of {char} to the left

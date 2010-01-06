@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.2.  Last change: 2006 Sep 26
+*visual.txt*    For Vim version 7.2.  Last change: 2009 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -217,7 +217,7 @@ The objects that can be used are:
 	i[	inner [] block					|v_i[|
 
 Additionally the following commands can be used:
-	:	start ex command for highlighted lines (1)	|v_:|
+	:	start Ex command for highlighted lines (1)	|v_:|
 	r	change (4)					|v_r|
 	s	change						|v_s|
 	C	change (2)(4)					|v_C|
@@ -309,8 +309,6 @@ The block is shifted by 'shiftwidth'.  The RHS of the block is irrelevant.  The
 LHS of the block determines the point from which to apply a right shift, and
 padding includes TABs optimally according to 'ts' and 'et'.  The LHS of the
 block determines the point upto which to shift left.
-    Note: v_< padding is buggy if the Visual Block starts and ends in the same
-    TAB. (Vim 5.4c)
 See |v_b_>_example|.
 See |v_b_<_example|.
 
@@ -464,6 +462,10 @@ When mappings and menus are defined with the |:vmap| or |:vmenu| command they
 work both in Visual mode and in Select mode.  When these are used in Select
 mode Vim automatically switches to Visual mode, so that the same behavior as
 in Visual mode is effective.  If you don't want this use |:xmap| or |:smap|.
+
+Users will expect printable characters to replace the selected area.
+Therefore avoid mapping printable characters in Select mode.  Or use
+|:sunmap|  after |:map| and |:vmap| to remove it for Select mode.
 
 After the mapping or menu finishes, the selection is enabled again and Select
 mode entered, unless the selected area was deleted, another buffer became

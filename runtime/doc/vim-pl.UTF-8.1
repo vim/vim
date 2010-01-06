@@ -1,4 +1,4 @@
-.TH VIM 1 "2002 Lut 22"
+.TH VIM 1 "2006 kwi 11"
 .SH NAME
 vim \- Vi rozbudowany, edytor tekstu dla programisty
 .SH SYNOPSIS
@@ -13,7 +13,7 @@ vim \- Vi rozbudowany, edytor tekstu dla programisty
 [opcje] \-t znacznik
 .br
 .B vim
-[opcje] \-q [plik błędu]
+[opcje] \-q [plik_błędu]
 .PP
 .br
 .B ex
@@ -35,10 +35,10 @@ jest edytorem tekstu kompatybilnym z Vi. Może być
 używany do edycji wszelkiego rodzaju plików tekstowych.
 Użyteczny zwłaszcza przy edycji programów.
 .PP
-Posiada wiele usprawnień w porównaniu z Vi: wielo poziomowe cofanie zmian,
+Posiada wiele usprawnień w porównaniu z Vi: wielopoziomowe cofanie zmian,
 wiele okien i buforów, podświetlanie składni, edycja linii poleceń,
 uzupełnianie nazw plików, pomoc on-line, wizualna selekcja, itd.
-Zobacz ":help vi_diff.txt" dla podsumowania różnić pomiędzy
+Zobacz ":help vi_diff.txt" dla podsumowania różnic pomiędzy
 .B Vimem
 i Vi.
 .PP
@@ -82,7 +82,7 @@ rodzaju etykiety goto.
 {znacznika} szuka się w pliku tags, związany z nim plik staje się
 plikiem bieżącym i wykonuje się powiązane polecenie.
 Zazwyczaj używa się tego sposobu dla programów w C, w których wypadku
-{znacznik} powinien być nazwą funkcji.
+{znacznik} może być nazwą funkcji.
 W efekcie plik zawierający określoną funkcję staje się plikiem
 bieżącym a kursor jest umieszczony na początku funkcji.
 Zobacz ":help tag-commands".
@@ -91,7 +91,7 @@ Zobacz ":help tag-commands".
 Zacznij w trybie quickFix.
 Plik [plik_błędów] zostaje zinterpretowany i pokaże się pierwszy błąd.
 Jeśli brak opcji [plik_błędów] nazwa pliku zostanie pobrana z opcji
-'errorfile' (domyślnie "AztecC.Err" dla Amigi, "errros.err" dla innych
+\&'errorfile' (domyślnie "AztecC.Err" dla Amigi, "errros.err" dla innych
 systemów.
 Do kolejnych błędów można przeskoczyć dzięki poleceniu ":cn".
 Zobacz ":help quickfix".
@@ -140,8 +140,8 @@ Jeśli brak "num" kursor zostanie umieszczony w ostatnim wierszu.
 +/{wzór}
 W pierwszym pliku kursor zostanie umieszczony na pierwszym wystąpieniu
 {wzór}.
-Zobacz ":help search-pattern" by dowiedzieć się jakie są możliwości
-wzorów wyszukiwania.
+Zobacz ":help search-pattern" by dowiedzieć się jakie są możliwe
+wzorce wyszukiwania.
 .TP
 +{polecenie}
 .TP
@@ -164,7 +164,7 @@ wtedy jeśli \-S jest ostatnim argumentem).
 \-\-cmd {polecenie}
 Podobne do "\-c", ale polecenie jest wykonywane tuż przed
 interpretacją jakiegokolwiek pliku vimrc.
-Można użyć do 10 takich poleceń, niezależni od poleceń od "\-c"
+Można użyć do 10 takich poleceń, niezależnie od poleceń od "\-c"
 .TP
 \-A
 Jeśli
@@ -190,7 +190,7 @@ będzie zachowywał się jak Vi, nawet jeśli istnieje plik .vimrc.
 .TP
 \-d
 Uruchom w trybie diff.
-Powinno być dwa lub trzy nazwy plików jako argumenty.
+Powinno się użyć dwóch, trzech lub czterech nazwy plików jako argumentów.
 .B Vim
 otworzy wszystkie te pliki i pokaże różnice między nimi.
 Działa jak vimdiff(1).
@@ -283,18 +283,18 @@ Ustawia opcje 'lisp' i 'showmatch'.
 \-m
 Zmiana pliku jest niemożliwa.
 Przestawia opcję 'write'.
-Można cały czas zmienić zawartość bufora, ale zapisanie pliku nie jest
-możliwa.
+Można zmieniać zawartość bufora, ale zapisanie pliku nie jest
+możliwe.
 .TP
 \-M
 Opcje 'modifiable' i 'write' zostaną wyłączone, tak więc zmiany
-w pliku oraz ich zapisanie nie są możliwe. Można wartość tych opcji
+w pliku oraz ich zapisanie nie są możliwe. Wartość tych opcji można
 zmienić.
 .TP
 \-N
-Tryb niekompatibylny. Przestawia opcję 'compatible'. Dzięki temu
+Tryb niekompatybilny. Przestawia opcję 'compatible'. Dzięki temu
 .B Vim
-będzie zachowywał się odrobinę lepiej, ale mniej zgodznie z Vi nawet
+będzie zachowywał się odrobinę lepiej, ale mniej zgodnie z Vi nawet
 jeśli nie istnieje plik .vimrc.
 .TP
 \-n
@@ -323,8 +323,8 @@ Kiedy brak N, otwórz jedną kartę dla każdego pliku.
 \-R
 Tryb tylko do odczytu.
 Zostanie ustawiona opcja 'readonly'.
-Cały czas można zmieniać bufor, ale będzie istniała blokada przed przypadkowym
-zapisaniem pliku.
+Cały czas można zmieniać bufor, ale będzie istniała blokada by chronić
+przed przypadkowym zapisaniem pliku.
 Jeśli chcesz zapisać plik dodaj wykrzyknik do polecenia Ex, np. ":w!".
 Opcja \-R implikuje opcję \-n (zobacz poniżej).
 Opcja 'readonly' może zostać przestawiona poprzez ":set noro".
@@ -427,15 +427,15 @@ Wyświetl informację o pomocy i zakończy, to samo co"\-h".
 .TP
 \-\-literal
 Potraktuj nazwy plików dosłownie i nie rozwiązuj kwantyfikatorów. Nie
-ma znaczenia na Uniksach gdzie powłoka rozwiązuje kwantyfikatorów
+ma znaczenia na Uniksach gdzie powłoka rozwiązuje kwantyfikatory.
 .TP
 \-\-noplugin
 Pomiń ładowanie wtyczek. Implikowane przy \-u NONE.
 .TP
 \-\-remote
-Połącz się z serwerem Vima i edytuj w nim resztę argumentów. Jeśli nie
-znaleziono serwera zostanie zgłoszony błąd a pliki będą otwarte
-w bieżącym Vimie.
+Połącz się z serwerem Vima i edytuj w nim resztę plików podanych jako
+argumenty. Jeśli nie znaleziono serwera zostanie zgłoszony błąd a pliki zostaną
+otwarte w bieżącym Vimie.
 .TP
 \-\-remote\-expr {wyrażenie}
 Połącz z serwerem Vima, rozwiąż w nim {wyrażenie} i wypisz rozwiązanie
@@ -449,7 +449,7 @@ Tak samo jak \-remote, ale bez ostrzeżenia kiedy nie znaleziono
 serwera.
 .TP
 \-\-remote\-wait
-Tak samo jak \-remote, ale Vim nie zakończy dopóki pliki nie zostaną
+Tak samo jak \-remote, ale Vim nie zakończy dopóki pliki pozostaną
 otwarte.
 .TP
 \-\-remote\-wait\-silent
@@ -486,6 +486,9 @@ Można w ten sposób zobaczyć całą dokumentację, np. ":help syntax.txt".
 Dokumentacja
 .B Vima
 Użyj ":help doc\-file\-list" aby uzyskać pełną listę.
+.TP
+/usr/local/lib/vim/doc/tags
+Plik znaczników służy do znajdowania informacji w plikach dokumentacji.
 .TP
 /usr/local/lib/vim/syntax/syntax.vim
 Globalne uruchamianie podświetlania składni.

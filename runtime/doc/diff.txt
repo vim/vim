@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 7.2.  Last change: 2008 Jul 21
+*diff.txt*      For Vim version 7.2.  Last change: 2009 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,6 +64,9 @@ In each of the edited files these options are set:
 
 These options are set local to the window.  When editing another file they are
 reset to the global value.
+The options can still be overruled from a modeline when re-editing the file.
+However, 'foldmethod' and 'wrap' won't be set from a modeline when 'diff' is
+set.
 
 The differences shown are actually the differences in the buffer.  Thus if you
 make changes after loading a file, these will be included in the displayed
@@ -91,7 +94,7 @@ While already in Vim you can start diff mode in three ways.
 :diffthis	Make the current window part of the diff windows.  This sets
 		the options like for "vimdiff".
 
-:diffpatch {patchfile}					*:diffp* *:diffpatch*
+:diffpatch {patchfile}				 *E816* *:diffp* *:diffpatch*
 		Use the current buffer, patch it with the diff found in
 		{patchfile} and open a buffer on the result.  The options are
 		set as for "vimdiff".
@@ -121,7 +124,8 @@ file for a moment and come back to the same file and be in diff mode again.
 							*:diffo* *:diffoff*
 :diffoff	Switch off diff mode for the current window.
 
-:diffoff!	Switch off diff mode for all windows in the current tab page.
+:diffoff!	Switch off diff mode for the current window and in all windows
+		in the current tab page where 'diff' is set.
 
 The ":diffoff" command resets the relevant options to their default value.
 This may be different from what the values were before diff mode was started,
@@ -237,7 +241,8 @@ that the buffers will be equal within the specified range.
 							*:diffg* *:diffget*
 :[range]diffg[et] [bufspec]
 		Modify the current buffer to undo difference with another
-		buffer.  If [bufspec] is given, that buffer is used.
+		buffer.  If [bufspec] is given, that buffer is used.  If
+		[bufspec] refers to the current buffer then nothing happens.
 		Otherwise this only works if there is one other buffer in diff
 		mode.
 		See below for [range].
@@ -323,7 +328,7 @@ The "1a2" item appends the line "bbb".
 The "4d4" item deletes the line "111".
 The '7c7" item replaces the line "GGG" with "ggg".
 
-When 'diffexpr' is not empty, Vim evaluates to obtain a diff file in the
+When 'diffexpr' is not empty, Vim evaluates it to obtain a diff file in the
 format mentioned.  These variables are set to the file names used:
 
 	v:fname_in		original file
@@ -353,7 +358,7 @@ The "-a" argument is used to force comparing the files as text, comparing as
 binaries isn't useful.  The "--binary" argument makes the files read in binary
 mode, so that a CTRL-Z doesn't end the text on DOS.
 
-						*E97*
+						*E810* *E97*
 Vim will do a test if the diff output looks alright.  If it doesn't, you will
 get an error message.  Possible causes:
 -  The "diff" program cannot be executed.

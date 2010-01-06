@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 7.2.  Last change: 2007 Aug 12
+*repeat.txt*    For Vim version 7.2.  Last change: 2009 Nov 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -331,6 +331,12 @@ All leading whitespace characters in the line before a backslash are ignored.
 Note however that trailing whitespace in the line before it cannot be
 inserted freely; it depends on the position where a command is split up
 whether additional whitespace is allowed or not.
+
+When a space is required it's best to put it right after the backslash.  A
+space at the end of a line is hard to see and may be accidentally deleted. >
+	:syn match Comment
+		\ "very long regexp"
+		\ keepend
 
 There is a problem with the ":append" and ":insert" commands: >
    :1append

@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 7.2.  Last change: 2006 Apr 24
+*usr_90.txt*	For Vim version 7.2.  Last change: 2008 Sep 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -126,12 +126,12 @@ If it is alright you will finally see:
 	test results: ~
 	ALL DONE ~
 
-If there are one or two messages about failed tests, Vim might still work, but
-not perfectly.  If you see a lot of error messages or Vim doesn't finish until
-the end, there must be something wrong.  Either try to find out yourself, or
-find someone who can solve it.  You could look in the |maillist-archive| for a
-solution.  If everything else fails, you could ask in the vim |maillist| if
-someone can help you.
+If you get "TEST FAILURE" some test failed.  If there are one or two messages
+about failed tests, Vim might still work, but not perfectly.  If you see a lot
+of error messages or Vim doesn't finish until the end, there must be something
+wrong.  Either try to find out yourself, or find someone who can solve it.
+You could look in the |maillist-archive| for a solution.  If everything else
+fails, you could ask in the vim |maillist| if someone can help you.
 
 
 INSTALLING

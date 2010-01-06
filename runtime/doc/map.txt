@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.2.  Last change: 2008 Aug 09
+*map.txt*       For Vim version 7.2.  Last change: 2009 Nov 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -272,9 +272,10 @@ as a special key.
 1.3 MAPPING AND MODES					*:map-modes*
 			*mapmode-nvo* *mapmode-n* *mapmode-v* *mapmode-o*
 
-There are five sets of mappings
+There are six sets of mappings
 - For Normal mode: When typing commands.
 - For Visual mode: When typing commands while the Visual area is highlighted.
+- For Select mode: like Visual mode but typing text replaces the selection.
 - For Operator-pending mode: When an operator is pending (after "d", "y", "c",
   etc.).  See below: |omap-info|.
 - For Insert mode.  These are also used in Replace mode.
@@ -299,6 +300,9 @@ Overview of which map command works in which mode:
 Some commands work both in Visual and Select mode, some in only one.  Note
 that quite often "Visual" is mentioned where both Visual and Select mode
 apply. |Select-mode-mapping|
+NOTE: Mapping a printable character in Select mode may confuse the user.  It's
+better to explicitly use :xmap and :smap for printable characters.  Or use
+:sunmap after defining the mapping.
 
     commands:				      modes: ~
 					  Visual    Select ~
@@ -590,11 +594,14 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed). |:map-alt-keys|
+- Meta-keys (with the ALT key pressed).  Depending on your keybord accented
+  characters may be used as well. |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
 - Use a key that is a synonym for another command.  For example: CTRL-P and
   CTRL-N.  Use an extra character to allow more mappings.
+- The key defined by <Leader> and one or more other keys.  This is especially
+  useful in scripts. |mapleader|
 
 See the file "index" for keys that are not used and thus can be mapped without
 losing any builtin function.  You can also use ":help {key}^D" to find out if
@@ -1082,7 +1089,7 @@ feature}.
 It is possible to define your own Ex commands.  A user-defined command can act
 just like a built-in command (it can have a range or arguments, arguments can
 be completed as filenames or buffer names, etc), except that when the command
-is executed, it is transformed into a normal ex command and then executed.
+is executed, it is transformed into a normal Ex command and then executed.
 
 For starters: See section |40.2| in the user manual.
 
@@ -1150,7 +1157,7 @@ See |:verbose-cmd| for more information.
 
 Command attributes
 
-User-defined commands are treated by Vim just like any other ex commands.  They
+User-defined commands are treated by Vim just like any other Ex commands.  They
 can have arguments, or have a range specified.  Arguments are subject to
 completion as filenames, buffers, etc.  Exactly how this works depends upon the
 command's attributes, which are specified when the command is defined.
@@ -1240,7 +1247,7 @@ The function arguments are:
 	CursorPos	the cursor position in it (byte index)
 The function may use these for determining context.  For the "custom"
 argument, it is not necessary to filter candidates against the (implicit
-pattern in) ArgLead.  Vim will do filter the candidates with its regexp engine
+pattern in) ArgLead.  Vim will filter the candidates with its regexp engine
 after function return, and this is probably more efficient in most cases. For
 the "customlist" argument, Vim will not filter the returned completion
 candidates and the user supplied function should filter the candidates.
@@ -1256,7 +1263,7 @@ the 'path' option: >
     :com -nargs=1 -bang -complete=customlist,EditFileComplete
 			\ EditFile edit<bang> <args>
     :fun EditFileComplete(A,L,P)
-    :    return split(globpath(&path, a:ArgLead), "\n")
+    :    return split(globpath(&path, a:A), "\n")
     :endfun
 <
 
@@ -1405,7 +1412,7 @@ errors and the "update" command to write modified buffers): >
 This will invoke: >
 	:call Allargs("%s/foo/bar/ge|update")
 <
-When defining an user command in a script, it will be able to call functions
+When defining a user command in a script, it will be able to call functions
 local to the script and use mappings local to the script.  When the user
 invokes the user command, it will run in the context of the script it was
 defined in.  This matters if |<SID>| is used in a command.

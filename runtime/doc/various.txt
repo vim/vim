@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.2.  Last change: 2008 Aug 06
+*various.txt*   For Vim version 7.2.  Last change: 2009 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -179,8 +179,8 @@ g8			Print the hex values of the bytes used in the
 			(to start Insert mode, see |:startinsert|).  A ":"
 			command must be completed as well.  And you can't use
 			"Q" or "gQ" to start Ex mode.
-			{commands} cannot start with a space.  Put a 1 (one)
-			before it, 1 space is one space.
+			{commands} cannot start with a space.  Put a count of
+			1 (one) before it, "1 " is one space.
 			The 'insertmode' option is ignored for {commands}.
 			This command cannot be followed by another command,
 			since any '|' is considered part of the command.
@@ -347,7 +347,7 @@ B  *+mouse_netterm*	Unix only: netterm mouse handling |netterm-mouse|
 N  *+mouse_pterm*	QNX only: pterm mouse handling |qnx-terminal|
 N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-B  *+multi_byte*	Korean and other languages |multibyte|
+B  *+multi_byte*	16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
@@ -647,7 +647,7 @@ g CTRL-A		Only when Vim was compiled with MEM_PROFILING defined
 			Note that the longer the {subject} you give, the less
 			matches will be found.  You can get an idea how this
 			all works by using commandline completion (type CTRL-D
-			after ":help subject").
+			after ":help subject" |c_CTRL-D|).
 			If there are several matches, you can have them listed
 			by hitting CTRL-D.  Example: >
 				:help cont<Ctrl-D>

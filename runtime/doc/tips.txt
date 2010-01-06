@@ -1,10 +1,14 @@
-*tips.txt*      For Vim version 7.2.  Last change: 2006 Jul 24
+*tips.txt*      For Vim version 7.2.  Last change: 2009 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Tips and ideas for using Vim				*tips*
+
+These are just a few that we thought would be helpful for many users.
+You can find many more tips on the wiki.  The URL can be found on
+http://www.vim.org
 
 Don't forget to browse the user manual, it also contains lots of useful tips
 |usr_toc.txt|.
@@ -18,11 +22,12 @@ Correcting common typing mistakes		|type-mistakes|
 Counting words, lines, etc.			|count-items|
 Restoring the cursor position			|restore-position|
 Renaming files					|rename-files|
+Change a name in multiple files			|change-name|
 Speeding up external commands			|speed-up|
 Useful mappings					|useful-mappings|
 Compressing the help files			|gzip-helpfile|
-Hex editing					|hex-editing|
 Executing shell commands in a window		|shell-window|
+Hex editing					|hex-editing|
 Using <> notation in autocommands		|autocmd-<>|
 Highlighting matching parens			|match-parens|
 
@@ -246,6 +251,8 @@ Breaking up restoring the position:
 	zt	scroll to move this line to the top of the window
 	`s	jump to the original position of the cursor
 
+For something more advanced see |winsaveview()| and |winrestview()|.
+
 ==============================================================================
 Renaming files						*rename-files*
 
@@ -264,6 +271,25 @@ and I want to rename *.c *.bla.  I'd do it like this: >
 	:%s/\(.*\).c/mv & \1.bla
 	:w !sh
 	:q!
+
+==============================================================================
+Change a name in multiple files				*change-name*
+
+Example for using a script file to change a name in several files:
+
+	Create a file "subs.vim" containing substitute commands and a :update
+	command: >
+		:%s/Jones/Smith/g
+		:%s/Allen/Peter/g
+		:update
+<
+	Execute Vim on all files you want to change, and source the script for
+	each argument: >
+
+		vim *.let
+		argdo source subs.vim
+
+See |:argdo|.
 
 ==============================================================================
 Speeding up external commands				*speed-up*

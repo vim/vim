@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 7.2.  Last change: 2007 May 11
+*develop.txt*   For Vim version 7.2.  Last change: 2008 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,7 +64,7 @@ completely different editor.  Extensions are done with a "Vi spirit".
   hard time finding and remembering them.  Keep in mind that more commands and
   options will be added later.
 - A feature that people do not know about is a useless feature.  Don't add
-  obscure features, or at least add hints in documentation that they exists.
+  obscure features, or at least add hints in documentation that they exist.
 - Minimize using CTRL and other modifiers, they are more difficult to type.
 - There are many first-time and inexperienced Vim users.  Make it easy for
   them to start using Vim and learn more over time.
@@ -323,7 +323,7 @@ Wrong:	var=a*5;
 OK:	var = a * 5;
 
 In general: Use empty lines to group lines of code together.  Put a comment
-just above the group of lines.  This makes it more easy to quickly see what is
+just above the group of lines.  This makes it easier to quickly see what is
 being done.
 
 OK:	/* Prepare for building the table. */

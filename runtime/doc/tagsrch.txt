@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 7.2.  Last change: 2006 Apr 24
+*tagsrch.txt*   For Vim version 7.2.  Last change: 2009 Feb 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -176,7 +176,7 @@ get an error message.
 3. Tag match list				*tag-matchlist* *E427* *E428*
 
 When there are several matching tags, these commands can be used to jump
-between them.  Note that these command don't change the tag stack, they keep
+between them.  Note that these commands don't change the tag stack, they keep
 the same entry.
 
 							*:ts* *:tselect*
@@ -427,6 +427,10 @@ put in the search history, so you can modify it if searching fails.
 Emacs style tag files are only supported if Vim was compiled with the
 |+emacs_tags| feature enabled.  Sorry, there is no explanation about Emacs tag
 files here, it is only supported for backwards compatibility :-).
+
+Lines in Emacs tags files can be very long.  Vim only deals with lines of up
+to about 510 bytes.  To see whether lines are ignored set 'verbose' to 5 or
+higher.
 
 							*tags-option*
 The 'tags' option is a list of file names.  Each of these files is searched

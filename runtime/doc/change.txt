@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.2.  Last change: 2008 Jul 24
+*change.txt*    For Vim version 7.2.  Last change: 2009 Nov 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -506,9 +506,9 @@ comment (starting with '"') after the ":!" command.
 			{filter}.  Vim replaces the optional bangs with the
 			latest given command and appends the optional [arg].
 			Vim saves the output of the filter command in a
-			temporary file and then reads the file into the
-			buffer.  Vim uses the 'shellredir' option to redirect
-			the filter output to the temporary file.
+			temporary file and then reads the file into the buffer
+			|tempfile|.  Vim uses the 'shellredir' option to
+			redirect the filter output to the temporary file.
 			However, if the 'shelltemp' option is off then pipes
 			are used when possible (on Unix).
 			When the 'R' flag is included in 'cpoptions' marks in
@@ -524,7 +524,9 @@ comment (starting with '"') after the ":!" command.
 			option is empty (this is the default), use the
 			internal formatting function |C-indenting|.  But when
 			'indentexpr' is not empty, it will be used instead
-			|indent-expression|.
+			|indent-expression|.  When Vim was compiled without
+			internal formatting then the "indent" program is used
+			as a last resort.
 
 							*==*
 ==			Filter [count] lines like with ={motion}.
@@ -532,6 +534,22 @@ comment (starting with '"') after the ":!" command.
 							*v_=*
 {Visual}=		Filter the highlighted lines like with ={motion}.
 			{not in Vi}
+
+
+						*tempfile* *setuid*
+Vim uses temporary files for filtering, generating diffs and also for
+tempname().  For Unix, the file will be in a private directory (only
+accessible by the current user) to avoid security problems (e.g., a symlink
+attack or other people reading your file).  When Vim exits the directory and
+all files in it are deleted.  When Vim has the setuid bit set this may cause
+problems, the temp file is owned by the setuid user but the filter command
+probably runs as the original user.
+On MS-DOS and OS/2 the first of these directories that works is used: $TMP,
+$TEMP, c:\TMP, c:\TEMP.
+For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
+For MS-Windows the GetTempFileName() system function is used.
+For other systems the tmpnam() library function is used.
+
 
 
 4.2 Substitute						*:substitute*
@@ -861,7 +879,10 @@ inside of strings can change!  Also see 'softtabstop' option. >
 
 							*:reg* *:registers*
 :reg[isters]		Display the contents of all numbered and named
-			registers.  {not in Vi}
+			registers.  If a register is written to for |:redir|
+			it will not be listed.
+			{not in Vi}
+
 
 :reg[isters] {arg}	Display the contents of the numbered and named
 			registers that are mentioned in {arg}.  For example: >
@@ -994,6 +1015,11 @@ register.  With blockwise selection it also depends on the size of the block
 and whether the corners are on an existing character.  (Implementation detail:
 it actually works by first putting the register after the selection and then
 deleting the selection.)
+The previously selected text is put in the unnamed register.  If you want to
+put the same text into a Visual selection several times you need to use
+another register.  E.g., yank the text to copy, Visually select the text to
+replace and use "0p .  You can repeat this as many times as you like, the
+unnamed register will be changed each time.
 
 							*blockwise-register*
 If you use a blockwise Visual mode command to get the text into the register,
@@ -1031,8 +1057,10 @@ There are nine types of registers:			*registers* *E354*
 Vim fills this register with text deleted with the "d", "c", "s", "x" commands
 or copied with the yank "y" command, regardless of whether or not a specific
 register was used (e.g.  "xdd).  This is like the unnamed register is pointing
-to the last used register.  An exception is the '_' register: "_dd does not
-store the deleted text in any register.
+to the last used register.  Thus when appending using an uppercase register
+name, the unnamed register contains the same text as the named register.
+An exception is the '_' register: "_dd does not store the deleted text in any
+register.
 Vim uses the contents of the unnamed register for any put command (p or P)
 which does not specify a register.  Additionally you can access it with the
 name '"'.  This means you have to type two double quotes.  Writing to the ""
@@ -1098,11 +1126,16 @@ normal command-line editing commands are available, including a special
 history for expressions.  When you end the command-line by typing <CR>, Vim
 computes the result of the expression.  If you end it with <Esc>, Vim abandons
 the expression.  If you do not enter an expression, Vim uses the previous
-expression (like with the "/" command).  The expression must evaluate to a
-string.  If the result is a number it's turned into a string.  A List,
-Dictionary or FuncRef results in an error message (use string() to convert).
-If the "= register is used for the "p" command, the string is split up at <NL>
-characters.  If the string ends in a <NL>, it is regarded as a linewise
+expression (like with the "/" command).
+
+The expression must evaluate to a String.  A Number is always automatically
+converted to a String.  For the "p" and ":put" command, if the result is a
+Float it's converted into a String.  If the result is a List each element is
+turned into a String and used as a line.  A Dictionary or FuncRef results in
+an error message (use string() to convert).
+
+If the "= register is used for the "p" command, the String is split up at <NL>
+characters.  If the String ends in a <NL>, it is regarded as a linewise
 register.  {not in Vi}
 
 7. Selection and drop registers "*, "+ and "~ 

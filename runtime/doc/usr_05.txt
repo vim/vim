@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 7.2.  Last change: 2007 May 11
+*usr_05.txt*	For Vim version 7.2.  Last change: 2009 Jun 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -205,8 +205,8 @@ to 78, but only locally in one file.
 
 							*restore-cursor*  >
 	autocmd BufReadPost *
-	    \ if line("'\"") > 0 && line("'\"") <= line("$") |
-	    \   exe "normal g`\"" |
+	    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+	    \   exe "normal! g`\"" |
 	    \ endif
 
 Another autocommand.  This time it is used after reading any file.  The

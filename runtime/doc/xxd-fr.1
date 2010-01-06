@@ -135,7 +135,7 @@ aux positions dans le fichier données dans le code hexadécimal.
 Débute au
 .RI < décalage >
 absolu ou relatif dans fichier_entree.
-\fI+ fRindique que le décalage est relatif à la position courante dans
+\fI+ \fRindique que le décalage est relatif à la position courante dans
 l'entrée standard (sans effet si la lecture n'a pas lieu sur l'entrée
 standard). \fI\- \fRindique un décalage en caractères depuis la fin de
 l'entrée (utilisé avec \fI+\fR, désigne la position avant la position
@@ -308,7 +308,7 @@ Convertir le fichier de l'exemple précédent avec la fonctionnalité "autoskip".
 .PP
 Créer un fichier d'un octet, contenant seulement le caractère 'A'.
 Les nombres après '\-r \-s' s'ajoutent au numéros de lignes trouvées dans le
-fichier ; XXX in effects, les octets initiaux sont supprimés.
+fichier ; les octets initiaux sont supprimés.
 .br
 \fI% echo '010000: 41' | xxd \-r \-s \-0x10000 \> fichier\fR
 .PP

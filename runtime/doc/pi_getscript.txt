@@ -1,11 +1,11 @@
-*pi_getscript.txt*  For Vim version 7.2.  Last change: 2008 Jun 29
+*pi_getscript.txt*  For Vim version 7.0.  Last change: 2009 Oct 14
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell, Jr.
 <
 Authors:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamilyA.Mbiz>
 	  (remove NOSPAM from the email address)
 						*GetLatestVimScripts-copyright*
-Copyright: (c) 2004-2006 by Charles E. Campbell, Jr.	*glvs-copyright*
+Copyright: (c) 2004-2009 by Charles E. Campbell, Jr.	*glvs-copyright*
            The VIM LICENSE applies to getscript.vim and
            pi_getscript.txt (see |copyright|) except use
            "getscript" instead of "Vim".  No warranty, express or implied.
@@ -51,7 +51,7 @@ The GetLatestVimScripts.dist file serves as an example and a template for your
 own personal list.  Feel free to remove all the scripts mentioned within it;
 the "important" part of it is the first two lines.
 
-Your computer needs to have wget for GetLatestVimScripts to do its work.
+Your computer needs to have wget or curl for GetLatestVimScripts to do its work.
 
 	1. if compressed:  gunzip getscript.vba.gz
 	2. Unix:
@@ -76,7 +76,7 @@ Your computer needs to have wget for GetLatestVimScripts to do its work.
 ==============================================================================
 3. GetLatestVimScripts Usage				*glvs-usage* *:GLVS*
 
-Unless its been defined elsewhere, >
+Unless it has been defined elsewhere, >
 	:GLVS
 will invoke GetLatestVimScripts().  If some other plugin has defined that
 command, then you may type
@@ -136,7 +136,7 @@ insures that GetLatestVimScripts will assume that the script it has is
 out-of-date.
 
 The SourceID is extracted by GetLatestVimScripts from the script's page on
-vim.sf.net; whenever its greater than the one stored in the
+vim.sf.net; whenever it is greater than the one stored in the
 GetLatestVimScripts.dat file, the script will be downloaded
 (see |GetLatestVimScripts_dat|).
 
@@ -176,6 +176,8 @@ Note: the first two lines are required, but essentially act as comments.
 ==============================================================================
 5. GetLatestVimScripts Friendly Plugins	*getscript-plugins* *glvs-plugins*
 
+		(this section is for plugin authors)~
+
 If a plugin author includes the following comment anywhere in their plugin,
 GetLatestVimScripts will find it and use it to automatically build the user's
 GetLatestVimScripts.dat files:
@@ -191,11 +193,20 @@ plus any additional lines describing any plugin dependencies it may have.
 Same format, of course!
 
 If your command is auto-installable (see |glvs-autoinstall|), and most scripts
-are, then you may include :AutoInstall: at the start of "yourscriptname".
+are, then you may include :AutoInstall: just before "yourscriptname":
+>
+	                         src_id
+	                            v
+	" GetLatestVimScripts: ### ### :AutoInstall: yourscriptname
+	                        ^
+	                    scriptid
+<
+NOTE: :AutoInstall: is a plugin-author option, not a GetLatestVimScripts.dat~
+      entry!~
 
 GetLatestVimScripts commands for those scripts are then appended, if not
-already present, to the user's GetLatest/GetLatestVimScripts.dat file.  Its a
-relatively painless way to automate the acquisition of any scripts your
+already present, to the user's GetLatest/GetLatestVimScripts.dat file.  It is
+a relatively painless way to automate the acquisition of any scripts your
 plugins depend upon.
 
 Now, as an author, you probably don't want GetLatestVimScripts to download
@@ -290,14 +301,19 @@ after/syntax/c.vim contained in it to overwrite a user's c.vim.
 		This variable holds the options to be used with the
 		g:GetLatestVimScripts_wget command.
 >
- 	g:getLatestVimScripts_allowautoinstall
+ 	g:GetLatestVimScripts_allowautoinstall
 <	default= 1
 		This variable indicates whether GetLatestVimScripts is allowed
-		to attempt to automatically install scripts.  Note that it
-		doesn't understand vimballs (yet).  Furthermore, the plugin
-		author has to have explicitly indicated that his/her plugin
-		is automatically installable.
-
+		to attempt to automatically install scripts.  Furthermore, the
+		plugin author has to have explicitly indicated that his/her
+		plugin is automatically installable (via the :AutoInstall:
+		keyword in the GetLatestVimScripts comment line).
+>
+	g:GetLatestVimScripts_autoinstalldir
+<	default= $HOME/.vim     (linux)
+	default= $HOME/vimfiles (windows)
+		Override where :AutoInstall: scripts will be installed.
+		Doesn't override vimball installation.
 
 ==============================================================================
 8. GetLatestVimScripts Algorithm		*glvs-algorithm* *glvs-alg*
@@ -336,8 +352,10 @@ The AutoInstall process will:
 9. GetLatestVimScripts History		*getscript-history* *glvs-hist* {{{1
 
 v31 Jun 29, 2008 : * (Bill McCarthy) fixed having hls enabled with getscript
+		   * (David Schaefer) the acd option interferes with vimballs
+		     Solution: bypass the acd option
 v30 Jun 13, 2008 : * GLVS now checks for existence of fnameescape() and will
-		     issue an error message if its not supported
+		     issue an error message if it is not supported
 v29 Jan 07, 2008 : * Bram M pointed out that cpo is a global option and that
                      getscriptPlugin.vim was setting it but not restoring it.
 v28 Jan 02, 2008 : * improved shell quoting character handling, cygwin

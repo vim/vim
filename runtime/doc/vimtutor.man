@@ -37,9 +37,9 @@ FILES
 AUTHOR
        The  Vimtutor  was  originally  written for Vi by Michael C. Pierce and
        Robert K. Ware, Colorado  School  of  Mines  using  ideas  supplied  by
-       Charles  Smith,  Colorado  State  University.  E-mail: bware@mines.col-
+       Charles  Smith,  Colorado  State  University.  E-mail: bware@mines.col‐
        orado.edu.
-       It was modified for Vim by Bram Moolenaar.  For the names of the trans-
+       It was modified for Vim by Bram Moolenaar.  For the names of the trans‐
        lators see the tutor files.
 
 SEE ALSO

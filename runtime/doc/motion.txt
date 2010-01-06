@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.2.  Last change: 2008 Aug 03
+*motion.txt*    For Vim version 7.2.  Last change: 2009 Sep 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,6 +151,11 @@ CTRL-V		When used after an operator, before the motion command: Force
 ==============================================================================
 2. Left-right motions					*left-right-motions*
 
+These commands move the cursor to the specified column in the current line.
+They stop at the first column and at the end of the line, except "$", which
+may move to one of the next lines.  See 'whichwrap' option to make some of the
+commands move across line boundaries.
+
 h		or					*h*
 <Left>		or					*<Left>*
 CTRL-H		or					*CTRL-H* *<BS>*
@@ -234,7 +239,7 @@ g$ or g<End>		When lines wrap ('wrap' on): To the last character of
 
 							*bar*
 |			To screen column [count] in the current line.
-			|exclusive| motion.
+			|exclusive| motion.  Ceci n'est pas une pipe.
 
 							*f*
 f{char}			To [count]'th occurrence of {char} to the right.  The
@@ -269,11 +274,6 @@ T{char}			Till after [count]'th occurrence of {char} to the
 							*,*
 ,			Repeat latest f, t, F or T in opposite direction
 			[count] times.
-
-These commands move the cursor to the specified column in the current line.
-They stop at the first column and at the end of the line, except "$", which
-may move to one of the next lines.  See 'whichwrap' option to make some of the
-commands move across line boundaries.
 
 ==============================================================================
 3. Up-down motions					*up-down-motions*
@@ -325,9 +325,9 @@ gg			Goto line [count], default first line, on the first
 			non-blank character |linewise|.  If 'startofline' not
 			set, keep the same column.
 
-:[range]		Set the cursor on the specified line number.  If
-			there are several numbers, the last one is used.
-
+:[range]		Set the cursor on the last line number in [range].
+			[range] can also be just one line number, e.g., ":1"
+			or ":'m".
 							*N%*
 {count}%		Go to {count} percentage in the file, on the first
 			non-blank in the line |linewise|.  To compute the new
@@ -637,7 +637,8 @@ a`							*v_a`* *a`*
 			When the cursor starts on a quote, Vim will figure out
 			which quote pairs form a string by searching from the
 			start of the line.
-			Any trailing or leading white space is included.
+			Any trailing white space is included, unless there is
+			none, then leading white space is included.
 			When used in Visual mode it is made characterwise.
 			Repeating this object in Visual mode another string is
 			included.  A count is currently not used.

@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.2.  Last change: 2007 Aug 19
+*message.txt*   For Vim version 7.2.  Last change: 2009 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -135,8 +135,8 @@ This means that there are not enough colors available for Vim.  It will still
 run, but some of the colors will not appear in the specified color.  Try
 stopping other applications that use many colors, or start them after starting
 gvim.
-Netscape is known to consume a lot of colors.  You can avoid this by telling
-it to use its own colormap: >
+Browsers are known to consume a lot of colors.  You can avoid this with
+netscape by telling it to use its own colormap: >
 	netscape -install
 Or tell it to limit to a certain number of colors (64 should work well): >
 	netscape -ncols 64
@@ -567,7 +567,7 @@ allowed for the command that was used.
   Unable to open swap file for "{filename}", recovery impossible
 
 Vim was not able to create a swap file.  You can still edit the file, but if
-Vim unexpected exits the changes will be lost.  And Vim may consume a lot of
+Vim unexpectedly exits the changes will be lost.  And Vim may consume a lot of
 memory when editing a big file.  You may want to change the 'directory' option
 to avoid this error.  See |swap-file|.
 
@@ -758,9 +758,9 @@ and the screen is about to be redrawn:
 -> Press 'k', <Up>, 'u', 'b' or 'g' to scroll back in the messages.  This
    works the same way as at the |more-prompt|.  Only works when 'compatible'
    is off and 'more' is on.
--> Pressing 'j', 'd' or <Down> is ignored when messages scrolled off the top
-   of the screen, 'compatible' is off and 'more' is on, to avoid that typing
-   one 'j' too many causes the messages to disappear.
+-> Pressing 'j', 'f', 'd' or <Down> is ignored when messages scrolled off the
+   top of the screen, 'compatible' is off and 'more' is on, to avoid that
+   typing one 'j' or 'f' too many causes the messages to disappear.
 -> Press <C-Y> to copy (yank) a modeless selection to the clipboard register.
 -> Use a menu.  The characters defined for Cmdline-mode are used.
 -> When 'mouse' contains the 'r' flag, clicking the left mouse button works
@@ -795,7 +795,7 @@ group.
 Type					effect ~
      <CR> or <NL> or j or <Down>	one more line
      d					down a page (half a screen)
-     <Space> or <PageDown>		down a screen
+     <Space> or f or <PageDown>		down a screen
      G					down all the way, until the hit-enter
 					prompt
 

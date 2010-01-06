@@ -1,4 +1,4 @@
-*usr_44.txt*	For Vim version 7.2.  Last change: 2006 Apr 24
+*usr_44.txt*	For Vim version 7.2.  Last change: 2008 Dec 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -493,9 +493,9 @@ one for C by using the following command: >
 	:runtime! syntax/c.vim
 
 The ":runtime!" command searches 'runtimepath' for all "syntax/c.vim" files.
-This makes the C syntax be defined like for C files.  If you have replaced the
-c.vim syntax file, or added items with an extra file, these will be loaded as
-well.
+This makes the C parts of the C++ syntax be defined like for C files.  If you
+have replaced the c.vim syntax file, or added items with an extra file, these
+will be loaded as well.
    After loading the C syntax items the specific C++ items can be defined.
 For example, add keywords that are not used in C: >
 
@@ -503,8 +503,8 @@ For example, add keywords that are not used in C: >
 
 This works just like in any other syntax file.
 
-Now consider the Perl language.  It consists of two distinct parts: a
-documentation section in POD format, and a program written in Perl itself.
+Now consider the Perl language.  A Perl script consists of two distinct parts:
+a documentation section in POD format, and a program written in Perl itself.
 The POD section starts with "=head" and ends with "=cut".
    You want to define the POD syntax in one file, and use it from the Perl
 syntax file.  The ":syntax include" command reads in a syntax file and stores
@@ -663,7 +663,7 @@ as an example will save you a lot of time.
 
 Choose a good, descriptive name for your syntax file.  Use lowercase letters
 and digits.  Don't make it too long, it is used in many places: The name of
-the syntax file "name.vim", 'filetype', b:current_syntax the start of each
+the syntax file "name.vim", 'filetype', b:current_syntax and the start of each
 syntax group (nameType, nameStatement, nameString, etc).
 
 Start with a check for "b:current_syntax".  If it is defined, some other

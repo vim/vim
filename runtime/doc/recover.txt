@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 7.2.  Last change: 2006 Apr 24
+*recover.txt*   For Vim version 7.2.  Last change: 2009 Apr 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -181,7 +181,7 @@ parts of the original file were not written to disk.
 Be sure that the recovery was successful before overwriting the original
 file or deleting the swap file.  It is good practice to write the recovered
 file elsewhere and run 'diff' to find out if the changes you want are in the
-recovered file.
+recovered file.  Or use |:DiffOrig|.
 
 Once you are sure the recovery is ok delete the swap file.  Otherwise, you
 will continue to get warning messages that the ".swp" file already exists.

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.2.  Last change: 2008 Aug 09
+*windows.txt*   For Vim version 7.2.  Last change: 2009 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,6 +34,11 @@ disabled at compile time}
 
 ==============================================================================
 1. Introduction					*windows-intro* *window*
+
+Summary:
+   A buffer is the in-memory text of a file.
+   A window is a viewport on a buffer.
+   A tab page is a collection of windows.
 
 A window is a viewport onto a buffer.  You can use multiple windows on one
 buffer, or several windows on different buffers.
@@ -342,13 +347,13 @@ CTRL-W CTRL-W	Without count: move cursor to window below/right of the
 		top-left window.
 		With count: go to Nth window (windows are numbered from
 		top-left to bottom-right).  To obtain the window number see
-		|bufwinnr()| and |winnr()|.
+		|bufwinnr()| and |winnr()|.  When N is larger than the number
+		of windows go to the last window.
 
 						*CTRL-W_W*
 CTRL-W W	Without count: move cursor to window above/left of current
 		one.  If there is no window above or left, go to bottom-right
-		window.  With count: go to Nth window (windows are numbered
-		from top-left to bottom-right).
+		window.  With count: go to Nth window, like with CTRL-W w.
 
 CTRL-W t					*CTRL-W_t* *CTRL-W_CTRL-T*
 CTRL-W CTRL-T	Move cursor to top-left window.
@@ -1175,7 +1180,8 @@ scratch		Contains text that can be discarded at any time.  It is kept
 			:setlocal buftype=nofile
 			:setlocal bufhidden=hide
 			:setlocal noswapfile
-<		The buffer name can be used to identify the buffer.
+<		The buffer name can be used to identify the buffer, if you
+		give it a meaningful name.
 
 						*unlisted-buffer*
 unlisted	The buffer is not in the buffer list.  It is not used for

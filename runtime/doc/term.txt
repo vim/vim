@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 7.2.  Last change: 2008 Jun 21
+*term.txt*      For Vim version 7.2.  Last change: 2009 Nov 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -409,6 +409,21 @@ produce different codes, depending on the mode it is in (8-bit, VT102,
 VT220, etc.).  The result is that codes like <xF1> are no longer needed.
 Note: This is only done on startup.  If the xterm options are changed after
 Vim has started, the escape sequences may not be recognized any more.
+
+							*xterm-resize*
+Window resizing with xterm only works if the allowWindowOps resource is
+enabled.  On some systems and versions of xterm it's disabled by default
+because someone thought it would be a security issue.  It's not clear if this
+is actually the case.
+
+To overrule the default, put this line in your ~/.Xdefaults or
+~/.Xresources:
+>
+	XTerm*allowWindowOps: 		true
+
+And run "xrdb -merge .Xresources" to make it effective.  You can check the
+value with the context menu (right mouse button while CTRL key is pressed),
+there should be a tick at allow-window-ops.
 
 							*termcap-colors*
 Note about colors: The 't_Co' option tells Vim the number of colors available.
