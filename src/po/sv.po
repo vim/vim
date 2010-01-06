@@ -417,7 +417,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Saknar \"in\" efter :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Saknar hakparantes: %s"
 
 #, c-format
@@ -3735,7 +3735,7 @@ msgid "-- More --"
 msgstr "-- Mer --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " BLANKSTEG/d/j: skärm/sida/rad ned, b/u/k: upp, q: quit"
+msgstr " BLANKSTEG/d/j: skärm/sida/rad ned, b/u/k: upp, q: quit "
 
 msgid "Question"
 msgstr "Fråga"

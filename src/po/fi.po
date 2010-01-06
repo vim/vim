@@ -432,7 +432,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: :for-kommenolta puuttuu in"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Sulkeita puuttuu: %s"
 
 #, c-format
@@ -3793,7 +3793,7 @@ msgid "-- More --"
 msgstr "-- Lisää --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " SPACE/d/j: ruutu/sivu/rivi alas, b/u/k: ylös, q: lopeta"
+msgstr " SPACE/d/j: ruutu/sivu/rivi alas, b/u/k: ylös, q: lopeta "
 
 msgid "Question"
 msgstr "Kysymys"
@@ -4962,7 +4962,7 @@ msgstr "Liikaa jälkikäteistettyjä prefiksejä"
 msgid "Too many compound flags"
 msgstr "Liikaa yhdyssanalippuja"
 
-msgid "Too many posponed prefixes and/or compound flags"
+msgid "Too many postponed prefixes and/or compound flags"
 msgstr "Liikaa jälkikäteistettyjä prefiksejä tai yhdyssanalippuja"
 
 #, c-format

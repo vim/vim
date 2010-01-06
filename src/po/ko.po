@@ -1,14 +1,14 @@
 # Korean translation for Vim
 #
-# FIRST AUTHOR Nam SungHyun <namsh@kldp.org>, 2000-2004
+# FIRST AUTHOR SungHyun Nam <goweol@gmail.com>, 2000-2004
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 6.3\n"
-"Report-Msgid-Bugs-To: Nam SungHyun <namsh@kldp.org>\n"
+"Report-Msgid-Bugs-To: SungHyun Nam <goweol@gmail.com>\n"
 "POT-Creation-Date: 2004-05-17 17:27+0900\n"
-"PO-Revision-Date: 2004-05-17 18:17+0900\n"
-"Last-Translator: Nam SungHyun <namsh@kldp.org>\n"
+"PO-Revision-Date: 2008-09-17 09:43+0900\n"
+"Last-Translator: SungHyun Nam <goweol@gmail.com>\n"
 "Language-Team: GTP Korean <gnome-kr-translation@gnome.or.kr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=euc-kr\n"
@@ -316,7 +316,7 @@ msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: ¸ð¸£´Â º¯¼ö: \"%s\""
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: °ýÈ£ ¾øÀ½: %s"
 
 #, c-format
@@ -3196,7 +3196,7 @@ msgid "[string too long]"
 msgstr "[³Ê¹« ±ä ¹®ÀÚ¿­]"
 
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
-msgstr "¸Þ½ÃÁö ¹ø¿ª: Sung-Hyun Nam <namsh@kldp.org>"
+msgstr "ë©”ì‹œì§€ ë²ˆì—­: SungHyun Nam <goweol@gmail.com>"
 
 msgid "Interrupt: "
 msgstr "Áß´Ü: "
@@ -4737,8 +4737,8 @@ msgstr "³¡³»·Á¸é                   :q<¿£ÅÍ>               ÀÔ·Â"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "¿Â¶óÀÎ µµ¿ò¸»À» º¸·Á¸é     :help<¿£ÅÍ> ¶Ç´Â <F1>  ÀÔ·Â"
 
-msgid "type  :help version6<Enter>   for version info"
-msgstr "ÆÇ Á¤º¸¸¦ º¸·Á¸é           :help version6<¿£ÅÍ>   ÀÔ·Â"
+msgid "type  :help version7<Enter>   for version info"
+msgstr "ÆÇ Á¤º¸¸¦ º¸·Á¸é           :help version7<¿£ÅÍ>   ÀÔ·Â"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi È£È¯ »óÅÂ·Î ½ÇÇàÁßÀÔ´Ï´Ù"

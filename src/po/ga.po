@@ -419,7 +419,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: \"in\" ar iarraidh i ndiaidh :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Lúibíní slabhracha ar iarraidh: %s"
 
 #, c-format

@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-03-01 10:47+0200\n"
+"POT-Creation-Date: 2009-09-07 15:11+0300\n"
 "PO-Revision-Date: 2008-03-07 13:57+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -167,6 +167,9 @@ msgstr "[Список місць]"
 msgid "[Quickfix List]"
 msgstr "[Список виправлень]"
 
+msgid "[Scratch]"
+msgstr "[З нуля]"
+
 msgid ""
 "\n"
 "--- Signs ---"
@@ -186,11 +189,17 @@ msgstr "    рядок=%ld  id=%d назва=%s"
 msgid "E96: Can not diff more than %ld buffers"
 msgstr "E96: Не зміг порівняти понад %ld буфери(ів) "
 
+msgid "E810: Cannot read or write temp files"
+msgstr "E810: Не можна читати чи записувати тимчасові файли"
+
 msgid "E97: Cannot create diffs"
 msgstr "E97: Не зміг створити порівняння"
 
 msgid "Patch file"
 msgstr "Латка"
+
+msgid "E816: Cannot read patch output"
+msgstr "E816: Не зміг прочитати результат patch"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Не зміг прочитати результат diff"
@@ -205,7 +214,9 @@ msgid "E100: No other buffer in diff mode"
 msgstr "E100: Немає інших буферів в режимі порівняння"
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
-msgstr "E101: Понад два буфери у режимі порівняння, не зрозуміло, котрий із них використати"
+msgstr ""
+"E101: Понад два буфери у режимі порівняння, не зрозуміло, котрий із них "
+"використати"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -296,7 +307,6 @@ msgstr " (заміна) Прогорнути (^E/^Y)"
 msgid "Scanning: %s"
 msgstr "Пошук у: %s"
 
-#, c-format
 msgid "Scanning tags."
 msgstr "Пошук серед теґів."
 
@@ -426,7 +436,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Відсутнє \"in\" після :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Пропущено дужки: %s"
 
 #, c-format
@@ -456,6 +466,9 @@ msgstr "E693: Функцію можна порівняти тільки із ф�
 
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Некоректна операція над функцією"
+
+msgid "E804: Cannot use '%' with Float"
+msgstr "E804: Не можна виконати '%' над Float"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Пропущено ')'"
@@ -511,6 +524,14 @@ msgid "E724: variable nested too deep for displaying"
 msgstr "E724: У змінній занадто багато вкладень, щоб її показати"
 
 #, c-format
+msgid "E740: Too many arguments for function %s"
+msgstr "E740: Забагато аргументів для функції %s"
+
+#, c-format
+msgid "E116: Invalid arguments for function %s"
+msgstr "E116: Неправильні аргументи функції %s"
+
+#, c-format
 msgid "E117: Unknown function: %s"
 msgstr "E117: Невідома функція: %s"
 
@@ -525,6 +546,9 @@ msgstr "E120: <SID> використовується не у контексті 
 #, c-format
 msgid "E725: Calling dict function without Dictionary: %s"
 msgstr "E725: Виклик dict-функції без словника: %s"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Треба вказати Number чи Float"
 
 msgid "E699: Too many arguments"
 msgstr "E699: Забагато аргументів"
@@ -607,28 +631,35 @@ msgstr "(Неможливо)"
 msgid "E677: Error writing temp file"
 msgstr "E677: Не вдалося записати тимчасовий файл"
 
+msgid "E805: Using a Float as a Number"
+msgstr "E805: Float вжито як Number"
+
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Функцію вжито як число"
+msgstr "E703: Funcref вжито як Number"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: Список вжито як число"
+msgstr "E745: List вжито як Number"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Словник вжито як число"
+msgstr "E728: Dictionary вжито як Number"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: Функцію вжито як рядок"
+msgstr "E729: Funcref вжито як String"
 
 # msgstr "E373: "
 msgid "E730: using List as a String"
-msgstr "E730: Список вжито як рядок"
+msgstr "E730: List вжито як String"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: Словник вжито як рядок"
+msgstr "E731: Dictionary вжито як String"
+
+# msgstr "E373: "
+msgid "E806: using Float as a String"
+msgstr "E806: Float вжито як String"
 
 #, c-format
 msgid "E704: Funcref variable name must start with a capital: %s"
-msgstr "E704: Назва змінної-функції має починатися з великої літери: %s"
+msgstr "E704: Назва змінної Funcref має починатися з великої літери: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
@@ -657,6 +688,10 @@ msgid "E698: variable nested too deep for making a copy"
 msgstr "E698: Змінна вкладена занадто глибоко, щоб зробити її копію"
 
 #, c-format
+msgid "E123: Undefined function: %s"
+msgstr "E123: Невизначена функція: %s"
+
+#, c-format
 msgid "E124: Missing '(': %s"
 msgstr "E124: Бракує '(': %s"
 
@@ -668,6 +703,14 @@ msgid "E126: Missing :endfunction"
 msgstr "E126: Бракує :endfunction"
 
 #, c-format
+msgid "E707: Function name conflicts with variable: %s"
+msgstr "E707: Назва функції співпадає зі змінною: %s"
+
+#, c-format
+msgid "E127: Cannot redefine function %s: It is in use"
+msgstr "E127: Не зміг перевизначити функцію %s: вона використовується"
+
+#, c-format
 msgid "E746: Function name does not match script file name: %s"
 msgstr "E746: Назва функції не збігається з назвою файлу скрипту: %s"
 
@@ -676,7 +719,8 @@ msgstr "E129: Не вказано назву функції"
 
 #, c-format
 msgid "E128: Function name must start with a capital or contain a colon: %s"
-msgstr "E128: Назва функції має починатися з великої літери або містити двокрапку: %s"
+msgstr ""
+"E128: Назва функції має починатися з великої літери або містити двокрапку: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -723,138 +767,8 @@ msgstr ""
 "\n"
 "\tВостаннє змінена у "
 
-msgid "Entering Debug mode.  Type \"cont\" to continue."
-msgstr "Режим налагодження.  Щоб продовжити введіть \"cont\"."
-
-#, c-format
-msgid "line %ld: %s"
-msgstr "рядок %ld: %s"
-
-#, c-format
-msgid "cmd: %s"
-msgstr "команда: %s"
-
-#, c-format
-msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Точка зупинки в \"%s%s\" рядок %ld"
-
-#, c-format
-msgid "E161: Breakpoint not found: %s"
-msgstr "E161: Точку зупинки не знайдено: %s"
-
-msgid "No breakpoints defined"
-msgstr "Не визначено жодної точки зупинки"
-
-#, c-format
-msgid "%3d  %s %s  line %ld"
-msgstr "%3d %s %s   рядок %ld"
-
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Спочатку виконайте :profile start <файл>"
-
-msgid "Save As"
-msgstr "Зберегти як"
-
-#, c-format
-msgid "Save changes to \"%s\"?"
-msgstr "Зберегти зміни в \"%s\"?"
-
-msgid "Untitled"
-msgstr "Неназваний"
-
-#, c-format
-msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Буфер \"%s\" має незбережені зміни"
-
-msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
-msgstr "Обережно: Несподівано опинилися у іншому буфері (перевірте автокоманди)"
-
-msgid "E163: There is only one file to edit"
-msgstr "E163: Редагується лише один файл"
-
-msgid "E164: Cannot go before first file"
-msgstr "E164: Це вже найперший файл"
-
-msgid "E165: Cannot go beyond last file"
-msgstr "E165: Це вже останній файл"
-
-#, c-format
-msgid "E666: compiler not supported: %s"
-msgstr "E666: Компілятор не підтримується: %s"
-
-# msgstr "E195: "
-#, c-format
-msgid "Searching for \"%s\" in \"%s\""
-msgstr "Шукаємо \"%s\" в \"%s\""
-
-#, c-format
-msgid "Searching for \"%s\""
-msgstr "Шукаємо \"%s\""
-
-#, c-format
-msgid "not found in 'runtimepath': \"%s\""
-msgstr "В 'runtimepath' не знайдено \"%s\""
-
-msgid "Source Vim script"
-msgstr "Прочитати скрипт Vim"
-
-#, c-format
-msgid "Cannot source a directory: \"%s\""
-msgstr "Не зміг прочитати каталог: \"%s\""
-
-#, c-format
-msgid "could not source \"%s\""
-msgstr "Не можна виконати \"%s\""
-
-#, c-format
-msgid "line %ld: could not source \"%s\""
-msgstr "рядок %ld: не можна виконати \"%s\""
-
-#, c-format
-msgid "sourcing \"%s\""
-msgstr "виконується \"%s\""
-
-#, c-format
-msgid "line %ld: sourcing \"%s\""
-msgstr "рядок %ld: виконується \"%s\""
-
-#, c-format
-msgid "finished sourcing %s"
-msgstr "закінчено виконання %s"
-
-msgid "modeline"
-msgstr "modeline"
-
-# msgstr "E14: "
-msgid "--cmd argument"
-msgstr "--cmd аргумент"
-
-# msgstr "E14: "
-msgid "-c argument"
-msgstr "-c аргумент"
-
-msgid "environment variable"
-msgstr "змінна оточення"
-
-msgid "error handler"
-msgstr "обробник помилки"
-
-msgid "W15: Warning: Wrong line separator, ^M may be missing"
-msgstr "W15: Увага: Неправильний роздільник рядків, можливо, бракує ^M"
-
-msgid "E167: :scriptencoding used outside of a sourced file"
-msgstr "E167: :scriptencoding використано поза виконуваним файлом"
-
-msgid "E168: :finish used outside of a sourced file"
-msgstr "E168: :finish використано поза виконуваним файлом"
-
-#, c-format
-msgid "Current %slanguage: \"%s\""
-msgstr "Мова (%s): \"%s\""
-
-#, c-format
-msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Не зміг встановити мову \"%s\""
+msgid "No old files"
+msgstr "Жодного старого файлу"
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Octal %03o"
@@ -905,6 +819,9 @@ msgstr " інформація"
 msgid " marks"
 msgstr " позначки"
 
+msgid " oldfiles"
+msgstr " старі файли"
+
 msgid " FAILED"
 msgstr " НЕ ВДАЛОСЯ"
 
@@ -940,6 +857,9 @@ msgstr "# Значення 'encoding' під час створення цьог�
 
 msgid "Illegal starting char"
 msgstr "Недозволений символ на початку рядка"
+
+msgid "Save As"
+msgstr "Зберегти як"
 
 msgid "Write partial file?"
 msgstr "Записати частину файлу?"
@@ -1125,6 +1045,137 @@ msgstr " (не підтримується)"
 
 msgid "[Deleted]"
 msgstr "[Знищено]"
+
+msgid "Entering Debug mode.  Type \"cont\" to continue."
+msgstr "Режим налагодження.  Щоб продовжити введіть \"cont\"."
+
+#, c-format
+msgid "line %ld: %s"
+msgstr "рядок %ld: %s"
+
+#, c-format
+msgid "cmd: %s"
+msgstr "команда: %s"
+
+#, c-format
+msgid "Breakpoint in \"%s%s\" line %ld"
+msgstr "Точка зупинки в \"%s%s\" рядок %ld"
+
+#, c-format
+msgid "E161: Breakpoint not found: %s"
+msgstr "E161: Точку зупинки не знайдено: %s"
+
+msgid "No breakpoints defined"
+msgstr "Не визначено жодної точки зупинки"
+
+#, c-format
+msgid "%3d  %s %s  line %ld"
+msgstr "%3d %s %s   рядок %ld"
+
+msgid "E750: First use :profile start <fname>"
+msgstr "E750: Спочатку виконайте :profile start <файл>"
+
+#, c-format
+msgid "Save changes to \"%s\"?"
+msgstr "Зберегти зміни в \"%s\"?"
+
+msgid "Untitled"
+msgstr "Неназваний"
+
+#, c-format
+msgid "E162: No write since last change for buffer \"%s\""
+msgstr "E162: Буфер \"%s\" має незбережені зміни"
+
+msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
+msgstr ""
+"Обережно: Несподівано опинилися у іншому буфері (перевірте автокоманди)"
+
+msgid "E163: There is only one file to edit"
+msgstr "E163: Редагується лише один файл"
+
+msgid "E164: Cannot go before first file"
+msgstr "E164: Це вже найперший файл"
+
+msgid "E165: Cannot go beyond last file"
+msgstr "E165: Це вже останній файл"
+
+#, c-format
+msgid "E666: compiler not supported: %s"
+msgstr "E666: Компілятор не підтримується: %s"
+
+# msgstr "E195: "
+#, c-format
+msgid "Searching for \"%s\" in \"%s\""
+msgstr "Шукаємо \"%s\" в \"%s\""
+
+#, c-format
+msgid "Searching for \"%s\""
+msgstr "Шукаємо \"%s\""
+
+#, c-format
+msgid "not found in 'runtimepath': \"%s\""
+msgstr "В 'runtimepath' не знайдено \"%s\""
+
+msgid "Source Vim script"
+msgstr "Прочитати скрипт Vim"
+
+#, c-format
+msgid "Cannot source a directory: \"%s\""
+msgstr "Не зміг прочитати каталог: \"%s\""
+
+#, c-format
+msgid "could not source \"%s\""
+msgstr "Не можна виконати \"%s\""
+
+#, c-format
+msgid "line %ld: could not source \"%s\""
+msgstr "рядок %ld: не можна виконати \"%s\""
+
+#, c-format
+msgid "sourcing \"%s\""
+msgstr "виконується \"%s\""
+
+#, c-format
+msgid "line %ld: sourcing \"%s\""
+msgstr "рядок %ld: виконується \"%s\""
+
+#, c-format
+msgid "finished sourcing %s"
+msgstr "закінчено виконання %s"
+
+msgid "modeline"
+msgstr "modeline"
+
+# msgstr "E14: "
+msgid "--cmd argument"
+msgstr "--cmd аргумент"
+
+# msgstr "E14: "
+msgid "-c argument"
+msgstr "-c аргумент"
+
+msgid "environment variable"
+msgstr "змінна оточення"
+
+msgid "error handler"
+msgstr "обробник помилки"
+
+msgid "W15: Warning: Wrong line separator, ^M may be missing"
+msgstr "W15: Увага: Неправильний роздільник рядків, можливо, бракує ^M"
+
+msgid "E167: :scriptencoding used outside of a sourced file"
+msgstr "E167: :scriptencoding використано поза виконуваним файлом"
+
+msgid "E168: :finish used outside of a sourced file"
+msgstr "E168: :finish використано поза виконуваним файлом"
+
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Мова (%s): \"%s\""
+
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Не зміг встановити мову \"%s\""
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr "Режим Ex. Для повернення до нормального режиму виконайте \"visual\""
@@ -1328,6 +1379,9 @@ msgstr "E191: Аргумент має бути літерою, ` або '"
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Забагато вкладених :normal"
 
+msgid "E809: #< is not available without the +eval feature"
+msgstr "E809: #< не доступна без можливості +eval"
+
 # msgstr "E193: "
 msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Немає назви вторинного файлу для заміни '#'"
@@ -1468,6 +1522,9 @@ msgstr "E193: :endfunction поза межами функції"
 msgid "E788: Not allowed to edit another buffer now"
 msgstr "E788: Зараз не можна редагувати інший буфер"
 
+msgid "E811: Not allowed to change buffer information now"
+msgstr "E811: Зараз не можна змінювати інформацію буферу"
+
 # msgstr "E197: "
 msgid "tagname"
 msgstr "назва теґу"
@@ -1503,6 +1560,9 @@ msgstr "E198: cmd_pchar поза межами команди"
 
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: Активне вікно або буфер було знищено"
+
+msgid "E812: Autocommands changed buffer or buffer name"
+msgstr "E812: Автокоманди змінили буфер чи його назву"
 
 # msgstr "E199: "
 msgid "Illegal file name"
@@ -1565,9 +1625,6 @@ msgstr "[RO]"
 
 msgid "[CR missing]"
 msgstr "[Бракує CR]"
-
-msgid "[NL found]"
-msgstr "[Знайдено NL]"
 
 msgid "[long lines split]"
 msgstr "[Розбито довгі рядки]"
@@ -1634,7 +1691,8 @@ msgid "E507: Close error for backup file (add ! to override)"
 msgstr "E507: Помилка закриття резервного файлу (! щоб не зважати)"
 
 msgid "E508: Can't read file for backup (add ! to override)"
-msgstr "E508: Не зміг прочитати файл, щоб створити резервну копію (! щоб не зважати)"
+msgstr ""
+"E508: Не зміг прочитати файл, щоб створити резервну копію (! щоб не зважати)"
 
 msgid "E509: Cannot create backup file (add ! to override)"
 msgstr "E509: Не зміг створити резервну копію (! щоб не зважати)"
@@ -1666,11 +1724,21 @@ msgstr "E512: Не вдалося закрити"
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr "E513: Помилка запису, конвертація не вдалася (скиньте 'fenc')"
 
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr "E513: Помилка запису, конвертація не вдалася у рядку %ld (скиньте 'fenc')"
+
 msgid "E514: write error (file system full?)"
 msgstr "E514: Помилка запису (скінчилось вільне місце?)"
 
 msgid " CONVERSION ERROR"
 msgstr " ПОМИЛКА КОНВЕРТАЦІЇ"
+
+#, c-format
+msgid " in line %ld;"
+msgstr " у рядку %ld;"
 
 msgid "[Device]"
 msgstr "[Пристрій]"
@@ -1776,7 +1844,9 @@ msgid "E211: File \"%s\" no longer available"
 msgstr "E211: Файл \"%s\" більше не досяжний"
 
 #, c-format
-msgid "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as well"
+msgid ""
+"W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
+"well"
 msgstr "W12: Увага: Файл \"%s\" змінився, але й буфер у Vim також"
 
 msgid "See \":help W12\" for more info."
@@ -1938,37 +2008,6 @@ msgstr "Заміни не знайдено"
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Неприпустимий режим"
 
-msgid "<cannot open> "
-msgstr "<не відкривається> "
-
-#, c-format
-msgid "E616: vim_SelFile: can't get font %s"
-msgstr "E616: vim_SelFile: не зміг отримати шрифт %s"
-
-msgid "E614: vim_SelFile: can't return to current directory"
-msgstr "E614: vim_SelFile: не зміг повернутися в поточний каталог"
-
-msgid "Pathname:"
-msgstr "Шлях:"
-
-msgid "E615: vim_SelFile: can't get current directory"
-msgstr "E615: vim_SelFile: не зміг отримати поточний каталог"
-
-msgid "OK"
-msgstr "Гаразд"
-
-msgid "Cancel"
-msgstr "Скасувати"
-
-msgid "Vim dialog"
-msgstr "Діалог Vim"
-
-msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
-msgstr "Scrollbar Widget: Не зміг визначити розмір скороченої картинки."
-
-msgid "E232: Cannot create BalloonEval with both message and callback"
-msgstr "E232: Не зміг створити BalloonEval з повідомленням і функцією"
-
 # msgstr "E228: "
 msgid "E229: Cannot start the GUI"
 msgstr "E229: Не зміг запустити GUI"
@@ -1994,6 +2033,37 @@ msgstr "E254: Не зміг отримати колір %s"
 
 msgid "No match at cursor, finding next"
 msgstr "Немає над курсором, шукаємо далі"
+
+msgid "<cannot open> "
+msgstr "<не відкривається> "
+
+#, c-format
+msgid "E616: vim_SelFile: can't get font %s"
+msgstr "E616: vim_SelFile: не зміг отримати шрифт %s"
+
+msgid "E614: vim_SelFile: can't return to current directory"
+msgstr "E614: vim_SelFile: не зміг повернутися в поточний каталог"
+
+msgid "Pathname:"
+msgstr "Шлях:"
+
+msgid "E615: vim_SelFile: can't get current directory"
+msgstr "E615: vim_SelFile: не зміг отримати поточний каталог"
+
+msgid "OK"
+msgstr "Гаразд"
+
+msgid "Cancel"
+msgstr "Скасувати"
+
+msgid "Scrollbar Widget: Could not get geometry of thumb pixmap."
+msgstr "Scrollbar Widget: Не зміг визначити розмір скороченої картинки."
+
+msgid "Vim dialog"
+msgstr "Діалог Vim"
+
+msgid "E232: Cannot create BalloonEval with both message and callback"
+msgstr "E232: Не зміг створити BalloonEval з повідомленням і функцією"
 
 # msgstr "E232: "
 msgid "Vim dialog..."
@@ -2068,10 +2138,6 @@ msgstr "Vim: Несподівано знищилося головне вікно
 # msgstr "E234: "
 msgid "Font Selection"
 msgstr "Вибрати шрифт"
-
-# msgstr "E242: "
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "Використано CUT_BUFFER0 замість порожнього виділення"
 
 msgid "&Filter"
 msgstr "&F:Фільтрувати"
@@ -2159,7 +2225,9 @@ msgid "Directory\t*.nothing\n"
 msgstr "Каталог\t*.нічого\n"
 
 msgid "Vim E458: Cannot allocate colormap entry, some colors may be incorrect"
-msgstr "Vim E458: Немає вільних комірок у палітрі, деякі кольори можуть бути неправильні"
+msgstr ""
+"Vim E458: Немає вільних комірок у палітрі, деякі кольори можуть бути "
+"неправильні"
 
 #, c-format
 msgid "E250: Fonts for the following charsets are missing in fontset %s:"
@@ -2297,7 +2365,8 @@ msgid "E673: Incompatible multi-byte encoding and character set."
 msgstr "E673: Несумісні багатобайтове кодування та набір символів."
 
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
-msgstr "E674: printmbcharset не може бути порожнім з багатобайтовим кодуванням."
+msgstr ""
+"E674: printmbcharset не може бути порожнім з багатобайтовим кодуванням."
 
 msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Не зазначено шрифт для багатобайтового друку."
@@ -2422,8 +2491,29 @@ msgid "cscope commands:\n"
 msgstr "Команди cscope:\n"
 
 #, c-format
-msgid "%-5s: %-30s (Usage: %s)"
-msgstr "%-5s: %-30s (Використання: %s)"
+msgid "%-5s: %s%*s (Usage: %s)"
+msgstr "%-5s: %s%*s (Використання: %s)"
+
+msgid ""
+"\n"
+"       c: Find functions calling this function\n"
+"       d: Find functions called by this function\n"
+"       e: Find this egrep pattern\n"
+"       f: Find this file\n"
+"       g: Find this definition\n"
+"       i: Find files #including this file\n"
+"       s: Find this C symbol\n"
+"       t: Find assignments to\n"
+msgstr ""
+"\n"
+"       c: Знайти функції, що викликають цю функцію\n"
+"       d: Знайти функції, що викликаються цією функцією\n"
+"       e: Знайти цей шаблон egrep\n"
+"       f: Знайти цей файл\n"
+"       g: Знайти це визначення\n"
+"       i: Знайти файли, які включають в себе цей файл\n"
+"       s: Знайти цей символ C\n"
+"       t: Знайти присвоєння цьому\n"
 
 #, c-format
 msgid "E625: cannot open cscope database: %s"
@@ -2434,9 +2524,6 @@ msgstr "E626: Не зміг отримати інформацію з бази д
 
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: Повторна база даних cscope не додана"
-
-msgid "E569: maximum number of cscope connections reached"
-msgstr "E569: Кількість з'єднань з cscope досягла максимуму"
 
 # msgstr "E260: "
 #, c-format
@@ -2478,8 +2565,12 @@ msgstr "Жодного з'єднання з cscope\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    назва бази даних                    шлях\n"
 
-msgid "???: Sorry, this command is disabled, the MzScheme library could not be loaded."
-msgstr "???: Вибачте, ця команда вимкнена, бібліотека MzScheme не може бути завантажена."
+msgid ""
+"E815: Sorry, this command is disabled, the MzScheme libraries could not be "
+"loaded."
+msgstr ""
+"E815: Вибачте, ця команда вимкнена, бібліотеки MzScheme не можуть бути "
+"завантажені."
 
 msgid "invalid expression"
 msgstr "некоректний вираз"
@@ -2532,8 +2623,12 @@ msgstr "номер рядка за межами файлу"
 msgid "not allowed in the Vim sandbox"
 msgstr "не дозволено у пісочниці Vim"
 
-msgid "E263: Sorry, this command is disabled, the Python library could not be loaded."
-msgstr "E263: Вибачте, ця команда вимкнена, бібліотека Python не може бути завантажена."
+msgid ""
+"E263: Sorry, this command is disabled, the Python library could not be "
+"loaded."
+msgstr ""
+"E263: Вибачте, ця команда вимкнена, бібліотека Python не може бути "
+"завантажена."
 
 msgid "E659: Cannot invoke Python recursively"
 msgstr "E659: Не можна рекурсивно викликати Python"
@@ -2561,8 +2656,8 @@ msgid "line number out of range"
 msgstr "номер рядка за межами файлу"
 
 #, c-format
-msgid "<buffer object (deleted) at %8lX>"
-msgstr "<об'єкт буферу (знищено) в %8lX>"
+msgid "<buffer object (deleted) at %p>"
+msgstr "<об'єкт буферу (знищено) за адресою %p>"
 
 msgid "invalid mark name"
 msgstr "неправильна назва позначки"
@@ -2580,12 +2675,12 @@ msgid "cursor position outside buffer"
 msgstr "курсор за межами буферу"
 
 #, c-format
-msgid "<window object (deleted) at %.8lX>"
-msgstr "<об'єкт вікна (знищено) в %.8lX>"
+msgid "<window object (deleted) at %p>"
+msgstr "<об'єкт вікна (знищено) за адресою %p>"
 
 #, c-format
-msgid "<window object (unknown) at %.8lX>"
-msgstr "<об'єкт вікна (невідомий) в %.8lX>"
+msgid "<window object (unknown) at %p>"
+msgstr "<об'єкт вікна (невідомий) за адресою %p>"
 
 #, c-format
 msgid "<window %d>"
@@ -2595,10 +2690,12 @@ msgid "no such window"
 msgstr "такого вікна немає"
 
 msgid "E265: $_ must be an instance of String"
-msgstr "E265: $_ має бути екземпляром рядка"
+msgstr "E265: $_ має бути екземпляром String"
 
-msgid "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
-msgstr "E266: Вибачте, ця команда вимкнена, бібліотека Ruby не може бути завантажена."
+msgid ""
+"E266: Sorry, this command is disabled, the Ruby library could not be loaded."
+msgstr ""
+"E266: Вибачте, ця команда вимкнена, бібліотека Ruby не може бути завантажена."
 
 # msgstr "E414: "
 msgid "E267: unexpected return"
@@ -2678,8 +2775,12 @@ msgstr "Показати docu"
 msgid "Generate docu for"
 msgstr "Створити docu для"
 
-msgid "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in $PATH).\n"
-msgstr "Не зміг з'єднатися з SNiFF+. Перевірте оточення (sniffemacs має бути у $PATH).\n"
+msgid ""
+"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
+"$PATH).\n"
+msgstr ""
+"Не зміг з'єднатися з SNiFF+. Перевірте оточення (sniffemacs має бути у "
+"$PATH).\n"
 
 msgid "E274: Sniff: Error during read. Disconnected"
 msgstr "E274: Sniff: Помилка під час читання. Від'єднано"
@@ -2745,21 +2846,32 @@ msgstr "помилка Vim"
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "не зміг створити команду вікна/буферу: об'єкт знищується"
 
-msgid "cannot register callback command: buffer/window is already being deleted"
+msgid ""
+"cannot register callback command: buffer/window is already being deleted"
 msgstr "Не зміг зареєструвати подію: буфер/вікно уже знищується"
 
 #. This should never happen.  Famous last word?
-msgid "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"
-msgstr "E280: ФАТАЛЬНА ПОМИЛКА TCL: можливо пошкоджено список посилань!? Будь ласка, повідомте у vim-dev@vim.org"
+msgid ""
+"E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
+"org"
+msgstr ""
+"E280: ФАТАЛЬНА ПОМИЛКА TCL: можливо пошкоджено список посилань!? Будь ласка, "
+"повідомте у vim-dev@vim.org"
 
 msgid "cannot register callback command: buffer/window reference not found"
-msgstr "Не зміг зареєструвати команду події: посилання на буфер/вікно не знайдено"
+msgstr ""
+"Не зміг зареєструвати команду події: посилання на буфер/вікно не знайдено"
 
-msgid "E571: Sorry, this command is disabled: the Tcl library could not be loaded."
-msgstr "E571: Вибачте, ця команда вимкнена, бібліотека Tcl не може бути завантажена."
+msgid ""
+"E571: Sorry, this command is disabled: the Tcl library could not be loaded."
+msgstr ""
+"E571: Вибачте, ця команда вимкнена, бібліотека Tcl не може бути завантажена."
 
-msgid "E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
-msgstr "E281: ПОМИЛКА TCL: код виходу не є цілим!? Будь ласка, повідомте у vim-dev@vim.org"
+msgid ""
+"E281: TCL ERROR: exit code is not int!? Please report this to vim-dev@vim.org"
+msgstr ""
+"E281: ПОМИЛКА TCL: код виходу не є цілим!? Будь ласка, повідомте у vim-"
+"dev@vim.org"
 
 #, c-format
 msgid "E572: exit code %d"
@@ -2794,7 +2906,8 @@ msgid "Garbage after option argument"
 msgstr "Сміття після аргументу опції"
 
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
-msgstr "Забагато аргументів у \"+команда\", \"-c команда\" або \"--cmd команда\""
+msgstr ""
+"Забагато аргументів у \"+команда\", \"-c команда\" або \"--cmd команда\""
 
 # msgstr "E14: "
 msgid "Invalid argument for"
@@ -2806,6 +2919,9 @@ msgstr "%d файли(ів)\n"
 
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Ця версія Vim не була скомпільована з підтримкою порівняння."
+
+msgid "'-nb' cannot be used: not enabled at compile time\n"
+msgstr "Не можна використати '-nb': не дозволено під час компіляції\n"
 
 msgid "Attempt to open script file again: \""
 msgstr "Спроба повторно відкрити скрипт: \""
@@ -2877,7 +2993,8 @@ msgid ""
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
-"Якщо регістр ігнорується, додайте / спереду, щоб прапорець був у верхньому регістрі."
+"Якщо регістр ігнорується, додайте / спереду, щоб прапорець був у верхньому "
+"регістрі."
 
 msgid ""
 "\n"
@@ -3036,25 +3153,36 @@ msgid "--remote <files>\tEdit <files> in a Vim server if possible"
 msgstr "--remote <файли>\tРедагувати <файли> на сервері Vim, якщо це можливо"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <файли>  Те саме, тільки не скаржитися на відсутність сервера"
+msgstr ""
+"--remote-silent <файли>  Те саме, тільки не скаржитися на відсутність сервера"
 
-msgid "--remote-wait <files>  As --remote but wait for files to have been edited"
-msgstr "--remote-wait <файли>   ..., але зачекати поки усі файли будуть відредаговані"
+msgid ""
+"--remote-wait <files>  As --remote but wait for files to have been edited"
+msgstr ""
+"--remote-wait <файли>   ..., але зачекати поки усі файли будуть відредаговані"
 
-msgid "--remote-wait-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-wait-silent <файли>  Те саме, тільки не скаржитися, якщо сервера немає"
+msgid ""
+"--remote-wait-silent <files>  Same, don't complain if there is no server"
+msgstr ""
+"--remote-wait-silent <файли>  Те саме, тільки не скаржитися, якщо сервера "
+"немає"
 
-msgid "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
-msgstr "--remote-tab[-wait][-silent] <файли>  Так само, як --remote, але по вкладці на файл"
+msgid ""
+"--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
+msgstr ""
+"--remote-tab[-wait][-silent] <файли>  Так само, як --remote, але по вкладці "
+"на файл"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <символи> Відіслати <символи> серверу і завершити роботу"
 
 msgid "--remote-expr <expr>\tEvaluate <expr> in a Vim server and print result"
-msgstr "--remote-expr <вираз> Виконати <вираз> у сервері Vim і надрукувати результат"
+msgstr ""
+"--remote-expr <вираз> Виконати <вираз> у сервері Vim і надрукувати результат"
 
 msgid "--serverlist\t\tList available Vim server names and exit"
-msgstr "--serverlist\t\tПоказати список наявних серверів Vim і завершити роботу"
+msgstr ""
+"--serverlist\t\tПоказати список наявних серверів Vim і завершити роботу"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <назва>\tСпілкуватися з/стати Vim сервером з такою назвою"
@@ -3105,7 +3233,8 @@ msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <колір>\tВикористати <колір> для фону (також: -bg)"
 
 msgid "-foreground <color>\tUse <color> for normal text (also: -fg)"
-msgstr "-foreground <колір>\tВикористати <колір> для звичайного тексту (також: -fg)"
+msgstr ""
+"-foreground <колір>\tВикористати <колір> для звичайного тексту (також: -fg)"
 
 msgid "-font <font>\t\tUse <font> for normal text (also: -fn)"
 msgstr "-font <шрифт>\tВикористати <шрифт> для звичайного тексту (також: -fn)"
@@ -3161,7 +3290,8 @@ msgid "-display <display>\tRun vim on <display> (also: --display)"
 msgstr "-display <дисплей>\tВиконати vim на <дисплеї> (також: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
-msgstr "--role <роль>\tВстановити унікальну роль для ідентифікації головного вікна"
+msgstr ""
+"--role <роль>\tВстановити унікальну роль для ідентифікації головного вікна"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
 msgstr "--socketid <xid>\tВідкрити Vim в іншому елементі інтерфейсу GTK"
@@ -3435,8 +3565,11 @@ msgstr "??? КІНЕЦЬ"
 msgid "E311: Recovery Interrupted"
 msgstr "E311: Відновлення перервано"
 
-msgid "E312: Errors detected while recovering; look for lines starting with ???"
-msgstr "E312: Під час відновлення знайдено помилки. Перегляньте рядки, що починаються з ???"
+msgid ""
+"E312: Errors detected while recovering; look for lines starting with ???"
+msgstr ""
+"E312: Під час відновлення знайдено помилки. Перегляньте рядки, що "
+"починаються з ???"
 
 msgid "See \":help E312\" for more information."
 msgstr "Див. \":help E312\" для уточнення."
@@ -3861,6 +3994,9 @@ msgstr "E338: Вибачте, але в консолі немає діалогу
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Недостатньо аргументів для printf()"
 
+msgid "E807: Expected Float argument for printf()"
+msgstr "E807: Очікується аргумент Float для printf()"
+
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Забагато аргументів для printf()"
 
@@ -3868,11 +4004,11 @@ msgstr "E767: Забагато аргументів для printf()"
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Увага: Змінюється файл призначений лише для читання"
 
-msgid "Type number or click with mouse (<Enter> cancels): "
-msgstr "Наберіть число чи клацніть мишкою (<Enter> скасовує): "
+msgid "Type number and <Enter> or click with mouse (empty cancels): "
+msgstr "Наберіть число та <Enter> чи клацніть мишкою (порожнє скасовує): "
 
-msgid "Choice number (<Enter> cancels): "
-msgstr "Номер вибору (<Enter> скасовує): "
+msgid "Type number and <Enter> (empty cancels): "
+msgstr "Наберіть число та <Enter> (порожнє скасовує): "
 
 msgid "1 more line"
 msgstr "додано один рядок"
@@ -3964,8 +4100,12 @@ msgid "Keys don't match!"
 msgstr "Ключі не однакові!"
 
 #, c-format
-msgid "E343: Invalid path: '**[number]' must be at the end of the path or be followed by '%s'."
-msgstr "E343: Некоректний шлях: `**[число]' повинне бути наприкінці шляху або перед '%s'."
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: Некоректний шлях: `**[число]' повинне бути наприкінці шляху або перед "
+"'%s'."
 
 # msgstr "E343: "
 #, c-format
@@ -3987,7 +4127,6 @@ msgstr "E346: У 'cdpath' немає більше каталогу \"%s\""
 msgid "E347: No more file \"%s\" found in path"
 msgstr "E347: У шляху пошуку більше немає файлів \"%s\""
 
-#. Get here when the server can't be found.
 msgid "Cannot connect to Netbeans #2"
 msgstr "Не зміг з'єднатися із Netbeans #2"
 
@@ -3996,7 +4135,9 @@ msgstr "Не зміг з'єднатися із Netbeans"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: Неправильний режим доступу до файлу інформації про з'єднання з NetBenans: \"%s\""
+msgstr ""
+"E668: Неправильний режим доступу до файлу інформації про з'єднання з "
+"NetBenans: \"%s\""
 
 msgid "read from Netbeans socket"
 msgstr "читаємо з сокета Netbeans"
@@ -4007,6 +4148,10 @@ msgstr "E658: Втрачено зв'язок із NetBeans для буферу %
 
 msgid "E505: "
 msgstr "E505: "
+
+# msgstr "E348: "
+msgid "E349: No identifier under cursor"
+msgstr "E349: Немає ідентифікатора над курсором"
 
 msgid "E774: 'operatorfunc' is empty"
 msgstr "E774: 'operatorfunc' порожня"
@@ -4019,10 +4164,6 @@ msgstr "Увага: Термінал не підтримує кольори"
 
 msgid "E348: No string under cursor"
 msgstr "E348: Немає рядка на курсорі"
-
-# msgstr "E348: "
-msgid "E349: No identifier under cursor"
-msgstr "E349: Немає ідентифікатора над курсором"
 
 msgid "E352: Cannot erase folds with current 'foldmethod'"
 msgstr "E352: Не зміг знищити згортки поточним методом 'foldmethod'"
@@ -4135,16 +4276,24 @@ msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Bytes"
 msgstr "Вибрано %s%ld з %ld рядків; %ld з %ld слів; %ld з %ld байтів"
 
 #, c-format
-msgid "Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld Bytes"
-msgstr "Вибрано %s%ld з %ld рядків; %ld з %ld слів; %ld of %ld символів; %ld з %ld байтів"
+msgid ""
+"Selected %s%ld of %ld Lines; %ld of %ld Words; %ld of %ld Chars; %ld of %ld "
+"Bytes"
+msgstr ""
+"Вибрано %s%ld з %ld рядків; %ld з %ld слів; %ld of %ld символів; %ld з %ld "
+"байтів"
 
 #, c-format
 msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Byte %ld of %ld"
 msgstr "Колонка %s з %s; рядок %ld з %ld; слово %ld з %ld; байт %ld з %ld"
 
 #, c-format
-msgid "Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of %ld"
-msgstr "Колонка %s з %s; рядок %ld з %ld; слово %ld з %ld; символ %ld of %ld; байт %ld з %ld"
+msgid ""
+"Col %s of %s; Line %ld of %ld; Word %ld of %ld; Char %ld of %ld; Byte %ld of "
+"%ld"
+msgstr ""
+"Колонка %s з %s; рядок %ld з %ld; слово %ld з %ld; символ %ld of %ld; байт %"
+"ld з %ld"
 
 #, c-format
 msgid "(+%ld for BOM)"
@@ -4166,7 +4315,7 @@ msgid "E520: Not allowed in a modeline"
 msgstr "E520: Не дозволено у modeline"
 
 msgid "E521: Number required after ="
-msgstr "E521: Після = потрібно вказати число"
+msgstr "E521: Після = потрібно вказати Number"
 
 msgid "E522: Not found in termcap"
 msgstr "E522: Не знайдено серед можливостей терміналів"
@@ -4251,7 +4400,8 @@ msgid "E590: A preview window already exists"
 msgstr "E590: Вікно перегляду вже існує"
 
 msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
-msgstr "W17: Для арабської мови потрібне UTF-8, виконайте ':set encoding=utf-8'"
+msgstr ""
+"W17: Для арабської мови потрібне UTF-8, виконайте ':set encoding=utf-8'"
 
 #, c-format
 msgid "E593: Need at least %d lines"
@@ -4270,7 +4420,7 @@ msgstr "E355: Невідома опція: %s"
 #. * num option using a string.
 #, c-format
 msgid "E521: Number required: &%s = '%s'"
-msgstr "E521: Потрібно вказати число: &%s = '%s'"
+msgstr "E521: Потрібно вказати Number: &%s = '%s'"
 
 # msgstr "E355: "
 msgid ""
@@ -4430,6 +4580,20 @@ msgstr "Дисплей Х не пройшов перевірку"
 
 msgid "Opening the X display timed out"
 msgstr "Сплив час очікування відкриття дисплею Х"
+
+msgid ""
+"\n"
+"Could not get security context for "
+msgstr ""
+"\n"
+"Не вдалося отримати контекст безпеки для "
+
+msgid ""
+"\n"
+"Could not set security context for "
+msgstr ""
+"\n"
+"Не вдалося встановити контекст безпеки для "
 
 msgid ""
 "\n"
@@ -4612,7 +4776,7 @@ msgid "E681: Buffer is not loaded"
 msgstr "E681: Буфер не завантажено"
 
 msgid "E777: String or List expected"
-msgstr "E777: Очікується рядок чи список"
+msgstr "E777: Очікується String чи List"
 
 #, c-format
 msgid "E369: invalid item in %s%%[]"
@@ -4824,6 +4988,9 @@ msgstr "E388: Визначення не знайдено"
 msgid "E389: Couldn't find pattern"
 msgstr "E389: Зразок не знайдено"
 
+msgid "Substitute "
+msgstr "Заміна "
+
 #, c-format
 msgid ""
 "\n"
@@ -4911,12 +5078,24 @@ msgid "FLAG after using flags in %s line %d: %s"
 msgstr "FLAG після використання прапорців у %s у рядку %d: %s"
 
 #, c-format
-msgid "Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line %d"
-msgstr "Визначення COMPOUNDFORBIDFLAG після елементу PFX може дати неправильний результат у %s у рядку %d"
+msgid ""
+"Defining COMPOUNDFORBIDFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Визначення COMPOUNDFORBIDFLAG після елементу PFX може дати неправильний "
+"результат у %s у рядку %d"
 
 #, c-format
-msgid "Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line %d"
-msgstr "Визначення COMPOUNDPERMITFLAG після елементу PFX можу дати неправильний результат у %s у рядку %d"
+msgid ""
+"Defining COMPOUNDPERMITFLAG after PFX item may give wrong results in %s line "
+"%d"
+msgstr ""
+"Визначення COMPOUNDPERMITFLAG після елементу PFX можу дати неправильний "
+"результат у %s у рядку %d"
+
+#, c-format
+msgid "Wrong COMPOUNDRULES value in %s line %d: %s"
+msgstr "Неправильне значення COMPOUNDRULES у %s у рядку %d: %s"
 
 #, c-format
 msgid "Wrong COMPOUNDWORDMAX value in %s line %d: %s"
@@ -4936,15 +5115,20 @@ msgstr "Неправильне значення CHECKCOMPOUNDPATTERN у %s у р
 
 #, c-format
 msgid "Different combining flag in continued affix block in %s line %d: %s"
-msgstr "Інший прапорець комбінації у продовженні блоку афіксів у %s у рядку %d: %s"
+msgstr ""
+"Інший прапорець комбінації у продовженні блоку афіксів у %s у рядку %d: %s"
 
 #, c-format
 msgid "Duplicate affix in %s line %d: %s"
 msgstr "Подвійний афікс у %s у рядку %d: %s"
 
 #, c-format
-msgid "Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s line %d: %s"
-msgstr "Афікс також використовується для BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST у %s у рядку %d: %s"
+msgid ""
+"Affix also used for BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/NOSUGGEST in %s "
+"line %d: %s"
+msgstr ""
+"Афікс також використовується для BAD/RARE/KEEPCASE/NEEDAFFIX/NEEDCOMPOUND/"
+"NOSUGGEST у %s у рядку %d: %s"
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
@@ -5290,7 +5474,8 @@ msgstr "E402: Сміття після зразку: %s"
 
 # msgstr "E402: "
 msgid "E403: syntax sync: line continuations pattern specified twice"
-msgstr "E403: Синтаксична синхронізація: зразок для продовження рядка вказано двічі"
+msgstr ""
+"E403: Синтаксична синхронізація: зразок для продовження рядка вказано двічі"
 
 #, c-format
 msgid "E404: Illegal arguments: %s"
@@ -5483,6 +5668,9 @@ msgstr "E432: Файл теґів не впорядкований: %s"
 msgid "E433: No tags file"
 msgstr "E433: Немає файлу теґів"
 
+msgid "Ignoring long line in tags file"
+msgstr "Ігнорується довгий рядок у файлі з позначками"
+
 # msgstr "E433: "
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Не зміг знайти теґ за зразком"
@@ -5527,6 +5715,10 @@ msgstr "запущено нову оболонку\n"
 
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Помилка читання вводу, завершуємо роботу...\n"
+
+# msgstr "E242: "
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "Використано CUT_BUFFER0 замість порожнього виділення"
 
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -5628,6 +5820,13 @@ msgstr " з підтримкою OLE"
 
 msgid ""
 "\n"
+"MS-Windows 64-bit console version"
+msgstr ""
+"\n"
+"Консольна версія для 64-розрядної Windows"
+
+msgid ""
+"\n"
 "MS-Windows 32-bit console version"
 msgstr ""
 "\n"
@@ -5684,10 +5883,24 @@ msgstr ""
 
 msgid ""
 "\n"
+"OpenVMS version"
+msgstr ""
+"\n"
+"Версія для OpenVMS"
+
+msgid ""
+"\n"
 "Included patches: "
 msgstr ""
 "\n"
 "Включені латки: "
+
+msgid ""
+"\n"
+"Extra patches: "
+msgstr ""
+"\n"
+"Додаткові латки: "
 
 msgid "Modified by "
 msgstr "Змінив "
@@ -5924,6 +6137,14 @@ msgstr "E443: Не зміг перемістити вікно, заважают�
 msgid "E444: Cannot close last window"
 msgstr "E444: Не зміг закрити останнє вікно"
 
+# msgstr "E443: "
+msgid "E813: Cannot close autocmd window"
+msgstr "E813: Не зміг закрити вікно autocmd"
+
+# msgstr "E443: "
+msgid "E814: Cannot close window, only autocmd window would remain"
+msgstr "E814: Не зміг закрити вікно, залишилося б тільки вікно autocmd"
+
 msgid "E445: Other window contains changes"
 msgstr "E445: У іншому вікні є зміни"
 
@@ -5941,7 +6162,8 @@ msgid "E370: Could not load library %s"
 msgstr "E370: Не зміг завантажити бібліотеку %s"
 
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
-msgstr "Вибачте, ця команда вимкнена, бібліотека Perl не може бути завантажена."
+msgstr ""
+"Вибачте, ця команда вимкнена, бібліотека Perl не може бути завантажена."
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr "E299: Обчислення виразів Perl заборонене у пісочниці без модуля Safe"
@@ -5996,7 +6218,8 @@ msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
 msgstr "E11: Неприпустимо у вікні команд, <CR> виконує, CTRL-C виходить"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
-msgstr "E12: Команда не дозволена у exrc/vimrc у пошуку поточного каталогу чи теґу"
+msgstr ""
+"E12: Команда не дозволена у exrc/vimrc у пошуку поточного каталогу чи теґу"
 
 msgid "E171: Missing :endif"
 msgstr "E171: Бракує :endif"
@@ -6115,7 +6338,8 @@ msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
 msgstr "E27: Не можна використати фарсі: Не ввімкнено під час компіляції\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
-msgstr "E800: Не можна використати арабську мову: Не ввімкнено під час компіляції\n"
+msgstr ""
+"E800: Не можна використати арабську мову: Не ввімкнено під час компіляції\n"
 
 # msgstr "E25: "
 #, c-format
@@ -6340,3 +6564,8 @@ msgstr "Пошук дійшов ПОЧАТКУ, продовжуємо з КІН
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "Пошук дійшов до КІНЦЯ, продовжуємо з ПОЧАТКУ"
 
+#~ msgid "[NL found]"
+#~ msgstr "[Знайдено NL]"
+
+#~ msgid "E569: maximum number of cscope connections reached"
+#~ msgstr "E569: Кількість з'єднань з cscope досягла максимуму"

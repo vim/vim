@@ -18,6 +18,7 @@ LANGUAGES = \
 		it \
 		ja \
 		ko \
+		nb \
 		no \
 		pl \
 		pt_BR \
@@ -45,6 +46,7 @@ MOFILES = \
 		it.mo \
 		ja.mo \
 		ko.mo \
+		nb.mo \
 		no.mo \
 		pl.mo \
 		pt_BR.mo \
@@ -82,6 +84,7 @@ CHECKFILES = \
 		it.ck \
 		ja.ck \
 		ko.ck \
+		nb.ck \
 		no.ck \
 		pl.ck \
 		pt_BR.ck \
@@ -123,7 +126,7 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 	$(MSGFMT) -o $@ $<
 
 .po.ck:
-	$(VIM) -u NONE -e -S check.vim -c "if error == 0 | q | endif" -c cq $<
+	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	touch $@
 
 all: $(MOFILES)
@@ -156,6 +159,12 @@ uninstall:
 	done
 
 converted: $(CONVERTED)
+
+# Norwegian/Bokmal: "nb" is an alias for "no".
+# Copying the file is not efficient, but I don't know of another way to make
+# this work.
+nb.po: no.po
+	cp no.po nb.po
 
 # Convert ja.po to create ja.sjis.po.  Requires doubling backslashes in the
 # second byte.  Don't depend on sjiscorr, it should only be compiled when

@@ -330,7 +330,7 @@ msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: Onbekende veranderlike: \"%s\""
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Ontbrekende hakies: %s"
 
 #, c-format
@@ -4735,8 +4735,8 @@ msgstr "tik   :q<Enter>               om program verlaat    "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "tik   :help<Enter>  of  <F1>  vir aanlyn hulp       "
 
-msgid "type  :help version6<Enter>   for version info"
-msgstr "tik   :help version6<Enter>   vir weergawe-inligting"
+msgid "type  :help version7<Enter>   for version info"
+msgstr "tik   :help version7<Enter>   vir weergawe-inligting"
 
 msgid "Running in Vi compatible mode"
 msgstr "Voer tans uit in Vi-versoenbare modus"

@@ -344,7 +344,7 @@ msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: 未定義的變數: \"%s\""
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: 缺少對應的括號: %s"
 
 #, c-format
@@ -4770,8 +4770,8 @@ msgstr "要離開請輸入                  :q<Enter>            "
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "線上說明請輸入                :help<Enter>         "
 
-msgid "type  :help version6<Enter>   for version info"
-msgstr "新版本資訊請輸入              :help version6<Enter>"
+msgid "type  :help version7<Enter>   for version info"
+msgstr "新版本資訊請輸入              :help version7<Enter>"
 
 msgid "Running in Vi compatible mode"
 msgstr "Vi 相容模式"

@@ -1,7 +1,7 @@
 # Slovak translation of vim
 # Lubomir Host 'rajo' <rajo AT platon.sk>
 # 2005 - Platon Group, http://platon.sk/
-# $Revision$
+# $Revision: 1.4 $
 # $LastChangedDate: 2005-10-08 12:00:24 +0200 (Sat, 08 Oct 2005) $
 msgid ""
 msgstr ""
@@ -398,7 +398,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Chýba \"in\" po :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Chýbajú zátvorky: %s"
 
 #, c-format
@@ -3541,7 +3541,7 @@ msgid "-- More --"
 msgstr "-- Pokraèovanie --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " MEDZERA/d/j: obrazovka/stránka/riadok dole, b/u/k: hore, q: koniec"
+msgstr " MEDZERA/d/j: obrazovka/stránka/riadok dole, b/u/k: hore, q: koniec "
 
 msgid "Question"
 msgstr "Otázka"

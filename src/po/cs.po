@@ -305,7 +305,7 @@ msgid "E106: Unknown variable: \"%s\""
 msgstr "E106: Neznámá promìnná: \"%s\""
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Chybí závorky: %s"
 
 #, c-format
@@ -4358,8 +4358,8 @@ msgstr "zadejte :q<Enter>             pro ukonèení programu"
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
 msgstr "zadejte :help<Enter>  èi <F1> pro nápovìdu"
 
-msgid "type  :help version6<Enter>   for version info"
-msgstr "zadejte :help version6<Enter>  pro informace o verzi 6"
+msgid "type  :help version7<Enter>   for version info"
+msgstr "zadejte :help version7<Enter>  pro informace o verzi 6"
 
 msgid "Running in Vi compatible mode"
 msgstr "Bì¾ím v re¾imu kompatibility s Vi"

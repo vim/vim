@@ -419,7 +419,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: :for 后缺少 \"in\""
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: 缺少括号: %s"
 
 #, c-format
@@ -3663,7 +3663,7 @@ msgid "-- More --"
 msgstr "-- 更多 --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " 空格/d/j: 屏幕/页/行 下翻，b/u/k: 上翻，q: 退出"
+msgstr " 空格/d/j: 屏幕/页/行 下翻，b/u/k: 上翻，q: 退出 "
 
 msgid "Question"
 msgstr "问题"

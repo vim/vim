@@ -421,7 +421,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: :for の後に \"in\" がありません"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: カッコ '(' がありません: %s"
 
 #, c-format
@@ -3748,7 +3748,7 @@ msgid "-- More --"
 msgstr "-- 継続 --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " SPACE/d/j: 画面/ページ/行 下, b/uk: 上, q: 終了"
+msgstr " SPACE/d/j: 画面/ページ/行 下, b/uk: 上, q: 終了 "
 
 msgid "Question"
 msgstr "質問"

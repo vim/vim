@@ -410,7 +410,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Fehlendes \"in\" nach :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Fehlende Klammern: %s"
 
 #, c-format
@@ -3603,7 +3603,7 @@ msgid "-- More --"
 msgstr "-- Mehr --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " LEERZEICHEN/d/j: Seite/halbe Seite/Zeile vorwärts, b/u/k: rückwärts, q: Ende"
+msgstr " LEERZEICHEN/d/j: Seite/halbe Seite/Zeile vorwärts, b/u/k: rückwärts, q: Ende "
 
 msgid "Question"
 msgstr "Frage"

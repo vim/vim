@@ -434,7 +434,7 @@ msgid "E690: Missing \"in\" after :for"
 msgstr "E690: Falta un \"in\" després de :for"
 
 #, c-format
-msgid "E107: Missing braces: %s"
+msgid "E107: Missing parentheses: %s"
 msgstr "E107: Falten claus '{}': %s"
 
 #, c-format
@@ -3725,7 +3725,7 @@ msgid "-- More --"
 msgstr "-- Més --"
 
 msgid " SPACE/d/j: screen/page/line down, b/u/k: up, q: quit "
-msgstr " ESPAI/d/j: pantalla/pàgina/línia avall, b/u/k: amunt, q: sortir"
+msgstr " ESPAI/d/j: pantalla/pàgina/línia avall, b/u/k: amunt, q: sortir "
 
 msgid "Question"
 msgstr "Pregunta"
