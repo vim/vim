@@ -93,7 +93,7 @@ Remarks:
   won't show a menubar.  Then you need to set the $VIM environment variable to
   point to the top directory of your Vim files.  Example:
     set VIM=C:\editors\vim
-  Vim version 6.0 will look for your vimrc file in $VIM, and for the runtime
+  Vim version 7.2 will look for your vimrc file in $VIM, and for the runtime
   files in $VIM/vim72.  See ":help $VIM" for more information.
 
 - To avoid confusion between distributed files of different versions and your
@@ -105,10 +105,10 @@ Remarks:
 	C:\vim\vimfiles\ftplugin\*.vim	Filetype plugins
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim72\vim.exe		The Vim version 6.0 executable.
-	C:\vim\vim72\doc\*.txt		The version 6.0 documentation files.
-	C:\vim\vim72\bugreport.vim	A Vim version 6.0 script.
-	C:\vim\vim72\...		Other version 6.0 distributed files.
+	C:\vim\vim72\vim.exe		The Vim version 7.2 executable.
+	C:\vim\vim72\doc\*.txt		The version 7.2 documentation files.
+	C:\vim\vim72\bugreport.vim	A Vim version 7.2 script.
+	C:\vim\vim72\...		Other version 7.2 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
   Then $VIMRUNTIME will automatically be set to "$VIM\vim72".  Don't add

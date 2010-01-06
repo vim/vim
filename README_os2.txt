@@ -41,10 +41,10 @@ Extra remarks:
 	C:\vim\_viminfo			Dynamic info for 'viminfo'.
 	C:\vim\...			Other files you made.
   Distributed files:
-	C:\vim\vim72\vim.exe		The Vim version 7.1 executable.
-	C:\vim\vim72\doc\*.txt		The version 7.1 documentation files.
-	C:\vim\vim72\bugreport.vim	A Vim version 7.1 script.
-	C:\vim\vim72\...		Other version 7.1 distributed files.
+	C:\vim\vim72\vim.exe		The Vim version 7.2 executable.
+	C:\vim\vim72\doc\*.txt		The version 7.2 documentation files.
+	C:\vim\vim72\bugreport.vim	A Vim version 7.2 script.
+	C:\vim\vim72\...		Other version 7.2 distributed files.
   In this case the $VIM environment variable would be set like this:
 	set VIM=C:\vim
 

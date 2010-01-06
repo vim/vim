@@ -1,10 +1,10 @@
 README_extra.txt for version 7.2 of Vim: Vi IMproved.
 
 The extra archive of Vim is to be used in combination with the source archive
-(vim-7.0-src.tar.gz).  The extra archive is useless without it.
+(vim-7.2-src.tar.gz).  The extra archive is useless without it.
 
 For more information, see the "README.txt" file that comes with the runtime
-archive (vim-7.0-rt.tar.gz).  To be able to run Vim you MUST get the runtime
+archive (vim-7.2-rt.tar.gz).  To be able to run Vim you MUST get the runtime
 archive too!
 
 The extra archive plus the source and runtime achives make up the complete
