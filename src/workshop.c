@@ -56,12 +56,12 @@ static void	 load_buffer_by_number(int, int);
 static void	 load_window(char *, int lnum);
 static void	 warp_to_pc(int);
 #ifdef FEAT_BEVAL
-void		workshop_beval_cb(BalloonEval *, int);
+void		 workshop_beval_cb(BalloonEval *, int);
+static int	 computeIndex(int, char_u *, int);
 #endif
 static char	*fixAccelText(char *);
 static void	 addMenu(char *, char *, char *);
 static char	*lookupVerb(char *, int);
-static int	 computeIndex(int, char_u *, int);
 static void	 coloncmd(char *, Boolean);
 
 extern Widget	 vimShell;
@@ -1624,8 +1624,6 @@ workshop_beval_cb(
 	}
     }
 }
-#endif
-
 
     static int
 computeIndex(
@@ -1649,6 +1647,7 @@ computeIndex(
 
     return -1;
 }
+#endif
 
     static void
 addMenu(

@@ -78,7 +78,7 @@
 
 /* Functions private to this file */
 static void workshop_connection_closed(void);
-static void messageFromEserve(XtPointer clientData, int *NOTUSED1, XtInputId *NOTUSED2);
+static void messageFromEserve(XtPointer clientData, int *dum1, XtInputId *dum2);
 static void workshop_disconnect(void);
 static void workshop_sensitivity(int num, char *table);
 static void adjust_sign_name(char *filename);
@@ -157,9 +157,10 @@ getCommand(void)
 
 }
 
-/*ARGSUSED*/
 void
-messageFromEserve(XtPointer clientData, int *NOTUSED1, XtInputId *NOTUSED2)
+messageFromEserve(XtPointer clientData UNUSED,
+		  int *dum1 UNUSED,
+		  XtInputId *dum2 UNUSED)
 {
 	char	*cmd;		/* the 1st word of the command */
 
@@ -199,7 +200,7 @@ messageFromEserve(XtPointer clientData, int *NOTUSED1, XtInputId *NOTUSED2)
 			if (sign) {
 				sign++;
 			}
-			/* Change sign name to accomodate a different size? */
+			/* Change sign name to accommodate a different size? */
 			adjust_sign_name(sign);
 			workshop_add_mark_type(idx, color, sign);
 		}
@@ -580,7 +581,7 @@ unrecognised_message(
 #endif
 
 
-/* Change sign name to accomodate a different size:
+/* Change sign name to accommodate a different size:
  * Create the filename based on the height. The filename format
  * of multisize icons are:
  *    x.xpm   : largest icon
@@ -614,6 +615,7 @@ adjust_sign_name(char *filename)
 		strcpy(s, ".xpm");
 }
 
+#if 0
 /* Were we invoked by WorkShop? This function can be used early during startup
    if you want to do things differently if the editor is started standalone
    or in WorkShop mode. For example, in standalone mode you may not want to
@@ -627,6 +629,7 @@ workshop_invoked()
 	}
 	return result;
 }
+#endif
 
 /* Connect back to eserve */
 void	workshop_connect(XtAppContext context)
@@ -750,6 +753,7 @@ void	workshop_disconnect()
  * Utility functions
  */
 
+#if 0
 /* Set icon for the window */
 void
 workshop_set_icon(Display *display, Widget shell, char **xpmdata,
@@ -793,6 +797,7 @@ workshop_set_icon(Display *display, Widget shell, char **xpmdata,
 	}
 	XtFree((char *)xpmAttributes.colorsymbols);
 }
+#endif
 
 /* Minimize and maximize shells. From libutil's shell.cc. */
 
@@ -927,7 +932,7 @@ Boolean workshop_get_width_height(int *width, int *height)
 	return success;
 }
 
-
+#if 0
 Boolean workshop_get_rows_cols(int *rows, int *cols)
 {
 	static int	r = 0;
@@ -958,6 +963,7 @@ Boolean workshop_get_rows_cols(int *rows, int *cols)
 	}
 	return success;
 }
+#endif
 
 /*
  * Toolbar code
@@ -1043,12 +1049,11 @@ void workshop_set_option_first(char *name, char *value)
 }
 
 
-
+#if 0
 /*
  * Send information to eserve on certain editor events
  * You must make sure these are called when necessary
  */
-
 void workshop_file_closed(char *filename)
 {
 	char buffer[2*MAXPATHLEN];
@@ -1056,6 +1061,7 @@ void workshop_file_closed(char *filename)
 			NOCATGETS("deletedFile %s\n"), filename);
 	write(sd, buffer, strlen(buffer));
 }
+#endif
 
 void workshop_file_closed_lineno(char *filename, int lineno)
 {
@@ -1086,14 +1092,7 @@ void workshop_file_saved(char *filename)
 	workshop_moved_marks(filename);
 }
 
-void workshop_move_mark(char *filename, int markId, int newLineno)
-{
-	char buffer[2*MAXPATHLEN];
-	vim_snprintf(buffer, sizeof(buffer),
-			NOCATGETS("moveMark %s %d %d\n"), filename, markId, newLineno);
-	write(sd, buffer, strlen(buffer));
-}
-
+#if 0
 void workshop_file_modified(char *filename)
 {
 	char buffer[2*MAXPATHLEN];
@@ -1101,6 +1100,15 @@ void workshop_file_modified(char *filename)
 			NOCATGETS("modifiedFile %s\n"), filename);
 	write(sd, buffer, strlen(buffer));
 }
+
+void workshop_move_mark(char *filename, int markId, int newLineno)
+{
+	char buffer[2*MAXPATHLEN];
+	vim_snprintf(buffer, sizeof(buffer),
+	       NOCATGETS("moveMark %s %d %d\n"), filename, markId, newLineno);
+	write(sd, buffer, strlen(buffer));
+}
+#endif
 
 void workshop_frame_moved(int new_x, int new_y, int new_w, int new_h)
 {
@@ -1179,10 +1187,12 @@ void workshop_perform_verb(char *verb, void *clientData)
 }
 
 /* Send a message to eserve */
+#if defined(NOHANDS_SUPPORT_FUNCTIONS) || defined(FEAT_BEVAL)
 void workshop_send_message(char *buf)
 {
 	write(sd, buf, strlen(buf));
 }
+#endif
 
 /* Some methods, like currentFile, cursorPos, etc. are missing here.
  * But it looks like these are used for NoHands testing only so we
