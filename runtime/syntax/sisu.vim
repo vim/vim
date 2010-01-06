@@ -1,6 +1,6 @@
 "SiSU Vim syntax file
 "SiSU Maintainer: Ralph Amissah <ralph@amissah.com>
-"SiSU Markup:     SiSU (sisu-0.66.0, 2008-02-24)
+"SiSU Markup:     SiSU (sisu-0.69.0, 2008-09-16)
 "(originally looked at Ruby Vim by Mirko Nasato)
 
 if version < 600
@@ -81,6 +81,7 @@ syn region sisu_normal contains=sisu_strikeout,sisu_identifier,sisu_content_endn
 syn region sisu_comment matchgroup=sisu_comment start="^%\{1,2\} " end="$"
 "font face curly brackets
 "syn region sisu_identifier contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_sem start="\S\+:{" end="}:[^<>,.!?:; ]\+" oneline
+syn region sisu_index matchgroup=sisu_index_block start="^={" end="}"
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_fontface start="\*{" end="}\*"
 syn region sisu_control contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_fontface start="!{" end="}!"
 syn region sisu_underline contains=sisu_strikeout,sisu_number,sisu_control,sisu_identifier,sisu_error matchgroup=sisu_fontface start="_{" end="}_"
@@ -162,7 +163,6 @@ hi def link sisu_linked           String
 hi def link sisu_fontface         Include
 hi def link sisu_strikeout        DiffDelete
 hi def link sisu_content_alt      Special
-hi def link sisu_sem_content      String
 hi def link sisu_sem_content      SpecialKey
 hi def link sisu_sem_block        Special
 hi def link sisu_sem_marker       Visual
@@ -173,6 +173,8 @@ hi def link sisu_sem_ex_marker_block Folded
 hi def link sisu_sem_ex_content   Comment
 "hi def link sisu_sem_ex_content   SpecialKey
 hi def link sisu_sem_ex_block     Comment
+hi def link sisu_index            SpecialKey
+hi def link sisu_index_block      Visual
 hi def link sisu_content_endnote  Special
 hi def link sisu_control          Define
 hi def link sisu_ocn              Include

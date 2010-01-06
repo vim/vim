@@ -357,7 +357,7 @@ fun! s:InsertRefs(groupBR, prefix, group, suffix, matchline)
       execute s:Ref(ini, d, "start", "len")
       let ini = strpart(ini, 0, start) . backref . strpart(ini, start+len)
       let tailBR = substitute(tailBR, s:notslash . '\zs\\' . d,
-	\ escape(backref, '\\'), 'g')
+	\ escape(backref, '\\&'), 'g')
     endif
     let d = d-1
   endwhile

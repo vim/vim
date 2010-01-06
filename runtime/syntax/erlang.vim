@@ -50,7 +50,7 @@ if ! exists ("erlang_characters")
     " Operators
     syn match   erlangOperator         "+\|-\|\*\|\/"
     syn keyword erlangOperator         div rem or xor bor bxor bsl bsr
-    syn keyword erlangOperator         and band not bnot
+    syn keyword erlangOperator         and band not bnot andalso orelse
     syn match   erlangOperator         "==\|/=\|=:=\|=/=\|<\|=<\|>\|>="
     syn match   erlangOperator         "++\|--\|=\|!\|<-"
 
@@ -123,7 +123,7 @@ endif
 
 if ! exists ("erlang_keywords")
     " Constants and Directives
-    syn match   erlangDirective  "-behaviour\|-behaviour"
+    syn match   erlangDirective  "-behaviour\|-behavior"
     syn match   erlangDirective  "-compile\|-define\|-else\|-endif\|-export\|-file"
     syn match   erlangDirective  "-ifdef\|-ifndef\|-import\|-include_lib\|-include"
     syn match   erlangDirective  "-module\|-record\|-undef"

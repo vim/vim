@@ -3,7 +3,7 @@
 " Maintainer:   Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 " Splint Home:	http://www.splint.org/
 " Last Change:  2005 Apr 21
-" $Revision$
+" $Revision: 1.3 $
 
 if exists("current_compiler")
   finish

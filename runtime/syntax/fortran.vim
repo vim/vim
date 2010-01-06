@@ -2,7 +2,7 @@
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
 " Version:	0.88
 " URL:		http://www.unb.ca/chem/ajit/syntax/fortran.vim
-" Last Change:	2006 Apr. 22
+" Last Change:	2008 Nov 01
 " Maintainer:	Ajit J. Thakkar (ajit AT unb.ca); <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-syntax from Vim
 " Credits:
@@ -300,7 +300,7 @@ if (b:fortran_fixed_source == 1)
     syn match fortranLabelError	"^.\{-,4}[^0-9 ]" contains=fortranTab
     syn match fortranLabelError	"^.\{4}\d\S"
   endif
-  syn match fortranComment		excludenl "^[!c*].*$" contains=@fortranCommentGroup
+  syn match fortranComment		excludenl "^[!c*].*$" contains=@fortranCommentGroup,@spell
   syn match fortranLeftMargin		transparent "^ \{5}"
   syn match fortranContinueMark		display "^.\{5}\S"lc=5
 else

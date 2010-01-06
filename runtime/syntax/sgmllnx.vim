@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	SGML-linuxdoc (supported by old sgmltools-1.x)
 "		(for more information, visit www.sgmltools.org)
-" Maintainer:	Nam SungHyun <namsh@kldp.org>
-" Last Change:	2001 Apr 26
+" Maintainer:	SungHyun Nam <goweol@gmail.com>
+" Last Change:	2008 Sep 17
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jun 03, 2008
-" Version:	41
+" Last Change:	Dec 28, 2009
+" Version:	46
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -103,6 +103,7 @@ endif
 syn cluster texEnvGroup		contains=texMatcher,texMathDelim,texSpecialChar,texStatement
 syn cluster texFoldGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texInputFile,texLength,texLigature,texMatcher,texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ,texNewCmd,texNewEnv,texOnlyMath,texOption,texParen,texRefZone,texSection,texSectionMarker,texSectionZone,texSpaceCode,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,@texMathZones,texTitle,texAbstract
 syn cluster texMatchGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMatcher,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,@Spell
+syn cluster texStyleGroup	contains=texAccent,texBadMath,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texNewCmd,texNewEnv,texOnlyMath,texParen,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone,texInputFile,texOption,texStyleStatement,@Spell,texStyleMatcher
 syn cluster texRefGroup		contains=texMatcher,texComment,texDelimiter
 if !exists("tex_no_math")
  syn cluster texMathZones	contains=texMathZoneV,texMathZoneW,texMathZoneX,texMathZoneY,texMathZoneZ
@@ -179,24 +180,24 @@ syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)$"
 
 " \begin{}/\end{} section markers: {{{1
 syn match  texSectionMarker	"\\begin\>\|\\end\>" nextgroup=texSectionName
-syn region texSectionName	matchgroup=Delimiter start="{" end="}"  contained nextgroup=texSectionModifier
-syn region texSectionModifier	matchgroup=Delimiter start="\[" end="]" contained
+syn region texSectionName	matchgroup=Delimiter start="{" end="}"  contained	nextgroup=texSectionModifier	contains=texComment
+syn region texSectionModifier	matchgroup=Delimiter start="\[" end="]" contained	contains=texComment
 
 " \documentclass, \documentstyle, \usepackage: {{{1
 syn match  texDocType		"\\documentclass\>\|\\documentstyle\>\|\\usepackage\>"	nextgroup=texSectionName,texDocTypeArgs
-syn region texDocTypeArgs	matchgroup=Delimiter start="\[" end="]"			contained	nextgroup=texSectionName
+syn region texDocTypeArgs	matchgroup=Delimiter start="\[" end="]"			contained	nextgroup=texSectionName	contains=texComment
 
 " Preamble syntax-based folding support: {{{1
 if g:tex_fold_enabled && has("folding")
- syn region texPreamble	transparent fold	start='\zs\\documentclass\>' end='\ze\\begin{document}'	contains=@texMatchGroup
+ syn region texPreamble	transparent fold	start='\zs\\documentclass\>' end='\ze\\begin{document}'	contains=texStyle,@texMatchGroup
 endif
 
 " TeX input: {{{1
 syn match texInput		"\\input\s\+[a-zA-Z/.0-9_^]\+"hs=s+7				contains=texStatement
-syn match texInputFile		"\\include\(graphics\|list\)\=\(\[.\{-}\]\)\=\s*{.\{-}}"	contains=texStatement,texInputCurlies
+syn match texInputFile		"\\include\(graphics\|list\)\=\(\[.\{-}\]\)\=\s*{.\{-}}"	contains=texStatement,texInputCurlies,texInputFileOpt
 syn match texInputFile		"\\\(epsfig\|input\|usepackage\)\s*\(\[.*\]\)\={.\{-}}"		contains=texStatement,texInputCurlies,texInputFileOpt
 syn match texInputCurlies	"[{}]"								contained
-syn region texInputFileOpt	matchgroup=Delimiter start="\[" end="\]"			contained
+syn region texInputFileOpt	matchgroup=Delimiter start="\[" end="\]"			contained	contains=texComment
 
 " Type Styles (LaTeX 2.09): {{{1
 syn match texTypeStyle		"\\rm\>"
@@ -309,7 +310,7 @@ if !exists("tex_no_math")
    exe 'syn region '.grpname.' start='."'".'\\begin\s*{\s*'.a:mathzone.'\s*}'."'".' end='."'".'\\end\s*{\s*'.a:mathzone.'\s*}'."'".' keepend contains=@texMathZoneGroup'.foldcmd
    exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
    exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
-   exe 'HiLink '.grpname.' texMath'
+   exe 'hi def link '.grpname.' texMath'
    if a:starform
     let grpname  = "texMathZone".a:sfx.'S'
     let syncname = "texSyncMathZone".a:sfx.'S'
@@ -317,7 +318,7 @@ if !exists("tex_no_math")
     exe 'syn region '.grpname.' start='."'".'\\begin\s*{\s*'.a:mathzone.'\*\s*}'."'".' end='."'".'\\end\s*{\s*'.a:mathzone.'\*\s*}'."'".' keepend contains=@texMathZoneGroup'.foldcmd
     exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
     exe 'syn sync match '.syncname.' grouphere '.grpname.' "\\begin\s*{\s*'.a:mathzone.'\*\s*}"'
-    exe 'HiLink '.grpname.' texMath'
+    exe 'hi def link '.grpname.' texMath'
    endif
  endfun
 
@@ -399,7 +400,7 @@ endif
 " Separate lines used for verb` and verb# so that the end conditions {{{1
 " will appropriately terminate.  Ideally vim would let me save a
 " character from the start pattern and re-use it in the end-pattern.
-syn region texZone		start="\\begin{verbatim}"		end="\\end{verbatim}\|%stopzone\>"	contains=@Spell
+syn region texZone		start="\\begin{[vV]erbatim}"		end="\\end{[vV]erbatim}\|%stopzone\>"	contains=@Spell
 " listings package:
 syn region texZone		start="\\begin{lstlisting}"		end="\\end{lstlisting}\|%stopzone\>"	contains=@Spell
 " moreverb package:
@@ -456,6 +457,14 @@ syn match  texLength		"\<\d\+\([.,]\d\+\)\=\s*\(true\)\=\s*\(bp\|cc\|cm\|dd\|em\
 " TeX String Delimiters: {{{1
 syn match texString		"\(``\|''\|,,\)"
 
+" makeatletter -- makeatother sections
+if !exists("g:tex_no_error")
+ syn region texStyle			matchgroup=texStatement start='\\makeatletter' end='\\makeatother'	contains=@texStyleGroup contained
+ syn match  texStyleStatement		"\\[a-zA-Z@]\+"	contained
+ syn region texStyleMatcher		matchgroup=Delimiter start="{" skip="\\\\\|\\[{}]"	end="}"		contains=@texStyleGroup,texError	contained
+ syn region texStyleMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texStyleGroup,texError	contained
+endif
+
 " LaTeX synchronization: {{{1
 syn sync maxlines=200
 syn sync minlines=50
@@ -507,6 +516,7 @@ if did_tex_syntax_inits == 1
    HiLink texMathDelimSet2	texMathDelim
    HiLink texMathDelimKey	texMathDelim
    HiLink texMathMatcher	texMath
+   HiLink texMathZoneV		texMath
    HiLink texMathZoneW		texMath
    HiLink texMathZoneX		texMath
    HiLink texMathZoneY		texMath
@@ -516,6 +526,7 @@ if did_tex_syntax_inits == 1
   HiLink texSectionMarker	texCmdName
   HiLink texSectionName		texSection
   HiLink texSpaceCode		texStatement
+  HiLink texStyleStatement	texStatement
   HiLink texTypeSize		texType
   HiLink texTypeStyle		texType
 

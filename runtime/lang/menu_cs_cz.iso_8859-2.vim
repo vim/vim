@@ -1,8 +1,8 @@
 " Menu Translations:	Czech for ISO-8859-2
 " Maintainer:		Jiri Brezina <brzj@seznam.cz>
 " vim:set foldmethod=marker:
-" $Revision$
-" $Date$
+" $Revision: 1.3 $
+" $Date: 2005/12/19 22:08:24 $
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

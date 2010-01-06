@@ -3,7 +3,7 @@
 " Filename extensions: *.ent, *.eni
 " Maintainer:	Philip Uren <philuSPAX@ieee.org> - Remove SPAX spam block
 " Last update:	Wed Apr 12 08:47:18 EST 2006
-" $Id$
+" $Id: cl.vim,v 1.3 2006/04/12 21:43:28 vimboss Exp $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

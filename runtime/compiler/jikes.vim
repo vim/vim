@@ -1,8 +1,8 @@
 " Vim Compiler File
 " Compiler:	Jikes
 " Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Change:	2004 Mar 27
-" URL:		http://mywebpage.netscape.com/sharppeople/vim/compiler
+" Last Change:	20 Jan 2009
+" URL:		http://dwsharp.users.sourceforge.net/vim/compiler
 
 if exists("current_compiler")
   finish

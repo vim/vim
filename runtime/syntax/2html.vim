@@ -1,12 +1,17 @@
 " Vim syntax support file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
-" Last Change: 2008 Jul 17
+" Last Change: 2009 Jul 14
 "	       (modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>)
 "	       (XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>)
 "	       (made w3 compliant by Edd Barrett <vext01@gmail.com>)
 "	       (added html_font. Edd Barrett <vext01@gmail.com>)
+"	       (dynamic folding by Ben Fritz <fritzophrenic@gmail.com>)
 
 " Transform a file into HTML, using the current syntax highlighting.
+
+" this file uses line continuations
+let s:cpo_sav = &cpo
+set cpo-=C
 
 " Number lines when explicitely requested or when `number' is set
 if exists("html_number_lines")
@@ -20,6 +25,37 @@ if exists("html_font")
   let s:htmlfont = html_font . ", monospace"
 else
   let s:htmlfont = "monospace"
+endif
+
+" make copies of the user-defined settings that we may overrule
+if exists("html_dynamic_folds")
+  let s:html_dynamic_folds = 1
+endif
+if exists("html_hover_unfold")
+  let s:html_hover_unfold = 1
+endif
+if exists("html_use_css")
+  let s:html_use_css = 1
+endif
+
+" hover opening implies dynamic folding
+if exists("s:html_hover_unfold")
+  let s:html_dynamic_folds = 1
+endif
+
+" dynamic folding with no foldcolumn implies hover opens
+if exists("s:html_dynamic_folds") && exists("html_no_foldcolumn")
+  let s:html_hover_unfold = 1
+endif
+
+" ignore folding overrides dynamic folding
+if exists("html_ignore_folding") && exists("s:html_dynamic_folds")
+  unlet s:html_dynamic_folds
+endif
+
+" dynamic folding implies css
+if exists("s:html_dynamic_folds")
+  let s:html_use_css = 1
 endif
 
 " When not in gui we can only guess the colors.
@@ -62,7 +98,7 @@ else
   endfun
 endif
 
-if !exists("html_use_css")
+if !exists("s:html_use_css")
   " Return opening HTML tag for given highlight id
   function! s:HtmlOpening(id)
     let a = ""
@@ -150,6 +186,26 @@ function! s:CSS1(id)
   return a
 endfun
 
+if exists("s:html_dynamic_folds")
+
+  " compares two folds as stored in our list of folds
+  " A fold is "less" than another if it starts at an earlier line number,
+  " or ends at a later line number, ties broken by fold level
+  function! s:FoldCompare(f1, f2)
+    if a:f1.firstline != a:f2.firstline
+      " put it before if it starts earlier
+      return a:f1.firstline - a:f2.firstline
+    elseif a:f1.lastline != a:f2.lastline
+      " put it before if it ends later
+      return a:f2.lastline - a:f1.lastline
+    else
+      " if folds begin and end on the same lines, put lowest fold level first
+      return a:f1.level - a:f2.level
+    endif
+  endfunction
+
+endif
+
 " Figure out proper MIME charset from the 'encoding' option.
 if exists("html_use_encoding")
   let s:html_encoding = html_use_encoding
@@ -223,13 +279,13 @@ else
   let s:tag_close = '>'
 endif
 
-" Cache html_no_pre incase we have to turn it on for non-css mode
+" Cache html_no_pre in case we have to turn it on for non-css mode
 if exists("html_no_pre")
   let s:old_html_no_pre = html_no_pre
 endif
 
-if !exists("html_use_css")
-  " Cant put font tags in <pre>
+if !exists("s:html_use_css")
+  " Can't put font tags in <pre>
   let html_no_pre=1
 endif
 
@@ -251,9 +307,86 @@ if s:html_encoding != ""
   exe "normal! a<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close . "\n\e"
 endif
 
-if exists("html_use_css")
-  exe "normal! a<style type=\"text/css\">\n<!--\n-->\n</style>\n\e"
+if exists("s:html_use_css")
+  if exists("s:html_dynamic_folds")
+    if exists("s:html_hover_unfold")
+      " if we are doing hover_unfold, use css 2 with css 1 fallback for IE6
+      exe "normal! a".
+	  \ "<style type=\"text/css\">\n<!--\n".
+	  \ ".FoldColumn { text-decoration: none; white-space: pre; }\n\n".
+	  \ "body * { margin: 0; padding: 0; }\n".
+	  \ "\n".
+	  \ ".open-fold   > .Folded { display: none;  }\n".
+	  \ ".open-fold   > .fulltext { display: inline; }\n".
+	  \ ".closed-fold > .fulltext { display: none;  }\n".
+	  \ ".closed-fold > .Folded { display: inline; }\n".
+	  \ "\n".
+	  \ ".open-fold   > .toggle-open   { display: none;   }\n".
+	  \ ".open-fold   > .toggle-closed { display: inline; }\n".
+	  \ ".closed-fold > .toggle-open   { display: inline; }\n".
+	  \ ".closed-fold > .toggle-closed { display: none;   }\n"
+      exe "normal! a\n/* opening a fold while hovering won't be supported by IE6 and other\n".
+	  \ "similar browsers, but it should fail gracefully. */\n".
+	  \ ".closed-fold:hover > .fulltext { display: inline; }\n".
+	  \ ".closed-fold:hover > .toggle-filler { display: none; }\n".
+	  \ ".closed-fold:hover > .Folded { display: none; }\n"
+      exe "normal! a-->\n</style>\n"
+      exe "normal! a<!--[if lt IE 7]>".
+	  \ "<style type=\"text/css\">\n".
+	  \ ".open-fold   .Folded      { display: none; }\n".
+	  \ ".open-fold   .fulltext      { display: inline; }\n".
+	  \ ".open-fold   .toggle-open   { display: none; }\n".
+	  \ ".closed-fold .toggle-closed { display: inline; }\n".
+	  \ "\n".
+	  \ ".closed-fold .fulltext      { display: none; }\n".
+	  \ ".closed-fold .Folded      { display: inline; }\n".
+	  \ ".closed-fold .toggle-open   { display: inline; }\n".
+	  \ ".closed-fold .toggle-closed { display: none; }\n".
+	  \ "</style>\n".
+	  \ "<![endif]-->\n"
+    else
+      " if we aren't doing hover_unfold, use CSS 1 only
+      exe "normal! a<style type=\"text/css\">\n<!--\n".
+	    \ ".FoldColumn { text-decoration: none; white-space: pre; }\n\n".
+	    \ ".open-fold   .Folded      { display: none; }\n".
+	    \ ".open-fold   .fulltext      { display: inline; }\n".
+	    \ ".open-fold   .toggle-open   { display: none; }\n".
+	    \ ".closed-fold .toggle-closed { display: inline; }\n".
+	    \ "\n".
+	    \ ".closed-fold .fulltext      { display: none; }\n".
+	    \ ".closed-fold .Folded      { display: inline; }\n".
+	    \ ".closed-fold .toggle-open   { display: inline; }\n".
+	    \ ".closed-fold .toggle-closed { display: none; }\n".
+	    \ "-->\n</style>\n"
+    endif
+  else
+    " if we aren't doing any dynamic folding, no need for any special rules
+    exe "normal! a<style type=\"text/css\">\n<!--\n-->\n</style>\n\e"
+  endif
 endif
+
+" insert javascript to toggle folds open and closed
+if exists("s:html_dynamic_folds")
+  exe "normal! a\n".
+	\ "<script type='text/javascript'>\n".
+	\ "<!--\n".
+	\ "function toggleFold(objID)\n".
+	\ "{\n".
+	\ "  var fold;\n".
+	\ "  fold = document.getElementById(objID);\n".
+	\ "  if(fold.className == 'closed-fold')\n".
+	\ "  {\n".
+	\ "    fold.className = 'open-fold';\n".
+	\ "  }\n".
+	\ "  else if (fold.className == 'open-fold')\n".
+	\ "  {\n".
+	\ "    fold.className = 'closed-fold';\n".
+	\ "  }\n".
+	\ "}\n".
+	\ "-->\n".
+	\ "</script>\n\e"
+endif
+
 if exists("html_no_pre")
   exe "normal! a</head>\n<body>\n\e"
 else
@@ -265,7 +398,81 @@ exe s:orgwin . "wincmd w"
 " List of all id's
 let s:idlist = ","
 
-" Loop over all lines in the original text.
+" First do some preprocessing for dynamic folding. Do this for the entire file
+" so we don't accidentally start within a closed fold or something.
+let s:allfolds = []
+
+if exists("s:html_dynamic_folds")
+  let s:lnum = 1
+  let s:end = line('$')
+  " save the fold text and set it to the default so we can find fold levels
+  let s:foldtext_save = &foldtext
+  set foldtext&
+
+  " we will set the foldcolumn in the html to the greater of the maximum fold
+  " level and the current foldcolumn setting
+  let s:foldcolumn = &foldcolumn
+
+  " get all info needed to describe currently closed folds
+  while s:lnum < s:end
+    if foldclosed(s:lnum) == s:lnum
+      " default fold text has '+-' and then a number of dashes equal to fold
+      " level, so subtract 2 from index of first non-dash after the dashes
+      " in order to get the fold level of the current fold
+      let s:level = match(foldtextresult(s:lnum), '+-*\zs[^-]') - 2
+      if s:level+1 > s:foldcolumn
+	let s:foldcolumn = s:level+1
+      endif
+      " store fold info for later use
+      let s:newfold = {'firstline': s:lnum, 'lastline': foldclosedend(s:lnum), 'level': s:level,'type': "closed-fold"}
+      call add(s:allfolds, s:newfold)
+      " open the fold so we can find any contained folds
+      execute s:lnum."foldopen"
+    else
+      let s:lnum = s:lnum + 1
+    endif
+  endwhile
+
+  " close all folds to get info for originally open folds
+  silent! %foldclose!
+  let s:lnum = 1
+
+  " the originally open folds will be all folds we encounter that aren't
+  " already in the list of closed folds
+  while s:lnum < s:end
+    if foldclosed(s:lnum) == s:lnum
+      " default fold text has '+-' and then a number of dashes equal to fold
+      " level, so subtract 2 from index of first non-dash after the dashes
+      " in order to get the fold level of the current fold
+      let s:level = match(foldtextresult(s:lnum), '+-*\zs[^-]') - 2
+      if s:level+1 > s:foldcolumn
+	let s:foldcolumn = s:level+1
+      endif
+      let s:newfold = {'firstline': s:lnum, 'lastline': foldclosedend(s:lnum), 'level': s:level,'type': "closed-fold"}
+      " only add the fold if we don't already have it
+      if empty(s:allfolds) || index(s:allfolds, s:newfold) == -1
+	let s:newfold.type = "open-fold"
+	call add(s:allfolds, s:newfold)
+      endif
+      " open the fold so we can find any contained folds
+      execute s:lnum."foldopen"
+    else
+      let s:lnum = s:lnum + 1
+    endif
+  endwhile
+
+  " sort the folds so that we only ever need to look at the first item in the
+  " list of folds
+  call sort(s:allfolds, "s:FoldCompare")
+
+  let &foldtext = s:foldtext_save
+  unlet s:foldtext_save
+
+  " close all folds again so we can get the fold text as we go
+  silent! %foldclose! 
+endif
+
+" Now loop over all lines in the original text to convert to html.
 " Use html_start_line and html_end_line if they are set.
 if exists("html_start_line")
   let s:lnum = html_start_line
@@ -284,6 +491,15 @@ else
   let s:end = line("$")
 endif
 
+" stack to keep track of all the folds containing the current line
+let s:foldstack = []
+
+if s:numblines
+  let s:margin = strlen(s:end) + 1
+else
+  let s:margin = 0
+endif
+
 if has('folding') && !exists('html_ignore_folding')
   let s:foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
   if s:foldfillchar == ''
@@ -295,6 +511,7 @@ if s:difffillchar == ''
   let s:difffillchar = '-'
 endif
 
+let s:foldId = 0
 
 while s:lnum <= s:end
 
@@ -303,12 +520,7 @@ while s:lnum <= s:end
   if s:filler > 0
     let s:n = s:filler
     while s:n > 0
-      if s:numblines
-	" Indent if line numbering is on
-	let s:new = repeat(s:LeadingSpace, strlen(s:end) + 1) . repeat(s:difffillchar, 3)
-      else
-	let s:new = repeat(s:difffillchar, 3)
-      endif
+      let s:new = repeat(s:difffillchar, 3)
 
       if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
 	let s:new = s:new . " " . s:filler . " inserted lines "
@@ -317,10 +529,16 @@ while s:lnum <= s:end
 
       if !exists("html_no_pre")
 	" HTML line wrapping is off--go ahead and fill to the margin
-	let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new))
+	let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new) - s:margin)
+      else
+	let s:new = s:new . repeat(s:difffillchar, 3)
       endif
 
       let s:new = s:HtmlFormat(s:new, "DiffDelete")
+      if s:numblines
+	" Indent if line numbering is on; must be after escaping.
+	let s:new = repeat(s:LeadingSpace, s:margin) . s:new
+      endif
       exe s:newwin . "wincmd w"
       exe "normal! a" . s:new . s:HtmlEndline . "\n\e"
       exe s:orgwin . "wincmd w"
@@ -333,16 +551,18 @@ while s:lnum <= s:end
 
   " Start the line with the line number.
   if s:numblines
-    let s:new = repeat(' ', strlen(s:end) - strlen(s:lnum)) . s:lnum . ' '
+    let s:numcol = repeat(' ', s:margin - 1 - strlen(s:lnum)) . s:lnum . ' '
   else
-    let s:new = ""
+    let s:numcol = ""
   endif
 
-  if has('folding') && !exists('html_ignore_folding') && foldclosed(s:lnum) > -1
+  let s:new = ""
+
+  if has('folding') && !exists('html_ignore_folding') && foldclosed(s:lnum) > -1 && !exists('s:html_dynamic_folds')
     "
-    " This is the beginning of a folded block
+    " This is the beginning of a folded block (with no dynamic folding)
     "
-    let s:new = s:new . foldtextresult(s:lnum)
+    let s:new = s:numcol . foldtextresult(s:lnum)
     if !exists("html_no_pre")
       " HTML line wrapping is off--go ahead and fill to the margin
       let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
@@ -355,14 +575,96 @@ while s:lnum <= s:end
 
   else
     "
-    " A line that is not folded.
+    " A line that is not folded, or doing dynamic folding.
     "
     let s:line = getline(s:lnum)
-
     let s:len = strlen(s:line)
 
+    if exists("s:html_dynamic_folds")
+      " First insert a closing for any open folds that end on this line
+      while !empty(s:foldstack) && get(s:foldstack,0).lastline == s:lnum-1
+	let s:new = s:new."</span></span>"
+	call remove(s:foldstack, 0)
+      endwhile
+
+      " Now insert an opening any new folds that start on this line
+      let s:firstfold = 1
+      while !empty(s:allfolds) && get(s:allfolds,0).firstline == s:lnum
+	let s:foldId = s:foldId + 1
+	let s:new = s:new . "<span id='fold".s:foldId."' class='".s:allfolds[0].type."'>"
+
+	" Unless disabled, add a fold column for the opening line of a fold.
+	"
+	" Note that dynamic folds require using css so we just use css to take
+	" care of the leading spaces rather than using &nbsp; in the case of
+	" html_no_pre to make it easier
+	if !exists("html_no_foldcolumn")
+	  " add fold column that can open the new fold
+	  if s:allfolds[0].level > 1 && s:firstfold
+	    let s:new = s:new . "<a class='toggle-open FoldColumn' href='javascript:toggleFold(\"fold".s:foldstack[0].id."\")'>"
+	    let s:new = s:new . repeat('|', s:allfolds[0].level - 1) . "</a>"
+	  endif
+	  let s:new = s:new . "<a class='toggle-open FoldColumn' href='javascript:toggleFold(\"fold".s:foldId."\")'>+</a>"
+	  let s:new = s:new . "<a class='toggle-open "
+	  " If this is not the last fold we're opening on this line, we need
+	  " to keep the filler spaces hidden if the fold is opened by mouse
+	  " hover. If it is the last fold to open in the line, we shouldn't hide
+	  " them, so don't apply the toggle-filler class.
+	  if get(s:allfolds, 1, {'firstline': 0}).firstline == s:lnum
+	    let s:new = s:new . "toggle-filler "
+	  endif
+	  let s:new = s:new . "FoldColumn' href='javascript:toggleFold(\"fold".s:foldId."\")'>"
+	  let s:new = s:new . repeat(" ", s:foldcolumn - s:allfolds[0].level) . "</a>"
+
+	  " add fold column that can close the new fold
+	  let s:new = s:new . "<a class='toggle-closed FoldColumn' href='javascript:toggleFold(\"fold".s:foldId."\")'>"
+	  if s:firstfold
+	    let s:new = s:new . repeat('|', s:allfolds[0].level - 1)
+	  endif
+	  let s:new = s:new . "-"
+	  " only add spaces if we aren't opening another fold on the same line
+	  if get(s:allfolds, 1, {'firstline': 0}).firstline != s:lnum
+	    let s:new = s:new . repeat(" ", s:foldcolumn - s:allfolds[0].level)
+	  endif
+	  let s:new = s:new . "</a>"
+	  let s:firstfold = 0
+	endif
+
+	" add fold text, moving the span ending to the next line so collapsing
+	" of folds works correctly
+	let s:new = s:new . substitute(s:HtmlFormat(s:numcol . foldtextresult(s:lnum), "Folded"), '</span>', s:HtmlEndline.'\r\0', '')
+	let s:new = s:new . "<span class='fulltext'>"
+
+	" open the fold now that we have the fold text to allow retrieval of
+	" fold text for subsequent folds
+	execute s:lnum."foldopen"
+	call insert(s:foldstack, remove(s:allfolds,0))
+	let s:foldstack[0].id = s:foldId
+      endwhile
+
+      " Unless disabled, add a fold column for other lines.
+      "
+      " Note that dynamic folds require using css so we just use css to take
+      " care of the leading spaces rather than using &nbsp; in the case of
+      " html_no_pre to make it easier
+      if !exists("html_no_foldcolumn")
+	if empty(s:foldstack)
+	  " add the empty foldcolumn for unfolded lines
+	  let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn")
+	else
+	  " add the fold column for folds not on the opening line
+	  if get(s:foldstack, 0).firstline < s:lnum
+	    let s:new = s:new . "<a class='FoldColumn' href='javascript:toggleFold(\"fold".s:foldstack[0].id."\")'>"
+	    let s:new = s:new . repeat('|', s:foldstack[0].level)
+	    let s:new = s:new . repeat(' ', s:foldcolumn - s:foldstack[0].level) . "</a>"
+	  endif
+	endif
+      endif
+    endif
+
+    " Now continue with the unfolded line text
     if s:numblines
-      let s:new = s:HtmlFormat(s:new, "lnr")
+      let s:new = s:new . s:HtmlFormat(s:numcol, "lnr")
     endif
 
     " Get the diff attribute, if any.
@@ -380,7 +682,7 @@ while s:lnum <= s:end
 	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
 	if s:len < &columns && !exists("html_no_pre")
 	  " Add spaces at the end to mark the changed line.
-	  let s:line = s:line . repeat(' ', &columns - s:len)
+	  let s:line = s:line . repeat(' ', &columns - virtcol([s:lnum, s:len]) - s:margin)
 	  let s:len = &columns
 	endif
       else
@@ -393,11 +695,27 @@ while s:lnum <= s:end
 
       " Expand tabs
       let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
-      let idx = stridx(s:expandedtab, "\t")
-      while idx >= 0
-	let i = &ts - ((idx + s:startcol - 1) % &ts)
-	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', i), '')
-	let idx = stridx(s:expandedtab, "\t")
+      let s:offset = 0
+      let s:idx = stridx(s:expandedtab, "\t")
+      while s:idx >= 0
+	if has("multi_byte_encoding")
+	  if s:startcol + s:idx == 1
+	    let s:i = &ts
+	  else
+	    if s:idx == 0
+	      let s:prevc = matchstr(s:line, '.\%' . (s:startcol + s:idx + s:offset) . 'c')
+	    else
+	      let s:prevc = matchstr(s:expandedtab, '.\%' . (s:idx + 1) . 'c')
+	    endif
+	    let s:vcol = virtcol([s:lnum, s:startcol + s:idx + s:offset - len(s:prevc)])
+	    let s:i = &ts - (s:vcol % &ts)
+	  endif
+	  let s:offset -= s:i - 1
+	else
+	  let s:i = &ts - ((s:idx + s:startcol - 1) % &ts)
+	endif
+	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', s:i), '')
+	let s:idx = stridx(s:expandedtab, "\t")
       endwhile
 
       " Output the text with the same synID, with class set to {s:id_name}
@@ -415,8 +733,22 @@ endwhile
 " Finish with the last line
 exe s:newwin . "wincmd w"
 
+if exists("s:html_dynamic_folds")
+  " finish off any open folds
+  while !empty(s:foldstack)
+    exe "normal! a</span></span>"
+    call remove(s:foldstack, 0)
+  endwhile
+
+  " add fold column to the style list if not already there
+  let s:id = hlID('FoldColumn')
+  if stridx(s:idlist, "," . s:id . ",") == -1
+    let s:idlist = s:idlist . s:id . ","
+  endif
+endif
+
 " Close off the font tag that encapsulates the whole <body>
-if !exists("html_use_css")
+if !exists("s:html_use_css")
   exe "normal! a</font>\e"
 endif
 
@@ -428,7 +760,7 @@ endif
 
 
 " Now, when we finally know which, we define the colors and styles
-if exists("html_use_css")
+if exists("s:html_use_css")
   1;/<style type="text/+1
 endif
 
@@ -445,7 +777,7 @@ endif
 " Normal/global attributes
 " For Netscape 4, set <body> attributes too, though, strictly speaking, it's
 " incorrect.
-if exists("html_use_css")
+if exists("s:html_use_css")
   if exists("html_no_pre")
     execute "normal! A\nbody { color: " . s:fgc . "; background-color: " . s:bgc . "; font-family: ". s:htmlfont ."; }\e"
   else
@@ -455,12 +787,12 @@ if exists("html_use_css")
     execute "normal! ^cwbody\e"
   endif
 else
-    execute '%s:<body>:<body bgcolor="' . s:bgc . '" text="' . s:fgc . '"><font face="'. s:htmlfont .'">'
+  execute '%s:<body>:<body bgcolor="' . s:bgc . '" text="' . s:fgc . '"><font face="'. s:htmlfont .'">'
 endif
 
 " Line numbering attributes
 if s:numblines
-  if exists("html_use_css")
+  if exists("s:html_use_css")
     execute "normal! A\n.lnr { " . s:CSS1(hlID("LineNr")) . "}\e"
   else
     execute '%s+^<span class="lnr">\([^<]*\)</span>+' . s:HtmlOpening(hlID("LineNr")) . '\1' . s:HtmlClosing(hlID("LineNr")) . '+g'
@@ -479,14 +811,14 @@ while s:idlist != ""
   " If the class has some attributes, export the style, otherwise DELETE all
   " its occurences to make the HTML shorter
   if s:attr != ""
-    if exists("html_use_css")
+    if exists("s:html_use_css")
       execute "normal! A\n." . s:id_name . " { " . s:attr . "}"
     else
       execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+' . s:HtmlOpening(s:id) . '\1' . s:HtmlClosing(s:id) . '+g'
     endif
   else
     execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+\1+ge'
-    if exists("html_use_css")
+    if exists("s:html_use_css")
       1;/<style type="text/+1
     endif
   endif
@@ -531,16 +863,28 @@ endif
 " Save a little bit of memory (worth doing?)
 unlet s:htmlfont
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search
-unlet s:whatterm s:idlist s:lnum s:end s:fgc s:bgc s:old_magic
+unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc s:old_magic
 unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines
-unlet s:orgwin s:newwin s:orgbufnr
+unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset
 if !v:profiling
   delfunc s:HtmlColor
   delfunc s:HtmlFormat
   delfunc s:CSS1
-  if !exists("html_use_css")
+  if !exists("s:html_use_css")
     delfunc s:HtmlOpening
     delfunc s:HtmlClosing
   endif
 endif
-silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:LeadingSpace s:HtmlEndline
+silent! unlet s:diffattr s:difffillchar s:foldfillchar s:HtmlSpace s:LeadingSpace s:HtmlEndline s:firstfold s:foldcolumn
+unlet s:foldstack s:allfolds s:foldId s:numcol
+
+if exists("s:html_dynamic_folds")
+  delfunc s:FoldCompare
+endif
+
+silent! unlet s:html_dynamic_folds s:html_hover_unfold s:html_use_css
+
+let &cpo = s:cpo_sav
+unlet s:cpo_sav
+
+" vim: noet sw=2 sts=2

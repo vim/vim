@@ -1,6 +1,6 @@
 " Vim script to download a missing spell file
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Jun 27
+" Last Change:	2008 Nov 29
 
 if !exists('g:spellfile_URL')
   " Prefer using http:// when netrw should be able to use it, since
@@ -39,19 +39,22 @@ function! spellfile#LoadFile(lang)
   let s:donedict[a:lang . &enc] = 1
 
   " Find spell directories we can write in.
-  let dirlist = []
-  let dirchoices = '&Cancel'
-  for dir in split(globpath(&rtp, 'spell'), "\n")
-    if filewritable(dir) == 2
-      call add(dirlist, dir)
-      let dirchoices .= "\n&" . len(dirlist)
-    endif
-  endfor
+  let [dirlist, dirchoices] = spellfile#GetDirChoices()
   if len(dirlist) == 0
-    if &verbose
+    let dir_to_create = spellfile#WritableSpellDir()
+    if &verbose || dir_to_create != ''
       echomsg 'spellfile#LoadFile(): There is no writable spell directory.'
     endif
-    return
+    if dir_to_create != ''
+      if confirm("Shall I create " . dir_to_create, "&Yes\n&No", 2) == 1
+	" After creating the directory it should show up in the list.
+	call mkdir(dir_to_create, "p")
+	let [dirlist, dirchoices] = spellfile#GetDirChoices()
+      endif
+    endif
+    if len(dirlist) == 0
+      return
+    endif
   endif
 
   let msg = 'Cannot find spell file for "' . a:lang . '" in ' . &enc
@@ -177,3 +180,29 @@ function! spellfile#Nread(fname)
     unlet g:netrw_use_errorwindow
   endif
 endfunc
+
+" Get a list of writable spell directories and choices for confirm().
+function! spellfile#GetDirChoices()
+  let dirlist = []
+  let dirchoices = '&Cancel'
+  for dir in split(globpath(&rtp, 'spell'), "\n")
+    if filewritable(dir) == 2
+      call add(dirlist, dir)
+      let dirchoices .= "\n&" . len(dirlist)
+    endif
+  endfor
+  return [dirlist, dirchoices]
+endfunc
+
+function! spellfile#WritableSpellDir()
+  if has("unix")
+    " For Unix always use the $HOME/.vim directory
+    return $HOME . "/.vim/spell"
+  endif
+  for dir in split(&rtp, ',')
+    if filewritable(dir) == 2
+      return dir . "/spell"
+    endif
+  endfor
+  return ''
+endfunction

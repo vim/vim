@@ -2,7 +2,7 @@
 " Language:	VHDL
 " Maintainer:	Czo <Olivier.Sirol@lip6.fr>
 " Credits:	Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
-" $Id$
+" $Id: vhdl.vim,v 1.1 2004/06/13 15:34:56 vimboss Exp $
 
 " VHSIC Hardware Description Language
 " Very High Scale Integrated Circuit

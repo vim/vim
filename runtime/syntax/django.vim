@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Django template
 " Maintainer:	Dave Hodder <dmh@dmh.org.uk>
-" Last Change:	2007 Apr 21
+" Last Change:	2008 Dec 18
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -18,8 +18,9 @@ syn match djangoError "%}\|}}\|#}"
 
 " Django template built-in tags and parameters
 " 'comment' doesn't appear here because it gets special treatment
+syn keyword djangoStatement contained autoescape on off endautoescape
 syn keyword djangoStatement contained and as block endblock by cycle debug else
-syn keyword djangoStatement contained extends filter endfilter firstof for
+syn keyword djangoStatement contained extends filter endfilter firstof for empty
 syn keyword djangoStatement contained endfor if endif ifchanged endifchanged
 syn keyword djangoStatement contained ifequal endifequal ifnotequal
 syn keyword djangoStatement contained endifnotequal in include load not now or
@@ -35,15 +36,15 @@ syn keyword djangoStatement contained get_current_language_bidi plural
 " Django templete built-in filters
 syn keyword djangoFilter contained add addslashes capfirst center cut date
 syn keyword djangoFilter contained default default_if_none dictsort
-syn keyword djangoFilter contained dictsortreversed divisibleby escape
+syn keyword djangoFilter contained dictsortreversed divisibleby escape escapejs
 syn keyword djangoFilter contained filesizeformat first fix_ampersands
-syn keyword djangoFilter contained floatformat get_digit join length length_is
+syn keyword djangoFilter contained floatformat force_escape get_digit iriencode join last length length_is
 syn keyword djangoFilter contained linebreaks linebreaksbr linenumbers ljust
 syn keyword djangoFilter contained lower make_list phone2numeric pluralize
-syn keyword djangoFilter contained pprint random removetags rjust slice slugify
+syn keyword djangoFilter contained pprint random removetags rjust safe slice slugify
 syn keyword djangoFilter contained stringformat striptags
 syn keyword djangoFilter contained time timesince timeuntil title
-syn keyword djangoFilter contained truncatewords unordered_list upper urlencode
+syn keyword djangoFilter contained truncatewords truncatewords_html unordered_list upper urlencode
 syn keyword djangoFilter contained urlize urlizetrunc wordcount wordwrap yesno
 
 " Keywords to highlight within comments

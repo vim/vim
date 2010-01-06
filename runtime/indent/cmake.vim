@@ -1,10 +1,10 @@
 " =============================================================================
 " 
 "   Program:   CMake - Cross-Platform Makefile Generator
-"   Module:    $RCSfile$
+"   Module:    $RCSfile: cmake-indent.vim,v $
 "   Language:  VIM
-"   Date:      $Date$
-"   Version:   $Revision$
+"   Date:      $Date: 2006/09/23 21:09:08 $
+"   Version:   $Revision: 1.7 $
 " 
 " =============================================================================
 
@@ -12,8 +12,8 @@
 " Language:     CMake (ft=cmake)
 " Author:       Andy Cedilnik <andy.cedilnik@kitware.com>
 " Maintainer:   Andy Cedilnik <andy.cedilnik@kitware.com>
-" Last Change:  $Date$
-" Version:      $Revision$
+" Last Change:  $Date: 2006/09/23 21:09:08 $
+" Version:      $Revision: 1.7 $
 "
 " Licence:      The CMake license applies to this file. See
 "               http://www.cmake.org/HTML/Copyright.html

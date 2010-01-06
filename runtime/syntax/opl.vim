@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	OPL
 " Maintainer:	Czo <Olivier.Sirol@lip6.fr>
-" $Id$
+" $Id: opl.vim,v 1.1 2004/06/13 17:34:11 vimboss Exp $
 
 " Open Psion Language... (EPOC16/EPOC32)
 

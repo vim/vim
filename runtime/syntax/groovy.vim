@@ -228,6 +228,7 @@ if !exists("groovy_ignore_groovydoc") && main_syntax != 'jsp'
   " syntax include @groovyHtml <sfile>:p:h/html.vim
    syntax include @groovyHtml runtime! syntax/html.vim
   unlet b:current_syntax
+  syntax spell default  " added by Bram
   syn region  groovyDocComment    start="/\*\*"  end="\*/" keepend contains=groovyCommentTitle,@groovyHtml,groovyDocTags,groovyTodo,@Spell
   syn region  groovyCommentTitle  contained matchgroup=groovyDocComment start="/\*\*"   matchgroup=groovyCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@groovyHtml,groovyCommentStar,groovyTodo,@Spell,groovyDocTags
 

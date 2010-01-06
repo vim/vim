@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Fr, 04 Nov 2005 12:46:45 CET
 " Filenames:	/etc/sgml.catalog
-" $Id$
+" $Id: catalog.vim,v 1.2 2005/11/23 21:11:10 vimboss Exp $
 
 " Quit when a syntax file was already loaded
 if exists("b:current_syntax")

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:     mysql
 " Maintainer:   Kenneth J. Pronovici <pronovic@ieee.org>
-" Last Change:  $LastChangedDate: 2007-12-19 10:59:39 -0600 (Wed, 19 Dec 2007) $
+" Last Change:  $LastChangedDate: 2009-06-29 23:08:37 -0500 (Mon, 29 Jun 2009) $
 " Filenames:    *.mysql
 " URL:          ftp://cedar-solutions.com/software/mysql.vim
 " Note:         The definitions below are taken from the mysql user manual as of April 2002, for version 3.23
@@ -36,7 +36,7 @@ syn keyword mysqlKeyword         match max_rows middleint min_rows minute minute
 syn keyword mysqlKeyword         natural no
 syn keyword mysqlKeyword         on optimize option optionally order outer outfile
 syn keyword mysqlKeyword         pack_keys partial password primary privileges procedure process processlist
-syn keyword mysqlKeyword         read references reload rename replace restrict returns revoke row rows
+syn keyword mysqlKeyword         read references reload rename replace restrict returns revoke right row rows
 syn keyword mysqlKeyword         second select show shutdown soname sql_big_result sql_big_selects sql_big_tables sql_log_off
 syn keyword mysqlKeyword         sql_log_update sql_low_priority_updates sql_select_limit sql_small_result sql_warnings starting
 syn keyword mysqlKeyword         status straight_join string
@@ -57,7 +57,7 @@ syn region mysqlString           start=+'+  skip=+\\\\\|\\'+  end=+'+
 " Numbers and hexidecimal values
 syn match mysqlNumber            "-\=\<[0-9]*\>"
 syn match mysqlNumber            "-\=\<[0-9]*\.[0-9]*\>"
-syn match mysqlNumber            "-\=\<[0-9]*e[+-]\=[0-9]*\>"
+syn match mysqlNumber            "-\=\<[0-9][0-9]*e[+-]\=[0-9]*\>"
 syn match mysqlNumber            "-\=\<[0-9]*\.[0-9]*e[+-]\=[0-9]*\>"
 syn match mysqlNumber            "\<0x[abcdefABCDEF0-9]*\>"
 

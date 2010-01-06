@@ -2,9 +2,9 @@
 " Language:	C#
 " Maintainer:	Anduin Withers <awithers@anduin.com>
 " Former Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sun Apr 30 19:26:18 PDT 2006
+" Last Change:	Fri Aug 14 13:56:37 PDT 2009
 " Filenames:	*.cs
-" $Id$
+" $Id: cs.vim,v 1.4 2006/05/03 21:20:02 vimboss Exp $
 "
 " REFERENCES:
 " [1] ECMA TC39: C# Language Specification (WD13Oct01.doc)
@@ -78,8 +78,8 @@ syn keyword csXmlTag		contained list listheader item term description altcomplia
 syn cluster xmlTagHook add=csXmlTag
 
 syn match   csXmlCommentLeader	+\/\/\/+    contained
-syn match   csXmlComment	+\/\/\/.*$+ contains=csXmlCommentLeader,@csXml
-syntax include @csXml <sfile>:p:h/xml.vim
+syn match   csXmlComment	+\/\/\/.*$+ contains=csXmlCommentLeader,@csXml,@Spell
+syntax include @csXml syntax/xml.vim
 hi def link xmlRegion Comment
 
 
@@ -100,7 +100,7 @@ syn match   csSpecialChar	contained +\\["\\'0abfnrtvx]+
 " unicode characters
 syn match   csUnicodeNumber	+\\\(u\x\{4}\|U\x\{8}\)+ contained contains=csUnicodeSpecifier
 syn match   csUnicodeSpecifier	+\\[uU]+ contained
-syn region  csVerbatimString	start=+@"+ end=+"+ end=+$+ skip=+""+ contains=csVerbatimSpec,@Spell
+syn region  csVerbatimString	start=+@"+ end=+"+ skip=+""+ contains=csVerbatimSpec,@Spell
 syn match   csVerbatimSpec	+@"+he=s+1 contained
 syn region  csString		start=+"+  end=+"+ end=+$+ contains=csSpecialChar,csSpecialError,csUnicodeNumber,@Spell
 syn match   csCharacter		"'[^']*'" contains=csSpecialChar,csSpecialCharError

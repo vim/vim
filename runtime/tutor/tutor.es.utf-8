@@ -117,7 +117,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 			    RESUMEN DE LA LECCIÓN 1
 
 
-  1. El cursor se mueve utilizamdo las teclas de las flechas o las teclas hjkl.
+  1. El cursor se mueve utilizando las teclas de las flechas o las teclas hjkl.
 	 h (izquierda)	   j (abajo)	  k (arriba)	  l (derecha)
 
   2. Para acceder a Vim (desde el símbolo del sistema %) escriba:

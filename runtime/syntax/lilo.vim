@@ -1,10 +1,8 @@
 " Vim syntax file
-" This is a GENERATED FILE. Please always refer to source file at the URI below.
 " Language: lilo configuration (lilo.conf)
-" Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-" Last Change: 2004-07-20
-" URL: http://trific.ath.cx/Ftp/vim/syntax/lilo.vim
-
+" Maintainer: help wanted!
+" Previous Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
+" Last Change: 2009-01-27
 
 " Setup
 if version >= 600
@@ -64,7 +62,7 @@ syn keyword liloDiskOpt sectors heads cylinders start nextgroup=liloEqDecNumber,
 
 " String
 syn keyword liloOption menu-title nextgroup=liloEqString,liloEqStringComment,liloError skipwhite skipempty
-syn keyword liloKernelOpt append nextgroup=liloEqString,liloEqStringComment,liloError skipwhite skipempty
+syn keyword liloKernelOpt append addappend nextgroup=liloEqString,liloEqStringComment,liloError skipwhite skipempty
 syn keyword liloImageOpt fallback literal nextgroup=liloEqString,liloEqStringComment,liloError skipwhite skipempty
 
 " Hex number

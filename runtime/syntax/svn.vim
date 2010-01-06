@@ -2,7 +2,7 @@
 " Language:     Subversion (svn) commit file
 " Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
 " URL:          http://www.hlabs.spb.ru/vim/svn.vim
-" Revision:     $Id$
+" Revision:     $Id: svn.vim 683 2008-07-30 11:52:38Z hdima $
 " Filenames:    svn-commit*.tmp
 " Version:      1.6
 

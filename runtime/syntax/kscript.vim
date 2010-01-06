@@ -2,7 +2,7 @@
 " Language:	kscript
 " Maintainer:	Thomas Capricelli <orzel@yalbi.com>
 " URL:		http://aquila.rezel.enst.fr/thomas/vim/kscript.vim
-" CVS:		$Id$
+" CVS:		$Id: kscript.vim,v 1.1 2004/06/13 17:40:02 vimboss Exp $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

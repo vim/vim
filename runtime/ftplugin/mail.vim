@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Mail
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 Apr 30
+" Last Change:	2009 Jun 03
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -23,7 +23,7 @@ endif
 " Set 'formatoptions' to break text lines and keep the comment leader ">".
 setlocal fo+=tcql
 
-" Add mappings, unless the user didn't want this.
+" Add mappings, unless the user doesn't want this.
 if !exists("no_plugin_maps") && !exists("no_mail_maps")
   " Quote text by inserting "> "
   if !hasmapto('<Plug>MailQuote')

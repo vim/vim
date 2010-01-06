@@ -4,7 +4,7 @@
 " URL:		http://tritarget.com/pub/vim/syntax/aspvbs.vim (broken)
 " Last Change:	2006 Jun 19
 " 		by Dan Casey
-" Version:	$Revision$
+" Version:	$Revision: 1.3 $
 " Thanks to Jay-Jay <vim@jay-jay.net> for a syntax sync hack, hungarian
 " notation, and extra highlighting.
 " Thanks to patrick dehne <patrick@steidle.net> for the folding code.

@@ -4,7 +4,7 @@
 " URL:		http://glen.alkohol.ee/pld/initng/
 " License:	GPL v2
 " Version:	0.13
-" Last Change:	$Date$
+" Last Change:	$Date: 2007/05/05 17:17:40 $
 "
 " Syntax highlighting for initng .i files. Inherits from sh.vim and adds
 " in the hiliting to start/stop {} blocks. Requires vim 6.3 or later.

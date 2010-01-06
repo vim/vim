@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:         generic Changelog file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-05-21
+" Latest Revision:  2009-05-25
 " Variables:
 "   g:changelog_timeformat (deprecated: use g:changelog_dateformat instead) -
 "       description: the timeformat used in ChangeLog entries.
@@ -46,73 +46,78 @@ if &filetype == 'changelog'
     endif
   endif
 
-  " Try to figure out a reasonable username of the form:
-  "   Full Name <user@host>.
-  if !exists('g:changelog_username')
-    if exists('$EMAIL') && $EMAIL != ''
-      let g:changelog_username = $EMAIL
-    elseif exists('$EMAIL_ADDRESS') && $EMAIL_ADDRESS != ''
-      " This is some Debian junk if I remember correctly.
-      let g:changelog_username = $EMAIL_ADDRESS
-    else
-      " Get the users login name.
-      let login = system('whoami')
-      if v:shell_error
-        let login = 'unknown'
-      else
-        let newline = stridx(login, "\n")
-        if newline != -1
-          let login = strpart(login, 0, newline)
-        endif
-      endif
-
-      " Try to get the full name from gecos field in /etc/passwd.
-      if filereadable('/etc/passwd')
-        for line in readfile('/etc/passwd')
-          if line =~ '^' . login
-            let name = substitute(line,'^\%([^:]*:\)\{4}\([^:]*\):.*$','\1','')
-            " Only keep stuff before the first comma.
-            let comma = stridx(name, ',')
-            if comma != -1
-              let name = strpart(name, 0, comma)
-            endif
-            " And substitute & in the real name with the login of our user.
-            let amp = stridx(name, '&')
-            if amp != -1
-              let name = strpart(name, 0, amp) . toupper(login[0]) .
-                       \ strpart(login, 1) . strpart(name, amp + 1)
-            endif
-          endif
-        endfor
-      endif
-
-      " If we haven't found a name, try to gather it from other places.
-      if !exists('name')
-        " Maybe the environment has something of interest.
-        if exists("$NAME")
-          let name = $NAME
-        else
-          " No? well, use the login name and capitalize first
-          " character.
-          let name = toupper(login[0]) . strpart(login, 1)
-        endif
-      endif
-
-      " Get our hostname.
-      let hostname = system('hostname')
-      if v:shell_error
-        let hostname = 'localhost'
-      else
-        let newline = stridx(hostname, "\n")
-        if newline != -1
-          let hostname = strpart(hostname, 0, newline)
-        endif
-      endif
-
-      " And finally set the username.
-      let g:changelog_username = name . '  <' . login . '@' . hostname . '>'
+  function! s:username()
+    if exists('g:changelog_username')
+      return g:changelog_username
+    elseif $EMAIL != ""
+      return $EMAIL
+    elseif $EMAIL_ADDRESS != ""
+      return $EMAIL_ADDRESS
     endif
-  endif
+    
+    let login = s:login()
+    return printf('%s <%s@%s>', s:name(login), login, s:hostname())
+  endfunction
+
+  function! s:login()
+    return s:trimmed_system_with_default('whoami', 'unknown')
+  endfunction
+
+  function! s:trimmed_system_with_default(command, default)
+    return s:first_line(s:system_with_default(a:command, a:default))
+  endfunction
+
+  function! s:system_with_default(command, default)
+    let output = system(a:command)
+    if v:shell_error
+      return default
+    endif
+    return output
+  endfunction
+
+  function! s:first_line(string)
+    return substitute(a:string, '\n.*$', "", "")
+  endfunction
+
+  function! s:name(login)
+    for name in [s:gecos_name(a:login), $NAME, s:capitalize(a:login)]
+      if name != ""
+        return name
+      endif
+    endfor
+  endfunction
+
+  function! s:gecos_name(login)
+    for line in s:try_reading_file('/etc/passwd')
+      if line =~ '^' . a:login . ':'
+        return substitute(s:passwd_field(line, 5), '&', s:capitalize(a:login), "")
+      endif
+    endfor
+    return ""
+  endfunction
+
+  function! s:try_reading_file(path)
+    try
+      return readfile(a:path)
+    endtry
+    return []
+  endfunction
+
+  function! s:passwd_field(line, field)
+    let fields = split(a:line, ':', 1)
+    if len(fields) < field
+      return ""
+    endif
+    return fields[field - 1]
+  endfunction
+
+  function! s:capitalize(word)
+    return toupper(a:word[0]) . strpart(a:word, 1)
+  endfunction
+
+  function! s:hostname()
+    return s:trimmed_system_with_default('hostname', 'localhost')
+  endfunction
 
   " Format used for new date entries.
   if !exists('g:changelog_new_date_format')
@@ -178,7 +183,7 @@ if &filetype == 'changelog'
       " Ok, now we look for the end of the date entry, and add an entry.
       call cursor(nextnonblank(line('.') + 1), 1)
       if search(g:changelog_date_end_entry_search, 'W') > 0
-        let p = line('.') - 1
+	let p = (line('.') == line('$')) ? line('.') : line('.') - 1
       else
         let p = line('.')
       endif
@@ -217,7 +222,7 @@ if &filetype == 'changelog'
   endfunction
 
   if exists(":NewChangelogEntry") != 2
-    map <buffer> <silent> <Leader>o <Esc>:call <SID>new_changelog_entry()<CR>
+    noremap <buffer> <silent> <Leader>o <Esc>:call <SID>new_changelog_entry()<CR>
     command! -nargs=0 NewChangelogEntry call s:new_changelog_entry()
   endif
 
@@ -236,14 +241,48 @@ if &filetype == 'changelog'
   let &cpo = s:cpo_save
   unlet s:cpo_save
 else
+  let s:cpo_save = &cpo
+  set cpo&vim
+
   " Add the Changelog opening mapping
-  nmap <silent> <Leader>o :call <SID>open_changelog()<CR>
+  nnoremap <silent> <Leader>o :call <SID>open_changelog()<CR>
 
   function! s:open_changelog()
-    if !filereadable('ChangeLog')
+    let path = expand('%:p:h')
+    if exists('b:changelog_path')
+      let changelog = b:changelog_path
+    else
+      if exists('b:changelog_name')
+        let name = b:changelog_name
+      else
+        let name = 'ChangeLog'
+      endif
+      while isdirectory(path)
+        let changelog = path . '/' . name
+        if filereadable(changelog)
+          break
+        endif
+        let parent = substitute(path, '/\+[^/]*$', "", "")
+        if path == parent
+          break
+        endif
+        let path = parent
+      endwhile
+    endif
+    if !filereadable(changelog)
       return
     endif
-    let buf = bufnr('ChangeLog')
+
+    if exists('b:changelog_entry_prefix')
+      let prefix = call(b:changelog_entry_prefix, [])
+    else
+      let prefix = substitute(strpart(expand('%:p'), strlen(path)), '^/\+', "", "") . ':'
+    endif
+    if !empty(prefix)
+      let prefix = ' ' . prefix
+    endif
+
+    let buf = bufnr(changelog)
     if buf != -1
       if bufwinnr(buf) != -1
         execute bufwinnr(buf) . 'wincmd w'
@@ -251,9 +290,12 @@ else
         execute 'sbuffer' buf
       endif
     else
-      split ChangeLog
+      execute 'split' fnameescape(changelog)
     endif
 
-    call s:new_changelog_entry()
+    call s:new_changelog_entry(prefix)
   endfunction
+
+  let &cpo = s:cpo_save
+  unlet s:cpo_save
 endif

@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	git rebase --interactive
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2008 Apr 16
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2009 Dec 24
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
@@ -22,12 +22,13 @@ function! s:choose(word)
 endfunction
 
 function! s:cycle()
-    call s:choose(get({'s':'edit','p':'squash'},getline('.')[0],'pick'))
+    call s:choose(get({'s':'edit','p':'squash','e':'reword'},getline('.')[0],'pick'))
 endfunction
 
 command! -buffer -bar Pick   :call s:choose('pick')
 command! -buffer -bar Squash :call s:choose('squash')
 command! -buffer -bar Edit   :call s:choose('edit')
+command! -buffer -bar Reword :call s:choose('reword')
 command! -buffer -bar Cycle  :call s:cycle()
 " The above are more useful when they are mapped; for example:
 "nnoremap <buffer> <silent> S :Cycle<CR>

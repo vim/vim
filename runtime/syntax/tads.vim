@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TADS
 " Maintainer:	Amir Karger <karger@post.harvard.edu>
-" $Date$
-" $Revision$
+" $Date: 2004/06/13 19:28:45 $
+" $Revision: 1.1 $
 " Stolen from: Bram Moolenaar's C language file
 " Newest version at: http://www.hec.utah.edu/~karger/vim/syntax/tads.vim
 " History info at the bottom of the file

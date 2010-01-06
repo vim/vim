@@ -2,7 +2,7 @@
 " Language:     Java
 " Maintainer:   Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2007 Dec 21
+" Last Change:  2009 Mar 14
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -15,6 +15,7 @@ if !exists("main_syntax")
   endif
   " we define it here so that included files can test for it
   let main_syntax='java'
+  syn region javaFold start="{" end="}" transparent fold
 endif
 
 " don't use standard HiLink, it will not work with included syntax files
@@ -58,7 +59,7 @@ syn match   javaTypedef		"\.\s*\<class\>"ms=s+1
 syn keyword javaClassDecl	enum
 syn match   javaClassDecl	"^class\>"
 syn match   javaClassDecl	"[^.]\s*\<class\>"ms=s+1
-syn match   javaAnnotation      "@[_$a-zA-Z][_$a-zA-Z0-9_]*\>"
+syn match   javaAnnotation      "@\([_$a-zA-Z][_$a-zA-Z0-9]*\.\)*[_$a-zA-Z][_$a-zA-Z0-9]*\>"
 syn match   javaClassDecl       "@interface\>"
 syn keyword javaBranch		break continue nextgroup=javaUserLabelRef skipwhite
 syn match   javaUserLabelRef	"\k\+" contained
@@ -121,11 +122,6 @@ syn match   javaUserLabel       "^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contai
 syn keyword javaLabel		default
 
 if !exists("java_allow_cpp_keywords")
-  " The default used to be to highlight C++ keywords.  But several people
-  " don't like that, so default to not highlighting these.
-  let java_allow_cpp_keywords = 1
-endif
-if !java_allow_cpp_keywords
   syn keyword javaError auto delete extern friend inline redeclared
   syn keyword javaError register signed sizeof struct template typedef union
   syn keyword javaError unsigned operator
@@ -161,6 +157,11 @@ if !exists("java_ignore_javadoc") && main_syntax != 'jsp'
   " syntax coloring for javadoc comments (HTML)
   syntax include @javaHtml <sfile>:p:h/html.vim
   unlet b:current_syntax
+  " HTML enables spell checking for all text that is not in a syntax item. This
+  " is wrong for Java (all identifiers would be spell-checked), so it's undone
+  " here.
+  syntax spell default
+
   syn region  javaDocComment    start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaDocSeeTag,javaTodo,@Spell
   syn region  javaCommentTitle  contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags,javaDocSeeTag
 
@@ -179,7 +180,7 @@ syn match   javaComment		 "/\*\*/"
 " Strings and constants
 syn match   javaSpecialError     contained "\\."
 syn match   javaSpecialCharError contained "[^']"
-syn match   javaSpecialChar      contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\x\{4\}\)"
+syn match   javaSpecialChar      contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\+\x\{4\}\)"
 syn region  javaString		start=+"+ end=+"+ end=+$+ contains=javaSpecialChar,javaSpecialError,@Spell
 " next line disabled, it can cause a crash for a long line
 "syn match   javaStringError	  +"\([^"\\]\|\\.\)*$+
@@ -192,7 +193,7 @@ syn match   javaNumber		 "\<\d\+[eE][-+]\=\d\+[fFdD]\=\>"
 syn match   javaNumber		 "\<\d\+\([eE][-+]\=\d\+\)\=[fFdD]\>"
 
 " unicode characters
-syn match   javaSpecial "\\u\d\{4\}"
+syn match   javaSpecial "\\u\+\d\{4\}"
 
 syn cluster javaTop add=javaString,javaCharacter,javaNumber,javaSpecial,javaStringError
 

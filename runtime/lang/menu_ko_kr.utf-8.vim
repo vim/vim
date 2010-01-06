@@ -1,6 +1,6 @@
 " Menu Translations:	Korean
-" Maintainer:		Nam SungHyun <namsh@kldp.org>
-" Last Change:		2003 Apr 25
+" Maintainer:		SungHyun Nam <goweol@gmail.com>
+" Last Change:		2008 Sep 17
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

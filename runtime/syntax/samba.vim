@@ -2,8 +2,10 @@
 " Language:	samba configuration files (smb.conf)
 " Maintainer:	Rafael Garcia-Suarez <rgarciasuarez@free.fr>
 " URL:		http://rgarciasuarez.free.fr/vim/syntax/samba.vim
-" Last change:	2004 September 21
-
+" Last change:	2009 Aug 06
+"
+"               New maintainer wanted!
+"
 " Don't forget to run your config file through testparm(1)!
 
 " For version 5.x: Clear all syntax items
@@ -51,7 +53,7 @@ syn keyword sambaKeyword contained message min mode modes mux name names
 syn keyword sambaKeyword contained netbios nis notify nt null offset ok ole
 syn keyword sambaKeyword contained only open oplock oplocks options order os
 syn keyword sambaKeyword contained output packet page panic passwd password
-syn keyword sambaKeyword contained passwords path permissions pipe port
+syn keyword sambaKeyword contained passwords path permissions pipe port ports
 syn keyword sambaKeyword contained postexec postscript prediction preexec
 syn keyword sambaKeyword contained prefered preferred preload preserve print
 syn keyword sambaKeyword contained printable printcap printer printers

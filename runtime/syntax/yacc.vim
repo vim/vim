@@ -1,95 +1,85 @@
 " Vim syntax file
 " Language:	Yacc
 " Maintainer:	Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Jan 09, 2008
-" Version:	5
+" Last Change:	Oct 21, 2008
+" Version:	7
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Options: {{{1
 "   g:yacc_uses_cpp : if this variable exists, then C++ is loaded rather than C
-"   g:yacc_minlines : see :help :he syn-sync-minlines -- default 50
-"   g:yacc_maxlines : see :help :he syn-sync-maxlines -- default 200
 
 " ---------------------------------------------------------------------
-" For version 5.x: Clear all syntax items {{{1
-" For version 6.x: Quit when a syntax file was already loaded
+" this version of syntax/yacc.vim requires 6.0 or later
 if version < 600
-  syntax clear
-elseif exists("b:current_syntax")
-  finish
+ finish
+endif
+if exists("b:current_syntax")
+ syntax clear
+endif
+
+" ---------------------------------------------------------------------
+"  Folding Support {{{1
+if has("folding")
+ com! -nargs=+ HiFold	<args> fold
+else
+ com! -nargs=+ HiFold	<args>
 endif
 
 " ---------------------------------------------------------------------
 " Read the C syntax to start with {{{1
-if version >= 600
-  if exists("g:yacc_uses_cpp")
-    runtime! syntax/cpp.vim
-  else
-    runtime! syntax/c.vim
-  endif
-elseif exists("g:yacc_uses_cpp")
-  so <sfile>:p:h/cpp.vim
+if exists("g:yacc_uses_cpp")
+ syn include @yaccCode	<sfile>:p:h/cpp.vim
 else
-  so <sfile>:p:h/c.vim
+ syn include @yaccCode	<sfile>:p:h/c.vim
 endif
 
 " ---------------------------------------------------------------------
-" Clusters {{{1
-syn cluster	yaccActionGroup	contains=yaccDelim,cInParen,cTodo,cIncluded,yaccDelim,yaccCurlyError,yaccUnionCurly,yaccUnion,cUserLabel,cOctalZero,cCppOut2,cCppSkip,cErrInBracket,cErrInParen,cOctalError,cCommentStartError,cParenError
-syn cluster	yaccUnionGroup	contains=yaccKey,cComment,yaccCurly,cType,cStructure,cStorageClass,yaccUnionCurly
+"  Yacc Clusters: {{{1
+syn cluster yaccInitCluster	contains=yaccKey,yaccKeyActn,yaccBrkt,yaccType,yaccString,yaccUnionStart,yaccHeader2,yaccComment
+syn cluster yaccRulesCluster	contains=yaccNonterminal,yaccString
 
 " ---------------------------------------------------------------------
-" Yacc stuff {{{1
-syn match	yaccDelim	"^\s*[:|;]"
-syn match	yaccOper	"@\d\+"
-
-syn match	yaccKey	"^\s*%\(token\|type\|left\|right\|start\|ident\|nonassoc\)\>"
-syn match	yaccKey	"\s%\(prec\|expect\)\>"
-syn match	yaccKey	"\$\(<[a-zA-Z_][a-zA-Z_0-9]*>\)\=[\$0-9]\+"
-syn keyword	yaccKeyActn	yyerrok yyclearin
-
-syn match	yaccUnionStart	"^%union"	skipwhite skipnl nextgroup=yaccUnion
-syn region	yaccUnion	contained matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}"	contains=@yaccUnionGroup
-syn region	yaccUnionCurly	contained matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}" contains=@yaccUnionGroup
-syn match	yaccBrkt	contained "[<>]"
-syn match	yaccType	"<[a-zA-Z_][a-zA-Z0-9_]*>"	contains=yaccBrkt
-syn match	yaccDefinition	"^[A-Za-z][A-Za-z0-9_]*\_s*:"
+"  Yacc Sections: {{{1
+HiFold syn	region	yaccInit	start='.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty contained
+HiFold syn	region	yaccInit2      start='\%^.'ms=s-1,rs=s-1	matchgroup=yaccSectionSep	end='^%%$'me=e-2,re=e-2	contains=@yaccInitCluster	nextgroup=yaccRules	skipwhite skipempty
+HiFold syn	region	yaccHeader2	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty contained
+HiFold syn	region	yaccHeader	matchgroup=yaccSep	start="^\s*\zs%{"	end="^\s*%}"		contains=@yaccCode	nextgroup=yaccInit	skipwhite skipempty
+HiFold syn	region	yaccRules	matchgroup=yaccSectionSep	start='^%%$'		end='^%%$'me=e-2,re=e-2	contains=@yaccRulesCluster	nextgroup=yaccEndCode	skipwhite skipempty contained
+HiFold syn	region	yaccEndCode	matchgroup=yaccSectionSep	start='^%%$'		end='\%$'		contains=@yaccCode	contained
 
 " ---------------------------------------------------------------------
-" special Yacc separators {{{1
-syn match	yaccSectionSep	"^[ \t]*%%"
-syn match	yaccSep	"^[ \t]*%{"
-syn match	yaccSep	"^[ \t]*%}"
+" Yacc Commands: {{{1
+syn	match	yaccDelim	"[:|]"	contained
+syn	match	yaccOper	"@\d\+"	contained
+
+syn	match	yaccKey	"^\s*%\(token\|type\|left\|right\|start\|ident\|nonassoc\)\>"	contained
+syn	match	yaccKey	"\s%\(prec\|expect\)\>"	contained
+syn	match	yaccKey	"\$\(<[a-zA-Z_][a-zA-Z_0-9]*>\)\=[\$0-9]\+"	contained
+syn	keyword	yaccKeyActn	yyerrok yyclearin	contained
+
+syn	match	yaccUnionStart	"^%union"	skipwhite skipnl nextgroup=yaccUnion	contained
+HiFold syn	region	yaccUnion	matchgroup=yaccCurly start="{" matchgroup=yaccCurly end="}" contains=@yaccCode	contained
+syn	match	yaccBrkt	"[<>]"	contained
+syn	match	yaccType	"<[a-zA-Z_][a-zA-Z0-9_]*>"	contains=yaccBrkt	contained
+
+HiFold syn	region	yaccNonterminal	start="^\s*\a\w*\ze\_s*\(/\*\_.\{-}\*/\)\=\_s*:"	matchgroup=yaccDelim end=";"	matchgroup=yaccSectionSep end='^%%$'me=e-2,re=e-2 contains=yaccAction,yaccDelim,yaccString,yaccComment	contained
+syn	region	yaccComment	start="/\*"	end="\*/"
+syn	match	yaccString	"'[^']*'"	contained
+
 
 " ---------------------------------------------------------------------
 " I'd really like to highlight just the outer {}.  Any suggestions??? {{{1
-syn match	yaccCurlyError	"[{}]"
-syn region	yaccAction	matchgroup=yaccCurly start="{" end="}" contains=ALLBUT,@yaccActionGroup
+syn	match	yaccCurlyError	"[{}]"
+HiFold syn	region	yaccAction	matchgroup=yaccCurly start="{" end="}" contains=@yaccCode	contained
 
 " ---------------------------------------------------------------------
 " Yacc synchronization: {{{1
-if exists("g:yacc_maxlines")
- exe "syn sync maxlines=".g:yacc_maxlines
-else
- syn sync maxlines=200
-endif
-if exists("g:yacc_minlines")
- exe "syn sync minlines=".g:yacc_minlines
-else
- syn sync minlines=50
-endif
+syn sync fromstart
 
 " ---------------------------------------------------------------------
 " Define the default highlighting. {{{1
-" For version 5.7 and earlier: only when not done already
-" For version 5.8 and later: only when an item doesn't have highlighting yet
-if version >= 508 || !exists("did_yacc_syn_inits")
-  if version < 508
-    let did_yacchdl_syn_inits = 1
-    command -nargs=+ HiLink hi link <args>
-  else
-    command -nargs=+ HiLink hi def link <args>
-  endif
+if !exists("did_yacc_syn_inits")
+  command -nargs=+ HiLink hi def link <args>
 
   " Internal yacc highlighting links {{{2
   HiLink yaccBrkt	yaccStmt
@@ -98,13 +88,15 @@ if version >= 508 || !exists("did_yacc_syn_inits")
   HiLink yaccUnionStart	yaccKey
 
   " External yacc highlighting links {{{2
+  HiLink yaccComment	Comment
   HiLink yaccCurly	Delimiter
   HiLink yaccCurlyError	Error
-  HiLink yaccDefinition	Function
-  HiLink yaccDelim	Function
+  HiLink yaccNonterminal	Function
+  HiLink yaccDelim	Delimiter
   HiLink yaccKeyActn	Special
   HiLink yaccSectionSep	Todo
   HiLink yaccSep	Delimiter
+  HiLink yaccString	String
   HiLink yaccStmt	Statement
   HiLink yaccType	Type
 
@@ -113,6 +105,10 @@ if version >= 508 || !exists("did_yacc_syn_inits")
 
   delcommand HiLink
 endif
+
+" ---------------------------------------------------------------------
+"  Cleanup: {{{1
+delcommand HiFold
 let b:current_syntax = "yacc"
 
 " ---------------------------------------------------------------------

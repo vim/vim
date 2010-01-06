@@ -8,7 +8,7 @@
 "			Mikhail Kuperblum	<mikhail@whasup.com>
 "			John Florian		<jflorian@voyager.net>
 " Last Change:		Wed Apr 12 08:55:35 EST 2006
-" $Id$
+" $Id: progress.vim,v 1.3 2006/04/12 21:48:47 vimboss Exp $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

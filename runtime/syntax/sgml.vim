@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Tue, 27 Apr 2004 15:05:21 CEST
 " Filenames:	*.sgml,*.sgm
-" $Id$
+" $Id: sgml.vim,v 1.1 2004/06/13 17:52:57 vimboss Exp $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

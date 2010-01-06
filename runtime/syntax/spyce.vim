@@ -2,7 +2,7 @@
 " Language:	   SPYCE
 " Maintainer:	 Rimon Barr <rimon AT acm DOT org>
 " URL:		     http://spyce.sourceforge.net
-" Last Change: 2003 May 11
+" Last Change: 2009 Nov 11
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -25,6 +25,7 @@ if version < 600
 else
   runtime! syntax/html.vim
   unlet b:current_syntax
+  syntax spell default  " added by Bram
 endif
 
 " include python

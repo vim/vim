@@ -2,8 +2,8 @@
 " Language:	Microsoft Macro Assembler (80x86)
 " Orig Author:	Rob Brady <robb@datatone.com>
 " Maintainer:	Wu Yongwei <wuyongwei@gmail.com>
-" Last Change:	$Date$
-" $Revision$
+" Last Change:	$Date: 2007/04/21 13:20:15 $
+" $Revision: 1.44 $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-07-04
+" Latest Revision:  2009-05-25
 
 if exists("b:current_syntax")
   finish
@@ -12,12 +12,9 @@ set cpo&vim
 
 syn case ignore
 
-" FIXME: The problem with these two is that Vim doesn’t seem to like
-" matching across line boundaries.
-"
-" syn match   rstSections /^.*\n[=`:.'"~^_*+#-]\+$/
+syn match   rstSections "^\%(\([=`:.'"~^_*+#-]\)\1\+\n\)\=.\+\n\([=`:.'"~^_*+#-]\)\2\+$"
 
-" syn match   rstTransition  /^\s*[=`:.'"~^_*+#-]\{4,}\s*$/
+syn match   rstTransition  /^[=`:.'"~^_*+#-]\{4,}\s*$/
 
 syn cluster rstCruft                contains=rstEmphasis,rstStrongEmphasis,
       \ rstInterpretedText,rstInlineLiteral,rstSubstitutionReference,
@@ -144,8 +141,8 @@ syn sync minlines=50
 
 hi def link rstTodo                         Todo
 hi def link rstComment                      Comment
-"hi def link rstSections                     Type
-"hi def link rstTransition                   Type
+hi def link rstSections                     Type
+hi def link rstTransition                   Type
 hi def link rstLiteralBlock                 String
 hi def link rstQuotedLiteralBlock           String
 hi def link rstDoctestBlock                 PreProc

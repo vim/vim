@@ -3,7 +3,7 @@
 " Maintainer:  Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers: Gerfried Fuchs <alfie@ist.org>
 "                     Wichert Akkerman <wakkerma@debian.org>
-" Last Change: 2008-01-16
+" Last Change: 2009 Jun 05
 " URL: http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/syntax/debchangelog.vim;hb=debian
 
 " Standard syntax initialization
@@ -17,9 +17,9 @@ endif
 syn case ignore
 
 " Define some common expressions we can use later on
-syn match debchangelogName	contained "^[[:alpha:]][[:alnum:].+-]\+ "
+syn match debchangelogName	contained "^[[:alnum:]][[:alnum:].+-]\+ "
 syn match debchangelogUrgency	contained "; urgency=\(low\|medium\|high\|critical\|emergency\)\( \S.*\)\="
-syn match debchangelogTarget	contained "\v %(%(old)=stable|frozen|unstable|%(testing-|%(old)=stable-)=proposed-updates|experimental|%(sarge|etch|lenny)-%(backports|volatile)|%(testing|%(old)=stable)-security|%(dapper|feisty|gutsy|hardy|intrepid)%(-%(security|proposed|updates|backports|commercial|partner))=)+"
+syn match debchangelogTarget	contained "\v %(frozen|unstable|%(testing|%(old)=stable)%(-proposed-updates|-security)=|experimental|%(etch|lenny)-%(backports|volatile)|%(dapper|hardy|intrepid|jaunty|karmic)%(-%(security|proposed|updates|backports|commercial|partner))=)+"
 syn match debchangelogVersion	contained "(.\{-})"
 syn match debchangelogCloses	contained "closes:\_s*\(bug\)\=#\=\_s\=\d\+\(,\_s*\(bug\)\=#\=\_s\=\d\+\)*"
 syn match debchangelogLP	contained "\clp:\s\+#\d\+\(,\s*#\d\+\)*"

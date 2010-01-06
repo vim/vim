@@ -1,5 +1,5 @@
 ===============================================================================
-=    Ü d v ö z ö l j ü k   a   V I M   T u t o r b a n  -    1.5-ös  verzió ===
+== Ü d v ö z ö l j ü k   a   V I M - o k t a t ó b a n  -    1.5-ös  verzió  ==
 ===============================================================================
 
      A Vim egy nagyon hatékony szerkesztõ, amelnyek rengeteg utasítása
@@ -38,7 +38,7 @@
   2. Tartsa lenyomva a lefelét (j), akkor ismétlõdik!
 ---> Most tudja, hogyan mehet a következõ leckére.
 
-  3. A lefelé fomb használatával menjen a 1.2. leckére!
+  3. A lefelé gomb használatával menjen a 1.2. leckére!
 
 Megj: Ha nem biztos benne, mit nyomott meg, nyomja meg az <ESC>-et, hogy
       normál módba kerüljön, és ismételje meg a parancsot!
@@ -60,8 +60,8 @@ Megj: A kurzor gomboknak is mûködniük kell, de a hjkl használatával
      Ha menteni szeretné a változásokat és kilépni, írja:
 				:wq  <ENTER>
 
-  3. Amikor a shell promptot látja, írja be a parancsot, amely ebbe a
-     tutorba hozza:
+  3. Amikor a shell promptot látja, írja be a parancsot, amely ebbe az
+     oktatóba hozza:
      Ez valószínûleg:	vimtutor <ENTER>
      Normális esetben ezt írná:	vim tutor.hu <ENTER>
 
@@ -230,7 +230,7 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 2.5.  lecke: A VISSZAVONÁS (UNDO) PARANCS
+		   2.5.  lecke: A VISSZAVONÁS (UNDO) PARANCS
 
 
 ** u gépelésével visszavonható az utolsó parancs, U az egész sort helyreállítja. **
@@ -245,9 +245,9 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
   7. CTRL-R (CTRL gomb lenyomása mellett üssön R-t) párszor csinálja újra a
      visszavont parancsokat (redo)!
 
----> Javíítsd a hhibákaat ebbben a sooorban majd állítsa visszaaa az eredetit.
+---> Javíítsa a hhibákaat ebbben a sooorban majd állítsa visszaaa az eredetit.
 
-  8. Ezek nagyon hasznos parancsok. Most ugarjon a 2. lecke összefoglalójára.
+  8. Ezek nagyon hasznos parancsok. Most ugorjon a 2. lecke összefoglalójára.
 
 
 
@@ -257,7 +257,7 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
 
   1. Törlés a kurzortól a szó végéig:    dw
 
-  2. Törlés a kurzortól a szó végéig:    d$
+  2. Törlés a kurzortól a sor végéig:    d$
 
   3. Egész sor törlése:    dd
 
@@ -275,7 +275,7 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
      Visszavonások visszavonása:	     CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 3.1.  lecke: A PUT PARANCS
+		3.1.  lecke: A BEILLESZTÉS (PUT) PARANCS
 
 
   ** p  leütésével az utolsónak töröltet a kurzor után illeszhetjük. **
@@ -284,8 +284,8 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
 
   2. dd leütésével töröljük a sort és eltérolódik a Vim pufferében.
 
-  3. Mozgassuk a kurzort AFÖLÉ a sor fölé, ahová mozgatni szeretnénk a
-     törölt sort.
+  3. Mozgassuk a kurzort azelõtt a  sor ELÕTTI sorba, ahová mozgatni
+     szeretnénk a törölt sort.
 
   4. Normál módban írjunk  p   betût a törölt sor beillesztéséhez.
 
@@ -299,7 +299,7 @@ MEGJ:  Vállalkozóbbak kedvéért, csupán az objektum begépelésével parancs nélkül
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       3.2.  lecke: A REPLACE PARANCS
+		       3.2.  lecke: AZ ÁTÍRÁS (REPLACE) PARANCS
 
 
 ** r  és  a karakterek leütésével a kurzor alatti karaktert megváltoztatjuk. **
@@ -321,7 +321,7 @@ MEGJ: Emlékezzen, hogy nem memorizálással, hanem gyakorlással tanuljon.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			3.3.  lecke: A CHANGE PARANCS
+			3.3.  lecke: A CSERE (CHANGE) PARANCS
 
 
 	   ** A szó egy részének megváltoztatásához írjuk:  cw . **
@@ -415,7 +415,7 @@ Ugorjunk a következõ leckére!
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			4.2.  lecke: A SEARCH PARANCS
+			4.2.  lecke: A KERESÉS (SEARCH) PARANCS
 
 
   ** / majd a kívánt kifejezés beírásával kereshetjük meg a kifejezést. **
@@ -459,7 +459,7 @@ Megj: Ez nagyon hasznos, ha olyan programot debugolunk, amelyben a
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      4.4.  lecke: A HIBÁK KIJAVÍTÁSÁNAK EGY MÓDJA
+		  4.4.  lecke: A HIBÁK KIJAVÍTÁSÁNAK EGY MÓDJA
 
 
     ** :s/új/régi/g begépelésével az 'új'-ra cseréljük a 'régi'-t. **
@@ -470,10 +470,10 @@ Megj: Ez nagyon hasznos, ha olyan programot debugolunk, amelyben a
      sorban.
 
   3. Most ezt írjuk:	 :s/eggy/egg/g	   amely globálisan helyettesít
-     a sorban.
+     a sorban, azaz minden elõfordulást.
      Ez a sorban minden elõfordulást helyettesít.
 
----> eggy hegy meggy, szembe jön eggy másik heggy.
+---> eggy heggy meggy, szembe jön eggy másik heggy.
 
   4. Két sor között a karaktersor minden elõfordulásának helyettesítése:
      :#,#s/régi/új/g    ahol #,# a két sor sorszáma.
@@ -530,7 +530,7 @@ Megj:  Minden  :  parancs után <ENTER>-t kell ütni.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		      5.2.  lecke: BÕVEBBEN A FÁJLOK ÍRÁSÁRÓL
+		 5.2.  lecke: BÕVEBBEN A FÁJLOK ÍRÁSÁRÓL
 
 
      ** A fájlok változásait így írhatjuk ki  :w FÁJLNÉV. **
@@ -542,12 +542,12 @@ Megj:  Minden  :  parancs után <ENTER>-t kell ütni.
 
   3. Írja:	:w TESZT   (ahol TESZT a választott fájlnév)!
 
-  4. Ez elmenti a teljes fájlt (a Vim Tutort) TESZT néven.
+  4. Ez elmenti a teljes fájlt (a Vim oktatóját) TESZT néven.
      Ellenõrzésképp írjuk ismét    :!dir   hogy lássuk a könyvtárat!
      (Felfelé gombbal : után az elõzõ utasítások visszahozhatóak.)
 
 Megj: Ha Ön kilépne a Vimbõl és és visszatérne a TESZT fájlnévvel, akkor a
-      fájl a tutor mentéskori pontos másolata lenne.
+      fájl az oktató mentéskori pontos másolata lenne.
 
   5. Távolítsa el a fájlt  (MS-DOS):	:!del TESZT
 			vagy (Unix):	:!rm TESZT
@@ -626,7 +626,7 @@ MEGJ:  A fájl, amit beillesztett a kurzora alatt helyezkedik el.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			 6.1.  lecke: A OPEN PARANCS
+		   6.1.  lecke: A MEGNYITÁS (OPEN) PARANCS
 
 
 ** o  beírásával nyithat egy új sort a kurzor alatt és válthat beszúró módba **
@@ -684,16 +684,17 @@ Megj: A Vimben a sor legvégére is lehet állni, azonba ez elõdjében
 
   1. Mozgassuk a kurzort az elsõ ---> kezdetû sorra!
 
-  2. Place the cursor at the beginning of the first word that is different
-     from the second line marked ---> (the word 'last').
+  2. Helyezze a kurzort az elsõ szó elejére amely eltér a második
+     ---> kezdetû sor tartalmától (a 'az utolsóval' résztõl).
 
-  3. Now type  R  and replace the remainder of the text on the first line by
-     typing over the old text to make the first line the same as the second.
+  3. Nyomjon R karaktert és írja ét a szöveg maradékát az elsõ sorban
+     úgy, hogy a  két sor egyezõ legyen.
 
----> To make the first line the same as the last on this page use the keys.
----> To make the first line the same as the second, type R and the new text.
+---> Az elsõ sort tegye azonossá az utolsóval: használja a gombokat.
+---> Az elsõ sort tegye azonossá a másodikkal: írjon R-t és az új szöveget.
 
-  4. Note that when you press <ESC> to exit, any unaltered text remains.
+  4. Jegyezzük meg, ha <ESC>-et nyomok, akkor a változatlanuk hagyott
+     szövegek változatlanok maradnak.
 
 
 
@@ -726,16 +727,16 @@ Megj: A Vimben a sor legvégére is lehet állni, azonba ez elõdjében
 			       6. LECKE ÖSSZEFOGLALÓJA
 
 
-  1. Typing  o	opens a line BELOW the cursor and places the cursor on the open
-     line in Insert mode.
-     Typing a capital  O  opens the line ABOVE the line the cursor is on.
+  1. o	beírásával új sort nyitunk meg a sor ALATT és a kurzor az új
+     sorban lesz beszúrás-módban.
+     Nagy  O  a sor FELETT nyit új sort, és oda kerül a kurzor.
 
-  2. Type an  a  to insert text AFTER the character the cursor is on.
-     Typing a capital  A  automatically appends text to the end of the line.
+  2. a  beírásával az aktuális karaktertõl UTÁN (jobbra) szúrhatunk be szöveget.
+     Nagy A  automatikusan a sor legvégéhez adja hozzá a szöveget.
 
-  3. Typing a capital  R  enters Replace mode until  <ESC>  is pressed to exit.
+  3. A nagy  R  beütésével átíró (replace) módba kerülünk  <ESC> lenyomásáig.
 
-  4. Typing ":set xxx" sets the option "xxx"
+  4. ":set xxx" beírásával az "xxx" opció állítható be.
 
 
 
@@ -746,7 +747,7 @@ Megj: A Vimben a sor legvégére is lehet állni, azonba ez elõdjében
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-		       7. lecke: ON-LINE HELP PARANCSOK
+		     7. lecke: AZ ON-LINE SÚGÓ PARANCSAI
 
 
 		    ** Az online súgórendszer használata **
@@ -801,8 +802,9 @@ Megj: A Vimben a sor legvégére is lehet állni, azonba ez elõdjében
   tudóknak: ":help user-manual". (egyelõre nem tud magyarul)
 
   További magyar olvasnivalók érhetõek el az alábbi oldalról.
-  http://ubuntu.hu/index.php?title=Vim
+  http://wiki.hup.hu/index.php/Vim
 
+  Angol olvasmányok:
   For further reading and studying, this book is recommended:
 	Vim - Vi Improved - by Steve Oualline
 	Publisher: New Riders
@@ -816,8 +818,13 @@ Megj: A Vimben a sor legvégére is lehet állni, azonba ez elõdjében
   It is a good book to get to know almost anything you want to do with Vi.
   The sixth edition also includes information on Vim.
 
-  This tutorial was written by Michael C. Pierce and Robert K. Ware,
-  Colorado School of Mines using ideas supplied by Charles Smith,
-  Colorado State University.  E-mail: bware@mines.colorado.edu.
+  Ezt az oktatót Michael C. Pierce és Robert K. Ware írta, a Colorado
+  School of Mines dolgozói Charles Smith (Colorado State University)
+  támogatásával.
 
-  Modified for Vim by Bram Moolenaar.
+  E-mail: bware@mines.colorado.edu.
+
+  A Vimhez idomította Bram Moolenaar.
+
+  Magyarította: Horváth Árpád <horvath.arpad@roik.bmf.hu>, 2006-2008
+

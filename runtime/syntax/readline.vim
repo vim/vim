@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         readline(3) configuration file
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2007-06-17
+" Latest Revision:  2009-05-25
 "   readline_has_bash - if defined add support for bash specific
 "                       settings/functions
 
@@ -128,6 +128,7 @@ syn keyword readlineFunctions   contained display
                                 \ arrow-key-prefix vi-back-to-indent vi-bword
                                 \ vi-bWord vi-eword vi-eWord vi-fword vi-fWord
                                 \ vi-next-word
+                                \ vi-movement-mode
 
 if exists("readline_has_bash")
   syn keyword readlineFunctions contained

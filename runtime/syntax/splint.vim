@@ -2,8 +2,8 @@
 " Language:	splint (C with lclint/splint Annotations)
 " Maintainer:	Ralf Wildenhues <Ralf.Wildenhues@gmx.de>
 " Splint Home:	http://www.splint.org/
-" Last Change:	$Date$
-" $Revision$
+" Last Change:	$Date: 2004/06/13 20:08:47 $
+" $Revision: 1.1 $
 
 " Note:		Splint annotated files are not detected by default.
 "		If you want to use this file for highlighting C code,

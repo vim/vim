@@ -2,7 +2,7 @@
 " Language:	GDB command files
 " Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/gdb.vim
-" Last Change:	2003 Jan 04
+" Last Change:	2009 May 25
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -35,7 +35,7 @@ syn match gdbStatement "^\s*info" nextgroup=gdbInfo skipwhite skipempty
 " some commonly used abreviations
 syn keyword gdbStatement c disp undisp disas p
 
-syn region gdbDocument matchgroup=gdbFuncDef start="\<document\>.*$" matchgroup=gdbFuncDef end="^end$"
+syn region gdbDocument matchgroup=gdbFuncDef start="\<document\>.*$" matchgroup=gdbFuncDef end="^end\s*$"
 
 syn match gdbStatement "\<add-shared-symbol-files\>"
 syn match gdbStatement "\<add-symbol-file\>"

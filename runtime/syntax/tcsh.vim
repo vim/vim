@@ -1,6 +1,6 @@
 " tcsh.vim: Vim syntax file for tcsh scripts
-" Maintainer:	Gautam Iyer <gi1242@users.sourceforge.net>
-" Modified:	Sat 16 Jun 2007 04:52:12 PM PDT
+" Maintainer:	Gautam Iyer <gi1242@gmail.com>
+" Modified:	Thu 17 Dec 2009 06:05:07 PM EST
 "
 " Description: We break up each statement into a "command" and an "end" part.
 " All groups are either a "command" or part of the "end" of a statement (ie
@@ -60,7 +60,7 @@ syn region  tcshEnvEnd	contained transparent matchgroup=tcshBuiltin start='' ski
 " alias and unalias (contains special aliases)
 syn keyword tcshAliases contained beepcmd cwdcmd jobcmd helpcommand periodic precmd postcmd shell
 syn keyword tcshBuiltin	nextgroup=tcshAliCmd skipwhite alias unalias
-syn match   tcshAliCmd	contained nextgroup=tcshAliEnd skipwhite '\v[\w-]+' contains=tcshAliases
+syn match   tcshAliCmd	contained nextgroup=tcshAliEnd skipwhite '\v(\w|-)+' contains=tcshAliases
 syn region  tcshAliEnd	contained transparent matchgroup=tcshBuiltin start='' skip='\\$' end='$\|;' contains=@tcshStatementEnds
 
 " if statements
@@ -197,7 +197,11 @@ syn match tcshSpecial	contained '\v\\%([0-7]{3}|.)'
 
 " ----- Synchronising -----
 if exists('tcsh_minlines')
-    exec 'syn sync minlines=' . tcsh_minlines
+    if tcsh_minlines == 'fromstart'
+	syn sync fromstart
+    else
+	exec 'syn sync minlines=' . tcsh_minlines
+    endif
 else
     syn sync minlines=100	" Some completions can be quite long
 endif

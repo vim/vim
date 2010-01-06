@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		configure.in script: M4 with sh
 " Maintainer:	Christian Hammesr <ch@lathspell.westend.com>
-" Last Change:	2001 May 09
+" Last Change:	2008 Sep 03
 
 " Well, I actually even do not know much about m4. This explains why there
 " is probably very much missing here, yet !
@@ -26,7 +26,7 @@ syn match   confignumber    "[-+]\=\<\d\+\(\.\d*\)\=\>"
 syn keyword configkeyword   if then else fi test for in do done
 syn keyword configspecial   cat rm eval
 syn region  configstring    start=+"+ skip=+\\"+ end=+"+
-syn region  configstring    start=+`+ skip=+\\'+ end=+'+
+syn region  configstring    start=+'+ skip=+\\'+ end=+'+
 syn region  configstring    start=+`+ skip=+\\'+ end=+`+
 
 " Define the default highlighting.

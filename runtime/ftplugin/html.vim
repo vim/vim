@@ -1,8 +1,8 @@
 " Vim filetype plugin file
 " Language:	html
-" Maintainer:	Dan Sharp <dwsharp at hotmail dot com>
-" Last Changed: 2007 Nov 20
-" URL:		http://mywebpage.netscape.com/sharppeople/vim/ftplugin
+" Maintainer:	Dan Sharp <dwsharp at users dot sourceforge dot net>
+" Last Changed: 20 Jan 2009
+" URL:		http://dwsharp.users.sourceforge.net/vim/ftplugin
 
 if exists("b:did_ftplugin") | finish | endif
 let b:did_ftplugin = 1

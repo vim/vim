@@ -2,14 +2,15 @@
 " Language: fstab file
 " Maintaner: Radu Dineiu <radu.dineiu@gmail.com>
 " URL: http://ld.yi.org/vim/fstab.vim
-" Last Change: 2008 Jan 16
-" Version: 0.92
+" Last Change: 2009 Feb 04
+" Version: 0.93
 "
 " Credits:
 "   David Necas (Yeti) <yeti@physics.muni.cz>
 "   Stefano Zacchiroli <zack@debian.org>
 "   Georgi Georgiev <chutz@gg3.net>
 "   James Vega <jamessan@debian.org>
+"   Elias Probst <mail@eliasprobst.eu>
 "
 " Options:
 "   let fstab_unknown_fs_errors = 1
@@ -46,7 +47,7 @@ syn keyword fsMountPointKeyword contained none swap
 " Type
 syn cluster fsTypeCluster contains=fsTypeKeyword,fsTypeUnknown
 syn match fsTypeUnknown /\s\+\zs\w\+/ contained
-syn keyword fsTypeKeyword contained adfs ados affs atfs audiofs auto autofs befs bfs cd9660 cfs cifs coda cramfs devfs devpts e2compr efs ext2 ext2fs ext3 fdesc ffs filecore fuse hfs hpfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix msdos ncpfs nfs none ntfs null nwfs overlay ovlfs portal proc procfs ptyfs qnx4 reiserfs romfs shm smbfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xfs zisofs
+syn keyword fsTypeKeyword contained adfs ados affs atfs audiofs auto autofs befs bfs cd9660 cfs cifs coda cramfs devfs devpts e2compr efs ext2 ext2fs ext3 ext4 fdesc ffs filecore fuse hfs hpfs iso9660 jffs jffs2 jfs kernfs lfs linprocfs mfs minix msdos ncpfs nfs none ntfs null nwfs overlay ovlfs portal proc procfs ptyfs qnx4 reiserfs romfs shm smbfs sshfs std subfs swap sysfs sysv tcfs tmpfs udf ufs umap umsdos union usbfs userfs vfat vs3fs vxfs wrapfs wvfs xfs zisofs
 
 " Options
 " -------
@@ -91,7 +92,21 @@ syn match fsOptionsKeywords contained /\<data=/ nextgroup=fsOptionsExt3Data
 syn match fsOptionsKeywords contained /\<commit=/ nextgroup=fsOptionsNumber
 syn keyword fsOptionsExt3Journal contained update inum
 syn keyword fsOptionsExt3Data contained journal ordered writeback
-syn keyword fsOptionsKeywords contained noload
+syn keyword fsOptionsKeywords contained noload user_xattr nouser_xattr acl noacl
+
+" Options: ext4
+syn match fsOptionsKeywords contained /\<journal=/ nextgroup=fsOptionsExt4Journal
+syn match fsOptionsKeywords contained /\<data=/ nextgroup=fsOptionsExt4Data
+syn match fsOptionsKeywords contained /\<barrier=/ nextgroup=fsOptionsExt4Barrier
+syn match fsOptionsKeywords contained /\<journal_dev=/ nextgroup=fsOptionsNumber
+syn match fsOptionsKeywords contained /\<resuid=/ nextgroup=fsOptionsNumber
+syn match fsOptionsKeywords contained /\<resgid=/ nextgroup=fsOptionsNumber
+syn match fsOptionsKeywords contained /\<sb=/ nextgroup=fsOptionsNumber
+syn match fsOptionsKeywords contained /\<commit=/ nextgroup=fsOptionsNumber
+syn keyword fsOptionsExt4Journal contained update inum
+syn keyword fsOptionsExt4Data contained journal ordered writeback
+syn match fsOptionsExt4Barrier /[0-1]/
+syn keyword fsOptionsKeywords contained noload extents orlov oldalloc user_xattr nouser_xattr acl noacl reservation noreservation bsddf minixdf check=none nocheck debug grpid nogroupid sysvgroups bsdgroups quota noquota grpquota usrquota bh nobh
 
 " Options: fat
 syn match fsOptionsKeywords contained /\<blocksize=/ nextgroup=fsOptionsSize
@@ -241,6 +256,9 @@ if version >= 508 || !exists("did_config_syntax_inits")
 	HiLink fsOptionsExt2Errors String
 	HiLink fsOptionsExt3Journal String
 	HiLink fsOptionsExt3Data String
+	HiLink fsOptionsExt4Journal String
+	HiLink fsOptionsExt4Data String
+	HiLink fsOptionsExt4Barrier Number
 	HiLink fsOptionsFatCheck String
 	HiLink fsOptionsConv String
 	HiLink fsOptionsFatType Number

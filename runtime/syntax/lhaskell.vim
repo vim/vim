@@ -4,8 +4,8 @@
 "			\begin{code} \end{code} blocks
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
 " Original Author:	Arthur van Leeuwen <arthurvl@cs.uu.nl>
-" Last Change:		2008 Jul 01
-" Version:		1.02
+" Last Change:		2009 May 08
+" Version:		1.04
 "
 " Thanks to Ian Lynagh for thoughtful comments on initial versions and
 " for the inspiration for writing this in the first place.
@@ -29,8 +29,10 @@
 " 2004 February 20: Cleaned up the guessing and overriding a bit
 " 2004 February 23: Cleaned up syntax highlighting for \begin{code} and
 "		    \end{code}, added some clarification to the attributions
-" 2008 July 1:      Removed % from guess list, as it totally breaks  plain
-"		    text markup guessing
+" 2008 July 1:      Removed % from guess list, as it totally breaks plain
+"                   text markup guessing
+" 2009 April 29:    Fixed highlighting breakage in TeX mode, 
+"                   thanks to Kalman Noel
 "
 
 
@@ -73,14 +75,14 @@ call cursor(1,1)
 "   - \begin{env}       (for env != code)
 "   - \part, \chapter, \section, \subsection, \subsubsection, etc
 if b:lhs_markup == "unknown"
-    if search('\\documentclass\|\\begin{\(code}\)\@!\|\\\(sub \)*section\|\\chapter|\\part','W') != 0
+    if search('\\documentclass\|\\begin{\(code}\)\@!\|\\\(sub\)*section\|\\chapter|\\part','W') != 0
 	let b:lhs_markup = "tex"
     else
 	let b:lhs_markup = "plain"
     endif
 endif
 
-" If user wants us to highlight TeX syntax or guess thinks it's TeX,  read it.
+" If user wants us to highlight TeX syntax or guess thinks it's TeX, read it.
 if b:lhs_markup == "tex"
     if version < 600
 	source <sfile>:p:h/tex.vim
@@ -91,6 +93,9 @@ if b:lhs_markup == "tex"
 	" Tex.vim removes "_" from 'iskeyword', but we need it for Haskell.
 	setlocal isk+=_
     endif
+    syntax cluster lhsTeXContainer contains=tex.*Zone,texAbstract
+else
+    syntax cluster lhsTeXContainer contains=.*
 endif
 
 " Literate Haskell is Haskell in between text, so at least read Haskell
@@ -101,8 +106,8 @@ else
     syntax include @haskellTop syntax/haskell.vim
 endif
 
-syntax region lhsHaskellBirdTrack start="^>" end="\%(^[^>]\)\@=" contains=@haskellTop,lhsBirdTrack
-syntax region lhsHaskellBeginEndBlock start="^\\begin{code}\s*$" matchgroup=NONE end="\%(^\\end{code}.*$\)\@=" contains=@haskellTop,@beginCode
+syntax region lhsHaskellBirdTrack start="^>" end="\%(^[^>]\)\@=" contains=@haskellTop,lhsBirdTrack containedin=@lhsTeXContainer
+syntax region lhsHaskellBeginEndBlock start="^\\begin{code}\s*$" matchgroup=NONE end="\%(^\\end{code}.*$\)\@=" contains=@haskellTop,@beginCode containedin=@lhsTeXContainer
 
 syntax match lhsBirdTrack "^>" contained
 

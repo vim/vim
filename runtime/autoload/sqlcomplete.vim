@@ -1,13 +1,19 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
-" Maintainer:  David Fishburn <fishburn@ianywhere.com>
-" Version:     6.0
-" Last Change: Thu 03 Apr 2008 10:37:54 PM Eastern Daylight Time
+" Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
+" Version:     7.0
+" Last Change: 2009 Jan 04
 " Usage:       For detailed help
 "              ":help sql.txt" 
 "              or ":help ft-sql-omni" 
 "              or read $VIMRUNTIME/doc/sql.txt
 
+" History
+" Version 7.0
+"     Better handling of object names
+" Version 6.0
+"     Supports object names with spaces "my table name"
+"
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
 " sourced directly instead of using the autoload feature. 
@@ -22,7 +28,7 @@ endif
 if exists('g:loaded_sql_completion')
     finish 
 endif
-let g:loaded_sql_completion = 50
+let g:loaded_sql_completion = 70
 
 " Maintains filename of dictionary
 let s:sql_file_table        = ""
@@ -106,10 +112,23 @@ function! sqlcomplete#Complete(findstart, base)
             let begindot = 1
         endif
         while start > 0
-            if line[start - 1] =~ '\(\w\|\s\+\)'
+            " Additional code was required to handle objects which 
+            " can contain spaces like "my table name".
+            if line[start - 1] !~ '\(\w\|\.\)'
+                " If the previous character is not a period or word character
+                break
+            " elseif line[start - 1] =~ '\(\w\|\s\+\)'
+            "     let start -= 1
+            elseif line[start - 1] =~ '\w'
+                " If the previous character is word character continue back
                 let start -= 1
             elseif line[start - 1] =~ '\.' && 
                         \ compl_type =~ 'column\|table\|view\|procedure'
+                " If the previous character is a period and we are completing
+                " an object which can be specified with a period like this:
+                "     table_name.column_name
+                "     owner_name.table_name
+
                 " If lastword has already been set for column completion
                 " break from the loop, since we do not also want to pickup
                 " a table name if it was also supplied.
@@ -184,9 +203,10 @@ function! sqlcomplete#Complete(findstart, base)
         endif
 
         let compl_type_uc = substitute(compl_type, '\w\+', '\u&', '')
-        if s:sql_file_{compl_type} == ""
-            let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type_uc)
-        endif
+        " Same call below, no need to do it twice
+        " if s:sql_file_{compl_type} == ""
+        "     let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type_uc)
+        " endif
         let s:sql_file_{compl_type} = DB_getDictionaryName(compl_type_uc)
         if s:sql_file_{compl_type} != ""
             if filereadable(s:sql_file_{compl_type})
@@ -312,9 +332,16 @@ function! sqlcomplete#Complete(findstart, base)
     endif
 
     if base != ''
-        " Filter the list based on the first few characters the user
-        " entered
-        let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\([^.]*\\)\\?'.base.'\\)"'
+        " Filter the list based on the first few characters the user entered.
+        " Check if the text matches at the beginning 
+        " or 
+        " Match to a owner.table or alias.column type match
+        " or
+        " Handle names with spaces "my table name"
+        let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|^\\(\\w\\+\\.\\)\\?'.base.'\\)"'
+        " let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\)"'
+        " let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\(\\.\\)\\?'.base.'\\)"'
+        " let expr = 'v:val '.(g:omni_sql_ignorecase==1?'=~?':'=~#').' "\\(^'.base.'\\|\\([^.]*\\)\\?'.base.'\\)"'
         let compl_list = filter(deepcopy(compl_list), expr)
     endif
 

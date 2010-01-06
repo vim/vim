@@ -2,8 +2,8 @@
 " Language:	Eiffel
 " Maintainer:	Jocelyn Fiat <eiffel@djoce.net>
 " Previous-Maintainer:	David Clarke <gadicath@dishevelled.net>
-" $Date$
-" $Revision$
+" $Date: 2004/12/09 21:33:52 $
+" $Revision: 1.3 $
 " URL: http://www.djoce.net/page/vim/
 " Last Change:	2004 Sept 14 : removed specific value for tab (sw)
 

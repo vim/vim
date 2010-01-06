@@ -4,7 +4,7 @@
 " Last Change:  Thu May 19 21:36:04 CDT 2005
 " Source:       http://members.wri.com/layland/vim/syntax/mma.vim
 "               http://vim.sourceforge.net/scripts/script.php?script_id=1273
-" Id:           $Id$
+" Id:           $Id: mma.vim,v 1.4 2006/04/14 20:40:38 vimboss Exp $
 " NOTE:
 " 
 " Empty .m files will automatically be presumed as Matlab files

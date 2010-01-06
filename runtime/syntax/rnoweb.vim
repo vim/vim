@@ -1,9 +1,9 @@
 " Vim syntax file
 " Language:    R noweb Files
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2007 Mär 30
-" Version:     0.8
-" SVN:	       $Id$
+" Last Change: 2009 May 05
+" Version:     0.9
+" SVN:	       $Id: rnoweb.vim 84 2009-05-03 19:52:47Z ranke $
 " Remarks:     - This file is inspired by the proposal of 
 "				 Fernando Henrique Ferraz Pereira da Rosa <feferraz@ime.usp.br>
 "			     http://www.ime.usp.br/~feferraz/en/sweavevim.html
@@ -25,6 +25,7 @@ runtime syntax/tex.vim
 unlet b:current_syntax
 
 syn cluster texMatchGroup add=@rnoweb
+syn cluster texMathMatchGroup add=rnowebSexpr
 syn cluster texEnvGroup add=@rnoweb
 syn cluster texFoldGroup add=@rnoweb
 syn cluster texDocGroup		add=@rnoweb

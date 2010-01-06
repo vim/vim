@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	generic git output
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2008 Jul 30
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2009 Dec 24
 
 " Only do this when not done yet for this buffer
 if (exists("b:did_ftplugin"))
@@ -28,6 +28,9 @@ if exists('*shellescape') && exists('b:git_dir') && b:git_dir != ''
     let &l:keywordprg = 'git --git-dir='.shellescape(b:git_dir).' show'
 else
     setlocal keywordprg=git\ show
+endif
+if has('gui_running')
+  let &l:keywordprg = substitute(&l:keywordprg,'^git\>','git --no-pager','')
 endif
 
 setlocal includeexpr=substitute(v:fname,'^[^/]\\+/','','')

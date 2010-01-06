@@ -1,8 +1,8 @@
 " ---------------------------------------------------------------------
 " getscript.vim
 "  Author:	Charles E. Campbell, Jr.
-"  Date:	Jul 10, 2008
-"  Version:	31
+"  Date:	Dec 28, 2009
+"  Version:	32
 "  Installing:	:help glvs-install
 "  Usage:	:help glvs
 "
@@ -12,18 +12,23 @@
 " Initialization:	{{{1
 " if you're sourcing this file, surely you can't be
 " expecting vim to be in its vi-compatible mode!
+if exists("g:loaded_getscript")
+ finish
+endif
+let g:loaded_getscript= "v32"
 if &cp
  echoerr "GetLatestVimScripts is not vi-compatible; not loaded (you need to set nocp)"
+ finish
+endif
+if v:version < 702
+ echohl WarningMsg
+ echo "***warning*** this version of getscript needs vim 7.2"
+ echohl Normal
  finish
 endif
 let s:keepcpo = &cpo
 set cpo&vim
 "DechoTabOn
-
-if exists("g:loaded_getscript")
- finish
-endif
-let g:loaded_getscript= "v31"
 
 " ---------------------------
 " Global Variables: {{{1
@@ -39,25 +44,6 @@ if !exists("g:getscript_cygwin")
  else
   let g:getscript_cygwin= 0
  endif
-endif
-" shell quoting character {{{2
-if exists("g:netrw_shq") && !exists("g:getscript_shq")
- let g:getscript_shq= g:netrw_shq
-elseif !exists("g:getscript_shq")
- if exists("&shq") && &shq != ""
-  let g:getscript_shq= &shq
- elseif exists("&sxq") && &sxq != ""
-  let g:getscript_shq= &sxq
- elseif has("win32") || has("win95") || has("win64") || has("win16")
-  if g:getscript_cygwin
-   let g:getscript_shq= "'"
-  else
-   let g:getscript_shq= '"'
-  endif
- else
-  let g:getscript_shq= "'"
- endif
-" call Decho("g:getscript_shq<".g:getscript_shq.">")
 endif
 
 " wget vs curl {{{2
@@ -112,7 +98,9 @@ if g:GetLatestVimScripts_allowautoinstall
   endif
  endif
 
- if exists('$HOME') && isdirectory(expand("$HOME")."/".s:dotvim)
+ if exists("g:GetLatestVimScripts_autoinstalldir") && isdirectory(g:GetLatestVimScripts_autoinstalldir)
+  let s:autoinstall= g:GetLatestVimScripts_autoinstalldir"
+ elseif exists('$HOME') && isdirectory(expand("$HOME")."/".s:dotvim)
   let s:autoinstall= $HOME."/".s:dotvim
  endif
 " call Decho("s:autoinstall<".s:autoinstall.">")
@@ -165,7 +153,6 @@ fun! getscript#GetLatestVimScripts()
 "   call Dret("GetLatestVimScripts : unable to find a GetLatest subdirectory")
    return
   endif
-
   if filewritable(datadir) != 2
    echoerr "(getLatestVimScripts) Your ".datadir." isn't writable"
 "   call Dret("GetLatestVimScripts : non-writable directory<".datadir.">")
@@ -182,21 +169,29 @@ fun! getscript#GetLatestVimScripts()
 "   call Dret("GetLatestVimScripts : non-writable datafile<".datafile.">")
    return
   endif
+  " --------------------
+  " Passed sanity checks
+  " --------------------
+
 "  call Decho("datadir  <".datadir.">")
 "  call Decho("datafile <".datafile.">")
 
-  " don't let any events interfere (like winmanager's, taglist's, etc)
-  let eikeep= &ei
-  let hlskeep= &hls
-  set ei=all hls&vim
+  " don't let any event handlers interfere (like winmanager's, taglist's, etc)
+  let eikeep  = &ei
+  let hlskeep = &hls
+  let acdkeep = &acd
+  set ei=all hls&vim noacd
 
-  " record current directory, change to datadir, open split window with
-  " datafile
+  " Edit the datafile (ie. GetLatestVimScripts.dat):
+  " 1. record current directory (origdir),
+  " 2. change directory to datadir,
+  " 3. split window
+  " 4. edit datafile
   let origdir= getcwd()
 "  call Decho("exe cd ".fnameescape(substitute(datadir,'\','/','ge')))
   exe "cd ".fnameescape(substitute(datadir,'\','/','ge'))
   split
-"  call Decho("exe e ".fnameescape(substitute(datafile,'\','/','ge')))
+"  call Decho("exe  e ".fnameescape(substitute(datafile,'\','/','ge')))
   exe "e ".fnameescape(substitute(datafile,'\','/','ge'))
   res 1000
   let s:downloads = 0
@@ -207,69 +202,68 @@ fun! getscript#GetLatestVimScripts()
 "  call Decho("searching plugins for GetLatestVimScripts dependencies")
   let lastline    = line("$")
 "  call Decho("lastline#".lastline)
-  let plugins     = split(globpath(&rtp,"plugin/*.vim"),'\n')
+  let firstdir    = substitute(&rtp,',.*$','','')
+  let plugins     = split(globpath(firstdir,"plugin/*.vim"),'\n')
+  let plugins     = plugins + split(globpath(firstdir,"AsNeeded/*.vim"),'\n')
   let foundscript = 0
-  let firstdir= ""
 
+  " this loop updates the GetLatestVimScripts.dat file
+  " with dependencies explicitly mentioned in the plugins
+  " via   GetLatestVimScripts: ... lines
+  " It reads the plugin script at the end of the GetLatestVimScripts.dat
+  " file, examines it, and then removes it.
   for plugin in plugins
+"   call Decho(" ")
 "   call Decho("plugin<".plugin.">")
-
-   " don't process plugins in system directories
-   if firstdir == ""
-    let firstdir= substitute(plugin,'[/\\][^/\\]\+$','','')
-"    call Decho("setting firstdir<".firstdir.">")
-   else
-    let curdir= substitute(plugin,'[/\\][^/\\]\+$','','')
-"    call Decho("curdir<".curdir.">")
-    if curdir != firstdir
-"     call Decho("skipping subsequent plugins: curdir<".curdir."> != firstdir<".firstdir.">")
-     break
-    endif
-   endif
 
    " read plugin in
    " evidently a :r creates a new buffer (the "#" buffer) that is subsequently unused -- bwiping it
    $
-"   call Decho(" ")
 "   call Decho(".dependency checking<".plugin."> line$=".line("$"))
-"   call Decho("exe silent r ".fnameescape(plugin))
+"   call Decho("..exe silent r ".fnameescape(plugin))
    exe "silent r ".fnameescape(plugin)
    exe "silent bwipe ".bufnr("#")
 
    while search('^"\s\+GetLatestVimScripts:\s\+\d\+\s\+\d\+','W') != 0
-    let newscript= substitute(getline("."),'^"\s\+GetLatestVimScripts:\s\+\d\+\s\+\d\+\s\+\(.*\)$','\1','e')
-    let llp1     = lastline+1
-"    call Decho("..newscript<".newscript.">")
+    let depscript   = substitute(getline("."),'^"\s\+GetLatestVimScripts:\s\+\d\+\s\+\d\+\s\+\(.*\)$','\1','e')
+    let depscriptid = substitute(getline("."),'^"\s\+GetLatestVimScripts:\s\+\(\d\+\)\s\+.*$','\1','')
+    let llp1        = lastline+1
+"    call Decho("..depscript<".depscript.">")
 
-    " don't process ""GetLatestVimScripts lines -- those that have been doubly-commented out
-    if newscript !~ '^"'
-     " found a "GetLatestVimScripts: # #" line in the script; check if its already in the datafile
-     let curline     = line(".")
-     let noai_script = substitute(newscript,'\s*:AutoInstall:\s*','','e')
-     exe llp1
-     let srchline    = search('\<'.noai_script.'\>','bW')
-"     call Decho("..noai_script<".noai_script."> srch=".srchline."curline#".line(".")." lastline#".lastline)
-
-     if srchline == 0
-      " found a new script to permanently include in the datafile
-      let keep_rega   = @a
-      let @a          = substitute(getline(curline),'^"\s\+GetLatestVimScripts:\s\+','','')
-      exe lastline."put a"
-      echomsg "Appending <".@a."> to ".datafile." for ".newscript
-"      call Decho("..APPEND (".noai_script.")<".@a."> to GetLatestVimScripts.dat")
-      let @a          = keep_rega
-      let lastline    = llp1
-      let curline     = curline     + 1
-      let foundscript = foundscript + 1
-"     else	" Decho
-"      call Decho("..found <".noai_script."> (already in datafile at line#".srchline.")")
-     endif
-
-     let curline = curline + 1
-     exe curline
+    " found a "GetLatestVimScripts: # #" line in the script;
+    " check if its already in the datafile by searching backwards from llp1,
+    " the (prior to reading in the plugin script) last line plus one of the GetLatestVimScripts.dat file,
+    " for the script-id with no wrapping allowed.
+    let curline     = line(".")
+    let noai_script = substitute(depscript,'\s*:AutoInstall:\s*','','e')
+    exe llp1
+    let srchline    = search('^\s*'.depscriptid.'\s\+\d\+\s\+.*$','bW')
+    if srchline == 0
+     " this second search is taken when, for example, a   0 0 scriptname  is to be skipped over
+     let srchline= search('\<'.noai_script.'\>','bW')
     endif
+"    call Decho("..noai_script<".noai_script."> depscriptid#".depscriptid." srchline#".srchline." curline#".line(".")." lastline#".lastline)
+
+    if srchline == 0
+     " found a new script to permanently include in the datafile
+     let keep_rega   = @a
+     let @a          = substitute(getline(curline),'^"\s\+GetLatestVimScripts:\s\+','','')
+     echomsg "Appending <".@a."> to ".datafile." for ".depscript
+"     call Decho("..Appending <".@a."> to ".datafile." for ".depscript)
+     exe lastline."put a"
+     let @a          = keep_rega
+     let lastline    = llp1
+     let curline     = curline     + 1
+     let foundscript = foundscript + 1
+"    else	" Decho
+"     call Decho("..found <".noai_script."> (already in datafile at line#".srchline.")")
+    endif
+
+    let curline = curline + 1
+    exe curline
    endwhile
 
+   " llp1: last line plus one
    let llp1= lastline + 1
 "   call Decho(".deleting lines: ".llp1.",$d")
    exe "silent! ".llp1.",$d"
@@ -282,7 +276,9 @@ fun! getscript#GetLatestVimScripts()
    setlocal nomod
   endif
 
+  " --------------------------------------------------------------------
   " Check on out-of-date scripts using GetLatest/GetLatestVimScripts.dat
+  " --------------------------------------------------------------------
 "  call Decho("begin: checking out-of-date scripts using datafile<".datafile.">")
   setlocal lz
   1
@@ -322,8 +318,9 @@ fun! getscript#GetLatestVimScripts()
 
   " restore events and current directory
   exe "cd ".fnameescape(substitute(origdir,'\','/','ge'))
-  let &ei= eikeep
-  let &hls= hlskeep
+  let &ei  = eikeep
+  let &hls = hlskeep
+  let &acd = acdkeep
   setlocal nolz
 "  call Dredir("BUFFER TEST (GetLatestVimScripts 2)","ls!")
 "  call Dret("GetLatestVimScripts : did ".s:downloads." downloads")
@@ -333,7 +330,7 @@ endfun
 "  GetOneScript: (Get Latest Vim Script) this function operates {{{1
 "    on the current line, interpreting two numbers and text as
 "    ScriptID, SourceID, and Filename.
-"    It downloads any scripts that have newer versions from vim.sf.net.
+"    It downloads any scripts that have newer versions from vim.sourceforge.net.
 fun! s:GetOneScript(...)
 "   call Dfunc("GetOneScript()")
 
@@ -391,6 +388,7 @@ fun! s:GetOneScript(...)
 "   call Decho("fname   <".fname.">")
   endif
 
+  " plugin author protection from downloading his/her own scripts atop their latest work
   if scriptid == 0 || srcid == 0
    " When looking for :AutoInstall: lines, skip scripts that have   0 0 scriptname
    let @a= rega
@@ -416,21 +414,21 @@ fun! s:GetOneScript(...)
 "  call Decho('considering <'.aicmmnt.'> scriptid='.scriptid.' srcid='.srcid)
   echo 'considering <'.aicmmnt.'> scriptid='.scriptid.' srcid='.srcid
 
-  " grab a copy of the plugin's vim.sf.net webpage
-  let scriptaddr = 'http://vim.sf.net/script.php?script_id='.scriptid
+  " grab a copy of the plugin's vim.sourceforge.net webpage
+  let scriptaddr = 'http://vim.sourceforge.net/script.php?script_id='.scriptid
   let tmpfile    = tempname()
   let v:errmsg   = ""
 
   " make up to three tries at downloading the description
   let itry= 1
   while itry <= 3
-"   call Decho("try#".itry." to download description of <".aicmmnt."> with addr=".scriptaddr)
+"   call Decho(".try#".itry." to download description of <".aicmmnt."> with addr=".scriptaddr)
    if has("win32") || has("win16") || has("win95")
-"    call Decho("new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(tmpfile).' '.s:Escape(scriptaddr)."|bw!")
-    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(tmpfile).' '.s:Escape(scriptaddr)|bw!
+"    call Decho(".new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile).' '.shellescape(scriptaddr)."|bw!")
+    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile).' '.shellescape(scriptaddr)|bw!
    else
-"    call Decho("exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(tmpfile)." ".s:Escape(scriptaddr))
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(tmpfile)." ".s:Escape(scriptaddr)
+"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile)." ".shellescape(scriptaddr))
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(tmpfile)." ".shellescape(scriptaddr)
    endif
    if itry == 1
     exe "silent vsplit ".fnameescape(tmpfile)
@@ -495,8 +493,7 @@ fun! s:GetOneScript(...)
   let latestsrcid = latestsrcid + 0
 "  call Decho("srcid=".srcid." latestsrcid=".latestsrcid." sname<".sname.">")
 
-  " has the plugin's most-recent srcid increased, which indicates
-  " that it has been updated
+  " has the plugin's most-recent srcid increased, which indicates that it has been updated
   if latestsrcid > srcid
 "   call Decho("[latestsrcid=".latestsrcid."] <= [srcid=".srcid."]: need to update <".sname.">")
 
@@ -506,65 +503,103 @@ fun! s:GetOneScript(...)
     let sname= "NEW_".sname
    endif
 
+   " -----------------------------------------------------------------------------
    " the plugin has been updated since we last obtained it, so download a new copy
-"   call Decho("...downloading new <".sname.">")
-   echomsg "...downloading new <".sname.">"
+   " -----------------------------------------------------------------------------
+"   call Decho(".downloading new <".sname.">")
+   echomsg ".downloading new <".sname.">"
    if has("win32") || has("win16") || has("win95")
-"    call Decho("new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id='.latestsrcid)."|q")
-    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id='.latestsrcid)|q
+"    call Decho(".new|exe silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='.latestsrcid)."|q")
+    new|exe "silent r!".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='.latestsrcid)|q
    else
-"    call Decho("exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id='))
-    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".s:Escape(sname)." ".s:Escape('http://vim.sf.net/scripts/download_script.php?src_id=').latestsrcid
+"    call Decho(".exe silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id='))
+    exe "silent !".g:GetLatestVimScripts_wget." ".g:GetLatestVimScripts_options." ".shellescape(sname)." ".shellescape('http://vim.sourceforge.net/scripts/download_script.php?src_id=').latestsrcid
    endif
 
+   " --------------------------------------------------------------------------
    " AutoInstall: only if doautoinstall has been requested by the plugin itself
+   " --------------------------------------------------------------------------
    if doautoinstall
-"    call Decho("attempting to do autoinstall: getcwd<".getcwd()."> filereadable(".sname.")=".filereadable(sname))
+"    call Decho(" ")
+"    call Decho("Autoinstall: getcwd<".getcwd()."> filereadable(".sname.")=".filereadable(sname))
     if filereadable(sname)
-"     call Decho("exe silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".s:Escape(s:autoinstall))
-     exe "silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".s:Escape(s:autoinstall)
+"     call Decho("<".sname."> is readable")
+"     call Decho("exe silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".shellescape(s:autoinstall))
+     exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".shellescape(s:autoinstall)
      let curdir    = escape(substitute(getcwd(),'\','/','ge'),"|[]*'\" #")
      let installdir= curdir."/Installed"
      if !isdirectory(installdir)
       call mkdir(installdir)
      endif
-"    call Decho("exe cd ".fnameescape(s:autoinstall))
+"     call Decho("curdir<".curdir."> installdir<".installdir.">")
+"     call Decho("exe cd ".fnameescape(s:autoinstall))
      exe "cd ".fnameescape(s:autoinstall)
+
+     " determine target directory for moves
+     let firstdir= substitute(&rtp,',.*$','','')
+     let pname   = substitute(sname,'\..*','.vim','')
+"     call Decho("determine tgtdir: is <".firstdir.'/AsNeeded/'.pname." readable?")
+     if filereadable(firstdir.'/AsNeeded/'.pname)
+      let tgtdir= "AsNeeded"
+     else
+      let tgtdir= "plugin"
+     endif
+"     call Decho("tgtdir<".tgtdir.">  pname<".pname.">")
      
      " decompress
      if sname =~ '\.bz2$'
 "      call Decho("decompress: attempt to bunzip2 ".sname)
-      exe "silent !bunzip2 ".s:Escape(sname)
+      exe "silent !bunzip2 ".shellescape(sname)
       let sname= substitute(sname,'\.bz2$','','')
 "      call Decho("decompress: new sname<".sname."> after bunzip2")
      elseif sname =~ '\.gz$'
 "      call Decho("decompress: attempt to gunzip ".sname)
-      exe "silent !gunzip ".s:Escape(sname)
+      exe "silent !gunzip ".shellescape(sname)
       let sname= substitute(sname,'\.gz$','','')
 "      call Decho("decompress: new sname<".sname."> after gunzip")
+     else
+"      call Decho("no decompression needed")
      endif
      
      " distribute archive(.zip, .tar, .vba) contents
      if sname =~ '\.zip$'
 "      call Decho("dearchive: attempt to unzip ".sname)
-      exe "silent !unzip -o ".s:Escape(sname)
+      exe "silent !unzip -o ".shellescape(sname)
      elseif sname =~ '\.tar$'
 "      call Decho("dearchive: attempt to untar ".sname)
-      exe "silent !tar -xvf ".s:Escape(sname)
+      exe "silent !tar -xvf ".shellescape(sname)
      elseif sname =~ '\.vba$'
 "      call Decho("dearchive: attempt to handle a vimball: ".sname)
       silent 1split
+      if exists("g:vimball_home")
+       let oldvimballhome= g:vimball_home
+      endif
+      let g:vimball_home= s:autoinstall
       exe "silent e ".fnameescape(sname)
       silent so %
       silent q
+      if exists("oldvimballhome")
+       let g:vimball_home= oldvimballhome
+      else
+       unlet g:vimball_home
+      endif
+     else
+"      call Decho("no dearchiving needed")
      endif
      
+     " ---------------------------------------------
+     " move plugin to plugin/ or AsNeeded/ directory
+     " ---------------------------------------------
      if sname =~ '.vim$'
-"      call Decho("dearchive: attempt to simply move ".sname." to plugin")
-      exe "silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." plugin"
+"      call Decho("dearchive: attempt to simply move ".sname." to ".tgtdir)
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".tgtdir
      else
 "      call Decho("dearchive: move <".sname."> to installdir<".installdir.">")
-      exe "silent !".g:GetLatestVimScripts_mv." ".s:Escape(sname)." ".installdir
+      exe "silent !".g:GetLatestVimScripts_mv." ".shellescape(sname)." ".installdir
+     endif
+     if tgtdir != "plugin"
+"      call Decho("exe silent !".g:GetLatestVimScripts_mv." plugin/".shellescape(pname)." ".tgtdir)
+      exe "silent !".g:GetLatestVimScripts_mv." plugin/".shellescape(pname)." ".tgtdir
      endif
      
      " helptags step
@@ -597,20 +632,6 @@ fun! s:GetOneScript(...)
 "  call Dredir("BUFFER TEST (GetOneScript)","ls!")
 
 "  call Dret("GetOneScript")
-endfun
-
-" ---------------------------------------------------------------------
-" s:Escape: makes a string safe&suitable for the shell {{{2
-fun! s:Escape(name)
-"  call Dfunc("s:Escape(name<".a:name.">)")
-  if exists("*shellescape")
-   " shellescape() was added by patch 7.0.111
-   let name= shellescape(a:name)
-  else
-   let name= g:getscript_shq . a:name . g:getscript_shq
-  endif
-"  call Dret("s:Escape ".name)
-  return name
 endfun
 
 " ---------------------------------------------------------------------

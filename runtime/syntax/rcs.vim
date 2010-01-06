@@ -2,7 +2,7 @@
 " Language:     RCS file
 " Maintainer:   Dmitry Vasiliev <dima at hlabs dot spb dot ru>
 " URL:          http://www.hlabs.spb.ru/vim/rcs.vim
-" Revision:     $Id$
+" Revision:     $Id: rcs.vim,v 1.2 2006/03/27 16:41:00 vimboss Exp $
 " Filenames:    *,v
 " Version:      1.11
 

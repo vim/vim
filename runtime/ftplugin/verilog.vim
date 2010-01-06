@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	Verilog HDL
 " Maintainer:	Chih-Tsun Huang <cthuang@larc.ee.nthu.edu.tw>
-" Last Change:	Mon Sep  5 11:05:54 CST 2005 and 2006 April 30
+" Last Change:	Wed Sep  3 15:24:49 CST 2008
 " URL:		http://larc.ee.nthu.edu.tw/~cthuang/vim/ftplugin/verilog.vim
 
 " Only do this when not done yet for this buffer
@@ -11,6 +11,10 @@ endif
 
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
+
+" Set 'cpoptions' to allow line continuations
+let s:cpo_save = &cpo
+set cpo&vim
 
 " Undo the plugin effect
 let b:undo_ftplugin = "setlocal fo< com< tw<"
@@ -27,8 +31,6 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 if &textwidth == 0 
   setlocal tw=78
 endif
-
-set cpo-=C
 
 " Win32 can filter files in the browse dialog
 if has("gui_win32") && !exists("b:browsefilter")
@@ -49,3 +51,7 @@ if exists("loaded_matchit")
     \ '\<task\>:\<endtask\>,' .
     \ '\<specify\>:\<endspecify\>'
 endif
+
+" Reset 'cpoptions' back to the user's setting
+let &cpo = s:cpo_save
+unlet s:cpo_save

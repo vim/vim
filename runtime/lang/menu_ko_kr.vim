@@ -1,5 +1,5 @@
 " Menu Translations:	Korean
-" Translated By:	Nam SungHyun <namsh@kldp.org>
-" Last Change:		2003 Feb 24
+" Translated By:	SungHyun Nam <goweol@gmail.com>
+" Last Change:		2008 Sep 17
 
 source <sfile>:p:h/menu_ko_kr.euckr.vim

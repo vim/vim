@@ -19,7 +19,7 @@ if &cp || exists("g:loaded_getscriptPlugin")
  endif
  finish
 endif
-let g:loaded_getscriptPlugin = "v31"
+let g:loaded_getscriptPlugin = "v32"
 let s:keepcpo                = &cpo
 set cpo&vim
 

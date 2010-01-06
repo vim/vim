@@ -4,7 +4,7 @@
 "     (formerly Davyd Ondrejko <vondraco@columbus.rr.com>)
 "     (formerly Sitaram Chamarty <sitaram@diac.com> and
 "		    James Mitchell <james_mitchell@acm.org>)
-" $Id$
+" $Id: cobol.vim,v 1.2 2007/05/05 18:23:43 vimboss Exp $
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

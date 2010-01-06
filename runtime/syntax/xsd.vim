@@ -3,7 +3,7 @@
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Tue, 27 Apr 2004 14:54:59 CEST
 " Filenames:	*.xsd
-" $Id$
+" $Id: xsd.vim,v 1.1 2004/06/13 18:20:48 vimboss Exp $
 
 " REFERENCES:
 "   [1] http://www.w3.org/TR/xmlschema-0

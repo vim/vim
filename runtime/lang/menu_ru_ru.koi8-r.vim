@@ -3,7 +3,7 @@
 " Last Change:		26 Apr 2004
 " URL:			cvs://cvs.sf.net:/cvsroot/ruvim/extras/menu/menu_ru_ru.vim
 "
-" $Id$
+" $Id: menu_ru_ru.koi8-r.vim,v 1.2 2004/06/16 11:19:21 vimboss Exp $
 "
 " Adopted for RuVim project by Vassily Ragosin.
 " First translation: Tim Alexeevsky <realtim [at] mail.ru>,

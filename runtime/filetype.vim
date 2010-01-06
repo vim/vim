@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Aug 03
+" Last Change:	2009 Dec 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -110,11 +110,14 @@ au BufNewFile,BufRead build.xml			setf ant
 au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')
 
 " Apache config file
-au BufNewFile,BufRead .htaccess			 setf apache
-au BufNewFile,BufRead httpd.conf*,srm.conf*,access.conf*,apache.conf*,apache2.conf*,/etc/apache2/*.conf* call s:StarSetf('apache')
+au BufNewFile,BufRead .htaccess,/etc/httpd/*.conf		 setf apache
+au BufNewFile,BufRead httpd.conf*,srm.conf*,access.conf*,apache.conf*,apache2.conf*,/etc/apache2/*.conf*,/etc/httpd/conf.d/*.conf* call s:StarSetf('apache')
 
 " XA65 MOS6510 cross assembler
 au BufNewFile,BufRead *.a65			setf a65
+
+" Applescript
+au BufNewFile,BufRead *.scpt			setf applescript
 
 " Applix ELF
 au BufNewFile,BufRead *.am
@@ -350,10 +353,9 @@ au BufNewFile,BufRead *.cpp
 	\ if exists("cynlib_syntax_for_cpp")|setf cynlib|else|setf cpp|endif
 
 " C++
+au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.ipp,*.moc,*.tcc,*.inl setf cpp
 if has("fname_case")
-  au BufNewFile,BufRead *.cxx,*.c++,*.C,*.H,*.hh,*.hxx,*.hpp,*.moc,*.tcc,*.inl setf cpp
-else
-  au BufNewFile,BufRead *.cxx,*.c++,*.hh,*.hxx,*.hpp,*.moc,*.tcc,*.inl setf cpp
+  au BufNewFile,BufRead *.C,*.H setf cpp
 endif
 
 " .h files can be C, Ch C++, ObjC or ObjC++.
@@ -364,9 +366,9 @@ au BufNewFile,BufRead *.h			call s:FTheader()
 func! s:FTheader()
   if match(getline(1, min([line("$"), 200])), '^@\(interface\|end\|class\)') > -1
     setf objc
-  elseif exists("c_syntax_for_h")
+  elseif exists("g:c_syntax_for_h")
     setf c
-  elseif exists("ch_syntax_for_h")
+  elseif exists("g:ch_syntax_for_h")
     setf ch
   else
     setf cpp
@@ -669,8 +671,9 @@ au BufNewFile,BufRead *.factor			setf factor
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
 
-" FlexWiki
-au BufNewFile,BufRead *.wiki			setf flexwiki
+" FlexWiki - disabled, because it has side effects when a .wiki file
+" is not actually FlexWiki
+"au BufNewFile,BufRead *.wiki			setf flexwiki
 
 " Focus Executable
 au BufNewFile,BufRead *.fex,*.focexec		setf focexec
@@ -704,12 +707,12 @@ au BufNewFile,BufRead .gdbinit			setf gdb
 au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 
 " Gedcom
-au BufNewFile,BufRead *.ged			setf gedcom
+au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-autocmd BufNewFile,BufRead *.git/COMMIT_EDITMSG    setf gitcommit
-autocmd BufNewFile,BufRead *.git/config,.gitconfig setf gitconfig
-autocmd BufNewFile,BufRead git-rebase-todo         setf gitrebase
+autocmd BufNewFile,BufRead *.git/COMMIT_EDITMSG setf gitcommit
+autocmd BufNewFile,BufRead *.git/config,.gitconfig,.gitmodules setf gitconfig
+autocmd BufNewFile,BufRead git-rebase-todo      setf gitrebase
 autocmd BufNewFile,BufRead .msg.[0-9]*
       \ if getline(1) =~ '^From.*# This line is ignored.$' |
       \   setf gitsendemail |
@@ -896,7 +899,7 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es	setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx	setf javascript
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -1043,7 +1046,7 @@ func! s:FTm()
   let n = 1
   while n < 10
     let line = getline(n)
-    if line =~ '^\s*\(#\s*\(include\|import\)\>\|/\*\)'
+    if line =~ '^\s*\(#\s*\(include\|import\)\>\|/\*\|//\)'
       setf objc
       return
     endif
@@ -1069,6 +1072,9 @@ au BufNewFile,BufRead *.nb			setf mma
 
 " Maya Extension Language
 au BufNewFile,BufRead *.mel			setf mel
+
+" Mercurial config (looks like generic config file)
+au BufNewFile,BufRead *.hgrc,*hgrc		setf cfg
 
 " Messages
 au BufNewFile,BufRead /var/log/messages,/var/log/messages.*[0-9]  setf messages
@@ -1260,7 +1266,7 @@ if has("fname_case")
 else
   au BufNewFile,BufRead *.pl			call s:FTpl()
 endif
-au BufNewFile,BufRead *.plx			setf perl
+au BufNewFile,BufRead *.plx,*.al		setf perl
 
 func! s:FTpl()
   if exists("g:filetype_pl")
@@ -1552,6 +1558,7 @@ endfunc
 
 " Remind
 au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
+au BufNewFile,BufRead *.remind,*.rem		setf remind
 
 " Resolv.conf
 au BufNewFile,BufRead resolv.conf		setf resolv
@@ -1586,7 +1593,7 @@ au BufNewFile,BufRead *.builder,*.rxml,*.rjs	setf ruby
 " Rantfile and Rakefile is like Ruby
 au BufNewFile,BufRead [rR]antfile,*.rant,[rR]akefile,*.rake	setf ruby
 
-" S-lang (or shader language!)
+" S-lang (or shader language, or SmallLisp)
 au BufNewFile,BufRead *.sl			setf slang
 
 " Samba config
@@ -1685,7 +1692,15 @@ func! SetFileTypeSH(name)
   if expand("<amatch>") =~ g:ft_ignore_pat
     return
   endif
-  if a:name =~ '\<ksh\>'
+  if a:name =~ '\<csh\>'
+    " Some .sh scripts contain #!/bin/csh.
+    call SetFileTypeShell("csh")
+    return
+  elseif a:name =~ '\<tcsh\>'
+    " Some .sh scripts contain #!/bin/tcsh.
+    call SetFileTypeShell("tcsh")
+    return
+  elseif a:name =~ '\<ksh\>'
     let b:is_kornshell = 1
     if exists("b:is_bash")
       unlet b:is_bash
@@ -1823,8 +1838,13 @@ au BufNewFile,BufRead *.rules			call s:FTRules()
 
 let s:ft_rules_udev_rules_pattern = '^\s*\cudev_rules\s*=\s*"\([^"]\{-1,}\)/*".*'
 func! s:FTRules()
-  if expand('<amatch>:p') =~ '^/etc/udev/\%(rules\.d/\)\=.*\.rules$'
+  let path = expand('<amatch>:p')
+  if path =~ '^/etc/udev/\%(rules\.d/\)\=.*\.rules$'
     setf udevrules
+    return
+  endif
+  if path =~ '^/etc/ufw/'
+    setf conf  " Better than hog
     return
   endif
   try
@@ -1909,6 +1929,9 @@ au BufNewFile,BufRead *.cm			setf voscm
 " Sysctl
 au BufNewFile,BufRead /etc/sysctl.conf		setf sysctl
 
+" Synopsys Design Constraints
+au BufNewFile,BufRead *.sdc			setf sdc
+
 " Sudoers
 au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
 
@@ -1943,6 +1966,10 @@ au BufNewFile,BufRead tags			setf tags
 
 " TAK
 au BufNewFile,BufRead *.tak			setf tak
+
+" Task
+au BufRead,BufNewFile {pending,completed,undo}.data  setf taskdata
+au BufRead,BufNewFile *.task                    setf taskedit
 
 " Tcl (JACL too)
 au BufNewFile,BufRead *.tcl,*.tk,*.itcl,*.itk,*.jacl	setf tcl
@@ -2079,8 +2106,13 @@ au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
 " Viminfo file
 au BufNewFile,BufRead .viminfo,_viminfo		setf viminfo
 
-" Virata Config Script File
-au BufRead,BufNewFile *.hw,*.module,*.pkg	setf virata
+" Virata Config Script File or Drupal module
+au BufRead,BufNewFile *.hw,*.module,*.pkg
+	\ if getline(1) =~ '<?php' |
+	\   setf php |
+	\ else |
+	\   setf virata |
+	\ endif
 
 " Visual Basic (also uses *.bas) or FORM
 au BufNewFile,BufRead *.frm			call s:FTVB("form")
@@ -2324,6 +2356,9 @@ au BufNewFile,BufRead *fvwm2rc*
 	\|else
 	\|  let b:fvwm_version = 2 | call s:StarSetf('fvwm')
 	\|endif
+
+" Gedcom
+au BufNewFile,BufRead /tmp/lltmp*		call s:StarSetf('gedcom')
 
 " GTK RC
 au BufNewFile,BufRead .gtkrc*,gtkrc*		call s:StarSetf('gtkrc')

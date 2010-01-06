@@ -2,17 +2,10 @@
 " Language:	PHP
 " Author:	John Wellesz <John.wellesz (AT) teaser (DOT) fr>
 " URL:		http://www.2072productions.com/vim/indent/php.vim
-" Last Change:  2008 June 7th
+" Last Change:  2008 November 22nd
 " Newsletter:   http://www.2072productions.com/?to=php-indent-for-vim-newsletter.php
-" Version:	1.28
+" Version:	1.30
 "
-"  If you find a bug, please e-mail me at John.wellesz (AT) teaser (DOT) fr
-"  with an example of code that breaks the algorithm.
-"
-"  ---> The change log and all the comments have been removed from this file.
-"
-"  For a complete change log and fully commented code, download the script on
-"  2072productions.com at the URI provided above.
 "
 "  If you find a bug, please e-mail me at John.wellesz (AT) teaser (DOT) fr
 "  with an example of code that breaks the algorithm.
@@ -24,7 +17,7 @@
 " NOTE: This script must be used with PHP syntax ON and with the php syntax
 "	script by Lutz Eymers (http://www.isp.de/data/php.vim ) or with the
 "	script by Peter Hodge (http://www.vim.org/scripts/script.php?script_id=1571 )
-"	the later is bunbdled by default with vim 7.
+"	the later is bunbdled by default with Vim 7.
 "
 "
 "	In the case you have syntax errors in your script such as HereDoc end
@@ -33,50 +26,19 @@
 "	they are followed by a ';').
 "
 "
-" NOTE: If you are editing file in Unix file format and that (by accident)
-" there are '\r' before new lines, this script won't be able to proceed
-" correctly and will make many mistakes because it won't be able to match
-" '\s*$' correctly.
-" So you have to remove those useless characters first with a command like:
+" NOTE: If you are editing files in Unix file format and that (by accident)
+"	there are '\r' before new lines, this script won't be able to proceed
+"	correctly and will make many mistakes because it won't be able to match
+"	'\s*$' correctly.
+"	So you have to remove those useless characters first with a command like:
 "
-" :%s /\r$//g
+"	:%s /\r$//g
 "
-" or simply 'let' the option PHP_removeCRwhenUnix to 1 and the script will
-" silently remove them when VIM load this script (at each bufread).
+"	or simply 'let' the option PHP_removeCRwhenUnix to 1 and the script will
+"	silently remove them when VIM load this script (at each bufread).
 "
-"
-" Options: PHP_autoformatcomment = 0 to not enable autoformating of comment by
-"		    default, if set to 0, this script will let the 'formatoptions' setting intact.
-"
-" Options: PHP_default_indenting = # of sw (default is 0), # of sw will be
-"		   added to the indent of each line of PHP code.
-"
-" Options: PHP_removeCRwhenUnix = 1 to make the script automatically remove CR
-"		   at end of lines (by default this option is unset), NOTE that you
-"		   MUST remove CR when the fileformat is UNIX else the indentation
-"		   won't be correct!
-"
-" Options: PHP_BracesAtCodeLevel = 1 to indent the '{' and '}' at the same
-"		   level than the code they contain.
-"		   Exemple:
-"			Instead of:
-"				if ($foo)
-"				{
-"					foo();
-"				}
-"
-"			You will write:
-"				if ($foo)
-"					{
-"					foo();
-"					}
-"
-"			NOTE: The script will be a bit slower if you use this option because
-"			some optimizations won't be available.
-"
-" Options: PHP_vintage_case_default_indent = 1 (defaults to 0) to add a meaningless indent
-"		    befaore 'case:' and 'default":' statement in switch block
-"
+" Options: See :help php-indent for available options.
+
 
 if exists("b:did_indent")
     finish
@@ -145,6 +107,7 @@ if &fileformat == "unix" && exists("PHP_removeCRwhenUnix") && PHP_removeCRwhenUn
 endif
 
 if exists("*GetPhpIndent")
+    call ResetPhpOptions()
     finish " XXX
 endif
 
@@ -317,14 +280,13 @@ endfunction " }}}
 let s:notPhpHereDoc = '\%(break\|return\|continue\|exit\|else\)'
 let s:blockstart = '\%(\%(\%(}\s*\)\=else\%(\s\+\)\=\)\=if\>\|else\>\|while\>\|switch\>\|for\%(each\)\=\>\|declare\>\|class\>\|interface\>\|abstract\>\|try\>\|catch\>\)'
 
-let s:autorestoptions = 0
-if ! s:autorestoptions
-    au BufWinEnter,Syntax	*.php,*.php3,*.php4,*.php5	call ResetOptions()
-    let s:autorestoptions = 1
+let s:autoresetoptions = 0
+if ! s:autoresetoptions
+    let s:autoresetoptions = 1
 endif
 
-function! ResetOptions()
-    if ! b:optionsset
+function! ResetPhpOptions()
+    if ! b:optionsset && &filetype == "php" 
 	if b:PHP_autoformatcomment
 
 	    setlocal comments=s1:/*,mb:*,ex:*/,://,:#
@@ -340,6 +302,8 @@ function! ResetOptions()
 	let b:optionsset = 1
     endif
 endfunc
+
+call ResetPhpOptions()
 
 function! GetPhpIndent()
 
@@ -360,7 +324,7 @@ function! GetPhpIndent()
     if !b:PHP_indentinghuge && b:PHP_lastindented > b:PHP_indentbeforelast
 	if b:PHP_indentbeforelast
 	    let b:PHP_indentinghuge = 1
-	    echom 'Large indenting detected, speed optimizations engaged (v1.28)'
+	    echom 'Large indenting detected, speed optimizations engaged (v1.30)'
 	endif
 	let b:PHP_indentbeforelast = b:PHP_lastindented
     endif
@@ -693,6 +657,7 @@ function! GetPhpIndent()
 
     if !LastLineClosed
 
+
 	if last_line =~# '[{(]'.endline || last_line =~? '\h\w*\s*(.*,$' && pline !~ '[,(]'.endline
 
 	    if !b:PHP_BracesAtCodeLevel || last_line !~# '^\s*{'
@@ -715,11 +680,11 @@ function! GetPhpIndent()
 	elseif last_line =~ '^\s*'.s:blockstart
 	    let ind = ind + &sw
 
-	elseif last_line =~# defaultORcase
+	elseif last_line =~# defaultORcase && cline !~# defaultORcase
 	    let ind = ind + &sw
 
 
-	elseif pline =~ '\%(;\%(\s*?>\)\=\|<<<''\=\a\w*''\=$\|^\s*}\|{\)'.endline . '\|' . defaultORcase
+	elseif pline =~ '\%(;\%(\s*?>\)\=\|<<<''\=\a\w*''\=$\|^\s*}\|{\)'.endline . '\|' . defaultORcase && cline !~# defaultORcase
 
 	    let ind = ind + &sw
 	endif

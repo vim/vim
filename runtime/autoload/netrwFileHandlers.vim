@@ -1,9 +1,9 @@
 " netrwFileHandlers: contains various extension-based file handlers for
 "                    netrw's browsers' x command ("eXecute launcher")
 " Author:	Charles E. Campbell, Jr.
-" Date:		May 30, 2006
-" Version:	9
-" Copyright:    Copyright (C) 1999-2005 Charles E. Campbell, Jr. {{{1
+" Date:		Sep 30, 2008
+" Version:	10
+" Copyright:    Copyright (C) 1999-2008 Charles E. Campbell, Jr. {{{1
 "               Permission is hereby granted to use and distribute this code,
 "               with or without modifications, provided that this copyright
 "               notice is copied with it. Like anything else that's free,
@@ -20,9 +20,15 @@
 if exists("g:loaded_netrwFileHandlers") || &cp
  finish
 endif
+let g:loaded_netrwFileHandlers= "v10"
+if v:version < 702
+ echohl WarningMsg
+ echo "***warning*** this version of netrwFileHandlers needs vim 7.2"
+ echohl Normal
+ finish
+endif
 let s:keepcpo= &cpo
 set cpo&vim
-let g:loaded_netrwFileHandlers= "v9"
 
 " ---------------------------------------------------------------------
 " netrwFileHandlers#Invoke: {{{1
@@ -73,10 +79,10 @@ fun! s:NFH_html(pagefile)
 
   if executable("mozilla")
 "   call Decho("executing !mozilla ".page)
-   exe "!mozilla ".g:netrw_shq.page.g:netrw_shq
+   exe "!mozilla ".shellescape(page,1)
   elseif executable("netscape")
 "   call Decho("executing !netscape ".page)
-   exe "!netscape ".g:netrw_shq..page.g:netrw_shq
+   exe "!netscape ".shellescape(page,1)
   else
 "   call Dret("s:NFH_html 0")
    return 0
@@ -96,10 +102,10 @@ fun! s:NFH_htm(pagefile)
 
   if executable("mozilla")
 "   call Decho("executing !mozilla ".page)
-   exe "!mozilla ".g:netrw_shq.page.g:netrw_shq
+   exe "!mozilla ".shellescape(page,1)
   elseif executable("netscape")
 "   call Decho("executing !netscape ".page)
-   exe "!netscape ".g:netrw_shq.page.g:netrw_shq
+   exe "!netscape ".shellescape(page,1)
   else
 "   call Dret("s:NFH_htm 0")
    return 0
@@ -115,10 +121,10 @@ fun! s:NFH_jpg(jpgfile)
 "  call Dfunc("s:NFH_jpg(jpgfile<".a:jpgfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".g:netrw_shq.a:jpgfile.g:netrw_shq
+   exe "silent! !gimp -s ".shellescape(a:jpgfile,1)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
 "   call Decho("silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".escape(a:jpgfile," []|'"))
-   exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:jpgfile.g:netrw_shq
+   exe "!".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:jpgfile,1)
   else
 "   call Dret("s:NFH_jpg 0")
    return 0
@@ -134,9 +140,9 @@ fun! s:NFH_gif(giffile)
 "  call Dfunc("s:NFH_gif(giffile<".a:giffile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".g:netrw_shq.a:giffile.g:netrw_shq
+   exe "silent! !gimp -s ".shellescape(a:giffile,1)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:giffile.g:netrw_shq
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:giffile,1)
   else
 "   call Dret("s:NFH_gif 0")
    return 0
@@ -152,9 +158,9 @@ fun! s:NFH_png(pngfile)
 "  call Dfunc("s:NFH_png(pngfile<".a:pngfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".g:netrw_shq.a:pngfile.g:netrw_shq
+   exe "silent! !gimp -s ".shellescape(a:pngfile,1)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:pngfile.g:netrw_shq
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:pngfile,1)
   else
 "   call Dret("s:NFH_png 0")
    return 0
@@ -170,9 +176,9 @@ fun! s:NFH_pnm(pnmfile)
 "  call Dfunc("s:NFH_pnm(pnmfile<".a:pnmfile.">)")
 
   if executable("gimp")
-   exe "silent! !gimp -s ".g:netrw_shq.a:pnmfile.g:netrw_shq
+   exe "silent! !gimp -s ".shellescape(a:pnmfile,1)
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:pnmfile.g:netrw_shq
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:pnmfile,1)
   else
 "   call Dret("s:NFH_pnm 0")
    return 0
@@ -190,7 +196,7 @@ fun! s:NFH_bmp(bmpfile)
   if executable("gimp")
    exe "silent! !gimp -s ".a:bmpfile
   elseif executable(expand("$SystemRoot")."/SYSTEM32/MSPAINT.EXE")
-   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".g:netrw_shq.a:bmpfile.g:netrw_shq
+   exe "silent! !".expand("$SystemRoot")."/SYSTEM32/MSPAINT ".shellescape(a:bmpfile,1)
   else
 "   call Dret("s:NFH_bmp 0")
    return 0
@@ -205,9 +211,9 @@ endfun
 fun! s:NFH_pdf(pdf)
 "  call Dfunc("s:NFH_pdf(pdf<".a:pdf.">)")
   if executable("gs")
-   exe 'silent! !gs '.g:netrw_shq.a:pdf.g:netrw_shq
+   exe 'silent! !gs '.shellescape(a:pdf,1)
   elseif executable("pdftotext")
-   exe 'silent! pdftotext -nopgbrk '.g:netrw_shq.a:pdf.g:netrw_shq
+   exe 'silent! pdftotext -nopgbrk '.shellescape(a:pdf,1)
   else
 "  call Dret("s:NFH_pdf 0")
    return 0
@@ -223,7 +229,7 @@ fun! s:NFH_doc(doc)
 "  call Dfunc("s:NFH_doc(doc<".a:doc.">)")
 
   if executable("oowriter")
-   exe 'silent! !oowriter '.g:netrw_shq.a:doc.g:netrw_shq
+   exe 'silent! !oowriter '.shellescape(a:doc,1)
    redraw!
   else
 "  call Dret("s:NFH_doc 0")
@@ -240,7 +246,7 @@ fun! s:NFH_sxw(sxw)
 "  call Dfunc("s:NFH_sxw(sxw<".a:sxw.">)")
 
   if executable("oowriter")
-   exe 'silent! !oowriter '.g:netrw_shq.a:sxw.g:netrw_shq
+   exe 'silent! !oowriter '.shellescape(a:sxw,1)
    redraw!
   else
 "   call Dret("s:NFH_sxw 0")
@@ -257,7 +263,7 @@ fun! s:NFH_xls(xls)
 "  call Dfunc("s:NFH_xls(xls<".a:xls.">)")
 
   if executable("oocalc")
-   exe 'silent! !oocalc '.g:netrw_shq.a:xls.g:netrw_shq
+   exe 'silent! !oocalc '.shellescape(a:xls,1)
    redraw!
   else
 "  call Dret("s:NFH_xls 0")
@@ -274,15 +280,15 @@ fun! s:NFH_ps(ps)
 "  call Dfunc("s:NFH_ps(ps<".a:ps.">)")
   if executable("gs")
 "   call Decho("exe silent! !gs ".a:ps)
-   exe "silent! !gs ".g:netrw_shq.a:ps.g:netrw_shq
+   exe "silent! !gs ".shellescape(a:ps,1)
    redraw!
   elseif executable("ghostscript")
 "   call Decho("exe silent! !ghostscript ".a:ps)
-   exe "silent! !ghostscript ".g:netrw_shq.a:ps.g:netrw_shq
+   exe "silent! !ghostscript ".shellescape(a:ps,1)
    redraw!
   elseif executable("gswin32")
-"   call Decho("exe silent! !gswin32 ".g:netrw_shq.a:ps.g:netrw_shq)
-   exe "silent! !gswin32 ".g:netrw_shq.a:ps.g:netrw_shq
+"   call Decho("exe silent! !gswin32 ".shellescape(a:ps,1))
+   exe "silent! !gswin32 ".shellescape(a:ps,1)
    redraw!
   else
 "   call Dret("s:NFH_ps 0")
@@ -298,16 +304,16 @@ endfun
 fun! s:NFH_eps(eps)
 "  call Dfunc("s:NFH_eps()")
   if executable("gs")
-   exe "silent! !gs ".g:netrw_shq.a:eps.g:netrw_shq
+   exe "silent! !gs ".shellescape(a:eps,1)
    redraw!
   elseif executable("ghostscript")
-   exe "silent! !ghostscript ".g:netrw_shq.a:eps.g:netrw_shq
+   exe "silent! !ghostscript ".shellescape(a:eps,1)
    redraw!
   elseif executable("ghostscript")
-   exe "silent! !ghostscript ".g:netrw_shq.a:eps.g:netrw_shq
+   exe "silent! !ghostscript ".shellescape(a:eps,1)
    redraw!
   elseif executable("gswin32")
-   exe "silent! !gswin32 ".g:netrw_shq.a:eps.g:netrw_shq
+   exe "silent! !gswin32 ".shellescape(a:eps,1)
    redraw!
   else
 "   call Dret("s:NFH_eps 0")

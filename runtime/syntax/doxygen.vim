@@ -2,8 +2,8 @@
 " Language:     doxygen on top of c, cpp, idl, java, php
 " Maintainer:   Michael Geddes <vimmer@frog.wheelycreek.net>
 " Author:       Michael Geddes
-" Last Change:  July 2008
-" Version:      1.22
+" Last Change:  Jan 2009
+" Version:      1.23
 "
 " Copyright 2004-2008 Michael Geddes
 " Please feel free to use, modify & distribute all or part of this script,
@@ -239,7 +239,7 @@ endif
   " #Link hilighting.
   syn match doxygenHashLink /\([a-zA-Z_][0-9a-zA-Z_]*\)\?#\(\.[0-9a-zA-Z_]\@=\|[a-zA-Z0-9_]\+\|::\|()\)\+/ contained contains=doxygenHashSpecial
   syn match doxygenHashSpecial /#/ contained
-  syn match doxygenHyperLink /\(\s\|^\s*\*\?\)\@<=\(http\|https\|ftp\):\/\/[-0-9a-zA-Z_?&=+#%/.!':;@]\+/ contained
+  syn match doxygenHyperLink /\(\s\|^\s*\*\?\)\@<=\(http\|https\|ftp\):\/\/[-0-9a-zA-Z_?&=+#%/.!':;@~]\+/ contained
 
   " Handle \page.  This does not use doxygenBrief.
   syn match doxygenPage "[\\@]page\>"me=s+1 contained skipwhite nextgroup=doxygenPagePage

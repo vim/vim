@@ -1,7 +1,8 @@
 " Menu Translations:	Español
-" Maintainer:		Alejandro López-Valencia <dradul@users.sourceforge.net>
-" Version:		6.4.p0-1
-" Last Change:		2005 Dec 01
+" Previous translator:	Alejandro López-Valencia <dradul@users.sourceforge.net>
+" Last translator:	Omar Campagne Polaino <ocampagne@gmail.com>
+" Version:		7.2.245
+" Last Change:		2009 Sep 03
 "
 
 " Quit when menu translations have already been done.
@@ -28,13 +29,14 @@ menutrans O&rphans		Ayude\ a\ los\ niños\ &huérfanos
 menutrans Co&pying		&Términos\ de\ Licencia
 menutrans Sponsor/Register	Benefactor/Regístrese
 menutrans &Version		&Versión\ e\ \información\ de\ configuración
-menutrans &About		&Acerca\ de\ Vim.
+menutrans &About		&Acerca\ de\ Vim
 
 " File menu
 menutrans &File				&Archivo
 menutrans &Open\.\.\.<Tab>:e		&Abrir\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	A&brir\ en\ otra\ ventana\.\.\.<Tab>:sp
 menutrans &New<Tab>:enew		&Nuevo<Tab>:enew
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	Abrir\ pes&taña\.\.\.<Tab>:tabnew
 menutrans &Close<Tab>:close		&Cerrar<Tab>:close
 menutrans &Save<Tab>:w			&Guardar<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav	Guardar\ &como\.\.\.<Tab>:sav
@@ -65,11 +67,12 @@ menutrans Find\ and\ Rep&lace<Tab>:%s	Buscar\ y\ R&eemplazar<Tab>:%s
 menutrans Find\ and\ Rep&lace		Buscar\ y\ R&eemplazar
 menutrans Find\ and\ Rep&lace<Tab>:s	Buscar\ y\ R&eemplazar<Tab>:s
 menutrans Settings\ &Window		&Ventana\ de\ opciones
+menutrans Startup\ &Settings		Opciones\ de\ arranque	 
 
 " Edit/Global Settings
 menutrans &Global\ Settings		Opciones\ &globales
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Activar/Desactivar\ &realzado\ de\ sintaxis<Tab>:set\ hls!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Activar/Desactivar\ &resaltado\ de\ sintaxis<Tab>:set\ hls!
 menutrans Toggle\ &Ignore-case<Tab>:set\ ic!		Activar/Desactivar\ &ignorar\ mayúsculas\ y\ minúsculas<Tab>:set\ ic!
 menutrans Toggle\ &Showmatch<Tab>:set\ sm!		Activar/Desactivar\ &mostrar\ coincidencias<Tab>:set\ sm!
 
@@ -95,11 +98,11 @@ menutrans Toggle\ &Bottom\ Scrollbar	Ocultar/Mostrar\ barra\ de\ desplazamiento\
 menutrans Toggle\ &Left\ Scrollbar	Ocultar/Mostrar\ barra\ de\ desplazamiento\ i&zquierda
 menutrans Toggle\ &Right\ Scrollbar	Ocultar/Mostrar\ barra\ de\ desplazamiento\ &derecha
 
-let g:menutrans_path_dialog = "Introduzca la ruta de búsqueda para los ficheros.\nSepare los nombres de los directorios con una coma."
-let g:menutrans_tags_dialog = "Introduzca los nombres de los fichero de tags.\nSepare los nombres con una coma."
+let g:menutrans_path_dialog = "Introduzca la ruta de búsqueda para los archivos.\nSepare los nombres de los directorios con una coma."
+let g:menutrans_tags_dialog = "Introduzca los nombres de los archivos de tags.\nSepare los nombres con una coma."
 
 " Edit/File Settings
-menutrans F&ile\ Settings		Opciones\ del\ &fichero
+menutrans F&ile\ Settings		Opciones\ del\ &archivo
 
 " Boolean options
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Activar/Desactivar\ &numeración\ de\ líneas<Tab>:set\ nu!
@@ -118,8 +121,8 @@ menutrans Soft\ &Tabstop		&Tabulado\ «blando»
 menutrans Te&xt\ Width\.\.\.		Anchura\ del\ te&xto\.\.\.
 let g:menutrans_textwidth_dialog = "Introduzca el nuevo ancho del texto (0 para desactivar el quiebre de línea): "
 
-menutrans &File\ Format\.\.\.		&Formato\ del\ fichero\.\.\.
-let g:menutrans_fileformat_dialog = "Seleccione el formato para escribir el fichero"
+menutrans &File\ Format\.\.\.		&Formato\ del\ archivo\.\.\.
+let g:menutrans_fileformat_dialog = "Seleccione el formato para escribir el archivo"
 
 menutrans C&olor\ Scheme		Esquema\ de\ c&olores
 menutrans blue		azul
@@ -154,7 +157,7 @@ menutrans slovak	eslovaco
 menutrans &Tools			&Herramientas
 menutrans &Jump\ to\ this\ tag<Tab>g^]	&Saltar\ a\ este\ etiqueta<Tab>g^]
 menutrans Jump\ &back<Tab>^T		Saltar\ &atrás<Tab>^T
-menutrans Build\ &Tags\ File		Crear\ fichero\ de\ &etiquetas\
+menutrans Build\ &Tags\ File		Crear\ archivo\ de\ &etiquetas\
 menutrans &Diff				Modo\ de\ &diferencias
 menutrans &Folding			&Plegado
 menutrans &Make<Tab>:make		Ejecutar\ «&Make»<Tab>:make
@@ -169,6 +172,24 @@ menutrans &Set\ Compiler		Esco&ger\ el\ compilador\ a\ usar
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	Convertir\ a\ formato\ &hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	&Convertir\ al\ formato\ original<Tab>:%!xxd\ -r
 
+" Tools.Spelling Menu
+menutrans &Spelling				Corrección\ ortográfica
+menutrans &Spell\ Check\ On			&Activar\ corrección\ ortográfica
+menutrans Spell\ Check\ &Off			&Desactivar\ corrección\ ortográfica
+menutrans To\ &Next\ error<Tab>]s		&Siguiente\ error<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s  		Error\ &precedente<Tab>[s 
+menutrans Suggest\ &Corrections<Tab>z=		Sugerir\ &corrección<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	&Repetir\ corrección<Tab>:spellrepall
+an 40.335.205 &Tools.&Spelling.Castellano\ (es)	:set spl=es spell<CR>
+menutrans Set\ language\ to\ "en"		Inglés
+menutrans Set\ language\ to\ "en_au"		Inglés\ (en_au)
+menutrans Set\ language\ to\ "en_ca"		Inglés\ (en_ca)
+menutrans Set\ language\ to\ "en_gb"		Inglés\ (en_gb)
+menutrans Set\ language\ to\ "en_nz"		Inglés\ (en_nz)
+menutrans Set\ language\ to\ "en_us"		Inglés\ (en_us)
+
+menutrans &Find\ More\ Languages		&Buscar\ otras\ lenguas
+
 " Tools.Fold Menu
 menutrans &Enable/Disable\ folds<Tab>zi		&Activar/Desactivar\ pliegues<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv		&Ver\ línea\ del\ cursor<Tab>zv
@@ -182,7 +203,7 @@ menutrans Fold\ Met&hod				&Método\ de\ plegado
 " create and delete folds
 menutrans Create\ &Fold<Tab>zf			Crear\ &pliegue<Tab>zf
 menutrans &Delete\ Fold<Tab>zd			&Suprimir\ pliegue<Tab>zd
-menutrans Delete\ &All\ Folds<Tab>zD		Suprimir\ &todos\ los\ pligues<Tab>zD
+menutrans Delete\ &All\ Folds<Tab>zD		Suprimir\ &todos\ los\ pliegues<Tab>zD
 " moving around in folds
 menutrans Fold\ col&umn\ width			A&nchura\ de\ columna\ del\ pliegue
 
@@ -203,7 +224,7 @@ menutrans &Delete		&Suprimir
 menutrans &Alternate		&Alternar
 menutrans &Next			Si&guiente
 menutrans &Previous		&Previo
-let g:menutrans_no_file = "[Sin fichero]"
+let g:menutrans_no_file = "[Sin archivo]"
 
 " Window menu
 menutrans &Window			&Ventana
@@ -211,7 +232,7 @@ menutrans &New<Tab>^Wn			Ventana\ &nueva<Tab>^Wn
 menutrans S&plit<Tab>^Ws		&Dividir\ la\ ventana<Tab>^Ws
 menutrans Sp&lit\ To\ #<Tab>^W^^	D&ividir\ en\ el\ marcador\ (#)<Tab>^W^^
 menutrans Split\ &Vertically<Tab>^Wv    Dividir\ &verticalmente<Tab>^Wv
-menutrans Split\ File\ E&xplorer	&Abrir\ el\ «Explorador\ de\ ficheros»
+menutrans Split\ File\ E&xplorer	&Abrir\ el\ «Explorador\ de\ archivos»
 menutrans &Close<Tab>^Wc		&Cerrar\ esta\ ventana<Tab>^Wc
 menutrans Close\ &Other(s)<Tab>^Wo	Cerrar\ &otra(s)\ ventana(s)<Tab>^Wo
 menutrans Move\ &To			Mov&er\ a
@@ -245,9 +266,9 @@ if has("toolbar")
     delfun Do_toolbar_tmenu
   endif
   fun Do_toolbar_tmenu()
-    tmenu ToolBar.Open		Abrir fichero
-    tmenu ToolBar.Save		Guardar fichero
-    tmenu ToolBar.SaveAll	Guardar todos los ficheros
+    tmenu ToolBar.Open		Abrir archivo
+    tmenu ToolBar.Save		Guardar archivo
+    tmenu ToolBar.SaveAll	Guardar todos los archivos
     tmenu ToolBar.Print		Imprimir
     tmenu ToolBar.Undo		Deshacer
     tmenu ToolBar.Redo		Rehacer
@@ -273,7 +294,7 @@ if has("toolbar")
     tmenu ToolBar.RunScript	Ejecutar un archivo de órdenes
     tmenu ToolBar.Make		Ejecutar «Make»
     tmenu ToolBar.Shell		Abrir un intérprete de comandos
-    tmenu ToolBar.RunCtags	Generar un fichero de etiquetas
+    tmenu ToolBar.RunCtags	Generar un archivo de etiquetas
     tmenu ToolBar.TagJump	Saltar a una etiqueta
     tmenu ToolBar.Help		Ayuda
     tmenu ToolBar.FindHelp	Buscar en la ayuda...
@@ -282,15 +303,15 @@ endif
 
 " Syntax menu
 menutrans &Syntax			&Sintaxis
-menutrans &Show\ filetypes\ in\ menu	&Mostrar\ listas\ de\ «tipo\ de\ fichero»
+menutrans &Show\ filetypes\ in\ menu	&Mostrar\ listas\ de\ «tipo\ de\ archivo»
 menutrans Set\ '&syntax'\ only		Activar\ sólo\ sintaxis
-menutrans Set\ '&filetype'\ too		Activar\ también\ «tipo\ de\ fichero»
+menutrans Set\ '&filetype'\ too		Activar\ también\ «tipo\ de\ archivo»
 menutrans &Off				&Desactivar\ sintaxis
-menutrans &Manual			sintaxis\ &manual
-menutrans A&utomatic			sintaxis\ a&utomática
-menutrans on/off\ for\ &This\ file	Activar/Desactivar\ en\ es&te\ fichero
+menutrans &Manual			Sintaxis\ &manual
+menutrans A&utomatic			Sintaxis\ a&utomática
+menutrans on/off\ for\ &This\ file	Activar/Desactivar\ en\ es&te\ archivo
 menutrans Co&lor\ test			&Prueba\ de\ colores
-menutrans &Highlight\ test		Prueba\ de\ &realzado
+menutrans &Highlight\ test		Prueba\ de\ &resaltado
 menutrans &Convert\ to\ HTML		&Convertir\ a\ HTML
 
 " Find Help dialog text

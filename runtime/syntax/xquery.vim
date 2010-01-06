@@ -4,7 +4,7 @@
 " Last Change:	mar jui 12 18:04:05 CEST 2005
 " Filenames:	*.xq
 " URL:		http://jmvanel.free.fr/vim/xquery.vim
-" $Id$
+" $Id: xquery.vim,v 1.1 2005/07/18 21:44:56 vimboss Exp $
 
 " REFERENCES:
 "   [1] http://www.w3.org/TR/xquery/

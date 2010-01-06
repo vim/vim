@@ -1,13 +1,14 @@
 " Vim syntax file
 " Language:    R Help File
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2008 Apr 10
-" Version:     0.7.1
-" SVN:		   $Id$
+" Last Change: 2009 Mai 12
+" Version:     0.7.2
+" SVN:		   $Id: rhelp.vim 86 2009-05-12 19:23:47Z ranke $
 " Remarks:     - Now includes R syntax highlighting in the appropriate
 "                sections if an r.vim file is in the same directory or in the
 "                default debian location.
 "              - There is no Latex markup in equations
+"              - Thanks to Will Gray for finding and fixing a bug
 
 " Version Clears: {{{1
 " For version 5.x: Clear all syntax items
@@ -57,7 +58,7 @@ syn match rhelpKeyword  ">"
 
 " Links {{{1
 syn region rhelpLink matchgroup=rhelpSection start="\\link{" end="}" contained keepend
-syn region rhelpLink matchgroup=rhelpSection start="\\link\[.*\]{" end="}" contained keepend
+syn region rhelpLink matchgroup=rhelpSection start="\\link\[.\{-}\]{" end="}" contained keepend
 syn region rhelpLink matchgroup=rhelpSection start="\\linkS4class{" end="}" contained keepend
 
 " Type Styles {{{1

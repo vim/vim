@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:		Haskell
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
-" Last Change:		2004 Feb 23
+" Last Change:		2008 Dec 15
 " Original Author:	John Williams <jrw@pobox.com>
 "
 " Thanks to Ryan Crumley for suggestions and John Meacham for
@@ -30,6 +30,7 @@
 "	       in eol comment character class
 " 2004 Feb 23: Made the leading comments somewhat clearer where it comes
 "	       to attribution of work.
+" 2008 Dec 15: Added comments as contained element in import statements
 
 " Remove any old syntax stuff hanging around
 if version < 600
@@ -67,7 +68,7 @@ syn match   hsFloat		"\<[0-9]\+\.[0-9]\+\([eE][-+]\=[0-9]\+\)\=\>"
 " because otherwise they would match as keywords at the start of a
 " "literate" comment (see lhs.vim).
 syn match hsModule		"\<module\>"
-syn match hsImport		"\<import\>.*"he=s+6 contains=hsImportMod
+syn match hsImport		"\<import\>.*"he=s+6 contains=hsImportMod,hsLineComment,hsBlockComment
 syn match hsImportMod		contained "\<\(as\|qualified\|hiding\)\>"
 syn match hsInfix		"\<\(infix\|infixl\|infixr\)\>"
 syn match hsStructure		"\<\(class\|data\|deriving\|instance\|default\|where\)\>"

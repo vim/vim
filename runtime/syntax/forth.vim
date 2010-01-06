@@ -5,7 +5,7 @@
 " Filenames:   *.fs,*.ft
 " URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
-" $Id$
+" $Id: forth.vim,v 1.11 2008/02/09 13:17:01 bruessow Exp $
 
 " The list of keywords is incomplete, compared with the offical ANS
 " wordlist. If you use this language, please improve it, and send me

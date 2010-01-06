@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:    Lisp
 " Maintainer:  Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change: Oct 19, 2007
-" Version:     20
+" Last Change: Mar 05, 2009
+" Version:     21
 " URL:	       http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 "  Thanks to F Xavier Noria for a list of 978 Common Lisp symbols
@@ -534,7 +534,8 @@ endif
 
 " ---------------------------------------------------------------------
 " Numbers: supporting integers and floating point numbers {{{1
-syn match lispNumber		"-\=\(\.\d\+\|\d\+\(\.\d*\)\=\)\(e[-+]\=\d\+\)\="
+syn match lispNumber		"-\=\(\.\d\+\|\d\+\(\.\d*\)\=\)\([dDeEfFlL][-+]\=\d\+\)\="
+syn match lispNumber		"-\=\(\d\+/\d\+\)"
 
 syn match lispSpecial		"\*\w[a-z_0-9-]*\*"
 syn match lispSpecial		!#|[^()'`,"; \t]\+|#!

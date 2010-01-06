@@ -4,7 +4,7 @@
 " Last Change:	2006 Feb 21
 " Maintainer:  Gero Kuhlmann <gero@gkminix.han.de>
 "
-" $Id$
+" $Id: mgl.vim,v 1.1 2006/02/21 22:08:20 vimboss Exp $
 "
 if version < 600
   syntax clear

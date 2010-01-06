@@ -2,7 +2,7 @@
 "
 " Language:	papp
 " Maintainer:	Marc Lehmann <pcg@goof.com>
-" Last Change:	2003 May 11
+" Last Change:	2009 Nov 11
 " Filenames:    *.papp *.pxml *.pxsl
 " URL:		http://papp.plan9.de/
 
@@ -37,6 +37,7 @@ if exists("papp_include_html")
     syn include @PAppHtml syntax/html.vim
   endif
   unlet b:current_syntax
+  syntax spell default  " added by Bram
 endif
 
 if version < 600

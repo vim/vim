@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	git config file
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:	gitconfig, .gitconfig, *.git/config
-" Last Change:	2008 Jun 04
+" Last Change:	2009 Dec 24
 
 if exists("b:current_syntax")
     finish

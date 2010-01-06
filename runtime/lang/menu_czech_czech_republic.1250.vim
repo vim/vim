@@ -1,8 +1,8 @@
 " Menu Translations:	Czech for MS-Windows
 " Maintainer:		Jiri Brezina <brzj@seznam.cz>
 " vim:set foldmethod=marker:
-" $Revision$
-" $Date$
+" $Revision: 1.3 $
+" $Date: 2005/12/19 22:13:30 $
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")

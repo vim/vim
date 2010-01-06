@@ -2,10 +2,11 @@
 " Vim syntax file
 " Language:    SQL, Adaptive Server Anywhere
 " Maintainer:  David Fishburn <fishburn at ianywhere dot com>
-" Last Change: Tue 29 Jan 2008 12:54:19 PM Eastern Standard Time
-" Version:     10.0.1
+" Last Change: 2009 Mar 15
+" Version:     11.0.1
 
-" Description: Updated to Adaptive Server Anywhere 10.0.1
+" Description: Updated to Adaptive Server Anywhere 11.0.1
+"              Updated to Adaptive Server Anywhere 10.0.1
 "              Updated to Adaptive Server Anywhere  9.0.2
 "              Updated to Adaptive Server Anywhere  9.0.1
 "              Updated to Adaptive Server Anywhere  9.0.0
@@ -54,20 +55,24 @@ syn keyword sqlFunction	 get_identity lookup newid uuidtostr
 syn keyword sqlFunction	 strtouuid varexists
 
 " 9.0.1 functions
-syn keyword sqlFunction	 acos asin atan atn2 cast ceiling convert cos cot 
+syn keyword sqlFunction	 acos asin atan atn2 cast ceiling convert cos cot
 syn keyword sqlFunction	 char_length coalesce dateformat datetime degrees exp
-syn keyword sqlFunction	 floor getdate insertstr 
+syn keyword sqlFunction	 floor getdate insertstr
 syn keyword sqlFunction	 log log10 lower mod pi power
-syn keyword sqlFunction	 property radians replicate round sign sin 
+syn keyword sqlFunction	 property radians replicate round sign sin
 syn keyword sqlFunction	 sqldialect tan truncate truncnum
 syn keyword sqlFunction	 base64_encode base64_decode
 syn keyword sqlFunction	 hash compress decompress encrypt decrypt
+
+" 11.0.1 functions
+syn keyword sqlFunction	 connection_extended_property text_handle_vector_match
+syn keyword sqlFunction	 read_client_file write_client_file
 
 " string functions
 syn keyword sqlFunction	 ascii char left ltrim repeat
 syn keyword sqlFunction	 space right rtrim trim lcase ucase
 syn keyword sqlFunction	 locate charindex patindex replace
-syn keyword sqlFunction	 errormsg csconvert 
+syn keyword sqlFunction	 errormsg csconvert
 
 " property functions
 syn keyword sqlFunction	 db_id db_name property_name
@@ -358,125 +363,135 @@ syn keyword sqlFunction	 next_http_header next_http_variable
 syn keyword sqlFunction	 sa_set_http_header sa_set_http_option
 syn keyword sqlFunction	 sa_http_variable_info sa_http_header_info
 
-" http functions 9.0.1 
+" http functions 9.0.1
 syn keyword sqlFunction	 http_encode http_decode
 syn keyword sqlFunction	 html_encode html_decode
 
 " keywords
-syn keyword sqlKeyword	 absolute accent action activ add address after
-syn keyword sqlKeyword	 algorithm allow_dup_row
-syn keyword sqlKeyword	 alter and any as append asc ascii ase at atomic
-syn keyword sqlKeyword	 attach attended audit authorization 
+syn keyword sqlKeyword	 absolute accent action active add address aes_decrypt
+syn keyword sqlKeyword	 after aggregate algorithm allow_dup_row allowed
+syn keyword sqlKeyword	 alter and ansi_substring any as append apply asc ascii ase
+syn keyword sqlKeyword	 assign at atan2 atomic attach attended audit authorization
 syn keyword sqlKeyword	 autoincrement autostop batch bcp before
-syn keyword sqlKeyword	 between blank blanks block
-syn keyword sqlKeyword	 both bottom unbounded break bufferpool
+syn keyword sqlKeyword	 between bit_and bit_length bit_or bit_substr bit_xor
+syn keyword sqlKeyword	 blank blanks block
+syn keyword sqlKeyword	 both bottom unbounded break breaker bufferpool
 syn keyword sqlKeyword	 build bulk by byte bytes cache calibrate calibration
 syn keyword sqlKeyword	 cancel capability cascade cast
-syn keyword sqlKeyword	 catalog changes char char_convert check checksum
+syn keyword sqlKeyword	 catalog ceil changes char char_convert check checksum
 syn keyword sqlKeyword	 class classes client cmp
-syn keyword sqlKeyword	 cluster clustered collation column columns
+syn keyword sqlKeyword	 cluster clustered collation
+syn keyword sqlKeyword	 column columns
 syn keyword sqlKeyword	 command comment committed comparisons
 syn keyword sqlKeyword	 compatible component compressed compute computes
-syn keyword sqlKeyword	 concat confirm conflict connection
+syn keyword sqlKeyword	 concat configuration confirm conflict connection
 syn keyword sqlKeyword	 console consolidate consolidated
-syn keyword sqlKeyword	 constraint constraints continue
-syn keyword sqlKeyword	 convert copy count crc cross cube
+syn keyword sqlKeyword	 constraint constraints content continue
+syn keyword sqlKeyword	 convert coordinator copy count count_set_bits
+syn keyword sqlKeyword	 crc createtime cross cube cume_dist
 syn keyword sqlKeyword	 current cursor data data database
 syn keyword sqlKeyword	 current_timestamp current_user
-syn keyword sqlKeyword	 datatype dba dbfile
-syn keyword sqlKeyword	 dbspace dbspacename debug decoupled
-syn keyword sqlKeyword	 decrypted default defaults deferred definition
+syn keyword sqlKeyword	 databases datatype dba dbfile
+syn keyword sqlKeyword	 dbspace dbspaces dbspacename debug decoupled
+syn keyword sqlKeyword	 decrypted default defaults default_dbspace deferred
+syn keyword sqlKeyword	 definer definition
 syn keyword sqlKeyword	 delay deleting delimited dependencies desc
 syn keyword sqlKeyword	 description detach deterministic directory
-syn keyword sqlKeyword	 disable disabled distinct do domain download
+syn keyword sqlKeyword	 disable disabled distinct do domain download duplicate
 syn keyword sqlKeyword	 dsetpass dttm dynamic each editproc ejb
-syn keyword sqlKeyword	 else elseif enable encapsulated encrypted end 
-syn keyword sqlKeyword	 encoding endif engine erase error escape escapes event
-syn keyword sqlKeyword	 every except exception exclude exclusive exec 
-syn keyword sqlKeyword	 existing exists expanded express
+syn keyword sqlKeyword	 else elseif empty enable encapsulated encrypted end
+syn keyword sqlKeyword	 encoding endif engine environment erase error escape escapes event
+syn keyword sqlKeyword	 event_parameter every except exception exclude excluded exclusive exec
+syn keyword sqlKeyword	 existing exists expanded expiry express exprtype extended_property
 syn keyword sqlKeyword	 external externlogin factor failover false
-syn keyword sqlKeyword	 fastfirstrow fieldproc file filler
-syn keyword sqlKeyword	 fillfactor finish first first_keyword 
-syn keyword sqlKeyword	 following force foreign format 
-syn keyword sqlKeyword	 freepage french fresh full function go global
-syn keyword sqlKeyword	 group handler hash having header hexadecimal 
-syn keyword sqlKeyword	 hidden high history hold holdlock
-syn keyword sqlKeyword	 hours id identified identity ignore
+syn keyword sqlKeyword	 fastfirstrow fieldproc file files filler
+syn keyword sqlKeyword	 fillfactor finish first first_keyword first_value
+syn keyword sqlKeyword	 following force foreign format forxml forxml_sep fp frame
+syn keyword sqlKeyword	 freepage french fresh full function gb get_bit go global
+syn keyword sqlKeyword	 group handler hash having header hexadecimal
+syn keyword sqlKeyword	 hidden high history hg hng hold holdlock host
+syn keyword sqlKeyword	 hours http_body http_session_timeout id identified identity ignore
 syn keyword sqlKeyword	 ignore_dup_key ignore_dup_row immediate
-syn keyword sqlKeyword	 in inactive inactivity incremental index info 
+syn keyword sqlKeyword	 in inactiv inactive inactivity included incremental
+syn keyword sqlKeyword	 index index_enabled index_lparen indexonly info
 syn keyword sqlKeyword	 inline inner inout insensitive inserting
 syn keyword sqlKeyword	 instead integrated
-syn keyword sqlKeyword	 internal into introduced iq is isolation jar java
+syn keyword sqlKeyword	 internal intersection into introduced invoker iq is isolation
+syn keyword sqlKeyword	 jar java java_location java_main_userid java_vm_options
 syn keyword sqlKeyword	 jconnect jdk join kb key keep kerberos language last
-syn keyword sqlKeyword	 last_keyword lateral left level like
-syn keyword sqlKeyword	 limit local location log 
-syn keyword sqlKeyword	 logging login logscan long low lru main
-syn keyword sqlKeyword	 match materialized max maximum membership 
-syn keyword sqlKeyword	 minutes mirror mode modify monitor  mru
-syn keyword sqlKeyword	 name named national native natural new next no
+syn keyword sqlKeyword	 last_keyword last_value lateral ld left len lf ln level like
+syn keyword sqlKeyword	 limit local location log
+syn keyword sqlKeyword	 logging login logscan long low lru main manual mark
+syn keyword sqlKeyword	 match matched materialized max maximum mb membership
+syn keyword sqlKeyword	 merge metadata methods minimum minutes mirror mode modify monitor move mru
+syn keyword sqlKeyword	 multiplex name named national native natural new next no
 syn keyword sqlKeyword	 noholdlock nolock nonclustered none not
-syn keyword sqlKeyword	 notify null nulls of off old on
-syn keyword sqlKeyword	 only optimization optimizer option
+syn keyword sqlKeyword	 notify null nullable_constant nulls object oem_string of off offline
+syn keyword sqlKeyword	 old on online only openstring optimization optimizer option
 syn keyword sqlKeyword	 or order others out outer over
 syn keyword sqlKeyword	 package packetsize padding page pages
-syn keyword sqlKeyword	 paglock parallel part partition partner password path
-syn keyword sqlKeyword	 pctfree plan preceding precision prefetch prefix
-syn keyword sqlKeyword	 preserve preview primary 
-syn keyword sqlKeyword	 prior priqty private privileges procedure profile
-syn keyword sqlKeyword	 public publication publish publisher
-syn keyword sqlKeyword	 quote quotes range readcommitted readonly
+syn keyword sqlKeyword	 paglock parallel part partial partition partitions partner password path
+syn keyword sqlKeyword	 pctfree plan policy populate port postfilter preceding precision
+syn keyword sqlKeyword	 prefetch prefilter prefix preserve preview primary
+syn keyword sqlKeyword	 prior priority priqty private privileges procedure profile
+syn keyword sqlKeyword	 property_is_cumulative property_is_numeric public publication publish publisher
+syn keyword sqlKeyword	 quiesce quote quotes range readclientfile readcommitted reader readfile readonly
 syn keyword sqlKeyword	 readpast readuncommitted readwrite rebuild
 syn keyword sqlKeyword	 received recompile recover recursive references
-syn keyword sqlKeyword	 referencing refresh relative relocate
+syn keyword sqlKeyword	 referencing refresh regex regexp regexp_substr relative relocate
 syn keyword sqlKeyword	 rename repeatable repeatableread
-syn keyword sqlKeyword	 replicate rereceive resend reserve reset
+syn keyword sqlKeyword	 replicate request_timeout required rereceive resend reserve reset
 syn keyword sqlKeyword	 resizing resolve resource respect
 syn keyword sqlKeyword	 restrict result retain
-syn keyword sqlKeyword	 returns right 
-syn keyword sqlKeyword	 rollup root row rowlock rows save 
-syn keyword sqlKeyword	 schedule schema scripted scroll seconds secqty
+syn keyword sqlKeyword	 returns reverse right role
+syn keyword sqlKeyword	 rollup root row row_number rowlock rows save
+syn keyword sqlKeyword	 sa_index_hash sa_internal_fk_verify sa_internal_termbreak
+syn keyword sqlKeyword	 sa_order_preserving_hash sa_order_preserving_hash_big sa_order_preserving_hash_prefix
+syn keyword sqlKeyword	 schedule schema scope scripted scroll seconds secqty security
 syn keyword sqlKeyword	 send sensitive sent serializable
-syn keyword sqlKeyword	 server server session sets 
+syn keyword sqlKeyword	 server server session set_bit set_bits sets
 syn keyword sqlKeyword	 share simple since site size skip
-syn keyword sqlKeyword	 snapshot soapheader some sorted_data 
-syn keyword sqlKeyword	 sqlcode sqlid sqlstate stacker stale statement
-syn keyword sqlKeyword	 statistics status stogroup store
-syn keyword sqlKeyword	 strip subpages subscribe subscription
-syn keyword sqlKeyword	 subtransaction synchronization
+syn keyword sqlKeyword	 snapshot soapheader soap_header split some sorted_data
+syn keyword sqlKeyword	 sqlcode sqlid sqlflagger sqlstate sqrt square
+syn keyword sqlKeyword	 stacker stale statement statistics status stddev_pop stddev_samp
+syn keyword sqlKeyword	 stemmer stogroup stoplist store
+syn keyword sqlKeyword	 strip stripesizekb striping subpages subscribe subscription
+syn keyword sqlKeyword	 subtransaction suser_id suser_name synchronization
 syn keyword sqlKeyword	 syntax_error table tablock
-syn keyword sqlKeyword	 tablockx tb temp template temporary then
-syn keyword sqlKeyword	 ties timezone to top tracing
-syn keyword sqlKeyword	 transaction transactional tries true 
+syn keyword sqlKeyword	 tablockx tb temp template temporary term then
+syn keyword sqlKeyword	 ties timezone to to_char to_nchar top traced_plan tracing
+syn keyword sqlKeyword	 transfer transaction transactional tries true
 syn keyword sqlKeyword	 tsequal type tune uncommitted unconditionally
-syn keyword sqlKeyword	 unenforced unique union unknown unload 
-syn keyword sqlKeyword	 updating updlock upgrade upload use user
+syn keyword sqlKeyword	 unenforced unicode unique union unistr unknown unlimited unload
+syn keyword sqlKeyword	 unpartition unquiesce updatetime updating updlock upgrade upload
+syn keyword sqlKeyword	 upper use user
 syn keyword sqlKeyword	 using utc utilities validproc
 syn keyword sqlKeyword	 value values varchar variable
-syn keyword sqlKeyword	 varying vcat verify view virtual wait 
-syn keyword sqlKeyword	 warning web when where window with with_auto
+syn keyword sqlKeyword	 varying var_pop var_samp vcat verify versions view virtual wait
+syn keyword sqlKeyword	 warning wd web when where window with with_auto
 syn keyword sqlKeyword	 with_auto with_cube with_rollup without
-syn keyword sqlKeyword	 with_lparen within word work workload writefile 
-syn keyword sqlKeyword	 writers writeserver xlock zeros
+syn keyword sqlKeyword	 with_lparen within word work workload write writefile
+syn keyword sqlKeyword	 writeclientfile writer writers writeserver xlock zeros
 " XML function support
-syn keyword sqlFunction	 openxml xmlelement xmlforest xmlgen xmlconcat xmlagg 
-syn keyword sqlFunction	 xmlattributes 
+syn keyword sqlFunction	 openxml xmlelement xmlforest xmlgen xmlconcat xmlagg
+syn keyword sqlFunction	 xmlattributes
 syn keyword sqlKeyword	 raw auto elements explicit
 " HTTP support
-syn keyword sqlKeyword	 authorization secure url service
+syn keyword sqlKeyword	 authorization secure url service next_soap_header
 " HTTP 9.0.2 new procedure keywords
 syn keyword sqlKeyword	 namespace certificate clientport proxy
 " OLAP support 9.0.0
-syn keyword sqlKeyword	 covar_pop covar_samp corr regr_slope regr_intercept 
+syn keyword sqlKeyword	 covar_pop covar_samp corr regr_slope regr_intercept
 syn keyword sqlKeyword	 regr_count regr_r2 regr_avgx regr_avgy
 syn keyword sqlKeyword	 regr_sxx regr_syy regr_sxy
 
 " Alternate keywords
 syn keyword sqlKeyword	 character dec options proc reference
-syn keyword sqlKeyword	 subtrans tran syn keyword 
+syn keyword sqlKeyword	 subtrans tran syn keyword
 
 
 syn keyword sqlOperator	 in any some all between exists
-syn keyword sqlOperator	 like escape not is and or 
+syn keyword sqlOperator	 like escape not is and or
 syn keyword sqlOperator  intersect minus
 syn keyword sqlOperator  prior distinct
 
@@ -496,43 +511,38 @@ syn keyword sqlStatement validate waitfor whenever while writetext
 
 
 syn keyword sqlType	 char long varchar text
-syn keyword sqlType	 bigint decimal double float int integer numeric 
+syn keyword sqlType	 bigint decimal double float int integer numeric
 syn keyword sqlType	 smallint tinyint real
 syn keyword sqlType	 money smallmoney
-syn keyword sqlType	 bit 
-syn keyword sqlType	 date datetime smalldate time timestamp 
+syn keyword sqlType	 bit
+syn keyword sqlType	 date datetime smalldate time timestamp
 syn keyword sqlType	 binary image varbinary uniqueidentifier
 syn keyword sqlType	 xml unsigned
 " New types 10.0.0
 syn keyword sqlType	 varbit nchar nvarchar
 
 syn keyword sqlOption    Allow_nulls_by_default
+syn keyword sqlOption    Allow_read_client_file
+syn keyword sqlOption    Allow_snapshot_isolation
+syn keyword sqlOption    Allow_write_client_file
 syn keyword sqlOption    Ansi_blanks
 syn keyword sqlOption    Ansi_close_cursors_on_rollback
-syn keyword sqlOption    Ansi_integer_overflow
 syn keyword sqlOption    Ansi_permissions
+syn keyword sqlOption    Ansi_substring
 syn keyword sqlOption    Ansi_update_constraints
 syn keyword sqlOption    Ansinull
-syn keyword sqlOption    Assume_distinct_servers
 syn keyword sqlOption    Auditing
 syn keyword sqlOption    Auditing_options
-syn keyword sqlOption    Auto_commit
-syn keyword sqlOption    Auto_refetch
-syn keyword sqlOption    Automatic_timestamp
 syn keyword sqlOption    Background_priority
-syn keyword sqlOption    Bell
-syn keyword sqlOption    Blob_threshold
 syn keyword sqlOption    Blocking
 syn keyword sqlOption    Blocking_timeout
 syn keyword sqlOption    Chained
-syn keyword sqlOption    Char_OEM_Translation
 syn keyword sqlOption    Checkpoint_time
 syn keyword sqlOption    Cis_option
 syn keyword sqlOption    Cis_rowset_size
 syn keyword sqlOption    Close_on_endtrans
-syn keyword sqlOption    Command_delimiter
-syn keyword sqlOption    Commit_on_exit
-syn keyword sqlOption    Compression
+syn keyword sqlOption    Collect_statistics_on_dml_updates
+syn keyword sqlOption    Conn_auditing
 syn keyword sqlOption    Connection_authentication
 syn keyword sqlOption    Continue_after_raiserror
 syn keyword sqlOption    Conversion_error
@@ -543,125 +553,90 @@ syn keyword sqlOption    Date_format
 syn keyword sqlOption    Date_order
 syn keyword sqlOption    Debug_messages
 syn keyword sqlOption    Dedicated_task
+syn keyword sqlOption    Default_dbspace
 syn keyword sqlOption    Default_timestamp_increment
 syn keyword sqlOption    Delayed_commit_timeout
 syn keyword sqlOption    Delayed_commits
-syn keyword sqlOption    Delete_old_logs
-syn keyword sqlOption    Describe_Java_Format
-syn keyword sqlOption    Divide_by_zero_error
-syn keyword sqlOption    Echo
 syn keyword sqlOption    Escape_character
 syn keyword sqlOption    Exclude_operators
 syn keyword sqlOption    Extended_join_syntax
-syn keyword sqlOption    External_remote_options
 syn keyword sqlOption    Fire_triggers
 syn keyword sqlOption    First_day_of_week
-syn keyword sqlOption    Float_as_double
 syn keyword sqlOption    For_xml_null_treatment
 syn keyword sqlOption    Force_view_creation
 syn keyword sqlOption    Global_database_id
-syn keyword sqlOption    Headings
-syn keyword sqlOption    Input_format
+syn keyword sqlOption    Http_session_timeout
 syn keyword sqlOption    Integrated_server_name
 syn keyword sqlOption    Isolation_level
-syn keyword sqlOption    ISQL_command_timing
-syn keyword sqlOption    ISQL_escape_character
-syn keyword sqlOption    ISQL_field_separator
-syn keyword sqlOption    ISQL_log
-syn keyword sqlOption    ISQL_plan
-syn keyword sqlOption    ISQL_plan_cursor_sensitivity
-syn keyword sqlOption    ISQL_plan_cursor_writability
-syn keyword sqlOption    ISQL_quote
-syn keyword sqlOption    Java_heap_size
-syn keyword sqlOption    Java_input_output
-syn keyword sqlOption    Java_namespace_size
-syn keyword sqlOption    Java_page_buffer_size
+syn keyword sqlOption    Java_location
+syn keyword sqlOption    Java_main_userid
+syn keyword sqlOption    Java_vm_options
 syn keyword sqlOption    Lock_rejected_rows
 syn keyword sqlOption    Log_deadlocks
-syn keyword sqlOption    Log_detailed_plans
-syn keyword sqlOption    Log_max_requests
 syn keyword sqlOption    Login_mode
 syn keyword sqlOption    Login_procedure
+syn keyword sqlOption    Materialized_view_optimization
+syn keyword sqlOption    Max_client_statements_cached
 syn keyword sqlOption    Max_cursor_count
 syn keyword sqlOption    Max_hash_size
 syn keyword sqlOption    Max_plans_cached
+syn keyword sqlOption    Max_priority
+syn keyword sqlOption    Max_query_tasks
 syn keyword sqlOption    Max_recursive_iterations
 syn keyword sqlOption    Max_statement_count
-syn keyword sqlOption    Max_work_table_hash_size
+syn keyword sqlOption    Max_temp_space
 syn keyword sqlOption    Min_password_length
 syn keyword sqlOption    Nearest_century
 syn keyword sqlOption    Non_keywords
-syn keyword sqlOption    NULLS
-syn keyword sqlOption    ODBC_describe_binary_as_varbinary
-syn keyword sqlOption    ODBC_distinguish_char_and_varchar
-syn keyword sqlOption    On_Charset_conversion_failure
-syn keyword sqlOption    On_error
+syn keyword sqlOption    Odbc_describe_binary_as_varbinary
+syn keyword sqlOption    Odbc_distinguish_char_and_varchar
+syn keyword sqlOption    Oem_string
+syn keyword sqlOption    On_charset_conversion_failure
 syn keyword sqlOption    On_tsql_error
-syn keyword sqlOption    Optimistic_wait_for_commit
 syn keyword sqlOption    Optimization_goal
 syn keyword sqlOption    Optimization_level
-syn keyword sqlOption    Optimization_logging
 syn keyword sqlOption    Optimization_workload
-syn keyword sqlOption    Output_format
-syn keyword sqlOption    Output_length
-syn keyword sqlOption    Output_nulls
-syn keyword sqlOption    Percent_as_comment
 syn keyword sqlOption    Pinned_cursor_percent_of_cache
+syn keyword sqlOption    Post_login_procedure
 syn keyword sqlOption    Precision
 syn keyword sqlOption    Prefetch
 syn keyword sqlOption    Preserve_source_format
 syn keyword sqlOption    Prevent_article_pkey_update
-syn keyword sqlOption    Qualify_owners
-syn keyword sqlOption    Query_plan_on_open
-syn keyword sqlOption    Quiet
-syn keyword sqlOption    Quote_all_identifiers
+syn keyword sqlOption    Priority
+syn keyword sqlOption    Query_mem_timeout
 syn keyword sqlOption    Quoted_identifier
 syn keyword sqlOption    Read_past_deleted
 syn keyword sqlOption    Recovery_time
 syn keyword sqlOption    Remote_idle_timeout
 syn keyword sqlOption    Replicate_all
-syn keyword sqlOption    Replication_error
-syn keyword sqlOption    Replication_error_piece
+syn keyword sqlOption    Request_timeout
 syn keyword sqlOption    Return_date_time_as_string
-syn keyword sqlOption    Return_java_as_string
-syn keyword sqlOption    RI_Trigger_time
 syn keyword sqlOption    Rollback_on_deadlock
 syn keyword sqlOption    Row_counts
-syn keyword sqlOption    Save_remote_passwords
 syn keyword sqlOption    Scale
-syn keyword sqlOption    Screen_format
-syn keyword sqlOption    Sort_Collation
-syn keyword sqlOption    SQL_flagger_error_level
-syn keyword sqlOption    SQL_flagger_warning_level
-syn keyword sqlOption    SQLConnect
-syn keyword sqlOption    SQLStart
-syn keyword sqlOption    SR_Date_Format
-syn keyword sqlOption    SR_Time_Format
-syn keyword sqlOption    SR_TimeStamp_Format
-syn keyword sqlOption    Statistics
+syn keyword sqlOption    Secure_feature_key
+syn keyword sqlOption    Sort_collation
+syn keyword sqlOption    Sql_flagger_error_level
+syn keyword sqlOption    Sql_flagger_warning_level
 syn keyword sqlOption    String_rtruncation
-syn keyword sqlOption    Subscribe_by_remote
 syn keyword sqlOption    Subsume_row_locks
-syn keyword sqlOption    Suppress_TDS_debugging
-syn keyword sqlOption    TDS_Empty_string_is_null
+syn keyword sqlOption    Suppress_tds_debugging
+syn keyword sqlOption    Synchronize_mirror_on_commit
+syn keyword sqlOption    Tds_empty_string_is_null
 syn keyword sqlOption    Temp_space_limit_check
-syn keyword sqlOption    Thread_count
-syn keyword sqlOption    Thread_stack
-syn keyword sqlOption    Thread_swaps
 syn keyword sqlOption    Time_format
 syn keyword sqlOption    Time_zone_adjustment
 syn keyword sqlOption    Timestamp_format
-syn keyword sqlOption    Truncate_date_values
 syn keyword sqlOption    Truncate_timestamp_values
-syn keyword sqlOption    Truncate_with_auto_commit
-syn keyword sqlOption    Truncation_length
-syn keyword sqlOption    Tsql_hex_constant
+syn keyword sqlOption    Tsql_outer_joins
 syn keyword sqlOption    Tsql_variables
+syn keyword sqlOption    Updatable_statement_isolation
 syn keyword sqlOption    Update_statistics
+syn keyword sqlOption    Upgrade_database_capability
 syn keyword sqlOption    User_estimates
-syn keyword sqlOption    Verify_all_columns
-syn keyword sqlOption    Verify_threshold
+syn keyword sqlOption    Verify_password_function
 syn keyword sqlOption    Wait_for_commit
+syn keyword sqlOption    Webservice_namespace_host
 
 " Strings and characters:
 syn region sqlString		start=+"+    end=+"+ contains=@Spell

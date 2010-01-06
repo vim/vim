@@ -2,7 +2,7 @@
 " Language:	MSDOS batch file (with NT command extensions)
 " Maintainer:	Mike Williams <mrw@eandem.co.uk>
 " Filenames:    *.bat
-" Last Change:	10th May 2008
+" Last Change:	6th September 2009
 " Web Page:     http://www.eandem.co.uk/mrw/vim
 "
 " Options Flags:
@@ -36,7 +36,7 @@ syn keyword dosbatchRepeat	for
 syn case match
 syn keyword dosbatchOperator    EQU NEQ LSS LEQ GTR GEQ
 syn case ignore
-syn match dosbatchOperator      "\s[-+\*/%]\s"
+syn match dosbatchOperator      "\s[-+\*/%!~]\s"
 syn match dosbatchOperator      "="
 syn match dosbatchOperator      "[-+\*/%]="
 syn match dosbatchOperator      "\s\(&\||\|^\|<<\|>>\)=\=\s"
@@ -51,10 +51,10 @@ syn match dosbatchEchoOperator  "\<echo\s\+\(on\|off\)\s*$"lc=4
 syn match dosbatchCmd		"(\s*'[^']*'"lc=1 contains=dosbatchString,dosbatchVariable,dosBatchArgument,@dosbatchNumber,dosbatchImplicit,dosbatchStatement,dosbatchConditional,dosbatchRepeat,dosbatchOperator
 
 " Numbers - surround with ws to not include in dir and filenames
-syn match dosbatchInteger       "[[:space:]=(/:]\d\+"lc=1
-syn match dosbatchHex		"[[:space:]=(/:]0x\x\+"lc=1
-syn match dosbatchBinary	"[[:space:]=(/:]0b[01]\+"lc=1
-syn match dosbatchOctal		"[[:space:]=(/:]0\o\+"lc=1
+syn match dosbatchInteger       "[[:space:]=(/:,!~-]\d\+"lc=1
+syn match dosbatchHex		"[[:space:]=(/:,!~-]0x\x\+"lc=1
+syn match dosbatchBinary	"[[:space:]=(/:,!~-]0b[01]\+"lc=1
+syn match dosbatchOctal		"[[:space:]=(/:,!~-]0\o\+"lc=1
 syn cluster dosbatchNumber      contains=dosbatchInteger,dosbatchHex,dosbatchBinary,dosbatchOctal
 
 " Command line switches
@@ -69,15 +69,15 @@ syn match dosbatchSpecialChar   "%%"
 syn match dosbatchIdentifier    contained "\s\h\w*\>"
 syn match dosbatchVariable	"%\h\w*%"
 syn match dosbatchVariable	"%\h\w*:\*\=[^=]*=[^%]*%"
-syn match dosbatchVariable	"%\h\w*:\~\d\+,\d\+%" contains=dosbatchInteger
+syn match dosbatchVariable	"%\h\w*:\~[-]\=\d\+\(,[-]\=\d\+\)\=%" contains=dosbatchInteger
 syn match dosbatchVariable	"!\h\w*!"
-syn match dosbatchVariable	"!\h\w*:\*\=[^=]*=[^%]*!"
-syn match dosbatchVariable	"!\h\w*:\~\d\+,\d\+!" contains=dosbatchInteger
+syn match dosbatchVariable	"!\h\w*:\*\=[^=]*=[^!]*!"
+syn match dosbatchVariable	"!\h\w*:\~[-]\=\d\+\(,[-]\=\d\+\)\=!" contains=dosbatchInteger
 syn match dosbatchSet		"\s\h\w*[+-]\==\{-1}" contains=dosbatchIdentifier,dosbatchOperator
 
 " Args to bat files and for loops, etc
 syn match dosbatchArgument	"%\(\d\|\*\)"
-syn match dosbatchArgument	"%%[a-z]\>"
+syn match dosbatchArgument	"%[a-z]\>"
 if dosbatch_cmdextversion == 1
   syn match dosbatchArgument	"%\~[fdpnxs]\+\(\($PATH:\)\=[a-z]\|\d\)\>"
 else
@@ -92,7 +92,9 @@ syn match dosbatchLabel		":\h\w*\>"
 
 " Comments - usual rem but also two colons as first non-space is an idiom
 syn match dosbatchComment	"^rem\($\|\s.*$\)"lc=3 contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
+syn match dosbatchComment	"^@rem\($\|\s.*$\)"lc=4 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
 syn match dosbatchComment	"\srem\($\|\s.*$\)"lc=4 contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
+syn match dosbatchComment	"\s@rem\($\|\s.*$\)"lc=5 contains=dosbatchTodo,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
 syn match dosbatchComment	"\s*:\s*:.*$" contains=dosbatchTodo,dosbatchSpecialChar,@dosbatchNumber,dosbatchVariable,dosbatchArgument,@Spell
 
 " Comments in ()'s - still to handle spaces before rem

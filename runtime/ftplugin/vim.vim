@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 Feb 27
+" Last Change:	2009 Jan 22
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -11,15 +11,19 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-let cpo_save = &cpo
+let s:cpo_save = &cpo
 set cpo-=C
 
-let b:undo_ftplugin = "setl fo< com< tw< commentstring<"
+let b:undo_ftplugin = "setl fo< isk< com< tw< commentstring<"
 	\ . "| unlet! b:match_ignorecase b:match_words b:match_skip"
 
 " Set 'formatoptions' to break comment lines but not other lines,
 " and insert the comment leader when hitting <CR> or using "o".
 setlocal fo-=t fo+=croql
+
+" To allow tag lookup via CTRL-] for autoload functions, '#' must be a
+" keyword character.  E.g., for netrw#Nread().
+setlocal isk+=#
 
 " Set 'comments' to format dashed lists in comments
 setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
@@ -53,8 +57,7 @@ if exists("loaded_matchit")
   let b:match_ignorecase = 0
   let b:match_words =
 	\ '\<fu\%[nction]\>:\<retu\%[rn]\>:\<endf\%[unction]\>,' .
-	\ '\<wh\%[ile]\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<endw\%[hile]\>,' .
-	\ '\<for\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<endfo\%[r]\>,' .
+ 	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
 	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
 	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,' .
@@ -64,7 +67,8 @@ if exists("loaded_matchit")
 	\ synIDattr(synID(line("."),col("."),1),"name") =~? "comment\\|string"'
 endif
 
-let &cpo = cpo_save
+let &cpo = s:cpo_save
+unlet s:cpo_save
 
 " removed this, because 'cpoptions' is a global option.
 " setlocal cpo+=M		" makes \%( match \)
