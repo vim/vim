@@ -11453,7 +11453,7 @@ f_has(argvars, rettv)
 #if defined(UNIX) && (defined(__CYGWIN32__) || defined(__CYGWIN__))
 	"win32unix",
 #endif
-#ifdef WIN64
+#if defined(WIN64) || defined(_WIN64)
 	"win64",
 #endif
 #ifdef EBCDIC

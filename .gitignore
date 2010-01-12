@@ -1,4 +1,4 @@
-# Unixen
+# Unixen: object and executable files.
 *.o
 src/vim
 src/xxd/xxd
@@ -16,7 +16,6 @@ src/auto/link.sed
 src/auto/pathdef.c
 
 # Windows
-.hgignore
 *.exe
 *.idb
 *.manifest
