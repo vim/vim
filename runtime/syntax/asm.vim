@@ -1,10 +1,12 @@
 " Vim syntax file
 " Language:	GNU Assembler
-" Maintainer:	Kevin Dahlhausen <kdahlhaus@yahoo.com>
-" Last Change:	2002 Sep 19
+" Maintainer:	Erik Wognsen <erik.wognsen@gmail.com>
+"		Previous maintainer:
+"		Kevin Dahlhausen <kdahlhaus@yahoo.com>
+" Last Change:	2010 Jan 9
 
 " For version 5.x: Clear all syntax items
-" For version 6.x: Quit when a syntax file was already loaded
+" For version 6.0 and later: Quit when a syntax file was already loaded
 if version < 600
   syntax clear
 elseif exists("b:current_syntax")
@@ -12,7 +14,6 @@ elseif exists("b:current_syntax")
 endif
 
 syn case ignore
-
 
 " storage types
 syn match asmType "\.long"
@@ -44,9 +45,8 @@ syn match octNumber		"0[0-7][0-7]\+"
 syn match hexNumber		"0[xX][0-9a-fA-F]\+"
 syn match binNumber		"0[bB][0-1]*"
 
-
-syn match asmSpecialComment	";\*\*\*.*"
-syn match asmComment		";.*"hs=s+1
+syn match asmComment		"#.*"
+syn region asmComment		start="/\*" end="\*/"
 
 syn match asmInclude		"\.include"
 syn match asmCond		"\.if"
@@ -86,14 +86,8 @@ if version >= 508 || !exists("did_asm_syntax_inits")
   HiLink octNumber	Number
   HiLink binNumber	Number
 
-  HiLink asmSpecialComment Comment
   HiLink asmIdentifier Identifier
   HiLink asmType	Type
-
-  " My default color overrides:
-  " hi asmSpecialComment ctermfg=red
-  " hi asmIdentifier ctermfg=lightcyan
-  " hi asmType ctermbg=black ctermfg=brown
 
   delcommand HiLink
 endif

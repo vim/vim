@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 Jan 06
+*todo.txt*      For Vim version 7.2.  Last change: 2010 Jan 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,9 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch from Dominique Pelle to comment out unused functions. (2009 Dec 25)
+Patch from Dominique Pelle, documentation fixes. (2010 Jan 9)
+Another patch for README files.
 
 Extention for MzScheme interface. (Sergey Khorev, 2009 Dec 21, update Dec 26)
+
+patch from Sergey Khorev for "*" command escaping. (2010 Jan 5)
 
 Patch: :compiler command doesn't function properly when invoked in a function
 (Yukihiro Nakadaira)
@@ -47,6 +50,12 @@ Better: if the window offset was negative before changing something, then
 don't change it.
 
 Patch to make CTRL-] work on scheme keywords. (Sergey Khorev, 2010 Jan 5)
+
+Omni menu position one column too far to the right, double-wide chars split to
+next line. (Jiang Ma, 2010 Jan 10)
+Explicit example from Dominique.
+Need to check that the last character fits?
+Patch from Dominique Pelle. (2010 Jan 12)
 
 has("win64") returns zero.  Patch from Sergey Khorev, 2009 Jan 5.
 Or define WIN64 when _WIN64 is defined, change all _WIN64 to WIN64.
@@ -1134,7 +1143,7 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
--   Use latest autoconf (3.64)
+-   Use latest autoconf (2.65)
 -   Use NSIS 2.45, it includes Windows 7 support.
 -   Include all files in distro, no "extra" and "lang" package.
 -   Create Mercurial repository.
