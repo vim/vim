@@ -7873,6 +7873,9 @@ nv_g_cmd(cap)
 				    && vim_iswhite(ptr[curwin->w_cursor.col]))
 		--curwin->w_cursor.col;
 	    curwin->w_set_curswant = TRUE;
+#ifdef FEAT_VISUAL
+	    adjust_for_sel(cap);
+#endif
 	}
 	break;
 
