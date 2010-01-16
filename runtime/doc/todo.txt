@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 Jan 12
+*todo.txt*      For Vim version 7.2.  Last change: 2010 Jan 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -33,6 +33,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Patch from Dominique Pelle, documentation fixes. (2010 Jan 9)
 Another patch for README files.
 
+Patch from Dominique Pelle for buffer reload when fixing spell mistake.
+(2010 Jan 14)
+
 Extention for MzScheme interface. (Sergey Khorev, 2009 Dec 21, update Dec 26)
 
 patch from Sergey Khorev for "*" command escaping. (2010 Jan 5)
@@ -51,11 +54,14 @@ don't change it.
 
 Patch to make CTRL-] work on scheme keywords. (Sergey Khorev, 2010 Jan 5)
 
+Gcc warning for condition that can never be true, fold.c line 3242. (James
+Vega, 2010 Jan 13)
+
 Omni menu position one column too far to the right, double-wide chars split to
 next line. (Jiang Ma, 2010 Jan 10)
 Explicit example from Dominique.
 Need to check that the last character fits?
-Patch from Dominique Pelle. (2010 Jan 12)
+Patch from Dominique Pelle. (2010 Jan 12)  One more (2010 Jan 12)
 
 has("win64") returns zero.  Patch from Sergey Khorev, 2009 Jan 5.
 Or define WIN64 when _WIN64 is defined, change all _WIN64 to WIN64.
