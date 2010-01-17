@@ -681,6 +681,11 @@ LANG_GEN = \
 		runtime/spell/README.txt \
 		runtime/spell/??/*.diff \
 		runtime/spell/??/main.aap \
+		runtime/spell/tet/*.diff \
+		runtime/spell/tet/main.aap \
+		runtime/spell/check/main.aap \
+		runtime/spell/check/*.aff \
+		runtime/spell/check/*.dic \
 		runtime/spell/yi/README.txt \
 		runtime/spell/main.aap \
 		runtime/spell/*.vim \
