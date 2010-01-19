@@ -10306,7 +10306,10 @@ spell_suggest(count)
     /* Figure out if the word should be capitalised. */
     need_cap = check_need_cap(curwin->w_cursor.lnum, curwin->w_cursor.col);
 
-    line = ml_get_curline();
+    /* Make a copy of current line since autocommands may free the line. */
+    line = vim_strsave(ml_get_curline());
+    if (line == NULL)
+	goto skip;
 
     /* Get the list of suggestions.  Limit to 'lines' - 2 or the number in
      * 'spellsuggest', whatever is smaller. */
@@ -10470,6 +10473,8 @@ spell_suggest(count)
 	curwin->w_cursor = prev_cursor;
 
     spell_find_cleanup(&sug);
+skip:
+    vim_free(line);
 }
 
 /*
@@ -10931,7 +10936,7 @@ spell_suggest_intern(su, interactive)
 	    rescore_suggestions(su);
 
 	/*
-	 * While going throught the soundfold tree "su_maxscore" is the score
+	 * While going through the soundfold tree "su_maxscore" is the score
 	 * for the soundfold word, limits the changes that are being tried,
 	 * and "su_sfmaxscore" the rescored score, which is set by
 	 * cleanup_suggestions().
@@ -11415,7 +11420,7 @@ suggest_trie_walk(su, lp, fword, soundfold)
     char_u	tword[MAXWLEN];	    /* good word collected so far */
     trystate_T	stack[MAXWLEN];
     char_u	preword[MAXWLEN * 3]; /* word found with proper case;
-				       * concatanation of prefix compound
+				       * concatenation of prefix compound
 				       * words and split word.  NUL terminated
 				       * when going deeper but not when coming
 				       * back. */
