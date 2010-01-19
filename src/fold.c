@@ -3239,8 +3239,8 @@ foldlevelMarker(flp)
 		    flp->lvl = n;
 		    flp->lvl_next = n - 1;
 		    /* never start a fold with an end marker */
-		    if (flp->lvl_next > flp->lvl)
-			flp->lvl_next = flp->lvl;
+		    if (flp->lvl_next > start_lvl)
+			flp->lvl_next = start_lvl;
 		}
 	    }
 	    else
