@@ -3036,7 +3036,8 @@ do_source(fname, check_other, is_vimrc)
 #endif
 
 #ifdef STARTUPTIME
-    time_push(&tv_rel, &tv_start);
+    if (time_fd != NULL)
+	time_push(&tv_rel, &tv_start);
 #endif
 
 #ifdef FEAT_EVAL
@@ -3162,9 +3163,12 @@ do_source(fname, check_other, is_vimrc)
 	verbose_leave();
     }
 #ifdef STARTUPTIME
-    vim_snprintf((char *)IObuff, IOSIZE, "sourcing %s", fname);
-    time_msg((char *)IObuff, &tv_start);
-    time_pop(&tv_rel);
+    if (time_fd != NULL)
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, "sourcing %s", fname);
+	time_msg((char *)IObuff, &tv_start);
+	time_pop(&tv_rel);
+    }
 #endif
 
 #ifdef FEAT_EVAL
