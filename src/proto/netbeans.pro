@@ -16,7 +16,7 @@ void netbeans_inserted __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, char_u
 void netbeans_removed __ARGS((buf_T *bufp, linenr_T linenr, colnr_T col, long len));
 void netbeans_unmodified __ARGS((buf_T *bufp));
 void netbeans_button_release __ARGS((int button));
-void netbeans_keycommand __ARGS((int key));
+int netbeans_keycommand __ARGS((int key));
 void netbeans_save_buffer __ARGS((buf_T *bufp));
 void netbeans_deleted_all_lines __ARGS((buf_T *bufp));
 int netbeans_is_guarded __ARGS((linenr_T top, linenr_T bot));

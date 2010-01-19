@@ -70,7 +70,8 @@ static long pos2off __ARGS((buf_T *, pos_T *));
 static pos_T *off2pos __ARGS((buf_T *, long));
 static pos_T *get_off_or_lnum __ARGS((buf_T *buf, char_u **argp));
 static long get_buf_size __ARGS((buf_T *));
-static void netbeans_keystring __ARGS((int key, char *keystr));
+static int netbeans_keystring __ARGS((char_u *keystr));
+static void postpone_keycommand __ARGS((char_u *keystr));
 static void special_keys __ARGS((char_u *args));
 
 static void netbeans_connect __ARGS((void));
@@ -502,7 +503,7 @@ getConnInfo(char *file, char **host, char **port, char **auth)
 
 struct keyqueue
 {
-    int		     key;
+    char_u	    *keystr;
     struct keyqueue *next;
     struct keyqueue *prev;
 };
@@ -514,13 +515,17 @@ static keyQ_T keyHead; /* dummy node, header for circular queue */
 
 /*
  * Queue up key commands sent from netbeans.
+ * We store the string, because it may depend on the global mod_mask and
+ * :nbkey doesn't have a key number.
  */
     static void
-postpone_keycommand(int key)
+postpone_keycommand(char_u *keystr)
 {
     keyQ_T *node;
 
     node = (keyQ_T *)alloc(sizeof(keyQ_T));
+    if (node == NULL)
+	return;  /* out of memory, drop the key */
 
     if (keyHead.next == NULL) /* initialize circular queue */
     {
@@ -534,7 +539,7 @@ postpone_keycommand(int key)
     keyHead.prev->next = node;
     keyHead.prev = node;
 
-    node->key = key;
+    node->keystr = vim_strsave(keystr);
 }
 
 /*
@@ -543,15 +548,20 @@ postpone_keycommand(int key)
     static void
 handle_key_queue(void)
 {
-    while (keyHead.next && keyHead.next != &keyHead)
+    int postponed = FALSE;
+
+    while (!postponed && keyHead.next && keyHead.next != &keyHead)
     {
 	/* first, unlink the node */
 	keyQ_T *node = keyHead.next;
 	keyHead.next = node->next;
 	node->next->prev = node->prev;
 
-	/* now, send the keycommand */
-	netbeans_keycommand(node->key);
+	/* Now, send the keycommand.  This may cause it to be postponed again
+	 * and change keyHead. */
+	if (node->keystr != NULL)
+	    postponed = !netbeans_keystring(node->keystr);
+	vim_free(node->keystr);
 
 	/* Finally, dispose of the node */
 	vim_free(node);
@@ -2495,7 +2505,7 @@ nb_do_cmd(
 	    }
 	    else
 	    {
-	        nbdebug(("    Buffer has no changes!\n"));
+		nbdebug(("    Buffer has no changes!\n"));
 	    }
 /* =====================================================================*/
 	}
@@ -2658,7 +2668,7 @@ special_keys(char_u *args)
 ex_nbkey(eap)
     exarg_T	*eap;
 {
-    netbeans_keystring(0, (char *)eap->arg);
+    (void)netbeans_keystring(eap->arg);
 }
 
 
@@ -2680,7 +2690,7 @@ nb_init_graphics(void)
 }
 
 /*
- * Convert key to netbeans name.
+ * Convert key to netbeans name.  This uses the global "mod_mask".
  */
     static void
 netbeans_keyname(int key, char *buf)
@@ -3127,23 +3137,27 @@ netbeans_button_release(int button)
 /*
  * Send a keypress event back to netbeans. This usually simulates some
  * kind of function key press. This function operates on a key code.
+ * Return TRUE when the key was sent, FALSE when the command has been
+ * postponed.
  */
-    void
+    int
 netbeans_keycommand(int key)
 {
     char	keyName[60];
 
     netbeans_keyname(key, keyName);
-    netbeans_keystring(key, keyName);
+    return netbeans_keystring((char_u *)keyName);
 }
 
 
 /*
  * Send a keypress event back to netbeans. This usually simulates some
  * kind of function key press. This function operates on a key string.
+ * Return TRUE when the key was sent, FALSE when the command has been
+ * postponed.
  */
-    static void
-netbeans_keystring(int key, char *keyName)
+    static int
+netbeans_keystring(char_u *keyName)
 {
     char	buf[2*MAXPATHL];
     int		bufno = nb_getbufno(curbuf);
@@ -3151,7 +3165,7 @@ netbeans_keystring(int key, char *keyName)
     char_u	*q;
 
     if (!haveConnection)
-	return;
+	return TRUE;
 
 
     if (bufno == -1)
@@ -3160,7 +3174,7 @@ netbeans_keystring(int key, char *keyName)
 	q = curbuf->b_ffname == NULL ? (char_u *)""
 						 : nb_quote(curbuf->b_ffname);
 	if (q == NULL)
-	    return;
+	    return TRUE;
 	vim_snprintf(buf, sizeof(buf), "0:fileOpened=%d \"%s\" %s %s\n", 0,
 		q,
 		"T",  /* open in NetBeans */
@@ -3170,9 +3184,8 @@ netbeans_keystring(int key, char *keyName)
 	nbdebug(("EVT: %s", buf));
 	nb_send(buf, "netbeans_keycommand");
 
-	if (key > 0)
-	    postpone_keycommand(key);
-	return;
+	postpone_keycommand(keyName);
+	return FALSE;
     }
 
     /* sync the cursor position */
@@ -3198,6 +3211,7 @@ netbeans_keystring(int key, char *keyName)
 		off, (long)curwin->w_cursor.lnum, (long)curwin->w_cursor.col);
     nbdebug(("EVT: %s", buf));
     nb_send(buf, "netbeans_keycommand");
+    return TRUE;
 }
 
 
