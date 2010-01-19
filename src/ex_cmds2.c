@@ -2802,20 +2802,35 @@ source_level(cookie)
 
 static char_u *get_one_sourceline __ARGS((struct source_cookie *sp));
 
-#if defined(WIN32) && defined(FEAT_CSCOPE)
+#if (defined(WIN32) && defined(FEAT_CSCOPE)) || defined(HAVE_FD_CLOEXEC)
+# define USE_FOPEN_NOINH
 static FILE *fopen_noinh_readbin __ARGS((char *filename));
 
 /*
  * Special function to open a file without handle inheritance.
+ * When possible the handle is closed on exec().
  */
     static FILE *
 fopen_noinh_readbin(filename)
     char    *filename;
 {
-    int	fd_tmp = mch_open(filename, O_RDONLY | O_BINARY | O_NOINHERIT, 0);
+    int	fd_tmp = mch_open(filename, O_RDONLY
+# ifdef WIN32
+			  O_BINARY | O_NOINHERIT
+# endif
+			  , 0);
 
     if (fd_tmp == -1)
 	return NULL;
+
+# ifdef HAVE_FD_CLOEXEC
+    {
+	int fdflags = fcntl(fd_tmp, F_GETFD);
+	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
+	    fcntl(fd_tmp, F_SETFD, fdflags | FD_CLOEXEC);
+    }
+# endif
+
     return fdopen(fd_tmp, READBIN);
 }
 #endif
@@ -2895,7 +2910,7 @@ do_source(fname, check_other, is_vimrc)
     apply_autocmds(EVENT_SOURCEPRE, fname_exp, fname_exp, FALSE, curbuf);
 #endif
 
-#if defined(WIN32) && defined(FEAT_CSCOPE)
+#ifdef USE_FOPEN_NOINH
     cookie.fp = fopen_noinh_readbin((char *)fname_exp);
 #else
     cookie.fp = mch_fopen((char *)fname_exp, READBIN);
@@ -2916,7 +2931,7 @@ do_source(fname, check_other, is_vimrc)
 		*p = '.';
 	    else
 		*p = '_';
-#if defined(WIN32) && defined(FEAT_CSCOPE)
+#ifdef USE_FOPEN_NOINH
 	    cookie.fp = fopen_noinh_readbin((char *)fname_exp);
 #else
 	    cookie.fp = mch_fopen((char *)fname_exp, READBIN);
