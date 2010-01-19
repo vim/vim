@@ -433,7 +433,6 @@ static listitem_T *list_find __ARGS((list_T *l, long n));
 static long list_find_nr __ARGS((list_T *l, long idx, int *errorp));
 static long list_idx_of_item __ARGS((list_T *l, listitem_T *item));
 static void list_append __ARGS((list_T *l, listitem_T *item));
-static int list_append_tv __ARGS((list_T *l, typval_T *tv));
 static int list_append_number __ARGS((list_T *l, varnumber_T n));
 static int list_insert_tv __ARGS((list_T *l, typval_T *tv, listitem_T *item));
 static int list_extend __ARGS((list_T	*l1, list_T *l2, listitem_T *bef));
@@ -448,12 +447,9 @@ static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d, int recurse));
-static dictitem_T *dictitem_alloc __ARGS((char_u *key));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
-static void dictitem_free __ARGS((dictitem_T *item));
 static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
-static int dict_add __ARGS((dict_T *d, dictitem_T *item));
 static long dict_len __ARGS((dict_T *d));
 static dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
 static char_u *dict2string __ARGS((typval_T *tv, int copyID));
@@ -628,6 +624,9 @@ static void f_min __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_mkdir __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_mode __ARGS((typval_T *argvars, typval_T *rettv));
+#ifdef FEAT_MZSCHEME
+static void f_mzeval __ARGS((typval_T *argvars, typval_T *rettv));
+#endif
 static void f_nextnonblank __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_nr2char __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_pathshorten __ARGS((typval_T *argvars, typval_T *rettv));
@@ -764,7 +763,6 @@ static void set_var __ARGS((char_u *name, typval_T *varp, int copy));
 static int var_check_ro __ARGS((int flags, char_u *name));
 static int var_check_fixed __ARGS((int flags, char_u *name));
 static int tv_check_lock __ARGS((int lock, char_u *name));
-static void copy_tv __ARGS((typval_T *from, typval_T *to));
 static int item_copy __ARGS((typval_T *from, typval_T *to, int deep, int copyID));
 static char_u *find_option_end __ARGS((char_u **arg, int *opt_flags));
 static char_u *trans_function_name __ARGS((char_u **pp, int skip, int flags, funcdict_T *fd));
@@ -6155,7 +6153,7 @@ list_append(l, item)
  * Append typval_T "tv" to the end of list "l".
  * Return FAIL when out of memory.
  */
-    static int
+    int
 list_append_tv(l, tv)
     list_T	*l;
     typval_T	*tv;
@@ -6812,7 +6810,7 @@ dict_free(d, recurse)
  * Note that the value of the item "di_tv" still needs to be initialized!
  * Returns NULL when out of memory.
  */
-    static dictitem_T *
+    dictitem_T *
 dictitem_alloc(key)
     char_u	*key;
 {
@@ -6868,7 +6866,7 @@ dictitem_remove(dict, item)
 /*
  * Free a dict item.  Also clears the value.
  */
-    static void
+    void
 dictitem_free(item)
     dictitem_T *item;
 {
@@ -6948,7 +6946,7 @@ dict_copy(orig, deep, copyID)
  * Add item "item" to Dictionary "d".
  * Returns FAIL when out of memory and when key already existed.
  */
-    static int
+    int
 dict_add(d, item)
     dict_T	*d;
     dictitem_T	*item;
@@ -7699,6 +7697,9 @@ static struct fst
     {"mkdir",		1, 3, f_mkdir},
 #endif
     {"mode",		0, 1, f_mode},
+#ifdef FEAT_MZSCHEME
+    {"mzeval",		1, 1, f_mzeval},
+#endif
     {"nextnonblank",	1, 1, f_nextnonblank},
     {"nr2char",		1, 1, f_nr2char},
     {"pathshorten",	1, 1, f_pathshorten},
@@ -13591,6 +13592,23 @@ f_mode(argvars, rettv)
     rettv->v_type = VAR_STRING;
 }
 
+#ifdef FEAT_MZSCHEME
+/*
+ * "mzeval()" function
+ */
+    static void
+f_mzeval(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*str;
+    char_u	buf[NUMBUFLEN];
+
+    str = get_tv_string_buf(&argvars[0], buf);
+    do_mzeval(str, rettv);
+}
+#endif
+
 /*
  * "nextnonblank()" function
  */
@@ -19274,7 +19292,7 @@ tv_check_lock(lock, name)
  * It is OK for "from" and "to" to point to the same item.  This is used to
  * make a copy later.
  */
-    static void
+    void
 copy_tv(from, to)
     typval_T *from;
     typval_T *to;

@@ -32,11 +32,11 @@ gui:	newlog $Scripts $ScriptsGUI
 $Scripts $ScriptsGUI: $VimProg
 
 clean:
-	:del {r}{force} *.out test.log tiny.vim small.vim mbyte.vim test.ok X*
+	:del {r}{force} *.out test.log tiny.vim small.vim mbyte.vim mzscheme.vim test.ok X*
 
 # test1 is special, it checks for features
 test1.out: test1.in
-	:del {force} test1.failed tiny.vim small.vim mbyte.vim
+	:del {force} test1.failed tiny.vim small.vim mbyte.vim mzscheme.vim
 	:sys {i} $VimProg -u unix.vim -U NONE --noplugin -s dotest.in test1.in
 	@if os.system("diff test.out test1.ok") != 0:
 		:error test1 FAILED - Something basic is wrong

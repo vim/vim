@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.2.  Last change: 2009 Jun 24
+*if_mzsch.txt*  For Vim version 7.2.  Last change: 2010 Jan 19
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -9,8 +9,9 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 1. Commands				|mzscheme-commands|
 2. Examples				|mzscheme-examples|
 3. Threads				|mzscheme-threads|
-4. The Vim access procedures		|mzscheme-vim|
-5. Dynamic loading			|mzscheme-dynamic|
+4. Vim access from MzScheme		|mzscheme-vim|
+5. mzeval() Vim function		|mzscheme-mzeval|
+6. Dynamic loading			|mzscheme-dynamic|
 
 {Vi does not have any of these commands}
 
@@ -142,7 +143,7 @@ Thread scheduling in the console version of Vim is less reliable than in the
 GUI version.
 
 ==============================================================================
-5. VIM Functions					*mzscheme-vim*
+4. Vim access from MzScheme				*mzscheme-vim*
 
 							*mzscheme-vimext*
 The 'vimext' module provides access to procedures defined in the MzScheme
@@ -231,7 +232,13 @@ Windows							    *mzscheme-window*
     (set-cursor (line . col) [window])  Set cursor position.
 
 ==============================================================================
-5. Dynamic loading				    *mzscheme-dynamic* *E815*
+5. mzeval() Vim function				    *mzscheme-mzeval*
+
+To facilitate bi-directional interface, you can use |mzeval| function to
+evaluate MzScheme expressions and pass their values to VimL.
+
+==============================================================================
+6. Dynamic loading				    *mzscheme-dynamic* *E815*
 
 On MS-Windows the MzScheme libraries can be loaded dynamically. The |:version|
 output then includes |+mzscheme/dyn|.

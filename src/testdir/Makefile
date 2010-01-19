@@ -23,7 +23,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test54.out test55.out test56.out test57.out test58.out \
 		test59.out test60.out test61.out test62.out test63.out \
 		test64.out test65.out test66.out test67.out test68.out \
-		test69.out
+		test69.out test70.out
 
 SCRIPTS_GUI = test16.out
 
@@ -44,10 +44,10 @@ report:
 $(SCRIPTS) $(SCRIPTS_GUI): $(VIMPROG)
 
 clean:
-	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim test.ok X* valgrind.pid* viminfo
+	-rm -rf *.out *.failed *.rej *.orig test.log tiny.vim small.vim mbyte.vim mzscheme.vim test.ok X* valgrind.pid* viminfo
 
 test1.out: test1.in
-	-rm -f $*.failed tiny.vim small.vim mbyte.vim test.ok X* viminfo
+	-rm -f $*.failed tiny.vim small.vim mbyte.vim mzscheme.vim test.ok X* viminfo
 	$(VALGRIND) $(VIMPROG) -u unix.vim -U NONE --noplugin -s dotest.in $*.in
 	@/bin/sh -c "if diff test.out $*.ok; \
 		then mv -f test.out $*.out; \

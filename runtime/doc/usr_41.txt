@@ -868,6 +868,8 @@ Various:
 	taglist()		get list of matching tags
 	tagfiles()		get a list of tags files
 
+	mzeval()		evaluate |MzScheme| expression
+
 ==============================================================================
 *41.7*	Defining a function
 

@@ -1826,6 +1826,7 @@ min( {list})			Number	minimum value of items in {list}
 mkdir( {name} [, {path} [, {prot}]])
 				Number	create directory {name}
 mode( [expr])			String	current editing mode
+mzeval( {expr})			any	evaluate |MzScheme| expression
 nextnonblank( {lnum})		Number	line nr of non-blank line >= {lnum}
 nr2char( {expr})		String	single char with ASCII value {expr}
 pathshorten( {expr})		String	shorten directory names in a path
@@ -4101,6 +4102,23 @@ mode([expr])	Return a string that indicates the current mode.
 		with |remote_expr()| In most other places it always returns
 		"c" or "n".
 		Also see |visualmode()|.
+
+mzeval({expr})							*mzeval()*
+		Evaluate MzScheme expression {expr} and return its result
+		convert to Vim data structures.
+		Numbers and strings are returned as they are.
+		Pairs (including lists and improper lists) and vectors are
+		returned as Vim |Lists|.
+		Hash tables are represented as Vim |Dictionary| type with keys
+		converted to strings.
+		All other types are converted to string with display function.
+		Examples: >
+		    :mz (define l (list 1 2 3))
+		    :mz (define h (make-hash)) (hash-set! h "list" l)
+		    :echo mzeval("l")
+		    :echo mzeval("h")
+<
+		{only available when compiled with the |+mzscheme| feature}
 
 nextnonblank({lnum})					*nextnonblank()*
 		Return the line number of the first line at or below {lnum}

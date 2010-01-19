@@ -48,7 +48,7 @@ SCRIPTS =	test3.out test4.out test5.out test6.out test7.out \
 		test42.out test52.out test65.out test66.out test67.out \
 		test68.out test69.out
 
-SCRIPTS32 =	test50.out
+SCRIPTS32 =	test50.out test70.out
 
 SCRIPTS_GUI = test16.out
 
@@ -78,6 +78,7 @@ clean:
 	-$(DEL) small.vim
 	-$(DEL) tiny.vim
 	-$(DEL) mbyte.vim
+	-$(DEL) mzscheme.vim
 	-$(DEL) X*
 	-$(DEL) viminfo
 
