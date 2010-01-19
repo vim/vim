@@ -2816,7 +2816,7 @@ fopen_noinh_readbin(filename)
 {
     int	fd_tmp = mch_open(filename, O_RDONLY
 # ifdef WIN32
-			  O_BINARY | O_NOINHERIT
+			  | O_BINARY | O_NOINHERIT
 # endif
 			  , 0);
 
