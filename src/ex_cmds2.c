@@ -2496,14 +2496,15 @@ ex_compiler(eap)
 		 * To remain backwards compatible "current_compiler" is always
 		 * used.  A user's compiler plugin may set it, the distributed
 		 * plugin will then skip the settings.  Afterwards set
-		 * "b:current_compiler" and restore "current_compiler". */
-		old_cur_comp = get_var_value((char_u *)"current_compiler");
+		 * "b:current_compiler" and restore "current_compiler".
+		 * Explicitly prepend "g:" to make it work in a function. */
+		old_cur_comp = get_var_value((char_u *)"g:current_compiler");
 		if (old_cur_comp != NULL)
 		    old_cur_comp = vim_strsave(old_cur_comp);
 		do_cmdline_cmd((char_u *)
 			      "command -nargs=* CompilerSet setlocal <args>");
 	    }
-	    do_unlet((char_u *)"current_compiler", TRUE);
+	    do_unlet((char_u *)"g:current_compiler", TRUE);
 	    do_unlet((char_u *)"b:current_compiler", TRUE);
 
 	    sprintf((char *)buf, "compiler/%s.vim", eap->arg);
@@ -2514,7 +2515,7 @@ ex_compiler(eap)
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");
 
 	    /* Set "b:current_compiler" from "current_compiler". */
-	    p = get_var_value((char_u *)"current_compiler");
+	    p = get_var_value((char_u *)"g:current_compiler");
 	    if (p != NULL)
 		set_internal_string_var((char_u *)"b:current_compiler", p);
 
@@ -2523,12 +2524,12 @@ ex_compiler(eap)
 	    {
 		if (old_cur_comp != NULL)
 		{
-		    set_internal_string_var((char_u *)"current_compiler",
+		    set_internal_string_var((char_u *)"g:current_compiler",
 								old_cur_comp);
 		    vim_free(old_cur_comp);
 		}
 		else
-		    do_unlet((char_u *)"current_compiler", TRUE);
+		    do_unlet((char_u *)"g:current_compiler", TRUE);
 	    }
 	}
     }
