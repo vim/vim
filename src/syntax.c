@@ -4167,7 +4167,6 @@ clear_keywtab(ht)
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    --todo;
-	    kp = HI2KE(hi);
 	    for (kp = HI2KE(hi); kp != NULL; kp = kp_next)
 	    {
 		kp_next = kp->ke_next;

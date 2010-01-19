@@ -1899,7 +1899,6 @@ qf_list(eap)
     int		i;
     int		idx1 = 1;
     int		idx2 = -1;
-    int		need_return = TRUE;
     char_u	*arg = eap->arg;
     int		all = eap->forceit;	/* if not :cl!, only show
 						   recognised errors */
@@ -1939,13 +1938,9 @@ qf_list(eap)
     {
 	if ((qfp->qf_valid || all) && idx1 <= i && i <= idx2)
 	{
-	    if (need_return)
-	    {
-		msg_putchar('\n');
-		if (got_int)
-		    break;
-		need_return = FALSE;
-	    }
+	    msg_putchar('\n');
+	    if (got_int)
+		break;
 
 	    fname = NULL;
 	    if (qfp->qf_fnum != 0
@@ -1988,7 +1983,6 @@ qf_list(eap)
 							      IObuff, IOSIZE);
 	    msg_prt_line(IObuff, FALSE);
 	    out_flush();		/* show one line at a time */
-	    need_return = TRUE;
 	}
 
 	qfp = qfp->qf_next;

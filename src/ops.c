@@ -5591,13 +5591,13 @@ x11_export_final_selection()
 	 */
 	if (has_mbyte)
 	{
-	    char_u	*conv_str = str;
 	    vimconv_T	vc;
 
 	    vc.vc_type = CONV_NONE;
 	    if (convert_setup(&vc, p_enc, (char_u *)"latin1") == OK)
 	    {
-	        int intlen = len;
+		int	intlen = len;
+		char_u	*conv_str;
 
 		conv_str = string_convert(&vc, str, &intlen);
 		len = intlen;

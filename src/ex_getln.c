@@ -2193,7 +2193,6 @@ getexmodeline(promptc, cookie, indent)
     {
 	if (ga_grow(&line_ga, 40) == FAIL)
 	    break;
-	pend = (char_u *)line_ga.ga_data + line_ga.ga_len;
 
 	/* Get one character at a time.  Don't use inchar(), it can't handle
 	 * special characters. */
@@ -3314,7 +3313,7 @@ nextwild(xp, type, options)
 		    WILD_HOME_REPLACE|WILD_ADD_SLASH|WILD_SILENT|WILD_ESCAPE
 							      |options, type);
 	    vim_free(p1);
-	    /* longest match: make sure it is not shorter (happens with :help */
+	    /* longest match: make sure it is not shorter, happens with :help */
 	    if (p2 != NULL && type == WILD_LONGEST)
 	    {
 		for (j = 0; j < xp->xp_pattern_len; ++j)

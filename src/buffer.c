@@ -315,7 +315,7 @@ close_buffer(win, buf, action)
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf;
-    int		nwindows = buf->b_nwindows;
+    int		nwindows;
 #endif
     int		unload_buf = (action != 0);
     int		del_buf = (action == DOBUF_DEL || action == DOBUF_WIPE);

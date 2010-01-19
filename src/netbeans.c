@@ -873,7 +873,7 @@ nb_parse_cmd(char_u *cmd)
     {
 #ifdef NBDEBUG
 	/*
-	 * This happens because the ExtEd can send a cammand or 2 after
+	 * This happens because the ExtEd can send a command or 2 after
 	 * doing a stopDocumentListen command. It doesn't harm anything
 	 * so I'm disabling it except for debugging.
 	 */
@@ -1174,7 +1174,7 @@ nb_quote(char_u *txt)
 		break;
 	}
     }
-    *q++ = '\0';
+    *q = '\0';
 
     return buf;
 }
@@ -3070,7 +3070,7 @@ netbeans_removed(
 }
 
 /*
- * Send netbeans an unmodufied command.
+ * Send netbeans an unmodified command.
  */
     void
 netbeans_unmodified(buf_T *bufp UNUSED)
@@ -3366,7 +3366,7 @@ netbeans_gutter_click(linenr_T lnum)
 
 
 /*
- * Add a sign of the reqested type at the requested location.
+ * Add a sign of the requested type at the requested location.
  *
  * Reverse engineering:
  * Apparently an annotation is defined the first time it is used in a buffer.

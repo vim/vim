@@ -7072,8 +7072,8 @@ vim_tempname(extra_char)
 	 */
 	for (i = 0; i < (int)(sizeof(tempdirs) / sizeof(char *)); ++i)
 	{
-	    size_t	itmplen;
 # ifndef HAVE_MKDTEMP
+	    size_t	itmplen;
 	    long	nr;
 	    long	off;
 # endif
@@ -7091,7 +7091,6 @@ vim_tempname(extra_char)
 		else
 # endif
 		    add_pathsep(itmp);
-		itmplen = STRLEN(itmp);
 
 # ifdef HAVE_MKDTEMP
 		/* Leave room for filename */
@@ -7104,6 +7103,7 @@ vim_tempname(extra_char)
 		 * otherwise it doesn't matter.  The use of mkdir() avoids any
 		 * security problems because of the predictable number. */
 		nr = (mch_get_pid() + (long)time(NULL)) % 1000000L;
+		itmplen = STRLEN(itmp);
 
 		/* Try up to 10000 different values until we find a name that
 		 * doesn't exist. */

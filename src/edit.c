@@ -4048,7 +4048,7 @@ ins_compl_get_exp(ini)
 	    save_p_ic = p_ic;
 	    p_ic = ignorecase(compl_pattern);
 
-	    /* Find up to TAG_MANY matches.  Avoids that an enourmous number
+	    /* Find up to TAG_MANY matches.  Avoids that an enormous number
 	     * of matches is found when compl_pattern is empty */
 	    if (find_tags(compl_pattern, &num_matches, &matches,
 		    TAG_REGEXP | TAG_NAMES | TAG_NOIC |
@@ -4219,7 +4219,7 @@ ins_compl_get_exp(ini)
 						 || IObuff[len - 2] == '!'))))
 					IObuff[len++] = ' ';
 				}
-				/* copy as much as posible of the new word */
+				/* copy as much as possible of the new word */
 				if (tmp_ptr - ptr >= IOSIZE - len)
 				    tmp_ptr = ptr + IOSIZE - len - 1;
 				STRNCPY(IObuff + len, ptr, tmp_ptr - ptr);
@@ -5827,10 +5827,7 @@ internal_format(textwidth, second_indent, flags, format_only, c)
 #endif
 		&& !has_format_option(FO_WRAP))
 
-	{
-	    textwidth = 0;
 	    break;
-	}
 	if ((startcol = curwin->w_cursor.col) == 0)
 	    break;
 

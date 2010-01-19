@@ -2383,7 +2383,7 @@ yank_cut_buffer0(dpy, cbd)
 	 * 'enc' anyway. */
 	if (has_mbyte)
 	{
-	    char_u	*conv_buf = buffer;
+	    char_u	*conv_buf;
 	    vimconv_T	vc;
 
 	    vc.vc_type = CONV_NONE;

@@ -2069,7 +2069,7 @@ cs_print_tags_priv(matches, cntxts, num_matches)
 	    continue;
 	(void)strcpy(tbuf, matches[idx]);
 
-	if ((fname = strtok(tbuf, (const char *)"\t")) == NULL)
+	if (strtok(tbuf, (const char *)"\t") == NULL)
 	    continue;
 	if ((fname = strtok(NULL, (const char *)"\t")) == NULL)
 	    continue;
