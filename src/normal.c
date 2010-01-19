@@ -5406,6 +5406,7 @@ nv_ident(cap)
     int		n = 0;		/* init for GCC */
     int		cmdchar;
     int		g_cmd;		/* "g" command */
+    int		tag_cmd = FALSE;
     char_u	*aux_ptr;
     int		isman;
     int		isman_s;
@@ -5515,6 +5516,7 @@ nv_ident(cap)
 	    break;
 
 	case ']':
+	    tag_cmd = TRUE;
 #ifdef FEAT_CSCOPE
 	    if (p_cst)
 		STRCPY(buf, "cstag ");
@@ -5526,10 +5528,14 @@ nv_ident(cap)
 	default:
 	    if (curbuf->b_help)
 		STRCPY(buf, "he! ");
-	    else if (g_cmd)
-		STRCPY(buf, "tj ");
 	    else
-		sprintf((char *)buf, "%ldta ", cap->count0);
+	    {
+		tag_cmd = TRUE;
+		if (g_cmd)
+		    STRCPY(buf, "tj ");
+		else
+		    sprintf((char *)buf, "%ldta ", cap->count0);
+	    }
     }
 
     /*
@@ -5562,8 +5568,10 @@ nv_ident(cap)
 	    aux_ptr = (char_u *)(p_magic ? "/.*~[^$\\" : "/^$\\");
 	else if (cmdchar == '#')
 	    aux_ptr = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
-	else
+	else if (tag_cmd)
 	    /* Don't escape spaces and Tabs in a tag with a backslash */
+	    aux_ptr = (char_u *)"\\|\"\n[";
+	else
 	    aux_ptr = (char_u *)"\\|\"\n*?[";
 
 	p = buf + STRLEN(buf);
