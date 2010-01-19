@@ -6475,6 +6475,7 @@ list_join(gap, l, sep, echo, copyID)
 	vim_free(tofree);
 	if (s == NULL)
 	    return FAIL;
+	line_breakcheck();
     }
     return OK;
 }
