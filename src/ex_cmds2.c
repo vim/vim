@@ -2814,11 +2814,11 @@ static FILE *fopen_noinh_readbin __ARGS((char *filename));
 fopen_noinh_readbin(filename)
     char    *filename;
 {
-    int	fd_tmp = mch_open(filename, O_RDONLY
 # ifdef WIN32
-			  | O_BINARY | O_NOINHERIT
+    int	fd_tmp = mch_open(filename, O_RDONLY | O_BINARY | O_NOINHERIT, 0);
+# else
+    int	fd_tmp = mch_open(filename, O_RDONLY, 0);
 # endif
-			  , 0);
 
     if (fd_tmp == -1)
 	return NULL;
