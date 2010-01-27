@@ -1390,6 +1390,7 @@ gui_set_shellsize(mustset, fit_to_display, direction)
     int		un_maximize = mustset;
     int         did_adjust = 0;
 #endif
+    int		x = -1, y = -1;
 
     if (!gui.shell_created)
 	return;
@@ -1406,6 +1407,10 @@ gui_set_shellsize(mustset, fit_to_display, direction)
 
     base_width = gui_get_base_width();
     base_height = gui_get_base_height();
+    if (fit_to_display)
+	/* Remember the original window position. */
+	gui_mch_get_winpos(&x, &y);
+
 #ifdef USE_SUN_WORKSHOP
     if (!mustset && usingSunWorkShop
 				&& workshop_get_width_height(&width, &height))
@@ -1473,11 +1478,12 @@ gui_set_shellsize(mustset, fit_to_display, direction)
 
     gui_mch_set_shellsize(width, height, min_width, min_height,
 					  base_width, base_height, direction);
-    if (fit_to_display)
-    {
-	int	    x, y;
 
-	/* Some window managers put the Vim window left of/above the screen. */
+    if (fit_to_display && x >= 0 && y >= 0)
+    {
+	/* Some window managers put the Vim window left of/above the screen.
+	 * Only change the position if it wasn't already negative before
+	 * (happens on MS-Windows with a secondary monitor). */
 	gui_mch_update();
 	if (gui_mch_get_winpos(&x, &y) == OK && (x < 0 || y < 0))
 	    gui_mch_set_winpos(x < 0 ? 0 : x, y < 0 ? 0 : y);
