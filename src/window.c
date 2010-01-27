@@ -626,7 +626,7 @@ wingotofile:
 #ifdef FEAT_SEARCHPATH
 		    case 'f':	    /* CTRL-W gf: "gf" in a new tab page */
 		    case 'F':	    /* CTRL-W gF: "gF" in a new tab page */
-			cmdmod.tab = TRUE;
+			cmdmod.tab = tabpage_index(curtab) + 1;
 			nchar = xchar;
 			goto wingotofile;
 #endif
