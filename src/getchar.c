@@ -2389,6 +2389,17 @@ vgetorpeek(advance)
 		    /* complete match */
 		    if (keylen >= 0 && keylen <= typebuf.tb_len)
 		    {
+#ifdef FEAT_EVAL
+			int save_m_expr;
+			int save_m_noremap;
+			int save_m_silent;
+			char_u *save_m_keys;
+			char_u *save_m_str;
+#else
+# define save_m_noremap mp->m_noremap
+# define save_m_silent mp->m_silent
+#endif
+
 			/* write chars to script file(s) */
 			if (keylen > typebuf.tb_maplen)
 			    gotchars(typebuf.tb_buf + typebuf.tb_off
@@ -2431,6 +2442,16 @@ vgetorpeek(advance)
 #endif
 
 #ifdef FEAT_EVAL
+			/* Copy the values from *mp that are used, because
+			 * evaluating the expression may invoke a function
+			 * that redefines the mapping, thereby making *mp
+			 * invalid. */
+			save_m_expr = mp->m_expr;
+			save_m_noremap = mp->m_noremap;
+			save_m_silent = mp->m_silent;
+			save_m_keys = NULL;  /* only saved when needed */
+			save_m_str = NULL;  /* only saved when needed */
+
 			/*
 			 * Handle ":map <expr>": evaluate the {rhs} as an
 			 * expression.  Save and restore the typeahead so that
@@ -2446,7 +2467,9 @@ vgetorpeek(advance)
 			    if (tabuf.typebuf_valid)
 			    {
 				vgetc_busy = 0;
-				s = eval_map_expr(mp->m_str, NUL);
+				save_m_keys = vim_strsave(mp->m_keys);
+				save_m_str = vim_strsave(mp->m_str);
+				s = eval_map_expr(save_m_str, NUL);
 				vgetc_busy = save_vgetc_busy;
 			    }
 			    else
@@ -2470,17 +2493,25 @@ vgetorpeek(advance)
 			else
 			{
 			    i = ins_typebuf(s,
-				    mp->m_noremap != REMAP_YES
-					    ? mp->m_noremap
-					    : STRNCMP(s, mp->m_keys,
+				    save_m_noremap != REMAP_YES
+					    ? save_m_noremap
+					    : STRNCMP(s,
+#ifdef FEAT_EVAL
+					   save_m_keys != NULL ? save_m_keys :
+#endif
+						      mp->m_keys,
 							  (size_t)keylen) != 0
 						     ? REMAP_YES : REMAP_SKIP,
-				0, TRUE, cmd_silent || mp->m_silent);
+				0, TRUE, cmd_silent || save_m_silent);
 #ifdef FEAT_EVAL
-			    if (mp->m_expr)
+			    if (save_m_expr)
 				vim_free(s);
 #endif
 			}
+#ifdef FEAT_EVAL
+			vim_free(save_m_keys);
+			vim_free(save_m_str);
+#endif
 			if (i == FAIL)
 			{
 			    c = -1;
