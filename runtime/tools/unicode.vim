@@ -187,16 +187,27 @@ func! BuildCombiningTable()
   wincmd p
 endfunc
 
-" Build the ambiguous table in a new buffer.
+" Build the double width or ambiguous width table in a new buffer.
 " Uses s:widthprops and s:dataprops.
-func! BuildAmbiguousTable()
+func! BuildWidthTable(pattern, tableName)
   let start = -1
   let end = -1
   let ranges = []
   let dataidx = 0
   for p in s:widthprops
-    if p[1][0] == 'A'
-      let n = ('0x' . p[0]) + 0
+    if p[1][0] =~ a:pattern
+      if p[0] =~ '\.\.'
+	" It is a range.  we don't check for composing char then.
+	let rng = split(p[0], '\.\.')
+	if len(rng) != 2
+	  echoerr "Cannot parse range: '" . p[0] . "' in width table"
+	endif
+	let n = ('0x' . rng[0]) + 0
+	let n_last =  ('0x' . rng[1]) + 0
+      else
+	let n = ('0x' . p[0]) + 0
+	let n_last = n
+      endif
       " Find this char in the data table.
       while 1
 	let dn = ('0x' . s:dataprops[dataidx][0]) + 0
@@ -205,27 +216,23 @@ func! BuildAmbiguousTable()
 	endif
 	let dataidx += 1
       endwhile
-      if dn != n
+      if dn != n && n_last == n
 	echoerr "Cannot find character " . n . " in data table"
       endif
       " Only use the char when it's not a composing char.
+      " But use all chars from a range.
       let dp = s:dataprops[dataidx]
-      if dp[2] != 'Mn' && dp[2] != 'Mc' && dp[2] != 'Me'
+      if n_last > n || (dp[2] != 'Mn' && dp[2] != 'Mc' && dp[2] != 'Me')
 	if start >= 0 && end + 1 == n
 	  " continue with same range.
-	  let end = n
 	else
 	  if start >= 0
 	    " produce previous range
 	    call add(ranges, printf("\t{0x%04x, 0x%04x},", start, end))
 	  endif
 	  let start = n
-	  if p[0] =~ '\.\.'
-	    let end = ('0x' . substitute(p[0], '.*\.\.', '', '')) + 0
-	  else
-	    let end = n
-	  endif
 	endif
+	let end = n_last
       endif
     endif
   endfor
@@ -235,8 +242,8 @@ func! BuildAmbiguousTable()
 
   " New buffer to put the result in.
   new
-  file ambiguous
-  call setline(1, "    static struct interval ambiguous[] =")
+  exe "file " . a:tableName
+  call setline(1, "    static struct interval " . a:tableName . "[] =")
   call setline(2, "    {")
   call append('$', ranges)
   call setline('$', getline('$')[:-2])  " remove last comma
@@ -276,5 +283,8 @@ edit http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
 " Parse each line, create a list of lists.
 call ParseWidthProps()
 
-" Build the ambiguous table.
-call BuildAmbiguousTable()
+" Build the double width table.
+call BuildWidthTable('[WF]', 'doublewidth')
+
+" Build the ambiguous width table.
+call BuildWidthTable('A', 'ambiguous')

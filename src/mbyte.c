@@ -1200,6 +1200,49 @@ intable(table, size, c)
 utf_char2cells(c)
     int		c;
 {
+    /* Sorted list of non-overlapping intervals of East Asian double width
+     * characters, generated with ../runtime/tools/unicode.vim. */
+    static struct interval doublewidth[] =
+    {
+	{0x1100, 0x115f},
+	{0x11a3, 0x11a7},
+	{0x11fa, 0x11ff},
+	{0x2329, 0x232a},
+	{0x2e80, 0x2e99},
+	{0x2e9b, 0x2ef3},
+	{0x2f00, 0x2fd5},
+	{0x2ff0, 0x2ffb},
+	{0x3000, 0x3029},
+	{0x3030, 0x303e},
+	{0x3041, 0x3096},
+	{0x309b, 0x30ff},
+	{0x3105, 0x312d},
+	{0x3131, 0x318e},
+	{0x3190, 0x31b7},
+	{0x31c0, 0x31e3},
+	{0x31f0, 0x321e},
+	{0x3220, 0x3247},
+	{0x3250, 0x32fe},
+	{0x3300, 0x4dbf},
+	{0x4e00, 0xa48c},
+	{0xa490, 0xa4c6},
+	{0xa960, 0xa97c},
+	{0xac00, 0xd7a3},
+	{0xd7b0, 0xd7c6},
+	{0xd7cb, 0xd7fb},
+	{0xf900, 0xfaff},
+	{0xfe10, 0xfe19},
+	{0xfe30, 0xfe52},
+	{0xfe54, 0xfe66},
+	{0xfe68, 0xfe6b},
+	{0xff01, 0xff60},
+	{0xffe0, 0xffe6},
+	{0x1f200, 0x1f200},
+	{0x1f210, 0x1f231},
+	{0x1f240, 0x1f248},
+	{0x20000, 0x2fffd},
+	{0x30000, 0x3fffd}
+    };
     /* Sorted list of non-overlapping intervals of East Asian Ambiguous
      * characters, generated with ../runtime/tools/unicode.vim. */
     static struct interval ambiguous[] =
@@ -1403,20 +1446,7 @@ utf_char2cells(c)
 #else
 	if (!utf_printable(c))
 	    return 6;		/* unprintable, displays <xxxx> */
-	if (c >= 0x1100
-	    && (c <= 0x115f			/* Hangul Jamo */
-		|| c == 0x2329
-		|| c == 0x232a
-		|| (c >= 0x2e80 && c <= 0xa4cf
-		    && c != 0x303f)		/* CJK ... Yi */
-		|| (c >= 0xac00 && c <= 0xd7a3)	/* Hangul Syllables */
-		|| (c >= 0xf900 && c <= 0xfaff)	/* CJK Compatibility
-						   Ideographs */
-		|| (c >= 0xfe30 && c <= 0xfe6f)	/* CJK Compatibility Forms */
-		|| (c >= 0xff00 && c <= 0xff60)	/* Fullwidth Forms */
-		|| (c >= 0xffe0 && c <= 0xffe6)
-		|| (c >= 0x20000 && c <= 0x2fffd)
-		|| (c >= 0x30000 && c <= 0x3fffd)))
+	if (intable(doublewidth, sizeof(doublewidth), c))
 	    return 2;
 #endif
     }
