@@ -6410,6 +6410,9 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    }
 # endif
 	    curbuf->b_help = (curbuf->b_p_bt[0] == 'h');
+# ifdef FEAT_TITLE
+	    redraw_titles();
+# endif
 	}
     }
 #endif
