@@ -1301,10 +1301,16 @@ put_reedit_in_typebuf(silent)
     }
 }
 
+/*
+ * Insert register contents "s" into the typeahead buffer, so that it will be
+ * executed again.
+ * When "esc" is TRUE it is to be taken literally: Escape CSI characters and
+ * no remapping.
+ */
     static int
 put_in_typebuf(s, esc, colon, silent)
     char_u	*s;
-    int		esc;	    /* Escape CSI characters */
+    int		esc;
     int		colon;	    /* add ':' before the line */
     int		silent;
 {
@@ -1312,7 +1318,7 @@ put_in_typebuf(s, esc, colon, silent)
 
     put_reedit_in_typebuf(silent);
     if (colon)
-	retval = ins_typebuf((char_u *)"\n", REMAP_YES, 0, TRUE, silent);
+	retval = ins_typebuf((char_u *)"\n", REMAP_NONE, 0, TRUE, silent);
     if (retval == OK)
     {
 	char_u	*p;
@@ -1324,12 +1330,13 @@ put_in_typebuf(s, esc, colon, silent)
 	if (p == NULL)
 	    retval = FAIL;
 	else
-	    retval = ins_typebuf(p, REMAP_YES, 0, TRUE, silent);
+	    retval = ins_typebuf(p, esc ? REMAP_NONE : REMAP_YES,
+							     0, TRUE, silent);
 	if (esc)
 	    vim_free(p);
     }
     if (colon && retval == OK)
-	retval = ins_typebuf((char_u *)":", REMAP_YES, 0, TRUE, silent);
+	retval = ins_typebuf((char_u *)":", REMAP_NONE, 0, TRUE, silent);
     return retval;
 }
 
