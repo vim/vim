@@ -2492,17 +2492,24 @@ vgetorpeek(advance)
 			    i = FAIL;
 			else
 			{
-			    i = ins_typebuf(s,
-				    save_m_noremap != REMAP_YES
-					    ? save_m_noremap
-					    : STRNCMP(s,
+			    int noremap;
+
+			    if (save_m_noremap != REMAP_YES)
+				noremap = save_m_noremap;
+			    else if (
 #ifdef FEAT_EVAL
-					   save_m_keys != NULL ? save_m_keys :
+				STRNCMP(s, save_m_keys != NULL
+						   ? save_m_keys : mp->m_keys,
+							 (size_t)keylen)
+#else
+				STRNCMP(s, mp->m_keys, (size_t)keylen)
 #endif
-						      mp->m_keys,
-							  (size_t)keylen) != 0
-						     ? REMAP_YES : REMAP_SKIP,
-				0, TRUE, cmd_silent || save_m_silent);
+				   != 0)
+				noremap = REMAP_YES;
+			    else
+				noremap = REMAP_SKIP;
+			    i = ins_typebuf(s, noremap,
+					0, TRUE, cmd_silent || save_m_silent);
 #ifdef FEAT_EVAL
 			    if (save_m_expr)
 				vim_free(s);
