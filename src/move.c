@@ -889,6 +889,7 @@ validate_cursor_col()
 {
     colnr_T off;
     colnr_T col;
+    int     width;
 
     validate_virtcol();
     if (!(curwin->w_valid & VALID_WCOL))
@@ -896,15 +897,14 @@ validate_cursor_col()
 	col = curwin->w_virtcol;
 	off = curwin_col_off();
 	col += off;
+	width = W_WIDTH(curwin) - off + curwin_col_off2();
 
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_p_wrap
 		&& col >= (colnr_T)W_WIDTH(curwin)
-		&& W_WIDTH(curwin) - off + curwin_col_off2() > 0)
-	{
-	    col -= W_WIDTH(curwin);
-	    col = col % (W_WIDTH(curwin) - off + curwin_col_off2());
-	}
+		&& width > 0)
+	    /* use same formula as what is used in curs_columns() */
+	    col -= ((col - W_WIDTH(curwin)) / width + 1) * width;
 	if (col > (int)curwin->w_leftcol)
 	    col -= curwin->w_leftcol;
 	else
@@ -1041,6 +1041,7 @@ curs_columns(scroll)
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_wcol >= W_WIDTH(curwin))
 	{
+	    /* this same formula is used in validate_cursor_col() */
 	    n = (curwin->w_wcol - W_WIDTH(curwin)) / width + 1;
 	    curwin->w_wcol -= n * width;
 	    curwin->w_wrow += n;
