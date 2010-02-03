@@ -849,11 +849,17 @@ foldUpdate(wp, top, bot)
     fold_T	*fp;
 
     /* Mark all folds from top to bot as maybe-small. */
-    (void)foldFind(&curwin->w_folds, curwin->w_cursor.lnum, &fp);
+    (void)foldFind(&curwin->w_folds, top, &fp);
     while (fp < (fold_T *)curwin->w_folds.ga_data + curwin->w_folds.ga_len
 	    && fp->fd_top < bot)
     {
 	fp->fd_small = MAYBE;
+
+	/* Not sure if this is the right place to reset fd_flags (suggested by
+	 * Lech Lorens). */
+        if (wp->w_foldinvalid)
+            fp->fd_flags = FD_LEVEL;
+
 	++fp;
     }
 
