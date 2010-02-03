@@ -1084,9 +1084,15 @@ _TextAreaWndProc(
 	case WM_NOTIFY: Handle_WM_Notify(hwnd, (LPNMHDR)lParam);
 	    return TRUE;
 #endif
+	/* Workaround for the problem that MyWindowProc() returns FALSE on 64
+	 * bit windows when cross-compiled using Mingw libraries. (Andy
+	 * Kittner) */
+	case WM_NCCREATE:
+	    MyWindowProc(hwnd, uMsg, wParam, lParam);
+	    return TRUE;
 
-    default:
-	return MyWindowProc(hwnd, uMsg, wParam, lParam);
+	default:
+	    return MyWindowProc(hwnd, uMsg, wParam, lParam);
     }
 }
 
