@@ -2335,13 +2335,12 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 		if (cells > 1)
 		    ScreenLines[idx + 1] = 0;
 	    }
-	    else if (cells > 1)	    /* double-byte character */
-	    {
-		if (enc_dbcs == DBCS_JPNU && *p == 0x8e)
-		    ScreenLines2[idx] = p[1];
-		else
-		    ScreenLines[idx + 1] = p[1];
-	    }
+	    else if (enc_dbcs == DBCS_JPNU && *p == 0x8e)
+		/* double-byte single width character */
+		ScreenLines2[idx] = p[1];
+	    else if (cells > 1)
+		/* double-width character */
+		ScreenLines[idx + 1] = p[1];
 	    col += cells;
 	    idx += cells;
 	    p += c_len;
@@ -4631,7 +4630,11 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    ScreenLines[off] = c;
 #ifdef FEAT_MBYTE
 	    if (enc_dbcs == DBCS_JPNU)
+	    {
+		if ((mb_c & 0xff00) == 0x8e00)
+		    ScreenLines[off] = 0x8e;
 		ScreenLines2[off] = mb_c & 0xff;
+	    }
 	    else if (enc_utf8)
 	    {
 		if (mb_utf8)
