@@ -3804,6 +3804,11 @@ set_one_cmd_context(xp, buff)
 		xp->xp_context = EXPAND_NOTHING;
 	    break;
 #endif
+#if defined(FEAT_PROFILE)
+	case CMD_profile:
+	    set_context_in_profile_cmd(xp, arg);
+	    break;
+#endif
 
 #endif /* FEAT_CMDL_COMPL */
 

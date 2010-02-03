@@ -1115,6 +1115,79 @@ ex_profile(eap)
     }
 }
 
+/* Command line expansion for :profile. */
+static enum
+{
+    PEXP_SUBCMD,	/* expand :profile sub-commands */
+    PEXP_FUNC,		/* expand :profile func {funcname} */
+} pexpand_what;
+
+static char *pexpand_cmds[] = {
+			"start",
+#define PROFCMD_START	0
+			"pause",
+#define PROFCMD_PAUSE	1
+			"continue",
+#define PROFCMD_CONTINUE 2
+			"func",
+#define PROFCMD_FUNC	3
+			"file",
+#define PROFCMD_FILE	4
+			NULL
+#define PROFCMD_LAST	5
+};
+
+/*
+ * Function given to ExpandGeneric() to obtain the profile command
+ * specific expansion.
+ */
+    char_u *
+get_profile_name(xp, idx)
+    expand_T	*xp UNUSED;
+    int		idx;
+{
+    switch (pexpand_what)
+    {
+    case PEXP_SUBCMD:
+	return (char_u *)pexpand_cmds[idx];
+    /* case PEXP_FUNC: TODO */
+    default:
+	return NULL;
+    }
+}
+
+/*
+ * Handle command line completion for :profile command.
+ */
+    void
+set_context_in_profile_cmd(xp, arg)
+    expand_T	*xp;
+    char_u	*arg;
+{
+    char_u	*end_subcmd;
+    int		len;
+
+    /* Default: expand subcommands. */
+    xp->xp_context = EXPAND_PROFILE;
+    pexpand_what = PEXP_SUBCMD;
+    xp->xp_pattern = arg;
+
+    end_subcmd = skiptowhite(arg);
+    if (*end_subcmd == NUL)
+	return;
+
+    len = end_subcmd - arg;
+    if (len == 5 && STRNCMP(arg, "start", 5) == 0)
+    {
+	xp->xp_context = EXPAND_FILES;
+	xp->xp_pattern = skipwhite(end_subcmd);
+	return;
+    }
+
+    /* TODO: expand function names after "func" */
+    xp->xp_context = EXPAND_NOTHING;
+}
+
 /*
  * Dump the profiling info.
  */

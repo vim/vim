@@ -24,6 +24,8 @@ void profile_sub_wait __ARGS((proftime_T *tm, proftime_T *tma));
 int profile_equal __ARGS((proftime_T *tm1, proftime_T *tm2));
 int profile_cmp __ARGS((proftime_T *tm1, proftime_T *tm2));
 void ex_profile __ARGS((exarg_T *eap));
+char_u *get_profile_name __ARGS((expand_T *xp, int idx));
+void set_context_in_profile_cmd __ARGS((expand_T *xp, char_u *arg));
 void profile_dump __ARGS((void));
 void script_prof_save __ARGS((proftime_T *tm));
 void script_prof_restore __ARGS((proftime_T *tm));

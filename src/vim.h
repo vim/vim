@@ -718,6 +718,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_SHELLCMD		32
 #define EXPAND_CSCOPE		33
 #define EXPAND_SIGN		34
+#define EXPAND_PROFILE		35
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1

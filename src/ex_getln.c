@@ -4522,6 +4522,9 @@ ExpandFromContext(xp, pat, num_file, file, options)
 #ifdef FEAT_SIGNS
 	    {EXPAND_SIGN, get_sign_name, TRUE},
 #endif
+#ifdef FEAT_PROFILE
+	    {EXPAND_PROFILE, get_profile_name, TRUE},
+#endif
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
 	    {EXPAND_LANGUAGE, get_lang_arg, TRUE},
