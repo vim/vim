@@ -1,10 +1,15 @@
 " Vim completion script
 " Language:    All languages, uses existing syntax highlighting rules
-" Maintainer:  David Fishburn <dfishburn.vim@gmail.com>
-" Version:     4.0
-" Last Change: Fri 26 Oct 2007 05:27:03 PM Eastern Daylight Time
+" Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
+" Version:     5.0
+" Last Change: 2010 Jan 31
 " Usage:       For detailed help, ":help ft-syntax-omni" 
 
+" History
+" Version 5.0
+"     When processing a list of syntax groups, the final group
+"     was missed in function SyntaxCSyntaxGroupItems.
+"
 " Set completion with CTRL-X CTRL-O to autoloaded function.
 " This check is in place in case this script is
 " sourced directly instead of using the autoload feature. 
@@ -312,9 +317,13 @@ function! s:SyntaxCSyntaxGroupItems( group_name, syntax_full )
     "     \zs          - start the match
     "     .\{-}        - everything ...
     "     \ze          - end the match
+    "     \(           - start a group or 2 potential matches
     "     \n\w         - at the first newline starting with a character
+    "     \|           - 2nd potential match
+    "     \%$          - matches end of the file or string
+    "     \)           - end a group
     let syntax_group = matchstr(a:syntax_full, 
-                \ "\n".a:group_name.'\s\+xxx\s\+\zs.\{-}\ze'."\n".'\w'
+                \ "\n".a:group_name.'\s\+xxx\s\+\zs.\{-}\ze\(\n\w\|\%$\)'
                 \ )
 
     if syntax_group != ""

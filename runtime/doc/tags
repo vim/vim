@@ -6486,11 +6486,13 @@ mysql	ft_sql.txt	/*mysql*
 mysyntaxfile	syntax.txt	/*mysyntaxfile*
 mysyntaxfile-add	syntax.txt	/*mysyntaxfile-add*
 mysyntaxfile-replace	syntax.txt	/*mysyntaxfile-replace*
+mzeval()	eval.txt	/*mzeval()*
 mzscheme	if_mzsch.txt	/*mzscheme*
 mzscheme-buffer	if_mzsch.txt	/*mzscheme-buffer*
 mzscheme-commands	if_mzsch.txt	/*mzscheme-commands*
 mzscheme-dynamic	if_mzsch.txt	/*mzscheme-dynamic*
 mzscheme-examples	if_mzsch.txt	/*mzscheme-examples*
+mzscheme-mzeval	if_mzsch.txt	/*mzscheme-mzeval*
 mzscheme-sandbox	if_mzsch.txt	/*mzscheme-sandbox*
 mzscheme-threads	if_mzsch.txt	/*mzscheme-threads*
 mzscheme-vim	if_mzsch.txt	/*mzscheme-vim*

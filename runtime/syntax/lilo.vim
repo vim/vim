@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language: lilo configuration (lilo.conf)
-" Maintainer: help wanted!
+" Maintainer: Niels Horn <niels.horn@gmail.com>
 " Previous Maintainer: David Necas (Yeti) <yeti@physics.muni.cz>
-" Last Change: 2009-01-27
+" Last Change: 2010-02-03
 
 " Setup
 if version >= 600

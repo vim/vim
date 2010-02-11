@@ -4734,7 +4734,7 @@ New keymap files:
 Other new runtime files:
 	Esperanto menu and message translations. (Dominique Pelle)
 	Finnish menu and message translations. (Flammie Pirinen)
-	Brazilian Portugese message translations. (Eduardo Dobay)
+	Brazilian Portuguese message translations. (Eduardo Dobay)
 
 Added floating point support. |Float|
 
@@ -4925,7 +4925,7 @@ Files:	    src/fileio.c, src/os_unix.h
 
 Patch 7.1.028
 Problem:    Can't use last search pattern for ":sort". (Brian McKee)
-Solution:   When the pattern is emtpy use the last search pattern. (Martin
+Solution:   When the pattern is empty use the last search pattern. (Martin
 	    Toft)
 Files:	    runtime/doc/change.txt, src/ex_cmds.c
 
@@ -5463,7 +5463,7 @@ Solution:   Remove the replacement with a question mark when UNICODE16 is not
 Files:	    src/screen.c
 
 Patch 7.1.117
-Problem:    Can't check wether Vim was compiled with Gnome. (Tony Mechelynck)
+Problem:    Can't check whether Vim was compiled with Gnome. (Tony Mechelynck)
 Solution:   Add gui_gnome to the has() list.
 Files:	    src/eval.c
 

@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         Zsh shell script
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2008-07-17
+" Latest Revision:  2010-01-23
 
 if exists("b:current_syntax")
   finish
@@ -14,7 +14,7 @@ setlocal iskeyword+=-
 
 syn keyword zshTodo             contained TODO FIXME XXX NOTE
 
-syn region  zshComment          display oneline start='\%(^\|\s\)#' end='$'
+syn region  zshComment          oneline start='\%(^\|\s\)#' end='$'
                                 \ contains=zshTodo,@Spell
 
 syn match   zshPreProc          '^\%1l#\%(!\|compdef\|autoload\).*$'

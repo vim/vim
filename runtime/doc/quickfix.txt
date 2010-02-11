@@ -482,7 +482,7 @@ example: >
 {shellpipe} is the 'shellpipe' option.
 {errorfile} is the 'makeef' option, with ## replaced to make it unique.
 
-The placeholder "$*" can be used for the argument list in {makeprog} if the
+The placeholder "$*" can be used for the argument list in {makeprg} if the
 command needs some additional characters after its arguments.  The $* is
 replaced then by all arguments.  Example: >
    :set makeprg=latex\ \\\\nonstopmode\ \\\\input\\{$*}
@@ -1212,7 +1212,7 @@ Maintaining the correct directory is more complicated if you don't use
 GNU-make.  AIX-make for example doesn't print any information about its
 working directory.  Then you need to enhance the makefile.  In the makefile of
 LessTif there is a command which echoes "Making {target} in {dir}".  The
-special problem here is that it doesn't print informations on leaving the
+special problem here is that it doesn't print information on leaving the
 directory and that it doesn't print the absolute path.
 
 To solve the problem with relative paths and missing "leave directory"

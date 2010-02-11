@@ -340,7 +340,7 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		this to get 'compatible', even though a .vimrc file exists.
 		Keep in mind that the command ":set nocompatible" in some
 		plugin or startup script overrules this, so you may end up
-		with 'nocmpatible' anyway.  To find out, use: >
+		with 'nocompatible' anyway.  To find out, use: >
 			:verbose set compatible?
 <		Several plugins won't work with 'compatible' set.  You may
 		want to set it after startup this way: >

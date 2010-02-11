@@ -11170,7 +11170,7 @@ Files:	    runtime/doc/help.txt, runtime/doc/sponsor.txt, runtime/doc/tags,
 	    runtime/menu.vim, src/version.c
 
 Patch 6.2.192
-Problem:    Using CTRL-T and CTRL-D with "gR" messes up the text.  (Jonahtan
+Problem:    Using CTRL-T and CTRL-D with "gR" messes up the text.  (Jonathan
 	    Hankins)
 Solution:   Avoid calling change_indent() recursively.
 Files:	    src/edit.c

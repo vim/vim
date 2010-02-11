@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         reStructuredText documentation format
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2009-05-25
+" Latest Revision:  2010-01-23
 
 if exists("b:current_syntax")
   finish
@@ -137,7 +137,7 @@ syn match   rstStandaloneHyperlink  contains=@NoSpell
 
 " TODO: Use better syncing.  I don’t know the specifics of syncing well enough,
 " though.
-syn sync minlines=50
+syn sync minlines=50 linebreaks=1
 
 hi def link rstTodo                         Todo
 hi def link rstComment                      Comment
