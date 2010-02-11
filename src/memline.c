@@ -3087,12 +3087,19 @@ ml_flush_line(buf)
     int		start;
     int		count;
     int		i;
+    static int  entered = FALSE;
 
     if (buf->b_ml.ml_line_lnum == 0 || buf->b_ml.ml_mfp == NULL)
 	return;		/* nothing to do */
 
     if (buf->b_ml.ml_flags & ML_LINE_DIRTY)
     {
+	/* This code doesn't work recursively, but Netbeans may call back here
+	 * when obtaining the cursor position. */
+	if (entered)
+	    return;
+	entered = TRUE;
+
 	lnum = buf->b_ml.ml_line_lnum;
 	new_line = buf->b_ml.ml_line_ptr;
 
@@ -3160,6 +3167,8 @@ ml_flush_line(buf)
 	    }
 	}
 	vim_free(new_line);
+
+	entered = FALSE;
     }
 
     buf->b_ml.ml_line_lnum = 0;
