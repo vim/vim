@@ -6190,7 +6190,7 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 		int pcc[MAX_MCO];
 
 		/* TODO: use the composing characters */
-		c = utfc_ptr2char_len(p, &pcc, len - (p - s));
+		c = utfc_ptr2char_len(p, pcc, len - (p - s));
 		if (c >= 0x10000)	/* show chars > 0xffff as ? */
 		    c = 0xbf;
 		buf[textlen].byte1 = c >> 8;

@@ -1471,6 +1471,9 @@ x_IOerror_check(dpy)
 {
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(lc_jump_env, 1);
+#  ifdef VMS
+    return 0;  /* avoid the compiler complains about missing return value */
+#  endif
 }
 # endif
 
@@ -1490,6 +1493,9 @@ x_IOerror_handler(dpy)
 
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(x_jump_env, 1);
+# ifdef VMS
+    return 0;  /* avoid the compiler complains about missing return value */
+# endif
 }
 #endif
 
