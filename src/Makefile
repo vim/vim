@@ -395,7 +395,9 @@ CClink = $(CC)
 
 # RUBY
 # Uncomment this when you want to include the Ruby interface.
-#CONF_OPT_RUBY = --enable-rubyinterp
+# Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
+# CONF_OPT_RUBY = --enable-rubyinterp
+# CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
 
 # MZSCHEME
 # Uncomment this when you want to include the MzScheme interface.

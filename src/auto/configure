@@ -793,6 +793,7 @@ with_python_config_dir
 enable_tclinterp
 with_tclsh
 enable_rubyinterp
+with_ruby_command
 enable_cscope
 enable_workshop
 enable_netbeans
@@ -1503,6 +1504,7 @@ Optional Packages:
   --with-plthome=PLTHOME   Use PLTHOME.
   --with-python-config-dir=PATH  Python's config directory
   --with-tclsh=PATH       which tclsh to use (default: tclsh8.0)
+  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)
   --with-x                use the X Window System
   --with-gtk-prefix=PFX   Prefix where GTK is installed (optional)
   --with-gtk-exec-prefix=PFX Exec prefix where GTK is installed (optional)
@@ -5703,9 +5705,21 @@ fi
 { $as_echo "$as_me:$LINENO: result: $enable_rubyinterp" >&5
 $as_echo "$enable_rubyinterp" >&6; }
 if test "$enable_rubyinterp" = "yes"; then
+  { $as_echo "$as_me:$LINENO: checking --with-ruby-command argument" >&5
+$as_echo_n "checking --with-ruby-command argument... " >&6; }
 
-  # Extract the first word of "ruby", so it can be a program name with args.
-set dummy ruby; ac_word=$2
+# Check whether --with-ruby-command was given.
+if test "${with_ruby_command+set}" = set; then
+  withval=$with_ruby_command; RUBY_CMD="$withval"; { $as_echo "$as_me:$LINENO: result: $RUBY_CMD" >&5
+$as_echo "$RUBY_CMD" >&6; }
+else
+  RUBY_CMD="ruby"; { $as_echo "$as_me:$LINENO: result: defaulting to $RUBY_CMD" >&5
+$as_echo "defaulting to $RUBY_CMD" >&6; }
+fi
+
+
+  # Extract the first word of "$RUBY_CMD", so it can be a program name with args.
+set dummy $RUBY_CMD; ac_word=$2
 { $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if test "${ac_cv_path_vi_cv_path_ruby+set}" = set; then
@@ -5752,11 +5766,17 @@ $as_echo_n "checking Ruby version... " >&6; }
 $as_echo "OK" >&6; }
       { $as_echo "$as_me:$LINENO: checking Ruby header files" >&5
 $as_echo_n "checking Ruby header files... " >&6; }
-      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG["archdir"] || $hdrdir' 2>/dev/null`
+      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG["rubyhdrdir"] || Config::CONFIG["archdir"] || $hdrdir' 2>/dev/null`
       if test "X$rubyhdrdir" != "X"; then
 	{ $as_echo "$as_me:$LINENO: result: $rubyhdrdir" >&5
 $as_echo "$rubyhdrdir" >&6; }
 	RUBY_CFLAGS="-I$rubyhdrdir"
+        rubyarch=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["arch"]'`
+        if test -d "$rubyhdrdir/$rubyarch"; then
+          RUBY_CFLAGS="$RUBY_CFLAGS -I$rubyhdrdir/$rubyarch"
+        fi
+        rubyversion=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["ruby_version"].gsub(/\./, "")[0,2]'`
+        RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["LIBS"]'`
 	if test "X$rubylibs" != "X"; then
 	  RUBY_LIBS="$rubylibs"
@@ -5793,8 +5813,8 @@ $as_echo "$rubyhdrdir" >&6; }
 _ACEOF
 
       else
-	{ $as_echo "$as_me:$LINENO: result: not found" >&5
-$as_echo "not found" >&6; }
+	{ $as_echo "$as_me:$LINENO: result: not found; disabling Ruby" >&5
+$as_echo "not found; disabling Ruby" >&6; }
       fi
     else
       { $as_echo "$as_me:$LINENO: result: too old; need Ruby version 1.6.0 or later" >&5

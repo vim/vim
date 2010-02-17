@@ -949,17 +949,27 @@ AC_ARG_ENABLE(rubyinterp,
 	[enable_rubyinterp="no"])
 AC_MSG_RESULT($enable_rubyinterp)
 if test "$enable_rubyinterp" = "yes"; then
+  AC_MSG_CHECKING(--with-ruby-command argument)
+  AC_ARG_WITH(ruby-command, [  --with-ruby-command=RUBY  name of the Ruby command (default: ruby)],
+	RUBY_CMD="$withval"; AC_MSG_RESULT($RUBY_CMD),
+	RUBY_CMD="ruby"; AC_MSG_RESULT(defaulting to $RUBY_CMD))
   AC_SUBST(vi_cv_path_ruby)
-  AC_PATH_PROG(vi_cv_path_ruby, ruby)
+  AC_PATH_PROG(vi_cv_path_ruby, $RUBY_CMD)
   if test "X$vi_cv_path_ruby" != "X"; then
     AC_MSG_CHECKING(Ruby version)
     if $vi_cv_path_ruby -e '(VERSION rescue RUBY_VERSION) >= "1.6.0" or exit 1' >/dev/null 2>/dev/null; then
       AC_MSG_RESULT(OK)
       AC_MSG_CHECKING(Ruby header files)
-      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG[["archdir"]] || $hdrdir' 2>/dev/null`
+      rubyhdrdir=`$vi_cv_path_ruby -r mkmf -e 'print Config::CONFIG[["rubyhdrdir"]] || Config::CONFIG[["archdir"]] || $hdrdir' 2>/dev/null`
       if test "X$rubyhdrdir" != "X"; then
 	AC_MSG_RESULT($rubyhdrdir)
 	RUBY_CFLAGS="-I$rubyhdrdir"
+        rubyarch=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["arch"]]'`
+        if test -d "$rubyhdrdir/$rubyarch"; then
+          RUBY_CFLAGS="$RUBY_CFLAGS -I$rubyhdrdir/$rubyarch"
+        fi
+        rubyversion=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["ruby_version"]].gsub(/\./, "")[[0,2]]'`
+        RUBY_CFLAGS="$RUBY_CFLAGS -DRUBY_VERSION=$rubyversion"
 	rubylibs=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG[["LIBS"]]'`
 	if test "X$rubylibs" != "X"; then
 	  RUBY_LIBS="$rubylibs"
@@ -997,7 +1007,7 @@ if test "$enable_rubyinterp" = "yes"; then
 	RUBY_PRO="if_ruby.pro"
 	AC_DEFINE(FEAT_RUBY)
       else
-	AC_MSG_RESULT(not found, disabling Ruby)
+	AC_MSG_RESULT(not found; disabling Ruby)
       fi
     else
       AC_MSG_RESULT(too old; need Ruby version 1.6.0 or later)
