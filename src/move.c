@@ -1610,7 +1610,7 @@ scrollup_clamp()
  * Add one line above "lp->lnum".  This can be a filler line, a closed fold or
  * a (wrapped) text line.  Uses and sets "lp->fill".
  * Returns the height of the added line in "lp->height".
- * Lines above the first one are incredibly high.
+ * Lines above the first one are incredibly high: MAXCOL.
  */
     static void
 topline_back(lp)
@@ -1942,7 +1942,7 @@ scroll_cursor_bot(min_scroll, set_topbot)
 	{
 	    loff.lnum = curwin->w_topline;
 	    topline_back(&loff);
-	    if (used + loff.height > curwin->w_height)
+	    if (loff.height == MAXCOL || used + loff.height > curwin->w_height)
 		break;
 	    used += loff.height;
 #ifdef FEAT_DIFF
@@ -2021,7 +2021,10 @@ scroll_cursor_bot(min_scroll, set_topbot)
 
 	/* Add one line above */
 	topline_back(&loff);
-	used += loff.height;
+	if (loff.height == MAXCOL)
+	    used = MAXCOL;
+	else
+	    used += loff.height;
 	if (used > curwin->w_height)
 	    break;
 	if (loff.lnum >= curwin->w_botline
@@ -2175,7 +2178,10 @@ scroll_cursor_halfway(atend)
 	if (below > above)	    /* add a line above the cursor */
 	{
 	    topline_back(&loff);
-	    used += loff.height;
+	    if (loff.height == MAXCOL)
+		used = MAXCOL;
+	    else
+		used += loff.height;
 	    if (used > curwin->w_height)
 		break;
 	    above += loff.height;
@@ -2472,9 +2478,12 @@ onepage(dir, count)
 	    while (n <= curwin->w_height && loff.lnum >= 1)
 	    {
 		topline_back(&loff);
-		n += loff.height;
+		if (loff.height == MAXCOL)
+		    n = MAXCOL;
+		else
+		    n += loff.height;
 	    }
-	    if (n <= curwin->w_height)		    /* at begin of file */
+	    if (loff.lnum < 1)			/* at begin of file */
 	    {
 		curwin->w_topline = 1;
 #ifdef FEAT_DIFF
