@@ -48,6 +48,11 @@
 # endif
 #endif
 
+/* suggested by Ariya Mizutani */
+#if (_MSC_VER == 1200)
+# undef _WIN32_WINNT
+#endif
+
 #include <ruby.h>
 
 #undef EXTERN
@@ -132,6 +137,7 @@ static void ruby_vim_init(void);
 #define ruby_errinfo			(*dll_ruby_errinfo)
 #define ruby_init			dll_ruby_init
 #define ruby_init_loadpath		dll_ruby_init_loadpath
+#define NtInitialize			dll_NtInitialize
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 # define rb_w32_snprintf		dll_rb_w32_snprintf
 #endif
@@ -186,6 +192,7 @@ static VALUE (*dll_rb_str_new2) (const char*);
 static VALUE *dll_ruby_errinfo;
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
+static void (*dll_NtInitialize) (int*, char***);
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #endif
@@ -248,6 +255,7 @@ static struct
     {"ruby_errinfo", (RUBY_PROC*)&dll_ruby_errinfo},
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
+    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
 #endif
@@ -413,6 +421,12 @@ static int ensure_ruby_initialized(void)
 #ifdef DYNAMIC_RUBY
 	if (ruby_enabled(TRUE))
 	{
+#endif
+#ifdef _WIN32
+	    /* suggested by Ariya Mizutani */
+	    int argc = 1;
+	    char *argv[] = {"gvim.exe"};
+	    NtInitialize(&argc, &argv);
 #endif
 	    ruby_init();
 	    ruby_init_loadpath();
