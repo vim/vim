@@ -93,6 +93,9 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # define perl_free dll_perl_free
 # define Perl_get_context dll_Perl_get_context
 # define Perl_croak dll_Perl_croak
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+#  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
+# endif
 # ifndef PROTO
 #  define Perl_croak_nocontext dll_Perl_croak_nocontext
 #  define Perl_call_argv dll_Perl_call_argv
@@ -202,6 +205,9 @@ static int (*perl_run)(PerlInterpreter*);
 static int (*perl_parse)(PerlInterpreter*, XSINIT_t, int, char**, char**);
 static void* (*Perl_get_context)(void);
 static void (*Perl_croak)(pTHX_ const char*, ...);
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const params);
+#endif
 static void (*Perl_croak_nocontext)(const char*, ...);
 static I32 (*Perl_dowantarray)(pTHX);
 static void (*Perl_free_tmps)(pTHX);
@@ -306,6 +312,9 @@ static struct {
     {"perl_parse", (PERL_PROC*)&perl_parse},
     {"Perl_get_context", (PERL_PROC*)&Perl_get_context},
     {"Perl_croak", (PERL_PROC*)&Perl_croak},
+#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+    {"Perl_croak_xs_usage", (PERL_PROC*)&Perl_croak_xs_usage},
+#endif
     {"Perl_croak_nocontext", (PERL_PROC*)&Perl_croak_nocontext},
     {"Perl_dowantarray", (PERL_PROC*)&Perl_dowantarray},
     {"Perl_free_tmps", (PERL_PROC*)&Perl_free_tmps},
