@@ -14,9 +14,9 @@
 #if !defined(AFX_STDAFX_H__3389658B_AD83_11D3_9C1E_0090278BBD99__INCLUDED_)
 #define AFX_STDAFX_H__3389658B_AD83_11D3_9C1E_0090278BBD99__INCLUDED_
 
-#if _MSC_VER > 1000
+#if defined(_MSC_VER) && _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
+#endif
 
 // Insert your headers here
 // #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
@@ -34,7 +34,7 @@
 #define INC_OLE2	// WIN32, get ole2 from windows.h
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
-#if _MSC_VER >= 1400
+#if defined(_MSC_VER) && _MSC_VER >= 1400
 # define _CRT_SECURE_NO_DEPRECATE
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
@@ -44,7 +44,7 @@
 #include <shlobj.h>
 
 /* Accommodate old versions of VC that don't have a modern Platform SDK */
-#if _MSC_VER < 1300
+#if defined(_MSC_VER) && _MSC_VER < 1300
 # undef  UINT_PTR
 # define UINT_PTR UINT
 #endif
