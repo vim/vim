@@ -3345,7 +3345,7 @@ gui_mch_browseW(
 #ifdef OPENFILENAME_SIZE_VERSION_400
     /* be compatible with Windows NT 4.0 */
     /* TODO: what to use for OPENFILENAMEW??? */
-    fileStruct.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
+    fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 #else
     fileStruct.lStructSize = sizeof(fileStruct);
 #endif
@@ -3506,7 +3506,7 @@ gui_mch_browse(
     memset(&fileStruct, 0, sizeof(OPENFILENAME));
 #ifdef OPENFILENAME_SIZE_VERSION_400
     /* be compatible with Windows NT 4.0 */
-    fileStruct.lStructSize = sizeof(OPENFILENAME_SIZE_VERSION_400);
+    fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400;
 #else
     fileStruct.lStructSize = sizeof(fileStruct);
 #endif
