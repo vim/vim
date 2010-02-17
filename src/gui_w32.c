@@ -1329,6 +1329,7 @@ gui_mch_init(void)
     WNDCLASS wndclass;
 #ifdef FEAT_MBYTE
     const WCHAR szVimWndClassW[] = VIM_CLASSW;
+    const WCHAR szTextAreaClassW[] = L"VimTextArea";
     WNDCLASSW wndclassw;
 #endif
 #ifdef GLOBAL_IME
@@ -1479,6 +1480,28 @@ gui_mch_init(void)
 #endif
 
     /* Create the text area window */
+#ifdef FEAT_MBYTE
+    if (wide_WindowProc)
+    {
+	if (GetClassInfoW(s_hinst, szTextAreaClassW, &wndclassw) == 0)
+	{
+	    wndclassw.style = CS_OWNDC;
+	    wndclassw.lpfnWndProc = _TextAreaWndProc;
+	    wndclassw.cbClsExtra = 0;
+	    wndclassw.cbWndExtra = 0;
+	    wndclassw.hInstance = s_hinst;
+	    wndclassw.hIcon = NULL;
+	    wndclassw.hCursor = LoadCursor(NULL, IDC_ARROW);
+	    wndclassw.hbrBackground = NULL;
+	    wndclassw.lpszMenuName = NULL;
+	    wndclassw.lpszClassName = szTextAreaClassW;
+
+	    if (RegisterClassW(&wndclassw) == 0)
+		return FAIL;
+	}
+    }
+    else
+#endif
     if (GetClassInfo(s_hinst, szTextAreaClass, &wndclass) == 0)
     {
 	wndclass.style = CS_OWNDC;
