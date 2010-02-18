@@ -869,7 +869,7 @@ static VALUE buffer_append(VALUE self, VALUE num, VALUE str)
     long	n = NUM2LONG(num);
     aco_save_T	aco;
 
-    if (line != NULL) {
+    if (line == NULL) {
 	rb_raise(rb_eIndexError, "NULL line");
     }
     else if (n >= 0 && n <= buf->b_ml.ml_line_count)
