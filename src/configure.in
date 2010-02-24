@@ -2642,14 +2642,16 @@ if test "x$vim_cv_getcwd_broken" = "xyes" ; then
   AC_DEFINE(BAD_GETCWD)
 fi
 
-dnl Check for functions in one big call, to reduce the size of configure
-AC_CHECK_FUNCS(bcmp fchdir fchown fseeko fsync ftello getcwd getpseudotty \
+dnl Check for functions in one big call, to reduce the size of configure.
+dnl Can only be used for functions that do not require any include.
+AC_CHECK_FUNCS(bcmp fchdir fchown fsync getcwd getpseudotty \
 	getpwnam getpwuid getrlimit gettimeofday getwd lstat memcmp \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigvec strcasecmp strerror strftime stricmp strncasecmp \
 	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
 	usleep utime utimes)
+AC_FUNC_FSEEKO
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
 AC_MSG_CHECKING(for st_blksize)

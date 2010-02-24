@@ -25,7 +25,7 @@ extern int	fseek __ARGS((FILE *, long, int));
 extern int	fseeko __ARGS((FILE *, off_t, int));
 #endif
 extern long	ftell __ARGS((FILE *));
-#ifdef HAVE_FTELLO
+#ifdef HAVE_FSEEKO
 extern off_t	ftello __ARGS((FILE *));
 #endif
 extern void	rewind __ARGS((FILE *));

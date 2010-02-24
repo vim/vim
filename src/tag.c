@@ -90,8 +90,9 @@ static char_u	*tagmatchname = NULL;	/* name of last used tag */
 /*
  * We use ftello() here, if available.  It returns off_t instead of long,
  * which helps if long is 32 bit and off_t is 64 bit.
+ * We assume that when fseeko() is available then ftello() is too.
  */
-#ifdef HAVE_FTELLO
+#ifdef HAVE_FSEEKO
 # define ftell ftello
 #endif
 
