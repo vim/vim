@@ -854,12 +854,6 @@ foldUpdate(wp, top, bot)
 	    && fp->fd_top < bot)
     {
 	fp->fd_small = MAYBE;
-
-	/* Not sure if this is the right place to reset fd_flags (suggested by
-	 * Lech Lorens). */
-        if (wp->w_foldinvalid)
-            fp->fd_flags = FD_LEVEL;
-
 	++fp;
     }
 

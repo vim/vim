@@ -1117,26 +1117,31 @@ diff_win_options(wp, addbuf)
     win_T	*wp;
     int		addbuf;		/* Add buffer to diff. */
 {
+# ifdef FEAT_FOLDING
+    win_T *old_curwin = curwin;
+
+    /* close the manually opened folds */
+    curwin = wp;
+    newFoldLevel();
+    curwin = old_curwin;
+# endif
+
     wp->w_p_diff = TRUE;
     wp->w_p_scb = TRUE;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
-    {
-	win_T	    *old_curwin = curwin;
-
-	curwin = wp;
-	curbuf = curwin->w_buffer;
-	set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
+    curwin = wp;
+    curbuf = curwin->w_buffer;
+    set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
 						       OPT_LOCAL|OPT_FREE, 0);
-	curwin = old_curwin;
-	curbuf = curwin->w_buffer;
-	wp->w_p_fdc = diff_foldcolumn;
-	wp->w_p_fen = TRUE;
-	wp->w_p_fdl = 0;
-	foldUpdateAll(wp);
-	/* make sure topline is not halfway a fold */
-	changed_window_setting_win(wp);
-    }
+    curwin = old_curwin;
+    curbuf = curwin->w_buffer;
+    wp->w_p_fdc = diff_foldcolumn;
+    wp->w_p_fen = TRUE;
+    wp->w_p_fdl = 0;
+    foldUpdateAll(wp);
+    /* make sure topline is not halfway a fold */
+    changed_window_setting_win(wp);
 # endif
 #ifdef FEAT_SCROLLBIND
     if (vim_strchr(p_sbo, 'h') == NULL)

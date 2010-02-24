@@ -36,6 +36,8 @@ Gzk:call append("$", "folding " . getline("."))
 k:call append("$", getline("."))
 jAcommentstart  Acommentend:set fdl=1
 3j:call append("$", getline("."))
+:set fdl=0
+zOj:call append("$", getline("."))
 :" test expression folding
 :fun Flvl()
   let l = getline(v:lnum)

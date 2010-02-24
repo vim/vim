@@ -6586,7 +6586,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 		|| *curwin->w_p_fdm == NUL)
 	    errmsg = e_invarg;
 	else
+	{
 	    foldUpdateAll(curwin);
+	    if (foldmethodIsDiff(curwin))
+		newFoldLevel();
+	}
     }
 # ifdef FEAT_EVAL
     /* 'foldexpr' */
