@@ -660,20 +660,88 @@ static VALUE vim_command(VALUE self UNUSED, VALUE str)
     return Qnil;
 }
 
+#ifdef FEAT_EVAL
+static VALUE vim_to_ruby(typval_T *tv)
+{
+    VALUE result = Qnil;
+
+    if (tv->v_type == VAR_STRING)
+    {
+        result = rb_str_new2((char *)tv->vval.v_string);
+    }
+    else if (tv->v_type == VAR_NUMBER)
+    {
+        result = INT2NUM(tv->vval.v_number);
+    }
+# ifdef FEAT_FLOAT
+    else if (tv->v_type == VAR_FLOAT)
+    {
+        result = rb_float_new(tv->vval.v_float);
+    }
+# endif
+    else if (tv->v_type == VAR_LIST)
+    {
+        list_T      *list = tv->vval.v_list;
+        listitem_T  *curr;
+
+        result = rb_ary_new();
+
+        if (list != NULL)
+        {
+            for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+            {
+                rb_ary_push(result, vim_to_ruby(&curr->li_tv));
+            }
+        }
+    }
+    else if (tv->v_type == VAR_DICT)
+    {
+        result = rb_hash_new();
+
+        if (tv->vval.v_dict != NULL)
+        {
+            hashtab_T   *ht = &tv->vval.v_dict->dv_hashtab;
+            long_u      todo = ht->ht_used;
+            hashitem_T  *hi;
+            dictitem_T  *di;
+
+            for (hi = ht->ht_array; todo > 0; ++hi)
+            {
+                if (!HASHITEM_EMPTY(hi))
+                {
+                    --todo;
+
+                    di = dict_lookup(hi);
+                    rb_hash_aset(result, rb_str_new2((char *)hi->hi_key),
+						     vim_to_ruby(&di->di_tv));
+                }
+            }
+        }
+    } /* else return Qnil; */
+
+    return result;
+}
+#endif
+
 static VALUE vim_evaluate(VALUE self UNUSED, VALUE str)
 {
 #ifdef FEAT_EVAL
-    char_u *value = eval_to_string((char_u *)StringValuePtr(str), NULL, TRUE);
+    typval_T    *tv;
+    VALUE       result;
 
-    if (value != NULL)
+    tv = eval_expr((char_u *)StringValuePtr(str), NULL);
+    if (tv == NULL)
     {
-	VALUE val = rb_str_new2((char *)value);
-	vim_free(value);
-	return val;
+        return Qnil;
     }
-    else
+    result = vim_to_ruby(tv);
+
+    free_tv(tv);
+
+    return result;
+#else
+    return Qnil;
 #endif
-	return Qnil;
 }
 
 static VALUE buffer_new(buf_T *buf)
