@@ -241,15 +241,15 @@ DEF_GUI=-DFEAT_GUI_W32 -DFEAT_CLIPBOARD
 DEFINES=-DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) \
 	-DHAVE_PATHDEF -DFEAT_$(FEATURES)
 ifeq ($(CROSS),yes)
-# cross-compiler:
-CC = i586-pc-mingw32msvc-gcc
+# cross-compiler prefix:
+CROSS_COMPILE = i586-pc-mingw32msvc-
 DEL = rm
 MKDIR = mkdir -p
-WINDRES = i586-pc-mingw32msvc-windres
+DIRSLASH = /
 else
 # normal (Windows) compilation:
-CC = gcc
 ifneq (sh.exe, $(SHELL))
+CROSS_COMPILE =
 DEL = rm
 MKDIR = mkdir -p
 DIRSLASH = /
@@ -258,8 +258,9 @@ DEL = del
 MKDIR = mkdir
 DIRSLASH = \\
 endif
-WINDRES = windres
 endif
+CC := $(CROSS_COMPILE)gcc
+WINDRES := $(CROSS_COMPILE)windres
 
 #>>>>> end of choices
 ###########################################################################
@@ -549,10 +550,11 @@ upx: exes
 	upx vim.exe
 
 xxd/xxd.exe: xxd/xxd.c
-	$(MAKE) -C xxd -f Make_cyg.mak
+	$(MAKE) -C xxd -f Make_cyg.mak CC=$(CC)
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 	$(MAKE) -C GvimExt -f Make_ming.mak
+	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.o

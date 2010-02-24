@@ -20,17 +20,11 @@ MINGWOLD = no
 ifeq ($(CROSS),yes)
 DEL = rm
 ifeq ($(MINGWOLD),yes)
-CXX = i586-mingw32msvc-g++
 CXXFLAGS := -O2 -mno-cygwin -fvtable-thunks
-WINDRES = i586-mingw32msvc-windres
 else
-CXX = i386-mingw32msvc-g++
 CXXFLAGS := -O2 -mno-cygwin
-WINDRES = i386-mingw32msvc-windres
 endif
 else
-CXX := g++
-WINDRES := windres
 CXXFLAGS := -O2 -mno-cygwin
 ifneq (sh.exe, $(SHELL))
 DEL = rm
@@ -38,6 +32,8 @@ else
 DEL = del
 endif
 endif
+CXX := $(CROSS_COMPILE)g++
+WINDRES := $(CROSS_COMPILE)windres
 LIBS :=  -luuid
 RES  := gvimext.res
 DEFFILE = gvimext_ming.def

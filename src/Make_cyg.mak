@@ -1,6 +1,6 @@
 #
 # Makefile for VIM on Win32, using Cygnus gcc
-# Last updated by Dan Sharp.  Last Change: 2007 Sep 29
+# Last updated by Dan Sharp.  Last Change: 2010 Feb 24
 #
 # Also read INSTALLpc.txt!
 #
@@ -32,9 +32,12 @@
 # OLE		no or yes: set to yes to make OLE gvim (no)
 # DEBUG		no or yes: set to yes if you wish a DEBUGging build (no)
 # CPUNR		No longer supported, use ARCH.
-# ARCH		i386 through pentium4: select -march argument to compile with (i386)
+# ARCH		i386 through pentium4: select -march argument to compile with
+#               (i386)
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cygwin1.dll is required to run Vim.
+#		"no" does not work with latest version of Cygwin, use
+#		Make_ming.mak instead.  Or set CC to gcc-3.
 # POSTSCRIPT	no or yes: set to yes for PostScript printing (no)
 # FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG)
 # WINVER	Lowest Win32 version to support.  (0x0400)
@@ -99,6 +102,7 @@ DEFINES = -DWIN32 -DHAVE_PATHDEF -DFEAT_$(FEATURES) \
 INCLUDES = -march=$(ARCH) -Iproto
 
 #>>>>> name of the compiler and linker, name of lib directory
+CROSS_COMPILE =
 CC = gcc
 RC = windres
 
@@ -467,10 +471,10 @@ $(EXE): $(OUTDIR) $(OBJ)
 	$(CC) $(CFLAGS) -o $(EXE) $(OBJ) $(LIBS) -luuid -lole32 $(EXTRA_LIBS)
 
 xxd/xxd.exe: xxd/xxd.c
-	$(MAKE) -C xxd -f Make_cyg.mak USEDLL=$(USEDLL)
+	$(MAKE) -C xxd -f Make_cyg.mak CC=$(CC) USEDLL=$(USEDLL)
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
-	$(MAKE) -C GvimExt -f Make_ming.mak
+	$(MAKE) -C GvimExt -f Make_ming.mak CROSS_COMPILE=$(CROSS_COMPILE)
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c  $(LIBS)

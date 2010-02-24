@@ -12,6 +12,7 @@ DEFINES = -mno-cygwin
 LIBS    =
 endif
 
+CC = gcc
 CFLAGS = -O2 -Wall -DWIN32 $(DEFINES)
 
 ifneq (sh.exe, $(SHELL))
@@ -21,7 +22,7 @@ DEL = del
 endif
 
 xxd.exe: xxd.c
-	gcc $(CFLAGS) -s -o xxd.exe xxd.c $(LIBS)
+	$(CC) $(CFLAGS) -s -o xxd.exe xxd.c $(LIBS)
 
 clean:
 	-$(DEL) xxd.exe

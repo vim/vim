@@ -241,7 +241,7 @@ Use Make_cyg.mak with Cygwin's GCC. See
 The Cygnus one many not fully work yet.
 With Cygnus gcc you can use the Unix Makefile instead (you need to get the
 Unix archive then).  Then you get a Cygwin application (feels like Vim is
-runnin on Unix), while with Make_cyg.mak you get a Windows application (like
+running on Unix), while with Make_cyg.mak you get a Windows application (like
 with the other makefiles).
 
 
