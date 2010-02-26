@@ -248,8 +248,8 @@ MKDIR = mkdir -p
 DIRSLASH = /
 else
 # normal (Windows) compilation:
-ifneq (sh.exe, $(SHELL))
 CROSS_COMPILE =
+ifneq (sh.exe, $(SHELL))
 DEL = rm
 MKDIR = mkdir -p
 DIRSLASH = /
@@ -553,7 +553,6 @@ xxd/xxd.exe: xxd/xxd.c
 	$(MAKE) -C xxd -f Make_cyg.mak CC=$(CC)
 
 GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
-	$(MAKE) -C GvimExt -f Make_ming.mak
 	$(MAKE) -C GvimExt -f Make_ming.mak CROSS=$(CROSS) CROSS_COMPILE=$(CROSS_COMPILE)
 
 clean:
