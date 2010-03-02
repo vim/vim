@@ -215,7 +215,7 @@ directory.
 
 You should not need to do *any* editing of any files to get vim compiled this
 way.  If, for some reason, you want the console-mode-only version of vim (this
-is NOT recommended on Win32, especially on '95/'98!!!), you need can use:
+is NOT recommended on Win32, especially on '95/'98!!!), you can use:
 
     make -f Make_ming.mak GUI=no vim.exe
 

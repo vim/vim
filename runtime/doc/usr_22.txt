@@ -1,4 +1,4 @@
-*usr_22.txt*	For Vim version 7.2.  Last change: 2007 Aug 14
+*usr_22.txt*	For Vim version 7.2.  Last change: 2010 Feb 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -54,7 +54,7 @@ You can see these items:
     *.c files, etc)
 5.  How to get help (use the <F1> key), and an abbreviated listing
     of available commands
-6.  A listing of files, including "../", which allows one to to list
+6.  A listing of files, including "../", which allows one to list
     the parent directory.
 
 If you have syntax highlighting enabled, the different parts are highlighted

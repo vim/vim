@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 7.2.  Last change: 2009 Oct 28
+*message.txt*   For Vim version 7.2.  Last change: 2010 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -72,7 +72,7 @@ LIST OF MESSAGES
   Hangul automata ERROR
   block was not locked
   Didn't get block nr {N}?
-  ml_timestamp: Didn't get block 0??
+  ml_upd_block0(): Didn't get block 0??
   pointer block id wrong {N}
   Updated too many blocks?
   get_varp ERROR
@@ -128,7 +128,6 @@ The color name {name} is unknown.  See |gui-colors| for a list of colors that
 are available on most systems.
 
 							*E458*  >
-  Cannot allocate colormap entry for "xxxx"
   Cannot allocate colormap entry, some colors may be incorrect
 
 This means that there are not enough colors available for Vim.  It will still
@@ -180,7 +179,7 @@ manually delete the link or the file, or change the permissions so that Vim
 can overwrite.
 
 							*E46*  >
-  Cannot set read-only variable "{name}"
+  Cannot change read-only variable "{name}"
 
 You are trying to assign a value to an argument of a function |a:var| or a Vim
 internal variable |v:var| which is read-only.
@@ -279,8 +278,8 @@ Writing a file was not completed successfully.  The file is probably
 incomplete.
 
 							*E13* *E189*  >
-  File exists (use ! to override)
-  "{filename}" exists (use ! to override)
+  File exists (add ! to override)
+  "{filename}" exists (add ! to override)
 
 You are protected from accidentally overwriting a file.  When you want to
 write anyway, use the same command, but add a "!" just after the command.
@@ -349,7 +348,7 @@ the other way around.  It should be used like this: {foo,bar}.  This matches
 "foo" and "bar".
 
 							*E315*  >
-  ml_get: invalid lnum:
+  ml_get: invalid lnum: {number}
 
 This is an internal Vim error.  Please try to find out how it can be
 reproduced, and submit a bug report |bugreport.vim|.
@@ -420,8 +419,8 @@ mapping.  All variations of this command give the same message: ":cunmap",
   |:map-<buffer>|
 
 							*E37* *E89*  >
-  No write since last change (use ! to override)
-  No write since last change for buffer {N} (use ! to override)
+  No write since last change (add ! to override)
+  No write since last change for buffer {N} (add ! to override)
 
 You are trying to |abandon| a file that has changes.  Vim protects you from
 losing your work.  You can either write the changed file with ":w", or, if you
@@ -477,7 +476,7 @@ This only happens on systems with 16 bit ints: The compiled regexp pattern is
 longer than about 65000 characters.  Try using a shorter pattern.
 
 							*E45*  >
-  'readonly' option is set (use ! to override)
+  'readonly' option is set (add ! to override)
 
 You are trying to write a file that was marked as read-only.  To write the
 file anyway, either reset the 'readonly' option, or add a '!' character just
@@ -641,7 +640,7 @@ bit to be reset.  It should be safe to reload the file.  Set 'autoread' to
 automatically reload the file.
 
 							*E211*  >
-  Warning: File "{filename}" no longer available
+  File "{filename}" no longer available
 
 The file which you have started editing has disappeared, or is no longer
 accessible.  Make sure you write the buffer somewhere to avoid losing
@@ -688,6 +687,7 @@ no argument has been specified.
 
 							*E474* *E475*  >
   Invalid argument
+  Invalid argument: {arg}
 
 An Ex command has been executed, but an invalid argument has been specified.
 
@@ -715,8 +715,8 @@ A range was specified for an Ex command that doesn't permit one.  See
 Vim cannot create a temporary file.
 
 							*E484* *E485*  >
-  Can't open file %s"
-  Can't read file %s"
+  Can't open file {filename}
+  Can't read file {filename}
 
 Vim cannot read a temporary file.
 

@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.2.  Last change: 2009 Dec 22
+*fold.txt*      For Vim version 7.2.  Last change: 2010 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -274,7 +274,7 @@ zf{motion}  or
 		Also see |fold-create-marker|.
 
 							*zF*
-zF		Create a fold for N lines.  Works like "zf".
+zF		Create a fold for [count] lines.  Works like "zf".
 
 :{range}fo[ld]						*:fold* *:fo*
 		Create a fold for the lines in {range}.  Works like "zf".
@@ -399,24 +399,24 @@ MOVING OVER FOLDS ~
 [z		Move to the start of the current open fold.  If already at the
 		start, move to the start of the fold that contains it.  If
 		there is no containing fold, the command fails.
-		When a count is used, repeats the command N times.
+		When a count is used, repeats the command [count] times.
 
 							*]z*
 ]z		Move to the end of the current open fold.  If already at the
 		end, move to the end of the fold that contains it.  If there
 		is no containing fold, the command fails.
-		When a count is used, repeats the command N times.
+		When a count is used, repeats the command [count] times.
 
 							*zj*
 zj		Move downwards to the start of the next fold.  A closed fold
 		is counted as one fold.
-		When a count is used, repeats the command N times.
+		When a count is used, repeats the command [count] times.
 		This command can be used after an |operator|.
 
 							*zk*
 zk		Move upwards to the end of the previous fold.  A closed fold
 		is counted as one fold.
-		When a count is used, repeats the command N times.
+		When a count is used, repeats the command [count] times.
 		This command can be used after an |operator|.
 
 

@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 7.2.  Last change: 2009 Oct 14
+*visual.txt*    For Vim version 7.2.  Last change: 2010 Feb 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -211,10 +211,18 @@ The objects that can be used are:
 	ib	inner () block					|v_ib|
 	aB	a {} block (with braces)			|v_aB|
 	iB	inner {} block					|v_iB|
+	at	a <tag> </tag> block (with tags)		|v_at|
+	it	inner <tag> </tag> block			|v_it|
 	a<	a <> block (with <>)				|v_a<|
 	i<	inner <> block					|v_i<|
 	a[	a [] block (with [])				|v_a[|
 	i[	inner [] block					|v_i[|
+	a"	a double quoted string (with quotes)		|v_aquote|
+	i"	inner double quoted string			|v_iquote|
+	a'	a single quoted string (with quotes)		|v_a'|
+	i'	inner simple quoted string			|v_i'|
+	a`	a string in backticks (with backticks)		|v_a`|
+	i`	inner string in backticks			|v_i`|
 
 Additionally the following commands can be used:
 	:	start Ex command for highlighted lines (1)	|v_:|

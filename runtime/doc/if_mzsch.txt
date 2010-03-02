@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 7.2.  Last change: 2010 Jan 19
+*if_mzsch.txt*  For Vim version 7.2.  Last change: 2010 Feb 11
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -185,8 +185,7 @@ Buffers							 *mzscheme-buffer*
 				    current buffer will be used.
     (get-buff-line-list {start} {end} [buffer])
 				    Get a list of lines in a buffer. {Start}
-				    and {end} are 1-based. {Start} is
-				    inclusive, {end} - exclusive.
+				    and {end} are 1-based and inclusive.
     (set-buff-line-list {start} {end} {string-list} [buffer])
 				    Set a list of lines in a buffer. If
 				    string-list is #f or null, the lines get
@@ -200,8 +199,8 @@ Buffers							 *mzscheme-buffer*
 				    Insert a list of lines into a buffer after
 				    {linenr}. If {linenr} is 0, lines will be
 				    inserted at start.
-    (curr-buff)			    Get the current buffer. Use procedures
-				    from "vimcmd" module to change it.
+    (curr-buff)			    Get the current buffer. Use other MzScheme
+				    interface procedures to change it.
     (buff-count)		    Get count of total buffers in the editor.
     (get-next-buff [buffer])	    Get next buffer.
     (get-prev-buff [buffer])	    Get previous buffer. Return #f when there

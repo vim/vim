@@ -65,7 +65,7 @@ you want Motif.
 
   The smarter way:
     Make VIM as described above. Then create a file named 'link.sed' with the
-    following contense:
+    following content:
 
 	s/-lXext  *//g
 	s/-lXmu  *//g

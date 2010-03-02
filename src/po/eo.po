@@ -23,8 +23,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-27 16:52+0200\n"
-"PO-Revision-Date: 2009-06-28 09:53+0200\n"
+"POT-Creation-Date: 2010-02-16 21:54+0100\n"
+"PO-Revision-Date: 2010-02-16 21:56+0100\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -211,8 +211,11 @@ msgstr "E97: Ne eblas krei dosierdiferencojn"
 msgid "Patch file"
 msgstr "Flika dosiero"
 
+msgid "E816: Cannot read patch output"
+msgstr "E816: Ne eblas legi eliron de flikilo \"patch\""
+
 msgid "E98: Cannot read diff output"
-msgstr "E98: Ne eblas legi eliron de dosierdiferenco"
+msgstr "E98: Ne eblas legi eliron de dosierdiferencilo \"diff\""
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Aktuala bufro ne estas en dosierdiferenca reĝimo"
@@ -1624,7 +1627,7 @@ msgstr "[ĉifrita]"
 
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
-msgstr "[ERARO DE KONVERTO ĉe linio %ld]"
+msgstr "[ERARO DE KONVERTO en linio %ld]"
 
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
@@ -1704,13 +1707,25 @@ msgid "E512: Close failed"
 msgstr "E512: Fermo fiaskis"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
-msgstr "E513: Skriberaro, konverto fiaskis (igu 'fenc' malplena por transpasi)"
+msgstr "E513: skriberaro, konverto fiaskis (igu 'fenc' malplena por transpasi)"
+
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr ""
+"E513: skriberaro, konverto fiaskis en linio %ld (igu 'fenc' malplana  por "
+"transpasi)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: skriberaro (ĉu plena dosiersistemo?)"
 
 msgid " CONVERSION ERROR"
 msgstr " ERARO DE KONVERTO"
+
+#, c-format
+msgid " in line %ld;"
+msgstr " en linio %ld;"
 
 msgid "[Device]"
 msgstr "[Aparatdosiero]"
@@ -2097,9 +2112,6 @@ msgstr "Vim: Ĉefa fenestro neatendite detruiĝis\n"
 msgid "Font Selection"
 msgstr "Elekto de tiparo"
 
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "Uzis CUT_BUFFER0 anstataŭ malplenan apartigon"
-
 msgid "&Filter"
 msgstr "&Filtri"
 
@@ -2474,9 +2486,6 @@ msgstr "E626: ne eblas akiri informojn pri la datumbazo de cscope"
 
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: ripetita datumbazo de cscope ne aldonita"
-
-msgid "E569: maximum number of cscope connections reached"
-msgstr "E569: atingis maksimuman nombron de konektoj de cscope"
 
 #, c-format
 msgid "E261: cscope connection %s not found"
@@ -3142,6 +3151,11 @@ msgstr "--serverlist\t\tListigi haveblajn nomojn de Vim-serviloj kaj eliri"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <nomo>\tSendu al/iĝi la Vim-servilo <nomo>"
+
+msgid "--startuptime <file>\tWrite startup timing messages to <file>"
+msgstr ""
+"--startuptime <dosiero>  Skribi mesaĝojn de komenca tempomezurado al "
+"<dosiero>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUzi <viminfo> anstataŭ .viminfo"
@@ -5568,6 +5582,9 @@ msgstr "nova ŝelo lanĉita\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Eraro dum legado de eniro, elironta...\n"
 
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "Uzis CUT_BUFFER0 anstataŭ malplenan apartigon"
+
 #. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "Malfaro neebla; daŭrigi tamene"
@@ -6388,7 +6405,3 @@ msgstr "serĉo atingis SUPRON, daŭrigonte al SUBO"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "serĉo atingis SUBON, daŭrigonte al SUPRO"
-
-# DP: ĉu traduki NL?
-#~ msgid "[NL found]"
-#~ msgstr "[NL trovita]"

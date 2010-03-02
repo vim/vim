@@ -7,7 +7,7 @@ For more information, see the "README.txt" file that comes with the runtime
 archive (vim-7.2-rt.tar.gz).  To be able to run Vim you MUST get the runtime
 archive too!
 
-The extra archive plus the source and runtime achives make up the complete
+The extra archive plus the source and runtime archives make up the complete
 sources of Vim for all systems.
 
 

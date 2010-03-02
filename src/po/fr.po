@@ -6,7 +6,7 @@
 #  FIRST AUTHOR  DindinX         <David.Odin@bigfoot.com>     2000.
 # SECOND AUTHOR  Adrien Beau     <version.francaise@free.fr>  2002, 2003.
 #  THIRD AUTHOR  David Blanchet  <david.blanchet@free.fr>     2006, 2008.
-# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2009.
+# FOURTH AUTHOR  Dominique Pellé <dominique.pelle@gmail.com>  2008, 2010.
 #
 # Latest translation available at:
 #   http://dominique.pelle.free.fr/vim-fr.php
@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-27 16:52+0200\n"
-"PO-Revision-Date: 2009-06-28 09:54+0200\n"
+"POT-Creation-Date: 2010-02-16 21:54+0100\n"
+"PO-Revision-Date: 2010-02-16 22:10+0100\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -230,8 +230,9 @@ msgstr "E97: diff ne fonctionne pas"
 msgid "Patch file"
 msgstr "Fichier rustine"
 
-# AB - La version française est correcte, mais trop technique.
-# AB - "output" est difficile à traduire clairement.
+msgid "E816: Cannot read patch output"
+msgstr "E816: Le fichier intermédiaire produit par patch n'a pu être lu"
+
 msgid "E98: Cannot read diff output"
 msgstr "E98: Le fichier intermédiaire produit par diff n'a pu être lu"
 
@@ -1059,7 +1060,7 @@ msgstr "E143: Une autocommande a effacé le nouveau tampon %s"
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: L'argument de :z n'est pas numérique"
 
-# AB - La version française fera peut-être mieux passer l'amère pillule.
+# AB - La version française fera peut-être mieux passer l'amère pilule.
 #      La consultation de l'aide donnera l'explication complète à ceux qui
 #      ne comprendraient pas à quoi ce message est dû.
 msgid "E145: Shell commands not allowed in rvim"
@@ -1258,7 +1259,7 @@ msgstr "E750: Utilisez d'abord :profile start <nomfichier>"
 msgid "Save changes to \"%s\"?"
 msgstr "Enregistrer \"%s\" ?"
 
-# AB - Si les parenthèses posent problème, il faudra remettre les guillements
+# AB - Si les parenthèses posent problème, il faudra remettre les guillemets
 #      ci-dessus.
 msgid "Untitled"
 msgstr "(sans titre)"
@@ -1420,7 +1421,7 @@ msgid ""
 "    Name        Args Range Complete  Definition"
 msgstr ""
 "\n"
-"    Nom         Args Plage Complèt.  Définition"
+"    Nom         Args Plage Complet.  Définition"
 
 msgid "No user-defined commands found"
 msgstr "Aucune commande définie par l'utilisateur trouvée"
@@ -1895,17 +1896,27 @@ msgstr "E667: Fsynch a échoué"
 msgid "E512: Close failed"
 msgstr "E512: Erreur de fermeture de fichier"
 
-# DB - todo : un peu long...
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Erreur d'écriture, échec de la conversion (videz 'fenc' pour passer "
+"E513: Erreur d'écriture, échec de conversion (videz 'fenc' pour passer "
 "outre)"
+
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr ""
+"E513: Erreur d'écriture, échec de conversion à la ligne %ld (videz 'fenc' pour passer outre)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: erreur d'écriture (système de fichiers plein ?)"
 
 msgid " CONVERSION ERROR"
 msgstr " ERREUR DE CONVERSION"
+
+#, c-format
+msgid " in line %ld;"
+msgstr " à la ligne %ld"
 
 msgid "[Device]"
 msgstr "[Périph.]"
@@ -2300,10 +2311,6 @@ msgstr "Vim : Fenêtre principale détruite inopinément\n"
 msgid "Font Selection"
 msgstr "Choisir une police - Vim"
 
-# DB - Message de débogage.
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
-
 msgid "&Filter"
 msgstr "&Filtrer"
 
@@ -2366,7 +2373,7 @@ msgstr "E243: Argument non supporté : \"-%s\" ; Utilisez la version OLE."
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Impossible d'ouvrir une fenêtre dans une application MDI"
 
-# DB - Les quelques messages qui suivent se retouvent aussi ici :
+# DB - Les quelques messages qui suivent se retrouvent aussi ici :
 #      gui_gtk_x11.c:3170 et suivants.
 #      Les libellés changent un peu (majuscule par exemple).
 #      La VF tâche de les unifier.
@@ -2638,10 +2645,10 @@ msgstr "E622: Impossible de forker pour cscope"
 msgid "cs_create_connection exec failed"
 msgstr "exec de cs_create_connection a échoué"
 
-msgid "cs_create_connection : fdopen for to_fp failed"
+msgid "cs_create_connection: fdopen for to_fp failed"
 msgstr "cs_create_connection : fdopen pour to_fp a échoué"
 
-msgid "cs_create_connection : fdopen for fr_fp failed"
+msgid "cs_create_connection: fdopen for fr_fp failed"
 msgstr "cs_create_connection : fdopen pour fr_fp a échoué"
 
 msgid "E623: Could not spawn cscope process"
@@ -2697,9 +2704,6 @@ msgstr ""
 
 msgid "E568: duplicate cscope database not added"
 msgstr "E568: base de données cscope redondante non ajoutée"
-
-msgid "E569: maximum number of cscope connections reached"
-msgstr "E569: nombre maximum de connexions cscope atteint"
 
 #, c-format
 msgid "E261: cscope connection %s not found"
@@ -3069,8 +3073,7 @@ msgid "E573: Invalid server id used: %s"
 msgstr "E573: Id utilisé pour le serveur invalide : %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
-msgstr ""
-"E251: Entrée registre de l'instance de Vim mal formattée. Suppression !"
+msgstr "E251: Entrée registre de l'instance de Vim mal formatée. Suppression !"
 
 msgid "Unknown option argument"
 msgstr "Option inconnue"
@@ -3367,6 +3370,9 @@ msgstr ""
 msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <nom>\tEnvoyer au/devenir le serveur Vim nommé <nom>"
 
+msgid "--startuptime <file>\tWrite startup timing messages to <file>"
+msgstr "--startuptime <fich>\tÉcrire les messages d'horodatage au démarrage dans <fich>"
+
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUtiliser <viminfo> au lieu du viminfo habituel"
 
@@ -3659,8 +3665,8 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Il est possible qu'aucune modification n'a été faite ou que Vim n'a pas mis à "
-"jour  le fichier d'échange."
+"Il est possible qu'aucune modification n'a été faite ou que Vim n'a pas mis "
+"à jour  le fichier d'échange."
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " ne peut pas être utilisé avec cette version de Vim.\n"
@@ -4408,7 +4414,7 @@ msgid ""
 "# Registers:\n"
 msgstr ""
 "\n"
-"# Resgistres :\n"
+"# Registres :\n"
 
 #, c-format
 msgid "E574: Unknown register type %d"
@@ -5819,6 +5825,10 @@ msgstr "nouveau shell démarré\n"
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim : Erreur lors de la lecture de l'entrée, sortie...\n"
 
+# DB - Message de débogage.
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
+
 # DB - Question O/N.
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -6640,6 +6650,9 @@ msgstr "La recherche a atteint le HAUT, et continue en BAS"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La recherche a atteint le BAS, et continue en HAUT"
+
+#~ msgid "E569: maximum number of cscope connections reached"
+#~ msgstr "E569: nombre maximum de connexions cscope atteint"
 
 #~ msgid "[NL found]"
 #~ msgstr "[NL trouvé]"

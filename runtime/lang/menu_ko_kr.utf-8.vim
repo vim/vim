@@ -1,6 +1,6 @@
 " Menu Translations:	Korean
 " Maintainer:		SungHyun Nam <goweol@gmail.com>
-" Last Change:		2008 Sep 17
+" Last Change:		2010 Feb 18
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -14,19 +14,21 @@ scriptencoding utf-8
 menutrans &Help			도움말(&H)
 menutrans &Overview<Tab><F1>	개관(&O)<Tab><F1>
 menutrans &User\ Manual		사용자\ 매뉴얼(&U)
-menutrans &How-to\ links	어찌하나\ 목록(&H)
-menutrans &GUI			구이(&G)
+menutrans &How-to\ links	하우투\ 목록(&H)
+menutrans &GUI			GUI(&G)
 menutrans &Find\.\.\.		찾기(&F)\.\.\.
 menutrans &Credits		고마운\ 분(&C)
 menutrans Co&pying		저작권(&p)
+menutrans &Sponsor/Register	후원/등록(&S)
 menutrans O&rphans		고아(&r)
-menutrans &Version		버전(&V)
+menutrans &Version		버젼(&V)
 menutrans &About		이\ 프로그램은(&A)
 
 " File menu
 menutrans &File				파일(&F)
 menutrans &Open\.\.\.<Tab>:e		열기(&O)\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	나눠서\ 열기(&l)\.\.\.<Tab>:sp
+menutrans Open\ Tab\.\.\.<Tab>:tabnew	탭\ 열기\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		새로운(&N)<Tab>:enew
 menutrans &Close<Tab>:close		닫기(&C)<Tab>:close
 menutrans &Save<Tab>:w			저장(&S)<Tab>:w
@@ -52,6 +54,7 @@ menutrans &Select\ All<Tab>ggVG		모두\ 고르기(&S)<Tab>ggVG
 menutrans &Find\.\.\.			찾기(&F)\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	찾아서\ 바꾸기(&l)\.\.\.
 menutrans Settings\ &Window		설정\ 창(&W)
+menutrans Startup\ &Settings		시작\ 설정(&S)
 
 " Edit/Global Settings
 menutrans &Global\ Settings		전역\ 설정(&G)
@@ -104,6 +107,21 @@ menutrans &Jump\ to\ this\ tag<Tab>g^]	이\ 꼬리표로\ 가기(&J)<Tab>g^]
 menutrans Jump\ &back<Tab>^T		뒤로\ 가기(&b)<Tab>^T
 menutrans Build\ &Tags\ File		꼬리표\ 파일\ 만들기(&T)
 
+menutrans &Spelling			맞춤법\ 검사(&S)
+menutrans &Spell\ Check\ On		맞춤법\ 검사\ 시작(&S)
+menutrans Spell\ Check\ &Off		맞춤법\ 검사\ 끝(&O)
+menutrans To\ &Next\ error<Tab>]s	다음\ 에러로(&N)<Tab>]s
+menutrans To\ &Previous\ error<Tab>[s	이전\ 에러로(&P)<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=	수정\ 제안(&C)<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	수정\ 반복(&R)<Tab>:spellrepall
+menutrans Set\ language\ to\ "en"	언어를\ "en"으로\ 설정
+menutrans Set\ language\ to\ "en_au"	언어를\ "en_au"로\ 설정
+menutrans Set\ language\ to\ "en_ca"	언어를\ "en_ca"로\ 설정
+menutrans Set\ language\ to\ "en_gb"	언어를\ "en_gb"로\ 설정
+menutrans Set\ language\ to\ "en_nz"	언어를\ "en_nz"으로\ 설정
+menutrans Set\ language\ to\ "en_us"	언어를\ "en_us"로\ 설정
+menutrans &Find\ More\ Languages	다른\ 언어\ 찾기(&F)
+
 " Tools.Fold Menu
 menutrans &Folding			접기(&F)
 " open close folds
@@ -134,7 +152,7 @@ menutrans &Update			갱신(&U)
 menutrans &Get\ Block			블럭\ 가져오기(&G)
 menutrans &Put\ Block			블럭\ 집어넣기(&P)
 
-menutrans &Make<Tab>:make		Make(&M)<Tab>:make
+menutrans &Make<Tab>:make		빌드(&M)<Tab>:make
 menutrans &List\ Errors<Tab>:cl		에러\ 목록\ 보기(&L)<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!	메시지\ 목록\ 보기(&i)<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn		다음\ 에러(&N)<Tab>:cn
@@ -145,7 +163,7 @@ menutrans Error\ &Window		에러\ 창(&W)
 menutrans &Update<Tab>:cwin		갱신(&U)<Tab>:cwin
 menutrans &Open<Tab>:copen		열기(&O)<Tab>:copen
 menutrans &Close<Tab>:cclose		닫기(&C)<Tab>:cclose
-menutrans &Set\ Compiler		컴파일러\ 설정(&S)
+menutrans Se&T\ Compiler		컴파일러\ 설정(&T)
 menutrans &Convert\ to\ HEX<Tab>:%!mc\ vim:xxd	십육진으로\ 변환<Tab>:%!mc\ vim:xxd
 menutrans &Convert\ to\ HEX<Tab>:%!xxd	십육진으로\ 변환(&C)<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!mc\ vim:xxd\ -r	원래대로\ 변환(&r)<Tab>:%!mc\ vim:xxd\ -r

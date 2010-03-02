@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 Feb 09
+*todo.txt*      For Vim version 7.2.  Last change: 2010 Mar 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,30 +30,22 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for crash in netbeans on join command. (Xavier de Gaye, 2010 Feb 5)
+Patch for access to freed memory. (Dominique Pelle, 2010 Feb 28)
 
-Patch for mzscheme docs. (Sergey Khorev, 2010 Jan 29)
+Update pythoncomplete. (Aaron Griffin, 2010 Feb 25)
 
-Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr 26)
-Now with Mercurial repository (2010 Jan 2)
+Patch for Visual Studio 2010. (George Reilly, 2010 Feb 26)
+Test 69 breaks.
 
-Warnings for Python 2.6.4. (Dominique Pelle, 2010 Jan 31)
+With cmdline window open, can drag the status line above it, but not another
+one. (Jean Johner, 2010 Feb 27)
 
-Patch for better fix for Win64. (Sergey Khorev, 2010 Feb 4)
+I often see pasted text (from Firefox, to Vim in xterm) appear twice.
+Also, Vim in xterm sometimes loses copy/paste ability (probably after running
+an external command).
 
-Patch for error messages. (Dominique Pelle, 2010 Feb 5)
-Patch for visual-operators text (Dominique Pelle, 2010 Feb 6)
-
-Patch for Win64 MingW struct size. (Andy Kittner, 2010 Feb 7)
-
-Patch for Perl interface with Perl 5.10. (Sergey Khorev, 2010 Feb 5)
-
-Patch for xxd to support "-r -p" as documented. (James Vega, 2010 Feb 8)
-
-Win32: patch for cross compile xxd and GvimExt. (Markus Heidelberg, 2009 Mar
-18)  Also update INSTALLpc.txt?
-Patch for xxd/Make_cyg.mak. (Chris Sutcliffe, 2009 Jun 10) Included in the
-above?
+In netrw, click on last status lines causes netrw to open the last entry in
+the window. (Jean Johner, 2010 Feb 26)
 
 iconv() doesn't fail on an illegal character, as documented. (Yongwei Wu, 2009
 Nov 15, example Nov 26)  Add argument to specify whether iconv() should fail
@@ -63,14 +55,17 @@ Add local time at start of --startuptime output.
 Requires configure check for localtime().
 Use format year-month-day hr:min:sec.
 
+":s" summary in :folddo is not correct. (Jean Johner, 2010 Feb 20)
+
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
 
+Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr 26)
+Now with Mercurial repository (2010 Jan 2)
+
 Crash when assigning s: to variable, pointer becomes invalid later.
 (Yukihiro Nakadaira, 2009 Oct 12, confirmed by Dominique Pelle)
-
-ml_get error when using SiSU syntax. (Nathan Thomas, 2009 Oct 29)
 
 Coverity: ask someone to create new user: Dominique.
 look into reported defects: http://scan.coverity.com/rung2.html
@@ -138,11 +133,6 @@ Probably needs a bit of work.
 
 List of encoding aliases. (Takao Fujiware, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
-
-Patch for Ruby sockets. (todesking/Ariya Mizutani, 2008 Jul 1,24)
-Confirmed by Anton Sharonov, 2008 Dec 26.
-
-Patch for Ruby 1.9. (Msaki Suketa, 2009 Jul 21, Jul 26)
 
 Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
 8   For ":find" and ":sfind" expand files found in 'path'.
@@ -1135,6 +1125,9 @@ this, at least for Unix (using device/inode)?
 When switching between windows the cursor is often put in the middle.
 Remember the relative position and restore that, just like lnum and col are
 restored. (Luc St-Louis)
+
+Patch for adding "J" flag to 'cinoptions': placement of jump label.
+(Manuel Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
 
 
 Vim 7.3:

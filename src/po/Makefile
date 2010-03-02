@@ -18,6 +18,7 @@ LANGUAGES = \
 		it \
 		ja \
 		ko \
+		ko.UTF-8 \
 		nb \
 		no \
 		pl \
@@ -46,6 +47,7 @@ MOFILES = \
 		it.mo \
 		ja.mo \
 		ko.mo \
+		ko.UTF-8.mo \
 		nb.mo \
 		no.mo \
 		pl.mo \
@@ -84,6 +86,7 @@ CHECKFILES = \
 		it.ck \
 		ja.ck \
 		ko.ck \
+		ko.UTF-8.ck \
 		nb.ck \
 		no.ck \
 		pl.ck \
@@ -207,6 +210,14 @@ zh_CN.cp936.po: zh_CN.po
 	rm -f zh_CN.cp936.po
 	iconv -f gb2312 -t cp936 zh_CN.po | \
 		sed -e 's/charset=gb2312/charset=gbk/' -e 's/# Original translations/# Generated from zh_CN.po, DO NOT EDIT/' > zh_CN.cp936.po
+
+# Convert ko.UTF-8.po to create ko.po.
+ko.po: ko.UTF-8.po
+	rm -f ko.po
+	iconv -f UTF-8 -t euc-kr ko.UTF-8.po | \
+		sed -e 's/charset=UTF-8/charset=euc-kr/' \
+		    -e 's/# Korean translation for Vim/# Generated from ko.UTF-8.po, DO NOT EDIT/' \
+		    > ko.po
 
 # Convert ru.po to create ru.cp1251.po.
 ru.cp1251.po: ru.po

@@ -27,6 +27,7 @@ LANGUAGES =	af \
 		ja \
 		ja.sjis \
 		ko \
+		ko.UTF-8 \
 		no \
 		pl \
 		pl.cp1250 \
@@ -60,6 +61,7 @@ MOFILES =	af.mo \
 		ja.mo \
 		ja.sjis.mo \
 		ko.mo \
+		ko.UTF-8.mo \
 		no.mo \
 		pl.cp1250.mo \
 		pl.mo \
