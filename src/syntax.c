@@ -3090,7 +3090,7 @@ syn_add_start_off(result, regmatch, spp, idx, extra)
     {
 	/* a "\n" at the end of the pattern may take us below the last line */
 	result->lnum = syn_buf->b_ml.ml_line_count;
-	col = STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
+	col = (int)STRLEN(ml_get_buf(syn_buf, result->lnum, FALSE));
     }
     if (off != 0)
     {

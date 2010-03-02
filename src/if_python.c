@@ -2080,7 +2080,7 @@ WindowSetattr(PyObject *self, char *name, PyObject *val)
 	    return -1;
 
 	/* When column is out of range silently correct it. */
-	len = STRLEN(ml_get_buf(this->win->w_buffer, lnum, FALSE));
+	len = (long)STRLEN(ml_get_buf(this->win->w_buffer, lnum, FALSE));
 	if (col > len)
 	    col = len;
 

@@ -1165,7 +1165,6 @@ set_context_in_profile_cmd(xp, arg)
     char_u	*arg;
 {
     char_u	*end_subcmd;
-    int		len;
 
     /* Default: expand subcommands. */
     xp->xp_context = EXPAND_PROFILE;
@@ -1176,8 +1175,7 @@ set_context_in_profile_cmd(xp, arg)
     if (*end_subcmd == NUL)
 	return;
 
-    len = end_subcmd - arg;
-    if (len == 5 && STRNCMP(arg, "start", 5) == 0)
+    if (end_subcmd - arg == 5 && STRNCMP(arg, "start", 5) == 0)
     {
 	xp->xp_context = EXPAND_FILES;
 	xp->xp_pattern = skipwhite(end_subcmd);
