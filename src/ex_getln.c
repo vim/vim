@@ -6252,7 +6252,11 @@ ex_window()
 	bp = curbuf;
 	win_goto(old_curwin);
 	win_close(wp, TRUE);
-	close_buffer(NULL, bp, DOBUF_WIPE);
+
+	/* win_close() may have already wiped the buffer when 'bh' is
+	 * set to 'wipe' */
+	if (buf_valid(bp))
+	    close_buffer(NULL, bp, DOBUF_WIPE);
 
 	/* Restore window sizes. */
 	win_size_restore(&winsizes);
