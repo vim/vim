@@ -7727,11 +7727,14 @@ term_again:
 	/*
 	 * If the NEXT line is a function declaration, the current
 	 * line needs to be indented as a function type spec.
-	 * Don't do this if the current line looks like a comment
-	 * or if the current line is terminated, ie. ends in ';'.
+	 * Don't do this if the current line looks like a comment or if the
+	 * current line is terminated, ie. ends in ';', or if the current line
+	 * contains { or }: "void f() {\n if (1)"
 	 */
 	else if (cur_curpos.lnum < curbuf->b_ml.ml_line_count
 		&& !cin_nocode(theline)
+		&& vim_strchr(theline, '{') == NULL
+		&& vim_strchr(theline, '}') == NULL
 		&& !cin_ends_in(theline, (char_u *)":", NULL)
 		&& !cin_ends_in(theline, (char_u *)",", NULL)
 		&& cin_isfuncdecl(NULL, cur_curpos.lnum + 1)
