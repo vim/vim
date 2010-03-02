@@ -4492,6 +4492,7 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	} tab[] =
 	{
 	    {EXPAND_COMMANDS, get_command_name, FALSE},
+	    {EXPAND_BEHAVE, get_behave_arg, TRUE},
 #ifdef FEAT_USR_CMDS
 	    {EXPAND_USER_COMMANDS, get_user_commands, FALSE},
 	    {EXPAND_USER_CMD_FLAGS, get_user_cmd_flags, FALSE},

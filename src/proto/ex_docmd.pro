@@ -52,4 +52,5 @@ char_u *expand_sfile __ARGS((char_u *arg));
 int put_eol __ARGS((FILE *fd));
 int put_line __ARGS((FILE *fd, char *s));
 void dialog_msg __ARGS((char_u *buff, char *format, char_u *fname));
+char_u *get_behave_arg __ARGS((expand_T *xp, int idx));
 /* vim: set ft=c : */

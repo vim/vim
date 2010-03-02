@@ -595,7 +595,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 
 /*
  * Terminal highlighting attribute bits.
- * Attibutes above HL_ALL are used for syntax highlighting.
+ * Attributes above HL_ALL are used for syntax highlighting.
  */
 #define HL_NORMAL		0x00
 #define HL_INVERSE		0x01
@@ -721,6 +721,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_CSCOPE		33
 #define EXPAND_SIGN		34
 #define EXPAND_PROFILE		35
+#define EXPAND_BEHAVE		36
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
@@ -1262,7 +1263,7 @@ typedef enum
 } hlf_T;
 
 /* The HL_FLAGS must be in the same order as the HLF_ enums!
- * When chainging this also adjust the default for 'highlight'. */
+ * When changing this also adjust the default for 'highlight'. */
 #define HL_FLAGS {'8', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
 		  'n', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
 		  'f', 'F', 'A', 'C', 'D', 'T', '>', \
@@ -1430,7 +1431,7 @@ typedef enum
 #ifdef FEAT_MBYTE
 /* We need to call mb_stricmp() even when we aren't dealing with a multi-byte
  * encoding because mb_stricmp() takes care of all ascii and non-ascii
- * encodings, including characters with umluats in latin1, etc., while
+ * encodings, including characters with umlauts in latin1, etc., while
  * STRICMP() only handles the system locale version, which often does not
  * handle non-ascii properly. */
 
