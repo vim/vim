@@ -2598,14 +2598,7 @@ retnomove:
 	if (cmdwin_type != 0 && wp != curwin)
 	{
 	    /* A click outside the command-line window: Use modeless
-	     * selection if possible.  Allow dragging the status line of
-	     * windows just above the command-line window. */
-	    if (wp->w_winrow + wp->w_height
-		       != curwin->w_prev->w_winrow + curwin->w_prev->w_height)
-	    {
-		on_status_line = 0;
-		dragwin = NULL;
-	    }
+	     * selection if possible.  Allow dragging the status lines. */
 # ifdef FEAT_VERTSPLIT
 	    on_sep_line = 0;
 # endif
