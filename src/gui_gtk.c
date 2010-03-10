@@ -2313,19 +2313,6 @@ gui_mch_dialog(int	type,	    /* type of dialog */
 	gtk_widget_destroy(dialog);
     }
 
-    /* Terrible hack: When the text area still has focus when we remove the
-     * dialog, somehow gvim loses window focus.  This is with "point to type"
-     * in the KDE 3.1 window manager.  Warp the mouse pointer to outside the
-     * window and back to avoid that. */
-    if (!gui.in_focus)
-    {
-	int x, y;
-
-	gdk_window_get_pointer(gui.drawarea->window, &x, &y, NULL);
-	gui_mch_setmouse(-100, -100);
-	gui_mch_setmouse(x, y);
-    }
-
     return response > 0 ? response : 0;
 }
 
