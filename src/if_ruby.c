@@ -39,8 +39,8 @@
 # define rb_cTrueClass		(*dll_rb_cTrueClass)
 # if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 /*
- * On ver 1.8, all Ruby functions are exported with "__declspce(dllimport)"
- * in ruby.h.  But it cause trouble for these variables, because it is
+ * On ver 1.8, all Ruby functions are exported with "__declspec(dllimport)"
+ * in ruby.h.  But it causes trouble for these variables, because it is
  * defined in this file.  When defined this RUBY_EXPORT it modified to
  * "extern" and be able to avoid this problem.
  */
@@ -51,6 +51,13 @@
 /* suggested by Ariya Mizutani */
 #if (_MSC_VER == 1200)
 # undef _WIN32_WINNT
+#endif
+
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
+/* Ruby 1.9 defines a number of static functions which use rb_num2long and
+ * rb_int2big */
+# define rb_num2long rb_num2long_stub
+# define rb_int2big rb_int2big_stub
 #endif
 
 #include <ruby.h>
@@ -159,7 +166,14 @@ static void ruby_vim_init(void);
 #define rb_str_concat			dll_rb_str_concat
 #define rb_str_new			dll_rb_str_new
 #define rb_str_new2			dll_rb_str_new2
-#if defined(RUBY_VERSION) && RUBY_VERSION >= 19
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+# define rb_string_value_ptr		dll_rb_string_value_ptr
+# define rb_float_new			dll_rb_float_new
+# define rb_ary_new			dll_rb_ary_new
+# define rb_ary_push			dll_rb_ary_push
+#endif
+#if defined(RUBY_VERSION) && RUBY_VERSION >= 19 \
+    || defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 # define rb_errinfo			dll_rb_errinfo
 #else
 # define ruby_errinfo			(*dll_ruby_errinfo)
@@ -226,7 +240,8 @@ static VALUE (*dll_rb_str_cat) (VALUE, const char*, long);
 static VALUE (*dll_rb_str_concat) (VALUE, VALUE);
 static VALUE (*dll_rb_str_new) (const char*, long);
 static VALUE (*dll_rb_str_new2) (const char*);
-#if defined(RUBY_VERSION) && RUBY_VERSION >= 19
+#if defined(RUBY_VERSION) && RUBY_VERSION >= 19 \
+    || defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 static VALUE (*dll_rb_errinfo) (void);
 #else
 static VALUE *dll_ruby_errinfo;
@@ -234,6 +249,15 @@ static VALUE *dll_ruby_errinfo;
 static void (*dll_ruby_init) (void);
 static void (*dll_ruby_init_loadpath) (void);
 static void (*dll_NtInitialize) (int*, char***);
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+static char * (*dll_rb_string_value_ptr) (volatile VALUE*);
+static VALUE (*dll_rb_float_new) (double);
+static VALUE (*dll_rb_ary_new) (void);
+static VALUE (*dll_rb_ary_push) (VALUE, VALUE);
+#endif
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
+static VALUE (*dll_rb_int2big)(SIGNED_VALUE);
+#endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 static int (*dll_rb_w32_snprintf)(char*, size_t, const char*, ...);
 #endif
@@ -244,6 +268,17 @@ static int (*dll_rb_enc_find_index) (const char*);
 static rb_encoding* (*dll_rb_enc_find) (const char*);
 static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
+#endif
+
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
+static SIGNED_VALUE rb_num2long_stub(VALUE x)
+{
+    return dll_rb_num2long(x);
+}
+static VALUE rb_int2big_stub(SIGNED_VALUE x)
+{
+    return dll_rb_int2big(x);
+}
 #endif
 
 static HINSTANCE hinstRuby = 0; /* Instance of ruby.dll */
@@ -301,16 +336,32 @@ static struct
     {"rb_str_concat", (RUBY_PROC*)&dll_rb_str_concat},
     {"rb_str_new", (RUBY_PROC*)&dll_rb_str_new},
     {"rb_str_new2", (RUBY_PROC*)&dll_rb_str_new2},
-#if defined(RUBY_VERSION) && RUBY_VERSION >= 19
+#if defined(RUBY_VERSION) && RUBY_VERSION >= 19 \
+    || defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
     {"rb_errinfo", (RUBY_PROC*)&dll_rb_errinfo},
 #else
     {"ruby_errinfo", (RUBY_PROC*)&dll_ruby_errinfo},
 #endif
     {"ruby_init", (RUBY_PROC*)&dll_ruby_init},
     {"ruby_init_loadpath", (RUBY_PROC*)&dll_ruby_init_loadpath},
-    {"NtInitialize", (RUBY_PROC*)&dll_NtInitialize},
+    {
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER < 19
+    "NtInitialize",
+#else
+    "ruby_sysinit",
+#endif
+			(RUBY_PROC*)&dll_NtInitialize},
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
     {"rb_w32_snprintf", (RUBY_PROC*)&dll_rb_w32_snprintf},
+#endif
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
+    {"rb_string_value_ptr", (RUBY_PROC*)&dll_rb_string_value_ptr},
+    {"rb_float_new", (RUBY_PROC*)&dll_rb_float_new},
+    {"rb_ary_new", (RUBY_PROC*)&dll_rb_ary_new},
+    {"rb_ary_push", (RUBY_PROC*)&dll_rb_ary_push},
+#endif
+#if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
+    {"rb_int2big", (RUBY_PROC*)&dll_rb_int2big},
 #endif
 #if defined(RUBY_VERSION) && RUBY_VERSION >= 19
     {"ruby_script", (RUBY_PROC*)&dll_ruby_script},
@@ -569,7 +620,8 @@ static int ensure_ruby_initialized(void)
 static void error_print(int state)
 {
 #ifndef DYNAMIC_RUBY
-#if !(defined(RUBY_VERSION) &&  RUBY_VERSION >= 19)
+#if !(defined(RUBY_VERSION) && RUBY_VERSION >= 19) \
+    && !(defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19)
     RUBYEXTERN VALUE ruby_errinfo;
 #endif
 #endif
@@ -605,7 +657,8 @@ static void error_print(int state)
 	break;
     case TAG_RAISE:
     case TAG_FATAL:
-#if defined(RUBY_VERSION) && RUBY_VERSION >= 19
+#if defined(RUBY_VERSION) && RUBY_VERSION >= 19 \
+    || defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
 	eclass = CLASS_OF(rb_errinfo());
 	einfo = rb_obj_as_string(rb_errinfo());
 #else
