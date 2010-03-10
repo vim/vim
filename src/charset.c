@@ -1255,7 +1255,10 @@ getvcol(wp, pos, start, cursor, end)
 
     vcol = 0;
     ptr = ml_get_buf(wp->w_buffer, pos->lnum, FALSE);
-    posptr = ptr + pos->col;
+    if (pos->col == MAXCOL)
+	posptr = NULL;  /* continue until the NUL */
+    else
+	posptr = ptr + pos->col;
 
     /*
      * This function is used very often, do some speed optimizations.
@@ -1313,7 +1316,7 @@ getvcol(wp, pos, start, cursor, end)
 		    incr = CHARSIZE(c);
 	    }
 
-	    if (ptr >= posptr)	/* character at pos->col */
+	    if (posptr != NULL && ptr >= posptr) /* character at pos->col */
 		break;
 
 	    vcol += incr;
@@ -1334,7 +1337,7 @@ getvcol(wp, pos, start, cursor, end)
 		break;
 	    }
 
-	    if (ptr >= posptr)	/* character at pos->col */
+	    if (posptr != NULL && ptr >= posptr) /* character at pos->col */
 		break;
 
 	    vcol += incr;

@@ -2113,12 +2113,12 @@ errorret:
     if (buf->b_ml.ml_mfp == NULL)	/* there are no lines */
 	return (char_u *)"";
 
-/*
- * See if it is the same line as requested last time.
- * Otherwise may need to flush last used line.
- * Don't use the last used line when 'swapfile' is reset, need to load all
- * blocks.
- */
+    /*
+     * See if it is the same line as requested last time.
+     * Otherwise may need to flush last used line.
+     * Don't use the last used line when 'swapfile' is reset, need to load all
+     * blocks.
+     */
     if (buf->b_ml.ml_line_lnum != lnum || mf_dont_release)
     {
 	ml_flush_line(buf);
