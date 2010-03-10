@@ -736,6 +736,14 @@ messageFromNetbeans(gpointer clientData UNUSED,
 #ifndef FEAT_GUI_GTK
     static int		level = 0;
 #endif
+#ifdef HAVE_SELECT
+    struct timeval	tval;
+    fd_set		rfds;
+#else
+# ifdef HAVE_POLL
+    struct pollfd	fds;
+# endif
+#endif
 
     if (sd < 0)
     {
@@ -755,9 +763,26 @@ messageFromNetbeans(gpointer clientData UNUSED,
 	    return;	/* out of memory! */
     }
 
-    /* Keep on reading for as long as there is something to read. */
+    /* Keep on reading for as long as there is something to read.
+     * Use select() or poll() to avoid blocking on a message that is exactly
+     * MAXMSGSIZE long. */
     for (;;)
     {
+#ifdef HAVE_SELECT
+	FD_ZERO(&rfds);
+        FD_SET(sd, &rfds);
+        tval.tv_sec = 0;
+        tval.tv_usec = 0;
+        if (select(sd + 1, &rfds, NULL, NULL, &tval) <= 0)
+            break;
+#else
+# ifdef HAVE_POLL
+	fds.fd = sd;
+	fds.events = POLLIN;
+        if (poll(&fds, 1, 0) <= 0)
+            break;
+# endif
+#endif
 	len = sock_read(sd, buf, MAXMSGSIZE);
 	if (len <= 0)
 	    break;	/* error or nothing more to read */

@@ -477,6 +477,23 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 # include <stdarg.h>
 #endif
 
+# if defined(HAVE_SYS_SELECT_H) && \
+	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
+#  include <sys/select.h>
+# endif
+
+# ifndef HAVE_SELECT
+#  ifdef HAVE_SYS_POLL_H
+#   include <sys/poll.h>
+#   define HAVE_POLL
+#  else
+#   ifdef HAVE_POLL_H
+#    include <poll.h>
+#    define HAVE_POLL
+#   endif
+#  endif
+# endif
+
 /* ================ end of the header file puzzle =============== */
 
 /*

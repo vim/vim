@@ -28,11 +28,6 @@
 #  include <sys/wait.h>
 # endif
 
-# if defined(HAVE_SYS_SELECT_H) && \
-	(!defined(HAVE_SYS_TIME_H) || defined(SYS_SELECT_WITH_SYS_TIME))
-#  include <sys/select.h>
-# endif
-
 # ifndef WEXITSTATUS
 #  ifdef HAVE_UNION_WAIT
 #   define WEXITSTATUS(stat_val) ((stat_val).w_T.w_Retcode)
@@ -63,16 +58,6 @@
 
 #ifdef HAVE_STRING_H
 # include <string.h>
-#endif
-
-#ifndef HAVE_SELECT
-# ifdef HAVE_SYS_POLL_H
-#  include <sys/poll.h>
-# else
-#  ifdef HAVE_POLL_H
-#   include <poll.h>
-#  endif
-# endif
 #endif
 
 #ifdef HAVE_SYS_STREAM_H
