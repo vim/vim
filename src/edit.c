@@ -4684,6 +4684,7 @@ ins_complete(c)
     int		startcol = 0;	    /* column where searched text starts */
     colnr_T	curs_col;	    /* cursor column */
     int		n;
+    int		save_w_wrow;
 
     compl_direction = ins_compl_key2dir(c);
     if (!compl_started)
@@ -5067,6 +5068,7 @@ ins_complete(c)
     /*
      * Find next match (and following matches).
      */
+    save_w_wrow = curwin->w_wrow;
     n = ins_compl_next(TRUE, ins_compl_key2count(c), ins_compl_use_match(c));
 
     /* may undisplay the popup menu */
@@ -5220,6 +5222,12 @@ ins_complete(c)
 	/* RedrawingDisabled may be set when invoked through complete(). */
 	n = RedrawingDisabled;
 	RedrawingDisabled = 0;
+
+	/* If the cursor moved we need to remove the pum first. */
+	setcursor();
+	if (save_w_wrow != curwin->w_wrow)
+	    ins_compl_del_pum();
+
 	ins_compl_show_pum();
 	setcursor();
 	RedrawingDisabled = n;
