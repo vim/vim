@@ -718,6 +718,7 @@ EXNAME
 VIMNAME
 OS_EXTRA_OBJ
 OS_EXTRA_SRC
+XCODE_SELECT
 CPP_MM
 STRIP
 AWK
@@ -774,6 +775,7 @@ ac_user_opts='
 enable_option_checking
 enable_darwin
 with_mac_arch
+with_developer_dir
 with_local_dir
 with_vim_name
 with_ex_name
@@ -1492,6 +1494,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-mac-arch=ARCH    current, intel, ppc or both
+  --with-developer-dir=PATH    use PATH as location for Xcode developer tools
   --with-local-dir=PATH   search PATH instead of /usr/local for local libraries.
   --without-local-dir     do not search /usr/local for local libraries.
   --with-vim-name=NAME    what to call the Vim executable
@@ -3833,13 +3836,78 @@ $as_echo "defaulting to $MACARCH" >&6; }
 fi
 
 
+  { $as_echo "$as_me:$LINENO: checking --with-developer-dir argument" >&5
+$as_echo_n "checking --with-developer-dir argument... " >&6; }
+
+# Check whether --with-developer-dir was given.
+if test "${with_developer_dir+set}" = set; then
+  withval=$with_developer_dir; DEVELOPER_DIR="$withval"; { $as_echo "$as_me:$LINENO: result: $DEVELOPER_DIR" >&5
+$as_echo "$DEVELOPER_DIR" >&6; }
+else
+  DEVELOPER_DIR=""; { $as_echo "$as_me:$LINENO: result: not present" >&5
+$as_echo "not present" >&6; }
+fi
+
+
+  if test "x$DEVELOPER_DIR" = "x"; then
+    # Extract the first word of "xcode-select", so it can be a program name with args.
+set dummy xcode-select; ac_word=$2
+{ $as_echo "$as_me:$LINENO: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if test "${ac_cv_path_XCODE_SELECT+set}" = set; then
+  $as_echo_n "(cached) " >&6
+else
+  case $XCODE_SELECT in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_XCODE_SELECT="$XCODE_SELECT" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_XCODE_SELECT="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+XCODE_SELECT=$ac_cv_path_XCODE_SELECT
+if test -n "$XCODE_SELECT"; then
+  { $as_echo "$as_me:$LINENO: result: $XCODE_SELECT" >&5
+$as_echo "$XCODE_SELECT" >&6; }
+else
+  { $as_echo "$as_me:$LINENO: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    if test "x$XCODE_SELECT" != "x"; then
+      { $as_echo "$as_me:$LINENO: checking for developer dir using xcode-select" >&5
+$as_echo_n "checking for developer dir using xcode-select... " >&6; }
+      DEVELOPER_DIR=`$XCODE_SELECT -print-path`
+      { $as_echo "$as_me:$LINENO: result: $DEVELOPER_DIR" >&5
+$as_echo "$DEVELOPER_DIR" >&6; }
+    else
+      DEVELOPER_DIR=/Developer
+    fi
+  fi
+
   if test "x$MACARCH" = "xboth"; then
     { $as_echo "$as_me:$LINENO: checking for 10.4 universal SDK" >&5
 $as_echo_n "checking for 10.4 universal SDK... " >&6; }
                             save_cppflags="$CPPFLAGS"
     save_cflags="$CFLAGS"
     save_ldflags="$LDFLAGS"
-    CFLAGS="$CFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
+    CFLAGS="$CFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -3960,9 +4028,9 @@ rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
         CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
     if test "x$MACARCH" = "xboth"; then
-      CPPFLAGS="$CPPFLAGS -I/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
+      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
     else
-      CPPFLAGS="$CPPFLAGS -I/Developer/Headers/FlatCarbon"
+      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
     fi
 
                 # On IRIX 5.3, sys/types and inttypes.h are conflicting.
@@ -17319,7 +17387,7 @@ $as_echo "no" >&6; }
   fi
 fi
 if test "x$MACARCH" = "xboth"; then
-  LDFLAGS="$LDFLAGS -isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
+  LDFLAGS="$LDFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 
 DEPEND_CFLAGS_FILTER=
