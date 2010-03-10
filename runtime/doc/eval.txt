@@ -5388,6 +5388,8 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 				the color, cterm: color number as a string,
 				term: empty string)
 		"bg"		background color (as with "fg")
+		"font"		font name (only available in the GUI)
+				|highlight-font|
 		"sp"		special color (as with "fg") |highlight-guisp|
 		"fg#"		like "fg", but for the GUI and the GUI is
 				running the name in "#RRGGBB" form
@@ -5397,6 +5399,7 @@ synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		"italic"	"1" if italic
 		"reverse"	"1" if reverse
 		"inverse"	"1" if inverse (= reverse)
+		"standout"	"1" if standout
 		"underline"	"1" if underlined
 		"undercurl"	"1" if undercurled
 

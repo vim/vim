@@ -8326,7 +8326,7 @@ highlight_has_attr(id, flag, modec)
     char_u *
 highlight_color(id, what, modec)
     int		id;
-    char_u	*what;	/* "fg", "bg", "sp", "fg#", "bg#" or "sp#" */
+    char_u	*what;	/* "font", "fg", "bg", "sp", "fg#", "bg#" or "sp#" */
     int		modec;	/* 'g' for GUI, 'c' for cterm, 't' for term */
 {
     static char_u	name[20];
@@ -8334,20 +8334,30 @@ highlight_color(id, what, modec)
     int			fg = FALSE;
 # ifdef FEAT_GUI
     int			sp = FALSE;
+    int			font = FALSE;
 # endif
 
     if (id <= 0 || id > highlight_ga.ga_len)
 	return NULL;
 
-    if (TOLOWER_ASC(what[0]) == 'f')
+    if (TOLOWER_ASC(what[0]) == 'f' && TOLOWER_ASC(what[1]) == 'g')
 	fg = TRUE;
 # ifdef FEAT_GUI
-    else if (TOLOWER_ASC(what[0]) == 's')
+    else if (TOLOWER_ASC(what[0]) == 'f' && TOLOWER_ASC(what[1]) == 'o'
+             && TOLOWER_ASC(what[2]) == 'n' && TOLOWER_ASC(what[3]) == 't')
+	font = TRUE;
+    else if (TOLOWER_ASC(what[0]) == 's' && TOLOWER_ASC(what[1]) == 'p')
 	sp = TRUE;
+    else if (!(TOLOWER_ASC(what[0]) == 'b' && TOLOWER_ASC(what[1]) == 'g'))
+	return NULL;
     if (modec == 'g')
     {
+	/* return font name */
+	if (font)
+	    return HL_TABLE()[id - 1].sg_font_name;
+
 	/* return #RRGGBB form (only possible when GUI is running) */
-	if (gui.in_use && what[1] && what[2] == '#')
+	if (gui.in_use && what[2] == '#')
 	{
 	    guicolor_T		color;
 	    long_u		rgb;
@@ -8374,6 +8384,8 @@ highlight_color(id, what, modec)
 	    return (HL_TABLE()[id - 1].sg_gui_sp_name);
 	return (HL_TABLE()[id - 1].sg_gui_bg_name);
     }
+    if (font || sp)
+	return NULL;
 # endif
     if (modec == 'c')
     {

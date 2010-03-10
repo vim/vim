@@ -16627,7 +16627,7 @@ f_synIDattr(argvars, rettv)
 		    p = highlight_has_attr(id, HL_BOLD, modec);
 		break;
 
-	case 'f':					/* fg[#] */
+	case 'f':					/* fg[#] or font */
 		p = highlight_color(id, what, modec);
 		break;
 
