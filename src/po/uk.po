@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-09-07 15:11+0300\n"
+"POT-Creation-Date: 2010-03-06 23:51+0200\n"
 "PO-Revision-Date: 2008-03-07 13:57+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -1072,8 +1072,8 @@ msgstr "Не визначено жодної точки зупинки"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d %s %s   рядок %ld"
 
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Спочатку виконайте :profile start <файл>"
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: Спочатку зробіть \":profile start {файл}\""
 
 #, c-format
 msgid "Save changes to \"%s\"?"
@@ -1728,7 +1728,8 @@ msgstr "E513: Помилка запису, конвертація не вдал�
 msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
-msgstr "E513: Помилка запису, конвертація не вдалася у рядку %ld (скиньте 'fenc')"
+msgstr ""
+"E513: Помилка запису, конвертація не вдалася у рядку %ld (скиньте 'fenc')"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: Помилка запису (скінчилось вільне місце?)"
@@ -2362,7 +2363,7 @@ msgid "E621: \"%s\" resource file has wrong version"
 msgstr "E621: Неправильна версія файлу ресурсів \"%s\""
 
 msgid "E673: Incompatible multi-byte encoding and character set."
-msgstr "E673: Несумісні багатобайтове кодування та набір символів."
+msgstr "E673: Несумісні багатобайтове кодування й набір символів."
 
 msgid "E674: printmbcharset cannot be empty with multi-byte encoding."
 msgstr ""
@@ -3185,7 +3186,10 @@ msgstr ""
 "--serverlist\t\tПоказати список наявних серверів Vim і завершити роботу"
 
 msgid "--servername <name>\tSend to/become the Vim server <name>"
-msgstr "--servername <назва>\tСпілкуватися з/стати Vim сервером з такою назвою"
+msgstr "--servername <назва>\tНадіслати до/стати Vim сервером з <назвою>"
+
+msgid "--startuptime <file>\tWrite startup timing messages to <file>"
+msgstr "--startuptime <файл>\tЗаписати запускні повідомлення з часовими відмітками до <файлу>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tВикористати <viminfo> замість .viminfo"
@@ -3194,7 +3198,7 @@ msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h  чи  --help\tНадрукувати це повідомлення і вийти"
 
 msgid "--version\t\tPrint version information and exit"
-msgstr "--version\t\tНадрукувати інформацію про версію програми та вийти"
+msgstr "--version\t\tНадрукувати інформацію про версію програми і вийти"
 
 msgid ""
 "\n"
@@ -3246,7 +3250,7 @@ msgid "-italicfont <font>\tUse <font> for italic text"
 msgstr "-italicfont <шрифт>\tВикористати <шрифт> для похилого тексту"
 
 msgid "-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"
-msgstr "-geometry <геом>\tЗадати розміри та положення (також: -geom)"
+msgstr "-geometry <геом>\tЗадати розміри й положення (також: -geom)"
 
 msgid "-borderwidth <width>\tUse a border width of <width> (also: -bw)"
 msgstr "-borderwidth <товщ>\tВстановити товщину меж <товщ> (також: -bw)"
@@ -4005,10 +4009,10 @@ msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Увага: Змінюється файл призначений лише для читання"
 
 msgid "Type number and <Enter> or click with mouse (empty cancels): "
-msgstr "Наберіть число та <Enter> чи клацніть мишкою (порожнє скасовує): "
+msgstr "Наберіть число й <Enter> чи клацніть мишкою (порожнє скасовує): "
 
 msgid "Type number and <Enter> (empty cancels): "
-msgstr "Наберіть число та <Enter> (порожнє скасовує): "
+msgstr "Наберіть число й <Enter> (порожнє скасовує): "
 
 msgid "1 more line"
 msgstr "додано один рядок"
@@ -4334,7 +4338,7 @@ msgid "E531: Use \":gui\" to start the GUI"
 msgstr "E531: Застосовуйте \":gui\" для запуску GUI"
 
 msgid "E589: 'backupext' and 'patchmode' are equal"
-msgstr "E589: Опції 'backupext' та 'patchmode' однакові"
+msgstr "E589: Опції 'backupext' і 'patchmode' однакові"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Не можна змінити в GUI GTK+ 2"
@@ -5626,7 +5630,7 @@ msgid " or more"
 msgstr " або більше"
 
 msgid "  Using tag with different case!"
-msgstr "  Використовую теґ, не розрізняючи великі та малі літери"
+msgstr "  Використовую теґ, не розрізняючи великі й малі літери"
 
 #, c-format
 msgid "E429: File \"%s\" does not exist"
@@ -6053,7 +6057,7 @@ msgid "by Bram Moolenaar et al."
 msgstr "автор: Bram Moolenaar та ін."
 
 msgid "Vim is open source and freely distributable"
-msgstr "Vim -- це відкрита та вільно розповсюджувана програма"
+msgstr "Vim -- це відкрита й вільно розповсюджувана програма"
 
 msgid "Help poor children in Uganda!"
 msgstr "Допоможіть сиротам з Уганди!"
@@ -6127,7 +6131,7 @@ msgstr "E441: Немає вікна перегляду"
 
 # msgstr "E441: "
 msgid "E442: Can't split topleft and botright at the same time"
-msgstr "E442: Не зміг одночасно розбити topleft та botright"
+msgstr "E442: Не зміг одночасно розбити topleft і botright"
 
 # msgstr "E442: "
 msgid "E443: Cannot rotate when another window is split"

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 Mar 02
+*todo.txt*      For Vim version 7.2.  Last change: 2010 Mar 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,22 +30,22 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for access to freed memory. (Dominique Pelle, 2010 Feb 28)
+":s" summary in :folddo is not correct. (Jean Johner, 2010 Feb 20)
+Patch from Lech Lorens, 2010 Mar 13.
 
-Update pythoncomplete. (Aaron Griffin, 2010 Feb 25)
+Vim tries to set the background or foreground color in a terminal to -1.
+(Graywh)  Appears to happen with ":hi Normal ctermbg=NONE".
+Possible solution from Matt Wozniski, 2010 Mar 17.
 
-Patch for Visual Studio 2010. (George Reilly, 2010 Feb 26)
-Test 69 breaks.
-
-With cmdline window open, can drag the status line above it, but not another
-one. (Jean Johner, 2010 Feb 27)
+Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
+Additional info by Dominique Pelle.
 
 I often see pasted text (from Firefox, to Vim in xterm) appear twice.
 Also, Vim in xterm sometimes loses copy/paste ability (probably after running
 an external command).
 
-In netrw, click on last status lines causes netrw to open the last entry in
-the window. (Jean Johner, 2010 Feb 26)
+Problem with transparent cmdline.  Also: Terminal title is wrong with
+non-ASCII character. (Lily White, 2010 Mar 7)
 
 iconv() doesn't fail on an illegal character, as documented. (Yongwei Wu, 2009
 Nov 15, example Nov 26)  Add argument to specify whether iconv() should fail
@@ -54,8 +54,6 @@ or replace with a character and continue?
 Add local time at start of --startuptime output.
 Requires configure check for localtime().
 Use format year-month-day hr:min:sec.
-
-":s" summary in :folddo is not correct. (Jean Johner, 2010 Feb 20)
 
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
@@ -66,6 +64,9 @@ Now with Mercurial repository (2010 Jan 2)
 
 Crash when assigning s: to variable, pointer becomes invalid later.
 (Yukihiro Nakadaira, 2009 Oct 12, confirmed by Dominique Pelle)
+
+Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
+26)
 
 Coverity: ask someone to create new user: Dominique.
 look into reported defects: http://scan.coverity.com/rung2.html
@@ -97,16 +98,11 @@ http://blog.flameeyes.eu/2008/01/17/today-how-to-identify-unused-exported-functi
 In command line window ":close" doesn't work properly. (Tony Mechelynck, 2009
 Jun 1)
 
-Why does this give a #705 error:
-let X = function('haslocaldir')
-let X = function('getcwd')
-Inserting "unlet X" helps.
-
 When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
 
-Reproducable crash in syntax HL. (George Reilly, Dominique Pelle, 2009 May 9)
+Reproducible crash in syntax HL. (George Reilly, Dominique Pelle, 2009 May 9)
 
 Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
@@ -142,9 +138,6 @@ Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
 
 Setting 'tags' to "tagsdir/*" does not find "tagsdir/tags". (Steven K. Wong,
 2009 Jul 18)
-
-":e dir<Tab>" with 'wildmode' set to "list" doesn't highlight directory names
-with a space. (Alexandre Provencio, 2009 Jun 9)
 
 Patch to add farsi handling to arabic.c (Ali Gholami Rudi, 2009 May 2)
 Added test, updates, June 23.
@@ -1141,6 +1134,7 @@ Vim 7.3:
     Kocher (LGPL), close to original.  Mohsin also has some ideas.
     Take four bytes and turn them into unsigned to avoid byte-order problems.
     Need to buffer up to 7 bytes to align on 8 byte boundaries.
+    Patch from Moshin, 2010 Mar 15.
 -   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.
 	Most of do_source() would not be used, need a new function.

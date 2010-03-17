@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.2\n"
-"POT-Creation-Date: 2009-11-30 10:40+0100\n"
-"PO-Revision-Date:  2009-11-30 16:41+0100\n"
+"POT-Creation-Date: 2010-03-01 13:21+0100\n"
+"PO-Revision-Date:  2009-03-01 13:21+0100\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -1053,8 +1053,8 @@ msgstr "Nessun 'breakpoint' definito"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s linea %ld"
 
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Usare prima :profile start <fname>"
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: Usare prima \":profile start {fname}\""
 
 #, c-format
 msgid "Save changes to \"%s\"?"
@@ -3132,8 +3132,7 @@ msgstr "--servername <nome>\tInvia a/diventa server Vim di nome <nome>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
 msgstr ""
-"--startuptime <file>\tScrivi tutti i messaggi iniziali di timing "
-"in <file>"
+"--startuptime <file>\tScrivi tutti i messaggi iniziali di timing in <file>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUsa <viminfo> invece di .viminfo"

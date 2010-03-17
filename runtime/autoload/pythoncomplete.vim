@@ -1,16 +1,27 @@
 "pythoncomplete.vim - Omni Completion for python
 " Maintainer: Aaron Griffin <aaronmgriffin@gmail.com>
-" Version: 0.7
-" Last Updated: 19 Oct 2006
+" Version: 0.9
+" Last Updated: 18 Jun 2009
 "
 " Changes
 " TODO:
-" User defined docstrings aren't handled right...
 " 'info' item output can use some formatting work
 " Add an "unsafe eval" mode, to allow for return type evaluation
 " Complete basic syntax along with import statements
 "   i.e. "import url<c-x,c-o>"
 " Continue parsing on invalid line??
+"
+" v 0.9
+"   * Fixed docstring parsing for classes and functions
+"   * Fixed parsing of *args and **kwargs type arguments
+"   * Better function param parsing to handle things like tuples and
+"     lambda defaults args
+"
+" v 0.8
+"   * Fixed an issue where the FIRST assignment was always used instead of
+"   using a subsequent assignment for a variable
+"   * Fixed a scoping issue when working inside a parameterless function
+"
 "
 " v 0.7
 "   * Fixed function list sorting (_ and __ at the bottom)
@@ -63,7 +74,7 @@ function! pythoncomplete#Complete(findstart, base)
         while idx > 0
             let idx -= 1
             let c = line[idx]
-            if c =~ '\w' || c =~ '\.' || c == '('
+            if c =~ '\w' || c =~ '\.'
                 let cword = c . cword
                 continue
             elseif strlen(cword) > 0 || idx == 0
@@ -206,7 +217,7 @@ class Completer(object):
             if len(stmt) > 0 and stmt[-1] == '(':
                 result = eval(_sanitize(stmt[:-1]), self.compldict)
                 doc = result.__doc__
-                if doc == None: doc = ''
+                if doc is None: doc = ''
                 args = self.get_arguments(result)
                 return [{'word':self._cleanstr(args),'info':self._cleanstr(doc)}]
             elif ridx == -1:
@@ -223,18 +234,18 @@ class Completer(object):
 
             try: maindoc = result.__doc__
             except: maindoc = ' '
-            if maindoc == None: maindoc = ' '
+            if maindoc is None: maindoc = ' '
             for m in all:
                 if m == "_PyCmplNoType": continue #this is internal
                 try:
                     dbg('possible completion: %s' % m)
                     if m.find(match) == 0:
-                        if result == None: inst = all[m]
+                        if result is None: inst = all[m]
                         else: inst = getattr(result,m)
                         try: doc = inst.__doc__
                         except: doc = maindoc
                         typestr = str(inst)
-                        if doc == None or doc == '': doc = maindoc
+                        if doc is None or doc == '': doc = maindoc
 
                         wrd = m[len(match):]
                         c = {'word':wrd, 'abbr':m,  'info':self._cleanstr(doc)}
@@ -260,9 +271,9 @@ class Completer(object):
             return []
 
 class Scope(object):
-    def __init__(self,name,indent):
+    def __init__(self,name,indent,docstr=''):
         self.subscopes = []
-        self.docstr = ''
+        self.docstr = docstr
         self.locals = []
         self.parent = None
         self.name = name
@@ -281,29 +292,28 @@ class Scope(object):
         while d.find('  ') > -1: d = d.replace('  ',' ')
         while d[0] in '"\'\t ': d = d[1:]
         while d[-1] in '"\'\t ': d = d[:-1]
+        dbg("Scope(%s)::docstr = %s" % (self,d))
         self.docstr = d
 
     def local(self,loc):
-        if not self._hasvaralready(loc):
-            self.locals.append(loc)
+        self._checkexisting(loc)
+        self.locals.append(loc)
 
     def copy_decl(self,indent=0):
         """ Copy a scope's declaration only, at the specified indent level - not local variables """
-        return Scope(self.name,indent)
+        return Scope(self.name,indent,self.docstr)
 
-    def _hasvaralready(self,test):
+    def _checkexisting(self,test):
         "Convienance function... keep out duplicates"
         if test.find('=') > -1:
             var = test.split('=')[0].strip()
             for l in self.locals:
                 if l.find('=') > -1 and var == l.split('=')[0].strip():
-                    return True
-        return False
+                    self.locals.remove(l)
 
     def get_code(self):
-        # we need to start with this, to fix up broken completions
-        # hopefully this name is unique enough...
-        str = '"""'+self.docstr+'"""\n'
+        str = ""
+        if len(self.docstr) > 0: str += '"""'+self.docstr+'"""\n'
         for l in self.locals:
             if l.startswith('import'): str += l+'\n'
         str += 'class _PyCmplNoType:\n    def __getattr__(self,name):\n        return None\n'
@@ -330,11 +340,11 @@ class Scope(object):
         return '    '*(self.indent+1)
 
 class Class(Scope):
-    def __init__(self, name, supers, indent):
-        Scope.__init__(self,name,indent)
+    def __init__(self, name, supers, indent, docstr=''):
+        Scope.__init__(self,name,indent, docstr)
         self.supers = supers
     def copy_decl(self,indent=0):
-        c = Class(self.name,self.supers,indent)
+        c = Class(self.name,self.supers,indent, self.docstr)
         for s in self.subscopes:
             c.add(s.copy_decl(indent+1))
         return c
@@ -351,11 +361,11 @@ class Class(Scope):
 
 
 class Function(Scope):
-    def __init__(self, name, params, indent):
-        Scope.__init__(self,name,indent)
+    def __init__(self, name, params, indent, docstr=''):
+        Scope.__init__(self,name,indent, docstr)
         self.params = params
     def copy_decl(self,indent=0):
-        return Function(self.name,self.params,indent)
+        return Function(self.name,self.params,indent, self.docstr)
     def get_code(self):
         str = "%sdef %s(%s):\n" % \
             (self.currentindent(),self.name,','.join(self.params))
@@ -371,7 +381,7 @@ class PyParser:
     def _parsedotname(self,pre=None):
         #returns (dottedname, nexttoken)
         name = []
-        if pre == None:
+        if pre is None:
             tokentype, token, indent = self.next()
             if tokentype != NAME and token != '*':
                 return ('', token)
@@ -405,17 +415,20 @@ class PyParser:
         while True:
             tokentype, token, indent = self.next()
             if token in (')', ',') and level == 1:
-                names.append(name)
+                if '=' not in name: name = name.replace(' ', '')
+                names.append(name.strip())
                 name = ''
             if token == '(':
                 level += 1
+                name += "("
             elif token == ')':
                 level -= 1
                 if level == 0: break
+                else: name += ")"
             elif token == ',' and level == 1:
                 pass
             else:
-                name += str(token)
+                name += "%s " % str(token)
         return names
 
     def _parsefunction(self,indent):
@@ -495,16 +508,26 @@ class PyParser:
                 #Handle 'self' params
                 if scp.parent != None and type(scp.parent) == Class:
                     slice = 1
-                    p = scp.params[0]
-                    i = p.find('=')
-                    if i != -1: p = p[:i]
                     newscope.local('%s = %s' % (scp.params[0],scp.parent.name))
                 for p in scp.params[slice:]:
                     i = p.find('=')
+                    if len(p) == 0: continue
+                    pvar = ''
+                    ptype = ''
                     if i == -1:
-                        newscope.local('%s = _PyCmplNoType()' % p)
+                        pvar = p
+                        ptype = '_PyCmplNoType()'
                     else:
-                        newscope.local('%s = %s' % (p[:i],_sanitize(p[i+1])))
+                        pvar = p[:i]
+                        ptype = _sanitize(p[i+1:])
+                    if pvar.startswith('**'):
+                        pvar = pvar[2:]
+                        ptype = '{}'
+                    elif pvar.startswith('*'):
+                        pvar = pvar[1:]
+                        ptype = '[]'
+
+                    newscope.local('%s = %s' % (pvar,ptype))
 
             for s in scp.subscopes:
                 ns = s.copy_decl(0)
@@ -532,17 +555,19 @@ class PyParser:
                     self.scope = self.scope.pop(indent)
                 elif token == 'def':
                     func = self._parsefunction(indent)
-                    if func == None:
+                    if func is None:
                         print "function: syntax error..."
                         continue
+                    dbg("new scope: function")
                     freshscope = True
                     self.scope = self.scope.add(func)
                 elif token == 'class':
                     cls = self._parseclass(indent)
-                    if cls == None:
+                    if cls is None:
                         print "class: syntax error..."
                         continue
                     freshscope = True
+                    dbg("new scope: class")
                     self.scope = self.scope.add(cls)
                     
                 elif token == 'import':
@@ -569,6 +594,7 @@ class PyParser:
                     name,token = self._parsedotname(token) 
                     if token == '=':
                         stmt = self._parseassignment()
+                        dbg("parseassignment: %s = %s" % (name, stmt))
                         if stmt != None:
                             self.scope.local("%s = %s" % (name,stmt))
                     freshscope = False

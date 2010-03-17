@@ -2893,7 +2893,7 @@ fun! s:NetrwBrowseChgDir(islocal,newdir,...)
   let wlastline  = line('w$')
   let lastline   = line('$')
 "  call Decho("v:mouse_lnum=".mouse_lnum." line(w$)=".wlastline." line($)=".lastline)
-  if mouse_lnum == wlastline + 1
+  if mouse_lnum == wlastline + 1 || v:mouse_win != winnr()
 "   call Decho("appears to be a status bar leftmouse click")
    " appears to be a status bar leftmouse click
    return
