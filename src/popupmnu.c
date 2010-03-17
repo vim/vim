@@ -640,7 +640,7 @@ pum_set_selected(n, repeat)
 
 		    curbuf->b_changed = 0;
 		    curbuf->b_p_ma = FALSE;
-		    curwin->w_cursor.lnum = 0;
+		    curwin->w_cursor.lnum = 1;
 		    curwin->w_cursor.col = 0;
 
 		    if (curwin != curwin_save && win_valid(curwin_save))
