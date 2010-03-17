@@ -1053,15 +1053,14 @@ find_wl_entry(win, lnum)
 {
     int		i;
 
-    if (win->w_lines_valid > 0)
-	for (i = 0; i < win->w_lines_valid; ++i)
-	    if (win->w_lines[i].wl_valid)
-	    {
-		if (lnum < win->w_lines[i].wl_lnum)
-		    return -1;
-		if (lnum <= win->w_lines[i].wl_lastlnum)
-		    return i;
-	    }
+    for (i = 0; i < win->w_lines_valid; ++i)
+	if (win->w_lines[i].wl_valid)
+	{
+	    if (lnum < win->w_lines[i].wl_lnum)
+		return -1;
+	    if (lnum <= win->w_lines[i].wl_lastlnum)
+		return i;
+	}
     return -1;
 }
 
