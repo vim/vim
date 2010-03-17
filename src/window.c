@@ -991,28 +991,28 @@ win_split_ins(size, flags, newwin, dir)
 	wp->w_p_scr = curwin->w_p_scr;
 	if (need_status)
 	{
-	    --oldwin->w_height;
+	    win_new_height(oldwin, oldwin->w_height - 1);
 	    oldwin->w_status_height = need_status;
 	}
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    /* set height and row of new window to full height */
 	    wp->w_winrow = tabline_height();
-	    wp->w_height = curfrp->fr_height - (p_ls > 0);
+	    win_new_height(wp, curfrp->fr_height - (p_ls > 0));
 	    wp->w_status_height = (p_ls > 0);
 	}
 	else
 	{
 	    /* height and row of new window is same as current window */
 	    wp->w_winrow = oldwin->w_winrow;
-	    wp->w_height = oldwin->w_height;
+	    win_new_height(wp, oldwin->w_height);
 	    wp->w_status_height = oldwin->w_status_height;
 	}
 	frp->fr_height = curfrp->fr_height;
 
 	/* "new_size" of the current window goes to the new window, use
 	 * one column for the vertical separator */
-	wp->w_width = new_size;
+	win_new_width(wp, new_size);
 	if (before)
 	    wp->w_vsep_width = 1;
 	else
@@ -1049,13 +1049,13 @@ win_split_ins(size, flags, newwin, dir)
 	if (flags & (WSP_TOP | WSP_BOT))
 	{
 	    wp->w_wincol = 0;
-	    wp->w_width = Columns;
+	    win_new_width(wp, Columns);
 	    wp->w_vsep_width = 0;
 	}
 	else
 	{
 	    wp->w_wincol = oldwin->w_wincol;
-	    wp->w_width = oldwin->w_width;
+	    win_new_width(wp, oldwin->w_width);
 	    wp->w_vsep_width = oldwin->w_vsep_width;
 	}
 	frp->fr_width = curfrp->fr_width;
@@ -1111,7 +1111,7 @@ win_split_ins(size, flags, newwin, dir)
     }
 
     /*
-     * make the new window the current window and redraw
+     * equalize the window sizes.
      */
     if (do_equal || dir != 0)
 	win_equal(wp, TRUE,
@@ -1143,6 +1143,10 @@ win_split_ins(size, flags, newwin, dir)
 	if (size != 0)
 	    p_wh = size;
     }
+
+    /*
+     * make the new window the current window
+     */
     win_enter(wp, FALSE);
 #ifdef FEAT_VERTSPLIT
     if (flags & WSP_VERT)
