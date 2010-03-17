@@ -3948,8 +3948,12 @@ showmatches(xp, wildmenu)
 					  || xp->xp_context == EXPAND_SHELLCMD
 					  || xp->xp_context == EXPAND_BUFFERS)
 		{
-			    /* highlight directories */
-		    j = (mch_isdir(files_found[k]));
+		    char_u	*halved_slash;
+
+		    /* highlight directories */
+		    halved_slash = backslash_halve_save(files_found[k]);
+		    j = mch_isdir(halved_slash);
+		    vim_free(halved_slash);
 		    if (showtail)
 			p = L_SHOWFILE(k);
 		    else
