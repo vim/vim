@@ -5526,11 +5526,11 @@ nv_ident(cap)
 	    break;
 
 	default:
+	    tag_cmd = TRUE;
 	    if (curbuf->b_help)
 		STRCPY(buf, "he! ");
 	    else
 	    {
-		tag_cmd = TRUE;
 		if (g_cmd)
 		    STRCPY(buf, "tj ");
 		else
