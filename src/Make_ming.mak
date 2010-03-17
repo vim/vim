@@ -215,10 +215,12 @@ endif
 ifndef RUBY_PLATFORM
 ifeq ($(RUBY_VER), 16)
 RUBY_PLATFORM = i586-mswin32
-else ifneq ("X$(wildcard, $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/i386-mingw32)", X)
+else
+ifneq ($(wildcard $(RUBY)/lib/ruby/$(RUBY_VER_LONG)/i386-mingw32),)
 RUBY_PLATFORM = i386-mingw32
 else
 RUBY_PLATFORM = i386-mswin32
+endif
 endif
 endif
 
