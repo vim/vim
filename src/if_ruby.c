@@ -722,8 +722,8 @@ static VALUE vim_to_ruby(typval_T *tv)
 
     if (tv->v_type == VAR_STRING)
     {
-	result = rb_str_new2((char *)(tv->vval.v_string == NULL
-						   ? "" : tv->vval.v_string));
+	result = rb_str_new2(tv->vval.v_string == NULL
+					  ? "" : (char *)(tv->vval.v_string));
     }
     else if (tv->v_type == VAR_NUMBER)
     {
