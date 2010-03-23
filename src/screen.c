@@ -7536,7 +7536,7 @@ retry:
     new_ScreenLines = (schar_T *)lalloc((long_u)(
 			      (Rows + 1) * Columns * sizeof(schar_T)), FALSE);
 #ifdef FEAT_MBYTE
-    vim_memset(new_ScreenLinesC, 0, sizeof(u8char_T) * MAX_MCO);
+    vim_memset(new_ScreenLinesC, 0, sizeof(u8char_T *) * MAX_MCO);
     if (enc_utf8)
     {
 	new_ScreenLinesUC = (u8char_T *)lalloc((long_u)(
