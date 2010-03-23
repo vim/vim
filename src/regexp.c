@@ -6963,6 +6963,8 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 	    eval_result = eval_to_string(source + 2, NULL, TRUE);
 	    if (eval_result != NULL)
 	    {
+		int had_backslash = FALSE;
+
 		for (s = eval_result; *s != NUL; mb_ptr_adv(s))
 		{
 		    /* Change NL to CR, so that it becomes a line break.
@@ -6970,7 +6972,20 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 		    if (*s == NL)
 			*s = CAR;
 		    else if (*s == '\\' && s[1] != NUL)
+		    {
 			++s;
+			had_backslash = TRUE;
+		    }
+		}
+		if (had_backslash && backslash)
+		{
+		    /* Backslashes will be consumed, need to double them. */
+		    s = vim_strsave_escaped(eval_result, (char_u *)"\\");
+		    if (s != NULL)
+		    {
+			vim_free(eval_result);
+			eval_result = s;
+		    }
 		}
 
 		dst += STRLEN(eval_result);
