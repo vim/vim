@@ -6270,6 +6270,8 @@ get_c_indent()
 	    case 'l': ind_keep_case_label = n; break;
 	    case '#': ind_hash_comment = n; break;
 	}
+	if (*options == ',')
+	    ++options;
     }
 
     /* remember where the cursor was when we started */
