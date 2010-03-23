@@ -3948,12 +3948,26 @@ showmatches(xp, wildmenu)
 					  || xp->xp_context == EXPAND_SHELLCMD
 					  || xp->xp_context == EXPAND_BUFFERS)
 		{
-		    char_u	*halved_slash;
-
 		    /* highlight directories */
-		    halved_slash = backslash_halve_save(files_found[k]);
-		    j = mch_isdir(halved_slash);
-		    vim_free(halved_slash);
+		    if (xp->xp_numfiles != -1)
+		    {
+			char_u	*halved_slash;
+			char_u	*exp_path;
+
+			/* Expansion was done before and special characters
+			 * were escaped, need to halve backslashes.  Also
+			 * $HOME has been replaced with ~/. */
+			exp_path = expand_env_save_opt(files_found[k], TRUE);
+			halved_slash = backslash_halve_save(
+				exp_path != NULL ? exp_path : files_found[k]);
+			j = mch_isdir(halved_slash != NULL ? halved_slash
+							    : files_found[k]);
+			vim_free(exp_path);
+			vim_free(halved_slash);
+		    }
+		    else
+			/* Expansion was done here, file names are literal. */
+			j = mch_isdir(files_found[k]);
 		    if (showtail)
 			p = L_SHOWFILE(k);
 		    else
