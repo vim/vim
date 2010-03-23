@@ -4238,6 +4238,7 @@ do_sub(eap)
     char_u	*sub_firstline;		/* allocated copy of first sub line */
     int		endcolumn = FALSE;	/* cursor in last column when done */
     pos_T	old_cursor = curwin->w_cursor;
+    int		start_nsubs;
 
     cmd = eap->arg;
     if (!global_busy)
@@ -4245,6 +4246,7 @@ do_sub(eap)
 	sub_nsubs = 0;
 	sub_nlines = 0;
     }
+    start_nsubs = sub_nsubs;
 
     if (eap->cmdidx == CMD_tilde)
 	which_pat = RE_LAST;	/* use last used regexp */
@@ -5106,7 +5108,7 @@ outofmem:
     if (do_count)
 	curwin->w_cursor = old_cursor;
 
-    if (sub_nsubs)
+    if (sub_nsubs > start_nsubs)
     {
 	/* Set the '[ and '] marks. */
 	curbuf->b_op_start.lnum = eap->line1;
