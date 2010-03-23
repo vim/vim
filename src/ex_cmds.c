@@ -5238,8 +5238,6 @@ ex_global(eap)
 	type = *eap->cmd;
     cmd = eap->arg;
     which_pat = RE_LAST;	    /* default: use last used regexp */
-    sub_nsubs = 0;
-    sub_nlines = 0;
 
     /*
      * undocumented vi feature:
@@ -5343,6 +5341,8 @@ global_exe(cmd)
     /* When the command writes a message, don't overwrite the command. */
     msg_didout = TRUE;
 
+    sub_nsubs = 0;
+    sub_nlines = 0;
     global_need_beginline = FALSE;
     global_busy = 1;
     old_lcount = curbuf->b_ml.ml_line_count;
