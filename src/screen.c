@@ -25,10 +25,11 @@
  * one character which occupies two display cells.
  * For UTF-8 a multi-byte character is converted to Unicode and stored in
  * ScreenLinesUC[].  ScreenLines[] contains the first byte only.  For an ASCII
- * character without composing chars ScreenLinesUC[] will be 0.  When the
- * character occupies two display cells the next byte in ScreenLines[] is 0.
+ * character without composing chars ScreenLinesUC[] will be 0 and
+ * ScreenLinesC[][] is not used.  When the character occupies two display
+ * cells the next byte in ScreenLines[] is 0.
  * ScreenLinesC[][] contain up to 'maxcombine' composing characters
- * (drawn on top of the first character).  They are 0 when not used.
+ * (drawn on top of the first character).  There is 0 after the last one used.
  * ScreenLines2[] is only used for euc-jp to store the second byte if the
  * first byte is 0x8e (single-width character).
  *
@@ -4893,6 +4894,7 @@ static int comp_char_differs __ARGS((int, int));
 
 /*
  * Return if the composing characters at "off_from" and "off_to" differ.
+ * Only to be used when ScreenLinesUC[off_from] != 0.
  */
     static int
 comp_char_differs(off_from, off_to)
@@ -6281,6 +6283,7 @@ static int screen_comp_differs __ARGS((int, int*));
 /*
  * Return TRUE if composing characters for screen posn "off" differs from
  * composing characters in "u8cc".
+ * Only to be used when ScreenLinesUC[off] != 0.
  */
     static int
 screen_comp_differs(off, u8cc)
@@ -6461,8 +6464,10 @@ screen_puts_len(text, len, row, col, attr)
 		    && c == 0x8e
 		    && ScreenLines2[off] != ptr[1])
 		|| (enc_utf8
-		    && (ScreenLinesUC[off] != (u8char_T)(c >= 0x80 ? u8c : 0)
-			|| screen_comp_differs(off, u8cc)))
+		    && (ScreenLinesUC[off] !=
+				(u8char_T)(c < 0x80 && u8cc[0] == 0 ? 0 : u8c)
+			|| (ScreenLinesUC[off] != 0
+					  && screen_comp_differs(off, u8cc))))
 #endif
 		|| ScreenAttrs[off] != attr
 		|| exmode_active;
@@ -7542,7 +7547,7 @@ retry:
 	new_ScreenLinesUC = (u8char_T *)lalloc((long_u)(
 			     (Rows + 1) * Columns * sizeof(u8char_T)), FALSE);
 	for (i = 0; i < p_mco; ++i)
-	    new_ScreenLinesC[i] = (u8char_T *)lalloc((long_u)(
+	    new_ScreenLinesC[i] = (u8char_T *)lalloc_clear((long_u)(
 			     (Rows + 1) * Columns * sizeof(u8char_T)), FALSE);
     }
     if (enc_dbcs == DBCS_JPNU)
