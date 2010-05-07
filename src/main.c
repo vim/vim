@@ -1477,7 +1477,7 @@ parse_command_name(parmp)
 	++initstr;
     }
 
-    /* Avoid using evim mode for "editor". */
+    /* Use evim mode for "evim" and "egvim", not for "editor". */
     if (TOLOWER_ASC(initstr[0]) == 'e'
 	    && (TOLOWER_ASC(initstr[1]) == 'v'
 		|| TOLOWER_ASC(initstr[1]) == 'g'))
@@ -2262,7 +2262,7 @@ scripterror:
 	     * Look for evidence of non-Cygwin paths before we bother.
 	     * This is only for when using the Unix files.
 	     */
-	    if (strpbrk(p, "\\:") != NULL)
+	    if (strpbrk(p, "\\:") != NULL && !path_with_url(p))
 	    {
 		char posix_path[PATH_MAX];
 
