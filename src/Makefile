@@ -30,7 +30,7 @@
 #	  want to disable using X11 libraries.	This speeds up starting Vim,
 #	  but the window title will not be set and the X11 selection can not
 #	  used.
-#	- Uncomment the line "CONF_OPT_XSMP = --without-xsmp" if you have the
+#	- Uncomment the line "CONF_OPT_XSMP = --disable-xsmp" if you have the
 #	  X11 Session Management Protocol (XSMP) library (libSM) but do not
 #	  want to use it.
 #	  This can speedup Vim startup but Vim loses the ability to catch the
@@ -1882,7 +1882,7 @@ installrtbase: $(HELPSOURCE)/vim.1 $(DEST_VIM) $(DEST_RT) \
 	cd $(PLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_PLUG)
 	cd $(DEST_PLUG); chmod $(HELPMOD) *.vim README.txt
 # install the ftplugin files
-	cd $(FTPLUGSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_FTP)
+	cd $(FTPLUGSOURCE); $(INSTALL_DATA) *.vim README.txt logtalk.dict $(DEST_FTP)
 	cd $(DEST_FTP); chmod $(HELPMOD) *.vim README.txt
 # install the compiler files
 	cd $(COMPSOURCE); $(INSTALL_DATA) *.vim README.txt $(DEST_COMP)
