@@ -3196,7 +3196,7 @@ get_mouse_class(p)
      * There are a few special cases where we want certain combinations of
      * characters to be considered as a single word.  These are things like
      * "->", "/ *", "*=", "+=", "&=", "<=", ">=", "!=" etc.  Otherwise, each
-     * character is in it's own class.
+     * character is in its own class.
      */
     if (c != NUL && vim_strchr((char_u *)"-+*/%<>&|^!=", c) != NULL)
 	return 1;
@@ -4085,7 +4085,7 @@ check_scrollbind(topline_diff, leftcol_diff)
 /*
  * Command character that's ignored.
  * Used for CTRL-Q and CTRL-S to avoid problems with terminals that use
- * xon/xoff
+ * xon/xoff.
  */
     static void
 nv_ignore(cap)
@@ -6523,7 +6523,7 @@ nv_brackets(cap)
      * [ or ] followed by a middle mouse click: put selected text with
      * indent adjustment.  Any other button just does as usual.
      */
-    else if (cap->nchar >= K_LEFTMOUSE && cap->nchar <= K_RIGHTRELEASE)
+    else if (cap->nchar >= K_RIGHTRELEASE && cap->nchar <= K_LEFTMOUSE)
     {
 	(void)do_mouse(cap->oap, cap->nchar,
 		       (cap->cmdchar == ']') ? FORWARD : BACKWARD,
