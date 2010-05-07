@@ -2669,6 +2669,10 @@ AC_CHECK_FUNCS(bcmp fchdir fchown fsync getcwd getpseudotty \
 	usleep utime utimes)
 AC_FUNC_FSEEKO
 
+dnl define _LARGE_FILES, _FILE_OFFSET_BITS and _LARGEFILE_SOURCE when
+dnl appropriate, so that off_t is 64 bits when needed.
+AC_SYS_LARGEFILE
+
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
 AC_MSG_CHECKING(for st_blksize)
 AC_TRY_COMPILE(

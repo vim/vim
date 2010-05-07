@@ -196,6 +196,11 @@
 #undef HAVE_UTIME
 #undef HAVE_BIND_TEXTDOMAIN_CODESET
 
+/* Define, if needed, for accessing large files. */
+#undef _LARGE_FILES
+#undef _FILE_OFFSET_BITS
+#undef _LARGEFILE_SOURCE
+
 /* Define if you do not have utime(), but do have the utimes() function. */
 #undef HAVE_UTIMES
 
