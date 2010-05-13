@@ -52,7 +52,7 @@
 #define ARGOPT	      0x40000L	/* allow "++opt=val" argument */
 #define SBOXOK	      0x80000L	/* allowed in the sandbox */
 #define CMDWIN	     0x100000L	/* allowed in cmdline window */
-#define MODIFY       0x200000L  /* forbidden in non-'modifiable' buffer */
+#define MODIFY       0x200000L	/* forbidden in non-'modifiable' buffer */
 #define EXFLAGS      0x400000L	/* allow flags after count in argument */
 #define FILES	(XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1	(EXTRA | NOSPC)	/* one extra word allowed */
@@ -116,7 +116,7 @@ EX(CMD_argdelete,	"argdelete",	ex_argdelete,
 EX(CMD_argdo,		"argdo",	ex_listdo,
 			BANG|NEEDARG|EXTRA|NOTRLCOM),
 EX(CMD_argedit,		"argedit",	ex_argedit,
-			BANG|NEEDARG|RANGE|NOTADR|FILE1|EDITCMD|TRLBAR),
+			BANG|NEEDARG|RANGE|NOTADR|FILE1|EDITCMD|ARGOPT|TRLBAR),
 EX(CMD_argglobal,	"argglobal",	ex_args,
 			BANG|FILES|EDITCMD|ARGOPT|TRLBAR),
 EX(CMD_arglocal,	"arglocal",	ex_args,
