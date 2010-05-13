@@ -4936,13 +4936,15 @@ dozet:
 
 		/* "zx": re-apply 'foldlevel' and open folds at the cursor */
     case 'x':	curwin->w_p_fen = TRUE;
-		newFoldLevel();		/* update right now */
+		curwin->w_foldinvalid = TRUE;	/* recompute folds */
+		newFoldLevel();			/* update right now */
 		foldOpenCursor();
 		break;
 
 		/* "zX": undo manual opens/closes, re-apply 'foldlevel' */
     case 'X':	curwin->w_p_fen = TRUE;
-		old_fdl = -1;		/* force an update */
+		curwin->w_foldinvalid = TRUE;	/* recompute folds */
+		old_fdl = -1;			/* force an update */
 		break;
 
 		/* "zm": fold more */
