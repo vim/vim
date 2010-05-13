@@ -2917,6 +2917,7 @@ gui_mch_dialog(type, title, message, button_names, dfltbutton, textfield)
 	    *textfield = NUL;
 	else
 	    vim_strncpy(textfield, p, IOSIZE - 1);
+	XtFree((char *)p);
     }
 
     suppress_dialog_mnemonics(dialogform);
