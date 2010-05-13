@@ -7136,7 +7136,8 @@ do_highlight(line, forceit, init)
 		    }
 		}
 	    }
-	    /* Add one to the argument, to avoid zero */
+	    /* Add one to the argument, to avoid zero.  Zero is used for
+	     * "NONE", then "color" is -1. */
 	    if (key[5] == 'F')
 	    {
 		HL_TABLE()[idx].sg_cterm_fg = color + 1;
@@ -7150,7 +7151,7 @@ do_highlight(line, forceit, init)
 #endif
 		    {
 			must_redraw = CLEAR;
-			if (termcap_active)
+			if (termcap_active && color >= 0)
 			    term_fg_color(color);
 		    }
 		}
@@ -7167,16 +7168,21 @@ do_highlight(line, forceit, init)
 #endif
 		    {
 			must_redraw = CLEAR;
-			if (termcap_active)
-			    term_bg_color(color);
-			if (t_colors < 16)
-			    i = (color == 0 || color == 4);
-			else
-			    i = (color < 7 || color == 8);
-			/* Set the 'background' option if the value is wrong. */
-			if (i != (*p_bg == 'd'))
-			    set_option_value((char_u *)"bg", 0L,
-				 i ? (char_u *)"dark" : (char_u *)"light", 0);
+			if (color >= 0)
+			{
+			    if (termcap_active)
+				term_bg_color(color);
+			    if (t_colors < 16)
+				i = (color == 0 || color == 4);
+			    else
+				i = (color < 7 || color == 8);
+			    /* Set the 'background' option if the value is
+			     * wrong. */
+			    if (i != (*p_bg == 'd'))
+				set_option_value((char_u *)"bg", 0L,
+					i ?  (char_u *)"dark"
+					  : (char_u *)"light", 0);
+			}
 		    }
 		}
 	    }
