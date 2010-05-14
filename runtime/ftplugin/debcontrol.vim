@@ -1,9 +1,9 @@
 " Vim filetype plugin file (GUI menu and folding)
-" Language:	Debian control files
-" Maintainer:	Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
-" Former Maintainer:	Pierre Habouzit <madcoder@debian.org>
-" Last Change:	2008-03-08
-" URL:		http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/ftplugin/debcontrol.vim;hb=debian
+" Language:     Debian control files
+" Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainer:    Pierre Habouzit <madcoder@debian.org>
+" Last Change:  2008-03-08
+" URL:          http://hg.debian.org/hg/pkg-vim/vim/raw-file/tip/runtime/ftplugin/debcontrol.vim
 
 " Do these settings once per buffer
 if exists("b:did_ftplugin")

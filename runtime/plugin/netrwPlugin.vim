@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v136"
+let g:loaded_netrwPlugin = "v138"
 if v:version < 702
  echohl WarningMsg | echo "***netrw*** you need vim version 7.2 for this version of netrw" | echohl None
  finish
@@ -35,6 +35,7 @@ set cpo&vim
 augroup FileExplorer
  au!
  au BufEnter * silent! call s:LocalBrowse(expand("<amatch>"))
+ au VimEnter * silent! call s:VimEnter(expand("<amatch>"))
  if has("win32") || has("win95") || has("win64") || has("win16")
   au BufEnter .* silent! call s:LocalBrowse(expand("<amatch>"))
  endif
@@ -106,6 +107,13 @@ fun! s:LocalBrowse(dirname)
    silent! call netrw#LocalBrowseCheck(a:dirname)
   endif
   " not a directory, ignore it
+endfun
+
+" ---------------------------------------------------------------------
+" s:VimEnter: {{{2
+fun! s:VimEnter(dirname)
+  windo if a:dirname != expand("%")|call s:LocalBrowse(expand("%:p"))|endif
+  1wincmd w
 endfun
 
 " ---------------------------------------------------------------------

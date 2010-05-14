@@ -67,13 +67,13 @@ pt_BR.aff pt_BR.dic: {buildcheck=}
         :fetch $BR_FNAME
         :sys $UNZIP $BR_FNAME
         :delete $BR_FNAME
-        :sys $VIM README_pt_BR.TXT -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_pt_BR.TXT -u NONE -e -c "set ff=unix" -c update -c q
         :move README_pt_BR.TXT README_pt_BR.txt
 
 # Vim seems to ignore the dots from the word list.
 # Removing words with dot to avoid misbehaviour.
-        :sys $VIM pt_BR.dic -e -c "set ff=unix" -c "/\./d" -c update -c q
-        :sys $VIM pt_BR.aff -e -c "set ff=unix" -c update -c q
+        :sys $VIM pt_BR.dic -u NONE -e -c "set ff=unix" -c "/\./d" -c update -c q
+        :sys $VIM pt_BR.aff -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('pt_BR.orig.aff'):
             :copy pt_BR.aff pt_BR.orig.aff
         @if not os.path.exists('pt_BR.orig.dic'):

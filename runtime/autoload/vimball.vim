@@ -1,7 +1,7 @@
 " vimball.vim : construct a file containing both paths and files
 " Author:	Charles E. Campbell, Jr.
-" Date:		Dec 28, 2009
-" Version:	30
+" Date:		Apr 12, 2010
+" Version:	31
 " GetLatestVimScripts: 1502 1 :AutoInstall: vimball.vim
 " Copyright: (c) 2004-2009 by Charles E. Campbell, Jr.
 "            The VIM LICENSE applies to Vimball.vim, and Vimball.txt
@@ -14,7 +14,7 @@
 if &cp || exists("g:loaded_vimball")
  finish
 endif
-let g:loaded_vimball = "v30"
+let g:loaded_vimball = "v31"
 if v:version < 702
  echohl WarningMsg
  echo "***warning*** this version of vimball needs vim 7.2"

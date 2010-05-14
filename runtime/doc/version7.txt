@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.2.  Last change: 2009 Dec 02
+*version7.txt*  For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -55,6 +55,11 @@ VERSION 7.2			|version-7.2|
 Changed					|changed-7.2|
 Added					|added-7.2|
 Fixed					|fixed-7.2|
+
+VERSION 7.3			|version-7.3|
+Changed					|changed-7.3|
+Added					|added-7.3|
+Fixed					|fixed-7.3|
 
 ==============================================================================
 INCOMPATIBLE CHANGES				*incompatible-7*
@@ -7141,6 +7146,35 @@ Memory leak when using CTRL-C to cancel listing the jump list. (Dominique
 Pelle)
 
 Mac: Could not build with Perl interface.
+
+==============================================================================
+VERSION 7.3						*version-7.3*
+
+This section is about improvements made between version 7.2 and 7.3.
+
+This is a bug-fix release and there are a few new features.
+
+
+Changed							*changed-7.3*
+-------
+
+The extra and language files are no longer distributed separately.
+The files for all systems are included in one distribution.
+
+
+Added							*added-7.3*
+-----
+
+New syntax files:
+
+New spell files:
+
+Breton. (Dominique Pelle)
+
+
+Fixed							*fixed-7.3*
+-----
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

@@ -1,8 +1,7 @@
-" Vim syntax file
-" Language:     Java
-" Maintainer:   Claudio Fleiner <claudio@fleiner.com>
+" Vim syntax file " Language:	  Java
+" Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		http://www.fleiner.com/vim/syntax/java.vim
-" Last Change:  2009 Mar 14
+" Last Change:	2010 March 23
 
 " Please check :help java.vim for comments on some of the options available.
 
@@ -59,8 +58,8 @@ syn match   javaTypedef		"\.\s*\<class\>"ms=s+1
 syn keyword javaClassDecl	enum
 syn match   javaClassDecl	"^class\>"
 syn match   javaClassDecl	"[^.]\s*\<class\>"ms=s+1
-syn match   javaAnnotation      "@\([_$a-zA-Z][_$a-zA-Z0-9]*\.\)*[_$a-zA-Z][_$a-zA-Z0-9]*\>"
-syn match   javaClassDecl       "@interface\>"
+syn match   javaAnnotation	"@\([_$a-zA-Z][_$a-zA-Z0-9]*\.\)*[_$a-zA-Z][_$a-zA-Z0-9]*\>"
+syn match   javaClassDecl	"@interface\>"
 syn keyword javaBranch		break continue nextgroup=javaUserLabelRef skipwhite
 syn match   javaUserLabelRef	"\k\+" contained
 syn match   javaVarArg		"\.\.\."
@@ -69,7 +68,7 @@ syn keyword javaScopeDecl	public protected private abstract
 if exists("java_highlight_java_lang_ids")
   let java_highlight_all=1
 endif
-if exists("java_highlight_all")  || exists("java_highlight_java")  || exists("java_highlight_java_lang")
+if exists("java_highlight_all")  || exists("java_highlight_java")  || exists("java_highlight_java_lang") 
   " java.lang.*
   syn match javaLangClass "\<System\>"
   syn keyword javaR_JavaLang NegativeArraySizeException ArrayStoreException IllegalStateException RuntimeException IndexOutOfBoundsException UnsupportedOperationException ArrayIndexOutOfBoundsException ArithmeticException ClassCastException EnumConstantNotPresentException StringIndexOutOfBoundsException IllegalArgumentException IllegalMonitorStateException IllegalThreadStateException NumberFormatException NullPointerException TypeNotPresentException SecurityException
@@ -110,15 +109,15 @@ endif
 
 if exists("java_space_errors")
   if !exists("java_no_trail_space_error")
-    syn match   javaSpaceError  "\s\+$"
+    syn match	javaSpaceError	"\s\+$"
   endif
   if !exists("java_no_tab_space_error")
-    syn match   javaSpaceError  " \+\t"me=e-1
+    syn match	javaSpaceError	" \+\t"me=e-1
   endif
 endif
 
-syn region  javaLabelRegion     transparent matchgroup=javaLabel start="\<case\>" matchgroup=NONE end=":" contains=javaNumber,javaCharacter
-syn match   javaUserLabel       "^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=javaLabel
+syn region  javaLabelRegion	transparent matchgroup=javaLabel start="\<case\>" matchgroup=NONE end=":" contains=javaNumber,javaCharacter
+syn match   javaUserLabel	"^\s*[_$a-zA-Z][_$a-zA-Z0-9_]*\s*:"he=e-1 contains=javaLabel
 syn keyword javaLabel		default
 
 if !exists("java_allow_cpp_keywords")
@@ -135,7 +134,7 @@ syn cluster javaTop add=javaExternal,javaError,javaError,javaBranch,javaLabelReg
 syn keyword javaTodo		 contained TODO FIXME XXX
 if exists("java_comment_strings")
   syn region  javaCommentString    contained start=+"+ end=+"+ end=+$+ end=+\*/+me=s-1,he=s-1 contains=javaSpecial,javaCommentStar,javaSpecialChar,@Spell
-  syn region  javaComment2String   contained start=+"+  end=+$\|"+  contains=javaSpecial,javaSpecialChar,@Spell
+  syn region  javaComment2String   contained start=+"+	end=+$\|"+  contains=javaSpecial,javaSpecialChar,@Spell
   syn match   javaCommentCharacter contained "'\\[^']\{1,6\}'" contains=javaSpecialChar
   syn match   javaCommentCharacter contained "'\\''" contains=javaSpecialChar
   syn match   javaCommentCharacter contained "'[^\\]'"
@@ -143,9 +142,9 @@ if exists("java_comment_strings")
   syn cluster javaCommentSpecial2 add=javaComment2String,javaCommentCharacter,javaNumber
 endif
 syn region  javaComment		 start="/\*"  end="\*/" contains=@javaCommentSpecial,javaTodo,@Spell
-syn match   javaCommentStar      contained "^\s*\*[^/]"me=e-1
-syn match   javaCommentStar      contained "^\s*\*$"
-syn match   javaLineComment      "//.*" contains=@javaCommentSpecial2,javaTodo,@Spell
+syn match   javaCommentStar	 contained "^\s*\*[^/]"me=e-1
+syn match   javaCommentStar	 contained "^\s*\*$"
+syn match   javaLineComment	 "//.*" contains=@javaCommentSpecial2,javaTodo,@Spell
 JavaHiLink javaCommentString javaString
 JavaHiLink javaComment2String javaString
 JavaHiLink javaCommentCharacter javaCharacter
@@ -162,14 +161,14 @@ if !exists("java_ignore_javadoc") && main_syntax != 'jsp'
   " here.
   syntax spell default
 
-  syn region  javaDocComment    start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaDocSeeTag,javaTodo,@Spell
-  syn region  javaCommentTitle  contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags,javaDocSeeTag
+  syn region  javaDocComment	start="/\*\*"  end="\*/" keepend contains=javaCommentTitle,@javaHtml,javaDocTags,javaDocSeeTag,javaTodo,@Spell
+  syn region  javaCommentTitle	contained matchgroup=javaDocComment start="/\*\*"   matchgroup=javaCommentTitle keepend end="\.$" end="\.[ \t\r<&]"me=e-1 end="[^{]@"me=s-2,he=s-1 end="\*/"me=s-1,he=s-1 contains=@javaHtml,javaCommentStar,javaTodo,@Spell,javaDocTags,javaDocSeeTag
 
-  syn region javaDocTags         contained start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
-  syn match  javaDocTags         contained "@\(param\|exception\|throws\|since\)\s\+\S\+" contains=javaDocParam
-  syn match  javaDocParam        contained "\s\S\+"
-  syn match  javaDocTags         contained "@\(version\|author\|return\|deprecated\|serial\|serialField\|serialData\)\>"
-  syn region javaDocSeeTag       contained matchgroup=javaDocTags start="@see\s\+" matchgroup=NONE end="\_."re=e-1 contains=javaDocSeeTagParam
+  syn region javaDocTags	 contained start="{@\(link\|linkplain\|inherit[Dd]oc\|doc[rR]oot\|value\)" end="}"
+  syn match  javaDocTags	 contained "@\(param\|exception\|throws\|since\)\s\+\S\+" contains=javaDocParam
+  syn match  javaDocParam	 contained "\s\S\+"
+  syn match  javaDocTags	 contained "@\(version\|author\|return\|deprecated\|serial\|serialField\|serialData\)\>"
+  syn region javaDocSeeTag	 contained matchgroup=javaDocTags start="@see\s\+" matchgroup=NONE end="\_."re=e-1 contains=javaDocSeeTagParam
   syn match  javaDocSeeTagParam  contained @"\_[^"]\+"\|<a\s\+\_.\{-}</a>\|\(\k\|\.\)*\(#\k\+\((\_[^)]\+)\)\=\)\=@ extend
   syntax case match
 endif
@@ -178,9 +177,9 @@ endif
 syn match   javaComment		 "/\*\*/"
 
 " Strings and constants
-syn match   javaSpecialError     contained "\\."
+syn match   javaSpecialError	 contained "\\."
 syn match   javaSpecialCharError contained "[^']"
-syn match   javaSpecialChar      contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\+\x\{4\}\)"
+syn match   javaSpecialChar	 contained "\\\([4-9]\d\|[0-3]\d\d\|[\"\\'ntbrf]\|u\x\{4\}\)"
 syn region  javaString		start=+"+ end=+"+ end=+$+ contains=javaSpecialChar,javaSpecialError,@Spell
 " next line disabled, it can cause a crash for a long line
 "syn match   javaStringError	  +"\([^"\\]\|\\.\)*$+
@@ -193,7 +192,7 @@ syn match   javaNumber		 "\<\d\+[eE][-+]\=\d\+[fFdD]\=\>"
 syn match   javaNumber		 "\<\d\+\([eE][-+]\=\d\+\)\=[fFdD]\>"
 
 " unicode characters
-syn match   javaSpecial "\\u\+\d\{4\}"
+syn match   javaSpecial "\\u\d\{4\}"
 
 syn cluster javaTop add=javaString,javaCharacter,javaNumber,javaSpecial,javaStringError
 
@@ -206,8 +205,8 @@ if exists("java_highlight_functions")
   else
     " This line catches method declarations at any indentation>0, but it assumes
     " two things:
-    "   1. class names are always capitalized (ie: Button)
-    "   2. method names are never capitalized (except constructors, of course)
+    "	1. class names are always capitalized (ie: Button)
+    "	2. method names are never capitalized (except constructors, of course)
     syn region javaFuncDef start=+^\s\+\(\(public\|protected\|private\|static\|abstract\|final\|native\|synchronized\)\s\+\)*\(\(void\|boolean\|char\|byte\|short\|int\|long\|float\|double\|\([A-Za-z_][A-Za-z0-9_$]*\.\)*[A-Z][A-Za-z0-9_$]*\)\(<[^>]*>\)\=\(\[\]\)*\s\+[a-z][A-Za-z0-9_$]*\|[A-Z][A-Za-z0-9_$]*\)\s*([^0-9]+ end=+)+ contains=javaScopeDecl,javaType,javaStorageClass,javaComment,javaLineComment,@javaClasses
   endif
   syn match  javaBraces  "[{}]"
@@ -219,7 +218,7 @@ if exists("java_highlight_debug")
   " Strings and constants
   syn match   javaDebugSpecial		contained "\\\d\d\d\|\\."
   syn region  javaDebugString		contained start=+"+  end=+"+  contains=javaDebugSpecial
-  syn match   javaDebugStringError      +"\([^"\\]\|\\.\)*$+
+  syn match   javaDebugStringError	+"\([^"\\]\|\\.\)*$+
   syn match   javaDebugCharacter	contained "'[^\\]'"
   syn match   javaDebugSpecialCharacter contained "'\\.'"
   syn match   javaDebugSpecialCharacter contained "'\\''"
@@ -265,17 +264,17 @@ if exists("java_mark_braces_in_parens_as_errors")
 endif
 
 " catch errors caused by wrong parenthesis
-syn region  javaParenT  transparent matchgroup=javaParen  start="("  end=")" contains=@javaTop,javaParenT1
+syn region  javaParenT	transparent matchgroup=javaParen  start="("  end=")" contains=@javaTop,javaParenT1
 syn region  javaParenT1 transparent matchgroup=javaParen1 start="(" end=")" contains=@javaTop,javaParenT2 contained
 syn region  javaParenT2 transparent matchgroup=javaParen2 start="(" end=")" contains=@javaTop,javaParenT  contained
-syn match   javaParenError       ")"
+syn match   javaParenError	 ")"
 " catch errors caused by wrong square parenthesis
-syn region  javaParenT  transparent matchgroup=javaParen  start="\["  end="\]" contains=@javaTop,javaParenT1
+syn region  javaParenT	transparent matchgroup=javaParen  start="\["  end="\]" contains=@javaTop,javaParenT1
 syn region  javaParenT1 transparent matchgroup=javaParen1 start="\[" end="\]" contains=@javaTop,javaParenT2 contained
 syn region  javaParenT2 transparent matchgroup=javaParen2 start="\[" end="\]" contains=@javaTop,javaParenT  contained
-syn match   javaParenError       "\]"
+syn match   javaParenError	 "\]"
 
-JavaHiLink javaParenError       javaError
+JavaHiLink javaParenError	javaError
 
 if !exists("java_minlines")
   let java_minlines = 10
@@ -288,7 +287,7 @@ if version >= 508 || !exists("did_java_syn_inits")
     let did_java_syn_inits = 1
   endif
   JavaHiLink javaFuncDef		Function
-  JavaHiLink javaVarArg                 Function
+  JavaHiLink javaVarArg			Function
   JavaHiLink javaBraces			Function
   JavaHiLink javaBranch			Conditional
   JavaHiLink javaUserLabelRef		javaUserLabel
@@ -320,7 +319,7 @@ if version >= 508 || !exists("did_java_syn_inits")
   JavaHiLink javaConstant		Constant
   JavaHiLink javaTypedef		Typedef
   JavaHiLink javaTodo			Todo
-  JavaHiLink javaAnnotation             PreProc
+  JavaHiLink javaAnnotation		PreProc
 
   JavaHiLink javaCommentTitle		SpecialComment
   JavaHiLink javaDocTags		Special

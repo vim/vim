@@ -1,14 +1,14 @@
 " Vim filetype plugin file (GUI menu, folding and completion)
-" Language:	Debian Changelog
-" Maintainer:	Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
-" Former Maintainers:	Michael Piefel <piefel@informatik.hu-berlin.de>
-"			Stefano Zacchiroli <zack@debian.org>
-" Last Change:	2008-03-08
-" License:	GNU GPL, version 2.0 or later
-" URL:		http://git.debian.org/?p=pkg-vim/vim.git;a=blob_plain;f=runtime/ftplugin/debchangelog.vim;hb=debian
+" Language:     Debian Changelog
+" Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+" Former Maintainers:   Michael Piefel <piefel@informatik.hu-berlin.de>
+"                       Stefano Zacchiroli <zack@debian.org>
+" Last Change:  2010-04-29
+" License:      GNU GPL, version 2.0 or later
+" URL:          http://hg.debian.org/hg/pkg-vim/vim/raw-file/tip/runtime/ftplugin/debchangelog.vim
 
 " Bug completion requires apt-listbugs installed for Debian packages or
-" python-launchpad-bugs installed for Ubuntu packages
+" python-launchpadlib installed for Ubuntu packages
 
 if exists("b:did_ftplugin")
   finish
@@ -329,17 +329,26 @@ fun! DebCompleteBugs(findstart, base)
       python << EOF
 import vim
 try:
-    from launchpadbugs import connector
-    buglist = connector.ConnectBugList()
-    bl = list(buglist('https://bugs.launchpad.net/ubuntu/+source/%s' % vim.eval('pkgsrc')))
-    bl.sort(None, int)
-    liststr = '['
-    for bug in bl:
-        liststr += "'#%d - %s'," % (int(bug), bug.summary.replace('\'', '\'\''))
-    liststr += ']'
-    vim.command('silent let bug_lines = %s' % liststr)
+    from launchpadlib.launchpad import Launchpad
+    from lazr.restfulclient.errors import HTTPError
+    # login anonymously
+    lp = Launchpad.login_anonymously('debchangelog.vim', 'production')
+    ubuntu = lp.distributions['ubuntu']
+    try:
+        sp = ubuntu.getSourcePackage(name=vim.eval('pkgsrc'))
+        status = ('New', 'Incomplete', 'Confirmed', 'Triaged',
+                  'In Progress', 'Fix Committed')
+        tasklist = sp.searchTasks(status=status, order_by='id')
+        liststr = '['
+        for task in tasklist:
+            bug = task.bug
+            liststr += "'#%d - %s'," % (bug.id, bug.title.replace('\'', '\'\''))
+        liststr += ']'
+        vim.command('silent let bug_lines = %s' % liststr.encode('utf-8'))
+    except HTTPError:
+        pass
 except ImportError:
-    vim.command('echoerr \'python-launchpad-bugs needs to be installed to use Launchpad bug completion\'')
+    vim.command('echoerr \'python-launchpadlib >= 1.5.4 needs to be installed to use Launchpad bug completion\'')
 EOF
     else
       if ! filereadable('/usr/sbin/apt-listbugs')

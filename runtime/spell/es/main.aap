@@ -63,7 +63,7 @@ es_MX.aff es_MX.dic: {buildcheck=}
         :print No copyright information for es_MX wordlist >! README_es_MX.txt
         :sys $UNZIP $ZIPFILE_MX
         :delete $ZIPFILE_MX
-        :sys $VIM -e -c "set ff=unix | wq" es_MX.dic
+        :sys $VIM -u NONE -e -c "set ff=unix | wq" es_MX.dic
         @if not os.path.exists('es_MX.orig.aff'):
             :copy es_MX.aff es_MX.orig.aff
         @if not os.path.exists('es_MX.orig.dic'):

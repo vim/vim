@@ -1,14 +1,23 @@
 " Vim OMNI completion script for SQL
 " Language:    SQL
 " Maintainer:  David Fishburn <dfishburn dot vim at gmail dot com>
-" Version:     7.0
-" Last Change: 2009 Jan 04
+" Version:     9.0
+" Last Change: 2010 Apr 20
 " Usage:       For detailed help
 "              ":help sql.txt" 
 "              or ":help ft-sql-omni" 
 "              or read $VIMRUNTIME/doc/sql.txt
 
 " History
+" Version 9.0
+"     This change removes some of the support for tables with spaces in their
+"     names in order to simplify the regexes used to pull out query table 
+"     aliases for more robust table name and column name code completion.
+"     Full support for "table names with spaces" can be added in again
+"     after 7.3.
+" Version 8.0
+"     Incorrectly re-executed the g:ftplugin_sql_omni_key_right and g:ftplugin_sql_omni_key_left 
+"     when drilling in and out of a column list for a table.
 " Version 7.0
 "     Better handling of object names
 " Version 6.0
@@ -250,7 +259,7 @@ function! sqlcomplete#Complete(findstart, base)
             "    1.  Check if the dbext plugin has the option turned
             "        on to even allow owners
             "    2.  Based on 1, if the user is showing a table list
-            "        and the DrillIntoTable (using <C-Right>) then 
+            "        and the DrillIntoTable (using <Right>) then 
             "        this will be owner.table.  In this case, we can
             "        check to see the table.column exists in the 
             "        cached table list.  If it does, then we have
@@ -390,13 +399,14 @@ function! sqlcomplete#DrillIntoTable()
         call sqlcomplete#Map('column')
         " C-Y, makes the currently highlighted entry active
         " and trigger the omni popup to be redisplayed
-        call feedkeys("\<C-Y>\<C-X>\<C-O>")
+        call feedkeys("\<C-Y>\<C-X>\<C-O>", 'n')
     else
-        if has('win32')
-            " If the popup is not visible, simple perform the normal
-            " <C-Right> behaviour
-            exec "normal! \<C-Right>"
-        endif
+	" If the popup is not visible, simple perform the normal
+	" key behaviour.
+	" Must use exec since they key must be preceeded by "\"
+	" or feedkeys will simply push each character of the string 
+	" rather than the "key press".
+        exec 'call feedkeys("\'.g:ftplugin_sql_omni_key_right.'", "n")'
     endif
     return ""
 endfunction
@@ -408,11 +418,12 @@ function! sqlcomplete#DrillOutOfColumns()
         " Trigger the omni popup to be redisplayed
         call feedkeys("\<C-X>\<C-O>")
     else
-        if has('win32')
-            " If the popup is not visible, simple perform the normal
-            " <C-Left> behaviour
-            exec "normal! \<C-Left>"
-        endif
+	" If the popup is not visible, simple perform the normal
+	" key behaviour.
+	" Must use exec since they key must be preceeded by "\"
+	" or feedkeys will simply push each character of the string 
+	" rather than the "key press".
+        exec 'call feedkeys("\'.g:ftplugin_sql_omni_key_left.'", "n")'
     endif
     return ""
 endfunction
@@ -609,7 +620,7 @@ function! s:SQLCGetColumns(table_name, list_type)
          " Search backwards to the beginning of the statement
          " and do NOT wrap
          " exec 'silent! normal! v?\<\(select\|update\|delete\|;\)\>'."\n".'"yy'
-         exec 'silent! normal! ?\<\(select\|update\|delete\|;\)\>'."\n"
+         exec 'silent! normal! ?\<\c\(select\|update\|delete\|;\)\>'."\n"
 
          " Start characterwise visual mode
          " Advance right one character
@@ -618,27 +629,38 @@ function! s:SQLCGetColumns(table_name, list_type)
          "     2.  A ; at the end of a line (the delimiter)
          "     3.  The end of the file (incase no delimiter)
          " Yank the visually selected text into the "y register.
-         exec 'silent! normal! vl/\(\<select\>\|\<update\>\|\<delete\>\|;\s*$\|\%$\)'."\n".'"yy'
+         exec 'silent! normal! vl/\c\(\<select\>\|\<update\>\|\<delete\>\|;\s*$\|\%$\)'."\n".'"yy'
 
          let query = @y
          let query = substitute(query, "\n", ' ', 'g')
          let found = 0
 
-         " if query =~? '^\(select\|update\|delete\)'
-         if query =~? '^\(select\)'
+         " if query =~? '^\c\(select\)'
+         if query =~? '^\(select\|update\|delete\)'
              let found = 1
              "  \(\(\<\w\+\>\)\.\)\?   - 
-             " 'from.\{-}'  - Starting at the from clause
+             " '\c\(from\|join\|,\).\{-}'  - Starting at the from clause (case insensitive)
              " '\zs\(\(\<\w\+\>\)\.\)\?' - Get the owner name (optional)
              " '\<\w\+\>\ze' - Get the table name 
              " '\s\+\<'.table_name.'\>' - Followed by the alias
              " '\s*\.\@!.*'  - Cannot be followed by a .
              " '\(\<where\>\|$\)' - Must be followed by a WHERE clause
              " '.*'  - Exclude the rest of the line in the match
+             " let table_name_new = matchstr(@y, 
+             "             \ '\c\(from\|join\|,\).\{-}'.
+             "             \ '\zs\(\("\|\[\)\?.\{-}\("\|\]\)\.\)\?'.
+             "             \ '\("\|\[\)\?.\{-}\("\|\]\)\?\ze'.
+             "             \ '\s\+\%(as\s\+\)\?\<'.
+             "             \ matchstr(table_name, '.\{-}\ze\.\?$').
+             "             \ '\>'.
+             "             \ '\s*\.\@!.*'.
+             "             \ '\(\<where\>\|$\)'.
+             "             \ '.*'
+             "             \ )
              let table_name_new = matchstr(@y, 
-                         \ 'from.\{-}'.
-                         \ '\zs\(\("\|\[\)\?.\{-}\("\|\]\)\.\)\?'.
-                         \ '\("\|\[\)\?.\{-}\("\|\]\)\ze'.
+                         \ '\c\(\<from\>\|\<join\>\|,\)\s*'.
+                         \ '\zs\(\("\|\[\)\?\w\+\("\|\]\)\?\.\)\?'.
+                         \ '\("\|\[\)\?\w\+\("\|\]\)\?\ze'.
                          \ '\s\+\%(as\s\+\)\?\<'.
                          \ matchstr(table_name, '.\{-}\ze\.\?$').
                          \ '\>'.
@@ -649,7 +671,7 @@ function! s:SQLCGetColumns(table_name, list_type)
 
              if table_name_new != ''
                  let table_alias = table_name
-                 let table_name  = table_name_new
+                 let table_name  = matchstr( table_name_new, '^\(.*\.\)\?\zs.*\ze' )
 
                  let list_idx = index(s:tbl_name, table_name, 0, &ignorecase)
                  if list_idx > -1
@@ -717,4 +739,3 @@ function! s:SQLCGetColumns(table_name, list_type)
 
     return table_cols
 endfunction
-

@@ -36,9 +36,9 @@ ku_TR.aff ku_TR.dic: {buildcheck=}
         :fetch ku_TR.zip
         :sys $UNZIP ku_TR.zip
         :delete ku_TR.zip
-        :sys $VIM ku_TR.aff -e -c "set ff=unix" -c update -c q
-        :sys $VIM ku_TR.dic -e -c "set ff=unix" -c update -c q
-        :sys $VIM README_ku_TR.txt -e -c "set ff=unix" -c update -c q
+        :sys $VIM ku_TR.aff -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM ku_TR.dic -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_ku_TR.txt -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('ku_TR.orig.aff'):
             :copy ku_TR.aff ku_TR.orig.aff
         @if not os.path.exists('ku_TR.orig.dic'):

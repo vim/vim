@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 7.2.  Last change: 2006 Apr 24
+*sign.txt*      For Vim version 7.2.  Last change: 2010 May 07
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -53,7 +53,7 @@ disappears again.  The color of the column is set with the SignColumn group
 ==============================================================================
 2. Commands					*sign-commands* *:sig* *:sign*
 
-Here is an example that places a sign piet, displayed with the text ">>", in
+Here is an example that places a sign "piet", displayed with the text ">>", in
 line 23 of the current file: >
 	:sign define piet text=>> texthl=Search
 	:exe ":sign place 2 line=23 name=piet file=" . expand("%:p")

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 7.2.  Last change: 2009 Nov 11
+*change.txt*    For Vim version 7.2.  Last change: 2010 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -585,7 +585,7 @@ For other systems the tmpnam() library function is used.
 			":&r".  See |:s_flags| for [flags].
 
 								*&*
-&			Synonym for ":s//~/" (repeat last substitute).  Note
+&			Synonym for ":s" (repeat last substitute).  Note
 			that the flags are not remembered, thus it might
 			actually work differently.  You can use ":&&" to keep
 			the flags.

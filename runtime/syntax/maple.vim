@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Maple V (based on release 4)
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change:	Sep 11, 2006
-" Version:	9
+" Last Change:	Jan 05, 2010
+" Version:	10
 " URL:	http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Package Function Selection: {{{1
@@ -164,9 +164,11 @@ syn match   mvError	"\.\.\."
 " Split into booleans, conditionals, operators, repeat-logic, etc
 syn keyword mvBool	true	false	FAIL
 syn keyword mvCond	elif	else	fi	if	then
+syn match   mvCond	"end\s\+if"
 
 syn keyword mvRepeat	by	for	in	to
 syn keyword mvRepeat	do	from	od	while
+syn match   mvRepeat	"end\s\+do"
 
 syn keyword mvSpecial	NULL
 syn match   mvSpecial	"\[\]\|{}"

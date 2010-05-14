@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:	C
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2007 Aug 30
+" Last Change:	2010 Mar 23
 
 
 " This function is used for the 'omnifunc' option.
@@ -161,7 +161,7 @@ function! ccomplete#Complete(findstart, base)
       let res = [{'match': match, 'tagline' : '', 'kind' : kind, 'info' : line}]
     else
       " Completing "var.", "var.something", etc.
-      let res = s:Nextitem(strpart(line, 0, col), items[-1], 0, 1)
+      let res = s:Nextitem(strpart(line, 0, col), items[1:], 0, 1)
     endif
   endif
 

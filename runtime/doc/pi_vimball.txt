@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.2.  Last change: 2009 Dec 28
+*pi_vimball.txt*	For Vim version 7.2.  Last change: 2010 Apr 12
 
 			       ----------------
 			       Vimball Archiver
@@ -155,6 +155,22 @@ PREVENTING LOADING
 
 		let g:loaded_vimballPlugin= 1
 		let g:loaded_vimball      = 1
+<
+WINDOWS							*vimball-windows*
+
+	Many vimball files are compressed with gzip.  Windows, unfortunately,
+	does not come provided with a tool to decompress gzip'ped files.
+	Fortunately, there are a number of tools available for Windows users
+	to un-gzip files:
+>
+	    Item     Tool/Suite   Free   Website
+	    ----     ----------   ----   -------
+	    7zip        tool       y     http://www.7-zip.org/
+	    Winzip      tool       n     http://www.winzip.com/downwz.htm
+	    unxutils    suite      y     http://unxutils.sourceforge.net/
+	    cygwin      suite      y     http://www.cygwin.com/
+	    GnuWin32    suite      y     http://gnuwin32.sourceforge.net/
+	    MinGW       suite      y     http://www.mingw.org/
 <
 
 ==============================================================================

@@ -1,4 +1,4 @@
-*pi_zip.txt*	For Vim version 7.2.  Last change: 2008 Jul 30
+*pi_zip.txt*	For Vim version 7.2.  Last change: 2010 Apr 12
 
 				+====================+
 				| Zip File Interface |
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright: Copyright (C) 2005-2008 Charles E Campbell, Jr *zip-copyright*
+Copyright: Copyright (C) 2005-2009 Charles E Campbell, Jr *zip-copyright*
            Permission is hereby granted to use and distribute this code,
 	   with or without modifications, provided that this copyright
 	   notice is copied with it. Like anything else that's free,
@@ -59,6 +59,16 @@ Copyright: Copyright (C) 2005-2008 Charles E Campbell, Jr *zip-copyright*
    It's used during the writing (updating) of a file already in a zip
    file; by default: >
    	let g:zip_zipcmd= "zip"
+<
+   PREVENTING LOADING~
+
+   If for some reason you do not wish to use vim to examine zipped files,
+   you may put the following two variables into your <.vimrc> to prevent
+   the tar plugin from loading: >
+
+	let g:loaded_zipPlugin= 1
+	let g:loaded_zip      = 1
+<
 <
 
 ==============================================================================

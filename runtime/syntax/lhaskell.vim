@@ -4,7 +4,7 @@
 "			\begin{code} \end{code} blocks
 " Maintainer:		Haskell Cafe mailinglist <haskell-cafe@haskell.org>
 " Original Author:	Arthur van Leeuwen <arthurvl@cs.uu.nl>
-" Last Change:		2009 May 08
+" Last Change:		2010 Apr 11
 " Version:		1.04
 "
 " Thanks to Ian Lynagh for thoughtful comments on initial versions and
@@ -107,13 +107,12 @@ else
 endif
 
 syntax region lhsHaskellBirdTrack start="^>" end="\%(^[^>]\)\@=" contains=@haskellTop,lhsBirdTrack containedin=@lhsTeXContainer
-syntax region lhsHaskellBeginEndBlock start="^\\begin{code}\s*$" matchgroup=NONE end="\%(^\\end{code}.*$\)\@=" contains=@haskellTop,@beginCode containedin=@lhsTeXContainer
+syntax region lhsHaskellBeginEndBlock start="^\\begin{code}\s*$" matchgroup=NONE end="\%(^\\end{code}.*$\)\@=" contains=@haskellTop,beginCodeBegin containedin=@lhsTeXContainer
 
 syntax match lhsBirdTrack "^>" contained
 
 syntax match beginCodeBegin "^\\begin" nextgroup=beginCodeCode contained
 syntax region beginCodeCode  matchgroup=texDelimiter start="{" end="}"
-syntax cluster beginCode    contains=beginCodeBegin,beginCodeCode
 
 " Define the default highlighting.
 " For version 5.7 and earlier: only when not done already

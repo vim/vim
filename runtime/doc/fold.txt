@@ -1,4 +1,4 @@
-*fold.txt*      For Vim version 7.2.  Last change: 2010 Feb 21
+*fold.txt*      For Vim version 7.2.  Last change: 2010 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,6 +126,9 @@ backwards for a line for which the fold level is defined.  This can be slow.
 fold level.  But note that foldlevel() may return -1 if the level is not known
 yet.  And it returns the level at the start of the line, while a fold might
 end in that line.
+
+It may happened that folds are not updated properly.  You can use |zx| or |zX|
+to force updating folds.
 
 
 SYNTAX						*fold-syntax*
@@ -352,9 +355,13 @@ zv		View cursor line: Open just enough folds to make the line in
 							*zx*
 zx		Update folds: Undo manually opened and closed folds: re-apply
 		'foldlevel', then do "zv": View cursor line.
+		Also forces recomputing folds.  This is useful when using
+		'foldexpr' and the buffer is changed in a way that results in
+		folds not to be updated properly.
 
 							*zX*
 zX		Undo manually opened and closed folds: re-apply 'foldlevel'.
+		Also forces recomputing folds, like |zx|.
 
 							*zm*
 zm		Fold more: Subtract one from 'foldlevel'.  If 'foldlevel' was

@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 7.2.  Last change: 2010 Jan 27
+*indent.txt*    For Vim version 7.2.  Last change: 2010 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -447,7 +447,7 @@ assume a 'shiftwidth' of 4.
 
 The defaults, spelled out in full, are:
 	cinoptions=>s,e0,n0,f0,{0,}0,^0,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,c3,C0,
-		   /0,(2s,us,U0,w0,W0,m0,j0,)20,*30,#0
+		   /0,(2s,us,U0,w0,W0,m0,j0,)20,*70,#0
 
 Vim puts a line in column 1 if:
 - It starts with '#' (preprocessor directives), if 'cinkeys' contains '#'.

@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_zipPlugin")
  finish
 endif
-let g:loaded_zipPlugin = "v22"
+let g:loaded_zipPlugin = "v23"
 let s:keepcpo          = &cpo
 set cpo&vim
 

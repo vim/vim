@@ -1,14 +1,17 @@
 " Vim syntax file
 " Language:    R Help File
 " Maintainer:  Johannes Ranke <jranke@uni-bremen.de>
-" Last Change: 2009 Mai 12
-" Version:     0.7.2
-" SVN:		   $Id: rhelp.vim 86 2009-05-12 19:23:47Z ranke $
+" Last Change: 2010 Apr 22
+" Version:     0.7.3
+" SVN:		   $Id: rhelp.vim 88 2010-04-22 19:37:09Z ranke $
 " Remarks:     - Now includes R syntax highlighting in the appropriate
 "                sections if an r.vim file is in the same directory or in the
 "                default debian location.
 "              - There is no Latex markup in equations
 "              - Thanks to Will Gray for finding and fixing a bug
+"              - No support for \if, \ifelse and \out as I don't understand
+"                them and have no examples at hand (help welcome).
+"              - No support for \var tag within quoted string (dito)
 
 " Version Clears: {{{1
 " For version 5.x: Clear all syntax items
@@ -37,6 +40,7 @@ syn region rhelpRcode matchgroup=Delimiter start="\\synopsis{" matchgroup=Delimi
 syn region rhelpRcode matchgroup=Delimiter start="\\special{" matchgroup=Delimiter transparent end=/}/ contains=@R contained
 syn region rhelpRcode matchgroup=Delimiter start="\\code{" matchgroup=Delimiter transparent end=/}/ contains=@R,rhelpLink contained
 syn region rhelpS4method matchgroup=Delimiter start="\\S4method{.*}(" matchgroup=Delimiter transparent end=/)/ contains=@R,rhelpDots contained
+syn region rhelpSexpr matchgroup=Delimiter start="\\Sexpr{" matchgroup=Delimiter transparent end=/}/ contains=@R
 
 " Strings {{{1
 syn region rhelpString start=/"/ end=/"/ 
@@ -55,6 +59,56 @@ syn match rhelpKeyword  "--"
 syn match rhelpKeyword  "---"
 syn match rhelpKeyword  "<"
 syn match rhelpKeyword  ">"
+syn match rhelpKeyword	"\\ge"
+syn match rhelpKeyword	"\\le"
+syn match rhelpKeyword	"\\alpha"
+syn match rhelpKeyword	"\\beta"
+syn match rhelpKeyword	"\\gamma"
+syn match rhelpKeyword	"\\delta"
+syn match rhelpKeyword	"\\epsilon"
+syn match rhelpKeyword	"\\zeta"
+syn match rhelpKeyword	"\\eta"
+syn match rhelpKeyword	"\\theta"
+syn match rhelpKeyword	"\\iota"
+syn match rhelpKeyword	"\\kappa"
+syn match rhelpKeyword	"\\lambda"
+syn match rhelpKeyword	"\\mu"
+syn match rhelpKeyword	"\\nu"
+syn match rhelpKeyword	"\\xi"
+syn match rhelpKeyword	"\\omicron"
+syn match rhelpKeyword	"\\pi"
+syn match rhelpKeyword	"\\rho"
+syn match rhelpKeyword	"\\sigma"
+syn match rhelpKeyword	"\\tau"
+syn match rhelpKeyword	"\\upsilon"
+syn match rhelpKeyword	"\\phi"
+syn match rhelpKeyword	"\\chi"
+syn match rhelpKeyword	"\\psi"
+syn match rhelpKeyword	"\\omega"
+syn match rhelpKeyword	"\\Alpha"
+syn match rhelpKeyword	"\\Beta"
+syn match rhelpKeyword	"\\Gamma"
+syn match rhelpKeyword	"\\Delta"
+syn match rhelpKeyword	"\\Epsilon"
+syn match rhelpKeyword	"\\Zeta"
+syn match rhelpKeyword	"\\Eta"
+syn match rhelpKeyword	"\\Theta"
+syn match rhelpKeyword	"\\Iota"
+syn match rhelpKeyword	"\\Kappa"
+syn match rhelpKeyword	"\\Lambda"
+syn match rhelpKeyword	"\\Mu"
+syn match rhelpKeyword	"\\Nu"
+syn match rhelpKeyword	"\\Xi"
+syn match rhelpKeyword	"\\Omicron"
+syn match rhelpKeyword	"\\Pi"
+syn match rhelpKeyword	"\\Rho"
+syn match rhelpKeyword	"\\Sigma"
+syn match rhelpKeyword	"\\Tau"
+syn match rhelpKeyword	"\\Upsilon"
+syn match rhelpKeyword	"\\Phi"
+syn match rhelpKeyword	"\\Chi"
+syn match rhelpKeyword	"\\Psi"
+syn match rhelpKeyword	"\\Omega"
 
 " Links {{{1
 syn region rhelpLink matchgroup=rhelpSection start="\\link{" end="}" contained keepend
@@ -112,6 +166,7 @@ syn match rhelpSection		"\\donttest\>"
 
 " Freely named Sections {{{1
 syn region rhelpFreesec matchgroup=Delimiter start="\\section{" matchgroup=Delimiter transparent end=/}/ 
+syn region rhelpFreesubsec matchgroup=Delimiter start="\\subsection{" matchgroup=Delimiter transparent end=/}/ 
 
 " R help file comments {{{1
 syn match rhelpComment /%.*$/ contained 

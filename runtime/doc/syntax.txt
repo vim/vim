@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.2.  Last change: 2009 Dec 19
+*syntax.txt*	For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3871,13 +3871,19 @@ This will open a new window containing all highlight group names, displayed
 in their own color.
 
 						*:colo* *:colorscheme* *E185*
+:colo[rscheme]		Output the name of the currently active color scheme.
+			This is basically the same as >
+				:echo g:colors_name
+<			In case g:colors_name has not been defined :colo will
+			output "default".  When compiled without the |+eval|
+			feature it will output "unknown".
+
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
 			for the file "colors/{name}.vim.  The first one that
 			is found is loaded.
 			To see the name of the currently active color scheme: >
-				:echo g:colors_name
-<			When using the default colors you will get an E121
-			error.
+				:colo
+<			The name is also stored in the g:colors_name variable.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 			After the color scheme has been loaded the

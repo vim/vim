@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.2.  Last change: 2009 Oct 28
+*spell.txt*	For Vim version 7.2.  Last change: 2010 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -468,8 +468,11 @@ Vim uses a binary file format for spelling.  This greatly speeds up loading
 the word list and keeps it small.
 						    *.aff* *.dic* *Myspell*
 You can create a Vim spell file from the .aff and .dic files that Myspell
-uses.  Myspell is used by OpenOffice.org and Mozilla.  You should be able to
-find them here:
+uses.  Myspell is used by OpenOffice.org and Mozilla. The OpenOffice .oxt 
+files are zip files which contain the .aff and .dic files. You should be able
+to find them here:
+	http://extensions.services.openoffice.org/dictionary
+The older, OpenOffice 2 files may be used if this doesn't work:
 	http://wiki.services.openoffice.org/wiki/Dictionaries
 You can also use a plain word list.  The results are the same, the choice
 depends on what word lists you can find.

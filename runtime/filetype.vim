@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 Feb 24
+" Last Change:	2010 May 14
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -324,6 +324,9 @@ au BufNewFile,BufRead */.calendar/*,
 " C#
 au BufNewFile,BufRead *.cs			setf cs
 
+" Cabal
+au BufNewFile,BufRead *.cabal       		setf cabal
+
 " Cdrdao TOC
 au BufNewFile,BufRead *.toc			setf cdrtoc
 
@@ -332,6 +335,9 @@ au BufNewFile,BufRead etc/cdrdao.conf,etc/defaults/cdrdao,etc/default/cdrdao,~/.
 
 " Cfengine
 au BufNewFile,BufRead cfengine.conf		setf cfengine
+
+" ChaiScript
+au BufRead,BufNewFile *.chai			setf chaiscript
 
 " Comshare Dimension Definition Language
 au BufNewFile,BufRead *.cdl			setf cdl
@@ -764,7 +770,7 @@ au BufNewFile,BufRead *.haml			setf haml
 au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
 
 " Haskell
-au BufNewFile,BufRead *.hs			setf haskell
+au BufNewFile,BufRead *.hs,*.hs-boot 		setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
 
@@ -1381,6 +1387,10 @@ au BufNewFile,BufRead *.g			setf pccts
 " PPWizard
 au BufNewFile,BufRead *.it,*.ih			setf ppwiz
 
+" Obj 3D file format
+" TODO: is there a way to avoid MS-Windows Object files?
+au BufNewFile,BufRead *.obj         		setf obj
+
 " Oracle Pro*C/C++
 au BufNewFile,BufRead *.pc			setf proc
 
@@ -1937,6 +1947,9 @@ au BufNewFile,BufRead *.sdc			setf sdc
 
 " Sudoers
 au BufNewFile,BufRead /etc/sudoers,sudoers.tmp	setf sudoers
+
+" SVG (Scalable Vector Graphics)
+au BufNewFile,BufRead *.svg			setf svg
 
 " If the file has an extension of 't' and is in a directory 't' then it is
 " almost certainly a Perl test file.

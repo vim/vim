@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Dec 28, 2009
-" Version:	46
+" Last Change:	Apr 14, 2010
+" Version:	47
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -77,7 +77,7 @@ elseif g:tex_fold_enabled && !has("folding")
  echomsg "Ignoring g:tex_fold_enabled=".g:tex_fold_enabled."; need to re-compile vim for +fold support"
 endif
 if g:tex_fold_enabled && &fdm == "manual"
- set fdm=syntax
+ setl fdm=syntax
 endif
 
 " (La)TeX keywords: only use the letters a-zA-Z {{{1

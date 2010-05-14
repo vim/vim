@@ -36,8 +36,8 @@ ca_ES.aff ca_ES.dic: {buildcheck=}
         :fetch ca_ES.zip
         :sys $UNZIP ca_ES.zip
         :delete ca_ES.zip
-        :sys $VIM ca_ES.aff -c "set ff=unix" -c "update" -c q
-        :sys $VIM ca_ES.dic -c "set ff=unix" -c "update" -c q
+        :sys $VIM ca_ES.aff -u NONE -c "set ff=unix" -c "update" -c q
+        :sys $VIM ca_ES.dic -u NONE -c "set ff=unix" -c "update" -c q
         @if not os.path.exists('ca_ES.orig.aff'):
             :copy ca_ES.aff ca_ES.orig.aff
         @if not os.path.exists('ca_ES.orig.dic'):

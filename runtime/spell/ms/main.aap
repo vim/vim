@@ -36,8 +36,8 @@ ms_MY.aff ms_MY.dic: {buildcheck=}
         :fetch ms_MY.zip
         :sys $UNZIP ms_MY.zip
         :delete ms_MY.zip
-        :sys $VIM ms_MY.aff -e -c "set ff=unix" -c update -c q
-        :sys $VIM ms_MY.dic -e -c "set ff=unix" -c update -c q
+        :sys $VIM ms_MY.aff -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM ms_MY.dic -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('ms_MY.orig.aff'):
             :copy ms_MY.aff ms_MY.orig.aff
         @if not os.path.exists('ms_MY.orig.dic'):

@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.2.  Last change: 2009 Dec 28
+*pi_netrw.txt*  For Vim version 7.2.  Last change: 2010 May 14
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -6,7 +6,7 @@
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
 
-Copyright: Copyright (C) 2009 Charles E Campbell, Jr	*netrw-copyright*
+Copyright: Copyright (C) 1999-2010 Charles E Campbell, Jr    *netrw-copyright*
 	   Permission is hereby granted to use and distribute this code, with
 	   or without modifications, provided that this copyright notice is
 	   copied with it. Like anything else that's free, netrw.vim,
@@ -19,9 +19,9 @@ Copyright: Copyright (C) 2009 Charles E Campbell, Jr	*netrw-copyright*
 	   use of this software.
 
 
-*dav*    *ftp*    *netrw-file*  *Nread*    *rcp*    *scp*
-*davs*   *http*   *netrw.vim*   *Nsource*  *rsync*  *sftp*
-*fetch*  *netrw*  *network*     *Nwrite*
+		*dav*    *ftp*    *netrw-file*  *rcp*    *scp*
+		*davs*   *http*   *netrw.vim*   *rsync*  *sftp*
+		*fetch*  *netrw*  *network*
 
 ==============================================================================
 1. Contents						*netrw-contents* {{{1
@@ -158,7 +158,7 @@ There are more protocols supported by netrw than just scp and ftp, too: see the
 next section, |netrw-externapp|, on how to use these external applications with
 netrw and vim.
 
-PREVENTING LOADING
+PREVENTING LOADING						*netrw-noload*
 
 If you want to use plugins, but for some reason don't wish to use netrw, then
 you need to avoid loading both the plugin and the autoload portions of netrw.
@@ -169,7 +169,7 @@ You may do so by placing the following two lines in your <.vimrc>: >
 <
 
 ==============================================================================
-3. Netrw Reference					*netrw-ref* {{{1
+3. Netrw Reference						*netrw-ref* {{{1
 
    Netrw supports several protocols in addition to scp and ftp as mentioned
    in |netrw-start|.  These include dav, fetch, http,... well, just look
@@ -642,18 +642,22 @@ Nread as shown in |netrw-transparent| (ie. simply use >
 instead, as appropriate) -- see |netrw-urls|.  In the explanations
 below, a {netfile} is an url to a remote file.
 
+						*:Nwrite*  *:Nw*
 :[range]Nw[rite]	Write the specified lines to the current
 		file as specified in b:netrw_lastfile.
+		(related: |netrw-nwrite|)
 
 :[range]Nw[rite] {netfile} [{netfile}]...
 		Write the specified lines to the {netfile}.
 
+						*:Nread*   *:Nr*
 :Nr[ead]	Read the lines from the file specified in b:netrw_lastfile
-		into the current buffer.
+		into the current buffer.  (related: |netrw-nread|)
 
 :Nr[ead] {netfile} {netfile}...
 		Read the {netfile} after the current line.
 
+						*:Nsource* *:Ns*
 :Ns[ource] {netfile}
 		Source the {netfile}.
 		To start up vim using a remote .vimrc, one may use
@@ -661,20 +665,24 @@ below, a {netfile} is an url to a remote file.
 		vim -u NORC -N
 		 --cmd "runtime plugin/netrwPlugin.vim"
 		 --cmd "source scp://HOSTNAME/.vimrc"
-<								*netrw-uidpass*
-:call NetUserPass()
+<		 (related: |netrw-source|)
+
+:call NetUserPass()				*NetUserPass()*
 		If g:netrw_uid and s:netrw_passwd don't exist,
 		this function will query the user for them.
+		(related: |netrw-userpass|)
 
 :call NetUserPass("userid")
 		This call will set the g:netrw_uid and, if
 		the password doesn't exist, will query the user for it.
+		(related: |netrw-userpass|)
 
 :call NetUserPass("userid","passwd")
 		This call will set both the g:netrw_uid and s:netrw_passwd.
 		The user-id and password are used by ftp transfers.  One may
 		effectively remove the user-id and password by using empty
 		strings (ie. "").
+		(related: |netrw-userpass|)
 
 :NetrwSettings  This command is described in |netrw-settings| -- used to
                 display netrw settings and change netrw behavior.
@@ -688,9 +696,7 @@ below, a {netfile} is an url to a remote file.
 The <netrw.vim> script provides several variables which act as options to
 affect <netrw.vim>'s file transfer behavior.  These variables typically may be
 set in the user's <.vimrc> file: (see also |netrw-settings| |netrw-protocol|)
-
 >
-
                         -------------
                         Netrw Options
                         -------------
@@ -1025,6 +1031,8 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 			to the netrw browser window.  See |g:netrw_retmap|.
 	<s-leftmouse>	(gvim only) like mf, will mark files
 
+	(to disable mouse buttons while browsing: |g:netrw_mousemaps|)
+
 				*netrw-quickcom* *netrw-quickcoms*
 QUICK REFERENCE: COMMANDS	*netrw-explore-cmds* *netrw-browse-cmds* {{{2
      :NetrwClean[!] ...........................................|netrw-clean|
@@ -1202,7 +1210,7 @@ Related Topics:
 	|netrw-qb| how to list bookmarks
 
 
-CHANGING TO A PREDECESSOR DIRECTORY	*netrw-u* *netrw-updir* {{{2
+CHANGING TO A PREDECESSOR DIRECTORY		*netrw-u* *netrw-updir* {{{2
 
 Every time you change to a new directory (new for the current session),
 netrw will save the directory in a recently-visited directory history
@@ -2022,7 +2030,8 @@ your browsing preferences.  (see also: |netrw-settings|)
 				 unix or g:netrw_cygwin set: : "ls -tlF"
 				 otherwise                     "dir"
 
-  *g:netrw_glob_escape*		='[]*?`{~$'
+  *g:netrw_glob_escape*		='[]*?`{~$'  (unix)
+				='[]*?`{$'  (windows
 				These characters in directory names are
 				escaped before applying glob()
 
@@ -2293,6 +2302,18 @@ the browser (where the cursor will remain) and the file (see |:pedit|).
 By default, the split will be taken horizontally; one may use vertical
 splitting if one has set |g:netrw_preview| first.
 
+An interesting set of netrw settings is: >
+
+	let g:netrw_preview   = 1
+	let g:netrw_liststyle = 3
+	let g:netrw_winsize   = 30
+
+These will:
+	1. Make vertical splitting the default for previewing files
+	2. Make the default listing style "tree"
+	3. When a vertical preview window is opened, the directory listing
+	   will use only 30 columns; the rest of the window is used for the
+	   preview window.
 
 PREVIOUS WINDOW				*netrw-P* *netrw-prvwin* {{{2
 
@@ -2597,6 +2618,29 @@ Associated setting variables:	|g:netrw_chgwin|
 	     Multibyte encodings use two (or more) bytes per character.
 	     You may need to change |g:netrw_sepchr| and/or |g:netrw_xstrlen|.
 
+								*netrw-p13*
+	P13. I'm a Windows + putty + ssh user, and when I attempt to browse,
+	     the directories are missing trailing "/"s so netrw treats them
+	     as file transfers instead of as attempts to browse
+	     subdirectories.  How may I fix this?
+
+	     (mikeyao) If you want to use vim via ssh and putty under Windows,
+	     try combining the use of pscp/psftp with plink.  pscp/psftp will
+	     be used to connect and plink will be used to execute commands on
+	     the server, for example: list files and directory using 'ls'.
+
+	     These are the settings I use to do this:
+>
+	    " list files, it's the key setting, if you haven't set,
+	    " you will get a blank buffer
+	    let g:netrw_list_cmd = "plink HOSTNAME ls -Fa"
+	    " if you haven't add putty directory in system path, you should
+	    " specify scp/sftp command.  For examples:
+	    "let g:netrw_sftp_cmd = "d:\\dev\\putty\\PSFTP.exe"
+	    "let g:netrw_scp_cmd = "d:\\dev\\putty\\PSCP.exe"
+<
+
+
 ==============================================================================
 11. Debugging Netrw Itself				*netrw-debug* {{{1
 
@@ -2651,6 +2695,35 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v138: May 01, 2010 * added the bomb setting to the Save-Set-Restore
+			     option handling (for Tony M)
+			   * (Bram Moolenaar) netrw optionally sets cursorline
+			     (and sometimes cursorcolumn) for its display.
+			     This option setting was leaking through with
+			     remote file handling.
+	v137: Dec 28, 2009 * modified the preview window handling for
+			     vertically split windows.  The preview
+			     window will take up all but g:netrw_winsize
+			     columns of the original window; those 
+			     g:netrw_winsize columns will be used for
+			     the netrw listing.
+			   * (Simon Dambe) removed "~" from
+			     |g:netrw_glob_escape| under Windows
+			   * (Bram Moolenaar) modified test for status bar
+			     click with leftmouse.  Moved code to
+			     s:NetrwLeftmouse().
+	      Feb 24, 2010 * (for Jean Johner) added insert-mode maps; one
+			     can get into insert mode with netrw via
+			     ctrl-o :e .
+	      Mar 15, 2010 * (Dominique Pellé) Directory with backslashes such
+			     as foo\bar were not being entered/left properly
+	      Mar 15, 2010 * Using :Explore .. and causing two FocusGained
+			     events caused the directory to change.  Fixed.
+	      Mar 22, 2010 * Last fix caused problems for *//pat and */filepat
+			     searches.
+	      Mar 30, 2010 * With :set hidden and changing listing styles 8
+			     times, the tree listing buffer was being marked
+			     as modified upon exit.  Fixed.
 	v136: Jan 14, 2009 * extended |g:Netrw_funcref| to also handle lists
 			     of function references
 	      Jan 14, 2009 * (reported by Marvin Renich) with spell check

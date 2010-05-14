@@ -22,7 +22,7 @@ $SPELLDIR/eo.utf-8.spl : $FILES
 ../README_eo.txt : README_eo_l3.txt
         :copy $source $target
         # fix missing newline
-        :sys $VIM $target -e -c "set ff=unix" -c wq
+        :sys $VIM -u NONE -e -c "set ff=unix" -c wq $target
 
 #
 # Fetching the files from OpenOffice.org.

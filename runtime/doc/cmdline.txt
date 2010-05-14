@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 7.2.  Last change: 2009 Oct 25
+*cmdline.txt*   For Vim version 7.2.  Last change: 2010 May 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -522,6 +522,7 @@ followed by another Vim command:
     :registers
     :read !
     :scscope
+    :sign
     :tcl
     :tcldo
     :tclfile

@@ -1,4 +1,4 @@
-*usr_27.txt*	For Vim version 7.2.  Last change: 2007 Nov 10
+*usr_27.txt*	For Vim version 7.2.  Last change: 2010 Mar 28
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -40,7 +40,7 @@ matches.)
 
 	:set noignorecase
 
-But lets keep it set, and search for "INCLUDE".  It will match exactly the
+But let's keep it set, and search for "INCLUDE".  It will match exactly the
 same text as "include" did.  Now set the 'smartcase' option: >
 
 	:set ignorecase smartcase

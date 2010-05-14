@@ -1,14 +1,14 @@
 " Vim keymap file for Bulgarian and Russian characters, "bds" layout.
 " Most of it can be used with both utf-8 and cp1251 file encodings, except
-" the accented vowels which can only be stored in utf-8.
+" the accented characters which can only be stored in utf-8.
 " This file itself is in utf-8.
 
 " Maintainer: Boyko Bantchev <boykobb@gmail.com>
 " URI: http://www.math.bas.bg/bantchev/vim/bulgarian-bds.vim
-" Last Changed: 2008 June 28
+" Last Changed: 2010 May 4
 
 " This keymap corresponds to what is called Bulgarian standard typewriter
-" keyboard layout (BDS, БДС).
+" keyboard layout, or "БДС".
 "
 " Note that, in addition to the Bulgarian alphabet, the BDS layout prescribes
 " the presence of the following characters:
@@ -17,7 +17,7 @@
 "        without having to leave Cyrillic mode.
 "
 " Some punctuation characters present in ascii are mapped in BDS to keys
-" different from the ones they occupy in the qwerty layout, because the latter
+" different from the ones they occupy in the QWERTY layout, because the latter
 " keys are used to type other characters.
 "
 " In this keymap, also defined (besides BDS) are:
@@ -28,12 +28,16 @@
 "     —  The quotation marks „ “ ” ‘ ’ (used in the Bulgarian and English
 "        quotation styles), as well as « » (Russian quotation style).
 "     —  The characters §, №, – (en-dash), — (em-dash), …, •, ·, ±, °, ¬,
-"        ¤, and €.
+"        ¤, €, ‰, †, ‡, and ¶.
 "
-" The keymap also defines key combinations for accented vowels in Bulgarian.
+" The keymap also defines key combinations for grave and acute accents.
+" (Grave accent is used in Bulgarian, acute in Russian, but both accents
+" apply to other languages as well.)
 "
 " For details of what key or key combination maps to what character, please
-" see below the map table itself.
+" see below the map itself.
+"
+" See also http://www.math.bas.bg/bantchev/vim/kbdbul.html (in Bulgarian).
 
 scriptencoding utf-8
 
@@ -139,21 +143,13 @@ q       ,       COMMA
 ~~      ¬       NOT SIGN
 @@      ¤       CURRENCY SIGN
 $$      €       EURO SIGN
+%%      ‰       PER MILLE SIGN
++|      †       DAGGER
+++      ‡       DOUBLE DAGGER
+||      ¶       PILCROW SIGN
 
-" accented vowels cannot map onto cp1251 – use utf-8 file encoding
-`D      А̀       CYRILLIC CAPITAL LETTER A + GRAVE ACCENT (COMPOSED)
-`d      а̀       CYRILLIC SMALL LETTER A + GRAVE ACCENT (COMPOSED)
-`E      Ѐ       CYRILLIC CAPITAL LETTER IE + GRAVE ACCENT (COMPOSED)
-`e      ѐ       CYRILLIC SMALL LETTER IE + GRAVE ACCENT (COMPOSED)
-`R      Ѝ       CYRILLIC CAPITAL LETTER I + GRAVE ACCENT (COMPOSED)
-`r      ѝ       CYRILLIC SMALL LETTER I + GRAVE ACCENT (COMPOSED)
-`F      О̀       CYRILLIC CAPITAL LETTER O + GRAVE ACCENT (COMPOSED)
-`f      о̀       CYRILLIC SMALL LETTER O + GRAVE ACCENT (COMPOSED)
-`W      У̀       CYRILLIC CAPITAL LETTER U + GRAVE ACCENT (COMPOSED)
-`w      у̀       CYRILLIC SMALL LETTER U + GRAVE ACCENT (COMPOSED)
-`C      Ъ̀       CYRILLIC CAPITAL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
-`c      ъ̀       CYRILLIC SMALL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
-`Z      Ю̀       CYRILLIC CAPITAL LETTER YU + GRAVE ACCENT (COMPOSED)
-`z      ю̀       CYRILLIC SMALL LETTER YU + GRAVE ACCENT (COMPOSED)
-`S      Я̀       CYRILLIC CAPITAL LETTER YA + GRAVE ACCENT (COMPOSED)
-`s      я̀       CYRILLIC SMALL LETTER YA + GRAVE ACCENT (COMPOSED)
+" Accented characters cannot map onto cp1251 – use utf-8 file encoding.
+" To apply an accent to a letter, type the corresponding key combination
+" to the immediate right of that letter.
+^`      <char-0x300>    COMBINING GRAVE ACCENT
+^'      <char-0x301>    COMBINING ACUTE ACCENT

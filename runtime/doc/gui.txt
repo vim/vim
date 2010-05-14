@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 7.2.  Last change: 2009 Jan 22
+*gui.txt*       For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -556,7 +556,7 @@ some modes:
 	mode		inserted	appended	~
 	Normal		nothing		nothing
 	Visual		<C-C>		<C-\><C-G>
-	Insert		<C-O>
+	Insert		<C-\><C-O>
 	Cmdline		<C-C>		<C-\><C-G>
 	Op-pending	<C-C>		<C-\><C-G>
 
@@ -571,7 +571,7 @@ is equal to: >
 
    :nmenu File.Next	:next^M
    :vmenu File.Next	^C:next^M^\^G
-   :imenu File.Next	^O:next^M
+   :imenu File.Next	^\^O:next^M
    :cmenu File.Next	^C:next^M^\^G
    :omenu File.Next	^C:next^M^\^G
 

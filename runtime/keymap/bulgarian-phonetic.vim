@@ -5,15 +5,13 @@
 
 " Maintainer:   Boyko Bantchev <boykobb@gmail.com>
 " URI: http://www.math.bas.bg/bantchev/vim/bulgarian-phonetic.vim
-" Last Changed: 2008 June 28
-
-" For a rationale for the layout and additional info on typing in Bulgarian
-" using Unicode Cyrillic please see:
+" Last Changed: 2010 May 4
 
 " This keymap corresponds to what is called "phonetic layout" in Bulgaria:
-" Cyrillic letters tend to be mapped to their Latin homophones, if present.
-" Most keys corresponding to punctuation characters are left unmapped, so
-" they retain their usual (qwerty) meanings in Cyrillic typing.
+" Cyrillic letters tend to be mapped to their Latin homophones wherever
+" there are ones.  Most keys corresponding to punctuation characters are
+" left unmapped, so they retain their usual (QWERTY) meanings when typing
+" Cyrillic.
 "
 " In addition to the Bulgarian alphabet, the keymap makes accessible the
 " following characters:
@@ -24,12 +22,16 @@
 "     —  The quotation marks „ “ ” ‘ ’ (used in the Bulgarian and English
 "        quotation styles), as well as « » (Russian quotation style).
 "     —  The characters §, №, – (en-dash), — (em-dash), …, •, ·, ±, °, ¬,
-"        ¤, and €.
+"        ¤, €, ‰, †, ‡, and ¶.
 "
-" The keymap also defines key combinations for accented vowels in Bulgarian.
+" The keymap also defines key combinations for grave and acute accents.
+" (Grave accent is used in Bulgarian, acute in Russian, but both accents
+" apply to other languages as well.)
 "
 " For details of what key or key combination maps to what character, please
-" see below the map table itself.
+" see below the map itself.
+"
+" See also http://www.math.bas.bg/bantchev/vim/kbdbul.html (in Bulgarian).
 
 scriptencoding utf-8
 
@@ -121,21 +123,13 @@ q       я       CYRILLIC SMALL LETTER YA
 ~~      ¬       NOT SIGN
 @@      ¤       CURRENCY SIGN
 $$      €       EURO SIGN
+%%      ‰       PER MILLE SIGN
++|      †       DAGGER
+++      ‡       DOUBLE DAGGER
+||      ¶       PILCROW SIGN
 
-" accented vowels cannot map onto cp1251 – use utf-8 file encoding
-'A      А̀       CYRILLIC CAPITAL LETTER A + GRAVE ACCENT (COMPOSED)
-'a      а̀       CYRILLIC SMALL LETTER A + GRAVE ACCENT (COMPOSED)
-'E      Ѐ       CYRILLIC CAPITAL LETTER IE + GRAVE ACCENT (COMPOSED)
-'e      ѐ       CYRILLIC SMALL LETTER IE + GRAVE ACCENT (COMPOSED)
-'I      Ѝ       CYRILLIC CAPITAL LETTER I + GRAVE ACCENT (COMPOSED)
-'i      ѝ       CYRILLIC SMALL LETTER I + GRAVE ACCENT (COMPOSED)
-'O      О̀       CYRILLIC CAPITAL LETTER O + GRAVE ACCENT (COMPOSED)
-'o      о̀       CYRILLIC SMALL LETTER O + GRAVE ACCENT (COMPOSED)
-'U      У̀       CYRILLIC CAPITAL LETTER U + GRAVE ACCENT (COMPOSED)
-'u      у̀       CYRILLIC SMALL LETTER U + GRAVE ACCENT (COMPOSED)
-'Y      Ъ̀       CYRILLIC CAPITAL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
-'y      ъ̀       CYRILLIC SMALL LETTER HARD SIGN + GRAVE ACCENT (COMPOSED)
-'|      Ю̀       CYRILLIC CAPITAL LETTER YU + GRAVE ACCENT (COMPOSED)
-'\\     ю̀       CYRILLIC SMALL LETTER YU + GRAVE ACCENT (COMPOSED)
-'Q      Я̀       CYRILLIC CAPITAL LETTER YA + GRAVE ACCENT (COMPOSED)
-'q      я̀       CYRILLIC SMALL LETTER YA + GRAVE ACCENT (COMPOSED)
+" Accented characters cannot map onto cp1251 – use utf-8 file encoding.
+" To apply an accent to a letter, type the corresponding key combination
+" to the immediate right of that letter.
+^`      <char-0x300>    COMBINING GRAVE ACCENT
+^'      <char-0x301>    COMBINING ACUTE ACCENT

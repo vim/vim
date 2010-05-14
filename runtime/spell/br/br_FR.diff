@@ -1,0 +1,13 @@
+*** br_FR.orig.aff	2010-04-14 18:44:36.365731271 +0200
+--- br_FR.aff	2010-04-14 18:43:31.069137439 +0200
+***************
+*** 9,14 ****
+--- 9,16 ----
+  SET UTF-8
+  TRY esiaùnñrtolcdugmphbyfvkwzESIAÙNÑRTOLCDUGMPHBYFVKWZ'
+  
++ MIDWORD '
++ 
+  PFX m Y 1
+  PFX m   0          m'         [aehiouy]
+  

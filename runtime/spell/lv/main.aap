@@ -37,9 +37,9 @@ lv_LV.aff lv_LV.dic: {buildcheck=}
         :sys $UNZIP lv_LV.zip
         :delete lv_LV.zip
         :delete changelog.txt gpl.txt lin-lv_LV_add.sh win-lv_LV_add.bat
-        :sys $VIM lv_LV.aff -e -N -c "%s/\r//" -c update -c q
-        :sys $VIM lv_LV.dic -e -N -c "%s/\r//" -c update -c q
-        :sys $VIM README_lv_LV.txt -e -c "set ff=unix" -c update -c q
+        :sys $VIM lv_LV.aff -u NONE -e -N -c "%s/\r//" -c update -c q
+        :sys $VIM lv_LV.dic -u NONE -e -N -c "%s/\r//" -c update -c q
+        :sys $VIM README_lv_LV.txt -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('lv_LV.orig.aff'):
             :copy lv_LV.aff lv_LV.orig.aff
         @if not os.path.exists('lv_LV.orig.dic'):

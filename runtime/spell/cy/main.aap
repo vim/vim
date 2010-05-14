@@ -36,9 +36,9 @@ cy_GB.aff cy_GB.dic: {buildcheck=}
         :fetch cy_GB.zip
         :sys $UNZIP cy_GB.zip
         :delete cy_GB.zip
-        :sys $VIM cy_GB.aff -e -c "set ff=unix" -c update -c q
-        :sys $VIM cy_GB.dic -e -c "set ff=unix" -c update -c q
-        :sys $VIM README_cy_GB.txt -e -c "set ff=unix" -c update -c q
+        :sys $VIM cy_GB.aff -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM cy_GB.dic -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_cy_GB.txt -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('cy_GB.orig.aff'):
             :copy cy_GB.aff cy_GB.orig.aff
         @if not os.path.exists('cy_GB.orig.dic'):

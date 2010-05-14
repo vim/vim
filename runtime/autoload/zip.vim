@@ -1,7 +1,7 @@
 " zip.vim: Handles browsing zipfiles
 "            AUTOLOAD PORTION
-" Date:		Jul 30, 2008
-" Version:	22
+" Date:		Apr 12, 2010
+" Version:	23
 " Maintainer:	Charles E Campbell, Jr <NdrOchip@ScampbellPfamily.AbizM-NOSPAM>
 " License:	Vim License  (see vim's :help license)
 " Copyright:    Copyright (C) 2005-2008 Charles E. Campbell, Jr. {{{1
@@ -16,13 +16,19 @@
 
 " ---------------------------------------------------------------------
 " Load Once: {{{1
-let s:keepcpo= &cpo
-set cpo&vim
-if &cp || exists("g:loaded_zip") || v:version < 700
+if &cp || exists("g:loaded_zip")
  finish
 endif
+let g:loaded_zip= "v23"
+if v:version < 702
+ echohl WarningMsg
+ echo "***warning*** this version of zip needs vim 7.2"
+ echohl Normal
+ finish
+endif
+let s:keepcpo= &cpo
+set cpo&vim
 
-let g:loaded_zip     = "v22"
 let s:zipfile_escape = ' ?&;\'
 let s:ERROR          = 2
 let s:WARNING        = 1

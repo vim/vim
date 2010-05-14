@@ -34,9 +34,9 @@ bg_BG.aff bg_BG.dic: {buildcheck=}
         :fetch bg_BG.zip
         :sys $UNZIP bg_BG.zip
         :delete bg_BG.zip
-        :sys $VIM bg_BG.aff -e -c "set ff=unix" -c update -c q
-        :sys $VIM bg_BG.dic -e -c "set ff=unix" -c update -c q
-        :sys $VIM README_bg_BG.txt -e -c "set ff=unix" -c update -c q
+        :sys $VIM bg_BG.aff -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM bg_BG.dic -u NONE -e -c "set ff=unix" -c update -c q
+        :sys $VIM README_bg_BG.txt -u NONE -e -c "set ff=unix" -c update -c q
         @if not os.path.exists('bg_BG.orig.aff'):
             :copy bg_BG.aff bg_BG.orig.aff
         @if not os.path.exists('bg_BG.orig.dic'):

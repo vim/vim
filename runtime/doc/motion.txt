@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 7.2.  Last change: 2009 Sep 15
+*motion.txt*    For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -315,6 +315,7 @@ _  <underscore>		[count] - 1 lines downward, on the first non-blank
 G			Goto line [count], default last line, on the first
 			non-blank character |linewise|.  If 'startofline' not
 			set, keep the same column.
+			G is a one of |jump-motions|.
 
 							*<C-End>*
 <C-End>			Goto line [count], default last line, on the last
@@ -328,6 +329,8 @@ gg			Goto line [count], default first line, on the first
 :[range]		Set the cursor on the last line number in [range].
 			[range] can also be just one line number, e.g., ":1"
 			or ":'m".
+			In contrast with |G| this command does not modify the
+			|jumplist|.
 							*N%*
 {count}%		Go to {count} percentage in the file, on the first
 			non-blank in the line |linewise|.  To compute the new

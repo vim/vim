@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 Mar 17
+*todo.txt*      For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,19 +30,58 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-":s" summary in :folddo is not correct. (Jean Johner, 2010 Feb 20)
-Patch from Lech Lorens, 2010 Mar 13.
+Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
-Vim tries to set the background or foreground color in a terminal to -1.
-(Graywh)  Appears to happen with ":hi Normal ctermbg=NONE".
-Possible solution from Matt Wozniski, 2010 Mar 17.
+E315 when trying to change a file in FileChangedRO autocommand event.
+(Dominique Pelle, 2010 Apr 30)
+
+When directory "/tmp/tags" contains "tags1" and "tags2", setting 'tags' to
+"/tmp/tags/*" doesn't pick up these files.  (Simon Ruggier, 2010 Mar 17)
+
+":command Print echo 'print'" works, but ":Print" doesn't.  Builtin Print
+should be overruled. (Aaron Thoma)
+
+Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
+^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
+
+Have a look at patch to enable screen access from Python. (Marko Mahnic, 2010
+Apr 12)
+
+Problem producing tags file when hebrew.frx is present.  It has a BOM.
+Results in E670. (Tony Mechelynck, 2010 May 2)
+
+'cindent' not correct when 'list' is set. (Zdravi Korusef, 2010 Apr 15)
+
+":helpgrep" does not put the cursor in the correct column when preceded by
+accented character. (Tony Mechelynck, 2010 Apr 15)
+
+Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
+Tobisek.
+
+Use Dutch spell files from:
+http://extensions.services.openoffice.org/en/project/dict-nl
+Looks like this is newer than the new wordlist for Dutch:
+http://www.opentaal.org/bestanden/1_10/nl_NL-Pack
 
 Problem with cursor in the wrong column. (SungHyun Nam, 2010 Mar 11)
-Additional info by Dominique Pelle.
+Additional info by Dominique Pelle. (also on 2010 Apr 10)
+
+"make install" installs some of the .info files on Unix.
+(James Vega, 2010 Mar 30)
+
+Is ~/bin (literally) in $PATH supposed to work?  (Paul, 2010 March 29)
+Looks like only bash can do it. (Yakov Lerner)
+
+8   Add an event like CursorHold that is triggered repeatedly, not just once
+    after typing something.
+Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
+function that resets did_cursorhold.
 
 I often see pasted text (from Firefox, to Vim in xterm) appear twice.
 Also, Vim in xterm sometimes loses copy/paste ability (probably after running
 an external command).
+
+Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
 Problem with transparent cmdline.  Also: Terminal title is wrong with
 non-ASCII character. (Lily White, 2010 Mar 7)
@@ -59,14 +98,11 @@ Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
 
-Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr 26)
-Now with Mercurial repository (2010 Jan 2)
-
-Crash when assigning s: to variable, pointer becomes invalid later.
-(Yukihiro Nakadaira, 2009 Oct 12, confirmed by Dominique Pelle)
-
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
 26)
+
+":function f(x) keepjumps" creates a function where every command is executed
+like it has ":keepjumps" before it.
 
 Coverity: ask someone to create new user: Dominique.
 look into reported defects: http://scan.coverity.com/rung2.html
@@ -78,19 +114,15 @@ Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 
 Support .xz with the xz program, like with lzma.
 
-Perl runtime files update. (Andy Lester, 2009 Aug 25)
-
-Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
-
 Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 
-Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
+Undo problem: line not removed as expected when using setline() from Insert
+mode. (Israel Chauca, 2010 May 13, more in second msg)
+Break undo when CTRL-R = changes the text?  Or save more lines?
 
 Change to C syntax folding to make it work much faster, but a bit less
 reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
 Most time is spent in in_id_list().
-
-New wordlist for Dutch: http://www.opentaal.org/bestanden/1_10/nl_NL-Pack
 
 Check for unused functions, idea:
 http://blog.flameeyes.eu/2008/01/17/today-how-to-identify-unused-exported-functions-and-variables
@@ -102,17 +134,17 @@ When a:base in 'completefunc' starts with a number it's passed as a number,
 not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
 
+There is no command line completion for ":lmap".
+
 Reproducible crash in syntax HL. (George Reilly, Dominique Pelle, 2009 May 9)
 
 Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
-Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
-15)
-
 For running gvim on an USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.
 
-submatch() may remove backslash. (Sergey Goldgaber, 2009 Jul 6)
+When a mapping exists both for insert mode and lang-insert mode, the last one
+doesn't work. (Tyru, 2010 May 6)  Or is this intended?
 
 Still a problem with ":make" in the wrong directory.  Caused by ":bufdo".
 (Ajit Thakkar, 2009 Jul 1) More information Jul 9, Jul 15.
@@ -148,10 +180,6 @@ Needs more work.
 
 Problem with <script> mappings (Andy Wokula, 2009 Mar 8)
 
-Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
-
-Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
-
 When starting Vim with "gvim -f -u non_existent_file > foo.txt" there are a
 few control characters in the output. (Dale Wiles, 2009 May 28)
 
@@ -161,13 +189,19 @@ few control characters in the output. (Dale Wiles, 2009 May 28)
 Status line containing winnr() isn't updated when splitting the window (Clark
 J.  Wang, 2009 Mar 31)
 
+When $VIMRUNTIME is set in .vimrc, need to reload lang files.  Already done
+for GTK, how about others? (Ron Aaron, 2010 Apr 10)
+
 Patch for vertical line at certain column position, 'guidecolumn' option.
 (Pankaj Garg, 2009 Apr 14, aka Lone, Apr 15)
 Update 2009 May 2, 'margincolumn'
-Alternative patch. (2010 Feb 2, Gregor Uhlenheuer)
+Alternative patch. (2010 Feb 2, Gregor Uhlenheuer, update Apr 18 2010)
+Fix by Lech Lorens, Apr 19
 
 Add different highlighting for a fold line depending on the fold level.
 Patch. (Noel Henson, 2009 Sep 13)
+
+Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 When 'ft' changes redraw custom status line.
 
@@ -175,7 +209,7 @@ When 'ft' changes redraw custom status line.
 because win_valid() always returns FALSE.  Below win_new_tabpage() in
 ex_docmd.c.
 
-Space before comma in function defenition not allowed: "function x(a , b)"
+Space before comma in function definition not allowed: "function x(a , b)"
 Give a more appropriate error message.  Add a remark to the docs.
 
 string_convert() should be able to convert between utf-8 and utf-16le.  Used
@@ -297,6 +331,10 @@ Completion for ":buf" doesn't work properly on Win32 when 'shellslash' is off.
 Allow patches to add something to version.c, like with an official patch, so
 that :version output shows which patches have been applied.
 
+Bug: in Ex mode (after "Q") backslash before line break, when yanked into a
+register and executed, results in <Nul>: instead of line break.
+(Konrad Schwarz, 2010 Apr 16)
+
 Have a look at patch for utf-8 line breaking. (Yongwei Wu, 2008 Mar 1, Mar 23)
 Now at: http://vimgadgets.sourceforge.net/liblinebreak/
 
@@ -402,12 +440,6 @@ command is not executed.  Fix by Ian Kelling?
 ":help s/~" jumps to *s/\~*, while ":help s/\~" doesn't find anything. (Tim
 Chase)  Fix by Ian Kelling, 2008 Jul 14.
 
-":colorscheme" without arguments should echo the current color scheme name.
-
-After using ":recover" or recovering a file in another way, ":x" doesn't save
-what you see.  Mark the buffer as modified?  Only when the text is actually
-different from the original file?
-
 Use "\U12345678" for 32 bit Unicode characters?  (Tony Mechelynck, 2009
 Apr 6)  Or use "\u(123456)", similar to Perl.
 
@@ -420,6 +452,7 @@ Patch for colorscheme submenu. (Juergen Kraemer, 2008 Aug 20)
 Patch for Python 3 support. (Roland Puntaier, 2009 Sep 22)
 Includes changes for omnicompletion.
 Needs to be tested.
+Update 2010 Apr 20
 
 8   Some file systems are case-sensitive, some are not.  Turn
     CASE_INSENSITIVE_FILENAME into an option, at least for completion.
@@ -453,7 +486,6 @@ Patch from Vladimir Vichniakov, 2007 Apr 24.
 Should clean up the whole function.  Also allow modifiers like <S-Char-32>?
 find_special_key() also has this problem.
 
-Problem with 'langmap' parsing. (James Vega, 2008 Jan 27)
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
 2008 May 14)
 
@@ -495,10 +527,6 @@ Mar 5)  Alternative: Kazuki Sakamoto, Mar 7.
 
 Mac: trouble compiling with Motif, requires --disable-darwin. (Raf, 2008 Aug
 1)  Reply by Ben Schmidt.
-
-":emenu" works with the translated menu name.  Should also work with the
-untranslated name.  Would need to store both the English and the translated
-name.  Patch by Bjorn Winckler, 2008 Mar 30.
 
 C't: On utf-8 system, editing file with umlaut through Gnome results in URL
 with %nn%nn, which is taken as two characters instead of one.
@@ -731,12 +759,6 @@ Vim resizes and moves to one of the monitors. (Chris Monkiewicz, 2008 Oct)
 Win32: When 'shell' is bash shellescape() doesn't always do the right thing.
 Depends on 'shellslash', 'shellquote' and 'shellxquote', but shellescape()
 only takes 'shellslash' into account.
-
-When file b is a link to file a and editing b twice you get the correct
-warning for existing swap file, but when trying to recover it doesn't find the
-swapfile. (Matt Wozniski, 2008 Aug 5)  Patch by Ian Kelling, 2008 Aug 11.
-Another patch by James Vega, 2008 Aug 20, again 2008 Sep 3.
-Also solves: Problem finding swap file for recovery. (Gautam Iyer, 2006 May 16)
 
 Pressing the 'pastetoggle' key doesn't update the statusline. (Jan Christoph
 Ebersbach, 2008 Feb 1)
@@ -1126,20 +1148,50 @@ Patch for adding "J" flag to 'cinoptions': placement of jump label.
 Vim 7.3:
 -   Use latest autoconf (2.65)
 -   Use NSIS 2.45, it includes Windows 7 support.
+	Include "RequestExecutionLevel highest"
+	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
+-   Supply a 64 bit version of gvimext.dll for 64 bit windows.
+    http://code.google.com/p/vim-win3264/
+    Gvim can be 32 bit.
 -   Include all files in distro, no "extra" and "lang" package.
 -   Create Mercurial repository.
 -   Easier/standard way to disable default plugins.
 -   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
+    Update 2010 May 2.
+8   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
+    20.  Repost 2009 Nov 16.
+    -> disable by default and add remark that it's new and may fail.
+    Testing remarks by Christian Brabandt, 2010 May 1:
+	- doesn't work well with symlinks (Jordan will look into it)
+	- old undo files tend to pile up
+        - :rundo should output a message (Jordan will fix this)
+    Older ideas:
+    Use timestamps, so that a version a certain time ago can be found and info
+    before some time/date can be flushed. 'undopersist' gives maximum time to
+    keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
+    extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
 -   Add blowfish encryption.  Openssl has an implementation.  Also by Paul
     Kocher (LGPL), close to original.  Mohsin also has some ideas.
     Take four bytes and turn them into unsigned to avoid byte-order problems.
     Need to buffer up to 7 bytes to align on 8 byte boundaries.
-    Patch from Moshin, 2010 Mar 15.
+    Patch from Moshin: 2010 May 8, addition May 9.
+-   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
+    26) Now with Mercurial repository (2010 Jan 2)
 -   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.
 	Most of do_source() would not be used, need a new function.
 	It's easy when not doing breakpoints or profiling.
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
+- Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
+- Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
+- Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
+- Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
+- Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
+  15)
+- After using ":recover" or recovering a file in another way, ":x" doesn't
+  save what you see.  Mark the buffer as modified?  Only when the text is
+  actually different from the original file.
+- Add fixes for 7.2 to version7.txt
 
 
 More patches:
@@ -2161,6 +2213,7 @@ Most interesting new features to be added when all bugs have been fixed:
     http://vimshell.wana.at
 -   Add Lua interface? (Wolfgang Oertl) patch by Luis Carvalho, 2008 Sep 5
 	Patch for Make_ming.mak from Paul Moore (2008 Sep 1)
+      http://vim-iflua.googlecode.com/files/vim72-lua-0.7.patch.gz
 8   Add a command to jump to a certain kind of tag.  Allow the user to specify
     values for the optional fields.  E.g., ":tag size type=m".
     Also allow specifying the file and command, so that the result of
@@ -3225,8 +3278,6 @@ Autocommands:
 8   Use another option than 'updatetime' for the CursorHold event.  The two
     things are unrelated for the user (but the implementation is more
     difficult).
-8   Add an event like CursorHold that is triggered repeatedly, not just once
-    after typing something.
 7   Add autocommand event for when a buffer cannot be abandoned.  So that the
     user can define the action taking (autowrite, dialog, fail) based on the
     kind of file. (Yakov Lerner)  Or is BufLeave sufficient?
@@ -3964,13 +4015,6 @@ Undo:
     storing the differences.
 8   Search for pattern in undo tree, showing when it happened and the text
     state, so that you can jump to it.
--   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
-    20.  Repost 2009 Nov 16.
-    Older ideas:
-    Use timestamps, so that a version a certain time ago can be found and info
-    before some time/date can be flushed. 'undopersist' gives maximum time to
-    keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
-    extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.2.  Last change: 2010 Mar 10
+*eval.txt*	For Vim version 7.2.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -67,7 +67,7 @@ the Number.  Examples: >
 	Number 123	-->	String "123"
 	Number 0	-->	String "0"
 	Number -1	-->	String "-1"
-
+							*octal*
 Conversion from a String to a Number is done by converting the first digits
 to a number.  Hexadecimal "0xf9" and Octal "017" numbers are recognized.  If
 the String doesn't start with digits, the result is zero.  Examples: >
@@ -1020,7 +1020,9 @@ A string constant accepts these special characters:
 \t	tab <Tab>
 \\	backslash
 \"	double quote
-\<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.
+\<xxx>	Special key named "xxx".  e.g. "\<C-W>" for CTRL-W.  This is for use
+	in mappings, the 0x80 byte is escaped.  Don't use <Char-xxxx> to get a
+	utf-8 character, use \uxxxx as mentioned above.
 
 Note that "\xff" is stored as the byte 255, which may be invalid in some
 encodings.  Use "\u00ff" to store character 255 according to the current value
@@ -4944,6 +4946,8 @@ setqflist({list} [, {action}])				*setqflist()*
 		item will not be handled as an error line.
 		If both "pattern" and "lnum" are present then "pattern" will
 		be used.
+		If you supply an empty {list}, the quickfix list will be
+		cleared.
 		Note that the list is not exactly the same as what
 		|getqflist()| returns.
 
@@ -6828,14 +6832,16 @@ This would call the function "my_func_whizz(parameter)".
 <
 							*:exe* *:execute*
 :exe[cute] {expr1} ..	Executes the string that results from the evaluation
-			of {expr1} as an Ex command.  Multiple arguments are
-			concatenated, with a space in between.	{expr1} is
-			used as the processed command, command line editing
-			keys are not recognized.
+			of {expr1} as an Ex command.
+			Multiple arguments are concatenated, with a space in
+			between.  To avoid the extra space use the "."
+			operator to concatenate strings into one argument.
+			{expr1} is used as the processed command, command line
+			editing keys are not recognized.
 			Cannot be followed by a comment.
 			Examples: >
-		:execute "buffer " nextbuf
-		:execute "normal " count . "w"
+		:execute "buffer" nextbuf
+		:execute "normal" count . "w"
 <
 			":execute" can be used to append a command to commands
 			that don't accept a '|'.  Example: >

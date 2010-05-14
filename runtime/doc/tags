@@ -1767,6 +1767,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :Nexplore	pi_netrw.txt	/*:Nexplore*
 :Next	editing.txt	/*:Next*
 :NoMatchParen	pi_paren.txt	/*:NoMatchParen*
+:Nr	pi_netrw.txt	/*:Nr*
+:Nread	pi_netrw.txt	/*:Nread*
+:Ns	pi_netrw.txt	/*:Ns*
+:Nsource	pi_netrw.txt	/*:Nsource*
+:Nw	pi_netrw.txt	/*:Nw*
+:Nwrite	pi_netrw.txt	/*:Nwrite*
 :P	various.txt	/*:P*
 :Pexplore	pi_netrw.txt	/*:Pexplore*
 :Print	various.txt	/*:Print*
@@ -2614,6 +2620,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :search-args	tagsrch.txt	/*:search-args*
 :set	options.txt	/*:set*
 :set+=	options.txt	/*:set+=*
+:set-!	options.txt	/*:set-!*
 :set-&	options.txt	/*:set-&*
 :set-&vi	options.txt	/*:set-&vi*
 :set-&vim	options.txt	/*:set-&vim*
@@ -2621,6 +2628,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :set-args	options.txt	/*:set-args*
 :set-browse	options.txt	/*:set-browse*
 :set-default	options.txt	/*:set-default*
+:set-inv	options.txt	/*:set-inv*
 :set-termcap	options.txt	/*:set-termcap*
 :set-verbose	options.txt	/*:set-verbose*
 :set^=	options.txt	/*:set^=*
@@ -4235,13 +4243,11 @@ N:	cmdline.txt	/*N:*
 N<Del>	various.txt	/*N<Del>*
 NL-used-for-Nul	pattern.txt	/*NL-used-for-Nul*
 NetBSD-backspace	options.txt	/*NetBSD-backspace*
+NetUserPass()	pi_netrw.txt	/*NetUserPass()*
 Normal	intro.txt	/*Normal*
 Normal-mode	intro.txt	/*Normal-mode*
-Nread	pi_netrw.txt	/*Nread*
-Nsource	pi_netrw.txt	/*Nsource*
 Number	eval.txt	/*Number*
 Nvi	intro.txt	/*Nvi*
-Nwrite	pi_netrw.txt	/*Nwrite*
 O	insert.txt	/*O*
 OS/2	os_os2.txt	/*OS\/2*
 OS2	os_os2.txt	/*OS2*
@@ -6620,6 +6626,7 @@ netrw-mx	pi_netrw.txt	/*netrw-mx*
 netrw-mz	pi_netrw.txt	/*netrw-mz*
 netrw-netrc	pi_netrw.txt	/*netrw-netrc*
 netrw-nexplore	pi_netrw.txt	/*netrw-nexplore*
+netrw-noload	pi_netrw.txt	/*netrw-noload*
 netrw-nread	pi_netrw.txt	/*netrw-nread*
 netrw-nwrite	pi_netrw.txt	/*netrw-nwrite*
 netrw-o	pi_netrw.txt	/*netrw-o*
@@ -6629,6 +6636,7 @@ netrw-p1	pi_netrw.txt	/*netrw-p1*
 netrw-p10	pi_netrw.txt	/*netrw-p10*
 netrw-p11	pi_netrw.txt	/*netrw-p11*
 netrw-p12	pi_netrw.txt	/*netrw-p12*
+netrw-p13	pi_netrw.txt	/*netrw-p13*
 netrw-p2	pi_netrw.txt	/*netrw-p2*
 netrw-p3	pi_netrw.txt	/*netrw-p3*
 netrw-p4	pi_netrw.txt	/*netrw-p4*
@@ -6679,7 +6687,6 @@ netrw-texplore	pi_netrw.txt	/*netrw-texplore*
 netrw-todo	pi_netrw.txt	/*netrw-todo*
 netrw-transparent	pi_netrw.txt	/*netrw-transparent*
 netrw-u	pi_netrw.txt	/*netrw-u*
-netrw-uidpass	pi_netrw.txt	/*netrw-uidpass*
 netrw-updir	pi_netrw.txt	/*netrw-updir*
 netrw-urls	pi_netrw.txt	/*netrw-urls*
 netrw-userpass	pi_netrw.txt	/*netrw-userpass*
@@ -6792,6 +6799,7 @@ object-select	motion.txt	/*object-select*
 objects	index.txt	/*objects*
 obtaining-exted	netbeans.txt	/*obtaining-exted*
 ocaml.vim	syntax.txt	/*ocaml.vim*
+octal	eval.txt	/*octal*
 oldfiles-variable	eval.txt	/*oldfiles-variable*
 ole-activation	if_ole.txt	/*ole-activation*
 ole-eval	if_ole.txt	/*ole-eval*
@@ -8072,6 +8080,7 @@ vimball-extract	pi_vimball.txt	/*vimball-extract*
 vimball-history	pi_vimball.txt	/*vimball-history*
 vimball-intro	pi_vimball.txt	/*vimball-intro*
 vimball-manual	pi_vimball.txt	/*vimball-manual*
+vimball-windows	pi_vimball.txt	/*vimball-windows*
 vimdev	intro.txt	/*vimdev*
 vimdiff	diff.txt	/*vimdiff*
 vimfiles	options.txt	/*vimfiles*

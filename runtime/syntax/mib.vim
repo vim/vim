@@ -3,13 +3,13 @@
 " Maintainer:      Martin Smat <msmat@post.cz>
 " Original Author: David Pascoe <pascoedj@spamcop.net>
 " Written:     	   Wed Jan 28 14:37:23 GMT--8:00 1998
-" Last Changed:    Mon Mar 15 2010
+" Last Changed:    Mon Mar 23 2010
 
 if exists("b:current_syntax")
   finish
 endif
 
-setlocal iskeyword=@,48-57,_,128-167,224-235,-,:,=
+setlocal iskeyword=@,48-57,_,128-167,224-235,-
 
 syn keyword mibImplicit ACCESS ANY AUGMENTS BEGIN BIT BITS BOOLEAN CHOICE
 syn keyword mibImplicit COMPONENTS CONTACT-INFO DEFINITIONS DEFVAL
@@ -22,7 +22,7 @@ syn keyword mibImplicit NULL OBJECT-GROUP OBJECT-IDENTITY OBJECT-TYPE
 syn keyword mibImplicit OBJECTS OF OPTIONAL ORGANIZATION REFERENCE
 syn keyword mibImplicit REVISION SEQUENCE SET SIZE STATUS SYNTAX
 syn keyword mibImplicit TEXTUAL-CONVENTION TRAP-TYPE TRUE UNITS VARIABLES
-syn keyword mibImplicit WRITE-SYNTAX ::=
+syn keyword mibImplicit WRITE-SYNTAX
 syn keyword mibValue accessible-for-notify current DisplayString
 syn keyword mibValue deprecated mandatory not-accessible obsolete optional
 syn keyword mibValue read-create read-only read-write write-only INTEGER
@@ -40,11 +40,13 @@ syn keyword mibEpilogue test-function-async next-function next-function-async
 syn keyword mibEpilogue leaf-name
 syn keyword mibEpilogue DEFAULT contained
 
+syn match  mibOperator  "::="
 syn match  mibComment   "\ *--.\{-}\(--\|$\)"
 syn match  mibNumber    "\<['0-9a-fA-FhH]*\>"
 syn region mibDescription start="\"" end="\"" contains=DEFAULT
 
 hi def link mibImplicit	     Statement
+hi def link mibOperator      Statement
 hi def link mibComment       Comment
 hi def link mibConstants     String
 hi def link mibNumber        Number

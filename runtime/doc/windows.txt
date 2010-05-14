@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 7.2.  Last change: 2009 Sep 23
+*windows.txt*   For Vim version 7.2.  Last change: 2010 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -467,11 +467,11 @@ CTRL-W =	Make all windows (almost) equally high and wide, but use
 
 :res[ize] -N					*:res* *:resize* *CTRL-W_-*
 CTRL-W -	Decrease current window height by N (default 1).
-		If used after 'vertical': decrease width by N.
+		If used after |:vertical|: decrease width by N.
 
 :res[ize] +N					*CTRL-W_+*
 CTRL-W +	Increase current window height by N (default 1).
-		If used after 'vertical': increase width by N.
+		If used after |:vertical|: increase width by N.
 
 :res[ize] [N]
 CTRL-W CTRL-_					*CTRL-W_CTRL-_* *CTRL-W__*

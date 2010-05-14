@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.2.  Last change: 2010 Jan 06
+*options.txt*	For Vim version 7.2.  Last change: 2010 May 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,6 +40,7 @@ achieve special effects.  These options come in three forms:
 
 :se[t] no{option}	Toggle option: Reset, switch it off.
 
+							   *:set-!* *:set-inv*
 :se[t] {option}!   or
 :se[t] inv{option}	Toggle option: Invert value. {not in Vi}
 
@@ -696,8 +697,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'autochdir' 'acd'	boolean (default off)
 			global
 			{not in Vi}
-			{only available when compiled with the
-			|+netbeans_intg| or |+sun_workshop| feature}
+			{only available when compiled with it, use
+			exists("+autochdir") to check}
 	When on, Vim will change the current working directory whenever you
 	open a file, switch buffers, delete a buffer or open/close a window.
 	It will change to the directory containing the file which was opened
@@ -5708,7 +5709,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
 	'shell' option is "sh", "ksh", "zsh" or "bash" the default becomes
-	"2>&1| tee".  This means that stderr is also included.
+	"2>&1| tee".  This means that stderr is also included.  Before using
+	the 'shell' option a path is removed, thus "/bin/sh" uses "sh".
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was
