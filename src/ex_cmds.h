@@ -74,7 +74,7 @@ typedef struct exarg exarg_T;
 # undef EX	    /* just in case */
 #endif
 #ifdef DO_DECLARE_EXCMD
-# define EX(a, b, c, d)  {(char_u *)b, c, d}
+# define EX(a, b, c, d)  {(char_u *)b, c, (long_u)(d)}
 
 typedef void (*ex_func_T) __ARGS((exarg_T *eap));
 
