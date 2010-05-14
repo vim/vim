@@ -10432,6 +10432,11 @@ langmap_set()
 	    p2 = NULL;	    /* aAbBcCdD form, p2 is NULL */
 	while (p[0])
 	{
+	    if (p[0] == ',')
+	    {
+		++p;
+		break;
+	    }
 	    if (p[0] == '\\' && p[1] != NUL)
 		++p;
 #ifdef FEAT_MBYTE
@@ -10439,26 +10444,33 @@ langmap_set()
 #else
 	    from = p[0];
 #endif
+	    to = NUL;
 	    if (p2 == NULL)
 	    {
 		mb_ptr_adv(p);
-		if (p[0] == '\\')
-		    ++p;
+		if (p[0] != ',')
+		{
+		    if (p[0] == '\\')
+			++p;
 #ifdef FEAT_MBYTE
-		to = (*mb_ptr2char)(p);
+		    to = (*mb_ptr2char)(p);
 #else
-		to = p[0];
+		    to = p[0];
 #endif
+		}
 	    }
 	    else
 	    {
-		if (p2[0] == '\\')
-		    ++p2;
+		if (p2[0] != ',')
+		{
+		    if (p2[0] == '\\')
+			++p2;
 #ifdef FEAT_MBYTE
-		to = (*mb_ptr2char)(p2);
+		    to = (*mb_ptr2char)(p2);
 #else
-		to = p2[0];
+		    to = p2[0];
 #endif
+		}
 	    }
 	    if (to == NUL)
 	    {
@@ -10476,15 +10488,7 @@ langmap_set()
 
 	    /* Advance to next pair */
 	    mb_ptr_adv(p);
-	    if (p2 == NULL)
-	    {
-		if (p[0] == ',')
-		{
-		    ++p;
-		    break;
-		}
-	    }
-	    else
+	    if (p2 != NULL)
 	    {
 		mb_ptr_adv(p2);
 		if (*p == ';')
