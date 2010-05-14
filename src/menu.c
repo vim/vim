@@ -490,6 +490,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
     char_u	*next_name;
     int		i;
     int		c;
+    int		d;
 #ifdef FEAT_GUI
     int		idx;
     int		new_idx;
@@ -746,6 +747,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 		 * Don't do this if adding a tearbar (addtearoff == FALSE).
 		 * Don't do this for "<Nop>". */
 		c = 0;
+		d = 0;
 		if (amenu && call_data != NULL && *call_data != NUL
 #ifdef FEAT_GUI_W32
 		       && addtearoff
@@ -761,18 +763,25 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 			    c = Ctrl_C;
 			    break;
 			case MENU_INSERT_MODE:
-			    c = Ctrl_O;
+			    c = Ctrl_BSL;
+			    d = Ctrl_O;
 			    break;
 		    }
 		}
 
-		if (c)
+		if (c != 0)
 		{
-		    menu->strings[i] = alloc((unsigned)(STRLEN(call_data) + 4));
+		    menu->strings[i] = alloc((unsigned)(STRLEN(call_data) + 5 ));
 		    if (menu->strings[i] != NULL)
 		    {
 			menu->strings[i][0] = c;
-			STRCPY(menu->strings[i] + 1, call_data);
+			if (d == 0)
+			    STRCPY(menu->strings[i] + 1, call_data);
+			else
+			{
+			    menu->strings[i][1] = d;
+			    STRCPY(menu->strings[i] + 2, call_data);
+			}
 			if (c == Ctrl_C)
 			{
 			    int	    len = (int)STRLEN(menu->strings[i]);
