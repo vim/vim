@@ -18309,8 +18309,8 @@ set_cmdarg(eap, oldarg)
 # ifdef FEAT_MBYTE
     if (eap->force_enc != 0)
 	len += (unsigned)STRLEN(eap->cmd + eap->force_enc) + 7;
-    if (eap->bad_char != 0)
-	len += (unsigned)STRLEN(eap->cmd + eap->bad_char) + 7;
+    if (eap->bad_char_idx != 0)
+	len += (unsigned)STRLEN(eap->cmd + eap->bad_char_idx) + 7;
 # endif
 
     newval = alloc(len + 1);
@@ -18334,9 +18334,9 @@ set_cmdarg(eap, oldarg)
     if (eap->force_enc != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++enc=%s",
 					       eap->cmd + eap->force_enc);
-    if (eap->bad_char != 0)
+    if (eap->bad_char_idx != 0)
 	sprintf((char *)newval + STRLEN(newval), " ++bad=%s",
-					       eap->cmd + eap->bad_char);
+					       eap->cmd + eap->bad_char_idx);
 # endif
     vimvars[VV_CMDARG].vv_str = newval;
     return oldval;

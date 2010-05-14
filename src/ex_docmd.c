@@ -4739,7 +4739,7 @@ getargopt(eap)
     else if (STRNCMP(arg, "bad", 3) == 0)
     {
 	arg += 3;
-	pp = &eap->bad_char;
+	pp = &eap->bad_char_idx;
     }
 #endif
 
@@ -4770,7 +4770,7 @@ getargopt(eap)
     {
 	/* Check ++bad= argument.  Must be a single-byte character, "keep" or
 	 * "drop". */
-	p = eap->cmd + eap->bad_char;
+	p = eap->cmd + eap->bad_char_idx;
 	if (STRICMP(p, "keep") == 0)
 	    eap->bad_char = BAD_KEEP;
 	else if (STRICMP(p, "drop") == 0)
