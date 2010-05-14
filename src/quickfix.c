@@ -3654,7 +3654,11 @@ set_errorlist(wp, list, action)
 	}
     }
 
-    qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
+    if (qi->qf_lists[qi->qf_curlist].qf_index == 0)
+	/* empty list or no valid entry */
+	qi->qf_lists[qi->qf_curlist].qf_nonevalid = TRUE;
+    else
+	qi->qf_lists[qi->qf_curlist].qf_nonevalid = FALSE;
     qi->qf_lists[qi->qf_curlist].qf_ptr = qi->qf_lists[qi->qf_curlist].qf_start;
     qi->qf_lists[qi->qf_curlist].qf_index = 1;
 
