@@ -678,10 +678,10 @@ MenuPopup			Just before showing the popup menu (under the
 QuickFixCmdPre			Before a quickfix command is run (|:make|,
 				|:lmake|, |:grep|, |:lgrep|, |:grepadd|,
 				|:lgrepadd|, |:vimgrep|, |:lvimgrep|,
-				|:vimgrepadd|, |:lvimgrepadd|). The pattern is
-				matched against the command being run.  When
-				|:grep| is used but 'grepprg' is set to
-				"internal" it still matches "grep".
+				|:vimgrepadd|, |:lvimgrepadd|, |:cscope|).
+				The pattern is matched against the command
+				being run.  When |:grep| is used but 'grepprg'
+				is set to "internal" it still matches "grep".
 				This command cannot be used to set the
 				'makeprg' and 'grepprg' variables.
 				If this command causes an error, the quickfix

@@ -1113,6 +1113,70 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 #ifdef FEAT_QUICKFIX
     char cmdletter;
     char *qfpos;
+
+    /* get cmd letter */
+    switch (opt[0])
+    {
+    case '0' :
+	cmdletter = 's';
+	break;
+    case '1' :
+	cmdletter = 'g';
+	break;
+    case '2' :
+	cmdletter = 'd';
+	break;
+    case '3' :
+	cmdletter = 'c';
+	break;
+    case '4' :
+	cmdletter = 't';
+	break;
+    case '6' :
+	cmdletter = 'e';
+	break;
+    case '7' :
+	cmdletter = 'f';
+	break;
+    case '8' :
+	cmdletter = 'i';
+	break;
+    default :
+	cmdletter = opt[0];
+    }
+
+    qfpos = (char *)vim_strchr(p_csqf, cmdletter);
+    if (qfpos != NULL)
+    {
+	qfpos++;
+	/* next symbol must be + or - */
+	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
+	{
+	    char *nf = _("E469: invalid cscopequickfix flag %c for %c");
+	    char *buf = (char *)alloc((unsigned)strlen(nf));
+
+	    /* strlen will be enough because we use chars */
+	    if (buf != NULL)
+	    {
+		sprintf(buf, nf, *qfpos, *(qfpos-1));
+		(void)EMSG(buf);
+		vim_free(buf);
+	    }
+	    return FALSE;
+	}
+
+# ifdef FEAT_AUTOCMD
+	if (*qfpos != '0')
+	{
+	    apply_autocmds(EVENT_QUICKFIXCMDPRE, (char_u *)"cscope",
+					       curbuf->b_fname, TRUE, curbuf);
+#  ifdef FEAT_EVAL
+	    if (did_throw || force_abort)
+		return FALSE;
+#  endif
+	}
+# endif
+    }
 #endif
 
     /* create the actual command to send to cscope */
@@ -1174,58 +1238,6 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
     }
 
 #ifdef FEAT_QUICKFIX
-    /* get cmd letter */
-    switch (opt[0])
-    {
-    case '0' :
-	cmdletter = 's';
-	break;
-    case '1' :
-	cmdletter = 'g';
-	break;
-    case '2' :
-	cmdletter = 'd';
-	break;
-    case '3' :
-	cmdletter = 'c';
-	break;
-    case '4' :
-	cmdletter = 't';
-	break;
-    case '6' :
-	cmdletter = 'e';
-	break;
-    case '7' :
-	cmdletter = 'f';
-	break;
-    case '8' :
-	cmdletter = 'i';
-	break;
-    default :
-	cmdletter = opt[0];
-    }
-
-    qfpos = (char *)vim_strchr(p_csqf, cmdletter);
-    if (qfpos != NULL)
-    {
-	qfpos++;
-	/* next symbol must be + or - */
-	if (strchr(CSQF_FLAGS, *qfpos) == NULL)
-	{
-	    char *nf = _("E469: invalid cscopequickfix flag %c for %c");
-	    char *buf = (char *)alloc((unsigned)strlen(nf));
-
-	    /* strlen will be enough because we use chars */
-	    if (buf != NULL)
-	    {
-		sprintf(buf, nf, *qfpos, *(qfpos-1));
-		(void)EMSG(buf);
-		vim_free(buf);
-	    }
-	    vim_free(nummatches);
-	    return FALSE;
-	}
-    }
     if (qfpos != NULL && *qfpos != '0' && totmatches > 0)
     {
 	/* fill error list */
@@ -1257,6 +1269,11 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 #  endif
 		    postponed_split = 0;
 		}
+# endif
+
+# ifdef FEAT_AUTOCMD
+		apply_autocmds(EVENT_QUICKFIXCMDPOST, (char_u *)"cscope",
+					       curbuf->b_fname, TRUE, curbuf);
 # endif
 		if (use_ll)
 		    /*
