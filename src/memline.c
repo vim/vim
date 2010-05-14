@@ -245,6 +245,9 @@ static char_u *make_percent_swname __ARGS((char_u *dir, char_u *name));
 #ifdef FEAT_BYTEOFF
 static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype));
 #endif
+#ifdef HAVE_READLINK
+static int resolve_symlink __ARGS((char_u *fname, char_u *buf));
+#endif
 
 /*
  * Open a new memline for "buf".
@@ -1401,10 +1404,19 @@ recover_names(fname, list, nr)
     int		i;
     char_u	*dirp;
     char_u	*dir_name;
+    char_u	*fname_res = *fname;
+#ifdef HAVE_READLINK
+    char_u	fname_buf[MAXPATHL];
+
+    /* Expand symlink in the file name, because the swap file is created with
+     * the actual file instead of with the symlink. */
+    if (resolve_symlink(*fname, fname_buf) == OK)
+	fname_res = fname_buf;
+#endif
 
     if (list)
     {
-	    /* use msg() to start the scrolling properly */
+	/* use msg() to start the scrolling properly */
 	msg((char_u *)_("Swap files found:"));
 	msg_putchar('\n');
     }
@@ -1453,7 +1465,7 @@ recover_names(fname, list, nr)
 #endif
 	    }
 	    else
-		num_names = recov_file_names(names, *fname, TRUE);
+		num_names = recov_file_names(names, fname_res, TRUE);
 	}
 	else			    /* check directory dir_name */
 	{
@@ -1490,12 +1502,12 @@ recover_names(fname, list, nr)
 		if (after_pathsep(dir_name, p) && p[-1] == p[-2])
 		{
 		    /* Ends with '//', Use Full path for swap name */
-		    tail = make_percent_swname(dir_name, *fname);
+		    tail = make_percent_swname(dir_name, fname_res);
 		}
 		else
 #endif
 		{
-		    tail = gettail(*fname);
+		    tail = gettail(fname_res);
 		    tail = concat_fnames(dir_name, tail, TRUE);
 		}
 		if (tail == NULL)
@@ -1535,11 +1547,13 @@ recover_names(fname, list, nr)
 	    struct stat	    st;
 	    char_u	    *swapname;
 
+	    swapname = modname(fname_res,
 #if defined(VMS) || defined(RISCOS)
-	    swapname = modname(*fname, (char_u *)"_swp", FALSE);
+			       (char_u *)"_swp", FALSE
 #else
-	    swapname = modname(*fname, (char_u *)".swp", TRUE);
+			       (char_u *)".swp", TRUE
 #endif
+			      );
 	    if (swapname != NULL)
 	    {
 		if (mch_stat((char *)swapname, &st) != -1)	    /* It exists! */
@@ -3508,8 +3522,6 @@ ml_lineadd(buf, count)
 }
 
 #ifdef HAVE_READLINK
-static int resolve_symlink __ARGS((char_u *fname, char_u *buf));
-
 /*
  * Resolve a symlink in the last component of a file name.
  * Note that f_resolve() does it for every part of the path, we don't do that
@@ -3601,9 +3613,9 @@ makeswapname(fname, ffname, buf, dir_name)
     char_u	*dir_name;
 {
     char_u	*r, *s;
+    char_u	*fname_res = fname;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
-    char_u	*fname_res;
 #endif
 
 #if defined(UNIX) || defined(WIN3264)  /* Need _very_ long file names */
@@ -3625,8 +3637,6 @@ makeswapname(fname, ffname, buf, dir_name)
      * actual file instead of with the symlink. */
     if (resolve_symlink(fname, fname_buf) == OK)
 	fname_res = fname_buf;
-    else
-	fname_res = fname;
 #endif
 
     r = buf_modname(
@@ -3639,11 +3649,7 @@ makeswapname(fname, ffname, buf, dir_name)
 	    /* Avoid problems if fname has special chars, eg <Wimp$Scrap> */
 	    ffname,
 #else
-# ifdef HAVE_READLINK
 	    fname_res,
-# else
-	    fname,
-# endif
 #endif
 	    (char_u *)
 #if defined(VMS) || defined(RISCOS)
