@@ -145,9 +145,9 @@ typedef struct
     dict_T	sv_dict;
 } scriptvar_T;
 
-static garray_T	    ga_scripts = {0, 0, sizeof(scriptvar_T), 4, NULL};
-#define SCRIPT_SV(id) (((scriptvar_T *)ga_scripts.ga_data)[(id) - 1])
-#define SCRIPT_VARS(id) (SCRIPT_SV(id).sv_dict.dv_hashtab)
+static garray_T	    ga_scripts = {0, 0, sizeof(scriptvar_T *), 4, NULL};
+#define SCRIPT_SV(id) (((scriptvar_T **)ga_scripts.ga_data)[(id) - 1])
+#define SCRIPT_VARS(id) (SCRIPT_SV(id)->sv_dict.dv_hashtab)
 
 static int echo_attr = 0;   /* attributes used for ":echo" */
 
@@ -866,10 +866,6 @@ eval_clear()
     hash_init(&vimvarht);  /* garbage_collect() will access it */
     hash_clear(&compat_hashtab);
 
-    /* script-local variables */
-    for (i = 1; i <= ga_scripts.ga_len; ++i)
-	vars_clear(&SCRIPT_VARS(i));
-    ga_clear(&ga_scripts);
     free_scriptnames();
 
     /* global variables */
@@ -877,6 +873,14 @@ eval_clear()
 
     /* autoloaded script names */
     ga_clear_strings(&ga_loaded);
+
+    /* script-local variables */
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+    {
+	vars_clear(&SCRIPT_VARS(i));
+	vim_free(SCRIPT_SV(i));
+    }
+    ga_clear(&ga_scripts);
 
     /* unreferenced lists and dicts */
     (void)garbage_collect();
@@ -18803,7 +18807,7 @@ find_var_in_ht(ht, varname, writing)
 	/* Must be something like "s:", otherwise "ht" would be NULL. */
 	switch (varname[-2])
 	{
-	    case 's': return &SCRIPT_SV(current_SID).sv_var;
+	    case 's': return &SCRIPT_SV(current_SID)->sv_var;
 	    case 'g': return &globvars_var;
 	    case 'v': return &vimvars_var;
 	    case 'b': return &curbuf->b_bufvar;
@@ -18928,13 +18932,14 @@ new_script_vars(id)
 	    ht = &SCRIPT_VARS(i);
 	    if (ht->ht_mask == HT_INIT_SIZE - 1)
 		ht->ht_array = ht->ht_smallarray;
-	    sv = &SCRIPT_SV(i);
+	    sv = SCRIPT_SV(i);
 	    sv->sv_var.di_tv.vval.v_dict = &sv->sv_dict;
 	}
 
 	while (ga_scripts.ga_len < id)
 	{
-	    sv = &SCRIPT_SV(ga_scripts.ga_len + 1);
+	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) = 
+		(scriptvar_T *)alloc_clear(sizeof(scriptvar_T));
 	    init_var_dict(&sv->sv_dict, &sv->sv_var);
 	    ++ga_scripts.ga_len;
 	}
@@ -21931,7 +21936,7 @@ write_viminfo_varlist(fp)
     if (find_viminfo_parameter('!') == NULL)
 	return;
 
-    fprintf(fp, _("\n# global variables:\n"));
+    fputs(_("\n# global variables:\n"), fp);
 
     todo = (int)globvarht.ht_used;
     for (hi = globvarht.ht_array; todo > 0; ++hi)
