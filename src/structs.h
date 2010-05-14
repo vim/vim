@@ -232,7 +232,7 @@ struct wininfo_S
 {
     wininfo_T	*wi_next;	/* next entry or NULL for last entry */
     wininfo_T	*wi_prev;	/* previous entry or NULL for first entry */
-    win_T	*wi_win;	/* pointer to window that did set wi_lnum */
+    win_T	*wi_win;	/* pointer to window that did set wi_fpos */
     pos_T	wi_fpos;	/* last cursor position in the file */
     int		wi_optset;	/* TRUE when wi_opt has useful values */
     winopt_T	wi_opt;		/* local window options */
@@ -2207,8 +2207,14 @@ struct VimMenu
 {
     int		modes;		    /* Which modes is this menu visible for? */
     int		enabled;	    /* for which modes the menu is enabled */
-    char_u	*name;		    /* Name of menu */
-    char_u	*dname;		    /* Displayed Name (without '&') */
+    char_u	*name;		    /* Name of menu, possibly translated */
+    char_u	*dname;		    /* Displayed Name ("name" without '&') */
+#ifdef FEAT_MULTI_LANG
+    char_u	*en_name;	    /* "name" untranslated, NULL when "name"
+				     * was not translated */
+    char_u	*en_dname;	    /* "dname" untranslated, NULL when "dname"
+				     * was not translated */
+#endif
     int		mnemonic;	    /* mnemonic key (after '&') */
     char_u	*actext;	    /* accelerator text (after TAB) */
     int		priority;	    /* Menu order priority */

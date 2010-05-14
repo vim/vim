@@ -58,6 +58,9 @@ static char_u *menu_skip_part __ARGS((char_u *p));
 static char_u *menutrans_lookup __ARGS((char_u *name, int len));
 #endif
 
+static char_u *menu_translate_tab_and_shift __ARGS((char_u *arg_start));
+static void menu_unescape_name  __ARGS((char_u	*p));
+
 /* The character for each menu mode */
 static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};
 
@@ -106,10 +109,6 @@ ex_menu(eap)
     int		pri_tab[MENUDEPTH + 1];
     int		enable = MAYBE;	    /* TRUE for "menu enable", FALSE for "menu
 				     * disable */
-#ifdef FEAT_MULTI_LANG
-    char_u	*tofree = NULL;
-    char_u	*new_cmd;
-#endif
 #ifdef FEAT_TOOLBAR
     char_u	*icon = NULL;
 #endif
@@ -251,41 +250,6 @@ ex_menu(eap)
     }
 #endif
 
-#ifdef FEAT_MULTI_LANG
-    /*
-     * Translate menu names as specified with ":menutrans" commands.
-     */
-    menu_path = arg;
-    while (*menu_path)
-    {
-	/* find the end of one part and check if it should be translated */
-	p = menu_skip_part(menu_path);
-	map_to = menutrans_lookup(menu_path, (int)(p - menu_path));
-	if (map_to != NULL)
-	{
-	    /* found a match: replace with the translated part */
-	    i = (int)STRLEN(map_to);
-	    new_cmd = alloc((unsigned)STRLEN(arg) + i + 1);
-	    if (new_cmd == NULL)
-		break;
-	    mch_memmove(new_cmd, arg, menu_path - arg);
-	    mch_memmove(new_cmd + (menu_path - arg), map_to, (size_t)i);
-	    STRCPY(new_cmd + (menu_path - arg) + i, p);
-	    p = new_cmd + (menu_path - arg) + i;
-	    vim_free(tofree);
-	    tofree = new_cmd;
-	    arg = new_cmd;
-	}
-	if (*p != '.')
-	    break;
-	menu_path = p + 1;
-    }
-#endif
-
-    /*
-     * Isolate the menu name.
-     * Skip the menu name, and translate <Tab> into a real TAB.
-     */
     menu_path = arg;
     if (*menu_path == '.')
     {
@@ -293,21 +257,7 @@ ex_menu(eap)
 	goto theend;
     }
 
-    while (*arg && !vim_iswhite(*arg))
-    {
-	if ((*arg == '\\' || *arg == Ctrl_V) && arg[1] != NUL)
-	    arg++;
-	else if (STRNICMP(arg, "<TAB>", 5) == 0)
-	{
-	    *arg = TAB;
-	    STRMOVE(arg + 1, arg + 5);
-	}
-	arg++;
-    }
-    if (*arg != NUL)
-	*arg++ = NUL;
-    arg = skipwhite(arg);
-    map_to = arg;
+    map_to = menu_translate_tab_and_shift(arg);
 
     /*
      * If there is only a menu name, display menus with that name.
@@ -453,11 +403,7 @@ ex_menu(eap)
 #endif
 
 theend:
-#ifdef FEAT_MULTI_LANG
-    vim_free(tofree);
-#else
     ;
-#endif
 }
 
 /*
@@ -498,6 +444,10 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
     int		pri_idx = 0;
     int		old_modes = 0;
     int		amenu;
+#ifdef FEAT_MULTI_LANG
+    char_u	*en_name;
+    char_u	*map_to = NULL;
+#endif
 
     /* Make a copy so we can stuff around with it, since it could be const */
     path_name = vim_strsave(menu_path);
@@ -511,6 +461,16 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 	/* Get name of this element in the menu hierarchy, and the simplified
 	 * name (without mnemonic and accelerator text). */
 	next_name = menu_name_skip(name);
+#ifdef	FEAT_MULTI_LANG
+	map_to = menutrans_lookup(name,STRLEN(name));
+	if (map_to != NULL)
+	{
+	    en_name = name;
+	    name = map_to;
+	}
+	else
+	    en_name = NULL;
+#endif
 	dname = menu_text(name, NULL, NULL);
 	if (dname == NULL)
 	    goto erret;
@@ -594,6 +554,18 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 	    menu->name = vim_strsave(name);
 	    /* separate mnemonic and accelerator text from actual menu name */
 	    menu->dname = menu_text(name, &menu->mnemonic, &menu->actext);
+#ifdef	FEAT_MULTI_LANG
+	    if (en_name != NULL)
+	    {
+		menu->en_name = vim_strsave(en_name);
+		menu->en_dname = menu_text(en_name, NULL, NULL);
+	    }
+	    else
+	    {
+		menu->en_name = NULL;
+		menu->en_dname = NULL;
+	    }
+#endif
 	    menu->priority = pri_tab[pri_idx];
 	    menu->parent = parent;
 #ifdef FEAT_GUI_MOTIF
@@ -1040,6 +1012,10 @@ free_menu(menup)
     *menup = menu->next;
     vim_free(menu->name);
     vim_free(menu->dname);
+#ifdef FEAT_MULTI_LANG
+    vim_free(menu->en_name);
+    vim_free(menu->en_dname);
+#endif
     vim_free(menu->actext);
 #ifdef FEAT_TOOLBAR
     vim_free(menu->iconfile);
@@ -1357,9 +1333,15 @@ get_menu_name(xp, idx)
 {
     static vimmenu_T	*menu = NULL;
     char_u		*str;
+#ifdef FEAT_MULTI_LANG
+    static  int		should_advance = FALSE;
+#endif
 
     if (idx == 0)	    /* first call: start at first item */
+    {
 	menu = expand_menu;
+	should_advance = FALSE;
+    }
 
     /* Skip PopUp[nvoci]. */
     while (menu != NULL && (menu_is_hidden(menu->dname)
@@ -1372,12 +1354,30 @@ get_menu_name(xp, idx)
 	return NULL;
 
     if (menu->modes & expand_modes)
-	str = menu->dname;
+#ifdef FEAT_MULTI_LANG
+	if (should_advance)
+	    str = menu->en_dname;
+	else
+	{
+#endif
+	    str = menu->dname;
+#ifdef FEAT_MULTI_LANG
+	    if (menu->en_dname == NULL)
+                should_advance = TRUE;
+	}
+#endif
     else
 	str = (char_u *)"";
 
-    /* Advance to next menu entry. */
-    menu = menu->next;
+#ifdef FEAT_MULTI_LANG
+    if (should_advance)
+#endif
+        /* Advance to next menu entry. */
+        menu = menu->next;
+
+#ifdef FEAT_MULTI_LANG
+    should_advance = !should_advance;
+#endif
 
     return str;
 }
@@ -1394,9 +1394,15 @@ get_menu_names(xp, idx)
     static vimmenu_T	*menu = NULL;
     static char_u	tbuffer[256]; /*hack*/
     char_u		*str;
+#ifdef FEAT_MULTI_LANG
+    static  int		should_advance = FALSE;
+#endif
 
     if (idx == 0)	    /* first call: start at first item */
+    {
 	menu = expand_menu;
+	should_advance = FALSE;
+    }
 
     /* Skip Browse-style entries, popup menus and separators. */
     while (menu != NULL
@@ -1416,20 +1422,51 @@ get_menu_names(xp, idx)
     {
 	if (menu->children != NULL)
 	{
-	    STRCPY(tbuffer, menu->dname);
+#ifdef FEAT_MULTI_LANG
+	    if (should_advance)
+		STRCPY(tbuffer, menu->en_dname);
+	    else
+	    {
+#endif
+		STRCPY(tbuffer, menu->dname);
+#ifdef FEAT_MULTI_LANG
+		if (menu->en_dname == NULL)
+		    should_advance = TRUE;
+	    }
+#endif
 	    /* hack on menu separators:  use a 'magic' char for the separator
 	     * so that '.' in names gets escaped properly */
 	    STRCAT(tbuffer, "\001");
 	    str = tbuffer;
 	}
 	else
-	    str = menu->dname;
+#ifdef FEAT_MULTI_LANG
+        {
+            if (should_advance)
+                str = menu->en_dname;
+            else
+            {
+#endif
+                str = menu->dname;
+#ifdef FEAT_MULTI_LANG
+                if (menu->en_dname == NULL)
+                    should_advance = TRUE;
+            }
+        }
+#endif
     }
     else
 	str = (char_u *)"";
 
-    /* Advance to next menu entry. */
-    menu = menu->next;
+#ifdef FEAT_MULTI_LANG
+    if (should_advance)
+#endif
+        /* Advance to next menu entry. */
+        menu = menu->next;
+
+#ifdef FEAT_MULTI_LANG
+    should_advance = !should_advance;
+#endif
 
     return str;
 }
@@ -1469,7 +1506,11 @@ menu_name_equal(name, menu)
     char_u	*name;
     vimmenu_T	*menu;
 {
-    return (menu_namecmp(name, menu->name) || menu_namecmp(name, menu->dname));
+    if (menu->en_name != NULL
+	    && (menu_namecmp(name,menu->en_name)
+		|| menu_namecmp(name,menu->en_dname)))
+        return TRUE;
+    return menu_namecmp(name, menu->name) || menu_namecmp(name, menu->dname);
 }
 
     static int
@@ -2402,6 +2443,10 @@ ex_menutranslate(eap)
 		    to = vim_strnsave(to, (int)(arg - to));
 		    if (from_noamp != NULL && to != NULL)
 		    {
+			menu_translate_tab_and_shift(from);
+			menu_translate_tab_and_shift(to);
+			menu_unescape_name(from);
+			menu_unescape_name(to);
 			tp[menutrans_ga.ga_len].from = from;
 			tp[menutrans_ga.ga_len].from_noamp = from_noamp;
 			tp[menutrans_ga.ga_len].to = to;
@@ -2475,5 +2520,47 @@ menutrans_lookup(name, len)
     return NULL;
 }
 #endif /* FEAT_MULTI_LANG */
+
+/*
+ * Unescape the name in the translate dictionary table.
+ */
+    static void
+menu_unescape_name(name)
+    char_u	*name;
+{
+    char_u  *p;
+
+    for (p = name; *p && *p != '.'; mb_ptr_adv(p))
+	if (*p == '\\')
+	    STRMOVE(p, p + 1);
+}
+
+/*
+ * Isolate the menu name.
+ * Skip the menu name, and translate <Tab> into a real TAB.
+ */
+    static char_u *
+menu_translate_tab_and_shift(arg_start)
+    char_u	*arg_start;
+{
+    char_u	*arg = arg_start;
+
+    while (*arg && !vim_iswhite(*arg))
+    {
+	if ((*arg == '\\' || *arg == Ctrl_V) && arg[1] != NUL)
+	    arg++;
+	else if (STRNICMP(arg, "<TAB>", 5) == 0)
+	{
+	    *arg = TAB;
+	    STRMOVE(arg + 1, arg + 5);
+	}
+	arg++;
+    }
+    if (*arg != NUL)
+	*arg++ = NUL;
+    arg = skipwhite(arg);
+
+    return arg;
+}
 
 #endif /* FEAT_MENU */
