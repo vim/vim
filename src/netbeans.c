@@ -731,7 +731,7 @@ messageFromNetbeans(gpointer clientData UNUSED,
 #endif
 {
     static char_u	*buf = NULL;
-    int			len;
+    int			len = 0;
     int			readlen = 0;
 #ifndef FEAT_GUI_GTK
     static int		level = 0;
