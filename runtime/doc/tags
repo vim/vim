@@ -4569,6 +4569,7 @@ added-6.3	version6.txt	/*added-6.3*
 added-6.4	version6.txt	/*added-6.4*
 added-7.1	version7.txt	/*added-7.1*
 added-7.2	version7.txt	/*added-7.2*
+added-7.3	version7.txt	/*added-7.3*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -4825,6 +4826,7 @@ changed-6.3	version6.txt	/*changed-6.3*
 changed-6.4	version6.txt	/*changed-6.4*
 changed-7.1	version7.txt	/*changed-7.1*
 changed-7.2	version7.txt	/*changed-7.2*
+changed-7.3	version7.txt	/*changed-7.3*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	eval.txt	/*changenr()*
@@ -5368,6 +5370,7 @@ fixed-6.3	version6.txt	/*fixed-6.3*
 fixed-6.4	version6.txt	/*fixed-6.4*
 fixed-7.1	version7.txt	/*fixed-7.1*
 fixed-7.2	version7.txt	/*fixed-7.2*
+fixed-7.3	version7.txt	/*fixed-7.3*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
 float-e	eval.txt	/*float-e*
 float-pi	eval.txt	/*float-pi*
@@ -8047,6 +8050,7 @@ version-6.3	version6.txt	/*version-6.3*
 version-6.4	version6.txt	/*version-6.4*
 version-7.1	version7.txt	/*version-7.1*
 version-7.2	version7.txt	/*version-7.2*
+version-7.3	version7.txt	/*version-7.3*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*

@@ -1,4 +1,4 @@
-*sql.txt*	For Vim version 7.2.  Last change: 2009 Nov 03
+*sql.txt*	For Vim version 7.3a.  Last change: 2009 Nov 03
 
 by David Fishburn
 

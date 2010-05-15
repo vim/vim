@@ -4428,7 +4428,7 @@ gui_mch_set_shellsize(int width, int height,
     /* this will cause the proper resizement to happen too */
     update_window_manager_hints(0, 0);
 
-#else  /* HAVE_GTK2 */
+#else
     /* this will cause the proper resizement to happen too */
     if (gtk_socket_id == 0)
 	update_window_manager_hints(0, 0);
@@ -4444,14 +4444,14 @@ gui_mch_set_shellsize(int width, int height,
     else
 	update_window_manager_hints(width, height);
 
-#if 0
+# if 0
     if (!resize_idle_installed)
     {
 	g_idle_add_full(GDK_PRIORITY_EVENTS + 10,
 			&force_shell_resize_idle, NULL, NULL);
 	resize_idle_installed = TRUE;
     }
-#endif
+# endif
     /*
      * Wait until all events are processed to prevent a crash because the
      * real size of the drawing area doesn't reflect Vim's internal ideas.

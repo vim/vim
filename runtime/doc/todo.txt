@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.2.  Last change: 2010 May 14
+*todo.txt*      For Vim version 7.3a.  Last change: 2010 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+After patch 7.2.432 Japanese menus don't work properly. (David NorthField)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
@@ -1146,6 +1148,9 @@ Patch for adding "J" flag to 'cinoptions': placement of jump label.
 
 
 Vim 7.3:
+-   Create Mercurial repository.
+-   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
+    Update 2010 May 2.
 -   Use latest autoconf (2.65)
 -   Use NSIS 2.45, it includes Windows 7 support.
 	Include "RequestExecutionLevel highest"
@@ -1154,10 +1159,7 @@ Vim 7.3:
     http://code.google.com/p/vim-win3264/
     Gvim can be 32 bit.
 -   Include all files in distro, no "extra" and "lang" package.
--   Create Mercurial repository.
 -   Easier/standard way to disable default plugins.
--   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
-    Update 2010 May 2.
 8   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
     20.  Repost 2009 Nov 16.
     -> disable by default and add remark that it's new and may fail.
@@ -1175,6 +1177,7 @@ Vim 7.3:
     Take four bytes and turn them into unsigned to avoid byte-order problems.
     Need to buffer up to 7 bytes to align on 8 byte boundaries.
     Patch from Moshin: 2010 May 8, addition May 9.
+-   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
 -   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
     26) Now with Mercurial repository (2010 Jan 2)
 -   ":{range}source": source the lines from the current file.
@@ -1209,8 +1212,6 @@ More patches:
 -   ml_append_string(): efficiently append to an existing line. (Brad
     Beveridge, 2006 Aug 26)  Use in some situations, e.g., when pasting a
     character at a time?
--   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2007 Sep 13,
-    2008 Jun 12)
 -   recognize hex numbers better. (Mark Manning, 2006 Sep 13)
 -   Add <AbbrExpand> key, to expand an abbreviation in a mapping. (Kana
     Natsuno, 2008 Jul 17)

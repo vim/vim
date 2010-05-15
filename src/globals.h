@@ -50,6 +50,7 @@ EXTERN char_u	*LineWraps INIT(= NULL);	/* line wraps to next line */
  * ScreenLinesUC[] contains the Unicode for the character at this position, or
  * NUL when the character in ScreenLines[] is to be used (ASCII char).
  * The composing characters are to be drawn on top of the original character.
+ * ScreenLinesC[0][off] is only to be used when ScreenLinesUC[off] != 0.
  * Note: These three are only allocated when enc_utf8 is set!
  */
 EXTERN u8char_T	*ScreenLinesUC INIT(= NULL);	/* decoded UTF-8 characters */

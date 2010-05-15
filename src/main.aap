@@ -267,7 +267,8 @@ distclean: clean
 # messages.  Don't worry about that.
 # If there is a real error, there will be a difference between "test.out" and
 # a "test99.ok" file.
-# If everything is alright, the final message will be "ALL DONE".
+# If everything is alright, the final message will be "ALL DONE".  If not you
+# get "TEST FAILURE".
 #
 test check:
     VimProg = ../$Target

@@ -283,23 +283,26 @@ void workshop_file_opened(char *filename, int readOnly);
 void workshop_file_saved(char *filename);
 
 
+#if 0
 /* A file has been closed */
 void workshop_file_closed(char *filename);
+#endif
 
 /* Like workshop_file_closed, but also inform eserve what line the
    cursor was on when you left the file. That way eserve can put you
    back where you left off when you return to this file. */
 void workshop_file_closed_lineno(char *filename, int line);
 
+#if 0
 /* A file has been modified */
 void workshop_file_modified(char *filename);
-
 
 /*
  * A mark has been moved. Only call this as a response to
  * a workshop_moved_marks request call.
  */
 void workshop_move_mark(char *filename, int markId, int newLineno);
+#endif
 
 /* Tell the integration library about a new frame being added.
  * Supply a form for the toolbar, a label for the footer, and an
@@ -377,7 +380,9 @@ int workshop_get_balloon_text(Position x, Position y,
  */
 void workshop_frame_moved(int new_x, int new_y, int new_w, int new_h);
 Boolean workshop_get_width_height(int *, int *);
+#if 0
 Boolean workshop_get_rows_cols(int *, int *);
+#endif
 
 /* This function should be invoked when you press a hotkey
  * set up by workshop_register_hotkey. Pass the clientData
@@ -396,20 +401,23 @@ void workshop_hotkey_pressed(void *frame, void *clientData);
  *
  */
 
+#if 0
 /* Were we invoked by WorkShop? This function can be used early during startup
  * if you want to do things differently if the editor is started standalone
  * or in WorkShop mode. For example, in standalone mode you may not want to
  * add a footer/message area or a sign gutter.
  */
 int workshop_invoked(void);
+#endif
 
+#if 0
 /*
  *Set the desktop icon of the current shell to the given xpm icon.
  * Standard WorkShop desktop icons should be 48x48.
  */
-
 void workshop_set_icon(Display *display, Widget shell, char **xpmdata,
 		       int width, int height);
+#endif
 
 
 /* Minimize (iconify) the given shell */

@@ -1855,6 +1855,7 @@ utfc_ptr2char_len(p, pcc, maxlen)
  * Convert the character at screen position "off" to a sequence of bytes.
  * Includes the composing characters.
  * "buf" must at least have the length MB_MAXBYTES.
+ * Only to be used when ScreenLinesUC[off] != 0.
  * Returns the produced number of bytes.
  */
     int

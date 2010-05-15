@@ -242,7 +242,7 @@ u_save(top, bot)
 }
 
 /*
- * save the line "lnum" (used by ":s" and "~" command)
+ * Save the line "lnum" (used by ":s" and "~" command).
  * The line is replaced, so the new bottom line is lnum + 1.
  */
     int
@@ -256,7 +256,7 @@ u_savesub(lnum)
 }
 
 /*
- * a new line is inserted before line "lnum" (used by :s command)
+ * A new line is inserted before line "lnum" (used by :s command).
  * The line is inserted, so the new bottom line is lnum + 1.
  */
     int
@@ -270,7 +270,7 @@ u_inssub(lnum)
 }
 
 /*
- * save the lines "lnum" - "lnum" + nlines (used by delete command)
+ * Save the lines "lnum" - "lnum" + nlines (used by delete command).
  * The lines are deleted, so the new bottom line is lnum, unless the buffer
  * becomes empty.
  */
@@ -1406,10 +1406,9 @@ u_sync(force)
 /*
  * ":undolist": List the leafs of the undo tree
  */
-/*ARGSUSED*/
     void
 ex_undolist(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     garray_T	ga;
     u_header_T	*uhp;
@@ -1529,10 +1528,9 @@ u_add_time(buf, buflen, tt)
 /*
  * ":undojoin": continue adding to the last entry list
  */
-/*ARGSUSED*/
     void
 ex_undojoin(eap)
-    exarg_T *eap;
+    exarg_T *eap UNUSED;
 {
     if (curbuf->b_u_newhead == NULL)
 	return;		    /* nothing changed before */

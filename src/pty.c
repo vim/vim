@@ -37,8 +37,6 @@
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/* RCS_ID("$Id$ FAU") */
-
 #include "vim.h"
 
 #include <signal.h>
@@ -134,7 +132,7 @@ static void initmaster __ARGS((int));
 
     static void
 initmaster(f)
-    int f;
+    int f UNUSED;
 {
 #ifndef VMS
 # ifdef POSIX

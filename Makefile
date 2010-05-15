@@ -69,7 +69,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 2
+MINOR = 3a
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -105,7 +105,7 @@ DOSBIN_S =  dosbin_s
 # - "make unixall", "make extra", "make lang", "make html"
 # - Make diff files against the previous release: "makediff7 7.1 7.2"
 #
-# Amiga:
+# Amiga: (OBSOLETE, Amiga files are no longer distributed)
 # - "make amisrc", move the archive to the Amiga and compile:
 #   "make -f Make_manx.mak" (will use "big" features by default).
 # - Run the tests: "make -f Make_manx.mak test"
@@ -115,7 +115,7 @@ DOSBIN_S =  dosbin_s
 #
 # PC:
 # - "make dossrc" and "make dosrt".  Unpack the archives on a PC.
-# 16 bit DOS version:
+# 16 bit DOS version: (OBSOLETE, 16 bit version doesn't build)
 # - Set environment for compiling with Borland C++ 3.1.
 # - "bmake -f Make_bc3.mak BOR=E:\borlandc" (compiling xxd might fail, in that
 #   case set environment for compiling with Borland C++ 4.0 and do
@@ -179,7 +179,7 @@ DOSBIN_S =  dosbin_s
 # - go to ../nsis and do "makensis gvim.nsi".
 # - Copy gvim##.exe to the dist directory.
 #
-# OS/2:
+# OS/2: (OBSOLETE, OS/2 version is no longer distributed)
 # - Unpack the Unix "src", "extra" and "rt" archives.
 # - "make -f Make_os2.mak".
 # - Rename the executables to vimos2.exe, xxdos2.exe and teeos2.exe and copy

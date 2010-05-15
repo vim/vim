@@ -24,7 +24,7 @@ Most code can be found in a file with an obvious name (incomplete list):
 	fold.c		folding
 	getchar.c	getting characters and key mapping
 	mark.c		marks
-	mbyte.c		multy-byte character handling
+	mbyte.c		multi-byte character handling
 	memfile.c	storing lines for buffers in a swapfile
 	memline.c	storing lines for buffers in memory
 	menu.c		menus

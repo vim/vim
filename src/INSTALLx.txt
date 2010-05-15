@@ -50,7 +50,7 @@ You need to set the following "configure" command line switches:
 	--host.
 
 --with-tlib=... :
-	Which terminal library to.
+	Which terminal library to use.
 	For example, "ncurses".
 
 
@@ -68,26 +68,26 @@ ac_cv_sizeof_int:
 	machines.
 
 vi_cv_path_python_conf:
-	If Python support is enabled, set this variables to the path for
+	If Python support is enabled, set this variable to the path for
 	Python's library implementation. This is a path like
 	"/usr/lib/pythonX.Y/config" (the directory contains a file
 	"config.c").
 
 vi_cv_var_python_epfx:
-	If Python support is enabled, set this variables to the execution
+	If Python support is enabled, set this variable to the execution
 	prefix of your Python interpreter (that is, where it thinks it is
 	running).
 	This is the output of the following Python script:
 		import sys; print sys.exec_prefix
 
 vi_cv_var_python_pfx:
-	If Python support is enabled, set this variables to the prefix of your
-	Python interpreter (that is, where was installed).
+	If Python support is enabled, set this variable to the prefix of your
+	Python interpreter (that is, where it was installed).
 	This is the output of the following Python script:
 		import sys; print sys.prefix
 
 vi_cv_var_python_version:
-	If Python support is enabled, set this variables to the version of the
+	If Python support is enabled, set this variable to the version of the
 	Python interpreter that will be used.
 	This is the output of the following Python script:
 		import sys; print sys.version[:3]
@@ -133,11 +133,11 @@ vim_cv_toupper_broken:
 
 vim_cv_tty_group:
 	The default group of pseudo terminals. Either set to the numeric value
-	of the your tty group or to "world" if they are world accessable.
+	of your tty group or to "world" if they are world accessible.
 
 vim_cv_tty_mode:
-	The default mode of pseudo terminals if they are not world accessable.
-	Most propably the value "0620".
+	The default mode of pseudo terminals if they are not world accessible.
+	Most probably the value "0620".
 
 
 4. EXAMPLE:

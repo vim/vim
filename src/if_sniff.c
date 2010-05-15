@@ -969,20 +969,20 @@ get_request(fd, buf, maxlen)
 #ifdef HAVE_SELECT
 	    if (select(fd + 1, &rfds, NULL, NULL, &tval) > 0)
 #else
-		if (poll(&fds, 1, 0) > 0)
+	    if (poll(&fds, 1, 0) > 0)
 #endif
-		{
-		    pos = 0;
-		    bytes = read(fd, inbuf, sizeof(inbuf));
-		    if (bytes <= 0)
-			return bytes;
-		}
-		else
-		{
-		    pos = pos-len;
-		    buf[0] = '\0';
-		    return 0;
-		}
+	    {
+		pos = 0;
+		bytes = read(fd, inbuf, sizeof(inbuf));
+		if (bytes <= 0)
+		    return bytes;
+	    }
+	    else
+	    {
+		pos = pos-len;
+		buf[0] = '\0';
+		return 0;
+	    }
 	}
 	if ((buf[len] = inbuf[pos++]) =='\n')
 	    break;
