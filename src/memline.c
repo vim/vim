@@ -870,6 +870,7 @@ ml_recover()
     int		serious_error = TRUE;
     long	mtime;
     int		attr;
+    int		orig_file_status = NOTDONE;
 
     recoverymode = TRUE;
     called_from_main = (curbuf->b_ml.ml_mfp == NULL);
@@ -1119,12 +1120,8 @@ ml_recover()
      * 'fileencoding', etc.  Ignore errors.  The text itself is not used.
      */
     if (curbuf->b_ffname != NULL)
-    {
-	(void)readfile(curbuf->b_ffname, NULL, (linenr_T)0,
+	orig_file_status = readfile(curbuf->b_ffname, NULL, (linenr_T)0,
 			      (linenr_T)0, (linenr_T)MAXLNUM, NULL, READ_NEW);
-	while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
-	    ml_delete((linenr_T)1, FALSE);
-    }
 
     /* Use the 'fileformat' and 'fileencoding' as stored in the swap file. */
     if (b0_ff != 0)
@@ -1325,10 +1322,46 @@ ml_recover()
     }
 
     /*
-     * The dummy line from the empty buffer will now be after the last line in
-     * the buffer. Delete it.
+     * Compare the buffer contents with the original file.  When they differ
+     * set the 'modified' flag.
+     * Lines 1 - lnum are the new contents.
+     * Lines lnum + 1 to ml_line_count are the original contents.
+     * Line ml_line_count + 1 in the dummy empty line.
      */
-    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+    if (orig_file_status != OK || curbuf->b_ml.ml_line_count != lnum * 2 + 1)
+    {
+	/* Recovering an empty file results in two lines and the first line is
+	 * empty.  Don't set the modified flag then. */
+	if (!(curbuf->b_ml.ml_line_count == 2 && *ml_get(1) == NUL))
+	{
+	    changed_int();
+	    ++curbuf->b_changedtick;
+	}
+    }
+    else
+    {
+	for (idx = 1; idx <= lnum; ++idx)
+	{
+	    /* Need to copy one line, fetching the other one may flush it. */
+	    p = vim_strsave(ml_get(idx));
+	    i = STRCMP(p, ml_get(idx + lnum));
+	    vim_free(p);
+	    if (i != 0)
+	    {
+		changed_int();
+		++curbuf->b_changedtick;
+		break;
+	    }
+	}
+    }
+
+    /*
+     * Delete the lines from the original file and the dummy line from the
+     * empty buffer.  These will now be after the last line in the buffer.
+     */
+    while (curbuf->b_ml.ml_line_count > lnum
+				       && !(curbuf->b_ml.ml_flags & ML_EMPTY))
+	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
     curbuf->b_flags |= BF_RECOVERED;
 
     recoverymode = FALSE;
@@ -1345,10 +1378,15 @@ ml_recover()
     }
     else
     {
-	MSG(_("Recovery completed. You should check if everything is OK."));
-	MSG_PUTS(_("\n(You might want to write out this file under another name\n"));
-	MSG_PUTS(_("and run diff with the original file to check for changes)\n"));
-	MSG_PUTS(_("Delete the .swp file afterwards.\n\n"));
+	if (curbuf->b_changed)
+	{
+	    MSG(_("Recovery completed. You should check if everything is OK."));
+	    MSG_PUTS(_("\n(You might want to write out this file under another name\n"));
+	    MSG_PUTS(_("and run diff with the original file to check for changes)"));
+	}
+	else
+	    MSG(_("Recovery completed. Buffer contents equals file contents."));
+	MSG_PUTS(_("\nYou may want to delete the .swp file now.\n\n"));
 	cmdline_row = msg_row;
     }
     redraw_curbuf_later(NOT_VALID);

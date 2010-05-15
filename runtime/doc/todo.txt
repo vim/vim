@@ -1148,8 +1148,25 @@ Patch for adding "J" flag to 'cinoptions': placement of jump label.
 
 
 Vim 7.3:
+Patches to include:
 -   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
     Update 2010 May 2.
+-   Add blowfish encryption.  Openssl has an implementation.  Also by Paul
+    Kocher (LGPL), close to original.  Mohsin also has some ideas.
+    Take four bytes and turn them into unsigned to avoid byte-order problems.
+    Need to buffer up to 7 bytes to align on 8 byte boundaries.
+    Patch from Moshin: 2010 May 8, addition May 9.
+-   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
+-   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
+    26) Now with Mercurial repository (2010 Jan 2)
+- Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
+- Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
+- Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
+- Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
+- Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
+- Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
+  15)
+Needs some work:
 -   Use NSIS 2.45, it includes Windows 7 support.
 	Include "RequestExecutionLevel highest"
 	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
@@ -1169,28 +1186,11 @@ Vim 7.3:
     before some time/date can be flushed. 'undopersist' gives maximum time to
     keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot and
     extension: ".filename.un~" (like swapfile but "un~" instead of "swp").
--   Add blowfish encryption.  Openssl has an implementation.  Also by Paul
-    Kocher (LGPL), close to original.  Mohsin also has some ideas.
-    Take four bytes and turn them into unsigned to avoid byte-order problems.
-    Need to buffer up to 7 bytes to align on 8 byte boundaries.
-    Patch from Moshin: 2010 May 8, addition May 9.
--   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
--   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
-    26) Now with Mercurial repository (2010 Jan 2)
 -   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.
 	Most of do_source() would not be used, need a new function.
 	It's easy when not doing breakpoints or profiling.
-- Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
-- Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
-- Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
-- Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
-- Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
-- Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
-  15)
-- After using ":recover" or recovering a file in another way, ":x" doesn't
-  save what you see.  Mark the buffer as modified?  Only when the text is
-  actually different from the original file.
+Before (beta) release:
 - Add fixes for 7.2 to version7.txt
 
 

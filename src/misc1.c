@@ -2514,17 +2514,26 @@ changed()
 		msg_scroll = save_msg_scroll;
 	    }
 	}
-	curbuf->b_changed = TRUE;
-	ml_setflags(curbuf);
-#ifdef FEAT_WINDOWS
-	check_status(curbuf);
-	redraw_tabline = TRUE;
-#endif
-#ifdef FEAT_TITLE
-	need_maketitle = TRUE;	    /* set window title later */
-#endif
+	changed_int();
     }
     ++curbuf->b_changedtick;
+}
+
+/*
+ * Internal part of changed(), no user interaction.
+ */
+    void
+changed_int()
+{
+    curbuf->b_changed = TRUE;
+    ml_setflags(curbuf);
+#ifdef FEAT_WINDOWS
+    check_status(curbuf);
+    redraw_tabline = TRUE;
+#endif
+#ifdef FEAT_TITLE
+    need_maketitle = TRUE;	    /* set window title later */
+#endif
 }
 
 static void changedOneline __ARGS((buf_T *buf, linenr_T lnum));

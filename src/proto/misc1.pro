@@ -30,6 +30,7 @@ void pchar_cursor __ARGS((int c));
 int inindent __ARGS((int extra));
 char_u *skip_to_option_part __ARGS((char_u *p));
 void changed __ARGS((void));
+void changed_int __ARGS((void));
 void changed_bytes __ARGS((linenr_T lnum, colnr_T col));
 void appended_lines __ARGS((linenr_T lnum, long count));
 void appended_lines_mark __ARGS((linenr_T lnum, long count));
