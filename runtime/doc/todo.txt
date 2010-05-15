@@ -1148,10 +1148,8 @@ Patch for adding "J" flag to 'cinoptions': placement of jump label.
 
 
 Vim 7.3:
--   Create Mercurial repository.
 -   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
     Update 2010 May 2.
--   Use latest autoconf (2.65)
 -   Use NSIS 2.45, it includes Windows 7 support.
 	Include "RequestExecutionLevel highest"
 	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
