@@ -654,7 +654,7 @@ EXTRA =		\
 		farsi/fonts/*/far-* \
 		runtime/vimlogo.xpm \
 		src/swis.s \
-		src/tee/Makefile* \
+		src/tee/Makefile \
 		src/tee/tee.c \
 		csdpmi4b.zip \
 

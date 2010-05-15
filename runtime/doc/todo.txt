@@ -1156,7 +1156,6 @@ Vim 7.3:
 -   Supply a 64 bit version of gvimext.dll for 64 bit windows.
     http://code.google.com/p/vim-win3264/
     Gvim can be 32 bit.
--   Include all files in distro, no "extra" and "lang" package.
 -   Easier/standard way to disable default plugins.
 8   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
     20.  Repost 2009 Nov 16.
