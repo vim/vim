@@ -226,9 +226,6 @@ COMMENT_FARSI = comment/$(VERSION)-farsi
 dist/$(COMMENT_RT): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) runtime files for MS-DOS and MS-Windows" > dist/$(COMMENT_RT)
 
-dist/$(COMMENT_RT1): dist/comment
-	echo "Vim - Vi IMproved - v$(VDOT) runtime files (PART 1) for MS-DOS and MS-Windows" > dist/$(COMMENT_RT1)
-
 dist/$(COMMENT_D16): dist/comment
 	echo "Vim - Vi IMproved - v$(VDOT) binaries for MS-DOS 16 bit real mode" > dist/$(COMMENT_D16)
 
