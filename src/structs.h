@@ -327,7 +327,7 @@ struct u_header
 typedef struct m_info minfo_T;
 
 /*
- * stucture used to link chunks in one of the free chunk lists.
+ * structure used to link chunks in one of the free chunk lists.
  */
 struct m_info
 {
@@ -795,9 +795,9 @@ struct syn_state
 	garray_T	sst_ga;	/* growarray for long state stack */
     } sst_union;
     int		sst_next_flags;	/* flags for sst_next_list */
+    int		sst_stacksize;	/* number of states on the stack */
     short	*sst_next_list;	/* "nextgroup" list in this state
 				 * (this is a copy, don't free it! */
-    short	sst_stacksize;	/* number of states on the stack */
     disptick_T	sst_tick;	/* tick when last displayed */
     linenr_T	sst_change_lnum;/* when non-zero, change in this line
 				 * may have made the state invalid */
@@ -2138,7 +2138,7 @@ typedef struct cmdarg_S
 #define SHAPE_IDX_CI	5	/* Command line Insert mode */
 #define SHAPE_IDX_CR	6	/* Command line Replace mode */
 #define SHAPE_IDX_O	7	/* Operator-pending mode */
-#define SHAPE_IDX_VE	8	/* Visual mode with 'seleciton' exclusive */
+#define SHAPE_IDX_VE	8	/* Visual mode with 'selection' exclusive */
 #define SHAPE_IDX_CLINE	9	/* On command line */
 #define SHAPE_IDX_STATUS 10	/* A status line */
 #define SHAPE_IDX_SDRAG 11	/* dragging a status line */
@@ -2267,7 +2267,7 @@ struct VimMenu
 /*  short	index;	*/	    /* the item index within the father menu */
     short	menu_id;	    /* the menu id to which this item belong */
     short	submenu_id;	    /* the menu id of the children (could be
-				       get throught some tricks) */
+				       get through some tricks) */
     MenuHandle	menu_handle;
     MenuHandle	submenu_handle;
 #endif
