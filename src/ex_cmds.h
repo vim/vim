@@ -1152,8 +1152,7 @@ struct exarg
     int		force_ff;	/* ++ff= argument (index in cmd[]) */
 #ifdef FEAT_MBYTE
     int		force_enc;	/* ++enc= argument (index in cmd[]) */
-    int		bad_char_idx;	/* ++bad= argument (index in cmd[]) */
-    int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement char */
+    int		bad_char;	/* BAD_KEEP, BAD_DROP or replacement byte */
 #endif
 #ifdef FEAT_USR_CMDS
     int		useridx;	/* user command index */
