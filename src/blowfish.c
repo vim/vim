@@ -1,6 +1,6 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
- * Blowfish encryption for vim; in Blowfish output feedback mode.
+ * Blowfish encryption for Vim; in Blowfish output feedback mode.
  * GPL(C) Mohsin Ahmed, http://www.cs.albany.edu/~mosh
  * Based on http://www.schneier.com/blowfish.html by Bruce Schneier.
  */
@@ -399,10 +399,10 @@ bf_key_init(password)
 {
     int    i, j, keypos = 0;
     long_u val, data_l, data_r;
-    char   *key;
+    char_u *key;
     int    keylen;
 
-    key = sha256_key((char *)password);
+    key = sha256_key(password);
     keylen = STRLEN(key);
     for (i = 0; i < 256; ++i)
     {
@@ -416,7 +416,7 @@ bf_key_init(password)
     {
 	val = 0;
 	for (j = 0; j < 4; ++j)
-	    val = (val << 8) | (key[keypos++ % keylen] & 0xff);
+	    val = (val << 8) | key[keypos++ % keylen];
 	pax[i] = ipa[i] ^ val;
     }
 

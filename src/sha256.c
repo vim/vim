@@ -28,7 +28,7 @@ static void sha256_starts __ARGS((context_sha256_T *ctx));
 static void sha256_process __ARGS((context_sha256_T *ctx, char_u data[64]));
 static void sha256_update __ARGS((context_sha256_T *ctx, char_u *input, uint32_t length));
 static void sha256_finish __ARGS((context_sha256_T *ctx, char_u digest[32]));
-static char *sha256_bytes __ARGS((char *buf, int buflen));
+static char_u *sha256_bytes __ARGS((char_u *buf, int buflen));
 static unsigned int get_some_time __ARGS((void));
 
 
@@ -277,48 +277,42 @@ sha256_finish(ctx, digest)
     PUT_UINT32(ctx->state[7], digest, 28);
 }
 
-    static char *
+/*
+ * Returns hex digest of "buf[buflen]" in a static array.
+ */
+    static char_u *
 sha256_bytes(buf, buflen)
-    char *buf;
-    int  buflen;
+    char_u *buf;
+    int    buflen;
 {
     char_u	     sha256sum[32];
-    static char      hexit[65];
+    static char_u    hexit[65];
     int		     j;
     context_sha256_T ctx;
 
     sha256_self_test();
 
     sha256_starts(&ctx);
-    sha256_update(&ctx, (char_u *)buf, buflen);
+    sha256_update(&ctx, buf, buflen);
     sha256_finish(&ctx, sha256sum);
     for (j = 0; j < 32; j++)
-	sprintf(hexit + j * 2, "%02x", sha256sum[j]);
+	sprintf((char *)hexit + j * 2, "%02x", sha256sum[j]);
     hexit[sizeof(hexit) - 1] = '\0';
     return hexit;
 }
 
 /*
- * Returns sha256(buf) as 64 hex chars.
+ * Returns sha256(buf) as 64 hex chars in static array.
  */
-    char *
+    char_u *
 sha256_key(buf)
-    char *buf;
+    char_u *buf;
 {
-    static char *hexit = 0;
-    int		buflen;
-
     /* No passwd means don't encrypt */
     if (buf == NULL || *buf == NUL)
-	return "";
+	return (char_u *)"";
 
-    /* if password is "0", reuse previous hash, for user convienience. */
-    if (!strcmp(buf, "0") && hexit)
-	return hexit;
-
-    buflen = strlen(buf);
-    hexit = sha256_bytes(buf, buflen);
-    return hexit;
+    return sha256_bytes(buf, STRLEN(buf));
 }
 
 /*
@@ -353,7 +347,7 @@ sha256_self_test()
     char_u	     buf[1000];
     char_u	     sha256sum[32];
     static int	     failures = 0;
-    char	     *hexit;
+    char_u	     *hexit;
     static int	     sha256_self_tested = 0;
 
     if (sha256_self_tested > 0)
@@ -364,9 +358,9 @@ sha256_self_test()
     {
 	if (i < 2)
 	{
-	    hexit = sha256_bytes(sha_self_test_msg[i],
-						strlen(sha_self_test_msg[i]));
-	    strcpy(output, hexit);
+	    hexit = sha256_bytes((char_u *)sha_self_test_msg[i],
+						STRLEN(sha_self_test_msg[i]));
+	    STRCPY(output, hexit);
 	}
 	else
 	{

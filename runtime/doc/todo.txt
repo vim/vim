@@ -30,16 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-check blowfish.c
-check sha256.c
-Use 'cm' option only when FEAT_CRYPT is defined.
-When not full match with magic, check for head and give warning about
-unsupported crypt method.
-if 'enc' is ucs-2, does utf-8 to ucs-2 encoding always work for seed?
-
 Crypt update:
-- move bf_self_test() and sha256_self_test() elsewhere
+- Use 'cm' option only when FEAT_CRYPT is defined.
+- When not full match with magic, check for head and give warning about
+  unsupported crypt method.
+- if 'enc' is ucs-2, does utf-8 to ucs-2 encoding always work for seed?
 - Update E000 to error number.
+
+Include cabal and obj syntax files. (Vincent Berthoux, 2010 May 16)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
