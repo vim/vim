@@ -818,6 +818,7 @@ Short explanation of each option:		*option-list*
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting
+'relativenumber'  'rnu'	    show relative line number in front of each line
 'remap'			    allow mappings to work recursively
 'report'		    threshold for reporting nr. of lines changed
 'restorescreen'   'rs'	    Win32: restore screen when exiting

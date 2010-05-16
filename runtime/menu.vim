@@ -276,6 +276,7 @@ endfun
 
 " Boolean options
 an 20.440.100 &Edit.F&ile\ Settings.Toggle\ Line\ &Numbering<Tab>:set\ nu!	:set nu! nu?<CR>
+an 20.440.105 &Edit.F&ile\ Settings.Toggle\ relati&ve\ Line\ Numbering<Tab>:set\ rnu!	:set rnu! rnu?<CR>
 an 20.440.110 &Edit.F&ile\ Settings.Toggle\ &List\ Mode<Tab>:set\ list!	:set list! list?<CR>
 an 20.440.120 &Edit.F&ile\ Settings.Toggle\ Line\ &Wrap<Tab>:set\ wrap!	:set wrap! wrap?<CR>
 an 20.440.130 &Edit.F&ile\ Settings.Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	:set lbr! lbr?<CR>

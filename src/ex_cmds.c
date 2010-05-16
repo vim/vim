@@ -3488,6 +3488,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	curbuf->b_p_ma = FALSE;		/* not modifiable */
 	curbuf->b_p_bin = FALSE;	/* reset 'bin' before reading file */
 	curwin->w_p_nu = 0;		/* no line numbers */
+	curwin->w_p_rnu = 0;		/* no relative line numbers */
 #ifdef FEAT_SCROLLBIND
 	curwin->w_p_scb = FALSE;	/* no scroll binding */
 #endif

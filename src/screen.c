@@ -423,9 +423,11 @@ update_screen(type)
 	check_for_delay(FALSE);
 
 #ifdef FEAT_LINEBREAK
-    /* Force redraw when width of 'number' column changes. */
+    /* Force redraw when width of 'number' or 'relativenumber' column
+     * changes. */
     if (curwin->w_redr_type < NOT_VALID
-	   && curwin->w_nrwidth != (curwin->w_p_nu ? number_width(curwin) : 0))
+	   && curwin->w_nrwidth != ((curwin->w_p_nu || curwin->w_p_rnu)
+				    ? number_width(curwin) : 0))
 	curwin->w_redr_type = NOT_VALID;
 #endif
 
@@ -871,8 +873,9 @@ win_update(wp)
 #endif
 
 #ifdef FEAT_LINEBREAK
-    /* Force redraw when width of 'number' column changes. */
-    i = wp->w_p_nu ? number_width(wp) : 0;
+    /* Force redraw when width of 'number' or 'relativenumber' column
+     * changes. */
+    i = (wp->w_p_nu || wp->w_p_rnu) ? number_width(wp) : 0;
     if (wp->w_nrwidth != i)
     {
 	type = NOT_VALID;
@@ -2118,7 +2121,7 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
     /* Build the fold line:
      * 1. Add the cmdwin_type for the command-line window
      * 2. Add the 'foldcolumn'
-     * 3. Add the 'number' column
+     * 3. Add the 'number' or 'relativenumber' column
      * 4. Compose the text
      * 5. Add the text
      * 6. set highlighting for the Visual area an other text
@@ -2180,7 +2183,8 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 				 ScreenAttrs[off + (p) + ri] = v
 #endif
 
-    /* Set all attributes of the 'number' column and the text */
+    /* Set all attributes of the 'number' or 'relativenumber' column and the
+     * text */
     RL_MEMSET(col, hl_attr(HLF_FL), W_WIDTH(wp) - col);
 
 #ifdef FEAT_SIGNS
@@ -2206,18 +2210,27 @@ fold_line(wp, fold_count, foldinfo, lnum, row)
 #endif
 
     /*
-     * 3. Add the 'number' column
+     * 3. Add the 'number' or 'relativenumber' column
      */
-    if (wp->w_p_nu)
+    if (wp->w_p_nu || wp->w_p_rnu)
     {
 	len = W_WIDTH(wp) - col;
 	if (len > 0)
 	{
 	    int	    w = number_width(wp);
+	    long num;
 
 	    if (len > w + 1)
 		len = w + 1;
-	    sprintf((char *)buf, "%*ld ", w, (long)lnum);
+
+	    if (wp->w_p_nu)
+		/* 'number' */
+		num = (long)lnum;
+	    else
+		/* 'relativenumber', don't use negative numbers */
+		num = (long)abs((int)get_cursor_rel_lnum(wp, lnum));
+
+	    sprintf((char *)buf, "%*ld ", w, num);
 #ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		/* the line number isn't reversed */
@@ -3327,9 +3340,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    if (draw_state == WL_NR - 1 && n_extra == 0)
 	    {
 		draw_state = WL_NR;
-		/* Display the line number.  After the first fill with blanks
-		 * when the 'n' flag isn't in 'cpo' */
-		if (wp->w_p_nu
+		/* Display the absolute or relative line number. After the
+		 * first fill with blanks when the 'n' flag isn't in 'cpo' */
+		if ((wp->w_p_nu || wp->w_p_rnu)
 			&& (row == startrow
 #ifdef FEAT_DIFF
 			    + filler_lines
@@ -3343,8 +3356,18 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #endif
 			    )
 		    {
+			long num;
+
+			if (wp->w_p_nu)
+			    /* 'number' */
+			    num = (long)lnum;
+			else
+			    /* 'relativenumber', don't use negative numbers */
+			    num = (long)abs((int)get_cursor_rel_lnum(wp,
+								    lnum));
+
 			sprintf((char *)extra, "%*ld ",
-						number_width(wp), (long)lnum);
+						number_width(wp), num);
 			if (wp->w_skipcol > 0)
 			    for (p_extra = extra; *p_extra == ' '; ++p_extra)
 				*p_extra = '-';
@@ -4707,7 +4730,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	else
 	    --n_skip;
 
-	/* Only advance the "vcol" when after the 'number' column. */
+	/* Only advance the "vcol" when after the 'number' or 'relativenumber'
+	 * column. */
 	if (draw_state > WL_NR
 #ifdef FEAT_DIFF
 		&& filler_todo <= 0
@@ -9770,8 +9794,8 @@ win_redr_ruler(wp, always)
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
- * Return the width of the 'number' column.
- * Caller may need to check if 'number' is set.
+ * Return the width of the 'number' and 'relativenumber' column.
+ * Caller may need to check if 'number' or 'relativenumber' is set.
  * Otherwise it depends on 'numberwidth' and the line count.
  */
     int
@@ -9781,7 +9805,13 @@ number_width(wp)
     int		n;
     linenr_T	lnum;
 
-    lnum = wp->w_buffer->b_ml.ml_line_count;
+    if (wp->w_p_nu)
+	/* 'number' */
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+    else
+	/* 'relativenumber' */
+	lnum = wp->w_height;
+
     if (lnum == wp->w_nrwidth_line_count)
 	return wp->w_nrwidth_width;
     wp->w_nrwidth_line_count = lnum;

@@ -643,8 +643,8 @@ Options: ~
 'maxmempattern'		maximum amount of memory to use for pattern matching
 'mkspellmem'		parameters for |:mkspell| memory use
 'mzquantum'		Time in msec to schedule MzScheme threads.
-'numberwidth'		Minimal width of the space used for the 'number'
-			option. (Emmanuel Renieris)
+'numberwidth'		Minimal width of the space used for the 'number' and
+			'relativenumber' option. (Emmanuel Renieris)
 'omnifunc'		The name of the function used for omni completion.
 'operatorfunc'		function to be called for |g@| operator
 'printmbcharset'	CJK character set to be used for :hardcopy

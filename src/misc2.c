@@ -469,6 +469,57 @@ decl(lp)
 }
 
 /*
+ * Get the line number relative to the current cursor position, i.e. the
+ * difference between line number and cursor position. Only look for lines that
+ * can be visible, folded lines don't count.
+ */
+    linenr_T
+get_cursor_rel_lnum(wp, lnum)
+    win_T	*wp;
+    linenr_T	lnum;		    /* line number to get the result for */
+{
+    linenr_T	cursor = wp->w_cursor.lnum;
+    linenr_T	retval = 0;
+
+#ifdef FEAT_FOLDING
+    if (hasAnyFolding(wp))
+    {
+	if (lnum > cursor)
+	{
+	    while (lnum > cursor)
+	    {
+		(void)hasFolding(lnum, &lnum, NULL);
+		/* if lnum and cursor are in the same fold,
+		 * now lnum <= cursor */
+		if (lnum > cursor)
+		    retval++;
+		lnum--;
+	    }
+	}
+	else if (lnum < cursor)
+	{
+	    while (lnum < cursor)
+	    {
+		(void)hasFolding(lnum, NULL, &lnum);
+		/* if lnum and cursor are in the same fold,
+		 * now lnum >= cursor */
+		if (lnum < cursor)
+		    retval--;
+		lnum++;
+	    }
+	}
+	/* else if (lnum == cursor)
+	 *     retval = 0;
+	 */
+    }
+    else
+#endif
+	retval = lnum - cursor;
+
+    return retval;
+}
+
+/*
  * Make sure curwin->w_cursor.lnum is valid.
  */
     void

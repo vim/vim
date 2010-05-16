@@ -6272,7 +6272,7 @@ comp_textwidth(ff)
 		    )
 	    textwidth -= 1;
 #endif
-	if (curwin->w_p_nu)
+	if (curwin->w_p_nu || curwin->w_p_rnu)
 	    textwidth -= 8;
     }
     if (textwidth < 0)

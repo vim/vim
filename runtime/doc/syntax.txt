@@ -4203,7 +4203,7 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 		":s///c"
 							*hl-LineNr*
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
-		option is set.
+		or 'relativenumber' option is set.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|

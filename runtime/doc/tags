@@ -559,6 +559,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'noprompt'	options.txt	/*'noprompt'*
 'nopvw'	options.txt	/*'nopvw'*
 'noreadonly'	options.txt	/*'noreadonly'*
+'norelativenumber'	options.txt	/*'norelativenumber'*
 'noremap'	options.txt	/*'noremap'*
 'norestorescreen'	options.txt	/*'norestorescreen'*
 'norevins'	options.txt	/*'norevins'*
@@ -567,6 +568,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'norightleftcmd'	options.txt	/*'norightleftcmd'*
 'norl'	options.txt	/*'norl'*
 'norlc'	options.txt	/*'norlc'*
+'nornu'	options.txt	/*'nornu'*
 'noro'	options.txt	/*'noro'*
 'nors'	options.txt	/*'nors'*
 'noru'	options.txt	/*'noru'*
@@ -708,6 +710,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'readonly'	options.txt	/*'readonly'*
 'redraw'	vi_diff.txt	/*'redraw'*
 'redrawtime'	options.txt	/*'redrawtime'*
+'relativenumber'	options.txt	/*'relativenumber'*
 'remap'	options.txt	/*'remap'*
 'report'	options.txt	/*'report'*
 'restorescreen'	options.txt	/*'restorescreen'*
@@ -717,6 +720,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'rightleftcmd'	options.txt	/*'rightleftcmd'*
 'rl'	options.txt	/*'rl'*
 'rlc'	options.txt	/*'rlc'*
+'rnu'	options.txt	/*'rnu'*
 'ro'	options.txt	/*'ro'*
 'rs'	options.txt	/*'rs'*
 'rtp'	options.txt	/*'rtp'*

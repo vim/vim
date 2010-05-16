@@ -11,6 +11,7 @@ int incl __ARGS((pos_T *lp));
 int dec_cursor __ARGS((void));
 int dec __ARGS((pos_T *lp));
 int decl __ARGS((pos_T *lp));
+linenr_T get_cursor_rel_lnum __ARGS((win_T *wp, linenr_T lnum));
 void check_cursor_lnum __ARGS((void));
 void check_cursor_col __ARGS((void));
 void check_cursor __ARGS((void));

@@ -916,14 +916,14 @@ validate_cursor_col()
 }
 
 /*
- * Compute offset of a window, occupied by line number, fold column and sign
- * column (these don't move when scrolling horizontally).
+ * Compute offset of a window, occupied by absolute or relative line number,
+ * fold column and sign column (these don't move when scrolling horizontally).
  */
     int
 win_col_off(wp)
     win_T	*wp;
 {
-    return ((wp->w_p_nu ? number_width(wp) + 1 : 0)
+    return (((wp->w_p_nu || wp->w_p_rnu) ? number_width(wp) + 1 : 0)
 #ifdef FEAT_CMDWIN
 	    + (cmdwin_type == 0 || wp != curwin ? 0 : 1)
 #endif
@@ -949,13 +949,14 @@ curwin_col_off()
 
 /*
  * Return the difference in column offset for the second screen line of a
- * wrapped line.  It's 8 if 'number' is on and 'n' is in 'cpoptions'.
+ * wrapped line.  It's 8 if 'number' or 'relativenumber' is on and 'n' is in
+ * 'cpoptions'.
  */
     int
 win_col_off2(wp)
     win_T	*wp;
 {
-    if (wp->w_p_nu && vim_strchr(p_cpo, CPO_NUMCOL) != NULL)
+    if ((wp->w_p_nu || wp->w_p_rnu) && vim_strchr(p_cpo, CPO_NUMCOL) != NULL)
 	return number_width(wp) + 1;
     return 0;
 }
@@ -1218,17 +1219,22 @@ curs_columns(scroll)
     if (prev_skipcol != curwin->w_skipcol)
 	redraw_later(NOT_VALID);
 
+    /* Redraw when w_row changes and 'relativenumber' is set */
+    if (((curwin->w_valid & VALID_WROW) == 0 && (curwin->w_p_rnu
 #ifdef FEAT_SYN_HL
-    /* Redraw when w_virtcol changes and 'cursorcolumn' is set, or when w_row
-     * changes and 'cursorline' is set. */
-    if (((curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
-		|| (curwin->w_p_cul && (curwin->w_valid & VALID_WROW) == 0))
-# ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-# endif
-	    )
-	redraw_later(SOME_VALID);
+	/* or when w_row changes and 'cursorline' is set. */
+						|| curwin->w_p_cul
 #endif
+	))
+#ifdef FEAT_SYN_HL
+	/* or when w_virtcol changes and 'cursorcolumn' is set */
+	|| (curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0)
+#endif
+	)
+# ifdef FEAT_INS_EXPAND
+	    if (!pum_visible())
+# endif
+		redraw_later(SOME_VALID);
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }

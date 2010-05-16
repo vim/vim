@@ -1884,8 +1884,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			parenthesis match.  When included "%" ignores
 			backslashes, which is Vi compatible.
 								*cpo-n*
-		n	When included, the column used for 'number' will also
-			be used for text of wrapped lines.
+		n	When included, the column used for 'number' and
+			'relativenumber' will also be used for text of wrapped
+			lines.
 								*cpo-o*
 		o	Line offset to search command is not remembered for
 			next search.
@@ -3608,7 +3609,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-Search|	 l  last search pattern highlighting (see 'hlsearch')
 	|hl-MoreMsg|	 m  |more-prompt|
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")
-	|hl-LineNr|	 n  line number for ":number" and ":#" commands
+	|hl-LineNr|	 n  line number for ":number" and ":#" commands, and
+			    when 'number' or 'relativenumber' option is set.
 	|hl-Question|	 r  |hit-enter| prompt and yes/no questions
 	|hl-StatusLine|	 s  status line of current window |status-line|
 	|hl-StatusLineNC| S  status lines of not-current windows
@@ -4871,6 +4873,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When a long, wrapped line doesn't start with the first character, '-'
 	characters are put before the number.
 	See |hl-LineNr| for the highlighting used for the number.
+	When setting this option, 'relativenumber' is reset.
 
 						*'numberwidth'* *'nuw'*
 'numberwidth' 'nuw'	number	(Vim default: 4  Vi default: 8)
@@ -4879,13 +4882,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |+linebreak|
 			feature}
 	Minimal number of columns to use for the line number.  Only relevant
-	when the 'number' option is set or printing lines with a line number.
-	Since one space is always between the number and the text, there is
-	one less character for the number itself.
+	when the 'number' or 'relativenumber' option is set or printing lines
+	with a line number. Since one space is always between the number and
+	the text, there is one less character for the number itself.
 	The value is the minimum width.  A bigger width is used when needed to
-	fit the highest line number in the buffer.  Thus with the Vim default
-	of 4 there is room for a line number up to 999.  When the buffer has
-	1000 lines five columns will be used.
+	fit the highest line number in the buffer respectively the number of
+	rows in the window, depending on whether 'number' or 'relativenumber'
+	is set. Thus with the Vim default of 4 there is room for a line number
+	up to 999. When the buffer has 1000 lines five columns will be used.
 	The minimum value is 1, the maximum value is 10.
 	NOTE: 'numberwidth' is reset to 8 when 'compatible' is set.
 
@@ -5258,6 +5262,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When redrawing takes more than this many milliseconds no further
 	matches will be highlighted.  This is used to avoid that Vim hangs
 	when using a very complicated pattern.
+
+		*'relativenumber'* *'rnu'* *'norelativenumber'* *'nornu'*
+'relativenumber' 'rnu'	boolean	(default off)
+			local to window
+			{not in Vi}
+	Show the line number relative to the line with the cursor in front of
+	each line. Relative line numbers help you using the |count| you can
+	precede some vertical motion commands (e.g. j k + -) with, without
+	having to calculate it yourself. Especially useful in combination with
+	other commands (e.g. y d c < > gq gw =).
+	When the 'n' option is excluded from 'cpoptions' a wrapped
+	line will not use the column of line numbers (this is the default when
+	'compatible' isn't set).
+	The 'numberwidth' option can be used to set the room used for the line
+	number.
+	When a long, wrapped line doesn't start with the first character, '-'
+	characters are put before the number.
+	See |hl-LineNr| for the highlighting used for the number.
+	When setting this option, 'number' is reset.
 
 						*'remap'* *'noremap'*
 'remap'			boolean	(default on)

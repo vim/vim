@@ -169,6 +169,8 @@ typedef struct
 #define w_p_list w_onebuf_opt.wo_list	/* 'list' */
     int		wo_nu;
 #define w_p_nu w_onebuf_opt.wo_nu	/* 'number' */
+    int		wo_rnu;
+#define w_p_rnu w_onebuf_opt.wo_rnu	/* 'relativenumber' */
 #ifdef FEAT_LINEBREAK
     long	wo_nuw;
 # define w_p_nuw w_onebuf_opt.wo_nuw	/* 'numberwidth' */
@@ -1907,7 +1909,8 @@ struct window_S
 				       recomputed */
 #endif
 #ifdef FEAT_LINEBREAK
-    int		w_nrwidth;	    /* width of 'number' column being used */
+    int		w_nrwidth;	    /* width of 'number' and 'relativenumber'
+				       column being used */
 #endif
 
     /*
