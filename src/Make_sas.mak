@@ -179,6 +179,7 @@ OBJ = \
 	$(TERMLIB)
 
 PRO = \
+	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
 	proto/diff.pro \
@@ -214,6 +215,7 @@ PRO = \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/sha256.pro \
 	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
@@ -278,6 +280,8 @@ $(PRO): $(GST) vim.h
 	$(CC) $(CFLAGS) GPFILE=proto/$*.pro $(PROPT) $*.c
 
 # dependancies
+blowfish.o:		blowfish.c
+proto/blowfish.pro:	blowfish.c
 buffer.o:		buffer.c
 proto/buffer.pro:	buffer.c
 charset.o:		charset.c
@@ -348,6 +352,8 @@ screen.o:		screen.c
 proto/screen.pro:	screen.c
 search.o:		search.c
 proto/search.pro:	search.c
+sha256.o:		sha256.c
+proto/sha256.pro:	sha256.c
 spell.o:		spell.c
 proto/spell.pro:	spell.c
 syntax.o:		syntax.c

@@ -1,0 +1,37 @@
+Test for encryption.
+
+STARTTEST
+:so small.vim
+:/^start of testfile/+1
+:let lines = getline('.', '$')
+:new
+:call append(0, lines)
+:$d
+:X
+foobar
+foobar
+:w! Xtestfile
+:bwipe!
+:e Xtestfile
+foobar
+:let dec1_lines = getline('.', '$')
+:%s/^/2/
+:set key=
+:set cryptmethod=1
+:X
+barfoo
+barfoo
+:w! Xtestfile
+:bwipe!
+:e Xtestfile
+barfoo
+:call append(0, dec1_lines)
+:set key=
+:w! test.out
+:qa!
+ENDTEST
+
+start of testfile
+01234567890123456789012345678901234567
+line 2  foo bar blah
+line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx

@@ -33,8 +33,14 @@
 #define SMBUFSIZE	256	/* size of emergency write buffer */
 
 #ifdef FEAT_CRYPT
-# define CRYPT_MAGIC		"VimCrypt~01!"	/* "01" is the version nr */
+char crypt_magic_01[] = "VimCrypt~01!";
+char crypt_magic_02[] = "VimCrypt~02!";
 # define CRYPT_MAGIC_LEN	12		/* must be multiple of 4! */
+
+/* crypt_magic[0] is pkzip crypt, crypt_magic[1] is sha2+blowfish */
+static char   *crypt_magic[] = {crypt_magic_01, crypt_magic_02};
+static int    crypt_seed_len[] = {0, 8};
+#define CRYPT_SEED_LEN_MAX 8
 #endif
 
 /* Is there any system that doesn't have access()? */
@@ -54,6 +60,7 @@ static char_u *readfile_charconvert __ARGS((char_u *fname, char_u *fenc, int *fd
 static void check_marks_read __ARGS((void));
 #endif
 #ifdef FEAT_CRYPT
+static int get_crypt_method __ARGS((char *ptr, int len));
 static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, long *filesizep, int newfile));
 #endif
 #ifdef UNIX
@@ -1425,7 +1432,9 @@ retry:
 	     */
 	    if ((filesize == 0
 # ifdef FEAT_CRYPT
-			|| (filesize == CRYPT_MAGIC_LEN && cryptkey != NULL)
+		   || (filesize == (CRYPT_MAGIC_LEN
+					   + crypt_seed_len[use_crypt_method])
+							  && cryptkey != NULL)
 # endif
 		       )
 		    && (fio_flags == FIO_UCSBOM
@@ -2241,7 +2250,7 @@ failed:
 
 #ifdef FEAT_CRYPT
     if (cryptkey != curbuf->b_p_key)
-	vim_free(cryptkey);
+	free_crypt_key(cryptkey);
 #endif
 
 #ifdef FEAT_MBYTE
@@ -2456,7 +2465,8 @@ failed:
 		c = TRUE;
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
-		msg_add_lines(c, (long)linecnt, filesize - CRYPT_MAGIC_LEN);
+		msg_add_lines(c, (long)linecnt, filesize
+			- CRYPT_MAGIC_LEN - crypt_seed_len[use_crypt_method]);
 	    else
 #endif
 		msg_add_lines(c, (long)linecnt, filesize);
@@ -2783,7 +2793,29 @@ check_marks_read()
 
 #ifdef FEAT_CRYPT
 /*
- * Check for magic number used for encryption.
+ * Get the crypt method used for a file from "ptr[len]", the magic text at the
+ * start of the file.
+ * Returns -1 when no encryption used.
+ */
+    static int
+get_crypt_method(ptr, len)
+    char  *ptr;
+    int   len;
+{
+    int i;
+
+    for (i = 0; i < (int)(sizeof(crypt_magic) / sizeof(crypt_magic[0])); i++)
+    {
+	if (len < (CRYPT_MAGIC_LEN + crypt_seed_len[i]))
+	    continue;
+	if (memcmp(ptr, crypt_magic[i], CRYPT_MAGIC_LEN) == 0)
+	    return i;
+    }
+    return -1;
+}
+
+/*
+ * Check for magic number used for encryption.  Applies to the current buffer.
  * If found, the magic number is removed from ptr[*sizep] and *sizep and
  * *filesizep are updated.
  * Return the (new) encryption key, NULL for no encryption.
@@ -2796,17 +2828,23 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile)
     long	*filesizep;	/* nr of bytes used from file */
     int		newfile;	/* editing a new buffer */
 {
-    if (*sizep >= CRYPT_MAGIC_LEN
-	    && STRNCMP(ptr, CRYPT_MAGIC, CRYPT_MAGIC_LEN) == 0)
+    int method = get_crypt_method((char *)ptr, *sizep);
+
+    if (method >= 0)
     {
+	curbuf->b_p_cm = method;
+	use_crypt_method = method;
+	if (method > 0)
+	    (void)blowfish_self_test();
 	if (cryptkey == NULL)
 	{
 	    if (*curbuf->b_p_key)
 		cryptkey = curbuf->b_p_key;
 	    else
 	    {
-		/* When newfile is TRUE, store the typed key
-		 * in the 'key' option and don't free it. */
+		/* When newfile is TRUE, store the typed key in the 'key'
+		 * option and don't free it.  bf needs hash of the key saved.
+		 */
 		cryptkey = get_crypt_key(newfile, FALSE);
 		/* check if empty key entered */
 		if (cryptkey != NULL && *cryptkey == NUL)
@@ -2820,17 +2858,24 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile)
 
 	if (cryptkey != NULL)
 	{
-	    crypt_init_keys(cryptkey);
+	    int seed_len = crypt_seed_len[method];
+
+	    if (method == 0)
+		crypt_init_keys(cryptkey);
+	    else
+	    {
+		bf_key_init(cryptkey);
+		bf_ofb_init(ptr + CRYPT_MAGIC_LEN, seed_len);
+	    }
 
 	    /* Remove magic number from the text */
-	    *filesizep += CRYPT_MAGIC_LEN;
-	    *sizep -= CRYPT_MAGIC_LEN;
-	    mch_memmove(ptr, ptr + CRYPT_MAGIC_LEN, (size_t)*sizep);
+	    *filesizep += CRYPT_MAGIC_LEN + seed_len;
+	    *sizep -= CRYPT_MAGIC_LEN + seed_len;
+	    mch_memmove(ptr, ptr + CRYPT_MAGIC_LEN + seed_len, (size_t)*sizep);
 	}
     }
-    /* When starting to edit a new file which does not have
-     * encryption, clear the 'key' option, except when
-     * starting up (called with -x argument) */
+    /* When starting to edit a new file which does not have encryption, clear
+     * the 'key' option, except when starting up (called with -x argument) */
     else if (newfile && *curbuf->b_p_key && !starting)
 	set_option_value((char_u *)"key", 0L, (char_u *)"", OPT_LOCAL);
 
@@ -4229,12 +4274,30 @@ restore_backup:
 #ifdef FEAT_CRYPT
     if (*buf->b_p_key && !filtering)
     {
-	crypt_init_keys(buf->b_p_key);
-	/* Write magic number, so that Vim knows that this file is encrypted
-	 * when reading it again.  This also undergoes utf-8 to ucs-2/4
-	 * conversion when needed. */
-	write_info.bw_buf = (char_u *)CRYPT_MAGIC;
-	write_info.bw_len = CRYPT_MAGIC_LEN;
+	char_u header[CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2];
+	int seed_len = crypt_seed_len[buf->b_p_cm];
+
+	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
+
+	memset(header, 0, sizeof(header));
+	vim_strncpy(header, (char_u *)crypt_magic[use_crypt_method],
+							     CRYPT_MAGIC_LEN);
+
+	if (buf->b_p_cm == 0)
+	    crypt_init_keys(buf->b_p_key);
+	else
+	{
+	    /* Using blowfish, add seed. */
+	    sha2_seed(header + CRYPT_MAGIC_LEN, seed_len); /* create iv */
+	    bf_ofb_init(header + CRYPT_MAGIC_LEN, seed_len);
+	    bf_key_init(buf->b_p_key);
+	}
+
+	/* Write magic number, so that Vim knows that this file is
+	 * encrypted when reading it again.  This also undergoes utf-8 to
+	 * ucs-2/4 conversion when needed. */
+	write_info.bw_buf = (char_u *)header;
+	write_info.bw_len = CRYPT_MAGIC_LEN + seed_len;
 	write_info.bw_flags = FIO_NOCONVERT;
 	if (buf_write_bytes(&write_info) == FAIL)
 	    end = 0;

@@ -69,6 +69,9 @@ extern int _stricoll __ARGS((char *a, char *b));
 #  include "os_qnx.pro"
 # endif
 
+# ifdef FEAT_CRYPT
+#  include "blowfish.pro"
+# endif
 # include "buffer.pro"
 # include "charset.pro"
 # ifdef FEAT_CSCOPE
@@ -146,6 +149,9 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # endif
 # include "regexp.pro"
 # include "screen.pro"
+# ifdef FEAT_CRYPT
+#  include "sha256.pro"
+# endif
 # include "search.pro"
 # include "spell.pro"
 # include "syntax.pro"

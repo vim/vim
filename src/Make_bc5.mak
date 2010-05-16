@@ -533,6 +533,7 @@ vimwinmain = \
 !endif
 
 vimobj =  \
+	$(OBJDIR)\blowfish.obj \
 	$(OBJDIR)\buffer.obj \
 	$(OBJDIR)\charset.obj \
 	$(OBJDIR)\diff.obj \
@@ -567,6 +568,7 @@ vimobj =  \
 	$(OBJDIR)\regexp.obj \
 	$(OBJDIR)\screen.obj \
 	$(OBJDIR)\search.obj \
+	$(OBJDIR)\sha256.obj \
 	$(OBJDIR)\spell.obj \
 	$(OBJDIR)\syntax.obj \
 	$(OBJDIR)\tag.obj \

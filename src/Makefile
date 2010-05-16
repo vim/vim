@@ -468,7 +468,7 @@ CClink = $(CC)
 #CONF_OPT_FEAT = --with-features=small
 #CONF_OPT_FEAT = --with-features=normal
 #CONF_OPT_FEAT = --with-features=big
-#CONF_OPT_FEAT = --with-features=huge
+CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
 #CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
@@ -536,9 +536,9 @@ CClink = $(CC)
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1
-#PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
-#MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
+CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1
+PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
+MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
 
 # EFENCE - Electric-Fence malloc debugging: catches memory accesses beyond
 # allocated memory (and makes every malloc()/free() very slow).
@@ -1377,6 +1377,7 @@ DEST_MAN_RU_U = $(DEST_MAN_TOP)/ru.UTF-8$(MAN1DIR)
 TAGS_INCL = *.h
 
 BASIC_SRC = \
+	blowfish.c \
 	buffer.c \
 	charset.c \
 	diff.c \
@@ -1415,6 +1416,7 @@ BASIC_SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	sha256.c \
 	spell.c \
 	syntax.c \
 	tag.c \
@@ -1449,6 +1451,7 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(TCL_SRC) \
 
 OBJ = \
 	objects/buffer.o \
+	objects/blowfish.o \
 	objects/charset.o \
 	objects/diff.o \
 	objects/digraph.o \
@@ -1487,6 +1490,7 @@ OBJ = \
 	objects/regexp.o \
 	objects/screen.o \
 	objects/search.o \
+	objects/sha256.o \
 	objects/spell.o \
 	objects/syntax.o \
 	$(SNIFF_OBJ) \
@@ -1507,6 +1511,7 @@ OBJ = \
 	$(WSDEBUG_OBJ)
 
 PRO_AUTO = \
+	blowfish.pro \
 	buffer.pro \
 	charset.pro \
 	diff.pro \
@@ -1547,6 +1552,7 @@ PRO_AUTO = \
 	regexp.pro \
 	screen.pro \
 	search.pro \
+	sha256.pro \
 	spell.pro \
 	syntax.pro \
 	tag.pro \
@@ -2337,6 +2343,9 @@ auto/pathdef.c: Makefile auto/config.mk
 objects:
 	mkdir objects
 
+objects/blowfish.o: blowfish.c
+	$(CCC) -o $@ blowfish.c
+
 objects/buffer.o: buffer.c
 	$(CCC) -o $@ buffer.c
 
@@ -2546,6 +2555,9 @@ objects/screen.o: screen.c
 
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
+
+objects/sha256.o: sha256.c
+	$(CCC) -o $@ sha256.c
 
 objects/spell.o: spell.c
 	$(CCC) -o $@ spell.c

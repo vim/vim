@@ -908,6 +908,7 @@ enum
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
     , BV_CINW
 #endif
+    , BV_CM
 #ifdef FEAT_FOLDING
     , BV_CMS
 #endif

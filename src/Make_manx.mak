@@ -124,7 +124,8 @@ OBJ =	obj/buffer.o \
 	obj/window.o \
 	$(TERMLIB)
 
-PRO =	proto/buffer.pro \
+PRO =	proto/blowfish.pro \
+	proto/buffer.pro \
 	proto/charset.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -159,6 +160,7 @@ PRO =	proto/buffer.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/sha256.pro \
 	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \

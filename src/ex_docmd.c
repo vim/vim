@@ -11123,7 +11123,8 @@ ex_match(eap)
 ex_X(eap)
     exarg_T	*eap UNUSED;
 {
-    (void)get_crypt_key(TRUE, TRUE);
+    if (curbuf->b_p_cm == 0 || blowfish_self_test() == OK)
+	(void)get_crypt_key(TRUE, TRUE);
 }
 #endif
 

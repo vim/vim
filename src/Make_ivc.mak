@@ -210,6 +210,7 @@ ALL : .\$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe GvimExt/gvime
 
 LINK32_OBJS= \
 	$(EXTRAS) \
+	"$(INTDIR)/blowfish.obj" \
 	"$(INTDIR)/buffer.obj" \
 	"$(INTDIR)/charset.obj" \
 	"$(INTDIR)/diff.obj" \
@@ -246,6 +247,7 @@ LINK32_OBJS= \
 	"$(INTDIR)/regexp.obj" \
 	"$(INTDIR)/screen.obj" \
 	"$(INTDIR)/search.obj" \
+	"$(INTDIR)/sha256.obj" \
 	"$(INTDIR)/spell.obj" \
 	"$(INTDIR)/syntax.obj" \
 	"$(INTDIR)/tag.obj" \

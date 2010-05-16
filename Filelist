@@ -7,6 +7,7 @@ SRC_ALL =	\
 		src/arabic.c \
 		src/arabic.h \
 		src/ascii.h \
+		src/blowfish.c \
 		src/buffer.c \
 		src/charset.c \
 		src/diff.c \
@@ -58,6 +59,7 @@ SRC_ALL =	\
 		src/regexp.h \
 		src/screen.c \
 		src/search.c \
+		src/sha256.c \
 		src/structs.h \
 		src/spell.c \
 		src/syntax.c \
@@ -79,6 +81,7 @@ SRC_ALL =	\
 		src/testdir/test49.vim \
 		src/testdir/test60.vim \
 		src/proto.h \
+		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
 		src/proto/charset.pro \
 		src/proto/diff.pro \
@@ -116,6 +119,7 @@ SRC_ALL =	\
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
+		src/proto/sha256.pro \
 		src/proto/spell.pro \
 		src/proto/syntax.pro \
 		src/proto/tag.pro \

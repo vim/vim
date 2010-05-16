@@ -592,7 +592,7 @@
 /*
  * +cryptv		Encryption (by Mohsin Ahmed <mosh@sasi.com>).
  */
-#if defined(FEAT_NORMAL) || defined(PROTO)
+#if defined(FEAT_NORMAL) && !defined(FEAT_CRYPT) || defined(PROTO)
 # define FEAT_CRYPT
 #endif
 

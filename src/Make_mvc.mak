@@ -453,6 +453,8 @@ INCL =	vim.h os_win32.h ascii.h feature.h globals.h keymap.h macros.h \
 	$(NBDEBUG_INCL)
 
 OBJ = \
+	$(OUTDIR)\blowfish.obj \
+	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\diff.obj \
@@ -912,6 +914,10 @@ testclean:
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 
+$(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
+
+$(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
+
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
 $(OUTDIR)/diff.obj:	$(OUTDIR) diff.c  $(INCL)
@@ -1080,6 +1086,7 @@ auto:
 
 # End Custom Build
 proto.h: \
+	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/charset.pro \
 	proto/diff.pro \
@@ -1115,6 +1122,7 @@ proto.h: \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/sha256.pro \
 	proto/spell.pro \
 	proto/syntax.pro \
 	proto/tag.pro \

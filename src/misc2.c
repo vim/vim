@@ -3685,6 +3685,11 @@ update_mouseshape(shape_idx)
  * NOTE FOR USA: Since 2000 exporting this code from the USA is allowed to
  * most countries.  There are a few exceptions, but that still should not be a
  * problem since this code was originally created in Europe and India.
+ *
+ * Blowfish addition originally made by Mohsin Ahmed,
+ * http://www.cs.albany.edu/~mosh 2010-03-14
+ * Based on blowfish by Bruce Schneier (http://www.schneier.com/blowfish.html)
+ * and sha256 by Christophe Devine.
  */
 
 /* from zip.h */
@@ -3730,6 +3735,8 @@ decrypt_byte()
 {
     ush temp;
 
+    if (use_crypt_method > 0)
+	return bf_ranbyte();
     temp = (ush)keys[2] | 2;
     return (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff);
 }
@@ -3737,15 +3744,19 @@ decrypt_byte()
 /*
  * Update the encryption keys with the next byte of plain text
  */
-    int
+    void
 update_keys(c)
     int c;			/* byte of plain text */
 {
-    keys[0] = CRC32(keys[0], c);
-    keys[1] += keys[0] & 0xff;
-    keys[1] = keys[1] * 134775813L + 1;
-    keys[2] = CRC32(keys[2], (int)(keys[1] >> 24));
-    return c;
+    if (use_crypt_method > 0)
+	bf_ofb_update( (unsigned char) c);
+    else
+    {
+	keys[0] = CRC32(keys[0], c);
+	keys[1] += keys[0] & 0xff;
+	keys[1] = keys[1] * 134775813L + 1;
+	keys[2] = CRC32(keys[2], (int)(keys[1] >> 24));
+    }
 }
 
 /*
@@ -3769,8 +3780,26 @@ crypt_init_keys(passwd)
 }
 
 /*
+ * Free an allocated crypt key.  Clear the text to make sure it doesn't stay
+ * in memory anywhere.
+ */
+    void
+free_crypt_key(key)
+    char_u *key;
+{
+    char_u *p;
+
+    if (key != NULL)
+    {
+	for (p = key; *p != NUL; ++p)
+	    *p++ = 0;
+	vim_free(key);
+    }
+}
+
+/*
  * Ask the user for a crypt key.
- * When "store" is TRUE, the new key in stored in the 'key' option, and the
+ * When "store" is TRUE, the new key is stored in the 'key' option, and the
  * 'key' option value is returned: Don't free it.
  * When "store" is FALSE, the typed key is returned in allocated memory.
  * Returns NULL on failure.
@@ -3801,16 +3830,17 @@ get_crypt_key(store, twice)
 	    if (p2 != NULL && STRCMP(p1, p2) != 0)
 	    {
 		MSG(_("Keys don't match!"));
-		vim_free(p1);
-		vim_free(p2);
+		free_crypt_key(p1);
+		free_crypt_key(p2);
 		p2 = NULL;
 		round = -1;		/* do it again */
 		continue;
 	    }
+
 	    if (store)
 	    {
 		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
-		vim_free(p1);
+		free_crypt_key(p1);
 		p1 = curbuf->b_p_key;
 	    }
 	    break;
@@ -3822,7 +3852,7 @@ get_crypt_key(store, twice)
     need_wait_return = FALSE;
     msg_didout = FALSE;
 
-    vim_free(p2);
+    free_crypt_key(p2);
     return p1;
 }
 

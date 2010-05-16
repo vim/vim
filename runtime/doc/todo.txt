@@ -30,6 +30,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+check blowfish.c
+check sha256.c
+Use 'cm' option only when FEAT_CRYPT is defined.
+When not full match with magic, check for head and give warning about
+unsupported crypt method.
+if 'enc' is ucs-2, does utf-8 to ucs-2 encoding always work for seed?
+
+Crypt update:
+- move bf_self_test() and sha256_self_test() elsewhere
+- Update E000 to error number.
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -1082,8 +1093,6 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 Patches to include:
--   Add patch for 'relativenumber' option?  Markus Heidelberg, 2008 Jun 27.
-    Update 2010 May 2.
 -   Add blowfish encryption.  Openssl has an implementation.  Also by Paul
     Kocher (LGPL), close to original.  Mohsin also has some ideas.
     Take four bytes and turn them into unsigned to avoid byte-order problems.

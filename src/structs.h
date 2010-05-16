@@ -1358,6 +1358,7 @@ struct file_buffer
 #ifdef FEAT_INS_EXPAND
     char_u	*b_p_cpt;	/* 'complete' */
 #endif
+    long	b_p_cm;		/* 'cryptmethod' */
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	/* 'completefunc' */
     char_u	*b_p_ofu;	/* 'omnifunc' */
