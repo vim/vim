@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-After patch 7.2.432 Japanese menus don't work properly. (David NorthField)
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -45,9 +43,6 @@ should be overruled. (Aaron Thoma)
 
 Editing a file with a ^M with 'ff' set to "mac", opening a help file, then the
 ^M is displayed as ^J sometimes.  Getting 'ff' value from wrong window/buffer?
-
-Have a look at patch to enable screen access from Python. (Marko Mahnic, 2010
-Apr 12)
 
 Problem producing tags file when hebrew.frx is present.  It has a BOM.
 Results in E670. (Tony Mechelynck, 2010 May 2)
@@ -114,8 +109,6 @@ Only with "vim -u NONE".
 
 Problem with editing file in binary mode. (Ingo Krabbe, 2009 Oct 8)
 
-Support .xz with the xz program, like with lzma.
-
 Problem with stop directory in findfile(). (Adam Simpkins, 2009 Aug 26)
 
 Undo problem: line not removed as expected when using setline() from Insert
@@ -137,8 +130,6 @@ not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
 string value.
 
 There is no command line completion for ":lmap".
-
-Reproducible crash in syntax HL. (George Reilly, Dominique Pelle, 2009 May 9)
 
 Invalid read error in Farsi mode. (Dominique Pelle, 2009 Aug 2)
 
@@ -163,10 +154,6 @@ Probably needs a bit of work.
 
 List of encoding aliases. (Takao Fujiware, 2009 Jul 18)
 Are they all OK?  Update Jul 22.
-
-Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
-8   For ":find" and ":sfind" expand files found in 'path'.
-Update 2009 Mar 28.
 
 Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
 
@@ -193,15 +180,6 @@ J.  Wang, 2009 Mar 31)
 
 When $VIMRUNTIME is set in .vimrc, need to reload lang files.  Already done
 for GTK, how about others? (Ron Aaron, 2010 Apr 10)
-
-Patch for vertical line at certain column position, 'guidecolumn' option.
-(Pankaj Garg, 2009 Apr 14, aka Lone, Apr 15)
-Update 2009 May 2, 'margincolumn'
-Alternative patch. (2010 Feb 2, Gregor Uhlenheuer, update Apr 18 2010)
-Fix by Lech Lorens, Apr 19
-
-Add different highlighting for a fold line depending on the fold level.
-Patch. (Noel Henson, 2009 Sep 13)
 
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
@@ -255,9 +233,6 @@ displayed in a window should return the value that's stored for that buffer.
 
 ":he ctrl_u" can be auto-corrected to ":he ctrl-u".
 
-Patch to make synIDattr() work for GUI attributes in Vim without GUI feature.
-(Matt Wozniski, 2009 Apr 15)
-
 There should be a way after an abbreviation has expanded to go back to what
 was typed.  CTRL-G h ?  Would also undo last word or line break inserted
 perhaps.  And undo CTRL-W.  CTRL-G l would redo.
@@ -267,8 +242,6 @@ work, the backslash is removed, assuming that it escapes the (. (Valery
 Kondakoff, 2009 May 13)
 
 Win32 GUI: Changing manifest helps for dpi changes (Joe Castro, 2009 Mar 27)
-
-Win32: patch for better font scaling. (George Reilly, 2009 Mar 26)
 
 Win32 GUI: last message from startup doesn't show up when there is an echoerr
 command. (Cyril Slobin, 2009 Mar 13)
@@ -287,14 +260,6 @@ Also: the rhs string is not always correct. (Hari Krishna Dara, 2009 Sept 29)
 
 Using ~ works OK on 'a' with composing char, but not on 0x0418  with composing
 char 0x0301. (Tony Mechelynck, 2009 Mar 4)
-
-6   In the quickfix window statusline add the command used to get the list of
-    errors, e.g. ":make foo", ":grep something *.c".
-    Patch by Lech Lorens, 2009 Mar 23.
-    Comments from Andreas Bernauer 24th, Dominique Pelle 24th
-    Docs patch by Dominique Pelle, Mar 25
-    Update 2009 Mar 28.
-    Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
 
 Inconsistent: starting with $LANG set to es_ES.utf-8 gives Spanish
 messages, even though locale is not supported.  But ":lang messages
@@ -320,10 +285,6 @@ part of standard Vim.  The "1 to "9 registers are not sufficient.
 netrw: dragging status line causes selection of entry.  Should check row
 number to be below last visible line.
 
-Make do_do_join() work faster.  Could at least do a binary search way of doing
-this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
-Patch from Milan Vancura, 2008 Dec 22.  Update 2009 Jan 7 in two parts.
-
 After doing "su" $HOME can be the old user's home, thus ~root/file is not
 correct.  Don't use it in the swap file.
 
@@ -343,9 +304,6 @@ Now at: http://vimgadgets.sourceforge.net/liblinebreak/
 Greek sigma character should be lower cased depending on the context.  Can we
 make this work?  (Dominique Pelle, 2009 Sep 24)
 
-Disable setting 'encoding' from a modeline?  It usually causes problems, can't
-do any good.  (Patch from Patrick Texier, 2008 Dec 9)
-
 When changing 'encoding' convert all the swap file names, so that we can
 still delete them.  Also convert all buffer file names?
 
@@ -362,9 +320,6 @@ ATTENTION message?  (Tony Mechelynck, 2008 Dec 1)
 Also: swap files are in ~/tmp/  One has relative file name ".mozilla/...".
 
 Add v:motion_force. (Kana Natsuno, 2008 Dec 6)
-
-Redraw problem when appending digraph causes line to wrap. (James Vega, 2007
-Sep 18)  Patch by Ian Kelling, 2008 Aug 8.
 
 Runtime files for Clojure. (Toralf Wittner, 2008 Jun 25)
 
@@ -449,19 +404,8 @@ When mapping : to ; and ; to :, @; doesn't work like @: and @: doesn't work
 either.  Matt Wozniski:  nv_at() calls do_execreg() which uses
 put_in_typebuf().  Char mapped twice?
 
-Patch for colorscheme submenu. (Juergen Kraemer, 2008 Aug 20)
-
-Patch for Python 3 support. (Roland Puntaier, 2009 Sep 22)
-Includes changes for omnicompletion.
-Needs to be tested.
-Update 2010 Apr 20
-
 8   Some file systems are case-sensitive, some are not.  Turn
     CASE_INSENSITIVE_FILENAME into an option, at least for completion.
-
-9   Make it possible to drag a tab page label to another position with the
-    mouse.
-Patch by Paul B. Mahol, 2008 Aug 29.
 
 Despite adding save_subexpr() this still doesn't work properly:
 Regexp: matchlist('12a4aaa', '^\(.\{-}\)\(\%5c\@<=a\+\)\(.\+\)\?')
@@ -517,9 +461,6 @@ Works like CTRL-Y in Command line mode.
 
 Mac: Move Carbon todo items to os_mac.txt.  Note that this version is frozen,
 try the Cocoa version.
-
-Mac: Patch to disable antialias. (LC Mi, 2008 Aug 23)  Tested on 10.5 and
-10.4.
 
 Mac: After a ":vsplit" the left scrollbar doesn't appear until 'columns' is
 changed or the window is resized.
@@ -596,9 +537,6 @@ Gnome improvements: Edward Catmur, 2007 Jan 7
     Also use Save/Discard for other GUIs
 
 New PHP syntax file, use it? (Peter Hodge)
-
-Patch go make gui highlight settings work in Vim without +gui feature.
-(Matt Wozniski, 2009 Mar 27)
 
 'foldcolumn' in modeline applied to wrong window when using a session. (Teemu
 Likonen, March 19)
@@ -752,7 +690,7 @@ contains "cmd" in the tail?  (Benjamin Fritz, 2008 Oct 13)
 Also set 'shellcmdflag' to include /s.
 
 Win32: When there is 4 Gbyte of memory mch_avail_mem() doesn't work properly.
-Unfished patch by Jelle Geerts, 2008 Aug 24.
+Unfinished patch by Jelle Geerts, 2008 Aug 24.
 Let mch_avail_mem() return Kbyte instead?
 
 Win32: With two monitors, gvim partly on both, and adding/removing a scrollbar
@@ -816,7 +754,7 @@ The need_fileinfo flag is messy.  Instead make the message right away and put
 it in keep_msg?
 
 Editing a file remotely that matches 'wildignore' results in a "no match"
-error.  Should only happen when there are wildards, not when giving the file
+error.  Should only happen when there are wildcards, not when giving the file
 name literally, and esp. if there is only one name.
 
 Test 61 fails sometimes.  This is a timing problem: "sleep 2" sometimes takes
@@ -1012,7 +950,7 @@ error and stop using the connection to the server.
 Problem with 'cdpath' on MS-Windows when a directory is equal to $HOME. (2006
 Jul 26, Gary Johnson)
 
-Using UTF-8 character with ":command" does not work properly. (Matt Wosniski,
+Using UTF-8 character with ":command" does not work properly. (Matt Wozniski,
 2008 Sep 29)
 
 In the Netbeans interface add a "vimeval" function, so that the other side can
@@ -1111,8 +1049,6 @@ disappears. (Vincent Beffara, 2008 Jul 3)
 TermResponse autocommand isn't always triggered when using vimdiff. (Aron
 Griffis, 2007 Sep 19)
 
-Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
-
 Create a gvimtutor.1 file and change Makefiles to install it.
 
 When 'encoding' is utf-8 typing text at the end of the line causes previously
@@ -1143,9 +1079,6 @@ When switching between windows the cursor is often put in the middle.
 Remember the relative position and restore that, just like lnum and col are
 restored. (Luc St-Louis)
 
-Patch for adding "J" flag to 'cinoptions': placement of jump label.
-(Manuel Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
-
 
 Vim 7.3:
 Patches to include:
@@ -1155,24 +1088,69 @@ Patches to include:
     Kocher (LGPL), close to original.  Mohsin also has some ideas.
     Take four bytes and turn them into unsigned to avoid byte-order problems.
     Need to buffer up to 7 bytes to align on 8 byte boundaries.
-    Patch from Moshin: 2010 May 8, addition May 9.
+    Patch from Moshin: 2010 May 8, addition May 9, update May 15
 -   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
 -   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
     26) Now with Mercurial repository (2010 Jan 2)
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
+- Minor patches from Dominique Pelle, 2010 May 15
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
 - Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
 - Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
   15)
+- Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 
+- Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
+  8   For ":find" and ":sfind" expand files found in 'path'.
+  Update 2009 Mar 28.
+- Patch for vertical line at certain column position, 'guidecolumn' option.
+  (Pankaj Garg, 2009 Apr 14, aka Lone, Apr 15)
+  Update 2009 May 2, 'margincolumn'
+  Alternative patch. (2010 Feb 2, Gregor Uhlenheuer, update Apr 18 2010)
+  Fix by Lech Lorens, Apr 19
+- Add different highlighting for a fold line depending on the fold level.
+  Patch. (Noel Henson, 2009 Sep 13)
+- Patch to make synIDattr() work for GUI attributes in Vim without GUI
+  feature.  (Matt Wozniski, 2009 Apr 15)
+  Patch go make gui highlight settings work in Vim without +gui feature.
+  (Matt Wozniski, 2009 Mar 27)
+- Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
+6   In the quickfix window statusline add the command used to get the list of
+    errors, e.g. ":make foo", ":grep something *.c".
+    Patch by Lech Lorens, 2009 Mar 23.
+    Comments from Andreas Bernauer 24th, Dominique Pelle 24th
+    Docs patch by Dominique Pelle, Mar 25
+    Update 2009 Mar 28.
+    Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
+- Make do_do_join() work faster.  Could at least do a binary search way of
+  doing this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
+  Patch from Milan Vancura, 2008 Dec 22.  Update 2009 Jan 7 in two parts.
+- Disable setting 'encoding' from a modeline?  It usually causes problems,
+  can't do any good.  (Patch from Patrick Texier, 2008 Dec 9)
+- Redraw problem when appending digraph causes line to wrap. (James Vega, 2007
+  Sep 18)  Patch by Ian Kelling, 2008 Aug 8.
+- Patch for colorscheme submenu. (Juergen Kraemer, 2008 Aug 20)
+- 9   Make it possible to drag a tab page label to another position with the
+    mouse.
+  Patch by Paul B. Mahol, 2008 Aug 29.
+- Mac: Patch to disable antialias. (LC Mi, 2008 Aug 23)  Tested on 10.5 and
+  10.4.
+- Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
+  Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
 Needs some work:
--   Use NSIS 2.45, it includes Windows 7 support.
+- Use NSIS 2.45, it includes Windows 7 support.
 	Include "RequestExecutionLevel highest"
 	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
--   Supply a 64 bit version of gvimext.dll for 64 bit windows.
+- Supply a 64 bit version of gvimext.dll for 64 bit windows.
     http://code.google.com/p/vim-win3264/
     Gvim can be 32 bit.
+- Have a look at patch to enable screen access from Python. (Marko Mahnic,
+  2010 Apr 12)
+- Patch for Python 3 support. (Roland Puntaier, 2009 Sep 22)
+  Includes changes for omnicompletion.
+  Needs some more testing.
+  Update 2010 Apr 20, patch by Andy Kittner, May 16
 -   Easier/standard way to disable default plugins.
 8   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
     20.  Repost 2009 Nov 16.
@@ -3377,7 +3355,7 @@ Omni completion:
 	    and http://stud4.tuwien.ac.at/~e0125672/icomplete/
 	http://cedet.sourceforge.net/intellisense.shtml (for Emacs)
 	Ivan Villanueva has something for Java.
-	Emads: http://www.xref-tech.com/xrefactory/more_c_completion.html
+	Emacs: http://www.xref-tech.com/xrefactory/more_c_completion.html
 	Completion in .NET framework SharpDevelop: http://www.icsharpcode.net
 -   Pre-expand abbreviations, show which abbrevs would match?
 
