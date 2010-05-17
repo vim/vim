@@ -2054,8 +2054,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 			{not in Vi}
 	Method used for encryption when the buffer is written to a file:
+							*pkzip*
 		0	PkZip compatible method.  A weak kind of encryption.
 			backwards compatible with Vim 7.2 and older.
+							*blowfish*
 		1	Blowfish method.  Strong encryption.  Not compatible
 			with Vim 7.2 and older.
 	When reading an encrypted file 'cryptmethod' will be set automatically

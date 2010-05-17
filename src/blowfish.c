@@ -1,7 +1,13 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
+ * VIM - Vi IMproved	by Bram Moolenaar
+ *
+ * Do ":help uganda"  in Vim to read copying and usage conditions.
+ * Do ":help credits" in Vim to see a list of people who contributed.
+ * See README.txt for an overview of the Vim source code.
+ *
  * Blowfish encryption for Vim; in Blowfish output feedback mode.
- * GPL(C) Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ * Contributed by Mohsin Ahmed, http://www.cs.albany.edu/~mosh
  * Based on http://www.schneier.com/blowfish.html by Bruce Schneier.
  */
 
@@ -15,32 +21,29 @@
 #define BF_OFB_LEN  (8*(BF_BLOCK))
 
 typedef union {
-    long_u ul[2];
-    char_u uc[8];
+    uint32_t ul[2];
+    char_u   uc[8];
 } block8;
 
-#ifdef __BORLANDC__
-# define LITTLE_ENDIAN
+#ifdef WIN3264
+  /* MS-Windows is always little endian */
 #else
-# if !defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN)
-#  if (('1234' >> 24) == '1')
-#   define LITTLE_ENDIAN 1
-#  else
-#   if (('4321' >> 24) == '1')
-#    define BIG_ENDIAN  1
-#   endif
-#  endif
+# ifdef HAVE_CONFIG_H
+   /* in configure.in AC_C_BIGENDIAN() defines WORDS_BIGENDIAN when needed */
+# else
+   error!
+   Please change this code to define WORDS_BIGENDIAN for big-endian machines.
 # endif
 #endif
 
-static void bf_e_block __ARGS((long_u *p_xl, long_u *p_xr));
+static void bf_e_block __ARGS((uint32_t *p_xl, uint32_t *p_xr));
 static void bf_e_cblock __ARGS((char_u *block));
-static int bf_check_tables __ARGS((long_u ipa[18], long_u sbi[4][256], long_u val));
+static int bf_check_tables __ARGS((uint32_t ipa[18], uint32_t sbi[4][256], uint32_t val));
 static int bf_self_test __ARGS((void));
 
 // Blowfish code
-static long_u pax[18];
-static long_u ipa[18] = {
+static uint32_t pax[18];
+static uint32_t ipa[18] = {
     0x243f6a88u, 0x85a308d3u, 0x13198a2eu,
     0x03707344u, 0xa4093822u, 0x299f31d0u,
     0x082efa98u, 0xec4e6c89u, 0x452821e6u,
@@ -49,8 +52,8 @@ static long_u ipa[18] = {
     0xb5470917u, 0x9216d5d9u, 0x8979fb1bu
 };
 
-static long_u sbx[4][256];
-static long_u sbi[4][256] = {
+static uint32_t sbx[4][256];
+static uint32_t sbi[4][256] = {
    {0xd1310ba6u, 0x98dfb5acu, 0x2ffd72dbu, 0xd01adfb7u,
     0xb8e1afedu, 0x6a267e96u, 0xba7c9045u, 0xf12c7f99u,
     0x24a19947u, 0xb3916cf7u, 0x0801f2e2u, 0x858efc16u,
@@ -328,10 +331,10 @@ static long_u sbi[4][256] = {
 
     static void
 bf_e_block(p_xl, p_xr)
-    long_u *p_xl;
-    long_u *p_xr;
+    uint32_t *p_xl;
+    uint32_t *p_xr;
 {
-    long_u temp, xl = *p_xl, xr = *p_xr;
+    uint32_t temp, xl = *p_xl, xr = *p_xr;
 
     F1(0) F2(1) F1(2) F2(3) F1(4) F2(5) F1(6) F2(7)
     F1(8) F2(9) F1(10) F2(11) F1(12) F2(13) F1(14) F2(15)
@@ -343,10 +346,10 @@ bf_e_block(p_xl, p_xr)
 #if 0  /* not used */
     static void
 bf_d_block(p_xl, p_xr)
-    long_u *p_xl;
-    long_u *p_xr;
+    uint32_t *p_xl;
+    uint32_t *p_xr;
 {
-    long_u temp, xl = *p_xl, xr = *p_xr;
+    uint32_t temp, xl = *p_xl, xr = *p_xr;
     F1(17) F2(16) F1(15) F2(14) F1(13) F2(12) F1(11) F2(10)
     F1(9) F2(8) F1(7) F2(6) F1(5) F2(4) F1(3) F2(2)
     xl ^= pax[1];
@@ -357,7 +360,7 @@ bf_d_block(p_xl, p_xr)
 #endif
 
 
-#ifdef BIG_ENDIAN
+#ifdef WORDS_BIGENDIAN
 # define htonl2(x) \
     x = ((((x) &     0xffL) << 24) | (((x) & 0xff00L)     <<  8) | \
 	 (((x) & 0xff0000L) >>  8) | (((x) & 0xff000000L) >> 24))
@@ -397,10 +400,10 @@ bf_d_cblock(block)
 bf_key_init(password)
     char_u *password;
 {
-    int    i, j, keypos = 0;
-    long_u val, data_l, data_r;
-    char_u *key;
-    int    keylen;
+    int      i, j, keypos = 0;
+    uint32_t val, data_l, data_r;
+    char_u   *key;
+    int      keylen;
 
     key = sha256_key(password);
     keylen = STRLEN(key);
@@ -444,12 +447,12 @@ bf_key_init(password)
  */
     static int
 bf_check_tables(ipa, sbi, val)
-    long_u ipa[18];
-    long_u sbi[4][256];
-    long_u val;
+    uint32_t ipa[18];
+    uint32_t sbi[4][256];
+    uint32_t val;
 {
     int i, j;
-    long_u c = 0;
+    uint32_t c = 0;
 
     for (i = 0; i < 18; i++)
 	c ^= ipa[i];
@@ -460,10 +463,11 @@ bf_check_tables(ipa, sbi, val)
 }
 
 typedef struct {
-    char_u password[64];
-    char_u plaintxt[8];
-    char_u cryptxt[8];
-    long_u keysum;
+    char_u   password[64];
+    char_u   plaintxt[8];
+    char_u   cryptxt[8];
+    char_u   badcryptxt[8]; /* cryptxt when big/little endian is wrong */
+    uint32_t keysum;
 } struct_bf_test_data;
 
 // Assert bf(password, plaintxt) is cryptxt.
@@ -472,11 +476,8 @@ static struct_bf_test_data bf_test_data[] = {
   {
       "password",
       "plaintxt",
-#if 0  /* This value doesn't work, why??? */
       "\x55\xca\x56\x3a\xef\xe1\x9c\x73", /* cryptxt */
-#else
-      "\x47\xd9\x67\x49\x91\xc5\x9a\x95", /* cryptxt */
-#endif
+      "\x47\xd9\x67\x49\x91\xc5\x9a\x95", /* badcryptxt */
       0x5de01bdbu, /* keysum */
   },
 };
@@ -505,7 +506,11 @@ bf_self_test()
 	memcpy(bk.uc, bf_test_data[i].plaintxt, 8);
 	bf_e_cblock(bk.uc);
 	if (memcmp(bk.uc, bf_test_data[i].cryptxt, 8) != 0)
+	{
+	    if (err == 0 && memcmp(bk.uc, bf_test_data[i].badcryptxt, 8) == 0)
+		EMSG(_("E817: Blowfish big/little endian use wrong"));
 	    err++;
+	}
     }
 
     return err > 0 ? FAIL : OK;
@@ -567,12 +572,12 @@ blowfish_self_test()
 {
     if (sha256_self_test() == FAIL)
     {
-	EMSG2(_("E000: sha256 test failed"),"");
+	EMSG(_("E818: sha256 test failed"));
 	return FAIL;
     }
     if (bf_self_test() == FAIL)
     {
-	EMSG2(_("E000: Blowfish test failed"),"");
+	EMSG(_("E819: Blowfish test failed"));
 	return FAIL;
     }
     return OK;

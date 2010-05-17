@@ -1,22 +1,26 @@
 /* vi:set ts=8 sts=4 sw=4:
  *
- *  FIPS-180-2 compliant SHA-256 implementation
- *  GPL by Christophe Devine.
- *  Modified for md5deep, in public domain.
- *  Modified For Vim, GPL(C) Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ * VIM - Vi IMproved	by Bram Moolenaar
  *
- *  Vim specific notes:
- *  Functions exported by this file:
- *   1. sha256_key() hashes the password to 64 bytes char string.
- *   2. sha2_seed() generates a random header.
- *   sha256_self_test() is implicitly called once.
+ * Do ":help uganda"  in Vim to read copying and usage conditions.
+ * Do ":help credits" in Vim to see a list of people who contributed.
+ * See README.txt for an overview of the Vim source code.
+ *
+ * FIPS-180-2 compliant SHA-256 implementation
+ * GPL by Christophe Devine.
+ * Modified for md5deep, in public domain.
+ * Modified For Vim, Mohsin Ahmed, http://www.cs.albany.edu/~mosh
+ *
+ * Vim specific notes:
+ * Functions exported by this file:
+ *  1. sha256_key() hashes the password to 64 bytes char string.
+ *  2. sha2_seed() generates a random header.
+ *  sha256_self_test() is implicitly called once.
  */
 
 #include "vim.h"
 
 #ifdef FEAT_CRYPT
-
-typedef unsigned long uint32_t;
 
 typedef struct {
   uint32_t total[2];

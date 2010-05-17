@@ -43,6 +43,11 @@
 # define sock_close(sd) closesocket(sd)
 # define sleep(t) Sleep(t*1000) /* WinAPI Sleep() accepts milliseconds */
 #else
+  /* uint32_t may be defined by configure, but netdb.h indirectly includes
+   * stdint.h which tries to typedef uint32_t and fails. */
+# ifdef uint32_t
+#  undef uint32_t
+# endif
 # include <netdb.h>
 # include <netinet/in.h>
 # include <sys/socket.h>

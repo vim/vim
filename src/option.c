@@ -278,7 +278,9 @@ static char_u	*p_cino;
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 static char_u	*p_cinw;
 #endif
+#ifdef FEAT_CRYPT
 static long	p_cm;
+#endif
 #ifdef FEAT_COMMENTS
 static char_u	*p_com;
 #endif
@@ -837,7 +839,11 @@ static struct vimoption
 			    {(char_u *)CPO_VI, (char_u *)CPO_VIM}
 			    SCRIPTID_INIT},
     {"cryptmethod", "cm",   P_NUM|P_VI_DEF|P_VIM,
+#ifdef FEAT_CRYPT
 			    (char_u *)&p_cm, PV_CM,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"cscopepathcomp", "cspc", P_NUM|P_VI_DEF|P_VIM,
 #ifdef FEAT_CSCOPE
@@ -7875,6 +7881,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 
 #endif
 
+#ifdef FEAT_CRYPT
     else if (pp == &curbuf->b_p_cm)
     {
 	if (curbuf->b_p_cm < 0)
@@ -7890,6 +7897,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	if (curbuf->b_p_cm > 0 && blowfish_self_test() == FAIL)
 	    curbuf->b_p_cm = 0;
     }
+#endif
 
 #ifdef FEAT_WINDOWS
     /* (re)set last window status line */
@@ -9307,7 +9315,9 @@ get_varp(p)
 	case PV_CINK:	return (char_u *)&(curbuf->b_p_cink);
 	case PV_CINO:	return (char_u *)&(curbuf->b_p_cino);
 #endif
+#ifdef FEAT_CRYPT
 	case PV_CM:	return (char_u *)&(curbuf->b_p_cm);
+#endif
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	case PV_CINW:	return (char_u *)&(curbuf->b_p_cinw);
 #endif

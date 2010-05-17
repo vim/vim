@@ -31,11 +31,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Crypt update:
-- Use 'cm' option only when FEAT_CRYPT is defined.
 - When not full match with magic, check for head and give warning about
   unsupported crypt method.
 - if 'enc' is ucs-2, does utf-8 to ucs-2 encoding always work for seed?
-- Update E000 to error number.
 
 Include cabal and obj syntax files. (Vincent Berthoux, 2010 May 16)
 
@@ -1145,6 +1143,9 @@ Patches to include:
   10.4.
 - Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
   Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
+-   Add Lua interface? (Wolfgang Oertl) patch by Luis Carvalho, 2008 Sep 5
+	Patch for Make_ming.mak from Paul Moore (2008 Sep 1)
+      http://code.google.com/p/vim-iflua/  Download  vim72-lua-0.7.patch.gz
 Needs some work:
 - Use NSIS 2.45, it includes Windows 7 support.
 	Include "RequestExecutionLevel highest"
@@ -2194,9 +2195,6 @@ Most interesting new features to be added when all bugs have been fixed:
 -   Running a shell command from the GUI still has limitations.  Look into how
     the terminal emulator of the Vim shell project can help:
     http://vimshell.wana.at
--   Add Lua interface? (Wolfgang Oertl) patch by Luis Carvalho, 2008 Sep 5
-	Patch for Make_ming.mak from Paul Moore (2008 Sep 1)
-      http://vim-iflua.googlecode.com/files/vim72-lua-0.7.patch.gz
 8   Add a command to jump to a certain kind of tag.  Allow the user to specify
     values for the optional fields.  E.g., ":tag size type=m".
     Also allow specifying the file and command, so that the result of

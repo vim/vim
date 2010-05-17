@@ -110,6 +110,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cinw'	options.txt	/*'cinw'*
 'cinwords'	options.txt	/*'cinwords'*
 'clipboard'	options.txt	/*'clipboard'*
+'cm'	options.txt	/*'cm'*
 'cmdheight'	options.txt	/*'cmdheight'*
 'cmdwinheight'	options.txt	/*'cmdwinheight'*
 'cmp'	options.txt	/*'cmp'*
@@ -132,6 +133,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
 'cpt'	options.txt	/*'cpt'*
+'cryptmethod'	options.txt	/*'cryptmethod'*
 'cscopepathcomp'	options.txt	/*'cscopepathcomp'*
 'cscopeprg'	options.txt	/*'cscopeprg'*
 'cscopequickfix'	options.txt	/*'cscopequickfix'*
@@ -4136,6 +4138,9 @@ E813	editing.txt	/*E813*
 E814	editing.txt	/*E814*
 E815	if_mzsch.txt	/*E815*
 E816	diff.txt	/*E816*
+E817	editing.txt	/*E817*
+E818	editing.txt	/*E818*
+E819	editing.txt	/*E819*
 E82	message.txt	/*E82*
 E83	message.txt	/*E83*
 E84	windows.txt	/*E84*
@@ -4692,6 +4697,7 @@ blockwise-examples	visual.txt	/*blockwise-examples*
 blockwise-operators	visual.txt	/*blockwise-operators*
 blockwise-register	change.txt	/*blockwise-register*
 blockwise-visual	visual.txt	/*blockwise-visual*
+blowfish	options.txt	/*blowfish*
 bold	syntax.txt	/*bold*
 bom-bytes	mbyte.txt	/*bom-bytes*
 book	intro.txt	/*book*
@@ -6910,6 +6916,7 @@ pi_spec.txt	pi_spec.txt	/*pi_spec.txt*
 pi_tar.txt	pi_tar.txt	/*pi_tar.txt*
 pi_vimball.txt	pi_vimball.txt	/*pi_vimball.txt*
 pi_zip.txt	pi_zip.txt	/*pi_zip.txt*
+pkzip	options.txt	/*pkzip*
 plaintex.vim	syntax.txt	/*plaintex.vim*
 plsql	ft_sql.txt	/*plsql*
 plugin	usr_05.txt	/*plugin*
