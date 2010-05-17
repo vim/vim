@@ -335,7 +335,7 @@ doesn't set 'ff' to "unix".  (Ben Fritz, 2008 Dec 5) Reusing the old buffer
 probably causes this.
 
 'scrollbind' is not respected when deleting lines or undo. (Milan Vancura,
-1009 Jan 16)
+2009 Jan 16)
 
 Document that default font in Athena can be set with resources:
    XtDefaultFont: "9x15"
@@ -1089,11 +1089,6 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 Patches to include:
--   Add blowfish encryption.  Openssl has an implementation.  Also by Paul
-    Kocher (LGPL), close to original.  Mohsin also has some ideas.
-    Take four bytes and turn them into unsigned to avoid byte-order problems.
-    Need to buffer up to 7 bytes to align on 8 byte boundaries.
-    Patch from Moshin: 2010 May 8, addition May 9, update May 15
 -   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
 -   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
     26) Now with Mercurial repository (2010 Jan 2)
@@ -1130,7 +1125,8 @@ Patches to include:
     Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
 - Make do_do_join() work faster.  Could at least do a binary search way of
   doing this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
-  Patch from Milan Vancura, 2008 Dec 22.  Update 2009 Jan 7 in two parts.
+  Patch from Milan Vancura, 2010 May 16.
+- Fix for test29. (Milan Vancura, 2010 May 16)
 - Disable setting 'encoding' from a modeline?  It usually causes problems,
   can't do any good.  (Patch from Patrick Texier, 2008 Dec 9)
 - Redraw problem when appending digraph causes line to wrap. (James Vega, 2007

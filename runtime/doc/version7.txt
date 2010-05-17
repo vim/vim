@@ -7173,8 +7173,14 @@ Added							*added-7.3*
 New syntax files:
 
 New spell files:
-
 Breton. (Dominique Pelle)
+
+Added the 'relativenumber' option. (Markus Heidelberg)
+
+Support for Blowfish encryption.  Added the 'cryptmethod' option.
+Mostly by Moshin Ahmed.
+
+Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 
 
 Fixed							*fixed-7.3*
