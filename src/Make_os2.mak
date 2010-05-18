@@ -39,6 +39,7 @@ INCL = vim.h globals.h option.h keymap.h macros.h ascii.h term.h os_unix.h struc
 CFLAGS = -O2 -fno-strength-reduce -DOS2 -Wall -Iproto $(DEFINES)
 
 OBJ = \
+	blowfish.o \
 	buffer.o \
 	charset.o \
 	diff.o \
@@ -73,6 +74,7 @@ OBJ = \
 	regexp.o \
 	screen.o \
 	search.o \
+	sha256.o \
 	spell.o \
 	syntax.o \
 	tag.o \
@@ -112,6 +114,7 @@ clean:
 ###########################################################################
 
 os_unix.o:	os_unix.c  $(INCL)
+blowfish.o:	blowfish.c  $(INCL)
 buffer.o:	buffer.c  $(INCL)
 charset.o:	charset.c  $(INCL)
 diff.o:		diff.c  $(INCL)
@@ -146,6 +149,7 @@ quickfix.o:	quickfix.c  $(INCL)
 regexp.o:	regexp.c  $(INCL)
 screen.o:	screen.c  $(INCL)
 search.o:	search.c  $(INCL)
+sha256.o:	sha256.c  $(INCL)
 spell.o:	spell.c  $(INCL)
 syntax.o:	syntax.c  $(INCL)
 tag.o:		tag.c  $(INCL)

@@ -34,7 +34,8 @@ SHELL = csh
 REN = $(SHELL) -c mv -f
 DEL = $(SHELL) -c rm -f
 
-SRC =	buffer.c \
+SRC =	blowfish.c \
+	buffer.c \
 	charset.c \
 	diff.c \
 	digraph.c \
@@ -69,6 +70,7 @@ SRC =	buffer.c \
 	regexp.c \
 	screen.c \
 	search.c \
+	sha256.c \
 	spell.c \
 	syntax.c \
 	tag.c \
@@ -80,7 +82,8 @@ SRC =	buffer.c \
 
 INCL = vim.h feature.h keymap.h macros.h ascii.h term.h structs.h os_amiga.h
 
-OBJ =	obj/buffer.o \
+OBJ =	obj/blowfish.o \
+	obj/buffer.o \
 	obj/charset.o \
 	obj/diff.o \
 	obj/digraph.o \
@@ -115,6 +118,7 @@ OBJ =	obj/buffer.o \
 	obj/regexp.o \
 	obj/screen.o \
 	obj/search.o \
+	obj/sha256.o \
 	obj/spell.o \
 	obj/syntax.o \
 	obj/tag.o \
@@ -213,6 +217,9 @@ CCSYM = $(CC) $(CFLAGS) -hi$(SYMS) -o
 CCNOSYM = $(CC) $(CFLAGS) -o
 
 $(OBJ): $(SYMS)
+
+obj/blowfish.o:	blowfish.c
+	$(CCSYM) $@ blowfish.c
 
 obj/buffer.o:	buffer.c
 	$(CCSYM) $@ buffer.c
@@ -322,6 +329,9 @@ obj/screen.o:	screen.c
 
 obj/search.o:	search.c
 	$(CCSYM) $@ search.c
+
+obj/sha256.o:	sha256.c
+	$(CCSYM) $@ sha256.c
 
 obj/spell.o:	spell.c
 	$(CCSYM) $@ spell.c

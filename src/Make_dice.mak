@@ -26,6 +26,7 @@ LD = dcc
 	${CC} ${PRE} ${CFLAGS} $< -o $@
 
 SRC = \
+	blowfish.c \
 	buffer.c \
 	charset.c \
 	diff.c \
@@ -61,6 +62,7 @@ SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	sha256.c \
 	spell.c \
 	syntax.c \
 	tag.c \
@@ -70,7 +72,8 @@ SRC = \
 	window.c \
 	version.c
 
-OBJ =	o/buffer.o \
+OBJ =	o/blowfish.o \
+	o/buffer.o \
 	o/charset.o \
 	o/diff.o \
 	o/digraph.o \
@@ -105,6 +108,7 @@ OBJ =	o/buffer.o \
 	o/regexp.o \
 	o/screen.o \
 	o/search.o \
+	o/sha256.o \
 	o/spell.o \
 	o/syntax.o \
 	o/tag.o \
@@ -132,6 +136,8 @@ $(SYMS)  : vim.h globals.h keymap.h macros.h ascii.h term.h os_amiga.h structs.h
 	delete $(SYMS)
 
 ###########################################################################
+
+o/blowfish.o:	blowfish.c  $(SYMS)
 
 o/buffer.o:	buffer.c  $(SYMS)
 
@@ -207,6 +213,8 @@ o/regexp.o:	regexp.c  $(SYMS) regexp.h
 o/screen.o:	screen.c  $(SYMS)
 
 o/search.o:	search.c  $(SYMS) regexp.h
+
+o/sha256.o:	sha256.c  $(SYMS)
 
 o/spell.o:	spell.c  $(SYMS)
 

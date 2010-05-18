@@ -454,7 +454,6 @@ INCL =	vim.h os_win32.h ascii.h feature.h globals.h keymap.h macros.h \
 
 OBJ = \
 	$(OUTDIR)\blowfish.obj \
-	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\diff.obj \
@@ -492,6 +491,7 @@ OBJ = \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
+	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
@@ -912,11 +912,9 @@ testclean:
 !ENDIF
 	$(CC) $(CFLAGS) $<
 
-$(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
-
 $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
-$(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
+$(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
@@ -1032,6 +1030,8 @@ $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c  $(INCL)
 $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
+
+$(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
 $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 

@@ -414,6 +414,7 @@ CFLAGS = $(OPTFLAG) $(DEFINES) $(INCLUDES)
 RCFLAGS = -O coff $(DEFINES)
 
 OBJ = \
+	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/diff.o \
@@ -451,6 +452,7 @@ OBJ = \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
+	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \

@@ -51,6 +51,7 @@ SPAWNL = spawnl.lib
 
 
 EXE_dependencies = \
+	blowfish.obj \
 	buffer.obj \
 	charset.obj \
 	diff.obj \
@@ -85,6 +86,7 @@ EXE_dependencies = \
 	regexp.obj \
 	screen.obj \
 	search.obj \
+	sha256.obj \
 	spell.obj \
 	syntax.obj \
 	tag.obj \

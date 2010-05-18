@@ -89,6 +89,7 @@ CFLAGS4 = $(DEFINES) DATAMEMORY=$(MEMORYTYPE)
 PROPT = DEF=PROTO GPROTO GPPARM MAXIMUMERRORS=999 GENPROTOSTATICS GENPROTOPARAMETERS
 
 SRC = \
+	blowfish.c \
 	buffer.c \
 	charset.c \
 	diff.c \
@@ -124,6 +125,7 @@ SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	sha256.c \
 	spell.c \
 	syntax.c \
 	tag.c \
@@ -134,6 +136,7 @@ SRC = \
 	version.c
 
 OBJ = \
+	blowfish.o \
 	buffer.o \
 	charset.o \
 	diff.o \
@@ -169,6 +172,7 @@ OBJ = \
 	regexp.o \
 	screen.o \
 	search.o \
+	sha256.o \
 	spell.o \
 	syntax.o \
 	tag.o \

@@ -24,7 +24,8 @@ RM =		rm
 .c.o:
 	${CC} ${CFLAGS} $< -o $@
 
-SRC =	buffer.c						\
+SRC =	blowfish.c						\
+	buffer.c						\
 	charset.c						\
 	diff.c							\
 	digraph.c						\
@@ -59,6 +60,7 @@ SRC =	buffer.c						\
 	regexp.c						\
 	screen.c						\
 	search.c						\
+	sha256.c						\
 	spell.c							\
 	syntax.c						\
 	tag.c							\
