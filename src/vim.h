@@ -2065,6 +2065,12 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #  undef bool
 # endif
 
+/* uint32_t may be defined by configure, but perh.h may indirectly include
+ * stdint.h which tries to typedef uint32_t and fails. */
+#ifdef uint32_t
+# undef uint32_t
+#endif
+
 # ifdef __BORLANDC__
   /* Borland has the structure stati64 but not _stati64 */
 #  define _stati64 stati64
