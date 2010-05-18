@@ -46,7 +46,7 @@ else
       while test -n "$cont"; do
         if grep "l$libname " linkit.sh >/dev/null; then
           if test ! -f link1.sed; then
-            echo "link.sh: OK, linking works, let's try removing a few libraries."
+            echo "link.sh: OK, linking works, let's try omitting a few libraries."
             echo "link.sh: See auto/link.log for details."
             rm -f auto/link.log
           fi
@@ -55,16 +55,16 @@ else
           sed -f link1.sed <linkit2.sh >linkit.sh
           # keep the last -lm
           if test $libname != "m" || grep "lm " linkit.sh >/dev/null; then
-            echo "link.sh: Trying to remove the $libname library..."
+            echo "link.sh: Trying to omit the $libname library..."
             cat linkit.sh >>auto/link.log
             # Redirect this link output, it may contain error messages which
             # should be ignored.
             if sh linkit.sh >>auto/link.log 2>&1; then
-              echo "link.sh: We don't need the $libname library!"
+              echo "link.sh: Vim doesn't need the $libname library!"
               cat link1.sed >>auto/link.sed
               rm -f auto/pathdef.c
             else
-              echo "link.sh: We DO need the $libname library."
+              echo "link.sh: Vim DOES need the $libname library."
               cont=
               cp link.cmd linkit.sh
             fi
@@ -82,7 +82,7 @@ else
       $MAKE objects/pathdef.o
     fi
     if test ! -f link1.sed; then
-      echo "link.sh: Linked fine, no libraries can be removed"
+      echo "link.sh: Linked fine, no libraries can be omitted"
       touch link3.sed
     fi
   else
@@ -94,12 +94,12 @@ fi
 # Now do the real linking.
 #
 if test -s auto/link.sed; then
-  echo "link.sh: Using auto/link.sed file to remove a few libraries"
+  echo "link.sh: Using auto/link.sed file to omit a few libraries"
   sed -f auto/link.sed <link.cmd >linkit.sh
   cat linkit.sh
   if sh linkit.sh; then
     exit_value=0
-    echo "link.sh: Linked fine with a few libraries removed"
+    echo "link.sh: Linked fine with a few libraries omitted"
   else
     exit_value=$?
     echo "link.sh: Linking failed, making auto/link.sed empty and trying again"
