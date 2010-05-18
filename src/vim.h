@@ -1980,6 +1980,12 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 
 #endif
 
+#if !defined(HAVE_CONFIG_H) && !defined(uint32_t) \
+	&& (defined(__CYGWIN32__) || defined(__MINGW32__))
+  /* Assuming that MingW and Cygwin do not typedef uint32_t. */
+# define uint32_t unsigned int
+#endif
+
 /* ISSYMLINK(mode) tests if a file is a symbolic link. */
 #if (defined(S_IFMT) && defined(S_IFLNK)) || defined(S_ISLNK)
 # define HAVE_ISSYMLINK
@@ -2067,9 +2073,9 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 
 /* uint32_t may be defined by configure, but perh.h may indirectly include
  * stdint.h which tries to typedef uint32_t and fails. */
-#ifdef uint32_t
-# undef uint32_t
-#endif
+# ifdef uint32_t
+#  undef uint32_t
+# endif
 
 # ifdef __BORLANDC__
   /* Borland has the structure stati64 but not _stati64 */

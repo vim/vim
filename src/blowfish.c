@@ -41,7 +41,7 @@ static void bf_e_cblock __ARGS((char_u *block));
 static int bf_check_tables __ARGS((uint32_t ipa[18], uint32_t sbi[4][256], uint32_t val));
 static int bf_self_test __ARGS((void));
 
-// Blowfish code
+/* Blowfish code */
 static uint32_t pax[18];
 static uint32_t ipa[18] = {
     0x243f6a88u, 0x85a308d3u, 0x13198a2eu,
@@ -470,8 +470,10 @@ typedef struct {
     uint32_t keysum;
 } struct_bf_test_data;
 
-// Assert bf(password, plaintxt) is cryptxt.
-// Assert csum(pax sbx(password)) is keysum.
+/*
+ * Assert bf(password, plaintxt) is cryptxt.
+ * Assert csum(pax sbx(password)) is keysum.
+ */
 static struct_bf_test_data bf_test_data[] = {
   {
       "password",
