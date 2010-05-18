@@ -975,6 +975,9 @@ if !has("msdos")
   call append("$", "\t(local to buffer)")
   call <SID>BinOptionL("sn")
 endif
+call append("$", "cryptmethod\tsimple (0) or complex (1) encryption method for file writing")
+call append("$", "\t(local to buffer)")
+call <SID>OptionL("cm")
 
 
 call <SID>Header("the swap file")

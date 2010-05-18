@@ -651,6 +651,7 @@ Short explanation of each option:		*option-list*
 'conskey'	  'consk'   get keys directly from console (MS-DOS only)
 'copyindent'	  'ci'	    make 'autoindent' use existing indent structure
 'cpoptions'	  'cpo'     flags for Vi-compatible behavior
+'cryptmethod'	  'cm'	    type of encryption to use for file writing
 'cscopepathcomp'  'cspc'    how many components of the path to show
 'cscopeprg'       'csprg'   command to execute cscope
 'cscopequickfix'  'csqf'    use quickfix window for cscope results

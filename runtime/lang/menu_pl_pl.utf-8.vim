@@ -1,7 +1,7 @@
 " Menu Translations:	Polish
 " Maintainer:		Mikolaj Machowski ( mikmach AT wp DOT pl )
 " Initial Translation:	Marcin Dalecki <martin@dalecki.de>
-" Last Change: 4 May  2006
+" Last Change: 17 May  2010
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -13,15 +13,16 @@ scriptencoding utf-8
 
 " Help menu
 menutrans &Help			Po&moc
-menutrans &Overview<Tab><F1>	&Spis\ treści<Tab><F1>
+menutrans &Overview<Tab><F1>			&Ogólnie<Tab><F1>
+menutrans &User\ Manual	Podręcznik\ &użytkownika
 menutrans &How-to\ links	&Odnośniki\ JTZ
+menutrans &Find\.\.\.	&Szukaj\.\.\.
 menutrans &Credits		Po&dziękowania
-menutrans &User\ Manual    Podręcznik\ &użytkownika
 menutrans Co&pying		&Kopiowanie
-menutrans &Version		&Wersja
-menutrans &About		o\ &Programie
 menutrans &Sponsor/Register	&Sponsorowanie/Rejestracja
 menutrans O&rphans		Sie&roty
+menutrans &Version		&Wersja
+menutrans &About		o\ &Programie
 
 " File menu
 menutrans &File				&Plik
@@ -80,19 +81,19 @@ menutrans hebrewp			hebrajski\ p
 menutrans russian-jcuken		rosyjski-jcuken
 menutrans russian-jcukenwin		rosyjski-jcukenwin
 
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Podkreślanie\ &wzorców<Tab>:set\ hls!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Podświetlanie\ &wzorców<Tab>:set\ hls!
 
 menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	&Ignorowanie\ wielkości<Tab>:set\ ic!
 menutrans Toggle\ &Showmatch<Tab>:set\ sm!		&Pokazywanie\ pasujących<Tab>:set\ sm!
 
 menutrans &Context\ lines	Wiersze\ &kontekstowe
-menutrans &Virtual\ Edit	Obróbka\ &wirtualna
+menutrans &Virtual\ Edit	Edycja\ &wirtualna
 
 menutrans Never			Nigdy
-menutrans Block\ Selection	Zaznaczanie\ zakresu
+menutrans Block\ Selection	Zaznaczanie\ blokowe
 menutrans Insert\ mode		Tryb\ wprowadzania
 menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Tryb\ zg&odności\ z\ Vi<Tab>:set\ cp!
-menutrans Block\ and\ Insert	Zakres\ i\ wprowadzanie
+menutrans Block\ and\ Insert	Blokowe\ i\ wprowadzanie
 menutrans Always		Zawsze
 
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Tryb\ wprowadzania<Tab>:set\ im!
@@ -119,7 +120,7 @@ menutrans Spell\ Check\ &Off	Wyłącz
 menutrans To\ &Next\ error<Tab>]s	Do\ &następnego\ błędu<Tab>]s
 menutrans To\ &Previous\ error<Tab>[s	Do\ &poprzedniego\ błędu<Tab>[s
 menutrans Suggest\ &Corrections<Tab>z=	Sugestie\ poprawek<Tab>z=
-menutrans &Repeat\ correction<Tab>:spellrepall	Powtó&z\ poprawkę<Tab>:spellrepall
+menutrans &Repeat\ correction<Tab>:spellrepall	Powtór&z\ poprawkę<Tab>:spellrepall
 menutrans Set\ language\ to\ "en"	Ustaw\ język\ na\ "en"
 menutrans Set\ language\ to\ "en_au"	Ustaw\ język\ na\ "en_au"
 menutrans Set\ language\ to\ "en_ca"	Ustaw\ język\ na\ "en_ca"
@@ -146,7 +147,7 @@ menutrans Fold\ column\ &width				Szerokość\ kolumny\ za&winięć
 menutrans Fold\ Met&hod		Me&toda\ zawijania
 menutrans M&anual			&Ręcznie
 menutrans I&ndent			W&cięcie
-menutrans E&xpression W&yrazenie
+menutrans E&xpression W&yrażenie
 menutrans S&yntax			S&kładnia
 menutrans Ma&rker			Zn&acznik
 
@@ -163,7 +164,7 @@ menutrans &Next\ Error<Tab>:cn		&Następny\ błąd<Tab>:cn
 menutrans &Previous\ Error<Tab>:cp	&Poprzedni\ błąd<Tab>:cp
 menutrans &Older\ List<Tab>:cold	&Starsza\ lista<Tab>:cold
 menutrans N&ewer\ List<Tab>:cnew	N&owsza\ lista<Tab>:cnew
-menutrans Error\ &Window  Okno\ komu&nikatów
+menutrans Error\ &Window	Okno\ błędó&w
 menutrans &Update<Tab>:cwin			Akt&ualizuj<Tab>:cwin
 menutrans &Close<Tab>:cclose			&Zamknij<Tab>:cclose
 menutrans &Open<Tab>:copen			&Otwórz<Tab>:copen
@@ -174,8 +175,8 @@ menutrans Conve&rt\ back<Tab>:%!xxd\ -r     Zwykły\ tekst<Tab>:%!xxd\ -r
 
 " Names for buffer menu.
 menutrans &Buffers	&Bufory
-menutrans &Refresh\ menu	Odśwież
-menutrans Delete	Skasuj
+menutrans &Refresh\ menu	&Odśwież
+menutrans &Delete	&Skasuj
 menutrans &Alternate	&Zmień
 menutrans &Next		&Następny
 menutrans &Previous	&Poprzedni
