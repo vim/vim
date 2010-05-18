@@ -47,6 +47,7 @@
    * stdint.h which tries to typedef uint32_t and fails. */
 # ifdef uint32_t
 #  undef uint32_t
+#  undef __uint32_t_defined
 # endif
 # include <netdb.h>
 # include <netinet/in.h>

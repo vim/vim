@@ -32,6 +32,10 @@
 # include "auto/config.h"
 # define HAVE_PATHDEF
 
+/* Avoid a problem when stdint.h gets included later, autoconf defines
+ * uint32_t when it is not typedef'ed. */
+# define __uint32_t_defined
+
 /*
  * Check if configure correctly managed to find sizeof(int).  If this failed,
  * it becomes zero.  This is likely a problem of not being able to run the
@@ -2075,6 +2079,7 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
  * stdint.h which tries to typedef uint32_t and fails. */
 # ifdef uint32_t
 #  undef uint32_t
+#  undef __uint32_t_defined
 # endif
 
 # ifdef __BORLANDC__
