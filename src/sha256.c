@@ -23,14 +23,14 @@
 #ifdef FEAT_CRYPT
 
 typedef struct {
-  uint32_t total[2];
-  uint32_t state[8];
+  UINT32_T total[2];
+  UINT32_T state[8];
   char_u   buffer[64];
 } context_sha256_T;
 
 static void sha256_starts __ARGS((context_sha256_T *ctx));
 static void sha256_process __ARGS((context_sha256_T *ctx, char_u data[64]));
-static void sha256_update __ARGS((context_sha256_T *ctx, char_u *input, uint32_t length));
+static void sha256_update __ARGS((context_sha256_T *ctx, char_u *input, UINT32_T length));
 static void sha256_finish __ARGS((context_sha256_T *ctx, char_u digest[32]));
 static char_u *sha256_bytes __ARGS((char_u *buf, int buflen));
 static unsigned int get_some_time __ARGS((void));
@@ -38,10 +38,10 @@ static unsigned int get_some_time __ARGS((void));
 
 #define GET_UINT32(n, b, i)		    \
 {					    \
-    (n) = ( (uint32_t)(b)[(i)	 ] << 24)   \
-	| ( (uint32_t)(b)[(i) + 1] << 16)   \
-	| ( (uint32_t)(b)[(i) + 2] <<  8)   \
-	| ( (uint32_t)(b)[(i) + 3]	);  \
+    (n) = ( (UINT32_T)(b)[(i)	 ] << 24)   \
+	| ( (UINT32_T)(b)[(i) + 1] << 16)   \
+	| ( (UINT32_T)(b)[(i) + 2] <<  8)   \
+	| ( (UINT32_T)(b)[(i) + 3]	);  \
 }
 
 #define PUT_UINT32(n,b,i)		  \
@@ -74,8 +74,8 @@ sha256_process(ctx, data)
     context_sha256_T *ctx;
     char_u	     data[64];
 {
-    uint32_t temp1, temp2, W[64];
-    uint32_t A, B, C, D, E, F, G, H;
+    UINT32_T temp1, temp2, W[64];
+    UINT32_T A, B, C, D, E, F, G, H;
 
     GET_UINT32(W[0],  data,  0);
     GET_UINT32(W[1],  data,  4);
@@ -207,9 +207,9 @@ sha256_process(ctx, data)
 sha256_update(ctx, input, length)
     context_sha256_T *ctx;
     char_u	     *input;
-    uint32_t	     length;
+    UINT32_T	     length;
 {
-    uint32_t left, fill;
+    UINT32_T left, fill;
 
     if (length == 0)
 	return;
@@ -255,8 +255,8 @@ sha256_finish(ctx, digest)
     context_sha256_T *ctx;
     char_u           digest[32];
 {
-    uint32_t last, padn;
-    uint32_t high, low;
+    UINT32_T last, padn;
+    UINT32_T high, low;
     char_u   msglen[8];
 
     high = (ctx->total[0] >> 29) | (ctx->total[1] <<  3);

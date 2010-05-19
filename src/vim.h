@@ -32,10 +32,6 @@
 # include "auto/config.h"
 # define HAVE_PATHDEF
 
-/* Avoid a problem when stdint.h gets included later, autoconf defines
- * uint32_t when it is not typedef'ed. */
-# define __uint32_t_defined
-
 /*
  * Check if configure correctly managed to find sizeof(int).  If this failed,
  * it becomes zero.  This is likely a problem of not being able to run the
@@ -51,6 +47,20 @@
  */
 # if defined(__CYGWIN32__) && defined(HAVE_FCHDIR)
 #  undef HAVE_FCHDIR
+# endif
+
+/* We may need to define the uint32_t on non-Unix system, but using the same
+ * identifier causes conflicts.  Therefore use UINT32_T. */
+# define UINT32_T uint32_t
+#endif
+
+#if !defined(UINT32_T)
+# if defined(uint32_t)  /* this doesn't catch typedefs, unfortunately */
+#  define UINT32_T uint32_t
+# else
+  /* Fall back to assuming unsigned int is 32 bit.  If this is wrong then the
+   * test in blowfish.c will fail. */
+#  define UINT32_T unsigned int
 # endif
 #endif
 
@@ -474,6 +484,12 @@ typedef unsigned long u8char_T;	    /* long should be 32 bits or more */
 
 #include <assert.h>
 
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
 #ifdef HAVE_WCTYPE_H
 # include <wctype.h>
 #endif
@@ -1984,12 +2000,6 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 
 #endif
 
-#if !defined(HAVE_CONFIG_H) && !defined(uint32_t) \
-	&& (defined(__CYGWIN32__) || defined(__MINGW32__))
-  /* Assuming that MingW and Cygwin do not typedef uint32_t. */
-# define uint32_t unsigned int
-#endif
-
 /* ISSYMLINK(mode) tests if a file is a symbolic link. */
 #if (defined(S_IFMT) && defined(S_IFLNK)) || defined(S_ISLNK)
 # define HAVE_ISSYMLINK
@@ -2073,13 +2083,6 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
    * and for Perl */
 # if defined(bool) && defined(MACOS) && !defined(FEAT_PERL)
 #  undef bool
-# endif
-
-/* uint32_t may be defined by configure, but perh.h may indirectly include
- * stdint.h which tries to typedef uint32_t and fails. */
-# ifdef uint32_t
-#  undef uint32_t
-#  undef __uint32_t_defined
 # endif
 
 # ifdef __BORLANDC__

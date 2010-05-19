@@ -2174,14 +2174,16 @@ if test $ac_cv_header_sys_wait_h = no; then
 		AC_MSG_RESULT(no))
 fi
 
-AC_CHECK_HEADERS(stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
-	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h sys/types.h termio.h \
-	iconv.h langinfo.h math.h unistd.h stropts.h errno.h \
-	sys/resource.h sys/systeminfo.h locale.h \
-	sys/stream.h termios.h libc.h sys/statfs.h \
-	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
-	libgen.h util/debug.h util/msg18n.h frame.h \
-	sys/acl.h sys/access.h sys/sysinfo.h wchar.h wctype.h)
+AC_CHECK_HEADERS(stdarg.h stdint.h stdlib.h string.h \
+	sys/select.h sys/utsname.h termcap.h fcntl.h \
+	sgtty.h sys/ioctl.h sys/time.h sys/types.h \
+	termio.h iconv.h inttypes.h langinfo.h math.h \
+	unistd.h stropts.h errno.h sys/resource.h \
+	sys/systeminfo.h locale.h sys/stream.h termios.h \
+	libc.h sys/statfs.h poll.h sys/poll.h pwd.h \
+	utime.h sys/param.h libintl.h libgen.h \
+	util/debug.h util/msg18n.h frame.h sys/acl.h \
+	sys/access.h sys/sysinfo.h wchar.h wctype.h)
 
 dnl sys/ptem.h depends on sys/stream.h on Solaris
 AC_CHECK_HEADERS(sys/ptem.h, [], [],
@@ -2247,6 +2249,7 @@ AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_TYPE_UINT32_T
+
 AC_HEADER_TIME
 AC_CHECK_TYPE(ino_t, long)
 AC_CHECK_TYPE(dev_t, unsigned)
@@ -2975,10 +2978,29 @@ main()
   exit(0);
 }],
 	    ac_cv_sizeof_int=`cat conftestval`,
-	    ac_cv_sizeof_int=0,
-	    AC_MSG_ERROR(failed to compile test program))])
+	    AC_MSG_ERROR([failed to determine sizeof(int)]),
+	    AC_MSG_ERROR([failed to compile test program]))])
 AC_MSG_RESULT($ac_cv_sizeof_int)
 AC_DEFINE_UNQUOTED(SIZEOF_INT, $ac_cv_sizeof_int)
+
+dnl Make sure that uint32_t is really 32 bits unsigned.
+AC_MSG_CHECKING([uint32_t is 32 bits])
+AC_TRY_RUN([
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+main() {
+  uint32_t nr1 = (uint32_t)-1;
+  uint32_t nr2 = (uint32_t)0xffffffffUL;
+  if (sizeof(uint32_t) != 4 || nr1 != 0xffffffffUL || nr2 + 1 != 0) exit(1);
+  exit(0);
+}],
+AC_MSG_RESULT(ok),
+AC_MSG_ERROR([WRONG!  uint32_t not defined correctly.]),
+AC_MSG_ERROR([could not compile program using uint32_t.]))
 
 dnl Check for memmove() before bcopy(), makes memmove() be used when both are
 dnl present, fixes problem with incompatibility between Solaris 2.4 and 2.5.

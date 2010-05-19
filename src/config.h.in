@@ -216,6 +216,7 @@
 #undef HAVE_FCNTL_H
 #undef HAVE_FRAME_H
 #undef HAVE_ICONV_H
+#undef HAVE_INTTYPES_H
 #undef HAVE_LANGINFO_H
 #undef HAVE_LIBC_H
 #undef HAVE_LIBGEN_H
@@ -228,6 +229,7 @@
 #undef HAVE_PWD_H
 #undef HAVE_SETJMP_H
 #undef HAVE_SGTTY_H
+#undef HAVE_STDINT_H
 #undef HAVE_STRINGS_H
 #undef HAVE_STROPTS_H
 #undef HAVE_SYS_ACCESS_H

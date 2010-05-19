@@ -1366,7 +1366,7 @@ this before writing the file.  When reading an encrypted file it will be set
 automatically to the method used when that file was written.  You can change
 'cryptmethod' before writing that file to change the method.
 
-						*E817* *E818* *E819*
+						*E817* *E818* *E819* *E820*
 When encryption does not work properly, you would be able to write your text
 to a file and never be able to read it back.  Therefore a test is performed to
 check if the encryption works as expected.  If you get one of these errors

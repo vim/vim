@@ -8649,14 +8649,16 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-for ac_header in stdarg.h stdlib.h string.h sys/select.h sys/utsname.h \
-	termcap.h fcntl.h sgtty.h sys/ioctl.h sys/time.h sys/types.h termio.h \
-	iconv.h langinfo.h math.h unistd.h stropts.h errno.h \
-	sys/resource.h sys/systeminfo.h locale.h \
-	sys/stream.h termios.h libc.h sys/statfs.h \
-	poll.h sys/poll.h pwd.h utime.h sys/param.h libintl.h \
-	libgen.h util/debug.h util/msg18n.h frame.h \
-	sys/acl.h sys/access.h sys/sysinfo.h wchar.h wctype.h
+for ac_header in stdarg.h stdint.h stdlib.h string.h \
+	sys/select.h sys/utsname.h termcap.h fcntl.h \
+	sgtty.h sys/ioctl.h sys/time.h sys/types.h \
+	termio.h iconv.h inttypes.h langinfo.h math.h \
+	unistd.h stropts.h errno.h sys/resource.h \
+	sys/systeminfo.h locale.h sys/stream.h termios.h \
+	libc.h sys/statfs.h poll.h sys/poll.h pwd.h \
+	utime.h sys/param.h libintl.h libgen.h \
+	util/debug.h util/msg18n.h frame.h sys/acl.h \
+	sys/access.h sys/sysinfo.h wchar.h wctype.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -9032,6 +9034,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 ;;
   esac
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether time.h and sys/time.h may both be included" >&5
 $as_echo_n "checking whether time.h and sys/time.h may both be included... " >&6; }
@@ -11216,7 +11219,7 @@ _ACEOF
 if ac_fn_c_try_run "$LINENO"; then :
   ac_cv_sizeof_int=`cat conftestval`
 else
-  ac_cv_sizeof_int=0
+  as_fn_error "failed to determine sizeof(int)" "$LINENO" 5
 fi
 rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
@@ -11229,6 +11232,38 @@ $as_echo "$ac_cv_sizeof_int" >&6; }
 cat >>confdefs.h <<_ACEOF
 #define SIZEOF_INT $ac_cv_sizeof_int
 _ACEOF
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking uint32_t is 32 bits" >&5
+$as_echo_n "checking uint32_t is 32 bits... " >&6; }
+if test "$cross_compiling" = yes; then :
+  as_fn_error "could not compile program using uint32_t." "$LINENO" 5
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+main() {
+  uint32_t nr1 = (uint32_t)-1;
+  uint32_t nr2 = (uint32_t)0xffffffffUL;
+  if (sizeof(uint32_t) != 4 || nr1 != 0xffffffffUL || nr2 + 1 != 0) exit(1);
+  exit(0);
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: ok" >&5
+$as_echo "ok" >&6; }
+else
+  as_fn_error "WRONG!  uint32_t not defined correctly." "$LINENO" 5
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
 
 
 
