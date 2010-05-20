@@ -170,7 +170,10 @@ static void ruby_vim_init(void);
 #define rb_str_cat			dll_rb_str_cat
 #define rb_str_concat			dll_rb_str_concat
 #define rb_str_new			dll_rb_str_new
-#define rb_str_new2			dll_rb_str_new2
+/* Ruby may also define rb_str_new2. */
+#ifndef rb_str_new2
+# define rb_str_new2			dll_rb_str_new2
+#endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
 # define rb_string_value_ptr		dll_rb_string_value_ptr
 # define rb_float_new			dll_rb_float_new

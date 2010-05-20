@@ -7166,6 +7166,8 @@ don't save what you see.  This could result in work being lost.  Now the text
 after recovery is compared to the original file contents.  When they differ
 the buffer is marked as modified.
 
+Use BASEMODLIBS instead of MODLIBS for Python configuration. (Michael Bienia)
+
 
 Added							*added-7.3*
 -----

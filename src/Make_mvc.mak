@@ -364,6 +364,9 @@ MSVCVER = 10.0
 !if "$(_NMAKE_VER)" == "10.00.30128.01"
 MSVCVER = 10.0
 !endif
+!if "$(_NMAKE_VER)" == "10.00.30319.01"
+MSVCVER = 10.0
+!endif
 !endif
 
 # Abort bulding VIM if version of VC is unrecognised.

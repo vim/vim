@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.2\n"
-"POT-Creation-Date: 2010-03-01 13:21+0100\n"
-"PO-Revision-Date:  2009-03-01 13:21+0100\n"
+"POT-Creation-Date: 2010-05-17 10:05+0200\n"
+"PO-Revision-Date:  2009-05-17 10:05+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -1266,6 +1266,9 @@ msgid "E467: Custom completion requires a function argument"
 msgstr ""
 "E467: Il completamento personalizzato richiede un argomento di funzione"
 
+msgid "unknown"
+msgstr "sconosciuto"
+
 #, c-format
 msgid "E185: Cannot find color scheme %s"
 msgstr "E185: Non riesco a trovare schema colore %s"
@@ -2428,12 +2431,12 @@ msgid "E567: no cscope connections"
 msgstr "E567: nessuna connessione cscope"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
-msgstr "E259: nessuna corrispondenza trovata per la richiesta cscope %s di %s"
-
-#, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
 msgstr "E469: flag cscopequickfix %c non valido per %c"
+
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: nessuna corrispondenza trovata per la richiesta cscope %s di %s"
 
 msgid "cscope commands:\n"
 msgstr "comandi cscope:\n"
