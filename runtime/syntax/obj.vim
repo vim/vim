@@ -2,6 +2,7 @@
 " Language:	3D wavefront's obj file
 " Maintainer:	Vincent Berthoux <twinside@gmail.com>
 " File Types:	.obj (used in 3D)
+" Last Change:  2010 May 18
 "
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded

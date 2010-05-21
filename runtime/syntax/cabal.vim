@@ -2,6 +2,7 @@
 " Language:	Haskell Cabal Build file
 " Maintainer:	Vincent Berthoux <twinside@gmail.com>
 " File Types:	.cabal
+" Last Change:  2010 May 18
 " v1.3: Updated to the last version of cabal
 "       Added more highlighting for cabal function, true/false
 "       and version number. Also added missing comment highlighting.

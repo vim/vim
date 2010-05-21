@@ -7184,6 +7184,9 @@ Mostly by Moshin Ahmed.
 
 Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 
+More floating point functions: acos(), asin(), atan2(), cosh(), exp(), fmod(),
+log(), sinh(), tan(), tanh().  (Bill McCarthy)
+
 
 Fixed							*fixed-7.3*
 -----

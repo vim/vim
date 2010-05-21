@@ -1660,6 +1660,7 @@ See |function-list| for a list grouped by what the function is used for.
 USAGE				RESULT	DESCRIPTION	~
 
 abs( {expr})			Float or Number  absolute value of {expr}
+acos( {expr})			Float	arc cosine of {expr}
 add( {list}, {item})		List	append {item} to |List| {list}
 append( {lnum}, {string})	Number	append {string} below line {lnum}
 append( {lnum}, {list})		Number	append lines {list} below line {lnum}
@@ -1667,7 +1668,9 @@ argc()				Number	number of files in the argument list
 argidx()			Number	current index in the argument list
 argv( {nr})			String	{nr} entry of the argument list
 argv( )				List	the argument list
+asin( {expr})			Float	arc sine of {expr}
 atan( {expr})			Float	arc tangent of {expr}
+atan2( {expr}, {expr})		Float   arc tangent of {expr1} / {expr2}
 browse( {save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir( {title}, {initdir})	String	put up a directory requester
@@ -1694,6 +1697,7 @@ confirm( {msg} [, {choices} [, {default} [, {type}]]])
 				Number	number of choice picked by user
 copy( {expr})			any	make a shallow copy of {expr}
 cos( {expr})			Float	cosine of {expr}
+cosh( {expr})			Float	hyperbolic cosine of {expr}
 count( {list}, {expr} [, {start} [, {ic}]])
 				Number	 count how many {expr} are in {list}
 cscope_connection( [{num} , {dbpath} [, {prepend}]])
@@ -1714,6 +1718,7 @@ executable( {expr})		Number	1 if executable {expr} exists
 exists( {expr})			Number	TRUE if {expr} exists
 extend( {expr1}, {expr2} [, {expr3}])
 				List/Dict insert items of {expr2} into {expr1}
+exp( {expr})			Float	exponential of {expr}
 expand( {expr} [, {flag}])	String	expand special keywords in {expr}
 feedkeys( {string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable( {file})		Number	TRUE if {file} is a readable file
@@ -1726,6 +1731,7 @@ findfile( {name}[, {path}[, {count}]])
 				String	find file {name} in {path}
 float2nr( {expr})		Number	convert Float {expr} to a Number
 floor( {expr})			Float	round {expr} down
+fmod( {expr1}, {expr2})		Float	remainder of {expr1} / {expr2}
 fnameescape( {fname})		String	escape special characters in {fname}
 fnamemodify( {fname}, {mods})	String	modify file name
 foldclosed( {lnum})		Number	first line of fold at {lnum} if closed
@@ -1805,6 +1811,7 @@ line( {expr})			Number	line nr of cursor, last line or mark
 line2byte( {lnum})		Number	byte count of line {lnum}
 lispindent( {lnum})		Number	Lisp indent for line {lnum}
 localtime()			Number	current time
+log( {expr})			Float	natural logarithm (base e) of {expr}
 log10( {expr})			Float	logarithm of Float {expr} to base 10
 map( {expr}, {string})		List/Dict  change each item in {expr} to {expr}
 maparg( {name}[, {mode} [, {abbr}]])
@@ -1887,6 +1894,7 @@ shellescape( {string} [, {special}])
 					command argument
 simplify( {filename})		String	simplify filename as much as possible
 sin( {expr})			Float	sine of {expr}
+sinh( {expr})			Float	hyperbolic sine of {expr}
 sort( {list} [, {func}])	List	sort {list}, using {func} to compare
 soundfold( {word})		String	sound-fold {word}
 spellbadword()			String	badly spelled word at cursor
@@ -1923,6 +1931,8 @@ tabpagewinnr( {tabarg}[, {arg}])
 taglist( {expr})		List	list of tags matching {expr}
 tagfiles()			List	tags files used
 tempname()			String	name for a temporary file
+tan( {expr})			Float	tangent of {expr}
+tanh( {expr})			Float	hyperbolic tangent of {expr}
 tolower( {expr})		String	the String {expr} switched to lowercase
 toupper( {expr})		String	the String {expr} switched to uppercase
 tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
@@ -1957,6 +1967,20 @@ abs({expr})							*abs()*
 			echo abs(-4)
 <			4
 		{only available when compiled with the |+float| feature}
+
+
+acos({expr})							*acos()*
+		Return the arc cosine of {expr} measured in radians, as a
+		|Float|in the range of [0, pi].
+		{expr} must evaluate to a|Float|or a|Number|in the range
+		[-1, 1].
+		Examples: >
+			:echo acos(0)
+<			1.570796 >
+			:echo acos(-0.5)
+<			2.094395
+		{only available when compiled with|+float|}
+
 
 add({list}, {expr})					*add()*
 		Append the item {expr} to |List| {list}.  Returns the
@@ -2000,6 +2024,19 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 <		Without the {nr} argument a |List| with the whole |arglist| is
 		returned.
 
+asin({expr})						*asin()*
+		Return the arc sine of {expr} measured in radians, as a|Float|
+		in the range of [-pi/2, pi/2].
+		{expr} must evaluate to a|Float|or a|Number|in the range
+		[-1, 1].
+		Examples: >
+			:echo asin(0.8)
+<			0.927295 >
+			:echo asin(-0.5)
+<			-0.523599
+		{only available when compiled with|+float|}
+
+
 atan({expr})						*atan()*
 		Return the principal value of the arc tangent of {expr}, in
 		the range [-pi/2, +pi/2] radians, as a |Float|.
@@ -2010,6 +2047,19 @@ atan({expr})						*atan()*
 			:echo atan(-4.01)
 <			-1.326405
 		{only available when compiled with the |+float| feature}
+
+
+atan2({expr1}, {expr2})					*atan2()*
+		Return the arc tangent of {expr1} / {expr2}, measured in
+		radians, as a|Float|in the range [-pi, pi].
+		{expr1} and {expr2} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo atan2(-1, 1)
+<			-0.785398 >
+			:echo atan2(1, -1)
+<			2.356194
+		{only available when compiled with|+float|}
+
 
 							*browse()*
 browse({save}, {title}, {initdir}, {default})
@@ -2355,6 +2405,18 @@ cos({expr})						*cos()*
 <			-0.646043
 		{only available when compiled with the |+float| feature}
 
+
+cosh({expr})						*cosh()*
+		Return the hyperbolic cosine of {expr} as a|Float|in the range
+		[1, inf].
+		{expr} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo cosh(0.5)
+<			1.127626 >
+			:echo cosh(-0.5)
+<			-1.127626
+		{only available when compiled with|+float|}
+
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
 		Return the number of times an item with value {expr} appears
@@ -2615,6 +2677,18 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 <		This doesn't check for existence of the "bufcount" variable,
 		but gets the value of "bufcount", and checks if that exists.
 
+exp({expr})						*exp()*
+		Return the exponential of {expr} as a|Float|in the range
+		[0, inf].
+		{expr} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo exp(2)
+<			7.389056 >
+			:echo exp(-1)
+<			0.367879
+		{only available when compiled with|+float|}
+
+
 expand({expr} [, {flag}])				*expand()*
 		Expand wildcards and the following special keywords in {expr}.
 		The result is a String.
@@ -2847,6 +2921,23 @@ floor({expr})							*floor()*
 <			4.0
 		{only available when compiled with the |+float| feature}
 		
+
+fmod({expr1}, {expr2})					*fmod()*
+		Return the remainder of {expr1} / {expr2}, even if the
+		division is not representable.  Returns {expr1} - i * {expr2}
+		for some integer i such that if {expr2} is non-zero, the
+		result has the same sign as {expr1} and magnitude less than
+		the magnitude of {expr2}.  If {expr2} is zero, the value
+		returned is zero.  The value returned is a|Float|.
+		{expr1} and {expr2} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo fmod(12.33, 1.22)
+<			0.13 >
+			:echo fmod(-12.33, 1.22)
+<			-0.13
+		{only available when compiled with|+float|}
+
+
 fnameescape({string})					*fnameescape()*
 		Escape {string} for use as file name command argument.	All
 		characters that have a special meaning, such as '%' and '|'
@@ -3800,6 +3891,18 @@ lispindent({lnum})					*lispindent()*
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
 		1970.  See also |strftime()| and |getftime()|.
+
+
+log({expr})						*log()*
+		Return the natural logarithm (base e) of {expr} as a|Float|.
+		{expr} must evaluate to a|Float|or a|Number|in the range
+		(0, inf].
+		Examples: >
+			:echo log(10)
+<			2.302585 >
+			:echo log(exp(5))
+<			5.0
+		{only available when compiled with|+float|}
 
 
 log10({expr})						*log10()*
@@ -5076,6 +5179,18 @@ sin({expr})						*sin()*
 		{only available when compiled with the |+float| feature}
 		
 
+sinh({expr})						*sinh()*
+		Return the hyperbolic sine of {expr} as a|Float|in the range
+		[-inf, inf].
+		{expr} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo sinh(0.5)
+<			0.521095 >
+			:echo sinh(-0.9)
+<			-1.026517
+		{only available when compiled with|+float|}
+
+
 sort({list} [, {func}])					*sort()* *E702*
 		Sort the items in {list} in-place.  Returns {list}.  If you
 		want a list to remain unmodified make a copy first: >
@@ -5554,6 +5669,31 @@ tempname()					*tempname()* *temp-file-name*
 <		For Unix, the file will be in a private directory |tempfile|.
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
+
+
+tan({expr})						*tan()*
+		Return the tangent of {expr}, measured in radians, as a|Float|
+		in the range [-inf, inf].
+		{expr} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo tan(10)
+<			0.648361 >
+			:echo tan(-4.01)
+<			-1.181502
+		{only available when compiled with|+float|}
+
+
+tanh({expr})						*tanh()*
+		Return the hyperbolic tangent of {expr} as a|Float|in the
+		range [-1, 1].
+		{expr} must evaluate to a|Float|or a|Number|.
+		Examples: >
+			:echo tanh(0.5)
+<			0.462117 >
+			:echo tanh(-1)
+<			-0.761594
+		{only available when compiled with|+float|}
+
 
 tolower({expr})						*tolower()*
 		The result is a copy of the String given, with all uppercase

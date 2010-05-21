@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include cabal and obj syntax files. (Vincent Berthoux, 2010 May 16)
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -1087,10 +1085,15 @@ Patches to include:
 -   gettabvar() and settabvar() functions. (Yegappan Lakshmanan, 2010 May 14)
 -   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
     26) Now with Mercurial repository (2010 Jan 2)
+- More float functions.  (Bill McCarthy)
+  ~/tmp/eval.diff
+  http://groups.google.com/group/vim_dev/browse_thread/thread/de192817983abb54
+- Include conceal patch?
+  http://vince.negri.googlepages.com/
+  http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
-- More float functions.
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
 - Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
 - Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
