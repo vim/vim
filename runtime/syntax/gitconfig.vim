@@ -2,10 +2,10 @@
 " Language:	git config file
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:	gitconfig, .gitconfig, *.git/config
-" Last Change:	2009 Dec 24
+" Last Change:	2010 May 21
 
 if exists("b:current_syntax")
-    finish
+  finish
 endif
 
 setlocal iskeyword+=-

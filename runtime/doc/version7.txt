@@ -3,7 +3,7 @@
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
-									*vim7*
+					*vim7* *version-7.0* *version7.0*
 Welcome to Vim 7!  A large number of features has been added.  This file
 mentions all the new items, changes to existing features and bug fixes
 since Vim 6.x.  Use this command to see the version you are using: >
@@ -2984,7 +2984,7 @@ CTRL-N or a printable character while still searching for matches.
 
 
 ==============================================================================
-VERSION 7.1						*version-7.1*
+VERSION 7.1					*version-7.1* *version7.1*
 
 This section is about improvements made between version 7.0 and 7.1.
 
@@ -4626,7 +4626,7 @@ Solution:   Use the same mechanism as in mch_total_mem(): first reduce the
 Files:	    src/memfile.c
 
 ==============================================================================
-VERSION 7.2						*version-7.2*
+VERSION 7.2					*version-7.2* *version7.2*
 
 This section is about improvements made between version 7.1 and 7.2.
 
@@ -7148,7 +7148,7 @@ Pelle)
 Mac: Could not build with Perl interface.
 
 ==============================================================================
-VERSION 7.3						*version-7.3*
+VERSION 7.3					*version-7.3* *version7.3*
 
 This section is about improvements made between version 7.2 and 7.3.
 
@@ -7188,6 +7188,13 @@ Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 Fixed							*fixed-7.3*
 -----
 
+When writing a file, switching tab pages and selecting a word the file write
+message would be displayed again.  This in Insert mode and with 'cmdheight'
+set to 2.
+
+When using ":lang" to set a locale that uses a comma for decimal separator and
+using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
+(James Vega)
 
 
  vim:tw=78:ts=8:ft=help:norl:

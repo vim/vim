@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	git config file
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2009 Dec 24
+" Last Change:	2010 May 21
 
 if exists("b:did_indent")
   finish
@@ -18,18 +18,18 @@ if exists("*GetGitconfigIndent")
 endif
 
 function! GetGitconfigIndent()
-    let line  = getline(prevnonblank(v:lnum-1))
-    let cline = getline(v:lnum)
-    if line =~  '\\\@<!\%(\\\\\)*\\$'
-        " odd number of slashes, in a line continuation
-        return 2 * &sw
-    elseif cline =~ '^\s*\['
-        return 0
-    elseif cline =~ '^\s*\a'
-        return &sw
-    elseif cline == ''       && line =~ '^\['
-        return &sw
-    else
-        return -1
-    endif
+  let line  = getline(prevnonblank(v:lnum-1))
+  let cline = getline(v:lnum)
+  if line =~  '\\\@<!\%(\\\\\)*\\$'
+    " odd number of slashes, in a line continuation
+    return 2 * &sw
+  elseif cline =~ '^\s*\['
+    return 0
+  elseif cline =~ '^\s*\a'
+    return &sw
+  elseif cline == ''       && line =~ '^\['
+    return &sw
+  else
+    return -1
+  endif
 endfunction

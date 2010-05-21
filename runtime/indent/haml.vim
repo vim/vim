@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:	HAML
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2007 Dec 16
+" Language:	Haml
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2008 Sep 11
 
 if exists("b:did_indent")
   finish
@@ -44,8 +44,6 @@ function! GetHamlIndent()
   if indent == indent(lnum)
     let indent = cindent <= indent ? -1 : increase
   endif
-  "let indent = indent == indent(lnum) ? -1 : indent
-  "let indent = indent > indent(lnum) + &sw ? indent(lnum) + &sw : indent
 
   let group = synIDattr(synID(lnum,lastcol,1),'name')
 
@@ -53,9 +51,11 @@ function! GetHamlIndent()
     return indent
   elseif line =~ '^/\%(\[[^]]*\]\)\=$'
     return increase
-  elseif line =~ '^:'
+  elseif group == 'hamlFilter'
     return increase
-  elseif line =~ '^'.s:tag.'[=~-]\s*\%(\%(if\|else\|elsif\|unless\|case\|when\|while\|until\|for\|begin\|module\|class\|def\)\>\%(.*\<end\>\)\@!\|.*do |[^|]*|\s*$\)'
+  elseif line =~ '^'.s:tag.'[&!]\=[=~-]\s*\%(\%(if\|else\|elsif\|unless\|case\|when\|while\|until\|for\|begin\|module\|class\|def\)\>\%(.*\<end\>\)\@!\|.*do\%(\s*|[^|]*|\)\=\s*$\)'
+    return increase
+  elseif line =~ '^'.s:tag.'[&!]\=[=~-].*,\s*$'
     return increase
   elseif line == '-#'
     return increase

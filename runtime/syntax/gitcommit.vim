@@ -2,17 +2,17 @@
 " Language:	git commit file
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:	*.git/COMMIT_EDITMSG
-" Last Change:	2009 Dec 24
+" Last Change:	2010 May 21
 
 if exists("b:current_syntax")
-    finish
+  finish
 endif
 
 syn case match
 syn sync minlines=50
 
 if has("spell")
-    syn spell toplevel
+  syn spell toplevel
 endif
 
 syn include @gitcommitDiff syntax/diff.vim
@@ -29,7 +29,7 @@ syn match   gitcommitOnBranch	"\%(^# \)\@<=Your branch .\{-\} '" contained conta
 syn match   gitcommitBranch	"[^ \t']\+" contained
 syn match   gitcommitNoBranch	"\%(^# \)\@<=Not currently on any branch." contained containedin=gitcommitComment
 syn match   gitcommitHeader	"\%(^# \)\@<=.*:$"	contained containedin=gitcommitComment
-syn region  gitcommitAuthor	matchgroup=gitCommitHeader start=/\%(^# \)\@<=Author:/ end=/$/ keepend oneline contained containedin=gitcommitComment transparent
+syn region  gitcommitAuthor	matchgroup=gitCommitHeader start=/\%(^# \)\@<=\%(Author\|Committer\):/ end=/$/ keepend oneline contained containedin=gitcommitComment transparent
 syn match   gitcommitNoChanges	"\%(^# \)\@<=No changes$" contained containedin=gitcommitComment
 
 syn region  gitcommitUntracked	start=/^# Untracked files:/ end=/^#$\|^#\@!/ contains=gitcommitHeader,gitcommitHead,gitcommitUntrackedFile fold

@@ -1,7 +1,7 @@
 " Vim indent file
-" Language:	SASS
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Change:	2007 Dec 16
+" Language:	Sass
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Last Change:	2010 May 21
 
 if exists("b:did_indent")
   finish
@@ -17,7 +17,7 @@ if exists("*GetSassIndent")
   finish
 endif
 
-let s:property = '^\s*:\|^\s*[[:alnum:]-]\+:'
+let s:property = '^\s*:\|^\s*[[:alnum:]-]\+\%(:\|\s*=\)'
 
 function! GetSassIndent()
   let lnum = prevnonblank(v:lnum-1)
