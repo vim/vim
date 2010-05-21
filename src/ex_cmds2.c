@@ -4159,18 +4159,6 @@ ex_language(eap)
 		    set_helplang_default(mname);
 #endif
 		}
-
-		/* Set $LC_CTYPE, because it overrules $LANG, and
-		 * gtk_set_locale() calls setlocale() again.  gnome_init()
-		 * sets $LC_CTYPE to "en_US" (that's a bug!). */
-		if (what != VIM_LC_MESSAGES)
-		    vim_setenv((char_u *)"LC_CTYPE", name);
-# ifdef FEAT_GUI_GTK
-		/* Let GTK know what locale we're using.  Not sure this is
-		 * really needed... */
-		if (gui.in_use)
-		    (void)gtk_set_locale();
-# endif
 	    }
 
 # ifdef FEAT_EVAL

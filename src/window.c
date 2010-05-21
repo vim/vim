@@ -3775,6 +3775,9 @@ goto_tabpage(n)
 goto_tabpage_tp(tp)
     tabpage_T	*tp;
 {
+    /* Don't repeat a message in another tab page. */
+    set_keep_msg(NULL, 0);
+
     if (tp != curtab && leave_tabpage(tp->tp_curwin->w_buffer) == OK)
     {
 	if (valid_tabpage(tp))

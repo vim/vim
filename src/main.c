@@ -377,10 +377,6 @@ main
 	    if (params.evim_mode)
 		mch_exit(1);
 	}
-#  if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-	/* Re-initialize locale, it may have been altered by gui_init_check() */
-	init_locale();
-#  endif
     }
 # endif
 #endif
@@ -1400,6 +1396,10 @@ init_locale()
 {
     setlocale(LC_ALL, "");
 
+# ifdef FEAT_GUI_GTK
+    /* Tell Gtk not to change our locale settings. */
+    gtk_disable_setlocale();
+# endif
 # if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
     /* Make sure strtod() uses a decimal point, not a comma. */
     setlocale(LC_NUMERIC, "C");
