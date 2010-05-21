@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-"g8" doesn't produce right value on NUL. Patch (Dominique Pelle, 2010 May 18)
-
 Include cabal and obj syntax files. (Vincent Berthoux, 2010 May 16)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)

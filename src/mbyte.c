@@ -3176,7 +3176,8 @@ show_utf8()
 	    }
 	    clen = utf_ptr2len(line + i);
 	}
-	sprintf((char *)IObuff + rlen, "%02x ", line[i]);
+	sprintf((char *)IObuff + rlen, "%02x ",
+	        (line[i] == NL) ? NUL : line[i]);  /* NUL is stored as NL */
 	--clen;
 	rlen += (int)STRLEN(IObuff + rlen);
 	if (rlen > IOSIZE - 20)
@@ -4871,7 +4872,7 @@ xim_reset(void)
 	 *
 	 * An alternative approach would be to destroy the IM context and
 	 * recreate it.  But that means loading/unloading the IM module on
-	 * every mode switch, which causes a quite noticable delay even on
+	 * every mode switch, which causes a quite noticeable delay even on
 	 * my rather fast box...
 	 * *
 	 * Moreover, there are some XIM which cannot respond to
@@ -5179,7 +5180,7 @@ im_xim_str2keycode(code, state)
     static void
 im_xim_send_event_imactivate()
 {
-    /* Force turn on preedit state by symulate keypress event.
+    /* Force turn on preedit state by simulating keypress event.
      * Keycode and state is specified by 'imactivatekey'.
      */
     XKeyEvent ev;
@@ -5256,7 +5257,7 @@ im_set_active(active)
 	    {
 		/* Force turn off preedit state.  With some IM
 		 * implementations, we cannot turn off preedit state by
-		 * symulate keypress event.  It is why using such a method
+		 * simulating keypress event.  It is why using such a method
 		 * that destroy old IC (input context), and create new one.
 		 * When create new IC, its preedit state is usually off.
 		 */
@@ -5272,14 +5273,14 @@ im_set_active(active)
 	else
 	{
 	    /* First, force destroy old IC, and create new one.  It
-	     * symulates "turning off preedit state".
+	     * simulates "turning off preedit state".
 	     */
 	    xim_set_focus(FALSE);
 	    gdk_ic_destroy(xic);
 	    xim_init();
 	    xim_can_preediting = FALSE;
 
-	    /* 2nd, when requested to activate IM, symulate this by sending
+	    /* 2nd, when requested to activate IM, simulate this by sending
 	     * the event.
 	     */
 	    if (active)
@@ -5334,7 +5335,7 @@ im_set_active(active)
 	 * couldn't switch state of XIM preediting.  This is reason why these
 	 * codes are commented out.
 	 */
-	/* First, force destroy old IC, and create new one.  It symulates
+	/* First, force destroy old IC, and create new one.  It simulates
 	 * "turning off preedit state".
 	 */
 	xim_set_focus(FALSE);
@@ -5342,7 +5343,7 @@ im_set_active(active)
 	xic = NULL;
 	xim_init();
 
-	/* 2nd, when requested to activate IM, symulate this by sending the
+	/* 2nd, when requested to activate IM, simulate this by sending the
 	 * event.
 	 */
 	if (active)

@@ -7196,5 +7196,7 @@ When using ":lang" to set a locale that uses a comma for decimal separator and
 using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
 (James Vega)
 
+"g8" didn't produce the right value on a NUL. (Dominique Pelle)
+
 
  vim:tw=78:ts=8:ft=help:norl:
