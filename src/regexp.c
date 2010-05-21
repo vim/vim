@@ -6974,6 +6974,13 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 		    else if (*s == '\\' && s[1] != NUL)
 		    {
 			++s;
+			/* Change NL to CR here too, so that this works:
+			 * :s/abc\\\ndef/\="aaa\\\nbbb"/  on text:
+			 *   abc\
+			 *   def
+			 */
+			if (*s == NL)
+			    *s = CAR;
 			had_backslash = TRUE;
 		    }
 		}
