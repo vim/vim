@@ -2,10 +2,14 @@ Test for encryption.
 
 STARTTEST
 :so small.vim
-:/^start of testfile/+1
-:let lines = getline('.', '$')
-:new
-:call append(0, lines)
+:/^start of text/+1
+:let text_lines = getline('.', line('.') + 2)
+:/^start of cm=0 bytes/+1
+:let cm0_bytes = getline('.', '.')
+:/^start of cm=1 bytes/+1
+:let cm1_bytes = getline('.', '.')
+:bwipe
+:call append(0, text_lines)
 :$d
 :X
 foobar
@@ -14,10 +18,11 @@ foobar
 :bwipe!
 :e Xtestfile
 foobar
-:let dec1_lines = getline('.', '$')
-:%s/^/2/
+:let cm0_read_back = getline('.', '$')
 :set key=
 :set cryptmethod=1
+:" If the blowfish test fails 'cryptmethod' will be 0 now.
+:%s/^/\=&cryptmethod == 1 ? "OK " : "blowfish test failed "/
 :X
 barfoo
 barfoo
@@ -25,13 +30,46 @@ barfoo
 :bwipe!
 :e Xtestfile
 barfoo
-:call append(0, dec1_lines)
-:set key=
+:let cm1_read_back = getline('.', '$')
+:bwipe!
+:set bin noeol key=
+:call append(0, cm0_bytes)
+:$d
+:set fenc=latin1
+:w! Xtestfile
+:bwipe!
+:set nobin
+:e Xtestfile
+foofoo
+:let cm0_read_bin = getline('.', '$')
+:bwipe!
+:set bin noeol key=
+:call append(0, cm1_bytes)
+:$d
+:set fenc=latin1
+:w! Xtestfile
+:bwipe!
+:set nobin
+:e Xtestfile
+barbar
+:call append(0, cm0_read_bin)
+:call append(0, cm1_read_back)
+:call append(0, cm0_read_back)
+:set key= fenc=latin1
 :w! test.out
 :qa!
 ENDTEST
 
-start of testfile
+start of text
 01234567890123456789012345678901234567
 line 2  foo bar blah
 line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+end of text
+
+start of cm=0 bytes
+VimCrypt~01!lV'Þ}Mg ê£V©çE#3Ž2Ué—
+end of cm=0 bytes
+
+start of cm=1 bytes
+VimCrypt~02!¨Ò9ZšÙ¢èì”F¼èÃ[,ì”F¼ƒ€z¼Öè»‚y¾Ô(
+end of cm=1 bytes

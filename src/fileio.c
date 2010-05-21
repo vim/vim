@@ -33,13 +33,11 @@
 #define SMBUFSIZE	256	/* size of emergency write buffer */
 
 #ifdef FEAT_CRYPT
-char crypt_magic_01[] = "VimCrypt~01!";
-char crypt_magic_02[] = "VimCrypt~02!";
-# define CRYPT_MAGIC_LEN	12		/* must be multiple of 4! */
-
 /* crypt_magic[0] is pkzip crypt, crypt_magic[1] is sha2+blowfish */
-static char   *crypt_magic[] = {crypt_magic_01, crypt_magic_02};
-static int    crypt_seed_len[] = {0, 8};
+static char	*crypt_magic[] = {"VimCrypt~01!", "VimCrypt~02!"};
+static char	crypt_magic_head[] = "VimCrypt~";
+# define CRYPT_MAGIC_LEN	12		/* must be multiple of 4! */
+static int	crypt_seed_len[] = {0, 8};
 #define CRYPT_SEED_LEN_MAX 8
 #endif
 
@@ -61,7 +59,7 @@ static void check_marks_read __ARGS((void));
 #endif
 #ifdef FEAT_CRYPT
 static int get_crypt_method __ARGS((char *ptr, int len));
-static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, long *filesizep, int newfile));
+static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, long *filesizep, int newfile, int *did_ask));
 #endif
 #ifdef UNIX
 static void set_file_time __ARGS((char_u *fname, time_t atime, time_t mtime));
@@ -253,6 +251,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     int		skip_read = FALSE;
 #ifdef FEAT_CRYPT
     char_u	*cryptkey = NULL;
+    int		did_ask_for_key = FALSE;
 #endif
     int		split = 0;		/* number of split lines */
 #define UNKNOWN	 0x0fffffff		/* file size is unknown */
@@ -1412,7 +1411,7 @@ retry:
 		 */
 		if (filesize == 0)
 		    cryptkey = check_for_cryptkey(cryptkey, ptr, &size,
-							  &filesize, newfile);
+					&filesize, newfile, &did_ask_for_key);
 		/*
 		 * Decrypt the read bytes.
 		 */
@@ -2811,6 +2810,11 @@ get_crypt_method(ptr, len)
 	if (memcmp(ptr, crypt_magic[i], CRYPT_MAGIC_LEN) == 0)
 	    return i;
     }
+
+    i = STRLEN(crypt_magic_head);
+    if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
+	EMSG(_("E821: File is encrypted with unknown method"));
+
     return -1;
 }
 
@@ -2821,12 +2825,13 @@ get_crypt_method(ptr, len)
  * Return the (new) encryption key, NULL for no encryption.
  */
     static char_u *
-check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile)
+check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, did_ask)
     char_u	*cryptkey;	/* previous encryption key or NULL */
     char_u	*ptr;		/* pointer to read bytes */
     long	*sizep;		/* length of read bytes */
     long	*filesizep;	/* nr of bytes used from file */
     int		newfile;	/* editing a new buffer */
+    int		*did_ask;	/* flag: whether already asked for key */
 {
     int method = get_crypt_method((char *)ptr, *sizep);
 
@@ -2836,7 +2841,7 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile)
 	use_crypt_method = method;
 	if (method > 0)
 	    (void)blowfish_self_test();
-	if (cryptkey == NULL)
+	if (cryptkey == NULL && !*did_ask)
 	{
 	    if (*curbuf->b_p_key)
 		cryptkey = curbuf->b_p_key;
@@ -2844,8 +2849,11 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile)
 	    {
 		/* When newfile is TRUE, store the typed key in the 'key'
 		 * option and don't free it.  bf needs hash of the key saved.
-		 */
+		 * Don't ask for the key again when first time Enter was hit.
+		 * Happens when retrying to detect encoding. */
 		cryptkey = get_crypt_key(newfile, FALSE);
+		*did_ask = TRUE;
+
 		/* check if empty key entered */
 		if (cryptkey != NULL && *cryptkey == NUL)
 		{

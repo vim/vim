@@ -30,16 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Crypt update:
-- Make sure test71 fails when blowfish test fails.
-- When not full match with magic, check for head and give warning about
-  unsupported crypt method.
-- if 'enc' is ucs-2, does utf-8 to ucs-2 encoding always work for seed?
-
-After patch 7.2.407 a backslash before a newline is turned into a NUL. (Andy
-Wokula, 2010 May 18)
-No longer possible to insert a line break?  Roll back the patch?
-
 "g8" doesn't produce right value on NUL. Patch (Dominique Pelle, 2010 May 18)
 
 Include cabal and obj syntax files. (Vincent Berthoux, 2010 May 16)
