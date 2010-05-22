@@ -7175,7 +7175,8 @@ Added the 'relativenumber' option. (Markus Heidelberg)
 Support for Blowfish encryption.  Added the 'cryptmethod' option.
 Mostly by Moshin Ahmed.
 
-Added support for NetBeans in a terminal. (Xavier de Gaye)
+Added support for NetBeans in a terminal.  Added |:nbstart| and |:nbclose|.
+(Xavier de Gaye)
 
 More floating point functions: acos(), asin(), atan2(), cosh(), exp(), fmod(),
 log(), sinh(), tan(), tanh().  (Bill McCarthy)

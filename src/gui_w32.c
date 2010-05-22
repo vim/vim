@@ -1278,24 +1278,12 @@ gui_mch_prepare(int *argc, char **argv)
 	for (arg = 1; arg < *argc; arg++)
 	    if (strncmp("-nb", argv[arg], 3) == 0)
 	    {
-		usingNetbeans++;
 		netbeansArg = argv[arg];
 		mch_memmove(&argv[arg], &argv[arg + 1],
 					    (--*argc - arg) * sizeof(char *));
 		argv[*argc] = NULL;
 		break;	/* enough? */
 	    }
-
-	if (usingNetbeans)
-	{
-	    WSADATA wsaData;
-	    int wsaerr;
-
-	    /* Init WinSock */
-	    wsaerr = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	    if (wsaerr == 0)
-		WSInitialized = TRUE;
-	}
     }
 #endif
 
@@ -4840,6 +4828,9 @@ netbeans_draw_multisign_indicator(int row)
     int y;
     int x;
 
+    if (!netbeans_active())
+        return;
+
     x = 0;
     y = TEXT_Y(row);
 
@@ -4853,5 +4844,22 @@ netbeans_draw_multisign_indicator(int row)
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
     SetPixel(s_hdc, x+3, y++, gui.currFgColor);
     SetPixel(s_hdc, x+2, y, gui.currFgColor);
+}
+
+/*
+ * Initialize the Winsock dll.
+ */
+    void
+netbeans_init_winsock()
+{
+    WSADATA wsaData;
+    int wsaerr;
+
+    if (WSInitialized)
+        return;
+
+    wsaerr = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaerr == 0)
+        WSInitialized = TRUE;
 }
 #endif

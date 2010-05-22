@@ -567,7 +567,6 @@ gui_mch_prepare(int *argc, char **argv)
 #endif
 #ifdef FEAT_NETBEANS_INTG
 		case ARG_NETBEANS:
-		    ++usingNetbeans;
 		    gui.dofork = FALSE; /* don't fork() when starting GUI */
 		    netbeansArg = argv[i];
 		    break;
@@ -6596,8 +6595,7 @@ gui_mch_wait_for_chars(long wtime)
 
 #if defined(FEAT_NETBEANS_INTG)
 	/* Process the queued netbeans messages. */
-	if (usingNetbeans)
-	    netbeans_parse_messages();
+        netbeans_parse_messages();
 #endif
 
 	/*

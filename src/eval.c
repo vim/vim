@@ -12093,7 +12093,7 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_NETBEANS_INTG
 	else if (STRICMP(name, "netbeans_enabled") == 0)
-	    n = usingNetbeans;
+	    n = netbeans_active();
 #endif
     }
 

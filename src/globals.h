@@ -1369,7 +1369,6 @@ EXTERN int netbeansFireChanges INIT(= 1); /* send buffer changes if != 0 */
 EXTERN int netbeansForcedQuit INIT(= 0);/* don't write modified files */
 EXTERN int netbeansReadFile INIT(= 1);	/* OK to read from disk if != 0 */
 EXTERN int netbeansSuppressNoLines INIT(= 0); /* skip "No lines in buffer" */
-EXTERN int usingNetbeans INIT(= 0);	/* set if -nb flag is used */
 #endif
 
 /*

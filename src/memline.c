@@ -2753,7 +2753,7 @@ ml_append_int(buf, lnum, line, len, newfile, mark)
     ml_updatechunk(buf, lnum + 1, (long)len, ML_CHNK_ADDLINE);
 #endif
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
+    if (netbeans_active())
     {
 	if (STRLEN(line) > 0)
 	    netbeans_inserted(buf, lnum+1, (colnr_T)0, line, (int)STRLEN(line));
@@ -2791,7 +2791,7 @@ ml_replace(lnum, line, copy)
     if (copy && (line = vim_strsave(line)) == NULL) /* allocate memory */
 	return FAIL;
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
+    if (netbeans_active())
     {
 	netbeans_removed(curbuf, lnum, 0, (long)STRLEN(ml_get(lnum)));
 	netbeans_inserted(curbuf, lnum, 0, line, (int)STRLEN(line));
@@ -2896,7 +2896,7 @@ ml_delete_int(buf, lnum, message)
 	line_size = ((dp->db_index[idx - 1]) & DB_INDEX_MASK) - line_start;
 
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
+    if (netbeans_active())
 	netbeans_removed(buf, lnum, 0, (long)line_size);
 #endif
 

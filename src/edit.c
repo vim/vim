@@ -6267,7 +6267,7 @@ comp_textwidth(ff)
 #ifdef FEAT_SIGNS
 	if (curwin->w_buffer->b_signlist != NULL
 # ifdef FEAT_NETBEANS_INTG
-			    || usingNetbeans
+			    || netbeans_active()
 # endif
 		    )
 	    textwidth -= 1;
@@ -9431,7 +9431,7 @@ ins_tab()
 			replace_join(repl_off);
 	    }
 #ifdef FEAT_NETBEANS_INTG
-	    if (usingNetbeans)
+	    if (netbeans_active())
 	    {
 		netbeans_removed(curbuf, fpos.lnum, cursor->col, (long)(i + 1));
 		netbeans_inserted(curbuf, fpos.lnum, cursor->col,

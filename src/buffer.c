@@ -636,8 +636,7 @@ free_buffer_stuff(buf, free_options)
     buf_delete_signs(buf);		/* delete any signs */
 #endif
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-        netbeans_file_killed(buf);
+    netbeans_file_killed(buf);
 #endif
 #ifdef FEAT_LOCALMAP
     map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  /* clear local mappings */
@@ -1447,8 +1446,7 @@ enter_buffer(buf)
 
 #ifdef FEAT_NETBEANS_INTG
     /* Send fileOpened event because we've changed buffers. */
-    if (usingNetbeans && isNetbeansBuffer(curbuf))
-	netbeans_file_activated(curbuf);
+    netbeans_file_activated(curbuf);
 #endif
 
     /* Change directories when the 'acd' option is set. */

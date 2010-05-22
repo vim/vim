@@ -2417,7 +2417,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :mzfile	if_mzsch.txt	/*:mzfile*
 :mzscheme	if_mzsch.txt	/*:mzscheme*
 :n	editing.txt	/*:n*
+:nbclose	netbeans.txt	/*:nbclose*
 :nbkey	netbeans.txt	/*:nbkey*
+:nbstart	netbeans.txt	/*:nbstart*
 :ne	editing.txt	/*:ne*
 :new	windows.txt	/*:new*
 :next	editing.txt	/*:next*
@@ -3805,6 +3807,7 @@ E508	editing.txt	/*E508*
 E509	editing.txt	/*E509*
 E51	pattern.txt	/*E51*
 E510	editing.txt	/*E510*
+E511	netbeans.txt	/*E511*
 E512	editing.txt	/*E512*
 E513	options.txt	/*E513*
 E514	editing.txt	/*E514*
@@ -6541,14 +6544,15 @@ nb-special	netbeans.txt	/*nb-special*
 nb-terms	netbeans.txt	/*nb-terms*
 ncf.vim	syntax.txt	/*ncf.vim*
 netbeans	netbeans.txt	/*netbeans*
+netbeans-commands	netbeans.txt	/*netbeans-commands*
 netbeans-configure	netbeans.txt	/*netbeans-configure*
 netbeans-debugging	netbeans.txt	/*netbeans-debugging*
 netbeans-download	netbeans.txt	/*netbeans-download*
 netbeans-integration	netbeans.txt	/*netbeans-integration*
 netbeans-intro	netbeans.txt	/*netbeans-intro*
-netbeans-key	netbeans.txt	/*netbeans-key*
 netbeans-keybindings	netbeans.txt	/*netbeans-keybindings*
 netbeans-messages	netbeans.txt	/*netbeans-messages*
+netbeans-parameters	netbeans.txt	/*netbeans-parameters*
 netbeans-preparation	netbeans.txt	/*netbeans-preparation*
 netbeans-problems	netbeans.txt	/*netbeans-problems*
 netbeans-protocol	netbeans.txt	/*netbeans-protocol*

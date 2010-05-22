@@ -4781,8 +4781,7 @@ ex_gui(eap)
 	msg_clr_eos_force();
 	gui_start();
 #ifdef FEAT_NETBEANS_INTG
-	if (usingNetbeans)
-	    netbeans_gui_register();
+	netbeans_gui_register();
 #endif
     }
     if (!ends_excmd(*eap->arg))

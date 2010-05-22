@@ -14,7 +14,7 @@ Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
 4.  Error Messages				|netbeans-messages|
 5.  Running Vim in NetBeans mode		|netbeans-run|
 6.  NetBeans protocol				|netbeans-protocol|
-7.  NetBeans key				|netbeans-key|
+7.  NetBeans commands				|netbeans-commands|
 8.  Known problems				|netbeans-problems|
 9.  Debugging NetBeans protocol			|netbeans-debugging|
 10. NetBeans External Editor
@@ -48,6 +48,8 @@ Current projects using the NetBeans protocol of Vim are:
 	http://www.a-a-p.org
 - Clewn, a gdb integration into Vim, written in C:
 	http://clewn.sourceforge.net/
+- Pyclewn, a gdb integration into Vim, written in Python:
+	http://pyclewn.sourceforge.net/
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
 - PIDA, IDE written in Python integrating Vim:
@@ -186,25 +188,37 @@ Read-only file
 ==============================================================================
 5. Running Vim in NetBeans mode				*netbeans-run*
 
-Vim must be started with the |-nb| argument.  Three forms can be used, that
-differ in the way the information for the connection is specified:
+There are two different ways to run Vim in NetBeans mode:
+
+	+ an IDE may start Vim with the|-nb|command line argument
+	+ NetBeans can be started from within Vim with the|:nbstart|command
+
+							*netbeans-parameters*
+Three forms can be used to setup the NetBeans connection parameters.
+When started from the command line, the|-nb|command line argument may be:
 
 	-nb={fname}				from a file
 	-nb:{hostname}:{addr}:{password}	directly
 	-nb					from a file or environment
 
+When started from within Vim, the|:nbstart|optional argument may be:
+
+	={fname}				from a file
+	:{hostname}:{addr}:{password}	        directly
+	<MISSING ARGUMENT>			from a file or environment
+
 							*E660* *E668*
-For security reasons, the best method is to write the information in a file
-readable only by the user.  The name of the file can be passed with the
-"-nb={fname}" argument or, when "-nb" is used without a parameter, the
-environment variable "__NETBEANS_CONINFO".  The file must contain these three
-lines, in any order:
+When NetBeans is started from the command line, for security reasons, the best
+method is to write the information in a file readable only by the user.  The
+name of the file can be passed with the "-nb={fname}" argument or, when "-nb"
+is used without a parameter, the environment variable "__NETBEANS_CONINFO".
+The file must contain these three lines, in any order:
 
 	host={hostname}
 	port={addr}
 	auth={password}
 
-Other lines are ignored.  The caller of Vim is responsible for deleting the
+Other lines are ignored.  The Vim Controller is responsible for deleting the
 file afterwards.
 
 {hostname} is the name of the machine where Vim Controller is running.  When
@@ -803,10 +817,22 @@ These errors occur when a message violates the protocol:
 
 
 ==============================================================================
-7. NetBeans key						*netbeans-key*
+7. NetBeans commands					*netbeans-commands*
+
+							*:nbstart* *E511*
+:nbs[tart] {connection}	Start a new Netbeans session with {connection} as the
+			socket connection parameters.  The format of
+			{connection} is described in|netbeans-parameters|.
+			At any time, one may check if the netbeans socket is
+			connected by running the command:
+			':echo has("netbeans_enabled")'
+
+							*:nbclose*
+:nbc[lose]		Close the current NetBeans session. Remove all placed
+			signs.
 
 							*:nbkey*
-:nbkey key		Pass the key to the Vim Controller for processing
+:nb[key] {key}		Pass the {key} to the Vim Controller for processing
 
 When a hot-key has been installed with the specialKeys command, this command
 can be used to generate a hotkey messages to the Vim Controller. The events

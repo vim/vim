@@ -346,7 +346,7 @@ u_savecommon(top, bot, newbot)
      * Netbeans defines areas that cannot be modified.  Bail out here when
      * trying to change text in a guarded area.
      */
-    if (usingNetbeans)
+    if (netbeans_active())
     {
 	if (netbeans_is_guarded(top, bot))
 	{

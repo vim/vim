@@ -439,7 +439,9 @@ static void	ex_folddo __ARGS((exarg_T *eap));
 # define ex_wsverb		ex_ni
 #endif
 #ifndef FEAT_NETBEANS_INTG
+# define ex_nbclose		ex_ni
 # define ex_nbkey		ex_ni
+# define ex_nbstart		ex_ni
 #endif
 
 #ifndef FEAT_EVAL

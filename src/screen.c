@@ -1981,7 +1981,7 @@ draw_signcolumn(wp)
 {
     return (wp->w_buffer->b_signlist != NULL
 # ifdef FEAT_NETBEANS_INTG
-			    || usingNetbeans
+			    || netbeans_active()
 # endif
 		    );
 }

@@ -710,7 +710,7 @@ gui_x11_resize_window_cb(w, dud, event, dum)
     }
 #endif
 #if defined(FEAT_NETBEANS_INTG) && defined(FEAT_GUI_MOTIF)
-    if (usingNetbeans)
+    if (netbeans_active())
     {
 	XRectangle  rec;
 
@@ -1253,7 +1253,6 @@ gui_mch_prepare(argc, argv)
 #ifdef FEAT_NETBEANS_INTG
 	    if (strncmp("-nb", argv[arg], 3) == 0)
 	{
-	    usingNetbeans++;
 	    gui.dofork = FALSE;	/* don't fork() when starting GUI */
 	    netbeansArg = argv[arg];
 	    mch_memmove(&argv[arg], &argv[arg + 1],

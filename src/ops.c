@@ -2249,14 +2249,14 @@ op_tilde(oap)
 	    did_change |= one_change;
 
 # ifdef FEAT_NETBEANS_INTG
-	    if (usingNetbeans && one_change)
+	    if (netbeans_active() && one_change)
 	    {
 		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 
 		netbeans_removed(curbuf, pos.lnum, bd.textcol,
 							    (long)bd.textlen);
 		netbeans_inserted(curbuf, pos.lnum, bd.textcol,
-				    &ptr[bd.textcol], bd.textlen);
+						&ptr[bd.textcol], bd.textlen);
 	    }
 # endif
 	}
@@ -2294,7 +2294,7 @@ op_tilde(oap)
 	    changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1,
 									  0L);
 #ifdef FEAT_NETBEANS_INTG
-	    if (usingNetbeans && did_change)
+	    if (netbeans_active() && did_change)
 	    {
 		char_u *ptr;
 		int count;
@@ -2306,7 +2306,7 @@ op_tilde(oap)
 		    count = (int)STRLEN(ptr) - pos.col;
 		    netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		    netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 &ptr[pos.col], count);
+							&ptr[pos.col], count);
 		    pos.col = 0;
 		    pos.lnum++;
 		}
@@ -2314,7 +2314,7 @@ op_tilde(oap)
 		count = oap->end.col - pos.col + 1;
 		netbeans_removed(curbuf, pos.lnum, pos.col, (long)count);
 		netbeans_inserted(curbuf, pos.lnum, pos.col,
-						 &ptr[pos.col], count);
+							&ptr[pos.col], count);
 	    }
 #endif
 	}

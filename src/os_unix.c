@@ -368,8 +368,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 
 #ifdef FEAT_NETBEANS_INTG
     /* Process the queued netbeans messages. */
-    if (usingNetbeans)
-	netbeans_parse_messages();
+    netbeans_parse_messages();
 #endif
 
     /* Check if window changed size while we were busy, perhaps the ":set
@@ -386,8 +385,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	    handle_resize();
 #ifdef FEAT_NETBEANS_INTG
 	    /* Process the queued netbeans messages. */
-	    if (usingNetbeans)
-		netbeans_parse_messages();
+            netbeans_parse_messages();
 #endif
 	}
     }
@@ -421,8 +419,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 
 #ifdef FEAT_NETBEANS_INTG
 	/* Process the queued netbeans messages. */
-	if (usingNetbeans)
-	    netbeans_parse_messages();
+        netbeans_parse_messages();
 #endif
 	/*
 	 * we want to be interrupted by the winch signal
@@ -3108,8 +3105,7 @@ mch_exit(r)
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-	netbeans_send_disconnect();
+    netbeans_send_disconnect();
 #endif
 
 #ifdef EXITFREE
@@ -4788,7 +4784,7 @@ RealWaitForChar(fd, msec, check_for_gpm)
 {
     int		ret;
 #ifdef FEAT_NETBEANS_INTG
-    int		nb_fd = (usingNetbeans ? netbeans_filedesc() : -1);
+    int		nb_fd = netbeans_filedesc();
 #endif
 #if defined(FEAT_XCLIPBOARD) || defined(USE_XSMP) || defined(FEAT_MZSCHEME)
     static int	busy = FALSE;

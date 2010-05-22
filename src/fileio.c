@@ -3309,7 +3309,7 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #endif
 
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans && isNetbeansBuffer(buf))
+    if (netbeans_active() && isNetbeansBuffer(buf))
     {
 	if (whole)
 	{

@@ -2277,7 +2277,7 @@ del_bytes(count, fixpos_arg, use_delcombine)
      * care of notifiying Netbeans.
      */
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
+    if (netbeans_active())
 	was_alloced = FALSE;
     else
 #endif

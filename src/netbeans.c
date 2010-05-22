@@ -24,6 +24,9 @@
 
 #if defined(FEAT_NETBEANS_INTG) || defined(PROTO)
 
+/* TODO: when should this not be defined? */
+#define INET_SOCKETS
+
 /* Note: when making changes here also adjust configure.in. */
 #ifdef WIN32
 # ifdef DEBUG
@@ -43,8 +46,13 @@
 # define sock_close(sd) closesocket(sd)
 # define sleep(t) Sleep(t*1000) /* WinAPI Sleep() accepts milliseconds */
 #else
-# include <netdb.h>
-# include <netinet/in.h>
+# ifdef INET_SOCKETS
+#  include <netdb.h>
+#  include <netinet/in.h>
+# else
+#  include <sys/un.h>
+# endif
+
 # include <sys/socket.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
@@ -56,8 +64,6 @@
 #endif
 
 #include "version.h"
-
-#define INET_SOCKETS
 
 #define GUARDED		10000 /* typenr for "guarded" annotation */
 #define GUARDEDOFFSET 1000000 /* base for "guarded" sign id's */
@@ -75,7 +81,7 @@ static int netbeans_keystring __ARGS((char_u *keystr));
 static void postpone_keycommand __ARGS((char_u *keystr));
 static void special_keys __ARGS((char_u *args));
 
-static void netbeans_connect __ARGS((void));
+static int netbeans_connect __ARGS((char *, int));
 static int getConnInfo __ARGS((char *file, char **host, char **port, char **password));
 
 static void nb_init_graphics __ARGS((void));
@@ -90,6 +96,7 @@ static void messageFromNetbeans __ARGS((gpointer, gint, GdkInputCondition));
 static void nb_parse_cmd __ARGS((char_u *));
 static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
 static void nb_send __ARGS((char *buf, char *fun));
+static void nb_free __ARGS((void));
 
 /* TRUE when netbeans is running with a GUI. */
 #ifdef FEAT_GUI
@@ -102,20 +109,20 @@ typedef __int64 NBSOCK;
 typedef int NBSOCK;
 #endif
 
-static NBSOCK sd = -1;			/* socket fd for Netbeans connection */
+static NBSOCK nbsock = -1;		/* socket fd for Netbeans connection */
+#define NETBEANS_OPEN (nbsock != -1)
+
 #ifdef FEAT_GUI_MOTIF
-static XtInputId inputHandler;		/* Cookie for input */
+static XtInputId inputHandler = (XtInputId)NULL;  /* Cookie for input */
 #endif
 #ifdef FEAT_GUI_GTK
-static gint inputHandler;		/* Cookie for input */
+static gint inputHandler = 0;		/* Cookie for input */
 #endif
 #ifdef FEAT_GUI_W32
 static int  inputHandler = -1;		/* simply ret.value of WSAAsyncSelect() */
 extern HWND s_hwnd;			/* Gvim's Window handle */
 #endif
 static int r_cmdno;			/* current command number for reply */
-static int haveConnection = FALSE;	/* socket is connected and
-					   initialization is done */
 static int dosetvisible = FALSE;
 
 /*
@@ -125,10 +132,17 @@ static int dosetvisible = FALSE;
 # include "nbdebug.c"
 #endif
 
-/* Connect back to Netbeans process */
+static int needupdate = 0;
+static int inAtomic = 0;
+
     static void
-netbeans_disconnect(void)
+netbeans_close(void)
 {
+    if (!NETBEANS_OPEN)
+	return;
+
+    netbeans_send_disconnect();
+
 #ifdef FEAT_GUI_MOTIF
     if (inputHandler != (XtInputId)NULL)
     {
@@ -146,17 +160,33 @@ netbeans_disconnect(void)
 #  ifdef FEAT_GUI_W32
     if (inputHandler == 0)
     {
-	WSAAsyncSelect(sd, s_hwnd, 0, 0);
+	WSAAsyncSelect(nbsock, s_hwnd, 0, 0);
 	inputHandler = -1;
     }
 #  endif
 # endif
 #endif
 
-    sd = -1;
-    haveConnection = FALSE;
 #ifdef FEAT_BEVAL
     bevalServers &= ~BEVAL_NETBEANS;
+#endif
+
+    sock_close(nbsock);
+    nbsock = -1;
+
+    needupdate = 0;
+    inAtomic = 0;
+    nb_free();
+
+    /* remove all signs and update the screen after gutter removal */
+    coloncmd(":sign unplace *");
+    changed_window_setting();
+    update_screen(CLEAR);
+    setcursor();
+    out_flush();
+#ifdef FEAT_GUI
+    gui_update_cursor(TRUE, FALSE);
+    gui_mch_flush();
 #endif
 }
 
@@ -164,8 +194,8 @@ netbeans_disconnect(void)
 #define NB_DEF_ADDR "3219"
 #define NB_DEF_PASS "changeme"
 
-    static void
-netbeans_connect(void)
+    static int
+netbeans_connect(char *params, int abort)
 {
 #ifdef INET_SOCKETS
     struct sockaddr_in	server;
@@ -178,6 +208,7 @@ netbeans_connect(void)
 #else
     struct sockaddr_un	server;
 #endif
+    int		sd;
     char	buf[32];
     char	*hostname = NULL;
     char	*address = NULL;
@@ -185,29 +216,29 @@ netbeans_connect(void)
     char	*fname;
     char	*arg = NULL;
 
-    if (netbeansArg[3] == '=')
+    if (*params == '=')
     {
-	/* "-nb=fname": Read info from specified file. */
-	if (getConnInfo(netbeansArg + 4, &hostname, &address, &password)
+	/* "=fname": Read info from specified file. */
+	if (getConnInfo(params + 1, &hostname, &address, &password)
 								      == FAIL)
-	    return;
+	    return FAIL;
     }
     else
     {
-	if (netbeansArg[3] == ':')
-	    /* "-nb:<host>:<addr>:<password>": get info from argument */
-	    arg = netbeansArg + 4;
+	if (*params == ':')
+	    /* ":<host>:<addr>:<password>": get info from argument */
+	    arg = params + 1;
 	if (arg == NULL && (fname = getenv("__NETBEANS_CONINFO")) != NULL)
 	{
-	    /* "-nb": get info from file specified in environment */
+	    /* "": get info from file specified in environment */
 	    if (getConnInfo(fname, &hostname, &address, &password) == FAIL)
-		return;
+		return FAIL;
 	}
 	else
 	{
 	    if (arg != NULL)
 	    {
-		/* "-nb:<host>:<addr>:<password>": get info from argument */
+		/* ":<host>:<addr>:<password>": get info from argument */
 		hostname = arg;
 		address = strchr(hostname, ':');
 		if (address != NULL)
@@ -256,6 +287,10 @@ netbeans_connect(void)
     if (hostname == NULL || address == NULL || password == NULL)
 	goto theend;	    /* out of memory */
 
+#ifdef FEAT_GUI_W32
+    netbeans_init_winsock();
+#endif
+
 #ifdef INET_SOCKETS
     port = atoi(address);
 
@@ -281,7 +316,6 @@ netbeans_connect(void)
 	}
 	nbdebug(("error in gethostbyname() in netbeans_connect()\n"));
 	PERROR("gethostbyname() in netbeans_connect()");
-	sd = -1;
 	goto theend;
     }
     memcpy((char *)&server.sin_addr, host->h_addr, host->h_length);
@@ -327,6 +361,15 @@ netbeans_connect(void)
 		{
 		    nbdebug(("retrying...\n"));
 		    sleep(5);
+		    if (!abort)
+		    {
+			ui_breakcheck();
+			if (got_int)
+			{
+			    sock_errno = EINTR;
+			    break;
+			}
+		    }
 		    if (connect(sd, (struct sockaddr *)&server,
 				sizeof(server)) == 0)
 		    {
@@ -339,7 +382,9 @@ netbeans_connect(void)
 		    /* Get here when the server can't be found. */
 		    nbdebug(("Cannot connect to Netbeans #2\n"));
 		    PERROR(_("Cannot connect to Netbeans #2"));
-		    getout(1);
+		    if (abort)
+			getout(1);
+		    goto theend;
 		}
 	    }
 
@@ -348,25 +393,24 @@ netbeans_connect(void)
 	{
 	    nbdebug(("Cannot connect to Netbeans\n"));
 	    PERROR(_("Cannot connect to Netbeans"));
-	    getout(1);
+	    if (abort)
+		getout(1);
+	    goto theend;
 	}
     }
 
+    nbsock = sd;
     vim_snprintf(buf, sizeof(buf), "AUTH %s\n", password);
     nb_send(buf, "netbeans_connect");
 
     sprintf(buf, "0:version=0 \"%s\"\n", ExtEdProtocolVersion);
     nb_send(buf, "externaleditor_version");
 
-/*    nb_init_graphics();  delay until needed */
-
-    haveConnection = TRUE;
-
 theend:
     vim_free(hostname);
     vim_free(address);
     vim_free(password);
-    return;
+    return NETBEANS_OPEN ? OK : FAIL;
 }
 
 /*
@@ -580,6 +624,9 @@ netbeans_parse_messages(void)
     char_u	*p;
     queue_T	*node;
 
+    if (!NETBEANS_OPEN)
+	return;
+
     while (head.next != NULL && head.next != &head)
     {
 	node = head.next;
@@ -683,7 +730,7 @@ netbeans_read()
 # endif
 #endif
 
-    if (sd < 0)
+    if (!NETBEANS_OPEN)
     {
 	nbdebug(("messageFromNetbeans() called without a socket\n"));
 	return;
@@ -711,20 +758,20 @@ netbeans_read()
     {
 #ifdef HAVE_SELECT
 	FD_ZERO(&rfds);
-	FD_SET(sd, &rfds);
+	FD_SET(nbsock, &rfds);
 	tval.tv_sec = 0;
 	tval.tv_usec = 0;
-	if (select(sd + 1, &rfds, NULL, NULL, &tval) <= 0)
+	if (select(nbsock + 1, &rfds, NULL, NULL, &tval) <= 0)
 	    break;
 #else
 # ifdef HAVE_POLL
-	fds.fd = sd;
+	fds.fd = nbsock;
 	fds.events = POLLIN;
 	if (poll(&fds, 1, 0) <= 0)
 	    break;
 # endif
 #endif
-	len = sock_read(sd, buf, MAXMSGSIZE);
+	len = sock_read(nbsock, buf, MAXMSGSIZE);
 	if (len <= 0)
 	    break;	/* error or nothing more to read */
 
@@ -738,7 +785,7 @@ netbeans_read()
     if (readlen <= 0)
     {
 	/* read error or didn't read anything */
-	netbeans_disconnect();
+	netbeans_close();
 	nbdebug(("messageFromNetbeans: Error in read() from socket\n"));
 	if (len < 0)
 	{
@@ -793,11 +840,9 @@ nb_parse_cmd(char_u *cmd)
     if (STRCMP(cmd, "DISCONNECT") == 0)
     {
 	/* We assume the server knows that we can safely exit! */
-	if (sd >= 0)
-	    sock_close(sd);
 	/* Disconnect before exiting, Motif hangs in a Select error
 	 * message otherwise. */
-	netbeans_disconnect();
+	netbeans_close();
 	getout(0);
 	/* NOTREACHED */
     }
@@ -805,9 +850,7 @@ nb_parse_cmd(char_u *cmd)
     if (STRCMP(cmd, "DETACH") == 0)
     {
 	/* The IDE is breaking the connection. */
-	if (sd >= 0)
-	    sock_close(sd);
-	netbeans_disconnect();
+	netbeans_close();
 	return;
     }
 
@@ -878,13 +921,13 @@ struct nbbuf_struct
 
 typedef struct nbbuf_struct nbbuf_T;
 
-static nbbuf_T *buf_list = 0;
+static nbbuf_T *buf_list = NULL;
 static int buf_list_size = 0;	/* size of buf_list */
 static int buf_list_used = 0;	/* nr of entries in buf_list actually in use */
 
-static char **globalsignmap;
-static int globalsignmaplen;
-static int globalsignmapused;
+static char **globalsignmap = NULL;
+static int globalsignmaplen = 0;
+static int globalsignmapused = 0;
 
 static int  mapsigntype __ARGS((nbbuf_T *, int localsigntype));
 static void addsigntype __ARGS((nbbuf_T *, int localsigntype, char_u *typeName,
@@ -894,6 +937,66 @@ static void print_read_msg __ARGS((nbbuf_T *buf));
 static void print_save_msg __ARGS((nbbuf_T *buf, long nchars));
 
 static int curPCtype = -1;
+
+/*
+ * Free netbeans resources.
+ */
+    static void
+nb_free()
+{
+    keyQ_T *key_node = keyHead.next;
+    queue_T *cmd_node = head.next;
+    nbbuf_T buf;
+    buf_T *bufp;
+    int i;
+
+    /* free the netbeans buffer list */
+    for (i = 0; i < buf_list_used; i++)
+    {
+	buf = buf_list[i];
+	vim_free(buf.displayname);
+	vim_free(buf.signmap);
+	if ((bufp=buf.bufp) != NULL)
+	{
+	    buf.bufp->b_netbeans_file = FALSE;
+	    buf.bufp->b_was_netbeans_file = FALSE;
+	}
+    }
+    vim_free(buf_list);
+    buf_list = NULL;
+    buf_list_size = 0;
+    buf_list_used = 0;
+
+    /* free the queued key commands */
+    while(key_node != NULL && key_node != &keyHead)
+    {
+	keyQ_T *next = key_node->next;
+	vim_free(key_node->keystr);
+	vim_free(key_node);
+	if (next == &keyHead)
+	{
+	    keyHead.next = &keyHead;
+	    keyHead.prev = &keyHead;
+	    break;
+	}
+	key_node = next;
+    }
+
+    /* free the queued netbeans commands */
+    while(cmd_node != NULL && cmd_node != &head)
+    {
+	queue_T *next = cmd_node->next;
+	vim_free(cmd_node->buffer);
+	vim_free(cmd_node);
+	if (next == &head)
+	{
+	    head.next = &head;
+	    head.prev = &head;
+	    break;
+	}
+	cmd_node = next;
+    }
+}
 
 /*
  * Get the Netbeans buffer number for the specified buffer.
@@ -915,7 +1018,7 @@ nb_getbufno(buf_T *bufp)
     int
 isNetbeansBuffer(buf_T *bufp)
 {
-    return usingNetbeans && bufp->b_netbeans_file;
+    return NETBEANS_OPEN && bufp->b_netbeans_file;
 }
 
 /*
@@ -930,7 +1033,7 @@ isNetbeansBuffer(buf_T *bufp)
     int
 isNetbeansModified(buf_T *bufp)
 {
-    if (usingNetbeans && bufp->b_netbeans_file)
+    if (isNetbeansBuffer(bufp))
     {
 	int bufno = nb_getbufno(bufp);
 
@@ -1010,7 +1113,7 @@ netbeans_end(void)
     int i;
     static char buf[128];
 
-    if (!haveConnection)
+    if (!NETBEANS_OPEN)
 	return;
 
     for (i = 0; i < buf_list_used; i++)
@@ -1026,9 +1129,8 @@ netbeans_end(void)
 	}
 	sprintf(buf, "%d:killed=%d\n", i, r_cmdno);
 	nbdebug(("EVT: %s", buf));
-/*	nb_send(buf, "netbeans_end");    avoid "write failed" messages */
-	if (sd >= 0)
-	    ignored = sock_write(sd, buf, (int)STRLEN(buf));
+	/* nb_send(buf, "netbeans_end");    avoid "write failed" messages */
+	ignored = sock_write(nbsock, buf, (int)STRLEN(buf));
     }
 }
 
@@ -1042,7 +1144,7 @@ nb_send(char *buf, char *fun)
      * exited, only mention the first error until the connection works again. */
     static int did_error = FALSE;
 
-    if (sd < 0)
+    if (!NETBEANS_OPEN)
     {
 	if (!did_error)
 	{
@@ -1051,7 +1153,7 @@ nb_send(char *buf, char *fun)
 	}
 	did_error = TRUE;
     }
-    else if (sock_write(sd, buf, (int)STRLEN(buf)) != (int)STRLEN(buf))
+    else if (sock_write(nbsock, buf, (int)STRLEN(buf)) != (int)STRLEN(buf))
     {
 	if (!did_error)
 	{
@@ -1073,9 +1175,6 @@ nb_reply_nil(int cmdno)
 {
     char reply[32];
 
-    if (!haveConnection)
-	return;
-
     nbdebug(("REP %d: <none>\n", cmdno));
 
     sprintf(reply, "%d\n", cmdno);
@@ -1091,9 +1190,6 @@ nb_reply_nil(int cmdno)
 nb_reply_text(int cmdno, char_u *result)
 {
     char_u *reply;
-
-    if (!haveConnection)
-	return;
 
     nbdebug(("REP %d: %s\n", cmdno, (char *)result));
 
@@ -1112,9 +1208,6 @@ nb_reply_text(int cmdno, char_u *result)
 nb_reply_nr(int cmdno, long result)
 {
     char reply[32];
-
-    if (!haveConnection)
-	return;
 
     nbdebug(("REP %d: %ld\n", cmdno, result));
 
@@ -1272,8 +1365,6 @@ nb_joinlines(linenr_T first, linenr_T other)
 
 #define SKIP_STOP 2
 #define streq(a,b) (strcmp(a,b) == 0)
-static int needupdate = 0;
-static int inAtomic = 0;
 
 /*
  * Do the actual processing of a single netbeans command or function.
@@ -2648,6 +2739,12 @@ special_keys(char_u *args)
     vim_free(save_str);
 }
 
+    void
+ex_nbclose(eap)
+    exarg_T	*eap UNUSED;
+{
+    netbeans_close();
+}
 
     void
 ex_nbkey(eap)
@@ -2656,6 +2753,12 @@ ex_nbkey(eap)
     (void)netbeans_keystring(eap->arg);
 }
 
+    void
+ex_nbstart(eap)
+    exarg_T	*eap;
+{
+    netbeans_open((char *)eap->arg, FALSE);
+}
 
 /*
  * Initialize highlights and signs for use by netbeans  (mostly obsolete)
@@ -2766,7 +2869,7 @@ netbeans_beval_cb(
 
     /* Don't do anything when 'ballooneval' is off, messages scrolled the
      * windows up or we have no connection. */
-    if (!p_beval || msg_scrolled > 0 || !haveConnection)
+    if (!p_beval || msg_scrolled > 0 || !NETBEANS_OPEN)
 	return;
 
     if (get_beval_info(beval, TRUE, &wp, &lnum, &text, &col) == OK)
@@ -2791,12 +2894,21 @@ netbeans_beval_cb(
 #endif
 
 /*
+ * Return TRUE when the netbeans connection is closed.
+ */
+    int
+netbeans_active(void)
+{
+    return NETBEANS_OPEN;
+}
+
+/*
  * Return netbeans file descriptor.
  */
     int
-netbeans_filedesc (void)
+netbeans_filedesc(void)
 {
-    return sd;
+    return nbsock;
 }
 
 #if defined(FEAT_GUI) || defined(PROTO)
@@ -2806,41 +2918,38 @@ netbeans_filedesc (void)
     void
 netbeans_gui_register(void)
 {
-    if (!NB_HAS_GUI)
+    if (!NB_HAS_GUI || !NETBEANS_OPEN)
 	return;
 
-    if (sd > 0)
-    {
 # ifdef FEAT_GUI_MOTIF
-	/* tell notifier we are interested in being called
-	 * when there is input on the editor connection socket
-	 */
-	if (inputHandler == (XtInputId)NULL)
-	    inputHandler = XtAppAddInput((XtAppContext)app_context, sd,
-			     (XtPointer)(XtInputReadMask + XtInputExceptMask),
-						   messageFromNetbeans, NULL);
+    /* tell notifier we are interested in being called
+     * when there is input on the editor connection socket
+     */
+    if (inputHandler == (XtInputId)NULL)
+	inputHandler = XtAppAddInput((XtAppContext)app_context, nbsock,
+			 (XtPointer)(XtInputReadMask + XtInputExceptMask),
+					       messageFromNetbeans, NULL);
 # else
 #  ifdef FEAT_GUI_GTK
-	/*
-	 * Tell gdk we are interested in being called when there
-	 * is input on the editor connection socket
-	 */
-	if (inputHandler == 0)
-	    inputHandler = gdk_input_add((gint)sd, (GdkInputCondition)
-		((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
-						   messageFromNetbeans, NULL);
+    /*
+     * Tell gdk we are interested in being called when there
+     * is input on the editor connection socket
+     */
+    if (inputHandler == 0)
+	inputHandler = gdk_input_add((gint)nbsock, (GdkInputCondition)
+	    ((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
+					       messageFromNetbeans, NULL);
 #  else
 #   ifdef FEAT_GUI_W32
-	/*
-	 * Tell Windows we are interested in receiving message when there
-	 * is input on the editor connection socket
-	 */
-	if (inputHandler == -1)
-	    inputHandler = WSAAsyncSelect(sd, s_hwnd, WM_NETBEANS, FD_READ);
+    /*
+     * Tell Windows we are interested in receiving message when there
+     * is input on the editor connection socket
+     */
+    if (inputHandler == -1)
+	inputHandler = WSAAsyncSelect(nbsock, s_hwnd, WM_NETBEANS, FD_READ);
 #   endif
 #  endif
 # endif
-    }
 
 # ifdef FEAT_BEVAL
     bevalServers |= BEVAL_NETBEANS;
@@ -2852,15 +2961,17 @@ netbeans_gui_register(void)
  * Tell netbeans that the window was opened, ready for commands.
  */
     void
-netbeans_startup_done(void)
+netbeans_open(char *params, int abort)
 {
     char *cmd = "0:startupDone=0\n";
 
-    if (!usingNetbeans)
+    if (NETBEANS_OPEN)
+    {
+	EMSG(_("E511: netbeans already connected"));
 	return;
+    }
 
-    netbeans_connect();
-    if (!haveConnection)
+    if (netbeans_connect(params, abort) != OK)
 	return;
 #ifdef FEAT_GUI
     netbeans_gui_register();
@@ -2868,6 +2979,16 @@ netbeans_startup_done(void)
 
     nbdebug(("EVT: %s", cmd));
     nb_send(cmd, "netbeans_startup_done");
+
+    /* update the screen after having added the gutter */
+    changed_window_setting();
+    update_screen(CLEAR);
+    setcursor();
+    out_flush();
+#ifdef FEAT_GUI
+    gui_update_cursor(TRUE, FALSE);
+    gui_mch_flush();
+#endif
 }
 
 /*
@@ -2879,7 +3000,7 @@ netbeans_send_disconnect()
 {
     char buf[128];
 
-    if (haveConnection)
+    if (NETBEANS_OPEN)
     {
 	sprintf(buf, "0:disconnect=%d\n", r_cmdno);
 	nbdebug(("EVT: %s", buf));
@@ -2896,7 +3017,7 @@ netbeans_frame_moved(int new_x, int new_y)
 {
     char buf[128];
 
-    if (!haveConnection)
+    if (!NETBEANS_OPEN)
 	return;
 
     sprintf(buf, "0:geometry=%d %d %d %d %d\n",
@@ -2917,7 +3038,7 @@ netbeans_file_activated(buf_T *bufp)
     char    buffer[2*MAXPATHL];
     char_u  *q;
 
-    if (!haveConnection || dosetvisible)
+    if (!NETBEANS_OPEN || !bufp->b_netbeans_file || dosetvisible)
 	return;
 
     q = nb_quote(bufp->b_ffname);
@@ -2949,7 +3070,7 @@ netbeans_file_opened(buf_T *bufp)
     nbbuf_T *bp = nb_get_buf(nb_getbufno(bufp));
     int	    bnum;
 
-    if (!haveConnection)
+    if (!NETBEANS_OPEN)
 	return;
 
     q = nb_quote(bufp->b_ffname);
@@ -2985,7 +3106,7 @@ netbeans_file_killed(buf_T *bufp)
     nbbuf_T	*nbbuf = nb_get_buf(bufno);
     char	buffer[2*MAXPATHL];
 
-    if (!haveConnection || bufno == -1)
+    if (!NETBEANS_OPEN || bufno == -1)
 	return;
 
     nbdebug(("netbeans_file_killed:\n"));
@@ -3012,7 +3133,7 @@ nb_bufp2nbbuf_fire(buf_T *bufp, int *bufnop)
     int		bufno;
     nbbuf_T	*nbbuf;
 
-    if (!haveConnection || !netbeansFireChanges)
+    if (!NETBEANS_OPEN || !netbeansFireChanges)
 	return NULL;		/* changes are not reported at all */
 
     bufno = nb_getbufno(bufp);
@@ -3045,6 +3166,9 @@ netbeans_inserted(
     long	off;
     char_u	*p;
     char_u	*newtxt;
+
+    if (!NETBEANS_OPEN)
+	return;
 
     nbbuf = nb_bufp2nbbuf_fire(bufp, &bufno);
     if (nbbuf == NULL)
@@ -3091,6 +3215,9 @@ netbeans_removed(
     pos_T	pos;
     long	off;
 
+    if (!NETBEANS_OPEN)
+	return;
+
     nbbuf = nb_bufp2nbbuf_fire(bufp, &bufno);
     if (nbbuf == NULL)
 	return;
@@ -3119,6 +3246,9 @@ netbeans_removed(
     void
 netbeans_unmodified(buf_T *bufp UNUSED)
 {
+    if (!NETBEANS_OPEN)
+	return;
+
 #if 0
     char_u	buf[128];
     int		bufno;
@@ -3147,6 +3277,9 @@ netbeans_button_release(int button)
 {
     char	buf[128];
     int		bufno;
+
+    if (!NETBEANS_OPEN)
+	return;
 
     bufno = nb_getbufno(curbuf);
 
@@ -3199,9 +3332,8 @@ netbeans_keystring(char_u *keyName)
     long	off;
     char_u	*q;
 
-    if (!haveConnection)
+    if (!NETBEANS_OPEN)
 	return TRUE;
-
 
     if (bufno == -1)
     {
@@ -3260,6 +3392,9 @@ netbeans_save_buffer(buf_T *bufp)
     int		bufno;
     nbbuf_T	*nbbuf;
 
+    if (!NETBEANS_OPEN)
+	return;
+
     nbbuf = nb_bufp2nbbuf_fire(bufp, &bufno);
     if (nbbuf == NULL)
 	return;
@@ -3281,6 +3416,9 @@ netbeans_deleted_all_lines(buf_T *bufp)
     char_u	buf[64];
     int		bufno;
     nbbuf_T	*nbbuf;
+
+    if (!NETBEANS_OPEN)
+	return;
 
     nbbuf = nb_bufp2nbbuf_fire(bufp, &bufno);
     if (nbbuf == NULL)
@@ -3307,6 +3445,9 @@ netbeans_is_guarded(linenr_T top, linenr_T bot)
     signlist_T	*p;
     int		lnum;
 
+    if (!NETBEANS_OPEN)
+	return FALSE;
+
     for (p = curbuf->b_signlist; p != NULL; p = p->next)
 	if (p->id >= GUARDEDOFFSET)
 	    for (lnum = top + 1; lnum < bot; lnum++)
@@ -3327,6 +3468,9 @@ netbeans_draw_multisign_indicator(int row)
     int i;
     int y;
     int x;
+
+    if (!NETBEANS_OPEN)
+	return;
 
     x = 0;
     y = row * gui.char_height + 2;
@@ -3357,6 +3501,9 @@ netbeans_draw_multisign_indicator(int row)
     int x;
     GdkDrawable *drawable = gui.drawarea->window;
 
+    if (!NETBEANS_OPEN)
+	return;
+
     x = 0;
     y = row * gui.char_height + 2;
 
@@ -3381,6 +3528,9 @@ netbeans_draw_multisign_indicator(int row)
 netbeans_gutter_click(linenr_T lnum)
 {
     signlist_T	*p;
+
+    if (!NETBEANS_OPEN)
+	return;
 
     for (p = curbuf->b_signlist; p != NULL; p = p->next)
     {

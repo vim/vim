@@ -6047,7 +6047,7 @@ multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.
 netbeans_intg		Compiled with support for |netbeans|.
-netbeans_enabled	Compiled with support for |netbeans| and it's used.
+netbeans_enabled	Compiled with support for |netbeans| and connected.
 ole			Compiled with OLE automation support for Win32.
 os2			OS/2 version of Vim.
 osfiletype		Compiled with support for osfiletypes |+osfiletype|

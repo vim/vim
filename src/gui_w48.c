@@ -1999,8 +1999,7 @@ gui_mch_wait_for_chars(int wtime)
 
 #ifdef FEAT_NETBEANS_INTG
 	/* Process the queued netbeans messages. */
-	if (usingNetbeans)
-	    netbeans_parse_messages();
+        netbeans_parse_messages();
 #endif
 
 	/*

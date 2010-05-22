@@ -932,7 +932,7 @@ main
 	stuffcharReadbuff(K_NOP);
 
 #ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
+    if (netbeansArg != NULL && strncmp("-nb", netbeansArg, 3) == 0)
     {
 # ifdef FEAT_GUI
 #  if !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_GTK)  \
@@ -945,7 +945,7 @@ main
 #  endif
 # endif
 	/* Tell the client that it can start sending commands. */
-	netbeans_startup_done();
+	netbeans_open(netbeansArg + 3, TRUE);
     }
 #endif
 
@@ -1891,7 +1891,6 @@ command_line_scan(parmp)
 		/* checking for "-nb", netbeans parameters */
 		if (argv[0][argv_idx] == 'b')
 		{
-		    ++usingNetbeans;
 		    netbeansArg = argv[0];
 		    argv_idx = -1;	    /* skip to next argument */
 		}
@@ -2385,7 +2384,7 @@ check_tty(parmp)
 	 * input buffer so fast I can't even kill the process in under 2
 	 * minutes (and it beeps continuously the whole time :-)
 	 */
-	if (usingNetbeans && (!parmp->stdout_isatty || !input_isatty))
+	if (netbeans_active() && (!parmp->stdout_isatty || !input_isatty))
 	{
 	    mch_errmsg(_("Vim: Error: Failure to start gvim from NetBeans\n"));
 	    exit(1);
