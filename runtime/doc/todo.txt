@@ -1093,6 +1093,7 @@ Patches to include:
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
 - Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
 - Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
+- Patch to improve javascript indenting. (Hari Kumar G, 2010 May 22)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
   15)
 - Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 

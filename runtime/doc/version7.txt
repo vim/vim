@@ -7210,5 +7210,7 @@ using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
 Use BASEMODLIBS instead of MODLIBS for Python configuration to pick up the
 right compiler flags. (Michael Bienia)
 
+Window title is not updated after dropping a file on Vim. (Hari G)
+
 
  vim:tw=78:ts=8:ft=help:norl:

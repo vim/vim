@@ -2680,16 +2680,14 @@ gui_wait_for_chars(wtime)
 {
     int	    retval;
 
+#ifdef FEAT_MENU
     /*
      * If we're going to wait a bit, update the menus and mouse shape for the
      * current State.
      */
     if (wtime != 0)
-    {
-#ifdef FEAT_MENU
 	gui_update_menus(0);
 #endif
-    }
 
     gui_mch_update();
     if (input_available())	/* Got char, return immediately */
@@ -5281,6 +5279,9 @@ gui_handle_drop(x, y, modifiers, fnames, count)
 # ifdef FEAT_MENU
 	gui_update_menus(0);
 # endif
+#ifdef FEAT_TITLE
+	maketitle();
+#endif
 	setcursor();
 	out_flush();
 	gui_update_cursor(FALSE, FALSE);
