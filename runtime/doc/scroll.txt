@@ -132,7 +132,7 @@ z.			Redraw, line [count] at center of window (default
 
 							*zz*
 zz			Like "z.", but leave the cursor in the same column.
-			Careful: If caps-lock is on, this commands becomes
+			Careful: If caps-lock is on, this command becomes
 			"ZZ": write buffer and exit!  {not in Vi}
 
 							*z-*
@@ -193,7 +193,7 @@ ze			Scroll the text horizontally to position the cursor
 5. Scrolling synchronously				*scroll-binding*
 
 Occasionally, it is desirable to bind two or more windows together such that
-when one window is scrolled, the other windows are scrolled also.  In Vim,
+when one window is scrolled, the other windows are also scrolled.  In Vim,
 windows can be given this behavior by setting the (window-specific)
 'scrollbind' option.  When a window that has 'scrollbind' set is scrolled, all
 other 'scrollbind' windows are scrolled the same amount, if possible.  The

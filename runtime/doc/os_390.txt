@@ -190,7 +190,7 @@ to only work for the opening of menus (like <Alt-F> to open the file menu).
 They still do not work for the menu items themselves (like <Alt-F>O to open
 the file browser).
 
-There is no solution for this as of yet.
+There is no solution for this yet.
 
 ==============================================================================
 7. Bugs					*OS390-bugs* *zOS-Bugs*

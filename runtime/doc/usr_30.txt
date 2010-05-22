@@ -362,7 +362,7 @@ this:
 	   echo "-------" ~
 	fi ~
 
-Start off by setting these option: >
+Start off by setting these options: >
 
 	:set autoindent shiftwidth=3
 

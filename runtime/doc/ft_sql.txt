@@ -536,7 +536,7 @@ Example of using column completion:
        completion window is active.  If the completion popup window is
        not active, a normal <Right> or <Left> will be executed.
 
-Lets look how we can build a SQL statement dynamically.  A select statement
+Let's look at how we can build a SQL statement dynamically.  A select statement
 requires a list of columns.  There are two ways to build a column list using
 the SQL completion plugin. >
     One column at a time:
@@ -738,8 +738,8 @@ platform you can also use <C-Space> or ALT keys.
 
 Many times SQL can be used with different filetypes.  For example Perl, Java,
 PHP, Javascript can all interact with a database.  Often you need both the SQL
-completion as well as the completion capabilities for the current language you
-are editing.
+completion and the completion capabilities for the current language you are
+editing.
 
 This can be enabled easily with the following steps (assuming a Perl file): >
     1.  :e test.pl

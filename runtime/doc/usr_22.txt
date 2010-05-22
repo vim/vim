@@ -98,7 +98,7 @@ browser.  This is what you get: >
 <    	(etc)
 
 The <F1> key thus brings you to a netrw directory browsing contents help page.
-Its a regular help page; use the usual |CTRL-]| to jump to tagged help items
+It's a regular help page; use the usual |CTRL-]| to jump to tagged help items
 and |CTRL-O| to jump back.
 
 To select files for display and editing: (with the cursor is atop a filename)
@@ -358,7 +358,7 @@ use the name, or part of it, instead: >
 
 	:buffer help
 
-Vim will find a best match for the name you type.  If there is only one
+Vim will find the best match for the name you type.  If there is only one
 buffer that matches the name, it will be used.  In this case "help.txt".
    To open a buffer in a new window: >
 

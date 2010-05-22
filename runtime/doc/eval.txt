@@ -1767,6 +1767,7 @@ getpos( {expr})			List	position of cursor, mark, etc.
 getqflist()			List	list of quickfix items
 getreg( [{regname} [, 1]])	String	contents of register
 getregtype( [{regname}])	String	type of register
+gettabvar( {nr}, {varname})	any	variable {varname} in tab {nr}
 gettabwinvar( {tabnr}, {winnr}, {name})
 				any	{name} in {winnr} in tab page {tabnr}
 getwinposx()			Number	X coord in pixels of GUI Vim window
@@ -1886,6 +1887,7 @@ setmatches( {list})		Number	restore a list of matches
 setpos( {expr}, {list})		Number	set the {expr} position to {list}
 setqflist( {list}[, {action}])	Number	modify quickfix list using {list}
 setreg( {n}, {v}[, {opt}])	Number	set register to value and type
+settabvar( {nr}, {varname}, {val})	set {varname} in tab page {nr} to {val}
 settabwinvar( {tabnr}, {winnr}, {varname}, {val})    set {varname} in window
 					{winnr} in tab page {tabnr} to {val}
 setwinvar( {nr}, {varname}, {val})	set {varname} in window {nr} to {val}
@@ -3353,6 +3355,12 @@ getregtype([{regname}])					*getregtype()*
 		    0			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
+
+gettabvar({tabnr}, {varname})				*gettabvar()*
+		Get the value of a tab-local variable {varname} in tab page
+		{tabnr}. |t:var|
+		Tabs are numbered starting with one.
+		Note that the name without "t:" must be used.
 
 gettabwinvar({tabnr}, {winnr}, {varname})		*gettabwinvar()*
 		Get the value of window-local variable {varname} in window
@@ -5102,6 +5110,15 @@ setreg({regname}, {value} [,{options}])
 <		You can also change the type of a register by appending
 		nothing: >
 			:call setreg('a', '', 'al')
+
+settabvar({tabnr}, {varname}, {val})			*settabvar()*
+		Set tab-local variable {varname} to {val} in tab page {tabnr}.
+		|t:var|
+		Note that the variable name without "t:" must be used.
+		Tabs are numbered starting with one.
+		Vim briefly goes to the tab page {tabnr}, this may trigger
+		TabLeave and TabEnter autocommands.
+		This function is not available in the |sandbox|.
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		Set option or local variable {varname} in window {winnr} to

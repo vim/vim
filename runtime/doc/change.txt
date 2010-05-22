@@ -1139,7 +1139,7 @@ characters.  If the String ends in a <NL>, it is regarded as a linewise
 register.  {not in Vi}
 
 7. Selection and drop registers "*, "+ and "~ 
-Use these register for storing and retrieving the selected text for the GUI.
+Use these registers for storing and retrieving the selected text for the GUI.
 See |quotestar| and |quoteplus|.  When the clipboard is not available or not
 working, the unnamed register is used instead.  For Unix systems the clipboard
 is only available when the |+xterm_clipboard| feature is present.  {not in Vi}

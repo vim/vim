@@ -712,7 +712,7 @@ If you see '{' and '}' highlighted as an error where they are OK, reset the
 highlighting for cErrInParen and cErrInBracket.
 
 If you want to use folding in your C files, you can add these lines in a file
-an the "after" directory in 'runtimepath'.  For Unix this would be
+in the "after" directory in 'runtimepath'.  For Unix this would be
 ~/.vim/after/syntax/c.vim. >
     syn sync fromstart
     set foldmethod=syntax
@@ -905,7 +905,7 @@ global or buffer-local variable load_doxygen_syntax.  This is done by adding
 the following to your .vimrc. >
 	:let g:load_doxygen_syntax=1
 
-There are a couple of variables that have an affect on syntax highlighting, and
+There are a couple of variables that have an effect on syntax highlighting, and
 are to do with non-standard highlighting options.
 
 Variable			Default	Effect ~

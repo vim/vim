@@ -453,8 +453,8 @@ searched for.  If all three fail, the GUI will be disabled.
 For GTK+, Vim's configuration process requires that GTK+ be properly
 installed.  That is, the shell script 'gtk-config' must be in your PATH, and
 you can already successful compile, build, and execute a GTK+ program.  The
-reason for this is because the compiler flags (CFLAGS) and link flags
-(LDFLAGS) are obtained through the 'gtk-config' shell script.
+reason for this is that the compiler flags (CFLAGS) and link flags (LDFLAGS)
+are obtained through the 'gtk-config' shell script.
 
 If you want to build with GTK+ 2 support pass the --enable-gtk2-check argument
 to ./configure.  Optionally, support for GNOME 2 will be compiled if the

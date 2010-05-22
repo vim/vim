@@ -1243,7 +1243,7 @@ the cursor position.  Likewise for "1gD" and "gD".
 'scrolljump' can be set to a negative number to scroll a percentage of the
 window height.
 
-The |v:scrollstart| variable has been added to help finding the location in
+The |v:scrollstart| variable has been added to help find the location in
 your script that causes the hit-enter prompt.
 
 To make it possible to handle the situation that a file is being edited that
@@ -7166,16 +7166,20 @@ don't save what you see.  This could result in work being lost.  Now the text
 after recovery is compared to the original file contents.  When they differ
 the buffer is marked as modified.
 
-Use BASEMODLIBS instead of MODLIBS for Python configuration. (Michael Bienia)
-
 
 Added							*added-7.3*
 -----
 
 New syntax files:
+TODO
+
+New filetype plugins:
+TODO
 
 New spell files:
+TODO
 Breton. (Dominique Pelle)
+
 
 Added the 'relativenumber' option. (Markus Heidelberg)
 
@@ -7186,6 +7190,8 @@ Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 
 More floating point functions: acos(), asin(), atan2(), cosh(), exp(), fmod(),
 log(), sinh(), tan(), tanh().  (Bill McCarthy)
+
+gettabvar() and settabvar() functions. (Yegappan Lakshmanan)
 
 
 Fixed							*fixed-7.3*
@@ -7200,6 +7206,9 @@ using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
 (James Vega)
 
 "g8" didn't produce the right value on a NUL. (Dominique Pelle)
+
+Use BASEMODLIBS instead of MODLIBS for Python configuration to pick up the
+right compiler flags. (Michael Bienia)
 
 
  vim:tw=78:ts=8:ft=help:norl:

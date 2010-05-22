@@ -456,7 +456,7 @@ browsed remote directories, for example.
 On the other hand, thanks go to Jan M. for pointing out the many
 vulnerabilities that netrw (and vim itself) had had in handling "crafted"
 filenames.  The |shellescape()| and |fnameescape()| functions were written in
-response by Bram Moolenaar to handle these sort of problems, and netrw has
+response by Bram Moolenaar to handle this sort of problems, and netrw has
 been modified to use them.  Still, my advice is, if the "filename" looks like
 a vim command that you aren't comfortable with having executed, don't open it.
 

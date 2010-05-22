@@ -217,7 +217,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Don't use "ucs-2" or "ucs-4", scripts cannot be in
 			these encodings (they would contain NUL bytes).
 			When a sourced script starts with a BOM (Byte Order
-			Mark) in utf-8 format Vim will recognized it, no need
+			Mark) in utf-8 format Vim will recognize it, no need
 			to use ":scriptencoding utf-8" then.
 
 			When compiled without the |+multi_byte| feature this

@@ -5292,7 +5292,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not in Vi}
 	Show the line number relative to the line with the cursor in front of
-	each line. Relative line numbers help you using the |count| you can
+	each line. Relative line numbers help you use the |count| you can
 	precede some vertical motion commands (e.g. j k + -) with, without
 	having to calculate it yourself. Especially useful in combination with
 	other commands (e.g. y d c < > gq gw =).

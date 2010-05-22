@@ -201,7 +201,7 @@ vim-manner and call: >
 
 which will write your selection right into OS/2's clipboard.
 
-For ease of use you might want to add some maps for this commands.  E.g. to
+For ease of use you might want to add some maps for these commands.  E.g. to
 use F11 to paste the clipboard into Vim and F12 to copy selected text to the
 clipboard you would use: >
 

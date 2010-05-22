@@ -211,7 +211,7 @@ I cannot believe how great it is to use VIM.  I think the guys at work are
 getting tired of hearing me bragging about it.  Others eyes are lighting up.
 (Rick Croote)
 
-Emacs takes way to much time to start up and run, it is to big and bulky for
+Emacs takes way too much time to start up and run, it is to big and bulky for
 effective use and the interface is more confusing than it is of any help.  VIM
 however is short, it is fast, it is powerful, it has a good interface and it
 is all purpose.  (Paal Ditlefsen Ekran)

@@ -5805,6 +5805,7 @@ getscript-data	pi_getscript.txt	/*getscript-data*
 getscript-history	pi_getscript.txt	/*getscript-history*
 getscript-plugins	pi_getscript.txt	/*getscript-plugins*
 getscript-start	pi_getscript.txt	/*getscript-start*
+gettabvar()	eval.txt	/*gettabvar()*
 gettabwinvar()	eval.txt	/*gettabwinvar()*
 getwinposx()	eval.txt	/*getwinposx()*
 getwinposy()	eval.txt	/*getwinposy()*
@@ -7238,6 +7239,7 @@ setmatches()	eval.txt	/*setmatches()*
 setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
 setreg()	eval.txt	/*setreg()*
+settabvar()	eval.txt	/*settabvar()*
 settabwinvar()	eval.txt	/*settabwinvar()*
 setting-guifont	gui.txt	/*setting-guifont*
 setting-guitablabel	tabpage.txt	/*setting-guitablabel*

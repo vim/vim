@@ -101,7 +101,8 @@ use the |clientserver| interface.
 ==============================================================================
 3. Configuring Vim for NetBeans			*netbeans-configure*
 
-For more help installing Vim, please read |usr_90.txt| in the Vim User Manual.
+For more help about installing Vim, please read |usr_90.txt| in the Vim User
+Manual.
 
 
 On Unix:

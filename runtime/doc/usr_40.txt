@@ -24,8 +24,8 @@ A simple mapping was explained in section |05.3|.  The principle is that one
 sequence of key strokes is translated into another sequence of key strokes.
 This is a simple, yet powerful mechanism.
    The simplest form is that one key is mapped to a sequence of keys.  Since
-the function keys, except <F1>, have no predefined meaning in Vim, these are a
-good choice to map.  Example: >
+the function keys, except <F1>, have no predefined meaning in Vim, these are
+good choices to map.  Example: >
 
 	:map <F2> GoDate: <Esc>:read !date<CR>kJ
 

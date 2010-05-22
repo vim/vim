@@ -670,8 +670,10 @@ Variables:
 	getbufvar()		get a variable value from a specific buffer
 	setbufvar()		set a variable in a specific buffer
 	getwinvar()		get a variable from specific window
+	gettabvar()		get a variable from specific tab page
 	gettabwinvar()		get a variable from specific window & tab page
 	setwinvar()		set a variable in a specific window
+	settabvar()		set a variable in a specific tab page
 	settabwinvar()		set a variable in a specific window & tab page
 	garbagecollect()	possibly free memory
 
@@ -2152,7 +2154,7 @@ FUNCTIONS
 
 When defining a function, this only needs to be done once.  But the filetype
 plugin will be sourced every time a file with this filetype will be opened.
-This construct make sure the function is only defined once: >
+This construct makes sure the function is only defined once: >
 
 	:if !exists("*s:Func")
 	:  function s:Func(arg)

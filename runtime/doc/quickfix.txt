@@ -1260,7 +1260,7 @@ prints information about entering a directory in the form "Making all in dir".
    This can be solved by printing absolute directories in the "enter directory"
    message or by printing "leave directory" messages..
 
-To avoid this problems, ensure to print absolute directory names and "leave
+To avoid this problem, ensure to print absolute directory names and "leave
 directory" messages.
 
 Examples for Makefiles:

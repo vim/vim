@@ -99,7 +99,7 @@ specific source might contain CTAGS source files as described above.
 You can find more information about CTAGS on VMS at
 http://www.polarhome.com/ctags/
 
-Advanced users may try some acrobatics in FEATURE.H file also.
+Advanced users may try some acrobatics in FEATURE.H file as well.
 
 It is possible to compile with +xfontset +xim options too, but then you have
 to set up GUI fonts etc. correctly.  See :help xim from Vim command prompt.

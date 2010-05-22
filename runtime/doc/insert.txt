@@ -1358,7 +1358,7 @@ Script completes:
 - function names with additional info:
   - in case of built-in functions list of possible arguments and after | type
     data returned by function
-  - in case of user function arguments and name of file were function was
+  - in case of user function arguments and name of file where function was
     defined (if it is not current file)
 
 - constants names
@@ -1446,8 +1446,8 @@ a look at the PHP filetype to see how this works.
 If you edit a file called, index.php, run the following command: >
 	:syntax list
 
-First thing you will notice is there are many different syntax groups.  The
-PHP language can include elements from different languages like HTML,
+The first thing you will notice is that there are many different syntax groups.
+The PHP language can include elements from different languages like HTML,
 JavaScript and many more.  The syntax plugin will only include syntax groups
 that begin with the filetype, "php", in this case.  For example these syntax
 groups are included by default with the PHP: phpEnvVar, phpIntVar,

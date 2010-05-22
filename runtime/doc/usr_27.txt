@@ -77,7 +77,7 @@ matter if 'ignorecase' or 'smartcase' was changed.
 
 	Note:
 	The use of "\" items in search patterns depends on the 'magic' option.
-	In this chapters we will assume 'magic' is on, because that is the
+	In this chapter we will assume 'magic' is on, because that is the
 	standard and recommended setting.  If you would change 'magic', many
 	search patterns would suddenly become invalid.
 

@@ -7149,7 +7149,7 @@ Files:	    src/gui.c, src/gui.h, src/gui_w32.c
 Patch 5.6.060
 Problem:    Some bold characters spill over to the cell on the left, that
 	    spill-over can remain sometimes.
-Solution:   Redraw a characters when the next character was bold and needs
+Solution:   Redraw a character when the next character was bold and needs
 	    redrawing. (Robert Webb)
 Files:	    src/screen.c
 

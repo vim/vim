@@ -678,7 +678,7 @@ and Photon GUI.  It should turn up in other GUIs in due course.  The
 default toolbar is setup in menu.vim.
 The display of the toolbar is controlled by the 'guioptions' letter 'T'.  You
 can thus have menu & toolbar together, or either on its own, or neither.
-The appearance is controlled by the 'toolbar' option.  You can chose between
+The appearance is controlled by the 'toolbar' option.  You can choose between
 an image, text or both.
 
 							*toolbar-icon*

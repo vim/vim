@@ -753,7 +753,7 @@ Then add a command to your |gvimrc| file to set 'guifont': >
 
 X INPUT METHOD (XIM) BACKGROUND			*XIM* *xim* *x-input-method*
 
-XIM is an international input module for X.  There are two kind of structures,
+XIM is an international input module for X.  There are two kinds of structures,
 Xlib unit type and |IM-server| (Input-Method server) type.  |IM-server| type
 is suitable for complex input, such as CJK.
 
@@ -826,7 +826,7 @@ Use the RPM or port for your system.
   of Preedit Area and Status Area: |OnTheSpot|, |OffTheSpot|, |OverTheSpot|
   and |Root|.
 
-  Currently, GUI Vim support three style, |OverTheSpot|, |OffTheSpot| and
+  Currently, GUI Vim supports three styles, |OverTheSpot|, |OffTheSpot| and
   |Root|.
 
 *.  on-the-spot						*OnTheSpot*
