@@ -3792,7 +3792,7 @@ free_crypt_key(key)
     if (key != NULL)
     {
 	for (p = key; *p != NUL; ++p)
-	    *p++ = 0;
+	    *p = 0;
 	vim_free(key);
     }
 }
@@ -4100,7 +4100,7 @@ vim_findnext()
 /*
  * Initialization routine for vim_findfile.
  *
- * Returns the newly allocated search context or NULL if an error occured.
+ * Returns the newly allocated search context or NULL if an error occurred.
  *
  * Don't forget to clean up by calling vim_findfile_cleanup() if you are done
  * with the search context.
@@ -4121,7 +4121,7 @@ vim_findnext()
  *
  * If the 'path' is relative, the starting dir for the search is either VIM's
  * current dir or if the path starts with "./" the current files dir.
- * If the 'path' is absolut, the starting dir is that part of the path before
+ * If the 'path' is absolute, the starting dir is that part of the path before
  * the first wildcard.
  *
  * Upward search is only done on the starting dir.
