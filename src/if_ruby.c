@@ -170,8 +170,11 @@ static void ruby_vim_init(void);
 #define rb_str_cat			dll_rb_str_cat
 #define rb_str_concat			dll_rb_str_concat
 #define rb_str_new			dll_rb_str_new
-/* Ruby may also define rb_str_new2. */
-#ifndef rb_str_new2
+#ifdef rb_str_new2
+/* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
+# define need_rb_str_new_cstr 1
+# define rb_str_new_cstr		dll_rb_str_new_cstr
+#else
 # define rb_str_new2			dll_rb_str_new2
 #endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 18
@@ -247,7 +250,12 @@ static char *(*dll_rb_str2cstr) (VALUE,int*);
 static VALUE (*dll_rb_str_cat) (VALUE, const char*, long);
 static VALUE (*dll_rb_str_concat) (VALUE, VALUE);
 static VALUE (*dll_rb_str_new) (const char*, long);
+#ifdef need_rb_str_new_cstr
+/* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
+static VALUE (*dll_rb_str_new_cstr) (const char*);
+#else
 static VALUE (*dll_rb_str_new2) (const char*);
+#endif
 #ifdef RUBY19_OR_LATER
 static VALUE (*dll_rb_errinfo) (void);
 #else
@@ -343,7 +351,11 @@ static struct
     {"rb_str_cat", (RUBY_PROC*)&dll_rb_str_cat},
     {"rb_str_concat", (RUBY_PROC*)&dll_rb_str_concat},
     {"rb_str_new", (RUBY_PROC*)&dll_rb_str_new},
+#ifdef need_rb_str_new_cstr
+    {"rb_str_new_cstr", (RUBY_PROC*)&dll_rb_str_new_cstr},
+#else
     {"rb_str_new2", (RUBY_PROC*)&dll_rb_str_new2},
+#endif
 #ifdef RUBY19_OR_LATER
     {"rb_errinfo", (RUBY_PROC*)&dll_rb_errinfo},
 #else
