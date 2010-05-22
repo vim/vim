@@ -61,10 +61,11 @@
 
 #define GUARDED		10000 /* typenr for "guarded" annotation */
 #define GUARDEDOFFSET 1000000 /* base for "guarded" sign id's */
+#define MAX_COLOR_LENGTH 32 /* max length of color name in defineAnnoType */
 
 /* The first implementation (working only with Netbeans) returned "1.1".  The
  * protocol implemented here also supports A-A-P. */
-static char *ExtEdProtocolVersion = "2.4";
+static char *ExtEdProtocolVersion = "2.5";
 
 static long pos2off __ARGS((buf_T *, pos_T *));
 static pos_T *off2pos __ARGS((buf_T *, long));
@@ -90,6 +91,11 @@ static void nb_parse_cmd __ARGS((char_u *));
 static int  nb_do_cmd __ARGS((int, char_u *, int, int, char_u *));
 static void nb_send __ARGS((char *buf, char *fun));
 
+/* TRUE when netbeans is running with a GUI. */
+#ifdef FEAT_GUI
+# define NB_HAS_GUI (gui.in_use || gui.starting)
+#endif
+
 #ifdef WIN64
 typedef __int64 NBSOCK;
 #else
@@ -110,16 +116,6 @@ extern HWND s_hwnd;			/* Gvim's Window handle */
 static int r_cmdno;			/* current command number for reply */
 static int haveConnection = FALSE;	/* socket is connected and
 					   initialization is done */
-#ifdef FEAT_GUI_MOTIF
-static void netbeans_Xt_connect __ARGS((void *context));
-#endif
-#ifdef FEAT_GUI_GTK
-static void netbeans_gtk_connect __ARGS((void));
-#endif
-#ifdef FEAT_GUI_W32
-static void netbeans_w32_connect __ARGS((void));
-#endif
-
 static int dosetvisible = FALSE;
 
 /*
@@ -130,101 +126,39 @@ static int dosetvisible = FALSE;
 #endif
 
 /* Connect back to Netbeans process */
-#ifdef FEAT_GUI_MOTIF
-    static void
-netbeans_Xt_connect(void *context)
-{
-    netbeans_connect();
-    if (sd > 0)
-    {
-	/* tell notifier we are interested in being called
-	 * when there is input on the editor connection socket
-	 */
-	inputHandler = XtAppAddInput((XtAppContext)context, sd,
-			     (XtPointer)(XtInputReadMask + XtInputExceptMask),
-						   messageFromNetbeans, NULL);
-    }
-}
-
     static void
 netbeans_disconnect(void)
 {
+#ifdef FEAT_GUI_MOTIF
     if (inputHandler != (XtInputId)NULL)
     {
 	XtRemoveInput(inputHandler);
 	inputHandler = (XtInputId)NULL;
     }
-    sd = -1;
-    haveConnection = FALSE;
-# ifdef FEAT_BEVAL
-    bevalServers &= ~BEVAL_NETBEANS;
-# endif
-}
-#endif /* FEAT_MOTIF_GUI */
-
-#ifdef FEAT_GUI_GTK
-    static void
-netbeans_gtk_connect(void)
-{
-    netbeans_connect();
-    if (sd > 0)
-    {
-	/*
-	 * Tell gdk we are interested in being called when there
-	 * is input on the editor connection socket
-	 */
-	inputHandler = gdk_input_add((gint)sd, (GdkInputCondition)
-		((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
-						   messageFromNetbeans, NULL);
-    }
-}
-
-    static void
-netbeans_disconnect(void)
-{
+#else
+# ifdef FEAT_GUI_GTK
     if (inputHandler != 0)
     {
 	gdk_input_remove(inputHandler);
 	inputHandler = 0;
     }
-    sd = -1;
-    haveConnection = FALSE;
-# ifdef FEAT_BEVAL
-    bevalServers &= ~BEVAL_NETBEANS;
-# endif
-}
-#endif /* FEAT_GUI_GTK */
-
-#if defined(FEAT_GUI_W32) || defined(PROTO)
-    static void
-netbeans_w32_connect(void)
-{
-    netbeans_connect();
-    if (sd > 0)
-    {
-	/*
-	 * Tell Windows we are interested in receiving message when there
-	 * is input on the editor connection socket
-	 */
-	inputHandler = WSAAsyncSelect(sd, s_hwnd, WM_NETBEANS, FD_READ);
-    }
-}
-
-    static void
-netbeans_disconnect(void)
-{
+# else
+#  ifdef FEAT_GUI_W32
     if (inputHandler == 0)
     {
 	WSAAsyncSelect(sd, s_hwnd, 0, 0);
 	inputHandler = -1;
     }
+#  endif
+# endif
+#endif
+
     sd = -1;
     haveConnection = FALSE;
-# ifdef FEAT_BEVAL
+#ifdef FEAT_BEVAL
     bevalServers &= ~BEVAL_NETBEANS;
-# endif
+#endif
 }
-#endif /* FEAT_GUI_W32 */
 
 #define NB_DEF_HOST "localhost"
 #define NB_DEF_ADDR "3219"
@@ -240,7 +174,7 @@ netbeans_connect(void)
     u_short		port;
 # else
     int			port;
-#endif
+# endif
 #else
     struct sockaddr_un	server;
 #endif
@@ -709,31 +643,35 @@ netbeans_parse_messages(void)
 #define MAXMSGSIZE 4096
 
 /*
- * Read and process a command from netbeans.
+ * Read a command from netbeans.
  */
-#if defined(FEAT_GUI_W32) || defined(PROTO)
-/* Use this one when generating prototypes, the others are static. */
-    void
-messageFromNetbeansW32()
-#else
-# ifdef FEAT_GUI_MOTIF
+#ifdef FEAT_GUI_MOTIF
     static void
 messageFromNetbeans(XtPointer clientData UNUSED,
 		    int *unused1 UNUSED,
 		    XtInputId *unused2 UNUSED)
-# endif
-# ifdef FEAT_GUI_GTK
+{
+    netbeans_read();
+}
+#endif
+
+#ifdef FEAT_GUI_GTK
     static void
 messageFromNetbeans(gpointer clientData UNUSED,
 		    gint unused1 UNUSED,
 		    GdkInputCondition unused2 UNUSED)
-# endif
+{
+    netbeans_read();
+}
 #endif
+
+    void
+netbeans_read()
 {
     static char_u	*buf = NULL;
     int			len = 0;
     int			readlen = 0;
-#ifndef FEAT_GUI_GTK
+#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
     static int		level = 0;
 #endif
 #ifdef HAVE_SELECT
@@ -751,8 +689,11 @@ messageFromNetbeans(gpointer clientData UNUSED,
 	return;
     }
 
-#ifndef FEAT_GUI_GTK
-    ++level;  /* recursion guard; this will be called from the X event loop */
+#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)
+    /* recursion guard; this will be called from the X event loop at unknown
+     * moments */
+    if (NB_HAS_GUI)
+	++level;
 #endif
 
     /* Allocate a buffer to read into. */
@@ -770,17 +711,17 @@ messageFromNetbeans(gpointer clientData UNUSED,
     {
 #ifdef HAVE_SELECT
 	FD_ZERO(&rfds);
-        FD_SET(sd, &rfds);
-        tval.tv_sec = 0;
-        tval.tv_usec = 0;
-        if (select(sd + 1, &rfds, NULL, NULL, &tval) <= 0)
-            break;
+	FD_SET(sd, &rfds);
+	tval.tv_sec = 0;
+	tval.tv_usec = 0;
+	if (select(sd + 1, &rfds, NULL, NULL, &tval) <= 0)
+	    break;
 #else
 # ifdef HAVE_POLL
 	fds.fd = sd;
 	fds.events = POLLIN;
-        if (poll(&fds, 1, 0) <= 0)
-            break;
+	if (poll(&fds, 1, 0) <= 0)
+	    break;
 # endif
 #endif
 	len = sock_read(sd, buf, MAXMSGSIZE);
@@ -807,18 +748,21 @@ messageFromNetbeans(gpointer clientData UNUSED,
 	return; /* don't try to parse it */
     }
 
-#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32)
+#if defined(NB_HAS_GUI) && !defined(FEAT_GUI_W32)
     /* Let the main loop handle messages. */
+    if (NB_HAS_GUI)
+    {
 # ifdef FEAT_GUI_GTK
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-# endif
-#else
-    /* Parse the messages now, but avoid recursion. */
-    if (level == 1)
-	netbeans_parse_messages();
+	if (gtk_main_level() > 0)
+	    gtk_main_quit();
+# else
+	/* Parse the messages now, but avoid recursion. */
+	if (level == 1)
+	    netbeans_parse_messages();
 
-    --level;
+	--level;
+# endif
+    }
 #endif
 }
 
@@ -945,7 +889,7 @@ static int globalsignmapused;
 static int  mapsigntype __ARGS((nbbuf_T *, int localsigntype));
 static void addsigntype __ARGS((nbbuf_T *, int localsigntype, char_u *typeName,
 			char_u *tooltip, char_u *glyphfile,
-			int usefg, int fg, int usebg, int bg));
+			char_u *fg, char_u *bg));
 static void print_read_msg __ARGS((nbbuf_T *buf));
 static void print_save_msg __ARGS((nbbuf_T *buf, long nchars));
 
@@ -1848,7 +1792,9 @@ nb_do_cmd(
 	    buf->bufp = curbuf;
 	    maketitle();
 	    buf->insertDone = FALSE;
+#if defined(FEAT_MENU) && defined(FEAT_GUI)
 	    gui_update_menus(0);
+#endif
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "insertDone"))
@@ -2012,7 +1958,9 @@ nb_do_cmd(
 	    netbeansReadFile = 1;
 	    buf->bufp = curbuf;
 	    maketitle();
+#if defined(FEAT_MENU) && defined(FEAT_GUI)
 	    gui_update_menus(0);
+#endif
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "editFile"))
@@ -2034,7 +1982,9 @@ nb_do_cmd(
 #if defined(FEAT_TITLE)
 	    maketitle();
 #endif
+#if defined(FEAT_MENU) && defined(FEAT_GUI)
 	    gui_update_menus(0);
+#endif
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setVisible"))
@@ -2058,17 +2008,21 @@ nb_do_cmd(
 		doupdate = 1;
 		dosetvisible = FALSE;
 
+#ifdef FEAT_GUI
 		/* Side effect!!!. */
 		if (!gui.starting)
 		    gui_mch_set_foreground();
+#endif
 	    }
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "raise"))
 	{
+#ifdef FEAT_GUI
 	    /* Bring gvim to the foreground. */
 	    if (!gui.starting)
 		gui_mch_set_foreground();
+#endif
 /* =====================================================================*/
 	}
 	else if (streq((char *)cmd, "setModified"))
@@ -2199,8 +2153,10 @@ nb_do_cmd(
 	    update_screen(VALID);
 	    setcursor();
 	    out_flush();
+#ifdef FEAT_GUI
 	    gui_update_cursor(TRUE, FALSE);
 	    gui_mch_flush();
+#endif
 	    /* Quit a hit-return or more prompt. */
 	    if (State == HITRETURN || State == ASKMORE)
 	    {
@@ -2237,7 +2193,9 @@ nb_do_cmd(
 		    EMSG("E649: invalid buffer identifier in close");
 	    }
 	    nbdebug(("    CLOSE %d: %s\n", bufno, name));
+#ifdef FEAT_GUI
 	    need_mouse_correct = TRUE;
+#endif
 	    if (buf->bufp != NULL)
 		do_buffer(DOBUF_WIPE, DOBUF_FIRST, FORWARD,
 						     buf->bufp->b_fnum, TRUE);
@@ -2264,10 +2222,9 @@ nb_do_cmd(
 	    char_u *tooltip;
 	    char_u *p;
 	    char_u *glyphFile;
-	    int use_fg = 0;
-	    int use_bg = 0;
-	    int fg = -1;
-	    int bg = -1;
+	    int parse_error = FALSE;
+	    char_u *fg;
+	    char_u *bg;
 
 	    if (buf == NULL)
 	    {
@@ -2290,33 +2247,32 @@ nb_do_cmd(
 	    vim_free(p);
 
 	    args = skipwhite(args + 1);
-	    if (STRNCMP(args, "none", 4) == 0)
-		args += 5;
-	    else
+	    p = skiptowhite(args);
+	    if (*p != NUL)
 	    {
-		use_fg = 1;
-		cp = (char *)args;
-		fg = strtol(cp, &cp, 10);
-		args = (char_u *)cp;
+		*p = NUL;
+		p = skipwhite(p + 1);
 	    }
-	    if (STRNCMP(args, "none", 4) == 0)
-		args += 5;
-	    else
+	    fg = vim_strsave(args);
+	    bg = vim_strsave(p);
+	    if (STRLEN(fg) > MAX_COLOR_LENGTH || STRLEN(bg) > MAX_COLOR_LENGTH)
 	    {
-		use_bg = 1;
-		cp = (char *)args;
-		bg = strtol(cp, &cp, 10);
-		args = (char_u *)cp;
+		EMSG("E532: highlighting color name too long in defineAnnoType");
+		vim_free(typeName);
+		parse_error = TRUE;
 	    }
-	    if (typeName != NULL && tooltip != NULL && glyphFile != NULL)
-		addsigntype(buf, typeNum, typeName, tooltip, glyphFile,
-						      use_fg, fg, use_bg, bg);
+	    else if (typeName != NULL && tooltip != NULL && glyphFile != NULL)
+		addsigntype(buf, typeNum, typeName, tooltip, glyphFile, fg, bg);
 	    else
 		vim_free(typeName);
 
 	    /* don't free typeName; it's used directly in addsigntype() */
+	    vim_free(fg);
+	    vim_free(bg);
 	    vim_free(tooltip);
 	    vim_free(glyphFile);
+	    if (parse_error)
+		return FAIL;
 
 #endif
 /* =====================================================================*/
@@ -2588,8 +2544,10 @@ nb_do_cmd(
 	update_screen(NOT_VALID);
 	setcursor();
 	out_flush();
+#ifdef FEAT_GUI
 	gui_update_cursor(TRUE, FALSE);
 	gui_mch_flush();
+#endif
 	/* Quit a hit-return or more prompt. */
 	if (State == HITRETURN || State == ASKMORE)
 	{
@@ -2638,8 +2596,10 @@ coloncmd(char *cmd, ...)
     setcursor();		/* restore the cursor position */
     out_flush();		/* make sure output has been written */
 
+#ifdef FEAT_GUI
     gui_update_cursor(TRUE, FALSE);
     gui_mch_flush();
+#endif
 }
 
 
@@ -2707,7 +2667,8 @@ nb_init_graphics(void)
 
     if (!did_init)
     {
-	coloncmd(":highlight NBGuarded guibg=Cyan guifg=Black");
+	coloncmd(":highlight NBGuarded guibg=Cyan guifg=Black"
+			    " ctermbg=LightCyan ctermfg=Black");
 	coloncmd(":sign define %d linehl=NBGuarded", GUARDED);
 
 	did_init = TRUE;
@@ -2785,7 +2746,7 @@ netbeans_keyname(int key, char *buf)
     strcat(buf, name);
 }
 
-#ifdef FEAT_BEVAL
+#if defined(FEAT_BEVAL) || defined(PROTO)
 /*
  * Function to be called for balloon evaluation.  Grabs the text under the
  * cursor and sends it to the debugger for evaluation.  The debugger should
@@ -2830,6 +2791,64 @@ netbeans_beval_cb(
 #endif
 
 /*
+ * Return netbeans file descriptor.
+ */
+    int
+netbeans_filedesc (void)
+{
+    return sd;
+}
+
+#if defined(FEAT_GUI) || defined(PROTO)
+/*
+ * Register our file descriptor with the gui event handling system.
+ */
+    void
+netbeans_gui_register(void)
+{
+    if (!NB_HAS_GUI)
+	return;
+
+    if (sd > 0)
+    {
+# ifdef FEAT_GUI_MOTIF
+	/* tell notifier we are interested in being called
+	 * when there is input on the editor connection socket
+	 */
+	if (inputHandler == (XtInputId)NULL)
+	    inputHandler = XtAppAddInput((XtAppContext)app_context, sd,
+			     (XtPointer)(XtInputReadMask + XtInputExceptMask),
+						   messageFromNetbeans, NULL);
+# else
+#  ifdef FEAT_GUI_GTK
+	/*
+	 * Tell gdk we are interested in being called when there
+	 * is input on the editor connection socket
+	 */
+	if (inputHandler == 0)
+	    inputHandler = gdk_input_add((gint)sd, (GdkInputCondition)
+		((int)GDK_INPUT_READ + (int)GDK_INPUT_EXCEPTION),
+						   messageFromNetbeans, NULL);
+#  else
+#   ifdef FEAT_GUI_W32
+	/*
+	 * Tell Windows we are interested in receiving message when there
+	 * is input on the editor connection socket
+	 */
+	if (inputHandler == -1)
+	    inputHandler = WSAAsyncSelect(sd, s_hwnd, WM_NETBEANS, FD_READ);
+#   endif
+#  endif
+# endif
+    }
+
+# ifdef FEAT_BEVAL
+    bevalServers |= BEVAL_NETBEANS;
+# endif
+}
+#endif
+
+/*
  * Tell netbeans that the window was opened, ready for commands.
  */
     void
@@ -2837,24 +2856,14 @@ netbeans_startup_done(void)
 {
     char *cmd = "0:startupDone=0\n";
 
-    if (usingNetbeans)
-#ifdef FEAT_GUI_MOTIF
-	netbeans_Xt_connect(app_context);
-#else
-# ifdef FEAT_GUI_GTK
-	netbeans_gtk_connect();
-# else
-#  ifdef FEAT_GUI_W32
-	netbeans_w32_connect();
-#  endif
-# endif
-#endif
-
-    if (!haveConnection)
+    if (!usingNetbeans)
 	return;
 
-#ifdef FEAT_BEVAL
-    bevalServers |= BEVAL_NETBEANS;
+    netbeans_connect();
+    if (!haveConnection)
+	return;
+#ifdef FEAT_GUI
+    netbeans_gui_register();
 #endif
 
     nbdebug(("EVT: %s", cmd));
@@ -3144,7 +3153,7 @@ netbeans_button_release(int button)
     if (bufno >= 0 && curwin != NULL && curwin->w_buffer == curbuf)
     {
 	int col = mouse_col - W_WINCOL(curwin)
-		  - ((curwin->w_p_nu || curwin->w_p_rnu) ? 9 : 1);
+			      - ((curwin->w_p_nu || curwin->w_p_rnu) ? 9 : 1);
 	long off = pos2off(curbuf, &curwin->w_cursor);
 
 	/* sync the cursor position */
@@ -3404,7 +3413,6 @@ netbeans_gutter_click(linenr_T lnum)
     }
 }
 
-
 /*
  * Add a sign of the requested type at the requested location.
  *
@@ -3427,14 +3435,12 @@ addsigntype(
     char_u	*typeName,
     char_u	*tooltip UNUSED,
     char_u	*glyphFile,
-    int		use_fg,
-    int		fg,
-    int		use_bg,
-    int		bg)
+    char_u	*fg,
+    char_u	*bg)
 {
-    char fgbuf[32];
-    char bgbuf[32];
     int i, j;
+    int use_fg = (*fg && STRCMP(fg, "none") != 0);
+    int use_bg = (*bg && STRCMP(bg, "none") != 0);
 
     for (i = 0; i < globalsignmapused; i++)
 	if (STRCMP(typeName, globalsignmap[i]) == 0)
@@ -3442,12 +3448,26 @@ addsigntype(
 
     if (i == globalsignmapused) /* not found; add it to global map */
     {
-	nbdebug(("DEFINEANNOTYPE(%d,%s,%s,%s,%d,%d)\n",
+	nbdebug(("DEFINEANNOTYPE(%d,%s,%s,%s,%s,%s)\n",
 			    typeNum, typeName, tooltip, glyphFile, fg, bg));
 	if (use_fg || use_bg)
 	{
-	    sprintf(fgbuf, "guifg=#%06x", fg & 0xFFFFFF);
-	    sprintf(bgbuf, "guibg=#%06x", bg & 0xFFFFFF);
+	    char fgbuf[2 * (8 + MAX_COLOR_LENGTH) + 1];
+	    char bgbuf[2 * (8 + MAX_COLOR_LENGTH) + 1];
+	    char *ptr;
+	    int value;
+
+	    value = strtol((char *)fg, &ptr, 10);
+	    if (ptr != (char *)fg)
+		sprintf(fgbuf, "guifg=#%06x", value & 0xFFFFFF);
+	    else
+		sprintf(fgbuf, "guifg=%s ctermfg=%s", fg, fg);
+
+	    value = strtol((char *)bg, &ptr, 10);
+	    if (ptr != (char *)bg)
+		sprintf(bgbuf, "guibg=#%06x", value & 0xFFFFFF);
+	    else
+		sprintf(bgbuf, "guibg=%s ctermbg=%s", bg, bg);
 
 	    coloncmd(":highlight NB_%s %s %s", typeName, (use_fg) ? fgbuf : "",
 		     (use_bg) ? bgbuf : "");
@@ -3674,7 +3694,8 @@ print_read_msg(buf)
     }
     if (!buf->bufp->b_start_eol)
     {
-	STRCAT(IObuff, shortmess(SHM_LAST) ? _("[noeol]") : _("[Incomplete last line]"));
+	STRCAT(IObuff, shortmess(SHM_LAST) ? _("[noeol]")
+					       : _("[Incomplete last line]"));
 	c = TRUE;
     }
     msg_add_lines(c, (long)lnum, nchars);
@@ -3689,8 +3710,9 @@ print_read_msg(buf)
 
 
 /*
- * Print a message after NetBeans writes the file. This message should be identical
- * to the standard message a non-netbeans user would see when writing a file.
+ * Print a message after NetBeans writes the file. This message should be
+ * identical to the standard message a non-netbeans user would see when
+ * writing a file.
  */
     static void
 print_save_msg(buf, nchars)
@@ -3702,7 +3724,8 @@ print_save_msg(buf, nchars)
 
     if (nchars >= 0)
     {
-	msg_add_fname(buf->bufp, buf->bufp->b_ffname);   /* fname in IObuff with quotes */
+	/* put fname in IObuff with quotes */
+	msg_add_fname(buf->bufp, buf->bufp->b_ffname);
 	c = FALSE;
 
 	msg_add_lines(c, buf->bufp->b_ml.ml_line_count,

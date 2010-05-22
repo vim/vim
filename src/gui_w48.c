@@ -1732,7 +1732,7 @@ process_message(void)
 #ifdef FEAT_NETBEANS_INTG
     if (msg.message == WM_NETBEANS)
     {
-	messageFromNetbeansW32();
+	netbeans_read();
 	return;
     }
 #endif
@@ -1999,7 +1999,8 @@ gui_mch_wait_for_chars(int wtime)
 
 #ifdef FEAT_NETBEANS_INTG
 	/* Process the queued netbeans messages. */
-	netbeans_parse_messages();
+	if (usingNetbeans)
+	    netbeans_parse_messages();
 #endif
 
 	/*

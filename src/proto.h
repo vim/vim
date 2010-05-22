@@ -181,6 +181,16 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 #  include "if_ruby.pro"
 # endif
 
+/* Ugly solution for "BalloonEval" not being defined while it's used in some
+ * .pro files. */
+# ifndef FEAT_BEVAL
+#  define BalloonEval int
+# endif
+
+# ifdef FEAT_NETBEANS_INTG
+#  include "netbeans.pro"
+# endif
+
 # ifdef FEAT_GUI
 #  include "gui.pro"
 #  if defined(UNIX) || defined(MACOS)
@@ -194,11 +204,6 @@ extern char_u *vimpty_getenv __ARGS((const char_u *string));	/* from pty.c */
 #  endif
 #  ifdef FEAT_GUI_W16
 #   include "gui_w16.pro"
-#  endif
-    /* Ugly solution for "BalloonEval" not being defined while it's used in
-     * the prototypes. */
-#  ifndef FEAT_BEVAL
-#   define BalloonEval int
 #  endif
 #  ifdef FEAT_GUI_W32
 #   include "gui_w32.pro"
@@ -231,9 +236,6 @@ extern char *vim_SelFile __ARGS((Widget toplevel, char *prompt, char *init_path,
 #  endif
 #  ifdef FEAT_SUN_WORKSHOP
 #   include "workshop.pro"
-#  endif
-#  ifdef FEAT_NETBEANS_INTG
-#   include "netbeans.pro"
 #  endif
 # endif	/* FEAT_GUI */
 

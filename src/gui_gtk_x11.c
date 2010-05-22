@@ -6596,7 +6596,8 @@ gui_mch_wait_for_chars(long wtime)
 
 #if defined(FEAT_NETBEANS_INTG)
 	/* Process the queued netbeans messages. */
-	netbeans_parse_messages();
+	if (usingNetbeans)
+	    netbeans_parse_messages();
 #endif
 
 	/*

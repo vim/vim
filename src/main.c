@@ -528,10 +528,6 @@ main
      * Set the default values for the options that use Rows and Columns.
      */
     ui_get_shellsize();		/* inits Rows and Columns */
-#ifdef FEAT_NETBEANS_INTG
-    if (usingNetbeans)
-	Columns += 2;		/* leave room for glyph gutter */
-#endif
     win_init_size();
 #ifdef FEAT_DIFF
     /* Set the 'diff' option now, so that it can be checked for in a .vimrc
@@ -937,8 +933,20 @@ main
 
 #ifdef FEAT_NETBEANS_INTG
     if (usingNetbeans)
+    {
+# ifdef FEAT_GUI
+#  if !defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_GTK)  \
+		&& !defined(FEAT_GUI_W32)
+	if (gui.in_use)
+	{
+	    mch_errmsg(_("netbeans is not supported with this GUI\n"));
+	    mch_exit(2);
+	}
+#  endif
+# endif
 	/* Tell the client that it can start sending commands. */
 	netbeans_startup_done();
+    }
 #endif
 
     TIME_MSG("before starting main loop");
@@ -1616,10 +1624,10 @@ early_arg_scan(parmp)
 # endif
 # ifndef FEAT_NETBEANS_INTG
 	else if (strncmp(argv[i], "-nb", (size_t)3) == 0)
-        {
-            mch_errmsg(_("'-nb' cannot be used: not enabled at compile time\n"));
-            mch_exit(2);
-        }
+	{
+	    mch_errmsg(_("'-nb' cannot be used: not enabled at compile time\n"));
+	    mch_exit(2);
+	}
 # endif
 
     }
@@ -1879,6 +1887,16 @@ command_line_scan(parmp)
 		break;
 
 	    case 'n':		/* "-n" no swap file */
+#ifdef FEAT_NETBEANS_INTG
+		/* checking for "-nb", netbeans parameters */
+		if (argv[0][argv_idx] == 'b')
+		{
+		    ++usingNetbeans;
+		    netbeansArg = argv[0];
+		    argv_idx = -1;	    /* skip to next argument */
+		}
+		else
+#endif
 		parmp->no_swap_file = TRUE;
 		break;
 

@@ -1082,8 +1082,12 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 Patches to include:
--   Patch to support netbeans in Unix console Vim. (Xavier de Gaye, 2009 Apr
-    26) Now with Mercurial repository (2010 Jan 2)
+- nbstart command patch (Xavier de Gaye)
+    Keep nbkey as the first command in ex_cmds.h
+    NETBEANS_CLOSED -> NETBEANS_OPEN
+    netbeans_closed() -> netbeans_active()
+    do check netbeans_active() when calling netbeans_removed() et al.
+
 - Include conceal patch?
   http://vince.negri.googlepages.com/
   http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines

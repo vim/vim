@@ -1193,11 +1193,9 @@
 #endif
 
 /*
- * The Netbeans features currently only work with Motif and GTK and Win32.
- * It also requires +listcmds and +eval.
+ * The Netbeans feature requires +listcmds and +eval.
  */
-#if ((!defined(FEAT_GUI_MOTIF) && !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_W32)) \
-		|| !defined(FEAT_LISTCMDS) || !defined(FEAT_EVAL)) \
+#if (!defined(FEAT_LISTCMDS) || !defined(FEAT_EVAL)) \
 	&& defined(FEAT_NETBEANS_INTG)
 # undef FEAT_NETBEANS_INTG
 #endif

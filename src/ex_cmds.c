@@ -3815,10 +3815,10 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
     DO_AUTOCHDIR
 
 #if defined(FEAT_SUN_WORKSHOP) || defined(FEAT_NETBEANS_INTG)
-    if (gui.in_use && curbuf->b_ffname != NULL)
+    if (curbuf->b_ffname != NULL)
     {
 # ifdef FEAT_SUN_WORKSHOP
-	if (usingSunWorkShop)
+	if (gui.in_use && usingSunWorkShop)
 	    workshop_file_opened((char *)curbuf->b_ffname, curbuf->b_p_ro);
 # endif
 # ifdef FEAT_NETBEANS_INTG

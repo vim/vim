@@ -593,11 +593,6 @@ gui_init()
 	    gui_mch_disable_beval_area(balloonEval);
 #endif
 
-#ifdef FEAT_NETBEANS_INTG
-	if (starting == 0 && usingNetbeans)
-	    /* Tell the client that it can start sending commands. */
-	    netbeans_startup_done();
-#endif
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
 	    EMSG(_("E599: Value of 'imactivatekey' is invalid"));
@@ -2367,7 +2362,8 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
     if (draw_sign)
 	/* Draw the sign on top of the spaces. */
 	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
-# ifdef FEAT_NETBEANS_INTG
+# if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_MOTIF) \
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_W32))
     if (multi_sign)
 	netbeans_draw_multisign_indicator(gui.row);
 # endif
@@ -4784,6 +4780,10 @@ ex_gui(eap)
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
 	gui_start();
+#ifdef FEAT_NETBEANS_INTG
+	if (usingNetbeans)
+	    netbeans_gui_register();
+#endif
     }
     if (!ends_excmd(*eap->arg))
 	ex_next(eap);

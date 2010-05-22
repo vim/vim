@@ -1,11 +1,13 @@
 /* netbeans.c */
 void netbeans_parse_messages __ARGS((void));
-void messageFromNetbeansW32 __ARGS((void));
+void netbeans_read __ARGS((void));
 int isNetbeansBuffer __ARGS((buf_T *bufp));
 int isNetbeansModified __ARGS((buf_T *bufp));
 void netbeans_end __ARGS((void));
 void ex_nbkey __ARGS((exarg_T *eap));
 void netbeans_beval_cb __ARGS((BalloonEval *beval, int state));
+int netbeans_filedesc __ARGS((void));
+void netbeans_gui_register __ARGS((void));
 void netbeans_startup_done __ARGS((void));
 void netbeans_send_disconnect __ARGS((void));
 void netbeans_frame_moved __ARGS((int new_x, int new_y));

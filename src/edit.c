@@ -9433,8 +9433,7 @@ ins_tab()
 #ifdef FEAT_NETBEANS_INTG
 	    if (usingNetbeans)
 	    {
-		netbeans_removed(curbuf, fpos.lnum, cursor->col,
-							       (long)(i + 1));
+		netbeans_removed(curbuf, fpos.lnum, cursor->col, (long)(i + 1));
 		netbeans_inserted(curbuf, fpos.lnum, cursor->col,
 							   (char_u *)"\t", 1);
 	    }
