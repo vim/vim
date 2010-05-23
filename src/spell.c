@@ -854,9 +854,6 @@ static char_u *spell_enc __ARGS((void));
 static void int_wordlist_spl __ARGS((char_u *fname));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
-static int get2c __ARGS((FILE *fd));
-static int get3c __ARGS((FILE *fd));
-static int get4c __ARGS((FILE *fd));
 static time_t get8c __ARGS((FILE *fd));
 static char_u *read_cnt_string __ARGS((FILE *fd, int cnt_bytes, int *lenp));
 static char_u *read_string __ARGS((FILE *fd, int cnt));
@@ -2988,7 +2985,7 @@ endOK:
 /*
  * Read 2 bytes from "fd" and turn them into an int, MSB first.
  */
-    static int
+    int
 get2c(fd)
     FILE	*fd;
 {
@@ -3002,7 +2999,7 @@ get2c(fd)
 /*
  * Read 3 bytes from "fd" and turn them into an int, MSB first.
  */
-    static int
+    int
 get3c(fd)
     FILE	*fd;
 {
@@ -3017,7 +3014,7 @@ get3c(fd)
 /*
  * Read 4 bytes from "fd" and turn them into an int, MSB first.
  */
-    static int
+    int
 get4c(fd)
     FILE	*fd;
 {
@@ -8018,7 +8015,7 @@ node_equal(n1, n2)
 /*
  * Write a number to file "fd", MSB first, in "len" bytes.
  */
-    void
+    int
 put_bytes(fd, nr, len)
     FILE    *fd;
     long_u  nr;
@@ -8027,7 +8024,9 @@ put_bytes(fd, nr, len)
     int	    i;
 
     for (i = len - 1; i >= 0; --i)
-	putc((int)(nr >> (i * 8)), fd);
+	if (putc((int)(nr >> (i * 8)), fd) == EOF)
+	    return FAIL;
+    return OK;
 }
 
 #ifdef _MSC_VER

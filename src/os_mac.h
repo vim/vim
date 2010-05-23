@@ -204,7 +204,7 @@
 #endif
 
 #ifndef DFLT_VDIR
-#  define DFLT_VDIR	"$VIM/vimfiles/view"	/* default for 'viewdir' */
+# define DFLT_VDIR	"$VIM/vimfiles/view"	/* default for 'viewdir' */
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"

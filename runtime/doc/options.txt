@@ -7220,6 +7220,33 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	Alias for 'term', see above.
 
+						*'undodir'* *'udir'*
+'undodir' 'udir'	string	(default ".")
+			global
+			{not in Vi}
+			{only when compiled with the +persistent_undo feature}
+	List of directory names for undo files, separated with commas.
+	See |'backupdir'| for the format.  Specifically, "." means using the
+	directory of the file.
+	When writing: The first directory that exists is used. "." always
+	works, no directories after "." will be used for writing.
+	When reading all entries are tried to find an undo file.  The first
+	undo file that exists is used.  When it cannot be read an error is
+	given, no further entry is used.
+	See |undo-persistence|.
+
+						*'undofile'* *'udf'*
+'undofile' 'udf'	boolean	(default off)
+			local to buffer
+			{not in Vi}
+			{only when compiled with the +persistent_undo feature}
+	When on, Vim automatically saves undo history to an undo file when
+	writing a buffer to a file, and restores undo history from the same
+	file on buffer read.
+	The name of the undo file is specified by 'undodir'.
+	See |undo-persistence|.
+	WARNING: this is a very new feature.  Use at your own risc!
+
 						*'undolevels'* *'ul'*
 'undolevels' 'ul'	number	(default 100, 1000 for Unix, VMS,
 						Win32 and OS/2)

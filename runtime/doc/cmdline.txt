@@ -805,6 +805,7 @@ Note: these are typed literally, they are not special keys!
 
 							 *filename-modifiers*
 	 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs*
+	        *%:8* *%:p* *%:.* *%:~* *%:h* *%:t* *%:r* *%:e* *%:s* *%:gs*
 The file name modifiers can be used after "%", "#", "#n", "<cfile>", "<sfile>",
 "<afile>" or "<abuf>".  They are also used with the |fnamemodify()| function.
 These are not available when Vim has been compiled without the |+modify_fname|

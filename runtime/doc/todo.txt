@@ -30,6 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+When Vim crashes it may run out of stack while executing autocommands.  Patch
+to not run autocommands when leaving Vim? (James Vega, 2010 May 23)
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -1082,6 +1085,18 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 Patches to include:
+8   Persistent undo bugs / fixes:
+    - Add tests.  Also with different 'enc'
+    - Add undofile(name): get undo file name for buffer "name".
+- Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
+  May 23)
+- Also crypt the undo file.
+- Also crypt the swap file, each block separately.  Change mf_write() and
+    mf_read().  How to get b_p_key to these functions?
+- Do profiling on sha256 code to find obvious bottlenecks.
+- Do profiling on crypt code to find obvious bottlenecks.
+- Use off_t instead of long for bytes in a buffer. (James Vega, 2010 May 22,
+  update next day)
 - Include conceal patch?
   http://vince.negri.googlepages.com/
   http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines
@@ -1150,42 +1165,17 @@ Needs some work:
   Needs some more testing.
   Update 2010 Apr 20, patch by Andy Kittner, May 16
 -   Easier/standard way to disable default plugins.
-8   Persistent undo: store undo in a file.  Patch by Jordan Lewis, 2009 Feb
-    20.  Repost 2009 Nov 16.
-    Get tar file from: http://repo.or.cz/w/vim_extended.git/tree/feat/persistent-undo
-    -> disable by default and add remark that it's new and may fail.
-    Testing remarks by Christian Brabandt, 2010 May 1:
-	- doesn't work well with symlinks (Jordan will look into it)
-	- old undo files tend to pile up
-        - :rundo should output a message (Jordan will fix this)
-    Bugs / fixes:
-    - Undo file should be stored with the original file by default, the undo
-      directory doesn't handle remote files or directory renames.
-      Use same mechanism as for swap files?  But only with one file name.
-    - Read coladd depending on FEAT_VIRTUALEDIT, should always read/write it
-    - invoke u_wundo() inside buf_write()
-    - invoke u_rundo() inside readfile()
-    - Document that ":wundo" and ":rundo" should only be used in autocommands.
-    - unserialize_pos() does not need a return value
-    - function comments go before the function, not inside
-    - u_get_undofile() changes its argument ffname
-    - make magic four bytes.
-    - errors need numbers "E000:"
-    - also put 'enc' in undo file.
-    - don't use timestamp, "touch file" or dir copy may change it and undo
-      still works.
-    Older ideas:
-    - Use timestamps, so that a version a certain time ago can be found and
-      info before some time/date can be flushed. 'undopersist' gives maximum
-      time to keep undo: "3h", "1d", "2w", "1y", etc.  For the file use dot
-      and extension: ".filename.un~" (like swapfile but "un~" instead of
-      "swp").
 -   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.
 	Most of do_source() would not be used, need a new function.
 	It's easy when not doing breakpoints or profiling.
+Probably not now:
+- Use timestamps for undo, so that a version a certain time ago can be found
+  and info before some time/date can be flushed. 'undopersist' gives maximum
+  time to keep undo: "3h", "1d", "2w", "1y", etc.
 Before (beta) release:
 - Add fixes for 7.2 to version7.txt
+- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 
 More patches:
@@ -1292,7 +1282,6 @@ Awaiting updated patches:
     to left as well?  See patch of Dec 26. (Nadim Shaikli)
 8   Option to lock all used memory so that it doesn't get swapped to disk
     (uncrypted).  Patch by Jason Holt, 2003 May 23.  Uses mlock.
-7   Support a stronger encryption.  Jason Holt implemented AES (May 6 2003).
 7   Add ! register, for shell commands. (patch from Grenie)
 8   In the gzip plugin, also recognize *.gz.orig, *.gz.bak, etc.  Like it's
     done for filetype detection.  Patch from Walter Briscoe, 2003 Jul 1.
@@ -4318,11 +4307,6 @@ Mouse support:
     the nearest corner of the rectangle (four possible corners).
 -   Precede mouse click by a number to simulate double clicks?!?
 -   When mouse click after 'r' command, get character that was pointed to.
-
-
-Crypt and security:
-8   Also crypt the swapfile, each block separately.  Change mf_write() and
-    mf_read().  How to get b_p_key to these functions?
 
 
 Argument list:

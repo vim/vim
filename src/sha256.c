@@ -20,18 +20,9 @@
 
 #include "vim.h"
 
-#ifdef FEAT_CRYPT
+#if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 
-typedef struct {
-  UINT32_T total[2];
-  UINT32_T state[8];
-  char_u   buffer[64];
-} context_sha256_T;
-
-static void sha256_starts __ARGS((context_sha256_T *ctx));
 static void sha256_process __ARGS((context_sha256_T *ctx, char_u data[64]));
-static void sha256_update __ARGS((context_sha256_T *ctx, char_u *input, UINT32_T length));
-static void sha256_finish __ARGS((context_sha256_T *ctx, char_u digest[32]));
 static char_u *sha256_bytes __ARGS((char_u *buf, int buflen));
 static unsigned int get_some_time __ARGS((void));
 
@@ -52,8 +43,8 @@ static unsigned int get_some_time __ARGS((void));
     (b)[(i) + 3] = (char_u)((n)      );   \
 }
 
-    static void
-sha256_starts(ctx)
+     void
+sha256_start(ctx)
     context_sha256_T *ctx;
 {
     ctx->total[0] = 0;
@@ -203,7 +194,7 @@ sha256_process(ctx, data)
     ctx->state[7] += H;
 }
 
-    static void
+    void
 sha256_update(ctx, input, length)
     context_sha256_T *ctx;
     char_u	     *input;
@@ -250,7 +241,7 @@ static char_u sha256_padding[64] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-    static void
+    void
 sha256_finish(ctx, digest)
     context_sha256_T *ctx;
     char_u           digest[32];
@@ -296,7 +287,7 @@ sha256_bytes(buf, buflen)
 
     sha256_self_test();
 
-    sha256_starts(&ctx);
+    sha256_start(&ctx);
     sha256_update(&ctx, buf, buflen);
     sha256_finish(&ctx, sha256sum);
     for (j = 0; j < 32; j++)
@@ -368,7 +359,7 @@ sha256_self_test()
 	}
 	else
 	{
-	    sha256_starts(&ctx);
+	    sha256_start(&ctx);
 	    memset(buf, 'a', 1000);
 	    for (j = 0; j < 1000; j++)
 		sha256_update(&ctx, (char_u *)buf, 1000);
@@ -416,7 +407,7 @@ sha2_seed(header, header_len)
 
     for (i = 0; i < (int)sizeof(random_data) - 1; i++)
 	random_data[i] = (char_u)((get_some_time() ^ rand()) & 0xff);
-    sha256_starts(&ctx);
+    sha256_start(&ctx);
     sha256_update(&ctx, (char_u *)random_data, sizeof(random_data));
     sha256_finish(&ctx, sha256sum);
 
@@ -424,4 +415,4 @@ sha2_seed(header, header_len)
 	header[i] = sha256sum[i % sizeof(sha256sum)];
 }
 
-#endif /* FEAT_CRYPT */
+#endif /* FEAT_CRYPT || FEAT_PERSISTENT_UNDO */

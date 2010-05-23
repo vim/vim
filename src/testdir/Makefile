@@ -69,7 +69,7 @@ test1.out: test1.in
 		  fi \
 		else echo $* NO OUTPUT >>test.log; \
 		fi"
-	#-rm -rf X* test.ok viminfo
+	-rm -rf X* test.ok viminfo
 
 test49.out: test49.vim
 

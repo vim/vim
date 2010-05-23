@@ -61,8 +61,9 @@ static void buf_delete_signs __ARGS((buf_T *buf));
 #endif
 
 /*
- * Open current buffer, that is: open the memfile and read the file into memory
- * return FAIL for failure, OK otherwise
+ * Open current buffer, that is: open the memfile and read the file into
+ * memory.
+ * Return FAIL for failure, OK otherwise.
  */
     int
 open_buffer(read_stdin, eap)

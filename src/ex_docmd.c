@@ -243,6 +243,10 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_spellinfo		ex_ni
 # define ex_spellrepall		ex_ni
 #endif
+#ifndef FEAT_PERSISTENT_UNDO
+# define ex_rundo		ex_ni
+# define ex_wundo		ex_ni
+#endif
 #ifndef FEAT_MZSCHEME
 # define ex_mzscheme		ex_script_ni
 # define ex_mzfile		ex_ni
@@ -298,6 +302,10 @@ static void	ex_join __ARGS((exarg_T *eap));
 static void	ex_at __ARGS((exarg_T *eap));
 static void	ex_bang __ARGS((exarg_T *eap));
 static void	ex_undo __ARGS((exarg_T *eap));
+#ifdef FEAT_PERSISTENT_UNDO
+static void	ex_wundo __ARGS((exarg_T *eap));
+static void	ex_rundo __ARGS((exarg_T *eap));
+#endif
 static void	ex_redo __ARGS((exarg_T *eap));
 static void	ex_later __ARGS((exarg_T *eap));
 static void	ex_redir __ARGS((exarg_T *eap));
@@ -8451,6 +8459,28 @@ ex_undo(eap)
     else
 	u_undo(1);
 }
+
+#ifdef FEAT_PERSISTENT_UNDO
+    void
+ex_wundo(eap)
+    exarg_T *eap;
+{
+    char_u hash[UNDO_HASH_SIZE];
+
+    u_compute_hash(hash);
+    u_write_undo(eap->arg, eap->forceit, curbuf, hash);
+}
+
+    void
+ex_rundo(eap)
+    exarg_T *eap;
+{
+    char_u hash[UNDO_HASH_SIZE];
+
+    u_compute_hash(hash);
+    u_read_undo(eap->arg, hash);
+}
+#endif
 
 /*
  * ":redo".

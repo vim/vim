@@ -10,6 +10,16 @@ $VIM	starting.txt	/*$VIM*
 $VIM-use	version5.txt	/*$VIM-use*
 $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 %	motion.txt	/*%*
+%:.	cmdline.txt	/*%:.*
+%:8	cmdline.txt	/*%:8*
+%:e	cmdline.txt	/*%:e*
+%:gs	cmdline.txt	/*%:gs*
+%:h	cmdline.txt	/*%:h*
+%:p	cmdline.txt	/*%:p*
+%:r	cmdline.txt	/*%:r*
+%:s	cmdline.txt	/*%:s*
+%:t	cmdline.txt	/*%:t*
+%:~	cmdline.txt	/*%:~*
 &	change.txt	/*&*
 '	motion.txt	/*'*
 ''	motion.txt	/*''*
@@ -1005,7 +1015,11 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'tw'	options.txt	/*'tw'*
 'tx'	options.txt	/*'tx'*
 'uc'	options.txt	/*'uc'*
+'udf'	options.txt	/*'udf'*
+'udir'	options.txt	/*'udir'*
 'ul'	options.txt	/*'ul'*
+'undodir'	options.txt	/*'undodir'*
+'undofile'	options.txt	/*'undofile'*
 'undolevels'	options.txt	/*'undolevels'*
 'updatecount'	options.txt	/*'updatecount'*
 'updatetime'	options.txt	/*'updatetime'*
@@ -1163,6 +1177,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +path_extra	various.txt	/*+path_extra*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*
++persistent_undo	various.txt	/*+persistent_undo*
 +postscript	various.txt	/*+postscript*
 +printer	various.txt	/*+printer*
 +profile	various.txt	/*+profile*
@@ -2582,6 +2597,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :rubydo	if_ruby.txt	/*:rubydo*
 :rubyf	if_ruby.txt	/*:rubyf*
 :rubyfile	if_ruby.txt	/*:rubyfile*
+:rundo	undo.txt	/*:rundo*
 :runtime	repeat.txt	/*:runtime*
 :rv	starting.txt	/*:rv*
 :rviminfo	starting.txt	/*:rviminfo*
@@ -2964,6 +2980,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :write_f	editing.txt	/*:write_f*
 :ws	workshop.txt	/*:ws*
 :wsverb	workshop.txt	/*:wsverb*
+:wundo	undo.txt	/*:wundo*
 :wv	starting.txt	/*:wv*
 :wviminfo	starting.txt	/*:wviminfo*
 :x	editing.txt	/*:x*
@@ -6913,6 +6930,7 @@ perl-overview	if_perl.txt	/*perl-overview*
 perl-patterns	pattern.txt	/*perl-patterns*
 perl-using	if_perl.txt	/*perl-using*
 perl.vim	syntax.txt	/*perl.vim*
+persistent-undo	undo.txt	/*persistent-undo*
 pexpr-option	print.txt	/*pexpr-option*
 pfn-option	print.txt	/*pfn-option*
 pheader-option	print.txt	/*pheader-option*
@@ -7835,6 +7853,7 @@ undo	undo.txt	/*undo*
 undo-blocks	undo.txt	/*undo-blocks*
 undo-branches	undo.txt	/*undo-branches*
 undo-commands	undo.txt	/*undo-commands*
+undo-persistence	undo.txt	/*undo-persistence*
 undo-redo	undo.txt	/*undo-redo*
 undo-remarks	undo.txt	/*undo-remarks*
 undo-tree	undo.txt	/*undo-tree*

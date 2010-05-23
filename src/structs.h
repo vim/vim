@@ -1465,6 +1465,9 @@ struct file_buffer
     char_u	*b_p_dict;	/* 'dictionary' local value */
     char_u	*b_p_tsr;	/* 'thesaurus' local value */
 #endif
+#ifdef FEAT_PERSISTENT_UNDO
+    int		b_p_udf;	/* 'undofile' */
+#endif
 
     /* end of buffer options */
 
@@ -2392,3 +2395,9 @@ typedef struct
 #define CPT_KIND    2	/* "kind" */
 #define CPT_INFO    3	/* "info" */
 #define CPT_COUNT   4	/* Number of entries */
+
+typedef struct {
+  UINT32_T total[2];
+  UINT32_T state[8];
+  char_u   buffer[64];
+} context_sha256_T;

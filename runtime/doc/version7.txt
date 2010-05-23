@@ -7170,6 +7170,10 @@ the buffer is marked as modified.
 Added							*added-7.3*
 -----
 
+Persistent undo: store undo information in a file.  Can undo to before when
+the file was read, also for unloaded buffers. |undo-persistence|
+(partly by Jordan Lewis)
+
 Added the 'relativenumber' option. (Markus Heidelberg)
 
 Support for Blowfish encryption.  Added the 'cryptmethod' option.

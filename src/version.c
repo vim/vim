@@ -426,6 +426,11 @@ static char *(features[]) =
 #else
 	"-perl",
 #endif
+#ifdef FEAT_PERSISTENT_UNDO
+	"+persistent_undo",
+#else
+	"-persistent_undo",
+#endif
 #ifdef FEAT_PRINTER
 # ifdef FEAT_POSTSCRIPT
 	"+postscript",

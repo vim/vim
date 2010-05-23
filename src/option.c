@@ -177,6 +177,9 @@
 #define PV_TS		OPT_BUF(BV_TS)
 #define PV_TW		OPT_BUF(BV_TW)
 #define PV_TX		OPT_BUF(BV_TX)
+#ifdef FEAT_PERSISTENT_UNDO
+# define PV_UDF		OPT_BUF(BV_UDF)
+#endif
 #define PV_WM		OPT_BUF(BV_WM)
 
 /*
@@ -362,6 +365,9 @@ static char_u	*p_spl;
 static long	p_ts;
 static long	p_tw;
 static int	p_tx;
+#ifdef FEAT_PERSISTENT_UNDO
+static int	p_udf;
+#endif
 static long	p_wm;
 #ifdef FEAT_KEYMAP
 static char_u	*p_keymap;
@@ -2586,6 +2592,22 @@ static struct vimoption
     {"ttytype",	    "tty",  P_STRING|P_EXPAND|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RALL,
 			    (char_u *)&T_NAME, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
+    {"undodir",     "udir", P_STRING|P_EXPAND|P_COMMA|P_NODUP|P_SECURE|P_VI_DEF,
+#ifdef FEAT_PERSISTENT_UNDO
+			    (char_u *)&p_udir, PV_NONE,
+			    {(char_u *)".", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"undofile",    "udf",  P_BOOL|P_VI_DEF|P_VIM,
+#ifdef FEAT_PERSISTENT_UNDO
+			    (char_u *)&p_udf, PV_UDF,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"undolevels",  "ul",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_ul, PV_NONE,
 			    {
@@ -9404,6 +9426,9 @@ get_varp(p)
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
 	case PV_TW:	return (char_u *)&(curbuf->b_p_tw);
 	case PV_TX:	return (char_u *)&(curbuf->b_p_tx);
+#ifdef FEAT_PERSISTENT_UNDO
+	case PV_UDF:	return (char_u *)&(curbuf->b_p_udf);
+#endif
 	case PV_WM:	return (char_u *)&(curbuf->b_p_wm);
 #ifdef FEAT_KEYMAP
 	case PV_KMAP:	return (char_u *)&(curbuf->b_p_keymap);
@@ -9773,6 +9798,9 @@ buf_copy_options(buf, flags)
 #endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	    buf->b_p_bexpr = empty_option;
+#endif
+#ifdef FEAT_PERSISTENT_UNDO
+	    buf->b_p_udf = p_udf;
 #endif
 
 	    /*

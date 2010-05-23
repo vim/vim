@@ -99,6 +99,14 @@ static void u_freeheader __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp)
 static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentry __ARGS((u_entry_T *, long));
+#ifdef FEAT_PERSISTENT_UNDO
+static void unserialize_pos __ARGS((pos_T *pos, FILE *fp));
+static void unserialize_visualinfo __ARGS((visualinfo_T *info, FILE *fp));
+static char_u *u_get_undo_file_name __ARGS((char_u *, int reading));
+static int serialize_uep __ARGS((u_entry_T *uep, FILE *fp));
+static void serialize_pos __ARGS((pos_T pos, FILE *fp));
+static void serialize_visualinfo __ARGS((visualinfo_T info, FILE *fp));
+#endif
 
 #ifdef U_USE_MALLOC
 # define U_FREE_LINE(ptr) vim_free(ptr)
@@ -118,6 +126,8 @@ static long	u_newcount, u_oldcount;
  * the action that "u" should do.
  */
 static int	undo_undoes = FALSE;
+
+static int	lastmark = 0;
 
 #ifdef U_DEBUG
 /*
@@ -652,6 +662,795 @@ nomem:
     return FAIL;
 }
 
+#ifdef FEAT_PERSISTENT_UNDO
+
+# define UF_START_MAGIC	    0xfeac	/* magic at start of undofile */
+# define UF_HEADER_MAGIC    0x5fd0	/* magic at start of header */
+# define UF_END_MAGIC	    0xe7aa	/* magic after last header */
+# define UF_VERSION	    1		/* 2-byte undofile version number */
+
+/*
+ * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
+ */
+    void
+u_compute_hash(hash)
+    char_u *hash;
+{
+    context_sha256_T	ctx;
+    linenr_T		lnum;
+    char_u		*p;
+
+    sha256_start(&ctx);
+    for (lnum = 1; lnum < curbuf->b_ml.ml_line_count; ++lnum)
+    {
+	p = ml_get(lnum);
+	sha256_update(&ctx, p, STRLEN(p) + 1);
+    }
+    sha256_finish(&ctx, hash);
+}
+
+/*
+ * Unserialize the pos_T at the current position in fp.
+ */
+    static void
+unserialize_pos(pos, fp)
+    pos_T *pos;
+    FILE  *fp;
+{
+    pos->lnum = get4c(fp);
+    pos->col = get4c(fp);
+#ifdef FEAT_VIRTUALEDIT
+    pos->coladd = get4c(fp);
+#else
+    (void)get4c(fp);
+#endif
+}
+
+/*
+ * Unserialize the visualinfo_T at the current position in fp.
+ */
+    static void
+unserialize_visualinfo(info, fp)
+    visualinfo_T    *info;
+    FILE	    *fp;
+{
+    unserialize_pos(&info->vi_start, fp);
+    unserialize_pos(&info->vi_end, fp);
+    info->vi_mode = get4c(fp);
+    info->vi_curswant = get4c(fp);
+}
+
+/*
+ * Return an allocated string of the full path of the target undofile.
+ * When "reading" is TRUE find the file to read, go over all directories in
+ * 'undodir'.
+ * When "reading" is FALSE use the first name where the directory exists.
+ */
+    static char_u *
+u_get_undo_file_name(buf_ffname, reading)
+    char_u	*buf_ffname;
+    int		reading;
+{
+    char_u	*dirp;
+    char_u	dir_name[IOSIZE + 1];
+    char_u	*munged_name = NULL;
+    char_u	*undo_file_name = NULL;
+    int		dir_len;
+    char_u	*p;
+    struct stat st;
+    char_u	*ffname = buf_ffname;
+#ifdef HAVE_READLINK
+    char_u	fname_buf[MAXPATHL];
+#endif
+
+    if (ffname == NULL)
+	return NULL;
+
+#ifdef HAVE_READLINK
+    /* Expand symlink in the file name, so that we put the undo file with the
+     * actual file instead of with the symlink. */
+    if (resolve_symlink(ffname, fname_buf) == OK)
+	ffname = fname_buf;
+#endif
+
+    /* Loop over 'undodir'.  When reading find the first file that exists.
+     * When not reading use the first directory that exists or ".". */
+    dirp = p_udir;
+    while (*dirp != NUL)
+    {
+        dir_len = copy_option_part(&dirp, dir_name, IOSIZE, ",");
+	if (dir_len == 1 && dir_name[0] == '.')
+	{
+	    /* Use same directory as the ffname,
+	     * "dir/name" -> "dir/.name.un~" */
+	    undo_file_name = vim_strnsave(ffname, STRLEN(ffname) + 5);
+	    if (undo_file_name == NULL)
+		break;
+	    p = gettail(undo_file_name);
+	    mch_memmove(p + 1, p, STRLEN(p) + 1);
+	    *p = '.';
+	    STRCAT(p, ".un~");
+	}
+	else
+	{
+	    dir_name[dir_len] = NUL;
+	    if (mch_isdir(dir_name))
+	    {
+		if (munged_name == NULL)
+		{
+		    munged_name = vim_strsave(ffname);
+		    if (munged_name == NULL)
+			return NULL;
+		    for (p = munged_name; *p != NUL; mb_ptr_adv(p))
+			if (vim_ispathsep(*p))
+			    *p = '%';
+		}
+		undo_file_name = concat_fnames(dir_name, munged_name, TRUE);
+	    }
+	}
+
+	/* When reading check if the file exists. */
+	if (undo_file_name != NULL && (!reading
+			       || mch_stat((char *)undo_file_name, &st) >= 0))
+	    break;
+	vim_free(undo_file_name);
+	undo_file_name = NULL;
+    }
+
+    vim_free(munged_name);
+    return undo_file_name;
+}
+
+/*
+ * Load the undo tree from an undo file.
+ * If "name" is not NULL use it as the undo file name.  This also means being
+ * a bit more verbose.
+ * Otherwise use curbuf->b_ffname to generate the undo file name.
+ * "hash[UNDO_HASH_SIZE]" must be the hash value of the buffer text.
+ */
+    void
+u_read_undo(name, hash)
+    char_u *name;
+    char_u *hash;
+{
+    char_u	*file_name;
+    FILE	*fp;
+    long	magic, version, str_len;
+    char_u	*line_ptr = NULL;
+    linenr_T	line_lnum;
+    colnr_T	line_colnr;
+    linenr_T	line_count;
+    int		uep_len;
+    int		line_len;
+    int		num_head;
+    long	old_header_seq, new_header_seq, cur_header_seq;
+    long	seq_last, seq_cur;
+    short	old_idx = -1, new_idx = -1, cur_idx = -1;
+    long	num_read_uhps = 0;
+    time_t	seq_time;
+    int		i, j;
+    int		c;
+    short	found_first_uep = 0;
+    char_u	**array;
+    char_u	*line;
+    u_entry_T	*uep, *last_uep, *nuep;
+    u_header_T	*uhp;
+    u_header_T	**uhp_table = NULL;
+    char_u	read_hash[UNDO_HASH_SIZE];
+
+    if (name == NULL)
+    {
+        file_name = u_get_undo_file_name(curbuf->b_ffname, TRUE);
+	if (file_name == NULL)
+	    return;
+    }
+    else
+        file_name = name;
+
+    if (p_verbose > 0)
+	smsg((char_u *)_("Reading undo file: %s"), file_name);
+    fp = mch_fopen((char *)file_name, "r");
+    if (fp == NULL)
+    {
+        if (name != NULL || p_verbose > 0)
+            EMSG2(_("E822: Cannot open undo file for reading: %s"), file_name);
+	goto error;
+    }
+
+    /* Begin overall file information */
+    magic = get2c(fp);
+    if (magic != UF_START_MAGIC)
+    {
+        EMSG2(_("E823: Corrupted undo file: %s"), file_name);
+        goto error;
+    }
+    version = get2c(fp);
+    if (version != UF_VERSION)
+    {
+        EMSG2(_("E824: Incompatible undo file: %s"), file_name);
+        goto error;
+    }
+
+    fread(read_hash, UNDO_HASH_SIZE, 1, fp);
+    line_count = (linenr_T)get4c(fp);
+    if (memcmp(hash, read_hash, UNDO_HASH_SIZE) != 0
+				  || line_count != curbuf->b_ml.ml_line_count)
+    {
+        if (p_verbose > 0 || name != NULL)
+        {
+            verbose_enter();
+            give_warning((char_u *)_("Undo file contents changed"), TRUE);
+            verbose_leave();
+        }
+        goto error;
+    }
+
+    /* Begin undo data for U */
+    str_len = get4c(fp);
+    if (str_len < 0)
+        goto error;
+    else if (str_len > 0)
+    {
+        if ((line_ptr = U_ALLOC_LINE(str_len)) == NULL)
+            goto error;
+        for (i = 0; i < str_len; i++)
+            line_ptr[i] = (char_u)getc(fp);
+        line_ptr[i] = NUL;
+    }
+    line_lnum = (linenr_T)get4c(fp);
+    line_colnr = (colnr_T)get4c(fp);
+
+    /* Begin general undo data */
+    old_header_seq = get4c(fp);
+    new_header_seq = get4c(fp);
+    cur_header_seq = get4c(fp);
+    num_head = get4c(fp);
+    seq_last = get4c(fp);
+    seq_cur = get4c(fp);
+    seq_time = get4c(fp);
+
+    /* uhp_table will store the freshly created undo headers we allocate
+     * until we insert them into curbuf. The table remains sorted by the
+     * sequence numbers of the headers. */
+    uhp_table = (u_header_T **)U_ALLOC_LINE(num_head * sizeof(u_header_T *));
+    if (uhp_table == NULL)
+        goto error;
+    vim_memset(uhp_table, 0, num_head * sizeof(u_header_T *));
+
+    c = get2c(fp);
+    while (c == UF_HEADER_MAGIC)
+    {
+        found_first_uep = 0;
+        uhp = (u_header_T *)U_ALLOC_LINE((unsigned)sizeof(u_header_T));
+        if (uhp == NULL)
+            goto error;
+        vim_memset(uhp, 0, sizeof(u_header_T));
+        /* We're not actually trying to store pointers here. We're just storing
+         * IDs so we can swizzle them into pointers later - hence the type
+	 * cast. */
+        uhp->uh_next = (u_header_T *)(long)get4c(fp);
+        uhp->uh_prev = (u_header_T *)(long)get4c(fp);
+        uhp->uh_alt_next = (u_header_T *)(long)get4c(fp);
+        uhp->uh_alt_prev = (u_header_T *)(long)get4c(fp);
+        uhp->uh_seq = get4c(fp);
+        if (uhp->uh_seq <= 0)
+        {
+            EMSG2(_("E825: Undo file corruption: invalid uh_seq.: %s"),
+								   file_name);
+            U_FREE_LINE(uhp);
+            goto error;
+        }
+        uhp->uh_walk = 0;
+        unserialize_pos(&uhp->uh_cursor, fp);
+#ifdef FEAT_VIRTUALEDIT
+        uhp->uh_cursor_vcol = get4c(fp);
+#else
+        (void)get4c(fp);
+#endif
+        uhp->uh_flags = get2c(fp);
+        for (i = 0; i < NMARKS; ++i)
+            unserialize_pos(&uhp->uh_namedm[i], fp);
+#ifdef FEAT_VISUAL
+        unserialize_visualinfo(&uhp->uh_visual, fp);
+#else
+	{
+	    visualinfo_T info;
+	    unserialize_visualinfo(&info, fp);
+	}
+#endif
+        uhp->uh_time = get4c(fp);
+
+        /* Unserialize uep list. The first 4 bytes is the length of the
+         * entire uep in bytes minus the length of the strings within.
+         * -1 is a sentinel value meaning no more ueps.*/
+        last_uep = NULL;
+        while ((uep_len = get4c(fp)) != -1)
+        {
+            uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
+            vim_memset(uep, 0, sizeof(u_entry_T));
+            if (uep == NULL)
+                goto error;
+            uep->ue_top = get4c(fp);
+            uep->ue_bot = get4c(fp);
+            uep->ue_lcount = get4c(fp);
+            uep->ue_size = get4c(fp);
+            uep->ue_next = NULL;
+            array = (char_u **)U_ALLOC_LINE(
+				 (unsigned)(sizeof(char_u *) * uep->ue_size));
+            for (i = 0; i < uep->ue_size; i++)
+            {
+                line_len = get4c(fp);
+                /* U_ALLOC_LINE provides an extra byte for the NUL terminator.*/
+                line = (char_u *)U_ALLOC_LINE(
+				      (unsigned) (sizeof(char_u) * line_len));
+                if (line == NULL)
+                    goto error;
+                for (j = 0; j < line_len; j++)
+                {
+                    line[j] = getc(fp);
+                }
+                line[j] = '\0';
+                array[i] = line;
+            }
+            uep->ue_array = array;
+            if (found_first_uep == 0)
+            {
+                uhp->uh_entry = uep;
+                found_first_uep = 1;
+            }
+            else
+            {
+                last_uep->ue_next = uep;
+            }
+            last_uep = uep;
+        }
+
+        /* Insertion sort the uhp into the table by its uh_seq. This is
+         * required because, while the number of uhps is limited to
+         * num_heads, and the uh_seq order is monotonic with respect to
+         * creation time, the starting uh_seq can be > 0 if any undolevel
+         * culling was done at undofile write time, and there can be uh_seq
+         * gaps in the uhps.
+         */
+        for (i = num_read_uhps - 1; i >= -1; i--)
+        {
+            /* if i == -1, we've hit the leftmost side of the table, so insert
+             * at uhp_table[0]. */
+            if (i == -1 || uhp->uh_seq > uhp_table[i]->uh_seq)
+            {
+                /* If we've had to move from the rightmost side of the table,
+                 * we have to shift everything to the right by one spot. */
+                if (i < num_read_uhps - 1)
+                {
+                    memmove(uhp_table + i + 2, uhp_table + i + 1,
+                            (num_read_uhps - i) * sizeof(u_header_T *));
+                }
+                uhp_table[i + 1] = uhp;
+                break;
+            }
+            else if (uhp->uh_seq == uhp_table[i]->uh_seq)
+            {
+                EMSG2(_("E826 Undo file corruption: duplicate uh_seq: %s"),
+								   file_name);
+                goto error;
+            }
+        }
+        num_read_uhps++;
+	c = get2c(fp);
+    }
+
+    if (c != UF_END_MAGIC)
+    {
+	EMSG2(_("E827: Undo file corruption; no end marker: %s"), file_name);
+	goto error;
+    }
+
+    /* We've organized all of the uhps into a table sorted by uh_seq. Now we
+     * iterate through the table and swizzle each sequence number we've
+     * stored in uh_foo into a pointer corresponding to the header with that
+     * sequence number. Then free curbuf's old undo structure, give curbuf
+     * the updated {old,new,cur}head pointers, and then free the table. */
+    for (i = 0; i < num_head; i++)
+    {
+        uhp = uhp_table[i];
+        if (uhp == NULL)
+            continue;
+        for (j = 0; j < num_head; j++)
+        {
+            if (uhp_table[j] == NULL)
+                continue;
+            if (uhp_table[j]->uh_seq == (long)uhp->uh_next)
+                uhp->uh_next = uhp_table[j];
+            if (uhp_table[j]->uh_seq == (long)uhp->uh_prev)
+                uhp->uh_prev = uhp_table[j];
+            if (uhp_table[j]->uh_seq == (long)uhp->uh_alt_next)
+                uhp->uh_alt_next = uhp_table[j];
+            if (uhp_table[j]->uh_seq == (long)uhp->uh_alt_prev)
+                uhp->uh_alt_prev = uhp_table[j];
+        }
+        if (old_header_seq > 0 && old_idx < 0 && uhp->uh_seq == old_header_seq)
+            old_idx = i;
+        if (new_header_seq > 0 && new_idx < 0 && uhp->uh_seq == new_header_seq)
+            new_idx = i;
+        if (cur_header_seq > 0 && cur_idx < 0 && uhp->uh_seq == cur_header_seq)
+            cur_idx = i;
+    }
+    u_blockfree(curbuf);
+    curbuf->b_u_oldhead = old_idx < 0 ? 0 : uhp_table[old_idx];
+    curbuf->b_u_newhead = new_idx < 0 ? 0 : uhp_table[new_idx];
+    curbuf->b_u_curhead = cur_idx < 0 ? 0 : uhp_table[cur_idx];
+    curbuf->b_u_line_ptr = line_ptr;
+    curbuf->b_u_line_lnum = line_lnum;
+    curbuf->b_u_line_colnr = line_colnr;
+    curbuf->b_u_numhead = num_head;
+    curbuf->b_u_seq_last = seq_last;
+    curbuf->b_u_seq_cur = seq_cur;
+    curbuf->b_u_seq_time = seq_time;
+    U_FREE_LINE(uhp_table);
+#ifdef U_DEBUG
+    u_check(TRUE);
+#endif
+    if (name != NULL)
+	smsg((char_u *)_("Finished reading undo file %s"), file_name);
+    goto theend;
+
+error:
+    if (line_ptr != NULL)
+        U_FREE_LINE(line_ptr);
+    if (uhp_table != NULL)
+    {
+        for (i = 0; i < num_head; i++)
+        {
+            if (uhp_table[i] != NULL)
+            {
+                uep = uhp_table[i]->uh_entry;
+                while (uep != NULL)
+                {
+                    nuep = uep->ue_next;
+                    u_freeentry(uep, uep->ue_size);
+                    uep = nuep;
+                }
+                U_FREE_LINE(uhp_table[i]);
+            }
+        }
+        U_FREE_LINE(uhp_table);
+    }
+
+theend:
+    if (fp != NULL)
+        fclose(fp);
+    if (file_name != name)
+	vim_free(file_name);
+    return;
+}
+
+/*
+ * Serialize "uep" to "fp".
+ */
+    static int
+serialize_uep(uep, fp)
+    u_entry_T	*uep;
+    FILE	*fp;
+{
+    int i;
+    int uep_len;
+    int *entry_lens;
+
+    if (uep->ue_size > 0)
+        entry_lens = (int *)alloc(uep->ue_size * sizeof(int));
+
+    /* Define uep_len to be the size of the entire uep minus the size of its
+     * component strings, in bytes. The sizes of the component strings
+     * are written before each individual string.
+     * We have 4 entries each of 4 bytes, plus ue_size * 4 bytes
+     * of string size information. */
+
+    uep_len = uep->ue_size * 4;
+    /* Collect sizing information for later serialization. */
+    for (i = 0; i < uep->ue_size; i++)
+    {
+        entry_lens[i] = (int)STRLEN(uep->ue_array[i]);
+        uep_len += entry_lens[i];
+    }
+    put_bytes(fp, (long_u)uep_len, 4);
+    put_bytes(fp, (long_u)uep->ue_top, 4);
+    put_bytes(fp, (long_u)uep->ue_bot, 4);
+    put_bytes(fp, (long_u)uep->ue_lcount, 4);
+    put_bytes(fp, (long_u)uep->ue_size, 4);
+    for (i = 0; i < uep->ue_size; i++)
+    {
+        if (put_bytes(fp, (long_u)entry_lens[i], 4) == FAIL)
+	    return FAIL;
+        fprintf(fp, "%s", uep->ue_array[i]);
+    }
+    if (uep->ue_size > 0)
+        vim_free(entry_lens);
+    return OK;
+}
+
+/*
+ * Serialize "pos" to "fp".
+ */
+    static void
+serialize_pos(pos, fp)
+    pos_T pos;
+    FILE  *fp;
+{
+    put_bytes(fp, (long_u)pos.lnum, 4);
+    put_bytes(fp, (long_u)pos.col, 4);
+#ifdef FEAT_VIRTUALEDIT
+    put_bytes(fp, (long_u)pos.coladd, 4);
+#else
+    put_bytes(fp, (long_u)0, 4);
+#endif
+}
+
+/*
+ * Serialize "info" to "fp".
+ */
+    static void
+serialize_visualinfo(info, fp)
+    visualinfo_T    info;
+    FILE	    *fp;
+{
+    serialize_pos(info.vi_start, fp);
+    serialize_pos(info.vi_end, fp);
+    put_bytes(fp, (long_u)info.vi_mode, 4);
+    put_bytes(fp, (long_u)info.vi_curswant, 4);
+}
+
+static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
+
+/*
+ * Write the undo tree in an undo file.
+ * When "name" is not NULL, use it as the name of the undo file.
+ * Otherwise use buf->b_ffname to generate the undo file name.
+ * "buf" must never be null, buf->b_ffname is used to obtain the original file
+ * permissions.
+ * "forceit" is TRUE for ":wundo!", FALSE otherwise.
+ * "hash[UNDO_HASH_SIZE]" must be the hash value of the buffer text.
+ */
+    void
+u_write_undo(name, forceit, buf, hash)
+    char_u	*name;
+    int		forceit;
+    buf_T	*buf;
+    char_u	*hash;
+{
+    u_header_T	*uhp;
+    u_entry_T	*uep;
+    char_u	*file_name;
+    int		str_len, i, uep_len, mark;
+    int		fd;
+    FILE	*fp = NULL;
+    int		perm;
+    int		write_ok = FALSE;
+#ifdef UNIX
+    struct stat	st_old;
+    struct stat	st_new;
+#endif
+
+    if (name == NULL)
+    {
+        file_name = u_get_undo_file_name(buf->b_ffname, FALSE);
+	if (file_name == NULL)
+	    return;
+    }
+    else
+        file_name = name;
+
+#ifdef UNIX
+    if (mch_stat((char *)buf->b_ffname, &st_old) >= 0)
+	perm = st_old.st_mode;
+    else
+	perm = 0600;
+#else
+    perm = mch_getperm(buf->b_ffname);
+    if (perm < 0)
+	perm = 0600;
+#endif
+    /* set file protection same as original file, but strip s-bit */
+    perm = perm & 0777;
+
+    /* If the undo file exists, verify that it actually is an undo file, and
+     * delete it. */
+    if (mch_getperm(file_name) >= 0)
+    {
+	if (name == NULL || !forceit)
+	{
+	    /* Check we can read it and it's an undo file. */
+	    fd = mch_open((char *)file_name, O_RDONLY|O_EXTRA, 0);
+	    if (fd < 0)
+	    {
+		if (name != NULL || p_verbose > 0)
+		    smsg((char_u *)_("Will not overwrite with undo file, cannot read: %s"),
+								   file_name);
+		goto theend;
+	    }
+	    else
+	    {
+		char_u buf[2];
+
+		vim_read(fd, buf, 2);
+		close(fd);
+		if ((buf[0] << 8) + buf[1] != UF_START_MAGIC)
+		{
+		    if (name != NULL || p_verbose > 0)
+			smsg((char_u *)_("Will not overwrite, this is not an undo file: %s"),
+								   file_name);
+		    goto theend;
+		}
+	    }
+	}
+	mch_remove(file_name);
+    }
+
+    fd = mch_open((char *)file_name,
+			    O_CREAT|O_EXTRA|O_WRONLY|O_EXCL|O_NOFOLLOW, perm);
+    (void)mch_setperm(file_name, perm);
+    if (fd < 0)
+    {
+        EMSG2(_(e_not_open), file_name);
+	goto theend;
+    }
+    if (p_verbose > 0)
+	smsg((char_u *)_("Writing undo file: %s"), file_name);
+
+#ifdef UNIX
+    /*
+     * Try to set the group of the undo file same as the original file. If
+     * this fails, set the protection bits for the group same as the
+     * protection bits for others.
+     */
+    if (mch_stat((char *)file_name, &st_new) >= 0
+	    && st_new.st_gid != st_old.st_gid
+# ifdef HAVE_FCHOWN  /* sequent-ptx lacks fchown() */
+	    && fchown(fd, (uid_t)-1, st_old.st_gid) != 0
+# endif
+       )
+	mch_setperm(file_name, (perm & 0707) | ((perm & 07) << 3));
+# ifdef HAVE_SELINUX
+    mch_copy_sec(buf->b_ffname, file_name);
+# endif
+#endif
+
+    fp = fdopen(fd, "w");
+    if (fp == NULL)
+    {
+        EMSG2(_(e_not_open), file_name);
+	close(fd);
+	mch_remove(file_name);
+	goto theend;
+    }
+
+    /* Start writing, first overall file information */
+    put_bytes(fp, (long_u)UF_START_MAGIC, 2);
+    put_bytes(fp, (long_u)UF_VERSION, 2);
+
+    /* Write a hash of the buffer text, so that we can verify it is still the
+     * same when reading the buffer text. */
+    if (fwrite(hash, (size_t)UNDO_HASH_SIZE, (size_t)1, fp) != 1)
+	goto write_error;
+    put_bytes(fp, (long_u)buf->b_ml.ml_line_count, 4);
+
+    /* Begin undo data for U */
+    str_len = buf->b_u_line_ptr != NULL ? STRLEN(buf->b_u_line_ptr) : 0;
+    put_bytes(fp, (long_u)str_len, 4);
+    if (str_len > 0 && fwrite(buf->b_u_line_ptr, (size_t)str_len,
+							  (size_t)1, fp) != 1)
+	goto write_error;
+
+    put_bytes(fp, (long_u)buf->b_u_line_lnum, 4);
+    put_bytes(fp, (long_u)buf->b_u_line_colnr, 4);
+
+    /* Begin general undo data */
+    uhp = buf->b_u_oldhead;
+    put_bytes(fp, (long_u)(uhp != NULL ? uhp->uh_seq : 0), 4);
+
+    uhp = buf->b_u_newhead;
+    put_bytes(fp, (long_u)(uhp != NULL ? uhp->uh_seq : 0), 4);
+
+    uhp = buf->b_u_curhead;
+    put_bytes(fp, (long_u)(uhp != NULL ? uhp->uh_seq : 0), 4);
+
+    put_bytes(fp, (long_u)buf->b_u_numhead, 4);
+    put_bytes(fp, (long_u)buf->b_u_seq_last, 4);
+    put_bytes(fp, (long_u)buf->b_u_seq_cur, 4);
+    put_bytes(fp, (long_u)buf->b_u_seq_time, 4);
+
+    /* Iteratively serialize UHPs and their UEPs from the top down.  */
+    mark = ++lastmark;
+    uhp = buf->b_u_oldhead;
+    while (uhp != NULL)
+    {
+        /* Serialize current UHP if we haven't seen it */
+        if (uhp->uh_walk != mark)
+        {
+	    if (put_bytes(fp, (long_u)UF_HEADER_MAGIC, 2) == FAIL)
+		goto write_error;
+
+            put_bytes(fp, (long_u)((uhp->uh_next != NULL)
+					      ? uhp->uh_next->uh_seq : 0), 4);
+            put_bytes(fp, (long_u)((uhp->uh_prev != NULL)
+					      ? uhp->uh_prev->uh_seq : 0), 4);
+            put_bytes(fp, (long_u)((uhp->uh_alt_next != NULL)
+					  ? uhp->uh_alt_next->uh_seq : 0), 4);
+            put_bytes(fp, (long_u)((uhp->uh_alt_prev != NULL)
+					  ? uhp->uh_alt_prev->uh_seq : 0), 4);
+            put_bytes(fp, uhp->uh_seq, 4);
+            serialize_pos(uhp->uh_cursor, fp);
+#ifdef FEAT_VIRTUALEDIT
+            put_bytes(fp, (long_u)uhp->uh_cursor_vcol, 4);
+#else
+            put_bytes(fp, (long_u)0, 4);
+#endif
+            put_bytes(fp, (long_u)uhp->uh_flags, 2);
+            /* Assume NMARKS will stay the same. */
+            for (i = 0; i < NMARKS; ++i)
+            {
+                serialize_pos(uhp->uh_namedm[i], fp);
+            }
+#ifdef FEAT_VISUAL
+            serialize_visualinfo(uhp->uh_visual, fp);
+#endif
+            put_bytes(fp, (long_u)uhp->uh_time, 4);
+
+            uep = uhp->uh_entry;
+            while (uep != NULL)
+            {
+                if (serialize_uep(uep, fp) == FAIL)
+		    goto write_error;
+                uep = uep->ue_next;
+            }
+            /* Sentinel value: no more ueps */
+            uep_len = -1;
+            put_bytes(fp, (long_u)uep_len, 4);
+            uhp->uh_walk = mark;
+        }
+
+        /* Now walk through the tree - algorithm from undo_time */
+        if (uhp->uh_prev != NULL && uhp->uh_prev->uh_walk != mark)
+            uhp = uhp->uh_prev;
+        else if (uhp->uh_alt_next != NULL && uhp->uh_alt_next->uh_walk != mark)
+            uhp = uhp->uh_alt_next;
+        else if (uhp->uh_next != NULL && uhp->uh_alt_prev == NULL
+					     && uhp->uh_next->uh_walk != mark)
+            uhp = uhp->uh_next;
+        else if (uhp->uh_alt_prev != NULL)
+            uhp = uhp->uh_alt_prev;
+        else
+            uhp = uhp->uh_next;
+    }
+
+    if (put_bytes(fp, (long_u)UF_END_MAGIC, 2) == OK)
+	write_ok = TRUE;
+
+write_error:
+    fclose(fp);
+    if (!write_ok)
+        EMSG2(_("E829: write error in undo file: %s"), file_name);
+
+#if defined(MACOS_CLASSIC) || defined(WIN3264)
+    (void)mch_copy_file_attribute(buf->b_ffname, file_name);
+#endif
+#ifdef HAVE_ACL
+    {
+	vim_acl_T	    acl;
+
+	/* For systems that support ACL: get the ACL from the original file. */
+	acl = mch_get_acl(buf->b_ffname);
+	mch_set_acl(file_name, acl);
+    }
+#endif
+
+theend:
+    if (file_name != name)
+	vim_free(file_name);
+}
+
+#endif /* FEAT_PERSISTENT_UNDO */
+
+
 /*
  * If 'cpoptions' contains 'u': Undo the previous undo or redo (vi compatible).
  * If 'cpoptions' does not contain 'u': Always undo.
@@ -756,8 +1555,6 @@ u_doit(startcount)
     }
     u_undo_end(undo_undoes, FALSE);
 }
-
-static int lastmark = 0;
 
 /*
  * Undo or redo over the timeline.
@@ -927,7 +1724,7 @@ undo_time(step, sec, absolute)
 
 	if (absolute)
 	{
-	    EMSGN(_("Undo number %ld not found"), step);
+	    EMSGN(_("E830: Undo number %ld not found"), step);
 	    return;
 	}
 

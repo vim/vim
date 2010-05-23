@@ -1398,6 +1398,9 @@ typedef enum
  */
 #define MAXMAPLEN   50
 
+/* Size in bytes of the hash used in the undo file. */
+#define UNDO_HASH_SIZE 32
+
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif

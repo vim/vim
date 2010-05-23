@@ -2,11 +2,14 @@
 int spell_check __ARGS((win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol, int docount));
 int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, hlf_T *attrp));
 void spell_cat_line __ARGS((char_u *buf, char_u *line, int maxlen));
+int get2c __ARGS((FILE *fd));
+int get3c __ARGS((FILE *fd));
+int get4c __ARGS((FILE *fd));
 char_u *did_set_spelllang __ARGS((buf_T *buf));
 void spell_free_all __ARGS((void));
 void spell_reload __ARGS((void));
 int spell_check_msm __ARGS((void));
-void put_bytes __ARGS((FILE *fd, long_u nr, int len));
+int put_bytes __ARGS((FILE *fd, long_u nr, int len));
 void ex_mkspell __ARGS((exarg_T *eap));
 void ex_spell __ARGS((exarg_T *eap));
 void spell_add_word __ARGS((char_u *word, int len, int bad, int idx, int undo));

@@ -1275,3 +1275,11 @@
 	    || defined(FEAT_BIG)
 # define FEAT_AUTOCHDIR
 #endif
+
+/*
+ * +persistent_undo	'undofile', 'undodir' options, :wundo and :rundo, and
+ * implementation.
+ */
+#ifdef FEAT_NORMAL
+# define FEAT_PERSISTENT_UNDO
+#endif

@@ -253,6 +253,10 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     char_u	*cryptkey = NULL;
     int		did_ask_for_key = FALSE;
 #endif
+#ifdef FEAT_PERSISTENT_UNDO
+    context_sha256_T sha_ctx;
+    int		read_undo_file = FALSE;
+#endif
     int		split = 0;		/* number of split lines */
 #define UNKNOWN	 0x0fffffff		/* file size is unknown */
     linenr_T	linecnt;
@@ -1177,6 +1181,12 @@ retry:
 	read_count = lines_to_read;
 #ifdef FEAT_MBYTE
 	conv_restlen = 0;
+#endif
+#ifdef FEAT_PERSISTENT_UNDO
+	read_undo_file = (newfile && curbuf->b_ffname != NULL && curbuf->b_p_udf
+				&& !filtering && !read_stdin && !read_buffer);
+	if (read_undo_file)
+	    sha256_start(&sha_ctx);
 #endif
     }
 
@@ -2133,6 +2143,10 @@ rewind_retry:
 			    error = TRUE;
 			    break;
 			}
+#ifdef FEAT_PERSISTENT_UNDO
+			if (read_undo_file)
+			    sha256_update(&sha_ctx, line_start, len);
+#endif
 			++lnum;
 			if (--read_count == 0)
 			{
@@ -2197,6 +2211,10 @@ rewind_retry:
 			    error = TRUE;
 			    break;
 			}
+#ifdef FEAT_PERSISTENT_UNDO
+			if (read_undo_file)
+			    sha256_update(&sha_ctx, line_start, len);
+#endif
 			++lnum;
 			if (--read_count == 0)
 			{
@@ -2237,11 +2255,17 @@ failed:
 	if (set_options)
 	    curbuf->b_p_eol = FALSE;
 	*ptr = NUL;
-	if (ml_append(lnum, line_start,
-			(colnr_T)(ptr - line_start + 1), newfile) == FAIL)
+	len = (colnr_T)(ptr - line_start + 1);
+	if (ml_append(lnum, line_start, len, newfile) == FAIL)
 	    error = TRUE;
 	else
+	{
+#ifdef FEAT_PERSISTENT_UNDO
+	    if (read_undo_file)
+		sha256_update(&sha_ctx, line_start, len);
+#endif
 	    read_no_eol_lnum = ++lnum;
+	}
     }
 
     if (set_options)
@@ -2554,6 +2578,19 @@ failed:
      * ":autocmd FileReadPost *.gz set bin|'[,']!gunzip" to work.
      */
     write_no_eol_lnum = read_no_eol_lnum;
+
+#ifdef FEAT_PERSISTENT_UNDO
+    /*
+     * When opening a new file locate undo info and read it.
+     */
+    if (read_undo_file)
+    {
+	char_u	hash[UNDO_HASH_SIZE];
+
+	sha256_finish(&sha_ctx, hash);
+	u_read_undo(NULL, hash);
+    }
+#endif
 
 #ifdef FEAT_AUTOCMD
     if (!read_stdin && !read_buffer)
@@ -3037,6 +3074,10 @@ buf_write(buf, fname, sfname, start, end, eap, append, forceit,
 #ifdef HAVE_ACL
     vim_acl_T	    acl = NULL;		/* ACL copied from original file to
 					   backup or new file */
+#endif
+#ifdef FEAT_PERSISTENT_UNDO
+    int		    write_undo_file = FALSE;
+    context_sha256_T sha_ctx;
 #endif
 
     if (fname == NULL || *fname == NUL)	/* safety check */
@@ -4344,6 +4385,14 @@ restore_backup:
     write_info.bw_start_lnum = start;
 #endif
 
+#ifdef FEAT_PERSISTENT_UNDO
+    write_undo_file = (buf->b_p_udf && overwriting && !append
+					      && !filtering && reset_changed);
+    if (write_undo_file)
+	/* Prepare for computing the hash value of the text. */
+	sha256_start(&sha_ctx);
+#endif
+
     write_info.bw_len = bufsize;
 #ifdef HAS_BW_FLAGS
     write_info.bw_flags = wb_flags;
@@ -4358,6 +4407,10 @@ restore_backup:
 	 * Keep it fast!
 	 */
 	ptr = ml_get_buf(buf, lnum, FALSE) - 1;
+#ifdef FEAT_PERSISTENT_UNDO
+	if (write_undo_file)
+	    sha256_update(&sha_ctx, ptr + 1, STRLEN(ptr + 1) + 1);
+#endif
 	while ((c = *++ptr) != NUL)
 	{
 	    if (c == NL)
@@ -4885,6 +4938,20 @@ nofail:
 	}
     }
     msg_scroll = msg_save;
+
+#ifdef FEAT_PERSISTENT_UNDO
+    /*
+     * When writing the whole file and 'undofile' is set, also write the undo
+     * file.
+     */
+    if (retval == OK && write_undo_file)
+    {
+	char_u	    hash[UNDO_HASH_SIZE];
+
+	sha256_finish(&sha_ctx, hash);
+	u_write_undo(NULL, FALSE, buf, hash);
+    }
+#endif
 
 #ifdef FEAT_AUTOCMD
 #ifdef FEAT_EVAL

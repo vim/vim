@@ -50,6 +50,53 @@ obbbbu:.w >>test.out
 obbbb:set ul=100
 :undojoin
 occccu:.w >>test.out
+:"
+:" Test 'undofile': first a simple one-line change.
+:set nocp ul=100 undofile
+:e! Xtestfile
+ggdGithis is one line:set ul=100
+:s/one/ONE/
+:set ul=100
+:w
+:bwipe!
+:e Xtestfile
+u:.w >>test.out
+:"
+:" Test 'undofile', change in original file fails check
+:set noundofile
+:e! Xtestfile
+:s/line/Line/
+:w
+:set undofile
+:bwipe!
+:e Xtestfile
+u:.w >>test.out
+:"
+:" Test 'undofile', add 10 lines, delete 6 lines, undo 3
+:set undofile
+ggdGione
+two
+three
+four
+five
+six
+seven
+eight
+nine
+ten:set ul=100
+3Gdd:set ul=100
+dd:set ul=100
+dd:set ul=100
+dd:set ul=100
+dd:set ul=100
+dd:set ul=100
+:w
+:bwipe!
+:e Xtestfile
+uuu:w >>test.out
+:"
+:" Rename the undo file so that it gets cleaned up.
+:call rename(".Xtestfile.un~", "Xtestundo")
 :qa!
 ENDTEST
 

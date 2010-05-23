@@ -6053,6 +6053,7 @@ os2			OS/2 version of Vim.
 osfiletype		Compiled with support for osfiletypes |+osfiletype|
 path_extra		Compiled with up/downwards search in 'path' and 'tags'
 perl			Compiled with Perl interface.
+persistent_undo		Compiled with support for persistent undo history.
 postscript		Compiled with PostScript file printing.
 printer			Compiled with |:hardcopy| support.
 profile			Compiled with |:profile| support.

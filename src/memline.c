@@ -245,9 +245,6 @@ static char_u *make_percent_swname __ARGS((char_u *dir, char_u *name));
 #ifdef FEAT_BYTEOFF
 static void ml_updatechunk __ARGS((buf_T *buf, long line, long len, int updtype));
 #endif
-#ifdef HAVE_READLINK
-static int resolve_symlink __ARGS((char_u *fname, char_u *buf));
-#endif
 
 /*
  * Open a new memline for "buf".
@@ -3559,7 +3556,7 @@ ml_lineadd(buf, count)
     }
 }
 
-#ifdef HAVE_READLINK
+#if defined(HAVE_READLINK) || defined(PROTO)
 /*
  * Resolve a symlink in the last component of a file name.
  * Note that f_resolve() does it for every part of the path, we don't do that
@@ -3567,7 +3564,7 @@ ml_lineadd(buf, count)
  * If it worked returns OK and the resolved link in "buf[MAXPATHL]".
  * Otherwise returns FAIL.
  */
-    static int
+    int
 resolve_symlink(fname, buf)
     char_u	*fname;
     char_u	*buf;
@@ -3862,7 +3859,7 @@ do_swapexists(buf, fname)
  * Returns the name in allocated memory or NULL.
  *
  * Note: If BASENAMELEN is not correct, you will get error messages for
- *	 not being able to open the swapfile
+ *	 not being able to open the swap or undo file
  * Note: May trigger SwapExists autocmd, pointers may change!
  */
     static char_u *
@@ -3886,29 +3883,29 @@ findswapname(buf, dirp, old_fname)
 # define CREATE_DUMMY_FILE
     FILE	*dummyfd = NULL;
 
-/*
- * If we start editing a new file, e.g. "test.doc", which resides on an MSDOS
- * compatible filesystem, it is possible that the file "test.doc.swp" which we
- * create will be exactly the same file. To avoid this problem we temporarily
- * create "test.doc".
- * Don't do this when the check below for a 8.3 file name is used.
- */
+    /*
+     * If we start editing a new file, e.g. "test.doc", which resides on an
+     * MSDOS compatible filesystem, it is possible that the file
+     * "test.doc.swp" which we create will be exactly the same file. To avoid
+     * this problem we temporarily create "test.doc".  Don't do this when the
+     * check below for a 8.3 file name is used.
+     */
     if (!(buf->b_p_sn || buf->b_shortname) && buf->b_fname != NULL
 					     && mch_getperm(buf->b_fname) < 0)
 	dummyfd = mch_fopen((char *)buf->b_fname, "w");
 #endif
 
-/*
- * Isolate a directory name from *dirp and put it in dir_name.
- * First allocate some memory to put the directory name in.
- */
+    /*
+     * Isolate a directory name from *dirp and put it in dir_name.
+     * First allocate some memory to put the directory name in.
+     */
     dir_name = alloc((unsigned)STRLEN(*dirp) + 1);
     if (dir_name != NULL)
 	(void)copy_option_part(dirp, dir_name, 31000, ",");
 
-/*
- * we try different names until we find one that does not exist yet
- */
+    /*
+     * we try different names until we find one that does not exist yet
+     */
     if (dir_name == NULL)	    /* out of memory */
 	fname = NULL;
     else

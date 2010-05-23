@@ -12,7 +12,8 @@ The basics are explained in section |02.5| of the user manual.
 2. Two ways of undo		|undo-two-ways|
 3. Undo blocks			|undo-blocks|
 4. Undo branches		|undo-branches|
-5. Remarks about undo		|undo-remarks|
+5. Undo persistence		|undo-persistence|
+6. Remarks about undo		|undo-remarks|
 
 ==============================================================================
 1. Undo and redo commands				*undo-commands*
@@ -22,7 +23,7 @@ u			Undo [count] changes.  {Vi: only one level}
 
 							*:u* *:un* *:undo*
 :u[ndo]			Undo one change.  {Vi: only one level}
-
+								*E830*
 :u[ndo] {N}		Jump to after change number {N}.  See |undo-branches|
 			for the meaning of {N}.  {not in Vi}
 
@@ -109,6 +110,8 @@ change.
 To do the opposite, break a change into two undo blocks, in Insert mode use
 CTRL-G u.  This is useful if you want an insert command to be undoable in
 parts.  E.g., for each sentence.  |i_CTRL-G_u|
+Setting the value of 'undolevels' also breaks undo.  Even when the new value
+is equal to the old value.
 
 ==============================================================================
 4. Undo branches				*undo-branches* *undo-tree*
@@ -201,7 +204,88 @@ Note that using "u" and CTRL-R will not get you to all possible text states
 while repeating "g-" and "g+" does.
 
 ==============================================================================
-5. Remarks about undo					*undo-remarks*
+5. Undo persistence		*undo-persistence* *persistent-undo*
+
+When unloading a buffer Vim normally destroys the tree of undos created for
+that buffer.  By setting the 'undofile' option, Vim will automatically save
+your undo history when you write a file and restore undo history when you edit
+the file again.
+
+The 'undofile' option is checked after writing a file, before the BufWritePost
+autocommands.  If you want to control what files to write undo information
+for, you can use a BufWritePre autocommand: >
+	au BufWritePre /tmp/* setlocal noundofile
+
+Vim saves undo trees in a separate undo file, one for each edited file, using
+a simple scheme that maps filesystem paths directly to undo files. Vim will
+detect if an undo file is no longer synchronized with the file it was written
+for (with a hash of the file contents) and ignore it when the file was changed
+after the undo file was written, to prevent corruption.
+
+Undo files are normally saved in the same directory as the file.  This can be
+changed with the 'undodir' option.
+
+You can also save and restore undo histories by using ":wundo" and ":rundo"
+respectively:
+							*:wundo* *:rundo*
+:wundo[!] {file}
+		Write undo history to {file}.
+		When {file} exists and it does not look like an undo file
+		(the magic number at the start of the file is wrong), then
+		this fails, unless the ! was added.
+		If it exists and does look like an undo file it is
+		overwritten.
+		{not in Vi}
+
+:rundo {file}	Read undo history from {file}.
+		{not in Vi}
+
+You can use these in autocommands to explicitly specify the name of the
+history file.  E.g.: >
+
+	au BufReadPost * rundo %:h/UNDO/%:t
+	au BufWritePost * wundo %:h/UNDO/%:t
+
+You should keep 'undofile' off, otherwise you end up with two undo files for
+every write.
+Note: I did not verify this always works!
+
+Note that while reading/writing files and 'undofile' is set most errors will
+be silent, unless 'verbose' is set.  With :wundo and :rundo you will get more
+error messages, e.g., when the file cannot be read or written.
+
+NOTE: undo files are never deleted by Vim.  You need to delete them yourself.
+
+Reading an existing undo file may fail for several reasons:
+*E822*	It cannot be opened, because the file permissions don't allow it.
+*E823*	The magic number at the start of the file doesn't match.  This usually
+	means it is not an undo file.
+*E824*	The version number of the undo file indicates that it's written by a
+	newer version of Vim.  You need that newer version to open it.  Don't
+	write the buffer if you want to keep the undo info in the file.
+"Undo file contents changed"
+	The file text differs from when the undo file was written.  This means
+	the undo file cannot be used, it would corrupt the text.
+*E825* *E826*	The undo file does not contain valid contents and cannot be
+	used.
+*E827*	The magic number at the end of the file was not found.  This usually
+	means the file was truncated.
+
+Writing an undo file may fail for these reasons:
+*E828*	The file to be written cannot be created.  Perhaps you do not have
+	write permissions in the directory.
+"Will not overwrite with undo file, cannot read"
+	A file exists with the name of the undo file to be written, but it
+	cannot be read.  You may want to delete this file or rename it.
+"Will not overwrite, this is not an undo file"
+	A file exists with the name of the undo file to be written, but it
+	does not start with the right magic number.  You may want to delete
+	this file or rename it.
+*E829*	An error occurred while writing the undo file.  You may want to try
+	again.
+
+==============================================================================
+6. Remarks about undo					*undo-remarks*
 
 The number of changes that are remembered is set with the 'undolevels' option.
 If it is zero, the Vi-compatible way is always used.  If it is negative no

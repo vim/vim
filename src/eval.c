@@ -11869,6 +11869,9 @@ f_has(argvars, rettv)
 	"perl",
 #endif
 #endif
+#ifdef FEAT_PERSISTENT_UNDO
+	"persistent_undo",
+#endif
 #ifdef FEAT_PYTHON
 #ifndef DYNAMIC_PYTHON
 	"python",
