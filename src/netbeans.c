@@ -34,7 +34,7 @@
 # endif
 /* WinSock API is separated from C API, thus we can't use read(), write(),
  * errno... */
-# define sock_errno WSAGetLastError()
+# define SOCK_ERRNO errno = WSAGetLastError()
 # undef ECONNREFUSED
 # define ECONNREFUSED WSAECONNREFUSED
 # ifdef EINTR
@@ -57,7 +57,7 @@
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
 # endif
-# define sock_errno errno
+# define SOCK_ERRNO
 # define sock_write(sd, buf, len) write(sd, buf, len)
 # define sock_read(sd, buf, len) read(sd, buf, len)
 # define sock_close(sd) close(sd)
@@ -333,13 +333,15 @@ netbeans_connect(char *params, int abort)
     /* Connect to server */
     if (connect(sd, (struct sockaddr *)&server, sizeof(server)))
     {
-	nbdebug(("netbeans_connect: Connect failed with errno %d\n", sock_errno));
-	if (sock_errno == ECONNREFUSED)
+	SOCK_ERRNO;
+	nbdebug(("netbeans_connect: Connect failed with errno %d\n", errno));
+	if (errno == ECONNREFUSED)
 	{
 	    sock_close(sd);
 #ifdef INET_SOCKETS
 	    if ((sd = (NBSOCK)socket(AF_INET, SOCK_STREAM, 0)) == (NBSOCK)-1)
 	    {
+		SOCK_ERRNO;
 		nbdebug(("socket()#2 in netbeans_connect()\n"));
 		PERROR("socket()#2 in netbeans_connect()");
 		goto theend;
@@ -347,6 +349,7 @@ netbeans_connect(char *params, int abort)
 #else
 	    if ((sd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1)
 	    {
+		SOCK_ERRNO;
 		nbdebug(("socket()#2 in netbeans_connect()\n"));
 		PERROR("socket()#2 in netbeans_connect()");
 		goto theend;
@@ -356,8 +359,10 @@ netbeans_connect(char *params, int abort)
 	    {
 		int retries = 36;
 		int success = FALSE;
-		while (retries--
-			     && ((sock_errno == ECONNREFUSED) || (sock_errno == EINTR)))
+
+		SOCK_ERRNO;
+		while (retries-- && ((errno == ECONNREFUSED)
+							 || (errno == EINTR)))
 		{
 		    nbdebug(("retrying...\n"));
 		    sleep(5);
@@ -366,16 +371,17 @@ netbeans_connect(char *params, int abort)
 			ui_breakcheck();
 			if (got_int)
 			{
-			    sock_errno = EINTR;
+			    errno = EINTR;
 			    break;
 			}
 		    }
 		    if (connect(sd, (struct sockaddr *)&server,
-				sizeof(server)) == 0)
+							 sizeof(server)) == 0)
 		    {
 			success = TRUE;
 			break;
 		    }
+		    SOCK_ERRNO;
 		}
 		if (!success)
 		{
@@ -387,7 +393,6 @@ netbeans_connect(char *params, int abort)
 		    goto theend;
 		}
 	    }
-
 	}
 	else
 	{
