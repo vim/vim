@@ -1943,6 +1943,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
  #pragma option -p.
 #endif
 
+#ifdef _MSC_VER
+/* Avoid useless warning "conversion from X to Y of greater size". */
+ #pragma warning(disable : 4312)
+#endif
+
 #if defined(MEM_PROFILE)
 # define vim_realloc(ptr, size)  mem_realloc((ptr), (size))
 #else

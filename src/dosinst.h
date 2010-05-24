@@ -418,12 +418,12 @@ run_command(char *cmd)
 	/* There is a cmd.exe, so this might be Windows NT.  If it is,
 	 * we need to call cmd.exe explicitly.  If it is a later OS,
 	 * calling cmd.exe won't hurt if it is present.
-	 * Also, "wait" on NT expects a window title argument.
+	 * Also, "start" on NT expects a window title argument.
 	 */
 	/* Replace the slashes with backslashes. */
 	while ((p = strchr(cmd_path, '/')) != NULL)
 	    *p = '\\';
-	sprintf(cmd_buf, "%s /c start \"vimcmd\" /w %s", cmd_path, cmd);
+	sprintf(cmd_buf, "%s /c start \"vimcmd\" /wait %s", cmd_path, cmd);
 	free(cmd_path);
     }
     else

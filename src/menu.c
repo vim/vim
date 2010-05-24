@@ -462,7 +462,7 @@ add_menu_path(menu_path, menuarg, pri_tab, call_data
 	 * name (without mnemonic and accelerator text). */
 	next_name = menu_name_skip(name);
 #ifdef	FEAT_MULTI_LANG
-	map_to = menutrans_lookup(name,STRLEN(name));
+	map_to = menutrans_lookup(name, (int)STRLEN(name));
 	if (map_to != NULL)
 	{
 	    en_name = name;

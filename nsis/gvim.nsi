@@ -27,12 +27,15 @@
 # ----------- No configurable settings below this line -----------
 
 !include UpgradeDLL.nsh		# for VisVim.dll
+!include LogicLib.nsh
+!include x64.nsh
 
 Name "Vim ${VER_MAJOR}.${VER_MINOR}"
 OutFile gvim${VER_MAJOR}${VER_MINOR}.exe
 CRCCheck force
 SetCompressor lzma
 SetDatablockOptimize on
+RequestExecutionLevel highest
 
 ComponentText "This will install Vim ${VER_MAJOR}.${VER_MINOR} on your computer."
 DirText "Choose a directory to install Vim (must end in 'vim')"
@@ -290,13 +293,21 @@ Section "Add an Edit-with-Vim context menu entry"
 	SetOutPath $0
 	ClearErrors
 	SetOverwrite try
-	File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+	${If} ${RunningX64}
+	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext64.dll
+	${Else}
+	  File /oname=gvimext.dll ${VIMSRC}\GvimExt\gvimext.dll
+	${EndIf}
 	IfErrors 0 GvimExtDone
 
 	# Can't copy gvimext.dll, create it under another name and rename it on
 	# next reboot.
 	GetTempFileName $3 $0
-	File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
+	${If} ${RunningX64}
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext64.dll
+	${Else}
+	  File /oname=$3 ${VIMSRC}\GvimExt\gvimext.dll
+	${EndIf}
 	Rename /REBOOTOK $3 $0\gvimext.dll
 
 	GvimExtDone:

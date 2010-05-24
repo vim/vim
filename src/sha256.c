@@ -307,7 +307,7 @@ sha256_key(buf)
     if (buf == NULL || *buf == NUL)
 	return (char_u *)"";
 
-    return sha256_bytes(buf, STRLEN(buf));
+    return sha256_bytes(buf, (int)STRLEN(buf));
 }
 
 /*
@@ -354,7 +354,7 @@ sha256_self_test()
 	if (i < 2)
 	{
 	    hexit = sha256_bytes((char_u *)sha_self_test_msg[i],
-						STRLEN(sha_self_test_msg[i]));
+					   (int)STRLEN(sha_self_test_msg[i]));
 	    STRCPY(output, hexit);
 	}
 	else

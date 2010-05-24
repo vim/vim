@@ -113,6 +113,7 @@ DOSBIN_S =  dosbin_s
 # - "make amirt", "make amibin".
 #
 # PC:
+# - Run make on Unix to update the ".mo" files.
 # - "make dossrc" and "make dosrt".  Unpack the archives on a PC.
 # 16 bit DOS version: (OBSOLETE, 16 bit version doesn't build)
 # - Set environment for compiling with Borland C++ 3.1.
@@ -130,9 +131,11 @@ DOSBIN_S =  dosbin_s
 # - Rename the executables to "vimd32.exe", "xxdd32.exe", "installd32.exe" and
 #   "uninstald32.exe".
 # Win32 console version:
-# - Set environment for Visual C++ 2008 Express Edition: "msvc2008.bat".  Or,
-#   when using the Visual C++ Toolkit 2003: "msvcsetup.bat" (adjust the paths
-#   when necessary).  For Windows 98 the 2003 version is required.
+# - Set environment for Visual C++ 2010:
+#   "E:\Microsoft Visual Studio 10.0\VC\bin\vcvars32.bat".  Or, for Visual
+#   C++ 2008 Express Edition: "msvc2008.bat".  Or, when using the Visual C++
+#   Toolkit 2003: "msvcsetup.bat" (adjust the paths when necessary).  For
+#   Windows 98/ME the 2003 version is required.
 # - "nmake -f Make_mvc.mak"
 # - "rm testdir/*.out", "nmake -f Make_mvc.mak test" and check the output.
 # - Rename the executables to "vimw32.exe", "xxdw32.exe".
@@ -165,15 +168,18 @@ DOSBIN_S =  dosbin_s
 # - Copy all the "*.exe" files to where this Makefile is.
 # - Copy all the "*.pdb" files to where this Makefile is.
 # - "make dosbin".
-# - Run make on Unix to update the ".mo" files.
 # NSIS self installing exe:
+# - To get NSIS see http://nsis.sourceforge.net
 # - Make sure gvim_ole.exe, vimd32.exe, vimw32.exe, installw32.exe,
 #   uninstalw32.exe and xxdw32.exe have been build as mentioned above.
-# - put gvimext.dll in src/GvimExt and VisVim.dll in src/VisVim (get them
-#   from a binary archive or build them)
+# - copy these files (get them from a binary archive or build them):
+#	gvimext.dll in src/GvimExt
+#	gvimext64.dll in src/GvimExt
+#	VisVim.dll in src/VisVim
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
+#   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
 # - make sure there is a diff.exe two levels up
-# - go to ../nsis and do "makensis gvim.nsi".
+# - go to ../nsis and do "makensis gvim.nsi" (takes a few minutes).
 # - Copy gvim##.exe to the dist directory.
 #
 # OS/2: (OBSOLETE, OS/2 version is no longer distributed)
@@ -355,11 +361,35 @@ amisrc: dist prepare
 no_title.vim: Makefile
 	echo "set notitle noicon nocp nomodeline viminfo=" >no_title.vim
 
+# MS-DOS sources
+dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
+	-rm -rf dist/vim$(VERSION)src.zip
+	-rm -rf dist/vim
+	mkdir dist/vim
+	mkdir dist/vim/$(VIMRTDIR)
+	tar cf - \
+		$(SRC_ALL) \
+		$(SRC_DOS) \
+		$(SRC_AMI_DOS) \
+		$(SRC_DOS_UNIX) \
+		runtime/doc/uganda.nsis.txt \
+		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
+	rmdir dist/vim/$(VIMRTDIR)/runtime
+	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
+	tar cf - \
+		$(SRC_DOS_BIN) \
+		| (cd dist/vim/$(VIMRTDIR); tar xf -)
+	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
+
+runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
+	cd runtime/doc && $(MAKE) uganda.nsis.txt
+
 dosrt: dist dist/$(COMMENT_RT) dosrt_unix2dos
 	-rm -rf dist/vim$(VERSION)rt.zip
 	cd dist && zip -9 -rD -z vim$(VERSION)rt.zip vim <$(COMMENT_RT)
 
-# Split in two parts to avoid a "argument list too long" error.
+# Split in two parts to avoid an "argument list too long" error.
 dosrt_unix2dos: dist prepare no_title.vim
 	-rm -rf dist/vim
 	mkdir dist/vim
@@ -515,30 +545,6 @@ dosbin_s: dist no_title.vim dist/$(COMMENT_W32S)
 	cp installw32.exe dist/vim/$(VIMRTDIR)/install.exe
 	cp uninstalw32.exe dist/vim/$(VIMRTDIR)/uninstal.exe
 	cd dist && zip -9 -rD -z gvim$(VERSION)_s.zip vim <$(COMMENT_W32S)
-
-# MS-DOS sources
-dossrc: dist no_title.vim dist/$(COMMENT_SRC) runtime/doc/uganda.nsis.txt
-	-rm -rf dist/vim$(VERSION)src.zip
-	-rm -rf dist/vim
-	mkdir dist/vim
-	mkdir dist/vim/$(VIMRTDIR)
-	tar cf - \
-		$(SRC_ALL) \
-		$(SRC_DOS) \
-		$(SRC_AMI_DOS) \
-		$(SRC_DOS_UNIX) \
-		runtime/doc/uganda.nsis.txt \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	mv dist/vim/$(VIMRTDIR)/runtime/* dist/vim/$(VIMRTDIR)
-	rmdir dist/vim/$(VIMRTDIR)/runtime
-	find dist/vim/$(VIMRTDIR) -type f -exec $(VIM) -e -X -u no_title.vim -c ":set tx|wq" {} \;
-	tar cf - \
-		$(SRC_DOS_BIN) \
-		| (cd dist/vim/$(VIMRTDIR); tar xf -)
-	cd dist && zip -9 -rD -z vim$(VERSION)src.zip vim <$(COMMENT_SRC)
-
-runtime/doc/uganda.nsis.txt: runtime/doc/uganda.txt
-	cd runtime/doc && $(MAKE) uganda.nsis.txt
 
 os2bin: dist no_title.vim dist/$(COMMENT_OS2)
 	-rm -rf dist/vim$(VERSION)os2.zip

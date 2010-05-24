@@ -1084,12 +1084,12 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
-- Use NSIS 2.45, it includes Windows 7 support.
-	Include "RequestExecutionLevel highest"
-	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Supply a 64 bit version of gvimext.dll for 64 bit windows.
-    http://code.google.com/p/vim-win3264/
-    Gvim can be 32 bit.
+- Win32 DOS and Win32 console version: test69 fails.
+- using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
+   Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
+- When running uninstall program from NSIS via install.exe, still need to
+  ask confirmation in console window, uninstaller doesn't wait.  Is there an
+  NSIS option to wait?
 Patches to include:
 - Persistent undo bugs / fixes:
     - Add undofile(name): get undo file name for buffer "name".

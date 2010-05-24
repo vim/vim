@@ -787,7 +787,7 @@ check_str_len(char_u *str)
 	/* get length from str to end of page */
 	long_u pageLength = si.dwPageSize - (dwStr - strPage);
 
-	for (p = str; !IsBadReadPtr(p, pageLength);
+	for (p = str; !IsBadReadPtr(p, (UINT)pageLength);
 				  p += pageLength, pageLength = si.dwPageSize)
 	    for (i = 0; i < pageLength; ++i, ++length)
 		if (p[i] == NUL)
@@ -1779,7 +1779,7 @@ swap_me(COLORREF colorref)
 }
 
 /* Attempt to make this work for old and new compilers */
-#if _MSC_VER < 1300
+#if !defined(_MSC_VER) || (_MSC_VER < 1300) || !defined(INT_PTR)
 # define PDP_RETVAL BOOL
 #else
 # define PDP_RETVAL INT_PTR

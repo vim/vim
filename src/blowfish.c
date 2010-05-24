@@ -25,7 +25,7 @@ typedef union {
     char_u   uc[8];
 } block8;
 
-#ifdef WIN3264
+#if defined(WIN3264) || defined(DOS32)
   /* MS-Windows is always little endian */
 #else
 # ifdef HAVE_CONFIG_H
@@ -406,7 +406,7 @@ bf_key_init(password)
     int      keylen;
 
     key = sha256_key(password);
-    keylen = STRLEN(key);
+    keylen = (int)STRLEN(key);
     for (i = 0; i < 256; ++i)
     {
 	sbx[0][i] = sbi[0][i];

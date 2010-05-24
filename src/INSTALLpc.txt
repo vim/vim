@@ -162,6 +162,17 @@ Visual C++ 2008 Express Edition       *msvc-2008-express*
 -------------------------------
 
 Visual C++ 2008 Express Edition can be downloaded for free from:
+    http://www.microsoft.com/express/downloads/
+This includes the IDE and the debugger.
+
+To set the environment execute the msvc2008.bat script.  You can then build
+Vim with Make_mvc.mak.
+
+
+Visual C++ 2010 Express Edition       *msvc-2010-express*
+-------------------------------
+
+Visual C++ 2010 Express Edition can be downloaded for free from:
     http://www.microsoft.com/express/vc/Default.aspx
 This includes the IDE and the debugger.
 

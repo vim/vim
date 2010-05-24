@@ -37,7 +37,7 @@ The Win32 version was written by George V. Reilly <george@reilly.org>.
 The original Windows NT port was done by Roger Knobbe <RogerK@wonderware.com>.
 The GUI version was made by George V. Reilly and Robert Webb.
 
-For compiling see "src/INSTALL.pc".			*win32-compiling*
+For compiling see "src/INSTALLpc.txt".			*win32-compiling*
 
 ==============================================================================
 1. Known problems				*windows95* *win32-problems*

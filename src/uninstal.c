@@ -354,8 +354,9 @@ main(int argc, char *argv[])
     {
 	printf(" - the \"Edit with Vim\" entry in the popup menu\n");
 	printf("   which uses \"%s\"\n", popup_path);
-	printf("\nRemove it (y/n)? ");
-	if (confirm())
+	if (interactive)
+	    printf("\nRemove it (y/n)? ");
+	if (!interactive || confirm())
 	{
 	    remove_popup();
 	    /* Assume the "Open With" entry can be removed as well, don't
@@ -430,9 +431,14 @@ main(int argc, char *argv[])
 	printf("(They are still where you unpacked them.)\n");
     }
 
-    rewind(stdin);
-    printf("\nPress Enter to exit...");
-    (void)getchar();
+    if (interactive)
+    {
+	rewind(stdin);
+	printf("\nPress Enter to exit...");
+	(void)getchar();
+    }
+    else
+	Sleep(3000);
 
     return 0;
 }

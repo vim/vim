@@ -82,6 +82,10 @@
 #define UH_MAGIC 0x18dade	/* value for uh_magic when in use */
 #define UE_MAGIC 0xabc123	/* value for ue_magic when in use */
 
+#if defined(MSDOS) || defined(WIN16) || defined(WIN32) || defined(_WIN64)
+# include "vimio.h"	/* for vim_read(), must be before vim.h */
+#endif
+
 #include "vim.h"
 
 /* See below: use malloc()/free() for memory management. */
@@ -685,7 +689,7 @@ u_compute_hash(hash)
     for (lnum = 1; lnum < curbuf->b_ml.ml_line_count; ++lnum)
     {
 	p = ml_get(lnum);
-	sha256_update(&ctx, p, STRLEN(p) + 1);
+	sha256_update(&ctx, p, (UINT32_T)(STRLEN(p) + 1));
     }
     sha256_finish(&ctx, hash);
 }
@@ -764,7 +768,7 @@ u_get_undo_file_name(buf_ffname, reading)
 	{
 	    /* Use same directory as the ffname,
 	     * "dir/name" -> "dir/.name.un~" */
-	    undo_file_name = vim_strnsave(ffname, STRLEN(ffname) + 5);
+	    undo_file_name = vim_strnsave(ffname, (int)(STRLEN(ffname) + 5));
 	    if (undo_file_name == NULL)
 		break;
 	    p = gettail(undo_file_name);
@@ -823,7 +827,7 @@ u_read_undo(name, hash)
     linenr_T	line_count;
     int		uep_len;
     int		line_len;
-    int		num_head;
+    int		num_head = 0;
     long	old_header_seq, new_header_seq, cur_header_seq;
     long	seq_last, seq_cur;
     short	old_idx = -1, new_idx = -1, cur_idx = -1;
@@ -929,10 +933,10 @@ u_read_undo(name, hash)
         /* We're not actually trying to store pointers here. We're just storing
          * IDs so we can swizzle them into pointers later - hence the type
 	 * cast. */
-        uhp->uh_next = (u_header_T *)(long)get4c(fp);
-        uhp->uh_prev = (u_header_T *)(long)get4c(fp);
-        uhp->uh_alt_next = (u_header_T *)(long)get4c(fp);
-        uhp->uh_alt_prev = (u_header_T *)(long)get4c(fp);
+        uhp->uh_next = (u_header_T *)get4c(fp);
+        uhp->uh_prev = (u_header_T *)get4c(fp);
+        uhp->uh_alt_next = (u_header_T *)get4c(fp);
+        uhp->uh_alt_prev = (u_header_T *)get4c(fp);
         uhp->uh_seq = get4c(fp);
         if (uhp->uh_seq <= 0)
         {
@@ -1139,6 +1143,8 @@ serialize_uep(uep, fp)
 
     if (uep->ue_size > 0)
         entry_lens = (int *)alloc(uep->ue_size * sizeof(int));
+    else
+	entry_lens = NULL;
 
     /* Define uep_len to be the size of the entire uep minus the size of its
      * component strings, in bytes. The sizes of the component strings
@@ -1335,7 +1341,7 @@ u_write_undo(name, forceit, buf, hash)
     put_bytes(fp, (long_u)buf->b_ml.ml_line_count, 4);
 
     /* Begin undo data for U */
-    str_len = buf->b_u_line_ptr != NULL ? STRLEN(buf->b_u_line_ptr) : 0;
+    str_len = buf->b_u_line_ptr != NULL ? (int)STRLEN(buf->b_u_line_ptr) : 0;
     put_bytes(fp, (long_u)str_len, 4);
     if (str_len > 0 && fwrite(buf->b_u_line_ptr, (size_t)str_len,
 							  (size_t)1, fp) != 1)

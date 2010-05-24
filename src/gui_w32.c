@@ -183,7 +183,7 @@
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
-#if _MSC_VER < 1300
+#if _MSC_VER < 1300 || !defined(UINT_PTR)
 /* Work around old versions of basetsd.h which wrongly declares
  * UINT_PTR as unsigned long. */
 # define UINT_PTR UINT
@@ -4765,9 +4765,7 @@ gui_mch_create_beval_area(target, mesg, mesgCB, clientData)
 
 /*ARGSUSED*/
     static void
-Handle_WM_Notify(hwnd, pnmh)
-    HWND hwnd;
-    LPNMHDR pnmh;
+Handle_WM_Notify(HWND hwnd, LPNMHDR pnmh)
 {
     if (pnmh->idFrom != ID_BEVAL_TOOLTIP) /* it is not our tooltip */
 	return;

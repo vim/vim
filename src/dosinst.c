@@ -451,7 +451,7 @@ get_vim_env(void)
  * Return non-zero when found one.
  */
     static int
-uninstall_check(void)
+uninstall_check(int skip_question)
 {
     HKEY	key_handle;
     HKEY	uninstall_key_handle;
@@ -502,7 +502,10 @@ uninstall_check(void)
 	    printf("(The batch files used in a console and the \"Edit with Vim\" entry in\n");
 	    printf("the popup menu will use the new version)\n");
 
-	    printf("\nDo you want to uninstall \"%s\" now?\n(y)es/(n)o)  ", temp_string_buffer);
+	    if (skip_question)
+		printf("\nRunning uninstall program for \"%s\"\n", temp_string_buffer);
+	    else
+		printf("\nDo you want to uninstall \"%s\" now?\n(y)es/(n)o)  ", temp_string_buffer);
 	    fflush(stdout);
 
 	    /* get the UninstallString */
@@ -523,8 +526,13 @@ uninstall_check(void)
 		if (input != 'n')
 		    printf("%c is an invalid reply.  Please enter either 'y' or 'n'\n", input);
 
-		rewind(stdin);
-		scanf("%c", &input);
+		if (skip_question)
+		    input = 'y';
+		else
+		{
+		    rewind(stdin);
+		    scanf("%c", &input);
+		}
 		switch (input)
 		{
 		    case 'y':
@@ -535,12 +543,14 @@ uninstall_check(void)
 					     &orig_num_keys, NULL, NULL, NULL,
 						      NULL, NULL, NULL, NULL);
 
+#if 0 /* let the uninstall program delete the key */
 			/* Delete the uninstall key.  It has no subkeys, so
 			 * this is easy.  Do this before uninstalling, that
 			 * may try to delete the key as well. */
 			RegDeleteKey(key_handle, subkey_name_buff);
+#endif
 
-			/* Find existing .bat files before deleting them.  */
+			/* Find existing .bat files before deleting them. */
 			find_bat_exe(TRUE);
 
 			/* Execute the uninstall program.  Put it in double
@@ -2376,16 +2386,23 @@ main(int argc, char **argv)
     if (argc > 1 && strcmp(argv[1], "-uninstall-check") == 0)
     {
 	/* Only check for already installed Vims.  Used by NSIS installer. */
-	i = uninstall_check();
+	i = uninstall_check(1);
 
 	/* Find the value of $VIM, because NSIS isn't able to do this by
 	 * itself. */
 	get_vim_env();
 
 	/* When nothing found exit quietly.  If something found wait for
-	 * return pressed. */
+	 * hitting Enter.
+	 * We would like to exit without hitting Enter, but the uninstaller
+	 * detaches itself, thus we get here before it's finished. */
 	if (i)
-	    myexit(0);
+	{
+	    printf("\n");
+	    printf("When the uninstall program is finished, press Enter to continue\n");
+	    rewind(stdin);
+	    (void)getchar();
+	}
 	exit(0);
     }
 #endif
@@ -2399,7 +2416,7 @@ main(int argc, char **argv)
 #ifdef WIN3264
     /* Check for already installed Vims. */
     if (interactive)
-	uninstall_check();
+	uninstall_check(0);
 #endif
 
     /* Find out information about the system. */
@@ -2449,6 +2466,7 @@ main(int argc, char **argv)
 	    }
 	}
 	printf("\n");
+	myexit(0);
     }
     else
     {
@@ -2457,9 +2475,11 @@ main(int argc, char **argv)
 	 */
 	command_line_setup_choices(argc, argv);
 	install();
+
+	/* Avoid that the user has to hit Enter, just wait a little bit to
+	 * allow reading the messages. */
+	Sleep(2000);
     }
 
-    myexit(0);
-    /*NOTREACHED*/
     return 0;
 }

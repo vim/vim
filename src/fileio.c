@@ -2848,7 +2848,7 @@ get_crypt_method(ptr, len)
 	    return i;
     }
 
-    i = STRLEN(crypt_magic_head);
+    i = (int)STRLEN(crypt_magic_head);
     if (len >= i && memcmp(ptr, crypt_magic_head, i) == 0)
 	EMSG(_("E821: File is encrypted with unknown method"));
 
@@ -4409,7 +4409,7 @@ restore_backup:
 	ptr = ml_get_buf(buf, lnum, FALSE) - 1;
 #ifdef FEAT_PERSISTENT_UNDO
 	if (write_undo_file)
-	    sha256_update(&sha_ctx, ptr + 1, STRLEN(ptr + 1) + 1);
+	    sha256_update(&sha_ctx, ptr + 1, (UINT32_T)(STRLEN(ptr + 1) + 1));
 #endif
 	while ((c = *++ptr) != NUL)
 	{
@@ -5675,7 +5675,10 @@ need_conversion(fenc)
     int		fenc_flags;
 
     if (*fenc == NUL || STRCMP(p_enc, fenc) == 0)
+    {
 	same_encoding = TRUE;
+	fenc_flags = 0;
+    }
     else
     {
 	/* Ignore difference between "ansi" and "latin1", "ucs-4" and
