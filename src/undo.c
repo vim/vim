@@ -1233,6 +1233,7 @@ u_write_undo(name, forceit, buf, hash)
     int		perm;
     int		write_ok = FALSE;
 #ifdef UNIX
+    int		st_old_valid = FALSE;
     struct stat	st_old;
     struct stat	st_new;
 #endif
@@ -1246,16 +1247,25 @@ u_write_undo(name, forceit, buf, hash)
     else
         file_name = name;
 
-#ifdef UNIX
-    if (mch_stat((char *)buf->b_ffname, &st_old) >= 0)
-	perm = st_old.st_mode;
+    if (buf->b_ffname == NULL)
+	perm = 0600;
     else
-	perm = 0600;
+    {
+#ifdef UNIX
+	if (mch_stat((char *)buf->b_ffname, &st_old) >= 0)
+	{
+	    perm = st_old.st_mode;
+	    st_old_valid = TRUE;
+	}
+	else
+	    perm = 0600;
 #else
-    perm = mch_getperm(buf->b_ffname);
-    if (perm < 0)
-	perm = 0600;
+	perm = mch_getperm(buf->b_ffname);
+	if (perm < 0)
+	    perm = 0600;
 #endif
+    }
+
     /* set file protection same as original file, but strip s-bit */
     perm = perm & 0777;
 
@@ -1309,15 +1319,16 @@ u_write_undo(name, forceit, buf, hash)
      * this fails, set the protection bits for the group same as the
      * protection bits for others.
      */
-    if (mch_stat((char *)file_name, &st_new) >= 0
-	    && st_new.st_gid != st_old.st_gid
+    if (st_old_valid && (mch_stat((char *)file_name, &st_new) >= 0
+		&& st_new.st_gid != st_old.st_gid
 # ifdef HAVE_FCHOWN  /* sequent-ptx lacks fchown() */
-	    && fchown(fd, (uid_t)-1, st_old.st_gid) != 0
+		&& fchown(fd, (uid_t)-1, st_old.st_gid) != 0)
 # endif
        )
 	mch_setperm(file_name, (perm & 0707) | ((perm & 07) << 3));
 # ifdef HAVE_SELINUX
-    mch_copy_sec(buf->b_ffname, file_name);
+    if (buf->b_ffname != NULL)
+	mch_copy_sec(buf->b_ffname, file_name);
 # endif
 #endif
 
@@ -1438,9 +1449,11 @@ write_error:
         EMSG2(_("E829: write error in undo file: %s"), file_name);
 
 #if defined(MACOS_CLASSIC) || defined(WIN3264)
-    (void)mch_copy_file_attribute(buf->b_ffname, file_name);
+    if (buf->b_ffname != NULL)
+	(void)mch_copy_file_attribute(buf->b_ffname, file_name);
 #endif
 #ifdef HAVE_ACL
+    if (buf->b_ffname != NULL)
     {
 	vim_acl_T	    acl;
 

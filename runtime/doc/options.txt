@@ -7226,8 +7226,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only when compiled with the +persistent_undo feature}
 	List of directory names for undo files, separated with commas.
-	See |'backupdir'| for the format.  Specifically, "." means using the
-	directory of the file.
+	See |'backupdir'| for the format.
+	"." means using the directory of the file.  The undo file name for
+	"file.txt" is ".file.txt.un~".
+	For other directories the file name is the full path of the edited
+	file, with path separators replaced with "%".
 	When writing: The first directory that exists is used. "." always
 	works, no directories after "." will be used for writing.
 	When reading all entries are tried to find an undo file.  The first
