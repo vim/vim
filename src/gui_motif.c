@@ -2023,7 +2023,7 @@ do_mnemonic(Widget w, unsigned int keycode)
 
 		    XmProcessTraversal(w, XmTRAVERSE_CURRENT);
 
-		    memset((char *) &keyEvent, 0, sizeof(XKeyPressedEvent));
+		    vim_memset((char *) &keyEvent, 0, sizeof(XKeyPressedEvent));
 		    keyEvent.type = KeyPress;
 		    keyEvent.serial = 1;
 		    keyEvent.send_event = True;

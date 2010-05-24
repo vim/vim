@@ -542,7 +542,7 @@ bf_ofb_init(iv, iv_len)
     int i, mi;
 
     randbyte_offset = update_offset = 0;
-    memset(ofb_buffer, 0, BF_OFB_LEN);
+    vim_memset(ofb_buffer, 0, BF_OFB_LEN);
     if (iv_len > 0)
     {
 	mi = iv_len > BF_OFB_LEN ? iv_len : BF_OFB_LEN;

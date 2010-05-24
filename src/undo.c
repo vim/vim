@@ -595,6 +595,7 @@ u_savecommon(top, bot, newbot)
     uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
+    vim_memset(uep, 0, sizeof(u_entry_T));
 #ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
 #endif
@@ -879,7 +880,7 @@ u_read_undo(name, hash)
         if (p_verbose > 0 || name != NULL)
         {
             verbose_enter();
-            give_warning((char_u *)_("Undo file contents changed"), TRUE);
+            give_warning((char_u *)_("File contents changed, cannot use undo info"), TRUE);
             verbose_leave();
         }
         goto error;
@@ -967,9 +968,9 @@ u_read_undo(name, hash)
         while ((uep_len = get4c(fp)) != -1)
         {
             uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
-            vim_memset(uep, 0, sizeof(u_entry_T));
             if (uep == NULL)
                 goto error;
+            vim_memset(uep, 0, sizeof(u_entry_T));
             uep->ue_top = get4c(fp);
             uep->ue_bot = get4c(fp);
             uep->ue_lcount = get4c(fp);

@@ -291,7 +291,7 @@ iconv_open(const char* tocode, const char* fromcode)
     cd = (iconv_t)alloc(sizeof(struct _iconv_t));
     if (!cd)
 	goto ICONV_OPEN_ERR;
-    memset(cd, 0, sizeof(struct _iconv_t));
+    vim_memset(cd, 0, sizeof(struct _iconv_t));
 
     /* Create converter */
     if (fromEnc != toEnc)

@@ -4328,7 +4328,7 @@ restore_backup:
 
 	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
 
-	memset(header, 0, sizeof(header));
+	vim_memset(header, 0, sizeof(header));
 	vim_strncpy(header, (char_u *)crypt_magic[use_crypt_method],
 							     CRYPT_MAGIC_LEN);
 

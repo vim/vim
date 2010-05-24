@@ -51,16 +51,16 @@
 
 /* We may need to define the uint32_t on non-Unix system, but using the same
  * identifier causes conflicts.  Therefore use UINT32_T. */
-# define UINT32_T uint32_t
+# define UINT32_TYPEDEF uint32_t
 #endif
 
-#if !defined(UINT32_T)
+#if !defined(UINT32_TYPEDEF)
 # if defined(uint32_t)  /* this doesn't catch typedefs, unfortunately */
-#  define UINT32_T uint32_t
+#  define UINT32_TYPEDEF uint32_t
 # else
   /* Fall back to assuming unsigned int is 32 bit.  If this is wrong then the
    * test in blowfish.c will fail. */
-#  define UINT32_T unsigned int
+#  define UINT32_TYPEDEF unsigned int
 # endif
 #endif
 
@@ -1316,6 +1316,10 @@ typedef enum
 #endif
 
 #define MAYBE	2	    /* sometimes used for a variant on TRUE */
+
+#ifndef UINT32_T
+typedef UINT32_TYPEDEF UINT32_T;
+#endif
 
 /*
  * Operator IDs; The order must correspond to opchars[] in ops.c!

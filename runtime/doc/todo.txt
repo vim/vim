@@ -1084,9 +1084,14 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
+- Use NSIS 2.45, it includes Windows 7 support.
+	Include "RequestExecutionLevel highest"
+	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
+- Supply a 64 bit version of gvimext.dll for 64 bit windows.
+    http://code.google.com/p/vim-win3264/
+    Gvim can be 32 bit.
 Patches to include:
-8   Persistent undo bugs / fixes:
-    - Add tests.  Also with different 'enc'
+- Persistent undo bugs / fixes:
     - Add undofile(name): get undo file name for buffer "name".
 - Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
   May 23)
@@ -1152,12 +1157,6 @@ Patches to include:
 	Patch for Make_ming.mak from Paul Moore (2008 Sep 1)
       http://code.google.com/p/vim-iflua/  Download  vim72-lua-0.7.patch.gz
 Needs some work:
-- Use NSIS 2.45, it includes Windows 7 support.
-	Include "RequestExecutionLevel highest"
-	Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Supply a 64 bit version of gvimext.dll for 64 bit windows.
-    http://code.google.com/p/vim-win3264/
-    Gvim can be 32 bit.
 - Have a look at patch to enable screen access from Python. (Marko Mahnic,
   2010 Apr 12)
 - Patch for Python 3 support. (Roland Puntaier, 2009 Sep 22)

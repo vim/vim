@@ -4178,7 +4178,7 @@ vim_findfile_init(path, filename, stopdirs, level, free_visited, find_what,
 	search_ctx = (ff_search_ctx_T*)alloc((unsigned)sizeof(ff_search_ctx_T));
 	if (search_ctx == NULL)
 	    goto error_return;
-	memset(search_ctx, 0, sizeof(ff_search_ctx_T));
+	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
     }
     search_ctx->ffsc_find_what = find_what;
 

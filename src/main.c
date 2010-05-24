@@ -3643,7 +3643,7 @@ cmdsrv_main(argc, argv, serverName_arg, serverStr)
 # endif
 
 		/* Wait for all files to unload in remote */
-		memset(done, 0, numFiles);
+		vim_memset(done, 0, numFiles);
 		while (memchr(done, 0, numFiles) != NULL)
 		{
 # ifdef WIN32

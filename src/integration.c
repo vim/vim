@@ -662,7 +662,7 @@ void	workshop_connect(XtAppContext context)
 
 	/* Get the server internet address and put into addr structure */
 	/* fill in the socket address structure and connect to server */
-	memset((char *)&server, '\0', sizeof(server));
+	vim_memset((char *)&server, '\0', sizeof(server));
 	server.sin_family = AF_INET;
 	server.sin_port = port;
 	if ((host = gethostbyname(NOCATGETS("localhost"))) == NULL) {

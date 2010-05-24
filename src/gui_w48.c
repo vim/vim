@@ -3341,7 +3341,7 @@ gui_mch_browseW(
     /* Convert the filter to Windows format. */
     filterp = convert_filterW(filter);
 
-    memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
+    vim_memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
 #ifdef OPENFILENAME_SIZE_VERSION_400
     /* be compatible with Windows NT 4.0 */
     /* TODO: what to use for OPENFILENAMEW??? */
@@ -3503,7 +3503,7 @@ gui_mch_browse(
     /* Convert the filter to Windows format. */
     filterp = convert_filter(filter);
 
-    memset(&fileStruct, 0, sizeof(OPENFILENAME));
+    vim_memset(&fileStruct, 0, sizeof(OPENFILENAME));
 #ifdef OPENFILENAME_SIZE_VERSION_400
     /* be compatible with Windows NT 4.0 */
     fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400;
@@ -3842,7 +3842,7 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 		    /* Halve the number of backslashes. */
 		    if (i > 1 && pnew != NULL)
 		    {
-			memset(pnew, '\\', i / 2);
+			vim_memset(pnew, '\\', i / 2);
 			pnew += i / 2;
 		    }
 
@@ -3859,7 +3859,7 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 		    /* Copy span of backslashes unmodified. */
 		    if (pnew != NULL)
 		    {
-			memset(pnew, '\\', i);
+			vim_memset(pnew, '\\', i);
 			pnew += i;
 		    }
 		    p += i;

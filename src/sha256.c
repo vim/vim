@@ -360,7 +360,7 @@ sha256_self_test()
 	else
 	{
 	    sha256_start(&ctx);
-	    memset(buf, 'a', 1000);
+	    vim_memset(buf, 'a', 1000);
 	    for (j = 0; j < 1000; j++)
 		sha256_update(&ctx, (char_u *)buf, 1000);
 	    sha256_finish(&ctx, sha256sum);

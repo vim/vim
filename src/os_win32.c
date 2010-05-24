@@ -604,7 +604,7 @@ win32_kbd_patch_key(
     if (pker->AChar != 0)
 	return 1;
 
-    memset(abKeystate, 0, sizeof (abKeystate));
+    vim_memset(abKeystate, 0, sizeof (abKeystate));
 
     // Should only be non-NULL on NT 4.0
     if (s_pfnGetConsoleKeyboardLayoutName != NULL)

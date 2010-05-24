@@ -303,7 +303,7 @@ netbeans_connect(char *params, int abort)
 
     /* Get the server internet address and put into addr structure */
     /* fill in the socket address structure and connect to server */
-    memset((char *)&server, '\0', sizeof(server));
+    vim_memset((char *)&server, '\0', sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
     if ((host = gethostbyname(hostname)) == NULL)
@@ -1079,7 +1079,8 @@ nb_get_buf(int bufno)
 	    buf_list_size += incr;
 	    buf_list = (nbbuf_T *)vim_realloc(
 				   buf_list, buf_list_size * sizeof(nbbuf_T));
-	    memset(buf_list + buf_list_size - incr, 0, incr * sizeof(nbbuf_T));
+	    vim_memset(buf_list + buf_list_size - incr, 0,
+						      incr * sizeof(nbbuf_T));
 	}
 
 	while (buf_list_used <= bufno)
@@ -3662,7 +3663,7 @@ addsigntype(
 		incr = globalsignmaplen - oldlen;
 		globalsignmap = (char **)vim_realloc(globalsignmap,
 					   globalsignmaplen * sizeof(char *));
-		memset(globalsignmap + oldlen, 0, incr * sizeof(char *));
+		vim_memset(globalsignmap + oldlen, 0, incr * sizeof(char *));
 	    }
 	}
 
@@ -3691,7 +3692,7 @@ addsigntype(
 	    incr = buf->signmaplen - oldlen;
 	    buf->signmap = (int *)vim_realloc(buf->signmap,
 					       buf->signmaplen*sizeof(int *));
-	    memset(buf->signmap + oldlen, 0, incr * sizeof(int *));
+	    vim_memset(buf->signmap + oldlen, 0, incr * sizeof(int *));
 	}
     }
 

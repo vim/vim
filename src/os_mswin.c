@@ -2077,7 +2077,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     int			i;
 
     bUserAbort = &(psettings->user_abort);
-    memset(&prt_dlg, 0, sizeof(PRINTDLG));
+    vim_memset(&prt_dlg, 0, sizeof(PRINTDLG));
     prt_dlg.lStructSize = sizeof(PRINTDLG);
 #ifndef FEAT_GUI
     GetConsoleHwnd();	    /* get value of s_hwnd */
@@ -2192,7 +2192,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     /*
      * Initialise the font according to 'printfont'
      */
-    memset(&fLogFont, 0, sizeof(fLogFont));
+    vim_memset(&fLogFont, 0, sizeof(fLogFont));
     if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
 	EMSG2(_("E613: Unknown printer font: %s"), p_pfn);
@@ -2285,7 +2285,7 @@ mch_print_begin(prt_settings_T *psettings)
     wsprintf(szBuffer, _("Printing '%s'"), gettail(psettings->jobname));
     SetDlgItemText(hDlgPrint, IDC_PRINTTEXT1, (LPSTR)szBuffer);
 
-    memset(&di, 0, sizeof(DOCINFO));
+    vim_memset(&di, 0, sizeof(DOCINFO));
     di.cbSize = sizeof(DOCINFO);
     di.lpszDocName = psettings->jobname;
     ret = StartDoc(prt_dlg.hDC, &di);
@@ -3362,7 +3362,7 @@ get_logfont(
 #if defined(FEAT_GUI_W32)
 	CHOOSEFONT	cf;
 	/* if name is "*", bring up std font dialog: */
-	memset(&cf, 0, sizeof(cf));
+	vim_memset(&cf, 0, sizeof(cf));
 	cf.lStructSize = sizeof(cf);
 	cf.hwndOwner = s_hwnd;
 	cf.Flags = CF_SCREENFONTS | CF_FIXEDPITCHONLY | CF_INITTOLOGFONTSTRUCT;

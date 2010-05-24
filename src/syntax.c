@@ -8986,7 +8986,7 @@ highlight_changed()
     hlcnt = highlight_ga.ga_len;
     if (id_S == 0)
     {		    /* Make sure id_S is always valid to simplify code below */
-	memset(&HL_TABLE()[hlcnt + 9], 0, sizeof(struct hl_group));
+	vim_memset(&HL_TABLE()[hlcnt + 9], 0, sizeof(struct hl_group));
 	HL_TABLE()[hlcnt + 9].sg_term = highlight_attr[HLF_S];
 	id_S = hlcnt + 10;
     }
@@ -9012,7 +9012,7 @@ highlight_changed()
 # ifdef FEAT_STL_OPT
 	    if (id_SNC == 0)
 	    {
-		memset(&hlt[hlcnt + i], 0, sizeof(struct hl_group));
+		vim_memset(&hlt[hlcnt + i], 0, sizeof(struct hl_group));
 		hlt[hlcnt + i].sg_term = highlight_attr[HLF_SNC];
 		hlt[hlcnt + i].sg_cterm = highlight_attr[HLF_SNC];
 #  ifdef FEAT_GUI
