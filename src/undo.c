@@ -1025,10 +1025,10 @@ u_read_undo(name, hash)
             {
                 /* If we've had to move from the rightmost side of the table,
                  * we have to shift everything to the right by one spot. */
-                if (i < num_read_uhps - 1)
+                if (num_read_uhps - i - 1 > 0)
                 {
                     memmove(uhp_table + i + 2, uhp_table + i + 1,
-                            (num_read_uhps - i) * sizeof(u_header_T *));
+                            (num_read_uhps - i - 1) * sizeof(u_header_T *));
                 }
                 uhp_table[i + 1] = uhp;
                 break;
