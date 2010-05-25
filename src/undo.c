@@ -1286,11 +1286,12 @@ u_write_undo(name, forceit, buf, hash)
 	    }
 	    else
 	    {
-		char_u buf[2];
+		char_u	buf[2];
+		int	len;
 
-		vim_read(fd, buf, 2);
+		len = vim_read(fd, buf, 2);
 		close(fd);
-		if ((buf[0] << 8) + buf[1] != UF_START_MAGIC)
+		if (len < 2 || (buf[0] << 8) + buf[1] != UF_START_MAGIC)
 		{
 		    if (name != NULL || p_verbose > 0)
 			smsg((char_u *)_("Will not overwrite, this is not an undo file: %s"),
