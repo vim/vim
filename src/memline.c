@@ -1404,15 +1404,22 @@ recover_names(fname, list, nr)
     int		i;
     char_u	*dirp;
     char_u	*dir_name;
-    char_u	*fname_res = *fname;
+    char_u	*fname_res = NULL;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
+#endif
 
+    if (fname != NULL)
+    {
+#ifdef HAVE_READLINK
     /* Expand symlink in the file name, because the swap file is created with
      * the actual file instead of with the symlink. */
     if (resolve_symlink(*fname, fname_buf) == OK)
 	fname_res = fname_buf;
+    else
 #endif
+	fname_res = *fname;
+    }
 
     if (list)
     {
