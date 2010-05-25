@@ -15,15 +15,15 @@ set insertmode
 set hidden
 
 " Make cursor keys ignore wrapping
-inoremap <Down> <C-R>=pumvisible() ? "\<lt>Down>" : "\<lt>C-O>gj"<CR>
-inoremap <Up> <C-R>=pumvisible() ? "\<lt>Up>" : "\<lt>C-O>gk"<CR>
+inoremap <silent> <Down> <C-R>=pumvisible() ? "\<lt>Down>" : "\<lt>C-O>gj"<CR>
+inoremap <silent> <Up> <C-R>=pumvisible() ? "\<lt>Up>" : "\<lt>C-O>gk"<CR>
 
 " CTRL-F does Find dialog instead of page forward
-noremap <C-F> :promptfind<CR>
-vnoremap <C-F> y:promptfind <C-R>"<CR>
-onoremap <C-F> <C-C>:promptfind<CR>
-inoremap <C-F> <C-O>:promptfind<CR>
-cnoremap <C-F> <C-C>:promptfind<CR>
+noremap <silent> <C-F> :promptfind<CR>
+vnoremap <silent> <C-F> y:promptfind <C-R>"<CR>
+onoremap <silent> <C-F> <C-C>:promptfind<CR>
+inoremap <silent> <C-F> <C-O>:promptfind<CR>
+cnoremap <silent> <C-F> <C-C>:promptfind<CR>
 
 
 set backspace=2		" allow backspacing over everything in insert mode

@@ -7226,7 +7226,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{only when compiled with the +persistent_undo feature}
 	List of directory names for undo files, separated with commas.
-	See |'backupdir'| for the format.
+	See |'backupdir'| for details of the format.
 	"." means using the directory of the file.  The undo file name for
 	"file.txt" is ".file.txt.un~".
 	For other directories the file name is the full path of the edited
@@ -7246,9 +7246,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When on, Vim automatically saves undo history to an undo file when
 	writing a buffer to a file, and restores undo history from the same
 	file on buffer read.
-	The name of the undo file is specified by 'undodir'.
-	See |undo-persistence|.
-	WARNING: this is a very new feature.  Use at your own risc!
+	The directory where the undo file is stored is specified by 'undodir'.
+	For more information about this feature see |undo-persistence|.
+	WARNING: this is a very new feature.  Use at your own risk!
 
 						*'undolevels'* *'ul'*
 'undolevels' 'ul'	number	(default 100, 1000 for Unix, VMS,

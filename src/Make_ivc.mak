@@ -288,7 +288,7 @@ CLEAN :
 
 
 install.exe: dosinst.c
-	$(CPP) /Fe$@ /nologo /W3 -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib ole32.lib advapi32.lib uuid.lib
+	$(CPP) /Fe$@ /nologo /W3 -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib user32.lib ole32.lib advapi32.lib uuid.lib
 
 uninstal.exe: uninstal.c
 	$(CPP) /nologo /W3 -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib

@@ -446,6 +446,25 @@ get_vim_env(void)
     }
 }
 
+static int num_windows;
+
+/*
+ * Callback used for EnumWindows():
+ * Count the window if the title looks like it is for the uninstaller.
+ */
+/*ARGSUSED*/
+    static BOOL CALLBACK
+window_cb(HWND hwnd, LPARAM lparam)
+{
+    char title[256];
+
+    title[0] = 0;
+    GetWindowText(hwnd, title, 256);
+    if (strstr(title, "Vim ") != NULL && strstr(title, "Uninstall:") != NULL)
+	++num_windows;
+    return TRUE;
+}
+
 /*
  * Check for already installed Vims.
  * Return non-zero when found one.
@@ -543,26 +562,51 @@ uninstall_check(int skip_question)
 					     &orig_num_keys, NULL, NULL, NULL,
 						      NULL, NULL, NULL, NULL);
 
-#if 0 /* let the uninstall program delete the key */
-			/* Delete the uninstall key.  It has no subkeys, so
-			 * this is easy.  Do this before uninstalling, that
-			 * may try to delete the key as well. */
-			RegDeleteKey(key_handle, subkey_name_buff);
-#endif
-
 			/* Find existing .bat files before deleting them. */
 			find_bat_exe(TRUE);
 
 			/* Execute the uninstall program.  Put it in double
 			 * quotes if there is an embedded space. */
-			if (strchr(temp_string_buffer, ' ') != NULL)
 			{
 			    char buf[BUFSIZE];
 
-			    strcpy(buf, temp_string_buffer);
-			    sprintf(temp_string_buffer, "\"%s\"", buf);
+			    if (strchr(temp_string_buffer, ' ') != NULL)
+				sprintf(buf, "\"%s\"", temp_string_buffer);
+			    else
+				strcpy(buf, temp_string_buffer);
+			    run_command(buf);
 			}
-			run_command(temp_string_buffer);
+
+			/* Count the number of windows with a title that match
+			 * the installer, so that we can check when it's done.
+			 * The uninstaller copies itself, executes the copy
+			 * and exits, thus we can't wait for the process to
+			 * finish. */
+			Sleep(1000);  /* wait for uninstaller to start up */
+			num_windows = 0;
+			EnumWindows(window_cb, 0);
+			Sleep(1000);  /* wait for windows to be counted */
+			if (num_windows == 0)
+			{
+			    /* Did not find the uninstaller, ask user to press
+			     * Enter when done. Just in case. */
+			    printf("Press Enter when the uninstaller is finished\n");
+			    rewind(stdin);
+			    (void)getchar();
+			}
+			else
+			{
+			    printf("Waiting for the uninstaller to finish (press CTRL-C to abort).");
+			    do
+			    {
+				printf(".");
+				fflush(stdout);
+				num_windows = 0;
+				EnumWindows(window_cb, 0);
+				Sleep(1000);  /* wait for windows to be counted */
+			    } while (num_windows > 0);
+			}
+			printf("\nDone!\n");
 
 			/* Check if an uninstall reg key was deleted.
 			 * if it was, we want to decrement key_index.
@@ -2393,16 +2437,9 @@ main(int argc, char **argv)
 	get_vim_env();
 
 	/* When nothing found exit quietly.  If something found wait for
-	 * hitting Enter.
-	 * We would like to exit without hitting Enter, but the uninstaller
-	 * detaches itself, thus we get here before it's finished. */
+	 * a little while, so that the user can read the messages. */
 	if (i)
-	{
-	    printf("\n");
-	    printf("When the uninstall program is finished, press Enter to continue\n");
-	    rewind(stdin);
-	    (void)getchar();
-	}
+	    Sleep(3000);
 	exit(0);
     }
 #endif

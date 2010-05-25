@@ -1085,14 +1085,17 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 - Win32 DOS and Win32 console version: test69 fails.
+- Win32 binary: vim -r fails. (Antonio Colombo)  Also on Unix.
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - When running uninstall program from NSIS via install.exe, still need to
-  ask confirmation in console window, uninstaller doesn't wait.  Is there an
-  NSIS option to wait?
+  ask confirmation in console window, uninstaller doesn't wait.
+  Wait until the uninstaller is deleted -> doesn't work when cancelling
+  Wait until window is gone with EnumWindows (see os_win32.c).
 Patches to include:
 - Persistent undo bugs / fixes:
     - Add undofile(name): get undo file name for buffer "name".
+    - When there is no undo info (undolevels negative), delete the undo file.
 - Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
   May 23)
 - Also crypt the undo file.
@@ -1163,6 +1166,7 @@ Needs some work:
   Includes changes for omnicompletion.
   Needs some more testing.
   Update 2010 Apr 20, patch by Andy Kittner, May 16
+  Build the MS-Windows version with Python 2.6.5 and 3.1.2?
 -   Easier/standard way to disable default plugins.
 -   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.
