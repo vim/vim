@@ -33,6 +33,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 When Vim crashes it may run out of stack while executing autocommands.  Patch
 to not run autocommands when leaving Vim? (James Vega, 2010 May 23)
 
+Invalid memory access when deleting funcref variable.  Patch by Lech Lorens,
+2010 May 25.
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -1094,8 +1097,12 @@ Vim 7.3:
   Wait until window is gone with EnumWindows (see os_win32.c).
 Patches to include:
 - Persistent undo bugs / fixes:
-    - Add undofile(name): get undo file name for buffer "name".
+    - Patch not to allocate extra byte in U_ALLOC_LINE() (Dominique, 2010 May
+      25)
+    - Remove the old code when U_USE_MALLOC is not defined?
     - When there is no undo info (undolevels negative), delete the undo file.
+    - Need to check all values for evil manipulation.
+    - Add undofile(name): get undo file name for buffer "name".
 - Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
   May 23)
 - Also crypt the undo file.

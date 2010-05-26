@@ -107,6 +107,7 @@ static void u_freeentry __ARGS((u_entry_T *, long));
 static void unserialize_pos __ARGS((pos_T *pos, FILE *fp));
 static void unserialize_visualinfo __ARGS((visualinfo_T *info, FILE *fp));
 static char_u *u_get_undo_file_name __ARGS((char_u *, int reading));
+static void u_free_uhp __ARGS((u_header_T *uhp));
 static int serialize_uep __ARGS((u_entry_T *uep, FILE *fp));
 static void serialize_pos __ARGS((pos_T pos, FILE *fp));
 static void serialize_visualinfo __ARGS((visualinfo_T info, FILE *fp));
@@ -835,10 +836,9 @@ u_read_undo(name, hash)
     time_t	seq_time;
     int		i, j;
     int		c;
-    short	found_first_uep = 0;
     char_u	**array;
     char_u	*line;
-    u_entry_T	*uep, *last_uep, *nuep;
+    u_entry_T	*uep, *last_uep;
     u_header_T	*uhp;
     u_header_T	**uhp_table = NULL;
     char_u	read_hash[UNDO_HASH_SIZE];
@@ -914,6 +914,9 @@ u_read_undo(name, hash)
     seq_cur = get4c(fp);
     seq_time = get4c(fp);
 
+    if (num_head < 0)
+	num_head = 0;
+
     /* uhp_table will store the freshly created undo headers we allocate
      * until we insert them into curbuf. The table remains sorted by the
      * sequence numbers of the headers. */
@@ -925,7 +928,13 @@ u_read_undo(name, hash)
     c = get2c(fp);
     while (c == UF_HEADER_MAGIC)
     {
-        found_first_uep = 0;
+	if (num_read_uhps >= num_head)
+	{
+	    EMSG2(_("E831 Undo file corruption: num_head: %s"), file_name);
+	    u_free_uhp(uhp);
+	    goto error;
+	}
+
         uhp = (u_header_T *)U_ALLOC_LINE((unsigned)sizeof(u_header_T));
         if (uhp == NULL)
             goto error;
@@ -973,8 +982,17 @@ u_read_undo(name, hash)
         {
             uep = (u_entry_T *)U_ALLOC_LINE((unsigned)sizeof(u_entry_T));
             if (uep == NULL)
+	    {
+		u_free_uhp(uhp);
                 goto error;
+	    }
             vim_memset(uep, 0, sizeof(u_entry_T));
+            if (last_uep == NULL)
+                uhp->uh_entry = uep;
+	    else
+                last_uep->ue_next = uep;
+            last_uep = uep;
+
             uep->ue_top = get4c(fp);
             uep->ue_bot = get4c(fp);
             uep->ue_lcount = get4c(fp);
@@ -982,37 +1000,35 @@ u_read_undo(name, hash)
             uep->ue_next = NULL;
             array = (char_u **)U_ALLOC_LINE(
 				 (unsigned)(sizeof(char_u *) * uep->ue_size));
+	    if (array == NULL)
+	    {
+		u_free_uhp(uhp);
+		goto error;
+	    }
+            vim_memset(array, 0, sizeof(char_u *) * uep->ue_size);
+            uep->ue_array = array;
+
             for (i = 0; i < uep->ue_size; i++)
             {
                 line_len = get4c(fp);
                 /* U_ALLOC_LINE provides an extra byte for the NUL terminator.*/
                 line = (char_u *)U_ALLOC_LINE(
-				      (unsigned) (sizeof(char_u) * line_len));
+				       (unsigned)(sizeof(char_u) * line_len));
                 if (line == NULL)
+		{
+		    u_free_uhp(uhp);
                     goto error;
+		}
                 for (j = 0; j < line_len; j++)
-                {
                     line[j] = getc(fp);
-                }
                 line[j] = '\0';
                 array[i] = line;
             }
-            uep->ue_array = array;
-            if (found_first_uep == 0)
-            {
-                uhp->uh_entry = uep;
-                found_first_uep = 1;
-            }
-            else
-            {
-                last_uep->ue_next = uep;
-            }
-            last_uep = uep;
         }
 
         /* Insertion sort the uhp into the table by its uh_seq. This is
          * required because, while the number of uhps is limited to
-         * num_heads, and the uh_seq order is monotonic with respect to
+         * num_head, and the uh_seq order is monotonic with respect to
          * creation time, the starting uh_seq can be > 0 if any undolevel
          * culling was done at undofile write time, and there can be uh_seq
          * gaps in the uhps.
@@ -1028,7 +1044,7 @@ u_read_undo(name, hash)
                 if (num_read_uhps - i - 1 > 0)
                 {
                     memmove(uhp_table + i + 2, uhp_table + i + 1,
-                            (num_read_uhps - i - 1) * sizeof(u_header_T *));
+			      (num_read_uhps - i - 1) * sizeof(u_header_T *));
                 }
                 uhp_table[i + 1] = uhp;
                 break;
@@ -1037,6 +1053,7 @@ u_read_undo(name, hash)
             {
                 EMSG2(_("E826 Undo file corruption: duplicate uh_seq: %s"),
 								   file_name);
+		u_free_uhp(uhp);
                 goto error;
             }
         }
@@ -1105,19 +1122,8 @@ error:
     if (uhp_table != NULL)
     {
         for (i = 0; i < num_head; i++)
-        {
             if (uhp_table[i] != NULL)
-            {
-                uep = uhp_table[i]->uh_entry;
-                while (uep != NULL)
-                {
-                    nuep = uep->ue_next;
-                    u_freeentry(uep, uep->ue_size);
-                    uep = nuep;
-                }
-                U_FREE_LINE(uhp_table[i]);
-            }
-        }
+		u_free_uhp(uhp_table[i]);
         U_FREE_LINE(uhp_table);
     }
 
@@ -1127,6 +1133,23 @@ theend:
     if (file_name != name)
 	vim_free(file_name);
     return;
+}
+
+    static void
+u_free_uhp(uhp)
+    u_header_T	*uhp;
+{
+    u_entry_T	*nuep;
+    u_entry_T	*uep;
+
+    uep = uhp->uh_entry;
+    while (uep != NULL)
+    {
+	nuep = uep->ue_next;
+	u_freeentry(uep, uep->ue_size);
+	uep = nuep;
+    }
+    U_FREE_LINE(uhp);
 }
 
 /*

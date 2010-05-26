@@ -267,8 +267,8 @@ Reading an existing undo file may fail for several reasons:
 	The file text differs from when the undo file was written.  This means
 	the undo file cannot be used, it would corrupt the text.  This also
 	happens when 'encoding' differs from when the undo file was written.
-*E825* *E826*	The undo file does not contain valid contents and cannot be
-	used.
+*E825* *E826* *E831*
+	The undo file does not contain valid contents and cannot be used.
 *E827*	The magic number at the end of the file was not found.  This usually
 	means the file was truncated.
 
