@@ -34,9 +34,10 @@ extern HWND s_hwnd;
 extern HWND vim_parent_hwnd;
 }
 
-#if _MSC_VER < 1300
+#if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)
 /* Work around old versions of basetsd.h which wrongly declares
  * UINT_PTR as unsigned long */
+# undef UINT_PTR
 # define UINT_PTR UINT
 #endif
 

@@ -183,9 +183,10 @@
 # define ID_BEVAL_TOOLTIP   200
 # define BEVAL_TEXT_LEN	    MAXPATHL
 
-#if _MSC_VER < 1300 || !defined(UINT_PTR)
+#if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)
 /* Work around old versions of basetsd.h which wrongly declares
  * UINT_PTR as unsigned long. */
+# undef  UINT_PTR
 # define UINT_PTR UINT
 #endif
 
@@ -4697,7 +4698,7 @@ gui_mch_enable_beval_area(beval)
     if (beval == NULL)
 	return;
     // TRACE0("gui_mch_enable_beval_area {{{");
-    BevalTimerId = SetTimer(s_textArea, 0, p_bdlay / 2, BevalTimerProc);
+    BevalTimerId = SetTimer(s_textArea, 0, (UINT)(p_bdlay / 2), BevalTimerProc);
     // TRACE0("gui_mch_enable_beval_area }}}");
 }
 

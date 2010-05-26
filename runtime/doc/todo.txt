@@ -36,6 +36,10 @@ to not run autocommands when leaving Vim? (James Vega, 2010 May 23)
 Invalid memory access when deleting funcref variable.  Patch by Lech Lorens,
 2010 May 25.
 
+Fixes for broken URLs:
+    Benjamin Haskell, 2010 May 25
+    Christian Brabandt, 2010 May 26, two messages
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.

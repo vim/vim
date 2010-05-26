@@ -44,7 +44,7 @@
 #include <shlobj.h>
 
 /* Accommodate old versions of VC that don't have a modern Platform SDK */
-#if defined(_MSC_VER) && _MSC_VER < 1300
+#if (defined(_MSC_VER) && _MSC_VER < 1300) || !defined(MAXULONG_PTR)
 # undef  UINT_PTR
 # define UINT_PTR UINT
 #endif
