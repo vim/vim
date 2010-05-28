@@ -35,6 +35,11 @@ STARTTEST
 :  let g:counter = 0
 :  return ''
 :endfunc
+:func FuncWithRef(a)
+:  unlet g:FuncRef
+:  return a:a
+:endfunc
+:let g:FuncRef=function("FuncWithRef")
 :let counter = 0
 :inoremap <expr> ( ListItem()
 :inoremap <expr> [ ListReset()
@@ -47,6 +52,7 @@ C=Table("xxx", 4, "asdf")
  =retval
  =Compute(45, 5, "retval")
  =retval
+ =g:FuncRef(333)
 
 XX+-XX
 ---*---
