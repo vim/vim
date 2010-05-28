@@ -30,9 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-When Vim crashes it may run out of stack while executing autocommands.  Patch
-to not run autocommands when leaving Vim? (James Vega, 2010 May 23)
-
 Patch for invalid mem access in completion. (Dominique Pelle, 2010 May 26)
 
 Invalid memory access when deleting funcref variable.  Patch by Lech Lorens,

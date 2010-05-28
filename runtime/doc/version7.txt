@@ -7166,6 +7166,10 @@ don't save what you see.  This could result in work being lost.  Now the text
 after recovery is compared to the original file contents.  When they differ
 the buffer is marked as modified.
 
+When Vim is exiting because of a deadly signal, when v:dying is 2 or more,
+VimLeavePre, VimLeave, BufWinLeave and BufUnload autocommands are not
+executed.
+
 
 Added							*added-7.3*
 -----

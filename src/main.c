@@ -1276,40 +1276,44 @@ getout(exitval)
 #endif
 
 #ifdef FEAT_AUTOCMD
-    /* Trigger BufWinLeave for all windows, but only once per buffer. */
-# if defined FEAT_WINDOWS
-    for (tp = first_tabpage; tp != NULL; tp = next_tp)
+    if (get_vim_var_nr(VV_DYING) <= 1)
     {
-	next_tp = tp->tp_next;
-	for (wp = (tp == curtab)
-		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	/* Trigger BufWinLeave for all windows, but only once per buffer. */
+# if defined FEAT_WINDOWS
+	for (tp = first_tabpage; tp != NULL; tp = next_tp)
 	{
-	    buf = wp->w_buffer;
-	    if (buf->b_changedtick != -1)
+	    next_tp = tp->tp_next;
+	    for (wp = (tp == curtab)
+		    ? firstwin : tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 	    {
-		apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname, buf->b_fname,
-								  FALSE, buf);
-		buf->b_changedtick = -1;    /* note that we did it already */
-		/* start all over, autocommands may mess up the lists */
-		next_tp = first_tabpage;
-		break;
+		buf = wp->w_buffer;
+		if (buf->b_changedtick != -1)
+		{
+		    apply_autocmds(EVENT_BUFWINLEAVE, buf->b_fname,
+						    buf->b_fname, FALSE, buf);
+		    buf->b_changedtick = -1;    /* note that we did it already */
+		    /* start all over, autocommands may mess up the lists */
+		    next_tp = first_tabpage;
+		    break;
+		}
 	    }
 	}
-    }
 # else
-    apply_autocmds(EVENT_BUFWINLEAVE, curbuf, curbuf->b_fname, FALSE, curbuf);
+	apply_autocmds(EVENT_BUFWINLEAVE, curbuf, curbuf->b_fname,
+							       FALSE, curbuf);
 # endif
 
-    /* Trigger BufUnload for buffers that are loaded */
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-	if (buf->b_ml.ml_mfp != NULL)
-	{
-	    apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname,
+	/* Trigger BufUnload for buffers that are loaded */
+	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    if (buf->b_ml.ml_mfp != NULL)
+	    {
+		apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
-	    if (!buf_valid(buf))	/* autocmd may delete the buffer */
-		break;
-	}
-    apply_autocmds(EVENT_VIMLEAVEPRE, NULL, NULL, FALSE, curbuf);
+		if (!buf_valid(buf))	/* autocmd may delete the buffer */
+		    break;
+	    }
+	apply_autocmds(EVENT_VIMLEAVEPRE, NULL, NULL, FALSE, curbuf);
+    }
 #endif
 
 #ifdef FEAT_VIMINFO
@@ -1319,7 +1323,8 @@ getout(exitval)
 #endif
 
 #ifdef FEAT_AUTOCMD
-    apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+    if (get_vim_var_nr(VV_DYING) <= 1)
+	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
 #endif
 
 #ifdef FEAT_PROFILE
