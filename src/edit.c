@@ -2164,6 +2164,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
     int		i, c;
     int		actual_len;		/* Take multi-byte characters */
     int		actual_compl_length;	/* into account. */
+    int		min_len;
     int		*wca;			/* Wide character array. */
     int		has_lower = FALSE;
     int		was_letter = FALSE;
@@ -2204,6 +2205,11 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 #endif
 	    actual_compl_length = compl_length;
 
+	/* "actual_len" may be smaller than "actual_compl_length" when using
+	 * thesaurus, only use the minimum when comparing. */
+	min_len = actual_len < actual_compl_length
+					   ? actual_len : actual_compl_length;
+
 	/* Allocate wide character array for the completion and fill it. */
 	wca = (int *)alloc((unsigned)(actual_len * sizeof(int)));
 	if (wca != NULL)
@@ -2219,7 +2225,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 
 	    /* Rule 1: Were any chars converted to lower? */
 	    p = compl_orig_text;
-	    for (i = 0; i < actual_compl_length; ++i)
+	    for (i = 0; i < min_len; ++i)
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
@@ -2247,7 +2253,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 	    if (!has_lower)
 	    {
 		p = compl_orig_text;
-		for (i = 0; i < actual_compl_length; ++i)
+		for (i = 0; i < min_len; ++i)
 		{
 #ifdef FEAT_MBYTE
 		    if (has_mbyte)
@@ -2268,7 +2274,7 @@ ins_compl_add_infercase(str, len, icase, fname, dir, flags)
 
 	    /* Copy the original case of the part we typed. */
 	    p = compl_orig_text;
-	    for (i = 0; i < actual_compl_length; ++i)
+	    for (i = 0; i < min_len; ++i)
 	    {
 #ifdef FEAT_MBYTE
 		if (has_mbyte)
