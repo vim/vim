@@ -1399,6 +1399,7 @@ The commands are sorted on the non-optional part of their name.
 |:ruby|		:rub[y]		execute Ruby command
 |:rubydo|	:rubyd[o]	execute Ruby command for each line
 |:rubyfile|	:rubyf[ile]	execute Ruby script file
+|:rundo|	:rund[o]	read undo information from a file
 |:runtime|	:ru[ntime]	source vim scripts in 'runtimepath'
 |:rviminfo|	:rv[iminfo]	read from viminfo file
 |:substitute|	:s[ubstitute]	find and replace text
@@ -1564,6 +1565,7 @@ The commands are sorted on the non-optional part of their name.
 |:wq|		:wq		write to a file and quit window or Vim
 |:wqall|	:wqa[ll]	write all changed buffers and quit Vim
 |:wsverb|	:ws[verb]	pass the verb to workshop over IPC
+|:wundo|	:wu[ndo]	write undo information to a file
 |:wviminfo|	:wv[iminfo]	write to viminfo file
 |:xit|		:x[it]		write if buffer changed and quit window or Vim
 |:xall|		:xa[ll]		same as ":wqall"

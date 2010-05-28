@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:		Ruby
 " Maintainer:		Nikolai Weibull <now at bitwi.se>
-" Info:			$Id: ruby.vim,v 1.47 2008/06/29 04:18:43 tpope Exp $
+" Last Change:		2009 Dec 17
 " URL:			http://vim-ruby.rubyforge.org
 " Anon CVS:		See above site
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>
@@ -178,7 +178,7 @@ function s:LineHasOpeningBrackets(lnum)
 endfunction
 
 function s:Match(lnum, regex)
-  let col = match(getline(a:lnum), a:regex) + 1
+  let col = match(getline(a:lnum), '\C'.a:regex) + 1
   return col > 0 && !s:IsInStringOrComment(a:lnum, col) ? col : 0
 endfunction
 

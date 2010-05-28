@@ -2,7 +2,7 @@
 " Language:		Ruby
 " Function:		Syntax check and/or error reporting
 " Maintainer:		Tim Hammerquist <timh at rubyforge.org>
-" Info:			$Id: ruby.vim,v 1.13 2008/06/29 04:18:43 tpope Exp $
+" Last Change:		2008 Aug 1
 " URL:			http://vim-ruby.rubyforge.org
 " Anon CVS:		See above site
 " Release Coordinator:	Doug Kearns <dougkearns@gmail.com>

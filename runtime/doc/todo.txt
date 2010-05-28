@@ -33,6 +33,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 When Vim crashes it may run out of stack while executing autocommands.  Patch
 to not run autocommands when leaving Vim? (James Vega, 2010 May 23)
 
+Patch for invalid mem access in completion. (Dominique Pelle, 2010 May 26)
+
 Invalid memory access when deleting funcref variable.  Patch by Lech Lorens,
 2010 May 25.
 
@@ -128,6 +130,10 @@ Break undo when CTRL-R = changes the text?  Or save more lines?
 Change to C syntax folding to make it work much faster, but a bit less
 reliable. (Lech Lorens, 2009 Nov 9)  Enable with an option?
 Most time is spent in in_id_list().
+
+Slow combination of folding and PHP syntax highlighting.  Script to reproduce
+it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
+(Christian Brabandt, 2010 May 27)
 
 Check for unused functions, idea:
 http://blog.flameeyes.eu/2008/01/17/today-how-to-identify-unused-exported-functions-and-variables
@@ -1094,13 +1100,11 @@ Vim 7.3:
 - Win32 DOS and Win32 console version: test69 fails.
 - Win32 binary: vim -r fails. (Antonio Colombo)  Also on Unix.
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
+   Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- When running uninstall program from NSIS via install.exe, still need to
-  ask confirmation in console window, uninstaller doesn't wait.
-  Wait until the uninstaller is deleted -> doesn't work when cancelling
-  Wait until window is gone with EnumWindows (see os_win32.c).
 Patches to include:
 - Persistent undo bugs / fixes:
+    - binary distributed: ":wundo" always fails.
     - Patch not to allocate extra byte in U_ALLOC_LINE() (Dominique, 2010 May
       25)
     - Remove the old code when U_USE_MALLOC is not defined?
