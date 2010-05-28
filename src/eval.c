@@ -464,7 +464,7 @@ static int get_env_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
-static int call_func __ARGS((char_u *name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
+static int call_func __ARGS((char_u *func_name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static void emsg_funcname __ARGS((char *ermsg, char_u *name));
 static int non_zero_arg __ARGS((typval_T *argvars));
 
@@ -8029,9 +8029,9 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
  * Also returns OK when an error was encountered while executing the function.
  */
     static int
-call_func(name, len, rettv, argcount, argvars, firstline, lastline,
+call_func(func_name, len, rettv, argcount, argvars, firstline, lastline,
 						doesrange, evaluate, selfdict)
-    char_u	*name;		/* name of the function */
+    char_u	*func_name;	/* name of the function */
     int		len;		/* length of "name" */
     typval_T	*rettv;		/* return value goes here */
     int		argcount;	/* number of "argvars" */
@@ -8055,18 +8055,22 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
     int		i;
     int		llen;
     ufunc_T	*fp;
-    int		cc;
 #define FLEN_FIXED 40
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*fname;
+    char_u	*name;
+
+    /* Make a copy of the name, if it comes from a funcref variable it could
+     * be changed or deleted in the called function. */
+    name = vim_strnsave(func_name, len);
+    if (name == NULL)
+	return ret;
 
     /*
      * In a script change <SID>name() and s:name() to K_SNR 123_name().
      * Change <SNR>123_name() to K_SNR 123_name().
      * Use fname_buf[] when it fits, otherwise allocate memory (slow).
      */
-    cc = name[len];
-    name[len] = NUL;
     llen = eval_fname_script(name);
     if (llen > 0)
     {
@@ -8237,9 +8241,9 @@ call_func(name, len, rettv, argcount, argvars, firstline, lastline,
 	}
     }
 
-    name[len] = cc;
     if (fname != name && fname != fname_buf)
 	vim_free(fname);
+    vim_free(name);
 
     return ret;
 }
