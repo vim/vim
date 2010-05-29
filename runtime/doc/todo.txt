@@ -1089,18 +1089,11 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
-- Win32 DOS and Win32 console version: test69 fails.
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Persistent undo bugs / fixes:
     - Memory leak reproduced by Dominique Pelle, 2010 May 28.
-    - Compiling without FEAT_SPELL fails, functions used in undo code:
-	get2c, get4c, put_bytes (Ralf Schandl)
-    - binary distributed: ":wundo" always fails.
-    - Patch not to allocate extra byte in U_ALLOC_LINE() (Dominique Pelle,
-      2010 May 25)
-    - Remove the old code when U_USE_MALLOC is not defined?
     - When there is no undo info (undolevels negative), delete the undo file.
     - Need to check all values for evil manipulation.
     - Add undofile(name): get undo file name for buffer "name".
