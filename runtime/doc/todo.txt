@@ -1097,6 +1097,7 @@ Vim 7.3:
     - When there is no undo info (undolevels negative), delete the undo file.
     - Need to check all values for evil manipulation.
     - Add undofile(name): get undo file name for buffer "name".
+- patch for unused functions. (Dominique Pelle, 2010 May 29)
 - Also crypt the undo file.
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?

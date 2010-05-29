@@ -2,7 +2,7 @@
 " Language:	sed
 " Maintainer:	Haakon Riiser <hakonrk@fys.uio.no>
 " URL:		http://folk.uio.no/hakonrk/vim/syntax/sed.vim
-" Last Change:	2005 Dec 15
+" Last Change:	2010 May 29
 
 " For version 5.x: Clear all syntax items
 " For version 6.x: Quit when a syntax file was already loaded
@@ -49,7 +49,7 @@ syn match sedReplaceMeta    "&\|\\\($\|.\)" contains=sedTab contained
 " Metacharacters: $ * . \ ^ [ ~
 " @ is used as delimiter and treated on its own below
 let __at = char2nr("@")
-let __sed_i = char2nr(" ")
+let __sed_i = char2nr(" ") " ASCII: 32, EBCDIC: 64
 if has("ebcdic")
     let __sed_last = 255
 else
@@ -105,8 +105,8 @@ if version >= 508 || !exists("did_sed_syntax_inits")
     if exists("highlight_sedtabs")
 	HiLink sedTab		Todo
     endif
-    let __sed_i = 32
-    while __sed_i <= 126
+    let __sed_i = char2nr(" ") " ASCII: 32, EBCDIC: 64
+    while __sed_i <= __sed_last
 	exe "HiLink sedRegexp".__sed_i		"Macro"
 	exe "HiLink sedReplacement".__sed_i	"NONE"
 	let __sed_i = __sed_i + 1
@@ -115,7 +115,7 @@ if version >= 508 || !exists("did_sed_syntax_inits")
     delcommand HiLink
 endif
 
-unlet __sed_i __sed_delimiter __sed_metacharacters
+unlet __sed_i __sed_last __sed_delimiter __sed_metacharacters
 
 let b:current_syntax = "sed"
 

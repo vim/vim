@@ -6134,7 +6134,7 @@ emsgn(s, n)
 get2c(fd)
     FILE	*fd;
 {
-    long	n;
+    int		n;
 
     n = getc(fd);
     n = (n << 8) + getc(fd);
@@ -6148,7 +6148,7 @@ get2c(fd)
 get3c(fd)
     FILE	*fd;
 {
-    long	n;
+    int		n;
 
     n = getc(fd);
     n = (n << 8) + getc(fd);
@@ -6163,7 +6163,7 @@ get3c(fd)
 get4c(fd)
     FILE	*fd;
 {
-    long	n;
+    int		n;
 
     n = getc(fd);
     n = (n << 8) + getc(fd);

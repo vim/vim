@@ -1,4 +1,5 @@
 /* undo.c */
+void u_check __ARGS((int newhead_may_be_NULL));
 int u_save_cursor __ARGS((void));
 int u_save __ARGS((linenr_T top, linenr_T bot));
 int u_savesub __ARGS((linenr_T lnum));
