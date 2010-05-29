@@ -110,7 +110,7 @@ static char_u *u_get_undo_file_name __ARGS((char_u *, int reading));
 static void u_free_uhp __ARGS((u_header_T *uhp));
 static int serialize_uep __ARGS((u_entry_T *uep, FILE *fp));
 static void serialize_pos __ARGS((pos_T pos, FILE *fp));
-static void serialize_visualinfo __ARGS((visualinfo_T info, FILE *fp));
+static void serialize_visualinfo __ARGS((visualinfo_T *info, FILE *fp));
 #endif
 
 #ifdef U_USE_MALLOC
@@ -675,6 +675,9 @@ nomem:
 # define UF_END_MAGIC	    0xe7aa	/* magic after last header */
 # define UF_VERSION	    1		/* 2-byte undofile version number */
 
+static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
+static char_u e_corrupted[] = N_("E823: Corrupted undo file: %s");
+
 /*
  * Compute the hash for the current buffer text into hash[UNDO_HASH_SIZE].
  */
@@ -866,7 +869,7 @@ u_read_undo(name, hash)
     magic = get2c(fp);
     if (magic != UF_START_MAGIC)
     {
-        EMSG2(_("E823: Corrupted undo file: %s"), file_name);
+        EMSG2(_(e_corrupted), file_name);
         goto error;
     }
     version = get2c(fp);
@@ -876,7 +879,11 @@ u_read_undo(name, hash)
         goto error;
     }
 
-    fread(read_hash, UNDO_HASH_SIZE, 1, fp);
+    if (fread(read_hash, UNDO_HASH_SIZE, 1, fp) != 1)
+    {
+        EMSG2(_(e_corrupted), file_name);
+        goto error;
+    }
     line_count = (linenr_T)get4c(fp);
     if (memcmp(hash, read_hash, UNDO_HASH_SIZE) != 0
 				  || line_count != curbuf->b_ml.ml_line_count)
@@ -912,7 +919,7 @@ u_read_undo(name, hash)
     num_head = get4c(fp);
     seq_last = get4c(fp);
     seq_cur = get4c(fp);
-    seq_time = get4c(fp);
+    seq_time = get8ctime(fp);
 
     if (num_head < 0)
 	num_head = 0;
@@ -942,10 +949,10 @@ u_read_undo(name, hash)
         /* We're not actually trying to store pointers here. We're just storing
          * IDs so we can swizzle them into pointers later - hence the type
 	 * cast. */
-        uhp->uh_next = (u_header_T *)get4c(fp);
-        uhp->uh_prev = (u_header_T *)get4c(fp);
-        uhp->uh_alt_next = (u_header_T *)get4c(fp);
-        uhp->uh_alt_prev = (u_header_T *)get4c(fp);
+        uhp->uh_next = (u_header_T *)(long_u)get4c(fp);
+        uhp->uh_prev = (u_header_T *)(long_u)get4c(fp);
+        uhp->uh_alt_next = (u_header_T *)(long_u)get4c(fp);
+        uhp->uh_alt_prev = (u_header_T *)(long_u)get4c(fp);
         uhp->uh_seq = get4c(fp);
         if (uhp->uh_seq <= 0)
         {
@@ -972,7 +979,7 @@ u_read_undo(name, hash)
 	    unserialize_visualinfo(&info, fp);
 	}
 #endif
-        uhp->uh_time = get4c(fp);
+        uhp->uh_time = get8ctime(fp);
 
         /* Unserialize uep list. The first 4 bytes is the length of the
          * entire uep in bytes minus the length of the strings within.
@@ -1220,16 +1227,14 @@ serialize_pos(pos, fp)
  */
     static void
 serialize_visualinfo(info, fp)
-    visualinfo_T    info;
+    visualinfo_T    *info;
     FILE	    *fp;
 {
-    serialize_pos(info.vi_start, fp);
-    serialize_pos(info.vi_end, fp);
-    put_bytes(fp, (long_u)info.vi_mode, 4);
-    put_bytes(fp, (long_u)info.vi_curswant, 4);
+    serialize_pos(info->vi_start, fp);
+    serialize_pos(info->vi_end, fp);
+    put_bytes(fp, (long_u)info->vi_mode, 4);
+    put_bytes(fp, (long_u)info->vi_curswant, 4);
 }
-
-static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
 
 /*
  * Write the undo tree in an undo file.
@@ -1398,7 +1403,7 @@ u_write_undo(name, forceit, buf, hash)
     put_bytes(fp, (long_u)buf->b_u_numhead, 4);
     put_bytes(fp, (long_u)buf->b_u_seq_last, 4);
     put_bytes(fp, (long_u)buf->b_u_seq_cur, 4);
-    put_bytes(fp, (long_u)buf->b_u_seq_time, 4);
+    put_time(fp, buf->b_u_seq_time);
 
     /* Iteratively serialize UHPs and their UEPs from the top down.  */
     mark = ++lastmark;
@@ -1429,13 +1434,18 @@ u_write_undo(name, forceit, buf, hash)
             put_bytes(fp, (long_u)uhp->uh_flags, 2);
             /* Assume NMARKS will stay the same. */
             for (i = 0; i < NMARKS; ++i)
-            {
                 serialize_pos(uhp->uh_namedm[i], fp);
-            }
 #ifdef FEAT_VISUAL
-            serialize_visualinfo(uhp->uh_visual, fp);
+            serialize_visualinfo(&uhp->uh_visual, fp);
+#else
+	    {
+		visualinfo_T info;
+
+		memset(&info, 0, sizeof(visualinfo_T));
+		serialize_visualinfo(&info, fp);
+	    }
 #endif
-            put_bytes(fp, (long_u)uhp->uh_time, 4);
+            put_time(fp, uhp->uh_time);
 
             uep = uhp->uh_entry;
             while (uep != NULL)

@@ -1,11 +1,11 @@
 " Vim syntax file
 " Language:    FORTH
 " Maintainer:  Christian V. J. Brüssow <cvjb@cvjb.de>
-" Last Change: Sa 09 Feb 2008 13:27:29 CET
+" Last Change: Di 07 Jul 2009 21:38:45 CEST
 " Filenames:   *.fs,*.ft
 " URL:	       http://www.cvjb.de/comp/vim/forth.vim
 
-" $Id: forth.vim,v 1.11 2008/02/09 13:17:01 bruessow Exp $
+" $Id: forth.vim,v 1.12 2008/07/07 21:39:12 bruessow Exp $
 
 " The list of keywords is incomplete, compared with the offical ANS
 " wordlist. If you use this language, please improve it, and send me
@@ -16,6 +16,11 @@
 " for forth.vim).
 
 " Many Thanks to...
+"
+" 2009-06-28:
+" Josh Grams send a patch to allow the parenthesis comments at the
+" beginning of a line. That patch also fixed a typo in one of the
+" comments.
 "
 " 2008-02-09:
 " Shawn K. Quinn <sjquinn at speakeasy dot net> send a big patch with
@@ -209,7 +214,7 @@ syn keyword forthConversion <<# <# # #> #>> #S (NUMBER) (NUMBER?) CONVERT D>F
 syn keyword forthConversion D>S DIGIT DPL F>D HLD HOLD NUMBER S>D SIGN >NUMBER
 syn keyword forthConversion F>S S>F
 
-" interptreter, wordbook, compiler
+" interpreter, wordbook, compiler
 syn keyword forthForth (LOCAL) BYE COLD ABORT >BODY >NEXT >LINK CFA >VIEW HERE
 syn keyword forthForth PAD WORDS VIEW VIEW> N>LINK NAME> LINK> L>NAME FORGET
 syn keyword forthForth BODY> ASSERT( ASSERT0( ASSERT1( ASSERT2( ASSERT3( )
@@ -258,7 +263,7 @@ syn region forthString start=+c\"+ end=+"+ end=+$+
 syn match forthComment '\\\s.*$' contains=forthTodo,forthSpaceError
 syn region forthComment start='\\S\s' end='.*' contains=forthTodo,forthSpaceError
 syn match forthComment '\.(\s[^)]*)' contains=forthTodo,forthSpaceError
-syn region forthComment start='\s(\s' skip='\\)' end=')' contains=forthTodo,forthSpaceError
+syn region forthComment start='\(^\|\s\)\zs(\s' skip='\\)' end=')' contains=forthTodo,forthSpaceError
 syn region forthComment start='/\*' end='\*/' contains=forthTodo,forthSpaceError
 
 " Include files

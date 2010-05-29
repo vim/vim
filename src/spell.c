@@ -854,9 +854,7 @@ static char_u *spell_enc __ARGS((void));
 static void int_wordlist_spl __ARGS((char_u *fname));
 static void spell_load_cb __ARGS((char_u *fname, void *cookie));
 static slang_T *spell_load_file __ARGS((char_u *fname, char_u *lang, slang_T *old_lp, int silent));
-static time_t get8c __ARGS((FILE *fd));
 static char_u *read_cnt_string __ARGS((FILE *fd, int cnt_bytes, int *lenp));
-static char_u *read_string __ARGS((FILE *fd, int cnt));
 static int read_region_section __ARGS((FILE *fd, slang_T *slang, int len));
 static int read_charflags_section __ARGS((FILE *fd));
 static int read_prefcond_section __ARGS((FILE *fd, slang_T *lp));
@@ -2888,7 +2886,7 @@ spell_load_file(fname, lang, old_lp, silent)
 		break;
 
 	    case SN_SUGFILE:
-		lp->sl_sugtime = get8c(fd);		/* <timestamp> */
+		lp->sl_sugtime = get8ctime(fd);		/* <timestamp> */
 		break;
 
 	    case SN_NOSPLITSUGS:
@@ -2983,66 +2981,6 @@ endOK:
 }
 
 /*
- * Read 2 bytes from "fd" and turn them into an int, MSB first.
- */
-    int
-get2c(fd)
-    FILE	*fd;
-{
-    long	n;
-
-    n = getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
-}
-
-/*
- * Read 3 bytes from "fd" and turn them into an int, MSB first.
- */
-    int
-get3c(fd)
-    FILE	*fd;
-{
-    long	n;
-
-    n = getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
-}
-
-/*
- * Read 4 bytes from "fd" and turn them into an int, MSB first.
- */
-    int
-get4c(fd)
-    FILE	*fd;
-{
-    long	n;
-
-    n = getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    n = (n << 8) + getc(fd);
-    return n;
-}
-
-/*
- * Read 8 bytes from "fd" and turn them into a time_t, MSB first.
- */
-    static time_t
-get8c(fd)
-    FILE	*fd;
-{
-    time_t	n = 0;
-    int		i;
-
-    for (i = 0; i < 8; ++i)
-	n = (n << 8) + getc(fd);
-    return n;
-}
-
-/*
  * Read a length field from "fd" in "cnt_bytes" bytes.
  * Allocate memory, read the string into it and add a NUL at the end.
  * Returns NULL when the count is zero.
@@ -3074,39 +3012,6 @@ read_cnt_string(fd, cnt_bytes, cntp)
     str = read_string(fd, cnt);
     if (str == NULL)
 	*cntp = SP_OTHERERROR;
-    return str;
-}
-
-/*
- * Read a string of length "cnt" from "fd" into allocated memory.
- * Returns NULL when out of memory or unable to read that many bytes.
- */
-    static char_u *
-read_string(fd, cnt)
-    FILE	*fd;
-    int		cnt;
-{
-    char_u	*str;
-    int		i;
-    int		c;
-
-    /* allocate memory */
-    str = alloc((unsigned)cnt + 1);
-    if (str != NULL)
-    {
-	/* Read the string.  Quit when running into the EOF. */
-	for (i = 0; i < cnt; ++i)
-	{
-	    c = getc(fd);
-	    if (c == EOF)
-	    {
-		vim_free(str);
-		return NULL;
-	    }
-	    str[i] = c;
-	}
-	str[i] = NUL;
-    }
     return str;
 }
 
@@ -5113,7 +5018,6 @@ static void free_wordnode __ARGS((spellinfo_T *spin, wordnode_T *n));
 static void wordtree_compress __ARGS((spellinfo_T *spin, wordnode_T *root));
 static int node_compress __ARGS((spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, int *tot));
 static int node_equal __ARGS((wordnode_T *n1, wordnode_T *n2));
-static void put_sugtime __ARGS((spellinfo_T *spin, FILE *fd));
 static int write_vim_spell __ARGS((spellinfo_T *spin, char_u *fname));
 static void clear_node __ARGS((wordnode_T *node));
 static int put_node __ARGS((FILE *fd, wordnode_T *node, int idx, int regionmask, int prefixtree));
@@ -8012,61 +7916,6 @@ node_equal(n1, n2)
     return p1 == NULL && p2 == NULL;
 }
 
-/*
- * Write a number to file "fd", MSB first, in "len" bytes.
- */
-    int
-put_bytes(fd, nr, len)
-    FILE    *fd;
-    long_u  nr;
-    int	    len;
-{
-    int	    i;
-
-    for (i = len - 1; i >= 0; --i)
-	if (putc((int)(nr >> (i * 8)), fd) == EOF)
-	    return FAIL;
-    return OK;
-}
-
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
-/* This line is required for VC6 without the service pack.  Also see the
- * matching #pragma below. */
- #  pragma optimize("", off)
-# endif
-#endif
-
-/*
- * Write spin->si_sugtime to file "fd".
- */
-    static void
-put_sugtime(spin, fd)
-    spellinfo_T *spin;
-    FILE	*fd;
-{
-    int		c;
-    int		i;
-
-    /* time_t can be up to 8 bytes in size, more than long_u, thus we
-     * can't use put_bytes() here. */
-    for (i = 7; i >= 0; --i)
-	if (i + 1 > (int)sizeof(time_t))
-	    /* ">>" doesn't work well when shifting more bits than avail */
-	    putc(0, fd);
-	else
-	{
-	    c = (unsigned)spin->si_sugtime >> (i * 8);
-	    putc(c, fd);
-	}
-}
-
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
- #  pragma optimize("", on)
-# endif
-#endif
-
 static int
 #ifdef __BORLANDC__
 _RTLENTRYF
@@ -8384,7 +8233,7 @@ write_vim_spell(spin, fname)
 
 	/* Set si_sugtime and write it to the file. */
 	spin->si_sugtime = time(NULL);
-	put_sugtime(spin, fd);				/* <timestamp> */
+	put_time(fd, spin->si_sugtime);			/* <timestamp> */
     }
 
     /* SN_NOSPLITSUGS: nothing
@@ -9106,7 +8955,7 @@ sug_write(spin, fname)
     putc(VIMSUGVERSION, fd);				/* <versionnr> */
 
     /* Write si_sugtime to the file. */
-    put_sugtime(spin, fd);				/* <timestamp> */
+    put_time(fd, spin->si_sugtime);			/* <timestamp> */
 
     /*
      * <SUGWORDTREE>
@@ -11059,7 +10908,7 @@ suggest_load_files()
 
 	    /* Check the timestamp, it must be exactly the same as the one in
 	     * the .spl file.  Otherwise the word numbers won't match. */
-	    timestamp = get8c(fd);			/* <timestamp> */
+	    timestamp = get8ctime(fd);			/* <timestamp> */
 	    if (timestamp != slang->sl_sugtime)
 	    {
 		EMSG2(_("E781: .sug file doesn't match .spl file: %s"),

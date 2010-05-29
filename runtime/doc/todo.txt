@@ -30,11 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for invalid mem access in completion. (Dominique Pelle, 2010 May 26)
-
-Invalid memory access when deleting funcref variable.  Patch by Lech Lorens,
-2010 May 25.
-
 Fixes for broken URLs:
     Benjamin Haskell, 2010 May 25
     Christian Brabandt, 2010 May 26, two messages
@@ -1095,26 +1090,29 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 - Win32 DOS and Win32 console version: test69 fails.
-- Win32 binary: vim -r fails. (Antonio Colombo)  Also on Unix.
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-Patches to include:
 - Persistent undo bugs / fixes:
+    - Memory leak reproduced by Dominique Pelle, 2010 May 28.
+    - Compiling without FEAT_SPELL fails, functions used in undo code:
+	get2c, get4c, put_bytes (Ralf Schandl)
     - binary distributed: ":wundo" always fails.
-    - Patch not to allocate extra byte in U_ALLOC_LINE() (Dominique, 2010 May
-      25)
+    - Patch not to allocate extra byte in U_ALLOC_LINE() (Dominique Pelle,
+      2010 May 25)
     - Remove the old code when U_USE_MALLOC is not defined?
     - When there is no undo info (undolevels negative), delete the undo file.
     - Need to check all values for evil manipulation.
     - Add undofile(name): get undo file name for buffer "name".
-- Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
-  May 23)
 - Also crypt the undo file.
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?
 - Do profiling on sha256 code to find obvious bottlenecks.
 - Do profiling on crypt code to find obvious bottlenecks.
+- Make 'clipboard' global-local, for "html"?  Christian J. Robinson.
+Patches to include:
+- Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
+  May 23)
 - Use off_t instead of long for bytes in a buffer. (James Vega, 2010 May 22,
   update next day)
 - Include conceal patch?

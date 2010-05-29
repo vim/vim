@@ -100,4 +100,11 @@ int pathcmp __ARGS((const char *p, const char *q, int maxlen));
 int filewritable __ARGS((char_u *fname));
 int emsg3 __ARGS((char_u *s, char_u *a1, char_u *a2));
 int emsgn __ARGS((char_u *s, long n));
+int get2c __ARGS((FILE *fd));
+int get3c __ARGS((FILE *fd));
+int get4c __ARGS((FILE *fd));
+time_t get8ctime __ARGS((FILE *fd));
+char_u *read_string __ARGS((FILE *fd, int cnt));
+int put_bytes __ARGS((FILE *fd, long_u nr, int len));
+void put_time __ARGS((FILE *fd, time_t the_time));
 /* vim: set ft=c : */
