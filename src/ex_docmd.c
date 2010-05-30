@@ -8478,7 +8478,7 @@ ex_rundo(eap)
     char_u hash[UNDO_HASH_SIZE];
 
     u_compute_hash(hash);
-    u_read_undo(eap->arg, hash);
+    u_read_undo(eap->arg, hash, NULL);
 }
 #endif
 

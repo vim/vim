@@ -9,7 +9,7 @@ int undo_allowed __ARGS((void));
 void u_compute_hash __ARGS((char_u *hash));
 char_u *u_get_undo_file_name __ARGS((char_u *buf_ffname, int reading));
 void u_write_undo __ARGS((char_u *name, int forceit, buf_T *buf, char_u *hash));
-void u_read_undo __ARGS((char_u *name, char_u *hash));
+void u_read_undo __ARGS((char_u *name, char_u *hash, char_u *orig_name));
 void u_undo __ARGS((int count));
 void u_redo __ARGS((int count));
 void undo_time __ARGS((long step, int sec, int absolute));

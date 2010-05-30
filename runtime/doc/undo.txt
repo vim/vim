@@ -282,10 +282,15 @@ Reading an existing undo file may fail for several reasons:
 	the undo file cannot be used, it would corrupt the text.  This also
 	happens when 'encoding' differs from when the undo file was written.
 *E825*  The undo file does not contain valid contents and cannot be used.
+"Not reading undo file, owner differs"
+	The undo file is owned by someone else than the owner of the text
+	file.  For safety the undo file is not used.
 
 Writing an undo file may fail for these reasons:
 *E828*	The file to be written cannot be created.  Perhaps you do not have
 	write permissions in the directory.
+"Cannot write undo file in any directory in 'undodir'"
+	None of the directories in 'undodir' can be used.
 "Will not overwrite with undo file, cannot read"
 	A file exists with the name of the undo file to be written, but it
 	cannot be read.  You may want to delete this file or rename it.
@@ -293,6 +298,9 @@ Writing an undo file may fail for these reasons:
 	A file exists with the name of the undo file to be written, but it
 	does not start with the right magic number.  You may want to delete
 	this file or rename it.
+"Skipping undo file write, noting to undo"
+	There is no undo information not be written, nothing has been changed
+	or 'undolevels' is negative.
 *E829*	An error occurred while writing the undo file.  You may want to try
 	again.
 
