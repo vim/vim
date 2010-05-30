@@ -6260,9 +6260,10 @@ put_time(fd, the_time)
     /* time_t can be up to 8 bytes in size, more than long_u, thus we
      * can't use put_bytes() here.
      * Another problem is that ">>" may do an arithmetic shift that keeps the
-     * sign.  A cast to long_u may truncate if time_t is 8 bytes.  So only use
-     * a cast when it is 4 bytes, it's safe to assume that long_u is 4 bytes
-     * or more and when using 8 bytes the top bit won't be set. */
+     * sign.  This happens for large values of wtime.  A cast to long_u may
+     * truncate if time_t is 8 bytes.  So only use a cast when it is 4 bytes,
+     * it's safe to assume that long_u is 4 bytes or more and when using 8
+     * bytes the top bit won't be set. */
     for (i = 7; i >= 0; --i)
     {
 	if (i + 1 > (int)sizeof(time_t))
@@ -6270,11 +6271,11 @@ put_time(fd, the_time)
 	    putc(0, fd);
 	else
 	{
-	    /* use "i" in condition to avoid compiler warning */
-	    if (i >= 0 && sizeof(time_t) > 4)
-		c = wtime >> (i * 8);
-	    else
-		c = (long_u)wtime >> (i * 8);
+#if defined(SIZEOF_TIME_T) && SIZEOF_TIME_T > 4
+	    c = wtime >> (i * 8);
+#else
+	    c = (long_u)wtime >> (i * 8);
+#endif
 	    putc(c, fd);
 	}
     }

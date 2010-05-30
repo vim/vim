@@ -11238,6 +11238,49 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking size of time_t" >&5
+$as_echo_n "checking size of time_t... " >&6; }
+if test "${ac_cv_sizeof_time_t+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  as_fn_error "failed to compile test program" "$LINENO" 5
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <time.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", (int)sizeof(time_t));
+  exit(0);
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  ac_cv_sizeof_time_t=`cat conftestval`
+else
+  as_fn_error "failed to determine sizeof(time_t)" "$LINENO" 5
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sizeof_time_t" >&5
+$as_echo "$ac_cv_sizeof_time_t" >&6; }
+cat >>confdefs.h <<_ACEOF
+#define SIZEOF_TIME_T $ac_cv_sizeof_time_t
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking uint32_t is 32 bits" >&5
 $as_echo_n "checking uint32_t is 32 bits... " >&6; }
 if test "$cross_compiling" = yes; then :

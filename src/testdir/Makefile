@@ -23,7 +23,7 @@ SCRIPTS = test1.out test2.out test3.out test4.out test5.out test6.out \
 		test54.out test55.out test56.out test57.out test58.out \
 		test59.out test60.out test61.out test62.out test63.out \
 		test64.out test65.out test66.out test67.out test68.out \
-		test69.out test70.out test71.out
+		test69.out test70.out test71.out test72.out
 
 SCRIPTS_GUI = test16.out
 

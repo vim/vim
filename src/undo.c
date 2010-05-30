@@ -858,6 +858,8 @@ unserialize_uep(fp, error, file_name)
 	}
 	vim_memset(array, 0, sizeof(char_u *) * uep->ue_size);
     }
+    else
+	array = NULL;
     uep->ue_array = array;
 
     for (i = 0; i < uep->ue_size; ++i)
@@ -1365,7 +1367,6 @@ u_read_undo(name, hash)
 	if (num_read_uhps >= num_head)
 	{
 	    corruption_error("num_head", file_name);
-	    u_free_uhp(uhp);
 	    goto error;
 	}
 
@@ -1442,7 +1443,7 @@ u_read_undo(name, hash)
          * culling was done at undofile write time, and there can be uh_seq
          * gaps in the uhps.
          */
-        for (i = num_read_uhps - 1; i >= -1; i--)
+        for (i = num_read_uhps - 1; ; --i)
         {
             /* if i == -1, we've hit the leftmost side of the table, so insert
              * at uhp_table[0]. */

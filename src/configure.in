@@ -2988,6 +2988,29 @@ main()
 AC_MSG_RESULT($ac_cv_sizeof_int)
 AC_DEFINE_UNQUOTED(SIZEOF_INT, $ac_cv_sizeof_int)
 
+dnl Figure out sizeof(time_t) so that it can be used in #ifdef.
+AC_MSG_CHECKING(size of time_t)
+AC_CACHE_VAL(ac_cv_sizeof_time_t,
+	[AC_TRY_RUN([
+#include <stdio.h>
+#if STDC_HEADERS
+# include <stdlib.h>
+# include <stddef.h>
+#endif
+#include <time.h>
+main()
+{
+  FILE *f=fopen("conftestval", "w");
+  if (!f) exit(1);
+  fprintf(f, "%d\n", (int)sizeof(time_t));
+  exit(0);
+}],
+	    ac_cv_sizeof_time_t=`cat conftestval`,
+	    AC_MSG_ERROR([failed to determine sizeof(time_t)]),
+	    AC_MSG_ERROR([failed to compile test program]))])
+AC_MSG_RESULT($ac_cv_sizeof_time_t)
+AC_DEFINE_UNQUOTED(SIZEOF_TIME_T, $ac_cv_sizeof_time_t)
+
 dnl Make sure that uint32_t is really 32 bits unsigned.
 AC_MSG_CHECKING([uint32_t is 32 bits])
 AC_TRY_RUN([

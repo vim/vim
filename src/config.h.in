@@ -39,6 +39,9 @@
 /* Defined to the size of an int */
 #undef SIZEOF_INT
 
+/* Defined to the size of time_t */
+#undef SIZEOF_TIME_T
+
 /* Define when wchar_t is only 2 bytes. */
 #undef SMALL_WCHAR_T
 
