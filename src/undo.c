@@ -1918,6 +1918,8 @@ undo_time(step, sec, absolute)
 		last->uh_alt_next = uhp;
 		uhp->uh_alt_prev = last;
 
+		if (curbuf->b_u_oldhead == uhp)
+		    curbuf->b_u_oldhead = last;
 		uhp = last;
 		if (uhp->uh_next != NULL)
 		    uhp->uh_next->uh_prev = uhp;
