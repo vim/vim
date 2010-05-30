@@ -100,7 +100,6 @@ static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp)
 static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentry __ARGS((u_entry_T *, long));
 #ifdef FEAT_PERSISTENT_UNDO
-static char_u *u_get_undo_file_name __ARGS((char_u *, int reading));
 static void corruption_error __ARGS((char *msg, char_u *file_name));
 static void u_free_uhp __ARGS((u_header_T *uhp));
 static int serialize_uep __ARGS((u_entry_T *uep, FILE *fp));
@@ -698,7 +697,7 @@ u_compute_hash(hash)
  * When "reading" is FALSE use the first name where the directory exists.
  * Returns NULL when there is no place to write or no file to read.
  */
-    static char_u *
+    char_u *
 u_get_undo_file_name(buf_ffname, reading)
     char_u	*buf_ffname;
     int		reading;

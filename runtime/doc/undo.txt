@@ -243,12 +243,26 @@ respectively:
 You can use these in autocommands to explicitly specify the name of the
 history file.  E.g.: >
 
-	au BufReadPost * rundo %:h/UNDO/%:t
-	au BufWritePost * wundo %:h/UNDO/%:t
+	au BufReadPost * call ReadUndo()
+	au BufWritePost * call WriteUndo()
+	func ReadUndo()
+	  if filereadable(expand('%:h'). '/UNDO/' . expand('%:t'))
+	    rundo %:h/UNDO/%:t
+	  endif
+	endfunc
+	func WriteUndo()
+	  let dirname = expand('%:h') . '/UNDO'
+	  if !isdirectory(dirname)
+	    call mkdir(dirname)
+	  endif
+	  wundo %:h/UNDO/%:t
+	endfunc
 
 You should keep 'undofile' off, otherwise you end up with two undo files for
 every write.
-Note: I did not verify this always works!
+
+You can use the |undofile()| function to find out the file name that Vim would
+use.
 
 Note that while reading/writing files and 'undofile' is set most errors will
 be silent, unless 'verbose' is set.  With :wundo and :rundo you will get more

@@ -7867,6 +7867,7 @@ undo-tree	undo.txt	/*undo-tree*
 undo-two-ways	undo.txt	/*undo-two-ways*
 undo.txt	undo.txt	/*undo.txt*
 undo_ftplugin	usr_41.txt	/*undo_ftplugin*
+undofile()	eval.txt	/*undofile()*
 unicode	mbyte.txt	/*unicode*
 unix	os_unix.txt	/*unix*
 unlisted-buffer	windows.txt	/*unlisted-buffer*

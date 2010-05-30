@@ -828,7 +828,8 @@ startup vimrc: >
 DESKTOP					   *desktop.vim* *ft-desktop-syntax*
 
 Primary goal of this syntax file is to highlight .desktop and .directory files
-according to freedesktop.org standard: http://pdx.freedesktop.org/Standards/
+according to freedesktop.org standard:
+http://standards.freedesktop.org/desktop-entry-spec/latest/
 But actually almost none implements this standard fully.  Thus it will
 highlight all Unix ini files.  But you can force strict highlighting according
 to standard by placing this in your vimrc file: >

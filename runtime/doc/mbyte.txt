@@ -775,7 +775,7 @@ is suitable for complex input, such as CJK.
   For Chinese, there's a great XIM server named "xcin", you can input both
   Traditional and Simplified Chinese characters.  And it can accept other
   locale if you make a correct input table.  Xcin can be found at:
-  http://xcin.linux.org.tw/
+  http://cle.linux.org.tw/xcin/
   Others are scim: http://scim.freedesktop.org/ and fcitx:
   http://www.fcitx.org/
 
@@ -963,10 +963,10 @@ WHAT IS GLOBAL IME					*global-ime*
     language version of Global IME at same place.
 
     - Global IME detailed information.
-	http://www.microsoft.com/windows/ie/features/ime.asp
+	http://search.microsoft.com/results.aspx?q=global+ime
 
     - Active Input Method Manager (Global IME)
-	http://msdn.microsoft.com/workshop/misc/AIMM/aimm.asp
+	http://msdn.microsoft.com/en-us/library/aa741221(v=VS.85).aspx
 
     Support for Global IME is an experimental feature.
 

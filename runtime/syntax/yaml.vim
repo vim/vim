@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:         YAML (YAML Ain't Markup Language)
 " Maintainer:       Nikolai Weibull <now@bitwi.se>
-" Latest Revision:  2006-04-19
+" Latest Revision:  2010-05-30
 
 if exists("b:current_syntax")
   finish
@@ -17,7 +17,7 @@ syn region  yamlComment         display oneline start='\%(^\|\s\)#' end='$'
 
 syn match   yamlNodeProperty    '!\%(![^\\^%     ]\+\|[^!][^:/   ]*\)'
 
-syn match   yamlAnchor          '&.\+'
+syn match   yamlAnchor          '&[^ \t]\+'
 
 syn match   yamlAlias           '\*.\+'
 

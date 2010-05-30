@@ -731,6 +731,7 @@ static void f_tr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_trunc __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_type __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_undofile __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_values __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_virtcol __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_visualmode __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7825,6 +7826,7 @@ static struct fst
     {"trunc",		1, 1, f_trunc},
 #endif
     {"type",		1, 1, f_type},
+    {"undofile",	1, 1, f_undofile},
     {"values",		1, 1, f_values},
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
@@ -17581,6 +17583,23 @@ f_type(argvars, rettv)
 	default: EMSG2(_(e_intern2), "f_type()"); n = 0; break;
     }
     rettv->vval.v_number = n;
+}
+
+/*
+ * "undofile(name)" function
+ */
+    static void
+f_undofile(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    rettv->v_type = VAR_STRING;
+#ifdef FEAT_PERSISTENT_UNDO
+    rettv->vval.v_string = u_get_undo_file_name(get_tv_string(&argvars[0]),
+								       FALSE);
+#else
+    rettv->vval.v_string = NULL;
+#endif
 }
 
 /*

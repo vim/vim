@@ -1943,6 +1943,7 @@ tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 					to chars in {tostr}
 trunc( {expr}			Float	truncate Float {expr}
 type( {name})			Number	type of variable {name}
+undofile( {name})		String	undo file name for {name}
 values( {dict})			List	values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
@@ -5766,6 +5767,15 @@ type({expr})	The result is a Number, depending on the type of {expr}:
 			:if type(myvar) == type([])
 			:if type(myvar) == type({})
 			:if type(myvar) == type(0.0)
+
+undofile({name})					*undofile()*
+		Return the name of the undo file that would be used for a file
+		with name {name} when writing.  This uses the 'undodir'
+		option, finding directories that exist.  It does not check if
+		the undo file exist.
+		Useful in combination with |:wundo| and |:rundo|.
+		When compiled without the +persistent_undo option this always
+		returns an empty string.
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.	The |List| is

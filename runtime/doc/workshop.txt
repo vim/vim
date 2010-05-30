@@ -89,10 +89,10 @@ Without it the toolbar and signs will be disabled.
 
 The XPM library is provide by Arnaud Le Hors of the French National Institute
 for Research in Computer Science and Control.  It can be downloaded from
-http://koala.ilog.fr/ftp/pub/xpm.  The current release, as of this writing, is
-xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create the directory
-/usr/local/xpm and untar the file there you can use the uncommented lines in
-the Makefile without changing them.  If you use another xpm directory you will
-need to change the XPM_DIR in src/Makefile.
+http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
+writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create
+the directory /usr/local/xpm and untar the file there you can use the
+uncommented lines in the Makefile without changing them.  If you use another
+xpm directory you will need to change the XPM_DIR in src/Makefile.
 
  vim:tw=78:ts=8:ft=help:norl:

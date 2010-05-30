@@ -183,7 +183,8 @@ anyway you need an additional tool which gives you access to the clipboard
 from within a vio application.  The freeware package clipbrd.zip by Stefan
 Gruendel can be used for this purpose.  You might download the package
 including precompiled binaries and all sources from:
-	http://www.stellarcom.org/vim/index.html
+	http://www.os2site.com/sw/util/clipboard/index.html
+	http://download.uni-hd.de/ftp/pub/os2/pmtools/
 
 Installation of this package is straight forward: just put the two executables
 that come with this package into a directory within your PATH for Vim should

@@ -490,7 +490,7 @@ Traditional Chinese fonts available at:
 
 You can find descriptions of the various fonts in the read me file at
 
-  http://examples.oreilly.com/cjkvinfo/adobe/00README
+  http://examples.oreilly.de/english_examples/cjkvinfo/adobe/00README
 
 Please read your printer documentation on how to install new fonts.
 
