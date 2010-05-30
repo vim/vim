@@ -2827,7 +2827,7 @@ check_marks_read()
 }
 #endif
 
-#ifdef FEAT_CRYPT
+#if defined(FEAT_CRYPT) || defined(PROTO)
 /*
  * Get the crypt method used for a file from "ptr[len]", the magic text at the
  * start of the file.
@@ -2926,7 +2926,129 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, did_ask)
 
     return cryptkey;
 }
-#endif
+
+/*
+ * Check for magic number used for encryption.  Applies to the current buffer.
+ * If found and decryption is possible returns OK;
+ */
+    int
+prepare_crypt_read(fp)
+    FILE	*fp;
+{
+    int		method;
+    char_u	buffer[CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2];
+
+    if (fread(buffer, CRYPT_MAGIC_LEN, 1, fp) != 1)
+	return FAIL;
+    method = get_crypt_method((char *)buffer,
+					CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX);
+    if (method < 0 || method != curbuf->b_p_cm)
+	return FAIL;
+
+    if (method == 0)
+	crypt_init_keys(curbuf->b_p_key);
+    else
+    {
+	int seed_len = crypt_seed_len[method];
+
+	if (fread(buffer, seed_len, 1, fp) != 1)
+	    return FAIL;
+	bf_key_init(curbuf->b_p_key);
+	bf_ofb_init(buffer, seed_len);
+    }
+    return OK;
+}
+
+/*
+ * Prepare for writing encrypted bytes for buffer "buf".
+ * Returns a pointer to an allocated header of length "*lenp".
+ */
+    char_u *
+prepare_crypt_write(buf, lenp)
+    buf_T *buf;
+    int   *lenp;
+{
+    char_u  *header;
+    int	    seed_len = crypt_seed_len[buf->b_p_cm];
+
+    header = alloc_clear(CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2);
+    if (header != NULL)
+    {
+	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
+	vim_strncpy(header, (char_u *)crypt_magic[use_crypt_method],
+							     CRYPT_MAGIC_LEN);
+	if (buf->b_p_cm == 0)
+	    crypt_init_keys(buf->b_p_key);
+	else
+	{
+	    /* Using blowfish, add seed. */
+	    sha2_seed(header + CRYPT_MAGIC_LEN, seed_len); /* create iv */
+	    bf_ofb_init(header + CRYPT_MAGIC_LEN, seed_len);
+	    bf_key_init(buf->b_p_key);
+	}
+    }
+    *lenp = CRYPT_MAGIC_LEN + seed_len;
+    return header;
+}
+
+/*
+ * Like fwrite() but crypt the bytes when 'key' is set.
+ * Returns 1 if successful.
+ */
+    size_t
+fwrite_crypt(buf, ptr, len, fp)
+    buf_T	*buf;
+    char_u	*ptr;
+    size_t	len;
+    FILE	*fp;
+{
+    char_u  *copy;
+    char_u  small_buf[100];
+    int	    ztemp, t;
+    size_t  i;
+
+    if (*buf->b_p_key == NUL)
+	return fwrite(ptr, len, (size_t)1, fp);
+    if (len < 100)
+	copy = small_buf;  /* no malloc()/free() for short strings */
+    else
+    {
+	copy = lalloc(len, FALSE);
+	if (copy == NULL)
+	    return 0;
+    }
+    for (i = 0; i < len; ++i)
+    {
+	ztemp = ptr[i];
+	copy[i] = ZENCODE(ztemp, t);
+    }
+    i = fwrite(copy, len, (size_t)1, fp);
+    if (copy != small_buf)
+	vim_free(copy);
+    return i;
+}
+
+/*
+ * Read a string of length "len" from "fd".
+ * When 'key' is set decrypt the bytes.
+ */
+    char_u *
+read_string_decrypt(buf, fd, len)
+    buf_T   *buf;
+    FILE    *fd;
+    int	    len;
+{
+    char_u  *ptr;
+    char_u  *p;
+
+    ptr = read_string(fd, len);
+    if (ptr != NULL || *buf->b_p_key != NUL)
+	for (p = ptr; p < ptr + len; ++p)
+	    ZDECODE(*p);
+    return ptr;
+}
+
+#endif  /* FEAT_CRYPT */
 
 #ifdef UNIX
     static void
@@ -4323,34 +4445,25 @@ restore_backup:
 #ifdef FEAT_CRYPT
     if (*buf->b_p_key && !filtering)
     {
-	char_u header[CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2];
-	int seed_len = crypt_seed_len[buf->b_p_cm];
+	char_u *header;
+	int    header_len;
 
-	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
-
-	vim_memset(header, 0, sizeof(header));
-	vim_strncpy(header, (char_u *)crypt_magic[use_crypt_method],
-							     CRYPT_MAGIC_LEN);
-
-	if (buf->b_p_cm == 0)
-	    crypt_init_keys(buf->b_p_key);
+	header = prepare_crypt_write(buf, &header_len);
+	if (header == NULL)
+	    end = 0;
 	else
 	{
-	    /* Using blowfish, add seed. */
-	    sha2_seed(header + CRYPT_MAGIC_LEN, seed_len); /* create iv */
-	    bf_ofb_init(header + CRYPT_MAGIC_LEN, seed_len);
-	    bf_key_init(buf->b_p_key);
+	    /* Write magic number, so that Vim knows that this file is
+	     * encrypted when reading it again.  This also undergoes utf-8 to
+	     * ucs-2/4 conversion when needed. */
+	    write_info.bw_buf = header;
+	    write_info.bw_len = header_len;
+	    write_info.bw_flags = FIO_NOCONVERT;
+	    if (buf_write_bytes(&write_info) == FAIL)
+		end = 0;
+	    wb_flags |= FIO_ENCRYPTED;
+	    vim_free(header);
 	}
-
-	/* Write magic number, so that Vim knows that this file is
-	 * encrypted when reading it again.  This also undergoes utf-8 to
-	 * ucs-2/4 conversion when needed. */
-	write_info.bw_buf = (char_u *)header;
-	write_info.bw_len = CRYPT_MAGIC_LEN + seed_len;
-	write_info.bw_flags = FIO_NOCONVERT;
-	if (buf_write_bytes(&write_info) == FAIL)
-	    end = 0;
-	wb_flags |= FIO_ENCRYPTED;
     }
 #endif
 
@@ -5558,7 +5671,7 @@ buf_write_bytes(ip)
 
 	for (i = 0; i < len; i++)
 	{
-	    ztemp  = buf[i];
+	    ztemp = buf[i];
 	    buf[i] = ZENCODE(ztemp, t);
 	}
     }

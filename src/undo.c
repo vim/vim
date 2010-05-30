@@ -103,9 +103,9 @@ static void u_freeentry __ARGS((u_entry_T *, long));
 static void corruption_error __ARGS((char *msg, char_u *file_name));
 static void u_free_uhp __ARGS((u_header_T *uhp));
 static int serialize_header __ARGS((FILE *fp, buf_T *buf, char_u *hash));
-static int serialize_uhp __ARGS((FILE *fp, u_header_T *uhp));
+static int serialize_uhp __ARGS((FILE *fp, buf_T *buf, u_header_T *uhp));
 static u_header_T *unserialize_uhp __ARGS((FILE *fp, char_u *file_name));
-static int serialize_uep __ARGS((u_entry_T *uep, FILE *fp));
+static int serialize_uep __ARGS((FILE *fp, buf_T *buf, u_entry_T *uep));
 static u_entry_T *unserialize_uep __ARGS((FILE *fp, int *error, char_u *file_name));
 static void serialize_pos __ARGS((pos_T pos, FILE *fp));
 static void unserialize_pos __ARGS((pos_T *pos, FILE *fp));
@@ -670,6 +670,7 @@ nomem:
 # define UF_ENTRY_MAGIC		0xf518	/* magic at start of entry */
 # define UF_ENTRY_END_MAGIC	0x3581	/* magic after last entry */
 # define UF_VERSION		1	/* 2-byte undofile version number */
+# define UF_VERSION_CRYPT	0x8001	/* idem, encrypted */
 
 static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
 
@@ -811,7 +812,28 @@ serialize_header(fp, buf, hash)
     /* Start writing, first the magic marker and undo info version. */
     if (fwrite(UF_START_MAGIC, (size_t)UF_START_MAGIC_LEN, (size_t)1, fp) != 1)
 	return FAIL;
-    put_bytes(fp, (long_u)UF_VERSION, 2);
+
+    /* If the buffer is encrypted then all text bytes following will be
+     * encrypted.  Numbers and other info is not crypted. */
+#ifdef FEAT_CRYPT
+    if (*buf->b_p_key)
+    {
+	char_u *header;
+	int    header_len;
+
+	put_bytes(fp, (long_u)UF_VERSION_CRYPT, 2);
+	header = prepare_crypt_write(buf, &header_len);
+	if (header == NULL)
+	    return FAIL;
+	len = fwrite(header, (size_t)header_len, (size_t)1, fp);
+	vim_free(header);
+	if (len != 1)
+	    return FAIL;
+    }
+    else
+#endif
+	put_bytes(fp, (long_u)UF_VERSION, 2);
+
 
     /* Write a hash of the buffer text, so that we can verify it is still the
      * same when reading the buffer text. */
@@ -822,7 +844,7 @@ serialize_header(fp, buf, hash)
     put_bytes(fp, (long_u)buf->b_ml.ml_line_count, 4);
     len = buf->b_u_line_ptr != NULL ? (int)STRLEN(buf->b_u_line_ptr) : 0;
     put_bytes(fp, (long_u)len, 4);
-    if (len > 0 && fwrite(buf->b_u_line_ptr, (size_t)len, (size_t)1, fp) != 1)
+    if (len > 0 && fwrite_crypt(buf, buf->b_u_line_ptr, (size_t)len, fp) != 1)
 	return FAIL;
     put_bytes(fp, (long_u)buf->b_u_line_lnum, 4);
     put_bytes(fp, (long_u)buf->b_u_line_colnr, 4);
@@ -841,8 +863,9 @@ serialize_header(fp, buf, hash)
 }
 
     static int
-serialize_uhp(fp, uhp)
+serialize_uhp(fp, buf, uhp)
     FILE	*fp;
+    buf_T	*buf;
     u_header_T	*uhp;
 {
     int		i;
@@ -882,7 +905,7 @@ serialize_uhp(fp, uhp)
     for (uep = uhp->uh_entry; uep != NULL; uep = uep->ue_next)
     {
 	put_bytes(fp, (long_u)UF_ENTRY_MAGIC, 2);
-	if (serialize_uep(uep, fp) == FAIL)
+	if (serialize_uep(fp, buf, uep) == FAIL)
 	    return FAIL;
     }
     put_bytes(fp, (long_u)UF_ENTRY_END_MAGIC, 2);
@@ -971,9 +994,10 @@ unserialize_uhp(fp, file_name)
  * Serialize "uep" to "fp".
  */
     static int
-serialize_uep(uep, fp)
-    u_entry_T	*uep;
+serialize_uep(fp, buf, uep)
     FILE	*fp;
+    buf_T	*buf;
+    u_entry_T	*uep;
 {
     int		i;
     size_t	len;
@@ -987,7 +1011,7 @@ serialize_uep(uep, fp)
 	len = STRLEN(uep->ue_array[i]);
         if (put_bytes(fp, (long_u)len, 4) == FAIL)
 	    return FAIL;
-        if (len > 0 && fwrite(uep->ue_array[i], len, (size_t)1, fp) != 1)
+        if (len > 0 && fwrite_crypt(buf, uep->ue_array[i], len, fp) != 1)
 	    return FAIL;
     }
     return OK;
@@ -1034,7 +1058,7 @@ unserialize_uep(fp, error, file_name)
     {
 	line_len = get4c(fp);
 	if (line_len >= 0)
-	    line = read_string(fp, line_len);
+	    line = read_string_decrypt(curbuf, fp, line_len);
 	else
 	{
 	    line = NULL;
@@ -1333,7 +1357,7 @@ u_write_undo(name, forceit, buf, hash)
 #ifdef U_DEBUG
 	    ++headers_written;
 #endif
-	    if (serialize_uhp(fp, uhp) == FAIL)
+	    if (serialize_uhp(fp, buf, uhp) == FAIL)
 		goto write_error;
         }
 
@@ -1478,7 +1502,20 @@ u_read_undo(name, hash, orig_name)
         goto error;
     }
     version = get2c(fp);
-    if (version != UF_VERSION)
+    if (version == UF_VERSION_CRYPT)
+    {
+#ifdef FEAT_CRYPT
+	if (prepare_crypt_read(fp) == FAIL)
+	{
+	    EMSG2(_("E826: Undo file decryption failed: %s"), file_name);
+	    goto error;
+	}
+#else
+        EMSG2(_("E826: Undo file is encrypted: %s"), file_name);
+        goto error;
+#endif
+    }
+    else if (version != UF_VERSION)
     {
         EMSG2(_("E824: Incompatible undo file: %s"), file_name);
         goto error;
@@ -1510,7 +1547,7 @@ u_read_undo(name, hash, orig_name)
     if (str_len < 0)
         goto error;
     if (str_len > 0)
-	line_ptr = read_string(fp, str_len);
+	line_ptr = read_string_decrypt(curbuf, fp, str_len);
     line_lnum = (linenr_T)get4c(fp);
     line_colnr = (colnr_T)get4c(fp);
     if (line_lnum < 0 || line_colnr < 0)
@@ -1634,10 +1671,6 @@ u_read_undo(name, hash, orig_name)
     curbuf->b_u_oldhead = old_idx < 0 ? NULL : uhp_table[old_idx];
     curbuf->b_u_newhead = new_idx < 0 ? NULL : uhp_table[new_idx];
     curbuf->b_u_curhead = cur_idx < 0 ? NULL : uhp_table[cur_idx];
-#ifdef U_DEBUG
-    if (curbuf->b_u_curhead != NULL)
-	corruption_error("curhead not NULL", file_name);
-#endif
     curbuf->b_u_line_ptr = line_ptr;
     curbuf->b_u_line_lnum = line_lnum;
     curbuf->b_u_line_colnr = line_colnr;

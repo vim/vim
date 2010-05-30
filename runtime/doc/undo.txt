@@ -225,6 +225,9 @@ after the undo file was written, to prevent corruption.
 Undo files are normally saved in the same directory as the file.  This can be
 changed with the 'undodir' option.
 
+When the file is encrypted, the text in the undo file is also crypted.  The
+same key and method is used. |encryption|
+
 You can also save and restore undo histories by using ":wundo" and ":rundo"
 respectively:
 							*:wundo* *:rundo*

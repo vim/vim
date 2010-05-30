@@ -1,6 +1,6 @@
 " Vim Compiler File
 " Compiler:     Perl syntax checks (perl -Wc)
-" Maintainer:   Christian J. Robinson <infynity@onewest.net>
+" Maintainer:   Christian J. Robinson <heptite@gmail.com>
 " Last Change:  2006 Aug 13
 
 if exists("current_compiler")

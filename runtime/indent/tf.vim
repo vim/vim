@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:     tf (TinyFugue)
-" Maintainer:   Christian J. Robinson <infynity@onewest.net>
-" URL:          http://www.infynity.spodzone.com/vim/indent/tf.vim
+" Maintainer:   Christian J. Robinson <heptite@gmail.com>
+" URL:          http://christianrobinson.name/vim/indent/tf.vim
 " Last Change:  2002 May 29
 
 " Only load this indent file when no other was loaded.
