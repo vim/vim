@@ -1090,7 +1090,6 @@ Vim 7.3:
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Persistent undo bugs / fixes:
     - Need to check all values for evil manipulation.
-- patch for unused functions. (Dominique Pelle, 2010 May 29)
 - Also crypt the undo file.
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?

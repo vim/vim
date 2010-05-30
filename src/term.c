@@ -2609,6 +2609,8 @@ out_char_nf(c)
 	out_flush();
 }
 
+#if defined(FEAT_TITLE) || defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI) \
+    || defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * A never-padding out_str.
  * use this whenever you don't want to run the string through tputs.
@@ -2631,6 +2633,7 @@ out_str_nf(s)
     if (p_wd)
 	out_flush();
 }
+#endif
 
 /*
  * out_str(s): Put a character string a byte at a time into the output buffer.
@@ -4361,7 +4364,7 @@ check_termcode(max_offset, buf, buflen)
 		 *  ###   Y cursor position padded to 3 digits
 		 * (s-x)  SHIFT key pressed - not pressed x not reporting
 		 * (c-x)  CTRL key pressed - not pressed x not reporting
-		 * \033\\ terminateing sequence
+		 * \033\\ terminating sequence
 		 */
 
 		p = tp + slen;
@@ -4607,7 +4610,7 @@ check_termcode(max_offset, buf, buflen)
 # ifdef FEAT_MOUSE_PTERM
 	    if (key_name[0] == (int)KS_PTERM_MOUSE)
 	    {
-		int button, num_clicks, action, mc, mr;
+		int button, num_clicks, action;
 
 		p = tp + slen;
 

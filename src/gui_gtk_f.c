@@ -172,12 +172,13 @@ gtk_form_move(GtkForm	*form,
     }
 }
 
+#if !defined(HAVE_GTK2) || defined(PROTO)
     void
 gtk_form_set_size(GtkForm *form, guint width, guint height)
 {
     g_return_if_fail(GTK_IS_FORM(form));
 
-    /* prevent unneccessary calls */
+    /* prevent useless calls */
     if (form->width == width && form->height == height)
 	return;
     form->width = width;
@@ -190,6 +191,7 @@ gtk_form_set_size(GtkForm *form, guint width, guint height)
     gtk_container_queue_resize(GTK_CONTAINER(GTK_WIDGET(form)->parent));
 #endif
 }
+#endif
 
     void
 gtk_form_freeze(GtkForm *form)
