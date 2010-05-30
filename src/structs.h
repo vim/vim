@@ -342,18 +342,6 @@ struct m_info
 };
 
 /*
- * structure used to link blocks in the list of allocated blocks.
- */
-typedef struct m_block mblock_T;
-struct m_block
-{
-    mblock_T	*mb_next;	/* pointer to next allocated block */
-    size_t	mb_size;	/* total size of all chunks in this block */
-    size_t	mb_maxsize;	/* size of largest fee chunk */
-    minfo_T	mb_info;	/* head of free chunk list for this block */
-};
-
-/*
  * things used in memfile.c
  */
 
@@ -1285,14 +1273,6 @@ struct file_buffer
     char_u	*b_u_line_ptr;	/* saved line for "U" command */
     linenr_T	b_u_line_lnum;	/* line number of line in u_line */
     colnr_T	b_u_line_colnr;	/* optional column number */
-
-    /*
-     * The following only used in undo.c
-     */
-    mblock_T	b_block_head;	/* head of allocated memory block list */
-    minfo_T	*b_m_search;	/* pointer to chunk before previously
-				   allocated/freed chunk */
-    mblock_T	*b_mb_current;	/* block where m_search points in */
 
 #ifdef FEAT_INS_EXPAND
     int		b_scanned;	/* ^N/^P have scanned this buffer */

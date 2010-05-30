@@ -19,7 +19,7 @@ The ":messages" command can be used to view previously given messages.  This
 is especially useful when messages have been overwritten or truncated.  This
 depends on the 'shortmess' option.
 
-The number of remembered messages is fixed at 20 for the tiny version and 100
+The number of remembered messages is fixed at 20 for the tiny version and 200
 for other versions.
 
 								*g<*

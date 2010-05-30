@@ -1075,6 +1075,11 @@ u_write_undo(name, forceit, buf, hash)
     if (p_verbose > 0)
 	smsg((char_u *)_("Writing undo file: %s"), file_name);
 
+#ifdef U_DEBUG
+    /* Check if there already is a problem before writing. */
+    u_check(FALSE);
+#endif
+
 #ifdef UNIX
     /*
      * Try to set the group of the undo file same as the original file. If
@@ -1102,6 +1107,9 @@ u_write_undo(name, forceit, buf, hash)
 	mch_remove(file_name);
 	goto theend;
     }
+
+    /* Undo must be synced. */
+    u_sync(TRUE);
 
     /* Start writing, first the undo file header. */
     if (fwrite(UF_START_MAGIC, (size_t)UF_START_MAGIC_LEN, (size_t)1, fp) != 1)
@@ -1359,7 +1367,6 @@ u_read_undo(name, hash)
 					     num_head * sizeof(u_header_T *));
 	if (uhp_table == NULL)
 	    goto error;
-	vim_memset(uhp_table, 0, num_head * sizeof(u_header_T *));
     }
 
     while ((c = get2c(fp)) == UF_HEADER_MAGIC)
@@ -1436,37 +1443,13 @@ u_read_undo(name, hash)
             goto error;
         }
 
-        /* Insertion sort the uhp into the table by its uh_seq. This is
-         * required because, while the number of uhps is limited to
-         * num_head, and the uh_seq order is monotonic with respect to
-         * creation time, the starting uh_seq can be > 0 if any undolevel
-         * culling was done at undofile write time, and there can be uh_seq
-         * gaps in the uhps.
-         */
-        for (i = num_read_uhps - 1; ; --i)
-        {
-            /* if i == -1, we've hit the leftmost side of the table, so insert
-             * at uhp_table[0]. */
-            if (i == -1 || uhp->uh_seq > uhp_table[i]->uh_seq)
-            {
-                /* If we've had to move from the rightmost side of the table,
-                 * we have to shift everything to the right by one spot. */
-                if (num_read_uhps - i - 1 > 0)
-                {
-                    memmove(uhp_table + i + 2, uhp_table + i + 1,
-			      (num_read_uhps - i - 1) * sizeof(u_header_T *));
-                }
-                uhp_table[i + 1] = uhp;
-                break;
-            }
-            else if (uhp->uh_seq == uhp_table[i]->uh_seq)
-            {
-		corruption_error("duplicate uh_seq", file_name);
-		u_free_uhp(uhp);
-                goto error;
-            }
-        }
-        num_read_uhps++;
+	uhp_table[num_read_uhps++] = uhp;
+    }
+
+    if (num_read_uhps != num_head)
+    {
+	corruption_error("num_head", file_name);
+	goto error;
     }
 
     if (c != UF_HEADER_END_MAGIC)
@@ -1483,11 +1466,9 @@ u_read_undo(name, hash)
 # define SET_FLAG(j)
 #endif
 
-    /* We've organized all of the uhps into a table sorted by uh_seq. Now we
-     * iterate through the table and swizzle each sequence number we've
-     * stored in uh_* into a pointer corresponding to the header with that
-     * sequence number. Then free curbuf's old undo structure, give curbuf
-     * the updated {old,new,cur}head pointers, and then free the table. */
+    /* We have put all of the uhps into a table. Now we iterate through the
+     * table and swizzle each sequence number we've stored in uh_* into a
+     * pointer corresponding to the header with that sequence number. */
     for (i = 0; i < num_head; i++)
     {
         uhp = uhp_table[i];
@@ -1497,6 +1478,12 @@ u_read_undo(name, hash)
         {
             if (uhp_table[j] == NULL)
                 continue;
+            if (i != j && uhp_table[i]->uh_seq == uhp_table[j]->uh_seq)
+            {
+		corruption_error("duplicate uh_seq", file_name);
+                goto error;
+	    }
+
             if (uhp_table[j]->uh_seq == (long)uhp->uh_next)
 	    {
                 uhp->uh_next = uhp_table[j];
@@ -1541,6 +1528,10 @@ u_read_undo(name, hash)
     curbuf->b_u_oldhead = old_idx < 0 ? NULL : uhp_table[old_idx];
     curbuf->b_u_newhead = new_idx < 0 ? NULL : uhp_table[new_idx];
     curbuf->b_u_curhead = cur_idx < 0 ? NULL : uhp_table[cur_idx];
+#ifdef U_DEBUG
+    if (curbuf->b_u_curhead != NULL)
+	corruption_error("curhead not NULL", file_name);
+#endif
     curbuf->b_u_line_ptr = line_ptr;
     curbuf->b_u_line_lnum = line_lnum;
     curbuf->b_u_line_colnr = line_colnr;
@@ -1548,6 +1539,8 @@ u_read_undo(name, hash)
     curbuf->b_u_seq_last = seq_last;
     curbuf->b_u_seq_cur = seq_cur;
     curbuf->b_u_seq_time = seq_time;
+
+    curbuf->b_u_synced = TRUE;
     vim_free(uhp_table);
 
 #ifdef U_DEBUG
@@ -1566,7 +1559,7 @@ error:
     vim_free(line_ptr);
     if (uhp_table != NULL)
     {
-        for (i = 0; i < num_head; i++)
+        for (i = 0; i < num_read_uhps; i++)
             if (uhp_table[i] != NULL)
 		u_free_uhp(uhp_table[i]);
         vim_free(uhp_table);
