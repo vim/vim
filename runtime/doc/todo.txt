@@ -1093,9 +1093,6 @@ Vim 7.3:
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Persistent undo bugs / fixes:
-    - Memory leak reproduced by Dominique Pelle, 2010 May 28.
-    - When there is no undo info (undolevels negative), delete the undo file.
-      Already done?
     - Need to check all values for evil manipulation.
     - Add undofile(name): get undo file name for buffer "name".
 - patch for unused functions. (Dominique Pelle, 2010 May 29)

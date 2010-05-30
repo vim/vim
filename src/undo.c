@@ -998,7 +998,12 @@ u_write_undo(name, forceit, buf, hash)
 	if (file_name == NULL)
 	{
 	    if (p_verbose > 0)
-		smsg((char_u *)_("Cannot write undo file in any directory in 'undodir'"));
+	    {
+		verbose_enter();
+		smsg((char_u *)
+		   _("Cannot write undo file in any directory in 'undodir'"));
+		verbose_leave();
+	    }
 	    return;
 	}
     }
@@ -1040,8 +1045,15 @@ u_write_undo(name, forceit, buf, hash)
 	    if (fd < 0)
 	    {
 		if (name != NULL || p_verbose > 0)
-		    smsg((char_u *)_("Will not overwrite with undo file, cannot read: %s"),
+		{
+		    if (name == NULL)
+			verbose_enter();
+		    smsg((char_u *)
+		      _("Will not overwrite with undo file, cannot read: %s"),
 								   file_name);
+		    if (name == NULL)
+			verbose_leave();
+		}
 		goto theend;
 	    }
 	    else
@@ -1055,13 +1067,28 @@ u_write_undo(name, forceit, buf, hash)
 		      || memcmp(buf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
 		{
 		    if (name != NULL || p_verbose > 0)
+		    {
+			if (name == NULL)
+			    verbose_enter();
 			smsg((char_u *)_("Will not overwrite, this is not an undo file: %s"),
 								   file_name);
+			if (name == NULL)
+			    verbose_leave();
+		    }
 		    goto theend;
 		}
 	    }
 	}
 	mch_remove(file_name);
+    }
+
+    /* If there is no undo information at all, quit here after deleting any
+     * existing undo file. */
+    if (buf->b_u_numhead == 0)
+    {
+	if (p_verbose > 0)
+	    verb_msg((char_u *)_("Skipping undo file write, noting to undo"));
+	goto theend;
     }
 
     fd = mch_open((char *)file_name,
@@ -1073,10 +1100,14 @@ u_write_undo(name, forceit, buf, hash)
     }
     (void)mch_setperm(file_name, perm);
     if (p_verbose > 0)
+    {
+	verbose_enter();
 	smsg((char_u *)_("Writing undo file: %s"), file_name);
+	verbose_leave();
+    }
 
 #ifdef U_DEBUG
-    /* Check if there already is a problem before writing. */
+    /* Check there is no problem in undo info before writing. */
     u_check(FALSE);
 #endif
 
@@ -1290,7 +1321,11 @@ u_read_undo(name, hash)
         file_name = name;
 
     if (p_verbose > 0)
+    {
+	verbose_enter();
 	smsg((char_u *)_("Reading undo file: %s"), file_name);
+	verbose_leave();
+    }
     fp = mch_fopen((char *)file_name, "r");
     if (fp == NULL)
     {
@@ -1326,9 +1361,11 @@ u_read_undo(name, hash)
     {
         if (p_verbose > 0 || name != NULL)
         {
-            verbose_enter();
+	    if (name == NULL)
+		verbose_enter();
             give_warning((char_u *)_("File contents changed, cannot use undo info"), TRUE);
-            verbose_leave();
+	    if (name == NULL)
+		verbose_leave();
         }
         goto error;
     }
