@@ -939,7 +939,7 @@ static void addsigntype __ARGS((nbbuf_T *, int localsigntype, char_u *typeName,
 			char_u *tooltip, char_u *glyphfile,
 			char_u *fg, char_u *bg));
 static void print_read_msg __ARGS((nbbuf_T *buf));
-static void print_save_msg __ARGS((nbbuf_T *buf, long nchars));
+static void print_save_msg __ARGS((nbbuf_T *buf, off_t nchars));
 
 static int curPCtype = -1;
 
@@ -3837,7 +3837,7 @@ print_read_msg(buf)
     nbbuf_T	*buf;
 {
     int	    lnum = buf->bufp->b_ml.ml_line_count;
-    long    nchars = (long)buf->bufp->b_orig_size;
+    off_t   nchars = buf->bufp->b_orig_size;
     char_u  c;
 
     msg_add_fname(buf->bufp, buf->bufp->b_ffname);
@@ -3873,7 +3873,7 @@ print_read_msg(buf)
     static void
 print_save_msg(buf, nchars)
     nbbuf_T	*buf;
-    long	nchars;
+    off_t	nchars;
 {
     char_u	c;
     char_u	*p;
@@ -3885,7 +3885,7 @@ print_save_msg(buf, nchars)
 	c = FALSE;
 
 	msg_add_lines(c, buf->bufp->b_ml.ml_line_count,
-						(long)buf->bufp->b_orig_size);
+						buf->bufp->b_orig_size);
 
 	vim_free(keep_msg);
 	keep_msg = NULL;

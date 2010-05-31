@@ -39,6 +39,12 @@
 /* Defined to the size of an int */
 #undef SIZEOF_INT
 
+/* Defined to the size of a long */
+#undef SIZEOF_LONG
+
+/* Defined to the size of off_t */
+#undef SIZEOF_OFF_T
+
 /* Defined to the size of time_t */
 #undef SIZEOF_TIME_T
 
@@ -251,12 +257,13 @@
 #undef HAVE_SYS_SYSINFO_H
 #undef HAVE_SYS_SYSTEMINFO_H
 #undef HAVE_SYS_TIME_H
+#undef HAVE_SYS_TYPES_H
 #undef HAVE_SYS_UTSNAME_H
-#undef HAVE_WCHAR_H
-#undef HAVE_WCTYPE_H
 #undef HAVE_TERMCAP_H
 #undef HAVE_TERMIOS_H
 #undef HAVE_TERMIO_H
+#undef HAVE_WCHAR_H
+#undef HAVE_WCTYPE_H
 #undef HAVE_UNISTD_H
 #undef HAVE_UTIL_DEBUG_H
 #undef HAVE_UTIL_MSGI18N_H

@@ -1097,8 +1097,6 @@ Vim 7.3:
 - Do profiling on sha256 code to find obvious bottlenecks.
 - Do profiling on crypt code to find obvious bottlenecks.
 Patches to include:
-- Use off_t instead of long for bytes in a buffer. (James Vega, 2010 May 22,
-  update next day)
 - Include conceal patch?
   http://vince.negri.googlepages.com/
   http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines

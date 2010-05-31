@@ -1983,7 +1983,7 @@ ml_sync_all(check_file, check_char)
 	     */
 	    if (mch_stat((char *)buf->b_ffname, &st) == -1
 		    || st.st_mtime != buf->b_mtime_read
-		    || (size_t)st.st_size != buf->b_orig_size)
+		    || st.st_size != buf->b_orig_size)
 	    {
 		ml_preserve(buf, FALSE);
 		did_check_timestamps = FALSE;

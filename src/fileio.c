@@ -59,7 +59,7 @@ static void check_marks_read __ARGS((void));
 #endif
 #ifdef FEAT_CRYPT
 static int get_crypt_method __ARGS((char *ptr, int len));
-static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, long *filesizep, int newfile, int *did_ask));
+static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, off_t *filesizep, int newfile, int *did_ask));
 #endif
 #ifdef UNIX
 static void set_file_time __ARGS((char_u *fname, time_t atime, time_t mtime));
@@ -247,7 +247,7 @@ readfile(fname, sfname, from, lines_to_skip, lines_to_read, eap, flags)
     colnr_T	len;
     long	size = 0;
     char_u	*p;
-    long	filesize = 0;
+    off_t	filesize = 0;
     int		skip_read = FALSE;
 #ifdef FEAT_CRYPT
     char_u	*cryptkey = NULL;
@@ -2866,7 +2866,7 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, did_ask)
     char_u	*cryptkey;	/* previous encryption key or NULL */
     char_u	*ptr;		/* pointer to read bytes */
     long	*sizep;		/* length of read bytes */
-    long	*filesizep;	/* nr of bytes used from file */
+    off_t	*filesizep;	/* nr of bytes used from file */
     int		newfile;	/* editing a new buffer */
     int		*did_ask;	/* flag: whether already asked for key */
 {
@@ -5222,7 +5222,7 @@ msg_add_fileformat(eol_type)
 msg_add_lines(insert_space, lnum, nchars)
     int	    insert_space;
     long    lnum;
-    long    nchars;
+    off_t   nchars;
 {
     char_u  *p;
 
@@ -5231,7 +5231,13 @@ msg_add_lines(insert_space, lnum, nchars)
     if (insert_space)
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
-	sprintf((char *)p, "%ldL, %ldC", lnum, nchars);
+	sprintf((char *)p,
+#ifdef LONG_LONG_OFF_T
+		"%ldL, %lldC",
+#else
+		"%ldL, %ldC",
+#endif
+		lnum, nchars);
     else
     {
 	if (lnum == 1)
@@ -5242,7 +5248,13 @@ msg_add_lines(insert_space, lnum, nchars)
 	if (nchars == 1)
 	    STRCPY(p, _("1 character"));
 	else
-	    sprintf((char *)p, _("%ld characters"), nchars);
+	    sprintf((char *)p,
+#ifdef LONG_LONG_OFF_T
+		    _("%lld characters"),
+#else
+		    _("%ld characters"),
+#endif
+		    nchars);
     }
 }
 
@@ -6813,7 +6825,7 @@ buf_check_timestamp(buf, focus)
 #if defined(FEAT_CON_DIALOG) || defined(FEAT_GUI_DIALOG)
     int		can_reload = FALSE;
 #endif
-    size_t	orig_size = buf->b_orig_size;
+    off_t	orig_size = buf->b_orig_size;
     int		orig_mode = buf->b_orig_mode;
 #ifdef FEAT_GUI
     int		save_mouse_correct = need_mouse_correct;
@@ -7213,7 +7225,7 @@ buf_store_time(buf, st, fname)
     char_u	*fname UNUSED;
 {
     buf->b_mtime = (long)st->st_mtime;
-    buf->b_orig_size = (size_t)st->st_size;
+    buf->b_orig_size = st->st_size;
 #ifdef HAVE_ST_MODE
     buf->b_orig_mode = (int)st->st_mode;
 #else

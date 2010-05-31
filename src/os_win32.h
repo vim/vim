@@ -93,6 +93,7 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <sys/types.h>
 
 #ifndef STRICT
 # define STRICT
