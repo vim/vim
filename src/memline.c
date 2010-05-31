@@ -87,7 +87,7 @@ struct pointer_entry
 struct pointer_block
 {
     short_u	pb_id;		/* ID for pointer block: PTR_ID */
-    short_u	pb_count;	/* number of pointer in this block */
+    short_u	pb_count;	/* number of pointers in this block */
     short_u	pb_count_max;	/* maximum value for pb_count */
     PTR_EN	pb_pointer[1];	/* list of pointers to blocks (actually longer)
 				 * followed by empty space until end of page */
@@ -3270,7 +3270,8 @@ ml_new_ptr(mfp)
     pp = (PTR_BL *)(hp->bh_data);
     pp->pb_id = PTR_ID;
     pp->pb_count = 0;
-    pp->pb_count_max = (short_u)((mfp->mf_page_size - sizeof(PTR_BL)) / sizeof(PTR_EN) + 1);
+    pp->pb_count_max = (short_u)((mfp->mf_page_size - sizeof(PTR_BL))
+							/ sizeof(PTR_EN) + 1);
 
     return hp;
 }

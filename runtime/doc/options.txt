@@ -1450,6 +1450,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			as HTML.  This works to copy rendered HTML from
 			Firefox, paste it as raw HTML in Vim, select the HTML
 			in Vim and paste it in a rich edit box in Firefox.
+			You probably want to add this only temporarily,
+			possibly use BufEnter autocommands.
 			Only supported for GTK version 2 and later.
 			Only available with the |+multi_byte| feature.
 

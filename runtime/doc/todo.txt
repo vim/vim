@@ -1087,12 +1087,16 @@ Vim 7.3:
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?
+    Generate seed for each block, store in pointer block.  Block 1 is not
+    encrypted.
+    When changing the password need to read back with the old password and
+    write again with the new one.
+    Verify recovery works.
+- Update for crypt code to use salt. (Mohsin May 30)
+    Make the strengthen_key value configurable and store it in the header.
 - Do profiling on sha256 code to find obvious bottlenecks.
 - Do profiling on crypt code to find obvious bottlenecks.
-- Make 'clipboard' global-local, for "html"?  Christian J. Robinson.
 Patches to include:
-- Extend test62 for gettabvar() and settabvar(). (Yegappan Lakshmanan, 2010
-  May 23)
 - Use off_t instead of long for bytes in a buffer. (James Vega, 2010 May 22,
   update next day)
 - Include conceal patch?

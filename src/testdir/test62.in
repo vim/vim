@@ -26,6 +26,29 @@ STARTTEST
 :call append(line('$'), line2)
 :unlet line1 line2
 :"
+:" Test for settabvar() and gettabvar() functions. Open a new tab page and 
+:" set 3 variables to a number, string and a list. Verify that the variables
+:" are correctly set.
+:tabnew
+:tabfirst
+:call settabvar(2, 'val_num', 100)
+:call settabvar(2, 'val_str', 'SetTabVar test')
+:call settabvar(2, 'val_list', ['red', 'blue', 'green'])
+:"
+:let test_status = 'gettabvar: fail'
+:if gettabvar(2, 'val_num') == 100 && gettabvar(2, 'val_str') == 'SetTabVar test') && gettabvar(2, 'val_list') == ['red', 'blue', 'green'])
+:    let test_status = 'gettabvar: pass'
+:endif
+:call append(line('$'), test_status)
+:"
+:tabnext 2
+:let test_status = 'settabvar: fail'
+:if t:val_num == 100 && t:val_str == 'SetTabVar test'  && t:val_list == ['red', 'blue', 'green']
+:   let test_status = 'settabvar: pass'
+:endif
+:tabclose
+:call append(line('$'), test_status)
+:"
 :"
 :/^Results/,$w! test.out
 :qa!

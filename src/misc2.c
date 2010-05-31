@@ -3749,7 +3749,7 @@ update_keys(c)
     int c;			/* byte of plain text */
 {
     if (use_crypt_method > 0)
-	bf_ofb_update( (unsigned char) c);
+	bf_ofb_update(c);
     else
     {
 	keys[0] = CRC32(keys[0], c);
