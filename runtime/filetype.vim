@@ -674,6 +674,9 @@ au BufNewFile,BufRead *.exp			setf expect
 " Exports
 au BufNewFile,BufRead exports			setf exports
 
+" Fantom
+au BufNewFile,BufRead *.fan,*.fwt		setf fan
+
 " Factor
 au BufNewFile,BufRead *.factor			setf factor
 

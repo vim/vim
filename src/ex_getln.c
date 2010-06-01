@@ -4091,6 +4091,7 @@ addstar(fname, len, context)
     int		i, j;
     int		new_len;
     char_u	*tail;
+    int		ends_in_star;
 
     if (context != EXPAND_FILES
 	    && context != EXPAND_SHELLCMD
@@ -4181,8 +4182,17 @@ addstar(fname, len, context)
 	     * When the name ends in '$' don't add a star, remove the '$'.
 	     */
 	    tail = gettail(retval);
+	    ends_in_star = (len > 0 && retval[len - 1] == '*');
+#ifndef BACKSLASH_IN_FILENAME
+	    for (i = len - 2; i >= 0; --i)
+	    {
+		if (retval[i] != '\\')
+		    break;
+		ends_in_star = !ends_in_star;
+	    }
+#endif
 	    if ((*retval != '~' || tail != retval)
-		    && (len == 0 || retval[len - 1] != '*')
+		    && !ends_in_star
 		    && vim_strchr(tail, '$') == NULL
 		    && vim_strchr(retval, '`') == NULL)
 		retval[len++] = '*';

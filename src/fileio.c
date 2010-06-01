@@ -10189,6 +10189,13 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 		    }
 		}
 #endif
+		/* Undo escaping from ExpandEscape():
+		 * foo\?bar -> foo?bar
+		 * foo\%bar -> foo%bar
+		 * foo\,bar -> foo,bar
+		 * foo\ bar -> foo bar
+		 * Don't unescape \, * and others that are also special in a
+		 * regexp. */
 		if (*++p == '?'
 #ifdef BACKSLASH_IN_FILENAME
 			&& no_bslash
@@ -10196,8 +10203,8 @@ file_pat_to_reg_pat(pat, pat_end, allow_dirs, no_bslash)
 			)
 		    reg_pat[i++] = '?';
 		else
-		    if (*p == ',')
-			reg_pat[i++] = ',';
+		    if (*p == ',' || *p == '%' || *p == '#' || *p == ' ')
+			reg_pat[i++] = *p;
 		    else
 		    {
 			if (allow_dirs != NULL && vim_ispathsep(*p)

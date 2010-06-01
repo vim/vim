@@ -208,7 +208,7 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 
 !include <Win32.mak>
 
-# May turn on Win64 compatibility warnings for VC7.x and VC8.
+# Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
 WP64CHECK = /Wp64
 
 #>>>>> path of the compiler and linker; name of include and lib directories
