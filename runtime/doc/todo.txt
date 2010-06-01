@@ -1085,6 +1085,7 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
+- Undo code: use union to store long in place of pointers?
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().  How to get b_p_key to these functions?
     Generate seed for each block, store in pointer block.  Block 1 is not

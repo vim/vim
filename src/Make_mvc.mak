@@ -208,11 +208,8 @@ MAKEFLAGS_GVIMEXT = DEBUG=yes
 
 !include <Win32.mak>
 
-# Turn on Win64 compatibility warnings for VC7.x and VC8.
-# (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
-!if ("$(MSVCVER)" == "7.0") || ("$(MSVCVER)" == "7.1") || ("$(MSVCVER)" == "8.0") 
-DEFINES=$(DEFINES) /Wp64
-!endif
+# May turn on Win64 compatibility warnings for VC7.x and VC8.
+WP64CHECK = /Wp64
 
 #>>>>> path of the compiler and linker; name of include and lib directories
 # PATH = c:\msvc20\bin;$(PATH)
@@ -414,12 +411,19 @@ OPTFLAG = /O2
 !else # MAXSPEED
 OPTFLAG = /Ox
 !endif
+
 !if ("$(MSVCVER)" == "8.0") || ("$(MSVCVER)" == "9.0") || ("$(MSVCVER)" == "10.0")
 # Use link time code generation if not worried about size
 !if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
 !endif
 !endif
+
+# (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
+!if ("$(MSVCVER)" == "7.0") || ("$(MSVCVER)" == "7.1") || ("$(MSVCVER)" == "8.0") 
+CFLAGS=$(CFLAGS) $(WP64CHECK)
+!endif
+
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
 ! ifdef USE_MSVCRT
