@@ -3724,39 +3724,81 @@ make_crc_tab()
 
 #define CRC32(c, b) (crc_32_tab[((int)(c) ^ (b)) & 0xff] ^ ((c) >> 8))
 
-
 static ulg keys[3]; /* keys defining the pseudo-random sequence */
 
 /*
- * Return the next byte in the pseudo-random sequence
+ * Return the next byte in the pseudo-random sequence.
  */
-    int
-decrypt_byte()
-{
-    ush temp;
-
-    if (use_crypt_method > 0)
-	return bf_ranbyte();
-    temp = (ush)keys[2] | 2;
-    return (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff);
+#define DECRYPT_BYTE_ZIP(t) { \
+    ush temp; \
+ \
+    temp = (ush)keys[2] | 2; \
+    t = (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff); \
 }
 
 /*
- * Update the encryption keys with the next byte of plain text
+ * Update the encryption keys with the next byte of plain text.
+ */
+#define UPDATE_KEYS_ZIP(c) { \
+    keys[0] = CRC32(keys[0], (c)); \
+    keys[1] += keys[0] & 0xff; \
+    keys[1] = keys[1] * 134775813L + 1; \
+    keys[2] = CRC32(keys[2], (int)(keys[1] >> 24)); \
+}
+
+/*
+ * Encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
  */
     void
-update_keys(c)
-    int c;			/* byte of plain text */
+crypt_encode(from, len, to)
+    char_u	*from;
+    size_t	len;
+    char_u	*to;
 {
-    if (use_crypt_method > 0)
-	bf_ofb_update(c);
+    size_t	i;
+    int		ztemp, t;
+
+    if (use_crypt_method == 0)
+	for (i = 0; i < len; ++i)
+	{
+	    ztemp = from[i];
+	    DECRYPT_BYTE_ZIP(t);
+	    UPDATE_KEYS_ZIP(ztemp);
+	    to[i] = t ^ ztemp;
+	}
     else
-    {
-	keys[0] = CRC32(keys[0], c);
-	keys[1] += keys[0] & 0xff;
-	keys[1] = keys[1] * 134775813L + 1;
-	keys[2] = CRC32(keys[2], (int)(keys[1] >> 24));
-    }
+	for (i = 0; i < len; ++i)
+	{
+	    ztemp = from[i];
+	    t = bf_ranbyte();
+	    bf_ofb_update(ztemp);
+	    to[i] = t ^ ztemp;
+	}
+}
+
+/*
+ * Decrypt "ptr[len]" in place.
+ */
+    void
+crypt_decode(ptr, len)
+    char_u	*ptr;
+    long	len;
+{
+    char_u *p;
+
+    if (use_crypt_method == 0)
+	for (p = ptr; p < ptr + len; ++p)
+	{
+	    ush temp;
+
+	    temp = (ush)keys[2] | 2;
+	    temp = (int)(((unsigned)(temp * (temp ^ 1)) >> 8) & 0xff);
+	    UPDATE_KEYS_ZIP(*p ^= temp);
+	}
+    else
+	for (p = ptr; p < ptr + len; ++p)
+	    bf_ofb_update(*p ^= bf_ranbyte());
 }
 
 /*
@@ -3774,8 +3816,14 @@ crypt_init_keys(passwd)
 	keys[0] = 305419896L;
 	keys[1] = 591751049L;
 	keys[2] = 878082192L;
-	while (*passwd != '\0')
-	    update_keys((int)*passwd++);
+	if (use_crypt_method == 0)
+	    while (*passwd != '\0')
+	    {
+		UPDATE_KEYS_ZIP((int)*passwd++);
+	    }
+	else
+	    while (*passwd != '\0')
+		bf_ofb_update((int)*passwd++);
     }
 }
 

@@ -18,6 +18,7 @@
 #define ARRAY_LENGTH(A)      (sizeof(A)/sizeof(A[0]))
 
 #define BF_BLOCK    8
+#define BF_BLOCK_MASK 7
 #define BF_OFB_LEN  (8*(BF_BLOCK))
 
 typedef union {
@@ -563,14 +564,14 @@ bf_ofb_update(c)
     int
 bf_ranbyte()
 {
-    int current_byte = randbyte_offset++;
-    int current_block = (current_byte / BF_BLOCK) * BF_BLOCK;
+    int b;
 
-    if (randbyte_offset == BF_OFB_LEN)
+    if ((randbyte_offset & BF_BLOCK_MASK) == 0)
+	bf_e_cblock(&ofb_buffer[randbyte_offset]);
+    b = ofb_buffer[randbyte_offset];
+    if (++randbyte_offset == BF_OFB_LEN)
 	randbyte_offset = 0;
-    if ((current_byte % BF_BLOCK) == 0)
-	bf_e_cblock(&ofb_buffer[current_block]);
-    return ofb_buffer[current_byte];
+    return b;
 }
 
 /*

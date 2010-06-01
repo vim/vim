@@ -1426,8 +1426,7 @@ retry:
 		 * Decrypt the read bytes.
 		 */
 		if (cryptkey != NULL && size > 0)
-		    for (p = ptr; p < ptr + size; ++p)
-			ZDECODE(*p);
+		    crypt_decode(ptr, size);
 #endif
 	    }
 	    skip_read = FALSE;
@@ -3004,7 +3003,6 @@ fwrite_crypt(buf, ptr, len, fp)
 {
     char_u  *copy;
     char_u  small_buf[100];
-    int	    ztemp, t;
     size_t  i;
 
     if (*buf->b_p_key == NUL)
@@ -3017,11 +3015,7 @@ fwrite_crypt(buf, ptr, len, fp)
 	if (copy == NULL)
 	    return 0;
     }
-    for (i = 0; i < len; ++i)
-    {
-	ztemp = ptr[i];
-	copy[i] = ZENCODE(ztemp, t);
-    }
+    crypt_encode(ptr, len, copy);
     i = fwrite(copy, len, (size_t)1, fp);
     if (copy != small_buf)
 	vim_free(copy);
@@ -3039,12 +3033,10 @@ read_string_decrypt(buf, fd, len)
     int	    len;
 {
     char_u  *ptr;
-    char_u  *p;
 
     ptr = read_string(fd, len);
     if (ptr != NULL || *buf->b_p_key != NUL)
-	for (p = ptr; p < ptr + len; ++p)
-	    ZDECODE(*p);
+	crypt_decode(ptr, len);
     return ptr;
 }
 
@@ -5678,15 +5670,7 @@ buf_write_bytes(ip)
 
 #ifdef FEAT_CRYPT
     if (flags & FIO_ENCRYPTED)		/* encrypt the data */
-    {
-	int ztemp, t, i;
-
-	for (i = 0; i < len; i++)
-	{
-	    ztemp = buf[i];
-	    buf[i] = ZENCODE(ztemp, t);
-	}
-    }
+	crypt_encode(buf, len, buf);
 #endif
 
     /* Repeat the write(), it may be interrupted by a signal. */

@@ -227,21 +227,6 @@
 # endif
 #endif
 
-/*
- * Encryption macros.  Mohsin Ahmed, mosh@sasi.com 98-09-24
- * Based on zip/crypt sources.
- */
-
-#ifdef FEAT_CRYPT
-
-/* encode byte c, using temp t.  Warning: c must not have side effects. */
-# define ZENCODE(c, t)  (t = decrypt_byte(), update_keys(c), t^(c))
-
-/* decode byte c in place */
-# define ZDECODE(c)   update_keys(c ^= decrypt_byte())
-
-#endif
-
 #ifdef STARTUPTIME
 # define TIME_MSG(s) { if (time_fd != NULL) time_msg(s, NULL); }
 #else
