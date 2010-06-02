@@ -317,17 +317,17 @@ static UINT32_T sbi[4][256] = {
 
 #define F1(i) \
     xl ^= pax[i]; \
-    xr ^= ((sbx[0][xl>>24] + \
-    sbx[1][(xl&0xFF0000)>>16]) ^ \
-    sbx[2][(xl&0xFF00)>>8]) + \
-    sbx[3][xl&0xFF];
+    xr ^= ((sbx[0][xl >> 24] + \
+    sbx[1][(xl & 0xFF0000) >> 16]) ^ \
+    sbx[2][(xl & 0xFF00) >> 8]) + \
+    sbx[3][xl & 0xFF];
 
 #define F2(i) \
     xr ^= pax[i]; \
-    xl ^= ((sbx[0][xr>>24] + \
-    sbx[1][(xr&0xFF0000)>>16]) ^ \
-    sbx[2][(xr&0xFF00)>>8]) + \
-    sbx[3][xr&0xFF];
+    xl ^= ((sbx[0][xr >> 24] + \
+    sbx[1][(xr & 0xFF0000) >> 16]) ^ \
+    sbx[2][(xr & 0xFF00) >> 8]) + \
+    sbx[3][xr & 0xFF];
 
 
     static void
@@ -339,9 +339,13 @@ bf_e_block(p_xl, p_xr)
 
     F1(0) F2(1) F1(2) F2(3) F1(4) F2(5) F1(6) F2(7)
     F1(8) F2(9) F1(10) F2(11) F1(12) F2(13) F1(14) F2(15)
-    xl ^= pax[16]; xr ^= pax[17];
-    temp = xl; xl = xr; xr = temp;
-    *p_xl = xl; *p_xr = xr;
+    xl ^= pax[16];
+    xr ^= pax[17];
+    temp = xl;
+    xl = xr;
+    xr = temp;
+    *p_xl = xl;
+    *p_xr = xr;
 }
 
 #if 0  /* not used */
@@ -373,7 +377,8 @@ bf_d_block(p_xl, p_xr)
 bf_e_cblock(block)
     char_u *block;
 {
-    block8 bk;
+    block8	bk;
+
     memcpy(bk.uc, block, 8);
     htonl2(bk.ul[0]);
     htonl2(bk.ul[1]);
@@ -552,26 +557,75 @@ bf_ofb_init(iv, iv_len)
     }
 }
 
-    void
-bf_ofb_update(c)
-    int c;
-{
-    ofb_buffer[update_offset++] ^= (char_u)c;
-    if (update_offset == BF_OFB_LEN)
-	update_offset = 0;
+#define BF_OFB_UPDATE(c) { \
+    ofb_buffer[update_offset] ^= (char_u)c; \
+    if (++update_offset == BF_OFB_LEN) \
+	update_offset = 0; \
 }
 
-    int
-bf_ranbyte()
-{
-    int b;
+#define BF_RANBYTE(t) { \
+    if ((randbyte_offset & BF_BLOCK_MASK) == 0) \
+	bf_e_cblock(&ofb_buffer[randbyte_offset]); \
+    t = ofb_buffer[randbyte_offset]; \
+    if (++randbyte_offset == BF_OFB_LEN) \
+	randbyte_offset = 0; \
+}
 
-    if ((randbyte_offset & BF_BLOCK_MASK) == 0)
-	bf_e_cblock(&ofb_buffer[randbyte_offset]);
-    b = ofb_buffer[randbyte_offset];
-    if (++randbyte_offset == BF_OFB_LEN)
-	randbyte_offset = 0;
-    return b;
+/*
+ * Encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
+ */
+    void
+bf_crypt_encode(from, len, to)
+    char_u	*from;
+    size_t	len;
+    char_u	*to;
+{
+    size_t	i;
+    int		ztemp, t;
+
+    for (i = 0; i < len; ++i)
+    {
+	ztemp = from[i];
+	BF_RANBYTE(t);
+	BF_OFB_UPDATE(ztemp);
+	to[i] = t ^ ztemp;
+    }
+}
+
+/*
+ * Decrypt "ptr[len]" in place.
+ */
+    void
+bf_crypt_decode(ptr, len)
+    char_u	*ptr;
+    long	len;
+{
+    char_u	*p;
+    int		t;
+
+    for (p = ptr; p < ptr + len; ++p)
+    {
+	BF_RANBYTE(t);
+	*p ^= t;
+	BF_OFB_UPDATE(*p);
+    }
+}
+
+/*
+ * Initialize the encryption keys and the random header according to
+ * the given password.
+ */
+    void
+bf_crypt_init_keys(passwd)
+    char_u *passwd;		/* password string with which to modify keys */
+{
+    char_u *p;
+
+    for (p = passwd; *p != NUL; ++p)
+    {
+	BF_OFB_UPDATE(*p);
+    }
 }
 
 /*

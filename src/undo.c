@@ -825,7 +825,7 @@ serialize_header(fp, buf, hash)
 	header = prepare_crypt_write(buf, &header_len);
 	if (header == NULL)
 	    return FAIL;
-	len = fwrite(header, (size_t)header_len, (size_t)1, fp);
+	len = (int)fwrite(header, (size_t)header_len, (size_t)1, fp);
 	vim_free(header);
 	if (len != 1)
 	    return FAIL;

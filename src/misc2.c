@@ -3768,13 +3768,7 @@ crypt_encode(from, len, to)
 	    to[i] = t ^ ztemp;
 	}
     else
-	for (i = 0; i < len; ++i)
-	{
-	    ztemp = from[i];
-	    t = bf_ranbyte();
-	    bf_ofb_update(ztemp);
-	    to[i] = t ^ ztemp;
-	}
+	bf_crypt_encode(from, len, to);
 }
 
 /*
@@ -3797,8 +3791,7 @@ crypt_decode(ptr, len)
 	    UPDATE_KEYS_ZIP(*p ^= temp);
 	}
     else
-	for (p = ptr; p < ptr + len; ++p)
-	    bf_ofb_update(*p ^= bf_ranbyte());
+	bf_crypt_decode(ptr, len);
 }
 
 /*
@@ -3812,18 +3805,21 @@ crypt_init_keys(passwd)
 {
     if (passwd != NULL && *passwd != NUL)
     {
-	make_crc_tab();
-	keys[0] = 305419896L;
-	keys[1] = 591751049L;
-	keys[2] = 878082192L;
 	if (use_crypt_method == 0)
-	    while (*passwd != '\0')
+	{
+	    char_u *p;
+
+	    make_crc_tab();
+	    keys[0] = 305419896L;
+	    keys[1] = 591751049L;
+	    keys[2] = 878082192L;
+	    for (p = passwd; *p!= NUL; ++p)
 	    {
-		UPDATE_KEYS_ZIP((int)*passwd++);
+		UPDATE_KEYS_ZIP((int)*p);
 	    }
+	}
 	else
-	    while (*passwd != '\0')
-		bf_ofb_update((int)*passwd++);
+	    bf_crypt_init_keys(passwd);
     }
 }
 
@@ -6320,9 +6316,9 @@ put_time(fd, the_time)
 	else
 	{
 #if defined(SIZEOF_TIME_T) && SIZEOF_TIME_T > 4
-	    c = wtime >> (i * 8);
+	    c = (int)(wtime >> (i * 8));
 #else
-	    c = (long_u)wtime >> (i * 8);
+	    c = (int)((long_u)wtime >> (i * 8));
 #endif
 	    putc(c, fd);
 	}

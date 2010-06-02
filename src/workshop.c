@@ -1826,7 +1826,7 @@ findYourself(
     else if (*argv0 == '.' || strchr(argv0, '/'))
     {
 	runpath = (char *) malloc(MAXPATHLEN);
-	getcwd(runpath, MAXPATHLEN);
+	(void)getcwd(runpath, MAXPATHLEN);
 	strcat(runpath, "/");
 	strcat(runpath, argv0);
     }

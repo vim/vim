@@ -1082,6 +1082,8 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
+- undofile: keep markers where the file was written/read, so that it's easy to
+  go back to a saved version of the file  ":earlier 1file"?
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
@@ -1094,11 +1096,6 @@ Vim 7.3:
     Verify recovery works.
 - Update for crypt code to use salt. (Mohsin May 30)
     Make the strengthen_key value configurable and store it in the header.
-- Do profiling on crypt code to find obvious bottlenecks.
-    bf_ranbyte() and bf_ofb_init() are called for each byte, can they be done
-    inline somehow?
-    -> Add a function in blowfish.c to process an array, called once from
-       crypt_decode() and crypt_encode().
 Patches to include:
 - Include conceal patch?
   http://vince.negri.googlepages.com/
