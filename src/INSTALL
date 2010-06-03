@@ -15,7 +15,7 @@ See INSTALLmac.txt              for Macintosh
 See INSTALLpc.txt               for PC (MS-DOS, Windows 95/98/NT/XP)
 See INSTALLvms.txt              for VMS
 See INSTALLx.txt		for cross-compiling on Unix
-See ../runtime/doc/os_390.txt   for OS/390 Unix
+See ../README_390.txt           for OS/390 Unix
 See ../runtime/doc/os_beos.txt  for BeBox
 
 

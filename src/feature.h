@@ -300,16 +300,20 @@
 
 /*
  * +rightleft		Right-to-left editing/typing support.
+ *
+ * Disabled for EBCDIC as it requires multibyte.
  */
-#ifdef FEAT_BIG
+#if defined(FEAT_BIG) && !defined(EBCDIC)
 # define FEAT_RIGHTLEFT
 #endif
 
 /*
  * +farsi		Farsi (Persian language) Keymap support.
  *			Requires FEAT_RIGHTLEFT.
+ *
+ * Disabled for EBCDIC as it requires multibyte.
  */
-#ifdef FEAT_BIG
+#if defined(FEAT_BIG) && !defined(EBCDIC)
 # define FEAT_FKMAP
 #endif
 #ifdef FEAT_FKMAP
@@ -321,6 +325,8 @@
 /*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT and FEAT_MBYTE.
+ *
+ * Disabled for EBCDIC as it requires multibyte.
  */
 #if defined(FEAT_BIG) && !defined(WIN16) && SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_ARABIC
@@ -343,7 +349,7 @@
  * +tag_binary		Can use a binary search for the tags file.
  *
  * Disabled for EBCDIC:
- * On OS/390 Unix we have the problem that /bin/sort sorts ASCII instead of
+ * On z/OS Unix we have the problem that /bin/sort sorts ASCII instead of
  * EBCDIC.  With this binary search doesn't work, as VIM expects a tag file
  * sorted by character values.  I'm not sure how to fix this. Should we really
  * do a EBCDIC to ASCII conversion for this??
@@ -530,8 +536,11 @@
 
 /*
  * +spell		spell checking
+ *
+ * Disabled for EBCDIC:
+ * Doesn't work (SIGSEGV). 
  */
-#if defined(FEAT_NORMAL) || defined(PROTO)
+#if (defined(FEAT_NORMAL) || defined(PROTO)) && !defined(EBCDIC)
 # define FEAT_SPELL
 #endif
 
@@ -622,7 +631,7 @@
  *			with 16 bit ints.  Required for GTK+ 2.
  *
  * Disabled for EBCDIC:
- * Multibyte support doesn't work on OS390 Unix currently.
+ * Multibyte support doesn't work on z/OS Unix currently.
  */
 #if (defined(FEAT_BIG) || defined(HAVE_GTK2) || defined(FEAT_ARABIC)) \
 	&& !defined(FEAT_MBYTE) && !defined(WIN16) \

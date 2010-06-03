@@ -669,6 +669,7 @@ vi_cv_path_mzscheme
 compiledby
 dogvimdiff
 dovimdiff
+QUOTESED
 line_break
 VIEWNAME
 EXNAME
@@ -4384,10 +4385,10 @@ esac
 
 
 if test "$cf_cv_ebcdic" = "yes"; then
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OS/390 Unix" >&5
-$as_echo_n "checking for OS/390 Unix... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for z/OS Unix" >&5
+$as_echo_n "checking for z/OS Unix... " >&6; }
 case `uname` in
-    OS/390)	OS390Unix="yes";
+    OS/390)	zOSUnix="yes";
 										if test "$CC" = "cc"; then
 		  ccm="$_CC_CCMODE"
 		  ccn="CC"
@@ -4402,7 +4403,7 @@ case `uname` in
 		if test "$ccm" != "1"; then
 		  echo ""
 		  echo "------------------------------------------"
-		  echo " On OS/390 Unix, the environment variable"
+		  echo " On z/OS Unix, the environment variable"
 		  echo " __CC_${ccn}MODE must be set to \"1\"!"
 		  echo " Do:"
 		  echo "    export _CC_${ccn}MODE=1"
@@ -4410,16 +4411,25 @@ case `uname` in
 		  echo "------------------------------------------"
 		  exit 1
 		fi
-		CFLAGS="$CFLAGS -D_ALL_SOURCE"; LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
+		CFLAGS="$CFLAGS -D_ALL_SOURCE -Wc,float\\(IEEE\\)";
+                LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 		;;
-    *)		OS390Unix="no";
+    *)		zOSUnix="no";
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 		;;
 esac
 fi
+
+if test "$zOSUnix" = "yes"; then
+    QUOTESED="sed -e 's/[\\\\\"]/\\\\\\\\&/g' -e 's/\\\\\\\\\"/\"/' -e 's/\\\\\\\\\";\$\$/\";/'"
+else
+    QUOTESED="sed -e 's/[\\\\\"]/\\\\&/g' -e 's/\\\\\"/\"/' -e 's/\\\\\";\$\$/\";/'"
+fi
+
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-selinux argument" >&5
 $as_echo_n "checking --disable-selinux argument... " >&6; }
@@ -6697,7 +6707,7 @@ fi
 fi
 
 
-        if test "$OS390Unix" = "yes"; then
+        if test "$zOSUnix" = "yes"; then
     CFLAGS="$CFLAGS -W c,dll"
     LDFLAGS="$LDFLAGS -W l,dll"
     X_EXTRA_LIBS="$X_EXTRA_LIBS -lSM -lICE -lXmu"

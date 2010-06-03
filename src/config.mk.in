@@ -100,6 +100,9 @@ INSTALLGVIMDIFF	= @dogvimdiff@
 INSTALL_LANGS	= @INSTALL_LANGS@
 INSTALL_TOOL_LANGS	= @INSTALL_TOOL_LANGS@
 
+### sed command to fix quotes while creating pathdef.c
+QUOTESED        = @QUOTESED@
+
 ### Line break character as octal number for "tr"
 NL		= @line_break@
 

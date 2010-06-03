@@ -731,6 +731,30 @@ get_equi_class(pp)
     return 0;
 }
 
+#ifdef EBCDIC
+/*
+ * Table for equivalence class "c". (IBM-1047)
+ */
+char *EQUIVAL_CLASS_C[16] = {
+    "A\x62\x63\x64\x65\x66\x67",
+    "C\x68",
+    "E\x71\x72\x73\x74",
+    "I\x75\x76\x77\x78",
+    "N\x69",
+    "O\xEB\xEC\xED\xEE\xEF",
+    "U\xFB\xFC\xFD\xFE",
+    "Y\xBA",
+    "a\x42\x43\x44\x45\x46\x47",
+    "c\x48",
+    "e\x51\x52\x53\x54",
+    "i\x55\x56\x57\x58",
+    "n\x49",
+    "o\xCB\xCC\xCD\xCE\xCF",
+    "u\xDB\xDC\xDD\xDE",
+    "y\x8D\xDF",
+};
+#endif
+
 /*
  * Produce the bytes for equivalence class "c".
  * Currently only handles latin1, latin9 and utf-8.
@@ -744,6 +768,22 @@ reg_equi_class(c)
 					 || STRCMP(p_enc, "iso-8859-15") == 0)
 #endif
     {
+#ifdef EBCDIC
+	int i;
+
+	/* This might be slower than switch/case below. */
+	for (i = 0; i < 16; i++)
+	{
+	    if (vim_strchr(EQUIVAL_CLASS_C[i], c) != NULL)
+	    {
+		char *p = EQUIVAL_CLASS_C[i];
+
+		while (*p != 0)
+		    regmbc(*p++);
+		return;
+	    }
+	}
+#else
 	switch (c)
 	{
 	    case 'A': case '\300': case '\301': case '\302':
@@ -811,6 +851,7 @@ reg_equi_class(c)
 		      regmbc('y'); regmbc('\375'); regmbc('\377');
 		      return;
 	}
+#endif
     }
     regmbc(c);
 }

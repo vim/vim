@@ -275,7 +275,7 @@ AC_ARG_WITH(modified-by, [  --with-modified-by=NAME       name of who modified a
 	AC_MSG_RESULT($withval); AC_DEFINE_UNQUOTED(MODIFIED_BY, "$withval"),
 	AC_MSG_RESULT(no))
 
-dnl Check for EBCDIC stolen from the LYNX port to OS390 Unix
+dnl Check for EBCDIC stolen from the LYNX port to z/OS Unix
 AC_MSG_CHECKING(if character set is EBCDIC)
 AC_TRY_COMPILE([ ],
 [ /* TryCompile function for CharSet.
@@ -301,10 +301,10 @@ esac
 AC_SUBST(line_break)
 
 if test "$cf_cv_ebcdic" = "yes"; then
-dnl If we have EBCDIC we most likley have OS390 Unix, let's test it!
-AC_MSG_CHECKING(for OS/390 Unix)
+dnl If we have EBCDIC we most likley have z/OS Unix, let's test it!
+AC_MSG_CHECKING(for z/OS Unix)
 case `uname` in
-    OS/390)	OS390Unix="yes";
+    OS/390)	zOSUnix="yes";
 		dnl If using cc the environment variable _CC_CCMODE must be
 		dnl set to "1", so that some compiler extensions are enabled.
 		dnl If using c89 the environment variable is named _CC_C89MODE.
@@ -323,7 +323,7 @@ case `uname` in
 		if test "$ccm" != "1"; then
 		  echo ""
 		  echo "------------------------------------------"
-		  echo " On OS/390 Unix, the environment variable"
+		  echo " On z/OS Unix, the environment variable"
 		  echo " __CC_${ccn}MODE must be set to \"1\"!"
 		  echo " Do:"
 		  echo "    export _CC_${ccn}MODE=1"
@@ -331,14 +331,24 @@ case `uname` in
 		  echo "------------------------------------------"
 		  exit 1
 		fi
-		CFLAGS="$CFLAGS -D_ALL_SOURCE"; LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
+		CFLAGS="$CFLAGS -D_ALL_SOURCE -Wc,float\\(IEEE\\)";
+                LDFLAGS="$LDFLAGS -Wl,EDIT=NO"
 		AC_MSG_RESULT(yes)
 		;;
-    *)		OS390Unix="no";
+    *)		zOSUnix="no";
 		AC_MSG_RESULT(no)
 		;;
 esac
 fi
+
+dnl Set QUOTESED. Needs additional backslashes on zOS
+if test "$zOSUnix" = "yes"; then
+    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\\\\\&/g' -e 's/\\\\\\\\\"/\"/' -e 's/\\\\\\\\\";\$\$/\";/'"
+else
+    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\&/g' -e 's/\\\\\"/\"/' -e 's/\\\\\";\$\$/\";/'"
+fi
+AC_SUBST(QUOTESED)
+
 
 dnl Link with -lselinux for SELinux stuff; if not found
 AC_MSG_CHECKING(--disable-selinux argument)
@@ -1166,10 +1176,10 @@ else
 
   AC_PATH_XTRA
 
-  dnl On OS390Unix the X libraries are DLLs. To use them the code must
+  dnl On z/OS Unix the X libraries are DLLs. To use them the code must
   dnl be compiled with a special option.
   dnl Also add SM, ICE and Xmu to X_EXTRA_LIBS.
-  if test "$OS390Unix" = "yes"; then
+  if test "$zOSUnix" = "yes"; then
     CFLAGS="$CFLAGS -W c,dll"
     LDFLAGS="$LDFLAGS -W l,dll"
     X_EXTRA_LIBS="$X_EXTRA_LIBS -lSM -lICE -lXmu"

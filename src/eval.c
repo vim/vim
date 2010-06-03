@@ -820,6 +820,13 @@ static int searchpair_cmn __ARGS((typval_T *argvars, pos_T *match_pos));
 static int search_cmn __ARGS((typval_T *argvars, pos_T *match_pos, int *flagsp));
 static void setwinvar __ARGS((typval_T *argvars, typval_T *rettv, int off));
 
+
+#ifdef EBCDIC
+static int compare_func_name __ARGS((const void *s1, const void *s2));
+static void sortFunctions __ARGS(());
+#endif
+
+
 /* Character used as separated in autoload function/variable names. */
 #define AUTOLOAD_CHAR '#'
 
@@ -856,6 +863,13 @@ eval_init()
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
+
+#ifdef EBCDIC
+    /*
+     * Sort the function table, to enable binary sort.
+     */
+    sortFunctions();
+#endif
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -7900,6 +7914,36 @@ get_expr_name(xp, idx)
 }
 
 #endif /* FEAT_CMDL_COMPL */
+
+#if defined(EBCDIC) || defined(PROTO)
+/*
+ * Compare struct fst by function name.
+ */
+    static int
+compare_func_name(s1, s2)
+    const void *s1;
+    const void *s2;
+{
+    struct fst *p1 = (struct fst *)s1;
+    struct fst *p2 = (struct fst *)s2;
+
+    return STRCMP(p1->f_name, p2->f_name);
+}
+
+/*
+ * Sort the function table by function name.
+ * The sorting of the table above is ASCII dependant.
+ * On machines using EBCDIC we have to sort it.
+ */
+    static void
+sortFunctions()
+{
+    int		funcCnt = (int)(sizeof(functions) / sizeof(struct fst)) - 1;
+
+    qsort(functions, (size_t)funcCnt, sizeof(struct fst), compare_func_name);
+}
+#endif
+
 
 /*
  * Find internal function in table above.
@@ -19243,7 +19287,7 @@ new_script_vars(id)
 
 	while (ga_scripts.ga_len < id)
 	{
-	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) = 
+	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) =
 		(scriptvar_T *)alloc_clear(sizeof(scriptvar_T));
 	    init_var_dict(&sv->sv_dict, &sv->sv_var);
 	    ++ga_scripts.ga_len;
@@ -22481,7 +22525,7 @@ get_short_pathname(fnamep, bufp, fnamelen)
  * append the remaining non-existing path.
  *
  * fname - Pointer to the filename to shorten.  On return, contains the
- *         pointer to the shortened pathname
+ *	   pointer to the shortened pathname
  * bufp -  Pointer to an allocated buffer for the filename.
  * fnamelen - Length of the filename pointed to by fname
  *
