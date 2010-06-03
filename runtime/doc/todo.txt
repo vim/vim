@@ -1082,24 +1082,30 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
-- undofile: keep markers where the file was written/read, so that it's easy to
-  go back to a saved version of the file  ":earlier 1file"?
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Also crypt the swap file, each block separately.  Change mf_write() and
-    mf_read().  How to get b_p_key to these functions?
-    Generate seed for each block, store in pointer block.  Block 1 is not
-    encrypted.
-    When changing the password need to read back with the old password and
-    write again with the new one.
-    Verify recovery works.
+    mf_read().
+    - How to get b_p_key to these functions?   Store it in mfp?
+    - Generate a seed for the swapfile, put it in block 0.
+    - For each block, use password + seed + byte offset to crypt/decrypt.
+    - When changing the password need to read back with the old password and
+      write again with the new one.
+    - Verify recovery works.
 - Update for crypt code to use salt. (Mohsin May 30)
-    Make the strengthen_key value configurable and store it in the header.
+    Make the strengthen_key value configurable and store it in the header?
+    Or just use 10000, equivalent to crypting 10 Kbyte of text.
+- undofile: keep markers where the file was written/read, so that it's easy to
+  go back to a saved version of the file:  ":earlier 1f" (f for file)?
+  Also add ":earlier 1d" (d for day).
+- Create a helphelp.txt file, move instructions there to write help files from
+  various.txt and list by Tony.
 Patches to include:
 - Include conceal patch?
   http://vince.negri.googlepages.com/
   http://vim.wikia.com/wiki/Patch_to_conceal_parts_of_lines
+  http://sites.google.com/site/vincenegri/conceal-ownsyntax.diff?attredirects=0
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)

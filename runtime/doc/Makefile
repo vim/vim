@@ -37,6 +37,7 @@ DOCS = \
 	hangulin.txt \
 	hebrew.txt \
 	help.txt \
+	helphelp.txt \
 	howto.txt \
 	if_cscop.txt \
 	if_mzsch.txt \

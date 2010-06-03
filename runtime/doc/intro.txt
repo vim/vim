@@ -194,6 +194,7 @@ patches, suggestions and giving feedback about what is good and bad in Vim.
 Vim would never have become what it is now, without the help of these people!
 
 	Ron Aaron		Win32 GUI changes
+	Mohsin Ahmed		encryption
 	Zoltan Arpadffy		work on VMS port
 	Tony Andrews		Stevie
 	Gert van Antwerpen	changes for DJGPP on MS-DOS
@@ -226,13 +227,13 @@ Vim would never have become what it is now, without the help of these people!
 	David Leonard		Port of Python extensions to Unix
 	Avner Lottem		Edit in right-to-left windows
 	Flemming Madsen		X11 client-server, various features and patches
-	Microsoft		Gave me a copy of DevStudio to compile Vim with
+	Tony Mechelynck		answers many user questions
 	Paul Moore		Python interface extensions, many patches
 	Katsuhito Nagano	Work on multi-byte versions
 	Sung-Hyun Nam		Work on multi-byte versions
 	Vince Negri		Win32 GUI and generic console enhancements
 	Steve Oualline		Author of the first Vim book |frombook|
-	Dominique Pelle		figuring out valgrind reports and fixes
+	Dominique Pelle		valgrind reports and many fixes
 	A.Politz		Many bug reports and some fixes
 	George V. Reilly	Win32 port, Win32 GUI start-off
 	Stephen Riehm		bug collector

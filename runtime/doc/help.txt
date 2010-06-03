@@ -26,6 +26,7 @@ Get specific help:  It is possible to go directly to whatever you want help
 		      Option			  '	   :help 'textwidth'
   Search for help:  Type ":help word", then hit CTRL-D to see matching
 		    help entries for "word".
+		    Or use ":helpgrep word". |:helpgrep|
 
 VIM stands for Vi IMproved.  Most of VIM was made by Bram Moolenaar, but only
 through the help of many others.  See |credits|.
@@ -90,6 +91,7 @@ REFERENCE MANUAL: These files explain every detail of Vim.	*reference_toc*
 General subjects ~
 |intro.txt|	general introduction to Vim; notation used in help files
 |help.txt|	overview and quick reference (this file)
+|helphelp.txt|	about using the help files
 |index.txt|	alphabetical index of all commands
 |help-tags|	all the tags you can jump to (index of tags)
 |howto.txt|	how to do the most common editing tasks
@@ -208,10 +210,11 @@ Now that you've jumped here with CTRL-] or a double mouse click, you can use
 CTRL-T, CTRL-O, g<RightMouse>, or <C-RightMouse> to go back to where you were.
 
 Note that tags are within | characters, but when highlighting is enabled these
-are hidden.  That makes it easier to read a command.
+characters are hidden.  That makes it easier to read a command.
 
 Anyway, you can use CTRL-] on any word, also when it is not within |, and Vim
-will try to find help for it.
+will try to find help for it.  Especially for options in single quotes, e.g.
+'compatible'.
 
 ------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
