@@ -134,6 +134,11 @@ static char *(features[]) =
 #else
 	"-comments",
 #endif
+#ifdef FEAT_CONCEAL
+	"+conceal",
+#else
+	"-conceal",
+#endif
 #ifdef FEAT_CRYPT
 	"+cryptv",
 #else
@@ -143,6 +148,11 @@ static char *(features[]) =
 	"+cscope",
 #else
 	"-cscope",
+#endif
+#ifdef FEAT_CURSORBIND
+	"+cursorbind",
+#else
+	"-cursorbind",
 #endif
 #ifdef CURSOR_SHAPE
 	"+cursorshape",
@@ -935,13 +945,13 @@ list_version()
 #      if defined(MSWIN)
     MSG_PUTS(_("with GUI."));
 #      else
-#	if defined (TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON
+#	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON
     MSG_PUTS(_("with Carbon GUI."));
 #	else
-#	 if defined (TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
+#	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
     MSG_PUTS(_("with Cocoa GUI."));
 #	 else
-#	  if defined (MACOS)
+#	  if defined(MACOS)
     MSG_PUTS(_("with (classic) GUI."));
 #	  endif
 #	 endif

@@ -3411,6 +3411,14 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 		else
 #endif
 		{
+#ifdef FEAT_SYN_HL
+		    /*
+		     * <VN> We could instead free the synblock
+		     * and re-attach to buffer, perhaps.
+		     */
+		    if (curwin->w_s == &(curwin->w_buffer->b_s))
+			    curwin->w_s = &(buf->b_s);
+#endif
 		    curwin->w_buffer = buf;
 		    curbuf = buf;
 		    ++curbuf->b_nwindows;
@@ -3717,8 +3725,8 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 #ifdef FEAT_SPELL
     /* If the window options were changed may need to set the spell language.
      * Can only do this after the buffer has been properly setup. */
-    if (did_get_winopts && curwin->w_p_spell && *curbuf->b_p_spl != NUL)
-	(void)did_set_spelllang(curbuf);
+    if (did_get_winopts && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
+	(void)did_set_spelllang(curwin);
 #endif
 
     if (command == NULL)
@@ -5963,7 +5971,7 @@ fix_help_buffer()
     set_option_value((char_u *)"ft", 0L, (char_u *)"help", OPT_LOCAL);
 
 #ifdef FEAT_SYN_HL
-    if (!syntax_present(curbuf))
+    if (!syntax_present(curwin))
 #endif
     {
 	for (lnum = 1; lnum <= curbuf->b_ml.ml_line_count; ++lnum)

@@ -46,5 +46,6 @@ void get_trans_bufname __ARGS((buf_T *buf));
 int redrawing __ARGS((void));
 int messaging __ARGS((void));
 void showruler __ARGS((int always));
+void update_single_line __ARGS((win_T *buf, linenr_T lnum));
 int number_width __ARGS((win_T *wp));
 /* vim: set ft=c : */

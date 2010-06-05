@@ -2,14 +2,10 @@
 int spell_check __ARGS((win_T *wp, char_u *ptr, hlf_T *attrp, int *capcol, int docount));
 int spell_move_to __ARGS((win_T *wp, int dir, int allwords, int curline, hlf_T *attrp));
 void spell_cat_line __ARGS((char_u *buf, char_u *line, int maxlen));
-int get2c __ARGS((FILE *fd));
-int get3c __ARGS((FILE *fd));
-int get4c __ARGS((FILE *fd));
-char_u *did_set_spelllang __ARGS((buf_T *buf));
+char_u *did_set_spelllang __ARGS((win_T *wp));
 void spell_free_all __ARGS((void));
 void spell_reload __ARGS((void));
 int spell_check_msm __ARGS((void));
-int put_bytes __ARGS((FILE *fd, long_u nr, int len));
 void ex_mkspell __ARGS((exarg_T *eap));
 void ex_spell __ARGS((exarg_T *eap));
 void spell_add_word __ARGS((char_u *word, int len, int bad, int idx, int undo));
@@ -21,8 +17,8 @@ void spell_suggest_list __ARGS((garray_T *gap, char_u *word, int maxcount, int n
 char_u *eval_soundfold __ARGS((char_u *word));
 void ex_spellinfo __ARGS((exarg_T *eap));
 void ex_spelldump __ARGS((exarg_T *eap));
-void spell_dump_compl __ARGS((buf_T *buf, char_u *pat, int ic, int *dir, int dumpflags_arg));
-char_u *spell_to_word_end __ARGS((char_u *start, buf_T *buf));
+void spell_dump_compl __ARGS((char_u *pat, int ic, int *dir, int dumpflags_arg));
+char_u *spell_to_word_end __ARGS((char_u *start, win_T *win));
 int spell_word_start __ARGS((int startcol));
 void spell_expand_check_cap __ARGS((colnr_T col));
 int expand_spelling __ARGS((linenr_T lnum, char_u *pat, char_u ***matchp));

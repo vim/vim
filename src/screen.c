@@ -485,7 +485,7 @@ update_screen(type)
 # ifdef FEAT_WINDOWS
 		    wwp == wp &&
 # endif
-		    syntax_present(wp->w_buffer))
+		    syntax_present(wp))
 		syn_stack_apply_changes(wp->w_buffer);
 	}
     }
@@ -584,6 +584,54 @@ update_screen(type)
     }
 #endif
 }
+
+#if defined(FEAT_CONCEAL) || defined(PROTO)
+    void
+update_single_line(wp, lnum)
+    win_T	*wp;
+    linenr_T	lnum;
+{
+    int		row;
+    int		j;
+
+    if (lnum >= wp->w_topline && lnum < wp->w_botline
+					  && foldedCount(wp, lnum, NULL) == 0)
+    {
+# ifdef FEAT_GUI
+	/* Remove the cursor before starting to do anything, because scrolling
+	 * may make it difficult to redraw the text under it. */
+	if (gui.in_use)
+	    gui_undraw_cursor();
+# endif
+	row = 0;
+	for (j = 0; j < wp->w_lines_valid; ++j)
+	{
+	    if (lnum == wp->w_lines[j].wl_lnum)
+	    {
+		screen_start();	/* not sure of screen cursor */
+# if defined(FEAT_SEARCH_EXTRA)
+		start_search_hl();
+		prepare_search_hl(wp, lnum);
+# endif
+		win_line(wp, lnum, row, row + wp->w_lines[j].wl_size, FALSE);
+# if defined(FEAT_SEARCH_EXTRA)
+		end_search_hl();
+# endif
+		break;
+	    }
+	    row += wp->w_lines[j].wl_size;
+	}
+# ifdef FEAT_GUI
+	/* Redraw the cursor */
+	if (gui.in_use)
+	{
+	    out_flush();	/* required before updating the cursor */
+	    gui_update_cursor(FALSE, FALSE);
+	}
+# endif
+    }
+}
+#endif
 
 #if defined(FEAT_SIGNS) || defined(FEAT_GUI)
 static void update_prepare __ARGS((void));
@@ -917,9 +965,9 @@ win_update(wp)
 #ifdef FEAT_SYN_HL
 		/* Need to redraw lines above the change that may be included
 		 * in a pattern match. */
-		if (syntax_present(buf))
+		if (syntax_present(wp))
 		{
-		    mod_top -= buf->b_syn_sync_linebreaks;
+		    mod_top -= buf->b_s.b_syn_sync_linebreaks;
 		    if (mod_top < 1)
 			mod_top = 1;
 		}
@@ -1010,7 +1058,7 @@ win_update(wp)
 	    if (mod_bot > wp->w_topline)
 		mod_top = wp->w_topline;
 #ifdef FEAT_SYN_HL
-	    else if (syntax_present(buf))
+	    else if (syntax_present(wp))
 		top_end = 1;
 #endif
 	}
@@ -1545,7 +1593,7 @@ win_update(wp)
 #ifdef FEAT_SYN_HL
 				|| did_update == DID_FOLD
 				|| (did_update == DID_LINE
-				    && syntax_present(buf)
+				    && syntax_present(wp)
 				    && (
 # ifdef FEAT_FOLDING
 					(foldmethodIsSyntax(wp)
@@ -1771,7 +1819,7 @@ win_update(wp)
 #ifdef FEAT_SYN_HL
 		/* Let the syntax stuff know we skipped a few lines. */
 		if (syntax_last_parsed != 0 && syntax_last_parsed + 1 < lnum
-						       && syntax_present(buf))
+						       && syntax_present(wp))
 		    syntax_end_parsing(syntax_last_parsed + 1);
 #endif
 
@@ -1843,7 +1891,7 @@ win_update(wp)
     /*
      * Let the syntax stuff know we stop parsing here.
      */
-    if (syntax_last_parsed != 0 && syntax_present(buf))
+    if (syntax_last_parsed != 0 && syntax_present(wp))
 	syntax_end_parsing(syntax_last_parsed + 1);
 #endif
 
@@ -2726,6 +2774,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		feedback_old_attr = -1;
 #endif
 
+#ifdef FEAT_CONCEAL
+    int		syntax_flags	= 0;
+    int		conceal_attr	= hl_attr(HLF_CONCEAL);
+    int		first_conceal	= (wp->w_p_conceal != 3);
+    int		is_concealing	= FALSE;
+    int		boguscols	= 0;	/* nonexistent columns added to force
+					   wrapping */
+#endif
 
     if (startrow > endrow)		/* past the end already! */
 	return startrow;
@@ -2743,7 +2799,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     extra_check = 0;
 #endif
 #ifdef FEAT_SYN_HL
-    if (syntax_present(wp->w_buffer) && !wp->w_buffer->b_syn_error)
+    if (syntax_present(wp) && !wp->w_s->b_syn_error)
     {
 	/* Prepare for syntax highlighting in this line.  When there is an
 	 * error, stop syntax highlighting. */
@@ -2751,7 +2807,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	did_emsg = FALSE;
 	syntax_start(wp, lnum);
 	if (did_emsg)
-	    wp->w_buffer->b_syn_error = TRUE;
+	    wp->w_s->b_syn_error = TRUE;
 	else
 	{
 	    did_emsg = save_did_emsg;
@@ -2763,9 +2819,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_SPELL
     if (wp->w_p_spell
-	    && *wp->w_buffer->b_p_spl != NUL
-	    && wp->w_buffer->b_langp.ga_len > 0
-	    && *(char **)(wp->w_buffer->b_langp.ga_data) != NULL)
+	    && *wp->w_s->b_p_spl != NUL
+	    && wp->w_s->b_langp.ga_len > 0
+	    && *(char **)(wp->w_s->b_langp.ga_data) != NULL)
     {
 	/* Prepare for spell checking. */
 	has_spell = TRUE;
@@ -3113,7 +3169,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		/* no bad word found at line start, don't check until end of a
 		 * word */
 		spell_hlf = HLF_COUNT;
-		word_end = (int)(spell_to_word_end(ptr, wp->w_buffer)
+		word_end = (int)(spell_to_word_end(ptr, wp)
 								  - line + 1);
 	    }
 	    else
@@ -3962,14 +4018,19 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    did_emsg = FALSE;
 
 		    syntax_attr = get_syntax_attr((colnr_T)v - 1,
-# ifdef FEAT_SPELL
-					       has_spell ? &can_spell :
+# ifdef FEAT_CONCEAL
+						&syntax_flags,
+# else
+						NULL,
 # endif
-					       NULL, FALSE);
+# ifdef FEAT_SPELL
+						has_spell ? &can_spell :
+# endif
+						NULL, FALSE);
 
 		    if (did_emsg)
 		    {
-			wp->w_buffer->b_syn_error = TRUE;
+			wp->w_s->b_syn_error = TRUE;
 			has_syntax = FALSE;
 		    }
 		    else
@@ -4304,6 +4365,74 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		}
 #endif
 	    }
+
+#ifdef FEAT_CONCEAL
+	    if (    wp->w_p_conceal
+		    && (!area_highlighting)
+		    && ((lnum != wp->w_cursor.lnum)
+			|| (curwin != wp) || (wp->w_buffer->b_p_ma == FALSE))
+		    && ((syntax_flags & HL_CONCEAL) != 0))
+
+	    {
+		char_attr = conceal_attr;
+		if (first_conceal
+			&& (syn_get_sub_char() != NUL || wp->w_p_conceal == 1))
+		{
+		    if (syn_get_sub_char() != NUL)
+			c = syn_get_sub_char();
+		    else if (lcs_conceal != NUL)
+			c = lcs_conceal;
+		    else
+			c = ' ';
+
+		    first_conceal = FALSE;
+
+# ifdef FEAT_HLCOLUMN
+		    if (hlc > 0 && n_extra > 0)
+			hlc += n_extra;
+# endif
+		    vcol += n_extra;
+		    if (wp->w_p_wrap && n_extra > 0)
+		    {
+# ifdef FEAT_RIGHTLEFT
+			if (wp->w_p_rl)
+			{
+			    col -= n_extra;
+			    boguscols -= n_extra;
+			}
+			else
+# endif
+			{
+			    boguscols += n_extra;
+			    col += n_extra;
+			}
+		    }
+		    n_extra = 0;
+		    n_attr = 0;
+		}
+		else if (n_skip == 0)
+		{
+		    is_concealing = TRUE;
+		    n_skip = 1;
+		}
+# ifdef FEAT_MBYTE
+		mb_c = c;
+		if (enc_utf8 && (*mb_char2len)(c) > 1)
+		{
+		    mb_utf8 = TRUE;
+		    u8cc[0] = 0;
+		    c = 0xc0;
+		}
+		else
+		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */
+# endif
+	    }
+	    else
+	    {
+		first_conceal	= (wp->w_p_conceal != 3);
+		is_concealing	= FALSE;
+	    }
+#endif /* FEAT_CONCEAL */
 	}
 
 	/* Don't override visual selection highlighting. */
@@ -4570,8 +4699,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 #endif
 
-	    SCREEN_LINE(screen_row, W_WINCOL(wp), col, (int)W_WIDTH(wp),
-								  wp->w_p_rl);
+#ifdef FEAT_CONCEAL
+	    SCREEN_LINE(screen_row, W_WINCOL(wp), col - boguscols,
+						(int)W_WIDTH(wp), wp->w_p_rl);
+	    boguscols = 0;
+#else
+	    SCREEN_LINE(screen_row, W_WINCOL(wp), col,
+						(int)W_WIDTH(wp), wp->w_p_rl);
+#endif
 	    row++;
 
 	    /*
@@ -4730,6 +4865,97 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		++col;
 	    }
 	}
+#ifdef FEAT_CONCEAL
+	else if (wp->w_p_conceal && is_concealing)
+	{
+	    --n_skip;
+# ifdef FEAT_HLCOLUMN
+	    if (hlc)
+	    {
+		++hlc;
+		if (n_extra > 0)
+		    hlc += n_extra;
+	    }
+# endif
+	    if (wp->w_p_wrap)
+	    {
+		/*
+		 * Special voodoo required if 'wrap' is on.
+		 *
+		 * Advance the column indicator to force the line
+		 * drawing to wrap early. This will make the line
+		 * take up the same screen space when parts are concealed,
+		 * so that cursor line computations aren't messed up.
+		 *
+		 * To avoid the fictitious advance of 'col' causing
+		 * trailing junk to be written out of the screen line
+		 * we are building, 'boguscols' keeps track of the number
+		 * of bad columns we have advanced.
+		 */
+		if (n_extra > 0)
+		{
+		    vcol += n_extra;
+# ifdef FEAT_RIGHTLEFT
+		    if (wp->w_p_rl)
+		    {
+			col -= n_extra;
+			boguscols -= n_extra;
+		    }
+		    else
+# endif
+		    {
+			col += n_extra;
+			boguscols += n_extra;
+		    }
+		    n_extra = 0;
+		    n_attr = 0;
+		}
+
+
+# ifdef FEAT_MBYTE
+		if (has_mbyte && (*mb_char2cells)(mb_c) > 1)
+		{
+		    /* Need to fill two screen columns. */
+#  ifdef FEAT_RIGHTLEFT
+		    if (wp->w_p_rl)
+		    {
+			--boguscols;
+			--col;
+		    }
+		    else
+#  endif
+		    {
+			++boguscols;
+			++col;
+		    }
+		}
+# endif
+
+# ifdef FEAT_RIGHTLEFT
+		if (wp->w_p_rl)
+		{
+		    --boguscols;
+		    --col;
+		}
+		else
+# endif
+		{
+		    ++boguscols;
+		    ++col;
+		}
+	    }
+	    else
+	    {
+		if (n_extra > 0)
+		{
+		    vcol += n_extra;
+		    n_extra = 0;
+		    n_attr = 0;
+		}
+	    }
+
+	}
+#endif /* FEAT_CONCEAL */
 	else
 	    --n_skip;
 
@@ -4772,8 +4998,14 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    || (n_extra != 0 && (c_extra != NUL || *p_extra != NUL)))
 		)
 	{
-	    SCREEN_LINE(screen_row, W_WINCOL(wp), col, (int)W_WIDTH(wp),
-								  wp->w_p_rl);
+#ifdef FEAT_CONCEAL
+	    SCREEN_LINE(screen_row, W_WINCOL(wp), col - boguscols,
+						(int)W_WIDTH(wp), wp->w_p_rl);
+	    boguscols = 0;
+#else
+	    SCREEN_LINE(screen_row, W_WINCOL(wp), col,
+						(int)W_WIDTH(wp), wp->w_p_rl);
+#endif
 	    ++row;
 	    ++screen_row;
 

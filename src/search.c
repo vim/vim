@@ -1077,6 +1077,9 @@ do_search(oap, dirc, pat, count, options, tm)
     char_u	    *dircp;
     char_u	    *strcopy = NULL;
     char_u	    *ps;
+#ifdef FEAT_CONCEAL
+    linenr_T	oldline = curwin->w_cursor.lnum;
+#endif
 
     /*
      * A line offset is not remembered, this is vi compatible.
@@ -1422,6 +1425,13 @@ do_search(oap, dirc, pat, count, options, tm)
 	setpcmark();
     curwin->w_cursor = pos;
     curwin->w_set_curswant = TRUE;
+#ifdef FEAT_CONCEAL
+    if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
+    {
+	update_single_line(curwin, oldline);
+	update_single_line(curwin, curwin->w_cursor.lnum);
+    }
+#endif
 
 end_do_search:
     if (options & SEARCH_KEEP)

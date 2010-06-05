@@ -243,7 +243,12 @@
 # define PV_WFW		OPT_WIN(WV_WFW)
 #endif
 #define PV_WRAP		OPT_WIN(WV_WRAP)
-
+#ifdef FEAT_CURSORBIND
+# define PV_CRBIND	OPT_WIN(WV_CRBIND)
+#endif
+#ifdef FEAT_CONCEAL
+# define PV_CONCEAL	OPT_WIN(WV_CONCEAL)
+#endif
 
 /* WV_ and BV_ values get typecasted to this for the "indir" field */
 typedef enum
@@ -460,8 +465,8 @@ struct vimoption
  * possible when compiling with few features. */
 #if defined(FEAT_DIFF) || defined(FEAT_FOLDING) || defined(FEAT_SPELL) \
 	|| defined(FEAT_VERTSPLIT) || defined(FEAT_CLIPBOARD) \
-	|| defined(FEAT_INS_EXPAND) || defined(FEAT_SYN_HL)
-# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine"
+	|| defined(FEAT_INS_EXPAND) || defined(FEAT_SYN_HL) || defined(FEAT_CONCEAL)
+# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine"
 #else
 # define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,t:Title,v:Visual,w:WarningMsg,W:WildMenu,>:SignColumn,*:TabLine,#:TabLineSel,_:TabLineFill"
 #endif
@@ -805,6 +810,14 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
+    {"conceallevel","conc", P_NUM|P_RWIN|P_VI_DEF,
+#ifdef FEAT_CONCEAL
+			    (char_u *)VAR_WIN, PV_CONCEAL,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)0L, (char_u *)0L}
+			    SCRIPTID_INIT},
     {"completefunc", "cfu", P_STRING|P_ALLOCED|P_VI_DEF|P_SECURE,
 #ifdef FEAT_COMPL_FUNC
 			    (char_u *)&p_cfu, PV_CFU,
@@ -897,6 +910,13 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
+    {"cursorbind",  "crb",  P_BOOL|P_VI_DEF,
+#ifdef FEAT_CURSORBIND
+			    (char_u *)VAR_WIN, PV_CRBIND,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
     {"cursorcolumn", "cuc", P_BOOL|P_VI_DEF|P_RWIN,
 #ifdef FEAT_SYN_HL
 			    (char_u *)VAR_WIN, PV_CUC,
@@ -2959,7 +2979,7 @@ static char_u *set_chars_option __ARGS((char_u **varp));
 static char_u *check_clipboard_option __ARGS((void));
 #endif
 #ifdef FEAT_SPELL
-static char_u *compile_cap_prog __ARGS((buf_T *buf));
+static char_u *compile_cap_prog __ARGS((synblock_T *synblock));
 #endif
 #ifdef FEAT_EVAL
 static void set_option_scriptID_idx __ARGS((int opt_idx, int opt_flags, int id));
@@ -5127,7 +5147,7 @@ didset_options()
 #ifdef FEAT_SPELL
     (void)spell_check_msm();
     (void)spell_check_sps();
-    (void)compile_cap_prog(curbuf);
+    (void)compile_cap_prog(curwin->w_s);
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_W32)
     (void)opt_strings_flags(p_toolbar, p_toolbar_values, &toolbar_flags, TRUE);
@@ -5208,9 +5228,9 @@ check_buf_options(buf)
     check_string_option(&buf->b_p_syn);
 #endif
 #ifdef FEAT_SPELL
-    check_string_option(&buf->b_p_spc);
-    check_string_option(&buf->b_p_spf);
-    check_string_option(&buf->b_p_spl);
+    check_string_option(&buf->b_s.b_p_spc);
+    check_string_option(&buf->b_s.b_p_spf);
+    check_string_option(&buf->b_s.b_p_spl);
 #endif
 #ifdef FEAT_SEARCHPATH
     check_string_option(&buf->b_p_sua);
@@ -6407,15 +6427,15 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 #ifdef FEAT_SPELL
     /* When 'spelllang' or 'spellfile' is set and there is a window for this
      * buffer in which 'spell' is set load the wordlists. */
-    else if (varp == &(curbuf->b_p_spl) || varp == &(curbuf->b_p_spf))
+    else if (varp == &(curbuf->b_s.b_p_spl) || varp == &(curbuf->b_s.b_p_spf))
     {
 	win_T	    *wp;
 	int	    l;
 
-	if (varp == &(curbuf->b_p_spf))
+	if (varp == &(curbuf->b_s.b_p_spf))
 	{
-	    l = (int)STRLEN(curbuf->b_p_spf);
-	    if (l > 0 && (l < 4 || STRCMP(curbuf->b_p_spf + l - 4,
+	    l = (int)STRLEN(curbuf->b_s.b_p_spf);
+	    if (l > 0 && (l < 4 || STRCMP(curbuf->b_s.b_p_spf + l - 4,
 								".add") != 0))
 		errmsg = e_invarg;
 	}
@@ -6425,7 +6445,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    FOR_ALL_WINDOWS(wp)
 		if (wp->w_buffer == curbuf && wp->w_p_spell)
 		{
-		    errmsg = did_set_spelllang(curbuf);
+		    errmsg = did_set_spelllang(wp);
 # ifdef FEAT_WINDOWS
 		    break;
 # endif
@@ -6433,9 +6453,9 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	}
     }
     /* When 'spellcapcheck' is set compile the regexp program. */
-    else if (varp == &(curbuf->b_p_spc))
+    else if (varp == &(curwin->w_s->b_p_spc))
     {
-	errmsg = compile_cap_prog(curbuf);
+	errmsg = compile_cap_prog(curwin->w_s);
     }
     /* 'spellsuggest' */
     else if (varp == &p_sps)
@@ -6843,7 +6863,7 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	}
 #endif
 #ifdef FEAT_SPELL
-	if (varp == &(curbuf->b_p_spl))
+	if (varp == &(curwin->w_s->b_p_spl))
 	{
 	    char_u	fname[200];
 
@@ -6853,11 +6873,11 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	     * Use the first name in 'spelllang' up to '_region' or
 	     * '.encoding'.
 	     */
-	    for (p = curbuf->b_p_spl; *p != NUL; ++p)
+	    for (p = curwin->w_s->b_p_spl; *p != NUL; ++p)
 		if (vim_strchr((char_u *)"_.,", *p) != NULL)
 		    break;
 	    vim_snprintf((char *)fname, 200, "spell/%.*s.vim",
-				 (int)(p - curbuf->b_p_spl), curbuf->b_p_spl);
+				 (int)(p - curwin->w_s->b_p_spl), curwin->w_s->b_p_spl);
 	    source_runtime(fname, TRUE);
 	}
 #endif
@@ -6920,6 +6940,11 @@ set_chars_option(varp)
 	{&lcs_prec,	"precedes"},
 	{&lcs_tab2,	"tab"},
 	{&lcs_trail,	"trail"},
+#ifdef FEAT_CONCEAL
+	{&lcs_conceal,	"conceal"},
+#else
+	{NULL,		"conceal"},
+#endif
     };
     struct charstab *tab;
 
@@ -6941,12 +6966,13 @@ set_chars_option(varp)
     /* first round: check for valid value, second round: assign values */
     for (round = 0; round <= 1; ++round)
     {
-	if (round)
+	if (round > 0)
 	{
 	    /* After checking that the value is valid: set defaults: space for
 	     * 'fillchars', NUL for 'listchars' */
 	    for (i = 0; i < entries; ++i)
-		*(tab[i].cp) = (varp == &p_lcs ? NUL : ' ');
+		if (tab[i].cp != NULL)
+		    *(tab[i].cp) = (varp == &p_lcs ? NUL : ' ');
 	    if (varp == &p_lcs)
 		lcs_tab1 = NUL;
 #if defined(FEAT_WINDOWS) || defined(FEAT_FOLDING)
@@ -6993,7 +7019,7 @@ set_chars_option(varp)
 				lcs_tab1 = c1;
 				lcs_tab2 = c2;
 			    }
-			    else
+			    else if (tab[i].cp != NULL)
 				*(tab[i].cp) = c1;
 
 			}
@@ -7170,24 +7196,24 @@ check_clipboard_option()
  * Return error message when failed, NULL when OK.
  */
     static char_u *
-compile_cap_prog(buf)
-    buf_T	*buf;
+compile_cap_prog(synblock)
+    synblock_T *synblock;
 {
-    regprog_T   *rp = buf->b_cap_prog;
+    regprog_T   *rp = synblock->b_cap_prog;
     char_u	*re;
 
-    if (*buf->b_p_spc == NUL)
-	buf->b_cap_prog = NULL;
+    if (*synblock->b_p_spc == NUL)
+	synblock->b_cap_prog = NULL;
     else
     {
 	/* Prepend a ^ so that we only match at one column */
-	re = concat_str((char_u *)"^", buf->b_p_spc);
+	re = concat_str((char_u *)"^", synblock->b_p_spc);
 	if (re != NULL)
 	{
-	    buf->b_cap_prog = vim_regcomp(re, RE_MAGIC);
-	    if (buf->b_cap_prog == NULL)
+	    synblock->b_cap_prog = vim_regcomp(re, RE_MAGIC);
+	    if (synblock->b_cap_prog == NULL)
 	    {
-		buf->b_cap_prog = rp; /* restore the previous program */
+		synblock->b_cap_prog = rp; /* restore the previous program */
 		return e_invarg;
 	    }
 	    vim_free(re);
@@ -7588,8 +7614,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
     {
 	if (curwin->w_p_spell)
 	{
-	    char_u	*errmsg = did_set_spelllang(curbuf);
-
+	    char_u	*errmsg = did_set_spelllang(curwin);
 	    if (errmsg != NULL)
 		EMSG(_(errmsg));
 	}
@@ -8089,6 +8114,21 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	if (p_uc && !old_value)
 	    ml_open_files();
     }
+#ifdef FEAT_CONCEAL
+    else if (pp == (long *)&curwin->w_p_conceal)
+    {
+	if (curwin->w_p_conceal < 0)
+	{
+	    errmsg = e_positive;
+	    curwin->w_p_conceal = 0;
+	}
+	else if (curwin->w_p_conceal > 3)
+	{
+	    errmsg = e_invarg;
+	    curwin->w_p_conceal = 3;
+	}
+    }
+#endif
 #ifdef MZSCHEME_GUI_THREADS
     else if (pp == &p_mzq)
 	mzvim_reset_timer();
@@ -9327,6 +9367,12 @@ get_varp(p)
 #ifdef FEAT_SCROLLBIND
 	case PV_SCBIND: return (char_u *)&(curwin->w_p_scb);
 #endif
+#ifdef FEAT_CURSORBIND
+	case PV_CRBIND: return (char_u *)&(curwin->w_p_crb);
+#endif
+#ifdef FEAT_CONCEAL
+	case PV_CONCEAL:    return (char_u *)&(curwin->w_p_conceal);
+#endif
 
 	case PV_AI:	return (char_u *)&(curbuf->b_p_ai);
 	case PV_BIN:	return (char_u *)&(curbuf->b_p_bin);
@@ -9425,9 +9471,9 @@ get_varp(p)
 	case PV_SYN:	return (char_u *)&(curbuf->b_p_syn);
 #endif
 #ifdef FEAT_SPELL
-	case PV_SPC:	return (char_u *)&(curbuf->b_p_spc);
-	case PV_SPF:	return (char_u *)&(curbuf->b_p_spf);
-	case PV_SPL:	return (char_u *)&(curbuf->b_p_spl);
+	case PV_SPC:	return (char_u *)&(curwin->w_s->b_p_spc);
+	case PV_SPF:	return (char_u *)&(curwin->w_s->b_p_spf);
+	case PV_SPL:	return (char_u *)&(curwin->w_s->b_p_spl);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
@@ -9750,10 +9796,10 @@ buf_copy_options(buf, flags)
 	    buf->b_p_smc = p_smc;
 #endif
 #ifdef FEAT_SPELL
-	    buf->b_p_spc = vim_strsave(p_spc);
-	    (void)compile_cap_prog(buf);
-	    buf->b_p_spf = vim_strsave(p_spf);
-	    buf->b_p_spl = vim_strsave(p_spl);
+	    buf->b_s.b_p_spc = vim_strsave(p_spf);
+	    (void)compile_cap_prog(&buf->b_s);
+	    buf->b_s.b_p_spf = vim_strsave(p_spf);
+	    buf->b_s.b_p_spl = vim_strsave(p_spl);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);

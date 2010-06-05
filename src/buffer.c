@@ -581,7 +581,7 @@ buf_freeall(buf, del_buf, wipe_buf)
     buf->b_ml.ml_line_count = 0;    /* no lines in buffer */
     u_clearall(buf);		    /* reset all undo information */
 #ifdef FEAT_SYN_HL
-    syntax_clear(buf);		    /* reset syntax info */
+    syntax_clear(&buf->b_s);	    /* reset syntax info */
 #endif
     buf->b_flags &= ~BF_READERR;    /* a read error is no longer relevant */
 }
@@ -648,7 +648,7 @@ free_buffer_stuff(buf, free_options)
     buf->b_start_fenc = NULL;
 #endif
 #ifdef FEAT_SPELL
-    ga_clear(&buf->b_langp);
+    ga_clear(&buf->b_s.b_langp);
 #endif
 }
 
@@ -1378,6 +1378,15 @@ enter_buffer(buf)
     foldUpdateAll(curwin);	/* update folds (later). */
 #endif
 
+#ifdef FEAT_SYN_HL
+    if (curwin->w_s != &curwin->w_buffer->b_s)
+    {
+	/* Get rid of independant syntax */
+	syntax_clear(curwin->w_s);
+	vim_free(curwin->w_s);
+    }
+    curwin->w_s = &(buf->b_s);
+#endif
     /* Get the buffer in the current window. */
     curwin->w_buffer = buf;
     curbuf = buf;
@@ -1460,8 +1469,8 @@ enter_buffer(buf)
 #ifdef FEAT_SPELL
     /* May need to set the spell language.  Can only do this after the buffer
      * has been properly setup. */
-    if (!curbuf->b_help && curwin->w_p_spell && *curbuf->b_p_spl != NUL)
-	(void)did_set_spelllang(curbuf);
+    if (!curbuf->b_help && curwin->w_p_spell && *curwin->w_s->b_p_spl != NUL)
+	(void)did_set_spelllang(curwin);
 #endif
 
     redraw_later(NOT_VALID);
@@ -1672,8 +1681,8 @@ buflist_new(ffname, sfname, lnum, flags)
     init_var_dict(&buf->b_vars, &buf->b_bufvar);    /* init b: variables */
 #endif
 #ifdef FEAT_SYN_HL
-    hash_init(&buf->b_keywtab);
-    hash_init(&buf->b_keywtab_ic);
+    hash_init(&buf->b_s.b_keywtab);
+    hash_init(&buf->b_s.b_keywtab_ic);
 #endif
 
     buf->b_fname = buf->b_sfname;
@@ -1772,11 +1781,11 @@ free_buf_options(buf, free_p_ff)
     clear_string_option(&buf->b_p_syn);
 #endif
 #ifdef FEAT_SPELL
-    clear_string_option(&buf->b_p_spc);
-    clear_string_option(&buf->b_p_spf);
-    vim_free(buf->b_cap_prog);
-    buf->b_cap_prog = NULL;
-    clear_string_option(&buf->b_p_spl);
+    clear_string_option(&buf->b_s.b_p_spc);
+    clear_string_option(&buf->b_s.b_p_spf);
+    vim_free(buf->b_s.b_cap_prog);
+    buf->b_s.b_cap_prog = NULL;
+    clear_string_option(&buf->b_s.b_p_spl);
 #endif
 #ifdef FEAT_SEARCHPATH
     clear_string_option(&buf->b_p_sua);

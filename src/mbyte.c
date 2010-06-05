@@ -5222,7 +5222,7 @@ im_set_active(active)
     /* If 'imdisable' is set, XIM is never active. */
     if (p_imdisable)
 	active = FALSE;
-#if !defined (FEAT_GUI_GTK)
+#if !defined(FEAT_GUI_GTK)
     else if (input_style & XIMPreeditPosition)
 	/* There is a problem in switching XIM off when preediting is used,
 	 * and it is not clear how this can be solved.  For now, keep XIM on

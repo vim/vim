@@ -1163,6 +1163,13 @@ b:changedtick	The total number of changes to the current buffer.  It is
 A variable name that is preceded with "w:" is local to the current window.  It
 is deleted when the window is closed.
 
+One local window variable is predefined:
+					*w:ownsyntax-variable* *ownsyntax*
+w:ownsyntax	Set to 1 if the window has an independent syntax installed
+		via the |:ownsyntax| command. The default for a window is
+		0. Syntax scripts can use this to determine whether they
+		should set b:current_syntax or w:current_syntax.
+
 						*tabpage-variable* *t:var*
 A variable name that is preceded with "t:" is local to the current tab page,
 It is deleted when the tab page is closed. {not available when compiled
@@ -5772,7 +5779,7 @@ undofile({name})					*undofile()*
 		Return the name of the undo file that would be used for a file
 		with name {name} when writing.  This uses the 'undodir'
 		option, finding directories that exist.  It does not check if
-		the undo file exist.
+		the undo file exists.
 		{name} is always expanded to the full path, since that is what
 		is used internally.
 		Useful in combination with |:wundo| and |:rundo|.

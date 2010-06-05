@@ -134,6 +134,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
 'completeopt'	options.txt	/*'completeopt'*
+'conc'	options.txt	/*'conc'*
+'conceallevel'	options.txt	/*'conceallevel'*
 'confirm'	options.txt	/*'confirm'*
 'consk'	options.txt	/*'consk'*
 'conskey'	options.txt	/*'conskey'*
@@ -143,6 +145,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
 'cpt'	options.txt	/*'cpt'*
+'crb'	options.txt	/*'crb'*
 'cryptmethod'	options.txt	/*'cryptmethod'*
 'cscopepathcomp'	options.txt	/*'cscopepathcomp'*
 'cscopeprg'	options.txt	/*'cscopeprg'*
@@ -158,6 +161,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'csverb'	options.txt	/*'csverb'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
+'cursorbind'	options.txt	/*'cursorbind'*
 'cursorcolumn'	options.txt	/*'cursorcolumn'*
 'cursorline'	options.txt	/*'cursorline'*
 'cwh'	options.txt	/*'cwh'*
@@ -482,12 +486,14 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'noconskey'	options.txt	/*'noconskey'*
 'nocopyindent'	options.txt	/*'nocopyindent'*
 'nocp'	options.txt	/*'nocp'*
+'nocrb'	options.txt	/*'nocrb'*
 'nocscopetag'	options.txt	/*'nocscopetag'*
 'nocscopeverbose'	options.txt	/*'nocscopeverbose'*
 'nocst'	options.txt	/*'nocst'*
 'nocsverb'	options.txt	/*'nocsverb'*
 'nocuc'	options.txt	/*'nocuc'*
 'nocul'	options.txt	/*'nocul'*
+'nocursorbind'	options.txt	/*'nocursorbind'*
 'nocursorcolumn'	options.txt	/*'nocursorcolumn'*
 'nocursorline'	options.txt	/*'nocursorline'*
 'nodeco'	options.txt	/*'nodeco'*
@@ -1120,8 +1126,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +cmdline_hist	various.txt	/*+cmdline_hist*
 +cmdline_info	various.txt	/*+cmdline_info*
 +comments	various.txt	/*+comments*
++conceal	various.txt	/*+conceal*
 +cryptv	various.txt	/*+cryptv*
 +cscope	various.txt	/*+cscope*
++cursorbind	various.txt	/*+cursorbind*
 +cursorshape	various.txt	/*+cursorshape*
 +debug	various.txt	/*+debug*
 +dialog_con	various.txt	/*+dialog_con*
@@ -2495,6 +2503,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :ounmap	map.txt	/*:ounmap*
 :ounme	gui.txt	/*:ounme*
 :ounmenu	gui.txt	/*:ounmenu*
+:ownsyntax	syntax.txt	/*:ownsyntax*
 :p	various.txt	/*:p*
 :pc	windows.txt	/*:pc*
 :pclose	windows.txt	/*:pclose*
@@ -2761,8 +2770,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :syn	syntax.txt	/*:syn*
 :syn-arguments	syntax.txt	/*:syn-arguments*
 :syn-case	syntax.txt	/*:syn-case*
+:syn-cchar	syntax.txt	/*:syn-cchar*
 :syn-clear	syntax.txt	/*:syn-clear*
 :syn-cluster	syntax.txt	/*:syn-cluster*
+:syn-conceal	syntax.txt	/*:syn-conceal*
+:syn-conceal-implicit	syntax.txt	/*:syn-conceal-implicit*
+:syn-concealends	syntax.txt	/*:syn-concealends*
 :syn-contained	syntax.txt	/*:syn-contained*
 :syn-containedin	syntax.txt	/*:syn-containedin*
 :syn-contains	syntax.txt	/*:syn-contains*
@@ -4956,6 +4969,7 @@ complete_check()	eval.txt	/*complete_check()*
 complex-change	change.txt	/*complex-change*
 complex-repeat	repeat.txt	/*complex-repeat*
 compress	pi_gzip.txt	/*compress*
+conceal	syntax.txt	/*conceal*
 confirm()	eval.txt	/*confirm()*
 connection-refused	message.txt	/*connection-refused*
 console-menus	gui.txt	/*console-menus*
@@ -6019,6 +6033,7 @@ hit-enter-prompt	message.txt	/*hit-enter-prompt*
 hit-return	message.txt	/*hit-return*
 hitest.vim	syntax.txt	/*hitest.vim*
 hjkl	usr_02.txt	/*hjkl*
+hl-Conceal	syntax.txt	/*hl-Conceal*
 hl-Cursor	syntax.txt	/*hl-Cursor*
 hl-CursorColumn	syntax.txt	/*hl-CursorColumn*
 hl-CursorIM	syntax.txt	/*hl-CursorIM*
@@ -6895,6 +6910,7 @@ os_unix.txt	os_unix.txt	/*os_unix.txt*
 os_vms.txt	os_vms.txt	/*os_vms.txt*
 os_win32.txt	os_win32.txt	/*os_win32.txt*
 other-features	vi_diff.txt	/*other-features*
+ownsyntax	eval.txt	/*ownsyntax*
 p	change.txt	/*p*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*
@@ -8200,6 +8216,7 @@ vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
 vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
+w:ownsyntax-variable	eval.txt	/*w:ownsyntax-variable*
 w:var	eval.txt	/*w:var*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 white-space	pattern.txt	/*white-space*

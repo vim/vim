@@ -2824,7 +2824,7 @@ struct source_cookie
     FILE	*fp;		/* opened file for sourcing */
     char_u      *nextline;      /* if not NULL: line that was read ahead */
     int		finished;	/* ":finish" used */
-#if defined (USE_CRNL) || defined (USE_CR)
+#if defined(USE_CRNL) || defined(USE_CR)
     int		fileformat;	/* EOL_UNKNOWN, EOL_UNIX or EOL_DOS */
     int		error;		/* TRUE if LF found after CR-LF */
 #endif

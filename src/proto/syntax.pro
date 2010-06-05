@@ -1,18 +1,20 @@
 /* syntax.c */
 void syntax_start __ARGS((win_T *wp, linenr_T lnum));
-void syn_stack_free_all __ARGS((buf_T *buf));
+void syn_stack_free_all __ARGS((synblock_T *block));
 void syn_stack_apply_changes __ARGS((buf_T *buf));
 void syntax_end_parsing __ARGS((linenr_T lnum));
 int syntax_check_changed __ARGS((linenr_T lnum));
-int get_syntax_attr __ARGS((colnr_T col, int *can_spell, int keep_state));
-void syntax_clear __ARGS((buf_T *buf));
+int get_syntax_attr __ARGS((colnr_T col, int *p_flags, int *can_spell, int keep_state));
+void syntax_clear __ARGS((synblock_T *block));
 void ex_syntax __ARGS((exarg_T *eap));
-int syntax_present __ARGS((buf_T *buf));
+void ex_ownsyntax __ARGS((exarg_T *eap));
+int syntax_present __ARGS((win_T *win));
 void reset_expand_highlight __ARGS((void));
 void set_context_in_echohl_cmd __ARGS((expand_T *xp, char_u *arg));
 void set_context_in_syntax_cmd __ARGS((expand_T *xp, char_u *arg));
 char_u *get_syntax_name __ARGS((expand_T *xp, int idx));
 int syn_get_id __ARGS((win_T *wp, long lnum, colnr_T col, int trans, int *spellp, int keep_state));
+int syn_get_sub_char __ARGS((void));
 int syn_get_stack_item __ARGS((int i));
 int syn_get_foldlevel __ARGS((win_T *wp, long lnum));
 void init_highlight __ARGS((int both, int reset));

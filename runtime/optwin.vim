@@ -373,6 +373,11 @@ if has("linebreak")
   call append("$", "\t(local to window)")
   call <SID>OptionL("nuw")
 endif
+if has("conceal")
+  call append("$", "conceallevel\tcontrols whether concealable elements are hidden")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("conc")
+endif
 
 
 call <SID>Header("syntax, highlighting and spelling")

@@ -1127,6 +1127,10 @@ diff_win_options(wp, addbuf)
 # endif
 
     wp->w_p_diff = TRUE;
+#ifdef FEAT_CURSORBIND
+    /* Use cursorbind if it's available */
+    wp->w_p_crb = TRUE;
+#endif
     wp->w_p_scb = TRUE;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
@@ -2472,6 +2476,77 @@ diff_move_to(dir, count)
 
     return OK;
 }
+
+#if defined(FEAT_CURSORBIND) || defined(PROTO)
+    linenr_T
+diff_get_corresponding_line(buf1, lnum1, buf2, lnum3)
+    buf_T	*buf1;
+    linenr_T	lnum1;
+    buf_T	*buf2;
+    linenr_T	lnum3;
+{
+    int		idx1;
+    int		idx2;
+    diff_T	*dp;
+    int		baseline = 0;
+    linenr_T	lnum2;
+
+    idx1 = diff_buf_idx(buf1);
+    idx2 = diff_buf_idx(buf2);
+    if (idx1 == DB_COUNT || idx2 == DB_COUNT || curtab->tp_first_diff == NULL)
+	return lnum1;
+
+    if (curtab->tp_diff_invalid)
+	ex_diffupdate(NULL);		/* update after a big change */
+
+    if (curtab->tp_first_diff == NULL)		/* no diffs today */
+	return lnum1;
+
+    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    {
+	if (dp->df_lnum[idx1] > lnum1)
+	{
+	    lnum2 = lnum1 - baseline;
+	    /* don't end up past the end of the file */
+	    if (lnum2 > buf2->b_ml.ml_line_count)
+		lnum2 = buf2->b_ml.ml_line_count;
+
+	    return lnum2;
+	}
+	else if ((dp->df_lnum[idx1] + dp->df_count[idx1]) > lnum1)
+	{
+	    /* Inside the diffblock */
+	    baseline = lnum1 - dp->df_lnum[idx1];
+	    if (baseline > dp->df_count[idx2])
+		baseline = dp->df_count[idx2];
+
+	    return dp->df_lnum[idx2] + baseline;
+	}
+	else if (   (dp->df_lnum[idx1] == lnum1)
+		 && (dp->df_count[idx1] == 0)
+		 && (dp->df_lnum[idx2] <= lnum3)
+		 && ((dp->df_lnum[idx2] + dp->df_count[idx2]) > lnum3))
+	    /*
+	     * Special case: if the cursor is just after a zero-count
+	     * block (i.e. all filler) and the target cursor is already
+	     * inside the corresponding block, leave the target cursor
+	     * unmoved. This makes repeated CTRL-W W operations work
+	     * as expected.
+	     */
+	    return lnum3;
+	baseline = (dp->df_lnum[idx1] + dp->df_count[idx1])
+				   - (dp->df_lnum[idx2] + dp->df_count[idx2]);
+    }
+
+    /* If we get here then the cursor is after the last diff */
+    lnum2 = lnum1 - baseline;
+    /* don't end up past the end of the file */
+    if (lnum2 > buf2->b_ml.ml_line_count)
+	lnum2 = buf2->b_ml.ml_line_count;
+
+    return lnum2;
+}
+#endif
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
 /*

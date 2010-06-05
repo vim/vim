@@ -1,4 +1,5 @@
 /* move.c */
+void do_check_cursorbind __ARGS((void));
 void update_topline_redraw __ARGS((void));
 void update_topline __ARGS((void));
 void update_curswant __ARGS((void));

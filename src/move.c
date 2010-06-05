@@ -2884,3 +2884,68 @@ halfpage(flag, Prenum)
     beginline(BL_SOL | BL_FIX);
     redraw_later(VALID);
 }
+
+#if defined(FEAT_CURSORBIND) || defined(PROTO)
+    void
+do_check_cursorbind()
+{
+    linenr_T	line = curwin->w_cursor.lnum;
+    colnr_T	col =  curwin->w_cursor.col;
+    win_T	*old_curwin = curwin;
+    buf_T	*old_curbuf = curbuf;
+# ifdef FEAT_VISUAL
+    int		old_VIsual_select = VIsual_select;
+    int		old_VIsual_active = VIsual_active;
+# endif
+
+    /*
+     * loop through the cursorbound windows
+     */
+# ifdef FEAT_VISUAL
+    VIsual_select = VIsual_active = 0;
+# endif
+    for (curwin = firstwin; curwin; curwin = curwin->w_next)
+    {
+	curbuf = curwin->w_buffer;
+	/* skip original window  and windows with 'noscrollbind' */
+	if (curwin != old_curwin && curwin->w_p_crb)
+	{
+# ifdef FEAT_DIFF
+	    if (curwin->w_p_diff)
+		curwin->w_cursor.lnum
+			= diff_get_corresponding_line(old_curbuf,
+						      line,
+						      curbuf,
+						      curwin->w_cursor.lnum);
+	    else
+# endif
+		curwin->w_cursor.lnum = line;
+	    curwin->w_cursor.col = col;
+
+	    /* Make sure the cursor is in a valid position. */
+	    check_cursor();
+# ifdef FEAT_MBYTE
+	    /* Correct cursor for multi-byte character. */
+	    if (has_mbyte)
+		mb_adjust_cursor();
+# endif
+
+	    redraw_later(VALID);
+	    update_topline();
+# ifdef FEAT_WINDOWS
+	    curwin->w_redr_status = TRUE;
+# endif
+	}
+    }
+
+    /*
+     * reset current-window
+     */
+# ifdef FEAT_VISUAL
+    VIsual_select = old_VIsual_select;
+    VIsual_active = old_VIsual_active;
+# endif
+    curwin = old_curwin;
+    curbuf = old_curbuf;
+}
+#endif /* FEAT_CURSORBIND */

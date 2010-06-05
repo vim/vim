@@ -35,7 +35,8 @@ In the User Manual:
 13. Linking groups		|:highlight-link|
 14. Cleaning up			|:syn-clear|
 15. Highlighting tags		|tag-highlight|
-16. Color xterms		|xterm-color|
+16. Window-local syntax		|:ownsyntax|
+17. Color xterms		|xterm-color|
 
 {Vi does not have any of these commands}
 
@@ -3115,12 +3116,14 @@ and may be mixed with patterns.
 Not all commands accept all arguments.	This table shows which arguments
 can not be used for all commands:
 							*E395* *E396*
-		    contains  oneline	fold  display  extend ~
-:syntax keyword		 -	 -	 -	 -	 -
-:syntax match		yes	 -	yes	yes	yes
-:syntax region		yes	yes	yes	yes	yes
+		    contains  oneline	fold  display  extend concealends~
+:syntax keyword		 -	 -	 -	 -	 -      -
+:syntax match		yes	 -	yes	yes	yes     -
+:syntax region		yes	yes	yes	yes	yes    yes
 
 These arguments can be used for all three commands:
+	conceal
+	cchar
 	contained
 	containedin
 	nextgroup
@@ -3129,6 +3132,27 @@ These arguments can be used for all three commands:
 	skipnl
 	skipempty
 
+conceal						*conceal* *:syn-conceal*
+
+When the "conceal" argument is given, the item is marked as concealable.
+Whether or not it is actually concealed depends on the setting on the
+'conceallevel' option.
+
+concealends						*:syn-concealends*
+
+When the "concealends" argument is given, the start and end matches of
+the region, but not the contents of the region, are marked as concealable.
+Whether or not they are actually concealed depends on the setting on the
+'conceallevel' option. The ends of a region can only be concealed separately
+in this way when they have their own highlighting via "matchgroup"
+
+cchar							*:syn-cchar*
+
+The "cchar" argument defines the character shown in place of the item
+when it is concealed (setting "cchar" only makes sense when the conceal
+argument is given.) If "cchar" is not set then the default conceal
+character defined in the 'listchars' option is used. Example: >
+   :syntax match Entity "&amp;" conceal cchar=&
 
 contained						*:syn-contained*
 
@@ -3384,6 +3408,16 @@ precedence.
 Note that this example doesn't work for nested "if"s.  You need to add
 "contains" arguments to make that work (omitted for simplicity of the
 example).
+
+IMPLICIT CONCEAL					*:syn-conceal-implicit*
+
+:sy[ntax] conceal [on|off]
+	This defines if the following ":syntax" commands will define keywords,
+	matches or regions with the "conceal" flag set. After ":syn conceal
+	on", all subsequent ":syn keyword", ":syn match" or ":syn region"
+	defined will have the "conceal" flag set implicitly. ":syn conceal
+	off" returns to the normal state where the "conceal" flag must be
+	given explicitly.
 
 ==============================================================================
 7. Syntax patterns				*:syn-pattern* *E401* *E402*
@@ -4169,6 +4203,9 @@ These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value
 of 'background'.  You can see the current settings with the ":highlight"
 command.
+							*hl-Conceal*
+Conceal		placeholder characters substituted for concealed
+		text (see 'conceallevel')
 							*hl-Cursor*
 Cursor		the character under the cursor
 							*hl-CursorIM*
@@ -4470,6 +4507,28 @@ And put these lines in your .vimrc: >
    autocmd BufRead,BufNewFile *.[ch] if filereadable(fname)
    autocmd BufRead,BufNewFile *.[ch]   exe 'so ' . fname
    autocmd BufRead,BufNewFile *.[ch] endif
+
+==============================================================================
+16. Window-local syntax				*:ownsyntax*
+
+Normally all windows on a buffer share the same syntax settings. It is
+possible, however, to set a particular window on a file to have its own
+private syntax setting. A possible example would be to edit LaTeX source
+with conventional highlighting in one window, while seeing the same source
+highlighted differently (so as to hide control sequences and indicate bold,
+italic etc regions) in another. The 'scrollbind' option is useful here.
+
+To set the current window to have the syntax "foo", separately from all other
+windows on the buffer: >
+   :ownsyntax foo
+
+Once a window has its own syntax, syntax commands executed from other windows
+on the same buffer (including :syntax clear) have no effect. Conversely, 
+syntax commands executed from that window do not effect other windows on the
+same buffer.
+
+A window with its own syntax reverts to normal behaviour when another buffer
+is loaded into that window.
 
 ==============================================================================
 16. Color xterms				*xterm-color* *color-xterm*

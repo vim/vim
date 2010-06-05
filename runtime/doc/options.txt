@@ -1707,6 +1707,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    combination with "menu" or "menuone".
 
 
+'conceallevel' 'conc'		*'conceallevel'* *'conc'*
+			number (default 0)
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+conceal|
+			feature}
+	Determine how text with the "conceal" syntax attribute is shown:
+
+	'conceallevel'	Effect
+	0		Text is shown normally
+	1		Each block of concealed text is replaced with the
+			character defined in 'listchars' (default is a dash)
+			and highlighted with the "Conceal" highlight group.
+	2		Concealed text is completely hidden unless it has a
+			custom replacement character defined (see
+			|:syn-cchar|.
+	3		Concealed text is completely hidden.
+
+
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)
 			global
@@ -2131,6 +2150,20 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 	Give messages when adding a cscope database.  See |cscopeverbose|.
 	NOTE: This option is reset when 'compatible' is set.
+
+			*'cursorbind'* *'crb'* *'nocursorbind'* *'nocrb'*
+'cursorbind' 'crb'	boolean  (default off)
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+cursorbind|
+			feature}
+	When this option is set, as the cursor in the current
+	window moves other cursorbound windows (windows that also have
+	this option set) move their cursors to the corresponding line and
+	column.  This option is useful for viewing the
+	differences between two versions of a file (see 'diff'); in diff mode,
+	inserted and deleted lines (though not characters within a line) are
+	taken into account. 
 
 
 			*'cursorcolumn'* *'cuc'* *'nocursorcolumn'* *'nocuc'*
@@ -3615,7 +3648,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     f:Folded,F:FoldColumn,A:DiffAdd,
 				     C:DiffChange,D:DiffDelete,T:DiffText,
 				     >:SignColumn,B:SpellBad,P:SpellCap,
-				     R:SpellRare,L:SpellLocal,
+				     R:SpellRare,L:SpellLocal,-:Conceal,
 				     +:Pmenu,=:PmenuSel,
 				     x:PmenuSbar,X:PmenuThumb")
 			global
@@ -3659,6 +3692,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-SpellCap|	 P  word that should start with capital|spell|
 	|hl-SpellRare|	 R  rare word |spell|
 	|hl-SpellLocal|	 L  word from other region |spell|
+	|hl-Conceal|	 -  the placeholders used for concealed characters
+			    (see 'conceallevel')
 	|hl-Pmenu|       +  popup menu normal line
 	|hl-PmenuSel|    =  popup menu normal line
 	|hl-PmenuSbar|   x  popup menu scrollbar
@@ -4416,6 +4451,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  precedes:c	Character to show in the first column, when 'wrap'
 			is off and there is text preceding the character
 			visible in the first column.
+	  conceal:c	Character to show in place of concealed text, when
+	  		'conceallevel' is set to 1.
 	  nbsp:c	Character to show for a non-breakable space (character
 			0xA0, 160).  Left blank when omitted.
 

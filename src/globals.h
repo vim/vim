@@ -1151,6 +1151,9 @@ EXTERN int	lcs_nbsp INIT(= NUL);
 EXTERN int	lcs_tab1 INIT(= NUL);
 EXTERN int	lcs_tab2 INIT(= NUL);
 EXTERN int	lcs_trail INIT(= NUL);
+#ifdef FEAT_CONCEAL
+EXTERN int	lcs_conceal INIT(= '-');
+#endif
 
 #if defined(FEAT_WINDOWS) || defined(FEAT_WILDMENU) || defined(FEAT_STL_OPT) \
 	|| defined(FEAT_FOLDING)
@@ -1412,7 +1415,7 @@ EXTERN char_u e_invexpr2[]	INIT(= N_("E15: Invalid expression: %s"));
 #endif
 EXTERN char_u e_invrange[]	INIT(= N_("E16: Invalid range"));
 EXTERN char_u e_invcmd[]	INIT(= N_("E476: Invalid command"));
-#if defined(UNIX) || defined(FEAT_SYN_HL)
+#if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 EXTERN char_u e_isadir2[]	INIT(= N_("E17: \"%s\" is a directory"));
 #endif
 #ifdef FEAT_LIBCALL

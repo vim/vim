@@ -1175,6 +1175,9 @@ win_init(newp, oldp, flags)
     int		i;
 
     newp->w_buffer = oldp->w_buffer;
+#ifdef FEAT_SYN_HL
+    newp->w_s = oldp->w_s;
+#endif
     oldp->w_buffer->b_nwindows++;
     newp->w_cursor = oldp->w_cursor;
     newp->w_valid = 0;
@@ -3294,6 +3297,9 @@ win_alloc_firstwin(oldwin)
 	if (curwin == NULL || curbuf == NULL)
 	    return FAIL;
 	curwin->w_buffer = curbuf;
+#ifdef FEAT_SYN_HL
+	curwin->w_s = &(curbuf->b_s);
+#endif
 	curbuf->b_nwindows = 1;	/* there is one window */
 #ifdef FEAT_WINDOWS
 	curwin->w_alist = &global_alist;
@@ -4401,10 +4407,16 @@ win_free(wp, tp)
     }
 #endif /* FEAT_GUI */
 
+#ifdef FEAT_SYN_HL
+    /* free independent synblock */
+    if (wp->w_s != &wp->w_buffer->b_s)
+	vim_free(wp->w_s);
+#endif
+
 #ifdef FEAT_AUTOCMD
     if (wp != aucmd_win)
 #endif
-	win_remove(wp, tp);
+    win_remove(wp, tp);
     vim_free(wp);
 
 #ifdef FEAT_AUTOCMD

@@ -698,6 +698,10 @@ edit(cmdchar, startln, count)
 	    do_check_scrollbind(TRUE);
 #endif
 
+#ifdef FEAT_CURSORBIND
+	if (curwin->w_p_crb)
+	    do_check_cursorbind();
+#endif
 	update_curswant();
 	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -1277,7 +1281,7 @@ doESCkey:
 	    inserted_space = FALSE;
 	    break;
 
-#if defined(FEAT_DIGRAPHS) || defined (FEAT_INS_EXPAND)
+#if defined(FEAT_DIGRAPHS) || defined(FEAT_INS_EXPAND)
 	case Ctrl_K:	    /* digraph or keyword completion */
 # ifdef FEAT_INS_EXPAND
 	    if (ctrl_x_mode == CTRL_X_DICTIONARY)
@@ -1470,7 +1474,7 @@ ins_redraw(ready)
 	     * highlighting is correct after making a change (e.g., inserting
 	     * a "(".  The autocommand may also require a redraw, so it's done
 	     * again below, unfortunately. */
-	    if (syntax_present(curbuf) && must_redraw)
+	    if (syntax_present(curwin) && must_redraw)
 		update_screen(0);
 # endif
 	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
@@ -2960,7 +2964,7 @@ ins_compl_dictionaries(dict_start, pat, flags, thesaurus)
 		ptr = pat + 2;
 	    else
 		ptr = pat;
-	    spell_dump_compl(curbuf, ptr, regmatch.rm_ic, &dir, 0);
+	    spell_dump_compl(ptr, regmatch.rm_ic, &dir, 0);
 	}
 	else
 # endif
@@ -9119,6 +9123,9 @@ ins_s_right()
 ins_up(startcol)
     int		startcol;	/* when TRUE move to Insstart.col */
 {
+#ifdef FEAT_CONCEAL
+    linenr_T	oldline = curwin->w_cursor.lnum;
+#endif
     pos_T	tpos;
     linenr_T	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -9140,6 +9147,13 @@ ins_up(startcol)
 	start_arrow(&tpos);
 #ifdef FEAT_CINDENT
 	can_cindent = TRUE;
+#endif
+#ifdef FEAT_CONCEAL
+	if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
+	{
+	    update_single_line(curwin, oldline);
+	    update_single_line(curwin, curwin->w_cursor.lnum);
+	}
 #endif
     }
     else
@@ -9182,6 +9196,10 @@ ins_pageup()
 ins_down(startcol)
     int		startcol;	/* when TRUE move to Insstart.col */
 {
+#ifdef FEAT_CONCEAL
+    linenr_T	oldline = curwin->w_cursor.lnum;
+    linenr_T	oldbotline = curwin->w_botline;
+#endif
     pos_T	tpos;
     linenr_T	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -9203,6 +9221,16 @@ ins_down(startcol)
 	start_arrow(&tpos);
 #ifdef FEAT_CINDENT
 	can_cindent = TRUE;
+#endif
+#ifdef FEAT_CONCEAL
+	if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
+	{
+	    update_single_line(curwin, oldline);
+	    /* Don't do this if we've scrolled, the line is already
+	     * drawn */
+	    if (oldbotline == curwin->w_botline)
+		update_single_line(curwin, curwin->w_cursor.lnum);
+	}
 #endif
     }
     else

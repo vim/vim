@@ -235,6 +235,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #endif
 #ifndef FEAT_SYN_HL
 # define ex_syntax		ex_ni
+# define ex_ownsyntax		ex_ni
 #endif
 #ifndef FEAT_SPELL
 # define ex_spell		ex_ni

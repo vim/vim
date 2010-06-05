@@ -616,7 +616,7 @@ ex_hardcopy(eap)
 	else
 	    settings.modec = 't';
 
-    if (!syntax_present(curbuf))
+    if (!syntax_present(curwin))
 	settings.do_syntax = FALSE;
     else if (printer_opts[OPT_PRINT_SYNTAX].present
 	    && TOLOWER_ASC(printer_opts[OPT_PRINT_SYNTAX].string[0]) != 'a')

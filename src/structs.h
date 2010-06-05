@@ -213,6 +213,14 @@ typedef struct
 #endif
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
+#ifdef FEAT_CONCEAL
+    int		wo_conceal;		/* 'conceal' */
+# define w_p_conceal w_onebuf_opt.wo_conceal
+#endif
+#ifdef FEAT_CURSORBIND
+    int		wo_crb;
+# define w_p_crb w_onebuf_opt.wo_crb	/* 'cursorbind' */
+#endif
 
 #ifdef FEAT_EVAL
     int		wo_scriptID[WV_COUNT];	/* SIDs for window-local options */
@@ -769,7 +777,8 @@ struct keyentry
     keyentry_T	*ke_next;	/* next entry with identical "keyword[]" */
     struct sp_syn k_syn;	/* struct passed to in_id_list() */
     short	*next_list;	/* ID list for next match (if non-zero) */
-    short	flags;		/* see syntax.c */
+    int		flags;
+    int		k_char;		/* conceal substitute character */
     char_u	keyword[1];	/* actually longer */
 };
 
@@ -779,7 +788,7 @@ struct keyentry
 typedef struct buf_state
 {
     int		    bs_idx;	 /* index of pattern */
-    long	    bs_flags;	 /* flags for pattern */
+    int		    bs_flags;	 /* flags for pattern */
     reg_extmatch_T *bs_extmatch; /* external matches from start pattern */
 } bufstate_T;
 
@@ -968,6 +977,11 @@ struct stl_hlrec
     int		userhl;		/* 0: no HL, 1-9: User HL, < 0 for syn ID */
 };
 
+
+/*
+ * Syntax items - usually buffer-specific.
+ */
+
 /* Item for a hashtable.  "hi_key" can be one of three values:
  * NULL:	   Never been used
  * HI_KEY_REMOVED: Entry was removed
@@ -1139,6 +1153,73 @@ struct dictvar_S
 #ifdef FEAT_QUICKFIX
 typedef struct qf_info_S qf_info_T;
 #endif
+
+typedef struct {
+#ifdef FEAT_SYN_HL
+    hashtab_T	b_keywtab;		/* syntax keywords hash table */
+    hashtab_T	b_keywtab_ic;		/* idem, ignore case */
+    int		b_syn_error;		/* TRUE when error occured in HL */
+    int		b_syn_ic;		/* ignore case for :syn cmds */
+    int		b_syn_spell;		/* SYNSPL_ values */
+    garray_T	b_syn_patterns;		/* table for syntax patterns */
+    garray_T	b_syn_clusters;		/* table for syntax clusters */
+    int		b_spell_cluster_id;	/* @Spell cluster ID or 0 */
+    int		b_nospell_cluster_id;	/* @NoSpell cluster ID or 0 */
+    int		b_syn_containedin;	/* TRUE when there is an item with a
+					   "containedin" argument */
+    int		b_syn_sync_flags;	/* flags about how to sync */
+    short	b_syn_sync_id;		/* group to sync on */
+    long	b_syn_sync_minlines;	/* minimal sync lines offset */
+    long	b_syn_sync_maxlines;	/* maximal sync lines offset */
+    long	b_syn_sync_linebreaks;	/* offset for multi-line pattern */
+    char_u	*b_syn_linecont_pat;	/* line continuation pattern */
+    regprog_T	*b_syn_linecont_prog;	/* line continuation program */
+    int		b_syn_linecont_ic;	/* ignore-case flag for above */
+    int		b_syn_topgrp;		/* for ":syntax include" */
+# ifdef FEAT_CONCEAL
+    int		b_syn_conceal;		/* auto-conceal for :syn cmds */
+# endif
+# ifdef FEAT_FOLDING
+    int		b_syn_folditems;	/* number of patterns with the HL_FOLD
+					   flag set */
+# endif
+/*
+ * b_sst_array[] contains the state stack for a number of lines, for the start
+ * of that line (col == 0).  This avoids having to recompute the syntax state
+ * too often.
+ * b_sst_array[] is allocated to hold the state for all displayed lines, and
+ * states for 1 out of about 20 other lines.
+ * b_sst_array		pointer to an array of synstate_T
+ * b_sst_len		number of entries in b_sst_array[]
+ * b_sst_first		pointer to first used entry in b_sst_array[] or NULL
+ * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
+ * b_sst_freecount	number of free entries in b_sst_array[]
+ * b_sst_check_lnum	entries after this lnum need to be checked for
+ *			validity (MAXLNUM means no check needed)
+ */
+    synstate_T	*b_sst_array;
+    int		b_sst_len;
+    synstate_T	*b_sst_first;
+    synstate_T	*b_sst_firstfree;
+    int		b_sst_freecount;
+    linenr_T	b_sst_check_lnum;
+    short_u	b_sst_lasttick;	/* last display tick */
+#endif /* FEAT_SYN_HL */
+
+#ifdef FEAT_SPELL
+    /* for spell checking */
+    garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
+    char_u	b_spell_ismw[256];/* flags: is midword char */
+# ifdef FEAT_MBYTE
+    char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
+# endif
+    char_u	*b_p_spc;	/* 'spellcapcheck' */
+    regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
+    char_u	*b_p_spf;	/* 'spellfile' */
+    char_u	*b_p_spl;	/* 'spelllang' */
+#endif
+} synblock_T;
+
 
 /*
  * buffer: structure that holds information about one file
@@ -1427,12 +1508,6 @@ struct file_buffer
     long	b_p_smc;	/* 'synmaxcol' */
     char_u	*b_p_syn;	/* 'syntax' */
 #endif
-#ifdef FEAT_SPELL
-    char_u	*b_p_spc;	/* 'spellcapcheck' */
-    regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
-    char_u	*b_p_spf;	/* 'spellfile' */
-    char_u	*b_p_spl;	/* 'spelllang' */
-#endif
     long	b_p_ts;		/* 'tabstop' */
     int		b_p_tx;		/* 'textmode' */
     long	b_p_tw;		/* 'textwidth' */
@@ -1528,61 +1603,10 @@ struct file_buffer
     void	*b_ruby_ref;
 #endif
 
-#ifdef FEAT_SYN_HL
-    hashtab_T	b_keywtab;		/* syntax keywords hash table */
-    hashtab_T	b_keywtab_ic;		/* idem, ignore case */
-    int		b_syn_error;		/* TRUE when error occured in HL */
-    int		b_syn_ic;		/* ignore case for :syn cmds */
-    int		b_syn_spell;		/* SYNSPL_ values */
-    garray_T	b_syn_patterns;		/* table for syntax patterns */
-    garray_T	b_syn_clusters;		/* table for syntax clusters */
-    int		b_spell_cluster_id;	/* @Spell cluster ID or 0 */
-    int		b_nospell_cluster_id;	/* @NoSpell cluster ID or 0 */
-    int		b_syn_containedin;	/* TRUE when there is an item with a
-					   "containedin" argument */
-    int		b_syn_sync_flags;	/* flags about how to sync */
-    short	b_syn_sync_id;		/* group to sync on */
-    long	b_syn_sync_minlines;	/* minimal sync lines offset */
-    long	b_syn_sync_maxlines;	/* maximal sync lines offset */
-    long	b_syn_sync_linebreaks;	/* offset for multi-line pattern */
-    char_u	*b_syn_linecont_pat;	/* line continuation pattern */
-    regprog_T	*b_syn_linecont_prog;	/* line continuation program */
-    int		b_syn_linecont_ic;	/* ignore-case flag for above */
-    int		b_syn_topgrp;		/* for ":syntax include" */
-# ifdef FEAT_FOLDING
-    int		b_syn_folditems;	/* number of patterns with the HL_FOLD
-					   flag set */
-# endif
-/*
- * b_sst_array[] contains the state stack for a number of lines, for the start
- * of that line (col == 0).  This avoids having to recompute the syntax state
- * too often.
- * b_sst_array[] is allocated to hold the state for all displayed lines, and
- * states for 1 out of about 20 other lines.
- * b_sst_array		pointer to an array of synstate_T
- * b_sst_len		number of entries in b_sst_array[]
- * b_sst_first		pointer to first used entry in b_sst_array[] or NULL
- * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
- * b_sst_freecount	number of free entries in b_sst_array[]
- * b_sst_check_lnum	entries after this lnum need to be checked for
- *			validity (MAXLNUM means no check needed)
- */
-    synstate_T	*b_sst_array;
-    int		b_sst_len;
-    synstate_T	*b_sst_first;
-    synstate_T	*b_sst_firstfree;
-    int		b_sst_freecount;
-    linenr_T	b_sst_check_lnum;
-    short_u	b_sst_lasttick;	/* last display tick */
-#endif /* FEAT_SYN_HL */
-
-#ifdef FEAT_SPELL
-    /* for spell checking */
-    garray_T	b_langp;	/* list of pointers to slang_T, see spell.c */
-    char_u	b_spell_ismw[256];/* flags: is midword char */
-# ifdef FEAT_MBYTE
-    char_u	*b_spell_ismw_mb; /* multi-byte midword chars */
-# endif
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
+    synblock_T	b_s;		/* Info related to syntax highlighting.  w_s
+				 * normally points to this, but some windows
+				 * may use a different synblock_T. */
 #endif
 
 #ifdef FEAT_SIGNS
@@ -1766,6 +1790,10 @@ struct window_S
 {
     buf_T	*w_buffer;	    /* buffer we are a window into (used
 				       often, keep it the first item!) */
+
+#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
+    synblock_T	*w_s;
+#endif
 
 #ifdef FEAT_WINDOWS
     win_T	*w_prev;	    /* link to previous window */
