@@ -1286,7 +1286,7 @@ v:beval_winnr	The number of the window, over which the mouse pointer is. Only
 
 					*v:char* *char-variable*
 v:char		Argument for evaluating 'formatexpr' and used for the typed
-		character when using <expr> in an abbreviation |map-<expr>|.
+		character when using <expr> in an abbreviation |:map-<expr>|.
 
 			*v:charconvert_from* *charconvert_from-variable*
 v:charconvert_from
@@ -5773,6 +5773,8 @@ undofile({name})					*undofile()*
 		with name {name} when writing.  This uses the 'undodir'
 		option, finding directories that exist.  It does not check if
 		the undo file exist.
+		{name} is always expanded to the full path, since that is what
+		is used internally.
 		Useful in combination with |:wundo| and |:rundo|.
 		When compiled without the +persistent_undo option this always
 		returns an empty string.

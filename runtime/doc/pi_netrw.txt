@@ -589,7 +589,7 @@ password.
 PASSWORD						*netrw-passwd*
 
 The script attempts to get passwords for ftp invisibly using |inputsecret()|,
-a built-in Vim function.  See |netrw-uidpass| for how to change the password
+a built-in Vim function.  See |NetUserPass()| for how to change the password
 after one has set it.
 
 Unfortunately there doesn't appear to be a way for netrw to feed a password to
@@ -803,7 +803,7 @@ temporary file:
                                               get filename tempfile >
   ---------------------------------------------------------------------
 <
-The |g:netrw_ftpmode| and |g:netrw_extracmd| are optional.
+The |g:netrw_ftpmode| and g:netrw_extracmd are optional.
 
 Netrw then executes the lines above by use of a filter:
 >

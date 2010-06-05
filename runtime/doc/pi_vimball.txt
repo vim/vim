@@ -197,7 +197,7 @@ WINDOWS							*vimball-windows*
 	     Apr 18, 2008 * RmVimball command is now protected by saving and
 	                    restoring settings -- in particular, acd was
 			    causing problems as reported by Zhang Shuhan
-	24 : Nov 15, 2007 * |g:vimball_path_escape| used by s:Path() to
+	24 : Nov 15, 2007 * g:vimball_path_escape used by s:Path() to
 	                    prevent certain characters from causing trouble
 	22 : Mar 21, 2007 * uses setlocal instead of set during BufEnter
 	21 : Nov 27, 2006 * (tnx to Bill McCarthy) vimball had a header

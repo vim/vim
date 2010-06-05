@@ -1,51 +1,84 @@
-README_os_390.txt for version 7.3a of Vim: Vi IMproved.
+README_zOS.txt for version 7.3 of Vim: Vi IMproved.
 
-Welcome to the OS/390 Unix port of VIM.
+This readme explains how to build Vim on z/OS.  Formerly called OS/390.
+See "README.txt" for general information about Vim.
 
-ATTENTION: THIS IS AN _ALPHA_ VERSION!!!
-I expect you to know how to handle alpha software!
+Most likley there are not many users out there using Vim on z/OS. So chances
+are good, that some bugs are still undiscovered.
 
-This port was done by Ralf Schandl <schandl@de.ibm.com>.
-This port is not maintained or supported by IBM!!
+Getting the source to z/OS:
+==========================
 
+First get the source code in one big tar file and ftp it a binary to z/OS. If
+the tar file is initially compressed with gzip (tar.gz) or bzip2 (tar.bz2)
+uncompress it on your PC, as this tools are (most likely) not available on the
+mainframe.
 
-For the list of changes see runtime/doc/os_390.txt.
+To reduce the size of the tar file you might compress it into a zip file. On
+z/OS Unix you might have the command "jar" from java to uncompress a zip. Use:
+        jar xvf <zip file name>
+
+Unpack the tar file on z/OS with 
+        pax -o from=ISO8859-1,to=IBM-1047 -rf vim.tar
+
+Note: The Vim source contains a few bitmaps etc which will be destroyed by
+this command, but these files are not needed on zOS (at least not for the
+console version).
 
 
 Compiling:
-----------
+==========
 
-Note: After the file configure was created via autoconf, it had been
-      handedited, to make the test for ICEConnectionNumber work.
-      DO NOT run autoconf again!
+Vim can be compiled with or without GUI support. For 7.3 only the compilation
+without GUI was tested. Below is a section about compiling with X11 but this
+is from an earlier version of Vim.
 
-Without X11:
+Console only:
+-------------
 
 If you build VIM without X11 support, compiling and building is nearly
-straightforward. The only restriction is, that you can't call make from the
-VIM toplevel directory. Change to the src directory first and call make from
-there. Here is a what to do:
+straightforward. 
+
+Change to the vim directory and do:
 
     # Don't use c89!
-    # Make additional symbols visible.
     # Allow intermixing of compiler options and files.
 
     $ export CC=cc
-    $ export CFLAGS=-D_ALL_SOURCE
     $ export _CC_CCMODE=1
-    $./configure --enable-max-features --without-x --enable-gui=no
+    $./configure --with-features=big --without-x --enable-gui=no
     $ cd src
     $ make
+
+      There may be warnings:
+        - include files not found (libc, sys/param.h, ...)
+        - Redeclaration of ... differs from ...
+        -- just ignore them.
+
     $ make test
 
-      Note: Test 28 will be reported as failed. This is because diff can't
-	    compare files containing '\0' characters. Test 11 will fail if you
-	    don't have gzip.
+      This will produce lots of garbage on your screen (including error
+      messages). Don't worry.
+
+      If the test stops at one point in vim (might happen in test 11), just
+      press :q!
+
+      Expected test failures:
+        11: If you don't have gzip installed
+        24: test of backslash sequences in regexp are ASCII dependent
+        42: Multibyte is not supported on z/OS
+        55: ASCII<->EBCDIC sorting
+        57: ASCII<->EBCDIC sorting
+        58: Spell checking is not supported with EBCDIC
+        71: Blowfish encryption doesn't work
 
     $ make install
 
 
 With X11:
+---------
+
+WARNING: This instruction was not tested with Vim 7.3.
 
 There are two ways for building VIM with X11 support. The first way is simple
 and results in a big executable (~13 Mb), the second needs a few additional
@@ -54,8 +87,6 @@ you want Motif.
 
   The easy way:
     $ export CC=cc
-    $ export CFLAGS="-D_ALL_SOURCE -W c,dll"
-    $ export LDFLAGS="-W l,dll"
     $ export _CC_CCMODE=1
     $ ./configure --enable-max-features --enable-gui=motif
     $ cd src
@@ -65,7 +96,7 @@ you want Motif.
 
   The smarter way:
     Make VIM as described above. Then create a file named 'link.sed' with the
-    following content:
+    following content (see src/link.390):
 
 	s/-lXext  *//g
 	s/-lXmu  *//g
@@ -84,47 +115,3 @@ you want Motif.
     See the Makefile and the file link.sh on how link.sed is used.
 
 
-Hint:
------
-Use the online help! (See weaknesses below.)
-
-Example:
-Enter ':help syntax' and then press <TAB> several times, you will switch
-through all help items containing 'syntax'. Press <ENTER> on the one you are
-interested at. Or press <Ctrl-D> and you will get a list of all items printed
-that contain 'syntax'.
-
-The helpfiles contains cross-references. Links are between '|'. Position the
-cursor on them and press <Ctrl-]> to follow this link. Use <Ctrl-T> to jump
-back.
-
-Known weaknesses:
------------------
-
-- You can't call make from the toplevel directory, you have to do a 'cd src'
-  first.  If you do it, make will call configure again. I don't know why and
-  didn't investigate it, there were more important things to do. If you can
-  make it work drop me a note.
-
-- The documentation was not updated for this alpha release. It contains lot of
-  ASCII dependencies, especially in examples.
-
-- Digraphs are dependent on code page 1047. Digraphs are used to enter
-  characters that normally cannot be entered by an ordinary keyboard.
-  See ":help digraphs".
-
-- Using 'ga' to show the code of the character under the cursor shows the
-  correct dec/hex/oct values, but the other informations might be missing or
-  wrong.
-
-- The sed syntax file doesn't work, it is ASCII dependent.
-
-Bugs:
------
-If you find a bug please inform me (schandl@de.ibm.com), don't disturb Bram
-Moolenaar. It's most likely a bug I introduced during porting or some ASCII
-dependency I didn't notice.
-
-Feedback:
----------
-Feedback welcome! Just drop me a note.

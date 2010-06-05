@@ -314,6 +314,16 @@ The number of changes that are remembered is set with the 'undolevels' option.
 If it is zero, the Vi-compatible way is always used.  If it is negative no
 undo is possible.  Use this if you are running out of memory.
 
+							*clear-undo*
+When you set 'undolevels' to -1 the undo information is not immediately
+cleared, this happens at the next change.  To force clearing the undo
+information you can use these commands: >
+	:let old_undolevels = &undolevels
+	:set undolevels=-1
+	:exe "normal a \<BS>\<Esc>"
+	:let &undolevels = old_undolevels
+	:unlet old_undolevels
+
 Marks for the buffer ('a to 'z) are also saved and restored, together with the
 text.  {Vi does this a little bit different}
 

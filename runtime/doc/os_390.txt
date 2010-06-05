@@ -7,7 +7,7 @@
 This file contains the particulars for the z/OS UNIX version of Vim.
 
 1. ASCII/EBCDIC dependent scripts	|zOS-has-ebcdic|
-2. Putty and Colors                     |zOS-Putty|
+2. Putty and Colors                     |zOS-PuTTY|
 3. Motif Problems			|zOS-Motif|
 4. Bugs					|zOS-Bugs|
 5. Limitations     			|zOS-limitations|

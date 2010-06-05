@@ -273,6 +273,68 @@ Hints for translators:
 ==============================================================================
 3. Writing help files					*help-writing*
 
-TODO
+For ease of use, a Vim help file for a plugin should follow the format of the
+standard Vim help files.  If you are writing a new help file it's best to copy
+one of the existing files and use it as a template.
+
+The first line in a help file should have the following format:
+
+*helpfile_name.txt*	For Vim version 7.3	Last change: 2010 June 4
+
+The first field is a link to the help file name. The second field describes
+the applicable Vim version. The last field specifies the last modification
+date of the file. Each field is separated by a tab.
+
+At the bottom of the help file, place a Vim modeline to set the 'textwidth'
+and 'tabstop' options and the 'filetype' to 'help'.  Never set a global option
+in such a modeline, that can have consequences undesired by whoever reads that
+help.
+
+
+TAGS
+
+To define a help tag, place the name between asterisks (*tag-name*).  The
+tag-name should be different from all the Vim help tag names and ideally
+should begin with the name of the Vim plugin. The tag name is usually right
+aligned on a line.
+
+When referring to an existing help tag and to create a hot-link, place the
+name between two bars (|) eg. |help-writing|.
+
+When referring to a Vim option in the help file, place the option name between
+two single quotes. eg. 'statusline'
+
+
+HIGHLIGHTING
+
+To define a column heading, use a tilde character at the end of the line. This
+will highlight the column heading in a different color. E.g.
+
+Column heading~
+
+To separate sections in a help file, place a series of '=' characters in a
+line starting from the first column. The section separator line is highlighted
+differently.
+
+To quote a block of ex-commands verbatim, place a greater than (>) character
+at the end of the line before the block and a less than (<) character as the
+first non-blank on a line following the block. Any line starting in column 1
+also implicitly stops the block of ex-commands before it.  E.g. >
+    function Example_Func()
+	echo "Example"
+    endfunction
+<
+
+The following are highlighted differently in a Vim help file:
+  - a special key name expressed either in <> notation as in <PageDown>, or
+    as a Ctrl character as in CTRL-X
+  - anything between {braces}, e.g. {lhs} and {rhs}
+
+The word "Note", "Notes" and similar automagically receive distinctive
+highlighting.  So do these:
+	*Todo	something to do
+	*Error	something wrong
+
+You can find the details in $VIMRUNTIME/syntax/help.vim
 
  vim:tw=78:ts=8:ft=help:norl:

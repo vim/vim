@@ -1087,11 +1087,13 @@ Vim 7.3:
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().
-    - How to get b_p_key to these functions?   Store it in mfp?
+    - How to get b_p_key to these functions?  -> Store buf_T pointer in mfp.
     - Generate a seed for the swapfile, put it in block 0.
     - For each block, use password + seed + byte offset to crypt/decrypt.
     - When changing the password need to read back with the old password and
       write again with the new one.
+    - Fill the gaps in the block with random bytes, otherwise it's easy to
+      check for correct password by finding NUL bytes.
     - Verify recovery works.
 - Update for crypt code to use salt. (Mohsin May 30)
     Make the strengthen_key value configurable and store it in the header?
@@ -1099,6 +1101,10 @@ Vim 7.3:
 - undofile: keep markers where the file was written/read, so that it's easy to
   go back to a saved version of the file:  ":earlier 1f" (f for file)?
   Also add ":earlier 1d" (d for day).
+  Something like changenr() to see the "file saved" marker?
+  Show "file saved" marker in :undolist
+  Function to get undo tree: undotree().  List of lists.  Each entry is a
+  dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
 - Create a helphelp.txt file, move instructions there to write help files from
   various.txt and list by Tony.
 Patches to include:

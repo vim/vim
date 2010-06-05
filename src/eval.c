@@ -17639,8 +17639,13 @@ f_undofile(argvars, rettv)
 {
     rettv->v_type = VAR_STRING;
 #ifdef FEAT_PERSISTENT_UNDO
-    rettv->vval.v_string = u_get_undo_file_name(get_tv_string(&argvars[0]),
-								       FALSE);
+    {
+	char_u *ffname = FullName_save(get_tv_string(&argvars[0]), FALSE);
+
+	if (ffname != NULL)
+	    rettv->vval.v_string = u_get_undo_file_name(ffname, FALSE);
+	vim_free(ffname);
+    }
 #else
     rettv->vval.v_string = NULL;
 #endif

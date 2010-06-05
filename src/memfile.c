@@ -234,7 +234,7 @@ mf_open_file(mfp, fname)
 }
 
 /*
- * close a memory file and delete the associated file if 'del_file' is TRUE
+ * Close a memory file and delete the associated file if 'del_file' is TRUE.
  */
     void
 mf_close(mfp, del_file)
@@ -415,7 +415,8 @@ mf_new(mfp, negative, page_count)
      * Init the data to all zero, to avoid reading uninitialized data.
      * This also avoids that the passwd file ends up in the swap file!
      */
-    (void)vim_memset((char *)(hp->bh_data), 0, (size_t)mfp->mf_page_size);
+    (void)vim_memset((char *)(hp->bh_data), 0,
+				      (size_t)mfp->mf_page_size * page_count);
 
     return hp;
 }
