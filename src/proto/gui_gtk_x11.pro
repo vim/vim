@@ -9,6 +9,8 @@ void gui_mch_show_tabline __ARGS((int showit));
 int gui_mch_showing_tabline __ARGS((void));
 void gui_mch_update_tabline __ARGS((void));
 void gui_mch_set_curtab __ARGS((int nr));
+void gui_gtk_set_selection_targets __ARGS((void));
+void gui_gtk_set_dnd_targets __ARGS((void));
 int gui_mch_init __ARGS((void));
 void gui_mch_forked __ARGS((void));
 void gui_mch_new_colors __ARGS((void));

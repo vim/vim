@@ -7112,6 +7112,13 @@ check_clipboard_option()
 	clip_html = new_html;
 	vim_free(clip_exclude_prog);
 	clip_exclude_prog = new_exclude_prog;
+#ifdef FEAT_GUI_GTK
+	if (gui.in_use)
+	{
+	    gui_gtk_set_selection_targets();
+	    gui_gtk_set_dnd_targets();
+	}
+#endif
     }
     else
 	vim_free(new_exclude_prog);
