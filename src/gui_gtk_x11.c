@@ -1444,6 +1444,10 @@ selection_received_cb(GtkWidget		*widget UNUSED,
     }
 #endif /* !HAVE_GTK2 */
 
+    /* Chop off any traiing NUL bytes.  OpenOffice sends these. */
+    while (len > 0 && text[len - 1] == NUL)
+	--len;
+
     clip_yank_selection(motion_type, text, (long)len, cbd);
     received_selection = RS_OK;
     vim_free(tmpbuf);
@@ -3474,6 +3478,66 @@ gui_mch_set_curtab(nr)
 #endif /* FEAT_GUI_TABLINE */
 
 /*
+ * Add selection targets for PRIMARY and CLIPBOARD selections.
+ */
+    void
+gui_gtk_set_selection_targets(void)
+{
+    int		    i, j = 0;
+    int		    n_targets = N_SELECTION_TARGETS;
+    GtkTargetEntry  targets[N_SELECTION_TARGETS];
+
+    for (i = 0; i < (int)N_SELECTION_TARGETS; ++i)
+    {
+#ifdef FEAT_MBYTE
+	/* OpenOffice tries to use TARGET_HTML and fails when it doesn't
+	 * return something, instead of trying another target. Therefore only
+	 * offer TARGET_HTML when it works. */
+	if (!clip_html && selection_targets[i].info == TARGET_HTML)
+	    n_targets--;
+	else
+#endif
+	    targets[j++] = selection_targets[i];
+    }
+
+    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)GDK_SELECTION_PRIMARY);
+    gtk_selection_clear_targets(gui.drawarea, (GdkAtom)clip_plus.gtk_sel_atom);
+    gtk_selection_add_targets(gui.drawarea,
+			      (GdkAtom)GDK_SELECTION_PRIMARY,
+			      targets, n_targets);
+    gtk_selection_add_targets(gui.drawarea,
+			      (GdkAtom)clip_plus.gtk_sel_atom,
+			      targets, n_targets);
+}
+
+/*
+ * Set up for receiving DND items.
+ */
+    void
+gui_gtk_set_dnd_targets(void)
+{
+    int		    i, j = 0;
+    int		    n_targets = N_DND_TARGETS;
+    GtkTargetEntry  targets[N_DND_TARGETS];
+
+    for (i = 0; i < (int)N_DND_TARGETS; ++i)
+    {
+#ifdef FEAT_MBYTE
+	if (!clip_html && selection_targets[i].info == TARGET_HTML)
+	    n_targets--;
+	else
+#endif
+	    targets[j++] = dnd_targets[i];
+    }
+
+    gtk_drag_dest_unset(gui.drawarea);
+    gtk_drag_dest_set(gui.drawarea,
+		      GTK_DEST_DEFAULT_ALL,
+		      targets, n_targets,
+		      GDK_ACTION_COPY);
+}
+
+/*
  * Initialize the GUI.	Create all the windows, set up all the callbacks etc.
  * Returns OK for success, FAIL when the GUI can't be started.
  */
@@ -3936,15 +4000,7 @@ gui_mch_init(void)
     gtk_signal_connect(GTK_OBJECT(gui.drawarea), "selection_received",
 		       GTK_SIGNAL_FUNC(selection_received_cb), NULL);
 
-    /*
-     * Add selection targets for PRIMARY and CLIPBOARD selections.
-     */
-    gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)GDK_SELECTION_PRIMARY,
-			      selection_targets, N_SELECTION_TARGETS);
-    gtk_selection_add_targets(gui.drawarea,
-			      (GdkAtom)clip_plus.gtk_sel_atom,
-			      selection_targets, N_SELECTION_TARGETS);
+    gui_gtk_set_selection_targets();
 
     gtk_signal_connect(GTK_OBJECT(gui.drawarea), "selection_get",
 		       GTK_SIGNAL_FUNC(selection_get_cb), NULL);
@@ -4067,7 +4123,6 @@ check_startup_plug_hints(gpointer data UNUSED)
     init_window_hints_state = 1;
     return TRUE;
 }
-
 
 /*
  * Open the GUI window which was created by a call to gui_mch_init().
@@ -4236,13 +4291,8 @@ gui_mch_open(void)
 		       GTK_SIGNAL_FUNC(form_configure_event), NULL);
 
 #ifdef FEAT_DND
-    /*
-     * Set up for receiving DND items.
-     */
-    gtk_drag_dest_set(gui.drawarea,
-		      GTK_DEST_DEFAULT_ALL,
-		      dnd_targets, N_DND_TARGETS,
-		      GDK_ACTION_COPY);
+    /* Set up for receiving DND items. */
+    gui_gtk_set_dnd_targets();
 
     gtk_signal_connect(GTK_OBJECT(gui.drawarea), "drag_data_received",
 		       GTK_SIGNAL_FUNC(drag_data_received_cb), NULL);
