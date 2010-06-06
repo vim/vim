@@ -1085,9 +1085,14 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 - Included conceal patch.
-    remove w:ownsyntax, automatically set w:current_syntax to the value of
-    b:current_syntax after loading a syntax file.
-    :ownsyntax only sets w:current_syntax.
+    HL disappears in other window:
+	:sp
+	:ownsyntax perl
+	:e
+    Documentation update:
+	remove w:ownsyntax, automatically set w:current_syntax to the value of
+	b:current_syntax after loading a syntax file.  :ownsyntax only sets
+	w:current_syntax.
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi

@@ -1176,7 +1176,8 @@ win_init(newp, oldp, flags)
 
     newp->w_buffer = oldp->w_buffer;
 #ifdef FEAT_SYN_HL
-    newp->w_s = oldp->w_s;
+    /* TODO: use reference count? */
+    newp->w_s = &(oldp->w_buffer->b_s);
 #endif
     oldp->w_buffer->b_nwindows++;
     newp->w_cursor = oldp->w_cursor;
@@ -4408,18 +4409,13 @@ win_free(wp, tp)
 #endif /* FEAT_GUI */
 
 #ifdef FEAT_SYN_HL
-    /* free independent synblock */
-    if (wp->w_s != &wp->w_buffer->b_s)
-    {
-	syntax_clear(wp->w_s);
-	vim_free(wp->w_s);
-    }
+    reset_synblock(wp);  /* free independent synblock */
 #endif
 
 #ifdef FEAT_AUTOCMD
     if (wp != aucmd_win)
 #endif
-    win_remove(wp, tp);
+	win_remove(wp, tp);
     vim_free(wp);
 
 #ifdef FEAT_AUTOCMD

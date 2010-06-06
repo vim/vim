@@ -1379,12 +1379,7 @@ enter_buffer(buf)
 #endif
 
 #ifdef FEAT_SYN_HL
-    if (curwin->w_s != &curwin->w_buffer->b_s)
-    {
-	/* Get rid of independant syntax */
-	syntax_clear(curwin->w_s);
-	vim_free(curwin->w_s);
-    }
+    reset_synblock(curwin);
     curwin->w_s = &(buf->b_s);
 #endif
     /* Get the buffer in the current window. */

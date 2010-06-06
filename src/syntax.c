@@ -3421,6 +3421,21 @@ syntax_clear(block)
 }
 
 /*
+ * Get rid of ownsyntax for window "wp".
+ */
+    void
+reset_synblock(wp)
+    win_T *wp;
+{
+    if (wp->w_s != &wp->w_buffer->b_s)
+    {
+	syntax_clear(wp->w_s);
+	vim_free(wp->w_s);
+	wp->w_s = &wp->w_buffer->b_s;
+    }
+}
+
+/*
  * Clear syncing info for one buffer.
  */
     static void
@@ -3538,7 +3553,6 @@ syn_cmd_clear(eap, syncing)
 	    if (curwin->w_s == &curwin->w_buffer->b_s)
 		do_unlet((char_u *)"b:current_syntax", TRUE);
 	    do_unlet((char_u *)"w:current_syntax", TRUE);
-
 	}
     }
     else

@@ -6,6 +6,7 @@ void syntax_end_parsing __ARGS((linenr_T lnum));
 int syntax_check_changed __ARGS((linenr_T lnum));
 int get_syntax_attr __ARGS((colnr_T col, int *p_flags, int *can_spell, int keep_state));
 void syntax_clear __ARGS((synblock_T *block));
+void reset_synblock __ARGS((win_T *wp));
 void ex_syntax __ARGS((exarg_T *eap));
 void ex_ownsyntax __ARGS((exarg_T *eap));
 int syntax_present __ARGS((win_T *win));
