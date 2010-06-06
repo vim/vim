@@ -4521,14 +4521,21 @@ italic etc regions) in another. The 'scrollbind' option is useful here.
 To set the current window to have the syntax "foo", separately from all other
 windows on the buffer: >
    :ownsyntax foo
+<						*w:current_syntax*
+This will set the "w:current_syntax" variable to "foo".  The value of
+"b:current_syntax" does not change.  This is implemented by saving and
+restoring "b:current_syntax", since the syntax files do set
+"b:current_syntax".  The value set by the syntax file is assigned to
+"w:current_syntax".
 
 Once a window has its own syntax, syntax commands executed from other windows
 on the same buffer (including :syntax clear) have no effect. Conversely, 
 syntax commands executed from that window do not effect other windows on the
 same buffer.
 
-A window with its own syntax reverts to normal behaviour when another buffer
-is loaded into that window.
+A window with its own syntax reverts to normal behavior when another buffer
+is loaded into that window or the file is reloaded.
+When splitting the window, the new window will use the original syntax.
 
 ==============================================================================
 16. Color xterms				*xterm-color* *color-xterm*

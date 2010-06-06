@@ -3571,9 +3571,6 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	    new_name = NULL;
 #endif
 	buf_freeall(curbuf, FALSE, FALSE);   /* free all things for buffer */
-#ifdef FEAT_SYN_HL
-	reset_synblock(curwin);	    /* remove any ownsyntax */
-#endif
 #ifdef FEAT_AUTOCMD
 	/* If autocommands deleted the buffer we were going to re-edit, give
 	 * up and jump to the end. */
@@ -3617,6 +3614,10 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
      * Check if we are editing the w_arg_idx file in the argument list.
      */
     check_arg_idx(curwin);
+
+#ifdef FEAT_SYN_HL
+    reset_synblock(curwin);	    /* remove any ownsyntax */
+#endif
 
 #ifdef FEAT_AUTOCMD
     if (!auto_buf)

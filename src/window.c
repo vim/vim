@@ -1176,7 +1176,6 @@ win_init(newp, oldp, flags)
 
     newp->w_buffer = oldp->w_buffer;
 #ifdef FEAT_SYN_HL
-    /* TODO: use reference count? */
     newp->w_s = &(oldp->w_buffer->b_s);
 #endif
     oldp->w_buffer->b_nwindows++;

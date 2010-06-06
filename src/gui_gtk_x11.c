@@ -4231,7 +4231,7 @@ gui_mch_open(void)
 #ifdef HAVE_GTK2
     /* For GTK2 changing the size of the form widget doesn't cause window
      * resizing. */
-    if (gtk_socket_id == 0) 
+    if (gtk_socket_id == 0)
 	gtk_window_resize(GTK_WINDOW(gui.mainwin), pixel_width, pixel_height);
 #else
     gtk_form_set_size(GTK_FORM(gui.formwin), pixel_width, pixel_height);
