@@ -6198,10 +6198,13 @@ ex_ownsyntax(eap)
 
     /* move value of b:current_syntax to w:current_syntax */
     new_value = get_var_value((char_u *)"b:current_syntax");
-    set_internal_string_var((char_u *)"w:current_syntax", new_value);
+    if (new_value != NULL)
+	set_internal_string_var((char_u *)"w:current_syntax", new_value);
 
     /* restore value of b:current_syntax */
-    if (old_value != NULL)
+    if (old_value == NULL)
+	do_unlet((char_u *)"b:current_syntax", TRUE);
+    else
     {
 	set_internal_string_var((char_u *)"b:current_syntax", old_value);
 	vim_free(old_value);
