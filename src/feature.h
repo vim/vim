@@ -127,7 +127,7 @@
 #endif
 
 /*
- * Message history is fixed at 100 message, 20 for the tiny version.
+ * Message history is fixed at 200 message, 20 for the tiny version.
  */
 #ifdef FEAT_SMALL
 # define MAX_MSG_HIST_LEN 200

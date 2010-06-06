@@ -1503,13 +1503,19 @@ u_read_undo(name, hash, orig_name)
     if (version == UF_VERSION_CRYPT)
     {
 #ifdef FEAT_CRYPT
+	if (*curbuf->b_p_key == NUL)
+	{
+	    EMSG2(_("E832: Non-encrypted file has encrypted undo file: %s"),
+								   file_name);
+	    goto error;
+	}
 	if (prepare_crypt_read(fp) == FAIL)
 	{
 	    EMSG2(_("E826: Undo file decryption failed: %s"), file_name);
 	    goto error;
 	}
 #else
-        EMSG2(_("E826: Undo file is encrypted: %s"), file_name);
+        EMSG2(_("E827: Undo file is encrypted: %s"), file_name);
         goto error;
 #endif
     }

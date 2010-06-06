@@ -413,6 +413,11 @@ bf_key_init(password)
 
     key = sha256_key(password);
     keylen = (int)STRLEN(key);
+    if (keylen == 0)
+    {
+	EMSG(_("E831: bf_key_init() called with empty password"));
+	return;
+    }
     for (i = 0; i < 256; ++i)
     {
 	sbx[0][i] = sbi[0][i];

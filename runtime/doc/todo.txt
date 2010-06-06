@@ -30,6 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+gtk_selection_clear_targets not available in GTK1 (Patrick Texier)
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.

@@ -235,7 +235,7 @@ static char_u **syn_cmdlinep;
 
 /*
  * Another Annoying Hack(TM):  To prevent rules from other ":syn include"'d
- * files from from leaking into ALLBUT lists, we assign a unique ID to the
+ * files from leaking into ALLBUT lists, we assign a unique ID to the
  * rules in each ":syn include"'d file.
  */
 static int current_syn_inc_tag = 0;
@@ -4500,11 +4500,13 @@ get_syn_options(arg, opt, conceal_char)
 	    }
 	    else
 #endif
+	    {
 #ifdef FEAT_CONCEAL
 		*conceal_char = arg[6];
 #else
 		;
 #endif
+	    }
 	    arg = skipwhite(arg + 7);
 	}
 	else

@@ -56,10 +56,10 @@ static char_u *menu_skip_part __ARGS((char_u *p));
 #endif
 #ifdef FEAT_MULTI_LANG
 static char_u *menutrans_lookup __ARGS((char_u *name, int len));
+static void menu_unescape_name  __ARGS((char_u	*p));
 #endif
 
 static char_u *menu_translate_tab_and_shift __ARGS((char_u *arg_start));
-static void menu_unescape_name  __ARGS((char_u	*p));
 
 /* The character for each menu mode */
 static char_u	menu_mode_chars[] = {'n', 'v', 's', 'o', 'i', 'c', 't'};
@@ -2525,7 +2525,6 @@ menutrans_lookup(name, len)
 
     return NULL;
 }
-#endif /* FEAT_MULTI_LANG */
 
 /*
  * Unescape the name in the translate dictionary table.
@@ -2540,6 +2539,7 @@ menu_unescape_name(name)
 	if (*p == '\\')
 	    STRMOVE(p, p + 1);
 }
+#endif /* FEAT_MULTI_LANG */
 
 /*
  * Isolate the menu name.

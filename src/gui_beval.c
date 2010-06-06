@@ -20,6 +20,7 @@ general_beval_cb(beval, state)
     BalloonEval *beval;
     int		state UNUSED;
 {
+#ifdef FEAT_EVAL
     win_T	*wp;
     int		col;
     int		use_sandbox;
@@ -29,8 +30,9 @@ general_beval_cb(beval, state)
     long	winnr = 0;
     char_u	*bexpr;
     buf_T	*save_curbuf;
-#ifdef FEAT_WINDOWS
+# ifdef FEAT_WINDOWS
     win_T	*cw;
+# endif
 #endif
     static int	recursive = FALSE;
 
