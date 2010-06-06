@@ -4410,7 +4410,10 @@ win_free(wp, tp)
 #ifdef FEAT_SYN_HL
     /* free independent synblock */
     if (wp->w_s != &wp->w_buffer->b_s)
+    {
+	syntax_clear(wp->w_s);
 	vim_free(wp->w_s);
+    }
 #endif
 
 #ifdef FEAT_AUTOCMD

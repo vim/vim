@@ -3884,11 +3884,6 @@ get_user_var_name(xp, idx)
 	    ++hi;
 	return cat_prefix_varname('w', hi->hi_key);
     }
-    if (wdone == ht->ht_used)
-    {
-	++wdone;
-	return (char_u *)"w:ownsyntax";
-    }
 
 #ifdef FEAT_WINDOWS
     /* t: variables */
@@ -18758,18 +18753,6 @@ get_var_tv(name, len, rettv, verbose)
 	tv = &atv;
     }
 
-    if (STRCMP(name, "w:ownsyntax") == 0)
-    {
-	atv.v_type = VAR_NUMBER;
-#ifdef FEAT_SYN_HL
-	atv.vval.v_number = (curwin->w_s != &curwin->w_buffer->b_s) ? 1 : 0;
-#else
-	atv.vval.v_number = 0;
-#endif
-	tv = &atv;
-    }
-
-
     /*
      * Check for user-defined variables.
      */
@@ -19292,6 +19275,7 @@ find_var_ht(name, varname)
 
 /*
  * Get the string value of a (global/local) variable.
+ * Note: see get_tv_string() for how long the pointer remains valid.
  * Returns NULL when it doesn't exist.
  */
     char_u *
