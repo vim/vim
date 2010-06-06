@@ -696,7 +696,9 @@ ex_perl(eap)
     char	*script;
     STRLEN	length;
     SV		*sv;
+#ifdef HAVE_SANDBOX
     SV		*safe;
+#endif
 
     script = (char *)script_get(eap, eap->arg);
     if (eap->skip)

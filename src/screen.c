@@ -297,7 +297,7 @@ redrawWinline(lnum, invalid)
 #endif
 }
 
-#if defined(FEAT_RUBY) || defined(FEAT_VISUAL) || \
+#if defined(FEAT_RUBY) || defined(FEAT_PERL) || defined(FEAT_VISUAL) || \
     (defined(FEAT_CLIPBOARD) && defined(FEAT_X11)) || defined(PROTO)
 /*
  * update all windows that are editing the current buffer

@@ -1641,7 +1641,8 @@ SFscrollTimer(p, id)
 
     if (SFbuttonPressed)
 	SFscrollTimerId = XtAppAddTimeOut(SFapp,
-		       SFscrollTimerInterval(), SFscrollTimer, (XtPointer) n);
+		       SFscrollTimerInterval(), SFscrollTimer,
+		       (XtPointer)(long_u)n);
 }
 
     static int
@@ -1684,7 +1685,7 @@ SFnewInvertEntry(n, event)
 		SFscrollTimerAdded = 1;
 		SFscrollTimerId = XtAppAddTimeOut(SFapp,
 			SFscrollTimerInterval(), SFscrollTimer,
-			(XtPointer) n);
+			(XtPointer)(long_u)n);
 	    }
 	}
 	return -1;
@@ -2587,7 +2588,8 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 		    NULL);
 
 	XtAddCallback(selFileVScrolls[n], XtNjumpProc,
-		(XtCallbackProc)SFvFloatSliderMovedCallback, (XtPointer)n);
+		(XtCallbackProc)SFvFloatSliderMovedCallback,
+		(XtPointer)(long_u)n);
 	XtAddCallback(selFileVScrolls[n], XtNscrollProc,
 		(XtCallbackProc)SFvAreaSelectedCallback, (XtPointer)n);
 
@@ -2611,7 +2613,8 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
 		    NULL);
 
 	XtAddCallback(selFileHScrolls[n], XtNjumpProc,
-		(XtCallbackProc)SFhSliderMovedCallback, (XtPointer)n);
+		(XtCallbackProc)SFhSliderMovedCallback,
+		(XtPointer)(long_u)n);
 	XtAddCallback(selFileHScrolls[n], XtNscrollProc,
 		(XtCallbackProc)SFhAreaSelectedCallback, (XtPointer)n);
     }
@@ -2663,17 +2666,17 @@ SFcreateWidgets(toplevel, prompt, ok, cancel)
     for (n = 0; n < 3; n++)
     {
 	XtAddEventHandler(selFileLists[n], ExposureMask, True,
-		(XtEventHandler)SFexposeList, (XtPointer)n);
+		(XtEventHandler)SFexposeList, (XtPointer)(long_u)n);
 	XtAddEventHandler(selFileLists[n], EnterWindowMask, False,
-		(XtEventHandler)SFenterList, (XtPointer)n);
+		(XtEventHandler)SFenterList, (XtPointer)(long_u)n);
 	XtAddEventHandler(selFileLists[n], LeaveWindowMask, False,
-		(XtEventHandler)SFleaveList, (XtPointer)n);
+		(XtEventHandler)SFleaveList, (XtPointer)(long_u)n);
 	XtAddEventHandler(selFileLists[n], PointerMotionMask, False,
-		(XtEventHandler)SFmotionList, (XtPointer)n);
+		(XtEventHandler)SFmotionList, (XtPointer)(long_u)n);
 	XtAddEventHandler(selFileLists[n], ButtonPressMask, False,
-		(XtEventHandler)SFbuttonPressList, (XtPointer)n);
+		(XtEventHandler)SFbuttonPressList, (XtPointer)(long_u)n);
 	XtAddEventHandler(selFileLists[n], ButtonReleaseMask, False,
-		(XtEventHandler)SFbuttonReleaseList, (XtPointer)n);
+		(XtEventHandler)SFbuttonReleaseList, (XtPointer)(long_u)n);
     }
 
     XtAddEventHandler(selFileField, KeyPressMask, False,

@@ -820,7 +820,7 @@ RepeatNotify(client_data, idp)
     if (mode == SMODE_PAGE_UP || mode == SMODE_LINE_UP)
 	call_data = -call_data;
 
-    XtCallCallbacks((Widget)sbw, XtNscrollProc, (XtPointer)call_data);
+    XtCallCallbacks((Widget)sbw, XtNscrollProc, (XtPointer)(long_u)call_data);
 
     sbw->scrollbar.timer_id =
 	XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)sbw),
@@ -894,7 +894,7 @@ ScrollSome(w, event, call_data)
 	return;
 
     sbw->scrollbar.scroll_mode = SMODE_LINE_UP;
-    XtCallCallbacks(w, XtNscrollProc, (XtPointer)call_data);
+    XtCallCallbacks(w, XtNscrollProc, (XtPointer)(long_u)call_data);
 }
 
     static void
@@ -977,7 +977,7 @@ NotifyScroll(w, event, params, num_params)
     }
 
     if (call_data)
-	XtCallCallbacks(w, XtNscrollProc, (XtPointer)call_data);
+	XtCallCallbacks(w, XtNscrollProc, (XtPointer)(long_u)call_data);
 
     /* establish autoscroll */
     if (delay)

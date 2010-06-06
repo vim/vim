@@ -1107,8 +1107,7 @@ Vim 7.3:
   Show "file saved" marker in :undolist
   Function to get undo tree: undotree().  List of lists.  Each entry is a
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
-- Create a helphelp.txt file, move instructions there to write help files from
-  various.txt and list by Tony.
+- Remove support for GTK 1?
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15

@@ -1270,7 +1270,7 @@ gui_mch_add_menu_item(menu, idx)
 		return;
 
 	    /* If there are other "pulldown" items in this pane, then adjust
-	     * the right margin to accomodate the arrow pixmap, otherwise
+	     * the right margin to accommodate the arrow pixmap, otherwise
 	     * the right margin will be the same as the left margin.
 	     */
 	    {
@@ -2254,7 +2254,7 @@ gui_mch_dialog(type, title, message, buttons, dfltbutton, textfield)
 		    vertical ? XtNfromVert : XtNfromHoriz, prev_dialogButton,
 		    NULL);
 
-	XtAddCallback(dialogButton, XtNcallback, butproc, (XtPointer)butcount);
+	XtAddCallback(dialogButton, XtNcallback, butproc, (XtPointer)(long_u)butcount);
 	p = next;
 	prev_dialogButton = dialogButton;
     }
