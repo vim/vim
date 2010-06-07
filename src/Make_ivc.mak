@@ -326,6 +326,10 @@ GvimExt/gvimext.dll: GvimExt/gvimext.cpp GvimExt/gvimext.rc GvimExt/gvimext.h
 
 # Begin Source File
 
+SOURCE=.\blowfish.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\buffer.c
 # End Source File
 # Begin Source File
@@ -617,6 +621,10 @@ SOURCE=.\screen.c
 # Begin Source File
 
 SOURCE=.\search.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\sha256.c
 # End Source File
 # Begin Source File
 
