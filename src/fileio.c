@@ -8792,6 +8792,7 @@ aucmd_prepbuf(aco, buf)
 	aco->use_aucmd_win = TRUE;
 	aucmd_win_used = TRUE;
 	aucmd_win->w_buffer = buf;
+	aucmd_win->w_s = &buf->b_s;
 	++buf->b_nwindows;
 	win_init_empty(aucmd_win); /* set cursor and topline to safe values */
 	vim_free(aucmd_win->w_localdir);
