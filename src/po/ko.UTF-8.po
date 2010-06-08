@@ -202,7 +202,7 @@ msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: 현재 버퍼는 diff 상태가 아닙니다"
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E100: 수정 가능한 diff 상태 버퍼는 없습니다"
+msgstr "E793: 수정 가능한 diff 상태 버퍼는 없습니다"
 
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: 다른 버퍼중에 diff 상태인 게 없습니다"
@@ -855,7 +855,7 @@ msgstr "스왑 파일 \"%s\"가 있습니다, 덮어쓸까요?"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E13: 스왑 파일 있슴: %s (덮어쓰려면 :silent! 사용)"
+msgstr "E768: 스왑 파일 있슴: %s (덮어쓰려면 :silent! 사용)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
@@ -1444,10 +1444,10 @@ msgid "E587: :break without :while or :for"
 msgstr "E587: :while 혹은 :for없이 :break가 있습니다"
 
 msgid "E732: Using :endfor with :while"
-msgstr "E170: :while에 :endfor가 사용되었습니다"
+msgstr "E732: :while에 :endfor가 사용되었습니다"
 
 msgid "E733: Using :endwhile with :for"
-msgstr "E170: :for에 :endwhile이 사용되었습니다"
+msgstr "E733: :for에 :endwhile이 사용되었습니다"
 
 msgid "E601: :try nesting too deep"
 msgstr "E601: :try가 너무 깊게 중첩되었습니다"

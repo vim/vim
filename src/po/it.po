@@ -11,9 +11,9 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: vim 7.2\n"
-"POT-Creation-Date: 2010-05-17 10:05+0200\n"
-"PO-Revision-Date:  2009-05-17 10:05+0200\n"
+"Project-Id-Version: vim 7.3\n"
+"POT-Creation-Date: 2010-06-08 12:54+0200\n"
+"PO-Revision-Date:  2010-06-08 16:55+0200\n"
 "Last-Translator:   Vlad Sandrini   <vlad.gently@gmail.com>\n"
 "Language-Team:     Italian"
 "                   Antonio Colombo <azc100@gmail.com>"
@@ -23,6 +23,21 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO_8859-1\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Report-Msgid-Bugs-To: \n"
+
+msgid "E831: bf_key_init() called with empty password"
+msgstr "E831: chiamata a bf_key_init() con password nulla"
+
+msgid "E820: sizeof(uint32_t) != 4"
+msgstr "E820: sizeof(uint32_t) != 4"
+
+msgid "E817: Blowfish big/little endian use wrong"
+msgstr "E817: uso errato di big/little endian in Blowfish"
+
+msgid "E818: sha256 test failed"
+msgstr "E818: test sha256 fallito"
+
+msgid "E819: Blowfish test failed"
+msgstr "E819: test Blowfish fallito"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Non riesco ad allocare alcun buffer, esco..."
@@ -192,7 +207,7 @@ msgid "E810: Cannot read or write temp files"
 msgstr "E810: Non riesco a leggere o scrivere file temporanei"
 
 msgid "E97: Cannot create diffs"
-msgstr "E97: Non riesco a creare differenze "
+msgstr "E97: Non riesco a creare differenze"
 
 msgid "Patch file"
 msgstr "File di differenze"
@@ -915,7 +930,7 @@ msgid "(Interrupted) "
 msgstr "(Interrotto) "
 
 msgid "1 match"
-msgstr "1 corrisp. "
+msgstr "1 corrisp."
 
 msgid "1 substitution"
 msgstr "1 sostituzione"
@@ -1173,7 +1188,7 @@ msgid "End of sourced file"
 msgstr "Fine del file di comandi"
 
 msgid "End of function"
-msgstr "Fine funzione "
+msgstr "Fine funzione"
 
 msgid "E464: Ambiguous use of user-defined command"
 msgstr "E464: Uso ambiguo di comando definito dall'utente"
@@ -1627,6 +1642,9 @@ msgstr "Conversione fallita con 'charconvert'"
 msgid "can't read output of 'charconvert'"
 msgstr "non riesco a leggere il risultato di 'charconvert'"
 
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: File cifrato con metodo sconosciuto"
+
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Nessun autocomando corrispondente per buffer acwrite"
 
@@ -1785,6 +1803,10 @@ msgstr "%ld linee,"
 
 msgid "1 character"
 msgstr "1 carattere"
+
+#, c-format
+msgid "%lld characters"
+msgstr "%lld caratteri"
 
 #, c-format
 msgid "%ld characters"
@@ -2141,7 +2163,7 @@ msgstr "&U Disfa"
 
 #, c-format
 msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Non riesco a caricate il fonte Zap '%s'"
+msgstr "E610: Non riesco a caricate il font Zap '%s'"
 
 #, c-format
 msgid "E611: Can't use font %s"
@@ -2866,6 +2888,9 @@ msgstr "Argomento non valido per"
 msgid "%d files to edit\n"
 msgstr "%d file da elaborare\n"
 
+msgid "netbeans is not supported with this GUI\n"
+msgstr "netbeans non è supportato con questa GUI\n"
+
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Vim non compilato con funzionalità 'diff'."
 
@@ -3516,14 +3541,20 @@ msgstr ""
 "\n"
 "(Potresti salvare questo file con un altro nome ed eseguire\n"
 
-msgid "and run diff with the original file to check for changes)\n"
-msgstr "'diff' rispetto al file originale per vedere le differenze)\n"
+msgid "and run diff with the original file to check for changes)"
+msgstr "'diff' rispetto al file originale per vedere le differenze)"
 
+msgid "Recovery completed. Buffer contents equals file contents."
+msgstr "Ripristino effettuato. Il contenuto del buffer coincide con quello del file."
+
+#, fuzzy
 msgid ""
-"Delete the .swp file afterwards.\n"
+"\n"
+"You may want to delete the .swp file now.\n"
 "\n"
 msgstr ""
-"Cancella il file .swp in seguito.\n"
+"\n"
+"È consigliato cancellare il file .swp adesso.\n"
 "\n"
 
 #. use msg() to start the scrolling properly
@@ -4048,6 +4079,9 @@ msgstr "lettura da socket Netbeans"
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: Connessione NetBeans persa per il buffer %ld"
+
+msgid "E511: netbeans already connected"
+msgstr "E511: netbeans già connesso"
 
 msgid "E505: "
 msgstr "E505: "
@@ -5544,6 +5578,75 @@ msgstr "Uso CUT_BUFFER0 invece che una scelta nulla"
 msgid "No undo possible; continue anyway"
 msgstr "'undo' non più possibile; continuo comunque"
 
+#, c-format
+msgid "E828: Cannot open undo file for writing: %s"
+msgstr "E828: Non posso aprire il file Undo in scrittura: %s"
+
+#, c-format
+msgid "E825: Corrupted undo file (%s): %s"
+msgstr "E825: File Undo corrotto (%s): %s"
+
+msgid "Cannot write undo file in any directory in 'undodir'"
+msgstr "Non posso scrivere un file Undo in alcuna directory di 'undodir'"
+
+#, c-format
+msgid "Will not overwrite with undo file, cannot read: %s"
+msgstr "File Undo non sovrascritto, non riesco a leggere: %s"
+
+#, c-format
+msgid "Will not overwrite, this is not an undo file: %s"
+msgstr "Non sovrascritto, non è un file Undo: %s"
+
+msgid "Skipping undo file write, noting to undo"
+msgstr "Ometto scrittura del file Undo, non ci sono modifiche"
+
+#, c-format
+msgid "Writing undo file: %s"
+msgstr "Scrivo file Undo: %s"
+
+#, fuzzy, c-format
+msgid "E829: write error in undo file: %s"
+msgstr "E829: errore scrivendo nel file Undo: %s"
+
+#, c-format
+msgid "Not reading undo file, owner differs: %s"
+msgstr "Non leggo file Undo, appartiene a un altro utente: %s"
+
+#, c-format
+msgid "Reading undo file: %s"
+msgstr "Lettura file Undo: %s"
+
+#, c-format
+msgid "E822: Cannot open undo file for reading: %s"
+msgstr "E822: Non posso aprire il file Undo in lettura: %s"
+
+#, c-format
+msgid "E823: Not an undo file: %s"
+msgstr "E823: Non è un file Undo: %s"
+
+#, fuzzy, c-format
+msgid "E832: Non-encrypted file has encrypted undo file: %s"
+msgstr "E832: File non cifrato con file Undo cifrato: %s"
+
+#, c-format
+msgid "E826: Undo file decryption failed: %s"
+msgstr "E826: Decifratura fallita del file Undo: %s"
+
+#, c-format
+msgid "E827: Undo file is encrypted: %s"
+msgstr "E827: File Undo cifrato: %s"
+
+#, c-format
+msgid "E824: Incompatible undo file: %s"
+msgstr "E824: File Undo incompatibile: %s"
+
+msgid "File contents changed, cannot use undo info"
+msgstr "File ulteriormente modificato, non posso usare informazioni di Undo"
+
+#, c-format
+msgid "Finished reading undo file %s"
+msgstr "Lettura del file Undo %s effettuata"
+
 msgid "Already at oldest change"
 msgstr "Questa è già la prima modifica"
 
@@ -5551,8 +5654,8 @@ msgid "Already at newest change"
 msgstr "Questa è già l'ultima modifica"
 
 #, c-format
-msgid "Undo number %ld not found"
-msgstr "Undo numero %ld non trovato"
+msgid "E830: Undo number %ld not found"
+msgstr "E830: Undo numero %ld non trovato"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: numeri linee errati"
