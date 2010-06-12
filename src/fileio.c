@@ -5225,11 +5225,12 @@ msg_add_lines(insert_space, lnum, nchars)
     if (shortmess(SHM_LINES))
 	sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		"%ldL, %lldC",
+		"%ldL, %lldC", lnum, nchars
 #else
-		"%ldL, %ldC",
+		/* Explicit typecast avoids warning on Mac OS X 10.6 */
+		"%ldL, %ldC", lnum, (long)nchars
 #endif
-		lnum, nchars);
+		);
     else
     {
 	if (lnum == 1)
@@ -5242,11 +5243,12 @@ msg_add_lines(insert_space, lnum, nchars)
 	else
 	    sprintf((char *)p,
 #ifdef LONG_LONG_OFF_T
-		    _("%lld characters"),
+		    _("%lld characters"), nchars
 #else
-		    _("%ld characters"),
+		    /* Explicit typecast avoids warning on Mac OS X 10.6 */
+		    _("%ld characters"), (long)nchars
 #endif
-		    nchars);
+		    );
     }
 }
 
