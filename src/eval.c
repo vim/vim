@@ -451,7 +451,6 @@ static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
 static void dictitem_remove __ARGS((dict_T *dict, dictitem_T *item));
 static dict_T *dict_copy __ARGS((dict_T *orig, int deep, int copyID));
 static long dict_len __ARGS((dict_T *d));
-static dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
 static char_u *dict2string __ARGS((typval_T *tv, int copyID));
 static int get_dict_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static char_u *echo_string __ARGS((typval_T *tv, char_u **tofree, char_u *numbuf, int copyID));
@@ -7012,7 +7011,7 @@ dict_len(d)
  * If "len" is negative use strlen(key).
  * Returns NULL when not found.
  */
-    static dictitem_T *
+    dictitem_T *
 dict_find(d, key, len)
     dict_T	*d;
     char_u	*key;

@@ -56,6 +56,7 @@ dictitem_T *dictitem_alloc __ARGS((char_u *key));
 void dictitem_free __ARGS((dictitem_T *item));
 int dict_add __ARGS((dict_T *d, dictitem_T *item));
 int dict_add_nr_str __ARGS((dict_T *d, char *key, long nr, char_u *str));
+dictitem_T *dict_find __ARGS((dict_T *d, char_u *key, int len));
 char_u *get_dict_string __ARGS((dict_T *d, char_u *key, int save));
 long get_dict_number __ARGS((dict_T *d, char_u *key));
 char_u *get_function_name __ARGS((expand_T *xp, int idx));

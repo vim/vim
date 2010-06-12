@@ -3771,7 +3771,8 @@ expand_tags(tagnames, pat, num_file, file)
 static int add_tag_field __ARGS((dict_T *dict, char *field_name, char_u *start, char_u *end));
 
 /*
- * Add a tag field to the dictionary "dict"
+ * Add a tag field to the dictionary "dict".
+ * Return OK or FAIL.
  */
     static int
 add_tag_field(dict, field_name, start, end)
@@ -3783,6 +3784,17 @@ add_tag_field(dict, field_name, start, end)
     char_u	buf[MAXPATHL];
     int		len = 0;
 
+    /* check that the field name doesn't exist yet */
+    if (dict_find(dict, (char_u *)field_name, -1) != NULL)
+    {
+	if (p_verbose > 0)
+	{
+	    verbose_enter();
+	    smsg((char_u *)_("Duplicate field name: %s"), field_name);
+	    verbose_leave();
+	}
+	return FAIL;
+    }
     if (start != NULL)
     {
 	if (end == NULL)
