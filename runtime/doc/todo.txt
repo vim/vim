@@ -30,11 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-internal error hash_add() (Peter Odding)
-    :set tags=/tmp/bad_tags
-    :call taglist('.')
-Also with one line tags file. (Lech Lorens, Jun 9)
-
 gtk_selection_clear_targets not available in GTK1 (Patrick Texier)
 Use #ifdefs to use old code for GTK1.
 

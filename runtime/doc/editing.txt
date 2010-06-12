@@ -1376,7 +1376,7 @@ check if the encryption works as expected.  If you get one of these errors
 don't write the file encrypted!  You need to rebuild the Vim binary to fix
 this.
 
-*E831* This is an internal error, "cannot happen".  If you can reproduc it,
+*E831* This is an internal error, "cannot happen".  If you can reproduce it,
 please report to the developers.
 
 When reading a file that has been encrypted and the 'key' option is not empty,

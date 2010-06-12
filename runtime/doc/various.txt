@@ -189,7 +189,8 @@ g8			Print the hex values of the bytes used in the
 			mapping |:noremap|, the argument can be mapped anyway.
 			An alternative is to use |:execute|, which uses an
 			expression as argument.  This allows the use of
-			printable characters.  Example: >
+			printable characters to represent special characters.
+			Example: >
 				:exe "normal \<c-w>\<c-w>"
 <			{not in Vi, of course}
 			{not available when the |+ex_extra| feature was
