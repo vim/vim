@@ -1279,7 +1279,7 @@ u_write_undo(name, forceit, buf, hash)
     if (buf->b_u_numhead == 0 && buf->b_u_line_ptr == NULL)
     {
 	if (p_verbose > 0)
-	    verb_msg((char_u *)_("Skipping undo file write, noting to undo"));
+	    verb_msg((char_u *)_("Skipping undo file write, nothing to undo"));
 	goto theend;
     }
 

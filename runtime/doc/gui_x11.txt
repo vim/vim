@@ -458,9 +458,7 @@ are obtained through the 'gtk-config' shell script.
 
 If you want to build with GTK+ 2 support pass the --enable-gtk2-check argument
 to ./configure.  Optionally, support for GNOME 2 will be compiled if the
---enable-gnome-check option is also given.  Note that the support for GTK+ 2
-is still experimental.  However, many people have reported that it works just
-fine for them.
+--enable-gnome-check option is also given.
 
 Otherwise, if you are using Motif or Athena, when you have the Motif or Athena
 files in a directory where configure doesn't look, edit the Makefile to enter
@@ -468,15 +466,12 @@ the names of the directories.  Search for "GUI_INC_LOC" for an example to set
 the Motif directories, "CONF_OPT_X" for Athena.
 
 							*gui-x11-gtk*
-At the time of this writing, you may use either GTK+ version 1.0.6 or 1.2.  It
-is suggested that you use v1.2 since not all of Vim's GUI features are present
-if using v1.0.6.  For instance, there are no tearoff menus present in v1.0.6.
-Using a version from GTK+'s CVS tree may or may not work, and is therefore not
-supported and not recommended.
+At the time of this writing, GTK+ version 1.0.6 and 1.2 are outdated.  It
+is suggested that you use GTK 2.  The GTK 1 support will most likely be
+dropped soon.
 
-For the experimental GTK+ 2 GUI, using the latest release of the GTK+ 2.0 or
-GTK+ 2.2 series is recommended.  CVS HEAD seems to work fine most of time as
-well.
+For the GTK+ 2 GUI, using the latest release of the GTK+ 2.0 or GTK+ 2.2
+series is recommended.
 
 Lastly, although GTK+ has supposedly been ported to the Win32 platform, this
 has not been tested with Vim and is also unsupported.  Also, it's unlikely to

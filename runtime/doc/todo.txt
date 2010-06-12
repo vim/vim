@@ -30,7 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+internal error hash_add() (Peter Odding)
+    :set tags=/tmp/bad_tags
+    :call taglist('.')
+Also with one line tags file. (Lech Lorens, Jun 9)
+
 gtk_selection_clear_targets not available in GTK1 (Patrick Texier)
+Use #ifdefs to use old code for GTK1.
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
@@ -124,6 +130,9 @@ Most time is spent in in_id_list().
 Slow combination of folding and PHP syntax highlighting.  Script to reproduce
 it.  Caused by "syntax sync fromstart" in combination with patch 7.2.274.
 (Christian Brabandt, 2010 May 27)
+
+When completion inserts the first match, it may trigger the line to be folded.
+Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 
 In command line window ":close" doesn't work properly. (Tony Mechelynck, 2009
 Jun 1)
@@ -1084,6 +1093,7 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
+- crash when reloading file. (Namsh, 2010 Jun 11)
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
@@ -1107,7 +1117,10 @@ Vim 7.3:
   Show "file saved" marker in :undolist
   Function to get undo tree: undotree().  List of lists.  Each entry is a
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
-- Remove support for GTK 1?
+- Patch for conceal feature and 'foldcolumn'. (Dominique Pelle, 2010 Jun 10,
+  second patch)
+- patch for conceal feature and 'modifiable'. (Dominique Pelle, 2010 Jun 9)
+- Remove support for GTK 1?  Patch by James Vega, Jun 11.
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15
@@ -1116,6 +1129,8 @@ Patches to include:
 - Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
 - Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
 - Patch to improve javascript indenting. (Hari Kumar G, 2010 May 22)
+- Patch to make CTRL-L work better with 'ignorecase' and 'smarcase'. (Martin
+  Toft, 2010 Jun 8)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
   15)
 - Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 
