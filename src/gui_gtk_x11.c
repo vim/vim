@@ -3478,7 +3478,7 @@ gui_gtk_set_selection_targets(void)
 
     for (i = 0; i < (int)N_SELECTION_TARGETS; ++i)
     {
-#ifdef FEAT_MBYTE
+#if defined(FEAT_MBYTE) && defined(HAVE_GTK2)
 	/* OpenOffice tries to use TARGET_HTML and fails when it doesn't
 	 * return something, instead of trying another target. Therefore only
 	 * offer TARGET_HTML when it works. */
@@ -3489,8 +3489,10 @@ gui_gtk_set_selection_targets(void)
 	    targets[j++] = selection_targets[i];
     }
 
+#ifdef HAVE_GTK2  /* GTK 1 doesn't have this function */
     gtk_selection_clear_targets(gui.drawarea, (GdkAtom)GDK_SELECTION_PRIMARY);
     gtk_selection_clear_targets(gui.drawarea, (GdkAtom)clip_plus.gtk_sel_atom);
+#endif
     gtk_selection_add_targets(gui.drawarea,
 			      (GdkAtom)GDK_SELECTION_PRIMARY,
 			      targets, n_targets);
