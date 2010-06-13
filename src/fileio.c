@@ -3011,63 +3011,6 @@ prepare_crypt_write(buf, lenp)
 
 #endif  /* FEAT_CRYPT */
 
-/*
- * Like fwrite() but crypt the bytes when 'key' is set.
- * Returns 1 if successful.
- */
-    size_t
-fwrite_crypt(buf, ptr, len, fp)
-    buf_T	*buf UNUSED;
-    char_u	*ptr;
-    size_t	len;
-    FILE	*fp;
-{
-#ifdef FEAT_CRYPT
-    char_u  *copy;
-    char_u  small_buf[100];
-    size_t  i;
-
-    if (*buf->b_p_key == NUL)
-	return fwrite(ptr, len, (size_t)1, fp);
-    if (len < 100)
-	copy = small_buf;  /* no malloc()/free() for short strings */
-    else
-    {
-	copy = lalloc(len, FALSE);
-	if (copy == NULL)
-	    return 0;
-    }
-    crypt_encode(ptr, len, copy);
-    i = fwrite(copy, len, (size_t)1, fp);
-    if (copy != small_buf)
-	vim_free(copy);
-    return i;
-#else
-    return fwrite(ptr, len, (size_t)1, fp);
-#endif
-}
-
-/*
- * Read a string of length "len" from "fd".
- * When 'key' is set decrypt the bytes.
- */
-    char_u *
-read_string_decrypt(buf, fd, len)
-    buf_T   *buf UNUSED;
-    FILE    *fd;
-    int	    len;
-{
-    char_u  *ptr;
-
-    ptr = read_string(fd, len);
-#ifdef FEAT_CRYPT
-    if (ptr != NULL || *buf->b_p_key != NUL)
-	crypt_decode(ptr, len);
-#endif
-    return ptr;
-}
-
-
 #ifdef UNIX
     static void
 set_file_time(fname, atime, mtime)

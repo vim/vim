@@ -1088,19 +1088,19 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Update for crypt code to use salt. (Mohsin May 30)
-    Make the strengthen_key value 10000, equivalent to crypting 10 Kbyte of
-    text.
 - Also crypt the swap file, each block separately.  Change mf_write() and
     mf_read().
     - How to get b_p_key to these functions?  -> Store buf_T pointer in mfp.
-    - Generate a seed for the swapfile, put it in block 0.
+    - Generate a salt and seed for the swapfile, put it in block 0.
     - For each block, use password + seed + byte offset to crypt/decrypt.
     - When changing the password need to read back with the old password and
       write again with the new one.
     - Fill the gaps in the block with random bytes, otherwise it's easy to
       check for correct password by finding NUL bytes.
     - Verify recovery works.
+- Patch for conceal feature and 'foldcolumn'. (Dominique Pelle, 2010 Jun 10,
+  second patch)
+- patch for conceal feature and 'modifiable'. (Dominique Pelle, 2010 Jun 9)
 - undofile: keep markers where the file was written/read, so that it's easy to
   go back to a saved version of the file:  ":earlier 1f" (f for file)?
   Also add ":earlier 1d" (d for day).
@@ -1108,9 +1108,6 @@ Vim 7.3:
   Show "file saved" marker in :undolist
   Function to get undo tree: undotree().  List of lists.  Each entry is a
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
-- Patch for conceal feature and 'foldcolumn'. (Dominique Pelle, 2010 Jun 10,
-  second patch)
-- patch for conceal feature and 'modifiable'. (Dominique Pelle, 2010 Jun 9)
 - Remove support for GTK 1?  Patch by James Vega, Jun 11.
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)

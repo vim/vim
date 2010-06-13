@@ -4,8 +4,6 @@ int readfile __ARGS((char_u *fname, char_u *sfname, linenr_T from, linenr_T line
 int prep_exarg __ARGS((exarg_T *eap, buf_T *buf));
 int prepare_crypt_read __ARGS((FILE *fp));
 char_u *prepare_crypt_write __ARGS((buf_T *buf, int *lenp));
-size_t fwrite_crypt __ARGS((buf_T *buf, char_u *ptr, size_t len, FILE *fp));
-char_u *read_string_decrypt __ARGS((buf_T *buf, FILE *fd, int len));
 int check_file_readonly __ARGS((char_u *fname, int perm));
 int buf_write __ARGS((buf_T *buf, char_u *fname, char_u *sfname, linenr_T start, linenr_T end, exarg_T *eap, int append, int forceit, int reset_changed, int filtering));
 void msg_add_fname __ARGS((buf_T *buf, char_u *fname));
