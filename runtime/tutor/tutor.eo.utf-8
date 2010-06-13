@@ -1,5 +1,5 @@
 ==============================================================================
-=  B o n v e n o n  al  la  I n s t r u i l o  de  V I M  -  Versio 1.7.eo.2 =
+=  B o n v e n o n  al  la  I n s t r u i l o  de  V I M  -  Versio 1.7.eo.3 =
 ==============================================================================
 
    Vim estas tre potenca redaktilo, kiu havas multajn komandojn, tro da ili
@@ -149,6 +149,7 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
   !! RIMARKO: Antaŭ ol plenumi iun suban paŝon ajn, legu la tutan lecionon!!
 
   1. Eliru el la instruilo kiel vi faris en la leciono 1.2:  :q!
+     Aŭ, se vi havas atingon al alia terminalo, faru tion, kio sekvas tie.
 
   2. Ĉe la ŝelinvito, tajpu ĉi tiun komandon:  vim tutor <Enenklavo>
      'vim' estas la komando por lanĉi la redaktilon Vim, 'tutor' estas la
@@ -159,7 +160,8 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
 
   4. Konservu la dosieron kun ŝanĝoj kaj eliru el Vim per:  :wq  <Enenklavo>
 
-  5. Relanĉu la instruilon vimtutor kaj moviĝu suben al la sekvanta resumo.
+  5. Se vi eliris la instruilon vimtutor en paŝo 1, restartu la intruilon
+     vimtutor kaj moviĝu suben al la sekvanta resumo.
 
   6. Post kiam vi legis la suprajn paŝojn, kaj komprenis ilin: faru ilin.
 
@@ -413,7 +415,7 @@ RIMARKO: Premo de nur la movo en Normala reĝimo sen operatoro movos
 
   5. Nun moviĝu al la leciono 3.3.
 
-Rimarko: Memoru, ke vi devus lerni per uzo, kaj ne per memorado.
+RIMARKO: Memoru, ke vi devus lerni per uzo, kaj ne per memorado.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -908,7 +910,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu serĉa komando, uzu  \c
                          ** Ebligu kapablojn de Vim **
 
   Vim havas multe pli da kapabloj ol Vi, sed la plej multaj estas defaŭlte
-  malŝaltitaj.  Por ekuzi la kapablojn, vi devas krei dosieron "vimrc.
+  malŝaltitaj.  Por ekuzi la kapablojn, vi devas krei dosieron "vimrc".
 
   1. Ekredaktu la dosieron "vimrc".  Tio dependas de via sistemo:
       :e ~/.vimrc          por Unikso
@@ -969,7 +971,7 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Tio konkludas la instruilon de Vim.  Ĝi celis doni mallongan superrigardon
-  de la redaktilo Vim, nur tio kio sufiĉas por ebligi al vi facilan uzon de
+  de la redaktilo Vim, nur tion kio sufiĉas por ebligi al vi facilan uzon de
   la redaktilo. Estas nepre nekompleta, ĉar Vim havas multajn multajn pliajn
   komandojn. Legu la manlibron: ":help user-manual".
 
@@ -984,6 +986,6 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   Tradukita en Esperanto de Dominique Pellé, 2008-04-01
   Retpoŝto: dominique.pelle@gmail.com
-  Lasta ŝanĝo: 2009-02-01
+  Lasta ŝanĝo: 2010-05-23
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

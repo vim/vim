@@ -15,13 +15,28 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-16 21:54+0100\n"
-"PO-Revision-Date: 2010-02-16 22:10+0100\n"
+"POT-Creation-Date: 2010-06-12 07:15+0200\n"
+"PO-Revision-Date: 2010-06-12 07:56+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO_8859-15\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid "E831: bf_key_init() called with empty password"
+msgstr "E831: bf_key_init() appelée avec un mot de passe vide"
+
+msgid "E820: sizeof(uint32_t) != 4"
+msgstr "E820: sizeof(uint32_t) != 4"
+
+msgid "E817: Blowfish big/little endian use wrong"
+msgstr "E817: petit/gros boutisme incorrect dans blowfish"
+
+msgid "E818: sha256 test failed"
+msgstr "E818: le test de sha256 a échoué"
+
+msgid "E819: Blowfish test failed"
+msgstr "E819: le test de blowfish a échoué"
 
 # AB - Il faut respecter l'esprit plus que la lettre.
 msgid "E82: Cannot allocate any buffer, exiting..."
@@ -590,7 +605,7 @@ msgid "E723: Missing end of Dictionary '}': %s"
 msgstr "E723: Il manque '}' à la fin du Dictionnaire %s"
 
 msgid "E724: variable nested too deep for displaying"
-msgstr "E724: variable trop imbriquée pour être afficher"
+msgstr "E724: variable trop imbriquée pour être affichée"
 
 #, c-format
 msgid "E740: Too many arguments for function %s"
@@ -840,7 +855,6 @@ msgstr "E133: :return en dehors d'une fonction"
 
 # AB - La version française est capitalisée pour être en accord avec les autres
 #      commentaires enregistrés dans le fichier viminfo.
-#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
@@ -1113,7 +1127,7 @@ msgstr "E148: :global doit être suivi par une expression régulière"
 #      qui est utilisé.
 #, c-format
 msgid "Pattern found in every line: %s"
-msgstr "Motif trouvé dans toutes les ligne : %s"
+msgstr "Motif trouvé dans toutes les lignes : %s"
 
 # AB - Ne pas traduire le dollar.
 # AB - Ce message n'est volontairement pas traduit. En effet, il fait partie
@@ -1251,8 +1265,8 @@ msgstr "Aucun point d'arrêt n'est défini"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  ligne %ld"
 
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Utilisez d'abord :profile start <nomfichier>"
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: Utilisez d'abord \":profile start {nomfichier}\""
 
 # AB - "changes to" est redondant et a été omis de la version française.
 #, c-format
@@ -1464,6 +1478,9 @@ msgstr "E468: Seul le complètement personnalisé accepte un argument"
 
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Le complètement personnalisé requiert une fonction en argument"
+
+msgid "unknown"
+msgstr "inconnu"
 
 #, c-format
 msgid "E185: Cannot find color scheme %s"
@@ -1732,7 +1749,7 @@ msgid "E198: cmd_pchar beyond the command length"
 msgstr "E198: cmd_pchar au-delà de la longueur de la commande"
 
 msgid "E199: Active window or buffer deleted"
-msgstr "E199: Tampon ou fenêtre active effacé(e)"
+msgstr "E199: Fenêtre ou tampon actif effacé"
 
 msgid "E812: Autocommands changed buffer or buffer name"
 msgstr "E812: Des autocommandes on changé le tampon ou le nom du tampon"
@@ -1830,6 +1847,9 @@ msgstr "La conversion avec 'charconvert' a échoué"
 msgid "can't read output of 'charconvert'"
 msgstr "Impossible de lire la sortie de 'charconvert'"
 
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: Le fichier est chiffré avec une méthode inconnue"
+
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Pas d'autocommande correspondante pour le tampon acwrite"
 
@@ -1898,15 +1918,15 @@ msgstr "E512: Erreur de fermeture de fichier"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Erreur d'écriture, échec de conversion (videz 'fenc' pour passer "
-"outre)"
+"E513: Erreur d'écriture, échec de conversion (videz 'fenc' pour passer outre)"
 
 #, c-format
 msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Erreur d'écriture, échec de conversion à la ligne %ld (videz 'fenc' pour passer outre)"
+"E513: Erreur d'écriture, échec de conversion à la ligne %ld (videz 'fenc' "
+"pour passer outre)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: erreur d'écriture (système de fichiers plein ?)"
@@ -1985,6 +2005,10 @@ msgstr "%ld lignes, "
 
 msgid "1 character"
 msgstr "1 caractère"
+
+#, c-format
+msgid "%lld characters"
+msgstr "%lld caractères"
 
 #, c-format
 msgid "%ld characters"
@@ -2657,14 +2681,14 @@ msgstr "E623: Impossible d'engendrer le processus cscope"
 msgid "E567: no cscope connections"
 msgstr "E567: Aucune connexion cscope"
 
+#, c-format
+msgid "E469: invalid cscopequickfix flag %c for %c"
+msgstr "E469: Drapeau cscopequickfix %c invalide pour %c"
+
 # DB - todo
 #, c-format
 msgid "E259: no matches found for cscope query %s of %s"
 msgstr "E259: aucune correspondance trouvée pour la requête cscope %s de %s"
-
-#, c-format
-msgid "E469: invalid cscopequickfix flag %c for %c"
-msgstr "E469: Drapeau cscopequickfix %c invalide pour %c"
 
 msgid "cscope commands:\n"
 msgstr "commandes cscope :\n"
@@ -3097,6 +3121,9 @@ msgstr "Argument invalide pour"
 msgid "%d files to edit\n"
 msgstr "%d fichiers à éditer\n"
 
+msgid "netbeans is not supported with this GUI\n"
+msgstr "netbeans n'est pas supporté avec cette interface graphique\n"
+
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Ce Vim n'a pas été compilé avec la fonctionnalité diff"
 
@@ -3371,7 +3398,9 @@ msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <nom>\tEnvoyer au/devenir le serveur Vim nommé <nom>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
-msgstr "--startuptime <fich>\tÉcrire les messages d'horodatage au démarrage dans <fich>"
+msgstr ""
+"--startuptime <fich>\tÉcrire les messages d'horodatage au démarrage dans "
+"<fich>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tUtiliser <viminfo> au lieu du viminfo habituel"
@@ -3759,15 +3788,20 @@ msgstr ""
 "\n"
 "(Vous voudrez peut-être enregistrer ce fichier sous un autre nom\n"
 
-msgid "and run diff with the original file to check for changes)\n"
+msgid "and run diff with the original file to check for changes)"
 msgstr ""
-"et lancer diff avec le fichier original pour repérer les changements)\n"
+"et lancer diff avec le fichier original pour repérer les changements)"
+
+msgid "Recovery completed. Buffer contents equals file contents."
+msgstr "Récupération achevée. Le contenu du tampon est identique au contenu du fichier."
 
 msgid ""
-"Delete the .swp file afterwards.\n"
+"\n"
+"You may want to delete the .swp file now.\n"
 "\n"
 msgstr ""
-"Effacez ensuite le fichier .swp.\n"
+"\n"
+"Il est conseillé d'effacer maintenant le fichier .swp.\n"
 "\n"
 
 #. use msg() to start the scrolling properly
@@ -4298,6 +4332,9 @@ msgstr "read sur la socket Netbeans"
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: Connexion NetBeans perdue pour le tampon %ld"
+
+msgid "E511: netbeans already connected"
+msgstr "E511: netbeans déjà connecté"
 
 msgid "E505: "
 msgstr "E505: "
@@ -5376,7 +5413,7 @@ msgstr "Trop de régions dans %s ligne %d : %s"
 
 #, c-format
 msgid "/ line ignored in %s line %d: %s"
-msgstr "Ligne / ignorée dans %s ligen %d : %s"
+msgstr "Ligne / ignorée dans %s ligne %d : %s"
 
 #, c-format
 msgid "Invalid region nr in %s line %d: %s"
@@ -5599,7 +5636,7 @@ msgid "E399: Not enough arguments: syntax region %s"
 msgstr "E399: Pas assez d'arguments : syntax region %s"
 
 msgid "E400: No cluster specified"
-msgstr "E400: Aucun grappe spécifiée"
+msgstr "E400: Aucune grappe spécifiée"
 
 #, c-format
 msgid "E401: Pattern delimiter not found: %s"
@@ -5834,6 +5871,77 @@ msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
 msgid "No undo possible; continue anyway"
 msgstr "Annulation impossible ; continuer"
 
+#, c-format
+msgid "E828: Cannot open undo file for writing: %s"
+msgstr "E828: Impossible d'ouvrir le fichier d'annulations en écriture : %s"
+
+#, c-format
+msgid "E825: Corrupted undo file (%s): %s"
+msgstr "E825: Fichier d'annulations corrompu (%s) : %s"
+
+msgid "Cannot write undo file in any directory in 'undodir'"
+msgstr "Impossible d'écrire le fichier d'annulations dans n'importe "
+"quel répertoire de 'undodir'"
+
+#, c-format
+msgid "Will not overwrite with undo file, cannot read: %s"
+msgstr "Le fichier d'annulations de sera pas écrasé, impossible de lire : %s"
+
+#, c-format
+msgid "Will not overwrite, this is not an undo file: %s"
+msgstr "Fichier ne sera pas écrasé, ce n'est pas un fichier d'annulations : %s"
+
+msgid "Skipping undo file write, nothing to undo"
+msgstr "Le fichier d'annulations n'est pas écrit, rien à annuler"
+
+#, c-format
+msgid "Writing undo file: %s"
+msgstr "Écriture du fichier d'annulations : %s"
+
+#, c-format
+msgid "E829: write error in undo file: %s"
+msgstr "E829: Erreur d'écriture dans le fichier d'annulations : %s"
+
+#, c-format
+msgid "Not reading undo file, owner differs: %s"
+msgstr "Le fichier d'annulations n'est pas lu, propriétaire différent : %s"
+
+#, c-format
+msgid "Reading undo file: %s"
+msgstr "Lecture du fichier d'annulations : %s..."
+
+#, c-format
+msgid "E822: Cannot open undo file for reading: %s"
+msgstr "E822: Impossible d'ouvrir le fichier d'annulations en lecture : %s"
+
+#, c-format
+msgid "E823: Not an undo file: %s"
+msgstr "E823: Ce n'est pas un fichier d'annulations : %s"
+
+#, c-format
+msgid "E832: Non-encrypted file has encrypted undo file: %s"
+msgstr "E832: Fichier non-chiffré a un fichier d'annulations chiffré : %s"
+
+#, c-format
+msgid "E826: Undo file decryption failed: %s"
+msgstr "E826: Déchiffrage du fichier d'annulation a échoué : %s"
+
+#, c-format
+msgid "E827: Undo file is encrypted: %s"
+msgstr "E827: Le fichier d'annulations est chiffré : %s"
+
+#, c-format
+msgid "E824: Incompatible undo file: %s"
+msgstr "E824: Fichier d'annulations incompatible : %s"
+
+msgid "File contents changed, cannot use undo info"
+msgstr "Le contenu du fichier a changé, impossible d'utiliser les "
+"informations d'annulation"
+
+#, c-format
+msgid "Finished reading undo file %s"
+msgstr "Fin de lecture du fichier d'annulations %s"
+
 msgid "Already at oldest change"
 msgstr "Déjà à la modification la plus ancienne"
 
@@ -5841,8 +5949,8 @@ msgid "Already at newest change"
 msgstr "Déjà à la modification la plus récente"
 
 #, c-format
-msgid "Undo number %ld not found"
-msgstr "L'annulation n° %ld introuvable"
+msgid "E830: Undo number %ld not found"
+msgstr "E830: Annulation n° %ld introuvable"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo : numéros de ligne erronés"
@@ -6535,7 +6643,7 @@ msgid "E776: No location list"
 msgstr "E776: Aucune liste d'emplacements"
 
 msgid "E43: Damaged match string"
-msgstr "E43: Le chaîne de recherche est endommagée"
+msgstr "E43: La chaîne de recherche est endommagée"
 
 msgid "E44: Corrupted regexp program"
 msgstr "E44: L'automate de regexp est corrompu"
@@ -6650,9 +6758,3 @@ msgstr "La recherche a atteint le HAUT, et continue en BAS"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La recherche a atteint le BAS, et continue en HAUT"
-
-#~ msgid "E569: maximum number of cscope connections reached"
-#~ msgstr "E569: nombre maximum de connexions cscope atteint"
-
-#~ msgid "[NL found]"
-#~ msgstr "[NL trouvé]"

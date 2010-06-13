@@ -402,22 +402,40 @@ bf_d_cblock(block)
 }
 #endif
 
+/*
+ * Initialize the crypt method using "password" as the encryption key and
+ * "salt[salt_len]" as the salt.
+ */
     void
-bf_key_init(password)
+bf_key_init(password, salt, salt_len)
     char_u *password;
+    char_u *salt;
+    int    salt_len;
 {
     int      i, j, keypos = 0;
     UINT32_T val, data_l, data_r;
     char_u   *key;
     int      keylen;
 
-    key = sha256_key(password);
-    keylen = (int)STRLEN(key);
+    /* Process the key 1000 times.
+     * See http://en.wikipedia.org/wiki/Key_strengthening. */
+    key = sha256_key(password, salt, salt_len);
+    for (i = 0; i < 1000; i++)
+        key = sha256_key(key, salt, salt_len);
+
+    /* Convert the key from 64 hex chars to 32 binary chars. */
+    keylen = (int)STRLEN(key) / 2;
     if (keylen == 0)
     {
 	EMSG(_("E831: bf_key_init() called with empty password"));
 	return;
     }
+    for (i = 0; i < keylen; i++)
+    {
+        sscanf((char *)&key[i * 2], "%2x", &j);
+        key[i] = j;
+    }
+
     for (i = 0; i < 256; ++i)
     {
 	sbx[0][i] = sbi[0][i];
@@ -475,9 +493,10 @@ bf_check_tables(ipa, sbi, val)
 
 typedef struct {
     char_u   password[64];
-    char_u   plaintxt[8];
-    char_u   cryptxt[8];
-    char_u   badcryptxt[8]; /* cryptxt when big/little endian is wrong */
+    char_u   salt[9];
+    char_u   plaintxt[9];
+    char_u   cryptxt[9];
+    char_u   badcryptxt[9]; /* cryptxt when big/little endian is wrong */
     UINT32_T keysum;
 } struct_bf_test_data;
 
@@ -488,10 +507,11 @@ typedef struct {
 static struct_bf_test_data bf_test_data[] = {
   {
       "password",
+      "salt",
       "plaintxt",
-      "\x55\xca\x56\x3a\xef\xe1\x9c\x73", /* cryptxt */
-      "\x47\xd9\x67\x49\x91\xc5\x9a\x95", /* badcryptxt */
-      0x5de01bdbu, /* keysum */
+      "\xad\x3d\xfa\x7f\xe8\xea\x40\xf6", /* cryptxt */
+      "\x72\x50\x3b\x38\x10\x60\x22\xa7", /* badcryptxt */
+      0x56701b5du /* keysum */
   },
 };
 
@@ -519,7 +539,9 @@ bf_self_test()
     bn = ARRAY_LENGTH(bf_test_data);
     for (i = 0; i < bn; i++)
     {
-	bf_key_init((char_u *)(bf_test_data[i].password));
+	bf_key_init((char_u *)(bf_test_data[i].password),
+                    bf_test_data[i].salt,
+		    (int)STRLEN(bf_test_data[i].salt));
 	if (!bf_check_tables(pax, sbx, bf_test_data[i].keysum))
 	    err++;
 

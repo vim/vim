@@ -23,13 +23,28 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Esperanto)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-02-16 21:54+0100\n"
-"PO-Revision-Date: 2010-02-16 21:56+0100\n"
+"POT-Creation-Date: 2010-06-12 07:15+0200\n"
+"PO-Revision-Date: 2010-06-12 08:24+0200\n"
 "Last-Translator: Dominique PELLÉ <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+msgid "E831: bf_key_init() called with empty password"
+msgstr "E831: bf_key_init() alvokita kun malplena pasvorto"
+
+msgid "E820: sizeof(uint32_t) != 4"
+msgstr "E820: sizeof(uint32_t) != 4"
+
+msgid "E817: Blowfish big/little endian use wrong"
+msgstr "E817: Misuzo de pezkomenca/pezfina en blowfish"
+
+msgid "E818: sha256 test failed"
+msgstr "E818: Testo de sha256 fiaskis"
+
+msgid "E819: Blowfish test failed"
+msgstr "E819: Testo de blowfish fiaskis"
 
 msgid "E82: Cannot allocate any buffer, exiting..."
 msgstr "E82: Ne eblas disponigi iun ajn bufron, nun eliras..."
@@ -749,7 +764,6 @@ msgstr "daŭrigas en %s"
 msgid "E133: :return not inside a function"
 msgstr "E133: \":return\" ekster funkcio"
 
-#, c-format
 msgid ""
 "\n"
 "# global variables:\n"
@@ -1039,7 +1053,7 @@ msgid " (NOT FOUND)"
 msgstr "  (NETROVITA)"
 
 msgid " (not supported)"
-msgstr " (nesubtenita)"
+msgstr " (nesubtenata)"
 
 msgid "[Deleted]"
 msgstr "[Forviŝita]"
@@ -1070,8 +1084,8 @@ msgstr "Neniu kontrolpunkto estas difinita"
 msgid "%3d  %s %s  line %ld"
 msgstr "%3d  %s %s  linio %ld"
 
-msgid "E750: First use :profile start <fname>"
-msgstr "E750: Uzu unue \":profile start <dosiernomo>\""
+msgid "E750: First use \":profile start {fname}\""
+msgstr "E750: Uzu unue \":profile start {dosiernomo}\""
 
 #, c-format
 msgid "Save changes to \"%s\"?"
@@ -1095,10 +1109,6 @@ msgstr "E164: Ne eblas iri antaŭ ol la unuan dosieron"
 
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Ne eblas iri preter la lastan dosieron"
-
-#, c-format
-msgid "E666: compiler not supported: %s"
-msgstr "E666: kompililo nesubtenita: %s"
 
 #, c-format
 msgid "Searching for \"%s\" in \"%s\""
@@ -1278,6 +1288,9 @@ msgstr ""
 
 msgid "E467: Custom completion requires a function argument"
 msgstr "E467: Uzula kompletigo bezonas funkcian argumenton"
+
+msgid "unknown"
+msgstr "nekonata"
 
 #, c-format
 msgid "E185: Cannot find color scheme %s"
@@ -1645,6 +1658,9 @@ msgstr "Konverto kun 'charconvert' fiaskis"
 msgid "can't read output of 'charconvert'"
 msgstr "ne eblas legi la eligon de 'charconvert'"
 
+msgid "E821: File is encrypted with unknown method"
+msgstr "E821: Dosiero estas ĉifrata per nekonata metodo"
+
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Neniu kongrua aŭtokomando por la bufro acwrite"
 
@@ -1791,6 +1807,10 @@ msgstr "%ld linioj, "
 
 msgid "1 character"
 msgstr "1 signo"
+
+#, c-format
+msgid "%lld characters"
+msgstr "%lld signoj"
 
 #, c-format
 msgid "%ld characters"
@@ -2169,7 +2189,7 @@ msgstr "E671: Ne eblas trovi titolon de fenestro \"%s\""
 
 #, c-format
 msgid "E243: Argument not supported: \"-%s\"; Use the OLE version."
-msgstr "E243: Ne subtenita argumento: \"-%s\"; Uzu la version OLE."
+msgstr "E243: Ne subtenata argumento: \"-%s\"; Uzu la version OLE."
 
 msgid "E672: Unable to open window inside MDI application"
 msgstr "E672: Ne eblas malfermi fenestron interne de aplikaĵo MDI"
@@ -2321,7 +2341,7 @@ msgstr "E618: \"%s\" ne estas dosiero de PostSkripta rimedo"
 
 #, c-format
 msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: \"%s\" ne estas subtenita dosiero de PostSkripta rimedo"
+msgstr "E619: \"%s\" ne estas subtenata dosiero de PostSkripta rimedo"
 
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
@@ -2442,12 +2462,12 @@ msgid "E567: no cscope connections"
 msgstr "E567: neniu konekto al cscope"
 
 #, c-format
-msgid "E259: no matches found for cscope query %s of %s"
-msgstr "E259: neniu kongruo trovita por serĉo per cscope %s de %s"
-
-#, c-format
 msgid "E469: invalid cscopequickfix flag %c for %c"
 msgstr "E469: nevalida flago cscopequickfix %c de %c"
+
+#, c-format
+msgid "E259: no matches found for cscope query %s of %s"
+msgstr "E259: neniu kongruo trovita por serĉo per cscope %s de %s"
 
 msgid "cscope commands:\n"
 msgstr "komandoj de cscope:\n"
@@ -2880,6 +2900,9 @@ msgstr "Nevalida argumento por"
 msgid "%d files to edit\n"
 msgstr "%d redaktendaj dosieroj\n"
 
+msgid "netbeans is not supported with this GUI\n"
+msgstr "netbeans ne estas subtenata kun tiu grafika interfaco\n"
+
 msgid "This Vim was not compiled with the diff feature."
 msgstr "Tiu Vim ne estis kompilita kun la kompara eblo."
 
@@ -2971,7 +2994,7 @@ msgid "--\t\t\tOnly file names after this"
 msgstr "--\t\t\tNur dosiernomoj malantaŭ tio"
 
 msgid "--literal\t\tDon't expand wildcards"
-msgstr "--literal\t\tNe ekspansii ĵokerojn"
+msgstr "--literal\t\tNe malvolvi ĵokerojn"
 
 msgid "-register\t\tRegister this gvim for OLE"
 msgstr "-register\t\tRegistri tiun gvim al OLE"
@@ -3397,7 +3420,7 @@ msgid "E296: Seek error in swap file write"
 msgstr "E296: Eraro de enpoziciigo dum skribo de permutodosiero .swp"
 
 msgid "E297: Write error in swap file"
-msgstr "E297: Eraro de skribo en permutodosiero .swp"
+msgstr "E297: Skriberaro en permutodosiero .swp"
 
 msgid "E300: Swap file already exists (symlink attack?)"
 msgstr "E300: Permutodosiero .swp jam ekzistas (ĉu atako per simbola ligilo?)"
@@ -3537,14 +3560,20 @@ msgstr ""
 "\n"
 "(Indas konservi tiun dosieron per alia nomo\n"
 
-msgid "and run diff with the original file to check for changes)\n"
-msgstr "kaj lanĉi diff kun la originala dosiero por kontroli la ŝanĝojn)\n"
+msgid "and run diff with the original file to check for changes)"
+msgstr "kaj lanĉi diff kun la originala dosiero por kontroli la ŝanĝojn)"
+
+msgid "Recovery completed. Buffer contents equals file contents."
+msgstr ""
+"Restaŭro finiĝis. La enhavo de la bufro samas kun la enhavo de la dosiero."
 
 msgid ""
-"Delete the .swp file afterwards.\n"
+"\n"
+"You may want to delete the .swp file now.\n"
 "\n"
 msgstr ""
-"Poste forviŝi la permutodosieron .swp.\n"
+"\n"
+"La dosiero .swp nun forviŝindas.\n"
 "\n"
 
 #. use msg() to start the scrolling properly
@@ -4074,6 +4103,9 @@ msgstr "lego el kontaktoskatolo de Netbeans"
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: Konekto de NetBeans perdita por bufro %ld"
 
+msgid "E511: netbeans already connected"
+msgstr "E511: nebeans jam konektata"
+
 msgid "E505: "
 msgstr "E505: "
 
@@ -4236,7 +4268,7 @@ msgid "E518: Unknown option"
 msgstr "E518: Nekonata opcio"
 
 msgid "E519: Option not supported"
-msgstr "E519: Opcio ne subtenita"
+msgstr "E519: Opcio ne subtenata"
 
 msgid "E520: Not allowed in a modeline"
 msgstr "E520: Ne permesita en reĝimlinio"
@@ -4312,7 +4344,7 @@ msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' devas esti malplena aŭ enhavi %s"
 
 msgid "E538: No mouse support"
-msgstr "E538: Neniu muso subtenita"
+msgstr "E538: Neniu muso subtenata"
 
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: '}' mankas"
@@ -4637,7 +4669,7 @@ msgstr "E374: Mankas ] en formata ĉeno"
 
 #, c-format
 msgid "E375: Unsupported %%%c in format string"
-msgstr "E375: Nesubtenita %%%c en formata ĉeno"
+msgstr "E375: Nesubtenata %%%c en formata ĉeno"
 
 #, c-format
 msgid "E376: Invalid %%%c in format string prefix"
@@ -4949,11 +4981,11 @@ msgid "E772: Spell file is for newer version of Vim"
 msgstr "E772: Literuma dosiero estas por pli nova versio de Vim"
 
 msgid "E770: Unsupported section in spell file"
-msgstr "E770: Nesubtenita sekcio en literuma dosiero"
+msgstr "E770: Nesubtenata sekcio en literuma dosiero"
 
 #, c-format
 msgid "Warning: region %s not supported"
-msgstr "Averto: regiono %s ne subtenita"
+msgstr "Averto: regiono %s ne subtenata"
 
 #, c-format
 msgid "Reading affix file %s ..."
@@ -4965,11 +4997,11 @@ msgstr "Malsukceso dum konverto de vorto en %s linio %d: %s"
 
 #, c-format
 msgid "Conversion in %s not supported: from %s to %s"
-msgstr "Konverto en %s nesubtenita: de %s al %s"
+msgstr "Konverto en %s nesubtenata: de %s al %s"
 
 #, c-format
 msgid "Conversion in %s not supported"
-msgstr "Konverto en %s nesubtenita"
+msgstr "Konverto en %s nesubtenata"
 
 #, c-format
 msgid "Invalid value for FLAG in %s line %d: %s"
@@ -5189,7 +5221,7 @@ msgid "E751: Output file name must not have region name"
 msgstr "E751: Nomo de eliga dosiero ne devas havi nomon de regiono"
 
 msgid "E754: Only up to 8 regions supported"
-msgstr "E754: Nur 8 regionoj subtenitaj"
+msgstr "E754: Nur 8 regionoj subtenataj"
 
 #, c-format
 msgid "E755: Invalid region in %s"
@@ -5589,6 +5621,75 @@ msgstr "Uzis CUT_BUFFER0 anstataŭ malplenan apartigon"
 msgid "No undo possible; continue anyway"
 msgstr "Malfaro neebla; daŭrigi tamene"
 
+#, c-format
+msgid "E828: Cannot open undo file for writing: %s"
+msgstr "E828: Ne eblas malfermi la malfaran dosieron por skribi: %s"
+
+#, c-format
+msgid "E825: Corrupted undo file (%s): %s"
+msgstr "E825: Difektita malfara dosiero (%s): %s"
+
+msgid "Cannot write undo file in any directory in 'undodir'"
+msgstr "Ne eblis skribi malfaran dosieron en iu dosiero ajn de 'undodir'"
+
+#, c-format
+msgid "Will not overwrite with undo file, cannot read: %s"
+msgstr "Ne superkribos malfaran dosieron, ne eblis legi: %s"
+
+#, c-format
+msgid "Will not overwrite, this is not an undo file: %s"
+msgstr "Ne superskribos, tio ne estas malfara dosiero: %s"
+
+msgid "Skipping undo file write, nothing to undo"
+msgstr "Preterpasas skribon de malfara dosiero, nenio por malfari"
+
+#, c-format
+msgid "Writing undo file: %s"
+msgstr "Skribas malfaran dosieron: %s"
+
+#, c-format
+msgid "E829: write error in undo file: %s"
+msgstr "E829: Skriberaro en malfara dosiero: %s"
+
+#, c-format
+msgid "Not reading undo file, owner differs: %s"
+msgstr "Ne legas malfaran dosieron, posedanto malsamas: %s"
+
+#, c-format
+msgid "Reading undo file: %s"
+msgstr "Legado de de malfara dosiero: %s"
+
+#, c-format
+msgid "E822: Cannot open undo file for reading: %s"
+msgstr "E822: Ne eblas malfermi malfaran dosieron por legi: %s"
+
+#, c-format
+msgid "E823: Not an undo file: %s"
+msgstr "E823: Ne estas malfara dosiero: %s"
+
+#, c-format
+msgid "E832: Non-encrypted file has encrypted undo file: %s"
+msgstr "E832: Ne ĉifrata dosiero havas ĉifratan malfaran dosieron: %s"
+
+#, c-format
+msgid "E826: Undo file decryption failed: %s"
+msgstr "E826: Malĉifrado de malfara dosiero fiaskis: %s"
+
+#, c-format
+msgid "E827: Undo file is encrypted: %s"
+msgstr "E827: Malfara dosiero estas ĉifrata: %s"
+
+#, c-format
+msgid "E824: Incompatible undo file: %s"
+msgstr "E824: Malkongrua malfara dosiero: %s"
+
+msgid "File contents changed, cannot use undo info"
+msgstr "Enhavo de dosiero ŝanĝiĝis, ne eblas uzi malfarajn infomojn"
+
+#, c-format
+msgid "Finished reading undo file %s"
+msgstr "Finis legi malfaran dosieron %s"
+
 msgid "Already at oldest change"
 msgstr "Jam al la plej malnova ŝanĝo"
 
@@ -5596,8 +5697,8 @@ msgid "Already at newest change"
 msgstr "Jam al la plej nova ŝanĝo"
 
 #, c-format
-msgid "Undo number %ld not found"
-msgstr "Malfaro numero %ld netrovita"
+msgid "E830: Undo number %ld not found"
+msgstr "E830: Malfara numero %ld netrovita"
 
 msgid "E438: u_undo: line numbers wrong"
 msgstr "E438: u_undo: nevalidaj numeroj de linioj"
@@ -6318,7 +6419,7 @@ msgid "E523: Not allowed here"
 msgstr "E523: Ne permesita tie"
 
 msgid "E359: Screen mode setting not supported"
-msgstr "E359: Reĝimo de ekrano ne subtenita"
+msgstr "E359: Reĝimo de ekrano ne subtenata"
 
 msgid "E49: Invalid scroll size"
 msgstr "E49: Nevalida grando de rulumo"
@@ -6354,7 +6455,7 @@ msgid "E78: Unknown mark"
 msgstr "E78: Nekonata marko"
 
 msgid "E79: Cannot expand wildcards"
-msgstr "E79: Ne eblas ekspansi ĵokerojn"
+msgstr "E79: Ne eblas malvolvi ĵokerojn"
 
 msgid "E591: 'winheight' cannot be smaller than 'winminheight'"
 msgstr "E591: 'winheight' ne rajtas esti malpli ol 'winminheight'"

@@ -149,7 +149,7 @@ void qsort __ARGS((void *base, size_t elm_count, size_t elm_size, int (*cmp)(con
 # endif
 # include "regexp.pro"
 # include "screen.pro"
-# ifdef FEAT_CRYPT
+# if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 #  include "sha256.pro"
 # endif
 # include "search.pro"

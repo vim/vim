@@ -23,9 +23,6 @@
 #if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 
 static void sha256_process __ARGS((context_sha256_T *ctx, char_u data[64]));
-static char_u *sha256_bytes __ARGS((char_u *buf, int buflen));
-static unsigned int get_some_time __ARGS((void));
-
 
 #define GET_UINT32(n, b, i)		    \
 {					    \
@@ -271,14 +268,22 @@ sha256_finish(ctx, digest)
     PUT_UINT32(ctx->state[6], digest, 24);
     PUT_UINT32(ctx->state[7], digest, 28);
 }
+#endif /* FEAT_CRYPT || FEAT_PERSISTENT_UNDO */
+
+#if defined(FEAT_CRYPT) || defined(PROTO)
+static char_u *sha256_bytes __ARGS((char_u *buf, int buf_len, char_u *salt, int salt_len));
+static unsigned int get_some_time __ARGS((void));
 
 /*
- * Returns hex digest of "buf[buflen]" in a static array.
+ * Returns hex digest of "buf[buf_len]" in a static array.
+ * if "salt" is not NULL also do "salt[salt_len]".
  */
     static char_u *
-sha256_bytes(buf, buflen)
+sha256_bytes(buf, buf_len, salt, salt_len)
     char_u *buf;
-    int    buflen;
+    int    buf_len;
+    char_u *salt;
+    int    salt_len;
 {
     char_u	     sha256sum[32];
     static char_u    hexit[65];
@@ -288,7 +293,9 @@ sha256_bytes(buf, buflen)
     sha256_self_test();
 
     sha256_start(&ctx);
-    sha256_update(&ctx, buf, buflen);
+    sha256_update(&ctx, buf, buf_len);
+    if (salt != NULL)
+	sha256_update(&ctx, salt, salt_len);
     sha256_finish(&ctx, sha256sum);
     for (j = 0; j < 32; j++)
 	sprintf((char *)hexit + j * 2, "%02x", sha256sum[j]);
@@ -300,14 +307,16 @@ sha256_bytes(buf, buflen)
  * Returns sha256(buf) as 64 hex chars in static array.
  */
     char_u *
-sha256_key(buf)
+sha256_key(buf, salt, salt_len)
     char_u *buf;
+    char_u *salt;
+    int    salt_len;
 {
     /* No passwd means don't encrypt */
     if (buf == NULL || *buf == NUL)
 	return (char_u *)"";
 
-    return sha256_bytes(buf, (int)STRLEN(buf));
+    return sha256_bytes(buf, (int)STRLEN(buf), salt, salt_len);
 }
 
 /*
@@ -354,7 +363,8 @@ sha256_self_test()
 	if (i < 2)
 	{
 	    hexit = sha256_bytes((char_u *)sha_self_test_msg[i],
-					   (int)STRLEN(sha_self_test_msg[i]));
+		    (int)STRLEN(sha_self_test_msg[i]),
+		    NULL, 0);
 	    STRCPY(output, hexit);
 	}
 	else
@@ -380,29 +390,32 @@ sha256_self_test()
     static unsigned int
 get_some_time()
 {
-#ifdef HAVE_GETTIMEOFDAY
+# ifdef HAVE_GETTIMEOFDAY
     struct timeval tv;
 
     /* Using usec makes it less predictable. */
     gettimeofday(&tv, NULL);
     return (unsigned int)(tv.tv_sec + tv.tv_usec);
-#else
+# else
     return (unsigned int)time(NULL);
-#endif
+# endif
 }
 
 /*
  * set header = sha2_seed(random_data);
  */
     void
-sha2_seed(header, header_len)
-    char_u header[];
+sha2_seed(header, header_len, salt, salt_len)
+    char_u *header;
     int    header_len;
+    char_u *salt;
+    int    salt_len;
 {
     int		     i;
     static char_u    random_data[1000];
     char_u	     sha256sum[32];
     context_sha256_T ctx;
+
     srand(get_some_time());
 
     for (i = 0; i < (int)sizeof(random_data) - 1; i++)
@@ -411,8 +424,13 @@ sha2_seed(header, header_len)
     sha256_update(&ctx, (char_u *)random_data, sizeof(random_data));
     sha256_finish(&ctx, sha256sum);
 
+    /* put first block into header. */
     for (i = 0; i < header_len; i++)
 	header[i] = sha256sum[i % sizeof(sha256sum)];
+
+    /* put remaining block into salt. */
+    for (i = 0; i < salt_len; i++)
+	salt[i] = sha256sum[(i + header_len) % sizeof(sha256sum)];
 }
 
-#endif /* FEAT_CRYPT || FEAT_PERSISTENT_UNDO */
+#endif /* FEAT_CRYPT */

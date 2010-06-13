@@ -1,5 +1,5 @@
 ===============================================================================
-= B i e n v e n u e  dans le  T u t o r i e l  de  V I M  -  Version 1.7.fr.1 =
+= B i e n v e n u e  dans le  T u t o r i e l  de  V I M  -  Version 1.7.fr.2 =
 ===============================================================================
 
      Vim est un éditeur très puissant qui a trop de commandes pour pouvoir
@@ -67,7 +67,7 @@ NOTE : Les touches fléchées devraient également fonctionner. Mais en utilisan
   4. Si vous avez mémorisé ces étapes et êtes confiant, effectuez les étapes
      1 à 3 pour sortir puis rentrer dans l'éditeur.
 
-NOTE :  :q! <Entrée> annule tous le changements que vous avez fait. Dans
+NOTE :  :q! <Entrée> annule tous les changements que vous avez fait. Dans
          quelques leçons, vous apprendrez à enregistrer les changements.
 
   5. Déplacez le curseur à la Leçon 1.3.
@@ -401,7 +401,7 @@ NOTE : Le seul appui d'un mouvement en mode Normal, sans commande, déplace le
 
   2. Tapez  dd  pour effacer la ligne et la placer dans un registre de Vim.
 
-  3. Déplacez le curseur sur la ligne c) au dessus où vous voulez remettre la
+  3. Déplacez le curseur sur la ligne c) au-dessus où vous voulez remettre la
      ligne effacée.
 
   4. En mode Normal, tapez   p   pour remettre la ligne en dessous du curseur.
@@ -486,7 +486,7 @@ Notez que  ce  efface le mot et vous place ensuite en mode Insertion.
 ---> La fin de cette ligne doit être rendue identique à la seconde.
 ---> La fin de cette ligne doit être corrigée avec la commande  c$ .
 
-NOTE :  Vous pouvez utilisez la touche Retour Arrière pour corriger les
+NOTE :  Vous pouvez utiliser la touche Retour Arrière pour corriger les
         erreurs lorsque vous tapez.
 
 
@@ -722,14 +722,14 @@ NOTE : L'appui de  v  démarre la sélection Visuelle. Vous pouvez déplacer le
 
         ** Pour insérer le contenu d'un fichier, tapez  :r FICHIER **
 
-  1. Placez le curseur juste au dessus de cette ligne.
+  1. Placez le curseur juste au-dessus de cette ligne.
 
 NOTE :  Après avoir exécuté l'étape 2 vous verrez du texte de la Leçon 5.3.
         Puis déplacez vous vers le bas pour voir cette leçon à nouveau.
 
   2. Maintenant récupérez votre fichier TEST en utilisant la commande  :r TEST
      où TEST est le nom de votre fichier.
-     Le fichier que vous récupérez est placé au dessous de la ligne du curseur.
+     Le fichier que vous récupérez est placé au-dessous de la ligne du curseur.
 
   4. Pour vérifier que le fichier a bien été inséré, remontez et vérifiez
      qu'il y a maintenant deux copies de la Leçon 5.3, l'originale et celle
@@ -779,7 +779,7 @@ NOTE :  Vous pouvez aussi lire la sortie d'une commande externe. Par exemple,
 
 ---> En tapant  o  le curseur se met sur la ligne ouverte, en mode Insertion.
 
-  4. Pour ouvrir une ligne au DESSUS du curseur, tapez simplement un  O
+  4. Pour ouvrir une ligne au-DESSUS du curseur, tapez simplement un  O
      majuscule, plutôt qu'un  o  minuscule. Faites un essai sur la ligne
      ci-dessous.
 
@@ -849,7 +849,7 @@ NOTE : Le mode Remplacement est comme le mode Insertion, mais tous les
 
   3. Tapez  y  pour copier le texte en surbrillance.
 
-  4. Déplacez la curseur à la fin de la ligne suivante :   j$
+  4. Déplacez le curseur à la fin de la ligne suivante :   j$
 
   5. Tapez  p  pour coller le texte. Puis tapez :  un second <Échap> .
 
@@ -893,7 +893,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
 
   1. Taper  o  ouvre une ligne SOUS le curseur et démarre le mode Insertion.
-     Taper  O  ouvre une ligne au DESSUS du curseur.
+     Taper  O  ouvre une ligne au-DESSUS du curseur.
 
   2. Taper  a  pour insérer du texte APRÈS le curseur.
      Taper  A  pour insérer du texte après la fin de ligne.
@@ -985,7 +985,7 @@ NOTE : Si vous voulez ignorer la casse uniquement pour une recherche, utilisez
 
   7  Appuyez  <TAB>. Vim va compléter le nom (s'il est unique).
 
-NOTE : Le complètement fonctionne pour de nombreuse commandes. Essayez
+NOTE : Le complètement fonctionne pour de nombreuses commandes. Essayez
        d'appuyer CTRL-D et <TAB>. C'est utile en particulier pour  :help .
 
 
@@ -1034,5 +1034,5 @@ NOTE : Le complètement fonctionne pour de nombreuse commandes. Essayez
   Dernières mises à jour par Dominique Pellé.
 
   E-mail :      dominique.pelle@gmail.com
-  Last Change : 2008 Nov 23
+  Last Change : 2010 May 23
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

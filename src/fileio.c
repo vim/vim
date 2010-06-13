@@ -37,7 +37,12 @@
 static char	*crypt_magic[] = {"VimCrypt~01!", "VimCrypt~02!"};
 static char	crypt_magic_head[] = "VimCrypt~";
 # define CRYPT_MAGIC_LEN	12		/* must be multiple of 4! */
+
+/* For blowfish, after the magic header, we store 8 bytes of salt and then 8
+ * bytes of seed (initialisation vector). */
+static int	crypt_salt_len[] = {0, 8};
 static int	crypt_seed_len[] = {0, 8};
+#define CRYPT_SALT_LEN_MAX 8
 #define CRYPT_SEED_LEN_MAX 8
 #endif
 
@@ -1441,6 +1446,7 @@ retry:
 	    if ((filesize == 0
 # ifdef FEAT_CRYPT
 		   || (filesize == (CRYPT_MAGIC_LEN
+					   + crypt_salt_len[use_crypt_method]
 					   + crypt_seed_len[use_crypt_method])
 							  && cryptkey != NULL)
 # endif
@@ -2488,7 +2494,9 @@ failed:
 #ifdef FEAT_CRYPT
 	    if (cryptkey != NULL)
 		msg_add_lines(c, (long)linecnt, filesize
-			- CRYPT_MAGIC_LEN - crypt_seed_len[use_crypt_method]);
+			- CRYPT_MAGIC_LEN
+			- crypt_salt_len[use_crypt_method]
+			- crypt_seed_len[use_crypt_method]);
 	    else
 #endif
 		msg_add_lines(c, (long)linecnt, filesize);
@@ -2841,7 +2849,7 @@ get_crypt_method(ptr, len)
 
     for (i = 0; i < (int)(sizeof(crypt_magic) / sizeof(crypt_magic[0])); i++)
     {
-	if (len < (CRYPT_MAGIC_LEN + crypt_seed_len[i]))
+	if (len < (CRYPT_MAGIC_LEN + crypt_salt_len[i] + crypt_seed_len[i]))
 	    continue;
 	if (memcmp(ptr, crypt_magic[i], CRYPT_MAGIC_LEN) == 0)
 	    return i;
@@ -2903,19 +2911,20 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, did_ask)
 	if (cryptkey != NULL)
 	{
 	    int seed_len = crypt_seed_len[method];
+	    int salt_len = crypt_salt_len[method];
 
 	    if (method == 0)
 		crypt_init_keys(cryptkey);
 	    else
 	    {
-		bf_key_init(cryptkey);
-		bf_ofb_init(ptr + CRYPT_MAGIC_LEN, seed_len);
+		bf_key_init(cryptkey, ptr + CRYPT_MAGIC_LEN, salt_len);
+		bf_ofb_init(ptr + CRYPT_MAGIC_LEN + salt_len, seed_len);
 	    }
 
 	    /* Remove magic number from the text */
-	    *filesizep += CRYPT_MAGIC_LEN + seed_len;
-	    *sizep -= CRYPT_MAGIC_LEN + seed_len;
-	    mch_memmove(ptr, ptr + CRYPT_MAGIC_LEN + seed_len, (size_t)*sizep);
+	    *filesizep += CRYPT_MAGIC_LEN + salt_len + seed_len;
+	    *sizep -= CRYPT_MAGIC_LEN + salt_len + seed_len;
+	    mch_memmove(ptr, ptr + CRYPT_MAGIC_LEN + salt_len + seed_len, (size_t)*sizep);
 	}
     }
     /* When starting to edit a new file which does not have encryption, clear
@@ -2935,12 +2944,15 @@ prepare_crypt_read(fp)
     FILE	*fp;
 {
     int		method;
-    char_u	buffer[CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2];
+    char_u	buffer[CRYPT_MAGIC_LEN + CRYPT_SALT_LEN_MAX
+						    + CRYPT_SEED_LEN_MAX + 2];
 
     if (fread(buffer, CRYPT_MAGIC_LEN, 1, fp) != 1)
 	return FAIL;
     method = get_crypt_method((char *)buffer,
-					CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX);
+					CRYPT_MAGIC_LEN +
+                                        CRYPT_SEED_LEN_MAX +
+                                        CRYPT_SALT_LEN_MAX);
     if (method < 0 || method != curbuf->b_p_cm)
 	return FAIL;
 
@@ -2948,12 +2960,13 @@ prepare_crypt_read(fp)
 	crypt_init_keys(curbuf->b_p_key);
     else
     {
+	int salt_len = crypt_salt_len[method];
 	int seed_len = crypt_seed_len[method];
 
-	if (fread(buffer, seed_len, 1, fp) != 1)
+	if (fread(buffer, salt_len + seed_len, 1, fp) != 1)
 	    return FAIL;
-	bf_key_init(curbuf->b_p_key);
-	bf_ofb_init(buffer, seed_len);
+	bf_key_init(curbuf->b_p_key, buffer, salt_len);
+	bf_ofb_init(buffer + salt_len, seed_len);
     }
     return OK;
 }
@@ -2969,8 +2982,12 @@ prepare_crypt_write(buf, lenp)
 {
     char_u  *header;
     int	    seed_len = crypt_seed_len[buf->b_p_cm];
+    int     salt_len = crypt_salt_len[buf->b_p_cm];
+    char_u  *salt;
+    char_u  *seed;
 
-    header = alloc_clear(CRYPT_MAGIC_LEN + CRYPT_SEED_LEN_MAX + 2);
+    header = alloc_clear(CRYPT_MAGIC_LEN + CRYPT_SALT_LEN_MAX
+						    + CRYPT_SEED_LEN_MAX + 2);
     if (header != NULL)
     {
 	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
@@ -2980,15 +2997,19 @@ prepare_crypt_write(buf, lenp)
 	    crypt_init_keys(buf->b_p_key);
 	else
 	{
-	    /* Using blowfish, add seed. */
-	    sha2_seed(header + CRYPT_MAGIC_LEN, seed_len); /* create iv */
-	    bf_ofb_init(header + CRYPT_MAGIC_LEN, seed_len);
-	    bf_key_init(buf->b_p_key);
+	    /* Using blowfish, add salt and seed. */
+	    salt = header + CRYPT_MAGIC_LEN;
+	    seed = salt + salt_len;
+	    sha2_seed(salt, salt_len, seed, seed_len);
+	    bf_key_init(buf->b_p_key, salt, salt_len);
+	    bf_ofb_init(seed, seed_len);
 	}
     }
-    *lenp = CRYPT_MAGIC_LEN + seed_len;
+    *lenp = CRYPT_MAGIC_LEN + salt_len + seed_len;
     return header;
 }
+
+#endif  /* FEAT_CRYPT */
 
 /*
  * Like fwrite() but crypt the bytes when 'key' is set.
@@ -2996,11 +3017,12 @@ prepare_crypt_write(buf, lenp)
  */
     size_t
 fwrite_crypt(buf, ptr, len, fp)
-    buf_T	*buf;
+    buf_T	*buf UNUSED;
     char_u	*ptr;
     size_t	len;
     FILE	*fp;
 {
+#ifdef FEAT_CRYPT
     char_u  *copy;
     char_u  small_buf[100];
     size_t  i;
@@ -3020,6 +3042,9 @@ fwrite_crypt(buf, ptr, len, fp)
     if (copy != small_buf)
 	vim_free(copy);
     return i;
+#else
+    return fwrite(ptr, len, (size_t)1, fp);
+#endif
 }
 
 /*
@@ -3028,19 +3053,20 @@ fwrite_crypt(buf, ptr, len, fp)
  */
     char_u *
 read_string_decrypt(buf, fd, len)
-    buf_T   *buf;
+    buf_T   *buf UNUSED;
     FILE    *fd;
     int	    len;
 {
     char_u  *ptr;
 
     ptr = read_string(fd, len);
+#ifdef FEAT_CRYPT
     if (ptr != NULL || *buf->b_p_key != NUL)
 	crypt_decode(ptr, len);
+#endif
     return ptr;
 }
 
-#endif  /* FEAT_CRYPT */
 
 #ifdef UNIX
     static void

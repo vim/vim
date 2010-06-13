@@ -7363,7 +7363,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When not empty all messages are written in a file with this name.
 	When the file exists messages are appended.
 	Writing to the file ends when Vim exits or when 'verbosefile' is made
-	empty.
+	empty.  Writes are buffered, thus may not show up for some time.
 	Setting 'verbosefile' to a new value is like making it empty first.
 	The difference with |:redir| is that verbose messages are not
 	displayed when 'verbosefile' is set.

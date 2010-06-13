@@ -30,9 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-gtk_selection_clear_targets not available in GTK1 (Patrick Texier)
-Use #ifdefs to use old code for GTK1.
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
@@ -1088,7 +1085,6 @@ restored. (Luc St-Louis)
 
 
 Vim 7.3:
-- crash when reloading file. (Namsh, 2010 Jun 11)
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
