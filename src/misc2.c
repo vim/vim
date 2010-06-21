@@ -3746,6 +3746,59 @@ static ulg keys[3]; /* keys defining the pseudo-random sequence */
     keys[2] = CRC32(keys[2], (int)(keys[1] >> 24)); \
 }
 
+static int crypt_busy = 0;
+static ulg saved_keys[3];
+static int saved_crypt_method;
+
+/*
+ * Prepare for initializing encryption.  If already doing encryption then save
+ * the state.
+ * Must always be called symmetrycally with crypt_pop_state().
+ */
+    void
+crypt_push_state()
+{
+    if (crypt_busy == 1)
+    {
+	/* save the state */
+	if (use_crypt_method == 0)
+	{
+	    saved_keys[0] = keys[0];
+	    saved_keys[1] = keys[1];
+	    saved_keys[2] = keys[2];
+	}
+	else
+	    bf_crypt_save();
+	saved_crypt_method = use_crypt_method;
+    }
+    else if (crypt_busy > 1)
+	EMSG2(_(e_intern2), "crypt_push_state()");
+    ++crypt_busy;
+}
+
+/*
+ * End encryption.  If doing encryption before crypt_push_state() then restore
+ * the saved state.
+ * Must always be called symmetrycally with crypt_push_state().
+ */
+    void
+crypt_pop_state()
+{
+    --crypt_busy;
+    if (crypt_busy == 1)
+    {
+	use_crypt_method = saved_crypt_method;
+	if (use_crypt_method == 0)
+	{
+	    keys[0] = saved_keys[0];
+	    keys[1] = saved_keys[1];
+	    keys[2] = saved_keys[2];
+	}
+	else
+	    bf_crypt_restore();
+    }
+}
+
 /*
  * Encrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
@@ -3894,6 +3947,8 @@ get_crypt_key(store, twice)
 
     /* since the user typed this, no need to wait for return */
     need_wait_return = FALSE;
+    if (msg_didout)
+	msg_putchar('\n');
     msg_didout = FALSE;
 
     free_crypt_key(p2);

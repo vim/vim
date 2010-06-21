@@ -595,7 +595,7 @@ main
      */
     if (recoverymode && fname == NULL)
     {
-	recover_names(NULL, TRUE, 0);
+	recover_names(NULL, TRUE, 0, NULL);
 	mch_exit(0);
     }
 

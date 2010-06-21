@@ -119,9 +119,9 @@ Help on help files					*helphelp*
 							*:lh* *:lhelpgrep*
 :lh[elpgrep] {pattern}[@xx]
 			Same as ":helpgrep", except the location list is used
-			instead of the quickfix list. If the help window is
+			instead of the quickfix list.  If the help window is
 			already opened, then the location list for that window
-			is used. Otherwise, a new help window is opened and
+			is used.  Otherwise, a new help window is opened and
 			the location list for that window is set.  The
 			location list for the current window is not changed.
 
@@ -281,9 +281,9 @@ The first line in a help file should have the following format:
 
 *helpfile_name.txt*	For Vim version 7.3	Last change: 2010 June 4
 
-The first field is a link to the help file name. The second field describes
-the applicable Vim version. The last field specifies the last modification
-date of the file. Each field is separated by a tab.
+The first field is a link to the help file name.  The second field describes
+the applicable Vim version.  The last field specifies the last modification
+date of the file.  Each field is separated by a tab.
 
 At the bottom of the help file, place a Vim modeline to set the 'textwidth'
 and 'tabstop' options and the 'filetype' to 'help'.  Never set a global option
@@ -295,30 +295,30 @@ TAGS
 
 To define a help tag, place the name between asterisks (*tag-name*).  The
 tag-name should be different from all the Vim help tag names and ideally
-should begin with the name of the Vim plugin. The tag name is usually right
+should begin with the name of the Vim plugin.  The tag name is usually right
 aligned on a line.
 
 When referring to an existing help tag and to create a hot-link, place the
 name between two bars (|) eg. |help-writing|.
 
 When referring to a Vim option in the help file, place the option name between
-two single quotes. eg. 'statusline'
+two single quotes, eg. 'statusline'
 
 
 HIGHLIGHTING
 
-To define a column heading, use a tilde character at the end of the line. This
-will highlight the column heading in a different color. E.g.
+To define a column heading, use a tilde character at the end of the line.
+This will highlight the column heading in a different color.  E.g.
 
 Column heading~
 
 To separate sections in a help file, place a series of '=' characters in a
-line starting from the first column. The section separator line is highlighted
+line starting from the first column.  The section separator line is highlighted
 differently.
 
 To quote a block of ex-commands verbatim, place a greater than (>) character
 at the end of the line before the block and a less than (<) character as the
-first non-blank on a line following the block. Any line starting in column 1
+first non-blank on a line following the block.  Any line starting in column 1
 also implicitly stops the block of ex-commands before it.  E.g. >
     function Example_Func()
 	echo "Example"

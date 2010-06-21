@@ -402,7 +402,8 @@ get_some_time()
 }
 
 /*
- * set header = sha2_seed(random_data);
+ * Fill "header[header_len]" with random_data.
+ * Also "salt[salt_len]" when "salt" is not NULL.
  */
     void
 sha2_seed(header, header_len, salt, salt_len)
@@ -429,8 +430,9 @@ sha2_seed(header, header_len, salt, salt_len)
 	header[i] = sha256sum[i % sizeof(sha256sum)];
 
     /* put remaining block into salt. */
-    for (i = 0; i < salt_len; i++)
-	salt[i] = sha256sum[(i + header_len) % sizeof(sha256sum)];
+    if (salt != NULL)
+	for (i = 0; i < salt_len; i++)
+	    salt[i] = sha256sum[(i + header_len) % sizeof(sha256sum)];
 }
 
 #endif /* FEAT_CRYPT */

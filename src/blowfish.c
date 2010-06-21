@@ -436,13 +436,7 @@ bf_key_init(password, salt, salt_len)
         key[i] = j;
     }
 
-    for (i = 0; i < 256; ++i)
-    {
-	sbx[0][i] = sbi[0][i];
-	sbx[1][i] = sbi[1][i];
-	sbx[2][i] = sbi[2][i];
-	sbx[3][i] = sbi[3][i];
-    }
+    mch_memmove(sbx, sbi, 4 * 4 * 256);
 
     for (i = 0; i < 18; ++i)
     {
@@ -653,6 +647,40 @@ bf_crypt_init_keys(passwd)
     {
 	BF_OFB_UPDATE(*p);
     }
+}
+
+static int save_randbyte_offset;
+static int save_update_offset;
+static char_u save_ofb_buffer[BF_OFB_LEN];
+static UINT32_T save_pax[18];
+static UINT32_T save_sbx[4][256];
+
+/*
+ * Save the current crypt state.  Can only be used once before
+ * bf_crypt_restore().
+ */
+    void
+bf_crypt_save()
+{
+    save_randbyte_offset = randbyte_offset;
+    save_update_offset = update_offset;
+    mch_memmove(save_ofb_buffer, ofb_buffer, BF_OFB_LEN);
+    mch_memmove(save_pax, pax, 4 * 18);
+    mch_memmove(save_sbx, sbx, 4 * 4 * 256);
+}
+
+/*
+ * Restore the current crypt state.  Can only be used after
+ * bf_crypt_save().
+ */
+    void
+bf_crypt_restore()
+{
+    randbyte_offset = save_randbyte_offset;
+    update_offset = save_update_offset;
+    mch_memmove(ofb_buffer, save_ofb_buffer, BF_OFB_LEN);
+    mch_memmove(pax, save_pax, 4 * 18);
+    mch_memmove(sbx, save_sbx, 4 * 4 * 256);
 }
 
 /*

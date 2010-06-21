@@ -1564,6 +1564,10 @@ EXTERN short disallow_gui	INIT(= FALSE);
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
+#ifdef FEAT_CRYPT
+EXTERN char need_key_msg[] INIT(= N_("Need encryption key for \"%s\""));
+#endif
+
 /*
  * Comms. with the session manager (XSMP)
  */

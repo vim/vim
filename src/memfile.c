@@ -85,6 +85,7 @@ static void mf_ins_free __ARGS((memfile_T *, bhdr_T *));
 static bhdr_T *mf_rem_free __ARGS((memfile_T *));
 static int  mf_read __ARGS((memfile_T *, bhdr_T *));
 static int  mf_write __ARGS((memfile_T *, bhdr_T *));
+static int  mf_write_block __ARGS((memfile_T *mfp, bhdr_T *hp, off_t offset, unsigned size));
 static int  mf_trans_add __ARGS((memfile_T *, bhdr_T *));
 static void mf_do_open __ARGS((memfile_T *, char_u *, int));
 
@@ -161,6 +162,9 @@ mf_open(fname, flags)
 	mfp->mf_trans[i] = NULL;	/* trans lists are empty */
     }
     mfp->mf_page_size = MEMFILE_PAGE_SIZE;
+#ifdef FEAT_CRYPT
+    mfp->mf_old_key = NULL;
+#endif
 
 #ifdef USE_FSTATFS
     /*
@@ -422,7 +426,7 @@ mf_new(mfp, negative, page_count)
 }
 
 /*
- * get existing block 'nr' with 'page_count' pages
+ * Get existing block "nr" with "page_count" pages.
  *
  * Note: The caller should first check a negative nr with mf_trans_del()
  */
@@ -1050,6 +1054,13 @@ mf_read(mfp, hp)
 	PERROR(_("E295: Read error in swap file"));
 	return FAIL;
     }
+
+#ifdef FEAT_CRYPT
+    /* Decrypt if 'key' is set and this is a data block. */
+    if (*mfp->mf_buffer->b_p_key != NUL)
+	ml_decrypt_data(mfp, hp->bh_data, offset, size);
+#endif
+
     return OK;
 }
 
@@ -1107,8 +1118,7 @@ mf_write(mfp, hp)
 	else
 	    page_count = hp2->bh_page_count;
 	size = page_size * page_count;
-	if ((unsigned)vim_write(mfp->mf_fd,
-	     (hp2 == NULL ? hp : hp2)->bh_data, size) != size)
+	if (mf_write_block(mfp, hp2 == NULL ? hp : hp2, offset, size) == FAIL)
 	{
 	    /*
 	     * Avoid repeating the error message, this mostly happens when the
@@ -1134,6 +1144,42 @@ mf_write(mfp, hp)
 }
 
 /*
+ * Write block "hp" with data size "size" to file "mfp->mf_fd".
+ * Takes care of encryption.
+ * Return FAIL or OK.
+ */
+    static int
+mf_write_block(mfp, hp, offset, size)
+    memfile_T	*mfp;
+    bhdr_T	*hp;
+    off_t	offset UNUSED;
+    unsigned	size;
+{
+    char_u	*data = hp->bh_data;
+    int		result = OK;
+
+#ifdef FEAT_CRYPT
+    /* Encrypt if 'key' is set and this is a data block. */
+    if (*mfp->mf_buffer->b_p_key != NUL)
+    {
+	data = ml_encrypt_data(mfp, data, offset, size);
+	if (data == NULL)
+	    return FAIL;
+    }
+#endif
+
+    if ((unsigned)vim_write(mfp->mf_fd, data, size) != size)
+	result = FAIL;
+
+#ifdef FEAT_CRYPT
+    if (data != hp->bh_data)
+	vim_free(data);
+#endif
+
+    return result;
+}
+
+/*
  * Make block number for *hp positive and add it to the translation list
  *
  * Return FAIL for failure, OK otherwise
@@ -1156,7 +1202,7 @@ mf_trans_add(mfp, hp)
 	return FAIL;
 
 /*
- * get a new number for the block.
+ * Get a new number for the block.
  * If the first item in the free list has sufficient pages, use its number
  * Otherwise use mf_blocknr_max.
  */

@@ -80,6 +80,8 @@ int illegal_slash __ARGS((char *name));
 char_u *parse_shape_opt __ARGS((int what));
 int get_shape_idx __ARGS((int mouse));
 void update_mouseshape __ARGS((int shape_idx));
+void crypt_push_state __ARGS((void));
+void crypt_pop_state __ARGS((void));
 void crypt_encode __ARGS((char_u *from, size_t len, char_u *to));
 void crypt_decode __ARGS((char_u *ptr, long len));
 void crypt_init_keys __ARGS((char_u *passwd));

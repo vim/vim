@@ -886,7 +886,10 @@ serialize_header(fp, buf, hash)
 	len = (int)fwrite(header, (size_t)header_len, (size_t)1, fp);
 	vim_free(header);
 	if (len != 1)
+	{
+	    crypt_pop_state();
 	    return FAIL;
+	}
     }
     else
 #endif
@@ -1240,6 +1243,9 @@ u_write_undo(name, forceit, buf, hash)
     struct stat	st_old;
     struct stat	st_new;
 #endif
+#ifdef FEAT_CRYPT
+    int		do_crypt = FALSE;
+#endif
 
     if (name == NULL)
     {
@@ -1397,6 +1403,10 @@ u_write_undo(name, forceit, buf, hash)
      */
     if (serialize_header(fp, buf, hash) == FAIL)
 	goto write_error;
+#ifdef FEAT_CRYPT
+    if (*buf->b_p_key)
+	do_crypt = TRUE;
+#endif
 
     /*
      * Iteratively serialize UHPs and their UEPs from the top down.
@@ -1462,6 +1472,10 @@ write_error:
 #endif
 
 theend:
+#ifdef FEAT_CRYPT
+    if (do_crypt)
+	crypt_pop_state();
+#endif
     if (file_name != name)
 	vim_free(file_name);
 }
@@ -1504,6 +1518,9 @@ u_read_undo(name, hash, orig_name)
 #ifdef UNIX
     struct stat	st_orig;
     struct stat	st_undo;
+#endif
+#ifdef FEAT_CRYPT
+    int		do_decrypt = FALSE;
 #endif
 
     if (name == NULL)
@@ -1572,6 +1589,7 @@ u_read_undo(name, hash, orig_name)
 	    EMSG2(_("E826: Undo file decryption failed: %s"), file_name);
 	    goto error;
 	}
+	do_decrypt = TRUE;
 #else
         EMSG2(_("E827: Undo file is encrypted: %s"), file_name);
         goto error;
@@ -1776,6 +1794,10 @@ error:
     }
 
 theend:
+#ifdef FEAT_CRYPT
+    if (do_decrypt)
+	crypt_pop_state();
+#endif
     if (fp != NULL)
         fclose(fp);
     if (file_name != name)

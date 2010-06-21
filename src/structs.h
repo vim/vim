@@ -392,7 +392,7 @@ struct block_hdr
     bhdr_T	*bh_prev;	    /* previous block_hdr in used list */
     bhdr_T	*bh_hash_next;	    /* next block_hdr in hash list */
     bhdr_T	*bh_hash_prev;	    /* previous block_hdr in hash list */
-    blocknr_T	bh_bnum;		/* block number */
+    blocknr_T	bh_bnum;	    /* block number */
     char_u	*bh_data;	    /* pointer to memory (for used block) */
     int		bh_page_count;	    /* number of pages in this block */
 
@@ -491,12 +491,15 @@ typedef struct
 # endif
 } cmdmod_T;
 
+typedef struct file_buffer buf_T;  /* forward declaration */
+
 /*
  * Simplistic hashing scheme to quickly locate the blocks in the used list.
  * 64 blocks are found directly (64 * 4K = 256K, most files are smaller).
  */
 #define MEMHASHSIZE	64
 #define MEMHASH(nr)	((nr) & (MEMHASHSIZE - 1))
+#define MF_SEED_LEN	8
 
 struct memfile
 {
@@ -516,6 +519,16 @@ struct memfile
     blocknr_T	mf_infile_count;	/* number of pages in the file */
     unsigned	mf_page_size;		/* number of bytes in a page */
     int		mf_dirty;		/* TRUE if there are dirty blocks */
+#ifdef FEAT_CRYPT
+    buf_T	*mf_buffer;		/* bufer this memfile is for */
+    char_u	mf_seed[MF_SEED_LEN];	/* seed for encryption */
+
+    /* Values for key, method and seed used for reading data blocks when
+     * updating for a newly set key or method. Only when mf_old_key != NULL. */
+    char_u	*mf_old_key;
+    int		mf_old_cm;
+    char_u	mf_old_seed[MF_SEED_LEN];
+#endif
 };
 
 /*
@@ -1228,8 +1241,6 @@ typedef struct {
  * A buffer is unallocated if there is no memfile for it.
  * A buffer is new if the associated file has never been loaded yet.
  */
-
-typedef struct file_buffer buf_T;
 
 struct file_buffer
 {

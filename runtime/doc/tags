@@ -2577,6 +2577,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :read!	insert.txt	/*:read!*
 :rec	recover.txt	/*:rec*
 :recover	recover.txt	/*:recover*
+:recover-crypt	recover.txt	/*:recover-crypt*
 :red	undo.txt	/*:red*
 :redi	various.txt	/*:redi*
 :redir	various.txt	/*:redir*
@@ -6914,7 +6915,6 @@ os_unix.txt	os_unix.txt	/*os_unix.txt*
 os_vms.txt	os_vms.txt	/*os_vms.txt*
 os_win32.txt	os_win32.txt	/*os_win32.txt*
 other-features	vi_diff.txt	/*other-features*
-ownsyntax	eval.txt	/*ownsyntax*
 p	change.txt	/*p*
 page-down	intro.txt	/*page-down*
 page-up	intro.txt	/*page-up*
@@ -8220,7 +8220,7 @@ vt100-cursor-keys	term.txt	/*vt100-cursor-keys*
 vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
-w:ownsyntax-variable	eval.txt	/*w:ownsyntax-variable*
+w:current_syntax	syntax.txt	/*w:current_syntax*
 w:var	eval.txt	/*w:var*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 white-space	pattern.txt	/*white-space*

@@ -5969,13 +5969,18 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	}
     }
 
-#if defined(FEAT_CRYPT) && defined(FEAT_CMDHIST)
+#if defined(FEAT_CRYPT)
     /* 'cryptkey' */
     else if (gvarp == &p_key)
     {
+# if defined(FEAT_CMDHIST)
 	/* Make sure the ":set" command doesn't show the new value in the
 	 * history. */
 	remove_key_from_history();
+# endif
+	if (STRCMP(curbuf->b_p_key, oldval) != 0)
+	    /* Need to update the swapfile. */
+	    ml_set_crypt_key(curbuf, oldval, curbuf->b_p_cm);
     }
 #endif
 
@@ -7941,15 +7946,19 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	if (curbuf->b_p_cm < 0)
 	{
 	    errmsg = e_positive;
-	    curbuf->b_p_cm = 0;
+	    curbuf->b_p_cm = old_value;
 	}
 	if (curbuf->b_p_cm > 1)
 	{
 	    errmsg = e_invarg;
-	    curbuf->b_p_cm = 1;
+	    curbuf->b_p_cm = old_value;
 	}
 	if (curbuf->b_p_cm > 0 && blowfish_self_test() == FAIL)
-	    curbuf->b_p_cm = 0;
+	    curbuf->b_p_cm = old_value;
+
+	if (curbuf->b_p_cm != old_value && *curbuf->b_p_key != NUL)
+	    /* Need to update the swapfile. */
+	    ml_set_crypt_key(curbuf, curbuf->b_p_key, old_value);
     }
 #endif
 

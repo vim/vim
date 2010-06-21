@@ -1304,13 +1304,15 @@ load_window(
     }
     else
     {
+#ifdef FEAT_WINDOWS
 	/* buf is in a window */
 	if (win != curwin)
 	{
 	    win_enter(win, False);
-	    /* wsdebug("load_window: window endter %s\n",
+	    /* wsdebug("load_window: window enter %s\n",
 		    win->w_buffer->b_sfname); */
 	}
+#endif
 	if (lnum > 0 && win->w_cursor.lnum != lnum)
 	{
 	    warp_to_pc(lnum);
