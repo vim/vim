@@ -1088,12 +1088,6 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Also crypt the swap file, each block separately:
-    - When changing the password or 'cryptmethod' need to read back with the
-      old password and write again with the new one.
-      Problem: when the file is not written, key differs between text file and
-      swap file!
-- Patch for :ownsyntax completion (Dominique Pelle, 2010 Jun 20)
 - Patch for conceal feature and 'foldcolumn'. (Dominique Pelle, 2010 Jun 10,
   second patch)
   Also patch from Vince, 2010 Jun 15.  And another June 16.

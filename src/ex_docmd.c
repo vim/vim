@@ -3803,6 +3803,11 @@ set_one_cmd_context(xp, buff)
 	    xp->xp_pattern = arg;
 	    break;
 
+	case CMD_ownsyntax:
+	    xp->xp_context = EXPAND_FILETYPE;
+	    xp->xp_pattern = arg;
+	    break;
+
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_GETTEXT) || defined(FEAT_MBYTE))
 	case CMD_language:

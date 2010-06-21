@@ -4108,6 +4108,7 @@ addstar(fname, len, context)
 	if (context == EXPAND_HELP
 		|| context == EXPAND_COLORS
 		|| context == EXPAND_COMPILER
+		|| context == EXPAND_FILETYPE
 		|| (context == EXPAND_TAGS && fname[0] == '/'))
 	    retval = vim_strnsave(fname, len);
 	else
@@ -4489,6 +4490,8 @@ ExpandFromContext(xp, pat, num_file, file, options)
 	return ExpandRTDir(pat, num_file, file, "colors");
     if (xp->xp_context == EXPAND_COMPILER)
 	return ExpandRTDir(pat, num_file, file, "compiler");
+    if (xp->xp_context == EXPAND_FILETYPE)
+	return ExpandRTDir(pat, num_file, file, "syntax");
 # if defined(FEAT_USR_CMDS) && defined(FEAT_EVAL)
     if (xp->xp_context == EXPAND_USER_LIST)
 	return ExpandUserList(xp, num_file, file);
@@ -4928,15 +4931,15 @@ ExpandUserList(xp, num_file, file)
 #endif
 
 /*
- * Expand color scheme names: 'runtimepath'/colors/{pat}.vim
- * or compiler names.
+ * Expand color scheme, compiler or filetype names:
+ * 'runtimepath'/{dirname}/{pat}.vim
  */
     static int
 ExpandRTDir(pat, num_file, file, dirname)
     char_u	*pat;
     int		*num_file;
     char_u	***file;
-    char	*dirname;	/* "colors" or "compiler" */
+    char	*dirname;	/* "colors", "compiler" or "syntax" */
 {
     char_u	*all;
     char_u	*s;

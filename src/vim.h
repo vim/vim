@@ -769,6 +769,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_SIGN		34
 #define EXPAND_PROFILE		35
 #define EXPAND_BEHAVE		36
+#define EXPAND_FILETYPE		37
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
@@ -1556,7 +1557,7 @@ typedef unsigned short disptick_T;	/* display tick type */
 
 /*
  * Well, you won't believe it, but some S/390 machines ("host", now also known
- * as zServer) us 31 bit pointers. There are also some newer machines, that
+ * as zServer) use 31 bit pointers. There are also some newer machines, that
  * use 64 bit pointers. I don't know how to distinguish between 31 and 64 bit
  * machines, so the best way is to assume 31 bits whenever we detect OS/390
  * Unix.
