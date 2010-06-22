@@ -1088,11 +1088,8 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Patch for conceal feature and 'foldcolumn'. (Dominique Pelle, 2010 Jun 10,
-  second patch)
-  Also patch from Vince, 2010 Jun 15.  And another June 16.
+- Patch for conceal from Vince, 2010 Jun 15.  And another June 16.
   However: more generic patch on the way.
-- patch for conceal feature and 'modifiable'. (Dominique Pelle, 2010 Jun 9)
 - undofile: keep markers where the file was written/read, so that it's easy to
   go back to a saved version of the file:  ":earlier 1f" (f for file)?
   Also add ":earlier 1d" (d for day).

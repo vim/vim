@@ -7334,12 +7334,21 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 #endif
     }
 
-#ifdef FEAT_TITLE
-    /* when 'modifiable' is changed, redraw the window title */
+#if defined(FEAT_TITLE) || defined(FEAT_CONCEAL)
+    /* when 'modifiable' is changed, redraw the window title and
+     * update current line for concealable items */
     else if ((int *)varp == &curbuf->b_p_ma)
     {
+# ifdef FEAT_TITLE
 	redraw_titles();
+# endif
+# ifdef FEAT_CONCEAL
+	if (curwin->w_p_conceal)
+	    update_single_line(curwin, curwin->w_cursor.lnum);
+# endif
     }
+#endif
+#ifdef FEAT_TITLE
     /* when 'endofline' is changed, redraw the window title */
     else if ((int *)varp == &curbuf->b_p_eol)
     {
@@ -8443,7 +8452,7 @@ findoption(arg)
 get_option_value(name, numval, stringval, opt_flags)
     char_u	*name;
     long	*numval;
-    char_u	**stringval;	    /* NULL when only checking existance */
+    char_u	**stringval;	    /* NULL when only checking existence */
     int		opt_flags;
 {
     int		opt_idx;

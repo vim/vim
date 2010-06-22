@@ -595,7 +595,7 @@ update_single_line(wp, lnum)
     int		j;
 
     if (lnum >= wp->w_topline && lnum < wp->w_botline
-					  && foldedCount(wp, lnum, NULL) == 0)
+				 && foldedCount(wp, lnum, &win_foldinfo) == 0)
     {
 # ifdef FEAT_GUI
 	/* Remove the cursor before starting to do anything, because scrolling
