@@ -467,11 +467,15 @@ clip_own_selection(cbd)
      * Also want to check somehow that we are reading from the keyboard rather
      * than a mapping etc.
      */
-    if (!cbd->owned && cbd->available)
-    {
-	cbd->owned = (clip_gen_own_selection(cbd) == OK);
 #ifdef FEAT_X11
-	if (cbd == &clip_star)
+    /* Always own the selection, we might have lost it without being
+     * notified. */
+    if (cbd->available)
+    {
+	int was_owned = cbd->owned;
+
+	cbd->owned = (clip_gen_own_selection(cbd) == OK);
+	if (!was_owned && cbd == &clip_star)
 	{
 	    /* May have to show a different kind of highlighting for the
 	     * selected area.  There is no specific redraw command for this,
@@ -483,8 +487,12 @@ clip_own_selection(cbd)
 		    && hl_attr(HLF_V) != hl_attr(HLF_VNC))
 		redraw_curbuf_later(INVERTED_ALL);
 	}
-#endif
     }
+#else
+    /* Only own the clibpard when we didn't own it yet. */
+    if (!cbd->owned && cbd->available)
+	cbd->owned = (clip_gen_own_selection(cbd) == OK);
+#endif
 }
 
     void
@@ -1967,6 +1975,7 @@ static Atom	vimenc_atom;	/* Vim's extended selection format */
 static Atom	compound_text_atom;
 static Atom	text_atom;
 static Atom	targets_atom;
+static Atom	timestamp_atom;	/* Used to get a timestamp */
 
     void
 x11_setup_atoms(dpy)
@@ -1978,14 +1987,69 @@ x11_setup_atoms(dpy)
 #endif
     compound_text_atom = XInternAtom(dpy, "COMPOUND_TEXT", False);
     text_atom	       = XInternAtom(dpy, "TEXT",	   False);
-    targets_atom       = XInternAtom(dpy, "TARGETS",       False);
+    targets_atom       = XInternAtom(dpy, "TARGETS",	   False);
     clip_star.sel_atom = XA_PRIMARY;
-    clip_plus.sel_atom = XInternAtom(dpy, "CLIPBOARD",     False);
+    clip_plus.sel_atom = XInternAtom(dpy, "CLIPBOARD",	   False);
+    timestamp_atom     = XInternAtom(dpy, "TIMESTAMP",	   False);
 }
 
 /*
  * X Selection stuff, for cutting and pasting text to other windows.
  */
+
+static Boolean	clip_x11_convert_selection_cb __ARGS((Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *));
+
+static void  clip_x11_lose_ownership_cb __ARGS((Widget, Atom *));
+
+static void clip_x11_timestamp_cb __ARGS((Widget w, XtPointer n, XEvent *event, Boolean *cont));
+
+/*
+ * Property callback to get a timestamp for XtOwnSelection.
+ */
+    static void
+clip_x11_timestamp_cb(w, n, event, cont)
+    Widget	w;
+    XtPointer	n UNUSED;
+    XEvent	*event;
+    Boolean	*cont UNUSED;
+{
+    Atom	    actual_type;
+    int		    format;
+    unsigned  long  nitems, bytes_after;
+    unsigned char   *prop=NULL;
+    XPropertyEvent  *xproperty=&event->xproperty;
+
+    /* Must be a property notify, state can't be Delete (True), has to be
+     * one of the supported selection types. */
+    if (event->type != PropertyNotify || xproperty->state
+	    || (xproperty->atom != clip_star.sel_atom
+				    && xproperty->atom != clip_plus.sel_atom))
+	return;
+
+    if (XGetWindowProperty(xproperty->display, xproperty->window,
+	  xproperty->atom, 0, 0, False, timestamp_atom, &actual_type, &format,
+						&nitems, &bytes_after, &prop))
+	return;
+
+    if (prop)
+	XFree(prop);
+
+    /* Make sure the property type is "TIMESTAMP" and it's 32 bits. */
+    if (actual_type != timestamp_atom || format != 32)
+	return;
+
+    /* Get the selection, using the event timestamp. */
+    XtOwnSelection(w, xproperty->atom, xproperty->time,
+	    clip_x11_convert_selection_cb, clip_x11_lose_ownership_cb, NULL);
+}
+
+    void
+x11_setup_selection(w)
+    Widget	w;
+{
+    XtAddEventHandler(w, PropertyChangeMask, False,
+	    /*(XtEventHandler)*/clip_x11_timestamp_cb, (XtPointer)NULL);
+}
 
 static void  clip_x11_request_selection_cb __ARGS((Widget, XtPointer, Atom *, Atom *, XtPointer, long_u *, int *));
 
@@ -2186,8 +2250,6 @@ clip_x11_request_selection(myShell, dpy, cbd)
     yank_cut_buffer0(dpy, cbd);
 }
 
-static Boolean	clip_x11_convert_selection_cb __ARGS((Widget, Atom *, Atom *, Atom *, XtPointer *, long_u *, int *));
-
     static Boolean
 clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
     Widget	w UNUSED;
@@ -2315,8 +2377,6 @@ clip_x11_convert_selection_cb(w, sel_atom, target, type, value, length, format)
     return True;
 }
 
-static void  clip_x11_lose_ownership_cb __ARGS((Widget, Atom *));
-
     static void
 clip_x11_lose_ownership_cb(w, sel_atom)
     Widget  w UNUSED;
@@ -2341,10 +2401,13 @@ clip_x11_own_selection(myShell, cbd)
     Widget	myShell;
     VimClipboard	*cbd;
 {
-    if (XtOwnSelection(myShell, cbd->sel_atom, CurrentTime,
-	    clip_x11_convert_selection_cb, clip_x11_lose_ownership_cb,
-							       NULL) == False)
+    /* Get the time by a zero-length append, clip_x11_timestamp_cb will be
+     * called with the current timestamp.  */
+    if (!XChangeProperty(XtDisplay(myShell), XtWindow(myShell), cbd->sel_atom,
+	    timestamp_atom, 32, PropModeAppend, NULL, 0))
 	return FAIL;
+    /* Flush is required in a terminal as nothing else is doing it. */
+    XFlush(XtDisplay(myShell));
     return OK;
 }
 

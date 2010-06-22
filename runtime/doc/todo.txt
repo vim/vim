@@ -1088,18 +1088,17 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()? (George Reilly, 2010 May 26)
    Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
-- Patch for conceal from Vince, 2010 Jun 15.  And another June 16.
-  However: more generic patch on the way.
+- Patch for conceal feature from Vince, 2010 June 16.
+  Needs some more testing.
 - undofile: keep markers where the file was written/read, so that it's easy to
   go back to a saved version of the file:  ":earlier 1f" (f for file)?
   Also add ":earlier 1d" (d for day).
   Something like changenr() to see the "file saved" marker?
   Show "file saved" marker in :undolist
-  Function to get undo tree: undotree().  List of lists.  Each entry is a
+- Function to get undo tree: undotree().  List of lists.  Each entry is a
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
-- Remove support for GTK 1?  Patch by James Vega, Jun 11.
+- Remove support for GTK 1?  Patch by James Vega, Jun 11 (removes too much).
 Patches to include:
-- Patch for X clibboard CurrentTime, (Fries, 2010 Jun 20)
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
