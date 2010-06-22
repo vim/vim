@@ -8133,7 +8133,7 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    ml_open_files();
     }
 #ifdef FEAT_CONCEAL
-    else if (pp == (long *)&curwin->w_p_conceal)
+    else if (pp == &curwin->w_p_conceal)
     {
 	if (curwin->w_p_conceal < 0)
 	{

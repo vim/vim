@@ -1335,16 +1335,16 @@ ml_recover()
     b0_ff = (b0p->b0_flags & B0_FF_MASK);
     if (b0p->b0_flags & B0_HAS_FENC)
     {
-	int size = B0_FNAME_SIZE_NOCRYPT;
+	int fnsize = B0_FNAME_SIZE_NOCRYPT;
 
 #ifdef FEAT_CRYPT
 	/* Use the same size as in add_b0_fenc(). */
 	if (b0p->b0_id[1] != BLOCK0_ID1)
-	    size = B0_FNAME_SIZE_CRYPT;
+	    fnsize = B0_FNAME_SIZE_CRYPT;
 #endif
-	for (p = b0p->b0_fname + size; p > b0p->b0_fname && p[-1] != NUL; --p)
+	for (p = b0p->b0_fname + fnsize; p > b0p->b0_fname && p[-1] != NUL; --p)
 	    ;
-	b0_fenc = vim_strnsave(p, (int)(b0p->b0_fname + size - p));
+	b0_fenc = vim_strnsave(p, (int)(b0p->b0_fname + fnsize - p));
     }
 
     mf_put(mfp, hp, FALSE, FALSE);	/* release block 0 */

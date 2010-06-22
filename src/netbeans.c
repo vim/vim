@@ -195,7 +195,7 @@ netbeans_close(void)
 #define NB_DEF_PASS "changeme"
 
     static int
-netbeans_connect(char *params, int abort)
+netbeans_connect(char *params, int doabort)
 {
 #ifdef INET_SOCKETS
     struct sockaddr_in	server;
@@ -366,7 +366,7 @@ netbeans_connect(char *params, int abort)
 		{
 		    nbdebug(("retrying...\n"));
 		    sleep(5);
-		    if (!abort)
+		    if (!doabort)
 		    {
 			ui_breakcheck();
 			if (got_int)
@@ -388,7 +388,7 @@ netbeans_connect(char *params, int abort)
 		    /* Get here when the server can't be found. */
 		    nbdebug(("Cannot connect to Netbeans #2\n"));
 		    PERROR(_("Cannot connect to Netbeans #2"));
-		    if (abort)
+		    if (doabort)
 			getout(1);
 		    goto theend;
 		}
@@ -398,7 +398,7 @@ netbeans_connect(char *params, int abort)
 	{
 	    nbdebug(("Cannot connect to Netbeans\n"));
 	    PERROR(_("Cannot connect to Netbeans"));
-	    if (abort)
+	    if (doabort)
 		getout(1);
 	    goto theend;
 	}
@@ -2967,7 +2967,7 @@ netbeans_gui_register(void)
  * Tell netbeans that the window was opened, ready for commands.
  */
     void
-netbeans_open(char *params, int abort)
+netbeans_open(char *params, int doabort)
 {
     char *cmd = "0:startupDone=0\n";
 
@@ -2977,7 +2977,7 @@ netbeans_open(char *params, int abort)
 	return;
     }
 
-    if (netbeans_connect(params, abort) != OK)
+    if (netbeans_connect(params, doabort) != OK)
 	return;
 #ifdef FEAT_GUI
     netbeans_gui_register();

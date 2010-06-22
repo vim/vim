@@ -100,7 +100,7 @@ static void u_freebranch __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp)
 static void u_freeentries __ARGS((buf_T *buf, u_header_T *uhp, u_header_T **uhpp));
 static void u_freeentry __ARGS((u_entry_T *, long));
 #ifdef FEAT_PERSISTENT_UNDO
-static void corruption_error __ARGS((char *msg, char_u *file_name));
+static void corruption_error __ARGS((char *mesg, char_u *file_name));
 static void u_free_uhp __ARGS((u_header_T *uhp));
 static size_t fwrite_crypt __ARGS((buf_T *buf UNUSED, char_u *ptr, size_t len, FILE *fp));
 static char_u *read_string_decrypt __ARGS((buf_T *buf UNUSED, FILE *fd, int len));
@@ -779,11 +779,11 @@ u_get_undo_file_name(buf_ffname, reading)
 }
 
     static void
-corruption_error(msg, file_name)
-    char *msg;
+corruption_error(mesg, file_name)
+    char *mesg;
     char_u *file_name;
 {
-    EMSG3(_("E825: Corrupted undo file (%s): %s"), msg, file_name);
+    EMSG3(_("E825: Corrupted undo file (%s): %s"), mesg, file_name);
 }
 
     static void
@@ -1313,13 +1313,13 @@ u_write_undo(name, forceit, buf, hash)
 	    }
 	    else
 	    {
-		char_u	buf[UF_START_MAGIC_LEN];
+		char_u	mbuf[UF_START_MAGIC_LEN];
 		int	len;
 
-		len = vim_read(fd, buf, UF_START_MAGIC_LEN);
+		len = vim_read(fd, mbuf, UF_START_MAGIC_LEN);
 		close(fd);
 		if (len < UF_START_MAGIC_LEN
-		      || memcmp(buf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
+		      || memcmp(mbuf, UF_START_MAGIC, UF_START_MAGIC_LEN) != 0)
 		{
 		    if (name != NULL || p_verbose > 0)
 		    {

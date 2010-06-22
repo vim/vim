@@ -214,7 +214,7 @@ typedef struct
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
 #ifdef FEAT_CONCEAL
-    int		wo_conceal;		/* 'conceal' */
+    long	wo_conceal;		/* 'conceal' */
 # define w_p_conceal w_onebuf_opt.wo_conceal
 #endif
 #ifdef FEAT_CURSORBIND

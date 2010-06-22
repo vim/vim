@@ -39,7 +39,7 @@ typedef union {
 
 static void bf_e_block __ARGS((UINT32_T *p_xl, UINT32_T *p_xr));
 static void bf_e_cblock __ARGS((char_u *block));
-static int bf_check_tables __ARGS((UINT32_T ipa[18], UINT32_T sbi[4][256], UINT32_T val));
+static int bf_check_tables __ARGS((UINT32_T a_ipa[18], UINT32_T a_sbi[4][256], UINT32_T val));
 static int bf_self_test __ARGS((void));
 
 /* Blowfish code */
@@ -469,19 +469,19 @@ bf_key_init(password, salt, salt_len)
  * BF Self test for corrupted tables or instructions
  */
     static int
-bf_check_tables(ipa, sbi, val)
-    UINT32_T ipa[18];
-    UINT32_T sbi[4][256];
+bf_check_tables(a_ipa, a_sbi, val)
+    UINT32_T a_ipa[18];
+    UINT32_T a_sbi[4][256];
     UINT32_T val;
 {
     int i, j;
     UINT32_T c = 0;
 
     for (i = 0; i < 18; i++)
-	c ^= ipa[i];
+	c ^= a_ipa[i];
     for (i = 0; i < 4; i++)
 	for (j = 0; j < 256; j++)
-	    c ^= sbi[i][j];
+	    c ^= a_sbi[i][j];
     return c == val;
 }
 

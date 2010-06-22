@@ -463,7 +463,7 @@ static int get_env_tv __ARGS((char_u **arg, typval_T *rettv, int evaluate));
 static int find_internal_func __ARGS((char_u *name));
 static char_u *deref_func_name __ARGS((char_u *name, int *lenp));
 static int get_func_tv __ARGS((char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
-static int call_func __ARGS((char_u *func_name, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
+static int call_func __ARGS((char_u *funcname, int len, typval_T *rettv, int argcount, typval_T *argvars, linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict));
 static void emsg_funcname __ARGS((char *ermsg, char_u *name));
 static int non_zero_arg __ARGS((typval_T *argvars));
 
@@ -8074,9 +8074,9 @@ get_func_tv(name, len, rettv, arg, firstline, lastline, doesrange,
  * Also returns OK when an error was encountered while executing the function.
  */
     static int
-call_func(func_name, len, rettv, argcount, argvars, firstline, lastline,
+call_func(funcname, len, rettv, argcount, argvars, firstline, lastline,
 						doesrange, evaluate, selfdict)
-    char_u	*func_name;	/* name of the function */
+    char_u	*funcname;	/* name of the function */
     int		len;		/* length of "name" */
     typval_T	*rettv;		/* return value goes here */
     int		argcount;	/* number of "argvars" */
@@ -8107,7 +8107,7 @@ call_func(func_name, len, rettv, argcount, argvars, firstline, lastline,
 
     /* Make a copy of the name, if it comes from a funcref variable it could
      * be changed or deleted in the called function. */
-    name = vim_strnsave(func_name, len);
+    name = vim_strnsave(funcname, len);
     if (name == NULL)
 	return ret;
 
@@ -10114,7 +10114,7 @@ filter_map(argvars, rettv, map)
     int		todo;
     char_u	*ermsg = map ? (char_u *)"map()" : (char_u *)"filter()";
     int		save_did_emsg;
-    int		index = 0;
+    int		idx = 0;
 
     if (argvars[0].v_type == VAR_LIST)
     {
@@ -10184,13 +10184,13 @@ filter_map(argvars, rettv, map)
 		if (tv_check_lock(li->li_tv.v_lock, ermsg))
 		    break;
 		nli = li->li_next;
-		vimvars[VV_KEY].vv_nr = index;
+		vimvars[VV_KEY].vv_nr = idx;
 		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
 								  || did_emsg)
 		    break;
 		if (!map && rem)
 		    listitem_remove(l, li);
-		++index;
+		++idx;
 	    }
 	}
 

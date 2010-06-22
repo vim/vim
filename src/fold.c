@@ -2265,24 +2265,24 @@ foldUpdateIEMS(wp, top, bot)
     if (foldlevelSyntax == getlevel)
     {
 	garray_T *gap = &wp->w_folds;
-	fold_T	 *fp = NULL;
+	fold_T	 *fpn = NULL;
 	int	  current_fdl = 0;
 	linenr_T  fold_start_lnum = 0;
 	linenr_T  lnum_rel = fline.lnum;
 
 	while (current_fdl < fline.lvl)
 	{
-	    if (!foldFind(gap, lnum_rel, &fp))
+	    if (!foldFind(gap, lnum_rel, &fpn))
 		break;
 	    ++current_fdl;
 
-	    fold_start_lnum += fp->fd_top;
-	    gap = &fp->fd_nested;
-	    lnum_rel -= fp->fd_top;
+	    fold_start_lnum += fpn->fd_top;
+	    gap = &fpn->fd_nested;
+	    lnum_rel -= fpn->fd_top;
 	}
-	if (fp != NULL && current_fdl == fline.lvl)
+	if (fpn != NULL && current_fdl == fline.lvl)
 	{
-	    linenr_T fold_end_lnum = fold_start_lnum + fp->fd_len;
+	    linenr_T fold_end_lnum = fold_start_lnum + fpn->fd_len;
 
 	    if (fold_end_lnum > bot)
 		bot = fold_end_lnum;
