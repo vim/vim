@@ -4923,7 +4923,7 @@ ml_crypt_prepare(mfp, offset, reading)
 	/* Using blowfish, add salt and seed. We use the byte offset of the
 	 * block for the salt. */
 	vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
-	bf_key_init(key, salt, STRLEN(salt));
+	bf_key_init(key, salt, (int)STRLEN(salt));
 	bf_ofb_init(seed, MF_SEED_LEN);
     }
 }
