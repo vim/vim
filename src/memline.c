@@ -508,6 +508,7 @@ ml_set_crypt_key(buf, old_key, old_cm)
 	idx = 0;		/* start with first index in block 1 */
 	error = 0;
 	buf->b_ml.ml_stack_top = 0;
+	vim_free(buf->b_ml.ml_stack);
 	buf->b_ml.ml_stack = NULL;
 	buf->b_ml.ml_stack_size = 0;	/* no stack yet */
 
@@ -744,8 +745,8 @@ ml_open_file(buf)
     {
 	if (*dirp == NUL)
 	    break;
-	/* There is a small chance that between chosing the swap file name and
-	 * creating it, another Vim creates the file.  In that case the
+	/* There is a small chance that between choosing the swap file name
+	 * and creating it, another Vim creates the file.  In that case the
 	 * creation will fail and we will use another directory. */
 	fname = findswapname(buf, &dirp, NULL); /* allocates fname */
 	if (fname == NULL)
@@ -1239,7 +1240,7 @@ ml_recover()
 	    MSG_PUTS_ATTR(_(" cannot be used on this computer.\n"),
 							     attr | MSG_HIST);
 	MSG_PUTS_ATTR(_("The file was created on "), attr | MSG_HIST);
-	/* avoid going past the end of a currupted hostname */
+	/* avoid going past the end of a corrupted hostname */
 	b0p->b0_fname[0] = NUL;
 	MSG_PUTS_ATTR(b0p->b0_hname, attr | MSG_HIST);
 	MSG_PUTS_ATTR(_(",\nor the file has been damaged."), attr | MSG_HIST);
