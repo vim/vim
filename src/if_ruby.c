@@ -208,12 +208,12 @@ static void ruby_vim_init(void);
  * Pointers for dynamic link
  */
 static VALUE (*dll_rb_assoc_new) (VALUE, VALUE);
-static VALUE *dll_rb_cFalseClass;
-static VALUE *dll_rb_cFixnum;
-static VALUE *dll_rb_cNilClass;
+VALUE *dll_rb_cFalseClass;
+VALUE *dll_rb_cFixnum;
+VALUE *dll_rb_cNilClass;
 static VALUE *dll_rb_cObject;
-static VALUE *dll_rb_cSymbol;
-static VALUE *dll_rb_cTrueClass;
+VALUE *dll_rb_cSymbol;
+VALUE *dll_rb_cTrueClass;
 static void (*dll_rb_check_type) (VALUE,int);
 static VALUE (*dll_rb_class_path) (VALUE);
 static VALUE (*dll_rb_data_object_alloc) (VALUE, void*, RUBY_DATA_FUNC, RUBY_DATA_FUNC);
@@ -287,11 +287,11 @@ static void (*ruby_init_stack)(VALUE*);
 #endif
 
 #ifdef RUBY19_OR_LATER
-static SIGNED_VALUE rb_num2long_stub(VALUE x)
+SIGNED_VALUE rb_num2long_stub(VALUE x)
 {
     return dll_rb_num2long(x);
 }
-static VALUE rb_int2big_stub(SIGNED_VALUE x)
+VALUE rb_int2big_stub(SIGNED_VALUE x)
 {
     return dll_rb_int2big(x);
 }
