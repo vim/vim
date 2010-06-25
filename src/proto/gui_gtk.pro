@@ -18,6 +18,5 @@ void gui_mch_show_popupmenu __ARGS((vimmenu_T *menu));
 void gui_make_popup __ARGS((char_u *path_name, int mouse_pos));
 void gui_mch_find_dialog __ARGS((exarg_T *eap));
 void gui_mch_replace_dialog __ARGS((exarg_T *eap));
-void gui_gtk_synch_fonts __ARGS((void));
 void ex_helpfind __ARGS((exarg_T *eap));
 /* vim: set ft=c : */

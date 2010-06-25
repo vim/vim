@@ -62,7 +62,6 @@ void gtk_form_move(GtkForm *form, GtkWidget * widget,
 void gtk_form_move_resize(GtkForm * form, GtkWidget * widget,
 	gint x, gint y,
 	gint w, gint h);
-void gtk_form_set_size(GtkForm * form, guint width, guint height);
 
 /* These disable and enable moving and repainting respectively.  If you
  * want to update the layout's offsets but do not want it to repaint

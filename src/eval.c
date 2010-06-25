@@ -11813,9 +11813,7 @@ f_has(argvars, rettv)
 #endif
 #ifdef FEAT_GUI_GTK
 	"gui_gtk",
-# ifdef HAVE_GTK2
 	"gui_gtk2",
-# endif
 #endif
 #ifdef FEAT_GUI_GNOME
 	"gui_gnome",

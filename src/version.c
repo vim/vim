@@ -916,17 +916,9 @@ list_version()
 #else
 # ifdef FEAT_GUI_GTK
 #  ifdef FEAT_GUI_GNOME
-#   ifdef HAVE_GTK2
     MSG_PUTS(_("with GTK2-GNOME GUI."));
-#   else
-    MSG_PUTS(_("with GTK-GNOME GUI."));
-#   endif
 #  else
-#   ifdef HAVE_GTK2
     MSG_PUTS(_("with GTK2 GUI."));
-#   else
-    MSG_PUTS(_("with GTK GUI."));
-#   endif
 #  endif
 # else
 #  ifdef FEAT_GUI_MOTIF

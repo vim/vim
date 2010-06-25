@@ -100,7 +100,7 @@
 #include <X11/Xlocale.h>
 #endif
 
-#if defined(FEAT_GUI_GTK) && defined(FEAT_XIM) && defined(HAVE_GTK2)
+#if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
 # include <gdk/gdkkeysyms.h>
 # ifdef WIN3264
 #  include <gdk/gdkwin32.h>
@@ -5068,147 +5068,6 @@ static XIMStyle	input_style;
 static int	status_area_enabled = TRUE;
 #endif
 
-#ifdef FEAT_GUI_GTK
-# ifdef WIN3264
-#  include <gdk/gdkwin32.h>
-# else
-#  include <gdk/gdkx.h>
-# endif
-#else
-# ifdef PROTO
-/* Define a few things to be able to generate prototypes while not configured
- * for GTK. */
-#  define GSList int
-#  define gboolean int
-   typedef int GdkEvent;
-   typedef int GdkEventKey;
-#  define GdkIC int
-# endif
-#endif
-
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
-static int	preedit_buf_len = 0;
-static int	xim_can_preediting INIT(= FALSE);	/* XIM in showmode() */
-static int	xim_input_style;
-#ifndef FEAT_GUI_GTK
-# define gboolean int
-#endif
-static gboolean	use_status_area = 0;
-
-static int im_xim_str2keycode __ARGS((unsigned int *code, unsigned int *state));
-static void im_xim_send_event_imactivate __ARGS((void));
-
-/*
- * Convert string to keycode and state for XKeyEvent.
- * When string is valid return OK, when invalid return FAIL.
- *
- * See 'imactivatekey' documentation for the format.
- */
-    static int
-im_xim_str2keycode(code, state)
-    unsigned int *code;
-    unsigned int *state;
-{
-    int		retval = OK;
-    int		len;
-    unsigned	keycode = 0, keystate = 0;
-    Window	window;
-    Display	*display;
-    char_u	*flag_end;
-    char_u	*str;
-
-    if (*p_imak != NUL)
-    {
-	len = STRLEN(p_imak);
-	for (flag_end = p_imak + len - 1;
-			    flag_end > p_imak && *flag_end != '-'; --flag_end)
-	    ;
-
-	/* Parse modifier keys */
-	for (str = p_imak; str < flag_end; ++str)
-	{
-	    switch (*str)
-	    {
-		case 's': case 'S':
-		    keystate |= ShiftMask;
-		    break;
-		case 'l': case 'L':
-		    keystate |= LockMask;
-		    break;
-		case 'c': case 'C':
-		    keystate |= ControlMask;
-		    break;
-		case '1':
-		    keystate |= Mod1Mask;
-		    break;
-		case '2':
-		    keystate |= Mod2Mask;
-		    break;
-		case '3':
-		    keystate |= Mod3Mask;
-		    break;
-		case '4':
-		    keystate |= Mod4Mask;
-		    break;
-		case '5':
-		    keystate |= Mod5Mask;
-		    break;
-		case '-':
-		    break;
-		default:
-		    retval = FAIL;
-	    }
-	}
-	if (*str == '-')
-	    ++str;
-
-	/* Get keycode from string. */
-	gui_get_x11_windis(&window, &display);
-	if (display)
-	    keycode = XKeysymToKeycode(display, XStringToKeysym((char *)str));
-	if (keycode == 0)
-	    retval = FAIL;
-
-	if (code != NULL)
-	    *code = keycode;
-	if (state != NULL)
-	    *state = keystate;
-    }
-    return retval;
-}
-
-    static void
-im_xim_send_event_imactivate()
-{
-    /* Force turn on preedit state by simulating keypress event.
-     * Keycode and state is specified by 'imactivatekey'.
-     */
-    XKeyEvent ev;
-
-    gui_get_x11_windis(&ev.window, &ev.display);
-    ev.root = RootWindow(ev.display, DefaultScreen(ev.display));
-    ev.subwindow = None;
-    ev.time = CurrentTime;
-    ev.x = 1;
-    ev.y = 1;
-    ev.x_root = 1;
-    ev.y_root = 1;
-    ev.same_screen = 1;
-    ev.type = KeyPress;
-    if (im_xim_str2keycode(&ev.keycode, &ev.state) == OK)
-	XSendEvent(ev.display, ev.window, 1, KeyPressMask, (XEvent*)&ev);
-}
-
-/*
- * Return TRUE if 'imactivatekey' has a valid value.
- */
-    int
-im_xim_isvalid_imactivate()
-{
-    return im_xim_str2keycode(NULL, NULL) == OK;
-}
-#endif /* FEAT_GUI_GTK */
-
 /*
  * Switch using XIM on/off.  This is used by the code that changes "State".
  */
@@ -5232,124 +5091,6 @@ im_set_active(active)
 
     /* Remember the active state, it is needed when Vim gets keyboard focus. */
     xim_is_active = active;
-
-#ifdef FEAT_GUI_GTK
-    /* When 'imactivatekey' has valid key-string, try to control XIM preedit
-     * state.  When 'imactivatekey' has no or invalid string, try old XIM
-     * focus control.
-     */
-    if (*p_imak != NUL)
-    {
-	/* BASIC STRATEGY:
-	 * Destroy old Input Context (XIC), and create new one.  New XIC
-	 * would have a state of preedit that is off.  When argument:active
-	 * is false, that's all.  Else argument:active is true, send a key
-	 * event specified by 'imactivatekey' to activate XIM preedit state.
-	 */
-
-	xim_is_active = TRUE; /* Disable old XIM focus control */
-	/* If we can monitor preedit state with preedit callback functions,
-	 * try least creation of new XIC.
-	 */
-	if (xim_input_style & (int)GDK_IM_PREEDIT_CALLBACKS)
-	{
-	    if (xim_can_preediting && !active)
-	    {
-		/* Force turn off preedit state.  With some IM
-		 * implementations, we cannot turn off preedit state by
-		 * simulating keypress event.  It is why using such a method
-		 * that destroy old IC (input context), and create new one.
-		 * When create new IC, its preedit state is usually off.
-		 */
-		xim_reset();
-		xim_set_focus(FALSE);
-		gdk_ic_destroy(xic);
-		xim_init();
-		xim_can_preediting = FALSE;
-	    }
-	    else if (!xim_can_preediting && active)
-		im_xim_send_event_imactivate();
-	}
-	else
-	{
-	    /* First, force destroy old IC, and create new one.  It
-	     * simulates "turning off preedit state".
-	     */
-	    xim_set_focus(FALSE);
-	    gdk_ic_destroy(xic);
-	    xim_init();
-	    xim_can_preediting = FALSE;
-
-	    /* 2nd, when requested to activate IM, simulate this by sending
-	     * the event.
-	     */
-	    if (active)
-	    {
-		im_xim_send_event_imactivate();
-		xim_can_preediting = TRUE;
-	    }
-	}
-    }
-    else
-    {
-# ifndef XIMPreeditUnKnown
-	/* X11R5 doesn't have these, it looks safe enough to define here. */
-	typedef unsigned long XIMPreeditState;
-#  define XIMPreeditUnKnown	0L
-#  define XIMPreeditEnable	1L
-#  define XIMPreeditDisable	(1L<<1)
-#  define XNPreeditState	"preeditState"
-# endif
-	XIMPreeditState preedit_state = XIMPreeditUnKnown;
-	XVaNestedList preedit_attr;
-	XIC pxic;
-
-	preedit_attr = XVaCreateNestedList(0,
-				XNPreeditState, &preedit_state,
-				NULL);
-	pxic = ((GdkICPrivate *)xic)->xic;
-
-	if (!XGetICValues(pxic, XNPreeditAttributes, preedit_attr, NULL))
-	{
-	    XFree(preedit_attr);
-	    preedit_attr = XVaCreateNestedList(0,
-				XNPreeditState,
-				active ? XIMPreeditEnable : XIMPreeditDisable,
-				NULL);
-	    XSetICValues(pxic, XNPreeditAttributes, preedit_attr, NULL);
-	    xim_can_preediting = active;
-	    xim_is_active = active;
-	}
-	XFree(preedit_attr);
-    }
-    if (xim_input_style & XIMPreeditCallbacks)
-    {
-	preedit_buf_len = 0;
-	init_preedit_start_col();
-    }
-#else
-# if 0
-	/* When had tested kinput2 + canna + Athena GUI version with
-	 * 'imactivatekey' is "s-space", im_xim_send_event_imactivate() did not
-	 * work correctly.  It just inserted one space.  I don't know why we
-	 * couldn't switch state of XIM preediting.  This is reason why these
-	 * codes are commented out.
-	 */
-	/* First, force destroy old IC, and create new one.  It simulates
-	 * "turning off preedit state".
-	 */
-	xim_set_focus(FALSE);
-	XDestroyIC(xic);
-	xic = NULL;
-	xim_init();
-
-	/* 2nd, when requested to activate IM, simulate this by sending the
-	 * event.
-	 */
-	if (active)
-	    im_xim_send_event_imactivate();
-# endif
-#endif
     xim_set_preedit();
 }
 
@@ -5373,11 +5114,7 @@ xim_set_focus(focus)
 	if (!xim_has_focus)
 	{
 	    xim_has_focus = TRUE;
-#ifdef FEAT_GUI_GTK
-	    gdk_im_begin(xic, gui.drawarea->window);
-#else
 	    XSetICFocus(xic);
-#endif
 	}
     }
     else
@@ -5385,11 +5122,7 @@ xim_set_focus(focus)
 	if (xim_has_focus)
 	{
 	    xim_has_focus = FALSE;
-#ifdef FEAT_GUI_GTK
-	    gdk_im_end();
-#else
 	    XUnsetICFocus(xic);
-#endif
 	}
     }
 }
@@ -5413,135 +5146,50 @@ xim_set_preedit()
 
     xim_set_focus(TRUE);
 
-#ifdef FEAT_GUI_GTK
-    if (gdk_im_ready())
+    XVaNestedList attr_list;
+    XRectangle spot_area;
+    XPoint over_spot;
+    int line_space;
+
+    if (!xim_has_focus)
     {
-	int		attrmask;
-	GdkICAttr	*attr;
+	/* hide XIM cursor */
+	over_spot.x = 0;
+	over_spot.y = -100; /* arbitrary invisible position */
+	attr_list = (XVaNestedList) XVaCreateNestedList(0,
+							XNSpotLocation,
+							&over_spot,
+							NULL);
+	XSetICValues(xic, XNPreeditAttributes, attr_list, NULL);
+	XFree(attr_list);
+	return;
+    }
 
-	if (!xic_attr)
-	    return;
-
-	attr = xic_attr;
-	attrmask = 0;
-
-# ifdef FEAT_XFONTSET
-	if ((xim_input_style & (int)GDK_IM_PREEDIT_POSITION)
-		&& gui.fontset != NOFONTSET
-		&& gui.fontset->type == GDK_FONT_FONTSET)
-	{
-	    if (!xim_has_focus)
-	    {
-		if (attr->spot_location.y >= 0)
-		{
-		    attr->spot_location.x = 0;
-		    attr->spot_location.y = -100;
-		    attrmask |= (int)GDK_IC_SPOT_LOCATION;
-		}
-	    }
-	    else
-	    {
-		gint	width, height;
-
-		if (attr->spot_location.x != TEXT_X(gui.col)
-		    || attr->spot_location.y != TEXT_Y(gui.row))
-		{
-		    attr->spot_location.x = TEXT_X(gui.col);
-		    attr->spot_location.y = TEXT_Y(gui.row);
-		    attrmask |= (int)GDK_IC_SPOT_LOCATION;
-		}
-
-		gdk_window_get_size(gui.drawarea->window, &width, &height);
-		width -= 2 * gui.border_offset;
-		height -= 2 * gui.border_offset;
-		if (xim_input_style & (int)GDK_IM_STATUS_AREA)
-		    height -= gui.char_height;
-		if (attr->preedit_area.width != width
-		    || attr->preedit_area.height != height)
-		{
-		    attr->preedit_area.x = gui.border_offset;
-		    attr->preedit_area.y = gui.border_offset;
-		    attr->preedit_area.width = width;
-		    attr->preedit_area.height = height;
-		    attrmask |= (int)GDK_IC_PREEDIT_AREA;
-		}
-
-		if (attr->preedit_fontset != gui.current_font)
-		{
-		    attr->preedit_fontset = gui.current_font;
-		    attrmask |= (int)GDK_IC_PREEDIT_FONTSET;
-		}
-	    }
-	}
-# endif /* FEAT_XFONTSET */
-
+    if (input_style & XIMPreeditPosition)
+    {
 	if (xim_fg_color == INVALCOLOR)
 	{
 	    xim_fg_color = gui.def_norm_pixel;
 	    xim_bg_color = gui.def_back_pixel;
 	}
-	if (attr->preedit_foreground.pixel != xim_fg_color)
-	{
-	    attr->preedit_foreground.pixel = xim_fg_color;
-	    attrmask |= (int)GDK_IC_PREEDIT_FOREGROUND;
-	}
-	if (attr->preedit_background.pixel != xim_bg_color)
-	{
-	    attr->preedit_background.pixel = xim_bg_color;
-	    attrmask |= (int)GDK_IC_PREEDIT_BACKGROUND;
-	}
-
-	if (attrmask != 0)
-	    gdk_ic_set_attr(xic, attr, (GdkICAttributesType)attrmask);
+	over_spot.x = TEXT_X(gui.col);
+	over_spot.y = TEXT_Y(gui.row);
+	spot_area.x = 0;
+	spot_area.y = 0;
+	spot_area.height = gui.char_height * Rows;
+	spot_area.width  = gui.char_width * Columns;
+	line_space = gui.char_height;
+	attr_list = (XVaNestedList) XVaCreateNestedList(0,
+					XNSpotLocation, &over_spot,
+					XNForeground, (Pixel) xim_fg_color,
+					XNBackground, (Pixel) xim_bg_color,
+					XNArea, &spot_area,
+					XNLineSpace, line_space,
+					NULL);
+	if (XSetICValues(xic, XNPreeditAttributes, attr_list, NULL))
+	    EMSG(_("E284: Cannot set IC values"));
+	XFree(attr_list);
     }
-#else /* FEAT_GUI_GTK */
-    {
-	XVaNestedList attr_list;
-	XRectangle spot_area;
-	XPoint over_spot;
-	int line_space;
-
-	if (!xim_has_focus)
-	{
-	    /* hide XIM cursor */
-	    over_spot.x = 0;
-	    over_spot.y = -100; /* arbitrary invisible position */
-	    attr_list = (XVaNestedList) XVaCreateNestedList(0,
-							    XNSpotLocation,
-							    &over_spot,
-							    NULL);
-	    XSetICValues(xic, XNPreeditAttributes, attr_list, NULL);
-	    XFree(attr_list);
-	    return;
-	}
-
-	if (input_style & XIMPreeditPosition)
-	{
-	    if (xim_fg_color == INVALCOLOR)
-	    {
-		xim_fg_color = gui.def_norm_pixel;
-		xim_bg_color = gui.def_back_pixel;
-	    }
-	    over_spot.x = TEXT_X(gui.col);
-	    over_spot.y = TEXT_Y(gui.row);
-	    spot_area.x = 0;
-	    spot_area.y = 0;
-	    spot_area.height = gui.char_height * Rows;
-	    spot_area.width  = gui.char_width * Columns;
-	    line_space = gui.char_height;
-	    attr_list = (XVaNestedList) XVaCreateNestedList(0,
-					    XNSpotLocation, &over_spot,
-					    XNForeground, (Pixel) xim_fg_color,
-					    XNBackground, (Pixel) xim_bg_color,
-					    XNArea, &spot_area,
-					    XNLineSpace, line_space,
-					    NULL);
-	    if (XSetICValues(xic, XNPreeditAttributes, attr_list, NULL))
-		EMSG(_("E284: Cannot set IC values"));
-	    XFree(attr_list);
-	}
-    }
-#endif /* FEAT_GUI_GTK */
 }
 
 /*
@@ -5558,137 +5206,98 @@ xim_set_status_area()
     if (xic == NULL)
 	return;
 
-#ifdef FEAT_GUI_GTK
-# if defined(FEAT_XFONTSET)
-    if (use_status_area)
+    XVaNestedList preedit_list = 0, status_list = 0, list = 0;
+    XRectangle pre_area, status_area;
+
+    if (input_style & XIMStatusArea)
     {
-	GdkICAttr	*attr;
-	int		style;
-	gint		width, height;
-	GtkWidget	*widget;
-	int		attrmask;
-
-	if (!xic_attr)
-	    return;
-
-	attr = xic_attr;
-	attrmask = 0;
-	style = (int)gdk_ic_get_style(xic);
-	if ((style & (int)GDK_IM_STATUS_MASK) == (int)GDK_IM_STATUS_AREA)
+	if (input_style & XIMPreeditArea)
 	{
-	    if (gui.fontset != NOFONTSET
-		    && gui.fontset->type == GDK_FONT_FONTSET)
-	    {
-		widget = gui.mainwin;
-		gdk_window_get_size(widget->window, &width, &height);
+	    XRectangle *needed_rect;
 
-		attrmask |= (int)GDK_IC_STATUS_AREA;
-		attr->status_area.x = 0;
-		attr->status_area.y = height - gui.char_height - 1;
-		attr->status_area.width = width;
-		attr->status_area.height = gui.char_height;
-	    }
-	}
-	if (attrmask != 0)
-	    gdk_ic_set_attr(xic, attr, (GdkICAttributesType)attrmask);
-    }
-# endif
-#else
-    {
-	XVaNestedList preedit_list = 0, status_list = 0, list = 0;
-	XRectangle pre_area, status_area;
-
-	if (input_style & XIMStatusArea)
-	{
-	    if (input_style & XIMPreeditArea)
-	    {
-		XRectangle *needed_rect;
-
-		/* to get status_area width */
-		status_list = XVaCreateNestedList(0, XNAreaNeeded,
-						  &needed_rect, NULL);
-		XGetICValues(xic, XNStatusAttributes, status_list, NULL);
-		XFree(status_list);
-
-		status_area.width = needed_rect->width;
-	    }
-	    else
-		status_area.width = gui.char_width * Columns;
-
-	    status_area.x = 0;
-	    status_area.y = gui.char_height * Rows + gui.border_offset;
-	    if (gui.which_scrollbars[SBAR_BOTTOM])
-		status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	    if (gui.menu_is_active)
-		status_area.y += gui.menu_height;
-#endif
-	    status_area.height = gui.char_height;
-	    status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
-	}
-	else
-	{
-	    status_area.x = 0;
-	    status_area.y = gui.char_height * Rows + gui.border_offset;
-	    if (gui.which_scrollbars[SBAR_BOTTOM])
-		status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	    if (gui.menu_is_active)
-		status_area.y += gui.menu_height;
-#endif
-	    status_area.width = 0;
-	    status_area.height = gui.char_height;
-	}
-
-	if (input_style & XIMPreeditArea)   /* off-the-spot */
-	{
-	    pre_area.x = status_area.x + status_area.width;
-	    pre_area.y = gui.char_height * Rows + gui.border_offset;
-	    pre_area.width = gui.char_width * Columns - pre_area.x;
-	    if (gui.which_scrollbars[SBAR_BOTTOM])
-		pre_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	    if (gui.menu_is_active)
-		pre_area.y += gui.menu_height;
-#endif
-	    pre_area.height = gui.char_height;
-	    preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
-	}
-	else if (input_style & XIMPreeditPosition)   /* over-the-spot */
-	{
-	    pre_area.x = 0;
-	    pre_area.y = 0;
-	    pre_area.height = gui.char_height * Rows;
-	    pre_area.width = gui.char_width * Columns;
-	    preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
-	}
-
-	if (preedit_list && status_list)
-	    list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
-				       XNStatusAttributes, status_list, NULL);
-	else if (preedit_list)
-	    list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
-				       NULL);
-	else if (status_list)
-	    list = XVaCreateNestedList(0, XNStatusAttributes, status_list,
-				       NULL);
-	else
-	    list = NULL;
-
-	if (list)
-	{
-	    XSetICValues(xic, XNVaNestedList, list, NULL);
-	    XFree(list);
-	}
-	if (status_list)
+	    /* to get status_area width */
+	    status_list = XVaCreateNestedList(0, XNAreaNeeded,
+					      &needed_rect, NULL);
+	    XGetICValues(xic, XNStatusAttributes, status_list, NULL);
 	    XFree(status_list);
-	if (preedit_list)
-	    XFree(preedit_list);
-    }
+
+	    status_area.width = needed_rect->width;
+	}
+	else
+	    status_area.width = gui.char_width * Columns;
+
+	status_area.x = 0;
+	status_area.y = gui.char_height * Rows + gui.border_offset;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    status_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    status_area.y += gui.menu_height;
 #endif
+	status_area.height = gui.char_height;
+	status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
+    }
+    else
+    {
+	status_area.x = 0;
+	status_area.y = gui.char_height * Rows + gui.border_offset;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    status_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    status_area.y += gui.menu_height;
+#endif
+	status_area.width = 0;
+	status_area.height = gui.char_height;
+    }
+
+    if (input_style & XIMPreeditArea)   /* off-the-spot */
+    {
+	pre_area.x = status_area.x + status_area.width;
+	pre_area.y = gui.char_height * Rows + gui.border_offset;
+	pre_area.width = gui.char_width * Columns - pre_area.x;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    pre_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    pre_area.y += gui.menu_height;
+#endif
+	pre_area.height = gui.char_height;
+	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
+    }
+    else if (input_style & XIMPreeditPosition)   /* over-the-spot */
+    {
+	pre_area.x = 0;
+	pre_area.y = 0;
+	pre_area.height = gui.char_height * Rows;
+	pre_area.width = gui.char_width * Columns;
+	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
+    }
+
+    if (preedit_list && status_list)
+	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
+				   XNStatusAttributes, status_list, NULL);
+    else if (preedit_list)
+	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
+				   NULL);
+    else if (status_list)
+	list = XVaCreateNestedList(0, XNStatusAttributes, status_list,
+				   NULL);
+    else
+	list = NULL;
+
+    if (list)
+    {
+	XSetICValues(xic, XNVaNestedList, list, NULL);
+	XFree(list);
+    }
+    if (status_list)
+	XFree(status_list);
+    if (preedit_list)
+	XFree(preedit_list);
 }
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_X11)
 static char e_xim[] = N_("E285: Failed to create input context");
 #endif
 
@@ -5998,483 +5607,11 @@ xim_real_init(x11_window, x11_display)
 
 #endif /* FEAT_GUI_X11 */
 
-#if defined(FEAT_GUI_GTK) || defined(PROTO)
-
-# ifdef FEAT_XFONTSET
-static char e_overthespot[] = N_("E290: over-the-spot style requires fontset");
-# endif
-
-# ifdef PROTO
-typedef int GdkIC;
-# endif
-
-    void
-xim_decide_input_style()
-{
-    /* GDK_IM_STATUS_CALLBACKS was disabled, enabled it to allow Japanese
-     * OverTheSpot. */
-    int supported_style = (int)GDK_IM_PREEDIT_NONE |
-				 (int)GDK_IM_PREEDIT_NOTHING |
-				 (int)GDK_IM_PREEDIT_POSITION |
-				 (int)GDK_IM_PREEDIT_CALLBACKS |
-				 (int)GDK_IM_STATUS_CALLBACKS |
-				 (int)GDK_IM_STATUS_AREA |
-				 (int)GDK_IM_STATUS_NONE |
-				 (int)GDK_IM_STATUS_NOTHING;
-
-#ifdef XIM_DEBUG
-    xim_log("xim_decide_input_style()\n");
-#endif
-
-    if (!gdk_im_ready())
-	xim_input_style = 0;
-    else
-    {
-	if (gtk_major_version > 1
-		|| (gtk_major_version == 1
-		    && (gtk_minor_version > 2
-			|| (gtk_minor_version == 2 && gtk_micro_version >= 3))))
-	    use_status_area = TRUE;
-	else
-	{
-	    EMSG(_("E291: Your GTK+ is older than 1.2.3. Status area disabled"));
-	    use_status_area = FALSE;
-	}
-#ifdef FEAT_XFONTSET
-	if (gui.fontset == NOFONTSET || gui.fontset->type != GDK_FONT_FONTSET)
-#endif
-	    supported_style &= ~((int)GDK_IM_PREEDIT_POSITION
-						   | (int)GDK_IM_STATUS_AREA);
-	if (!use_status_area)
-	    supported_style &= ~(int)GDK_IM_STATUS_AREA;
-	xim_input_style = (int)gdk_im_decide_style((GdkIMStyle)supported_style);
-    }
-}
-
-    static void
-preedit_start_cbproc(XIC thexic UNUSED,
-	             XPointer client_data UNUSED,
-		     XPointer call_data UNUSED)
-{
-#ifdef XIM_DEBUG
-    xim_log("xim_decide_input_style()\n");
-#endif
-
-    draw_feedback = NULL;
-    xim_can_preediting = TRUE;
-    xim_has_preediting = TRUE;
-    gui_update_cursor(TRUE, FALSE);
-    if (showmode() > 0)
-    {
-	setcursor();
-	out_flush();
-    }
-}
-
-    static void
-xim_back_delete(int n)
-{
-    char_u str[3];
-
-    str[0] = CSI;
-    str[1] = 'k';
-    str[2] = 'b';
-    while (n-- > 0)
-	add_to_input_buf(str, 3);
-}
-
-static GSList *key_press_event_queue = NULL;
-static gboolean processing_queued_event = FALSE;
-
-    static void
-preedit_draw_cbproc(XIC thexic UNUSED,
-		    XPointer client_data UNUSED,
-		    XPointer call_data)
-{
-    XIMPreeditDrawCallbackStruct *draw_data;
-    XIMText	*text;
-    char	*src;
-    GSList	*event_queue;
-
-#ifdef XIM_DEBUG
-    xim_log("preedit_draw_cbproc()\n");
-#endif
-
-    draw_data = (XIMPreeditDrawCallbackStruct *) call_data;
-    text = (XIMText *) draw_data->text;
-
-    if ((text == NULL && draw_data->chg_length == preedit_buf_len)
-						      || preedit_buf_len == 0)
-    {
-	init_preedit_start_col();
-	vim_free(draw_feedback);
-	draw_feedback = NULL;
-    }
-    if (draw_data->chg_length > 0)
-    {
-	int bs_cnt;
-
-	if (draw_data->chg_length > preedit_buf_len)
-	    bs_cnt = preedit_buf_len;
-	else
-	    bs_cnt = draw_data->chg_length;
-	xim_back_delete(bs_cnt);
-	preedit_buf_len -= bs_cnt;
-    }
-    if (text != NULL)
-    {
-	int		len;
-#ifdef FEAT_MBYTE
-	char_u		*buf = NULL;
-	unsigned int	nfeedback = 0;
-#endif
-	char_u		*ptr;
-
-	src = text->string.multi_byte;
-	if (src != NULL && !text->encoding_is_wchar)
-	{
-	    len = strlen(src);
-	    ptr = (char_u *)src;
-	    /* Avoid the enter for decision */
-	    if (*ptr == '\n')
-		return;
-
-#ifdef FEAT_MBYTE
-	    if (input_conv.vc_type != CONV_NONE
-		    && (buf = string_convert(&input_conv,
-						 (char_u *)src, &len)) != NULL)
-	    {
-		/* Converted from 'termencoding' to 'encoding'. */
-		add_to_input_buf_csi(buf, len);
-		ptr = buf;
-	    }
-	    else
-#endif
-		add_to_input_buf_csi((char_u *)src, len);
-	    /* Add count of character to preedit_buf_len  */
-	    while (*ptr != NUL)
-	    {
-#ifdef FEAT_MBYTE
-		if (draw_data->text->feedback != NULL)
-		{
-		    if (draw_feedback == NULL)
-			draw_feedback = (char *)alloc(draw_data->chg_first
-							      + text->length);
-		    else
-			draw_feedback = vim_realloc(draw_feedback,
-					 draw_data->chg_first + text->length);
-		    if (draw_feedback != NULL)
-		    {
-			draw_feedback[nfeedback + draw_data->chg_first]
-				       = draw_data->text->feedback[nfeedback];
-			nfeedback++;
-		    }
-		}
-		if (has_mbyte)
-		    ptr += (*mb_ptr2len)(ptr);
-		else
-#endif
-		    ptr++;
-		preedit_buf_len++;
-	    }
-#ifdef FEAT_MBYTE
-	    vim_free(buf);
-#endif
-	    preedit_end_col = MAXCOL;
-	}
-    }
-    if (text != NULL || draw_data->chg_length > 0)
-    {
-	event_queue = key_press_event_queue;
-	processing_queued_event = TRUE;
-	while (event_queue != NULL && processing_queued_event)
-	{
-	    GdkEvent *ev = event_queue->data;
-
-	    gboolean *ret;
-	    gtk_signal_emit_by_name((GtkObject*)gui.mainwin, "key_press_event",
-								    ev, &ret);
-	    gdk_event_free(ev);
-	    event_queue = event_queue->next;
-	}
-	processing_queued_event = FALSE;
-	if (key_press_event_queue)
-	{
-	    g_slist_free(key_press_event_queue);
-	    key_press_event_queue = NULL;
-	}
-    }
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-}
-
-/*
- * Retrieve the highlighting attributes at column col in the preedit string.
- * Return -1 if not in preediting mode or if col is out of range.
- */
-    int
-im_get_feedback_attr(int col)
-{
-    if (draw_feedback != NULL && col < preedit_buf_len)
-    {
-	if (draw_feedback[col] & XIMReverse)
-	    return HL_INVERSE;
-	else if (draw_feedback[col] & XIMUnderline)
-	    return HL_UNDERLINE;
-	else
-	    return hl_attr(HLF_V);
-    }
-
-    return -1;
-}
-
-    static void
-preedit_caret_cbproc(XIC thexic UNUSED,
-		     XPointer client_data UNUSED,
-		     XPointer call_data UNUSED)
-{
-#ifdef XIM_DEBUG
-    xim_log("preedit_caret_cbproc()\n");
-#endif
-}
-
-    static void
-preedit_done_cbproc(XIC thexic UNUSED,
-		    XPointer client_data UNUSED,
-		    XPointer call_data UNUSED)
-{
-#ifdef XIM_DEBUG
-    xim_log("preedit_done_cbproc()\n");
-#endif
-
-    vim_free(draw_feedback);
-    draw_feedback = NULL;
-    xim_can_preediting = FALSE;
-    xim_has_preediting = FALSE;
-    gui_update_cursor(TRUE, FALSE);
-    if (showmode() > 0)
-    {
-	setcursor();
-	out_flush();
-    }
-}
-
-    void
-xim_reset(void)
-{
-    char *text;
-
-#ifdef XIM_DEBUG
-    xim_log("xim_reset()\n");
-#endif
-
-    if (xic != NULL)
-    {
-	text = XmbResetIC(((GdkICPrivate *)xic)->xic);
-	if (text != NULL && !(xim_input_style & (int)GDK_IM_PREEDIT_CALLBACKS))
-	    add_to_input_buf_csi((char_u *)text, strlen(text));
-	else
-	    preedit_buf_len = 0;
-	if (text != NULL)
-	    XFree(text);
-    }
-}
-
-    int
-xim_queue_key_press_event(GdkEventKey *event, int down UNUSED)
-{
-#ifdef XIM_DEBUG
-    xim_log("xim_queue_key_press_event()\n");
-#endif
-
-    if (preedit_buf_len <= 0)
-	return FALSE;
-    if (processing_queued_event)
-	processing_queued_event = FALSE;
-
-    key_press_event_queue = g_slist_append(key_press_event_queue,
-					   gdk_event_copy((GdkEvent *)event));
-    return TRUE;
-}
-
-    static void
-preedit_callback_setup(GdkIC *ic UNUSED)
-{
-    XIC xxic;
-    XVaNestedList preedit_attr;
-    XIMCallback preedit_start_cb;
-    XIMCallback preedit_draw_cb;
-    XIMCallback preedit_caret_cb;
-    XIMCallback preedit_done_cb;
-
-    xxic = ((GdkICPrivate*)xic)->xic;
-    preedit_start_cb.callback = (XIMProc)preedit_start_cbproc;
-    preedit_draw_cb.callback = (XIMProc)preedit_draw_cbproc;
-    preedit_caret_cb.callback = (XIMProc)preedit_caret_cbproc;
-    preedit_done_cb.callback = (XIMProc)preedit_done_cbproc;
-    preedit_attr
-	 = XVaCreateNestedList(0,
-			       XNPreeditStartCallback, &preedit_start_cb,
-			       XNPreeditDrawCallback, &preedit_draw_cb,
-			       XNPreeditCaretCallback, &preedit_caret_cb,
-			       XNPreeditDoneCallback, &preedit_done_cb,
-			       NULL);
-    XSetICValues(xxic, XNPreeditAttributes, preedit_attr, NULL);
-    XFree(preedit_attr);
-}
-
-    static void
-reset_state_setup(GdkIC *ic UNUSED)
-{
-#ifdef USE_X11R6_XIM
-    /* don't change the input context when we call reset */
-    XSetICValues(((GdkICPrivate *)ic)->xic, XNResetState, XIMPreserveState,
-									NULL);
-#endif
-}
-
-    void
-xim_init(void)
-{
-#ifdef XIM_DEBUG
-    xim_log("xim_init()\n");
-#endif
-
-    xic = NULL;
-    xic_attr = NULL;
-
-    if (!gdk_im_ready())
-    {
-	if (p_verbose > 0)
-	{
-	    verbose_enter();
-	    EMSG(_("E292: Input Method Server is not running"));
-	    verbose_leave();
-	}
-	return;
-    }
-    if ((xic_attr = gdk_ic_attr_new()) != NULL)
-    {
-#ifdef FEAT_XFONTSET
-	gint width, height;
-#endif
-	int		mask;
-	GdkColormap	*colormap;
-	GdkICAttr	*attr = xic_attr;
-	int		attrmask = (int)GDK_IC_ALL_REQ;
-	GtkWidget	*widget = gui.drawarea;
-
-	attr->style = (GdkIMStyle)xim_input_style;
-	attr->client_window = gui.mainwin->window;
-
-	if ((colormap = gtk_widget_get_colormap(widget)) !=
-	    gtk_widget_get_default_colormap())
-	{
-	    attrmask |= (int)GDK_IC_PREEDIT_COLORMAP;
-	    attr->preedit_colormap = colormap;
-	}
-	attrmask |= (int)GDK_IC_PREEDIT_FOREGROUND;
-	attrmask |= (int)GDK_IC_PREEDIT_BACKGROUND;
-	attr->preedit_foreground = widget->style->fg[GTK_STATE_NORMAL];
-	attr->preedit_background = widget->style->base[GTK_STATE_NORMAL];
-
-#ifdef FEAT_XFONTSET
-	if ((xim_input_style & (int)GDK_IM_PREEDIT_MASK)
-					      == (int)GDK_IM_PREEDIT_POSITION)
-	{
-	    if (gui.fontset == NOFONTSET
-		    || gui.fontset->type != GDK_FONT_FONTSET)
-	    {
-		EMSG(_(e_overthespot));
-	    }
-	    else
-	    {
-		gdk_window_get_size(widget->window, &width, &height);
-
-		attrmask |= (int)GDK_IC_PREEDIT_POSITION_REQ;
-		attr->spot_location.x = TEXT_X(0);
-		attr->spot_location.y = TEXT_Y(0);
-		attr->preedit_area.x = gui.border_offset;
-		attr->preedit_area.y = gui.border_offset;
-		attr->preedit_area.width = width - 2*gui.border_offset;
-		attr->preedit_area.height = height - 2*gui.border_offset;
-		attr->preedit_fontset = gui.fontset;
-	    }
-	}
-
-	if ((xim_input_style & (int)GDK_IM_STATUS_MASK)
-						   == (int)GDK_IM_STATUS_AREA)
-	{
-	    if (gui.fontset == NOFONTSET
-		    || gui.fontset->type != GDK_FONT_FONTSET)
-	    {
-		EMSG(_(e_overthespot));
-	    }
-	    else
-	    {
-		gdk_window_get_size(gui.mainwin->window, &width, &height);
-		attrmask |= (int)GDK_IC_STATUS_AREA_REQ;
-		attr->status_area.x = 0;
-		attr->status_area.y = height - gui.char_height - 1;
-		attr->status_area.width = width;
-		attr->status_area.height = gui.char_height;
-		attr->status_fontset = gui.fontset;
-	    }
-	}
-	else if ((xim_input_style & (int)GDK_IM_STATUS_MASK)
-					      == (int)GDK_IM_STATUS_CALLBACKS)
-	{
-	    /* FIXME */
-	}
-#endif
-
-	xic = gdk_ic_new(attr, (GdkICAttributesType)attrmask);
-
-	if (xic == NULL)
-	    EMSG(_(e_xim));
-	else
-	{
-	    mask = (int)gdk_window_get_events(widget->window);
-	    mask |= (int)gdk_ic_get_events(xic);
-	    gdk_window_set_events(widget->window, (GdkEventMask)mask);
-	    if (xim_input_style & (int)GDK_IM_PREEDIT_CALLBACKS)
-		preedit_callback_setup(xic);
-	    reset_state_setup(xic);
-	}
-    }
-}
-
-    void
-im_shutdown(void)
-{
-#ifdef XIM_DEBUG
-    xim_log("im_shutdown()\n");
-#endif
-
-    if (xic != NULL)
-    {
-	gdk_im_end();
-	gdk_ic_destroy(xic);
-	xic = NULL;
-    }
-    xim_is_active = FALSE;
-    xim_can_preediting = FALSE;
-    preedit_start_col = MAXCOL;
-    xim_has_preediting = FALSE;
-}
-
-#endif /* FEAT_GUI_GTK */
-
     int
 xim_get_status_area_height()
 {
-#ifdef FEAT_GUI_GTK
-    if (xim_input_style & (int)GDK_IM_STATUS_AREA)
-	return gui.char_height;
-#else
     if (status_area_enabled)
 	return gui.char_height;
-#endif
     return 0;
 }
 
@@ -6487,10 +5624,6 @@ xim_get_status_area_height()
     int
 im_get_status()
 {
-#  ifdef FEAT_GUI_GTK
-    if (xim_input_style & (int)GDK_IM_PREEDIT_CALLBACKS)
-	return xim_can_preediting;
-#  endif
     return xim_has_focus;
 }
 

@@ -235,13 +235,8 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 				   actual color */
 
 #ifdef FEAT_GUI_GTK
-# ifdef HAVE_GTK2
   typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */
   typedef PangoFontDescription  *GuiFontset;    /* handle for a GUI fontset */
-# else
-  typedef GdkFont	*GuiFont;	/* handle for a GUI font */
-  typedef GdkFont	*GuiFontset;	/* handle for a GUI fontset */
-# endif
 # define NOFONT		(GuiFont)NULL
 # define NOFONTSET	(GuiFontset)NULL
 #else
@@ -402,24 +397,15 @@ typedef struct Gui
     GdkColor	*fgcolor;	    /* GDK-styled foreground color */
     GdkColor	*bgcolor;	    /* GDK-styled background color */
     GdkColor	*spcolor;	    /* GDK-styled special color */
-# ifndef HAVE_GTK2
-    GuiFont	current_font;
-# endif
     GdkGC	*text_gc;	    /* cached GC for normal text */
-# ifdef HAVE_GTK2
     PangoContext     *text_context; /* the context used for all text */
     PangoFont	     *ascii_font;   /* cached font for ASCII strings */
     PangoGlyphString *ascii_glyphs; /* cached code point -> glyph map */
-# endif
 # ifdef FEAT_GUI_TABLINE
     GtkWidget	*tabline;	    /* tab pages line handle */
 # endif
 
     GtkAccelGroup *accel_group;
-# ifndef HAVE_GTK2
-    GtkWidget	*fontdlg;	    /* font selection dialog window */
-    char_u	*fontname;	    /* font name from font selection dialog */
-# endif
     GtkWidget	*filedlg;	    /* file selection dialog */
     char_u	*browse_fname;	    /* file name from filedlg */
 #endif	/* FEAT_GUI_GTK */

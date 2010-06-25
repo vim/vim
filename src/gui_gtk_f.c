@@ -54,10 +54,6 @@ static void gtk_form_size_request(GtkWidget *widget,
 				  GtkRequisition *requisition);
 static void gtk_form_size_allocate(GtkWidget *widget,
 				   GtkAllocation *allocation);
-#ifndef HAVE_GTK2  /* this isn't needed in gtk2 */
-static void gtk_form_draw(GtkWidget *widget,
-			  GdkRectangle *area);
-#endif
 static gint gtk_form_expose(GtkWidget *widget,
 			    GdkEventExpose *event);
 
@@ -172,27 +168,6 @@ gtk_form_move(GtkForm	*form,
     }
 }
 
-#if !defined(HAVE_GTK2) || defined(PROTO)
-    void
-gtk_form_set_size(GtkForm *form, guint width, guint height)
-{
-    g_return_if_fail(GTK_IS_FORM(form));
-
-    /* prevent useless calls */
-    if (form->width == width && form->height == height)
-	return;
-    form->width = width;
-    form->height = height;
-
-    /* signal the change */
-#ifdef HAVE_GTK2
-    gtk_widget_queue_resize(gtk_widget_get_parent(GTK_WIDGET(form)));
-#else
-    gtk_container_queue_resize(GTK_CONTAINER(GTK_WIDGET(form)->parent));
-#endif
-}
-#endif
-
     void
 gtk_form_freeze(GtkForm *form)
 {
@@ -211,11 +186,7 @@ gtk_form_thaw(GtkForm *form)
 	if (!(--form->freeze_count))
 	{
 	    gtk_form_position_children(form);
-#ifdef HAVE_GTK2
 	    gtk_widget_queue_draw(GTK_WIDGET(form));
-#else
-	    gtk_widget_draw(GTK_WIDGET(form), NULL);
-#endif
 	}
     }
 }
@@ -259,9 +230,6 @@ gtk_form_class_init(GtkFormClass *klass)
     widget_class->map = gtk_form_map;
     widget_class->size_request = gtk_form_size_request;
     widget_class->size_allocate = gtk_form_size_allocate;
-#ifndef HAVE_GTK2 /* not needed for GTK2 */
-    widget_class->draw = gtk_form_draw;
-#endif
     widget_class->expose_event = gtk_form_expose;
 
     container_class->remove = gtk_form_remove;
@@ -421,37 +389,6 @@ gtk_form_unrealize(GtkWidget *widget)
 	 (* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
 }
 
-#ifndef HAVE_GTK2
-    static void
-gtk_form_draw(GtkWidget *widget, GdkRectangle *area)
-{
-    GtkForm		*form;
-    GList		*children;
-    GtkFormChild	*child;
-    GdkRectangle	child_area;
-
-    g_return_if_fail(GTK_IS_FORM(widget));
-
-    if (GTK_WIDGET_DRAWABLE(widget))
-    {
-	form = GTK_FORM(widget);
-
-	children = form->children;
-
-	while (children)
-	{
-	    child = children->data;
-
-	    if (GTK_WIDGET_DRAWABLE(child->widget)
-		    && gtk_widget_intersect(child->widget, area, &child_area))
-		gtk_widget_draw(child->widget, &child_area);
-
-	    children = children->next;
-	}
-    }
-}
-#endif /* !HAVE_GTK2 */
-
     static void
 gtk_form_size_request(GtkWidget *widget, GtkRequisition *requisition)
 {
@@ -536,7 +473,6 @@ gtk_form_expose(GtkWidget *widget, GdkEventExpose *event)
 
     for (tmp_list = form->children; tmp_list; tmp_list = tmp_list->next)
     {
-#ifdef HAVE_GTK2
 	GtkFormChild	*formchild = tmp_list->data;
 	GtkWidget	*child	   = formchild->widget;
 	/*
@@ -557,12 +493,6 @@ gtk_form_expose(GtkWidget *widget, GdkEventExpose *event)
 		gtk_widget_send_expose(child, (GdkEvent *)&child_event);
 	    }
 	}
-#else /* !HAVE_GTK2 */
-	GtkFormChild *child = tmp_list->data;
-
-	if (event->window == child->window)
-	    return gtk_widget_event(child->widget, (GdkEvent *) event);
-#endif /* !HAVE_GTK2 */
     }
 
     return FALSE;
@@ -854,28 +784,12 @@ gtk_form_main_filter(GdkXEvent *gdk_xevent,
     return GDK_FILTER_CONTINUE;
 }
 
-/* Routines to set the window gravity, and check whether it is
- * functional. Extra capabilities need to be added to GDK, so
- * we don't have to use Xlib here.
- */
     static void
 gtk_form_set_static_gravity(GdkWindow *window, gboolean use_static)
 {
-#ifdef HAVE_GTK2
     /* We don't check if static gravity is actually supported, because it
      * results in an annoying assertion error message. */
     gdk_window_set_static_gravities(window, use_static);
-#else
-    XSetWindowAttributes xattributes;
-
-    xattributes.win_gravity = (use_static) ? StaticGravity : NorthWestGravity;
-    xattributes.bit_gravity = (use_static) ? StaticGravity : NorthWestGravity;
-
-    XChangeWindowAttributes(GDK_WINDOW_XDISPLAY(window),
-			    GDK_WINDOW_XWINDOW(window),
-			    CWBitGravity | CWWinGravity,
-			    &xattributes);
-#endif
 }
 
     void
@@ -903,11 +817,7 @@ gtk_form_send_configure(GtkForm *form)
     event.width = widget->allocation.width;
     event.height = widget->allocation.height;
 
-#ifdef HAVE_GTK2
     gtk_main_do_event((GdkEvent*)&event);
-#else
-    gtk_widget_event(widget, (GdkEvent*)&event);
-#endif
 }
 
     static void

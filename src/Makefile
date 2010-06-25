@@ -325,9 +325,7 @@ CClink = $(CC)
 # Uncomment one of these lines if you have that GUI but don't want to use it.
 # The automatic check will use another one that can be found.
 # Gnome is disabled by default, it may cause trouble.
-#CONF_OPT_GUI = --disable-gtk-check
 #CONF_OPT_GUI = --disable-gtk2-check
-#CONF_OPT_GUI = --enable-gnome-check
 #CONF_OPT_GUI = --enable-gnome2-check
 #CONF_OPT_GUI = --disable-motif-check
 #CONF_OPT_GUI = --disable-athena-check
@@ -339,6 +337,7 @@ CClink = $(CC)
 #
 # GTK versions that are known not to work 100% are rejected.
 # Use "--disable-gtktest" to accept them anyway.
+# Only GTK 2 is supported, for GTK 1 use Vim 7.2.
 #
 # GNOME means GTK with Gnome support.  If using GTK and --enable-gnome-check
 # is used then GNOME will automatically be used if it is found.  If you have
@@ -346,11 +345,8 @@ CClink = $(CC)
 # --enable-gui=gtk or leave out --enable-gnome-check.
 #
 # If the selected GUI isn't found, the GUI is disabled automatically
-#CONF_OPT_GUI = --enable-gui=gtk
-#CONF_OPT_GUI = --enable-gui=gtk --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=gtk2
 #CONF_OPT_GUI = --enable-gui=gtk2 --disable-gtktest
-#CONF_OPT_GUI = --enable-gui=gnome
 #CONF_OPT_GUI = --enable-gui=gnome2
 #CONF_OPT_GUI = --enable-gui=gnome2 --disable-gtktest
 #CONF_OPT_GUI = --enable-gui=motif
@@ -396,8 +392,8 @@ CClink = $(CC)
 # RUBY
 # Uncomment this when you want to include the Ruby interface.
 # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
-# CONF_OPT_RUBY = --enable-rubyinterp
-# CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
+#CONF_OPT_RUBY = --enable-rubyinterp
+#CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
 
 # MZSCHEME
 # Uncomment this when you want to include the MzScheme interface.

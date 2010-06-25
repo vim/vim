@@ -3233,9 +3233,7 @@ usage()
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
     main_msg(_("-display <display>\tRun vim on <display> (also: --display)"));
-# ifdef HAVE_GTK2
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
-# endif
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
 #endif
 #ifdef FEAT_GUI_W32

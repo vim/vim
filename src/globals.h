@@ -847,13 +847,7 @@ EXTERN int* (*iconv_errno) (void);
 
 #ifdef FEAT_XIM
 # ifdef FEAT_GUI_GTK
-#  ifdef HAVE_GTK2
 EXTERN GtkIMContext	*xic INIT(= NULL);
-#  else
-EXTERN GdkICAttr	*xic_attr INIT(= NULL);
-EXTERN GdkIC		*xic INIT(= NULL);
-EXTERN char		*draw_feedback INIT(= NULL);
-#  endif
 /*
  * Start and end column of the preedit area in virtual columns from the start
  * of the text line.  When there is no preedit area they are set to MAXCOL.
@@ -1402,7 +1396,7 @@ EXTERN char_u e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN)
 EXTERN char_u e_font[]		INIT(= N_("E235: Unknown font: %s"));
 #endif
-#if (defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)) && !defined(HAVE_GTK2)
+#if defined(FEAT_GUI_X11) && !defined(HAVE_GTK2)
 EXTERN char_u e_fontwidth[]	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
 #endif
 EXTERN char_u e_internal[]	INIT(= N_("E473: Internal error"));

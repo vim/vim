@@ -157,9 +157,6 @@ static void pointer_event __ARGS((BalloonEval *, int, int, unsigned));
 static void key_event __ARGS((BalloonEval *, unsigned, int));
 static gint timeout_cb __ARGS((gpointer));
 static gint balloon_expose_event_cb __ARGS((GtkWidget *, GdkEventExpose *, gpointer));
-# ifndef HAVE_GTK2
-static void balloon_draw_cb __ARGS((GtkWidget *, GdkRectangle *, gpointer));
-# endif
 #else
 static void addEventHandler __ARGS((Widget, BalloonEval *));
 static void removeEventHandler __ARGS((BalloonEval *));
@@ -534,9 +531,7 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 		cancelBalloon(beval);
 	    break;
 	case GDK_BUTTON_PRESS:
-# ifdef HAVE_GTK2
 	case GDK_SCROLL:
-# endif
 	    cancelBalloon(beval);
 	    break;
 	case GDK_KEY_PRESS:
@@ -675,25 +670,6 @@ balloon_expose_event_cb(GtkWidget *widget,
 
     return FALSE; /* continue emission */
 }
-
-# ifndef HAVE_GTK2
-    static void
-balloon_draw_cb(GtkWidget *widget, GdkRectangle *area, gpointer data)
-{
-    GtkWidget	    *child;
-    GdkRectangle    child_area;
-
-    gtk_paint_flat_box(widget->style, widget->window,
-		       GTK_STATE_NORMAL, GTK_SHADOW_OUT,
-		       area, widget, "tooltip",
-		       0, 0, -1, -1);
-
-    child = GTK_BIN(widget)->child;
-
-    if (gtk_widget_intersect(child, area, &child_area))
-	gtk_widget_draw(child, &child_area);
-}
-# endif
 
 #else /* !FEAT_GUI_GTK */
 
@@ -913,15 +889,13 @@ requestBalloon(beval)
 }
 
 #ifdef FEAT_GUI_GTK
-
-# ifdef HAVE_GTK2
 /*
  * Convert the string to UTF-8 if 'encoding' is not "utf-8".
  * Replace any non-printable characters and invalid bytes sequences with
  * "^X" or "<xx>" escapes, and apply SpecialKey highlighting to them.
  * TAB and NL are passed through unscathed.
  */
-#  define IS_NONPRINTABLE(c) (((c) < 0x20 && (c) != TAB && (c) != NL) \
+# define IS_NONPRINTABLE(c) (((c) < 0x20 && (c) != TAB && (c) != NL) \
 			      || (c) == DEL)
     static void
 set_printable_label_text(GtkLabel *label, char_u *text)
@@ -1059,8 +1033,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
     gtk_label_set_attributes(label, attr_list);
     pango_attr_list_unref(attr_list);
 }
-#  undef IS_NONPRINTABLE
-# endif /* HAVE_GTK2 */
+# undef IS_NONPRINTABLE
 
 /*
  * Draw a balloon.
@@ -1077,9 +1050,7 @@ drawBalloon(BalloonEval *beval)
 	int		y;
 	int		x_offset = EVAL_OFFSET_X;
 	int		y_offset = EVAL_OFFSET_Y;
-# ifdef HAVE_GTK2
 	PangoLayout	*layout;
-# endif
 # ifdef HAVE_GTK_MULTIHEAD
 	GdkScreen	*screen;
 
@@ -1094,7 +1065,6 @@ drawBalloon(BalloonEval *beval)
 	gtk_widget_ensure_style(beval->balloonShell);
 	gtk_widget_ensure_style(beval->balloonLabel);
 
-# ifdef HAVE_GTK2
 	set_printable_label_text(GTK_LABEL(beval->balloonLabel), beval->msg);
 	/*
 	 * Dirty trick:  Enable wrapping mode on the label's layout behind its
@@ -1102,11 +1072,11 @@ drawBalloon(BalloonEval *beval)
 	 * builtin maximum value of about 65 Latin characters.
 	 */
 	layout = gtk_label_get_layout(GTK_LABEL(beval->balloonLabel));
-#  ifdef PANGO_WRAP_WORD_CHAR
+# ifdef PANGO_WRAP_WORD_CHAR
 	pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
-#  else
+# else
 	pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
-#  endif
+# endif
 	pango_layout_set_width(layout,
 		/* try to come up with some reasonable width */
 		PANGO_SCALE * CLAMP(gui.num_cols * gui.char_width,
@@ -1115,25 +1085,6 @@ drawBalloon(BalloonEval *beval)
 
 	/* Calculate the balloon's width and height. */
 	gtk_widget_size_request(beval->balloonShell, &requisition);
-# else
-	gtk_label_set_line_wrap(GTK_LABEL(beval->balloonLabel), FALSE);
-	gtk_label_set_text(GTK_LABEL(beval->balloonLabel),
-			   (const char *)beval->msg);
-
-	/* Calculate the balloon's width and height. */
-	gtk_widget_size_request(beval->balloonShell, &requisition);
-	/*
-	 * Unfortunately, the dirty trick used above to get around the builtin
-	 * maximum wrap width of GtkLabel doesn't work with GTK+ 1.  Thus if
-	 * and only if it's absolutely necessary to avoid drawing off-screen,
-	 * do enable wrapping now and recalculate the size request.
-	 */
-	if (requisition.width > screen_w)
-	{
-	    gtk_label_set_line_wrap(GTK_LABEL(beval->balloonLabel), TRUE);
-	    gtk_widget_size_request(beval->balloonShell, &requisition);
-	}
-# endif
 
 	/* Compute position of the balloon area */
 	gdk_window_get_origin(beval->target->window, &x, &y);
@@ -1196,10 +1147,6 @@ createBalloonEvalWindow(BalloonEval *beval)
 
     gtk_signal_connect((GtkObject*)(beval->balloonShell), "expose_event",
 		       GTK_SIGNAL_FUNC(balloon_expose_event_cb), NULL);
-# ifndef HAVE_GTK2
-    gtk_signal_connect((GtkObject*)(beval->balloonShell), "draw",
-		       GTK_SIGNAL_FUNC(balloon_draw_cb), NULL);
-# endif
     beval->balloonLabel = gtk_label_new(NULL);
 
     gtk_label_set_line_wrap(GTK_LABEL(beval->balloonLabel), FALSE);

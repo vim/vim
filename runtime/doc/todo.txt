@@ -1086,8 +1086,8 @@ restored. (Luc St-Louis)
 
 Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
-   Use register_shell_extension()? (George Reilly, 2010 May 26)
-   Ron's version: http://dev.ronware.org/p/vim/finfo?name=gvim.nsi
+   Use register_shell_extension()?
+   Patch from Geoffrey Reilly, 2010 Jun 22
 - Patch for conceal feature from Vince, 2010 June 16.
   Needs some more testing.
 - undofile: keep markers where the file was written/read, so that it's easy to
@@ -1097,7 +1097,6 @@ Vim 7.3:
   Show "file saved" marker in :undolist
 - Function to get undo tree: undotree().  List of lists.  Each entry is a
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
-- Remove support for GTK 1?  Patch by James Vega, Jun 11 (removes too much).
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Minor patches from Dominique Pelle, 2010 May 15
