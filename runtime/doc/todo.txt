@@ -1099,7 +1099,6 @@ Vim 7.3:
   dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
-- Minor patches from Dominique Pelle, 2010 May 15
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
 - Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)

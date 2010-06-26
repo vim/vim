@@ -409,8 +409,7 @@ vms_wproc(char *name, int val)
     int
 mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, int flags)
 {
-    int		i, j = 0, cnt = 0;
-    char	*cp;
+    int		i, cnt = 0;
     char_u	buf[MAXPATHL];
     int		dir;
     int files_alloced, files_free;
@@ -481,7 +480,6 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 mch_expandpath(garray_T *gap, char_u *path, int flags)
 {
     int		i,cnt = 0;
-    char	*cp;
     vms_match_num = 0;
 
     cnt = decc$to_vms(decc$translate_vms(vms_fixfilename(path)), vms_wproc, 1, 0);

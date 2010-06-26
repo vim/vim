@@ -4205,7 +4205,7 @@ iconv_end()
 
 #if defined(FEAT_XIM) || defined(PROTO)
 
-# ifdef FEAT_GUI_GTK
+# if defined(FEAT_GUI_GTK) || defined(PROTO)
 static int xim_has_preediting INIT(= FALSE);  /* IM current status */
 
 /*
@@ -4221,9 +4221,6 @@ init_preedit_start_col(void)
     /* Prevent that preediting marks the buffer as changed. */
     xim_changed_while_preediting = curbuf->b_changed;
 }
-# endif
-
-# if defined(FEAT_GUI_GTK) && !defined(PROTO)
 
 static int im_is_active	       = FALSE;	/* IM is enabled for current mode    */
 static int preedit_is_active   = FALSE;
@@ -5058,6 +5055,18 @@ im_get_status(void)
     return im_is_active;
 }
 
+    int
+preedit_get_status(void)
+{
+    return preedit_is_active;
+}
+
+    int
+im_is_preediting()
+{
+    return xim_has_preediting;
+}
+
 # else /* !FEAT_GUI_GTK */
 
 static int	xim_is_active = FALSE;  /* XIM should be active in the current
@@ -5190,111 +5199,6 @@ xim_set_preedit()
 	    EMSG(_("E284: Cannot set IC values"));
 	XFree(attr_list);
     }
-}
-
-/*
- * Set up the status area.
- *
- * This should use a separate Widget, but that seems not possible, because
- * preedit_area and status_area should be set to the same window as for the
- * text input.  Unfortunately this means the status area pollutes the text
- * window...
- */
-    void
-xim_set_status_area()
-{
-    if (xic == NULL)
-	return;
-
-    XVaNestedList preedit_list = 0, status_list = 0, list = 0;
-    XRectangle pre_area, status_area;
-
-    if (input_style & XIMStatusArea)
-    {
-	if (input_style & XIMPreeditArea)
-	{
-	    XRectangle *needed_rect;
-
-	    /* to get status_area width */
-	    status_list = XVaCreateNestedList(0, XNAreaNeeded,
-					      &needed_rect, NULL);
-	    XGetICValues(xic, XNStatusAttributes, status_list, NULL);
-	    XFree(status_list);
-
-	    status_area.width = needed_rect->width;
-	}
-	else
-	    status_area.width = gui.char_width * Columns;
-
-	status_area.x = 0;
-	status_area.y = gui.char_height * Rows + gui.border_offset;
-	if (gui.which_scrollbars[SBAR_BOTTOM])
-	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	if (gui.menu_is_active)
-	    status_area.y += gui.menu_height;
-#endif
-	status_area.height = gui.char_height;
-	status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
-    }
-    else
-    {
-	status_area.x = 0;
-	status_area.y = gui.char_height * Rows + gui.border_offset;
-	if (gui.which_scrollbars[SBAR_BOTTOM])
-	    status_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	if (gui.menu_is_active)
-	    status_area.y += gui.menu_height;
-#endif
-	status_area.width = 0;
-	status_area.height = gui.char_height;
-    }
-
-    if (input_style & XIMPreeditArea)   /* off-the-spot */
-    {
-	pre_area.x = status_area.x + status_area.width;
-	pre_area.y = gui.char_height * Rows + gui.border_offset;
-	pre_area.width = gui.char_width * Columns - pre_area.x;
-	if (gui.which_scrollbars[SBAR_BOTTOM])
-	    pre_area.y += gui.scrollbar_height;
-#ifdef FEAT_MENU
-	if (gui.menu_is_active)
-	    pre_area.y += gui.menu_height;
-#endif
-	pre_area.height = gui.char_height;
-	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
-    }
-    else if (input_style & XIMPreeditPosition)   /* over-the-spot */
-    {
-	pre_area.x = 0;
-	pre_area.y = 0;
-	pre_area.height = gui.char_height * Rows;
-	pre_area.width = gui.char_width * Columns;
-	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
-    }
-
-    if (preedit_list && status_list)
-	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
-				   XNStatusAttributes, status_list, NULL);
-    else if (preedit_list)
-	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
-				   NULL);
-    else if (status_list)
-	list = XVaCreateNestedList(0, XNStatusAttributes, status_list,
-				   NULL);
-    else
-	list = NULL;
-
-    if (list)
-    {
-	XSetICValues(xic, XNVaNestedList, list, NULL);
-	XFree(list);
-    }
-    if (status_list)
-	XFree(status_list);
-    if (preedit_list)
-	XFree(preedit_list);
 }
 
 #if defined(FEAT_GUI_X11)
@@ -5607,14 +5511,6 @@ xim_real_init(x11_window, x11_display)
 
 #endif /* FEAT_GUI_X11 */
 
-    int
-xim_get_status_area_height()
-{
-    if (status_area_enabled)
-	return gui.char_height;
-    return 0;
-}
-
 /*
  * Get IM status.  When IM is on, return TRUE.  Else return FALSE.
  * FIXME: This doesn't work correctly: Having focus doesn't always mean XIM is
@@ -5629,21 +5525,121 @@ im_get_status()
 
 # endif /* !FEAT_GUI_GTK */
 
-# if defined(FEAT_GUI_GTK) || defined(PROTO)
-    int
-preedit_get_status(void)
+# if !defined(FEAT_GUI_GTK) || defined(PROTO)
+/*
+ * Set up the status area.
+ *
+ * This should use a separate Widget, but that seems not possible, because
+ * preedit_area and status_area should be set to the same window as for the
+ * text input.  Unfortunately this means the status area pollutes the text
+ * window...
+ */
+    void
+xim_set_status_area()
 {
-    return preedit_is_active;
+    if (xic == NULL)
+	return;
+
+    XVaNestedList preedit_list = 0, status_list = 0, list = 0;
+    XRectangle pre_area, status_area;
+
+    if (input_style & XIMStatusArea)
+    {
+	if (input_style & XIMPreeditArea)
+	{
+	    XRectangle *needed_rect;
+
+	    /* to get status_area width */
+	    status_list = XVaCreateNestedList(0, XNAreaNeeded,
+					      &needed_rect, NULL);
+	    XGetICValues(xic, XNStatusAttributes, status_list, NULL);
+	    XFree(status_list);
+
+	    status_area.width = needed_rect->width;
+	}
+	else
+	    status_area.width = gui.char_width * Columns;
+
+	status_area.x = 0;
+	status_area.y = gui.char_height * Rows + gui.border_offset;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    status_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    status_area.y += gui.menu_height;
+#endif
+	status_area.height = gui.char_height;
+	status_list = XVaCreateNestedList(0, XNArea, &status_area, NULL);
+    }
+    else
+    {
+	status_area.x = 0;
+	status_area.y = gui.char_height * Rows + gui.border_offset;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    status_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    status_area.y += gui.menu_height;
+#endif
+	status_area.width = 0;
+	status_area.height = gui.char_height;
+    }
+
+    if (input_style & XIMPreeditArea)   /* off-the-spot */
+    {
+	pre_area.x = status_area.x + status_area.width;
+	pre_area.y = gui.char_height * Rows + gui.border_offset;
+	pre_area.width = gui.char_width * Columns - pre_area.x;
+	if (gui.which_scrollbars[SBAR_BOTTOM])
+	    pre_area.y += gui.scrollbar_height;
+#ifdef FEAT_MENU
+	if (gui.menu_is_active)
+	    pre_area.y += gui.menu_height;
+#endif
+	pre_area.height = gui.char_height;
+	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
+    }
+    else if (input_style & XIMPreeditPosition)   /* over-the-spot */
+    {
+	pre_area.x = 0;
+	pre_area.y = 0;
+	pre_area.height = gui.char_height * Rows;
+	pre_area.width = gui.char_width * Columns;
+	preedit_list = XVaCreateNestedList(0, XNArea, &pre_area, NULL);
+    }
+
+    if (preedit_list && status_list)
+	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
+				   XNStatusAttributes, status_list, NULL);
+    else if (preedit_list)
+	list = XVaCreateNestedList(0, XNPreeditAttributes, preedit_list,
+				   NULL);
+    else if (status_list)
+	list = XVaCreateNestedList(0, XNStatusAttributes, status_list,
+				   NULL);
+    else
+	list = NULL;
+
+    if (list)
+    {
+	XSetICValues(xic, XNVaNestedList, list, NULL);
+	XFree(list);
+    }
+    if (status_list)
+	XFree(status_list);
+    if (preedit_list)
+	XFree(preedit_list);
+}
+
+    int
+xim_get_status_area_height()
+{
+    if (status_area_enabled)
+	return gui.char_height;
+    return 0;
 }
 # endif
 
-# if defined(FEAT_GUI_GTK) || defined(PROTO)
-    int
-im_is_preediting()
-{
-    return xim_has_preediting;
-}
-# endif
 #endif /* FEAT_XIM */
 
 #if defined(FEAT_MBYTE) || defined(PROTO)

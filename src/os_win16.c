@@ -193,8 +193,6 @@ mch_check_win(
     int argc,
     char **argv)
 {
-    int		i;
-
     return OK;	    /* GUI always has a tty */
 }
 

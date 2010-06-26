@@ -588,7 +588,7 @@ staterr:
 		)
 	{
 	    fname[strlen(fname)-1] = '\0';
-	    if (strlen(fname) == 0)
+	    if (fname[0] == '\0')
 		break;
 	}
 	if (fname[0] == '\0')

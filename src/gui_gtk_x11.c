@@ -4013,7 +4013,7 @@ gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
     /*
      * FIXME: dirty trick: Because the gui_get_base_height() doesn't include
      * the toolbar and menubar for GTK, we subtract them from the screen
-     * hight, so that the window size can be made to fit on the screen.
+     * height, so that the window size can be made to fit on the screen.
      * This should be completely changed later.
      */
     *screen_w -= get_menu_tool_width();
@@ -4818,7 +4818,7 @@ count_cluster_cells(char_u *s, PangoItem *item,
  * If ink_rect.x is negative Pango apparently has taken care of the composing
  * by itself.  Actually setting x_offset = 0 should be sufficient then, but due
  * to problems with composing from different fonts we still need to fine-tune
- * x_offset to avoid uglyness.
+ * x_offset to avoid ugliness.
  *
  * If ink_rect.x is not negative, force overstriking by pointing x_offset to
  * the position of the previous glyph.	Apparently this happens only with old

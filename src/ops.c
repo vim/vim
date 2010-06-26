@@ -5444,7 +5444,7 @@ write_viminfo_registers(fp)
     int	    max_kbyte;
     long    len;
 
-    fprintf(fp, _("\n# Registers:\n"));
+    fputs(_("\n# Registers:\n"), fp);
 
     /* Get '<' value, use old '"' value if '<' is not found. */
     max_num_lines = get_viminfo_parameter('<');
@@ -5474,7 +5474,7 @@ write_viminfo_registers(fp)
 	num_lines = y_regs[i].y_size;
 	if (num_lines == 0
 		|| (num_lines == 1 && y_regs[i].y_type == MCHAR
-					&& STRLEN(y_regs[i].y_array[0]) == 0))
+					&& *y_regs[i].y_array[0] == NUL))
 	    continue;
 
 	if (max_kbyte > 0)

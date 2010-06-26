@@ -3494,7 +3494,7 @@ netbeans_draw_multisign_indicator(int row)
 }
 #endif /* FEAT_GUI_MOTIF */
 
-#ifdef FEAT_GUI_GTK
+#if defined(FEAT_GUI_GTK) && !defined(PROTO)
 /*
  * We have multiple signs to draw at the same location. Draw the
  * multi-sign indicator instead. This is the GTK/Gnome version.

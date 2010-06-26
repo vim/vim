@@ -175,7 +175,7 @@ static int mzscheme_to_vim(Scheme_Object *obj, typval_T *tv, int depth,
 #endif
 
 #ifdef MZ_PRECISE_GC
-static int buffer_size_proc(void *obj)
+static int buffer_size_proc(void *obj UNUSED)
 {
     return gcBYTES_TO_WORDS(sizeof(vim_mz_buffer));
 }
@@ -187,7 +187,7 @@ static int buffer_fixup_proc(void *obj)
 {
     return buffer_size_proc(obj);
 }
-static int window_size_proc(void *obj)
+static int window_size_proc(void *obj UNUSED)
 {
     return gcBYTES_TO_WORDS(sizeof(vim_mz_window));
 }
@@ -708,16 +708,16 @@ static void remove_timer(void);
 /* timers are presented in GUI only */
 # if defined(FEAT_GUI_W32)
     static void CALLBACK
-timer_proc(HWND hwnd, UINT uMsg, UINT idEvent, DWORD dwTime)
+timer_proc(HWND hwnd UNUSED, UINT uMsg UNUSED, UINT idEvent UNUSED, DWORD dwTime UNUSED)
 # elif defined(FEAT_GUI_GTK)
     static gint
-timer_proc(gpointer data)
+timer_proc(gpointer data UNUSED)
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     static void
-timer_proc(XtPointer timed_out, XtIntervalId *interval_id)
+timer_proc(XtPointer timed_out UNUSED, XtIntervalId *interval_id UNUSED)
 # elif defined(FEAT_GUI_MAC)
     pascal void
-timer_proc(EventLoopTimerRef theTimer, void *userData)
+timer_proc(EventLoopTimerRef theTimer UNUSED, void *userData UNUSED)
 # endif
 {
     scheme_check_threads();
@@ -806,7 +806,7 @@ mzscheme_main(void)
 }
 
     static int
-mzscheme_env_main(Scheme_Env *env, int argc, char **argv)
+mzscheme_env_main(Scheme_Env *env, int argc UNUSED, char **argv UNUSED)
 {
     /* neither argument nor return values are used */
 #ifdef MZ_PRECISE_GC
@@ -1190,7 +1190,7 @@ ex_mzscheme(exarg_T *eap)
 }
 
     static Scheme_Object *
-do_load(void *data, int noargc, Scheme_Object **noargv)
+do_load(void *data, int noargc UNUSED, Scheme_Object **noargv UNUSED)
 {
     Scheme_Object   *expr = NULL;
     Scheme_Object   *result = NULL;
@@ -1306,7 +1306,7 @@ extract_exn_message(Scheme_Object *v)
 }
 
     static Scheme_Object *
-do_eval(void *s, int noargc, Scheme_Object **noargv)
+do_eval(void *s, int noargc UNUSED, Scheme_Object **noargv UNUSED)
 {
     return scheme_eval_string_all((char *)s, environment, TRUE);
 }
@@ -1317,7 +1317,7 @@ do_eval(void *s, int noargc, Scheme_Object **noargv)
  *========================================================================
  */
     static void
-do_intrnl_output(char *mesg, long len, int error)
+do_intrnl_output(char *mesg, int error)
 {
     char *p, *prev;
 
@@ -1341,21 +1341,21 @@ do_intrnl_output(char *mesg, long len, int error)
 }
 
     static void
-do_output(char *mesg, long len)
+do_output(char *mesg, long len UNUSED)
 {
-    do_intrnl_output(mesg, len, 0);
+    do_intrnl_output(mesg, 0);
 }
 
     static void
-do_err_output(char *mesg, long len)
+do_err_output(char *mesg)
 {
-    do_intrnl_output(mesg, len, 1);
+    do_intrnl_output(mesg, 1);
 }
 
     static void
 do_printf(char *format, ...)
 {
-    do_intrnl_output(format, STRLEN(format), 1);
+    do_intrnl_output(format, 1);
 }
 
     static void
@@ -1368,7 +1368,7 @@ do_flush(void)
     MZ_GC_CHECK();
     if (length)
     {
-	do_err_output(buff, length);
+	do_err_output(buff);
 	return;
     }
 
@@ -1438,21 +1438,21 @@ vim_eval(void *data, int argc, Scheme_Object **argv)
 
 /* (range-start) */
     static Scheme_Object *
-get_range_start(void *data, int argc, Scheme_Object **argv)
+get_range_start(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     return scheme_make_integer(range_start);
 }
 
 /* (range-end) */
     static Scheme_Object *
-get_range_end(void *data, int argc, Scheme_Object **argv)
+get_range_end(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     return scheme_make_integer(range_end);
 }
 
 /* (beep) */
     static Scheme_Object *
-mzscheme_beep(void *data, int argc, Scheme_Object **argv)
+mzscheme_beep(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     vim_beep();
     return scheme_void;
@@ -1584,14 +1584,14 @@ set_option(void *data, int argc, Scheme_Object **argv)
 
 /* (curr-win) */
     static Scheme_Object *
-get_curr_win(void *data, int argc, Scheme_Object **argv)
+get_curr_win(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     return (Scheme_Object *)get_vim_curr_window();
 }
 
 /* (win-count) */
     static Scheme_Object *
-get_window_count(void *data, int argc, Scheme_Object **argv)
+get_window_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     win_T   *w;
     int	    n = 0;
@@ -1926,7 +1926,7 @@ get_buffer_num(void *data, int argc, Scheme_Object **argv)
 
 /* (buff-count) */
     static Scheme_Object *
-get_buffer_count(void *data, int argc, Scheme_Object **argv)
+get_buffer_count(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     buf_T   *b;
     int	    n = 0;
@@ -1947,7 +1947,7 @@ get_buffer_name(void *data, int argc, Scheme_Object **argv)
 
 /* (curr-buff) */
     static Scheme_Object *
-get_curr_buffer(void *data, int argc, Scheme_Object **argv)
+get_curr_buffer(void *data UNUSED, int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     return (Scheme_Object *)get_vim_curr_buffer();
 }
@@ -2521,7 +2521,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
  */
 /* (buff? obj) */
     static Scheme_Object *
-vim_bufferp(void *data, int argc, Scheme_Object **argv)
+vim_bufferp(void *data UNUSED, int argc UNUSED, Scheme_Object **argv)
 {
     if (SCHEME_VIMBUFFERP(argv[0]))
 	return scheme_true;
@@ -2531,7 +2531,7 @@ vim_bufferp(void *data, int argc, Scheme_Object **argv)
 
 /* (win? obj) */
     static Scheme_Object *
-vim_windowp(void *data, int argc, Scheme_Object **argv)
+vim_windowp(void *data UNUSED, int argc UNUSED, Scheme_Object **argv)
 {
     if (SCHEME_VIMWINDOWP(argv[0]))
 	return scheme_true;
@@ -2541,7 +2541,7 @@ vim_windowp(void *data, int argc, Scheme_Object **argv)
 
 /* (buff-valid? obj) */
     static Scheme_Object *
-vim_buffer_validp(void *data, int argc, Scheme_Object **argv)
+vim_buffer_validp(void *data UNUSED, int argc UNUSED, Scheme_Object **argv)
 {
     if (SCHEME_VIMBUFFERP(argv[0])
 	    && ((vim_mz_buffer *)argv[0])->buf != INVALID_BUFFER_VALUE)
@@ -2552,7 +2552,7 @@ vim_buffer_validp(void *data, int argc, Scheme_Object **argv)
 
 /* (win-valid? obj) */
     static Scheme_Object *
-vim_window_validp(void *data, int argc, Scheme_Object **argv)
+vim_window_validp(void *data UNUSED, int argc UNUSED, Scheme_Object **argv)
 {
     if (SCHEME_VIMWINDOWP(argv[0])
 	    && ((vim_mz_window *)argv[0])->win != INVALID_WINDOW_VALUE)
@@ -3315,7 +3315,7 @@ sandbox_check(void)
 
 /* security guards to force Vim's sandbox restrictions on MzScheme level */
     static Scheme_Object *
-sandbox_file_guard(int argc, Scheme_Object **argv)
+sandbox_file_guard(int argc UNUSED, Scheme_Object **argv)
 {
     if (sandbox)
     {
@@ -3361,7 +3361,7 @@ sandbox_file_guard(int argc, Scheme_Object **argv)
 }
 
     static Scheme_Object *
-sandbox_network_guard(int argc, Scheme_Object **argv)
+sandbox_network_guard(int argc UNUSED, Scheme_Object **argv UNUSED)
 {
     return scheme_void;
 }

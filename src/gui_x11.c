@@ -1162,9 +1162,9 @@ gui_x11_mouse_cb(w, dud, event, dum)
 /* ARGSUSED */
     static void
 gui_x11_sniff_request_cb(closure, source, id)
-    XtPointer	closure;
-    int		*source;
-    XtInputId	*id;
+    XtPointer	closure UNUSED;
+    int		*source UNUSED;
+    XtInputId	*id UNUSED;
 {
     static char_u bytes[3] = {CSI, (int)KS_EXTRA, (int)KE_SNIFF};
 
