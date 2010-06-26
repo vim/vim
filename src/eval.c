@@ -445,6 +445,7 @@ static int free_unref_items __ARGS((int copyID));
 static void set_ref_in_ht __ARGS((hashtab_T *ht, int copyID));
 static void set_ref_in_list __ARGS((list_T *l, int copyID));
 static void set_ref_in_item __ARGS((typval_T *tv, int copyID));
+static int rettv_dict_alloc __ARGS((typval_T *rettv));
 static void dict_unref __ARGS((dict_T *d));
 static void dict_free __ARGS((dict_T *d, int recurse));
 static dictitem_T *dictitem_copy __ARGS((dictitem_T *org));
@@ -731,6 +732,7 @@ static void f_trunc __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_type __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_undofile __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_undotree __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_values __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_virtcol __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_visualmode __ARGS((typval_T *argvars, typval_T *rettv));
@@ -6785,6 +6787,26 @@ dict_alloc()
 }
 
 /*
+ * Allocate an empty dict for a return value.
+ * Returns OK or FAIL.
+ */
+    static int
+rettv_dict_alloc(rettv)
+    typval_T	*rettv;
+{
+    dict_T	*d = dict_alloc();
+
+    if (d == NULL)
+	return FAIL;
+
+    rettv->vval.v_dict = d;
+    rettv->v_type = VAR_DICT;
+    ++d->dv_refcount;
+    return OK;
+}
+
+
+/*
  * Unreference a Dictionary: decrement the reference count and free it when it
  * becomes zero.
  */
@@ -6979,7 +7001,7 @@ dict_copy(orig, deep, copyID)
 
 /*
  * Add item "item" to Dictionary "d".
- * Returns FAIL when out of memory and when key already existed.
+ * Returns FAIL when out of memory and when key already exists.
  */
     int
 dict_add(d, item)
@@ -7017,6 +7039,32 @@ dict_add_nr_str(d, key, nr, str)
 	item->di_tv.v_type = VAR_STRING;
 	item->di_tv.vval.v_string = vim_strsave(str);
     }
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Add a list  entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_list(d, key, list)
+    dict_T	*d;
+    char	*key;
+    list_T	*list;
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    item->di_tv.v_lock = 0;
+    item->di_tv.v_type = VAR_LIST;
+    item->di_tv.vval.v_list = list;
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
@@ -7840,6 +7888,7 @@ static struct fst
 #endif
     {"type",		1, 1, f_type},
     {"undofile",	1, 1, f_undofile},
+    {"undotree",	0, 0, f_undotree},
     {"values",		1, 1, f_values},
     {"virtcol",		1, 1, f_virtcol},
     {"visualmode",	0, 1, f_visualmode},
@@ -17674,6 +17723,35 @@ f_undofile(argvars, rettv)
 }
 
 /*
+ * "undotree()" function
+ */
+    static void
+f_undotree(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+    if (rettv_dict_alloc(rettv) == OK)
+    {
+	dict_T *dict = rettv->vval.v_dict;
+	list_T *list;
+
+	dict_add_nr_str(dict, "seq_last", curbuf->b_u_seq_last, NULL);
+	dict_add_nr_str(dict, "seq_cur", curbuf->b_u_seq_cur, NULL);
+	dict_add_nr_str(dict, "time_cur", (long)curbuf->b_u_time_cur, NULL);
+	dict_add_nr_str(dict, "save_last",
+					(long)curbuf->b_u_last_save_nr, NULL);
+	dict_add_nr_str(dict, "synced", (long)curbuf->b_u_synced, NULL);
+
+	list = list_alloc();
+	if (list != NULL)
+	{
+	    u_eval_tree(curbuf->b_u_oldhead, list);
+	    dict_add_list(dict, "entries", list);
+	}
+    }
+}
+
+/*
  * "values(dict)" function
  */
     static void
@@ -17892,12 +17970,9 @@ f_winsaveview(argvars, rettv)
 {
     dict_T	*dict;
 
-    dict = dict_alloc();
-    if (dict == NULL)
+    if (rettv_dict_alloc(rettv) == FAIL)
 	return;
-    rettv->v_type = VAR_DICT;
-    rettv->vval.v_dict = dict;
-    ++dict->dv_refcount;
+    dict = rettv->vval.v_dict;
 
     dict_add_nr_str(dict, "lnum", (long)curwin->w_cursor.lnum, NULL);
     dict_add_nr_str(dict, "col", (long)curwin->w_cursor.col, NULL);

@@ -135,6 +135,7 @@ This is explained in the user manual: |usr_32.txt|.
 			The "changes" column is the number of changes to this
 			leaf from the root of the tree.
 			The "time" column is the time this change was made.
+			For more details use the |undotree()| function.
 
 							*g-*
 g-			Go to older text state.  With a count repeat that many

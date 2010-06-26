@@ -2992,9 +2992,7 @@ fileinfo(fullname, shorthelp, dont_truncate)
 					  (int)(IOSIZE - (p - buffer)), TRUE);
     }
 
-    len = STRLEN(buffer);
-    vim_snprintf((char *)buffer + len, IOSIZE - len,
-	    "\"%s%s%s%s%s%s",
+    vim_snprintf_add((char *)buffer, IOSIZE, "\"%s%s%s%s%s%s",
 	    curbufIsChanged() ? (shortmess(SHM_MOD)
 					  ?  " [+]" : _(" [Modified]")) : " ",
 	    (curbuf->b_flags & BF_NOTEDITED)
@@ -3021,27 +3019,24 @@ fileinfo(fullname, shorthelp, dont_truncate)
     else
 	n = (int)(((long)curwin->w_cursor.lnum * 100L) /
 					    (long)curbuf->b_ml.ml_line_count);
-    len = STRLEN(buffer);
     if (curbuf->b_ml.ml_flags & ML_EMPTY)
     {
-	vim_snprintf((char *)buffer + len, IOSIZE - len, "%s", _(no_lines_msg));
+	vim_snprintf_add((char *)buffer, IOSIZE, "%s", _(no_lines_msg));
     }
 #ifdef FEAT_CMDL_INFO
     else if (p_ru)
     {
 	/* Current line and column are already on the screen -- webb */
 	if (curbuf->b_ml.ml_line_count == 1)
-	    vim_snprintf((char *)buffer + len, IOSIZE - len,
-		    _("1 line --%d%%--"), n);
+	    vim_snprintf_add((char *)buffer, IOSIZE, _("1 line --%d%%--"), n);
 	else
-	    vim_snprintf((char *)buffer + len, IOSIZE - len,
-		    _("%ld lines --%d%%--"),
+	    vim_snprintf_add((char *)buffer, IOSIZE, _("%ld lines --%d%%--"),
 					 (long)curbuf->b_ml.ml_line_count, n);
     }
 #endif
     else
     {
-	vim_snprintf((char *)buffer + len, IOSIZE - len,
+	vim_snprintf_add((char *)buffer, IOSIZE,
 		_("line %ld of %ld --%d%%-- col "),
 		(long)curwin->w_cursor.lnum,
 		(long)curbuf->b_ml.ml_line_count,
@@ -5043,7 +5038,6 @@ write_viminfo_bufferlist(fp)
 #endif
     char_u	*line;
     int		max_buffers;
-    size_t	len;
 
     if (find_viminfo_parameter('%') == NULL)
 	return;
@@ -5079,8 +5073,7 @@ write_viminfo_bufferlist(fp)
 	    break;
 	putc('%', fp);
 	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
-	len = STRLEN(line);
-	vim_snprintf((char *)line + len, len - LINE_BUF_LEN, "\t%ld\t%d",
+	vim_snprintf_add((char *)line, LINE_BUF_LEN, "\t%ld\t%d",
 			(long)buf->b_last_cursor.lnum,
 			buf->b_last_cursor.col);
 	viminfo_writestring(fp, line);

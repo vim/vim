@@ -1944,6 +1944,7 @@ tr( {src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 trunc( {expr}			Float	truncate Float {expr}
 type( {name})			Number	type of variable {name}
 undofile( {name})		String	undo file name for {name}
+undotree()			List	undo file tree
 values( {dict})			List	values in {dict}
 virtcol( {expr})		Number	screen column of cursor or mark
 visualmode( [expr])		String	last visual mode used
@@ -2349,11 +2350,13 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		choice this is 1.
 		Note: confirm() is only supported when compiled with dialog
 		support, see |+dialog_con| and |+dialog_gui|.
+
 		{msg} is displayed in a |dialog| with {choices} as the
 		alternatives.  When {choices} is missing or empty, "&OK" is
 		used (and translated).
 		{msg} is a String, use '\n' to include a newline.  Only on
 		some systems the string is wrapped when it doesn't fit.
+
 		{choices} is a String, with the individual choices separated
 		by '\n', e.g. >
 			confirm("Save changes?", "&Yes\n&No\n&Cancel")
@@ -2363,15 +2366,18 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 			confirm("file has been modified", "&Save\nSave &All")
 <		For the console, the first letter of each choice is used as
 		the default shortcut key.
+
 		The optional {default} argument is the number of the choice
 		that is made if the user hits <CR>.  Use 1 to make the first
 		choice the default one.  Use 0 to not set a default.  If
 		{default} is omitted, 1 is used.
-		The optional {type} argument gives the type of dialog.	This
-		is only used for the icon of the Win32 GUI.  It can be one of
-		these values: "Error", "Question", "Info", "Warning" or
-		"Generic".  Only the first character is relevant.  When {type}
-		is omitted, "Generic" is used.
+
+		The optional {type} argument gives the type of dialog.  This
+		is only used for the icon of the GTK, Mac, Motif and Win32
+		GUI.  It can be one of these values: "Error", "Question",
+		"Info", "Warning" or "Generic".  Only the first character is
+		relevant.  When {type} is omitted, "Generic" is used.
+
 		If the user aborts the dialog by pressing <Esc>, CTRL-C,
 		or another valid interrupt key, confirm() returns 0.
 
@@ -5778,6 +5784,47 @@ undofile({name})					*undofile()*
 		Useful in combination with |:wundo| and |:rundo|.
 		When compiled without the +persistent_undo option this always
 		returns an empty string.
+
+undotree()						*undotree()*
+		Return the current state of the undo tree in a dictionary with
+		the following items:
+		  "seq_last"	The highest undo sequence number used.
+		  "seq_cur"	The sequence number of the current position in
+				the undo tree.  This differs from "seq_last"
+				when some changes were undone.
+		  "time_cur"	Time last used for |:earlier| and related
+				commands.  Use |strftime()| to convert to
+				something readable.
+		  "save_last"	Number of the last file write.  Zero when no
+				write yet.
+		  "synced"	Non-zero when the last undo block was synced.
+				This happens when waiting from input from the
+				user.  See |undo-blocks|.
+		  "entries"	A list of dictionaries with information about
+				undo blocks.
+
+		The first item in the "entries" list is the oldest undo item.
+		Each List item is a Dictionary with these items:
+		  "seq"		Undo sequence number.  Same as what appears in
+				|:undolist|.
+		  "time"	Timestamp when the change happened.  Use
+				|strftime()| to convert to something readable.
+		  "newhead"	Only appears in the item that is the last one
+				that was added.  This marks the last change
+				and where further changes will be added.
+		  "curhead"	Only appears in the item that is the last one
+				that was undone.  This marks the current
+				position in the undo tree, the block that will
+				be used by a redo command.  When nothing was
+				undone after the last change this item will
+				not appear anywhere.
+		  "save"	Only appears on the last block before a file
+				write.  The number is the write count.  The
+				first write has number 1, the last one the
+				"save_last" mentioned above.
+		  "alt"		Alternate entry.  This is again a List of undo
+				blocks.  Each item may again have an "alt"
+				item.
 
 values({dict})						*values()*
 		Return a |List| with all the values of {dict}.	The |List| is

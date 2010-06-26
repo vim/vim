@@ -24,4 +24,5 @@ void u_undoline __ARGS((void));
 void u_blockfree __ARGS((buf_T *buf));
 int bufIsChanged __ARGS((buf_T *buf));
 int curbufIsChanged __ARGS((void));
+void u_eval_tree __ARGS((u_header_T *first_uhp, list_T *list));
 /* vim: set ft=c : */

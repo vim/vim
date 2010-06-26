@@ -820,7 +820,6 @@ workshop_toolbar_button(
     char	namebuf[BUFSIZ];
     static int	tbid = 1;
     char_u	*p;
-    int		len;
 
 #ifdef WSDEBUG_TRACE
     if (WSDLEVEL(WS_TRACE_VERBOSE))
@@ -861,12 +860,10 @@ workshop_toolbar_button(
     if (file != NULL && *file != NUL)
     {
 	p = vim_strsave_escaped((char_u *)file, (char_u *)" ");
-	len = STRLEN(cbuf);
-	vim_snprintf(cbuf + len, sizeof(cbuf) - len, "icon=%s ", p);
+	vim_snprintf_add(cbuf, sizeof(cbuf), "icon=%s ", p);
 	vim_free(p);
     }
-    len = STRLEN(cbuf);
-    vim_snprintf(cbuf + len, sizeof(cbuf) - len,"1.%d %s :wsverb %s<CR>",
+    vim_snprintf_add(cbuf, sizeof(cbuf),"1.%d %s :wsverb %s<CR>",
 							tbpri, namebuf, verb);
 
     /* Define the menu item */

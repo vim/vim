@@ -106,7 +106,7 @@ static size_t fwrite_crypt __ARGS((buf_T *buf UNUSED, char_u *ptr, size_t len, F
 static char_u *read_string_decrypt __ARGS((buf_T *buf UNUSED, FILE *fd, int len));
 static int serialize_header __ARGS((FILE *fp, buf_T *buf, char_u *hash));
 static int serialize_uhp __ARGS((FILE *fp, buf_T *buf, u_header_T *uhp));
-static u_header_T *unserialize_uhp __ARGS((FILE *fp, char_u *file_name));
+static u_header_T *unserialize_uhp __ARGS((FILE *fp, char_u *file_name, int new_version));
 static int serialize_uep __ARGS((FILE *fp, buf_T *buf, u_entry_T *uep));
 static u_entry_T *unserialize_uep __ARGS((FILE *fp, int *error, char_u *file_name));
 static void serialize_pos __ARGS((pos_T pos, FILE *fp));
@@ -473,7 +473,8 @@ u_savecommon(top, bot, newbot)
 	uhp->uh_seq = ++curbuf->b_u_seq_last;
 	curbuf->b_u_seq_cur = uhp->uh_seq;
 	uhp->uh_time = time(NULL);
-	curbuf->b_u_seq_time = uhp->uh_time + 1;
+	uhp->uh_save_nr = 0;
+	curbuf->b_u_time_cur = uhp->uh_time + 1;
 
 	uhp->uh_walk = 0;
 	uhp->uh_entry = NULL;
@@ -671,8 +672,16 @@ nomem:
 # define UF_HEADER_END_MAGIC	0xe7aa	/* magic after last header */
 # define UF_ENTRY_MAGIC		0xf518	/* magic at start of entry */
 # define UF_ENTRY_END_MAGIC	0x3581	/* magic after last entry */
-# define UF_VERSION		1	/* 2-byte undofile version number */
-# define UF_VERSION_CRYPT	0x8001	/* idem, encrypted */
+# define UF_VERSION_PREV	1	/* 2-byte undofile version number */
+# define UF_VERSION		2	/* 2-byte undofile version number */
+# define UF_VERSION_CRYPT_PREV	0x8001	/* idem, encrypted */
+# define UF_VERSION_CRYPT	0x8002	/* idem, encrypted */
+
+/* extra fields for header */
+# define UF_LAST_SAVE_NR	1
+
+/* extra fields for uhp */
+# define UHP_SAVE_NR		1
 
 static char_u e_not_open[] = N_("E828: Cannot open undo file for writing: %s");
 
@@ -918,7 +927,14 @@ serialize_header(fp, buf, hash)
     put_bytes(fp, (long_u)buf->b_u_numhead, 4);
     put_bytes(fp, (long_u)buf->b_u_seq_last, 4);
     put_bytes(fp, (long_u)buf->b_u_seq_cur, 4);
-    put_time(fp, buf->b_u_seq_time);
+    put_time(fp, buf->b_u_time_cur);
+
+    /* Optional fields. */
+    putc(4, fp);
+    putc(UF_LAST_SAVE_NR, fp);
+    put_bytes(fp, (long_u)buf->b_u_last_save_nr, 4);
+
+    putc(0, fp);  /* end marker */
 
     return OK;
 }
@@ -962,6 +978,13 @@ serialize_uhp(fp, buf, uhp)
 #endif
     put_time(fp, uhp->uh_time);
 
+    /* Optional fields. */
+    putc(4, fp);
+    putc(UHP_SAVE_NR, fp);
+    put_bytes(fp, (long_u)uhp->uh_save_nr, 4);
+
+    putc(0, fp);  /* end marker */
+
     /* Write all the entries. */
     for (uep = uhp->uh_entry; uep != NULL; uep = uep->ue_next)
     {
@@ -974,9 +997,10 @@ serialize_uhp(fp, buf, uhp)
 }
 
     static u_header_T *
-unserialize_uhp(fp, file_name)
+unserialize_uhp(fp, file_name, new_version)
     FILE	*fp;
     char_u	*file_name;
+    int		new_version;
 {
     u_header_T	*uhp;
     int		i;
@@ -1020,6 +1044,28 @@ unserialize_uhp(fp, file_name)
     }
 #endif
     uhp->uh_time = get8ctime(fp);
+
+    /* Optional fields. */
+    if (new_version)
+	for (;;)
+	{
+	    int len = getc(fp);
+	    int what;
+
+	    if (len == 0)
+		break;
+	    what = getc(fp);
+	    switch (what)
+	    {
+		case UHP_SAVE_NR:
+		    uhp->uh_save_nr = get4c(fp);
+		    break;
+		default:
+		    /* field not supported, skip */
+		    while (--len >= 0)
+			(void)getc(fp);
+	    }
+	}
 
     /* Unserialize the uep list. */
     last_uep = NULL;
@@ -1398,6 +1444,17 @@ u_write_undo(name, forceit, buf, hash)
     /* Undo must be synced. */
     u_sync(TRUE);
 
+    /* Increase the write count, store it in the last undo header, what would
+     * be used for "u". */
+    ++buf->b_u_last_save_nr;
+    uhp = buf->b_u_curhead;
+    if (uhp != NULL)
+	uhp = uhp->uh_next.ptr;
+    else
+	uhp = buf->b_u_newhead;
+    if (uhp != NULL)
+	uhp->uh_save_nr = buf->b_u_last_save_nr;
+
     /*
      * Write the header.
      */
@@ -1496,6 +1553,7 @@ u_read_undo(name, hash, orig_name)
     char_u	*file_name;
     FILE	*fp;
     long	version, str_len;
+    int		new_version;
     char_u	*line_ptr = NULL;
     linenr_T	line_lnum;
     colnr_T	line_colnr;
@@ -1503,6 +1561,7 @@ u_read_undo(name, hash, orig_name)
     int		num_head = 0;
     long	old_header_seq, new_header_seq, cur_header_seq;
     long	seq_last, seq_cur;
+    long_u	last_save_nr = 0;
     short	old_idx = -1, new_idx = -1, cur_idx = -1;
     long	num_read_uhps = 0;
     time_t	seq_time;
@@ -1575,7 +1634,7 @@ u_read_undo(name, hash, orig_name)
         goto error;
     }
     version = get2c(fp);
-    if (version == UF_VERSION_CRYPT)
+    if (version == UF_VERSION_CRYPT || version == UF_VERSION_CRYPT_PREV)
     {
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
@@ -1595,11 +1654,12 @@ u_read_undo(name, hash, orig_name)
         goto error;
 #endif
     }
-    else if (version != UF_VERSION)
+    else if (version != UF_VERSION && version != UF_VERSION_PREV)
     {
         EMSG2(_("E824: Incompatible undo file: %s"), file_name);
         goto error;
     }
+    new_version = (version == UF_VERSION || version == UF_VERSION_CRYPT);
 
     if (fread(read_hash, UNDO_HASH_SIZE, 1, fp) != 1)
     {
@@ -1645,6 +1705,28 @@ u_read_undo(name, hash, orig_name)
     seq_cur = get4c(fp);
     seq_time = get8ctime(fp);
 
+    /* Optional header fields, not in previous version. */
+    if (new_version)
+	for (;;)
+	{
+	    int len = getc(fp);
+	    int what;
+
+	    if (len == 0 || len == EOF)
+		break;
+	    what = getc(fp);
+	    switch (what)
+	    {
+		case UF_LAST_SAVE_NR:
+		    last_save_nr = get4c(fp);
+		    break;
+		default:
+		    /* field not supported, skip */
+		    while (--len >= 0)
+			(void)getc(fp);
+	    }
+	}
+
     /* uhp_table will store the freshly created undo headers we allocate
      * until we insert them into curbuf. The table remains sorted by the
      * sequence numbers of the headers.
@@ -1665,7 +1747,7 @@ u_read_undo(name, hash, orig_name)
 	    goto error;
 	}
 
-	uhp = unserialize_uhp(fp, file_name);
+	uhp = unserialize_uhp(fp, file_name, new_version);
 	if (uhp == NULL)
 	    goto error;
 	uhp_table[num_read_uhps++] = uhp;
@@ -1766,7 +1848,8 @@ u_read_undo(name, hash, orig_name)
     curbuf->b_u_numhead = num_head;
     curbuf->b_u_seq_last = seq_last;
     curbuf->b_u_seq_cur = seq_cur;
-    curbuf->b_u_seq_time = seq_time;
+    curbuf->b_u_time_cur = seq_time;
+    curbuf->b_u_last_save_nr = last_save_nr;
 
     curbuf->b_u_synced = TRUE;
     vim_free(uhp_table);
@@ -1962,7 +2045,7 @@ undo_time(step, sec, absolute)
 	/* When doing computations with time_t subtract starttime, because
 	 * time_t converted to a long may result in a wrong number. */
 	if (sec)
-	    target = (long)(curbuf->b_u_seq_time - starttime) + step;
+	    target = (long)(curbuf->b_u_time_cur - starttime) + step;
 	else
 	    target = curbuf->b_u_seq_cur + step;
 	if (step < 0)
@@ -2458,7 +2541,7 @@ u_undoredo(undo)
 
     /* The timestamp can be the same for multiple changes, just use the one of
      * the undone/redone change. */
-    curbuf->b_u_seq_time = curhead->uh_time;
+    curbuf->b_u_time_cur = curhead->uh_time;
 #ifdef U_DEBUG
     u_check(FALSE);
 #endif
@@ -2595,6 +2678,13 @@ ex_undolist(eap)
 							uhp->uh_seq, changes);
 	    u_add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
 								uhp->uh_time);
+	    if (uhp->uh_save_nr > 0)
+	    {
+		while (STRLEN(IObuff) < 32)
+		    STRCAT(IObuff, " ");
+		vim_snprintf_add((char *)IObuff, IOSIZE,
+						   "  %3ld", uhp->uh_save_nr);
+	    }
 	    ((char_u **)(ga.ga_data))[ga.ga_len++] = vim_strsave(IObuff);
 	}
 
@@ -2645,7 +2735,8 @@ ex_undolist(eap)
 	sort_strings((char_u **)ga.ga_data, ga.ga_len);
 
 	msg_start();
-	msg_puts_attr((char_u *)_("number changes  time"), hl_attr(HLF_T));
+	msg_puts_attr((char_u *)_("number changes  time            saved"),
+							      hl_attr(HLF_T));
 	for (i = 0; i < ga.ga_len && !got_int; ++i)
 	{
 	    msg_putchar('\n');
@@ -3048,3 +3139,48 @@ curbufIsChanged()
 #endif
 	(curbuf->b_changed || file_ff_differs(curbuf));
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * For undotree(): Append the list of undo blocks at "first_uhp" to "list".
+ * Recursive.
+ */
+    void
+u_eval_tree(first_uhp, list)
+    u_header_T  *first_uhp;
+    list_T	*list;
+{
+    u_header_T  *uhp = first_uhp;
+    dict_T	*dict;
+
+    while (uhp != NULL)
+    {
+	dict = dict_alloc();
+	if (dict == NULL)
+	    return;
+	dict_add_nr_str(dict, "seq", uhp->uh_seq, NULL);
+	dict_add_nr_str(dict, "time", uhp->uh_time, NULL);
+	if (uhp == curbuf->b_u_newhead)
+	    dict_add_nr_str(dict, "newhead", 1, NULL);
+	if (uhp == curbuf->b_u_curhead)
+	    dict_add_nr_str(dict, "curhead", 1, NULL);
+	if (uhp->uh_save_nr > 0)
+	    dict_add_nr_str(dict, "save", uhp->uh_save_nr, NULL);
+
+	if (uhp->uh_alt_next.ptr != NULL)
+	{
+	    list_T	*alt_list = list_alloc();
+
+	    if (alt_list != NULL)
+	    {
+		/* Recursive call to add alternate undo tree. */
+		u_eval_tree(uhp->uh_alt_next.ptr, alt_list);
+		dict_add_list(dict, "alt", alt_list);
+	    }
+	}
+
+	list_append_dict(list, dict);
+	uhp = uhp->uh_prev.ptr;
+    }
+}
+#endif

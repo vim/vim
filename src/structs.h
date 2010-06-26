@@ -327,6 +327,7 @@ struct u_header
     visualinfo_T uh_visual;	/* Visual areas before undo/after redo */
 #endif
     time_t	uh_time;	/* timestamp when the change was made */
+    long_u	uh_save_nr;	/* counter for last time saved */
 #ifdef U_DEBUG
     int		uh_magic;	/* magic number to check allocation */
 #endif
@@ -1371,7 +1372,8 @@ struct file_buffer
     int		b_u_synced;	/* entry lists are synced */
     long	b_u_seq_last;	/* last used undo sequence number */
     long	b_u_seq_cur;	/* hu_seq of header below which we are now */
-    time_t	b_u_seq_time;	/* uh_time of header below which we are now */
+    time_t	b_u_time_cur;	/* uh_time of header below which we are now */
+    long_u	b_u_last_save_nr; /* counter for last file write */
 
     /*
      * variables for "U" command in undo.c

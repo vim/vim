@@ -110,16 +110,25 @@ int
 _RTLENTRYF
 #  endif
 smsg __ARGS((char_u *, ...));
+
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
 smsg_attr __ARGS((int, char_u *, ...));
+
+int
+#  ifdef __BORLANDC__
+_RTLENTRYF
+#  endif
+vim_snprintf_add __ARGS((char *, size_t, char *, ...));
+
 int
 #  ifdef __BORLANDC__
 _RTLENTRYF
 #  endif
 vim_snprintf __ARGS((char *, size_t, char *, ...));
+
 #  if defined(HAVE_STDARG_H)
 int vim_vsnprintf(char *str, size_t str_m, char *fmt, va_list ap, typval_T *tvs);
 #  endif

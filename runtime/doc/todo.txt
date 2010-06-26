@@ -1089,14 +1089,11 @@ Vim 7.3:
    Use register_shell_extension()?
    Patch from Geoffrey Reilly, 2010 Jun 22
 - Patch for conceal feature from Vince, 2010 June 16.
-  Needs some more testing.
-- undofile: keep markers where the file was written/read, so that it's easy to
-  go back to a saved version of the file:  ":earlier 1f" (f for file)?
+  Needs some more testing, better patch is coming.
+- implement ":earlier 1f" (f for file)?
   Also add ":earlier 1d" (d for day).
   Something like changenr() to see the "file saved" marker?
-  Show "file saved" marker in :undolist
-- Function to get undo tree: undotree().  List of lists.  Each entry is a
-  dictionary: {'nr': 2, 'time': 1234, 'saved': 1}
+- in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)

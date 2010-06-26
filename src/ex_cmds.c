@@ -5164,8 +5164,6 @@ outofmem:
 do_sub_msg(count_only)
     int	    count_only;		/* used 'n' flag for ":s" */
 {
-    int	    len = 0;
-
     /*
      * Only report substitutions when:
      * - more than 'report' substitutions
@@ -5177,23 +5175,19 @@ do_sub_msg(count_only)
 	    && messaging())
     {
 	if (got_int)
-	{
 	    STRCPY(msg_buf, _("(Interrupted) "));
-	    len = (int)STRLEN(msg_buf);
-	}
 	if (sub_nsubs == 1)
-	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
 		    "%s", count_only ? _("1 match") : _("1 substitution"));
 	else
-	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
 		    count_only ? _("%ld matches") : _("%ld substitutions"),
 								   sub_nsubs);
-	len = (int)STRLEN(msg_buf);
 	if (sub_nlines == 1)
-	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
 		    "%s", _(" on 1 line"));
 	else
-	    vim_snprintf((char *)msg_buf + len, sizeof(msg_buf) - len,
+	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
 		    _(" on %ld lines"), (long)sub_nlines);
 	if (msg(msg_buf))
 	    /* save message to display it after redraw */
