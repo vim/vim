@@ -2591,8 +2591,6 @@ out_char(c)
 
 static void out_char_nf __ARGS((unsigned));
 
-#if defined(FEAT_GUI) || defined(FEAT_TITLE) \
-	|| defined(FEAT_TERMRESPONSE) || defined(FEAT_MOUSE_TTY)
 /*
  * out_char_nf(c): like out_char(), but don't flush when p_wd is set
  */
@@ -5437,7 +5435,6 @@ req_more_codes_from_term()
     if (xt_index_out != old_idx)
 	out_flush();
 }
-#endif
 
 /*
  * Decode key code response from xterm: '<Esc>P1+r<name>=<string><Esc>\'.
