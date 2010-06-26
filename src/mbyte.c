@@ -3482,7 +3482,7 @@ theend:
     convert_setup(&vimconv, NULL, NULL);
 }
 
-#if defined(HAVE_GTK2) || defined(PROTO)
+#if defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Return TRUE if string "s" is a valid utf-8 string.
  * When "end" is NULL stop at the first NUL.
@@ -4223,7 +4223,7 @@ init_preedit_start_col(void)
 }
 # endif
 
-# if defined(HAVE_GTK2) && !defined(PROTO)
+# if defined(FEAT_GUI_GTK) && !defined(PROTO)
 
 static int im_is_active	       = FALSE;	/* IM is enabled for current mode    */
 static int preedit_is_active   = FALSE;
@@ -5058,7 +5058,7 @@ im_get_status(void)
     return im_is_active;
 }
 
-# else /* !HAVE_GTK2 */
+# else /* !FEAT_GUI_GTK */
 
 static int	xim_is_active = FALSE;  /* XIM should be active in the current
 					   mode */
@@ -5627,9 +5627,9 @@ im_get_status()
     return xim_has_focus;
 }
 
-# endif /* !HAVE_GTK2 */
+# endif /* !FEAT_GUI_GTK */
 
-# if defined(HAVE_GTK2) || defined(PROTO)
+# if defined(FEAT_GUI_GTK) || defined(PROTO)
     int
 preedit_get_status(void)
 {

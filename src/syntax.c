@@ -9430,7 +9430,7 @@ free_highlight_fonts()
 # ifdef FEAT_XFONTSET
     gui_mch_free_fontset(gui.fontset);
 # endif
-# ifndef HAVE_GTK2
+# ifndef FEAT_GUI_GTK
     gui_mch_free_font(gui.bold_font);
     gui_mch_free_font(gui.ital_font);
     gui_mch_free_font(gui.boldital_font);

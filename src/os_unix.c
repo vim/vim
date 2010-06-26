@@ -2991,7 +2991,7 @@ mch_free_mem()
     }
 #  endif
 # endif
-# if defined(FEAT_X11) && (!defined(FEAT_GUI_GTK) || defined(HAVE_GTK2))
+# if defined(FEAT_X11)
     if (x11_display != NULL
 #  ifdef FEAT_XCLIPBOARD
 	    && x11_display != xterm_dpy

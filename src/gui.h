@@ -75,7 +75,7 @@
  * On some systems scrolling needs to be done right away instead of in the
  * main loop.
  */
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) || defined(HAVE_GTK2)
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK)
 # define USE_ON_FLY_SCROLL
 #endif
 
@@ -151,7 +151,7 @@
 #define DRAW_BOLD		0x02	/* draw bold text */
 #define DRAW_UNDERL		0x04	/* draw underline text */
 #define DRAW_UNDERC		0x08	/* draw undercurl text */
-#if defined(RISCOS) || defined(HAVE_GTK2)
+#if defined(RISCOS) || defined(FEAT_GUI_GTK)
 # define DRAW_ITALIC		0x10	/* draw italic text */
 #endif
 #define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
@@ -310,7 +310,7 @@ typedef struct Gui
     int		border_offset;	    /* Total pixel offset for all borders */
 
     GuiFont	norm_font;	    /* Normal font */
-#ifndef HAVE_GTK2
+#ifndef FEAT_GUI_GTK
     GuiFont	bold_font;	    /* Bold font */
     GuiFont	ital_font;	    /* Italic font */
     GuiFont	boldital_font;	    /* Bold-Italic font */
@@ -319,7 +319,7 @@ typedef struct Gui
 				     * The styled font variants are not used. */
 #endif
 
-#if defined(FEAT_MENU) && !defined(HAVE_GTK2)
+#if defined(FEAT_MENU) && !defined(FEAT_GUI_GTK)
 # ifdef FONTSET_ALWAYS
     GuiFontset	menu_fontset;	    /* set of fonts for multi-byte chars */
 # else
@@ -508,7 +508,7 @@ typedef enum
 # define FRD_MATCH_CASE	0x10	/* match case */
 #endif
 
-#ifdef HAVE_GTK2
+#ifdef FEAT_GUI_GTK
 /*
  * Convenience macros to convert from 'encoding' to 'termencoding' and
  * vice versa.	If no conversion is necessary the passed-in pointer is
@@ -549,4 +549,4 @@ typedef enum
 # define CONVERT_TO_UTF8_FREE(String) ((String) = (char_u *)NULL)
 # define CONVERT_FROM_UTF8(String) (String)
 # define CONVERT_FROM_UTF8_FREE(String) ((String) = (char_u *)NULL)
-#endif /* HAVE_GTK2 */
+#endif /* FEAT_GUI_GTK */

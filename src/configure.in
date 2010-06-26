@@ -1671,7 +1671,6 @@ if test -z "$SKIP_GTK2"; then
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
-    AC_DEFINE(HAVE_GTK2)
     if test "$gtk_minor_version" = 1 -a "0$gtk_micro_version" -ge 1 \
 	|| test "0$gtk_minor_version" -ge 2; then
       AC_DEFINE(HAVE_GTK_MULTIHEAD)

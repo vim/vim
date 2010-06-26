@@ -1605,7 +1605,7 @@ vgetc()
 		continue;
 	    }
 #endif
-#if defined(FEAT_GUI) && defined(HAVE_GTK2) && defined(FEAT_MENU)
+#if defined(FEAT_GUI) && defined(FEAT_GUI_GTK) && defined(FEAT_MENU)
 	    /* GTK: <F10> normally selects the menu, but it's passed until
 	     * here to allow mapping it.  Intercept and invoke the GTK
 	     * behavior if it's not mapped. */

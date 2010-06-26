@@ -640,7 +640,7 @@
  * Disabled for EBCDIC:
  * Multibyte support doesn't work on z/OS Unix currently.
  */
-#if (defined(FEAT_BIG) || defined(HAVE_GTK2) || defined(FEAT_ARABIC)) \
+#if (defined(FEAT_BIG) || defined(FEAT_GUI_GTK) || defined(FEAT_ARABIC)) \
 	&& !defined(FEAT_MBYTE) && !defined(WIN16) \
 	&& SIZEOF_INT >= 4 && !defined(EBCDIC)
 # define FEAT_MBYTE
@@ -693,7 +693,7 @@
 # define ESC_CHG_TO_ENG_MODE		/* if defined, when ESC pressed,
 					 * turn to english mode
 					 */
-# if !defined(FEAT_XFONTSET) && defined(HAVE_X11) && !defined(HAVE_GTK2)
+# if !defined(FEAT_XFONTSET) && defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
 #  define FEAT_XFONTSET			/* Hangul input requires xfontset */
 # endif
 # if defined(FEAT_XIM) && !defined(LINT)
@@ -710,7 +710,7 @@
  * +xfontset		X fontset support.  For outputting wide characters.
  */
 #ifndef FEAT_XFONTSET
-# if defined(FEAT_MBYTE) && defined(HAVE_X11) && !defined(HAVE_GTK2)
+# if defined(FEAT_MBYTE) && defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
 #  define FEAT_XFONTSET
 # else
 /* #  define FEAT_XFONTSET */
