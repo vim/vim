@@ -119,6 +119,7 @@ static void put_header_ptr __ARGS((FILE	*fp, u_header_T *uhp));
 #define U_ALLOC_LINE(size) lalloc((long_u)(size), FALSE)
 static char_u *u_save_line __ARGS((linenr_T));
 
+/* used in undo_end() to report number of added and deleted lines */
 static long	u_newcount, u_oldcount;
 
 /*
@@ -932,7 +933,7 @@ serialize_header(fp, buf, hash)
     /* Optional fields. */
     putc(4, fp);
     putc(UF_LAST_SAVE_NR, fp);
-    put_bytes(fp, (long_u)buf->b_u_last_save_nr, 4);
+    put_bytes(fp, (long_u)buf->b_u_save_nr_last, 4);
 
     putc(0, fp);  /* end marker */
 
@@ -1444,17 +1445,6 @@ u_write_undo(name, forceit, buf, hash)
     /* Undo must be synced. */
     u_sync(TRUE);
 
-    /* Increase the write count, store it in the last undo header, what would
-     * be used for "u". */
-    ++buf->b_u_last_save_nr;
-    uhp = buf->b_u_curhead;
-    if (uhp != NULL)
-	uhp = uhp->uh_next.ptr;
-    else
-	uhp = buf->b_u_newhead;
-    if (uhp != NULL)
-	uhp->uh_save_nr = buf->b_u_last_save_nr;
-
     /*
      * Write the header.
      */
@@ -1849,7 +1839,7 @@ u_read_undo(name, hash, orig_name)
     curbuf->b_u_seq_last = seq_last;
     curbuf->b_u_seq_cur = seq_cur;
     curbuf->b_u_time_cur = seq_time;
-    curbuf->b_u_last_save_nr = last_save_nr;
+    curbuf->b_u_save_nr_last = last_save_nr;
 
     curbuf->b_u_synced = TRUE;
     vim_free(uhp_table);
@@ -2001,13 +1991,15 @@ u_doit(startcount)
  * When "step" is negative go back in time, otherwise goes forward in time.
  * When "sec" is FALSE make "step" steps, when "sec" is TRUE use "step" as
  * seconds.
+ * When "file" is TRUE use "step" as a number of file writes.
  * When "absolute" is TRUE use "step" as the sequence number to jump to.
  * "sec" must be FALSE then.
  */
     void
-undo_time(step, sec, absolute)
+undo_time(step, sec, file, absolute)
     long	step;
     int		sec;
+    int		file;
     int		absolute;
 {
     long	    target;
@@ -2021,6 +2013,7 @@ undo_time(step, sec, absolute)
     int		    nomark;
     int		    round;
     int		    dosec = sec;
+    int		    dofile = file;
     int		    above = FALSE;
     int		    did_undo = TRUE;
 
@@ -2044,8 +2037,45 @@ undo_time(step, sec, absolute)
     {
 	/* When doing computations with time_t subtract starttime, because
 	 * time_t converted to a long may result in a wrong number. */
-	if (sec)
+	if (dosec)
 	    target = (long)(curbuf->b_u_time_cur - starttime) + step;
+	else if (dofile)
+	{
+	    if (step < 0)
+	    {
+		/* Going back to a previous write. If there were changes after
+		 * the last write, count that as moving one file-write, so
+		 * that ":earlier 1f" undoes all changes since the last save. */
+		uhp = curbuf->b_u_curhead;
+		if (uhp != NULL)
+		    uhp = uhp->uh_next.ptr;
+		else
+		    uhp = curbuf->b_u_newhead;
+		if (uhp != NULL && uhp->uh_save_nr != 0)
+		    /* "uh_save_nr" was set in the last block, that means
+		     * there were no changes since the last write */
+		    target = curbuf->b_u_save_nr_cur + step;
+		else
+		    /* count the changes since the last write as one step */
+		    target = curbuf->b_u_save_nr_cur + step + 1;
+		if (target <= 0)
+		    /* Go to before first write: before the oldest change. Use
+		     * the sequence number for that. */
+		    dofile = FALSE;
+	    }
+	    else
+	    {
+		/* Moving forward to a newer write. */
+		target = curbuf->b_u_save_nr_cur + step;
+		if (target > curbuf->b_u_save_nr_last)
+		{
+		    /* Go to after last write: after the latest change. Use
+		     * the sequence number for that. */
+		    target = curbuf->b_u_seq_last + 1;
+		    dofile = FALSE;
+		}
+	    }
+	}
 	else
 	    target = curbuf->b_u_seq_cur + step;
 	if (step < 0)
@@ -2056,8 +2086,10 @@ undo_time(step, sec, absolute)
 	}
 	else
 	{
-	    if (sec)
+	    if (dosec)
 		closest = (long)(time(NULL) - starttime + 1);
+	    else if (dofile)
+		closest = curbuf->b_u_save_nr_last + 2;
 	    else
 		closest = curbuf->b_u_seq_last + 2;
 	    if (target >= closest)
@@ -2092,9 +2124,14 @@ undo_time(step, sec, absolute)
 	while (uhp != NULL)
 	{
 	    uhp->uh_walk = mark;
-	    val = (long)(dosec ? (uhp->uh_time - starttime) : uhp->uh_seq);
+	    if (dosec)
+		val = (long)(uhp->uh_time - starttime);
+	    else if (dofile)
+		val = uhp->uh_save_nr;
+	    else
+		val = uhp->uh_seq;
 
-	    if (round == 1)
+	    if (round == 1 && !(dofile && val == 0))
 	    {
 		/* Remember the header that is closest to the target.
 		 * It must be at least in the right direction (checked with
@@ -2123,7 +2160,10 @@ undo_time(step, sec, absolute)
 	    /* Quit searching when we found a match.  But when searching for a
 	     * time we need to continue looking for the best uh_seq. */
 	    if (target == val && !dosec)
+	    {
+		target = uhp->uh_seq;
 		break;
+	    }
 
 	    /* go down in the tree if we haven't been there */
 	    if (uhp->uh_prev.ptr != NULL && uhp->uh_prev.ptr->uh_walk != nomark
@@ -2179,6 +2219,7 @@ undo_time(step, sec, absolute)
 
 	target = closest_seq;
 	dosec = FALSE;
+	dofile = FALSE;
 	if (step < 0)
 	    above = TRUE;	/* stop above the header */
     }
@@ -2539,6 +2580,15 @@ u_undoredo(undo)
 	 * work we compute this as being just above the just undone change. */
 	--curbuf->b_u_seq_cur;
 
+    /* Remember where we are for ":earlier 1f" and ":later 1f". */
+    if (curhead->uh_save_nr != 0)
+    {
+	if (undo)
+	    curbuf->b_u_save_nr_cur = curhead->uh_save_nr - 1;
+	else
+	    curbuf->b_u_save_nr_cur = curhead->uh_save_nr;
+    }
+
     /* The timestamp can be the same for multiple changes, just use the one of
      * the undone/redone change. */
     curbuf->b_u_time_cur = curhead->uh_time;
@@ -2809,6 +2859,27 @@ u_unchanged(buf)
 {
     u_unch_branch(buf->b_u_oldhead);
     buf->b_did_warn = FALSE;
+}
+
+/*
+ * Increase the write count, store it in the last undo header, what would be
+ * used for "u".
+ */
+    void
+u_update_save_nr(buf)
+    buf_T *buf;
+{
+    u_header_T	*uhp;
+
+    ++buf->b_u_save_nr_last;
+    buf->b_u_save_nr_cur = buf->b_u_save_nr_last;
+    uhp = buf->b_u_curhead;
+    if (uhp != NULL)
+	uhp = uhp->uh_next.ptr;
+    else
+	uhp = buf->b_u_newhead;
+    if (uhp != NULL)
+	uhp->uh_save_nr = buf->b_u_save_nr_last;
 }
 
     static void

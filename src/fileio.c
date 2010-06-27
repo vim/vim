@@ -4879,6 +4879,7 @@ restore_backup:
     {
 	unchanged(buf, TRUE);
 	u_unchanged(buf);
+	u_update_save_nr(buf);
     }
 
     /*

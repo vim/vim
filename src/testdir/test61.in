@@ -1,6 +1,7 @@
 Tests for undo tree.
 Since this script is sourced we need to explicitly break changes up in
 undo-able pieces.  Do that by setting 'undolevels'.
+Also tests :earlier and :later.
 
 STARTTEST
 :" Delete three characters and undo
@@ -50,6 +51,35 @@ obbbbu:.w >>test.out
 obbbb:set ul=100
 :undojoin
 occccu:.w >>test.out
+:e! Xtest
+ione one one:set ul=100
+:w!
+otwo:set ul=100
+otwo:set ul=100
+:w
+othree:earlier 1f
+:" expect "one one one\ntwo\ntwo"
+:%yank a
+:earlier 1f
+:" expect "one one one"
+:%yank b
+:earlier 1f
+:" expect empty line
+:%yank c
+:later 1f
+:" expect "one one one"
+:%yank d
+:later 1f
+:" expect "one one one\ntwo\ntwo"
+:%yank e
+:later 1f
+:" expect "one one one\ntwo\ntwo\nthree"
+ggO---:0put e
+ggO---:0put d
+ggO---:0put c
+ggO---:0put b
+ggO---:0put a
+ggO---:w >>test.out
 :qa!
 ENDTEST
 

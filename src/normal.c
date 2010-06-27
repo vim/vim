@@ -8294,7 +8294,7 @@ nv_g_cmd(cap)
     case '-': /* "g+" and "g-": undo or redo along the timeline */
 	if (!checkclearopq(oap))
 	    undo_time(cap->nchar == '-' ? -cap->count1 : cap->count1,
-								FALSE, FALSE);
+							 FALSE, FALSE, FALSE);
 	break;
 
     default:

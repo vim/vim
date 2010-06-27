@@ -5797,6 +5797,8 @@ undotree()						*undotree()*
 				something readable.
 		  "save_last"	Number of the last file write.  Zero when no
 				write yet.
+		  "save_cur"	Number of the current position in the undo
+				tree.  
 		  "synced"	Non-zero when the last undo block was synced.
 				This happens when waiting from input from the
 				user.  See |undo-blocks|.
