@@ -980,6 +980,11 @@ main_loop(cmdwin, noexmode)
 {
     oparg_T	oa;				/* operator arguments */
     int		previous_got_int = FALSE;	/* "got_int" was TRUE */
+#ifdef FEAT_CONCEAL
+    linenr_T	conceal_old_cursor_line = 0;
+    linenr_T	conceal_new_cursor_line = 0;
+    int		conceal_update_lines = FALSE;
+#endif
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     /* Setup to catch a terminating error from the X server.  Just ignore
@@ -1079,12 +1084,34 @@ main_loop(cmdwin, noexmode)
 	    skip_redraw = FALSE;
 	else if (do_redraw || stuff_empty())
 	{
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
 	    /* Trigger CursorMoved if the cursor moved. */
-	    if (!finish_op && has_cursormoved()
-			     && !equalpos(last_cursormoved, curwin->w_cursor))
+	    if (!finish_op && (
+# ifdef FEAT_AUTOCMD
+			has_cursormoved()
+# endif
+# if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
+			||
+# endif
+# ifdef FEAT_CONCEAL
+			curwin->w_p_conceal
+# endif
+			)
+		 && !equalpos(last_cursormoved, curwin->w_cursor))
 	    {
-		apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_AUTOCMD
+		if (has_cursormoved())
+		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
+							       FALSE, curbuf);
+# endif
+# ifdef FEAT_CONCEAL
+		if (curwin->w_p_conceal)
+		{
+		    conceal_old_cursor_line = last_cursormoved.lnum;
+		    conceal_new_cursor_line = curwin->w_cursor.lnum;
+		    conceal_update_lines = TRUE;
+		}
+# endif
 		last_cursormoved = curwin->w_cursor;
 	    }
 #endif
@@ -1164,6 +1191,15 @@ main_loop(cmdwin, noexmode)
 	    may_clear_sb_text();	/* clear scroll-back text on next msg */
 	    showruler(FALSE);
 
+# if defined(FEAT_CONCEAL)
+	    if (conceal_update_lines
+		    && conceal_old_cursor_line != conceal_new_cursor_line)
+	    {
+		update_single_line(curwin, conceal_old_cursor_line);
+		update_single_line(curwin, conceal_new_cursor_line);
+		curwin->w_valid &= ~VALID_CROW;
+	    }
+# endif
 	    setcursor();
 	    cursor_on();
 

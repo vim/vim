@@ -30,10 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Bug in undo, using freed memory. (Dominique Pelle, Jul 1)
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 E315 when trying to change a file in FileChangedRO autocommand event.
 (Dominique Pelle, 2010 Apr 30)
+
+Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
+Pelle, 2010 June 28)
 
 When directory "/tmp/tags" contains "tags1" and "tags2", setting 'tags' to
 "/tmp/tags/*" doesn't pick up these files.  (Simon Ruggier, 2010 Mar 17)
@@ -73,6 +78,9 @@ Looks like only bash can do it. (Yakov Lerner)
     after typing something.
 Need for CursorHold that retriggers.  Use a key that doesn't do anything, or a
 function that resets did_cursorhold.
+
+Cscope "cs add" stopped working somewhat before 7.2.438. (Gary Johnson, 2010
+Jun 29)  Caused by 7.2.433?
 
 I often see pasted text (from Firefox, to Vim in xterm) appear twice.
 Also, Vim in xterm sometimes loses copy/paste ability (probably after running
@@ -984,8 +992,6 @@ visible.
 GTK: when setting 'columns' in a startup script and doing ":vertical diffsplit"
 the window isn't redrawn properly, see two vertical bars.
 
-GTK: file chooser is disabled.  Patch by Tim Starling, 2009 Nov 13.
-
 The magic clipboard format "VimClipboard2" appears in several places.  Should
 be only one.
 
@@ -1083,16 +1089,17 @@ When switching between windows the cursor is often put in the middle.
 Remember the relative position and restore that, just like lnum and col are
 restored. (Luc St-Louis)
 
+Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
+2010 Jun 30)
+
 
 Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()?
    Patch from Geoffrey Reilly, 2010 Jun 22
-- Patch for conceal feature from Vince, 2010 June 16.
-  Needs some more testing, better patch is coming.
-- implement ":earlier 1f" (f for file)?
-  Also add ":earlier 1d" (d for day).
-  Something like changenr() to see the "file saved" marker?
+- Patch for conceal feature from Vince, 2010 Jul 1.
+    fix insert mode, cursor up/down?
+    CTRL-O j doesn't trigger cursormoved event?
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
@@ -1102,8 +1109,11 @@ Patches to include:
 - Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
 - Patch to improve javascript indenting. (Hari Kumar G, 2010 May 22)
 - Patch to use return value of 'formatexpr'. (James Vega, 2010 Jun 16)
+- Patch for gtk main_loop() to enable GtkFileChooser. (James Vega, 2010 Jun 28)
+    Same as this one?  GTK: file chooser is disabled.  Patch by Tim Starling,
+    2009 Nov 13.
 - Patch to make CTRL-L work better with 'ignorecase' and 'smarcase'. (Martin
-  Toft, 2010 Jun 8, Jun 16)
+  Toft, 2010 Jun 8, Jun 16, Jun 30)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
   15)
 - Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 
@@ -1355,16 +1365,6 @@ Vi incompatibility:
 6   Vi compatibility (optional): make "ia<CR><ESC>10." do the same strange
     thing.  (only repeat insert for the first line).
 
-
-GTK+ 1 (OK in GTK 2):
-8   When using "gvim -geom 40x30" or setting 'columns' in .gvimrc or with a
-    GUIEnter autocommand, the width is still set to fit the toolbar.  Also
-    happens when changing the font.  How to avoid that the toolbar specifies
-    the minimal window width?
-8   When using a theme with different scrollbars (gtkstep), the scrollbars can
-    be too narrow. (Drazen Kacar)
-8   Font "7x14" has a bold version "7x14bold".  Try to find the bold font by
-    appending "bold" when there are not 14 dashes.
 
 GTK+ GUI known bugs:
 9   Crash with X command server over ssh. (Ciaran McCreesh, 2006 Feb 6)
@@ -2433,8 +2433,6 @@ Folding:
 	edit version.c
     Can editing version.c twice be avoided?
 -   'foldmethod' "textobject": fold on sections and paragraph text objects.
--   Add 'hidecomment' option: don't display comments in /* */ and after //.
-    Or is the conceal patch from Vince Negri a more generic solution?
 -   "zuf": undo change in manual fold. "zUf" redo change in manual fold.  How
     to implement this?
 -   "zJ" command: add the line or fold below the fold in the fold under the

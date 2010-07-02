@@ -482,6 +482,11 @@ if has("scrollbind")
   call append("$", "scrollopt\t\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'")
   call <SID>OptionG("sbo", &sbo)
 endif
+if has("cursorbind")
+  call append("$", "cursorbind\tthis window's cursor moves together with other bound windows")
+  call append("$", "\t(local to window)")
+  call <SID>BinOptionL("crb")
+endif
 
 
 call <SID>Header("multiple tab pages")

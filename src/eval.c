@@ -9437,9 +9437,6 @@ f_cursor(argvars, rettv)
     typval_T	*rettv;
 {
     long	line, col;
-#ifdef FEAT_CONCEAL
-    linenr_T	oldline = curwin->w_cursor.lnum;
-#endif
 #ifdef FEAT_VIRTUALEDIT
     long	coladd = 0;
 #endif
@@ -9489,13 +9486,6 @@ f_cursor(argvars, rettv)
 #endif
 
     curwin->w_set_curswant = TRUE;
-#ifdef FEAT_CONCEAL
-    if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
-    {
-	update_single_line(curwin, oldline);
-	update_single_line(curwin, curwin->w_cursor.lnum);
-    }
-#endif
     rettv->vval.v_number = 0;
 }
 
@@ -15165,15 +15155,6 @@ search_cmn(argvars, match_pos, flagsp)
     /* If 'n' flag is used: restore cursor position. */
     if (flags & SP_NOMOVE)
 	curwin->w_cursor = save_cursor;
-#ifdef FEAT_CONCEAL
-	else if (curwin->w_p_conceal
-				 && save_cursor.lnum != curwin->w_cursor.lnum)
-	{
-	    curwin->w_set_curswant = TRUE;
-	    update_single_line(curwin, save_cursor.lnum);
-	    update_single_line(curwin, curwin->w_cursor.lnum);
-	}
-#endif
     else
 	curwin->w_set_curswant = TRUE;
 theend:

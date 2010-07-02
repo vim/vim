@@ -1,8 +1,8 @@
 " VHDL indent ('93 syntax)
 " Language:    VHDL
 " Maintainer:  Gerald Lai <laigera+vim?gmail.com>
-" Version:     1.54
-" Last Change: 2007 Aug 17
+" Version:     1.55
+" Last Change: 2010 Jun 27
 " URL:         http://www.vim.org/scripts/script.php?script_id=1450
 
 " only load this indent file when no other was loaded
@@ -156,7 +156,7 @@ function GetVHDLindent()
     let ps = getline(pn)
     while pn > 0
       let t = indent(pn)
-      if ps !~ '^\s*--' && t < ind
+      if ps !~ '^\s*--' && (t < ind || (t == ind && m == 3))
         " make sure one of these is true
         " keywords: variable + "<=" without ";" ending
         " where:    start of previous non-comment line

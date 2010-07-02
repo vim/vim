@@ -4908,19 +4908,57 @@ no_console_input()
     void
 gui_update_screen()
 {
+#ifdef FEAT_CONCEAL
+    linenr_T	conceal_old_cursor_line = 0;
+    linenr_T	conceal_new_cursor_line = 0;
+    int		conceal_update_lines = FALSE;
+#endif
+
     update_topline();
     validate_cursor();
-#ifdef FEAT_AUTOCMD
+
+#if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
     /* Trigger CursorMoved if the cursor moved. */
-    if (!finish_op && has_cursormoved()
-	    && !equalpos(last_cursormoved, curwin->w_cursor))
+    if (!finish_op && (
+# ifdef FEAT_AUTOCMD
+		has_cursormoved()
+# endif
+# if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
+		||
+# endif
+# ifdef FEAT_CONCEAL
+		curwin->w_p_conceal
+# endif
+		)
+		     && !equalpos(last_cursormoved, curwin->w_cursor))
     {
-	apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_AUTOCMD
+	if (has_cursormoved())
+	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+# endif
+# ifdef FEAT_CONCEAL
+	if (curwin->w_p_conceal)
+	{
+	    conceal_old_cursor_line = last_cursormoved.lnum;
+	    conceal_new_cursor_line = curwin->w_cursor.lnum;
+	    conceal_update_lines = TRUE;
+	}
+# endif
 	last_cursormoved = curwin->w_cursor;
     }
 #endif
+
     update_screen(0);	/* may need to update the screen */
     setcursor();
+# if defined(FEAT_CONCEAL)
+    if (conceal_update_lines
+	    && conceal_old_cursor_line != conceal_new_cursor_line)
+    {
+	update_single_line(curwin, conceal_old_cursor_line);
+	update_single_line(curwin, conceal_new_cursor_line);
+	curwin->w_valid &= ~VALID_CROW;
+    }
+# endif
     out_flush();		/* make sure output has been written */
     gui_update_cursor(TRUE, FALSE);
     gui_mch_flush();

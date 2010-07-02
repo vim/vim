@@ -609,10 +609,12 @@ static int ensure_ruby_initialized(void)
 	    char *argv[] = {"gvim.exe"};
 	    NtInitialize(&argc, &argv);
 #endif
+	    {
 #ifdef RUBY19_OR_LATER
-	    RUBY_INIT_STACK;
+		RUBY_INIT_STACK;
 #endif
-	    ruby_init();
+		ruby_init();
+	    }
 #ifdef RUBY19_OR_LATER
 	    ruby_script("vim-ruby");
 #endif

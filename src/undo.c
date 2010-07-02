@@ -1551,7 +1551,7 @@ u_read_undo(name, hash, orig_name)
     int		num_head = 0;
     long	old_header_seq, new_header_seq, cur_header_seq;
     long	seq_last, seq_cur;
-    long_u	last_save_nr = 0;
+    long	last_save_nr = 0;
     short	old_idx = -1, new_idx = -1, cur_idx = -1;
     long	num_read_uhps = 0;
     time_t	seq_time;
@@ -2662,6 +2662,18 @@ u_undo_end(did_undo, absolute)
     else
 	u_add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
 
+#ifdef FEAT_CONCEAL
+    {
+	win_T	*wp;
+
+	FOR_ALL_WINDOWS(wp)
+	{
+	    if (wp->w_buffer == curbuf && wp->w_p_conceal)
+		redraw_win_later(wp, NOT_VALID);
+	}
+    }
+#endif
+
     smsg((char_u *)_("%ld %s; %s #%ld  %s"),
 	    u_oldcount < 0 ? -u_oldcount : u_oldcount,
 	    _(msgstr),
@@ -3230,7 +3242,7 @@ u_eval_tree(first_uhp, list)
 	if (dict == NULL)
 	    return;
 	dict_add_nr_str(dict, "seq", uhp->uh_seq, NULL);
-	dict_add_nr_str(dict, "time", uhp->uh_time, NULL);
+	dict_add_nr_str(dict, "time", (long)uhp->uh_time, NULL);
 	if (uhp == curbuf->b_u_newhead)
 	    dict_add_nr_str(dict, "newhead", 1, NULL);
 	if (uhp == curbuf->b_u_curhead)

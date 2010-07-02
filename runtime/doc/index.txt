@@ -1352,6 +1352,7 @@ The commands are sorted on the non-optional part of their name.
 |:options|	:opt[ions]	open the options-window
 |:ounmap|	:ou[nmap]	like ":unmap" but for Operator-pending mode
 |:ounmenu|	:ounme[nu]	remove menu for Operator-pending mode
+|:ownsyntax|	:ow[nsyntax]	set new local syntax highlight for this window
 |:pclose|	:pc[lose]	close preview window
 |:pedit|	:ped[it]	edit file in the preview window
 |:perl|		:pe[rl]		execute Perl command

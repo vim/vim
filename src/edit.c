@@ -1457,17 +1457,33 @@ force_cindent:
 ins_redraw(ready)
     int		ready UNUSED;	    /* not busy with something */
 {
+#ifdef FEAT_CONCEAL
+    linenr_T	conceal_old_cursor_line = 0;
+    linenr_T	conceal_new_cursor_line = 0;
+    int		conceal_update_lines = FALSE;
+#endif
+
     if (!char_avail())
     {
-#ifdef FEAT_AUTOCMD
+#if defined(FEAT_AUTOCMD) || defined(FEAT_CONCEAL)
 	/* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
 	 * visible, the command might delete it. */
-	if (ready && has_cursormovedI()
-			     && !equalpos(last_cursormoved, curwin->w_cursor)
-# ifdef FEAT_INS_EXPAND
-			     && !pum_visible()
+	if (ready && (
+# ifdef FEAT_AUTOCMD
+		    has_cursormovedI()
 # endif
-			     )
+# if defined(FEAT_AUTOCMD) && defined(FEAT_CONCEAL)
+		    ||
+# endif
+# ifdef FEAT_CONCEAL
+		    curwin->w_p_conceal
+# endif
+		    )
+	    && !equalpos(last_cursormoved, curwin->w_cursor)
+# ifdef FEAT_INS_EXPAND
+	    && !pum_visible()
+# endif
+	   )
 	{
 # ifdef FEAT_SYN_HL
 	    /* Need to update the screen first, to make sure syntax
@@ -1477,7 +1493,18 @@ ins_redraw(ready)
 	    if (syntax_present(curwin) && must_redraw)
 		update_screen(0);
 # endif
-	    apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
+# ifdef FEAT_AUTOCMD
+	    if (has_cursormovedI())
+		apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
+# endif
+# ifdef FEAT_CONCEAL
+	    if (curwin->w_p_conceal)
+	    {
+		conceal_old_cursor_line = last_cursormoved.lnum;
+		conceal_new_cursor_line = curwin->w_cursor.lnum;
+		conceal_update_lines = TRUE;
+	    }
+# endif
 	    last_cursormoved = curwin->w_cursor;
 	}
 #endif
@@ -1485,6 +1512,15 @@ ins_redraw(ready)
 	    update_screen(0);
 	else if (clear_cmdline || redraw_cmdline)
 	    showmode();		/* clear cmdline and show mode */
+# if defined(FEAT_CONCEAL)
+	if (conceal_update_lines
+		&& conceal_old_cursor_line != conceal_new_cursor_line)
+	{
+	    update_single_line(curwin, conceal_old_cursor_line);
+	    update_single_line(curwin, conceal_new_cursor_line);
+	    curwin->w_valid &= ~VALID_CROW;
+	}
+# endif
 	showruler(FALSE);
 	setcursor();
 	emsg_on_display = FALSE;	/* may remove error message now */
@@ -9123,9 +9159,6 @@ ins_s_right()
 ins_up(startcol)
     int		startcol;	/* when TRUE move to Insstart.col */
 {
-#ifdef FEAT_CONCEAL
-    linenr_T	oldline = curwin->w_cursor.lnum;
-#endif
     pos_T	tpos;
     linenr_T	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -9147,13 +9180,6 @@ ins_up(startcol)
 	start_arrow(&tpos);
 #ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
-#ifdef FEAT_CONCEAL
-	if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
-	{
-	    update_single_line(curwin, oldline);
-	    update_single_line(curwin, curwin->w_cursor.lnum);
-	}
 #endif
     }
     else
@@ -9196,10 +9222,6 @@ ins_pageup()
 ins_down(startcol)
     int		startcol;	/* when TRUE move to Insstart.col */
 {
-#ifdef FEAT_CONCEAL
-    linenr_T	oldline = curwin->w_cursor.lnum;
-    linenr_T	oldbotline = curwin->w_botline;
-#endif
     pos_T	tpos;
     linenr_T	old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -9221,16 +9243,6 @@ ins_down(startcol)
 	start_arrow(&tpos);
 #ifdef FEAT_CINDENT
 	can_cindent = TRUE;
-#endif
-#ifdef FEAT_CONCEAL
-	if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
-	{
-	    update_single_line(curwin, oldline);
-	    /* Don't do this if we've scrolled, the line is already
-	     * drawn */
-	    if (oldbotline == curwin->w_botline)
-		update_single_line(curwin, curwin->w_cursor.lnum);
-	}
 #endif
     }
     else

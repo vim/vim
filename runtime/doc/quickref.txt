@@ -647,6 +647,7 @@ Short explanation of each option:		*option-list*
 'complete'	  'cpt'     specify how Insert mode completion works
 'completefunc'	  'cfu'     function to be used for Insert mode completion
 'completeopt'	  'cot'     options for Insert mode completion
+'conceallevel'	  'conc'    whether concealable text is shown or hidden 
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
 'conskey'	  'consk'   get keys directly from console (MS-DOS only)
 'copyindent'	  'ci'	    make 'autoindent' use existing indent structure
@@ -658,6 +659,7 @@ Short explanation of each option:		*option-list*
 'cscopetag'       'cst'     use cscope for tag commands
 'cscopetagorder'  'csto'    determines ":cstag" search order
 'cscopeverbose'   'csverb'  give messages when adding a cscope database
+'cursorbind'	  'crb'     move cursor in window as it moves in other windows
 'cursorcolumn'	  'cuc'	    highlight the screen column of the cursor
 'cursorline'	  'cul'	    highlight the screen line of the cursor
 'debug'			    set to "msg" to see all error messages

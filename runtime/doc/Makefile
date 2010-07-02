@@ -168,6 +168,7 @@ HTMLS = \
 	gui_x11.html \
 	hangulin.html \
 	hebrew.html \
+	helphelp.html \
 	howto.html \
 	if_cscop.html \
 	if_mzsch.html \
