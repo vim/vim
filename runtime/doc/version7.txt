@@ -6725,8 +6725,7 @@ Files:	    src/ex_getln.c
 
 Patch 7.1.326
 Problem:    ":s!from!to!" works, but ":smagic!from!to!" doesn't.  It sees the
-	    "!" as a flag to to the command.  Same for ":snomagic". (Johan
-	    Spetz)
+	    "!" as a flag to the command.  Same for ":snomagic". (Johan Spetz)
 Solution:   When checking for a forced command also ignore ":smagic" and
 	    ":snomagic". (Ian Kelling)
 Files:	    src/ex_docmd.c

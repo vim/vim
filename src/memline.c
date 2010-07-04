@@ -1259,7 +1259,7 @@ ml_recover()
 #else
     if (b0p->b0_id[1] != BLOCK0_ID1)
     {
-	EMSG2(_("E000: %s is encrypted and this version of Vim does not support encryption"), mfp->mf_fname);
+	EMSG2(_("E833: %s is encrypted and this version of Vim does not support encryption"), mfp->mf_fname);
 	goto theend;
     }
 #endif

@@ -389,7 +389,7 @@ For more details see |fold-diff|.
 ==============================================================================
 *28.10* Which fold method to use?
 
-All these possibilities make you wonder which method you should chose.
+All these possibilities make you wonder which method you should choose.
 Unfortunately, there is no golden rule.  Here are some hints.
 
 If there is a syntax file with folding for the language you are editing, that

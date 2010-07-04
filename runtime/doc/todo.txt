@@ -1015,7 +1015,7 @@ Win32: When running ":make" and 'encoding' differs from the system locale, the
 output should be converted.  Esp. when 'encoding' is "utf-8". (Yongwei Wu)
 Should we use 'termencoding' for this?
 
-Win32, NTFS: When editing an specific infostream directly and 'backupcopy' is
+Win32, NTFS: When editing a specific infostream directly and 'backupcopy' is
 "auto" should detect this situation and work like 'backupcopy' is "yes".  File
 name is something like "c:\path\foo.txt:bar", includes a colon.  (Alex
 Jakushev, 2008 Feb 1)
@@ -1097,9 +1097,6 @@ Vim 7.3:
 - using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
    Use register_shell_extension()?
    Patch from Geoffrey Reilly, 2010 Jun 22
-- Patch for conceal feature from Vince, 2010 Jul 1.
-    fix insert mode, cursor up/down?
-    CTRL-O j doesn't trigger cursormoved event?
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
@@ -1112,7 +1109,7 @@ Patches to include:
 - Patch for gtk main_loop() to enable GtkFileChooser. (James Vega, 2010 Jun 28)
     Same as this one?  GTK: file chooser is disabled.  Patch by Tim Starling,
     2009 Nov 13.
-- Patch to make CTRL-L work better with 'ignorecase' and 'smarcase'. (Martin
+- Patch to make CTRL-L work better with 'ignorecase' and 'smartcase'. (Martin
   Toft, 2010 Jun 8, Jun 16, Jun 30)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
   15)
@@ -1896,7 +1893,7 @@ Macintosh:
     - Add a flag in 'printoptions' to add an empty page to make the total
       number even.  "addempty"? (Mike Williams)
     - Respect 'linebreak'.  Perhaps also 'showbreak'?
-    - Should interpreted CTRL-L as a page break.
+    - Should interpret CTRL-L as a page break.
     - Grey line numbers are not always readable.  Add field in 'printoptions'.
       Default to black when no syntax highlighting.
     - Be able to print a window in diff mode.

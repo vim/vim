@@ -570,7 +570,7 @@ OBSCURE
 ==============================================================================
 6. Profiling						*profile* *profiling*
 
-Profiling means that Vim measures the time that is spend on executing
+Profiling means that Vim measures the time that is spent on executing
 functions and/or scripts.  The |+profile| feature is required for this.
 It is only included when Vim was compiled with "huge" features.
 {Vi does not have profiling}

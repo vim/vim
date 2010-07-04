@@ -1500,7 +1500,7 @@ the whole thing.
 
 "r<CR>" didn't work correctly on the last char of a line.
 
-sometimes a window resize or other signal caused an endless loop, involving
+Sometimes a window resize or other signal caused an endless loop, involving
 set_winsize().
 
 "vim -r" didn't work, it would just hang (using tgetent() while 'term' is

@@ -87,7 +87,7 @@ concatenated with the equivalent of version.h's VIM_VERSION_SHORT.
 The XPM library is required to show images within Vim with Motif or Athena.
 Without it the toolbar and signs will be disabled.
 
-The XPM library is provide by Arnaud Le Hors of the French National Institute
+The XPM library is provided by Arnaud Le Hors of the French National Institute
 for Research in Computer Science and Control.  It can be downloaded from
 http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
 writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create

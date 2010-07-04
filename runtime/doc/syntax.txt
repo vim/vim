@@ -1929,7 +1929,7 @@ Some functions are highlighted by default.  To switch it off: >
 
    :let pascal_no_functions=1
 
-Furthermore, there are specific variable for some compiler.  Besides
+Furthermore, there are specific variables for some compilers.  Besides
 pascal_delphi, there are pascal_gpc and pascal_fpc.  Default extensions try to
 match Turbo Pascal. >
 
@@ -2683,7 +2683,7 @@ set "tf_minlines" to the value you desire.  Example: >
 
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
-There is a tradeoff between more accurate syntax highlighting versus screen
+There is a trade-off between more accurate syntax highlighting versus screen
 updating speed.  To improve accuracy, you may wish to increase the
 g:vimsyn_minlines variable.  The g:vimsyn_maxlines variable may be used to
 improve screen updating rates (see |:syn-sync| for more on this). >
