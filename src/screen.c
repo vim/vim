@@ -139,6 +139,7 @@ static void redraw_custom_statusline __ARGS((win_T *wp));
 #define SEARCH_HL_PRIORITY 0
 static void start_search_hl __ARGS((void));
 static void end_search_hl __ARGS((void));
+static void init_search_hl __ARGS((win_T *wp));
 static void prepare_search_hl __ARGS((win_T *wp, linenr_T lnum));
 static void next_search_hl __ARGS((win_T *win, match_T *shl, linenr_T lnum, colnr_T mincol));
 #endif
@@ -609,7 +610,8 @@ update_single_line(wp, lnum)
 	    if (lnum == wp->w_lines[j].wl_lnum)
 	    {
 		screen_start();	/* not sure of screen cursor */
-# if defined(FEAT_SEARCH_EXTRA)
+# ifdef FEAT_SEARCH_EXTRA
+		init_search_hl(wp);
 		start_search_hl();
 		prepare_search_hl(wp, lnum);
 # endif
@@ -898,29 +900,7 @@ win_update(wp)
 #endif
 
 #ifdef FEAT_SEARCH_EXTRA
-    /* Setup for match and 'hlsearch' highlighting.  Disable any previous
-     * match */
-    cur = wp->w_match_head;
-    while (cur != NULL)
-    {
-	cur->hl.rm = cur->match;
-	if (cur->hlg_id == 0)
-	    cur->hl.attr = 0;
-	else
-	    cur->hl.attr = syn_id2attr(cur->hlg_id);
-	cur->hl.buf = buf;
-	cur->hl.lnum = 0;
-	cur->hl.first_lnum = 0;
-# ifdef FEAT_RELTIME
-	/* Set the time limit to 'redrawtime'. */
-	profile_setlimit(p_rdt, &(cur->hl.tm));
-# endif
-	cur = cur->next;
-    }
-    search_hl.buf = buf;
-    search_hl.lnum = 0;
-    search_hl.first_lnum = 0;
-    /* time limit is set at the toplevel, for all windows */
+    init_search_hl(wp);
 #endif
 
 #ifdef FEAT_LINEBREAK
@@ -6891,6 +6871,40 @@ end_search_hl()
 	vim_free(search_hl.rm.regprog);
 	search_hl.rm.regprog = NULL;
     }
+}
+
+/*
+ * Init for calling prepare_search_hl().
+ */
+    static void
+init_search_hl(wp)
+    win_T	*wp;
+{
+    matchitem_T *cur;
+
+    /* Setup for match and 'hlsearch' highlighting.  Disable any previous
+     * match */
+    cur = wp->w_match_head;
+    while (cur != NULL)
+    {
+	cur->hl.rm = cur->match;
+	if (cur->hlg_id == 0)
+	    cur->hl.attr = 0;
+	else
+	    cur->hl.attr = syn_id2attr(cur->hlg_id);
+	cur->hl.buf = wp->w_buffer;
+	cur->hl.lnum = 0;
+	cur->hl.first_lnum = 0;
+# ifdef FEAT_RELTIME
+	/* Set the time limit to 'redrawtime'. */
+	profile_setlimit(p_rdt, &(cur->hl.tm));
+# endif
+	cur = cur->next;
+    }
+    search_hl.buf = wp->w_buffer;
+    search_hl.lnum = 0;
+    search_hl.first_lnum = 0;
+    /* time limit is set at the toplevel, for all windows */
 }
 
 /*
