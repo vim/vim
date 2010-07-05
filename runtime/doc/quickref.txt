@@ -1087,14 +1087,18 @@ Context-sensitive completion on the command-line:
 |:_%|	    %		current file name (only where a file name is expected)
 |:_#|	    #[num]	alternate file name [num] (only where a file name is
 			   expected)
-	Note: The next four are typed literally; these are not special keys!
+	Note: The next five are typed literally; these are not special keys!
+|:<afile>|  <abuf>	buffer number, for use in an autocommand (only where a
+			   file name is expected)
+|:<afile>|  <afile>	file name, for user in an autocommand (only where a
+			   file name is expected)
+|:<afile>|  <amatch>	what matched with the pattern, for use in an
+			   autocommand (only where a file name is expected)
 |:<cword>|  <cword>	word under the cursor (only where a file name is
 			   expected)
 |:<cWORD>|  <cWORD>	WORD under the cursor (only where a file name is
 			   expected) (see |WORD|)
 |:<cfile>|  <cfile>	file name under the cursor (only where a file name is
-			   expected)
-|:<afile>|  <afile>	file name for autocommand (only where a file name is
 			   expected)
 |:<sfile>|  <sfile>	file name of a ":source"d file, within that file (only
 			   where a file name is expected)

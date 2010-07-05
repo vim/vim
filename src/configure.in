@@ -1876,7 +1876,7 @@ if test "$enable_xsmp" = "yes"; then
 fi
 
 
-if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK"; then
+if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_GTK2"; then
   dnl Check for X11/xpm.h and X11/Sunkeysym.h with the GUI include path
   cppflags_save=$CPPFLAGS
   CPPFLAGS="$CPPFLAGS $X_CFLAGS"

@@ -1230,7 +1230,7 @@ identified directory.  If not, it is searched in all other directories of the
 directory stack (NOT the directory subtree!).  If it is still not found, it is
 assumed that it is in Vim's current directory.
 
-There are limitations in this algorithm.  This examples assume that make just
+There are limitations in this algorithm.  These examples assume that make just
 prints information about entering a directory in the form "Making all in dir".
 
 1) Assume you have following directories and files:

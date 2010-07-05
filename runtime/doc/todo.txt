@@ -1098,6 +1098,8 @@ Vim 7.3:
    Use register_shell_extension()?
    Patch from Geoffrey Reilly, 2010 Jun 22
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
+- Conceal feature: no update when moving to another window. (Dominique Pelle,
+  2010 Jul 5)
 Patches to include:
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
