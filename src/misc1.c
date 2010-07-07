@@ -2467,10 +2467,12 @@ skip_to_option_part(p)
 }
 
 /*
- * changed() is called when something in the current buffer is changed.
+ * Call this function when something in the current buffer is changed.
  *
  * Most often called through changed_bytes() and changed_lines(), which also
  * mark the area of the display to be redrawn.
+ *
+ * Careful: may trigger autocommands that reload the buffer.
  */
     void
 changed()
@@ -2545,6 +2547,7 @@ static void changed_common __ARGS((linenr_T lnum, colnr_T col, linenr_T lnume, l
  * - marks the windows on this buffer to be redisplayed
  * - marks the buffer changed by calling changed()
  * - invalidates cached values
+ * Careful: may trigger autocommands that reload the buffer.
  */
     void
 changed_bytes(lnum, col)
@@ -2658,6 +2661,7 @@ deleted_lines_mark(lnum, count)
  * below the changed lines (BEFORE the change).
  * When only inserting lines, "lnum" and "lnume" are equal.
  * Takes care of calling changed() and updating b_mod_*.
+ * Careful: may trigger autocommands that reload the buffer.
  */
     void
 changed_lines(lnum, col, lnume, xtra)
@@ -2725,6 +2729,11 @@ changed_lines_buf(buf, lnum, lnume, xtra)
     }
 }
 
+/*
+ * Common code for when a change is was made.
+ * See changed_lines() for the arguments.
+ * Careful: may trigger autocommands that reload the buffer.
+ */
     static void
 changed_common(lnum, col, lnume, xtra)
     linenr_T	lnum;
@@ -2975,6 +2984,7 @@ check_status(buf)
  * Don't use emsg(), because it flushes the macro buffer.
  * If we have undone all changes b_changed will be FALSE, but "b_did_warn"
  * will be TRUE.
+ * Careful: may trigger autocommands that reload the buffer.
  */
     void
 change_warning(col)
