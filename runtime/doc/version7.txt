@@ -7228,5 +7228,9 @@ right compiler flags. (Michael Bienia)
 
 Window title is not updated after dropping a file on Vim. (Hari G)
 
+MS-Windows: The self-installing executable now also works on 64-bit systems.
+The gvim executable is 32 bits, the installed gvimext.dll is either a 32 or 64
+bit version. (George Reilly)
+
 
  vim:tw=78:ts=8:ft=help:norl:

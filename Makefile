@@ -157,7 +157,7 @@ DOSBIN_S =  dosbin_s
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:
 # - Set environment for Visual C++ 4.1 (requires a new console window)
-# - "vcvars32" (use the path for VC 4.1 e:\msdev\bin)
+# - "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
 # - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
 # - "nmake -f Make_mvc.mak GUI=yes INTL=no" (use the path for VC 4.1)
 # - Rename "gvim.exe" to "gvim_w32s.exe".
@@ -178,6 +178,7 @@ DOSBIN_S =  dosbin_s
 #	VisVim.dll in src/VisVim
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from http://code.google.com/p/vim-win3264/
+#	It is part of vim72.zip as vim72/gvimext.dll.
 # - make sure there is a diff.exe two levels up
 # - go to ../nsis and do "makensis gvim.nsi" (takes a few minutes).
 # - Copy gvim##.exe to the dist directory.

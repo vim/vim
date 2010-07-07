@@ -36,5 +36,5 @@
 #define VIM_VERSION_NODOT	"vim73a"
 #define VIM_VERSION_SHORT	"7.3a"
 #define VIM_VERSION_MEDIUM	"7.3a BETA"
-#define VIM_VERSION_LONG	"VIM - Vi IMproved 7.3 BETA (2010 May 15)"
-#define VIM_VERSION_LONG_DATE	"VIM - Vi IMproved 7.3 BETA (2010 May 15, compiled "
+#define VIM_VERSION_LONG	"VIM - Vi IMproved 7.3 BETA (2010 Jul 7)"
+#define VIM_VERSION_LONG_DATE	"VIM - Vi IMproved 7.3 BETA (2010 Jul 7, compiled "

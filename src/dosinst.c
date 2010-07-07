@@ -139,31 +139,6 @@ static char	*(vimfiles_subdirs[]) =
 };
 
 /*
- * Copy a directory name from "dir" to "buf", doubling backslashes.
- * Also make sure it ends in a double backslash.
- */
-    static void
-double_bs(char *dir, char *buf)
-{
-    char *d = buf;
-    char *s;
-
-    for (s = dir; *s; ++s)
-    {
-	if (*s == '\\')
-	    *d++ = '\\';
-	*d++ = *s;
-    }
-    /* when dir is not empty, it must end in a double backslash */
-    if (d > buf && d[-1] != '\\')
-    {
-	*d++ = '\\';
-	*d++ = '\\';
-    }
-    *d = NUL;
-}
-
-/*
  * Obtain a choice from a table.
  * First entry is a question, others are choices.
  */
@@ -442,7 +417,7 @@ get_vim_env(void)
     else
     {
 	printf("Failed to open %s\n", fname);
-	Sleep(2000);
+	sleep(2);
     }
 }
 
@@ -582,10 +557,10 @@ uninstall_check(int skip_question)
 			 * The uninstaller copies itself, executes the copy
 			 * and exits, thus we can't wait for the process to
 			 * finish. */
-			Sleep(1000);  /* wait for uninstaller to start up */
+			sleep(1);  /* wait for uninstaller to start up */
 			num_windows = 0;
 			EnumWindows(window_cb, 0);
-			Sleep(1000);  /* wait for windows to be counted */
+			sleep(1);  /* wait for windows to be counted */
 			if (num_windows == 0)
 			{
 			    /* Did not find the uninstaller, ask user to press
@@ -603,7 +578,7 @@ uninstall_check(int skip_question)
 				fflush(stdout);
 				num_windows = 0;
 				EnumWindows(window_cb, 0);
-				Sleep(1000);  /* wait for windows to be counted */
+				sleep(1);  /* wait for windows to be counted */
 			    } while (num_windows > 0);
 			}
 			printf("\nDone!\n");
@@ -1376,7 +1351,15 @@ init_vimrc_choices(void)
     ++choice_count;
 }
 
-#if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT)
+#if defined(WIN3264)
+/*
+ * Modern way of creating registry entries, also works on 64 bit windows when
+ * compiled as a 32 bit program.
+ */
+# ifndef KEY_WOW64_64KEY
+#  define KEY_WOW64_64KEY 0x0100
+# endif
+
     static LONG
 reg_create_key(
     HKEY root,
@@ -1525,7 +1508,7 @@ register_uninstall(
 					 "UninstallString", uninstall_string);
     return lRet;
 }
-#endif /* if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT) */
+#endif /* WIN3264 */
 
 /*
  * Add some entries to the registry:
@@ -1534,11 +1517,11 @@ register_uninstall(
  * - to uninstall Vim
  */
 /*ARGSUSED*/
-    static LONG
+    static int
 install_registry(void)
 {
+#ifdef WIN3264
     LONG        lRet = ERROR_SUCCESS;
-#if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT)
     const char	*vim_ext_ThreadingModel = "Apartment";
     const char	*vim_ext_name = "Vim Shell Extension";
     const char	*vim_ext_clsid = "{51EEE242-AD87-11d3-9C1E-0090278BBD99}";
@@ -1566,11 +1549,11 @@ install_registry(void)
             HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name,
 						bufg, vim_ext_ThreadingModel);
         if (ERROR_SUCCESS != lRet)
-	    return lRet;
+	    return FAIL;
         lRet = register_shellex(
             HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name, vim_exe_path);
         if (ERROR_SUCCESS != lRet)
-	    return lRet;
+	    return FAIL;
     }
 
     if (install_openwith)
@@ -1579,7 +1562,7 @@ install_registry(void)
 
         lRet = register_openwith(HKEY_CLASSES_ROOT, vim_exe_path);
         if (ERROR_SUCCESS != lRet)
-	    return lRet;
+	    return FAIL;
     }
 
     printf("Creating an uninstall entry\n");
@@ -1601,9 +1584,11 @@ install_registry(void)
         "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
         display_name,
         uninstall_string);
+    if (ERROR_SUCCESS != lRet)
+	return FAIL;
+#endif /* WIN3264 */
 
-#endif /* if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT) */
-    return lRet;
+    return OK;
 }
 
     static void
@@ -2569,7 +2554,7 @@ main(int argc, char **argv)
 	/* When nothing found exit quietly.  If something found wait for
 	 * a little while, so that the user can read the messages. */
 	if (i)
-	    Sleep(3000);
+	    sleep(3);
 	exit(0);
     }
 #endif
@@ -2645,7 +2630,7 @@ main(int argc, char **argv)
 
 	/* Avoid that the user has to hit Enter, just wait a little bit to
 	 * allow reading the messages. */
-	Sleep(2000);
+	sleep(2);
     }
 
     return 0;

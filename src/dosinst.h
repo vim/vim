@@ -62,6 +62,11 @@ char *searchpath(char *name);
 #  define vim_mkdir(x, y) mkdir((char *)(x))
 # endif
 #endif
+
+#ifndef DJGPP
+# define sleep(n) Sleep((n) * 1000)
+#endif
+
 /* ---------------------------------------- */
 
 
@@ -395,9 +400,10 @@ char *(icon_link_names[ICON_COUNT]) =
 	 "gVim Easy " VIM_VERSION_SHORT ".lnk",
 	 "gVim Read only " VIM_VERSION_SHORT ".lnk"};
 
-/* This is only used for dosinst.c and for uninstal.c when not being able to
- * directly access registry entries. */
-#if !defined(WIN3264) || defined(DOSINST)
+/* This is only used for dosinst.c when WIN3264 is defined and for uninstal.c
+ * when not being able to directly access registry entries. */
+#if (defined(DOSINST) && defined(WIN3264)) \
+	|| (!defined(DOSINST) && !defined(WIN3264))
 /*
  * Run an external command and wait for it to finish.
  */

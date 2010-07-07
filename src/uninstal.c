@@ -438,7 +438,7 @@ main(int argc, char *argv[])
 	(void)getchar();
     }
     else
-	Sleep(3000);
+	sleep(3);
 
     return 0;
 }

@@ -34,6 +34,9 @@ Bug in undo, using freed memory. (Dominique Pelle, Jul 1)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
+Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
+26)
+
 E315 when trying to change a file in FileChangedRO autocommand event.
 (Dominique Pelle, 2010 Apr 30)
 
@@ -102,9 +105,6 @@ Use format year-month-day hr:min:sec.
 Shell not recognized properly if it ends in "csh -f". (James Vega, 2009 Nov 3)
 Find tail?  Might have a / in argument.  Find space?  Might have space in
 path.
-
-Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
-26)
 
 ":function f(x) keepjumps" creates a function where every command is executed
 like it has ":keepjumps" before it.
@@ -1094,9 +1094,6 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 
 Vim 7.3:
-- using NSIS 2.46: install on Windows 7 works, but no "Edit with Vim" menu.
-   Use register_shell_extension()?
-   Patch from Geoffrey Reilly, 2010 Jun 22
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
