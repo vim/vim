@@ -7169,6 +7169,9 @@ When Vim is exiting because of a deadly signal, when v:dying is 2 or more,
 VimLeavePre, VimLeave, BufWinLeave and BufUnload autocommands are not
 executed.
 
+Removed support for GTK 1.  It was no longer maintained and required a lot of
+#ifdefs in the source code.  GTK 2 should be available for every system.
+
 
 Added							*added-7.3*
 -----
@@ -7180,7 +7183,10 @@ the file was read, also for unloaded buffers. |undo-persistence|
 Added the 'relativenumber' option. (Markus Heidelberg)
 
 Support for Blowfish encryption.  Added the 'cryptmethod' option.
-Mostly by Moshin Ahmed.
+Mostly by Moshin Ahmed.  Also encrypt the text in the swap file and the undo
+file.
+
+Added the |+conceal| feature.  (Vince Negri)
 
 Added support for NetBeans in a terminal.  Added |:nbstart| and |:nbclose|.
 (Xavier de Gaye)

@@ -1376,6 +1376,157 @@ init_vimrc_choices(void)
     ++choice_count;
 }
 
+#if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT)
+    static LONG
+reg_create_key(
+    HKEY root,
+    const char *subkey,
+    PHKEY phKey)
+{
+    DWORD disp;
+
+    *phKey = NULL;
+    return RegCreateKeyEx(
+                root, subkey,
+                0, NULL, REG_OPTION_NON_VOLATILE,
+                KEY_WOW64_64KEY | KEY_WRITE,
+                NULL, phKey, &disp);
+}
+
+    static LONG
+reg_set_string_value(
+    HKEY hKey,
+    const char *value_name,
+    const char *data)
+{
+    return RegSetValueEx(hKey, value_name, 0, REG_SZ,
+				     (LPBYTE)data, (DWORD)(1 + strlen(data)));
+}
+
+    static LONG
+reg_create_key_and_value(
+    HKEY hRootKey,
+    const char *subkey,
+    const char *value_name,
+    const char *data)
+{
+    HKEY hKey;
+    LONG lRet = reg_create_key(hRootKey, subkey, &hKey);
+
+    if (ERROR_SUCCESS == lRet)
+    {
+        lRet = reg_set_string_value(hKey, value_name, data);
+        RegCloseKey(hKey);
+    }
+    return lRet;
+}
+
+    static LONG
+register_inproc_server(
+    HKEY hRootKey,
+    const char *clsid,
+    const char *extname,
+    const char *module,
+    const char *threading_model)
+{
+    CHAR subkey[BUFSIZE];
+    LONG lRet;
+
+    sprintf(subkey, "CLSID\\%s", clsid);
+    lRet = reg_create_key_and_value(hRootKey, subkey, NULL, extname);
+    if (ERROR_SUCCESS == lRet)
+    {
+        sprintf(subkey, "CLSID\\%s\\InProcServer32", clsid);
+        lRet = reg_create_key_and_value(hRootKey, subkey, NULL, module);
+        if (ERROR_SUCCESS == lRet)
+        {
+            lRet = reg_create_key_and_value(hRootKey, subkey,
+					   "ThreadingModel", threading_model);
+        }
+    }
+    return lRet;
+}
+
+    static LONG
+register_shellex(
+    HKEY hRootKey,
+    const char *clsid,
+    const char *name,
+    const char *exe_path)
+{
+    LONG lRet = reg_create_key_and_value(
+            hRootKey,
+            "*\\shellex\\ContextMenuHandlers\\gvim",
+            NULL,
+            clsid);
+
+    if (ERROR_SUCCESS == lRet)
+    {
+        lRet = reg_create_key_and_value(
+                HKEY_LOCAL_MACHINE,
+                "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+                clsid,
+                name);
+
+        if (ERROR_SUCCESS == lRet)
+        {
+            lRet = reg_create_key_and_value(
+                    HKEY_LOCAL_MACHINE,
+                    "Software\\Vim\\Gvim",
+                    "path",
+                    exe_path);
+        }
+    }
+    return lRet;
+}
+
+    static LONG
+register_openwith(
+    HKEY hRootKey,
+    const char *exe_path)
+{
+    LONG lRet = reg_create_key_and_value(
+            hRootKey,
+            "Applications\\gvim.exe\\shell\\edit\\command",
+            NULL,
+            exe_path);
+
+    if (ERROR_SUCCESS == lRet)
+    {
+        int i;
+        static const char *openwith[] = {
+	        ".htm\\OpenWithList\\gvim.exe",
+	        ".vim\\OpenWithList\\gvim.exe",
+	        "*\\OpenWithList\\gvim.exe",
+        };
+
+        for (i = 0; ERROR_SUCCESS == lRet
+			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
+        {
+            lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "");
+        }
+    }
+
+    return lRet;
+}
+
+    static LONG
+register_uninstall(
+    HKEY hRootKey,
+    const char *appname,
+    const char *display_name,
+    const char *uninstall_string)
+{
+    LONG lRet = reg_create_key_and_value(hRootKey, appname,
+						 "DisplayName", display_name);
+
+    if (ERROR_SUCCESS == lRet)
+        lRet = reg_create_key_and_value(hRootKey, appname,
+					 "UninstallString", uninstall_string);
+    return lRet;
+}
+#endif /* if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT) */
+
 /*
  * Add some entries to the registry:
  * - to add "Edit with Vim" to the context * menu
@@ -1383,97 +1534,76 @@ init_vimrc_choices(void)
  * - to uninstall Vim
  */
 /*ARGSUSED*/
-    static void
+    static LONG
 install_registry(void)
 {
+    LONG        lRet = ERROR_SUCCESS;
 #if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT)
-    FILE	*fd;
     const char	*vim_ext_ThreadingModel = "Apartment";
     const char	*vim_ext_name = "Vim Shell Extension";
     const char	*vim_ext_clsid = "{51EEE242-AD87-11d3-9C1E-0090278BBD99}";
     char	buf[BUFSIZE];
+    char	vim_exe_path[BUFSIZE];
+    char        display_name[BUFSIZE];
+    char        uninstall_string[BUFSIZE];
 
-    fd = fopen("vim.reg", "w");
-    if (fd == NULL)
-	printf("ERROR: Could not open vim.reg for writing\n");
+    sprintf(vim_exe_path, "%s\\gvim.exe", installdir);
+
+    if (install_popup)
+    {
+        char	    bufg[BUFSIZE];
+        struct stat st;
+
+        if (stat("gvimext.dll", &st) >= 0)
+            sprintf(bufg, "%s\\gvimext.dll", installdir);
+        else
+            /* gvimext.dll is in gvimext subdir */
+            sprintf(bufg, "%s\\gvimext\\gvimext.dll", installdir);
+
+        printf("Creating \"Edit with Vim\" popup menu entry\n");
+
+        lRet = register_inproc_server(
+            HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name,
+						bufg, vim_ext_ThreadingModel);
+        if (ERROR_SUCCESS != lRet)
+	    return lRet;
+        lRet = register_shellex(
+            HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name, vim_exe_path);
+        if (ERROR_SUCCESS != lRet)
+	    return lRet;
+    }
+
+    if (install_openwith)
+    {
+        printf("Creating \"Open with ...\" list entry\n");
+
+        lRet = register_openwith(HKEY_CLASSES_ROOT, vim_exe_path);
+        if (ERROR_SUCCESS != lRet)
+	    return lRet;
+    }
+
+    printf("Creating an uninstall entry\n");
+
+    /* For the NSIS installer use the generated uninstaller. */
+    if (interactive)
+    {
+        sprintf(display_name, "Vim " VIM_VERSION_SHORT);
+        sprintf(uninstall_string, "%suninstal.exe", buf);
+    }
     else
     {
-	double_bs(installdir, buf); /* double the backslashes */
-
-	/*
-	 * Write the registry entries for the "Edit with Vim" menu.
-	 */
-	fprintf(fd, "REGEDIT4\n");
-	fprintf(fd, "\n");
-	if (install_popup)
-	{
-	    char	bufg[BUFSIZE];
-	    struct stat st;
-
-	    if (stat("gvimext.dll", &st) >= 0)
-		strcpy(bufg, buf);
-	    else
-		/* gvimext.dll is in gvimext subdir */
-		sprintf(bufg, "%sgvimext\\\\", buf);
-
-	    printf("Creating \"Edit with Vim\" popup menu entry\n");
-
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\CLSID\\%s]\n", vim_ext_clsid);
-	    fprintf(fd, "@=\"%s\"\n", vim_ext_name);
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\CLSID\\%s\\InProcServer32]\n",
-							       vim_ext_clsid);
-	    fprintf(fd, "@=\"%sgvimext.dll\"\n", bufg);
-	    fprintf(fd, "\"ThreadingModel\"=\"%s\"\n", vim_ext_ThreadingModel);
-	    fprintf(fd, "\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\*\\shellex\\ContextMenuHandlers\\gvim]\n");
-	    fprintf(fd, "@=\"%s\"\n", vim_ext_clsid);
-	    fprintf(fd, "\n");
-	    fprintf(fd, "[HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved]\n");
-	    fprintf(fd, "\"%s\"=\"%s\"\n", vim_ext_clsid, vim_ext_name);
-	    fprintf(fd, "\n");
-	    fprintf(fd, "[HKEY_LOCAL_MACHINE\\Software\\Vim\\Gvim]\n");
-	    fprintf(fd, "\"path\"=\"%sgvim.exe\"\n", buf);
-	    fprintf(fd, "\n");
-	}
-
-	if (install_openwith)
-	{
-	    printf("Creating \"Open with ...\" list entry\n");
-
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\Applications\\gvim.exe]\n\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\Applications\\gvim.exe\\shell]\n\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\Applications\\gvim.exe\\shell\\edit]\n\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\Applications\\gvim.exe\\shell\\edit\\command]\n");
-	    fprintf(fd, "@=\"%sgvim.exe \\\"%%1\\\"\"\n\n", buf);
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\.htm\\OpenWithList\\gvim.exe]\n\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\.vim\\OpenWithList\\gvim.exe]\n\n");
-	    fprintf(fd, "[HKEY_CLASSES_ROOT\\*\\OpenWithList\\gvim.exe]\n\n");
-	}
-
-	printf("Creating an uninstall entry\n");
-
-	/* The registry entries for uninstalling the menu */
-	fprintf(fd, "[HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT "]\n");
-
-	/* For the NSIS installer use the generated uninstaller. */
-	if (interactive)
-	{
-	    fprintf(fd, "\"DisplayName\"=\"Vim " VIM_VERSION_SHORT "\"\n");
-	    fprintf(fd, "\"UninstallString\"=\"%suninstal.exe\"\n", buf);
-	}
-	else
-	{
-	    fprintf(fd, "\"DisplayName\"=\"Vim " VIM_VERSION_SHORT " (self-installing)\"\n");
-	    fprintf(fd, "\"UninstallString\"=\"%suninstall-gui.exe\"\n", buf);
-	}
-
-	fclose(fd);
-
-	run_command("regedit /s vim.reg");
-
-	remove("vim.reg");
+        sprintf(display_name, "Vim " VIM_VERSION_SHORT " (self-installing)");
+        sprintf(uninstall_string, "%suninstall-gui.exe", buf);
     }
-#endif /* if defined(DJGPP) || defined(WIN3264) */
+
+    lRet = register_uninstall(
+        HKEY_LOCAL_MACHINE,
+        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
+        display_name,
+        uninstall_string);
+
+#endif /* if defined(DJGPP) || defined(WIN3264) || defined(UNIX_LINT) */
+    return lRet;
 }
 
     static void
