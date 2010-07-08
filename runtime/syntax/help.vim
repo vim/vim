@@ -116,6 +116,17 @@ if s:i > 0
   exe "runtime syntax/help_" . strpart(expand("%"), s:i + 1, 2) . ".vim"
 endif
 
+" Italian
+if v:lang == "IT"
+  syn keyword helpNote		nota Nota NOTA notare: Notare: NOTARE:
+  syn match helpSpecial		"Nma"me=e-2
+  syn match helpSpecial		"Nme"me=e-2
+  syn match helpSpecial		"Nmi"me=e-2
+  syn match helpSpecial		"Nmo"me=e-2
+  syn match helpSpecial		"\[interv.]"
+  syn region helpNotVi		start="{non" start="{solo" start="{disponibile" end="}" contains=helpLeadBlank,helpHyperTextJump
+endif
+
 syn sync minlines=40
 
 

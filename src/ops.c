@@ -1595,9 +1595,9 @@ adjust_clip_reg(rp)
 #endif
 
 /*
- * op_delete - handle a delete operation
+ * Handle a delete operation.
  *
- * return FAIL if undo failed, OK otherwise.
+ * Return FAIL if undo failed, OK otherwise.
  */
     int
 op_delete(oap)
@@ -1635,11 +1635,11 @@ op_delete(oap)
 	mb_adjust_opend(oap);
 #endif
 
-/*
- * Imitate the strange Vi behaviour: If the delete spans more than one line
- * and motion_type == MCHAR and the result is a blank line, make the delete
- * linewise.  Don't do this for the change command or Visual mode.
- */
+    /*
+     * Imitate the strange Vi behaviour: If the delete spans more than one
+     * line and motion_type == MCHAR and the result is a blank line, make the
+     * delete linewise.  Don't do this for the change command or Visual mode.
+     */
     if (       oap->motion_type == MCHAR
 #ifdef FEAT_VISUAL
 	    && !oap->is_VIsual
@@ -1654,10 +1654,10 @@ op_delete(oap)
 	    oap->motion_type = MLINE;
     }
 
-/*
- * Check for trying to delete (e.g. "D") in an empty line.
- * Note: For the change operator it is ok.
- */
+    /*
+     * Check for trying to delete (e.g. "D") in an empty line.
+     * Note: For the change operator it is ok.
+     */
     if (       oap->motion_type == MCHAR
 	    && oap->line_count == 1
 	    && oap->op_type == OP_DELETE
@@ -1678,11 +1678,11 @@ op_delete(oap)
 	return OK;
     }
 
-/*
- * Do a yank of whatever we're about to delete.
- * If a yank register was specified, put the deleted text into that register.
- * For the black hole register '_' don't yank anything.
- */
+    /*
+     * Do a yank of whatever we're about to delete.
+     * If a yank register was specified, put the deleted text into that
+     * register.  For the black hole register '_' don't yank anything.
+     */
     if (oap->regname != '_')
     {
 	if (oap->regname != 0)
@@ -1749,9 +1749,9 @@ op_delete(oap)
     }
 
 #ifdef FEAT_VISUAL
-/*
- * block mode delete
- */
+    /*
+     * block mode delete
+     */
     if (oap->block_mode)
     {
 	if (u_save((linenr_T)(oap->start.lnum - 1),

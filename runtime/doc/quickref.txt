@@ -68,8 +68,8 @@ N is used to indicate an optional count that can be given before the command.
 			   non-blank character
 |gg|	N  gg		goto line N (default: first line), on the first
 			   non-blank character
-|N%|	N  %		goto line N percentage down in the file.  N must be
-			   given, otherwise it is the |%| command.
+|N%|	N  %		goto line N percentage down in the file;  N must be
+			   given, otherwise it is the |%| command
 |gk|	N  gk		up N screen lines (differs from "k" when line wraps)
 |gj|	N  gj		down N screen lines (differs from "j" when line wraps)
 ------------------------------------------------------------------------------
@@ -204,23 +204,23 @@ N is used to indicate an optional count that can be given before the command.
 ------------------------------------------------------------------------------
 *Q_ta*		Using tags
 
-|:ta|	   :ta[g][!] {tag}	Jump to tag {tag}
-|:ta|	   :[count]ta[g][!]	Jump to [count]'th newer tag in tag list
-|CTRL-]|      CTRL-]		Jump to the tag under cursor, unless changes
+|:ta|	   :ta[g][!] {tag}	jump to tag {tag}
+|:ta|	   :[count]ta[g][!]	jump to [count]'th newer tag in tag list
+|CTRL-]|      CTRL-]		jump to the tag under cursor, unless changes
 				   have been made
-|:ts|	   :ts[elect][!] [tag]	List matching tags and select one to jump to
-|:tjump|   :tj[ump][!] [tag]	Jump to tag [tag] or select from list when
+|:ts|	   :ts[elect][!] [tag]	list matching tags and select one to jump to
+|:tjump|   :tj[ump][!] [tag]	jump to tag [tag] or select from list when
 				   there are multiple matches
-|:ltag|	   :lt[ag][!] [tag]	Jump to tag [tag] and add matching tags to the
-				   location list.
+|:ltag|	   :lt[ag][!] [tag]	jump to tag [tag] and add matching tags to the
+				   location list
 
-|:tags|	   :tags		Print tag list
-|CTRL-T|   N  CTRL-T		Jump back from Nth older tag in tag list
-|:po|	   :[count]po[p][!]	Jump back from [count]'th older tag in tag list
-|:tnext|   :[count]tn[ext][!]	Jump to [count]'th next matching tag
-|:tp|      :[count]tp[revious][!] Jump to [count]'th previous matching tag
-|:tr|	   :[count]tr[ewind][!] Jump to [count]'th matching tag
-|:tl|	   :tl[ast][!]		Jump to last matching tag
+|:tags|	   :tags		print tag list
+|CTRL-T|   N  CTRL-T		jump back from Nth older tag in tag list
+|:po|	   :[count]po[p][!]	jump back from [count]'th older tag in tag list
+|:tnext|   :[count]tn[ext][!]	jump to [count]'th next matching tag
+|:tp|      :[count]tp[revious][!] jump to [count]'th previous matching tag
+|:tr|	   :[count]tr[ewind][!] jump to [count]'th matching tag
+|:tl|	   :tl[ast][!]		jump to last matching tag
 
 |:ptag|	   :pt[ag] {tag}	open a preview window to show tag {tag}
 |CTRL-W_}|     CTRL-W }		like CTRL-] but show tag in preview window
@@ -494,35 +494,34 @@ In Insert or Command-line mode:
 			   command
 |:@@|	   :@@		repeat previous :@{a-z}
 |:g|	   :[range]g[lobal]/{pattern}/[cmd]
-			Execute Ex command [cmd] (default: ":p") on the lines
-			   within [range] where {pattern} matches.
+			execute Ex command [cmd] (default: ":p") on the lines
+			   within [range] where {pattern} matches
 |:g|	   :[range]g[lobal]!/{pattern}/[cmd]
-			Execute Ex command [cmd] (default: ":p") on the lines
-			   within [range] where {pattern} does NOT match.
+			execute Ex command [cmd] (default: ":p") on the lines
+			   within [range] where {pattern} does NOT match
 |:so|	   :so[urce] {file}
-			Read Ex commands from {file}.
+			read Ex commands from {file}
 |:so|	   :so[urce]! {file}
-			Read Vim commands from {file}.
+			read Vim commands from {file}
 |:sl|	   :sl[eep] [sec]
 			don't do anything for [sec] seconds
-|gs|	   N  gs	Goto Sleep for N seconds
+|gs|	   N  gs	goto Sleep for N seconds
 ------------------------------------------------------------------------------
 *Q_km*		Key mapping
 
-|:map|	     :ma[p] {lhs} {rhs}	  Map {lhs} to {rhs} in Normal and Visual
-				     mode.
-|:map!|	     :ma[p]! {lhs} {rhs}  Map {lhs} to {rhs} in Insert and Command-line
-				     mode.
+|:map|	     :ma[p] {lhs} {rhs}	  map {lhs} to {rhs} in Normal and Visual mode
+|:map!|	     :ma[p]! {lhs} {rhs}  map {lhs} to {rhs} in Insert and Command-line
+				     mode
 |:noremap|   :no[remap][!] {lhs} {rhs}
-				  Same as ":map", no remapping for this {rhs}
-|:unmap|     :unm[ap] {lhs}	  Remove the mapping of {lhs} for Normal and
-				     Visual mode.
-|:unmap!|    :unm[ap]! {lhs}	  Remove the mapping of {lhs} for Insert and
-				     Command-line mode.
-|:map_l|     :ma[p] [lhs]	  List mappings (starting with [lhs]) for
-				     Normal and Visual mode.
-|:map_l!|    :ma[p]! [lhs]	  List mappings (starting with [lhs]) for
-				     Insert and Command-line mode.
+				  same as ":map", no remapping for this {rhs}
+|:unmap|     :unm[ap] {lhs}	  remove the mapping of {lhs} for Normal and
+				     Visual mode
+|:unmap!|    :unm[ap]! {lhs}	  remove the mapping of {lhs} for Insert and
+				     Command-line mode
+|:map_l|     :ma[p] [lhs]	  list mappings (starting with [lhs]) for
+				     Normal and Visual mode
+|:map_l!|    :ma[p]! [lhs]	  list mappings (starting with [lhs]) for
+				     Insert and Command-line mode
 |:cmap|	     :cmap/:cunmap/:cnoremap
 				  like ":map!"/":unmap!"/":noremap!" but for
 				     Command-line mode only
@@ -553,7 +552,7 @@ In Insert or Command-line mode:
 |:mksession| :mks[ession][!] [file]
 				  like ":mkvimrc", but store current files,
 				     windows, etc. too, to be able to continue
-				     this session later.
+				     this session later
 ------------------------------------------------------------------------------
 *Q_ab*		Abbreviations
 
@@ -571,32 +570,32 @@ In Insert or Command-line mode:
 ------------------------------------------------------------------------------
 *Q_op*		Options
 
-|:set|		:se[t]			  Show all modified options.
-|:set|		:se[t] all		  Show all non-termcap options.
-|:set|		:se[t] termcap		  Show all termcap options.
-|:set|		:se[t] {option}		  Set boolean option (switch it on),
-					  show string or number option.
-|:set|		:se[t] no{option}	  Reset boolean option (switch it off).
-|:set|		:se[t] inv{option}	  invert boolean option.
-|:set|		:se[t] {option}={value}	  Set string/number option to {value}.
+|:set|		:se[t]			  show all modified options
+|:set|		:se[t] all		  show all non-termcap options
+|:set|		:se[t] termcap		  show all termcap options
+|:set|		:se[t] {option}		  set boolean option (switch it on),
+					  show string or number option
+|:set|		:se[t] no{option}	  reset boolean option (switch it off)
+|:set|		:se[t] inv{option}	  invert boolean option
+|:set|		:se[t] {option}={value}	  set string/number option to {value}
 |:set|		:se[t] {option}+={value}  append {value} to string option, add
 					  {value} to number option
 |:set|		:se[t] {option}-={value}  remove {value} to string option,
 					  subtract {value} from number option
-|:set|		:se[t] {option}?	  Show value of {option}.
-|:set|		:se[t] {option}&	  Reset {option} to its default value.
+|:set|		:se[t] {option}?	  show value of {option}
+|:set|		:se[t] {option}&	  reset {option} to its default value
 
 |:setlocal|	:setl[ocal]		  like ":set" but set the local value
 					  for options that have one
 |:setglobal|	:setg[lobal]		  like ":set" but set the global value
 					  of a local option
 
-|:fix|		:fix[del]		  Set value of 't_kD' according to
-					  value of 't_kb'.
-|:options|	:opt[ions]		  Open a new window to view and set
+|:fix|		:fix[del]		  set value of 't_kD' according to
+					  value of 't_kb'
+|:options|	:opt[ions]		  open a new window to view and set
 					  options, grouped by functionality,
 					  a one line explanation and links to
-					  the help.
+					  the help
 
 Short explanation of each option:		*option-list*
 'aleph'		  'al'	    ASCII code of the letter Aleph (Hebrew)
@@ -934,7 +933,7 @@ Short explanation of each option:		*option-list*
 'wildignore'	  'wig'     files matching these patterns are not completed
 'wildmenu'	  'wmnu'    use menu for command line completion
 'wildmode'	  'wim'     mode for 'wildchar' command-line expansion
-'wildoptions'	  'wop'     specifies how command line completion is done.
+'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
 'winheight'	  'wh'	    minimum number of lines for the current window
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
@@ -984,17 +983,17 @@ Short explanation of each option:		*option-list*
 |:make|		:make [args]	start make, read errors, and jump to first
 				   error
 |:grep|		:gr[ep] [args]	execute 'grepprg' to find matches and jump to
-				   the first one.
+				   the first one
 ------------------------------------------------------------------------------
 *Q_vc*		Various commands
 
-|CTRL-L|	   CTRL-L	Clear and redraw the screen.
+|CTRL-L|	   CTRL-L	clear and redraw the screen
 |CTRL-G|	   CTRL-G	show current file name (with path) and cursor
 				   position
 |ga|		   ga		show ascii value of character under cursor in
 				   decimal, hex, and octal
 |g8|		   g8		for utf-8 encoding: show byte sequence for
-				   character under cursor in hex.
+				   character under cursor in hex
 |g_CTRL-G|	   g CTRL-G	show cursor column, line, and character
 				   position
 |CTRL-C|	   CTRL-C	during searches: Interrupt the search
@@ -1004,13 +1003,13 @@ Short explanation of each option:		*option-list*
 |:mode|		:mode N		MS-DOS: set screen mode to N (number, C80,
 				   C4350, etc.)
 |:normal|	:norm[al][!] {commands}
-				Execute Normal mode commands.
+				execute Normal mode commands
 |Q|		Q		switch to "Ex" mode
 
 |:redir|	:redir >{file}		redirect messages to {file}
 |:silent|	:silent[!] {command}	execute {command} silently
 |:confirm|	:confirm {command}	quit, write, etc., asking about
-					unsaved changes or read-only files.
+					unsaved changes or read-only files
 |:browse|	:browse {command}	open/read/write file, using a
 					file selection dialog
 ------------------------------------------------------------------------------
@@ -1045,9 +1044,9 @@ Context-sensitive completion on the command-line:
 
 |c_wildchar|	'wildchar'  (default: <Tab>)
 				do completion on the pattern in front of the
-				   cursor.  If there are multiple matches,
+				   cursor; if there are multiple matches,
 				   beep and show the first one; further
-				   'wildchar' will show the next ones.
+				   'wildchar' will show the next ones
 |c_CTRL-D|	CTRL-D		list all names that match the pattern in
 				   front of the cursor
 |c_CTRL-A|	CTRL-A		insert all names that match pattern in front
@@ -1158,37 +1157,37 @@ Context-sensitive completion on the command-line:
 |---|	--		    end of options, other arguments are file names
 |--help|    --help	    show list of arguments and exit
 |--version| --version	    show version info and exit
-|--|	-		    Read file from stdin.
+|--|	-		    read file from stdin
 ------------------------------------------------------------------------------
 *Q_ed*		Editing a file
 
 	   Without !: Fail if changes has been made to the current buffer.
 	      With !: Discard any changes to the current buffer.
-|:edit_f|  :e[dit][!] {file}	Edit {file}.
-|:edit|	   :e[dit][!]		Reload the current file.
-|:enew|	   :ene[w][!]		Edit a new, unnamed buffer.
-|:find|    :fin[d][!] {file}	Find {file} in 'path' and edit it.
+|:edit_f|  :e[dit][!] {file}	edit {file}
+|:edit|	   :e[dit][!]		reload the current file
+|:enew|	   :ene[w][!]		edit a new, unnamed buffer
+|:find|    :fin[d][!] {file}	find {file} in 'path' and edit it
 
-|CTRL-^|   N   CTRL-^		Edit alternate file N (equivalent to ":e #N").
-|gf|	       gf  or ]f	Edit the file whose name is under the cursor
-|:pwd|	   :pwd			Print the current directory name.
-|:cd|	   :cd [path]		Change the current directory to [path].
-|:cd-|	   :cd -		Back to previous current directory.
-|:file|	   :f[ile]		Print the current file name and the cursor
-				   position.
-|:file|	   :f[ile] {name}	Set the current file name to {name}.
-|:files|   :files		Show alternate file names.
+|CTRL-^|   N   CTRL-^		edit alternate file N (equivalent to ":e #N")
+|gf|	       gf  or ]f	edit the file whose name is under the cursor
+|:pwd|	   :pwd			print the current directory name
+|:cd|	   :cd [path]		change the current directory to [path]
+|:cd-|	   :cd -		back to previous current directory
+|:file|	   :f[ile]		print the current file name and the cursor
+				   position
+|:file|	   :f[ile] {name}	set the current file name to {name}
+|:files|   :files		show alternate file names
 ------------------------------------------------------------------------------
 *Q_fl*		Using the argument list			|argument-list|
 
-|:args|	   :ar[gs]		Print the argument list, with the current file
-				   in "[]".
-|:all|	   :all  or :sall	Open a window for every file in the arg list.
-|:wn|	   :wn[ext][!]		Write file and edit next file.
-|:wn|	   :wn[ext][!] {file}	Write to {file} and edit next file, unless
-				   {file} exists.  With !, overwrite existing
-				   file.
-|:wN|	   :wN[ext][!] [file]	Write file and edit previous file.
+|:args|	   :ar[gs]		print the argument list, with the current file
+				   in "[]"
+|:all|	   :all  or :sall	open a window for every file in the arg list
+|:wn|	   :wn[ext][!]		write file and edit next file
+|:wn|	   :wn[ext][!] {file}	write to {file} and edit next file, unless
+				   {file} exists; With !, overwrite existing
+				   file
+|:wN|	   :wN[ext][!] [file]	write file and edit previous file
 
 	     in current window    in new window	~
 |:argument|  :argu[ment] N	  :sar[gument] N	Edit file N
@@ -1201,40 +1200,40 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_wq*		Writing and quitting
 
-|:w|	  :[range]w[rite][!]		Write to the current file.
-|:w_f|	  :[range]w[rite] {file}	Write to {file}, unless it already
-					   exists.
-|:w_f|	  :[range]w[rite]! {file}	Write to {file}.  Overwrite an existing
-					   file.
-|:w_a|	  :[range]w[rite][!] >>		Append to the current file.
-|:w_a|	  :[range]w[rite][!] >> {file}	Append to {file}.
-|:w_c|	  :[range]w[rite] !{cmd}	Execute {cmd} with [range] lines as
-					   standard input.
+|:w|	  :[range]w[rite][!]		write to the current file
+|:w_f|	  :[range]w[rite] {file}	write to {file}, unless it already
+					   exists
+|:w_f|	  :[range]w[rite]! {file}	write to {file}.  Overwrite an existing
+					   file
+|:w_a|	  :[range]w[rite][!] >>		append to the current file
+|:w_a|	  :[range]w[rite][!] >> {file}	append to {file}
+|:w_c|	  :[range]w[rite] !{cmd}	execute {cmd} with [range] lines as
+					   standard input
 |:up|	  :[range]up[date][!]		write to current file if modified
 |:wall|	  :wa[ll][!]			write all changed buffers
 
-|:q|	  :q[uit]		Quit current buffer, unless changes have been
-				   made.  Exit Vim when there are no other
+|:q|	  :q[uit]		quit current buffer, unless changes have been
+				   made; Exit Vim when there are no other
 				   non-help buffers
-|:q|	  :q[uit]!		Quit current buffer always, discard any
+|:q|	  :q[uit]!		quit current buffer always, discard any
 				   changes.  Exit Vim when there are no other
 				   non-help buffers
-|:qa|	  :qa[ll]		Exit Vim, unless changes have been made.
-|:qa|	  :qa[ll]!		Exit Vim always, discard any changes.
-|:cq|	  :cq			Quit without writing and return error code.
+|:qa|	  :qa[ll]		exit Vim, unless changes have been made
+|:qa|	  :qa[ll]!		exit Vim always, discard any changes
+|:cq|	  :cq			quit without writing and return error code
 
-|:wq|	  :wq[!]		Write the current file and exit.
-|:wq|	  :wq[!] {file}		Write to {file} and exit.
-|:xit|	  :x[it][!] [file]	Like ":wq" but write only when changes have
+|:wq|	  :wq[!]		write the current file and exit
+|:wq|	  :wq[!] {file}		write to {file} and exit
+|:xit|	  :x[it][!] [file]	like ":wq" but write only when changes have
 				   been made
-|ZZ|	     ZZ			Same as ":x".
-|ZQ|	     ZQ			Same as ":q!".
+|ZZ|	     ZZ			same as ":x"
+|ZQ|	     ZQ			same as ":q!"
 |:xall|	  :xa[ll][!]  or :wqall[!]
-				Write all changed buffers and exit
+				write all changed buffers and exit
 
-|:stop|	  :st[op][!]		Suspend VIM or start new shell.  If 'aw' option
-				   is set and [!] not given write the buffer.
-|CTRL-Z|     CTRL-Z		Same as ":stop"
+|:stop|	  :st[op][!]		suspend VIM or start new shell; if 'aw' option
+				   is set and [!] not given write the buffer
+|CTRL-Z|     CTRL-Z		same as ":stop"
 ------------------------------------------------------------------------------
 *Q_ac*		Automatic Commands
 
@@ -1269,41 +1268,41 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_wi*		Multi-window commands
 
-|CTRL-W_s|	CTRL-W s  or  :split	Split window into two parts
-|:split_f|	:split {file}		Split window and edit {file} in one of
+|CTRL-W_s|	CTRL-W s  or  :split	split window into two parts
+|:split_f|	:split {file}		split window and edit {file} in one of
 					   them
-|:vsplit|	:vsplit {file}		Same, but split vertically
-|:vertical|	:vertical {cmd}		Make {cmd} split vertically
+|:vsplit|	:vsplit {file}		same, but split vertically
+|:vertical|	:vertical {cmd}		make {cmd} split vertically
 
-|:sfind|	:sf[ind] {file}		Split window, find {file} in 'path'
-					   and edit it.
-|CTRL-W_]|	CTRL-W ]		Split window and jump to tag under
+|:sfind|	:sf[ind] {file}		split window, find {file} in 'path'
+					   and edit it
+|CTRL-W_]|	CTRL-W ]		split window and jump to tag under
 					   cursor
-|CTRL-W_f|	CTRL-W f		Split window and edit file name under
+|CTRL-W_f|	CTRL-W f		split window and edit file name under
 					   the cursor
-|CTRL-W_^|	CTRL-W ^		Split window and edit alternate file
-|CTRL-W_n|	CTRL-W n  or  :new	Create new empty window
-|CTRL-W_q|	CTRL-W q  or  :q[uit]	Quit editing and close window
-|CTRL-W_c|	CTRL-W c  or  :cl[ose]	Make buffer hidden and close window
-|CTRL-W_o|	CTRL-W o  or  :on[ly]	Make current window only one on the
+|CTRL-W_^|	CTRL-W ^		split window and edit alternate file
+|CTRL-W_n|	CTRL-W n  or  :new	create new empty window
+|CTRL-W_q|	CTRL-W q  or  :q[uit]	quit editing and close window
+|CTRL-W_c|	CTRL-W c  or  :cl[ose]	make buffer hidden and close window
+|CTRL-W_o|	CTRL-W o  or  :on[ly]	make current window only one on the
 					   screen
 
-|CTRL-W_j|	CTRL-W j		Move cursor to window below
-|CTRL-W_k|	CTRL-W k		Move cursor to window above
-|CTRL-W_CTRL-W|	CTRL-W CTRL-W		Move cursor to window below (wrap)
-|CTRL-W_W|	CTRL-W W		Move cursor to window above (wrap)
-|CTRL-W_t|	CTRL-W t		Move cursor to top window
-|CTRL-W_b|	CTRL-W b		Move cursor to bottom window
-|CTRL-W_p|	CTRL-W p		Move cursor to previous active window
+|CTRL-W_j|	CTRL-W j		move cursor to window below
+|CTRL-W_k|	CTRL-W k		move cursor to window above
+|CTRL-W_CTRL-W|	CTRL-W CTRL-W		move cursor to window below (wrap)
+|CTRL-W_W|	CTRL-W W		move cursor to window above (wrap)
+|CTRL-W_t|	CTRL-W t		move cursor to top window
+|CTRL-W_b|	CTRL-W b		move cursor to bottom window
+|CTRL-W_p|	CTRL-W p		move cursor to previous active window
 
-|CTRL-W_r|	CTRL-W r		Rotate windows downwards
-|CTRL-W_R|	CTRL-W R		Rotate windows upwards
-|CTRL-W_x|	CTRL-W x		Exchange current window with next one
+|CTRL-W_r|	CTRL-W r		rotate windows downwards
+|CTRL-W_R|	CTRL-W R		rotate windows upwards
+|CTRL-W_x|	CTRL-W x		exchange current window with next one
 
-|CTRL-W_=|	CTRL-W =		Make all windows equal height
-|CTRL-W_-|	CTRL-W -		Decrease current window height
-|CTRL-W_+|	CTRL-W +		Increase current window height
-|CTRL-W__|	CTRL-W _		Set current window height (default:
+|CTRL-W_=|	CTRL-W =		make all windows equal height
+|CTRL-W_-|	CTRL-W -		decrease current window height
+|CTRL-W_+|	CTRL-W +		increase current window height
+|CTRL-W__|	CTRL-W _		set current window height (default:
 					   very high)
 ------------------------------------------------------------------------------
 *Q_bu*		Buffer list commands
@@ -1360,11 +1359,11 @@ Context-sensitive completion on the command-line:
 
 |:menu|		:menu			list all menus
 |:menu|		:menu {mpath}		list menus starting with {mpath}
-|:menu|		:menu {mpath} {rhs}	add menu {mpath}, giving {lhs}
+|:menu|		:menu {mpath} {rhs}	add menu {mpath}, giving {rhs}
 |:menu|		:menu {pri} {mpath} {rhs}
 					idem, with priorities {pri}
 |:menu|		:menu ToolBar.{name} {rhs}
-					add toolbar item, giving {lhs}
+					add toolbar item, giving {rhs}
 |:tmenu|	:tmenu {mpath} {text}	add tooltip to menu {mpath}
 |:unmenu|	:unmenu {mpath}		remove menu {mpath}
 ------------------------------------------------------------------------------

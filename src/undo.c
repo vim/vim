@@ -233,6 +233,7 @@ u_save_cursor()
 /*
  * Save the lines between "top" and "bot" for both the "u" and "U" command.
  * "top" may be 0 and bot may be curbuf->b_ml.ml_line_count + 1.
+ * Careful: may trigger autocommands that reload the buffer.
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
@@ -255,6 +256,8 @@ u_save(top, bot)
 /*
  * Save the line "lnum" (used by ":s" and "~" command).
  * The line is replaced, so the new bottom line is lnum + 1.
+ * Careful: may trigger autocommands that reload the buffer.
+ * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
 u_savesub(lnum)
@@ -269,6 +272,8 @@ u_savesub(lnum)
 /*
  * A new line is inserted before line "lnum" (used by :s command).
  * The line is inserted, so the new bottom line is lnum + 1.
+ * Careful: may trigger autocommands that reload the buffer.
+ * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
 u_inssub(lnum)
@@ -284,6 +289,8 @@ u_inssub(lnum)
  * Save the lines "lnum" - "lnum" + nlines (used by delete command).
  * The lines are deleted, so the new bottom line is lnum, unless the buffer
  * becomes empty.
+ * Careful: may trigger autocommands that reload the buffer.
+ * Returns FAIL when lines could not be saved, OK otherwise.
  */
     int
 u_savedel(lnum, nlines)
@@ -333,6 +340,10 @@ undo_allowed()
 
 /*
  * Common code for various ways to save text before a change.
+ * "top" is the line above the first changed line.
+ * "bot" is the line below the last changed line.
+ * Careful: may trigger autocommands that reload the buffer.
+ * Returns FAIL when lines could not be saved, OK otherwise.
  */
     static int
 u_savecommon(top, bot, newbot)
@@ -383,6 +394,13 @@ u_savecommon(top, bot, newbot)
      * (e.g., obtained from a source control system).
      */
     change_warning(0);
+    if (bot > curbuf->b_ml.ml_line_count + 1)
+    {
+	/* This happens when the FileChangedRO autocommand changes the file in
+	 * a way it becomes shorter. */
+	EMSG(_("E834: Line count changed unexpectedly"));
+	return FAIL;
+    }
 #endif
 
     size = bot - top - 1;
@@ -3165,6 +3183,7 @@ u_clearline()
  * Implementation of the "U" command.
  * Differentiation from vi: "U" can be undone with the next "U".
  * We also allow the cursor to be in another line.
+ * Careful: may trigger autocommands that reload the buffer.
  */
     void
 u_undoline()

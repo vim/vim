@@ -30,15 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Bug in undo, using freed memory. (Dominique Pelle, Jul 1)
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
 26)
-
-E315 when trying to change a file in FileChangedRO autocommand event.
-(Dominique Pelle, 2010 Apr 30)
 
 Bug: searching for tags file uses 'suffixesadd', should not happen. (Dominique
 Pelle, 2010 June 28)
@@ -2838,6 +2833,7 @@ Performance:
     buffer a lot slower than re-editing the file.  Can the memline be locked
     so that we don't need to make a copy?  Or avoid invoking ml_updatechunk(),
     that is taking a lot of time.  (Ralf Wildenhues, 2008 Jul 7)
+    With a patch, but does it work?
 8   Instead of loading rgb.txt every time a color wasn't recognized load it
     once and keep it in memory.  Move the code to a common place to avoid
     repeating it in various system files.
