@@ -1089,6 +1089,9 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 
 Vim 7.3:
+- :s messages concatenate (Tony)
+- Windows XP: copying only gets first letter of bad spelled word. (Cesar
+  Romani, 2010 Jul 7)
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.

@@ -5176,6 +5176,8 @@ do_sub_msg(count_only)
     {
 	if (got_int)
 	    STRCPY(msg_buf, _("(Interrupted) "));
+	else
+	    *msg_buf = NUL;
 	if (sub_nsubs == 1)
 	    vim_snprintf_add((char *)msg_buf, sizeof(msg_buf),
 		    "%s", count_only ? _("1 match") : _("1 substitution"));

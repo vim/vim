@@ -5410,6 +5410,7 @@ nv_ident(cap)
 {
     char_u	*ptr = NULL;
     char_u	*buf;
+    char_u	*newbuf;
     char_u	*p;
     char_u	*kp;		/* value of 'keywordprg' */
     int		kp_help;	/* 'keywordprg' is ":help" */
@@ -5562,13 +5563,14 @@ nv_ident(cap)
 	    vim_free(buf);
 	    return;
 	}
-	buf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
-	if (buf == NULL)
+	newbuf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
+	if (newbuf == NULL)
 	{
 	    vim_free(buf);
 	    vim_free(p);
 	    return;
 	}
+	buf = newbuf;
 	STRCAT(buf, p);
 	vim_free(p);
     }

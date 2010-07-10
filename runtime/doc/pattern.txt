@@ -995,7 +995,8 @@ x	A single character, with no special meaning, matches itself
 	in the collection: "[^xyz]" matches anything but 'x', 'y' and 'z'.
 	- If two characters in the sequence are separated by '-', this is
 	  shorthand for the full list of ASCII characters between them.  E.g.,
-	  "[0-9]" matches any decimal digit.
+	  "[0-9]" matches any decimal digit.  Non-ASCII characters can be
+	  used, but the character values must not be more than 256 apart.
 	- A character class expression is evaluated to the set of characters
 	  belonging to that character class.  The following character classes
 	  are supported:
@@ -1043,9 +1044,9 @@ x	A single character, with no special meaning, matches itself
 	  "^"):  "[]xyz]" or "[^]xyz]" {not in Vi}.
 	  For '-' you can also make it the first or last character: "[-xyz]",
 	  "[^-xyz]" or "[xyz-]".  For '\' you can also let it be followed by
-	  any character that's not in "^]-\bertn".  "[\xyz]" matches '\', 'x',
-	  'y' and 'z'.  It's better to use "\\" though, future expansions may
-	  use other characters after '\'.
+	  any character that's not in "^]-\bdertnoUux".  "[\xyz]" matches '\',
+	  'x', 'y' and 'z'.  It's better to use "\\" though, future expansions
+	  may use other characters after '\'.
 	- The following translations are accepted when the 'l' flag is not
 	  included in 'cpoptions' {not in Vi}:
 		\e	<Esc>

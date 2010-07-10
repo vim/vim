@@ -5571,6 +5571,10 @@ synstack({lnum}, {col})					*synstack()*
 			for id in synstack(line("."), col("."))
 			   echo synIDattr(id, "name")
 			endfor
+<		When the position specified with {lnum} and {col} is invalid
+		nothing is returned.  The position just after the last
+		character in a line and the first column in an empty line are
+		valid positions.
 
 system({expr} [, {input}])				*system()* *E677*
 		Get the output of the shell command {expr}.

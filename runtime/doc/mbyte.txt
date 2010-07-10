@@ -1267,8 +1267,8 @@ is no longer relevant in the GTK+ 2 GUI.
 When reading a file a BOM (Byte Order Mark) can be used to recognize the
 Unicode encoding:
 	EF BB BF     utf-8
-	FF FE        utf-16 big endian
-	FE FF        utf-16 little endian
+	FE FF        utf-16 big endian
+	FF FE        utf-16 little endian
 	00 00 FE FF  utf-32 big endian
 	FF FE 00 00  utf-32 little endian
 

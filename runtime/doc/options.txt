@@ -1169,7 +1169,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			Win32 GUI}
 	Which directory to use for the file browser:
 	   last		Use same directory as with last file browser, where a
-	   		file was opened or saved.
+			file was opened or saved.
 	   buffer	Use the directory of the related buffer.
 	   current	Use the current directory.
 	   {path}	Use the specified directory
@@ -3485,15 +3485,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  'i'	Use a Vim icon.  For GTK with KDE it is used in the left-upper
 		corner of the window.  It's black&white on non-GTK, because of
 		limitations of X11.  For a color icon, see |X11-icon|.
-	  							*'go-m'*
+								*'go-m'*
 	  'm'	Menu bar is present.
-	  							*'go-M'*
+								*'go-M'*
 	  'M'	The system menu "$VIMRUNTIME/menu.vim" is not sourced.  Note
 		that this flag must be added in the .vimrc file, before
 		switching on syntax or filetype recognition (when the |gvimrc|
 		file is sourced the system menu has already been loaded; the
 		":syntax on" and ":filetype on" commands load the menu too).
-	  							*'go-g'*
+								*'go-g'*
 	  'g'	Grey menu items: Make menu items that are not active grey.  If
 		'g' is not included inactive menu items are not shown at all.
 		Exception: Athena will always use grey menu items.
@@ -3505,36 +3505,36 @@ A jump table for the options with a short description can be found at |Q_op|.
 		and Athena GUIs.
 								*'go-r'*
 	  'r'	Right-hand scrollbar is always present.
-	  							*'go-R'*
+								*'go-R'*
 	  'R'	Right-hand scrollbar is present when there is a vertically
 		split window.
-	  							*'go-l'*
+								*'go-l'*
 	  'l'	Left-hand scrollbar is always present.
-	  							*'go-L'*
+								*'go-L'*
 	  'L'	Left-hand scrollbar is present when there is a vertically
 		split window.
 								*'go-b'*
 	  'b'	Bottom (horizontal) scrollbar is present.  Its size depends on
 		the longest visible line, or on the cursor line if the 'h'
 		flag is included. |gui-horiz-scroll|
-	  							*'go-h'*
+								*'go-h'*
 	  'h'	Limit horizontal scrollbar size to the length of the cursor
 		line.  Reduces computations. |gui-horiz-scroll|
 
 	And yes, you may even have scrollbars on the left AND the right if
 	you really want to :-).  See |gui-scrollbars| for more information.
 
-	  							*'go-v'*
+								*'go-v'*
 	  'v'	Use a vertical button layout for dialogs.  When not included,
 		a horizontal layout is preferred, but when it doesn't fit a
 		vertical layout is used anyway.
-	  							*'go-p'*
+								*'go-p'*
 	  'p'	Use Pointer callbacks for X11 GUI.  This is required for some
 		window managers.  If the cursor is not blinking or hollow at
 		the right moment, try adding this flag.  This must be done
 		before starting the GUI.  Set it in your |gvimrc|.  Adding or
 		removing it after the GUI has started has no effect.
-	  							*'go-F'*
+								*'go-F'*
 	  'F'	Add a footer.  Only for Motif.  See |gui-footer|.
 
 
@@ -4454,7 +4454,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			is off and there is text preceding the character
 			visible in the first column.
 	  conceal:c	Character to show in place of concealed text, when
-	  		'conceallevel' is set to 1.
+			'conceallevel' is set to 1.
 	  nbsp:c	Character to show for a non-breakable space (character
 			0xA0, 160).  Left blank when omitted.
 
@@ -4917,7 +4917,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	respectively; see |CTRL-A| for more info on these commands.
 	alpha	If included, single alphabetical characters will be
 		incremented or decremented.  This is useful for a list with a
-		letter index a), b), etc.
+		letter index a), b), etc.			*octal*
 	octal	If included, numbers that start with a zero will be considered
 		to be octal.  Example: Using CTRL-A on "007" results in "010".
 	hex	If included, numbers starting with "0x" or "0X" will be
@@ -6628,7 +6628,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			a buffer.  Otherwise: do not split, use current window.
 			Supported in |quickfix| commands that display errors.
 	   newtab	Like "split", but open a new tab page.  Overrules
-	   		"split" when both are present.
+			"split" when both are present.
 
 						*'synmaxcol'* *'smc'*
 'synmaxcol' 'smc'	number	(default 3000)
