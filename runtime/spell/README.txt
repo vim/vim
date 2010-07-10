@@ -22,6 +22,11 @@ patch and running Vim to generate the .spl file.  To do this all in one go use
 the Aap program (www.a-a-p.org).  It's simple to install, it only requires
 Python.
 
+Before generating spell files, verify your system has the required locale
+support.  Source the check_locales.vim script to find out.  If something is
+missing, see LOCALE below.
+
+
 You can also do it manually:
 1. Fetch the right spell file from:
    http://ftp.services.openoffice.org/pub/OpenOffice.org/contrib/dictionaries
@@ -88,3 +93,20 @@ This procedure should work well:
    files and finally move the .new.dic to .orig.dic and .new.aff to .orig.aff.
 
 5. Repeat step 4. regularly.
+
+
+LOCALE
+
+For proper spell file generation the required locale must be installed.
+Otherwise Vim doesn't know what are letters and upper-lower case differences.
+Modern systems use UTF-8, but we also generate spell files for 8-bit locales
+for users with older systems.
+
+On Ubuntu the default is to only support locales for your own language.  To
+add others you need to do this:
+	sudo vim /var/lib/locales/supported.d/local
+	    Add needed lines from /usr/share/i18n/SUPPORTED
+	sudo dpkg-reconfigure locales
+
+When using the check_locales.vim script, you need to exit Vim and restart it
+to pickup the newly installed locales.

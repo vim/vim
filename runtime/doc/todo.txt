@@ -1089,13 +1089,13 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 
 Vim 7.3:
-- :s messages concatenate (Tony)
-- Windows XP: copying only gets first letter of bad spelled word. (Cesar
-  Romani, 2010 Jul 7)
 - in August remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to include:
+- Make do_do_join() work faster.  Could at least do a binary search way of
+  doing this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
+  Patch from Milan Vancura, 2010 May 16.
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)
@@ -1133,9 +1133,6 @@ Patches to include:
     Docs patch by Dominique Pelle, Mar 25
     Update 2009 Mar 28.
     Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
-- Make do_do_join() work faster.  Could at least do a binary search way of
-  doing this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
-  Patch from Milan Vancura, 2010 May 16.
 - Fix for test29. (Milan Vancura, 2010 May 16)
 - Disable setting 'encoding' from a modeline?  It usually causes problems,
   can't do any good.  (Patch from Patrick Texier, 2008 Dec 9)

@@ -901,7 +901,6 @@ if has("spell")
     let [w, a] = spellbadword()
     if col('.') > curcol		" don't use word after the cursor
       let w = ''
-      call cursor(0, curcol)	" put the cursor back where it was
     endif
     if w != ''
       if a == 'caps'
@@ -909,12 +908,13 @@ if has("spell")
       else
 	let s:suglist = spellsuggest(w, 10)
       endif
-      if len(s:suglist) <= 0
-	call cursor(0, curcol)	" put the cursor back where it was
-      else
+      if len(s:suglist) > 0
 	let s:changeitem = 'change\ "' . escape(w, ' .'). '"\ to'
 	let s:fromword = w
 	let pri = 1
+	" set 'cpo' to include the <CR>
+	let cpo_save = &cpo
+	set cpo&vim
 	for sug in s:suglist
 	  exe 'anoremenu 1.5.' . pri . ' PopUp.' . s:changeitem . '.' . escape(sug, ' .')
 		\ . ' :call <SID>SpellReplace(' . pri . ')<CR>'
@@ -928,12 +928,16 @@ if has("spell")
 	exe 'anoremenu 1.7 PopUp.' . s:ignoreitem . ' :spellgood! ' . w . '<CR>'
 
 	anoremenu 1.8 PopUp.-SpellSep- :
+	let &cpo = cpo_save
       endif
     endif
+    call cursor(0, curcol)	" put the cursor back where it was
   endfunc
 
   func! <SID>SpellReplace(n)
     let l = getline('.')
+    " Move the cursor to the start of the word.
+    call spellbadword()
     call setline('.', strpart(l, 0, col('.') - 1) . s:suglist[a:n - 1]
 	  \ . strpart(l, col('.') + len(s:fromword) - 1))
   endfunc
