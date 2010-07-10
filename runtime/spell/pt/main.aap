@@ -29,7 +29,7 @@ all: $SPELLDIR/pt.latin1.spl $SPELLDIR/pt.utf-8.spl \
         ../README_pt.txt
 
 $SPELLDIR/pt.latin1.spl : $FILES
-        :sys env LANG=pt_PT.ISO8859-1 LC_ALL=pt_PT.ISO8859-1
+        :sys env LANG=pt_PT.ISO-8859-1 LC_ALL=pt_PT.ISO-8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/pt pt_PT pt_BR" -c q
 
 $SPELLDIR/pt.utf-8.spl : $FILES

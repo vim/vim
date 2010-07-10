@@ -25,7 +25,7 @@ all: $SPELLDIR/fr.latin1.spl $SPELLDIR/fr.utf-8.spl ../README_fr.txt
 $SPELLDIR/fr.latin1.spl : $FILES
         :copy {force} fr_FR_latin1.aff fr_FR.aff
         :copy {force} fr_FR_latin1.dic fr_FR.dic
-        :sys env LANG=fr_FR.ISO8859-15
+        :sys env LANG=fr_FR.ISO-8859-15@euro
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/fr fr_FR" -c q
 
 $SPELLDIR/fr.utf-8.spl : $FILES

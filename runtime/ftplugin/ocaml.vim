@@ -5,7 +5,8 @@
 "              Stefano Zacchiroli  <zack@bononia.it>
 "              Vincent Aravantinos <firstname.name@imag.fr>
 " URL:         http://www.ocaml.info/vim/ftplugin/ocaml.vim
-" Last Change: 2008 Jul 17 - Bugfix related to fnameescape (VA)
+" Last Change: 2010 Jul 10 - Bugfix, thanks to Pat Rondon
+"              2008 Jul 17 - Bugfix related to fnameescape (VA)
 "              2007 Sep 09 - Added .annot support for ocamlbuild, python not 
 "                            needed anymore (VA)
 "              2006 May 01 - Added .annot support for file.whateverext (SZ)
@@ -292,10 +293,6 @@ endfunction
     " - b:_build_path: 
     "                       path to the build directory even if this one is
     "                       not named '_build'
-    " - b:source_file_relative_path :
-    "                       relative path of the source file *in* the build
-    "                       directory ; this is how it is reffered to in the
-    "                       .annot file
   function! s:Locate_annotation()
     if !b:annotation_file_located
 
@@ -308,7 +305,6 @@ endfunction
       if b:annot_file_path != ''
         let b:annot_file_path = getcwd().'/'.b:annot_file_path
         let b:_build_path = ''
-        let b:source_file_relative_path = s:Fnameescape(expand('%'))
       else
         " 2nd case : the buffer and the _build directory are in the same directory
         "      ..
@@ -323,7 +319,6 @@ endfunction
           if b:annot_file_path != ''
             let b:annot_file_path = getcwd().'/'.b:annot_file_path
           endif
-          let b:source_file_relative_path = s:Fnameescape(expand('%'))
         else
           " 3rd case : the _build directory is in a directory higher in the file hierarchy 
           "            (it can't be deeper by ocamlbuild requirements)
@@ -340,7 +335,6 @@ endfunction
             let project_path                = substitute(b:_build_path,'/_build$','','')
             let path_relative_to_project    = s:Fnameescape(substitute(expand('%:p:h'),project_path.'/','',''))
             let b:annot_file_path           = findfile(annot_file_name,project_path.'/_build/'.path_relative_to_project)
-            let b:source_file_relative_path = s:Fnameescape(substitute(expand('%:p'),project_path.'/','',''))
           else
             let b:annot_file_path = findfile(annot_file_name,'**')
             "4th case : what if the user decided to change the name of the _build directory ?
@@ -352,7 +346,6 @@ endfunction
                 let b:annot_file_path = getcwd().'/'.b:annot_file_path
                 let b:_build_path     = getcwd().'/'.b:_build_path
               endif
-              let b:source_file_relative_path = s:Fnameescape(expand('%'))
             else
               " 4b. anarchy : the renamed _build directory may be higher in the hierarchy
               " this will work if the file for which we are looking annotations has a unique name in the whole project
@@ -360,7 +353,6 @@ endfunction
               let b:annot_file_path = findfile(annot_file_name,'**;')
               let project_path      = s:Find_common_path(b:annot_file_path,expand('%:p:h'))
               let b:_build_path       = matchstr(b:annot_file_path,project_path.'/[^/]*')
-              let b:source_file_relative_path = substitute(expand('%:p'),project_path.'/','','')
             endif
           endif
         endif
@@ -438,11 +430,12 @@ endfunction
       let start_num1 = a:lin1
       let start_num2 = line2byte(a:lin1) - 1
       let start_num3 = start_num2 + a:col1
-      let start_pos  = '"'.b:source_file_relative_path.'" '.start_num1.' '.start_num2.' '.start_num3
+      let path       = '"\(\\"\|[^"]\)\+"'
+      let start_pos  = path.' '.start_num1.' '.start_num2.' '.start_num3
       let end_num1   = a:lin2
       let end_num2   = line2byte(a:lin2) - 1
       let end_num3   = end_num2 + a:col2
-      let end_pos    = '"'.b:source_file_relative_path.'" '.end_num1.' '.end_num2.' '.end_num3
+      let end_pos    = path.' '.end_num1.' '.end_num2.' '.end_num3
       return '^'.start_pos.' '.end_pos."$"
       " rq: the '^' here is not totally correct regarding the annot file "grammar"
       " but currently the annotation file respects this, and it's a little bit faster with the '^';

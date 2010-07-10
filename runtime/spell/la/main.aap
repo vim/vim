@@ -11,8 +11,11 @@ FILES    = la.aff la.dic
 
 all: $SPELLDIR/la.latin1.spl $SPELLDIR/la.utf-8.spl ../README_la.txt
 
+# NOTE: the la_LN.ISO-8859-1 locale is not available on Ubuntu.
+# Use the English one instead.
+
 $SPELLDIR/la.latin1.spl : $FILES
-        :sys env LANG=la_LN.ISO8859-1
+        :sys env LANG=en_US.ISO-8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/la la" -c q
 
 $SPELLDIR/la.utf-8.spl : $FILES

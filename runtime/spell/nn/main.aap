@@ -12,11 +12,11 @@ FILES    = nn_NO.aff nn_NO.dic
 all: $SPELLDIR/nn.latin1.spl $SPELLDIR/nn.utf-8.spl ../README_nn.txt
 
 $SPELLDIR/nn.latin1.spl : $FILES
-        :sys env LANG=no_NO.ISO8859-1
+        :sys env LANG=nb_NO.ISO-8859-1
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/nn nn_NO" -c q
 
 $SPELLDIR/nn.utf-8.spl : $FILES
-        :sys env LANG=no_NO.UTF-8
+        :sys env LANG=nb_NO.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/nn nn_NO" -c q
 
 ../README_nn.txt : README_nn_NO.txt

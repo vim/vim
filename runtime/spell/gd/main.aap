@@ -12,7 +12,7 @@ FILES    = gd_GB.aff gd_GB.dic
 all: $SPELLDIR/gd.latin1.spl $SPELLDIR/gd.utf-8.spl ../README_gd.txt
 
 $SPELLDIR/gd.latin1.spl : $FILES
-        :sys env LANG=gd_GB.ISO8859-1
+        :sys env LANG=gd_GB.ISO8859-15
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/gd gd_GB" -c q
 
 $SPELLDIR/gd.utf-8.spl : $FILES
