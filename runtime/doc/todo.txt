@@ -1093,9 +1093,6 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to include:
-- Make do_do_join() work faster.  Could at least do a binary search way of
-  doing this.  Hint from Dominique Pelle, Dec 10; Lee Naish, Dec 11.
-  Patch from Milan Vancura, 2010 May 16.
 - Patch for Lisp support with ECL (Mikael Jansson, 2008 Oct 25)
 - Gvimext patch to support wide file names. (Szabolcs Horvat 2008 Sep 10)
 - Patch to support netbeans for Mac. (Kazuki Sakamoto, 2009 Jun 25)

@@ -1908,7 +1908,7 @@ do_pending_operator(cap, old_col, gui_yank)
 		beep_flush();
 	    else
 	    {
-		do_do_join(oap->line_count, oap->op_type == OP_JOIN);
+		(void)do_join(oap->line_count, oap->op_type == OP_JOIN, TRUE);
 		auto_format(FALSE, TRUE);
 	    }
 	    break;
@@ -9111,7 +9111,7 @@ nv_join(cap)
 	{
 	    prep_redo(cap->oap->regname, cap->count0,
 			 NUL, cap->cmdchar, NUL, NUL, cap->nchar);
-	    do_do_join(cap->count0, cap->nchar == NUL);
+	    (void)do_join(cap->count0, cap->nchar == NUL, TRUE);
 	}
     }
 }
