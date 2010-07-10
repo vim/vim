@@ -1,10 +1,18 @@
-Test for joining lines with 'joinspaces' set or not
+Test for joining lines and marks in them
+ in compatible and nocompatible modes
+ and with 'joinspaces' set or not
+ and with 'cpoptions' flag 'j' set or not
 
 STARTTEST
+:set nocompatible
 :set nojoinspaces
+:set cpoptions-=j
 /firstline/
-jJjJjJjJjJjJjJjJjJjJjJjJjJjJ:set joinspaces
-jJjJjJjJjJjJjJjJjJjJjJjJjJjJ:?firstline?+1,$w! test.out
+j"tdGpJjJjJjJjJjJjJjJjJjJjJjJjJjJj05lmx2j06lmy2k4Jy3l$p`xyl$p`yy2l$p:set cpoptions+=j
+j05lmx2j06lmy2k4Jy3l$p`xyl$p`yy2l$p:set cpoptions-=j joinspaces
+j"tpJjJjJjJjJjJjJjJjJjJjJjJjJjJj05lmx2j06lmy2k4Jy3l$p`xyl$p`yy2l$p:set cpoptions+=j
+j05lmx2j06lmy2k4Jy3l$p`xyl$p`yy2l$p:set cpoptions-=j nojoinspaces compatible
+j"tpJjJjJjJjJjJjJjJjJjJjJjJjJjJj4Jy3l$pjdG:?firstline?+1,$w! test.out
 :qa!
 ENDTEST
 
@@ -37,31 +45,12 @@ asdfasdf
 asdf
 asdfasdf		
 asdf
-asdfasdf.
-asdf
-asdfasdf. 
-asdf
-asdfasdf.  
-asdf
-asdfasdf.	
-asdf
-asdfasdf. 	
-asdf
-asdfasdf.	 
-asdf
-asdfasdf.		
-asdf
-asdfasdf
-asdf
-asdfasdf 
-asdf
-asdfasdf  
-asdf
-asdfasdf	
-asdf
-asdfasdf	 
-asdf
-asdfasdf 	
-asdf
-asdfasdf		
-asdf
+zx cvn.
+as dfg?
+hjkl iop!
+ert
+zx cvn.
+as dfg?
+hjkl iop!
+ert
+
