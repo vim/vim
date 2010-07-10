@@ -85,6 +85,17 @@ getGvimName(char *name, int runtime)
     }
 }
 
+    static void
+getGvimNameW(wchar_t *nameW)
+{
+    char *name;
+
+    name = (char *)malloc(BUFSIZE);
+    getGvimName(name, 0);
+    mbstowcs(nameW, name, BUFSIZE);
+    free(name);
+}
+
 //
 // Get the Vim runtime directory into buf[BUFSIZE].
 // The result is empty when it failed.
@@ -848,34 +859,34 @@ STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
 				   LPCSTR  /* pszParam */,
 				   int  /* iShowCmd */)
 {
-    char m_szFileUserClickedOn[BUFSIZE];
-    char cmdStr[BUFSIZE];
+    wchar_t m_szFileUserClickedOn[BUFSIZE];
+    wchar_t cmdStrW[BUFSIZE];
     UINT i;
 
     for (i = 0; i < cbFiles; i++)
     {
-	DragQueryFile((HDROP)medium.hGlobal,
+	DragQueryFileW((HDROP)medium.hGlobal,
 		i,
 		m_szFileUserClickedOn,
 		sizeof(m_szFileUserClickedOn));
 
-	getGvimName(cmdStr, 0);
-	strcat(cmdStr, " \"");
+	getGvimNameW(cmdStrW);
+	wcscat(cmdStrW, L" \"");
 
-	if ((strlen(cmdStr) + strlen(m_szFileUserClickedOn) + 2) < BUFSIZE)
+	if ((wcslen(cmdStrW) + wcslen(m_szFileUserClickedOn) + 2) < BUFSIZE)
 	{
-	    strcat(cmdStr, m_szFileUserClickedOn);
-	    strcat(cmdStr, "\"");
+	    wcscat(cmdStrW, m_szFileUserClickedOn);
+	    wcscat(cmdStrW, L"\"");
 
-	    STARTUPINFO si;
+	    STARTUPINFOW si;
 	    PROCESS_INFORMATION pi;
 
 	    ZeroMemory(&si, sizeof(si));
 	    si.cb = sizeof(si);
 
 	    // Start the child process.
-	    if (!CreateProcess(NULL,	// No module name (use command line).
-			cmdStr,		// Command line.
+	    if (!CreateProcessW(NULL,	// No module name (use command line).
+			cmdStrW,	// Command line.
 			NULL,		// Process handle not inheritable.
 			NULL,		// Thread handle not inheritable.
 			FALSE,		// Set handle inheritance to FALSE.
@@ -919,44 +930,45 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 				   int  /* iShowCmd */,
 				   int useDiff)
 {
-    char	m_szFileUserClickedOn[BUFSIZE];
-    char	*cmdStr;
+    wchar_t	m_szFileUserClickedOn[BUFSIZE];
+    wchar_t	*cmdStrW;
     size_t	cmdlen;
     size_t	len;
     UINT i;
 
     cmdlen = BUFSIZE;
-    cmdStr = (char *)malloc(cmdlen);
-    getGvimName(cmdStr, 0);
+    cmdStrW  = (wchar_t *) malloc(cmdlen * sizeof(wchar_t));
+    getGvimNameW(cmdStrW);
+
     if (useDiff)
-	strcat(cmdStr, " -d");
+	wcscat(cmdStrW, L" -d");
     for (i = 0; i < cbFiles; i++)
     {
-	DragQueryFile((HDROP)medium.hGlobal,
+	DragQueryFileW((HDROP)medium.hGlobal,
 		i,
 		m_szFileUserClickedOn,
 		sizeof(m_szFileUserClickedOn));
 
-	len = strlen(cmdStr) + strlen(m_szFileUserClickedOn) + 4;
+	len = wcslen(cmdStrW) + wcslen(m_szFileUserClickedOn) + 4;
 	if (len > cmdlen)
 	{
 	    cmdlen = len + BUFSIZE;
-	    cmdStr = (char *)realloc(cmdStr, cmdlen);
+	    cmdStrW = (wchar_t *)realloc(cmdStrW, cmdlen * sizeof(wchar_t));
 	}
-	strcat(cmdStr, " \"");
-	strcat(cmdStr, m_szFileUserClickedOn);
-	strcat(cmdStr, "\"");
+	wcscat(cmdStrW, L" \"");
+	wcscat(cmdStrW, m_szFileUserClickedOn);
+	wcscat(cmdStrW, L"\"");
     }
 
-    STARTUPINFO si;
+    STARTUPINFOW si;
     PROCESS_INFORMATION pi;
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
 
     // Start the child process.
-    if (!CreateProcess(NULL,	// No module name (use command line).
-		cmdStr,		// Command line.
+    if (!CreateProcessW(NULL,	// No module name (use command line).
+		cmdStrW,	// Command line.
 		NULL,		// Process handle not inheritable.
 		NULL,		// Thread handle not inheritable.
 		FALSE,		// Set handle inheritance to FALSE.
@@ -979,7 +991,7 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 	CloseHandle(pi.hThread);
     }
 
-    free(cmdStr);
+    free(cmdStrW);
 
     return NOERROR;
 }
