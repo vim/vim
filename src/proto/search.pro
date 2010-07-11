@@ -6,6 +6,7 @@ void save_search_patterns __ARGS((void));
 void restore_search_patterns __ARGS((void));
 void free_search_patterns __ARGS((void));
 int ignorecase __ARGS((char_u *pat));
+int pat_has_uppercase __ARGS((char_u *pat));
 char_u *last_search_pat __ARGS((void));
 void reset_search_dir __ARGS((void));
 void set_last_search_pat __ARGS((char_u *s, int idx, int magic, int setlast));

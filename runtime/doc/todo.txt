@@ -1088,14 +1088,16 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 2010 Jun 30)
 
 
+Before (beta) release 7.3:
+- Add fixes for 7.2 to version7.txt
+- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
+
 Vim 7.3:
+  configure: -pthread appears in cproto arguments, from GTK
 - Soon: remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Patch for gtk main_loop() to enable GtkFileChooser. (James Vega, 2010 Jun 28)
-    Same as this one?  GTK: file chooser is disabled.  Patch by Tim Starling,
-    2009 Nov 13.
 - Patch to make CTRL-L work better with 'ignorecase' and 'smartcase'. (Martin
   Toft, 2010 Jun 8, Jun 16, Jun 30)
 - Patch to add diff functionality to 2html.vim. (Christian Brabandt, 2009 Dec
@@ -1157,9 +1159,6 @@ Probably not now:
 - Use timestamps for undo, so that a version a certain time ago can be found
   and info before some time/date can be flushed. 'undopersist' gives maximum
   time to keep undo: "3h", "1d", "2w", "1y", etc.
-Before (beta) release:
-- Add fixes for 7.2 to version7.txt
-- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 
 More patches:

@@ -416,7 +416,10 @@ CTRL-L		A match is done on the pattern in front of the cursor.  If
 		than the pattern, no completion is done.
 		When 'incsearch' is set, entering a search pattern for "/" or
 		"?" and the current match is displayed then CTRL-L will add
-		one character from the end of the current match.
+		one character from the end of the current match.  If
+		'ignorecase' and 'smartcase' are set and the command line has
+		no uppercase characters, the added character is converted to
+		lowercase.
 
 The 'wildchar' option defaults to <Tab> (CTRL-E when in Vi compatible mode; in
 a previous version <Esc> was used).  In the pattern standard wildcards '*' and

@@ -9606,7 +9606,7 @@ FreeWild(count, files)
 }
 
 /*
- * return TRUE when need to go to Insert mode because of 'insertmode'.
+ * Return TRUE when need to go to Insert mode because of 'insertmode'.
  * Don't do this when still processing a command or a mapping.
  * Don't do this when inside a ":normal" command.
  */

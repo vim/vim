@@ -365,56 +365,58 @@ free_search_patterns()
 ignorecase(pat)
     char_u	*pat;
 {
-    char_u	*p;
-    int		ic;
+    int		ic = p_ic;
 
-    ic = p_ic;
     if (ic && !no_smartcase && p_scs
 #ifdef FEAT_INS_EXPAND
 				&& !(ctrl_x_mode && curbuf->b_p_inf)
 #endif
 								    )
-    {
-	/* don't ignore case if pattern has uppercase */
-	for (p = pat; *p; )
-	{
-#ifdef FEAT_MBYTE
-	    int		l;
-
-	    if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-	    {
-		if (enc_utf8 && utf_isupper(utf_ptr2char(p)))
-		{
-		    ic = FALSE;
-		    break;
-		}
-		p += l;
-	    }
-	    else
-#endif
-                if (*p == '\\')
-		{
-		    if (p[1] == '_' && p[2] != NUL)  /* skip "\_X" */
-			p += 3;
-		    else if (p[1] == '%' && p[2] != NUL)  /* skip "\%X" */
-			p += 3;
-		    else if (p[1] != NUL)  /* skip "\X" */
-			p += 2;
-		    else
-			p += 1;
-		}
-		else if (MB_ISUPPER(*p))
-		{
-		    ic = FALSE;
-		    break;
-		}
-		else
-		    ++p;
-	}
-    }
+	ic = !pat_has_uppercase(pat);
     no_smartcase = FALSE;
 
     return ic;
+}
+
+/*
+ * Return TRUE if patter "pat" has an uppercase character.
+ */
+    int
+pat_has_uppercase(pat)
+    char_u	*pat;
+{
+    char_u *p = pat;
+
+    while (*p != NUL)
+    {
+#ifdef FEAT_MBYTE
+	int		l;
+
+	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
+	{
+	    if (enc_utf8 && utf_isupper(utf_ptr2char(p)))
+		return TRUE;
+	    p += l;
+	}
+	else
+#endif
+	     if (*p == '\\')
+	{
+	    if (p[1] == '_' && p[2] != NUL)  /* skip "\_X" */
+		p += 3;
+	    else if (p[1] == '%' && p[2] != NUL)  /* skip "\%X" */
+		p += 3;
+	    else if (p[1] != NUL)  /* skip "\X" */
+		p += 2;
+	    else
+		p += 1;
+	}
+	else if (MB_ISUPPER(*p))
+	    return TRUE;
+	else
+	    ++p;
+    }
+    return FALSE;
 }
 
     char_u *
