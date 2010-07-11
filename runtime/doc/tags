@@ -4193,6 +4193,7 @@ E83	message.txt	/*E83*
 E830	undo.txt	/*E830*
 E831	editing.txt	/*E831*
 E832	undo.txt	/*E832*
+E833	editing.txt	/*E833*
 E84	windows.txt	/*E84*
 E85	options.txt	/*E85*
 E86	windows.txt	/*E86*
@@ -4651,6 +4652,7 @@ aquote	motion.txt	/*aquote*
 arabic.txt	arabic.txt	/*arabic.txt*
 arabicfonts	arabic.txt	/*arabicfonts*
 arabickeymap	arabic.txt	/*arabickeymap*
+arg-functions	usr_41.txt	/*arg-functions*
 argc()	eval.txt	/*argc()*
 argidx()	eval.txt	/*argidx()*
 arglist	editing.txt	/*arglist*
@@ -4758,6 +4760,7 @@ browse()	eval.txt	/*browse()*
 browsedir()	eval.txt	/*browsedir()*
 browsefilter	editing.txt	/*browsefilter*
 bufexists()	eval.txt	/*bufexists()*
+buffer-functions	usr_41.txt	/*buffer-functions*
 buffer-hidden	windows.txt	/*buffer-hidden*
 buffer-list	windows.txt	/*buffer-list*
 buffer-variable	eval.txt	/*buffer-variable*
@@ -4935,6 +4938,7 @@ collapse	tips.txt	/*collapse*
 color-xterm	syntax.txt	/*color-xterm*
 coloring	syntax.txt	/*coloring*
 colortest.vim	syntax.txt	/*colortest.vim*
+command-line-functions	usr_41.txt	/*command-line-functions*
 command-line-window	cmdline.txt	/*command-line-window*
 command-mode	intro.txt	/*command-mode*
 compatible-default	starting.txt	/*compatible-default*
@@ -4972,6 +4976,7 @@ complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
 complete_check()	eval.txt	/*complete_check()*
+completion-functions	usr_41.txt	/*completion-functions*
 complex-change	change.txt	/*complex-change*
 complex-repeat	repeat.txt	/*complex-repeat*
 compress	pi_gzip.txt	/*compress*
@@ -5100,6 +5105,7 @@ current_compiler	quickfix.txt	/*current_compiler*
 cursor()	eval.txt	/*cursor()*
 cursor-blinking	options.txt	/*cursor-blinking*
 cursor-down	intro.txt	/*cursor-down*
+cursor-functions	usr_41.txt	/*cursor-functions*
 cursor-left	intro.txt	/*cursor-left*
 cursor-motions	motion.txt	/*cursor-motions*
 cursor-position	pattern.txt	/*cursor-position*
@@ -5118,6 +5124,7 @@ daW	motion.txt	/*daW*
 dab	motion.txt	/*dab*
 dap	motion.txt	/*dap*
 das	motion.txt	/*das*
+date-functions	usr_41.txt	/*date-functions*
 dav	pi_netrw.txt	/*dav*
 davs	pi_netrw.txt	/*davs*
 daw	motion.txt	/*daw*
@@ -5170,6 +5177,7 @@ diW	motion.txt	/*diW*
 dialog	gui_w32.txt	/*dialog*
 dialogs-added	version5.txt	/*dialogs-added*
 dib	motion.txt	/*dib*
+dict-functions	usr_41.txt	/*dict-functions*
 dict-identity	eval.txt	/*dict-identity*
 dict-modification	eval.txt	/*dict-modification*
 did_filetype()	eval.txt	/*did_filetype()*
@@ -5394,6 +5402,7 @@ feedkeys()	eval.txt	/*feedkeys()*
 fetch	pi_netrw.txt	/*fetch*
 file-browser-5.2	version5.txt	/*file-browser-5.2*
 file-formats	editing.txt	/*file-formats*
+file-functions	usr_41.txt	/*file-functions*
 file-pattern	autocmd.txt	/*file-pattern*
 file-read	insert.txt	/*file-read*
 file-searching	editing.txt	/*file-searching*
@@ -5437,6 +5446,7 @@ fixed-7.2	version7.txt	/*fixed-7.2*
 fixed-7.3	version7.txt	/*fixed-7.3*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
 float-e	eval.txt	/*float-e*
+float-functions	usr_41.txt	/*float-functions*
 float-pi	eval.txt	/*float-pi*
 float2nr()	eval.txt	/*float2nr()*
 floating-point-format	eval.txt	/*floating-point-format*
@@ -5472,6 +5482,7 @@ foldclosedend()	eval.txt	/*foldclosedend()*
 folddashes-variable	eval.txt	/*folddashes-variable*
 foldend-variable	eval.txt	/*foldend-variable*
 folding	fold.txt	/*folding*
+folding-functions	usr_41.txt	/*folding-functions*
 foldlevel()	eval.txt	/*foldlevel()*
 foldlevel-variable	eval.txt	/*foldlevel-variable*
 folds	fold.txt	/*folds*
@@ -5915,6 +5926,7 @@ gui-colors	syntax.txt	/*gui-colors*
 gui-extras	gui.txt	/*gui-extras*
 gui-footer	debugger.txt	/*gui-footer*
 gui-fork	gui_x11.txt	/*gui-fork*
+gui-functions	usr_41.txt	/*gui-functions*
 gui-gnome	gui_x11.txt	/*gui-gnome*
 gui-gnome-session	gui_x11.txt	/*gui-gnome-session*
 gui-gtk	gui_x11.txt	/*gui-gtk*
@@ -6028,12 +6040,14 @@ highlight-stop	syntax.txt	/*highlight-stop*
 highlight-term	syntax.txt	/*highlight-term*
 highlightID()	eval.txt	/*highlightID()*
 highlight_exists()	eval.txt	/*highlight_exists()*
+highlighting-functions	usr_41.txt	/*highlighting-functions*
 hist-names	eval.txt	/*hist-names*
 histadd()	eval.txt	/*histadd()*
 histdel()	eval.txt	/*histdel()*
 histget()	eval.txt	/*histget()*
 histnr()	eval.txt	/*histnr()*
 history	cmdline.txt	/*history*
+history-functions	usr_41.txt	/*history-functions*
 hit-enter	message.txt	/*hit-enter*
 hit-enter-prompt	message.txt	/*hit-enter-prompt*
 hit-return	message.txt	/*hit-return*
@@ -6294,6 +6308,7 @@ install-home	usr_90.txt	/*install-home*
 install-registry	gui_w32.txt	/*install-registry*
 intel-itanium	syntax.txt	/*intel-itanium*
 intellimouse-wheel-problems	gui_w32.txt	/*intellimouse-wheel-problems*
+interactive-functions	usr_41.txt	/*interactive-functions*
 interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
@@ -6316,6 +6331,8 @@ j	motion.txt	/*j*
 java-cinoptions	indent.txt	/*java-cinoptions*
 java-indenting	indent.txt	/*java-indenting*
 java.vim	syntax.txt	/*java.vim*
+javascript-cinoptions	indent.txt	/*javascript-cinoptions*
+javascript-indenting	indent.txt	/*javascript-indenting*
 join()	eval.txt	/*join()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
 jtags	tagsrch.txt	/*jtags*
@@ -6379,6 +6396,7 @@ linewise-register	change.txt	/*linewise-register*
 linewise-visual	visual.txt	/*linewise-visual*
 lisp.vim	syntax.txt	/*lisp.vim*
 lispindent()	eval.txt	/*lispindent()*
+list-functions	usr_41.txt	/*list-functions*
 list-identity	eval.txt	/*list-identity*
 list-index	eval.txt	/*list-index*
 list-modification	eval.txt	/*list-modification*
@@ -6464,6 +6482,7 @@ mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
 mapping	map.txt	/*mapping*
 mark	motion.txt	/*mark*
+mark-functions	usr_41.txt	/*mark-functions*
 mark-motions	motion.txt	/*mark-motions*
 markfilelist	pi_netrw.txt	/*markfilelist*
 masm.vim	syntax.txt	/*masm.vim*
@@ -6876,6 +6895,7 @@ objects	index.txt	/*objects*
 obtaining-exted	netbeans.txt	/*obtaining-exted*
 ocaml.vim	syntax.txt	/*ocaml.vim*
 octal	eval.txt	/*octal*
+octal-number	options.txt	/*octal-number*
 oldfiles-variable	eval.txt	/*oldfiles-variable*
 ole-activation	if_ole.txt	/*ole-activation*
 ole-eval	if_ole.txt	/*ole-eval*
@@ -7073,6 +7093,7 @@ quickfix	quickfix.txt	/*quickfix*
 quickfix-6	version6.txt	/*quickfix-6*
 quickfix-directory-stack	quickfix.txt	/*quickfix-directory-stack*
 quickfix-error-lists	quickfix.txt	/*quickfix-error-lists*
+quickfix-functions	usr_41.txt	/*quickfix-functions*
 quickfix-gcc	quickfix.txt	/*quickfix-gcc*
 quickfix-manx	quickfix.txt	/*quickfix-manx*
 quickfix-perl	quickfix.txt	/*quickfix-perl*
@@ -7279,6 +7300,7 @@ send-money	sponsor.txt	/*send-money*
 send-to-menu	gui_w32.txt	/*send-to-menu*
 sendto	gui_w32.txt	/*sendto*
 sentence	motion.txt	/*sentence*
+server-functions	usr_41.txt	/*server-functions*
 server2client()	eval.txt	/*server2client()*
 serverlist()	eval.txt	/*serverlist()*
 servername-variable	eval.txt	/*servername-variable*
@@ -7422,6 +7444,7 @@ spell-compound	spell.txt	/*spell-compound*
 spell-dic-format	spell.txt	/*spell-dic-format*
 spell-double-scoring	spell.txt	/*spell-double-scoring*
 spell-file-format	spell.txt	/*spell-file-format*
+spell-functions	usr_41.txt	/*spell-functions*
 spell-german	spell.txt	/*spell-german*
 spell-load	spell.txt	/*spell-load*
 spell-midword	spell.txt	/*spell-midword*
@@ -7502,6 +7525,7 @@ strcspn()	eval.txt	/*strcspn()*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
 string()	eval.txt	/*string()*
+string-functions	usr_41.txt	/*string-functions*
 string-match	eval.txt	/*string-match*
 strlen()	eval.txt	/*strlen()*
 strpart()	eval.txt	/*strpart()*
@@ -7551,6 +7575,7 @@ synload-5	syntax.txt	/*synload-5*
 synload-6	syntax.txt	/*synload-6*
 synstack()	eval.txt	/*synstack()*
 syntax	syntax.txt	/*syntax*
+syntax-functions	usr_41.txt	/*syntax-functions*
 syntax-highlighting	syntax.txt	/*syntax-highlighting*
 syntax-loading	syntax.txt	/*syntax-loading*
 syntax-printing	usr_06.txt	/*syntax-printing*
@@ -7559,6 +7584,7 @@ syntax_cmd	syntax.txt	/*syntax_cmd*
 sys-file-list	help.txt	/*sys-file-list*
 sysmouse	term.txt	/*sysmouse*
 system()	eval.txt	/*system()*
+system-functions	usr_41.txt	/*system-functions*
 system-vimrc	starting.txt	/*system-vimrc*
 s~	change.txt	/*s~*
 t	motion.txt	/*t*
@@ -7839,6 +7865,7 @@ tex-runon	syntax.txt	/*tex-runon*
 tex-slow	syntax.txt	/*tex-slow*
 tex-style	syntax.txt	/*tex-style*
 tex.vim	syntax.txt	/*tex.vim*
+text-functions	usr_41.txt	/*text-functions*
 text-objects	motion.txt	/*text-objects*
 text-objects-changed	version5.txt	/*text-objects-changed*
 textlock	eval.txt	/*textlock*
@@ -7849,6 +7876,7 @@ throw-expression	eval.txt	/*throw-expression*
 throw-from-catch	eval.txt	/*throw-from-catch*
 throw-variables	eval.txt	/*throw-variables*
 throwpoint-variable	eval.txt	/*throwpoint-variable*
+time-functions	usr_41.txt	/*time-functions*
 timestamp	editing.txt	/*timestamp*
 timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
@@ -8110,9 +8138,11 @@ v_~	change.txt	/*v_~*
 val-variable	eval.txt	/*val-variable*
 valgrind	debug.txt	/*valgrind*
 values()	eval.txt	/*values()*
+var-functions	usr_41.txt	/*var-functions*
 variables	eval.txt	/*variables*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*
+various-functions	usr_41.txt	/*various-functions*
 various-motions	motion.txt	/*various-motions*
 various.txt	various.txt	/*various.txt*
 vb.vim	syntax.txt	/*vb.vim*
@@ -8267,10 +8297,12 @@ wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*
 window-contents	intro.txt	/*window-contents*
 window-exit	editing.txt	/*window-exit*
+window-functions	usr_41.txt	/*window-functions*
 window-move-cursor	windows.txt	/*window-move-cursor*
 window-moving	windows.txt	/*window-moving*
 window-resize	windows.txt	/*window-resize*
 window-size	term.txt	/*window-size*
+window-size-functions	usr_41.txt	/*window-size-functions*
 window-tag	windows.txt	/*window-tag*
 window-variable	eval.txt	/*window-variable*
 windows	windows.txt	/*windows*

@@ -420,10 +420,6 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 menu_item_activate(GtkWidget *widget UNUSED, gpointer data)
 {
     gui_menu_cb((vimmenu_T *)data);
-
-    /* make sure the menu action is taken immediately */
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
     void
@@ -731,9 +727,6 @@ adjustment_value_changed(GtkAdjustment *adjustment, gpointer data)
     }
 
     gui_drag_scrollbar(sb, value, dragging);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
 /* SBAR_VERT or SBAR_HORIZ */
@@ -780,10 +773,7 @@ gui_mch_destroy_scrollbar(scrollbar_T *sb)
  * Implementation of the file selector related stuff
  */
 #if GTK_CHECK_VERSION(2,4,0)
-/* This has been disabled, because the GTK library rewrites
- * ~/.recently-used.xbel every time the main loop is quit.  For Vim that means
- * on just about any event. */
-/* # define USE_FILE_CHOOSER */
+# define USE_FILE_CHOOSER
 #endif
 
 #ifndef USE_FILE_CHOOSER
@@ -798,8 +788,6 @@ browse_ok_cb(GtkWidget *widget UNUSED, gpointer cbdata)
     vw->browse_fname = (char_u *)g_strdup(gtk_file_selection_get_filename(
 					GTK_FILE_SELECTION(vw->filedlg)));
     gtk_widget_hide(vw->filedlg);
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
     static void
@@ -813,8 +801,6 @@ browse_cancel_cb(GtkWidget *widget UNUSED, gpointer cbdata)
 	vw->browse_fname = NULL;
     }
     gtk_widget_hide(vw->filedlg);
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
     static gboolean
@@ -826,10 +812,7 @@ browse_destroy_cb(GtkWidget *widget UNUSED)
 	gui.browse_fname = NULL;
     }
     gui.filedlg = NULL;
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-
+    gtk_main_quit();
     return FALSE;
 }
 #endif
@@ -882,6 +865,8 @@ gui_mch_browse(int saving UNUSED,
 	    NULL);
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),
 						       (const gchar *)dirbuf);
+    if (saving && dflt != NULL && *dflt != NUL)
+	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fc), (char *)dflt);
 
     gui.browse_fname = NULL;
     if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
@@ -929,8 +914,7 @@ gui_mch_browse(int saving UNUSED,
 						      (const gchar *)dirbuf);
 
     gtk_widget_show(gui.filedlg);
-    while (gui.filedlg && GTK_WIDGET_DRAWABLE(gui.filedlg))
-	gtk_main_iteration_do(TRUE);
+    gtk_main();
 #endif
 
     CONVERT_TO_UTF8_FREE(title);
@@ -1840,9 +1824,6 @@ find_replace_cb(GtkWidget *widget UNUSED, gpointer data)
     rc = gui_do_findrepl(flags, find_text, repl_text, direction_down);
     CONVERT_FROM_UTF8_FREE(repl_text);
     CONVERT_FROM_UTF8_FREE(find_text);
-
-    if (rc && gtk_main_level() > 0)
-	gtk_main_quit(); /* make sure cmd will be handled immediately */
 }
 
 /* our usual callback function */

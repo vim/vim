@@ -652,9 +652,6 @@ property_event(GtkWidget *widget,
 	xev.xproperty.window = commWindow;
 	xev.xproperty.state = PropertyNewValue;
 	serverEventProc(GDK_WINDOW_XDISPLAY(widget->window), &xev);
-
-	if (gtk_main_level() > 0)
-	    gtk_main_quit();
     }
     return FALSE;
 }
@@ -788,10 +785,6 @@ focus_in_event(GtkWidget *widget,
     if (widget != gui.drawarea)
 	gtk_widget_grab_focus(gui.drawarea);
 
-    /* make sure the input buffer is read */
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-
     return TRUE;
 }
 
@@ -804,10 +797,6 @@ focus_out_event(GtkWidget *widget UNUSED,
 
     if (blink_state != BLINK_NONE)
 	gui_mch_stop_blink();
-
-    /* make sure the input buffer is read */
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 
     return TRUE;
 }
@@ -1130,9 +1119,6 @@ key_press_event(GtkWidget *widget UNUSED,
     if (p_mh)
 	gui_mch_mousehide(TRUE);
 
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-
     return TRUE;
 }
 
@@ -1166,9 +1152,6 @@ selection_clear_event(GtkWidget		*widget UNUSED,
 	clip_lose_selection(&clip_plus);
     else
 	clip_lose_selection(&clip_star);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 
     return TRUE;
 }
@@ -1204,9 +1187,6 @@ selection_received_cb(GtkWidget		*widget UNUSED,
     {
 	received_selection = RS_FAIL;
 	/* clip_free_selection(cbd); ??? */
-
-	if (gtk_main_level() > 0)
-	    gtk_main_quit();
 
 	return;
     }
@@ -1287,9 +1267,6 @@ selection_received_cb(GtkWidget		*widget UNUSED,
     received_selection = RS_OK;
     vim_free(tmpbuf);
     g_free(tmpbuf_utf8);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
 /*
@@ -1515,9 +1492,6 @@ process_motion_notify(int x, int y, GdkModifierType state)
     /* inform the editor engine about the occurrence of this event */
     gui_send_mouse_event(button, x, y, FALSE, vim_modifiers);
 
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
-
     /*
      * Auto repeat timer handling.
      */
@@ -1700,8 +1674,6 @@ button_press_event(GtkWidget *widget,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(button, x, y, repeated_click, vim_modifiers);
-    if (gtk_main_level() > 0)
-	gtk_main_quit(); /* make sure the above will be handled immediately */
 
     return TRUE;
 }
@@ -1743,9 +1715,6 @@ scroll_event(GtkWidget *widget,
     gui_send_mouse_event(button, (int)event->x, (int)event->y,
 							FALSE, vim_modifiers);
 
-    if (gtk_main_level() > 0)
-	gtk_main_quit(); /* make sure the above will be handled immediately */
-
     return TRUE;
 }
 
@@ -1775,8 +1744,6 @@ button_release_event(GtkWidget *widget UNUSED,
     vim_modifiers = modifiers_gdk2mouse(event->state);
 
     gui_send_mouse_event(MOUSE_RELEASE, x, y, FALSE, vim_modifiers);
-    if (gtk_main_level() > 0)
-	gtk_main_quit();	/* make sure it will be handled immediately */
 
     return TRUE;
 }
@@ -1930,9 +1897,6 @@ drag_handle_text(GdkDragContext	    *context,
 	add_to_input_buf(dropkey, (int)sizeof(dropkey));
     else
 	add_to_input_buf(dropkey + 3, (int)(sizeof(dropkey) - 3));
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
 /*
@@ -2846,9 +2810,6 @@ tabline_menu_handler(GtkMenuItem *item UNUSED, gpointer user_data)
 {
     /* Add the string cmd into input buffer */
     send_tabline_menu_event(clicked_page, (int)(long)user_data);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
     static void
@@ -2924,8 +2885,7 @@ on_tabline_menu(GtkWidget *widget, GdkEvent *event)
 	    {
 		/* Click after all tabs moves to next tab page.  When "x" is
 		 * small guess it's the left button. */
-		if (send_tabline_event(x < 50 ? -1 : 0) && gtk_main_level() > 0)
-		    gtk_main_quit();
+		send_tabline_event(x < 50 ? -1 : 0);
 	    }
 	}
     }
@@ -2946,8 +2906,7 @@ on_select_tab(
 {
     if (!ignore_tabline_evt)
     {
-	if (send_tabline_event(idx + 1) && gtk_main_level() > 0)
-	    gtk_main_quit();
+	send_tabline_event(idx + 1);
     }
 }
 
@@ -3855,9 +3814,6 @@ gui_mch_exit(int rc UNUSED)
 {
     if (gui.mainwin != NULL)
 	gtk_widget_destroy(gui.mainwin);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 
 /*
@@ -5407,8 +5363,8 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     void
 gui_mch_update(void)
 {
-    while (gtk_events_pending() && !vim_is_input_buf_full())
-	gtk_main_iteration_do(FALSE);
+    while (g_main_context_pending(NULL) && !vim_is_input_buf_full())
+	g_main_context_iteration(NULL, TRUE);
 }
 
     static gint
@@ -5418,9 +5374,6 @@ input_timer_cb(gpointer data)
 
     /* Just inform the caller about the occurrence of it */
     *timed_out = TRUE;
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 
     return FALSE;		/* don't happen again */
 }
@@ -5438,9 +5391,6 @@ sniff_request_cb(
     static char_u bytes[3] = {CSI, (int)KS_EXTRA, (int)KE_SNIFF};
 
     add_to_input_buf(bytes, 3);
-
-    if (gtk_main_level() > 0)
-	gtk_main_quit();
 }
 #endif
 
@@ -5515,7 +5465,7 @@ gui_mch_wait_for_chars(long wtime)
 	 * situations, sort of race condition).
 	 */
 	if (!input_available())
-	    gtk_main();
+	    g_main_context_iteration(NULL, TRUE);
 
 	/* Got char, return immediately */
 	if (input_available())
@@ -5707,7 +5657,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 	 * during the FocusGained event. */
 	start = time(NULL);
 	while (received_selection == RS_NONE && time(NULL) < start + 3)
-	    gtk_main();	/* wait for selection_received_cb */
+	    g_main_context_iteration(NULL, TRUE);	/* wait for selection_received_cb */
 
 	if (received_selection != RS_FAIL)
 	    return;
