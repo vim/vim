@@ -7557,7 +7557,8 @@ tree_add_word(spin, word, root, flags, region, affixID)
 		np->wn_refs = node->wn_refs;
 		node->wn_refs = 1;
 	    }
-	    *prev = np;
+	    if (prev != NULL)
+		*prev = np;
 	    np->wn_sibling = node;
 	    node = np;
 	}
