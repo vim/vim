@@ -1279,10 +1279,6 @@ CPP_DEPEND = $(CC) -I$(srcdir) -M$(CPP_MM) \
 #     -D"foo()=" is not supported by all compilers so do not use it
 NO_ATTR=
 #
-#     maybe the "/usr/bin/cc -E" has to be adjusted for some systems
-# This is for cproto 3.5 patchlevel 3:
-# PROTO_FLAGS = -f4 -m__ARGS -d -E"$(CPP)" $(NO_ATTR)
-#
 # Use this for cproto 3 patchlevel 6 or below (use "cproto -V" to check):
 # PROTO_FLAGS = -f4 -m__ARGS -d -E"$(CPP)" $(NO_ATTR)
 #
@@ -1300,10 +1296,9 @@ SHELL = /bin/sh
 .SUFFIXES: .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
-NOPROTO_DEFS = $(PYTHON_NOPROTO)
+POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(ECL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
 
-ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS) $(NOPROTO_DEFS)
+ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
 # Exclude $CFLAGS for osdef.sh, for Mac 10.4 some flags don't work together
 # with "-E".
@@ -1314,11 +1309,6 @@ LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Da
 LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
-
-# If you have problems with flags that cproto doesn't support, and you are
-# using GNU make, you can try using the other line to filter out arguments.
-#PFLAGS = $(PROTO_FLAGS) -DPROTO $(filter -D% -I%, $(LINT_CFLAGS))
-PFLAGS = $(PROTO_FLAGS) -DPROTO $(LINT_CFLAGS)
 
 ALL_LIB_DIRS = $(GUI_LIBS_DIR) $(X_LIBS_DIR)
 ALL_LIBS = $(GUI_LIBS1) $(GUI_X_LIBS) $(GUI_LIBS2) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(LIBS) $(EXTRA_LIBS) $(MZSCHEME_LIBS) $(PERL_LIBS) $(PYTHON_LIBS) $(TCL_LIBS) $(RUBY_LIBS) $(PROFILE_LIBS)
@@ -1680,46 +1670,53 @@ update-po:
 
 proto: $(PRO_AUTO) $(PRO_MANUAL)
 
+# Filter out arguments that cproto doesn't support.
+# Don't pass "-pthread" to cproto, it sees it as a list of individual flags.
+# The -E"gcc -E" argument must be separate to avoid problems with shell
+# quoting.
+CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
+	 `echo '$(LINT_CFLAGS)' | sed -e 's/-pthread//g'` 
+
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
 #$(PRO_AUTO): $$(*F).c
-#	cproto $(PFLAGS) -DFEAT_GUI $(*F).c > $@
+#	$(CPROTO) -DFEAT_GUI $(*F).c > $@
 
 # Always define FEAT_GUI.  This may generate a few warnings if it's also
 # defined in auto/config.h, you can ignore that.
 .c.pro:
-	cproto $(PFLAGS) -DFEAT_GUI $< > proto/$@
+	$(CPROTO) -DFEAT_GUI $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_amiga.pro: os_amiga.c
-	cproto $(PFLAGS) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
+	$(CPROTO) -DAMIGA -UHAVE_CONFIG_H -DBPTR=char* $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_msdos.pro: os_msdos.c
-	cproto $(PFLAGS) -DMSDOS -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DMSDOS -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_win16.pro: os_win16.c
-	cproto $(PFLAGS) -DWIN16 -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DWIN16 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_win32.pro: os_win32.c
-	cproto $(PFLAGS) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_mswin.pro: os_mswin.c
-	cproto $(PFLAGS) -DWIN16 -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -DWIN16 -DWIN32 -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_beos.pro: os_beos.c
-	cproto $(PFLAGS) -D__BEOS__ -UHAVE_CONFIG_H $< > proto/$@
+	$(CPROTO) -D__BEOS__ -UHAVE_CONFIG_H $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 
 os_vms.pro: os_vms.c
 # must use os_vms_conf.h for auto/config.h
 	mv auto/config.h auto/config.h.save
 	cp os_vms_conf.h auto/config.h
-	cproto $(PFLAGS) -DVMS -UFEAT_GUI_ATHENA -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
+	$(CPROTO) -DVMS -UFEAT_GUI_ATHENA -UFEAT_GUI_NEXTAW -UFEAT_GUI_MOTIF -UFEAT_GUI_GTK $< > proto/$@
 	echo "/* vim: set ft=c : */" >> proto/$@
 	rm auto/config.h
 	mv auto/config.h.save auto/config.h
@@ -1727,7 +1724,7 @@ os_vms.pro: os_vms.c
 # if_perl.pro is special: Use the generated if_perl.c for input and remove
 # prototypes for local functions.
 if_perl.pro: auto/if_perl.c
-	cproto $(PFLAGS) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
+	$(CPROTO) -DFEAT_GUI auto/if_perl.c | sed "/_VI/d" > proto/$@
 
 
 notags:
