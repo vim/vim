@@ -2951,6 +2951,18 @@ ex_cfile(eap)
 	|| eap->cmdidx == CMD_laddfile)
 	wp = curwin;
 
+#ifdef FEAT_BROWSE
+    if (cmdmod.browse)
+    {
+	char_u *browse_file = do_browse(0, (char_u *)_("Error file"), eap->arg,
+				   NULL, NULL, BROWSE_FILTER_ALL_FILES, NULL);
+	if (browse_file == NULL)
+	    return;
+	set_string_option_direct((char_u *)"ef", -1, browse_file, OPT_FREE, 0);
+	vim_free(browse_file);
+    }
+    else
+#endif
     if (*eap->arg != NUL)
 	set_string_option_direct((char_u *)"ef", -1, eap->arg, OPT_FREE, 0);
 

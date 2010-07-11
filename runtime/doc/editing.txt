@@ -1171,14 +1171,21 @@ If you want to always use ":confirm", set the 'confirm' option.
 			*:browse* *:bro* *E338* *E614* *E615* *E616* *E578*
 :bro[wse] {command}	Open a file selection dialog for an argument to
 			{command}.  At present this works for |:e|, |:w|,
-			|:r|, |:saveas|, |:sp|, |:mkexrc|, |:mkvimrc|,
-			|:mksession|, |:split|, |:vsplit|, and |:tabe|.
+			|:wall|, |:wq|, |:wqall|, |:x|, |:xall|, |:exit|,
+			|:view|, |:sview|, |:r|, |:saveas|, |:sp|, |:mkexrc|,
+			|:mkvimrc|, |:mksession|, |:mkview|, |:split|,
+			|:vsplit|, |:tabe|, |:tabnew|, |:cfile|, |:cgetfile|,
+			|:caddfile|, |:lfile|, |:lgetfile|, |:laddfile|,
+			|:diffsplit|, |:diffpatch|, |:open|, |:pedit|,
+			|:redir|, |:source|, |:update|, |:visual|, |:vsplit|,
+			and |:qall| if 'confirm' is set.
 			{only in Win32, Athena, Motif, GTK and Mac GUI}
 			When ":browse" is not possible you get an error
 			message.  If the |+browse| feature is missing or the
 			{command} doesn't support browsing, the {command} is
 			executed without a dialog.
 			":browse set" works like |:options|.
+			See also |:oldfiles| for ":browse oldfiles".
 
 The syntax is best shown via some examples: >
 	:browse e $vim/foo

@@ -18,7 +18,7 @@
 |Q_sc|	Scrolling			|Q_ce|	Ex: Command-line editing
 |Q_in|	insert: Inserting text		|Q_ra|	Ex: Ranges
 |Q_ai|	insert: Keys			|Q_ex|	Ex: Special characters
-|Q_ss|	insert: Special keys		|Q_st|	Starting VIM
+|Q_ss|	insert: Special keys		|Q_st|	Starting Vim
 |Q_di|	insert: Digraphs		|Q_ed|	Editing a file
 |Q_si|	insert: Special inserts		|Q_fl|	Using the argument list
 |Q_de|	change: Deleting text		|Q_wq|	Writing and quitting
@@ -68,7 +68,7 @@ N is used to indicate an optional count that can be given before the command.
 			   non-blank character
 |gg|	N  gg		goto line N (default: first line), on the first
 			   non-blank character
-|N%|	N  %		goto line N percentage down in the file;  N must be
+|N%|	N  %		goto line N percentage down in the file; N must be
 			   given, otherwise it is the |%| command
 |gk|	N  gk		up N screen lines (differs from "k" when line wraps)
 |gj|	N  gj		down N screen lines (differs from "j" when line wraps)
@@ -1086,7 +1086,7 @@ Context-sensitive completion on the command-line:
 |:_%|	    %		current file name (only where a file name is expected)
 |:_#|	    #[num]	alternate file name [num] (only where a file name is
 			   expected)
-	Note: The next five are typed literally; these are not special keys!
+	Note: The next seven are typed literally; these are not special keys!
 |:<afile>|  <abuf>	buffer number, for use in an autocommand (only where a
 			   file name is expected)
 |:<afile>|  <afile>	file name, for user in an autocommand (only where a
@@ -1110,7 +1110,7 @@ Context-sensitive completion on the command-line:
 		|::e|	    :e		extension
 		|::s|	    :s/{pat}/{repl}/	substitute {pat} with {repl}
 ------------------------------------------------------------------------------
-*Q_st*		Starting VIM
+*Q_st*		Starting Vim
 
 |-vim|	   vim [options]		start editing with an empty buffer
 |-file|	   vim [options] {file} ..	start editing one or more files
@@ -1144,7 +1144,7 @@ Context-sensitive completion on the command-line:
 |-n|	-n		    do not create a swap file
 |-o|	-o [num]	    open [num] windows (default: one for each file)
 |-f|	-f		    GUI: foreground process, don't fork
-			    Amiga: do not restart VIM to open a window (for
+			    Amiga: do not restart Vim to open a window (for
 				e.g., mail)
 |-s|	-s {scriptin}	    first read commands from the file {scriptin}
 |-w|	-w {scriptout}	    write typed chars to file {scriptout} (append)
@@ -1161,7 +1161,7 @@ Context-sensitive completion on the command-line:
 ------------------------------------------------------------------------------
 *Q_ed*		Editing a file
 
-	   Without !: Fail if changes has been made to the current buffer.
+	   Without !: Fail if changes have been made to the current buffer.
 	      With !: Discard any changes to the current buffer.
 |:edit_f|  :e[dit][!] {file}	edit {file}
 |:edit|	   :e[dit][!]		reload the current file
@@ -1190,13 +1190,13 @@ Context-sensitive completion on the command-line:
 |:wN|	   :wN[ext][!] [file]	write file and edit previous file
 
 	     in current window    in new window	~
-|:argument|  :argu[ment] N	  :sar[gument] N	Edit file N
-|:next|	     :n[ext]		  :sn[ext]		Edit next file
+|:argument|  :argu[ment] N	  :sar[gument] N	edit file N
+|:next|	     :n[ext]		  :sn[ext]		edit next file
 |:next_f|    :n[ext] {arglist}	  :sn[ext] {arglist}	define new arg list
 							   and edit first file
-|:Next|	     :N[ext]		  :sN[ext]		Edit previous file
-|:first|     :fir[st]		  :sfir[st]		Edit first file
-|:last|	     :la[st]		  :sla[st]		Edit last file
+|:Next|	     :N[ext]		  :sN[ext]		edit previous file
+|:first|     :fir[st]		  :sfir[st]		edit first file
+|:last|	     :la[st]		  :sla[st]		edit last file
 ------------------------------------------------------------------------------
 *Q_wq*		Writing and quitting
 
@@ -1231,18 +1231,18 @@ Context-sensitive completion on the command-line:
 |:xall|	  :xa[ll][!]  or :wqall[!]
 				write all changed buffers and exit
 
-|:stop|	  :st[op][!]		suspend VIM or start new shell; if 'aw' option
+|:stop|	  :st[op][!]		suspend Vim or start new shell; if 'aw' option
 				   is set and [!] not given write the buffer
 |CTRL-Z|     CTRL-Z		same as ":stop"
 ------------------------------------------------------------------------------
 *Q_ac*		Automatic Commands
 
-|viminfo-file|	Read registers, marks, history at startup, save when exiting.
+|viminfo-file|	read registers, marks, history at startup, save when exiting.
 
-|:rviminfo|	:rv[iminfo] [file]	Read info from viminfo file [file]
+|:rviminfo|	:rv[iminfo] [file]	read info from viminfo file [file]
 |:rviminfo|	:rv[iminfo]! [file]	idem, overwrite existing info
-|:wviminfo|	:wv[iminfo] [file]	Add info to viminfo file [file]
-|:wviminfo|	:wv[iminfo]! [file]	Write info to viminfo file [file]
+|:wviminfo|	:wv[iminfo] [file]	add info to viminfo file [file]
+|:wviminfo|	:wv[iminfo]! [file]	write info to viminfo file [file]
 
 |modeline|	Automatic option setting when editing a file
 
@@ -1252,19 +1252,19 @@ Context-sensitive completion on the command-line:
 
 |autocommand|	Automatic execution of commands on certain events.
 
-|:autocmd|	:au			List all autocommands
-|:autocmd|	:au {event}		List all autocommands for {event}
-|:autocmd|	:au {event} {pat}	List all autocommands for {event} with
-					{pat}
-|:autocmd|	:au {event} {pat} {cmd}	Enter new autocommands for {event}
-					with {pat}
-|:autocmd|	:au!			Remove all autocommands
-|:autocmd|	:au! {event}		Remove all autocommands for {event}
-|:autocmd|	:au! * {pat}		Remove all autocommands for {pat}
-|:autocmd|	:au! {event} {pat}	Remove all autocommands for {event}
-					with {pat}
-|:autocmd|	:au! {event} {pat} {cmd}  Remove all autocommands for {event}
-					with {pat} and enter new one
+|:autocmd|	:au			  list all autocommands
+|:autocmd|	:au {event}		  list all autocommands for {event}
+|:autocmd|	:au {event} {pat}	  list all autocommands for {event}
+					  with {pat}
+|:autocmd|	:au {event} {pat} {cmd}	  enter new autocommands for {event}
+					  with {pat}
+|:autocmd|	:au!			  remove all autocommands
+|:autocmd|	:au! {event}		  remove all autocommands for {event}
+|:autocmd|	:au! * {pat}		  remove all autocommands for {pat}
+|:autocmd|	:au! {event} {pat}	  remove all autocommands for {event}
+					  with {pat}
+|:autocmd|	:au! {event} {pat} {cmd}  remove all autocommands for {event}
+					  with {pat} and enter new one
 ------------------------------------------------------------------------------
 *Q_wi*		Multi-window commands
 

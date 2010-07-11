@@ -3155,6 +3155,7 @@ when it is concealed (setting "cchar" only makes sense when the conceal
 argument is given.) If "cchar" is not set then the default conceal
 character defined in the 'listchars' option is used. Example: >
    :syntax match Entity "&amp;" conceal cchar=&
+See |hl-Conceal| for highlighting.
 
 contained						*:syn-contained*
 

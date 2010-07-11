@@ -117,8 +117,8 @@ if s:i > 0
 endif
 
 " Italian
-if v:lang == "IT"
-  syn keyword helpNote		nota Nota NOTA notare: Notare: NOTARE:
+if v:lang =~ '\<IT\>' || v:lang =~? "italian"
+  syn keyword helpNote		nota Nota NOTA nota: Nota: NOTA: notare Notare
   syn match helpSpecial		"Nma"me=e-2
   syn match helpSpecial		"Nme"me=e-2
   syn match helpSpecial		"Nmi"me=e-2
