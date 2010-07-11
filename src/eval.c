@@ -126,6 +126,9 @@ static dictitem_T	globvars_var;
  */
 static hashtab_T	compat_hashtab;
 
+/* When using exists() don't auto-load a script. */
+static int		no_autoload = FALSE;
+
 /*
  * When recursively copying lists and dicts we need to remember which ones we
  * have done to avoid endless recursiveness.  This unique ID is used for that.
@@ -9724,6 +9727,8 @@ f_exists(argvars, rettv)
     int		n = FALSE;
     int		len = 0;
 
+    no_autoload = TRUE;
+
     p = get_tv_string(&argvars[0]);
     if (*p == '$')			/* environment variable */
     {
@@ -9790,6 +9795,8 @@ f_exists(argvars, rettv)
     }
 
     rettv->vval.v_number = n;
+
+    no_autoload = FALSE;
 }
 
 #ifdef FEAT_FLOAT
@@ -21280,6 +21287,10 @@ script_autoload(name, reload)
     char_u	*scriptname, *tofree;
     int		ret = FALSE;
     int		i;
+
+    /* Return quickly when autoload disabled. */
+    if (no_autoload)
+	return FALSE;
 
     /* If there is no '#' after name[0] there is no package name. */
     p = vim_strchr(name, AUTOLOAD_CHAR);
