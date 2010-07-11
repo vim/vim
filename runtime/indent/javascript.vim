@@ -11,5 +11,6 @@ let b:did_indent = 1
 
 " C indenting is not too bad.
 setlocal cindent
+setlocal cinoptions+=j1,J1
 
 let b:undo_indent = "setl cin<"

@@ -1089,11 +1089,10 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 
 Vim 7.3:
-- soon: remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
+- Soon: remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Patch to support :browse for more commands. (Lech Lorens, 2009 Jul 18)
 - Patch to improve javascript indenting. (Hari Kumar G, 2010 May 22)
 - Patch to use return value of 'formatexpr'. (James Vega, 2010 Jun 16)
 - Patch for gtk main_loop() to enable GtkFileChooser. (James Vega, 2010 Jun 28)

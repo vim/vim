@@ -431,6 +431,24 @@ assume a 'shiftwidth' of 4.
 		    }
 		});
 <
+				*javascript-cinoptions* *javascript-indenting*
+	JN    Indent JavaScript object declarations correctly by not confusing
+	      them with labels.  The value 'N' is currently unused but must be 
+	      non-zero (e.g. 'J1'). >
+
+		var bar = {
+		    foo: {
+			that: this,
+			some: ok,
+		    },
+		    "bar":{ 
+			a : 2,
+			b: "123abc",
+			x: 4,
+			"y": 5
+		    }
+		}
+<
 	)N    Vim searches for unclosed parentheses at most N lines away.
 	      This limits the time needed to search for parentheses.  (default
 	      20 lines).

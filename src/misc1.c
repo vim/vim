@@ -5050,7 +5050,7 @@ cin_islabel(ind_maxcomment)		/* XXX */
 	    curwin->w_cursor = cursor_save;
 	    if (cin_isterminated(line, TRUE, FALSE)
 		    || cin_isscopedecl(line)
-		    || cin_iscase(line)
+		    || cin_iscase(line, TRUE)
 		    || (cin_islabel_skip(&line) && cin_nocode(line)))
 		return TRUE;
 	    return FALSE;
@@ -5089,8 +5089,9 @@ cin_isinit(void)
  * Recognize a switch label: "case .*:" or "default:".
  */
      int
-cin_iscase(s)
+cin_iscase(s, strict)
     char_u *s;
+    int strict; /* Allow relaxed check of case statement for JS */
 {
     s = cin_skipcomment(s);
     if (STRNCMP(s, "case", 4) == 0 && !vim_isIDc(s[4]))
@@ -5106,11 +5107,17 @@ cin_iscase(s)
 		    return TRUE;
 	    }
 	    if (*s == '\'' && s[1] && s[2] == '\'')
-		s += 2;			/* skip over '.' */
+		s += 2;			/* skip over ':' */
 	    else if (*s == '/' && (s[1] == '*' || s[1] == '/'))
 		return FALSE;		/* stop at comment */
 	    else if (*s == '"')
-		return FALSE;		/* stop at string */
+	    {
+		/* JS etc. */
+		if (strict)
+		    return FALSE;		/* stop at string */
+		else
+		    return TRUE;
+	    }
 	}
 	return FALSE;
     }
@@ -5169,7 +5176,7 @@ after_label(l)
 	{
 	    if (l[1] == ':')	    /* skip over "::" for C++ */
 		++l;
-	    else if (!cin_iscase(l + 1))
+	    else if (!cin_iscase(l + 1, FALSE))
 		break;
 	}
 	else if (*l == '\'' && l[1] && l[2] == '\'')
@@ -5227,7 +5234,8 @@ skip_label(lnum, pp, ind_maxcomment)
     curwin->w_cursor.lnum = lnum;
     l = ml_get_curline();
 				    /* XXX */
-    if (cin_iscase(l) || cin_isscopedecl(l) || cin_islabel(ind_maxcomment))
+    if (cin_iscase(l, FALSE) || cin_isscopedecl(l)
+					       || cin_islabel(ind_maxcomment))
     {
 	amount = get_indent_nolabel(lnum);
 	l = after_label(ml_get_curline());
@@ -6174,6 +6182,11 @@ get_c_indent()
     int	ind_java = 0;
 
     /*
+     * not to confuse JS object properties with labels
+     */
+    int ind_js = 0;
+
+    /*
      * handle blocked cases correctly
      */
     int ind_keep_case_label = 0;
@@ -6286,6 +6299,7 @@ get_c_indent()
 	    case 'g': ind_scopedecl = n; break;
 	    case 'h': ind_scopedecl_code = n; break;
 	    case 'j': ind_java = n; break;
+	    case 'J': ind_js = n; break;
 	    case 'l': ind_keep_case_label = n; break;
 	    case '#': ind_hash_comment = n; break;
 	}
@@ -6295,6 +6309,10 @@ get_c_indent()
 
     /* remember where the cursor was when we started */
     cur_curpos = curwin->w_cursor;
+
+    /* if we are at line 1 0 is fine, right? */
+    if (cur_curpos.lnum == 1)
+	return 0;
 
     /* Get a copy of the current contents of the line.
      * This is required, because only the most recent line obtained with
@@ -6330,9 +6348,9 @@ get_c_indent()
     }
 
     /*
-     * Is it a non-case label?	Then that goes at the left margin too.
+     * Is it a non-case label?	Then that goes at the left margin too unless JS flag is set.
      */
-    else if (cin_islabel(ind_maxcomment))	    /* XXX */
+    else if (!ind_js && cin_islabel(ind_maxcomment))	    /* XXX */
     {
 	amount = 0;
     }
@@ -6783,7 +6801,8 @@ get_c_indent()
 	     *			ldfd) {
 	     *		    }
 	     */
-	    if (ind_keep_case_label && cin_iscase(skipwhite(ml_get_curline())))
+	    if ((ind_keep_case_label
+			   && cin_iscase(skipwhite(ml_get_curline()), FALSE)))
 		amount = get_indent();
 	    else
 		amount = skip_label(lnum, &l, ind_maxcomment);
@@ -6861,7 +6880,7 @@ get_c_indent()
 
 	    lookfor_break = FALSE;
 
-	    if (cin_iscase(theline))	/* it's a switch() label */
+	    if (cin_iscase(theline, FALSE))	/* it's a switch() label */
 	    {
 		lookfor = LOOKFOR_CASE;	/* find a previous switch() label */
 		amount += ind_case;
@@ -6922,7 +6941,7 @@ get_c_indent()
 			     * initialization) */
 			    if (cont_amount > 0)
 				amount = cont_amount;
-			    else
+			    else if (!ind_js)
 				amount += ind_continuation;
 			    break;
 			}
@@ -7046,7 +7065,7 @@ get_c_indent()
 		 * If this is a switch() label, may line up relative to that.
 		 * If this is a C++ scope declaration, do the same.
 		 */
-		iscase = cin_iscase(l);
+		iscase = cin_iscase(l, FALSE);
 		if (iscase || cin_isscopedecl(l))
 		{
 		    /* we are only looking for cpp base class
@@ -7170,7 +7189,7 @@ get_c_indent()
 		/*
 		 * Ignore jump labels with nothing after them.
 		 */
-		if (cin_islabel(ind_maxcomment))
+		if (!ind_js && cin_islabel(ind_maxcomment))
 		{
 		    l = after_label(ml_get_curline());
 		    if (l == NULL || cin_nocode(l))
@@ -7281,7 +7300,7 @@ get_c_indent()
 			 */
 			curwin->w_cursor = *trypos;
 			l = ml_get_curline();
-			if (cin_iscase(l) || cin_isscopedecl(l))
+			if (cin_iscase(l, FALSE) || cin_isscopedecl(l))
 			{
 			    ++curwin->w_cursor.lnum;
 			    curwin->w_cursor.col = 0;
@@ -7312,9 +7331,11 @@ get_c_indent()
 		     * Get indent and pointer to text for current line,
 		     * ignoring any jump label.	    XXX
 		     */
-		    cur_amount = skip_label(curwin->w_cursor.lnum,
+		    if (!ind_js)
+			cur_amount = skip_label(curwin->w_cursor.lnum,
 							  &l, ind_maxcomment);
-
+		    else
+			cur_amount = get_indent();
 		    /*
 		     * If this is just above the line we are indenting, and it
 		     * starts with a '{', line it up with this line.
@@ -7640,7 +7661,7 @@ term_again:
 			     */
 			    curwin->w_cursor = *trypos;
 			    l = ml_get_curline();
-			    if (cin_iscase(l) || cin_isscopedecl(l))
+			    if (cin_iscase(l, FALSE) || cin_isscopedecl(l))
 			    {
 				++curwin->w_cursor.lnum;
 				curwin->w_cursor.col = 0;
@@ -7657,7 +7678,7 @@ term_again:
 			 *	stat;
 			 * }
 			 */
-			iscase = (ind_keep_case_label && cin_iscase(l));
+			iscase = (ind_keep_case_label && cin_iscase(l, FALSE));
 
 			/*
 			 * Get indent and pointer to text for current line,
