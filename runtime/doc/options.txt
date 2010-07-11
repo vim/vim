@@ -3126,8 +3126,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	text beyond that limit.  This happens under the same conditions as
 	when internal formatting is used.  Make sure the cursor is kept in the
 	same spot relative to the text then!  The |mode()| function will
-	return "i" or "R" in this situation.  When the function returns
-	non-zero Vim will fall back to using the internal format mechanism.
+	return "i" or "R" in this situation.
+	
+	When the expression evaluates to non-zero Vim will fall back to using
+	the internal format mechanism.
 
 	The expression may be evaluated in the |sandbox|, see
 	|sandbox-option|.

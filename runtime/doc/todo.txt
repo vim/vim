@@ -1093,7 +1093,6 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Patch to improve javascript indenting. (Hari Kumar G, 2010 May 22)
 - Patch to use return value of 'formatexpr'. (James Vega, 2010 Jun 16)
 - Patch for gtk main_loop() to enable GtkFileChooser. (James Vega, 2010 Jun 28)
     Same as this one?  GTK: file chooser is disabled.  Patch by Tim Starling,

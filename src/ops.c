@@ -4475,7 +4475,10 @@ op_formatexpr(oap)
 	redraw_curbuf_later(INVERTED);
 # endif
 
-    (void)fex_format(oap->start.lnum, oap->line_count, NUL);
+    if (fex_format(oap->start.lnum, oap->line_count, NUL) != 0)
+	/* As documented: when 'formatexpr' returns non-zero fall back to
+	 * internal formatting. */
+	op_format(oap, FALSE);
 }
 
     int
