@@ -387,6 +387,12 @@ Or use the ":TOhtml" user command.  It is defined in a standard plugin.
 
 	:10,40TOhtml
 
+":TOhtml" has another special feature: if the window is in diff mode, it will
+generate HTML that shows all the related windows.  This can be disabled by
+setting the g:diff_one_file variable: >
+
+	let g:diff_one_file = 1
+
 After you save the resulting file, you can view it with any browser.  The
 colors should be exactly the same as you see them in Vim.
 

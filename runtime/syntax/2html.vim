@@ -14,27 +14,27 @@ let s:cpo_sav = &cpo
 set cpo-=C
 
 " Number lines when explicitely requested or when `number' is set
-if exists("html_number_lines")
+if exists("g:html_number_lines")
   let s:numblines = html_number_lines
 else
   let s:numblines = &number
 endif
 
 " Font
-if exists("html_font")
+if exists("g:html_font")
   let s:htmlfont = html_font . ", monospace"
 else
   let s:htmlfont = "monospace"
 endif
 
 " make copies of the user-defined settings that we may overrule
-if exists("html_dynamic_folds")
+if exists("g:html_dynamic_folds")
   let s:html_dynamic_folds = 1
 endif
-if exists("html_hover_unfold")
+if exists("g:html_hover_unfold")
   let s:html_hover_unfold = 1
 endif
-if exists("html_use_css")
+if exists("g:html_use_css")
   let s:html_use_css = 1
 endif
 
@@ -44,12 +44,12 @@ if exists("s:html_hover_unfold")
 endif
 
 " dynamic folding with no foldcolumn implies hover opens
-if exists("s:html_dynamic_folds") && exists("html_no_foldcolumn")
+if exists("s:html_dynamic_folds") && exists("g:html_no_foldcolumn")
   let s:html_hover_unfold = 1
 endif
 
 " ignore folding overrides dynamic folding
-if exists("html_ignore_folding") && exists("s:html_dynamic_folds")
+if exists("g:html_ignore_folding") && exists("s:html_dynamic_folds")
   unlet s:html_dynamic_folds
 endif
 
@@ -207,7 +207,7 @@ if exists("s:html_dynamic_folds")
 endif
 
 " Figure out proper MIME charset from the 'encoding' option.
-if exists("html_use_encoding")
+if exists("g:html_use_encoding")
   let s:html_encoding = html_use_encoding
 else
   let s:vim_encoding = &encoding
@@ -268,7 +268,7 @@ set paste
 let s:old_magic = &magic
 set magic
 
-if exists("use_xhtml")
+if exists("g:use_xhtml")
   if s:html_encoding != ""
     exe "normal!  a<?xml version=\"1.0\" encoding=\"" . s:html_encoding . "\"?>\n\e"
   else
@@ -280,7 +280,7 @@ else
 endif
 
 " Cache html_no_pre in case we have to turn it on for non-css mode
-if exists("html_no_pre")
+if exists("g:html_no_pre")
   let s:old_html_no_pre = html_no_pre
 endif
 
@@ -292,7 +292,7 @@ endif
 let s:HtmlSpace = ' '
 let s:LeadingSpace = ' '
 let s:HtmlEndline = ''
-if exists("html_no_pre")
+if exists("g:html_no_pre")
   let s:HtmlEndline = '<br' . s:tag_close
   let s:LeadingSpace = '&nbsp;'
   let s:HtmlSpace = '\' . s:LeadingSpace
@@ -387,7 +387,7 @@ if exists("s:html_dynamic_folds")
 	\ "</script>\n\e"
 endif
 
-if exists("html_no_pre")
+if exists("g:html_no_pre")
   exe "normal! a</head>\n<body>\n\e"
 else
   exe "normal! a</head>\n<body>\n<pre>\n\e"
@@ -474,7 +474,7 @@ endif
 
 " Now loop over all lines in the original text to convert to html.
 " Use html_start_line and html_end_line if they are set.
-if exists("html_start_line")
+if exists("g:html_start_line")
   let s:lnum = html_start_line
   if s:lnum < 1 || s:lnum > line("$")
     let s:lnum = 1
@@ -482,7 +482,7 @@ if exists("html_start_line")
 else
   let s:lnum = 1
 endif
-if exists("html_end_line")
+if exists("g:html_end_line")
   let s:end = html_end_line
   if s:end < s:lnum || s:end > line("$")
     let s:end = line("$")
@@ -500,7 +500,7 @@ else
   let s:margin = 0
 endif
 
-if has('folding') && !exists('html_ignore_folding')
+if has('folding') && !exists('g:html_ignore_folding')
   let s:foldfillchar = &fillchars[matchend(&fillchars, 'fold:')]
   if s:foldfillchar == ''
     let s:foldfillchar = '-'
@@ -522,12 +522,12 @@ while s:lnum <= s:end
     while s:n > 0
       let s:new = repeat(s:difffillchar, 3)
 
-      if s:n > 2 && s:n < s:filler && !exists("html_whole_filler")
+      if s:n > 2 && s:n < s:filler && !exists("g:html_whole_filler")
 	let s:new = s:new . " " . s:filler . " inserted lines "
 	let s:n = 2
       endif
 
-      if !exists("html_no_pre")
+      if !exists("g:html_no_pre")
 	" HTML line wrapping is off--go ahead and fill to the margin
 	let s:new = s:new . repeat(s:difffillchar, &columns - strlen(s:new) - s:margin)
       else
@@ -558,12 +558,12 @@ while s:lnum <= s:end
 
   let s:new = ""
 
-  if has('folding') && !exists('html_ignore_folding') && foldclosed(s:lnum) > -1 && !exists('s:html_dynamic_folds')
+  if has('folding') && !exists('g:html_ignore_folding') && foldclosed(s:lnum) > -1 && !exists('s:html_dynamic_folds')
     "
     " This is the beginning of a folded block (with no dynamic folding)
     "
     let s:new = s:numcol . foldtextresult(s:lnum)
-    if !exists("html_no_pre")
+    if !exists("g:html_no_pre")
       " HTML line wrapping is off--go ahead and fill to the margin
       let s:new = s:new . repeat(s:foldfillchar, &columns - strlen(s:new))
     endif
@@ -598,7 +598,7 @@ while s:lnum <= s:end
 	" Note that dynamic folds require using css so we just use css to take
 	" care of the leading spaces rather than using &nbsp; in the case of
 	" html_no_pre to make it easier
-	if !exists("html_no_foldcolumn")
+	if !exists("g:html_no_foldcolumn")
 	  " add fold column that can open the new fold
 	  if s:allfolds[0].level > 1 && s:firstfold
 	    let s:new = s:new . "<a class='toggle-open FoldColumn' href='javascript:toggleFold(\"fold".s:foldstack[0].id."\")'>"
@@ -647,7 +647,7 @@ while s:lnum <= s:end
       " Note that dynamic folds require using css so we just use css to take
       " care of the leading spaces rather than using &nbsp; in the case of
       " html_no_pre to make it easier
-      if !exists("html_no_foldcolumn")
+      if !exists("g:html_no_foldcolumn")
 	if empty(s:foldstack)
 	  " add the empty foldcolumn for unfolded lines
 	  let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn")
@@ -680,7 +680,7 @@ while s:lnum <= s:end
 	" Speed loop (it's small - that's the trick)
 	" Go along till we find a change in hlID
 	while s:col <= s:len && s:id == diff_hlID(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
-	if s:len < &columns && !exists("html_no_pre")
+	if s:len < &columns && !exists("g:html_no_pre")
 	  " Add spaces at the end to mark the changed line.
 	  let s:line = s:line . repeat(' ', &columns - virtcol([s:lnum, s:len]) - s:margin)
 	  let s:len = &columns
@@ -752,7 +752,7 @@ if !exists("s:html_use_css")
   exe "normal! a</font>\e"
 endif
 
-if exists("html_no_pre")
+if exists("g:html_no_pre")
   exe "normal! a</body>\n</html>\e"
 else
   exe "normal! a</pre>\n</body>\n</html>\e"
@@ -778,7 +778,7 @@ endif
 " For Netscape 4, set <body> attributes too, though, strictly speaking, it's
 " incorrect.
 if exists("s:html_use_css")
-  if exists("html_no_pre")
+  if exists("g:html_no_pre")
     execute "normal! A\nbody { color: " . s:fgc . "; background-color: " . s:bgc . "; font-family: ". s:htmlfont ."; }\e"
   else
     execute "normal! A\npre { font-family: ". s:htmlfont ."; color: " . s:fgc . "; background-color: " . s:bgc . "; }\e"
@@ -828,13 +828,13 @@ endwhile
 %s+\(https\=://\S\{-}\)\(\([.,;:}]\=\(\s\|$\)\)\|[\\"'<>]\|&gt;\|&lt;\|&quot;\)+<a href="\1">\1</a>\2+ge
 
 " The DTD
-if exists("use_xhtml")
+if exists("g:use_xhtml")
   exe "normal! gg$a\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\e"
 else
   exe "normal! gg0i<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n\e"
 endif
 
-if exists("use_xhtml")
+if exists("g:use_xhtml")
   exe "normal! gg/<html/e\na xmlns=\"http://www.w3.org/1999/xhtml\"\e"
 endif
 
@@ -856,7 +856,7 @@ exe s:newwin . "wincmd w"
 if exists("s:old_html_no_pre")
   let html_no_pre = s:old_html_no_pre
   unlet s:old_html_no_pre
-elseif exists("html_no_pre")
+elseif exists("g:html_no_pre")
   unlet html_no_pre
 endif
 

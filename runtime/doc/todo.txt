@@ -1090,6 +1090,7 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 Before (beta) release 7.3:
 - Add fixes for 7.2 to version7.txt
+- Add hg history to version7.txt
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 Vim 7.3:
@@ -1109,6 +1110,8 @@ Patches to possibly include:
   Update 2009 May 2, 'margincolumn'
   Alternative patch. (2010 Feb 2, Gregor Uhlenheuer, update Apr 18 2010)
   Fix by Lech Lorens, Apr 19
+- Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
+  Needs a few tests.
 - Add different highlighting for a fold line depending on the fold level.
   Patch. (Noel Henson, 2009 Sep 13)
 - Patch to make synIDattr() work for GUI attributes in Vim without GUI
