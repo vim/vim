@@ -2304,6 +2304,7 @@ win_close_othertab(win, free_buf, tp)
     win_T	*wp;
     int		dir;
     tabpage_T   *ptp = NULL;
+    int		free_tp = FALSE;
 
     /* Close the link to the buffer. */
     close_buffer(win, win->w_buffer, free_buf ? DOBUF_UNLOAD : 0);
@@ -2321,11 +2322,8 @@ win_close_othertab(win, free_buf, tp)
     if (wp == NULL)
 	return;
 
-    /* Free the memory used for the window. */
-    wp = win_free_mem(win, &dir, tp);
-
     /* When closing the last window in a tab page remove the tab page. */
-    if (wp == NULL)
+    if (tp == NULL ? firstwin == lastwin : tp->tp_firstwin == tp->tp_lastwin)
     {
 	if (tp == first_tabpage)
 	    first_tabpage = tp->tp_next;
@@ -2341,8 +2339,14 @@ win_close_othertab(win, free_buf, tp)
 	    }
 	    ptp->tp_next = tp->tp_next;
 	}
-	free_tabpage(tp);
+	free_tp = TRUE;
     }
+
+    /* Free the memory used for the window. */
+    win_free_mem(win, &dir, tp);
+
+    if (free_tp)
+	free_tabpage(tp);
 }
 
 /*
