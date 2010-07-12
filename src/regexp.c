@@ -7140,10 +7140,26 @@ vim_regsub_both(source, dest, copy, magic, backslash)
 #ifdef FEAT_MBYTE
 	    if (has_mbyte)
 	    {
-		src += mb_ptr2len(src - 1) - 1;
+		int totlen = mb_ptr2len(src - 1);
+
 		if (copy)
 		    mb_char2bytes(cc, dst);
 		dst += mb_char2len(cc) - 1;
+		if (enc_utf8)
+		{
+		    int clen = utf_ptr2len(src - 1);
+
+		    /* If the character length is shorter than "totlen", there
+		     * are composing characters; copy them as-is. */
+		    if (clen < totlen)
+		    {
+			if (copy)
+			    mch_memmove(dst + 1, src - 1 + clen,
+						     (size_t)(totlen - clen));
+			dst += totlen - clen;
+		    }
+		}
+		src += totlen - 1;
 	    }
 	    else
 #endif
