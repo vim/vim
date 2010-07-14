@@ -4155,7 +4155,8 @@ do_join(count, insert_space, save_undo)
     char_u	*cend;
     char_u	*newp;
     char_u	*spaces;	/* number of spaces inserte before a line */
-    int		endcurr1, endcurr2;
+    int		endcurr1 = NUL;
+    int		endcurr2 = NUL;
     int		currsize = 0;	/* size of the current line */
     int		sumsize = 0;	/* size of the long new line */
     linenr_T	t;

@@ -686,7 +686,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 	    n = [mstring replaceOccurrencesOfString:@"\x0d" withString:@"\x0a"
 					   options:0 range:range];
 	}
-	
+
 	/* Scan for newline character to decide whether the string should be
 	 * pasted line-wise or character-wise.
 	 */
@@ -734,7 +734,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     cbd->owned = TRUE;
     clip_get_selection(cbd);
     cbd->owned = FALSE;
-    
+
     /* Get the text to put on the pasteboard. */
     long_u llen = 0; char_u *str = 0;
     int motion_type = clip_convert_selection(&str, &llen, cbd);
@@ -771,7 +771,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	[pb setPropertyList:plist forType:VimPboardType];
 
 	[pb setString:string forType:NSStringPboardType];
-	
+
 	[string release];
     }
 

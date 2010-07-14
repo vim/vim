@@ -1098,7 +1098,6 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Mac: console clipboard support. (Bjorn Winckler, 2010 Jul 12)
 - Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 
 - Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
   8   For ":find" and ":sfind" expand files found in 'path'.
@@ -1154,10 +1153,6 @@ Needs some work:
 	You can already yank lines and use :@" to execute them.
 	Most of do_source() would not be used, need a new function.
 	It's easy when not doing breakpoints or profiling.
-Probably not now:
-- Use timestamps for undo, so that a version a certain time ago can be found
-  and info before some time/date can be flushed. 'undopersist' gives maximum
-  time to keep undo: "3h", "1d", "2w", "1y", etc.
 
 
 More patches:
@@ -3954,6 +3949,11 @@ Searching:
 Undo:
 9   After undo/redo, in the message show whether the buffer is modified or
     not.
+8   Use timestamps for undo, so that a version a certain time ago can be found
+    and info before some time/date can be flushed. 'undopersist' gives maximum
+    time to keep undo: "3h", "1d", "2w", "1y", etc.
+8   Search for pattern in undo tree, showing when it happened and the text
+    state, so that you can jump to it.
 8   Undo tree: visually show the tree somehow (Damian Conway)
     Show only the leaves, indicating how many changed from the branch and the
     timestamp?
@@ -3964,8 +3964,6 @@ Undo:
     was changed outside of Vim.
     Would require doing a diff between the buffer text and the file and
     storing the differences.
-8   Search for pattern in undo tree, showing when it happened and the text
-    state, so that you can jump to it.
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
