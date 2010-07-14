@@ -560,11 +560,6 @@ character typed. (Tyler Spivey, 2008 Sep 3)  Only redraw cmdline for
 'arabicshape' when there is a character on the command line for which
 (ARABIC_CHAR(u8c)) is TRUE.
 
-Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520
-by Vissale Neang.  (Martin Stubenschrott)
-Asked Vissale to make the scripts more friendly for the Vim distribution.
-New version received 2008 Jan 6.
-
 Cheng Fang made javacomplete. (2007 Aug 11)
 Asked about latest version: 0.77.1 is on www.vim.org.
 
@@ -1102,6 +1097,10 @@ Patches to possibly include:
   feature.  (Matt Wozniski, 2009 Apr 15)
   Patch go make gui highlight settings work in Vim without +gui feature.
   (Matt Wozniski, 2009 Mar 27)
+- Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
+  Vissale Neang.  (Martin Stubenschrott)
+  Asked Vissale to make the scripts more friendly for the Vim distribution.
+  New version received 2008 Jan 6.
 - Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
@@ -1112,8 +1111,6 @@ Patches to possibly include:
     Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
 - Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
   Needs a few tests.
-- Disable setting 'encoding' from a modeline?  It usually causes problems,
-  can't do any good.  (Patch from Patrick Texier, 2008 Dec 9)
 - Redraw problem when appending digraph causes line to wrap. (James Vega, 2007
   Sep 18)  Patch by Ian Kelling, 2008 Aug 8.
 - Patch for colorscheme submenu. (Juergen Kraemer, 2008 Aug 20)

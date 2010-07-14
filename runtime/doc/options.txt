@@ -2436,6 +2436,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It should normally be kept at its default value, or set when Vim
 	starts up.  See |multibyte|.  To reload the menus see |:menutrans|.
 
+	This option cannot be set from a |modeline|.  It would most likely
+	corrupt the text.
+
 	NOTE: For GTK+ 2 it is highly recommended to set 'encoding' to
 	"utf-8".  Although care has been taken to allow different values of
 	'encoding', "utf-8" is the natural choice for the environment and
@@ -2619,6 +2622,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			feature}
 			{not in Vi}
 	Sets the character encoding for the file of this buffer.
+
 	When 'fileencoding' is different from 'encoding', conversion will be
 	done when writing the file.  For reading see below.
 	When 'fileencoding' is empty, the same value as 'encoding' will be
@@ -2631,24 +2635,32 @@ A jump table for the options with a short description can be found at |Q_op|.
 		is most likely done in a way that the reverse conversion
 		results in the same text.  When 'encoding' is not "utf-8" some
 		characters may be lost!
+
 	See 'encoding' for the possible values.  Additionally, values may be
 	specified that can be handled by the converter, see
 	|mbyte-conversion|.
+
 	When reading a file 'fileencoding' will be set from 'fileencodings'.
 	To read a file in a certain encoding it won't work by setting
 	'fileencoding', use the |++enc| argument.  One exception: when
 	'fileencodings' is empty the value of 'fileencoding' is used.
 	For a new file the global value of 'fileencoding' is used.
+
 	Prepending "8bit-" and "2byte-" has no meaning here, they are ignored.
 	When the option is set, the value is converted to lowercase.  Thus
 	you can set it with uppercase values too.  '_' characters are
 	replaced with '-'.  If a name is recognized from the list for
 	'encoding', it is replaced by the standard name.  For example
 	"ISO8859-2" becomes "iso-8859-2".
+
 	When this option is set, after starting to edit a file, the 'modified'
 	option is set, because the file would be different when written.
-	If you do this in a modeline, you might want to set 'nomodified' to
-	avoid this.
+
+	Keep in mind that changing 'fenc' from a modeline happens
+	AFTER the text has been read, thus it applies to when the file will be
+	written.  If you do set 'fenc' in a modeline, you might want to set
+	'nomodified' to avoid not being able to ":q".
+
 	This option can not be changed when 'modifiable' is off.
 
 							*'fe'*

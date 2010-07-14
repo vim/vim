@@ -451,6 +451,7 @@ struct vimoption
 #define P_INSECURE     0x400000L/* option was set from a modeline */
 #define P_PRI_MKRC     0x800000L/* priority for :mkvimrc (setting option has
 				   side effects) */
+#define P_NO_ML       0x1000000L/* not allowed in modeline */
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
@@ -1015,7 +1016,7 @@ static struct vimoption
     {"edcompatible","ed",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_ed, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCRIPTID_INIT},
-    {"encoding",    "enc",  P_STRING|P_VI_DEF|P_RCLR,
+    {"encoding",    "enc",  P_STRING|P_VI_DEF|P_RCLR|P_NO_ML,
 #ifdef FEAT_MBYTE
 			    (char_u *)&p_enc, PV_NONE,
 			    {(char_u *)ENC_DFLT, (char_u *)0L}
@@ -4236,7 +4237,7 @@ do_set(arg, opt_flags)
 	    /* Disallow changing some options from modelines. */
 	    if (opt_flags & OPT_MODELINE)
 	    {
-		if (flags & P_SECURE)
+		if (flags & (P_SECURE | P_NO_ML))
 		{
 		    errmsg = (char_u *)_("E520: Not allowed in a modeline");
 		    goto skip;
