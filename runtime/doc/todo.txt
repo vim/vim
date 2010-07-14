@@ -1098,9 +1098,6 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
-  8   For ":find" and ":sfind" expand files found in 'path'.
-  Update 2009 Mar 28.
 - Patch for vertical line at certain column position, 'guidecolumn' option.
   (Pankaj Garg, 2009 Apr 14, aka Lone, Apr 15)
   Update 2009 May 2, 'margincolumn'

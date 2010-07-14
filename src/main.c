@@ -711,6 +711,10 @@ main
     qnx_clip_init();
 #endif
 
+#if defined(MACOS_X) && defined(FEAT_CLIPBOARD)
+    clip_init(TRUE);
+#endif
+
 #ifdef FEAT_XCLIPBOARD
     /* Start using the X clipboard, unless the GUI was started. */
 # ifdef FEAT_GUI
