@@ -1091,11 +1091,6 @@ Before (beta) release 7.3:
 
 Vim 7.3:
 Patches to possibly include:
-- Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
-  Vissale Neang.  (Martin Stubenschrott)
-  Asked Vissale to make the scripts more friendly for the Vim distribution.
-  New version received 2008 Jan 6.
-- Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
     Patch by Lech Lorens, 2009 Mar 23.
@@ -1103,10 +1098,6 @@ Patches to possibly include:
     Docs patch by Dominique Pelle, Mar 25
     Update 2009 Mar 28.
     Fix for invalid memory access. (Lech Lorens, 2009 Apr 17)
-- Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
-  Needs a few tests.
-- Redraw problem when appending digraph causes line to wrap. (James Vega, 2007
-  Sep 18)  Patch by Ian Kelling, 2008 Aug 8.
 - Patch for colorscheme submenu. (Juergen Kraemer, 2008 Aug 20)
 - 9   Make it possible to drag a tab page label to another position with the
     mouse.
@@ -1135,6 +1126,8 @@ Needs some work:
 
 
 More patches:
+-   Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
+    Needs a few tests.
 -   Add 'cscopeignorecase' option. (Liang Wenzhi, 2006 Sept 3)
 -   Argument for feedkeys() to prepend to typeahead (Yakov Lerner, 2006 Oct
     21)
@@ -1164,8 +1157,13 @@ More patches:
     Sep 13)
 -   Patch for adding "space" item in 'listchars'. (Jérémie Roquet, 2009 Oct 29,
     Docs patch Oct 30)
--   Patch to support clipboard for Mac terminal. (Jjgod Jiang, 2009 Aug 1)
-    Needs to be updated for block-wise selection.
+-   Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
+    Where is a recent version of this patch?
+-   Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
+    Vissale Neang.  (Martin Stubenschrott) Asked Vissale to make the scripts
+    more friendly for the Vim distribution.
+    New version received 2008 Jan 6.
+    No maintenance in two years...
 
 
 Awaiting updated patches:

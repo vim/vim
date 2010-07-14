@@ -1547,6 +1547,8 @@ ins_ctrl_v()
 #endif
 
     c = get_literal();
+    edit_unputchar();  /* when line fits in 'columns' the '^' is at the start
+			  of the next line and will not be redrawn */
 #ifdef FEAT_CMDL_INFO
     clear_showcmd();
 #endif
@@ -9620,6 +9622,9 @@ ins_digraph()
     c = plain_vgetc();
     --no_mapping;
     --allow_keys;
+    edit_unputchar();  /* when line fits in 'columns' the '?' is at the start
+			  of the next line and will not be redrawn */
+
     if (IS_SPECIAL(c) || mod_mask)	    /* special key */
     {
 #ifdef FEAT_CMDL_INFO
@@ -9652,6 +9657,8 @@ ins_digraph()
 	cc = plain_vgetc();
 	--no_mapping;
 	--allow_keys;
+	edit_unputchar();  /* when line fits in 'columns' the '?' is at the
+			      start of the next line and will not be redrawn */
 	if (cc != ESC)
 	{
 	    AppendToRedobuff((char_u *)CTRL_V_STR);
@@ -9662,7 +9669,6 @@ ins_digraph()
 	    return c;
 	}
     }
-    edit_unputchar();
 #ifdef FEAT_CMDL_INFO
     clear_showcmd();
 #endif
