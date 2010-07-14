@@ -9550,14 +9550,13 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	    vim_free(t);
 	}
 
+#if defined(FEAT_SEARCHPATH)
+	if (flags & EW_PATH)
+	    uniquefy_paths(&ga, p);
+#endif
 	if (p != pat[i])
 	    vim_free(p);
     }
-
-#if defined(FEAT_SEARCHPATH)
-    if (flags & EW_PATH)
-	uniquefy_paths(&ga, p);
-#endif
 
     *num_file = ga.ga_len;
     *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data : (char_u **)"";
