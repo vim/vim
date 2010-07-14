@@ -299,15 +299,3 @@
 
 /* A Mac constant causing big problem to syntax highlighting */
 #define UNKNOWN_CREATOR '\?\?\?\?'
-
-/*
- * for debugging
- */
-#ifdef MACOS_X
-# ifdef _DEBUG
-#  define TRACE			Trace
-   void Trace(char *fmt, ...);
-# else
-#  define TRACE			1 ? (void)0 : printf
-# endif
-#endif
