@@ -35,19 +35,22 @@ struct hl_group
     int		sg_cterm_attr;	/* Screen attr for color term mode */
 #ifdef FEAT_GUI
 /* for when using the GUI */
-    int		sg_gui;		/* "gui=" highlighting attributes */
     guicolor_T	sg_gui_fg;	/* GUI foreground color handle */
-    char_u	*sg_gui_fg_name;/* GUI foreground color name */
     guicolor_T	sg_gui_bg;	/* GUI background color handle */
-    char_u	*sg_gui_bg_name;/* GUI background color name */
     guicolor_T	sg_gui_sp;	/* GUI special color handle */
-    char_u	*sg_gui_sp_name;/* GUI special color name */
     GuiFont	sg_font;	/* GUI font handle */
 #ifdef FEAT_XFONTSET
     GuiFontset	sg_fontset;	/* GUI fontset handle */
 #endif
     char_u	*sg_font_name;  /* GUI font or fontset name */
     int		sg_gui_attr;    /* Screen attr for GUI mode */
+#endif
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+/* Store the sp color name for the GUI or synIDattr() */
+    int		sg_gui;		/* "gui=" highlighting attributes */
+    char_u	*sg_gui_fg_name;/* GUI foreground color name */
+    char_u	*sg_gui_bg_name;/* GUI background color name */
+    char_u	*sg_gui_sp_name;/* GUI special color name */
 #endif
     int		sg_link;	/* link to this highlight group ID */
     int		sg_set;		/* combination of SG_* flags */
@@ -6412,7 +6415,7 @@ syn_get_foldlevel(wp, lnum)
  * The #ifdefs are needed to reduce the amount of static data.  Helps to make
  * the 16 bit DOS (museum) version compile.
  */
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 # define CENT(a, b) b
 #else
 # define CENT(a, b) a
@@ -7142,7 +7145,7 @@ do_highlight(line, forceit, init)
 		    HL_TABLE()[idx].sg_cterm_bold = FALSE;
 		}
 	    }
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    else
 	    {
 		if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
@@ -7418,86 +7421,100 @@ do_highlight(line, forceit, init)
 	}
 	else if (STRCMP(key, "GUIFG") == 0)
 	{
-#ifdef FEAT_GUI	    /* in non-GUI guifg colors are simply ignored */
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
+# ifdef FEAT_GUI
+		/* In GUI guifg colors are only used when recognized */
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
 		{
 		    HL_TABLE()[idx].sg_gui_fg = i;
+# endif
 		    vim_free(HL_TABLE()[idx].sg_gui_fg_name);
 		    if (STRCMP(arg, "NONE"))
 			HL_TABLE()[idx].sg_gui_fg_name = vim_strsave(arg);
 		    else
 			HL_TABLE()[idx].sg_gui_fg_name = NULL;
-# ifdef FEAT_GUI_X11
+# ifdef FEAT_GUI
+#  ifdef FEAT_GUI_X11
 		    if (is_menu_group)
 			gui.menu_fg_pixel = i;
 		    if (is_scrollbar_group)
 			gui.scroll_fg_pixel = i;
-#  ifdef FEAT_BEVAL
+#   ifdef FEAT_BEVAL
 		    if (is_tooltip_group)
 			gui.tooltip_fg_pixel = i;
-#  endif
+#   endif
 		    do_colors = TRUE;
-# endif
+#  endif
 		}
+# endif
 	    }
 #endif
 	}
 	else if (STRCMP(key, "GUIBG") == 0)
 	{
-#ifdef FEAT_GUI	    /* in non-GUI guibg colors are simply ignored */
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
+# ifdef FEAT_GUI
+		/* In GUI guifg colors are only used when recognized */
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
 		{
 		    HL_TABLE()[idx].sg_gui_bg = i;
+# endif
 		    vim_free(HL_TABLE()[idx].sg_gui_bg_name);
 		    if (STRCMP(arg, "NONE") != 0)
 			HL_TABLE()[idx].sg_gui_bg_name = vim_strsave(arg);
 		    else
 			HL_TABLE()[idx].sg_gui_bg_name = NULL;
-# ifdef FEAT_GUI_X11
+# ifdef FEAT_GUI
+#  ifdef FEAT_GUI_X11
 		    if (is_menu_group)
 			gui.menu_bg_pixel = i;
 		    if (is_scrollbar_group)
 			gui.scroll_bg_pixel = i;
-#  ifdef FEAT_BEVAL
+#   ifdef FEAT_BEVAL
 		    if (is_tooltip_group)
 			gui.tooltip_bg_pixel = i;
-#  endif
+#   endif
 		    do_colors = TRUE;
-# endif
+#  endif
 		}
+# endif
 	    }
 #endif
 	}
 	else if (STRCMP(key, "GUISP") == 0)
 	{
-#ifdef FEAT_GUI	    /* in non-GUI guisp colors are simply ignored */
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    if (!init || !(HL_TABLE()[idx].sg_set & SG_GUI))
 	    {
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
+# ifdef FEAT_GUI
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
 		{
 		    HL_TABLE()[idx].sg_gui_sp = i;
+# endif
 		    vim_free(HL_TABLE()[idx].sg_gui_sp_name);
 		    if (STRCMP(arg, "NONE") != 0)
 			HL_TABLE()[idx].sg_gui_sp_name = vim_strsave(arg);
 		    else
 			HL_TABLE()[idx].sg_gui_sp_name = NULL;
+# ifdef FEAT_GUI
 		}
+# endif
 	    }
 #endif
 	}
@@ -7728,17 +7745,19 @@ highlight_clear(idx)
     HL_TABLE()[idx].sg_cterm_fg = 0;
     HL_TABLE()[idx].sg_cterm_bg = 0;
     HL_TABLE()[idx].sg_cterm_attr = 0;
-#ifdef FEAT_GUI	    /* in non-GUI fonts are simply ignored */
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
     HL_TABLE()[idx].sg_gui = 0;
-    HL_TABLE()[idx].sg_gui_fg = INVALCOLOR;
     vim_free(HL_TABLE()[idx].sg_gui_fg_name);
     HL_TABLE()[idx].sg_gui_fg_name = NULL;
-    HL_TABLE()[idx].sg_gui_bg = INVALCOLOR;
     vim_free(HL_TABLE()[idx].sg_gui_bg_name);
     HL_TABLE()[idx].sg_gui_bg_name = NULL;
-    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
     vim_free(HL_TABLE()[idx].sg_gui_sp_name);
     HL_TABLE()[idx].sg_gui_sp_name = NULL;
+#endif
+#ifdef FEAT_GUI
+    HL_TABLE()[idx].sg_gui_fg = INVALCOLOR;
+    HL_TABLE()[idx].sg_gui_bg = INVALCOLOR;
+    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
     gui_mch_free_font(HL_TABLE()[idx].sg_font);
     HL_TABLE()[idx].sg_font = NOFONT;
 # ifdef FEAT_XFONTSET
@@ -8436,7 +8455,7 @@ highlight_list_one(id)
     didh = highlight_list_arg(id, didh, LIST_INT,
 				    sgp->sg_cterm_bg, NULL, "ctermbg");
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
     didh = highlight_list_arg(id, didh, LIST_ATTR,
 				    sgp->sg_gui, NULL, "gui");
     didh = highlight_list_arg(id, didh, LIST_STRING,
@@ -8445,6 +8464,8 @@ highlight_list_one(id)
 				    0, sgp->sg_gui_bg_name, "guibg");
     didh = highlight_list_arg(id, didh, LIST_STRING,
 				    0, sgp->sg_gui_sp_name, "guisp");
+#endif
+#ifdef FEAT_GUI
     didh = highlight_list_arg(id, didh, LIST_STRING,
 				    0, sgp->sg_font_name, "font");
 #endif
@@ -8535,7 +8556,7 @@ highlight_has_attr(id, flag, modec)
     if (id <= 0 || id > highlight_ga.ga_len)
 	return NULL;
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
     if (modec == 'g')
 	attr = HL_TABLE()[id - 1].sg_gui;
     else
@@ -8564,17 +8585,14 @@ highlight_color(id, what, modec)
     static char_u	name[20];
     int			n;
     int			fg = FALSE;
-# ifdef FEAT_GUI
     int			sp = FALSE;
     int			font = FALSE;
-# endif
 
     if (id <= 0 || id > highlight_ga.ga_len)
 	return NULL;
 
     if (TOLOWER_ASC(what[0]) == 'f' && TOLOWER_ASC(what[1]) == 'g')
 	fg = TRUE;
-# ifdef FEAT_GUI
     else if (TOLOWER_ASC(what[0]) == 'f' && TOLOWER_ASC(what[1]) == 'o'
 	     && TOLOWER_ASC(what[2]) == 'n' && TOLOWER_ASC(what[3]) == 't')
 	font = TRUE;
@@ -8584,6 +8602,7 @@ highlight_color(id, what, modec)
 	return NULL;
     if (modec == 'g')
     {
+# ifdef FEAT_GUI
 	/* return font name */
 	if (font)
 	    return HL_TABLE()[id - 1].sg_font_name;
@@ -8610,6 +8629,7 @@ highlight_color(id, what, modec)
 				      (unsigned)rgb & 255);
 	    return buf;
 	}
+#endif
 	if (fg)
 	    return (HL_TABLE()[id - 1].sg_gui_fg_name);
 	if (sp)
@@ -8618,7 +8638,6 @@ highlight_color(id, what, modec)
     }
     if (font || sp)
 	return NULL;
-# endif
     if (modec == 'c')
     {
 	if (fg)
@@ -9243,7 +9262,7 @@ highlight_changed()
 		vim_memset(&hlt[hlcnt + i], 0, sizeof(struct hl_group));
 		hlt[hlcnt + i].sg_term = highlight_attr[HLF_SNC];
 		hlt[hlcnt + i].sg_cterm = highlight_attr[HLF_SNC];
-#  ifdef FEAT_GUI
+#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
 		hlt[hlcnt + i].sg_gui = highlight_attr[HLF_SNC];
 #  endif
 	    }
@@ -9266,9 +9285,11 @@ highlight_changed()
 		hlt[hlcnt + i].sg_cterm_fg = hlt[id - 1].sg_cterm_fg;
 	    if (hlt[id - 1].sg_cterm_bg != hlt[id_S - 1].sg_cterm_bg)
 		hlt[hlcnt + i].sg_cterm_bg = hlt[id - 1].sg_cterm_bg;
-#  ifdef FEAT_GUI
+#  if defined(FEAT_GUI) || defined(FEAT_EVAL)
 	    hlt[hlcnt + i].sg_gui ^=
 		hlt[id - 1].sg_gui ^ hlt[id_S - 1].sg_gui;
+#  endif
+#  ifdef FEAT_GUI
 	    if (hlt[id - 1].sg_gui_fg != hlt[id_S - 1].sg_gui_fg)
 		hlt[hlcnt + i].sg_gui_fg = hlt[id - 1].sg_gui_fg;
 	    if (hlt[id - 1].sg_gui_bg != hlt[id_S - 1].sg_gui_bg)

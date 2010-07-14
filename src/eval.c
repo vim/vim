@@ -16953,11 +16953,7 @@ f_synIDattr(argvars, rettv)
     {
 	mode = get_tv_string_buf(&argvars[2], modebuf);
 	modec = TOLOWER_ASC(mode[0]);
-	if (modec != 't' && modec != 'c'
-#ifdef FEAT_GUI
-		&& modec != 'g'
-#endif
-		)
+	if (modec != 't' && modec != 'c' && modec != 'g')
 	    modec = 0;	/* replace invalid with current */
     }
     else

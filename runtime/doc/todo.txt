@@ -1091,12 +1091,6 @@ Before (beta) release 7.3:
 
 Vim 7.3:
 Patches to possibly include:
-- Add different highlighting for a fold line depending on the fold level.
-  Patch. (Noel Henson, 2009 Sep 13)
-- Patch to make synIDattr() work for GUI attributes in Vim without GUI
-  feature.  (Matt Wozniski, 2009 Apr 15)
-  Patch go make gui highlight settings work in Vim without +gui feature.
-  (Matt Wozniski, 2009 Mar 27)
 - Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
   Vissale Neang.  (Martin Stubenschrott)
   Asked Vissale to make the scripts more friendly for the Vim distribution.
