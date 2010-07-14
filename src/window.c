@@ -3877,6 +3877,10 @@ tabpage_move(nr)
 win_goto(wp)
     win_T	*wp;
 {
+#ifdef FEAT_CONCEAL
+    win_T	*owp = curwin;
+#endif
+
     if (text_locked())
     {
 	beep_flush();
@@ -3899,6 +3903,13 @@ win_goto(wp)
     need_mouse_correct = TRUE;
 #endif
     win_enter(wp, TRUE);
+
+#ifdef FEAT_CONCEAL
+    /* Conceal cursor line in previous window, unconceal in current window. */
+    if (win_valid(owp))
+	update_single_line(owp, owp->w_cursor.lnum);
+    update_single_line(curwin, curwin->w_cursor.lnum);
+#endif
 }
 
 #if defined(FEAT_PERL) || defined(PROTO)

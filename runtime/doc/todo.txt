@@ -1091,12 +1091,10 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 Before (beta) release 7.3:
 - Add fixes for 7.2 to version7.txt
 - Add hg history to version7.txt
+- Remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 Vim 7.3:
-- Soon: remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
-- Conceal feature: no update when moving to another window. (Dominique Pelle,
-  2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
 - Add different highlighting for a fold line depending on the fold level.
   Patch. (Noel Henson, 2009 Sep 13)
@@ -3954,6 +3952,10 @@ Undo:
     was changed outside of Vim.
     Would require doing a diff between the buffer text and the file and
     storing the differences.
+    Alternative: before reloading a buffer, store it somewhere.  Keep a list
+    of about 10 last reloaded buffers.
+    OR: before unloading, write a backup file with the current text, as if
+    doing ":w" twice before reloading.
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
