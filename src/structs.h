@@ -202,6 +202,8 @@ typedef struct
 # define w_p_cuc w_onebuf_opt.wo_cuc	/* 'cursorcolumn' */
     int		wo_cul;
 # define w_p_cul w_onebuf_opt.wo_cul	/* 'cursorline' */
+    char_u	*wo_cc;
+# define w_p_cc w_onebuf_opt.wo_cc	/* 'colorcolumn' */
 #endif
 #ifdef FEAT_STL_OPT
     char_u	*wo_stl;
@@ -2009,6 +2011,9 @@ struct window_S
 #ifdef FEAT_EVAL
     long_u	w_p_fde_flags;	    /* flags for 'foldexpr' */
     long_u	w_p_fdt_flags;	    /* flags for 'foldtext' */
+#endif
+#ifdef FEAT_SYN_HL
+    int		*w_p_cc_cols;	    /* array of columns to highlight or NULL */
 #endif
 
     /* transform a pointer to a "onebuf" option into a "allbuf" option */

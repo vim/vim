@@ -2163,7 +2163,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	column.  This option is useful for viewing the
 	differences between two versions of a file (see 'diff'); in diff mode,
 	inserted and deleted lines (though not characters within a line) are
-	taken into account. 
+	taken into account.
 
 
 			*'cursorcolumn'* *'cuc'* *'nocursorcolumn'* *'nocuc'*
@@ -4547,6 +4547,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+						*'colorcolumn'* *'cc'*
+'colorcolumn' 'cc'	string	(default "")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	'colorcolumn' is a comma separated list of screen columns that are
+	highlighted with ColorColumn |hl-ColorColumn|.  Useful to align
+	text.  Will make screen redrawing slower.
+	The screen column can be an absolute number, or a number preceded with
+	'+' or '-', which is added to or subtracted from 'textwidth'. >
+
+		:set cc=+1  " highlight column after 'textwidth'
+		:set cc=+1,+2,+3  " highlight three columns after 'textwidth'
+		:hi ColorColumn ctermbg=lightgrey guibg=lightgrey
+<
+	When 'textwidth' is zero then the items with '-' and '+' are not used.
+	A maximum of 256 columns are highlighted.
+
 						*'matchpairs'* *'mps'*
 'matchpairs' 'mps'	string	(default "(:),{:},[:]")
 			local to buffer
@@ -6013,7 +6032,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set showbreak=>\ 
 <	Note the backslash to escape the trailing space.  It's easier like
 	this: >
-		:let &showbreak = '+++ ' 
+		:let &showbreak = '+++ '
 <	Only printable single-cell characters are allowed, excluding <Tab> and
 	comma (in a future version the comma might be used to separate the
 	part that is shown at the end and at the start of a line).

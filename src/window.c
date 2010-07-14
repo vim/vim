@@ -1225,6 +1225,10 @@ win_init(newp, oldp, flags)
 # endif
 
     win_init_some(newp, oldp);
+
+# ifdef FEAT_SYN_HL
+    check_colorcolumn(newp);
+# endif
 }
 
 /*
@@ -4413,6 +4417,7 @@ win_free(wp, tp)
 
 #ifdef FEAT_SYN_HL
     reset_synblock(wp);  /* free independent synblock */
+    vim_free(wp->w_p_cc_cols);
 #endif
 
 #ifdef FEAT_AUTOCMD

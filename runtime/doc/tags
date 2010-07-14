@@ -101,6 +101,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'buftype'	options.txt	/*'buftype'*
 'casemap'	options.txt	/*'casemap'*
 'cb'	options.txt	/*'cb'*
+'cc'	options.txt	/*'cc'*
 'ccv'	options.txt	/*'ccv'*
 'cd'	options.txt	/*'cd'*
 'cdpath'	options.txt	/*'cdpath'*
@@ -126,6 +127,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cmp'	options.txt	/*'cmp'*
 'cms'	options.txt	/*'cms'*
 'co'	options.txt	/*'co'*
+'colorcolumn'	options.txt	/*'colorcolumn'*
 'columns'	options.txt	/*'columns'*
 'com'	options.txt	/*'com'*
 'comments'	options.txt	/*'comments'*

@@ -589,6 +589,10 @@ EXTERN int	p_magic;	/* 'magic' */
 EXTERN char_u	*p_mef;		/* 'makeef' */
 EXTERN char_u	*p_mp;		/* 'makeprg' */
 #endif
+#ifdef FEAT_SYN_HL
+EXTERN char_u   *p_cc;		/* 'colorcolumn' */
+EXTERN int      p_cc_cols[256]; /* array for 'colorcolumn' columns */
+#endif
 EXTERN long	p_mat;		/* 'matchtime' */
 #ifdef FEAT_MBYTE
 EXTERN long	p_mco;		/* 'maxcombine' */
@@ -1069,6 +1073,7 @@ enum
 #ifdef FEAT_SYN_HL
     , WV_CUC
     , WV_CUL
+    , WV_CC
 #endif
 #ifdef FEAT_STL_OPT
     , WV_STL

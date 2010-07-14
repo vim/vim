@@ -4212,6 +4212,8 @@ These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value
 of 'background'.  You can see the current settings with the ":highlight"
 command.
+							*hl-ColorColumn*
+ColorColumn	used for the columns set with 'colorcolumn'
 							*hl-Conceal*
 Conceal		placeholder characters substituted for concealed
 		text (see 'conceallevel')

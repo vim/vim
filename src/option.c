@@ -232,6 +232,7 @@
 #ifdef FEAT_SYN_HL
 # define PV_CUC		OPT_WIN(WV_CUC)
 # define PV_CUL		OPT_WIN(WV_CUL)
+# define PV_CC		OPT_WIN(WV_CC)
 #endif
 #ifdef FEAT_STL_OPT
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
@@ -466,7 +467,7 @@ struct vimoption
 #if defined(FEAT_DIFF) || defined(FEAT_FOLDING) || defined(FEAT_SPELL) \
 	|| defined(FEAT_VERTSPLIT) || defined(FEAT_CLIPBOARD) \
 	|| defined(FEAT_INS_EXPAND) || defined(FEAT_SYN_HL) || defined(FEAT_CONCEAL)
-# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine"
+# define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn"
 #else
 # define HIGHLIGHT_INIT "8:SpecialKey,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,r:Question,s:StatusLine,S:StatusLineNC,t:Title,v:Visual,w:WarningMsg,W:WildMenu,>:SignColumn,*:TabLine,#:TabLineSel,_:TabLineFill"
 #endif
@@ -774,6 +775,13 @@ static struct vimoption
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)7L, (char_u *)0L} SCRIPTID_INIT},
+    {"colorcolumn", "cc",   P_STRING|P_VI_DEF|P_COMMA|P_NODUP|P_RWIN,
+#ifdef FEAT_SYN_HL
+			    (char_u *)VAR_WIN, PV_CC,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)"", (char_u *)0L} SCRIPTID_INIT},
     {"columns",	    "co",   P_NUM|P_NODEFAULT|P_NO_MKRC|P_VI_DEF|P_RCLR,
 			    (char_u *)&Columns, PV_NONE,
 			    {(char_u *)80L, (char_u *)0L} SCRIPTID_INIT},
@@ -2526,7 +2534,7 @@ static struct vimoption
 			    (char_u *)FALSE,
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
-    {"textwidth",   "tw",   P_NUM|P_VI_DEF|P_VIM,
+    {"textwidth",   "tw",   P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 			    (char_u *)&p_tw, PV_TW,
 			    {(char_u *)0L, (char_u *)0L} SCRIPTID_INIT},
     {"thesaurus",   "tsr",  P_STRING|P_EXPAND|P_VI_DEF|P_COMMA|P_NODUP,
@@ -2975,6 +2983,9 @@ static void set_string_option_global __ARGS((int opt_idx, char_u **varp));
 static void set_string_option __ARGS((int opt_idx, char_u *value, int opt_flags));
 static char_u *did_set_string_option __ARGS((int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char_u *errbuf, int opt_flags));
 static char_u *set_chars_option __ARGS((char_u **varp));
+#ifdef FEAT_SYN_HL
+static int int_cmp __ARGS((const void *a, const void *b));
+#endif
 #ifdef FEAT_CLIPBOARD
 static char_u *check_clipboard_option __ARGS((void));
 #endif
@@ -5638,6 +5649,12 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	}
     }
 
+#ifdef FEAT_SYN_HL
+    /* 'colorcolumn' */
+    else if (varp == &curwin->w_p_cc)
+	errmsg = check_colorcolumn(curwin);
+#endif
+
 #ifdef FEAT_MULTI_LANG
     /* 'helplang' */
     else if (varp == &p_hlg)
@@ -6911,6 +6928,85 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
     return errmsg;
 }
 
+#ifdef FEAT_SYN_HL
+/*
+ * Simple int comparison function for use with qsort()
+ */
+    static int
+int_cmp(a, b)
+    const void *a;
+    const void *b;
+{
+    return *(const int *)a - *(const int *)b;
+}
+
+/*
+ * Handle setting 'colorcolumn' or 'textwidth' in window "wp".
+ * Returns error message, NULL if it's OK.
+ */
+    char_u *
+check_colorcolumn(wp)
+    win_T	*wp;
+{
+    char_u	*s;
+    int		col;
+    int		count = 0;
+    int		color_cols[256];
+    int		i;
+    int		j = 0;
+
+    for (s = wp->w_p_cc; *s != NUL && count < 255; ++s)
+    {
+	if (*s == '-' || *s == '+')
+	{
+	    /* -N and +N: add to 'textwidth' */
+	    col = (*s == '-') ? -1 : 1;
+	    ++s;
+	    if (!VIM_ISDIGIT(*s))
+		return e_invarg;
+	    col = col * getdigits(&s);
+	    if (wp->w_buffer->b_p_tw == 0)
+		continue;  /* 'textwidth' not set, skip this item */
+	    col += wp->w_buffer->b_p_tw;
+	    if (col < 0)
+		continue;
+	}
+	else if (VIM_ISDIGIT(*s))
+	    col = getdigits(&s);
+	else
+	    return e_invarg;
+	color_cols[count++] = col - 1;  /* 1-based to 0-based */
+
+	if (*s == NUL)
+	    break;
+	if (*s != ',')
+	    return e_invarg;
+    }
+
+    vim_free(wp->w_p_cc_cols);
+    if (count == 0)
+	wp->w_p_cc_cols = NULL;
+    else
+    {
+	wp->w_p_cc_cols = (int *)alloc((unsigned)sizeof(int) * (count + 1));
+	if (wp->w_p_cc_cols != NULL)
+	{
+	    /* sort the columns for faster usage on screen redraw inside
+	     * win_line() */
+	    qsort(color_cols, count, sizeof(int), int_cmp);
+
+	    for (i = 0; i < count; ++i)
+		/* skip duplicates */
+		if (j == 0 || wp->w_p_cc_cols[j - 1] != color_cols[i])
+		    wp->w_p_cc_cols[j++] = color_cols[i];
+	    wp->w_p_cc_cols[j] = -1;  /* end marker */
+	}
+    }
+
+    return NULL;  /* no error */
+}
+#endif
+
 /*
  * Handle setting 'listchars' or 'fillchars'.
  * Returns error message, NULL if it's OK.
@@ -8179,6 +8275,28 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     }
 #endif
 
+    else if (pp == &curbuf->b_p_tw)
+    {
+	if (curbuf->b_p_tw < 0)
+	{
+	    errmsg = e_positive;
+	    curbuf->b_p_tw = 0;
+	}
+#ifdef FEAT_SYN_HL
+# ifdef FEAT_WINDOWS
+	{
+	    win_T	*wp;
+	    tabpage_T	*tp;
+
+	    FOR_ALL_TAB_WINDOWS(tp, wp)
+		check_colorcolumn(wp);
+	}
+# else
+	check_colorcolumn(curwin);
+# endif
+#endif
+    }
+
     /*
      * Check the bounds for numeric options here
      */
@@ -8250,11 +8368,6 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
     {
 	errmsg = e_positive;
 	curbuf->b_p_ts = 8;
-    }
-    if (curbuf->b_p_tw < 0)
-    {
-	errmsg = e_positive;
-	curbuf->b_p_tw = 0;
     }
     if (p_tm < 0)
     {
@@ -9341,6 +9454,7 @@ get_varp(p)
 #ifdef FEAT_SYN_HL
 	case PV_CUC:	return (char_u *)&(curwin->w_p_cuc);
 	case PV_CUL:	return (char_u *)&(curwin->w_p_cul);
+	case PV_CC:	return (char_u *)&(curwin->w_p_cc);
 #endif
 #ifdef FEAT_DIFF
 	case PV_DIFF:	return (char_u *)&(curwin->w_p_diff);
@@ -9582,6 +9696,7 @@ copy_winopt(from, to)
 #ifdef FEAT_SYN_HL
     to->wo_cuc = from->wo_cuc;
     to->wo_cul = from->wo_cul;
+    to->wo_cc = vim_strsave(from->wo_cc);
 #endif
 #ifdef FEAT_DIFF
     to->wo_diff = from->wo_diff;
@@ -9636,6 +9751,9 @@ check_winopt(wop)
 #ifdef FEAT_STL_OPT
     check_string_option(&wop->wo_stl);
 #endif
+#ifdef FEAT_SYN_HL
+    check_string_option(&wop->wo_cc);
+#endif
 }
 
 /*
@@ -9660,6 +9778,9 @@ clear_winopt(wop)
 #ifdef FEAT_STL_OPT
     clear_string_option(&wop->wo_stl);
 #endif
+#ifdef FEAT_SYN_HL
+    clear_string_option(&wop->wo_cc);
+#endif
 }
 
 /*
@@ -9682,7 +9803,7 @@ buf_copy_options(buf, flags)
     int		did_isk = FALSE;
 
     /*
-     * Don't do anything of the buffer is invalid.
+     * Don't do anything if the buffer is invalid.
      */
     if (buf == NULL || !buf_valid(buf))
 	return;

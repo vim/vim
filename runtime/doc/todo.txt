@@ -1098,12 +1098,8 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Patch for vertical line at certain column position, 'guidecolumn' option.
-  (Pankaj Garg, 2009 Apr 14, aka Lone, Apr 15)
-  Update 2009 May 2, 'margincolumn'
+- 'colorcolumn': make it local to window.
   Alternative patch. (2010 Feb 2, Gregor Uhlenheuer, update 2010 Jul 12)
-  Fix by Lech Lorens, Apr 19
-  When there are multiple columns it makes sense to call it 'guidecolumn'
 - Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
   Needs a few tests.
 - Add different highlighting for a fold line depending on the fold level.

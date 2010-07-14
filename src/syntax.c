@@ -6531,6 +6531,8 @@ static char *(highlight_init_light[]) =
 	     "CursorColumn term=reverse ctermbg=LightGrey guibg=Grey90"),
 	CENT("CursorLine term=underline cterm=underline",
 	     "CursorLine term=underline cterm=underline guibg=Grey90"),
+	CENT("ColorColumn term=reverse ctermbg=LightRed",
+	     "ColorColumn term=reverse ctermbg=LightRed guibg=LightRed"),
 #endif
 #ifdef FEAT_CONCEAL
 	CENT("Conceal ctermbg=DarkGrey ctermfg=LightGrey",
@@ -6615,6 +6617,8 @@ static char *(highlight_init_dark[]) =
 	     "CursorColumn term=reverse ctermbg=DarkGrey guibg=Grey40"),
 	CENT("CursorLine term=underline cterm=underline",
 	     "CursorLine term=underline cterm=underline guibg=Grey40"),
+	CENT("ColorColumn term=reverse ctermbg=DarkRed",
+	     "ColorColumn term=reverse ctermbg=DarkRed guibg=DarkRed"),
 #endif
 #ifdef FEAT_AUTOCMD
 	CENT("MatchParen term=reverse ctermbg=DarkCyan",
