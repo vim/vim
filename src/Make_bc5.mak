@@ -35,6 +35,9 @@
 # LINK		name of the linker ($(BOR)\bin\ilink if OSTYPE is DOS16,
 #		$(BOR)\bin\ilink32 otherwise)
 # GUI		no or yes: set to yes if you want the GUI version (yes)
+# LUA     define to path to Lua dir to get Lua support (not defined)
+#   LUA_VER	  define to version of Lua being used (51)
+#   DYNAMIC_LUA  no or yes: set to yes to load the Lua DLL dynamically (no)
 # PERL		define to path to Perl dir to get Perl support (not defined)
 #   PERL_VER	  define to version of Perl being used (56)
 #   DYNAMIC_PERL  no or yes: set to yes to load the Perl DLL dynamically (no)
@@ -129,6 +132,9 @@ CSCOPE = yes
 NETBEANS = yes
 !endif
 
+### LUA: uncomment this line if you want lua support in vim
+# LUA=c:\lua
+
 ### PERL: uncomment this line if you want perl support in vim
 # PERL=c:\perl
 
@@ -199,6 +205,7 @@ ALIGN = 4
 #   Incompatible when calling external functions (like MSVC-compiled DLLs), so
 #   don't use FASTCALL when linking with external libs.
 !if ("$(FASTCALL)"=="") && \
+	("$(LUA)"=="") && \
 	("$(PYTHON)"=="") && \
 	("$(PERL)"=="") && \
 	("$(TCL)"=="") && \
@@ -291,6 +298,18 @@ LIB = $(BOR)\lib
 INCLUDE = $(BOR)\include;.;proto
 DEFINES = -DFEAT_$(FEATURES) -DWIN32 -DHAVE_PATHDEF \
 	  -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+
+!ifdef LUA
+INTERP_DEFINES = $(INTERP_DEFINES) -DFEAT_LUA
+INCLUDE = $(LUA)\include;$(INCLUDE)
+!  ifndef LUA_VER
+LUA_VER = 51
+!  endif
+!  if ("$(DYNAMIC_LUA)" == "yes")
+INTERP_DEFINES = $(INTERP_DEFINES) -DDYNAMIC_LUA -DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
+LUA_LIB_FLAG = /nodefaultlib:
+!  endif
+!endif
 
 !ifdef PERL
 INTERP_DEFINES = $(INTERP_DEFINES) -DFEAT_PERL
@@ -584,6 +603,11 @@ vimobj = $(vimobj) \
 	$(OBJDIR)\if_ole.obj
 !endif
 
+!ifdef LUA
+vimobj = $(vimobj) \
+    $(OBJDIR)\if_lua.obj
+!endif
+
 !ifdef PERL
 vimobj = $(vimobj) \
     $(OBJDIR)\if_perl.obj
@@ -692,6 +716,12 @@ MSG = $(MSG) NETBEANS
 !ifdef XPM
 MSG = $(MSG) XPM
 !endif
+!ifdef LUA
+MSG = $(MSG) LUA
+! if "$(DYNAMIC_LUA)" == "yes"
+MSG = $(MSG)(dynamic)
+! endif
+!endif
 !ifdef PERL
 MSG = $(MSG) PERL
 ! if "$(DYNAMIC_PERL)" == "yes"
@@ -788,6 +818,9 @@ clean:
 	-@del *.ilf
 	-@del *.ils
 	-@del *.tds
+!ifdef LUA
+	-@del lua.lib
+!endif
 !ifdef PERL
 	-@del perl.lib
 !endif
@@ -825,6 +858,9 @@ $(DLLTARGET): $(OBJDIR) $(vimdllobj)
 !endif
 !if ($(OSTYPE)==WIN32)
 	import32.lib+
+!ifdef LUA
+	$(LUA_LIB_FLAG)lua.lib+
+!endif
 !ifdef PERL
 	$(PERL_LIB_FLAG)perl.lib+
 !endif
@@ -874,6 +910,9 @@ $(TARGET): $(OBJDIR) $(vimobj) $(OBJDIR)\$(RESFILE)
 	ole2w32.lib +
 !endif
 	import32.lib+
+!ifdef LUA
+	$(LUA_LIB_FLAG)lua.lib+
+!endif
 !ifdef PERL
 	$(PERL_LIB_FLAG)perl.lib+
 !endif
@@ -911,6 +950,9 @@ $(OBJDIR)\ex_docmd.obj:  ex_docmd.c ex_cmds.h
 $(OBJDIR)\ex_eval.obj:  ex_eval.c ex_cmds.h
 
 $(OBJDIR)\if_ole.obj: if_ole.cpp
+
+$(OBJDIR)\if_lua.obj: if_lua.c lua.lib
+	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_lua.c
 
 $(OBJDIR)\if_perl.obj: if_perl.c perl.lib
 	$(CC) $(CCARG) $(CC1) $(CC2)$@ -pc if_perl.c
@@ -965,6 +1007,9 @@ char_u *all_lflags = (char_u *)"$(LINK:\=\\) $(LFLAGS:\=\\)";
 char_u *compiled_user = (char_u *)"$(USERNAME)";
 char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";
 | auto\pathdef.c
+
+lua.lib: $(LUA)\lib\lua$(LUA_VER).lib
+	coff2omf $(LUA)\lib\lua$(LUA_VER).lib $@
 
 perl.lib: $(PERL)\lib\CORE\perl$(PERL_VER).lib
 	coff2omf $(PERL)\lib\CORE\perl$(PERL_VER).lib $@

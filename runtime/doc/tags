@@ -1165,6 +1165,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +lispindent	various.txt	/*+lispindent*
 +listcmds	various.txt	/*+listcmds*
 +localmap	various.txt	/*+localmap*
++lua	various.txt	/*+lua*
++lua/dyn	various.txt	/*+lua\/dyn*
 +menu	various.txt	/*+menu*
 +mksession	various.txt	/*+mksession*
 +modify_fname	various.txt	/*+modify_fname*
@@ -2365,6 +2367,9 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :lt	tagsrch.txt	/*:lt*
 :ltag	tagsrch.txt	/*:ltag*
 :lu	map.txt	/*:lu*
+:lua	if_lua.txt	/*:lua*
+:luado	if_lua.txt	/*:luado*
+:luafile	if_lua.txt	/*:luafile*
 :lunmap	map.txt	/*:lunmap*
 :lv	quickfix.txt	/*:lv*
 :lvimgrep	quickfix.txt	/*:lvimgrep*
@@ -4280,6 +4285,7 @@ L	motion.txt	/*L*
 Linux-backspace	options.txt	/*Linux-backspace*
 List	eval.txt	/*List*
 Lists	eval.txt	/*Lists*
+Lua	if_lua.txt	/*Lua*
 M	motion.txt	/*M*
 MDI	starting.txt	/*MDI*
 MS-DOS	os_msdos.txt	/*MS-DOS*
@@ -6055,6 +6061,7 @@ hit-enter-prompt	message.txt	/*hit-enter-prompt*
 hit-return	message.txt	/*hit-return*
 hitest.vim	syntax.txt	/*hitest.vim*
 hjkl	usr_02.txt	/*hjkl*
+hl-ColorColumn	syntax.txt	/*hl-ColorColumn*
 hl-Conceal	syntax.txt	/*hl-Conceal*
 hl-Cursor	syntax.txt	/*hl-Cursor*
 hl-CursorColumn	syntax.txt	/*hl-CursorColumn*
@@ -6248,6 +6255,7 @@ ident-search	tips.txt	/*ident-search*
 idl-syntax	syntax.txt	/*idl-syntax*
 idl.vim	syntax.txt	/*idl.vim*
 if_cscop.txt	if_cscop.txt	/*if_cscop.txt*
+if_lua.txt	if_lua.txt	/*if_lua.txt*
 if_mzsch.txt	if_mzsch.txt	/*if_mzsch.txt*
 if_ole.txt	if_ole.txt	/*if_ole.txt*
 if_perl.txt	if_perl.txt	/*if_perl.txt*
@@ -6424,6 +6432,11 @@ log10()	eval.txt	/*log10()*
 long-lines	version5.txt	/*long-lines*
 lowercase	change.txt	/*lowercase*
 lpc.vim	syntax.txt	/*lpc.vim*
+lua	if_lua.txt	/*lua*
+lua-buffer	if_lua.txt	/*lua-buffer*
+lua-commands	if_lua.txt	/*lua-commands*
+lua-vim	if_lua.txt	/*lua-vim*
+lua-window	if_lua.txt	/*lua-window*
 lua.vim	syntax.txt	/*lua.vim*
 m	motion.txt	/*m*
 m'	motion.txt	/*m'*

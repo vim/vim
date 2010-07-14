@@ -24,6 +24,9 @@
 #   MZSCHEME_VER      define to version of MzScheme being used (209_000)
 #   DYNAMIC_MZSCHEME  no or yes: use yes to load the MzScheme DLLs dynamically (yes)
 #   MZSCHEME_DLLS     path to MzScheme DLLs (libmzgc and libmzsch), for "static" build.
+# LUA	define to path to Lua dir to get Lua support (not defined)
+#   LUA_VER	    define to version of Lua being used (51)
+#   DYNAMIC_LUA  no or yes: use yes to load the Lua DLL dynamically (yes)
 # GETTEXT	no or yes: set to yes for dynamic gettext support (yes)
 # ICONV		no or yes: set to yes for dynamic iconv support (yes)
 # MBYTE		no or yes: set to yes to include multibyte support (yes)
@@ -269,6 +272,30 @@ DEFINES += -DDYNAMIC_TCL -DDYNAMIC_TCL_DLL=\"tcl$(TCL_VER).dll\"
 EXTRA_LIBS += $(TCL)/lib/tclstub$(TCL_VER).lib
 else
 EXTRA_LIBS += $(TCL)/lib/tcl$(TCL_VER).lib
+endif
+endif
+
+##############################
+# DYNAMIC_LUA=yes works.
+# DYNAMIC_LUA=no does not (unresolved externals on link).
+##############################
+ifdef LUA
+DEFINES += -DFEAT_LUA
+INCLUDES += -I$(LUA)/include
+EXTRA_OBJS += $(OUTDIR)/if_lua.o
+
+ifndef DYNAMIC_LUA
+DYNAMIC_LUA = yes
+endif
+
+ifndef LUA_VER
+LUA_VER = 51
+endif
+
+ifeq (yes, $(DYNAMIC_LUA))
+DEFINES += -DDYNAMIC_LUA -DDYNAMIC_LUA_DLL=\"lua$(LUA_VER).dll\"
+else
+EXTRA_LIBS += $(LUA)/lib/lua$(LUA_VER).lib
 endif
 endif
 

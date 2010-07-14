@@ -210,6 +210,7 @@ SRC_UNIX =	\
 SRC_DOS_UNIX =	\
 		src/if_cscope.c \
 		src/if_cscope.h \
+		src/if_lua.c \
 		src/if_mzsch.c \
 		src/if_mzsch.h \
 		src/if_perl.xs \
@@ -219,6 +220,7 @@ SRC_DOS_UNIX =	\
 		src/if_sniff.h \
 		src/if_tcl.c \
 		src/proto/if_cscope.pro \
+		src/proto/if_lua.pro \
 		src/proto/if_mzsch.pro \
 		src/proto/if_perl.pro \
 		src/proto/if_perlsfio.pro \

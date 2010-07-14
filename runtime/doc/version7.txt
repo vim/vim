@@ -7172,6 +7172,9 @@ executed.
 Removed support for GTK 1.  It was no longer maintained and required a lot of
 #ifdefs in the source code.  GTK 2 should be available for every system.
 
+It is no longer allowed to set the 'encoding' option from a modeline.  It
+would corrupt the text.
+
 
 Added							*added-7.3*
 -----
@@ -7188,6 +7191,9 @@ file.
 
 Added the |+conceal| feature.  (Vince Negri)
 
+Added the 'colorcolumn' option: highlight one or more columns in a window.
+E.g. to highlight the column after 'textwidth'. (partly by Gregor Uhlenheuer)
+
 Added support for NetBeans in a terminal.  Added |:nbstart| and |:nbclose|.
 (Xavier de Gaye)
 
@@ -7195,6 +7201,9 @@ More floating point functions: acos(), asin(), atan2(), cosh(), exp(), fmod(),
 log(), sinh(), tan(), tanh().  (Bill McCarthy)
 
 gettabvar() and settabvar() functions. (Yegappan Lakshmanan)
+
+Added the |Lua| interface.
+
 
 New syntax files:
 TODO

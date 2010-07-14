@@ -1107,9 +1107,6 @@ Patches to possibly include:
 - Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
   Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
   Need another name, "J" is now used for Javascript.
--   Add Lua interface? (Wolfgang Oertl) patch by Luis Carvalho, 2008 Sep 5
-	Patch for Make_ming.mak from Paul Moore (2008 Sep 1)
-      http://code.google.com/p/vim-iflua/  Download  vim72-lua-0.7.patch.gz
 Needs some work:
 - Have a look at patch to enable screen access from Python. (Marko Mahnic,
   2010 Apr 12)

@@ -1417,7 +1417,8 @@ EXTERN char_u e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
 #if defined(DYNAMIC_PERL) || defined(DYNAMIC_PYTHON) || defined(DYNAMIC_RUBY) \
 	|| defined(DYNAMIC_TCL) || defined(DYNAMIC_ICONV) \
-	|| defined(DYNAMIC_GETTEXT) || defined(DYNAMIC_MZSCHEME)
+	|| defined(DYNAMIC_GETTEXT) || defined(DYNAMIC_MZSCHEME) \
+        || defined(DYNAMIC_LUA)
 EXTERN char_u e_loadlib[]	INIT(= N_("E370: Could not load library %s"));
 EXTERN char_u e_loadfunc[]	INIT(= N_("E448: Could not load library function %s"));
 #endif

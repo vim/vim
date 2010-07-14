@@ -410,6 +410,81 @@ else
   AC_MSG_RESULT(yes)
 fi
 
+dnl Check for Lua feature.
+AC_MSG_CHECKING(--enable-luainterp argument)
+AC_ARG_ENABLE(luainterp,
+	[  --enable-luainterp      Include Lua interpreter.], ,
+	[enable_luainterp="no"])
+AC_MSG_RESULT($enable_luainterp)
+
+if test "$enable_luainterp" = "yes"; then
+  dnl -- find the lua executable
+  AC_SUBST(vi_cv_path_lua)
+
+  AC_MSG_CHECKING(--with-lua-prefix argument)
+  AC_ARG_WITH(lua_prefix,
+	[  --with-lua-prefix=PFX   Prefix where Lua is installed.],
+	with_lua_prefix="$withval"; AC_MSG_RESULT($with_lua_prefix),
+	with_lua_prefix="";AC_MSG_RESULT("no"))
+
+  if test "X$with_lua_prefix" != "X"; then
+       vi_cv_path_lua_pfx="$with_lua_prefix"
+  else
+    AC_MSG_CHECKING(LUA_PREFIX environment var)
+    if test "X$LUA_PREFIX" != "X"; then
+	AC_MSG_RESULT("$LUA_PREFIX")
+	vi_cv_path_lua_pfx="$LUA_PREFIX"
+    else
+	AC_MSG_RESULT("not set")
+    fi
+  fi
+
+  LUA_INC=
+  if test "X$vi_cv_path_lua_pfx" != "X"; then
+    AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
+    if test -f $vi_cv_path_lua_pfx/include/lua.h; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+      dnl -- try to find Lua executable
+      AC_PATH_PROG(vi_cv_path_lua, lua)
+      if test "X$vi_cv_path_lua" != "X"; then
+        dnl -- find Lua version
+        AC_CACHE_CHECK(Lua version, vi_cv_version_lua,
+        [ vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION:sub(5,7))"` ])
+        AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
+        if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
+          AC_MSG_RESULT("yes")
+          LUA_INC=/lua$vi_cv_version_lua
+        else
+          AC_MSG_RESULT("no")
+          vi_cv_path_lua_pfx=
+        fi
+      fi
+    fi
+  fi
+
+  if test "X$vi_cv_path_lua_pfx" != "X"; then
+    if test "X$vi_cv_version_lua" != "X"; then
+      dnl Test alternate location using version
+      LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua$vi_cv_version_lua"
+    else
+      LUA_LIBS="-L${vi_cv_path_lua_pfx}/lib -llua"
+    fi
+    LUA_CFLAGS="-I${vi_cv_path_lua_pfx}/include${LUA_INC}"
+    LUA_SRC="if_lua.c"
+    LUA_OBJ="objects/if_lua.o"
+    LUA_PRO="if_lua.pro"
+    AC_DEFINE(FEAT_LUA)
+  fi
+  AC_SUBST(LUA_SRC)
+  AC_SUBST(LUA_OBJ)
+  AC_SUBST(LUA_PRO)
+  AC_SUBST(LUA_LIBS)
+  AC_SUBST(LUA_CFLAGS)
+fi
+
+
 dnl Check for MzScheme feature.
 AC_MSG_CHECKING(--enable-mzschemeinterp argument)
 AC_ARG_ENABLE(mzschemeinterp,

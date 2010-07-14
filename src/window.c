@@ -4370,6 +4370,10 @@ win_free(wp, tp)
     block_autocmds();
 #endif
 
+#ifdef FEAT_LUA
+    lua_window_free(wp);
+#endif
+
 #ifdef FEAT_MZSCHEME
     mzscheme_window_free(wp);
 #endif

@@ -158,6 +158,7 @@ GUI ~
 
 Interfaces ~
 |if_cscop.txt|	using Cscope with Vim
+|if_lua.txt|	Lua interface
 |if_mzsch.txt|	MzScheme interface
 |if_perl.txt|	Perl interface
 |if_pyth.txt|	Python interface

@@ -5912,7 +5912,7 @@ list_equal(l1, l2, ic)
 }
 
 #if defined(FEAT_RUBY) || defined(FEAT_PYTHON) || defined(FEAT_MZSCHEME) \
-	|| defined(PROTO)
+	|| defined(FEAT_LUA) || defined(PROTO)
 /*
  * Return the dictitem that an entry in a hashtable points to.
  */
@@ -11912,6 +11912,11 @@ f_has(argvars, rettv)
 #ifdef FEAT_LOCALMAP
 	"localmap",
 #endif
+#ifdef FEAT_LUA
+# ifndef DYNAMIC_LUA
+	"lua",
+# endif
+#endif
 #ifdef FEAT_MENU
 	"menu",
 #endif
@@ -12166,6 +12171,10 @@ f_has(argvars, rettv)
 #if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
 	else if (STRICMP(name, "iconv") == 0)
 	    n = iconv_enabled(FALSE);
+#endif
+#ifdef DYNAMIC_LUA
+	else if (STRICMP(name, "lua") == 0)
+	    n = lua_enabled(FALSE);
 #endif
 #ifdef DYNAMIC_MZSCHEME
 	else if (STRICMP(name, "mzscheme") == 0)

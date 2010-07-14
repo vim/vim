@@ -314,6 +314,15 @@ static char *(features[]) =
 #else
 	"-localmap",
 #endif
+#ifdef FEAT_LUA
+# ifdef DYNAMIC_LUA
+	"+lua/dyn",
+# else
+	"+lua",
+# endif
+#else
+	"-lua",
+#endif
 #ifdef FEAT_MENU
 	"+menu",
 #else

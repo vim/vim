@@ -316,6 +316,9 @@
 /* Define if you want huge features. */
 #undef FEAT_HUGE
 
+/* Define if you want to include the Lua interpreter. */
+#undef FEAT_LUA
+
 /* Define if you want to include the MzScheme interpreter. */
 #undef FEAT_MZSCHEME
 

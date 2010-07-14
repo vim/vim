@@ -595,6 +595,9 @@ free_buffer(buf)
     buf_T	*buf;
 {
     free_buffer_stuff(buf, TRUE);
+#ifdef FEAT_LUA
+    lua_buffer_free(buf);
+#endif
 #ifdef FEAT_MZSCHEME
     mzscheme_buffer_free(buf);
 #endif

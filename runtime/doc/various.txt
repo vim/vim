@@ -338,6 +338,8 @@ N  *+lispindent*	|'lisp'|
 N  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
 N  *+localmap*		Support for mappings local to a buffer |:map-local|
+m  *+lua*		|Lua| interface
+m  *+lua/dyn*		|Lua| interface |/dyn|
 N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
 N  *+modify_fname*	|filename-modifiers|
