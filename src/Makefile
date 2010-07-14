@@ -2511,8 +2511,8 @@ objects/os_beos.o: os_beos.c
 objects/os_qnx.o: os_qnx.c
 	$(CCC) -o $@ os_qnx.c
 
-objects/os_macosx.o: os_macosx.c
-	$(CCC) -o $@ os_macosx.c
+objects/os_macosx.o: os_macosx.m
+	$(CCC) -o $@ os_macosx.m
 
 objects/os_mac_conv.o: os_mac_conv.c
 	$(CCC) -o $@ os_mac_conv.c

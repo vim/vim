@@ -37,7 +37,8 @@
 # USEDLL	no or yes: set to yes to use the Runtime library DLL (no)
 #		For USEDLL=yes the cygwin1.dll is required to run Vim.
 #		"no" does not work with latest version of Cygwin, use
-#		Make_ming.mak instead.  Or set CC to gcc-3.
+#		Make_ming.mak instead.  Or set CC to gcc-3 and add
+#		-L/lib/w32api to EXTRA_LIBS.
 # POSTSCRIPT	no or yes: set to yes for PostScript printing (no)
 # FEATURES	TINY, SMALL, NORMAL, BIG or HUGE (BIG)
 # WINVER	Lowest Win32 version to support.  (0x0400)

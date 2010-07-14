@@ -4004,7 +4004,7 @@ fi
 $as_echo "no" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if Darwin files are there" >&5
 $as_echo_n "checking if Darwin files are there... " >&6; }
-    if test -f os_macosx.c; then
+    if test -f os_macosx.m; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
     else
@@ -4160,14 +4160,9 @@ rm -f core conftest.err conftest.$ac_objext \
 
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
-    OS_EXTRA_SRC="os_macosx.c os_mac_conv.c";
+    OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
         CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
-    if test "x$MACARCH" = "xboth"; then
-      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
-    else
-      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
-    fi
 
                 # On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
@@ -7025,8 +7020,9 @@ $as_echo "no GUI support" >&6; }
 		SKIP_CARBON=YES ;;
     yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
 $as_echo "yes - automatic GUI support" >&6; } ;;
-    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - automatic GUI support" >&5
-$as_echo "auto - automatic GUI support" >&6; } ;;
+    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - Carbon GUI is outdated - disable GUI support" >&5
+$as_echo "auto - Carbon GUI is outdated - disable GUI support" >&6; }
+		SKIP_CARBON=YES ;;
     carbon)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Carbon GUI support" >&5
 $as_echo "Carbon GUI support" >&6; } ;;
     *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
@@ -7182,6 +7178,12 @@ $as_echo "yes" >&6; };
   GUITYPE=CARBONGUI
   if test "$VIMNAME" = "vim"; then
     VIMNAME=Vim
+  fi
+
+  if test "x$MACARCH" = "xboth"; then
+    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
+  else
+    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
   fi
 
     if test x$prefix = xNONE; then
@@ -11774,13 +11776,11 @@ if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOSX" = "xyes" && test "x$CARBON" = "xyes" \
-	&& test "x$GUITYPE" != "xCARBONGUI"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need -framework Carbon" >&5
-$as_echo_n "checking whether we need -framework Carbon... " >&6; }
-    if test "x$enable_multibyte" = "xyes" || test "x$features" = "xbig" \
-	|| test "x$features" = "xhuge"; then
-    LIBS="$LIBS -framework Carbon"
+if test "x$MACOSX" = "xyes"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need -framework Cocoa" >&5
+$as_echo_n "checking whether we need -framework Cocoa... " >&6; }
+      if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
+    LIBS=$"$LIBS -framework Cocoa"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   else
@@ -11788,7 +11788,7 @@ $as_echo "yes" >&6; }
 $as_echo "no" >&6; }
   fi
 fi
-if test "x$MACARCH" = "xboth"; then
+if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then
   LDFLAGS="$LDFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 

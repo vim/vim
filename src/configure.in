@@ -101,7 +101,7 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
   if test "$enable_darwin" = "yes"; then
     AC_MSG_RESULT(no)
     AC_MSG_CHECKING(if Darwin files are there)
-    if test -f os_macosx.c; then
+    if test -f os_macosx.m; then
       AC_MSG_RESULT(yes)
     else
       AC_MSG_RESULT([no, Darwin support disabled])
@@ -168,15 +168,10 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
 
   if test "$enable_darwin" = "yes"; then
     MACOSX=yes
-    OS_EXTRA_SRC="os_macosx.c os_mac_conv.c";
+    OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
     dnl TODO: use -arch i386 on Intel machines
     CPPFLAGS="$CPPFLAGS -DMACOS_X_UNIX -no-cpp-precomp"
-    if test "x$MACARCH" = "xboth"; then
-      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
-    else
-      CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
-    fi
 
     dnl If Carbon is found, assume we don't want X11
     dnl unless it was specifically asked for (--with-x)
@@ -1325,7 +1320,8 @@ elif test "x$MACOSX" = "xyes" -a "x$with_x" = "xno" ; then
     no)		AC_MSG_RESULT(no GUI support)
 		SKIP_CARBON=YES ;;
     yes|"")	AC_MSG_RESULT(yes - automatic GUI support) ;;
-    auto)	AC_MSG_RESULT(auto - automatic GUI support) ;;
+    auto)	AC_MSG_RESULT(auto - Carbon GUI is outdated - disable GUI support)
+		SKIP_CARBON=YES ;;
     carbon)	AC_MSG_RESULT(Carbon GUI support) ;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
 		SKIP_CARBON=YES ;;
@@ -1434,6 +1430,12 @@ if test "x$MACOSX" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   GUITYPE=CARBONGUI
   if test "$VIMNAME" = "vim"; then
     VIMNAME=Vim
+  fi
+
+  if test "x$MACARCH" = "xboth"; then
+    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
+  else
+    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
   fi
 
   dnl Default install directory is not /usr/local
@@ -3109,19 +3111,18 @@ if test "x$MACOSX" = "xyes" -a -n "$PERL"; then
   fi
 fi
 
-if test "x$MACOSX" = "xyes" && test "x$CARBON" = "xyes" \
-	&& test "x$GUITYPE" != "xCARBONGUI"; then
-  AC_MSG_CHECKING(whether we need -framework Carbon)
-  dnl check for MACOSX without Carbon GUI, but with FEAT_MBYTE
-  if test "x$enable_multibyte" = "xyes" || test "x$features" = "xbig" \
-	|| test "x$features" = "xhuge"; then
-    LIBS="$LIBS -framework Carbon"
+if test "x$MACOSX" = "xyes"; then
+  AC_MSG_CHECKING(whether we need -framework Cocoa)
+  dnl Cocoa is needed with FEAT_CLIPBOARD or FEAT_MBYTE (the former is
+  dnl disabled during tiny build)
+  if test "x$features" != "xtiny" || test "x$enable_multibyte" = "xyes"; then
+    LIBS=$"$LIBS -framework Cocoa"
     AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
   fi
 fi
-if test "x$MACARCH" = "xboth"; then
+if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then
   LDFLAGS="$LDFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 

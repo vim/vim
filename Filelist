@@ -373,7 +373,7 @@ SRC_MAC =	\
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
-		src/os_macosx.c \
+		src/os_macosx.m \
 		src/proto/gui_mac.pro \
 		src/proto/os_mac_conv.pro \
 

@@ -93,6 +93,9 @@
 # ifndef HAVE_CONFIG_H
 #  define UNIX
 # endif
+# ifndef FEAT_CLIPBOARD
+#  define FEAT_CLIPBOARD
+# endif
 #endif
 #if defined(MACOS_X) || defined(MACOS_CLASSIC)
 #  define MACOS

@@ -22,7 +22,7 @@
  * Include the Mac header files, unless also compiling with X11 (the header
  * files have many conflicts).
  */
-#ifndef FEAT_X11
+#ifdef FEAT_GUI_MAC
 # include <Quickdraw.h>	    /* Apple calls it QuickDraw.h... */
 # include <ToolUtils.h>
 # include <LowMem.h>
