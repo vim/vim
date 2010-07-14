@@ -941,7 +941,7 @@ _OnFindRepl(void)
     if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
 			&& enc_codepage >= 0 && (int)GetACP() != enc_codepage)
     {
-        findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
+	findrep_wtoa(&s_findrep_struct, &s_findrep_struct_w);
     }
 # endif
 
@@ -1999,7 +1999,7 @@ gui_mch_wait_for_chars(int wtime)
 
 #ifdef FEAT_NETBEANS_INTG
 	/* Process the queued netbeans messages. */
-        netbeans_parse_messages();
+	netbeans_parse_messages();
 #endif
 
 	/*
@@ -2619,7 +2619,7 @@ gui_mch_find_dialog(exarg_T *eap)
 	    if (os_version.dwPlatformId == VER_PLATFORM_WIN32_NT
 		    && enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	    {
-	        findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
+		findrep_atow(&s_findrep_struct_w, &s_findrep_struct);
 		s_findrep_hwnd = FindTextW(
 					(LPFINDREPLACEW) &s_findrep_struct_w);
 	    }

@@ -808,7 +808,7 @@ delete_first_msg()
     p = first_msg_hist;
     first_msg_hist = p->next;
     if (first_msg_hist == NULL)
-        last_msg_hist = NULL;  /* history is empty */
+	last_msg_hist = NULL;  /* history is empty */
     vim_free(p->msg);
     vim_free(p);
     --msg_hist_len;

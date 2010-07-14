@@ -1370,10 +1370,10 @@ reg_create_key(
 
     *phKey = NULL;
     return RegCreateKeyEx(
-                root, subkey,
-                0, NULL, REG_OPTION_NON_VOLATILE,
-                KEY_WOW64_64KEY | KEY_WRITE,
-                NULL, phKey, &disp);
+		root, subkey,
+		0, NULL, REG_OPTION_NON_VOLATILE,
+		KEY_WOW64_64KEY | KEY_WRITE,
+		NULL, phKey, &disp);
 }
 
     static LONG
@@ -1398,8 +1398,8 @@ reg_create_key_and_value(
 
     if (ERROR_SUCCESS == lRet)
     {
-        lRet = reg_set_string_value(hKey, value_name, data);
-        RegCloseKey(hKey);
+	lRet = reg_set_string_value(hKey, value_name, data);
+	RegCloseKey(hKey);
     }
     return lRet;
 }
@@ -1419,13 +1419,13 @@ register_inproc_server(
     lRet = reg_create_key_and_value(hRootKey, subkey, NULL, extname);
     if (ERROR_SUCCESS == lRet)
     {
-        sprintf(subkey, "CLSID\\%s\\InProcServer32", clsid);
-        lRet = reg_create_key_and_value(hRootKey, subkey, NULL, module);
-        if (ERROR_SUCCESS == lRet)
-        {
-            lRet = reg_create_key_and_value(hRootKey, subkey,
+	sprintf(subkey, "CLSID\\%s\\InProcServer32", clsid);
+	lRet = reg_create_key_and_value(hRootKey, subkey, NULL, module);
+	if (ERROR_SUCCESS == lRet)
+	{
+	    lRet = reg_create_key_and_value(hRootKey, subkey,
 					   "ThreadingModel", threading_model);
-        }
+	}
     }
     return lRet;
 }
@@ -1438,27 +1438,27 @@ register_shellex(
     const char *exe_path)
 {
     LONG lRet = reg_create_key_and_value(
-            hRootKey,
-            "*\\shellex\\ContextMenuHandlers\\gvim",
-            NULL,
-            clsid);
+	    hRootKey,
+	    "*\\shellex\\ContextMenuHandlers\\gvim",
+	    NULL,
+	    clsid);
 
     if (ERROR_SUCCESS == lRet)
     {
-        lRet = reg_create_key_and_value(
-                HKEY_LOCAL_MACHINE,
-                "Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
-                clsid,
-                name);
+	lRet = reg_create_key_and_value(
+		HKEY_LOCAL_MACHINE,
+		"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved",
+		clsid,
+		name);
 
-        if (ERROR_SUCCESS == lRet)
-        {
-            lRet = reg_create_key_and_value(
-                    HKEY_LOCAL_MACHINE,
-                    "Software\\Vim\\Gvim",
-                    "path",
-                    exe_path);
-        }
+	if (ERROR_SUCCESS == lRet)
+	{
+	    lRet = reg_create_key_and_value(
+		    HKEY_LOCAL_MACHINE,
+		    "Software\\Vim\\Gvim",
+		    "path",
+		    exe_path);
+	}
     }
     return lRet;
 }
@@ -1469,25 +1469,25 @@ register_openwith(
     const char *exe_path)
 {
     LONG lRet = reg_create_key_and_value(
-            hRootKey,
-            "Applications\\gvim.exe\\shell\\edit\\command",
-            NULL,
-            exe_path);
+	    hRootKey,
+	    "Applications\\gvim.exe\\shell\\edit\\command",
+	    NULL,
+	    exe_path);
 
     if (ERROR_SUCCESS == lRet)
     {
-        int i;
-        static const char *openwith[] = {
-	        ".htm\\OpenWithList\\gvim.exe",
-	        ".vim\\OpenWithList\\gvim.exe",
-	        "*\\OpenWithList\\gvim.exe",
-        };
+	int i;
+	static const char *openwith[] = {
+		".htm\\OpenWithList\\gvim.exe",
+		".vim\\OpenWithList\\gvim.exe",
+		"*\\OpenWithList\\gvim.exe",
+	};
 
-        for (i = 0; ERROR_SUCCESS == lRet
+	for (i = 0; ERROR_SUCCESS == lRet
 			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
-        {
-            lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "");
-        }
+	{
+	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "");
+	}
     }
 
     return lRet;
@@ -1504,7 +1504,7 @@ register_uninstall(
 						 "DisplayName", display_name);
 
     if (ERROR_SUCCESS == lRet)
-        lRet = reg_create_key_and_value(hRootKey, appname,
+	lRet = reg_create_key_and_value(hRootKey, appname,
 					 "UninstallString", uninstall_string);
     return lRet;
 }
@@ -1521,47 +1521,47 @@ register_uninstall(
 install_registry(void)
 {
 #ifdef WIN3264
-    LONG        lRet = ERROR_SUCCESS;
+    LONG	lRet = ERROR_SUCCESS;
     const char	*vim_ext_ThreadingModel = "Apartment";
     const char	*vim_ext_name = "Vim Shell Extension";
     const char	*vim_ext_clsid = "{51EEE242-AD87-11d3-9C1E-0090278BBD99}";
     char	buf[BUFSIZE];
     char	vim_exe_path[BUFSIZE];
-    char        display_name[BUFSIZE];
-    char        uninstall_string[BUFSIZE];
+    char	display_name[BUFSIZE];
+    char	uninstall_string[BUFSIZE];
 
     sprintf(vim_exe_path, "%s\\gvim.exe", installdir);
 
     if (install_popup)
     {
-        char	    bufg[BUFSIZE];
-        struct stat st;
+	char	    bufg[BUFSIZE];
+	struct stat st;
 
-        if (stat("gvimext.dll", &st) >= 0)
-            sprintf(bufg, "%s\\gvimext.dll", installdir);
-        else
-            /* gvimext.dll is in gvimext subdir */
-            sprintf(bufg, "%s\\gvimext\\gvimext.dll", installdir);
+	if (stat("gvimext.dll", &st) >= 0)
+	    sprintf(bufg, "%s\\gvimext.dll", installdir);
+	else
+	    /* gvimext.dll is in gvimext subdir */
+	    sprintf(bufg, "%s\\gvimext\\gvimext.dll", installdir);
 
-        printf("Creating \"Edit with Vim\" popup menu entry\n");
+	printf("Creating \"Edit with Vim\" popup menu entry\n");
 
-        lRet = register_inproc_server(
-            HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name,
+	lRet = register_inproc_server(
+	    HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name,
 						bufg, vim_ext_ThreadingModel);
-        if (ERROR_SUCCESS != lRet)
+	if (ERROR_SUCCESS != lRet)
 	    return FAIL;
-        lRet = register_shellex(
-            HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name, vim_exe_path);
-        if (ERROR_SUCCESS != lRet)
+	lRet = register_shellex(
+	    HKEY_CLASSES_ROOT, vim_ext_clsid, vim_ext_name, vim_exe_path);
+	if (ERROR_SUCCESS != lRet)
 	    return FAIL;
     }
 
     if (install_openwith)
     {
-        printf("Creating \"Open with ...\" list entry\n");
+	printf("Creating \"Open with ...\" list entry\n");
 
-        lRet = register_openwith(HKEY_CLASSES_ROOT, vim_exe_path);
-        if (ERROR_SUCCESS != lRet)
+	lRet = register_openwith(HKEY_CLASSES_ROOT, vim_exe_path);
+	if (ERROR_SUCCESS != lRet)
 	    return FAIL;
     }
 
@@ -1570,20 +1570,20 @@ install_registry(void)
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)
     {
-        sprintf(display_name, "Vim " VIM_VERSION_SHORT);
-        sprintf(uninstall_string, "%suninstal.exe", buf);
+	sprintf(display_name, "Vim " VIM_VERSION_SHORT);
+	sprintf(uninstall_string, "%suninstal.exe", buf);
     }
     else
     {
-        sprintf(display_name, "Vim " VIM_VERSION_SHORT " (self-installing)");
-        sprintf(uninstall_string, "%suninstall-gui.exe", buf);
+	sprintf(display_name, "Vim " VIM_VERSION_SHORT " (self-installing)");
+	sprintf(uninstall_string, "%suninstall-gui.exe", buf);
     }
 
     lRet = register_uninstall(
-        HKEY_LOCAL_MACHINE,
-        "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
-        display_name,
-        uninstall_string);
+	HKEY_LOCAL_MACHINE,
+	"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Vim " VIM_VERSION_SHORT,
+	display_name,
+	uninstall_string);
     if (ERROR_SUCCESS != lRet)
 	return FAIL;
 #endif /* WIN3264 */

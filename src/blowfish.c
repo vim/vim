@@ -421,7 +421,7 @@ bf_key_init(password, salt, salt_len)
      * See http://en.wikipedia.org/wiki/Key_strengthening. */
     key = sha256_key(password, salt, salt_len);
     for (i = 0; i < 1000; i++)
-        key = sha256_key(key, salt, salt_len);
+	key = sha256_key(key, salt, salt_len);
 
     /* Convert the key from 64 hex chars to 32 binary chars. */
     keylen = (int)STRLEN(key) / 2;
@@ -432,8 +432,8 @@ bf_key_init(password, salt, salt_len)
     }
     for (i = 0; i < keylen; i++)
     {
-        sscanf((char *)&key[i * 2], "%2x", &j);
-        key[i] = j;
+	sscanf((char *)&key[i * 2], "%2x", &j);
+	key[i] = j;
     }
 
     mch_memmove(sbx, sbi, 4 * 4 * 256);
@@ -534,7 +534,7 @@ bf_self_test()
     for (i = 0; i < bn; i++)
     {
 	bf_key_init((char_u *)(bf_test_data[i].password),
-                    bf_test_data[i].salt,
+		    bf_test_data[i].salt,
 		    (int)STRLEN(bf_test_data[i].salt));
 	if (!bf_check_tables(pax, sbx, bf_test_data[i].keysum))
 	    err++;

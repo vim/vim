@@ -790,7 +790,7 @@ focus_in_event(GtkWidget *widget,
 
     static gint
 focus_out_event(GtkWidget *widget UNUSED,
-	        GdkEventFocus *event UNUSED,
+		GdkEventFocus *event UNUSED,
 		gpointer data UNUSED)
 {
     gui_focus_change(FALSE);
@@ -5456,7 +5456,7 @@ gui_mch_wait_for_chars(long wtime)
 
 #if defined(FEAT_NETBEANS_INTG)
 	/* Process the queued netbeans messages. */
-        netbeans_parse_messages();
+	netbeans_parse_messages();
 #endif
 
 	/*

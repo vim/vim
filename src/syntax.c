@@ -8572,7 +8572,7 @@ highlight_color(id, what, modec)
 	fg = TRUE;
 # ifdef FEAT_GUI
     else if (TOLOWER_ASC(what[0]) == 'f' && TOLOWER_ASC(what[1]) == 'o'
-             && TOLOWER_ASC(what[2]) == 'n' && TOLOWER_ASC(what[3]) == 't')
+	     && TOLOWER_ASC(what[2]) == 'n' && TOLOWER_ASC(what[3]) == 't')
 	font = TRUE;
     else if (TOLOWER_ASC(what[0]) == 's' && TOLOWER_ASC(what[1]) == 'p')
 	sp = TRUE;

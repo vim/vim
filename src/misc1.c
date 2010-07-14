@@ -9217,6 +9217,205 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 }
 #endif
 
+#if defined(FEAT_SEARCHPATH)
+static int find_previous_pathsep __ARGS((char_u *path, char_u **psep));
+static int is_unique __ARGS((char_u *maybe_unique, garray_T *gap, int i));
+static void uniquefy_paths __ARGS((garray_T *gap, char_u *pattern));
+static int expand_in_path __ARGS((garray_T *gap, char_u	*pattern, int flags));
+
+/*
+ * Moves psep to the previous path separator in path, starting from the
+ * end of path.
+ * Returns FAIL is psep ends up at the beginning of path.
+ */
+    static int
+find_previous_pathsep(path, psep)
+    char_u *path;
+    char_u **psep;
+{
+    /* skip the current separator */
+    if (*psep > path && vim_ispathsep(**psep))
+	(*psep)--;
+
+    /* find the previous separator */
+    while (*psep > path && !vim_ispathsep(**psep))
+	(*psep)--;
+
+    if (*psep != path && vim_ispathsep(**psep))
+	return OK;
+
+    return FAIL;
+}
+
+/*
+ * Returns TRUE if maybe_unique is unique wrt other_paths in gap. maybe_unique
+ * is the end portion of ((char_u **)gap->ga_data)[i].
+ */
+    static int
+is_unique(maybe_unique, gap, i)
+    char_u	*maybe_unique;
+    garray_T	*gap;
+    int		i;
+{
+    int	    j;
+    int	    candidate_len;
+    int	    other_path_len;
+    char_u  *rival;
+    char_u  **other_paths;
+
+    other_paths = (gap->ga_data != NULL) ? (char_u **)gap->ga_data
+							      : (char_u **)"";
+
+    for (j = 0; j < gap->ga_len && !got_int; j++)
+    {
+	ui_breakcheck();
+	/* don't compare it with itself */
+	if (j == i)
+	    continue;
+
+	candidate_len = STRLEN(maybe_unique);
+	other_path_len = STRLEN(other_paths[j]);
+
+	if (other_path_len < candidate_len)
+	    continue;  /* it's different */
+
+	rival = other_paths[j] + other_path_len - candidate_len;
+
+	if (fnamecmp(maybe_unique, rival) == 0)
+	    return FALSE;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Sorts, removes duplicates and modifies all the fullpath names in gap so that
+ * they are unique with respect to each other while conserving the part that
+ * matches the pattern. Beware, this is at least O(n^2) wrt gap->ga_len.
+ */
+    static void
+uniquefy_paths(gap, pattern)
+    garray_T *gap;
+    char_u *pattern;
+{
+    int	    i;
+    int	    j;
+    int	    len;
+    char_u  *pathsep_p;
+    char_u  *path;
+    char_u  **fnames = (char_u **) gap->ga_data;
+
+    int		sort_again = 0;
+    char_u	*pat;
+    char_u      *file_pattern;
+    regmatch_T	regmatch;
+
+    /* Remove duplicate entries */
+    sort_strings(fnames, gap->ga_len);
+    for (i = 0; i < gap->ga_len - 1; i++)
+	if (fnamecmp(fnames[i], fnames[i+1]) == 0)
+	{
+	    vim_free(fnames[i]);
+	    for (j = i+1; j < gap->ga_len; j++)
+		fnames[j-1] = fnames[j];
+	    gap->ga_len--;
+	    i--;
+	}
+
+    /*
+     * We need to prepend a '*' at the beginning of file_pattern so that the
+     * regex matches anywhere in the path. FIXME: is this valid for all
+     * possible pattern?
+     */
+    len = STRLEN(pattern);
+    file_pattern = alloc(len + 2);
+    file_pattern[0] = '*';
+    file_pattern[1] = '\0';
+    STRCAT(file_pattern, pattern);
+    pat = file_pat_to_reg_pat(file_pattern, NULL, NULL, TRUE);
+    vim_free(file_pattern);
+    regmatch.rm_ic = TRUE;		/* always ignore case */
+
+    if (pat != NULL)
+    {
+	regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+	vim_free(pat);
+    }
+    if (pat == NULL || regmatch.regprog == NULL)
+	return;
+
+    for (i = 0; i < gap->ga_len; i++)
+    {
+	path = fnames[i];
+	len = STRLEN(path);
+
+	/* we start at the end of the path */
+	pathsep_p = path + len - 1;
+
+	while (find_previous_pathsep(path, &pathsep_p))
+	    if (vim_regexec(&regmatch, pathsep_p + 1, (colnr_T)0)
+					      && is_unique(pathsep_p, gap, i))
+	    {
+		sort_again = 1;
+		mch_memmove(path, pathsep_p + 1, STRLEN(pathsep_p));
+		break;
+	    }
+    }
+
+    if (sort_again)
+	sort_strings(fnames, gap->ga_len);
+}
+
+/*
+ * Calls globpath with 'path' values for the given pattern and stores
+ * the result in gap.
+ * Returns the total number of matches.
+ */
+    static int
+expand_in_path(gap, pattern, flags)
+    garray_T	*gap;
+    char_u	*pattern;
+    int		flags;		/* EW_* flags */
+{
+    int		c = 0;
+    char_u	*path_option = *curbuf->b_p_path == NUL
+						  ? p_path : curbuf->b_p_path;
+    char_u	*files;
+    char_u	*s;	/* start */
+    char_u	*e;	/* end */
+
+    files = globpath(path_option, pattern, 0);
+    if (files == NULL)
+	return 0;
+
+    /* Copy each path in files into gap */
+    s = e = files;
+    while (*s != '\0')
+    {
+	while (*e != '\n' && *e != '\0')
+	    e++;
+	if (*e == '\0')
+	{
+	    addfile(gap, s, flags);
+	    break;
+	}
+	else
+	{
+	    /* *e is '\n' */
+	    *e = '\0';
+	    addfile(gap, s, flags);
+	    e++;
+	    s = e;
+	}
+    }
+
+    c = gap->ga_len;
+    vim_free(files);
+
+    return c;
+}
+#endif
+
 /*
  * Generic wildcard expansion code.
  *
@@ -9325,7 +9524,14 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	     * when EW_NOTFOUND is given.
 	     */
 	    if (mch_has_exp_wildcard(p))
-		add_pat = mch_expandpath(&ga, p, flags);
+	    {
+#if defined(FEAT_SEARCHPATH)
+		if (*p != '.' && !vim_ispathsep(*p) && (flags & EW_PATH))
+		    add_pat = expand_in_path(&ga, p, flags);
+		else
+#endif
+		    add_pat = mch_expandpath(&ga, p, flags);
+	    }
 	}
 
 	if (add_pat == -1 || (add_pat == 0 && (flags & EW_NOTFOUND)))
@@ -9347,6 +9553,11 @@ gen_expand_wildcards(num_pat, pat, num_file, file, flags)
 	if (p != pat[i])
 	    vim_free(p);
     }
+
+#if defined(FEAT_SEARCHPATH)
+    if (flags & EW_PATH)
+	uniquefy_paths(&ga, p);
+#endif
 
     *num_file = ga.ga_len;
     *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data : (char_u **)"";

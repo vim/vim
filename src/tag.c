@@ -2551,8 +2551,8 @@ free_tag_stuff()
 # if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
     if (ptag_entry.tagname)
     {
-        vim_free(ptag_entry.tagname);
-        ptag_entry.tagname = NULL;
+	vim_free(ptag_entry.tagname);
+	ptag_entry.tagname = NULL;
     }
 # endif
 }
@@ -2678,7 +2678,7 @@ get_tagfname(tnp, first, buf)
 
 	    tnp->tn_search_ctx = vim_findfile_init(buf, filename,
 		    r_ptr, 100,
-		    FALSE,         /* don't free visited list */
+		    FALSE,	   /* don't free visited list */
 		    FINDFILE_FILE, /* we search for a file */
 		    tnp->tn_search_ctx, TRUE, curbuf->b_ffname);
 	    if (tnp->tn_search_ctx != NULL)

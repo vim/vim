@@ -4292,7 +4292,7 @@ do_join(count, insert_space, save_undo)
     /*
      * Set the cursor column:
      * Vi compatible: use the column of the first join
-     * vim:           use the column of the last join
+     * vim:	      use the column of the last join
      */
     curwin->w_cursor.col =
 		    (vim_strchr(p_cpo, CPO_JOINCOL) != NULL ? currsize : col);

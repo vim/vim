@@ -3371,14 +3371,14 @@ mch_call_shell(
 		if (!s_dont_use_vimrun)
 		    /* Use vimrun to execute the command.  It opens a console
 		     * window, which can be closed without killing Vim. */
-                    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
+		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
 			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
 		else
 #endif
-                    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
+		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
 		x = mch_system((char *)newcmd, options);
 	    }

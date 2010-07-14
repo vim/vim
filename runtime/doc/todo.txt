@@ -1098,7 +1098,6 @@ Vim 7.3:
 - Conceal feature: no update when moving to another window. (Dominique Pelle,
   2010 Jul 5)  Vince will look into it.
 Patches to possibly include:
-- Win32: patch for better font scaling. (George Reilly, 2009 Mar 26) 
 - Patch for completion of ":find" arguments. (Nazri Ramliy, 2009 Feb 22, 26)
   8   For ":find" and ":sfind" expand files found in 'path'.
   Update 2009 Mar 28.

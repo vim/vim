@@ -2970,8 +2970,8 @@ prepare_crypt_read(fp)
 	return FAIL;
     method = get_crypt_method((char *)buffer,
 					CRYPT_MAGIC_LEN +
-                                        CRYPT_SEED_LEN_MAX +
-                                        CRYPT_SALT_LEN_MAX);
+					CRYPT_SEED_LEN_MAX +
+					CRYPT_SALT_LEN_MAX);
     if (method < 0 || method != curbuf->b_p_cm)
 	return FAIL;
 

@@ -241,7 +241,7 @@ static char_u sha256_padding[64] = {
     void
 sha256_finish(ctx, digest)
     context_sha256_T *ctx;
-    char_u           digest[32];
+    char_u	     digest[32];
 {
     UINT32_T last, padn;
     UINT32_T high, low;

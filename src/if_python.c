@@ -1160,8 +1160,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 	    || (our_tv->v_type == VAR_DICT && our_tv->vval.v_dict != NULL))
     {
 	sprintf(ptrBuf, PRINTF_DECIMAL_LONG_U,
-	        our_tv->v_type == VAR_LIST ? (long_u)our_tv->vval.v_list
-		                           : (long_u)our_tv->vval.v_dict);
+		our_tv->v_type == VAR_LIST ? (long_u)our_tv->vval.v_list
+					   : (long_u)our_tv->vval.v_dict);
 	result = PyDict_GetItemString(lookupDict, ptrBuf);
 	if (result != NULL)
 	{

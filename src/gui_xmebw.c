@@ -143,10 +143,10 @@ static XtResource resources[] =
 XmPrimitiveClassExtRec xmEnhancedButtonPrimClassExtRec =
 {
     /* next_extension      */ NULL,
-    /* record_type         */ NULLQUARK,
-    /* version             */ XmPrimitiveClassExtVersion,
-    /* record_size         */ sizeof(XmPrimitiveClassExtRec),
-    /* widget_baseline     */ XmInheritBaselineProc,
+    /* record_type	   */ NULLQUARK,
+    /* version		   */ XmPrimitiveClassExtVersion,
+    /* record_size	   */ sizeof(XmPrimitiveClassExtRec),
+    /* widget_baseline	   */ XmInheritBaselineProc,
     /* widget_display_rect */ XmInheritDisplayRectProc,
     /* widget_margins      */ NULL
 };

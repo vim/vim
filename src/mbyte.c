@@ -3177,7 +3177,7 @@ show_utf8()
 	    clen = utf_ptr2len(line + i);
 	}
 	sprintf((char *)IObuff + rlen, "%02x ",
-	        (line[i] == NL) ? NUL : line[i]);  /* NUL is stored as NL */
+		(line[i] == NL) ? NUL : line[i]);  /* NUL is stored as NL */
 	--clen;
 	rlen += (int)STRLEN(IObuff + rlen);
 	if (rlen > IOSIZE - 20)

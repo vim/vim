@@ -2998,7 +2998,7 @@ mouse_comp_pos(win, rowp, colp, lnump)
     if (col < 0)
     {
 #ifdef FEAT_NETBEANS_INTG
-        netbeans_gutter_click(lnum);
+	netbeans_gutter_click(lnum);
 #endif
 	col = 0;
     }

@@ -1240,10 +1240,10 @@ vim_open_clipboard(void)
 
     while (!OpenClipboard(NULL))
     {
-        if (delay > 500)
-            return FALSE;  /* waited too long, give up */
-        Sleep(delay);
-        delay *= 2;	/* wait for 10, 20, 40, 80, etc. msec */
+	if (delay > 500)
+	    return FALSE;  /* waited too long, give up */
+	Sleep(delay);
+	delay *= 2;	/* wait for 10, 20, 40, 80, etc. msec */
     }
     return TRUE;
 }

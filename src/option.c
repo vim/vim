@@ -10476,8 +10476,8 @@ langmap_set_entry(from, to)
     int    to;
 {
     langmap_entry_T *entries = (langmap_entry_T *)(langmap_mapga.ga_data);
-    int             a = 0;
-    int             b = langmap_mapga.ga_len;
+    int		    a = 0;
+    int		    b = langmap_mapga.ga_len;
 
     /* Do a binary search for an existing entry. */
     while (a != b)

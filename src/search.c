@@ -349,9 +349,9 @@ free_search_patterns()
 # ifdef FEAT_RIGHTLEFT
     if (mr_pattern_alloced)
     {
-        vim_free(mr_pattern);
-        mr_pattern_alloced = FALSE;
-        mr_pattern = NULL;
+	vim_free(mr_pattern);
+	mr_pattern_alloced = FALSE;
+	mr_pattern = NULL;
     }
 # endif
 }

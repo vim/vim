@@ -3454,7 +3454,7 @@ gui_mch_register_sign(signfile)
 	{
 	    /* Sign width is fixed at two columns now.
 	    if (sign->width > gui.sign_width)
-	        gui.sign_width = sign->width + 8; */
+		gui.sign_width = sign->width + 8; */
 	}
 	else
 	    EMSG(_(e_signdata));

@@ -1383,7 +1383,7 @@ gui_set_shellsize(mustset, fit_to_display, direction)
     int		screen_h;
 #ifdef FEAT_GUI_GTK
     int		un_maximize = mustset;
-    int         did_adjust = 0;
+    int		did_adjust = 0;
 #endif
     int		x = -1, y = -1;
 

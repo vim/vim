@@ -385,7 +385,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	    handle_resize();
 #ifdef FEAT_NETBEANS_INTG
 	    /* Process the queued netbeans messages. */
-            netbeans_parse_messages();
+	    netbeans_parse_messages();
 #endif
 	}
     }
@@ -419,7 +419,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 
 #ifdef FEAT_NETBEANS_INTG
 	/* Process the queued netbeans messages. */
-        netbeans_parse_messages();
+	netbeans_parse_messages();
 #endif
 	/*
 	 * we want to be interrupted by the winch signal

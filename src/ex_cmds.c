@@ -3099,8 +3099,8 @@ theend:
  *	ECMD_FORCEIT: ! used for Ex command
  *	 ECMD_ADDBUF: don't edit, just add to buffer list
  *   oldwin: Should be "curwin" when editing a new buffer in the current
- *           window, NULL when splitting the window first.  When not NULL info
- *           of the previous buffer for "oldwin" is stored.
+ *	     window, NULL when splitting the window first.  When not NULL info
+ *	     of the previous buffer for "oldwin" is stored.
  *
  * return FAIL for failure, OK otherwise
  */
@@ -7232,8 +7232,8 @@ set_context_in_sign_cmd(xp, arg)
     cmd_idx = sign_cmd_idx(arg, end_subcmd);
 
     /* :sign {subcmd} {subcmd_args}
-     *                |
-     *                begin_subcmd_args */
+     *		      |
+     *		      begin_subcmd_args */
     begin_subcmd_args = skipwhite(end_subcmd);
     p = skiptowhite(begin_subcmd_args);
     if (*p == NUL)
@@ -7261,8 +7261,8 @@ set_context_in_sign_cmd(xp, arg)
     /* expand last argument of subcmd */
 
     /* :sign define {name} {args}...
-     *              |
-     *              p */
+     *		    |
+     *		    p */
 
     /* Loop until reaching last argument. */
     do
@@ -7275,8 +7275,8 @@ set_context_in_sign_cmd(xp, arg)
     p = vim_strchr(last, '=');
 
     /* :sign define {name} {args}... {last}=
-     *                               |     |
-     *                            last     p */
+     *				     |	   |
+     *				  last	   p */
     if (p == NUL)
     {
 	/* Expand last argument name (before equal sign). */

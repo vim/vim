@@ -773,6 +773,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EXPAND_PROFILE		35
 #define EXPAND_BEHAVE		36
 #define EXPAND_FILETYPE		37
+#define EXPAND_FILES_IN_PATH    38
 
 /* Values for exmode_active (0 is no exmode) */
 #define EXMODE_NORMAL		1
@@ -804,6 +805,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define EW_KEEPALL	0x10	/* keep all matches */
 #define EW_SILENT	0x20	/* don't print "1 returned" from shell */
 #define EW_EXEC		0x40	/* executable files */
+#define EW_PATH		0x80	/* search in 'path' too */
 /* Note: mostly EW_NOTFOUND and EW_SILENT are mutually exclusive: EW_NOTFOUND
  * is used when executing commands and EW_SILENT for interactive expanding. */
 
