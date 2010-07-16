@@ -6956,7 +6956,7 @@ check_colorcolumn(wp)
     int		i;
     int		j = 0;
 
-    for (s = wp->w_p_cc; *s != NUL && count < 255; ++s)
+    for (s = wp->w_p_cc; *s != NUL && count < 255;)
     {
 	if (*s == '-' || *s == '+')
 	{
@@ -6967,21 +6967,23 @@ check_colorcolumn(wp)
 		return e_invarg;
 	    col = col * getdigits(&s);
 	    if (wp->w_buffer->b_p_tw == 0)
-		continue;  /* 'textwidth' not set, skip this item */
+		goto skip;  /* 'textwidth' not set, skip this item */
 	    col += wp->w_buffer->b_p_tw;
 	    if (col < 0)
-		continue;
+		goto skip;
 	}
 	else if (VIM_ISDIGIT(*s))
 	    col = getdigits(&s);
 	else
 	    return e_invarg;
 	color_cols[count++] = col - 1;  /* 1-based to 0-based */
-
+skip:
 	if (*s == NUL)
 	    break;
 	if (*s != ',')
 	    return e_invarg;
+	if (*++s == NUL)
+	    return e_invarg;  /* illegal trailing comma as in "set cc=80," */
     }
 
     vim_free(wp->w_p_cc_cols);
