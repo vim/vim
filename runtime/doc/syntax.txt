@@ -380,51 +380,58 @@ Source the script to convert the current file: >
 
 	:runtime! syntax/2html.vim
 <
-Warning: This is slow!
 							*:TOhtml*
 Or use the ":TOhtml" user command.  It is defined in a standard plugin.
 ":TOhtml" also works with a range and in a Visual area: >
 
 	:10,40TOhtml
 
+Warning: This is slow! The script must process every character of every line.
+Because it is so slow, by default a progress bar is displayed in the
+statusline for each step that usually takes a long time. If you don't like
+seeing this progress bar, you can disable it and get a very minor speed
+improvement with: >
+
+	let g:html_no_progress = 1
+
 ":TOhtml" has another special feature: if the window is in diff mode, it will
 generate HTML that shows all the related windows.  This can be disabled by
-setting the g:diff_one_file variable: >
+setting the g:html_diff_one_file variable: >
 
-	let g:diff_one_file = 1
+	let g:html_diff_one_file = 1
 
 After you save the resulting file, you can view it with any browser.  The
 colors should be exactly the same as you see them in Vim.
 
-To restrict the conversion to a range of lines set "html_start_line" and
-"html_end_line" to the first and last line to be converted.  Example, using
-the last set Visual area: >
+To restrict the conversion to a range of lines, use a range with the |:TOhtml|
+command, or set "g:html_start_line" and "g:html_end_line" to the first and
+last line to be converted.  Example, using the last set Visual area: >
 
-	:let html_start_line = line("'<")
-	:let html_end_line = line("'>")
+	:let g:html_start_line = line("'<")
+	:let g:html_end_line = line("'>")
 
 The lines are numbered according to 'number' option and the Number
 highlighting.  You can force lines to be numbered in the HTML output by
 setting "html_number_lines" to non-zero value: >
-   :let html_number_lines = 1
+   :let g:html_number_lines = 1
 Force to omit the line numbers by using a zero value: >
-   :let html_number_lines = 0
+   :let g:html_number_lines = 0
 Go back to the default to use 'number' by deleting the variable: >
-   :unlet html_number_lines
+   :unlet g:html_number_lines
 
 By default, HTML optimized for old browsers is generated.  If you prefer using
 cascading style sheets (CSS1) for the attributes (resulting in considerably
 shorter and valid HTML 4 file), use: >
-   :let html_use_css = 1
+   :let g:html_use_css = 1
 
 Closed folds are put in the HTML as they are displayed.  If you don't want
 this, use the |zR| command before invoking 2html, or use: >
-   :let html_ignore_folding = 1
+   :let g:html_ignore_folding = 1
 
 You may want to generate HTML that includes all the data within the folds, and
 allow the user to view the folded data similar to how they would in Vim. To
 generate this dynamic fold information, use: >
-   :let html_dynamic_folds = 1
+   :let g:html_dynamic_folds = 1
 
 Using html_dynamic_folds will imply html_use_css, because it would be far too
 difficult to do it for old browsers. However, html_ignore_folding overrides
@@ -435,7 +442,7 @@ similar to Vim's foldcolumn, that will use javascript to open and close the
 folds in the HTML document. The width of this foldcolumn starts at the current
 setting of |'foldcolumn'| but grows to fit the greatest foldlevel in your
 document. If you do not want to show a foldcolumn at all, use: >
-   :let html_no_foldcolumn = 1
+   :let g:html_no_foldcolumn = 1
 
 Using this option, there will be no foldcolumn available to open the folds in
 the HTML. For this reason, another option is provided: html_hover_unfold.
@@ -446,7 +453,7 @@ included to fall back to the normal CSS1 code so that the folds show up
 correctly for this browser, but they will not be openable without a
 foldcolumn. Note that using html_hover_unfold will allow modern browsers with
 disabled javascript to view closed folds. To use this option, use: >
-   :let html_hover_unfold = 1
+   :let g:html_hover_unfold = 1
 
 Setting html_no_foldcolumn with html_dynamic_folds will automatically set
 html_hover_unfold, because otherwise the folds wouldn't be dynamic.
@@ -454,7 +461,7 @@ html_hover_unfold, because otherwise the folds wouldn't be dynamic.
 By default "<pre>" and "</pre>" is used around the text.  This makes it show
 up as you see it in Vim, but without wrapping.	If you prefer wrapping, at the
 risk of making some things look a bit different, use: >
-   :let html_no_pre = 1
+   :let g:html_no_pre = 1
 This will use <br> at the end of each line and use "&nbsp;" for repeated
 spaces.
 
@@ -462,20 +469,20 @@ The current value of 'encoding' is used to specify the charset of the HTML
 file.  This only works for those values of 'encoding' that have an equivalent
 HTML charset name.  To overrule this set g:html_use_encoding to the name of
 the charset to be used: >
-   :let html_use_encoding = "foobar"
+   :let g:html_use_encoding = "foobar"
 To omit the line that specifies the charset, set g:html_use_encoding to an
 empty string: >
-   :let html_use_encoding = ""
+   :let g:html_use_encoding = ""
 To go back to the automatic mechanism, delete the g:html_use_encoding
 variable: >
-   :unlet html_use_encoding
+   :unlet g:html_use_encoding
 <
 For diff mode a sequence of more than 3 filler lines is displayed as three
 lines with the middle line mentioning the total number of inserted lines.  If
 you prefer to see all the inserted lines use: >
-    :let html_whole_filler = 1
+    :let g:html_whole_filler = 1
 And to go back to displaying up to three lines again: >
-    :unlet html_whole_filler
+    :unlet g:html_whole_filler
 <
 					    *convert-to-XML* *convert-to-XHTML*
 An alternative is to have the script generate XHTML (XML compliant HTML).  To
@@ -483,8 +490,6 @@ do this set the "use_xhtml" variable: >
     :let use_xhtml = 1
 To disable it again delete the variable: >
     :unlet use_xhtml
-The generated XHTML file can be used in DocBook XML documents.  See:
-	http://people.mech.kuleuven.ac.be/~pissaris/howto/src2db.html
 
 Remarks:
 - This only works in a version with GUI support.  If the GUI is not actually

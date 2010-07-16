@@ -21,8 +21,8 @@ else
   syn match helpHyperTextEntry	"\*[#-)!+-~]\+\*\s"he=e-1 contains=helpStar
   syn match helpHyperTextEntry	"\*[#-)!+-~]\+\*$" contains=helpStar
 endif
-syn match helpBar		contained "|"
-syn match helpStar		contained "\*"
+syn match helpBar		contained "|" conceal
+syn match helpStar		contained "\*" conceal
 syn match helpNormal		"|.*====*|"
 syn match helpNormal		":|vim:|"	" for :help modeline
 syn match helpVim		"Vim version [0-9.a-z]\+"
@@ -30,7 +30,7 @@ syn match helpVim		"VIM REFERENCE.*"
 syn match helpOption		"'[a-z]\{2,\}'"
 syn match helpOption		"'t_..'"
 syn match helpHeader		"\s*\zs.\{-}\ze\s\=\~$" nextgroup=helpIgnore
-syn match helpIgnore		"." contained
+syn match helpIgnore		"." contained conceal
 syn keyword helpNote		note Note NOTE note: Note: NOTE: Notes Notes:
 syn match helpSpecial		"\<N\>"
 syn match helpSpecial		"\<N\.$"me=e-1

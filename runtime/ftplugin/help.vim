@@ -11,9 +11,9 @@ let b:did_ftplugin = 1
 let s:cpo_save = &cpo
 set cpo&vim
 
-let b:undo_ftplugin = "setl fo< tw<"
+let b:undo_ftplugin = "setl fo< tw< conc<"
 
-setlocal formatoptions+=tcroql textwidth=78
+setlocal formatoptions+=tcroql textwidth=78 conc=2
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
