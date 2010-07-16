@@ -9273,8 +9273,8 @@ is_unique(maybe_unique, gap, i)
 	if (j == i)
 	    continue;
 
-	candidate_len = STRLEN(maybe_unique);
-	other_path_len = STRLEN(other_paths[j]);
+	candidate_len = (int)STRLEN(maybe_unique);
+	other_path_len = (int)STRLEN(other_paths[j]);
 
 	if (other_path_len < candidate_len)
 	    continue;  /* it's different */
@@ -9327,7 +9327,7 @@ uniquefy_paths(gap, pattern)
      * regex matches anywhere in the path. FIXME: is this valid for all
      * possible pattern?
      */
-    len = STRLEN(pattern);
+    len = (int)STRLEN(pattern);
     file_pattern = alloc(len + 2);
     file_pattern[0] = '*';
     file_pattern[1] = '\0';
@@ -9347,7 +9347,7 @@ uniquefy_paths(gap, pattern)
     for (i = 0; i < gap->ga_len; i++)
     {
 	path = fnames[i];
-	len = STRLEN(path);
+	len = (int)STRLEN(path);
 
 	/* we start at the end of the path */
 	pathsep_p = path + len - 1;
