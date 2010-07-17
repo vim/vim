@@ -337,27 +337,23 @@ fun! s:FileFormat()
   endif
 endfun
 
+
 " Setup the Edit.Color Scheme submenu
+
+" get NL separated string with file names
 let s:n = globpath(&runtimepath, "colors/*.vim")
+
+" split at NL, Ignore case for VMS and windows, sort on name
+let s:names = sort(map(split(s:n, "\n"), 'substitute(v:val, "\\c.*[/\\\\:\\]]\\([^/\\\\:]*\\)\\.vim", "\\1", "")'), 1)
+
+" define all the submenu entries
 let s:idx = 100
-while strlen(s:n) > 0
-  let s:i = stridx(s:n, "\n")
-  if s:i < 0
-    let s:name = s:n
-    let s:n = ""
-  else
-    let s:name = strpart(s:n, 0, s:i)
-    let s:n = strpart(s:n, s:i + 1, 19999)
-  endif
-  " Ignore case for VMS and windows
-  let s:name = substitute(s:name, '\c.*[/\\:\]]\([^/\\:]*\)\.vim', '\1', '')
+for s:name in s:names
   exe "an 20.450." . s:idx . ' &Edit.C&olor\ Scheme.' . s:name . " :colors " . s:name . "<CR>"
-  unlet s:name
-  unlet s:i
   let s:idx = s:idx + 10
-endwhile
-unlet s:n
-unlet s:idx
+endfor
+unlet s:name s:names s:n s:idx
+
 
 " Setup the Edit.Keymap submenu
 if has("keymap")

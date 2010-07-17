@@ -1711,14 +1711,22 @@ system administrator has dropped it in the system-wide plugin directory, but a
 user has his own plugin he wants to use.  Then the user must have a chance to
 disable loading this specific plugin.  This will make it possible: >
 
-  6	if exists("loaded_typecorr")
+  6	if exists("g:loaded_typecorr")
   7	  finish
   8	endif
-  9	let loaded_typecorr = 1
+  9	let g:loaded_typecorr = 1
 
 This also avoids that when the script is loaded twice it would cause error
 messages for redefining functions and cause trouble for autocommands that are
 added twice.
+
+The name is recommended to start with "loaded_" and then the file name of the
+plugin, literally.  The "g:" is prepended just to avoid mistakes when using
+the variable in a function (without "g:" it would be a variable local to the
+function).
+
+Using "finish" stops Vim from reading the rest of the file, it's much quicker
+than using if-endif around the whole file.
 
 
 MAPPING
@@ -1896,10 +1904,10 @@ Here is the resulting complete example: >
   3	" Maintainer:	Bram Moolenaar <Bram@vim.org>
   4	" License:	This file is placed in the public domain.
   5
-  6	if exists("loaded_typecorr")
+  6	if exists("g:loaded_typecorr")
   7	  finish
   8	endif
-  9	let loaded_typecorr = 1
+  9	let g:loaded_typecorr = 1
  10
  11	let s:save_cpo = &cpo
  12	set cpo&vim
