@@ -1089,12 +1089,12 @@ Before (beta) release 7.3:
 - Add fixes for 7.2 to version7.txt
 - Add hg history to version7.txt
 - Remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
+
+Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 Vim 7.3:
 Patches to possibly include:
--   Mac: Patch to disable antialias. (LC Mi, 2008 Aug 23)  Tested on 10.5 and
-    10.4.
 -   Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
     Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
     Need another name, "J" is now used for Javascript.
