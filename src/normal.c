@@ -2281,6 +2281,9 @@ do_mouse(oap, c, dir, count, fixindent)
     pos_T	start_visual;
     int		moved;		/* Has cursor moved? */
     int		in_status_line;	/* mouse in status line */
+#ifdef FEAT_WINDOWS
+    static int	in_tab_line = FALSE; /* mouse clicked in tab line */
+#endif
 #ifdef FEAT_VERTSPLIT
     int		in_sep_line;	/* mouse in vertical separator line */
 #endif
@@ -2358,7 +2361,16 @@ do_mouse(oap, c, dir, count, fixindent)
 	if (!got_click)			/* didn't get click, ignore */
 	    return FALSE;
 	if (!is_drag)			/* release, reset got_click */
+	{
 	    got_click = FALSE;
+#ifdef FEAT_WINDOWS
+	    if (in_tab_line)
+	    {
+		in_tab_line = FALSE;
+		return FALSE;
+	    }
+#endif
+	}
     }
 
 #ifndef FEAT_VISUAL
@@ -2512,8 +2524,14 @@ do_mouse(oap, c, dir, count, fixindent)
     if (mouse_row == 0 && firstwin->w_winrow > 0)
     {
 	if (is_drag)
+	{
+	    if (in_tab_line)
+	    {
+		c1 = TabPageIdxs[mouse_col];
+		tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
+	    }
 	    return FALSE;
-	got_click = FALSE;	/* ignore mouse-up and drag events */
+	}
 
 	/* click in a tab selects that tab page */
 	if (is_click
@@ -2522,6 +2540,7 @@ do_mouse(oap, c, dir, count, fixindent)
 # endif
 		&& mouse_col < Columns)
 	{
+	    in_tab_line = TRUE;
 	    c1 = TabPageIdxs[mouse_col];
 	    if (c1 >= 0)
 	    {
@@ -2563,6 +2582,13 @@ do_mouse(oap, c, dir, count, fixindent)
 	}
 	return TRUE;
     }
+    else if (is_drag && in_tab_line)
+    {
+	c1 = TabPageIdxs[mouse_col];
+	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
+	return FALSE;
+    }
+
 #endif
 
     /*

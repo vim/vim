@@ -30,6 +30,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+GTK: torn-off menu doesn't work.
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
@@ -1091,9 +1093,6 @@ Before (beta) release 7.3:
 
 Vim 7.3:
 Patches to possibly include:
-- 9   Make it possible to drag a tab page label to another position with the
-    mouse.
-    Patch by Paul B. Mahol, 2008 Aug 29.
 -   Mac: Patch to disable antialias. (LC Mi, 2008 Aug 23)  Tested on 10.5 and
     10.4.
 -   Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
