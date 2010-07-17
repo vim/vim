@@ -176,11 +176,11 @@ g:gnat.Make()
 
 							     *g:gnat.Pretty()*
 g:gnat.Pretty()
-		Calls|g:gnat.Pretty_Command|
+		Calls|g:gnat.Pretty_Program|
 
 							       *g:gnat.Find()*
 g:gnat.Find()
-		Calls|g:gnat.Find_Command|
+		Calls|g:gnat.Find_Program|
 
 							       *g:gnat.Tags()*
 g:gnat.Tags()
@@ -237,8 +237,8 @@ DEC ADA OBJECT ~
 
 							     *g:decada.Make()*
 g:decada.Make()		function
-		Calls|g:decada.Make_Command|and displays the result inside a
-               |quickfix| window.
+		Calls |g:decada.Make_Command| and displays the result inside a
+		|quickfix| window.
 
 							*g:decada.Unit_Name()*
 g:decada.Unit_Name()	function
@@ -246,7 +246,7 @@ g:decada.Unit_Name()	function
 
 						       *g:decada.Make_Command*
 g:decada.Make_Command	string
-		External command used for|g:decadat.Make()| (|'makeprg'|).
+		External command used for |g:decada.Make()| (|'makeprg'|).
 
 						       *g:decada.Error_Format*
 g:decada.Error_Format|	string
@@ -406,15 +406,15 @@ makes no difference.
 g:gnat			    object
 		Control object which manages GNAT compiles.  The object
 		is created when the first Ada source code is loaded provided
-		that |g:ada_default_compiler|is set to 'gnat'. See|gnat_members|
-		for details.
+		that |g:ada_default_compiler|is set to 'gnat'. See
+		|gnat_members| for details.
 
 								    *g:decada*
 g:decada		      object
 		Control object which manages Dec Ada compiles.	The object
 		is created when the first Ada source code is loaded provided
 		that |g:ada_default_compiler|is set to 'decada'. See
-	       |decada_members|for details.
+	        |decada_members| for details.
 
 ------------------------------------------------------------------------------
 5.4 Constants ~

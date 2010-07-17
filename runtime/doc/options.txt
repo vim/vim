@@ -6065,6 +6065,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option off if your terminal is slow.
 	In Visual mode the size of the selected area is shown:
 	- When selecting characters within a line, the number of characters.
+	  If the number of bytes is different it is also displayed: "2-6"
+	  means two characters and six bytes.
 	- When selecting more than one line, the number of lines.
 	- When selecting a block, the size in screen characters:
 	  {lines}x{columns}.

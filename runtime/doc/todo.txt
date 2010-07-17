@@ -1155,7 +1155,7 @@ More patches:
 -   Patch for adding "space" item in 'listchars'. (Jérémie Roquet, 2009 Oct 29,
     Docs patch Oct 30)
 -   Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
-    Where is a recent version of this patch?
+    Where is a recent version of this patch?  Or use CSApprox plugin?
 -   Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
     Vissale Neang.  (Martin Stubenschrott) Asked Vissale to make the scripts
     more friendly for the Vim distribution.
@@ -3013,7 +3013,7 @@ Tags:
 8   For 'tags' wildcard in the file name is not supported, only in the path.
     This is due to it using |file-searching|. Suboptimal solution would be to
     make the filename or the whole option use |wildcards| globing, better
-    would be to merge the 2 kinds of globing. originall (Erik Falor, 2008
+    would be to merge the 2 kinds of globing. originally (Erik Falor, 2008
     April 18), updated (Ian Kelling, 2008 July 4)
 8   Use a mechanism similar to omni completion to figure out the kind of tab
     for CTRL-] and jump to the appropriate matching tag (if there are

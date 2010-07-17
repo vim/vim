@@ -639,7 +639,7 @@ You can now compare files in 4 ways: >
 
 DEC C uses many identifiers with '$' in them.  This is not allowed in ANSI C,
 and Vim recognises the '$' as the end of the identifier.  You can change this
-with the |iskeyword|command.
+with the 'iskeyword' option.
 Add this command to your .vimrc file: >
 
     autocmd FileType c,cpp,cs  set iskeyword+=$

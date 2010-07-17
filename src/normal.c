@@ -3756,9 +3756,40 @@ clear_showcmd()
 	else if (VIsual_mode == 'V' || VIsual.lnum != curwin->w_cursor.lnum)
 	    sprintf((char *)showcmd_buf, "%ld", lines);
 	else
-	    sprintf((char *)showcmd_buf, "%ld", (long)(cursor_bot
-		    ? curwin->w_cursor.col - VIsual.col
-		    : VIsual.col - curwin->w_cursor.col) + (*p_sel != 'e'));
+	{
+	    char_u  *s, *e;
+	    int	    l;
+	    int	    bytes = 0;
+	    int	    chars = 0;
+
+	    if (cursor_bot)
+	    {
+		s = ml_get_pos(&VIsual);
+		e = ml_get_cursor();
+	    }
+	    else
+	    {
+		s = ml_get_cursor();
+		e = ml_get_pos(&VIsual);
+	    }
+	    while ((*p_sel != 'e') ? s <= e : s < e)
+	    {
+		l = (*mb_ptr2len)(s);
+		if (l == 0)
+		{
+		    ++bytes;
+		    ++chars;
+		    break;  /* end of line */
+		}
+		bytes += l;
+		++chars;
+		s += l;
+	    }
+	    if (bytes == chars)
+		sprintf((char *)showcmd_buf, "%d", chars);
+	    else
+		sprintf((char *)showcmd_buf, "%d-%d", chars, bytes);
+	}
 	showcmd_buf[SHOWCMD_COLS] = NUL;	/* truncate */
 	showcmd_visual = TRUE;
     }

@@ -5638,6 +5638,7 @@ ft-xml-omni	insert.txt	/*ft-xml-omni*
 ft-xml-syntax	syntax.txt	/*ft-xml-syntax*
 ft-xpm-syntax	syntax.txt	/*ft-xpm-syntax*
 ft_ada.txt	ft_ada.txt	/*ft_ada.txt*
+ft_sql.txt	ft_sql.txt	/*ft_sql.txt*
 ftdetect	filetype.txt	/*ftdetect*
 ftp	pi_netrw.txt	/*ftp*
 ftplugin	usr_41.txt	/*ftplugin*
@@ -7504,7 +7505,6 @@ sql-object-motions	ft_sql.txt	/*sql-object-motions*
 sql-predefined-objects	ft_sql.txt	/*sql-predefined-objects*
 sql-type-default	ft_sql.txt	/*sql-type-default*
 sql-types	ft_sql.txt	/*sql-types*
-sql.txt	ft_sql.txt	/*sql.txt*
 sql.vim	syntax.txt	/*sql.vim*
 sqlanywhere	ft_sql.txt	/*sqlanywhere*
 sqlanywhere.vim	syntax.txt	/*sqlanywhere.vim*

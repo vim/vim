@@ -594,7 +594,7 @@ otherwise you would not be able to use those commands anymore.  Here are a few
 suggestions:
 - Function keys <F2>, <F3>, etc..  Also the shifted function keys <S-F1>,
   <S-F2>, etc.  Note that <F1> is already used for the help command.
-- Meta-keys (with the ALT key pressed).  Depending on your keybord accented
+- Meta-keys (with the ALT key pressed).  Depending on your keyboard accented
   characters may be used as well. |:map-alt-keys|
 - Use the '_' or ',' character and then any other character.  The "_" and ","
   commands do exist in Vim (see |_| and |,|), but you probably never use them.
@@ -767,7 +767,7 @@ g@{motion}		Call the function set by the 'operatorfunc' option.
 			The function is called with one String argument:
 			    "line"	{motion} was |linewise|
 			    "char"	{motion} was |characterwise|
-			    "block"	{motion} was |blockwise-visual||
+			    "block"	{motion} was |blockwise-visual|
 			Although "block" would rarely appear, since it can
 			only result from Visual mode where "g@" is not useful.
 			{not available when compiled without the +eval

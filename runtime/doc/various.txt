@@ -294,7 +294,7 @@ N  *+cmdline_compl*	command line completion |cmdline-completion|
 N  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
 N  *+comments*		|'comments'| support
-m  *+conceal*		"conceal" support, see ||conceal|| |:syn-conceal| etc.
+m  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 B  *+cscope*		|cscope| support
 m  *+cursorbind*	|'cursorbind'| support
