@@ -4386,6 +4386,10 @@ win_free(wp, tp)
     python_window_free(wp);
 #endif
 
+#ifdef FEAT_PYTHON3
+    python3_window_free(wp);
+#endif
+
 #ifdef FEAT_TCL
     tcl_window_free(wp);
 #endif

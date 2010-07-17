@@ -41,6 +41,7 @@
 #		--enable-luainterp	for Lua interpreter
 #		--enable-perlinterp	for Perl interpreter
 #		--enable-pythoninterp	for Python interpreter
+#		--enable-python3interp	for Python3 interpreter
 #		--enable-rubyinterp	for Ruby interpreter
 #		--enable-tclinterp	for Tcl interpreter
 #		--enable-cscope		for Cscope interface
@@ -383,7 +384,12 @@ CClink = $(CC)
 # NOTE: This may cause threading to be enabled, which has side effects (such
 # as using different libraries and debugging becomes more difficult).
 # NOTE: Using this together with Perl may cause a crash in initialization.
+# For Python3 support make a symbolic link in /usr/local/bin: 
+#	ln -s python3 python3.1
+# If both python2.x and python3.x are enabled then the linking will be via
+# dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
 #CONF_OPT_PYTHON = --enable-pythoninterp
+#CONF_OPT_PYTHON3 = --enable-python3interp
 
 # TCL
 # Uncomment this when you want to include the Tcl interface.
@@ -1304,7 +1310,7 @@ SHELL = /bin/sh
 .SUFFIXES: .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(LUA_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(ECL_CFLAGS) $(PYTHON_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
+POST_DEFS = $(X_CFLAGS) $(LUA_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(ECL_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
@@ -1319,7 +1325,23 @@ LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
 ALL_LIB_DIRS = $(GUI_LIBS_DIR) $(X_LIBS_DIR)
-ALL_LIBS = $(GUI_LIBS1) $(GUI_X_LIBS) $(GUI_LIBS2) $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS) $(LIBS) $(EXTRA_LIBS) $(LUA_LIBS) $(MZSCHEME_LIBS) $(PERL_LIBS) $(PYTHON_LIBS) $(TCL_LIBS) $(RUBY_LIBS) $(PROFILE_LIBS)
+ALL_LIBS = \
+	   $(GUI_LIBS1) \
+	   $(GUI_X_LIBS) \
+	   $(GUI_LIBS2) \
+	   $(X_PRE_LIBS) \
+	   $(X_LIBS) \
+	   $(X_EXTRA_LIBS) \
+	   $(LIBS) \
+	   $(EXTRA_LIBS) \
+	   $(LUA_LIBS) \
+	   $(MZSCHEME_LIBS) \
+	   $(PERL_LIBS) \
+	   $(PYTHON_LIBS) \
+	   $(PYTHON3_LIBS) \
+	   $(TCL_LIBS) \
+	   $(RUBY_LIBS) \
+	   $(PROFILE_LIBS)
 
 # abbreviations
 DEST_BIN = $(DESTDIR)$(BINDIR)
@@ -1422,15 +1444,24 @@ BASIC_SRC = \
 	window.c \
 	$(OS_EXTRA_SRC)
 
-SRC =	$(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(LUA_SRC) $(MZSCHEME_SRC) \
-	$(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) $(RUBY_SRC) \
-	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC)
+SRC =	$(BASIC_SRC) \
+	$(GUI_SRC) \
+	$(HANGULIN_SRC) \
+	$(LUA_SRC) \
+	$(MZSCHEME_SRC) \
+	$(PERL_SRC) \
+	$(PYTHON_SRC) $(PYTHON3_SRC) \
+	$(TCL_SRC) \
+	$(RUBY_SRC) \
+	$(SNIFF_SRC) \
+	$(WORKSHOP_SRC) \
+	$(WSDEBUG_SRC)
 
 TAGS_SRC = *.c *.cpp if_perl.xs
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
-	    if_python.c if_tcl.c if_ruby.c if_sniff.c gui_beval.c \
-	    workshop.c wsdebug.c integration.c netbeans.c
+	    if_python.c if_python3.c if_tcl.c if_ruby.c if_sniff.c \
+	    gui_beval.c workshop.c wsdebug.c integration.c netbeans.c
 
 # All sources, also the ones that are not configured
 ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(EXTRA_SRC)
@@ -1438,7 +1469,7 @@ ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(EXTRA_SRC)
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
 # The perl sources also don't work well with lint.
-LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(TCL_SRC) \
+LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
 	$(SNIFF_SRC) $(WORKSHOP_SRC) $(WSDEBUG_SRC) $(NETBEANS_SRC)
 #LINT_SRC = $(SRC)
 #LINT_SRC = $(ALL_SRC)
@@ -1499,6 +1530,7 @@ OBJ = \
 	$(MZSCHEME_OBJ) \
 	$(PERL_OBJ) \
 	$(PYTHON_OBJ) \
+	$(PYTHON3_OBJ) \
 	$(TCL_OBJ) \
 	$(RUBY_OBJ) \
 	$(OS_EXTRA_OBJ) \
@@ -1528,6 +1560,7 @@ PRO_AUTO = \
 	if_cscope.pro \
 	if_xcmdsrv.pro \
 	if_python.pro \
+	if_python3.pro \
 	if_ruby.pro \
 	main.pro \
 	mark.pro \
@@ -1589,7 +1622,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		CC="$(CC)" CPPFLAGS="$(CPPFLAGS)" CFLAGS="$(CFLAGS)" \
 		LDFLAGS="$(LDFLAGS)" $(CONF_SHELL) srcdir="$(srcdir)" \
 		./configure $(CONF_OPT_GUI) $(CONF_OPT_X) $(CONF_OPT_XSMP) \
-		$(CONF_OPT_DARWIN) $(CONF_OPT_PERL) $(CONF_OPT_PYTHON) \
+		$(CONF_OPT_DARWIN) $(CONF_OPT_PERL) $(CONF_OPT_PYTHON) $(CONF_OPT_PYTHON3) \
 		$(CONF_OPT_TCL) $(CONF_OPT_RUBY) $(CONF_OPT_NLS) \
 		$(CONF_OPT_CSCOPE) $(CONF_OPT_MULTIBYTE) $(CONF_OPT_INPUT) \
 		$(CONF_OPT_OUTPUT) $(CONF_OPT_GPM) $(CONF_OPT_WORKSHOP) \
@@ -2464,8 +2497,24 @@ objects/if_perl.o: auto/if_perl.c
 objects/if_perlsfio.o: if_perlsfio.c
 	$(CCC) -o $@ if_perlsfio.c
 
-objects/if_python.o: if_python.c
-	$(CCC) -o $@ $(PYTHON_CFLAGS_EXTRA) if_python.c
+objects/py_config.o: $(PYTHON_CONFDIR)/config.c
+	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/config.c \
+		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
+
+objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
+	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/getpath.c \
+		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
+		$(PYTHON_GETPATH_CFLAGS)
+
+objects/py3_config.o: $(PYTHON3_CONFDIR)/config.c
+	$(CCC) $(PYTHON3_CFLAGS) -o $@ $(PYTHON3_CONFDIR)/config.c \
+		-I$(PYTHON3_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
+
+objects/if_python.o: if_python.c 
+	$(CCC) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
+
+objects/if_python3.o: if_python3.c 
+	$(CCC) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
 objects/if_ruby.o: if_ruby.c
 	$(CCC) -o $@ if_ruby.c
@@ -2535,15 +2584,6 @@ objects/os_unix.o: os_unix.c
 
 objects/pathdef.o: auto/pathdef.c
 	$(CCC) -o $@ auto/pathdef.c
-
-objects/py_config.o: $(PYTHON_CONFDIR)/config.c
-	$(CCC) -o $@ $(PYTHON_CONFDIR)/config.c \
-		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
-
-objects/py_getpath.o: $(PYTHON_CONFDIR)/getpath.c
-	$(CCC) -o $@ $(PYTHON_CONFDIR)/getpath.c \
-		-I$(PYTHON_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN \
-		$(PYTHON_GETPATH_CFLAGS)
 
 objects/pty.o: pty.c
 	$(CCC) -o $@ pty.c
@@ -2975,6 +3015,10 @@ objects/if_perlsfio.o: if_perlsfio.c vim.h auto/config.h feature.h os_unix.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
 objects/if_python.o: if_python.c vim.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
+ regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
+ globals.h farsi.h arabic.h
+objects/if_python3.o: if_python3.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h

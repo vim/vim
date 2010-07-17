@@ -607,6 +607,9 @@ free_buffer(buf)
 #ifdef FEAT_PYTHON
     python_buffer_free(buf);
 #endif
+#ifdef FEAT_PYTHON3
+    python3_buffer_free(buf);
+#endif
 #ifdef FEAT_RUBY
     ruby_buffer_free(buf);
 #endif

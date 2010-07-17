@@ -1405,6 +1405,9 @@ getout(exitval)
 #ifdef FEAT_PYTHON
     python_end();
 #endif
+#ifdef FEAT_PYTHON3
+    python3_end();
+#endif
 #ifdef FEAT_PERL
     perl_end();
 #endif

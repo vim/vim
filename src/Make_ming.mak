@@ -194,6 +194,28 @@ PYTHONINC=-I $(PYTHON)/win32inc
 endif
 endif
 
+#PYTHON3: See comment for Python 2 above
+
+ifdef PYTHON3
+ifndef DYNAMIC_PYTHON3
+DYNAMIC_PYTHON3=yes
+endif
+
+ifndef PYTHON3_VER
+PYTHON3_VER=31
+endif
+
+ifeq (no,$(DYNAMIC_PYTHON3))
+PYTHON3LIB=-L$(PYTHON3)/libs -lPYTHON$(PYTHON3_VER)
+endif
+
+ifeq ($(CROSS),no)
+PYTHON3INC=-I $(PYTHON3)/include
+else
+PYTHON3INC=-I $(PYTHON3)/win32inc
+endif
+endif
+
 #	TCL interface:
 #	  TCL=[Path to TCL directory]
 #	  DYNAMIC_TCL=yes (to load the TCL DLL dynamically)
@@ -334,9 +356,16 @@ endif
 endif
 
 ifdef PYTHON
-CFLAGS += -DFEAT_PYTHON $(PYTHONINC)
+CFLAGS += -DFEAT_PYTHON 
 ifeq (yes, $(DYNAMIC_PYTHON))
-CFLAGS += -DDYNAMIC_PYTHON -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\"
+CFLAGS += -DDYNAMIC_PYTHON
+endif
+endif
+
+ifdef PYTHON3 
+CFLAGS += -DFEAT_PYTHON3 
+ifeq (yes, $(DYNAMIC_PYTHON3))
+CFLAGS += -DDYNAMIC_PYTHON3 
 endif
 endif
 
@@ -468,6 +497,9 @@ endif
 ifdef PYTHON
 OBJ += $(OUTDIR)/if_python.o
 endif
+ifdef PYTHON3
+OBJ += $(OUTDIR)/if_python3.o
+endif
 ifdef RUBY
 OBJ += $(OUTDIR)/if_ruby.o
 endif
@@ -576,7 +608,7 @@ uninstal.exe: uninstal.c
 	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
 
 $(TARGET): $(OUTDIR) $(OBJ)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 
 upx: exes
 	upx gvim.exe
@@ -607,6 +639,12 @@ endif
 INCL = vim.h feature.h os_win32.h os_dos.h ascii.h keymap.h term.h macros.h \
 	structs.h regexp.h option.h ex_cmds.h proto.h globals.h farsi.h \
 	gui.h
+
+$(OUTDIR)/if_python.o : if_python.c $(INCL)
+	$(CC) -c $(CFLAGS) $(PYTHONINC) -DDYNAMIC_PYTHON_DLL=\"python$(PYTHON_VER).dll\" $< -o $@
+
+$(OUTDIR)/if_python3.o : if_python3.c $(INCL)
+	$(CC) -c $(CFLAGS) $(PYTHON3INC) -DDYNAMIC_PYTHON3_DLL=\"PYTHON$(PYTHON3_VER).dll\" $< -o $@
 
 $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
@@ -659,7 +697,7 @@ ifneq (sh.exe, $(SHELL))
 	@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' >> pathdef.c
 	@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' >> pathdef.c
 	@echo 'char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)";' >> pathdef.c
-	@echo 'char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)";' >> pathdef.c
+	@echo 'char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)";' >> pathdef.c
 	@echo 'char_u *compiled_user = (char_u *)"$(USERNAME)";' >> pathdef.c
 	@echo 'char_u *compiled_sys = (char_u *)"$(USERDOMAIN)";' >> pathdef.c
 else
@@ -669,7 +707,7 @@ else
 	@echo char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)"; >> pathdef.c
 	@echo char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)"; >> pathdef.c
 	@echo char_u *all_cflags = (char_u *)"$(CC) $(CFLAGS)"; >> pathdef.c
-	@echo char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(RUBYLIB)"; >> pathdef.c
+	@echo char_u *all_lflags = (char_u *)"$(CC) $(CFLAGS) $(LFLAGS) -o $(TARGET) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)"; >> pathdef.c
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> pathdef.c
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> pathdef.c
 endif

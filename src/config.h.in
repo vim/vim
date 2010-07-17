@@ -328,6 +328,15 @@
 /* Define if you want to include the Python interpreter. */
 #undef FEAT_PYTHON
 
+/* Define if you want to include the Python3 interpreter. */
+#undef FEAT_PYTHON3
+
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_PYTHON
+
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_PYTHON3
+
 /* Define if you want to include the Ruby interpreter. */
 #undef FEAT_RUBY
 

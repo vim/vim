@@ -5911,8 +5911,8 @@ list_equal(l1, l2, ic)
     return item1 == NULL && item2 == NULL;
 }
 
-#if defined(FEAT_RUBY) || defined(FEAT_PYTHON) || defined(FEAT_MZSCHEME) \
-	|| defined(FEAT_LUA) || defined(PROTO)
+#if defined(FEAT_RUBY) || defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
+	|| defined(FEAT_MZSCHEME) || defined(FEAT_LUA) || defined(PROTO)
 /*
  * Return the dictitem that an entry in a hashtable points to.
  */
@@ -11991,6 +11991,11 @@ f_has(argvars, rettv)
 	"python",
 #endif
 #endif
+#ifdef FEAT_PYTHON3
+#ifndef DYNAMIC_PYTHON3
+	"python3",
+#endif
+#endif
 #ifdef FEAT_POSTSCRIPT
 	"postscript",
 #endif
@@ -12184,9 +12189,17 @@ f_has(argvars, rettv)
 	else if (STRICMP(name, "ruby") == 0)
 	    n = ruby_enabled(FALSE);
 #endif
+#ifdef FEAT_PYTHON
 #ifdef DYNAMIC_PYTHON
 	else if (STRICMP(name, "python") == 0)
 	    n = python_enabled(FALSE);
+#endif
+#endif
+#ifdef FEAT_PYTHON3
+#ifdef DYNAMIC_PYTHON3
+	else if (STRICMP(name, "python3") == 0)
+	    n = python3_enabled(FALSE);
+#endif
 #endif
 #ifdef DYNAMIC_PERL
 	else if (STRICMP(name, "perl") == 0)

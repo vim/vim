@@ -13,6 +13,7 @@
 #if defined(__BORLANDC__) && defined(WIN32) && !defined(DEBUG)
 #if defined(FEAT_PERL) || \
     defined(FEAT_PYTHON) || \
+    defined(FEAT_PYTHON3) || \
     defined(FEAT_RUBY) || \
     defined(FEAT_TCL) || \
     defined(FEAT_MZSCHEME) || \

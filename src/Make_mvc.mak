@@ -52,6 +52,11 @@
 #	  DYNAMIC_PYTHON=yes (to load the Python DLL dynamically)
 #	  PYTHON_VER=[Python version, eg 15, 20]  (default is 22)
 #
+#	Python3 interface:
+#	  PYTHON3=[Path to Python3 directory]
+#	  DYNAMIC_PYTHON3=yes (to load the Python3 DLL dynamically)
+#	  PYTHON3_VER=[Python3 version, eg 30, 31]  (default is 31)
+#
 #	Ruby interface:
 #	  RUBY=[Path to Ruby directory]
 #	  DYNAMIC_RUBY=yes (to load the Ruby DLL dynamically)
@@ -165,6 +170,9 @@ OBJDIR = $(OBJDIR)L
 !endif
 !ifdef PYTHON
 OBJDIR = $(OBJDIR)Y
+!endif
+!ifdef PYTHON3
+OBJDIR = $(OBJDIR)H
 !endif
 !ifdef TCL
 OBJDIR = $(OBJDIR)T
@@ -641,6 +649,13 @@ LUA_LIB = "$(LUA)\lib\lua$(LUA_VER).lib"
 !endif
 !endif
 
+!ifdef PYTHON
+!ifdef PYTHON3
+DYNAMIC_PYTHON=yes
+DYNAMIC_PYTHON3=yes
+!endif
+!endif
+
 # PYTHON interface
 !ifdef PYTHON
 !ifndef PYTHON_VER
@@ -659,6 +674,27 @@ CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON \
 PYTHON_LIB = /nodefaultlib:python$(PYTHON_VER).lib
 !else
 PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
+!endif
+!endif
+
+# PYTHON3 interface
+!ifdef PYTHON3
+!ifndef PYTHON3_VER
+PYTHON3_VER = 31
+!endif
+!message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
+!if "$(DYNAMIC_PYTHON3)" == "yes"
+!message Python3 DLL will be loaded dynamically
+!endif
+CFLAGS = $(CFLAGS) -DFEAT_PYTHON3
+PYTHON3_OBJ = $(OUTDIR)\if_python3.obj
+PYTHON3_INC = /I "$(PYTHON3)\Include" /I "$(PYTHON3)\PC"
+!if "$(DYNAMIC_PYTHON3)" == "yes"
+CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
+		-DDYNAMIC_PYTHON3_DLL=\"python$(PYTHON3_VER).dll\"
+PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
+!else
+PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
 !endif
 !endif
 
@@ -835,7 +871,7 @@ conflags = $(conflags) /map /mapinfo:lines
 
 LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(LIBC) $(OLE_LIB)  user32.lib $(SNIFF_LIB) \
-		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(RUBY_LIB) \
+		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
 		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
 # Report link time code generation progress if used. 
@@ -851,12 +887,12 @@ all:	$(VIM).exe vimrun.exe install.exe uninstal.exe xxd/xxd.exe \
 		GvimExt/gvimext.dll
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(GUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
-		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
+		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
 		$(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS) version.c
 	$(link) $(LINKARGS1) -out:$(VIM).exe $(OBJ) $(GUI_OBJ) $(OLE_OBJ) \
-		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(RUBY_OBJ) \
+		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
 		$(TCL_OBJ) $(SNIFF_OBJ) $(CSCOPE_OBJ) $(NETBEANS_OBJ) \
 		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
 
@@ -1015,6 +1051,9 @@ mzscheme_base.c:
 
 $(OUTDIR)/if_python.obj: $(OUTDIR) if_python.c  $(INCL)
 	$(CC) $(CFLAGS) $(PYTHON_INC) if_python.c
+
+$(OUTDIR)/if_python3.obj: $(OUTDIR) if_python3.c  $(INCL)
+	$(CC) $(CFLAGS) $(PYTHON3_INC) if_python3.c
 
 $(OUTDIR)/if_ole.obj: $(OUTDIR) if_ole.cpp  $(INCL) if_ole.h
 

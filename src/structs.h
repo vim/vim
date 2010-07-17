@@ -1612,6 +1612,10 @@ struct file_buffer
     void	*b_python_ref;	/* The Python reference to this buffer */
 #endif
 
+#ifdef FEAT_PYTHON3
+    void	*b_python3_ref;	/* The Python3 reference to this buffer */
+#endif
+
 #ifdef FEAT_TCL
     void	*b_tcl_ref;
 #endif
@@ -2104,6 +2108,10 @@ struct window_S
 
 #ifdef FEAT_PYTHON
     void	*w_python_ref;		/* The Python value for this window */
+#endif
+
+#ifdef FEAT_PYTHON3
+    void	*w_python3_ref;		/* The Python value for this window */
 #endif
 
 #ifdef FEAT_TCL

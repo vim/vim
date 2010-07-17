@@ -129,8 +129,8 @@ static int	getargopt __ARGS((exarg_T *eap));
 static int	check_more __ARGS((int, int));
 static linenr_T get_address __ARGS((char_u **, int skip, int to_other_file));
 static void	get_flags __ARGS((exarg_T *eap));
-#if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_TCL) \
-	|| !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
+#if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
+	|| !defined(FEAT_TCL) || !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
 # define HAVE_EX_SCRIPT_NI
 static void	ex_script_ni __ARGS((exarg_T *eap));
 #endif
@@ -264,6 +264,10 @@ static void	ex_popup __ARGS((exarg_T *eap));
 #ifndef FEAT_PYTHON
 # define ex_python		ex_script_ni
 # define ex_pyfile		ex_ni
+#endif
+#ifndef FEAT_PYTHON3
+# define ex_python3		ex_script_ni
+# define ex_py3file		ex_ni
 #endif
 #ifndef FEAT_TCL
 # define ex_tcl			ex_script_ni
@@ -2554,6 +2558,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_perl:
 	    case CMD_psearch:
 	    case CMD_python:
+	    case CMD_python3:
 	    case CMD_return:
 	    case CMD_rightbelow:
 	    case CMD_ruby:
@@ -2816,6 +2821,10 @@ find_command(eap, full)
     {
 	while (ASCII_ISALPHA(*p))
 	    ++p;
+        /* for python 3.x support (:py3, :python3) */
+        if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
+	    p = skipdigits(p);
+
 	/* check for non-alpha command */
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
 	    ++p;
