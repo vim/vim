@@ -6062,6 +6062,12 @@ get_c_indent()
     int ind_open_left_imag = 0;
 
     /*
+     * Spaces jump labels should be shifted to the left if N is non-negative,
+     * otherwise the jump label will be put to column 1.
+     */
+    int ind_jump_label = -1;
+
+    /*
      * spaces from the switch() indent a "case xx" label should be located
      */
     int ind_case = curbuf->b_p_sw;
@@ -6232,6 +6238,7 @@ get_c_indent()
     int		iscase;
     int		lookfor_break;
     int		cont_amount = 0;    /* amount for continuation line */
+    int		original_line_islabel;
 
     for (options = curbuf->b_p_cino; *options; )
     {
@@ -6277,6 +6284,7 @@ get_c_indent()
 	    case '{': ind_open_extra = n; break;
 	    case '}': ind_close_extra = n; break;
 	    case '^': ind_open_left_imag = n; break;
+	    case 'L': ind_jump_label = n; break;
 	    case ':': ind_case = n; break;
 	    case '=': ind_case_code = n; break;
 	    case 'b': ind_case_break = n; break;
@@ -6339,6 +6347,8 @@ get_c_indent()
 
     curwin->w_cursor.col = 0;
 
+    original_line_islabel = cin_islabel(ind_maxcomment);  /* XXX */
+
     /*
      * #defines and so on always go at the left when included in 'cinkeys'.
      */
@@ -6348,9 +6358,11 @@ get_c_indent()
     }
 
     /*
-     * Is it a non-case label?	Then that goes at the left margin too unless JS flag is set.
+     * Is it a non-case label?	Then that goes at the left margin too unless:
+     *  - JS flag is set.
+     *  - 'L' item has a positive value.
      */
-    else if (!ind_js && cin_islabel(ind_maxcomment))	    /* XXX */
+    else if (original_line_islabel && !ind_js && ind_jump_label < 0)
     {
 	amount = 0;
     }
@@ -7743,6 +7755,10 @@ term_again:
       /* add extra indent for a comment */
       if (cin_iscomment(theline))
 	  amount += ind_comment;
+
+      /* subtract extra left-shift for jump labels */
+      if (ind_jump_label > 0 && original_line_islabel)
+	  amount -= ind_jump_label;
     }
 
     /*

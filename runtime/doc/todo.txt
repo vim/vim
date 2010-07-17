@@ -1095,9 +1095,6 @@ Before release 7.3:
 
 Vim 7.3:
 Patches to possibly include:
--   Patch for adding "J" flag to 'cinoptions': placement of jump label.  (Manuel
-    Konig, 2010 Feb 19)  Update by Lech Lorens, Feb 22.
-    Need another name, "J" is now used for Javascript.
 -   Patch for Python 3 support. (Roland Puntaier, 2009 Sep 22)
     Includes changes for omnicompletion.
     Needs some more testing.

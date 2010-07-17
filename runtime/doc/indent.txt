@@ -216,6 +216,19 @@ assume a 'shiftwidth' of 4.
 		      }			}		  }
 		  }		      }			  }
 <
+	LN    Controls placement of jump labels. If N is negative, the label
+	      will be placed at column 1. If N is non-negative, the indent of
+	      the label will be the prevailing indent minus N.  (default -1).
+
+		cino=               cino=L2             cino=Ls >
+		  func()              func()              func()
+		  {                   {                   {
+		      {                   {                   {
+		          stmt;               stmt;               stmt;
+		  LABEL:                    LABEL:            LABEL:
+		      }                   }                   }
+		  }                   }                   }
+<
 	:N    Place case labels N characters from the indent of the switch().
 	      (default 'shiftwidth').
 
@@ -464,13 +477,14 @@ assume a 'shiftwidth' of 4.
 
 
 The defaults, spelled out in full, are:
-	cinoptions=>s,e0,n0,f0,{0,}0,^0,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,c3,C0,
-		   /0,(2s,us,U0,w0,W0,m0,j0,)20,*70,#0
+	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,ps,ts,is,+s,
+			c3,C0,/0,(2s,us,U0,w0,W0,m0,j0,J0,)20,*70,#0
 
 Vim puts a line in column 1 if:
 - It starts with '#' (preprocessor directives), if 'cinkeys' contains '#'.
 - It starts with a label (a keyword followed by ':', other than "case" and
-  "default").
+  "default") and 'cinoptions' does not contain an 'L' entry with a positive
+  value.
 - Any combination of indentations causes the line to have less than 0
   indentation.
 
