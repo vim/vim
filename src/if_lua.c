@@ -229,33 +229,44 @@ static const luaV_Reg luaV_dll[] = {
 
 static HINSTANCE hinstLua = 0;
 
-static void end_dynamic_lua (void) {
-    if (hinstLua) {
-        FreeLibrary(hinstLua);
-        hinstLua = 0;
+    static void
+end_dynamic_lua(void)
+{
+    if (hinstLua)
+    {
+	FreeLibrary(hinstLua);
+	hinstLua = 0;
     }
 }
 
-static int lua_link_init (char *libname, int verbose) {
+    static int
+lua_link_init(char *libname, int verbose)
+{
     const luaV_Reg *reg;
     if (hinstLua) return OK;
     hinstLua = LoadLibrary(libname);
-    if (!hinstLua) {
-        if (verbose) EMSG2(_(e_loadlib), libname);
-        return FAIL;
+    if (!hinstLua)
+    {
+	if (verbose)
+	    EMSG2(_(e_loadlib), libname);
+	return FAIL;
     }
-    for (reg = luaV_dll; reg->func; reg++) {
+    for (reg = luaV_dll; reg->func; reg++)
+    {
 	if ((*reg->func = GetProcAddress(hinstLua, reg->name)) == NULL) {
-            FreeLibrary(hinstLua);
-            hinstLua = 0;
-            if (verbose) EMSG2(_(e_loadfunc), reg->name);
-            return FAIL;
-        }
+	    FreeLibrary(hinstLua);
+	    hinstLua = 0;
+	    if (verbose)
+		EMSG2(_(e_loadfunc), reg->name);
+	    return FAIL;
+	}
     }
     return OK;
 }
 
-int lua_enabled (int verbose) {
+    int
+lua_enabled(int verbose)
+{
     return lua_link_init(DYNAMIC_LUA_DLL, verbose) == OK;
 }
 
@@ -264,116 +275,144 @@ int lua_enabled (int verbose) {
 
 /* =======   Internal   ======= */
 
-static void luaV_newmetatable (lua_State *L, const char *tname) {
+    static void
+luaV_newmetatable(lua_State *L, const char *tname)
+{
     lua_newtable(L);
     lua_pushlightuserdata(L, (void *) tname);
     lua_pushvalue(L, -2);
     lua_rawset(L, LUA_REGISTRYINDEX);
 }
 
-static void *luaV_toudata (lua_State *L, int ud, const char *tname) {
+    static void *
+luaV_toudata(lua_State *L, int ud, const char *tname)
+{
     void *p = lua_touserdata(L, ud);
-    if (p != NULL) { /* value is userdata? */
-        if (lua_getmetatable(L, ud)) { /* does it have a metatable? */
-            luaV_getfield(L, tname); /* get metatable */
-            if (lua_rawequal(L, -1, -2)) { /* MTs match? */
-                lua_pop(L, 2); /* MTs */
-                return p;
-            }
-        }
+
+    if (p != NULL) /* value is userdata? */
+    {
+	if (lua_getmetatable(L, ud)) /* does it have a metatable? */
+	{
+	    luaV_getfield(L, tname); /* get metatable */
+	    if (lua_rawequal(L, -1, -2)) /* MTs match? */
+	    {
+		lua_pop(L, 2); /* MTs */
+		return p;
+	    }
+	}
     }
     return NULL;
 }
 
-static void *luaV_checkudata (lua_State *L, int ud, const char *tname) {
+    static void *
+luaV_checkudata(lua_State *L, int ud, const char *tname)
+{
     void *p = luaV_toudata(L, ud, tname);
     if (p == NULL) luaL_typerror(L, ud, tname);
     return p;
 }
 
-static void luaV_pushtypval (lua_State *L, typval_T *tv) {
+    static void
+luaV_pushtypval(lua_State *L, typval_T *tv)
+{
     if (tv == NULL) luaL_error(L, "null type");
-    switch (tv->v_type) {
-        case VAR_STRING:
-            lua_pushstring(L, (char *) tv->vval.v_string);
-            break;
-        case VAR_NUMBER:
-            lua_pushinteger(L, (int) tv->vval.v_number);
-            break;
+    switch (tv->v_type)
+    {
+	case VAR_STRING:
+	    lua_pushstring(L, (char *) tv->vval.v_string);
+	    break;
+	case VAR_NUMBER:
+	    lua_pushinteger(L, (int) tv->vval.v_number);
+	    break;
 #ifdef FEAT_FLOAT
-        case VAR_FLOAT:
-            lua_pushnumber(L, (lua_Number) tv->vval.v_float);
-            break;
+	case VAR_FLOAT:
+	    lua_pushnumber(L, (lua_Number) tv->vval.v_float);
+	    break;
 #endif
-        case VAR_LIST: {
-            list_T *l = tv->vval.v_list;
-            if (l != NULL) {
-                /* check cache */
-                lua_pushlightuserdata(L, (void *) l);
-                lua_rawget(L, LUA_ENVIRONINDEX);
-                if (lua_isnil(L, -1)) { /* not interned? */
-                    listitem_T *li;
-                    int n = 0;
-                    lua_pop(L, 1); /* nil */
-                    lua_newtable(L);
-                    lua_pushlightuserdata(L, (void *) l);
-                    lua_pushvalue(L, -2);
-                    lua_rawset(L, LUA_ENVIRONINDEX);
-                    for (li = l->lv_first; li != NULL; li = li->li_next) {
-                        luaV_pushtypval(L, &li->li_tv);
-                        lua_rawseti(L, -2, ++n);
-                    }
-                }
-            }
-            else lua_pushnil(L);
-            break;
-        }
-        case VAR_DICT: {
-            dict_T *d = tv->vval.v_dict;
-            if (d != NULL) {
-                /* check cache */
-                lua_pushlightuserdata(L, (void *) d);
-                lua_rawget(L, LUA_ENVIRONINDEX);
-                if (lua_isnil(L, -1)) { /* not interned? */
-                    hashtab_T *ht = &d->dv_hashtab;
-                    hashitem_T *hi;
-                    int n = ht->ht_used; /* remaining items */
-                    lua_pop(L, 1); /* nil */
-                    lua_newtable(L);
-                    lua_pushlightuserdata(L, (void *) d);
-                    lua_pushvalue(L, -2);
-                    lua_rawset(L, LUA_ENVIRONINDEX);
-                    for (hi = ht->ht_array; n > 0; hi++) {
-                        if (!HASHITEM_EMPTY(hi)) {
-                            dictitem_T *di = dict_lookup(hi);
-                            luaV_pushtypval(L, &di->di_tv);
-                            lua_setfield(L, -2, (char *) hi->hi_key);
-                            n--;
-                        }
-                    }
-                }
-            }
-            else lua_pushnil(L);
-            break;
-        }
-        default:
-            luaL_error(L, "invalid type");
+	case VAR_LIST: {
+	    list_T *l = tv->vval.v_list;
+
+	    if (l != NULL)
+	    {
+		/* check cache */
+		lua_pushlightuserdata(L, (void *) l);
+		lua_rawget(L, LUA_ENVIRONINDEX);
+		if (lua_isnil(L, -1)) /* not interned? */
+		{
+		    listitem_T *li;
+		    int n = 0;
+		    lua_pop(L, 1); /* nil */
+		    lua_newtable(L);
+		    lua_pushlightuserdata(L, (void *) l);
+		    lua_pushvalue(L, -2);
+		    lua_rawset(L, LUA_ENVIRONINDEX);
+		    for (li = l->lv_first; li != NULL; li = li->li_next)
+		    {
+			luaV_pushtypval(L, &li->li_tv);
+			lua_rawseti(L, -2, ++n);
+		    }
+		}
+	    }
+	    else lua_pushnil(L);
+	    break;
+		       }
+	case VAR_DICT: {
+	    dict_T *d = tv->vval.v_dict;
+
+	    if (d != NULL)
+	    {
+		/* check cache */
+		lua_pushlightuserdata(L, (void *) d);
+		lua_rawget(L, LUA_ENVIRONINDEX);
+		if (lua_isnil(L, -1)) { /* not interned? */
+		    hashtab_T *ht = &d->dv_hashtab;
+		    hashitem_T *hi;
+		    int n = ht->ht_used; /* remaining items */
+		    lua_pop(L, 1); /* nil */
+		    lua_newtable(L);
+		    lua_pushlightuserdata(L, (void *) d);
+		    lua_pushvalue(L, -2);
+		    lua_rawset(L, LUA_ENVIRONINDEX);
+		    for (hi = ht->ht_array; n > 0; hi++)
+		    {
+			if (!HASHITEM_EMPTY(hi))
+			{
+			    dictitem_T *di = dict_lookup(hi);
+			    luaV_pushtypval(L, &di->di_tv);
+			    lua_setfield(L, -2, (char *) hi->hi_key);
+			    n--;
+			}
+		    }
+		}
+	    }
+	    else lua_pushnil(L);
+	    break;
+	}
+	default:
+	    luaL_error(L, "invalid type");
     }
 }
 
 /* similar to luaL_addlstring, but replaces \0 with \n if toline and
  * \n with \0 otherwise */
-static void luaV_addlstring (luaL_Buffer *b, const char *s, size_t l,
-        int toline) {
-    while (l--) {
-        if (*s == '\0' && toline) luaL_addchar(b, '\n');
-        else if (*s == '\n' && !toline) luaL_addchar(b, '\0');
-        else luaL_addchar(b, *s);
-        s++;
+    static void
+luaV_addlstring(luaL_Buffer *b, const char *s, size_t l, int toline)
+{
+    while (l--)
+    {
+	if (*s == '\0' && toline)
+	    luaL_addchar(b, '\n');
+	else if (*s == '\n' && !toline)
+	    luaL_addchar(b, '\0');
+	else
+	    luaL_addchar(b, *s);
+	s++;
     }
 }
 
-static void luaV_pushline (lua_State *L, buf_T *buf, linenr_T n) {
+    static void
+luaV_pushline(lua_State *L, buf_T *buf, linenr_T n)
+{
     const char *s = (const char *) ml_get_buf(buf, n, FALSE);
     luaL_Buffer b;
     luaL_buffinit(L, &b);
@@ -381,9 +420,12 @@ static void luaV_pushline (lua_State *L, buf_T *buf, linenr_T n) {
     luaL_pushresult(&b);
 }
 
-static char_u *luaV_toline (lua_State *L, int pos) {
+    static char_u *
+luaV_toline(lua_State *L, int pos)
+{
     size_t l;
     const char *s = lua_tolstring(L, pos, &l);
+
     luaL_Buffer b;
     luaL_buffinit(L, &b);
     luaV_addlstring(&b, s, l, 1);
@@ -393,7 +435,9 @@ static char_u *luaV_toline (lua_State *L, int pos) {
 
 /* pops a string s from the top of the stack and calls mf(t) for pieces t of
  * s separated by newlines */
-static void luaV_msgfunc (lua_State *L, msgfunc_T mf) {
+    static void
+luaV_msgfunc(lua_State *L, msgfunc_T mf)
+{
     luaL_Buffer b;
     size_t l;
     const char *p, *s = lua_tolstring(L, -1, &l);
@@ -402,11 +446,13 @@ static void luaV_msgfunc (lua_State *L, msgfunc_T mf) {
     luaL_pushresult(&b);
     /* break string */
     p = s = lua_tolstring(L, -1, &l);
-    while (l--) {
-        if (*p++ == '\0') { /* break? */
-            mf((char_u *) s);
-            s = p;
-        }
+    while (l--)
+    {
+	if (*p++ == '\0') /* break? */
+	{
+	    mf((char_u *) s);
+	    s = p;
+	}
     }
     mf((char_u *) s);
     lua_pop(L, 2); /* original and modified strings */
@@ -415,7 +461,9 @@ static void luaV_msgfunc (lua_State *L, msgfunc_T mf) {
 
 /* =======   Buffer type   ======= */
 
-static luaV_Buffer *luaV_newbuffer (lua_State *L, buf_T *buf) {
+    static luaV_Buffer *
+luaV_newbuffer(lua_State *L, buf_T *buf)
+{
     luaV_Buffer *b = (luaV_Buffer *) lua_newuserdata(L, sizeof(luaV_Buffer));
     *b = buf;
     lua_pushlightuserdata(L, (void *) buf);
@@ -431,126 +479,155 @@ static luaV_Buffer *luaV_newbuffer (lua_State *L, buf_T *buf) {
     return b;
 }
 
-static luaV_Buffer *luaV_pushbuffer (lua_State *L, buf_T *buf) {
+    static luaV_Buffer *
+luaV_pushbuffer (lua_State *L, buf_T *buf)
+{
     luaV_Buffer *b = NULL;
     if (buf == NULL)
-        lua_pushnil(L);
+	lua_pushnil(L);
     else {
-        lua_pushlightuserdata(L, (void *) buf);
-        lua_rawget(L, LUA_ENVIRONINDEX);
-        if (lua_isnil(L, -1)) { /* not interned? */
-            lua_pop(L, 1);
-            b = luaV_newbuffer(L, buf);
-        }
-        else b = (luaV_Buffer *) lua_touserdata(L, -1);
+	lua_pushlightuserdata(L, (void *) buf);
+	lua_rawget(L, LUA_ENVIRONINDEX);
+	if (lua_isnil(L, -1)) /* not interned? */
+	{
+	    lua_pop(L, 1);
+	    b = luaV_newbuffer(L, buf);
+	}
+	else
+	    b = (luaV_Buffer *) lua_touserdata(L, -1);
     }
     return b;
 }
 
 /* Buffer metamethods */
 
-static int luaV_buffer_tostring (lua_State *L) {
+    static int
+luaV_buffer_tostring(lua_State *L)
+{
     lua_pushfstring(L, "%s: %p", LUAVIM_BUFFER, lua_touserdata(L, 1));
     return 1;
 }
 
-static int luaV_buffer_len (lua_State *L) {
+    static int
+luaV_buffer_len(lua_State *L)
+{
     luaV_Buffer *b = lua_touserdata(L, 1);
     lua_pushinteger(L, (*b)->b_ml.ml_line_count);
     return 1;
 }
 
-static int luaV_buffer_call (lua_State *L) {
+    static int
+luaV_buffer_call(lua_State *L)
+{
     luaV_Buffer *b = (luaV_Buffer *) lua_touserdata(L, 1);
     lua_settop(L, 1);
     set_curbuf(*b, DOBUF_SPLIT);
     return 1;
 }
 
-static int luaV_buffer_index (lua_State *L) {
+    static int
+luaV_buffer_index(lua_State *L)
+{
     luaV_Buffer *b = (luaV_Buffer *) lua_touserdata(L, 1);
     linenr_T n = (linenr_T) lua_tointeger(L, 2);
     if (n > 0 && n <= (*b)->b_ml.ml_line_count)
-        luaV_pushline(L, *b, n);
-    else if (lua_isstring(L, 2)) {
-        const char *s = lua_tostring(L, 2);
-        if (strncmp(s, "name", 4) == 0)
-            lua_pushstring(L, (char *) (*b)->b_sfname);
-        else if (strncmp(s, "fname", 5) == 0)
-            lua_pushstring(L, (char *) (*b)->b_ffname);
-        else if (strncmp(s, "number", 6) == 0)
-            lua_pushinteger(L, (*b)->b_fnum);
-        /* methods */
-        else if (strncmp(s,   "insert", 6) == 0
-                || strncmp(s, "next", 4) == 0
-                || strncmp(s, "previous", 8) == 0
-                || strncmp(s, "isvalid", 7) == 0) {
-            lua_getmetatable(L, 1);
-            lua_getfield(L, -1, s);
-        }
-        else lua_pushnil(L);
+	luaV_pushline(L, *b, n);
+    else if (lua_isstring(L, 2))
+    {
+	const char *s = lua_tostring(L, 2);
+	if (strncmp(s, "name", 4) == 0)
+	    lua_pushstring(L, (char *) (*b)->b_sfname);
+	else if (strncmp(s, "fname", 5) == 0)
+	    lua_pushstring(L, (char *) (*b)->b_ffname);
+	else if (strncmp(s, "number", 6) == 0)
+	    lua_pushinteger(L, (*b)->b_fnum);
+	/* methods */
+	else if (strncmp(s,   "insert", 6) == 0
+		|| strncmp(s, "next", 4) == 0
+		|| strncmp(s, "previous", 8) == 0
+		|| strncmp(s, "isvalid", 7) == 0)
+	{
+	    lua_getmetatable(L, 1);
+	    lua_getfield(L, -1, s);
+	}
+	else
+	    lua_pushnil(L);
     }
-    else lua_pushnil(L);
+    else
+	lua_pushnil(L);
     return 1;
 }
 
-static int luaV_buffer_newindex (lua_State *L) {
+    static int
+luaV_buffer_newindex(lua_State *L)
+{
     luaV_Buffer *b = (luaV_Buffer *) lua_touserdata(L, 1);
     linenr_T n = (linenr_T) luaL_checkinteger(L, 2);
 #ifdef HAVE_SANDBOX
     luaV_checksandbox(L);
 #endif
     if (n < 1 || n > (*b)->b_ml.ml_line_count)
-        luaL_error(L, "invalid line number");
-    if (lua_isnil(L, 3)) { /* delete line */
-        buf_T *buf = curbuf;
-        curbuf = *b;
-        if (u_savedel(n, 1L) == FAIL) {
-            curbuf = buf;
-            luaL_error(L, "cannot save undo information");
-        }
-        else if (ml_delete(n, FALSE) == FAIL) {
-            curbuf = buf;
-            luaL_error(L, "cannot delete line");
-        }
-        else {
-            deleted_lines_mark(n, 1L);
-            if (*b == curwin->w_buffer) { /* fix cursor in current window? */
-                if (curwin->w_cursor.lnum >= n) {
-                    if (curwin->w_cursor.lnum > n) {
-                        curwin->w_cursor.lnum -= 1;
-                        check_cursor_col();
-                    }
-                    else check_cursor();
-                    changed_cline_bef_curs();
-                }
-                invalidate_botline();
-            }
-        }
-        curbuf = buf;
+	luaL_error(L, "invalid line number");
+    if (lua_isnil(L, 3)) /* delete line */
+    {
+	buf_T *buf = curbuf;
+	curbuf = *b;
+	if (u_savedel(n, 1L) == FAIL)
+	{
+	    curbuf = buf;
+	    luaL_error(L, "cannot save undo information");
+	}
+	else if (ml_delete(n, FALSE) == FAIL)
+	{
+	    curbuf = buf;
+	    luaL_error(L, "cannot delete line");
+	}
+	else {
+	    deleted_lines_mark(n, 1L);
+	    if (*b == curwin->w_buffer) /* fix cursor in current window? */
+	    {
+		if (curwin->w_cursor.lnum >= n)
+		{
+		    if (curwin->w_cursor.lnum > n)
+		    {
+			curwin->w_cursor.lnum -= 1;
+			check_cursor_col();
+		    }
+		    else check_cursor();
+		    changed_cline_bef_curs();
+		}
+		invalidate_botline();
+	    }
+	}
+	curbuf = buf;
     }
-    else if (lua_isstring(L, 3)) { /* update line */
-        buf_T *buf = curbuf;
-        curbuf = *b;
-        if (u_savesub(n) == FAIL) {
-            curbuf = buf;
-            luaL_error(L, "cannot save undo information");
-        }
-        else if (ml_replace(n, luaV_toline(L, 3), TRUE) == FAIL) {
-            curbuf = buf;
-            luaL_error(L, "cannot replace line");
-        }
-        else changed_bytes(n, 0);
-        curbuf = buf;
-        if (*b == curwin->w_buffer)
-            check_cursor_col();
+    else if (lua_isstring(L, 3)) /* update line */
+    {
+	buf_T *buf = curbuf;
+	curbuf = *b;
+	if (u_savesub(n) == FAIL)
+	{
+	    curbuf = buf;
+	    luaL_error(L, "cannot save undo information");
+	}
+	else if (ml_replace(n, luaV_toline(L, 3), TRUE) == FAIL)
+	{
+	    curbuf = buf;
+	    luaL_error(L, "cannot replace line");
+	}
+	else changed_bytes(n, 0);
+	curbuf = buf;
+	if (*b == curwin->w_buffer)
+	    check_cursor_col();
     }
     else
-        luaL_error(L, "wrong argument to change line");
+	luaL_error(L, "wrong argument to change line");
     return 0;
 }
 
-static int luaV_buffer_insert (lua_State *L) {
+    static int
+luaV_buffer_insert(lua_State *L)
+{
     luaV_Buffer *b = luaV_checkudata(L, 1, LUAVIM_BUFFER);
     linenr_T last = (*b)->b_ml.ml_line_count;
     linenr_T n = (linenr_T) luaL_optinteger(L, 3, last);
@@ -565,34 +642,42 @@ static int luaV_buffer_insert (lua_State *L) {
     /* insert */
     buf = curbuf;
     curbuf = *b;
-    if (u_save(n, n + 1) == FAIL) {
-        curbuf = buf;
-        luaL_error(L, "cannot save undo information");
+    if (u_save(n, n + 1) == FAIL)
+    {
+	curbuf = buf;
+	luaL_error(L, "cannot save undo information");
     }
-    else if (ml_append(n, luaV_toline(L, 2), 0, FALSE) == FAIL) {
-        curbuf = buf;
-        luaL_error(L, "cannot insert line");
+    else if (ml_append(n, luaV_toline(L, 2), 0, FALSE) == FAIL)
+    {
+	curbuf = buf;
+	luaL_error(L, "cannot insert line");
     }
     else
-        appended_lines_mark(n, 1L);
+	appended_lines_mark(n, 1L);
     curbuf = buf;
     update_screen(VALID);
     return 0;
 }
 
-static int luaV_buffer_next (lua_State *L) {
+    static int
+luaV_buffer_next(lua_State *L)
+{
     luaV_Buffer *b = luaV_checkudata(L, 1, LUAVIM_BUFFER);
     luaV_pushbuffer(L, (*b)->b_next);
     return 1;
 }
 
-static int luaV_buffer_previous (lua_State *L) {
+    static int
+luaV_buffer_previous(lua_State *L)
+{
     luaV_Buffer *b = luaV_checkudata(L, 1, LUAVIM_BUFFER);
     luaV_pushbuffer(L, (*b)->b_prev);
     return 1;
 }
 
-static int luaV_buffer_isvalid (lua_State *L) {
+    static int
+luaV_buffer_isvalid(lua_State *L)
+{
     luaV_Buffer *b = luaV_checkudata(L, 1, LUAVIM_BUFFER);
     lua_pushlightuserdata(L, (void *) (*b));
     lua_rawget(L, LUA_ENVIRONINDEX);
@@ -616,7 +701,9 @@ static const luaL_Reg luaV_Buffer_mt[] = {
 
 /* =======   Window type   ======= */
 
-static luaV_Window *luaV_newwindow (lua_State *L, win_T *win) {
+    static luaV_Window *
+luaV_newwindow(lua_State *L, win_T *win)
+{
     luaV_Window *w = (luaV_Window *) lua_newuserdata(L, sizeof(luaV_Window));
     *w = win;
     lua_pushlightuserdata(L, (void *) win);
@@ -632,121 +719,143 @@ static luaV_Window *luaV_newwindow (lua_State *L, win_T *win) {
     return w;
 }
 
-static luaV_Window *luaV_pushwindow (lua_State *L, win_T *win) {
+    static luaV_Window *
+luaV_pushwindow(lua_State *L, win_T *win)
+{
     luaV_Window *w = NULL;
     if (win == NULL)
-        lua_pushnil(L);
+	lua_pushnil(L);
     else {
-        lua_pushlightuserdata(L, (void *) win);
-        lua_rawget(L, LUA_ENVIRONINDEX);
-        if (lua_isnil(L, -1)) { /* not interned? */
-            lua_pop(L, 1);
-            w = luaV_newwindow(L, win);
-        }
-        else w = (luaV_Window *) lua_touserdata(L, -1);
+	lua_pushlightuserdata(L, (void *) win);
+	lua_rawget(L, LUA_ENVIRONINDEX);
+	if (lua_isnil(L, -1)) /* not interned? */
+	{
+	    lua_pop(L, 1);
+	    w = luaV_newwindow(L, win);
+	}
+	else w = (luaV_Window *) lua_touserdata(L, -1);
     }
     return w;
 }
 
 /* Window metamethods */
 
-static int luaV_window_tostring (lua_State *L) {
+    static int
+luaV_window_tostring(lua_State *L)
+{
     lua_pushfstring(L, "%s: %p", LUAVIM_WINDOW, lua_touserdata(L, 1));
     return 1;
 }
 
-static int luaV_window_call (lua_State *L) {
+    static int
+luaV_window_call(lua_State *L)
+{
     luaV_Window *w = (luaV_Window *) lua_touserdata(L, 1);
     lua_settop(L, 1);
     win_goto(*w);
     return 1;
 }
 
-static int luaV_window_index (lua_State *L) {
+    static int
+luaV_window_index(lua_State *L)
+{
     luaV_Window *w = (luaV_Window *) lua_touserdata(L, 1);
     const char *s = luaL_checkstring(L, 2);
     if (strncmp(s, "buffer", 6) == 0)
-        luaV_pushbuffer(L, (*w)->w_buffer);
+	luaV_pushbuffer(L, (*w)->w_buffer);
     else if (strncmp(s, "line", 4) == 0)
-        lua_pushinteger(L, (*w)->w_cursor.lnum);
+	lua_pushinteger(L, (*w)->w_cursor.lnum);
     else if (strncmp(s, "col", 3) == 0)
-        lua_pushinteger(L, (*w)->w_cursor.col + 1);
+	lua_pushinteger(L, (*w)->w_cursor.col + 1);
 #ifdef FEAT_VERTSPLIT
     else if (strncmp(s, "width", 5) == 0)
-        lua_pushinteger(L, W_WIDTH((*w)));
+	lua_pushinteger(L, W_WIDTH((*w)));
 #endif
     else if (strncmp(s, "height", 6) == 0)
-        lua_pushinteger(L, (*w)->w_height);
+	lua_pushinteger(L, (*w)->w_height);
     /* methods */
     else if (strncmp(s,   "next", 4) == 0
-            || strncmp(s, "previous", 8) == 0
-            || strncmp(s, "isvalid", 7) == 0) {
-        lua_getmetatable(L, 1);
-        lua_getfield(L, -1, s);
+	    || strncmp(s, "previous", 8) == 0
+	    || strncmp(s, "isvalid", 7) == 0)
+    {
+	lua_getmetatable(L, 1);
+	lua_getfield(L, -1, s);
     }
     else
-        lua_pushnil(L);
+	lua_pushnil(L);
     return 1;
 }
 
-static int luaV_window_newindex (lua_State *L) {
+    static int
+luaV_window_newindex (lua_State *L)
+{
     luaV_Window *w = (luaV_Window *) lua_touserdata(L, 1);
     const char *s = luaL_checkstring(L, 2);
     int v = luaL_checkinteger(L, 3);
-    if (strncmp(s, "line", 4) == 0) {
+    if (strncmp(s, "line", 4) == 0)
+    {
 #ifdef HAVE_SANDBOX
-        luaV_checksandbox(L);
+	luaV_checksandbox(L);
 #endif
-        if (v < 1 || v > (*w)->w_buffer->b_ml.ml_line_count)
-            luaL_error(L, "line out of range");
-        (*w)->w_cursor.lnum = v;
-        update_screen(VALID);
+	if (v < 1 || v > (*w)->w_buffer->b_ml.ml_line_count)
+	    luaL_error(L, "line out of range");
+	(*w)->w_cursor.lnum = v;
+	update_screen(VALID);
     }
-    else if (strncmp(s, "col", 3) == 0) {
+    else if (strncmp(s, "col", 3) == 0)
+    {
 #ifdef HAVE_SANDBOX
-        luaV_checksandbox(L);
+	luaV_checksandbox(L);
 #endif
-        (*w)->w_cursor.col = v - 1;
-        update_screen(VALID);
+	(*w)->w_cursor.col = v - 1;
+	update_screen(VALID);
     }
 #ifdef FEAT_VERTSPLIT
-    else if (strncmp(s, "width", 5) == 0) {
-        win_T *win = curwin;
+    else if (strncmp(s, "width", 5) == 0)
+    {
+	win_T *win = curwin;
 #ifdef FEAT_GUI
-        need_mouse_correct = TRUE;
+	need_mouse_correct = TRUE;
 #endif
-        curwin = *w;
-        win_setwidth(v);
-        curwin = win;
+	curwin = *w;
+	win_setwidth(v);
+	curwin = win;
     }
 #endif
-    else if (strncmp(s, "height", 6) == 0) {
-        win_T *win = curwin;
+    else if (strncmp(s, "height", 6) == 0)
+    {
+	win_T *win = curwin;
 #ifdef FEAT_GUI
-        need_mouse_correct = TRUE;
+	need_mouse_correct = TRUE;
 #endif
-        curwin = *w;
-        win_setheight(v);
-        curwin = win;
+	curwin = *w;
+	win_setheight(v);
+	curwin = win;
     }
     else
-        luaL_error(L, "invalid window property: `%s'", s);
+	luaL_error(L, "invalid window property: `%s'", s);
     return 0;
 }
 
-static int luaV_window_next (lua_State *L) {
+    static int
+luaV_window_next(lua_State *L)
+{
     luaV_Window *w = luaV_checkudata(L, 1, LUAVIM_WINDOW);
     luaV_pushwindow(L, (*w)->w_next);
     return 1;
 }
 
-static int luaV_window_previous (lua_State *L) {
+    static int
+luaV_window_previous(lua_State *L)
+{
     luaV_Window *w = luaV_checkudata(L, 1, LUAVIM_WINDOW);
     luaV_pushwindow(L, (*w)->w_prev);
     return 1;
 }
 
-static int luaV_window_isvalid (lua_State *L) {
+    static int
+luaV_window_isvalid(lua_State *L)
+{
     luaV_Window *w = luaV_checkudata(L, 1, LUAVIM_WINDOW);
     lua_pushlightuserdata(L, (void *) (*w));
     lua_rawget(L, LUA_ENVIRONINDEX);
@@ -768,103 +877,125 @@ static const luaL_Reg luaV_Window_mt[] = {
 
 /* =======   Vim module   ======= */
 
-static int luaV_print (lua_State *L) {
+    static int
+luaV_print(lua_State *L)
+{
     int i, n = lua_gettop(L); /* nargs */
     const char *s;
     size_t l;
     luaL_Buffer b;
     luaL_buffinit(L, &b);
     lua_getglobal(L, "tostring");
-    for (i = 1; i <= n; i++) {
-        lua_pushvalue(L, -1); /* tostring */
-        lua_pushvalue(L, i); /* arg */
-        lua_call(L, 1, 1);
-        s = lua_tolstring(L, -1, &l);
-        if (s == NULL)
-            return luaL_error(L, "cannot convert to string");
-        if (i > 1) luaL_addchar(&b, ' '); /* use space instead of tab */
-        luaV_addlstring(&b, s, l, 0);
-        lua_pop(L, 1);
+    for (i = 1; i <= n; i++)
+    {
+	lua_pushvalue(L, -1); /* tostring */
+	lua_pushvalue(L, i); /* arg */
+	lua_call(L, 1, 1);
+	s = lua_tolstring(L, -1, &l);
+	if (s == NULL)
+	    return luaL_error(L, "cannot convert to string");
+	if (i > 1) luaL_addchar(&b, ' '); /* use space instead of tab */
+	luaV_addlstring(&b, s, l, 0);
+	lua_pop(L, 1);
     }
     luaL_pushresult(&b);
     luaV_msg(L);
     return 0;
 }
 
-static int luaV_command (lua_State *L) {
+    static int
+luaV_command(lua_State *L)
+{
     do_cmdline_cmd((char_u *) luaL_checkstring(L, 1));
     update_screen(VALID);
     return 0;
 }
 
-static int luaV_eval (lua_State *L) {
+    static int
+luaV_eval(lua_State *L)
+{
     typval_T *tv = eval_expr((char_u *) luaL_checkstring(L, 1), NULL);
     if (tv == NULL) luaL_error(L, "invalid expression");
     luaV_pushtypval(L, tv);
     return 1;
 }
 
-static int luaV_beep (lua_State *L) {
+    static int
+luaV_beep(lua_State *L)
+{
     vim_beep();
     return 0;
 }
 
-static int luaV_line (lua_State *L) {
+    static int
+luaV_line(lua_State *L)
+{
     luaV_pushline(L, curbuf, curwin->w_cursor.lnum);
     return 1;
 }
 
-static int luaV_buffer (lua_State *L) {
+    static int
+luaV_buffer(lua_State *L)
+{
     buf_T *buf;
-    if (lua_isstring(L, 1)) { /* get by number or name? */
-        if (lua_isnumber(L, 1)) { /* by number? */
-            int n = lua_tointeger(L, 1);
-            for (buf = firstbuf; buf != NULL; buf = buf->b_next)
-                if (buf->b_fnum == n) break;
-        }
-        else { /* by name */
-            size_t l;
-            const char *s = lua_tolstring(L, 1, &l);
-            for (buf = firstbuf; buf != NULL; buf = buf->b_next) {
-                if (buf->b_ffname == NULL || buf->b_sfname == NULL) {
-                    if (l == 0) break;
-                }
-                else if (strncmp(s, buf->b_ffname, l) == 0
-                        || strncmp(s, buf->b_sfname, l) == 0)
-                    break;
-            }
-        }
-        if (buf == NULL) /* not found? */
-            lua_pushnil(L);
-        else
-            luaV_pushbuffer(L, buf);
+    if (lua_isstring(L, 1)) /* get by number or name? */
+    {
+	if (lua_isnumber(L, 1)) /* by number? */
+	{
+	    int n = lua_tointeger(L, 1);
+	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+		if (buf->b_fnum == n) break;
+	}
+	else { /* by name */
+	    size_t l;
+	    const char *s = lua_tolstring(L, 1, &l);
+	    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	    {
+		if (buf->b_ffname == NULL || buf->b_sfname == NULL)
+		{
+		    if (l == 0) break;
+		}
+		else if (strncmp(s, buf->b_ffname, l) == 0
+			|| strncmp(s, buf->b_sfname, l) == 0)
+		    break;
+	    }
+	}
+	if (buf == NULL) /* not found? */
+	    lua_pushnil(L);
+	else
+	    luaV_pushbuffer(L, buf);
     }
     else {
-        buf = (lua_toboolean(L, 1)) ? firstbuf : curbuf; /* first buffer? */
-        luaV_pushbuffer(L, buf);
+	buf = (lua_toboolean(L, 1)) ? firstbuf : curbuf; /* first buffer? */
+	luaV_pushbuffer(L, buf);
     }
     return 1;
 }
 
-static int luaV_window (lua_State *L) {
+    static int
+luaV_window(lua_State *L)
+{
     win_T *win;
-    if (lua_isnumber(L, 1)) { /* get by number? */
-        int n = lua_tointeger(L, 1);
-        for (win = firstwin; win != NULL; win = win->w_next, n--)
-            if (n == 1) break;
-        if (win == NULL) /* not found? */
-            lua_pushnil(L);
-        else
-            luaV_pushwindow(L, win);
+    if (lua_isnumber(L, 1)) /* get by number? */
+    {
+	int n = lua_tointeger(L, 1);
+	for (win = firstwin; win != NULL; win = win->w_next, n--)
+	    if (n == 1) break;
+	if (win == NULL) /* not found? */
+	    lua_pushnil(L);
+	else
+	    luaV_pushwindow(L, win);
     }
     else {
-        win = (lua_toboolean(L, 1)) ? firstwin : curwin; /* first window? */
-        luaV_pushwindow(L, win);
+	win = (lua_toboolean(L, 1)) ? firstwin : curwin; /* first window? */
+	luaV_pushwindow(L, win);
     }
     return 1;
 }
 
-static int luaV_open (lua_State *L) {
+    static int
+luaV_open(lua_State *L)
+{
     luaV_Buffer *b;
     char_u *s = NULL;
 #ifdef HAVE_SANDBOX
@@ -875,25 +1006,32 @@ static int luaV_open (lua_State *L) {
     return 1;
 }
 
-static int luaV_isbuffer (lua_State *L) {
+    static int
+luaV_isbuffer(lua_State *L)
+{
     lua_pushboolean(L, luaV_toudata(L, 1, LUAVIM_BUFFER) != NULL);
     return 1;
 }
 
-static int luaV_iswindow (lua_State *L) {
+    static int
+luaV_iswindow(lua_State *L)
+{
     lua_pushboolean(L, luaV_toudata(L, 1, LUAVIM_WINDOW) != NULL);
     return 1;
 }
 
 /* for freeing buffer and window objects; lightuserdata as arg */
-static luaV_free (lua_State *L) {
+    static int
+luaV_free(lua_State *L)
+{
     lua_pushvalue(L, 1); /* lightudata */
     lua_rawget(L, LUA_ENVIRONINDEX);
-    if (!lua_isnil(L, -1)) {
-        lua_pushnil(L);
-        lua_rawset(L, LUA_ENVIRONINDEX); /* env[udata] = nil */
-        lua_pushnil(L);
-        lua_rawset(L, LUA_ENVIRONINDEX); /* env[lightudata] = nil */
+    if (!lua_isnil(L, -1))
+    {
+	lua_pushnil(L);
+	lua_rawset(L, LUA_ENVIRONINDEX); /* env[udata] = nil */
+	lua_pushnil(L);
+	lua_rawset(L, LUA_ENVIRONINDEX); /* env[lightudata] = nil */
     }
     return 0;
 }
@@ -911,7 +1049,9 @@ static const luaL_Reg luaV_module[] = {
     {NULL, NULL}
 };
 
-static int luaopen_vim (lua_State *L) {
+    static int
+luaopen_vim(lua_State *L)
+{
     /* set environment */
     lua_newtable(L);
     lua_newtable(L);
@@ -935,35 +1075,39 @@ static int luaopen_vim (lua_State *L) {
     return 0;
 }
 
-static lua_State *luaV_newstate (void) {
+    static lua_State *
+luaV_newstate(void)
+{
     lua_State *L = luaL_newstate();
     const luaL_Reg luaV_core_libs[] = {
-        {"", luaopen_base},
-        {LUA_TABLIBNAME, luaopen_table},
-        {LUA_STRLIBNAME, luaopen_string},
-        {LUA_MATHLIBNAME, luaopen_math},
-        {LUA_OSLIBNAME, luaopen_os}, /* restricted */
-        {LUA_LOADLIBNAME, luaopen_package},
-        {LUA_DBLIBNAME, luaopen_debug},
-        {NULL, NULL}
+	{"", luaopen_base},
+	{LUA_TABLIBNAME, luaopen_table},
+	{LUA_STRLIBNAME, luaopen_string},
+	{LUA_MATHLIBNAME, luaopen_math},
+	{LUA_OSLIBNAME, luaopen_os}, /* restricted */
+	{LUA_LOADLIBNAME, luaopen_package},
+	{LUA_DBLIBNAME, luaopen_debug},
+	{NULL, NULL}
     };
     const char *os_funcs[] = {
-        "date", "clock", "time", "difftime", "getenv", NULL
+	"date", "clock", "time", "difftime", "getenv", NULL
     };
     const luaL_Reg *reg = luaV_core_libs;
     const char **s = os_funcs;
     /* core libs */
-    for ( ; reg->func; reg++) {
-        lua_pushcfunction(L, reg->func);
-        lua_pushstring(L, reg->name);
-        lua_call(L, 1, 0);
+    for ( ; reg->func; reg++)
+    {
+	lua_pushcfunction(L, reg->func);
+	lua_pushstring(L, reg->name);
+	lua_call(L, 1, 0);
     }
     /* restricted os lib */
     lua_getglobal(L, LUA_OSLIBNAME);
     lua_newtable(L);
-    for ( ; *s; s++) {
-        lua_getfield(L, -2, *s);
-        lua_setfield(L, -2, *s);
+    for ( ; *s; s++)
+    {
+	lua_getfield(L, -2, *s);
+	lua_setfield(L, -2, *s);
     }
     lua_setglobal(L, LUA_OSLIBNAME);
     lua_pop(L, 1); /* os table */
@@ -973,7 +1117,9 @@ static lua_State *luaV_newstate (void) {
     return L;
 }
 
-static void luaV_setrange (lua_State *L, int line1, int line2) {
+    static void
+luaV_setrange(lua_State *L, int line1, int line2)
+{
     lua_getglobal(L, LUAVIM_NAME);
     lua_pushinteger(L, line1);
     lua_setfield(L, -2, "firstline");
@@ -987,53 +1133,66 @@ static void luaV_setrange (lua_State *L, int line1, int line2) {
 
 static lua_State *L = NULL;
 
-static int lua_init (void) {
-    if (L == NULL) {
+    static int
+lua_init(void)
+{
+    if (L == NULL)
+    {
 #ifdef DYNAMIC_LUA
-        if (!lua_enabled(TRUE)) {
-            EMSG(_("Lua library cannot be loaded."));
-            return FAIL;
-        }
+	if (!lua_enabled(TRUE))
+	{
+	    EMSG(_("Lua library cannot be loaded."));
+	    return FAIL;
+	}
 #endif
-        L = luaV_newstate();
+	L = luaV_newstate();
     }
     return OK;
 }
 
-void lua_end (void) {
-    if (L != NULL) {
-        lua_close(L);
-        L = NULL;
+    void
+lua_end(void)
+{
+    if (L != NULL)
+    {
+	lua_close(L);
+	L = NULL;
 #ifdef DYNAMIC_LUA
-        end_dynamic_lua();
+	end_dynamic_lua();
 #endif
     }
 }
 
 /* ex commands */
-void ex_lua (exarg_T *eap) {
+    void
+ex_lua(exarg_T *eap)
+{
     char *script;
     if (lua_init() == FAIL) return;
     script = (char *) script_get(eap, eap->arg);
-    if (!eap->skip) {
-        char *s = (script) ? script :  (char *) eap->arg;
-        luaV_setrange(L, eap->line1, eap->line2);
-        if (luaL_loadbuffer(L, s, strlen(s), LUAVIM_CHUNKNAME)
-                || lua_pcall(L, 0, 0, 0))
-            luaV_emsg(L);
+    if (!eap->skip)
+    {
+	char *s = (script) ? script :  (char *) eap->arg;
+	luaV_setrange(L, eap->line1, eap->line2);
+	if (luaL_loadbuffer(L, s, strlen(s), LUAVIM_CHUNKNAME)
+		|| lua_pcall(L, 0, 0, 0))
+	    luaV_emsg(L);
     }
     if (script != NULL) vim_free(script);
 }
 
-void ex_luado (exarg_T *eap) {
+    void
+ex_luado(exarg_T *eap)
+{
     linenr_T l;
     const char *s = (const char *) eap->arg;
     luaL_Buffer b;
     size_t len;
     if (lua_init() == FAIL) return;
-    if (u_save(eap->line1 - 1, eap->line2 + 1) == FAIL) {
-        EMSG(_("cannot save undo information"));
-        return;
+    if (u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)
+    {
+	EMSG(_("cannot save undo information"));
+	return;
     }
     luaV_setrange(L, eap->line1, eap->line2);
     luaL_buffinit(L, &b);
@@ -1042,46 +1201,56 @@ void ex_luado (exarg_T *eap) {
     luaL_addlstring(&b, " end", 4); /* footer */
     luaL_pushresult(&b);
     s = lua_tolstring(L, -1, &len);
-    if (luaL_loadbuffer(L, s, len, LUAVIM_CHUNKNAME)) {
-        luaV_emsg(L);
-        lua_pop(L, 1); /* function body */
-        return;
+    if (luaL_loadbuffer(L, s, len, LUAVIM_CHUNKNAME))
+    {
+	luaV_emsg(L);
+	lua_pop(L, 1); /* function body */
+	return;
     }
     lua_call(L, 0, 1);
     lua_replace(L, -2); /* function -> body */
-    for (l = eap->line1; l <= eap->line2; l++) {
-        lua_pushvalue(L, -1); /* function */
-        luaV_pushline(L, curbuf, l); /* current line as arg */
-        if (lua_pcall(L, 1, 1, 0)) {
-            luaV_emsg(L);
-            break;
-        }
-        if (lua_isstring(L, -1)) { /* update line? */
+    for (l = eap->line1; l <= eap->line2; l++)
+    {
+	lua_pushvalue(L, -1); /* function */
+	luaV_pushline(L, curbuf, l); /* current line as arg */
+	if (lua_pcall(L, 1, 1, 0))
+	{
+	    luaV_emsg(L);
+	    break;
+	}
+	if (lua_isstring(L, -1)) /* update line? */
+	{
 #ifdef HAVE_SANDBOX
-            luaV_checksandbox(L);
+	    luaV_checksandbox(L);
 #endif
-            ml_replace(l, luaV_toline(L, -1), TRUE);
-            changed_bytes(l, 0);
-            lua_pop(L, 1); /* result from luaV_toline */
-        }
-        lua_pop(L, 1); /* line */
+	    ml_replace(l, luaV_toline(L, -1), TRUE);
+	    changed_bytes(l, 0);
+	    lua_pop(L, 1); /* result from luaV_toline */
+	}
+	lua_pop(L, 1); /* line */
     }
     lua_pop(L, 1); /* function */
     check_cursor();
     update_screen(NOT_VALID);
 }
 
-void ex_luafile (exarg_T *eap) {
-    if (lua_init() == FAIL) return;
-    if (!eap->skip) {
-        luaV_setrange(L, eap->line1, eap->line2);
-        if (luaL_loadfile(L, (char *) eap->arg) || lua_pcall(L, 0, 0, 0))
-            luaV_emsg(L);
+    void
+ex_luafile(exarg_T *eap)
+{
+    if (lua_init() == FAIL)
+	return;
+    if (!eap->skip)
+    {
+	luaV_setrange(L, eap->line1, eap->line2);
+	if (luaL_loadfile(L, (char *) eap->arg) || lua_pcall(L, 0, 0, 0))
+	    luaV_emsg(L);
     }
 }
 
 /* buffer */
-void lua_buffer_free (buf_T *buf) {
+    void
+lua_buffer_free(buf_T *buf)
+{
     if (lua_init() == FAIL) return;
     luaV_getfield(L, LUAVIM_FREE);
     lua_pushlightuserdata(L, (void *) buf);
@@ -1089,7 +1258,9 @@ void lua_buffer_free (buf_T *buf) {
 }
 
 /* window */
-void lua_window_free (win_T *win) {
+    void
+lua_window_free(win_T *win)
+{
     if (lua_init() == FAIL) return;
     luaV_getfield(L, LUAVIM_FREE);
     lua_pushlightuserdata(L, (void *) win);

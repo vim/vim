@@ -2821,8 +2821,8 @@ find_command(eap, full)
     {
 	while (ASCII_ISALPHA(*p))
 	    ++p;
-        /* for python 3.x support (:py3, :python3) */
-        if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
+	/* for python 3.x support (:py3, :python3) */
+	if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
 	    p = skipdigits(p);
 
 	/* check for non-alpha command */

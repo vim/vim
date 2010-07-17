@@ -392,8 +392,8 @@ typedef unsigned int	int_u;
  * On Win64, longs are 32 bits and pointers are 64 bits.
  * For printf() and scanf(), we need to take care of long_u specifically. */
 #ifdef _WIN64
-typedef unsigned __int64        long_u;
-typedef		 __int64        long_i;
+typedef unsigned __int64	long_u;
+typedef		 __int64	long_i;
 # define SCANF_HEX_LONG_U       "%Ix"
 # define SCANF_DECIMAL_LONG_U   "%Iu"
 # define PRINTF_HEX_LONG_U      "0x%Ix"

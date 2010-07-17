@@ -49,19 +49,19 @@
 
 /* Precise GC macros */
 #ifndef MZ_GC_DECL_REG
-# define MZ_GC_DECL_REG(size)            /* empty */
+# define MZ_GC_DECL_REG(size)		 /* empty */
 #endif
 #ifndef MZ_GC_VAR_IN_REG
-# define MZ_GC_VAR_IN_REG(x, v)          /* empty */
+# define MZ_GC_VAR_IN_REG(x, v)		 /* empty */
 #endif
 #ifndef MZ_GC_ARRAY_VAR_IN_REG
 # define MZ_GC_ARRAY_VAR_IN_REG(x, v, l) /* empty */
 #endif
 #ifndef MZ_GC_REG
-# define MZ_GC_REG()                     /* empty */
+# define MZ_GC_REG()			 /* empty */
 #endif
 #ifndef MZ_GC_UNREG
-# define MZ_GC_UNREG()                   /* empty */
+# define MZ_GC_UNREG()			 /* empty */
 #endif
 
 #ifdef MZSCHEME_FORCE_GC

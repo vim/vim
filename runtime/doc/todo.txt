@@ -1089,16 +1089,11 @@ Before (beta) release 7.3:
 - Add fixes for 7.2 to version7.txt
 - Add hg history to version7.txt
 - Remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
+- Documentation for Python 3 support.
 - Build the MS-Windows version with Python 2.6.5 and 3.1.2?
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
-
-Vim 7.3:
-Needs some work:
--   Have a look at patch to enable screen access from Python. (Marko Mahnic,
-    2010 Apr 12)
-
 
 More patches:
 -   Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)

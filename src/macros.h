@@ -135,7 +135,7 @@
 # ifdef FEAT_MBYTE
 #  define LANGMAP_ADJUST(c, condition) \
     do { \
-        if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0) \
+	if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0) \
 	{ \
 	    if ((c) < 256) \
 		c = langmap_mapchar[c]; \
@@ -146,8 +146,8 @@
 # else
 #  define LANGMAP_ADJUST(c, condition) \
     do { \
-        if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0 && (c) < 256) \
-            c = langmap_mapchar[c]; \
+	if (*p_langmap && (condition) && !KeyStuffed && (c) >= 0 && (c) < 256) \
+	    c = langmap_mapchar[c]; \
     } while (0)
 # endif
 #else
