@@ -1089,8 +1089,6 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 Before (beta) release 7.3:
 - Documentation for Python 3 support.
-- MS-Windows uninstaller looks for wrong executable:
-    "ool\vimfiles\syntaxuninstall-gui.exe".
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
