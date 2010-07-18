@@ -1,4 +1,4 @@
-/* if_python.c */
+/* if_python3.c */
 int python3_enabled __ARGS((int verbose));
 void python3_end __ARGS((void));
 void ex_python3 __ARGS((exarg_T *eap));

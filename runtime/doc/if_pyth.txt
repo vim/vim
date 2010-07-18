@@ -12,6 +12,7 @@ The Python Interface to Vim				*python* *Python*
 4. Range objects		|python-range|
 5. Window objects		|python-window|
 6. Dynamic loading		|python-dynamic|
+7. Python 3			|python3|
 
 {Vi does not have any of these commands}
 
@@ -326,6 +327,16 @@ console window type "path" to see what directories are used.
 The name of the DLL must match the Python version Vim was compiled with.
 Currently the name is "python24.dll".  That is for Python 2.4.  To know for
 sure edit "gvim.exe" and search for "python\d*.dll\c".
+
+==============================================================================
+7. Python 3						*python3*
+
+Python 3 support can exist next to Python 2.x.
+
+*:py3* *:python3* *:py3file*
+
+TODO
+
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

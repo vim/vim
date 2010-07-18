@@ -39,9 +39,10 @@
 #	- Uncomment one or more of these lines to include an interface;
 #	  each makes Vim quite a bit bigger:
 #		--enable-luainterp	for Lua interpreter
+#		--enable-mzschemeinterp	for MzScheme interpreter
 #		--enable-perlinterp	for Perl interpreter
-#		--enable-pythoninterp	for Python interpreter
 #		--enable-python3interp	for Python3 interpreter
+#		--enable-pythoninterp	for Python interpreter
 #		--enable-rubyinterp	for Ruby interpreter
 #		--enable-tclinterp	for Tcl interpreter
 #		--enable-cscope		for Cscope interface
@@ -368,6 +369,20 @@ CClink = $(CC)
 #CONF_OPT_DARWIN = --with-mac-arch=ppc
 #CONF_OPT_DARWIN = --with-mac-arch=both
 
+# LUA
+# Uncomment this when you want to include the Lua interface.
+#CONF_OPT_LUA = --enable-luainterp
+# Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
+#CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
+
+# MZSCHEME
+# Uncomment this when you want to include the MzScheme interface.
+#CONF_OPT_MZSCHEME = --enable-mzschemeinterp
+# PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
+#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
+#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
+#CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
+
 # PERL
 # Uncomment this when you want to include the Perl interface.
 # The Perl option sometimes causes problems, because it adds extra flags
@@ -391,30 +406,16 @@ CClink = $(CC)
 #CONF_OPT_PYTHON = --enable-pythoninterp
 #CONF_OPT_PYTHON3 = --enable-python3interp
 
-# TCL
-# Uncomment this when you want to include the Tcl interface.
-#CONF_OPT_TCL = --enable-tclinterp
-#CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
-
 # RUBY
 # Uncomment this when you want to include the Ruby interface.
 # Note: you need the development package (e.g., ruby1.9.1-dev on Ubuntu).
 #CONF_OPT_RUBY = --enable-rubyinterp
 #CONF_OPT_RUBY = --enable-rubyinterp --with-ruby-command=ruby1.9.1
 
-# LUA
-# Uncomment this when you want to include the Lua interface.
-#CONF_OPT_LUA = --enable-luainterp
-# Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
-#CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
-
-# MZSCHEME
-# Uncomment this when you want to include the MzScheme interface.
-#CONF_OPT_MZSCHEME = --enable-mzschemeinterp
-# PLT/mrscheme/drscheme Home dir; the PLTHOME environment variable also works
-#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/plt
-#CONF_OPT_PLTHOME  = --with-plthome=/usr/local/drscheme
-#CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
+# TCL
+# Uncomment this when you want to include the Tcl interface.
+#CONF_OPT_TCL = --enable-tclinterp
+#CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
 
 # CSCOPE
 # Uncomment this when you want to include the Cscope interface.
@@ -545,7 +546,8 @@ CClink = $(CC)
 #CFLAGS = -g -O2 '-DSTARTUPTIME="vimstartup"' -fno-strength-reduce -Wall -Wmissing-prototypes
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
-#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wmissing-prototypes -Wunreachable-code -D_FORTIFY_SOURCE=1 -DU_DEBUG
+#CFLAGS = -g -O2 -Wall -Wextra -Wmissing-prototypes -D_FORTIFY_SOURCE=1 -DU_DEBUG
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
 
@@ -1317,7 +1319,7 @@ ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 # with "-E".
 OSDEF_CFLAGS = $(PRE_DEFS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) -Dinline= -D__extension__= -Dalloca=alloca
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(PYTHON_CFLAGS) -Dinline= -D__extension__= -Dalloca=alloca
 
 LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
@@ -1714,10 +1716,11 @@ proto: $(PRO_AUTO) $(PRO_MANUAL)
 
 # Filter out arguments that cproto doesn't support.
 # Don't pass "-pthread" to cproto, it sees it as a list of individual flags.
+# Don't pass "-fstack-protector" to cproto, for the same reason.
 # The -E"gcc -E" argument must be separate to avoid problems with shell
 # quoting.
 CPROTO = cproto $(PROTO_FLAGS) -DPROTO \
-	 `echo '$(LINT_CFLAGS)' | sed -e 's/-pthread//g'` 
+	 `echo '$(LINT_CFLAGS)' | sed -e 's/-pthread//g' -e 's/-fstack-protector//g'`
 
 ### Would be nice if this would work for "normal" make.
 ### Currently it only works for (Free)BSD make.
@@ -2997,10 +3000,10 @@ objects/hangulin.o: hangulin.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
  globals.h farsi.h arabic.h
-objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
- regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \
- globals.h farsi.h arabic.h
+objects/if_lua.o: if_lua.c vim.h auto/config.h feature.h os_unix.h auto/osdef.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h globals.h farsi.h \
+ arabic.h
 objects/if_mzsch.o: if_mzsch.c vim.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h gui_beval.h proto/gui_beval.pro ex_cmds.h proto.h \

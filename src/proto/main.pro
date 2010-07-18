@@ -6,7 +6,7 @@ int process_env __ARGS((char_u *env, int is_viminit));
 void mainerr_arg_missing __ARGS((char_u *str));
 void time_push __ARGS((void *tv_rel, void *tv_start));
 void time_pop __ARGS((void *tp));
-void time_msg __ARGS((char *msg, void *tv_start));
+void time_msg __ARGS((char *mesg, void *tv_start));
 void server_to_input_buf __ARGS((char_u *str));
 char_u *eval_client_expr_to_string __ARGS((char_u *expr));
 char_u *serverConvert __ARGS((char_u *client_enc, char_u *data, char_u **tofree));

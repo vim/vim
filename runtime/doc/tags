@@ -2566,9 +2566,12 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :pw	editing.txt	/*:pw*
 :pwd	editing.txt	/*:pwd*
 :py	if_pyth.txt	/*:py*
+:py3	if_pyth.txt	/*:py3*
+:py3file	if_pyth.txt	/*:py3file*
 :pyf	if_pyth.txt	/*:pyf*
 :pyfile	if_pyth.txt	/*:pyfile*
 :python	if_pyth.txt	/*:python*
+:python3	if_pyth.txt	/*:python3*
 :q	editing.txt	/*:q*
 :qa	editing.txt	/*:qa*
 :qall	editing.txt	/*:qall*
@@ -6825,6 +6828,7 @@ new-cmdwin	version6.txt	/*new-cmdwin*
 new-color-schemes	version6.txt	/*new-color-schemes*
 new-commands	version5.txt	/*new-commands*
 new-commands-5.4	version5.txt	/*new-commands-5.4*
+new-conceal	version7.txt	/*new-conceal*
 new-debug-itf	version6.txt	/*new-debug-itf*
 new-debug-mode	version6.txt	/*new-debug-mode*
 new-debug-support	version7.txt	/*new-debug-support*
@@ -6848,9 +6852,11 @@ new-items-6	version6.txt	/*new-items-6*
 new-items-7	version7.txt	/*new-items-7*
 new-line-continuation	version5.txt	/*new-line-continuation*
 new-location-list	version7.txt	/*new-location-list*
+new-lua	version7.txt	/*new-lua*
 new-manpage-trans	version7.txt	/*new-manpage-trans*
 new-map-expression	version7.txt	/*new-map-expression*
 new-map-select	version7.txt	/*new-map-select*
+new-more-encryption	version7.txt	/*new-more-encryption*
 new-more-highlighting	version7.txt	/*new-more-highlighting*
 new-more-unicode	version7.txt	/*new-more-unicode*
 new-multi-byte	version5.txt	/*new-multi-byte*
@@ -6863,10 +6869,12 @@ new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*
 new-perl-python	version5.txt	/*new-perl-python*
+new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
 new-posix	version7.txt	/*new-posix*
 new-print-multi-byte	version7.txt	/*new-print-multi-byte*
 new-printing	version6.txt	/*new-printing*
+new-python3	version7.txt	/*new-python3*
 new-runtime-dir	version5.txt	/*new-runtime-dir*
 new-script	version5.txt	/*new-script*
 new-script-5.4	version5.txt	/*new-script-5.4*
@@ -7096,6 +7104,7 @@ python-vim	if_pyth.txt	/*python-vim*
 python-window	if_pyth.txt	/*python-window*
 python-windows	if_pyth.txt	/*python-windows*
 python.vim	syntax.txt	/*python.vim*
+python3	if_pyth.txt	/*python3*
 q	repeat.txt	/*q*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
@@ -7535,8 +7544,10 @@ sticky-type-checking	eval.txt	/*sticky-type-checking*
 str2float()	eval.txt	/*str2float()*
 str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
+strchars()	eval.txt	/*strchars()*
 strchr()	eval.txt	/*strchr()*
 strcspn()	eval.txt	/*strcspn()*
+strdisplaywidth()	eval.txt	/*strdisplaywidth()*
 strftime()	eval.txt	/*strftime()*
 stridx()	eval.txt	/*stridx()*
 string()	eval.txt	/*string()*
@@ -7550,6 +7561,7 @@ strridx()	eval.txt	/*strridx()*
 strspn()	eval.txt	/*strspn()*
 strstr()	eval.txt	/*strstr()*
 strtrans()	eval.txt	/*strtrans()*
+strwidth()	eval.txt	/*strwidth()*
 style-changes	develop.txt	/*style-changes*
 style-examples	develop.txt	/*style-examples*
 style-functions	develop.txt	/*style-functions*

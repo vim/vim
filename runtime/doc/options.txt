@@ -1713,9 +1713,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not in Vi}
 			{not available when compiled without the |+conceal|
 			feature}
-	Determine how text with the "conceal" syntax attribute is shown:
+	Determine how text with the "conceal" syntax attribute |:syn-conceal|
+	is shown:
 
-	'conceallevel'	Effect
+	Value		Effect ~
 	0		Text is shown normally
 	1		Each block of concealed text is replaced with the
 			character defined in 'listchars' (default is a dash)

@@ -86,7 +86,8 @@ DOSBIN_S =  dosbin_s
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
-# - "make lint" and check the output (ignore GTK warnings).
+# - If you have a lint program: "make lint" and check the output (ignore GTK
+#   warnings).
 # - Enable the efence library in "src/Makefile" and run "make test".  Disable
 #   Python and Ruby to avoid trouble with threads (efence is not threadsafe).
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).

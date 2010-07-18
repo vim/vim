@@ -57,6 +57,13 @@ Added					|added-7.2|
 Fixed					|fixed-7.2|
 
 VERSION 7.3			|version-7.3|
+
+Persistent undo				|new-persistent-undo|
+More encryption				|new-more-encryption|
+Conceal text				|new-conceal|
+Lua interface				|new-lua|
+Python3 interface			|new-python3|
+
 Changed					|changed-7.3|
 Added					|added-7.3|
 Fixed					|fixed-7.3|
@@ -7152,13 +7159,64 @@ VERSION 7.3					*version-7.3* *version7.3*
 This section is about improvements made between version 7.2 and 7.3.
 
 This is a bug-fix release and there are a few new features.
+The most notable new features are:
+
+
+Persistent undo					*new-persistent-undo*
+---------------
+
+Store undo information in a file.  Can undo to before when the file was read,
+also for unloaded buffers. See |undo-persistence| (partly by Jordan Lewis)
+Added ":earlier 1f" and ":later 1f".
+Add file save counter to undo information.
+Added the |undotree()| and |undofile()| functions.
+
+
+More encryption					*new-more-encryption*
+---------------
+
+Support for Blowfish encryption.  Added the 'cryptmethod' option.
+Mostly by Moshin Ahmed.
+
+Also encrypt the text in the swap file and the undo file.
+
+
+Conceal text					*new-conceal*
+------------
+
+Added the |+conceal| feature.  (Vince Negri)
+This allows hiding stretches of text, based on syntax highlighting.
+It also allows replacing a stretch of text by a character |:syn-cchar|.
+The 'conceallevel' option specifies what happens.
+
+The help files conceal characters used to mark tags and examples.
+
+
+Lua interface					*new-lua*
+-------------
+
+Added the |Lua| interface.  (Luis Carvalho)
+
+
+Python3 interface				*new-python3*
+-----------------
+
+Added the Python3 interface.  It exists next to Python 2.x, both can be used
+at the same time. |python3| (Roland Puntaier)
 
 
 Changed							*changed-7.3*
 -------
 
+The MS-Windows installer no longer requires the user to type anything in the
+console windows.  The installer now also works on 64 bit systems, including
+the "Edit with Vim" context menu.
+The gvim executable is 32 bits, the installed gvimext.dll is either a 32 or 64
+bit version. (mostly by George Reilly)
+Made the DOS installer work with more compilers.
+
 The extra and language files are no longer distributed separately.
-The files for all systems are included in one distribution.
+The source files for all systems are included in one distribution.
 
 After using ":recover" or recovering a file in another way, ":x" and "ZZ"
 don't save what you see.  This could result in work being lost.  Now the text
@@ -7171,25 +7229,24 @@ executed.
 
 Removed support for GTK 1.  It was no longer maintained and required a lot of
 #ifdefs in the source code.  GTK 2 should be available for every system.
+(James Vega)
 
 It is no longer allowed to set the 'encoding' option from a modeline.  It
-would corrupt the text.
+would corrupt the text.  (Patrick Texier)
+
+Renamed runtime/spell/fixdup to runtime/spell/fixdup.vim.
+
+Removed obsolete Mac code.
+
+Updated spell files for Ubuntu locale names.
+
+Switched from autoconf 2.63 to 2.65.
 
 
 Added							*added-7.3*
 -----
 
-Persistent undo: store undo information in a file.  Can undo to before when
-the file was read, also for unloaded buffers. |undo-persistence|
-(partly by Jordan Lewis)
-
 Added the 'relativenumber' option. (Markus Heidelberg)
-
-Support for Blowfish encryption.  Added the 'cryptmethod' option.
-Mostly by Moshin Ahmed.  Also encrypt the text in the swap file and the undo
-file.
-
-Added the |+conceal| feature.  (Vince Negri)
 
 Added the 'colorcolumn' option: highlight one or more columns in a window.
 E.g. to highlight the column after 'textwidth'. (partly by Gregor Uhlenheuer)
@@ -7197,12 +7254,60 @@ E.g. to highlight the column after 'textwidth'. (partly by Gregor Uhlenheuer)
 Added support for NetBeans in a terminal.  Added |:nbstart| and |:nbclose|.
 (Xavier de Gaye)
 
-More floating point functions: acos(), asin(), atan2(), cosh(), exp(), fmod(),
-log(), sinh(), tan(), tanh().  (Bill McCarthy)
+More floating point functions: |acos()|, |asin()|, |atan2()|, |cosh()|,
+|exp()|, |fmod()|, |log()|, |sinh()|, |tan()|, |tanh()|.  (Bill McCarthy)
 
-gettabvar() and settabvar() functions. (Yegappan Lakshmanan)
+Added the |gettabvar()| and |settabvar()| functions. (Yegappan Lakshmanan)
 
-Added the |Lua| interface.
+Added the |strchars()|, |strwidth()| and |strdisplaywidth()| functions.
+
+Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
+
+Made CTRL modifier work for mouse wheel. (Benjamin Haskell)
+
+When the buffer is in diff mode, have :TOhtml create HTML to show the diff
+side-by-side.  (Christian Brabandt)
+
+Various improvements to ":TOhtml" and the 2html.vim script.  (Benjamin Fritz)
+
+Add the 'L' item to 'cinoptions'. (Manuel Konig)
+
+Improve Javascript indenting.  Add "J" flag to 'cinoptions'. (Hari Kumar G)
+
+Mac: Support disabling antialias. (LC Mi)
+
+Mac: Add clipboard support in the Mac console. (Bjorn Winckler)
+
+Make it possible to drag a tab page label to another position. (Paul B. Mahol)
+
+Better implementation of creating the Color Scheme menu. (Juergen Kraemer)
+
+In Visual mode with 'showcmd' display the number of bytes and characters.
+
+Allow synIDattr() getting GUI attributes when build without GUI.  (Matt
+Wozniski)
+
+Support completion for ":find". (Nazri Ramliy)
+
+Avoid use of the GTK mail_loop() so that the GtkFileChooser can be used.
+(James Vega)
+
+When 'formatexpr' evaluates to non-zero fall back to internal formatting, also
+for "gq". (James Vega)
+
+Support :browse for commands that use an error file argument. (Lech Lorens)
+
+Support wide file names in gvimext. (Szabolcs Horvat)
+
+Improve test for joining lines. (Milan Vancura)
+Make joining a range of lines much faster. (Milan Vancura)
+
+Command line completion for :ownsyntax. (Dominique Pelle)
+
+Add patch to improve support of z/OS (OS/390). (Ralf Schandl)
+
+Added the helphelp.txt file.  Moved text from various.txt to it.
+
 
 
 New syntax files:
@@ -7216,15 +7321,2633 @@ TODO
 Breton. (Dominique Pelle)
 
 
-Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
-
 
 Fixed							*fixed-7.3*
 -----
 
+Patch 7.2.001
+Problem:    Mac: pseudo-ttys don't work properly on Leopard, resulting in the
+	    shell not to have a prompt, CTRL-C not working, etc.
+Solution:   Don't use SVR4 compatible ptys, even though they are detected.
+	    (Ben Schmidt)
+Files:	    src/pty.c
+
+Patch 7.2.002
+Problem:    Leaking memory when displaying menus.
+Solution:   Free allocated memory. (Dominique Pelle)
+Files:	    src/menu.c
+
+Patch 7.2.003
+Problem:    Typo in translated message.  Message not translated.
+Solution:   Correct spelling. Add _(). (Dominique Pelle)
+Files:	    src/spell.c, src/version.c
+
+Patch 7.2.004
+Problem:    Cscope help message is not translated.
+Solution:   Put it in _(). (Dominique Pelle)
+Files:	    src/if_cscope.c, src/if_cscope.h
+
+Patch 7.2.005
+Problem:    A few problems when profiling.  Using flag pointer instead of flag
+	    value.  Allocating zero bytes.  Not freeing used memory.
+Solution:   Remove wrong '&' characters.  Skip dumping when there is nothing
+	    to dump.  Free used memory. (Dominique Pelle)
+Files:	    src/eval.c
+
+Patch 7.2.006
+Problem:    HTML files are not recognized by contents.
+Solution:   Add a rule to the scripts file. (Nico Weber)
+Files:	    runtime/scripts.vim
+
+Patch 7.2.007 (extra)
+Problem:    Minor issues for VMS.
+Solution:   Minor fixes for VMS.  Add float support. (Zoltan Arpadffy)
+Files:	    runtime/doc/os_vms.txt, src/os_vms_conf.h, src/Make_vms.mms,
+	    src/testdir/Make_vms.mms, src/testdir/test30.in,
+	    src/testdir/test54.in
+
+Patch 7.2.008
+Problem:    With a BufHidden autocommand that invokes ":bunload" the window
+	    count for a buffer can be wrong. (Bob Hiestand)
+Solution:   Don't call enter_buffer() when already in that buffer.
+Files:	    src/buffer.c
+
+Patch 7.2.009
+Problem:    Can't compile with Perl 5.10 on MS-Windows. (Cesar Romani)
+Solution:   Add the Perl_sv_free2 function for dynamic loading. (Dan Sharp)
+Files:	    src/if_perl.xs
+
+Patch 7.2.010
+Problem:    When using "K" in Visual mode not all characters are properly
+	    escaped. (Ben Schmidt)
+Solution:   Use a function with the functionality of shellescape(). (Jan
+	    Minar)
+Files:	    src/mbyte.c, src/misc2.c, src/normal.c
+
+Patch 7.2.011
+Problem:    Get an error when inserting a float value from the expression
+	    register.
+Solution:   Convert the Float to a String automatically in the same place
+	    where a List would be converted to a String.
+Files:	    src/eval.c
+
+Patch 7.2.012
+Problem:    Compiler warnings when building with startup timing.
+Solution:   Add type casts.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.013
+Problem:    While waiting for the X selection Vim consumes a lot of CPU time
+	    and hangs until a response is received.
+Solution:   Sleep a bit when the selection event hasn't been received yet.
+	    Time out after a couple of seconds to avoid a hang when the
+	    selection owner isn't responding.
+Files:	    src/ui.c
+
+Patch 7.2.014
+Problem:    synstack() doesn't work in an emptly line.
+Solution:   Accept column zero as a valid position.
+Files:	    src/eval.c
+
+Patch 7.2.015
+Problem:    "make all test install" doesn't stop when the test fails. (Daniel
+	    Shahaf)
+Solution:   When test.log contains failures exit with non-zero status.
+Files:	    src/testdir/Makefile
+
+Patch 7.2.016
+Problem:    The pattern being completed may be in freed memory when the
+	    command line is being reallocated. (Dominique Pelle)
+Solution:   Keep a pointer to the expand_T in the command line structure.
+	    Don't use <S-Tab> as CTRL-P when there are no results.  Clear the
+	    completion when using a command line from the history.
+Files:	    src/ex_getln.c
+
+Patch 7.2.017
+Problem:    strlen() used on text that may not end in a NUL. (Dominique Pelle)
+	    Pasting a very big selection doesn't work.
+Solution:   Use the length passed to the XtSelectionCallbackProc() function.
+	    After getting the SelectionNotify event continue dispatching
+	    events until the callback is actually called.  Also dispatch the
+	    PropertyNotify event.
+Files:	    src/ui.c
+
+Patch 7.2.018
+Problem:    Memory leak when substitute is aborted.
+Solution:   Free the buffer allocated for the new text. (Dominique Pelle)
+Files:	    src/ex_cmds.c
+
+Patch 7.2.019
+Problem:    Completion of ":noautocmd" doesn't work and exists(":noautocmd")
+	    returns zero. (Ben Fritz)
+Solution:   Add "noautocmd" to the list of modifiers and commands.
+Files:	    src/ex_cmds.h, src/ex_docmd.c
+
+Patch 7.2.020
+Problem:    Starting the GUI when the executable starts with 'k', but the KDE
+	    version no longer exists.
+Solution:   Don't have "kvim" start the GUI.
+Files:	    src/main.c
+
+Patch 7.2.021
+Problem:    When executing autocommands getting the full file name may be
+	    slow. (David Kotchan)
+Solution:   Postpone calling FullName_save() until autocmd_fname is used.
+Files:	    src/ex_docmd.c, src/fileio.c, src/globals.h
+
+Patch 7.2.022 (extra)
+Problem:    Testing is not possible when compiling with MingW.
+Solution:   Add a MingW specific test Makefile. (Bill McCarthy)
+Files:	    Filelist, src/testdir/Make_ming.mak
+
+Patch 7.2.023
+Problem:    'cursorcolumn' is in the wrong place in a closed fold when the
+	    display is shifted left. (Gary Johnson)
+Solution:   Subtract w_skipcol or w_leftcol when needed.
+Files:	    src/screen.c
+
+Patch 7.2.024
+Problem:    It's possible to set 'history' to a negative value and that causes
+	    an out-of-memory error.
+Solution:   Check that 'history' has a positive value. (Doug Kearns)
+Files:	    src/option.c
+
+Patch 7.2.025
+Problem:    When a CursorHold event invokes system() it is retriggered over
+	    and over again.
+Solution:   Don't reset did_cursorhold when getting K_IGNORE.
+Files:	    src/normal.c
+
+Patch 7.2.026 (after 7.2.010)
+Problem:    "K" doesn't use the length of the identifier but uses the rest of
+	    the line.
+Solution:   Copy the desired number of characters first.
+Files:	    src/normal.c
+
+Patch 7.2.027
+Problem:    Can use cscope commands in the sandbox.
+Solution:   Disallow them, they might not be safe.
+Files:	    src/ex_cmds.h
+
+Patch 7.2.028
+Problem:    Confusing error message for missing ().
+Solution:   Change "braces" to "parentheses". (Gary Johnson)
+Files:	    src/eval.c
+
+Patch 7.2.029
+Problem:    No completion for ":doautoall".
+Solution:   Complete ":doautoall" like ":doautocmd".  (Doug Kearns)
+Files:	    src/ex_docmd.c
+
+Patch 7.2.030 (after 7.2.027)
+Problem:    Can't compile.
+Solution:   Remove prematurely added ex_oldfiles.
+Files:	    src/ex_cmds.h
+
+Patch 7.2.031
+Problem:    Information in the viminfo file about previously edited files is
+	    not available to the user.  There is no way to get a complete list
+	    of files edited in previous Vim sessions.
+Solution:   Add v:oldfiles and fill it with the list of old file names when
+	    first reading the viminfo file.  Add the ":oldfiles" command,
+	    ":browse oldfiles" and the "#<123" special file name.  Increase
+	    the default value for 'viminfo' from '20 to '100.
+Files:	    runtime/doc/cmdline.txt, runtime/doc/eval.txt,
+	    runtime/doc/starting.txt, runtime/doc/usr_21.txt, src/eval.c,
+	    src/ex_cmds.c, src/ex_cmds.h, src/ex_docmd.c, src/feature.h,
+	    src/fileio.c, src/main.c, src/mark.c, src/misc1.c,
+	    src/proto/eval.pro, src/proto/ex_cmds.pro, src/proto/mark.pro,
+	    src/option.c, src/structs.h, src/vim.h
+
+Patch 7.2.032 (after 7.2.031)
+Problem:    Can't build with EXITFREE defined. (Dominique Pelle)
+Solution:   Change vv_string to vv_str.
+Files:	    src/eval.c
+
+Patch 7.2.033
+Problem:    When detecting a little endian BOM "ucs-2le" is used, but the text
+	    might be "utf-16le".
+Solution:   Default to "utf-16le", it also works for "ucs-2le". (Jia Yanwei)
+Files:	    src/fileio.c, src/testdir/test42.ok
+
+Patch 7.2.034
+Problem:    Memory leak in spell info when deleting buffer.
+Solution:   Free the memory. (Dominique Pelle)
+Files:	    src/buffer.c
+
+Patch 7.2.035
+Problem:    Mismatches between alloc/malloc, free/vim_free,
+	    realloc/vim_realloc.
+Solution:   Use the right function. (Dominique Pelle)
+Files:	    src/gui_x11.c, src/mbyte.c, src/misc2.c, src/os_unix.c
+
+Patch 7.2.036 (extra)
+Problem:    Mismatches between alloc/malloc, free/vim_free,
+	    realloc/vim_realloc.
+Solution:   Use the right function. (Dominique Pelle)
+Files:	    src/gui_riscos.c, src/gui_w48.c, src/mbyte.c, src/os_vms.c,
+	    src/os_w32exe.c, src/os_win16.c
+
+Patch 7.2.037
+Problem:    Double free with GTK 1 and compiled with EXITFREE.
+Solution:   Don't close display. (Dominique Pelle)
+Files:	    src/os_unix.c
+
+Patch 7.2.038
+Problem:    Overlapping arguments to memcpy().
+Solution:   Use mch_memmove(). (Dominique Pelle)
+Files:	    src/if_xcmdsrv.c
+
+Patch 7.2.039
+Problem:    Accessing freed memory on exit when EXITFREE is defined.
+Solution:   Call hash_init() on the v: hash table.
+Files:	    src/eval.c
+
+Patch 7.2.040
+Problem:    When using ":e ++ff=dos fname" and the file contains a NL without
+	    a CR before it and 'ffs' contains "unix" then the fileformat
+	    becomes unix.
+Solution:   Ignore 'ffs' when using the ++ff argument. (Ben Schmidt)
+	    Also remove unreachable code.
+Files:	    src/fileio.c
+
+Patch 7.2.041
+Problem:    In diff mode, when using two tabs, each with two diffed buffers,
+	    editing a buffer of the other tab messes up the diff.  (Matt
+	    Mzyzik)
+Solution:   Only copy options from a window where the buffer was edited that
+	    doesn't have 'diff' set or is for the current tab page.
+	    Also fix that window options for a buffer are stored with the
+	    wrong window.
+Files:	    src/buffer.c, src/ex_cmds.c, src/ex_cmds2.c, src/ex_docmd.c,
+	    src/ex_getln.c, src/if_sniff.c, src/main.c, src/netbeans.c,
+	    src/normal.c, src/popupmnu.c, src/proto/buffer.pro,
+	    src/proto/ex_cmds.pro src/quickfix.c, src/window.c
+
+Patch 7.2.042
+Problem:    When using winrestview() in a BufWinEnter autocommand the window
+	    is scrolled anyway. (Matt Zyzik)
+Solution:   Don't recompute topline when above 'scrolloff' from the bottom.
+	    Don't always put the cursor halfway when entering a buffer.  Add
+	    "w_topline_was_set".
+Files:	    src/buffer.c, src/move.c, src/structs.h
+
+Patch 7.2.043
+Problem:    VMS: Too many characters are escaped in filename and shell
+	    commands.
+Solution:   Escape fewer characters. (Zoltan Arpadffy)
+Files:	    src/vim.h
+
+Patch 7.2.044
+Problem:    Crash because of STRCPY() being over protective of the destination
+	    size. (Dominique Pelle)
+Solution:   Add -D_FORTIFY_SOURCE=1 to CFLAGS.  Use an intermediate variable
+	    for the pointer to avoid a warning.
+Files:	    src/auto/configure, src/configure.in, src/eval.c
+
+Patch 7.2.045
+Problem:    The Python interface has an empty entry in sys.path.
+Solution:   Filter out the empty entry. (idea from James Vega)
+Files:	    src/if_python.c
+
+Patch 7.2.046
+Problem:    Wrong check for filling buffer with encoding. (Danek Duvall)
+Solution:   Remove pointers. (Dominique Pelle)
+Files:	    src/mbyte.c
+
+Patch 7.2.047
+Problem:    Starting Vim with the -nb argument while it's not supported causes
+	    the other side to hang.
+Solution:   When -nb is used while it's not supported exit Vim. (Xavier de
+	    Gaye)
+Files:	    src/main.c, src/vim.h
+
+Patch 7.2.048
+Problem:    v:prevcount is changed too often.  Counts are not multiplied when
+	    setting v:count.
+Solution:   Set v:prevcount properly.  Multiply counts. (idea by Ben Schmidt)
+Files:	    src/eval.c, src/normal.c, src/proto/eval.pro
+
+Patch 7.2.049 (extra)
+Problem:    Win32: the clipboard doesn't support UTF-16.
+Solution:   Change UCS-2 support to UTF-16 support. (Jia Yanwei)
+Files:	    src/gui_w32.c, src/gui_w48.c, src/mbyte.c, src/misc1.c,
+	    src/os_mswin.c, src/os_win32.c, src/proto/os_mswin.pro
+
+Patch 7.2.050
+Problem:    Warnings for not checking return value of fwrite(). (Chip Campbell)
+Solution:   Use the return value.
+Files:	    src/spell.c
+
+Patch 7.2.051
+Problem:    Can't avoid 'wildignore' and 'suffixes' for glob() and globpath().
+Solution:   Add an extra argument to these functions. (Ingo Karkat)
+Files:	    src/eval.c, src/ex_getln.c, src/proto/ex_getln.pro,
+	    runtime/doc/eval.txt, runtime/doc/options.txt
+
+Patch 7.2.052
+Problem:    synIDattr() doesn't support "sp" for special color.
+Solution:   Recognize "sp" and "sp#".  (Matt Wozniski)
+Files:	    runtime/doc/eval.txt, src/eval.c
+
+Patch 7.2.053
+Problem:    Crash when using WorkShop command ":ws foo". (Dominique Pelle)
+Solution:   Avoid using a NULL pointer.
+Files:	    src/workshop.c
+
+Patch 7.2.054
+Problem:    Compilation warnings for format in getchar.c.
+Solution:   Use fputs() instead of fprintf().  (Dominique Pelle)
+Files:	    src/getchar.c
+
+Patch 7.2.055
+Problem:    Various compiler warnings with strict checking.
+Solution:   Avoid the warnings by using return values and renaming.
+Files:	    src/diff.c, src/eval.c, src/ex_cmds.c, src/ex_docmd.c,
+	    src/fileio.c, src/fold.c, src/globals.h, src/gui.c,
+	    src/gui_at_sb.c, src/gui_gtk_x11.c, src/gui_xmdlg.c,
+	    src/gui_xmebw.c, src/main.c, src/mbyte.c, src/message.c,
+	    src/netbeans.c, src/option.c, src/os_unix.c, src/spell.c,
+	    src/ui.c, src/window.c
+
+Patch 7.2.056 (after 7.2.050)
+Problem:    Tests 58 and 59 fail.
+Solution:   Don't invoke fwrite() with a zero length. (Dominique Pelle)
+Files:	    src/spell.c
+
+Patch 7.2.057 (after 7.2.056)
+Problem:    Combination of int and size_t may not work.
+Solution:   Use size_t for variable.
+Files:	    src/spell.c
+
+Patch 7.2.058
+Problem:    Can't add a patch name to the ":version" output.
+Solution:   Add the extra_patches array.
+Files:	    src/version.c
+
+Patch 7.2.059
+Problem:    Diff display is not always updated.
+Solution:   Update the display more often.
+Files:	    src/diff.c
+
+Patch 7.2.060
+Problem:    When a spell files has many compound rules it may take a very long
+	    time making the list of suggestions.  Displaying also can be slow
+	    when there are misspelled words.
+	    Can't parse some Hunspell .aff files.
+Solution:   Check if a compounding can possibly work before trying a
+	    combination, if the compound rules don't contain wildcards.
+	    Implement using CHECKCOMPOUNDPATTERN.
+	    Ignore COMPOUNDRULES.  Ignore a comment after most items.
+	    Accept ONLYINCOMPOUND as an alias for NEEDCOMPOUND.
+	    Accept FORBIDDENWORD as an alias for BAD.
+Files:	    runtime/doc/spell.txt, src/spell.c
+
+Patch 7.2.061
+Problem:    Can't create a funcref for an autoload function without loading
+	    the script first. (Marc Weber)
+Solution:   Accept autoload functions that don't exist yet in function().
+Files:	    src/eval.c
+
+Patch 7.2.062
+Problem:    "[Scratch]" is not translated.
+Solution:   Mark the string for translation. (Dominique Pelle)
+Files:	    src/buffer.c
+
+Patch 7.2.063
+Problem:    Warning for NULL argument of Perl_sys_init3().
+Solution:   Use Perl_sys_init() instead. (partly by Dominique Pelle)
+Files:	    src/if_perl.xs
+
+Patch 7.2.064
+Problem:    Screen update bug when repeating "~" on a Visual block and the
+	    last line doesn't change.
+Solution:   Keep track of changes for all lines.  (Moritz Orbach)
+Files:	    src/ops.c
+
+Patch 7.2.065
+Problem:    GTK GUI: the cursor disappears when doing ":vsp" and the Vim
+	    window is maximized.  (Dominique Pelle, Denis Smolyar)
+Solution:   Don't change "Columns" back to an old value at a wrong moment.
+	    Do change "Rows" when it should not be a problem.
+Files:	    src/gui.c
+
+Patch 7.2.066
+Problem:    It's not easy to see whether 'encoding' is a multi-byte encoding.
+Solution:   Add has('multi_byte_encoding').
+Files:	    runtime/doc/eval.txt, src/eval.c
+
+Patch 7.2.067
+Problem:    Session file can't load extra file when the path contains special
+	    characters.
+Solution:   Escape the file name. (Lech Lorens)
+Files:	    src/ex_docmd.c
+
+Patch 7.2.068
+Problem:    Emacs tags file lines can be too long, resulting in an error
+	    message. (James Vega)
+Solution:   Ignore lines with errors if they are too long.
+Files:	    src/tag.c
+
+Patch 7.2.069 (after 7.2.060)
+Problem:    Compiler warning for storing size_t in int.
+Solution:   Add type cast.
+Files:	    src/spell.c
+
+Patch 7.2.070
+Problem:    Crash when a function returns a:000. (Matt Wozkiski)
+Solution:   Don't put the function struct on the stack, allocate it.  Free it
+	    only when nothing in it is used.
+Files:	    src/eval.c
+
+Patch 7.2.071 (extra)
+Problem:    Win32: Handling netbeans events while Vim is busy updating the
+	    screen may cause a crash.
+Solution:   Like with GTK, only handle netbeans messages in the main loop.
+	    (Xavier de Gaye)
+Files:	    src/gui_w48.c, src/netbeans.c
+
+Patch 7.2.072 (extra)
+Problem:    Compiler warning in Sniff code.
+Solution:   Use return value of pipe(). (Dominique Pelle)
+Files:	    src/if_sniff.c
+
+Patch 7.2.073
+Problem:    ":set <xHome>" has the same output as ":set <Home>". (Matt
+	    Wozniski)
+Solution:   Don't translate "x" keys to its alternative for ":set".
+Files:	    src/gui_mac.c, src/misc2.c, src/option.c, src/proto/misc2.pro
+
+Patch 7.2.074 (extra, after 7.2.073)
+Problem:    ":set <xHome>" has the same output as ":set <Home>". (Matt
+	    Wozniski)
+Solution:   Don't translate "x" keys to its alternative for ":set".
+Files:	    src/gui_mac.c
+
+Patch 7.2.075 (after 7.2.058)
+Problem:    Explanation about making a diff for extra_patches is unclear.
+Solution:   Adjust comment.
+Files:	    src/version.c
+
+Patch 7.2.076
+Problem:    rename(from, to) deletes the file if "from" and "to" are not equal
+	    but still refer to the same file.  E.g., on a FAT32 filesystem
+	    under Unix.
+Solution:   Go through another file name.
+Files:	    src/fileio.c
+
+Patch 7.2.077 (after 7.2.076)
+Problem:    rename(from, to) doesn't work if "from" and "to" differ only in
+	    case on a system that ignores case in file names.
+Solution:   Go through another file name.
+Files:	    src/fileio.c
+
+Patch 7.2.078
+Problem:    When deleting a fold that is specified with markers the cursor
+	    position may be wrong.  Folds may not be displayed properly after
+	    a delete.  Wrong fold may be deleted.
+Solution:   Fix the problems. (mostly by Lech Lorens)
+Files:	    src/fold.c
+
+Patch 7.2.079
+Problem:    "killed" netbeans events are not handled correctly.
+Solution:   A "killed" netbeans event is sent when the buffer is deleted or
+	    wiped out (in this case, the netbeans annotations in this buffer
+	    have been removed).  A user can still remove a sign with the
+	    command ":sign unplace" and this does not trigger a "killed"
+	    event.  (Xavier de Gaye)
+Files:	    runtime/doc/netbeans.txt, src/buffer.c, src/globals.h,
+	    src/netbeans.c, src/proto/netbeans.pro
+
+Patch 7.2.080
+Problem:    When typing a composing character just after starting completion
+	    may access memory before its allocation point. (Dominique Pelle)
+Solution:   Don't delete before the completion start column.  Add extra checks
+	    for the offset not being negative.
+Files:	    src/edit.c
+
+Patch 7.2.081
+Problem:    Compiler warning for floating point overflow on VAX.
+Solution:   For VAX use a smaller number. (Zoltan Arpadffy)
+Files:	    src/message.c
+
+Patch 7.2.082
+Problem:    When 'ff' is "mac" then "ga" on a ^J shows 0x0d instead of 0x0a.
+	    (Andy Wokula)
+Solution:   Use NL for this situation. (Lech Lorens)
+Files:	    src/ex_cmds.c
+
+Patch 7.2.083
+Problem:    ":tag" does not return to the right tag entry from the tag stack.
+Solution:   Don't change the current match when there is no argument.
+	    (Erik Falor)
+Files:	    src/tag.c
+
+Patch 7.2.084
+Problem:    Recursive structures are not handled properly in Python
+	    vim.eval().
+Solution:   Keep track of references in a better way. (Yukihiro Nakadaira)
+Files:	    src/if_python.c
+
+Patch 7.2.085
+Problem:    ":set <M-b>=<Esc>b" does not work when 'encoding' is utf-8.
+Solution:   Put the <M-b> character in the input buffer as valid utf-8.
+	    (partly by Matt Wosniski)
+Files:	    src/term.c
+
+Patch 7.2.086
+Problem:    Using ":diffget 1" in buffer 1 corrupts the text.
+Solution:   Don't do anything when source and destination of ":diffget" or
+	    ":diffput" is the same buffer. (Dominique Pelle)
+Files:	    src/diff.c
+
+Patch 7.2.087
+Problem:    Adding URL to 'path' doesn't work to edit a file.
+Solution:   Skip simplify_filename() for URLs. (Matt Wosniski)
+Files:	    src/misc2.c
+
+Patch 7.2.088 (extra)
+Problem:    OpenClipboard() may fail when another application is using the
+	    clipboard.
+Solution:   Retry OpenClipboard() a few times. (Jianrong Yu)
+Files:	    src/os_mswin.c
+
+Patch 7.2.089 (extra)
+Problem:    Win32: crash when using Ultramon buttons.
+Solution:   Don't use a WM_OLE message of zero size. (Ray Megal)
+Files:	    src/if_ole.cpp, src/gui_w48.c
+
+Patch 7.2.090
+Problem:    User command containing 0x80 in multi-byte character does not work
+	    properly. (Yasuhiro Matsumoto)
+Solution:   Undo replacement of K_SPECIAL and CSI characters when executing
+	    the command.
+Files:	    src/ex_docmd.c
+
+Patch 7.2.091
+Problem:    ":cs help" output is not aligned for some languages.
+Solution:   Compute character size instead of byte size. (Dominique Pelle)
+Files:	    src/if_cscope.c
+
+Patch 7.2.092
+Problem:    Some error messages are not translated.
+Solution:   Add _() around the messages. (Dominique Pelle)
+Files:	    src/eval.c
+
+Patch 7.2.093 (extra)
+Problem:    Win32: inputdialog() and find/replace dialogs can't handle
+	    multi-byte text.
+Solution:   Use the wide version of dialog functions when available. (Yanwei
+	    Jia)
+Files:	    src/gui_w32.c, src/gui_w48.c
+
+Patch 7.2.094
+Problem:    Compiler warning for signed/unsigned compare.
+Solution:   Add type cast.  Also fix a few typos.
+Files:	    src/edit.c
+
+Patch 7.2.095
+Problem:    With Visual selection, "r" and then CTRL-C Visual mode is stopped
+	    but the highlighting is not removed.
+Solution:   Call reset_VIsual().
+Files:	    src/normal.c
+
+Patch 7.2.096
+Problem:    After ":number" the "Press Enter" message may be on the wrong
+	    screen, if switching screens for shell commands.
+Solution:   Reset info_message. (James Vega)
+Files:	    src/ex_cmds.c
+
+Patch 7.2.097
+Problem:    "!xterm&" doesn't work when 'shell' is "bash".
+Solution:   Ignore SIGHUP after calling setsid(). (Simon Schubert) 
+Files:	    src/os_unix.c
+
+Patch 7.2.098
+Problem:    Warning for signed/unsigned pointer.
+Solution:   Add type cast.
+Files:	    src/eval.c
+
+Patch 7.2.099
+Problem:    Changing GUI options causes an unnecessary redraw when the GUI
+	    isn't active.
+Solution:   Avoid the redraw. (Lech Lorens)
+Files:	    src/option.c
+
+Patch 7.2.100
+Problem:    When using ":source" on a FIFO or something else that can't rewind
+	    the first three bytes are skipped.
+Solution:   Instead of rewinding read the first line and detect a BOM in that.
+	    (mostly by James Vega)
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.101 (extra)
+Problem:    MSVC version not recognized.
+Solution:   Add the version number to the list.  (Zhong Zhang)
+Files:	    src/Make_mvc.mak
+
+Patch 7.2.102 (after 7.2.100)
+Problem:    When 'encoding' is "utf-8" a BOM at the start of a Vim script is
+	    not removed. (Tony Mechelynck)
+Solution:   When no conversion is taking place make a copy of the line without
+	    the BOM.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.103
+Problem:    When 'bomb' is changed the window title is updated to show/hide a
+	    "+", but the tab page label isn't. (Patrick Texier)
+Solution:   Set "redraw_tabline" in most places where "need_maketitle" is set.
+	    (partly by Lech Lorens)
+Files:	    src/option.c
+
+Patch 7.2.104
+Problem:    When using ":saveas bar.c" the tab label isn't updated right away.
+Solution:   Set redraw_tabline. (Francois Ingelrest)
+Files:	    src/ex_cmds.c
+
+Patch 7.2.105
+Problem:    Modeline setting for 'foldmethod' overrules diff options. (Ingo
+	    Karkat)
+Solution:   Don't set 'foldmethod' and 'wrap' from a modeline when 'diff' is
+	    on.
+Files:	    src/option.c
+
+Patch 7.2.106
+Problem:    Endless loop when using "]s" in HTML when there are no
+	    misspellings. (Ingo Karkat)
+Solution:   Break the search loop.  Also fix pointer alignment for systems
+	    with pointers larger than int.
+Files:	    src/spell.c
+
+Patch 7.2.107
+Problem:    When using a GUI dialog and ":echo" commands the messages are
+	    deleted after the dialog. (Vicent Birebent)
+Solution:   Don't call msg_end_prompt() since there was no prompt.
+Files:	    src/message.c
+
+Patch 7.2.108 (after 7.2.105)
+Problem:    Can't build without the diff feature.
+Solution:   Add #ifdef.
+Files:	    src/option.c
+
+Patch 7.2.109
+Problem:    'langmap' does not work for multi-byte characters.
+Solution:   Add a list of mapped multi-byte characters. (based on work by
+	    Konstantin Korikov, Agathoklis Hatzimanikas)
+Files:	    runtime/doc/options.txt, src/edit.c, src/getchar.c, src/macros.h,
+	    src/normal.c, src/option.c, src/proto/option.pro, src/window.c
+
+Patch 7.2.110
+Problem:    Compiler warning for unused variable.
+Solution:   Init the variable.
+Files:	    src/ex_docmd.c
+
+Patch 7.2.111
+Problem:    When using Visual block mode with 'cursorcolumn' it's unclear what
+	    is selected.
+Solution:   Don't use 'cursorcolumn' highlighting inside the Visual selection.
+	    (idea by Dominique Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.112
+Problem:    Cursor invisible in Visual mode when 'number' is set and cursor in
+	    first column. (Matti Niemenmaa, Renato Alves)
+Solution:   Check that vcol_prev is smaller than vcol.
+Files:	    src/screen.c
+
+Patch 7.2.113
+Problem:    Crash for substitute() call using submatch(1) while there is no
+	    such submatch. (Yukihiro Nakadaira)
+Solution:   Also check the start of the submatch is set, it can be NULL when
+	    an attempted match didn't work out.
+Files:	    src/regexp.c
+
+Patch 7.2.114
+Problem:    Using wrong printf format.
+Solution:   Use "%ld" instead of "%d". (Dominique Pelle)
+Files:	    src/netbeans.c
+
+Patch 7.2.115
+Problem:    Some debugging code is never used.
+Solution:   Remove nbtrace() and nbprt(). (Dominique Pelle)
+Files:	    src/nbdebug.c, src/nbdebug.h
+
+Patch 7.2.116
+Problem:    Not all memory is freed when EXITFREE is defined.
+Solution:   Free allocated memory on exit. (Dominique Pelle)
+Files:	    src/ex_docmd.c, src/gui_gtk_x11.c, src/misc2.c, src/search.c,
+	    src/tag.c
+
+Patch 7.2.117
+Problem:    Location list incorrectly labelled "Quickfix List".
+Solution:   Break out of both loops for finding window for location list
+	    buffer. (Lech Lorens)
+Files:	    src/buffer.c, src/quickfix.c, src/screen.c
+
+Patch 7.2.118
+Problem:    <PageUp> at the more prompt only does half a page.
+Solution:   Make <PageUp> go up a whole page.  Also make 'f' go a page
+	    forward, but not quit the more prompt. (Markus Heidelberg)
+Files:	    src/message.c
+
+Patch 7.2.119
+Problem:    Status line is redrawn too often.
+Solution:   Check ScreeenLinesUC[] properly. (Yukihiro Nakadaira)
+Files:	    src/screen.c
+
+Patch 7.2.120
+Problem:    When opening the quickfix window or splitting the window and
+	    setting the location list, the location list is copied and then
+	    deleted, which is inefficient.
+Solution:   Don't copy the location list when not needed. (Lech Lorens)
+Files:	    src/quickfix.c, src/vim.h, src/window.c
+
+Patch 7.2.121
+Problem:    In gvim "!grep a *.c" spews out a lot of text that can't be
+	    stopped with CTRL-C.
+Solution:   When looping to read and show text, do check for typed characters
+	    every two seconds.
+Files:	    src/os_unix.c
+
+Patch 7.2.122
+Problem:    Invalid memory access when the VimResized autocommand changes
+	    'columns' and/or 'lines'.
+Solution:   After VimResized check for changed values. (Dominique Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.123
+Problem:    Typing 'q' at more prompt for ":map" output still displays another
+	    line, causing another more prompt. (Markus Heidelberg)
+Solution:   Quit listing maps when 'q' typed.
+Files:	    src/getchar.c
+
+Patch 7.2.124
+Problem:    Typing 'q' at more prompt for ":tselect" output still displays
+	    more lines, causing another more prompt. (Markus Heidelberg)
+Solution:   Quit listing tags when 'q' typed.
+Files:	    src/tag.c
+
+Patch 7.2.125
+Problem:    Leaking memory when reading XPM bitmap for a sign.
+Solution:   Don't allocate the memory twice. (Dominique Pelle)
+Files:	    src/gui_x11.c
+
+Patch 7.2.126
+Problem:    When EXITFREE is defined signs are not freed.
+Solution:   Free all signs on exit.  Also free keymaps. (Dominique Pelle)
+Files:	    src/misc2.c, src/ex_cmds.c, src/proto/ex_cmds.pro
+
+Patch 7.2.127
+Problem:    When listing mappings and a wrapping line causes the more prompt,
+	    after typing 'q' there can be another more prompt. (Markus
+	    Heidelberg)
+Solution:   Set "lines_left" to allow more lines to be displayed.
+Files:	    src/message.c
+
+Patch 7.2.128 (after 7.2.055)
+Problem:    Using ":lcd" makes session files not work.
+Solution:   Compare return value of mch_chdir() properly. (Andreas Bernauer)
+Files:	    src/ex_docmd.c
+
+Patch 7.2.129
+Problem:    When opening a command window from input() it uses the search
+	    history.
+Solution:   Use get_cmdline_type(). (James Vega)
+Files:	    src/ex_getln.c
+
+Patch 7.2.130
+Problem:    Vim may haing until CTRL-C is typed when using CTRL-Z.
+Solution:   Avoid using pause().  Also use "volatile" for variables used in
+	    signal functions. (Dominique Pelle)
+Files:	    src/auto/configure, src/configure.in, src/config.h.in,
+	    src/globals.h, src/os_unix.c
+
+Patch 7.2.131
+Problem:    When 'keymap' is cleared may still use the cursor highlighting for
+	    when it's enabled.
+Solution:   Reset 'iminsert' and 'imsearch'. (partly by Dominique Pelle)
+	    Also avoid ":setlocal" for these options have a global effect.
+Files:	    src/option.c
+
+Patch 7.2.132
+Problem:    When changing directory during a SwapExists autocmd freed memory
+	    may be accessed. (Dominique Pelle)
+Solution:   Add the allbuf_lock flag.
+Files:	    src/ex_getln.c, src/globals.h, src/fileio.c,
+	    src/proto/ex_getln.pro
+
+Patch 7.2.133
+Problem:    ":diffoff!" changes settings in windows not in diff mode.
+Solution:   Only change settings in other windows when 'diff' is set, always
+	    do it for the current window. (Lech Lorens)
+Files:	    src/diff.c
+
+Patch 7.2.134
+Problem:    Warning for discarding "const" from pointer.
+Solution:   Don't pass const pointer to mch_memmove().
+Files:	    src/fileio.c
+
+Patch 7.2.135
+Problem:    Memory leak when redefining user command with complete argument.
+Solution:   Free the old complete argument. (Dominique Pelle)
+Files:	    src/ex_docmd.c
+
+Patch 7.2.136 (after 7.2.132)
+Problem:    ":cd" is still possible in a SwapExists autocmd.
+Solution:   Check the allbuf_lock flag in ex_cd().
+Files:	    src/ex_docmd.c
+
+Patch 7.2.137
+Problem:    When 'virtualedit' is set, a left shift of a blockwise selection
+	    that starts and ends inside a tab shifts too much. (Helmut
+	    Stiegler)
+Solution:   Redo the block left shift code. (Lech Lorens)
+Files:	    src/ops.c, src/testdir/Makefile, src/testdir/test66.in,
+	    src/testdir/test66.ok
+
+Patch 7.2.138 (extra part of 7.2.137)
+Problem:    See 7.2.137.
+Solution:   See 7.2.137.
+Files:	    src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
+	    src/testdir/Make_ming.mak, src/testdir/Make_os2.mak,
+	    src/testdir/Make_vms.mms
+
+Patch 7.2.139
+Problem:    Crash when 'virtualedit' is "all". (James Vega)
+Solution:   Avoid overflow when column is MAXCOL. (Dominique Pelle)
+Files:	    src/misc2.c
+
+Patch 7.2.140
+Problem:    Diff highlighting isn't displayed before the Visual area if it
+	    starts at the cursor position. (Markus Heidelberg)
+Solution:   Also check fromcol_prev.
+Files:	    src/screen.c
+
+Patch 7.2.141
+Problem:    When redrawing a character for bold spill this causes the next
+	    character to be redrawn as well.
+Solution:   Only redraw one extra character. (Yukihiro Nakadaira)
+Files:	    src/screen.c
+
+Patch 7.2.142
+Problem:    Motif and Athena balloons don't use tooltip colors.
+Solution:   Set the colors. (Matt Wozniski)
+Files:	    src/gui_beval.c
+
+Patch 7.2.143
+Problem:    No command line completion for ":cscope" command.
+Solution:   Add the completion for ":cscope". (Dominique Pelle)
+Files:	    src/ex_docmd.c, src/ex_getln.c, src/if_cscope.c,
+	    src/proto/if_cscope.pro, src/vim.h
+
+Patch 7.2.144
+Problem:    When 't_Co' is set to the value it already had the color scheme is
+	    reloaded anyway.
+Solution:   Only load the colorscheme when the t_Co value changes. (Dominique
+	    Pelle)
+Files:	    src/option.c
+
+Patch 7.2.145
+Problem:    White space in ":cscope find" is not ignored.
+Solution:   Ignore the white space, but not when the leading white space is
+	    useful for the argument.
+Files:	    runtime/doc/if_scop.txt, src/if_cscope.c
+
+Patch 7.2.146
+Problem:    v:warningmsg isn't used for all warnings.
+Solution:   Set v:warningmsg for relevant warnings. (Ingo Karkat)
+Files:	    src/fileio.c, src/misc1.c, src/option.c
+
+Patch 7.2.147
+Problem:    When compiled as small version and 'number' is on the cursor is
+	    displayed in the wrong position after a tab. (James Vega)
+Solution:   Don't increment vcol when still displaying the line number.
+Files:	    src/screen.c
+
+Patch 7.2.148
+Problem:    When searching for "$" while 'hlsearch' is set, highlighting the
+	    character after the line does not work in the cursor column.
+	    Also highlighting for Visual mode after the line end when this
+	    isn't needed.  (Markus Heidelberg)
+Solution:   Only compare the cursor column in the cursor line.  Only highlight
+	    for Visual selection after the last character when it's needed to
+	    see where the Visual selection ends.
+Files:	    src/screen.c
+
+Patch 7.2.149
+Problem:    Using return value of function that doesn't return a value results
+	    in reading uninitialized memory.
+Solution:   Set the default to return zero.  Make cursor() return -1 on
+	    failure.  Let complete() return an empty string in case of an
+	    error.  (partly by Dominique Pelle)
+Files:	    runtime/doc/eval.txt, src/eval.c
+
+Patch 7.2.150 (extra)
+Problem:    Can't use tab pages from VisVim.
+Solution:   Add tab page support to VisVim. (Adam Slater)
+Files:	    src/VisVim/Commands.cpp, src/VisVim/Resource.h,
+	    src/VisVim/VisVim.rc
+
+Patch 7.2.151
+Problem:    ":hist a" doesn't work like ":hist all" as the docs suggest.
+Solution:   Make ":hist a" and ":hist al" work. (Dominique Pelle)
+Files:	    src/ex_getln.c
+
+Patch 7.2.152
+Problem:    When using "silent echo x" inside ":redir" a next echo may start
+	    halfway the line. (Tony Mechelynck, Dennis Benzinger)
+Solution:   Reset msg_col after redirecting silently.
+Files:	    src/ex_docmd.c, src/message.c, src/proto/message.pro
+
+Patch 7.2.153
+Problem:    Memory leak for ":recover empty_dir/".
+Solution:   Free files[] when it becomes empty. (Dominique Pelle)
+Files:	    src/memline.c
+
+Patch 7.2.154 (after 7.2.132)
+Problem:    ":cd" is still possible in a SwapExists autocmd.
+Solution:   Set allbuf_lock in do_swapexists().
+Files:	    src/memline.c
+
+Patch 7.2.155
+Problem:    Memory leak in ":function /pat".
+Solution:   Free the memory. (Dominique Pelle)
+Files:	    src/eval.c
+
+Patch 7.2.156 (after 7.2.143)
+Problem:    No completion for :scscope and :lcscope commands.
+Solution:   Implement the completion. (Dominique Pelle)
+Files:	    src/if_cscope.c, src/ex_docmd.c, src/proto/if_cscope.pro
+
+Patch 7.2.157
+Problem:    Illegal memory access when searching in path.
+Solution:   Avoid looking at a byte after end of a string. (Dominique Pelle)
+Files:	    src/search.c
+
+Patch 7.2.158
+Problem:    Warnings from VisualC compiler.
+Solution:   Add type casts. (George Reilly)
+Files:	    src/ops.c
+
+Patch 7.2.159
+Problem:    When $x_includes ends up being "NONE" configure fails.
+Solution:   Check for $x_includes not to be "NONE" (Rainer)
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2.160
+Problem:    Search pattern not freed on exit when 'rightleft' set.
+Solution:   Free mr_pattern_alloced.
+Files:	    src/search.c
+
+Patch 7.2.161
+Problem:    Folds messed up in other tab page. (Vlad Irnov)
+Solution:   Instead of going over all windows in current tab page go over all
+	    windows in all tab pages.  Also free memory for location lists in
+	    other tab pages when exiting. (Lech Lorens)
+Files:	    src/fileio.c, src/mark.c, src/misc1.c, src/misc2.c
+
+Patch 7.2.162
+Problem:    The quickfix window may get wrong filetype.
+Solution:   Do not detect the filetype for the quickfix window. (Lech Lorens)
+Files:	    src/quickfix.c
+
+Patch 7.2.163
+Problem:    The command line window may get folding.
+Solution:   Default to no/manual folding. (Lech Lorens)
+Files:	    src/ex_getln.c
+
+Patch 7.2.164
+Problem:    When 'showbreak' is set the size of the Visual block may be
+	    reported wrong. (Eduardo Daudt Flach)
+Solution:   Temporarily make 'sbr' empty.
+Files:	    src/normal.c, src/ops.c
+
+Patch 7.2.165
+Problem:    The argument for the FuncUndefined autocmd event is expanded like
+	    a file name.
+Solution:   Don't try expanding it. (Wang Xu)
+Files:	    src/fileio.c
+
+Patch 7.2.166
+Problem:    No completion for ":sign" command.
+Solution:   Add ":sign" completion. (Dominique Pelle)
+Files:	    src/ex_cmds.c, src/ex_docmd.c, src/ex_getln.c, src/vim.h,
+	    src/proto/ex_cmds.pro
+
+Patch 7.2.167
+Problem:    Splint doesn't work well for checking the code.
+Solution:   Add splint arguments in the Makefile.  Exclude some code from
+	    splint that it can't handle.  Tune splint arguments to give
+	    reasonable errors.  Add a filter for removing false warnings from
+	    splint output.  Many small changes to avoid warnings.  More to
+	    follow...
+Files:	    Filelist, src/Makefile, src/buffer.c, src/charset.c,
+	    src/cleanlint.vim, src/digraph.c, src/edit.c, src/ex_cmds.c,
+	    src/globals.h, src/ops.c, src/os_unix.c, src/os_unix.h,
+	    src/proto/buffer.pro, src/proto/edit.pro, src/screen.c,
+	    src/structs.h
+
+Patch 7.2.168
+Problem:    When no ctags program can be found, "make tags" attempts to
+	    execute the first C file.
+Solution:   Default to "ctags" when no ctags program can be found.
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.2.169
+Problem:    Splint complains about a lot of things.
+Solution:   Add type casts, #ifdefs and other changes to avoid warnings.
+	    Change colnr_T from unsigned to int.  Avoids mistakes with
+	    subtracting columns.
+Files:	    src/cleanlint.vim, src/diff.c, src/edit.c, src/ex_cmds.c,
+	    src/ex_cmds2.c, src/ex_docmd.c, src/proto/ex_cmds.pro,
+	    src/proto/spell.pro, src/quickfix.c, src/spell.c, src/structs.h,
+	    src/term.h, src/vim.h
+
+Patch 7.2.170
+Problem:    Using b_dev while it was not set. (Dominique Pelle)
+Solution:   Add the b_dev_valid flag.
+Files:	    src/buffer.c, src/fileio.c, src/structs.h
+
+Patch 7.2.171 (after 7.2.169)
+Problem:    Compiler warnings. (Tony Mechelynck)
+Solution:   Add function prototype. (Patrick Texier)  Init variable.
+Files:	    src/ex_cmds.c
+
+Patch 7.2.172 (extra)
+Problem:    Compiler warning.
+Solution:   Adjust function prototype. (Patrick Texier)
+Files:	    src/os_mswin.c
+
+Patch 7.2.173
+Problem:    Without lint there is no check for unused function arguments.
+Solution:   Use gcc -Wunused-parameter instead of lint.  For a few files add
+	    attributes to arguments that are known not to be used.
+Files:	    src/auto/configure, src/buffer.c, src/charset.c, src/diff.c,
+	    src/configure.in, src/config.h.in, src/edit.c, src/ex_cmds.c,
+	    src/ex_cmds2.c, src/version.c, src/vim.h
+
+Patch 7.2.174
+Problem:    Too many warnings from gcc -Wextra.
+Solution:   Change initializer.  Add UNUSED.  Add type casts.
+Files:	    src/edit.c, src/eval.c, src/ex_cmds.c, src/ex_docmd.c,
+	    src/ex_getln.c, src/fileio.c, getchar.c, globals.h, main.c,
+	    memline.c, message.c, src/misc1.c, src/move.c, src/normal.c,
+	    src/option.c, src/os_unix.c, src/os_unix.h, src/regexp.c,
+	    src/search.c, src/tag.c
+
+Patch 7.2.175
+Problem:    Compiler warning in OpenBSD.
+Solution:   Add type cast for NULL. (Dasn)
+Files:	    src/if_cscope.c
+
+Patch 7.2.176
+Problem:    Exceptions for splint are not useful.
+Solution:   Remove the S_SPLINT_S ifdefs.
+Files:	    src/edit.c, src/ex_cmds.c, src/ex_docmd.c, src/os_unix.c,
+	    src/os_unix.h, src/os_unixx.h, src/structs.h, src/term.h
+
+Patch 7.2.177
+Problem:    Compiler warnings when using -Wextra
+Solution:   Add UNUSED and type casts.
+Files:	    src/eval.c, src/ex_docmd.c, src/ex_eval.c, src/ex_getln.c,
+	    src/fileio.c, src/hardcopy.c, src/if_cscope.c, src/if_xcmdsrv.c,
+	    src/farsi.c, src/mark.c, src/menu.c
+
+Patch 7.2.178
+Problem:    Using negative value for device number might not work.
+Solution:   Use a separate flag for whether ffv_dev was set.
+Files:	    src/misc2.c
+
+Patch 7.2.179
+Problem:    Using negative value for device number might not work.
+Solution:   Use a separate flag for whether sn_dev was set.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.180
+Problem:    Some more compiler warnings when using gcc -Wextra.
+Solution:   Add UNUSED and type casts.
+Files:	    src/buffer.c, src/ex_cmds.c, src/macros.h, src/main.c,
+	    src/menu.c, src/message.c, src/misc1.c, src/mbyte.c,
+	    src/normal.c, src/option.c, src/os_unix.c, src/quickfix.c,
+	    src/screen.c, src/search.c, src/spell.c, src/syntax.c, src/tag.c,
+	    src/term.c, src/ui.c
+
+Patch 7.2.181
+Problem:    Some more compiler warnings when using gcc -Wextra.
+Solution:   Add UNUSED and type casts.
+Files:	    src/if_mzsch.c, src/gui.c, src/gui_gtk.c, src/gui_gtk_x11.c,
+	    src/gui_gtk_f.c, src/gui_beval.c, src/netbeans.c
+
+Patch 7.2.182 (after 7.2.181)
+Problem:    Compilation problems after previous patch for Motif.  Gvim with
+	    GTK crashes on startup.
+Solution:   Add comma.  Init form structure to zeroes.
+Files:	    src/netbeans.c, src/gui_gtk_f.c
+
+Patch 7.2.183
+Problem:    Configure problem for sys/sysctl.h on OpenBSD. (Dasn)
+Solution:   Add separate check for this header file.  Also switch to newer
+	    version of autoconf.
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2.184
+Problem:    Some more compiler warnings when using gcc -Wextra.
+Solution:   Add UNUSED and type casts.  Autoconf check for wchar_t.
+Files:	    src/auto/configure, src/config.h.in, src/configure.in,
+	    src/gui_athena.c, src/gui_x11.c, src/gui.c, src/gui_beval.c,
+	    src/gui_at_sb.c, src/gui_at_fs.c, src/gui_motif.c,
+	    src/gui_xmdlg.c, src/gui_xmebw.c, src/if_python.c, src/window.c,
+	    src/workshop.c
+
+Patch 7.2.185
+Problem:    Some more compiler warnings when using gcc -Wextra.
+Solution:   Add UNUSED and type casts.
+Files:	    src/Makefile, src/if_tlc.c, src/if_ruby.c
+
+Patch 7.2.186
+Problem:    Some more compiler warnings when using gcc -Wextra.
+Solution:   Now with the intended if_tcl.c changes.
+Files:	    src/if_tcl.c
+
+Patch 7.2.187 (after 7.2.186)
+Problem:    Doesn't build with older versions of TCL. (Yongwei Wu)
+Solution:   Add #ifdefs. (Dominique Pelle)
+Files:	    src/if_tcl.c
+
+Patch 7.2.188
+Problem:    Crash with specific use of function calls. (Meikel Brandmeyer)
+Solution:   Make sure the items referenced by a function call are not freed
+	    twice.  (based on patch from Nico Weber)
+Files:	    src/eval.c
+
+Patch 7.2.189
+Problem:    Possible hang for deleting auto-indent. (Dominique Pelle)
+Solution:   Make sure the position is not beyond the end of the line.
+Files:	    src/edit.c
+
+Patch 7.2.190
+Problem:    The register executed by @@ isn't restored.
+Solution:   Mark the executable register in the viminfo file.
+Files:	    src/ops.c
+
+Patch 7.2.191
+Problem:    Mzscheme interface doesn't work on Ubuntu.
+Solution:   Change autoconf rules.  Define missing macro.  Some changes to
+	    avoid gcc warnings.  Remove per-buffer namespace. (Sergey Khorev)
+Files:	    runtime/doc/if_mzsch.txt, src/Makefile, src/Make_ming.mak,
+	    src/Make_mvc.mak, src/auto/configure, src/configure.in,
+	    src/config.mk.in, src/eval.c, src/if_mzsch.c, src/if_mzsch.h,
+	    src/main.c, src/proto/if_mzsch.pro
+
+Patch 7.2.192 (after 7.2.188)
+Problem:    Still a crash in the garbage collector for a very rare situation.
+Solution:   Make sure current_copyID is always incremented correctly. (Kent
+	    Sibilev)
+Files:	    src/eval.c
+
+Patch 7.2.193
+Problem:    Warning for uninitialized values.
+Solution:   Initialize all the struct items.
+Files:	    src/eval.c
+
+Patch 7.2.194 (extra)
+Problem:    MSVC: rem commands are echoed.
+Solution:   Add commands to switch off echo. (Wang Xu)
+Files:	    src/msvc2008.bat
+
+Patch 7.2.195
+Problem:    Leaking memory for the command Vim was started with.
+Solution:   Remember the pointer and free it.
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2.196 (after 7.2.167)
+Problem:    Turns out splint doesn't work well enough to be usable.
+Solution:   Remove splint support.
+Files:	    Filelist, src/cleanlint.vim
+
+Patch 7.2.197
+Problem:    Warning for uninitialized values.
+Solution:   Initialize all the struct items of typebuf.
+Files:	    src/globals.h
+
+Patch 7.2.198
+Problem:    Size of buffer used for tgetent() may be too small.
+Solution:   Use the largest known size everywhere.
+Files:	    src/vim.h
+
+Patch 7.2.199
+Problem:    Strange character in comment.
+Solution:   Change to "message". (Yongwei Wu)
+Files:	    src/term.c
+
+Patch 7.2.200
+Problem:    Reading past end of string when navigating the menu bar or
+	    resizing the window.
+Solution:   Add and use mb_ptr2len_len(). (partly by Dominique Pelle)
+	    Also add mb_ptr2cells_len() to prevent more trouble.
+Files:	    src/gui_gtk_x11.c, src/os_unix.c, src/globals.h, src/mbyte.c,
+	    src/proto/mbyte.pro
+
+Patch 7.2.201
+Problem:    Cannot copy/paste HTML to/from Firefox via the clipboard.
+Solution:   Implement this for GTK.  Add the "html" value to 'clipboard'.
+Files:	    runtime/doc/options.txt, src/globals.h, src/gui_gtk_x11.c,
+	    src/mbyte.c, src/proto/mbyte.pro, src/option.c
+
+Patch 7.2.202
+Problem:    BufWipeout autocommand that edits another buffer causes problems.
+Solution:   Check for the situation, give an error and quit the operation.
+Files:	    src/fileio.c
+
+Patch 7.2.203
+Problem:    When reloading a buffer or doing anything else with a buffer that
+	    is not displayed in a visible window, autocommands may be applied
+	    to the current window, folds messed up, etc.
+Solution:   Instead of using the current window for the hidden buffer use a
+	    special window, splitting the current one temporarily.
+Files:	    src/fileio.c, src/globals.h, src/gui.c, src/if_perl.xs,
+	    src/progo/gui.pro, src/proto/window.pro, src/screen.c,
+	    src/structs.h, src/window.c
+
+Patch 7.2.204 (extra)
+Problem:    Win32: Can't build with Visual Studio 2010 beta 1.
+Solution:   Fix the makefile. (George Reilly)
+Files:	    src/Make_mvc.mak
+
+Patch 7.2.205 (extra)
+Problem:    Win32: No support for High DPI awarenes.
+Solution:   Fix the manifest file. (George Reilly)
+Files:	    src/Make_mvc.mak, src/gvim.exe.mnf
+
+Patch 7.2.206
+Problem:    Win32: Can't build netbeans interface with Visual Studio 2010.
+Solution:   Undefine ECONNREFUSED. (George Reilly)
+Files:	    src/netbeans.c
+
+Patch 7.2.207
+Problem:    Using freed memory with ":redrawstatus" when it works recursively.
+Solution:   Prevent recursively updating the status line. (partly by Dominique
+	    Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.208
+Problem:    "set novice" gives an error message, it should be ignored.
+Solution:   Don't see "no" in "novice" as unsetting an option.  (Patrick
+	    Texier)
+Files:	    src/option.c
+
+Patch 7.2.209
+Problem:    For xxd setmode() is undefined on Cygwin.
+Solution:   Include io.h. (Dominique Pelle)
+Files:	    src/xxd/xxd.c
+
+Patch 7.2.210
+Problem:    When a file that is being edited has its timestamp updated outside
+	    of Vim and ":checktime" is used still get a warning when writing
+	    the file. (Matt Mueller)
+Solution:   Store the timestamp in b_mtime_read when the timestamp is the only
+	    thing that changed.
+Files:	    src/fileio.c
+
+Patch 7.2.211
+Problem:    Memory leak when expanding a series of file names.
+Solution:   Use ga_clear_strings() instead of ga_clear().
+Files:	    src/misc1.c
+
+Patch 7.2.212 (extra)
+Problem:    Warnings for redefining SIG macros.
+Solution:   Don't define them if already defined. (Bjorn Winckler)
+Files:	    src/os_mac.h
+
+Patch 7.2.213
+Problem:    Warning for using vsprintf().
+Solution:   Use vim_vsnprintf().
+Files:	    src/netbeans.c
+
+Patch 7.2.214
+Problem:    Crash with complete function for user command. (Andy Wokula)
+Solution:   Avoid using a NULL pointer (Dominique Pelle)
+Files:	    src/ex_getln.c
+
+Patch 7.2.215
+Problem:    ml_get error when using ":vimgrep".
+Solution:   Load the memfile for the hidden buffer before putting it in a
+	    window.  Correct the order of splitting the window and filling
+	    the window and buffer with data.
+Files:	    src/fileio.c, src/proto/window.pro, src/quickfix.c, src/window.c
+
+Patch 7.2.216
+Problem:    Two error messages have the same number E812.
+Solution:   Give one message a different number.
+Files:	    runtime/doc/autocmd.txt, runtime/doc/if_mzsch.txt, src/if_mzsch.c
+
+Patch 7.2.217
+Problem:    Running tests with valgrind doesn't work as advertised.
+Solution:   Fix the line in the Makefile.
+Files:	    src/testdir/Makefile
+
+Patch 7.2.218
+Problem:    Cannot build GTK with hangul_input feature. (Dominique Pelle)
+Solution:   Adjuste #ifdef.  (SungHyun Nam)
+Files:	    src/gui.c
+
+Patch 7.2.219 (extra)
+Problem:    Photon GUI is outdated.
+Solution:   Updates for QNX 6.4.0. (Sean Boudreau)
+Files:	    src/gui_photon.c
+
+Patch 7.2.220 (after 7.2.215)
+Problem:    a BufEnter autocommand that changes directory causes problems.
+	    (Ajit Thakkar)
+Solution:   Disable autocommands when opening a hidden buffer in a window.
+Files:	    src/fileio.c
+
+Patch 7.2.221
+Problem:    X cut_buffer0 text is used as-is, it may be in the wrong encoding.
+Solution:   Convert between 'enc' and latin1. (James Vega)
+Files:	    src/gui_gtk_x11.c, src/message.c, src/ops.c, src/proto/ui.pro,
+	    src/ui.c
+
+Patch 7.2.222
+Problem:   ":mksession" doesn't work properly with 'acd' set. 
+Solution:   Make it work. (Yakov Lerner)
+Files:	    src/ex_docmd.c
+
+Patch 7.2.223
+Problem:    When a script is run with ":silent" it is not able to give warning
+	    messages.
+Solution:   Add the ":unsilent" command.
+Files:	    runtime/doc/various.txt, src/ex_cmds.h, src/ex_docmd.c
+
+Patch 7.2.224
+Problem:    Crash when using 'completefunc'. (Ingo Karkat)
+Solution:   Disallow entering edit() recursively when doing completion.
+Files:	    src/edit.c
+
+Patch 7.2.225
+Problem:    When using ":normal" a saved character may be executed.
+Solution:   Also store old_char when saving typeahead.
+Files:	    src/getchar.c, src/structs.h
+
+Patch 7.2.226
+Problem:    ml_get error after deleting the last line. (Xavier de Gaye)
+Solution:   When adjusting marks a callback may be invoked.  Adjust the cursor
+	    position before invoking deleted_lines_mark().
+Files:	    src/ex_cmds.c, src/ex_docmd.c, src/if_mzsch.c, src/if_python.c,
+	    src/if_perl.xs, src/misc1.c
+
+Patch 7.2.227
+Problem:    When using ":cd" in a script there is no way to track this.
+Solution:   Display the directory when 'verbose' is 5 or higher.
+Files:	    src/ex_docmd.c
+
+Patch 7.2.228
+Problem:    Cscope is limited to 8 connections.
+Solution:   Allocated the connection array to handle any number of
+	    connections. (Dominique Pelle)
+Files:	    runtime/doc/if_cscop.txt, src/if_cscope.h, src/if_cscope.c
+
+Patch 7.2.229
+Problem:    Warning for shadowed variable.
+Solution:   Rename "wait" to "wait_time".
+Files:	    src/os_unix.c
+
+Patch 7.2.230
+Problem:    A few old lint-style ARGUSED comments.
+Solution:   Change to the new UNUSED style.
+Files:	    src/getchar.c
+
+Patch 7.2.231
+Problem:    Warning for unreacheable code.
+Solution:   Add #ifdef.
+Files:	    src/if_perl.xs
+
+Patch 7.2.232
+Problem:    Cannot debug problems with being in a wrong directory.
+Solution:   When 'verbose' is 5 or higher report directory changes.
+Files:	    src/os_unix.c, src/os_unix.h, src/proto/os_unix.pro
+
+Patch 7.2.233 (extra part of 7.2.232)
+Problem:    Cannot debug problems with being in a wrong directory.
+Solution:   When 'verbose' is 5 or higher report directory changes.
+Files:	    src/os_msdos.c, src/os_mswin.c, src/os_riscos.c, src/os_mac.h
+
+Patch 7.2.234
+Problem:    It is not possible to ignore file names without a suffix.
+Solution:   Use an empty entry in 'suffixes' for file names without a dot.
+Files:	    runtime/doc/cmdline.txt, src/misc1.c
+
+Patch 7.2.235
+Problem:    Using CTRL-O z= in Insert mode has a delay before redrawing.
+Solution:   Reset msg_didout and msg_scroll.
+Files:	    src/misc1.c, src/spell.c
+
+Patch 7.2.236
+Problem:    Mac: Compiling with Ruby doesn't always work.
+Solution:   In configure filter out the --arch argument (Bjorn Winckler)
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.2.237
+Problem:    Crash on exit when window icon not set.
+Solution:   Copy terminal name when using it for the icon name.
+Files:	    src/os_unix.c
+
+Patch 7.2.238
+Problem:    Leaking memory when setting term to "builtin_dumb".
+Solution:   Free memory when resetting term option t_Co.
+Files:	    src/option.c, src/proto/option.pro, src/term.c
+
+Patch 7.2.239
+Problem:    Using :diffpatch twice or when patching fails causes memory
+	    corruption and/or a crash.  (Bryan Venteicher)
+Solution:   Detect missing output file.  Avoid using non-existing buffer.
+Files:	    src/diff.c
+
+Patch 7.2.240
+Problem:    Crash when using find/replace dialog repeatedly. (Michiel
+	    Hartsuiker)
+Solution:   Avoid doing the operation while busy or recursively.  Also refuse
+	    replace when text is locked.
+Files:	    src/gui.c
+
+Patch 7.2.241
+Problem:    When using a combination of ":bufdo" and "doautoall" we may end up
+	    in the wrong directory. (Ajit Thakkar)
+	    Crash when triggering an autocommand in ":vimgrep".  (Yukihiro
+	    Nakadaira)
+Solution:   Clear w_localdir and globaldir when using the aucmd_win.
+	    Use a separate flag to decide aucmd_win needs to be restored.
+Files:	    src/fileio.c, src/globals.h, src/structs.h
+
+Patch 7.2.242
+Problem:    Setting 'lazyredraw' causes the cursor column to be recomputed.
+	    (Tom Link)
+Solution:   Only recompute the cursor column for a boolean option if changes
+	    the cursor position.
+Files:	    src/option.c
+
+Patch 7.2.243
+Problem:    Memory leak when using :vimgrep and resizing. (Dominique Pelle)
+Solution:   Free memory for aucmd_win when resizing and don't allocate it
+	    twice.
+Files:	    src/screen.c
+
+Patch 7.2.244
+Problem:    When 'enc' is utf-8 and 'fenc' is latin1, writing a non-latin1
+	    character gives a conversion error without any hint what is wrong.
+Solution:   When known add the line number to the error message.
+Files:	    src/fileio.c
+
+Patch 7.2.245
+Problem:    When 'enc' is "utf-16" and 'fenc' is "utf-8" writing a file does
+	    conversion while none should be done. (Yukihiro Nakadaira) When
+	    'fenc' is empty the file is written as utf-8 instead of utf-16.
+Solution:   Do proper comparison of encodings, taking into account that all
+	    Unicode values for 'enc' use utf-8 internally.
+Files:	    src/fileio.c
+
+Patch 7.2.246
+Problem:    Cscope home page link is wrong.
+Solution:   Update the URL. (Sergey Khorev)
+Files:	    runtime/doc/if_cscop.txt
+
+Patch 7.2.247
+Problem:    Mzscheme interface minor problem.
+Solution:   Better error message when build fails. (Sergey Khorev)
+Files:	    src/if_mzsch.c
+
+Patch 7.2.248 (extra)
+Problem:    Mzscheme interface building minor problems.
+Solution:   Update Win32 makefiles. (Sergey Khorev)
+Files:	    src/Make_cyg.mak, src/Make_ming.mak, src/Make_mvc.mak
+
+Patch 7.2.249
+Problem:    The script to check .po files can't handle '%' in plural forms.
+Solution:   Remove "Plural-Forms:" from the checked string.
+Files:	    src/po/check.vim
+
+Patch 7.2.250 (extra)
+Problem:    Possible buffer overflow.
+Solution:   Compute the remaining space. (Dominique Pelle)
+Files:	    src/GvimExt/gvimext.cpp
+
+Patch 7.2.251 (after 7.2.044)
+Problem:    Compiler adds invalid memory bounds check.
+Solution:   Remove _FORTIFY_SOURCE=2 from CFLAGS. (Dominique Pelle)
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2.252
+Problem:    When using a multi-byte 'enc' the 'iskeyword' option cannot
+	    contain characters above 128.
+Solution:   Use mb_ptr2char_adv().
+Files:	    src/charset.c
+
+Patch 7.2.253
+Problem:    Netbeans interface: getLength always uses current buffer.
+Solution:   Use ml_get_buf() instead of ml_get(). (Xavier de Gaye)
+Files:	    src/netbeans.c
+
+Patch 7.2.254
+Problem:    Compiler warning for assigning size_t to int.
+Solution:   Use size_t for the variable. (George Reilly)
+Files:	    src/fileio.c
+
+Patch 7.2.255 (after 7.2.242)
+Problem:    Setting 'rightleft', 'linebreak' and 'wrap' may cause cursor to be
+	    in wrong place.
+Solution:   Recompute the cursor column for these options.
+Files:	    src/option.c
+
+Patch 7.2.256
+Problem:    When 'guifont' was not set GTK font dialog doesn't have a default.
+	    (Andreas Metzler)
+Solution:   Set default to DEFAULT_FONT. (James Vega)
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2.257
+Problem:    With GTK 2.17 lots of assertion error messages.
+Solution:   Remove check for static gravity. (Sebastian Droege)
+Files:	    src/gui_gtk_f.c
+
+Patch 7.2.258
+Problem:    v:beval_col and b:beval_text are wrong in UTF-8 text. (Tony
+	    Mechelynck)
+Solution:   Use byte number instead of character number for the column.
+Files:	    src/ui.c
+
+Patch 7.2.259
+Problem:    exists() doesn't work properly for an empty aucmd group.
+Solution:   Change how au_exists() handles a missing pattern.  Also add a
+	    test for this. (Bob Hiestand)
+Files:	    src/fileio.c, src/testdir/Makefile, src/testdir/test67.in,
+	    src/testdir/test67.ok
+
+Patch 7.2.260 (extra part of 7.2.259)
+Problem:    exists() doesn't work properly for empty aucmd group.
+Solution:   Change how au_exists() handles a missing pattern.  Also add a
+	    test for this. (Bob Hiestand)
+Files:	    src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
+	    src/testdir/Make_ming.mak, src/testdir/Make_os2.mak,
+	    src/testdir/Make_vms.mms
+
+Patch 7.2.261
+Problem:    When deleting lines with a specific folding configuration E38 may
+	    appear. (Shahaf)
+Solution:   When adjusting nested folds for deleted lines take into account
+	    that they don't start at the top of the enclosing fold.
+Files:	    src/fold.c
+
+Patch 7.2.262
+Problem:    When using custom completion for a user command the pattern string
+	    goes beyond the cursor position. (Hari Krishna Dara)
+Solution:   Truncate the string at the cursor position.
+Files:	    src/ex_getln.c, src/structs.h
+
+Patch 7.2.263
+Problem:    GTK2: when using the -geom argument with an offset from the right
+	    edge and the size is smaller than the default, the Vim window is
+	    not positioned properly.
+Solution:   Use another function to set the size. (Vitaly Minko)
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2.264
+Problem:    GTK2: When the Vim window is maximized setting 'columns' or
+	    'lines' doesn't work.
+Solution:   Unmaximize the window before setting the size. (Vitaly Minko)
+Files:	    src/gui.c, src/gui_gtk_x11.c, src/proto/gui_gtk_x11.pro
+
+Patch 7.2.265
+Problem:    When using ":silent broken" inside try/catch silency may persist.
+	    (dr-dr xp)
+Solution:   Set msg_silent when there is an error and it's bigger than the
+	    saved value.
+Files:	    src/ex_docmd.c
+
+Patch 7.2.266
+Problem:    When an expression abbreviation is triggered, the typed character
+	    is unknown.
+Solution:   Make the typed character available in v:char.
+Files:	    runtime/doc/map.txt, src/eval.c, src/getchar.c, src/ops.c,
+	    src/proto/eval.pro
+
+Patch 7.2.267
+Problem:    Crash for narrow window and double-width character.
+Solution:   Check for zero width.  (Taro Muraoka)
+Files:	    src/charset.c
+
+Patch 7.2.268
+Problem:    Crash when using Python to set cursor beyond end of line.
+	    (winterTTr)
+Solution:   Check the column to be valid.
+Files:	    src/if_python.c
+
+Patch 7.2.269
+Problem:    Many people struggle to find out why Vim startup is slow.
+Solution:   Add the --startuptime command line flag.
+Files:	    runtime/doc/starting.txt, src/globals.h, src/feature.h,
+	    src/main.c, src/macros.h
+
+Patch 7.2.270
+Problem:    Using ":@c" when the c register contains a CR causes the rest to
+	    be executed later. (Dexter Douglas)
+Solution:   Don't check for typeahead to start with ':', keep executing
+	    commands until all added typeahead has been used.
+Files:	    src/ex_docmd.c
+
+Patch 7.2.271
+Problem:    Using freed memory in Motif GUI version when making a choice.
+Solution:   Free memory only after using it. (Dominique Pelle)
+Files:	    src/gui_xmdlg.c
+
+Patch 7.2.272
+Problem:    "_.svz" is not recognized as a swap file. (David M. Besonen)
+Solution:   Accept .s[uvw][a-z] as a swap file name extension.
+Files:	    src/memline.c
+
+Patch 7.2.273
+Problem:    Crash with redir to unknown array. (Christian Brabandt)
+Solution:   Don't assign the redir result when there was an error.
+Files:	    src/eval.c
+
+Patch 7.2.274
+Problem:    Syntax folding doesn't work properly when adding a comment.
+Solution:   Fix it and add a test. (Lech Lorens)
+Files:	    src/fold.c, src/testdir/test45.in, src/testdir/test45.ok
+
+Patch 7.2.275
+Problem:    Warning for unused argument and comparing signed and unsigned.
+Solution:   Add type cast.
+Files:	    src/memline.c
+
+Patch 7.2.276
+Problem:    Crash when setting 'isprint' to a small bullet. (Raul Coronado)
+Solution:   Check for the character to be < 256.  Also make it possible to
+	    specify a range of multi-byte characters. (Lech Lorens)
+Files:	    src/charset.c
+
+Patch 7.2.277
+Problem:    CTRL-Y in a diff'ed window may move the cursor outside of the
+	    window. (Lech Lorens)
+Solution:   Limit the number of filler lines to the height of the window.
+	    Don't reset filler lines to zero for an empty buffer.
+Files:	    src/move.c
+
+Patch 7.2.278
+Problem:    Using magic number in the folding code.
+Solution:   Use the defined MAX_LEVEL.
+Files:	    src/fold.c
+
+Patch 7.2.279
+Problem:    Invalid memory read with visual mode "r". (Dominique Pelle)
+Solution:   Make sure the cursor position is valid.  Don't check the cursor
+	    position but the position being used.  And make sure we get the
+	    right line.
+Files:	    src/misc2.c, src/ops.c
+
+Patch 7.2.280
+Problem:    A redraw in a custom statusline with %! may cause a crash.
+	    (Yukihiro Nakadaira)
+Solution:   Make a copy of 'statusline'.  Also fix typo in function name
+	    redraw_custum_statusline. (partly by Dominique Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.281
+Problem:    'cursorcolumn' highlighting is wrong in diff mode.
+Solution:   Adjust the column computation. (Lech Lorens)
+Files:	    src/screen.c
+
+Patch 7.2.282
+Problem:    A fold can't be closed.
+Solution:   Initialize fd_small to MAYBE. (Lech Lorens)
+Files:	    src/fold.c
+
+Patch 7.2.283
+Problem:    Changing font while the window is maximized doesn't keep the
+	    window maximized.
+Solution:   Recompute number of lines and columns after changing font. (James
+	    Vega)
+Files:	    src/gui_gtk_x11.c
+
+Patch 7.2.284
+Problem:    When editing the same buffer in two windows, one with folding,
+	    display may be wrong after changes.
+Solution:   Call set_topline() to take care of side effects. (Lech Lorens)
+Files:	    src/misc1.c
+
+Patch 7.2.285 (after 7.2.169)
+Problem:    CTRL-U in Insert mode also deletes indent. (Andrey Voropaev)
+Solution:   Fix mistake made in patch 7.2.169.
+Files:	    src/edit.c
+
+Patch 7.2.286 (after 7.2.269)
+Problem:    The "--startuptime=<file>" argument is not consistent with other
+	    arguments.
+Solution:   Use "--startuptime <file>".  Added the +startuptime feature.
+Files:	    runtime/doc/eval.txt, runtime/doc/starting.txt,
+	    runtime/doc/various.txt, src/eval.c, src/main.c, src/version.c
+
+Patch 7.2.287
+Problem:    Warning from gcc 3.4 about uninitialized variable.
+Solution:   Move assignment outside of #ifdef.
+Files:	    src/if_perl.xs
+
+Patch 7.2.288
+Problem:    Python 2.6 pyconfig.h redefines macros.
+Solution:   Undefine the macros before including pyconfig.h.
+Files:	    src/if_python.c
+
+Patch 7.2.289
+Problem:    Checking wrong struct member.
+Solution:   Change tb_buf to tb_noremap. (Dominique Pelle)
+Files:	    src/getchar.c
+
+Patch 7.2.290
+Problem:    Not freeing memory from ":lmap", ":xmap" and ":menutranslate".
+Solution:   Free the memory when exiting. (Dominique Pelle)
+Files:	    src/misc2.c
+
+Patch 7.2.291
+Problem:    Reading uninitialised memory in arabic mode.
+Solution:   Use utfc_ptr2char_len() rather than utfc_ptr2char().  (Dominique
+	    Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.292
+Problem:    Block right-shift doesn't work properly with multi-byte encoding
+	    and 'list' set.
+Solution:   Add the missing "else". (Lech Lorens)
+Files:	    src/ops.c
+
+Patch 7.2.293
+Problem:    When setting 'comments' option it may be used in a wrong way. 
+Solution:   Don't increment after skipping over digets. (Yukihiro Nakadaira)
+Files:	    src/misc1.c
+
+Patch 7.2.294
+Problem:    When using TEMPDIRS dir name could get too long.
+Solution:   Overwrite tail instead of appending each time.  Use mkdtemp() when
+	    available. (James Vega)
+Files:	    src/auto/configure, src/config.h.in, src/configure.in, src/fileio.c
+
+Patch 7.2.295
+Problem:    When using map() on a List the index is not known.
+Solution:   Set v:key to the  index. (Hari Krishna Dara)
+Files:	    runtime/doc/eval.txt, src/eval.c
+
+Patch 7.2.296
+Problem:    Help message about startuptime is wrong. (Dominique Pelle)
+Solution:   Remove the equal sign.
+Files:	    src/main.c
+
+Patch 7.2.297
+Problem:    Reading freed memory when writing ":reg" output to a register.
+	    (Dominique Pelle)
+Solution:   Skip the register being written to.
+Files:	    src/ops.c
+
+Patch 7.2.298
+Problem:    ":vimgrep" crashes when there is an autocommand that sets a
+	    window-local variable.
+Solution:   Initialize the w: hashtab for re-use. (Yukihiro Nakadaira)
+Files:	    src/fileio.c
+
+Patch 7.2.299
+Problem:    Crash when comment middle is longer than start.
+Solution:   Fix size computation. (Lech Lorens)
+Files:	    src/misc1.c
+
+Patch 7.2.300
+Problem:    Vim doesn't close file descriptors when forking and executing
+	    another command, e.g., ":shell".
+Solution:   Use FD_CLOEXEC when available. (James Vega)
+Files:	    auto/configure, src/config.h.in, src/configure.in,
+	    src/ex_cmdds2.c, src/fileio.c, src/memfile.c, src/memline.c
+
+Patch 7.2.301
+Problem:    Formatting is wrong when 'tw' is set to a small value.
+Solution:   Fix it and add tests.  Also fix behavior of "1" in 'fo'. (Yukihiro
+	    Nakadaira)
+Files:	    src/edit.c, src/testdir/Makefile, src/testdir/test68.in,
+	    src/testdir/test68.ok, src/testdir/test69.in,
+	    src/testdir/test69,ok
+
+Patch 7.2.302 (extra part of 7.2.301)
+Problem:    Formatting wrong with small 'tw' value.
+Solution:   Add build rules for tests.
+Files:	    src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
+	    src/testdir/Make_ming.mak, src/testdir/Make_os2.mak,
+	    src/testdir/Make_vms.mms
+
+Patch 7.2.303 (after 7.2.294)
+Problem:    Can't build on MS-Windows.
+Solution:   Add #ifdef around vim_settempdir(). (James Vega)
+Files:	    src/fileio.c
+
+Patch 7.2.304
+Problem:    Compiler warning for bad pointer cast.
+Solution:   Use another variable for int pointer.
+Files:	    src/ops.c
+
+Patch 7.2.305
+Problem:    Recursively redrawing causes a memory leak. (Dominique Pelle)
+Solution:   Disallow recursive screen updating.
+Files:	    src/screen.c
+
+Patch 7.2.306
+Problem:    shellescape("10%%", 1) only escapes first %. (Christian Brabandt)
+Solution:   Don't copy the character after the escaped one.
+Files:	    src/misc2.c
+
+Patch 7.2.307
+Problem:    Crash with a very long syntax match statement. (Guy Gur Ari)
+Solution:   When the offset does not fit in the two bytes available give an
+	    error instead of continuing with invalid pointers.
+Files:	    src/regexp.c
+
+Patch 7.2.308
+Problem:    When using a regexp in the "\=" expression of a substitute
+	    command, submatch() returns empty strings for further lines.
+	    (Clockwork Jam)
+Solution:   Save and restore the line number and line count when calling
+	    reg_getline().
+Files:	    src/regexp.c
+
+Patch 7.2.309 (after 7.2.308)
+Problem:    Warning for missing function prototype. (Patrick Texier)
+Solution:   Add the prototype.
+Files:	    src/regexp.c
+
+Patch 7.2.310
+Problem:    When a filetype plugin in ~/.vim/ftdetect uses ":setfiletype" and
+	    the file starts with a "# comment" it gets "conf" filetype.
+Solution:   Check for "conf" filetype after using ftdetect plugins.
+Files:	    runtime/filetype.vim
+
+Patch 7.2.311
+Problem:    Can't compile with FreeMiNT.
+Solution:   Change #ifdef for limits.h. (Alan Hourihane)
+Files:	    src/fileio.c
+
+Patch 7.2.312
+Problem:    iconv() returns an invalid character sequence when conversion
+	    fails.  It should return an empty string. (Yongwei Wu)
+Solution:   Be more strict about invalid characters in the input.
+Files:	    src/mbyte.c
+
+Patch 7.2.313
+Problem:    Command line completion doesn't work after "%:h" and similar.
+Solution:   Expand these items before doing the completion.
+Files:	    src/ex_getln.c, src/misc1.c, src/proto/misc1.pro
+
+Patch 7.2.314
+Problem:    Missing function in small build.
+Solution:   Always include concat_str.
+Files:	    src/misc1.c
+
+Patch 7.2.315
+Problem:    Python libs can't be found on 64 bit system.
+Solution:   Add lib64 to the list of directories. (Michael Henry)
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2.316
+Problem:    May get multiple _FORTIFY_SOURCE arguments. (Tony Mechelynck)
+Solution:   First remove all these arguments and then add the one we want.
+	    (Dominique Pelle)
+Files:	    src/auto/configure, src/configure.in
+
+Patch 7.2.317
+Problem:    Memory leak when adding a highlight group with unprintable
+	    characters, resulting in E669.
+Solution:   Free the memory.  And fix a few typos. (Dominique Pelle)
+Files:	    src/syntax.c
+
+Patch 7.2.318
+Problem:    Wrong locale value breaks floating point numbers for gvim.
+Solution:   Set the locale again after doing GUI inits. (Dominique Pelle)
+Files:	    src/main.c
+
+Patch 7.2.319
+Problem:    Motif: accessing freed memory when cancelling font dialog.
+Solution:   Destroy the widget only after accessing it. (Dominique Pelle)
+Files:	    src/gui_xmdlg.c
+
+Patch 7.2.320
+Problem:    Unused function in Mzscheme interface.
+Solution:   Remove the function and what depends on it. (Dominique Pelle)
+Files:	    src/if_mzsch.c, src/proto/if_mzsch.pro
+
+Patch 7.2.321
+Problem:    histadd() and searching with "*" fails to add entry to history
+	    when it is empty.
+Solution:   Initialize the history. (Lech Lorens)
+Files:	    src/eval.c, src/normal.c
+
+Patch 7.2.322
+Problem:    Wrong indenting in virtual replace mode with CTRL-Y below a short
+	    line.
+Solution:   Check for character to be NUL. (suggested by Lech Lorens)
+Files:	    src/edit.c
+
+Patch 7.2.323 (extra)
+Problem:    Balloon evaluation crashes on Win64.
+Solution:   Change pointer types. (Sergey Khorev)
+Files:	    src/gui_w32.c
+
+Patch 7.2.324
+Problem:    A negative column argument in setpos() may cause a crash.
+Solution:   Check for invalid column number. (James Vega)
+Files:	    src/eval.c, src/misc2.c
+
+Patch 7.2.325
+Problem:    A stray "w" in the startup vimrc file causes the edited file to be
+	    replaced with an empty file. (Stone Kang).
+Solution:   Do not write a buffer when it has never been loaded.
+Files:	    src/fileio.c
+
+Patch 7.2.326
+Problem:    Win32: $HOME doesn't work when %HOMEPATH% is not defined.
+Solution:   Use "\" for %HOMEPATH% when it is not defined.
+Files:	    src/misc1.c
+
+Patch 7.2.327
+Problem:    Unused functions in Workshop.
+Solution:   Add "#if 0" and minor cleanup. (Dominique Pelle)
+Files:	    src/workshop.c, src/integration.c, src/ingegration.h
+
+Patch 7.2.328
+Problem:    has("win64") does not return 1 on 64 bit MS-Windows version.
+Solution:   Also check for _WIN64 besides WIN64.
+Files:	    src/eval.c
+
+Patch 7.2.329
+Problem:    "g_" doesn't position cursor correctly when in Visual mode and
+	    'selection' is "exclusive". (Ben Fritz)
+Solution:   Call adjust_for_sel().
+Files:	    src/normal.c
+
+Patch 7.2.330
+Problem:    Tables for Unicode case operators are outdated.
+Solution:   Add a Vim script for generating the tables.  Include tables for
+	    Unicode 5.2.
+Files:	    runtime/tools/README.txt, runtime/tools/unicode.vim, src/mbyte.c
+
+Patch 7.2.331
+Problem:    Can't interrupt "echo list" for a very long list.
+Solution:   Call line_breakcheck() in list_join().
+Files:	    src/eval.c
+
+Patch 7.2.332
+Problem:    Crash when spell correcting triggers an autocommand that reloads
+	    the buffer.
+Solution:   Make a copy of the line to be modified. (Dominique Pelle)
+Files:	    src/spell.c
+
+Patch 7.2.333
+Problem:    Warnings from static code analysis.
+Solution:   Small changes to various lines. (Dominique Pelle)
+Files:	    src/buffer.c, src/edit.c, src/ex_getln.c, src/fileio.c,
+	    src/if_cscope.c, src/netbeans.c, src/ops.c, src/quickfix.c,
+	    src/syntax.c, src/ui.c
+
+Patch 7.2.334
+Problem:    Postponing keys in Netbeans interface does not work properly.
+Solution:   Store the key string instead of the number.  Avoid an infinite
+	    loop. (Mostly by Xavier de Gaye)
+Files:	    src/netbeans.c, src/proto/netbeans.pro
+
+Patch 7.2.335
+Problem:    The CTRL-] command escapes too many characters.
+Solution:   Use a different list of characters to be escaped. (Sergey Khorev)
+Files:	    src/normal.c
+
+Patch 7.2.336
+Problem:    MzScheme interface can't evaluate an expression.
+Solution:   Add mzeval(). (Sergey Khorev)
+Files:	    runtime/doc/eval.txt, runtime/doc/if_mzsch.txt,
+	    runtime/doc/usr_41.txt, src/eval.c, src/if_mzsch.c,
+	    src/proto/eval.pro, src/proto/if_mzsch.pro,
+	    src/testdir/Make_dos.mak, src/testdir/Make_ming.mak,
+	    src/testdir/Makefile, src/testdir/main.aap, src/testdir/test1.in,
+	    src/testdir/test70.in, src/testdir/test70.ok
+
+Patch 7.2.337
+Problem:    The :compiler command doesn't function properly when invoked in a
+	    function.
+Solution:   Add "g:" before "current_compiler". (Yukihiro Nakadaira)
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.338 (after 7.2.300)
+Problem:    Part of FD_CLOEXEC change is missing.
+Solution:   Include source file skipped because of typo.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.339 (after 7.2.269)
+Problem:    Part of --startuptime patch is missing.
+Solution:   Add check for time_fd.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.340
+Problem:    Gcc warning for condition that can never be true. (James Vega)
+Solution:   Use start_lvl instead flp->lvl.
+Files:	    src/fold.c
+
+Patch 7.2.341
+Problem:    Popup menu wraps to next line when double-wide character doesn't
+	    fit. (Jiang Ma)
+Solution:   Display a ">" instead. (Dominique Pelle)
+Files:	    src/screen.c
+
+Patch 7.2.342
+Problem:    Popup menu displayed wrong in 'rightleft' mode when there are
+	    multi-byte characters.
+Solution:   Adjust the column computations. (Dominique Pelle)
+Files:	    src/popupmnu.c
+
+Patch 7.2.343 (after 7.2.338)
+Problem:    Can't compile on Win32.
+Solution:   Insert the missing '|'.
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.344 (after 7.2.343)
+Problem:    Can't compile on some systems
+Solution:   Move the #ifdef outside of the mch_open macro. (Patrick Texier)
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.345
+Problem:    Tab line is not updated when the value of 'bt' is changed.
+Solution:   Call redraw_titles(). (Lech Lorens)
+Files:	    src/option.c
+
+Patch 7.2.346
+Problem:    Repeating a command with @: causes a mapping to be applied twice.
+Solution:   Do not remap characters inserted in the typeahead buffer. (Kana
+	    Natsuno)
+Files:	    src/ops.c
+
+Patch 7.2.347
+Problem:    Crash when executing <expr> mapping redefines that same mapping.
+Solution:   Save the values used before evaluating the expression.
+Files:	    src/getchar.c
+
+Patch 7.2.348 (after 7.2.330)
+Problem:    Unicode double-width characters are not up-to date.
+Solution:   Produce the double-width table like the others.
+Files:	    runtime/tools/unicode.vim, src/mbyte.c
+
+Patch 7.2.349
+Problem:    CTRL-W gf doesn't put the new tab in the same place as "tab split"
+	    and "gf". (Tony Mechelynck)
+Solution:   Store the tab number in cmdmod.tab.
+Files:	    src/window.c
+
+Patch 7.2.350
+Problem:    Win32: When changing font the window may jump from the secondary
+	    to the primary screen. (Michael Wookey)
+Solution:   When the screen position was negative don't correct it to zero.
+Files:	    src/gui.c
+
+Patch 7.2.351 (after 7.2.347)
+Problem:    Can't build with some compilers.
+Solution:   Move the #ifdef outside of a macro.  Cleanup the code.
+Files:	    src/getchar.c
+
+Patch 7.2.352 (extra)
+Problem:    Win64: Vim doesn't work when cross-compiled with MingW libraries.
+Solution:   Always return TRUE for the WM_NCCREATE message. (Andy Kittner)
+Files:	    src/gui_w48.c
+
+Patch 7.2.353
+Problem:    No command line completion for ":profile".
+Solution:   Complete the subcommand and file name.
+Files:	    src/ex_docmd.c, src/ex_cmds2.c, src/ex_getln.c,
+	    src/proto/ex_cmds2.pro, src/vim.h
+
+Patch 7.2.354
+Problem:    Japanese single-width double-byte characters not handled correctly.
+Solution:   Put 0x8e in ScreenLines[] and the second byte in ScreenLines2[].
+	    (partly by Kikuchan)
+Files:	    src/screen.c
+
+Patch 7.2.355
+Problem:    Computing the cursor column in validate_cursor_col() is wrong when
+	    line numbers are used and 'n' is not in 'cpoptions', causing the
+	    popup menu to be positioned wrong.
+Solution:   Correctly use the offset. (partly by Dominique Pelle)
+Files:	    src/move.c
+
+Patch 7.2.356
+Problem:    When 'foldmethod' is changed not all folds are closed as expected.
+Solution:   In foldUpdate() correct the start position and reset fd_flags when
+	    w_foldinvalid is set. (Lech Lorens)
+Files:	    src/fold.c
+
+Patch 7.2.357
+Problem:    When changing 'fileformat' from/to "mac" and there is a CR in the
+	    text the display is wrong.
+Solution:   Redraw the text when 'fileformat' is changed. (Ben Schmidt)
+Files:	    src/option.c
+
+Patch 7.2.358
+Problem:    Compiler warnings on VMS. (Zoltan Arpadffy)
+Solution:   Pass array itself instead its address.  Return a value.
+Files:	    src/gui_gtk_x11.c, src/os_unix.c
+
+Patch 7.2.359
+Problem:    Crash when using the Netbeans join command.
+Solution:   Make sure the ml_flush_line() function is not used recursively.
+	    (Xavier de Gaye)
+Files:	    src/memline.c
+
+Patch 7.2.360
+Problem:    Ruby on MS-Windows: can't use sockets.
+Solution:   Call NtInitialize() during initialization. (Ariya Mizutani)
+Files:	    src/if_ruby.c
+
+Patch 7.2.361
+Problem:    Ruby 1.9 is not supported.
+Solution:   Add Ruby 1.9 support. (Masaki Suketa)
+Files:	    src/Makefile, src/auto/configure, src/configure.in, src/if_ruby.c
+
+Patch 7.2.362 (extra, after 7.2.352)
+Problem:    Win64: Vim doesn't work when cross-compiled with MingW libraries.
+Solution:   Instead of handling WM_NCCREATE, create wide text area window
+	    class if the parent window iw side. (Sergey Khorev)
+Files:	    src/gui_w32.c, src/gui_w48.c
+
+Patch 7.2.363
+Problem:    Can't dynamically load Perl 5.10.
+Solution:   Add the function Perl_croak_xs_usage. (Sergey Khorev)
+Files:	    src/if_perl.xs
+
+Patch 7.2.364 (extra)
+Problem:    Can't build gvimext.dll on Win 7 x64 using MinGW (John Marriott)
+Solution:   Check if _MSC_VER is defined. (Andy Kittner)
+Files:	    src/GvimExt/gvimext.h
+
+Patch 7.2.365 (extra)
+Problem:    MS-Windows with MingW: "File->Save As" does not work. (John
+	    Marriott)
+Solution:   Correctly fill in structure size. (Andy Kittner)
+Files:	    src/gui_w48.c
+
+Patch 7.2.366
+Problem:    CTRL-B doesn't go back to the first line of the buffer.
+Solution:   Avoid an overflow when adding MAXCOL.
+Files:	    src/move.c
+
+Patch 7.2.367
+Problem:    "xxd -r -p" doesn't work as documented.
+Solution:   Skip white space. (James Vega)
+Files:	    src/xxd/xxd.c
+
+Patch 7.2.368 (after 7.2.361)
+Problem:    Ruby interface: Appending line doesn't work. (Michael Henry)
+Solution:   Reverse check for NULL line. (James Vega)
+Files:	    src/if_ruby.c
+
+Patch 7.2.369
+Problem:    Error message is not easy to understand.
+Solution:   Add quotes. (SungHyun Nam)
+Files:	    src/ex_cmds2.c
+
+Patch 7.2.370 (after 7.2.356)
+Problem:    A redraw may cause folds to be closed.
+Solution:   Revert part of the previous patch.  Add a test. (Lech Lorens)
+Files:	    src/diff.c, src/fold.c, src/option.c, src/testdir/test45.in,
+	    src/testdir/test45.ok
+
+Patch 7.2.371
+Problem:    Build problems on Tandem NonStop.
+Solution:   A few changes to #ifdefs (Joachim Schmitz)
+Files:	    src/auto/configure, src/configure.in, src/config.h.in, src/vim.h,
+	    src/if_cscope.c, src/osdef1.h.in, src/tag.c
+
+Patch 7.2.372 (extra)
+Problem:    Cross-compiling GvimExt and xxd doesn't work.
+Solution:   Change the build files. (Markus Heidelberg)
+Files:	    src/INSTALLpc.txt, src/GvimExt/Make_ming.mak, src/Make_cyg.mak,
+	    src/Make_ming.mak, src/xxd/Make_cyg.mak
+
+Patch 7.2.373
+Problem:    Gcc 4.5 adds more error messages. (Chris Indy)
+Solution:   Update default 'errorformat'.
+Files:	    src/option.h
+
+Patch 7.2.374
+Problem:    Ruby eval() doesn't understand Vim types.
+Solution:   Add the vim_to_ruby() function.  (George Gensure)
+Files:	    src/eval.c, src/if_ruby.c
+
+Patch 7.2.375
+Problem:    ml_get errors when using ":bprevious" in a BufEnter autocmd.
+	    (Dominique Pelle)
+Solution:   Clear w_valid when entering another buffer.
+Files:	    src/buffer.c
+
+Patch 7.2.376
+Problem:    ml_get error when using SiSU syntax. (Nathan Thomas)
+Solution:   If the match ends below the last line move it to the end of the
+	    last line.
+Files:	    src/syntax.c
+
+Patch 7.2.377 (extra, after 7.2.372)
+Problem:    Misplaced assignment.  Duplicate build line for gvimext.dll.
+Solution:   Move setting CROSS_COMPILE to before ifneq.  Remove the wrong
+	    build line. (Markus Heidelberg)
+Files:	    src/Make_ming.mak
+
+Patch 7.2.378
+Problem:    C function declaration indented too much. (Rui)
+Solution:   Don't see a line containing { or } as a type. (Matt Wozniski)
+Files:	    src/misc1.c
+
+Patch 7.2.379
+Problem:    'eventignore' is set to an invalid value inside ":doau". (Antony
+	    Scriven)
+Solution:   Don't include the leading comma when the option was empty.
+Files:	    src/fileio.c
+
+Patch 7.2.380 (after 7.2.363)
+Problem:    Perl interface builds with 5.10.1 but not with 5.10.0.
+Solution:   Change the #ifdefs. (Sergey Khorev)
+Files:	    src/if_perl.xs
+
+Patch 7.2.381
+Problem:    No completion for :behave.
+Solution:   Add :behave completion.  Minor related fixes. (Dominique Pelle)
+Files:	    src/ex_docmd.c, src/ex_getln.c, src/proto/ex_docmd.pro, src/vim.h
+
+Patch 7.2.382
+Problem:    Accessing freed memory when closing the cmdline window when
+	    'bufhide' is set to "wipe".
+Solution:   Check if the buffer still exists before invoking close_buffer()
+	    (Dominique Pelle)
+Files:	    src/ex_getln.c
+
+Patch 7.2.383
+Problem:    Vim doesn't build cleanly with MSVC 2010.
+Solution:   Change a few types. (George Reilly)
+Files:	    src/ex_cmds2.c, src/if_python.c, src/syntax.c
+
+Patch 7.2.384 (extra)
+Problem:    Vim doesn't build properly with MSVC 2010.
+Solution:   Add the nmake version to the build file. (George Reilly)
+Files:	    src/Make_mvc.mak, src/testdir/Make_dos.mak
+
+Patch 7.2.385
+Problem:    When in the command line window dragging status line only works
+	    for last-but-one window. (Jean Johner)
+Solution:   Remove the code that disallows this.
+Files:	    src/ui.c
+
+Patch 7.2.386
+Problem:    Focus hack for KDE 3.1 causes problems for other window managers.
+Solution:   Remove the hack. (forwarded by Joel Bradshaw)
+Files:	    src/gui_gtk.c
+
+Patch 7.2.387
+Problem:    Ruby with MingW still doesn't build all versions.
+Solution:   More #ifdefs for the  Ruby code. (Sergey Khorev)
+Files:	    src/if_ruby.c
+
+Patch 7.2.388 (extra part of 7.2.387)
+Problem:    Ruby with MingW still doesn't build all versions.
+Solution:   Different approach to build file. (Sergey Khorev)
+Files:	    src/Make_ming.mak
+
+Patch 7.2.389
+Problem:    synIDattr() cannot return the font.
+Solution:   Support the "font" argument. (Christian Brabandt)
+Files:	    runtime/doc/eval.txt, src/eval.c, src/syntax.c
+
+Patch 7.2.390
+Problem:    In some situations the popup menu can be displayed wrong.
+Solution:   Remove the popup menu if the cursor moved. (Lech Lorens)
+Files:	    src/edit.c
+
+Patch 7.2.391
+Problem:    Internal alloc(0) error when doing "CTRL-V $ c". (Martti Kuparinen)
+Solution:   Fix computations in getvcol(). (partly by Lech Lorens)
+Files:	    src/charset.c, src/memline.c
+
+Patch 7.2.392
+Problem:    Netbeans hangs reading from a socket at the maximum block size.
+Solution:   Use select() or poll(). (Xavier de Gaye)
+Files:	    src/vim.h, src/os_unixx.h, src/if_xcmdsrv.c, src/netbeans.c
+
+Patch 7.2.393
+Problem:    Mac: Can't build with different Xcode developer tools directory.
+Solution:   make "Developer" directory name configurable. (Rainer Muller)
+Files:	    src/configure.in, src/auto/configure
+
+Patch 7.2.394
+Problem:    .lzma and .xz files are not supported.
+Solution:   Recognize .lzma and .xz files so that they can be edited.
+Files:	    runtime/plugin/gzip.vim
+
+Patch 7.2.395
+Problem:    In help CTRL=] on g?g? escapes the ?, causing it to fail. (Tony
+	    Mechelynck)
+Solution:   Don't escape ? for a help command. (Sergey Khorev)
+Files:	    src/normal.c
+
+Patch 7.2.396
+Problem:    Get E38 errors. (Dasn)
+Solution:   Set cursor to line 1 instead of 0. (Dominique Pelle)
+Files:	    src/popupmnu.c
+
+Patch 7.2.397
+Problem:    Redundant check for w_lines_valid.
+Solution:   Remove the if.  (Lech Lorens)
+Files:	    src/fold.c
+
+Patch 7.2.398
+Problem:    When moving windows the cursor ends up in the wrong line.
+Solution:   Set the window width and height properly. (Lech Lorens)
+Files:	    src/window.c
+
+Patch 7.2.399 (extra, after 7.2.388)
+Problem:    Cannot compile on MingW.
+Solution:   Move ifneq to separate line. (Vlad Sandrini, Dominique Pelle)
+Files:	    src/Make_ming.mak
+
+Patch 7.2.400 (after 7.2.387)
+Problem:    Dynamic Ruby is not initialised properly for version 1.9.1.
+	    Ruby cannot create strings from NULL.
+Solution:   Cleanup #ifdefs.  Handle NULL like an empty string.  Add
+	    ruby_init_stack. (Sergey Khorev)
+Files:	    src/if_ruby.c
+
+Patch 7.2.401
+Problem:    ":e dir<Tab>" with 'wildmode' set to "list" doesn't highlight
+	    directory names with a space. (Alexandre Provencio)
+Solution:   Remove the backslash before checking if the name is a directory.
+	    (Dominique Pelle)
+Files:	    src/ex_getln.c
+
+Patch 7.2.402
+Problem:    This gives a #705 error: let X = function('haslocaldir')
+	    let X = function('getcwd')
+Solution:   Don't give E705 when the name is found in the hashtab. (Sergey
+	    Khorev)
+Files:	    src/eval.c
+
+Patch 7.2.403 (after 7.2.400)
+Problem:    Compiler warning for pointer type. (Tony Mechelynck)
+Solution:   Move type cast to the right place.
+Files:	    src/if_ruby.c
+
+Patch 7.2.404
+Problem:    Pointers for composing characters are not properly initialized.
+Solution:   Compute the size of the pointer, not what it points to. (Yukihiro
+	    Nakadaira)
+Files:	    src/screen.c
+
+Patch 7.2.405
+Problem:    When built with small features the matching text is not
+	    highlighted for ":s/pat/repl/c".
+Solution:   Remove the #ifdef for IncSearch. (James Vega)
+Files:	    src/syntax.c
+
+Patch 7.2.406
+Problem:    Patch 7.2.119 introduces uninit mem read. (Dominique Pelle)
+Solution:   Only used ScreeenLinesC when ScreeenLinesUC is not zero. (Yukihiro
+	    Nakadaira)  Also clear ScreeenLinesC when allocating.
+Files:	    src/screen.c
+
+Patch 7.2.407
+Problem:    When using an expression in ":s" backslashes in the result are
+	    dropped. (Sergey Goldgaber, Christian Brabandt)
+Solution:   Double backslashes.
+Files:	    src/regexp.c
+
+Patch 7.2.408
+Problem:    With ":g/the/s/foo/bar/" the '[ and '] marks can be set to a line
+	    that was not changed.
+Solution:   Only set '[ and '] marks when a substitution was done.
+Files:	    src/ex_cmds.c
+
+Patch 7.2.409
+Problem:    Summary of number of substitutes is incorrect for ":folddo". (Jean
+	    Johner)
+Solution:   Reset sub_nsubs and sub_nlines in global_exe().
+Files:	    src/ex_cmds.c
+
+Patch 7.2.410
+Problem:    Highlighting directories for completion doesn't work properly.
+Solution:   Don't halve backslashes when not needed, expaned "~/".
+	    (Dominique Pelle)
+Files:	    src/ex_getln.c
+
+Patch 7.2.411
+Problem:    When parsing 'cino' a comma isn't skipped properly.
+Solution:   Skip the comma. (Lech Lorens)
+Files:	    src/misc1.c
+
+Patch 7.2.412
+Problem:    [ or ] followed by mouse click doesn't work.
+Solution:   Reverse check for key being a mouse event. (Dominique Pelle)
+Files:	    src/normal.c
+
+Patch 7.2.413
+Problem:    Large file support is incorrect.
+Solution:   Add AC_SYS_LARGEFILE to configure. (James Vega)
+Files:	    src/configure.in, src/config.h.in, src/auto/configure
+
+Patch 7.2.414
+Problem:    CTRK-K <space> <space> does not produce 0xa0 as expected. (Tony
+	    Mechelynck)
+Solution:   Remove the Unicode range 0xe000 - 0xefff from digraphs, these are
+	    not valid characters.
+Files:	    src/digraph.c
+
+Patch 7.2.415
+Problem:    Win32: Can't open a remote file when starting Vim.
+Solution:   Don't invoke cygwin_conv_path() for URLs. (Tomoya Adachi)
+Files:	    src/main.c
+
+Patch 7.2.416
+Problem:    Logtalk.dict is not installed.
+Solution:   Add it to the install target. (Markus Heidelberg)
+Files:	    src/Makefile
+
+Patch 7.2.417
+Problem:    When 'shell' has an argument with a slash then 'shellpipe' is not
+	    set properly. (Britton Kerin)
+Solution:   Assume there are no spaces in the path, arguments follow.
+Files:	    src/option.c
+
+Patch 7.2.418
+Problem:    Vim tries to set the background or foreground color in a terminal
+	    to -1.  (Graywh)  Happens with ":hi Normal ctermbg=NONE".
+Solution:   When resetting the foreground or background color don't set the
+	    color, let the clear screen code do that.
+Files:	    src/syntax.c
+
+Patch 7.2.419
+Problem:    Memory leak in Motif when clicking on "Search Vim Help".
+Solution:   Free string returned by XmTextGetString(). (Dominique Pelle)
+Files:	    src/gui_motif.c
+
+Patch 7.2.420
+Problem:    ":argedit" does not accept "++enc=utf8" as documented. (Dominique
+	    Pelle)
+Solution:   Add the ARGOPT flag to ":argedit".
+Files:	    src/ex_cmds.h
+
+Patch 7.2.421
+Problem:    Folds are sometimes not updated properly and there is no way to
+	    force an update.
+Solution:   Make "zx" and "zX" recompute folds (suggested by Christian
+	    Brabandt)
+Files:	    src/normal.c
+
+Patch 7.2.422
+Problem:    May get E763 when using spell dictionaries.
+Solution:   Avoid utf-8 case folded character to be truncated to 8 bits and
+	    differ from latin1. (Dominique Pelle)
+Files:	    src/spell.c
+
+Patch 7.2.423
+Problem:    Crash when assigning s: to variable. (Yukihiro Nakadaira)
+Solution:   Make ga_scripts contain pointer to scriptvar_T instead of
+	    scriptvar_T itself. (Dominique Pelle)
+Files:	    src/eval.c
+
+Patch 7.2.424
+Problem:    ":colorscheme" without an argument doesn't do anything.
+Solution:   Make it echo the current color scheme name.  (partly by Christian
+	    Brabandt)
+Files:	    runtime/doc/syntax.txt, src/ex_cmds.h, src/ex_docmd.c
+
+Patch 7.2.425
+Problem:    Some compilers complain about fourth EX() argument.
+Solution:   Add cast to long_u.
+Files:	    src/ex_cmds.h
+
+Patch 7.2.426
+Problem:    Commas in 'langmap' are not always handled correctly.
+Solution:   Require commas to be backslash escaped. (James Vega)
+Files:	    src/option.c
+
+Patch 7.2.427
+Problem:    The swapfile is created using the destination of a symlink, but
+	    recovery doesn't follow symlinks.
+Solution:   When recovering, resolve symlinks. (James Vega)
+Files:	    src/memline.c
+
+Patch 7.2.428
+Problem:    Using setqflist([]) to clear the error list doesn't work properly.
+Solution:   Set qf_nonevalid to TRUE when appropriate. (Christian Brabandt)
+Files:	    src/quickfix.c
+
+Patch 7.2.429
+Problem:    A file that exists but access is denied may result in a "new file"
+	    message.  E.g. when its directory is unreadable.
+Solution:   Specifically check for ENOENT to decide a file doesn't exist.
+	    (partly by James Vega)
+Files:	    src/fileio.c
+
+Patch 7.2.430
+Problem:    The ++bad argument is handled wrong, resulting in an invalid
+	    memory access.
+Solution:   Use the bad_char field only for the replacement character, add
+	    bad_char_idx to store the position. (Dominique Pelle)
+Files:	    src/eval.c, src/ex_cmds.h, src/ex_docmd.c
+
+Patch 7.2.431
+Problem:    ":amenu" moves the cursor when in Insert mode.
+Solution:   Use CTRL-\ CTRL-O instead of CTRL-O. (Christian Brabandt)
+Files:	    src/menu.c
+
+Patch 7.2.432
+Problem:    When menus are translated they can only be found by the translated
+	    name.  That makes ":emenu" difficult to use.
+Solution:   Store the untranslated name and use it for completion and :emenu.
+	    (Liang Peng (Bezetek James), Edward L. Fox)
+Files:	    src/menu.c, src/structs.h
+
+Patch 7.2.433
+Problem:    Can't use cscope with QuickFixCmdPre and QuickFixCmdPost.
+Solution:   Add cscope support for these autocmd events. (Bryan Venteicher)
+Files:	    runtime/doc/autocmd.txt, src/if_cscope.c
+
+Patch 7.2.434 (after 7.2.432)
+Problem:    Compilation fails without the multi-lang feature.
+Solution:   Add #ifdefs. (Johm Marriott)
+Files:	    src/menu.c
+
+Patch 7.2.435 (after 7.2.430)
+Problem:    Crash when using bad_char_idx uninitialized. (Patrick Texier)
+Solution:   Don't use bad_char_idx, reproduce the ++bad argument from bad_char.
+Files:	    src/eval.c, src/ex_cmds.h, src/ex_docmd.c
+
+Patch 7.2.436
+Problem:    Reproducible crash in syntax HL. (George Reilly, Dominique Pelle)
+Solution:   Make sst_stacksize an int instead of short. (Dominique Pelle)
+Files:	    src/structs.h
+
+Patch 7.2.437 (after 7.2.407)
+Problem:    When "\\\n" appears in the expression result the \n doesn't result
+	    in a line break. (Andy Wokula)
+Solution:   Also replace a \n after a backslash into \r.
+Files:	    src/regexp.c
+
+Patch 7.2.438 (after 7.2.427)
+Problem:    "vim -r" crashes.
+Solution:   Don't use NULL pointer argument.
+Files:	    src/memline.c
+
+Patch 7.2.439
+Problem:    Invalid memory access when doing thesaurus completion and
+	    'infercase' is set.
+Solution:   Use the minimal length of completed word and replacement.
+	    (Dominique Pelle)
+Files:	    src/edit.c
+
+Patch 7.2.440
+Problem:    Calling a function through a funcref, where the function deletes
+	    the funcref, leads to an invalid memory access.
+Solution:   Make a copy of the function name. (Lech Lorens)
+Files:	    src/eval.c, src/testdir/test34.in, src/testdir/test34.ok
+
+Patch 7.2.441
+Problem:    When using ":earlier" undo information may be wrong.
+Solution:   When changing alternate branches also adjust b_u_oldhead.
+Files:	    src/undo.c
+
+Patch 7.2.442 (after 7.2.201)
+Problem:    Copy/paste with OpenOffice doesn't work.
+Solution:   Do not offer the HTML target when it is not supported. (James
+	    Vega)
+Files:	    src/gui_gtk_x11.c, src/option.c, src/proto/gui_gtk_x11.pro
+
+Patch 7.2.443
+Problem:    Using taglist() on a tag file with duplicate fields generates an
+	    internal error. (Peter Odding)
+Solution:   Check for duplicate field names.
+Files:	    src/eval.c, src/proto/eval.pro, src/tag.c
+
+Patch 7.2.444 (after 7.2.442)
+Problem:    Can't build with GTK 1, gtk_selection_clear_targets() is not
+	    available. (Patrick Texier)
+Solution:   Don't change the targets for GTK 1, set them once.
+Files:	    src/gui_gtk_x11.c, src/option.c
+
+Patch 7.2.445
+Problem:    Crash when using undo/redo and a FileChangedRO autocmd event that
+	    reloads the buffer. (Dominique Pelle)
+Solution:   Do not allow autocommands while performing and undo or redo.
+Files:	    src/misc1.c, src/undo.c
+
+Patch 7.2.446
+Problem:    Crash in GUI when closing the last window in a tabpage. (ryo7000)
+Solution:   Remove the tabpage from the list before freeing the window.
+Files:	    src/window.c
+
 When writing a file, switching tab pages and selecting a word the file write
-message would be displayed again.  This in Insert mode and with 'cmdheight'
-set to 2.
+message would be displayed again.  This happened in Insert mode and with
+'cmdheight' set to 2.
 
 When using ":lang" to set a locale that uses a comma for decimal separator and
 using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
@@ -7235,14 +9958,50 @@ using GTK floating point numbers stop working.  Use gtk_disable_setlocale().
 Use BASEMODLIBS instead of MODLIBS for Python configuration to pick up the
 right compiler flags. (Michael Bienia)
 
-Window title is not updated after dropping a file on Vim. (Hari G)
-
-MS-Windows: The self-installing executable now also works on 64-bit systems.
-The gvim executable is 32 bits, the installed gvimext.dll is either a 32 or 64
-bit version. (George Reilly)
+Window title was not updated after dropping a file on Vim. (Hari G)
 
 synstack() did not return anything when just past the end of the line.  Useful
 when using the cursor position in Insert mode.
+
+When entering a digraph or special character after a line that fits the window
+the '?' or '^' on the next line is not redrawn. (Ian Kelling)
+
+Composing characters in |:s| substitute text were dropped.
+
+|exists()| was causing an autoload script to be loaded.
+
+Filter out -pthread for cproto.
+
+Make CTRL-L in command line mode respect 'ignorecase' and 'smartcase'. (Martin
+Toft)
+
+Spell menu moved the cursor, causing Copy not to work.  Spell replacement
+didn't work in 'compatible' mode.
+
+Various small fixes from Dominique Pelle.
+
+Fix that :mksession may generate "2argu" even though there is no such
+argument. (Peter Odding)
+
+Fixes for time in clipboard request.  Also fix ownership.  (David Fries)
+
+Fixed completion of file names with '%' and '*'.
+
+Fixed MSVC makefile use of /Wp64 flag.
+
+Correct use of long instead of off_t for file size. (James Vega)
+
+Add a few #ifdefs to exclude functions that are not used. (Domnique Pelle)
+
+Remove old and unused method to allocate memory for undo.
+
+Fix definition of UINT_PTR for 64 bit systems.
+
+Some versions of Ruby redefine rb_str_new2 to rb_str_new_cstr.
+
+Window title not updated after file dropped.
+
+"g8" doesn't work properly on a NUL.
 
 
  vim:tw=78:ts=8:ft=help:norl:
