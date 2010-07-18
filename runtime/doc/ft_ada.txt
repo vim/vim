@@ -45,7 +45,7 @@ to change how loops are displayed, enter the command ":hi Repeat" followed by
 the colour specification; on simple terminals the colour specification
 ctermfg=White often shows well).
 
-There are several options you can select in this Ada mode. See|ft-ada-options|
+There are several options you can select in this Ada mode. See |ft-ada-options|
 for a complete list.
 
 To enable them, assign a value to the option.  For example, to turn one on:
@@ -143,7 +143,7 @@ support yet.
 								*ada-compiler*
 
 The Ada mode supports more than one Ada compiler and will automatically load the
-compiler set in|g:ada_default_compiler|whenever an Ada source is opened. The
+compiler set in |g:ada_default_compiler| whenever an Ada source is opened. The
 provided compiler plug-ins are split into the actual compiler plug-in and a
 collection of support functions and variables. This allows the easy
 development of specialized compiler plug-ins fine tuned to your development
@@ -171,20 +171,20 @@ GNAT OBJECT ~
 
 							       *g:gnat.Make()*
 g:gnat.Make()
-		Calls|g:gnat.Make_Command|and displays the result inside a
+		Calls |g:gnat.Make_Command| and displays the result inside a
                |quickfix| window.
 
 							     *g:gnat.Pretty()*
 g:gnat.Pretty()
-		Calls|g:gnat.Pretty_Program|
+		Calls |g:gnat.Pretty_Program|
 
 							       *g:gnat.Find()*
 g:gnat.Find()
-		Calls|g:gnat.Find_Program|
+		Calls |g:gnat.Find_Program|
 
 							       *g:gnat.Tags()*
 g:gnat.Tags()
-		Calls|g:gnat.Tags_Command|
+		Calls |g:gnat.Tags_Command|
 
 						   *g:gnat.Set_Project_File()*
 g:gnat.Set_Project_File([{file}])
@@ -200,19 +200,19 @@ g:gnat.Project_File	string
 
 							 *g:gnat.Make_Command*
 g:gnat.Make_Command	string
-		External command used for|g:gnat.Make()| (|'makeprg'|).
+		External command used for |g:gnat.Make()| (|'makeprg'|).
 
 						       *g:gnat.Pretty_Program*
 g:gnat.Pretty_Program	string
-		External command used for|g:gnat.Pretty()|
+		External command used for |g:gnat.Pretty()|
 
 							 *g:gnat.Find_Program*
 g:gnat.Find_Program	string
-		External command used for|g:gnat.Find()|
+		External command used for |g:gnat.Find()|
 
 							 *g:gnat.Tags_Command*
 g:gnat.Tags_Command	string
-		External command used for|g:gnat.Tags()|
+		External command used for |g:gnat.Tags()|
 
 							 *g:gnat.Error_Format*
 g:gnat.Error_Format	string
@@ -406,15 +406,15 @@ makes no difference.
 g:gnat			    object
 		Control object which manages GNAT compiles.  The object
 		is created when the first Ada source code is loaded provided
-		that |g:ada_default_compiler|is set to 'gnat'. See
+		that |g:ada_default_compiler| is set to 'gnat'. See
 		|gnat_members| for details.
 
 								    *g:decada*
 g:decada		      object
 		Control object which manages Dec Ada compiles.	The object
 		is created when the first Ada source code is loaded provided
-		that |g:ada_default_compiler|is set to 'decada'. See
-	        |decada_members| for details.
+		that |g:ada_default_compiler| is set to 'decada'. See
+		|decada_members| for details.
 
 ------------------------------------------------------------------------------
 5.4 Constants ~

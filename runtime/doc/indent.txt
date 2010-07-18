@@ -549,7 +549,7 @@ those useless characters first with a command like: >
     :%s /\r$//g
 
 Or, you can simply |:let| the variable PHP_removeCRwhenUnix to 1 and the
-script will silently remove them when Vim loads a PHP file (at each|BufRead|).
+script will silently remove them when Vim loads a PHP file (at each |BufRead|).
 
 OPTIONS: ~
 

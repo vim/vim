@@ -1977,15 +1977,15 @@ abs({expr})							*abs()*
 
 acos({expr})							*acos()*
 		Return the arc cosine of {expr} measured in radians, as a
-		|Float|in the range of [0, pi].
-		{expr} must evaluate to a|Float|or a|Number|in the range
+		|Float| in the range of [0, pi].
+		{expr} must evaluate to a |Float| or a |Number| in the range
 		[-1, 1].
 		Examples: >
 			:echo acos(0)
 <			1.570796 >
 			:echo acos(-0.5)
 <			2.094395
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 add({list}, {expr})					*add()*
@@ -2031,16 +2031,16 @@ argv([{nr}])	The result is the {nr}th file in the argument list of the
 		returned.
 
 asin({expr})						*asin()*
-		Return the arc sine of {expr} measured in radians, as a|Float|
+		Return the arc sine of {expr} measured in radians, as a |Float|
 		in the range of [-pi/2, pi/2].
-		{expr} must evaluate to a|Float|or a|Number|in the range
+		{expr} must evaluate to a |Float| or a |Number| in the range
 		[-1, 1].
 		Examples: >
 			:echo asin(0.8)
 <			0.927295 >
 			:echo asin(-0.5)
 <			-0.523599
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 atan({expr})						*atan()*
@@ -2057,14 +2057,14 @@ atan({expr})						*atan()*
 
 atan2({expr1}, {expr2})					*atan2()*
 		Return the arc tangent of {expr1} / {expr2}, measured in
-		radians, as a|Float|in the range [-pi, pi].
-		{expr1} and {expr2} must evaluate to a|Float|or a|Number|.
+		radians, as a |Float| in the range [-pi, pi].
+		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo atan2(-1, 1)
 <			-0.785398 >
 			:echo atan2(1, -1)
 <			2.356194
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 							*browse()*
@@ -2418,15 +2418,15 @@ cos({expr})						*cos()*
 
 
 cosh({expr})						*cosh()*
-		Return the hyperbolic cosine of {expr} as a|Float|in the range
+		Return the hyperbolic cosine of {expr} as a |Float| in the range
 		[1, inf].
-		{expr} must evaluate to a|Float|or a|Number|.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo cosh(0.5)
 <			1.127626 >
 			:echo cosh(-0.5)
 <			-1.127626
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 		
 count({comp}, {expr} [, {ic} [, {start}]])			*count()*
@@ -2689,15 +2689,15 @@ exists({expr})	The result is a Number, which is non-zero if {expr} is
 		but gets the value of "bufcount", and checks if that exists.
 
 exp({expr})						*exp()*
-		Return the exponential of {expr} as a|Float|in the range
+		Return the exponential of {expr} as a |Float| in the range
 		[0, inf].
-		{expr} must evaluate to a|Float|or a|Number|.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo exp(2)
 <			7.389056 >
 			:echo exp(-1)
 <			0.367879
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 expand({expr} [, {flag}])				*expand()*
@@ -2939,14 +2939,14 @@ fmod({expr1}, {expr2})					*fmod()*
 		for some integer i such that if {expr2} is non-zero, the
 		result has the same sign as {expr1} and magnitude less than
 		the magnitude of {expr2}.  If {expr2} is zero, the value
-		returned is zero.  The value returned is a|Float|.
-		{expr1} and {expr2} must evaluate to a|Float|or a|Number|.
+		returned is zero.  The value returned is a |Float|.
+		{expr1} and {expr2} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo fmod(12.33, 1.22)
 <			0.13 >
 			:echo fmod(-12.33, 1.22)
 <			-0.13
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 fnameescape({string})					*fnameescape()*
@@ -3911,15 +3911,15 @@ localtime()						*localtime()*
 
 
 log({expr})						*log()*
-		Return the natural logarithm (base e) of {expr} as a|Float|.
-		{expr} must evaluate to a|Float|or a|Number|in the range
+		Return the natural logarithm (base e) of {expr} as a |Float|.
+		{expr} must evaluate to a |Float| or a |Number| in the range
 		(0, inf].
 		Examples: >
 			:echo log(10)
 <			2.302585 >
 			:echo log(exp(5))
 <			5.0
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 log10({expr})						*log10()*
@@ -4906,8 +4906,8 @@ searchpairpos({start}, {middle}, {end} [, {flags} [, {skip}
 		column position of the match. The first element of the |List|
 		is the line number and the second element is the byte index of
 		the column position of the match.  If no match is found,
-		returns [0, 0].
->
+		returns [0, 0]. >
+
 			:let [lnum,col] = searchpairpos('{', '', '}', 'n')
 <
 		See |match-parens| for a bigger and more useful example.
@@ -5206,15 +5206,15 @@ sin({expr})						*sin()*
 		
 
 sinh({expr})						*sinh()*
-		Return the hyperbolic sine of {expr} as a|Float|in the range
+		Return the hyperbolic sine of {expr} as a |Float| in the range
 		[-inf, inf].
-		{expr} must evaluate to a|Float|or a|Number|.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo sinh(0.5)
 <			0.521095 >
 			:echo sinh(-0.9)
 <			-1.026517
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 sort({list} [, {func}])					*sort()* *E702*
@@ -5702,27 +5702,27 @@ tempname()					*tempname()* *temp-file-name*
 
 
 tan({expr})						*tan()*
-		Return the tangent of {expr}, measured in radians, as a|Float|
+		Return the tangent of {expr}, measured in radians, as a |Float|
 		in the range [-inf, inf].
-		{expr} must evaluate to a|Float|or a|Number|.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo tan(10)
 <			0.648361 >
 			:echo tan(-4.01)
 <			-1.181502
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 tanh({expr})						*tanh()*
-		Return the hyperbolic tangent of {expr} as a|Float|in the
+		Return the hyperbolic tangent of {expr} as a |Float| in the
 		range [-1, 1].
-		{expr} must evaluate to a|Float|or a|Number|.
+		{expr} must evaluate to a |Float| or a |Number|.
 		Examples: >
 			:echo tanh(0.5)
 <			0.462117 >
 			:echo tanh(-1)
 <			-0.761594
-		{only available when compiled with|+float|}
+		{only available when compiled with |+float|}
 
 
 tolower({expr})						*tolower()*

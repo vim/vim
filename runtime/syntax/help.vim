@@ -11,7 +11,7 @@ endif
 syn match helpHeadline		"^[-A-Z .][-A-Z0-9 .()]*[ \t]\+\*"me=e-1
 syn match helpSectionDelim	"^=\{3,}.*===$"
 syn match helpSectionDelim	"^-\{3,}.*--$"
-syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
+syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<" concealends
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
   syn match helpHyperTextEntry	"\*[^"*|]\+\*\s"he=e-1 contains=helpStar
@@ -132,7 +132,6 @@ syn sync minlines=40
 
 " Define the default highlighting.
 " Only used when an item doesn't have highlighting yet
-hi def link helpExampleStart	helpIgnore
 hi def link helpIgnore		Ignore
 hi def link helpHyperTextJump	Subtitle
 hi def link helpBar		Ignore

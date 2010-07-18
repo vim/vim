@@ -3703,7 +3703,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-DiffText|	 T  inserted text in diff mode
 	|hl-SignColumn|	 >  column used for |signs|
 	|hl-SpellBad|	 B  misspelled word |spell|
-	|hl-SpellCap|	 P  word that should start with capital|spell|
+	|hl-SpellCap|	 P  word that should start with capital |spell|
 	|hl-SpellRare|	 R  rare word |spell|
 	|hl-SpellLocal|	 L  word from other region |spell|
 	|hl-Conceal|	 -  the placeholders used for concealed characters

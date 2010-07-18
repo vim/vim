@@ -190,18 +190,18 @@ Read-only file
 
 There are two different ways to run Vim in NetBeans mode:
 
-	+ an IDE may start Vim with the|-nb|command line argument
-	+ NetBeans can be started from within Vim with the|:nbstart|command
+	+ an IDE may start Vim with the |-nb| command line argument
+	+ NetBeans can be started from within Vim with the |:nbstart| command
 
 							*netbeans-parameters*
 Three forms can be used to setup the NetBeans connection parameters.
-When started from the command line, the|-nb|command line argument may be:
+When started from the command line, the |-nb| command line argument may be:
 
 	-nb={fname}				from a file
 	-nb:{hostname}:{addr}:{password}	directly
 	-nb					from a file or environment
 
-When started from within Vim, the|:nbstart|optional argument may be:
+When started from within Vim, the |:nbstart| optional argument may be:
 
 	={fname}				from a file
 	:{hostname}:{addr}:{password}	        directly
@@ -325,8 +325,8 @@ number		Argument with a decimal number.
 
 color		Argument with either a decimal number, "none" (without the
 		quotes) or the name of a color (without the quotes) defined
-		both in the color list in|highlight-ctermfg| and in the color
-		list in|gui-colors|.
+		both in the color list in |highlight-ctermfg| and in the color
+		list in |gui-colors|.
 		New in version 2.5.
 
 offset		A number argument that indicates a byte position in a buffer.
@@ -822,7 +822,7 @@ These errors occur when a message violates the protocol:
 							*:nbstart* *E511*
 :nbs[tart] {connection}	Start a new Netbeans session with {connection} as the
 			socket connection parameters.  The format of
-			{connection} is described in|netbeans-parameters|.
+			{connection} is described in |netbeans-parameters|.
 			At any time, one may check if the netbeans socket is
 			connected by running the command:
 			':echo has("netbeans_enabled")'
@@ -846,7 +846,7 @@ NUL bytes are not possible.  For editor -> IDE they will appear as NL
 characters.  For IDE -> editor they cannot be inserted.
 
 A NetBeans session may be initiated with Vim running in a terminal, and
-continued later in a GUI environment after running the |:gui|command. In this
+continued later in a GUI environment after running the |:gui| command. In this
 case, the highlighting defined for the NetBeans annotations may be cleared
 when the ":gui" command sources .gvimrc and this file loads a colorscheme
 that runs the command ":highlight clear".

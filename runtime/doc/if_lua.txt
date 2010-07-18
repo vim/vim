@@ -94,10 +94,10 @@ functions$date$,$clock$,$time$,$difftime$, and$getenv$. In addition,
 Lua$print$function has its output redirected to the Vim message area, with
 arguments separated by a white space instead of a tab.
 
-Lua uses the "vim" module (see|lua-vim|) to issue commands to Vim
+Lua uses the "vim" module (see |lua-vim|) to issue commands to Vim
 and manage buffers (|lua-buffer|) and windows (|lua-window|). However,
 procedures that alter buffer content, open new buffers, and change cursor
-position are restricted when the command is executed in the|sandbox|.
+position are restricted when the command is executed in the |sandbox|.
 
 
 ==============================================================================
@@ -109,7 +109,7 @@ module also includes routines for buffer, window, and current line queries,
 Vim evaluation and command execution, and others.
 
 	$vim.isbuffer(value)$	Returns#true#if$value$is a buffer userdata and
-				$false$otherwise (see|lua-buffer|).
+				$false$otherwise (see |lua-buffer|).
 
 	$vim.buffer($[arg]$)$	If$arg$is a number, returns buffer with number
 				$arg$in the buffer list or, if$arg$is
@@ -121,7 +121,7 @@ Vim evaluation and command execution, and others.
 				buffer.
 
 	$vim.iswindow(value)$	Returns#true#if$value$is a window userdata and
-				$false$otherwise (see|lua-window|).
+				$false$otherwise (see |lua-window|).
 
 	$vim.window($[arg]$)$	If$arg$is a number, returns window with number
 				$arg$or#nil#if not found. Otherwise, if
@@ -133,7 +133,7 @@ Vim evaluation and command execution, and others.
 					:lua vim.command"set tw=60"
 					:lua vim.command"normal ddp"
 <
-	$vim.eval(${expr}$)$	Evaluates expression {expr} (see|expression|),
+	$vim.eval(${expr}$)$	Evaluates expression {expr} (see |expression|),
 				converts the result to Lua, and returns it.
 				Vim strings and numbers are directly converted
 				to Lua strings and numbers respectively. Vim
