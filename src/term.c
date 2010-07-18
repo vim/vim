@@ -4778,6 +4778,8 @@ check_termcode(max_offset, buf, buflen)
 	    {
 		if (wheel_code & MOUSE_CTRL)
 		    modifiers |= MOD_MASK_CTRL;
+		if (wheel_code & MOUSE_ALT)
+		    modifiers |= MOD_MASK_ALT;
 		key_name[1] = (wheel_code & 1)
 					? (int)KE_MOUSEUP : (int)KE_MOUSEDOWN;
 	    }
