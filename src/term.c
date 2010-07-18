@@ -4775,8 +4775,12 @@ check_termcode(max_offset, buf, buflen)
 	    /* Work out our pseudo mouse event */
 	    key_name[0] = (int)KS_EXTRA;
 	    if (wheel_code != 0)
+	    {
+		if (wheel_code & MOUSE_CTRL)
+		    modifiers |= MOD_MASK_CTRL;
 		key_name[1] = (wheel_code & 1)
 					? (int)KE_MOUSEUP : (int)KE_MOUSEDOWN;
+	    }
 	    else
 		key_name[1] = get_pseudo_mouse_code(current_button,
 							   is_click, is_drag);
