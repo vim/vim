@@ -921,7 +921,7 @@ luaV_eval(lua_State *L)
 }
 
     static int
-luaV_beep(lua_State *L)
+luaV_beep(lua_State *L UNUSED)
 {
     vim_beep();
     return 0;
@@ -955,8 +955,8 @@ luaV_buffer(lua_State *L)
 		{
 		    if (l == 0) break;
 		}
-		else if (strncmp(s, buf->b_ffname, l) == 0
-			|| strncmp(s, buf->b_sfname, l) == 0)
+		else if (strncmp(s, (char *)buf->b_ffname, l) == 0
+			|| strncmp(s, (char *)buf->b_sfname, l) == 0)
 		    break;
 	    }
 	}

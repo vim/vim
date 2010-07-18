@@ -405,9 +405,8 @@ CClink = $(CC)
 # LUA
 # Uncomment this when you want to include the Lua interface.
 #CONF_OPT_LUA = --enable-luainterp
-# Lua installation dir (also in LUA_PREFIX environment variable)
+# Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
 #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
-#CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr
 
 # MZSCHEME
 # Uncomment this when you want to include the MzScheme interface.

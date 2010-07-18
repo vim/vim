@@ -4605,8 +4605,8 @@ if test "${with_lua_prefix+set}" = set; then :
   withval=$with_lua_prefix; with_lua_prefix="$withval"; { $as_echo "$as_me:${as_lineno-$LINENO}: result: $with_lua_prefix" >&5
 $as_echo "$with_lua_prefix" >&6; }
 else
-  with_lua_prefix="";{ $as_echo "$as_me:${as_lineno-$LINENO}: result: \"no\"" >&5
-$as_echo "\"no\"" >&6; }
+  with_lua_prefix="";{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 fi
 
 
@@ -4620,8 +4620,9 @@ $as_echo_n "checking LUA_PREFIX environment var... " >&6; }
 $as_echo "\"$LUA_PREFIX\"" >&6; }
 	vi_cv_path_lua_pfx="$LUA_PREFIX"
     else
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: \"not set\"" >&5
-$as_echo "\"not set\"" >&6; }
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: not set, default to /usr" >&5
+$as_echo "not set, default to /usr" >&6; }
+	vi_cv_path_lua_pfx="/usr"
     fi
   fi
 
@@ -4630,11 +4631,11 @@ $as_echo "\"not set\"" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $vi_cv_path_lua_pfx/include" >&5
 $as_echo_n "checking if lua.h can be found in $vi_cv_path_lua_pfx/include... " >&6; }
     if test -f $vi_cv_path_lua_pfx/include/lua.h; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"yes\"" >&5
-$as_echo "\"yes\"" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
     else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"no\"" >&5
-$as_echo "\"no\"" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
             # Extract the first word of "lua", so it can be a program name with args.
 set dummy lua; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -4688,12 +4689,12 @@ $as_echo "$vi_cv_version_lua" >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua" >&5
 $as_echo_n "checking if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua... " >&6; }
         if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"yes\"" >&5
-$as_echo "\"yes\"" >&6; }
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
           LUA_INC=/lua$vi_cv_version_lua
         else
-          { $as_echo "$as_me:${as_lineno-$LINENO}: result: \"no\"" >&5
-$as_echo "\"no\"" >&6; }
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
           vi_cv_path_lua_pfx=
         fi
       fi

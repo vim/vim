@@ -425,7 +425,7 @@ if test "$enable_luainterp" = "yes"; then
   AC_ARG_WITH(lua_prefix,
 	[  --with-lua-prefix=PFX   Prefix where Lua is installed.],
 	with_lua_prefix="$withval"; AC_MSG_RESULT($with_lua_prefix),
-	with_lua_prefix="";AC_MSG_RESULT("no"))
+	with_lua_prefix="";AC_MSG_RESULT(no))
 
   if test "X$with_lua_prefix" != "X"; then
        vi_cv_path_lua_pfx="$with_lua_prefix"
@@ -435,7 +435,8 @@ if test "$enable_luainterp" = "yes"; then
 	AC_MSG_RESULT("$LUA_PREFIX")
 	vi_cv_path_lua_pfx="$LUA_PREFIX"
     else
-	AC_MSG_RESULT("not set")
+	AC_MSG_RESULT([not set, default to /usr])
+	vi_cv_path_lua_pfx="/usr"
     fi
   fi
 
@@ -443,9 +444,9 @@ if test "$enable_luainterp" = "yes"; then
   if test "X$vi_cv_path_lua_pfx" != "X"; then
     AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include)
     if test -f $vi_cv_path_lua_pfx/include/lua.h; then
-      AC_MSG_RESULT("yes")
+      AC_MSG_RESULT(yes)
     else
-      AC_MSG_RESULT("no")
+      AC_MSG_RESULT(no)
       dnl -- try to find Lua executable
       AC_PATH_PROG(vi_cv_path_lua, lua)
       if test "X$vi_cv_path_lua" != "X"; then
@@ -454,10 +455,10 @@ if test "$enable_luainterp" = "yes"; then
         [ vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION:sub(5,7))"` ])
         AC_MSG_CHECKING(if lua.h can be found in $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua)
         if test -f $vi_cv_path_lua_pfx/include/lua$vi_cv_version_lua/lua.h; then
-          AC_MSG_RESULT("yes")
+          AC_MSG_RESULT(yes)
           LUA_INC=/lua$vi_cv_version_lua
         else
-          AC_MSG_RESULT("no")
+          AC_MSG_RESULT(no)
           vi_cv_path_lua_pfx=
         fi
       fi
