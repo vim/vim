@@ -1,14 +1,14 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Jul 15
+" Last Change: 2010 July 16
 "
 " Additional contributors:
 "
-"             Original by Bram Moolenaar <Bram@vim.org>
-"             Diff2HTML() added by Christian Brabandt <cb@256bit.org>
+"	      Original by Bram Moolenaar <Bram@vim.org>
+"	      Diff2HTML() added by Christian Brabandt <cb@256bit.org>
 "
-"             See Mercurial change logs for more!
- 
+"	      See Mercurial change logs for more!
+
 " this file uses line continuations
 let s:cpo_sav = &cpo
 set cpo-=C
@@ -142,27 +142,27 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " if dynamic folding is active.
     if exists("g:html_dynamic_folds")
       call append(style_start, [
-            \  "<script type='text/javascript'>",
-            \  "  <!--",
-            \  "  function toggleFold(objID)",
-            \  "  {",
-            \  "    for (win_num = 1; win_num <= 2; win_num++)",
-            \  "    {",
-            \  "      var fold;",
-            \  '      fold = document.getElementById("win"+win_num+objID);',
-            \  "      if(fold.className == 'closed-fold')",
-            \  "      {",
-            \  "        fold.className = 'open-fold';",
-            \  "      }",
-            \  "      else if (fold.className == 'open-fold')",
-            \  "      {",
-            \  "        fold.className = 'closed-fold';",
-            \  "      }",
-            \  "    }",
-            \  "  }",
-            \  "  -->",
-            \  "</script>"
-            \ ])
+	    \  "<script type='text/javascript'>",
+	    \  "  <!--",
+	    \  "  function toggleFold(objID)",
+	    \  "  {",
+	    \  "    for (win_num = 1; win_num <= ".len(a:buf_list)."; win_num++)",
+	    \  "    {",
+	    \  "      var fold;",
+	    \  '      fold = document.getElementById("win"+win_num+objID);',
+	    \  "      if(fold.className == 'closed-fold')",
+	    \  "      {",
+	    \  "        fold.className = 'open-fold';",
+	    \  "      }",
+	    \  "      else if (fold.className == 'open-fold')",
+	    \  "      {",
+	    \  "        fold.className = 'closed-fold';",
+	    \  "      }",
+	    \  "    }",
+	    \  "  }",
+	    \  "  -->",
+	    \  "</script>"
+	    \ ])
     endif
 
     " Insert styles from all the generated html documents and additional styles
@@ -172,16 +172,16 @@ func! tohtml#Diff2HTML(win_list, buf_list)
     " is pretty useless for really long lines.
     if exists("g:html_use_css")
       call append(style_start, [
-            \ '<style type="text/css">']+
-            \  style+[
-            \ '<!--',
-            \ 'table { table-layout: fixed; }',
-            \ 'html, body, table, tbody { width: 100%; margin: 0; padding: 0; }',
-            \ 'th, td { width: '.printf("%.1f",100.0/len(a:win_list)).'%; }',
-            \ 'td div { overflow: auto; }',
-            \ '-->',
-            \  '</style>'
-            \ ])
+	    \ '<style type="text/css">']+
+	    \  style+[
+	    \ '<!--',
+	    \ 'table { table-layout: fixed; }',
+	    \ 'html, body, table, tbody { width: 100%; margin: 0; padding: 0; }',
+	    \ 'th, td { width: '.printf("%.1f",100.0/len(a:win_list)).'%; }',
+	    \ 'td div { overflow: auto; }',
+	    \ '-->',
+	    \  '</style>'
+	    \ ])
     endif
   endif
 endfunc
@@ -239,4 +239,4 @@ let &cpo = s:cpo_sav
 unlet s:cpo_sav
 
 " Make sure any patches will probably use consistent indent
-"   vim: sw=2 sts=2 et
+"   vim: ts=8 sw=2 sts=2 noet

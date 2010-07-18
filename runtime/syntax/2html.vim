@@ -1,6 +1,6 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 July 15
+" Last Change: 2010 July 16
 "
 " Additional contributors:
 "
@@ -990,7 +990,7 @@ while !empty(s:idlist)
     endif
   else
     execute '%s+<span class="' . s:id_name . '">\([^<]*\)</span>+\1+ge'
-    if exists("s:html_use_css")
+    if exists("g:html_use_css")
       1;/<style type="text/+1
     endif
   endif
@@ -1088,4 +1088,4 @@ let &cpo = s:cpo_sav
 unlet! s:cpo_sav
 
 " Make sure any patches will probably use consistent indent
-"   vim: noet sw=2 sts=2
+"   vim: ts=8 sw=2 sts=2 noet

@@ -1,6 +1,6 @@
 " Vim plugin for converting a syntax highlighted file to HTML.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 Jul 15
+" Last Change: 2010 Jul 16
 "
 " The core of the code is in $VIMRUNTIME/autoload/tohtml.vim and
 " $VIMRUNTIME/syntax/2html.vim
@@ -14,4 +14,4 @@ if !&cp && !exists(":TOhtml") && has("user_commands")
 endif
 
 " Make sure any patches will probably use consistent indent
-"   vim: ts=2 sw=2 sts=2 et
+"   vim: ts=8 sw=2 sts=2 noet
