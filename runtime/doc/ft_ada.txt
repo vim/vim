@@ -1,4 +1,4 @@
-*ft_ada.txt*	For Vim version 7.3a.  Last change: 2008 Jun 21
+*ft_ada.txt*	For Vim version 7.3b.  Last change: 2008 Jun 21
 
 
 		    ADA FILE TYPE PLUG-INS REFERENCE MANUAL~

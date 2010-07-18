@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3a.  Last change: 2010 May 15
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,7 +30,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Update syntax menus: run checkmenu.
+
 GTK: torn-off menu doesn't work.
+
+Make 'cryptmethod' global-local, so that a default specified in a .vimrc file
+is used for new files. (Christian J. Robinson)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 

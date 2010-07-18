@@ -11,7 +11,7 @@ endif
 syn match helpHeadline		"^[-A-Z .][-A-Z0-9 .()]*[ \t]\+\*"me=e-1
 syn match helpSectionDelim	"^=\{3,}.*===$"
 syn match helpSectionDelim	"^-\{3,}.*--$"
-syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<" concealends
+syn region helpExample		matchgroup=helpIgnore start=" >$" start="^>$" end="^[^ \t]"me=e-1 end="^<"
 if has("ebcdic")
   syn match helpHyperTextJump	"\\\@<!|[^"*|]\+|" contains=helpBar
   syn match helpHyperTextEntry	"\*[^"*|]\+\*\s"he=e-1 contains=helpStar
