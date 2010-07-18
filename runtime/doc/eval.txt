@@ -5377,6 +5377,9 @@ strdisplaywidth({expr}[, {col}])			*strdisplaywidth()*
 		When {col} is omitted zero is used.  Otherwise it is the
 		screen column where to start.  This matters for Tab
 		characters.
+		The option settings of the current window are used.  This
+		matters for anything that's displayed differently, such as
+		'tabstop' and 'display'.
 		When {expr} contains characters with East Asian Width Class
 		Ambiguous, this function's return value depends on 'ambiwidth'.
 		Also see |strlen()|, |strwidth()| and |strchars()|.

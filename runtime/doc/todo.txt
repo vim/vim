@@ -1089,8 +1089,8 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 Before (beta) release 7.3:
 - Documentation for Python 3 support.
-- Build the MS-Windows version with Ruby 1.91.  How?
-- Build the MS-Windows version with newer Perl version?
+- MS-Windows uninstaller looks for wrong executable:
+    "ool\vimfiles\syntaxuninstall-gui.exe".
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
@@ -1140,6 +1140,7 @@ More patches:
     Comments from Andreas Bernauer 24th, Dominique Pelle 24th
     Docs patch by Dominique Pelle, Mar 25
     Can we put the strings in a window-local variable?
+-   Patch to access screen under Python. (Marko Mahni, 2010 Jul 18)
 
 
 Awaiting updated patches:
