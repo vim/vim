@@ -272,11 +272,16 @@ This means that Vim will search for the Perl DLL file only when needed.  When
 you don't use the Perl interface you don't need it, thus you can use Vim
 without this DLL file.
 
-To use the Perl interface the Perl DLL must be in your search path.  In a
-console window type "path" to see what directories are used.
+You can download Perl from http://www.perl.org.  The one from ActiveState was
+used for building Vim.
+
+To use the Perl interface the Perl DLL must be in your search path.
+If Vim reports it cannot find the perl512.dll, make sure your $PATH includes
+the directory where it is localted.  The Perl installer normally does that.
+In a console window type "path" to see what directories are used.
 
 The name of the DLL must match the Perl version Vim was compiled with.
-Currently the name is "perl58.dll".  That is for Perl 5.8.  To know for
+Currently the name is "perl512.dll".  That is for Perl 5.12.  To know for
 sure edit "gvim.exe" and search for "perl\d*.dll\c".
 
 ==============================================================================

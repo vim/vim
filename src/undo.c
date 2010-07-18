@@ -106,7 +106,7 @@ static size_t fwrite_crypt __ARGS((buf_T *buf UNUSED, char_u *ptr, size_t len, F
 static char_u *read_string_decrypt __ARGS((buf_T *buf UNUSED, FILE *fd, int len));
 static int serialize_header __ARGS((FILE *fp, buf_T *buf, char_u *hash));
 static int serialize_uhp __ARGS((FILE *fp, buf_T *buf, u_header_T *uhp));
-static u_header_T *unserialize_uhp __ARGS((FILE *fp, char_u *file_name, int new_version));
+static u_header_T *unserialize_uhp __ARGS((FILE *fp, char_u *file_name));
 static int serialize_uep __ARGS((FILE *fp, buf_T *buf, u_entry_T *uep));
 static u_entry_T *unserialize_uep __ARGS((FILE *fp, int *error, char_u *file_name));
 static void serialize_pos __ARGS((pos_T pos, FILE *fp));
@@ -694,9 +694,7 @@ nomem:
 # define UF_HEADER_END_MAGIC	0xe7aa	/* magic after last header */
 # define UF_ENTRY_MAGIC		0xf518	/* magic at start of entry */
 # define UF_ENTRY_END_MAGIC	0x3581	/* magic after last entry */
-# define UF_VERSION_PREV	1	/* 2-byte undofile version number */
 # define UF_VERSION		2	/* 2-byte undofile version number */
-# define UF_VERSION_CRYPT_PREV	0x8001	/* idem, encrypted */
 # define UF_VERSION_CRYPT	0x8002	/* idem, encrypted */
 
 /* extra fields for header */
@@ -1019,10 +1017,9 @@ serialize_uhp(fp, buf, uhp)
 }
 
     static u_header_T *
-unserialize_uhp(fp, file_name, new_version)
+unserialize_uhp(fp, file_name)
     FILE	*fp;
     char_u	*file_name;
-    int		new_version;
 {
     u_header_T	*uhp;
     int		i;
@@ -1068,26 +1065,25 @@ unserialize_uhp(fp, file_name, new_version)
     uhp->uh_time = get8ctime(fp);
 
     /* Optional fields. */
-    if (new_version)
-	for (;;)
-	{
-	    int len = getc(fp);
-	    int what;
+    for (;;)
+    {
+	int len = getc(fp);
+	int what;
 
-	    if (len == 0)
+	if (len == 0)
+	    break;
+	what = getc(fp);
+	switch (what)
+	{
+	    case UHP_SAVE_NR:
+		uhp->uh_save_nr = get4c(fp);
 		break;
-	    what = getc(fp);
-	    switch (what)
-	    {
-		case UHP_SAVE_NR:
-		    uhp->uh_save_nr = get4c(fp);
-		    break;
-		default:
-		    /* field not supported, skip */
-		    while (--len >= 0)
-			(void)getc(fp);
-	    }
+	    default:
+		/* field not supported, skip */
+		while (--len >= 0)
+		    (void)getc(fp);
 	}
+    }
 
     /* Unserialize the uep list. */
     last_uep = NULL;
@@ -1564,7 +1560,6 @@ u_read_undo(name, hash, orig_name)
     char_u	*file_name;
     FILE	*fp;
     long	version, str_len;
-    int		new_version;
     char_u	*line_ptr = NULL;
     linenr_T	line_lnum;
     colnr_T	line_colnr;
@@ -1645,7 +1640,7 @@ u_read_undo(name, hash, orig_name)
 	goto error;
     }
     version = get2c(fp);
-    if (version == UF_VERSION_CRYPT || version == UF_VERSION_CRYPT_PREV)
+    if (version == UF_VERSION_CRYPT)
     {
 #ifdef FEAT_CRYPT
 	if (*curbuf->b_p_key == NUL)
@@ -1665,12 +1660,11 @@ u_read_undo(name, hash, orig_name)
 	goto error;
 #endif
     }
-    else if (version != UF_VERSION && version != UF_VERSION_PREV)
+    else if (version != UF_VERSION)
     {
 	EMSG2(_("E824: Incompatible undo file: %s"), file_name);
 	goto error;
     }
-    new_version = (version == UF_VERSION || version == UF_VERSION_CRYPT);
 
     if (fread(read_hash, UNDO_HASH_SIZE, 1, fp) != 1)
     {
@@ -1716,27 +1710,26 @@ u_read_undo(name, hash, orig_name)
     seq_cur = get4c(fp);
     seq_time = get8ctime(fp);
 
-    /* Optional header fields, not in previous version. */
-    if (new_version)
-	for (;;)
-	{
-	    int len = getc(fp);
-	    int what;
+    /* Optional header fields. */
+    for (;;)
+    {
+	int len = getc(fp);
+	int what;
 
-	    if (len == 0 || len == EOF)
+	if (len == 0 || len == EOF)
+	    break;
+	what = getc(fp);
+	switch (what)
+	{
+	    case UF_LAST_SAVE_NR:
+		last_save_nr = get4c(fp);
 		break;
-	    what = getc(fp);
-	    switch (what)
-	    {
-		case UF_LAST_SAVE_NR:
-		    last_save_nr = get4c(fp);
-		    break;
-		default:
-		    /* field not supported, skip */
-		    while (--len >= 0)
-			(void)getc(fp);
-	    }
+	    default:
+		/* field not supported, skip */
+		while (--len >= 0)
+		    (void)getc(fp);
 	}
+    }
 
     /* uhp_table will store the freshly created undo headers we allocate
      * until we insert them into curbuf. The table remains sorted by the
@@ -1758,7 +1751,7 @@ u_read_undo(name, hash, orig_name)
 	    goto error;
 	}
 
-	uhp = unserialize_uhp(fp, file_name, new_version);
+	uhp = unserialize_uhp(fp, file_name);
 	if (uhp == NULL)
 	    goto error;
 	uhp_table[num_read_uhps++] = uhp;

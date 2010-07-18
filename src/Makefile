@@ -404,7 +404,7 @@ CClink = $(CC)
 # If both python2.x and python3.x are enabled then the linking will be via
 # dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
 #CONF_OPT_PYTHON = --enable-pythoninterp
-#CONF_OPT_PYTHON3 = --enable-python3interp
+CONF_OPT_PYTHON3 = --enable-python3interp
 
 # RUBY
 # Uncomment this when you want to include the Ruby interface.

@@ -7214,6 +7214,8 @@ the "Edit with Vim" context menu.
 The gvim executable is 32 bits, the installed gvimext.dll is either a 32 or 64
 bit version. (mostly by George Reilly)
 Made the DOS installer work with more compilers.
+The MS-Windows big gvim is now built with Python 2.7 and 3.1.2, Perl 5.12 and
+Ruby 1.9.1.
 
 The extra and language files are no longer distributed separately.
 The source files for all systems are included in one distribution.
@@ -7309,17 +7311,43 @@ Add patch to improve support of z/OS (OS/390). (Ralf Schandl)
 Added the helphelp.txt file.  Moved text from various.txt to it.
 
 
-
 New syntax files:
-TODO
+Haskell Cabal build file (Vincent Berthoux)
+ChaiScript (Jason Turner)
+Cucumber (Tim Pope)
+Fantom (Kamil Toman)
+Liquid (Tim Pope)
+Markdown (Tim Pope)
+wavefront's obj file (Vincent Berthoux)
+Perl 6 (Andy Lester)
+SDC - Synopsys Design Constraints (Maurizio Tranchero)
+SVG - Scalable Vector Graphics (Vincent Berthoux)
+task data (John Florian)
+task 42 edit (John Florian)
 
 New filetype plugins:
-TODO
+Cucumber (Tim Pope)
+Liquid (Tim Pope)
+Markdown (Tim Pope)
+Tcl (Robert L Hicks)
 
-New spell files:
-TODO
-Breton. (Dominique Pelle)
+New indent plugins:
+ChaiScript (Jason Turner)
+Cucumber (Tim Pope)
+CUDA (Bram Moolenaar)
+LifeLines (Patrick Texier)
+Liquid (Tim Pope)
+Mail (Bram Moolenaar)
+Perl 6 (Andy Lester)
 
+Other new runtime files:
+Breton spell file (Dominique Pelle)
+Tutor Bairish (Sepp Hell)
+Tutor in Esperanto. (Dominique Pellé)
+Korean translations. (SungHyun Nam)
+Dvorak keymap (Ashish Shukla)
+Serbian menu translations (Aleksandar Jelenak)
+Tetum spell files.
 
 
 Fixed							*fixed-7.3*

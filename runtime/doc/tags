@@ -585,9 +585,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'norevins'	options.txt	/*'norevins'*
 'nori'	options.txt	/*'nori'*
 'norightleft'	options.txt	/*'norightleft'*
-'norightleftcmd'	options.txt	/*'norightleftcmd'*
 'norl'	options.txt	/*'norl'*
-'norlc'	options.txt	/*'norlc'*
 'nornu'	options.txt	/*'nornu'*
 'noro'	options.txt	/*'noro'*
 'nors'	options.txt	/*'nors'*

@@ -1088,11 +1088,9 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 
 
 Before (beta) release 7.3:
-- Add fixes for 7.2 to version7.txt
-- Add hg history to version7.txt
-- Remove UF_VERSION_CRYPT_PREV and UF_VERSION_PREV.
 - Documentation for Python 3 support.
-- Build the MS-Windows version with Python 2.6.5 and 3.1.2?
+- Build the MS-Windows version with Ruby 1.91.  How?
+- Build the MS-Windows version with newer Perl version?
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
