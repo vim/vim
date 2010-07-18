@@ -129,8 +129,12 @@ static int	getargopt __ARGS((exarg_T *eap));
 static int	check_more __ARGS((int, int));
 static linenr_T get_address __ARGS((char_u **, int skip, int to_other_file));
 static void	get_flags __ARGS((exarg_T *eap));
-#if !defined(FEAT_PERL) || !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
-	|| !defined(FEAT_TCL) || !defined(FEAT_RUBY) || !defined(FEAT_MZSCHEME)
+#if !defined(FEAT_PERL) \
+	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
+	|| !defined(FEAT_TCL) \
+	|| !defined(FEAT_RUBY) \
+	|| !defined(FEAT_LUA) \
+	|| !defined(FEAT_MZSCHEME)
 # define HAVE_EX_SCRIPT_NI
 static void	ex_script_ni __ARGS((exarg_T *eap));
 #endif
