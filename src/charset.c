@@ -839,14 +839,25 @@ win_chartabsize(wp, p, col)
 #endif
 
 /*
- * return the number of characters the string 's' will take on the screen,
- * taking into account the size of a tab
+ * Return the number of characters the string 's' will take on the screen,
+ * taking into account the size of a tab.
  */
     int
 linetabsize(s)
     char_u	*s;
 {
-    colnr_T	col = 0;
+    return linetabsize_col(0, s);
+}
+
+/*
+ * Like linetabsize(), but starting at column "startcol".
+ */
+    int
+linetabsize_col(startcol, s)
+    int		startcol;
+    char_u	*s;
+{
+    colnr_T	col = startcol;
 
     while (*s != NUL)
 	col += lbr_chartabsize_adv(&s, col);

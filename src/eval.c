@@ -710,6 +710,7 @@ static void f_strlen __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strpart __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strridx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strtrans __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_strdisplaywidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_submatch __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_substitute __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7859,6 +7860,7 @@ static struct fst
 #endif
     {"str2nr",		1, 2, f_str2nr},
     {"strchars",	1, 1, f_strchars},
+    {"strdisplaywidth",	1, 2, f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -16802,6 +16804,23 @@ f_strchars(argvars, rettv)
 #else
     rettv->vval.v_number = (varnumber_T)(STRLEN(s));
 #endif
+}
+
+/*
+ * "strdisplaywidth()" function
+ */
+    static void
+f_strdisplaywidth(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*s = get_tv_string(&argvars[0]);
+    int		col = 0;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	col = get_tv_number(&argvars[1]);
+
+    rettv->vval.v_number = (varnumber_T)(linetabsize_col(col, s));
 }
 
 /*

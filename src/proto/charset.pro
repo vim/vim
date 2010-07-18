@@ -15,6 +15,7 @@ int vim_strsize __ARGS((char_u *s));
 int vim_strnsize __ARGS((char_u *s, int len));
 int chartabsize __ARGS((char_u *p, colnr_T col));
 int linetabsize __ARGS((char_u *s));
+int linetabsize_col __ARGS((int startcol, char_u *s));
 int win_linetabsize __ARGS((win_T *wp, char_u *p, colnr_T len));
 int vim_isIDc __ARGS((int c));
 int vim_iswordc __ARGS((int c));

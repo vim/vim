@@ -1910,6 +1910,7 @@ sqrt( {expr}			Float	squar root of {expr}
 str2float( {expr})		Float	convert String to Float
 str2nr( {expr} [, {base}])	Number	convert String to Number
 strchars( {expr})		Number	character length of the String {expr}
+strdisplaywidth( {expr} [, {col}]) Number display length of the String {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
@@ -5368,7 +5369,17 @@ strchars({expr})					*strchars()*
 		The result is a Number, which is the number of characters
 		String {expr} occupies.  Composing characters are counted
 		separately.
-		Also see |strlen()| and |strwidth()|.
+		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
+
+strdisplaywidth({expr}[, {col}])			*strdisplaywidth()*
+		The result is a Number, which is the number of display cells
+		String {expr} occupies on the screen.
+		When {col} is omitted zero is used.  Otherwise it is the
+		screen column where to start.  This matters for Tab
+		characters.
+		When {expr} contains characters with East Asian Width Class
+		Ambiguous, this function's return value depends on 'ambiwidth'.
+		Also see |strlen()|, |strwidth()| and |strchars()|.
 
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as
@@ -5432,7 +5443,8 @@ strlen({expr})	The result is a Number, which is the length of the String
 <
 		If the argument is a Number it is first converted to a String.
 		For other types an error is given.
-		Also see |len()|, |strchars()| and |strwidth()|.
+		Also see |len()|, |strchars()|, |strdisplaywidth()| and
+		|strwidth()|.
 
 strpart({src}, {start}[, {len}])			*strpart()*
 		The result is a String, which is part of {src}, starting from
@@ -5478,10 +5490,10 @@ strtrans({expr})					*strtrans()*
 strwidth({expr})					*strwidth()*
 		The result is a Number, which is the number of display cells
 		String {expr} occupies.  A Tab character is counted as one
-		cell (on the screen it depends on the position).
+		cell, alternatively use |strdisplaywidth()|.
 		When {expr} contains characters with East Asian Width Class
 		Ambiguous, this function's return value depends on 'ambiwidth'.
-		Also see |strlen()| and |strchars()|.
+		Also see |strlen()|, |strdisplaywidth()| and |strchars()|.
 
 submatch({nr})						*submatch()*
 		Only for an expression in a |:substitute| command.  Returns
