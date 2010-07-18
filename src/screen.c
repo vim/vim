@@ -4806,7 +4806,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		vcol_save_attr = char_attr;
 		char_attr = hl_combine_attr(char_attr, hl_attr(HLF_CUC));
 	    }
-	    else if (draw_color_col && vcol == *color_cols)
+	    else if (draw_color_col && VCOL_HLC == *color_cols)
 	    {
 		vcol_save_attr = char_attr;
 		char_attr = hl_combine_attr(char_attr, hl_attr(HLF_MC));
