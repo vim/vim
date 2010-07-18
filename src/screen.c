@@ -6168,8 +6168,8 @@ win_redr_status(wp)
 		int	clen = 0, i;
 
 		/* Count total number of display cells. */
-		for (i = 0; p[i] != NUL; i += (*mb_ptr2len)(p + i))
-		    clen += (*mb_ptr2cells)(p + i);
+		clen = mb_string2cells(p, -1);
+
 		/* Find first character that will fit.
 		 * Going from start to end is much faster for DBCS. */
 		for (i = 0; p[i] != NUL && clen >= this_ru_col - 1;

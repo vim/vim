@@ -1579,6 +1579,23 @@ dbcs_char2cells(c)
 }
 
 /*
+ * Return the number of cells occupied by string "p".
+ * Stop at a NUL character.  When "len" >= 0 stop at character "p[len]".
+ */
+    int
+mb_string2cells(p, len)
+    char_u  *p;
+    int	    len;
+{
+    int i;
+    int clen = 0;
+
+    for (i = 0; (len < 0 || i < len) && p[i] != NUL; i += (*mb_ptr2len)(p + i))
+	clen += (*mb_ptr2cells)(p + i);
+    return clen;
+}
+
+/*
  * mb_off2cells() function pointer.
  * Return number of display cells for char at ScreenLines[off].
  * We make sure that the offset used is less than "max_off".
@@ -4364,12 +4381,12 @@ im_commit_cb(GtkIMContext *context UNUSED,
 	     const gchar *str,
 	     gpointer data UNUSED)
 {
-    int	slen = (int)STRLEN(str);
-    int	add_to_input = TRUE;
-    int	clen;
-    int	len = slen;
-    int	commit_with_preedit = TRUE;
-    char_u	*im_str, *p;
+    int		slen = (int)STRLEN(str);
+    int		add_to_input = TRUE;
+    int		clen;
+    int		len = slen;
+    int		commit_with_preedit = TRUE;
+    char_u	*im_str;
 
 #ifdef XIM_DEBUG
     xim_log("im_commit_cb(): %s\n", str);
@@ -4402,9 +4419,9 @@ im_commit_cb(GtkIMContext *context UNUSED,
     }
     else
 	im_str = (char_u *)str;
-    clen = 0;
-    for (p = im_str; p < im_str + len; p += (*mb_ptr2len)(p))
-	clen += (*mb_ptr2cells)(p);
+
+    clen = mb_string2cells(im_str, len);
+
     if (input_conv.vc_type != CONV_NONE)
 	vim_free(im_str);
     preedit_start_col += clen;

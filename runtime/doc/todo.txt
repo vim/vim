@@ -1193,8 +1193,8 @@ Awaiting updated patches:
 			Search in 'runtimepath'?
 			More docs needed about how to use this.
 			How to get the messages into the .po files?
-    charlen()		Like strlen() but counting characters instead of
-			bytes.
+    strchars()		Like strlen() and strwidth() but counting characters
+			instead of bytes.
     confirm()		add "flags" argument, with 'v' for vertical
 			    layout and 'c' for console dialog. (Haegg)
 			    Flemming Madsen has a patch for the 'c' flag

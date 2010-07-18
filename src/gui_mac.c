@@ -3983,13 +3983,8 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	/* Multibyte computation taken from gui_w32.c */
 	if (has_mbyte)
 	{
-	    int cell_len = 0;
-	    int n;
-
 	    /* Compute the length in display cells. */
-	    for (n = 0; n < len; n += MB_BYTE2LEN(s[n]))
-		cell_len += (*mb_ptr2cells)(s + n);
-	    rc.right = FILL_X(col + cell_len);
+	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
 #endif
@@ -4087,13 +4082,8 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	/* Multibyte computation taken from gui_w32.c */
 	if (has_mbyte)
 	{
-	    int cell_len = 0;
-	    int n;
-
 	    /* Compute the length in display cells. */
-	    for (n = 0; n < len; n += MB_BYTE2LEN(s[n]))
-		cell_len += (*mb_ptr2cells)(s + n);
-	    rc.right = FILL_X(col + cell_len);
+	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
 	    rc.right = FILL_X(col + len) + (col + len == Columns);

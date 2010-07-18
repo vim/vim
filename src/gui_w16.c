@@ -664,12 +664,8 @@ gui_mch_draw_string(
 #ifdef FEAT_MBYTE
 	if (has_mbyte)
 	{
-	    int cell_len = 0;
-
 	    /* Compute the length in display cells. */
-	    for (n = 0; n < len; n += MB_BYTE2LEN(text[n]))
-		cell_len += (*mb_ptr2cells)(text + n);
-	    rc.right = FILL_X(col + cell_len);
+	    rc.right = FILL_X(col + mb_string2cells(text, len));
 	}
 	else
 #endif

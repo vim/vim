@@ -700,6 +700,7 @@ static void f_sqrt __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_str2float __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
 static void f_str2nr __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_strchars __ARGS((typval_T *argvars, typval_T *rettv));
 #ifdef HAVE_STRFTIME
 static void f_strftime __ARGS((typval_T *argvars, typval_T *rettv));
 #endif
@@ -709,6 +710,7 @@ static void f_strlen __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strpart __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strridx __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_strtrans __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_strwidth __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_submatch __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_substitute __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7856,6 +7858,7 @@ static struct fst
     {"str2float",	1, 1, f_str2float},
 #endif
     {"str2nr",		1, 2, f_str2nr},
+    {"strchars",	1, 1, f_strchars},
 #ifdef HAVE_STRFTIME
     {"strftime",	1, 2, f_strftime},
 #endif
@@ -7865,6 +7868,7 @@ static struct fst
     {"strpart",		2, 3, f_strpart},
     {"strridx",		2, 3, f_strridx},
     {"strtrans",	1, 1, f_strtrans},
+    {"strwidth",	1, 1, f_strwidth},
     {"submatch",	1, 1, f_submatch},
     {"substitute",	4, 4, f_substitute},
     {"synID",		3, 3, f_synID},
@@ -16775,6 +16779,48 @@ f_strlen(argvars, rettv)
 {
     rettv->vval.v_number = (varnumber_T)(STRLEN(
 					      get_tv_string(&argvars[0])));
+}
+
+/*
+ * "strchars()" function
+ */
+    static void
+f_strchars(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u		*s = get_tv_string(&argvars[0]);
+#ifdef FEAT_MBYTE
+    varnumber_T		len = 0;
+
+    while (*s != NUL)
+    {
+	mb_cptr2char_adv(&s);
+	++len;
+    }
+    rettv->vval.v_number = len;
+#else
+    rettv->vval.v_number = (varnumber_T)(STRLEN(s));
+#endif
+}
+
+/*
+ * "strwidth()" function
+ */
+    static void
+f_strwidth(argvars, rettv)
+    typval_T	*argvars;
+    typval_T	*rettv;
+{
+    char_u	*s = get_tv_string(&argvars[0]);
+
+    rettv->vval.v_number = (varnumber_T)(
+#ifdef FEAT_MBYTE
+	    mb_string2cells(s, -1)
+#else
+	    STRLEN(s)
+#endif
+	    );
 }
 
 /*

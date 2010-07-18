@@ -1909,6 +1909,7 @@ split( {expr} [, {pat} [, {keepempty}]])
 sqrt( {expr}			Float	squar root of {expr}
 str2float( {expr})		Float	convert String to Float
 str2nr( {expr} [, {base}])	Number	convert String to Number
+strchars( {expr})		Number	character length of the String {expr}
 strftime( {format}[, {time}])	String	time in specified format
 stridx( {haystack}, {needle}[, {start}])
 				Number	index of {needle} in {haystack}
@@ -1919,6 +1920,7 @@ strpart( {src}, {start}[, {len}])
 strridx( {haystack}, {needle} [, {start}])
 				Number	last index of {needle} in {haystack}
 strtrans( {expr})		String	translate string to make it printable
+strwidth( {expr})		Number	display cell length of the String {expr}
 submatch( {nr})			String	specific match in ":substitute"
 substitute( {expr}, {pat}, {sub}, {flags})
 				String	all {pat} in {expr} replaced with {sub}
@@ -5362,6 +5364,12 @@ str2nr( {expr} [, {base}])				*str2nr()*
 		Text after the number is silently ignored.
 
 
+strchars({expr})					*strchars()*
+		The result is a Number, which is the number of characters
+		String {expr} occupies.  Composing characters are counted
+		separately.
+		Also see |strlen()| and |strwidth()|.
+
 strftime({format} [, {time}])				*strftime()*
 		The result is a String, which is a formatted date and time, as
 		specified by the {format} string.  The given {time} is used,
@@ -5424,7 +5432,7 @@ strlen({expr})	The result is a Number, which is the length of the String
 <
 		If the argument is a Number it is first converted to a String.
 		For other types an error is given.
-		Also see |len()|.
+		Also see |len()|, |strchars()| and |strwidth()|.
 
 strpart({src}, {start}[, {len}])			*strpart()*
 		The result is a String, which is part of {src}, starting from
@@ -5466,6 +5474,14 @@ strtrans({expr})					*strtrans()*
 			echo strtrans(@a)
 <		This displays a newline in register a as "^@" instead of
 		starting a new line.
+
+strwidth({expr})					*strwidth()*
+		The result is a Number, which is the number of display cells
+		String {expr} occupies.  A Tab character is counted as one
+		cell (on the screen it depends on the position).
+		When {expr} contains characters with East Asian Width Class
+		Ambiguous, this function's return value depends on 'ambiwidth'.
+		Also see |strlen()| and |strchars()|.
 
 submatch({nr})						*submatch()*
 		Only for an expression in a |:substitute| command.  Returns

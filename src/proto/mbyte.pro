@@ -14,6 +14,7 @@ int utf_ptr2cells __ARGS((char_u *p));
 int dbcs_ptr2cells __ARGS((char_u *p));
 int latin_ptr2cells_len __ARGS((char_u *p, int size));
 int latin_char2cells __ARGS((int c));
+int mb_string2cells __ARGS((char_u *p, int len));
 int latin_off2cells __ARGS((unsigned off, unsigned max_off));
 int dbcs_off2cells __ARGS((unsigned off, unsigned max_off));
 int utf_off2cells __ARGS((unsigned off, unsigned max_off));

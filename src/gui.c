@@ -2329,14 +2329,9 @@ gui_outstr_nowrap(s, len, flags, fg, bg, back)
 # ifdef FEAT_MBYTE
 	if (enc_dbcs == DBCS_JPNU)
 	{
-	    int		clen = 0;
-	    int		i;
-
 	    /* Get the length in display cells, this can be different from the
 	     * number of bytes for "euc-jp". */
-	    for (i = 0; i < len; i += (*mb_ptr2len)(s + i))
-		clen += (*mb_ptr2cells)(s + i);
-	    len = clen;
+	    len = mb_string2cells(s, len);
 	}
 # endif
     }
