@@ -3766,16 +3766,16 @@ clear_showcmd()
 
 	if (VIsual_mode == Ctrl_V)
 	{
-#ifdef FEAT_LINEBREAK
+# ifdef FEAT_LINEBREAK
 	    char_u *saved_sbr = p_sbr;
 
 	    /* Make 'sbr' empty for a moment to get the correct size. */
 	    p_sbr = empty_option;
-#endif
+# endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
-#ifdef FEAT_LINEBREAK
+# ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
-#endif
+# endif
 	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
 	}
@@ -3800,7 +3800,11 @@ clear_showcmd()
 	    }
 	    while ((*p_sel != 'e') ? s <= e : s < e)
 	    {
+# ifdef FEAT_MBYTE
 		l = (*mb_ptr2len)(s);
+# else
+		l = (*s == NUL) ? 0 : 1;
+# endif
 		if (l == 0)
 		{
 		    ++bytes;
