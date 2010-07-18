@@ -5442,7 +5442,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	and left-to-right strings so that both sets are displayed properly
 	in different windows).  Also see |rileft.txt|.
 
-			*'rightleftcmd'* *'rlc'* *'norightleftcmd'* *'norlc'*
+			*'rightleftcmd'* *'rlc'*
 'rightleftcmd' 'rlc'	string	(default "search")
 			local to window
 			{not in Vi}

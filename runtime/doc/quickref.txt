@@ -639,6 +639,7 @@ Short explanation of each option:		*option-list*
 'clipboard'	  'cb'	    use the clipboard as the unnamed register
 'cmdheight'	  'ch'	    number of lines to use for the command-line
 'cmdwinheight'	  'cwh'     height of the command-line window
+'colorcolumn'	  'cc'	    columns to highlight
 'columns'	  'co'	    number of columns in the display
 'comments'	  'com'     patterns that can start a comment line
 'commentstring'   'cms'     template for comments; used for fold marker

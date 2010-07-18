@@ -91,6 +91,8 @@ Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 Problem with transparent cmdline.  Also: Terminal title is wrong with
 non-ASCII character. (Lily White, 2010 Mar 7)
 
+Patch for horizontal mouse wheel. (Bjorn Winckler, 2010 Jul 18)
+
 iconv() doesn't fail on an illegal character, as documented. (Yongwei Wu, 2009
 Nov 15, example Nov 26)  Add argument to specify whether iconv() should fail
 or replace with a character and continue?

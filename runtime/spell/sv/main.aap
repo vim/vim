@@ -21,7 +21,7 @@ $SPELLDIR/sv.utf-8.spl : $FILES
         :sys env LANG=sv_SE.UTF-8
 		$VIM -u NONE -e -c "mkspell! $SPELLDIR/sv sv_SE" -c q
 
-../README_sv.txt : LICENSE_sv_SE.txt
+../README_sv.txt : README_sv.txt
         :copy $source $target
 
 #
@@ -41,6 +41,9 @@ sv_SE.aff sv_SE.dic: {buildcheck=}
         :copy dictionaries/sv_SE.aff sv_SE.aff
         :copy dictionaries/sv_SE.dic sv_SE.dic
         :delete {r} dictionaries dictionaries.xcu description.xml
+        :delete {f} README_sv.txt
+        :sys $VIM README_sv.txt -u NONE -N -e -c "0read LICENSE_en_US.txt" -c "read LICENSE_sv_SE.txt" -c "set ff=unix" -c write -c q
+        :delete LICENSE_en_US.txt LICENSE_sv_SE.txt
         @if not os.path.exists('sv_SE.orig.aff'):
             :copy sv_SE.aff sv_SE.orig.aff
         @if not os.path.exists('sv_SE.orig.dic'):
@@ -48,6 +51,12 @@ sv_SE.aff sv_SE.dic: {buildcheck=}
         @if os.path.exists('sv_SE.diff'):
             :sys patch <sv_SE.diff
 
+# Delete all the generated files, start from scratch
+clean:
+        :delete {f} sv_SE.aff sv_SE.dic
+        :delete {f} sv_SE.aff.orig sv_SE.dic.orig
+        :delete {f} sv_SE.orig.aff sv_SE.orig.dic
+        :delete {f} README_sv.txt
 
 # Generate diff files, so that others can get the OpenOffice files and apply
 # the diffs to get the Vim versions.
