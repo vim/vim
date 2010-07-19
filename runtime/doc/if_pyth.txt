@@ -16,8 +16,10 @@ The Python Interface to Vim				*python* *Python*
 
 {Vi does not have any of these commands}
 
-The Python interface is available only when Vim was compiled with the
+The Python 2.x interface is available only when Vim was compiled with the
 |+python| feature.
+The Python 3 interface is available only when Vim was compiled with the
+|+python3| feature.
 
 ==============================================================================
 1. Commands						*python-commands*
@@ -333,7 +335,7 @@ sure edit "gvim.exe" and search for "python\d*.dll\c".
 
 Python 3 support can exist next to Python 2.x.
 
-*:py3* *:python3* *:py3file*
+*:py3* *:py3file*
 
 TODO
 

@@ -1382,6 +1382,8 @@ The commands are sorted on the non-optional part of their name.
 |:ptselect|	:pts[elect]	|:tselect| and show tag in preview window
 |:put|		:pu[t]		insert contents of register in the text
 |:pwd|		:pw[d]		print current directory
+|:py3|		:py3		execute Python 3 command
+|:p3yfile|	:py3f[ile]	execute Python 3 script file
 |:python|	:py[thon]	execute Python command
 |:pyfile|	:pyf[ile]	execute Python script file
 |:quit|		:q[uit]		quit current window (when one window quit Vim)

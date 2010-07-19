@@ -270,7 +270,7 @@ static void	ex_popup __ARGS((exarg_T *eap));
 # define ex_pyfile		ex_ni
 #endif
 #ifndef FEAT_PYTHON3
-# define ex_python3		ex_script_ni
+# define ex_py3			ex_script_ni
 # define ex_py3file		ex_ni
 #endif
 #ifndef FEAT_TCL
@@ -2562,7 +2562,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_perl:
 	    case CMD_psearch:
 	    case CMD_python:
-	    case CMD_python3:
+	    case CMD_py3:
 	    case CMD_return:
 	    case CMD_rightbelow:
 	    case CMD_ruby:
@@ -2825,7 +2825,7 @@ find_command(eap, full)
     {
 	while (ASCII_ISALPHA(*p))
 	    ++p;
-	/* for python 3.x support (:py3, :python3) */
+	/* for python 3.x support ":py3" (and ":py4" :-) */
 	if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
 	    p = skipdigits(p);
 

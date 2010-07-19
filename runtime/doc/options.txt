@@ -3125,12 +3125,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+eval|
 			feature}
 	Expression which is evaluated to format a range of lines for the |gq|
-	operator.  When this option is empty 'formatprg' is used.
+	operator or automatic formatting (see 'formatoptions').  When this
+	option is empty 'formatprg' is used.
 
 	The |v:lnum|  variable holds the first line to be formatted.
 	The |v:count| variable holds the number of lines to be formatted.
 	The |v:char|  variable holds the character that is going to be
-		      inserted.  This can be empty.  Don't insert it yet!
+		      inserted if the expression is being evaluated due to
+		      automatic formatting.  This can be empty.  Don't insert
+		      it yet!
 
 	Example: >
 		:set formatexpr=mylang#Format()

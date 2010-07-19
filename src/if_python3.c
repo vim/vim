@@ -630,9 +630,9 @@ theend:
 }
 
 /*
- * ":python3"
+ * ":py3"
  */
-void ex_python3(exarg_T *eap)
+void ex_py3(exarg_T *eap)
 {
     char_u *script;
 

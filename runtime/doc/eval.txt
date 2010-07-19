@@ -1474,10 +1474,11 @@ v:lc_time	The current locale setting for time messages of the runtime
 		command.  See |multi-lang|.
 
 						*v:lnum* *lnum-variable*
-v:lnum		Line number for the 'foldexpr' |fold-expr| and 'indentexpr'
-		expressions, tab page number for 'guitablabel' and
-		'guitabtooltip'.  Only valid while one of these expressions is
-		being evaluated.  Read-only when in the |sandbox|.
+v:lnum		Line number for the 'foldexpr' |fold-expr|, 'formatexpr' and
+		'indentexpr' expressions, tab page number for 'guitablabel'
+		and 'guitabtooltip'.  Only valid while one of these
+		expressions is being evaluated.  Read-only when in the
+		|sandbox|.
 
 					*v:mouse_win* *mouse_win-variable*
 v:mouse_win	Window number for a mouse click obtained with |getchar()|.
@@ -8246,11 +8247,11 @@ missing: >
 ==============================================================================
 11. The sandbox					*eval-sandbox* *sandbox* *E48*
 
-The 'foldexpr', 'includeexpr', 'indentexpr', 'statusline' and 'foldtext'
-options are evaluated in a sandbox.  This means that you are protected from
-these expressions having nasty side effects.  This gives some safety for when
-these options are set from a modeline.	It is also used when the command from
-a tags file is executed and for CTRL-R = in the command line.
+The 'foldexpr', 'formatexpr', 'includeexpr', 'indentexpr', 'statusline' and
+'foldtext' options may be evaluated in a sandbox.  This means that you are
+protected from these expressions having nasty side effects.  This gives some
+safety for when these options are set from a modeline.  It is also used when
+the command from a tags file is executed and for CTRL-R = in the command line.
 The sandbox is also used for the |:sandbox| command.
 
 These items are not allowed in the sandbox:
