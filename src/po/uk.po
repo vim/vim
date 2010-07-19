@@ -5,7 +5,7 @@
 #
 # Thanks to:
 #   Dmytro Kovalov <dmytro.kovalov@nssmb.com> for useful suggestions
-# 	Dmytro O. Redchuk <dor@kiev-online.net> for viminfo bug
+#   Dmytro O. Redchuk <dor@kiev-online.net> for viminfo bug
 #
 # Please, see readme at htpp://www.vstu.edu.ua/~bohdan/vim before any
 # complains, and even if you won't complain, read it anyway.
@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 7.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-25 15:34+0300\n"
+"POT-Creation-Date: 2010-07-19 09:17+0300\n"
 "PO-Revision-Date: 2010-06-18 21:53+0300\n"
 "Last-Translator: Анатолій Сахнік <sakhnik@gmail.com>\n"
 "Language-Team: Bohdan Vlasyuk <bohdan@vstu.edu.ua>\n"
@@ -2588,6 +2588,12 @@ msgstr "Жодного з'єднання з cscope\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    назва бази даних                    шлях\n"
 
+msgid "Lua library cannot be loaded."
+msgstr "Не вдалося завантажити бібліотеку Lua"
+
+msgid "cannot save undo information"
+msgstr "не вдалося зберегти інформацію для скасування"
+
 msgid ""
 "E815: Sorry, this command is disabled, the MzScheme libraries could not be "
 "loaded."
@@ -2612,9 +2618,6 @@ msgstr "некоректний номер вікна"
 
 msgid "couldn't open buffer"
 msgstr "не вдалося відкрити буфер"
-
-msgid "cannot save undo information"
-msgstr "не вдалося зберегти інформацію для скасування"
 
 msgid "cannot delete line"
 msgstr "неможливо знищити рядок"
@@ -2652,9 +2655,6 @@ msgid ""
 msgstr ""
 "E263: Вибачте, ця команда вимкнена, бібліотека Python не може бути "
 "завантажена."
-
-msgid "E659: Cannot invoke Python recursively"
-msgstr "E659: Не можна рекурсивно викликати Python"
 
 msgid "can't delete OutputObject attributes"
 msgstr "не вдалося знищити атрибути OutputObject"
@@ -2711,6 +2711,9 @@ msgstr "<вікно %d>"
 
 msgid "no such window"
 msgstr "такого вікна немає"
+
+msgid "E659: Cannot invoke Python recursively"
+msgstr "E659: Не можна рекурсивно викликати Python"
 
 msgid "E265: $_ must be an instance of String"
 msgstr "E265: $_ має бути екземпляром String"
@@ -3536,8 +3539,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"E000: %s is encrypted and this version of Vim does not support encryption"
-msgstr "E000: %s зашифровано, а ця версія Vim не підтримує шифрування"
+"E833: %s is encrypted and this version of Vim does not support encryption"
+msgstr "E833: %s зашифровано, а ця версія Vim не підтримує шифрування"
 
 msgid " has been damaged (page size is smaller than minimum value).\n"
 msgstr " пошкоджений (розмір сторінки менший мінімального значення).\n"
@@ -3560,12 +3563,16 @@ msgstr "Файл обміну зашифрований: \"%s\""
 msgid ""
 "\n"
 "If you entered a new crypt key but did not write the text file,"
-msgstr "\nЯкщо ви задали новий ключ шифру, але не записали текстовий файл,"
+msgstr ""
+"\n"
+"Якщо ви задали новий ключ шифру, але не записали текстовий файл,"
 
 msgid ""
 "\n"
 "enter the new crypt key."
-msgstr "\nвведіть новий ключ шифру."
+msgstr ""
+"\n"
+"введіть новий ключ шифру."
 
 msgid ""
 "\n"
@@ -4320,7 +4327,6 @@ msgstr ""
 msgid "Illegal register name"
 msgstr "Неправильна назва регістру"
 
-#, c-format
 msgid ""
 "\n"
 "# Registers:\n"
@@ -4829,6 +4835,10 @@ msgstr "список помилок %d з %d; %d помилок"
 
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Не можу записати, вказана опція 'buftype'"
+
+# msgstr "E231: "
+msgid "Error file"
+msgstr "Файл помилок"
 
 msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Пропущено назву файлу чи некоректний шаблон"
@@ -5790,16 +5800,15 @@ msgstr "Vim: Помилка читання вводу, робота заверш
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "Використано CUT_BUFFER0 замість порожнього виділення"
 
+#. This happens when the FileChangedRO autocommand changes the file in
+#. * a way it becomes shorter.
+msgid "E834: Line count changed unexpectedly"
+msgstr "E834: Кількість рядків несподівано змінилася"
+
 #. must display the prompt
 msgid "No undo possible; continue anyway"
 msgstr "Скасування буде неможливе, все одно продовжити"
 
-#. magic at start of header
-#. magic after last header
-#. magic at start of entry
-#. magic after last entry
-#. 2-byte undofile version number
-#. idem, encrypted
 #, c-format
 msgid "E828: Cannot open undo file for writing: %s"
 msgstr "E828: Не вдалося відкрити файл історії для запису: %s"
@@ -5916,8 +5925,8 @@ msgstr "після"
 msgid "Nothing to undo"
 msgstr "Немає нічого скасовувати"
 
-msgid "number changes  time"
-msgstr "номер  змін     час"
+msgid "number changes  time            saved"
+msgstr "номер  змін     час             збережено"
 
 #, c-format
 msgid "%ld seconds ago"
