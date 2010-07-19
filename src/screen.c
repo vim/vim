@@ -4377,12 +4377,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 
 #ifdef FEAT_CONCEAL
-	    if (    wp->w_p_conc > 0
-		    && !area_highlighting
-		    && (lnum != wp->w_cursor.lnum
-			|| curwin != wp || wp->w_buffer->b_p_ma == FALSE)
-		    && (syntax_flags & HL_CONCEAL) != 0)
-
+	    if (   wp->w_p_conc > 0
+		&& (lnum != wp->w_cursor.lnum || curwin != wp)
+		&& (syntax_flags & HL_CONCEAL) != 0)
 	    {
 		char_attr = conceal_attr;
 		if (first_conceal
