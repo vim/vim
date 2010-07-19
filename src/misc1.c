@@ -8550,7 +8550,7 @@ expand_wildcards_eval(pat, num_file, file, flags)
 /*
  * Expand wildcards.  Calls gen_expand_wildcards() and removes files matching
  * 'wildignore'.
- * Returns OK or FAIL.
+ * Returns OK or FAIL.  When FAIL then "num_file" won't be set.
  */
     int
 expand_wildcards(num_pat, pat, num_file, file, flags)
@@ -8568,7 +8568,7 @@ expand_wildcards(num_pat, pat, num_file, file, flags)
     retval = gen_expand_wildcards(num_pat, pat, num_file, file, flags);
 
     /* When keeping all matches, return here */
-    if (flags & EW_KEEPALL)
+    if ((flags & EW_KEEPALL) || retval == FAIL)
 	return retval;
 
 #ifdef FEAT_WILDIGN
