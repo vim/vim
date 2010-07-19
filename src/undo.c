@@ -2710,7 +2710,7 @@ u_undo_end(did_undo, absolute)
 
 	FOR_ALL_WINDOWS(wp)
 	{
-	    if (wp->w_buffer == curbuf && wp->w_p_conceal)
+	    if (wp->w_buffer == curbuf && wp->w_p_conc > 0)
 		redraw_win_later(wp, NOT_VALID);
 	}
     }

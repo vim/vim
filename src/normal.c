@@ -8296,7 +8296,7 @@ n_opencmd(cap)
 		    0, 0))
 	{
 #ifdef FEAT_CONCEAL
-	    if (curwin->w_p_conceal && oldline != curwin->w_cursor.lnum)
+	    if (curwin->w_p_conc > 0 && oldline != curwin->w_cursor.lnum)
 		update_single_line(curwin, oldline);
 #endif
 	    /* When '#' is in 'cpoptions' ignore the count. */

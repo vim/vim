@@ -2776,7 +2776,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
     int		conceal_attr	= hl_attr(HLF_CONCEAL);
-    int		first_conceal	= (wp->w_p_conceal != 3);
+    int		first_conceal	= (wp->w_p_conc != 3);
     int		is_concealing	= FALSE;
     int		boguscols	= 0;	/* nonexistent columns added to force
 					   wrapping */
@@ -4377,7 +4377,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 
 #ifdef FEAT_CONCEAL
-	    if (    wp->w_p_conceal
+	    if (    wp->w_p_conc > 0
 		    && !area_highlighting
 		    && (lnum != wp->w_cursor.lnum
 			|| curwin != wp || wp->w_buffer->b_p_ma == FALSE)
@@ -4386,7 +4386,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    {
 		char_attr = conceal_attr;
 		if (first_conceal
-			&& (syn_get_sub_char() != NUL || wp->w_p_conceal == 1))
+			&& (syn_get_sub_char() != NUL || wp->w_p_conc == 1))
 		{
 		    if (syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
@@ -4437,8 +4437,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 	    else
 	    {
-		first_conceal	= (wp->w_p_conceal != 3);
-		is_concealing	= FALSE;
+		first_conceal = (wp->w_p_conc != 3);
+		is_concealing = FALSE;
 	    }
 #endif /* FEAT_CONCEAL */
 	}
@@ -4909,7 +4909,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 	}
 #ifdef FEAT_CONCEAL
-	else if (wp->w_p_conceal > 0 && is_concealing)
+	else if (wp->w_p_conc > 0 && is_concealing)
 	{
 	    --n_skip;
 	    ++vcol_off;

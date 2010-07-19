@@ -1098,7 +1098,7 @@ main_loop(cmdwin, noexmode)
 			||
 # endif
 # ifdef FEAT_CONCEAL
-			curwin->w_p_conceal
+			curwin->w_p_conc > 0
 # endif
 			)
 		 && !equalpos(last_cursormoved, curwin->w_cursor))
@@ -1109,7 +1109,7 @@ main_loop(cmdwin, noexmode)
 							       FALSE, curbuf);
 # endif
 # ifdef FEAT_CONCEAL
-		if (curwin->w_p_conceal)
+		if (curwin->w_p_conc > 0)
 		{
 		    conceal_old_cursor_line = last_cursormoved.lnum;
 		    conceal_new_cursor_line = curwin->w_cursor.lnum;

@@ -7442,7 +7442,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	redraw_titles();
 # endif
 # ifdef FEAT_CONCEAL
-	if (curwin->w_p_conceal)
+	if (curwin->w_p_conc > 0)
 	    update_single_line(curwin, curwin->w_cursor.lnum);
 # endif
     }
@@ -8232,17 +8232,17 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    ml_open_files();
     }
 #ifdef FEAT_CONCEAL
-    else if (pp == &curwin->w_p_conceal)
+    else if (pp == &curwin->w_p_conc)
     {
-	if (curwin->w_p_conceal < 0)
+	if (curwin->w_p_conc < 0)
 	{
 	    errmsg = e_positive;
-	    curwin->w_p_conceal = 0;
+	    curwin->w_p_conc = 0;
 	}
-	else if (curwin->w_p_conceal > 3)
+	else if (curwin->w_p_conc > 3)
 	{
 	    errmsg = e_invarg;
-	    curwin->w_p_conceal = 3;
+	    curwin->w_p_conc = 3;
 	}
     }
 #endif
@@ -9506,7 +9506,7 @@ get_varp(p)
 	case PV_CRBIND: return (char_u *)&(curwin->w_p_crb);
 #endif
 #ifdef FEAT_CONCEAL
-	case PV_CONCEAL:    return (char_u *)&(curwin->w_p_conceal);
+	case PV_CONCEAL:    return (char_u *)&(curwin->w_p_conc);
 #endif
 
 	case PV_AI:	return (char_u *)&(curbuf->b_p_ai);

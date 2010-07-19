@@ -34,6 +34,11 @@ Update syntax menus: run checkmenu.
 
 GTK: torn-off menu doesn't work.
 
+:find completion has duplicates. (Bjorn Winckler, 2010 Jul 18)
+
+Conceal: don't show for 'hlmatch' when 'modifiable' is off?
+And don't care about 'cursorline'.
+
 Make 'cryptmethod' global-local, so that a default specified in a .vimrc file
 is used for new files. (Christian J. Robinson)
 
@@ -2325,6 +2330,7 @@ Spell checking:
 Diff mode:
 9   Instead invoking an external diff program, use builtin code.  One can be
     found here: http://www.ioplex.com/~miallen/libmba/dl/src/diff.c
+    It's quite big and badly documented though.
 8   Use diff mode to show the changes made in a buffer (compared to the file).
     Use an unnamed buffer, like doing:
 	new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
@@ -3929,8 +3935,6 @@ Undo:
     storing the differences.
     Alternative: before reloading a buffer, store it somewhere.  Keep a list
     of about 10 last reloaded buffers.
-    OR: before unloading, write a backup file with the current text, as if
-    doing ":w" twice before reloading.
 -   Make it possible to undo all the commands from a mapping, including a
     trailing unfinished command, e.g. for ":map K iX^[r".
 -   When accidentally hitting "R" instead of Ctrl-R, further Ctrl-R is not
