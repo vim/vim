@@ -7119,7 +7119,7 @@ next_search_hl(win, shl, lnum, mincol)
 		NULL
 #endif
 		);
-	if (called_emsg)
+	if (called_emsg || got_int)
 	{
 	    /* Error while handling regexp: stop using this regexp. */
 	    if (shl == &search_hl)
