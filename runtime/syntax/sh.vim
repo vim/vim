@@ -3,7 +3,7 @@
 " Maintainer:		Dr. Charles E. Campbell, Jr.  <NdrOchipS@PcampbellAfamily.Mbiz>
 " Previous Maintainer:	Lennart Schultz <Lennart.Schultz@ecmwf.int>
 " Last Change:		Apr 12, 2010
-" Version:		111
+" Version:		112
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 " For options and settings, please use:      :help ft-sh-syntax
 " This file includes many ideas from Éric Brunet (eric.brunet@ens.fr)
@@ -132,7 +132,7 @@ syn match     shTestError "]"
 
 " Options: {{{1
 " ====================
-syn match   shOption	"\s\zs[-+][a-zA-Z0-9]\+\>"
+syn match   shOption	"\s\zs[-+][-_a-zA-Z0-9]\+\>"
 syn match   shOption	"\s\zs--[^ \t$`'"|]\+"
 
 " File Redirection Highlighted As Operators: {{{1
