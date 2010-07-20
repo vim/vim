@@ -947,7 +947,7 @@ the different input methods or disable them temporarily.
 WHAT IS IME
     IME is a part of East asian version Windows.  That helps you to input
     multibyte character.  English and other language version Windows does not
-    have any IME.  (Also there are no need usually.) But there is one that
+    have any IME.  (Also there is no need usually.) But there is one that
     called Microsoft Global IME.  Global IME is a part of Internet Explorer
     4.0 or above.  You can get more information about Global IME, at below
     URL.

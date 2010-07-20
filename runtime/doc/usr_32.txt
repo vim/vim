@@ -29,7 +29,7 @@ when you have last written the file.  You can do that with this command: >
 The "f" stands for "file" here.
 
 You can repeat this command to go further back in the past.  Or use a count
-diferent from 1 to go back faster.
+different from 1 to go back faster.
 
 If you go back too far, go forward again with: >
 

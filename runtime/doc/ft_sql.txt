@@ -205,7 +205,7 @@ Press any of the following keys: >
 						*sqlanywhere*
 						*oracle* *plsql* *sqlj*
 						*sqlserver*
-						*mysql* *postgress* *psql*
+						*mysql* *postgresql* *psql*
 						*informix*
 
 All relational databases support SQL.  There is a portion of SQL that is

@@ -277,7 +277,7 @@ used for building Vim.
 
 To use the Perl interface the Perl DLL must be in your search path.
 If Vim reports it cannot find the perl512.dll, make sure your $PATH includes
-the directory where it is localted.  The Perl installer normally does that.
+the directory where it is located.  The Perl installer normally does that.
 In a console window type "path" to see what directories are used.
 
 The name of the DLL must match the Perl version Vim was compiled with.

@@ -307,7 +307,7 @@ Also see |postscript-cjk-printing|.  (Mike Williams)
 Tab pages						*new-tab-pages*
 ---------
 
-A tab page is page with one or more windows with a label (aka tab) at the top.
+A tab page is a page with one or more windows with a label (aka tab) at the top.
 By clicking on the label you can quickly switch between the tab pages.  And
 with the keyboard, using the |gt| (Goto Tab) command.  This is a convenient
 way to work with many windows.
@@ -2763,7 +2763,7 @@ Motif: default to using XpmAttributes instead of XpmAttributes_21.
 A few more changes for 64 bit MS-Windows. (George Reilly)
 
 Got ml_get errors when doing "o" and selecting in other window where there are
-less line shorter than the cursor position in the other window.  ins_mouse()
+less lines shorter than the cursor position in the other window.  ins_mouse()
 was using position in wrong window.
 
 Win32 GUI: Crash when giving a lot of messages during startup.  Allocate twice
@@ -2943,7 +2943,7 @@ another, the cursor was displayed at the end of the line instead of after the
 match.  Now show the cursor after the match while still searching for matches.
 
 GUI: The mouse shape changed on the statusline even when 'mouse' was empty and
-they can't be dragged..
+they can't be dragged.
 
 GTK2: Selecting a button in the confirm() dialog with Tab or cursor keys and
 hitting Enter didn't select that button.  Removed GTK 1 specific code. (Neil
@@ -7433,7 +7433,7 @@ Solution:   Sleep a bit when the selection event hasn't been received yet.
 Files:	    src/ui.c
 
 Patch 7.2.014
-Problem:    synstack() doesn't work in an emptly line.
+Problem:    synstack() doesn't work in an empty line.
 Solution:   Accept column zero as a valid position.
 Files:	    src/eval.c
 
@@ -7783,7 +7783,7 @@ Solution:   Add type cast.
 Files:	    src/spell.c
 
 Patch 7.2.070
-Problem:    Crash when a function returns a:000. (Matt Wozkiski)
+Problem:    Crash when a function returns a:000. (Matt Wozniski)
 Solution:   Don't put the function struct on the stack, allocate it.  Free it
 	    only when nothing in it is used.
 Files:	    src/eval.c
@@ -7880,7 +7880,7 @@ Files:	    src/if_python.c
 Patch 7.2.085
 Problem:    ":set <M-b>=<Esc>b" does not work when 'encoding' is utf-8.
 Solution:   Put the <M-b> character in the input buffer as valid utf-8.
-	    (partly by Matt Wosniski)
+	    (partly by Matt Wozniski)
 Files:	    src/term.c
 
 Patch 7.2.086
@@ -7891,7 +7891,7 @@ Files:	    src/diff.c
 
 Patch 7.2.087
 Problem:    Adding URL to 'path' doesn't work to edit a file.
-Solution:   Skip simplify_filename() for URLs. (Matt Wosniski)
+Solution:   Skip simplify_filename() for URLs. (Matt Wozniski)
 Files:	    src/misc2.c
 
 Patch 7.2.088 (extra)
@@ -8009,7 +8009,7 @@ Files:	    src/spell.c
 
 Patch 7.2.107
 Problem:    When using a GUI dialog and ":echo" commands the messages are
-	    deleted after the dialog. (Vicent Birebent)
+	    deleted after the dialog. (Vincent Birebent)
 Solution:   Don't call msg_end_prompt() since there was no prompt.
 Files:	    src/message.c
 
@@ -8603,7 +8603,7 @@ Solution:   Fix the makefile. (George Reilly)
 Files:	    src/Make_mvc.mak
 
 Patch 7.2.205 (extra)
-Problem:    Win32: No support for High DPI awarenes.
+Problem:    Win32: No support for High DPI awareness.
 Solution:   Fix the manifest file. (George Reilly)
 Files:	    src/Make_mvc.mak, src/gvim.exe.mnf
 
@@ -9300,7 +9300,7 @@ Files:	    src/misc1.c
 Patch 7.2.327
 Problem:    Unused functions in Workshop.
 Solution:   Add "#if 0" and minor cleanup. (Dominique Pelle)
-Files:	    src/workshop.c, src/integration.c, src/ingegration.h
+Files:	    src/workshop.c, src/integration.c, src/integration.h
 
 Patch 7.2.328
 Problem:    has("win64") does not return 1 on 64 bit MS-Windows version.
@@ -9763,7 +9763,7 @@ Files:	    src/ex_cmds.c
 
 Patch 7.2.410
 Problem:    Highlighting directories for completion doesn't work properly.
-Solution:   Don't halve backslashes when not needed, expaned "~/".
+Solution:   Don't halve backslashes when not needed, expanded "~/".
 	    (Dominique Pelle)
 Files:	    src/ex_getln.c
 
@@ -10019,7 +10019,7 @@ Fixed MSVC makefile use of /Wp64 flag.
 
 Correct use of long instead of off_t for file size. (James Vega)
 
-Add a few #ifdefs to exclude functions that are not used. (Domnique Pelle)
+Add a few #ifdefs to exclude functions that are not used. (Dominique Pelle)
 
 Remove old and unused method to allocate memory for undo.
 

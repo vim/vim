@@ -36,6 +36,11 @@ GTK: torn-off menu doesn't work.
 
 :find completion has duplicates. (Bjorn Winckler, 2010 Jul 18)
 
+Win64: diff.exe crashes on Win64. (Julianne Bailey, 2006 Dec 12)
+Build another diff.exe somehow?
+
+Hang in search HL, CTRL-C should clear it. (Dimitar Dimitrov, 2010 Jul 19)
+
 Conceal: don't show for 'hlmatch' when 'modifiable' is off?
 And don't care about 'cursorline'.
 
@@ -95,6 +100,9 @@ Jun 29)  Caused by 7.2.433?
 I often see pasted text (from Firefox, to Vim in xterm) appear twice.
 Also, Vim in xterm sometimes loses copy/paste ability (probably after running
 an external command).
+
+Win32: The "4913" file is sometimes not deleted.  Perhaps another program has
+opened it?  Use FILE_FLAG_DELETE_ON_CLOSE? (Craig Barkhouse, 2009 Nov 6)
 
 Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
@@ -445,9 +453,6 @@ an alternate solution, also for src/ex_getln.c.
 This also fails when the file or directory name contains "%". (Thoml, 2008
 July 7)
 
-Win32: The "4913" file is sometimes not deleted.  Perhaps another program has
-opened it?  Use FILE_FLAG_DELETE_ON_CLOSE? (Craig Barkhouse, 2009 Nov 6)
-
 The str2special() function doesn't handle multi-byte characters properly.
 Patch from Vladimir Vichniakov, 2007 Apr 24.
 Should clean up the whole function.  Also allow modifiers like <S-Char-32>?
@@ -690,9 +695,6 @@ label.  (Tsakiridis, 2007 Feb 18)  Patch from Ian Kelling, 2008 Aug 6.
 Win32: using "gvim --remote-tab-silent fname" sometimes gives an empty screen
 with the more prompt.  Caused by setting the guitablabel?  (Thomas Michael
 Engelke, 2007 Dec 20 - 2008 Jan 17)
-
-Win64: diff.exe crashes on Win64. (Julianne Bailey, 2006 Dec 12)
-Build another diff.exe somehow?
 
 Win64: Seek error in swap file for a very big file (3 Gbyte).  Check storing
 pointer in long and seek offset in 64 bit var.
