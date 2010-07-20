@@ -32,8 +32,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 GTK: torn-off menu doesn't work.
 
-:find completion has duplicates. (Bjorn Winckler, 2010 Jul 18)
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb

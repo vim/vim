@@ -9236,6 +9236,7 @@ unix_expandpath(gap, path, wildoff, flags, didstar)
 #if defined(FEAT_SEARCHPATH)
 static int find_previous_pathsep __ARGS((char_u *path, char_u **psep));
 static int is_unique __ARGS((char_u *maybe_unique, garray_T *gap, int i));
+static void remove_duplicates __ARGS((garray_T *gap));
 static void uniquefy_paths __ARGS((garray_T *gap, char_u *pattern));
 static int expand_in_path __ARGS((garray_T *gap, char_u	*pattern, int flags));
 
@@ -9305,38 +9306,50 @@ is_unique(maybe_unique, gap, i)
 }
 
 /*
+ * Remove adjecent duplicate entries from "gap", which is a list of file names
+ * in allocated memory.
+ */
+    static void
+remove_duplicates(gap)
+    garray_T *gap;
+{
+    int	    i;
+    int	    j;
+    char_u  **fnames = (char_u **)gap->ga_data;
+
+    for (i = 1; i < gap->ga_len; ++i)
+	if (fnamecmp(fnames[i - 1], fnames[i]) == 0)
+	{
+	    vim_free(fnames[i]);
+	    for (j = i + 1; j < gap->ga_len; ++j)
+		fnames[j - 1] = fnames[j];
+	    --gap->ga_len;
+	    --i;
+	}
+}
+
+/*
  * Sorts, removes duplicates and modifies all the fullpath names in gap so that
  * they are unique with respect to each other while conserving the part that
  * matches the pattern. Beware, this is at least O(n^2) wrt gap->ga_len.
  */
     static void
 uniquefy_paths(gap, pattern)
-    garray_T *gap;
-    char_u *pattern;
+    garray_T	*gap;
+    char_u	*pattern;
 {
-    int	    i;
-    int	    j;
-    int	    len;
-    char_u  *pathsep_p;
-    char_u  *path;
-    char_u  **fnames = (char_u **) gap->ga_data;
-
+    int		i;
+    int		len;
+    char_u	*pathsep_p;
+    char_u	*path;
+    char_u	**fnames = (char_u **) gap->ga_data;
     int		sort_again = 0;
     char_u	*pat;
     char_u      *file_pattern;
     regmatch_T	regmatch;
 
-    /* Remove duplicate entries */
     sort_strings(fnames, gap->ga_len);
-    for (i = 0; i < gap->ga_len - 1; i++)
-	if (fnamecmp(fnames[i], fnames[i+1]) == 0)
-	{
-	    vim_free(fnames[i]);
-	    for (j = i+1; j < gap->ga_len; j++)
-		fnames[j-1] = fnames[j];
-	    gap->ga_len--;
-	    i--;
-	}
+    remove_duplicates(gap);
 
     /*
      * We need to prepend a '*' at the beginning of file_pattern so that the
@@ -9379,7 +9392,10 @@ uniquefy_paths(gap, pattern)
     }
 
     if (sort_again)
+    {
 	sort_strings(fnames, gap->ga_len);
+	remove_duplicates(gap);
+    }
 }
 
 /*
