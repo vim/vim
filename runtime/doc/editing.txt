@@ -1414,6 +1414,9 @@ An encrypted file can be recognized by the "file" command, if you add this
 line to "/etc/magic", "/usr/share/misc/magic" or wherever your system has the
 "magic" file: >
      0	string	VimCrypt~	Vim encrypted file
+     >9	string	01	- "zip" cryptmethod
+     >9	string	02	- "blowfish" cryptmethod
+
 
 Notes:
 - Encryption is not possible when doing conversion with 'charconvert'.

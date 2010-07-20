@@ -7,10 +7,13 @@
 						*win32* *Win32* *MS-Windows*
 This file documents the idiosyncrasies of the Win32 version of Vim.
 
-The Win32 version of Vim works on both Windows NT and Windows 95.  There are
-both console and GUI versions.  There is GUI version for use in the Win32s
-subsystem in Windows 3.1[1].  You can also use the 32-bit DOS version of Vim
-instead.  See |os_msdos.txt|.
+The Win32 version of Vim works on Windows NT, 95, 98, ME, XP, Vista and
+Windows 7.  There are both console and GUI versions.
+
+The 32 bit version also runs on 64 bit MS-Windows systems.
+
+There is GUI version for use in the Win32s subsystem in Windows 3.1[1].  You
+can also use the 32-bit DOS version of Vim instead.  See |os_msdos.txt|.
 
 1. Known problems		|win32-problems|
 2. Startup			|win32-startup|

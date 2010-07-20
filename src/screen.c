@@ -4055,6 +4055,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			char_attr = syntax_attr;
 		    else
 			char_attr = hl_combine_attr(syntax_attr, char_attr);
+# ifdef FEAT_CONCEAL
+		    /* no concealing past the end of the line, it interferes
+		     * with line highlighting */
+		    if (c == NUL)
+			syntax_flags = 0;
+# endif
 		}
 #endif
 

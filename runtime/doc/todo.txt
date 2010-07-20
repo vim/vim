@@ -30,8 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-GTK: torn-off menu doesn't work.
-
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb
@@ -4661,7 +4659,6 @@ Various improvements:
 From Elvis:
 -   Use "instman.sh" to install manpages?
 -   Add ":alias" command.
--   fontchanges recognized "\\fB" etc.
 -   Search patterns:
       \@	match word under cursor.
     but do:
@@ -4676,23 +4673,6 @@ From Elvis:
     :win name	to window editing buffer "name"
 7   ":cc" compiles a single file (default: current one).  'ccprg'   option is
     program to use with ":cc".  Use ":compile" instead of ":cc"?
-
-
-From Nvi:
--   'searchincr' option, alias for 'incsearch'?
--   'leftright' option, alias for 'nowrap'?
--   Have a look at "vi/doc/vi.chart", for Nvi specialties.
-8   Add 'keytime', time in 1/10 sec for mapping timeout?
--   Add 'filec' option as an alternative for 'wildchar'.
-6   Support Nvi command names as an alias:
-    :bg		    :hide
-    :fg	fname	    :buf fname (with 'hidden' set?)
-    :dis b	    :ls
-    :Edit fname	    :split fname
-    :Fg fname	    :sbuf fname (with 'hidden' set?)
-    :Next	    :snext (can't do this, already use :Next)
-    :Previous	    :sprevious
-    :Tag	    :stag
 
 
 From xvi:
