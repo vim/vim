@@ -97,40 +97,43 @@ an 50.10.690 &Syntax.AB.Blank :cal SetSyn("blank")<CR>
 an 50.20.100 &Syntax.C.C :cal SetSyn("c")<CR>
 an 50.20.110 &Syntax.C.C++ :cal SetSyn("cpp")<CR>
 an 50.20.120 &Syntax.C.C# :cal SetSyn("cs")<CR>
-an 50.20.130 &Syntax.C.Calendar :cal SetSyn("calendar")<CR>
-an 50.20.140 &Syntax.C.Cascading\ Style\ Sheets :cal SetSyn("css")<CR>
-an 50.20.150 &Syntax.C.CDL :cal SetSyn("cdl")<CR>
-an 50.20.160 &Syntax.C.Cdrdao\ TOC :cal SetSyn("cdrtoc")<CR>
-an 50.20.170 &Syntax.C.Cdrdao\ config :cal SetSyn("cdrdaoconf")<CR>
-an 50.20.180 &Syntax.C.Century\ Term :cal SetSyn("cterm")<CR>
-an 50.20.190 &Syntax.C.CH\ script :cal SetSyn("ch")<CR>
-an 50.20.200 &Syntax.C.ChangeLog :cal SetSyn("changelog")<CR>
-an 50.20.210 &Syntax.C.Cheetah\ template :cal SetSyn("cheetah")<CR>
-an 50.20.220 &Syntax.C.CHILL :cal SetSyn("chill")<CR>
-an 50.20.230 &Syntax.C.ChordPro :cal SetSyn("chordpro")<CR>
-an 50.20.240 &Syntax.C.Clean :cal SetSyn("clean")<CR>
-an 50.20.250 &Syntax.C.Clever :cal SetSyn("cl")<CR>
-an 50.20.260 &Syntax.C.Clipper :cal SetSyn("clipper")<CR>
-an 50.20.270 &Syntax.C.Cmake :cal SetSyn("cmake")<CR>
-an 50.20.280 &Syntax.C.Cmusrc :cal SetSyn("cmusrc")<CR>
-an 50.20.290 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
-an 50.20.300 &Syntax.C.Coco/R :cal SetSyn("coco")<CR>
-an 50.20.310 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
-an 50.20.320 &Syntax.C.Conary\ Recipe :cal SetSyn("conaryrecipe")<CR>
-an 50.20.330 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
-an 50.20.340 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
-an 50.20.350 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
-an 50.20.360 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
-an 50.20.370 &Syntax.C.Crontab :cal SetSyn("crontab")<CR>
-an 50.20.380 &Syntax.C.CSP :cal SetSyn("csp")<CR>
-an 50.20.390 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
-an 50.20.400 &Syntax.C.CUDA :cal SetSyn("cuda")<CR>
-an 50.20.410 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
-an 50.20.420 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
-an 50.20.430 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
-an 50.20.440 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
-an 50.20.450 &Syntax.C.Cyn++ :cal SetSyn("cynpp")<CR>
-an 50.20.460 &Syntax.C.Cynlib :cal SetSyn("cynlib")<CR>
+an 50.20.130 &Syntax.C.Cabal\ Haskell\ build\ file :cal SetSyn("cabal")<CR>
+an 50.20.140 &Syntax.C.Calendar :cal SetSyn("calendar")<CR>
+an 50.20.150 &Syntax.C.Cascading\ Style\ Sheets :cal SetSyn("css")<CR>
+an 50.20.160 &Syntax.C.CDL :cal SetSyn("cdl")<CR>
+an 50.20.170 &Syntax.C.Cdrdao\ TOC :cal SetSyn("cdrtoc")<CR>
+an 50.20.180 &Syntax.C.Cdrdao\ config :cal SetSyn("cdrdaoconf")<CR>
+an 50.20.190 &Syntax.C.Century\ Term :cal SetSyn("cterm")<CR>
+an 50.20.200 &Syntax.C.CH\ script :cal SetSyn("ch")<CR>
+an 50.20.210 &Syntax.C.ChaiScript :cal SetSyn("chaiscript")<CR>
+an 50.20.220 &Syntax.C.ChangeLog :cal SetSyn("changelog")<CR>
+an 50.20.230 &Syntax.C.Cheetah\ template :cal SetSyn("cheetah")<CR>
+an 50.20.240 &Syntax.C.CHILL :cal SetSyn("chill")<CR>
+an 50.20.250 &Syntax.C.ChordPro :cal SetSyn("chordpro")<CR>
+an 50.20.260 &Syntax.C.Clean :cal SetSyn("clean")<CR>
+an 50.20.270 &Syntax.C.Clever :cal SetSyn("cl")<CR>
+an 50.20.280 &Syntax.C.Clipper :cal SetSyn("clipper")<CR>
+an 50.20.290 &Syntax.C.Cmake :cal SetSyn("cmake")<CR>
+an 50.20.300 &Syntax.C.Cmusrc :cal SetSyn("cmusrc")<CR>
+an 50.20.310 &Syntax.C.Cobol :cal SetSyn("cobol")<CR>
+an 50.20.320 &Syntax.C.Coco/R :cal SetSyn("coco")<CR>
+an 50.20.330 &Syntax.C.Cold\ Fusion :cal SetSyn("cf")<CR>
+an 50.20.340 &Syntax.C.Conary\ Recipe :cal SetSyn("conaryrecipe")<CR>
+an 50.20.350 &Syntax.C.Config.Cfg\ Config\ file :cal SetSyn("cfg")<CR>
+an 50.20.360 &Syntax.C.Config.Configure\.in :cal SetSyn("config")<CR>
+an 50.20.370 &Syntax.C.Config.Generic\ Config\ file :cal SetSyn("conf")<CR>
+an 50.20.380 &Syntax.C.CRM114 :cal SetSyn("crm")<CR>
+an 50.20.390 &Syntax.C.Crontab :cal SetSyn("crontab")<CR>
+an 50.20.400 &Syntax.C.CSP :cal SetSyn("csp")<CR>
+an 50.20.410 &Syntax.C.Ctrl-H :cal SetSyn("ctrlh")<CR>
+an 50.20.420 &Syntax.C.Cucumber :cal SetSyn("cucumber")<CR>
+an 50.20.430 &Syntax.C.CUDA :cal SetSyn("cuda")<CR>
+an 50.20.440 &Syntax.C.CUPL.CUPL :cal SetSyn("cupl")<CR>
+an 50.20.450 &Syntax.C.CUPL.Simulation :cal SetSyn("cuplsim")<CR>
+an 50.20.460 &Syntax.C.CVS.commit\ file :cal SetSyn("cvs")<CR>
+an 50.20.470 &Syntax.C.CVS.cvsrc :cal SetSyn("cvsrc")<CR>
+an 50.20.480 &Syntax.C.Cyn++ :cal SetSyn("cynpp")<CR>
+an 50.20.490 &Syntax.C.Cynlib :cal SetSyn("cynlib")<CR>
 an 50.30.100 &Syntax.DE.D :cal SetSyn("d")<CR>
 an 50.30.110 &Syntax.DE.Debian.Debian\ ChangeLog :cal SetSyn("debchangelog")<CR>
 an 50.30.120 &Syntax.DE.Debian.Debian\ Control :cal SetSyn("debcontrol")<CR>
@@ -175,39 +178,40 @@ an 50.30.510 &Syntax.DE.Eviews :cal SetSyn("eviews")<CR>
 an 50.30.520 &Syntax.DE.Exim\ conf :cal SetSyn("exim")<CR>
 an 50.30.530 &Syntax.DE.Expect :cal SetSyn("expect")<CR>
 an 50.30.540 &Syntax.DE.Exports :cal SetSyn("exports")<CR>
-an 50.40.100 &Syntax.FG.Fetchmail :cal SetSyn("fetchmail")<CR>
-an 50.40.110 &Syntax.FG.FlexWiki :cal SetSyn("flexwiki")<CR>
-an 50.40.120 &Syntax.FG.Focus\ Executable :cal SetSyn("focexec")<CR>
-an 50.40.130 &Syntax.FG.Focus\ Master :cal SetSyn("master")<CR>
-an 50.40.140 &Syntax.FG.FORM :cal SetSyn("form")<CR>
-an 50.40.150 &Syntax.FG.Forth :cal SetSyn("forth")<CR>
-an 50.40.160 &Syntax.FG.Fortran :cal SetSyn("fortran")<CR>
-an 50.40.170 &Syntax.FG.FoxPro :cal SetSyn("foxpro")<CR>
-an 50.40.180 &Syntax.FG.FrameScript :cal SetSyn("framescript")<CR>
-an 50.40.190 &Syntax.FG.Fstab :cal SetSyn("fstab")<CR>
-an 50.40.200 &Syntax.FG.Fvwm.Fvwm\ configuration :cal SetSyn("fvwm1")<CR>
-an 50.40.210 &Syntax.FG.Fvwm.Fvwm2\ configuration :cal SetSyn("fvwm2")<CR>
-an 50.40.220 &Syntax.FG.Fvwm.Fvwm2\ configuration\ with\ M4 :cal SetSyn("fvwm2m4")<CR>
-an 50.40.240 &Syntax.FG.GDB\ command\ file :cal SetSyn("gdb")<CR>
-an 50.40.250 &Syntax.FG.GDMO :cal SetSyn("gdmo")<CR>
-an 50.40.260 &Syntax.FG.Gedcom :cal SetSyn("gedcom")<CR>
-an 50.40.270 &Syntax.FG.Git.Output :cal SetSyn("git")<CR>
-an 50.40.280 &Syntax.FG.Git.Commit :cal SetSyn("gitcommit")<CR>
-an 50.40.290 &Syntax.FG.Git.Config :cal SetSyn("gitconfig")<CR>
-an 50.40.300 &Syntax.FG.Git.Rebase :cal SetSyn("gitrebase")<CR>
-an 50.40.310 &Syntax.FG.Git.Send\ Email :cal SetSyn("gitsendemail")<CR>
-an 50.40.320 &Syntax.FG.Gkrellmrc :cal SetSyn("gkrellmrc")<CR>
-an 50.40.330 &Syntax.FG.GP :cal SetSyn("gp")<CR>
-an 50.40.340 &Syntax.FG.GPG :cal SetSyn("gpg")<CR>
-an 50.40.350 &Syntax.FG.Group\ file :cal SetSyn("group")<CR>
-an 50.40.360 &Syntax.FG.Grub :cal SetSyn("grub")<CR>
-an 50.40.370 &Syntax.FG.GNU\ Server\ Pages :cal SetSyn("gsp")<CR>
-an 50.40.380 &Syntax.FG.GNUplot :cal SetSyn("gnuplot")<CR>
-an 50.40.390 &Syntax.FG.GrADS\ scripts :cal SetSyn("grads")<CR>
-an 50.40.400 &Syntax.FG.Gretl :cal SetSyn("gretl")<CR>
-an 50.40.410 &Syntax.FG.Groff :cal SetSyn("groff")<CR>
-an 50.40.420 &Syntax.FG.Groovy :cal SetSyn("groovy")<CR>
-an 50.40.430 &Syntax.FG.GTKrc :cal SetSyn("gtkrc")<CR>
+an 50.40.100 &Syntax.FG.Fantom :cal SetSyn("fan")<CR>
+an 50.40.110 &Syntax.FG.Fetchmail :cal SetSyn("fetchmail")<CR>
+an 50.40.120 &Syntax.FG.FlexWiki :cal SetSyn("flexwiki")<CR>
+an 50.40.130 &Syntax.FG.Focus\ Executable :cal SetSyn("focexec")<CR>
+an 50.40.140 &Syntax.FG.Focus\ Master :cal SetSyn("master")<CR>
+an 50.40.150 &Syntax.FG.FORM :cal SetSyn("form")<CR>
+an 50.40.160 &Syntax.FG.Forth :cal SetSyn("forth")<CR>
+an 50.40.170 &Syntax.FG.Fortran :cal SetSyn("fortran")<CR>
+an 50.40.180 &Syntax.FG.FoxPro :cal SetSyn("foxpro")<CR>
+an 50.40.190 &Syntax.FG.FrameScript :cal SetSyn("framescript")<CR>
+an 50.40.200 &Syntax.FG.Fstab :cal SetSyn("fstab")<CR>
+an 50.40.210 &Syntax.FG.Fvwm.Fvwm\ configuration :cal SetSyn("fvwm1")<CR>
+an 50.40.220 &Syntax.FG.Fvwm.Fvwm2\ configuration :cal SetSyn("fvwm2")<CR>
+an 50.40.230 &Syntax.FG.Fvwm.Fvwm2\ configuration\ with\ M4 :cal SetSyn("fvwm2m4")<CR>
+an 50.40.250 &Syntax.FG.GDB\ command\ file :cal SetSyn("gdb")<CR>
+an 50.40.260 &Syntax.FG.GDMO :cal SetSyn("gdmo")<CR>
+an 50.40.270 &Syntax.FG.Gedcom :cal SetSyn("gedcom")<CR>
+an 50.40.280 &Syntax.FG.Git.Output :cal SetSyn("git")<CR>
+an 50.40.290 &Syntax.FG.Git.Commit :cal SetSyn("gitcommit")<CR>
+an 50.40.300 &Syntax.FG.Git.Config :cal SetSyn("gitconfig")<CR>
+an 50.40.310 &Syntax.FG.Git.Rebase :cal SetSyn("gitrebase")<CR>
+an 50.40.320 &Syntax.FG.Git.Send\ Email :cal SetSyn("gitsendemail")<CR>
+an 50.40.330 &Syntax.FG.Gkrellmrc :cal SetSyn("gkrellmrc")<CR>
+an 50.40.340 &Syntax.FG.GP :cal SetSyn("gp")<CR>
+an 50.40.350 &Syntax.FG.GPG :cal SetSyn("gpg")<CR>
+an 50.40.360 &Syntax.FG.Group\ file :cal SetSyn("group")<CR>
+an 50.40.370 &Syntax.FG.Grub :cal SetSyn("grub")<CR>
+an 50.40.380 &Syntax.FG.GNU\ Server\ Pages :cal SetSyn("gsp")<CR>
+an 50.40.390 &Syntax.FG.GNUplot :cal SetSyn("gnuplot")<CR>
+an 50.40.400 &Syntax.FG.GrADS\ scripts :cal SetSyn("grads")<CR>
+an 50.40.410 &Syntax.FG.Gretl :cal SetSyn("gretl")<CR>
+an 50.40.420 &Syntax.FG.Groff :cal SetSyn("groff")<CR>
+an 50.40.430 &Syntax.FG.Groovy :cal SetSyn("groovy")<CR>
+an 50.40.440 &Syntax.FG.GTKrc :cal SetSyn("gtkrc")<CR>
 an 50.50.100 &Syntax.HIJK.Haml :cal SetSyn("haml")<CR>
 an 50.50.110 &Syntax.HIJK.Hamster :cal SetSyn("hamster")<CR>
 an 50.50.120 &Syntax.HIJK.Haskell.Haskell :cal SetSyn("haskell")<CR>
@@ -254,302 +258,310 @@ an 50.50.550 &Syntax.HIJK.Kconfig :cal SetSyn("kconfig")<CR>
 an 50.50.560 &Syntax.HIJK.KDE\ script :cal SetSyn("kscript")<CR>
 an 50.50.570 &Syntax.HIJK.Kimwitu++ :cal SetSyn("kwt")<CR>
 an 50.50.580 &Syntax.HIJK.KixTart :cal SetSyn("kix")<CR>
-an 50.60.100 &Syntax.L-Ma.Lace :cal SetSyn("lace")<CR>
-an 50.60.110 &Syntax.L-Ma.LamdaProlog :cal SetSyn("lprolog")<CR>
-an 50.60.120 &Syntax.L-Ma.Latte :cal SetSyn("latte")<CR>
-an 50.60.130 &Syntax.L-Ma.Ld\ script :cal SetSyn("ld")<CR>
-an 50.60.140 &Syntax.L-Ma.LDAP.LDIF :cal SetSyn("ldif")<CR>
-an 50.60.150 &Syntax.L-Ma.LDAP.Configuration :cal SetSyn("ldapconf")<CR>
-an 50.60.160 &Syntax.L-Ma.Lex :cal SetSyn("lex")<CR>
-an 50.60.170 &Syntax.L-Ma.LFTP\ config :cal SetSyn("lftp")<CR>
-an 50.60.180 &Syntax.L-Ma.Libao :cal SetSyn("libao")<CR>
-an 50.60.190 &Syntax.L-Ma.LifeLines\ script :cal SetSyn("lifelines")<CR>
-an 50.60.200 &Syntax.L-Ma.Lilo :cal SetSyn("lilo")<CR>
-an 50.60.210 &Syntax.L-Ma.Limits\ config :cal SetSyn("limits")<CR>
-an 50.60.220 &Syntax.L-Ma.Linden\ scripting :cal SetSyn("lsl")<CR>
-an 50.60.230 &Syntax.L-Ma.Lisp :cal SetSyn("lisp")<CR>
-an 50.60.240 &Syntax.L-Ma.Lite :cal SetSyn("lite")<CR>
-an 50.60.250 &Syntax.L-Ma.LiteStep\ RC :cal SetSyn("litestep")<CR>
-an 50.60.260 &Syntax.L-Ma.Locale\ Input :cal SetSyn("fdcc")<CR>
-an 50.60.270 &Syntax.L-Ma.Login\.access :cal SetSyn("loginaccess")<CR>
-an 50.60.280 &Syntax.L-Ma.Login\.defs :cal SetSyn("logindefs")<CR>
-an 50.60.290 &Syntax.L-Ma.Logtalk :cal SetSyn("logtalk")<CR>
-an 50.60.300 &Syntax.L-Ma.LOTOS :cal SetSyn("lotos")<CR>
-an 50.60.310 &Syntax.L-Ma.LotusScript :cal SetSyn("lscript")<CR>
-an 50.60.320 &Syntax.L-Ma.Lout :cal SetSyn("lout")<CR>
-an 50.60.330 &Syntax.L-Ma.LPC :cal SetSyn("lpc")<CR>
-an 50.60.340 &Syntax.L-Ma.Lua :cal SetSyn("lua")<CR>
-an 50.60.350 &Syntax.L-Ma.Lynx\ Style :cal SetSyn("lss")<CR>
-an 50.60.360 &Syntax.L-Ma.Lynx\ config :cal SetSyn("lynx")<CR>
-an 50.60.380 &Syntax.L-Ma.M4 :cal SetSyn("m4")<CR>
-an 50.60.390 &Syntax.L-Ma.MaGic\ Point :cal SetSyn("mgp")<CR>
-an 50.60.400 &Syntax.L-Ma.Mail :cal SetSyn("mail")<CR>
-an 50.60.410 &Syntax.L-Ma.Mail\ aliases :cal SetSyn("mailaliases")<CR>
-an 50.60.420 &Syntax.L-Ma.Mailcap :cal SetSyn("mailcap")<CR>
-an 50.60.430 &Syntax.L-Ma.Makefile :cal SetSyn("make")<CR>
-an 50.60.440 &Syntax.L-Ma.MakeIndex :cal SetSyn("ist")<CR>
-an 50.60.450 &Syntax.L-Ma.Man\ page :cal SetSyn("man")<CR>
-an 50.60.460 &Syntax.L-Ma.Man\.conf :cal SetSyn("manconf")<CR>
-an 50.60.470 &Syntax.L-Ma.Maple\ V :cal SetSyn("maple")<CR>
-an 50.60.480 &Syntax.L-Ma.Mason :cal SetSyn("mason")<CR>
-an 50.60.490 &Syntax.L-Ma.Mathematica :cal SetSyn("mma")<CR>
-an 50.60.500 &Syntax.L-Ma.Matlab :cal SetSyn("matlab")<CR>
-an 50.60.510 &Syntax.L-Ma.Maxima :cal SetSyn("maxima")<CR>
-an 50.70.100 &Syntax.Me-NO.MEL\ (for\ Maya) :cal SetSyn("mel")<CR>
-an 50.70.110 &Syntax.Me-NO.Messages\ (/var/log) :cal SetSyn("messages")<CR>
-an 50.70.120 &Syntax.Me-NO.Metafont :cal SetSyn("mf")<CR>
-an 50.70.130 &Syntax.Me-NO.MetaPost :cal SetSyn("mp")<CR>
-an 50.70.140 &Syntax.Me-NO.MGL :cal SetSyn("mgl")<CR>
-an 50.70.150 &Syntax.Me-NO.MMIX :cal SetSyn("mmix")<CR>
-an 50.70.160 &Syntax.Me-NO.Modconf :cal SetSyn("modconf")<CR>
-an 50.70.170 &Syntax.Me-NO.Model :cal SetSyn("model")<CR>
-an 50.70.180 &Syntax.Me-NO.Modsim\ III :cal SetSyn("modsim3")<CR>
-an 50.70.190 &Syntax.Me-NO.Modula\ 2 :cal SetSyn("modula2")<CR>
-an 50.70.200 &Syntax.Me-NO.Modula\ 3 :cal SetSyn("modula3")<CR>
-an 50.70.210 &Syntax.Me-NO.Monk :cal SetSyn("monk")<CR>
-an 50.70.220 &Syntax.Me-NO.Mplayer\ config :cal SetSyn("mplayerconf")<CR>
-an 50.70.230 &Syntax.Me-NO.MOO :cal SetSyn("moo")<CR>
-an 50.70.240 &Syntax.Me-NO.Mrxvtrc :cal SetSyn("mrxvtrc")<CR>
-an 50.70.250 &Syntax.Me-NO.MS-DOS/Windows.4DOS\ \.bat\ file :cal SetSyn("btm")<CR>
-an 50.70.260 &Syntax.Me-NO.MS-DOS/Windows.\.bat\/\.cmd\ file :cal SetSyn("dosbatch")<CR>
-an 50.70.270 &Syntax.Me-NO.MS-DOS/Windows.\.ini\ file :cal SetSyn("dosini")<CR>
-an 50.70.280 &Syntax.Me-NO.MS-DOS/Windows.Message\ text :cal SetSyn("msmessages")<CR>
-an 50.70.290 &Syntax.Me-NO.MS-DOS/Windows.Module\ Definition :cal SetSyn("def")<CR>
-an 50.70.300 &Syntax.Me-NO.MS-DOS/Windows.Registry :cal SetSyn("registry")<CR>
-an 50.70.310 &Syntax.Me-NO.MS-DOS/Windows.Resource\ file :cal SetSyn("rc")<CR>
-an 50.70.320 &Syntax.Me-NO.Msql :cal SetSyn("msql")<CR>
-an 50.70.330 &Syntax.Me-NO.MuPAD :cal SetSyn("mupad")<CR>
-an 50.70.340 &Syntax.Me-NO.MUSHcode :cal SetSyn("mush")<CR>
-an 50.70.350 &Syntax.Me-NO.Muttrc :cal SetSyn("muttrc")<CR>
-an 50.70.370 &Syntax.Me-NO.Nanorc :cal SetSyn("nanorc")<CR>
-an 50.70.380 &Syntax.Me-NO.Nastran\ input/DMAP :cal SetSyn("nastran")<CR>
-an 50.70.390 &Syntax.Me-NO.Natural :cal SetSyn("natural")<CR>
-an 50.70.400 &Syntax.Me-NO.Netrc :cal SetSyn("netrc")<CR>
-an 50.70.410 &Syntax.Me-NO.Novell\ NCF\ batch :cal SetSyn("ncf")<CR>
-an 50.70.420 &Syntax.Me-NO.Not\ Quite\ C\ (LEGO) :cal SetSyn("nqc")<CR>
-an 50.70.430 &Syntax.Me-NO.Nroff :cal SetSyn("nroff")<CR>
-an 50.70.440 &Syntax.Me-NO.NSIS\ script :cal SetSyn("nsis")<CR>
-an 50.70.460 &Syntax.Me-NO.Objective\ C :cal SetSyn("objc")<CR>
-an 50.70.470 &Syntax.Me-NO.Objective\ C++ :cal SetSyn("objcpp")<CR>
-an 50.70.480 &Syntax.Me-NO.OCAML :cal SetSyn("ocaml")<CR>
-an 50.70.490 &Syntax.Me-NO.Occam :cal SetSyn("occam")<CR>
-an 50.70.500 &Syntax.Me-NO.Omnimark :cal SetSyn("omnimark")<CR>
-an 50.70.510 &Syntax.Me-NO.OpenROAD :cal SetSyn("openroad")<CR>
-an 50.70.520 &Syntax.Me-NO.Open\ Psion\ Lang :cal SetSyn("opl")<CR>
-an 50.70.530 &Syntax.Me-NO.Oracle\ config :cal SetSyn("ora")<CR>
-an 50.80.100 &Syntax.PQ.Packet\ filter\ conf :cal SetSyn("pf")<CR>
-an 50.80.110 &Syntax.PQ.Palm\ resource\ compiler :cal SetSyn("pilrc")<CR>
-an 50.80.120 &Syntax.PQ.Pam\ config :cal SetSyn("pamconf")<CR>
-an 50.80.130 &Syntax.PQ.PApp :cal SetSyn("papp")<CR>
-an 50.80.140 &Syntax.PQ.Pascal :cal SetSyn("pascal")<CR>
-an 50.80.150 &Syntax.PQ.Password\ file :cal SetSyn("passwd")<CR>
-an 50.80.160 &Syntax.PQ.PCCTS :cal SetSyn("pccts")<CR>
-an 50.80.170 &Syntax.PQ.PDF :cal SetSyn("pdf")<CR>
-an 50.80.180 &Syntax.PQ.Perl.Perl :cal SetSyn("perl")<CR>
-an 50.80.190 &Syntax.PQ.Perl.Perl\ POD :cal SetSyn("pod")<CR>
-an 50.80.200 &Syntax.PQ.Perl.Perl\ XS :cal SetSyn("xs")<CR>
-an 50.80.210 &Syntax.PQ.PHP.PHP\ 3-4 :cal SetSyn("php")<CR>
-an 50.80.220 &Syntax.PQ.PHP.Phtml\ (PHP\ 2) :cal SetSyn("phtml")<CR>
-an 50.80.230 &Syntax.PQ.Pike :cal SetSyn("pike")<CR>
-an 50.80.240 &Syntax.PQ.Pine\ RC :cal SetSyn("pine")<CR>
-an 50.80.250 &Syntax.PQ.Pinfo\ RC :cal SetSyn("pinfo")<CR>
-an 50.80.260 &Syntax.PQ.PL/M :cal SetSyn("plm")<CR>
-an 50.80.270 &Syntax.PQ.PL/SQL :cal SetSyn("plsql")<CR>
-an 50.80.280 &Syntax.PQ.PLP :cal SetSyn("plp")<CR>
-an 50.80.290 &Syntax.PQ.PO\ (GNU\ gettext) :cal SetSyn("po")<CR>
-an 50.80.300 &Syntax.PQ.Postfix\ main\ config :cal SetSyn("pfmain")<CR>
-an 50.80.310 &Syntax.PQ.PostScript.PostScript :cal SetSyn("postscr")<CR>
-an 50.80.320 &Syntax.PQ.PostScript.PostScript\ Printer\ Description :cal SetSyn("ppd")<CR>
-an 50.80.330 &Syntax.PQ.Povray.Povray\ scene\ descr :cal SetSyn("pov")<CR>
-an 50.80.340 &Syntax.PQ.Povray.Povray\ configuration :cal SetSyn("povini")<CR>
-an 50.80.350 &Syntax.PQ.PPWizard :cal SetSyn("ppwiz")<CR>
-an 50.80.360 &Syntax.PQ.Prescribe\ (Kyocera) :cal SetSyn("prescribe")<CR>
-an 50.80.370 &Syntax.PQ.Printcap :cal SetSyn("pcap")<CR>
-an 50.80.380 &Syntax.PQ.Privoxy :cal SetSyn("privoxy")<CR>
-an 50.80.390 &Syntax.PQ.Procmail :cal SetSyn("procmail")<CR>
-an 50.80.400 &Syntax.PQ.Product\ Spec\ File :cal SetSyn("psf")<CR>
-an 50.80.410 &Syntax.PQ.Progress :cal SetSyn("progress")<CR>
-an 50.80.420 &Syntax.PQ.Prolog :cal SetSyn("prolog")<CR>
-an 50.80.430 &Syntax.PQ.ProMeLa :cal SetSyn("promela")<CR>
-an 50.80.440 &Syntax.PQ.Protocols :cal SetSyn("protocols")<CR>
-an 50.80.450 &Syntax.PQ.Purify\ log :cal SetSyn("purifylog")<CR>
-an 50.80.460 &Syntax.PQ.Pyrex :cal SetSyn("pyrex")<CR>
-an 50.80.470 &Syntax.PQ.Python :cal SetSyn("python")<CR>
-an 50.80.490 &Syntax.PQ.Quake :cal SetSyn("quake")<CR>
-an 50.80.500 &Syntax.PQ.Quickfix\ window :cal SetSyn("qf")<CR>
-an 50.90.100 &Syntax.R-Sg.R.R :cal SetSyn("r")<CR>
-an 50.90.110 &Syntax.R-Sg.R.R\ help :cal SetSyn("rhelp")<CR>
-an 50.90.120 &Syntax.R-Sg.R.R\ noweb :cal SetSyn("rnoweb")<CR>
-an 50.90.130 &Syntax.R-Sg.Racc\ input :cal SetSyn("racc")<CR>
-an 50.90.140 &Syntax.R-Sg.Radiance :cal SetSyn("radiance")<CR>
-an 50.90.150 &Syntax.R-Sg.Ratpoison :cal SetSyn("ratpoison")<CR>
-an 50.90.160 &Syntax.R-Sg.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
-an 50.90.170 &Syntax.R-Sg.RCS.RCS\ file :cal SetSyn("rcs")<CR>
-an 50.90.180 &Syntax.R-Sg.Readline\ config :cal SetSyn("readline")<CR>
-an 50.90.190 &Syntax.R-Sg.Rebol :cal SetSyn("rebol")<CR>
-an 50.90.200 &Syntax.R-Sg.Remind :cal SetSyn("remind")<CR>
-an 50.90.210 &Syntax.R-Sg.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
-an 50.90.220 &Syntax.R-Sg.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
-an 50.90.230 &Syntax.R-Sg.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
-an 50.90.240 &Syntax.R-Sg.Resolv\.conf :cal SetSyn("resolv")<CR>
-an 50.90.250 &Syntax.R-Sg.Reva\ Forth :cal SetSyn("reva")<CR>
-an 50.90.260 &Syntax.R-Sg.Rexx :cal SetSyn("rexx")<CR>
-an 50.90.270 &Syntax.R-Sg.Robots\.txt :cal SetSyn("robots")<CR>
-an 50.90.280 &Syntax.R-Sg.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
-an 50.90.290 &Syntax.R-Sg.Rpcgen :cal SetSyn("rpcgen")<CR>
-an 50.90.300 &Syntax.R-Sg.RPL/2 :cal SetSyn("rpl")<CR>
-an 50.90.310 &Syntax.R-Sg.ReStructuredText :cal SetSyn("rst")<CR>
-an 50.90.320 &Syntax.R-Sg.RTF :cal SetSyn("rtf")<CR>
-an 50.90.330 &Syntax.R-Sg.Ruby :cal SetSyn("ruby")<CR>
-an 50.90.350 &Syntax.R-Sg.S-Lang :cal SetSyn("slang")<CR>
-an 50.90.360 &Syntax.R-Sg.Samba\ config :cal SetSyn("samba")<CR>
-an 50.90.370 &Syntax.R-Sg.SAS :cal SetSyn("sas")<CR>
-an 50.90.380 &Syntax.R-Sg.Sass :cal SetSyn("sass")<CR>
-an 50.90.390 &Syntax.R-Sg.Sather :cal SetSyn("sather")<CR>
-an 50.90.400 &Syntax.R-Sg.Scheme :cal SetSyn("scheme")<CR>
-an 50.90.410 &Syntax.R-Sg.Scilab :cal SetSyn("scilab")<CR>
-an 50.90.420 &Syntax.R-Sg.Screen\ RC :cal SetSyn("screen")<CR>
-an 50.90.430 &Syntax.R-Sg.SDL :cal SetSyn("sdl")<CR>
-an 50.90.440 &Syntax.R-Sg.Sed :cal SetSyn("sed")<CR>
-an 50.90.450 &Syntax.R-Sg.Sendmail\.cf :cal SetSyn("sm")<CR>
-an 50.90.460 &Syntax.R-Sg.Send-pr :cal SetSyn("sendpr")<CR>
-an 50.90.470 &Syntax.R-Sg.Sensors\.conf :cal SetSyn("sensors")<CR>
-an 50.90.480 &Syntax.R-Sg.Service\ Location\ config :cal SetSyn("slpconf")<CR>
-an 50.90.490 &Syntax.R-Sg.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
-an 50.90.500 &Syntax.R-Sg.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
-an 50.90.510 &Syntax.R-Sg.Services :cal SetSyn("services")<CR>
-an 50.90.520 &Syntax.R-Sg.Setserial\ config :cal SetSyn("setserial")<CR>
-an 50.90.530 &Syntax.R-Sg.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
-an 50.90.540 &Syntax.R-Sg.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
-an 50.90.550 &Syntax.R-Sg.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
-an 50.90.560 &Syntax.R-Sg.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
-an 50.100.100 &Syntax.Sh-S.Shell\ script.sh\ and\ ksh :cal SetSyn("sh")<CR>
-an 50.100.110 &Syntax.Sh-S.Shell\ script.csh :cal SetSyn("csh")<CR>
-an 50.100.120 &Syntax.Sh-S.Shell\ script.tcsh :cal SetSyn("tcsh")<CR>
-an 50.100.130 &Syntax.Sh-S.Shell\ script.zsh :cal SetSyn("zsh")<CR>
-an 50.100.140 &Syntax.Sh-S.SiCAD :cal SetSyn("sicad")<CR>
-an 50.100.150 &Syntax.Sh-S.Sieve :cal SetSyn("sieve")<CR>
-an 50.100.160 &Syntax.Sh-S.Simula :cal SetSyn("simula")<CR>
-an 50.100.170 &Syntax.Sh-S.Sinda.Sinda\ compare :cal SetSyn("sindacmp")<CR>
-an 50.100.180 &Syntax.Sh-S.Sinda.Sinda\ input :cal SetSyn("sinda")<CR>
-an 50.100.190 &Syntax.Sh-S.Sinda.Sinda\ output :cal SetSyn("sindaout")<CR>
-an 50.100.200 &Syntax.Sh-S.SiSU :cal SetSyn("sisu")<CR>
-an 50.100.210 &Syntax.Sh-S.SKILL.SKILL :cal SetSyn("skill")<CR>
-an 50.100.220 &Syntax.Sh-S.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
-an 50.100.230 &Syntax.Sh-S.Slice :cal SetSyn("slice")<CR>
-an 50.100.240 &Syntax.Sh-S.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
-an 50.100.250 &Syntax.Sh-S.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
-an 50.100.260 &Syntax.Sh-S.SmallTalk :cal SetSyn("st")<CR>
-an 50.100.270 &Syntax.Sh-S.Smarty\ Templates :cal SetSyn("smarty")<CR>
-an 50.100.280 &Syntax.Sh-S.SMIL :cal SetSyn("smil")<CR>
-an 50.100.290 &Syntax.Sh-S.SMITH :cal SetSyn("smith")<CR>
-an 50.100.300 &Syntax.Sh-S.SNMP\ MIB :cal SetSyn("mib")<CR>
-an 50.100.310 &Syntax.Sh-S.SNNS.SNNS\ network :cal SetSyn("snnsnet")<CR>
-an 50.100.320 &Syntax.Sh-S.SNNS.SNNS\ pattern :cal SetSyn("snnspat")<CR>
-an 50.100.330 &Syntax.Sh-S.SNNS.SNNS\ result :cal SetSyn("snnsres")<CR>
-an 50.100.340 &Syntax.Sh-S.Snobol4 :cal SetSyn("snobol4")<CR>
-an 50.100.350 &Syntax.Sh-S.Snort\ Configuration :cal SetSyn("hog")<CR>
-an 50.100.360 &Syntax.Sh-S.SPEC\ (Linux\ RPM) :cal SetSyn("spec")<CR>
-an 50.100.370 &Syntax.Sh-S.Specman :cal SetSyn("specman")<CR>
-an 50.100.380 &Syntax.Sh-S.Spice :cal SetSyn("spice")<CR>
-an 50.100.390 &Syntax.Sh-S.Spyce :cal SetSyn("spyce")<CR>
-an 50.100.400 &Syntax.Sh-S.Speedup :cal SetSyn("spup")<CR>
-an 50.100.410 &Syntax.Sh-S.Splint :cal SetSyn("splint")<CR>
-an 50.100.420 &Syntax.Sh-S.Squid\ config :cal SetSyn("squid")<CR>
-an 50.100.430 &Syntax.Sh-S.SQL.ESQL-C :cal SetSyn("esqlc")<CR>
-an 50.100.440 &Syntax.Sh-S.SQL.MySQL :cal SetSyn("mysql")<CR>
-an 50.100.450 &Syntax.Sh-S.SQL.PL/SQL :cal SetSyn("plsql")<CR>
-an 50.100.460 &Syntax.Sh-S.SQL.SQL\ Anywhere :cal SetSyn("sqlanywhere")<CR>
-an 50.100.470 &Syntax.Sh-S.SQL.SQL\ (automatic) :cal SetSyn("sql")<CR>
-an 50.100.480 &Syntax.Sh-S.SQL.SQL\ (Oracle) :cal SetSyn("sqloracle")<CR>
-an 50.100.490 &Syntax.Sh-S.SQL.SQL\ Forms :cal SetSyn("sqlforms")<CR>
-an 50.100.500 &Syntax.Sh-S.SQL.SQLJ :cal SetSyn("sqlj")<CR>
-an 50.100.510 &Syntax.Sh-S.SQL.SQL-Informix :cal SetSyn("sqlinformix")<CR>
-an 50.100.520 &Syntax.Sh-S.SQR :cal SetSyn("sqr")<CR>
-an 50.100.530 &Syntax.Sh-S.Ssh.ssh_config :cal SetSyn("sshconfig")<CR>
-an 50.100.540 &Syntax.Sh-S.Ssh.sshd_config :cal SetSyn("sshdconfig")<CR>
-an 50.100.550 &Syntax.Sh-S.Standard\ ML :cal SetSyn("sml")<CR>
-an 50.100.560 &Syntax.Sh-S.Stata.SMCL :cal SetSyn("smcl")<CR>
-an 50.100.570 &Syntax.Sh-S.Stata.Stata :cal SetSyn("stata")<CR>
-an 50.100.580 &Syntax.Sh-S.Stored\ Procedures :cal SetSyn("stp")<CR>
-an 50.100.590 &Syntax.Sh-S.Strace :cal SetSyn("strace")<CR>
-an 50.100.600 &Syntax.Sh-S.Streaming\ descriptor\ file :cal SetSyn("sd")<CR>
-an 50.100.610 &Syntax.Sh-S.Subversion\ commit :cal SetSyn("svn")<CR>
-an 50.100.620 &Syntax.Sh-S.Sudoers :cal SetSyn("sudoers")<CR>
-an 50.100.630 &Syntax.Sh-S.Symbian\ meta-makefile :cal SetSyn("mmp")<CR>
-an 50.100.640 &Syntax.Sh-S.Sysctl\.conf :cal SetSyn("sysctl")<CR>
-an 50.110.100 &Syntax.TUV.TADS :cal SetSyn("tads")<CR>
-an 50.110.110 &Syntax.TUV.Tags :cal SetSyn("tags")<CR>
-an 50.110.120 &Syntax.TUV.TAK.TAK\ compare :cal SetSyn("takcmp")<CR>
-an 50.110.130 &Syntax.TUV.TAK.TAK\ input :cal SetSyn("tak")<CR>
-an 50.110.140 &Syntax.TUV.TAK.TAK\ output :cal SetSyn("takout")<CR>
-an 50.110.150 &Syntax.TUV.Tcl/Tk :cal SetSyn("tcl")<CR>
-an 50.110.160 &Syntax.TUV.TealInfo :cal SetSyn("tli")<CR>
-an 50.110.170 &Syntax.TUV.Telix\ Salt :cal SetSyn("tsalt")<CR>
-an 50.110.180 &Syntax.TUV.Termcap/Printcap :cal SetSyn("ptcap")<CR>
-an 50.110.190 &Syntax.TUV.Terminfo :cal SetSyn("terminfo")<CR>
-an 50.110.200 &Syntax.TUV.TeX.TeX/LaTeX :cal SetSyn("tex")<CR>
-an 50.110.210 &Syntax.TUV.TeX.plain\ TeX :cal SetSyn("plaintex")<CR>
-an 50.110.220 &Syntax.TUV.TeX.ConTeXt :cal SetSyn("context")<CR>
-an 50.110.230 &Syntax.TUV.TeX.TeX\ configuration :cal SetSyn("texmf")<CR>
-an 50.110.240 &Syntax.TUV.TeX.Texinfo :cal SetSyn("texinfo")<CR>
-an 50.110.250 &Syntax.TUV.TF\ mud\ client :cal SetSyn("tf")<CR>
-an 50.110.260 &Syntax.TUV.Tidy\ configuration :cal SetSyn("tidy")<CR>
-an 50.110.270 &Syntax.TUV.Tilde :cal SetSyn("tilde")<CR>
-an 50.110.280 &Syntax.TUV.TPP :cal SetSyn("tpp")<CR>
-an 50.110.290 &Syntax.TUV.Trasys\ input :cal SetSyn("trasys")<CR>
-an 50.110.300 &Syntax.TUV.Trustees :cal SetSyn("trustees")<CR>
-an 50.110.310 &Syntax.TUV.TSS.Command\ Line :cal SetSyn("tsscl")<CR>
-an 50.110.320 &Syntax.TUV.TSS.Geometry :cal SetSyn("tssgm")<CR>
-an 50.110.330 &Syntax.TUV.TSS.Optics :cal SetSyn("tssop")<CR>
-an 50.110.350 &Syntax.TUV.Udev\ config :cal SetSyn("udevconf")<CR>
-an 50.110.360 &Syntax.TUV.Udev\ permissions :cal SetSyn("udevperm")<CR>
-an 50.110.370 &Syntax.TUV.Udev\ rules :cal SetSyn("udevrules")<CR>
-an 50.110.380 &Syntax.TUV.UIT/UIL :cal SetSyn("uil")<CR>
-an 50.110.390 &Syntax.TUV.UnrealScript :cal SetSyn("uc")<CR>
-an 50.110.400 &Syntax.TUV.Updatedb\.conf :cal SetSyn("updatedb")<CR>
-an 50.110.420 &Syntax.TUV.Valgrind :cal SetSyn("valgrind")<CR>
-an 50.110.430 &Syntax.TUV.Vera :cal SetSyn("vera")<CR>
-an 50.110.440 &Syntax.TUV.Verilog-AMS\ HDL :cal SetSyn("verilogams")<CR>
-an 50.110.450 &Syntax.TUV.Verilog\ HDL :cal SetSyn("verilog")<CR>
-an 50.110.460 &Syntax.TUV.Vgrindefs :cal SetSyn("vgrindefs")<CR>
-an 50.110.470 &Syntax.TUV.VHDL :cal SetSyn("vhdl")<CR>
-an 50.110.480 &Syntax.TUV.Vim.Vim\ help\ file :cal SetSyn("help")<CR>
-an 50.110.490 &Syntax.TUV.Vim.Vim\ script :cal SetSyn("vim")<CR>
-an 50.110.500 &Syntax.TUV.Vim.Viminfo\ file :cal SetSyn("viminfo")<CR>
-an 50.110.510 &Syntax.TUV.Virata\ config :cal SetSyn("virata")<CR>
-an 50.110.520 &Syntax.TUV.Visual\ Basic :cal SetSyn("vb")<CR>
-an 50.110.530 &Syntax.TUV.VOS\ CM\ macro :cal SetSyn("voscm")<CR>
-an 50.110.540 &Syntax.TUV.VRML :cal SetSyn("vrml")<CR>
-an 50.110.550 &Syntax.TUV.VSE\ JCL :cal SetSyn("vsejcl")<CR>
-an 50.120.100 &Syntax.WXYZ.WEB.CWEB :cal SetSyn("cweb")<CR>
-an 50.120.110 &Syntax.WXYZ.WEB.WEB :cal SetSyn("web")<CR>
-an 50.120.120 &Syntax.WXYZ.WEB.WEB\ Changes :cal SetSyn("change")<CR>
-an 50.120.130 &Syntax.WXYZ.Webmacro :cal SetSyn("webmacro")<CR>
-an 50.120.140 &Syntax.WXYZ.Website\ MetaLanguage :cal SetSyn("wml")<CR>
-an 50.120.160 &Syntax.WXYZ.wDiff :cal SetSyn("wdiff")<CR>
-an 50.120.180 &Syntax.WXYZ.Wget\ config :cal SetSyn("wget")<CR>
-an 50.120.190 &Syntax.WXYZ.Whitespace\ (add) :cal SetSyn("whitespace")<CR>
-an 50.120.200 &Syntax.WXYZ.WildPackets\ EtherPeek\ Decoder :cal SetSyn("dcd")<CR>
-an 50.120.210 &Syntax.WXYZ.WinBatch/Webbatch :cal SetSyn("winbatch")<CR>
-an 50.120.220 &Syntax.WXYZ.Windows\ Scripting\ Host :cal SetSyn("wsh")<CR>
-an 50.120.230 &Syntax.WXYZ.WSML :cal SetSyn("wsml")<CR>
-an 50.120.240 &Syntax.WXYZ.WvDial :cal SetSyn("wvdial")<CR>
-an 50.120.260 &Syntax.WXYZ.X\ Keyboard\ Extension :cal SetSyn("xkb")<CR>
-an 50.120.270 &Syntax.WXYZ.X\ Pixmap :cal SetSyn("xpm")<CR>
-an 50.120.280 &Syntax.WXYZ.X\ Pixmap\ (2) :cal SetSyn("xpm2")<CR>
-an 50.120.290 &Syntax.WXYZ.X\ resources :cal SetSyn("xdefaults")<CR>
-an 50.120.300 &Syntax.WXYZ.XBL :cal SetSyn("xbl")<CR>
-an 50.120.310 &Syntax.WXYZ.Xinetd\.conf :cal SetSyn("xinetd")<CR>
-an 50.120.320 &Syntax.WXYZ.Xmodmap :cal SetSyn("xmodmap")<CR>
-an 50.120.330 &Syntax.WXYZ.Xmath :cal SetSyn("xmath")<CR>
-an 50.120.340 &Syntax.WXYZ.XML :cal SetSyn("xml")<CR>
-an 50.120.350 &Syntax.WXYZ.XML\ Schema\ (XSD) :cal SetSyn("xsd")<CR>
-an 50.120.360 &Syntax.WXYZ.XQuery :cal SetSyn("xquery")<CR>
-an 50.120.370 &Syntax.WXYZ.Xslt :cal SetSyn("xslt")<CR>
-an 50.120.380 &Syntax.WXYZ.XFree86\ Config :cal SetSyn("xf86conf")<CR>
-an 50.120.400 &Syntax.WXYZ.YAML :cal SetSyn("yaml")<CR>
-an 50.120.410 &Syntax.WXYZ.Yacc :cal SetSyn("yacc")<CR>
+an 50.60.100 &Syntax.L.Lace :cal SetSyn("lace")<CR>
+an 50.60.110 &Syntax.L.LamdaProlog :cal SetSyn("lprolog")<CR>
+an 50.60.120 &Syntax.L.Latte :cal SetSyn("latte")<CR>
+an 50.60.130 &Syntax.L.Ld\ script :cal SetSyn("ld")<CR>
+an 50.60.140 &Syntax.L.LDAP.LDIF :cal SetSyn("ldif")<CR>
+an 50.60.150 &Syntax.L.LDAP.Configuration :cal SetSyn("ldapconf")<CR>
+an 50.60.160 &Syntax.L.Lex :cal SetSyn("lex")<CR>
+an 50.60.170 &Syntax.L.LFTP\ config :cal SetSyn("lftp")<CR>
+an 50.60.180 &Syntax.L.Libao :cal SetSyn("libao")<CR>
+an 50.60.190 &Syntax.L.LifeLines\ script :cal SetSyn("lifelines")<CR>
+an 50.60.200 &Syntax.L.Lilo :cal SetSyn("lilo")<CR>
+an 50.60.210 &Syntax.L.Limits\ config :cal SetSyn("limits")<CR>
+an 50.60.220 &Syntax.L.Linden\ scripting :cal SetSyn("lsl")<CR>
+an 50.60.230 &Syntax.L.Liquid :cal SetSyn("liquid")<CR>
+an 50.60.240 &Syntax.L.Lisp :cal SetSyn("lisp")<CR>
+an 50.60.250 &Syntax.L.Lite :cal SetSyn("lite")<CR>
+an 50.60.260 &Syntax.L.LiteStep\ RC :cal SetSyn("litestep")<CR>
+an 50.60.270 &Syntax.L.Locale\ Input :cal SetSyn("fdcc")<CR>
+an 50.60.280 &Syntax.L.Login\.access :cal SetSyn("loginaccess")<CR>
+an 50.60.290 &Syntax.L.Login\.defs :cal SetSyn("logindefs")<CR>
+an 50.60.300 &Syntax.L.Logtalk :cal SetSyn("logtalk")<CR>
+an 50.60.310 &Syntax.L.LOTOS :cal SetSyn("lotos")<CR>
+an 50.60.320 &Syntax.L.LotusScript :cal SetSyn("lscript")<CR>
+an 50.60.330 &Syntax.L.Lout :cal SetSyn("lout")<CR>
+an 50.60.340 &Syntax.L.LPC :cal SetSyn("lpc")<CR>
+an 50.60.350 &Syntax.L.Lua :cal SetSyn("lua")<CR>
+an 50.60.360 &Syntax.L.Lynx\ Style :cal SetSyn("lss")<CR>
+an 50.60.370 &Syntax.L.Lynx\ config :cal SetSyn("lynx")<CR>
+an 50.70.100 &Syntax.M.M4 :cal SetSyn("m4")<CR>
+an 50.70.110 &Syntax.M.MaGic\ Point :cal SetSyn("mgp")<CR>
+an 50.70.120 &Syntax.M.Mail :cal SetSyn("mail")<CR>
+an 50.70.130 &Syntax.M.Mail\ aliases :cal SetSyn("mailaliases")<CR>
+an 50.70.140 &Syntax.M.Mailcap :cal SetSyn("mailcap")<CR>
+an 50.70.150 &Syntax.M.Makefile :cal SetSyn("make")<CR>
+an 50.70.160 &Syntax.M.MakeIndex :cal SetSyn("ist")<CR>
+an 50.70.170 &Syntax.M.Man\ page :cal SetSyn("man")<CR>
+an 50.70.180 &Syntax.M.Man\.conf :cal SetSyn("manconf")<CR>
+an 50.70.190 &Syntax.M.Maple\ V :cal SetSyn("maple")<CR>
+an 50.70.200 &Syntax.M.Markdown :cal SetSyn("markdown")<CR>
+an 50.70.210 &Syntax.M.Mason :cal SetSyn("mason")<CR>
+an 50.70.220 &Syntax.M.Mathematica :cal SetSyn("mma")<CR>
+an 50.70.230 &Syntax.M.Matlab :cal SetSyn("matlab")<CR>
+an 50.70.240 &Syntax.M.Maxima :cal SetSyn("maxima")<CR>
+an 50.70.250 &Syntax.M.MEL\ (for\ Maya) :cal SetSyn("mel")<CR>
+an 50.70.260 &Syntax.M.Messages\ (/var/log) :cal SetSyn("messages")<CR>
+an 50.70.270 &Syntax.M.Metafont :cal SetSyn("mf")<CR>
+an 50.70.280 &Syntax.M.MetaPost :cal SetSyn("mp")<CR>
+an 50.70.290 &Syntax.M.MGL :cal SetSyn("mgl")<CR>
+an 50.70.300 &Syntax.M.MMIX :cal SetSyn("mmix")<CR>
+an 50.70.310 &Syntax.M.Modconf :cal SetSyn("modconf")<CR>
+an 50.70.320 &Syntax.M.Model :cal SetSyn("model")<CR>
+an 50.70.330 &Syntax.M.Modsim\ III :cal SetSyn("modsim3")<CR>
+an 50.70.340 &Syntax.M.Modula\ 2 :cal SetSyn("modula2")<CR>
+an 50.70.350 &Syntax.M.Modula\ 3 :cal SetSyn("modula3")<CR>
+an 50.70.360 &Syntax.M.Monk :cal SetSyn("monk")<CR>
+an 50.70.370 &Syntax.M.Mplayer\ config :cal SetSyn("mplayerconf")<CR>
+an 50.70.380 &Syntax.M.MOO :cal SetSyn("moo")<CR>
+an 50.70.390 &Syntax.M.Mrxvtrc :cal SetSyn("mrxvtrc")<CR>
+an 50.70.400 &Syntax.M.MS-DOS/Windows.4DOS\ \.bat\ file :cal SetSyn("btm")<CR>
+an 50.70.410 &Syntax.M.MS-DOS/Windows.\.bat\/\.cmd\ file :cal SetSyn("dosbatch")<CR>
+an 50.70.420 &Syntax.M.MS-DOS/Windows.\.ini\ file :cal SetSyn("dosini")<CR>
+an 50.70.430 &Syntax.M.MS-DOS/Windows.Message\ text :cal SetSyn("msmessages")<CR>
+an 50.70.440 &Syntax.M.MS-DOS/Windows.Module\ Definition :cal SetSyn("def")<CR>
+an 50.70.450 &Syntax.M.MS-DOS/Windows.Registry :cal SetSyn("registry")<CR>
+an 50.70.460 &Syntax.M.MS-DOS/Windows.Resource\ file :cal SetSyn("rc")<CR>
+an 50.70.470 &Syntax.M.Msql :cal SetSyn("msql")<CR>
+an 50.70.480 &Syntax.M.MuPAD :cal SetSyn("mupad")<CR>
+an 50.70.490 &Syntax.M.MUSHcode :cal SetSyn("mush")<CR>
+an 50.70.500 &Syntax.M.Muttrc :cal SetSyn("muttrc")<CR>
+an 50.80.100 &Syntax.NO.Nanorc :cal SetSyn("nanorc")<CR>
+an 50.80.110 &Syntax.NO.Nastran\ input/DMAP :cal SetSyn("nastran")<CR>
+an 50.80.120 &Syntax.NO.Natural :cal SetSyn("natural")<CR>
+an 50.80.130 &Syntax.NO.Netrc :cal SetSyn("netrc")<CR>
+an 50.80.140 &Syntax.NO.Novell\ NCF\ batch :cal SetSyn("ncf")<CR>
+an 50.80.150 &Syntax.NO.Not\ Quite\ C\ (LEGO) :cal SetSyn("nqc")<CR>
+an 50.80.160 &Syntax.NO.Nroff :cal SetSyn("nroff")<CR>
+an 50.80.170 &Syntax.NO.NSIS\ script :cal SetSyn("nsis")<CR>
+an 50.80.190 &Syntax.NO.Obj\ 3D\ wavefront :cal SetSyn("obj")<CR>
+an 50.80.200 &Syntax.NO.Objective\ C :cal SetSyn("objc")<CR>
+an 50.80.210 &Syntax.NO.Objective\ C++ :cal SetSyn("objcpp")<CR>
+an 50.80.220 &Syntax.NO.OCAML :cal SetSyn("ocaml")<CR>
+an 50.80.230 &Syntax.NO.Occam :cal SetSyn("occam")<CR>
+an 50.80.240 &Syntax.NO.Omnimark :cal SetSyn("omnimark")<CR>
+an 50.80.250 &Syntax.NO.OpenROAD :cal SetSyn("openroad")<CR>
+an 50.80.260 &Syntax.NO.Open\ Psion\ Lang :cal SetSyn("opl")<CR>
+an 50.80.270 &Syntax.NO.Oracle\ config :cal SetSyn("ora")<CR>
+an 50.90.100 &Syntax.PQ.Packet\ filter\ conf :cal SetSyn("pf")<CR>
+an 50.90.110 &Syntax.PQ.Palm\ resource\ compiler :cal SetSyn("pilrc")<CR>
+an 50.90.120 &Syntax.PQ.Pam\ config :cal SetSyn("pamconf")<CR>
+an 50.90.130 &Syntax.PQ.PApp :cal SetSyn("papp")<CR>
+an 50.90.140 &Syntax.PQ.Pascal :cal SetSyn("pascal")<CR>
+an 50.90.150 &Syntax.PQ.Password\ file :cal SetSyn("passwd")<CR>
+an 50.90.160 &Syntax.PQ.PCCTS :cal SetSyn("pccts")<CR>
+an 50.90.170 &Syntax.PQ.PDF :cal SetSyn("pdf")<CR>
+an 50.90.180 &Syntax.PQ.Perl.Perl :cal SetSyn("perl")<CR>
+an 50.90.190 &Syntax.PQ.Perl.Perl\ 6 :cal SetSyn("perl6")<CR>
+an 50.90.200 &Syntax.PQ.Perl.Perl\ POD :cal SetSyn("pod")<CR>
+an 50.90.210 &Syntax.PQ.Perl.Perl\ XS :cal SetSyn("xs")<CR>
+an 50.90.220 &Syntax.PQ.PHP.PHP\ 3-4 :cal SetSyn("php")<CR>
+an 50.90.230 &Syntax.PQ.PHP.Phtml\ (PHP\ 2) :cal SetSyn("phtml")<CR>
+an 50.90.240 &Syntax.PQ.Pike :cal SetSyn("pike")<CR>
+an 50.90.250 &Syntax.PQ.Pine\ RC :cal SetSyn("pine")<CR>
+an 50.90.260 &Syntax.PQ.Pinfo\ RC :cal SetSyn("pinfo")<CR>
+an 50.90.270 &Syntax.PQ.PL/M :cal SetSyn("plm")<CR>
+an 50.90.280 &Syntax.PQ.PL/SQL :cal SetSyn("plsql")<CR>
+an 50.90.290 &Syntax.PQ.PLP :cal SetSyn("plp")<CR>
+an 50.90.300 &Syntax.PQ.PO\ (GNU\ gettext) :cal SetSyn("po")<CR>
+an 50.90.310 &Syntax.PQ.Postfix\ main\ config :cal SetSyn("pfmain")<CR>
+an 50.90.320 &Syntax.PQ.PostScript.PostScript :cal SetSyn("postscr")<CR>
+an 50.90.330 &Syntax.PQ.PostScript.PostScript\ Printer\ Description :cal SetSyn("ppd")<CR>
+an 50.90.340 &Syntax.PQ.Povray.Povray\ scene\ descr :cal SetSyn("pov")<CR>
+an 50.90.350 &Syntax.PQ.Povray.Povray\ configuration :cal SetSyn("povini")<CR>
+an 50.90.360 &Syntax.PQ.PPWizard :cal SetSyn("ppwiz")<CR>
+an 50.90.370 &Syntax.PQ.Prescribe\ (Kyocera) :cal SetSyn("prescribe")<CR>
+an 50.90.380 &Syntax.PQ.Printcap :cal SetSyn("pcap")<CR>
+an 50.90.390 &Syntax.PQ.Privoxy :cal SetSyn("privoxy")<CR>
+an 50.90.400 &Syntax.PQ.Procmail :cal SetSyn("procmail")<CR>
+an 50.90.410 &Syntax.PQ.Product\ Spec\ File :cal SetSyn("psf")<CR>
+an 50.90.420 &Syntax.PQ.Progress :cal SetSyn("progress")<CR>
+an 50.90.430 &Syntax.PQ.Prolog :cal SetSyn("prolog")<CR>
+an 50.90.440 &Syntax.PQ.ProMeLa :cal SetSyn("promela")<CR>
+an 50.90.450 &Syntax.PQ.Protocols :cal SetSyn("protocols")<CR>
+an 50.90.460 &Syntax.PQ.Purify\ log :cal SetSyn("purifylog")<CR>
+an 50.90.470 &Syntax.PQ.Pyrex :cal SetSyn("pyrex")<CR>
+an 50.90.480 &Syntax.PQ.Python :cal SetSyn("python")<CR>
+an 50.90.500 &Syntax.PQ.Quake :cal SetSyn("quake")<CR>
+an 50.90.510 &Syntax.PQ.Quickfix\ window :cal SetSyn("qf")<CR>
+an 50.100.100 &Syntax.R.R.R :cal SetSyn("r")<CR>
+an 50.100.110 &Syntax.R.R.R\ help :cal SetSyn("rhelp")<CR>
+an 50.100.120 &Syntax.R.R.R\ noweb :cal SetSyn("rnoweb")<CR>
+an 50.100.130 &Syntax.R.Racc\ input :cal SetSyn("racc")<CR>
+an 50.100.140 &Syntax.R.Radiance :cal SetSyn("radiance")<CR>
+an 50.100.150 &Syntax.R.Ratpoison :cal SetSyn("ratpoison")<CR>
+an 50.100.160 &Syntax.R.RCS.RCS\ log\ output :cal SetSyn("rcslog")<CR>
+an 50.100.170 &Syntax.R.RCS.RCS\ file :cal SetSyn("rcs")<CR>
+an 50.100.180 &Syntax.R.Readline\ config :cal SetSyn("readline")<CR>
+an 50.100.190 &Syntax.R.Rebol :cal SetSyn("rebol")<CR>
+an 50.100.200 &Syntax.R.Remind :cal SetSyn("remind")<CR>
+an 50.100.210 &Syntax.R.Relax\ NG\ compact :cal SetSyn("rnc")<CR>
+an 50.100.220 &Syntax.R.Renderman.Renderman\ Shader\ Lang :cal SetSyn("sl")<CR>
+an 50.100.230 &Syntax.R.Renderman.Renderman\ Interface\ Bytestream :cal SetSyn("rib")<CR>
+an 50.100.240 &Syntax.R.Resolv\.conf :cal SetSyn("resolv")<CR>
+an 50.100.250 &Syntax.R.Reva\ Forth :cal SetSyn("reva")<CR>
+an 50.100.260 &Syntax.R.Rexx :cal SetSyn("rexx")<CR>
+an 50.100.270 &Syntax.R.Robots\.txt :cal SetSyn("robots")<CR>
+an 50.100.280 &Syntax.R.RockLinux\ package\ desc\. :cal SetSyn("desc")<CR>
+an 50.100.290 &Syntax.R.Rpcgen :cal SetSyn("rpcgen")<CR>
+an 50.100.300 &Syntax.R.RPL/2 :cal SetSyn("rpl")<CR>
+an 50.100.310 &Syntax.R.ReStructuredText :cal SetSyn("rst")<CR>
+an 50.100.320 &Syntax.R.RTF :cal SetSyn("rtf")<CR>
+an 50.100.330 &Syntax.R.Ruby :cal SetSyn("ruby")<CR>
+an 50.110.100 &Syntax.S-Sm.S-Lang :cal SetSyn("slang")<CR>
+an 50.110.110 &Syntax.S-Sm.Samba\ config :cal SetSyn("samba")<CR>
+an 50.110.120 &Syntax.S-Sm.SAS :cal SetSyn("sas")<CR>
+an 50.110.130 &Syntax.S-Sm.Sass :cal SetSyn("sass")<CR>
+an 50.110.140 &Syntax.S-Sm.Sather :cal SetSyn("sather")<CR>
+an 50.110.150 &Syntax.S-Sm.Scheme :cal SetSyn("scheme")<CR>
+an 50.110.160 &Syntax.S-Sm.Scilab :cal SetSyn("scilab")<CR>
+an 50.110.170 &Syntax.S-Sm.Screen\ RC :cal SetSyn("screen")<CR>
+an 50.110.180 &Syntax.S-Sm.SDC\ Synopsys\ Design\ Constraints :cal SetSyn("sdc")<CR>
+an 50.110.190 &Syntax.S-Sm.SDL :cal SetSyn("sdl")<CR>
+an 50.110.200 &Syntax.S-Sm.Sed :cal SetSyn("sed")<CR>
+an 50.110.210 &Syntax.S-Sm.Sendmail\.cf :cal SetSyn("sm")<CR>
+an 50.110.220 &Syntax.S-Sm.Send-pr :cal SetSyn("sendpr")<CR>
+an 50.110.230 &Syntax.S-Sm.Sensors\.conf :cal SetSyn("sensors")<CR>
+an 50.110.240 &Syntax.S-Sm.Service\ Location\ config :cal SetSyn("slpconf")<CR>
+an 50.110.250 &Syntax.S-Sm.Service\ Location\ registration :cal SetSyn("slpreg")<CR>
+an 50.110.260 &Syntax.S-Sm.Service\ Location\ SPI :cal SetSyn("slpspi")<CR>
+an 50.110.270 &Syntax.S-Sm.Services :cal SetSyn("services")<CR>
+an 50.110.280 &Syntax.S-Sm.Setserial\ config :cal SetSyn("setserial")<CR>
+an 50.110.290 &Syntax.S-Sm.SGML.SGML\ catalog :cal SetSyn("catalog")<CR>
+an 50.110.300 &Syntax.S-Sm.SGML.SGML\ DTD :cal SetSyn("sgml")<CR>
+an 50.110.310 &Syntax.S-Sm.SGML.SGML\ Declaration :cal SetSyn("sgmldecl")<CR>
+an 50.110.320 &Syntax.S-Sm.SGML.SGML-linuxdoc :cal SetSyn("sgmllnx")<CR>
+an 50.110.330 &Syntax.S-Sm.Shell\ script.sh\ and\ ksh :cal SetSyn("sh")<CR>
+an 50.110.340 &Syntax.S-Sm.Shell\ script.csh :cal SetSyn("csh")<CR>
+an 50.110.350 &Syntax.S-Sm.Shell\ script.tcsh :cal SetSyn("tcsh")<CR>
+an 50.110.360 &Syntax.S-Sm.Shell\ script.zsh :cal SetSyn("zsh")<CR>
+an 50.110.370 &Syntax.S-Sm.SiCAD :cal SetSyn("sicad")<CR>
+an 50.110.380 &Syntax.S-Sm.Sieve :cal SetSyn("sieve")<CR>
+an 50.110.390 &Syntax.S-Sm.Simula :cal SetSyn("simula")<CR>
+an 50.110.400 &Syntax.S-Sm.Sinda.Sinda\ compare :cal SetSyn("sindacmp")<CR>
+an 50.110.410 &Syntax.S-Sm.Sinda.Sinda\ input :cal SetSyn("sinda")<CR>
+an 50.110.420 &Syntax.S-Sm.Sinda.Sinda\ output :cal SetSyn("sindaout")<CR>
+an 50.110.430 &Syntax.S-Sm.SiSU :cal SetSyn("sisu")<CR>
+an 50.110.440 &Syntax.S-Sm.SKILL.SKILL :cal SetSyn("skill")<CR>
+an 50.110.450 &Syntax.S-Sm.SKILL.SKILL\ for\ Diva :cal SetSyn("diva")<CR>
+an 50.110.460 &Syntax.S-Sm.Slice :cal SetSyn("slice")<CR>
+an 50.110.470 &Syntax.S-Sm.SLRN.Slrn\ rc :cal SetSyn("slrnrc")<CR>
+an 50.110.480 &Syntax.S-Sm.SLRN.Slrn\ score :cal SetSyn("slrnsc")<CR>
+an 50.110.490 &Syntax.S-Sm.SmallTalk :cal SetSyn("st")<CR>
+an 50.110.500 &Syntax.S-Sm.Smarty\ Templates :cal SetSyn("smarty")<CR>
+an 50.110.510 &Syntax.S-Sm.SMIL :cal SetSyn("smil")<CR>
+an 50.110.520 &Syntax.S-Sm.SMITH :cal SetSyn("smith")<CR>
+an 50.120.100 &Syntax.Sn-Sy.SNMP\ MIB :cal SetSyn("mib")<CR>
+an 50.120.110 &Syntax.Sn-Sy.SNNS.SNNS\ network :cal SetSyn("snnsnet")<CR>
+an 50.120.120 &Syntax.Sn-Sy.SNNS.SNNS\ pattern :cal SetSyn("snnspat")<CR>
+an 50.120.130 &Syntax.Sn-Sy.SNNS.SNNS\ result :cal SetSyn("snnsres")<CR>
+an 50.120.140 &Syntax.Sn-Sy.Snobol4 :cal SetSyn("snobol4")<CR>
+an 50.120.150 &Syntax.Sn-Sy.Snort\ Configuration :cal SetSyn("hog")<CR>
+an 50.120.160 &Syntax.Sn-Sy.SPEC\ (Linux\ RPM) :cal SetSyn("spec")<CR>
+an 50.120.170 &Syntax.Sn-Sy.Specman :cal SetSyn("specman")<CR>
+an 50.120.180 &Syntax.Sn-Sy.Spice :cal SetSyn("spice")<CR>
+an 50.120.190 &Syntax.Sn-Sy.Spyce :cal SetSyn("spyce")<CR>
+an 50.120.200 &Syntax.Sn-Sy.Speedup :cal SetSyn("spup")<CR>
+an 50.120.210 &Syntax.Sn-Sy.Splint :cal SetSyn("splint")<CR>
+an 50.120.220 &Syntax.Sn-Sy.Squid\ config :cal SetSyn("squid")<CR>
+an 50.120.230 &Syntax.Sn-Sy.SQL.ESQL-C :cal SetSyn("esqlc")<CR>
+an 50.120.240 &Syntax.Sn-Sy.SQL.MySQL :cal SetSyn("mysql")<CR>
+an 50.120.250 &Syntax.Sn-Sy.SQL.PL/SQL :cal SetSyn("plsql")<CR>
+an 50.120.260 &Syntax.Sn-Sy.SQL.SQL\ Anywhere :cal SetSyn("sqlanywhere")<CR>
+an 50.120.270 &Syntax.Sn-Sy.SQL.SQL\ (automatic) :cal SetSyn("sql")<CR>
+an 50.120.280 &Syntax.Sn-Sy.SQL.SQL\ (Oracle) :cal SetSyn("sqloracle")<CR>
+an 50.120.290 &Syntax.Sn-Sy.SQL.SQL\ Forms :cal SetSyn("sqlforms")<CR>
+an 50.120.300 &Syntax.Sn-Sy.SQL.SQLJ :cal SetSyn("sqlj")<CR>
+an 50.120.310 &Syntax.Sn-Sy.SQL.SQL-Informix :cal SetSyn("sqlinformix")<CR>
+an 50.120.320 &Syntax.Sn-Sy.SQR :cal SetSyn("sqr")<CR>
+an 50.120.330 &Syntax.Sn-Sy.Ssh.ssh_config :cal SetSyn("sshconfig")<CR>
+an 50.120.340 &Syntax.Sn-Sy.Ssh.sshd_config :cal SetSyn("sshdconfig")<CR>
+an 50.120.350 &Syntax.Sn-Sy.Standard\ ML :cal SetSyn("sml")<CR>
+an 50.120.360 &Syntax.Sn-Sy.Stata.SMCL :cal SetSyn("smcl")<CR>
+an 50.120.370 &Syntax.Sn-Sy.Stata.Stata :cal SetSyn("stata")<CR>
+an 50.120.380 &Syntax.Sn-Sy.Stored\ Procedures :cal SetSyn("stp")<CR>
+an 50.120.390 &Syntax.Sn-Sy.Strace :cal SetSyn("strace")<CR>
+an 50.120.400 &Syntax.Sn-Sy.Streaming\ descriptor\ file :cal SetSyn("sd")<CR>
+an 50.120.410 &Syntax.Sn-Sy.Subversion\ commit :cal SetSyn("svn")<CR>
+an 50.120.420 &Syntax.Sn-Sy.Sudoers :cal SetSyn("sudoers")<CR>
+an 50.120.430 &Syntax.Sn-Sy.SVG :cal SetSyn("svg")<CR>
+an 50.120.440 &Syntax.Sn-Sy.Symbian\ meta-makefile :cal SetSyn("mmp")<CR>
+an 50.120.450 &Syntax.Sn-Sy.Sysctl\.conf :cal SetSyn("sysctl")<CR>
+an 50.130.100 &Syntax.T.TADS :cal SetSyn("tads")<CR>
+an 50.130.110 &Syntax.T.Tags :cal SetSyn("tags")<CR>
+an 50.130.120 &Syntax.T.TAK.TAK\ compare :cal SetSyn("takcmp")<CR>
+an 50.130.130 &Syntax.T.TAK.TAK\ input :cal SetSyn("tak")<CR>
+an 50.130.140 &Syntax.T.TAK.TAK\ output :cal SetSyn("takout")<CR>
+an 50.130.150 &Syntax.T.Task\ data :cal SetSyn("taskdata")<CR>
+an 50.130.160 &Syntax.T.Task\ 42\ edit :cal SetSyn("taskedit")<CR>
+an 50.130.170 &Syntax.T.Tcl/Tk :cal SetSyn("tcl")<CR>
+an 50.130.180 &Syntax.T.TealInfo :cal SetSyn("tli")<CR>
+an 50.130.190 &Syntax.T.Telix\ Salt :cal SetSyn("tsalt")<CR>
+an 50.130.200 &Syntax.T.Termcap/Printcap :cal SetSyn("ptcap")<CR>
+an 50.130.210 &Syntax.T.Terminfo :cal SetSyn("terminfo")<CR>
+an 50.130.220 &Syntax.T.TeX.TeX/LaTeX :cal SetSyn("tex")<CR>
+an 50.130.230 &Syntax.T.TeX.plain\ TeX :cal SetSyn("plaintex")<CR>
+an 50.130.240 &Syntax.T.TeX.ConTeXt :cal SetSyn("context")<CR>
+an 50.130.250 &Syntax.T.TeX.TeX\ configuration :cal SetSyn("texmf")<CR>
+an 50.130.260 &Syntax.T.TeX.Texinfo :cal SetSyn("texinfo")<CR>
+an 50.130.270 &Syntax.T.TF\ mud\ client :cal SetSyn("tf")<CR>
+an 50.130.280 &Syntax.T.Tidy\ configuration :cal SetSyn("tidy")<CR>
+an 50.130.290 &Syntax.T.Tilde :cal SetSyn("tilde")<CR>
+an 50.130.300 &Syntax.T.TPP :cal SetSyn("tpp")<CR>
+an 50.130.310 &Syntax.T.Trasys\ input :cal SetSyn("trasys")<CR>
+an 50.130.320 &Syntax.T.Trustees :cal SetSyn("trustees")<CR>
+an 50.130.330 &Syntax.T.TSS.Command\ Line :cal SetSyn("tsscl")<CR>
+an 50.130.340 &Syntax.T.TSS.Geometry :cal SetSyn("tssgm")<CR>
+an 50.130.350 &Syntax.T.TSS.Optics :cal SetSyn("tssop")<CR>
+an 50.140.100 &Syntax.UV.Udev\ config :cal SetSyn("udevconf")<CR>
+an 50.140.110 &Syntax.UV.Udev\ permissions :cal SetSyn("udevperm")<CR>
+an 50.140.120 &Syntax.UV.Udev\ rules :cal SetSyn("udevrules")<CR>
+an 50.140.130 &Syntax.UV.UIT/UIL :cal SetSyn("uil")<CR>
+an 50.140.140 &Syntax.UV.UnrealScript :cal SetSyn("uc")<CR>
+an 50.140.150 &Syntax.UV.Updatedb\.conf :cal SetSyn("updatedb")<CR>
+an 50.140.170 &Syntax.UV.Valgrind :cal SetSyn("valgrind")<CR>
+an 50.140.180 &Syntax.UV.Vera :cal SetSyn("vera")<CR>
+an 50.140.190 &Syntax.UV.Verilog-AMS\ HDL :cal SetSyn("verilogams")<CR>
+an 50.140.200 &Syntax.UV.Verilog\ HDL :cal SetSyn("verilog")<CR>
+an 50.140.210 &Syntax.UV.Vgrindefs :cal SetSyn("vgrindefs")<CR>
+an 50.140.220 &Syntax.UV.VHDL :cal SetSyn("vhdl")<CR>
+an 50.140.230 &Syntax.UV.Vim.Vim\ help\ file :cal SetSyn("help")<CR>
+an 50.140.240 &Syntax.UV.Vim.Vim\ script :cal SetSyn("vim")<CR>
+an 50.140.250 &Syntax.UV.Vim.Viminfo\ file :cal SetSyn("viminfo")<CR>
+an 50.140.260 &Syntax.UV.Virata\ config :cal SetSyn("virata")<CR>
+an 50.140.270 &Syntax.UV.Visual\ Basic :cal SetSyn("vb")<CR>
+an 50.140.280 &Syntax.UV.VOS\ CM\ macro :cal SetSyn("voscm")<CR>
+an 50.140.290 &Syntax.UV.VRML :cal SetSyn("vrml")<CR>
+an 50.140.300 &Syntax.UV.VSE\ JCL :cal SetSyn("vsejcl")<CR>
+an 50.150.100 &Syntax.WXYZ.WEB.CWEB :cal SetSyn("cweb")<CR>
+an 50.150.110 &Syntax.WXYZ.WEB.WEB :cal SetSyn("web")<CR>
+an 50.150.120 &Syntax.WXYZ.WEB.WEB\ Changes :cal SetSyn("change")<CR>
+an 50.150.130 &Syntax.WXYZ.Webmacro :cal SetSyn("webmacro")<CR>
+an 50.150.140 &Syntax.WXYZ.Website\ MetaLanguage :cal SetSyn("wml")<CR>
+an 50.150.160 &Syntax.WXYZ.wDiff :cal SetSyn("wdiff")<CR>
+an 50.150.180 &Syntax.WXYZ.Wget\ config :cal SetSyn("wget")<CR>
+an 50.150.190 &Syntax.WXYZ.Whitespace\ (add) :cal SetSyn("whitespace")<CR>
+an 50.150.200 &Syntax.WXYZ.WildPackets\ EtherPeek\ Decoder :cal SetSyn("dcd")<CR>
+an 50.150.210 &Syntax.WXYZ.WinBatch/Webbatch :cal SetSyn("winbatch")<CR>
+an 50.150.220 &Syntax.WXYZ.Windows\ Scripting\ Host :cal SetSyn("wsh")<CR>
+an 50.150.230 &Syntax.WXYZ.WSML :cal SetSyn("wsml")<CR>
+an 50.150.240 &Syntax.WXYZ.WvDial :cal SetSyn("wvdial")<CR>
+an 50.150.260 &Syntax.WXYZ.X\ Keyboard\ Extension :cal SetSyn("xkb")<CR>
+an 50.150.270 &Syntax.WXYZ.X\ Pixmap :cal SetSyn("xpm")<CR>
+an 50.150.280 &Syntax.WXYZ.X\ Pixmap\ (2) :cal SetSyn("xpm2")<CR>
+an 50.150.290 &Syntax.WXYZ.X\ resources :cal SetSyn("xdefaults")<CR>
+an 50.150.300 &Syntax.WXYZ.XBL :cal SetSyn("xbl")<CR>
+an 50.150.310 &Syntax.WXYZ.Xinetd\.conf :cal SetSyn("xinetd")<CR>
+an 50.150.320 &Syntax.WXYZ.Xmodmap :cal SetSyn("xmodmap")<CR>
+an 50.150.330 &Syntax.WXYZ.Xmath :cal SetSyn("xmath")<CR>
+an 50.150.340 &Syntax.WXYZ.XML :cal SetSyn("xml")<CR>
+an 50.150.350 &Syntax.WXYZ.XML\ Schema\ (XSD) :cal SetSyn("xsd")<CR>
+an 50.150.360 &Syntax.WXYZ.XQuery :cal SetSyn("xquery")<CR>
+an 50.150.370 &Syntax.WXYZ.Xslt :cal SetSyn("xslt")<CR>
+an 50.150.380 &Syntax.WXYZ.XFree86\ Config :cal SetSyn("xf86conf")<CR>
+an 50.150.400 &Syntax.WXYZ.YAML :cal SetSyn("yaml")<CR>
+an 50.150.410 &Syntax.WXYZ.Yacc :cal SetSyn("yacc")<CR>
 
 " The End Of The Syntax Menu
 

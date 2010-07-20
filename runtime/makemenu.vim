@@ -112,6 +112,7 @@ SynMenu AB.Blank:blank
 SynMenu C.C:c
 SynMenu C.C++:cpp
 SynMenu C.C#:cs
+SynMenu C.Cabal\ Haskell\ build\ file:cabal
 SynMenu C.Calendar:calendar
 SynMenu C.Cascading\ Style\ Sheets:css
 SynMenu C.CDL:cdl
@@ -119,6 +120,7 @@ SynMenu C.Cdrdao\ TOC:cdrtoc
 SynMenu C.Cdrdao\ config:cdrdaoconf
 SynMenu C.Century\ Term:cterm
 SynMenu C.CH\ script:ch
+SynMenu C.ChaiScript:chaiscript
 SynMenu C.ChangeLog:changelog
 SynMenu C.Cheetah\ template:cheetah
 SynMenu C.CHILL:chill
@@ -139,6 +141,7 @@ SynMenu C.CRM114:crm
 SynMenu C.Crontab:crontab
 SynMenu C.CSP:csp
 SynMenu C.Ctrl-H:ctrlh
+SynMenu C.Cucumber:cucumber
 SynMenu C.CUDA:cuda
 SynMenu C.CUPL.CUPL:cupl
 SynMenu C.CUPL.Simulation:cuplsim
@@ -193,6 +196,7 @@ SynMenu DE.Exim\ conf:exim
 SynMenu DE.Expect:expect
 SynMenu DE.Exports:exports
 
+SynMenu FG.Fantom:fan
 SynMenu FG.Fetchmail:fetchmail
 SynMenu FG.FlexWiki:flexwiki
 SynMenu FG.Focus\ Executable:focexec
@@ -275,90 +279,94 @@ SynMenu HIJK.KDE\ script:kscript
 SynMenu HIJK.Kimwitu++:kwt
 SynMenu HIJK.KixTart:kix
 
-SynMenu L-Ma.Lace:lace
-SynMenu L-Ma.LamdaProlog:lprolog
-SynMenu L-Ma.Latte:latte
-SynMenu L-Ma.Ld\ script:ld
-SynMenu L-Ma.LDAP.LDIF:ldif
-SynMenu L-Ma.LDAP.Configuration:ldapconf
-SynMenu L-Ma.Lex:lex
-SynMenu L-Ma.LFTP\ config:lftp
-SynMenu L-Ma.Libao:libao
-SynMenu L-Ma.LifeLines\ script:lifelines
-SynMenu L-Ma.Lilo:lilo
-SynMenu L-Ma.Limits\ config:limits
-SynMenu L-Ma.Linden\ scripting:lsl
-SynMenu L-Ma.Lisp:lisp
-SynMenu L-Ma.Lite:lite
-SynMenu L-Ma.LiteStep\ RC:litestep
-SynMenu L-Ma.Locale\ Input:fdcc
-SynMenu L-Ma.Login\.access:loginaccess
-SynMenu L-Ma.Login\.defs:logindefs
-SynMenu L-Ma.Logtalk:logtalk
-SynMenu L-Ma.LOTOS:lotos
-SynMenu L-Ma.LotusScript:lscript
-SynMenu L-Ma.Lout:lout
-SynMenu L-Ma.LPC:lpc
-SynMenu L-Ma.Lua:lua
-SynMenu L-Ma.Lynx\ Style:lss
-SynMenu L-Ma.Lynx\ config:lynx
-SynMenu L-Ma.M4:m4
-SynMenu L-Ma.MaGic\ Point:mgp
-SynMenu L-Ma.Mail:mail
-SynMenu L-Ma.Mail\ aliases:mailaliases
-SynMenu L-Ma.Mailcap:mailcap
-SynMenu L-Ma.Makefile:make
-SynMenu L-Ma.MakeIndex:ist
-SynMenu L-Ma.Man\ page:man
-SynMenu L-Ma.Man\.conf:manconf
-SynMenu L-Ma.Maple\ V:maple
-SynMenu L-Ma.Mason:mason
-SynMenu L-Ma.Mathematica:mma
-SynMenu L-Ma.Matlab:matlab
-SynMenu L-Ma.Maxima:maxima
+SynMenu L.Lace:lace
+SynMenu L.LamdaProlog:lprolog
+SynMenu L.Latte:latte
+SynMenu L.Ld\ script:ld
+SynMenu L.LDAP.LDIF:ldif
+SynMenu L.LDAP.Configuration:ldapconf
+SynMenu L.Lex:lex
+SynMenu L.LFTP\ config:lftp
+SynMenu L.Libao:libao
+SynMenu L.LifeLines\ script:lifelines
+SynMenu L.Lilo:lilo
+SynMenu L.Limits\ config:limits
+SynMenu L.Linden\ scripting:lsl
+SynMenu L.Liquid:liquid
+SynMenu L.Lisp:lisp
+SynMenu L.Lite:lite
+SynMenu L.LiteStep\ RC:litestep
+SynMenu L.Locale\ Input:fdcc
+SynMenu L.Login\.access:loginaccess
+SynMenu L.Login\.defs:logindefs
+SynMenu L.Logtalk:logtalk
+SynMenu L.LOTOS:lotos
+SynMenu L.LotusScript:lscript
+SynMenu L.Lout:lout
+SynMenu L.LPC:lpc
+SynMenu L.Lua:lua
+SynMenu L.Lynx\ Style:lss
+SynMenu L.Lynx\ config:lynx
 
-SynMenu Me-NO.MEL\ (for\ Maya):mel
-SynMenu Me-NO.Messages\ (/var/log):messages
-SynMenu Me-NO.Metafont:mf
-SynMenu Me-NO.MetaPost:mp
-SynMenu Me-NO.MGL:mgl
-SynMenu Me-NO.MMIX:mmix
-SynMenu Me-NO.Modconf:modconf
-SynMenu Me-NO.Model:model
-SynMenu Me-NO.Modsim\ III:modsim3
-SynMenu Me-NO.Modula\ 2:modula2
-SynMenu Me-NO.Modula\ 3:modula3
-SynMenu Me-NO.Monk:monk
-SynMenu Me-NO.Mplayer\ config:mplayerconf
-SynMenu Me-NO.MOO:moo
-SynMenu Me-NO.Mrxvtrc:mrxvtrc
-SynMenu Me-NO.MS-DOS/Windows.4DOS\ \.bat\ file:btm
-SynMenu Me-NO.MS-DOS/Windows.\.bat\/\.cmd\ file:dosbatch
-SynMenu Me-NO.MS-DOS/Windows.\.ini\ file:dosini
-SynMenu Me-NO.MS-DOS/Windows.Message\ text:msmessages
-SynMenu Me-NO.MS-DOS/Windows.Module\ Definition:def
-SynMenu Me-NO.MS-DOS/Windows.Registry:registry
-SynMenu Me-NO.MS-DOS/Windows.Resource\ file:rc
-SynMenu Me-NO.Msql:msql
-SynMenu Me-NO.MuPAD:mupad
-SynMenu Me-NO.MUSHcode:mush
-SynMenu Me-NO.Muttrc:muttrc
-SynMenu Me-NO.Nanorc:nanorc
-SynMenu Me-NO.Nastran\ input/DMAP:nastran
-SynMenu Me-NO.Natural:natural
-SynMenu Me-NO.Netrc:netrc
-SynMenu Me-NO.Novell\ NCF\ batch:ncf
-SynMenu Me-NO.Not\ Quite\ C\ (LEGO):nqc
-SynMenu Me-NO.Nroff:nroff
-SynMenu Me-NO.NSIS\ script:nsis
-SynMenu Me-NO.Objective\ C:objc
-SynMenu Me-NO.Objective\ C++:objcpp
-SynMenu Me-NO.OCAML:ocaml
-SynMenu Me-NO.Occam:occam
-SynMenu Me-NO.Omnimark:omnimark
-SynMenu Me-NO.OpenROAD:openroad
-SynMenu Me-NO.Open\ Psion\ Lang:opl
-SynMenu Me-NO.Oracle\ config:ora
+SynMenu M.M4:m4
+SynMenu M.MaGic\ Point:mgp
+SynMenu M.Mail:mail
+SynMenu M.Mail\ aliases:mailaliases
+SynMenu M.Mailcap:mailcap
+SynMenu M.Makefile:make
+SynMenu M.MakeIndex:ist
+SynMenu M.Man\ page:man
+SynMenu M.Man\.conf:manconf
+SynMenu M.Maple\ V:maple
+SynMenu M.Markdown:markdown
+SynMenu M.Mason:mason
+SynMenu M.Mathematica:mma
+SynMenu M.Matlab:matlab
+SynMenu M.Maxima:maxima
+SynMenu M.MEL\ (for\ Maya):mel
+SynMenu M.Messages\ (/var/log):messages
+SynMenu M.Metafont:mf
+SynMenu M.MetaPost:mp
+SynMenu M.MGL:mgl
+SynMenu M.MMIX:mmix
+SynMenu M.Modconf:modconf
+SynMenu M.Model:model
+SynMenu M.Modsim\ III:modsim3
+SynMenu M.Modula\ 2:modula2
+SynMenu M.Modula\ 3:modula3
+SynMenu M.Monk:monk
+SynMenu M.Mplayer\ config:mplayerconf
+SynMenu M.MOO:moo
+SynMenu M.Mrxvtrc:mrxvtrc
+SynMenu M.MS-DOS/Windows.4DOS\ \.bat\ file:btm
+SynMenu M.MS-DOS/Windows.\.bat\/\.cmd\ file:dosbatch
+SynMenu M.MS-DOS/Windows.\.ini\ file:dosini
+SynMenu M.MS-DOS/Windows.Message\ text:msmessages
+SynMenu M.MS-DOS/Windows.Module\ Definition:def
+SynMenu M.MS-DOS/Windows.Registry:registry
+SynMenu M.MS-DOS/Windows.Resource\ file:rc
+SynMenu M.Msql:msql
+SynMenu M.MuPAD:mupad
+SynMenu M.MUSHcode:mush
+SynMenu M.Muttrc:muttrc
+
+SynMenu NO.Nanorc:nanorc
+SynMenu NO.Nastran\ input/DMAP:nastran
+SynMenu NO.Natural:natural
+SynMenu NO.Netrc:netrc
+SynMenu NO.Novell\ NCF\ batch:ncf
+SynMenu NO.Not\ Quite\ C\ (LEGO):nqc
+SynMenu NO.Nroff:nroff
+SynMenu NO.NSIS\ script:nsis
+SynMenu NO.Obj\ 3D\ wavefront:obj
+SynMenu NO.Objective\ C:objc
+SynMenu NO.Objective\ C++:objcpp
+SynMenu NO.OCAML:ocaml
+SynMenu NO.Occam:occam
+SynMenu NO.Omnimark:omnimark
+SynMenu NO.OpenROAD:openroad
+SynMenu NO.Open\ Psion\ Lang:opl
+SynMenu NO.Oracle\ config:ora
 
 SynMenu PQ.Packet\ filter\ conf:pf
 SynMenu PQ.Palm\ resource\ compiler:pilrc
@@ -369,6 +377,7 @@ SynMenu PQ.Password\ file:passwd
 SynMenu PQ.PCCTS:pccts
 SynMenu PQ.PDF:pdf
 SynMenu PQ.Perl.Perl:perl
+SynMenu PQ.Perl.Perl\ 6:perl6
 SynMenu PQ.Perl.Perl\ POD:pod
 SynMenu PQ.Perl.Perl\ XS:xs
 SynMenu PQ.PHP.PHP\ 3-4:php
@@ -401,153 +410,159 @@ SynMenu PQ.Python:python
 SynMenu PQ.Quake:quake
 SynMenu PQ.Quickfix\ window:qf
 
-SynMenu R-Sg.R.R:r
-SynMenu R-Sg.R.R\ help:rhelp
-SynMenu R-Sg.R.R\ noweb:rnoweb
-SynMenu R-Sg.Racc\ input:racc
-SynMenu R-Sg.Radiance:radiance
-SynMenu R-Sg.Ratpoison:ratpoison
-SynMenu R-Sg.RCS.RCS\ log\ output:rcslog
-SynMenu R-Sg.RCS.RCS\ file:rcs
-SynMenu R-Sg.Readline\ config:readline
-SynMenu R-Sg.Rebol:rebol
-SynMenu R-Sg.Remind:remind
-SynMenu R-Sg.Relax\ NG\ compact:rnc
-SynMenu R-Sg.Renderman.Renderman\ Shader\ Lang:sl
-SynMenu R-Sg.Renderman.Renderman\ Interface\ Bytestream:rib
-SynMenu R-Sg.Resolv\.conf:resolv
-SynMenu R-Sg.Reva\ Forth:reva
-SynMenu R-Sg.Rexx:rexx
-SynMenu R-Sg.Robots\.txt:robots
-SynMenu R-Sg.RockLinux\ package\ desc\.:desc
-SynMenu R-Sg.Rpcgen:rpcgen
-SynMenu R-Sg.RPL/2:rpl
-SynMenu R-Sg.ReStructuredText:rst
-SynMenu R-Sg.RTF:rtf
-SynMenu R-Sg.Ruby:ruby
-SynMenu R-Sg.S-Lang:slang
-SynMenu R-Sg.Samba\ config:samba
-SynMenu R-Sg.SAS:sas
-SynMenu R-Sg.Sass:sass
-SynMenu R-Sg.Sather:sather
-SynMenu R-Sg.Scheme:scheme
-SynMenu R-Sg.Scilab:scilab
-SynMenu R-Sg.Screen\ RC:screen
-SynMenu R-Sg.SDL:sdl
-SynMenu R-Sg.Sed:sed
-SynMenu R-Sg.Sendmail\.cf:sm
-SynMenu R-Sg.Send-pr:sendpr
-SynMenu R-Sg.Sensors\.conf:sensors
-SynMenu R-Sg.Service\ Location\ config:slpconf
-SynMenu R-Sg.Service\ Location\ registration:slpreg
-SynMenu R-Sg.Service\ Location\ SPI:slpspi
-SynMenu R-Sg.Services:services
-SynMenu R-Sg.Setserial\ config:setserial
-SynMenu R-Sg.SGML.SGML\ catalog:catalog
-SynMenu R-Sg.SGML.SGML\ DTD:sgml
-SynMenu R-Sg.SGML.SGML\ Declaration:sgmldecl
-SynMenu R-Sg.SGML.SGML-linuxdoc:sgmllnx
+SynMenu R.R.R:r
+SynMenu R.R.R\ help:rhelp
+SynMenu R.R.R\ noweb:rnoweb
+SynMenu R.Racc\ input:racc
+SynMenu R.Radiance:radiance
+SynMenu R.Ratpoison:ratpoison
+SynMenu R.RCS.RCS\ log\ output:rcslog
+SynMenu R.RCS.RCS\ file:rcs
+SynMenu R.Readline\ config:readline
+SynMenu R.Rebol:rebol
+SynMenu R.Remind:remind
+SynMenu R.Relax\ NG\ compact:rnc
+SynMenu R.Renderman.Renderman\ Shader\ Lang:sl
+SynMenu R.Renderman.Renderman\ Interface\ Bytestream:rib
+SynMenu R.Resolv\.conf:resolv
+SynMenu R.Reva\ Forth:reva
+SynMenu R.Rexx:rexx
+SynMenu R.Robots\.txt:robots
+SynMenu R.RockLinux\ package\ desc\.:desc
+SynMenu R.Rpcgen:rpcgen
+SynMenu R.RPL/2:rpl
+SynMenu R.ReStructuredText:rst
+SynMenu R.RTF:rtf
+SynMenu R.Ruby:ruby
 
-SynMenu Sh-S.Shell\ script.sh\ and\ ksh:sh
-SynMenu Sh-S.Shell\ script.csh:csh
-SynMenu Sh-S.Shell\ script.tcsh:tcsh
-SynMenu Sh-S.Shell\ script.zsh:zsh
-SynMenu Sh-S.SiCAD:sicad
-SynMenu Sh-S.Sieve:sieve
-SynMenu Sh-S.Simula:simula
-SynMenu Sh-S.Sinda.Sinda\ compare:sindacmp
-SynMenu Sh-S.Sinda.Sinda\ input:sinda
-SynMenu Sh-S.Sinda.Sinda\ output:sindaout
-SynMenu Sh-S.SiSU:sisu
-SynMenu Sh-S.SKILL.SKILL:skill
-SynMenu Sh-S.SKILL.SKILL\ for\ Diva:diva
-SynMenu Sh-S.Slice:slice
-SynMenu Sh-S.SLRN.Slrn\ rc:slrnrc
-SynMenu Sh-S.SLRN.Slrn\ score:slrnsc
-SynMenu Sh-S.SmallTalk:st
-SynMenu Sh-S.Smarty\ Templates:smarty
-SynMenu Sh-S.SMIL:smil
-SynMenu Sh-S.SMITH:smith
-SynMenu Sh-S.SNMP\ MIB:mib
-SynMenu Sh-S.SNNS.SNNS\ network:snnsnet
-SynMenu Sh-S.SNNS.SNNS\ pattern:snnspat
-SynMenu Sh-S.SNNS.SNNS\ result:snnsres
-SynMenu Sh-S.Snobol4:snobol4
-SynMenu Sh-S.Snort\ Configuration:hog
-SynMenu Sh-S.SPEC\ (Linux\ RPM):spec
-SynMenu Sh-S.Specman:specman
-SynMenu Sh-S.Spice:spice
-SynMenu Sh-S.Spyce:spyce
-SynMenu Sh-S.Speedup:spup
-SynMenu Sh-S.Splint:splint
-SynMenu Sh-S.Squid\ config:squid
-SynMenu Sh-S.SQL.ESQL-C:esqlc
-SynMenu Sh-S.SQL.MySQL:mysql
-SynMenu Sh-S.SQL.PL/SQL:plsql
-SynMenu Sh-S.SQL.SQL\ Anywhere:sqlanywhere
-SynMenu Sh-S.SQL.SQL\ (automatic):sql
-SynMenu Sh-S.SQL.SQL\ (Oracle):sqloracle
-SynMenu Sh-S.SQL.SQL\ Forms:sqlforms
-SynMenu Sh-S.SQL.SQLJ:sqlj
-SynMenu Sh-S.SQL.SQL-Informix:sqlinformix
-SynMenu Sh-S.SQR:sqr
-SynMenu Sh-S.Ssh.ssh_config:sshconfig
-SynMenu Sh-S.Ssh.sshd_config:sshdconfig
-SynMenu Sh-S.Standard\ ML:sml
-SynMenu Sh-S.Stata.SMCL:smcl
-SynMenu Sh-S.Stata.Stata:stata
-SynMenu Sh-S.Stored\ Procedures:stp
-SynMenu Sh-S.Strace:strace
-SynMenu Sh-S.Streaming\ descriptor\ file:sd
-SynMenu Sh-S.Subversion\ commit:svn
-SynMenu Sh-S.Sudoers:sudoers
-SynMenu Sh-S.Symbian\ meta-makefile:mmp
-SynMenu Sh-S.Sysctl\.conf:sysctl
+SynMenu S-Sm.S-Lang:slang
+SynMenu S-Sm.Samba\ config:samba
+SynMenu S-Sm.SAS:sas
+SynMenu S-Sm.Sass:sass
+SynMenu S-Sm.Sather:sather
+SynMenu S-Sm.Scheme:scheme
+SynMenu S-Sm.Scilab:scilab
+SynMenu S-Sm.Screen\ RC:screen
+SynMenu S-Sm.SDC\ Synopsys\ Design\ Constraints:sdc
+SynMenu S-Sm.SDL:sdl
+SynMenu S-Sm.Sed:sed
+SynMenu S-Sm.Sendmail\.cf:sm
+SynMenu S-Sm.Send-pr:sendpr
+SynMenu S-Sm.Sensors\.conf:sensors
+SynMenu S-Sm.Service\ Location\ config:slpconf
+SynMenu S-Sm.Service\ Location\ registration:slpreg
+SynMenu S-Sm.Service\ Location\ SPI:slpspi
+SynMenu S-Sm.Services:services
+SynMenu S-Sm.Setserial\ config:setserial
+SynMenu S-Sm.SGML.SGML\ catalog:catalog
+SynMenu S-Sm.SGML.SGML\ DTD:sgml
+SynMenu S-Sm.SGML.SGML\ Declaration:sgmldecl
+SynMenu S-Sm.SGML.SGML-linuxdoc:sgmllnx
+SynMenu S-Sm.Shell\ script.sh\ and\ ksh:sh
+SynMenu S-Sm.Shell\ script.csh:csh
+SynMenu S-Sm.Shell\ script.tcsh:tcsh
+SynMenu S-Sm.Shell\ script.zsh:zsh
+SynMenu S-Sm.SiCAD:sicad
+SynMenu S-Sm.Sieve:sieve
+SynMenu S-Sm.Simula:simula
+SynMenu S-Sm.Sinda.Sinda\ compare:sindacmp
+SynMenu S-Sm.Sinda.Sinda\ input:sinda
+SynMenu S-Sm.Sinda.Sinda\ output:sindaout
+SynMenu S-Sm.SiSU:sisu
+SynMenu S-Sm.SKILL.SKILL:skill
+SynMenu S-Sm.SKILL.SKILL\ for\ Diva:diva
+SynMenu S-Sm.Slice:slice
+SynMenu S-Sm.SLRN.Slrn\ rc:slrnrc
+SynMenu S-Sm.SLRN.Slrn\ score:slrnsc
+SynMenu S-Sm.SmallTalk:st
+SynMenu S-Sm.Smarty\ Templates:smarty
+SynMenu S-Sm.SMIL:smil
+SynMenu S-Sm.SMITH:smith
 
-SynMenu TUV.TADS:tads
-SynMenu TUV.Tags:tags
-SynMenu TUV.TAK.TAK\ compare:takcmp
-SynMenu TUV.TAK.TAK\ input:tak
-SynMenu TUV.TAK.TAK\ output:takout
-SynMenu TUV.Tcl/Tk:tcl
-SynMenu TUV.TealInfo:tli
-SynMenu TUV.Telix\ Salt:tsalt
-SynMenu TUV.Termcap/Printcap:ptcap
-SynMenu TUV.Terminfo:terminfo
-SynMenu TUV.TeX.TeX/LaTeX:tex
-SynMenu TUV.TeX.plain\ TeX:plaintex
-SynMenu TUV.TeX.ConTeXt:context
-SynMenu TUV.TeX.TeX\ configuration:texmf
-SynMenu TUV.TeX.Texinfo:texinfo
-SynMenu TUV.TF\ mud\ client:tf
-SynMenu TUV.Tidy\ configuration:tidy
-SynMenu TUV.Tilde:tilde
-SynMenu TUV.TPP:tpp
-SynMenu TUV.Trasys\ input:trasys
-SynMenu TUV.Trustees:trustees
-SynMenu TUV.TSS.Command\ Line:tsscl
-SynMenu TUV.TSS.Geometry:tssgm
-SynMenu TUV.TSS.Optics:tssop
-SynMenu TUV.Udev\ config:udevconf
-SynMenu TUV.Udev\ permissions:udevperm
-SynMenu TUV.Udev\ rules:udevrules
-SynMenu TUV.UIT/UIL:uil
-SynMenu TUV.UnrealScript:uc
-SynMenu TUV.Updatedb\.conf:updatedb
-SynMenu TUV.Valgrind:valgrind
-SynMenu TUV.Vera:vera
-SynMenu TUV.Verilog-AMS\ HDL:verilogams
-SynMenu TUV.Verilog\ HDL:verilog
-SynMenu TUV.Vgrindefs:vgrindefs
-SynMenu TUV.VHDL:vhdl
-SynMenu TUV.Vim.Vim\ help\ file:help
-SynMenu TUV.Vim.Vim\ script:vim
-SynMenu TUV.Vim.Viminfo\ file:viminfo
-SynMenu TUV.Virata\ config:virata
-SynMenu TUV.Visual\ Basic:vb
-SynMenu TUV.VOS\ CM\ macro:voscm
-SynMenu TUV.VRML:vrml
-SynMenu TUV.VSE\ JCL:vsejcl
+SynMenu Sn-Sy.SNMP\ MIB:mib
+SynMenu Sn-Sy.SNNS.SNNS\ network:snnsnet
+SynMenu Sn-Sy.SNNS.SNNS\ pattern:snnspat
+SynMenu Sn-Sy.SNNS.SNNS\ result:snnsres
+SynMenu Sn-Sy.Snobol4:snobol4
+SynMenu Sn-Sy.Snort\ Configuration:hog
+SynMenu Sn-Sy.SPEC\ (Linux\ RPM):spec
+SynMenu Sn-Sy.Specman:specman
+SynMenu Sn-Sy.Spice:spice
+SynMenu Sn-Sy.Spyce:spyce
+SynMenu Sn-Sy.Speedup:spup
+SynMenu Sn-Sy.Splint:splint
+SynMenu Sn-Sy.Squid\ config:squid
+SynMenu Sn-Sy.SQL.ESQL-C:esqlc
+SynMenu Sn-Sy.SQL.MySQL:mysql
+SynMenu Sn-Sy.SQL.PL/SQL:plsql
+SynMenu Sn-Sy.SQL.SQL\ Anywhere:sqlanywhere
+SynMenu Sn-Sy.SQL.SQL\ (automatic):sql
+SynMenu Sn-Sy.SQL.SQL\ (Oracle):sqloracle
+SynMenu Sn-Sy.SQL.SQL\ Forms:sqlforms
+SynMenu Sn-Sy.SQL.SQLJ:sqlj
+SynMenu Sn-Sy.SQL.SQL-Informix:sqlinformix
+SynMenu Sn-Sy.SQR:sqr
+SynMenu Sn-Sy.Ssh.ssh_config:sshconfig
+SynMenu Sn-Sy.Ssh.sshd_config:sshdconfig
+SynMenu Sn-Sy.Standard\ ML:sml
+SynMenu Sn-Sy.Stata.SMCL:smcl
+SynMenu Sn-Sy.Stata.Stata:stata
+SynMenu Sn-Sy.Stored\ Procedures:stp
+SynMenu Sn-Sy.Strace:strace
+SynMenu Sn-Sy.Streaming\ descriptor\ file:sd
+SynMenu Sn-Sy.Subversion\ commit:svn
+SynMenu Sn-Sy.Sudoers:sudoers
+SynMenu Sn-Sy.SVG:svg
+SynMenu Sn-Sy.Symbian\ meta-makefile:mmp
+SynMenu Sn-Sy.Sysctl\.conf:sysctl
+
+SynMenu T.TADS:tads
+SynMenu T.Tags:tags
+SynMenu T.TAK.TAK\ compare:takcmp
+SynMenu T.TAK.TAK\ input:tak
+SynMenu T.TAK.TAK\ output:takout
+SynMenu T.Task\ data:taskdata
+SynMenu T.Task\ 42\ edit:taskedit
+SynMenu T.Tcl/Tk:tcl
+SynMenu T.TealInfo:tli
+SynMenu T.Telix\ Salt:tsalt
+SynMenu T.Termcap/Printcap:ptcap
+SynMenu T.Terminfo:terminfo
+SynMenu T.TeX.TeX/LaTeX:tex
+SynMenu T.TeX.plain\ TeX:plaintex
+SynMenu T.TeX.ConTeXt:context
+SynMenu T.TeX.TeX\ configuration:texmf
+SynMenu T.TeX.Texinfo:texinfo
+SynMenu T.TF\ mud\ client:tf
+SynMenu T.Tidy\ configuration:tidy
+SynMenu T.Tilde:tilde
+SynMenu T.TPP:tpp
+SynMenu T.Trasys\ input:trasys
+SynMenu T.Trustees:trustees
+SynMenu T.TSS.Command\ Line:tsscl
+SynMenu T.TSS.Geometry:tssgm
+SynMenu T.TSS.Optics:tssop
+
+SynMenu UV.Udev\ config:udevconf
+SynMenu UV.Udev\ permissions:udevperm
+SynMenu UV.Udev\ rules:udevrules
+SynMenu UV.UIT/UIL:uil
+SynMenu UV.UnrealScript:uc
+SynMenu UV.Updatedb\.conf:updatedb
+SynMenu UV.Valgrind:valgrind
+SynMenu UV.Vera:vera
+SynMenu UV.Verilog-AMS\ HDL:verilogams
+SynMenu UV.Verilog\ HDL:verilog
+SynMenu UV.Vgrindefs:vgrindefs
+SynMenu UV.VHDL:vhdl
+SynMenu UV.Vim.Vim\ help\ file:help
+SynMenu UV.Vim.Vim\ script:vim
+SynMenu UV.Vim.Viminfo\ file:viminfo
+SynMenu UV.Virata\ config:virata
+SynMenu UV.Visual\ Basic:vb
+SynMenu UV.VOS\ CM\ macro:voscm
+SynMenu UV.VRML:vrml
+SynMenu UV.VSE\ JCL:vsejcl
 
 SynMenu WXYZ.WEB.CWEB:cweb
 SynMenu WXYZ.WEB.WEB:web
