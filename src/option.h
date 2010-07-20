@@ -333,6 +333,9 @@ EXTERN char_u	*p_bex;		/* 'backupext' */
 #ifdef FEAT_WILDIGN
 EXTERN char_u	*p_bsk;		/* 'backupskip' */
 #endif
+#ifdef FEAT_CRYPT
+EXTERN char_u	*p_cm;		/* 'cryptmethod' */
+#endif
 #ifdef FEAT_BEVAL
 EXTERN long	p_bdlay;	/* 'balloondelay' */
 EXTERN int	p_beval;	/* 'ballooneval' */

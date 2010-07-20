@@ -7265,7 +7265,7 @@ Added the |strchars()|, |strwidth()| and |strdisplaywidth()| functions.
 
 Support GDK_SUPER_MASK for GTK on Mac. (Stephan Schulz)
 
-Made CTRL modifier work for mouse wheel. (Benjamin Haskell)
+Made CTRL and ALT modifier work for mouse wheel. (Benjamin Haskell)
 
 When the buffer is in diff mode, have :TOhtml create HTML to show the diff
 side-by-side.  (Christian Brabandt)
@@ -10030,6 +10030,11 @@ Some versions of Ruby redefine rb_str_new2 to rb_str_new_cstr.
 Window title not updated after file dropped.
 
 "g8" doesn't work properly on a NUL.
+
+Fixed crash for ":find" completion, might also happen in other path expansion
+usage.
+
+When 'searchhl' causes a hang make CTRL-C disable 'shearchhl'.
 
 
  vim:tw=78:ts=8:ft=help:norl:

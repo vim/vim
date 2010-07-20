@@ -11189,7 +11189,7 @@ ex_match(eap)
 ex_X(eap)
     exarg_T	*eap UNUSED;
 {
-    if (curbuf->b_p_cm == 0 || blowfish_self_test() == OK)
+    if (get_crypt_method(curbuf) == 0 || blowfish_self_test() == OK)
 	(void)get_crypt_key(TRUE, TRUE);
 }
 #endif

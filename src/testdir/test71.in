@@ -4,9 +4,9 @@ STARTTEST
 :so small.vim
 :/^start of text/+1
 :let text_lines = getline('.', line('.') + 2)
-:/^start of cm=0 bytes/+1
+:/^start of cm=zip bytes/+1
 :let cm0_bytes = getline('.', '.')
-:/^start of cm=1 bytes/+1
+:/^start of cm=blowfish bytes/+1
 :let cm1_bytes = getline('.', '.')
 :bwipe
 :call append(0, text_lines)
@@ -20,9 +20,9 @@ foobar
 foobar
 :let cm0_read_back = getline('.', '$')
 :set key=
-:set cryptmethod=1
-:" If the blowfish test fails 'cryptmethod' will be 0 now.
-:%s/^/\=&cryptmethod == 1 ? "OK " : "blowfish test failed "/
+:set cryptmethod=blowfish
+:" If the blowfish test fails 'cryptmethod' will be 'zip' now.
+:%s/^/\=&cryptmethod == 'blowfish' ? "OK " : "blowfish test failed "/
 :X
 barfoo
 barfoo
@@ -66,10 +66,10 @@ line 2  foo bar blah
 line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 end of text
 
-start of cm=0 bytes
+start of cm=zip bytes
 VimCrypt~01!lV'Þ}Mg ê£V©çE#3Ž2Ué—
-end of cm=0 bytes
+end of cm=zip bytes
 
-start of cm=1 bytes
+start of cm=blowfish bytes
 VimCrypt~02!k)¾—#ÝSœõ=ºàÈ#¥M´†JÃAÍ¥M´†!€›õáÒ‚˜÷Ú
-end of cm=1 bytes
+end of cm=blowfish bytes

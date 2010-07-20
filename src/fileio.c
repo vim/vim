@@ -63,7 +63,7 @@ static char_u *readfile_charconvert __ARGS((char_u *fname, char_u *fenc, int *fd
 static void check_marks_read __ARGS((void));
 #endif
 #ifdef FEAT_CRYPT
-static int get_crypt_method __ARGS((char *ptr, int len));
+static int crypt_method_from_magic __ARGS((char *ptr, int len));
 static char_u *check_for_cryptkey __ARGS((char_u *cryptkey, char_u *ptr, long *sizep, off_t *filesizep, int newfile, char_u *fname, int *did_ask));
 #endif
 #ifdef UNIX
@@ -2855,7 +2855,7 @@ check_marks_read()
  * Returns -1 when no encryption used.
  */
     static int
-get_crypt_method(ptr, len)
+crypt_method_from_magic(ptr, len)
     char  *ptr;
     int   len;
 {
@@ -2892,11 +2892,11 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, fname, did_ask)
     char_u	*fname;		/* file name to display */
     int		*did_ask;	/* flag: whether already asked for key */
 {
-    int method = get_crypt_method((char *)ptr, *sizep);
+    int method = crypt_method_from_magic((char *)ptr, *sizep);
 
     if (method >= 0)
     {
-	curbuf->b_p_cm = method;
+	set_crypt_method(curbuf, method);
 	if (method > 0)
 	    (void)blowfish_self_test();
 	if (cryptkey == NULL && !*did_ask)
@@ -2968,11 +2968,11 @@ prepare_crypt_read(fp)
 
     if (fread(buffer, CRYPT_MAGIC_LEN, 1, fp) != 1)
 	return FAIL;
-    method = get_crypt_method((char *)buffer,
+    method = crypt_method_from_magic((char *)buffer,
 					CRYPT_MAGIC_LEN +
 					CRYPT_SEED_LEN_MAX +
 					CRYPT_SALT_LEN_MAX);
-    if (method < 0 || method != curbuf->b_p_cm)
+    if (method < 0 || method != get_crypt_method(curbuf))
 	return FAIL;
 
     crypt_push_state();
@@ -3003,8 +3003,8 @@ prepare_crypt_write(buf, lenp)
     int   *lenp;
 {
     char_u  *header;
-    int	    seed_len = crypt_seed_len[buf->b_p_cm];
-    int     salt_len = crypt_salt_len[buf->b_p_cm];
+    int	    seed_len = crypt_seed_len[get_crypt_method(buf)];
+    int     salt_len = crypt_salt_len[get_crypt_method(buf)];
     char_u  *salt;
     char_u  *seed;
 
@@ -3013,10 +3013,10 @@ prepare_crypt_write(buf, lenp)
     if (header != NULL)
     {
 	crypt_push_state();
-	use_crypt_method = buf->b_p_cm;  /* select pkzip or blowfish */
+	use_crypt_method = get_crypt_method(buf);  /* select zip or blowfish */
 	vim_strncpy(header, (char_u *)crypt_magic[use_crypt_method],
 							     CRYPT_MAGIC_LEN);
-	if (buf->b_p_cm == 0)
+	if (use_crypt_method == 0)
 	    crypt_init_keys(buf->b_p_key);
 	else
 	{

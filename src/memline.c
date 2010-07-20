@@ -441,7 +441,7 @@ ml_set_b0_crypt(buf, b0p)
 	b0p->b0_id[1] = BLOCK0_ID1;
     else
     {
-	if (buf->b_p_cm == 0)
+	if (get_crypt_method(buf) == 0)
 	    b0p->b0_id[1] = BLOCK0_ID1_C0;
 	else
 	{
@@ -458,8 +458,8 @@ ml_set_b0_crypt(buf, b0p)
  * Will apply this to the swapfile.
  * "old_key" is the previous key.  It is equal to buf->b_p_key when
  * 'cryptmethod' is changed.
- * "old_cm" is the previous 'cryptmethod'.  It is equal to buf->b_p_cm when
- * 'key' is changed.
+ * "old_cm" is the previous 'cryptmethod'.  It is equal to the current
+ * 'cryptmethod' when 'key' is changed.
  */
     void
 ml_set_crypt_key(buf, old_key, old_cm)
@@ -1250,12 +1250,13 @@ ml_recover()
 
 #ifdef FEAT_CRYPT
     if (b0p->b0_id[1] == BLOCK0_ID1_C0)
-	buf->b_p_cm = b0_cm = 0;
+	b0_cm = 0;
     else if (b0p->b0_id[1] == BLOCK0_ID1_C1)
     {
-	buf->b_p_cm = b0_cm = 1;
+	b0_cm = 1;
 	mch_memmove(mfp->mf_seed, &b0p->b0_seed, MF_SEED_LEN);
     }
+    set_crypt_method(buf, b0_cm);
 #else
     if (b0p->b0_id[1] != BLOCK0_ID1)
     {
@@ -4908,7 +4909,7 @@ ml_crypt_prepare(mfp, offset, reading)
     }
     else
     {
-	method = buf->b_p_cm;
+	method = get_crypt_method(buf);
 	key = buf->b_p_key;
 	seed = mfp->mf_seed;
     }

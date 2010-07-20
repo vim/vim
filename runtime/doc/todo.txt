@@ -30,18 +30,9 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-GTK: torn-off menu doesn't work.  Because of patch for file selector?
-
-Win64: diff.exe crashes on Win64. (Julianne Bailey, 2006 Dec 12)
-Build another diff.exe somehow?
+GTK: torn-off menu doesn't work.
 
 :find completion has duplicates. (Bjorn Winckler, 2010 Jul 18)
-
-Conceal: don't show for 'hlmatch' when 'modifiable' is off?
-And don't care about 'cursorline'.
-
-Make 'cryptmethod' global-local, so that a default specified in a .vimrc file
-is used for new files. (Christian J. Robinson)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
