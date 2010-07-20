@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 7.3b.  Last change: 2009 Jan 06
+*netbeans.txt*  For Vim version 7.3b.  Last change: 2010 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
