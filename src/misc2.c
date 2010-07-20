@@ -1038,7 +1038,8 @@ free_all_mem()
 # endif
 
 # ifdef FEAT_WINDOWS
-    /* close all tabs and windows */
+    /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
+    p_ea = FALSE;
     if (first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (firstwin != lastwin)
