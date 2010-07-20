@@ -4715,6 +4715,10 @@ win_line(wp, lnum, startrow, endrow, nochange)
 			ScreenLinesUC[off] = 0;
 #endif
 		    ++col;
+		    if (draw_color_col)
+			draw_color_col = advance_color_col(VCOL_HLC,
+								 &color_cols);
+
 		    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol)
 			ScreenAttrs[off++] = hl_attr(HLF_CUC);
 		    else if (draw_color_col && VCOL_HLC == *color_cols)
@@ -4724,10 +4728,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 		    if (VCOL_HLC >= rightmost_vcol)
 			break;
-
-		    if (draw_color_col)
-			draw_color_col = advance_color_col(VCOL_HLC,
-								 &color_cols);
 
 		    ++vcol;
 		}
