@@ -7488,6 +7488,14 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 #endif
     }
 
+#ifdef FEAT_GUI
+    else if ((int *)varp == &p_mh)
+    {
+	if (!p_mh)
+	    gui_mch_mousehide(FALSE);
+    }
+#endif
+
 #if defined(FEAT_TITLE) || defined(FEAT_CONCEAL)
     /* when 'modifiable' is changed, redraw the window title and
      * update current line for concealable items */
