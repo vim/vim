@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 7.3b.  Last change: 2010 Jul 20
+*if_perl.txt*   For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -265,12 +265,15 @@ Note that "EOF" must be at the start of the line.
 ==============================================================================
 4. Dynamic loading					*perl-dynamic*
 
-On MS-Windows the Perl library can be loaded dynamically.  The |:version|
-output then includes |+perl/dyn|.
+On MS-Windows and Unix the Perl library can be loaded dynamically.  The
+|:version| output then includes |+perl/dyn|.
 
-This means that Vim will search for the Perl DLL file only when needed.  When
-you don't use the Perl interface you don't need it, thus you can use Vim
-without this DLL file.
+This means that Vim will search for the Perl DLL or shared library file only
+when needed.  When you don't use the Perl interface you don't need it, thus
+you can use Vim without this file.
+
+
+MS-Windows ~
 
 You can download Perl from http://www.perl.org.  The one from ActiveState was
 used for building Vim.

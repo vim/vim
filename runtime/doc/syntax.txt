@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 20
+*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1083,7 +1083,9 @@ FORTRAN					*fortran.vim* *ft-fortran-syntax*
 Default highlighting and dialect ~
 Highlighting appropriate for f95 (Fortran 95) is used by default.  This choice
 should be appropriate for most users most of the time because Fortran 95 is a
-superset of Fortran 90 and almost a superset of Fortran 77.
+superset of Fortran 90 and almost a superset of Fortran 77.  Preliminary
+support for Fortran 2003 and Fortran 2008 features has been introduced and is
+automatically available in the default (f95) highlighting.
 
 Fortran source code form ~
 Fortran 9x code can be in either fixed or free source form.  Note that the

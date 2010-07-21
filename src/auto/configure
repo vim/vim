@@ -1423,7 +1423,7 @@ Optional Features:
   --disable-xsmp-interact Disable XSMP interaction
   --enable-luainterp      Include Lua interpreter.
   --enable-mzschemeinterp   Include MzScheme interpreter.
-  --enable-perlinterp     Include Perl interpreter.
+  --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
   --enable-pythoninterp   Include Python interpreter.
   --enable-python3interp   Include Python3 interpreter.
   --enable-tclinterp      Include Tcl interpreter.
@@ -4241,7 +4241,7 @@ if test "${with_local_dir+set}" = set; then :
     */*) ;;
     no)
       # avoid adding local dir to LDFLAGS and CPPFLAGS
-      have_local_dir=yes
+      have_local_include=yes
       have_local_lib=yes
       ;;
     *) as_fn_error "must pass path argument to --with-local-dir" "$LINENO" 5 ;;
@@ -4924,7 +4924,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_perlinterp" >&5
 $as_echo "$enable_perlinterp" >&6; }
-if test "$enable_perlinterp" = "yes"; then
+if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
 
   # Extract the first word of "perl", so it can be a program name with args.
 set dummy perl; ac_word=$2
@@ -4971,6 +4971,7 @@ fi
 $as_echo_n "checking Perl version... " >&6; }
     if $vi_cv_path_perl -e 'require 5.003_01' >/dev/null 2>/dev/null; then
      eval `$vi_cv_path_perl -V:usethreads`
+     eval `$vi_cv_path_perl -V:libperl`
      if test "X$usethreads" = "XUNKNOWN" -o "X$usethreads" = "Xundef"; then
        badthreads=no
      else
@@ -5075,6 +5076,13 @@ $as_echo ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
       PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
+    fi
+  fi
+  if test "$enable_perlinterp" = "dynamic"; then
+    if test "$perl_ok" = "yes" -a "X$libperl" != "X"; then
+      $as_echo "#define DYNAMIC_PERL 1" >>confdefs.h
+
+      PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
     fi
   fi
 fi

@@ -213,7 +213,7 @@ if test "$cross_compiling" = no; then
     */*) ;;
     no)
       # avoid adding local dir to LDFLAGS and CPPFLAGS
-      have_local_dir=yes
+      have_local_include=yes
       have_local_lib=yes
       ;;
     *) AC_MSG_ERROR(must pass path argument to --with-local-dir) ;;
@@ -620,16 +620,17 @@ fi
 
 AC_MSG_CHECKING(--enable-perlinterp argument)
 AC_ARG_ENABLE(perlinterp,
-	[  --enable-perlinterp     Include Perl interpreter.], ,
+	[  --enable-perlinterp[=OPTS]     Include Perl interpreter.  [default=no] [OPTS=no/yes/dynamic]], ,
 	[enable_perlinterp="no"])
 AC_MSG_RESULT($enable_perlinterp)
-if test "$enable_perlinterp" = "yes"; then
+if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
   AC_SUBST(vi_cv_path_perl)
   AC_PATH_PROG(vi_cv_path_perl, perl)
   if test "X$vi_cv_path_perl" != "X"; then
     AC_MSG_CHECKING(Perl version)
     if $vi_cv_path_perl -e 'require 5.003_01' >/dev/null 2>/dev/null; then
      eval `$vi_cv_path_perl -V:usethreads`
+     eval `$vi_cv_path_perl -V:libperl`
      if test "X$usethreads" = "XUNKNOWN" -o "X$usethreads" = "Xundef"; then
        badthreads=no
      else
@@ -720,6 +721,12 @@ if test "$enable_perlinterp" = "yes"; then
       PERL_CFLAGS="-DFEAT_PERL -I$darwindir/CORE"
       PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
+    fi
+  fi
+  if test "$enable_perlinterp" = "dynamic"; then
+    if test "$perl_ok" = "yes" -a "X$libperl" != "X"; then
+      AC_DEFINE(DYNAMIC_PERL)
+      PERL_CFLAGS="-DDYNAMIC_PERL_DLL=\\\"$libperl\\\" $PERL_CFLAGS"
     fi
   fi
 fi

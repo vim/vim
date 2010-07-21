@@ -3,9 +3,9 @@
 " Maintainer:   Debian Vim Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
 " Former Maintainers:   Michael Piefel <piefel@informatik.hu-berlin.de>
 "                       Stefano Zacchiroli <zack@debian.org>
-" Last Change:  2010-04-29
+" Last Change:  2010-07-11
 " License:      GNU GPL, version 2.0 or later
-" URL:          http://hg.debian.org/hg/pkg-vim/vim/raw-file/tip/runtime/ftplugin/debchangelog.vim
+" URL:          http://hg.debian.org/hg/pkg-vim/vim/file/unstable/runtime/ftplugin/debchangelog.vim
 
 " Bug completion requires apt-listbugs installed for Debian packages or
 " python-launchpadlib installed for Ubuntu packages
@@ -228,7 +228,7 @@ endfunction
 
 augroup changelogMenu
 au BufEnter * if &filetype == "debchangelog" | call <SID>MakeMenu() | endif
-au BufLeave * if &filetype == "debchangelog" | aunmenu Changelog | endif
+au BufLeave * if &filetype == "debchangelog" | silent! aunmenu Changelog | endif
 augroup END
 
 " }}}

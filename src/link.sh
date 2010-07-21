@@ -41,7 +41,7 @@ else
   if sh link.cmd; then
     touch auto/link.sed
     cp link.cmd linkit.sh
-    for libname in SM ICE nsl dnet dnet_stub inet socket dir elf iconv Xt Xmu Xp Xpm X11 Xdmcp x w dl pthread thread readline m perl crypt attr; do
+    for libname in SM ICE nsl dnet dnet_stub inet socket dir elf iconv Xt Xmu Xp Xpm X11 Xdmcp x w perl dl pthread thread readline m crypt attr; do
       cont=yes
       while test -n "$cont"; do
         if grep "l$libname " linkit.sh >/dev/null; then

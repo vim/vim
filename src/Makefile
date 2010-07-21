@@ -384,8 +384,10 @@ CClink = $(CC)
 #CONF_OPT_PLTHOME  = --with-plthome=/home/me/mz
 
 # PERL
-# Uncomment this when you want to include the Perl interface.
+# Uncomment one of these when you want to include the Perl interface.
+# First one is for static linking, second one for dynamic loading.
 # The Perl option sometimes causes problems, because it adds extra flags
+#
 # to the command line.	If you see strange flags during compilation, check in
 # auto/config.mk where they come from.  If it's PERL_CFLAGS, try commenting
 # the next line.
@@ -393,6 +395,7 @@ CClink = $(CC)
 # one: "touch perl.exp".
 # This requires at least "small" features, "tiny" doesn't work.
 #CONF_OPT_PERL = --enable-perlinterp
+#CONF_OPT_PERL = --enable-perlinterp=dynamic
 
 # PYTHON
 # Uncomment this when you want to include the Python interface.
@@ -1311,7 +1314,7 @@ SHELL = /bin/sh
 .SUFFIXES: .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(LUA_CFLAGS) $(MZSCHEME_CFLAGS) $(PERL_CFLAGS) $(ECL_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
+POST_DEFS = $(X_CFLAGS) $(LUA_CFLAGS) $(MZSCHEME_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
@@ -2494,10 +2497,10 @@ mzscheme_base.c:
 	$(MZSCHEME_MZC) --c-mods mzscheme_base.c ++lib scheme/base
 
 objects/if_perl.o: auto/if_perl.c
-	$(CCC) -o $@ auto/if_perl.c
+	$(CCC) $(PERL_CFLAGS) -o $@ auto/if_perl.c
 
 objects/if_perlsfio.o: if_perlsfio.c
-	$(CCC) -o $@ if_perlsfio.c
+	$(CCC) $(PERL_CFLAGS) -o $@ if_perlsfio.c
 
 objects/py_config.o: $(PYTHON_CONFDIR)/config.c
 	$(CCC) $(PYTHON_CFLAGS) -o $@ $(PYTHON_CONFDIR)/config.c \

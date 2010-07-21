@@ -325,6 +325,9 @@
 /* Define if you want to include the Perl interpreter. */
 #undef FEAT_PERL
 
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_PERL
+
 /* Define if you want to include the Python interpreter. */
 #undef FEAT_PYTHON
 

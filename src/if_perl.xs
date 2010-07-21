@@ -84,9 +84,32 @@ static void VIM_init __ARGS((void));
 EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 
 /*
- * For dynamic linked perl. (Windows)
+ * For dynamic linked perl.
  */
 #if defined(DYNAMIC_PERL) || defined(PROTO)
+
+#ifndef DYNAMIC_PERL /* just generating prototypes */
+#ifdef _MSWIN
+typedef int HANDLE;
+#endif
+typedef int XSINIT_t;
+typedef int XSUBADDR_t;
+typedef int perl_key;
+#endif
+
+#ifndef _MSWIN
+#include <dlfcn.h>
+#define HANDLE void*
+#define PERL_PROC void*
+#define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+#define symbol_from_dll dlsym
+#define close_dll dlclose
+#else
+#define PERL_PROC FARPROC
+#define load_dll LoadLibrary
+#define symbol_from_dll GetProcAddress
+#define close_dll FreeLibrary
+#endif
 /*
  * Wrapper defines
  */
@@ -173,6 +196,7 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # define Perl_Ierrgv_ptr dll_Perl_Ierrgv_ptr
 # define Perl_Isv_yes_ptr dll_Perl_Isv_yes_ptr
 # define boot_DynaLoader dll_boot_DynaLoader
+# define Perl_Gthr_key_ptr dll_Perl_Gthr_key_ptr
 
 # define Perl_sys_init dll_Perl_sys_init
 # define Perl_sys_term dll_Perl_sys_term
@@ -190,12 +214,6 @@ EXTERN_C void boot_DynaLoader __ARGS((pTHX_ CV*));
 # define Perl_call_list dll_Perl_call_list
 # define Perl_Iscopestack_ix_ptr dll_Perl_Iscopestack_ix_ptr
 # define Perl_Iunitcheckav_ptr dll_Perl_Iunitcheckav_ptr
-
-#ifndef DYNAMIC_PERL /* just generating prototypes */
-typedef int HANDLE;
-typedef int XSINIT_t;
-typedef int XSUBADDR_t;
-#endif
 
 /*
  * Declare HANDLE for perl.dll and function pointers.
@@ -265,6 +283,7 @@ static void (*Perl_sv_setsv_flags)(pTHX_ SV*, SV*, I32);
 static void (*Perl_sv_setsv)(pTHX_ SV*, SV*);
 #endif
 static bool (*Perl_sv_upgrade)(pTHX_ SV*, U32);
+#if (PERL_REVISION == 5) && (PERL_VERSION < 10)
 static SV*** (*Perl_Tstack_sp_ptr)(register PerlInterpreter*);
 static OP** (*Perl_Top_ptr)(register PerlInterpreter*);
 static SV*** (*Perl_Tstack_base_ptr)(register PerlInterpreter*);
@@ -276,12 +295,7 @@ static I32** (*Perl_Tmarkstack_max_ptr)(register PerlInterpreter*);
 static SV** (*Perl_TSv_ptr)(register PerlInterpreter*);
 static XPV** (*Perl_TXpv_ptr)(register PerlInterpreter*);
 static STRLEN* (*Perl_Tna_ptr)(register PerlInterpreter*);
-static GV** (*Perl_Idefgv_ptr)(register PerlInterpreter*);
-static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
-static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
-static void (*boot_DynaLoader)_((pTHX_ CV*));
-
-#if (PERL_REVISION == 5) && (PERL_VERSION >= 10)
+#else
 static void (*Perl_sv_free2)(pTHX_ SV*);
 static void (*Perl_sys_init)(int* argc, char*** argv);
 static void (*Perl_sys_term)(void);
@@ -301,10 +315,15 @@ static I32* (*Perl_Iscopestack_ix_ptr)(register PerlInterpreter*);
 static AV** (*Perl_Iunitcheckav_ptr)(register PerlInterpreter*);
 #endif
 
+static GV** (*Perl_Idefgv_ptr)(register PerlInterpreter*);
+static GV** (*Perl_Ierrgv_ptr)(register PerlInterpreter*);
+static SV* (*Perl_Isv_yes_ptr)(register PerlInterpreter*);
+static void (*boot_DynaLoader)_((pTHX_ CV*));
+static perl_key* (*Perl_Gthr_key_ptr)_((pTHX));
+
 /*
  * Table of name to function pointer of perl.
  */
-#define PERL_PROC FARPROC
 static struct {
     char* name;
     PERL_PROC* ptr;
@@ -389,17 +408,16 @@ static struct {
     {"Perl_sys_init", (PERL_PROC*)&Perl_sys_init},
     {"Perl_sys_term", (PERL_PROC*)&Perl_sys_term},
     {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
-    {"Perl_Istack_sp_ptr", (PERL_PROC*)&Perl_Istack_sp_ptr},
-    {"Perl_Iop_ptr", (PERL_PROC*)&Perl_Iop_ptr},
-    {"Perl_Istack_base_ptr", (PERL_PROC*)&Perl_Istack_base_ptr},
     {"Perl_Istack_max_ptr", (PERL_PROC*)&Perl_Istack_max_ptr},
+    {"Perl_Istack_base_ptr", (PERL_PROC*)&Perl_Istack_base_ptr},
+    {"Perl_IXpv_ptr", (PERL_PROC*)&Perl_IXpv_ptr},
     {"Perl_Itmps_ix_ptr", (PERL_PROC*)&Perl_Itmps_ix_ptr},
     {"Perl_Itmps_floor_ptr", (PERL_PROC*)&Perl_Itmps_floor_ptr},
+    {"Perl_Ina_ptr", (PERL_PROC*)&Perl_Ina_ptr},
     {"Perl_Imarkstack_ptr_ptr", (PERL_PROC*)&Perl_Imarkstack_ptr_ptr},
     {"Perl_Imarkstack_max_ptr", (PERL_PROC*)&Perl_Imarkstack_max_ptr},
-    {"Perl_ISv_ptr", (PERL_PROC*)&Perl_ISv_ptr},
-    {"Perl_IXpv_ptr", (PERL_PROC*)&Perl_IXpv_ptr},
-    {"Perl_Ina_ptr", (PERL_PROC*)&Perl_Ina_ptr},
+    {"Perl_Istack_sp_ptr", (PERL_PROC*)&Perl_Istack_sp_ptr},
+    {"Perl_Iop_ptr", (PERL_PROC*)&Perl_Iop_ptr},
     {"Perl_call_list", (PERL_PROC*)&Perl_call_list},
     {"Perl_Iscopestack_ix_ptr", (PERL_PROC*)&Perl_Iscopestack_ix_ptr},
     {"Perl_Iunitcheckav_ptr", (PERL_PROC*)&Perl_Iunitcheckav_ptr},
@@ -408,6 +426,7 @@ static struct {
     {"Perl_Ierrgv_ptr", (PERL_PROC*)&Perl_Ierrgv_ptr},
     {"Perl_Isv_yes_ptr", (PERL_PROC*)&Perl_Isv_yes_ptr},
     {"boot_DynaLoader", (PERL_PROC*)&boot_DynaLoader},
+    {"Perl_Gthr_key_ptr", (PERL_PROC*)&Perl_Gthr_key_ptr},
     {"", NULL},
 };
 
@@ -428,7 +447,7 @@ perl_runtime_link_init(char *libname, int verbose)
 
     if (hPerlLib != NULL)
 	return OK;
-    if (!(hPerlLib = LoadLibraryEx(libname, NULL, 0)))
+    if ((hPerlLib = load_dll(libname)) == NULL)
     {
 	if (verbose)
 	    EMSG2(_("E370: Could not load library %s"), libname);
@@ -436,10 +455,10 @@ perl_runtime_link_init(char *libname, int verbose)
     }
     for (i = 0; perl_funcname_table[i].ptr; ++i)
     {
-	if (!(*perl_funcname_table[i].ptr = GetProcAddress(hPerlLib,
+	if (!(*perl_funcname_table[i].ptr = symbol_from_dll(hPerlLib,
 			perl_funcname_table[i].name)))
 	{
-	    FreeLibrary(hPerlLib);
+	    close_dll(hPerlLib);
 	    hPerlLib = NULL;
 	    if (verbose)
 		EMSG2(_(e_loadfunc), perl_funcname_table[i].name);
@@ -508,7 +527,7 @@ perl_end()
 #ifdef DYNAMIC_PERL
     if (hPerlLib)
     {
-	FreeLibrary(hPerlLib);
+	close_dll(hPerlLib);
 	hPerlLib = NULL;
     }
 #endif

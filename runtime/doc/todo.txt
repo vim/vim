@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 20
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
+Asked for a few changes.
 
 Patch for Dynamic loading for Perl. (James Vega, 2010 Jul 20)
 
@@ -1124,8 +1125,6 @@ More patches:
     Sep 13)
 -   Patch for adding "space" item in 'listchars'. (Jérémie Roquet, 2009 Oct 29,
     Docs patch Oct 30)
--   Patch for supporting #rrggbb in color terminals.  (Matt Wozniski)
-    Where is a recent version of this patch?  Or use CSApprox plugin?
 -   Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
     Vissale Neang.  (Martin Stubenschrott) Asked Vissale to make the scripts
     more friendly for the Vim distribution.
