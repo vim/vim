@@ -340,11 +340,13 @@ uganda.nsis.txt: uganda.txt
 		uganda.txt | uniq >uganda.nsis.txt
 
 # Awk version of .txt to .html conversion.
-html: noerrors tags tags.ref $(HTMLS)
+html: noerrors tags $(HTMLS)
 	@if test -f errors.log; then more errors.log; fi
 
 noerrors:
 	-rm -f errors.log
+
+$(HTMLS): tags.ref
 
 .txt.html:
 	$(AWK) -f makehtml.awk $< >$@
