@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Français)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-06-12 07:15+0200\n"
-"PO-Revision-Date: 2010-06-12 07:56+0200\n"
+"POT-Creation-Date: 2010-07-21 20:45+0200\n"
+"PO-Revision-Date: 2010-07-18 21:38+0200\n"
 "Last-Translator: Dominique Pellé <dominique.pelle@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -2260,9 +2260,6 @@ msgstr "Vim"
 msgid "E232: Cannot create BalloonEval with both message and callback"
 msgstr "E232: Impossible de créer un BalloonEval avec message ET callback"
 
-msgid "Vim dialog..."
-msgstr "Vim"
-
 msgid ""
 "&Yes\n"
 "&No\n"
@@ -2331,9 +2328,6 @@ msgstr "Ouvrir dans un onglet..."
 
 msgid "Vim: Main window unexpectedly destroyed\n"
 msgstr "Vim : Fenêtre principale détruite inopinément\n"
-
-msgid "Font Selection"
-msgstr "Choisir une police - Vim"
 
 msgid "&Filter"
 msgstr "&Filtrer"
@@ -2769,6 +2763,12 @@ msgstr "aucune connexion cscope\n"
 msgid " # pid    database name                       prepend path\n"
 msgstr " # pid    nom de la base de données           chemin\n"
 
+msgid "Lua library cannot be loaded."
+msgstr "La bibliothèque Lua n'a pas pu être chargée."
+
+msgid "cannot save undo information"
+msgstr "impossible d'enregistrer les informations d'annulation"
+
 msgid ""
 "E815: Sorry, this command is disabled, the MzScheme libraries could not be "
 "loaded."
@@ -2793,9 +2793,6 @@ msgstr "numéro de fenêtre hors limites"
 
 msgid "couldn't open buffer"
 msgstr "impossible d'ouvrir le tampon"
-
-msgid "cannot save undo information"
-msgstr "impossible d'enregistrer les informations d'annulation"
 
 msgid "cannot delete line"
 msgstr "impossible d'effacer la ligne"
@@ -3624,16 +3621,6 @@ msgstr ""
 "E289: le type de préédition de Vim n'est pas supporté par la méthode de "
 "saisie"
 
-# DB - todo
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: le style over-the-spot nécessite un jeu de polices"
-
-msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
-msgstr "E291: Votre GTK+ est plus ancien que 1.2.3. Zone d'état désactivée"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Le Serveur de Méthodes de Saisie n'est pas lancé"
-
 msgid "E293: block was not locked"
 msgstr "E293: le bloc n'était pas verrouillé"
 
@@ -3720,6 +3707,12 @@ msgstr ""
 ",\n"
 "ou le fichier a été endommagé."
 
+#, c-format
+msgid ""
+"E833: %s is encrypted and this version of Vim does not support encryption"
+msgstr ""
+"E833: %s est chiffré et cette version de Vim ne supporte pas le chiffrement"
+
 msgid " has been damaged (page size is smaller than minimum value).\n"
 msgstr " a été endommagé (taille de page inférieure à la valeur minimale).\n"
 
@@ -3733,6 +3726,40 @@ msgstr "Fichier original \"%s\""
 
 msgid "E308: Warning: Original file may have been changed"
 msgstr "E308: Alerte : Le fichier original a pu être modifié"
+
+#, c-format
+msgid "Swap file is encrypted: \"%s\""
+msgstr "Fichier d'échange chiffré : \"%s\""
+
+msgid ""
+"\n"
+"If you entered a new crypt key but did not write the text file,"
+msgstr ""
+"\n"
+"Si vous avez tapé une nouvelle clé de chiffrement mais n'avez pas enregistré "
+"le fichier texte,"
+
+msgid ""
+"\n"
+"enter the new crypt key."
+msgstr ""
+"\n"
+"tapez la nouvelle clé de chiffrement."
+
+msgid ""
+"\n"
+"If you wrote the text file after changing the crypt key press enter"
+msgstr ""
+"\n"
+"Si vous avez écrit le fichier texte après avoir changé la clé de "
+"chiffrement, appuyez sur entrée"
+
+msgid ""
+"\n"
+"to use the same key for text file and swap file"
+msgstr ""
+"\n"
+"afin d'utiliser la même clé pour le fichier texte et le fichier d'échange"
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
@@ -3789,11 +3816,12 @@ msgstr ""
 "(Vous voudrez peut-être enregistrer ce fichier sous un autre nom\n"
 
 msgid "and run diff with the original file to check for changes)"
-msgstr ""
-"et lancer diff avec le fichier original pour repérer les changements)"
+msgstr "et lancer diff avec le fichier original pour repérer les changements)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
-msgstr "Récupération achevée. Le contenu du tampon est identique au contenu du fichier."
+msgstr ""
+"Récupération achevée. Le contenu du tampon est identique au contenu du "
+"fichier."
 
 msgid ""
 "\n"
@@ -3803,6 +3831,11 @@ msgstr ""
 "\n"
 "Il est conseillé d'effacer maintenant le fichier .swp.\n"
 "\n"
+
+msgid "Using crypt key from swap file for the text file.\n"
+msgstr ""
+"Utilisation de la clé de chiffrement du fichier d'échange pour le fichier "
+"texte.\n"
 
 #. use msg() to start the scrolling properly
 msgid "Swap files found:"
@@ -4445,7 +4478,6 @@ msgstr ""
 msgid "Illegal register name"
 msgstr "Nom de registre invalide"
 
-#, c-format
 msgid ""
 "\n"
 "# Registers:\n"
@@ -4943,6 +4975,9 @@ msgstr "liste d'erreurs %d sur %d ; %d erreurs"
 
 msgid "E382: Cannot write, 'buftype' option is set"
 msgstr "E382: Écriture impossible, l'option 'buftype' est activée"
+
+msgid "Error file"
+msgstr "Fichier d'erreurs"
 
 msgid "E683: File name missing or invalid pattern"
 msgstr "E683: Nom de fichier manquant ou motif invalide"
@@ -5825,6 +5860,10 @@ msgstr "E434: Le motif de marqueur est introuvable"
 msgid "E435: Couldn't find tag, just guessing!"
 msgstr "E435: Marqueur introuvable, tentative pour deviner !"
 
+#, c-format
+msgid "Duplicate field name: %s"
+msgstr "Nom de champ dupliqué : %s"
+
 msgid "' not known. Available builtin terminals are:"
 msgstr "' inconnu. Les terminaux intégrés sont :"
 
@@ -5866,6 +5905,11 @@ msgstr "Vim : Erreur lors de la lecture de l'entrée, sortie...\n"
 msgid "Used CUT_BUFFER0 instead of empty selection"
 msgstr "CUT_BUFFER0 utilisé plutôt qu'une sélection vide"
 
+#. This happens when the FileChangedRO autocommand changes the file in
+#. * a way it becomes shorter.
+msgid "E834: Line count changed unexpectedly"
+msgstr "E834: Le nombre de lignes a été changé inopinément"
+
 # DB - Question O/N.
 #. must display the prompt
 msgid "No undo possible; continue anyway"
@@ -5880,8 +5924,9 @@ msgid "E825: Corrupted undo file (%s): %s"
 msgstr "E825: Fichier d'annulations corrompu (%s) : %s"
 
 msgid "Cannot write undo file in any directory in 'undodir'"
-msgstr "Impossible d'écrire le fichier d'annulations dans n'importe "
-"quel répertoire de 'undodir'"
+msgstr ""
+"Impossible d'écrire le fichier d'annulations dans n'importe quel répertoire "
+"de 'undodir'"
 
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"
@@ -5935,8 +5980,9 @@ msgid "E824: Incompatible undo file: %s"
 msgstr "E824: Fichier d'annulations incompatible : %s"
 
 msgid "File contents changed, cannot use undo info"
-msgstr "Le contenu du fichier a changé, impossible d'utiliser les "
-"informations d'annulation"
+msgstr ""
+"Le contenu du fichier a changé, impossible d'utiliser les informations "
+"d'annulation"
 
 #, c-format
 msgid "Finished reading undo file %s"
@@ -5987,8 +6033,8 @@ msgid "Nothing to undo"
 msgstr "Rien à annuler"
 
 # DB - Les deux premières colonnes sont alignées à droite.
-msgid "number changes  time"
-msgstr "numéro  modif.  instant"
+msgid "number changes  time            saved"
+msgstr "numéro  modif.  instant         enregistré"
 
 #, c-format
 msgid "%ld seconds ago"
@@ -6169,14 +6215,8 @@ msgstr "sans interface graphique."
 msgid "with GTK2-GNOME GUI."
 msgstr "avec interface graphique GTK2-GNOME."
 
-msgid "with GTK-GNOME GUI."
-msgstr "avec interface graphique GTK-GNOME."
-
 msgid "with GTK2 GUI."
 msgstr "avec interface graphique GTK2."
-
-msgid "with GTK GUI."
-msgstr "avec interface graphique GTK."
 
 msgid "with X11-Motif GUI."
 msgstr "avec interface graphique X11-Motif."
@@ -6758,3 +6798,7 @@ msgstr "La recherche a atteint le HAUT, et continue en BAS"
 
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "La recherche a atteint le BAS, et continue en HAUT"
+
+#, c-format
+msgid "Need encryption key for \"%s\""
+msgstr "Besoin de la clé de chiffrement pour \"%s\""
