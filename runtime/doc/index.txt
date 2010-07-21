@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 7.3b.  Last change: 2010 Jul 20
+*index.txt*     For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1383,7 +1383,8 @@ The commands are sorted on the non-optional part of their name.
 |:put|		:pu[t]		insert contents of register in the text
 |:pwd|		:pw[d]		print current directory
 |:py3|		:py3		execute Python 3 command
-|:p3yfile|	:py3f[ile]	execute Python 3 script file
+|:python3|	:python3	same as :py3
+|:py3yfile|	:py3f[ile]	execute Python 3 script file
 |:python|	:py[thon]	execute Python command
 |:pyfile|	:pyf[ile]	execute Python script file
 |:quit|		:q[uit]		quit current window (when one window quit Vim)

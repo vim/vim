@@ -30,6 +30,10 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
+
+Patch for Dynamic loading for Perl. (James Vega, 2010 Jul 20)
+
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
 Test 69 breaks on MS-Windows, both 32 and 64 builds. (George Reilly, 2010 Feb

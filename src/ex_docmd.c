@@ -2563,6 +2563,7 @@ do_one_cmd(cmdlinep, sourcing,
 	    case CMD_psearch:
 	    case CMD_python:
 	    case CMD_py3:
+	    case CMD_python3:
 	    case CMD_return:
 	    case CMD_rightbelow:
 	    case CMD_ruby:
@@ -2825,9 +2826,10 @@ find_command(eap, full)
     {
 	while (ASCII_ISALPHA(*p))
 	    ++p;
-	/* for python 3.x support ":py3" (and ":py4" :-) */
+	/* for python 3.x support ":py3", ":python3", ":py3file", etc. */
 	if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
-	    p = skipdigits(p);
+	    while (ASCII_ISALNUM(*p))
+		++p;
 
 	/* check for non-alpha command */
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
