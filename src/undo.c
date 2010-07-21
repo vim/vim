@@ -1437,10 +1437,11 @@ u_write_undo(name, forceit, buf, hash)
      * this fails, set the protection bits for the group same as the
      * protection bits for others.
      */
-    if (st_old_valid && (mch_stat((char *)file_name, &st_new) >= 0
-		&& st_new.st_gid != st_old.st_gid
+    if (st_old_valid
+	    && mch_stat((char *)file_name, &st_new) >= 0
+	    && st_new.st_gid != st_old.st_gid
 # ifdef HAVE_FCHOWN  /* sequent-ptx lacks fchown() */
-		&& fchown(fd, (uid_t)-1, st_old.st_gid) != 0)
+	    && fchown(fd, (uid_t)-1, st_old.st_gid) != 0
 # endif
        )
 	mch_setperm(file_name, (perm & 0707) | ((perm & 07) << 3));
