@@ -1193,6 +1193,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 +profile	various.txt	/*+profile*
 +python	various.txt	/*+python*
 +python/dyn	various.txt	/*+python\/dyn*
++python3	various.txt	/*+python3*
++python3/dyn	various.txt	/*+python3\/dyn*
 +quickfix	various.txt	/*+quickfix*
 +reltime	various.txt	/*+reltime*
 +rightleft	various.txt	/*+rightleft*
@@ -7041,7 +7043,7 @@ ports-6	version6.txt	/*ports-6*
 posix	vi_diff.txt	/*posix*
 posix-compliance	vi_diff.txt	/*posix-compliance*
 posix-screen-size	vi_diff.txt	/*posix-screen-size*
-postgress	ft_sql.txt	/*postgress*
+postgresql	ft_sql.txt	/*postgresql*
 postscr.vim	syntax.txt	/*postscr.vim*
 postscript-cjk-printing	print.txt	/*postscript-cjk-printing*
 postscript-print-encoding	print.txt	/*postscript-print-encoding*

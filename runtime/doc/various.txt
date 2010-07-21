@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 7.3b.  Last change: 2010 Jul 20
+*various.txt*   For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -367,8 +367,10 @@ H  *+persistent_undo*	Persistent undo |undo-persistence|
    *+postscript*	|:hardcopy| writes a PostScript file
 N  *+printer*		|:hardcopy| command
 H  *+profile*		|:profile| command
-m  *+python*		Python interface |python|
-m  *+python/dyn*	Python interface |python-dynamic| |/dyn|
+m  *+python*		Python 2 interface |python|
+m  *+python/dyn*	Python 2 interface |python-dynamic| |/dyn|
+m  *+python3*		Python 3 interface |python|
+m  *+python3/dyn*	Python 3 interface |python-dynamic| |/dyn|
 N  *+quickfix*		|:make| and |quickfix| commands
 N  *+reltime*		|reltime()| function, 'hlsearch'/'incsearch' timeout,
 			'redrawtime' option

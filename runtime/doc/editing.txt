@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 7.3b.  Last change: 2010 Jul 20
+*editing.txt*   For Vim version 7.3b.  Last change: 2010 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1410,8 +1410,8 @@ your shoulder.
 Since the value of the 'key' option is supposed to be a secret, its value can
 never be viewed.  You should not set this option in a vimrc file.
 
-An encrypted file can be recognized by the "file" command, if you add this
-line to "/etc/magic", "/usr/share/misc/magic" or wherever your system has the
+An encrypted file can be recognized by the "file" command, if you add these
+lines to "/etc/magic", "/usr/share/misc/magic" or wherever your system has the
 "magic" file: >
      0	string	VimCrypt~	Vim encrypted file
      >9	string	01	- "zip" cryptmethod
