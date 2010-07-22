@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 7.3b.  Last change: 2010 May 14
+*autocmd.txt*   For Vim version 7.3b.  Last change: 2010 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1280,7 +1280,7 @@ and "++ff=" argument that are effective.  These should be used for the command
 that reads/writes the file.  The |v:cmdbang| variable is one when "!" was
 used, zero otherwise.
 
-See the $VIMRUNTIME/plugin/netrw.vim for examples.
+See the $VIMRUNTIME/plugin/netrwPlugin.vim for examples.
 
 ==============================================================================
 11. Disabling autocommands				*autocmd-disable*

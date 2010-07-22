@@ -1,8 +1,7 @@
 " Vim indent file
 " Language:	Fortran95 (and Fortran90, Fortran77, F and elf90)
-" Version:	0.37
-" URL:		http://www.unb.ca/chem/ajit/indent/fortran.vim
-" Last Change:	2006 Nov 16
+" Version:	0.38
+" Last Change:	2010 July 21
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-indent from Vim
 
@@ -32,7 +31,7 @@ if !exists("b:fortran_fixed_source")
     " Detection becomes more accurate and time-consuming if more lines
     " are checked. Increase the limit below if you keep lots of comments at
     " the very top of each file and you have a fast computer
-    let s:lmax = 250
+    let s:lmax = 500
     if ( s:lmax > line("$") )
       let s:lmax = line("$")
     endif
@@ -40,7 +39,7 @@ if !exists("b:fortran_fixed_source")
     let s:ln=1
     while s:ln <= s:lmax
       let s:test = strpart(getline(s:ln),0,5)
-      if s:test[0] !~ '[Cc*!#]' && s:test !~ '^ \+[!#]' && s:test =~ '[^ 0-9\t]'
+      if s:test !~ '^[Cc*]' && s:test !~ '^ *[!#]' && s:test =~ '[^ 0-9\t]' && s:test !~ '^[ 0-9]*\t'
 	let b:fortran_fixed_source = 0
 	break
       endif
