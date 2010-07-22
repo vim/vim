@@ -96,11 +96,11 @@ struct PyMethodDef { Py_ssize_t a; };
 #  define HINSTANCE long_u		/* for generating prototypes */
 # endif
 
-#ifndef _WIN32
+#ifndef WIN3264
 # include <dlfcn.h>
 # define FARPROC void*
 # define HINSTANCE void*
-# define load_dll(n) dlopen((n),RTLD_LAZY)
+# define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 # define close_dll dlclose
 # define symbol_from_dll dlsym
 #else

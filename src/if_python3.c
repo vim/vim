@@ -70,11 +70,11 @@ static void init_structs(void);
 
 #if defined(DYNAMIC_PYTHON3)
 
-#ifndef _WIN32
+#ifndef WIN3264
 #include <dlfcn.h>
 #define FARPROC void*
 #define HINSTANCE void*
-#define load_dll(n) dlopen((n),RTLD_LAZY)
+#define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
 #define close_dll dlclose
 #define symbol_from_dll dlsym
 #else
