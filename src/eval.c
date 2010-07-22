@@ -16820,7 +16820,7 @@ f_strdisplaywidth(argvars, rettv)
     if (argvars[1].v_type != VAR_UNKNOWN)
 	col = get_tv_number(&argvars[1]);
 
-    rettv->vval.v_number = (varnumber_T)(linetabsize_col(col, s));
+    rettv->vval.v_number = (varnumber_T)(linetabsize_col(col, s) - col);
 }
 
 /*
