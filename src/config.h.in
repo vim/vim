@@ -319,6 +319,9 @@
 /* Define if you want to include the Lua interpreter. */
 #undef FEAT_LUA
 
+/* Define for linking via dlopen() or LoadLibrary() */
+#undef DYNAMIC_LUA
+
 /* Define if you want to include the MzScheme interpreter. */
 #undef FEAT_MZSCHEME
 

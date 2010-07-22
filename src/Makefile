@@ -370,8 +370,10 @@ CClink = $(CC)
 #CONF_OPT_DARWIN = --with-mac-arch=both
 
 # LUA
-# Uncomment this when you want to include the Lua interface.
+# Uncomment one of these when you want to include the Lua interface.
+# First one is for static linking, second one for dynamic loading.
 #CONF_OPT_LUA = --enable-luainterp
+#CONF_OPT_LUA = --enable-luainterp=dynamic
 # Lua installation dir (when not set uses $LUA_PREFIX or defaults to /usr)
 #CONF_OPT_LUA_PREFIX = --with-lua-prefix=/usr/local
 
@@ -1314,7 +1316,7 @@ SHELL = /bin/sh
 .SUFFIXES: .c .o .pro
 
 PRE_DEFS = -Iproto $(DEFS) $(GUI_DEFS) $(GUI_IPATH) $(CPPFLAGS) $(EXTRA_IPATHS)
-POST_DEFS = $(X_CFLAGS) $(LUA_CFLAGS) $(MZSCHEME_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
+POST_DEFS = $(X_CFLAGS) $(MZSCHEME_CFLAGS) $(TCL_CFLAGS) $(RUBY_CFLAGS) $(EXTRA_DEFS)
 
 ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 
@@ -1322,7 +1324,7 @@ ALL_CFLAGS = $(PRE_DEFS) $(CFLAGS) $(PROFILE_CFLAGS) $(POST_DEFS)
 # with "-E".
 OSDEF_CFLAGS = $(PRE_DEFS) $(POST_DEFS)
 
-LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(PYTHON_CFLAGS) -Dinline= -D__extension__= -Dalloca=alloca
+LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) -Dinline= -D__extension__= -Dalloca=alloca
 
 LINT_EXTRA = -DUSE_SNIFF -DHANGUL_INPUT -D"__attribute__(x)="
 
@@ -2488,7 +2490,7 @@ objects/if_xcmdsrv.o: if_xcmdsrv.c
 	$(CCC) -o $@ if_xcmdsrv.c
 
 objects/if_lua.o: if_lua.c
-	$(CCC) -o $@ if_lua.c
+	$(CCC) $(LUA_CFLAGS) -o $@ if_lua.c
 
 objects/if_mzsch.o: if_mzsch.c $(MZSCHEME_EXTRA)
 	$(CCC) -o $@ $(MZSCHEME_CFLAGS_EXTRA) if_mzsch.c

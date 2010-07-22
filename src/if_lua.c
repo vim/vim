@@ -41,6 +41,19 @@ static const char LUAVIM_FREE[] = "luaV_free";
 
 
 #ifdef DYNAMIC_LUA
+
+#ifndef WIN3264
+# include <dlfcn.h>
+# define HANDLE void*
+# define load_dll(n) dlopen((n), RTLD_LAZY|RTLD_GLOBAL)
+# define symbol_from_dll dlsym
+# define close_dll dlclose
+#else
+# define load_dll LoadLibrary
+# define symbol_from_dll GetProcAddress
+# define close_dll FreeLibrary
+#endif
+
 /* lauxlib */
 #define luaL_register dll_luaL_register
 #define luaL_typerror dll_luaL_typerror
@@ -227,14 +240,14 @@ static const luaV_Reg luaV_dll[] = {
     {NULL, NULL}
 };
 
-static HINSTANCE hinstLua = 0;
+static HANDLE hinstLua = NULL;
 
     static void
 end_dynamic_lua(void)
 {
     if (hinstLua)
     {
-	FreeLibrary(hinstLua);
+	close_dll(hinstLua);
 	hinstLua = 0;
     }
 }
@@ -244,7 +257,7 @@ lua_link_init(char *libname, int verbose)
 {
     const luaV_Reg *reg;
     if (hinstLua) return OK;
-    hinstLua = LoadLibrary(libname);
+    hinstLua = load_dll(libname);
     if (!hinstLua)
     {
 	if (verbose)
@@ -253,8 +266,9 @@ lua_link_init(char *libname, int verbose)
     }
     for (reg = luaV_dll; reg->func; reg++)
     {
-	if ((*reg->func = GetProcAddress(hinstLua, reg->name)) == NULL) {
-	    FreeLibrary(hinstLua);
+	if ((*reg->func = symbol_from_dll(hinstLua, reg->name)) == NULL)
+	{
+	    close_dll(hinstLua);
 	    hinstLua = 0;
 	    if (verbose)
 		EMSG2(_(e_loadfunc), reg->name);
@@ -364,7 +378,8 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 		/* check cache */
 		lua_pushlightuserdata(L, (void *) d);
 		lua_rawget(L, LUA_ENVIRONINDEX);
-		if (lua_isnil(L, -1)) { /* not interned? */
+		if (lua_isnil(L, -1)) /* not interned? */
+		{
 		    hashtab_T *ht = &d->dv_hashtab;
 		    hashitem_T *hi;
 		    int n = ht->ht_used; /* remaining items */

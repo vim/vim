@@ -1421,7 +1421,7 @@ Optional Features:
   --disable-selinux	  Don't check for SELinux support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
-  --enable-luainterp      Include Lua interpreter.
+  --enable-luainterp=OPTS     Include Lua interpreter.  default=no OPTS=no/yes/dynamic
   --enable-mzschemeinterp   Include MzScheme interpreter.
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
   --enable-pythoninterp   Include Python interpreter.
@@ -4594,7 +4594,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_luainterp" >&5
 $as_echo "$enable_luainterp" >&6; }
 
-if test "$enable_luainterp" = "yes"; then
+if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking --with-lua-prefix argument" >&5
@@ -4713,6 +4713,12 @@ $as_echo "no" >&6; }
     LUA_PRO="if_lua.pro"
     $as_echo "#define FEAT_LUA 1" >>confdefs.h
 
+    if test "$enable_luainterp" = "dynamic"; then
+      $as_echo "#define DYNAMIC_LUA 1" >>confdefs.h
+
+      LUA_LIBS=""
+      LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"liblua${vi_cv_version_lua}.so\\\" $LUA_CFLAGS"
+    fi
   fi
 
 

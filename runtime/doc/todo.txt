@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 21
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,8 +30,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Conceal in help files doesn't work nice.  How about adding an 'concealcursor'
+option, when on:
+- cursorline is concealed.
+- line is redrawn on every movement
+- display function corrects cursor position.
+
 Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
-Asked for a few changes.
+Additional patch Jul 21.
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 

@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 7.3b.  Last change: 2008 Aug 31
+*if_lua.txt*    For Vim version 7.3b.  Last change: 2010 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -56,13 +56,13 @@ Example:
 <
 
 							*:luado*
-:[range]luado {body}	Execute Lua function$function (line)${body}$end$ for
+:[range]luado {body}	Execute Lua function "function (line) {body} end" for
 			each line in the [range], with the function argument
 			being set to the text of each line in turn, without a
 			trailing <EOL>. If the value returned by the function
 			is a string it becomes the text of the line in the
 			current turn. The default for [range] is the whole
-			file: "1,$".                  {not in Vi}
+			file: "1,$".		      {not in Vi}
 
 Examples:
 >
@@ -88,10 +88,10 @@ Examples:
 All these commands execute a Lua chunk from either the command line (:lua and
 :luado) or a file (:luafile) with the given line [range]. Similarly to the Lua
 interpreter, each chunk has its own scope and so only global variables are
-shared between command calls. Lua default libraries$table$,$string$,$math$,
-and$package$are available,$io$and$debug$are not, and$os$is restricted to
-functions$date$,$clock$,$time$,$difftime$, and$getenv$. In addition,
-Lua$print$function has its output redirected to the Vim message area, with
+shared between command calls. Lua default libraries "table", "string", "math",
+and "package" are available, "io" and "debug" are not, and "os" is restricted
+to functions "date", "clock", "time", "difftime", and "getenv". In addition,
+Lua "print" function has its output redirected to the Vim message area, with
 arguments separated by a white space instead of a tab.
 
 Lua uses the "vim" module (see |lua-vim|) to issue commands to Vim
@@ -104,36 +104,39 @@ position are restricted when the command is executed in the |sandbox|.
 2. The vim module					*lua-vim*
 
 Lua interfaces Vim through the "vim" module. The first and last line of the
-input range are stored in$vim.firstline$and$vim.lastline$respectively. The
+input range are stored in "vim.firstline" and "vim.lastline" respectively. The
 module also includes routines for buffer, window, and current line queries,
 Vim evaluation and command execution, and others.
 
-	$vim.isbuffer(value)$	Returns#true#if$value$is a buffer userdata and
-				$false$otherwise (see |lua-buffer|).
+	vim.isbuffer(value)	Returns 'true' (boolean, not string) if
+				"value" is a buffer userdata and 'false'
+				otherwise (see |lua-buffer|).
 
-	$vim.buffer($[arg]$)$	If$arg$is a number, returns buffer with number
-				$arg$in the buffer list or, if$arg$is
-				a string, returns buffer whose full or short
-				name is$arg$. In both cases, returns#nil#if
-				the buffer is not found. Otherwise, if
-				$toboolean(arg)$is#true#returns the first
-				buffer in the buffer list or else the current
-				buffer.
+	vim.buffer([arg])	If "arg" is a number, returns buffer with
+				number "arg" in the buffer list or, if "arg"
+				is a string, returns buffer whose full or short
+				name is "arg". In both cases, returns 'nil'
+				(nil value, not string) if the buffer is not
+				found. Otherwise, if "toboolean(arg)" is
+				'true' returns the first buffer in the buffer
+				list or else the current buffer.
 
-	$vim.iswindow(value)$	Returns#true#if$value$is a window userdata and
-				$false$otherwise (see |lua-window|).
+	vim.iswindow(value)	Returns 'true' (boolean, not string) if
+				"value" is a window userdata and
+				'false' otherwise (see |lua-window|).
 
-	$vim.window($[arg]$)$	If$arg$is a number, returns window with number
-				$arg$or#nil#if not found. Otherwise, if
-				$toboolean(arg)$is#true#returns the first
-				window or else the current window.
+	vim.window([arg])	If "arg" is a number, returns window with
+				number "arg" or 'nil' (nil value, not string)
+				if not found. Otherwise, if "toboolean(arg)"
+				is 'true' returns the first window or else the
+				current window.
 
-	$vim.command(${cmd}$)$	Executes the vim (ex-mode) command {cmd}.
+	vim.command({cmd})	Executes the vim (ex-mode) command {cmd}.
 				Examples: >
 					:lua vim.command"set tw=60"
 					:lua vim.command"normal ddp"
 <
-	$vim.eval(${expr}$)$	Evaluates expression {expr} (see |expression|),
+	vim.eval({expr})	Evaluates expression {expr} (see |expression|),
 				converts the result to Lua, and returns it.
 				Vim strings and numbers are directly converted
 				to Lua strings and numbers respectively. Vim
@@ -143,12 +146,12 @@ Vim evaluation and command execution, and others.
 					:lua tw = vim.eval"&tw"
 					:lua print(vim.eval"{'a': 'one'}".a)
 <
-	$vim.line()$		Returns the current line (without the trailing
+	vim.line()		Returns the current line (without the trailing
 				<EOL>), a Lua string.
 
-	$vim.beep()$		Beeps.
+	vim.beep()		Beeps.
 
-	$vim.open(${fname}$)$	Opens a new buffer for file {fname} and
+	vim.open({fname})	Opens a new buffer for file {fname} and
 				returns it. Note that the buffer is not set as
 				current.
 
@@ -156,29 +159,31 @@ Vim evaluation and command execution, and others.
 ==============================================================================
 3. Buffer userdata					*lua-buffer*
 
-Buffer userdata represent vim buffers. A buffer userdata$b$has the following
+Buffer userdata represent vim buffers. A buffer userdata "b" has the following
 properties and methods:
 
 Properties
 ----------
-	#o#$b()$sets$b$as the current buffer.
-	#o#$#b$is the number of lines in buffer$b$.
-	#o#$b[k]$represents line number$k$:$b[k] = newline$replaces line$k$
-	    with string$newline$and$b[k] =$#nil#deletes line$k$.
-	#o#$b.name$contains the short name of buffer$b$(read-only).
-	#o#$b.fname$contains the full name of buffer$b$(read-only).
-	#o#$b.number$contains the position of buffer$b$in the buffer list
+	o "b()" sets "b" as the current buffer.
+	o "#b" is the number of lines in buffer "b".
+	o "b[k]" represents line number k: "b[k] = newline" replaces line k
+	    with string "newline" and "b[k] = nil" deletes line k.
+	o "b.name" contains the short name of buffer "b" (read-only).
+	o "b.fname" contains the full name of buffer "b" (read-only).
+	o "b.number" contains the position of buffer "b" in the buffer list
 	    (read-only).
 
 Methods
 -------
-	#o#$b:insert(newline$[, pos]$)$inserts string$newline$at position$pos$
-	    in the buffer. The default value for$pos$is$#b + 1$. If$pos == 0$
-	    then$newline$becomes the first line in the buffer.
-	#o#$b:next()$returns the buffer next to$b$in the buffer list.
-	#o#$b:previous()$returns the buffer previous to$b$in the buffer list.
-	#o#$b:isvalid()$returns#true#if buffer$b$corresponds to a "real" (not
-	    freed from memory) Vim buffer.
+	o "b:insert(newline[, pos])" inserts string "newline" at (optional)
+	    position "pos" in the buffer. The default value for "pos" is
+	    "#b + 1". If "pos == 0" then "newline" becomes the first line in
+	    the buffer.
+	o "b:next()" returns the buffer next to "b" in the buffer list.
+	o "b:previous()" returns the buffer previous to "b" in the buffer
+	    list.
+	o "b:isvalid()" returns 'true' (boolean) if buffer "b" corresponds to
+	    a "real" (not freed from memory) Vim buffer.
 
 Examples:
 >
@@ -206,24 +211,24 @@ Examples:
 ==============================================================================
 4. Window userdata					*lua-window*
 
-Window objects represent vim windows. A window userdata$w$has the following
+Window objects represent vim windows. A window userdata "w" has the following
 properties and methods:
 
 Properties
 ----------
-	#o#$w()$sets$w$as the current window.
-	#o#$w.buffer$contains the buffer of window$w$(read-only).
-	#o#$w.line$represents the cursor line position in window$w$.
-	#o#$w.col$represents the cursor column position in window$w$.
-	#o#$w.width$represents the width of window$w$.
-	#o#$w.height$represents the height of window$w$.
+	o "w()" sets "w" as the current window.
+	o "w.buffer" contains the buffer of window "w" (read-only).
+	o "w.line" represents the cursor line position in window "w".
+	o "w.col" represents the cursor column position in window "w".
+	o "w.width" represents the width of window "w".
+	o "w.height" represents the height of window "w".
 
 Methods
 -------
-	#o#$w:next()$returns the window next to$w$.
-	#o#$w:previous()$returns the window previous to$w$.
-	#o#$w:isvalid()$returns#true#if window$w$corresponds to a "real" (not
-	    freed from memory) Vim window.
+	o "w:next()" returns the window next to "w".
+	o "w:previous()" returns the window previous to "w".
+	o "w:isvalid()" returns 'true' (boolean) if window "w" corresponds to
+	    a "real" (not freed from memory) Vim window.
 
 Examples:
 >
