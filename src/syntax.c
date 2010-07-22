@@ -1755,9 +1755,8 @@ syn_finish_line(syncing)
  * done.
  */
     int
-get_syntax_attr(col, p_flags, can_spell, keep_state)
+get_syntax_attr(col, can_spell, keep_state)
     colnr_T	col;
-    int		*p_flags UNUSED;
     int		*can_spell;
     int		keep_state;	/* keep state of char at "col" */
 {
@@ -1799,10 +1798,6 @@ get_syntax_attr(col, p_flags, can_spell, keep_state)
 	++current_col;
     }
 
-#ifdef FEAT_CONCEAL
-    if (p_flags != NULL)
-	*p_flags = current_flags;
-#endif
     return attr;
 }
 
@@ -6332,12 +6327,26 @@ syn_get_id(wp, lnum, col, trans, spellp, keep_state)
 	    || col < current_col)
 	syntax_start(wp, lnum);
 
-    (void)get_syntax_attr(col, NULL, spellp, keep_state);
+    (void)get_syntax_attr(col, spellp, keep_state);
 
     return (trans ? current_trans_id : current_id);
 }
 
 #if defined(FEAT_CONCEAL) || defined(PROTO)
+/*
+ * Get extra information about the syntax item.  Must be called right after
+ * get_syntax_attr().
+ * Stores the current item ID in "*idp".
+ * Returns the current flags.
+ */
+    int
+get_syntax_info(idp)
+    int		*idp;
+{
+    *idp = current_id;
+    return current_flags;
+}
+
 /*
  * Return conceal substitution character
  */

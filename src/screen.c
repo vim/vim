@@ -2775,8 +2775,9 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
+    int		syntax_id	= 0;
+    int		prev_syntax_id	= 0;
     int		conceal_attr	= hl_attr(HLF_CONCEAL);
-    int		first_conceal	= (wp->w_p_conc != 3);
     int		is_concealing	= FALSE;
     int		boguscols	= 0;	/* nonexistent columns added to force
 					   wrapping */
@@ -4028,11 +4029,6 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    did_emsg = FALSE;
 
 		    syntax_attr = get_syntax_attr((colnr_T)v - 1,
-# ifdef FEAT_CONCEAL
-						&syntax_flags,
-# else
-						NULL,
-# endif
 # ifdef FEAT_SPELL
 						has_spell ? &can_spell :
 # endif
@@ -4060,6 +4056,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		     * with line highlighting */
 		    if (c == NUL)
 			syntax_flags = 0;
+		    else
+			syntax_flags = get_syntax_info(&syntax_id);
 # endif
 		}
 #endif
@@ -4388,9 +4386,12 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		&& (syntax_flags & HL_CONCEAL) != 0)
 	    {
 		char_attr = conceal_attr;
-		if (first_conceal
-			&& (syn_get_sub_char() != NUL || wp->w_p_conc == 1))
+		if (prev_syntax_id != syntax_id
+			&& (syn_get_sub_char() != NUL || wp->w_p_conc == 1)
+			&& wp->w_p_conc != 3)
 		{
+		    /* First time at this concealed item: display one
+		     * character. */
 		    if (syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
 		    else if (lcs_conceal != NUL)
@@ -4398,7 +4399,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    else
 			c = ' ';
 
-		    first_conceal = FALSE;
+		    prev_syntax_id = syntax_id;
 
 		    if (n_extra > 0)
 			vcol_off += n_extra;
@@ -4440,7 +4441,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 	    else
 	    {
-		first_conceal = (wp->w_p_conc != 3);
+		prev_syntax_id = 0;
 		is_concealing = FALSE;
 	    }
 #endif /* FEAT_CONCEAL */
