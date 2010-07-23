@@ -30,13 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-a |test| and a |test| and a |test|.
-Conceal in help files doesn't work nice.  How about adding a 'concealcursor'
-option:
--> implemented, but column isn't quite right just after concealed character.
-- Don't conceal in Insert and Visual mode?  Or make 'concealcursor' a string
-  option with mode characters.
-- Check position in wrapped line.
+Check position in wrapped line with 'concealcursor' set.
 
 Trick with syntax ID works, but it's not nice.  Can we give a sequence nr to
 syntax item matches?  At least the ones with a replacement char.

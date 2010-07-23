@@ -9766,6 +9766,7 @@ copy_winopt(from, to)
 #endif
 #ifdef FEAT_CONCEAL
     to->wo_cocu = vim_strsave(from->wo_cocu);
+    to->wo_cole = from->wo_cole;
 #endif
 #ifdef FEAT_FOLDING
     to->wo_fdc = from->wo_fdc;
