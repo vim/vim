@@ -4922,7 +4922,7 @@ gui_update_screen()
 		||
 # endif
 # ifdef FEAT_CONCEAL
-		curwin->w_p_conc > 0
+		curwin->w_p_cole > 0
 # endif
 		)
 		     && !equalpos(last_cursormoved, curwin->w_cursor))
@@ -4932,7 +4932,7 @@ gui_update_screen()
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
 # endif
 # ifdef FEAT_CONCEAL
-	if (curwin->w_p_conc > 0)
+	if (curwin->w_p_cole > 0)
 	{
 	    conceal_old_cursor_line = last_cursormoved.lnum;
 	    conceal_new_cursor_line = curwin->w_cursor.lnum;
@@ -4947,9 +4947,12 @@ gui_update_screen()
     setcursor();
 # if defined(FEAT_CONCEAL)
     if (conceal_update_lines
-	    && conceal_old_cursor_line != conceal_new_cursor_line)
+	    && (conceal_old_cursor_line != conceal_new_cursor_line
+		|| conceal_cursor_line(curwin)
+		|| need_cursor_line_redraw))
     {
-	update_single_line(curwin, conceal_old_cursor_line);
+	if (conceal_old_cursor_line != conceal_new_cursor_line)
+	    update_single_line(curwin, conceal_old_cursor_line);
 	update_single_line(curwin, conceal_new_cursor_line);
 	curwin->w_valid &= ~VALID_CROW;
     }

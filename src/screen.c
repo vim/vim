@@ -587,6 +587,44 @@ update_screen(type)
 }
 
 #if defined(FEAT_CONCEAL) || defined(PROTO)
+/*
+ * Return TRUE if the cursor line in window "wp" may be concealed, according
+ * to the 'concealcursor' option.
+ */
+    int
+conceal_cursor_line(wp)
+    win_T	*wp;
+{
+    int		c;
+
+    if (*wp->w_p_cocu == NUL)
+	return FALSE;
+    if (get_real_state() & VISUAL)
+	c = 'v';
+    else if (State & INSERT)
+	c = 'i';
+    else if (State & NORMAL)
+	c = 'n';
+    else
+	return FALSE;
+    return vim_strchr(wp->w_p_cocu, c) != NULL;
+}
+
+/*
+ * Check if the cursor line needs to be redrawn because of 'concealcursor'.
+ */
+    void
+conceal_check_cursur_line_redraw()
+{
+    if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
+    {
+	need_cursor_line_redraw = TRUE;
+	/* Need to recompute cursor column, e.g., when starting Visual mode
+	 * without concealing. */
+	curs_columns(TRUE);
+    }
+}
+
     void
 update_single_line(wp, lnum)
     win_T	*wp;
@@ -632,6 +670,7 @@ update_single_line(wp, lnum)
 	}
 # endif
     }
+    need_cursor_line_redraw = FALSE;
 }
 #endif
 
@@ -2781,7 +2820,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		is_concealing	= FALSE;
     int		boguscols	= 0;	/* nonexistent columns added to force
 					   wrapping */
-    int		vcol_off = 0;		/* offset for concealed characters */
+    int		vcol_off        = 0;	/* offset for concealed characters */
+    int		did_wcol	= FALSE;
 # define VCOL_HLC (vcol - vcol_off)
 #else
 # define VCOL_HLC (vcol)
@@ -4381,14 +4421,15 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 
 #ifdef FEAT_CONCEAL
-	    if (   wp->w_p_conc > 0
-		&& (lnum != wp->w_cursor.lnum || curwin != wp)
+	    if (   wp->w_p_cole > 0
+		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
+						      conceal_cursor_line(wp))
 		&& (syntax_flags & HL_CONCEAL) != 0)
 	    {
 		char_attr = conceal_attr;
 		if (prev_syntax_id != syntax_id
-			&& (syn_get_sub_char() != NUL || wp->w_p_conc == 1)
-			&& wp->w_p_conc != 3)
+			&& (syn_get_sub_char() != NUL || wp->w_p_cole == 1)
+			&& wp->w_p_cole != 3)
 		{
 		    /* First time at this concealed item: display one
 		     * character. */
@@ -4446,6 +4487,18 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 #endif /* FEAT_CONCEAL */
 	}
+
+#ifdef FEAT_CONCEAL
+	/* In the cursor line and we may be concealing characters: correct
+	 * the cursor column when we reach its position. */
+	if (!did_wcol && wp == curwin && lnum == wp->w_cursor.lnum
+		&& conceal_cursor_line(wp)
+		&& (int)wp->w_virtcol <= vcol + n_skip)
+	{
+	    wp->w_wcol = col - boguscols;
+	    did_wcol = TRUE;
+	}
+#endif
 
 	/* Don't override visual selection highlighting. */
 	if (n_attr > 0
@@ -4913,7 +4966,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    }
 	}
 #ifdef FEAT_CONCEAL
-	else if (wp->w_p_conc > 0 && is_concealing)
+	else if (wp->w_p_cole > 0 && is_concealing)
 	{
 	    --n_skip;
 	    ++vcol_off;

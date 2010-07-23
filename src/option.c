@@ -248,7 +248,8 @@
 # define PV_CRBIND	OPT_WIN(WV_CRBIND)
 #endif
 #ifdef FEAT_CONCEAL
-# define PV_CONCEAL	OPT_WIN(WV_CONCEAL)
+# define PV_COCU	OPT_WIN(WV_COCU)
+# define PV_COLE	OPT_WIN(WV_COLE)
 #endif
 
 /* WV_ and BV_ values get typecasted to this for the "indir" field */
@@ -816,9 +817,18 @@ static struct vimoption
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCRIPTID_INIT},
-    {"conceallevel","conc", P_NUM|P_RWIN|P_VI_DEF,
+    {"concealcursor","cocu", P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_CONCEAL
-			    (char_u *)VAR_WIN, PV_CONCEAL,
+			    (char_u *)VAR_WIN, PV_COCU,
+			    {(char_u *)"", (char_u *)NULL}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCRIPTID_INIT},
+    {"conceallevel","cole", P_NUM|P_RWIN|P_VI_DEF,
+#ifdef FEAT_CONCEAL
+			    (char_u *)VAR_WIN, PV_COLE,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -6848,6 +6858,10 @@ did_set_string_option(opt_idx, varp, new_value_alloced, oldval, errbuf,
 	    p = (char_u *)CPO_ALL;
 	else if (varp == &(curbuf->b_p_fo))
 	    p = (char_u *)FO_ALL;
+#ifdef FEAT_CONCEAL
+	else if (varp == &curwin->w_p_cocu)
+	    p = (char_u *)COCU_ALL;
+#endif
 	else if (varp == &p_mouse)
 	{
 #ifdef FEAT_MOUSE
@@ -7505,7 +7519,7 @@ set_bool_option(opt_idx, varp, value, opt_flags)
 	redraw_titles();
 # endif
 # ifdef FEAT_CONCEAL
-	if (curwin->w_p_conc > 0)
+	if (curwin->w_p_cole > 0)
 	    update_single_line(curwin, curwin->w_cursor.lnum);
 # endif
     }
@@ -8273,17 +8287,17 @@ set_num_option(opt_idx, varp, value, errbuf, errbuflen, opt_flags)
 	    ml_open_files();
     }
 #ifdef FEAT_CONCEAL
-    else if (pp == &curwin->w_p_conc)
+    else if (pp == &curwin->w_p_cole)
     {
-	if (curwin->w_p_conc < 0)
+	if (curwin->w_p_cole < 0)
 	{
 	    errmsg = e_positive;
-	    curwin->w_p_conc = 0;
+	    curwin->w_p_cole = 0;
 	}
-	else if (curwin->w_p_conc > 3)
+	else if (curwin->w_p_cole > 3)
 	{
 	    errmsg = e_invarg;
-	    curwin->w_p_conc = 3;
+	    curwin->w_p_cole = 3;
 	}
     }
 #endif
@@ -9554,7 +9568,8 @@ get_varp(p)
 	case PV_CRBIND: return (char_u *)&(curwin->w_p_crb);
 #endif
 #ifdef FEAT_CONCEAL
-	case PV_CONCEAL:    return (char_u *)&(curwin->w_p_conc);
+	case PV_COCU:    return (char_u *)&(curwin->w_p_cocu);
+	case PV_COLE:    return (char_u *)&(curwin->w_p_cole);
 #endif
 
 	case PV_AI:	return (char_u *)&(curbuf->b_p_ai);
@@ -9749,6 +9764,9 @@ copy_winopt(from, to)
 #ifdef FEAT_DIFF
     to->wo_diff = from->wo_diff;
 #endif
+#ifdef FEAT_CONCEAL
+    to->wo_cocu = vim_strsave(from->wo_cocu);
+#endif
 #ifdef FEAT_FOLDING
     to->wo_fdc = from->wo_fdc;
     to->wo_fen = from->wo_fen;
@@ -9802,6 +9820,9 @@ check_winopt(wop)
 #ifdef FEAT_SYN_HL
     check_string_option(&wop->wo_cc);
 #endif
+#ifdef FEAT_CONCEAL
+    check_string_option(&wop->wo_cocu);
+#endif
 }
 
 /*
@@ -9828,6 +9849,9 @@ clear_winopt(wop)
 #endif
 #ifdef FEAT_SYN_HL
     clear_string_option(&wop->wo_cc);
+#endif
+#ifdef FEAT_CONCEAL
+    clear_string_option(&wop->wo_cocu);
 #endif
 }
 

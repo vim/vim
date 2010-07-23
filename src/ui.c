@@ -1912,6 +1912,10 @@ ui_cursor_shape()
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif
+
+# ifdef FEAT_CONCEAL
+    conceal_check_cursur_line_redraw();
+# endif
 }
 #endif
 

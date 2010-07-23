@@ -1343,6 +1343,11 @@ EXTERN disptick_T	display_tick INIT(= 0);
 EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 #endif
 
+#ifdef FEAT_CONCEAL
+/* Set when the cursor line needs to be redrawn. */
+EXTERN int		need_cursor_line_redraw INIT(= FALSE);
+#endif
+
 #ifdef ALT_X_INPUT
 /* we need to be able to go into the dispatch loop while processing a command
  * received via alternate input. However, we don't want to process another

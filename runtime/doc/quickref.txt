@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3b.  Last change: 2009 Jan 22
+*quickref.txt*  For Vim version 7.3b.  Last change: 2010 Jul 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -647,7 +647,8 @@ Short explanation of each option:		*option-list*
 'complete'	  'cpt'     specify how Insert mode completion works
 'completefunc'	  'cfu'     function to be used for Insert mode completion
 'completeopt'	  'cot'     options for Insert mode completion
-'conceallevel'	  'conc'    whether concealable text is shown or hidden 
+'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
+'conceallevel'	  'cole'    whether concealable text is shown or hidden 
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
 'conskey'	  'consk'   get keys directly from console (MS-DOS only)
 'copyindent'	  'ci'	    make 'autoindent' use existing indent structure

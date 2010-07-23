@@ -8,6 +8,8 @@ void redraw_buf_later __ARGS((buf_T *buf, int type));
 void redrawWinline __ARGS((linenr_T lnum, int invalid));
 void update_curbuf __ARGS((int type));
 void update_screen __ARGS((int type));
+int conceal_cursor_line __ARGS((win_T *wp));
+void conceal_check_cursur_line_redraw __ARGS((void));
 void update_single_line __ARGS((win_T *wp, linenr_T lnum));
 void update_debug_sign __ARGS((buf_T *buf, linenr_T lnum));
 void updateWindow __ARGS((win_T *wp));

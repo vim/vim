@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 21
+*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3149,9 +3149,9 @@ conceal						*conceal* *:syn-conceal*
 
 When the "conceal" argument is given, the item is marked as concealable.
 Whether or not it is actually concealed depends on the value of the
-'conceallevel' option.  If 'modifiable' option is on, concealable items
-in the current line are always displayed unconcealed to be able to edit
-the line.
+'conceallevel' option.  The 'concealcursor' option is used to decide whether
+concealable items in the current line are displayed unconcealed to be able to
+edit the line.
 
 concealends						*:syn-concealends*
 

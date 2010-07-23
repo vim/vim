@@ -7623,6 +7623,11 @@ may_start_select(c)
 n_start_visual_mode(c)
     int		c;
 {
+#ifdef FEAT_CONCEAL
+    /* Check for redraw before changing the state. */
+    conceal_check_cursur_line_redraw();
+#endif
+
     VIsual_mode = c;
     VIsual_active = TRUE;
     VIsual_reselect = TRUE;
@@ -7642,6 +7647,11 @@ n_start_visual_mode(c)
 #ifdef FEAT_MOUSE
     setmouse();
 #endif
+#ifdef FEAT_CONCEAL
+    /* Check for redraw after changing the state. */
+    conceal_check_cursur_line_redraw();
+#endif
+
     if (p_smd && msg_silent == 0)
 	redraw_cmdline = TRUE;	/* show visual mode later */
 #ifdef FEAT_CLIPBOARD
@@ -8296,7 +8306,7 @@ n_opencmd(cap)
 		    0, 0))
 	{
 #ifdef FEAT_CONCEAL
-	    if (curwin->w_p_conc > 0 && oldline != curwin->w_cursor.lnum)
+	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
 		update_single_line(curwin, oldline);
 #endif
 	    /* When '#' is in 'cpoptions' ignore the count. */

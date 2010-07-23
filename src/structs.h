@@ -216,8 +216,10 @@ typedef struct
     int		wo_wrap;
 #define w_p_wrap w_onebuf_opt.wo_wrap	/* 'wrap' */
 #ifdef FEAT_CONCEAL
-    long	wo_conc;		/* 'conceal' */
-# define w_p_conc w_onebuf_opt.wo_conc
+    char_u	*wo_cocu;		/* 'concealcursor' */
+# define w_p_cocu w_onebuf_opt.wo_cocu
+    long	wo_cole;		/* 'conceallevel' */
+# define w_p_cole w_onebuf_opt.wo_cole
 #endif
 #ifdef FEAT_CURSORBIND
     int		wo_crb;

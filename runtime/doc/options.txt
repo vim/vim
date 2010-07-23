@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3b.  Last change: 2010 Jul 20
+*options.txt*	For Vim version 7.3b.  Last change: 2010 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1707,7 +1707,26 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    combination with "menu" or "menuone".
 
 
-'conceallevel' 'conc'		*'conceallevel'* *'conc'*
+						*'concealcursor'* *'cocu'*
+'concealcursor' 'cocu'	string (default: "")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+conceal|
+			feature}
+	Sets the modes in which text in the cursor line can also be concealed.
+	When the current mode is listed then concealing happens just like in
+	other lines.
+	  n		Normal mode
+	  v		Visual mode
+	  i		Insert mode
+
+	A useful value is "n".  This is used in help files.  So long as you
+	are moving around text is concealed, but when starting to insert text
+	or selecting a Visual area the concealed text is displayed, so that
+	you can see what you are doing.
+
+
+'conceallevel' 'cole'		*'conceallevel'* *'cole'*
 			number (default 0)
 			local to window
 			{not in Vi}
@@ -1727,7 +1746,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	3		Concealed text is completely hidden.
 
 	Note: in the cursor line concealed text is not hidden, so that you can
-	edit and copy the text.
+	edit and copy the text.  This can be changed with the 'concealcursor'
+	option.
 
 				*'confirm'* *'cf'* *'noconfirm'* *'nocf'*
 'confirm' 'cf'		boolean (default off)

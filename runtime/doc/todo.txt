@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 22
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,11 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Conceal in help files doesn't work nice.  How about adding an 'concealcursor'
-option, when on:
-- cursorline is concealed.
-- line is redrawn on every movement
-- display function corrects cursor position.
+a |test| and a |test| and a |test|.
+Conceal in help files doesn't work nice.  How about adding a 'concealcursor'
+option:
+-> implemented, but column isn't quite right just after concealed character.
+- Don't conceal in Insert and Visual mode?  Or make 'concealcursor' a string
+  option with mode characters.
+- Check position in wrapped line.
+
+Trick with syntax ID works, but it's not nice.  Can we give a sequence nr to
+syntax item matches?  At least the ones with a replacement char.
 
 Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
 Additional patch Jul 21.
@@ -271,6 +276,10 @@ Win32: use different args for SearchPath()? (Yasuhiro Matsumoto, 2009 Jan 30)
 
 Win32: completion of file name ":e c:\!test" results in ":e c:\\!test", which
 does not work. (Nieko Maatjes, 2009 Jan 8, Ingo Karkat, 2009 Jan 22)
+
+opening/closing window causes other window with 'winfixheight' to change
+height.  Also happens when there is another window in the frame, if it's not
+very high. (Yegappan Lakshmanan, 2010 Jul 22)
 
 Directory wrong in session file, caused by ":lcd" in BufEnter autocommand.
 (Felix Kater, 2009 Mar 3)

@@ -127,6 +127,8 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'cmp'	options.txt	/*'cmp'*
 'cms'	options.txt	/*'cms'*
 'co'	options.txt	/*'co'*
+'cocu'	options.txt	/*'cocu'*
+'cole'	options.txt	/*'cole'*
 'colorcolumn'	options.txt	/*'colorcolumn'*
 'columns'	options.txt	/*'columns'*
 'com'	options.txt	/*'com'*
@@ -136,7 +138,7 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
 'completeopt'	options.txt	/*'completeopt'*
-'conc'	options.txt	/*'conc'*
+'concealcursor'	options.txt	/*'concealcursor'*
 'conceallevel'	options.txt	/*'conceallevel'*
 'confirm'	options.txt	/*'confirm'*
 'consk'	options.txt	/*'consk'*

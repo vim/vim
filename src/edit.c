@@ -377,6 +377,12 @@ edit(cmdchar, startln, count)
     }
 #endif
 
+#ifdef FEAT_CONCEAL
+    /* Check if the cursor line needs redrawing before changing State.  If
+     * 'concealcursor' is "n" it needs to be redrawn without concealing. */
+    conceal_check_cursur_line_redraw();
+#endif
+
 #ifdef FEAT_MOUSE
     /*
      * When doing a paste with the middle mouse button, Insstart is set to
@@ -1476,7 +1482,7 @@ ins_redraw(ready)
 		    ||
 # endif
 # ifdef FEAT_CONCEAL
-		    curwin->w_p_conc > 0
+		    curwin->w_p_cole > 0
 # endif
 		    )
 	    && !equalpos(last_cursormoved, curwin->w_cursor)
@@ -1498,7 +1504,7 @@ ins_redraw(ready)
 		apply_autocmds(EVENT_CURSORMOVEDI, NULL, NULL, FALSE, curbuf);
 # endif
 # ifdef FEAT_CONCEAL
-	    if (curwin->w_p_conc > 0)
+	    if (curwin->w_p_cole > 0)
 	    {
 		conceal_old_cursor_line = last_cursormoved.lnum;
 		conceal_new_cursor_line = curwin->w_cursor.lnum;
@@ -1513,11 +1519,15 @@ ins_redraw(ready)
 	else if (clear_cmdline || redraw_cmdline)
 	    showmode();		/* clear cmdline and show mode */
 # if defined(FEAT_CONCEAL)
-	if (conceal_update_lines
-		&& conceal_old_cursor_line != conceal_new_cursor_line)
+	if ((conceal_update_lines
+		&& (conceal_old_cursor_line != conceal_new_cursor_line
+		    || conceal_cursor_line(curwin)))
+		|| need_cursor_line_redraw)
 	{
-	    update_single_line(curwin, conceal_old_cursor_line);
-	    update_single_line(curwin, conceal_new_cursor_line);
+	    if (conceal_old_cursor_line != conceal_new_cursor_line)
+		update_single_line(curwin, conceal_old_cursor_line);
+	    update_single_line(curwin, conceal_new_cursor_line == 0
+			   ? curwin->w_cursor.lnum : conceal_new_cursor_line);
 	    curwin->w_valid &= ~VALID_CROW;
 	}
 # endif

@@ -189,6 +189,8 @@
 #define MOUSE_NONE	' '		/* don't use Visual selection */
 #define MOUSE_NONEF	'x'		/* forced modeless selection */
 
+#define COCU_ALL	"nvi"		/* flags for 'concealcursor' */
+
 /* characters for p_shm option: */
 #define SHM_RO		'r'		/* readonly */
 #define SHM_MOD		'm'		/* modified */
@@ -1029,7 +1031,8 @@ enum
     , WV_ARAB
 #endif
 #ifdef FEAT_CONCEAL
-    , WV_CONCEAL
+    , WV_COCU
+    , WV_COLE
 #endif
 #ifdef FEAT_CURSORBIND
     , WV_CRBIND
