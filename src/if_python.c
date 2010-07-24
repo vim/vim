@@ -343,6 +343,16 @@ python_runtime_link_init(char *libname, int verbose)
 {
     int i;
 
+#if defined(UNIX) && defined(FEAT_PYTHON3)
+    /* Can't have Python and Python3 loaded at the same time, it may cause a
+     * crash. */
+    if (python3_loaded())
+    {
+	EMSG(_("E999: Python: Cannot use :py and :py3 in one session"));
+	return FAIL;
+    }
+#endif
+
     if (hinstPython)
 	return OK;
     hinstPython = load_dll(libname);
@@ -518,6 +528,14 @@ python_end()
 
     --recurse;
 }
+
+#if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON3)) || defined(PROTO)
+    int
+python_loaded()
+{
+    return (hinstPython != 0);
+}
+#endif
 
     static int
 Python_Init(void)

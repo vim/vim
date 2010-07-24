@@ -306,7 +306,7 @@ static struct
  */
 static void end_dynamic_python3(void)
 {
-    if (hinstPy3)
+    if (hinstPy3 != 0)
     {
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
@@ -323,7 +323,17 @@ static int py3_runtime_link_init(char *libname, int verbose)
     int i;
     void *ucs_from_string, *ucs_from_string_and_size;
 
-    if (hinstPy3)
+#if defined(UNIX) && defined(FEAT_PYTHON)
+    /* Can't have Python and Python3 loaded at the same time, it may cause a
+     * crash. */
+    if (python_loaded())
+    {
+	EMSG(_("E999: Python: Cannot use :py and :py3 in one session"));
+	return FAIL;
+    }
+#endif
+
+    if (hinstPy3 != 0)
 	return OK;
     hinstPy3 = load_dll(libname);
 
@@ -505,6 +515,14 @@ void python3_end()
 
     --recurse;
 }
+
+#if (defined(DYNAMIC_PYTHON) && defined(FEAT_PYTHON)) || defined(PROTO)
+    int
+python3_loaded()
+{
+    return (hinstPy3 != 0);
+}
+#endif
 
 static int Python3_Init(void)
 {
