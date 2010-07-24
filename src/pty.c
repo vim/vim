@@ -278,8 +278,10 @@ OpenPTY(ttyn)
     char **ttyn;
 {
     int		f;
-    char	*m, *ptsname();
-    int unlockpt __ARGS((int)), grantpt __ARGS((int));
+    char	*m;
+    char	*(ptsname __ARGS((int)));
+    int		unlockpt __ARGS((int));
+    int		grantpt __ARGS((int));
     RETSIGTYPE (*sigcld)__ARGS(SIGPROTOARG);
     /* used for opening a new pty-pair: */
     static char TtyName[32];
