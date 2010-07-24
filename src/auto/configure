@@ -5083,6 +5083,8 @@ $as_echo ">>> too old; need Perl version 5.003_01 or later <<<" >&6; }
       PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
+                PERL_LIBS=`echo "$PERL_LIBS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
+    PERL_CFLAGS=`echo "$PERL_CFLAGS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
   fi
   if test "$enable_perlinterp" = "dynamic"; then
     if test "$perl_ok" = "yes" -a "X$libperl" != "X"; then
@@ -6116,7 +6118,7 @@ $as_echo "$rubyhdrdir" >&6; }
 	fi
 	rubyldflags=`$vi_cv_path_ruby -r rbconfig -e 'print Config::CONFIG["LDFLAGS"]'`
 	if test "X$rubyldflags" != "X"; then
-	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//'`
+	  	  	  	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
 	  if test "X$rubyldflags" != "X"; then
 	    LDFLAGS="$rubyldflags $LDFLAGS"
 	  fi

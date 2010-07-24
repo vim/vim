@@ -727,6 +727,11 @@ if test "$enable_perlinterp" = "yes" -o "$enable_perlinterp" = "dynamic"; then
       PERL_OBJ="objects/if_perl.o objects/if_perlsfio.o $darwindir/auto/DynaLoader/DynaLoader.a"
       PERL_LIBS="-L$darwindir/CORE -lperl"
     fi
+    dnl Perl on Mac OS X 10.5 adds "-arch" flags but these should only
+    dnl be included if requested by passing --with-mac-arch to
+    dnl configure, so strip these flags first (if present)
+    PERL_LIBS=`echo "$PERL_LIBS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
+    PERL_CFLAGS=`echo "$PERL_CFLAGS" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
   fi
   if test "$enable_perlinterp" = "dynamic"; then
     if test "$perl_ok" = "yes" -a "X$libperl" != "X"; then
@@ -1286,7 +1291,7 @@ if test "$enable_rubyinterp" = "yes"; then
 	  dnl Ruby on Mac OS X 10.5 adds "-arch" flags but these should only
 	  dnl be included if requested by passing --with-mac-arch to
 	  dnl configure, so strip these flags first (if present)
-	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//'`
+	  rubyldflags=`echo "$rubyldflags" | sed -e 's/-arch\ ppc//' -e 's/-arch\ i386//' -e 's/-arch\ x86_64//'`
 	  if test "X$rubyldflags" != "X"; then
 	    LDFLAGS="$rubyldflags $LDFLAGS"
 	  fi

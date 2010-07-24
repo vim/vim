@@ -30,6 +30,16 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Before release 7.3:
+- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
+
+Add documentation for Python 3 support.
+
+6   In the quickfix window statusline add the command used to get the list of
+    errors, e.g. ":make foo", ":grep something *.c".
+    New patch 2010 Jul 24
+    Docs patch by Dominique Pelle, Mar 25 included?
+
 Check position in wrapped line with 'concealcursor' set.
 
 Trick with syntax ID works, but it's not nice.  Can we give a sequence nr to
@@ -1111,12 +1121,6 @@ Patch to support horizontal scroll wheel in GTK. Untested. (Bjorn Winckler,
 2010 Jun 30)
 
 
-Before (beta) release 7.3:
-- Documentation for Python 3 support.
-
-Before release 7.3:
-- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
-
 More patches:
 -   Another patch for Javascript indenting. (Hari Kumar, 2010 Jul 11)
     Needs a few tests.
@@ -1154,12 +1158,6 @@ More patches:
     more friendly for the Vim distribution.
     New version received 2008 Jan 6.
     No maintenance in two years...
-6   In the quickfix window statusline add the command used to get the list of
-    errors, e.g. ":make foo", ":grep something *.c".
-    Patch by Lech Lorens, 2009 Apri 17.
-    Comments from Andreas Bernauer 24th, Dominique Pelle 24th
-    Docs patch by Dominique Pelle, Mar 25
-    Can we put the strings in a window-local variable?
 -   Patch to access screen under Python. (Marko Mahni, 2010 Jul 18)
 
 
