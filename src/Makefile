@@ -2517,10 +2517,10 @@ objects/py3_config.o: $(PYTHON3_CONFDIR)/config.c
 	$(CCC) $(PYTHON3_CFLAGS) -o $@ $(PYTHON3_CONFDIR)/config.c \
 		-I$(PYTHON3_CONFDIR) -DHAVE_CONFIG_H -DNO_MAIN
 
-objects/if_python.o: if_python.c 
+objects/if_python.o: if_python.c if_py_both.h
 	$(CCC) $(PYTHON_CFLAGS) $(PYTHON_CFLAGS_EXTRA) -o $@ if_python.c
 
-objects/if_python3.o: if_python3.c 
+objects/if_python3.o: if_python3.c if_py_both.h
 	$(CCC) $(PYTHON3_CFLAGS) $(PYTHON3_CFLAGS_EXTRA) -o $@ if_python3.c
 
 objects/if_ruby.o: if_ruby.c

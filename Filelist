@@ -217,6 +217,7 @@ SRC_DOS_UNIX =	\
 		src/if_perlsfio.c \
 		src/if_python.c \
 		src/if_python3.c \
+		src/if_py_both.h \
 		src/if_ruby.c \
 		src/if_sniff.h \
 		src/if_tcl.c \

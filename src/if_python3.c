@@ -68,6 +68,8 @@
 
 static void init_structs(void);
 
+#define PyInt Py_ssize_t
+
 #if defined(DYNAMIC_PYTHON3)
 
 #ifndef WIN3264
@@ -304,7 +306,8 @@ static struct
 /*
  * Free python.dll
  */
-static void end_dynamic_python3(void)
+    static void
+end_dynamic_python3(void)
 {
     if (hinstPy3 != 0)
     {
@@ -318,7 +321,8 @@ static void end_dynamic_python3(void)
  * Parameter 'libname' provides name of DLL.
  * Return OK or FAIL.
  */
-static int py3_runtime_link_init(char *libname, int verbose)
+    static int
+py3_runtime_link_init(char *libname, int verbose)
 {
     int i;
     void *ucs_from_string, *ucs_from_string_and_size;
@@ -390,7 +394,8 @@ static int py3_runtime_link_init(char *libname, int verbose)
  * If python is enabled (there is installed python on Windows system) return
  * TRUE, else FALSE.
  */
-int python3_enabled(int verbose)
+    int
+python3_enabled(int verbose)
 {
     return py3_runtime_link_init(DYNAMIC_PYTHON3_DLL, verbose) == OK;
 }
@@ -400,7 +405,8 @@ int python3_enabled(int verbose)
  */
 static void get_py3_exceptions __ARGS((void));
 
-static void get_py3_exceptions()
+    static void
+get_py3_exceptions()
 {
     PyObject *exmod = PyImport_ImportModule("builtins");
     PyObject *exdict = PyModule_GetDict(exmod);
@@ -418,7 +424,13 @@ static void get_py3_exceptions()
 }
 #endif /* DYNAMIC_PYTHON3 */
 
-static void call_PyObject_Free(void *p)
+/*
+ * Include the code shared with if_python.c
+ */
+#include "if_py_both.h"
+
+    static void
+call_PyObject_Free(void *p)
 {
 #ifdef Py_DEBUG
     _PyObject_DebugFree(p);
@@ -426,11 +438,15 @@ static void call_PyObject_Free(void *p)
     PyObject_Free(p);
 #endif
 }
-static PyObject* call_PyType_GenericNew(PyTypeObject *type, PyObject *args, PyObject *kwds)
+
+    static PyObject *
+call_PyType_GenericNew(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
     return PyType_GenericNew(type,args,kwds);
 }
-static PyObject* call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
+
+    static PyObject *
+call_PyType_GenericAlloc(PyTypeObject *type, Py_ssize_t nitems)
 {
     return PyType_GenericAlloc(type,nitems);
 }
@@ -460,8 +476,6 @@ static PyObject *GetBufferLineList(buf_T *buf, Py_ssize_t lo, Py_ssize_t hi);
 static PyObject *LineToString(const char *);
 static char *StringToLine(PyObject *);
 
-static int VimErrorCheck(void);
-
 #define PyErr_SetVim(str) PyErr_SetString(VimError, str)
 
 /******************************************************
@@ -473,21 +487,8 @@ static int py3initialised = 0;
 
 static PyGILState_STATE pygilstate = PyGILState_UNLOCKED;
 
-/*
- * obtain a lock on the Vim data structures
- */
-static void Python_Lock_Vim(void)
-{
-}
-
-/*
- * release a lock on the Vim data structures
- */
-static void Python_Release_Vim(void)
-{
-}
-
-void python3_end()
+    void
+python3_end()
 {
     static int recurse = 0;
 
@@ -524,7 +525,8 @@ python3_loaded()
 }
 #endif
 
-static int Python3_Init(void)
+    static int
+Python3_Init(void)
 {
     if (!py3initialised)
     {
@@ -588,7 +590,8 @@ fail:
 /*
  * External interface
  */
-static void DoPy3Command(exarg_T *eap, const char *cmd)
+    static void
+DoPy3Command(exarg_T *eap, const char *cmd)
 {
 #if defined(MACOS) && !defined(MACOS_X_UNIX)
     GrafPtr		oldPort;
@@ -650,7 +653,8 @@ theend:
 /*
  * ":py3"
  */
-void ex_py3(exarg_T *eap)
+    void
+ex_py3(exarg_T *eap)
 {
     char_u *script;
 
@@ -731,34 +735,10 @@ ex_py3file(exarg_T *eap)
 static PyObject *OutputGetattro(PyObject *, PyObject *);
 static int OutputSetattro(PyObject *, PyObject *, PyObject *);
 
-static PyObject *OutputWrite(PyObject *, PyObject *);
-static PyObject *OutputWritelines(PyObject *, PyObject *);
-
-typedef void (*writefn)(char_u *);
-static void writer(writefn fn, char_u *str, Py_ssize_t n);
-
-/* Output object definition
- */
-
-typedef struct
-{
-    PyObject_HEAD
-    long softspace;
-    long error;
-} OutputObject;
-
-static struct PyMethodDef OutputMethods[] = {
-    /* name,	    function,		calling,    documentation */
-    {"write",	    OutputWrite,	1,	    "" },
-    {"writelines",  OutputWritelines,	1,	    "" },
-    { NULL,	    NULL,		0,	    NULL }
-};
-
-static PyTypeObject OutputType;
-
 /*************/
 
-static PyObject * OutputGetattro(PyObject *self, PyObject *nameobj)
+    static PyObject *
+OutputGetattro(PyObject *self, PyObject *nameobj)
 {
     char *name = "";
     if (PyUnicode_Check(nameobj))
@@ -770,7 +750,8 @@ static PyObject * OutputGetattro(PyObject *self, PyObject *nameobj)
     return PyObject_GenericGetAttr(self, nameobj);
 }
 
-static int OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+    static int
+OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     char *name = "";
     if (PyUnicode_Check(nameobj))
@@ -796,181 +777,17 @@ static int OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     return -1;
 }
 
-/*************/
-
-static PyObject * OutputWrite(PyObject *self, PyObject *args)
-{
-    int len;
-    char *str;
-    int error = ((OutputObject *)(self))->error;
-
-    if (!PyArg_ParseTuple(args, "s#", &str, &len))
-	return NULL;
-
-    Py_BEGIN_ALLOW_THREADS
-    Python_Lock_Vim();
-    writer((writefn)(error ? emsg : msg), (char_u *)str, len);
-    Python_Release_Vim();
-    Py_END_ALLOW_THREADS
-
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-static PyObject * OutputWritelines(PyObject *self, PyObject *args)
-{
-    Py_ssize_t n;
-    Py_ssize_t i;
-    PyObject *list;
-    int error = ((OutputObject *)(self))->error;
-
-    if (!PyArg_ParseTuple(args, "O", &list))
-	return NULL;
-    Py_INCREF(list);
-
-    if (!PyList_Check(list)) {
-	PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
-	Py_DECREF(list);
-	return NULL;
-    }
-
-    n = PyList_Size(list);
-
-    for (i = 0; i < n; ++i)
-    {
-	PyObject *line = PyList_GetItem(list, i);
-	char *str;
-	Py_ssize_t len;
-
-	if (!PyArg_Parse(line, "s#", &str, &len)) {
-	    PyErr_SetString(PyExc_TypeError, _("writelines() requires list of strings"));
-	    Py_DECREF(list);
-	    return NULL;
-	}
-
-	Py_BEGIN_ALLOW_THREADS
-	    Python_Lock_Vim();
-	writer((writefn)(error ? emsg : msg), (char_u *)str, len);
-	Python_Release_Vim();
-	Py_END_ALLOW_THREADS
-    }
-
-    Py_DECREF(list);
-    Py_INCREF(Py_None);
-    return Py_None;
-}
-
-/* Output buffer management
- */
-
-static char_u *buffer = NULL;
-static Py_ssize_t buffer_len = 0;
-static Py_ssize_t buffer_size = 0;
-
-static writefn old_fn = NULL;
-
-static void buffer_ensure(Py_ssize_t n)
-{
-    Py_ssize_t new_size;
-    char_u *new_buffer;
-
-    if (n < buffer_size)
-	return;
-
-    new_size = buffer_size;
-    while (new_size < n)
-	new_size += 80;
-
-    if (new_size != buffer_size)
-    {
-	new_buffer = alloc((unsigned)new_size);
-	if (new_buffer == NULL)
-	    return;
-
-	if (buffer)
-	{
-	    memcpy(new_buffer, buffer, buffer_len);
-	    vim_free(buffer);
-	}
-
-	buffer = new_buffer;
-	buffer_size = new_size;
-    }
-}
-
-static void PythonIO_Flush(void)
-{
-    if (old_fn && buffer_len)
-    {
-	buffer[buffer_len] = 0;
-	old_fn(buffer);
-    }
-
-    buffer_len = 0;
-}
-
-static void writer(writefn fn, char_u *str, Py_ssize_t n)
-{
-    char_u *ptr;
-
-    if (fn != old_fn && old_fn != NULL)
-	PythonIO_Flush();
-
-    old_fn = fn;
-
-    while (n > 0 && (ptr = memchr(str, '\n', n)) != NULL)
-    {
-	Py_ssize_t len = ptr - str;
-
-	buffer_ensure(buffer_len + len + 1);
-
-	memcpy(buffer + buffer_len, str, len);
-	buffer_len += len;
-	buffer[buffer_len] = 0;
-	fn(buffer);
-	str = ptr + 1;
-	n -= len + 1;
-	buffer_len = 0;
-    }
-
-    /* Put the remaining text into the buffer for later printing */
-    buffer_ensure(buffer_len + n + 1);
-    memcpy(buffer + buffer_len, str, n);
-    buffer_len += n;
-}
-
 /***************/
 
-static OutputObject Output =
-{
-    PyObject_HEAD_INIT(&OutputType)
-    0,
-    0
-};
-
-static OutputObject Error =
-{
-    PyObject_HEAD_INIT(&OutputType)
-    0,
-    1
-};
-
-static int PythonIO_Init(void)
+    static int
+PythonIO_Init(void)
 {
     PyType_Ready(&OutputType);
-
-    PySys_SetObject("stdout", (PyObject *)(void *)&Output);
-    PySys_SetObject("stderr", (PyObject *)(void *)&Error);
-
-    if (PyErr_Occurred())
-    {
-	EMSG(_("E264: Python: Error initialising I/O objects"));
-	return -1;
-    }
-
-    return 0;
+    return PythonIO_Init_io();
 }
-static void PythonIO_Fini(void)
+
+    static void
+PythonIO_Fini(void)
 {
     PySys_SetObject("stdout", NULL);
     PySys_SetObject("stderr", NULL);
@@ -983,8 +800,6 @@ static void PythonIO_Fini(void)
 /* Vim module - Implementation functions
  * -------------------------------------
  */
-
-static PyObject *VimError;
 
 static PyObject *VimCommand(PyObject *, PyObject *);
 static PyObject *VimEval(PyObject *, PyObject *);
@@ -1096,15 +911,15 @@ static int CurrentSetattro(PyObject *, PyObject *, PyObject *);
 
 static struct PyMethodDef VimMethods[] = {
     /* name,	     function,		calling,    documentation */
-    {"command",      VimCommand,	1,	    "Execute a Vim ex-mode command" },
+    {"command",	     VimCommand,	1,	    "Execute a Vim ex-mode command" },
     {"eval",	     VimEval,		1,	    "Evaluate an expression using Vim evaluator" },
     { NULL,	     NULL,		0,	    NULL }
 };
 
 /* Vim module - Implementation
  */
-/*ARGSUSED*/
-static PyObject * VimCommand(PyObject *self UNUSED, PyObject *args)
+    static PyObject *
+VimCommand(PyObject *self UNUSED, PyObject *args)
 {
     char *cmd;
     PyObject *result;
@@ -1140,10 +955,11 @@ static PyObject * VimCommand(PyObject *self UNUSED, PyObject *args)
  * The depth parameter is to avoid infinite recursion, set it to 1 when
  * you call VimToPython.
  */
-static PyObject * VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
+    static PyObject *
+VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 {
-    PyObject    *result;
-    PyObject    *newObj;
+    PyObject	*result;
+    PyObject	*newObj;
     char	ptrBuf[NUMBUFLEN];
 
     /* Avoid infinite recursion */
@@ -1216,18 +1032,18 @@ static PyObject * VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 
 	if (our_tv->vval.v_dict != NULL)
 	{
-	    hashtab_T   *ht = &our_tv->vval.v_dict->dv_hashtab;
-	    long_u      t = ht->ht_used;
-	    hashitem_T  *hi;
-	    dictitem_T  *di;
+	    hashtab_T	*ht = &our_tv->vval.v_dict->dv_hashtab;
+	    long_u	todo = ht->ht_used;
+	    hashitem_T	*hi;
+	    dictitem_T	*di;
 
 	    PyDict_SetItemString(lookupDict, ptrBuf, result);
 
-	    for (hi = ht->ht_array; t > 0; ++hi)
+	    for (hi = ht->ht_array; todo > 0; ++hi)
 	    {
 		if (!HASHITEM_EMPTY(hi))
 		{
-		    --t;
+		    --todo;
 
 		    di = dict_lookup(hi);
 		    newObj = VimToPython(&di->di_tv, depth + 1, lookupDict);
@@ -1247,13 +1063,13 @@ static PyObject * VimToPython(typval_T *our_tv, int depth, PyObject *lookupDict)
 }
 #endif
 
-/*ARGSUSED*/
-static PyObject * VimEval(PyObject *self UNUSED, PyObject *args)
+    static PyObject *
+VimEval(PyObject *self UNUSED, PyObject *args)
 {
 #ifdef FEAT_EVAL
     char	*expr;
-    typval_T    *our_tv;
-    PyObject    *result;
+    typval_T	*our_tv;
+    PyObject	*result;
     PyObject    *lookup_dict;
 
     if (!PyArg_ParseTuple(args, "s", &expr))
@@ -1296,7 +1112,8 @@ static PyObject * VimEval(PyObject *self UNUSED, PyObject *args)
  * -------------------------------------------
  */
 
-static int CheckBuffer(BufferObject *this)
+    static int
+CheckBuffer(BufferObject *this)
 {
     if (this->buf == INVALID_BUFFER_VALUE)
     {
@@ -1307,7 +1124,8 @@ static int CheckBuffer(BufferObject *this)
     return 0;
 }
 
-static PyObject * RBItem(BufferObject *self, Py_ssize_t n, Py_ssize_t start, Py_ssize_t end)
+    static PyObject *
+RBItem(BufferObject *self, Py_ssize_t n, Py_ssize_t start, Py_ssize_t end)
 {
     if (CheckBuffer(self))
 	return NULL;
@@ -1321,29 +1139,8 @@ static PyObject * RBItem(BufferObject *self, Py_ssize_t n, Py_ssize_t start, Py_
     return GetBufferLine(self->buf, n+start);
 }
 
-static Py_ssize_t RBAsItem(BufferObject *self, Py_ssize_t n, PyObject *val, Py_ssize_t start, Py_ssize_t end, Py_ssize_t *new_end)
-{
-    Py_ssize_t len_change;
-
-    if (CheckBuffer(self))
-	return -1;
-
-    if (n < 0 || n > end - start)
-    {
-	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
-	return -1;
-    }
-
-    if (SetBufferLine(self->buf, n+start, val, &len_change) == FAIL)
-	return -1;
-
-    if (new_end)
-	*new_end = end + len_change;
-
-    return 0;
-}
-
-static PyObject * RBSlice(BufferObject *self, Py_ssize_t lo, Py_ssize_t hi, Py_ssize_t start, Py_ssize_t end)
+    static PyObject *
+RBSlice(BufferObject *self, Py_ssize_t lo, Py_ssize_t hi, Py_ssize_t start, Py_ssize_t end)
 {
     Py_ssize_t size;
 
@@ -1366,7 +1163,31 @@ static PyObject * RBSlice(BufferObject *self, Py_ssize_t lo, Py_ssize_t hi, Py_s
     return GetBufferLineList(self->buf, lo+start, hi+start);
 }
 
-static PyObject * RBAppend(BufferObject *self, PyObject *args, Py_ssize_t start, Py_ssize_t end, Py_ssize_t *new_end)
+    static Py_ssize_t
+RBAsItem(BufferObject *self, Py_ssize_t n, PyObject *val, Py_ssize_t start, Py_ssize_t end, Py_ssize_t *new_end)
+{
+    Py_ssize_t len_change;
+
+    if (CheckBuffer(self))
+	return -1;
+
+    if (n < 0 || n > end - start)
+    {
+	PyErr_SetString(PyExc_IndexError, _("line number out of range"));
+	return -1;
+    }
+
+    if (SetBufferLine(self->buf, n+start, val, &len_change) == FAIL)
+	return -1;
+
+    if (new_end)
+	*new_end = end + len_change;
+
+    return 0;
+}
+
+    static PyObject *
+RBAppend(BufferObject *self, PyObject *args, Py_ssize_t start, Py_ssize_t end, Py_ssize_t *new_end)
 {
     PyObject *lines;
     Py_ssize_t len_change;
@@ -1397,6 +1218,9 @@ static PyObject * RBAppend(BufferObject *self, PyObject *args, Py_ssize_t start,
     return Py_None;
 }
 
+
+/* Buffer object - Definitions
+ */
 
 static struct PyMethodDef BufferMethods[] = {
     /* name,	    function,		calling,    documentation */
@@ -1431,7 +1255,8 @@ PyMappingMethods BufferAsMapping = {
 
 static PyTypeObject BufferType;
 
-static PyObject * BufferNew(buf_T *buf)
+    static PyObject *
+BufferNew(buf_T *buf)
 {
     /* We need to handle deletion of buffers underneath us.
      * If we add a "b_python3_ref" field to the buf_T structure,
@@ -1466,7 +1291,8 @@ static PyObject * BufferNew(buf_T *buf)
     return (PyObject *)(self);
 }
 
-static void BufferDestructor(PyObject *self)
+    static void
+BufferDestructor(PyObject *self)
 {
     BufferObject *this = (BufferObject *)(self);
 
@@ -1474,7 +1300,8 @@ static void BufferDestructor(PyObject *self)
 	this->buf->b_python3_ref = NULL;
 }
 
-static PyObject * BufferGetattro(PyObject *self, PyObject*nameobj)
+    static PyObject *
+BufferGetattro(PyObject *self, PyObject*nameobj)
 {
     BufferObject *this = (BufferObject *)(self);
 
@@ -1495,7 +1322,8 @@ static PyObject * BufferGetattro(PyObject *self, PyObject*nameobj)
 	return PyObject_GenericGetAttr(self, nameobj);
 }
 
-static PyObject * BufferRepr(PyObject *self)
+    static PyObject *
+BufferRepr(PyObject *self)
 {
     static char repr[100];
     BufferObject *this = (BufferObject *)(self);
@@ -1525,7 +1353,8 @@ static PyObject * BufferRepr(PyObject *self)
 
 /******************/
 
-static Py_ssize_t BufferLength(PyObject *self)
+    static Py_ssize_t
+BufferLength(PyObject *self)
 {
     if (CheckBuffer((BufferObject *)(self)))
 	return -1;
@@ -1533,27 +1362,31 @@ static Py_ssize_t BufferLength(PyObject *self)
     return (Py_ssize_t)(((BufferObject *)(self))->buf->b_ml.ml_line_count);
 }
 
-static PyObject * BufferItem(PyObject *self, Py_ssize_t n)
+    static PyObject *
+BufferItem(PyObject *self, Py_ssize_t n)
 {
     return RBItem((BufferObject *)(self), n, 1,
 	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
 }
 
-static Py_ssize_t BufferAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
+    static PyObject *
+BufferSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
+{
+    return RBSlice((BufferObject *)(self), lo, hi, 1,
+	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
+}
+
+    static Py_ssize_t
+BufferAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 {
     return RBAsItem((BufferObject *)(self), n, val, 1,
 		(Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		NULL);
 }
 
-static PyObject * BufferSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
-{
-    return RBSlice((BufferObject *)(self), lo, hi, 1,
-	       (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count);
-}
 
-
-static PyObject* BufferSubscript(PyObject *self, PyObject* idx)
+    static PyObject *
+BufferSubscript(PyObject *self, PyObject* idx)
 {
     if (PyLong_Check(idx)) {
 	long _idx = PyLong_AsLong(idx);
@@ -1574,14 +1407,16 @@ static PyObject* BufferSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-static PyObject * BufferAppend(PyObject *self, PyObject *args)
+    static PyObject *
+BufferAppend(PyObject *self, PyObject *args)
 {
     return RBAppend((BufferObject *)(self), args, 1,
 		(Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		NULL);
 }
 
-static PyObject * BufferMark(PyObject *self, PyObject *args)
+    static PyObject *
+BufferMark(PyObject *self, PyObject *args)
 {
     pos_T       *posp;
     char	*pmark;//test
@@ -1620,7 +1455,8 @@ static PyObject * BufferMark(PyObject *self, PyObject *args)
     return Py_BuildValue("(ll)", (long)(posp->lnum), (long)(posp->col));
 }
 
-static PyObject * BufferRange(PyObject *self, PyObject *args)
+    static PyObject *
+BufferRange(PyObject *self, PyObject *args)
 {
     Py_ssize_t start;
     Py_ssize_t end;
@@ -1667,7 +1503,8 @@ static PyTypeObject RangeType;
 /* Line range object - Implementation
  */
 
-static PyObject * RangeNew(buf_T *buf, Py_ssize_t start, Py_ssize_t end)
+    static PyObject *
+RangeNew(buf_T *buf, Py_ssize_t start, Py_ssize_t end)
 {
     BufferObject *bufr;
     RangeObject *self;
@@ -1690,12 +1527,14 @@ static PyObject * RangeNew(buf_T *buf, Py_ssize_t start, Py_ssize_t end)
     return (PyObject *)(self);
 }
 
-static void RangeDestructor(PyObject *self)
+    static void
+RangeDestructor(PyObject *self)
 {
     Py_DECREF(((RangeObject *)(self))->buf);
 }
 
-static PyObject * RangeGetattro(PyObject *self, PyObject *nameobj)
+    static PyObject *
+RangeGetattro(PyObject *self, PyObject *nameobj)
 {
     char *name = "";
     if (PyUnicode_Check(nameobj))
@@ -1709,7 +1548,8 @@ static PyObject * RangeGetattro(PyObject *self, PyObject *nameobj)
 	return PyObject_GenericGetAttr(self, nameobj);
 }
 
-static PyObject * RangeRepr(PyObject *self)
+    static PyObject *
+RangeRepr(PyObject *self)
 {
     static char repr[100];
     RangeObject *this = (RangeObject *)(self);
@@ -1742,7 +1582,8 @@ static PyObject * RangeRepr(PyObject *self)
 
 /****************/
 
-static Py_ssize_t RangeLength(PyObject *self)
+    static Py_ssize_t
+RangeLength(PyObject *self)
 {
     /* HOW DO WE SIGNAL AN ERROR FROM THIS FUNCTION? */
     if (CheckBuffer(((RangeObject *)(self))->buf))
@@ -1751,14 +1592,16 @@ static Py_ssize_t RangeLength(PyObject *self)
     return (((RangeObject *)(self))->end - ((RangeObject *)(self))->start + 1);
 }
 
-static PyObject * RangeItem(PyObject *self, Py_ssize_t n)
+    static PyObject *
+RangeItem(PyObject *self, Py_ssize_t n)
 {
     return RBItem(((RangeObject *)(self))->buf, n,
 		  ((RangeObject *)(self))->start,
 		  ((RangeObject *)(self))->end);
 }
 
-static Py_ssize_t RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
+    static Py_ssize_t
+RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 {
     return RBAsItem(((RangeObject *)(self))->buf, n, val,
 		    ((RangeObject *)(self))->start,
@@ -1766,14 +1609,16 @@ static Py_ssize_t RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 		    &((RangeObject *)(self))->end);
 }
 
-static PyObject * RangeSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
+    static PyObject *
+RangeSlice(PyObject *self, Py_ssize_t lo, Py_ssize_t hi)
 {
     return RBSlice(((RangeObject *)(self))->buf, lo, hi,
 		   ((RangeObject *)(self))->start,
 		   ((RangeObject *)(self))->end);
 }
 
-static PyObject* RangeSubscript(PyObject *self, PyObject* idx)
+    static PyObject *
+RangeSubscript(PyObject *self, PyObject* idx)
 {
     if (PyLong_Check(idx)) {
 	long _idx = PyLong_AsLong(idx);
@@ -1794,7 +1639,8 @@ static PyObject* RangeSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-static PyObject * RangeAppend(PyObject *self, PyObject *args)
+    static PyObject *
+RangeAppend(PyObject *self, PyObject *args)
 {
     return RBAppend(((RangeObject *)(self))->buf, args,
 		    ((RangeObject *)(self))->start,
@@ -1829,8 +1675,8 @@ static PyTypeObject BufListType;
 /* Buffer list object - Implementation
  */
 
-/*ARGSUSED*/
-static Py_ssize_t BufListLength(PyObject *self UNUSED)
+    static Py_ssize_t
+BufListLength(PyObject *self UNUSED)
 {
     buf_T       *b = firstbuf;
     Py_ssize_t  n = 0;
@@ -1844,8 +1690,8 @@ static Py_ssize_t BufListLength(PyObject *self UNUSED)
     return n;
 }
 
-/*ARGSUSED*/
-static PyObject * BufListItem(PyObject *self UNUSED, Py_ssize_t n)
+    static PyObject *
+BufListItem(PyObject *self UNUSED, Py_ssize_t n)
 {
     buf_T *b;
 
@@ -1872,7 +1718,8 @@ static PyTypeObject WindowType;
 /* Window object - Implementation
  */
 
-static PyObject * WindowNew(win_T *win)
+    static PyObject *
+WindowNew(win_T *win)
 {
     /* We need to handle deletion of windows underneath us.
      * If we add a "w_python3_ref" field to the win_T structure,
@@ -1905,7 +1752,8 @@ static PyObject * WindowNew(win_T *win)
     return (PyObject *)(self);
 }
 
-static void WindowDestructor(PyObject *self)
+    static void
+WindowDestructor(PyObject *self)
 {
     WindowObject *this = (WindowObject *)(self);
 
@@ -1913,7 +1761,8 @@ static void WindowDestructor(PyObject *self)
 	this->win->w_python3_ref = NULL;
 }
 
-static int CheckWindow(WindowObject *this)
+    static int
+CheckWindow(WindowObject *this)
 {
     if (this->win == INVALID_WINDOW_VALUE)
     {
@@ -1924,7 +1773,8 @@ static int CheckWindow(WindowObject *this)
     return 0;
 }
 
-static PyObject * WindowGetattro(PyObject *self, PyObject *nameobj)
+    static PyObject *
+WindowGetattro(PyObject *self, PyObject *nameobj)
 {
     WindowObject *this = (WindowObject *)(self);
 
@@ -1956,7 +1806,8 @@ static PyObject * WindowGetattro(PyObject *self, PyObject *nameobj)
 	return PyObject_GenericGetAttr(self, nameobj);
 }
 
-static int WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
+    static int
+WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 {
     WindowObject *this = (WindowObject *)(self);
 
@@ -2001,8 +1852,8 @@ static int WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     }
     else if (strcmp(name, "height") == 0)
     {
-	int     height;
-	win_T   *savewin;
+	int	height;
+	win_T	*savewin;
 
 	if (!PyArg_Parse(val, "i", &height))
 	    return -1;
@@ -2024,8 +1875,8 @@ static int WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 #ifdef FEAT_VERTSPLIT
     else if (strcmp(name, "width") == 0)
     {
-	int     width;
-	win_T   *savewin;
+	int	width;
+	win_T	*savewin;
 
 	if (!PyArg_Parse(val, "i", &width))
 	    return -1;
@@ -2052,7 +1903,8 @@ static int WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     }
 }
 
-static PyObject * WindowRepr(PyObject *self)
+    static PyObject *
+WindowRepr(PyObject *self)
 {
     static char repr[100];
     WindowObject *this = (WindowObject *)(self);
@@ -2064,8 +1916,8 @@ static PyObject * WindowRepr(PyObject *self)
     }
     else
     {
-	int     i = 0;
-	win_T   *w;
+	int	i = 0;
+	win_T	*w;
 
 	for (w = firstwin; w != NULL && w != this->win; w = W_NEXT(w))
 	    ++i;
@@ -2106,8 +1958,8 @@ static PyTypeObject WinListType;
 
 /* Window list object - Implementation
  */
-/*ARGSUSED*/
-static Py_ssize_t WinListLength(PyObject *self UNUSED)
+    static Py_ssize_t
+WinListLength(PyObject *self UNUSED)
 {
     win_T       *w = firstwin;
     Py_ssize_t  n = 0;
@@ -2121,8 +1973,8 @@ static Py_ssize_t WinListLength(PyObject *self UNUSED)
     return n;
 }
 
-/*ARGSUSED*/
-static PyObject * WinListItem(PyObject *self UNUSED, Py_ssize_t n)
+    static PyObject *
+WinListItem(PyObject *self UNUSED, Py_ssize_t n)
 {
     win_T *w;
 
@@ -2147,8 +1999,8 @@ static PyTypeObject CurrentType;
 
 /* Current items object - Implementation
  */
-/*ARGSUSED*/
-static PyObject * CurrentGetattro(PyObject *self UNUSED, PyObject *nameobj)
+    static PyObject *
+CurrentGetattro(PyObject *self UNUSED, PyObject *nameobj)
 {
     char *name = "";
     if (PyUnicode_Check(nameobj))
@@ -2171,8 +2023,8 @@ static PyObject * CurrentGetattro(PyObject *self UNUSED, PyObject *nameobj)
     }
 }
 
-/*ARGSUSED*/
-static int CurrentSetattro(PyObject *self UNUSED, PyObject *nameobj, PyObject *value)
+    static int
+CurrentSetattro(PyObject *self UNUSED, PyObject *nameobj, PyObject *value)
 {
     char *name = "";
     if (PyUnicode_Check(nameobj))
@@ -2278,12 +2130,23 @@ PyMODINIT_FUNC Py3Init_vim(void)
  * 4. Utility functions for handling the interface between Vim and Python.
  */
 
+/* Get a line from the specified buffer. The line number is
+ * in Vim format (1-based). The line is returned as a Python
+ * string object.
+ */
+    static PyObject *
+GetBufferLine(buf_T *buf, Py_ssize_t n)
+{
+    return LineToString((char *)ml_get_buf(buf, (linenr_T)n, FALSE));
+}
+
 
 /* Get a list of lines from the specified buffer. The line numbers
  * are in Vim format (1-based). The range is from lo up to, but not
  * including, hi. The list is returned as a Python list of string objects.
  */
-static PyObject * GetBufferLineList(buf_T *buf, Py_ssize_t lo, Py_ssize_t hi)
+    static PyObject *
+GetBufferLineList(buf_T *buf, Py_ssize_t lo, Py_ssize_t hi)
 {
     Py_ssize_t i;
     Py_ssize_t n = hi - lo;
@@ -2320,21 +2183,13 @@ static PyObject * GetBufferLineList(buf_T *buf, Py_ssize_t lo, Py_ssize_t hi)
     return list;
 }
 
-/* Get a line from the specified buffer. The line number is
- * in Vim format (1-based). The line is returned as a Python
- * string object.
- */
-static PyObject * GetBufferLine(buf_T *buf, Py_ssize_t n)
-{
-    return LineToString((char *)ml_get_buf(buf, (linenr_T)n, FALSE));
-}
-
 /*
  * Check if deleting lines made the cursor position invalid.
  * Changed the lines from "lo" to "hi" and added "extra" lines (negative if
  * deleted).
  */
-static void py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
+    static void
+py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
 {
     if (curwin->w_cursor.lnum >= lo)
     {
@@ -2365,7 +2220,8 @@ static void py_fix_cursor(linenr_T lo, linenr_T hi, linenr_T extra)
  * If OK is returned and len_change is not NULL, *len_change
  * is set to the change in the buffer length.
  */
-static int SetBufferLine(buf_T *buf, Py_ssize_t n, PyObject *line, Py_ssize_t *len_change)
+    static int
+SetBufferLine(buf_T *buf, Py_ssize_t n, PyObject *line, Py_ssize_t *len_change)
 {
     /* First of all, we check the thpe of the supplied Python object.
      * There are three cases:
@@ -2455,7 +2311,8 @@ static int SetBufferLine(buf_T *buf, Py_ssize_t n, PyObject *line, Py_ssize_t *l
  * If OK is returned and len_change is not NULL, *len_change
  * is set to the change in the buffer length.
  */
-static int InsertBufferLines(buf_T *buf, Py_ssize_t n, PyObject *lines, Py_ssize_t *len_change)
+    static int
+InsertBufferLines(buf_T *buf, Py_ssize_t n, PyObject *lines, Py_ssize_t *len_change)
 {
     /* First of all, we check the type of the supplied Python object.
      * It must be a string or a list, or the call is in error.
@@ -2576,7 +2433,8 @@ static int InsertBufferLines(buf_T *buf, Py_ssize_t n, PyObject *lines, Py_ssize
  *
  * On errors, the Python exception data is set, and NULL is returned.
  */
-static PyObject * LineToString(const char *str)
+    static PyObject *
+LineToString(const char *str)
 {
     PyObject *result;
     Py_ssize_t len = strlen(str);
@@ -2616,7 +2474,8 @@ static PyObject * LineToString(const char *str)
  *
  * On errors, the Python exception data is set, and NULL is returned.
  */
-static char * StringToLine(PyObject *obj)
+    static char *
+StringToLine(PyObject *obj)
 {
     const char *str;
     char *save;
@@ -2674,26 +2533,8 @@ static char * StringToLine(PyObject *obj)
     return save;
 }
 
-/* Check to see whether a Vim error has been reported, or a keyboard
- * interrupt has been detected.
- */
-static int VimErrorCheck(void)
-{
-    if (got_int)
-    {
-	PyErr_SetNone(PyExc_KeyboardInterrupt);
-	return 1;
-    }
-    else if (did_emsg && !PyErr_Occurred())
-    {
-	PyErr_SetNone(VimError);
-	return 1;
-    }
-
-    return 0;
-}
-
-static void init_structs(void)
+    static void
+init_structs(void)
 {
     vim_memset(&OutputType, 0, sizeof(OutputType));
     OutputType.tp_name = "vim.message";
