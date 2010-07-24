@@ -4500,6 +4500,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		&& (int)wp->w_virtcol <= vcol + n_skip)
 	{
 	    wp->w_wcol = col - boguscols;
+	    wp->w_wrow = row;
 	    did_wcol = TRUE;
 	}
 #endif

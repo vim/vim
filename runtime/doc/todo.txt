@@ -40,8 +40,6 @@ Add documentation for Python 3 support.
     New patch 2010 Jul 24
     Docs patch by Dominique Pelle, Mar 25 included?
 
-Check position in wrapped line with 'concealcursor' set.
-
 'undoreload' option: when fewer lines than these consider a reload as a change
 action and save the text before the reload, don't clear undo info.
 
