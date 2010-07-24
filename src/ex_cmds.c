@@ -3144,6 +3144,7 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 #ifdef FEAT_SPELL
     int		did_get_winopts = FALSE;
 #endif
+    int		readfile_flags = 0;
 
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
@@ -3570,7 +3571,22 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	else
 	    new_name = NULL;
 #endif
-	buf_freeall(curbuf, FALSE, FALSE);   /* free all things for buffer */
+	if (p_ur < 0 || curbuf->b_ml.ml_line_count <= p_ur)
+	{
+	    /* Save all the text, so that the reload can be undone.
+	     * Sync first so that this is a separate undo-able action. */
+	    u_sync(FALSE);
+	    if (u_savecommon(0, curbuf->b_ml.ml_line_count + 1, 0, TRUE)
+								     == FAIL)
+		goto theend;
+	    u_unchanged(curbuf);
+	    buf_freeall(curbuf, BFA_KEEP_UNDO);
+
+	    /* tell readfile() not to clear or reload undo info */
+	    readfile_flags = READ_KEEP_UNDO;
+	}
+	else
+	    buf_freeall(curbuf, 0);   /* free all things for buffer */
 #ifdef FEAT_AUTOCMD
 	/* If autocommands deleted the buffer we were going to re-edit, give
 	 * up and jump to the end. */
@@ -3667,10 +3683,10 @@ do_ecmd(fnum, ffname, sfname, eap, newlnum, flags, oldwin)
 	     * Open the buffer and read the file.
 	     */
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
-	    if (should_abort(open_buffer(FALSE, eap)))
+	    if (should_abort(open_buffer(FALSE, eap, readfile_flags)))
 		retval = FAIL;
 #else
-	    (void)open_buffer(FALSE, eap);
+	    (void)open_buffer(FALSE, eap, readfile_flags);
 #endif
 
 #if defined(HAS_SWAP_EXISTS_ACTION)

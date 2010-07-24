@@ -66,9 +66,10 @@ static void buf_delete_signs __ARGS((buf_T *buf));
  * Return FAIL for failure, OK otherwise.
  */
     int
-open_buffer(read_stdin, eap)
+open_buffer(read_stdin, eap, flags)
     int		read_stdin;	    /* read file from stdin */
     exarg_T	*eap;		    /* for forced 'ff' and 'fenc' or NULL */
+    int		flags;		    /* extra flags for readfile() */
 {
     int		retval = OK;
 #ifdef FEAT_AUTOCMD
@@ -130,7 +131,8 @@ open_buffer(read_stdin, eap)
 	netbeansFireChanges = 0;
 #endif
 	retval = readfile(curbuf->b_ffname, curbuf->b_fname,
-		  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM, eap, READ_NEW);
+		  (linenr_T)0, (linenr_T)0, (linenr_T)MAXLNUM, eap,
+		  flags | READ_NEW);
 #ifdef FEAT_NETBEANS_INTG
 	netbeansFireChanges = oldFire;
 #endif
@@ -151,13 +153,15 @@ open_buffer(read_stdin, eap)
 	 */
 	curbuf->b_p_bin = TRUE;
 	retval = readfile(NULL, NULL, (linenr_T)0,
-		  (linenr_T)0, (linenr_T)MAXLNUM, NULL, READ_NEW + READ_STDIN);
+		  (linenr_T)0, (linenr_T)MAXLNUM, NULL,
+		  flags | (READ_NEW + READ_STDIN));
 	curbuf->b_p_bin = save_bin;
 	if (retval == OK)
 	{
 	    line_count = curbuf->b_ml.ml_line_count;
 	    retval = readfile(NULL, NULL, (linenr_T)line_count,
-			    (linenr_T)0, (linenr_T)MAXLNUM, eap, READ_BUFFER);
+			    (linenr_T)0, (linenr_T)MAXLNUM, eap,
+			    flags | READ_BUFFER);
 	    if (retval == OK)
 	    {
 		/* Delete the binary lines. */
@@ -412,7 +416,7 @@ close_buffer(win, buf, action)
     buf->b_nwindows = nwindows;
 #endif
 
-    buf_freeall(buf, del_buf, wipe_buf);
+    buf_freeall(buf, (del_buf ? BFA_DEL : 0) + (wipe_buf ? BFA_WIPE : 0));
 
 #ifdef FEAT_AUTOCMD
     /* Autocommands may have deleted the buffer. */
@@ -511,13 +515,15 @@ buf_clear_file(buf)
 
 /*
  * buf_freeall() - free all things allocated for a buffer that are related to
- * the file.
+ * the file.  flags:
+ * BFA_DEL	  buffer is going to be deleted
+ * BFA_WIPE	  buffer is going to be wiped out
+ * BFA_KEEP_UNDO  do not free undo information
  */
     void
-buf_freeall(buf, del_buf, wipe_buf)
+buf_freeall(buf, flags)
     buf_T	*buf;
-    int		del_buf UNUSED;	    /* buffer is going to be deleted */
-    int		wipe_buf UNUSED;    /* buffer is going to be wiped out */
+    int		flags;
 {
 #ifdef FEAT_AUTOCMD
     int		is_curbuf = (buf == curbuf);
@@ -525,13 +531,13 @@ buf_freeall(buf, del_buf, wipe_buf)
     apply_autocmds(EVENT_BUFUNLOAD, buf->b_fname, buf->b_fname, FALSE, buf);
     if (!buf_valid(buf))	    /* autocommands may delete the buffer */
 	return;
-    if (del_buf && buf->b_p_bl)
+    if ((flags & BFA_DEL) && buf->b_p_bl)
     {
 	apply_autocmds(EVENT_BUFDELETE, buf->b_fname, buf->b_fname, FALSE, buf);
 	if (!buf_valid(buf))	    /* autocommands may delete the buffer */
 	    return;
     }
-    if (wipe_buf)
+    if (flags & BFA_WIPE)
     {
 	apply_autocmds(EVENT_BUFWIPEOUT, buf->b_fname, buf->b_fname,
 								  FALSE, buf);
@@ -576,10 +582,13 @@ buf_freeall(buf, del_buf, wipe_buf)
 #ifdef FEAT_TCL
     tcl_buffer_free(buf);
 #endif
-    u_blockfree(buf);		    /* free the memory allocated for undo */
     ml_close(buf, TRUE);	    /* close and delete the memline/memfile */
     buf->b_ml.ml_line_count = 0;    /* no lines in buffer */
-    u_clearall(buf);		    /* reset all undo information */
+    if ((flags & BFA_KEEP_UNDO) == 0)
+    {
+	u_blockfree(buf);	    /* free the memory allocated for undo */
+	u_clearall(buf);	    /* reset all undo information */
+    }
 #ifdef FEAT_SYN_HL
     syntax_clear(&buf->b_s);	    /* reset syntax info */
 #endif
@@ -1423,7 +1432,7 @@ enter_buffer(buf)
 	    did_filetype = FALSE;
 #endif
 
-	open_buffer(FALSE, NULL);
+	open_buffer(FALSE, NULL, 0);
     }
     else
     {
@@ -1625,7 +1634,7 @@ buflist_new(ffname, sfname, lnum, flags)
     if (buf == curbuf)
     {
 	/* free all things allocated for this buffer */
-	buf_freeall(buf, FALSE, FALSE);
+	buf_freeall(buf, 0);
 	if (buf != curbuf)	 /* autocommands deleted the buffer! */
 	    return NULL;
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)

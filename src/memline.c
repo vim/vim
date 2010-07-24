@@ -2529,7 +2529,7 @@ ml_append(lnum, line, len, newfile)
     int		newfile;	/* flag, see above */
 {
     /* When starting up, we might still need to create the memfile */
-    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL) == FAIL)
+    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
 	return FAIL;
 
     if (curbuf->b_ml.ml_line_lnum != 0)
@@ -3078,7 +3078,7 @@ ml_replace(lnum, line, copy)
 	return FAIL;
 
     /* When starting up, we might still need to create the memfile */
-    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL) == FAIL)
+    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
 	return FAIL;
 
     if (copy && (line = vim_strsave(line)) == NULL) /* allocate memory */

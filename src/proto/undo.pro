@@ -5,6 +5,7 @@ int u_savesub __ARGS((linenr_T lnum));
 int u_inssub __ARGS((linenr_T lnum));
 int u_savedel __ARGS((linenr_T lnum, long nlines));
 int undo_allowed __ARGS((void));
+int u_savecommon __ARGS((linenr_T top, linenr_T bot, linenr_T newbot, int reload));
 void u_compute_hash __ARGS((char_u *hash));
 char_u *u_get_undo_file_name __ARGS((char_u *buf_ffname, int reading));
 void u_write_undo __ARGS((char_u *name, int forceit, buf_T *buf, char_u *hash));

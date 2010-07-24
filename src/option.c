@@ -2655,6 +2655,9 @@ static struct vimoption
 			    (char_u *)100L,
 #endif
 				(char_u *)0L} SCRIPTID_INIT},
+    {"undoreload",  "ur",   P_NUM|P_VI_DEF,
+			    (char_u *)&p_ur, PV_NONE,
+			    { (char_u *)10000L, (char_u *)0L} SCRIPTID_INIT},
     {"updatecount", "uc",   P_NUM|P_VI_DEF,
 			    (char_u *)&p_uc, PV_NONE,
 			    {(char_u *)200L, (char_u *)0L} SCRIPTID_INIT},

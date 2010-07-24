@@ -1,9 +1,9 @@
 /* buffer.c */
-int open_buffer __ARGS((int read_stdin, exarg_T *eap));
+int open_buffer __ARGS((int read_stdin, exarg_T *eap, int flags));
 int buf_valid __ARGS((buf_T *buf));
 void close_buffer __ARGS((win_T *win, buf_T *buf, int action));
 void buf_clear_file __ARGS((buf_T *buf));
-void buf_freeall __ARGS((buf_T *buf, int del_buf, int wipe_buf));
+void buf_freeall __ARGS((buf_T *buf, int flags));
 void goto_buffer __ARGS((exarg_T *eap, int start, int dir, int count));
 void handle_swap_exists __ARGS((buf_T *old_curbuf));
 char_u *do_bufdel __ARGS((int command, char_u *arg, int addr_count, int start_bnr, int end_bnr, int forceit));

@@ -7361,6 +7361,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	file on buffer read.
 	The directory where the undo file is stored is specified by 'undodir'.
 	For more information about this feature see |undo-persistence|.
+	The undo file is not read when 'undoreload' causes the buffer from
+	before a reload to be saved for undo.
 	WARNING: this is a very new feature.  Use at your own risk!
 
 						*'undolevels'* *'ul'*
@@ -7381,6 +7383,22 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set ul=-1
 <	This helps when you run out of memory for a single change.
 	Also see |clear-undo|.
+
+						*'undoreload'* *'ur'*
+'undoreload' 'ur'	number	(default 10000)
+			global
+			{not in Vi}
+	Save the whole buffer for undo when reloading it.  This applies to the
+	":e!" command and reloading for when the buffer changed outside of
+	Vim. |FileChangedShell|
+	The save only happens when this options is negative or when the number
+	of lines is smaller than the value of this option.
+	Set this option to zero to disable undo for a reload.
+
+	When saving undo for a reload, any undo file is not read.
+
+	Note that this causes the whole buffer to be stored in memory.  Set
+	this option to a lower value if you run out of memory.
 
 						*'updatecount'* *'uc'*
 'updatecount' 'uc'	number	(default: 200)

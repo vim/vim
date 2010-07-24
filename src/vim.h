@@ -953,6 +953,7 @@ extern char *(*dyn_libintl_textdomain)(const char *domainname);
 #define READ_STDIN	0x04	/* read from stdin */
 #define READ_BUFFER	0x08	/* read from curbuf (converting stdin) */
 #define READ_DUMMY	0x10	/* reading into a dummy buffer */
+#define READ_KEEP_UNDO	0x20	/* keep undo info*/
 
 /* Values for change_indent() */
 #define INDENT_SET	1	/* set indent */
@@ -2173,5 +2174,10 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define VIF_WANT_MARKS		2	/* load file marks */
 #define VIF_FORCEIT		4	/* overwrite info already read */
 #define VIF_GET_OLDFILES	8	/* load v:oldfiles */
+
+/* flags for buf_freeall() */
+#define BFA_DEL		1	/* buffer is going to be deleted */
+#define BFA_WIPE	2	/* buffer is going to be wiped out */
+#define BFA_KEEP_UNDO	4	/* do not free undo information */
 
 #endif /* VIM__H */

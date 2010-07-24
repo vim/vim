@@ -219,6 +219,7 @@ filemess(buf, name, s, attr)
  * READ_BUFFER	read from curbuf instead of a file (converting after reading
  *		stdin)
  * READ_DUMMY	read into a dummy buffer (to check if file contents changed)
+ * READ_KEEP_UNDO  don't clear undo info or read it from a file
  *
  * return FAIL for failure, OK otherwise
  */
@@ -1195,8 +1196,12 @@ retry:
 	conv_restlen = 0;
 #endif
 #ifdef FEAT_PERSISTENT_UNDO
-	read_undo_file = (newfile && curbuf->b_ffname != NULL && curbuf->b_p_udf
-				&& !filtering && !read_stdin && !read_buffer);
+	read_undo_file = (newfile && (flags & READ_KEEP_UNDO) == 0
+				  && curbuf->b_ffname != NULL
+				  && curbuf->b_p_udf
+				  && !filtering
+				  && !read_stdin
+				  && !read_buffer);
 	if (read_undo_file)
 	    sha256_start(&sha_ctx);
 #endif
@@ -7077,6 +7082,7 @@ buf_reload(buf, orig_mode)
     buf_T	*savebuf;
     int		saved = OK;
     aco_save_T	aco;
+    int		flags = READ_NEW;
 
     /* set curwin/curbuf for "buf" and save some things */
     aucmd_prepbuf(&aco, buf);
@@ -7089,6 +7095,15 @@ buf_reload(buf, orig_mode)
 	old_cursor = curwin->w_cursor;
 	old_topline = curwin->w_topline;
 
+	if (saved == OK && (p_ur < 0 || curbuf->b_ml.ml_line_count <= p_ur))
+	{
+	    /* Save all the text, so that the reload can be undone.
+	     * Sync first so that this is a separate undo-able action. */
+	    u_sync(FALSE);
+	    saved = u_savecommon(0, curbuf->b_ml.ml_line_count + 1, 0, TRUE);
+	    flags |= READ_KEEP_UNDO;
+	}
+
 	/*
 	 * To behave like when a new file is edited (matters for
 	 * BufReadPost autocommands) we first need to delete the current
@@ -7096,7 +7111,7 @@ buf_reload(buf, orig_mode)
 	 * the old contents.  Can't use memory only, the file might be
 	 * too big.  Use a hidden buffer to move the buffer contents to.
 	 */
-	if (bufempty())
+	if (bufempty() || saved == FAIL)
 	    savebuf = NULL;
 	else
 	{
@@ -7128,7 +7143,7 @@ buf_reload(buf, orig_mode)
 #endif
 	    if (readfile(buf->b_ffname, buf->b_fname, (linenr_T)0,
 			(linenr_T)0,
-			(linenr_T)MAXLNUM, &ea, READ_NEW) == FAIL)
+			(linenr_T)MAXLNUM, &ea, flags) == FAIL)
 	    {
 #if defined(FEAT_AUTOCMD) && defined(FEAT_EVAL)
 		if (!aborting())
@@ -7144,12 +7159,18 @@ buf_reload(buf, orig_mode)
 		    (void)move_lines(savebuf, buf);
 		}
 	    }
-	    else if (buf == curbuf)
+	    else if (buf == curbuf)  /* "buf" still valid */
 	    {
 		/* Mark the buffer as unmodified and free undo info. */
 		unchanged(buf, TRUE);
-		u_blockfree(buf);
-		u_clearall(buf);
+		if ((flags & READ_KEEP_UNDO) == 0)
+		{
+		    u_blockfree(buf);
+		    u_clearall(buf);
+		}
+		else
+		    /* Mark all undo states as changed. */
+		    u_unchanged(curbuf);
 	    }
 	}
 	vim_free(ea.cmd);

@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 7.3b.  Last change: 2010 Jul 20
+*version7.txt*  For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -7170,6 +7170,9 @@ also for unloaded buffers. See |undo-persistence| (partly by Jordan Lewis)
 Added ":earlier 1f" and ":later 1f".
 Add file save counter to undo information.
 Added the |undotree()| and |undofile()| functions.
+
+Also added the 'undoreload' option.  This makes it possible to save the
+current text when reloading the buffer, so that it can be undone.
 
 
 More encryption					*new-more-encryption*

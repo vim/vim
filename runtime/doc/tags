@@ -1029,8 +1029,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 'undodir'	options.txt	/*'undodir'*
 'undofile'	options.txt	/*'undofile'*
 'undolevels'	options.txt	/*'undolevels'*
+'undoreload'	options.txt	/*'undoreload'*
 'updatecount'	options.txt	/*'updatecount'*
 'updatetime'	options.txt	/*'updatetime'*
+'ur'	options.txt	/*'ur'*
 'ut'	options.txt	/*'ut'*
 'vb'	options.txt	/*'vb'*
 'vbs'	options.txt	/*'vbs'*
@@ -6081,6 +6083,7 @@ hl-Directory	syntax.txt	/*hl-Directory*
 hl-ErrorMsg	syntax.txt	/*hl-ErrorMsg*
 hl-FoldColumn	syntax.txt	/*hl-FoldColumn*
 hl-Folded	syntax.txt	/*hl-Folded*
+hl-Ignore	syntax.txt	/*hl-Ignore*
 hl-IncSearch	syntax.txt	/*hl-IncSearch*
 hl-LineNr	syntax.txt	/*hl-LineNr*
 hl-MatchParen	syntax.txt	/*hl-MatchParen*

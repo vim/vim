@@ -90,7 +90,6 @@
 static void u_unch_branch __ARGS((u_header_T *uhp));
 static u_entry_T *u_get_headentry __ARGS((void));
 static void u_getbot __ARGS((void));
-static int u_savecommon __ARGS((linenr_T, linenr_T, linenr_T));
 static void u_doit __ARGS((int count));
 static void u_undoredo __ARGS((int undo));
 static void u_undo_end __ARGS((int did_undo, int absolute));
@@ -250,7 +249,7 @@ u_save(top, bot)
     if (top + 2 == bot)
 	u_saveline((linenr_T)(top + 1));
 
-    return (u_savecommon(top, bot, (linenr_T)0));
+    return (u_savecommon(top, bot, (linenr_T)0, FALSE));
 }
 
 /*
@@ -266,7 +265,7 @@ u_savesub(lnum)
     if (undo_off)
 	return OK;
 
-    return (u_savecommon(lnum - 1, lnum + 1, lnum + 1));
+    return (u_savecommon(lnum - 1, lnum + 1, lnum + 1, FALSE));
 }
 
 /*
@@ -282,7 +281,7 @@ u_inssub(lnum)
     if (undo_off)
 	return OK;
 
-    return (u_savecommon(lnum - 1, lnum, lnum + 1));
+    return (u_savecommon(lnum - 1, lnum, lnum + 1, FALSE));
 }
 
 /*
@@ -301,7 +300,7 @@ u_savedel(lnum, nlines)
 	return OK;
 
     return (u_savecommon(lnum - 1, lnum + nlines,
-			nlines == curbuf->b_ml.ml_line_count ? 2 : lnum));
+		     nlines == curbuf->b_ml.ml_line_count ? 2 : lnum, FALSE));
 }
 
 /*
@@ -342,13 +341,16 @@ undo_allowed()
  * Common code for various ways to save text before a change.
  * "top" is the line above the first changed line.
  * "bot" is the line below the last changed line.
+ * "newbot" is the new bottom line.  Use zero when not known.
+ * "reload" is TRUE when saving for a buffer reload.
  * Careful: may trigger autocommands that reload the buffer.
  * Returns FAIL when lines could not be saved, OK otherwise.
  */
-    static int
-u_savecommon(top, bot, newbot)
+    int
+u_savecommon(top, bot, newbot, reload)
     linenr_T	top, bot;
     linenr_T	newbot;
+    int		reload;
 {
     linenr_T	lnum;
     long	i;
@@ -358,49 +360,53 @@ u_savecommon(top, bot, newbot)
     u_entry_T	*prev_uep;
     long	size;
 
-    /* When making changes is not allowed return FAIL.  It's a crude way to
-     * make all change commands fail. */
-    if (!undo_allowed())
-	return FAIL;
-
-#ifdef U_DEBUG
-    u_check(FALSE);
-#endif
-#ifdef FEAT_NETBEANS_INTG
-    /*
-     * Netbeans defines areas that cannot be modified.  Bail out here when
-     * trying to change text in a guarded area.
-     */
-    if (netbeans_active())
+    if (!reload)
     {
-	if (netbeans_is_guarded(top, bot))
-	{
-	    EMSG(_(e_guarded));
+	/* When making changes is not allowed return FAIL.  It's a crude way
+	 * to make all change commands fail. */
+	if (!undo_allowed())
 	    return FAIL;
-	}
-	if (curbuf->b_p_ro)
+
+#ifdef FEAT_NETBEANS_INTG
+	/*
+	 * Netbeans defines areas that cannot be modified.  Bail out here when
+	 * trying to change text in a guarded area.
+	 */
+	if (netbeans_active())
 	{
-	    EMSG(_(e_nbreadonly));
-	    return FAIL;
+	    if (netbeans_is_guarded(top, bot))
+	    {
+		EMSG(_(e_guarded));
+		return FAIL;
+	    }
+	    if (curbuf->b_p_ro)
+	    {
+		EMSG(_(e_nbreadonly));
+		return FAIL;
+	    }
 	}
-    }
 #endif
 
 #ifdef FEAT_AUTOCMD
-    /*
-     * Saving text for undo means we are going to make a change.  Give a
-     * warning for a read-only file before making the change, so that the
-     * FileChangedRO event can replace the buffer with a read-write version
-     * (e.g., obtained from a source control system).
-     */
-    change_warning(0);
-    if (bot > curbuf->b_ml.ml_line_count + 1)
-    {
-	/* This happens when the FileChangedRO autocommand changes the file in
-	 * a way it becomes shorter. */
-	EMSG(_("E834: Line count changed unexpectedly"));
-	return FAIL;
+	/*
+	 * Saving text for undo means we are going to make a change.  Give a
+	 * warning for a read-only file before making the change, so that the
+	 * FileChangedRO event can replace the buffer with a read-write version
+	 * (e.g., obtained from a source control system).
+	 */
+	change_warning(0);
+	if (bot > curbuf->b_ml.ml_line_count + 1)
+	{
+	    /* This happens when the FileChangedRO autocommand changes the
+	     * file in a way it becomes shorter. */
+	    EMSG(_("E834: Line count changed unexpectedly"));
+	    return FAIL;
+	}
+#endif
     }
+
+#ifdef U_DEBUG
+    u_check(FALSE);
 #endif
 
     size = bot - top - 1;
@@ -2905,7 +2911,7 @@ ex_undojoin(eap)
 }
 
 /*
- * Called after writing the file and setting b_changed to FALSE.
+ * Called after writing or reloading the file and setting b_changed to FALSE.
  * Now an undo means that the buffer is modified.
  */
     void
@@ -3197,7 +3203,7 @@ u_undoline()
 
     /* first save the line for the 'u' command */
     if (u_savecommon(curbuf->b_u_line_lnum - 1,
-				curbuf->b_u_line_lnum + 1, (linenr_T)0) == FAIL)
+		       curbuf->b_u_line_lnum + 1, (linenr_T)0, FALSE) == FAIL)
 	return;
     oldp = u_save_line(curbuf->b_u_line_lnum);
     if (oldp == NULL)
