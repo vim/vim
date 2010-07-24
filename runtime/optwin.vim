@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2008 May 12
+" Last Change:	2010 Jul 24
 
 " If there already is an option window, jump to that one.
 if bufwinnr("option-window") > 0
@@ -257,7 +257,7 @@ call append("$", "\t(global or local to buffer)")
 call <SID>OptionG("pa", &pa)
 call append("$", "cdpath\tlist of directory names used for :cd")
 call <SID>OptionG("cd", &cd)
-if has("netbeans_intg") || has("sun_workshop")
+if exists("+autochdir")
   call append("$", "autochdir\tchange to directory of file in buffer")
   call <SID>BinOptionG("acd", &acd)
 endif
@@ -374,9 +374,12 @@ if has("linebreak")
   call <SID>OptionL("nuw")
 endif
 if has("conceal")
-  call append("$", "conceallevel\tcontrols whether concealable elements are hidden")
+  call append("$", "conceallevel\tcontrols whether concealable text is hidden")
   call append("$", "\t(local to window)")
-  call <SID>OptionL("conc")
+  call <SID>OptionL("cole")
+  call append("$", "concealcursor\tcontrols whether concealable text is hidden in the cursor line")
+  call append("$", "\t(local to window)")
+  call <SID>OptionL("cocu")
 endif
 
 
