@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3b.  Last change: 2010 Jul 23
+*options.txt*	For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1719,8 +1719,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  n		Normal mode
 	  v		Visual mode
 	  i		Insert mode
+	  c		Command line editing, for 'incsearch'
 
-	A useful value is "n".  This is used in help files.  So long as you
+	A useful value is "nc".  This is used in help files.  So long as you
 	are moving around text is concealed, but when starting to insert text
 	or selecting a Visual area the concealed text is displayed, so that
 	you can see what you are doing.

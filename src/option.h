@@ -189,7 +189,7 @@
 #define MOUSE_NONE	' '		/* don't use Visual selection */
 #define MOUSE_NONEF	'x'		/* forced modeless selection */
 
-#define COCU_ALL	"nvi"		/* flags for 'concealcursor' */
+#define COCU_ALL	"nvic"		/* flags for 'concealcursor' */
 
 /* characters for p_shm option: */
 #define SHM_RO		'r'		/* readonly */

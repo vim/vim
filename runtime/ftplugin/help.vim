@@ -13,7 +13,7 @@ set cpo&vim
 
 let b:undo_ftplugin = "setl fo< tw< cole< cocu<"
 
-setlocal formatoptions+=tcroql textwidth=78 cole=2 cocu=n
+setlocal formatoptions+=tcroql textwidth=78 cole=2 cocu=nc
 
 let &cpo = s:cpo_save
 unlet s:cpo_save

@@ -32,11 +32,14 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Check position in wrapped line with 'concealcursor' set.
 
-Patch for :find completion. (Nazri Ramliy)
-But I prefer to keep term.h and include/term.h
-
 Trick with syntax ID works, but it's not nice.  Can we give a sequence nr to
 syntax item matches?  At least the ones with a replacement char.
+
+'undoreload' option: when fewer lines than these consider a reload as a change
+action and save the text before the reload, don't clear undo info.
+
+Patch for :find completion. (Nazri Ramliy)
+But I prefer to keep term.h and include/term.h  He will work on it.
 
 'fenc' in modeline problem: add option to reload the file when 'fenc' is set
 to a different value in a modeline?  Option can be default on.
@@ -72,6 +75,8 @@ accented character. (Tony Mechelynck, 2010 Apr 15)
 
 Better Czech keymap. (Stepnem, 2010 May 4)  Use if no response from Jiri
 Tobisek.
+
+":drop" does not respect 'autochdir'. (Peter Odding, 2010 Jul 24)
 
 Use Dutch spell files from:
 http://extensions.services.openoffice.org/en/project/dict-nl

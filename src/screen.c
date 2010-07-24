@@ -605,6 +605,8 @@ conceal_cursor_line(wp)
 	c = 'i';
     else if (State & NORMAL)
 	c = 'n';
+    else if (State & CMDLINE)
+	c = 'c';
     else
 	return FALSE;
     return vim_strchr(wp->w_p_cocu, c) != NULL;
