@@ -4424,7 +4424,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 	    if (   wp->w_p_cole > 0
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
 						      conceal_cursor_line(wp))
-		&& (syntax_flags & HL_CONCEAL) != 0)
+		&& (syntax_flags & HL_CONCEAL) != 0
+		&& !lnum_in_visual_area)
 	    {
 		char_attr = conceal_attr;
 		if (prev_syntax_id != syntax_id

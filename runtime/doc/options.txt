@@ -1724,6 +1724,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	are moving around text is concealed, but when starting to insert text
 	or selecting a Visual area the concealed text is displayed, so that
 	you can see what you are doing.
+	Keep in mind that the cursor position is not always where it's
+	displayed.  E.g., when moving vertically it may change column.
 
 
 'conceallevel' 'cole'		*'conceallevel'* *'cole'*

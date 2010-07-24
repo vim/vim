@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 23
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -32,8 +32,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 Check position in wrapped line with 'concealcursor' set.
 
+Patch for :find completion. (Nazri Ramliy)
+But I prefer to keep term.h and include/term.h
+
 Trick with syntax ID works, but it's not nice.  Can we give a sequence nr to
 syntax item matches?  At least the ones with a replacement char.
+
+'fenc' in modeline problem: add option to reload the file when 'fenc' is set
+to a different value in a modeline?  Option can be default on.
+Could be done with an autocommand?
 
 Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
 Additional patch Jul 21.
@@ -99,6 +106,11 @@ Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
 Problem with transparent cmdline.  Also: Terminal title is wrong with
 non-ASCII character. (Lily White, 2010 Mar 7)
+
+Restoring terminal title in gnome-terminal causes a beep.  Saved value
+contains garbage?  Ukranian language characters.  'enc' and 'tenc' are utf-8.  
+(Anatoli Sakhnik, 2010 Jul 24)
+Using ":set titlestring=abc" with non-ascii characters also fails.
 
 Patch for horizontal mouse wheel. (Bjorn Winckler, 2010 Jul 18)
 
