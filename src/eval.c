@@ -21176,18 +21176,21 @@ builtin_function(name)
 func_do_profile(fp)
     ufunc_T	*fp;
 {
+    int		len = fp->uf_lines.ga_len;
+
+    if (len == 0)
+	len = 1;  /* avoid getting error for allocating zero bytes */
     fp->uf_tm_count = 0;
     profile_zero(&fp->uf_tm_self);
     profile_zero(&fp->uf_tm_total);
     if (fp->uf_tml_count == NULL)
-	fp->uf_tml_count = (int *)alloc_clear((unsigned)
-					 (sizeof(int) * fp->uf_lines.ga_len));
+	fp->uf_tml_count = (int *)alloc_clear((unsigned) (sizeof(int) * len));
     if (fp->uf_tml_total == NULL)
 	fp->uf_tml_total = (proftime_T *)alloc_clear((unsigned)
-				  (sizeof(proftime_T) * fp->uf_lines.ga_len));
+						  (sizeof(proftime_T) * len));
     if (fp->uf_tml_self == NULL)
 	fp->uf_tml_self = (proftime_T *)alloc_clear((unsigned)
-				  (sizeof(proftime_T) * fp->uf_lines.ga_len));
+						  (sizeof(proftime_T) * len));
     fp->uf_tml_idx = -1;
     if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
 						   || fp->uf_tml_self == NULL)
