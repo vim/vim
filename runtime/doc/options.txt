@@ -1721,6 +1721,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  i		Insert mode
 	  c		Command line editing, for 'incsearch'
 
+	'v' applies to all lines in the Visual area, not only the cursor.
 	A useful value is "nc".  This is used in help files.  So long as you
 	are moving around text is concealed, but when starting to insert text
 	or selecting a Visual area the concealed text is displayed, so that

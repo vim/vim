@@ -30,12 +30,15 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Diff python and python3 code, some is missing in python3.
+if_python3.c is missing some changes that were applied to if_python.c.
+Find the old version of if_python.c from when the copy was made.
 
-Before release 7.3:
-- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
+Move more common code from if_python.c and if_python3.c to if_py_both.h
 
 Add documentation for Python 3 support.
+
+Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
+Additional patch Jul 21.
 
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
@@ -45,12 +48,8 @@ Add documentation for Python 3 support.
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  He will work on it.
 
-'fenc' in modeline problem: add option to reload the file when 'fenc' is set
-to a different value in a modeline?  Option can be default on.
-Could be done with an autocommand?
-
-Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
-Additional patch Jul 21.
+Before release 7.3:
+- Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 
@@ -1098,11 +1097,6 @@ clip_x11_request_selection_cb() is called with zero value and length.
 Also: Get an error message from free() in the process that owns the selection.
 Seems to happen when the selection is requested the second time, but before
 clip_x11_convert_selection_cb() is invoked, thus in X library code.
-
-Add 'lazysize' option: Above this size Vim doesn't load everything before
-starting to edit a file.  Things like 'fileencodings' only work up to this
-size, modelines only work at the top.  Useful for large log files where you
-only want to look at the first few pages.  Use zero to disable it.
 
 ":vimgrep" does not recognize a recursive symlink.  Is it possible to detect
 this, at least for Unix (using device/inode)?
@@ -2397,6 +2391,9 @@ Multi-byte characters:
     display is messed up (Yasuhiro Matsumoto).  Should check for illegal
     double-byte characters and display them differently (display each single
     byte).
+9   'fenc' in modeline problem: add option to reload the file when 'fenc' is
+    set to a different value in a modeline?  Option can be default on.  Could
+    it be done with an autocommand?
 8   Add an item in 'fileencodings' to check the first lines of a file for
     the encoding.  See Python PEP: http://www.python.org/peps/pep-0263.html.
     To avoid getting a wrong encoding only accept something Emacs-like:
@@ -2788,6 +2785,10 @@ Robustness:
 Performance:
 7   For string variables up to 3 bytes don't allocate memory, use v_list
     itself as a character array.  Use VAR_SSTRING (short string).
+7   Add 'lazysize' option: Above this size Vim doesn't load everything before
+    starting to edit a file.  Things like 'fileencodings' only work up to this
+    size, modelines only work at the top.  Useful for large log files where
+    you only want to look at the first few pages.  Use zero to disable it.
 8   move_lines() copies every line into allocated memory, making reloading a
     buffer a lot slower than re-editing the file.  Can the memline be locked
     so that we don't need to make a copy?  Or avoid invoking ml_updatechunk(),

@@ -4427,7 +4427,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		&& (wp != curwin || lnum != wp->w_cursor.lnum ||
 						      conceal_cursor_line(wp))
 		&& (syntax_flags & HL_CONCEAL) != 0
-		&& !lnum_in_visual_area)
+		&& !(lnum_in_visual_area
+				    && vim_strchr(wp->w_p_cocu, 'v') == NULL))
 	    {
 		char_attr = conceal_attr;
 		if (prev_syntax_id != syntax_seqnr
