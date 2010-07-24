@@ -9306,7 +9306,7 @@ is_unique(maybe_unique, gap, i)
 }
 
 /*
- * Remove adjecent duplicate entries from "gap", which is a list of file names
+ * Remove adjacent duplicate entries from "gap", which is a list of file names
  * in allocated memory.
  */
     static void
@@ -9354,7 +9354,7 @@ uniquefy_paths(gap, pattern)
     /*
      * We need to prepend a '*' at the beginning of file_pattern so that the
      * regex matches anywhere in the path. FIXME: is this valid for all
-     * possible pattern?
+     * possible patterns?
      */
     len = (int)STRLEN(pattern);
     file_pattern = alloc(len + 2);
@@ -9363,14 +9363,13 @@ uniquefy_paths(gap, pattern)
     STRCAT(file_pattern, pattern);
     pat = file_pat_to_reg_pat(file_pattern, NULL, NULL, TRUE);
     vim_free(file_pattern);
-    regmatch.rm_ic = TRUE;		/* always ignore case */
+    if (pat == NULL)
+	return;
 
-    if (pat != NULL)
-    {
-	regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
-	vim_free(pat);
-    }
-    if (pat == NULL || regmatch.regprog == NULL)
+    regmatch.rm_ic = TRUE;		/* always ignore case */
+    regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
+    vim_free(pat);
+    if (regmatch.regprog == NULL)
 	return;
 
     for (i = 0; i < gap->ga_len; i++)
@@ -9391,6 +9390,7 @@ uniquefy_paths(gap, pattern)
 	    }
     }
 
+    vim_free(regmatch.regprog);
     if (sort_again)
     {
 	sort_strings(fnames, gap->ga_len);
