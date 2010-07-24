@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3b.  Last change: 2010 Jul 21
+*if_pyth.txt*   For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -240,10 +240,12 @@ with marks (see below) which use vim line numbers.
 
 The buffer object methods are:
 	b.append(str)	Append a line to the buffer
+	b.append(str, nr)  Idem, below line "nr"
 	b.append(list)	Append a list of lines to the buffer
 			Note that the option of supplying a list of strings to
 			the append method differs from the equivalent method
 			for Python's built-in list objects.
+	b.append(list, nr)  Idem, below line "nr"
 	b.mark(name)	Return a tuple (row,col) representing the position
 			of the named mark (can also get the []"<> marks)
 	b.range(s,e)	Return a range object (see |python-range|) which
@@ -285,10 +287,12 @@ The range object attributes are:
 
 The range object methods are:
 	r.append(str)	Append a line to the range
+	r.append(str, nr)  Idem, after line "nr"
 	r.append(list)	Append a list of lines to the range
 			Note that the option of supplying a list of strings to
 			the append method differs from the equivalent method
 			for Python's built-in list objects.
+	r.append(list, nr)  Idem, after line "nr"
 
 Example (assume r is the current range):
 	# Send all lines in a range to the default printer

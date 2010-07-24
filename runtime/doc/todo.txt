@@ -300,7 +300,7 @@ does not work. (Nieko Maatjes, 2009 Jan 8, Ingo Karkat, 2009 Jan 22)
 
 opening/closing window causes other window with 'winfixheight' to change
 height.  Also happens when there is another window in the frame, if it's not
-very high. (Yegappan Lakshmanan, 2010 Jul 22)
+very high. (Yegappan Lakshmanan, 2010 Jul 22, Michael Peeters, 2010 Jul 22)
 
 Directory wrong in session file, caused by ":lcd" in BufEnter autocommand.
 (Felix Kater, 2009 Mar 3)
