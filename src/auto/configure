@@ -5255,6 +5255,7 @@ __:
 	@echo "python_LIBS='$(LIBS)'"
 	@echo "python_SYSLIBS='$(SYSLIBS)'"
 	@echo "python_LINKFORSHARED='$(LINKFORSHARED)'"
+	@echo "python_INSTSONAME='$(INSTSONAME)'"
 eof
 	    	    eval "`cd ${PYTHON_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
 	    rm -f -- "${tmp_mkf}"
@@ -5537,6 +5538,7 @@ __:
 	@echo "python3_LIBS='$(LIBS)'"
 	@echo "python3_SYSLIBS='$(SYSLIBS)'"
 	@echo "python3_LINKFORSHARED='$(LINKFORSHARED)'"
+	@echo "python3_INSTSONAME='$(INSTSONAME)'"
 eof
                     eval "`cd ${PYTHON3_CONFDIR} && make -f "${tmp_mkf}" __ | sed '/ directory /d'`"
           rm -f -- "${tmp_mkf}"
@@ -5659,11 +5661,11 @@ if test "$python_ok" = yes && test "$python3_ok" = yes; then
 
   PYTHON_SRC="if_python.c"
   PYTHON_OBJ="objects/if_python.o"
-  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"libpython${vi_cv_var_python_version}.so\\\""
+  PYTHON_CFLAGS="$PYTHON_CFLAGS -DDYNAMIC_PYTHON_DLL=\\\"${python_INSTSONAME}\\\""
   PYTHON_LIBS=
   PYTHON3_SRC="if_python3.c"
   PYTHON3_OBJ="objects/if_python3.o"
-  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"libpython${vi_cv_var_python3_version}.so\\\""
+  PYTHON3_CFLAGS="$PYTHON3_CFLAGS -DDYNAMIC_PYTHON3_DLL=\\\"${python3_INSTSONAME}\\\""
   PYTHON3_LIBS=
 fi
 
