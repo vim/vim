@@ -2816,7 +2816,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
-    int		syntax_id	= 0;
+    int		syntax_seqnr	= 0;
     int		prev_syntax_id	= 0;
     int		conceal_attr	= hl_attr(HLF_CONCEAL);
     int		is_concealing	= FALSE;
@@ -4099,7 +4099,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    if (c == NUL)
 			syntax_flags = 0;
 		    else
-			syntax_flags = get_syntax_info(&syntax_id);
+			syntax_flags = get_syntax_info(&syntax_seqnr);
 # endif
 		}
 #endif
@@ -4430,7 +4430,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		&& !lnum_in_visual_area)
 	    {
 		char_attr = conceal_attr;
-		if (prev_syntax_id != syntax_id
+		if (prev_syntax_id != syntax_seqnr
 			&& (syn_get_sub_char() != NUL || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
 		{
@@ -4443,7 +4443,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
 		    else
 			c = ' ';
 
-		    prev_syntax_id = syntax_id;
+		    prev_syntax_id = syntax_seqnr;
 
 		    if (n_extra > 0)
 			vcol_off += n_extra;

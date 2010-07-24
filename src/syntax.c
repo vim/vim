@@ -196,6 +196,7 @@ static int current_id = 0;	    /* ID of current char for syn_get_id() */
 static int current_trans_id = 0;    /* idem, transparency removed */
 #endif
 #ifdef FEAT_CONCEAL
+static int current_seqnr = 0;
 static int current_flags = 0;
 static int current_sub_char = 0;
 #endif
@@ -287,6 +288,7 @@ typedef struct state_item
 					 * HL_SKIP* for si_next_list */
 #ifdef FEAT_CONCEAL
     int		si_char;		/* substitution character for conceal */
+    int		si_seqnr;		/* sequence number */
 #endif
     short	*si_cont_list;		/* list of contained groups */
     short	*si_next_list;		/* nextgroup IDs after this item ends */
@@ -297,6 +299,10 @@ typedef struct state_item
 #define KEYWORD_IDX	-1	    /* value of si_idx for keywords */
 #define ID_LIST_ALL	(short *)-1 /* valid of si_cont_list for containing all
 				       but contained groups */
+
+#ifdef FEAT_CONCEAL
+static int next_seqnr = 0;		/* value to use for si_seqnr */
+#endif
 
 /*
  * Struct to reduce the number of arguments to get_syn_options(), it's used
@@ -1949,6 +1955,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 			cur_si->si_end_idx = 0;
 			cur_si->si_flags = flags;
 #ifdef FEAT_CONCEAL
+			cur_si->si_seqnr = next_seqnr++;
 			cur_si->si_char = cchar;
 			if (current_state.ga_len > 1)
 			    cur_si->si_flags |=
@@ -2280,6 +2287,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 #ifdef FEAT_CONCEAL
 		current_flags = sip->si_flags;
 		current_sub_char = sip->si_char;
+		current_seqnr = sip->si_seqnr;
 #endif
 		break;
 	    }
@@ -2433,6 +2441,7 @@ push_next_match(cur_si)
 	cur_si->si_m_lnum = current_lnum;
 	cur_si->si_flags = spp->sp_flags;
 #ifdef FEAT_CONCEAL
+	cur_si->si_seqnr = next_seqnr++;
 	cur_si->si_char = spp->sp_char;
 	if (current_state.ga_len > 1)
 	    cur_si->si_flags |=
@@ -6336,14 +6345,14 @@ syn_get_id(wp, lnum, col, trans, spellp, keep_state)
 /*
  * Get extra information about the syntax item.  Must be called right after
  * get_syntax_attr().
- * Stores the current item ID in "*idp".
+ * Stores the current item sequence nr in "*seqnrp".
  * Returns the current flags.
  */
     int
-get_syntax_info(idp)
-    int		*idp;
+get_syntax_info(seqnrp)
+    int		*seqnrp;
 {
-    *idp = current_id;
+    *seqnrp = current_seqnr;
     return current_flags;
 }
 
