@@ -4492,7 +4492,8 @@ win_line(wp, lnum, startrow, endrow, nochange)
 #ifdef FEAT_CONCEAL
 	/* In the cursor line and we may be concealing characters: correct
 	 * the cursor column when we reach its position. */
-	if (!did_wcol && wp == curwin && lnum == wp->w_cursor.lnum
+	if (!did_wcol && draw_state == WL_LINE
+		&& wp == curwin && lnum == wp->w_cursor.lnum
 		&& conceal_cursor_line(wp)
 		&& (int)wp->w_virtcol <= vcol + n_skip)
 	{
