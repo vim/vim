@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 23
+*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -256,7 +256,7 @@ you can see the actual color, except for "Ignore"):
 
 	*Underlined	text that stands out, HTML links
 
-	*Ignore		left blank, hidden
+	*Ignore		left blank, hidden  |hl-Ignore|
 
 	*Error		any erroneous construct
 
@@ -274,6 +274,10 @@ can be used for the same group.
 
 The following names are reserved and cannot be used as a group name:
 	NONE   ALL   ALLBUT   contains	 contained
+
+							*hl-Ignore*
+When using the Ignore group, you may also consider using the conceal
+mechanism.  See |conceal|.
 
 ==============================================================================
 3. Syntax loading procedure				*syntax-loading*

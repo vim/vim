@@ -377,7 +377,7 @@ if has("conceal")
   call append("$", "conceallevel\tcontrols whether concealable text is hidden")
   call append("$", "\t(local to window)")
   call <SID>OptionL("cole")
-  call append("$", "concealcursor\tcontrols whether concealable text is hidden in the cursor line")
+  call append("$", "concealcursor\tmodes in which text in the cursor line can be concealed")
   call append("$", "\t(local to window)")
   call <SID>OptionL("cocu")
 endif
