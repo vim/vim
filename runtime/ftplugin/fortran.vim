@@ -1,11 +1,11 @@
 " Vim settings file
 " Language:	Fortran90 (and Fortran95, Fortran77, F and elf90)
-" Version:	0.45
-" Last Change:	2006 Apr. 03
-" URL:		http://www.unb.ca/chem/ajit/ftplugin/fortran.vim
+" Version:	0.46
+" Last Change:	2010 July 24
 " Maintainer:	Ajit J. Thakkar <ajit@unb.ca>; <http://www.unb.ca/chem/ajit/>
 " Usage:	Do :help fortran-plugin from Vim
-" Credits:      Useful suggestions were made by Stefano Zacchiroli
+" Credits:
+" Useful suggestions were made by Stefano Zacchiroli and Hendrik Merx.
 
 " Only do these settings when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -27,11 +27,11 @@ if !exists("b:fortran_fixed_source")
   else
     " f90 and f95 allow both fixed and free source form
     " assume fixed source form unless signs of free source form
-    " are detected in the first five columns of the first 250 lines
+    " are detected in the first five columns of the first s:lmax lines
     " Detection becomes more accurate and time-consuming if more lines
     " are checked. Increase the limit below if you keep lots of comments at
     " the very top of each file and you have a fast computer
-    let s:lmax = 250
+    let s:lmax = 500
     if ( s:lmax > line("$") )
       let s:lmax = line("$")
     endif
@@ -39,12 +39,13 @@ if !exists("b:fortran_fixed_source")
     let s:ln=1
     while s:ln <= s:lmax
       let s:test = strpart(getline(s:ln),0,5)
-      if s:test[0] !~ '[Cc*!#]' && s:test !~ '^ \+[!#]' && s:test =~ '[^ 0-9\t]'
+      if s:test !~ '^[Cc*]' && s:test !~ '^ *[!#]' && s:test =~ '[^ 0-9\t]' && s:test !~ '^[ 0-9]*\t'
 	let b:fortran_fixed_source = 0
 	break
       endif
       let s:ln = s:ln + 1
     endwhile
+    unlet! s:lmax s:ln s:test
   endif
 endif
 

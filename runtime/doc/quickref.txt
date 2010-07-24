@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 7.3b.  Last change: 2010 Jul 22
+*quickref.txt*  For Vim version 7.3b.  Last change: 2010 Jul 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -918,6 +918,7 @@ Short explanation of each option:		*option-list*
 'undodir'	  'udir'    where to store undo files
 'undofile'	  'udf'	    save undo information in a file
 'undolevels'	  'ul'	    maximum number of changes that can be undone
+'undoreload'	  'ur'	    max nr of lines to save for undo on a buffer reload
 'updatecount'	  'uc'	    after this many characters flush swap file
 'updatetime'	  'ut'	    after this many milliseconds flush swap file
 'verbose'	  'vbs'     give informative messages
@@ -937,6 +938,7 @@ Short explanation of each option:		*option-list*
 'wildmode'	  'wim'     mode for 'wildchar' command-line expansion
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
+'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
 'winheight'	  'wh'	    minimum number of lines for the current window
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
 'winfixwidth'	  'wfw'     keep window width when opening/closing windows
