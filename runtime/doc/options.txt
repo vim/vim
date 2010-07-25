@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3b.  Last change: 2010 Jul 24
+*options.txt*	For Vim version 7.3c.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -273,10 +273,10 @@ You will not get back the 'list' value as it was the last time you edited
 			current buffer or window.  Not all options have a
 			local value.  If the option does not have a local
 			value the global value is set.
-			With the "all" argument: display all local option's
-			local values.
-			Without argument: Display all local option's local
-			values which are different from the default.
+			With the "all" argument: display local values for all
+			local options.
+			Without argument: Display local values for all local
+			options which are different from the default.
 			When displaying a specific local option, show the
 			local value.  For a global/local boolean option, when
 			the global value is being used, "--" is displayed
@@ -298,10 +298,10 @@ You will not get back the 'list' value as it was the last time you edited
 :setg[lobal] ...	Like ":set" but set only the global value for a local
 			option without changing the local value.
 			When displaying an option, the global value is shown.
-			With the "all" argument: display all local option's
-			global values.
-			Without argument: display all local option's global
-			values which are different from the default.
+			With the "all" argument: display global values for all
+			local options.
+			Without argument: display global values for all local
+			options which are different from the default.
 			{not in Vi}
 
 For buffer-local and window-local options:

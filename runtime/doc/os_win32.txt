@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 7.3b.  Last change: 2010 Jul 20
+*os_win32.txt*  For Vim version 7.3c.  Last change: 2010 Jul 20
 
 
 		  VIM REFERENCE MANUAL    by George Reilly

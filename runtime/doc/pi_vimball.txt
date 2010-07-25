@@ -1,4 +1,4 @@
-*pi_vimball.txt*	For Vim version 7.3b.  Last change: 2010 Apr 12
+*pi_vimball.txt*	For Vim version 7.3c.  Last change: 2010 Apr 12
 
 			       ----------------
 			       Vimball Archiver

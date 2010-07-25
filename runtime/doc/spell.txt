@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 7.3b.  Last change: 2010 Apr 11
+*spell.txt*	For Vim version 7.3c.  Last change: 2010 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

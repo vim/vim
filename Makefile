@@ -68,7 +68,7 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 7
-MINOR = 3b
+MINOR = 3c
 
 # Uncomment this line if the Win32s version is to be included.
 DOSBIN_S =  dosbin_s
@@ -161,8 +161,8 @@ DOSBIN_S =  dosbin_s
 # - Delete install.exe and uninstal.exe.
 # - If building the Win32s version delete vimrun.exe.
 # Win32s GUI version:
-# - Set environment for Visual C++ 4.1 (requires a new console window)
-# - "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
+# - Set environment for Visual C++ 4.1 (requires a new console window):
+#   "vcvars32.bat" (use the path for VC 4.1 e:\msdev\bin)
 # - "nmake -f Make_mvc.mak GUI=yes INTL=no clean" (use the path for VC 4.1)
 # - "nmake -f Make_mvc.mak GUI=yes INTL=no" (use the path for VC 4.1)
 # - Rename "gvim.exe" to "gvim_w32s.exe".

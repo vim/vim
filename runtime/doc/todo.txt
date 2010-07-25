@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 25
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,12 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Restoring terminal title in gnome-terminal causes a beep.  Saved value
+contains garbage?  Ukranian language characters.  'enc' and 'tenc' are utf-8.  
+(Anatoli Sakhnik, 2010 Jul 24)
+Using ":set titlestring=abc" with non-ascii characters also fails.
+Patch by James Vega, 2010 Jul 25.
 
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  Nazri will work on it.
@@ -101,11 +107,6 @@ Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
 Problem with transparent cmdline.  Also: Terminal title is wrong with
 non-ASCII character. (Lily White, 2010 Mar 7)
-
-Restoring terminal title in gnome-terminal causes a beep.  Saved value
-contains garbage?  Ukranian language characters.  'enc' and 'tenc' are utf-8.  
-(Anatoli Sakhnik, 2010 Jul 24)
-Using ":set titlestring=abc" with non-ascii characters also fails.
 
 Patch for horizontal mouse wheel. (Bjorn Winckler, 2010 Jul 18)
 

@@ -1,4 +1,4 @@
-README_unix.txt for version 7.3b of Vim: Vi IMproved.
+README_unix.txt for version 7.3c of Vim: Vi IMproved.
 
 This file explains the installation of Vim on Unix systems.
 See "README.txt" for general information about Vim.
