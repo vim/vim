@@ -1155,7 +1155,7 @@ ml_recover()
 
     /*
      * Allocate a buffer structure for the swap file that is used for recovery.
-     * Only the memline in it is really used.
+     * Only the memline and crypt information in it are really used.
      */
     buf = (buf_T *)alloc((unsigned)sizeof(buf_T));
     if (buf == NULL)
@@ -1188,6 +1188,7 @@ ml_recover()
 #ifdef FEAT_CRYPT
     mfp->mf_buffer = buf;
     buf->b_p_key = empty_option;
+    buf->b_p_cm = empty_option;
 #endif
 
     /*
@@ -1685,6 +1686,7 @@ theend:
 #ifdef FEAT_CRYPT
 	if (buf->b_p_key != curbuf->b_p_key)
 	    free_string_option(buf->b_p_key);
+	free_string_option(buf->b_p_cm);
 #endif
 	vim_free(buf->b_ml.ml_stack);
 	vim_free(buf);
@@ -4939,7 +4941,7 @@ ml_crypt_prepare(mfp, offset, reading)
 #define MLCS_MINL 400   /* should be half of MLCS_MAXL */
 
 /*
- * Keep information for finding byte offset of a line, updtytpe may be one of:
+ * Keep information for finding byte offset of a line, updtype may be one of:
  * ML_CHNK_ADDLINE: Add len to parent chunk, possibly splitting it
  *	   Careful: ML_CHNK_ADDLINE may cause ml_find_line() to be called.
  * ML_CHNK_DELLINE: Subtract len from parent chunk, possibly deleting it
