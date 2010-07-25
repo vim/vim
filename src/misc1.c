@@ -3158,6 +3158,8 @@ get_keystroke()
 		    || n == K_RIGHTRELEASE
 		    || n == K_MOUSEDOWN
 		    || n == K_MOUSEUP
+		    || n == K_MOUSELEFT
+		    || n == K_MOUSERIGHT
 		    || n == K_X1MOUSE
 		    || n == K_X1DRAG
 		    || n == K_X1RELEASE

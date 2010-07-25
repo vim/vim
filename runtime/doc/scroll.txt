@@ -242,7 +242,8 @@ This allows quick adjustment of the relative offset of 'scrollbind' windows.
 
 When your mouse has a scroll wheel, it should work with Vim in the GUI.  How
 it works depends on your system.  It might also work in an xterm
-|xterm-mouse-wheel|.
+|xterm-mouse-wheel|.  By default only vertical scroll wheels are supported,
+but some GUIs also support horizontal scroll wheels.
 
 For the Win32 GUI the scroll action is hard coded.  It works just like
 dragging the scrollbar of the current window.  How many lines are scrolled
@@ -250,24 +251,36 @@ depends on your mouse driver.  If the scroll action causes input focus
 problems, see |intellimouse-wheel-problems|.
 
 For the X11 GUIs (Motif, Athena and GTK) scrolling the wheel generates key
-presses <MouseDown> and <MouseUp>.  The default action for these keys are:
-    <MouseDown>		scroll three lines down.	*<MouseDown>*
-    <S-MouseDown>	scroll a full page down.	*<S-MouseDown>*
-    <C-MouseDown>	scroll a full page down.	*<C-MouseDown>*
-    <MouseUp>		scroll three lines up.		*<MouseUp>*
-    <S-MouseUp>		scroll a full page up.		*<S-MouseUp>*
-    <C-MouseUp>		scroll a full page up.		*<C-MouseUp>*
+presses <ScrollWheelUp>, <ScrollWheelDown>, <ScrollWheelLeft> and
+<ScrollWheelRight>.  For example, if you push the scroll wheel upwards a
+<ScrollWheelUp> key press is generated causing the window to scroll upwards
+(while the text is actually moving downwards).  The default action for these
+keys are:
+    <ScrollWheelUp>	    scroll three lines up	*<ScrollWheelUp>*
+    <S-ScrollWheelUp>	    scroll one page up		*<S-ScrollWheelUp>*
+    <C-ScrollWheelUp>	    scroll one page up		*<C-ScrollWheelUp>*
+    <ScrollWheelDown>	    scroll three lines down	*<ScrollWheelDown>*
+    <S-ScrollWheelDown>	    scroll one page down	*<S-ScrollWheelDown>*
+    <C-ScrollWheelDown>	    scroll one page down	*<C-ScrollWheelDown>*
+    <ScrollWheelLeft>	    scroll six columns left	*<ScrollWheelLeft>*
+    <S-ScrollWheelLeft>	    scroll one page left	*<S-ScrollWheelLeft>*
+    <C-ScrollWheelLeft>	    scroll one page left	*<C-ScrollWheelLeft>*
+    <ScrollWheelRight>	    scroll six columns right	*<ScrollWheelRight>*
+    <S-ScrollWheelRight>    scroll one page right	*<S-ScrollWheelRight>*
+    <C-ScrollWheelRight>    scroll one page right	*<C-ScrollWheelRight>*
 This should work in all modes, except when editing the command line.
 
-Note that <MouseDown> is used for scrolling the text down, this happens when
-you turn the mouse wheel up!
+Note that horizontal scrolling only works if 'nowrap' is set.  Also, unless
+the "h" flag in 'guioptions' is set, the cursor moves to the longest visible
+line if the cursor line is about to be scrolled off the screen (similarly to
+how the horizontal scrollbar works).
 
-You can modify this behavior by mapping the keys.  For example, to make the
-scroll wheel move one line or half a page in Normal mode: >
-   :map <MouseDown> <C-Y>
-   :map <S-MouseDown> <C-U>
-   :map <MouseUp> <C-E>
-   :map <S-MouseUp> <C-D>
+You can modify the default behavior by mapping the keys.  For example, to make
+the scroll wheel move one line or half a page in Normal mode: >
+   :map <ScrollWheelUp> <C-Y>
+   :map <S-ScrollWheelUp> <C-U>
+   :map <ScrollWheelDown> <C-E>
+   :map <S-ScrollWheelDown> <C-D>
 You can also use Alt and Ctrl modifiers.
 
 This only works when Vim gets the scroll wheel events, of course.  You can
@@ -280,6 +293,10 @@ your mouse.  For FreeBSD, this entry works for a Logitech scrollmouse: >
     ZAxisMapping 4 5
 See the XFree86 documentation for information.
 
+						*<MouseDown>* *<MouseUp>*
+The keys <MouseDown> and <MouseUp> have been deprecated.  Use <ScrollWheelUp>
+instead of <MouseDown> and use <ScrollWheelDown> instead of <MouseUp>.
+
 							*xterm-mouse-wheel*
 To use the mouse wheel in a new xterm you only have to make the scroll wheel
 work in your Xserver, as mentioned above.
@@ -288,8 +305,8 @@ To use the mouse wheel in an older xterm you must do this:
 1. Make it work in your Xserver, as mentioned above.
 2. Add translations for the xterm, so that the xterm will pass a scroll event
    to Vim as an escape sequence.
-3. Add mappings in Vim, to interpret the escape sequences as <MouseUp> or
-   <MouseDown> keys.
+3. Add mappings in Vim, to interpret the escape sequences as <ScrollWheelDown>
+   or <ScrollWheelUp> keys.
 
 You can do the translations by adding this to your ~.Xdefaults file (or other
 file where your X resources are kept): >
@@ -303,13 +320,13 @@ file where your X resources are kept): >
 		<Btn5Up>:
 
 Add these mappings to your vimrc file: >
-	:map <M-Esc>[62~ <MouseDown>
-	:map! <M-Esc>[62~ <MouseDown>
-	:map <M-Esc>[63~ <MouseUp>
-	:map! <M-Esc>[63~ <MouseUp>
-	:map <M-Esc>[64~ <S-MouseDown>
-	:map! <M-Esc>[64~ <S-MouseDown>
-	:map <M-Esc>[65~ <S-MouseUp>
-	:map! <M-Esc>[65~ <S-MouseUp>
+	:map <M-Esc>[62~ <ScrollWheelUp>
+	:map! <M-Esc>[62~ <ScrollWheelUp>
+	:map <M-Esc>[63~ <ScrollWheelDown>
+	:map! <M-Esc>[63~ <ScrollWheelDown>
+	:map <M-Esc>[64~ <S-ScrollWheelUp>
+	:map! <M-Esc>[64~ <S-ScrollWheelUp>
+	:map <M-Esc>[65~ <S-ScrollWheelDown>
+	:map! <M-Esc>[65~ <S-ScrollWheelDown>
 <
  vim:tw=78:ts=8:ft=help:norl:

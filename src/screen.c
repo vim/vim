@@ -2822,7 +2822,7 @@ win_line(wp, lnum, startrow, endrow, nochange)
     int		is_concealing	= FALSE;
     int		boguscols	= 0;	/* nonexistent columns added to force
 					   wrapping */
-    int		vcol_off        = 0;	/* offset for concealed characters */
+    int		vcol_off	= 0;	/* offset for concealed characters */
     int		did_wcol	= FALSE;
 # define VCOL_HLC (vcol - vcol_off)
 #else

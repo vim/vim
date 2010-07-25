@@ -10357,7 +10357,7 @@ Files:	    src/ex_cmds2.c
 
 Patch 6.2.066 (extra)
 Problem:    Ruby interface doesn't work with Ruby 1.8.0.
-Solution:   Change "defout" to "stdout". (Aron Grifis)
+Solution:   Change "defout" to "stdout". (Aron Griffis)
 	    Change dynamic loading. (Taro Muraoka)
 Files:	    src/if_ruby.c, src/Make_mvc.mak
 

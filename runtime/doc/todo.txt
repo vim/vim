@@ -30,15 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-concealends does not appear to work.
-
-if_python3.c is missing some changes that were applied to if_python.c.
-Find the old version of if_python.c from when the copy was made.
-
-Move more common code from if_python.c and if_python3.c to if_py_both.h
-
-Add documentation for Python 3 support.
-
 Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
 Additional patch Jul 21.
 
@@ -50,8 +41,12 @@ Additional patch Jul 21.
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  He will work on it.
 
+Add hg changes to version7.txt
+
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
+
+Move more common code from if_python.c and if_python3.c to if_py_both.h
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 

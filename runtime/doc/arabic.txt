@@ -275,7 +275,7 @@ o  Keyboard
    +  CTRL-^ in insert/replace mode toggles between Arabic/Latin mode
 
    +  Keyboard mapping is based on the Microsoft's Arabic keymap (the
-      defacto standard in the Arab world):
+      de facto standard in the Arab world):
 
   +---------------------------------------------------------------------+
   |!   |@   |#   |$   |%   |^   |&   |*   |(   |)   |_   |+   ||   |~  ّ |

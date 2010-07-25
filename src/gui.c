@@ -31,6 +31,7 @@ static int gui_has_tabline __ARGS((void));
 #endif
 static void gui_do_scrollbar __ARGS((win_T *wp, int which, int enable));
 static colnr_T scroll_line_len __ARGS((linenr_T lnum));
+static linenr_T gui_find_longest_lnum __ARGS((void));
 static void gui_update_horiz_scrollbar __ARGS((int));
 static void gui_set_fg_color __ARGS((char_u *name));
 static void gui_set_bg_color __ARGS((char_u *name));
@@ -2759,7 +2760,8 @@ fill_mouse_coord(p, col, row)
  *  button	    --- may be any of MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT,
  *			MOUSE_X1, MOUSE_X2
  *			MOUSE_DRAG, or MOUSE_RELEASE.
- *			MOUSE_4 and MOUSE_5 are used for a scroll wheel.
+ *			MOUSE_4 and MOUSE_5 are used for vertical scroll wheel,
+ *			MOUSE_6 and MOUSE_7 for horizontal scroll wheel.
  *  x, y	    --- Coordinates of mouse in pixels.
  *  repeated_click  --- TRUE if this click comes only a short time after a
  *			previous click.
@@ -2803,6 +2805,12 @@ gui_send_mouse_event(button, x, y, repeated_click, modifiers)
 	    goto button_set;
 	case MOUSE_5:
 	    button_char = KE_MOUSEUP;
+	    goto button_set;
+	case MOUSE_6:
+	    button_char = KE_MOUSELEFT;
+	    goto button_set;
+	case MOUSE_7:
+	    button_char = KE_MOUSERIGHT;
 button_set:
 	    {
 		/* Don't put events in the input queue now. */
@@ -3845,14 +3853,14 @@ gui_drag_scrollbar(sb, value, still_dragging)
 	scrollbar_value = value;
 
 	if (State & NORMAL)
-	    gui_do_horiz_scroll();
+	    gui_do_horiz_scroll(scrollbar_value, FALSE);
 	else if (State & INSERT)
 	    ins_horscroll();
 	else if (State & CMDLINE)
 	{
 	    if (msg_scrolled == 0)
 	    {
-		gui_do_horiz_scroll();
+		gui_do_horiz_scroll(scrollbar_value, FALSE);
 		redrawcmdline();
 	    }
 	}
@@ -4319,6 +4327,51 @@ scroll_line_len(lnum)
  * search for it when scrolling horizontally. */
 static linenr_T longest_lnum = 0;
 
+/*
+ * Find longest visible line number.  If this is not possible (or not desired,
+ * by setting 'h' in "guioptions") then the current line number is returned.
+ */
+    static linenr_T
+gui_find_longest_lnum()
+{
+    linenr_T ret = 0;
+
+    /* Calculate maximum for horizontal scrollbar.  Check for reasonable
+     * line numbers, topline and botline can be invalid when displaying is
+     * postponed. */
+    if (vim_strchr(p_go, GO_HORSCROLL) == NULL
+	    && curwin->w_topline <= curwin->w_cursor.lnum
+	    && curwin->w_botline > curwin->w_cursor.lnum
+	    && curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)
+    {
+	linenr_T    lnum;
+	colnr_T	    n;
+	long	    max = 0;
+
+	/* Use maximum of all visible lines.  Remember the lnum of the
+	 * longest line, closest to the cursor line.  Used when scrolling
+	 * below. */
+	for (lnum = curwin->w_topline; lnum < curwin->w_botline; ++lnum)
+	{
+	    n = scroll_line_len(lnum);
+	    if (n > (colnr_T)max)
+	    {
+		max = n;
+		ret = lnum;
+	    }
+	    else if (n == (colnr_T)max
+		    && abs((int)(lnum - curwin->w_cursor.lnum))
+		       < abs((int)(ret - curwin->w_cursor.lnum)))
+		ret = lnum;
+	}
+    }
+    else
+	/* Use cursor line only. */
+	ret = curwin->w_cursor.lnum;
+
+    return ret;
+}
+
     static void
 gui_update_horiz_scrollbar(force)
     int		force;
@@ -4358,38 +4411,9 @@ gui_update_horiz_scrollbar(force)
     {
 	value = curwin->w_leftcol;
 
-	/* Calculate maximum for horizontal scrollbar.  Check for reasonable
-	 * line numbers, topline and botline can be invalid when displaying is
-	 * postponed. */
-	if (vim_strchr(p_go, GO_HORSCROLL) == NULL
-		&& curwin->w_topline <= curwin->w_cursor.lnum
-		&& curwin->w_botline > curwin->w_cursor.lnum
-		&& curwin->w_botline <= curbuf->b_ml.ml_line_count + 1)
-	{
-	    linenr_T	lnum;
-	    colnr_T	n;
+	longest_lnum = gui_find_longest_lnum();
+	max = scroll_line_len(longest_lnum);
 
-	    /* Use maximum of all visible lines.  Remember the lnum of the
-	     * longest line, clostest to the cursor line.  Used when scrolling
-	     * below. */
-	    max = 0;
-	    for (lnum = curwin->w_topline; lnum < curwin->w_botline; ++lnum)
-	    {
-		n = scroll_line_len(lnum);
-		if (n > (colnr_T)max)
-		{
-		    max = n;
-		    longest_lnum = lnum;
-		}
-		else if (n == (colnr_T)max
-			&& abs((int)(lnum - curwin->w_cursor.lnum))
-			   < abs((int)(longest_lnum - curwin->w_cursor.lnum)))
-		    longest_lnum = lnum;
-	    }
-	}
-	else
-	    /* Use cursor line only. */
-	    max = scroll_line_len(curwin->w_cursor.lnum);
 #ifdef FEAT_VIRTUALEDIT
 	if (virtual_active())
 	{
@@ -4442,26 +4466,33 @@ gui_update_horiz_scrollbar(force)
  * Do a horizontal scroll.  Return TRUE if the cursor moved, FALSE otherwise.
  */
     int
-gui_do_horiz_scroll()
+gui_do_horiz_scroll(leftcol, compute_longest_lnum)
+    colnr_T	leftcol;
+    int		compute_longest_lnum;
 {
     /* no wrapping, no scrolling */
     if (curwin->w_p_wrap)
 	return FALSE;
 
-    if ((long_u)curwin->w_leftcol == scrollbar_value)
+    if (curwin->w_leftcol == leftcol)
 	return FALSE;
 
-    curwin->w_leftcol = (colnr_T)scrollbar_value;
+    curwin->w_leftcol = leftcol;
 
     /* When the line of the cursor is too short, move the cursor to the
-     * longest visible line.  Do a sanity check on "longest_lnum", just in
-     * case. */
+     * longest visible line. */
     if (vim_strchr(p_go, GO_HORSCROLL) == NULL
-	    && longest_lnum >= curwin->w_topline
-	    && longest_lnum < curwin->w_botline
-	    && !virtual_active())
+	    && !virtual_active()
+	    && leftcol > scroll_line_len(curwin->w_cursor.lnum))
     {
-	if (scrollbar_value > (long_u)scroll_line_len(curwin->w_cursor.lnum))
+	if (compute_longest_lnum)
+	{
+	    curwin->w_cursor.lnum = gui_find_longest_lnum();
+	    curwin->w_cursor.col = 0;
+	}
+	/* Do a sanity check on "longest_lnum", just in case. */
+	else if (longest_lnum >= curwin->w_topline
+		&& longest_lnum < curwin->w_botline)
 	{
 	    curwin->w_cursor.lnum = longest_lnum;
 	    curwin->w_cursor.col = 0;

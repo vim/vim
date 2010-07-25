@@ -1721,11 +1721,17 @@ typedef int proftime_T;	    /* dummy for function prototypes */
 # define MOUSE_CTRL	0x10
 
 /* mouse buttons that are handled like a key press (GUI only) */
+/* Note that the scroll wheel keys are inverted: MOUSE_5 scrolls lines up but
+ * the result of this is that the window moves down, similarly MOUSE_6 scrolls
+ * columns left but the window moves right. */
 # define MOUSE_4	0x100	/* scroll wheel down */
 # define MOUSE_5	0x200	/* scroll wheel up */
 
 # define MOUSE_X1	0x300 /* Mouse-button X1 (6th) */
 # define MOUSE_X2	0x400 /* Mouse-button X2 */
+
+# define MOUSE_6	0x500	/* scroll wheel left */
+# define MOUSE_7	0x600	/* scroll wheel right */
 
 /* 0x20 is reserved by xterm */
 # define MOUSE_DRAG_XTERM   0x40
@@ -2179,5 +2185,11 @@ typedef int VimClipboard;	/* This is required for the prototypes. */
 #define BFA_DEL		1	/* buffer is going to be deleted */
 #define BFA_WIPE	2	/* buffer is going to be wiped out */
 #define BFA_KEEP_UNDO	4	/* do not free undo information */
+
+/* direction for nv_mousescroll() and ins_mousescroll() */
+#define MSCR_DOWN	0	/* DOWN must be FALSE */
+#define MSCR_UP		1
+#define MSCR_LEFT	-1
+#define MSCR_RIGHT	-2
 
 #endif /* VIM__H */

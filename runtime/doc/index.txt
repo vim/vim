@@ -136,10 +136,14 @@ tag		char		action	~
 |i_<Help>|	<Help>		stop insert mode and display help window
 |i_<Insert>|	<Insert>	toggle Insert/Replace mode
 |i_<LeftMouse>|	<LeftMouse>	cursor at mouse click
-|i_<MouseDown>|	<MouseDown>	scroll three lines downwards
-|i_<S-MouseDown>| <S-MouseDown>	scroll a full page downwards
-|i_<MouseUp>|	<MouseUp>	scroll three lines upwards
-|i_<S-MouseUp>|	<S-MouseUp>	scroll a full page upwards
+|i_<ScrollWheelDown>|	<ScrollWheelDown>	move window three lines down
+|i_<S-ScrollWheelDown>|	<S-ScrollWheelDown>	move window one page down
+|i_<ScrollWheelUp>|	<ScrollWheelUp>		move window three lines up
+|i_<S-ScrollWheelUp>|	<S-ScrollWheelUp>	move window one page up
+|i_<ScrollWheelLeft>|	<ScrollWheelLeft>	move window six columns left
+|i_<S-ScrollWheelLeft>| <S-ScrollWheelLeft>	move window one page left
+|i_<ScrollWheelRight>|	<ScrollWheelRight>	move window six columns right
+|i_<S-ScrollWheelRight>| <S-ScrollWheelRight>	move window one page right
 
 commands in CTRL-X submode				*i_CTRL-X_index*
 
@@ -441,10 +445,14 @@ tag		char	      note action in Normal mode	~
 |<S-Up>|	<S-Up>		1  same as CTRL-B
 |<Undo>|	<Undo>		2  same as "u"
 |<Up>|		<Up>		1  same as "k"
-|<MouseDown>|	<MouseDown>	   scroll three lines downwards
-|<S-MouseDown>|	<S-MouseDown>	   scroll a full page downwards
-|<MouseUp>|	<MouseUp>	   scroll three lines upwards
-|<S-MouseUp>|	<S-MouseUp>	   scroll a full page upwards
+|<ScrollWheelDown>|	<ScrollWheelDown>	move window three lines down
+|<S-ScrollWheelDown>|	<S-ScrollWheelDown>	move window one page down
+|<ScrollWheelUp>|	<ScrollWheelUp>		move window three lines up
+|<S-ScrollWheelUp>|	<S-ScrollWheelUp>	move window one page up
+|<ScrollWheelLeft>|	<ScrollWheelLeft>	move window six columns left
+|<S-ScrollWheelLeft>|	<S-ScrollWheelLeft>	move window one page left
+|<ScrollWheelRight>|	<ScrollWheelRight>	move window six columns right
+|<S-ScrollWheelRight>|	<S-ScrollWheelRight>	move window one page right
 
 ==============================================================================
 2.1 Text objects						*objects*

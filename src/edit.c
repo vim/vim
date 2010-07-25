@@ -224,7 +224,7 @@ static void ins_del __ARGS((void));
 static int  ins_bs __ARGS((int c, int mode, int *inserted_space_p));
 #ifdef FEAT_MOUSE
 static void ins_mouse __ARGS((int c));
-static void ins_mousescroll __ARGS((int up));
+static void ins_mousescroll __ARGS((int dir));
 #endif
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static void ins_tabline __ARGS((int c));
@@ -1112,11 +1112,19 @@ doESCkey:
 	    break;
 
 	case K_MOUSEDOWN: /* Default action for scroll wheel up: scroll up */
-	    ins_mousescroll(FALSE);
+	    ins_mousescroll(MSCR_DOWN);
 	    break;
 
 	case K_MOUSEUP:	/* Default action for scroll wheel down: scroll down */
-	    ins_mousescroll(TRUE);
+	    ins_mousescroll(MSCR_UP);
+	    break;
+
+	case K_MOUSELEFT: /* Scroll wheel left */
+	    ins_mousescroll(MSCR_LEFT);
+	    break;
+
+	case K_MOUSERIGHT: /* Scroll wheel right */
+	    ins_mousescroll(MSCR_RIGHT);
 	    break;
 #endif
 #ifdef FEAT_GUI_TABLINE
@@ -3516,7 +3524,8 @@ ins_compl_prep(c)
 	edit_submode_extra = NULL;
 
     /* Ignore end of Select mode mapping and mouse scroll buttons. */
-    if (c == K_SELECT || c == K_MOUSEDOWN || c == K_MOUSEUP)
+    if (c == K_SELECT || c == K_MOUSEDOWN || c == K_MOUSEUP
+	    || c == K_MOUSELEFT || c == K_MOUSERIGHT)
 	return retval;
 
     /* Set "compl_get_longest" when finding the first matches. */
@@ -8859,8 +8868,8 @@ ins_mouse(c)
 }
 
     static void
-ins_mousescroll(up)
-    int		up;
+ins_mousescroll(dir)
+    int		dir;
 {
     pos_T	tpos;
 # if defined(FEAT_WINDOWS)
@@ -8898,10 +8907,27 @@ ins_mousescroll(up)
 	    )
 # endif
     {
-	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-	    scroll_redraw(up, (long)(curwin->w_botline - curwin->w_topline));
+	if (dir == MSCR_DOWN || dir == MSCR_UP)
+	{
+	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+		scroll_redraw(dir,
+			(long)(curwin->w_botline - curwin->w_topline));
+	    else
+		scroll_redraw(dir, 3L);
+	}
+#ifdef FEAT_GUI
 	else
-	    scroll_redraw(up, 3L);
+	{
+	    int val, step = 6;
+
+	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+		step = W_WIDTH(curwin);
+	    val = curwin->w_leftcol + (dir == MSCR_RIGHT ? -step : step);
+	    if (val < 0)
+		val = 0;
+	    gui_do_horiz_scroll(val, TRUE);
+	}
+#endif
 # ifdef FEAT_INS_EXPAND
 	did_scroll = TRUE;
 # endif
@@ -8985,7 +9011,7 @@ ins_horscroll()
 
     undisplay_dollar();
     tpos = curwin->w_cursor;
-    if (gui_do_horiz_scroll())
+    if (gui_do_horiz_scroll(scrollbar_value, FALSE))
     {
 	start_arrow(&tpos);
 # ifdef FEAT_CINDENT

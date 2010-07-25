@@ -1,4 +1,4 @@
-*if_pyth.txt*   For Vim version 7.3b.  Last change: 2010 Jul 24
+*if_pyth.txt*   For Vim version 7.3b.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -337,12 +337,21 @@ sure edit "gvim.exe" and search for "python\d*.dll\c".
 ==============================================================================
 7. Python 3						*python3*
 
-Python 3 support can exist next to Python 2.x.
+							*:py3* *:python3*
+The |:py3| and |:python3| commands work similar to |:python|.
+ 								*:py3file*
+The |:py3file| command works similar to |:pyfile|.
 
-*:py3* *:python3* *:py3file*
+Vim can be built in four ways (:version output):
+1. No Python support        (-python, -python3)
+2. Python 2 support only    (+python or +python/dyn, -python3)
+3. Python 3 support only    (-python, +python3 or +python3/dyn)
+4. Python 2 and 3 support   (+python/dyn, +python3/dyn)
 
-TODO
-
+You can see that when Python 2 and Python 3 are both supported they must be
+loaded dynamically.  This may cause some problems though, therefore currently
+inside a Vim executable you can only use Python 2 or Python 3.  To switch to
+the other one you need to restart Vim.
 
 ==============================================================================
  vim:tw=78:ts=8:ft=help:norl:

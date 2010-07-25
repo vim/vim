@@ -10927,6 +10927,8 @@ f_getchar(argvars, rettv)
 		|| n == K_X2MOUSE
 		|| n == K_X2DRAG
 		|| n == K_X2RELEASE
+		|| n == K_MOUSELEFT
+		|| n == K_MOUSERIGHT
 		|| n == K_MOUSEDOWN
 		|| n == K_MOUSEUP)
 	{

@@ -359,10 +359,14 @@ CTRL-G CTRL-J	cursor one line down, insert start column    *i_CTRL-G_CTRL-J*
 <PageUp>	move window one page up			     *i_<PageUp>*
 <S-Down>	move window one page down		     *i_<S-Down>*
 <PageDown>	move window one page down		     *i_<PageDown>*
-<MouseDown>	scroll three lines down			     *i_<MouseDown>*
-<S-MouseDown>	scroll a full page down			     *i_<S-MouseDown>*
-<MouseUp>	scroll three lines up			     *i_<MouseUp>*
-<S-MouseUp>	scroll a full page up			     *i_<S-MouseUp>*
+<ScrollWheelDown>    move window three lines down	*i_<ScrollWheelDown>*
+<S-ScrollWheelDown>  move window one page down		*i_<S-ScrollWheelDown>*
+<ScrollWheelUp>      move window three lines up		*i_<ScrollWheelUp>*
+<S-ScrollWheelUp>    move window one page up		*i_<S-ScrollWheelUp>*
+<ScrollWheelLeft>    move window six columns left	*i_<ScrollWheelLeft>*
+<S-ScrollWheelLeft>  move window one page left		*i_<S-ScrollWheelLeft>*
+<ScrollWheelRight>   move window six columns right	*i_<ScrollWheelRight>*
+<S-ScrollWheelRight> move window one page right		*i_<S-ScrollWheelRight>*
 CTRL-O		execute one command, return to Insert mode   *i_CTRL-O*
 CTRL-\ CTRL-O	like CTRL-O but don't move the cursor	     *i_CTRL-\_CTRL-O*
 CTRL-L		when 'insertmode' is set: go to Normal mode  *i_CTRL-L*

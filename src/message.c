@@ -987,6 +987,7 @@ wait_return(redraw)
 				|| c == K_LEFTDRAG   || c == K_LEFTRELEASE
 				|| c == K_MIDDLEDRAG || c == K_MIDDLERELEASE
 				|| c == K_RIGHTDRAG  || c == K_RIGHTRELEASE
+				|| c == K_MOUSELEFT  || c == K_MOUSERIGHT
 				|| c == K_MOUSEDOWN  || c == K_MOUSEUP
 				|| (!mouse_has(MOUSE_RETURN)
 				    && mouse_row < msg_row

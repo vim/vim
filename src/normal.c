@@ -368,8 +368,10 @@ static const struct nv_cmd
     /* pound sign */
     {POUND,	nv_ident,	0,			0},
 #ifdef FEAT_MOUSE
-    {K_MOUSEUP, nv_mousescroll,	0,			TRUE},
-    {K_MOUSEDOWN, nv_mousescroll, 0,			FALSE},
+    {K_MOUSEUP, nv_mousescroll,	0,			MSCR_UP},
+    {K_MOUSEDOWN, nv_mousescroll, 0,			MSCR_DOWN},
+    {K_MOUSELEFT, nv_mousescroll, 0,			MSCR_LEFT},
+    {K_MOUSERIGHT, nv_mousescroll, 0,			MSCR_RIGHT},
     {K_LEFTMOUSE, nv_mouse,	0,			0},
     {K_LEFTMOUSE_NM, nv_mouse,	0,			0},
     {K_LEFTDRAG, nv_mouse,	0,			0},
@@ -3861,7 +3863,7 @@ add_to_showcmd(c)
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
 	K_RIGHTMOUSE, K_RIGHTDRAG, K_RIGHTRELEASE,
-	K_MOUSEDOWN, K_MOUSEUP,
+	K_MOUSEDOWN, K_MOUSEUP, K_MOUSELEFT, K_MOUSERIGHT,
 	K_X1MOUSE, K_X1DRAG, K_X1RELEASE, K_X2MOUSE, K_X2DRAG, K_X2RELEASE,
 	K_CURSORHOLD,
 	0
@@ -4536,7 +4538,8 @@ nv_screengo(oap, dir, dist)
 /*
  * Mouse scroll wheel: Default action is to scroll three lines, or one page
  * when Shift or Ctrl is used.
- * K_MOUSEUP (cap->arg == TRUE) or K_MOUSEDOWN (cap->arg == FALSE)
+ * K_MOUSEUP (cap->arg == 1) or K_MOUSEDOWN (cap->arg == 0) or
+ * K_MOUSELEFT (cap->arg == -1) or K_MOUSERIGHT (cap->arg == -2)
  */
     static void
 nv_mousescroll(cap)
@@ -4559,16 +4562,36 @@ nv_mousescroll(cap)
     }
 # endif
 
-    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
     {
-	(void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
+	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+	{
+	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
+	}
+	else
+	{
+	    cap->count1 = 3;
+	    cap->count0 = 3;
+	    nv_scroll_line(cap);
+	}
     }
+# ifdef FEAT_GUI
     else
     {
-	cap->count1 = 3;
-	cap->count0 = 3;
-	nv_scroll_line(cap);
+	/* Horizontal scroll - only allowed when 'wrap' is disabled */
+	if (!curwin->w_p_wrap)
+	{
+	    int val, step = 6;
+	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
+		step = W_WIDTH(curwin);
+	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
+	    if (val < 0)
+		val = 0;
+
+	    gui_do_horiz_scroll(val, TRUE);
+	}
     }
+# endif
 
 # if defined(FEAT_GUI) && defined(FEAT_WINDOWS)
     curwin->w_redr_status = TRUE;
@@ -5166,7 +5189,7 @@ nv_hor_scrollbar(cap)
 	clearopbeep(cap->oap);
 
     /* Even if an operator was pending, we still want to scroll */
-    gui_do_horiz_scroll();
+    gui_do_horiz_scroll(scrollbar_value, FALSE);
 }
 #endif
 

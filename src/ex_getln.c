@@ -1334,6 +1334,8 @@ getcmdline(firstc, count, indent)
 	/* Mouse scroll wheel: ignored here */
 	case K_MOUSEDOWN:
 	case K_MOUSEUP:
+	case K_MOUSELEFT:
+	case K_MOUSERIGHT:
 	/* Alternate buttons ignored here */
 	case K_X1MOUSE:
 	case K_X1DRAG:
@@ -1361,7 +1363,7 @@ getcmdline(firstc, count, indent)
 	case K_HOR_SCROLLBAR:
 		if (msg_scrolled == 0)
 		{
-		    gui_do_horiz_scroll();
+		    gui_do_horiz_scroll(scrollbar_value, FALSE);
 		    redrawcmd();
 		}
 		goto cmdline_not_changed;

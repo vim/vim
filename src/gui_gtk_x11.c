@@ -1700,7 +1700,13 @@ scroll_event(GtkWidget *widget,
 	case GDK_SCROLL_DOWN:
 	    button = MOUSE_5;
 	    break;
-	default: /* We don't care about left and right...  Yet. */
+	case GDK_SCROLL_LEFT:
+	    button = MOUSE_7;
+	    break;
+	case GDK_SCROLL_RIGHT:
+	    button = MOUSE_6;
+	    break;
+	default: /* This shouldn't happen */
 	    return FALSE;
     }
 
