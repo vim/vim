@@ -30,20 +30,13 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-6   In the quickfix window statusline add the command used to get the list of
-    errors, e.g. ":make foo", ":grep something *.c".
-    New patch 2010 Jul 24
-    Docs patch by Dominique Pelle, Mar 25 included?
-
 Patch for :find completion. (Nazri Ramliy)
-But I prefer to keep term.h and include/term.h  He will work on it.
+But I prefer to keep term.h and include/term.h  Nazri will work on it.
 
-Add hg changes to version7.txt
+Move more common code from if_python.c and if_python3.c to if_py_both.h
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)
-
-Move more common code from if_python.c and if_python3.c to if_py_both.h
 
 Cursor positioning wrong with 0x200e character. (John Becket, 2010 May 6)
 

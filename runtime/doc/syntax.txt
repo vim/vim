@@ -1599,6 +1599,13 @@ may be changed by the user if s/he is experiencing synchronization
 difficulties (such as may happen with large lex files).
 
 
+LIFELINES				*lifelines.vim* *ft-lifelines-syntax*
+
+To highlight deprecated functions as errors, add in your .vimrc: >
+
+	:let g:lifelines_deprecated = 1
+<
+
 LISP						*lisp.vim* *ft-lisp-syntax*
 
 The lisp syntax highlighting provides two options: >

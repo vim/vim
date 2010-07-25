@@ -7158,8 +7158,8 @@ VERSION 7.3					*version-7.3* *version7.3*
 
 This section is about improvements made between version 7.2 and 7.3.
 
-This is a bug-fix release and there are a few new features.
-The most notable new features are:
+This release has hundreds of bug fixes and there are a few new features.  The
+most notable new features are:
 
 
 Persistent undo					*new-persistent-undo*
@@ -7167,12 +7167,13 @@ Persistent undo					*new-persistent-undo*
 
 Store undo information in a file.  Can undo to before when the file was read,
 also for unloaded buffers. See |undo-persistence| (partly by Jordan Lewis)
-Added ":earlier 1f" and ":later 1f".
-Add file save counter to undo information.
+
+Added the ":earlier 1f" and ":later 1f" commands.
+Added file save counter to undo information.
 Added the |undotree()| and |undofile()| functions.
 
 Also added the 'undoreload' option.  This makes it possible to save the
-current text when reloading the buffer, so that it can be undone.
+current text when reloading the buffer, so that the reload can be undone.
 
 
 More encryption					*new-more-encryption*
@@ -7190,9 +7191,13 @@ Conceal text					*new-conceal*
 Added the |+conceal| feature.  (Vince Negri)
 This allows hiding stretches of text, based on syntax highlighting.
 It also allows replacing a stretch of text by a character |:syn-cchar|.
-The 'conceallevel' option specifies what happens.
+The 'conceallevel' option specifies what happens with text matching a syntax
+item that has the conceal attribute.
+The 'concealcursor' option specifies what happens in the cursor line.
 
 The help files conceal characters used to mark tags and examples.
+
+Added the |synconcealed()| function and use it for :TOhtml. (Benjamin Fritz)
 
 
 Lua interface					*new-lua*
@@ -7307,11 +7312,18 @@ Support wide file names in gvimext. (Szabolcs Horvat)
 Improve test for joining lines. (Milan Vancura)
 Make joining a range of lines much faster. (Milan Vancura)
 
-Command line completion for :ownsyntax. (Dominique Pelle)
+Command line completion for :ownsyntax and :setfiletype. (Dominique Pelle)
+
+Command line completion for :lmap and :lunmap.
 
 Add patch to improve support of z/OS (OS/390). (Ralf Schandl)
 
 Added the helphelp.txt file.  Moved text from various.txt to it.
+
+Added "q" item for 'statusline'.  Added |w:quickfix_title|. (Lech Lorens)
+
+Added support for horizontal scroll wheel. (Bjorn Winckler)
+
 
 
 New syntax files:
@@ -10036,6 +10048,22 @@ Fixed crash for ":find" completion, might also happen in other path expansion
 usage.
 
 When 'searchhl' causes a hang make CTRL-C disable 'searchhl'.
+
+When resetting both 'title' and 'icon' the title would be set after a shell
+command.
+
+Reset 'title' and 'icon' in test47 to avoid the xterm title getting messed up.
+
+Fix for compiler warning about function prototype in pty.c.
+
+Added 'window' to the options window.
+
+Fixed: errors for allocating zero bytes when profiling an empty function.
+
+Remove -arch flag from build flags for Perl. (Bjorn Wickler)
+
+Fix 'autochdir' not showing up in :options window. (Dominique Pelle)
+
 
 
  vim:tw=78:ts=8:ft=help:norl:

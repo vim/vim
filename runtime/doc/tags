@@ -5583,6 +5583,7 @@ ft-javascript-omni	insert.txt	/*ft-javascript-omni*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
+ft-lifelines-syntax	syntax.txt	/*ft-lifelines-syntax*
 ft-lisp-syntax	syntax.txt	/*ft-lisp-syntax*
 ft-lite-syntax	syntax.txt	/*ft-lite-syntax*
 ft-lpc-syntax	syntax.txt	/*ft-lpc-syntax*
@@ -6417,6 +6418,7 @@ libcall()	eval.txt	/*libcall()*
 libcallnr()	eval.txt	/*libcallnr()*
 license	uganda.txt	/*license*
 lid	quickfix.txt	/*lid*
+lifelines.vim	syntax.txt	/*lifelines.vim*
 limits	vi_diff.txt	/*limits*
 line()	eval.txt	/*line()*
 line-continuation	repeat.txt	/*line-continuation*
@@ -8298,6 +8300,7 @@ vt100-function-keys	term.txt	/*vt100-function-keys*
 w	motion.txt	/*w*
 w32-clientserver	remote.txt	/*w32-clientserver*
 w:current_syntax	syntax.txt	/*w:current_syntax*
+w:quickfix_title	quickfix.txt	/*w:quickfix_title*
 w:var	eval.txt	/*w:var*
 warningmsg-variable	eval.txt	/*warningmsg-variable*
 white-space	pattern.txt	/*white-space*
