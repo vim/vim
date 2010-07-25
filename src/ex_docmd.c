@@ -3786,26 +3786,28 @@ set_one_cmd_context(xp, buff)
 	case CMD_omap:	    case CMD_onoremap:
 	case CMD_imap:	    case CMD_inoremap:
 	case CMD_cmap:	    case CMD_cnoremap:
+	case CMD_lmap:	    case CMD_lnoremap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							FALSE, FALSE, ea.cmdidx);
+						     FALSE, FALSE, ea.cmdidx);
 	case CMD_unmap:
 	case CMD_nunmap:
 	case CMD_vunmap:
 	case CMD_ounmap:
 	case CMD_iunmap:
 	case CMD_cunmap:
+	case CMD_lunmap:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							 FALSE, TRUE, ea.cmdidx);
+						      FALSE, TRUE, ea.cmdidx);
 	case CMD_abbreviate:	case CMD_noreabbrev:
 	case CMD_cabbrev:	case CMD_cnoreabbrev:
 	case CMD_iabbrev:	case CMD_inoreabbrev:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							 TRUE, FALSE, ea.cmdidx);
+						      TRUE, FALSE, ea.cmdidx);
 	case CMD_unabbreviate:
 	case CMD_cunabbrev:
 	case CMD_iunabbrev:
 	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
-							  TRUE, TRUE, ea.cmdidx);
+						       TRUE, TRUE, ea.cmdidx);
 #ifdef FEAT_MENU
 	case CMD_menu:	    case CMD_noremenu:	    case CMD_unmenu:
 	case CMD_amenu:	    case CMD_anoremenu:	    case CMD_aunmenu:
