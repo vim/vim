@@ -888,7 +888,7 @@ read_string_decrypt(buf, fd, len)
 
     ptr = read_string(fd, len);
 #ifdef FEAT_CRYPT
-    if (ptr != NULL || *buf->b_p_key != NUL)
+    if (ptr != NULL && *buf->b_p_key != NUL)
 	crypt_decode(ptr, len);
 #endif
     return ptr;
@@ -909,7 +909,7 @@ serialize_header(fp, buf, hash)
     /* If the buffer is encrypted then all text bytes following will be
      * encrypted.  Numbers and other info is not crypted. */
 #ifdef FEAT_CRYPT
-    if (*buf->b_p_key)
+    if (*buf->b_p_key != NUL)
     {
 	char_u *header;
 	int    header_len;
@@ -1475,7 +1475,7 @@ u_write_undo(name, forceit, buf, hash)
     if (serialize_header(fp, buf, hash) == FAIL)
 	goto write_error;
 #ifdef FEAT_CRYPT
-    if (*buf->b_p_key)
+    if (*buf->b_p_key != NUL)
 	do_crypt = TRUE;
 #endif
 

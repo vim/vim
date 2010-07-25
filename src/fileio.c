@@ -2953,7 +2953,7 @@ check_for_cryptkey(cryptkey, ptr, sizep, filesizep, newfile, fname, did_ask)
     }
     /* When starting to edit a new file which does not have encryption, clear
      * the 'key' option, except when starting up (called with -x argument) */
-    else if (newfile && *curbuf->b_p_key && !starting)
+    else if (newfile && *curbuf->b_p_key != NUL && !starting)
 	set_option_value((char_u *)"key", 0L, (char_u *)"", OPT_LOCAL);
 
     return cryptkey;

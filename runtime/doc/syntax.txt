@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 24
+*syntax.txt*	For Vim version 7.3b.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -429,7 +429,7 @@ shorter and valid HTML 4 file), use: >
    :let g:html_use_css = 1
 
 Concealed text is removed from the HTML and replaced with the appropriate
-character from |syn-cchar| or 'listchars' depending on the current value of
+character from |:syn-cchar| or 'listchars' depending on the current value of
 'conceallevel'. If you always want to display all text in your document,
 either set 'conceallevel' to before invoking 2html, or use: >
    :let g:html_ignore_conceal = 1
