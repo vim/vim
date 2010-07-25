@@ -1170,6 +1170,10 @@ ml_recover()
     buf->b_ml.ml_line_lnum = 0;		/* no cached line */
     buf->b_ml.ml_locked = NULL;		/* no locked block */
     buf->b_ml.ml_flags = 0;
+#ifdef FEAT_CRYPT
+    buf->b_p_key = empty_option;
+    buf->b_p_cm = empty_option;
+#endif
 
     /*
      * open the memfile from the old swap file
@@ -1187,8 +1191,6 @@ ml_recover()
     buf->b_ml.ml_mfp = mfp;
 #ifdef FEAT_CRYPT
     mfp->mf_buffer = buf;
-    buf->b_p_key = empty_option;
-    buf->b_p_cm = empty_option;
 #endif
 
     /*
