@@ -6523,6 +6523,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	y F   Type of file in the buffer, e.g., "[vim]".  See 'filetype'.
 	Y F   Type of file in the buffer, e.g., ",VIM".  See 'filetype'.
 	      {not available when compiled without |+autocmd| feature}
+	q S   "[Quickfix List]", "[Location List]" or empty.
 	k S   Value of "b:keymap_name" or 'keymap' when |:lmap| mappings are
 	      being used: "<keymap>"
 	n N   Buffer number.

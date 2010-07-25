@@ -44,7 +44,7 @@ static void	    cs_file_results __ARGS((FILE *, int *));
 static void	    cs_fill_results __ARGS((char *, int , int *, char ***,
 			char ***, int *));
 static int	    cs_find __ARGS((exarg_T *eap));
-static int	    cs_find_common __ARGS((char *opt, char *pat, int, int, int));
+static int	    cs_find_common __ARGS((char *opt, char *pat, int, int, int, char_u *cmdline));
 static int	    cs_help __ARGS((exarg_T *eap));
 static void	    clear_csinfo __ARGS((int i));
 static int	    cs_insert_filelist __ARGS((char *, char *, char *,
@@ -294,7 +294,7 @@ do_cstag(eap)
 	if (cs_check_for_connections())
 	{
 	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
-				 FALSE);
+						       FALSE, *eap->cmdlinep);
 	    if (ret == FALSE)
 	    {
 		cs_free_tags();
@@ -322,7 +322,7 @@ do_cstag(eap)
 		if (cs_check_for_connections())
 		{
 		    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit,
-					 FALSE, FALSE);
+						FALSE, FALSE, *eap->cmdlinep);
 		    if (ret == FALSE)
 			cs_free_tags();
 		}
@@ -331,7 +331,7 @@ do_cstag(eap)
 	else if (cs_check_for_connections())
 	{
 	    ret = cs_find_common("g", (char *)(eap->arg), eap->forceit, FALSE,
-				 FALSE);
+						       FALSE, *eap->cmdlinep);
 	    if (ret == FALSE)
 		cs_free_tags();
 	}
@@ -1068,6 +1068,7 @@ cs_find(eap)
     exarg_T *eap;
 {
     char *opt, *pat;
+    int i;
 
     if (cs_check_for_connections() == FALSE)
     {
@@ -1088,8 +1089,16 @@ cs_find(eap)
 	return FALSE;
     }
 
+    /*
+     * Let's replace the NULs written by strtok() with spaces - we need the
+     * spaces to correctly display the quickfix/location list window's title.
+     */
+    for (i = 0; i < eap_arg_len; ++i)
+	if (NUL == eap->arg[i])
+	    eap->arg[i] = ' ';
+
     return cs_find_common(opt, pat, eap->forceit, TRUE,
-			  eap->cmdidx == CMD_lcscope);
+				  eap->cmdidx == CMD_lcscope, *eap->cmdlinep);
 } /* cs_find */
 
 
@@ -1099,12 +1108,13 @@ cs_find(eap)
  * common code for cscope find, shared by cs_find() and do_cstag()
  */
     static int
-cs_find_common(opt, pat, forceit, verbose, use_ll)
+cs_find_common(opt, pat, forceit, verbose, use_ll, cmdline)
     char *opt;
     char *pat;
     int forceit;
     int verbose;
     int	use_ll;
+    char_u *cmdline;
 {
     int i;
     char *cmd;
@@ -1257,7 +1267,7 @@ cs_find_common(opt, pat, forceit, verbose, use_ll)
 		wp = curwin;
 	    /* '-' starts a new error list */
 	    if (qf_init(wp, tmp, (char_u *)"%f%*\\t%l%*\\t%m",
-							   *qfpos == '-') > 0)
+						  *qfpos == '-', cmdline) > 0)
 	    {
 # ifdef FEAT_WINDOWS
 		if (postponed_split != 0)

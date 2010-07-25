@@ -60,6 +60,11 @@ static void insert_sign __ARGS((buf_T *buf, signlist_T *prev, signlist_T *next, 
 static void buf_delete_signs __ARGS((buf_T *buf));
 #endif
 
+#if defined(FEAT_WINDOWS) && defined(FEAT_QUICKFIX)
+static char *msg_loclist = N_("[Location List]");
+static char *msg_qflist = N_("[Quickfix List]");
+#endif
+
 /*
  * Open current buffer, that is: open the memfile and read the file into
  * memory.
@@ -3878,6 +3883,13 @@ build_stl_str_hl(wp, out, outlen, fmt, use_sandbox, fillchar, maxwidth, hltab, t
 		str = (char_u *)((opt == STL_PREVIEWFLAG_ALT) ? ",PRV"
 							    : _("[Preview]"));
 	    break;
+
+	case STL_QUICKFIX:
+	    if (bt_quickfix(wp->w_buffer))
+		str = (char_u *)(wp->w_llist_ref
+			    ? _(msg_loclist)
+			    : _(msg_qflist));
+	    break;
 #endif
 
 	case STL_MODIFIED:
@@ -5124,9 +5136,9 @@ buf_spname(buf)
 		goto win_found;
 win_found:
 	if (win != NULL && win->w_llist_ref != NULL)
-	    return _("[Location List]");
+	    return _(msg_loclist);
 	else
-	    return _("[Quickfix List]");
+	    return _(msg_qflist);
     }
 #endif
 #ifdef FEAT_QUICKFIX

@@ -30,9 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include patch for horizontal scoll wheel? (Bjorn Winckler, 2010 Jul 20)
-Additional patch Jul 21.
-
 6   In the quickfix window statusline add the command used to get the list of
     errors, e.g. ":make foo", ":grep something *.c".
     New patch 2010 Jul 24

@@ -301,7 +301,7 @@ use this code: >
 =============================================================================
 2. The error window					*quickfix-window*
 
-							*:cope* *:copen*
+					    *:cope* *:copen* *w:quickfix_title*
 :cope[n] [height]	Open a window to show the current list of errors.
 			When [height] is given, the window becomes that high
 			(if there is room).  Otherwise the window is made ten
@@ -310,7 +310,11 @@ use this code: >
 			'buftype' equal to "quickfix".  Don't change this!
 			If there already is a quickfix window, it will be made
 			the current window.  It is not possible to open a
-			second quickfix window.
+			second quickfix window. The window will have the
+			w:quickfix_title variable set which will indicate the
+			command that produced the quickfix list. This can be
+			used to compose a custom status line if the value of
+			'statusline' is adjusted properly.
 
 							*:lop* *:lopen*
 :lop[en] [height]	Open a window to show the location list for the

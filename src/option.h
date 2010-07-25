@@ -273,6 +273,7 @@
 #define STL_PREVIEWFLAG_ALT 'W'		/* - other display */
 #define STL_MODIFIED	'm'		/* modified flag */
 #define STL_MODIFIED_ALT 'M'		/* - other display */
+#define STL_QUICKFIX	'q'		/* quickfix window description */
 #define STL_PERCENTAGE	'p'		/* percentage through file */
 #define STL_ALTPERCENT	'P'		/* percentage as TOP BOT ALL or NN% */
 #define STL_ARGLISTSTAT	'a'		/* argument list status as (x of y) */
@@ -284,7 +285,7 @@
 #define STL_HIGHLIGHT	'#'		/* highlight name */
 #define STL_TABPAGENR	'T'		/* tab page label nr */
 #define STL_TABCLOSENR	'X'		/* tab page close nr */
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMpPaN{#")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaN{#")
 
 /* flags used for parsed 'wildmode' */
 #define WIM_FULL	1
