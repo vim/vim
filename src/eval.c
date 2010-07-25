@@ -718,6 +718,7 @@ static void f_synID __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDattr __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synIDtrans __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_synstack __ARGS((typval_T *argvars, typval_T *rettv));
+static void f_synconcealed __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_system __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tabpagebuflist __ARGS((typval_T *argvars, typval_T *rettv));
 static void f_tabpagenr __ARGS((typval_T *argvars, typval_T *rettv));
@@ -7876,6 +7877,7 @@ static struct fst
     {"synID",		3, 3, f_synID},
     {"synIDattr",	2, 3, f_synIDattr},
     {"synIDtrans",	1, 1, f_synIDtrans},
+    {"synconcealed",	2, 2, f_synconcealed},
     {"synstack",	2, 2, f_synstack},
     {"system",		1, 2, f_system},
     {"tabpagebuflist",	0, 1, f_tabpagebuflist},
@@ -17129,6 +17131,68 @@ f_synIDtrans(argvars, rettv)
 	id = 0;
 
     rettv->vval.v_number = id;
+}
+
+/*
+ * "synconcealed(lnum, col)" function
+ */
+    static void
+f_synconcealed(argvars, rettv)
+    typval_T	*argvars UNUSED;
+    typval_T	*rettv;
+{
+#if defined(FEAT_SYN_HL) && defined(FEAT_CONCEAL)
+    long	lnum;
+    long	col;
+    int		syntax_flags = 0;
+    int		cchar;
+    int		matchid = 0;
+    char_u	str[NUMBUFLEN];
+#endif
+
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = NULL;
+
+#if defined(FEAT_SYN_HL) && defined(FEAT_CONCEAL)
+    lnum = get_tv_lnum(argvars);		/* -1 on type error */
+    col = get_tv_number(&argvars[1]) - 1;	/* -1 on type error */
+
+    vim_memset(str, NUL, sizeof(str));
+
+    if (rettv_list_alloc(rettv) != FAIL)
+    {
+	if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count
+	    && col >= 0 && col <= (long)STRLEN(ml_get(lnum))
+	    && curwin->w_p_cole > 0)
+	{
+	    (void)syn_get_id(curwin, lnum, col, FALSE, NULL, FALSE);
+	    syntax_flags = get_syntax_info(&matchid);
+
+	    /* get the conceal character */
+	    if ((syntax_flags & HL_CONCEAL) && curwin->w_p_cole < 3)
+	    {
+		cchar = syn_get_sub_char();
+		if (cchar == NUL && curwin->w_p_cole == 1 && lcs_conceal != NUL)
+		    cchar = lcs_conceal;
+		if (cchar != NUL)
+		{
+# ifdef FEAT_MBYTE
+		    if (has_mbyte)
+			(*mb_char2bytes)(cchar, str);
+		    else
+# endif
+			str[0] = cchar;
+		}
+	    }
+	}
+
+	list_append_number(rettv->vval.v_list,
+					    (syntax_flags & HL_CONCEAL) != 0);
+	/* -1 to auto-determine strlen */
+	list_append_string(rettv->vval.v_list, str, -1);
+	list_append_number(rettv->vval.v_list, matchid);
+    }
+#endif
 }
 
 /*

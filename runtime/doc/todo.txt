@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 24
+*todo.txt*      For Vim version 7.3b.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -29,6 +29,8 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+concealends does not appear to work.
 
 if_python3.c is missing some changes that were applied to if_python.c.
 Find the old version of if_python.c from when the copy was made.

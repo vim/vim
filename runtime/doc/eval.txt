@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3b.  Last change: 2010 May 14
+*eval.txt*	For Vim version 7.3b.  Last change: 2010 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5550,6 +5550,21 @@ synID({lnum}, {col}, {trans})				*synID()*
 		Example (echoes the name of the syntax item under the cursor): >
 			:echo synIDattr(synID(line("."), col("."), 1), "name")
 <
+
+synconcealed({lnum}, {col})				*synconcealed()*
+		The result is a List. The first item in the list is 0 if the
+		character at the position {lnum} and {col} is not part of a
+		concealable region, 1 if it is. The second item in the list is
+		a string. If the first item is 1, the second item contains the
+		text which will be displayed in place of the concealed text,
+		depending on the current setting of 'conceallevel'. The third
+		and final item in the list is a unique number representing the
+		specific syntax region matched. This allows detection of the
+		beginning of a new concealable region if there are two
+		consecutive regions with the same replacement character.
+		For an example use see $VIMRUNTIME/syntax/2html.vim .
+
+
 synIDattr({synID}, {what} [, {mode}])			*synIDattr()*
 		The result is a String, which is the {what} attribute of
 		syntax ID {synID}.  This can be used to obtain information

@@ -1,6 +1,6 @@
 " Vim autoload file for the tohtml plugin.
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 July 16
+" Last Change: 2010 July 24
 "
 " Additional contributors:
 "
@@ -64,6 +64,7 @@ func! tohtml#Diff2HTML(win_list, buf_list)
   call add(html, '<head>')
   call add(html, '<title>diff</title>')
   call add(html, '<meta name="Generator" content="Vim/'.v:version/100.'.'.v:version%100.'">')
+  call add(html, '<meta name="plugin-version" content="'.g:loaded_2html_plugin.'">')
   " TODO: copy or move encoding logic from 2html.vim so generated markup can
   " validate without warnings about encoding
 

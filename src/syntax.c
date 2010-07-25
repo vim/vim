@@ -474,6 +474,10 @@ syntax_start(wp, lnum)
     int		dist;
     static int	changedtick = 0;	/* remember the last change ID */
 
+#ifdef FEAT_CONCEAL
+    current_sub_char = NUL;
+#endif
+
     /*
      * After switching buffers, invalidate current_state.
      * Also do this when a change was made, the current state may be invalid
@@ -1786,6 +1790,9 @@ get_syntax_attr(col, can_spell, keep_state)
 #ifdef FEAT_EVAL
 	current_id = 0;
 	current_trans_id = 0;
+#endif
+#ifdef FEAT_CONCEAL
+	current_flags = 0;
 #endif
 	return 0;
     }

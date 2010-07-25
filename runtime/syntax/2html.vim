@@ -1,19 +1,19 @@
 " Vim syntax support file
 " Maintainer: Ben Fritz <fritzophrenic@gmail.com>
-" Last Change: 2010 July 16
+" Last Change: 2010 July 24
 "
 " Additional contributors:
 "
-"	      Original by Bram Moolenaar <Bram@vim.org>
-"	      Modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-"	      XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>
-"	      Made w3 compliant by Edd Barrett <vext01@gmail.com>
-"	      Added html_font. Edd Barrett <vext01@gmail.com>
-"	      Progress bar based off code from "progressbar widget" plugin by
-"		Andreas Politz, heavily modified:
-"		http://www.vim.org/scripts/script.php?script_id=2006
+"             Original by Bram Moolenaar <Bram@vim.org>
+"             Modified by David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
+"             XHTML support by Panagiotis Issaris <takis@lumumba.luc.ac.be>
+"             Made w3 compliant by Edd Barrett <vext01@gmail.com>
+"             Added html_font. Edd Barrett <vext01@gmail.com>
+"             Progress bar based off code from "progressbar widget" plugin by
+"               Andreas Politz, heavily modified:
+"               http://www.vim.org/scripts/script.php?script_id=2006
 "
-"	      See Mercurial change logs for more!
+"             See Mercurial change logs for more!
 
 " Transform a file into HTML, using the current syntax highlighting.
 
@@ -241,6 +241,18 @@ setlocal et
 set nomore
 set report=1000000
 
+if exists(':ownsyntax') && exists('w:current_syntax')
+  let s:current_syntax = w:current_syntax
+elseif exists('b:current_syntax')
+  let s:current_syntax = b:current_syntax
+else
+  let s:current_syntax = 'none'
+endif
+
+if s:current_syntax == ''
+  let s:current_syntax = 'none'
+endif
+
 " Split window to create a buffer with the HTML file.
 let s:orgbufnr = winbufnr(0)
 let s:origwin_stl = &l:stl
@@ -315,10 +327,12 @@ call extend(s:lines, [
       \"<head>",
       \("<title>".expand("%:p:~")."</title>"),
       \("<meta name=\"Generator\" content=\"Vim/".v:version/100.".".v:version%100.'"'.s:tag_close),
+      \("<meta name=\"plugin-version\" content=\"".g:loaded_2html_plugin.'"'.s:tag_close),
       \])
 if s:html_encoding != ""
   call add(s:lines, "<meta http-equiv=\"content-type\" content=\"text/html; charset=" . s:html_encoding . '"' . s:tag_close)
 endif
+call add(s:lines, '<meta name="syntax" content="'.s:current_syntax.'"'.s:tag_close)
 
 if exists("g:html_use_css")
   if exists("g:html_dynamic_folds")
@@ -810,8 +824,11 @@ while s:lnum <= s:end
       " html_no_pre to make it easier
       if !exists("g:html_no_foldcolumn")
 	if empty(s:foldstack)
-	  " add the empty foldcolumn for unfolded lines
-	  let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn")
+	  " add the empty foldcolumn for unfolded lines if there is a fold
+	  " column at all
+	  if s:foldcolumn > 0
+	    let s:new = s:new . s:HtmlFormat(repeat(' ', s:foldcolumn), "FoldColumn")
+	  endif
 	else
 	  " add the fold column for folds not on the opening line
 	  if get(s:foldstack, 0).firstline < s:lnum
@@ -831,11 +848,24 @@ while s:lnum <= s:end
     " Get the diff attribute, if any.
     let s:diffattr = diff_hlID(s:lnum, 1)
 
+    " initialize conceal info to act like not concealed, just in case
+    let s:concealinfo = [0, '']
+
     " Loop over each character in the line
     let s:col = 1
     while s:col <= s:len || (s:col == 1 && s:diffattr)
       let s:startcol = s:col " The start column for processing text
-      if s:diffattr
+      if !exists('g:html_ignore_conceal') && has('conceal')
+	let s:concealinfo = synconcealed(s:lnum, s:col)
+      endif
+      if !exists('g:html_ignore_conceal') && s:concealinfo[0]
+	let s:col = s:col + 1
+	" Speed loop (it's small - that's the trick)
+	" Go along till we find a change in the match sequence number (ending
+	" the specific concealed region) or until there are no more concealed
+	" characters.
+	while s:col <= s:len && s:concealinfo == synconcealed(s:lnum, s:col) | let s:col = s:col + 1 | endwhile
+      elseif s:diffattr
 	let s:id = diff_hlID(s:lnum, s:col)
 	let s:col = s:col + 1
 	" Speed loop (it's small - that's the trick)
@@ -854,39 +884,50 @@ while s:lnum <= s:end
 	while s:col <= s:len && s:id == synID(s:lnum, s:col, 1) | let s:col = s:col + 1 | endwhile
       endif
 
-      " Expand tabs
-      let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
-      let s:offset = 0
-      let s:idx = stridx(s:expandedtab, "\t")
-      while s:idx >= 0
-	if has("multi_byte_encoding")
-	  if s:startcol + s:idx == 1
-	    let s:i = &ts
-	  else
-	    if s:idx == 0
-	      let s:prevc = matchstr(s:line, '.\%' . (s:startcol + s:idx + s:offset) . 'c')
-	    else
-	      let s:prevc = matchstr(s:expandedtab, '.\%' . (s:idx + 1) . 'c')
-	    endif
-	    let s:vcol = virtcol([s:lnum, s:startcol + s:idx + s:offset - len(s:prevc)])
-	    let s:i = &ts - (s:vcol % &ts)
-	  endif
-	  let s:offset -= s:i - 1
-	else
-	  let s:i = &ts - ((s:idx + s:startcol - 1) % &ts)
-	endif
-	let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', s:i), '')
+      if exists('g:html_ignore_conceal') || !s:concealinfo[0]
+	" Expand tabs
+	let s:expandedtab = strpart(s:line, s:startcol - 1, s:col - s:startcol)
+	let s:offset = 0
 	let s:idx = stridx(s:expandedtab, "\t")
-      endwhile
+	while s:idx >= 0
+	  if has("multi_byte_encoding")
+	    if s:startcol + s:idx == 1
+	      let s:i = &ts
+	    else
+	      if s:idx == 0
+		let s:prevc = matchstr(s:line, '.\%' . (s:startcol + s:idx + s:offset) . 'c')
+	      else
+		let s:prevc = matchstr(s:expandedtab, '.\%' . (s:idx + 1) . 'c')
+	      endif
+	      let s:vcol = virtcol([s:lnum, s:startcol + s:idx + s:offset - len(s:prevc)])
+	      let s:i = &ts - (s:vcol % &ts)
+	    endif
+	    let s:offset -= s:i - 1
+	  else
+	    let s:i = &ts - ((s:idx + s:startcol - 1) % &ts)
+	  endif
+	  let s:expandedtab = substitute(s:expandedtab, '\t', repeat(' ', s:i), '')
+	  let s:idx = stridx(s:expandedtab, "\t")
+	endwhile
 
-      " Output the text with the same synID, with class set to {s:id_name}
-      let s:id = synIDtrans(s:id)
-      let s:id_name = synIDattr(s:id, "name", s:whatterm)
-      let s:new = s:new . s:HtmlFormat(s:expandedtab,  s:id_name)
+	" get the highlight group name to use
+	let s:id = synIDtrans(s:id)
+	let s:id_name = synIDattr(s:id, "name", s:whatterm)
+      else
+	" use Conceal highlighting for concealed text
+	let s:id_name = 'Conceal'
+	let s:expandedtab = s:concealinfo[1]
+      endif
+
+      " Output the text with the same synID, with class set to {s:id_name},
+      " unless it has been concealed completely. Always output empty lines.
+      if strlen(s:expandedtab) > 0
+	let s:new = s:new . s:HtmlFormat(s:expandedtab,  s:id_name)
+      endif
     endwhile
   endif
 
-  call extend(s:lines, split(s:new.s:HtmlEndline, '\n'))
+  call extend(s:lines, split(s:new.s:HtmlEndline, '\n', 1))
   if !s:html_no_progress && s:pgb.needs_redraw
     redrawstatus
     let s:pgb.needs_redraw = 0
@@ -1054,8 +1095,8 @@ let &ls=s:ls
 unlet s:htmlfont
 unlet s:old_et s:old_paste s:old_icon s:old_report s:old_title s:old_search s:old_magic s:old_more s:old_fdm s:old_winheight s:old_winfixheight
 unlet s:whatterm s:idlist s:lnum s:end s:margin s:fgc s:bgc
-unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines
-unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl s:newwin_stl
+unlet! s:col s:id s:attr s:len s:line s:new s:expandedtab s:numblines s:concealinfo
+unlet! s:orgwin s:newwin s:orgbufnr s:idx s:i s:offset s:ls s:origwin_stl s:newwin_stl s:current_syntax
 if !v:profiling
   delfunc s:HtmlColor
   delfunc s:HtmlFormat
