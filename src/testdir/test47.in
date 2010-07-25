@@ -2,6 +2,8 @@ Tests for vertical splits and filler lines in diff mode
 
 STARTTEST
 :so small.vim
+:" Disable the title to avoid xterm keeping the wrong one.
+:set notitle noicon
 /^1
 yG:new
 pkdd:w! Xtest

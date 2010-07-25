@@ -3134,7 +3134,7 @@ maketitle()
     }
 
     need_maketitle = FALSE;
-    if (!p_title && !p_icon)
+    if (!p_title && !p_icon && lasttitle == NULL && lasticon == NULL)
 	return;
 
     if (p_title)
