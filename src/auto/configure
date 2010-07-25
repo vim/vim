@@ -4682,7 +4682,7 @@ $as_echo_n "checking Lua version... " >&6; }
 if test "${vi_cv_version_lua+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
-   vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION:sub(5,7))"`
+   vi_cv_version_lua=`${vi_cv_path_lua} -e "print(_VERSION)" | sed 's/.* //'`
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $vi_cv_version_lua" >&5
 $as_echo "$vi_cv_version_lua" >&6; }
@@ -4714,10 +4714,16 @@ $as_echo "no" >&6; }
     $as_echo "#define FEAT_LUA 1" >>confdefs.h
 
     if test "$enable_luainterp" = "dynamic"; then
+                  for i in 0 1 2 3 4 5 6 7 8 9; do
+	if test -f "${vi_cv_path_lua_pfx}/lib/liblua${vi_cv_version_lua}.so.$i"; then
+	  LUA_SONAME=".$i"
+	  break
+	fi
+      done
       $as_echo "#define DYNAMIC_LUA 1" >>confdefs.h
 
       LUA_LIBS=""
-      LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"liblua${vi_cv_version_lua}.so\\\" $LUA_CFLAGS"
+      LUA_CFLAGS="-DDYNAMIC_LUA_DLL=\\\"liblua${vi_cv_version_lua}.so$LUA_SONAME\\\" $LUA_CFLAGS"
     fi
   fi
 
