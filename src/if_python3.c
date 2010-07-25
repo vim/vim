@@ -34,7 +34,7 @@
 # undef _POSIX_THREADS
 #endif
 
-#if defined(_WIN32) && defined (HAVE_FCNTL_H)
+#if defined(_WIN32) && defined(HAVE_FCNTL_H)
 # undef HAVE_FCNTL_H
 #endif
 
@@ -1828,6 +1828,7 @@ WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
     {
 	long lnum;
 	long col;
+	long len;
 
 	if (!PyArg_Parse(val, "(ll)", &lnum, &col))
 	    return -1;
@@ -1842,10 +1843,16 @@ WindowSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 	if (VimErrorCheck())
 	    return -1;
 
-	/* NO CHECK ON COLUMN - SEEMS NOT TO MATTER */
+	/* When column is out of range silently correct it. */
+	len = (long)STRLEN(ml_get_buf(this->win->w_buffer, lnum, FALSE));
+	if (col > len)
+	    col = len;
 
 	this->win->w_cursor.lnum = lnum;
 	this->win->w_cursor.col = col;
+#ifdef FEAT_VIRTUALEDIT
+	this->win->w_cursor.coladd = 0;
+#endif
 	update_screen(VALID);
 
 	return 0;
@@ -2242,9 +2249,9 @@ SetBufferLine(buf_T *buf, Py_ssize_t n, PyObject *line, Py_ssize_t *len_change)
 	    PyErr_SetVim(_("cannot delete line"));
 	else
 	{
-	    deleted_lines_mark((linenr_T)n, 1L);
 	    if (buf == curwin->w_buffer)
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
+	    deleted_lines_mark((linenr_T)n, 1L);
 	}
 
 	curbuf = savebuf;
