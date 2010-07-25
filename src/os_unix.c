@@ -1821,15 +1821,19 @@ get_x11_thing(get_title, test_only)
 	    retval = TRUE;
 	    if (!test_only)
 	    {
-#ifdef FEAT_XFONTSET
-		if (text_prop.encoding == XA_STRING)
+#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
+		if (text_prop.encoding == XA_STRING
+# ifdef FEAT_MBYTE
+			&& !has_mbyte
+# endif
+			)
 		{
 #endif
 		    if (get_title)
 			oldtitle = vim_strsave((char_u *)text_prop.value);
 		    else
 			oldicon = vim_strsave((char_u *)text_prop.value);
-#ifdef FEAT_XFONTSET
+#if defined(FEAT_XFONTSET) || defined(FEAT_MBYTE)
 		}
 		else
 		{
@@ -2020,7 +2024,7 @@ mch_settitle(title, icon)
 #endif
 
     /*
-     * Note: if "t_TS" is set, title is set with escape sequence rather
+     * Note: if "t_ts" is set, title is set with escape sequence rather
      *	     than x11 calls, because the x11 calls don't always work
      */
     if ((type || *T_TS != NUL) && title != NULL)

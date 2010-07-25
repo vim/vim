@@ -30,11 +30,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Restoring terminal title in gnome-terminal causes a beep.  Saved value
-contains garbage?  Ukranian language characters.  'enc' and 'tenc' are utf-8.  
-(Anatoli Sakhnik, 2010 Jul 24)
-Using ":set titlestring=abc" with non-ascii characters also fails.
-Patch by James Vega, 2010 Jul 25.
+Access to free memory with :redir command. (Dominique Pelle, 2010 Jul 25)
 
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  Nazri will work on it.
