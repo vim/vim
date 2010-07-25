@@ -3831,6 +3831,7 @@ set_one_cmd_context(xp, buff)
 	    xp->xp_pattern = arg;
 	    break;
 
+	case CMD_setfiletype:
 	case CMD_ownsyntax:
 	    xp->xp_context = EXPAND_FILETYPE;
 	    xp->xp_pattern = arg;
