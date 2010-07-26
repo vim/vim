@@ -33,10 +33,17 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 Access to free memory with :redir command. (Dominique Pelle, 2010 Jul 25)
 Easier way to reproduce in later message.
 
+Patch for VMS. Zoltan Arpadffy, 2010 Jul 26.
+
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  Nazri will work on it.
 
 Move more common code from if_python.c and if_python3.c to if_py_both.h
+
+Problem with concealends in v50 of tex.vim? (Charles Campbell, 2010 Jul 26)
+
+Add filetype completion to user commands. (Christian Brabandt, 2010 Jul 26)
+But call it "filetype" instead of "syntax".
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)

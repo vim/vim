@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.3c.  Last change: 2010 Jul 25
+*syntax.txt*	For Vim version 7.3c.  Last change: 2010 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2699,6 +2699,16 @@ such use of @ as an error.  To solve this: >
 
 Putting "let g:tex_stylish=1" into your <.vimrc> will make <syntax/tex.vim>
 always accept such use of @.
+
+					*tex-cchar* *tex-cole* *tex-conceal*
+Taking Advantage of Conceal Mode~
+
+If you have |'conceallevel'| set to 1 and if your encoding is utf-8, then a
+number of character sequences will be translated (ie. better visualized) using
+|syn-cchar|, including various accented characters, Greek characters in
+MathZones, and superscripts and subscripts in MathZones.  Not all characters
+can be made into superscripts or subscripts; the constraint is due to what
+utf-8 supports.
 
 
 TF						*tf.vim* *ft-tf-syntax*

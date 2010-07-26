@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jun 24, 2010
-" Version:	48
+" Last Change:	Jul 26, 2010
+" Version:	49
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -110,7 +110,7 @@ if !exists("tex_no_math")
  syn cluster texMatchGroup	add=@texMathZones
  syn cluster texMathDelimGroup	contains=texMathDelimBad,texMathDelimKey,texMathDelimSet1,texMathDelimSet2
  syn cluster texMathMatchGroup	contains=@texMathZones,texComment,texDefCmd,texDelimiter,texDocType,texInput,texLength,texLigature,texMathDelim,texMathMatcher,texMathOper,texNewCmd,texNewEnv,texRefZone,texSection,texSpecialChar,texStatement,texString,texTypeSize,texTypeStyle,texZone
- syn cluster texMathZoneGroup	contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
+ syn cluster texMathZoneGroup	contains=texComment,texDelimiter,texLength,texMathDelim,texMathMatcher,texMathOper,texMathSymbol,texRefZone,texSpecialChar,texStatement,texTypeSize,texTypeStyle
  if !exists("g:tex_no_error")
   syn cluster texMathMatchGroup	add=texMathError
   syn cluster texMathZoneGroup	add=texMathError
@@ -469,115 +469,236 @@ if !exists("g:tex_no_error")
  syn region texStyleMatcher		matchgroup=Delimiter start="\["				end="]"		contains=@texStyleGroup,texError	contained
 endif
 
-" support for 
+" Conceal mode support (supports set cole=1) {{{1
 if has("conceal") && &enc == 'utf-8'
- syn match texGreek '\\alpha\>'		contained conceal cchar=α
- syn match texGreek '\\beta\>'		contained conceal cchar=β
- syn match texGreek '\\gamma\>'		contained conceal cchar=γ
- syn match texGreek '\\delta\>'		contained conceal cchar=δ
- syn match texGreek '\\epsilon\>'	contained conceal cchar=ϵ
- syn match texGreek '\\varepsilon\>'	contained conceal cchar=ε
- syn match texGreek '\\zeta\>'		contained conceal cchar=ζ
- syn match texGreek '\\eta\>'		contained conceal cchar=η
- syn match texGreek '\\theta\>'		contained conceal cchar=θ
- syn match texGreek '\\vartheta\>'	contained conceal cchar=ϑ
- syn match texGreek '\\kappa\>'		contained conceal cchar=κ
- syn match texGreek '\\lambda\>'	contained conceal cchar=λ
- syn match texGreek '\\mu\>'		contained conceal cchar=μ
- syn match texGreek '\\nu\>'		contained conceal cchar=ν
- syn match texGreek '\\xi\>'		contained conceal cchar=ξ
- syn match texGreek '\\pi\>'		contained conceal cchar=π
- syn match texGreek '\\varpi\>'		contained conceal cchar=ϖ
- syn match texGreek '\\rho\>'		contained conceal cchar=ρ
- syn match texGreek '\\varrho\>'	contained conceal cchar=ϱ
- syn match texGreek '\\sigma\>'		contained conceal cchar=σ
- syn match texGreek '\\varsigma\>'	contained conceal cchar=ς
- syn match texGreek '\\tau\>'		contained conceal cchar=τ
- syn match texGreek '\\upsilon\>'	contained conceal cchar=υ
- syn match texGreek '\\phi\>'		contained conceal cchar=φ
- syn match texGreek '\\varphi\>'	contained conceal cchar=ϕ
- syn match texGreek '\\chi\>'		contained conceal cchar=χ
- syn match texGreek '\\psi\>'		contained conceal cchar=ψ
- syn match texGreek '\\omega\>'		contained conceal cchar=ω
- syn match texGreek '\\Gamma\>'		contained conceal cchar=Γ
- syn match texGreek '\\Delta\>'		contained conceal cchar=Δ
- syn match texGreek '\\Theta\>'		contained conceal cchar=Θ
- syn match texGreek '\\Lambda\>'	contained conceal cchar=Λ
- syn match texGreek '\\Xi\>'		contained conceal cchar=Χ
- syn match texGreek '\\Pi\>'		contained conceal cchar=Π
- syn match texGreek '\\Sigma\>'		contained conceal cchar=Σ
- syn match texGreek '\\Upsilon\>'	contained conceal cchar=Υ
- syn match texGreek '\\Phi\>'		contained conceal cchar=Φ
- syn match texGreek '\\Psi\>'		contained conceal cchar=Ψ
- syn match texGreek '\\Omega\>'		contained conceal cchar=Ω
- syn match texSuperscript	'\^0'	contained conceal cchar=⁰
- syn match texSuperscript	'\^1'	contained conceal cchar=¹
- syn match texSuperscript	'\^2'	contained conceal cchar=²
- syn match texSuperscript	'\^3'	contained conceal cchar=³
- syn match texSuperscript	'\^4'	contained conceal cchar=⁴
- syn match texSuperscript	'\^5'	contained conceal cchar=⁵
- syn match texSuperscript	'\^6'	contained conceal cchar=⁶
- syn match texSuperscript	'\^7'	contained conceal cchar=⁷
- syn match texSuperscript	'\^8'	contained conceal cchar=⁸
- syn match texSuperscript	'\^9'	contained conceal cchar=⁹
- syn match texSuperscript	'\^a'	contained conceal cchar=ᵃ
- syn match texSuperscript	'\^b'	contained conceal cchar=ᵇ
- syn match texSuperscript	'\^c'	contained conceal cchar=ᶜ
- syn match texSuperscript	'\^d'	contained conceal cchar=ᵈ
- syn match texSuperscript	'\^e'	contained conceal cchar=ᵉ
- syn match texSuperscript	'\^f'	contained conceal cchar=ᶠ
- syn match texSuperscript	'\^g'	contained conceal cchar=ᵍ
- syn match texSuperscript	'\^h'	contained conceal cchar=ʰ
- syn match texSuperscript	'\^i'	contained conceal cchar=ⁱ
- syn match texSuperscript	'\^j'	contained conceal cchar=ʲ
- syn match texSuperscript	'\^k'	contained conceal cchar=ᵏ
- syn match texSuperscript	'\^l'	contained conceal cchar=ˡ
- syn match texSuperscript	'\^m'	contained conceal cchar=ᵐ
- syn match texSuperscript	'\^n'	contained conceal cchar=ⁿ
- syn match texSuperscript	'\^o'	contained conceal cchar=ᵒ
- syn match texSuperscript	'\^p'	contained conceal cchar=ᵖ
- syn match texSuperscript	'\^r'	contained conceal cchar=ʳ
- syn match texSuperscript	'\^s'	contained conceal cchar=ˢ
- syn match texSuperscript	'\^t'	contained conceal cchar=ᵗ
- syn match texSuperscript	'\^u'	contained conceal cchar=ᵘ
- syn match texSuperscript	'\^v'	contained conceal cchar=ᵛ
- syn match texSuperscript	'\^w'	contained conceal cchar=ʷ
- syn match texSuperscript	'\^x'	contained conceal cchar=ˣ
- syn match texSuperscript	'\^y'	contained conceal cchar=ʸ
- syn match texSuperscript	'\^z'	contained conceal cchar=ᶻ
- syn match texSuperscript	'\^A'	contained conceal cchar=ᴬ
- syn match texSuperscript	'\^B'	contained conceal cchar=ᴮ
- syn match texSuperscript	'\^D'	contained conceal cchar=ᴰ
- syn match texSuperscript	'\^E'	contained conceal cchar=ᴱ
- syn match texSuperscript	'\^G'	contained conceal cchar=ᴳ
- syn match texSuperscript	'\^H'	contained conceal cchar=ᴴ
- syn match texSuperscript	'\^I'	contained conceal cchar=ᴵ
- syn match texSuperscript	'\^J'	contained conceal cchar=ᴶ
- syn match texSuperscript	'\^K'	contained conceal cchar=ᴷ
- syn match texSuperscript	'\^L'	contained conceal cchar=ᴸ
- syn match texSuperscript	'\^M'	contained conceal cchar=ᴹ
- syn match texSuperscript	'\^N'	contained conceal cchar=ᴺ
- syn match texSuperscript	'\^O'	contained conceal cchar=ᴼ
- syn match texSuperscript	'\^P'	contained conceal cchar=ᴾ
- syn match texSuperscript	'\^R'	contained conceal cchar=ᴿ
- syn match texSuperscript	'\^T'	contained conceal cchar=ᵀ
- syn match texSuperscript	'\^U'	contained conceal cchar=ᵁ
- syn match texSuperscript	'\^W'	contained conceal cchar=ᵂ
- syn match texSubscript		'_0'	contained conceal cchar=₀
- syn match texSubscript		'_1'	contained conceal cchar=₁
- syn match texSubscript		'_2'	contained conceal cchar=₂
- syn match texSubscript		'_3'	contained conceal cchar=₃
- syn match texSubscript		'_4'	contained conceal cchar=₄
- syn match texSubscript		'_5'	contained conceal cchar=₅
- syn match texSubscript		'_6'	contained conceal cchar=₆
- syn match texSubscript		'_7'	contained conceal cchar=₇
- syn match texSubscript		'_8'	contained conceal cchar=₈
- syn match texSubscript		'_9'	contained conceal cchar=₉
- syn match texSubscript		'_a'	contained conceal cchar=ₐ
- syn match texSubscript		'_e'	contained conceal cchar=ₑ
- syn match texSubscript		'_i'	contained conceal cchar=ᵢ
- syn match texSubscript		'_o'	contained conceal cchar=ₒ
- syn match texSubscript		'_u'	contained conceal cchar=ᵤ
+
+ " Math Symbols {{{2
+ syn match texMathSymbol '\\left('      contained conceal cchar=(
+ syn match texMathSymbol '\\right)'     contained conceal cchar=)
+ syn match texMathSymbol '\\left{'      contained conceal cchar={
+ syn match texMathSymbol '\\right}'     contained conceal cchar=}
+ syn match texMathSymbol '\\cdot\>'     contained conceal cchar=·
+ syn match texMathSymbol '\\leq\>'      contained conceal cchar=≤
+ syn match texMathSymbol '\\geq\>'      contained conceal cchar=≥
+ syn match texMathSymbol '\\cdot\>'     contained conceal cchar=·
+ syn match texMathSymbol '\\times\>'    contained conceal cchar=×
+ syn match texMathSymbol '\\div\>'      contained conceal cchar=÷
+ syn match texMathSymbol '\\pm\>'       contained conceal cchar=±
+ syn match texMathSymbol '\\neq\>'      contained conceal cchar=≠
+ syn match texMathSymbol '\\cong\>'     contained conceal cchar=≅
+
+ " Greek {{{2
+ fun! s:Greek(group,pat,cchar)
+   exe 'syn match '.a:group." '".a:pat."' contained conceal cchar=".a:cchar
+ endfun
+ call s:Greek('texGreek','\\alpha\>'		,'α')
+ call s:Greek('texGreek','\\beta\>'		,'β')
+ call s:Greek('texGreek','\\gamma\>'		,'γ')
+ call s:Greek('texGreek','\\delta\>'		,'δ')
+ call s:Greek('texGreek','\\epsilon\>'		,'ϵ')
+ call s:Greek('texGreek','\\varepsilon\>'	,'ε')
+ call s:Greek('texGreek','\\zeta\>'		,'ζ')
+ call s:Greek('texGreek','\\eta\>'		,'η')
+ call s:Greek('texGreek','\\theta\>'		,'θ')
+ call s:Greek('texGreek','\\vartheta\>'		,'ϑ')
+ call s:Greek('texGreek','\\kappa\>'		,'κ')
+ call s:Greek('texGreek','\\lambda\>'		,'λ')
+ call s:Greek('texGreek','\\mu\>'		,'μ')
+ call s:Greek('texGreek','\\nu\>'		,'ν')
+ call s:Greek('texGreek','\\xi\>'		,'ξ')
+ call s:Greek('texGreek','\\pi\>'		,'π')
+ call s:Greek('texGreek','\\varpi\>'		,'ϖ')
+ call s:Greek('texGreek','\\rho\>'		,'ρ')
+ call s:Greek('texGreek','\\varrho\>'		,'ϱ')
+ call s:Greek('texGreek','\\sigma\>'		,'σ')
+ call s:Greek('texGreek','\\varsigma\>'		,'ς')
+ call s:Greek('texGreek','\\tau\>'		,'τ')
+ call s:Greek('texGreek','\\upsilon\>'		,'υ')
+ call s:Greek('texGreek','\\phi\>'		,'φ')
+ call s:Greek('texGreek','\\varphi\>'		,'ϕ')
+ call s:Greek('texGreek','\\chi\>'		,'χ')
+ call s:Greek('texGreek','\\psi\>'		,'ψ')
+ call s:Greek('texGreek','\\omega\>'		,'ω')
+ call s:Greek('texGreek','\\Gamma\>'		,'Γ')
+ call s:Greek('texGreek','\\Delta\>'		,'Δ')
+ call s:Greek('texGreek','\\Theta\>'		,'Θ')
+ call s:Greek('texGreek','\\Lambda\>'		,'Λ')
+ call s:Greek('texGreek','\\Xi\>'		,'Χ')
+ call s:Greek('texGreek','\\Pi\>'		,'Π')
+ call s:Greek('texGreek','\\Sigma\>'		,'Σ')
+ call s:Greek('texGreek','\\Upsilon\>'		,'Υ')
+ call s:Greek('texGreek','\\Phi\>'		,'Φ')
+ call s:Greek('texGreek','\\Psi\>'		,'Ψ')
+ call s:Greek('texGreek','\\Omega\>'		,'Ω')
+
+ " Superscripts/Subscripts {{{2
+ syn region texSuperscript	start='\^{'	end='}' contained contains=texSuperscripts
+ syn region texSubscript	start='_{'	end='}' contained contains=texSubscripts
+ fun! s:SuperSub(group,leader,pat,cchar)
+   exe 'syn match '.a:group." '".a:leader.a:pat."' contained conceal cchar=".a:cchar
+   exe 'syn match '.a:group."s '".a:pat."' contained conceal cchar=".a:cchar.' nextgroup='.a:group.'s'
+ endfun
+ call s:SuperSub('texSuperscript','\^','0','⁰')
+ call s:SuperSub('texSuperscript','\^','1','¹')
+ call s:SuperSub('texSuperscript','\^','2','²')
+ call s:SuperSub('texSuperscript','\^','3','³')
+ call s:SuperSub('texSuperscript','\^','4','⁴')
+ call s:SuperSub('texSuperscript','\^','5','⁵')
+ call s:SuperSub('texSuperscript','\^','6','⁶')
+ call s:SuperSub('texSuperscript','\^','7','⁷')
+ call s:SuperSub('texSuperscript','\^','8','⁸')
+ call s:SuperSub('texSuperscript','\^','9','⁹')
+ call s:SuperSub('texSuperscript','\^','a','ᵃ')
+ call s:SuperSub('texSuperscript','\^','b','ᵇ')
+ call s:SuperSub('texSuperscript','\^','c','ᶜ')
+ call s:SuperSub('texSuperscript','\^','d','ᵈ')
+ call s:SuperSub('texSuperscript','\^','e','ᵉ')
+ call s:SuperSub('texSuperscript','\^','f','ᶠ')
+ call s:SuperSub('texSuperscript','\^','g','ᵍ')
+ call s:SuperSub('texSuperscript','\^','h','ʰ')
+ call s:SuperSub('texSuperscript','\^','i','ⁱ')
+ call s:SuperSub('texSuperscript','\^','j','ʲ')
+ call s:SuperSub('texSuperscript','\^','k','ᵏ')
+ call s:SuperSub('texSuperscript','\^','l','ˡ')
+ call s:SuperSub('texSuperscript','\^','m','ᵐ')
+ call s:SuperSub('texSuperscript','\^','n','ⁿ')
+ call s:SuperSub('texSuperscript','\^','o','ᵒ')
+ call s:SuperSub('texSuperscript','\^','p','ᵖ')
+ call s:SuperSub('texSuperscript','\^','r','ʳ')
+ call s:SuperSub('texSuperscript','\^','s','ˢ')
+ call s:SuperSub('texSuperscript','\^','t','ᵗ')
+ call s:SuperSub('texSuperscript','\^','u','ᵘ')
+ call s:SuperSub('texSuperscript','\^','v','ᵛ')
+ call s:SuperSub('texSuperscript','\^','w','ʷ')
+ call s:SuperSub('texSuperscript','\^','x','ˣ')
+ call s:SuperSub('texSuperscript','\^','y','ʸ')
+ call s:SuperSub('texSuperscript','\^','z','ᶻ')
+ call s:SuperSub('texSuperscript','\^','A','ᴬ')
+ call s:SuperSub('texSuperscript','\^','B','ᴮ')
+ call s:SuperSub('texSuperscript','\^','D','ᴰ')
+ call s:SuperSub('texSuperscript','\^','E','ᴱ')
+ call s:SuperSub('texSuperscript','\^','G','ᴳ')
+ call s:SuperSub('texSuperscript','\^','H','ᴴ')
+ call s:SuperSub('texSuperscript','\^','I','ᴵ')
+ call s:SuperSub('texSuperscript','\^','J','ᴶ')
+ call s:SuperSub('texSuperscript','\^','K','ᴷ')
+ call s:SuperSub('texSuperscript','\^','L','ᴸ')
+ call s:SuperSub('texSuperscript','\^','M','ᴹ')
+ call s:SuperSub('texSuperscript','\^','N','ᴺ')
+ call s:SuperSub('texSuperscript','\^','O','ᴼ')
+ call s:SuperSub('texSuperscript','\^','P','ᴾ')
+ call s:SuperSub('texSuperscript','\^','R','ᴿ')
+ call s:SuperSub('texSuperscript','\^','T','ᵀ')
+ call s:SuperSub('texSuperscript','\^','U','ᵁ')
+ call s:SuperSub('texSuperscript','\^','W','ᵂ')
+ call s:SuperSub('texSuperscript','\^','+','⁺')
+ call s:SuperSub('texSuperscript','\^','-','⁻')
+ call s:SuperSub('texSuperscript','\^','<','˂')
+ call s:SuperSub('texSuperscript','\^','>','˃')
+ call s:SuperSub('texSuperscript','\^','/','ˊ')
+ call s:SuperSub('texSuperscript','\^','(','⁽')
+ call s:SuperSub('texSuperscript','\^',')','⁾')
+ call s:SuperSub('texSuperscript','\^','\.','˙')
+ call s:SuperSub('texSuperscript','\^','=','˭')
+ call s:SuperSub('texSubscript','_','0','₀')
+ call s:SuperSub('texSubscript','_','1','₁')
+ call s:SuperSub('texSubscript','_','2','₂')
+ call s:SuperSub('texSubscript','_','3','₃')
+ call s:SuperSub('texSubscript','_','4','₄')
+ call s:SuperSub('texSubscript','_','5','₅')
+ call s:SuperSub('texSubscript','_','6','₆')
+ call s:SuperSub('texSubscript','_','7','₇')
+ call s:SuperSub('texSubscript','_','8','₈')
+ call s:SuperSub('texSubscript','_','9','₉')
+ call s:SuperSub('texSubscript','_','a','ₐ')
+ call s:SuperSub('texSubscript','_','e','ₑ')
+ call s:SuperSub('texSubscript','_','i','ᵢ')
+ call s:SuperSub('texSubscript','_','o','ₒ')
+ call s:SuperSub('texSubscript','_','u','ᵤ')
+ call s:SuperSub('texSubscript','_','+','₊')
+ call s:SuperSub('texSubscript','_','-','₋')
+ call s:SuperSub('texSubscript','_','/','ˏ')
+ call s:SuperSub('texSubscript','_','(','₍')
+ call s:SuperSub('texSubscript','_',')','₎')
+ call s:SuperSub('texSubscript','_','\.','‸')
+ call s:SuperSub('texSubscript','_','r','ᵣ')
+ call s:SuperSub('texSubscript','_','v','ᵥ')
+ call s:SuperSub('texSubscript','_','x','ₓ')
+ call s:SuperSub('texSubscript','_','\\beta\>' ,'ᵦ')
+ call s:SuperSub('texSubscript','_','\\delta\>','ᵨ')
+ call s:SuperSub('texSubscript','_','\\phi\>'  ,'ᵩ')
+ call s:SuperSub('texSubscript','_','\\gamma\>','ᵧ')
+ call s:SuperSub('texSubscript','_','\\chi\>'  ,'ᵪ')
+
+ " Accented characters: {{{2
+ if b:tex_stylish
+  syn match texAccent		"\\[bcdvuH][^a-zA-Z@]"me=e-1
+  syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)[^a-zA-Z@]"me=e-1
+ else
+  syn match texAccent	'\\`{a}'	conceal cchar=à
+  syn match texAccent	'\\\'{a}'	conceal cchar=á
+  syn match texAccent	'\\^{a}'	conceal cchar=â
+  syn match texAccent	'\\"{a}'	conceal cchar=ä
+  syn match texAccent	'\\\~{a}'	conceal cchar=ã
+  syn match texAccent	'\\r{a}'	conceal cchar=å
+  syn match texAccent	'\\`{A}'	conceal cchar=À
+  syn match texAccent	'\\\'{A}'	conceal cchar=Á
+  syn match texAccent	'\\^{A}'	conceal cchar=Â
+  syn match texAccent	'\\"{A}'	conceal cchar=Ä
+  syn match texAccent	'\\\~{A}'	conceal cchar=Ã
+  syn match texAccent	'\\r{A}'	conceal cchar=Å
+  syn match texAccent	'\\c{c}'	conceal cchar=ç
+  syn match texAccent	'\\`{e}'	conceal cchar=è
+  syn match texAccent	'\\\'{e}'	conceal cchar=é
+  syn match texAccent	'\\^{e}'	conceal cchar=ê
+  syn match texAccent	'\\"{e}'	conceal cchar=ë
+  syn match texAccent	'\\\~{e}'	conceal cchar=ẽ
+  syn match texAccent	'\\`{E}'	conceal cchar=È
+  syn match texAccent	'\\\'{E}'	conceal cchar=É
+  syn match texAccent	'\\^{E}'	conceal cchar=Ê
+  syn match texAccent	'\\"{E}'	conceal cchar=Ë
+  syn match texAccent	'\\\~{E}'	conceal cchar=Ẽ
+  syn match texAccent	'\\`{i}'	conceal cchar=ì
+  syn match texAccent	'\\\'{i}'	conceal cchar=í
+  syn match texAccent	'\\^{i}'	conceal cchar=î
+  syn match texAccent	'\\"{i}'	conceal cchar=ï
+  syn match texAccent	'\\\~{i}'	conceal cchar=ĩ
+  syn match texAccent	'\\`{I}'	conceal cchar=Ì
+  syn match texAccent	'\\\'{I}'	conceal cchar=Í
+  syn match texAccent	'\\^{I}'	conceal cchar=Î
+  syn match texAccent	'\\"{I}'	conceal cchar=Ï
+  syn match texAccent	'\\\~{I}'	conceal cchar=Ĩ
+  syn match texAccent	'\\`{o}'	conceal cchar=ò
+  syn match texAccent	'\\\'{o}'	conceal cchar=ó
+  syn match texAccent	'\\^{o}'	conceal cchar=ô
+  syn match texAccent	'\\"{o}'	conceal cchar=ö
+  syn match texAccent	'\\\~{o}'	conceal cchar=õ
+  syn match texAccent	'\\`{O}'	conceal cchar=Ò
+  syn match texAccent	'\\\'{O}'	conceal cchar=Ó
+  syn match texAccent	'\\^{O}'	conceal cchar=Ô
+  syn match texAccent	'\\"{O}'	conceal cchar=Ö
+  syn match texAccent	'\\\~{O}'	conceal cchar=Õ
+  syn match texAccent	'\\`{u}'	conceal cchar=ù
+  syn match texAccent	'\\\'{u}'	conceal cchar=ú
+  syn match texAccent	'\\^{u}'	conceal cchar=û
+  syn match texAccent	'\\"{u}'	conceal cchar=ü
+  syn match texAccent	'\\\~{u}'	conceal cchar=ũ
+  syn match texAccent	'\\`{U}'	conceal cchar=Ù
+  syn match texAccent	'\\\'{U}'	conceal cchar=Ú
+  syn match texAccent	'\\^{U}'	conceal cchar=Û
+  syn match texAccent	'\\"{U}'	conceal cchar=Ü
+  syn match texAccent	'\\\~{U}'	conceal cchar=Ũ
+  syn match texAccent	'\\`{y}'	conceal cchar=ỳ
+  syn match texAccent	'\\\'{y}'	conceal cchar=ý
+  syn match texAccent	'\\^{y}'	conceal cchar=ŷ
+  syn match texAccent	'\\"{y}'	conceal cchar=ÿ
+  syn match texAccent	'\\\~{y}'	conceal cchar=ỹ
+  syn match texAccent	'\\`{Y}'	conceal cchar=Ỳ
+  syn match texAccent	'\\\'{Y}'	conceal cchar=Ý
+  syn match texAccent	'\\^{Y}'	conceal cchar=Ŷ
+  syn match texAccent	'\\"{Y}'	conceal cchar=Ÿ
+  syn match texAccent	'\\\~{Y}'	conceal cchar=Ỹ
+ endif
 endif
 
 " ---------------------------------------------------------------------
