@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 7.3c.  Last change: 2010 Jul 20
+*mbyte.txt*     For Vim version 7.3c.  Last change: 2010 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -928,7 +928,7 @@ See 'imactivatekey' for the format.
 
 {only works Windows GUI and compiled with the |+multi_byte_ime| feature}
 
-To input multibyte characters on Windows, you have to use Input Method Editor
+To input multibyte characters on Windows, you can use an Input Method Editor
 (IME).  In process of your editing text, you must switch status (on/off) of
 IME many many many times.  Because IME with status on is hooking all of your
 key inputs, you cannot input 'j', 'k', or almost all of keys to Vim directly.

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2010 May 14
+" Last Change:	2010 Jul 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1632,6 +1632,9 @@ au BufNewFile,BufRead *.sa			setf sather
 
 " Scilab
 au BufNewFile,BufRead *.sci,*.sce		setf scilab
+
+" SCSS
+au BufNewFile,BufRead *.scss 			setf scss
 
 " SD: Streaming Descriptors
 au BufNewFile,BufRead *.sd			setf sd

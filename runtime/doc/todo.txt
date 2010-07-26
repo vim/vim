@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 25
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -31,6 +31,7 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 -------------------- Known bugs and current work -----------------------
 
 Access to free memory with :redir command. (Dominique Pelle, 2010 Jul 25)
+Easier way to reproduce in later message.
 
 Patch for :find completion. (Nazri Ramliy)
 But I prefer to keep term.h and include/term.h  Nazri will work on it.

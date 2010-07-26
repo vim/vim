@@ -2,7 +2,7 @@
 " This file is normally sourced from menu.vim.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2006 Apr 27
+" Last Change:	2010 Jul 26
 
 " Define the SetSyn function, used for the Syntax menu entries.
 " Set 'filetype' and also 'syntax' if it is manually selected.

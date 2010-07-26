@@ -1,8 +1,8 @@
 " Vim syntax file
-" Language:     Haml
-" Maintainer:   Tim Pope <vimNOSPAM@tpope.org>
-" Filenames:    *.haml
-" Last Change:	2010 May 21
+" Language:	Haml
+" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
+" Filenames:	*.haml
+" Last Change:	2010 Jul 26
 
 if exists("b:current_syntax")
   finish
@@ -30,7 +30,7 @@ syn cluster hamlTop          contains=hamlBegin,hamlPlainFilter,hamlRubyFilter,h
 
 syn match   hamlBegin "^\s*\%([<>]\|&[^=~ ]\)\@!" nextgroup=hamlTag,hamlClassChar,hamlIdChar,hamlRuby,hamlPlainChar,hamlInterpolatable
 
-syn match   hamlTag        "%\w\+" contained contains=htmlTagName,htmlSpecialTagName nextgroup=@hamlComponent
+syn match   hamlTag        "%\w\+\%(:\w\+\)\=" contained contains=htmlTagName,htmlSpecialTagName nextgroup=@hamlComponent
 syn region  hamlAttributes     matchgroup=hamlAttributesDelimiter start="(" end=")" contained contains=htmlArg,hamlAttributeString,hamlAttributeVariable,htmlEvent,htmlCssDefinition nextgroup=@hamlComponent
 syn region  hamlAttributesHash matchgroup=hamlAttributesDelimiter start="{" end="}" contained contains=@hamlRubyTop nextgroup=@hamlComponent
 syn region  hamlObject         matchgroup=hamlObjectDelimiter     start="\[" end="\]" contained contains=@hamlRubyTop nextgroup=@hamlComponent
