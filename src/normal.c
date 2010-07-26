@@ -4582,6 +4582,7 @@ nv_mousescroll(cap)
 	if (!curwin->w_p_wrap)
 	{
 	    int val, step = 6;
+
 	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
 		step = W_WIDTH(curwin);
 	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);

@@ -4467,23 +4467,23 @@ gui_update_horiz_scrollbar(force)
  */
     int
 gui_do_horiz_scroll(leftcol, compute_longest_lnum)
-    colnr_T	leftcol;
+    long_u	leftcol;
     int		compute_longest_lnum;
 {
     /* no wrapping, no scrolling */
     if (curwin->w_p_wrap)
 	return FALSE;
 
-    if (curwin->w_leftcol == leftcol)
+    if (curwin->w_leftcol == (colnr_T)leftcol)
 	return FALSE;
 
-    curwin->w_leftcol = leftcol;
+    curwin->w_leftcol = (colnr_T)leftcol;
 
     /* When the line of the cursor is too short, move the cursor to the
      * longest visible line. */
     if (vim_strchr(p_go, GO_HORSCROLL) == NULL
 	    && !virtual_active()
-	    && leftcol > scroll_line_len(curwin->w_cursor.lnum))
+	    && (colnr_T)leftcol > scroll_line_len(curwin->w_cursor.lnum))
     {
 	if (compute_longest_lnum)
 	{

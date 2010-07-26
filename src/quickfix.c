@@ -898,7 +898,7 @@ qf_new_list(qi, qf_title)
     qi->qf_lists[qi->qf_curlist].qf_count = 0;
     if (qf_title != NULL)
     {
-	char_u *p = alloc(STRLEN(qf_title) + 2);
+	char_u *p = alloc((int)STRLEN(qf_title) + 2);
 
 	qi->qf_lists[qi->qf_curlist].qf_title = p;
 	if (p != NULL)
