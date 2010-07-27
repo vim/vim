@@ -2497,6 +2497,7 @@ push_next_match(cur_si)
 	    cur_si->si_end_idx = 0;
 	    cur_si->si_flags = HL_MATCH;
 #ifdef FEAT_CONCEAL
+	    cur_si->si_seqnr = next_seqnr++;
 	    cur_si->si_flags |= save_flags;
 	    if (cur_si->si_flags & HL_CONCEALENDS)
 		cur_si->si_flags |= HL_CONCEAL;
@@ -2546,6 +2547,7 @@ check_state_ends()
 		cur_si->si_h_endpos = cur_si->si_eoe_pos;
 		cur_si->si_flags |= HL_MATCH;
 #ifdef FEAT_CONCEAL
+		cur_si->si_seqnr = next_seqnr++;
 		if (cur_si->si_flags & HL_CONCEALENDS)
 		    cur_si->si_flags |= HL_CONCEAL;
 #endif
