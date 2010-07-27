@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 7.3c.  Last change: 2010 Jul 20
+*map.txt*       For Vim version 7.3c.  Last change: 2010 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1266,6 +1266,8 @@ the 'path' option: >
     :    return split(globpath(&path, a:A), "\n")
     :endfun
 <
+This example does not work for file names with spaces!
+
 
 Range handling				*E177* *E178* *:command-range*
 							*:command-count*

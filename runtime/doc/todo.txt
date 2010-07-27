@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 26
+*todo.txt*      For Vim version 7.3c.  Last change: 2010 Jul 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -30,17 +30,29 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Problem with concealends in v50 of tex.vim? (Charles Campbell, 2010 Jul 26)
+Fixed by patch from Vince?
+
+Conceal problem: CTRL-L draws differently than individual line. (Benjamin
+Fritz, 2010 Jul 27)
+
 Access to free memory with :redir command. (Dominique Pelle, 2010 Jul 25)
-Easier way to reproduce in later message.
+Easier way to reproduce in later message. (2010 Jul 26)
+call get_lval() again in var_redir_stop().
 
 Patch for VMS. Zoltan Arpadffy, 2010 Jul 26.
 
-Patch for :find completion. (Nazri Ramliy)
-But I prefer to keep term.h and include/term.h  Nazri will work on it.
+Patch for :find completion. (Nazri Ramliy, 2010 Jul 27, and leak fix)
+
+Windows 7: "Open with..." menu starts Vim without a file.
+
+Windows 7: installing Vim again doesn't find the previously installed Vim.
+
+ftplugin/mupad.vim should not source AppendMatchGroup.vim, it should use an
+autoload function.
+Same for indent/GenericIndent.vim
 
 Move more common code from if_python.c and if_python3.c to if_py_both.h
-
-Problem with concealends in v50 of tex.vim? (Charles Campbell, 2010 Jul 26)
 
 Add filetype completion to user commands. (Christian Brabandt, 2010 Jul 26)
 But call it "filetype" instead of "syntax".

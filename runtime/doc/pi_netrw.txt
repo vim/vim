@@ -1,4 +1,4 @@
-*pi_netrw.txt*  For Vim version 7.3c.  Last change: 2010 May 14
+*pi_netrw.txt*  For Vim version 7.3c.  Last change: 2010 Jul 27
 
 	    -----------------------------------------------------
 	    NETRW REFERENCE MANUAL    by Charles E. Campbell, Jr.
@@ -318,15 +318,24 @@ settings are described below, in |netrw-browser-options|, and in
  *b:netrw_lastfile*	last file Network-read/written retained on a
 			per-buffer basis (supports plain :Nw )
 
+ *g:netrw_bufsettings*	the settings that netrw buffers have
+ 			(default) noma nomod nonu nowrap ro nobl
+
  *g:netrw_chgwin*	specifies a window number where file edits will take
 			place.  (also see |netrw-C|)
 			(default) not defined
 
- *g:Netrw_funcref*	specifies a function to be called when netrw edits
-			a file.  The file is first edited, and then the
-			function reference (|Funcref|) is called.
+ *g:Netrw_funcref*	specifies a function (or functions) to be called when
+			netrw edits a file.  The file is first edited, and
+			then the function reference (|Funcref|) is called.
+			This variable may also hold a |List| of Funcrefs.
 			(default) not defined
-
+>
+			    Example: place in .vimrc; affects all file opening
+			    fun! MyFuncRef()
+			    endfun
+			    let g:Netrw_funcref= function("MyFuncRef")
+<
  *g:netrw_ftp*		if it doesn't exist, use default ftp
 			=0 use default ftp		       (uid password)
 			=1 use alternate ftp method	  (user uid password)
@@ -456,7 +465,7 @@ browsed remote directories, for example.
 On the other hand, thanks go to Jan M. for pointing out the many
 vulnerabilities that netrw (and vim itself) had had in handling "crafted"
 filenames.  The |shellescape()| and |fnameescape()| functions were written in
-response by Bram Moolenaar to handle this sort of problems, and netrw has
+response by Bram Moolenaar to handle these sort of problems, and netrw has
 been modified to use them.  Still, my advice is, if the "filename" looks like
 a vim command that you aren't comfortable with having executed, don't open it.
 
@@ -589,7 +598,7 @@ password.
 PASSWORD						*netrw-passwd*
 
 The script attempts to get passwords for ftp invisibly using |inputsecret()|,
-a built-in Vim function.  See |NetUserPass()| for how to change the password
+a built-in Vim function.  See |netrw-uidpass| for how to change the password
 after one has set it.
 
 Unfortunately there doesn't appear to be a way for netrw to feed a password to
@@ -778,8 +787,10 @@ variables listed below, and may be modified by the user.
 
 The g:netrw_..._cmd options (|g:netrw_ftp_cmd| and |g:netrw_sftp_cmd|)
 specify the external program to use handle the ftp protocol.  They may
-include command line options (such as -p for passive mode).
+include command line options (such as -p for passive mode). Example: >
 
+	let g:netrw_ftp_cmd= "ftp -p"
+<
 Browsing is supported by using the |g:netrw_list_cmd|; the substring
 "HOSTNAME" will be changed via substitution with whatever the current request
 is for a hostname.
@@ -803,7 +814,7 @@ temporary file:
                                               get filename tempfile >
   ---------------------------------------------------------------------
 <
-The |g:netrw_ftpmode| and g:netrw_extracmd are optional.
+The |g:netrw_ftpmode| and |g:netrw_extracmd| are optional.
 
 Netrw then executes the lines above by use of a filter:
 >
@@ -2544,13 +2555,13 @@ Associated setting variables:	|g:netrw_chgwin|
 
 		(Vit Gottwald) How to generate public/private key and save
 		public key it on server: >
-  http://www.tartarus.org/~simon/puttydoc/Chapter8.html#pubkey-gettingready
-			8.3 Getting ready for public key authentication
+  http://www.chiark.greenend.org.uk/~sgtatham/putty/0.60/htmldoc/Chapter8.html#pubkey-gettingready
+			(8.3 Getting ready for public key authentication)
 <
 		How to use a private key with 'pscp': >
 
-			http://www.tartarus.org/~simon/puttydoc/Chapter5.html
-			5.2.4 Using public key authentication with PSCP
+  http://www.chiark.greenend.org.uk/~sgtatham/putty/0.60/htmldoc/Chapter5.html
+			(5.2.4 Using public key authentication with PSCP)
 <
 		(Ben Schmidt) I find the ssh included with cwRsync is
 		brilliant, and install cwRsync or cwRsyncServer on most
@@ -2695,9 +2706,25 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v139: May 14, 2010 * when viewing remote directory listings and
+			     changing listing style, going to tree listing
+			     mode was issuing two rather useless messages
+			     about the buffer name.  They have now been
+			     silenced.
+			   * (Jean Johner) with "behave mswin", clicking
+			     on a filename in wide mode opened a new file
+			     with a missing first letter
+			   * (Britton Kerin) wanted netrw listings to be
+			     buflisted; the |g:netrw_bufsettings| option
+			     permits that.
+			   * (John Orr) pointed out that the intended maparg
+			     test for gx was actually testing for g rather
+			     than gx.  Fixed.
+	      Jun 18, 2010 * (Jan Steffens) added support for xz compression
+	      Jun 23, 2010 * vimdiff dir1 dir2 now works
 	v138: May 01, 2010 * added the bomb setting to the Save-Set-Restore
 			     option handling (for Tony M)
-			   * (Bram Moolenaar) netrw optionally sets cursorline
+	      May 14, 2010 * (Bram Moolenaar) netrw optionally sets cursorline
 			     (and sometimes cursorcolumn) for its display.
 			     This option setting was leaking through with
 			     remote file handling.
