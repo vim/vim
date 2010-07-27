@@ -13508,7 +13508,7 @@ find_some_match(argvars, rettv, type)
 		startcol = (colnr_T)(regmatch.startp[0]
 				    + (*mb_ptr2len)(regmatch.startp[0]) - str);
 #else
-		startcol = regmatch.startp[0] + 1 - str;
+		startcol = (colnr_T)(regmatch.startp[0] + 1 - str);
 #endif
 	    }
 	}

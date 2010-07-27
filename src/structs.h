@@ -1202,20 +1202,20 @@ typedef struct {
     int		b_syn_folditems;	/* number of patterns with the HL_FOLD
 					   flag set */
 # endif
-/*
- * b_sst_array[] contains the state stack for a number of lines, for the start
- * of that line (col == 0).  This avoids having to recompute the syntax state
- * too often.
- * b_sst_array[] is allocated to hold the state for all displayed lines, and
- * states for 1 out of about 20 other lines.
- * b_sst_array		pointer to an array of synstate_T
- * b_sst_len		number of entries in b_sst_array[]
- * b_sst_first		pointer to first used entry in b_sst_array[] or NULL
- * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
- * b_sst_freecount	number of free entries in b_sst_array[]
- * b_sst_check_lnum	entries after this lnum need to be checked for
- *			validity (MAXLNUM means no check needed)
- */
+    /*
+     * b_sst_array[] contains the state stack for a number of lines, for the
+     * start of that line (col == 0).  This avoids having to recompute the
+     * syntax state too often.
+     * b_sst_array[] is allocated to hold the state for all displayed lines,
+     * and states for 1 out of about 20 other lines.
+     * b_sst_array	pointer to an array of synstate_T
+     * b_sst_len	number of entries in b_sst_array[]
+     * b_sst_first	pointer to first used entry in b_sst_array[] or NULL
+     * b_sst_firstfree	pointer to first free entry in b_sst_array[] or NULL
+     * b_sst_freecount	number of free entries in b_sst_array[]
+     * b_sst_check_lnum	entries after this lnum need to be checked for
+     *			validity (MAXLNUM means no check needed)
+     */
     synstate_T	*b_sst_array;
     int		b_sst_len;
     synstate_T	*b_sst_first;
@@ -1236,6 +1236,9 @@ typedef struct {
     regprog_T	*b_cap_prog;	/* program for 'spellcapcheck' */
     char_u	*b_p_spf;	/* 'spellfile' */
     char_u	*b_p_spl;	/* 'spelllang' */
+#endif
+#if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
+    int		dummy;
 #endif
 } synblock_T;
 

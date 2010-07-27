@@ -3857,6 +3857,7 @@ ex_checktime(eap)
 
 #if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	&& (defined(FEAT_EVAL) || defined(FEAT_MULTI_LANG))
+# define HAVE_GET_LOCALE_VAL
 static char *get_locale_val __ARGS((int what));
 
     static char *
@@ -3946,7 +3947,7 @@ get_mess_lang()
 {
     char_u *p;
 
-# if (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
+# ifdef HAVE_GET_LOCALE_VAL
 #  if defined(LC_MESSAGES)
     p = (char_u *)get_locale_val(LC_MESSAGES);
 #  else
@@ -3997,7 +3998,7 @@ get_mess_env()
 	    p = mch_getenv((char_u *)"LANG");
 	    if (p != NULL && VIM_ISDIGIT(*p))
 		p = NULL;		/* ignore something like "1043" */
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# ifdef HAVE_GET_LOCALE_VAL
 	    if (p == NULL || *p == NUL)
 		p = (char_u *)get_locale_val(LC_CTYPE);
 # endif
@@ -4018,7 +4019,7 @@ set_lang_var()
 {
     char_u	*loc;
 
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# ifdef HAVE_GET_LOCALE_VAL
     loc = (char_u *)get_locale_val(LC_CTYPE);
 # else
     /* setlocale() not supported: use the default value */
@@ -4028,14 +4029,14 @@ set_lang_var()
 
     /* When LC_MESSAGES isn't defined use the value from $LC_MESSAGES, fall
      * back to LC_CTYPE if it's empty. */
-# if (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) && defined(LC_MESSAGES)
+# if defined(HAVE_GET_LOCALE_VAL) && defined(LC_MESSAGES)
     loc = (char_u *)get_locale_val(LC_MESSAGES);
 # else
     loc = get_mess_env();
 # endif
     set_vim_var_string(VV_LANG, loc, -1);
 
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+# ifdef HAVE_GET_LOCALE_VAL
     loc = (char_u *)get_locale_val(LC_TIME);
 # endif
     set_vim_var_string(VV_LC_TIME, loc, -1);

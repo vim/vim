@@ -3901,7 +3901,9 @@ get_cmd_args(char *prog, char *cmdline, char ***argvp, char **tofree)
 	}
     }
 
+#ifdef FEAT_MBYTE
 done:
+#endif
     argv[argc] = NULL;		/* NULL-terminated list */
     *argvp = argv;
     return argc;

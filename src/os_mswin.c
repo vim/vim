@@ -2548,7 +2548,7 @@ serverSendEnc(HWND target)
     data.cbData = (DWORD)STRLEN(p_enc) + 1;
     data.lpData = p_enc;
 #else
-    data.cbData = STRLEN("latin1") + 1;
+    data.cbData = (DWORD)STRLEN("latin1") + 1;
     data.lpData = "latin1";
 #endif
     (void)SendMessage(target, WM_COPYDATA, (WPARAM)message_window,

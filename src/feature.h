@@ -819,7 +819,8 @@
 # endif
 #endif
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK))
+	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
+	|| defined(FEAT_GUI_W32))
 /* need a dialog to show error messages when starting from the desktop */
 # define FEAT_GUI_DIALOG
 #endif
