@@ -30,22 +30,20 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for :find completion. (Nazri Ramliy, 2010 Jul 27, and leak fix)
-And patch for Windows, Jul 28.
-And fix for patch, Jul 28.
+Patch for :filetype completion. (Dominique Pelle, Jul 28)
 
 Windows 7: "Open with..." menu starts Vim without a file.
 
 Windows 7: installing Vim again doesn't find the previously installed Vim.
 
-ftplugin/mupad.vim should not source AppendMatchGroup.vim, it should use an
-autoload function.
-Same for indent/GenericIndent.vim
-
 Move more common code from if_python.c and if_python3.c to if_py_both.h
 
 Add filetype completion to user commands. (Christian Brabandt, 2010 Jul 26)
-But call it "filetype" instead of "syntax".
+But call it "filetype" instead of "syntax"?
+
+ftplugin/mupad.vim should not source AppendMatchGroup.vim, it should use an
+autoload function.
+Same for indent/GenericIndent.vim
 
 Before release 7.3:
 - Rename vim73 branch to default (hints: Xavier de Gaye, 2010 May 23)

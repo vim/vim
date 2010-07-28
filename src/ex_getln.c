@@ -5033,6 +5033,12 @@ globpath(path, file, expand_options)
     {
 	/* Copy one item of the path to buf[] and concatenate the file name. */
 	copy_option_part(&path, buf, MAXPATHL, ",");
+	if (path_with_url(buf))
+	    continue;
+	/*
+	 * FIXME: should we proactively skip 'path' with limiter (/usr/ **N)
+	 * and upward search (;) notations, just like we did with url above?
+	 */
 	if (STRLEN(buf) + STRLEN(file) + 2 < MAXPATHL)
 	{
 	    add_pathsep(buf);
