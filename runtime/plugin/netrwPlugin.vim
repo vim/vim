@@ -20,7 +20,7 @@
 if &cp || exists("g:loaded_netrwPlugin")
  finish
 endif
-let g:loaded_netrwPlugin = "v139"
+let g:loaded_netrwPlugin = "v140"
 if v:version < 702
  echohl WarningMsg | echo "***netrw*** you need vim version 7.2 for this version of netrw" | echohl None
  finish
@@ -112,8 +112,9 @@ endfun
 " ---------------------------------------------------------------------
 " s:VimEnter: {{{2
 fun! s:VimEnter(dirname)
+  let curwin= winnr()
   windo if a:dirname != expand("%")|call s:LocalBrowse(expand("%:p"))|endif
-  1wincmd w
+  exe curwin."wincmd w"
 endfun
 
 " ---------------------------------------------------------------------

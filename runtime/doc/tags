@@ -1819,10 +1819,10 @@ $VIMRUNTIME	starting.txt	/*$VIMRUNTIME*
 :Sexplore	pi_netrw.txt	/*:Sexplore*
 :TOhtml	syntax.txt	/*:TOhtml*
 :Texplore	pi_netrw.txt	/*:Texplore*
-:Untarvim	pi_tar.txt	/*:Untarvim*
 :UseVimball	pi_vimball.txt	/*:UseVimball*
 :Vexplore	pi_netrw.txt	/*:Vexplore*
 :VimballList	pi_vimball.txt	/*:VimballList*
+:Vimuntar	pi_tar.txt	/*:Vimuntar*
 :X	editing.txt	/*:X*
 :XMLent	insert.txt	/*:XMLent*
 :XMLns	insert.txt	/*:XMLns*
@@ -5732,6 +5732,7 @@ g:netrw_altv	pi_netrw.txt	/*g:netrw_altv*
 g:netrw_banner	pi_netrw.txt	/*g:netrw_banner*
 g:netrw_browse_split	pi_netrw.txt	/*g:netrw_browse_split*
 g:netrw_browsex_viewer	pi_netrw.txt	/*g:netrw_browsex_viewer*
+g:netrw_bufsettings	pi_netrw.txt	/*g:netrw_bufsettings*
 g:netrw_chgperm	pi_netrw.txt	/*g:netrw_chgperm*
 g:netrw_chgwin	pi_netrw.txt	/*g:netrw_chgwin*
 g:netrw_compress	pi_netrw.txt	/*g:netrw_compress*
@@ -7902,6 +7903,9 @@ terminal-info	term.txt	/*terminal-info*
 terminal-options	term.txt	/*terminal-options*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
+tex-cchar	syntax.txt	/*tex-cchar*
+tex-cole	syntax.txt	/*tex-cole*
+tex-conceal	syntax.txt	/*tex-conceal*
 tex-error	syntax.txt	/*tex-error*
 tex-folding	syntax.txt	/*tex-folding*
 tex-math	syntax.txt	/*tex-math*

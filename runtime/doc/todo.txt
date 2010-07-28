@@ -30,12 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Problem with concealends in v50 of tex.vim? (Charles Campbell, 2010 Jul 26)
-Fixed by patch from Vince?  Try /tmp/tex.vim
-
-v140 of netrw.
-v25 of tar.vim.
-
 Conceal problem: CTRL-L draws differently than individual line. (Benjamin
 Fritz, 2010 Jul 27)
 

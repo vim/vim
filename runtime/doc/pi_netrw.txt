@@ -2706,6 +2706,7 @@ which is loaded automatically at startup (assuming :set nocp).
 ==============================================================================
 12. History						*netrw-history* {{{1
 
+	v140: Jul 27, 2010 * (Lech Lorens) unexpected change of window
 	v139: May 14, 2010 * when viewing remote directory listings and
 			     changing listing style, going to tree listing
 			     mode was issuing two rather useless messages
@@ -2717,11 +2718,11 @@ which is loaded automatically at startup (assuming :set nocp).
 			   * (Britton Kerin) wanted netrw listings to be
 			     buflisted; the |g:netrw_bufsettings| option
 			     permits that.
-			   * (John Orr) pointed out that the intended maparg
-			     test for gx was actually testing for g rather
-			     than gx.  Fixed.
 	      Jun 18, 2010 * (Jan Steffens) added support for xz compression
 	      Jun 23, 2010 * vimdiff dir1 dir2 now works
+	      Jul 27, 2010 * (John Orr) pointed out that the intended maparg
+			     test for gx was actually testing for g rather
+			     than gx.  Fixed.
 	v138: May 01, 2010 * added the bomb setting to the Save-Set-Restore
 			     option handling (for Tony M)
 	      May 14, 2010 * (Bram Moolenaar) netrw optionally sets cursorline

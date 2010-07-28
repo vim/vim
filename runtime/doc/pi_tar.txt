@@ -1,4 +1,4 @@
-*pi_tar.txt*	For Vim version 7.3c.  Last change: 2009 Dec 28
+*pi_tar.txt*	For Vim version 7.3c.  Last change: 2010 Jul 27
 
 		       +====================+
 		       | Tar File Interface |
@@ -6,7 +6,7 @@
 
 Author:  Charles E. Campbell, Jr.  <NdrOchip@ScampbellPfamily.AbizM>
 	  (remove NOSPAM from Campbell's email first)
-Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
+Copyright 2005-2010: The GPL (gnu public license) applies to	*tar-copyright*
 	   tar.vim, tarPlugin.vim, and pi_tar.txt.
 	   No warranty, express or implied.  Use At-Your-Own-Risk.
 
@@ -26,10 +26,10 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
    also write to the file.  Currently, one may not make a new file in
    tar archives via the plugin.
 
-						*:Untarvim*
-   UNTARVIM~
+						*:Vimuntar*
+   VIMUNTAR~
 
-   :Untarvim [vimhome]
+   :Vimuntar [vimhome]
 
 	This command copies, if necessary, the tarball to the .vim or vimfiles
 	directory using the first writable directory in the |'runtimepath'|
@@ -83,6 +83,7 @@ Copyright 2005-2008: The GPL (gnu public license) applies to	*tar-copyright*
 4. History						*tar-history*
 
 
+   v25 Jun 19, 2010 * (Jan Steffens) added support for xz compression
    v24 Apr 07, 2009 * :Untarvim command implemented
        Sep 28, 2009 * Added lzma support
    v22 Aug 08, 2008 * security fixes
