@@ -145,7 +145,7 @@ typedef struct syn_pattern
     char	 sp_syncing;		/* this item used for syncing */
     int		 sp_flags;		/* see HL_ defines below */
 #ifdef FEAT_CONCEAL
-    int		 sp_char;		/* conceal substitute character */
+    int		 sp_cchar;		/* conceal substitute character */
 #endif
     struct sp_syn sp_syn;		/* struct passed to in_id_list() */
     short	 sp_syn_match_id;	/* highlight group ID of pattern */
@@ -196,8 +196,8 @@ static int current_id = 0;	    /* ID of current char for syn_get_id() */
 static int current_trans_id = 0;    /* idem, transparency removed */
 #endif
 #ifdef FEAT_CONCEAL
-static int current_seqnr = 0;
 static int current_flags = 0;
+static int current_seqnr = 0;
 static int current_sub_char = 0;
 #endif
 
@@ -287,8 +287,8 @@ typedef struct state_item
     long	si_flags;		/* HL_HAS_EOL flag in this state, and
 					 * HL_SKIP* for si_next_list */
 #ifdef FEAT_CONCEAL
-    int		si_char;		/* substitution character for conceal */
     int		si_seqnr;		/* sequence number */
+    int		si_cchar;		/* substitution character for conceal */
 #endif
     short	*si_cont_list;		/* list of contained groups */
     short	*si_next_list;		/* nextgroup IDs after this item ends */
@@ -1495,6 +1495,10 @@ store_current_state()
 	{
 	    bp[i].bs_idx = CUR_STATE(i).si_idx;
 	    bp[i].bs_flags = CUR_STATE(i).si_flags;
+#ifdef FEAT_CONCEAL
+	    bp[i].bs_seqnr = CUR_STATE(i).si_seqnr;
+	    bp[i].bs_cchar = CUR_STATE(i).si_cchar;
+#endif
 	    bp[i].bs_extmatch = ref_extmatch(CUR_STATE(i).si_extmatch);
 	}
 	sp->sst_next_flags = current_next_flags;
@@ -1530,6 +1534,10 @@ load_current_state(from)
 	{
 	    CUR_STATE(i).si_idx = bp[i].bs_idx;
 	    CUR_STATE(i).si_flags = bp[i].bs_flags;
+#ifdef FEAT_CONCEAL
+	    CUR_STATE(i).si_seqnr = bp[i].bs_seqnr;
+	    CUR_STATE(i).si_cchar = bp[i].bs_cchar;
+#endif
 	    CUR_STATE(i).si_extmatch = ref_extmatch(bp[i].bs_extmatch);
 	    if (keepend_level < 0 && (CUR_STATE(i).si_flags & HL_KEEPEND))
 		keepend_level = i;
@@ -1963,7 +1971,7 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 			cur_si->si_flags = flags;
 #ifdef FEAT_CONCEAL
 			cur_si->si_seqnr = next_seqnr++;
-			cur_si->si_char = cchar;
+			cur_si->si_cchar = cchar;
 			if (current_state.ga_len > 1)
 			    cur_si->si_flags |=
 				  CUR_STATE(current_state.ga_len - 2).si_flags
@@ -2293,8 +2301,8 @@ syn_current_attr(syncing, displaying, can_spell, keep_state)
 		current_trans_id = sip->si_trans_id;
 #ifdef FEAT_CONCEAL
 		current_flags = sip->si_flags;
-		current_sub_char = sip->si_char;
 		current_seqnr = sip->si_seqnr;
+		current_sub_char = sip->si_cchar;
 #endif
 		break;
 	    }
@@ -2449,7 +2457,7 @@ push_next_match(cur_si)
 	cur_si->si_flags = spp->sp_flags;
 #ifdef FEAT_CONCEAL
 	cur_si->si_seqnr = next_seqnr++;
-	cur_si->si_char = spp->sp_char;
+	cur_si->si_cchar = spp->sp_cchar;
 	if (current_state.ga_len > 1)
 	    cur_si->si_flags |=
 		    CUR_STATE(current_state.ga_len - 2).si_flags & HL_CONCEAL;
@@ -4885,7 +4893,7 @@ syn_cmd_match(eap, syncing)
 	    SYN_ITEMS(curwin->w_s)[idx].sp_syn.cont_in_list =
 						     syn_opt_arg.cont_in_list;
 #ifdef FEAT_CONCEAL
-	    SYN_ITEMS(curwin->w_s)[idx].sp_char = conceal_char;
+	    SYN_ITEMS(curwin->w_s)[idx].sp_cchar = conceal_char;
 #endif
 	    if (syn_opt_arg.cont_in_list != NULL)
 		curwin->w_s->b_syn_containedin = TRUE;
@@ -5129,7 +5137,7 @@ syn_cmd_region(eap, syncing)
 		    SYN_ITEMS(curwin->w_s)[idx].sp_syn_match_id =
 							ppp->pp_matchgroup_id;
 #ifdef FEAT_CONCEAL
-		    SYN_ITEMS(curwin->w_s)[idx].sp_char = conceal_char;
+		    SYN_ITEMS(curwin->w_s)[idx].sp_cchar = conceal_char;
 #endif
 		    if (item == ITEM_START)
 		    {

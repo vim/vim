@@ -808,6 +808,10 @@ typedef struct buf_state
 {
     int		    bs_idx;	 /* index of pattern */
     int		    bs_flags;	 /* flags for pattern */
+#ifdef FEAT_CONCEAL
+    int		    bs_seqnr;	 /* stores si_seqnr */
+    int		    bs_cchar;	 /* stores si_cchar */
+#endif
     reg_extmatch_T *bs_extmatch; /* external matches from start pattern */
 } bufstate_T;
 
