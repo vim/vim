@@ -24,7 +24,7 @@ Come
 .BR uuencode (1)
 e
 .BR uudecode (1)
-permette di trasmettere dati binari in una rapresentazione ASCII "a prova
+permette di trasmettere dati binari in una rappresentazione ASCII "a prova
 di email", ma ha anche il vantaggio di poter decodificare sullo "standard
 output".  Inoltre, può essere usato per effettuare delle modifiche (patch)
 a file binari.
@@ -61,7 +61,7 @@ sono notazioni equivalenti fra loro.
 .TP
 .IR \-a " | " \-autoskip
 Richiesta di autoskip: Un singolo '*' rimpiazza linee di zeri binari.
-Valore predefinito: off.
+Valore di default: off.
 .TP
 .IR \-b " | " \-bits
 Richiesta di una immagine binaria (cifre binarie), invece che esadecimale.
@@ -74,7 +74,7 @@ linea comando \-r, \-p, \-i non funzionano in questo modo.
 .IR "\-c colonne " | " \-cols colonne"
 In ogni linea sono formattate
 .RI < colonne >
-colonne. Valore predefinito 16 (\-i: 12, \-ps: 30, \-b: 6).
+colonne. Valore di default 16 (\-i: 12, \-ps: 30, \-b: 6).
 Valore massimo 256.
 .TP
 .IR \-E " | " \-EBCDIC
@@ -82,15 +82,15 @@ Cambia la codifica della colonna di destra da ASCII a EBCDIC.
 Questo non modifica la rappresentazione esadecimale. Non ha senso
 specificare questa opzione in combinazione con \-r, \-p o \-i.
 .TP
-.IR "\-g bytes " | " \-groupsize bytes"
+.IR "\-g numero_byte " | " \-groupsize numero_byte"
 Inserisci ogni
-.RI < bytes >
-bytes di output (di due caratteri esadecimali o otto numeri binari ognuno)
+.RI < numero_byte >
+byte di output (di due caratteri esadecimali o otto numeri binari ognuno)
 uno spazio bianco.
 Specificando
 .I \-g 0
-i bytes di output non sono separati da alcuno spazio.
-.RI < Bytes "> ha come valore predefinito " 2
+i byte di output non sono separati da alcuno spazio.
+.RI < numero_byte > ha come valore di default " 2
 in modalità normale [esadecimale] e \fI1\fP in modalità binaria.
 Il raggruppamento non si applica agli stili "PostScript" e "include".
 .TP
@@ -103,10 +103,10 @@ L'output è nello stile dei file "include" in C.  Viene preparata la
 definizione completa di un "array" [vettore], dandogli il nome del
 file di input), tranne che nel caso in cui xxd legga dallo "standard input".
 .TP
-.IR "\-l lunghezza " | " \-len lunghezza"
+.IR "\-l numero " | " \-len numero"
 Il programma esce dopo aver scritto
-.RI  < lunghezza >
-bytes.
+.RI  < numero >
+byte.
 .TP
 .IR \-p " | " \-ps " | " \-postscript " | " \-plain
 L'output è nello stile di un dump continuo sotto postscript.
@@ -120,7 +120,7 @@ in maniera continua, senza interruzioni.  Usare la combinazione
 .I \-r \-p
 per leggere dump in stile esadecimale semplice [plain], senza l'informazione
 di numero di linea e senza un particolare tracciato di colonna.  Degli spazi
-o delle linee vuote possono essere inserite a piacere [e vengono ingorate].
+o delle linee vuote possono essere inserite a piacere [e vengono ignorate].
 .TP
 .I \-seek distanza
 Usato con l'opzione
@@ -133,17 +133,17 @@ esadecimale.
 .I \-s [+][\-]seek
 Inizia a
 .RI < seek >
-bytes assoluti (o relativi) di distanza all'interno di input_file.
+byte assoluti (o relativi) di distanza all'interno di input_file.
 \fI+ \fRindica che il "seek" è relativo alla posizione corrente nel file
 "standard input" (non significativa quando non si legge da "standard input").
 \fI\- \fRindica che il "seek" dovrebbe posizionarsi ad quel numero di
 caratteri dalla fine dell'input (o se in combinazione con
 \fI+ \fR: prime della posizione corrente nel file "standard input").
-Se non si specifica una opzione \-s option, xxd inizia alla posizione
+Se non si specifica una opzione \-s, xxd inizia alla posizione
 corrente all'interno del file.
 .TP
 .I \-u
-usa lettere esadecimali maiuscole. Il valore predefinito è di usare
+usa lettere esadecimali maiuscole. Il valore di default è di usare
 lettere minuscole.
 .TP
 .IR \-v " | " \-version
@@ -169,7 +169,7 @@ salta il resto della linea, dopo aver letto abbastanza caratteri contenenti
 dati esadecimali (vedere opzione \-c). Ciò implica pure che le modifiche alle
 colonne di caratteri stampabili ascii (o ebcdic) sono sempre ignorate.
 La ricostruzione da un file immagine esadecimale in stile semplice
-(postscript) con xxd \-r \-p non dipende dal numero corrretto di colonne. 
+(postscript) con xxd \-r \-p non dipende dal numero corretto di colonne. 
 IN questo caso, qualsiasi cosa assomigli a una coppia di cifre esadecimali
 è interpretata [e utilizzata].
 .PP
@@ -185,7 +185,7 @@ e
 può comportarsi in modo diverso da
 .IR "xxd \-s seek"
 , perché lseek(2) è usata per tornare indietro nel file di input.  Il '+'
-fa differenza se il file di input è lo "standard input", e se la pozione nel
+fa differenza se il file di input è lo "standard input", e se la posizione nel
 file di "standard input" non è all'inizio del file quando xxd è eseguito,
 con questo input.
 I seguenti esempi possono contribuire a chiarire il concetto
@@ -204,29 +204,29 @@ si aggiunge a 1k (1024) dove `dd' si era fermato.
 .PP
 Immagine esadecimale dalla posizione 0x100 ( = 1024\-768 ) del file in avanti.
 .br
-\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +-768 > esadecimale' < file
+\fI% sh \-c 'dd of=normale bs=1k count=1; xxd \-s +\-768 > esadecimale' < file
 .PP
-Comunque, questo capita raramente, e l'uso del `+' di rado.
+Comunque, questo capita raramente, e l'uso del `+' non serve quasi mai.
 L'autore preferisce monitorare il comportamento di xxd con strace(1) o
 truss(1), quando si usa l'opzione \-s.
 .SH ESEMPI
 .PP
 .br
-Stampa tutto tranne le prime tre linee (0x30 bytes esadecimali) di
+Stampa tutto tranne le prime tre linee (0x30 byte esadecimali) di
 .B file
 \.
 .br
 \fI% xxd \-s 0x30 file
 .PP
 .br
-Stampa 3 linee (0x30 bytes esadecimali) alla fine di
+Stampa 3 linee (0x30 byte esadecimali) alla fine di
 .B file
 \.
 .br
 \fI% xxd \-s \-0x30 file
 .PP
 .br
-Stampa 120 bytes come immagine esadecimale continua con 20 bytes per linea.
+Stampa 120 byte come immagine esadecimale continua con 20 byte per linea.
 .br
 \fI% xxd \-l 120 \-ps \-c 20 xxd.1\fR
 
@@ -245,7 +245,7 @@ Stampa 120 bytes come immagine esadecimale continua con 20 bytes per linea.
 .br
 
 .br
-Stampa i primi 120 bytes della pagina di manuale vim.1 a 12 bytes per linea.
+Stampa i primi 120 byte della pagina di manuale vim.1 a 12 byte per linea.
 .br
 \fI% xxd \-l 120 \-c 12 xxd.1\fR
 
@@ -283,7 +283,7 @@ Copiare
 .B input_file
 su
 .B output_file
-premettendogli 100 bytes a 0x00.
+premettendogli 100 byte a 0x00.
 .br
 \fI% xxd input_file | xxd \-r \-s 100 \> output_file\fR
 .br
@@ -298,7 +298,7 @@ Modificare (patch) la data nel file xxd.1
 0000036: 3235 7468 204d 6179 2031 3939 36  25th May 1996
 .PP
 .br
-Creare un file di 65537 tutto a 0x00,
+Creare un file di 65537 byte tutto a 0x00,
 tranne che l'ultimo carattere che è una 'A' (esadecimale 0x41).
 .br
 \fI% echo '010000: 41' | xxd \-r \> file\fR
@@ -316,21 +316,21 @@ Stampa una immagine esadecimale del file  di cui sopra con opzione autoskip.
 .PP
 Crea un file di 1 byte che contiene il solo carattere 'A'.
 Il numero dopo '\-r \-s' viene aggiunto a quello trovato nel file;
-in pratica, i bytes precedenti non sono stampati.
+in pratica, i byte precedenti non sono stampati.
 .br
 \fI% echo '010000: 41' | xxd \-r \-s \-0x10000 \> file\fR
 .PP
-Usare xxd come filtro all'interno di un editor come
+Usa xxd come filtro all'interno di un editor come
 .B vim(1)
 per ottenere una immagine esadecimale di una parte di file
-delimitata dai mark `a' e `z'.
+delimitata dai marcatori `a' e `z'.
 .br
 \fI:'a,'z!xxd\fR
 .PP
 Usare xxd come filtro all'interno di un editor come
 .B vim(1)
 per ricostruire un pezzo di file binario da una immagine esadecimale
-delimitata dai mark `a' e `z'.
+delimitata dai marcatori `a' e `z'.
 .br
 \fI:'a,'z!xxd \-r\fR
 .PP
@@ -341,7 +341,7 @@ Portare il cursore sopra la linea e battere:
 .br
 \fI!!xxd \-r\fR
 .PP
-Per leggere singoli charatteri da una linea seriale
+Per leggere singoli caratteri da una linea seriale
 .br
 \fI% xxd \-c1 < /dev/term/b &\fR
 .br
@@ -385,7 +385,7 @@ Questa pagina di manuale documenta la versione 1.7 di xxd.
 .br
 (c) 1990-1997 Juergen Weigert
 .br
-<jnweiger@informatik.uni-erlangen.de>
+<jnweiger@informatik.uni\-erlangen.de>
 .LP
 Distribuite liberamente ed attribuitemi il credito,
 .br

@@ -2,11 +2,12 @@
 " Language:	Perl
 " Author:	Rafael Garcia-Suarez <rgarciasuarez@free.fr>
 " URL:		http://rgarciasuarez.free.fr/vim/indent/perl.vim
-" Last Change:	2005 Sep 07
+" Last Change:	2010 Jul 28
 
 " Suggestions and improvements by :
 "   Aaron J. Sherman (use syntax for hints)
 "   Artem Chuprina (play nice with folding)
+"   Benjamin R. Haskell (fold syntax group fix)
 
 " TODO things that are not or not properly indented (yet) :
 " - Continued statements
@@ -133,7 +134,7 @@ function GetPerlIndent()
 	    \ || synid == "perlMatchStartEnd"
 	    \ || synid == "perlHereDoc"
 	    \ || synid =~ "^perlFiledescStatement"
-	    \ || synid =~ '^perl\(Sub\|BEGINEND\|If\)Fold'
+	    \ || synid =~ '^perl\(Sub\|Block\)Fold'
 	let brace = strpart(line, bracepos, 1)
 	if brace == '(' || brace == '{'
 	  let ind = ind + &sw
@@ -148,7 +149,7 @@ function GetPerlIndent()
       let synid = synIDattr(synID(v:lnum, bracepos, 0), "name")
       if synid == ""
 	    \ || synid == "perlMatchStartEnd"
-	    \ || synid =~ '^perl\(Sub\|BEGINEND\|If\)Fold'
+	    \ || synid =~ '^perl\(Sub\|Block\)Fold'
 	let ind = ind - &sw
       endif
     endif

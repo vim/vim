@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3c.  Last change: 2010 Jul 25
+*eval.txt*	For Vim version 7.3c.  Last change: 2010 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5094,7 +5094,7 @@ setreg({regname}, {value} [,{options}])
 		Set the register {regname} to {value}.
 		If {options} contains "a" or {regname} is upper case,
 		then the value is appended.
-		{options} can also contains a register type specification:
+		{options} can also contain a register type specification:
 		    "c" or "v"	      |characterwise| mode
 		    "l" or "V"	      |linewise| mode
 		    "b" or "<CTRL-V>" |blockwise-visual| mode
