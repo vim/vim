@@ -109,9 +109,11 @@ static const char LUAVIM_FREE[] = "luaV_free";
 #define luaopen_table dll_luaopen_table
 #define luaopen_string dll_luaopen_string
 #define luaopen_math dll_luaopen_math
+#define luaopen_io dll_luaopen_io
 #define luaopen_os dll_luaopen_os
 #define luaopen_package dll_luaopen_package
 #define luaopen_debug dll_luaopen_debug
+#define luaL_openlibs dll_luaL_openlibs
 
 /* lauxlib */
 void (*dll_luaL_register) (lua_State *L, const char *libname, const luaL_Reg *l);
@@ -168,9 +170,11 @@ int (*dll_luaopen_base) (lua_State *L);
 int (*dll_luaopen_table) (lua_State *L);
 int (*dll_luaopen_string) (lua_State *L);
 int (*dll_luaopen_math) (lua_State *L);
+int (*dll_luaopen_io) (lua_State *L);
 int (*dll_luaopen_os) (lua_State *L);
 int (*dll_luaopen_package) (lua_State *L);
 int (*dll_luaopen_debug) (lua_State *L);
+void (*dll_luaL_openlibs) (lua_State *L);
 
 typedef void **luaV_function;
 typedef struct {
@@ -234,9 +238,11 @@ static const luaV_Reg luaV_dll[] = {
     {"luaopen_table", (luaV_function) &dll_luaopen_table},
     {"luaopen_string", (luaV_function) &dll_luaopen_string},
     {"luaopen_math", (luaV_function) &dll_luaopen_math},
+    {"luaopen_io", (luaV_function) &dll_luaopen_io},
     {"luaopen_os", (luaV_function) &dll_luaopen_os},
     {"luaopen_package", (luaV_function) &dll_luaopen_package},
     {"luaopen_debug", (luaV_function) &dll_luaopen_debug},
+    {"luaL_openlibs", (luaV_function) &dll_luaL_openlibs},
     {NULL, NULL}
 };
 
@@ -1094,40 +1100,8 @@ luaopen_vim(lua_State *L)
 luaV_newstate(void)
 {
     lua_State *L = luaL_newstate();
-    const luaL_Reg luaV_core_libs[] = {
-	{"", luaopen_base},
-	{LUA_TABLIBNAME, luaopen_table},
-	{LUA_STRLIBNAME, luaopen_string},
-	{LUA_MATHLIBNAME, luaopen_math},
-	{LUA_OSLIBNAME, luaopen_os}, /* restricted */
-	{LUA_LOADLIBNAME, luaopen_package},
-	{LUA_DBLIBNAME, luaopen_debug},
-	{NULL, NULL}
-    };
-    const char *os_funcs[] = {
-	"date", "clock", "time", "difftime", "getenv", NULL
-    };
-    const luaL_Reg *reg = luaV_core_libs;
-    const char **s = os_funcs;
-    /* core libs */
-    for ( ; reg->func; reg++)
-    {
-	lua_pushcfunction(L, reg->func);
-	lua_pushstring(L, reg->name);
-	lua_call(L, 1, 0);
-    }
-    /* restricted os lib */
-    lua_getglobal(L, LUA_OSLIBNAME);
-    lua_newtable(L);
-    for ( ; *s; s++)
-    {
-	lua_getfield(L, -2, *s);
-	lua_setfield(L, -2, *s);
-    }
-    lua_setglobal(L, LUA_OSLIBNAME);
-    lua_pop(L, 1); /* os table */
-    /* vim */
-    lua_pushcfunction(L, luaopen_vim);
+    luaL_openlibs(L); /* core libs */
+    lua_pushcfunction(L, luaopen_vim); /* vim */
     lua_call(L, 0, 0);
     return L;
 }
