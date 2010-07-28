@@ -1056,6 +1056,7 @@ var_redir_start(name, append)
 							     FNE_CHECK_START);
     if (redir_endp == NULL || redir_lval->ll_name == NULL || *redir_endp != NUL)
     {
+	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    /* Trailing characters are present after the variable name */
 	    EMSG(_(e_trailing));
@@ -1076,6 +1077,7 @@ var_redir_start(name, append)
 	set_var_lval(redir_lval, redir_endp, &tv, TRUE, (char_u *)".");
     else
 	set_var_lval(redir_lval, redir_endp, &tv, TRUE, (char_u *)"=");
+    clear_lval(redir_lval);
     err = did_emsg;
     did_emsg |= save_emsg;
     if (err)
@@ -1083,12 +1085,6 @@ var_redir_start(name, append)
 	redir_endp = NULL;  /* don't store a value, only cleanup */
 	var_redir_stop();
 	return FAIL;
-    }
-    if (redir_lval->ll_newkey != NULL)
-    {
-	/* Dictionary item was created, don't do it again. */
-	vim_free(redir_lval->ll_newkey);
-	redir_lval->ll_newkey = NULL;
     }
 
     return OK;
@@ -1144,14 +1140,19 @@ var_redir_stop()
 	    ga_append(&redir_ga, NUL);  /* Append the trailing NUL. */
 	    tv.v_type = VAR_STRING;
 	    tv.vval.v_string = redir_ga.ga_data;
-	    set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
+	    /* Call get_lval() again, if it's inside a Dict or List it may
+	     * have changed. */
+	    redir_endp = get_lval(redir_varname, NULL, redir_lval,
+					FALSE, FALSE, FALSE, FNE_CHECK_START);
+	    if (redir_endp != NULL && redir_lval->ll_name != NULL)
+		set_var_lval(redir_lval, redir_endp, &tv, FALSE, (char_u *)".");
+	    clear_lval(redir_lval);
 	}
 
 	/* free the collected output */
 	vim_free(redir_ga.ga_data);
 	redir_ga.ga_data = NULL;
 
-	clear_lval(redir_lval);
 	vim_free(redir_lval);
 	redir_lval = NULL;
     }
