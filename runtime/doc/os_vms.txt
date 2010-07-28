@@ -1,4 +1,4 @@
-*os_vms.txt*    For Vim version 7.3c.  Last change: 2009 Oct 28
+*os_vms.txt*    For Vim version 7.3c.  Last change: 2010 Jul 28
 
 
 		  VIM REFERENCE MANUAL
@@ -766,16 +766,20 @@ GNU_TOOLS.ZIP package downloadable from http://www.polarhome.com/vim/
 
 9. VMS related changes					*vms-changes*
 
-Recent changes
-- The following plugins are included into VMS runtime: 
-  genutils 2.4, multiselect 2.2, multvals 3.1, selectbuf 4.3,
-  bufexplorer 7.1.7, taglist 4.5
-- minor changes in vimrc (just in VMS runtime) 
+Version 7.3
+- CTAGS 5.8 included
+- VMS compile warnings fixed - floating-point overflow warning corrected on VAX
+- filepath completition corrected - too many chars were escaped in filename
+  and shell commands
+- the following plugins are included into VMS runtime:
+	genutils 2.4, multiselect 2.2, multvals 3.1, selectbuf 4.3,
+	bufexplorer 7.1.7, taglist 4.5
+- minor changes in vimrc (just in VMS runtime)
 - make_vms.mms - HUGE model is the default
 - [TESTDIR]make_vms.mms include as many tests possible
 - modify test30 and test54 for VMS
 - enable FLOAT feature in VMS port
-- os_vms.txt updated  
+- os_vms.txt updated
 
 Version 7.2 (2008 Aug 9)
 - VCF files write corrected

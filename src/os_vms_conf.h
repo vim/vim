@@ -50,6 +50,9 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* #undef uid_t */
 
+/* Define to `unsigned int' or other type that is 32 bit.  */
+#define UINT32_T unsigned int
+
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* #undef gid_t */
 

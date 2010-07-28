@@ -616,7 +616,7 @@ conceal_cursor_line(wp)
  * Check if the cursor line needs to be redrawn because of 'concealcursor'.
  */
     void
-conceal_check_cursur_line_redraw()
+conceal_check_cursur_line()
 {
     if (curwin->w_p_cole > 0 && conceal_cursor_line(curwin))
     {

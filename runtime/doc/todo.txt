@@ -30,15 +30,6 @@ be worked on, but only if you sponsor Vim development.  See |sponsor|.
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Conceal problem: CTRL-L draws differently than individual line. (Benjamin
-Fritz, 2010 Jul 27)
-
-Access to free memory with :redir command. (Dominique Pelle, 2010 Jul 25)
-Easier way to reproduce in later message. (2010 Jul 26)
-call get_lval() again in var_redir_stop().
-
-Patch for VMS. Zoltan Arpadffy, 2010 Jul 26.
-
 Patch for :find completion. (Nazri Ramliy, 2010 Jul 27, and leak fix)
 And patch for Windows, Jul 28.
 And fix for patch, Jul 28.
