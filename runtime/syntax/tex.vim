@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	TeX
 " Maintainer:	Dr. Charles E. Campbell, Jr. <NdrchipO@ScampbellPfamily.AbizM>
-" Last Change:	Jul 26, 2010
-" Version:	49
+" Last Change:	Jul 28, 2010 
+" Version:	51
 " URL:		http://mysite.verizon.net/astronaut/vim/index.html#vimlinks_syntax
 "
 " Notes: {{{1
@@ -126,8 +126,8 @@ if !exists("tex_no_math")
  syn cluster texSubSubSectionGroup	contains=texParaZone
  syn cluster texParaGroup		contains=texSubParaZone
  if has("conceal") && &enc == 'utf-8'
-  syn cluster texMathZoneGroup	add=texGreek,texSuperscript,texSubscript
-  syn cluster texMathMatchGroup	add=texGreek,texSuperscript,texSubscript
+  syn cluster texMathZoneGroup	add=texGreek,texSuperscript,texSubscript,texMathSymbol
+  syn cluster texMathMatchGroup	add=texGreek,texSuperscript,texSubscript,texMathSymbol
  endif
 endif
 
@@ -341,10 +341,17 @@ if !exists("tex_no_math")
  call TexNewMathZone("L","xxalignat",0)
 
  " Inline Math Zones: {{{2
- syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter end="\\)\|%stopzone\>"	keepend contains=@texMathZoneGroup
- syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter end="\\]\|%stopzone\>"	keepend contains=@texMathZoneGroup
- syn region texMathZoneX	matchgroup=Delimiter start="\$" skip="\\\\\|\\\$"	matchgroup=Delimiter end="\$" end="%stopzone\>"	contains=@texMathZoneGroup
- syn region texMathZoneY	matchgroup=Delimiter start="\$\$" 			matchgroup=Delimiter end="\$\$" end="%stopzone\>"	keepend		contains=@texMathZoneGroup
+ if has("conceal") && &enc == 'utf-8'
+  syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter end="\\)\|%stopzone\>"	keepend concealends contains=@texMathZoneGroup
+  syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter end="\\]\|%stopzone\>"	keepend concealends contains=@texMathZoneGroup
+  syn region texMathZoneX	matchgroup=Delimiter start="\$" skip="\\\\\|\\\$"	matchgroup=Delimiter end="\$" end="%stopzone\>"		concealends contains=@texMathZoneGroup
+  syn region texMathZoneY	matchgroup=Delimiter start="\$\$" 			matchgroup=Delimiter end="\$\$" end="%stopzone\>"	concealends keepend		contains=@texMathZoneGroup
+ else
+  syn region texMathZoneV	matchgroup=Delimiter start="\\("			matchgroup=Delimiter end="\\)\|%stopzone\>"	keepend contains=@texMathZoneGroup
+  syn region texMathZoneW	matchgroup=Delimiter start="\\\["			matchgroup=Delimiter end="\\]\|%stopzone\>"	keepend contains=@texMathZoneGroup
+  syn region texMathZoneX	matchgroup=Delimiter start="\$" skip="\\\\\|\\\$"	matchgroup=Delimiter end="\$" end="%stopzone\>"	contains=@texMathZoneGroup
+  syn region texMathZoneY	matchgroup=Delimiter start="\$\$" 			matchgroup=Delimiter end="\$\$" end="%stopzone\>"	keepend		contains=@texMathZoneGroup
+ endif
  syn region texMathZoneZ	matchgroup=texStatement start="\\ensuremath\s*{"	matchgroup=texStatement end="}" end="%stopzone\>"	contains=@texMathZoneGroup
 
  syn match texMathOper		"[_^=]" contained
@@ -530,10 +537,11 @@ if has("conceal") && &enc == 'utf-8'
  call s:Greek('texGreek','\\Phi\>'		,'Φ')
  call s:Greek('texGreek','\\Psi\>'		,'Ψ')
  call s:Greek('texGreek','\\Omega\>'		,'Ω')
+ delfun s:Greek
 
  " Superscripts/Subscripts {{{2
- syn region texSuperscript	start='\^{'	end='}' contained contains=texSuperscripts
- syn region texSubscript	start='_{'	end='}' contained contains=texSubscripts
+ syn region texSuperscript	matchgroup=Delimiter start='\^{'	end='}' contained concealends contains=texSuperscripts
+ syn region texSubscript	matchgroup=Delimiter start='_{'	end='}' contained concealends contains=texSubscripts
  fun! s:SuperSub(group,leader,pat,cchar)
    exe 'syn match '.a:group." '".a:leader.a:pat."' contained conceal cchar=".a:cchar
    exe 'syn match '.a:group."s '".a:pat."' contained conceal cchar=".a:cchar.' nextgroup='.a:group.'s'
@@ -629,75 +637,63 @@ if has("conceal") && &enc == 'utf-8'
  call s:SuperSub('texSubscript','_','\\phi\>'  ,'ᵩ')
  call s:SuperSub('texSubscript','_','\\gamma\>','ᵧ')
  call s:SuperSub('texSubscript','_','\\chi\>'  ,'ᵪ')
+ delfun s:SuperSub
 
  " Accented characters: {{{2
  if b:tex_stylish
   syn match texAccent		"\\[bcdvuH][^a-zA-Z@]"me=e-1
   syn match texLigature		"\\\([ijolL]\|ae\|oe\|ss\|AA\|AE\|OE\)[^a-zA-Z@]"me=e-1
  else
-  syn match texAccent	'\\`{a}'	conceal cchar=à
-  syn match texAccent	'\\\'{a}'	conceal cchar=á
-  syn match texAccent	'\\^{a}'	conceal cchar=â
-  syn match texAccent	'\\"{a}'	conceal cchar=ä
-  syn match texAccent	'\\\~{a}'	conceal cchar=ã
-  syn match texAccent	'\\r{a}'	conceal cchar=å
-  syn match texAccent	'\\`{A}'	conceal cchar=À
-  syn match texAccent	'\\\'{A}'	conceal cchar=Á
-  syn match texAccent	'\\^{A}'	conceal cchar=Â
-  syn match texAccent	'\\"{A}'	conceal cchar=Ä
-  syn match texAccent	'\\\~{A}'	conceal cchar=Ã
-  syn match texAccent	'\\r{A}'	conceal cchar=Å
+  fun! s:Accents(chr,...)
+    let i= 1
+    for accent in ["`","\\'","^",'"','\~',"r","v"]
+     if i > a:0
+      break
+     endif
+     if strlen(a:{i}) == 0
+      let i= i + 1
+      continue
+     endif
+     exe "syn match texAccent '\\\\".accent."{".a:chr."}' conceal cchar=".a:{i}
+     let i= i + 1
+    endfor
+  endfun
+  call s:Accents('a','à','á','â','ä','ã','å','ă')
+  call s:Accents('A','À','Á','Â','Ä','Ã','Å','Ă')
+  call s:Accents('C',"" ,'Ć','Ĉ',"" ,"" ,"" ,'Ć')
+  call s:Accents('e','è','é','ê','ë','ẽ',"" ,'ĕ')
+  call s:Accents('E','È','É','Ê','Ë','Ẽ',"" ,'Ė')
+  call s:Accents('i','ì','í','î','ï','ĩ',"" ,"ĭ")
+  call s:Accents('I','Ì','Í','Î','Ï','Ĩ',"" ,'Ĭ')
+  call s:Accents('o','ò','ó','ô','ö','õ',"" ,'ŏ')
+  call s:Accents('O','Ò','Ó','Ô','Ö','Õ',"" ,'Ŏ')
+  call s:Accents('r',"" ,'ŕ',"" ,"" ,"" ,"" ,'ř')
+  call s:Accents('R',"" ,'Ŕ',"" ,"" ,"" ,"" ,'Ř')
+  call s:Accents('s',"" ,'ś','ŝ',"" ,"" ,"" ,'š')
+  call s:Accents('S',"" ,'Ś','Ŝ',"" ,"" ,"" ,'Š')
+  call s:Accents('u','ù','ú','û','ü','ũ',"" ,'ŭ')
+  call s:Accents('U','Ù','Ú','Û','Ü','Ũ',"" ,'Ŭ')
+  call s:Accents('y','ỳ','ý','ŷ','ÿ','ỹ',"" ,"" )
+  call s:Accents('Y','Ỳ','Ý','Ŷ','Ÿ','Ỹ',"" ,"" )
+  delfun s:Accents
+  syn match texAccent   '\\aa\>'	conceal cchar=å
+  syn match texAccent   '\\AA\>'	conceal cchar=Å
+  syn match texAccent	'\\k{a}'	conceal cchar=ą
+  syn match texAccent	'\\k{A}'	conceal cchar=Ą
+  syn match texAccent	'\\c{C}'	conceal cchar=Ç
   syn match texAccent	'\\c{c}'	conceal cchar=ç
-  syn match texAccent	'\\`{e}'	conceal cchar=è
-  syn match texAccent	'\\\'{e}'	conceal cchar=é
-  syn match texAccent	'\\^{e}'	conceal cchar=ê
-  syn match texAccent	'\\"{e}'	conceal cchar=ë
-  syn match texAccent	'\\\~{e}'	conceal cchar=ẽ
-  syn match texAccent	'\\`{E}'	conceal cchar=È
-  syn match texAccent	'\\\'{E}'	conceal cchar=É
-  syn match texAccent	'\\^{E}'	conceal cchar=Ê
-  syn match texAccent	'\\"{E}'	conceal cchar=Ë
-  syn match texAccent	'\\\~{E}'	conceal cchar=Ẽ
-  syn match texAccent	'\\`{i}'	conceal cchar=ì
-  syn match texAccent	'\\\'{i}'	conceal cchar=í
-  syn match texAccent	'\\^{i}'	conceal cchar=î
-  syn match texAccent	'\\"{i}'	conceal cchar=ï
-  syn match texAccent	'\\\~{i}'	conceal cchar=ĩ
-  syn match texAccent	'\\`{I}'	conceal cchar=Ì
-  syn match texAccent	'\\\'{I}'	conceal cchar=Í
-  syn match texAccent	'\\^{I}'	conceal cchar=Î
-  syn match texAccent	'\\"{I}'	conceal cchar=Ï
-  syn match texAccent	'\\\~{I}'	conceal cchar=Ĩ
-  syn match texAccent	'\\`{o}'	conceal cchar=ò
-  syn match texAccent	'\\\'{o}'	conceal cchar=ó
-  syn match texAccent	'\\^{o}'	conceal cchar=ô
-  syn match texAccent	'\\"{o}'	conceal cchar=ö
-  syn match texAccent	'\\\~{o}'	conceal cchar=õ
-  syn match texAccent	'\\`{O}'	conceal cchar=Ò
-  syn match texAccent	'\\\'{O}'	conceal cchar=Ó
-  syn match texAccent	'\\^{O}'	conceal cchar=Ô
-  syn match texAccent	'\\"{O}'	conceal cchar=Ö
-  syn match texAccent	'\\\~{O}'	conceal cchar=Õ
-  syn match texAccent	'\\`{u}'	conceal cchar=ù
-  syn match texAccent	'\\\'{u}'	conceal cchar=ú
-  syn match texAccent	'\\^{u}'	conceal cchar=û
-  syn match texAccent	'\\"{u}'	conceal cchar=ü
-  syn match texAccent	'\\\~{u}'	conceal cchar=ũ
-  syn match texAccent	'\\`{U}'	conceal cchar=Ù
-  syn match texAccent	'\\\'{U}'	conceal cchar=Ú
-  syn match texAccent	'\\^{U}'	conceal cchar=Û
-  syn match texAccent	'\\"{U}'	conceal cchar=Ü
-  syn match texAccent	'\\\~{U}'	conceal cchar=Ũ
-  syn match texAccent	'\\`{y}'	conceal cchar=ỳ
-  syn match texAccent	'\\\'{y}'	conceal cchar=ý
-  syn match texAccent	'\\^{y}'	conceal cchar=ŷ
-  syn match texAccent	'\\"{y}'	conceal cchar=ÿ
-  syn match texAccent	'\\\~{y}'	conceal cchar=ỹ
-  syn match texAccent	'\\`{Y}'	conceal cchar=Ỳ
-  syn match texAccent	'\\\'{Y}'	conceal cchar=Ý
-  syn match texAccent	'\\^{Y}'	conceal cchar=Ŷ
-  syn match texAccent	'\\"{Y}'	conceal cchar=Ÿ
-  syn match texAccent	'\\\~{Y}'	conceal cchar=Ỹ
+  syn match texAccent	'\\\~{n}'	conceal cchar=ñ
+  syn match texAccent	'\\\~{N}'	conceal cchar=Ñ
+  syn match texAccent	'\\o\>'		conceal cchar=ø
+  syn match texAccent	'\\O\>'		conceal cchar=Ø
+  syn match texAccent	'\\H{o}'	conceal cchar=ő
+  syn match texAccent	'\\H{O}'	conceal cchar=Ő
+  syn match texAccent	'\\c{r}'	conceal cchar=ŗ
+  syn match texLigature	'\\AE\>'	conceal cchar=Æ
+  syn match texLigature	'\\ae\>'	conceal cchar=æ
+  syn match texLigature	'\\oe\>'	conceal cchar=œ
+  syn match texLigature	'\\OE\>'	conceal cchar=Œ
+  syn match texLigature	'\\ss\>'	conceal cchar=ß
  endif
 endif
 
