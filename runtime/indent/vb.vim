@@ -2,6 +2,7 @@
 " Language:	VisualBasic (ft=vb) / Basic (ft=basic) / SaxBasic (ft=vb)
 " Author:	Johannes Zellner <johannes@zellner.org>
 " Last Change:	Fri, 18 Jun 2004 07:22:42 CEST
+"		Small update 2010 Jul 28 by Maxim Kim
 
 if exists("b:did_indent")
     finish
@@ -63,7 +64,7 @@ fun! VbGetIndent(lnum)
 	    " end select
 	    let ind = ind - &sw
 	endif
-    elseif this_line =~? '^\s*\<\(end\|else\|until\|loop\|next\|wend\)\>'
+    elseif this_line =~? '^\s*\<\(end\|else\|elseif\|until\|loop\|next\|wend\)\>'
 	let ind = ind - &sw
     elseif this_line =~? '^\s*\<\(case\|default\)\>'
 	if previous_line !~? '^\s*\<select\>'
@@ -73,3 +74,5 @@ fun! VbGetIndent(lnum)
 
     return ind
 endfun
+
+" vim:sw=4

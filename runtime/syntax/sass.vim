@@ -2,7 +2,7 @@
 " Language:	Sass
 " Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
 " Filenames:	*.sass
-" Last Change:	2010 Jul 26
+" Last Change:	2010 Jul 28
 
 if exists("b:current_syntax")
   finish
@@ -17,8 +17,8 @@ syn cluster sassCssAttributes contains=css.*Attr,scssComment,cssValue.*,cssColor
 
 syn region sassDefinition matchgroup=cssBraces start="{" end="}" contains=TOP
 
-syn match sassProperty "\%([{};]\s*\|^\)\@<=[[:alnum:]-]\+:" contains=css.*Prop skipwhite nextgroup=sassCssAttribute contained containedin=sassDefinition
-syn match sassProperty "^\s*\zs\s\%([[:alnum:]-]\+:\|:[[:alnum:]-]\+\)"hs=s+1 contains=css.*Prop skipwhite nextgroup=sassCssAttribute
+syn match sassProperty "\%([{};]\s*\|^\)\@<=\%([[:alnum:]-]\|#{[^{}]*}\)\+:" contains=css.*Prop skipwhite nextgroup=sassCssAttribute contained containedin=sassDefinition
+syn match sassProperty "^\s*\zs\s\%(\%([[:alnum:]-]\|#{[^{}]*}\)\+:\|:[[:alnum:]-]\+\)"hs=s+1 contains=css.*Prop skipwhite nextgroup=sassCssAttribute
 syn match sassProperty "^\s*\zs\s\%(:\=[[:alnum:]-]\+\s*=\)"hs=s+1 contains=css.*Prop skipwhite nextgroup=sassCssAttribute
 syn match sassCssAttribute +\%("\%([^"]\|\\"\)*"\|'\%([^']\|\\'\)*'\|[^{};]\)*+ contained contains=@sassCssAttributes,sassVariable,sassFunction
 syn match sassDefault "!default\>" contained
@@ -34,7 +34,7 @@ syn match sassFunction "\<\%(unquote\|quote\)\>(\@=" contained
 syn match sassFunction "\<\%(percentage\|round\|ceil\|floor\|abs\)\>(\@=" contained
 syn match sassFunction "\<\%(type-of\|unit\|unitless\|comparable\)\>(\@=" contained
 
-syn region sassInterpolation matchgroup=sassInterpolationDelimiter start="#{" end="}" contains=@sassCssAttributes,sassVariable,sassFunction containedin=cssStringQ,cssStringQQ
+syn region sassInterpolation matchgroup=sassInterpolationDelimiter start="#{" end="}" contains=@sassCssAttributes,sassVariable,sassFunction containedin=cssStringQ,cssStringQQ,sassCssAttribute,sassProperty
 
 syn match sassMixinName "[[:alnum:]_-]\+" contained nextgroup=sassCssAttribute
 syn match sassMixin  "^="               nextgroup=sassMixinName
