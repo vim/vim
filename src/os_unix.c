@@ -421,9 +421,10 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 	/* Process the queued netbeans messages. */
 	netbeans_parse_messages();
 #endif
+#ifndef VMS  /* VMS: must try reading, WaitForChar() does nothing. */
 	/*
-	 * we want to be interrupted by the winch signal
-	 * or by an event on the monitored file descriptors
+	 * We want to be interrupted by the winch signal
+	 * or by an event on the monitored file descriptors.
 	 */
 	if (WaitForChar(-1L) == 0)
 	{
@@ -431,6 +432,7 @@ mch_inchar(buf, maxlen, wtime, tb_change_cnt)
 		handle_resize();
 	    return 0;
 	}
+#endif
 
 	/* If input was put directly in typeahead buffer bail out here. */
 	if (typebuf_changed(tb_change_cnt))
