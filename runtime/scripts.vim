@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2009 Dec 24
+" Last change:	2010 Jul 29
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -99,6 +99,10 @@ if s:line1 =~ "^#!"
     " Lua
   elseif s:name =~ 'lua'
     set ft=lua
+
+    " Perl 6
+  elseif s:name =~ 'perl6'
+    set ft=perl6
 
     " Perl
   elseif s:name =~ 'perl'
